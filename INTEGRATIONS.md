@@ -648,330 +648,64 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ## Integration Examples
 
-### Example 1: Call Screening App
+### Example 1: Call Screening
 
-A typical call screening app integration:
+```
+function onIncomingCall(rawNumber):
+    number = normalizeToE164(rawNumber, deviceDialPrefix)
 
-```java
-import android.content.Context;
-import android.content.SharedPreferences;
-import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import org.json.JSONObject;
+    // Compute hashes for privacy-preserving lookup
+    sha1       = SHA1(number).toUpperHex()
+    prefix10   = SHA1(number without last digit).toUpperHex()
+    prefix100  = SHA1(number without last 2 digits).toUpperHex()
 
-public class PhoneBlockService {
-    private static final String BASE_URL = "https://phoneblock.net/phoneblock/api";
-    private final Context context;
-    private String authToken;
+    // Query API
+    info = GET /api/check?sha1={sha1}&prefix10={prefix10}&prefix100={prefix100}
+           with Authorization: Bearer {token}
+           with User-Agent: MyApp/1.0.0
 
-    public PhoneBlockService(Context context) {
-        this.context = context;
-        // Load stored token
-        SharedPreferences prefs = context.getSharedPreferences("phoneblock", Context.MODE_PRIVATE);
-        this.authToken = prefs.getString("auth_token", null);
-    }
+    if info is null:
+        return ALLOW  // fail open
 
-    public CallScreeningDecision checkIncomingCall(String phoneNumber) {
-        try {
-            // Normalize to E.164 format
-            String normalized = normalizePhoneNumber(phoneNumber);
+    // 1. Personal lists take priority
+    if info.blackListed:  return BLOCK
+    if info.whiteListed:  return ALLOW
 
-            // Hash number and prefixes for privacy-preserving lookup
-            String hash = hashPhoneNumber(normalized);
-            String prefix10Hash = normalized.length() > 2
-                ? hashPhoneNumber(normalized.substring(0, normalized.length() - 1)) : null;
-            String prefix100Hash = normalized.length() > 3
-                ? hashPhoneNumber(normalized.substring(0, normalized.length() - 2)) : null;
+    // 2. Community votes (exact number)
+    if info.votes >= minVotes and not info.archived:
+        return BLOCK
 
-            // Query PhoneBlock API
-            PhoneInfo info = queryApi(hash, prefix10Hash, prefix100Hash);
+    // 3. Range-based detection (spam ranges)
+    if info.votesWildcard >= minRangeVotes:
+        return BLOCK
 
-            if (info != null) {
-                // User's personal blacklist — always block
-                if (info.blackListed) {
-                    return CallScreeningDecision.REJECT;
-                }
-
-                // User's personal whitelist — always allow
-                if (info.whiteListed) {
-                    return CallScreeningDecision.ALLOW;
-                }
-
-                // Community ratings
-                if ("G_FRAUD".equals(info.rating) || "F_GAMBLE".equals(info.rating)) {
-                    return CallScreeningDecision.REJECT;
-                }
-
-                if (info.votes > 10 &&
-                    ("E_ADVERTISING".equals(info.rating) || "D_POLL".equals(info.rating))) {
-                    return CallScreeningDecision.SILENCE;
-                }
-
-                // Range-based detection: block if number belongs to a known spam range
-                if (info.votesWildcard >= 10) {
-                    return CallScreeningDecision.SILENCE;
-                }
-
-                if ("A_LEGITIMATE".equals(info.rating)) {
-                    return CallScreeningDecision.ALLOW;
-                }
-
-                return CallScreeningDecision.SCREEN;
-            }
-        } catch (Exception e) {
-            // Log error but fail open
-            android.util.Log.e("PhoneBlock", "Failed to check number", e);
-        }
-
-        // Default: allow call if API fails
-        return CallScreeningDecision.ALLOW;
-    }
-
-    private PhoneInfo queryApi(String hash, String prefix10Hash, String prefix100Hash) throws IOException {
-        StringBuilder urlBuilder = new StringBuilder(BASE_URL + "/check?sha1=" + hash);
-        if (prefix10Hash != null) {
-            urlBuilder.append("&prefix10=").append(prefix10Hash);
-        }
-        if (prefix100Hash != null) {
-            urlBuilder.append("&prefix100=").append(prefix100Hash);
-        }
-        URL url = new URL(urlBuilder.toString());
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
-        try {
-            conn.setRequestMethod("GET");
-            conn.setRequestProperty("Authorization", "Bearer " + authToken);
-            conn.setRequestProperty("User-Agent", "MyCallBlocker/1.0.0");
-            conn.setConnectTimeout(5000);
-            conn.setReadTimeout(5000);
-
-            int responseCode = conn.getResponseCode();
-            if (responseCode == 200) {
-                // Read and parse JSON response
-                java.io.BufferedReader reader = new java.io.BufferedReader(
-                    new java.io.InputStreamReader(conn.getInputStream()));
-                StringBuilder response = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    response.append(line);
-                }
-                reader.close();
-
-                JSONObject json = new JSONObject(response.toString());
-                return PhoneInfo.fromJson(json);
-            }
-        } finally {
-            conn.disconnect();
-        }
-
-        return null;
-    }
-
-    public String normalizePhoneNumber(String phone) {
-        // Remove all non-digit characters except leading +
-        String cleaned = phone.replaceAll("[^+\\d]", "");
-
-        // Add country code if missing (using device SIM country)
-        if (cleaned.startsWith("+")) {
-            return cleaned;
-        } else {
-            String dialPrefix = getDialPrefixFromDevice();
-            String withoutLeadingZero = cleaned.replaceFirst("^0+", "");
-            return dialPrefix + withoutLeadingZero;
-        }
-    }
-
-    public String hashPhoneNumber(String phone) throws NoSuchAlgorithmException {
-        MessageDigest digest = MessageDigest.getInstance("SHA-1");
-        byte[] hash = digest.digest(phone.getBytes(StandardCharsets.UTF_8));
-
-        StringBuilder hexString = new StringBuilder();
-        for (byte b : hash) {
-            hexString.append(String.format("%02X", b));
-        }
-        return hexString.toString();
-    }
-
-    private String getDialPrefixFromDevice() {
-        // Get dial prefix from device SIM country
-        android.telephony.TelephonyManager tm =
-            (android.telephony.TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-        String countryIso = tm.getSimCountryIso();
-
-        // Map country ISO to dial prefix (simplified example)
-        switch (countryIso.toUpperCase()) {
-            case "DE": return "+49";
-            case "US": return "+1";
-            case "GB": return "+44";
-            case "FR": return "+33";
-            // Add more countries as needed
-            default: return "+49"; // Default to Germany
-        }
-    }
-
-    public enum CallScreeningDecision {
-        ALLOW, REJECT, SILENCE, SCREEN
-    }
-
-    public static class PhoneInfo {
-        public String phone;
-        public int votes;
-        public int votesWildcard;
-        public String rating;
-        public boolean whiteListed;
-        public boolean blackListed;
-        public boolean archived;
-        public long dateAdded;
-        public long lastUpdate;
-        public String label;
-        public String location;
-
-        public static PhoneInfo fromJson(JSONObject json) throws org.json.JSONException {
-            PhoneInfo info = new PhoneInfo();
-            info.phone = json.optString("phone");
-            info.votes = json.optInt("votes", 0);
-            info.votesWildcard = json.optInt("votesWildcard", 0);
-            info.rating = json.optString("rating");
-            info.whiteListed = json.optBoolean("whiteListed", false);
-            info.blackListed = json.optBoolean("blackListed", false);
-            info.archived = json.optBoolean("archived", false);
-            info.dateAdded = json.optLong("dateAdded", 0);
-            info.lastUpdate = json.optLong("lastUpdate", 0);
-            info.label = json.optString("label", null);
-            info.location = json.optString("location", null);
-            return info;
-        }
-    }
-}
+    return ALLOW
 ```
 
-### Example 2: SMS Spam Filter
+### Example 2: Reporting Spam
 
-Integration for SMS spam detection:
+```
+function reportNumber(phoneNumber, rating, comment):
+    POST /api/rate
+        with Authorization: Bearer {token}
+        with body: { "phone": phoneNumber, "rating": rating, "comment": comment }
 
-```java
-import java.util.Arrays;
-import java.util.List;
-
-public class SmsSpamFilter {
-    private final PhoneBlockService phoneBlockService;
-    private static final List<String> SPAM_KEYWORDS = Arrays.asList(
-        "winner", "prize", "free", "click here", "verify account"
-    );
-
-    public SmsSpamFilter(PhoneBlockService phoneBlockService) {
-        this.phoneBlockService = phoneBlockService;
-    }
-
-    public boolean checkSmsSpam(String sender, String message) {
-        PhoneBlockService.PhoneInfo phoneInfo = phoneBlockService.checkNumber(sender);
-
-        if (phoneInfo == null) {
-            return false;
-        }
-
-        // High-confidence spam detection
-        if (phoneInfo.votes > 20 &&
-            ("G_FRAUD".equals(phoneInfo.rating) ||
-             "F_GAMBLE".equals(phoneInfo.rating) ||
-             "E_ADVERTISING".equals(phoneInfo.rating))) {
-            return true;
-        }
-
-        // Additional heuristics based on message content
-        boolean hasSpamKeywords = hasSpamKeywords(message);
-
-        if (hasSpamKeywords && phoneInfo.votes > 5) {
-            // Report as spam
-            phoneBlockService.reportSpam(
-                sender,
-                "E_ADVERTISING",
-                "SMS spam with suspicious keywords"
-            );
-            return true;
-        }
-
-        return false;
-    }
-
-    private boolean hasSpamKeywords(String message) {
-        String lowerMessage = message.toLowerCase();
-        for (String keyword : SPAM_KEYWORDS) {
-            if (lowerMessage.contains(keyword)) {
-                return true;
-            }
-        }
-        return false;
-    }
-}
+    // rating is one of: A_LEGITIMATE, B_MISSED, C_PING, D_POLL,
+    //                    E_ADVERTISING, F_GAMBLE, G_FRAUD
+    // Use A_LEGITIMATE to whitelist, any other to blacklist
 ```
 
 ### Example 3: Contact Manager Integration
 
-Show spam warnings in contact details:
+```
+function showContactDetails(phoneNumber):
+    // Query in background
+    info = GET /api/num/{phoneNumber}?format=json
+           with Authorization: Bearer {token}
 
-```java
-import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-public class ContactDetailsActivity extends AppCompatActivity {
-    private PhoneBlockService phoneBlockService;
-    private ExecutorService executorService;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_contact_details);
-
-        phoneBlockService = new PhoneBlockService(this);
-        executorService = Executors.newSingleThreadExecutor();
-
-        String phoneNumber = getIntent().getStringExtra("phone");
-
-        // Check spam status in background thread
-        executorService.execute(() -> {
-            PhoneBlockService.PhoneInfo spamInfo = phoneBlockService.checkNumber(phoneNumber);
-
-            if (spamInfo != null && spamInfo.votes > 0) {
-                // Update UI on main thread
-                runOnUiThread(() -> {
-                    showSpamWarning(
-                        spamInfo.rating,
-                        spamInfo.votes,
-                        () -> {
-                            // Allow user to add their own report
-                            showReportDialog(phoneNumber);
-                        }
-                    );
-                });
-            }
-        });
-    }
-
-    private void showSpamWarning(String rating, int votes, Runnable onReportAction) {
-        // Display spam warning UI with rating and votes
-        // Implementation depends on your UI framework
-    }
-
-    private void showReportDialog(String phoneNumber) {
-        // Show dialog to allow user to report the number
-        // Implementation depends on your UI framework
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (executorService != null) {
-            executorService.shutdown();
-        }
-    }
-}
+    if info is not null and info.votes > 0:
+        showSpamWarning(info.rating, info.votes, info.location)
+        offerReportButton(phoneNumber)
 ```
 
 ## Best Practices
@@ -994,69 +728,16 @@ This helps PhoneBlock:
 
 ### 2. Error Handling
 
-Implement robust error handling:
-
-```java
-public PhoneInfo checkNumber(String phone) {
-    HttpURLConnection conn = null;
-    try {
-        String hash = hashPhoneNumber(phone);
-        URL url = new URL(baseUrl + "/check?sha1=" + hash);
-        conn = (HttpURLConnection) url.openConnection();
-
-        conn.setRequestMethod("GET");
-        conn.setRequestProperty("Authorization", "Bearer " + authToken);
-        conn.setRequestProperty("User-Agent", userAgent);
-        conn.setConnectTimeout(5000);
-        conn.setReadTimeout(5000);
-
-        int responseCode = conn.getResponseCode();
-
-        switch (responseCode) {
-            case 200:
-                // Success - parse response
-                BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(conn.getInputStream()));
-                StringBuilder response = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    response.append(line);
-                }
-                reader.close();
-
-                JSONObject json = new JSONObject(response.toString());
-                return PhoneInfo.fromJson(json);
-
-            case 401:
-                // Token expired or invalid - re-authenticate
-                Log.w(TAG, "Token expired, re-authentication required");
-                authToken = null;
-                return null;
-
-            case 429:
-                // Rate limited - back off
-                Log.w(TAG, "Rate limited, backing off");
-                try {
-                    Thread.sleep(60000);
-                } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
-                }
-                return null;
-
-            default:
-                Log.e(TAG, "API error: HTTP " + responseCode);
-                return null;
-        }
-    } catch (IOException | JSONException | NoSuchAlgorithmException e) {
-        Log.e(TAG, "Failed to check number", e);
-        // Fail open - allow call by default
-        return null;
-    } finally {
-        if (conn != null) {
-            conn.disconnect();
-        }
-    }
-}
+```
+function checkNumber(phone):
+    response = GET /api/check?sha1={hash}
+    switch response.status:
+        200: return parsePhoneInfo(response.body)
+        401: clearToken(); promptReAuthentication(); return null
+        429: backoff(60 seconds); return null
+        else: log("API error: " + response.status); return null
+    on network error:
+        return null  // fail open — allow call by default
 ```
 
 ### 3. Privacy by Default
@@ -1092,27 +773,18 @@ public PhoneInfo checkNumber(String phone) {
 
 Always normalize phone numbers to E.164 format before hashing:
 
-```java
-public String normalizeToE164(String phone, String defaultDialPrefix) {
-    // Remove all formatting
-    String cleaned = phone.replaceAll("[^+\\d]", "");
+```
+function normalizeToE164(phone, defaultDialPrefix):
+    cleaned = remove all characters except digits and leading "+"
 
-    if (cleaned.startsWith("+")) {
-        // Already in international format
-        return cleaned;
-    } else if (cleaned.startsWith("0")) {
-        // National format with leading zero
-        return defaultDialPrefix + cleaned.substring(1);
-    } else {
-        // National format without leading zero
-        return defaultDialPrefix + cleaned;
-    }
-}
+    if cleaned starts with "+":  return cleaned          // already international
+    if cleaned starts with "0":  return defaultDialPrefix + cleaned[1:]  // national
+    else:                        return defaultDialPrefix + cleaned      // no prefix
 
 // Examples:
-// normalizeToE164("0176 506 426 02", "+49") -> "+4917650642602"
-// normalizeToE164("+49 176 506 426 02", "+49") -> "+4917650642602"
-// normalizeToE164("17650642602", "+49") -> "+4917650642602"
+// normalizeToE164("0176 506 426 02", "+49") → "+4917650642602"
+// normalizeToE164("+49 176 506 426 02", "+49") → "+4917650642602"
+// normalizeToE164("17650642602", "+49") → "+4917650642602"
 ```
 
 ### 8. Battery and Performance
@@ -1126,70 +798,24 @@ public String normalizeToE164(String phone, String defaultDialPrefix) {
 
 Always test against the test server first:
 
-```java
-public class PhoneBlockApi {
-    private final String baseUrl;
-
-    public PhoneBlockApi(boolean isProduction) {
-        this.baseUrl = isProduction
-            ? "https://phoneblock.net/phoneblock/api"
-            : "https://phoneblock.net/pb-test/api";
-    }
-
-    // ... implementation
-}
-```
+- **Test**: `https://phoneblock.net/pb-test/api`
+- **Production**: `https://phoneblock.net/phoneblock/api`
 
 ### 10. Token Refresh
 
-Tokens are long-lived but can expire. Implement token refresh:
+Tokens are long-lived but can be revoked. Validate on startup:
 
-```java
-public boolean ensureValidToken() {
-    if (authToken == null) {
-        return false;
-    }
+```
+function ensureValidToken():
+    if token is null: return false
 
-    // Test token validity
-    boolean isValid = testConnection();
+    response = GET /api/test with Authorization: Bearer {token}
+    if response.status == 200: return true
 
-    if (!isValid) {
-        // Clear invalid token and prompt re-authentication
-        authToken = null;
-        showAuthenticationPrompt();
-        return false;
-    }
-
-    return true;
-}
-
-private boolean testConnection() {
-    try {
-        URL url = new URL(baseUrl + "/test-connect");
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("GET");
-        conn.setRequestProperty("Authorization", "Bearer " + authToken);
-        conn.setConnectTimeout(5000);
-        conn.setReadTimeout(5000);
-
-        int responseCode = conn.getResponseCode();
-        conn.disconnect();
-
-        return responseCode == 200;
-    } catch (IOException e) {
-        Log.e(TAG, "Failed to test connection", e);
-        return false;
-    }
-}
-
-private void showAuthenticationPrompt() {
-    // Redirect user to login page to get new token
-    Intent intent = new Intent(Intent.ACTION_VIEW);
-    String label = "MyApp on " + android.os.Build.MODEL;
-    intent.setData(Uri.parse("https://phoneblock.net/phoneblock/mobile/login?appId=YourAppId&label=" +
-        Uri.encode(label)));
-    context.startActivity(intent);
-}
+    // Token invalid — redirect user to re-authenticate
+    clearToken()
+    openBrowser("https://phoneblock.net/phoneblock/mobile/login?appId={appId}&label={deviceLabel}")
+    return false
 ```
 
 ## OpenAPI Specification
