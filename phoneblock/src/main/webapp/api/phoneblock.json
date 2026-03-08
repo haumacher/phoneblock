@@ -127,8 +127,7 @@
 					"description": "Optional hex-encoded SHA1 hash (40 hex digits) of the phone number with the last digit removed. Used for range-based spam detection when the exact number is not in the database.",
 					"required": false,
 					"schema": {
-						"type": "string",
-						"example": "A1B2C3D4E5F6A1B2C3D4E5F6A1B2C3D4E5F6A1B2"
+						"type": "string"
 					}
 				},
 				{
@@ -137,8 +136,7 @@
 					"description": "Optional hex-encoded SHA1 hash (40 hex digits) of the phone number with the last two digits removed. Used for range-based spam detection when the exact number is not in the database.",
 					"required": false,
 					"schema": {
-						"type": "string",
-						"example": "B2C3D4E5F6A1B2C3D4E5F6A1B2C3D4E5F6A1B2C3"
+						"type": "string"
 					}
 				},
 				{
