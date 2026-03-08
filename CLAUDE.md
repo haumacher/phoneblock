@@ -324,6 +324,30 @@ Example - Adding conditional device name display:
 </p>
 ```
 
+### Mobile App Internationalization (phoneblock_mobile/)
+
+> **STRICT RULES — VIOLATION WILL BREAK ALL TRANSLATIONS:**
+>
+> **FORBIDDEN — Do NOT touch these files, they are 100% auto-generated:**
+> - `lib/l10n/app_en.arb`, `app_fr.arb`, `app_es.arb`, etc. — ALL `.arb` files except `app_de.arb`
+> - `lib/l10n/app_localizations.dart` and ALL `app_localizations_*.dart` files
+>
+> **The ONLY file you may edit is `lib/l10n/app_de.arb`** (German source).
+
+**Adding or changing a message — the ONLY correct flow:**
+1. Edit strings in `lib/l10n/app_de.arb` only — no `x-translated`, the plugin adds it:
+   ```json
+   "myKey": "German text",
+   "@myKey": {
+     "description": "What this string is for"
+   }
+   ```
+2. Run `./gradlew translateArb` from `phoneblock_mobile/` (translates via DeepL)
+3. Run `flutter gen-l10n` from `phoneblock_mobile/` (regenerates Dart code)
+4. Use in code: `AppLocalizations.of(context)!.myKey`
+
+**All three steps (edit, translate, gen-l10n) MUST be done together. Never commit with only step 1 done.**
+
 ### Flutter `use_build_context_synchronously` Warnings
 
 In `State` subclasses, the analyzer cannot link a `context.mounted` check to later `context` uses because each `context` access re-evaluates the `State.context` getter. To fix:

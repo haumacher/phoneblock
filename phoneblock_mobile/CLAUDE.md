@@ -18,18 +18,30 @@ PhoneBlock Mobile is a Flutter-based Android application that integrates with th
 
 ### Internationalization (I18N)
 
+> **STRICT RULES — VIOLATION WILL BREAK ALL TRANSLATIONS:**
+>
+> **FORBIDDEN — Do NOT touch these files, they are 100% auto-generated:**
+> - `lib/l10n/app_en.arb`, `app_fr.arb`, `app_es.arb`, etc. — ALL `.arb` files except `app_de.arb`
+> - `lib/l10n/app_localizations.dart` and ALL `app_localizations_*.dart` files
+>
+> **The ONLY file you may edit is `lib/l10n/app_de.arb`** (German source).
+
 **Auto-Translation with DeepL:**
 The project uses the [auto-translate](https://github.com/haumacher/auto-translate) Gradle plugin to automatically translate ARB files from German to all other languages.
 
-**Source Language:** German (`lib/l10n/app_de.arb`)
-- **Only edit the German ARB file** - This is the ONLY source file you should modify
-- **All other language files are auto-generated** - Never manually edit `app_en.arb`, `app_es.arb`, etc.
+**Adding or changing a message — the ONLY correct flow:**
+1. Edit strings in `lib/l10n/app_de.arb` only — no `x-translated`, the plugin adds it:
+   ```json
+   "myKey": "German text",
+   "@myKey": {
+     "description": "What this string is for"
+   }
+   ```
+2. Run `./gradlew translateArb` from `phoneblock_mobile/` (translates to all target languages via DeepL)
+3. Run `flutter gen-l10n` from `phoneblock_mobile/` (regenerates Dart localization code)
+4. Use in code: `AppLocalizations.of(context)!.myKey`
 
-**Translation Workflow:**
-1. Edit strings in `lib/l10n/app_de.arb`
-2. Run `./gradlew translateArb` from the `phoneblock_mobile` directory
-3. The plugin will automatically translate to all target languages (ar, da, el, en, es, fr, it, nb, nl, pl, sv, uk, zh)
-4. Run `flutter gen-l10n` to regenerate Dart localization code
+**All three steps (edit, translate, gen-l10n) MUST be done together. Never commit with only step 1 done.**
 
 **DeepL API Configuration:**
 - Add your DeepL API key to `gradle.properties`: `deepl.auth.key=YOUR_KEY`
