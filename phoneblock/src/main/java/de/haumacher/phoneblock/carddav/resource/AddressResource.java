@@ -149,7 +149,7 @@ public class AddressResource extends Resource {
 
 						// Safety, prevent duplicate key constraint violation.
 						blockList.removePersonalization(currentUser, phoneId);
-						blockList.addPersonalization(currentUser, phoneId, sha1);
+						blockList.addPersonalization(currentUser, phoneId, sha1, System.currentTimeMillis());
 						
 						db.processVotesAndPublish(spamreport, number, dialPrefix, 2, System.currentTimeMillis());
 					}
