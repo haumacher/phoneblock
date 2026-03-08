@@ -208,6 +208,8 @@ Check if a phone number is spam using its SHA1 hash.
 
 **Parameters:**
 - `sha1` (required): SHA1 hash of the phone number in international format (40 hex digits)
+- `prefix10` (optional): SHA1 hash of the phone number with the last digit removed (for range-based spam detection)
+- `prefix100` (optional): SHA1 hash of the phone number with the last two digits removed (for range-based spam detection)
 - `format` (optional): Response format - `json` (default) or `xml`
 
 **Hash Computation:**
@@ -234,7 +236,7 @@ hash_phone_number('+4917650642602')
 
 **Request Example:**
 ```http
-GET /phoneblock/api/check?sha1=3D1D76F0C3664E1E818C6ECCFD8843AD1F4091CC&format=json HTTP/1.1
+GET /phoneblock/api/check?sha1=3D1D76F0C3664E1E818C6ECCFD8843AD1F4091CC&prefix10=A1B2...&prefix100=C3D4...&format=json HTTP/1.1
 Host: phoneblock.net
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 User-Agent: MyApp/1.0.0
@@ -247,11 +249,28 @@ User-Agent: MyApp/1.0.0
   "votes": 42,
   "votesWildcard": 15,
   "rating": "E_ADVERTISING",
+  "whiteListed": false,
+  "blackListed": false,
   "archived": false,
   "dateAdded": 1704067200000,
-  "lastUpdate": 1704153600000
+  "lastUpdate": 1704153600000,
+  "label": "(DE) 0176 50642602",
+  "location": "Mobilfunk"
 }
 ```
+
+**Response Fields:**
+- `phone` - The phone number (or `"unknown"` if only matched by prefix hash)
+- `votes` - Direct community votes for this exact number
+- `votesWildcard` - Combined votes from the number's spam range (can be non-zero even when `votes` is 0)
+- `rating` - Community rating (see values below)
+- `whiteListed` - `true` if this number is on the global whitelist (cannot receive votes)
+- `blackListed` - `true` if the authenticated user has personally blocked this number. When set, the client should always block the call regardless of vote count.
+- `archived` - `true` if this number was removed from the active blocklist due to inactivity
+- `dateAdded` - Timestamp (ms since epoch) when first reported
+- `lastUpdate` - Timestamp (ms since epoch) of the last report
+- `label` - Locale-formatted display string (e.g., `"(DE) 030 12345678"`), may be `null`
+- `location` - City or region (e.g., `"Berlin"`), may be `null`
 
 **Rating Values:**
 - `A_LEGITIMATE` - Verified legitimate number
@@ -261,6 +280,20 @@ User-Agent: MyApp/1.0.0
 - `E_ADVERTISING` - Advertising/marketing call
 - `F_GAMBLE` - Gambling/lottery scam
 - `G_FRAUD` - Fraud/scam call
+
+**Range-Based Spam Detection:**
+
+The `prefix10` and `prefix100` parameters enable detection of spam ranges — groups of consecutive phone numbers used by the same spam operation. When the exact number is not found in the database, PhoneBlock checks if the number's prefix matches a known spam range and returns the aggregated votes in `votesWildcard`.
+
+To compute the prefix hashes:
+```python
+number = "+4917650642602"
+prefix10 = number[:-1]   # "+491765064260" — last digit removed
+prefix100 = number[:-2]  # "+49176506426"  — last two digits removed
+
+sha1_prefix10 = hashlib.sha1(prefix10.encode()).hexdigest().upper()
+sha1_prefix100 = hashlib.sha1(prefix100.encode()).hexdigest().upper()
+```
 
 **Privacy Note:** The SHA1 hash ensures that PhoneBlock never receives the actual phone number, only its hash. PhoneBlock only maintains a lookup table for hash values of numbers with SPAM reports. This is the recommended method for call screening apps to protect user privacy.
 
@@ -647,20 +680,39 @@ public class PhoneBlockService {
             // Normalize to E.164 format
             String normalized = normalizePhoneNumber(phoneNumber);
 
-            // Hash for privacy
+            // Hash number and prefixes for privacy-preserving lookup
             String hash = hashPhoneNumber(normalized);
+            String prefix10Hash = normalized.length() > 2
+                ? hashPhoneNumber(normalized.substring(0, normalized.length() - 1)) : null;
+            String prefix100Hash = normalized.length() > 3
+                ? hashPhoneNumber(normalized.substring(0, normalized.length() - 2)) : null;
 
             // Query PhoneBlock API
-            PhoneInfo info = queryApi(hash);
+            PhoneInfo info = queryApi(hash, prefix10Hash, prefix100Hash);
 
             if (info != null) {
-                // Apply your blocking logic
+                // User's personal blacklist — always block
+                if (info.blackListed) {
+                    return CallScreeningDecision.REJECT;
+                }
+
+                // User's personal whitelist — always allow
+                if (info.whiteListed) {
+                    return CallScreeningDecision.ALLOW;
+                }
+
+                // Community ratings
                 if ("G_FRAUD".equals(info.rating) || "F_GAMBLE".equals(info.rating)) {
                     return CallScreeningDecision.REJECT;
                 }
 
                 if (info.votes > 10 &&
                     ("E_ADVERTISING".equals(info.rating) || "D_POLL".equals(info.rating))) {
+                    return CallScreeningDecision.SILENCE;
+                }
+
+                // Range-based detection: block if number belongs to a known spam range
+                if (info.votesWildcard >= 10) {
                     return CallScreeningDecision.SILENCE;
                 }
 
@@ -679,8 +731,15 @@ public class PhoneBlockService {
         return CallScreeningDecision.ALLOW;
     }
 
-    private PhoneInfo queryApi(String hash) throws IOException {
-        URL url = new URL(BASE_URL + "/check?sha1=" + hash);
+    private PhoneInfo queryApi(String hash, String prefix10Hash, String prefix100Hash) throws IOException {
+        StringBuilder urlBuilder = new StringBuilder(BASE_URL + "/check?sha1=" + hash);
+        if (prefix10Hash != null) {
+            urlBuilder.append("&prefix10=").append(prefix10Hash);
+        }
+        if (prefix100Hash != null) {
+            urlBuilder.append("&prefix100=").append(prefix100Hash);
+        }
+        URL url = new URL(urlBuilder.toString());
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
         try {
@@ -763,9 +822,13 @@ public class PhoneBlockService {
         public int votes;
         public int votesWildcard;
         public String rating;
+        public boolean whiteListed;
+        public boolean blackListed;
         public boolean archived;
         public long dateAdded;
         public long lastUpdate;
+        public String label;
+        public String location;
 
         public static PhoneInfo fromJson(JSONObject json) throws org.json.JSONException {
             PhoneInfo info = new PhoneInfo();
@@ -773,9 +836,13 @@ public class PhoneBlockService {
             info.votes = json.optInt("votes", 0);
             info.votesWildcard = json.optInt("votesWildcard", 0);
             info.rating = json.optString("rating");
+            info.whiteListed = json.optBoolean("whiteListed", false);
+            info.blackListed = json.optBoolean("blackListed", false);
             info.archived = json.optBoolean("archived", false);
             info.dateAdded = json.optLong("dateAdded", 0);
             info.lastUpdate = json.optLong("lastUpdate", 0);
+            info.label = json.optString("label", null);
+            info.location = json.optString("location", null);
             return info;
         }
     }
