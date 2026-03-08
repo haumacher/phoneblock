@@ -243,8 +243,17 @@ class _FritzBoxAnswerbotSetupScreenState
   }
 
   Widget _buildResultCard(AppLocalizations l10n) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    final backgroundColor = _succeeded
+        ? (isDark ? Colors.green.withValues(alpha: 0.2) : Colors.green.shade50)
+        : (isDark ? Colors.red.withValues(alpha: 0.2) : Colors.red.shade50);
+    final textColor = _succeeded
+        ? (isDark ? Colors.green.shade300 : Colors.green.shade900)
+        : (isDark ? Colors.red.shade300 : Colors.red.shade900);
+
     return Card(
-      color: _succeeded ? Colors.green.shade50 : Colors.red.shade50,
+      color: backgroundColor,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Row(
@@ -259,11 +268,7 @@ class _FritzBoxAnswerbotSetupScreenState
                 _succeeded
                     ? l10n.fritzboxAnswerbotSetupSuccess
                     : l10n.fritzboxAnswerbotSetupFailed,
-                style: TextStyle(
-                  color: _succeeded
-                      ? Colors.green.shade900
-                      : Colors.red.shade900,
-                ),
+                style: TextStyle(color: textColor),
               ),
             ),
           ],

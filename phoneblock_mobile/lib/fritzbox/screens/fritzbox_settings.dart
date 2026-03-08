@@ -351,13 +351,13 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
             Icon(
               Icons.router,
               size: 80,
-              color: Colors.grey[400],
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             const SizedBox(height: 24),
             Text(
               l10n.fritzboxNotConfigured,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    color: Colors.grey[600],
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
               textAlign: TextAlign.center,
             ),
@@ -365,7 +365,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
             Text(
               l10n.fritzboxNotConfiguredDescription,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.grey[600],
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
               textAlign: TextAlign.center,
             ),
@@ -451,7 +451,7 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label, style: const TextStyle(color: Colors.grey)),
+          Text(label, style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
           Text(value),
         ],
       ),

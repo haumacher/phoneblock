@@ -314,7 +314,7 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
           Text(
             l10n.fritzboxSearching,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.grey),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
         ] else if (_deviceInfo != null) ...[
           Card(
@@ -345,7 +345,7 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
         ] else ...[
           Text(
             l10n.fritzboxNotFoundDescription,
-            style: const TextStyle(color: Colors.grey),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
           const SizedBox(height: 16),
           TextField(
@@ -401,7 +401,7 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
       children: [
         Text(
           l10n.fritzboxLoginDescription,
-          style: const TextStyle(color: Colors.grey),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
         const SizedBox(height: 16),
 
@@ -472,7 +472,7 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
           l10n.fritzboxCredentialsNote,
           style: TextStyle(
             fontSize: 12,
-            color: Colors.grey[600],
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
 
@@ -510,7 +510,7 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
       children: [
         Text(
           l10n.fritzboxBlocklistDescription,
-          style: const TextStyle(color: Colors.grey),
+          style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
         ),
         const SizedBox(height: 16),
 
@@ -581,7 +581,7 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: selected ? Theme.of(context).primaryColor : Colors.transparent,
+          color: selected ? Theme.of(context).colorScheme.primary : Colors.transparent,
           width: 2,
         ),
       ),
@@ -596,8 +596,8 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
                 icon,
                 size: 32,
                 color: selected
-                    ? Theme.of(context).primaryColor
-                    : Colors.grey[600],
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.onSurfaceVariant,
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -611,8 +611,8 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
                         fontWeight:
                             selected ? FontWeight.bold : FontWeight.normal,
                         color: selected
-                            ? Theme.of(context).primaryColor
-                            : Colors.black87,
+                            ? Theme.of(context).colorScheme.primary
+                            : null,
                       ),
                     ),
                     const SizedBox(height: 4),
@@ -620,7 +620,7 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
                       subtitle,
                       style: TextStyle(
                         fontSize: 12,
-                        color: Colors.grey[600],
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ],
@@ -629,7 +629,7 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
               if (selected)
                 Icon(
                   Icons.check_circle,
-                  color: Theme.of(context).primaryColor,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
             ],
           ),
@@ -653,7 +653,7 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
           Expanded(
             child: Text(
               l10n.fritzboxVersionTooOldForCardDav,
-              style: TextStyle(color: Colors.orange[900]),
+              style: TextStyle(color: Colors.orange[700]),
             ),
           ),
         ],
