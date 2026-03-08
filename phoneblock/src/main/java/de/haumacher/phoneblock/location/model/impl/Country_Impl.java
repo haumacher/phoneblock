@@ -1589,11 +1589,13 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 		switch (field) {
 			case FIFA__PROP: setFIFA(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case DIAL_PREFIXES__PROP: {
+				java.util.List<String> newValue = new java.util.ArrayList<>();
 				in.beginArray();
 				while (in.hasNext()) {
-					addDialPrefixe(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in));
+					newValue.add(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in));
 				}
 				in.endArray();
+				setDialPrefixes(newValue);
 			}
 			break;
 			case ISO_3166_1_ALPHA_3__PROP: setISO31661Alpha3(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
@@ -1646,11 +1648,13 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 			case CONTINENT__PROP: setContinent(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case TLD__PROP: setTLD(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case LANGUAGES__PROP: {
+				java.util.List<String> newValue = new java.util.ArrayList<>();
 				in.beginArray();
 				while (in.hasNext()) {
-					addLanguage(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in));
+					newValue.add(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in));
 				}
 				in.endArray();
+				setLanguages(newValue);
 			}
 			break;
 			case GEONAME_ID__PROP: setGeonameID(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
@@ -1658,19 +1662,23 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 			case EDGAR__PROP: setEDGAR(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case WIKIDATA_ID__PROP: setWikidataId(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case TRUNK_PREFIXES__PROP: {
+				java.util.List<String> newValue = new java.util.ArrayList<>();
 				in.beginArray();
 				while (in.hasNext()) {
-					addTrunkPrefixe(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in));
+					newValue.add(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in));
 				}
 				in.endArray();
+				setTrunkPrefixes(newValue);
 			}
 			break;
 			case INTERNATIONAL_PREFIXES__PROP: {
+				java.util.List<String> newValue = new java.util.ArrayList<>();
 				in.beginArray();
 				while (in.hasNext()) {
-					addInternationalPrefixe(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in));
+					newValue.add(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in));
 				}
 				in.endArray();
+				setInternationalPrefixes(newValue);
 			}
 			break;
 			default: super.readField(in, field);

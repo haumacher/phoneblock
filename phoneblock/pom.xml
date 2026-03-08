@@ -42,14 +42,6 @@
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>
 
-		<!-- Note: The mybatis SQL framework requires Java method parameter names 
-			to allow using the method parameter names as SQL variables. -->
-		<maven.compiler.parameters>true</maven.compiler.parameters>
-		
-		<maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ssXXX</maven.build.timestamp.format>
-
-		<project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
-		
 		<font-awesome.version>6.4.0</font-awesome.version>
 		<bulma.version>1.0.2</bulma.version>
 		<bulma-collapsible.version>1.0.3</bulma-collapsible.version>
@@ -58,8 +50,6 @@
 		<swagger-ui.version>4.18.3</swagger-ui.version>
 		
 		<jetty.version>12.0.16</jetty.version>
-		
-		<msgbuf.version>1.1.4</msgbuf.version>
 		
 		<phoneblock.server.deployUrl>http://localhost:8080/manager/text</phoneblock.server.deployUrl>
 		<phoneblock.server.id>phoneblock</phoneblock.server.id>
@@ -105,7 +95,6 @@
 
 		<dependency>
 			<groupId>de.haumacher.msgbuf</groupId>
-			<version>${msgbuf.version}</version>
 			<artifactId>msgbuf-api</artifactId>
 		</dependency>
 	
@@ -222,13 +211,11 @@
 		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
-			<version>2.3.232</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.mybatis</groupId>
 			<artifactId>mybatis</artifactId>
-			<version>3.5.16</version>
 		</dependency>
 
 		<dependency>
@@ -306,40 +293,8 @@
 		</dependency>
 
 		<dependency>
-		    <groupId>org.slf4j</groupId>
-		    <artifactId>slf4j-api</artifactId>
-		    <version>2.0.16</version>
-		</dependency>
-
-		<dependency>
-		    <groupId>org.slf4j</groupId>
-		    <artifactId>jcl-over-slf4j</artifactId>
-		    <version>2.0.16</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.tinylog</groupId>
-			<artifactId>slf4j-tinylog</artifactId>
-			<version>2.7.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.tinylog</groupId>
-			<artifactId>tinylog-impl</artifactId>
-			<version>2.7.0</version>
-		</dependency>
-
-		<dependency>
 		    <groupId>org.junit.jupiter</groupId>
 		    <artifactId>junit-jupiter</artifactId>
-		    <version>5.14.1</version>
-		    <scope>test</scope>
-		</dependency>
-
-		<dependency>
-		    <groupId>org.junit.jupiter</groupId>
-		    <artifactId>junit-jupiter-api</artifactId>
-		    <version>5.14.1</version>
 		    <scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -410,78 +365,6 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-enforcer-plugin</artifactId>
-				<version>3.1.0</version>
-				<executions>
-					<execution>
-						<id>enforce-maven</id>
-						<goals>
-							<goal>enforce</goal>
-						</goals>
-						<configuration>
-							<rules>
-								<requireMavenVersion>
-									<version>3.2.5</version>
-								</requireMavenVersion>
-							</rules>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-      
-			<plugin>
-			  <groupId>org.apache.maven.plugins</groupId>
-			  <artifactId>maven-resources-plugin</artifactId>
-			  <version>3.3.0</version>
-			</plugin>
-			
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.10.1</version>
-				<configuration>
-					<fork>true</fork>
-				</configuration>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.0.0-M7</version>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-clean-plugin</artifactId>
-				<version>3.2.0</version>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-deploy-plugin</artifactId>
-				<version>3.0.0</version>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-install-plugin</artifactId>
-				<version>3.0.1</version>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.3.0</version>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-site-plugin</artifactId>
-				<version>4.0.0-M3</version>
 			</plugin>
 
 			<plugin>
@@ -611,53 +494,6 @@
 					<url>${phoneblock.server.deployUrl}</url>
 					<server>${phoneblock.server.id}</server>
 					<path>${phoneblock.contextpath}</path>
-				</configuration>
-			</plugin>
-
-			<!-- Check for well-known vulnerabilities. -->
-			<!-- Execute explicitly with `mvn dependency-check:check`. -->
-			<plugin>
-			    <groupId>org.owasp</groupId>
-			    <artifactId>dependency-check-maven</artifactId>
-			    <version>7.3.0</version>
-		        <configuration>
-	                <format>ALL</format>
-	                <skipProvidedScope>true</skipProvidedScope>
-		        </configuration>
-			</plugin>
-			
-			<!-- 
-				To update dependencies to latest releases use: 
-				mvn versions:use-latest-releases versions:update-properties -DgenerateBackupPoms=false
-				
-				Show updates of plugins:
-				mvn versions:display-plugin-updates
-			-->
-
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>versions-maven-plugin</artifactId>
-			    <version>2.15.0</version>
-				
-				<executions>
-					<execution>
-						<goals>
-							<goal>use-latest-releases</goal>
-							<goal>update-properties</goal>
-						</goals>
-					</execution>
-				</executions>
-				
-				<configuration>
-          			<ruleSet>
-						<ignoreVersions>
-							<!-- Exclude alpha and milestone builds. -->
-							<ignoreVersion>
-								<type>regex</type>
-								<version>(.+-alpha.*|.+-M.*|.+-RC.*|26962ce.*)</version>
-							</ignoreVersion>								
-						</ignoreVersions>
-					</ruleSet>
 				</configuration>
 			</plugin>
 

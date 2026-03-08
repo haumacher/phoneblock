@@ -127,11 +127,13 @@ public class ListAnswerbotResponse extends de.haumacher.msgbuf.data.AbstractData
 	protected void readField(de.haumacher.msgbuf.json.JsonReader in, String field) throws java.io.IOException {
 		switch (field) {
 			case BOTS__PROP: {
+				java.util.List<de.haumacher.phoneblock.ab.proto.AnswerbotInfo> newValue = new java.util.ArrayList<>();
 				in.beginArray();
 				while (in.hasNext()) {
-					addBot(de.haumacher.phoneblock.ab.proto.AnswerbotInfo.readAnswerbotInfo(in));
+					newValue.add(de.haumacher.phoneblock.ab.proto.AnswerbotInfo.readAnswerbotInfo(in));
 				}
 				in.endArray();
+				setBots(newValue);
 			}
 			break;
 			default: super.readField(in, field);

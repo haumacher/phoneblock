@@ -160,11 +160,13 @@ public class AreaCodes extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	protected void readField(de.haumacher.msgbuf.json.JsonReader in, String field) throws java.io.IOException {
 		switch (field) {
 			case CODES__PROP: {
+				java.util.Map<String, de.haumacher.phoneblock.analysis.AreaCode> newValue = new java.util.LinkedHashMap<>();
 				in.beginObject();
 				while (in.hasNext()) {
-					putCode(in.nextName(), de.haumacher.phoneblock.analysis.AreaCode.readAreaCode(in));
+					newValue.put(in.nextName(), de.haumacher.phoneblock.analysis.AreaCode.readAreaCode(in));
 				}
 				in.endObject();
+				setCodes(newValue);
 				break;
 			}
 			default: super.readField(in, field);

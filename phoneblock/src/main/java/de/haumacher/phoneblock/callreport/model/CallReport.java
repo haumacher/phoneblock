@@ -231,11 +231,13 @@ public class CallReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 			case TIMESTAMP__PROP: setTimestamp(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case LASTID__PROP: setLastid(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case CALLERS__PROP: {
+				java.util.List<String> newValue = new java.util.ArrayList<>();
 				in.beginArray();
 				while (in.hasNext()) {
-					addCaller(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in));
+					newValue.add(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in));
 				}
 				in.endArray();
+				setCallers(newValue);
 			}
 			break;
 			default: super.readField(in, field);

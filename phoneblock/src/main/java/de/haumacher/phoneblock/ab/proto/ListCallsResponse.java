@@ -189,11 +189,13 @@ public class ListCallsResponse extends de.haumacher.msgbuf.data.AbstractDataObje
 			case CALLS_ANSWERED__PROP: setCallsAnswered(in.nextInt()); break;
 			case TALK_TIME__PROP: setTalkTime(in.nextLong()); break;
 			case CALLS__PROP: {
+				java.util.List<de.haumacher.phoneblock.ab.proto.CallInfo> newValue = new java.util.ArrayList<>();
 				in.beginArray();
 				while (in.hasNext()) {
-					addCall(de.haumacher.phoneblock.ab.proto.CallInfo.readCallInfo(in));
+					newValue.add(de.haumacher.phoneblock.ab.proto.CallInfo.readCallInfo(in));
 				}
 				in.endArray();
+				setCalls(newValue);
 			}
 			break;
 			default: super.readField(in, field);
