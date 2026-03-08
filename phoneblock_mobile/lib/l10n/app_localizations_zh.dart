@@ -932,14 +932,55 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get blocklistLastSync => '上次同步';
+  String blocklistLastSync(String time) {
+    return '上次同步';
+  }
 
   @override
   String get blocklistLastSyncNever => '从不';
 
   @override
-  String blocklistLastSyncAgo(String timeAgo) {
-    return '在 $timeAgo 之前';
+  String blocklistLastSyncAgoDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Tagen',
+      one: 'Tag',
+    );
+    return 'vor $count $_temp0';
+  }
+
+  @override
+  String blocklistLastSyncAgoHours(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Stunden',
+      one: 'Stunde',
+    );
+    return 'vor $count $_temp0';
+  }
+
+  @override
+  String blocklistLastSyncAgoMinutes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Minuten',
+      one: 'Minute',
+    );
+    return 'vor $count $_temp0';
+  }
+
+  @override
+  String blocklistLastSyncAgoSeconds(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Sekunden',
+      one: 'Sekunde',
+    );
+    return 'vor $count $_temp0';
   }
 
   @override

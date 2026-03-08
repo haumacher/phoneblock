@@ -1838,11 +1838,11 @@ abstract class AppLocalizations {
   /// **'{count} Nummern'**
   String blocklistCachedEntries(int count);
 
-  /// Label for last sync time
+  /// Subtitle showing when the last blocklist sync happened
   ///
   /// In de, this message translates to:
-  /// **'Letzte Synchronisierung'**
-  String get blocklistLastSync;
+  /// **'Letzte Synchronisierung: {time}'**
+  String blocklistLastSync(String time);
 
   /// Shown when blocklist has never been synced
   ///
@@ -1850,11 +1850,29 @@ abstract class AppLocalizations {
   /// **'Nie'**
   String get blocklistLastSyncNever;
 
-  /// Relative time since last blocklist sync
+  /// Relative time in days since last blocklist sync
   ///
   /// In de, this message translates to:
-  /// **'vor {timeAgo}'**
-  String blocklistLastSyncAgo(String timeAgo);
+  /// **'vor {count} {count, plural, =1{Tag} other{Tagen}}'**
+  String blocklistLastSyncAgoDays(int count);
+
+  /// Relative time in hours since last blocklist sync
+  ///
+  /// In de, this message translates to:
+  /// **'vor {count} {count, plural, =1{Stunde} other{Stunden}}'**
+  String blocklistLastSyncAgoHours(int count);
+
+  /// Relative time in minutes since last blocklist sync
+  ///
+  /// In de, this message translates to:
+  /// **'vor {count} {count, plural, =1{Minute} other{Minuten}}'**
+  String blocklistLastSyncAgoMinutes(int count);
+
+  /// Relative time in seconds since last blocklist sync
+  ///
+  /// In de, this message translates to:
+  /// **'vor {count} {count, plural, =1{Sekunde} other{Sekunden}}'**
+  String blocklistLastSyncAgoSeconds(int count);
 
   /// Label for blocklist version number
   ///

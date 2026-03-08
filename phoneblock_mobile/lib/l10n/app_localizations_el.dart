@@ -1033,14 +1033,55 @@ class AppLocalizationsEl extends AppLocalizations {
   }
 
   @override
-  String get blocklistLastSync => 'Τελευταίος συγχρονισμός';
+  String blocklistLastSync(String time) {
+    return 'Τελευταίος συγχρονισμός';
+  }
 
   @override
   String get blocklistLastSyncNever => 'Ποτέ';
 
   @override
-  String blocklistLastSyncAgo(String timeAgo) {
-    return 'πριν $timeAgo';
+  String blocklistLastSyncAgoDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Tagen',
+      one: 'Tag',
+    );
+    return 'vor $count $_temp0';
+  }
+
+  @override
+  String blocklistLastSyncAgoHours(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Stunden',
+      one: 'Stunde',
+    );
+    return 'vor $count $_temp0';
+  }
+
+  @override
+  String blocklistLastSyncAgoMinutes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Minuten',
+      one: 'Minute',
+    );
+    return 'vor $count $_temp0';
+  }
+
+  @override
+  String blocklistLastSyncAgoSeconds(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Sekunden',
+      one: 'Sekunde',
+    );
+    return 'vor $count $_temp0';
   }
 
   @override

@@ -1026,14 +1026,55 @@ class AppLocalizationsUk extends AppLocalizations {
   }
 
   @override
-  String get blocklistLastSync => 'Остання синхронізація';
+  String blocklistLastSync(String time) {
+    return 'Остання синхронізація';
+  }
 
   @override
   String get blocklistLastSyncNever => 'Ніколи.';
 
   @override
-  String blocklistLastSyncAgo(String timeAgo) {
-    return 'перед $timeAgo';
+  String blocklistLastSyncAgoDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Tagen',
+      one: 'Tag',
+    );
+    return 'vor $count $_temp0';
+  }
+
+  @override
+  String blocklistLastSyncAgoHours(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Stunden',
+      one: 'Stunde',
+    );
+    return 'vor $count $_temp0';
+  }
+
+  @override
+  String blocklistLastSyncAgoMinutes(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Minuten',
+      one: 'Minute',
+    );
+    return 'vor $count $_temp0';
+  }
+
+  @override
+  String blocklistLastSyncAgoSeconds(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Sekunden',
+      one: 'Sekunde',
+    );
+    return 'vor $count $_temp0';
   }
 
   @override

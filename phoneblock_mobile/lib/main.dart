@@ -3513,17 +3513,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final syncTime = DateTime.fromMillisecondsSinceEpoch(timestampMs);
     final diff = now.difference(syncTime);
 
-    String timeAgo;
     if (diff.inDays > 0) {
-      timeAgo = '${diff.inDays}d';
+      return context.l10n.blocklistLastSyncAgoDays(diff.inDays);
     } else if (diff.inHours > 0) {
-      timeAgo = '${diff.inHours}h';
+      return context.l10n.blocklistLastSyncAgoHours(diff.inHours);
     } else if (diff.inMinutes > 0) {
-      timeAgo = '${diff.inMinutes}min';
+      return context.l10n.blocklistLastSyncAgoMinutes(diff.inMinutes);
     } else {
-      timeAgo = '${diff.inSeconds}s';
+      return context.l10n.blocklistLastSyncAgoSeconds(diff.inSeconds);
     }
-    return context.l10n.blocklistLastSyncAgo(timeAgo);
   }
 
   @override
@@ -3736,7 +3734,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ListTile(
                   leading: const Icon(Icons.storage),
                   title: Text(context.l10n.blocklistCachedEntries(_blocklistCount)),
-                  subtitle: Text('${context.l10n.blocklistLastSync}: ${_formatLastSync(context, _blocklistLastSync)}'),
+                  subtitle: Text(context.l10n.blocklistLastSync(_formatLastSync(context, _blocklistLastSync))),
                   trailing: _blocklistVersion > 0 ? Text('v$_blocklistVersion') : null,
                 ),
                 ListTile(

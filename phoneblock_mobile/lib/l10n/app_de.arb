@@ -1559,25 +1559,55 @@
     },
     "x-translated": "711da254"
   },
-  "blocklistLastSync": "Letzte Synchronisierung",
+  "blocklistLastSync": "Letzte Synchronisierung: {time}",
   "@blocklistLastSync": {
-    "description": "Label for last sync time",
-    "x-translated": "ee34a570"
+    "description": "Subtitle showing when the last blocklist sync happened",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
   },
   "blocklistLastSyncNever": "Nie",
   "@blocklistLastSyncNever": {
     "description": "Shown when blocklist has never been synced",
     "x-translated": "ca23ce1"
   },
-  "blocklistLastSyncAgo": "vor {timeAgo}",
-  "@blocklistLastSyncAgo": {
-    "description": "Relative time since last blocklist sync",
+  "blocklistLastSyncAgoDays": "vor {count} {count, plural, =1{Tag} other{Tagen}}",
+  "@blocklistLastSyncAgoDays": {
+    "description": "Relative time in days since last blocklist sync",
     "placeholders": {
-      "timeAgo": {
-        "type": "String"
+      "count": {
+        "type": "int"
       }
-    },
-    "x-translated": "a52b49b9"
+    }
+  },
+  "blocklistLastSyncAgoHours": "vor {count} {count, plural, =1{Stunde} other{Stunden}}",
+  "@blocklistLastSyncAgoHours": {
+    "description": "Relative time in hours since last blocklist sync",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "blocklistLastSyncAgoMinutes": "vor {count} {count, plural, =1{Minute} other{Minuten}}",
+  "@blocklistLastSyncAgoMinutes": {
+    "description": "Relative time in minutes since last blocklist sync",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "blocklistLastSyncAgoSeconds": "vor {count} {count, plural, =1{Sekunde} other{Sekunden}}",
+  "@blocklistLastSyncAgoSeconds": {
+    "description": "Relative time in seconds since last blocklist sync",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   },
   "blocklistVersion": "Version",
   "@blocklistVersion": {
