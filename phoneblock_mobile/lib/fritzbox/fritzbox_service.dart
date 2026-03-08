@@ -10,7 +10,6 @@ import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_storage.dart';
 import 'package:phoneblock_mobile/fritzbox/phone_number_utils.dart' as phone_utils;
 import 'package:phoneblock_mobile/main.dart';
-import 'package:phoneblock_mobile/state.dart';
 import 'package:phoneblock_mobile/storage.dart';
 import 'package:phoneblock_shared/phoneblock_shared.dart' hide getAuthToken;
 
@@ -577,38 +576,7 @@ class FritzBoxService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;
-
-        final votes = data['votes'] as int? ?? 0;
-        final votesWildcard = data['votesWildcard'] as int? ?? 0;
-        final ratingStr = data['rating'] as String?;
-        final label = data['label'] as String?;
-        final location = data['location'] as String?;
-
-        Rating? rating;
-        if (ratingStr != null) {
-          rating = _parseRating(ratingStr);
-        }
-
-        // Keep the original blocked status - for Fritz!Box calls, blocking
-        // already happened (or didn't) based on the CardDAV blocklist
-        final wasBlocked = call.wasBlocked;
-
-        return ScreenedCall(
-          id: call.id,
-          phoneNumber: call.phoneNumber,
-          timestamp: call.timestamp,
-          wasBlocked: wasBlocked,
-          votes: votes,
-          votesWildcard: votesWildcard,
-          rating: rating,
-          label: label ?? call.label,
-          location: location,
-          source: call.source,
-          duration: call.duration,
-          device: call.device,
-          fritzboxId: call.fritzboxId,
-          callType: call.callType,
-        );
+        return call.copyWithApiResponse(data);
       }
     } catch (e) {
       if (kDebugMode) {
@@ -617,28 +585,6 @@ class FritzBoxService {
     }
 
     return call;
-  }
-
-  /// Parses rating string from API response.
-  Rating? _parseRating(String ratingStr) {
-    switch (ratingStr) {
-      case 'A_LEGITIMATE':
-        return Rating.aLEGITIMATE;
-      case 'B_MISSED':
-        return Rating.uNKNOWN;
-      case 'C_PING':
-        return Rating.pING;
-      case 'D_POLL':
-        return Rating.pOLL;
-      case 'E_ADVERTISING':
-        return Rating.aDVERTISING;
-      case 'F_GAMBLE':
-        return Rating.gAMBLE;
-      case 'G_FRAUD':
-        return Rating.fRAUD;
-      default:
-        return null;
-    }
   }
 
   /// Checks if currently on the home network (can reach Fritz!Box).
