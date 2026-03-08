@@ -25,31 +25,51 @@ public interface BlockList {
 	 * All numbers that the user with the given user ID has explicitly blocked.
 	 */
 	@Select("""
+			select PHONE from PERSONALIZATION
+			where USERID = #{userId} and BLOCKED
+			order by PHONE
+			""")
+	List<String> getPersonalizations(long userId);
+
+	/**
+	 * All numbers that the user with the given user ID has explicitly blocked, with creation timestamp.
+	 */
+	@Select("""
 			select PHONE, CREATED from PERSONALIZATION
 			where USERID = #{userId} and BLOCKED
 			order by PHONE
 			""")
-	List<DBPersonalization> getPersonalizations(long userId);
+	List<DBPersonalization> getPersonalizationsWithCreated(long userId);
 
 	/**
 	 * All numbers that the user with the given user ID has explicitly allowed.
 	 */
 	@Select("""
-			select PHONE from PERSONALIZATION 
-			where USERID = #{userId} and NOT BLOCKED 
+			select PHONE from PERSONALIZATION
+			where USERID = #{userId} and NOT BLOCKED
 			order by PHONE
 			""")
 	Set<String> getExcluded(long userId);
-	
+
 	/**
 	 * List of all numbers that the user with the given user ID has explicitly allowed.
+	 */
+	@Select("""
+			select PHONE from PERSONALIZATION
+			where USERID = #{userId} and NOT BLOCKED
+			order by PHONE
+			""")
+	List<String> getWhiteList(long userId);
+
+	/**
+	 * List of all numbers that the user with the given user ID has explicitly allowed, with creation timestamp.
 	 */
 	@Select("""
 			select PHONE, CREATED from PERSONALIZATION
 			where USERID = #{userId} and NOT BLOCKED
 			order by PHONE
 			""")
-	List<DBPersonalization> getWhiteList(long userId);
+	List<DBPersonalization> getWhiteListWithCreated(long userId);
 
 	/**
 	 * Adds a blocklist entry for the user with the given user ID.

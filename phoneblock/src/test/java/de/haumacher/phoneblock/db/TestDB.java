@@ -261,9 +261,9 @@ public class TestDB {
 			blockList.addPersonalization(2, "098700000", null, System.currentTimeMillis());
 			
 			assertEquals(List.of("032100000", "065400000"), blockList.getPersonalizations(1));
-			
+
 			blockList.removePersonalization(1, "065400000");
-			
+
 			assertEquals(List.of("032100000"), blockList.getPersonalizations(1));
 			
 			blockList.removePersonalization(2, "032100000");

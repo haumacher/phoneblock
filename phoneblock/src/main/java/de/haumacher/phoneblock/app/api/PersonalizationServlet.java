@@ -117,10 +117,10 @@ public class PersonalizationServlet extends HttpServlet {
 
 			String servletPath = req.getServletPath();
 			if (BLACKLIST_PATH.equals(servletPath)) {
-				entries = blockList.getPersonalizations(userId);
+				entries = blockList.getPersonalizationsWithCreated(userId);
 				LOG.debug("Retrieved {} blocked numbers for user '{}'", entries.size(), userName);
 			} else if (WHITELIST_PATH.equals(servletPath)) {
-				entries = blockList.getWhiteList(userId);
+				entries = blockList.getWhiteListWithCreated(userId);
 				LOG.debug("Retrieved {} whitelisted numbers for user '{}'", entries.size(), userName);
 			} else {
 				ServletUtil.sendMessage(resp, HttpServletResponse.SC_NOT_FOUND, "Unknown endpoint");
