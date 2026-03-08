@@ -1014,7 +1014,7 @@ class AppLocalizationsEl extends AppLocalizations {
   String get add => 'Προσθέστε';
 
   @override
-  String get onPersonalBlocklist => 'Auf deiner Blockliste';
+  String get onPersonalBlocklist => 'Στη λίστα αποκλεισμού σας';
 
   @override
   String get wildcardBlocked => 'Κανόνας Wildcard';
@@ -1045,10 +1045,10 @@ class AppLocalizationsEl extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Tagen',
-      one: 'Tag',
+      other: 'Ημέρες',
+      one: 'Ημέρα',
     );
-    return 'vor $count $_temp0';
+    return 'πριν $count $_temp0';
   }
 
   @override
@@ -1056,10 +1056,10 @@ class AppLocalizationsEl extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Stunden',
-      one: 'Stunde',
+      other: 'Ώρες',
+      one: 'Ώρα',
     );
-    return 'vor $count $_temp0';
+    return 'πριν $count $_temp0';
   }
 
   @override
@@ -1067,10 +1067,10 @@ class AppLocalizationsEl extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Minuten',
-      one: 'Minute',
+      other: 'λεπτά',
+      one: 'Λεπτό',
     );
-    return 'vor $count $_temp0';
+    return 'πριν $count $_temp0';
   }
 
   @override
@@ -1078,10 +1078,10 @@ class AppLocalizationsEl extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Sekunden',
-      one: 'Sekunde',
+      other: 'Δευτερόλεπτα',
+      one: 'Δεύτερο',
     );
-    return 'vor $count $_temp0';
+    return 'πριν $count $_temp0';
   }
 
   @override
@@ -1101,6 +1101,6 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String personalizedAddedDate(String date) {
-    return 'Hinzugefügt: $date';
+    return 'Προστέθηκε: $date';
   }
 }

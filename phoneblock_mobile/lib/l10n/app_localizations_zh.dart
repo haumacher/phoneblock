@@ -913,7 +913,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get add => '添加';
 
   @override
-  String get onPersonalBlocklist => 'Auf deiner Blockliste';
+  String get onPersonalBlocklist => '在您的阻止名单上';
 
   @override
   String get wildcardBlocked => '通配符规则';
@@ -944,10 +944,10 @@ class AppLocalizationsZh extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Tagen',
-      one: 'Tag',
+      other: '天数',
+      one: '日',
     );
-    return 'vor $count $_temp0';
+    return '在 $count $_temp0 之前';
   }
 
   @override
@@ -955,10 +955,10 @@ class AppLocalizationsZh extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Stunden',
-      one: 'Stunde',
+      other: '小时数',
+      one: '小时',
     );
-    return 'vor $count $_temp0';
+    return '在 $count $_temp0 之前';
   }
 
   @override
@@ -966,10 +966,10 @@ class AppLocalizationsZh extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Minuten',
-      one: 'Minute',
+      other: '分钟',
+      one: '分钟',
     );
-    return 'vor $count $_temp0';
+    return '在 $count $_temp0 之前';
   }
 
   @override
@@ -977,10 +977,10 @@ class AppLocalizationsZh extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Sekunden',
-      one: 'Sekunde',
+      other: '秒数',
+      one: '第二',
     );
-    return 'vor $count $_temp0';
+    return '在 $count $_temp0 之前';
   }
 
   @override
@@ -1000,6 +1000,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String personalizedAddedDate(String date) {
-    return 'Hinzugefügt: $date';
+    return '已添加：<x1>日期</x1';
   }
 }

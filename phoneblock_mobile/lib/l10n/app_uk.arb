@@ -143,6 +143,8 @@
   "save": "Зберегти",
   "commentUpdated": "Коментар оновлено",
   "errorUpdatingComment": "Помилка при оновленні коментаря",
+  "notificationsTitle": "Сповіщення",
+  "notificationsDescription": "Показувати сповіщення про відфільтровані дзвінки",
   "appearance": "Зовнішній вигляд",
   "themeMode": "Дизайн",
   "themeModeDescription": "Виберіть світлий або темний дизайн",
@@ -285,12 +287,15 @@
   "blocklistCachedEntries": "{count} чисел",
   "blocklistLastSync": "Остання синхронізація",
   "blocklistLastSyncNever": "Ніколи.",
-  "blocklistLastSyncAgo": "перед {timeAgo}",
   "blocklistVersion": "Версія",
   "blocklistSyncNow": "Синхронізуйте зараз",
   "blocklistSyncing": "Синхронізувати...",
   "blocklistSyncSuccess": "Синхронізація блокчейну успішна",
   "blocklistSyncFailed": "Не вдалося синхронізувати блокчейн",
-  "notificationsTitle": "Сповіщення",
-  "notificationsDescription": "Показувати сповіщення про відфільтровані дзвінки"
+  "onPersonalBlocklist": "У вашому списку блокування",
+  "blocklistLastSyncAgoDays": "перед {count} <x2>count</x2",
+  "blocklistLastSyncAgoHours": "перед {count} <x2>count</x2",
+  "blocklistLastSyncAgoMinutes": "перед {count} <x2>count</x2",
+  "blocklistLastSyncAgoSeconds": "перед {count} <x2>count</x2",
+  "personalizedAddedDate": "Додано: {date}"
 }

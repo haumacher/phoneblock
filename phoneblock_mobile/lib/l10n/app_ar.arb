@@ -143,6 +143,8 @@
   "save": "الحفظ",
   "commentUpdated": "تم تحديث التعليق",
   "errorUpdatingComment": "خطأ عند تحديث التعليق",
+  "notificationsTitle": "الإشعارات",
+  "notificationsDescription": "إظهار تنبيهات حول المكالمات التي تمت تصفيتها",
   "appearance": "المظهر",
   "themeMode": "التصميم",
   "themeModeDescription": "اختر تصميماً فاتحاً أو غامقاً",
@@ -285,12 +287,15 @@
   "blocklistCachedEntries": "العدد {count} الأرقام",
   "blocklistLastSync": "آخر مزامنة",
   "blocklistLastSyncNever": "أبداً",
-  "blocklistLastSyncAgo": "قبل {timeAgo}",
   "blocklistVersion": "الإصدار",
   "blocklistSyncNow": "المزامنة الآن",
   "blocklistSyncing": "مزامنة...",
   "blocklistSyncSuccess": "تمت مزامنة قائمة الحظر بنجاح",
   "blocklistSyncFailed": "فشل مزامنة قائمة الحظر",
-  "notificationsTitle": "الإشعارات",
-  "notificationsDescription": "إظهار تنبيهات حول المكالمات التي تمت تصفيتها"
+  "onPersonalBlocklist": "في قائمة الحظر",
+  "blocklistLastSyncAgoDays": "قبل {count} {count, plural, =1{اليوم} other{الأيام}}",
+  "blocklistLastSyncAgoHours": "قبل {count} {count, plural, =1{ساعة} other{الساعات}}",
+  "blocklistLastSyncAgoMinutes": "قبل {count} {count, plural, =1{دقيقة} other{الدقائق}}",
+  "blocklistLastSyncAgoSeconds": "قبل {count} {count, plural, =1{الثاني} other{الثواني}}",
+  "personalizedAddedDate": "تمت الإضافة: {date}"
 }

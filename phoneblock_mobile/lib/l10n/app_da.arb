@@ -143,6 +143,8 @@
   "save": "Gemme",
   "commentUpdated": "Kommentar opdateret",
   "errorUpdatingComment": "Fejl ved opdatering af kommentar",
+  "notificationsTitle": "Meddelelser",
+  "notificationsDescription": "Vis meddelelser om filtrerede opkald",
   "appearance": "Udseende",
   "themeMode": "Design",
   "themeModeDescription": "Vælg et lyst eller mørkt design",
@@ -285,12 +287,15 @@
   "blocklistCachedEntries": "{count} tal",
   "blocklistLastSync": "Sidste synkronisering",
   "blocklistLastSyncNever": "Aldrig",
-  "blocklistLastSyncAgo": "før {timeAgo}.",
   "blocklistVersion": "Version",
   "blocklistSyncNow": "Synkroniser nu",
   "blocklistSyncing": "Synkroniser...",
   "blocklistSyncSuccess": "Bloklistesynkronisering vellykket",
   "blocklistSyncFailed": "Bloklistesynkronisering mislykkedes",
-  "notificationsTitle": "Meddelelser",
-  "notificationsDescription": "Vis meddelelser om filtrerede opkald"
+  "onPersonalBlocklist": "På din blokeringsliste",
+  "blocklistLastSyncAgoDays": "før {count} {count, plural, =1{Dag} other{Dage}}.",
+  "blocklistLastSyncAgoHours": "før {count} {count, plural, =1{Time} other{Timer}}.",
+  "blocklistLastSyncAgoMinutes": "før {count} {count, plural, =1{Minut} other{minutter}}.",
+  "blocklistLastSyncAgoSeconds": "før {count} {count, plural, =1{Anden} other{Sekunder}}.",
+  "personalizedAddedDate": "Tilføjet: {date}."
 }

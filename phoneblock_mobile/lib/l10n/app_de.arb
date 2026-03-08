@@ -1526,7 +1526,8 @@
   },
   "onPersonalBlocklist": "Auf deiner Blockliste",
   "@onPersonalBlocklist": {
-    "description": "Label shown for calls from numbers on the user's personal blocklist"
+    "description": "Label shown for calls from numbers on the user's personal blocklist",
+    "x-translated": "c3c19b6a"
   },
   "wildcardBlocked": "Wildcard-Regel",
   "@wildcardBlocked": {
@@ -1566,7 +1567,8 @@
       "time": {
         "type": "String"
       }
-    }
+    },
+    "x-translated": "52f63188"
   },
   "blocklistLastSyncNever": "Nie",
   "@blocklistLastSyncNever": {
@@ -1580,7 +1582,8 @@
       "count": {
         "type": "int"
       }
-    }
+    },
+    "x-translated": "bb2d7430"
   },
   "blocklistLastSyncAgoHours": "vor {count} {count, plural, =1{Stunde} other{Stunden}}",
   "@blocklistLastSyncAgoHours": {
@@ -1589,7 +1592,8 @@
       "count": {
         "type": "int"
       }
-    }
+    },
+    "x-translated": "c99d16da"
   },
   "blocklistLastSyncAgoMinutes": "vor {count} {count, plural, =1{Minute} other{Minuten}}",
   "@blocklistLastSyncAgoMinutes": {
@@ -1598,7 +1602,8 @@
       "count": {
         "type": "int"
       }
-    }
+    },
+    "x-translated": "45cbb892"
   },
   "blocklistLastSyncAgoSeconds": "vor {count} {count, plural, =1{Sekunde} other{Sekunden}}",
   "@blocklistLastSyncAgoSeconds": {
@@ -1607,7 +1612,8 @@
       "count": {
         "type": "int"
       }
-    }
+    },
+    "x-translated": "422e6b48"
   },
   "blocklistVersion": "Version",
   "@blocklistVersion": {
@@ -1641,6 +1647,7 @@
       "date": {
         "type": "String"
       }
-    }
+    },
+    "x-translated": "bc4b1251"
   }
 }

@@ -143,6 +143,8 @@
   "save": "Sla",
   "commentUpdated": "Commentaar bijgewerkt",
   "errorUpdatingComment": "Fout bij het bijwerken van de opmerking",
+  "notificationsTitle": "Meldingen",
+  "notificationsDescription": "Meldingen over gefilterde oproepen weergeven",
   "appearance": "Uiterlijk",
   "themeMode": "Ontwerp",
   "themeModeDescription": "Kies een licht of donker ontwerp",
@@ -285,12 +287,15 @@
   "blocklistCachedEntries": "{count}",
   "blocklistLastSync": "Laatste synchronisatie",
   "blocklistLastSyncNever": "Nooit",
-  "blocklistLastSyncAgo": "voor {timeAgo}",
   "blocklistVersion": "Versie",
   "blocklistSyncNow": "Nu synchroniseren",
   "blocklistSyncing": "Synchroniseren...",
   "blocklistSyncSuccess": "Synchronisatie van bloklijst geslaagd",
   "blocklistSyncFailed": "Synchronisatie blokkadelijst mislukt",
-  "notificationsTitle": "Meldingen",
-  "notificationsDescription": "Meldingen over gefilterde oproepen weergeven"
+  "onPersonalBlocklist": "Op uw blokkadelijst",
+  "blocklistLastSyncAgoDays": "voor {count} {count, plural, =1{Dag} other{Dagen}}",
+  "blocklistLastSyncAgoHours": "voor {count} {count, plural, =1{Uur} other{Uren}}",
+  "blocklistLastSyncAgoMinutes": "voor {count} {count, plural, =1{Minuut} other{minuten}}",
+  "blocklistLastSyncAgoSeconds": "voor {count} {count, plural, =1{Tweede} other{Seconden}}",
+  "personalizedAddedDate": "Toegevoegd: {date}"
 }

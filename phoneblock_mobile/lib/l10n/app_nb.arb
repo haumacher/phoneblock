@@ -143,6 +143,8 @@
   "save": "Spar",
   "commentUpdated": "Kommentar oppdatert",
   "errorUpdatingComment": "Feil ved oppdatering av kommentaren",
+  "notificationsTitle": "Varsler",
+  "notificationsDescription": "Vis varsler om filtrerte anrop",
   "appearance": "Utseende",
   "themeMode": "Design",
   "themeModeDescription": "Velg et lyst eller mørkt design",
@@ -285,12 +287,15 @@
   "blocklistCachedEntries": "{count} tall",
   "blocklistLastSync": "Siste synkronisering",
   "blocklistLastSyncNever": "Aldri",
-  "blocklistLastSyncAgo": "før {timeAgo}",
   "blocklistVersion": "Versjon",
   "blocklistSyncNow": "Synkroniser nå",
   "blocklistSyncing": "Synkroniser...",
   "blocklistSyncSuccess": "Synkronisering av blokkliste vellykket",
   "blocklistSyncFailed": "Synkronisering av blokkeringslisten mislyktes",
-  "notificationsTitle": "Varsler",
-  "notificationsDescription": "Vis varsler om filtrerte anrop"
+  "onPersonalBlocklist": "På blokkeringslisten din",
+  "blocklistLastSyncAgoDays": "før {count} {count, plural, =1{Dag} other{Dager}}",
+  "blocklistLastSyncAgoHours": "før {count} {count, plural, =1{Time} other{Timer}}",
+  "blocklistLastSyncAgoMinutes": "før {count} {count, plural, =1{Minutt} other{minutter}}",
+  "blocklistLastSyncAgoSeconds": "før {count} {count, plural, =1{Andre} other{Sekunder}}",
+  "personalizedAddedDate": "Lagt til: {date}"
 }

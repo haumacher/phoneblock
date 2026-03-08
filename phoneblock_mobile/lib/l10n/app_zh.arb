@@ -143,6 +143,8 @@
   "save": "节省",
   "commentUpdated": "评论已更新",
   "errorUpdatingComment": "更新注释时出错",
+  "notificationsTitle": "通知",
+  "notificationsDescription": "显示已过滤通话的通知",
   "appearance": "外观",
   "themeMode": "设计",
   "themeModeDescription": "选择浅色或深色设计",
@@ -285,12 +287,15 @@
   "blocklistCachedEntries": "{count}数字",
   "blocklistLastSync": "上次同步",
   "blocklistLastSyncNever": "从不",
-  "blocklistLastSyncAgo": "在 {timeAgo} 之前",
   "blocklistVersion": "版本",
   "blocklistSyncNow": "立即同步",
   "blocklistSyncing": "同步...",
   "blocklistSyncSuccess": "拦截列表同步成功",
   "blocklistSyncFailed": "拦截列表同步失败",
-  "notificationsTitle": "通知",
-  "notificationsDescription": "显示已过滤通话的通知"
+  "onPersonalBlocklist": "在您的阻止名单上",
+  "blocklistLastSyncAgoDays": "在 {count} {count, plural, =1{日} other{天数}} 之前",
+  "blocklistLastSyncAgoHours": "在 {count} {count, plural, =1{小时} other{小时数}} 之前",
+  "blocklistLastSyncAgoMinutes": "在 {count} {count, plural, =1{分钟} other{分钟}} 之前",
+  "blocklistLastSyncAgoSeconds": "在 {count} {count, plural, =1{第二} other{秒数}} 之前",
+  "personalizedAddedDate": "已添加：<x1>日期</x1"
 }

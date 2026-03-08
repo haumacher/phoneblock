@@ -143,6 +143,8 @@
   "save": "Enregistrer",
   "commentUpdated": "Commentaire mis à jour",
   "errorUpdatingComment": "Erreur lors de la mise à jour du commentaire",
+  "notificationsTitle": "Notifications",
+  "notificationsDescription": "Afficher les notifications d'appels filtrés",
   "appearance": "Apparence",
   "themeMode": "Design",
   "themeModeDescription": "Choisir un design clair ou foncé",
@@ -285,12 +287,15 @@
   "blocklistCachedEntries": "{count} numéros",
   "blocklistLastSync": "Dernière synchronisation",
   "blocklistLastSyncNever": "Jamais",
-  "blocklistLastSyncAgo": "avant {timeAgo}",
   "blocklistVersion": "Version",
   "blocklistSyncNow": "Synchroniser maintenant",
   "blocklistSyncing": "Synchroniser...",
   "blocklistSyncSuccess": "Synchronisation des listes de blocage réussie",
   "blocklistSyncFailed": "Échec de la synchronisation de la liste de blocage",
-  "notificationsTitle": "Notifications",
-  "notificationsDescription": "Afficher les notifications d'appels filtrés"
+  "onPersonalBlocklist": "Sur ta liste de blocage",
+  "blocklistLastSyncAgoDays": "devant {count} {count, plural, =1{Jour} other{jours}}",
+  "blocklistLastSyncAgoHours": "devant {count} {count, plural, =1{Heure} other{Heures}}",
+  "blocklistLastSyncAgoMinutes": "devant {count} {count, plural, =1{minute} other{minutes}}",
+  "blocklistLastSyncAgoSeconds": "devant {count} {count, plural, =1{Seconde} other{secondes}}",
+  "personalizedAddedDate": "Ajouté à la liste : {date}"
 }

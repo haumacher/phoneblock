@@ -143,6 +143,8 @@
   "save": "Spara",
   "commentUpdated": "Kommentar uppdaterad",
   "errorUpdatingComment": "Fel vid uppdatering av kommentaren",
+  "notificationsTitle": "Meddelanden",
+  "notificationsDescription": "Visa meddelanden om filtrerade samtal",
   "appearance": "Utseende",
   "themeMode": "Design",
   "themeModeDescription": "Välj en ljus eller mörk design",
@@ -285,12 +287,15 @@
   "blocklistCachedEntries": "{count} antal",
   "blocklistLastSync": "Senaste synkronisering",
   "blocklistLastSyncNever": "Aldrig",
-  "blocklistLastSyncAgo": "före {timeAgo}",
   "blocklistVersion": "Version",
   "blocklistSyncNow": "Synkronisera nu",
   "blocklistSyncing": "Synkronisera...",
   "blocklistSyncSuccess": "Synkroniseringen av blocklistan lyckades",
   "blocklistSyncFailed": "Synkroniseringen av blocklistan misslyckades",
-  "notificationsTitle": "Meddelanden",
-  "notificationsDescription": "Visa meddelanden om filtrerade samtal"
+  "onPersonalBlocklist": "På din blocklista",
+  "blocklistLastSyncAgoDays": "före {count} {count, plural, =1{Dag} other{Dagar}}",
+  "blocklistLastSyncAgoHours": "före {count} {count, plural, =1{Timme} other{Timmar}}",
+  "blocklistLastSyncAgoMinutes": "före {count} {count, plural, =1{Minut} other{Protokoll}}",
+  "blocklistLastSyncAgoSeconds": "före {count} {count, plural, =1{Andra} other{Sekunder}}",
+  "personalizedAddedDate": "Tillagd: {date}"
 }

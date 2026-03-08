@@ -143,6 +143,8 @@
   "save": "Save",
   "commentUpdated": "Comment updated",
   "errorUpdatingComment": "Error updating comment",
+  "notificationsTitle": "Notifications",
+  "notificationsDescription": "Show notifications about filtered calls",
   "appearance": "Appearance",
   "themeMode": "Design",
   "themeModeDescription": "Choose light or dark design",
@@ -285,12 +287,15 @@
   "blocklistCachedEntries": "{count} numbers",
   "blocklistLastSync": "Last synchronization",
   "blocklistLastSyncNever": "Never",
-  "blocklistLastSyncAgo": "before {timeAgo}",
   "blocklistVersion": "Version",
   "blocklistSyncNow": "Synchronize now",
   "blocklistSyncing": "Synchronize...",
   "blocklistSyncSuccess": "Blocklist synchronization successful",
   "blocklistSyncFailed": "Blocklist synchronization failed",
-  "notificationsTitle": "Notifications",
-  "notificationsDescription": "Show notifications about filtered calls"
+  "onPersonalBlocklist": "On your block list",
+  "blocklistLastSyncAgoDays": "before {count} {count, plural, =1{Day} other{Days}}",
+  "blocklistLastSyncAgoHours": "before {count} {count, plural, =1{Hour} other{Hours}}",
+  "blocklistLastSyncAgoMinutes": "before {count} {count, plural, =1{minute} other{minutes}}",
+  "blocklistLastSyncAgoSeconds": "before {count} {count, plural, =1{Second} other{Seconds}}",
+  "personalizedAddedDate": "Added: {date}"
 }

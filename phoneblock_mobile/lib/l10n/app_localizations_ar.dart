@@ -998,7 +998,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get add => 'إضافة';
 
   @override
-  String get onPersonalBlocklist => 'Auf deiner Blockliste';
+  String get onPersonalBlocklist => 'في قائمة الحظر';
 
   @override
   String get wildcardBlocked => 'قاعدة أحرف البدل';
@@ -1029,10 +1029,10 @@ class AppLocalizationsAr extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Tagen',
-      one: 'Tag',
+      other: 'الأيام',
+      one: 'اليوم',
     );
-    return 'vor $count $_temp0';
+    return 'قبل $count $_temp0';
   }
 
   @override
@@ -1040,10 +1040,10 @@ class AppLocalizationsAr extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Stunden',
-      one: 'Stunde',
+      other: 'الساعات',
+      one: 'ساعة',
     );
-    return 'vor $count $_temp0';
+    return 'قبل $count $_temp0';
   }
 
   @override
@@ -1051,10 +1051,10 @@ class AppLocalizationsAr extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Minuten',
-      one: 'Minute',
+      other: 'الدقائق',
+      one: 'دقيقة',
     );
-    return 'vor $count $_temp0';
+    return 'قبل $count $_temp0';
   }
 
   @override
@@ -1062,10 +1062,10 @@ class AppLocalizationsAr extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'Sekunden',
-      one: 'Sekunde',
+      other: 'الثواني',
+      one: 'الثاني',
     );
-    return 'vor $count $_temp0';
+    return 'قبل $count $_temp0';
   }
 
   @override
@@ -1085,6 +1085,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String personalizedAddedDate(String date) {
-    return 'Hinzugefügt: $date';
+    return 'تمت الإضافة: $date';
   }
 }

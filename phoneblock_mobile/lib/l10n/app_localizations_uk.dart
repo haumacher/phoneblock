@@ -1007,7 +1007,7 @@ class AppLocalizationsUk extends AppLocalizations {
   String get add => 'Додати';
 
   @override
-  String get onPersonalBlocklist => 'Auf deiner Blockliste';
+  String get onPersonalBlocklist => 'У вашому списку блокування';
 
   @override
   String get wildcardBlocked => 'Правило підстановки символів';
@@ -1035,46 +1035,22 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String blocklistLastSyncAgoDays(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Tagen',
-      one: 'Tag',
-    );
-    return 'vor $count $_temp0';
+    return 'перед $count <x2>count</x2';
   }
 
   @override
   String blocklistLastSyncAgoHours(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Stunden',
-      one: 'Stunde',
-    );
-    return 'vor $count $_temp0';
+    return 'перед $count <x2>count</x2';
   }
 
   @override
   String blocklistLastSyncAgoMinutes(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Minuten',
-      one: 'Minute',
-    );
-    return 'vor $count $_temp0';
+    return 'перед $count <x2>count</x2';
   }
 
   @override
   String blocklistLastSyncAgoSeconds(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Sekunden',
-      one: 'Sekunde',
-    );
-    return 'vor $count $_temp0';
+    return 'перед $count <x2>count</x2';
   }
 
   @override
@@ -1094,6 +1070,6 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String personalizedAddedDate(String date) {
-    return 'Hinzugefügt: $date';
+    return 'Додано: $date';
   }
 }

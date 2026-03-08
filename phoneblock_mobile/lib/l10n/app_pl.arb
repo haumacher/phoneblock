@@ -143,6 +143,8 @@
   "save": "Zapisz",
   "commentUpdated": "Komentarz zaktualizowany",
   "errorUpdatingComment": "Błąd podczas aktualizacji komentarza",
+  "notificationsTitle": "Powiadomienia",
+  "notificationsDescription": "Wyświetlanie powiadomień o odfiltrowanych połączeniach",
   "appearance": "Wygląd",
   "themeMode": "Projekt",
   "themeModeDescription": "Wybierz jasny lub ciemny wzór",
@@ -285,12 +287,15 @@
   "blocklistCachedEntries": "{count} liczb",
   "blocklistLastSync": "Ostatnia synchronizacja",
   "blocklistLastSyncNever": "Nigdy",
-  "blocklistLastSyncAgo": "przed {timeAgo}",
   "blocklistVersion": "Wersja",
   "blocklistSyncNow": "Synchronizuj teraz",
   "blocklistSyncing": "Synchronizacja...",
   "blocklistSyncSuccess": "Synchronizacja listy bloków powiodła się",
   "blocklistSyncFailed": "Synchronizacja listy bloków nie powiodła się",
-  "notificationsTitle": "Powiadomienia",
-  "notificationsDescription": "Wyświetlanie powiadomień o odfiltrowanych połączeniach"
+  "onPersonalBlocklist": "Na liście zablokowanych",
+  "blocklistLastSyncAgoDays": "przed {count} {count, plural, =1{Dzień} other{Dni}}",
+  "blocklistLastSyncAgoHours": "przed {count} {count, plural, =1{Godzina} other{Godziny}}",
+  "blocklistLastSyncAgoMinutes": "przed {count} {count, plural, =1{Minuta} other{minuty}}",
+  "blocklistLastSyncAgoSeconds": "przed {count} {count, plural, =1{Drugi} other{Sekundy}}",
+  "personalizedAddedDate": "Dodano: {date}"
 }
