@@ -121,6 +121,9 @@ class FritzBoxStorage {
     String? phonebookId,
     String? sipDeviceId,
     String? sipUsername,
+    String? countryCode,
+    String? intlPrefix,
+    String? trunkPrefix,
   }) async {
     final existing = await getConfig();
     final now = DateTime.now().millisecondsSinceEpoch;
@@ -136,6 +139,9 @@ class FritzBoxStorage {
       phonebookId: phonebookId,
       sipDeviceId: sipDeviceId,
       sipUsername: sipUsername,
+      countryCode: countryCode,
+      intlPrefix: intlPrefix,
+      trunkPrefix: trunkPrefix,
       updatedAt: now,
     ) ?? FritzBoxConfig(
       host: host,
@@ -148,6 +154,9 @@ class FritzBoxStorage {
       phonebookId: phonebookId,
       sipDeviceId: sipDeviceId,
       sipUsername: sipUsername,
+      countryCode: countryCode,
+      intlPrefix: intlPrefix,
+      trunkPrefix: trunkPrefix,
       createdAt: now,
       updatedAt: now,
     );

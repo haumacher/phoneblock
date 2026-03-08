@@ -209,7 +209,7 @@ class ScreenedCallsDatabase {
 
     return await openDatabase(
       path,
-      version: 13,
+      version: 14,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -266,6 +266,9 @@ class ScreenedCallsDatabase {
         phonebook_id TEXT,
         sip_device_id TEXT,
         sip_username TEXT,
+        country_code TEXT DEFAULT '49',
+        intl_prefix TEXT DEFAULT '00',
+        trunk_prefix TEXT DEFAULT '0',
         created_at INTEGER NOT NULL,
         updated_at INTEGER NOT NULL
       )
@@ -439,6 +442,11 @@ class ScreenedCallsDatabase {
     }
     if (oldVersion < 13) {
       await db.execute('ALTER TABLE blocklist_sync ADD COLUMN syncCount INTEGER NOT NULL DEFAULT 0');
+    }
+    if (oldVersion < 14) {
+      await db.execute("ALTER TABLE fritzbox_config ADD COLUMN country_code TEXT DEFAULT '49'");
+      await db.execute("ALTER TABLE fritzbox_config ADD COLUMN intl_prefix TEXT DEFAULT '00'");
+      await db.execute("ALTER TABLE fritzbox_config ADD COLUMN trunk_prefix TEXT DEFAULT '0'");
     }
   }
 
