@@ -1700,28 +1700,6 @@ class _MainScreenState extends State<MainScreen> {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    // Fritz!Box source badge
-                    if (source == CallSource.fritzbox) ...[
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.router, size: 10, color: Colors.grey[600]),
-                            const SizedBox(width: 2),
-                            Text(
-                              AppLocalizations.of(context)!.sourceFritzbox,
-                              style: TextStyle(fontSize: 10, color: Colors.grey[600]),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                    ],
                     // Call status icon and label
                     ..._buildCallStatusBadge(context, call, source, wasBlocked),
                     const SizedBox(width: 8),
