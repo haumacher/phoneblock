@@ -4546,6 +4546,35 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
     }
   }
 
+  /// Builds the subtitle for a personalized number tile, showing comment and/or creation date.
+  Widget? _buildNumberSubtitle(BuildContext context, api.PersonalizedNumber pn) {
+    final comment = pn.comment;
+    final created = pn.created;
+
+    final hasComment = comment != null && comment.isNotEmpty;
+    final hasDate = created > 0;
+
+    if (!hasComment && !hasDate) return null;
+
+    final dateFormat = DateFormat.yMMMd(Localizations.localeOf(context).toString());
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (hasComment)
+          Text(
+            comment!,
+            style: TextStyle(color: Colors.grey[600], fontSize: 14),
+          ),
+        if (hasDate)
+          Text(
+            context.l10n.personalizedAddedDate(dateFormat.format(DateTime.fromMillisecondsSinceEpoch(created))),
+            style: TextStyle(color: Colors.grey[500], fontSize: 12),
+          ),
+      ],
+    );
+  }
+
   Widget _buildNumberTile(
     BuildContext context,
     api.PersonalizedNumber personalizedNumber,
@@ -4628,12 +4657,7 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
             ? buildRatingAvatar(_convertApiRating(personalizedNumber.rating!))
             : defaultIcon,
         title: Text(displayPhone),
-        subtitle: personalizedNumber.comment != null && personalizedNumber.comment!.isNotEmpty
-            ? Text(
-                personalizedNumber.comment!,
-                style: TextStyle(color: Colors.grey[600], fontSize: 14),
-              )
-            : null,
+        subtitle: _buildNumberSubtitle(context, personalizedNumber),
         trailing: IconButton(
           icon: const Icon(Icons.edit_outlined),
           onPressed: () => _editComment(personalizedNumber),

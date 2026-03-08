@@ -1098,4 +1098,9 @@ class AppLocalizationsEl extends AppLocalizations {
 
   @override
   String get blocklistSyncFailed => 'Αποτυχία συγχρονισμού λίστας αποκλεισμού';
+
+  @override
+  String personalizedAddedDate(String date) {
+    return 'Hinzugefügt: $date';
+  }
 }

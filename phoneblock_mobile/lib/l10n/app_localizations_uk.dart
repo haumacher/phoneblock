@@ -1091,4 +1091,9 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get blocklistSyncFailed => 'Не вдалося синхронізувати блокчейн';
+
+  @override
+  String personalizedAddedDate(String date) {
+    return 'Hinzugefügt: $date';
+  }
 }

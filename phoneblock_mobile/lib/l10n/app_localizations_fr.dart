@@ -1104,4 +1104,9 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get blocklistSyncFailed =>
       'Échec de la synchronisation de la liste de blocage';
+
+  @override
+  String personalizedAddedDate(String date) {
+    return 'Hinzugefügt: $date';
+  }
 }

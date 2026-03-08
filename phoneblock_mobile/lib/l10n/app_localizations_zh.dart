@@ -997,4 +997,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get blocklistSyncFailed => '拦截列表同步失败';
+
+  @override
+  String personalizedAddedDate(String date) {
+    return 'Hinzugefügt: $date';
+  }
 }

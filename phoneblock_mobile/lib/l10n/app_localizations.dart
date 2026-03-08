@@ -1903,6 +1903,12 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Blocklist-Synchronisierung fehlgeschlagen'**
   String get blocklistSyncFailed;
+
+  /// Shows when a number was added to the blacklist or whitelist
+  ///
+  /// In de, this message translates to:
+  /// **'Hinzugefügt: {date}'**
+  String personalizedAddedDate(String date);
 }
 
 class _AppLocalizationsDelegate

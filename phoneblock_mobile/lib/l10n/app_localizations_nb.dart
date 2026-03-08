@@ -1092,4 +1092,9 @@ class AppLocalizationsNb extends AppLocalizations {
   @override
   String get blocklistSyncFailed =>
       'Synkronisering av blokkeringslisten mislyktes';
+
+  @override
+  String personalizedAddedDate(String date) {
+    return 'Hinzugefügt: $date';
+  }
 }

@@ -1633,5 +1633,14 @@
   "@blocklistSyncFailed": {
     "description": "Snackbar message after failed manual sync",
     "x-translated": "f21d616f"
+  },
+  "personalizedAddedDate": "Hinzugefügt: {date}",
+  "@personalizedAddedDate": {
+    "description": "Shows when a number was added to the blacklist or whitelist",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   }
 }

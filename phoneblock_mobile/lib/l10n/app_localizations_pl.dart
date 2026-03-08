@@ -1100,4 +1100,9 @@ class AppLocalizationsPl extends AppLocalizations {
   @override
   String get blocklistSyncFailed =>
       'Synchronizacja listy bloków nie powiodła się';
+
+  @override
+  String personalizedAddedDate(String date) {
+    return 'Hinzugefügt: $date';
+  }
 }
