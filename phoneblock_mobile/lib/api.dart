@@ -1967,12 +1967,16 @@ class PersonalizedNumber extends _JsonObject {
 	/// User's rating for this number (may be null).
 	Rating? rating;
 
+	/// Timestamp when this entry was added to the personalization list (milliseconds since epoch).
+	int created;
+
 	/// Creates a PersonalizedNumber.
 	PersonalizedNumber({
 			this.phone = "",
 			this.label,
 			this.comment,
 			this.rating,
+			this.created = 0,
 	});
 
 	/// Parses a PersonalizedNumber from a string source.
@@ -2009,6 +2013,10 @@ class PersonalizedNumber extends _JsonObject {
 				rating = readRating(json);
 				break;
 			}
+			case "created": {
+				created = json.expectInt();
+				break;
+			}
 			default: super._readProperty(key, json);
 		}
 	}
@@ -2037,6 +2045,9 @@ class PersonalizedNumber extends _JsonObject {
 			json.addKey("rating");
 			writeRating(json, _rating);
 		}
+
+		json.addKey("created");
+		json.addNumber(created);
 	}
 
 }
