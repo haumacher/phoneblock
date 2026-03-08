@@ -18,7 +18,7 @@ public class AreaCodes extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	/** Identifier for the property {@link #getCodes()} in binary format. */
 	static final int CODES__ID = 1;
 
-	private final java.util.Map<String, de.haumacher.phoneblock.analysis.AreaCode> _codes = new de.haumacher.msgbuf.util.ReferenceMap<>() {
+	private final java.util.Map<String, de.haumacher.phoneblock.analysis.AreaCode> _codes = new de.haumacher.msgbuf.util.ReferenceMap<String, de.haumacher.phoneblock.analysis.AreaCode>() {
 		@Override
 		protected void beforeAdd(String index, de.haumacher.phoneblock.analysis.AreaCode element) {
 			_listener.beforeAdd(AreaCodes.this, CODES__PROP, index, element);
@@ -27,6 +27,11 @@ public class AreaCodes extends de.haumacher.msgbuf.data.AbstractDataObject imple
 		@Override
 		protected void afterRemove(String index, de.haumacher.phoneblock.analysis.AreaCode element) {
 			_listener.afterRemove(AreaCodes.this, CODES__PROP, index, element);
+		}
+
+		@Override
+		protected void afterChanged() {
+			_listener.afterChanged(AreaCodes.this, CODES__PROP);
 		}
 	};
 
@@ -108,13 +113,29 @@ public class AreaCodes extends de.haumacher.msgbuf.data.AbstractDataObject imple
 		return AREA_CODES__TYPE;
 	}
 
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
-			CODES__PROP));
+	static final java.util.List<String> PROPERTIES;
+	static {
+		java.util.List<String> local = java.util.Arrays.asList(
+			CODES__PROP);
+		PROPERTIES = java.util.Collections.unmodifiableList(local);
+	}
+
+	static final java.util.Set<String> TRANSIENT_PROPERTIES;
+	static {
+		java.util.HashSet<String> tmp = new java.util.HashSet<>();
+		tmp.addAll(java.util.Arrays.asList(
+				));
+		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
+	}
 
 	@Override
 	public java.util.List<String> properties() {
 		return PROPERTIES;
+	}
+
+	@Override
+	public java.util.Set<String> transientProperties() {
+		return TRANSIENT_PROPERTIES;
 	}
 
 	@Override

@@ -98,6 +98,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	protected final void internalSetPhone(String value) {
 		_listener.beforeSet(this, PHONE__PROP, value);
 		_phone = value;
+		_listener.afterChanged(this, PHONE__PROP);
 	}
 
 	/**
@@ -119,6 +120,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	protected final void internalSetVotes(int value) {
 		_listener.beforeSet(this, VOTES__PROP, value);
 		_votes = value;
+		_listener.afterChanged(this, VOTES__PROP);
 	}
 
 	/**
@@ -141,6 +143,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 		if (value == null) throw new IllegalArgumentException("Property 'rating' cannot be null.");
 		_listener.beforeSet(this, RATING__PROP, value);
 		_rating = value;
+		_listener.afterChanged(this, RATING__PROP);
 	}
 
 	/**
@@ -166,6 +169,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	protected final void internalSetVotesWildcard(int value) {
 		_listener.beforeSet(this, VOTES_WILDCARD__PROP, value);
 		_votesWildcard = value;
+		_listener.afterChanged(this, VOTES_WILDCARD__PROP);
 	}
 
 	/**
@@ -187,6 +191,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	protected final void internalSetWhiteListed(boolean value) {
 		_listener.beforeSet(this, WHITE_LISTED__PROP, value);
 		_whiteListed = value;
+		_listener.afterChanged(this, WHITE_LISTED__PROP);
 	}
 
 	/**
@@ -208,6 +213,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	protected final void internalSetBlackListed(boolean value) {
 		_listener.beforeSet(this, BLACK_LISTED__PROP, value);
 		_blackListed = value;
+		_listener.afterChanged(this, BLACK_LISTED__PROP);
 	}
 
 	/**
@@ -229,6 +235,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	protected final void internalSetArchived(boolean value) {
 		_listener.beforeSet(this, ARCHIVED__PROP, value);
 		_archived = value;
+		_listener.afterChanged(this, ARCHIVED__PROP);
 	}
 
 	/**
@@ -250,6 +257,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	protected final void internalSetDateAdded(long value) {
 		_listener.beforeSet(this, DATE_ADDED__PROP, value);
 		_dateAdded = value;
+		_listener.afterChanged(this, DATE_ADDED__PROP);
 	}
 
 	/**
@@ -271,6 +279,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	protected final void internalSetLastUpdate(long value) {
 		_listener.beforeSet(this, LAST_UPDATE__PROP, value);
 		_lastUpdate = value;
+		_listener.afterChanged(this, LAST_UPDATE__PROP);
 	}
 
 	/**
@@ -292,6 +301,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	protected final void internalSetLabel(String value) {
 		_listener.beforeSet(this, LABEL__PROP, value);
 		_label = value;
+		_listener.afterChanged(this, LABEL__PROP);
 	}
 
 	/**
@@ -320,6 +330,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	protected final void internalSetLocation(String value) {
 		_listener.beforeSet(this, LOCATION__PROP, value);
 		_location = value;
+		_listener.afterChanged(this, LOCATION__PROP);
 	}
 
 	/**
@@ -356,8 +367,9 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 		return PHONE_INFO__TYPE;
 	}
 
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
+	static final java.util.List<String> PROPERTIES;
+	static {
+		java.util.List<String> local = java.util.Arrays.asList(
 			PHONE__PROP, 
 			VOTES__PROP, 
 			RATING__PROP, 
@@ -368,11 +380,26 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 			DATE_ADDED__PROP, 
 			LAST_UPDATE__PROP, 
 			LABEL__PROP, 
-			LOCATION__PROP));
+			LOCATION__PROP);
+		PROPERTIES = java.util.Collections.unmodifiableList(local);
+	}
+
+	static final java.util.Set<String> TRANSIENT_PROPERTIES;
+	static {
+		java.util.HashSet<String> tmp = new java.util.HashSet<>();
+		tmp.addAll(java.util.Arrays.asList(
+				));
+		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
+	}
 
 	@Override
 	public java.util.List<String> properties() {
 		return PROPERTIES;
+	}
+
+	@Override
+	public java.util.Set<String> transientProperties() {
+		return TRANSIENT_PROPERTIES;
 	}
 
 	@Override

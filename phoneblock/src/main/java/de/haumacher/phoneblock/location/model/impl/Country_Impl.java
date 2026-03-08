@@ -7,7 +7,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	private String _fIFA = "";
 
-	private final java.util.List<String> _dialPrefixes = new de.haumacher.msgbuf.util.ReferenceList<>() {
+	private final java.util.List<String> _dialPrefixes = new de.haumacher.msgbuf.util.ReferenceList<String>() {
 		@Override
 		protected void beforeAdd(int index, String element) {
 			_listener.beforeAdd(Country_Impl.this, DIAL_PREFIXES__PROP, index, element);
@@ -16,6 +16,11 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 		@Override
 		protected void afterRemove(int index, String element) {
 			_listener.afterRemove(Country_Impl.this, DIAL_PREFIXES__PROP, index, element);
+		}
+
+		@Override
+		protected void afterChanged() {
+			_listener.afterChanged(Country_Impl.this, DIAL_PREFIXES__PROP);
 		}
 	};
 
@@ -117,7 +122,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	private String _tLD = "";
 
-	private final java.util.List<String> _languages = new de.haumacher.msgbuf.util.ReferenceList<>() {
+	private final java.util.List<String> _languages = new de.haumacher.msgbuf.util.ReferenceList<String>() {
 		@Override
 		protected void beforeAdd(int index, String element) {
 			_listener.beforeAdd(Country_Impl.this, LANGUAGES__PROP, index, element);
@@ -126,6 +131,11 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 		@Override
 		protected void afterRemove(int index, String element) {
 			_listener.afterRemove(Country_Impl.this, LANGUAGES__PROP, index, element);
+		}
+
+		@Override
+		protected void afterChanged() {
+			_listener.afterChanged(Country_Impl.this, LANGUAGES__PROP);
 		}
 	};
 
@@ -137,7 +147,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	private String _wikidataId = "";
 
-	private final java.util.List<String> _trunkPrefixes = new de.haumacher.msgbuf.util.ReferenceList<>() {
+	private final java.util.List<String> _trunkPrefixes = new de.haumacher.msgbuf.util.ReferenceList<String>() {
 		@Override
 		protected void beforeAdd(int index, String element) {
 			_listener.beforeAdd(Country_Impl.this, TRUNK_PREFIXES__PROP, index, element);
@@ -147,9 +157,14 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 		protected void afterRemove(int index, String element) {
 			_listener.afterRemove(Country_Impl.this, TRUNK_PREFIXES__PROP, index, element);
 		}
+
+		@Override
+		protected void afterChanged() {
+			_listener.afterChanged(Country_Impl.this, TRUNK_PREFIXES__PROP);
+		}
 	};
 
-	private final java.util.List<String> _internationalPrefixes = new de.haumacher.msgbuf.util.ReferenceList<>() {
+	private final java.util.List<String> _internationalPrefixes = new de.haumacher.msgbuf.util.ReferenceList<String>() {
 		@Override
 		protected void beforeAdd(int index, String element) {
 			_listener.beforeAdd(Country_Impl.this, INTERNATIONAL_PREFIXES__PROP, index, element);
@@ -158,6 +173,11 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 		@Override
 		protected void afterRemove(int index, String element) {
 			_listener.afterRemove(Country_Impl.this, INTERNATIONAL_PREFIXES__PROP, index, element);
+		}
+
+		@Override
+		protected void afterChanged() {
+			_listener.afterChanged(Country_Impl.this, INTERNATIONAL_PREFIXES__PROP);
 		}
 	};
 
@@ -185,6 +205,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetFIFA(String value) {
 		_listener.beforeSet(this, FIFA__PROP, value);
 		_fIFA = value;
+		_listener.afterChanged(this, FIFA__PROP);
 	}
 
 	@Override
@@ -205,18 +226,18 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	}
 
 	@Override
-	public de.haumacher.phoneblock.location.model.Country addDialPrefixe(String value) {
-		internalAddDialPrefixe(value);
+	public de.haumacher.phoneblock.location.model.Country addDialPrefix(String value) {
+		internalAddDialPrefix(value);
 		return this;
 	}
 
-	/** Implementation of {@link #addDialPrefixe(String)} without chain call utility. */
-	protected final void internalAddDialPrefixe(String value) {
+	/** Implementation of {@link #addDialPrefix(String)} without chain call utility. */
+	protected final void internalAddDialPrefix(String value) {
 		_dialPrefixes.add(value);
 	}
 
 	@Override
-	public final void removeDialPrefixe(String value) {
+	public final void removeDialPrefix(String value) {
 		_dialPrefixes.remove(value);
 	}
 
@@ -235,6 +256,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetISO31661Alpha3(String value) {
 		_listener.beforeSet(this, ISO_3166_1_ALPHA_3__PROP, value);
 		_iSO31661Alpha3 = value;
+		_listener.afterChanged(this, ISO_3166_1_ALPHA_3__PROP);
 	}
 
 	@Override
@@ -252,6 +274,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetMARC(String value) {
 		_listener.beforeSet(this, MARC__PROP, value);
 		_mARC = value;
+		_listener.afterChanged(this, MARC__PROP);
 	}
 
 	@Override
@@ -269,6 +292,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetIndependent(boolean value) {
 		_listener.beforeSet(this, INDEPENDENT__PROP, value);
 		_independent = value;
+		_listener.afterChanged(this, INDEPENDENT__PROP);
 	}
 
 	@Override
@@ -286,6 +310,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetISO31661Numeric(String value) {
 		_listener.beforeSet(this, ISO_3166_1_NUMERIC__PROP, value);
 		_iSO31661Numeric = value;
+		_listener.afterChanged(this, ISO_3166_1_NUMERIC__PROP);
 	}
 
 	@Override
@@ -303,6 +328,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetGAUL(String value) {
 		_listener.beforeSet(this, GAUL__PROP, value);
 		_gAUL = value;
+		_listener.afterChanged(this, GAUL__PROP);
 	}
 
 	@Override
@@ -320,6 +346,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetFIPS(String value) {
 		_listener.beforeSet(this, FIPS__PROP, value);
 		_fIPS = value;
+		_listener.afterChanged(this, FIPS__PROP);
 	}
 
 	@Override
@@ -337,6 +364,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetWMO(String value) {
 		_listener.beforeSet(this, WMO__PROP, value);
 		_wMO = value;
+		_listener.afterChanged(this, WMO__PROP);
 	}
 
 	@Override
@@ -354,6 +382,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetISO31661Alpha2(String value) {
 		_listener.beforeSet(this, ISO_3166_1_ALPHA_2__PROP, value);
 		_iSO31661Alpha2 = value;
+		_listener.afterChanged(this, ISO_3166_1_ALPHA_2__PROP);
 	}
 
 	@Override
@@ -371,6 +400,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetITU(String value) {
 		_listener.beforeSet(this, ITU__PROP, value);
 		_iTU = value;
+		_listener.afterChanged(this, ITU__PROP);
 	}
 
 	@Override
@@ -388,6 +418,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetIOC(String value) {
 		_listener.beforeSet(this, IOC__PROP, value);
 		_iOC = value;
+		_listener.afterChanged(this, IOC__PROP);
 	}
 
 	@Override
@@ -405,6 +436,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetDS(String value) {
 		_listener.beforeSet(this, DS__PROP, value);
 		_dS = value;
+		_listener.afterChanged(this, DS__PROP);
 	}
 
 	@Override
@@ -422,6 +454,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetUNTERMSpanishFormal(String value) {
 		_listener.beforeSet(this, UNTERM_SPANISH_FORMAL__PROP, value);
 		_uNTERMSpanishFormal = value;
+		_listener.afterChanged(this, UNTERM_SPANISH_FORMAL__PROP);
 	}
 
 	@Override
@@ -439,6 +472,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetGlobalCode(String value) {
 		_listener.beforeSet(this, GLOBAL_CODE__PROP, value);
 		_globalCode = value;
+		_listener.afterChanged(this, GLOBAL_CODE__PROP);
 	}
 
 	@Override
@@ -456,6 +490,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetIntermediateRegionCode(String value) {
 		_listener.beforeSet(this, INTERMEDIATE_REGION_CODE__PROP, value);
 		_intermediateRegionCode = value;
+		_listener.afterChanged(this, INTERMEDIATE_REGION_CODE__PROP);
 	}
 
 	@Override
@@ -473,6 +508,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetOfficialNameFr(String value) {
 		_listener.beforeSet(this, OFFICIAL_NAME_FR__PROP, value);
 		_officialNameFr = value;
+		_listener.afterChanged(this, OFFICIAL_NAME_FR__PROP);
 	}
 
 	@Override
@@ -490,6 +526,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetUNTERMFrenchShort(String value) {
 		_listener.beforeSet(this, UNTERM_FRENCH_SHORT__PROP, value);
 		_uNTERMFrenchShort = value;
+		_listener.afterChanged(this, UNTERM_FRENCH_SHORT__PROP);
 	}
 
 	@Override
@@ -507,6 +544,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetISO4217CurrencyName(String value) {
 		_listener.beforeSet(this, ISO_4217_CURRENCY_NAME__PROP, value);
 		_iSO4217CurrencyName = value;
+		_listener.afterChanged(this, ISO_4217_CURRENCY_NAME__PROP);
 	}
 
 	@Override
@@ -524,6 +562,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetUNTERMRussianFormal(String value) {
 		_listener.beforeSet(this, UNTERM_RUSSIAN_FORMAL__PROP, value);
 		_uNTERMRussianFormal = value;
+		_listener.afterChanged(this, UNTERM_RUSSIAN_FORMAL__PROP);
 	}
 
 	@Override
@@ -541,6 +580,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetUNTERMEnglishShort(String value) {
 		_listener.beforeSet(this, UNTERM_ENGLISH_SHORT__PROP, value);
 		_uNTERMEnglishShort = value;
+		_listener.afterChanged(this, UNTERM_ENGLISH_SHORT__PROP);
 	}
 
 	@Override
@@ -558,6 +598,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetISO4217CurrencyAlphabeticCode(String value) {
 		_listener.beforeSet(this, ISO_4217_CURRENCY_ALPHABETIC_CODE__PROP, value);
 		_iSO4217CurrencyAlphabeticCode = value;
+		_listener.afterChanged(this, ISO_4217_CURRENCY_ALPHABETIC_CODE__PROP);
 	}
 
 	@Override
@@ -575,6 +616,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetSmallIslandDevelopingStatesSIDS(String value) {
 		_listener.beforeSet(this, SMALL_ISLAND_DEVELOPING_STATES_SIDS__PROP, value);
 		_smallIslandDevelopingStatesSIDS = value;
+		_listener.afterChanged(this, SMALL_ISLAND_DEVELOPING_STATES_SIDS__PROP);
 	}
 
 	@Override
@@ -592,6 +634,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetUNTERMSpanishShort(String value) {
 		_listener.beforeSet(this, UNTERM_SPANISH_SHORT__PROP, value);
 		_uNTERMSpanishShort = value;
+		_listener.afterChanged(this, UNTERM_SPANISH_SHORT__PROP);
 	}
 
 	@Override
@@ -609,6 +652,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetISO4217CurrencyNumericCode(String value) {
 		_listener.beforeSet(this, ISO_4217_CURRENCY_NUMERIC_CODE__PROP, value);
 		_iSO4217CurrencyNumericCode = value;
+		_listener.afterChanged(this, ISO_4217_CURRENCY_NUMERIC_CODE__PROP);
 	}
 
 	@Override
@@ -626,6 +670,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetUNTERMChineseFormal(String value) {
 		_listener.beforeSet(this, UNTERM_CHINESE_FORMAL__PROP, value);
 		_uNTERMChineseFormal = value;
+		_listener.afterChanged(this, UNTERM_CHINESE_FORMAL__PROP);
 	}
 
 	@Override
@@ -643,6 +688,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetUNTERMFrenchFormal(String value) {
 		_listener.beforeSet(this, UNTERM_FRENCH_FORMAL__PROP, value);
 		_uNTERMFrenchFormal = value;
+		_listener.afterChanged(this, UNTERM_FRENCH_FORMAL__PROP);
 	}
 
 	@Override
@@ -660,6 +706,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetUNTERMRussianShort(String value) {
 		_listener.beforeSet(this, UNTERM_RUSSIAN_SHORT__PROP, value);
 		_uNTERMRussianShort = value;
+		_listener.afterChanged(this, UNTERM_RUSSIAN_SHORT__PROP);
 	}
 
 	@Override
@@ -677,6 +724,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetM49(String value) {
 		_listener.beforeSet(this, M_49__PROP, value);
 		_m49 = value;
+		_listener.afterChanged(this, M_49__PROP);
 	}
 
 	@Override
@@ -694,6 +742,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetSubRegionCode(String value) {
 		_listener.beforeSet(this, SUB_REGION_CODE__PROP, value);
 		_subRegionCode = value;
+		_listener.afterChanged(this, SUB_REGION_CODE__PROP);
 	}
 
 	@Override
@@ -711,6 +760,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetRegionCode(String value) {
 		_listener.beforeSet(this, REGION_CODE__PROP, value);
 		_regionCode = value;
+		_listener.afterChanged(this, REGION_CODE__PROP);
 	}
 
 	@Override
@@ -728,6 +778,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetOfficialNameAr(String value) {
 		_listener.beforeSet(this, OFFICIAL_NAME_AR__PROP, value);
 		_officialNameAr = value;
+		_listener.afterChanged(this, OFFICIAL_NAME_AR__PROP);
 	}
 
 	@Override
@@ -745,6 +796,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetISO4217CurrencyMinorUnit(String value) {
 		_listener.beforeSet(this, ISO_4217_CURRENCY_MINOR_UNIT__PROP, value);
 		_iSO4217CurrencyMinorUnit = value;
+		_listener.afterChanged(this, ISO_4217_CURRENCY_MINOR_UNIT__PROP);
 	}
 
 	@Override
@@ -762,6 +814,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetUNTERMArabicFormal(String value) {
 		_listener.beforeSet(this, UNTERM_ARABIC_FORMAL__PROP, value);
 		_uNTERMArabicFormal = value;
+		_listener.afterChanged(this, UNTERM_ARABIC_FORMAL__PROP);
 	}
 
 	@Override
@@ -779,6 +832,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetUNTERMChineseShort(String value) {
 		_listener.beforeSet(this, UNTERM_CHINESE_SHORT__PROP, value);
 		_uNTERMChineseShort = value;
+		_listener.afterChanged(this, UNTERM_CHINESE_SHORT__PROP);
 	}
 
 	@Override
@@ -796,6 +850,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetLandLockedDevelopingCountriesLLDC(String value) {
 		_listener.beforeSet(this, LAND_LOCKED_DEVELOPING_COUNTRIES_LLDC__PROP, value);
 		_landLockedDevelopingCountriesLLDC = value;
+		_listener.afterChanged(this, LAND_LOCKED_DEVELOPING_COUNTRIES_LLDC__PROP);
 	}
 
 	@Override
@@ -813,6 +868,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetIntermediateRegionName(String value) {
 		_listener.beforeSet(this, INTERMEDIATE_REGION_NAME__PROP, value);
 		_intermediateRegionName = value;
+		_listener.afterChanged(this, INTERMEDIATE_REGION_NAME__PROP);
 	}
 
 	@Override
@@ -830,6 +886,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetOfficialNameEs(String value) {
 		_listener.beforeSet(this, OFFICIAL_NAME_ES__PROP, value);
 		_officialNameEs = value;
+		_listener.afterChanged(this, OFFICIAL_NAME_ES__PROP);
 	}
 
 	@Override
@@ -847,6 +904,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetUNTERMEnglishFormal(String value) {
 		_listener.beforeSet(this, UNTERM_ENGLISH_FORMAL__PROP, value);
 		_uNTERMEnglishFormal = value;
+		_listener.afterChanged(this, UNTERM_ENGLISH_FORMAL__PROP);
 	}
 
 	@Override
@@ -864,6 +922,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetOfficialNameCn(String value) {
 		_listener.beforeSet(this, OFFICIAL_NAME_CN__PROP, value);
 		_officialNameCn = value;
+		_listener.afterChanged(this, OFFICIAL_NAME_CN__PROP);
 	}
 
 	@Override
@@ -881,6 +940,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetOfficialNameEn(String value) {
 		_listener.beforeSet(this, OFFICIAL_NAME_EN__PROP, value);
 		_officialNameEn = value;
+		_listener.afterChanged(this, OFFICIAL_NAME_EN__PROP);
 	}
 
 	@Override
@@ -898,6 +958,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetISO4217CurrencyCountryName(String value) {
 		_listener.beforeSet(this, ISO_4217_CURRENCY_COUNTRY_NAME__PROP, value);
 		_iSO4217CurrencyCountryName = value;
+		_listener.afterChanged(this, ISO_4217_CURRENCY_COUNTRY_NAME__PROP);
 	}
 
 	@Override
@@ -915,6 +976,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetLeastDevelopedCountriesLDC(String value) {
 		_listener.beforeSet(this, LEAST_DEVELOPED_COUNTRIES_LDC__PROP, value);
 		_leastDevelopedCountriesLDC = value;
+		_listener.afterChanged(this, LEAST_DEVELOPED_COUNTRIES_LDC__PROP);
 	}
 
 	@Override
@@ -932,6 +994,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetRegionName(String value) {
 		_listener.beforeSet(this, REGION_NAME__PROP, value);
 		_regionName = value;
+		_listener.afterChanged(this, REGION_NAME__PROP);
 	}
 
 	@Override
@@ -949,6 +1012,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetUNTERMArabicShort(String value) {
 		_listener.beforeSet(this, UNTERM_ARABIC_SHORT__PROP, value);
 		_uNTERMArabicShort = value;
+		_listener.afterChanged(this, UNTERM_ARABIC_SHORT__PROP);
 	}
 
 	@Override
@@ -966,6 +1030,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetSubRegionName(String value) {
 		_listener.beforeSet(this, SUB_REGION_NAME__PROP, value);
 		_subRegionName = value;
+		_listener.afterChanged(this, SUB_REGION_NAME__PROP);
 	}
 
 	@Override
@@ -983,6 +1048,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetOfficialNameRu(String value) {
 		_listener.beforeSet(this, OFFICIAL_NAME_RU__PROP, value);
 		_officialNameRu = value;
+		_listener.afterChanged(this, OFFICIAL_NAME_RU__PROP);
 	}
 
 	@Override
@@ -1000,6 +1066,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetGlobalName(String value) {
 		_listener.beforeSet(this, GLOBAL_NAME__PROP, value);
 		_globalName = value;
+		_listener.afterChanged(this, GLOBAL_NAME__PROP);
 	}
 
 	@Override
@@ -1017,6 +1084,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetCapital(String value) {
 		_listener.beforeSet(this, CAPITAL__PROP, value);
 		_capital = value;
+		_listener.afterChanged(this, CAPITAL__PROP);
 	}
 
 	@Override
@@ -1034,6 +1102,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetContinent(String value) {
 		_listener.beforeSet(this, CONTINENT__PROP, value);
 		_continent = value;
+		_listener.afterChanged(this, CONTINENT__PROP);
 	}
 
 	@Override
@@ -1051,6 +1120,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetTLD(String value) {
 		_listener.beforeSet(this, TLD__PROP, value);
 		_tLD = value;
+		_listener.afterChanged(this, TLD__PROP);
 	}
 
 	@Override
@@ -1101,6 +1171,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetGeonameID(String value) {
 		_listener.beforeSet(this, GEONAME_ID__PROP, value);
 		_geonameID = value;
+		_listener.afterChanged(this, GEONAME_ID__PROP);
 	}
 
 	@Override
@@ -1118,6 +1189,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetCLDRDisplayName(String value) {
 		_listener.beforeSet(this, CLDR_DISPLAY_NAME__PROP, value);
 		_cLDRDisplayName = value;
+		_listener.afterChanged(this, CLDR_DISPLAY_NAME__PROP);
 	}
 
 	@Override
@@ -1135,6 +1207,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetEDGAR(String value) {
 		_listener.beforeSet(this, EDGAR__PROP, value);
 		_eDGAR = value;
+		_listener.afterChanged(this, EDGAR__PROP);
 	}
 
 	@Override
@@ -1152,6 +1225,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetWikidataId(String value) {
 		_listener.beforeSet(this, WIKIDATA_ID__PROP, value);
 		_wikidataId = value;
+		_listener.afterChanged(this, WIKIDATA_ID__PROP);
 	}
 
 	@Override
@@ -1172,18 +1246,18 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	}
 
 	@Override
-	public de.haumacher.phoneblock.location.model.Country addTrunkPrefixe(String value) {
-		internalAddTrunkPrefixe(value);
+	public de.haumacher.phoneblock.location.model.Country addTrunkPrefix(String value) {
+		internalAddTrunkPrefix(value);
 		return this;
 	}
 
-	/** Implementation of {@link #addTrunkPrefixe(String)} without chain call utility. */
-	protected final void internalAddTrunkPrefixe(String value) {
+	/** Implementation of {@link #addTrunkPrefix(String)} without chain call utility. */
+	protected final void internalAddTrunkPrefix(String value) {
 		_trunkPrefixes.add(value);
 	}
 
 	@Override
-	public final void removeTrunkPrefixe(String value) {
+	public final void removeTrunkPrefix(String value) {
 		_trunkPrefixes.remove(value);
 	}
 
@@ -1205,18 +1279,18 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 	}
 
 	@Override
-	public de.haumacher.phoneblock.location.model.Country addInternationalPrefixe(String value) {
-		internalAddInternationalPrefixe(value);
+	public de.haumacher.phoneblock.location.model.Country addInternationalPrefix(String value) {
+		internalAddInternationalPrefix(value);
 		return this;
 	}
 
-	/** Implementation of {@link #addInternationalPrefixe(String)} without chain call utility. */
-	protected final void internalAddInternationalPrefixe(String value) {
+	/** Implementation of {@link #addInternationalPrefix(String)} without chain call utility. */
+	protected final void internalAddInternationalPrefix(String value) {
 		_internationalPrefixes.add(value);
 	}
 
 	@Override
-	public final void removeInternationalPrefixe(String value) {
+	public final void removeInternationalPrefix(String value) {
 		_internationalPrefixes.remove(value);
 	}
 
@@ -1247,8 +1321,9 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 		return COUNTRY__TYPE;
 	}
 
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
+	static final java.util.List<String> PROPERTIES;
+	static {
+		java.util.List<String> local = java.util.Arrays.asList(
 			FIFA__PROP, 
 			DIAL_PREFIXES__PROP, 
 			ISO_3166_1_ALPHA_3__PROP, 
@@ -1306,11 +1381,26 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 			EDGAR__PROP, 
 			WIKIDATA_ID__PROP, 
 			TRUNK_PREFIXES__PROP, 
-			INTERNATIONAL_PREFIXES__PROP));
+			INTERNATIONAL_PREFIXES__PROP);
+		PROPERTIES = java.util.Collections.unmodifiableList(local);
+	}
+
+	static final java.util.Set<String> TRANSIENT_PROPERTIES;
+	static {
+		java.util.HashSet<String> tmp = new java.util.HashSet<>();
+		tmp.addAll(java.util.Arrays.asList(
+				));
+		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
+	}
 
 	@Override
 	public java.util.List<String> properties() {
 		return PROPERTIES;
+	}
+
+	@Override
+	public java.util.Set<String> transientProperties() {
+		return TRANSIENT_PROPERTIES;
 	}
 
 	@Override
@@ -1868,7 +1958,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 			case DIAL_PREFIXES__ID: {
 				in.beginArray();
 				while (in.hasNext()) {
-					addDialPrefixe(in.nextString());
+					addDialPrefix(in.nextString());
 				}
 				in.endArray();
 			}
@@ -1937,7 +2027,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 			case TRUNK_PREFIXES__ID: {
 				in.beginArray();
 				while (in.hasNext()) {
-					addTrunkPrefixe(in.nextString());
+					addTrunkPrefix(in.nextString());
 				}
 				in.endArray();
 			}
@@ -1945,7 +2035,7 @@ public class Country_Impl extends de.haumacher.msgbuf.data.AbstractDataObject im
 			case INTERNATIONAL_PREFIXES__ID: {
 				in.beginArray();
 				while (in.hasNext()) {
-					addInternationalPrefixe(in.nextString());
+					addInternationalPrefix(in.nextString());
 				}
 				in.endArray();
 			}

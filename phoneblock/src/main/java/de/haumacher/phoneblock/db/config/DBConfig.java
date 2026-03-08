@@ -91,6 +91,7 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 	protected final void internalSetUrl(String value) {
 		_listener.beforeSet(this, URL__PROP, value);
 		_url = value;
+		_listener.afterChanged(this, URL__PROP);
 	}
 
 	/**
@@ -112,6 +113,7 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 	protected final void internalSetUser(String value) {
 		_listener.beforeSet(this, USER__PROP, value);
 		_user = value;
+		_listener.afterChanged(this, USER__PROP);
 	}
 
 	/**
@@ -133,6 +135,7 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 	protected final void internalSetPassword(String value) {
 		_listener.beforeSet(this, PASSWORD__PROP, value);
 		_password = value;
+		_listener.afterChanged(this, PASSWORD__PROP);
 	}
 
 	/**
@@ -154,6 +157,7 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 	protected final void internalSetPort(int value) {
 		_listener.beforeSet(this, PORT__PROP, value);
 		_port = value;
+		_listener.afterChanged(this, PORT__PROP);
 	}
 
 	/**
@@ -175,6 +179,7 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 	protected final void internalSetSendHelpMails(boolean value) {
 		_listener.beforeSet(this, SEND_HELP_MAILS__PROP, value);
 		_sendHelpMails = value;
+		_listener.afterChanged(this, SEND_HELP_MAILS__PROP);
 	}
 
 	/**
@@ -196,6 +201,7 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 	protected final void internalSetSendWelcomeMails(boolean value) {
 		_listener.beforeSet(this, SEND_WELCOME_MAILS__PROP, value);
 		_sendWelcomeMails = value;
+		_listener.afterChanged(this, SEND_WELCOME_MAILS__PROP);
 	}
 
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
@@ -225,18 +231,34 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 		return DBCONFIG__TYPE;
 	}
 
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
+	static final java.util.List<String> PROPERTIES;
+	static {
+		java.util.List<String> local = java.util.Arrays.asList(
 			URL__PROP, 
 			USER__PROP, 
 			PASSWORD__PROP, 
 			PORT__PROP, 
 			SEND_HELP_MAILS__PROP, 
-			SEND_WELCOME_MAILS__PROP));
+			SEND_WELCOME_MAILS__PROP);
+		PROPERTIES = java.util.Collections.unmodifiableList(local);
+	}
+
+	static final java.util.Set<String> TRANSIENT_PROPERTIES;
+	static {
+		java.util.HashSet<String> tmp = new java.util.HashSet<>();
+		tmp.addAll(java.util.Arrays.asList(
+				));
+		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
+	}
 
 	@Override
 	public java.util.List<String> properties() {
 		return PROPERTIES;
+	}
+
+	@Override
+	public java.util.Set<String> transientProperties() {
+		return TRANSIENT_PROPERTIES;
 	}
 
 	@Override

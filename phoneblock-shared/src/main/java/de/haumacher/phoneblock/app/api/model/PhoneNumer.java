@@ -90,6 +90,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected final void internalSetId(String value) {
 		_listener.beforeSet(this, ID__PROP, value);
 		_id = value;
+		_listener.afterChanged(this, ID__PROP);
 	}
 
 	/**
@@ -111,6 +112,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected final void internalSetShortcut(String value) {
 		_listener.beforeSet(this, SHORTCUT__PROP, value);
 		_shortcut = value;
+		_listener.afterChanged(this, SHORTCUT__PROP);
 	}
 
 	public final String getPlus() {
@@ -129,6 +131,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected final void internalSetPlus(String value) {
 		_listener.beforeSet(this, PLUS__PROP, value);
 		_plus = value;
+		_listener.afterChanged(this, PLUS__PROP);
 	}
 
 	/**
@@ -150,6 +153,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected final void internalSetZeroZero(String value) {
 		_listener.beforeSet(this, ZERO_ZERO__PROP, value);
 		_zeroZero = value;
+		_listener.afterChanged(this, ZERO_ZERO__PROP);
 	}
 
 	/**
@@ -171,6 +175,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected final void internalSetDial(String value) {
 		_listener.beforeSet(this, DIAL__PROP, value);
 		_dial = value;
+		_listener.afterChanged(this, DIAL__PROP);
 	}
 
 	public final String getCountryCode() {
@@ -189,6 +194,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected final void internalSetCountryCode(String value) {
 		_listener.beforeSet(this, COUNTRY_CODE__PROP, value);
 		_countryCode = value;
+		_listener.afterChanged(this, COUNTRY_CODE__PROP);
 	}
 
 	public final String getCountry() {
@@ -207,6 +213,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected final void internalSetCountry(String value) {
 		_listener.beforeSet(this, COUNTRY__PROP, value);
 		_country = value;
+		_listener.afterChanged(this, COUNTRY__PROP);
 	}
 
 	public final String getCityCode() {
@@ -225,6 +232,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected final void internalSetCityCode(String value) {
 		_listener.beforeSet(this, CITY_CODE__PROP, value);
 		_cityCode = value;
+		_listener.afterChanged(this, CITY_CODE__PROP);
 	}
 
 	/**
@@ -250,6 +258,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected final void internalSetCity(String value) {
 		_listener.beforeSet(this, CITY__PROP, value);
 		_city = value;
+		_listener.afterChanged(this, CITY__PROP);
 	}
 
 	/**
@@ -278,6 +287,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected final void internalSetUsage(String value) {
 		_listener.beforeSet(this, USAGE__PROP, value);
 		_usage = value;
+		_listener.afterChanged(this, USAGE__PROP);
 	}
 
 	/**
@@ -314,8 +324,9 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		return PHONE_NUMER__TYPE;
 	}
 
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
+	static final java.util.List<String> PROPERTIES;
+	static {
+		java.util.List<String> local = java.util.Arrays.asList(
 			ID__PROP, 
 			SHORTCUT__PROP, 
 			PLUS__PROP, 
@@ -325,11 +336,26 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 			COUNTRY__PROP, 
 			CITY_CODE__PROP, 
 			CITY__PROP, 
-			USAGE__PROP));
+			USAGE__PROP);
+		PROPERTIES = java.util.Collections.unmodifiableList(local);
+	}
+
+	static final java.util.Set<String> TRANSIENT_PROPERTIES;
+	static {
+		java.util.HashSet<String> tmp = new java.util.HashSet<>();
+		tmp.addAll(java.util.Arrays.asList(
+				));
+		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
+	}
 
 	@Override
 	public java.util.List<String> properties() {
 		return PROPERTIES;
+	}
+
+	@Override
+	public java.util.Set<String> transientProperties() {
+		return TRANSIENT_PROPERTIES;
 	}
 
 	@Override

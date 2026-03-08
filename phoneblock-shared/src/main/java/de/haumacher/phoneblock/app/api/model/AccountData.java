@@ -72,6 +72,7 @@ public abstract class AccountData extends de.haumacher.msgbuf.data.AbstractDataO
 	protected final void internalSetLang(String value) {
 		_listener.beforeSet(this, LANG__PROP, value);
 		_lang = value;
+		_listener.afterChanged(this, LANG__PROP);
 	}
 
 	/**
@@ -100,6 +101,7 @@ public abstract class AccountData extends de.haumacher.msgbuf.data.AbstractDataO
 	protected final void internalSetDialPrefix(String value) {
 		_listener.beforeSet(this, DIAL_PREFIX__PROP, value);
 		_dialPrefix = value;
+		_listener.afterChanged(this, DIAL_PREFIX__PROP);
 	}
 
 	/**
@@ -128,6 +130,7 @@ public abstract class AccountData extends de.haumacher.msgbuf.data.AbstractDataO
 	protected final void internalSetDisplayName(String value) {
 		_listener.beforeSet(this, DISPLAY_NAME__PROP, value);
 		_displayName = value;
+		_listener.afterChanged(this, DISPLAY_NAME__PROP);
 	}
 
 	/**
@@ -159,15 +162,31 @@ public abstract class AccountData extends de.haumacher.msgbuf.data.AbstractDataO
 		_listener = de.haumacher.msgbuf.observer.Listener.unregister(_listener, l);
 	}
 
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
+	static final java.util.List<String> PROPERTIES;
+	static {
+		java.util.List<String> local = java.util.Arrays.asList(
 			LANG__PROP, 
 			DIAL_PREFIX__PROP, 
-			DISPLAY_NAME__PROP));
+			DISPLAY_NAME__PROP);
+		PROPERTIES = java.util.Collections.unmodifiableList(local);
+	}
+
+	static final java.util.Set<String> TRANSIENT_PROPERTIES;
+	static {
+		java.util.HashSet<String> tmp = new java.util.HashSet<>();
+		tmp.addAll(java.util.Arrays.asList(
+				));
+		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
+	}
 
 	@Override
 	public java.util.List<String> properties() {
 		return PROPERTIES;
+	}
+
+	@Override
+	public java.util.Set<String> transientProperties() {
+		return TRANSIENT_PROPERTIES;
 	}
 
 	@Override

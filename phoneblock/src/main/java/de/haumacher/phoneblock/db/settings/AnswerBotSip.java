@@ -168,6 +168,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 	protected final void internalSetHost(String value) {
 		_listener.beforeSet(this, HOST__PROP, value);
 		_host = value;
+		_listener.afterChanged(this, HOST__PROP);
 	}
 
 	/**
@@ -189,6 +190,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 	protected final void internalSetIpv4(String value) {
 		_listener.beforeSet(this, IPV_4__PROP, value);
 		_ipv4 = value;
+		_listener.afterChanged(this, IPV_4__PROP);
 	}
 
 	/**
@@ -210,6 +212,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 	protected final void internalSetIpv6(String value) {
 		_listener.beforeSet(this, IPV_6__PROP, value);
 		_ipv6 = value;
+		_listener.afterChanged(this, IPV_6__PROP);
 	}
 
 	/**
@@ -231,6 +234,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 	protected final void internalSetPreferIPv4(boolean value) {
 		_listener.beforeSet(this, PREFER_IPV_4__PROP, value);
 		_preferIPv4 = value;
+		_listener.afterChanged(this, PREFER_IPV_4__PROP);
 	}
 
 	/**
@@ -252,6 +256,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 	protected final void internalSetRegistrar(String value) {
 		_listener.beforeSet(this, REGISTRAR__PROP, value);
 		_registrar = value;
+		_listener.afterChanged(this, REGISTRAR__PROP);
 	}
 
 	/**
@@ -273,6 +278,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 	protected final void internalSetRealm(String value) {
 		_listener.beforeSet(this, REALM__PROP, value);
 		_realm = value;
+		_listener.afterChanged(this, REALM__PROP);
 	}
 
 	/**
@@ -294,6 +300,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 	protected final void internalSetUserName(String value) {
 		_listener.beforeSet(this, USER_NAME__PROP, value);
 		_userName = value;
+		_listener.afterChanged(this, USER_NAME__PROP);
 	}
 
 	/**
@@ -315,6 +322,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 	protected final void internalSetPasswd(String value) {
 		_listener.beforeSet(this, PASSWD__PROP, value);
 		_passwd = value;
+		_listener.afterChanged(this, PASSWD__PROP);
 	}
 
 	/**
@@ -336,6 +344,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 	protected final void internalSetMinVotes(int value) {
 		_listener.beforeSet(this, MIN_VOTES__PROP, value);
 		_minVotes = value;
+		_listener.afterChanged(this, MIN_VOTES__PROP);
 	}
 
 	/**
@@ -357,6 +366,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 	protected final void internalSetWildcards(boolean value) {
 		_listener.beforeSet(this, WILDCARDS__PROP, value);
 		_wildcards = value;
+		_listener.afterChanged(this, WILDCARDS__PROP);
 	}
 
 	/**
@@ -378,6 +388,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 	protected final void internalSetAcceptLocal(boolean value) {
 		_listener.beforeSet(this, ACCEPT_LOCAL__PROP, value);
 		_acceptLocal = value;
+		_listener.afterChanged(this, ACCEPT_LOCAL__PROP);
 	}
 
 	/**
@@ -399,6 +410,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 	protected final void internalSetRegistered(boolean value) {
 		_listener.beforeSet(this, REGISTERED__PROP, value);
 		_registered = value;
+		_listener.afterChanged(this, REGISTERED__PROP);
 	}
 
 	/**
@@ -420,6 +432,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 	protected final void internalSetRegisterMessage(String value) {
 		_listener.beforeSet(this, REGISTER_MESSAGE__PROP, value);
 		_registerMessage = value;
+		_listener.afterChanged(this, REGISTER_MESSAGE__PROP);
 	}
 
 	/**
@@ -441,6 +454,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 	protected final void internalSetLastSuccess(long value) {
 		_listener.beforeSet(this, LAST_SUCCESS__PROP, value);
 		_lastSuccess = value;
+		_listener.afterChanged(this, LAST_SUCCESS__PROP);
 	}
 
 	/**
@@ -462,6 +476,7 @@ public class AnswerBotSip extends AnswerBotSetting {
 	protected final void internalSetCallsAccepted(int value) {
 		_listener.beforeSet(this, CALLS_ACCEPTED__PROP, value);
 		_callsAccepted = value;
+		_listener.afterChanged(this, CALLS_ACCEPTED__PROP);
 	}
 
 	@Override
@@ -493,8 +508,10 @@ public class AnswerBotSip extends AnswerBotSetting {
 		return ANSWER_BOT_SIP__TYPE;
 	}
 
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
+	@SuppressWarnings("hiding")
+	static final java.util.List<String> PROPERTIES;
+	static {
+		java.util.List<String> local = java.util.Arrays.asList(
 			HOST__PROP, 
 			IPV_4__PROP, 
 			IPV_6__PROP, 
@@ -509,11 +526,31 @@ public class AnswerBotSip extends AnswerBotSetting {
 			REGISTERED__PROP, 
 			REGISTER_MESSAGE__PROP, 
 			LAST_SUCCESS__PROP, 
-			CALLS_ACCEPTED__PROP));
+			CALLS_ACCEPTED__PROP);
+		java.util.List<String> tmp = new java.util.ArrayList<>();
+		tmp.addAll(de.haumacher.phoneblock.db.settings.AnswerBotSetting.PROPERTIES);
+		tmp.addAll(local);
+		PROPERTIES = java.util.Collections.unmodifiableList(tmp);
+	}
+
+	@SuppressWarnings("hiding")
+	static final java.util.Set<String> TRANSIENT_PROPERTIES;
+	static {
+		java.util.HashSet<String> tmp = new java.util.HashSet<>();
+		tmp.addAll(de.haumacher.phoneblock.db.settings.AnswerBotSetting.TRANSIENT_PROPERTIES);
+		tmp.addAll(java.util.Arrays.asList(
+				));
+		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
+	}
 
 	@Override
 	public java.util.List<String> properties() {
 		return PROPERTIES;
+	}
+
+	@Override
+	public java.util.Set<String> transientProperties() {
+		return TRANSIENT_PROPERTIES;
 	}
 
 	@Override

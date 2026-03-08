@@ -21,7 +21,7 @@ public class Blocklist extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	/** @see #getVersion() */
 	public static final String VERSION__PROP = "version";
 
-	private final java.util.List<de.haumacher.phoneblock.app.api.model.BlockListEntry> _numbers = new de.haumacher.msgbuf.util.ReferenceList<>() {
+	private final java.util.List<de.haumacher.phoneblock.app.api.model.BlockListEntry> _numbers = new de.haumacher.msgbuf.util.ReferenceList<de.haumacher.phoneblock.app.api.model.BlockListEntry>() {
 		@Override
 		protected void beforeAdd(int index, de.haumacher.phoneblock.app.api.model.BlockListEntry element) {
 			_listener.beforeAdd(Blocklist.this, NUMBERS__PROP, index, element);
@@ -30,6 +30,11 @@ public class Blocklist extends de.haumacher.msgbuf.data.AbstractDataObject imple
 		@Override
 		protected void afterRemove(int index, de.haumacher.phoneblock.app.api.model.BlockListEntry element) {
 			_listener.afterRemove(Blocklist.this, NUMBERS__PROP, index, element);
+		}
+
+		@Override
+		protected void afterChanged() {
+			_listener.afterChanged(Blocklist.this, NUMBERS__PROP);
 		}
 	};
 
@@ -105,6 +110,7 @@ public class Blocklist extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	protected final void internalSetVersion(long value) {
 		_listener.beforeSet(this, VERSION__PROP, value);
 		_version = value;
+		_listener.afterChanged(this, VERSION__PROP);
 	}
 
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
@@ -134,14 +140,30 @@ public class Blocklist extends de.haumacher.msgbuf.data.AbstractDataObject imple
 		return BLOCKLIST__TYPE;
 	}
 
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
+	static final java.util.List<String> PROPERTIES;
+	static {
+		java.util.List<String> local = java.util.Arrays.asList(
 			NUMBERS__PROP, 
-			VERSION__PROP));
+			VERSION__PROP);
+		PROPERTIES = java.util.Collections.unmodifiableList(local);
+	}
+
+	static final java.util.Set<String> TRANSIENT_PROPERTIES;
+	static {
+		java.util.HashSet<String> tmp = new java.util.HashSet<>();
+		tmp.addAll(java.util.Arrays.asList(
+				));
+		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
+	}
 
 	@Override
 	public java.util.List<String> properties() {
 		return PROPERTIES;
+	}
+
+	@Override
+	public java.util.Set<String> transientProperties() {
+		return TRANSIENT_PROPERTIES;
 	}
 
 	@Override

@@ -98,6 +98,7 @@ public class RapidAPIResult extends de.haumacher.msgbuf.data.AbstractDataObject 
 	protected final void internalSetValid(boolean value) {
 		_listener.beforeSet(this, VALID__PROP, value);
 		_valid = value;
+		_listener.afterChanged(this, VALID__PROP);
 	}
 
 	public final boolean isBlock() {
@@ -116,6 +117,7 @@ public class RapidAPIResult extends de.haumacher.msgbuf.data.AbstractDataObject 
 	protected final void internalSetBlock(boolean value) {
 		_listener.beforeSet(this, BLOCK__PROP, value);
 		_block = value;
+		_listener.afterChanged(this, BLOCK__PROP);
 	}
 
 	public final boolean isDisposable() {
@@ -134,6 +136,7 @@ public class RapidAPIResult extends de.haumacher.msgbuf.data.AbstractDataObject 
 	protected final void internalSetDisposable(boolean value) {
 		_listener.beforeSet(this, DISPOSABLE__PROP, value);
 		_disposable = value;
+		_listener.afterChanged(this, DISPOSABLE__PROP);
 	}
 
 	public final boolean isForwarder() {
@@ -152,6 +155,7 @@ public class RapidAPIResult extends de.haumacher.msgbuf.data.AbstractDataObject 
 	protected final void internalSetForwarder(boolean value) {
 		_listener.beforeSet(this, FORWARDER__PROP, value);
 		_forwarder = value;
+		_listener.afterChanged(this, FORWARDER__PROP);
 	}
 
 	public final String getDomainName() {
@@ -170,6 +174,7 @@ public class RapidAPIResult extends de.haumacher.msgbuf.data.AbstractDataObject 
 	protected final void internalSetDomainName(String value) {
 		_listener.beforeSet(this, DOMAIN_NAME__PROP, value);
 		_domainName = value;
+		_listener.afterChanged(this, DOMAIN_NAME__PROP);
 	}
 
 	public final String getMxHost() {
@@ -188,6 +193,7 @@ public class RapidAPIResult extends de.haumacher.msgbuf.data.AbstractDataObject 
 	protected final void internalSetMxHost(String value) {
 		_listener.beforeSet(this, MX_HOST__PROP, value);
 		_mxHost = value;
+		_listener.afterChanged(this, MX_HOST__PROP);
 	}
 
 	public final String getMxIP() {
@@ -206,6 +212,7 @@ public class RapidAPIResult extends de.haumacher.msgbuf.data.AbstractDataObject 
 	protected final void internalSetMxIP(String value) {
 		_listener.beforeSet(this, MX_IP__PROP, value);
 		_mxIP = value;
+		_listener.afterChanged(this, MX_IP__PROP);
 	}
 
 	public final String getLastChanged() {
@@ -224,6 +231,7 @@ public class RapidAPIResult extends de.haumacher.msgbuf.data.AbstractDataObject 
 	protected final void internalSetLastChanged(String value) {
 		_listener.beforeSet(this, LAST_CHANGED__PROP, value);
 		_lastChanged = value;
+		_listener.afterChanged(this, LAST_CHANGED__PROP);
 	}
 
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
@@ -253,8 +261,9 @@ public class RapidAPIResult extends de.haumacher.msgbuf.data.AbstractDataObject 
 		return RAPID_APIRESULT__TYPE;
 	}
 
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
+	static final java.util.List<String> PROPERTIES;
+	static {
+		java.util.List<String> local = java.util.Arrays.asList(
 			VALID__PROP, 
 			BLOCK__PROP, 
 			DISPOSABLE__PROP, 
@@ -262,11 +271,26 @@ public class RapidAPIResult extends de.haumacher.msgbuf.data.AbstractDataObject 
 			DOMAIN_NAME__PROP, 
 			MX_HOST__PROP, 
 			MX_IP__PROP, 
-			LAST_CHANGED__PROP));
+			LAST_CHANGED__PROP);
+		PROPERTIES = java.util.Collections.unmodifiableList(local);
+	}
+
+	static final java.util.Set<String> TRANSIENT_PROPERTIES;
+	static {
+		java.util.HashSet<String> tmp = new java.util.HashSet<>();
+		tmp.addAll(java.util.Arrays.asList(
+				));
+		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
+	}
 
 	@Override
 	public java.util.List<String> properties() {
 		return PROPERTIES;
+	}
+
+	@Override
+	public java.util.Set<String> transientProperties() {
+		return TRANSIENT_PROPERTIES;
 	}
 
 	@Override

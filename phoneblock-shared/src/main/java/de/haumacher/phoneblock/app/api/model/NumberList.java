@@ -18,7 +18,7 @@ public class NumberList extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/** @see #getNumbers() */
 	public static final String NUMBERS__PROP = "numbers";
 
-	private final java.util.List<de.haumacher.phoneblock.app.api.model.PersonalizedNumber> _numbers = new de.haumacher.msgbuf.util.ReferenceList<>() {
+	private final java.util.List<de.haumacher.phoneblock.app.api.model.PersonalizedNumber> _numbers = new de.haumacher.msgbuf.util.ReferenceList<de.haumacher.phoneblock.app.api.model.PersonalizedNumber>() {
 		@Override
 		protected void beforeAdd(int index, de.haumacher.phoneblock.app.api.model.PersonalizedNumber element) {
 			_listener.beforeAdd(NumberList.this, NUMBERS__PROP, index, element);
@@ -27,6 +27,11 @@ public class NumberList extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		@Override
 		protected void afterRemove(int index, de.haumacher.phoneblock.app.api.model.PersonalizedNumber element) {
 			_listener.afterRemove(NumberList.this, NUMBERS__PROP, index, element);
+		}
+
+		@Override
+		protected void afterChanged() {
+			_listener.afterChanged(NumberList.this, NUMBERS__PROP);
 		}
 	};
 
@@ -108,13 +113,29 @@ public class NumberList extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		return NUMBER_LIST__TYPE;
 	}
 
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
-			NUMBERS__PROP));
+	static final java.util.List<String> PROPERTIES;
+	static {
+		java.util.List<String> local = java.util.Arrays.asList(
+			NUMBERS__PROP);
+		PROPERTIES = java.util.Collections.unmodifiableList(local);
+	}
+
+	static final java.util.Set<String> TRANSIENT_PROPERTIES;
+	static {
+		java.util.HashSet<String> tmp = new java.util.HashSet<>();
+		tmp.addAll(java.util.Arrays.asList(
+				));
+		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
+	}
 
 	@Override
 	public java.util.List<String> properties() {
 		return PROPERTIES;
+	}
+
+	@Override
+	public java.util.Set<String> transientProperties() {
+		return TRANSIENT_PROPERTIES;
 	}
 
 	@Override

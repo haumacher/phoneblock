@@ -37,7 +37,7 @@ public class CallReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	private String _lastid = "";
 
-	private final java.util.List<String> _callers = new de.haumacher.msgbuf.util.ReferenceList<>() {
+	private final java.util.List<String> _callers = new de.haumacher.msgbuf.util.ReferenceList<String>() {
 		@Override
 		protected void beforeAdd(int index, String element) {
 			_listener.beforeAdd(CallReport.this, CALLERS__PROP, index, element);
@@ -46,6 +46,11 @@ public class CallReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		@Override
 		protected void afterRemove(int index, String element) {
 			_listener.afterRemove(CallReport.this, CALLERS__PROP, index, element);
+		}
+
+		@Override
+		protected void afterChanged() {
+			_listener.afterChanged(CallReport.this, CALLERS__PROP);
 		}
 	};
 
@@ -77,6 +82,7 @@ public class CallReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected final void internalSetTimestamp(String value) {
 		_listener.beforeSet(this, TIMESTAMP__PROP, value);
 		_timestamp = value;
+		_listener.afterChanged(this, TIMESTAMP__PROP);
 	}
 
 	/**
@@ -98,6 +104,7 @@ public class CallReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected final void internalSetLastid(String value) {
 		_listener.beforeSet(this, LASTID__PROP, value);
 		_lastid = value;
+		_listener.afterChanged(this, LASTID__PROP);
 	}
 
 	/**
@@ -168,15 +175,31 @@ public class CallReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		return CALL_REPORT__TYPE;
 	}
 
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
+	static final java.util.List<String> PROPERTIES;
+	static {
+		java.util.List<String> local = java.util.Arrays.asList(
 			TIMESTAMP__PROP, 
 			LASTID__PROP, 
-			CALLERS__PROP));
+			CALLERS__PROP);
+		PROPERTIES = java.util.Collections.unmodifiableList(local);
+	}
+
+	static final java.util.Set<String> TRANSIENT_PROPERTIES;
+	static {
+		java.util.HashSet<String> tmp = new java.util.HashSet<>();
+		tmp.addAll(java.util.Arrays.asList(
+				));
+		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
+	}
 
 	@Override
 	public java.util.List<String> properties() {
 		return PROPERTIES;
+	}
+
+	@Override
+	public java.util.Set<String> transientProperties() {
+		return TRANSIENT_PROPERTIES;
 	}
 
 	@Override

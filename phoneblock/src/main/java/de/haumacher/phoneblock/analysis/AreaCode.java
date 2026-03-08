@@ -61,6 +61,7 @@ public class AreaCode extends de.haumacher.msgbuf.data.AbstractDataObject implem
 	protected final void internalSetPhoneAreaCode(String value) {
 		_listener.beforeSet(this, PHONE_AREA_CODE__PROP, value);
 		_phoneAreaCode = value;
+		_listener.afterChanged(this, PHONE_AREA_CODE__PROP);
 	}
 
 	public final String getCity() {
@@ -79,6 +80,7 @@ public class AreaCode extends de.haumacher.msgbuf.data.AbstractDataObject implem
 	protected final void internalSetCity(String value) {
 		_listener.beforeSet(this, CITY__PROP, value);
 		_city = value;
+		_listener.afterChanged(this, CITY__PROP);
 	}
 
 	public final boolean isActive() {
@@ -97,6 +99,7 @@ public class AreaCode extends de.haumacher.msgbuf.data.AbstractDataObject implem
 	protected final void internalSetActive(boolean value) {
 		_listener.beforeSet(this, ACTIVE__PROP, value);
 		_active = value;
+		_listener.afterChanged(this, ACTIVE__PROP);
 	}
 
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
@@ -126,15 +129,31 @@ public class AreaCode extends de.haumacher.msgbuf.data.AbstractDataObject implem
 		return AREA_CODE__TYPE;
 	}
 
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
+	static final java.util.List<String> PROPERTIES;
+	static {
+		java.util.List<String> local = java.util.Arrays.asList(
 			PHONE_AREA_CODE__PROP, 
 			CITY__PROP, 
-			ACTIVE__PROP));
+			ACTIVE__PROP);
+		PROPERTIES = java.util.Collections.unmodifiableList(local);
+	}
+
+	static final java.util.Set<String> TRANSIENT_PROPERTIES;
+	static {
+		java.util.HashSet<String> tmp = new java.util.HashSet<>();
+		tmp.addAll(java.util.Arrays.asList(
+				));
+		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
+	}
 
 	@Override
 	public java.util.List<String> properties() {
 		return PROPERTIES;
+	}
+
+	@Override
+	public java.util.Set<String> transientProperties() {
+		return TRANSIENT_PROPERTIES;
 	}
 
 	@Override

@@ -60,6 +60,7 @@ public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject 
 	protected final void internalSetPhone(String value) {
 		_listener.beforeSet(this, PHONE__PROP, value);
 		_phone = value;
+		_listener.afterChanged(this, PHONE__PROP);
 	}
 
 	/**
@@ -81,6 +82,7 @@ public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject 
 	protected final void internalSetVotes(int value) {
 		_listener.beforeSet(this, VOTES__PROP, value);
 		_votes = value;
+		_listener.afterChanged(this, VOTES__PROP);
 	}
 
 	/**
@@ -103,6 +105,7 @@ public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject 
 		if (value == null) throw new IllegalArgumentException("Property 'rating' cannot be null.");
 		_listener.beforeSet(this, RATING__PROP, value);
 		_rating = value;
+		_listener.afterChanged(this, RATING__PROP);
 	}
 
 	/**
@@ -124,6 +127,7 @@ public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject 
 	protected final void internalSetLastActivity(long value) {
 		_listener.beforeSet(this, LAST_ACTIVITY__PROP, value);
 		_lastActivity = value;
+		_listener.afterChanged(this, LAST_ACTIVITY__PROP);
 	}
 
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
@@ -153,16 +157,32 @@ public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject 
 		return BLOCK_LIST_ENTRY__TYPE;
 	}
 
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
+	static final java.util.List<String> PROPERTIES;
+	static {
+		java.util.List<String> local = java.util.Arrays.asList(
 			PHONE__PROP, 
 			VOTES__PROP, 
 			RATING__PROP, 
-			LAST_ACTIVITY__PROP));
+			LAST_ACTIVITY__PROP);
+		PROPERTIES = java.util.Collections.unmodifiableList(local);
+	}
+
+	static final java.util.Set<String> TRANSIENT_PROPERTIES;
+	static {
+		java.util.HashSet<String> tmp = new java.util.HashSet<>();
+		tmp.addAll(java.util.Arrays.asList(
+				));
+		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
+	}
 
 	@Override
 	public java.util.List<String> properties() {
 		return PROPERTIES;
+	}
+
+	@Override
+	public java.util.Set<String> transientProperties() {
+		return TRANSIENT_PROPERTIES;
 	}
 
 	@Override

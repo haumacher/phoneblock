@@ -15,7 +15,7 @@ public class Ratings extends de.haumacher.msgbuf.data.AbstractDataObject impleme
 	/** @see #getValues() */
 	public static final String VALUES__PROP = "values";
 
-	private final java.util.List<de.haumacher.phoneblock.app.api.model.Rating> _values = new de.haumacher.msgbuf.util.ReferenceList<>() {
+	private final java.util.List<de.haumacher.phoneblock.app.api.model.Rating> _values = new de.haumacher.msgbuf.util.ReferenceList<de.haumacher.phoneblock.app.api.model.Rating>() {
 		@Override
 		protected void beforeAdd(int index, de.haumacher.phoneblock.app.api.model.Rating element) {
 			_listener.beforeAdd(Ratings.this, VALUES__PROP, index, element);
@@ -24,6 +24,11 @@ public class Ratings extends de.haumacher.msgbuf.data.AbstractDataObject impleme
 		@Override
 		protected void afterRemove(int index, de.haumacher.phoneblock.app.api.model.Rating element) {
 			_listener.afterRemove(Ratings.this, VALUES__PROP, index, element);
+		}
+
+		@Override
+		protected void afterChanged() {
+			_listener.afterChanged(Ratings.this, VALUES__PROP);
 		}
 	};
 
@@ -102,13 +107,29 @@ public class Ratings extends de.haumacher.msgbuf.data.AbstractDataObject impleme
 		return RATINGS__TYPE;
 	}
 
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
-			VALUES__PROP));
+	static final java.util.List<String> PROPERTIES;
+	static {
+		java.util.List<String> local = java.util.Arrays.asList(
+			VALUES__PROP);
+		PROPERTIES = java.util.Collections.unmodifiableList(local);
+	}
+
+	static final java.util.Set<String> TRANSIENT_PROPERTIES;
+	static {
+		java.util.HashSet<String> tmp = new java.util.HashSet<>();
+		tmp.addAll(java.util.Arrays.asList(
+				));
+		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
+	}
 
 	@Override
 	public java.util.List<String> properties() {
 		return PROPERTIES;
+	}
+
+	@Override
+	public java.util.Set<String> transientProperties() {
+		return TRANSIENT_PROPERTIES;
 	}
 
 	@Override

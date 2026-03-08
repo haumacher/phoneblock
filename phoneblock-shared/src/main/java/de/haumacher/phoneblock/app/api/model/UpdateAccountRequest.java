@@ -53,6 +53,7 @@ public class UpdateAccountRequest extends AccountData {
 	protected final void internalSetCountryCode(String value) {
 		_listener.beforeSet(this, COUNTRY_CODE__PROP, value);
 		_countryCode = value;
+		_listener.afterChanged(this, COUNTRY_CODE__PROP);
 	}
 
 	/**
@@ -85,13 +86,35 @@ public class UpdateAccountRequest extends AccountData {
 		return UPDATE_ACCOUNT_REQUEST__TYPE;
 	}
 
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
-			COUNTRY_CODE__PROP));
+	@SuppressWarnings("hiding")
+	static final java.util.List<String> PROPERTIES;
+	static {
+		java.util.List<String> local = java.util.Arrays.asList(
+			COUNTRY_CODE__PROP);
+		java.util.List<String> tmp = new java.util.ArrayList<>();
+		tmp.addAll(de.haumacher.phoneblock.app.api.model.AccountData.PROPERTIES);
+		tmp.addAll(local);
+		PROPERTIES = java.util.Collections.unmodifiableList(tmp);
+	}
+
+	@SuppressWarnings("hiding")
+	static final java.util.Set<String> TRANSIENT_PROPERTIES;
+	static {
+		java.util.HashSet<String> tmp = new java.util.HashSet<>();
+		tmp.addAll(de.haumacher.phoneblock.app.api.model.AccountData.TRANSIENT_PROPERTIES);
+		tmp.addAll(java.util.Arrays.asList(
+				));
+		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
+	}
 
 	@Override
 	public java.util.List<String> properties() {
 		return PROPERTIES;
+	}
+
+	@Override
+	public java.util.Set<String> transientProperties() {
+		return TRANSIENT_PROPERTIES;
 	}
 
 	@Override

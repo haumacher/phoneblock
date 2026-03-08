@@ -380,12 +380,12 @@ public interface Country extends de.haumacher.msgbuf.data.DataObject, de.haumach
 	/**
 	 * Adds a value to the {@link #getDialPrefixes()} list.
 	 */
-	de.haumacher.phoneblock.location.model.Country addDialPrefixe(String value);
+	de.haumacher.phoneblock.location.model.Country addDialPrefix(String value);
 
 	/**
 	 * Removes a value from the {@link #getDialPrefixes()} list.
 	 */
-	void removeDialPrefixe(String value);
+	void removeDialPrefix(String value);
 
 	String getISO31661Alpha3();
 
@@ -785,12 +785,12 @@ public interface Country extends de.haumacher.msgbuf.data.DataObject, de.haumach
 	/**
 	 * Adds a value to the {@link #getTrunkPrefixes()} list.
 	 */
-	de.haumacher.phoneblock.location.model.Country addTrunkPrefixe(String value);
+	de.haumacher.phoneblock.location.model.Country addTrunkPrefix(String value);
 
 	/**
 	 * Removes a value from the {@link #getTrunkPrefixes()} list.
 	 */
-	void removeTrunkPrefixe(String value);
+	void removeTrunkPrefix(String value);
 
 	java.util.List<String> getInternationalPrefixes();
 
@@ -802,12 +802,12 @@ public interface Country extends de.haumacher.msgbuf.data.DataObject, de.haumach
 	/**
 	 * Adds a value to the {@link #getInternationalPrefixes()} list.
 	 */
-	de.haumacher.phoneblock.location.model.Country addInternationalPrefixe(String value);
+	de.haumacher.phoneblock.location.model.Country addInternationalPrefix(String value);
 
 	/**
 	 * Removes a value from the {@link #getInternationalPrefixes()} list.
 	 */
-	void removeInternationalPrefixe(String value);
+	void removeInternationalPrefix(String value);
 
 	@Override
 	public de.haumacher.phoneblock.location.model.Country registerListener(de.haumacher.msgbuf.observer.Listener l);

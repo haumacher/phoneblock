@@ -87,6 +87,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected final void internalSetPhone(String value) {
 		_listener.beforeSet(this, PHONE__PROP, value);
 		_phone = value;
+		_listener.afterChanged(this, PHONE__PROP);
 	}
 
 	public final int getVotes() {
@@ -105,6 +106,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected final void internalSetVotes(int value) {
 		_listener.beforeSet(this, VOTES__PROP, value);
 		_votes = value;
+		_listener.afterChanged(this, VOTES__PROP);
 	}
 
 	public final long getLastUpdate() {
@@ -123,6 +125,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected final void internalSetLastUpdate(long value) {
 		_listener.beforeSet(this, LAST_UPDATE__PROP, value);
 		_lastUpdate = value;
+		_listener.afterChanged(this, LAST_UPDATE__PROP);
 	}
 
 	public final long getDateAdded() {
@@ -141,6 +144,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected final void internalSetDateAdded(long value) {
 		_listener.beforeSet(this, DATE_ADDED__PROP, value);
 		_dateAdded = value;
+		_listener.afterChanged(this, DATE_ADDED__PROP);
 	}
 
 	public final boolean isArchived() {
@@ -159,6 +163,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected final void internalSetArchived(boolean value) {
 		_listener.beforeSet(this, ARCHIVED__PROP, value);
 		_archived = value;
+		_listener.afterChanged(this, ARCHIVED__PROP);
 	}
 
 	public final boolean isWhiteListed() {
@@ -177,6 +182,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected final void internalSetWhiteListed(boolean value) {
 		_listener.beforeSet(this, WHITE_LISTED__PROP, value);
 		_whiteListed = value;
+		_listener.afterChanged(this, WHITE_LISTED__PROP);
 	}
 
 	/**
@@ -198,6 +204,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected final void internalSetCnt10(int value) {
 		_listener.beforeSet(this, CNT_10__PROP, value);
 		_cnt10 = value;
+		_listener.afterChanged(this, CNT_10__PROP);
 	}
 
 	/**
@@ -219,6 +226,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected final void internalSetVotes10(int value) {
 		_listener.beforeSet(this, VOTES_10__PROP, value);
 		_votes10 = value;
+		_listener.afterChanged(this, VOTES_10__PROP);
 	}
 
 	/**
@@ -244,6 +252,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected final void internalSetCnt100(int value) {
 		_listener.beforeSet(this, CNT_100__PROP, value);
 		_cnt100 = value;
+		_listener.afterChanged(this, CNT_100__PROP);
 	}
 
 	/**
@@ -269,6 +278,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected final void internalSetVotes100(int value) {
 		_listener.beforeSet(this, VOTES_100__PROP, value);
 		_votes100 = value;
+		_listener.afterChanged(this, VOTES_100__PROP);
 	}
 
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
@@ -298,8 +308,9 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		return SPAM_REPORT__TYPE;
 	}
 
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
+	static final java.util.List<String> PROPERTIES;
+	static {
+		java.util.List<String> local = java.util.Arrays.asList(
 			PHONE__PROP, 
 			VOTES__PROP, 
 			LAST_UPDATE__PROP, 
@@ -309,11 +320,26 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 			CNT_10__PROP, 
 			VOTES_10__PROP, 
 			CNT_100__PROP, 
-			VOTES_100__PROP));
+			VOTES_100__PROP);
+		PROPERTIES = java.util.Collections.unmodifiableList(local);
+	}
+
+	static final java.util.Set<String> TRANSIENT_PROPERTIES;
+	static {
+		java.util.HashSet<String> tmp = new java.util.HashSet<>();
+		tmp.addAll(java.util.Arrays.asList(
+				));
+		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
+	}
 
 	@Override
 	public java.util.List<String> properties() {
 		return PROPERTIES;
+	}
+
+	@Override
+	public java.util.Set<String> transientProperties() {
+		return TRANSIENT_PROPERTIES;
 	}
 
 	@Override

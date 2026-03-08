@@ -109,6 +109,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	protected final void internalSetPhone(String value) {
 		_listener.beforeSet(this, PHONE__PROP, value);
 		_phone = value;
+		_listener.afterChanged(this, PHONE__PROP);
 	}
 
 	/**
@@ -130,6 +131,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	protected final void internalSetActive(boolean value) {
 		_listener.beforeSet(this, ACTIVE__PROP, value);
 		_active = value;
+		_listener.afterChanged(this, ACTIVE__PROP);
 	}
 
 	public final int getCalls() {
@@ -148,6 +150,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	protected final void internalSetCalls(int value) {
 		_listener.beforeSet(this, CALLS__PROP, value);
 		_calls = value;
+		_listener.afterChanged(this, CALLS__PROP);
 	}
 
 	/**
@@ -169,6 +172,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	protected final void internalSetVotes(int value) {
 		_listener.beforeSet(this, VOTES__PROP, value);
 		_votes = value;
+		_listener.afterChanged(this, VOTES__PROP);
 	}
 
 	/**
@@ -190,6 +194,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	protected final void internalSetRatingLegitimate(int value) {
 		_listener.beforeSet(this, RATING_LEGITIMATE__PROP, value);
 		_ratingLegitimate = value;
+		_listener.afterChanged(this, RATING_LEGITIMATE__PROP);
 	}
 
 	/**
@@ -211,6 +216,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	protected final void internalSetRatingPing(int value) {
 		_listener.beforeSet(this, RATING_PING__PROP, value);
 		_ratingPing = value;
+		_listener.afterChanged(this, RATING_PING__PROP);
 	}
 
 	/**
@@ -232,6 +238,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	protected final void internalSetRatingPoll(int value) {
 		_listener.beforeSet(this, RATING_POLL__PROP, value);
 		_ratingPoll = value;
+		_listener.afterChanged(this, RATING_POLL__PROP);
 	}
 
 	/**
@@ -253,6 +260,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	protected final void internalSetRatingAdvertising(int value) {
 		_listener.beforeSet(this, RATING_ADVERTISING__PROP, value);
 		_ratingAdvertising = value;
+		_listener.afterChanged(this, RATING_ADVERTISING__PROP);
 	}
 
 	/**
@@ -274,6 +282,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	protected final void internalSetRatingGamble(int value) {
 		_listener.beforeSet(this, RATING_GAMBLE__PROP, value);
 		_ratingGamble = value;
+		_listener.afterChanged(this, RATING_GAMBLE__PROP);
 	}
 
 	/**
@@ -295,6 +304,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	protected final void internalSetRatingFraud(int value) {
 		_listener.beforeSet(this, RATING_FRAUD__PROP, value);
 		_ratingFraud = value;
+		_listener.afterChanged(this, RATING_FRAUD__PROP);
 	}
 
 	/**
@@ -316,6 +326,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	protected final void internalSetSearches(int value) {
 		_listener.beforeSet(this, SEARCHES__PROP, value);
 		_searches = value;
+		_listener.afterChanged(this, SEARCHES__PROP);
 	}
 
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
@@ -340,8 +351,9 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 		_listener = de.haumacher.msgbuf.observer.Listener.unregister(_listener, l);
 	}
 
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
+	static final java.util.List<String> PROPERTIES;
+	static {
+		java.util.List<String> local = java.util.Arrays.asList(
 			PHONE__PROP, 
 			ACTIVE__PROP, 
 			CALLS__PROP, 
@@ -352,11 +364,26 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 			RATING_ADVERTISING__PROP, 
 			RATING_GAMBLE__PROP, 
 			RATING_FRAUD__PROP, 
-			SEARCHES__PROP));
+			SEARCHES__PROP);
+		PROPERTIES = java.util.Collections.unmodifiableList(local);
+	}
+
+	static final java.util.Set<String> TRANSIENT_PROPERTIES;
+	static {
+		java.util.HashSet<String> tmp = new java.util.HashSet<>();
+		tmp.addAll(java.util.Arrays.asList(
+				));
+		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
+	}
 
 	@Override
 	public java.util.List<String> properties() {
 		return PROPERTIES;
+	}
+
+	@Override
+	public java.util.Set<String> transientProperties() {
+		return TRANSIENT_PROPERTIES;
 	}
 
 	@Override

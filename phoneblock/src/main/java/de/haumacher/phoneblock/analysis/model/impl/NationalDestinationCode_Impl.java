@@ -39,6 +39,7 @@ public class NationalDestinationCode_Impl extends de.haumacher.msgbuf.data.Abstr
 	protected final void internalSetPrefix(String value) {
 		_listener.beforeSet(this, PREFIX__PROP, value);
 		_prefix = value;
+		_listener.afterChanged(this, PREFIX__PROP);
 	}
 
 	@Override
@@ -56,6 +57,7 @@ public class NationalDestinationCode_Impl extends de.haumacher.msgbuf.data.Abstr
 	protected final void internalSetMaxDigits(int value) {
 		_listener.beforeSet(this, MAX_DIGITS__PROP, value);
 		_maxDigits = value;
+		_listener.afterChanged(this, MAX_DIGITS__PROP);
 	}
 
 	@Override
@@ -73,6 +75,7 @@ public class NationalDestinationCode_Impl extends de.haumacher.msgbuf.data.Abstr
 	protected final void internalSetMinDigits(int value) {
 		_listener.beforeSet(this, MIN_DIGITS__PROP, value);
 		_minDigits = value;
+		_listener.afterChanged(this, MIN_DIGITS__PROP);
 	}
 
 	@Override
@@ -90,6 +93,7 @@ public class NationalDestinationCode_Impl extends de.haumacher.msgbuf.data.Abstr
 	protected final void internalSetUsage(String value) {
 		_listener.beforeSet(this, USAGE__PROP, value);
 		_usage = value;
+		_listener.afterChanged(this, USAGE__PROP);
 	}
 
 	@Override
@@ -107,6 +111,7 @@ public class NationalDestinationCode_Impl extends de.haumacher.msgbuf.data.Abstr
 	protected final void internalSetInfo(String value) {
 		_listener.beforeSet(this, INFO__PROP, value);
 		_info = value;
+		_listener.afterChanged(this, INFO__PROP);
 	}
 
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
@@ -136,17 +141,33 @@ public class NationalDestinationCode_Impl extends de.haumacher.msgbuf.data.Abstr
 		return NATIONAL_DESTINATION_CODE__TYPE;
 	}
 
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
+	static final java.util.List<String> PROPERTIES;
+	static {
+		java.util.List<String> local = java.util.Arrays.asList(
 			PREFIX__PROP, 
 			MAX_DIGITS__PROP, 
 			MIN_DIGITS__PROP, 
 			USAGE__PROP, 
-			INFO__PROP));
+			INFO__PROP);
+		PROPERTIES = java.util.Collections.unmodifiableList(local);
+	}
+
+	static final java.util.Set<String> TRANSIENT_PROPERTIES;
+	static {
+		java.util.HashSet<String> tmp = new java.util.HashSet<>();
+		tmp.addAll(java.util.Arrays.asList(
+				));
+		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
+	}
 
 	@Override
 	public java.util.List<String> properties() {
 		return PROPERTIES;
+	}
+
+	@Override
+	public java.util.Set<String> transientProperties() {
+		return TRANSIENT_PROPERTIES;
 	}
 
 	@Override

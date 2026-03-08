@@ -58,6 +58,7 @@ public class RatingInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected final void internalSetPhone(String value) {
 		_listener.beforeSet(this, PHONE__PROP, value);
 		_phone = value;
+		_listener.afterChanged(this, PHONE__PROP);
 	}
 
 	/**
@@ -80,6 +81,7 @@ public class RatingInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		if (value == null) throw new IllegalArgumentException("Property 'rating' cannot be null.");
 		_listener.beforeSet(this, RATING__PROP, value);
 		_rating = value;
+		_listener.afterChanged(this, RATING__PROP);
 	}
 
 	/**
@@ -101,6 +103,7 @@ public class RatingInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected final void internalSetVotes(int value) {
 		_listener.beforeSet(this, VOTES__PROP, value);
 		_votes = value;
+		_listener.afterChanged(this, VOTES__PROP);
 	}
 
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
@@ -130,15 +133,31 @@ public class RatingInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		return RATING_INFO__TYPE;
 	}
 
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
+	static final java.util.List<String> PROPERTIES;
+	static {
+		java.util.List<String> local = java.util.Arrays.asList(
 			PHONE__PROP, 
 			RATING__PROP, 
-			VOTES__PROP));
+			VOTES__PROP);
+		PROPERTIES = java.util.Collections.unmodifiableList(local);
+	}
+
+	static final java.util.Set<String> TRANSIENT_PROPERTIES;
+	static {
+		java.util.HashSet<String> tmp = new java.util.HashSet<>();
+		tmp.addAll(java.util.Arrays.asList(
+				));
+		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
+	}
 
 	@Override
 	public java.util.List<String> properties() {
 		return PROPERTIES;
+	}
+
+	@Override
+	public java.util.Set<String> transientProperties() {
+		return TRANSIENT_PROPERTIES;
 	}
 
 	@Override

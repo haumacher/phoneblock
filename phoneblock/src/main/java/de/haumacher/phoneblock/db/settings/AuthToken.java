@@ -163,6 +163,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	protected final void internalSetId(long value) {
 		_listener.beforeSet(this, ID__PROP, value);
 		_id = value;
+		_listener.afterChanged(this, ID__PROP);
 	}
 
 	/**
@@ -184,6 +185,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	protected final void internalSetUserId(long value) {
 		_listener.beforeSet(this, USER_ID__PROP, value);
 		_userId = value;
+		_listener.afterChanged(this, USER_ID__PROP);
 	}
 
 	/**
@@ -205,6 +207,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	protected final void internalSetUserName(String value) {
 		_listener.beforeSet(this, USER_NAME__PROP, value);
 		_userName = value;
+		_listener.afterChanged(this, USER_NAME__PROP);
 	}
 
 	/**
@@ -226,6 +229,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	protected final void internalSetLabel(String value) {
 		_listener.beforeSet(this, LABEL__PROP, value);
 		_label = value;
+		_listener.afterChanged(this, LABEL__PROP);
 	}
 
 	/**
@@ -247,6 +251,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	protected final void internalSetCreated(long value) {
 		_listener.beforeSet(this, CREATED__PROP, value);
 		_created = value;
+		_listener.afterChanged(this, CREATED__PROP);
 	}
 
 	/**
@@ -268,6 +273,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	protected final void internalSetPwHash(byte[] value) {
 		_listener.beforeSet(this, PW_HASH__PROP, value);
 		_pwHash = value;
+		_listener.afterChanged(this, PW_HASH__PROP);
 	}
 
 	/**
@@ -289,6 +295,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	protected final void internalSetImplicit(boolean value) {
 		_listener.beforeSet(this, IMPLICIT__PROP, value);
 		_implicit = value;
+		_listener.afterChanged(this, IMPLICIT__PROP);
 	}
 
 	/**
@@ -310,6 +317,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	protected final void internalSetAccessQuery(boolean value) {
 		_listener.beforeSet(this, ACCESS_QUERY__PROP, value);
 		_accessQuery = value;
+		_listener.afterChanged(this, ACCESS_QUERY__PROP);
 	}
 
 	/**
@@ -331,6 +339,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	protected final void internalSetAccessDownload(boolean value) {
 		_listener.beforeSet(this, ACCESS_DOWNLOAD__PROP, value);
 		_accessDownload = value;
+		_listener.afterChanged(this, ACCESS_DOWNLOAD__PROP);
 	}
 
 	/**
@@ -352,6 +361,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	protected final void internalSetAccessCarddav(boolean value) {
 		_listener.beforeSet(this, ACCESS_CARDDAV__PROP, value);
 		_accessCarddav = value;
+		_listener.afterChanged(this, ACCESS_CARDDAV__PROP);
 	}
 
 	/**
@@ -373,6 +383,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	protected final void internalSetAccessRate(boolean value) {
 		_listener.beforeSet(this, ACCESS_RATE__PROP, value);
 		_accessRate = value;
+		_listener.afterChanged(this, ACCESS_RATE__PROP);
 	}
 
 	/**
@@ -394,6 +405,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	protected final void internalSetAccessLogin(boolean value) {
 		_listener.beforeSet(this, ACCESS_LOGIN__PROP, value);
 		_accessLogin = value;
+		_listener.afterChanged(this, ACCESS_LOGIN__PROP);
 	}
 
 	/**
@@ -415,6 +427,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	protected final void internalSetLastAccess(long value) {
 		_listener.beforeSet(this, LAST_ACCESS__PROP, value);
 		_lastAccess = value;
+		_listener.afterChanged(this, LAST_ACCESS__PROP);
 	}
 
 	/**
@@ -436,6 +449,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	protected final void internalSetUserAgent(String value) {
 		_listener.beforeSet(this, USER_AGENT__PROP, value);
 		_userAgent = value;
+		_listener.afterChanged(this, USER_AGENT__PROP);
 	}
 
 	/**
@@ -457,6 +471,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	protected final void internalSetToken(String value) {
 		_listener.beforeSet(this, TOKEN__PROP, value);
 		_token = value;
+		_listener.afterChanged(this, TOKEN__PROP);
 	}
 
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
@@ -486,8 +501,9 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 		return AUTH_TOKEN__TYPE;
 	}
 
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
+	static final java.util.List<String> PROPERTIES;
+	static {
+		java.util.List<String> local = java.util.Arrays.asList(
 			ID__PROP, 
 			USER_ID__PROP, 
 			USER_NAME__PROP, 
@@ -502,11 +518,26 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 			ACCESS_LOGIN__PROP, 
 			LAST_ACCESS__PROP, 
 			USER_AGENT__PROP, 
-			TOKEN__PROP));
+			TOKEN__PROP);
+		PROPERTIES = java.util.Collections.unmodifiableList(local);
+	}
+
+	static final java.util.Set<String> TRANSIENT_PROPERTIES;
+	static {
+		java.util.HashSet<String> tmp = new java.util.HashSet<>();
+		tmp.addAll(java.util.Arrays.asList(
+				));
+		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
+	}
 
 	@Override
 	public java.util.List<String> properties() {
 		return PROPERTIES;
+	}
+
+	@Override
+	public java.util.Set<String> transientProperties() {
+		return TRANSIENT_PROPERTIES;
 	}
 
 	@Override

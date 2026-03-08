@@ -33,6 +33,7 @@ public class UpdateMessage_Impl extends de.haumacher.msgbuf.data.AbstractDataObj
 	protected final void internalSetUrl(String value) {
 		_listener.beforeSet(this, URL__PROP, value);
 		_url = value;
+		_listener.afterChanged(this, URL__PROP);
 	}
 
 	@Override
@@ -51,6 +52,7 @@ public class UpdateMessage_Impl extends de.haumacher.msgbuf.data.AbstractDataObj
 		if (value == null) throw new IllegalArgumentException("Property 'type' cannot be null.");
 		_listener.beforeSet(this, TYPE__PROP, value);
 		_type = value;
+		_listener.afterChanged(this, TYPE__PROP);
 	}
 
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
@@ -80,14 +82,30 @@ public class UpdateMessage_Impl extends de.haumacher.msgbuf.data.AbstractDataObj
 		return UPDATE_MESSAGE__TYPE;
 	}
 
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
+	static final java.util.List<String> PROPERTIES;
+	static {
+		java.util.List<String> local = java.util.Arrays.asList(
 			URL__PROP, 
-			TYPE__PROP));
+			TYPE__PROP);
+		PROPERTIES = java.util.Collections.unmodifiableList(local);
+	}
+
+	static final java.util.Set<String> TRANSIENT_PROPERTIES;
+	static {
+		java.util.HashSet<String> tmp = new java.util.HashSet<>();
+		tmp.addAll(java.util.Arrays.asList(
+				));
+		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
+	}
 
 	@Override
 	public java.util.List<String> properties() {
 		return PROPERTIES;
+	}
+
+	@Override
+	public java.util.Set<String> transientProperties() {
+		return TRANSIENT_PROPERTIES;
 	}
 
 	@Override

@@ -83,6 +83,7 @@ public class AnswerBotDynDns extends AnswerBotSetting {
 	protected final void internalSetDyndnsUser(String value) {
 		_listener.beforeSet(this, DYNDNS_USER__PROP, value);
 		_dyndnsUser = value;
+		_listener.afterChanged(this, DYNDNS_USER__PROP);
 	}
 
 	/**
@@ -104,6 +105,7 @@ public class AnswerBotDynDns extends AnswerBotSetting {
 	protected final void internalSetDynDnsPasswd(String value) {
 		_listener.beforeSet(this, DYN_DNS_PASSWD__PROP, value);
 		_dynDnsPasswd = value;
+		_listener.afterChanged(this, DYN_DNS_PASSWD__PROP);
 	}
 
 	/**
@@ -125,6 +127,7 @@ public class AnswerBotDynDns extends AnswerBotSetting {
 	protected final void internalSetIpv4(String value) {
 		_listener.beforeSet(this, IPV_4__PROP, value);
 		_ipv4 = value;
+		_listener.afterChanged(this, IPV_4__PROP);
 	}
 
 	/**
@@ -146,6 +149,7 @@ public class AnswerBotDynDns extends AnswerBotSetting {
 	protected final void internalSetIpv6(String value) {
 		_listener.beforeSet(this, IPV_6__PROP, value);
 		_ipv6 = value;
+		_listener.afterChanged(this, IPV_6__PROP);
 	}
 
 	@Override
@@ -177,16 +181,38 @@ public class AnswerBotDynDns extends AnswerBotSetting {
 		return ANSWER_BOT_DYN_DNS__TYPE;
 	}
 
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
+	@SuppressWarnings("hiding")
+	static final java.util.List<String> PROPERTIES;
+	static {
+		java.util.List<String> local = java.util.Arrays.asList(
 			DYNDNS_USER__PROP, 
 			DYN_DNS_PASSWD__PROP, 
 			IPV_4__PROP, 
-			IPV_6__PROP));
+			IPV_6__PROP);
+		java.util.List<String> tmp = new java.util.ArrayList<>();
+		tmp.addAll(de.haumacher.phoneblock.db.settings.AnswerBotSetting.PROPERTIES);
+		tmp.addAll(local);
+		PROPERTIES = java.util.Collections.unmodifiableList(tmp);
+	}
+
+	@SuppressWarnings("hiding")
+	static final java.util.Set<String> TRANSIENT_PROPERTIES;
+	static {
+		java.util.HashSet<String> tmp = new java.util.HashSet<>();
+		tmp.addAll(de.haumacher.phoneblock.db.settings.AnswerBotSetting.TRANSIENT_PROPERTIES);
+		tmp.addAll(java.util.Arrays.asList(
+				));
+		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
+	}
 
 	@Override
 	public java.util.List<String> properties() {
 		return PROPERTIES;
+	}
+
+	@Override
+	public java.util.Set<String> transientProperties() {
+		return TRANSIENT_PROPERTIES;
 	}
 
 	@Override

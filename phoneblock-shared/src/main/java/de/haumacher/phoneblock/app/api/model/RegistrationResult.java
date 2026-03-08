@@ -58,6 +58,7 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 	protected final void internalSetSession(String value) {
 		_listener.beforeSet(this, SESSION__PROP, value);
 		_session = value;
+		_listener.afterChanged(this, SESSION__PROP);
 	}
 
 	/**
@@ -79,6 +80,7 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 	protected final void internalSetLogin(String value) {
 		_listener.beforeSet(this, LOGIN__PROP, value);
 		_login = value;
+		_listener.afterChanged(this, LOGIN__PROP);
 	}
 
 	/**
@@ -100,6 +102,7 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 	protected final void internalSetPassword(String value) {
 		_listener.beforeSet(this, PASSWORD__PROP, value);
 		_password = value;
+		_listener.afterChanged(this, PASSWORD__PROP);
 	}
 
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
@@ -129,15 +132,31 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 		return REGISTRATION_RESULT__TYPE;
 	}
 
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
+	static final java.util.List<String> PROPERTIES;
+	static {
+		java.util.List<String> local = java.util.Arrays.asList(
 			SESSION__PROP, 
 			LOGIN__PROP, 
-			PASSWORD__PROP));
+			PASSWORD__PROP);
+		PROPERTIES = java.util.Collections.unmodifiableList(local);
+	}
+
+	static final java.util.Set<String> TRANSIENT_PROPERTIES;
+	static {
+		java.util.HashSet<String> tmp = new java.util.HashSet<>();
+		tmp.addAll(java.util.Arrays.asList(
+				));
+		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
+	}
 
 	@Override
 	public java.util.List<String> properties() {
 		return PROPERTIES;
+	}
+
+	@Override
+	public java.util.Set<String> transientProperties() {
+		return TRANSIENT_PROPERTIES;
 	}
 
 	@Override

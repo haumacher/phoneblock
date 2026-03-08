@@ -67,6 +67,7 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	protected final void internalSetDomainName(String value) {
 		_listener.beforeSet(this, DOMAIN_NAME__PROP, value);
 		_domainName = value;
+		_listener.afterChanged(this, DOMAIN_NAME__PROP);
 	}
 
 	public final boolean isDisposable() {
@@ -85,6 +86,7 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	protected final void internalSetDisposable(boolean value) {
 		_listener.beforeSet(this, DISPOSABLE__PROP, value);
 		_disposable = value;
+		_listener.afterChanged(this, DISPOSABLE__PROP);
 	}
 
 	public final long getLastChanged() {
@@ -103,6 +105,7 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	protected final void internalSetLastChanged(long value) {
 		_listener.beforeSet(this, LAST_CHANGED__PROP, value);
 		_lastChanged = value;
+		_listener.afterChanged(this, LAST_CHANGED__PROP);
 	}
 
 	public final int getSourceSystem() {
@@ -121,6 +124,7 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	protected final void internalSetSourceSystem(int value) {
 		_listener.beforeSet(this, SOURCE_SYSTEM__PROP, value);
 		_sourceSystem = value;
+		_listener.afterChanged(this, SOURCE_SYSTEM__PROP);
 	}
 
 	public final String getMxHost() {
@@ -139,6 +143,7 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	protected final void internalSetMxHost(String value) {
 		_listener.beforeSet(this, MX_HOST__PROP, value);
 		_mxHost = value;
+		_listener.afterChanged(this, MX_HOST__PROP);
 	}
 
 	/**
@@ -164,6 +169,7 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	protected final void internalSetMxIP(String value) {
 		_listener.beforeSet(this, MX_IP__PROP, value);
 		_mxIP = value;
+		_listener.afterChanged(this, MX_IP__PROP);
 	}
 
 	/**
@@ -200,18 +206,34 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject imp
 		return DOMAIN_CHECK__TYPE;
 	}
 
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
+	static final java.util.List<String> PROPERTIES;
+	static {
+		java.util.List<String> local = java.util.Arrays.asList(
 			DOMAIN_NAME__PROP, 
 			DISPOSABLE__PROP, 
 			LAST_CHANGED__PROP, 
 			SOURCE_SYSTEM__PROP, 
 			MX_HOST__PROP, 
-			MX_IP__PROP));
+			MX_IP__PROP);
+		PROPERTIES = java.util.Collections.unmodifiableList(local);
+	}
+
+	static final java.util.Set<String> TRANSIENT_PROPERTIES;
+	static {
+		java.util.HashSet<String> tmp = new java.util.HashSet<>();
+		tmp.addAll(java.util.Arrays.asList(
+				));
+		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
+	}
 
 	@Override
 	public java.util.List<String> properties() {
 		return PROPERTIES;
+	}
+
+	@Override
+	public java.util.Set<String> transientProperties() {
+		return TRANSIENT_PROPERTIES;
 	}
 
 	@Override

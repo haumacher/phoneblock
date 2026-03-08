@@ -104,6 +104,7 @@ public class Contribution extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetId(long value) {
 		_listener.beforeSet(this, ID__PROP, value);
 		_id = value;
+		_listener.afterChanged(this, ID__PROP);
 	}
 
 	/**
@@ -125,6 +126,7 @@ public class Contribution extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetUserId(Long value) {
 		_listener.beforeSet(this, USER_ID__PROP, value);
 		_userId = value;
+		_listener.afterChanged(this, USER_ID__PROP);
 	}
 
 	/**
@@ -153,6 +155,7 @@ public class Contribution extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetSender(String value) {
 		_listener.beforeSet(this, SENDER__PROP, value);
 		_sender = value;
+		_listener.afterChanged(this, SENDER__PROP);
 	}
 
 	/**
@@ -174,6 +177,7 @@ public class Contribution extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetTx(String value) {
 		_listener.beforeSet(this, TX__PROP, value);
 		_tx = value;
+		_listener.afterChanged(this, TX__PROP);
 	}
 
 	/**
@@ -195,6 +199,7 @@ public class Contribution extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetAmount(int value) {
 		_listener.beforeSet(this, AMOUNT__PROP, value);
 		_amount = value;
+		_listener.afterChanged(this, AMOUNT__PROP);
 	}
 
 	/**
@@ -216,6 +221,7 @@ public class Contribution extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetMessage(String value) {
 		_listener.beforeSet(this, MESSAGE__PROP, value);
 		_message = value;
+		_listener.afterChanged(this, MESSAGE__PROP);
 	}
 
 	/**
@@ -237,6 +243,7 @@ public class Contribution extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetReceived(long value) {
 		_listener.beforeSet(this, RECEIVED__PROP, value);
 		_received = value;
+		_listener.afterChanged(this, RECEIVED__PROP);
 	}
 
 	/**
@@ -258,6 +265,7 @@ public class Contribution extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetAcknowledged(boolean value) {
 		_listener.beforeSet(this, ACKNOWLEDGED__PROP, value);
 		_acknowledged = value;
+		_listener.afterChanged(this, ACKNOWLEDGED__PROP);
 	}
 
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
@@ -287,8 +295,9 @@ public class Contribution extends de.haumacher.msgbuf.data.AbstractDataObject im
 		return CONTRIBUTION__TYPE;
 	}
 
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
+	static final java.util.List<String> PROPERTIES;
+	static {
+		java.util.List<String> local = java.util.Arrays.asList(
 			ID__PROP, 
 			USER_ID__PROP, 
 			SENDER__PROP, 
@@ -296,11 +305,26 @@ public class Contribution extends de.haumacher.msgbuf.data.AbstractDataObject im
 			AMOUNT__PROP, 
 			MESSAGE__PROP, 
 			RECEIVED__PROP, 
-			ACKNOWLEDGED__PROP));
+			ACKNOWLEDGED__PROP);
+		PROPERTIES = java.util.Collections.unmodifiableList(local);
+	}
+
+	static final java.util.Set<String> TRANSIENT_PROPERTIES;
+	static {
+		java.util.HashSet<String> tmp = new java.util.HashSet<>();
+		tmp.addAll(java.util.Arrays.asList(
+				));
+		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
+	}
 
 	@Override
 	public java.util.List<String> properties() {
 		return PROPERTIES;
+	}
+
+	@Override
+	public java.util.Set<String> transientProperties() {
+		return TRANSIENT_PROPERTIES;
 	}
 
 	@Override

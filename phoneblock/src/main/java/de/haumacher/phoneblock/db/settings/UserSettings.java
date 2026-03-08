@@ -139,6 +139,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetId(long value) {
 		_listener.beforeSet(this, ID__PROP, value);
 		_id = value;
+		_listener.afterChanged(this, ID__PROP);
 	}
 
 	/**
@@ -160,6 +161,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetLogin(String value) {
 		_listener.beforeSet(this, LOGIN__PROP, value);
 		_login = value;
+		_listener.afterChanged(this, LOGIN__PROP);
 	}
 
 	/**
@@ -181,6 +183,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetDisplayName(String value) {
 		_listener.beforeSet(this, DISPLAY_NAME__PROP, value);
 		_displayName = value;
+		_listener.afterChanged(this, DISPLAY_NAME__PROP);
 	}
 
 	/**
@@ -202,6 +205,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetLang(String value) {
 		_listener.beforeSet(this, LANG__PROP, value);
 		_lang = value;
+		_listener.afterChanged(this, LANG__PROP);
 	}
 
 	/**
@@ -223,6 +227,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetDialPrefix(String value) {
 		_listener.beforeSet(this, DIAL_PREFIX__PROP, value);
 		_dialPrefix = value;
+		_listener.afterChanged(this, DIAL_PREFIX__PROP);
 	}
 
 	/**
@@ -244,6 +249,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetNationalOnly(boolean value) {
 		_listener.beforeSet(this, NATIONAL_ONLY__PROP, value);
 		_nationalOnly = value;
+		_listener.afterChanged(this, NATIONAL_ONLY__PROP);
 	}
 
 	/**
@@ -265,6 +271,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetEmail(String value) {
 		_listener.beforeSet(this, EMAIL__PROP, value);
 		_email = value;
+		_listener.afterChanged(this, EMAIL__PROP);
 	}
 
 	/**
@@ -286,6 +293,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetMinVotes(int value) {
 		_listener.beforeSet(this, MIN_VOTES__PROP, value);
 		_minVotes = value;
+		_listener.afterChanged(this, MIN_VOTES__PROP);
 	}
 
 	/**
@@ -307,6 +315,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetMaxLength(int value) {
 		_listener.beforeSet(this, MAX_LENGTH__PROP, value);
 		_maxLength = value;
+		_listener.afterChanged(this, MAX_LENGTH__PROP);
 	}
 
 	/**
@@ -328,6 +337,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetWildcards(boolean value) {
 		_listener.beforeSet(this, WILDCARDS__PROP, value);
 		_wildcards = value;
+		_listener.afterChanged(this, WILDCARDS__PROP);
 	}
 
 	/**
@@ -349,6 +359,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetLastAccess(long value) {
 		_listener.beforeSet(this, LAST_ACCESS__PROP, value);
 		_lastAccess = value;
+		_listener.afterChanged(this, LAST_ACCESS__PROP);
 	}
 
 	/**
@@ -370,6 +381,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetCredit(int value) {
 		_listener.beforeSet(this, CREDIT__PROP, value);
 		_credit = value;
+		_listener.afterChanged(this, CREDIT__PROP);
 	}
 
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
@@ -399,8 +411,9 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 		return USER_SETTINGS__TYPE;
 	}
 
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
+	static final java.util.List<String> PROPERTIES;
+	static {
+		java.util.List<String> local = java.util.Arrays.asList(
 			ID__PROP, 
 			LOGIN__PROP, 
 			DISPLAY_NAME__PROP, 
@@ -412,11 +425,26 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 			MAX_LENGTH__PROP, 
 			WILDCARDS__PROP, 
 			LAST_ACCESS__PROP, 
-			CREDIT__PROP));
+			CREDIT__PROP);
+		PROPERTIES = java.util.Collections.unmodifiableList(local);
+	}
+
+	static final java.util.Set<String> TRANSIENT_PROPERTIES;
+	static {
+		java.util.HashSet<String> tmp = new java.util.HashSet<>();
+		tmp.addAll(java.util.Arrays.asList(
+				));
+		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
+	}
 
 	@Override
 	public java.util.List<String> properties() {
 		return PROPERTIES;
+	}
+
+	@Override
+	public java.util.Set<String> transientProperties() {
+		return TRANSIENT_PROPERTIES;
 	}
 
 	@Override

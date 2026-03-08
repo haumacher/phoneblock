@@ -53,12 +53,12 @@
 
 		<project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
 		
-		<msgbuf.version>1.1.7</msgbuf.version>
-		<slf4j.version>2.0.16</slf4j.version>
+		<msgbuf.version>1.1.12</msgbuf.version>
+		<slf4j.version>2.0.17</slf4j.version>
 		<tinylog.version>2.7.0</tinylog.version>
 		<junit-jupiter.version>5.14.1</junit-jupiter.version>
-		<h2.version>2.3.232</h2.version>
-		<mybatis.version>3.5.16</mybatis.version>
+		<h2.version>2.4.240</h2.version>
+		<mybatis.version>3.5.19</mybatis.version>
 	</properties>
 
 	<dependencyManagement>
@@ -152,7 +152,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
-				<version>3.1.0</version>
+				<version>3.5.0</version>
 				<executions>
 					<execution>
 						<id>enforce-maven</id>
@@ -173,13 +173,13 @@
 			<plugin>
 			  <groupId>org.apache.maven.plugins</groupId>
 			  <artifactId>maven-resources-plugin</artifactId>
-			  <version>3.3.0</version>
+			  <version>3.3.1</version>
 			</plugin>
 			
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.10.1</version>
+				<version>3.14.0</version>
 				<configuration>
 					<fork>true</fork>
 				</configuration>
@@ -197,31 +197,31 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>3.0.0-M7</version>
+				<version>3.5.2</version>
 			</plugin>
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-clean-plugin</artifactId>
-				<version>3.2.0</version>
+				<version>3.4.1</version>
 			</plugin>
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-deploy-plugin</artifactId>
-				<version>3.0.0</version>
+				<version>3.1.4</version>
 			</plugin>
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-install-plugin</artifactId>
-				<version>3.0.1</version>
+				<version>3.1.4</version>
 			</plugin>
 
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.3.0</version>
+				<version>3.4.2</version>
 			</plugin>
 
 			<plugin>
@@ -253,7 +253,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>versions-maven-plugin</artifactId>
-			    <version>2.15.0</version>
+			    <version>2.18.0</version>
 				
 				<executions>
 					<execution>

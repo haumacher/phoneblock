@@ -68,6 +68,7 @@ public class SessionInfo extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	protected final void internalSetCreated(long value) {
 		_listener.beforeSet(this, CREATED__PROP, value);
 		_created = value;
+		_listener.afterChanged(this, CREATED__PROP);
 	}
 
 	/**
@@ -89,6 +90,7 @@ public class SessionInfo extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	protected final void internalSetSession(String value) {
 		_listener.beforeSet(this, SESSION__PROP, value);
 		_session = value;
+		_listener.afterChanged(this, SESSION__PROP);
 	}
 
 	/**
@@ -110,6 +112,7 @@ public class SessionInfo extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	protected final void internalSetEmail(String value) {
 		_listener.beforeSet(this, EMAIL__PROP, value);
 		_email = value;
+		_listener.afterChanged(this, EMAIL__PROP);
 	}
 
 	/**
@@ -131,6 +134,7 @@ public class SessionInfo extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	protected final void internalSetAnswer(String value) {
 		_listener.beforeSet(this, ANSWER__PROP, value);
 		_answer = value;
+		_listener.afterChanged(this, ANSWER__PROP);
 	}
 
 	/**
@@ -152,6 +156,7 @@ public class SessionInfo extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	protected final void internalSetCode(String value) {
 		_listener.beforeSet(this, CODE__PROP, value);
 		_code = value;
+		_listener.afterChanged(this, CODE__PROP);
 	}
 
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
@@ -181,17 +186,33 @@ public class SessionInfo extends de.haumacher.msgbuf.data.AbstractDataObject imp
 		return SESSION_INFO__TYPE;
 	}
 
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
+	static final java.util.List<String> PROPERTIES;
+	static {
+		java.util.List<String> local = java.util.Arrays.asList(
 			CREATED__PROP, 
 			SESSION__PROP, 
 			EMAIL__PROP, 
 			ANSWER__PROP, 
-			CODE__PROP));
+			CODE__PROP);
+		PROPERTIES = java.util.Collections.unmodifiableList(local);
+	}
+
+	static final java.util.Set<String> TRANSIENT_PROPERTIES;
+	static {
+		java.util.HashSet<String> tmp = new java.util.HashSet<>();
+		tmp.addAll(java.util.Arrays.asList(
+				));
+		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
+	}
 
 	@Override
 	public java.util.List<String> properties() {
 		return PROPERTIES;
+	}
+
+	@Override
+	public java.util.Set<String> transientProperties() {
+		return TRANSIENT_PROPERTIES;
 	}
 
 	@Override

@@ -49,7 +49,7 @@ public class SearchResult extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	private de.haumacher.phoneblock.app.api.model.PhoneNumer _number = null;
 
-	private final java.util.List<de.haumacher.phoneblock.app.api.model.UserComment> _comments = new de.haumacher.msgbuf.util.ReferenceList<>() {
+	private final java.util.List<de.haumacher.phoneblock.app.api.model.UserComment> _comments = new de.haumacher.msgbuf.util.ReferenceList<de.haumacher.phoneblock.app.api.model.UserComment>() {
 		@Override
 		protected void beforeAdd(int index, de.haumacher.phoneblock.app.api.model.UserComment element) {
 			_listener.beforeAdd(SearchResult.this, COMMENTS__PROP, index, element);
@@ -59,11 +59,16 @@ public class SearchResult extends de.haumacher.msgbuf.data.AbstractDataObject im
 		protected void afterRemove(int index, de.haumacher.phoneblock.app.api.model.UserComment element) {
 			_listener.afterRemove(SearchResult.this, COMMENTS__PROP, index, element);
 		}
+
+		@Override
+		protected void afterChanged() {
+			_listener.afterChanged(SearchResult.this, COMMENTS__PROP);
+		}
 	};
 
 	private de.haumacher.phoneblock.app.api.model.PhoneInfo _info = null;
 
-	private final java.util.List<Integer> _searches = new de.haumacher.msgbuf.util.ReferenceList<>() {
+	private final java.util.List<Integer> _searches = new de.haumacher.msgbuf.util.ReferenceList<Integer>() {
 		@Override
 		protected void beforeAdd(int index, Integer element) {
 			_listener.beforeAdd(SearchResult.this, SEARCHES__PROP, index, element);
@@ -73,11 +78,16 @@ public class SearchResult extends de.haumacher.msgbuf.data.AbstractDataObject im
 		protected void afterRemove(int index, Integer element) {
 			_listener.afterRemove(SearchResult.this, SEARCHES__PROP, index, element);
 		}
+
+		@Override
+		protected void afterChanged() {
+			_listener.afterChanged(SearchResult.this, SEARCHES__PROP);
+		}
 	};
 
 	private String _aiSummary = "";
 
-	private final java.util.List<String> _relatedNumbers = new de.haumacher.msgbuf.util.ReferenceList<>() {
+	private final java.util.List<String> _relatedNumbers = new de.haumacher.msgbuf.util.ReferenceList<String>() {
 		@Override
 		protected void beforeAdd(int index, String element) {
 			_listener.beforeAdd(SearchResult.this, RELATED_NUMBERS__PROP, index, element);
@@ -87,6 +97,11 @@ public class SearchResult extends de.haumacher.msgbuf.data.AbstractDataObject im
 		protected void afterRemove(int index, String element) {
 			_listener.afterRemove(SearchResult.this, RELATED_NUMBERS__PROP, index, element);
 		}
+
+		@Override
+		protected void afterChanged() {
+			_listener.afterChanged(SearchResult.this, RELATED_NUMBERS__PROP);
+		}
 	};
 
 	private String _prev = "";
@@ -95,7 +110,7 @@ public class SearchResult extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	private de.haumacher.phoneblock.app.api.model.Rating _topRating = de.haumacher.phoneblock.app.api.model.Rating.A_LEGITIMATE;
 
-	private final java.util.Map<de.haumacher.phoneblock.app.api.model.Rating, Integer> _ratings = new de.haumacher.msgbuf.util.ReferenceMap<>() {
+	private final java.util.Map<de.haumacher.phoneblock.app.api.model.Rating, Integer> _ratings = new de.haumacher.msgbuf.util.ReferenceMap<de.haumacher.phoneblock.app.api.model.Rating, Integer>() {
 		@Override
 		protected void beforeAdd(de.haumacher.phoneblock.app.api.model.Rating index, Integer element) {
 			_listener.beforeAdd(SearchResult.this, RATINGS__PROP, index, element);
@@ -104,6 +119,11 @@ public class SearchResult extends de.haumacher.msgbuf.data.AbstractDataObject im
 		@Override
 		protected void afterRemove(de.haumacher.phoneblock.app.api.model.Rating index, Integer element) {
 			_listener.afterRemove(SearchResult.this, RATINGS__PROP, index, element);
+		}
+
+		@Override
+		protected void afterChanged() {
+			_listener.afterChanged(SearchResult.this, RATINGS__PROP);
 		}
 	};
 
@@ -132,6 +152,7 @@ public class SearchResult extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetPhoneId(String value) {
 		_listener.beforeSet(this, PHONE_ID__PROP, value);
 		_phoneId = value;
+		_listener.afterChanged(this, PHONE_ID__PROP);
 	}
 
 	public final de.haumacher.phoneblock.app.api.model.PhoneNumer getNumber() {
@@ -150,6 +171,7 @@ public class SearchResult extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetNumber(de.haumacher.phoneblock.app.api.model.PhoneNumer value) {
 		_listener.beforeSet(this, NUMBER__PROP, value);
 		_number = value;
+		_listener.afterChanged(this, NUMBER__PROP);
 	}
 
 	/**
@@ -214,6 +236,7 @@ public class SearchResult extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetInfo(de.haumacher.phoneblock.app.api.model.PhoneInfo value) {
 		_listener.beforeSet(this, INFO__PROP, value);
 		_info = value;
+		_listener.afterChanged(this, INFO__PROP);
 	}
 
 	/**
@@ -244,20 +267,20 @@ public class SearchResult extends de.haumacher.msgbuf.data.AbstractDataObject im
 	/**
 	 * Adds a value to the {@link #getSearches()} list.
 	 */
-	public de.haumacher.phoneblock.app.api.model.SearchResult addSearche(int value) {
-		internalAddSearche(value);
+	public de.haumacher.phoneblock.app.api.model.SearchResult addSearch(int value) {
+		internalAddSearch(value);
 		return this;
 	}
 
-	/** Implementation of {@link #addSearche(int)} without chain call utility. */
-	protected final void internalAddSearche(int value) {
+	/** Implementation of {@link #addSearch(int)} without chain call utility. */
+	protected final void internalAddSearch(int value) {
 		_searches.add(value);
 	}
 
 	/**
 	 * Removes a value from the {@link #getSearches()} list.
 	 */
-	public final void removeSearche(int value) {
+	public final void removeSearch(int value) {
 		_searches.remove(value);
 	}
 
@@ -277,6 +300,7 @@ public class SearchResult extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetAiSummary(String value) {
 		_listener.beforeSet(this, AI_SUMMARY__PROP, value);
 		_aiSummary = value;
+		_listener.afterChanged(this, AI_SUMMARY__PROP);
 	}
 
 	public final java.util.List<String> getRelatedNumbers() {
@@ -333,6 +357,7 @@ public class SearchResult extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetPrev(String value) {
 		_listener.beforeSet(this, PREV__PROP, value);
 		_prev = value;
+		_listener.afterChanged(this, PREV__PROP);
 	}
 
 	public final String getNext() {
@@ -351,6 +376,7 @@ public class SearchResult extends de.haumacher.msgbuf.data.AbstractDataObject im
 	protected final void internalSetNext(String value) {
 		_listener.beforeSet(this, NEXT__PROP, value);
 		_next = value;
+		_listener.afterChanged(this, NEXT__PROP);
 	}
 
 	public final de.haumacher.phoneblock.app.api.model.Rating getTopRating() {
@@ -370,6 +396,7 @@ public class SearchResult extends de.haumacher.msgbuf.data.AbstractDataObject im
 		if (value == null) throw new IllegalArgumentException("Property 'topRating' cannot be null.");
 		_listener.beforeSet(this, TOP_RATING__PROP, value);
 		_topRating = value;
+		_listener.afterChanged(this, TOP_RATING__PROP);
 	}
 
 	public final java.util.Map<de.haumacher.phoneblock.app.api.model.Rating, Integer> getRatings() {
@@ -441,8 +468,9 @@ public class SearchResult extends de.haumacher.msgbuf.data.AbstractDataObject im
 		return SEARCH_RESULT__TYPE;
 	}
 
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
+	static final java.util.List<String> PROPERTIES;
+	static {
+		java.util.List<String> local = java.util.Arrays.asList(
 			PHONE_ID__PROP, 
 			NUMBER__PROP, 
 			COMMENTS__PROP, 
@@ -453,11 +481,26 @@ public class SearchResult extends de.haumacher.msgbuf.data.AbstractDataObject im
 			PREV__PROP, 
 			NEXT__PROP, 
 			TOP_RATING__PROP, 
-			RATINGS__PROP));
+			RATINGS__PROP);
+		PROPERTIES = java.util.Collections.unmodifiableList(local);
+	}
+
+	static final java.util.Set<String> TRANSIENT_PROPERTIES;
+	static {
+		java.util.HashSet<String> tmp = new java.util.HashSet<>();
+		tmp.addAll(java.util.Arrays.asList(
+				));
+		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
+	}
 
 	@Override
 	public java.util.List<String> properties() {
 		return PROPERTIES;
+	}
+
+	@Override
+	public java.util.Set<String> transientProperties() {
+		return TRANSIENT_PROPERTIES;
 	}
 
 	@Override

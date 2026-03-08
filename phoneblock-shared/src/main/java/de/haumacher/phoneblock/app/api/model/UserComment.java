@@ -93,6 +93,7 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	protected final void internalSetId(String value) {
 		_listener.beforeSet(this, ID__PROP, value);
 		_id = value;
+		_listener.afterChanged(this, ID__PROP);
 	}
 
 	/**
@@ -114,6 +115,7 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	protected final void internalSetUserId(Long value) {
 		_listener.beforeSet(this, USER_ID__PROP, value);
 		_userId = value;
+		_listener.afterChanged(this, USER_ID__PROP);
 	}
 
 	/**
@@ -142,6 +144,7 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	protected final void internalSetLang(String value) {
 		_listener.beforeSet(this, LANG__PROP, value);
 		_lang = value;
+		_listener.afterChanged(this, LANG__PROP);
 	}
 
 	/**
@@ -163,6 +166,7 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	protected final void internalSetPhone(String value) {
 		_listener.beforeSet(this, PHONE__PROP, value);
 		_phone = value;
+		_listener.afterChanged(this, PHONE__PROP);
 	}
 
 	/**
@@ -185,6 +189,7 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 		if (value == null) throw new IllegalArgumentException("Property 'rating' cannot be null.");
 		_listener.beforeSet(this, RATING__PROP, value);
 		_rating = value;
+		_listener.afterChanged(this, RATING__PROP);
 	}
 
 	/**
@@ -206,6 +211,7 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	protected final void internalSetComment(String value) {
 		_listener.beforeSet(this, COMMENT__PROP, value);
 		_comment = value;
+		_listener.afterChanged(this, COMMENT__PROP);
 	}
 
 	/**
@@ -227,6 +233,7 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	protected final void internalSetService(String value) {
 		_listener.beforeSet(this, SERVICE__PROP, value);
 		_service = value;
+		_listener.afterChanged(this, SERVICE__PROP);
 	}
 
 	/**
@@ -248,6 +255,7 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	protected final void internalSetCreated(long value) {
 		_listener.beforeSet(this, CREATED__PROP, value);
 		_created = value;
+		_listener.afterChanged(this, CREATED__PROP);
 	}
 
 	/**
@@ -269,6 +277,7 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	protected final void internalSetUp(int value) {
 		_listener.beforeSet(this, UP__PROP, value);
 		_up = value;
+		_listener.afterChanged(this, UP__PROP);
 	}
 
 	/**
@@ -290,6 +299,7 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	protected final void internalSetDown(int value) {
 		_listener.beforeSet(this, DOWN__PROP, value);
 		_down = value;
+		_listener.afterChanged(this, DOWN__PROP);
 	}
 
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
@@ -319,8 +329,9 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 		return USER_COMMENT__TYPE;
 	}
 
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
+	static final java.util.List<String> PROPERTIES;
+	static {
+		java.util.List<String> local = java.util.Arrays.asList(
 			ID__PROP, 
 			USER_ID__PROP, 
 			LANG__PROP, 
@@ -330,11 +341,26 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 			SERVICE__PROP, 
 			CREATED__PROP, 
 			UP__PROP, 
-			DOWN__PROP));
+			DOWN__PROP);
+		PROPERTIES = java.util.Collections.unmodifiableList(local);
+	}
+
+	static final java.util.Set<String> TRANSIENT_PROPERTIES;
+	static {
+		java.util.HashSet<String> tmp = new java.util.HashSet<>();
+		tmp.addAll(java.util.Arrays.asList(
+				));
+		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
+	}
 
 	@Override
 	public java.util.List<String> properties() {
 		return PROPERTIES;
+	}
+
+	@Override
+	public java.util.Set<String> transientProperties() {
+		return TRANSIENT_PROPERTIES;
 	}
 
 	@Override

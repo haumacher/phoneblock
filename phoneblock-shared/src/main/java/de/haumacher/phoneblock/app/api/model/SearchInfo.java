@@ -63,6 +63,7 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected final void internalSetPhone(String value) {
 		_listener.beforeSet(this, PHONE__PROP, value);
 		_phone = value;
+		_listener.afterChanged(this, PHONE__PROP);
 	}
 
 	/**
@@ -84,6 +85,7 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected final void internalSetCount(int value) {
 		_listener.beforeSet(this, COUNT__PROP, value);
 		_count = value;
+		_listener.afterChanged(this, COUNT__PROP);
 	}
 
 	/**
@@ -105,6 +107,7 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected final void internalSetTotal(int value) {
 		_listener.beforeSet(this, TOTAL__PROP, value);
 		_total = value;
+		_listener.afterChanged(this, TOTAL__PROP);
 	}
 
 	/**
@@ -126,6 +129,7 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	protected final void internalSetLastSearch(long value) {
 		_listener.beforeSet(this, LAST_SEARCH__PROP, value);
 		_lastSearch = value;
+		_listener.afterChanged(this, LAST_SEARCH__PROP);
 	}
 
 	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
@@ -155,16 +159,32 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		return SEARCH_INFO__TYPE;
 	}
 
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
+	static final java.util.List<String> PROPERTIES;
+	static {
+		java.util.List<String> local = java.util.Arrays.asList(
 			PHONE__PROP, 
 			COUNT__PROP, 
 			TOTAL__PROP, 
-			LAST_SEARCH__PROP));
+			LAST_SEARCH__PROP);
+		PROPERTIES = java.util.Collections.unmodifiableList(local);
+	}
+
+	static final java.util.Set<String> TRANSIENT_PROPERTIES;
+	static {
+		java.util.HashSet<String> tmp = new java.util.HashSet<>();
+		tmp.addAll(java.util.Arrays.asList(
+				));
+		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
+	}
 
 	@Override
 	public java.util.List<String> properties() {
 		return PROPERTIES;
+	}
+
+	@Override
+	public java.util.Set<String> transientProperties() {
+		return TRANSIENT_PROPERTIES;
 	}
 
 	@Override
