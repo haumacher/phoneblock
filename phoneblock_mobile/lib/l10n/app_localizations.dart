@@ -980,6 +980,18 @@ abstract class AppLocalizations {
   /// **'Fehler beim Aktualisieren des Kommentars'**
   String get errorUpdatingComment;
 
+  /// Notifications toggle title in settings
+  ///
+  /// In de, this message translates to:
+  /// **'Benachrichtigungen'**
+  String get notificationsTitle;
+
+  /// Notifications toggle description in settings
+  ///
+  /// In de, this message translates to:
+  /// **'Benachrichtigungen über gefilterte Anrufe anzeigen'**
+  String get notificationsDescription;
+
   /// Appearance section header
   ///
   /// In de, this message translates to:

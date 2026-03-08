@@ -3158,6 +3158,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _blockRanges = true;
   int _minRangeVotes = 10;
   int _retentionDays = retentionDefault;
+  bool _notificationsEnabled = true;
   String _themeMode = 'system';
   bool _answerbotEnabled = false;
   bool _isLoading = true;
@@ -3186,6 +3187,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final blockRangesResult = await platform.invokeMethod("getBlockRanges");
       final minRangeVotesResult = await platform.invokeMethod("getMinRangeVotes");
       final retentionDaysResult = await platform.invokeMethod("getRetentionDays");
+      final notificationsEnabledResult = await platform.invokeMethod("getNotificationsEnabled");
       final themeModeResult = await getThemeMode();
       final answerbotEnabledResult = await platform.invokeMethod("getAnswerbotEnabled");
       final blockedCallsCountResult = await platform.invokeMethod("getBlockedCallsCount");
@@ -3202,6 +3204,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _blockRanges = blockRangesResult ?? true;
         _minRangeVotes = minRangeVotesResult ?? 10;
         _retentionDays = retentionDaysResult ?? retentionDefault;
+        _notificationsEnabled = notificationsEnabledResult ?? true;
         _themeMode = themeModeResult;
         _answerbotEnabled = answerbotEnabledResult ?? false;
         _blockedCallsCount = blockedCallsCountResult ?? 0;
@@ -3354,6 +3357,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
     } catch (e) {
       if (kDebugMode) {
         print("Error saving retention days: $e");
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.errorSaving),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Save notifications enabled setting.
+  Future<void> _saveNotificationsEnabled(bool value) async {
+    if (kDebugMode) {
+      print("Saving notificationsEnabled: $value");
+    }
+    try {
+      await platform.invokeMethod("setNotificationsEnabled", value);
+      if (kDebugMode) {
+        print("Successfully saved notificationsEnabled to SharedPreferences: $value");
+      }
+      setState(() {
+        _notificationsEnabled = value;
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print("Error saving notifications enabled: $e");
       }
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -3605,6 +3636,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       }
                     },
                   ),
+                ),
+
+                // Notifications toggle
+                SwitchListTile(
+                  title: Text(context.l10n.notificationsTitle),
+                  subtitle: Text(context.l10n.notificationsDescription),
+                  value: _notificationsEnabled,
+                  onChanged: (value) {
+                    _saveNotificationsEnabled(value);
+                  },
                 ),
                 const Divider(),
                 Padding(

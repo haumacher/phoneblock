@@ -7,6 +7,7 @@
   "noCallsDescription": "PhoneBlock will automatically check incoming calls and block SPAM calls.",
   "blocked": "Blocked",
   "accepted": "Accepted",
+  "notBlocked": "Not blocked",
   "missed": "Missed",
   "votes": "{count} votes",
   "viewOnPhoneBlock": "View on PhoneBlock",
@@ -279,6 +280,7 @@
   "next": "Next",
   "add": "Add",
   "wildcardBlocked": "Wildcard rule",
+  "matchedWildcardFilter": "Filter: {prefix}",
   "blocklistCache": "Blocklist cache",
   "blocklistCachedEntries": "{count} numbers",
   "blocklistLastSync": "Last synchronization",
@@ -289,6 +291,6 @@
   "blocklistSyncing": "Synchronize...",
   "blocklistSyncSuccess": "Blocklist synchronization successful",
   "blocklistSyncFailed": "Blocklist synchronization failed",
-  "notBlocked": "Not blocked",
-  "matchedWildcardFilter": "Filter: {prefix}"
+  "notificationsTitle": "Notifications",
+  "notificationsDescription": "Show notifications about filtered calls"
 }

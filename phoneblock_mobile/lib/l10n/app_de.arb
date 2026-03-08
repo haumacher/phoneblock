@@ -799,6 +799,16 @@
   "@errorUpdatingComment": {
     "x-translated": "266a309b"
   },
+  "notificationsTitle": "Benachrichtigungen",
+  "@notificationsTitle": {
+    "description": "Notifications toggle title in settings",
+    "x-translated": "11d64afa"
+  },
+  "notificationsDescription": "Benachrichtigungen über gefilterte Anrufe anzeigen",
+  "@notificationsDescription": {
+    "description": "Notifications toggle description in settings",
+    "x-translated": "18246ffc"
+  },
   "appearance": "Erscheinungsbild",
   "@appearance": {
     "description": "Appearance section header",

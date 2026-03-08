@@ -7,6 +7,7 @@
   "noCallsDescription": "PhoneBlock screener automatisk indgående opkald og blokerer SPAM-opkald.",
   "blocked": "Blokeret",
   "accepted": "Accepteret",
+  "notBlocked": "Ikke blokeret",
   "missed": "Ubesvaret",
   "votes": "{count} stemmer",
   "viewOnPhoneBlock": "Vis på PhoneBlock",
@@ -279,6 +280,7 @@
   "next": "Yderligere",
   "add": "Tilføj",
   "wildcardBlocked": "Regel med jokertegn",
+  "matchedWildcardFilter": "Filter: {prefix}.",
   "blocklistCache": "Blokliste-cache",
   "blocklistCachedEntries": "{count} tal",
   "blocklistLastSync": "Sidste synkronisering",
@@ -289,6 +291,6 @@
   "blocklistSyncing": "Synkroniser...",
   "blocklistSyncSuccess": "Bloklistesynkronisering vellykket",
   "blocklistSyncFailed": "Bloklistesynkronisering mislykkedes",
-  "notBlocked": "Ikke blokeret",
-  "matchedWildcardFilter": "Filter: {prefix}."
+  "notificationsTitle": "Meddelelser",
+  "notificationsDescription": "Vis meddelelser om filtrerede opkald"
 }

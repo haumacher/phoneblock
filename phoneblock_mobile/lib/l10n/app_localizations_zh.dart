@@ -481,6 +481,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get errorUpdatingComment => '更新注释时出错';
 
   @override
+  String get notificationsTitle => '通知';
+
+  @override
+  String get notificationsDescription => '显示已过滤通话的通知';
+
+  @override
   String get appearance => '外观';
 
   @override

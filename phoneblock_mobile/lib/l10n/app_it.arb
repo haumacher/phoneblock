@@ -7,6 +7,7 @@
   "noCallsDescription": "PhoneBlock controlla automaticamente le chiamate in entrata e blocca le chiamate SPAM.",
   "blocked": "Bloccato",
   "accepted": "Accettato",
+  "notBlocked": "Non bloccato",
   "missed": "Mancato",
   "votes": "{count} dei voti",
   "viewOnPhoneBlock": "Mostra su PhoneBlock",
@@ -279,6 +280,7 @@
   "next": "Ulteriori",
   "add": "Aggiungi",
   "wildcardBlocked": "Regola jolly",
+  "matchedWildcardFilter": "Filtro: {prefix}",
   "blocklistCache": "Cache della lista di blocco",
   "blocklistCachedEntries": "{count}",
   "blocklistLastSync": "Ultima sincronizzazione",
@@ -289,6 +291,6 @@
   "blocklistSyncing": "Sincronizzare...",
   "blocklistSyncSuccess": "Sincronizzazione della lista di blocco riuscita",
   "blocklistSyncFailed": "Sincronizzazione della lista di blocco fallita",
-  "notBlocked": "Non bloccato",
-  "matchedWildcardFilter": "Filtro: {prefix}"
+  "notificationsTitle": "Notifiche",
+  "notificationsDescription": "Mostra notifiche sulle chiamate filtrate"
 }

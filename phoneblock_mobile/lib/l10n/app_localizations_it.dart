@@ -534,6 +534,13 @@ class AppLocalizationsIt extends AppLocalizations {
       'Errore durante l\'aggiornamento del commento';
 
   @override
+  String get notificationsTitle => 'Notifiche';
+
+  @override
+  String get notificationsDescription =>
+      'Mostra notifiche sulle chiamate filtrate';
+
+  @override
   String get appearance => 'Aspetto';
 
   @override

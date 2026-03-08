@@ -528,6 +528,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get errorUpdatingComment => 'Fehler beim Aktualisieren des Kommentars';
 
   @override
+  String get notificationsTitle => 'Benachrichtigungen';
+
+  @override
+  String get notificationsDescription =>
+      'Benachrichtigungen über gefilterte Anrufe anzeigen';
+
+  @override
   String get appearance => 'Erscheinungsbild';
 
   @override
