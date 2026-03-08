@@ -113,8 +113,13 @@ public class NumberAnalyzer {
 	}
 
 	public static PhoneInfo phoneInfoFromNumber(PhoneNumer number) {
-		return PhoneInfo.create()
-			.setPhone(number.getPlus());
+		PhoneInfo result = PhoneInfo.create()
+			.setPhone(number.getPlus())
+			.setLabel(number.getShortcut());
+		if (number.hasCity()) {
+			result.setLocation(number.getCity());
+		}
+		return result;
 	}
 
 	/**
