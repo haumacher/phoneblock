@@ -55,7 +55,6 @@ module de.haumacher.phoneblock {
 	requires transitive jakarta.mail;
 	requires transitive org.simplejavamail.java_utils_mail_dkim;
 	requires transitive de.haumacher.msgbuf;
-	requires transitive org.apache.httpcomponents.httpcore;
 	requires transitive org.jsoup;
 	requires transitive org.mybatis;
 	requires transitive org.slf4j;

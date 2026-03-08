@@ -17,12 +17,12 @@ import java.util.stream.Collectors;
 
 import javax.xml.namespace.QName;
 
-import org.apache.http.impl.EnglishReasonPhraseCatalog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
 import de.haumacher.phoneblock.app.LoginFilter;
+import de.haumacher.phoneblock.util.HttpStatus;
 import de.haumacher.phoneblock.carddav.CardDavServlet;
 import de.haumacher.phoneblock.carddav.schema.CardDavSchema;
 import de.haumacher.phoneblock.carddav.schema.DavSchema;
@@ -130,7 +130,7 @@ public abstract class Resource {
 			Element propstat = appendElement(response, DavSchema.DAV_PROPSTAT);
 			Element prop = appendElement(propstat, DavSchema.DAV_PROP);
 			int status = fillProperty(req, prop, property);
-			appendTextElement(propstat, DavSchema.DAV_STATUS, "HTTP/1.1 " + status + " " + EnglishReasonPhraseCatalog.INSTANCE.getReason(status, null));
+			appendTextElement(propstat, DavSchema.DAV_STATUS, "HTTP/1.1 " + status + " " + HttpStatus.reasonPhrase(status));
 		}
 	}
 

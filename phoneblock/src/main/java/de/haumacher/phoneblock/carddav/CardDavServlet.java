@@ -23,7 +23,6 @@ import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.DocumentBuilder;
 
-import org.apache.http.impl.EnglishReasonPhraseCatalog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -34,6 +33,7 @@ import org.w3c.dom.ls.LSSerializer;
 import org.xml.sax.SAXException;
 
 import de.haumacher.phoneblock.app.LoginFilter;
+import de.haumacher.phoneblock.util.HttpStatus;
 import de.haumacher.phoneblock.carddav.resource.AddressBookCache;
 import de.haumacher.phoneblock.carddav.resource.AddressBookResource;
 import de.haumacher.phoneblock.carddav.resource.PrincipalResource;
@@ -282,9 +282,9 @@ public class CardDavServlet extends HttpServlet {
 						
 						content.fillProperty(req, propElement, qname);
 					}
-					appendTextElement(propstat, DavSchema.DAV_STATUS, "HTTP/1.1 " + HttpServletResponse.SC_OK + " " + EnglishReasonPhraseCatalog.INSTANCE.getReason(HttpServletResponse.SC_OK, null));
+					appendTextElement(propstat, DavSchema.DAV_STATUS, "HTTP/1.1 " + HttpServletResponse.SC_OK + " " + HttpStatus.reasonPhrase(HttpServletResponse.SC_OK));
 				} else {
-					appendTextElement(propstat, DavSchema.DAV_STATUS, "HTTP/1.1 " + HttpServletResponse.SC_NOT_FOUND + " " + EnglishReasonPhraseCatalog.INSTANCE.getReason(HttpServletResponse.SC_NOT_FOUND, null));
+					appendTextElement(propstat, DavSchema.DAV_STATUS, "HTTP/1.1 " + HttpServletResponse.SC_NOT_FOUND + " " + HttpStatus.reasonPhrase(HttpServletResponse.SC_NOT_FOUND));
 				}
 			}
 			
