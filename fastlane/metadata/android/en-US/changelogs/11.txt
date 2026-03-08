@@ -1,0 +1,14 @@
+Version 1.3.0:
+* Unified call list display: all calls (mobile and Fritz!Box) use the same consistent layout
+* Fritz!Box number normalization using queried country/area code dial prefix (#265)
+* Display created date in blacklist/whitelist views
+* Add + button to whitelist view for adding numbers (#266)
+* Show personal blocklist status in call list (#266)
+* Notification toggle in app settings (#271)
+* Periodic full blocklist resync every 40 syncs to fix accumulated inconsistencies
+* SPAM badge reflects the user's blocking settings — no more "SPAM ?" for numbers above threshold
+* Fixed dark-mode display in Fritz!Box integration screens (#267)
+* Fixed Fritz!Box calls not showing "on your blocklist" for personally blocked numbers
+* Fixed hardcoded time abbreviations in blocklist sync display
+* Fixed bottom padding on about page for navigation bar (#266)
+* Fixed inconsistent phone number formatting across call sources

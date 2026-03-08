@@ -1,5 +1,10 @@
 # PhoneBlock Release Notes
 
+## Version 1.9.4 (2026-03-08)
+
+**Bug Fixes:**
+- Fixed missing label and location in API responses for personally blocked, whitelisted, and non-spam numbers (#270)
+
 ## Version 1.9.3 (2026-03-07)
 
 **Key Features:**
