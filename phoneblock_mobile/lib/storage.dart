@@ -61,7 +61,7 @@ class ScreenedCall {
     final ratingStr = map['rating'] as String?;
     final isWildcard = ratingStr == 'WILDCARD';
     if (ratingStr != null && !isWildcard) {
-      rating = _parseRating(ratingStr);
+      rating = parseApiRating(ratingStr);
     }
 
     // Parse source
@@ -131,18 +131,62 @@ class ScreenedCall {
     }
   }
 
-  /// Parses string from database to Rating enum.
-  static Rating? _parseRating(String ratingStr) {
+  /// Parses a rating string from the PhoneBlock API or database.
+  ///
+  /// Handles both API format (e.g., 'A_LEGITIMATE', 'C_PING') and
+  /// database format (e.g., 'LEGITIMATE', 'PING').
+  static Rating? parseApiRating(String ratingStr) {
     switch (ratingStr) {
       case 'A_LEGITIMATE': return Rating.aLEGITIMATE;
+      case 'B_MISSED':
       case 'UNKNOWN': return Rating.uNKNOWN;
+      case 'C_PING':
       case 'PING': return Rating.pING;
+      case 'D_POLL':
       case 'POLL': return Rating.pOLL;
+      case 'E_ADVERTISING':
       case 'ADVERTISING': return Rating.aDVERTISING;
+      case 'F_GAMBLE':
       case 'GAMBLE': return Rating.gAMBLE;
+      case 'G_FRAUD':
       case 'FRAUD': return Rating.fRAUD;
       default: return null;
     }
+  }
+
+  /// Creates a copy of this call with API response data applied.
+  ///
+  /// Parses the standard PhoneBlock API response fields (votes, rating,
+  /// label, location, blackListed, matchedWildcard) and merges them
+  /// into this call's data.
+  ScreenedCall copyWithApiResponse(Map<dynamic, dynamic> data) {
+    final ratingStr = data['rating'] as String?;
+    final isWildcard = ratingStr == 'WILDCARD';
+
+    Rating? rating;
+    if (ratingStr != null && !isWildcard) {
+      rating = parseApiRating(ratingStr);
+    }
+
+    return ScreenedCall(
+      id: id,
+      phoneNumber: phoneNumber,
+      timestamp: timestamp,
+      wasBlocked: wasBlocked,
+      votes: data['votes'] as int? ?? 0,
+      votesWildcard: (data['votesWildcard'] as int?) ?? 0,
+      rating: rating,
+      label: (data['label'] as String?) ?? label,
+      location: data['location'] as String?,
+      isWildcardBlocked: isWildcard,
+      matchedWildcard: data['matchedWildcard'] as String?,
+      isPersonallyBlocked: data['blackListed'] == true,
+      source: source,
+      duration: duration,
+      device: device,
+      fritzboxId: fritzboxId,
+      callType: callType,
+    );
   }
 }
 

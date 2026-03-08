@@ -261,20 +261,6 @@ StreamSubscription<List<SharedMediaFile>>? _sharingIntentSubscription;
 /// Stores shared phone number from cold start for later processing.
 String? _pendingSharedNumber;
 
-/// Parses rating string from PhoneBlock service API response.
-Rating? _parseRatingFromService(String ratingStr) {
-  switch (ratingStr) {
-    case 'A_LEGITIMATE': return Rating.aLEGITIMATE;
-    case 'B_MISSED': return Rating.uNKNOWN;
-    case 'C_PING': return Rating.pING;
-    case 'D_POLL': return Rating.pOLL;
-    case 'E_ADVERTISING': return Rating.aDVERTISING;
-    case 'F_GAMBLE': return Rating.gAMBLE;
-    case 'G_FRAUD': return Rating.fRAUD;
-    default: return null;
-  }
-}
-
 /// Extracts phone numbers from shared text.
 /// Supports formats: +49 123 456789, (123) 456-7890, 1234567890, etc.
 /// Returns first valid number found, or null if none.
@@ -563,38 +549,14 @@ void main() async {
   platform.setMethodCallHandler((call) async {
     if (call.method == 'onCallScreened') {
       final args = call.arguments as Map;
-      final phoneNumber = args['phoneNumber'] as String;
-      final wasBlocked = args['wasBlocked'] as bool;
-      final votes = args['votes'] as int;
-      final votesWildcard = args['votesWildcard'] as int? ?? 0;
-      final timestamp = args['timestamp'] as int;
-      final ratingStr = args['rating'] as String?;
-      final label = args['label'] as String?;
-      final location = args['location'] as String?;
-      final matchedWildcard = args['matchedWildcard'] as String?;
-      final isPersonallyBlocked = args['blackListed'] == true;
-
-      // Parse rating if available
-      final isWildcard = ratingStr == 'WILDCARD';
-      Rating? rating;
-      if (ratingStr != null && !isWildcard) {
-        rating = _parseRatingFromService(ratingStr);
-      }
 
       // Store the screened call in database
       final screenedCall = ScreenedCall(
-        phoneNumber: phoneNumber,
-        timestamp: DateTime.fromMillisecondsSinceEpoch(timestamp),
-        wasBlocked: wasBlocked,
-        votes: votes,
-        votesWildcard: votesWildcard,
-        rating: rating,
-        label: label,
-        location: location,
-        isWildcardBlocked: isWildcard,
-        matchedWildcard: matchedWildcard,
-        isPersonallyBlocked: isPersonallyBlocked,
-      );
+        phoneNumber: args['phoneNumber'] as String,
+        timestamp: DateTime.fromMillisecondsSinceEpoch(args['timestamp'] as int),
+        wasBlocked: args['wasBlocked'] as bool,
+        votes: 0,
+      ).copyWithApiResponse(args);
 
       final insertedCall = await ScreenedCallsDatabase.instance.insertScreenedCall(screenedCall);
 
@@ -611,7 +573,7 @@ void main() async {
       callScreenedStreamController.add(insertedCall);
 
       if (kDebugMode) {
-        print('Screened call saved: $phoneNumber (blocked: $wasBlocked, votes: $votes, rangeVotes: $votesWildcard, rating: $ratingStr)');
+        print('Screened call saved: ${screenedCall.phoneNumber} (blocked: ${screenedCall.wasBlocked}, votes: ${screenedCall.votes}, rangeVotes: ${screenedCall.votesWildcard}, rating: ${screenedCall.rating})');
       }
     }
   });
@@ -758,30 +720,13 @@ Future<void> syncStoredScreeningResults() async {
     if (storedCalls != null && storedCalls is List) {
       for (var callData in storedCalls) {
         final data = callData as Map;
-        final ratingStr = data['rating'] as String?;
-
-        // Parse rating if available
-        final isWildcard = ratingStr == 'WILDCARD';
-        Rating? rating;
-        if (ratingStr != null && !isWildcard) {
-          rating = _parseRatingFromService(ratingStr);
-        }
-
-        final isPersonallyBlocked = data['blackListed'] == true;
 
         final screenedCall = ScreenedCall(
           phoneNumber: data['phoneNumber'] as String,
           timestamp: DateTime.fromMillisecondsSinceEpoch(data['timestamp'] as int),
           wasBlocked: data['wasBlocked'] as bool,
-          votes: data['votes'] as int,
-          votesWildcard: (data['votesWildcard'] as int?) ?? 0,
-          rating: rating,
-          label: data['label'] as String?,
-          location: data['location'] as String?,
-          isWildcardBlocked: isWildcard,
-          matchedWildcard: data['matchedWildcard'] as String?,
-          isPersonallyBlocked: isPersonallyBlocked,
-        );
+          votes: 0,
+        ).copyWithApiResponse(data);
 
         final insertedCall = await ScreenedCallsDatabase.instance.insertScreenedCall(screenedCall);
 
@@ -791,7 +736,7 @@ Future<void> syncStoredScreeningResults() async {
         }
 
         if (kDebugMode) {
-          print('Synced stored call: ${screenedCall.phoneNumber} (blocked: ${screenedCall.wasBlocked}, rangeVotes: ${screenedCall.votesWildcard}, rating: $ratingStr)');
+          print('Synced stored call: ${screenedCall.phoneNumber} (blocked: ${screenedCall.wasBlocked}, rangeVotes: ${screenedCall.votesWildcard}, rating: ${screenedCall.rating})');
         }
       }
 
