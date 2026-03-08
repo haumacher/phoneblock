@@ -4544,7 +4544,6 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
     BuildContext context,
     api.PersonalizedNumber personalizedNumber,
     String Function(String) confirmRemoveMessage,
-    Icon defaultIcon,
   ) {
     final phone = personalizedNumber.phone;
     final displayPhone = personalizedNumber.label ?? phone;
@@ -4618,9 +4617,9 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
         });
       },
       child: ListTile(
-        leading: personalizedNumber.rating != null
+        leading: _isBlacklist && personalizedNumber.rating != null
             ? buildRatingAvatar(_convertApiRating(personalizedNumber.rating!))
-            : defaultIcon,
+            : buildRatingAvatar(_isBlacklist ? Rating.uNKNOWN : Rating.aLEGITIMATE),
         title: Text(displayPhone),
         subtitle: _buildNumberSubtitle(context, personalizedNumber),
         trailing: IconButton(
@@ -4721,9 +4720,6 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
     final confirmRemoveMessage = _isBlacklist
         ? (String phone) => context.l10n.confirmRemoveFromBlacklist(phone)
         : (String phone) => context.l10n.confirmRemoveFromWhitelist(phone);
-    final defaultIcon = _isBlacklist
-        ? const Icon(Icons.block, color: Colors.red)
-        : const Icon(Icons.check_circle, color: Colors.green);
 
     return Scaffold(
       appBar: AppBar(
@@ -4807,7 +4803,7 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
                                   ),
                                 ),
                               ),
-                            ..._numbers.map((pn) => _buildNumberTile(context, pn, confirmRemoveMessage, defaultIcon)),
+                            ..._numbers.map((pn) => _buildNumberTile(context, pn, confirmRemoveMessage)),
                           ],
                         ],
                       ),
