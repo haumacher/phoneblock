@@ -1000,6 +1000,9 @@ class AppLocalizationsUk extends AppLocalizations {
   String get add => 'Додати';
 
   @override
+  String get onPersonalBlocklist => 'Auf deiner Blockliste';
+
+  @override
   String get wildcardBlocked => 'Правило підстановки символів';
 
   @override

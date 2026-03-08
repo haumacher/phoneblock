@@ -1796,6 +1796,12 @@ abstract class AppLocalizations {
   /// **'Hinzufügen'**
   String get add;
 
+  /// Label shown for calls from numbers on the user's personal blocklist
+  ///
+  /// In de, this message translates to:
+  /// **'Auf deiner Blockliste'**
+  String get onPersonalBlocklist;
+
   /// Rating label shown for calls blocked by a wildcard rule
   ///
   /// In de, this message translates to:

@@ -572,6 +572,7 @@ void main() async {
       final label = args['label'] as String?;
       final location = args['location'] as String?;
       final matchedWildcard = args['matchedWildcard'] as String?;
+      final isPersonallyBlocked = args['blackListed'] == true;
 
       // Parse rating if available
       final isWildcard = ratingStr == 'WILDCARD';
@@ -592,6 +593,7 @@ void main() async {
         location: location,
         isWildcardBlocked: isWildcard,
         matchedWildcard: matchedWildcard,
+        isPersonallyBlocked: isPersonallyBlocked,
       );
 
       final insertedCall = await ScreenedCallsDatabase.instance.insertScreenedCall(screenedCall);
@@ -765,6 +767,8 @@ Future<void> syncStoredScreeningResults() async {
           rating = _parseRatingFromService(ratingStr);
         }
 
+        final isPersonallyBlocked = data['blackListed'] == true;
+
         final screenedCall = ScreenedCall(
           phoneNumber: data['phoneNumber'] as String,
           timestamp: DateTime.fromMillisecondsSinceEpoch(data['timestamp'] as int),
@@ -776,6 +780,7 @@ Future<void> syncStoredScreeningResults() async {
           location: data['location'] as String?,
           isWildcardBlocked: isWildcard,
           matchedWildcard: data['matchedWildcard'] as String?,
+          isPersonallyBlocked: isPersonallyBlocked,
         );
 
         final insertedCall = await ScreenedCallsDatabase.instance.insertScreenedCall(screenedCall);
@@ -2587,6 +2592,17 @@ class _MainScreenState extends State<MainScreen> {
 
   /// Builds the reports text showing votes and range votes.
   String _buildReportsText(ScreenedCall call) {
+    if (call.isPersonallyBlocked) {
+      final parts = <String>[context.l10n.onPersonalBlocklist];
+      if (call.votes > 0) {
+        parts.add(context.l10n.reportsCount(call.votes));
+      }
+      if (call.votesWildcard > call.votes) {
+        parts.add(context.l10n.rangeReportsCount(call.votesWildcard));
+      }
+      return parts.join(', ');
+    }
+
     if (call.isWildcardBlocked) {
       final prefix = call.matchedWildcard;
       if (prefix != null && prefix.isNotEmpty) {

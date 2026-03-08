@@ -1003,6 +1003,9 @@ class AppLocalizationsNl extends AppLocalizations {
   String get add => 'Voeg  toe';
 
   @override
+  String get onPersonalBlocklist => 'Auf deiner Blockliste';
+
+  @override
   String get wildcardBlocked => 'Wildcard-regel';
 
   @override
