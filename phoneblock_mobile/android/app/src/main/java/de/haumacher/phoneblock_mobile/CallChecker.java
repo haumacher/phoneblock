@@ -101,6 +101,7 @@ public class CallChecker extends CallScreeningService {
             String rating = null;
             String label = null;
             String location = null;
+            boolean blackListed = false;
 
             try {
                 JSONObject json = queryPhoneBlock(number, authToken);
@@ -110,6 +111,7 @@ public class CallChecker extends CallScreeningService {
                 rating = json.optString("rating", null);
                 label = json.optString("label", null);
                 location = json.optString("location", null);
+                blackListed = json.optBoolean("blackListed", false);
             } catch (Exception e) {
                 Log.d(CallChecker.class.getName(), "onScreenCall: API failed, using local data: " + number, e);
                 int localVotes = lookupLocalBlocklist(number);
@@ -124,6 +126,7 @@ public class CallChecker extends CallScreeningService {
             final String fRating = rating;
             final String fLabel = label;
             final String fLocation = location;
+            final boolean fBlackListed = blackListed;
 
             if (responded.compareAndSet(false, true)) {
                 if (timeoutFuture[0] != null) {
@@ -131,7 +134,7 @@ public class CallChecker extends CallScreeningService {
                 }
                 Handler.createAsync(Looper.getMainLooper()).post(() ->
                     decideAndRespond(callDetails, rawNumber, number,
-                        fVotes, fVotesWildcard, fArchived, fRating, fLabel, fLocation,
+                        fVotes, fVotesWildcard, fArchived, fRating, fLabel, fLocation, fBlackListed,
                         minVotes, blockRanges, minRangeVotes, wildcardPrefixesJson));
             }
         }, 0, TimeUnit.MILLISECONDS);
@@ -144,7 +147,7 @@ public class CallChecker extends CallScreeningService {
 
                 Handler.createAsync(Looper.getMainLooper()).post(() ->
                     decideAndRespond(callDetails, rawNumber, number,
-                        localVotes, 0, false, null, null, null,
+                        localVotes, 0, false, null, null, null, false,
                         minVotes, blockRanges, minRangeVotes, wildcardPrefixesJson));
             }
         }, 4500, TimeUnit.MILLISECONDS);
@@ -155,7 +158,7 @@ public class CallChecker extends CallScreeningService {
      * then either blocks or accepts the call and reports the result.
      */
     private void decideAndRespond(@NonNull Call.Details callDetails, String rawNumber, String number,
-            int votes, int votesWildcard, boolean archived, String rating, String label, String location,
+            int votes, int votesWildcard, boolean archived, String rating, String label, String location, boolean blackListed,
             int minVotes, boolean blockRanges, int minRangeVotes, String wildcardPrefixesJson) {
 
         boolean block = false;
@@ -189,9 +192,9 @@ public class CallChecker extends CallScreeningService {
         }
 
         if (matchedPrefix != null) {
-            MainActivity.reportScreenedCall(this, rawNumber, block, votes, votesWildcard, "WILDCARD", label, location, matchedPrefix);
+            MainActivity.reportScreenedCall(this, rawNumber, block, votes, votesWildcard, "WILDCARD", label, location, matchedPrefix, blackListed);
         } else {
-            MainActivity.reportScreenedCall(this, rawNumber, block, votes, votesWildcard, rating, label, location);
+            MainActivity.reportScreenedCall(this, rawNumber, block, votes, votesWildcard, rating, label, location, null, blackListed);
         }
     }
 

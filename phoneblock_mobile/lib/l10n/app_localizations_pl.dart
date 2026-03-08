@@ -1015,6 +1015,9 @@ class AppLocalizationsPl extends AppLocalizations {
   String get add => 'Dodaj';
 
   @override
+  String get onPersonalBlocklist => 'Auf deiner Blockliste';
+
+  @override
   String get wildcardBlocked => 'Reguła symboli wieloznacznych';
 
   @override

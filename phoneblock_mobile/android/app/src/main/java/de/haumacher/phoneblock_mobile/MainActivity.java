@@ -157,7 +157,7 @@ public class MainActivity extends FlutterActivity {
 
     /** Convenience overload without matchedWildcard parameter. */
     public static void reportScreenedCall(Context context, String phoneNumber, boolean wasBlocked, int votes, int votesWildcard, String rating, String label, String location) {
-        reportScreenedCall(context, phoneNumber, wasBlocked, votes, votesWildcard, rating, label, location, null);
+        reportScreenedCall(context, phoneNumber, wasBlocked, votes, votesWildcard, rating, label, location, null, false);
     }
 
     /**
@@ -177,8 +177,9 @@ public class MainActivity extends FlutterActivity {
      * @param label Formatted phone number for display (e.g., "(DE) 030 12345678"), may be null
      * @param location City or region where the call originated (e.g., "Berlin"), may be null
      * @param matchedWildcard The wildcard prefix that matched (e.g., "+4930"), null if not wildcard-blocked
+     * @param blackListed true if the number is on the user's personal blocklist
      */
-    public static void reportScreenedCall(Context context, String phoneNumber, boolean wasBlocked, int votes, int votesWildcard, String rating, String label, String location, String matchedWildcard) {
+    public static void reportScreenedCall(Context context, String phoneNumber, boolean wasBlocked, int votes, int votesWildcard, String rating, String label, String location, String matchedWildcard, boolean blackListed) {
         long timestamp = System.currentTimeMillis();
 
         // Update call counters
@@ -210,6 +211,9 @@ public class MainActivity extends FlutterActivity {
             if (matchedWildcard != null) {
                 data.put("matchedWildcard", matchedWildcard);
             }
+            if (blackListed) {
+                data.put("blackListed", true);
+            }
 
             _instance._channel.invokeMethod("onCallScreened", data);
         } else {
@@ -239,6 +243,9 @@ public class MainActivity extends FlutterActivity {
                 }
                 if (matchedWildcard != null) {
                     callJson.put("matchedWildcard", matchedWildcard);
+                }
+                if (blackListed) {
+                    callJson.put("blackListed", blackListed);
                 }
 
                 // Add to array
@@ -431,6 +438,9 @@ public class MainActivity extends FlutterActivity {
                 }
                 if (callJson.has("location")) {
                     data.put("location", callJson.getString("location"));
+                }
+                if (callJson.optBoolean("blackListed", false)) {
+                    data.put("blackListed", true);
                 }
                 results.add(data);
             }

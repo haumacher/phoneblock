@@ -1524,6 +1524,10 @@
     "description": "Button label to add/submit an entry",
     "x-translated": "e53bcf68"
   },
+  "onPersonalBlocklist": "Auf deiner Blockliste",
+  "@onPersonalBlocklist": {
+    "description": "Label shown for calls from numbers on the user's personal blocklist"
+  },
   "wildcardBlocked": "Wildcard-Regel",
   "@wildcardBlocked": {
     "description": "Rating label shown for calls blocked by a wildcard rule",

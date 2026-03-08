@@ -1014,6 +1014,9 @@ class AppLocalizationsEl extends AppLocalizations {
   String get add => 'Προσθέστε';
 
   @override
+  String get onPersonalBlocklist => 'Auf deiner Blockliste';
+
+  @override
   String get wildcardBlocked => 'Κανόνας Wildcard';
 
   @override

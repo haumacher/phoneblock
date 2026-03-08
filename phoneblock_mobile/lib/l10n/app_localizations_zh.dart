@@ -913,6 +913,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get add => '添加';
 
   @override
+  String get onPersonalBlocklist => 'Auf deiner Blockliste';
+
+  @override
   String get wildcardBlocked => '通配符规则';
 
   @override

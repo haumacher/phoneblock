@@ -1004,6 +1004,9 @@ class AppLocalizationsDa extends AppLocalizations {
   String get add => 'Tilføj';
 
   @override
+  String get onPersonalBlocklist => 'Auf deiner Blockliste';
+
+  @override
   String get wildcardBlocked => 'Regel med jokertegn';
 
   @override

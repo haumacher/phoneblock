@@ -1007,6 +1007,9 @@ class AppLocalizationsNb extends AppLocalizations {
   String get add => 'Legg til';
 
   @override
+  String get onPersonalBlocklist => 'Auf deiner Blockliste';
+
+  @override
   String get wildcardBlocked => 'Jokerregel';
 
   @override

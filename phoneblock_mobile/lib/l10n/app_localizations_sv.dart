@@ -1005,6 +1005,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get add => 'Lägg till';
 
   @override
+  String get onPersonalBlocklist => 'Auf deiner Blockliste';
+
+  @override
   String get wildcardBlocked => 'Jokerteckenregel';
 
   @override

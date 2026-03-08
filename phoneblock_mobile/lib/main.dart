@@ -572,6 +572,7 @@ void main() async {
       final label = args['label'] as String?;
       final location = args['location'] as String?;
       final matchedWildcard = args['matchedWildcard'] as String?;
+      final isPersonallyBlocked = args['blackListed'] == true;
 
       // Parse rating if available
       final isWildcard = ratingStr == 'WILDCARD';
@@ -592,6 +593,7 @@ void main() async {
         location: location,
         isWildcardBlocked: isWildcard,
         matchedWildcard: matchedWildcard,
+        isPersonallyBlocked: isPersonallyBlocked,
       );
 
       final insertedCall = await ScreenedCallsDatabase.instance.insertScreenedCall(screenedCall);
@@ -765,6 +767,8 @@ Future<void> syncStoredScreeningResults() async {
           rating = _parseRatingFromService(ratingStr);
         }
 
+        final isPersonallyBlocked = data['blackListed'] == true;
+
         final screenedCall = ScreenedCall(
           phoneNumber: data['phoneNumber'] as String,
           timestamp: DateTime.fromMillisecondsSinceEpoch(data['timestamp'] as int),
@@ -776,6 +780,7 @@ Future<void> syncStoredScreeningResults() async {
           location: data['location'] as String?,
           isWildcardBlocked: isWildcard,
           matchedWildcard: data['matchedWildcard'] as String?,
+          isPersonallyBlocked: isPersonallyBlocked,
         );
 
         final insertedCall = await ScreenedCallsDatabase.instance.insertScreenedCall(screenedCall);
@@ -1700,28 +1705,6 @@ class _MainScreenState extends State<MainScreen> {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    // Fritz!Box source badge
-                    if (source == CallSource.fritzbox) ...[
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                        decoration: BoxDecoration(
-                          color: Colors.grey.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.router, size: 10, color: Colors.grey[600]),
-                            const SizedBox(width: 2),
-                            Text(
-                              AppLocalizations.of(context)!.sourceFritzbox,
-                              style: TextStyle(fontSize: 10, color: Colors.grey[600]),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                    ],
                     // Call status icon and label
                     ..._buildCallStatusBadge(context, call, source, wasBlocked),
                     const SizedBox(width: 8),
@@ -2609,6 +2592,17 @@ class _MainScreenState extends State<MainScreen> {
 
   /// Builds the reports text showing votes and range votes.
   String _buildReportsText(ScreenedCall call) {
+    if (call.isPersonallyBlocked) {
+      final parts = <String>[context.l10n.onPersonalBlocklist];
+      if (call.votes > 0) {
+        parts.add(context.l10n.reportsCount(call.votes));
+      }
+      if (call.votesWildcard > call.votes) {
+        parts.add(context.l10n.rangeReportsCount(call.votesWildcard));
+      }
+      return parts.join(', ');
+    }
+
     if (call.isWildcardBlocked) {
       final prefix = call.matchedWildcard;
       if (prefix != null && prefix.isNotEmpty) {
@@ -3919,6 +3913,7 @@ class AboutScreen extends StatelessWidget {
               ),
             ),
           ),
+          SizedBox(height: MediaQuery.of(context).padding.bottom + 16),
         ],
       ),
     );
@@ -4148,16 +4143,18 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
                       }
                     },
                   ),
-                  const SizedBox(height: 12),
-                  SwitchListTile(
-                    title: Text(context.l10n.wildcardToggle),
-                    subtitle: isWildcard ? Text(context.l10n.wildcardHint) : null,
-                    value: isWildcard,
-                    onChanged: (value) {
-                      setDialogState(() => isWildcard = value);
-                    },
-                    contentPadding: EdgeInsets.zero,
-                  ),
+                  if (_isBlacklist) ...[
+                    const SizedBox(height: 12),
+                    SwitchListTile(
+                      title: Text(context.l10n.wildcardToggle),
+                      subtitle: isWildcard ? Text(context.l10n.wildcardHint) : null,
+                      value: isWildcard,
+                      onChanged: (value) {
+                        setDialogState(() => isWildcard = value);
+                      },
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ],
                 ],
               ),
               actions: [
@@ -4186,10 +4183,14 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
     if (result == null) return;
     if (!context.mounted) return;
 
-    if (result.wildcard) {
-      await _addWildcardNumber(context, result.phone);
+    if (_isBlacklist) {
+      if (result.wildcard) {
+        await _addWildcardNumber(context, result.phone);
+      } else {
+        await _addExactNumber(context, result.phone);
+      }
     } else {
-      await _addExactNumber(context, result.phone);
+      await _addWhitelistNumber(context, result.phone);
     }
   }
 
@@ -4383,6 +4384,77 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
     } catch (e) {
       if (kDebugMode) {
         print('Error adding number: $e');
+      }
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.reportError(e.toString())),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Adds a phone number to the whitelist via the rate API with A_LEGITIMATE rating.
+  Future<void> _addWhitelistNumber(BuildContext context, String phone) async {
+    String? token = await getAuthToken();
+    if (token == null) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.notLoggedIn),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
+    try {
+      final rateRequest = api.RateRequest(
+        phone: phone,
+        rating: api.Rating.aLegitimate,
+        comment: '',
+      );
+
+      final buffer = StringBuffer();
+      final jsonWriter = jsonStringWriter(buffer);
+      rateRequest.writeContent(jsonWriter);
+      final jsonBody = buffer.toString();
+
+      final response = await http.post(
+        Uri.parse('$pbBaseUrl/api/rate'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonBody,
+      );
+
+      if (response.statusCode == 200) {
+        await _loadNumbers();
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(context.l10n.numberAdded),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(context.l10n.reportError(response.statusCode.toString())),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error adding whitelist number: $e');
       }
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -4670,12 +4742,10 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
       appBar: AppBar(
         title: Text(title),
       ),
-      floatingActionButton: _isBlacklist
-          ? FloatingActionButton(
-              onPressed: () => _showAddNumberDialog(context),
-              child: const Icon(Icons.add),
-            )
-          : null,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showAddNumberDialog(context),
+        child: const Icon(Icons.add),
+      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _errorMessage != null

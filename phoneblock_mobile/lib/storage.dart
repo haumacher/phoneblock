@@ -18,6 +18,7 @@ class ScreenedCall {
   final String? location; // City or region where the call originated (e.g., "Berlin")
   final bool isWildcardBlocked; // true if blocked by a local wildcard prefix rule
   final String? matchedWildcard; // The wildcard prefix that matched (e.g., "+4930"), null if not wildcard-blocked
+  final bool isPersonallyBlocked; // true if blocked by user's personal blocklist
 
   // Unified source tracking
   final CallSource source; // Where the call came from (mobile or fritzbox)
@@ -40,6 +41,7 @@ class ScreenedCall {
     this.location,
     this.isWildcardBlocked = false,
     this.matchedWildcard,
+    this.isPersonallyBlocked = false,
     this.source = CallSource.mobile,
     this.duration,
     this.device,
@@ -85,6 +87,7 @@ class ScreenedCall {
       location: map['location'] as String?,
       isWildcardBlocked: isWildcard,
       matchedWildcard: map['matchedWildcard'] as String?,
+      isPersonallyBlocked: (map['isPersonallyBlocked'] as int?) == 1,
       source: source,
       duration: map['duration'] as int?,
       device: map['device'] as String?,
@@ -106,6 +109,7 @@ class ScreenedCall {
       'label': label,
       'location': location,
       'matchedWildcard': matchedWildcard,
+      'isPersonallyBlocked': isPersonallyBlocked ? 1 : 0,
       'source': source.name,
       'duration': duration,
       'device': device,
@@ -205,7 +209,7 @@ class ScreenedCallsDatabase {
 
     return await openDatabase(
       path,
-      version: 11,
+      version: 12,
       onCreate: _createDB,
       onUpgrade: _upgradeDB,
     );
@@ -229,7 +233,8 @@ class ScreenedCallsDatabase {
         device TEXT,
         fritzboxId TEXT UNIQUE,
         callType INTEGER,
-        matchedWildcard TEXT
+        matchedWildcard TEXT,
+        isPersonallyBlocked INTEGER NOT NULL DEFAULT 0
       )
     ''');
 
@@ -428,6 +433,9 @@ class ScreenedCallsDatabase {
     if (oldVersion < 11) {
       await db.execute('ALTER TABLE screened_calls ADD COLUMN matchedWildcard TEXT');
     }
+    if (oldVersion < 12) {
+      await db.execute('ALTER TABLE screened_calls ADD COLUMN isPersonallyBlocked INTEGER NOT NULL DEFAULT 0');
+    }
   }
 
   /// Inserts a new screened call record.
@@ -446,6 +454,7 @@ class ScreenedCallsDatabase {
       location: call.location,
       isWildcardBlocked: call.isWildcardBlocked,
       matchedWildcard: call.matchedWildcard,
+      isPersonallyBlocked: call.isPersonallyBlocked,
       source: call.source,
       duration: call.duration,
       device: call.device,

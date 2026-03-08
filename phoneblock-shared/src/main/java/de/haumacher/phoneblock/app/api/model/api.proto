@@ -144,6 +144,9 @@ message PhoneInfo {
 	/** Whether this number is on the white list and therefore cannot receive votes. */
 	boolean whiteListed;
 
+	/** Whether this number is on the requesting user's personal block list. */
+	boolean blackListed;
+
 	/** Whether this number no longer is on the blocklist, because no votes have been received for a long time. */
 	boolean archived;
 
