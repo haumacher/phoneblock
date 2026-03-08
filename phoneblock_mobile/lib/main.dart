@@ -4101,16 +4101,18 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
                       }
                     },
                   ),
-                  const SizedBox(height: 12),
-                  SwitchListTile(
-                    title: Text(context.l10n.wildcardToggle),
-                    subtitle: isWildcard ? Text(context.l10n.wildcardHint) : null,
-                    value: isWildcard,
-                    onChanged: (value) {
-                      setDialogState(() => isWildcard = value);
-                    },
-                    contentPadding: EdgeInsets.zero,
-                  ),
+                  if (_isBlacklist) ...[
+                    const SizedBox(height: 12),
+                    SwitchListTile(
+                      title: Text(context.l10n.wildcardToggle),
+                      subtitle: isWildcard ? Text(context.l10n.wildcardHint) : null,
+                      value: isWildcard,
+                      onChanged: (value) {
+                        setDialogState(() => isWildcard = value);
+                      },
+                      contentPadding: EdgeInsets.zero,
+                    ),
+                  ],
                 ],
               ),
               actions: [
@@ -4139,10 +4141,14 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
     if (result == null) return;
     if (!context.mounted) return;
 
-    if (result.wildcard) {
-      await _addWildcardNumber(context, result.phone);
+    if (_isBlacklist) {
+      if (result.wildcard) {
+        await _addWildcardNumber(context, result.phone);
+      } else {
+        await _addExactNumber(context, result.phone);
+      }
     } else {
-      await _addExactNumber(context, result.phone);
+      await _addWhitelistNumber(context, result.phone);
     }
   }
 
@@ -4336,6 +4342,77 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
     } catch (e) {
       if (kDebugMode) {
         print('Error adding number: $e');
+      }
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.reportError(e.toString())),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  /// Adds a phone number to the whitelist via the rate API with A_LEGITIMATE rating.
+  Future<void> _addWhitelistNumber(BuildContext context, String phone) async {
+    String? token = await getAuthToken();
+    if (token == null) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(context.l10n.notLoggedIn),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
+    try {
+      final rateRequest = api.RateRequest(
+        phone: phone,
+        rating: api.Rating.aLegitimate,
+        comment: '',
+      );
+
+      final buffer = StringBuffer();
+      final jsonWriter = jsonStringWriter(buffer);
+      rateRequest.writeContent(jsonWriter);
+      final jsonBody = buffer.toString();
+
+      final response = await http.post(
+        Uri.parse('$pbBaseUrl/api/rate'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json; charset=UTF-8',
+        },
+        body: jsonBody,
+      );
+
+      if (response.statusCode == 200) {
+        await _loadNumbers();
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(context.l10n.numberAdded),
+              backgroundColor: Colors.green,
+            ),
+          );
+        }
+      } else {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(context.l10n.reportError(response.statusCode.toString())),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error adding whitelist number: $e');
       }
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -4623,12 +4700,10 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
       appBar: AppBar(
         title: Text(title),
       ),
-      floatingActionButton: _isBlacklist
-          ? FloatingActionButton(
-              onPressed: () => _showAddNumberDialog(context),
-              child: const Icon(Icons.add),
-            )
-          : null,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _showAddNumberDialog(context),
+        child: const Icon(Icons.add),
+      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _errorMessage != null
