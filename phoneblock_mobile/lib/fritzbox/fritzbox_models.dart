@@ -83,6 +83,9 @@ class FritzBoxConfig {
   final String? phonebookId;
   final String? sipDeviceId;
   final String? sipUsername;
+  final String? countryCode;
+  final String? intlPrefix;
+  final String? trunkPrefix;
   final int createdAt;
   final int updatedAt;
 
@@ -100,6 +103,9 @@ class FritzBoxConfig {
     this.phonebookId,
     this.sipDeviceId,
     this.sipUsername,
+    this.countryCode,
+    this.intlPrefix,
+    this.trunkPrefix,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -120,6 +126,9 @@ class FritzBoxConfig {
       phonebookId: map['phonebook_id'] as String?,
       sipDeviceId: map['sip_device_id'] as String?,
       sipUsername: map['sip_username'] as String?,
+      countryCode: map['country_code'] as String?,
+      intlPrefix: map['intl_prefix'] as String?,
+      trunkPrefix: map['trunk_prefix'] as String?,
       createdAt: map['created_at'] as int,
       updatedAt: map['updated_at'] as int,
     );
@@ -141,6 +150,9 @@ class FritzBoxConfig {
       'phonebook_id': phonebookId,
       'sip_device_id': sipDeviceId,
       'sip_username': sipUsername,
+      'country_code': countryCode,
+      'intl_prefix': intlPrefix,
+      'trunk_prefix': trunkPrefix,
       'created_at': createdAt,
       'updated_at': updatedAt,
     };
@@ -161,6 +173,9 @@ class FritzBoxConfig {
     String? phonebookId,
     String? sipDeviceId,
     String? sipUsername,
+    String? countryCode,
+    String? intlPrefix,
+    String? trunkPrefix,
     int? createdAt,
     int? updatedAt,
   }) {
@@ -178,6 +193,9 @@ class FritzBoxConfig {
       phonebookId: phonebookId ?? this.phonebookId,
       sipDeviceId: sipDeviceId ?? this.sipDeviceId,
       sipUsername: sipUsername ?? this.sipUsername,
+      countryCode: countryCode ?? this.countryCode,
+      intlPrefix: intlPrefix ?? this.intlPrefix,
+      trunkPrefix: trunkPrefix ?? this.trunkPrefix,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
