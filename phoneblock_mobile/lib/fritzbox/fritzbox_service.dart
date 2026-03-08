@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:jsontool/jsontool.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_storage.dart';
+import 'package:phoneblock_mobile/fritzbox/phone_number_utils.dart' as phone_utils;
 import 'package:phoneblock_mobile/main.dart';
 import 'package:phoneblock_mobile/state.dart';
 import 'package:phoneblock_mobile/storage.dart';
@@ -461,6 +462,9 @@ class FritzBoxService {
 
     // Get last sync timestamp
     final config = await FritzBoxStorage.instance.getConfig();
+    final countryCode = config?.countryCode ?? '49';
+    final intlPrefix = config?.intlPrefix ?? '00';
+    final trunkPrefix = config?.trunkPrefix ?? '0';
     final lastFetch = config?.lastFetchTimestamp;
     DateTime? since;
     if (lastFetch != null) {
@@ -487,7 +491,9 @@ class FritzBoxService {
       if (exists) continue;
 
       // Normalize phone number to international format for API lookup
-      final normalizedNumber = await normalizePhoneNumber(call.phoneNumber);
+      final normalizedNumber = phone_utils.toInternationalForm(
+        call.phoneNumber, countryCode, intlPrefix, trunkPrefix,
+      );
       if (normalizedNumber == null) {
         // If normalization fails, skip this call (invalid number)
         if (kDebugMode) {
