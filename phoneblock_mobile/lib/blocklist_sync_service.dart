@@ -49,12 +49,24 @@ class BlocklistSyncService {
       final db = ScreenedCallsDatabase.instance;
       final syncInfo = await db.getBlocklistSyncInfo();
       final currentVersion = syncInfo['version'] as int;
+      final syncCount = syncInfo['syncCount'] as int;
 
-      if (kDebugMode) {
-        print('BlocklistSync: Starting sync from version $currentVersion');
+      // Trigger a full resync every 40 syncs to correct accumulated drift.
+      final needsFullResync = syncCount >= 40;
+      if (needsFullResync) {
+        if (kDebugMode) {
+          print('BlocklistSync: syncCount=$syncCount, triggering full resync');
+        }
+        await db.resetForFullSync();
       }
 
-      final url = '$pbBaseUrl/api/blocklist?since=$currentVersion';
+      final version = needsFullResync ? 0 : currentVersion;
+
+      if (kDebugMode) {
+        print('BlocklistSync: Starting sync from version $version');
+      }
+
+      final url = '$pbBaseUrl/api/blocklist?since=$version';
       final response = await callPhoneBlockApi(url, authToken: authToken);
 
       if (response.statusCode != 200) {
