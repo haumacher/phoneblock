@@ -127,10 +127,10 @@ public class FtcImportService implements ServletContextListener {
 		firstRun.set(Calendar.SECOND, 0);
 		firstRun.set(Calendar.MILLISECOND, 0);
 
-		Calendar inOneHour = Calendar.getInstance();
-		inOneHour.add(Calendar.HOUR, 1);
-
-		if (firstRun.before(inOneHour)) {
+		// Run next day, if the schedule for today has already passed.
+		Calendar inOneMinute = Calendar.getInstance();
+		inOneMinute.add(Calendar.MINUTE, 1);
+		if (firstRun.before(inOneMinute)) {
 			firstRun.add(Calendar.DAY_OF_MONTH, 1);
 		}
 
