@@ -9,7 +9,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -30,12 +29,15 @@ import org.slf4j.LoggerFactory;
 
 import com.opencsv.CSVReaderHeaderAware;
 
+import de.haumacher.phoneblock.analysis.NumberAnalyzer;
+import de.haumacher.phoneblock.app.api.model.PhoneNumer;
+import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.FtcReports;
+import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
-import de.haumacher.phoneblock.shared.PhoneHash;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 
@@ -46,8 +48,8 @@ import jakarta.servlet.ServletContextListener;
  * <p>
  * The service runs daily at a configurable time and downloads complaint data for
  * each day since the last successful import. Phone numbers are normalized to E.164
- * format (prepending +1 for US numbers) and stored in the FTC_NUMBERS, FTC_REPORTS,
- * and FTC_SUBJECTS tables.
+ * format (prepending +1 for US numbers) and fed directly into the main NUMBERS table
+ * as regular spam reports. Provenance is tracked in the FTC_REPORTS and FTC_SUBJECTS tables.
  * </p>
  *
  * <p>Configuration via JNDI or system properties:</p>
@@ -84,6 +86,9 @@ public class FtcImportService implements ServletContextListener {
 	/** Number of rows after which the SQL session is committed. */
 	private static final int COMMIT_INTERVAL = 1000;
 
+	/** Dial prefix for US phone numbers. */
+	private static final String US_DIAL_PREFIX = "+1";
+
 	private final SchedulerService _schedulerService;
 	private final DBService _dbService;
 
@@ -91,6 +96,11 @@ public class FtcImportService implements ServletContextListener {
 	private int _scheduleHour = 6;
 	private int _scheduleMinute = 0;
 	private ScheduledFuture<?> _task;
+
+	/**
+	 * Cached subject information (label to ID + rating).
+	 */
+	record SubjectInfo(int id, Rating rating) {}
 
 	/**
 	 * Creates a {@link FtcImportService}.
@@ -157,7 +167,8 @@ public class FtcImportService implements ServletContextListener {
 		DB db = _dbService.db();
 		try (SqlSession session = db.openSession()) {
 			Users users = session.getMapper(Users.class);
-			FtcReports reports = session.getMapper(FtcReports.class);
+			FtcReports ftcReports = session.getMapper(FtcReports.class);
+			SpamReports spamReports = session.getMapper(SpamReports.class);
 
 			// Determine start date.
 			String lastDateStr = users.getProperty(PROPERTY_LAST_DATE);
@@ -173,7 +184,7 @@ public class FtcImportService implements ServletContextListener {
 			int totalImported = 0;
 			for (LocalDate date = startDate; !date.isAfter(yesterday); date = date.plusDays(1)) {
 				try {
-					int count = importDay(session, reports, date);
+					int count = importDay(db, session, ftcReports, spamReports, date);
 					totalImported += count;
 
 					// Update the last imported date in PROPERTIES.
@@ -204,13 +215,15 @@ public class FtcImportService implements ServletContextListener {
 	/**
 	 * Downloads and parses one day's CSV file. Returns the number of rows imported.
 	 *
+	 * @param db the database instance.
 	 * @param session the active SQL session.
-	 * @param reports the FtcReports mapper.
+	 * @param ftcReports the FtcReports mapper.
+	 * @param spamReports the SpamReports mapper.
 	 * @param date the date to import.
 	 * @return number of rows imported.
 	 * @throws IOException if the download fails (but not for HTTP 404, which returns 0).
 	 */
-	int importDay(SqlSession session, FtcReports reports, LocalDate date) throws IOException {
+	int importDay(DB db, SqlSession session, FtcReports ftcReports, SpamReports spamReports, LocalDate date) throws IOException {
 		String url = String.format(FTC_CSV_URL_PATTERN, date.format(DateTimeFormatter.ISO_LOCAL_DATE));
 
 		HttpURLConnection connection = (HttpURLConnection) URI.create(url).toURL().openConnection();
@@ -228,8 +241,7 @@ public class FtcImportService implements ServletContextListener {
 			throw new IOException("HTTP " + responseCode + " for " + url);
 		}
 
-		MessageDigest digest = PhoneHash.createPhoneDigest();
-		Map<String, Integer> subjectCache = new HashMap<>();
+		Map<String, SubjectInfo> subjectCache = new HashMap<>();
 
 		int count = 0;
 		try (InputStream in = connection.getInputStream()) {
@@ -241,14 +253,13 @@ public class FtcImportService implements ServletContextListener {
 				String phoneNumber = row.get("Company_Phone_Number");
 				String createdDate = row.get("Created_Date");
 				String subject = row.get("Subject");
-				String robocall = row.get("Recorded_Message_Or_Robocall");
 
 				if (phoneNumber == null || createdDate == null) {
 					continue;
 				}
 
-				processRow(session, reports, subjectCache, digest,
-					phoneNumber.strip(), createdDate.strip(), subject, robocall);
+				processRow(db, session, ftcReports, spamReports, subjectCache,
+					phoneNumber.strip(), createdDate.strip(), subject);
 				count++;
 
 				if (count % COMMIT_INTERVAL == 0) {
@@ -263,24 +274,20 @@ public class FtcImportService implements ServletContextListener {
 	}
 
 	/**
-	 * Processes one CSV row: normalizes the phone number, computes SHA-1, resolves the
-	 * complaint subject, and upserts into FTC_NUMBERS and FTC_REPORTS.
+	 * Processes one CSV row: normalizes the phone number, feeds votes into the
+	 * main NUMBERS table, resolves the complaint subject for rating updates,
+	 * and upserts provenance data into FTC_REPORTS.
 	 */
-	void processRow(SqlSession session, FtcReports reports,
-					Map<String, Integer> subjectCache, MessageDigest digest,
-					String phoneNumber, String createdDate, String subject,
-					String robocall) {
+	void processRow(DB db, SqlSession session, FtcReports ftcReports, SpamReports spamReports,
+					Map<String, SubjectInfo> subjectCache,
+					String phoneNumber, String createdDate, String subject) {
 		// Validate: FTC CSV has bare 10-digit US numbers like "8886749072".
 		if (phoneNumber.length() != 10 || !phoneNumber.chars().allMatch(Character::isDigit)) {
 			return;
 		}
 
 		// Normalize to E.164: prepend "+1".
-		String phone = "+1" + phoneNumber;
-
-		// Compute SHA-1 hash.
-		byte[] sha1 = PhoneHash.getPhoneHash(digest, phone);
-		digest.reset();
+		String phone = US_DIAL_PREFIX + phoneNumber;
 
 		// Parse Created_Date to unix millis.
 		long createdMillis;
@@ -292,50 +299,58 @@ public class FtcImportService implements ServletContextListener {
 			return;
 		}
 
-		// Determine robocall flag.
-		boolean isRobocall = "Y".equalsIgnoreCase(robocall);
-		int robocallVote = isRobocall ? 1 : 0;
-
-		// Upsert FTC_NUMBERS: try UPDATE first, INSERT if no rows affected.
-		if (reports.getFtcNumber(phone) != null) {
-			reports.updateFtcNumber(phone, 1, robocallVote, createdMillis, createdMillis);
-		} else {
-			reports.insertFtcNumber(phone, sha1, 1, robocallVote, createdMillis, createdMillis);
+		// Parse phone number for processVotesAndPublish.
+		PhoneNumer number = NumberAnalyzer.parsePhoneNumber(phone, US_DIAL_PREFIX);
+		if (number == null) {
+			LOG.debug("Skipping unparseable phone number: {}", phone);
+			return;
 		}
 
-		// Resolve subject to ID.
+		String phoneId = NumberAnalyzer.getPhoneId(number);
+
+		// Add 1 vote to the main NUMBERS table.
+		db.processVotesAndPublish(spamReports, number, US_DIAL_PREFIX, 1, createdMillis);
+
+		// Resolve subject and update rating if applicable.
 		if (subject != null && !subject.isBlank()) {
 			subject = subject.strip();
-			int subjectId = resolveSubjectId(reports, subjectCache, subject);
+			SubjectInfo subjectInfo = resolveSubject(ftcReports, subjectCache, subject);
 
-			// Upsert FTC_REPORTS.
-			int updated = reports.updateFtcReport(phone, subjectId, 1);
+			// Update rating column in NUMBERS if the subject has a non-null, non-B_MISSED rating.
+			if (subjectInfo.rating() != null && subjectInfo.rating() != Rating.B_MISSED) {
+				spamReports.updateRating(phoneId, subjectInfo.rating(), 1, createdMillis);
+			}
+
+			// Upsert FTC_REPORTS for provenance tracking.
+			int updated = ftcReports.updateFtcReport(phone, subjectInfo.id(), 1);
 			if (updated == 0) {
-				reports.insertFtcReport(phone, subjectId, 1);
+				ftcReports.insertFtcReport(phone, subjectInfo.id(), 1);
 			}
 		}
 	}
 
 	/**
-	 * Resolves a subject label to its database ID, using an in-memory cache.
-	 * If the subject is not in the cache or database, it is inserted.
+	 * Resolves a subject label to its database ID and associated rating, using an in-memory cache.
+	 * If the subject is not in the cache or database, it is inserted (with null rating).
 	 */
-	private int resolveSubjectId(FtcReports reports, Map<String, Integer> cache, String label) {
-		Integer cachedId = cache.get(label);
-		if (cachedId != null) {
-			return cachedId.intValue();
+	private SubjectInfo resolveSubject(FtcReports reports, Map<String, SubjectInfo> cache, String label) {
+		SubjectInfo cached = cache.get(label);
+		if (cached != null) {
+			return cached;
 		}
 
 		Integer dbId = reports.getSubjectId(label);
-		if (dbId != null) {
-			cache.put(label, dbId);
-			return dbId.intValue();
+		if (dbId == null) {
+			reports.insertSubject(label);
+			dbId = reports.getSubjectId(label);
 		}
 
-		reports.insertSubject(label);
-		dbId = reports.getSubjectId(label);
-		cache.put(label, dbId);
-		return dbId.intValue();
+		String ratingStr = reports.getSubjectRating(dbId);
+		Rating rating = ratingStr != null ? Rating.valueOfProtocol(ratingStr) : null;
+
+		SubjectInfo info = new SubjectInfo(dbId, rating);
+		cache.put(label, info);
+		return info;
 	}
 
 	/**

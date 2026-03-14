@@ -112,17 +112,6 @@ public class SpamCheckServlet extends HttpServlet {
 			}
 		}
 
-		// If community data has no votes, check FTC complaint data as fallback.
-		if (info.getVotes() <= 0) {
-			try (SqlSession session = db.openSession()) {
-				PhoneInfo ftcInfo = db.getFtcPhoneInfo(session, hash);
-				if (ftcInfo != null) {
-					info.setVotes(ftcInfo.getVotes());
-					info.setRating(ftcInfo.getRating());
-				}
-			}
-		}
-
 		// If no match found (or number has no votes), try prefix hash lookup for range detection.
 		if (info.getVotes() <= 0 && info.getVotesWildcard() <= 0) {
 			PhoneInfo prefixInfo = lookupPrefixHashes(req, db);

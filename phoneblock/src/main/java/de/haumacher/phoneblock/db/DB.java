@@ -1585,31 +1585,6 @@ public class DB {
 		return result;
 	}
 
-	/**
-	 * Look up FTC Do Not Call data for a phone number by its SHA-1 hash.
-	 * Returns null if no FTC data exists for this hash.
-	 */
-	public PhoneInfo getFtcPhoneInfo(SqlSession session, byte[] hash) {
-		FtcReports ftcReports = session.getMapper(FtcReports.class);
-		DBFtcNumberInfo ftcNumber = ftcReports.getFtcNumberByHash(hash);
-		if (ftcNumber == null) {
-			return null;
-		}
-
-		// Build PhoneInfo from FTC data.
-		PhoneInfo info = PhoneInfo.create();
-		info.setPhone(ftcNumber.getPhone());
-		info.setVotes(ftcNumber.getVotes());
-
-		// Determine dominant rating from FTC_REPORTS + FTC_SUBJECTS.
-		List<DBFtcRatingInfo> ratings = ftcReports.getFtcRatingsByPhone(ftcNumber.getPhone());
-		if (!ratings.isEmpty()) {
-			Rating rating = Rating.valueOfProtocol(ratings.get(0).getRating());
-			info.setRating(rating);
-		}
-
-		return info;
-	}
 
 	public AggregationInfo getAggregation100(SpamReports reports, String phone) {
 		String prefix = prefix100(phone);
