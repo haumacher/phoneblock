@@ -530,7 +530,7 @@ public interface Users {
 	List<DailyCount> getTokenCreationsPerDayByAgent(long since, long before);
 
 	@Select("SELECT CASE WHEN LOCATE('/', USERAGENT) > 0 THEN SUBSTRING(USERAGENT, 1, LOCATE('/', USERAGENT) - 1) ELSE USERAGENT END AS dial, "
-		+ "COUNT(1) AS cnt FROM TOKENS WHERE NOT IMPLICIT AND CREATED < #{before} GROUP BY dial")
+		+ "COUNT(1) AS cnt FROM TOKENS WHERE NOT IMPLICIT AND CREATED < #{before} AND LASTACCESS >= #{before} GROUP BY dial")
 	List<DailyCount> getTokenCountBeforeByAgent(long before);
 
 	@Select("SELECT CAST(CREATED / 86400000 AS BIGINT) AS dayEpoch, COUNT(1) AS cnt "
