@@ -16,13 +16,13 @@ public class NumberInfo extends AbstractNumberInfo {
 	public static final String NUMBER_INFO__TYPE = "NumberInfo";
 
 	/** @see #getAdded() */
-	public static final String ADDED__PROP = "added";
+	private static final String ADDED__PROP = "added";
 
 	/** @see #getUpdated() */
-	public static final String UPDATED__PROP = "updated";
+	private static final String UPDATED__PROP = "updated";
 
 	/** @see #getLastSearch() */
-	public static final String LAST_SEARCH__PROP = "lastSearch";
+	private static final String LAST_SEARCH__PROP = "lastSearch";
 
 	private long _added = 0L;
 
@@ -61,9 +61,7 @@ public class NumberInfo extends AbstractNumberInfo {
 
 	/** Internal setter for {@link #getAdded()} without chain call utility. */
 	protected final void internalSetAdded(long value) {
-		_listener.beforeSet(this, ADDED__PROP, value);
 		_added = value;
-		_listener.afterChanged(this, ADDED__PROP);
 	}
 
 	/**
@@ -83,9 +81,7 @@ public class NumberInfo extends AbstractNumberInfo {
 
 	/** Internal setter for {@link #getUpdated()} without chain call utility. */
 	protected final void internalSetUpdated(long value) {
-		_listener.beforeSet(this, UPDATED__PROP, value);
 		_updated = value;
-		_listener.afterChanged(this, UPDATED__PROP);
 	}
 
 	/**
@@ -105,9 +101,7 @@ public class NumberInfo extends AbstractNumberInfo {
 
 	/** Internal setter for {@link #getLastSearch()} without chain call utility. */
 	protected final void internalSetLastSearch(long value) {
-		_listener.beforeSet(this, LAST_SEARCH__PROP, value);
 		_lastSearch = value;
-		_listener.afterChanged(this, LAST_SEARCH__PROP);
 	}
 
 	@Override
@@ -179,59 +173,6 @@ public class NumberInfo extends AbstractNumberInfo {
 	@Override
 	public String jsonType() {
 		return NUMBER_INFO__TYPE;
-	}
-
-	@SuppressWarnings("hiding")
-	static final java.util.List<String> PROPERTIES;
-	static {
-		java.util.List<String> local = java.util.Arrays.asList(
-			ADDED__PROP, 
-			UPDATED__PROP, 
-			LAST_SEARCH__PROP);
-		java.util.List<String> tmp = new java.util.ArrayList<>();
-		tmp.addAll(de.haumacher.phoneblock.app.api.model.AbstractNumberInfo.PROPERTIES);
-		tmp.addAll(local);
-		PROPERTIES = java.util.Collections.unmodifiableList(tmp);
-	}
-
-	@SuppressWarnings("hiding")
-	static final java.util.Set<String> TRANSIENT_PROPERTIES;
-	static {
-		java.util.HashSet<String> tmp = new java.util.HashSet<>();
-		tmp.addAll(de.haumacher.phoneblock.app.api.model.AbstractNumberInfo.TRANSIENT_PROPERTIES);
-		tmp.addAll(java.util.Arrays.asList(
-				));
-		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
-	}
-
-	@Override
-	public java.util.List<String> properties() {
-		return PROPERTIES;
-	}
-
-	@Override
-	public java.util.Set<String> transientProperties() {
-		return TRANSIENT_PROPERTIES;
-	}
-
-	@Override
-	public Object get(String field) {
-		switch (field) {
-			case ADDED__PROP: return getAdded();
-			case UPDATED__PROP: return getUpdated();
-			case LAST_SEARCH__PROP: return getLastSearch();
-			default: return super.get(field);
-		}
-	}
-
-	@Override
-	public void set(String field, Object value) {
-		switch (field) {
-			case ADDED__PROP: internalSetAdded((long) value); break;
-			case UPDATED__PROP: internalSetUpdated((long) value); break;
-			case LAST_SEARCH__PROP: internalSetLastSearch((long) value); break;
-			default: super.set(field, value); break;
-		}
 	}
 
 	/** Reads a new instance from the given reader. */

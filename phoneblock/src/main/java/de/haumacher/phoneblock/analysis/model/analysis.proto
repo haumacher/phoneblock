@@ -1,5 +1,10 @@
 package de.haumacher.phoneblock.analysis.model;
 
+option NoInterfaces;
+option NoBinary;
+option NoReflection;
+option NoListener;
+
 message NationalDestinationCode {
 	string prefix;
 	int maxDigits;

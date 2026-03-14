@@ -1,6 +1,6 @@
 package de.haumacher.phoneblock.analysis;
 
-public class AreaCode extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable {
+public class AreaCode extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
 	 * Creates a {@link de.haumacher.phoneblock.analysis.AreaCode} instance.
@@ -13,22 +13,13 @@ public class AreaCode extends de.haumacher.msgbuf.data.AbstractDataObject implem
 	public static final String AREA_CODE__TYPE = "AreaCode";
 
 	/** @see #getPhoneAreaCode() */
-	public static final String PHONE_AREA_CODE__PROP = "phone_area_code";
+	private static final String PHONE_AREA_CODE__PROP = "phone_area_code";
 
 	/** @see #getCity() */
-	public static final String CITY__PROP = "city";
+	private static final String CITY__PROP = "city";
 
 	/** @see #isActive() */
-	public static final String ACTIVE__PROP = "active";
-
-	/** Identifier for the property {@link #getPhoneAreaCode()} in binary format. */
-	static final int PHONE_AREA_CODE__ID = 1;
-
-	/** Identifier for the property {@link #getCity()} in binary format. */
-	static final int CITY__ID = 2;
-
-	/** Identifier for the property {@link #isActive()} in binary format. */
-	static final int ACTIVE__ID = 3;
+	private static final String ACTIVE__PROP = "active";
 
 	private String _phoneAreaCode = "";
 
@@ -59,9 +50,7 @@ public class AreaCode extends de.haumacher.msgbuf.data.AbstractDataObject implem
 
 	/** Internal setter for {@link #getPhoneAreaCode()} without chain call utility. */
 	protected final void internalSetPhoneAreaCode(String value) {
-		_listener.beforeSet(this, PHONE_AREA_CODE__PROP, value);
 		_phoneAreaCode = value;
-		_listener.afterChanged(this, PHONE_AREA_CODE__PROP);
 	}
 
 	public final String getCity() {
@@ -78,9 +67,7 @@ public class AreaCode extends de.haumacher.msgbuf.data.AbstractDataObject implem
 
 	/** Internal setter for {@link #getCity()} without chain call utility. */
 	protected final void internalSetCity(String value) {
-		_listener.beforeSet(this, CITY__PROP, value);
 		_city = value;
-		_listener.afterChanged(this, CITY__PROP);
 	}
 
 	public final boolean isActive() {
@@ -97,82 +84,7 @@ public class AreaCode extends de.haumacher.msgbuf.data.AbstractDataObject implem
 
 	/** Internal setter for {@link #isActive()} without chain call utility. */
 	protected final void internalSetActive(boolean value) {
-		_listener.beforeSet(this, ACTIVE__PROP, value);
 		_active = value;
-		_listener.afterChanged(this, ACTIVE__PROP);
-	}
-
-	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
-
-	@Override
-	public de.haumacher.phoneblock.analysis.AreaCode registerListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalRegisterListener(l);
-		return this;
-	}
-
-	protected final void internalRegisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.register(_listener, l);
-	}
-
-	@Override
-	public de.haumacher.phoneblock.analysis.AreaCode unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalUnregisterListener(l);
-		return this;
-	}
-
-	protected final void internalUnregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.unregister(_listener, l);
-	}
-
-	@Override
-	public String jsonType() {
-		return AREA_CODE__TYPE;
-	}
-
-	static final java.util.List<String> PROPERTIES;
-	static {
-		java.util.List<String> local = java.util.Arrays.asList(
-			PHONE_AREA_CODE__PROP, 
-			CITY__PROP, 
-			ACTIVE__PROP);
-		PROPERTIES = java.util.Collections.unmodifiableList(local);
-	}
-
-	static final java.util.Set<String> TRANSIENT_PROPERTIES;
-	static {
-		java.util.HashSet<String> tmp = new java.util.HashSet<>();
-		tmp.addAll(java.util.Arrays.asList(
-				));
-		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
-	}
-
-	@Override
-	public java.util.List<String> properties() {
-		return PROPERTIES;
-	}
-
-	@Override
-	public java.util.Set<String> transientProperties() {
-		return TRANSIENT_PROPERTIES;
-	}
-
-	@Override
-	public Object get(String field) {
-		switch (field) {
-			case PHONE_AREA_CODE__PROP: return getPhoneAreaCode();
-			case CITY__PROP: return getCity();
-			case ACTIVE__PROP: return isActive();
-			default: return null;
-		}
-	}
-
-	@Override
-	public void set(String field, Object value) {
-		switch (field) {
-			case PHONE_AREA_CODE__PROP: internalSetPhoneAreaCode((String) value); break;
-			case CITY__PROP: internalSetCity((String) value); break;
-			case ACTIVE__PROP: internalSetActive((boolean) value); break;
-		}
 	}
 
 	/** Reads a new instance from the given reader. */
@@ -208,60 +120,124 @@ public class AreaCode extends de.haumacher.msgbuf.data.AbstractDataObject implem
 		}
 	}
 
+	/** XML element name representing a {@link de.haumacher.phoneblock.analysis.AreaCode} type. */
+	public static final String AREA_CODE__XML_ELEMENT = "area-code";
+
+	/** XML attribute or element name of a {@link #getPhoneAreaCode} property. */
+	private static final String PHONE_AREA_CODE__XML_ATTR = "phone-area-code";
+
+	/** XML attribute or element name of a {@link #getCity} property. */
+	private static final String CITY__XML_ATTR = "city";
+
+	/** XML attribute or element name of a {@link #isActive} property. */
+	private static final String ACTIVE__XML_ATTR = "active";
+
 	@Override
-	public final void writeTo(de.haumacher.msgbuf.binary.DataWriter out) throws java.io.IOException {
-		out.beginObject();
-		writeFields(out);
-		out.endObject();
+	public String getXmlTagName() {
+		return AREA_CODE__XML_ELEMENT;
 	}
 
-	/**
-	 * Serializes all fields of this instance to the given binary output.
-	 *
-	 * @param out
-	 *        The binary output to write to.
-	 * @throws java.io.IOException If writing fails.
-	 */
-	protected void writeFields(de.haumacher.msgbuf.binary.DataWriter out) throws java.io.IOException {
-		out.name(PHONE_AREA_CODE__ID);
-		out.value(getPhoneAreaCode());
-		out.name(CITY__ID);
-		out.value(getCity());
-		out.name(ACTIVE__ID);
-		out.value(isActive());
+	@Override
+	public final void writeContent(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
+		writeAttributes(out);
+		writeElements(out);
 	}
 
-	/** Reads a new instance from the given reader. */
-	public static de.haumacher.phoneblock.analysis.AreaCode readAreaCode(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		in.beginObject();
-		de.haumacher.phoneblock.analysis.AreaCode result = de.haumacher.phoneblock.analysis.AreaCode.readAreaCode_Content(in);
-		in.endObject();
+	/** Serializes all fields that are written as XML attributes. */
+	protected void writeAttributes(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
+		out.writeAttribute(PHONE_AREA_CODE__XML_ATTR, getPhoneAreaCode());
+		out.writeAttribute(CITY__XML_ATTR, getCity());
+		out.writeAttribute(ACTIVE__XML_ATTR, Boolean.toString(isActive()));
+	}
+
+	/** Serializes all fields that are written as XML elements. */
+	protected void writeElements(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
+		// No element fields.
+	}
+
+	/** Creates a new {@link de.haumacher.phoneblock.analysis.AreaCode} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
+	public static AreaCode readAreaCode_XmlContent(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
+		AreaCode result = new AreaCode();
+		result.readContentXml(in);
 		return result;
 	}
 
-	/** Helper for creating an object of type {@link de.haumacher.phoneblock.analysis.AreaCode} from a polymorphic composition. */
-	public static de.haumacher.phoneblock.analysis.AreaCode readAreaCode_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		de.haumacher.phoneblock.analysis.AreaCode result = new AreaCode();
-		result.readContent(in);
-		return result;
-	}
+	/** Reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
+	protected final void readContentXml(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
+		for (int n = 0, cnt = in.getAttributeCount(); n < cnt; n++) {
+			String name = in.getAttributeLocalName(n);
+			String value = in.getAttributeValue(n);
 
-	/** Helper for reading all fields of this instance. */
-	protected final void readContent(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		while (in.hasNext()) {
-			int field = in.nextName();
-			readField(in, field);
+			readFieldXmlAttribute(name, value);
+		}
+		while (true) {
+			int event = in.nextTag();
+			if (event == javax.xml.stream.XMLStreamConstants.END_ELEMENT) {
+				break;
+			}
+			assert event == javax.xml.stream.XMLStreamConstants.START_ELEMENT;
+
+			String localName = in.getLocalName();
+			readFieldXmlElement(in, localName);
 		}
 	}
 
-	/** Consumes the value for the field with the given ID and assigns its value. */
-	protected void readField(de.haumacher.msgbuf.binary.DataReader in, int field) throws java.io.IOException {
-		switch (field) {
-			case PHONE_AREA_CODE__ID: setPhoneAreaCode(in.nextString()); break;
-			case CITY__ID: setCity(in.nextString()); break;
-			case ACTIVE__ID: setActive(in.nextBoolean()); break;
-			default: in.skipValue(); 
+	/** Parses the given attribute value and assigns it to the field with the given name. */
+	protected void readFieldXmlAttribute(String name, String value) {
+		switch (name) {
+			case PHONE_AREA_CODE__XML_ATTR: {
+				setPhoneAreaCode(value);
+				break;
+			}
+			case CITY__XML_ATTR: {
+				setCity(value);
+				break;
+			}
+			case ACTIVE__XML_ATTR: {
+				setActive(Boolean.parseBoolean(value));
+				break;
+			}
+			default: {
+				// Skip unknown attribute.
+			}
 		}
+	}
+
+	/** Reads the element under the cursor and assigns its contents to the field with the given name. */
+	protected void readFieldXmlElement(javax.xml.stream.XMLStreamReader in, String localName) throws javax.xml.stream.XMLStreamException {
+		switch (localName) {
+			case PHONE_AREA_CODE__XML_ATTR: {
+				setPhoneAreaCode(in.getElementText());
+				break;
+			}
+			case CITY__XML_ATTR: {
+				setCity(in.getElementText());
+				break;
+			}
+			case ACTIVE__XML_ATTR: {
+				setActive(Boolean.parseBoolean(in.getElementText()));
+				break;
+			}
+			default: {
+				internalSkipUntilMatchingEndElement(in);
+			}
+		}
+	}
+
+	protected static final void internalSkipUntilMatchingEndElement(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
+		int level = 0;
+		while (true) {
+			switch (in.next()) {
+				case javax.xml.stream.XMLStreamConstants.START_ELEMENT: level++; break;
+				case javax.xml.stream.XMLStreamConstants.END_ELEMENT: if (level == 0) { return; } else { level--; break; }
+			}
+		}
+	}
+
+	/** Creates a new {@link AreaCode} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
+	public static AreaCode readAreaCode(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
+		in.nextTag();
+		return de.haumacher.phoneblock.analysis.AreaCode.readAreaCode_XmlContent(in);
 	}
 
 }

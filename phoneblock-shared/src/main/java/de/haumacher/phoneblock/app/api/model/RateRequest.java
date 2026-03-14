@@ -3,7 +3,7 @@ package de.haumacher.phoneblock.app.api.model;
 /**
  * Request to a add a new rating for a phone number.
  */
-public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
+public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
 	 * Creates a {@link de.haumacher.phoneblock.app.api.model.RateRequest} instance.
@@ -16,13 +16,13 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	public static final String RATE_REQUEST__TYPE = "RateRequest";
 
 	/** @see #getPhone() */
-	public static final String PHONE__PROP = "phone";
+	private static final String PHONE__PROP = "phone";
 
 	/** @see #getRating() */
-	public static final String RATING__PROP = "rating";
+	private static final String RATING__PROP = "rating";
 
 	/** @see #getComment() */
-	public static final String COMMENT__PROP = "comment";
+	private static final String COMMENT__PROP = "comment";
 
 	private String _phone = "";
 
@@ -56,9 +56,7 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 
 	/** Internal setter for {@link #getPhone()} without chain call utility. */
 	protected final void internalSetPhone(String value) {
-		_listener.beforeSet(this, PHONE__PROP, value);
 		_phone = value;
-		_listener.afterChanged(this, PHONE__PROP);
 	}
 
 	/**
@@ -79,9 +77,7 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	/** Internal setter for {@link #getRating()} without chain call utility. */
 	protected final void internalSetRating(de.haumacher.phoneblock.app.api.model.Rating value) {
 		if (value == null) throw new IllegalArgumentException("Property 'rating' cannot be null.");
-		_listener.beforeSet(this, RATING__PROP, value);
 		_rating = value;
-		_listener.afterChanged(this, RATING__PROP);
 	}
 
 	/**
@@ -101,82 +97,7 @@ public class RateRequest extends de.haumacher.msgbuf.data.AbstractDataObject imp
 
 	/** Internal setter for {@link #getComment()} without chain call utility. */
 	protected final void internalSetComment(String value) {
-		_listener.beforeSet(this, COMMENT__PROP, value);
 		_comment = value;
-		_listener.afterChanged(this, COMMENT__PROP);
-	}
-
-	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.RateRequest registerListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalRegisterListener(l);
-		return this;
-	}
-
-	protected final void internalRegisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.register(_listener, l);
-	}
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.RateRequest unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalUnregisterListener(l);
-		return this;
-	}
-
-	protected final void internalUnregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.unregister(_listener, l);
-	}
-
-	@Override
-	public String jsonType() {
-		return RATE_REQUEST__TYPE;
-	}
-
-	static final java.util.List<String> PROPERTIES;
-	static {
-		java.util.List<String> local = java.util.Arrays.asList(
-			PHONE__PROP, 
-			RATING__PROP, 
-			COMMENT__PROP);
-		PROPERTIES = java.util.Collections.unmodifiableList(local);
-	}
-
-	static final java.util.Set<String> TRANSIENT_PROPERTIES;
-	static {
-		java.util.HashSet<String> tmp = new java.util.HashSet<>();
-		tmp.addAll(java.util.Arrays.asList(
-				));
-		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
-	}
-
-	@Override
-	public java.util.List<String> properties() {
-		return PROPERTIES;
-	}
-
-	@Override
-	public java.util.Set<String> transientProperties() {
-		return TRANSIENT_PROPERTIES;
-	}
-
-	@Override
-	public Object get(String field) {
-		switch (field) {
-			case PHONE__PROP: return getPhone();
-			case RATING__PROP: return getRating();
-			case COMMENT__PROP: return getComment();
-			default: return null;
-		}
-	}
-
-	@Override
-	public void set(String field, Object value) {
-		switch (field) {
-			case PHONE__PROP: internalSetPhone((String) value); break;
-			case RATING__PROP: internalSetRating((de.haumacher.phoneblock.app.api.model.Rating) value); break;
-			case COMMENT__PROP: internalSetComment((String) value); break;
-		}
 	}
 
 	/** Reads a new instance from the given reader. */

@@ -3,837 +3,1851 @@ package de.haumacher.phoneblock.location.model;
 /**
  * Country description from the database at https://github.com/datasets/country-codes
  */
-public interface Country extends de.haumacher.msgbuf.data.DataObject, de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
+public class Country extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.data.ReflectiveDataObject {
 
 	/**
 	 * Creates a {@link de.haumacher.phoneblock.location.model.Country} instance.
 	 */
-	static de.haumacher.phoneblock.location.model.Country create() {
-		return new de.haumacher.phoneblock.location.model.impl.Country_Impl();
+	public static de.haumacher.phoneblock.location.model.Country create() {
+		return new de.haumacher.phoneblock.location.model.Country();
 	}
 
 	/** Identifier for the {@link de.haumacher.phoneblock.location.model.Country} type in JSON format. */
-	String COUNTRY__TYPE = "Country";
+	public static final String COUNTRY__TYPE = "Country";
 
 	/** @see #getFIFA() */
-	String FIFA__PROP = "FIFA";
+	public static final String FIFA__PROP = "FIFA";
 
 	/** @see #getDialPrefixes() */
-	String DIAL_PREFIXES__PROP = "Dial";
+	public static final String DIAL_PREFIXES__PROP = "Dial";
 
 	/** @see #getISO31661Alpha3() */
-	String ISO_3166_1_ALPHA_3__PROP = "ISO3166-1-Alpha-3";
+	public static final String ISO_3166_1_ALPHA_3__PROP = "ISO3166-1-Alpha-3";
 
 	/** @see #getMARC() */
-	String MARC__PROP = "MARC";
+	public static final String MARC__PROP = "MARC";
 
 	/** @see #isIndependent() */
-	String INDEPENDENT__PROP = "is_independent";
+	public static final String INDEPENDENT__PROP = "is_independent";
 
 	/** @see #getISO31661Numeric() */
-	String ISO_3166_1_NUMERIC__PROP = "ISO3166-1-numeric";
+	public static final String ISO_3166_1_NUMERIC__PROP = "ISO3166-1-numeric";
 
 	/** @see #getGAUL() */
-	String GAUL__PROP = "GAUL";
+	public static final String GAUL__PROP = "GAUL";
 
 	/** @see #getFIPS() */
-	String FIPS__PROP = "FIPS";
+	public static final String FIPS__PROP = "FIPS";
 
 	/** @see #getWMO() */
-	String WMO__PROP = "WMO";
+	public static final String WMO__PROP = "WMO";
 
 	/** @see #getISO31661Alpha2() */
-	String ISO_3166_1_ALPHA_2__PROP = "ISO3166-1-Alpha-2";
+	public static final String ISO_3166_1_ALPHA_2__PROP = "ISO3166-1-Alpha-2";
 
 	/** @see #getITU() */
-	String ITU__PROP = "ITU";
+	public static final String ITU__PROP = "ITU";
 
 	/** @see #getIOC() */
-	String IOC__PROP = "IOC";
+	public static final String IOC__PROP = "IOC";
 
 	/** @see #getDS() */
-	String DS__PROP = "DS";
+	public static final String DS__PROP = "DS";
 
 	/** @see #getUNTERMSpanishFormal() */
-	String UNTERM_SPANISH_FORMAL__PROP = "UNTERM Spanish Formal";
+	public static final String UNTERM_SPANISH_FORMAL__PROP = "UNTERM Spanish Formal";
 
 	/** @see #getGlobalCode() */
-	String GLOBAL_CODE__PROP = "Global Code";
+	public static final String GLOBAL_CODE__PROP = "Global Code";
 
 	/** @see #getIntermediateRegionCode() */
-	String INTERMEDIATE_REGION_CODE__PROP = "Intermediate Region Code";
+	public static final String INTERMEDIATE_REGION_CODE__PROP = "Intermediate Region Code";
 
 	/** @see #getOfficialNameFr() */
-	String OFFICIAL_NAME_FR__PROP = "official_name_fr";
+	public static final String OFFICIAL_NAME_FR__PROP = "official_name_fr";
 
 	/** @see #getUNTERMFrenchShort() */
-	String UNTERM_FRENCH_SHORT__PROP = "UNTERM French Short";
+	public static final String UNTERM_FRENCH_SHORT__PROP = "UNTERM French Short";
 
 	/** @see #getISO4217CurrencyName() */
-	String ISO_4217_CURRENCY_NAME__PROP = "ISO4217-currency_name";
+	public static final String ISO_4217_CURRENCY_NAME__PROP = "ISO4217-currency_name";
 
 	/** @see #getUNTERMRussianFormal() */
-	String UNTERM_RUSSIAN_FORMAL__PROP = "UNTERM Russian Formal";
+	public static final String UNTERM_RUSSIAN_FORMAL__PROP = "UNTERM Russian Formal";
 
 	/** @see #getUNTERMEnglishShort() */
-	String UNTERM_ENGLISH_SHORT__PROP = "UNTERM English Short";
+	public static final String UNTERM_ENGLISH_SHORT__PROP = "UNTERM English Short";
 
 	/** @see #getISO4217CurrencyAlphabeticCode() */
-	String ISO_4217_CURRENCY_ALPHABETIC_CODE__PROP = "ISO4217-currency_alphabetic_code";
+	public static final String ISO_4217_CURRENCY_ALPHABETIC_CODE__PROP = "ISO4217-currency_alphabetic_code";
 
 	/** @see #getSmallIslandDevelopingStatesSIDS() */
-	String SMALL_ISLAND_DEVELOPING_STATES_SIDS__PROP = "Small Island Developing States (SIDS)";
+	public static final String SMALL_ISLAND_DEVELOPING_STATES_SIDS__PROP = "Small Island Developing States (SIDS)";
 
 	/** @see #getUNTERMSpanishShort() */
-	String UNTERM_SPANISH_SHORT__PROP = "UNTERM Spanish Short";
+	public static final String UNTERM_SPANISH_SHORT__PROP = "UNTERM Spanish Short";
 
 	/** @see #getISO4217CurrencyNumericCode() */
-	String ISO_4217_CURRENCY_NUMERIC_CODE__PROP = "ISO4217-currency_numeric_code";
+	public static final String ISO_4217_CURRENCY_NUMERIC_CODE__PROP = "ISO4217-currency_numeric_code";
 
 	/** @see #getUNTERMChineseFormal() */
-	String UNTERM_CHINESE_FORMAL__PROP = "UNTERM Chinese Formal";
+	public static final String UNTERM_CHINESE_FORMAL__PROP = "UNTERM Chinese Formal";
 
 	/** @see #getUNTERMFrenchFormal() */
-	String UNTERM_FRENCH_FORMAL__PROP = "UNTERM French Formal";
+	public static final String UNTERM_FRENCH_FORMAL__PROP = "UNTERM French Formal";
 
 	/** @see #getUNTERMRussianShort() */
-	String UNTERM_RUSSIAN_SHORT__PROP = "UNTERM Russian Short";
+	public static final String UNTERM_RUSSIAN_SHORT__PROP = "UNTERM Russian Short";
 
 	/** @see #getM49() */
-	String M_49__PROP = "M49";
+	public static final String M_49__PROP = "M49";
 
 	/** @see #getSubRegionCode() */
-	String SUB_REGION_CODE__PROP = "Sub-region Code";
+	public static final String SUB_REGION_CODE__PROP = "Sub-region Code";
 
 	/** @see #getRegionCode() */
-	String REGION_CODE__PROP = "Region Code";
+	public static final String REGION_CODE__PROP = "Region Code";
 
 	/** @see #getOfficialNameAr() */
-	String OFFICIAL_NAME_AR__PROP = "official_name_ar";
+	public static final String OFFICIAL_NAME_AR__PROP = "official_name_ar";
 
 	/** @see #getISO4217CurrencyMinorUnit() */
-	String ISO_4217_CURRENCY_MINOR_UNIT__PROP = "ISO4217-currency_minor_unit";
+	public static final String ISO_4217_CURRENCY_MINOR_UNIT__PROP = "ISO4217-currency_minor_unit";
 
 	/** @see #getUNTERMArabicFormal() */
-	String UNTERM_ARABIC_FORMAL__PROP = "UNTERM Arabic Formal";
+	public static final String UNTERM_ARABIC_FORMAL__PROP = "UNTERM Arabic Formal";
 
 	/** @see #getUNTERMChineseShort() */
-	String UNTERM_CHINESE_SHORT__PROP = "UNTERM Chinese Short";
+	public static final String UNTERM_CHINESE_SHORT__PROP = "UNTERM Chinese Short";
 
 	/** @see #getLandLockedDevelopingCountriesLLDC() */
-	String LAND_LOCKED_DEVELOPING_COUNTRIES_LLDC__PROP = "Land Locked Developing Countries (LLDC)";
+	public static final String LAND_LOCKED_DEVELOPING_COUNTRIES_LLDC__PROP = "Land Locked Developing Countries (LLDC)";
 
 	/** @see #getIntermediateRegionName() */
-	String INTERMEDIATE_REGION_NAME__PROP = "Intermediate Region Name";
+	public static final String INTERMEDIATE_REGION_NAME__PROP = "Intermediate Region Name";
 
 	/** @see #getOfficialNameEs() */
-	String OFFICIAL_NAME_ES__PROP = "official_name_es";
+	public static final String OFFICIAL_NAME_ES__PROP = "official_name_es";
 
 	/** @see #getUNTERMEnglishFormal() */
-	String UNTERM_ENGLISH_FORMAL__PROP = "UNTERM English Formal";
+	public static final String UNTERM_ENGLISH_FORMAL__PROP = "UNTERM English Formal";
 
 	/** @see #getOfficialNameCn() */
-	String OFFICIAL_NAME_CN__PROP = "official_name_cn";
+	public static final String OFFICIAL_NAME_CN__PROP = "official_name_cn";
 
 	/** @see #getOfficialNameEn() */
-	String OFFICIAL_NAME_EN__PROP = "official_name_en";
+	public static final String OFFICIAL_NAME_EN__PROP = "official_name_en";
 
 	/** @see #getISO4217CurrencyCountryName() */
-	String ISO_4217_CURRENCY_COUNTRY_NAME__PROP = "ISO4217-currency_country_name";
+	public static final String ISO_4217_CURRENCY_COUNTRY_NAME__PROP = "ISO4217-currency_country_name";
 
 	/** @see #getLeastDevelopedCountriesLDC() */
-	String LEAST_DEVELOPED_COUNTRIES_LDC__PROP = "Least Developed Countries (LDC)";
+	public static final String LEAST_DEVELOPED_COUNTRIES_LDC__PROP = "Least Developed Countries (LDC)";
 
 	/** @see #getRegionName() */
-	String REGION_NAME__PROP = "Region Name";
+	public static final String REGION_NAME__PROP = "Region Name";
 
 	/** @see #getUNTERMArabicShort() */
-	String UNTERM_ARABIC_SHORT__PROP = "UNTERM Arabic Short";
+	public static final String UNTERM_ARABIC_SHORT__PROP = "UNTERM Arabic Short";
 
 	/** @see #getSubRegionName() */
-	String SUB_REGION_NAME__PROP = "Sub-region Name";
+	public static final String SUB_REGION_NAME__PROP = "Sub-region Name";
 
 	/** @see #getOfficialNameRu() */
-	String OFFICIAL_NAME_RU__PROP = "official_name_ru";
+	public static final String OFFICIAL_NAME_RU__PROP = "official_name_ru";
 
 	/** @see #getGlobalName() */
-	String GLOBAL_NAME__PROP = "Global Name";
+	public static final String GLOBAL_NAME__PROP = "Global Name";
 
 	/** @see #getCapital() */
-	String CAPITAL__PROP = "Capital";
+	public static final String CAPITAL__PROP = "Capital";
 
 	/** @see #getContinent() */
-	String CONTINENT__PROP = "Continent";
+	public static final String CONTINENT__PROP = "Continent";
 
 	/** @see #getTLD() */
-	String TLD__PROP = "TLD";
+	public static final String TLD__PROP = "TLD";
 
 	/** @see #getLanguages() */
-	String LANGUAGES__PROP = "Languages";
+	public static final String LANGUAGES__PROP = "Languages";
 
 	/** @see #getGeonameID() */
-	String GEONAME_ID__PROP = "Geoname ID";
+	public static final String GEONAME_ID__PROP = "Geoname ID";
 
 	/** @see #getCLDRDisplayName() */
-	String CLDR_DISPLAY_NAME__PROP = "CLDR display name";
+	public static final String CLDR_DISPLAY_NAME__PROP = "CLDR display name";
 
 	/** @see #getEDGAR() */
-	String EDGAR__PROP = "EDGAR";
+	public static final String EDGAR__PROP = "EDGAR";
 
 	/** @see #getWikidataId() */
-	String WIKIDATA_ID__PROP = "wikidata_id";
+	public static final String WIKIDATA_ID__PROP = "wikidata_id";
 
 	/** @see #getTrunkPrefixes() */
-	String TRUNK_PREFIXES__PROP = "TrunkPrefix";
+	public static final String TRUNK_PREFIXES__PROP = "TrunkPrefix";
 
 	/** @see #getInternationalPrefixes() */
-	String INTERNATIONAL_PREFIXES__PROP = "InternationalPrefix";
+	public static final String INTERNATIONAL_PREFIXES__PROP = "InternationalPrefix";
 
-	/** Identifier for the property {@link #getFIFA()} in binary format. */
-	static final int FIFA__ID = 1;
+	private String _fIFA = "";
 
-	/** Identifier for the property {@link #getDialPrefixes()} in binary format. */
-	static final int DIAL_PREFIXES__ID = 2;
+	private final java.util.List<String> _dialPrefixes = new java.util.ArrayList<>();
 
-	/** Identifier for the property {@link #getISO31661Alpha3()} in binary format. */
-	static final int ISO_3166_1_ALPHA_3__ID = 3;
+	private String _iSO31661Alpha3 = "";
 
-	/** Identifier for the property {@link #getMARC()} in binary format. */
-	static final int MARC__ID = 4;
+	private String _mARC = "";
 
-	/** Identifier for the property {@link #isIndependent()} in binary format. */
-	static final int INDEPENDENT__ID = 5;
+	private boolean _independent = false;
 
-	/** Identifier for the property {@link #getISO31661Numeric()} in binary format. */
-	static final int ISO_3166_1_NUMERIC__ID = 6;
+	private String _iSO31661Numeric = "";
 
-	/** Identifier for the property {@link #getGAUL()} in binary format. */
-	static final int GAUL__ID = 7;
+	private String _gAUL = "";
 
-	/** Identifier for the property {@link #getFIPS()} in binary format. */
-	static final int FIPS__ID = 8;
+	private String _fIPS = "";
 
-	/** Identifier for the property {@link #getWMO()} in binary format. */
-	static final int WMO__ID = 9;
+	private String _wMO = "";
 
-	/** Identifier for the property {@link #getISO31661Alpha2()} in binary format. */
-	static final int ISO_3166_1_ALPHA_2__ID = 10;
+	private String _iSO31661Alpha2 = "";
 
-	/** Identifier for the property {@link #getITU()} in binary format. */
-	static final int ITU__ID = 11;
+	private String _iTU = "";
 
-	/** Identifier for the property {@link #getIOC()} in binary format. */
-	static final int IOC__ID = 12;
+	private String _iOC = "";
 
-	/** Identifier for the property {@link #getDS()} in binary format. */
-	static final int DS__ID = 13;
+	private String _dS = "";
 
-	/** Identifier for the property {@link #getUNTERMSpanishFormal()} in binary format. */
-	static final int UNTERM_SPANISH_FORMAL__ID = 14;
+	private String _uNTERMSpanishFormal = "";
 
-	/** Identifier for the property {@link #getGlobalCode()} in binary format. */
-	static final int GLOBAL_CODE__ID = 15;
+	private String _globalCode = "";
 
-	/** Identifier for the property {@link #getIntermediateRegionCode()} in binary format. */
-	static final int INTERMEDIATE_REGION_CODE__ID = 16;
+	private String _intermediateRegionCode = "";
 
-	/** Identifier for the property {@link #getOfficialNameFr()} in binary format. */
-	static final int OFFICIAL_NAME_FR__ID = 17;
+	private String _officialNameFr = "";
 
-	/** Identifier for the property {@link #getUNTERMFrenchShort()} in binary format. */
-	static final int UNTERM_FRENCH_SHORT__ID = 18;
+	private String _uNTERMFrenchShort = "";
 
-	/** Identifier for the property {@link #getISO4217CurrencyName()} in binary format. */
-	static final int ISO_4217_CURRENCY_NAME__ID = 19;
+	private String _iSO4217CurrencyName = "";
 
-	/** Identifier for the property {@link #getUNTERMRussianFormal()} in binary format. */
-	static final int UNTERM_RUSSIAN_FORMAL__ID = 20;
+	private String _uNTERMRussianFormal = "";
 
-	/** Identifier for the property {@link #getUNTERMEnglishShort()} in binary format. */
-	static final int UNTERM_ENGLISH_SHORT__ID = 21;
+	private String _uNTERMEnglishShort = "";
 
-	/** Identifier for the property {@link #getISO4217CurrencyAlphabeticCode()} in binary format. */
-	static final int ISO_4217_CURRENCY_ALPHABETIC_CODE__ID = 22;
+	private String _iSO4217CurrencyAlphabeticCode = "";
 
-	/** Identifier for the property {@link #getSmallIslandDevelopingStatesSIDS()} in binary format. */
-	static final int SMALL_ISLAND_DEVELOPING_STATES_SIDS__ID = 23;
+	private String _smallIslandDevelopingStatesSIDS = "";
 
-	/** Identifier for the property {@link #getUNTERMSpanishShort()} in binary format. */
-	static final int UNTERM_SPANISH_SHORT__ID = 24;
+	private String _uNTERMSpanishShort = "";
 
-	/** Identifier for the property {@link #getISO4217CurrencyNumericCode()} in binary format. */
-	static final int ISO_4217_CURRENCY_NUMERIC_CODE__ID = 25;
+	private String _iSO4217CurrencyNumericCode = "";
 
-	/** Identifier for the property {@link #getUNTERMChineseFormal()} in binary format. */
-	static final int UNTERM_CHINESE_FORMAL__ID = 26;
+	private String _uNTERMChineseFormal = "";
 
-	/** Identifier for the property {@link #getUNTERMFrenchFormal()} in binary format. */
-	static final int UNTERM_FRENCH_FORMAL__ID = 27;
+	private String _uNTERMFrenchFormal = "";
 
-	/** Identifier for the property {@link #getUNTERMRussianShort()} in binary format. */
-	static final int UNTERM_RUSSIAN_SHORT__ID = 28;
+	private String _uNTERMRussianShort = "";
 
-	/** Identifier for the property {@link #getM49()} in binary format. */
-	static final int M_49__ID = 29;
+	private String _m49 = "";
 
-	/** Identifier for the property {@link #getSubRegionCode()} in binary format. */
-	static final int SUB_REGION_CODE__ID = 30;
+	private String _subRegionCode = "";
 
-	/** Identifier for the property {@link #getRegionCode()} in binary format. */
-	static final int REGION_CODE__ID = 31;
+	private String _regionCode = "";
 
-	/** Identifier for the property {@link #getOfficialNameAr()} in binary format. */
-	static final int OFFICIAL_NAME_AR__ID = 32;
+	private String _officialNameAr = "";
 
-	/** Identifier for the property {@link #getISO4217CurrencyMinorUnit()} in binary format. */
-	static final int ISO_4217_CURRENCY_MINOR_UNIT__ID = 33;
+	private String _iSO4217CurrencyMinorUnit = "";
 
-	/** Identifier for the property {@link #getUNTERMArabicFormal()} in binary format. */
-	static final int UNTERM_ARABIC_FORMAL__ID = 34;
+	private String _uNTERMArabicFormal = "";
 
-	/** Identifier for the property {@link #getUNTERMChineseShort()} in binary format. */
-	static final int UNTERM_CHINESE_SHORT__ID = 35;
+	private String _uNTERMChineseShort = "";
 
-	/** Identifier for the property {@link #getLandLockedDevelopingCountriesLLDC()} in binary format. */
-	static final int LAND_LOCKED_DEVELOPING_COUNTRIES_LLDC__ID = 36;
+	private String _landLockedDevelopingCountriesLLDC = "";
 
-	/** Identifier for the property {@link #getIntermediateRegionName()} in binary format. */
-	static final int INTERMEDIATE_REGION_NAME__ID = 37;
+	private String _intermediateRegionName = "";
 
-	/** Identifier for the property {@link #getOfficialNameEs()} in binary format. */
-	static final int OFFICIAL_NAME_ES__ID = 38;
+	private String _officialNameEs = "";
 
-	/** Identifier for the property {@link #getUNTERMEnglishFormal()} in binary format. */
-	static final int UNTERM_ENGLISH_FORMAL__ID = 39;
+	private String _uNTERMEnglishFormal = "";
 
-	/** Identifier for the property {@link #getOfficialNameCn()} in binary format. */
-	static final int OFFICIAL_NAME_CN__ID = 40;
+	private String _officialNameCn = "";
 
-	/** Identifier for the property {@link #getOfficialNameEn()} in binary format. */
-	static final int OFFICIAL_NAME_EN__ID = 41;
+	private String _officialNameEn = "";
 
-	/** Identifier for the property {@link #getISO4217CurrencyCountryName()} in binary format. */
-	static final int ISO_4217_CURRENCY_COUNTRY_NAME__ID = 42;
+	private String _iSO4217CurrencyCountryName = "";
 
-	/** Identifier for the property {@link #getLeastDevelopedCountriesLDC()} in binary format. */
-	static final int LEAST_DEVELOPED_COUNTRIES_LDC__ID = 43;
+	private String _leastDevelopedCountriesLDC = "";
 
-	/** Identifier for the property {@link #getRegionName()} in binary format. */
-	static final int REGION_NAME__ID = 44;
+	private String _regionName = "";
 
-	/** Identifier for the property {@link #getUNTERMArabicShort()} in binary format. */
-	static final int UNTERM_ARABIC_SHORT__ID = 45;
+	private String _uNTERMArabicShort = "";
 
-	/** Identifier for the property {@link #getSubRegionName()} in binary format. */
-	static final int SUB_REGION_NAME__ID = 46;
+	private String _subRegionName = "";
 
-	/** Identifier for the property {@link #getOfficialNameRu()} in binary format. */
-	static final int OFFICIAL_NAME_RU__ID = 47;
+	private String _officialNameRu = "";
 
-	/** Identifier for the property {@link #getGlobalName()} in binary format. */
-	static final int GLOBAL_NAME__ID = 48;
+	private String _globalName = "";
 
-	/** Identifier for the property {@link #getCapital()} in binary format. */
-	static final int CAPITAL__ID = 49;
+	private String _capital = "";
 
-	/** Identifier for the property {@link #getContinent()} in binary format. */
-	static final int CONTINENT__ID = 50;
+	private String _continent = "";
 
-	/** Identifier for the property {@link #getTLD()} in binary format. */
-	static final int TLD__ID = 51;
+	private String _tLD = "";
 
-	/** Identifier for the property {@link #getLanguages()} in binary format. */
-	static final int LANGUAGES__ID = 52;
+	private final java.util.List<String> _languages = new java.util.ArrayList<>();
 
-	/** Identifier for the property {@link #getGeonameID()} in binary format. */
-	static final int GEONAME_ID__ID = 53;
+	private String _geonameID = "";
 
-	/** Identifier for the property {@link #getCLDRDisplayName()} in binary format. */
-	static final int CLDR_DISPLAY_NAME__ID = 54;
+	private String _cLDRDisplayName = "";
 
-	/** Identifier for the property {@link #getEDGAR()} in binary format. */
-	static final int EDGAR__ID = 55;
+	private String _eDGAR = "";
 
-	/** Identifier for the property {@link #getWikidataId()} in binary format. */
-	static final int WIKIDATA_ID__ID = 56;
+	private String _wikidataId = "";
 
-	/** Identifier for the property {@link #getTrunkPrefixes()} in binary format. */
-	static final int TRUNK_PREFIXES__ID = 57;
+	private final java.util.List<String> _trunkPrefixes = new java.util.ArrayList<>();
 
-	/** Identifier for the property {@link #getInternationalPrefixes()} in binary format. */
-	static final int INTERNATIONAL_PREFIXES__ID = 58;
+	private final java.util.List<String> _internationalPrefixes = new java.util.ArrayList<>();
 
-	String getFIFA();
+	/**
+	 * Creates a {@link Country} instance.
+	 *
+	 * @see de.haumacher.phoneblock.location.model.Country#create()
+	 */
+	protected Country() {
+		super();
+	}
+
+	public final String getFIFA() {
+		return _fIFA;
+	}
 
 	/**
 	 * @see #getFIFA()
 	 */
-	de.haumacher.phoneblock.location.model.Country setFIFA(String value);
+	public de.haumacher.phoneblock.location.model.Country setFIFA(String value) {
+		internalSetFIFA(value);
+		return this;
+	}
 
-	java.util.List<String> getDialPrefixes();
+	/** Internal setter for {@link #getFIFA()} without chain call utility. */
+	protected final void internalSetFIFA(String value) {
+		_fIFA = value;
+	}
+
+	public final java.util.List<String> getDialPrefixes() {
+		return _dialPrefixes;
+	}
 
 	/**
 	 * @see #getDialPrefixes()
 	 */
-	de.haumacher.phoneblock.location.model.Country setDialPrefixes(java.util.List<? extends String> value);
+	public de.haumacher.phoneblock.location.model.Country setDialPrefixes(java.util.List<? extends String> value) {
+		internalSetDialPrefixes(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getDialPrefixes()} without chain call utility. */
+	protected final void internalSetDialPrefixes(java.util.List<? extends String> value) {
+		_dialPrefixes.clear();
+		_dialPrefixes.addAll(value);
+	}
 
 	/**
 	 * Adds a value to the {@link #getDialPrefixes()} list.
 	 */
-	de.haumacher.phoneblock.location.model.Country addDialPrefix(String value);
+	public de.haumacher.phoneblock.location.model.Country addDialPrefix(String value) {
+		internalAddDialPrefix(value);
+		return this;
+	}
+
+	/** Implementation of {@link #addDialPrefix(String)} without chain call utility. */
+	protected final void internalAddDialPrefix(String value) {
+		_dialPrefixes.add(value);
+	}
 
 	/**
 	 * Removes a value from the {@link #getDialPrefixes()} list.
 	 */
-	void removeDialPrefix(String value);
+	public final void removeDialPrefix(String value) {
+		_dialPrefixes.remove(value);
+	}
 
-	String getISO31661Alpha3();
+	public final String getISO31661Alpha3() {
+		return _iSO31661Alpha3;
+	}
 
 	/**
 	 * @see #getISO31661Alpha3()
 	 */
-	de.haumacher.phoneblock.location.model.Country setISO31661Alpha3(String value);
+	public de.haumacher.phoneblock.location.model.Country setISO31661Alpha3(String value) {
+		internalSetISO31661Alpha3(value);
+		return this;
+	}
 
-	String getMARC();
+	/** Internal setter for {@link #getISO31661Alpha3()} without chain call utility. */
+	protected final void internalSetISO31661Alpha3(String value) {
+		_iSO31661Alpha3 = value;
+	}
+
+	public final String getMARC() {
+		return _mARC;
+	}
 
 	/**
 	 * @see #getMARC()
 	 */
-	de.haumacher.phoneblock.location.model.Country setMARC(String value);
+	public de.haumacher.phoneblock.location.model.Country setMARC(String value) {
+		internalSetMARC(value);
+		return this;
+	}
 
-	boolean isIndependent();
+	/** Internal setter for {@link #getMARC()} without chain call utility. */
+	protected final void internalSetMARC(String value) {
+		_mARC = value;
+	}
+
+	public final boolean isIndependent() {
+		return _independent;
+	}
 
 	/**
 	 * @see #isIndependent()
 	 */
-	de.haumacher.phoneblock.location.model.Country setIndependent(boolean value);
+	public de.haumacher.phoneblock.location.model.Country setIndependent(boolean value) {
+		internalSetIndependent(value);
+		return this;
+	}
 
-	String getISO31661Numeric();
+	/** Internal setter for {@link #isIndependent()} without chain call utility. */
+	protected final void internalSetIndependent(boolean value) {
+		_independent = value;
+	}
+
+	public final String getISO31661Numeric() {
+		return _iSO31661Numeric;
+	}
 
 	/**
 	 * @see #getISO31661Numeric()
 	 */
-	de.haumacher.phoneblock.location.model.Country setISO31661Numeric(String value);
+	public de.haumacher.phoneblock.location.model.Country setISO31661Numeric(String value) {
+		internalSetISO31661Numeric(value);
+		return this;
+	}
 
-	String getGAUL();
+	/** Internal setter for {@link #getISO31661Numeric()} without chain call utility. */
+	protected final void internalSetISO31661Numeric(String value) {
+		_iSO31661Numeric = value;
+	}
+
+	public final String getGAUL() {
+		return _gAUL;
+	}
 
 	/**
 	 * @see #getGAUL()
 	 */
-	de.haumacher.phoneblock.location.model.Country setGAUL(String value);
+	public de.haumacher.phoneblock.location.model.Country setGAUL(String value) {
+		internalSetGAUL(value);
+		return this;
+	}
 
-	String getFIPS();
+	/** Internal setter for {@link #getGAUL()} without chain call utility. */
+	protected final void internalSetGAUL(String value) {
+		_gAUL = value;
+	}
+
+	public final String getFIPS() {
+		return _fIPS;
+	}
 
 	/**
 	 * @see #getFIPS()
 	 */
-	de.haumacher.phoneblock.location.model.Country setFIPS(String value);
+	public de.haumacher.phoneblock.location.model.Country setFIPS(String value) {
+		internalSetFIPS(value);
+		return this;
+	}
 
-	String getWMO();
+	/** Internal setter for {@link #getFIPS()} without chain call utility. */
+	protected final void internalSetFIPS(String value) {
+		_fIPS = value;
+	}
+
+	public final String getWMO() {
+		return _wMO;
+	}
 
 	/**
 	 * @see #getWMO()
 	 */
-	de.haumacher.phoneblock.location.model.Country setWMO(String value);
+	public de.haumacher.phoneblock.location.model.Country setWMO(String value) {
+		internalSetWMO(value);
+		return this;
+	}
 
-	String getISO31661Alpha2();
+	/** Internal setter for {@link #getWMO()} without chain call utility. */
+	protected final void internalSetWMO(String value) {
+		_wMO = value;
+	}
+
+	public final String getISO31661Alpha2() {
+		return _iSO31661Alpha2;
+	}
 
 	/**
 	 * @see #getISO31661Alpha2()
 	 */
-	de.haumacher.phoneblock.location.model.Country setISO31661Alpha2(String value);
+	public de.haumacher.phoneblock.location.model.Country setISO31661Alpha2(String value) {
+		internalSetISO31661Alpha2(value);
+		return this;
+	}
 
-	String getITU();
+	/** Internal setter for {@link #getISO31661Alpha2()} without chain call utility. */
+	protected final void internalSetISO31661Alpha2(String value) {
+		_iSO31661Alpha2 = value;
+	}
+
+	public final String getITU() {
+		return _iTU;
+	}
 
 	/**
 	 * @see #getITU()
 	 */
-	de.haumacher.phoneblock.location.model.Country setITU(String value);
+	public de.haumacher.phoneblock.location.model.Country setITU(String value) {
+		internalSetITU(value);
+		return this;
+	}
 
-	String getIOC();
+	/** Internal setter for {@link #getITU()} without chain call utility. */
+	protected final void internalSetITU(String value) {
+		_iTU = value;
+	}
+
+	public final String getIOC() {
+		return _iOC;
+	}
 
 	/**
 	 * @see #getIOC()
 	 */
-	de.haumacher.phoneblock.location.model.Country setIOC(String value);
+	public de.haumacher.phoneblock.location.model.Country setIOC(String value) {
+		internalSetIOC(value);
+		return this;
+	}
 
-	String getDS();
+	/** Internal setter for {@link #getIOC()} without chain call utility. */
+	protected final void internalSetIOC(String value) {
+		_iOC = value;
+	}
+
+	public final String getDS() {
+		return _dS;
+	}
 
 	/**
 	 * @see #getDS()
 	 */
-	de.haumacher.phoneblock.location.model.Country setDS(String value);
+	public de.haumacher.phoneblock.location.model.Country setDS(String value) {
+		internalSetDS(value);
+		return this;
+	}
 
-	String getUNTERMSpanishFormal();
+	/** Internal setter for {@link #getDS()} without chain call utility. */
+	protected final void internalSetDS(String value) {
+		_dS = value;
+	}
+
+	public final String getUNTERMSpanishFormal() {
+		return _uNTERMSpanishFormal;
+	}
 
 	/**
 	 * @see #getUNTERMSpanishFormal()
 	 */
-	de.haumacher.phoneblock.location.model.Country setUNTERMSpanishFormal(String value);
+	public de.haumacher.phoneblock.location.model.Country setUNTERMSpanishFormal(String value) {
+		internalSetUNTERMSpanishFormal(value);
+		return this;
+	}
 
-	String getGlobalCode();
+	/** Internal setter for {@link #getUNTERMSpanishFormal()} without chain call utility. */
+	protected final void internalSetUNTERMSpanishFormal(String value) {
+		_uNTERMSpanishFormal = value;
+	}
+
+	public final String getGlobalCode() {
+		return _globalCode;
+	}
 
 	/**
 	 * @see #getGlobalCode()
 	 */
-	de.haumacher.phoneblock.location.model.Country setGlobalCode(String value);
+	public de.haumacher.phoneblock.location.model.Country setGlobalCode(String value) {
+		internalSetGlobalCode(value);
+		return this;
+	}
 
-	String getIntermediateRegionCode();
+	/** Internal setter for {@link #getGlobalCode()} without chain call utility. */
+	protected final void internalSetGlobalCode(String value) {
+		_globalCode = value;
+	}
+
+	public final String getIntermediateRegionCode() {
+		return _intermediateRegionCode;
+	}
 
 	/**
 	 * @see #getIntermediateRegionCode()
 	 */
-	de.haumacher.phoneblock.location.model.Country setIntermediateRegionCode(String value);
+	public de.haumacher.phoneblock.location.model.Country setIntermediateRegionCode(String value) {
+		internalSetIntermediateRegionCode(value);
+		return this;
+	}
 
-	String getOfficialNameFr();
+	/** Internal setter for {@link #getIntermediateRegionCode()} without chain call utility. */
+	protected final void internalSetIntermediateRegionCode(String value) {
+		_intermediateRegionCode = value;
+	}
+
+	public final String getOfficialNameFr() {
+		return _officialNameFr;
+	}
 
 	/**
 	 * @see #getOfficialNameFr()
 	 */
-	de.haumacher.phoneblock.location.model.Country setOfficialNameFr(String value);
+	public de.haumacher.phoneblock.location.model.Country setOfficialNameFr(String value) {
+		internalSetOfficialNameFr(value);
+		return this;
+	}
 
-	String getUNTERMFrenchShort();
+	/** Internal setter for {@link #getOfficialNameFr()} without chain call utility. */
+	protected final void internalSetOfficialNameFr(String value) {
+		_officialNameFr = value;
+	}
+
+	public final String getUNTERMFrenchShort() {
+		return _uNTERMFrenchShort;
+	}
 
 	/**
 	 * @see #getUNTERMFrenchShort()
 	 */
-	de.haumacher.phoneblock.location.model.Country setUNTERMFrenchShort(String value);
+	public de.haumacher.phoneblock.location.model.Country setUNTERMFrenchShort(String value) {
+		internalSetUNTERMFrenchShort(value);
+		return this;
+	}
 
-	String getISO4217CurrencyName();
+	/** Internal setter for {@link #getUNTERMFrenchShort()} without chain call utility. */
+	protected final void internalSetUNTERMFrenchShort(String value) {
+		_uNTERMFrenchShort = value;
+	}
+
+	public final String getISO4217CurrencyName() {
+		return _iSO4217CurrencyName;
+	}
 
 	/**
 	 * @see #getISO4217CurrencyName()
 	 */
-	de.haumacher.phoneblock.location.model.Country setISO4217CurrencyName(String value);
+	public de.haumacher.phoneblock.location.model.Country setISO4217CurrencyName(String value) {
+		internalSetISO4217CurrencyName(value);
+		return this;
+	}
 
-	String getUNTERMRussianFormal();
+	/** Internal setter for {@link #getISO4217CurrencyName()} without chain call utility. */
+	protected final void internalSetISO4217CurrencyName(String value) {
+		_iSO4217CurrencyName = value;
+	}
+
+	public final String getUNTERMRussianFormal() {
+		return _uNTERMRussianFormal;
+	}
 
 	/**
 	 * @see #getUNTERMRussianFormal()
 	 */
-	de.haumacher.phoneblock.location.model.Country setUNTERMRussianFormal(String value);
+	public de.haumacher.phoneblock.location.model.Country setUNTERMRussianFormal(String value) {
+		internalSetUNTERMRussianFormal(value);
+		return this;
+	}
 
-	String getUNTERMEnglishShort();
+	/** Internal setter for {@link #getUNTERMRussianFormal()} without chain call utility. */
+	protected final void internalSetUNTERMRussianFormal(String value) {
+		_uNTERMRussianFormal = value;
+	}
+
+	public final String getUNTERMEnglishShort() {
+		return _uNTERMEnglishShort;
+	}
 
 	/**
 	 * @see #getUNTERMEnglishShort()
 	 */
-	de.haumacher.phoneblock.location.model.Country setUNTERMEnglishShort(String value);
+	public de.haumacher.phoneblock.location.model.Country setUNTERMEnglishShort(String value) {
+		internalSetUNTERMEnglishShort(value);
+		return this;
+	}
 
-	String getISO4217CurrencyAlphabeticCode();
+	/** Internal setter for {@link #getUNTERMEnglishShort()} without chain call utility. */
+	protected final void internalSetUNTERMEnglishShort(String value) {
+		_uNTERMEnglishShort = value;
+	}
+
+	public final String getISO4217CurrencyAlphabeticCode() {
+		return _iSO4217CurrencyAlphabeticCode;
+	}
 
 	/**
 	 * @see #getISO4217CurrencyAlphabeticCode()
 	 */
-	de.haumacher.phoneblock.location.model.Country setISO4217CurrencyAlphabeticCode(String value);
+	public de.haumacher.phoneblock.location.model.Country setISO4217CurrencyAlphabeticCode(String value) {
+		internalSetISO4217CurrencyAlphabeticCode(value);
+		return this;
+	}
 
-	String getSmallIslandDevelopingStatesSIDS();
+	/** Internal setter for {@link #getISO4217CurrencyAlphabeticCode()} without chain call utility. */
+	protected final void internalSetISO4217CurrencyAlphabeticCode(String value) {
+		_iSO4217CurrencyAlphabeticCode = value;
+	}
+
+	public final String getSmallIslandDevelopingStatesSIDS() {
+		return _smallIslandDevelopingStatesSIDS;
+	}
 
 	/**
 	 * @see #getSmallIslandDevelopingStatesSIDS()
 	 */
-	de.haumacher.phoneblock.location.model.Country setSmallIslandDevelopingStatesSIDS(String value);
+	public de.haumacher.phoneblock.location.model.Country setSmallIslandDevelopingStatesSIDS(String value) {
+		internalSetSmallIslandDevelopingStatesSIDS(value);
+		return this;
+	}
 
-	String getUNTERMSpanishShort();
+	/** Internal setter for {@link #getSmallIslandDevelopingStatesSIDS()} without chain call utility. */
+	protected final void internalSetSmallIslandDevelopingStatesSIDS(String value) {
+		_smallIslandDevelopingStatesSIDS = value;
+	}
+
+	public final String getUNTERMSpanishShort() {
+		return _uNTERMSpanishShort;
+	}
 
 	/**
 	 * @see #getUNTERMSpanishShort()
 	 */
-	de.haumacher.phoneblock.location.model.Country setUNTERMSpanishShort(String value);
+	public de.haumacher.phoneblock.location.model.Country setUNTERMSpanishShort(String value) {
+		internalSetUNTERMSpanishShort(value);
+		return this;
+	}
 
-	String getISO4217CurrencyNumericCode();
+	/** Internal setter for {@link #getUNTERMSpanishShort()} without chain call utility. */
+	protected final void internalSetUNTERMSpanishShort(String value) {
+		_uNTERMSpanishShort = value;
+	}
+
+	public final String getISO4217CurrencyNumericCode() {
+		return _iSO4217CurrencyNumericCode;
+	}
 
 	/**
 	 * @see #getISO4217CurrencyNumericCode()
 	 */
-	de.haumacher.phoneblock.location.model.Country setISO4217CurrencyNumericCode(String value);
+	public de.haumacher.phoneblock.location.model.Country setISO4217CurrencyNumericCode(String value) {
+		internalSetISO4217CurrencyNumericCode(value);
+		return this;
+	}
 
-	String getUNTERMChineseFormal();
+	/** Internal setter for {@link #getISO4217CurrencyNumericCode()} without chain call utility. */
+	protected final void internalSetISO4217CurrencyNumericCode(String value) {
+		_iSO4217CurrencyNumericCode = value;
+	}
+
+	public final String getUNTERMChineseFormal() {
+		return _uNTERMChineseFormal;
+	}
 
 	/**
 	 * @see #getUNTERMChineseFormal()
 	 */
-	de.haumacher.phoneblock.location.model.Country setUNTERMChineseFormal(String value);
+	public de.haumacher.phoneblock.location.model.Country setUNTERMChineseFormal(String value) {
+		internalSetUNTERMChineseFormal(value);
+		return this;
+	}
 
-	String getUNTERMFrenchFormal();
+	/** Internal setter for {@link #getUNTERMChineseFormal()} without chain call utility. */
+	protected final void internalSetUNTERMChineseFormal(String value) {
+		_uNTERMChineseFormal = value;
+	}
+
+	public final String getUNTERMFrenchFormal() {
+		return _uNTERMFrenchFormal;
+	}
 
 	/**
 	 * @see #getUNTERMFrenchFormal()
 	 */
-	de.haumacher.phoneblock.location.model.Country setUNTERMFrenchFormal(String value);
+	public de.haumacher.phoneblock.location.model.Country setUNTERMFrenchFormal(String value) {
+		internalSetUNTERMFrenchFormal(value);
+		return this;
+	}
 
-	String getUNTERMRussianShort();
+	/** Internal setter for {@link #getUNTERMFrenchFormal()} without chain call utility. */
+	protected final void internalSetUNTERMFrenchFormal(String value) {
+		_uNTERMFrenchFormal = value;
+	}
+
+	public final String getUNTERMRussianShort() {
+		return _uNTERMRussianShort;
+	}
 
 	/**
 	 * @see #getUNTERMRussianShort()
 	 */
-	de.haumacher.phoneblock.location.model.Country setUNTERMRussianShort(String value);
+	public de.haumacher.phoneblock.location.model.Country setUNTERMRussianShort(String value) {
+		internalSetUNTERMRussianShort(value);
+		return this;
+	}
 
-	String getM49();
+	/** Internal setter for {@link #getUNTERMRussianShort()} without chain call utility. */
+	protected final void internalSetUNTERMRussianShort(String value) {
+		_uNTERMRussianShort = value;
+	}
+
+	public final String getM49() {
+		return _m49;
+	}
 
 	/**
 	 * @see #getM49()
 	 */
-	de.haumacher.phoneblock.location.model.Country setM49(String value);
+	public de.haumacher.phoneblock.location.model.Country setM49(String value) {
+		internalSetM49(value);
+		return this;
+	}
 
-	String getSubRegionCode();
+	/** Internal setter for {@link #getM49()} without chain call utility. */
+	protected final void internalSetM49(String value) {
+		_m49 = value;
+	}
+
+	public final String getSubRegionCode() {
+		return _subRegionCode;
+	}
 
 	/**
 	 * @see #getSubRegionCode()
 	 */
-	de.haumacher.phoneblock.location.model.Country setSubRegionCode(String value);
+	public de.haumacher.phoneblock.location.model.Country setSubRegionCode(String value) {
+		internalSetSubRegionCode(value);
+		return this;
+	}
 
-	String getRegionCode();
+	/** Internal setter for {@link #getSubRegionCode()} without chain call utility. */
+	protected final void internalSetSubRegionCode(String value) {
+		_subRegionCode = value;
+	}
+
+	public final String getRegionCode() {
+		return _regionCode;
+	}
 
 	/**
 	 * @see #getRegionCode()
 	 */
-	de.haumacher.phoneblock.location.model.Country setRegionCode(String value);
+	public de.haumacher.phoneblock.location.model.Country setRegionCode(String value) {
+		internalSetRegionCode(value);
+		return this;
+	}
 
-	String getOfficialNameAr();
+	/** Internal setter for {@link #getRegionCode()} without chain call utility. */
+	protected final void internalSetRegionCode(String value) {
+		_regionCode = value;
+	}
+
+	public final String getOfficialNameAr() {
+		return _officialNameAr;
+	}
 
 	/**
 	 * @see #getOfficialNameAr()
 	 */
-	de.haumacher.phoneblock.location.model.Country setOfficialNameAr(String value);
+	public de.haumacher.phoneblock.location.model.Country setOfficialNameAr(String value) {
+		internalSetOfficialNameAr(value);
+		return this;
+	}
 
-	String getISO4217CurrencyMinorUnit();
+	/** Internal setter for {@link #getOfficialNameAr()} without chain call utility. */
+	protected final void internalSetOfficialNameAr(String value) {
+		_officialNameAr = value;
+	}
+
+	public final String getISO4217CurrencyMinorUnit() {
+		return _iSO4217CurrencyMinorUnit;
+	}
 
 	/**
 	 * @see #getISO4217CurrencyMinorUnit()
 	 */
-	de.haumacher.phoneblock.location.model.Country setISO4217CurrencyMinorUnit(String value);
+	public de.haumacher.phoneblock.location.model.Country setISO4217CurrencyMinorUnit(String value) {
+		internalSetISO4217CurrencyMinorUnit(value);
+		return this;
+	}
 
-	String getUNTERMArabicFormal();
+	/** Internal setter for {@link #getISO4217CurrencyMinorUnit()} without chain call utility. */
+	protected final void internalSetISO4217CurrencyMinorUnit(String value) {
+		_iSO4217CurrencyMinorUnit = value;
+	}
+
+	public final String getUNTERMArabicFormal() {
+		return _uNTERMArabicFormal;
+	}
 
 	/**
 	 * @see #getUNTERMArabicFormal()
 	 */
-	de.haumacher.phoneblock.location.model.Country setUNTERMArabicFormal(String value);
+	public de.haumacher.phoneblock.location.model.Country setUNTERMArabicFormal(String value) {
+		internalSetUNTERMArabicFormal(value);
+		return this;
+	}
 
-	String getUNTERMChineseShort();
+	/** Internal setter for {@link #getUNTERMArabicFormal()} without chain call utility. */
+	protected final void internalSetUNTERMArabicFormal(String value) {
+		_uNTERMArabicFormal = value;
+	}
+
+	public final String getUNTERMChineseShort() {
+		return _uNTERMChineseShort;
+	}
 
 	/**
 	 * @see #getUNTERMChineseShort()
 	 */
-	de.haumacher.phoneblock.location.model.Country setUNTERMChineseShort(String value);
+	public de.haumacher.phoneblock.location.model.Country setUNTERMChineseShort(String value) {
+		internalSetUNTERMChineseShort(value);
+		return this;
+	}
 
-	String getLandLockedDevelopingCountriesLLDC();
+	/** Internal setter for {@link #getUNTERMChineseShort()} without chain call utility. */
+	protected final void internalSetUNTERMChineseShort(String value) {
+		_uNTERMChineseShort = value;
+	}
+
+	public final String getLandLockedDevelopingCountriesLLDC() {
+		return _landLockedDevelopingCountriesLLDC;
+	}
 
 	/**
 	 * @see #getLandLockedDevelopingCountriesLLDC()
 	 */
-	de.haumacher.phoneblock.location.model.Country setLandLockedDevelopingCountriesLLDC(String value);
+	public de.haumacher.phoneblock.location.model.Country setLandLockedDevelopingCountriesLLDC(String value) {
+		internalSetLandLockedDevelopingCountriesLLDC(value);
+		return this;
+	}
 
-	String getIntermediateRegionName();
+	/** Internal setter for {@link #getLandLockedDevelopingCountriesLLDC()} without chain call utility. */
+	protected final void internalSetLandLockedDevelopingCountriesLLDC(String value) {
+		_landLockedDevelopingCountriesLLDC = value;
+	}
+
+	public final String getIntermediateRegionName() {
+		return _intermediateRegionName;
+	}
 
 	/**
 	 * @see #getIntermediateRegionName()
 	 */
-	de.haumacher.phoneblock.location.model.Country setIntermediateRegionName(String value);
+	public de.haumacher.phoneblock.location.model.Country setIntermediateRegionName(String value) {
+		internalSetIntermediateRegionName(value);
+		return this;
+	}
 
-	String getOfficialNameEs();
+	/** Internal setter for {@link #getIntermediateRegionName()} without chain call utility. */
+	protected final void internalSetIntermediateRegionName(String value) {
+		_intermediateRegionName = value;
+	}
+
+	public final String getOfficialNameEs() {
+		return _officialNameEs;
+	}
 
 	/**
 	 * @see #getOfficialNameEs()
 	 */
-	de.haumacher.phoneblock.location.model.Country setOfficialNameEs(String value);
+	public de.haumacher.phoneblock.location.model.Country setOfficialNameEs(String value) {
+		internalSetOfficialNameEs(value);
+		return this;
+	}
 
-	String getUNTERMEnglishFormal();
+	/** Internal setter for {@link #getOfficialNameEs()} without chain call utility. */
+	protected final void internalSetOfficialNameEs(String value) {
+		_officialNameEs = value;
+	}
+
+	public final String getUNTERMEnglishFormal() {
+		return _uNTERMEnglishFormal;
+	}
 
 	/**
 	 * @see #getUNTERMEnglishFormal()
 	 */
-	de.haumacher.phoneblock.location.model.Country setUNTERMEnglishFormal(String value);
+	public de.haumacher.phoneblock.location.model.Country setUNTERMEnglishFormal(String value) {
+		internalSetUNTERMEnglishFormal(value);
+		return this;
+	}
 
-	String getOfficialNameCn();
+	/** Internal setter for {@link #getUNTERMEnglishFormal()} without chain call utility. */
+	protected final void internalSetUNTERMEnglishFormal(String value) {
+		_uNTERMEnglishFormal = value;
+	}
+
+	public final String getOfficialNameCn() {
+		return _officialNameCn;
+	}
 
 	/**
 	 * @see #getOfficialNameCn()
 	 */
-	de.haumacher.phoneblock.location.model.Country setOfficialNameCn(String value);
+	public de.haumacher.phoneblock.location.model.Country setOfficialNameCn(String value) {
+		internalSetOfficialNameCn(value);
+		return this;
+	}
 
-	String getOfficialNameEn();
+	/** Internal setter for {@link #getOfficialNameCn()} without chain call utility. */
+	protected final void internalSetOfficialNameCn(String value) {
+		_officialNameCn = value;
+	}
+
+	public final String getOfficialNameEn() {
+		return _officialNameEn;
+	}
 
 	/**
 	 * @see #getOfficialNameEn()
 	 */
-	de.haumacher.phoneblock.location.model.Country setOfficialNameEn(String value);
+	public de.haumacher.phoneblock.location.model.Country setOfficialNameEn(String value) {
+		internalSetOfficialNameEn(value);
+		return this;
+	}
 
-	String getISO4217CurrencyCountryName();
+	/** Internal setter for {@link #getOfficialNameEn()} without chain call utility. */
+	protected final void internalSetOfficialNameEn(String value) {
+		_officialNameEn = value;
+	}
+
+	public final String getISO4217CurrencyCountryName() {
+		return _iSO4217CurrencyCountryName;
+	}
 
 	/**
 	 * @see #getISO4217CurrencyCountryName()
 	 */
-	de.haumacher.phoneblock.location.model.Country setISO4217CurrencyCountryName(String value);
+	public de.haumacher.phoneblock.location.model.Country setISO4217CurrencyCountryName(String value) {
+		internalSetISO4217CurrencyCountryName(value);
+		return this;
+	}
 
-	String getLeastDevelopedCountriesLDC();
+	/** Internal setter for {@link #getISO4217CurrencyCountryName()} without chain call utility. */
+	protected final void internalSetISO4217CurrencyCountryName(String value) {
+		_iSO4217CurrencyCountryName = value;
+	}
+
+	public final String getLeastDevelopedCountriesLDC() {
+		return _leastDevelopedCountriesLDC;
+	}
 
 	/**
 	 * @see #getLeastDevelopedCountriesLDC()
 	 */
-	de.haumacher.phoneblock.location.model.Country setLeastDevelopedCountriesLDC(String value);
+	public de.haumacher.phoneblock.location.model.Country setLeastDevelopedCountriesLDC(String value) {
+		internalSetLeastDevelopedCountriesLDC(value);
+		return this;
+	}
 
-	String getRegionName();
+	/** Internal setter for {@link #getLeastDevelopedCountriesLDC()} without chain call utility. */
+	protected final void internalSetLeastDevelopedCountriesLDC(String value) {
+		_leastDevelopedCountriesLDC = value;
+	}
+
+	public final String getRegionName() {
+		return _regionName;
+	}
 
 	/**
 	 * @see #getRegionName()
 	 */
-	de.haumacher.phoneblock.location.model.Country setRegionName(String value);
+	public de.haumacher.phoneblock.location.model.Country setRegionName(String value) {
+		internalSetRegionName(value);
+		return this;
+	}
 
-	String getUNTERMArabicShort();
+	/** Internal setter for {@link #getRegionName()} without chain call utility. */
+	protected final void internalSetRegionName(String value) {
+		_regionName = value;
+	}
+
+	public final String getUNTERMArabicShort() {
+		return _uNTERMArabicShort;
+	}
 
 	/**
 	 * @see #getUNTERMArabicShort()
 	 */
-	de.haumacher.phoneblock.location.model.Country setUNTERMArabicShort(String value);
+	public de.haumacher.phoneblock.location.model.Country setUNTERMArabicShort(String value) {
+		internalSetUNTERMArabicShort(value);
+		return this;
+	}
 
-	String getSubRegionName();
+	/** Internal setter for {@link #getUNTERMArabicShort()} without chain call utility. */
+	protected final void internalSetUNTERMArabicShort(String value) {
+		_uNTERMArabicShort = value;
+	}
+
+	public final String getSubRegionName() {
+		return _subRegionName;
+	}
 
 	/**
 	 * @see #getSubRegionName()
 	 */
-	de.haumacher.phoneblock.location.model.Country setSubRegionName(String value);
+	public de.haumacher.phoneblock.location.model.Country setSubRegionName(String value) {
+		internalSetSubRegionName(value);
+		return this;
+	}
 
-	String getOfficialNameRu();
+	/** Internal setter for {@link #getSubRegionName()} without chain call utility. */
+	protected final void internalSetSubRegionName(String value) {
+		_subRegionName = value;
+	}
+
+	public final String getOfficialNameRu() {
+		return _officialNameRu;
+	}
 
 	/**
 	 * @see #getOfficialNameRu()
 	 */
-	de.haumacher.phoneblock.location.model.Country setOfficialNameRu(String value);
+	public de.haumacher.phoneblock.location.model.Country setOfficialNameRu(String value) {
+		internalSetOfficialNameRu(value);
+		return this;
+	}
 
-	String getGlobalName();
+	/** Internal setter for {@link #getOfficialNameRu()} without chain call utility. */
+	protected final void internalSetOfficialNameRu(String value) {
+		_officialNameRu = value;
+	}
+
+	public final String getGlobalName() {
+		return _globalName;
+	}
 
 	/**
 	 * @see #getGlobalName()
 	 */
-	de.haumacher.phoneblock.location.model.Country setGlobalName(String value);
+	public de.haumacher.phoneblock.location.model.Country setGlobalName(String value) {
+		internalSetGlobalName(value);
+		return this;
+	}
 
-	String getCapital();
+	/** Internal setter for {@link #getGlobalName()} without chain call utility. */
+	protected final void internalSetGlobalName(String value) {
+		_globalName = value;
+	}
+
+	public final String getCapital() {
+		return _capital;
+	}
 
 	/**
 	 * @see #getCapital()
 	 */
-	de.haumacher.phoneblock.location.model.Country setCapital(String value);
+	public de.haumacher.phoneblock.location.model.Country setCapital(String value) {
+		internalSetCapital(value);
+		return this;
+	}
 
-	String getContinent();
+	/** Internal setter for {@link #getCapital()} without chain call utility. */
+	protected final void internalSetCapital(String value) {
+		_capital = value;
+	}
+
+	public final String getContinent() {
+		return _continent;
+	}
 
 	/**
 	 * @see #getContinent()
 	 */
-	de.haumacher.phoneblock.location.model.Country setContinent(String value);
+	public de.haumacher.phoneblock.location.model.Country setContinent(String value) {
+		internalSetContinent(value);
+		return this;
+	}
 
-	String getTLD();
+	/** Internal setter for {@link #getContinent()} without chain call utility. */
+	protected final void internalSetContinent(String value) {
+		_continent = value;
+	}
+
+	public final String getTLD() {
+		return _tLD;
+	}
 
 	/**
 	 * @see #getTLD()
 	 */
-	de.haumacher.phoneblock.location.model.Country setTLD(String value);
+	public de.haumacher.phoneblock.location.model.Country setTLD(String value) {
+		internalSetTLD(value);
+		return this;
+	}
 
-	java.util.List<String> getLanguages();
+	/** Internal setter for {@link #getTLD()} without chain call utility. */
+	protected final void internalSetTLD(String value) {
+		_tLD = value;
+	}
+
+	public final java.util.List<String> getLanguages() {
+		return _languages;
+	}
 
 	/**
 	 * @see #getLanguages()
 	 */
-	de.haumacher.phoneblock.location.model.Country setLanguages(java.util.List<? extends String> value);
+	public de.haumacher.phoneblock.location.model.Country setLanguages(java.util.List<? extends String> value) {
+		internalSetLanguages(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getLanguages()} without chain call utility. */
+	protected final void internalSetLanguages(java.util.List<? extends String> value) {
+		_languages.clear();
+		_languages.addAll(value);
+	}
 
 	/**
 	 * Adds a value to the {@link #getLanguages()} list.
 	 */
-	de.haumacher.phoneblock.location.model.Country addLanguage(String value);
+	public de.haumacher.phoneblock.location.model.Country addLanguage(String value) {
+		internalAddLanguage(value);
+		return this;
+	}
+
+	/** Implementation of {@link #addLanguage(String)} without chain call utility. */
+	protected final void internalAddLanguage(String value) {
+		_languages.add(value);
+	}
 
 	/**
 	 * Removes a value from the {@link #getLanguages()} list.
 	 */
-	void removeLanguage(String value);
+	public final void removeLanguage(String value) {
+		_languages.remove(value);
+	}
 
-	String getGeonameID();
+	public final String getGeonameID() {
+		return _geonameID;
+	}
 
 	/**
 	 * @see #getGeonameID()
 	 */
-	de.haumacher.phoneblock.location.model.Country setGeonameID(String value);
+	public de.haumacher.phoneblock.location.model.Country setGeonameID(String value) {
+		internalSetGeonameID(value);
+		return this;
+	}
 
-	String getCLDRDisplayName();
+	/** Internal setter for {@link #getGeonameID()} without chain call utility. */
+	protected final void internalSetGeonameID(String value) {
+		_geonameID = value;
+	}
+
+	public final String getCLDRDisplayName() {
+		return _cLDRDisplayName;
+	}
 
 	/**
 	 * @see #getCLDRDisplayName()
 	 */
-	de.haumacher.phoneblock.location.model.Country setCLDRDisplayName(String value);
+	public de.haumacher.phoneblock.location.model.Country setCLDRDisplayName(String value) {
+		internalSetCLDRDisplayName(value);
+		return this;
+	}
 
-	String getEDGAR();
+	/** Internal setter for {@link #getCLDRDisplayName()} without chain call utility. */
+	protected final void internalSetCLDRDisplayName(String value) {
+		_cLDRDisplayName = value;
+	}
+
+	public final String getEDGAR() {
+		return _eDGAR;
+	}
 
 	/**
 	 * @see #getEDGAR()
 	 */
-	de.haumacher.phoneblock.location.model.Country setEDGAR(String value);
+	public de.haumacher.phoneblock.location.model.Country setEDGAR(String value) {
+		internalSetEDGAR(value);
+		return this;
+	}
 
-	String getWikidataId();
+	/** Internal setter for {@link #getEDGAR()} without chain call utility. */
+	protected final void internalSetEDGAR(String value) {
+		_eDGAR = value;
+	}
+
+	public final String getWikidataId() {
+		return _wikidataId;
+	}
 
 	/**
 	 * @see #getWikidataId()
 	 */
-	de.haumacher.phoneblock.location.model.Country setWikidataId(String value);
+	public de.haumacher.phoneblock.location.model.Country setWikidataId(String value) {
+		internalSetWikidataId(value);
+		return this;
+	}
 
-	java.util.List<String> getTrunkPrefixes();
+	/** Internal setter for {@link #getWikidataId()} without chain call utility. */
+	protected final void internalSetWikidataId(String value) {
+		_wikidataId = value;
+	}
+
+	public final java.util.List<String> getTrunkPrefixes() {
+		return _trunkPrefixes;
+	}
 
 	/**
 	 * @see #getTrunkPrefixes()
 	 */
-	de.haumacher.phoneblock.location.model.Country setTrunkPrefixes(java.util.List<? extends String> value);
+	public de.haumacher.phoneblock.location.model.Country setTrunkPrefixes(java.util.List<? extends String> value) {
+		internalSetTrunkPrefixes(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getTrunkPrefixes()} without chain call utility. */
+	protected final void internalSetTrunkPrefixes(java.util.List<? extends String> value) {
+		_trunkPrefixes.clear();
+		_trunkPrefixes.addAll(value);
+	}
 
 	/**
 	 * Adds a value to the {@link #getTrunkPrefixes()} list.
 	 */
-	de.haumacher.phoneblock.location.model.Country addTrunkPrefix(String value);
+	public de.haumacher.phoneblock.location.model.Country addTrunkPrefix(String value) {
+		internalAddTrunkPrefix(value);
+		return this;
+	}
+
+	/** Implementation of {@link #addTrunkPrefix(String)} without chain call utility. */
+	protected final void internalAddTrunkPrefix(String value) {
+		_trunkPrefixes.add(value);
+	}
 
 	/**
 	 * Removes a value from the {@link #getTrunkPrefixes()} list.
 	 */
-	void removeTrunkPrefix(String value);
+	public final void removeTrunkPrefix(String value) {
+		_trunkPrefixes.remove(value);
+	}
 
-	java.util.List<String> getInternationalPrefixes();
+	public final java.util.List<String> getInternationalPrefixes() {
+		return _internationalPrefixes;
+	}
 
 	/**
 	 * @see #getInternationalPrefixes()
 	 */
-	de.haumacher.phoneblock.location.model.Country setInternationalPrefixes(java.util.List<? extends String> value);
+	public de.haumacher.phoneblock.location.model.Country setInternationalPrefixes(java.util.List<? extends String> value) {
+		internalSetInternationalPrefixes(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getInternationalPrefixes()} without chain call utility. */
+	protected final void internalSetInternationalPrefixes(java.util.List<? extends String> value) {
+		_internationalPrefixes.clear();
+		_internationalPrefixes.addAll(value);
+	}
 
 	/**
 	 * Adds a value to the {@link #getInternationalPrefixes()} list.
 	 */
-	de.haumacher.phoneblock.location.model.Country addInternationalPrefix(String value);
+	public de.haumacher.phoneblock.location.model.Country addInternationalPrefix(String value) {
+		internalAddInternationalPrefix(value);
+		return this;
+	}
+
+	/** Implementation of {@link #addInternationalPrefix(String)} without chain call utility. */
+	protected final void internalAddInternationalPrefix(String value) {
+		_internationalPrefixes.add(value);
+	}
 
 	/**
 	 * Removes a value from the {@link #getInternationalPrefixes()} list.
 	 */
-	void removeInternationalPrefix(String value);
+	public final void removeInternationalPrefix(String value) {
+		_internationalPrefixes.remove(value);
+	}
 
 	@Override
-	public de.haumacher.phoneblock.location.model.Country registerListener(de.haumacher.msgbuf.observer.Listener l);
+	public String jsonType() {
+		return COUNTRY__TYPE;
+	}
+
+	static final java.util.List<String> PROPERTIES;
+	static {
+		java.util.List<String> local = java.util.Arrays.asList(
+			FIFA__PROP, 
+			DIAL_PREFIXES__PROP, 
+			ISO_3166_1_ALPHA_3__PROP, 
+			MARC__PROP, 
+			INDEPENDENT__PROP, 
+			ISO_3166_1_NUMERIC__PROP, 
+			GAUL__PROP, 
+			FIPS__PROP, 
+			WMO__PROP, 
+			ISO_3166_1_ALPHA_2__PROP, 
+			ITU__PROP, 
+			IOC__PROP, 
+			DS__PROP, 
+			UNTERM_SPANISH_FORMAL__PROP, 
+			GLOBAL_CODE__PROP, 
+			INTERMEDIATE_REGION_CODE__PROP, 
+			OFFICIAL_NAME_FR__PROP, 
+			UNTERM_FRENCH_SHORT__PROP, 
+			ISO_4217_CURRENCY_NAME__PROP, 
+			UNTERM_RUSSIAN_FORMAL__PROP, 
+			UNTERM_ENGLISH_SHORT__PROP, 
+			ISO_4217_CURRENCY_ALPHABETIC_CODE__PROP, 
+			SMALL_ISLAND_DEVELOPING_STATES_SIDS__PROP, 
+			UNTERM_SPANISH_SHORT__PROP, 
+			ISO_4217_CURRENCY_NUMERIC_CODE__PROP, 
+			UNTERM_CHINESE_FORMAL__PROP, 
+			UNTERM_FRENCH_FORMAL__PROP, 
+			UNTERM_RUSSIAN_SHORT__PROP, 
+			M_49__PROP, 
+			SUB_REGION_CODE__PROP, 
+			REGION_CODE__PROP, 
+			OFFICIAL_NAME_AR__PROP, 
+			ISO_4217_CURRENCY_MINOR_UNIT__PROP, 
+			UNTERM_ARABIC_FORMAL__PROP, 
+			UNTERM_CHINESE_SHORT__PROP, 
+			LAND_LOCKED_DEVELOPING_COUNTRIES_LLDC__PROP, 
+			INTERMEDIATE_REGION_NAME__PROP, 
+			OFFICIAL_NAME_ES__PROP, 
+			UNTERM_ENGLISH_FORMAL__PROP, 
+			OFFICIAL_NAME_CN__PROP, 
+			OFFICIAL_NAME_EN__PROP, 
+			ISO_4217_CURRENCY_COUNTRY_NAME__PROP, 
+			LEAST_DEVELOPED_COUNTRIES_LDC__PROP, 
+			REGION_NAME__PROP, 
+			UNTERM_ARABIC_SHORT__PROP, 
+			SUB_REGION_NAME__PROP, 
+			OFFICIAL_NAME_RU__PROP, 
+			GLOBAL_NAME__PROP, 
+			CAPITAL__PROP, 
+			CONTINENT__PROP, 
+			TLD__PROP, 
+			LANGUAGES__PROP, 
+			GEONAME_ID__PROP, 
+			CLDR_DISPLAY_NAME__PROP, 
+			EDGAR__PROP, 
+			WIKIDATA_ID__PROP, 
+			TRUNK_PREFIXES__PROP, 
+			INTERNATIONAL_PREFIXES__PROP);
+		PROPERTIES = java.util.Collections.unmodifiableList(local);
+	}
+
+	static final java.util.Set<String> TRANSIENT_PROPERTIES;
+	static {
+		java.util.HashSet<String> tmp = new java.util.HashSet<>();
+		tmp.addAll(java.util.Arrays.asList(
+				));
+		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
+	}
 
 	@Override
-	public de.haumacher.phoneblock.location.model.Country unregisterListener(de.haumacher.msgbuf.observer.Listener l);
+	public java.util.List<String> properties() {
+		return PROPERTIES;
+	}
+
+	@Override
+	public java.util.Set<String> transientProperties() {
+		return TRANSIENT_PROPERTIES;
+	}
+
+	@Override
+	public Object get(String field) {
+		switch (field) {
+			case FIFA__PROP: return getFIFA();
+			case DIAL_PREFIXES__PROP: return getDialPrefixes();
+			case ISO_3166_1_ALPHA_3__PROP: return getISO31661Alpha3();
+			case MARC__PROP: return getMARC();
+			case INDEPENDENT__PROP: return isIndependent();
+			case ISO_3166_1_NUMERIC__PROP: return getISO31661Numeric();
+			case GAUL__PROP: return getGAUL();
+			case FIPS__PROP: return getFIPS();
+			case WMO__PROP: return getWMO();
+			case ISO_3166_1_ALPHA_2__PROP: return getISO31661Alpha2();
+			case ITU__PROP: return getITU();
+			case IOC__PROP: return getIOC();
+			case DS__PROP: return getDS();
+			case UNTERM_SPANISH_FORMAL__PROP: return getUNTERMSpanishFormal();
+			case GLOBAL_CODE__PROP: return getGlobalCode();
+			case INTERMEDIATE_REGION_CODE__PROP: return getIntermediateRegionCode();
+			case OFFICIAL_NAME_FR__PROP: return getOfficialNameFr();
+			case UNTERM_FRENCH_SHORT__PROP: return getUNTERMFrenchShort();
+			case ISO_4217_CURRENCY_NAME__PROP: return getISO4217CurrencyName();
+			case UNTERM_RUSSIAN_FORMAL__PROP: return getUNTERMRussianFormal();
+			case UNTERM_ENGLISH_SHORT__PROP: return getUNTERMEnglishShort();
+			case ISO_4217_CURRENCY_ALPHABETIC_CODE__PROP: return getISO4217CurrencyAlphabeticCode();
+			case SMALL_ISLAND_DEVELOPING_STATES_SIDS__PROP: return getSmallIslandDevelopingStatesSIDS();
+			case UNTERM_SPANISH_SHORT__PROP: return getUNTERMSpanishShort();
+			case ISO_4217_CURRENCY_NUMERIC_CODE__PROP: return getISO4217CurrencyNumericCode();
+			case UNTERM_CHINESE_FORMAL__PROP: return getUNTERMChineseFormal();
+			case UNTERM_FRENCH_FORMAL__PROP: return getUNTERMFrenchFormal();
+			case UNTERM_RUSSIAN_SHORT__PROP: return getUNTERMRussianShort();
+			case M_49__PROP: return getM49();
+			case SUB_REGION_CODE__PROP: return getSubRegionCode();
+			case REGION_CODE__PROP: return getRegionCode();
+			case OFFICIAL_NAME_AR__PROP: return getOfficialNameAr();
+			case ISO_4217_CURRENCY_MINOR_UNIT__PROP: return getISO4217CurrencyMinorUnit();
+			case UNTERM_ARABIC_FORMAL__PROP: return getUNTERMArabicFormal();
+			case UNTERM_CHINESE_SHORT__PROP: return getUNTERMChineseShort();
+			case LAND_LOCKED_DEVELOPING_COUNTRIES_LLDC__PROP: return getLandLockedDevelopingCountriesLLDC();
+			case INTERMEDIATE_REGION_NAME__PROP: return getIntermediateRegionName();
+			case OFFICIAL_NAME_ES__PROP: return getOfficialNameEs();
+			case UNTERM_ENGLISH_FORMAL__PROP: return getUNTERMEnglishFormal();
+			case OFFICIAL_NAME_CN__PROP: return getOfficialNameCn();
+			case OFFICIAL_NAME_EN__PROP: return getOfficialNameEn();
+			case ISO_4217_CURRENCY_COUNTRY_NAME__PROP: return getISO4217CurrencyCountryName();
+			case LEAST_DEVELOPED_COUNTRIES_LDC__PROP: return getLeastDevelopedCountriesLDC();
+			case REGION_NAME__PROP: return getRegionName();
+			case UNTERM_ARABIC_SHORT__PROP: return getUNTERMArabicShort();
+			case SUB_REGION_NAME__PROP: return getSubRegionName();
+			case OFFICIAL_NAME_RU__PROP: return getOfficialNameRu();
+			case GLOBAL_NAME__PROP: return getGlobalName();
+			case CAPITAL__PROP: return getCapital();
+			case CONTINENT__PROP: return getContinent();
+			case TLD__PROP: return getTLD();
+			case LANGUAGES__PROP: return getLanguages();
+			case GEONAME_ID__PROP: return getGeonameID();
+			case CLDR_DISPLAY_NAME__PROP: return getCLDRDisplayName();
+			case EDGAR__PROP: return getEDGAR();
+			case WIKIDATA_ID__PROP: return getWikidataId();
+			case TRUNK_PREFIXES__PROP: return getTrunkPrefixes();
+			case INTERNATIONAL_PREFIXES__PROP: return getInternationalPrefixes();
+			default: return null;
+		}
+	}
+
+	@Override
+	public void set(String field, Object value) {
+		switch (field) {
+			case FIFA__PROP: internalSetFIFA((String) value); break;
+			case DIAL_PREFIXES__PROP: internalSetDialPrefixes(de.haumacher.msgbuf.util.Conversions.asList(String.class, value)); break;
+			case ISO_3166_1_ALPHA_3__PROP: internalSetISO31661Alpha3((String) value); break;
+			case MARC__PROP: internalSetMARC((String) value); break;
+			case INDEPENDENT__PROP: internalSetIndependent((boolean) value); break;
+			case ISO_3166_1_NUMERIC__PROP: internalSetISO31661Numeric((String) value); break;
+			case GAUL__PROP: internalSetGAUL((String) value); break;
+			case FIPS__PROP: internalSetFIPS((String) value); break;
+			case WMO__PROP: internalSetWMO((String) value); break;
+			case ISO_3166_1_ALPHA_2__PROP: internalSetISO31661Alpha2((String) value); break;
+			case ITU__PROP: internalSetITU((String) value); break;
+			case IOC__PROP: internalSetIOC((String) value); break;
+			case DS__PROP: internalSetDS((String) value); break;
+			case UNTERM_SPANISH_FORMAL__PROP: internalSetUNTERMSpanishFormal((String) value); break;
+			case GLOBAL_CODE__PROP: internalSetGlobalCode((String) value); break;
+			case INTERMEDIATE_REGION_CODE__PROP: internalSetIntermediateRegionCode((String) value); break;
+			case OFFICIAL_NAME_FR__PROP: internalSetOfficialNameFr((String) value); break;
+			case UNTERM_FRENCH_SHORT__PROP: internalSetUNTERMFrenchShort((String) value); break;
+			case ISO_4217_CURRENCY_NAME__PROP: internalSetISO4217CurrencyName((String) value); break;
+			case UNTERM_RUSSIAN_FORMAL__PROP: internalSetUNTERMRussianFormal((String) value); break;
+			case UNTERM_ENGLISH_SHORT__PROP: internalSetUNTERMEnglishShort((String) value); break;
+			case ISO_4217_CURRENCY_ALPHABETIC_CODE__PROP: internalSetISO4217CurrencyAlphabeticCode((String) value); break;
+			case SMALL_ISLAND_DEVELOPING_STATES_SIDS__PROP: internalSetSmallIslandDevelopingStatesSIDS((String) value); break;
+			case UNTERM_SPANISH_SHORT__PROP: internalSetUNTERMSpanishShort((String) value); break;
+			case ISO_4217_CURRENCY_NUMERIC_CODE__PROP: internalSetISO4217CurrencyNumericCode((String) value); break;
+			case UNTERM_CHINESE_FORMAL__PROP: internalSetUNTERMChineseFormal((String) value); break;
+			case UNTERM_FRENCH_FORMAL__PROP: internalSetUNTERMFrenchFormal((String) value); break;
+			case UNTERM_RUSSIAN_SHORT__PROP: internalSetUNTERMRussianShort((String) value); break;
+			case M_49__PROP: internalSetM49((String) value); break;
+			case SUB_REGION_CODE__PROP: internalSetSubRegionCode((String) value); break;
+			case REGION_CODE__PROP: internalSetRegionCode((String) value); break;
+			case OFFICIAL_NAME_AR__PROP: internalSetOfficialNameAr((String) value); break;
+			case ISO_4217_CURRENCY_MINOR_UNIT__PROP: internalSetISO4217CurrencyMinorUnit((String) value); break;
+			case UNTERM_ARABIC_FORMAL__PROP: internalSetUNTERMArabicFormal((String) value); break;
+			case UNTERM_CHINESE_SHORT__PROP: internalSetUNTERMChineseShort((String) value); break;
+			case LAND_LOCKED_DEVELOPING_COUNTRIES_LLDC__PROP: internalSetLandLockedDevelopingCountriesLLDC((String) value); break;
+			case INTERMEDIATE_REGION_NAME__PROP: internalSetIntermediateRegionName((String) value); break;
+			case OFFICIAL_NAME_ES__PROP: internalSetOfficialNameEs((String) value); break;
+			case UNTERM_ENGLISH_FORMAL__PROP: internalSetUNTERMEnglishFormal((String) value); break;
+			case OFFICIAL_NAME_CN__PROP: internalSetOfficialNameCn((String) value); break;
+			case OFFICIAL_NAME_EN__PROP: internalSetOfficialNameEn((String) value); break;
+			case ISO_4217_CURRENCY_COUNTRY_NAME__PROP: internalSetISO4217CurrencyCountryName((String) value); break;
+			case LEAST_DEVELOPED_COUNTRIES_LDC__PROP: internalSetLeastDevelopedCountriesLDC((String) value); break;
+			case REGION_NAME__PROP: internalSetRegionName((String) value); break;
+			case UNTERM_ARABIC_SHORT__PROP: internalSetUNTERMArabicShort((String) value); break;
+			case SUB_REGION_NAME__PROP: internalSetSubRegionName((String) value); break;
+			case OFFICIAL_NAME_RU__PROP: internalSetOfficialNameRu((String) value); break;
+			case GLOBAL_NAME__PROP: internalSetGlobalName((String) value); break;
+			case CAPITAL__PROP: internalSetCapital((String) value); break;
+			case CONTINENT__PROP: internalSetContinent((String) value); break;
+			case TLD__PROP: internalSetTLD((String) value); break;
+			case LANGUAGES__PROP: internalSetLanguages(de.haumacher.msgbuf.util.Conversions.asList(String.class, value)); break;
+			case GEONAME_ID__PROP: internalSetGeonameID((String) value); break;
+			case CLDR_DISPLAY_NAME__PROP: internalSetCLDRDisplayName((String) value); break;
+			case EDGAR__PROP: internalSetEDGAR((String) value); break;
+			case WIKIDATA_ID__PROP: internalSetWikidataId((String) value); break;
+			case TRUNK_PREFIXES__PROP: internalSetTrunkPrefixes(de.haumacher.msgbuf.util.Conversions.asList(String.class, value)); break;
+			case INTERNATIONAL_PREFIXES__PROP: internalSetInternationalPrefixes(de.haumacher.msgbuf.util.Conversions.asList(String.class, value)); break;
+		}
+	}
 
 	/** Reads a new instance from the given reader. */
-	static de.haumacher.phoneblock.location.model.Country readCountry(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
-		de.haumacher.phoneblock.location.model.impl.Country_Impl result = new de.haumacher.phoneblock.location.model.impl.Country_Impl();
+	public static de.haumacher.phoneblock.location.model.Country readCountry(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
+		de.haumacher.phoneblock.location.model.Country result = new de.haumacher.phoneblock.location.model.Country();
 		result.readContent(in);
 		return result;
 	}
 
-	/** Reads a new instance from the given reader. */
-	static de.haumacher.phoneblock.location.model.Country readCountry(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		in.beginObject();
-		de.haumacher.phoneblock.location.model.Country result = de.haumacher.phoneblock.location.model.impl.Country_Impl.readCountry_Content(in);
-		in.endObject();
-		return result;
+	@Override
+	public final void writeTo(de.haumacher.msgbuf.json.JsonWriter out) throws java.io.IOException {
+		writeContent(out);
 	}
 
-	/** Creates a new {@link Country} and reads properties from the content (attributes and inner tags) of the currently open element in the given {@link javax.xml.stream.XMLStreamReader}. */
-	public static Country readCountry(javax.xml.stream.XMLStreamReader in) throws javax.xml.stream.XMLStreamException {
-		in.nextTag();
-		return de.haumacher.phoneblock.location.model.impl.Country_Impl.readCountry_XmlContent(in);
+	@Override
+	protected void writeFields(de.haumacher.msgbuf.json.JsonWriter out) throws java.io.IOException {
+		super.writeFields(out);
+		out.name(FIFA__PROP);
+		out.value(getFIFA());
+		out.name(DIAL_PREFIXES__PROP);
+		out.beginArray();
+		for (String x : getDialPrefixes()) {
+			out.value(x);
+		}
+		out.endArray();
+		out.name(ISO_3166_1_ALPHA_3__PROP);
+		out.value(getISO31661Alpha3());
+		out.name(MARC__PROP);
+		out.value(getMARC());
+		out.name(INDEPENDENT__PROP);
+		out.value(isIndependent());
+		out.name(ISO_3166_1_NUMERIC__PROP);
+		out.value(getISO31661Numeric());
+		out.name(GAUL__PROP);
+		out.value(getGAUL());
+		out.name(FIPS__PROP);
+		out.value(getFIPS());
+		out.name(WMO__PROP);
+		out.value(getWMO());
+		out.name(ISO_3166_1_ALPHA_2__PROP);
+		out.value(getISO31661Alpha2());
+		out.name(ITU__PROP);
+		out.value(getITU());
+		out.name(IOC__PROP);
+		out.value(getIOC());
+		out.name(DS__PROP);
+		out.value(getDS());
+		out.name(UNTERM_SPANISH_FORMAL__PROP);
+		out.value(getUNTERMSpanishFormal());
+		out.name(GLOBAL_CODE__PROP);
+		out.value(getGlobalCode());
+		out.name(INTERMEDIATE_REGION_CODE__PROP);
+		out.value(getIntermediateRegionCode());
+		out.name(OFFICIAL_NAME_FR__PROP);
+		out.value(getOfficialNameFr());
+		out.name(UNTERM_FRENCH_SHORT__PROP);
+		out.value(getUNTERMFrenchShort());
+		out.name(ISO_4217_CURRENCY_NAME__PROP);
+		out.value(getISO4217CurrencyName());
+		out.name(UNTERM_RUSSIAN_FORMAL__PROP);
+		out.value(getUNTERMRussianFormal());
+		out.name(UNTERM_ENGLISH_SHORT__PROP);
+		out.value(getUNTERMEnglishShort());
+		out.name(ISO_4217_CURRENCY_ALPHABETIC_CODE__PROP);
+		out.value(getISO4217CurrencyAlphabeticCode());
+		out.name(SMALL_ISLAND_DEVELOPING_STATES_SIDS__PROP);
+		out.value(getSmallIslandDevelopingStatesSIDS());
+		out.name(UNTERM_SPANISH_SHORT__PROP);
+		out.value(getUNTERMSpanishShort());
+		out.name(ISO_4217_CURRENCY_NUMERIC_CODE__PROP);
+		out.value(getISO4217CurrencyNumericCode());
+		out.name(UNTERM_CHINESE_FORMAL__PROP);
+		out.value(getUNTERMChineseFormal());
+		out.name(UNTERM_FRENCH_FORMAL__PROP);
+		out.value(getUNTERMFrenchFormal());
+		out.name(UNTERM_RUSSIAN_SHORT__PROP);
+		out.value(getUNTERMRussianShort());
+		out.name(M_49__PROP);
+		out.value(getM49());
+		out.name(SUB_REGION_CODE__PROP);
+		out.value(getSubRegionCode());
+		out.name(REGION_CODE__PROP);
+		out.value(getRegionCode());
+		out.name(OFFICIAL_NAME_AR__PROP);
+		out.value(getOfficialNameAr());
+		out.name(ISO_4217_CURRENCY_MINOR_UNIT__PROP);
+		out.value(getISO4217CurrencyMinorUnit());
+		out.name(UNTERM_ARABIC_FORMAL__PROP);
+		out.value(getUNTERMArabicFormal());
+		out.name(UNTERM_CHINESE_SHORT__PROP);
+		out.value(getUNTERMChineseShort());
+		out.name(LAND_LOCKED_DEVELOPING_COUNTRIES_LLDC__PROP);
+		out.value(getLandLockedDevelopingCountriesLLDC());
+		out.name(INTERMEDIATE_REGION_NAME__PROP);
+		out.value(getIntermediateRegionName());
+		out.name(OFFICIAL_NAME_ES__PROP);
+		out.value(getOfficialNameEs());
+		out.name(UNTERM_ENGLISH_FORMAL__PROP);
+		out.value(getUNTERMEnglishFormal());
+		out.name(OFFICIAL_NAME_CN__PROP);
+		out.value(getOfficialNameCn());
+		out.name(OFFICIAL_NAME_EN__PROP);
+		out.value(getOfficialNameEn());
+		out.name(ISO_4217_CURRENCY_COUNTRY_NAME__PROP);
+		out.value(getISO4217CurrencyCountryName());
+		out.name(LEAST_DEVELOPED_COUNTRIES_LDC__PROP);
+		out.value(getLeastDevelopedCountriesLDC());
+		out.name(REGION_NAME__PROP);
+		out.value(getRegionName());
+		out.name(UNTERM_ARABIC_SHORT__PROP);
+		out.value(getUNTERMArabicShort());
+		out.name(SUB_REGION_NAME__PROP);
+		out.value(getSubRegionName());
+		out.name(OFFICIAL_NAME_RU__PROP);
+		out.value(getOfficialNameRu());
+		out.name(GLOBAL_NAME__PROP);
+		out.value(getGlobalName());
+		out.name(CAPITAL__PROP);
+		out.value(getCapital());
+		out.name(CONTINENT__PROP);
+		out.value(getContinent());
+		out.name(TLD__PROP);
+		out.value(getTLD());
+		out.name(LANGUAGES__PROP);
+		out.beginArray();
+		for (String x : getLanguages()) {
+			out.value(x);
+		}
+		out.endArray();
+		out.name(GEONAME_ID__PROP);
+		out.value(getGeonameID());
+		out.name(CLDR_DISPLAY_NAME__PROP);
+		out.value(getCLDRDisplayName());
+		out.name(EDGAR__PROP);
+		out.value(getEDGAR());
+		out.name(WIKIDATA_ID__PROP);
+		out.value(getWikidataId());
+		out.name(TRUNK_PREFIXES__PROP);
+		out.beginArray();
+		for (String x : getTrunkPrefixes()) {
+			out.value(x);
+		}
+		out.endArray();
+		out.name(INTERNATIONAL_PREFIXES__PROP);
+		out.beginArray();
+		for (String x : getInternationalPrefixes()) {
+			out.value(x);
+		}
+		out.endArray();
+	}
+
+	@Override
+	protected void readField(de.haumacher.msgbuf.json.JsonReader in, String field) throws java.io.IOException {
+		switch (field) {
+			case FIFA__PROP: setFIFA(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case DIAL_PREFIXES__PROP: {
+				java.util.List<String> newValue = new java.util.ArrayList<>();
+				in.beginArray();
+				while (in.hasNext()) {
+					newValue.add(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in));
+				}
+				in.endArray();
+				setDialPrefixes(newValue);
+			}
+			break;
+			case ISO_3166_1_ALPHA_3__PROP: setISO31661Alpha3(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case MARC__PROP: setMARC(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case INDEPENDENT__PROP: setIndependent(in.nextBoolean()); break;
+			case ISO_3166_1_NUMERIC__PROP: setISO31661Numeric(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case GAUL__PROP: setGAUL(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case FIPS__PROP: setFIPS(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case WMO__PROP: setWMO(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case ISO_3166_1_ALPHA_2__PROP: setISO31661Alpha2(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case ITU__PROP: setITU(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case IOC__PROP: setIOC(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case DS__PROP: setDS(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case UNTERM_SPANISH_FORMAL__PROP: setUNTERMSpanishFormal(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case GLOBAL_CODE__PROP: setGlobalCode(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case INTERMEDIATE_REGION_CODE__PROP: setIntermediateRegionCode(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case OFFICIAL_NAME_FR__PROP: setOfficialNameFr(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case UNTERM_FRENCH_SHORT__PROP: setUNTERMFrenchShort(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case ISO_4217_CURRENCY_NAME__PROP: setISO4217CurrencyName(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case UNTERM_RUSSIAN_FORMAL__PROP: setUNTERMRussianFormal(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case UNTERM_ENGLISH_SHORT__PROP: setUNTERMEnglishShort(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case ISO_4217_CURRENCY_ALPHABETIC_CODE__PROP: setISO4217CurrencyAlphabeticCode(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case SMALL_ISLAND_DEVELOPING_STATES_SIDS__PROP: setSmallIslandDevelopingStatesSIDS(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case UNTERM_SPANISH_SHORT__PROP: setUNTERMSpanishShort(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case ISO_4217_CURRENCY_NUMERIC_CODE__PROP: setISO4217CurrencyNumericCode(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case UNTERM_CHINESE_FORMAL__PROP: setUNTERMChineseFormal(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case UNTERM_FRENCH_FORMAL__PROP: setUNTERMFrenchFormal(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case UNTERM_RUSSIAN_SHORT__PROP: setUNTERMRussianShort(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case M_49__PROP: setM49(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case SUB_REGION_CODE__PROP: setSubRegionCode(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case REGION_CODE__PROP: setRegionCode(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case OFFICIAL_NAME_AR__PROP: setOfficialNameAr(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case ISO_4217_CURRENCY_MINOR_UNIT__PROP: setISO4217CurrencyMinorUnit(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case UNTERM_ARABIC_FORMAL__PROP: setUNTERMArabicFormal(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case UNTERM_CHINESE_SHORT__PROP: setUNTERMChineseShort(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case LAND_LOCKED_DEVELOPING_COUNTRIES_LLDC__PROP: setLandLockedDevelopingCountriesLLDC(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case INTERMEDIATE_REGION_NAME__PROP: setIntermediateRegionName(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case OFFICIAL_NAME_ES__PROP: setOfficialNameEs(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case UNTERM_ENGLISH_FORMAL__PROP: setUNTERMEnglishFormal(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case OFFICIAL_NAME_CN__PROP: setOfficialNameCn(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case OFFICIAL_NAME_EN__PROP: setOfficialNameEn(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case ISO_4217_CURRENCY_COUNTRY_NAME__PROP: setISO4217CurrencyCountryName(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case LEAST_DEVELOPED_COUNTRIES_LDC__PROP: setLeastDevelopedCountriesLDC(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case REGION_NAME__PROP: setRegionName(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case UNTERM_ARABIC_SHORT__PROP: setUNTERMArabicShort(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case SUB_REGION_NAME__PROP: setSubRegionName(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case OFFICIAL_NAME_RU__PROP: setOfficialNameRu(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case GLOBAL_NAME__PROP: setGlobalName(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case CAPITAL__PROP: setCapital(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case CONTINENT__PROP: setContinent(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case TLD__PROP: setTLD(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case LANGUAGES__PROP: {
+				java.util.List<String> newValue = new java.util.ArrayList<>();
+				in.beginArray();
+				while (in.hasNext()) {
+					newValue.add(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in));
+				}
+				in.endArray();
+				setLanguages(newValue);
+			}
+			break;
+			case GEONAME_ID__PROP: setGeonameID(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case CLDR_DISPLAY_NAME__PROP: setCLDRDisplayName(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case EDGAR__PROP: setEDGAR(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case WIKIDATA_ID__PROP: setWikidataId(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case TRUNK_PREFIXES__PROP: {
+				java.util.List<String> newValue = new java.util.ArrayList<>();
+				in.beginArray();
+				while (in.hasNext()) {
+					newValue.add(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in));
+				}
+				in.endArray();
+				setTrunkPrefixes(newValue);
+			}
+			break;
+			case INTERNATIONAL_PREFIXES__PROP: {
+				java.util.List<String> newValue = new java.util.ArrayList<>();
+				in.beginArray();
+				while (in.hasNext()) {
+					newValue.add(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in));
+				}
+				in.endArray();
+				setInternationalPrefixes(newValue);
+			}
+			break;
+			default: super.readField(in, field);
+		}
 	}
 
 }

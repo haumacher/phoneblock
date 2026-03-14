@@ -1,7 +1,9 @@
 package de.haumacher.phoneblock.analysis;
 
 option NoInterfaces;
-option NoXml;
+option NoBinary;
+option NoReflection;
+option NoListener;
 
 message AreaCodes {
 	map<string, AreaCode> codes;

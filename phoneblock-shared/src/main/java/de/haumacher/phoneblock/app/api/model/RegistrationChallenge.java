@@ -3,7 +3,7 @@ package de.haumacher.phoneblock.app.api.model;
 /**
  * Information that must be requested to start a registration process.
  */
-public class RegistrationChallenge extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
+public class RegistrationChallenge extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
 	 * Creates a {@link de.haumacher.phoneblock.app.api.model.RegistrationChallenge} instance.
@@ -16,10 +16,10 @@ public class RegistrationChallenge extends de.haumacher.msgbuf.data.AbstractData
 	public static final String REGISTRATION_CHALLENGE__TYPE = "RegistrationChallenge";
 
 	/** @see #getSession() */
-	public static final String SESSION__PROP = "session";
+	private static final String SESSION__PROP = "session";
 
 	/** @see #getCaptcha() */
-	public static final String CAPTCHA__PROP = "captcha";
+	private static final String CAPTCHA__PROP = "captcha";
 
 	private String _session = "";
 
@@ -51,9 +51,7 @@ public class RegistrationChallenge extends de.haumacher.msgbuf.data.AbstractData
 
 	/** Internal setter for {@link #getSession()} without chain call utility. */
 	protected final void internalSetSession(String value) {
-		_listener.beforeSet(this, SESSION__PROP, value);
 		_session = value;
-		_listener.afterChanged(this, SESSION__PROP);
 	}
 
 	/**
@@ -73,79 +71,7 @@ public class RegistrationChallenge extends de.haumacher.msgbuf.data.AbstractData
 
 	/** Internal setter for {@link #getCaptcha()} without chain call utility. */
 	protected final void internalSetCaptcha(String value) {
-		_listener.beforeSet(this, CAPTCHA__PROP, value);
 		_captcha = value;
-		_listener.afterChanged(this, CAPTCHA__PROP);
-	}
-
-	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.RegistrationChallenge registerListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalRegisterListener(l);
-		return this;
-	}
-
-	protected final void internalRegisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.register(_listener, l);
-	}
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.RegistrationChallenge unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalUnregisterListener(l);
-		return this;
-	}
-
-	protected final void internalUnregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.unregister(_listener, l);
-	}
-
-	@Override
-	public String jsonType() {
-		return REGISTRATION_CHALLENGE__TYPE;
-	}
-
-	static final java.util.List<String> PROPERTIES;
-	static {
-		java.util.List<String> local = java.util.Arrays.asList(
-			SESSION__PROP, 
-			CAPTCHA__PROP);
-		PROPERTIES = java.util.Collections.unmodifiableList(local);
-	}
-
-	static final java.util.Set<String> TRANSIENT_PROPERTIES;
-	static {
-		java.util.HashSet<String> tmp = new java.util.HashSet<>();
-		tmp.addAll(java.util.Arrays.asList(
-				));
-		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
-	}
-
-	@Override
-	public java.util.List<String> properties() {
-		return PROPERTIES;
-	}
-
-	@Override
-	public java.util.Set<String> transientProperties() {
-		return TRANSIENT_PROPERTIES;
-	}
-
-	@Override
-	public Object get(String field) {
-		switch (field) {
-			case SESSION__PROP: return getSession();
-			case CAPTCHA__PROP: return getCaptcha();
-			default: return null;
-		}
-	}
-
-	@Override
-	public void set(String field, Object value) {
-		switch (field) {
-			case SESSION__PROP: internalSetSession((String) value); break;
-			case CAPTCHA__PROP: internalSetCaptcha((String) value); break;
-		}
 	}
 
 	/** Reads a new instance from the given reader. */

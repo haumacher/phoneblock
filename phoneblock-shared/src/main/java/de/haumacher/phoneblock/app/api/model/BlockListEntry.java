@@ -1,6 +1,6 @@
 package de.haumacher.phoneblock.app.api.model;
 
-public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
+public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
 	 * Creates a {@link de.haumacher.phoneblock.app.api.model.BlockListEntry} instance.
@@ -13,16 +13,16 @@ public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject 
 	public static final String BLOCK_LIST_ENTRY__TYPE = "phone-info";
 
 	/** @see #getPhone() */
-	public static final String PHONE__PROP = "phone";
+	private static final String PHONE__PROP = "phone";
 
 	/** @see #getVotes() */
-	public static final String VOTES__PROP = "votes";
+	private static final String VOTES__PROP = "votes";
 
 	/** @see #getRating() */
-	public static final String RATING__PROP = "rating";
+	private static final String RATING__PROP = "rating";
 
 	/** @see #getLastActivity() */
-	public static final String LAST_ACTIVITY__PROP = "lastActivity";
+	private static final String LAST_ACTIVITY__PROP = "lastActivity";
 
 	private String _phone = "";
 
@@ -58,9 +58,7 @@ public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject 
 
 	/** Internal setter for {@link #getPhone()} without chain call utility. */
 	protected final void internalSetPhone(String value) {
-		_listener.beforeSet(this, PHONE__PROP, value);
 		_phone = value;
-		_listener.afterChanged(this, PHONE__PROP);
 	}
 
 	/**
@@ -80,9 +78,7 @@ public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject 
 
 	/** Internal setter for {@link #getVotes()} without chain call utility. */
 	protected final void internalSetVotes(int value) {
-		_listener.beforeSet(this, VOTES__PROP, value);
 		_votes = value;
-		_listener.afterChanged(this, VOTES__PROP);
 	}
 
 	/**
@@ -103,9 +99,7 @@ public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject 
 	/** Internal setter for {@link #getRating()} without chain call utility. */
 	protected final void internalSetRating(de.haumacher.phoneblock.app.api.model.Rating value) {
 		if (value == null) throw new IllegalArgumentException("Property 'rating' cannot be null.");
-		_listener.beforeSet(this, RATING__PROP, value);
 		_rating = value;
-		_listener.afterChanged(this, RATING__PROP);
 	}
 
 	/**
@@ -125,85 +119,7 @@ public class BlockListEntry extends de.haumacher.msgbuf.data.AbstractDataObject 
 
 	/** Internal setter for {@link #getLastActivity()} without chain call utility. */
 	protected final void internalSetLastActivity(long value) {
-		_listener.beforeSet(this, LAST_ACTIVITY__PROP, value);
 		_lastActivity = value;
-		_listener.afterChanged(this, LAST_ACTIVITY__PROP);
-	}
-
-	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.BlockListEntry registerListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalRegisterListener(l);
-		return this;
-	}
-
-	protected final void internalRegisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.register(_listener, l);
-	}
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.BlockListEntry unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalUnregisterListener(l);
-		return this;
-	}
-
-	protected final void internalUnregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.unregister(_listener, l);
-	}
-
-	@Override
-	public String jsonType() {
-		return BLOCK_LIST_ENTRY__TYPE;
-	}
-
-	static final java.util.List<String> PROPERTIES;
-	static {
-		java.util.List<String> local = java.util.Arrays.asList(
-			PHONE__PROP, 
-			VOTES__PROP, 
-			RATING__PROP, 
-			LAST_ACTIVITY__PROP);
-		PROPERTIES = java.util.Collections.unmodifiableList(local);
-	}
-
-	static final java.util.Set<String> TRANSIENT_PROPERTIES;
-	static {
-		java.util.HashSet<String> tmp = new java.util.HashSet<>();
-		tmp.addAll(java.util.Arrays.asList(
-				));
-		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
-	}
-
-	@Override
-	public java.util.List<String> properties() {
-		return PROPERTIES;
-	}
-
-	@Override
-	public java.util.Set<String> transientProperties() {
-		return TRANSIENT_PROPERTIES;
-	}
-
-	@Override
-	public Object get(String field) {
-		switch (field) {
-			case PHONE__PROP: return getPhone();
-			case VOTES__PROP: return getVotes();
-			case RATING__PROP: return getRating();
-			case LAST_ACTIVITY__PROP: return getLastActivity();
-			default: return null;
-		}
-	}
-
-	@Override
-	public void set(String field, Object value) {
-		switch (field) {
-			case PHONE__PROP: internalSetPhone((String) value); break;
-			case VOTES__PROP: internalSetVotes((int) value); break;
-			case RATING__PROP: internalSetRating((de.haumacher.phoneblock.app.api.model.Rating) value); break;
-			case LAST_ACTIVITY__PROP: internalSetLastActivity((long) value); break;
-		}
 	}
 
 	/** Reads a new instance from the given reader. */

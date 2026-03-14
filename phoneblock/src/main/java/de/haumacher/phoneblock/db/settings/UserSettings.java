@@ -3,7 +3,7 @@ package de.haumacher.phoneblock.db.settings;
 /**
  * Account settings.
  */
-public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable {
+public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject {
 
 	/**
 	 * Creates a {@link de.haumacher.phoneblock.db.settings.UserSettings} instance.
@@ -16,76 +16,40 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 	public static final String USER_SETTINGS__TYPE = "UserSettings";
 
 	/** @see #getId() */
-	public static final String ID__PROP = "id";
+	private static final String ID__PROP = "id";
 
 	/** @see #getLogin() */
-	public static final String LOGIN__PROP = "login";
+	private static final String LOGIN__PROP = "login";
 
 	/** @see #getDisplayName() */
-	public static final String DISPLAY_NAME__PROP = "displayName";
+	private static final String DISPLAY_NAME__PROP = "displayName";
 
 	/** @see #getLang() */
-	public static final String LANG__PROP = "lang";
+	private static final String LANG__PROP = "lang";
 
 	/** @see #getDialPrefix() */
-	public static final String DIAL_PREFIX__PROP = "dialPrefix";
+	private static final String DIAL_PREFIX__PROP = "dialPrefix";
 
 	/** @see #isNationalOnly() */
-	public static final String NATIONAL_ONLY__PROP = "nationalOnly";
+	private static final String NATIONAL_ONLY__PROP = "nationalOnly";
 
 	/** @see #getEmail() */
-	public static final String EMAIL__PROP = "email";
+	private static final String EMAIL__PROP = "email";
 
 	/** @see #getMinVotes() */
-	public static final String MIN_VOTES__PROP = "minVotes";
+	private static final String MIN_VOTES__PROP = "minVotes";
 
 	/** @see #getMaxLength() */
-	public static final String MAX_LENGTH__PROP = "maxLength";
+	private static final String MAX_LENGTH__PROP = "maxLength";
 
 	/** @see #isWildcards() */
-	public static final String WILDCARDS__PROP = "wildcards";
+	private static final String WILDCARDS__PROP = "wildcards";
 
 	/** @see #getLastAccess() */
-	public static final String LAST_ACCESS__PROP = "lastAccess";
+	private static final String LAST_ACCESS__PROP = "lastAccess";
 
 	/** @see #getCredit() */
-	public static final String CREDIT__PROP = "credit";
-
-	/** Identifier for the property {@link #getId()} in binary format. */
-	static final int ID__ID = 1;
-
-	/** Identifier for the property {@link #getLogin()} in binary format. */
-	static final int LOGIN__ID = 2;
-
-	/** Identifier for the property {@link #getDisplayName()} in binary format. */
-	static final int DISPLAY_NAME__ID = 3;
-
-	/** Identifier for the property {@link #getLang()} in binary format. */
-	static final int LANG__ID = 4;
-
-	/** Identifier for the property {@link #getDialPrefix()} in binary format. */
-	static final int DIAL_PREFIX__ID = 5;
-
-	/** Identifier for the property {@link #isNationalOnly()} in binary format. */
-	static final int NATIONAL_ONLY__ID = 6;
-
-	/** Identifier for the property {@link #getEmail()} in binary format. */
-	static final int EMAIL__ID = 7;
-
-	/** Identifier for the property {@link #getMinVotes()} in binary format. */
-	static final int MIN_VOTES__ID = 8;
-
-	/** Identifier for the property {@link #getMaxLength()} in binary format. */
-	static final int MAX_LENGTH__ID = 9;
-
-	/** Identifier for the property {@link #isWildcards()} in binary format. */
-	static final int WILDCARDS__ID = 10;
-
-	/** Identifier for the property {@link #getLastAccess()} in binary format. */
-	static final int LAST_ACCESS__ID = 11;
-
-	/** Identifier for the property {@link #getCredit()} in binary format. */
-	static final int CREDIT__ID = 12;
+	private static final String CREDIT__PROP = "credit";
 
 	private long _id = 0L;
 
@@ -137,9 +101,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	/** Internal setter for {@link #getId()} without chain call utility. */
 	protected final void internalSetId(long value) {
-		_listener.beforeSet(this, ID__PROP, value);
 		_id = value;
-		_listener.afterChanged(this, ID__PROP);
 	}
 
 	/**
@@ -159,9 +121,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	/** Internal setter for {@link #getLogin()} without chain call utility. */
 	protected final void internalSetLogin(String value) {
-		_listener.beforeSet(this, LOGIN__PROP, value);
 		_login = value;
-		_listener.afterChanged(this, LOGIN__PROP);
 	}
 
 	/**
@@ -181,9 +141,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	/** Internal setter for {@link #getDisplayName()} without chain call utility. */
 	protected final void internalSetDisplayName(String value) {
-		_listener.beforeSet(this, DISPLAY_NAME__PROP, value);
 		_displayName = value;
-		_listener.afterChanged(this, DISPLAY_NAME__PROP);
 	}
 
 	/**
@@ -203,9 +161,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	/** Internal setter for {@link #getLang()} without chain call utility. */
 	protected final void internalSetLang(String value) {
-		_listener.beforeSet(this, LANG__PROP, value);
 		_lang = value;
-		_listener.afterChanged(this, LANG__PROP);
 	}
 
 	/**
@@ -225,9 +181,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	/** Internal setter for {@link #getDialPrefix()} without chain call utility. */
 	protected final void internalSetDialPrefix(String value) {
-		_listener.beforeSet(this, DIAL_PREFIX__PROP, value);
 		_dialPrefix = value;
-		_listener.afterChanged(this, DIAL_PREFIX__PROP);
 	}
 
 	/**
@@ -247,9 +201,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	/** Internal setter for {@link #isNationalOnly()} without chain call utility. */
 	protected final void internalSetNationalOnly(boolean value) {
-		_listener.beforeSet(this, NATIONAL_ONLY__PROP, value);
 		_nationalOnly = value;
-		_listener.afterChanged(this, NATIONAL_ONLY__PROP);
 	}
 
 	/**
@@ -269,9 +221,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	/** Internal setter for {@link #getEmail()} without chain call utility. */
 	protected final void internalSetEmail(String value) {
-		_listener.beforeSet(this, EMAIL__PROP, value);
 		_email = value;
-		_listener.afterChanged(this, EMAIL__PROP);
 	}
 
 	/**
@@ -291,9 +241,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	/** Internal setter for {@link #getMinVotes()} without chain call utility. */
 	protected final void internalSetMinVotes(int value) {
-		_listener.beforeSet(this, MIN_VOTES__PROP, value);
 		_minVotes = value;
-		_listener.afterChanged(this, MIN_VOTES__PROP);
 	}
 
 	/**
@@ -313,9 +261,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	/** Internal setter for {@link #getMaxLength()} without chain call utility. */
 	protected final void internalSetMaxLength(int value) {
-		_listener.beforeSet(this, MAX_LENGTH__PROP, value);
 		_maxLength = value;
-		_listener.afterChanged(this, MAX_LENGTH__PROP);
 	}
 
 	/**
@@ -335,9 +281,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	/** Internal setter for {@link #isWildcards()} without chain call utility. */
 	protected final void internalSetWildcards(boolean value) {
-		_listener.beforeSet(this, WILDCARDS__PROP, value);
 		_wildcards = value;
-		_listener.afterChanged(this, WILDCARDS__PROP);
 	}
 
 	/**
@@ -357,9 +301,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	/** Internal setter for {@link #getLastAccess()} without chain call utility. */
 	protected final void internalSetLastAccess(long value) {
-		_listener.beforeSet(this, LAST_ACCESS__PROP, value);
 		_lastAccess = value;
-		_listener.afterChanged(this, LAST_ACCESS__PROP);
 	}
 
 	/**
@@ -379,109 +321,7 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	/** Internal setter for {@link #getCredit()} without chain call utility. */
 	protected final void internalSetCredit(int value) {
-		_listener.beforeSet(this, CREDIT__PROP, value);
 		_credit = value;
-		_listener.afterChanged(this, CREDIT__PROP);
-	}
-
-	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
-
-	@Override
-	public de.haumacher.phoneblock.db.settings.UserSettings registerListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalRegisterListener(l);
-		return this;
-	}
-
-	protected final void internalRegisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.register(_listener, l);
-	}
-
-	@Override
-	public de.haumacher.phoneblock.db.settings.UserSettings unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalUnregisterListener(l);
-		return this;
-	}
-
-	protected final void internalUnregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.unregister(_listener, l);
-	}
-
-	@Override
-	public String jsonType() {
-		return USER_SETTINGS__TYPE;
-	}
-
-	static final java.util.List<String> PROPERTIES;
-	static {
-		java.util.List<String> local = java.util.Arrays.asList(
-			ID__PROP, 
-			LOGIN__PROP, 
-			DISPLAY_NAME__PROP, 
-			LANG__PROP, 
-			DIAL_PREFIX__PROP, 
-			NATIONAL_ONLY__PROP, 
-			EMAIL__PROP, 
-			MIN_VOTES__PROP, 
-			MAX_LENGTH__PROP, 
-			WILDCARDS__PROP, 
-			LAST_ACCESS__PROP, 
-			CREDIT__PROP);
-		PROPERTIES = java.util.Collections.unmodifiableList(local);
-	}
-
-	static final java.util.Set<String> TRANSIENT_PROPERTIES;
-	static {
-		java.util.HashSet<String> tmp = new java.util.HashSet<>();
-		tmp.addAll(java.util.Arrays.asList(
-				));
-		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
-	}
-
-	@Override
-	public java.util.List<String> properties() {
-		return PROPERTIES;
-	}
-
-	@Override
-	public java.util.Set<String> transientProperties() {
-		return TRANSIENT_PROPERTIES;
-	}
-
-	@Override
-	public Object get(String field) {
-		switch (field) {
-			case ID__PROP: return getId();
-			case LOGIN__PROP: return getLogin();
-			case DISPLAY_NAME__PROP: return getDisplayName();
-			case LANG__PROP: return getLang();
-			case DIAL_PREFIX__PROP: return getDialPrefix();
-			case NATIONAL_ONLY__PROP: return isNationalOnly();
-			case EMAIL__PROP: return getEmail();
-			case MIN_VOTES__PROP: return getMinVotes();
-			case MAX_LENGTH__PROP: return getMaxLength();
-			case WILDCARDS__PROP: return isWildcards();
-			case LAST_ACCESS__PROP: return getLastAccess();
-			case CREDIT__PROP: return getCredit();
-			default: return null;
-		}
-	}
-
-	@Override
-	public void set(String field, Object value) {
-		switch (field) {
-			case ID__PROP: internalSetId((long) value); break;
-			case LOGIN__PROP: internalSetLogin((String) value); break;
-			case DISPLAY_NAME__PROP: internalSetDisplayName((String) value); break;
-			case LANG__PROP: internalSetLang((String) value); break;
-			case DIAL_PREFIX__PROP: internalSetDialPrefix((String) value); break;
-			case NATIONAL_ONLY__PROP: internalSetNationalOnly((boolean) value); break;
-			case EMAIL__PROP: internalSetEmail((String) value); break;
-			case MIN_VOTES__PROP: internalSetMinVotes((int) value); break;
-			case MAX_LENGTH__PROP: internalSetMaxLength((int) value); break;
-			case WILDCARDS__PROP: internalSetWildcards((boolean) value); break;
-			case LAST_ACCESS__PROP: internalSetLastAccess((long) value); break;
-			case CREDIT__PROP: internalSetCredit((int) value); break;
-		}
 	}
 
 	/** Reads a new instance from the given reader. */
@@ -541,89 +381,6 @@ public class UserSettings extends de.haumacher.msgbuf.data.AbstractDataObject im
 			case LAST_ACCESS__PROP: setLastAccess(in.nextLong()); break;
 			case CREDIT__PROP: setCredit(in.nextInt()); break;
 			default: super.readField(in, field);
-		}
-	}
-
-	@Override
-	public final void writeTo(de.haumacher.msgbuf.binary.DataWriter out) throws java.io.IOException {
-		out.beginObject();
-		writeFields(out);
-		out.endObject();
-	}
-
-	/**
-	 * Serializes all fields of this instance to the given binary output.
-	 *
-	 * @param out
-	 *        The binary output to write to.
-	 * @throws java.io.IOException If writing fails.
-	 */
-	protected void writeFields(de.haumacher.msgbuf.binary.DataWriter out) throws java.io.IOException {
-		out.name(ID__ID);
-		out.value(getId());
-		out.name(LOGIN__ID);
-		out.value(getLogin());
-		out.name(DISPLAY_NAME__ID);
-		out.value(getDisplayName());
-		out.name(LANG__ID);
-		out.value(getLang());
-		out.name(DIAL_PREFIX__ID);
-		out.value(getDialPrefix());
-		out.name(NATIONAL_ONLY__ID);
-		out.value(isNationalOnly());
-		out.name(EMAIL__ID);
-		out.value(getEmail());
-		out.name(MIN_VOTES__ID);
-		out.value(getMinVotes());
-		out.name(MAX_LENGTH__ID);
-		out.value(getMaxLength());
-		out.name(WILDCARDS__ID);
-		out.value(isWildcards());
-		out.name(LAST_ACCESS__ID);
-		out.value(getLastAccess());
-		out.name(CREDIT__ID);
-		out.value(getCredit());
-	}
-
-	/** Reads a new instance from the given reader. */
-	public static de.haumacher.phoneblock.db.settings.UserSettings readUserSettings(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		in.beginObject();
-		de.haumacher.phoneblock.db.settings.UserSettings result = de.haumacher.phoneblock.db.settings.UserSettings.readUserSettings_Content(in);
-		in.endObject();
-		return result;
-	}
-
-	/** Helper for creating an object of type {@link de.haumacher.phoneblock.db.settings.UserSettings} from a polymorphic composition. */
-	public static de.haumacher.phoneblock.db.settings.UserSettings readUserSettings_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		de.haumacher.phoneblock.db.settings.UserSettings result = new UserSettings();
-		result.readContent(in);
-		return result;
-	}
-
-	/** Helper for reading all fields of this instance. */
-	protected final void readContent(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		while (in.hasNext()) {
-			int field = in.nextName();
-			readField(in, field);
-		}
-	}
-
-	/** Consumes the value for the field with the given ID and assigns its value. */
-	protected void readField(de.haumacher.msgbuf.binary.DataReader in, int field) throws java.io.IOException {
-		switch (field) {
-			case ID__ID: setId(in.nextLong()); break;
-			case LOGIN__ID: setLogin(in.nextString()); break;
-			case DISPLAY_NAME__ID: setDisplayName(in.nextString()); break;
-			case LANG__ID: setLang(in.nextString()); break;
-			case DIAL_PREFIX__ID: setDialPrefix(in.nextString()); break;
-			case NATIONAL_ONLY__ID: setNationalOnly(in.nextBoolean()); break;
-			case EMAIL__ID: setEmail(in.nextString()); break;
-			case MIN_VOTES__ID: setMinVotes(in.nextInt()); break;
-			case MAX_LENGTH__ID: setMaxLength(in.nextInt()); break;
-			case WILDCARDS__ID: setWildcards(in.nextBoolean()); break;
-			case LAST_ACCESS__ID: setLastAccess(in.nextLong()); break;
-			case CREDIT__ID: setCredit(in.nextInt()); break;
-			default: in.skipValue(); 
 		}
 	}
 

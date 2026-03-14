@@ -3,7 +3,7 @@ package de.haumacher.phoneblock.app.api.model;
 /**
  * Information about a phone number that is published to the <i>PhoneBlock API</i>.
  */
-public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
+public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
 	 * Creates a {@link de.haumacher.phoneblock.app.api.model.PhoneInfo} instance.
@@ -16,37 +16,37 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	public static final String PHONE_INFO__TYPE = "PhoneInfo";
 
 	/** @see #getPhone() */
-	public static final String PHONE__PROP = "phone";
+	private static final String PHONE__PROP = "phone";
 
 	/** @see #getVotes() */
-	public static final String VOTES__PROP = "votes";
+	private static final String VOTES__PROP = "votes";
 
 	/** @see #getRating() */
-	public static final String RATING__PROP = "rating";
+	private static final String RATING__PROP = "rating";
 
 	/** @see #getVotesWildcard() */
-	public static final String VOTES_WILDCARD__PROP = "votesWildcard";
+	private static final String VOTES_WILDCARD__PROP = "votesWildcard";
 
 	/** @see #isWhiteListed() */
-	public static final String WHITE_LISTED__PROP = "whiteListed";
+	private static final String WHITE_LISTED__PROP = "whiteListed";
 
 	/** @see #isBlackListed() */
-	public static final String BLACK_LISTED__PROP = "blackListed";
+	private static final String BLACK_LISTED__PROP = "blackListed";
 
 	/** @see #isArchived() */
-	public static final String ARCHIVED__PROP = "archived";
+	private static final String ARCHIVED__PROP = "archived";
 
 	/** @see #getDateAdded() */
-	public static final String DATE_ADDED__PROP = "dateAdded";
+	private static final String DATE_ADDED__PROP = "dateAdded";
 
 	/** @see #getLastUpdate() */
-	public static final String LAST_UPDATE__PROP = "lastUpdate";
+	private static final String LAST_UPDATE__PROP = "lastUpdate";
 
 	/** @see #getLabel() */
-	public static final String LABEL__PROP = "label";
+	private static final String LABEL__PROP = "label";
 
 	/** @see #getLocation() */
-	public static final String LOCATION__PROP = "location";
+	private static final String LOCATION__PROP = "location";
 
 	private String _phone = "";
 
@@ -96,9 +96,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 
 	/** Internal setter for {@link #getPhone()} without chain call utility. */
 	protected final void internalSetPhone(String value) {
-		_listener.beforeSet(this, PHONE__PROP, value);
 		_phone = value;
-		_listener.afterChanged(this, PHONE__PROP);
 	}
 
 	/**
@@ -118,9 +116,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 
 	/** Internal setter for {@link #getVotes()} without chain call utility. */
 	protected final void internalSetVotes(int value) {
-		_listener.beforeSet(this, VOTES__PROP, value);
 		_votes = value;
-		_listener.afterChanged(this, VOTES__PROP);
 	}
 
 	/**
@@ -141,9 +137,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	/** Internal setter for {@link #getRating()} without chain call utility. */
 	protected final void internalSetRating(de.haumacher.phoneblock.app.api.model.Rating value) {
 		if (value == null) throw new IllegalArgumentException("Property 'rating' cannot be null.");
-		_listener.beforeSet(this, RATING__PROP, value);
 		_rating = value;
-		_listener.afterChanged(this, RATING__PROP);
 	}
 
 	/**
@@ -167,9 +161,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 
 	/** Internal setter for {@link #getVotesWildcard()} without chain call utility. */
 	protected final void internalSetVotesWildcard(int value) {
-		_listener.beforeSet(this, VOTES_WILDCARD__PROP, value);
 		_votesWildcard = value;
-		_listener.afterChanged(this, VOTES_WILDCARD__PROP);
 	}
 
 	/**
@@ -189,9 +181,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 
 	/** Internal setter for {@link #isWhiteListed()} without chain call utility. */
 	protected final void internalSetWhiteListed(boolean value) {
-		_listener.beforeSet(this, WHITE_LISTED__PROP, value);
 		_whiteListed = value;
-		_listener.afterChanged(this, WHITE_LISTED__PROP);
 	}
 
 	/**
@@ -211,9 +201,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 
 	/** Internal setter for {@link #isBlackListed()} without chain call utility. */
 	protected final void internalSetBlackListed(boolean value) {
-		_listener.beforeSet(this, BLACK_LISTED__PROP, value);
 		_blackListed = value;
-		_listener.afterChanged(this, BLACK_LISTED__PROP);
 	}
 
 	/**
@@ -233,9 +221,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 
 	/** Internal setter for {@link #isArchived()} without chain call utility. */
 	protected final void internalSetArchived(boolean value) {
-		_listener.beforeSet(this, ARCHIVED__PROP, value);
 		_archived = value;
-		_listener.afterChanged(this, ARCHIVED__PROP);
 	}
 
 	/**
@@ -255,9 +241,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 
 	/** Internal setter for {@link #getDateAdded()} without chain call utility. */
 	protected final void internalSetDateAdded(long value) {
-		_listener.beforeSet(this, DATE_ADDED__PROP, value);
 		_dateAdded = value;
-		_listener.afterChanged(this, DATE_ADDED__PROP);
 	}
 
 	/**
@@ -277,9 +261,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 
 	/** Internal setter for {@link #getLastUpdate()} without chain call utility. */
 	protected final void internalSetLastUpdate(long value) {
-		_listener.beforeSet(this, LAST_UPDATE__PROP, value);
 		_lastUpdate = value;
-		_listener.afterChanged(this, LAST_UPDATE__PROP);
 	}
 
 	/**
@@ -299,9 +281,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 
 	/** Internal setter for {@link #getLabel()} without chain call utility. */
 	protected final void internalSetLabel(String value) {
-		_listener.beforeSet(this, LABEL__PROP, value);
 		_label = value;
-		_listener.afterChanged(this, LABEL__PROP);
 	}
 
 	/**
@@ -328,9 +308,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 
 	/** Internal setter for {@link #getLocation()} without chain call utility. */
 	protected final void internalSetLocation(String value) {
-		_listener.beforeSet(this, LOCATION__PROP, value);
 		_location = value;
-		_listener.afterChanged(this, LOCATION__PROP);
 	}
 
 	/**
@@ -338,103 +316,6 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	 */
 	public final boolean hasLocation() {
 		return _location != null;
-	}
-
-	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.PhoneInfo registerListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalRegisterListener(l);
-		return this;
-	}
-
-	protected final void internalRegisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.register(_listener, l);
-	}
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.PhoneInfo unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalUnregisterListener(l);
-		return this;
-	}
-
-	protected final void internalUnregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.unregister(_listener, l);
-	}
-
-	@Override
-	public String jsonType() {
-		return PHONE_INFO__TYPE;
-	}
-
-	static final java.util.List<String> PROPERTIES;
-	static {
-		java.util.List<String> local = java.util.Arrays.asList(
-			PHONE__PROP, 
-			VOTES__PROP, 
-			RATING__PROP, 
-			VOTES_WILDCARD__PROP, 
-			WHITE_LISTED__PROP, 
-			BLACK_LISTED__PROP, 
-			ARCHIVED__PROP, 
-			DATE_ADDED__PROP, 
-			LAST_UPDATE__PROP, 
-			LABEL__PROP, 
-			LOCATION__PROP);
-		PROPERTIES = java.util.Collections.unmodifiableList(local);
-	}
-
-	static final java.util.Set<String> TRANSIENT_PROPERTIES;
-	static {
-		java.util.HashSet<String> tmp = new java.util.HashSet<>();
-		tmp.addAll(java.util.Arrays.asList(
-				));
-		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
-	}
-
-	@Override
-	public java.util.List<String> properties() {
-		return PROPERTIES;
-	}
-
-	@Override
-	public java.util.Set<String> transientProperties() {
-		return TRANSIENT_PROPERTIES;
-	}
-
-	@Override
-	public Object get(String field) {
-		switch (field) {
-			case PHONE__PROP: return getPhone();
-			case VOTES__PROP: return getVotes();
-			case RATING__PROP: return getRating();
-			case VOTES_WILDCARD__PROP: return getVotesWildcard();
-			case WHITE_LISTED__PROP: return isWhiteListed();
-			case BLACK_LISTED__PROP: return isBlackListed();
-			case ARCHIVED__PROP: return isArchived();
-			case DATE_ADDED__PROP: return getDateAdded();
-			case LAST_UPDATE__PROP: return getLastUpdate();
-			case LABEL__PROP: return getLabel();
-			case LOCATION__PROP: return getLocation();
-			default: return null;
-		}
-	}
-
-	@Override
-	public void set(String field, Object value) {
-		switch (field) {
-			case PHONE__PROP: internalSetPhone((String) value); break;
-			case VOTES__PROP: internalSetVotes((int) value); break;
-			case RATING__PROP: internalSetRating((de.haumacher.phoneblock.app.api.model.Rating) value); break;
-			case VOTES_WILDCARD__PROP: internalSetVotesWildcard((int) value); break;
-			case WHITE_LISTED__PROP: internalSetWhiteListed((boolean) value); break;
-			case BLACK_LISTED__PROP: internalSetBlackListed((boolean) value); break;
-			case ARCHIVED__PROP: internalSetArchived((boolean) value); break;
-			case DATE_ADDED__PROP: internalSetDateAdded((long) value); break;
-			case LAST_UPDATE__PROP: internalSetLastUpdate((long) value); break;
-			case LABEL__PROP: internalSetLabel((String) value); break;
-			case LOCATION__PROP: internalSetLocation((String) value); break;
-		}
 	}
 
 	/** Reads a new instance from the given reader. */

@@ -3,7 +3,7 @@ package de.haumacher.phoneblock.app.api.model;
 /**
  * List of blocked numbers for retrieval through the <i>PhoneBlock API</i>.
  */
-public class Blocklist extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
+public class Blocklist extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
 	 * Creates a {@link de.haumacher.phoneblock.app.api.model.Blocklist} instance.
@@ -16,27 +16,12 @@ public class Blocklist extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	public static final String BLOCKLIST__TYPE = "Blocklist";
 
 	/** @see #getNumbers() */
-	public static final String NUMBERS__PROP = "numbers";
+	private static final String NUMBERS__PROP = "numbers";
 
 	/** @see #getVersion() */
-	public static final String VERSION__PROP = "version";
+	private static final String VERSION__PROP = "version";
 
-	private final java.util.List<de.haumacher.phoneblock.app.api.model.BlockListEntry> _numbers = new de.haumacher.msgbuf.util.ReferenceList<de.haumacher.phoneblock.app.api.model.BlockListEntry>() {
-		@Override
-		protected void beforeAdd(int index, de.haumacher.phoneblock.app.api.model.BlockListEntry element) {
-			_listener.beforeAdd(Blocklist.this, NUMBERS__PROP, index, element);
-		}
-
-		@Override
-		protected void afterRemove(int index, de.haumacher.phoneblock.app.api.model.BlockListEntry element) {
-			_listener.afterRemove(Blocklist.this, NUMBERS__PROP, index, element);
-		}
-
-		@Override
-		protected void afterChanged() {
-			_listener.afterChanged(Blocklist.this, NUMBERS__PROP);
-		}
-	};
+	private final java.util.List<de.haumacher.phoneblock.app.api.model.BlockListEntry> _numbers = new java.util.ArrayList<>();
 
 	private long _version = 0L;
 
@@ -108,79 +93,7 @@ public class Blocklist extends de.haumacher.msgbuf.data.AbstractDataObject imple
 
 	/** Internal setter for {@link #getVersion()} without chain call utility. */
 	protected final void internalSetVersion(long value) {
-		_listener.beforeSet(this, VERSION__PROP, value);
 		_version = value;
-		_listener.afterChanged(this, VERSION__PROP);
-	}
-
-	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.Blocklist registerListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalRegisterListener(l);
-		return this;
-	}
-
-	protected final void internalRegisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.register(_listener, l);
-	}
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.Blocklist unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalUnregisterListener(l);
-		return this;
-	}
-
-	protected final void internalUnregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.unregister(_listener, l);
-	}
-
-	@Override
-	public String jsonType() {
-		return BLOCKLIST__TYPE;
-	}
-
-	static final java.util.List<String> PROPERTIES;
-	static {
-		java.util.List<String> local = java.util.Arrays.asList(
-			NUMBERS__PROP, 
-			VERSION__PROP);
-		PROPERTIES = java.util.Collections.unmodifiableList(local);
-	}
-
-	static final java.util.Set<String> TRANSIENT_PROPERTIES;
-	static {
-		java.util.HashSet<String> tmp = new java.util.HashSet<>();
-		tmp.addAll(java.util.Arrays.asList(
-				));
-		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
-	}
-
-	@Override
-	public java.util.List<String> properties() {
-		return PROPERTIES;
-	}
-
-	@Override
-	public java.util.Set<String> transientProperties() {
-		return TRANSIENT_PROPERTIES;
-	}
-
-	@Override
-	public Object get(String field) {
-		switch (field) {
-			case NUMBERS__PROP: return getNumbers();
-			case VERSION__PROP: return getVersion();
-			default: return null;
-		}
-	}
-
-	@Override
-	public void set(String field, Object value) {
-		switch (field) {
-			case NUMBERS__PROP: internalSetNumbers(de.haumacher.msgbuf.util.Conversions.asList(de.haumacher.phoneblock.app.api.model.BlockListEntry.class, value)); break;
-			case VERSION__PROP: internalSetVersion((long) value); break;
-		}
 	}
 
 	/** Reads a new instance from the given reader. */

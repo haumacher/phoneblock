@@ -3,7 +3,7 @@ package de.haumacher.phoneblock.app.api.model;
 /**
  * Base message with common account settings fields.
  */
-public abstract class AccountData extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
+public abstract class AccountData extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/** Type codes for the {@link de.haumacher.phoneblock.app.api.model.AccountData} hierarchy. */
 	public enum TypeKind {
@@ -29,13 +29,13 @@ public abstract class AccountData extends de.haumacher.msgbuf.data.AbstractDataO
 	}
 
 	/** @see #getLang() */
-	public static final String LANG__PROP = "lang";
+	private static final String LANG__PROP = "lang";
 
 	/** @see #getDialPrefix() */
-	public static final String DIAL_PREFIX__PROP = "dialPrefix";
+	private static final String DIAL_PREFIX__PROP = "dialPrefix";
 
 	/** @see #getDisplayName() */
-	public static final String DISPLAY_NAME__PROP = "displayName";
+	private static final String DISPLAY_NAME__PROP = "displayName";
 
 	private String _lang = null;
 
@@ -70,9 +70,7 @@ public abstract class AccountData extends de.haumacher.msgbuf.data.AbstractDataO
 
 	/** Internal setter for {@link #getLang()} without chain call utility. */
 	protected final void internalSetLang(String value) {
-		_listener.beforeSet(this, LANG__PROP, value);
 		_lang = value;
-		_listener.afterChanged(this, LANG__PROP);
 	}
 
 	/**
@@ -99,9 +97,7 @@ public abstract class AccountData extends de.haumacher.msgbuf.data.AbstractDataO
 
 	/** Internal setter for {@link #getDialPrefix()} without chain call utility. */
 	protected final void internalSetDialPrefix(String value) {
-		_listener.beforeSet(this, DIAL_PREFIX__PROP, value);
 		_dialPrefix = value;
-		_listener.afterChanged(this, DIAL_PREFIX__PROP);
 	}
 
 	/**
@@ -128,9 +124,7 @@ public abstract class AccountData extends de.haumacher.msgbuf.data.AbstractDataO
 
 	/** Internal setter for {@link #getDisplayName()} without chain call utility. */
 	protected final void internalSetDisplayName(String value) {
-		_listener.beforeSet(this, DISPLAY_NAME__PROP, value);
 		_displayName = value;
-		_listener.afterChanged(this, DISPLAY_NAME__PROP);
 	}
 
 	/**
@@ -140,73 +134,8 @@ public abstract class AccountData extends de.haumacher.msgbuf.data.AbstractDataO
 		return _displayName != null;
 	}
 
-	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.AccountData registerListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalRegisterListener(l);
-		return this;
-	}
-
-	protected final void internalRegisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.register(_listener, l);
-	}
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.AccountData unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalUnregisterListener(l);
-		return this;
-	}
-
-	protected final void internalUnregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.unregister(_listener, l);
-	}
-
-	static final java.util.List<String> PROPERTIES;
-	static {
-		java.util.List<String> local = java.util.Arrays.asList(
-			LANG__PROP, 
-			DIAL_PREFIX__PROP, 
-			DISPLAY_NAME__PROP);
-		PROPERTIES = java.util.Collections.unmodifiableList(local);
-	}
-
-	static final java.util.Set<String> TRANSIENT_PROPERTIES;
-	static {
-		java.util.HashSet<String> tmp = new java.util.HashSet<>();
-		tmp.addAll(java.util.Arrays.asList(
-				));
-		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
-	}
-
-	@Override
-	public java.util.List<String> properties() {
-		return PROPERTIES;
-	}
-
-	@Override
-	public java.util.Set<String> transientProperties() {
-		return TRANSIENT_PROPERTIES;
-	}
-
-	@Override
-	public Object get(String field) {
-		switch (field) {
-			case LANG__PROP: return getLang();
-			case DIAL_PREFIX__PROP: return getDialPrefix();
-			case DISPLAY_NAME__PROP: return getDisplayName();
-			default: return null;
-		}
-	}
-
-	@Override
-	public void set(String field, Object value) {
-		switch (field) {
-			case LANG__PROP: internalSetLang((String) value); break;
-			case DIAL_PREFIX__PROP: internalSetDialPrefix((String) value); break;
-			case DISPLAY_NAME__PROP: internalSetDisplayName((String) value); break;
-		}
-	}
+	/** The type identifier for this concrete subtype. */
+	public abstract String jsonType();
 
 	/** Reads a new instance from the given reader. */
 	public static de.haumacher.phoneblock.app.api.model.AccountData readAccountData(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {

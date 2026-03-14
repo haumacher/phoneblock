@@ -3,7 +3,7 @@ package de.haumacher.phoneblock.app.api.model;
 /**
  * A comment posted for a phone number
  */
-public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable, de.haumacher.phoneblock.shared.operations.UserCommentOperations {
+public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.xml.XmlSerializable, de.haumacher.phoneblock.shared.operations.UserCommentOperations {
 
 	/**
 	 * Creates a {@link de.haumacher.phoneblock.app.api.model.UserComment} instance.
@@ -16,34 +16,34 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	public static final String USER_COMMENT__TYPE = "UserComment";
 
 	/** @see #getId() */
-	public static final String ID__PROP = "id";
+	private static final String ID__PROP = "id";
 
 	/** @see #getUserId() */
-	public static final String USER_ID__PROP = "userId";
+	private static final String USER_ID__PROP = "userId";
 
 	/** @see #getLang() */
-	public static final String LANG__PROP = "lang";
+	private static final String LANG__PROP = "lang";
 
 	/** @see #getPhone() */
-	public static final String PHONE__PROP = "phone";
+	private static final String PHONE__PROP = "phone";
 
 	/** @see #getRating() */
-	public static final String RATING__PROP = "rating";
+	private static final String RATING__PROP = "rating";
 
 	/** @see #getComment() */
-	public static final String COMMENT__PROP = "comment";
+	private static final String COMMENT__PROP = "comment";
 
 	/** @see #getService() */
-	public static final String SERVICE__PROP = "service";
+	private static final String SERVICE__PROP = "service";
 
 	/** @see #getCreated() */
-	public static final String CREATED__PROP = "created";
+	private static final String CREATED__PROP = "created";
 
 	/** @see #getUp() */
-	public static final String UP__PROP = "up";
+	private static final String UP__PROP = "up";
 
 	/** @see #getDown() */
-	public static final String DOWN__PROP = "down";
+	private static final String DOWN__PROP = "down";
 
 	private String _id = "";
 
@@ -91,9 +91,7 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 
 	/** Internal setter for {@link #getId()} without chain call utility. */
 	protected final void internalSetId(String value) {
-		_listener.beforeSet(this, ID__PROP, value);
 		_id = value;
-		_listener.afterChanged(this, ID__PROP);
 	}
 
 	/**
@@ -113,9 +111,7 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 
 	/** Internal setter for {@link #getUserId()} without chain call utility. */
 	protected final void internalSetUserId(Long value) {
-		_listener.beforeSet(this, USER_ID__PROP, value);
 		_userId = value;
-		_listener.afterChanged(this, USER_ID__PROP);
 	}
 
 	/**
@@ -142,9 +138,7 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 
 	/** Internal setter for {@link #getLang()} without chain call utility. */
 	protected final void internalSetLang(String value) {
-		_listener.beforeSet(this, LANG__PROP, value);
 		_lang = value;
-		_listener.afterChanged(this, LANG__PROP);
 	}
 
 	/**
@@ -164,9 +158,7 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 
 	/** Internal setter for {@link #getPhone()} without chain call utility. */
 	protected final void internalSetPhone(String value) {
-		_listener.beforeSet(this, PHONE__PROP, value);
 		_phone = value;
-		_listener.afterChanged(this, PHONE__PROP);
 	}
 
 	/**
@@ -187,9 +179,7 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	/** Internal setter for {@link #getRating()} without chain call utility. */
 	protected final void internalSetRating(de.haumacher.phoneblock.app.api.model.Rating value) {
 		if (value == null) throw new IllegalArgumentException("Property 'rating' cannot be null.");
-		_listener.beforeSet(this, RATING__PROP, value);
 		_rating = value;
-		_listener.afterChanged(this, RATING__PROP);
 	}
 
 	/**
@@ -209,9 +199,7 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 
 	/** Internal setter for {@link #getComment()} without chain call utility. */
 	protected final void internalSetComment(String value) {
-		_listener.beforeSet(this, COMMENT__PROP, value);
 		_comment = value;
-		_listener.afterChanged(this, COMMENT__PROP);
 	}
 
 	/**
@@ -231,9 +219,7 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 
 	/** Internal setter for {@link #getService()} without chain call utility. */
 	protected final void internalSetService(String value) {
-		_listener.beforeSet(this, SERVICE__PROP, value);
 		_service = value;
-		_listener.afterChanged(this, SERVICE__PROP);
 	}
 
 	/**
@@ -253,9 +239,7 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 
 	/** Internal setter for {@link #getCreated()} without chain call utility. */
 	protected final void internalSetCreated(long value) {
-		_listener.beforeSet(this, CREATED__PROP, value);
 		_created = value;
-		_listener.afterChanged(this, CREATED__PROP);
 	}
 
 	/**
@@ -275,9 +259,7 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 
 	/** Internal setter for {@link #getUp()} without chain call utility. */
 	protected final void internalSetUp(int value) {
-		_listener.beforeSet(this, UP__PROP, value);
 		_up = value;
-		_listener.afterChanged(this, UP__PROP);
 	}
 
 	/**
@@ -297,103 +279,7 @@ public class UserComment extends de.haumacher.msgbuf.data.AbstractDataObject imp
 
 	/** Internal setter for {@link #getDown()} without chain call utility. */
 	protected final void internalSetDown(int value) {
-		_listener.beforeSet(this, DOWN__PROP, value);
 		_down = value;
-		_listener.afterChanged(this, DOWN__PROP);
-	}
-
-	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.UserComment registerListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalRegisterListener(l);
-		return this;
-	}
-
-	protected final void internalRegisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.register(_listener, l);
-	}
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.UserComment unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalUnregisterListener(l);
-		return this;
-	}
-
-	protected final void internalUnregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.unregister(_listener, l);
-	}
-
-	@Override
-	public String jsonType() {
-		return USER_COMMENT__TYPE;
-	}
-
-	static final java.util.List<String> PROPERTIES;
-	static {
-		java.util.List<String> local = java.util.Arrays.asList(
-			ID__PROP, 
-			USER_ID__PROP, 
-			LANG__PROP, 
-			PHONE__PROP, 
-			RATING__PROP, 
-			COMMENT__PROP, 
-			SERVICE__PROP, 
-			CREATED__PROP, 
-			UP__PROP, 
-			DOWN__PROP);
-		PROPERTIES = java.util.Collections.unmodifiableList(local);
-	}
-
-	static final java.util.Set<String> TRANSIENT_PROPERTIES;
-	static {
-		java.util.HashSet<String> tmp = new java.util.HashSet<>();
-		tmp.addAll(java.util.Arrays.asList(
-				));
-		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
-	}
-
-	@Override
-	public java.util.List<String> properties() {
-		return PROPERTIES;
-	}
-
-	@Override
-	public java.util.Set<String> transientProperties() {
-		return TRANSIENT_PROPERTIES;
-	}
-
-	@Override
-	public Object get(String field) {
-		switch (field) {
-			case ID__PROP: return getId();
-			case USER_ID__PROP: return getUserId();
-			case LANG__PROP: return getLang();
-			case PHONE__PROP: return getPhone();
-			case RATING__PROP: return getRating();
-			case COMMENT__PROP: return getComment();
-			case SERVICE__PROP: return getService();
-			case CREATED__PROP: return getCreated();
-			case UP__PROP: return getUp();
-			case DOWN__PROP: return getDown();
-			default: return null;
-		}
-	}
-
-	@Override
-	public void set(String field, Object value) {
-		switch (field) {
-			case ID__PROP: internalSetId((String) value); break;
-			case USER_ID__PROP: internalSetUserId((Long) value); break;
-			case LANG__PROP: internalSetLang((String) value); break;
-			case PHONE__PROP: internalSetPhone((String) value); break;
-			case RATING__PROP: internalSetRating((de.haumacher.phoneblock.app.api.model.Rating) value); break;
-			case COMMENT__PROP: internalSetComment((String) value); break;
-			case SERVICE__PROP: internalSetService((String) value); break;
-			case CREATED__PROP: internalSetCreated((long) value); break;
-			case UP__PROP: internalSetUp((int) value); break;
-			case DOWN__PROP: internalSetDown((int) value); break;
-		}
 	}
 
 	/** Reads a new instance from the given reader. */

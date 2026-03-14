@@ -1,6 +1,6 @@
 package de.haumacher.phoneblock.app.api.model;
 
-public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
+public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
 	 * Creates a {@link de.haumacher.phoneblock.app.api.model.SpamReport} instance.
@@ -13,34 +13,34 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	public static final String SPAM_REPORT__TYPE = "SpamReport";
 
 	/** @see #getPhone() */
-	public static final String PHONE__PROP = "phone";
+	private static final String PHONE__PROP = "phone";
 
 	/** @see #getVotes() */
-	public static final String VOTES__PROP = "votes";
+	private static final String VOTES__PROP = "votes";
 
 	/** @see #getLastUpdate() */
-	public static final String LAST_UPDATE__PROP = "lastUpdate";
+	private static final String LAST_UPDATE__PROP = "lastUpdate";
 
 	/** @see #getDateAdded() */
-	public static final String DATE_ADDED__PROP = "dateAdded";
+	private static final String DATE_ADDED__PROP = "dateAdded";
 
 	/** @see #isArchived() */
-	public static final String ARCHIVED__PROP = "archived";
+	private static final String ARCHIVED__PROP = "archived";
 
 	/** @see #isWhiteListed() */
-	public static final String WHITE_LISTED__PROP = "whiteListed";
+	private static final String WHITE_LISTED__PROP = "whiteListed";
 
 	/** @see #getCnt10() */
-	public static final String CNT_10__PROP = "cnt10";
+	private static final String CNT_10__PROP = "cnt10";
 
 	/** @see #getVotes10() */
-	public static final String VOTES_10__PROP = "votes10";
+	private static final String VOTES_10__PROP = "votes10";
 
 	/** @see #getCnt100() */
-	public static final String CNT_100__PROP = "cnt100";
+	private static final String CNT_100__PROP = "cnt100";
 
 	/** @see #getVotes100() */
-	public static final String VOTES_100__PROP = "votes100";
+	private static final String VOTES_100__PROP = "votes100";
 
 	private String _phone = "";
 
@@ -85,9 +85,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	/** Internal setter for {@link #getPhone()} without chain call utility. */
 	protected final void internalSetPhone(String value) {
-		_listener.beforeSet(this, PHONE__PROP, value);
 		_phone = value;
-		_listener.afterChanged(this, PHONE__PROP);
 	}
 
 	public final int getVotes() {
@@ -104,9 +102,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	/** Internal setter for {@link #getVotes()} without chain call utility. */
 	protected final void internalSetVotes(int value) {
-		_listener.beforeSet(this, VOTES__PROP, value);
 		_votes = value;
-		_listener.afterChanged(this, VOTES__PROP);
 	}
 
 	public final long getLastUpdate() {
@@ -123,9 +119,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	/** Internal setter for {@link #getLastUpdate()} without chain call utility. */
 	protected final void internalSetLastUpdate(long value) {
-		_listener.beforeSet(this, LAST_UPDATE__PROP, value);
 		_lastUpdate = value;
-		_listener.afterChanged(this, LAST_UPDATE__PROP);
 	}
 
 	public final long getDateAdded() {
@@ -142,9 +136,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	/** Internal setter for {@link #getDateAdded()} without chain call utility. */
 	protected final void internalSetDateAdded(long value) {
-		_listener.beforeSet(this, DATE_ADDED__PROP, value);
 		_dateAdded = value;
-		_listener.afterChanged(this, DATE_ADDED__PROP);
 	}
 
 	public final boolean isArchived() {
@@ -161,9 +153,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	/** Internal setter for {@link #isArchived()} without chain call utility. */
 	protected final void internalSetArchived(boolean value) {
-		_listener.beforeSet(this, ARCHIVED__PROP, value);
 		_archived = value;
-		_listener.afterChanged(this, ARCHIVED__PROP);
 	}
 
 	public final boolean isWhiteListed() {
@@ -180,9 +170,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	/** Internal setter for {@link #isWhiteListed()} without chain call utility. */
 	protected final void internalSetWhiteListed(boolean value) {
-		_listener.beforeSet(this, WHITE_LISTED__PROP, value);
 		_whiteListed = value;
-		_listener.afterChanged(this, WHITE_LISTED__PROP);
 	}
 
 	/**
@@ -202,9 +190,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	/** Internal setter for {@link #getCnt10()} without chain call utility. */
 	protected final void internalSetCnt10(int value) {
-		_listener.beforeSet(this, CNT_10__PROP, value);
 		_cnt10 = value;
-		_listener.afterChanged(this, CNT_10__PROP);
 	}
 
 	/**
@@ -224,9 +210,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	/** Internal setter for {@link #getVotes10()} without chain call utility. */
 	protected final void internalSetVotes10(int value) {
-		_listener.beforeSet(this, VOTES_10__PROP, value);
 		_votes10 = value;
-		_listener.afterChanged(this, VOTES_10__PROP);
 	}
 
 	/**
@@ -250,9 +234,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	/** Internal setter for {@link #getCnt100()} without chain call utility. */
 	protected final void internalSetCnt100(int value) {
-		_listener.beforeSet(this, CNT_100__PROP, value);
 		_cnt100 = value;
-		_listener.afterChanged(this, CNT_100__PROP);
 	}
 
 	/**
@@ -276,103 +258,7 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	/** Internal setter for {@link #getVotes100()} without chain call utility. */
 	protected final void internalSetVotes100(int value) {
-		_listener.beforeSet(this, VOTES_100__PROP, value);
 		_votes100 = value;
-		_listener.afterChanged(this, VOTES_100__PROP);
-	}
-
-	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.SpamReport registerListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalRegisterListener(l);
-		return this;
-	}
-
-	protected final void internalRegisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.register(_listener, l);
-	}
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.SpamReport unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalUnregisterListener(l);
-		return this;
-	}
-
-	protected final void internalUnregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.unregister(_listener, l);
-	}
-
-	@Override
-	public String jsonType() {
-		return SPAM_REPORT__TYPE;
-	}
-
-	static final java.util.List<String> PROPERTIES;
-	static {
-		java.util.List<String> local = java.util.Arrays.asList(
-			PHONE__PROP, 
-			VOTES__PROP, 
-			LAST_UPDATE__PROP, 
-			DATE_ADDED__PROP, 
-			ARCHIVED__PROP, 
-			WHITE_LISTED__PROP, 
-			CNT_10__PROP, 
-			VOTES_10__PROP, 
-			CNT_100__PROP, 
-			VOTES_100__PROP);
-		PROPERTIES = java.util.Collections.unmodifiableList(local);
-	}
-
-	static final java.util.Set<String> TRANSIENT_PROPERTIES;
-	static {
-		java.util.HashSet<String> tmp = new java.util.HashSet<>();
-		tmp.addAll(java.util.Arrays.asList(
-				));
-		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
-	}
-
-	@Override
-	public java.util.List<String> properties() {
-		return PROPERTIES;
-	}
-
-	@Override
-	public java.util.Set<String> transientProperties() {
-		return TRANSIENT_PROPERTIES;
-	}
-
-	@Override
-	public Object get(String field) {
-		switch (field) {
-			case PHONE__PROP: return getPhone();
-			case VOTES__PROP: return getVotes();
-			case LAST_UPDATE__PROP: return getLastUpdate();
-			case DATE_ADDED__PROP: return getDateAdded();
-			case ARCHIVED__PROP: return isArchived();
-			case WHITE_LISTED__PROP: return isWhiteListed();
-			case CNT_10__PROP: return getCnt10();
-			case VOTES_10__PROP: return getVotes10();
-			case CNT_100__PROP: return getCnt100();
-			case VOTES_100__PROP: return getVotes100();
-			default: return null;
-		}
-	}
-
-	@Override
-	public void set(String field, Object value) {
-		switch (field) {
-			case PHONE__PROP: internalSetPhone((String) value); break;
-			case VOTES__PROP: internalSetVotes((int) value); break;
-			case LAST_UPDATE__PROP: internalSetLastUpdate((long) value); break;
-			case DATE_ADDED__PROP: internalSetDateAdded((long) value); break;
-			case ARCHIVED__PROP: internalSetArchived((boolean) value); break;
-			case WHITE_LISTED__PROP: internalSetWhiteListed((boolean) value); break;
-			case CNT_10__PROP: internalSetCnt10((int) value); break;
-			case VOTES_10__PROP: internalSetVotes10((int) value); break;
-			case CNT_100__PROP: internalSetCnt100((int) value); break;
-			case VOTES_100__PROP: internalSetVotes100((int) value); break;
-		}
 	}
 
 	/** Reads a new instance from the given reader. */

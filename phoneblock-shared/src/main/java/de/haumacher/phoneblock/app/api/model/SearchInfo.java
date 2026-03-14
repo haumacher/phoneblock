@@ -3,7 +3,7 @@ package de.haumacher.phoneblock.app.api.model;
 /**
  * Info about how often a number was searched.
  */
-public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
+public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
 	 * Creates a {@link de.haumacher.phoneblock.app.api.model.SearchInfo} instance.
@@ -16,16 +16,16 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	public static final String SEARCH_INFO__TYPE = "SearchInfo";
 
 	/** @see #getPhone() */
-	public static final String PHONE__PROP = "phone";
+	private static final String PHONE__PROP = "phone";
 
 	/** @see #getCount() */
-	public static final String COUNT__PROP = "count";
+	private static final String COUNT__PROP = "count";
 
 	/** @see #getTotal() */
-	public static final String TOTAL__PROP = "total";
+	private static final String TOTAL__PROP = "total";
 
 	/** @see #getLastSearch() */
-	public static final String LAST_SEARCH__PROP = "lastSearch";
+	private static final String LAST_SEARCH__PROP = "lastSearch";
 
 	private String _phone = "";
 
@@ -61,9 +61,7 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	/** Internal setter for {@link #getPhone()} without chain call utility. */
 	protected final void internalSetPhone(String value) {
-		_listener.beforeSet(this, PHONE__PROP, value);
 		_phone = value;
-		_listener.afterChanged(this, PHONE__PROP);
 	}
 
 	/**
@@ -83,9 +81,7 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	/** Internal setter for {@link #getCount()} without chain call utility. */
 	protected final void internalSetCount(int value) {
-		_listener.beforeSet(this, COUNT__PROP, value);
 		_count = value;
-		_listener.afterChanged(this, COUNT__PROP);
 	}
 
 	/**
@@ -105,9 +101,7 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	/** Internal setter for {@link #getTotal()} without chain call utility. */
 	protected final void internalSetTotal(int value) {
-		_listener.beforeSet(this, TOTAL__PROP, value);
 		_total = value;
-		_listener.afterChanged(this, TOTAL__PROP);
 	}
 
 	/**
@@ -127,85 +121,7 @@ public class SearchInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	/** Internal setter for {@link #getLastSearch()} without chain call utility. */
 	protected final void internalSetLastSearch(long value) {
-		_listener.beforeSet(this, LAST_SEARCH__PROP, value);
 		_lastSearch = value;
-		_listener.afterChanged(this, LAST_SEARCH__PROP);
-	}
-
-	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.SearchInfo registerListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalRegisterListener(l);
-		return this;
-	}
-
-	protected final void internalRegisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.register(_listener, l);
-	}
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.SearchInfo unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalUnregisterListener(l);
-		return this;
-	}
-
-	protected final void internalUnregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.unregister(_listener, l);
-	}
-
-	@Override
-	public String jsonType() {
-		return SEARCH_INFO__TYPE;
-	}
-
-	static final java.util.List<String> PROPERTIES;
-	static {
-		java.util.List<String> local = java.util.Arrays.asList(
-			PHONE__PROP, 
-			COUNT__PROP, 
-			TOTAL__PROP, 
-			LAST_SEARCH__PROP);
-		PROPERTIES = java.util.Collections.unmodifiableList(local);
-	}
-
-	static final java.util.Set<String> TRANSIENT_PROPERTIES;
-	static {
-		java.util.HashSet<String> tmp = new java.util.HashSet<>();
-		tmp.addAll(java.util.Arrays.asList(
-				));
-		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
-	}
-
-	@Override
-	public java.util.List<String> properties() {
-		return PROPERTIES;
-	}
-
-	@Override
-	public java.util.Set<String> transientProperties() {
-		return TRANSIENT_PROPERTIES;
-	}
-
-	@Override
-	public Object get(String field) {
-		switch (field) {
-			case PHONE__PROP: return getPhone();
-			case COUNT__PROP: return getCount();
-			case TOTAL__PROP: return getTotal();
-			case LAST_SEARCH__PROP: return getLastSearch();
-			default: return null;
-		}
-	}
-
-	@Override
-	public void set(String field, Object value) {
-		switch (field) {
-			case PHONE__PROP: internalSetPhone((String) value); break;
-			case COUNT__PROP: internalSetCount((int) value); break;
-			case TOTAL__PROP: internalSetTotal((int) value); break;
-			case LAST_SEARCH__PROP: internalSetLastSearch((long) value); break;
-		}
 	}
 
 	/** Reads a new instance from the given reader. */

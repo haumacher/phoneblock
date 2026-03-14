@@ -1,6 +1,6 @@
 package de.haumacher.phoneblock.app.api.model;
 
-public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
+public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/** Type codes for the {@link de.haumacher.phoneblock.app.api.model.AbstractNumberInfo} hierarchy. */
 	public enum TypeKind {
@@ -26,37 +26,37 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	}
 
 	/** @see #getPhone() */
-	public static final String PHONE__PROP = "phone";
+	private static final String PHONE__PROP = "phone";
 
 	/** @see #isActive() */
-	public static final String ACTIVE__PROP = "active";
+	private static final String ACTIVE__PROP = "active";
 
 	/** @see #getCalls() */
-	public static final String CALLS__PROP = "calls";
+	private static final String CALLS__PROP = "calls";
 
 	/** @see #getVotes() */
-	public static final String VOTES__PROP = "votes";
+	private static final String VOTES__PROP = "votes";
 
 	/** @see #getRatingLegitimate() */
-	public static final String RATING_LEGITIMATE__PROP = "ratingLegitimate";
+	private static final String RATING_LEGITIMATE__PROP = "ratingLegitimate";
 
 	/** @see #getRatingPing() */
-	public static final String RATING_PING__PROP = "ratingPing";
+	private static final String RATING_PING__PROP = "ratingPing";
 
 	/** @see #getRatingPoll() */
-	public static final String RATING_POLL__PROP = "ratingPoll";
+	private static final String RATING_POLL__PROP = "ratingPoll";
 
 	/** @see #getRatingAdvertising() */
-	public static final String RATING_ADVERTISING__PROP = "ratingAdvertising";
+	private static final String RATING_ADVERTISING__PROP = "ratingAdvertising";
 
 	/** @see #getRatingGamble() */
-	public static final String RATING_GAMBLE__PROP = "ratingGamble";
+	private static final String RATING_GAMBLE__PROP = "ratingGamble";
 
 	/** @see #getRatingFraud() */
-	public static final String RATING_FRAUD__PROP = "ratingFraud";
+	private static final String RATING_FRAUD__PROP = "ratingFraud";
 
 	/** @see #getSearches() */
-	public static final String SEARCHES__PROP = "searches";
+	private static final String SEARCHES__PROP = "searches";
 
 	private String _phone = "";
 
@@ -107,9 +107,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 
 	/** Internal setter for {@link #getPhone()} without chain call utility. */
 	protected final void internalSetPhone(String value) {
-		_listener.beforeSet(this, PHONE__PROP, value);
 		_phone = value;
-		_listener.afterChanged(this, PHONE__PROP);
 	}
 
 	/**
@@ -129,9 +127,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 
 	/** Internal setter for {@link #isActive()} without chain call utility. */
 	protected final void internalSetActive(boolean value) {
-		_listener.beforeSet(this, ACTIVE__PROP, value);
 		_active = value;
-		_listener.afterChanged(this, ACTIVE__PROP);
 	}
 
 	public final int getCalls() {
@@ -148,9 +144,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 
 	/** Internal setter for {@link #getCalls()} without chain call utility. */
 	protected final void internalSetCalls(int value) {
-		_listener.beforeSet(this, CALLS__PROP, value);
 		_calls = value;
-		_listener.afterChanged(this, CALLS__PROP);
 	}
 
 	/**
@@ -170,9 +164,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 
 	/** Internal setter for {@link #getVotes()} without chain call utility. */
 	protected final void internalSetVotes(int value) {
-		_listener.beforeSet(this, VOTES__PROP, value);
 		_votes = value;
-		_listener.afterChanged(this, VOTES__PROP);
 	}
 
 	/**
@@ -192,9 +184,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 
 	/** Internal setter for {@link #getRatingLegitimate()} without chain call utility. */
 	protected final void internalSetRatingLegitimate(int value) {
-		_listener.beforeSet(this, RATING_LEGITIMATE__PROP, value);
 		_ratingLegitimate = value;
-		_listener.afterChanged(this, RATING_LEGITIMATE__PROP);
 	}
 
 	/**
@@ -214,9 +204,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 
 	/** Internal setter for {@link #getRatingPing()} without chain call utility. */
 	protected final void internalSetRatingPing(int value) {
-		_listener.beforeSet(this, RATING_PING__PROP, value);
 		_ratingPing = value;
-		_listener.afterChanged(this, RATING_PING__PROP);
 	}
 
 	/**
@@ -236,9 +224,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 
 	/** Internal setter for {@link #getRatingPoll()} without chain call utility. */
 	protected final void internalSetRatingPoll(int value) {
-		_listener.beforeSet(this, RATING_POLL__PROP, value);
 		_ratingPoll = value;
-		_listener.afterChanged(this, RATING_POLL__PROP);
 	}
 
 	/**
@@ -258,9 +244,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 
 	/** Internal setter for {@link #getRatingAdvertising()} without chain call utility. */
 	protected final void internalSetRatingAdvertising(int value) {
-		_listener.beforeSet(this, RATING_ADVERTISING__PROP, value);
 		_ratingAdvertising = value;
-		_listener.afterChanged(this, RATING_ADVERTISING__PROP);
 	}
 
 	/**
@@ -280,9 +264,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 
 	/** Internal setter for {@link #getRatingGamble()} without chain call utility. */
 	protected final void internalSetRatingGamble(int value) {
-		_listener.beforeSet(this, RATING_GAMBLE__PROP, value);
 		_ratingGamble = value;
-		_listener.afterChanged(this, RATING_GAMBLE__PROP);
 	}
 
 	/**
@@ -302,9 +284,7 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 
 	/** Internal setter for {@link #getRatingFraud()} without chain call utility. */
 	protected final void internalSetRatingFraud(int value) {
-		_listener.beforeSet(this, RATING_FRAUD__PROP, value);
 		_ratingFraud = value;
-		_listener.afterChanged(this, RATING_FRAUD__PROP);
 	}
 
 	/**
@@ -324,102 +304,11 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 
 	/** Internal setter for {@link #getSearches()} without chain call utility. */
 	protected final void internalSetSearches(int value) {
-		_listener.beforeSet(this, SEARCHES__PROP, value);
 		_searches = value;
-		_listener.afterChanged(this, SEARCHES__PROP);
 	}
 
-	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.AbstractNumberInfo registerListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalRegisterListener(l);
-		return this;
-	}
-
-	protected final void internalRegisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.register(_listener, l);
-	}
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.AbstractNumberInfo unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalUnregisterListener(l);
-		return this;
-	}
-
-	protected final void internalUnregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.unregister(_listener, l);
-	}
-
-	static final java.util.List<String> PROPERTIES;
-	static {
-		java.util.List<String> local = java.util.Arrays.asList(
-			PHONE__PROP, 
-			ACTIVE__PROP, 
-			CALLS__PROP, 
-			VOTES__PROP, 
-			RATING_LEGITIMATE__PROP, 
-			RATING_PING__PROP, 
-			RATING_POLL__PROP, 
-			RATING_ADVERTISING__PROP, 
-			RATING_GAMBLE__PROP, 
-			RATING_FRAUD__PROP, 
-			SEARCHES__PROP);
-		PROPERTIES = java.util.Collections.unmodifiableList(local);
-	}
-
-	static final java.util.Set<String> TRANSIENT_PROPERTIES;
-	static {
-		java.util.HashSet<String> tmp = new java.util.HashSet<>();
-		tmp.addAll(java.util.Arrays.asList(
-				));
-		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
-	}
-
-	@Override
-	public java.util.List<String> properties() {
-		return PROPERTIES;
-	}
-
-	@Override
-	public java.util.Set<String> transientProperties() {
-		return TRANSIENT_PROPERTIES;
-	}
-
-	@Override
-	public Object get(String field) {
-		switch (field) {
-			case PHONE__PROP: return getPhone();
-			case ACTIVE__PROP: return isActive();
-			case CALLS__PROP: return getCalls();
-			case VOTES__PROP: return getVotes();
-			case RATING_LEGITIMATE__PROP: return getRatingLegitimate();
-			case RATING_PING__PROP: return getRatingPing();
-			case RATING_POLL__PROP: return getRatingPoll();
-			case RATING_ADVERTISING__PROP: return getRatingAdvertising();
-			case RATING_GAMBLE__PROP: return getRatingGamble();
-			case RATING_FRAUD__PROP: return getRatingFraud();
-			case SEARCHES__PROP: return getSearches();
-			default: return null;
-		}
-	}
-
-	@Override
-	public void set(String field, Object value) {
-		switch (field) {
-			case PHONE__PROP: internalSetPhone((String) value); break;
-			case ACTIVE__PROP: internalSetActive((boolean) value); break;
-			case CALLS__PROP: internalSetCalls((int) value); break;
-			case VOTES__PROP: internalSetVotes((int) value); break;
-			case RATING_LEGITIMATE__PROP: internalSetRatingLegitimate((int) value); break;
-			case RATING_PING__PROP: internalSetRatingPing((int) value); break;
-			case RATING_POLL__PROP: internalSetRatingPoll((int) value); break;
-			case RATING_ADVERTISING__PROP: internalSetRatingAdvertising((int) value); break;
-			case RATING_GAMBLE__PROP: internalSetRatingGamble((int) value); break;
-			case RATING_FRAUD__PROP: internalSetRatingFraud((int) value); break;
-			case SEARCHES__PROP: internalSetSearches((int) value); break;
-		}
-	}
+	/** The type identifier for this concrete subtype. */
+	public abstract String jsonType();
 
 	/** Reads a new instance from the given reader. */
 	public static de.haumacher.phoneblock.app.api.model.AbstractNumberInfo readAbstractNumberInfo(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {

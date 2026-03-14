@@ -3,7 +3,7 @@ package de.haumacher.phoneblock.callreport.model;
 /**
  * Message expected by the CallReportServlet in a PUT request.
  */
-public class CallReport extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable {
+public class CallReport extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.data.ReflectiveDataObject {
 
 	/**
 	 * Creates a {@link de.haumacher.phoneblock.callreport.model.CallReport} instance.
@@ -24,35 +24,11 @@ public class CallReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/** @see #getCallers() */
 	public static final String CALLERS__PROP = "callers";
 
-	/** Identifier for the property {@link #getTimestamp()} in binary format. */
-	static final int TIMESTAMP__ID = 1;
-
-	/** Identifier for the property {@link #getLastid()} in binary format. */
-	static final int LASTID__ID = 2;
-
-	/** Identifier for the property {@link #getCallers()} in binary format. */
-	static final int CALLERS__ID = 3;
-
 	private String _timestamp = "";
 
 	private String _lastid = "";
 
-	private final java.util.List<String> _callers = new de.haumacher.msgbuf.util.ReferenceList<String>() {
-		@Override
-		protected void beforeAdd(int index, String element) {
-			_listener.beforeAdd(CallReport.this, CALLERS__PROP, index, element);
-		}
-
-		@Override
-		protected void afterRemove(int index, String element) {
-			_listener.afterRemove(CallReport.this, CALLERS__PROP, index, element);
-		}
-
-		@Override
-		protected void afterChanged() {
-			_listener.afterChanged(CallReport.this, CALLERS__PROP);
-		}
-	};
+	private final java.util.List<String> _callers = new java.util.ArrayList<>();
 
 	/**
 	 * Creates a {@link CallReport} instance.
@@ -80,9 +56,7 @@ public class CallReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	/** Internal setter for {@link #getTimestamp()} without chain call utility. */
 	protected final void internalSetTimestamp(String value) {
-		_listener.beforeSet(this, TIMESTAMP__PROP, value);
 		_timestamp = value;
-		_listener.afterChanged(this, TIMESTAMP__PROP);
 	}
 
 	/**
@@ -102,9 +76,7 @@ public class CallReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	/** Internal setter for {@link #getLastid()} without chain call utility. */
 	protected final void internalSetLastid(String value) {
-		_listener.beforeSet(this, LASTID__PROP, value);
 		_lastid = value;
-		_listener.afterChanged(this, LASTID__PROP);
 	}
 
 	/**
@@ -146,28 +118,6 @@ public class CallReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	 */
 	public final void removeCaller(String value) {
 		_callers.remove(value);
-	}
-
-	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
-
-	@Override
-	public de.haumacher.phoneblock.callreport.model.CallReport registerListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalRegisterListener(l);
-		return this;
-	}
-
-	protected final void internalRegisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.register(_listener, l);
-	}
-
-	@Override
-	public de.haumacher.phoneblock.callreport.model.CallReport unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalUnregisterListener(l);
-		return this;
-	}
-
-	protected final void internalUnregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.unregister(_listener, l);
 	}
 
 	@Override
@@ -264,76 +214,6 @@ public class CallReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 			}
 			break;
 			default: super.readField(in, field);
-		}
-	}
-
-	@Override
-	public final void writeTo(de.haumacher.msgbuf.binary.DataWriter out) throws java.io.IOException {
-		out.beginObject();
-		writeFields(out);
-		out.endObject();
-	}
-
-	/**
-	 * Serializes all fields of this instance to the given binary output.
-	 *
-	 * @param out
-	 *        The binary output to write to.
-	 * @throws java.io.IOException If writing fails.
-	 */
-	protected void writeFields(de.haumacher.msgbuf.binary.DataWriter out) throws java.io.IOException {
-		out.name(TIMESTAMP__ID);
-		out.value(getTimestamp());
-		out.name(LASTID__ID);
-		out.value(getLastid());
-		out.name(CALLERS__ID);
-		{
-			java.util.List<String> values = getCallers();
-			out.beginArray(de.haumacher.msgbuf.binary.DataType.STRING, values.size());
-			for (String x : values) {
-				out.value(x);
-			}
-			out.endArray();
-		}
-	}
-
-	/** Reads a new instance from the given reader. */
-	public static de.haumacher.phoneblock.callreport.model.CallReport readCallReport(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		in.beginObject();
-		de.haumacher.phoneblock.callreport.model.CallReport result = de.haumacher.phoneblock.callreport.model.CallReport.readCallReport_Content(in);
-		in.endObject();
-		return result;
-	}
-
-	/** Helper for creating an object of type {@link de.haumacher.phoneblock.callreport.model.CallReport} from a polymorphic composition. */
-	public static de.haumacher.phoneblock.callreport.model.CallReport readCallReport_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		de.haumacher.phoneblock.callreport.model.CallReport result = new CallReport();
-		result.readContent(in);
-		return result;
-	}
-
-	/** Helper for reading all fields of this instance. */
-	protected final void readContent(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		while (in.hasNext()) {
-			int field = in.nextName();
-			readField(in, field);
-		}
-	}
-
-	/** Consumes the value for the field with the given ID and assigns its value. */
-	protected void readField(de.haumacher.msgbuf.binary.DataReader in, int field) throws java.io.IOException {
-		switch (field) {
-			case TIMESTAMP__ID: setTimestamp(in.nextString()); break;
-			case LASTID__ID: setLastid(in.nextString()); break;
-			case CALLERS__ID: {
-				in.beginArray();
-				while (in.hasNext()) {
-					addCaller(in.nextString());
-				}
-				in.endArray();
-			}
-			break;
-			default: in.skipValue(); 
 		}
 	}
 

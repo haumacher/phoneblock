@@ -3,7 +3,7 @@ package de.haumacher.phoneblock.app.api.model;
 /**
  * A list of phone numbers (used for blacklist/whitelist responses).
  */
-public class NumberList extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
+public class NumberList extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
 	 * Creates a {@link de.haumacher.phoneblock.app.api.model.NumberList} instance.
@@ -16,24 +16,9 @@ public class NumberList extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	public static final String NUMBER_LIST__TYPE = "NumberList";
 
 	/** @see #getNumbers() */
-	public static final String NUMBERS__PROP = "numbers";
+	private static final String NUMBERS__PROP = "numbers";
 
-	private final java.util.List<de.haumacher.phoneblock.app.api.model.PersonalizedNumber> _numbers = new de.haumacher.msgbuf.util.ReferenceList<de.haumacher.phoneblock.app.api.model.PersonalizedNumber>() {
-		@Override
-		protected void beforeAdd(int index, de.haumacher.phoneblock.app.api.model.PersonalizedNumber element) {
-			_listener.beforeAdd(NumberList.this, NUMBERS__PROP, index, element);
-		}
-
-		@Override
-		protected void afterRemove(int index, de.haumacher.phoneblock.app.api.model.PersonalizedNumber element) {
-			_listener.afterRemove(NumberList.this, NUMBERS__PROP, index, element);
-		}
-
-		@Override
-		protected void afterChanged() {
-			_listener.afterChanged(NumberList.this, NUMBERS__PROP);
-		}
-	};
+	private final java.util.List<de.haumacher.phoneblock.app.api.model.PersonalizedNumber> _numbers = new java.util.ArrayList<>();
 
 	/**
 	 * Creates a {@link NumberList} instance.
@@ -84,73 +69,6 @@ public class NumberList extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	 */
 	public final void removeNumber(de.haumacher.phoneblock.app.api.model.PersonalizedNumber value) {
 		_numbers.remove(value);
-	}
-
-	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.NumberList registerListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalRegisterListener(l);
-		return this;
-	}
-
-	protected final void internalRegisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.register(_listener, l);
-	}
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.NumberList unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalUnregisterListener(l);
-		return this;
-	}
-
-	protected final void internalUnregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.unregister(_listener, l);
-	}
-
-	@Override
-	public String jsonType() {
-		return NUMBER_LIST__TYPE;
-	}
-
-	static final java.util.List<String> PROPERTIES;
-	static {
-		java.util.List<String> local = java.util.Arrays.asList(
-			NUMBERS__PROP);
-		PROPERTIES = java.util.Collections.unmodifiableList(local);
-	}
-
-	static final java.util.Set<String> TRANSIENT_PROPERTIES;
-	static {
-		java.util.HashSet<String> tmp = new java.util.HashSet<>();
-		tmp.addAll(java.util.Arrays.asList(
-				));
-		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
-	}
-
-	@Override
-	public java.util.List<String> properties() {
-		return PROPERTIES;
-	}
-
-	@Override
-	public java.util.Set<String> transientProperties() {
-		return TRANSIENT_PROPERTIES;
-	}
-
-	@Override
-	public Object get(String field) {
-		switch (field) {
-			case NUMBERS__PROP: return getNumbers();
-			default: return null;
-		}
-	}
-
-	@Override
-	public void set(String field, Object value) {
-		switch (field) {
-			case NUMBERS__PROP: internalSetNumbers(de.haumacher.msgbuf.util.Conversions.asList(de.haumacher.phoneblock.app.api.model.PersonalizedNumber.class, value)); break;
-		}
 	}
 
 	/** Reads a new instance from the given reader. */

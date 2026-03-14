@@ -3,7 +3,7 @@ package de.haumacher.phoneblock.db.config;
 /**
  * JNDI configuration settings for the embedded H2 database
  */
-public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable {
+public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.data.ReflectiveDataObject {
 
 	/**
 	 * Creates a {@link de.haumacher.phoneblock.db.config.DBConfig} instance.
@@ -32,24 +32,6 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 
 	/** @see #isSendWelcomeMails() */
 	public static final String SEND_WELCOME_MAILS__PROP = "sendWelcomeMails";
-
-	/** Identifier for the property {@link #getUrl()} in binary format. */
-	static final int URL__ID = 1;
-
-	/** Identifier for the property {@link #getUser()} in binary format. */
-	static final int USER__ID = 2;
-
-	/** Identifier for the property {@link #getPassword()} in binary format. */
-	static final int PASSWORD__ID = 3;
-
-	/** Identifier for the property {@link #getPort()} in binary format. */
-	static final int PORT__ID = 4;
-
-	/** Identifier for the property {@link #isSendHelpMails()} in binary format. */
-	static final int SEND_HELP_MAILS__ID = 5;
-
-	/** Identifier for the property {@link #isSendWelcomeMails()} in binary format. */
-	static final int SEND_WELCOME_MAILS__ID = 6;
 
 	private String _url = "";
 
@@ -89,9 +71,7 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 
 	/** Internal setter for {@link #getUrl()} without chain call utility. */
 	protected final void internalSetUrl(String value) {
-		_listener.beforeSet(this, URL__PROP, value);
 		_url = value;
-		_listener.afterChanged(this, URL__PROP);
 	}
 
 	/**
@@ -111,9 +91,7 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 
 	/** Internal setter for {@link #getUser()} without chain call utility. */
 	protected final void internalSetUser(String value) {
-		_listener.beforeSet(this, USER__PROP, value);
 		_user = value;
-		_listener.afterChanged(this, USER__PROP);
 	}
 
 	/**
@@ -133,9 +111,7 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 
 	/** Internal setter for {@link #getPassword()} without chain call utility. */
 	protected final void internalSetPassword(String value) {
-		_listener.beforeSet(this, PASSWORD__PROP, value);
 		_password = value;
-		_listener.afterChanged(this, PASSWORD__PROP);
 	}
 
 	/**
@@ -155,9 +131,7 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 
 	/** Internal setter for {@link #getPort()} without chain call utility. */
 	protected final void internalSetPort(int value) {
-		_listener.beforeSet(this, PORT__PROP, value);
 		_port = value;
-		_listener.afterChanged(this, PORT__PROP);
 	}
 
 	/**
@@ -177,9 +151,7 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 
 	/** Internal setter for {@link #isSendHelpMails()} without chain call utility. */
 	protected final void internalSetSendHelpMails(boolean value) {
-		_listener.beforeSet(this, SEND_HELP_MAILS__PROP, value);
 		_sendHelpMails = value;
-		_listener.afterChanged(this, SEND_HELP_MAILS__PROP);
 	}
 
 	/**
@@ -199,31 +171,7 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 
 	/** Internal setter for {@link #isSendWelcomeMails()} without chain call utility. */
 	protected final void internalSetSendWelcomeMails(boolean value) {
-		_listener.beforeSet(this, SEND_WELCOME_MAILS__PROP, value);
 		_sendWelcomeMails = value;
-		_listener.afterChanged(this, SEND_WELCOME_MAILS__PROP);
-	}
-
-	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
-
-	@Override
-	public de.haumacher.phoneblock.db.config.DBConfig registerListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalRegisterListener(l);
-		return this;
-	}
-
-	protected final void internalRegisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.register(_listener, l);
-	}
-
-	@Override
-	public de.haumacher.phoneblock.db.config.DBConfig unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalUnregisterListener(l);
-		return this;
-	}
-
-	protected final void internalUnregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.unregister(_listener, l);
 	}
 
 	@Override
@@ -325,71 +273,6 @@ public class DBConfig extends de.haumacher.msgbuf.data.AbstractDataObject implem
 			case SEND_HELP_MAILS__PROP: setSendHelpMails(in.nextBoolean()); break;
 			case SEND_WELCOME_MAILS__PROP: setSendWelcomeMails(in.nextBoolean()); break;
 			default: super.readField(in, field);
-		}
-	}
-
-	@Override
-	public final void writeTo(de.haumacher.msgbuf.binary.DataWriter out) throws java.io.IOException {
-		out.beginObject();
-		writeFields(out);
-		out.endObject();
-	}
-
-	/**
-	 * Serializes all fields of this instance to the given binary output.
-	 *
-	 * @param out
-	 *        The binary output to write to.
-	 * @throws java.io.IOException If writing fails.
-	 */
-	protected void writeFields(de.haumacher.msgbuf.binary.DataWriter out) throws java.io.IOException {
-		out.name(URL__ID);
-		out.value(getUrl());
-		out.name(USER__ID);
-		out.value(getUser());
-		out.name(PASSWORD__ID);
-		out.value(getPassword());
-		out.name(PORT__ID);
-		out.value(getPort());
-		out.name(SEND_HELP_MAILS__ID);
-		out.value(isSendHelpMails());
-		out.name(SEND_WELCOME_MAILS__ID);
-		out.value(isSendWelcomeMails());
-	}
-
-	/** Reads a new instance from the given reader. */
-	public static de.haumacher.phoneblock.db.config.DBConfig readDBConfig(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		in.beginObject();
-		de.haumacher.phoneblock.db.config.DBConfig result = de.haumacher.phoneblock.db.config.DBConfig.readDBConfig_Content(in);
-		in.endObject();
-		return result;
-	}
-
-	/** Helper for creating an object of type {@link de.haumacher.phoneblock.db.config.DBConfig} from a polymorphic composition. */
-	public static de.haumacher.phoneblock.db.config.DBConfig readDBConfig_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		de.haumacher.phoneblock.db.config.DBConfig result = new DBConfig();
-		result.readContent(in);
-		return result;
-	}
-
-	/** Helper for reading all fields of this instance. */
-	protected final void readContent(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		while (in.hasNext()) {
-			int field = in.nextName();
-			readField(in, field);
-		}
-	}
-
-	/** Consumes the value for the field with the given ID and assigns its value. */
-	protected void readField(de.haumacher.msgbuf.binary.DataReader in, int field) throws java.io.IOException {
-		switch (field) {
-			case URL__ID: setUrl(in.nextString()); break;
-			case USER__ID: setUser(in.nextString()); break;
-			case PASSWORD__ID: setPassword(in.nextString()); break;
-			case PORT__ID: setPort(in.nextInt()); break;
-			case SEND_HELP_MAILS__ID: setSendHelpMails(in.nextBoolean()); break;
-			case SEND_WELCOME_MAILS__ID: setSendWelcomeMails(in.nextBoolean()); break;
-			default: in.skipValue(); 
 		}
 	}
 

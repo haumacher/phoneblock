@@ -16,10 +16,10 @@ public class NumberHistory extends AbstractNumberInfo {
 	public static final String NUMBER_HISTORY__TYPE = "NumberHistory";
 
 	/** @see #getRMin() */
-	public static final String R_MIN__PROP = "rMin";
+	private static final String R_MIN__PROP = "rMin";
 
 	/** @see #getRMax() */
-	public static final String R_MAX__PROP = "rMax";
+	private static final String R_MAX__PROP = "rMax";
 
 	private int _rMin = 0;
 
@@ -56,9 +56,7 @@ public class NumberHistory extends AbstractNumberInfo {
 
 	/** Internal setter for {@link #getRMin()} without chain call utility. */
 	protected final void internalSetRMin(int value) {
-		_listener.beforeSet(this, R_MIN__PROP, value);
 		_rMin = value;
-		_listener.afterChanged(this, R_MIN__PROP);
 	}
 
 	/**
@@ -78,9 +76,7 @@ public class NumberHistory extends AbstractNumberInfo {
 
 	/** Internal setter for {@link #getRMax()} without chain call utility. */
 	protected final void internalSetRMax(int value) {
-		_listener.beforeSet(this, R_MAX__PROP, value);
 		_rMax = value;
-		_listener.afterChanged(this, R_MAX__PROP);
 	}
 
 	@Override
@@ -152,56 +148,6 @@ public class NumberHistory extends AbstractNumberInfo {
 	@Override
 	public String jsonType() {
 		return NUMBER_HISTORY__TYPE;
-	}
-
-	@SuppressWarnings("hiding")
-	static final java.util.List<String> PROPERTIES;
-	static {
-		java.util.List<String> local = java.util.Arrays.asList(
-			R_MIN__PROP, 
-			R_MAX__PROP);
-		java.util.List<String> tmp = new java.util.ArrayList<>();
-		tmp.addAll(de.haumacher.phoneblock.app.api.model.AbstractNumberInfo.PROPERTIES);
-		tmp.addAll(local);
-		PROPERTIES = java.util.Collections.unmodifiableList(tmp);
-	}
-
-	@SuppressWarnings("hiding")
-	static final java.util.Set<String> TRANSIENT_PROPERTIES;
-	static {
-		java.util.HashSet<String> tmp = new java.util.HashSet<>();
-		tmp.addAll(de.haumacher.phoneblock.app.api.model.AbstractNumberInfo.TRANSIENT_PROPERTIES);
-		tmp.addAll(java.util.Arrays.asList(
-				));
-		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
-	}
-
-	@Override
-	public java.util.List<String> properties() {
-		return PROPERTIES;
-	}
-
-	@Override
-	public java.util.Set<String> transientProperties() {
-		return TRANSIENT_PROPERTIES;
-	}
-
-	@Override
-	public Object get(String field) {
-		switch (field) {
-			case R_MIN__PROP: return getRMin();
-			case R_MAX__PROP: return getRMax();
-			default: return super.get(field);
-		}
-	}
-
-	@Override
-	public void set(String field, Object value) {
-		switch (field) {
-			case R_MIN__PROP: internalSetRMin((int) value); break;
-			case R_MAX__PROP: internalSetRMax((int) value); break;
-			default: super.set(field, value); break;
-		}
 	}
 
 	/** Reads a new instance from the given reader. */

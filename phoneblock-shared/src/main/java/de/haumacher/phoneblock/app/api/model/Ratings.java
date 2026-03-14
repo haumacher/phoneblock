@@ -1,6 +1,6 @@
 package de.haumacher.phoneblock.app.api.model;
 
-public class Ratings extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
+public class Ratings extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
 	 * Creates a {@link de.haumacher.phoneblock.app.api.model.Ratings} instance.
@@ -13,24 +13,9 @@ public class Ratings extends de.haumacher.msgbuf.data.AbstractDataObject impleme
 	public static final String RATINGS__TYPE = "Ratings";
 
 	/** @see #getValues() */
-	public static final String VALUES__PROP = "values";
+	private static final String VALUES__PROP = "values";
 
-	private final java.util.List<de.haumacher.phoneblock.app.api.model.Rating> _values = new de.haumacher.msgbuf.util.ReferenceList<de.haumacher.phoneblock.app.api.model.Rating>() {
-		@Override
-		protected void beforeAdd(int index, de.haumacher.phoneblock.app.api.model.Rating element) {
-			_listener.beforeAdd(Ratings.this, VALUES__PROP, index, element);
-		}
-
-		@Override
-		protected void afterRemove(int index, de.haumacher.phoneblock.app.api.model.Rating element) {
-			_listener.afterRemove(Ratings.this, VALUES__PROP, index, element);
-		}
-
-		@Override
-		protected void afterChanged() {
-			_listener.afterChanged(Ratings.this, VALUES__PROP);
-		}
-	};
+	private final java.util.List<de.haumacher.phoneblock.app.api.model.Rating> _values = new java.util.ArrayList<>();
 
 	/**
 	 * Creates a {@link Ratings} instance.
@@ -78,73 +63,6 @@ public class Ratings extends de.haumacher.msgbuf.data.AbstractDataObject impleme
 	 */
 	public final void removeValue(de.haumacher.phoneblock.app.api.model.Rating value) {
 		_values.remove(value);
-	}
-
-	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.Ratings registerListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalRegisterListener(l);
-		return this;
-	}
-
-	protected final void internalRegisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.register(_listener, l);
-	}
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.Ratings unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalUnregisterListener(l);
-		return this;
-	}
-
-	protected final void internalUnregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.unregister(_listener, l);
-	}
-
-	@Override
-	public String jsonType() {
-		return RATINGS__TYPE;
-	}
-
-	static final java.util.List<String> PROPERTIES;
-	static {
-		java.util.List<String> local = java.util.Arrays.asList(
-			VALUES__PROP);
-		PROPERTIES = java.util.Collections.unmodifiableList(local);
-	}
-
-	static final java.util.Set<String> TRANSIENT_PROPERTIES;
-	static {
-		java.util.HashSet<String> tmp = new java.util.HashSet<>();
-		tmp.addAll(java.util.Arrays.asList(
-				));
-		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
-	}
-
-	@Override
-	public java.util.List<String> properties() {
-		return PROPERTIES;
-	}
-
-	@Override
-	public java.util.Set<String> transientProperties() {
-		return TRANSIENT_PROPERTIES;
-	}
-
-	@Override
-	public Object get(String field) {
-		switch (field) {
-			case VALUES__PROP: return getValues();
-			default: return null;
-		}
-	}
-
-	@Override
-	public void set(String field, Object value) {
-		switch (field) {
-			case VALUES__PROP: internalSetValues(de.haumacher.msgbuf.util.Conversions.asList(de.haumacher.phoneblock.app.api.model.Rating.class, value)); break;
-		}
 	}
 
 	/** Reads a new instance from the given reader. */

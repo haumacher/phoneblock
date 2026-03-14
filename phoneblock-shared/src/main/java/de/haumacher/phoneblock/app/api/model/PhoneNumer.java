@@ -1,6 +1,6 @@
 package de.haumacher.phoneblock.app.api.model;
 
-public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
+public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
 	 * Creates a {@link de.haumacher.phoneblock.app.api.model.PhoneNumer} instance.
@@ -13,34 +13,34 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	public static final String PHONE_NUMER__TYPE = "PhoneNumer";
 
 	/** @see #getId() */
-	public static final String ID__PROP = "id";
+	private static final String ID__PROP = "id";
 
 	/** @see #getShortcut() */
-	public static final String SHORTCUT__PROP = "shortcut";
+	private static final String SHORTCUT__PROP = "shortcut";
 
 	/** @see #getPlus() */
-	public static final String PLUS__PROP = "plus";
+	private static final String PLUS__PROP = "plus";
 
 	/** @see #getZeroZero() */
-	public static final String ZERO_ZERO__PROP = "zeroZero";
+	private static final String ZERO_ZERO__PROP = "zeroZero";
 
 	/** @see #getDial() */
-	public static final String DIAL__PROP = "dial";
+	private static final String DIAL__PROP = "dial";
 
 	/** @see #getCountryCode() */
-	public static final String COUNTRY_CODE__PROP = "countryCode";
+	private static final String COUNTRY_CODE__PROP = "countryCode";
 
 	/** @see #getCountry() */
-	public static final String COUNTRY__PROP = "country";
+	private static final String COUNTRY__PROP = "country";
 
 	/** @see #getCityCode() */
-	public static final String CITY_CODE__PROP = "cityCode";
+	private static final String CITY_CODE__PROP = "cityCode";
 
 	/** @see #getCity() */
-	public static final String CITY__PROP = "city";
+	private static final String CITY__PROP = "city";
 
 	/** @see #getUsage() */
-	public static final String USAGE__PROP = "usage";
+	private static final String USAGE__PROP = "usage";
 
 	private String _id = "";
 
@@ -88,9 +88,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	/** Internal setter for {@link #getId()} without chain call utility. */
 	protected final void internalSetId(String value) {
-		_listener.beforeSet(this, ID__PROP, value);
 		_id = value;
-		_listener.afterChanged(this, ID__PROP);
 	}
 
 	/**
@@ -110,9 +108,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	/** Internal setter for {@link #getShortcut()} without chain call utility. */
 	protected final void internalSetShortcut(String value) {
-		_listener.beforeSet(this, SHORTCUT__PROP, value);
 		_shortcut = value;
-		_listener.afterChanged(this, SHORTCUT__PROP);
 	}
 
 	public final String getPlus() {
@@ -129,9 +125,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	/** Internal setter for {@link #getPlus()} without chain call utility. */
 	protected final void internalSetPlus(String value) {
-		_listener.beforeSet(this, PLUS__PROP, value);
 		_plus = value;
-		_listener.afterChanged(this, PLUS__PROP);
 	}
 
 	/**
@@ -151,9 +145,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	/** Internal setter for {@link #getZeroZero()} without chain call utility. */
 	protected final void internalSetZeroZero(String value) {
-		_listener.beforeSet(this, ZERO_ZERO__PROP, value);
 		_zeroZero = value;
-		_listener.afterChanged(this, ZERO_ZERO__PROP);
 	}
 
 	/**
@@ -173,9 +165,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	/** Internal setter for {@link #getDial()} without chain call utility. */
 	protected final void internalSetDial(String value) {
-		_listener.beforeSet(this, DIAL__PROP, value);
 		_dial = value;
-		_listener.afterChanged(this, DIAL__PROP);
 	}
 
 	public final String getCountryCode() {
@@ -192,9 +182,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	/** Internal setter for {@link #getCountryCode()} without chain call utility. */
 	protected final void internalSetCountryCode(String value) {
-		_listener.beforeSet(this, COUNTRY_CODE__PROP, value);
 		_countryCode = value;
-		_listener.afterChanged(this, COUNTRY_CODE__PROP);
 	}
 
 	public final String getCountry() {
@@ -211,9 +199,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	/** Internal setter for {@link #getCountry()} without chain call utility. */
 	protected final void internalSetCountry(String value) {
-		_listener.beforeSet(this, COUNTRY__PROP, value);
 		_country = value;
-		_listener.afterChanged(this, COUNTRY__PROP);
 	}
 
 	public final String getCityCode() {
@@ -230,9 +216,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	/** Internal setter for {@link #getCityCode()} without chain call utility. */
 	protected final void internalSetCityCode(String value) {
-		_listener.beforeSet(this, CITY_CODE__PROP, value);
 		_cityCode = value;
-		_listener.afterChanged(this, CITY_CODE__PROP);
 	}
 
 	/**
@@ -256,9 +240,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	/** Internal setter for {@link #getCity()} without chain call utility. */
 	protected final void internalSetCity(String value) {
-		_listener.beforeSet(this, CITY__PROP, value);
 		_city = value;
-		_listener.afterChanged(this, CITY__PROP);
 	}
 
 	/**
@@ -285,9 +267,7 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	/** Internal setter for {@link #getUsage()} without chain call utility. */
 	protected final void internalSetUsage(String value) {
-		_listener.beforeSet(this, USAGE__PROP, value);
 		_usage = value;
-		_listener.afterChanged(this, USAGE__PROP);
 	}
 
 	/**
@@ -295,100 +275,6 @@ public class PhoneNumer extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	 */
 	public final boolean hasUsage() {
 		return _usage != null;
-	}
-
-	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.PhoneNumer registerListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalRegisterListener(l);
-		return this;
-	}
-
-	protected final void internalRegisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.register(_listener, l);
-	}
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.PhoneNumer unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalUnregisterListener(l);
-		return this;
-	}
-
-	protected final void internalUnregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.unregister(_listener, l);
-	}
-
-	@Override
-	public String jsonType() {
-		return PHONE_NUMER__TYPE;
-	}
-
-	static final java.util.List<String> PROPERTIES;
-	static {
-		java.util.List<String> local = java.util.Arrays.asList(
-			ID__PROP, 
-			SHORTCUT__PROP, 
-			PLUS__PROP, 
-			ZERO_ZERO__PROP, 
-			DIAL__PROP, 
-			COUNTRY_CODE__PROP, 
-			COUNTRY__PROP, 
-			CITY_CODE__PROP, 
-			CITY__PROP, 
-			USAGE__PROP);
-		PROPERTIES = java.util.Collections.unmodifiableList(local);
-	}
-
-	static final java.util.Set<String> TRANSIENT_PROPERTIES;
-	static {
-		java.util.HashSet<String> tmp = new java.util.HashSet<>();
-		tmp.addAll(java.util.Arrays.asList(
-				));
-		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
-	}
-
-	@Override
-	public java.util.List<String> properties() {
-		return PROPERTIES;
-	}
-
-	@Override
-	public java.util.Set<String> transientProperties() {
-		return TRANSIENT_PROPERTIES;
-	}
-
-	@Override
-	public Object get(String field) {
-		switch (field) {
-			case ID__PROP: return getId();
-			case SHORTCUT__PROP: return getShortcut();
-			case PLUS__PROP: return getPlus();
-			case ZERO_ZERO__PROP: return getZeroZero();
-			case DIAL__PROP: return getDial();
-			case COUNTRY_CODE__PROP: return getCountryCode();
-			case COUNTRY__PROP: return getCountry();
-			case CITY_CODE__PROP: return getCityCode();
-			case CITY__PROP: return getCity();
-			case USAGE__PROP: return getUsage();
-			default: return null;
-		}
-	}
-
-	@Override
-	public void set(String field, Object value) {
-		switch (field) {
-			case ID__PROP: internalSetId((String) value); break;
-			case SHORTCUT__PROP: internalSetShortcut((String) value); break;
-			case PLUS__PROP: internalSetPlus((String) value); break;
-			case ZERO_ZERO__PROP: internalSetZeroZero((String) value); break;
-			case DIAL__PROP: internalSetDial((String) value); break;
-			case COUNTRY_CODE__PROP: internalSetCountryCode((String) value); break;
-			case COUNTRY__PROP: internalSetCountry((String) value); break;
-			case CITY_CODE__PROP: internalSetCityCode((String) value); break;
-			case CITY__PROP: internalSetCity((String) value); break;
-			case USAGE__PROP: internalSetUsage((String) value); break;
-		}
 	}
 
 	/** Reads a new instance from the given reader. */

@@ -2,6 +2,8 @@ package de.haumacher.phoneblock.db.config;
 
 option NoInterfaces;
 option NoXml;
+option NoBinary;
+option NoListener;
 
 /** JNDI configuration settings for the embedded H2 database */
 message DBConfig {

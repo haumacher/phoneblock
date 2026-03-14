@@ -1,5 +1,10 @@
 package de.haumacher.phoneblock.location.model;
 
+option NoInterfaces;
+option NoXml;
+option NoBinary;
+option NoListener;
+
 /** Country description from the database at https://github.com/datasets/country-codes */
 message Country {
 

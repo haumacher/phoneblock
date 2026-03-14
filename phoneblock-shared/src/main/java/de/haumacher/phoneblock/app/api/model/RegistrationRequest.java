@@ -3,7 +3,7 @@ package de.haumacher.phoneblock.app.api.model;
 /**
  * Requesting a new user account.
  */
-public class RegistrationRequest extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
+public class RegistrationRequest extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
 	 * Creates a {@link de.haumacher.phoneblock.app.api.model.RegistrationRequest} instance.
@@ -16,13 +16,13 @@ public class RegistrationRequest extends de.haumacher.msgbuf.data.AbstractDataOb
 	public static final String REGISTRATION_REQUEST__TYPE = "RegistrationRequest";
 
 	/** @see #getSession() */
-	public static final String SESSION__PROP = "session";
+	private static final String SESSION__PROP = "session";
 
 	/** @see #getAnswer() */
-	public static final String ANSWER__PROP = "answer";
+	private static final String ANSWER__PROP = "answer";
 
 	/** @see #getEmail() */
-	public static final String EMAIL__PROP = "email";
+	private static final String EMAIL__PROP = "email";
 
 	private String _session = "";
 
@@ -56,9 +56,7 @@ public class RegistrationRequest extends de.haumacher.msgbuf.data.AbstractDataOb
 
 	/** Internal setter for {@link #getSession()} without chain call utility. */
 	protected final void internalSetSession(String value) {
-		_listener.beforeSet(this, SESSION__PROP, value);
 		_session = value;
-		_listener.afterChanged(this, SESSION__PROP);
 	}
 
 	/**
@@ -78,9 +76,7 @@ public class RegistrationRequest extends de.haumacher.msgbuf.data.AbstractDataOb
 
 	/** Internal setter for {@link #getAnswer()} without chain call utility. */
 	protected final void internalSetAnswer(String value) {
-		_listener.beforeSet(this, ANSWER__PROP, value);
 		_answer = value;
-		_listener.afterChanged(this, ANSWER__PROP);
 	}
 
 	/**
@@ -100,82 +96,7 @@ public class RegistrationRequest extends de.haumacher.msgbuf.data.AbstractDataOb
 
 	/** Internal setter for {@link #getEmail()} without chain call utility. */
 	protected final void internalSetEmail(String value) {
-		_listener.beforeSet(this, EMAIL__PROP, value);
 		_email = value;
-		_listener.afterChanged(this, EMAIL__PROP);
-	}
-
-	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.RegistrationRequest registerListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalRegisterListener(l);
-		return this;
-	}
-
-	protected final void internalRegisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.register(_listener, l);
-	}
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.RegistrationRequest unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalUnregisterListener(l);
-		return this;
-	}
-
-	protected final void internalUnregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.unregister(_listener, l);
-	}
-
-	@Override
-	public String jsonType() {
-		return REGISTRATION_REQUEST__TYPE;
-	}
-
-	static final java.util.List<String> PROPERTIES;
-	static {
-		java.util.List<String> local = java.util.Arrays.asList(
-			SESSION__PROP, 
-			ANSWER__PROP, 
-			EMAIL__PROP);
-		PROPERTIES = java.util.Collections.unmodifiableList(local);
-	}
-
-	static final java.util.Set<String> TRANSIENT_PROPERTIES;
-	static {
-		java.util.HashSet<String> tmp = new java.util.HashSet<>();
-		tmp.addAll(java.util.Arrays.asList(
-				));
-		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
-	}
-
-	@Override
-	public java.util.List<String> properties() {
-		return PROPERTIES;
-	}
-
-	@Override
-	public java.util.Set<String> transientProperties() {
-		return TRANSIENT_PROPERTIES;
-	}
-
-	@Override
-	public Object get(String field) {
-		switch (field) {
-			case SESSION__PROP: return getSession();
-			case ANSWER__PROP: return getAnswer();
-			case EMAIL__PROP: return getEmail();
-			default: return null;
-		}
-	}
-
-	@Override
-	public void set(String field, Object value) {
-		switch (field) {
-			case SESSION__PROP: internalSetSession((String) value); break;
-			case ANSWER__PROP: internalSetAnswer((String) value); break;
-			case EMAIL__PROP: internalSetEmail((String) value); break;
-		}
 	}
 
 	/** Reads a new instance from the given reader. */

@@ -3,7 +3,7 @@ package de.haumacher.phoneblock.db.settings;
 /**
  * A user's authorization token.
  */
-public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable {
+public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject {
 
 	/**
 	 * Creates a {@link de.haumacher.phoneblock.db.settings.AuthToken} instance.
@@ -16,94 +16,49 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	public static final String AUTH_TOKEN__TYPE = "AuthToken";
 
 	/** @see #getId() */
-	public static final String ID__PROP = "id";
+	private static final String ID__PROP = "id";
 
 	/** @see #getUserId() */
-	public static final String USER_ID__PROP = "userId";
+	private static final String USER_ID__PROP = "userId";
 
 	/** @see #getUserName() */
-	public static final String USER_NAME__PROP = "userName";
+	private static final String USER_NAME__PROP = "userName";
 
 	/** @see #getLabel() */
-	public static final String LABEL__PROP = "label";
+	private static final String LABEL__PROP = "label";
 
 	/** @see #getCreated() */
-	public static final String CREATED__PROP = "created";
+	private static final String CREATED__PROP = "created";
 
 	/** @see #getPwHash() */
-	public static final String PW_HASH__PROP = "pwHash";
+	private static final String PW_HASH__PROP = "pwHash";
 
 	/** @see #isImplicit() */
-	public static final String IMPLICIT__PROP = "implicit";
+	private static final String IMPLICIT__PROP = "implicit";
 
 	/** @see #isAccessQuery() */
-	public static final String ACCESS_QUERY__PROP = "accessQuery";
+	private static final String ACCESS_QUERY__PROP = "accessQuery";
 
 	/** @see #isAccessDownload() */
-	public static final String ACCESS_DOWNLOAD__PROP = "accessDownload";
+	private static final String ACCESS_DOWNLOAD__PROP = "accessDownload";
 
 	/** @see #isAccessCarddav() */
-	public static final String ACCESS_CARDDAV__PROP = "accessCarddav";
+	private static final String ACCESS_CARDDAV__PROP = "accessCarddav";
 
 	/** @see #isAccessRate() */
-	public static final String ACCESS_RATE__PROP = "accessRate";
+	private static final String ACCESS_RATE__PROP = "accessRate";
 
 	/** @see #isAccessLogin() */
-	public static final String ACCESS_LOGIN__PROP = "accessLogin";
+	private static final String ACCESS_LOGIN__PROP = "accessLogin";
 
 	/** @see #getLastAccess() */
-	public static final String LAST_ACCESS__PROP = "lastAccess";
+	private static final String LAST_ACCESS__PROP = "lastAccess";
 
 	/** @see #getUserAgent() */
-	public static final String USER_AGENT__PROP = "userAgent";
+	private static final String USER_AGENT__PROP = "userAgent";
 
 	/** @see #getToken() */
-	public static final String TOKEN__PROP = "token";
-
-	/** Identifier for the property {@link #getId()} in binary format. */
-	static final int ID__ID = 1;
-
-	/** Identifier for the property {@link #getUserId()} in binary format. */
-	static final int USER_ID__ID = 2;
-
-	/** Identifier for the property {@link #getUserName()} in binary format. */
-	static final int USER_NAME__ID = 3;
-
-	/** Identifier for the property {@link #getLabel()} in binary format. */
-	static final int LABEL__ID = 4;
-
-	/** Identifier for the property {@link #getCreated()} in binary format. */
-	static final int CREATED__ID = 5;
-
-	/** Identifier for the property {@link #getPwHash()} in binary format. */
-	static final int PW_HASH__ID = 6;
-
-	/** Identifier for the property {@link #isImplicit()} in binary format. */
-	static final int IMPLICIT__ID = 7;
-
-	/** Identifier for the property {@link #isAccessQuery()} in binary format. */
-	static final int ACCESS_QUERY__ID = 8;
-
-	/** Identifier for the property {@link #isAccessDownload()} in binary format. */
-	static final int ACCESS_DOWNLOAD__ID = 9;
-
-	/** Identifier for the property {@link #isAccessCarddav()} in binary format. */
-	static final int ACCESS_CARDDAV__ID = 10;
-
-	/** Identifier for the property {@link #isAccessRate()} in binary format. */
-	static final int ACCESS_RATE__ID = 11;
-
-	/** Identifier for the property {@link #isAccessLogin()} in binary format. */
-	static final int ACCESS_LOGIN__ID = 12;
-
-	/** Identifier for the property {@link #getLastAccess()} in binary format. */
-	static final int LAST_ACCESS__ID = 13;
-
-	/** Identifier for the property {@link #getUserAgent()} in binary format. */
-	static final int USER_AGENT__ID = 14;
-
-	/** Identifier for the property {@link #getToken()} in binary format. */
-	static final int TOKEN__ID = 15;
+	private static final String TOKEN__PROP = "token";
 
 	private long _id = 0L;
 
@@ -161,9 +116,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 
 	/** Internal setter for {@link #getId()} without chain call utility. */
 	protected final void internalSetId(long value) {
-		_listener.beforeSet(this, ID__PROP, value);
 		_id = value;
-		_listener.afterChanged(this, ID__PROP);
 	}
 
 	/**
@@ -183,9 +136,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 
 	/** Internal setter for {@link #getUserId()} without chain call utility. */
 	protected final void internalSetUserId(long value) {
-		_listener.beforeSet(this, USER_ID__PROP, value);
 		_userId = value;
-		_listener.afterChanged(this, USER_ID__PROP);
 	}
 
 	/**
@@ -205,9 +156,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 
 	/** Internal setter for {@link #getUserName()} without chain call utility. */
 	protected final void internalSetUserName(String value) {
-		_listener.beforeSet(this, USER_NAME__PROP, value);
 		_userName = value;
-		_listener.afterChanged(this, USER_NAME__PROP);
 	}
 
 	/**
@@ -227,9 +176,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 
 	/** Internal setter for {@link #getLabel()} without chain call utility. */
 	protected final void internalSetLabel(String value) {
-		_listener.beforeSet(this, LABEL__PROP, value);
 		_label = value;
-		_listener.afterChanged(this, LABEL__PROP);
 	}
 
 	/**
@@ -249,9 +196,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 
 	/** Internal setter for {@link #getCreated()} without chain call utility. */
 	protected final void internalSetCreated(long value) {
-		_listener.beforeSet(this, CREATED__PROP, value);
 		_created = value;
-		_listener.afterChanged(this, CREATED__PROP);
 	}
 
 	/**
@@ -271,9 +216,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 
 	/** Internal setter for {@link #getPwHash()} without chain call utility. */
 	protected final void internalSetPwHash(byte[] value) {
-		_listener.beforeSet(this, PW_HASH__PROP, value);
 		_pwHash = value;
-		_listener.afterChanged(this, PW_HASH__PROP);
 	}
 
 	/**
@@ -293,9 +236,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 
 	/** Internal setter for {@link #isImplicit()} without chain call utility. */
 	protected final void internalSetImplicit(boolean value) {
-		_listener.beforeSet(this, IMPLICIT__PROP, value);
 		_implicit = value;
-		_listener.afterChanged(this, IMPLICIT__PROP);
 	}
 
 	/**
@@ -315,9 +256,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 
 	/** Internal setter for {@link #isAccessQuery()} without chain call utility. */
 	protected final void internalSetAccessQuery(boolean value) {
-		_listener.beforeSet(this, ACCESS_QUERY__PROP, value);
 		_accessQuery = value;
-		_listener.afterChanged(this, ACCESS_QUERY__PROP);
 	}
 
 	/**
@@ -337,9 +276,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 
 	/** Internal setter for {@link #isAccessDownload()} without chain call utility. */
 	protected final void internalSetAccessDownload(boolean value) {
-		_listener.beforeSet(this, ACCESS_DOWNLOAD__PROP, value);
 		_accessDownload = value;
-		_listener.afterChanged(this, ACCESS_DOWNLOAD__PROP);
 	}
 
 	/**
@@ -359,9 +296,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 
 	/** Internal setter for {@link #isAccessCarddav()} without chain call utility. */
 	protected final void internalSetAccessCarddav(boolean value) {
-		_listener.beforeSet(this, ACCESS_CARDDAV__PROP, value);
 		_accessCarddav = value;
-		_listener.afterChanged(this, ACCESS_CARDDAV__PROP);
 	}
 
 	/**
@@ -381,9 +316,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 
 	/** Internal setter for {@link #isAccessRate()} without chain call utility. */
 	protected final void internalSetAccessRate(boolean value) {
-		_listener.beforeSet(this, ACCESS_RATE__PROP, value);
 		_accessRate = value;
-		_listener.afterChanged(this, ACCESS_RATE__PROP);
 	}
 
 	/**
@@ -403,9 +336,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 
 	/** Internal setter for {@link #isAccessLogin()} without chain call utility. */
 	protected final void internalSetAccessLogin(boolean value) {
-		_listener.beforeSet(this, ACCESS_LOGIN__PROP, value);
 		_accessLogin = value;
-		_listener.afterChanged(this, ACCESS_LOGIN__PROP);
 	}
 
 	/**
@@ -425,9 +356,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 
 	/** Internal setter for {@link #getLastAccess()} without chain call utility. */
 	protected final void internalSetLastAccess(long value) {
-		_listener.beforeSet(this, LAST_ACCESS__PROP, value);
 		_lastAccess = value;
-		_listener.afterChanged(this, LAST_ACCESS__PROP);
 	}
 
 	/**
@@ -447,9 +376,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 
 	/** Internal setter for {@link #getUserAgent()} without chain call utility. */
 	protected final void internalSetUserAgent(String value) {
-		_listener.beforeSet(this, USER_AGENT__PROP, value);
 		_userAgent = value;
-		_listener.afterChanged(this, USER_AGENT__PROP);
 	}
 
 	/**
@@ -469,118 +396,7 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 
 	/** Internal setter for {@link #getToken()} without chain call utility. */
 	protected final void internalSetToken(String value) {
-		_listener.beforeSet(this, TOKEN__PROP, value);
 		_token = value;
-		_listener.afterChanged(this, TOKEN__PROP);
-	}
-
-	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
-
-	@Override
-	public de.haumacher.phoneblock.db.settings.AuthToken registerListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalRegisterListener(l);
-		return this;
-	}
-
-	protected final void internalRegisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.register(_listener, l);
-	}
-
-	@Override
-	public de.haumacher.phoneblock.db.settings.AuthToken unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalUnregisterListener(l);
-		return this;
-	}
-
-	protected final void internalUnregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.unregister(_listener, l);
-	}
-
-	@Override
-	public String jsonType() {
-		return AUTH_TOKEN__TYPE;
-	}
-
-	static final java.util.List<String> PROPERTIES;
-	static {
-		java.util.List<String> local = java.util.Arrays.asList(
-			ID__PROP, 
-			USER_ID__PROP, 
-			USER_NAME__PROP, 
-			LABEL__PROP, 
-			CREATED__PROP, 
-			PW_HASH__PROP, 
-			IMPLICIT__PROP, 
-			ACCESS_QUERY__PROP, 
-			ACCESS_DOWNLOAD__PROP, 
-			ACCESS_CARDDAV__PROP, 
-			ACCESS_RATE__PROP, 
-			ACCESS_LOGIN__PROP, 
-			LAST_ACCESS__PROP, 
-			USER_AGENT__PROP, 
-			TOKEN__PROP);
-		PROPERTIES = java.util.Collections.unmodifiableList(local);
-	}
-
-	static final java.util.Set<String> TRANSIENT_PROPERTIES;
-	static {
-		java.util.HashSet<String> tmp = new java.util.HashSet<>();
-		tmp.addAll(java.util.Arrays.asList(
-				));
-		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
-	}
-
-	@Override
-	public java.util.List<String> properties() {
-		return PROPERTIES;
-	}
-
-	@Override
-	public java.util.Set<String> transientProperties() {
-		return TRANSIENT_PROPERTIES;
-	}
-
-	@Override
-	public Object get(String field) {
-		switch (field) {
-			case ID__PROP: return getId();
-			case USER_ID__PROP: return getUserId();
-			case USER_NAME__PROP: return getUserName();
-			case LABEL__PROP: return getLabel();
-			case CREATED__PROP: return getCreated();
-			case PW_HASH__PROP: return getPwHash();
-			case IMPLICIT__PROP: return isImplicit();
-			case ACCESS_QUERY__PROP: return isAccessQuery();
-			case ACCESS_DOWNLOAD__PROP: return isAccessDownload();
-			case ACCESS_CARDDAV__PROP: return isAccessCarddav();
-			case ACCESS_RATE__PROP: return isAccessRate();
-			case ACCESS_LOGIN__PROP: return isAccessLogin();
-			case LAST_ACCESS__PROP: return getLastAccess();
-			case USER_AGENT__PROP: return getUserAgent();
-			case TOKEN__PROP: return getToken();
-			default: return null;
-		}
-	}
-
-	@Override
-	public void set(String field, Object value) {
-		switch (field) {
-			case ID__PROP: internalSetId((long) value); break;
-			case USER_ID__PROP: internalSetUserId((long) value); break;
-			case USER_NAME__PROP: internalSetUserName((String) value); break;
-			case LABEL__PROP: internalSetLabel((String) value); break;
-			case CREATED__PROP: internalSetCreated((long) value); break;
-			case PW_HASH__PROP: internalSetPwHash((byte[]) value); break;
-			case IMPLICIT__PROP: internalSetImplicit((boolean) value); break;
-			case ACCESS_QUERY__PROP: internalSetAccessQuery((boolean) value); break;
-			case ACCESS_DOWNLOAD__PROP: internalSetAccessDownload((boolean) value); break;
-			case ACCESS_CARDDAV__PROP: internalSetAccessCarddav((boolean) value); break;
-			case ACCESS_RATE__PROP: internalSetAccessRate((boolean) value); break;
-			case ACCESS_LOGIN__PROP: internalSetAccessLogin((boolean) value); break;
-			case LAST_ACCESS__PROP: internalSetLastAccess((long) value); break;
-			case USER_AGENT__PROP: internalSetUserAgent((String) value); break;
-			case TOKEN__PROP: internalSetToken((String) value); break;
-		}
 	}
 
 	/** Reads a new instance from the given reader. */
@@ -649,98 +465,6 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject imple
 			case USER_AGENT__PROP: setUserAgent(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case TOKEN__PROP: setToken(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			default: super.readField(in, field);
-		}
-	}
-
-	@Override
-	public final void writeTo(de.haumacher.msgbuf.binary.DataWriter out) throws java.io.IOException {
-		out.beginObject();
-		writeFields(out);
-		out.endObject();
-	}
-
-	/**
-	 * Serializes all fields of this instance to the given binary output.
-	 *
-	 * @param out
-	 *        The binary output to write to.
-	 * @throws java.io.IOException If writing fails.
-	 */
-	protected void writeFields(de.haumacher.msgbuf.binary.DataWriter out) throws java.io.IOException {
-		out.name(ID__ID);
-		out.value(getId());
-		out.name(USER_ID__ID);
-		out.value(getUserId());
-		out.name(USER_NAME__ID);
-		out.value(getUserName());
-		out.name(LABEL__ID);
-		out.value(getLabel());
-		out.name(CREATED__ID);
-		out.value(getCreated());
-		out.name(PW_HASH__ID);
-		out.value(getPwHash());
-		out.name(IMPLICIT__ID);
-		out.value(isImplicit());
-		out.name(ACCESS_QUERY__ID);
-		out.value(isAccessQuery());
-		out.name(ACCESS_DOWNLOAD__ID);
-		out.value(isAccessDownload());
-		out.name(ACCESS_CARDDAV__ID);
-		out.value(isAccessCarddav());
-		out.name(ACCESS_RATE__ID);
-		out.value(isAccessRate());
-		out.name(ACCESS_LOGIN__ID);
-		out.value(isAccessLogin());
-		out.name(LAST_ACCESS__ID);
-		out.value(getLastAccess());
-		out.name(USER_AGENT__ID);
-		out.value(getUserAgent());
-		out.name(TOKEN__ID);
-		out.value(getToken());
-	}
-
-	/** Reads a new instance from the given reader. */
-	public static de.haumacher.phoneblock.db.settings.AuthToken readAuthToken(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		in.beginObject();
-		de.haumacher.phoneblock.db.settings.AuthToken result = de.haumacher.phoneblock.db.settings.AuthToken.readAuthToken_Content(in);
-		in.endObject();
-		return result;
-	}
-
-	/** Helper for creating an object of type {@link de.haumacher.phoneblock.db.settings.AuthToken} from a polymorphic composition. */
-	public static de.haumacher.phoneblock.db.settings.AuthToken readAuthToken_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		de.haumacher.phoneblock.db.settings.AuthToken result = new AuthToken();
-		result.readContent(in);
-		return result;
-	}
-
-	/** Helper for reading all fields of this instance. */
-	protected final void readContent(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		while (in.hasNext()) {
-			int field = in.nextName();
-			readField(in, field);
-		}
-	}
-
-	/** Consumes the value for the field with the given ID and assigns its value. */
-	protected void readField(de.haumacher.msgbuf.binary.DataReader in, int field) throws java.io.IOException {
-		switch (field) {
-			case ID__ID: setId(in.nextLong()); break;
-			case USER_ID__ID: setUserId(in.nextLong()); break;
-			case USER_NAME__ID: setUserName(in.nextString()); break;
-			case LABEL__ID: setLabel(in.nextString()); break;
-			case CREATED__ID: setCreated(in.nextLong()); break;
-			case PW_HASH__ID: setPwHash(in.nextBinary()); break;
-			case IMPLICIT__ID: setImplicit(in.nextBoolean()); break;
-			case ACCESS_QUERY__ID: setAccessQuery(in.nextBoolean()); break;
-			case ACCESS_DOWNLOAD__ID: setAccessDownload(in.nextBoolean()); break;
-			case ACCESS_CARDDAV__ID: setAccessCarddav(in.nextBoolean()); break;
-			case ACCESS_RATE__ID: setAccessRate(in.nextBoolean()); break;
-			case ACCESS_LOGIN__ID: setAccessLogin(in.nextBoolean()); break;
-			case LAST_ACCESS__ID: setLastAccess(in.nextLong()); break;
-			case USER_AGENT__ID: setUserAgent(in.nextString()); break;
-			case TOKEN__ID: setToken(in.nextString()); break;
-			default: in.skipValue(); 
 		}
 	}
 

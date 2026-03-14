@@ -16,10 +16,10 @@ public class AccountSettings extends AccountData {
 	public static final String ACCOUNT_SETTINGS__TYPE = "AccountSettings";
 
 	/** @see #getLogin() */
-	public static final String LOGIN__PROP = "login";
+	private static final String LOGIN__PROP = "login";
 
 	/** @see #getEmail() */
-	public static final String EMAIL__PROP = "email";
+	private static final String EMAIL__PROP = "email";
 
 	private String _login = null;
 
@@ -56,9 +56,7 @@ public class AccountSettings extends AccountData {
 
 	/** Internal setter for {@link #getLogin()} without chain call utility. */
 	protected final void internalSetLogin(String value) {
-		_listener.beforeSet(this, LOGIN__PROP, value);
 		_login = value;
-		_listener.afterChanged(this, LOGIN__PROP);
 	}
 
 	/**
@@ -85,9 +83,7 @@ public class AccountSettings extends AccountData {
 
 	/** Internal setter for {@link #getEmail()} without chain call utility. */
 	protected final void internalSetEmail(String value) {
-		_listener.beforeSet(this, EMAIL__PROP, value);
 		_email = value;
-		_listener.afterChanged(this, EMAIL__PROP);
 	}
 
 	/**
@@ -118,56 +114,6 @@ public class AccountSettings extends AccountData {
 	@Override
 	public String jsonType() {
 		return ACCOUNT_SETTINGS__TYPE;
-	}
-
-	@SuppressWarnings("hiding")
-	static final java.util.List<String> PROPERTIES;
-	static {
-		java.util.List<String> local = java.util.Arrays.asList(
-			LOGIN__PROP, 
-			EMAIL__PROP);
-		java.util.List<String> tmp = new java.util.ArrayList<>();
-		tmp.addAll(de.haumacher.phoneblock.app.api.model.AccountData.PROPERTIES);
-		tmp.addAll(local);
-		PROPERTIES = java.util.Collections.unmodifiableList(tmp);
-	}
-
-	@SuppressWarnings("hiding")
-	static final java.util.Set<String> TRANSIENT_PROPERTIES;
-	static {
-		java.util.HashSet<String> tmp = new java.util.HashSet<>();
-		tmp.addAll(de.haumacher.phoneblock.app.api.model.AccountData.TRANSIENT_PROPERTIES);
-		tmp.addAll(java.util.Arrays.asList(
-				));
-		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
-	}
-
-	@Override
-	public java.util.List<String> properties() {
-		return PROPERTIES;
-	}
-
-	@Override
-	public java.util.Set<String> transientProperties() {
-		return TRANSIENT_PROPERTIES;
-	}
-
-	@Override
-	public Object get(String field) {
-		switch (field) {
-			case LOGIN__PROP: return getLogin();
-			case EMAIL__PROP: return getEmail();
-			default: return super.get(field);
-		}
-	}
-
-	@Override
-	public void set(String field, Object value) {
-		switch (field) {
-			case LOGIN__PROP: internalSetLogin((String) value); break;
-			case EMAIL__PROP: internalSetEmail((String) value); break;
-			default: super.set(field, value); break;
-		}
 	}
 
 	/** Reads a new instance from the given reader. */
