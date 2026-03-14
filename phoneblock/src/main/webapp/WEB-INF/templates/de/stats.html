@@ -26,13 +26,7 @@
 			"type": "line",
 			"data": {
 				"labels": <th:block th:text="${registrationLabels}"></th:block>,
-				"datasets": [{
-					"label": "<th:block th:text="#{page.stats.userCount}"></th:block>",
-					"data": <th:block th:text="${registrationData}"></th:block>,
-					"fill": false,
-					"borderColor": "rgb(75, 192, 192)",
-					"tension": 0.1
-				}]
+				"datasets": <th:block th:utext="${registrationDatasets}"></th:block>
 			},
 			"options": {
 				"scales": {

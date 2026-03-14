@@ -9,6 +9,7 @@ package de.haumacher.phoneblock.db;
 public class DailyCount {
 
 	private long dayEpoch;
+	private String dial;
 	private int cnt;
 
 	public long getDayEpoch() {
@@ -17,6 +18,14 @@ public class DailyCount {
 
 	public void setDayEpoch(long dayEpoch) {
 		this.dayEpoch = dayEpoch;
+	}
+
+	public String getDial() {
+		return dial;
+	}
+
+	public void setDial(String dial) {
+		this.dial = dial;
 	}
 
 	public int getCnt() {

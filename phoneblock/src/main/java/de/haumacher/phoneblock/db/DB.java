@@ -2290,7 +2290,8 @@ public class DB {
 	/**
 	 * Returns cumulative user counts for the last <code>days</code> days (excluding the current day).
 	 *
-	 * @return Two-element array: index 0 is a list of date labels (dd.MM.), index 1 is a list of cumulative user counts.
+	 * @return Three-element array: index 0 is a list of date labels (dd.MM.), index 1 is a list of cumulative user counts (total),
+	 *         index 2 is a {@code LinkedHashMap<String, List<Integer>>} of per-dial-prefix cumulative counts (top 10 + "OTHER").
 	 */
 	public Object[] getUserRegistrationHistory(int days) {
 		Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
@@ -2306,19 +2307,23 @@ public class DB {
 
 		List<DailyCount> counts;
 		int baseCount;
+		List<DailyCount> dialCounts;
+		List<DailyCount> dialBaseCounts;
 		try (SqlSession session = openSession()) {
 			Users u = session.getMapper(Users.class);
 			counts = u.getRegistrationsPerDay(since, before);
 			baseCount = u.getUserCountBefore(since);
+			dialCounts = u.getRegistrationsPerDayByDial(since, before);
+			dialBaseCounts = u.getUserCountBeforeByDial(before);
 		}
 
-		// Build a map for quick lookup.
+		// Build a map for quick lookup (total).
 		Map<Long, Integer> countByDay = new HashMap<>();
 		for (DailyCount dc : counts) {
 			countByDay.put(dc.getDayEpoch(), dc.getCnt());
 		}
 
-		// Fill gaps and accumulate to get absolute user count per day.
+		// Fill gaps and accumulate to get absolute user count per day (total).
 		java.text.SimpleDateFormat fmt = new java.text.SimpleDateFormat("dd.MM.");
 		fmt.setTimeZone(TimeZone.getTimeZone("UTC"));
 
@@ -2336,7 +2341,74 @@ public class DB {
 			iter.add(Calendar.DAY_OF_MONTH, 1);
 		}
 
-		return new Object[] { labels, data };
+		// Per-dial: compute total user count per dial prefix (base + window sum).
+		Map<String, Integer> dialBaseMap = new HashMap<>();
+		for (DailyCount dc : dialBaseCounts) {
+			String dial = dc.getDial() == null ? "" : dc.getDial();
+			dialBaseMap.merge(dial, dc.getCnt(), Integer::sum);
+		}
+
+		Map<String, Integer> dialWindowSum = new HashMap<>();
+		for (DailyCount dc : dialCounts) {
+			String dial = dc.getDial() == null ? "" : dc.getDial();
+			dialWindowSum.merge(dial, dc.getCnt(), Integer::sum);
+		}
+
+		// Merge all dials and compute total.
+		Map<String, Integer> dialTotalMap = new HashMap<>(dialBaseMap);
+		for (Map.Entry<String, Integer> e : dialWindowSum.entrySet()) {
+			dialTotalMap.merge(e.getKey(), e.getValue(), Integer::sum);
+		}
+
+		// Find top 10 dial prefixes by total count.
+		List<String> topDials = dialTotalMap.entrySet().stream()
+			.sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+			.limit(10)
+			.map(Map.Entry::getKey)
+			.collect(Collectors.toList());
+
+		Set<String> topDialSet = new HashSet<>(topDials);
+
+		// Build per-day map for each dial prefix: dial -> (dayEpoch -> count).
+		Map<String, Map<Long, Integer>> dialDayMap = new HashMap<>();
+		for (DailyCount dc : dialCounts) {
+			String dial = dc.getDial() == null ? "" : dc.getDial();
+			String key = topDialSet.contains(dial) ? dial : "OTHER";
+			dialDayMap.computeIfAbsent(key, k -> new HashMap<>())
+				.merge(dc.getDayEpoch(), dc.getCnt(), Integer::sum);
+		}
+
+		// Build base counts for top dials and OTHER.
+		Map<String, Integer> groupedBaseMap = new HashMap<>();
+		for (Map.Entry<String, Integer> e : dialBaseMap.entrySet()) {
+			String key = topDialSet.contains(e.getKey()) ? e.getKey() : "OTHER";
+			groupedBaseMap.merge(key, e.getValue(), Integer::sum);
+		}
+
+		// Build cumulative series for each group (top 10 + OTHER), ordered by total count desc.
+		List<String> orderedKeys = new ArrayList<>(topDials);
+		if (dialDayMap.containsKey("OTHER") || groupedBaseMap.containsKey("OTHER")) {
+			orderedKeys.add("OTHER");
+		}
+
+		java.util.LinkedHashMap<String, List<Integer>> perDialData = new java.util.LinkedHashMap<>();
+		for (String key : orderedKeys) {
+			Map<Long, Integer> dayMap = dialDayMap.getOrDefault(key, Collections.emptyMap());
+			int base = groupedBaseMap.getOrDefault(key, 0);
+			List<Integer> series = new ArrayList<>();
+			int cum = base;
+			Calendar iter2 = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+			iter2.setTimeInMillis(since);
+			for (int i = 0; i < days; i++) {
+				long dayEpoch = iter2.getTimeInMillis() / 86400000;
+				cum += dayMap.getOrDefault(dayEpoch, 0);
+				series.add(cum);
+				iter2.add(Calendar.DAY_OF_MONTH, 1);
+			}
+			perDialData.put(key, series);
+		}
+
+		return new Object[] { labels, data, perDialData };
 	}
 
 	public int getVotes() {
