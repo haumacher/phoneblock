@@ -197,6 +197,7 @@ public class DB {
 		configuration.addMapper(BlockList.class);
 		configuration.addMapper(Users.class);
 		configuration.addMapper(Domains.class);
+		configuration.addMapper(FtcReports.class);
 		_sessionFactory = new SqlSessionFactoryBuilder().build(configuration);
 		
 		setupSchema();
@@ -1583,6 +1584,7 @@ public class DB {
 		
 		return result;
 	}
+
 
 	public AggregationInfo getAggregation100(SpamReports reports, String phone) {
 		String prefix = prefix100(phone);

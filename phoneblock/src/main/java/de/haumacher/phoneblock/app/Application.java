@@ -27,6 +27,7 @@ import de.haumacher.phoneblock.crawl.FetchService;
 import de.haumacher.phoneblock.credits.ImapService;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.dns.DnsService;
+import de.haumacher.phoneblock.ftc.FtcImportService;
 import de.haumacher.phoneblock.index.IndexUpdateService;
 import de.haumacher.phoneblock.index.google.GoogleUpdateService;
 import de.haumacher.phoneblock.index.indexnow.IndexNowUpdateService;
@@ -121,7 +122,8 @@ public class Application implements ServletContextListener {
 			new AddressBookCache(db),
 			new ImapService(scheduler, db, mail),
 			new CallRetentionService(scheduler, db),
-			new BlocklistVersionService(scheduler, db)
+			new BlocklistVersionService(scheduler, db),
+			new FtcImportService(scheduler, db)
 		};
 		
 		for (int n = 0, cnt = _services.length; n < cnt; n++) {
