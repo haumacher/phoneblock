@@ -19,6 +19,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:device_region/device_region.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:phoneblock_mobile/blocklist_sync_service.dart';
 import 'package:phoneblock_shared/phoneblock_shared.dart';
@@ -527,6 +528,8 @@ Future<bool> updateWhitelistComment(String phone, String comment, String authTok
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     if (task == 'blocklistSync') {
+      final packageInfo = await PackageInfo.fromPlatform();
+      appVersion = packageInfo.version;
       return await BlocklistSyncService.instance.sync();
     }
     return Future.value(true);
@@ -2796,12 +2799,36 @@ class LoginFailed extends StatelessWidget {
   }
 }
 
-void setAuthToken(String token) {
+/// Stores the auth token in both Flutter SharedPreferences (accessible from
+/// background isolates for WorkManager sync) and native SharedPreferences
+/// (used by CallChecker for call screening).
+Future<void> setAuthToken(String token) async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.setString('auth_token', token);
   platform.invokeMethod("setAuthToken", token);
 }
 
+/// Reads the auth token from Flutter SharedPreferences.
+///
+/// On first call after migration from native-only storage, falls back to
+/// reading via MethodChannel (foreground only) and copies the value to
+/// Flutter SharedPreferences for future background access.
 Future<String?> getAuthToken() async {
-  return platform.invokeMethod("getAuthToken");
+  final prefs = await SharedPreferences.getInstance();
+  var token = prefs.getString('auth_token');
+  if (token == null) {
+    // Migration: try reading from native SharedPreferences via MethodChannel.
+    // This only works when the Flutter engine has an Activity (foreground).
+    try {
+      token = await platform.invokeMethod<String>("getAuthToken");
+      if (token != null) {
+        await prefs.setString('auth_token', token);
+      }
+    } catch (e) {
+      // MethodChannel unavailable in background isolate — token stays null.
+    }
+  }
+  return token;
 }
 
 /// Registers the daily blocklist sync task with WorkManager.
