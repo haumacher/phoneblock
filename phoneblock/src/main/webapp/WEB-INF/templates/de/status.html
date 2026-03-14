@@ -157,7 +157,7 @@
 
 	<p data-tx="t0040:99927fb8">
 		Bekannte SPAM-Nummern: 
-		<th:block th:text="${statistics['02-blocked']}"></th:block> aktive Nummern auf der Blocklist, <th:block th:text="${statistics['01-reported']}"></th:block> Nummern mit Beschwerden. 
+		<th:block th:text="${statistics['blocked']}"></th:block> aktive Nummern auf der Blocklist, <th:block th:text="${statistics['reported']}"></th:block> Nummern mit Beschwerden. 
 		Insgesamt <th:block th:text="${status.totalVotes}"></th:block> User-Reports, <th:block th:text="${status.archivedReports}"></th:block> inaktive Nummern mit Spam-Verdacht.
 	</p>
 </div>
