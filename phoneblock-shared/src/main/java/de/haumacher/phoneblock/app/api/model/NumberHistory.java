@@ -16,10 +16,10 @@ public class NumberHistory extends AbstractNumberInfo {
 	public static final String NUMBER_HISTORY__TYPE = "NumberHistory";
 
 	/** @see #getRMin() */
-	public static final String R_MIN__PROP = "rMin";
+	private static final String R_MIN__PROP = "rMin";
 
 	/** @see #getRMax() */
-	public static final String R_MAX__PROP = "rMax";
+	private static final String R_MAX__PROP = "rMax";
 
 	private int _rMin = 0;
 
@@ -56,7 +56,6 @@ public class NumberHistory extends AbstractNumberInfo {
 
 	/** Internal setter for {@link #getRMin()} without chain call utility. */
 	protected final void internalSetRMin(int value) {
-		_listener.beforeSet(this, R_MIN__PROP, value);
 		_rMin = value;
 	}
 
@@ -77,7 +76,6 @@ public class NumberHistory extends AbstractNumberInfo {
 
 	/** Internal setter for {@link #getRMax()} without chain call utility. */
 	protected final void internalSetRMax(int value) {
-		_listener.beforeSet(this, R_MAX__PROP, value);
 		_rMax = value;
 	}
 
@@ -150,34 +148,6 @@ public class NumberHistory extends AbstractNumberInfo {
 	@Override
 	public String jsonType() {
 		return NUMBER_HISTORY__TYPE;
-	}
-
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
-			R_MIN__PROP, 
-			R_MAX__PROP));
-
-	@Override
-	public java.util.List<String> properties() {
-		return PROPERTIES;
-	}
-
-	@Override
-	public Object get(String field) {
-		switch (field) {
-			case R_MIN__PROP: return getRMin();
-			case R_MAX__PROP: return getRMax();
-			default: return super.get(field);
-		}
-	}
-
-	@Override
-	public void set(String field, Object value) {
-		switch (field) {
-			case R_MIN__PROP: internalSetRMin((int) value); break;
-			case R_MAX__PROP: internalSetRMax((int) value); break;
-			default: super.set(field, value); break;
-		}
 	}
 
 	/** Reads a new instance from the given reader. */

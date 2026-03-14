@@ -2,6 +2,8 @@ package de.haumacher.phoneblock.callreport.model;
 
 option NoInterfaces;
 option NoXml;
+option NoBinary;
+option NoListener;
 
 /**
  * Message sent by the CallReportServlet upon GET request.

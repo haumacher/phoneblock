@@ -1,6 +1,6 @@
 package de.haumacher.phoneblock.mail.check.model;
 
-public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable {
+public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject {
 
 	/**
 	 * Creates a {@link de.haumacher.phoneblock.mail.check.model.DomainCheck} instance.
@@ -13,22 +13,22 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	public static final String DOMAIN_CHECK__TYPE = "DomainCheck";
 
 	/** @see #getDomainName() */
-	public static final String DOMAIN_NAME__PROP = "domainName";
+	private static final String DOMAIN_NAME__PROP = "domainName";
 
 	/** @see #isDisposable() */
-	public static final String DISPOSABLE__PROP = "disposable";
+	private static final String DISPOSABLE__PROP = "disposable";
 
 	/** @see #getLastChanged() */
-	public static final String LAST_CHANGED__PROP = "lastChanged";
+	private static final String LAST_CHANGED__PROP = "lastChanged";
 
 	/** @see #getSourceSystem() */
-	public static final String SOURCE_SYSTEM__PROP = "sourceSystem";
+	private static final String SOURCE_SYSTEM__PROP = "sourceSystem";
 
 	/** @see #getMxHost() */
-	public static final String MX_HOST__PROP = "mxHost";
+	private static final String MX_HOST__PROP = "mxHost";
 
 	/** @see #getMxIP() */
-	public static final String MX_IP__PROP = "mxIP";
+	private static final String MX_IP__PROP = "mxIP";
 
 	private String _domainName = "";
 
@@ -65,7 +65,6 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject imp
 
 	/** Internal setter for {@link #getDomainName()} without chain call utility. */
 	protected final void internalSetDomainName(String value) {
-		_listener.beforeSet(this, DOMAIN_NAME__PROP, value);
 		_domainName = value;
 	}
 
@@ -83,7 +82,6 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject imp
 
 	/** Internal setter for {@link #isDisposable()} without chain call utility. */
 	protected final void internalSetDisposable(boolean value) {
-		_listener.beforeSet(this, DISPOSABLE__PROP, value);
 		_disposable = value;
 	}
 
@@ -101,7 +99,6 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject imp
 
 	/** Internal setter for {@link #getLastChanged()} without chain call utility. */
 	protected final void internalSetLastChanged(long value) {
-		_listener.beforeSet(this, LAST_CHANGED__PROP, value);
 		_lastChanged = value;
 	}
 
@@ -119,7 +116,6 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject imp
 
 	/** Internal setter for {@link #getSourceSystem()} without chain call utility. */
 	protected final void internalSetSourceSystem(int value) {
-		_listener.beforeSet(this, SOURCE_SYSTEM__PROP, value);
 		_sourceSystem = value;
 	}
 
@@ -137,7 +133,6 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject imp
 
 	/** Internal setter for {@link #getMxHost()} without chain call utility. */
 	protected final void internalSetMxHost(String value) {
-		_listener.beforeSet(this, MX_HOST__PROP, value);
 		_mxHost = value;
 	}
 
@@ -162,7 +157,6 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject imp
 
 	/** Internal setter for {@link #getMxIP()} without chain call utility. */
 	protected final void internalSetMxIP(String value) {
-		_listener.beforeSet(this, MX_IP__PROP, value);
 		_mxIP = value;
 	}
 
@@ -171,72 +165,6 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject imp
 	 */
 	public final boolean hasMxIP() {
 		return _mxIP != null;
-	}
-
-	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
-
-	@Override
-	public de.haumacher.phoneblock.mail.check.model.DomainCheck registerListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalRegisterListener(l);
-		return this;
-	}
-
-	protected final void internalRegisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.register(_listener, l);
-	}
-
-	@Override
-	public de.haumacher.phoneblock.mail.check.model.DomainCheck unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalUnregisterListener(l);
-		return this;
-	}
-
-	protected final void internalUnregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.unregister(_listener, l);
-	}
-
-	@Override
-	public String jsonType() {
-		return DOMAIN_CHECK__TYPE;
-	}
-
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
-			DOMAIN_NAME__PROP, 
-			DISPOSABLE__PROP, 
-			LAST_CHANGED__PROP, 
-			SOURCE_SYSTEM__PROP, 
-			MX_HOST__PROP, 
-			MX_IP__PROP));
-
-	@Override
-	public java.util.List<String> properties() {
-		return PROPERTIES;
-	}
-
-	@Override
-	public Object get(String field) {
-		switch (field) {
-			case DOMAIN_NAME__PROP: return getDomainName();
-			case DISPOSABLE__PROP: return isDisposable();
-			case LAST_CHANGED__PROP: return getLastChanged();
-			case SOURCE_SYSTEM__PROP: return getSourceSystem();
-			case MX_HOST__PROP: return getMxHost();
-			case MX_IP__PROP: return getMxIP();
-			default: return null;
-		}
-	}
-
-	@Override
-	public void set(String field, Object value) {
-		switch (field) {
-			case DOMAIN_NAME__PROP: internalSetDomainName((String) value); break;
-			case DISPOSABLE__PROP: internalSetDisposable((boolean) value); break;
-			case LAST_CHANGED__PROP: internalSetLastChanged((long) value); break;
-			case SOURCE_SYSTEM__PROP: internalSetSourceSystem((int) value); break;
-			case MX_HOST__PROP: internalSetMxHost((String) value); break;
-			case MX_IP__PROP: internalSetMxIP((String) value); break;
-		}
 	}
 
 	/** Reads a new instance from the given reader. */

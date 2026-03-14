@@ -37,23 +37,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>de.haumacher.msgbuf</groupId>
-			<version>${msgbuf.version}</version>
 			<artifactId>msgbuf-api</artifactId>
-		</dependency>
-
-		<!-- SLF4J for logging -->
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-api</artifactId>
-			<version>2.0.9</version>
-		</dependency>
-
-		<!-- Tinylog binding for CLI (optional) -->
-		<dependency>
-			<groupId>org.tinylog</groupId>
-			<artifactId>slf4j-tinylog</artifactId>
-			<version>2.6.2</version>
-			<optional>true</optional>
 		</dependency>
 	</dependencies>
 
@@ -78,7 +62,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-shade-plugin</artifactId>
-				<version>3.5.0</version>
+				<version>3.6.0</version>
 				<executions>
 					<execution>
 						<phase>package</phase>

@@ -1,6 +1,6 @@
 package de.haumacher.phoneblock.db.settings;
 
-public class Contribution extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable {
+public class Contribution extends de.haumacher.msgbuf.data.AbstractDataObject {
 
 	/**
 	 * Creates a {@link de.haumacher.phoneblock.db.settings.Contribution} instance.
@@ -13,52 +13,28 @@ public class Contribution extends de.haumacher.msgbuf.data.AbstractDataObject im
 	public static final String CONTRIBUTION__TYPE = "Contribution";
 
 	/** @see #getId() */
-	public static final String ID__PROP = "id";
+	private static final String ID__PROP = "id";
 
 	/** @see #getUserId() */
-	public static final String USER_ID__PROP = "userId";
+	private static final String USER_ID__PROP = "userId";
 
 	/** @see #getSender() */
-	public static final String SENDER__PROP = "sender";
+	private static final String SENDER__PROP = "sender";
 
 	/** @see #getTx() */
-	public static final String TX__PROP = "tx";
+	private static final String TX__PROP = "tx";
 
 	/** @see #getAmount() */
-	public static final String AMOUNT__PROP = "amount";
+	private static final String AMOUNT__PROP = "amount";
 
 	/** @see #getMessage() */
-	public static final String MESSAGE__PROP = "message";
+	private static final String MESSAGE__PROP = "message";
 
 	/** @see #getReceived() */
-	public static final String RECEIVED__PROP = "received";
+	private static final String RECEIVED__PROP = "received";
 
 	/** @see #isAcknowledged() */
-	public static final String ACKNOWLEDGED__PROP = "acknowledged";
-
-	/** Identifier for the property {@link #getId()} in binary format. */
-	static final int ID__ID = 1;
-
-	/** Identifier for the property {@link #getUserId()} in binary format. */
-	static final int USER_ID__ID = 2;
-
-	/** Identifier for the property {@link #getSender()} in binary format. */
-	static final int SENDER__ID = 3;
-
-	/** Identifier for the property {@link #getTx()} in binary format. */
-	static final int TX__ID = 4;
-
-	/** Identifier for the property {@link #getAmount()} in binary format. */
-	static final int AMOUNT__ID = 5;
-
-	/** Identifier for the property {@link #getMessage()} in binary format. */
-	static final int MESSAGE__ID = 6;
-
-	/** Identifier for the property {@link #getReceived()} in binary format. */
-	static final int RECEIVED__ID = 7;
-
-	/** Identifier for the property {@link #isAcknowledged()} in binary format. */
-	static final int ACKNOWLEDGED__ID = 8;
+	private static final String ACKNOWLEDGED__PROP = "acknowledged";
 
 	private long _id = 0L;
 
@@ -102,7 +78,6 @@ public class Contribution extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	/** Internal setter for {@link #getId()} without chain call utility. */
 	protected final void internalSetId(long value) {
-		_listener.beforeSet(this, ID__PROP, value);
 		_id = value;
 	}
 
@@ -123,7 +98,6 @@ public class Contribution extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	/** Internal setter for {@link #getUserId()} without chain call utility. */
 	protected final void internalSetUserId(Long value) {
-		_listener.beforeSet(this, USER_ID__PROP, value);
 		_userId = value;
 	}
 
@@ -151,7 +125,6 @@ public class Contribution extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	/** Internal setter for {@link #getSender()} without chain call utility. */
 	protected final void internalSetSender(String value) {
-		_listener.beforeSet(this, SENDER__PROP, value);
 		_sender = value;
 	}
 
@@ -172,7 +145,6 @@ public class Contribution extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	/** Internal setter for {@link #getTx()} without chain call utility. */
 	protected final void internalSetTx(String value) {
-		_listener.beforeSet(this, TX__PROP, value);
 		_tx = value;
 	}
 
@@ -193,7 +165,6 @@ public class Contribution extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	/** Internal setter for {@link #getAmount()} without chain call utility. */
 	protected final void internalSetAmount(int value) {
-		_listener.beforeSet(this, AMOUNT__PROP, value);
 		_amount = value;
 	}
 
@@ -214,7 +185,6 @@ public class Contribution extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	/** Internal setter for {@link #getMessage()} without chain call utility. */
 	protected final void internalSetMessage(String value) {
-		_listener.beforeSet(this, MESSAGE__PROP, value);
 		_message = value;
 	}
 
@@ -235,7 +205,6 @@ public class Contribution extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	/** Internal setter for {@link #getReceived()} without chain call utility. */
 	protected final void internalSetReceived(long value) {
-		_listener.beforeSet(this, RECEIVED__PROP, value);
 		_received = value;
 	}
 
@@ -256,80 +225,7 @@ public class Contribution extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	/** Internal setter for {@link #isAcknowledged()} without chain call utility. */
 	protected final void internalSetAcknowledged(boolean value) {
-		_listener.beforeSet(this, ACKNOWLEDGED__PROP, value);
 		_acknowledged = value;
-	}
-
-	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
-
-	@Override
-	public de.haumacher.phoneblock.db.settings.Contribution registerListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalRegisterListener(l);
-		return this;
-	}
-
-	protected final void internalRegisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.register(_listener, l);
-	}
-
-	@Override
-	public de.haumacher.phoneblock.db.settings.Contribution unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalUnregisterListener(l);
-		return this;
-	}
-
-	protected final void internalUnregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.unregister(_listener, l);
-	}
-
-	@Override
-	public String jsonType() {
-		return CONTRIBUTION__TYPE;
-	}
-
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
-			ID__PROP, 
-			USER_ID__PROP, 
-			SENDER__PROP, 
-			TX__PROP, 
-			AMOUNT__PROP, 
-			MESSAGE__PROP, 
-			RECEIVED__PROP, 
-			ACKNOWLEDGED__PROP));
-
-	@Override
-	public java.util.List<String> properties() {
-		return PROPERTIES;
-	}
-
-	@Override
-	public Object get(String field) {
-		switch (field) {
-			case ID__PROP: return getId();
-			case USER_ID__PROP: return getUserId();
-			case SENDER__PROP: return getSender();
-			case TX__PROP: return getTx();
-			case AMOUNT__PROP: return getAmount();
-			case MESSAGE__PROP: return getMessage();
-			case RECEIVED__PROP: return getReceived();
-			case ACKNOWLEDGED__PROP: return isAcknowledged();
-			default: return null;
-		}
-	}
-
-	@Override
-	public void set(String field, Object value) {
-		switch (field) {
-			case ID__PROP: internalSetId((long) value); break;
-			case USER_ID__PROP: internalSetUserId((Long) value); break;
-			case SENDER__PROP: internalSetSender((String) value); break;
-			case TX__PROP: internalSetTx((String) value); break;
-			case AMOUNT__PROP: internalSetAmount((int) value); break;
-			case MESSAGE__PROP: internalSetMessage((String) value); break;
-			case RECEIVED__PROP: internalSetReceived((long) value); break;
-			case ACKNOWLEDGED__PROP: internalSetAcknowledged((boolean) value); break;
-		}
 	}
 
 	/** Reads a new instance from the given reader. */
@@ -379,79 +275,6 @@ public class Contribution extends de.haumacher.msgbuf.data.AbstractDataObject im
 			case RECEIVED__PROP: setReceived(in.nextLong()); break;
 			case ACKNOWLEDGED__PROP: setAcknowledged(in.nextBoolean()); break;
 			default: super.readField(in, field);
-		}
-	}
-
-	@Override
-	public final void writeTo(de.haumacher.msgbuf.binary.DataWriter out) throws java.io.IOException {
-		out.beginObject();
-		writeFields(out);
-		out.endObject();
-	}
-
-	/**
-	 * Serializes all fields of this instance to the given binary output.
-	 *
-	 * @param out
-	 *        The binary output to write to.
-	 * @throws java.io.IOException If writing fails.
-	 */
-	protected void writeFields(de.haumacher.msgbuf.binary.DataWriter out) throws java.io.IOException {
-		out.name(ID__ID);
-		out.value(getId());
-		if (hasUserId()) {
-			out.name(USER_ID__ID);
-			out.value(getUserId());
-		}
-		out.name(SENDER__ID);
-		out.value(getSender());
-		out.name(TX__ID);
-		out.value(getTx());
-		out.name(AMOUNT__ID);
-		out.value(getAmount());
-		out.name(MESSAGE__ID);
-		out.value(getMessage());
-		out.name(RECEIVED__ID);
-		out.value(getReceived());
-		out.name(ACKNOWLEDGED__ID);
-		out.value(isAcknowledged());
-	}
-
-	/** Reads a new instance from the given reader. */
-	public static de.haumacher.phoneblock.db.settings.Contribution readContribution(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		in.beginObject();
-		de.haumacher.phoneblock.db.settings.Contribution result = de.haumacher.phoneblock.db.settings.Contribution.readContribution_Content(in);
-		in.endObject();
-		return result;
-	}
-
-	/** Helper for creating an object of type {@link de.haumacher.phoneblock.db.settings.Contribution} from a polymorphic composition. */
-	public static de.haumacher.phoneblock.db.settings.Contribution readContribution_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		de.haumacher.phoneblock.db.settings.Contribution result = new Contribution();
-		result.readContent(in);
-		return result;
-	}
-
-	/** Helper for reading all fields of this instance. */
-	protected final void readContent(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		while (in.hasNext()) {
-			int field = in.nextName();
-			readField(in, field);
-		}
-	}
-
-	/** Consumes the value for the field with the given ID and assigns its value. */
-	protected void readField(de.haumacher.msgbuf.binary.DataReader in, int field) throws java.io.IOException {
-		switch (field) {
-			case ID__ID: setId(in.nextLong()); break;
-			case USER_ID__ID: setUserId(in.nextLong()); break;
-			case SENDER__ID: setSender(in.nextString()); break;
-			case TX__ID: setTx(in.nextString()); break;
-			case AMOUNT__ID: setAmount(in.nextInt()); break;
-			case MESSAGE__ID: setMessage(in.nextString()); break;
-			case RECEIVED__ID: setReceived(in.nextLong()); break;
-			case ACKNOWLEDGED__ID: setAcknowledged(in.nextBoolean()); break;
-			default: in.skipValue(); 
 		}
 	}
 

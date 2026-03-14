@@ -1,6 +1,6 @@
 package de.haumacher.phoneblock.app.api.model;
 
-public class SearchResult extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
+public class SearchResult extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
 	 * Creates a {@link de.haumacher.phoneblock.app.api.model.SearchResult} instance.
@@ -13,81 +13,51 @@ public class SearchResult extends de.haumacher.msgbuf.data.AbstractDataObject im
 	public static final String SEARCH_RESULT__TYPE = "SearchResult";
 
 	/** @see #getPhoneId() */
-	public static final String PHONE_ID__PROP = "phoneId";
+	private static final String PHONE_ID__PROP = "phoneId";
 
 	/** @see #getNumber() */
-	public static final String NUMBER__PROP = "number";
+	private static final String NUMBER__PROP = "number";
 
 	/** @see #getComments() */
-	public static final String COMMENTS__PROP = "comments";
+	private static final String COMMENTS__PROP = "comments";
 
 	/** @see #getInfo() */
-	public static final String INFO__PROP = "info";
+	private static final String INFO__PROP = "info";
 
 	/** @see #getSearches() */
-	public static final String SEARCHES__PROP = "searches";
+	private static final String SEARCHES__PROP = "searches";
 
 	/** @see #getAiSummary() */
-	public static final String AI_SUMMARY__PROP = "aiSummary";
+	private static final String AI_SUMMARY__PROP = "aiSummary";
 
 	/** @see #getRelatedNumbers() */
-	public static final String RELATED_NUMBERS__PROP = "relatedNumbers";
+	private static final String RELATED_NUMBERS__PROP = "relatedNumbers";
 
 	/** @see #getPrev() */
-	public static final String PREV__PROP = "prev";
+	private static final String PREV__PROP = "prev";
 
 	/** @see #getNext() */
-	public static final String NEXT__PROP = "next";
+	private static final String NEXT__PROP = "next";
 
 	/** @see #getTopRating() */
-	public static final String TOP_RATING__PROP = "topRating";
+	private static final String TOP_RATING__PROP = "topRating";
 
 	/** @see #getRatings() */
-	public static final String RATINGS__PROP = "ratings";
+	private static final String RATINGS__PROP = "ratings";
 
 	private String _phoneId = "";
 
 	private de.haumacher.phoneblock.app.api.model.PhoneNumer _number = null;
 
-	private final java.util.List<de.haumacher.phoneblock.app.api.model.UserComment> _comments = new de.haumacher.msgbuf.util.ReferenceList<>() {
-		@Override
-		protected void beforeAdd(int index, de.haumacher.phoneblock.app.api.model.UserComment element) {
-			_listener.beforeAdd(SearchResult.this, COMMENTS__PROP, index, element);
-		}
-
-		@Override
-		protected void afterRemove(int index, de.haumacher.phoneblock.app.api.model.UserComment element) {
-			_listener.afterRemove(SearchResult.this, COMMENTS__PROP, index, element);
-		}
-	};
+	private final java.util.List<de.haumacher.phoneblock.app.api.model.UserComment> _comments = new java.util.ArrayList<>();
 
 	private de.haumacher.phoneblock.app.api.model.PhoneInfo _info = null;
 
-	private final java.util.List<Integer> _searches = new de.haumacher.msgbuf.util.ReferenceList<>() {
-		@Override
-		protected void beforeAdd(int index, Integer element) {
-			_listener.beforeAdd(SearchResult.this, SEARCHES__PROP, index, element);
-		}
-
-		@Override
-		protected void afterRemove(int index, Integer element) {
-			_listener.afterRemove(SearchResult.this, SEARCHES__PROP, index, element);
-		}
-	};
+	private final java.util.List<Integer> _searches = new java.util.ArrayList<>();
 
 	private String _aiSummary = "";
 
-	private final java.util.List<String> _relatedNumbers = new de.haumacher.msgbuf.util.ReferenceList<>() {
-		@Override
-		protected void beforeAdd(int index, String element) {
-			_listener.beforeAdd(SearchResult.this, RELATED_NUMBERS__PROP, index, element);
-		}
-
-		@Override
-		protected void afterRemove(int index, String element) {
-			_listener.afterRemove(SearchResult.this, RELATED_NUMBERS__PROP, index, element);
-		}
-	};
+	private final java.util.List<String> _relatedNumbers = new java.util.ArrayList<>();
 
 	private String _prev = "";
 
@@ -95,17 +65,7 @@ public class SearchResult extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	private de.haumacher.phoneblock.app.api.model.Rating _topRating = de.haumacher.phoneblock.app.api.model.Rating.A_LEGITIMATE;
 
-	private final java.util.Map<de.haumacher.phoneblock.app.api.model.Rating, Integer> _ratings = new de.haumacher.msgbuf.util.ReferenceMap<>() {
-		@Override
-		protected void beforeAdd(de.haumacher.phoneblock.app.api.model.Rating index, Integer element) {
-			_listener.beforeAdd(SearchResult.this, RATINGS__PROP, index, element);
-		}
-
-		@Override
-		protected void afterRemove(de.haumacher.phoneblock.app.api.model.Rating index, Integer element) {
-			_listener.afterRemove(SearchResult.this, RATINGS__PROP, index, element);
-		}
-	};
+	private final java.util.Map<de.haumacher.phoneblock.app.api.model.Rating, Integer> _ratings = new java.util.LinkedHashMap<>();
 
 	/**
 	 * Creates a {@link SearchResult} instance.
@@ -130,7 +90,6 @@ public class SearchResult extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	/** Internal setter for {@link #getPhoneId()} without chain call utility. */
 	protected final void internalSetPhoneId(String value) {
-		_listener.beforeSet(this, PHONE_ID__PROP, value);
 		_phoneId = value;
 	}
 
@@ -148,7 +107,6 @@ public class SearchResult extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	/** Internal setter for {@link #getNumber()} without chain call utility. */
 	protected final void internalSetNumber(de.haumacher.phoneblock.app.api.model.PhoneNumer value) {
-		_listener.beforeSet(this, NUMBER__PROP, value);
 		_number = value;
 	}
 
@@ -212,7 +170,6 @@ public class SearchResult extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	/** Internal setter for {@link #getInfo()} without chain call utility. */
 	protected final void internalSetInfo(de.haumacher.phoneblock.app.api.model.PhoneInfo value) {
-		_listener.beforeSet(this, INFO__PROP, value);
 		_info = value;
 	}
 
@@ -244,20 +201,20 @@ public class SearchResult extends de.haumacher.msgbuf.data.AbstractDataObject im
 	/**
 	 * Adds a value to the {@link #getSearches()} list.
 	 */
-	public de.haumacher.phoneblock.app.api.model.SearchResult addSearche(int value) {
-		internalAddSearche(value);
+	public de.haumacher.phoneblock.app.api.model.SearchResult addSearch(int value) {
+		internalAddSearch(value);
 		return this;
 	}
 
-	/** Implementation of {@link #addSearche(int)} without chain call utility. */
-	protected final void internalAddSearche(int value) {
+	/** Implementation of {@link #addSearch(int)} without chain call utility. */
+	protected final void internalAddSearch(int value) {
 		_searches.add(value);
 	}
 
 	/**
 	 * Removes a value from the {@link #getSearches()} list.
 	 */
-	public final void removeSearche(int value) {
+	public final void removeSearch(int value) {
 		_searches.remove(value);
 	}
 
@@ -275,7 +232,6 @@ public class SearchResult extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	/** Internal setter for {@link #getAiSummary()} without chain call utility. */
 	protected final void internalSetAiSummary(String value) {
-		_listener.beforeSet(this, AI_SUMMARY__PROP, value);
 		_aiSummary = value;
 	}
 
@@ -331,7 +287,6 @@ public class SearchResult extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	/** Internal setter for {@link #getPrev()} without chain call utility. */
 	protected final void internalSetPrev(String value) {
-		_listener.beforeSet(this, PREV__PROP, value);
 		_prev = value;
 	}
 
@@ -349,7 +304,6 @@ public class SearchResult extends de.haumacher.msgbuf.data.AbstractDataObject im
 
 	/** Internal setter for {@link #getNext()} without chain call utility. */
 	protected final void internalSetNext(String value) {
-		_listener.beforeSet(this, NEXT__PROP, value);
 		_next = value;
 	}
 
@@ -368,7 +322,6 @@ public class SearchResult extends de.haumacher.msgbuf.data.AbstractDataObject im
 	/** Internal setter for {@link #getTopRating()} without chain call utility. */
 	protected final void internalSetTopRating(de.haumacher.phoneblock.app.api.model.Rating value) {
 		if (value == null) throw new IllegalArgumentException("Property 'topRating' cannot be null.");
-		_listener.beforeSet(this, TOP_RATING__PROP, value);
 		_topRating = value;
 	}
 
@@ -412,87 +365,6 @@ public class SearchResult extends de.haumacher.msgbuf.data.AbstractDataObject im
 	 */
 	public final void removeRating(de.haumacher.phoneblock.app.api.model.Rating key) {
 		_ratings.remove(key);
-	}
-
-	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.SearchResult registerListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalRegisterListener(l);
-		return this;
-	}
-
-	protected final void internalRegisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.register(_listener, l);
-	}
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.SearchResult unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalUnregisterListener(l);
-		return this;
-	}
-
-	protected final void internalUnregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.unregister(_listener, l);
-	}
-
-	@Override
-	public String jsonType() {
-		return SEARCH_RESULT__TYPE;
-	}
-
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
-			PHONE_ID__PROP, 
-			NUMBER__PROP, 
-			COMMENTS__PROP, 
-			INFO__PROP, 
-			SEARCHES__PROP, 
-			AI_SUMMARY__PROP, 
-			RELATED_NUMBERS__PROP, 
-			PREV__PROP, 
-			NEXT__PROP, 
-			TOP_RATING__PROP, 
-			RATINGS__PROP));
-
-	@Override
-	public java.util.List<String> properties() {
-		return PROPERTIES;
-	}
-
-	@Override
-	public Object get(String field) {
-		switch (field) {
-			case PHONE_ID__PROP: return getPhoneId();
-			case NUMBER__PROP: return getNumber();
-			case COMMENTS__PROP: return getComments();
-			case INFO__PROP: return getInfo();
-			case SEARCHES__PROP: return getSearches();
-			case AI_SUMMARY__PROP: return getAiSummary();
-			case RELATED_NUMBERS__PROP: return getRelatedNumbers();
-			case PREV__PROP: return getPrev();
-			case NEXT__PROP: return getNext();
-			case TOP_RATING__PROP: return getTopRating();
-			case RATINGS__PROP: return getRatings();
-			default: return null;
-		}
-	}
-
-	@Override
-	public void set(String field, Object value) {
-		switch (field) {
-			case PHONE_ID__PROP: internalSetPhoneId((String) value); break;
-			case NUMBER__PROP: internalSetNumber((de.haumacher.phoneblock.app.api.model.PhoneNumer) value); break;
-			case COMMENTS__PROP: internalSetComments(de.haumacher.msgbuf.util.Conversions.asList(de.haumacher.phoneblock.app.api.model.UserComment.class, value)); break;
-			case INFO__PROP: internalSetInfo((de.haumacher.phoneblock.app.api.model.PhoneInfo) value); break;
-			case SEARCHES__PROP: internalSetSearches(de.haumacher.msgbuf.util.Conversions.asList(Integer.class, value)); break;
-			case AI_SUMMARY__PROP: internalSetAiSummary((String) value); break;
-			case RELATED_NUMBERS__PROP: internalSetRelatedNumbers(de.haumacher.msgbuf.util.Conversions.asList(String.class, value)); break;
-			case PREV__PROP: internalSetPrev((String) value); break;
-			case NEXT__PROP: internalSetNext((String) value); break;
-			case TOP_RATING__PROP: internalSetTopRating((de.haumacher.phoneblock.app.api.model.Rating) value); break;
-			case RATINGS__PROP: internalSetRatings((java.util.Map<de.haumacher.phoneblock.app.api.model.Rating, Integer>) value); break;
-		}
 	}
 
 	/** Reads a new instance from the given reader. */

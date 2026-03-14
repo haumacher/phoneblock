@@ -3,7 +3,7 @@ package de.haumacher.phoneblock.app.api.model;
 /**
  * The completion of the registration.
  */
-public class RegistrationCompletion extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
+public class RegistrationCompletion extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
 	 * Creates a {@link de.haumacher.phoneblock.app.api.model.RegistrationCompletion} instance.
@@ -16,10 +16,10 @@ public class RegistrationCompletion extends de.haumacher.msgbuf.data.AbstractDat
 	public static final String REGISTRATION_COMPLETION__TYPE = "RegistrationCompletion";
 
 	/** @see #getSession() */
-	public static final String SESSION__PROP = "session";
+	private static final String SESSION__PROP = "session";
 
 	/** @see #getCode() */
-	public static final String CODE__PROP = "code";
+	private static final String CODE__PROP = "code";
 
 	private String _session = "";
 
@@ -51,7 +51,6 @@ public class RegistrationCompletion extends de.haumacher.msgbuf.data.AbstractDat
 
 	/** Internal setter for {@link #getSession()} without chain call utility. */
 	protected final void internalSetSession(String value) {
-		_listener.beforeSet(this, SESSION__PROP, value);
 		_session = value;
 	}
 
@@ -72,62 +71,7 @@ public class RegistrationCompletion extends de.haumacher.msgbuf.data.AbstractDat
 
 	/** Internal setter for {@link #getCode()} without chain call utility. */
 	protected final void internalSetCode(String value) {
-		_listener.beforeSet(this, CODE__PROP, value);
 		_code = value;
-	}
-
-	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.RegistrationCompletion registerListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalRegisterListener(l);
-		return this;
-	}
-
-	protected final void internalRegisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.register(_listener, l);
-	}
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.RegistrationCompletion unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalUnregisterListener(l);
-		return this;
-	}
-
-	protected final void internalUnregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.unregister(_listener, l);
-	}
-
-	@Override
-	public String jsonType() {
-		return REGISTRATION_COMPLETION__TYPE;
-	}
-
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
-			SESSION__PROP, 
-			CODE__PROP));
-
-	@Override
-	public java.util.List<String> properties() {
-		return PROPERTIES;
-	}
-
-	@Override
-	public Object get(String field) {
-		switch (field) {
-			case SESSION__PROP: return getSession();
-			case CODE__PROP: return getCode();
-			default: return null;
-		}
-	}
-
-	@Override
-	public void set(String field, Object value) {
-		switch (field) {
-			case SESSION__PROP: internalSetSession((String) value); break;
-			case CODE__PROP: internalSetCode((String) value); break;
-		}
 	}
 
 	/** Reads a new instance from the given reader. */

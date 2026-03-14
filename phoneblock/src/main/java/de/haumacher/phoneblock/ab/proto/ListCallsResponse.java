@@ -126,15 +126,31 @@ public class ListCallsResponse extends de.haumacher.msgbuf.data.AbstractDataObje
 		return LIST_CALLS_RESPONSE__TYPE;
 	}
 
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
+	static final java.util.List<String> PROPERTIES;
+	static {
+		java.util.List<String> local = java.util.Arrays.asList(
 			CALLS_ANSWERED__PROP, 
 			TALK_TIME__PROP, 
-			CALLS__PROP));
+			CALLS__PROP);
+		PROPERTIES = java.util.Collections.unmodifiableList(local);
+	}
+
+	static final java.util.Set<String> TRANSIENT_PROPERTIES;
+	static {
+		java.util.HashSet<String> tmp = new java.util.HashSet<>();
+		tmp.addAll(java.util.Arrays.asList(
+				));
+		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
+	}
 
 	@Override
 	public java.util.List<String> properties() {
 		return PROPERTIES;
+	}
+
+	@Override
+	public java.util.Set<String> transientProperties() {
+		return TRANSIENT_PROPERTIES;
 	}
 
 	@Override
@@ -189,11 +205,13 @@ public class ListCallsResponse extends de.haumacher.msgbuf.data.AbstractDataObje
 			case CALLS_ANSWERED__PROP: setCallsAnswered(in.nextInt()); break;
 			case TALK_TIME__PROP: setTalkTime(in.nextLong()); break;
 			case CALLS__PROP: {
+				java.util.List<de.haumacher.phoneblock.ab.proto.CallInfo> newValue = new java.util.ArrayList<>();
 				in.beginArray();
 				while (in.hasNext()) {
-					addCall(de.haumacher.phoneblock.ab.proto.CallInfo.readCallInfo(in));
+					newValue.add(de.haumacher.phoneblock.ab.proto.CallInfo.readCallInfo(in));
 				}
 				in.endArray();
+				setCalls(newValue);
 			}
 			break;
 			default: super.readField(in, field);
