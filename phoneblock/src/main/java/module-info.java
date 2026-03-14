@@ -53,7 +53,6 @@ module de.haumacher.phoneblock {
 	requires transitive jakarta.servlet.jsp;
 	requires transitive jakarta.el;
 	requires transitive jakarta.mail;
-	requires transitive org.simplejavamail.java_utils_mail_dkim;
 	requires transitive de.haumacher.msgbuf;
 	requires transitive org.jsoup;
 	requires transitive org.mybatis;
@@ -66,7 +65,6 @@ module de.haumacher.phoneblock {
 	requires transitive service;
 	requires transitive org.tinylog.api;
 	requires transitive jakartaee.pac4j;
-	requires transitive utils.data.fetcher;
 	requires transitive org.eclipse.angus.mail;
 	requires transitive io.nayuki.qrcodegen;
 }
