@@ -1,5 +1,21 @@
 # PhoneBlock Release Notes
 
+## Version 2.0.0 (2026-03-14)
+
+**Key Features:**
+- FTC Do Not Call data import: US spam numbers from FTC complaints integrated into main database (DB migrations 19+20)
+- Statistics page (`/stats`) with three charts:
+  - User registration growth with per-country breakdown (top 10 dial prefixes)
+  - Active installations by user agent prefix (top 5) plus registered answerbots
+  - Blocked numbers by country (pie chart)
+
+**Improvements:**
+- Centralized dependency management in parent POM
+- Updated dependencies to latest minor/patch versions
+
+**Bug Fixes:**
+- Fixed missing spam number counts on status page (statistics map key mismatch)
+
 ## Version 1.9.4 (2026-03-08)
 
 **Key Features:**
