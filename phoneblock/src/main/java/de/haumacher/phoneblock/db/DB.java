@@ -2471,10 +2471,10 @@ public class DB {
 			agentTotalMap.merge(e.getKey(), e.getValue(), Integer::sum);
 		}
 
-		// Find top 10 UA prefixes by total count.
+		// Find top 5 UA prefixes by total count.
 		List<String> topAgents = agentTotalMap.entrySet().stream()
 			.sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
-			.limit(10)
+			.limit(5)
 			.map(Map.Entry::getKey)
 			.collect(Collectors.toList());
 

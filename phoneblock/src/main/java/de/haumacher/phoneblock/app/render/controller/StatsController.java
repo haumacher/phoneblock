@@ -147,7 +147,10 @@ public class StatsController extends DefaultController {
 		}
 
 		// Answerbots (dashed dark cyan line).
-		installationDatasets.append(",{\"label\":");
+		if (!firstDataset) {
+			installationDatasets.append(',');
+		}
+		installationDatasets.append("{\"label\":");
 		jsString(installationDatasets, answerbotLabel);
 		installationDatasets.append(",\"data\":");
 		appendIntList(installationDatasets, answerbotData);
