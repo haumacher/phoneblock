@@ -104,9 +104,7 @@ public class StatsController extends DefaultController {
 		@SuppressWarnings("unchecked")
 		LinkedHashMap<String, List<Integer>> perAgentData = (LinkedHashMap<String, List<Integer>>) installations[1];
 		@SuppressWarnings("unchecked")
-		List<Integer> enabledBotData = (List<Integer>) installations[2];
-		@SuppressWarnings("unchecked")
-		List<Integer> registeredBotData = (List<Integer>) installations[3];
+		List<Integer> answerbotData = (List<Integer>) installations[2];
 
 		StringBuilder installationLabels = new StringBuilder();
 		installationLabels.append('[');
@@ -121,8 +119,7 @@ public class StatsController extends DefaultController {
 		}
 		installationLabels.append(']');
 
-		String enabledBotsLabel = I18N.getMessage(request, "page.stats.enabledBots");
-		String registeredBotsLabel = I18N.getMessage(request, "page.stats.registeredBots");
+		String answerbotLabel = I18N.getMessage(request, "page.stats.answerbots");
 
 		StringBuilder installationDatasets = new StringBuilder();
 		installationDatasets.append('[');
@@ -149,19 +146,12 @@ public class StatsController extends DefaultController {
 			colorIndex++;
 		}
 
-		// Enabled answerbots (dashed tomato line).
+		// Answerbots (dashed dark cyan line).
 		installationDatasets.append(",{\"label\":");
-		jsString(installationDatasets, enabledBotsLabel);
+		jsString(installationDatasets, answerbotLabel);
 		installationDatasets.append(",\"data\":");
-		appendIntList(installationDatasets, enabledBotData);
-		installationDatasets.append(",\"fill\":false,\"borderColor\":\"rgb(255, 99, 71)\",\"borderDash\":[5,5],\"tension\":0.1}");
-
-		// Registered answerbots (dashed lime green line).
-		installationDatasets.append(",{\"label\":");
-		jsString(installationDatasets, registeredBotsLabel);
-		installationDatasets.append(",\"data\":");
-		appendIntList(installationDatasets, registeredBotData);
-		installationDatasets.append(",\"fill\":false,\"borderColor\":\"rgb(50, 205, 50)\",\"borderDash\":[5,5],\"tension\":0.1}");
+		appendIntList(installationDatasets, answerbotData);
+		installationDatasets.append(",\"fill\":false,\"borderColor\":\"rgb(0, 139, 139)\",\"borderDash\":[5,5],\"tension\":0.1}");
 
 		installationDatasets.append(']');
 

@@ -2414,10 +2414,9 @@ public class DB {
 	/**
 	 * Returns cumulative active installation counts for the last <code>days</code> days.
 	 *
-	 * @return Four-element array: index 0 is a list of date labels, index 1 is a
+	 * @return Three-element array: index 0 is a list of date labels, index 1 is a
 	 *         {@code LinkedHashMap<String, List<Integer>>} of per-UA-prefix cumulative token counts (top 10 + "OTHER"),
-	 *         index 2 is a list of cumulative enabled answerbot counts,
-	 *         index 3 is a list of cumulative registered answerbot counts.
+	 *         index 2 is a list of cumulative registered answerbot counts.
 	 */
 	public Object[] getActiveInstallationsHistory(int days) {
 		Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
@@ -2432,16 +2431,12 @@ public class DB {
 
 		List<DailyCount> tokenCounts;
 		List<DailyCount> tokenBaseCounts;
-		List<DailyCount> enabledBotCounts;
-		int enabledBotBase;
 		List<DailyCount> registeredBotCounts;
 		int registeredBotBase;
 		try (SqlSession session = openSession()) {
 			Users u = session.getMapper(Users.class);
 			tokenCounts = u.getTokenCreationsPerDayByAgent(since, before);
 			tokenBaseCounts = u.getTokenCountBeforeByAgent(since);
-			enabledBotCounts = u.getEnabledAnswerbotCreationsPerDay(since, before);
-			enabledBotBase = u.getEnabledAnswerbotCountBefore(since);
 			registeredBotCounts = u.getRegisteredAnswerbotCreationsPerDay(since, before);
 			registeredBotBase = u.getRegisteredAnswerbotCountBefore(since);
 		}
@@ -2524,22 +2519,6 @@ public class DB {
 			perAgentData.put(key, series);
 		}
 
-		// Build cumulative answerbot series (enabled).
-		Map<Long, Integer> enabledBotDayMap = new HashMap<>();
-		for (DailyCount dc : enabledBotCounts) {
-			enabledBotDayMap.put(dc.getDayEpoch(), dc.getCnt());
-		}
-
-		List<Integer> enabledBotData = new ArrayList<>();
-		int cumEnabled = enabledBotBase;
-		iter.setTimeInMillis(since);
-		for (int i = 0; i < days; i++) {
-			long dayEpoch = iter.getTimeInMillis() / 86400000;
-			cumEnabled += enabledBotDayMap.getOrDefault(dayEpoch, 0);
-			enabledBotData.add(cumEnabled);
-			iter.add(Calendar.DAY_OF_MONTH, 1);
-		}
-
 		// Build cumulative answerbot series (registered).
 		Map<Long, Integer> registeredBotDayMap = new HashMap<>();
 		for (DailyCount dc : registeredBotCounts) {
@@ -2556,7 +2535,7 @@ public class DB {
 			iter.add(Calendar.DAY_OF_MONTH, 1);
 		}
 
-		return new Object[] { labels, perAgentData, enabledBotData, registeredBotData };
+		return new Object[] { labels, perAgentData, registeredBotData };
 	}
 
 	public int getVotes() {

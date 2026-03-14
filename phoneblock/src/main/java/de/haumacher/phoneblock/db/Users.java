@@ -534,19 +534,11 @@ public interface Users {
 	List<DailyCount> getTokenCountBeforeByAgent(long before);
 
 	@Select("SELECT CAST(CREATED / 86400000 AS BIGINT) AS dayEpoch, COUNT(1) AS cnt "
-		+ "FROM ANSWERBOT_SIP WHERE ENABLED = true AND CREATED >= #{since} AND CREATED < #{before} "
-		+ "GROUP BY dayEpoch ORDER BY dayEpoch")
-	List<DailyCount> getEnabledAnswerbotCreationsPerDay(long since, long before);
-
-	@Select("SELECT COUNT(1) FROM ANSWERBOT_SIP WHERE ENABLED = true AND CREATED < #{before}")
-	int getEnabledAnswerbotCountBefore(long before);
-
-	@Select("SELECT CAST(CREATED / 86400000 AS BIGINT) AS dayEpoch, COUNT(1) AS cnt "
-		+ "FROM ANSWERBOT_SIP WHERE ENABLED = true AND REGISTERED = true AND CREATED >= #{since} AND CREATED < #{before} "
+		+ "FROM ANSWERBOT_SIP WHERE REGISTERED = true AND CREATED >= #{since} AND CREATED < #{before} "
 		+ "GROUP BY dayEpoch ORDER BY dayEpoch")
 	List<DailyCount> getRegisteredAnswerbotCreationsPerDay(long since, long before);
 
-	@Select("SELECT COUNT(1) FROM ANSWERBOT_SIP WHERE ENABLED = true AND REGISTERED = true AND CREATED < #{before}")
+	@Select("SELECT COUNT(1) FROM ANSWERBOT_SIP WHERE REGISTERED = true AND CREATED < #{before}")
 	int getRegisteredAnswerbotCountBefore(long before);
 	
 	@Update("update ANSWERBOT_SIP set NEW_CALLS=NEW_CALLS + 1, CALLS_ACCEPTED=CALLS_ACCEPTED + 1, TALK_TIME=TALK_TIME + #{duration} where ID=#{id}")
