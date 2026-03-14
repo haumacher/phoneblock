@@ -2,6 +2,9 @@ package de.haumacher.phoneblock.db.settings;
 
 option NoInterfaces;
 option NoXml;
+option NoBinary;
+option NoReflection;
+option NoListener;
 
 /** Account settings. */
 message UserSettings {

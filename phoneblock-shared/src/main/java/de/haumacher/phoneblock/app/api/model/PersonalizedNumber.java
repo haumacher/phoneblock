@@ -3,7 +3,7 @@ package de.haumacher.phoneblock.app.api.model;
 /**
  * Entry in a personalized number list with optional comment.
  */
-public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
+public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
 	 * Creates a {@link de.haumacher.phoneblock.app.api.model.PersonalizedNumber} instance.
@@ -16,19 +16,19 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 	public static final String PERSONALIZED_NUMBER__TYPE = "PersonalizedNumber";
 
 	/** @see #getPhone() */
-	public static final String PHONE__PROP = "phone";
+	private static final String PHONE__PROP = "phone";
 
 	/** @see #getLabel() */
-	public static final String LABEL__PROP = "label";
+	private static final String LABEL__PROP = "label";
 
 	/** @see #getComment() */
-	public static final String COMMENT__PROP = "comment";
+	private static final String COMMENT__PROP = "comment";
 
 	/** @see #getRating() */
-	public static final String RATING__PROP = "rating";
+	private static final String RATING__PROP = "rating";
 
 	/** @see #getCreated() */
-	public static final String CREATED__PROP = "created";
+	private static final String CREATED__PROP = "created";
 
 	private String _phone = "";
 
@@ -66,7 +66,6 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 
 	/** Internal setter for {@link #getPhone()} without chain call utility. */
 	protected final void internalSetPhone(String value) {
-		_listener.beforeSet(this, PHONE__PROP, value);
 		_phone = value;
 	}
 
@@ -87,7 +86,6 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 
 	/** Internal setter for {@link #getLabel()} without chain call utility. */
 	protected final void internalSetLabel(String value) {
-		_listener.beforeSet(this, LABEL__PROP, value);
 		_label = value;
 	}
 
@@ -115,7 +113,6 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 
 	/** Internal setter for {@link #getComment()} without chain call utility. */
 	protected final void internalSetComment(String value) {
-		_listener.beforeSet(this, COMMENT__PROP, value);
 		_comment = value;
 	}
 
@@ -143,7 +140,6 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 
 	/** Internal setter for {@link #getRating()} without chain call utility. */
 	protected final void internalSetRating(de.haumacher.phoneblock.app.api.model.Rating value) {
-		_listener.beforeSet(this, RATING__PROP, value);
 		_rating = value;
 	}
 
@@ -171,71 +167,7 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 
 	/** Internal setter for {@link #getCreated()} without chain call utility. */
 	protected final void internalSetCreated(long value) {
-		_listener.beforeSet(this, CREATED__PROP, value);
 		_created = value;
-	}
-
-	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.PersonalizedNumber registerListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalRegisterListener(l);
-		return this;
-	}
-
-	protected final void internalRegisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.register(_listener, l);
-	}
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.PersonalizedNumber unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalUnregisterListener(l);
-		return this;
-	}
-
-	protected final void internalUnregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.unregister(_listener, l);
-	}
-
-	@Override
-	public String jsonType() {
-		return PERSONALIZED_NUMBER__TYPE;
-	}
-
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
-			PHONE__PROP, 
-			LABEL__PROP, 
-			COMMENT__PROP, 
-			RATING__PROP, 
-			CREATED__PROP));
-
-	@Override
-	public java.util.List<String> properties() {
-		return PROPERTIES;
-	}
-
-	@Override
-	public Object get(String field) {
-		switch (field) {
-			case PHONE__PROP: return getPhone();
-			case LABEL__PROP: return getLabel();
-			case COMMENT__PROP: return getComment();
-			case RATING__PROP: return getRating();
-			case CREATED__PROP: return getCreated();
-			default: return null;
-		}
-	}
-
-	@Override
-	public void set(String field, Object value) {
-		switch (field) {
-			case PHONE__PROP: internalSetPhone((String) value); break;
-			case LABEL__PROP: internalSetLabel((String) value); break;
-			case COMMENT__PROP: internalSetComment((String) value); break;
-			case RATING__PROP: internalSetRating((de.haumacher.phoneblock.app.api.model.Rating) value); break;
-			case CREATED__PROP: internalSetCreated((long) value); break;
-		}
 	}
 
 	/** Reads a new instance from the given reader. */

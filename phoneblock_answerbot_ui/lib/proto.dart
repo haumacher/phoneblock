@@ -114,9 +114,9 @@ class CreateAnswerbotResponse extends _JsonObject {
 
 	/// Creates a CreateAnswerbotResponse.
 	CreateAnswerbotResponse({
-			this.id = 0, 
-			this.userName = "", 
-			this.password = "", 
+			this.id = 0,
+			this.userName = "",
+			this.password = "",
 	});
 
 	/// Parses a CreateAnswerbotResponse from a string source.
@@ -215,7 +215,7 @@ abstract class BotRequest extends SetupRequest {
 
 	/// Creates a BotRequest.
 	BotRequest({
-			this.id = 0, 
+			this.id = 0,
 	});
 
 	/// Parses a BotRequest from a string source.
@@ -293,8 +293,8 @@ class EnterHostName extends BotRequest {
 
 	/// Creates a EnterHostName.
 	EnterHostName({
-			super.id, 
-			this.hostName = "", 
+			super.id,
+			this.hostName = "",
 	});
 
 	/// Parses a EnterHostName from a string source.
@@ -342,8 +342,8 @@ class SetupDynDns extends BotRequest {
 
 	/// Creates a SetupDynDns.
 	SetupDynDns({
-			super.id, 
-			this.hostName = "", 
+			super.id,
+			this.hostName = "",
 	});
 
 	/// Parses a SetupDynDns from a string source.
@@ -396,10 +396,10 @@ class SetupDynDnsResponse extends _JsonObject {
 
 	/// Creates a SetupDynDnsResponse.
 	SetupDynDnsResponse({
-			this.id = 0, 
-			this.dyndnsUser = "", 
-			this.dyndnsPassword = "", 
-			this.dyndnsDomain = "", 
+			this.id = 0,
+			this.dyndnsUser = "",
+			this.dyndnsPassword = "",
+			this.dyndnsDomain = "",
 	});
 
 	/// Parses a SetupDynDnsResponse from a string source.
@@ -463,7 +463,7 @@ class SetupDynDnsResponse extends _JsonObject {
 class CheckDynDns extends BotRequest {
 	/// Creates a CheckDynDns.
 	CheckDynDns({
-			super.id, 
+			super.id,
 	});
 
 	/// Parses a CheckDynDns from a string source.
@@ -505,12 +505,12 @@ class UpdateAnswerBot extends BotRequest {
 
 	/// Creates a UpdateAnswerBot.
 	UpdateAnswerBot({
-			super.id, 
-			this.enabled = false, 
-			this.preferIPv4 = false, 
-			this.minVotes = 0, 
-			this.wildcards = false, 
-			this.acceptLocal = false, 
+			super.id,
+			this.enabled = false,
+			this.preferIPv4 = false,
+			this.minVotes = 0,
+			this.wildcards = false,
+			this.acceptLocal = false,
 	});
 
 	/// Parses a UpdateAnswerBot from a string source.
@@ -584,7 +584,7 @@ class UpdateAnswerBot extends BotRequest {
 class EnableAnswerBot extends BotRequest {
 	/// Creates a EnableAnswerBot.
 	EnableAnswerBot({
-			super.id, 
+			super.id,
 	});
 
 	/// Parses a EnableAnswerBot from a string source.
@@ -611,7 +611,7 @@ class EnableAnswerBot extends BotRequest {
 class DisableAnswerBot extends BotRequest {
 	/// Creates a DisableAnswerBot.
 	DisableAnswerBot({
-			super.id, 
+			super.id,
 	});
 
 	/// Parses a DisableAnswerBot from a string source.
@@ -638,7 +638,7 @@ class DisableAnswerBot extends BotRequest {
 class DeleteAnswerBot extends BotRequest {
 	/// Creates a DeleteAnswerBot.
 	DeleteAnswerBot({
-			super.id, 
+			super.id,
 	});
 
 	/// Parses a DeleteAnswerBot from a string source.
@@ -665,7 +665,7 @@ class DeleteAnswerBot extends BotRequest {
 class CheckAnswerBot extends BotRequest {
 	/// Creates a CheckAnswerBot.
 	CheckAnswerBot({
-			super.id, 
+			super.id,
 	});
 
 	/// Parses a CheckAnswerBot from a string source.
@@ -692,7 +692,7 @@ class CheckAnswerBot extends BotRequest {
 class ListCalls extends BotRequest {
 	/// Creates a ListCalls.
 	ListCalls({
-			super.id, 
+			super.id,
 	});
 
 	/// Parses a ListCalls from a string source.
@@ -728,9 +728,9 @@ class ListCallsResponse extends _JsonObject {
 
 	/// Creates a ListCallsResponse.
 	ListCallsResponse({
-			this.callsAnswered = 0, 
-			this.talkTime = 0, 
-			this.calls = const [], 
+			this.callsAnswered = 0,
+			this.talkTime = 0,
+			this.calls = const [],
 	});
 
 	/// Parses a ListCallsResponse from a string source.
@@ -809,9 +809,9 @@ class CallInfo extends _JsonObject {
 
 	/// Creates a CallInfo.
 	CallInfo({
-			this.caller = "", 
-			this.started = 0, 
-			this.duration = 0, 
+			this.caller = "",
+			this.started = 0,
+			this.duration = 0,
 	});
 
 	/// Parses a CallInfo from a string source.
@@ -934,28 +934,28 @@ class AnswerbotInfo extends _JsonObject {
 
 		/// Creates a AnswerbotInfo.
 		AnswerbotInfo({
-				this.id = 0, 
-				this.userId = 0, 
-				this.enabled = false, 
-				this.preferIPv4 = false, 
-				this.minVotes = 0, 
-				this.wildcards = false, 
-				this.acceptLocal = false, 
-				this.registered = false, 
-				this.registerMsg, 
-				this.newCalls = 0, 
-				this.callsAccepted = 0, 
-				this.talkTime = 0, 
-				this.registrar = "", 
-				this.realm = "", 
-				this.userName = "", 
-				this.password = "", 
-				this.host, 
-				this.ip4, 
-				this.ip6, 
-				this.dyndnsUser, 
-				this.dyndnsPassword, 
-				this.retentionPeriod = RetentionPeriod.never, 
+				this.id = 0,
+				this.userId = 0,
+				this.enabled = false,
+				this.preferIPv4 = false,
+				this.minVotes = 0,
+				this.wildcards = false,
+				this.acceptLocal = false,
+				this.registered = false,
+				this.registerMsg,
+				this.newCalls = 0,
+				this.callsAccepted = 0,
+				this.talkTime = 0,
+				this.registrar = "",
+				this.realm = "",
+				this.userName = "",
+				this.password = "",
+				this.host,
+				this.ip4,
+				this.ip6,
+				this.dyndnsUser,
+				this.dyndnsPassword,
+				this.retentionPeriod = RetentionPeriod.never,
 		});
 
 		/// Parses a AnswerbotInfo from a string source.
@@ -1163,7 +1163,7 @@ class AnswerbotInfo extends _JsonObject {
 class ClearCallList extends BotRequest {
 	/// Creates a ClearCallList.
 	ClearCallList({
-			super.id, 
+			super.id,
 	});
 
 	/// Parses a ClearCallList from a string source.
@@ -1193,8 +1193,8 @@ class SetRetentionPolicy extends BotRequest {
 
 	/// Creates a SetRetentionPolicy.
 	SetRetentionPolicy({
-			super.id, 
-			this.period = RetentionPeriod.never, 
+			super.id,
+			this.period = RetentionPeriod.never,
 	});
 
 	/// Parses a SetRetentionPolicy from a string source.
@@ -1281,7 +1281,7 @@ class ListAnswerbotResponse extends _JsonObject {
 
 	/// Creates a ListAnswerbotResponse.
 	ListAnswerbotResponse({
-			this.bots = const [], 
+			this.bots = const [],
 	});
 
 	/// Parses a ListAnswerbotResponse from a string source.

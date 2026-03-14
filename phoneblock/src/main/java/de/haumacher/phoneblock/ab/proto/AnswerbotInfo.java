@@ -622,8 +622,9 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 			return ANSWERBOT_INFO__TYPE;
 		}
 
-		private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-			java.util.Arrays.asList(
+		static final java.util.List<String> PROPERTIES;
+		static {
+			java.util.List<String> local = java.util.Arrays.asList(
 				ID__PROP, 
 				USER_ID__PROP, 
 				ENABLED__PROP, 
@@ -645,11 +646,26 @@ public class AnswerbotInfo extends de.haumacher.msgbuf.data.AbstractDataObject i
 				IP_6__PROP, 
 				DYNDNS_USER__PROP, 
 				DYNDNS_PASSWORD__PROP, 
-				RETENTION_PERIOD__PROP));
+				RETENTION_PERIOD__PROP);
+			PROPERTIES = java.util.Collections.unmodifiableList(local);
+		}
+
+		static final java.util.Set<String> TRANSIENT_PROPERTIES;
+		static {
+			java.util.HashSet<String> tmp = new java.util.HashSet<>();
+			tmp.addAll(java.util.Arrays.asList(
+					));
+			TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
+		}
 
 		@Override
 		public java.util.List<String> properties() {
 			return PROPERTIES;
+		}
+
+		@Override
+		public java.util.Set<String> transientProperties() {
+			return TRANSIENT_PROPERTIES;
 		}
 
 		@Override

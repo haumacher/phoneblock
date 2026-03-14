@@ -3,6 +3,7 @@ package de.haumacher.phoneblock.app.api.model;
 option NoInterfaces;
 option NoBinary;
 option NoReflection;
+option NoListener;
 
 // Generator has problems with repeated primitive types.
 // option DartLib = "../../../../phoneblock_mobile/lib/api.dart";

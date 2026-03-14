@@ -16,13 +16,13 @@ public class NumberInfo extends AbstractNumberInfo {
 	public static final String NUMBER_INFO__TYPE = "NumberInfo";
 
 	/** @see #getAdded() */
-	public static final String ADDED__PROP = "added";
+	private static final String ADDED__PROP = "added";
 
 	/** @see #getUpdated() */
-	public static final String UPDATED__PROP = "updated";
+	private static final String UPDATED__PROP = "updated";
 
 	/** @see #getLastSearch() */
-	public static final String LAST_SEARCH__PROP = "lastSearch";
+	private static final String LAST_SEARCH__PROP = "lastSearch";
 
 	private long _added = 0L;
 
@@ -61,7 +61,6 @@ public class NumberInfo extends AbstractNumberInfo {
 
 	/** Internal setter for {@link #getAdded()} without chain call utility. */
 	protected final void internalSetAdded(long value) {
-		_listener.beforeSet(this, ADDED__PROP, value);
 		_added = value;
 	}
 
@@ -82,7 +81,6 @@ public class NumberInfo extends AbstractNumberInfo {
 
 	/** Internal setter for {@link #getUpdated()} without chain call utility. */
 	protected final void internalSetUpdated(long value) {
-		_listener.beforeSet(this, UPDATED__PROP, value);
 		_updated = value;
 	}
 
@@ -103,7 +101,6 @@ public class NumberInfo extends AbstractNumberInfo {
 
 	/** Internal setter for {@link #getLastSearch()} without chain call utility. */
 	protected final void internalSetLastSearch(long value) {
-		_listener.beforeSet(this, LAST_SEARCH__PROP, value);
 		_lastSearch = value;
 	}
 
@@ -176,37 +173,6 @@ public class NumberInfo extends AbstractNumberInfo {
 	@Override
 	public String jsonType() {
 		return NUMBER_INFO__TYPE;
-	}
-
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
-			ADDED__PROP, 
-			UPDATED__PROP, 
-			LAST_SEARCH__PROP));
-
-	@Override
-	public java.util.List<String> properties() {
-		return PROPERTIES;
-	}
-
-	@Override
-	public Object get(String field) {
-		switch (field) {
-			case ADDED__PROP: return getAdded();
-			case UPDATED__PROP: return getUpdated();
-			case LAST_SEARCH__PROP: return getLastSearch();
-			default: return super.get(field);
-		}
-	}
-
-	@Override
-	public void set(String field, Object value) {
-		switch (field) {
-			case ADDED__PROP: internalSetAdded((long) value); break;
-			case UPDATED__PROP: internalSetUpdated((long) value); break;
-			case LAST_SEARCH__PROP: internalSetLastSearch((long) value); break;
-			default: super.set(field, value); break;
-		}
 	}
 
 	/** Reads a new instance from the given reader. */

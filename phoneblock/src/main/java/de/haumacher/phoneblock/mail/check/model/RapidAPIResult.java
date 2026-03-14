@@ -21,7 +21,7 @@ package de.haumacher.phoneblock.mail.check.model;
  * 	} 
  * </pre>
  */
-public class RapidAPIResult extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable {
+public class RapidAPIResult extends de.haumacher.msgbuf.data.AbstractDataObject {
 
 	/**
 	 * Creates a {@link de.haumacher.phoneblock.mail.check.model.RapidAPIResult} instance.
@@ -34,28 +34,28 @@ public class RapidAPIResult extends de.haumacher.msgbuf.data.AbstractDataObject 
 	public static final String RAPID_APIRESULT__TYPE = "RapidAPIResult";
 
 	/** @see #isValid() */
-	public static final String VALID__PROP = "valid";
+	private static final String VALID__PROP = "valid";
 
 	/** @see #isBlock() */
-	public static final String BLOCK__PROP = "block";
+	private static final String BLOCK__PROP = "block";
 
 	/** @see #isDisposable() */
-	public static final String DISPOSABLE__PROP = "disposable";
+	private static final String DISPOSABLE__PROP = "disposable";
 
 	/** @see #isForwarder() */
-	public static final String FORWARDER__PROP = "email_forwarder";
+	private static final String FORWARDER__PROP = "email_forwarder";
 
 	/** @see #getDomainName() */
-	public static final String DOMAIN_NAME__PROP = "domain";
+	private static final String DOMAIN_NAME__PROP = "domain";
 
 	/** @see #getMxHost() */
-	public static final String MX_HOST__PROP = "mx_host";
+	private static final String MX_HOST__PROP = "mx_host";
 
 	/** @see #getMxIP() */
-	public static final String MX_IP__PROP = "mx_ip";
+	private static final String MX_IP__PROP = "mx_ip";
 
 	/** @see #getLastChanged() */
-	public static final String LAST_CHANGED__PROP = "last_changed_at";
+	private static final String LAST_CHANGED__PROP = "last_changed_at";
 
 	private boolean _valid = false;
 
@@ -96,7 +96,6 @@ public class RapidAPIResult extends de.haumacher.msgbuf.data.AbstractDataObject 
 
 	/** Internal setter for {@link #isValid()} without chain call utility. */
 	protected final void internalSetValid(boolean value) {
-		_listener.beforeSet(this, VALID__PROP, value);
 		_valid = value;
 	}
 
@@ -114,7 +113,6 @@ public class RapidAPIResult extends de.haumacher.msgbuf.data.AbstractDataObject 
 
 	/** Internal setter for {@link #isBlock()} without chain call utility. */
 	protected final void internalSetBlock(boolean value) {
-		_listener.beforeSet(this, BLOCK__PROP, value);
 		_block = value;
 	}
 
@@ -132,7 +130,6 @@ public class RapidAPIResult extends de.haumacher.msgbuf.data.AbstractDataObject 
 
 	/** Internal setter for {@link #isDisposable()} without chain call utility. */
 	protected final void internalSetDisposable(boolean value) {
-		_listener.beforeSet(this, DISPOSABLE__PROP, value);
 		_disposable = value;
 	}
 
@@ -150,7 +147,6 @@ public class RapidAPIResult extends de.haumacher.msgbuf.data.AbstractDataObject 
 
 	/** Internal setter for {@link #isForwarder()} without chain call utility. */
 	protected final void internalSetForwarder(boolean value) {
-		_listener.beforeSet(this, FORWARDER__PROP, value);
 		_forwarder = value;
 	}
 
@@ -168,7 +164,6 @@ public class RapidAPIResult extends de.haumacher.msgbuf.data.AbstractDataObject 
 
 	/** Internal setter for {@link #getDomainName()} without chain call utility. */
 	protected final void internalSetDomainName(String value) {
-		_listener.beforeSet(this, DOMAIN_NAME__PROP, value);
 		_domainName = value;
 	}
 
@@ -186,7 +181,6 @@ public class RapidAPIResult extends de.haumacher.msgbuf.data.AbstractDataObject 
 
 	/** Internal setter for {@link #getMxHost()} without chain call utility. */
 	protected final void internalSetMxHost(String value) {
-		_listener.beforeSet(this, MX_HOST__PROP, value);
 		_mxHost = value;
 	}
 
@@ -204,7 +198,6 @@ public class RapidAPIResult extends de.haumacher.msgbuf.data.AbstractDataObject 
 
 	/** Internal setter for {@link #getMxIP()} without chain call utility. */
 	protected final void internalSetMxIP(String value) {
-		_listener.beforeSet(this, MX_IP__PROP, value);
 		_mxIP = value;
 	}
 
@@ -222,80 +215,7 @@ public class RapidAPIResult extends de.haumacher.msgbuf.data.AbstractDataObject 
 
 	/** Internal setter for {@link #getLastChanged()} without chain call utility. */
 	protected final void internalSetLastChanged(String value) {
-		_listener.beforeSet(this, LAST_CHANGED__PROP, value);
 		_lastChanged = value;
-	}
-
-	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
-
-	@Override
-	public de.haumacher.phoneblock.mail.check.model.RapidAPIResult registerListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalRegisterListener(l);
-		return this;
-	}
-
-	protected final void internalRegisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.register(_listener, l);
-	}
-
-	@Override
-	public de.haumacher.phoneblock.mail.check.model.RapidAPIResult unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalUnregisterListener(l);
-		return this;
-	}
-
-	protected final void internalUnregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.unregister(_listener, l);
-	}
-
-	@Override
-	public String jsonType() {
-		return RAPID_APIRESULT__TYPE;
-	}
-
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
-			VALID__PROP, 
-			BLOCK__PROP, 
-			DISPOSABLE__PROP, 
-			FORWARDER__PROP, 
-			DOMAIN_NAME__PROP, 
-			MX_HOST__PROP, 
-			MX_IP__PROP, 
-			LAST_CHANGED__PROP));
-
-	@Override
-	public java.util.List<String> properties() {
-		return PROPERTIES;
-	}
-
-	@Override
-	public Object get(String field) {
-		switch (field) {
-			case VALID__PROP: return isValid();
-			case BLOCK__PROP: return isBlock();
-			case DISPOSABLE__PROP: return isDisposable();
-			case FORWARDER__PROP: return isForwarder();
-			case DOMAIN_NAME__PROP: return getDomainName();
-			case MX_HOST__PROP: return getMxHost();
-			case MX_IP__PROP: return getMxIP();
-			case LAST_CHANGED__PROP: return getLastChanged();
-			default: return null;
-		}
-	}
-
-	@Override
-	public void set(String field, Object value) {
-		switch (field) {
-			case VALID__PROP: internalSetValid((boolean) value); break;
-			case BLOCK__PROP: internalSetBlock((boolean) value); break;
-			case DISPOSABLE__PROP: internalSetDisposable((boolean) value); break;
-			case FORWARDER__PROP: internalSetForwarder((boolean) value); break;
-			case DOMAIN_NAME__PROP: internalSetDomainName((String) value); break;
-			case MX_HOST__PROP: internalSetMxHost((String) value); break;
-			case MX_IP__PROP: internalSetMxIP((String) value); break;
-			case LAST_CHANGED__PROP: internalSetLastChanged((String) value); break;
-		}
 	}
 
 	/** Reads a new instance from the given reader. */

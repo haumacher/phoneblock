@@ -3,7 +3,7 @@ package de.haumacher.phoneblock.index.google;
 /**
  * Message sent to the Google update service.
  */
-public interface UpdateMessage extends de.haumacher.msgbuf.data.DataObject, de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable {
+public class UpdateMessage extends de.haumacher.msgbuf.data.AbstractDataObject {
 
 	/**
 	 * The type of an update.
@@ -80,64 +80,101 @@ public interface UpdateMessage extends de.haumacher.msgbuf.data.DataObject, de.h
 	/**
 	 * Creates a {@link de.haumacher.phoneblock.index.google.UpdateMessage} instance.
 	 */
-	static de.haumacher.phoneblock.index.google.UpdateMessage create() {
-		return new de.haumacher.phoneblock.index.google.impl.UpdateMessage_Impl();
+	public static de.haumacher.phoneblock.index.google.UpdateMessage create() {
+		return new de.haumacher.phoneblock.index.google.UpdateMessage();
 	}
 
 	/** Identifier for the {@link de.haumacher.phoneblock.index.google.UpdateMessage} type in JSON format. */
-	String UPDATE_MESSAGE__TYPE = "UpdateMessage";
+	public static final String UPDATE_MESSAGE__TYPE = "UpdateMessage";
 
 	/** @see #getUrl() */
-	String URL__PROP = "url";
+	private static final String URL__PROP = "url";
 
 	/** @see #getType() */
-	String TYPE__PROP = "type";
+	private static final String TYPE__PROP = "type";
 
-	/** Identifier for the property {@link #getUrl()} in binary format. */
-	static final int URL__ID = 1;
+	private String _url = "";
 
-	/** Identifier for the property {@link #getType()} in binary format. */
-	static final int TYPE__ID = 2;
+	private de.haumacher.phoneblock.index.google.UpdateMessage.Type _type = de.haumacher.phoneblock.index.google.UpdateMessage.Type.URL_UPDATED;
+
+	/**
+	 * Creates a {@link UpdateMessage} instance.
+	 *
+	 * @see de.haumacher.phoneblock.index.google.UpdateMessage#create()
+	 */
+	protected UpdateMessage() {
+		super();
+	}
 
 	/**
 	 * The modified URL.
 	 */
-	String getUrl();
+	public final String getUrl() {
+		return _url;
+	}
 
 	/**
 	 * @see #getUrl()
 	 */
-	de.haumacher.phoneblock.index.google.UpdateMessage setUrl(String value);
+	public de.haumacher.phoneblock.index.google.UpdateMessage setUrl(String value) {
+		internalSetUrl(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getUrl()} without chain call utility. */
+	protected final void internalSetUrl(String value) {
+		_url = value;
+	}
 
 	/**
 	 * The type of update to inform about.
 	 */
-	de.haumacher.phoneblock.index.google.UpdateMessage.Type getType();
+	public final de.haumacher.phoneblock.index.google.UpdateMessage.Type getType() {
+		return _type;
+	}
 
 	/**
 	 * @see #getType()
 	 */
-	de.haumacher.phoneblock.index.google.UpdateMessage setType(de.haumacher.phoneblock.index.google.UpdateMessage.Type value);
+	public de.haumacher.phoneblock.index.google.UpdateMessage setType(de.haumacher.phoneblock.index.google.UpdateMessage.Type value) {
+		internalSetType(value);
+		return this;
+	}
 
-	@Override
-	public de.haumacher.phoneblock.index.google.UpdateMessage registerListener(de.haumacher.msgbuf.observer.Listener l);
-
-	@Override
-	public de.haumacher.phoneblock.index.google.UpdateMessage unregisterListener(de.haumacher.msgbuf.observer.Listener l);
+	/** Internal setter for {@link #getType()} without chain call utility. */
+	protected final void internalSetType(de.haumacher.phoneblock.index.google.UpdateMessage.Type value) {
+		if (value == null) throw new IllegalArgumentException("Property 'type' cannot be null.");
+		_type = value;
+	}
 
 	/** Reads a new instance from the given reader. */
-	static de.haumacher.phoneblock.index.google.UpdateMessage readUpdateMessage(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
-		de.haumacher.phoneblock.index.google.impl.UpdateMessage_Impl result = new de.haumacher.phoneblock.index.google.impl.UpdateMessage_Impl();
+	public static de.haumacher.phoneblock.index.google.UpdateMessage readUpdateMessage(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
+		de.haumacher.phoneblock.index.google.UpdateMessage result = new de.haumacher.phoneblock.index.google.UpdateMessage();
 		result.readContent(in);
 		return result;
 	}
 
-	/** Reads a new instance from the given reader. */
-	static de.haumacher.phoneblock.index.google.UpdateMessage readUpdateMessage(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		in.beginObject();
-		de.haumacher.phoneblock.index.google.UpdateMessage result = de.haumacher.phoneblock.index.google.impl.UpdateMessage_Impl.readUpdateMessage_Content(in);
-		in.endObject();
-		return result;
+	@Override
+	public final void writeTo(de.haumacher.msgbuf.json.JsonWriter out) throws java.io.IOException {
+		writeContent(out);
+	}
+
+	@Override
+	protected void writeFields(de.haumacher.msgbuf.json.JsonWriter out) throws java.io.IOException {
+		super.writeFields(out);
+		out.name(URL__PROP);
+		out.value(getUrl());
+		out.name(TYPE__PROP);
+		getType().writeTo(out);
+	}
+
+	@Override
+	protected void readField(de.haumacher.msgbuf.json.JsonReader in, String field) throws java.io.IOException {
+		switch (field) {
+			case URL__PROP: setUrl(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case TYPE__PROP: setType(de.haumacher.phoneblock.index.google.UpdateMessage.Type.readType(in)); break;
+			default: super.readField(in, field);
+		}
 	}
 
 }

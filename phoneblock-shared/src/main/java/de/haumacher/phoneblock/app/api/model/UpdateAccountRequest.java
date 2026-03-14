@@ -16,7 +16,7 @@ public class UpdateAccountRequest extends AccountData {
 	public static final String UPDATE_ACCOUNT_REQUEST__TYPE = "UpdateAccountRequest";
 
 	/** @see #getCountryCode() */
-	public static final String COUNTRY_CODE__PROP = "countryCode";
+	private static final String COUNTRY_CODE__PROP = "countryCode";
 
 	private String _countryCode = null;
 
@@ -51,7 +51,6 @@ public class UpdateAccountRequest extends AccountData {
 
 	/** Internal setter for {@link #getCountryCode()} without chain call utility. */
 	protected final void internalSetCountryCode(String value) {
-		_listener.beforeSet(this, COUNTRY_CODE__PROP, value);
 		_countryCode = value;
 	}
 
@@ -83,31 +82,6 @@ public class UpdateAccountRequest extends AccountData {
 	@Override
 	public String jsonType() {
 		return UPDATE_ACCOUNT_REQUEST__TYPE;
-	}
-
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
-			COUNTRY_CODE__PROP));
-
-	@Override
-	public java.util.List<String> properties() {
-		return PROPERTIES;
-	}
-
-	@Override
-	public Object get(String field) {
-		switch (field) {
-			case COUNTRY_CODE__PROP: return getCountryCode();
-			default: return super.get(field);
-		}
-	}
-
-	@Override
-	public void set(String field, Object value) {
-		switch (field) {
-			case COUNTRY_CODE__PROP: internalSetCountryCode((String) value); break;
-			default: super.set(field, value); break;
-		}
 	}
 
 	/** Reads a new instance from the given reader. */

@@ -1,6 +1,10 @@
 package de.haumacher.phoneblock.index.google;
 
+option NoInterfaces;
 option NoXml;
+option NoBinary;
+option NoReflection;
+option NoListener;
 
 /**
  * Message sent to the Google update service.

@@ -3,7 +3,7 @@ package de.haumacher.phoneblock.app.api.model;
 /**
  * The login data created during registration.
  */
-public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.observer.Observable, de.haumacher.msgbuf.xml.XmlSerializable {
+public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.xml.XmlSerializable {
 
 	/**
 	 * Creates a {@link de.haumacher.phoneblock.app.api.model.RegistrationResult} instance.
@@ -16,13 +16,13 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 	public static final String REGISTRATION_RESULT__TYPE = "RegistrationResult";
 
 	/** @see #getSession() */
-	public static final String SESSION__PROP = "session";
+	private static final String SESSION__PROP = "session";
 
 	/** @see #getLogin() */
-	public static final String LOGIN__PROP = "login";
+	private static final String LOGIN__PROP = "login";
 
 	/** @see #getPassword() */
-	public static final String PASSWORD__PROP = "password";
+	private static final String PASSWORD__PROP = "password";
 
 	private String _session = "";
 
@@ -56,7 +56,6 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 
 	/** Internal setter for {@link #getSession()} without chain call utility. */
 	protected final void internalSetSession(String value) {
-		_listener.beforeSet(this, SESSION__PROP, value);
 		_session = value;
 	}
 
@@ -77,7 +76,6 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 
 	/** Internal setter for {@link #getLogin()} without chain call utility. */
 	protected final void internalSetLogin(String value) {
-		_listener.beforeSet(this, LOGIN__PROP, value);
 		_login = value;
 	}
 
@@ -98,65 +96,7 @@ public class RegistrationResult extends de.haumacher.msgbuf.data.AbstractDataObj
 
 	/** Internal setter for {@link #getPassword()} without chain call utility. */
 	protected final void internalSetPassword(String value) {
-		_listener.beforeSet(this, PASSWORD__PROP, value);
 		_password = value;
-	}
-
-	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.RegistrationResult registerListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalRegisterListener(l);
-		return this;
-	}
-
-	protected final void internalRegisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.register(_listener, l);
-	}
-
-	@Override
-	public de.haumacher.phoneblock.app.api.model.RegistrationResult unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalUnregisterListener(l);
-		return this;
-	}
-
-	protected final void internalUnregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.unregister(_listener, l);
-	}
-
-	@Override
-	public String jsonType() {
-		return REGISTRATION_RESULT__TYPE;
-	}
-
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
-			SESSION__PROP, 
-			LOGIN__PROP, 
-			PASSWORD__PROP));
-
-	@Override
-	public java.util.List<String> properties() {
-		return PROPERTIES;
-	}
-
-	@Override
-	public Object get(String field) {
-		switch (field) {
-			case SESSION__PROP: return getSession();
-			case LOGIN__PROP: return getLogin();
-			case PASSWORD__PROP: return getPassword();
-			default: return null;
-		}
-	}
-
-	@Override
-	public void set(String field, Object value) {
-		switch (field) {
-			case SESSION__PROP: internalSetSession((String) value); break;
-			case LOGIN__PROP: internalSetLogin((String) value); break;
-			case PASSWORD__PROP: internalSetPassword((String) value); break;
-		}
 	}
 
 	/** Reads a new instance from the given reader. */

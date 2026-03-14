@@ -11,16 +11,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 
-import org.simplejavamail.utils.mail.dkim.Canonicalization;
-import org.simplejavamail.utils.mail.dkim.DkimMessage;
-import org.simplejavamail.utils.mail.dkim.DkimSigner;
-import org.simplejavamail.utils.mail.dkim.SigningAlgorithm;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.app.Application;
 import de.haumacher.phoneblock.app.SettingsServlet;
@@ -74,15 +69,12 @@ public class MailServiceImpl implements MailService {
 	private Transport _transport;
 	private InternetAddress _from;
 
-	private final MailSignature _signature;
-
 	/** 
 	 * Creates a {@link MailService}.
 	 */
-	public MailServiceImpl(String user, String password, MailSignature signature, Properties properties) {
+	public MailServiceImpl(String user, String password, Properties properties) {
 		_user = user;
 		_password = password;
-		_signature = signature;
 		_properties = properties;
 		
 		String contextPath = Application.getContextPath();
@@ -486,35 +478,17 @@ public class MailServiceImpl implements MailService {
 		return msg;
 	}
 
-	public void sendMail(InternetAddress receiver, MimeMessage msg) throws AddressException, MessagingException {
-		msg.setRecipient(RecipientType.TO, receiver);
+	public void sendMail(InternetAddress receiver, MimeMessage message) throws AddressException, MessagingException {
+		message.setRecipient(RecipientType.TO, receiver);
 		Address[] addresses = {receiver};
 		
-		MimeMessage signedMessage = dkimSignMessage(msg);
-		
 		try {
-			getTransport().sendMessage(signedMessage, addresses);
+			getTransport().sendMessage(message, addresses);
 		} catch (MessagingException | IllegalStateException ex) {
 			// Re-try.
 			shutdownTransport();
-			getTransport().sendMessage(signedMessage, addresses);
+			getTransport().sendMessage(message, addresses);
 		}
-	}
-
-	private MimeMessage dkimSignMessage(MimeMessage message) throws MessagingException {
-		if (_signature == null) {
-			return message;
-		}
-		
-		// Note: DkimSigner is not thread-safe and must therefore created for each mail being sent.
-		DkimSigner dkimSigner = _signature.createSigner();
-		dkimSigner.setIdentity(_from.getAddress());
-		dkimSigner.setHeaderCanonicalization(Canonicalization.SIMPLE);
-		dkimSigner.setBodyCanonicalization(Canonicalization.RELAXED);
-		dkimSigner.setSigningAlgorithm(SigningAlgorithm.SHA256_WITH_RSA);
-		dkimSigner.setLengthParam(true);
-		dkimSigner.setCopyHeaderFields(false);
-		return new DkimMessage(message, dkimSigner);
 	}
 	
 	public void startUp() {

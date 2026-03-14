@@ -3,7 +3,7 @@ package de.haumacher.phoneblock.callreport.model;
 /**
  * Message sent by the CallReportServlet upon GET request.
  */
-public class ReportInfo extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.binary.BinaryDataObject, de.haumacher.msgbuf.observer.Observable {
+public class ReportInfo extends de.haumacher.msgbuf.data.AbstractDataObject implements de.haumacher.msgbuf.data.ReflectiveDataObject {
 
 	/**
 	 * Creates a {@link de.haumacher.phoneblock.callreport.model.ReportInfo} instance.
@@ -20,12 +20,6 @@ public class ReportInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	/** @see #getLastid() */
 	public static final String LASTID__PROP = "lastid";
-
-	/** Identifier for the property {@link #getTimestamp()} in binary format. */
-	static final int TIMESTAMP__ID = 1;
-
-	/** Identifier for the property {@link #getLastid()} in binary format. */
-	static final int LASTID__ID = 2;
 
 	private String _timestamp = null;
 
@@ -57,7 +51,6 @@ public class ReportInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	/** Internal setter for {@link #getTimestamp()} without chain call utility. */
 	protected final void internalSetTimestamp(String value) {
-		_listener.beforeSet(this, TIMESTAMP__PROP, value);
 		_timestamp = value;
 	}
 
@@ -85,7 +78,6 @@ public class ReportInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	/** Internal setter for {@link #getLastid()} without chain call utility. */
 	protected final void internalSetLastid(String value) {
-		_listener.beforeSet(this, LASTID__PROP, value);
 		_lastid = value;
 	}
 
@@ -96,41 +88,35 @@ public class ReportInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		return _lastid != null;
 	}
 
-	protected de.haumacher.msgbuf.observer.Listener _listener = de.haumacher.msgbuf.observer.Listener.NONE;
-
-	@Override
-	public de.haumacher.phoneblock.callreport.model.ReportInfo registerListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalRegisterListener(l);
-		return this;
-	}
-
-	protected final void internalRegisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.register(_listener, l);
-	}
-
-	@Override
-	public de.haumacher.phoneblock.callreport.model.ReportInfo unregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		internalUnregisterListener(l);
-		return this;
-	}
-
-	protected final void internalUnregisterListener(de.haumacher.msgbuf.observer.Listener l) {
-		_listener = de.haumacher.msgbuf.observer.Listener.unregister(_listener, l);
-	}
-
 	@Override
 	public String jsonType() {
 		return REPORT_INFO__TYPE;
 	}
 
-	private static java.util.List<String> PROPERTIES = java.util.Collections.unmodifiableList(
-		java.util.Arrays.asList(
+	static final java.util.List<String> PROPERTIES;
+	static {
+		java.util.List<String> local = java.util.Arrays.asList(
 			TIMESTAMP__PROP, 
-			LASTID__PROP));
+			LASTID__PROP);
+		PROPERTIES = java.util.Collections.unmodifiableList(local);
+	}
+
+	static final java.util.Set<String> TRANSIENT_PROPERTIES;
+	static {
+		java.util.HashSet<String> tmp = new java.util.HashSet<>();
+		tmp.addAll(java.util.Arrays.asList(
+				));
+		TRANSIENT_PROPERTIES = java.util.Collections.unmodifiableSet(tmp);
+	}
 
 	@Override
 	public java.util.List<String> properties() {
 		return PROPERTIES;
+	}
+
+	@Override
+	public java.util.Set<String> transientProperties() {
+		return TRANSIENT_PROPERTIES;
 	}
 
 	@Override
@@ -181,63 +167,6 @@ public class ReportInfo extends de.haumacher.msgbuf.data.AbstractDataObject impl
 			case TIMESTAMP__PROP: setTimestamp(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case LASTID__PROP: setLastid(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			default: super.readField(in, field);
-		}
-	}
-
-	@Override
-	public final void writeTo(de.haumacher.msgbuf.binary.DataWriter out) throws java.io.IOException {
-		out.beginObject();
-		writeFields(out);
-		out.endObject();
-	}
-
-	/**
-	 * Serializes all fields of this instance to the given binary output.
-	 *
-	 * @param out
-	 *        The binary output to write to.
-	 * @throws java.io.IOException If writing fails.
-	 */
-	protected void writeFields(de.haumacher.msgbuf.binary.DataWriter out) throws java.io.IOException {
-		if (hasTimestamp()) {
-			out.name(TIMESTAMP__ID);
-			out.value(getTimestamp());
-		}
-		if (hasLastid()) {
-			out.name(LASTID__ID);
-			out.value(getLastid());
-		}
-	}
-
-	/** Reads a new instance from the given reader. */
-	public static de.haumacher.phoneblock.callreport.model.ReportInfo readReportInfo(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		in.beginObject();
-		de.haumacher.phoneblock.callreport.model.ReportInfo result = de.haumacher.phoneblock.callreport.model.ReportInfo.readReportInfo_Content(in);
-		in.endObject();
-		return result;
-	}
-
-	/** Helper for creating an object of type {@link de.haumacher.phoneblock.callreport.model.ReportInfo} from a polymorphic composition. */
-	public static de.haumacher.phoneblock.callreport.model.ReportInfo readReportInfo_Content(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		de.haumacher.phoneblock.callreport.model.ReportInfo result = new ReportInfo();
-		result.readContent(in);
-		return result;
-	}
-
-	/** Helper for reading all fields of this instance. */
-	protected final void readContent(de.haumacher.msgbuf.binary.DataReader in) throws java.io.IOException {
-		while (in.hasNext()) {
-			int field = in.nextName();
-			readField(in, field);
-		}
-	}
-
-	/** Consumes the value for the field with the given ID and assigns its value. */
-	protected void readField(de.haumacher.msgbuf.binary.DataReader in, int field) throws java.io.IOException {
-		switch (field) {
-			case TIMESTAMP__ID: setTimestamp(in.nextString()); break;
-			case LASTID__ID: setLastid(in.nextString()); break;
-			default: in.skipValue(); 
 		}
 	}
 

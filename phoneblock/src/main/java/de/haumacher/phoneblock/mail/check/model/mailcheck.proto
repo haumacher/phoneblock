@@ -3,6 +3,8 @@ package de.haumacher.phoneblock.mail.check.model;
 option NoInterfaces;
 option NoXml;
 option NoBinary;
+option NoReflection;
+option NoListener;
 
 message DomainCheck {
 	string domainName;
