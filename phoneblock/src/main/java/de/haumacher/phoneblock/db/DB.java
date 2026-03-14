@@ -2538,6 +2538,16 @@ public class DB {
 		return new Object[] { labels, perAgentData, registeredBotData };
 	}
 
+	/**
+	 * Returns blocked number counts per country (DIAL prefix) from NUMBERS_LOCALE.
+	 */
+	public List<DailyCount> getBlockedNumbersByCountry() {
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			return reports.getBlockedNumbersByCountry(MIN_VOTES);
+		}
+	}
+
 	public int getVotes() {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);

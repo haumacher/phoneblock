@@ -65,6 +65,25 @@
 		<script th:src="@{/assets/js/stats-installations.js}" type="text/javascript"></script>
 	</div>
 
+	<h2 data-tx="t0007:6adca729" th:text="#{page.stats.blockedByCountry}">Zablokowane numery według kraju</h2>
+
+	<div style="max-width: 500px;">
+		<canvas aria-label="Zablokowane numery według kraju" data-tx="t0008:6a3cfaf0" dir="ltr" id="blocked-by-country" role="img"></canvas>
+		<pre class="chartjs-data" id="blocked-by-country-data">
+		{
+			"type": "pie",
+			"data": {
+				"labels": <th:block th:text="${pieLabels}"></th:block>,
+				"datasets": [{
+					"data": <th:block th:text="${pieData}"></th:block>,
+					"backgroundColor": <th:block th:utext="${pieColors}"></th:block>
+				}]
+			}
+		}
+		</pre>
+		<script th:src="@{/assets/js/stats-blocked-by-country.js}" type="text/javascript"></script>
+	</div>
+
 </div>
 </section>
 

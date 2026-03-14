@@ -155,10 +155,11 @@
 
 	<h2 data-tx="t0039:198844bf">PhoneBlock-Datenbank</h2>
 
-	<p data-tx="t0040:99927fb8">
+	<p data-tx="t0040:518dc74a">
 		Bekannte SPAM-Nummern: 
 		<th:block th:text="${statistics['blocked']}"></th:block> aktive Nummern auf der Blocklist, <th:block th:text="${statistics['reported']}"></th:block> Nummern mit Beschwerden. 
 		Insgesamt <th:block th:text="${status.totalVotes}"></th:block> User-Reports, <th:block th:text="${status.archivedReports}"></th:block> inaktive Nummern mit Spam-Verdacht.
+		<a th:href="@{/stats}">Mehr Statistiken</a>
 	</p>
 </div>
 

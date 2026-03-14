@@ -11,6 +11,7 @@ import org.thymeleaf.context.WebContext;
 
 import de.haumacher.phoneblock.app.render.DefaultController;
 import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.db.DailyCount;
 import de.haumacher.phoneblock.util.I18N;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -160,6 +161,36 @@ public class StatsController extends DefaultController {
 
 		request.setAttribute("installationLabels", installationLabels.toString());
 		request.setAttribute("installationDatasets", installationDatasets.toString());
+
+		// Blocked numbers by country pie chart.
+		List<DailyCount> countryCounts = DBService.getInstance().getBlockedNumbersByCountry();
+
+		StringBuilder pieLabels = new StringBuilder();
+		StringBuilder pieData = new StringBuilder();
+		StringBuilder pieColors = new StringBuilder();
+		pieLabels.append('[');
+		pieData.append('[');
+		pieColors.append('[');
+		int pieIndex = 0;
+		for (DailyCount dc : countryCounts) {
+			if (pieIndex > 0) {
+				pieLabels.append(',');
+				pieData.append(',');
+				pieColors.append(',');
+			}
+			String dial = dc.getDial() == null || dc.getDial().isEmpty() ? "?" : dc.getDial();
+			jsString(pieLabels, dial);
+			pieData.append(dc.getCnt());
+			jsString(pieColors, DIAL_COLORS[pieIndex % DIAL_COLORS.length]);
+			pieIndex++;
+		}
+		pieLabels.append(']');
+		pieData.append(']');
+		pieColors.append(']');
+
+		request.setAttribute("pieLabels", pieLabels.toString());
+		request.setAttribute("pieData", pieData.toString());
+		request.setAttribute("pieColors", pieColors.toString());
 	}
 
 	private static void appendIntList(StringBuilder sb, List<Integer> values) {
