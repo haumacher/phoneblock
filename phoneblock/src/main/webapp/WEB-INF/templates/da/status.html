@@ -148,7 +148,7 @@
 
 	<h2 data-tx="t0039:198844bf">PhoneBlock-database</h2>
 
-	<p data-tx="t0040:99927fb8">Kendte SPAM-numre: <th:block th:text="${statistics['02-blocked']}"></th:block> aktive numre på blokeringslisten, <th:block th:text="${statistics['01-reported']}"></th:block> numre med klager. I alt <th:block th:text="${status.totalVotes}"></th:block> brugerrapporter, <th:block th:text="${status.archivedReports}"></th:block> inaktive numre med mistanke om spam.</p>
+	<p data-tx="t0040:518dc74a">Kendte SPAM-numre: <th:block th:text="${statistics['blocked']}"></th:block> aktive numre på blokeringslisten, <th:block th:text="${statistics['reported']}"></th:block> numre med klager. I alt <th:block th:text="${status.totalVotes}"></th:block> brugerrapporter, <th:block th:text="${status.archivedReports}"></th:block> inaktive numre med mistanke om spam. <a th:href="@{/stats}">Mere statistik</a></p>
 </div>
 
 </section>

@@ -346,7 +346,10 @@ public interface SpamReports {
 			ORDER BY state
 			""")
 	List<Statistics> getStatistics(int minVotes);
-	
+
+	@Select("SELECT DIAL AS dial, COUNT(1) AS cnt FROM NUMBERS_LOCALE WHERE VOTES >= #{minVotes} GROUP BY DIAL ORDER BY cnt DESC")
+	List<DailyCount> getBlockedNumbersByCountry(int minVotes);
+
 	@Update("""
 			update NUMBERS s
 			set

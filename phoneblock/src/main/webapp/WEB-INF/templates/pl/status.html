@@ -148,7 +148,7 @@
 
 	<h2 data-tx="t0039:198844bf">Baza danych PhoneBlock</h2>
 
-	<p data-tx="t0040:99927fb8">Znane numery SPAM: <th:block th:text="${statistics['02-blocked']}"></th:block> aktywne numery na liście blokowanych, <th:block th:text="${statistics['01-reported']}"></th:block> numery ze skargami. Łącznie <th:block th:text="${status.totalVotes}"></th:block> zgłoszeń użytkowników, <th:block th:text="${status.archivedReports}"></th:block> nieaktywnych numerów z podejrzeniem spamu.</p>
+	<p data-tx="t0040:518dc74a">Znane numery SPAM: <th:block th:text="${statistics['blocked']}"></th:block> aktywne numery na liście blokowanych, <th:block th:text="${statistics['reported']}"></th:block> numery ze skargami. Łącznie <th:block th:text="${status.totalVotes}"></th:block> raporty użytkowników, <th:block th:text="${status.archivedReports}"></th:block> nieaktywne numery z podejrzeniem spamu. <a th:href="@{/stats}">Więcej statystyk</a></p>
 </div>
 
 </section>

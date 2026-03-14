@@ -45,7 +45,7 @@ public class StatusController extends DefaultController {
 			statistics.put(s.getState(), s.getCnt());
 			cnt += s.getCnt();
 		}
-		statistics.put("03-total", cnt);
+		statistics.put("total", cnt);
 		request.setAttribute("status", status);
 		request.setAttribute("statistics", statistics);
 	}

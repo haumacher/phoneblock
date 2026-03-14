@@ -148,7 +148,7 @@
 
 	<h2 data-tx="t0039:198844bf">قاعدة بيانات PhoneBlock</h2>
 
-	<p data-tx="t0040:99927fb8">أرقام الرسائل الاقتحامية المعروفة: <th:block th:text="${statistics['02-blocked']}"></th:block> الأرقام النشطة في قائمة الحظر، <th:block th:text="${statistics['01-reported']}"></th:block> الأرقام التي بها شكاوى. إجمالي <th:block th:text="${status.totalVotes}"></th:block> بلاغات المستخدمين، <th:block th:text="${status.archivedReports}"></th:block> أرقام غير نشطة مع شكاوى مشتبه في أنها رسائل غير مرغوب فيها.</p>
+	<p data-tx="t0040:518dc74a">أرقام الرسائل الاقتحامية المعروفة: <th:block th:text="${statistics['blocked']}"></th:block> الأرقام النشطة في قائمة الحظر، <th:block th:text="${statistics['reported']}"></th:block> الأرقام التي بها شكاوى. إجمالي <th:block th:text="${status.totalVotes}"></th:block> تقارير المستخدمين، <th:block th:text="${status.archivedReports}"></th:block> أرقام غير نشطة مع شكاوى مشتبه في أنها رسائل غير مرغوب فيها. <a th:href="@{/stats}"> المزيد من الإحصاءات</a></p>
 </div>
 
 </section>

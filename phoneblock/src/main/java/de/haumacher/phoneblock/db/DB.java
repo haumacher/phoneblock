@@ -2287,6 +2287,267 @@ public class DB {
 		}
 	}
 
+	/**
+	 * Returns cumulative user counts for the last <code>days</code> days (excluding the current day).
+	 *
+	 * @return Three-element array: index 0 is a list of date labels (dd.MM.), index 1 is a list of cumulative user counts (total),
+	 *         index 2 is a {@code LinkedHashMap<String, List<Integer>>} of per-dial-prefix cumulative counts (top 10 + "OTHER").
+	 */
+	public Object[] getUserRegistrationHistory(int days) {
+		Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+		// Start of current UTC day (excludes today).
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		long before = cal.getTimeInMillis();
+
+		cal.add(Calendar.DAY_OF_MONTH, -days);
+		long since = cal.getTimeInMillis();
+
+		List<DailyCount> counts;
+		int baseCount;
+		List<DailyCount> dialCounts;
+		List<DailyCount> dialBaseCounts;
+		try (SqlSession session = openSession()) {
+			Users u = session.getMapper(Users.class);
+			counts = u.getRegistrationsPerDay(since, before);
+			baseCount = u.getUserCountBefore(since);
+			dialCounts = u.getRegistrationsPerDayByDial(since, before);
+			dialBaseCounts = u.getUserCountBeforeByDial(since);
+		}
+
+		// Build a map for quick lookup (total).
+		Map<Long, Integer> countByDay = new HashMap<>();
+		for (DailyCount dc : counts) {
+			countByDay.put(dc.getDayEpoch(), dc.getCnt());
+		}
+
+		// Fill gaps and accumulate to get absolute user count per day (total).
+		java.text.SimpleDateFormat fmt = new java.text.SimpleDateFormat("dd.MM.");
+		fmt.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+		List<String> labels = new ArrayList<>();
+		List<Integer> data = new ArrayList<>();
+
+		int cumulative = baseCount;
+		Calendar iter = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+		iter.setTimeInMillis(since);
+		for (int i = 0; i < days; i++) {
+			long dayEpoch = iter.getTimeInMillis() / 86400000;
+			cumulative += countByDay.getOrDefault(dayEpoch, 0);
+			labels.add(fmt.format(iter.getTime()));
+			data.add(cumulative);
+			iter.add(Calendar.DAY_OF_MONTH, 1);
+		}
+
+		// Per-dial: compute total user count per dial prefix (base + window sum).
+		Map<String, Integer> dialBaseMap = new HashMap<>();
+		for (DailyCount dc : dialBaseCounts) {
+			String dial = dc.getDial() == null ? "" : dc.getDial();
+			dialBaseMap.merge(dial, dc.getCnt(), Integer::sum);
+		}
+
+		Map<String, Integer> dialWindowSum = new HashMap<>();
+		for (DailyCount dc : dialCounts) {
+			String dial = dc.getDial() == null ? "" : dc.getDial();
+			dialWindowSum.merge(dial, dc.getCnt(), Integer::sum);
+		}
+
+		// Merge all dials and compute total.
+		Map<String, Integer> dialTotalMap = new HashMap<>(dialBaseMap);
+		for (Map.Entry<String, Integer> e : dialWindowSum.entrySet()) {
+			dialTotalMap.merge(e.getKey(), e.getValue(), Integer::sum);
+		}
+
+		// Find top 10 dial prefixes by total count.
+		List<String> topDials = dialTotalMap.entrySet().stream()
+			.sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+			.limit(10)
+			.map(Map.Entry::getKey)
+			.collect(Collectors.toList());
+
+		Set<String> topDialSet = new HashSet<>(topDials);
+
+		// Build per-day map for each dial prefix: dial -> (dayEpoch -> count).
+		Map<String, Map<Long, Integer>> dialDayMap = new HashMap<>();
+		for (DailyCount dc : dialCounts) {
+			String dial = dc.getDial() == null ? "" : dc.getDial();
+			String key = topDialSet.contains(dial) ? dial : "OTHER";
+			dialDayMap.computeIfAbsent(key, k -> new HashMap<>())
+				.merge(dc.getDayEpoch(), dc.getCnt(), Integer::sum);
+		}
+
+		// Build base counts for top dials and OTHER.
+		Map<String, Integer> groupedBaseMap = new HashMap<>();
+		for (Map.Entry<String, Integer> e : dialBaseMap.entrySet()) {
+			String key = topDialSet.contains(e.getKey()) ? e.getKey() : "OTHER";
+			groupedBaseMap.merge(key, e.getValue(), Integer::sum);
+		}
+
+		// Build cumulative series for each group (top 10 + OTHER), ordered by total count desc.
+		List<String> orderedKeys = new ArrayList<>(topDials);
+		if (dialDayMap.containsKey("OTHER") || groupedBaseMap.containsKey("OTHER")) {
+			orderedKeys.add("OTHER");
+		}
+
+		java.util.LinkedHashMap<String, List<Integer>> perDialData = new java.util.LinkedHashMap<>();
+		for (String key : orderedKeys) {
+			Map<Long, Integer> dayMap = dialDayMap.getOrDefault(key, Collections.emptyMap());
+			int base = groupedBaseMap.getOrDefault(key, 0);
+			List<Integer> series = new ArrayList<>();
+			int cum = base;
+			Calendar iter2 = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+			iter2.setTimeInMillis(since);
+			for (int i = 0; i < days; i++) {
+				long dayEpoch = iter2.getTimeInMillis() / 86400000;
+				cum += dayMap.getOrDefault(dayEpoch, 0);
+				series.add(cum);
+				iter2.add(Calendar.DAY_OF_MONTH, 1);
+			}
+			perDialData.put(key, series);
+		}
+
+		return new Object[] { labels, data, perDialData };
+	}
+
+	/**
+	 * Returns cumulative active installation counts for the last <code>days</code> days.
+	 *
+	 * @return Three-element array: index 0 is a list of date labels, index 1 is a
+	 *         {@code LinkedHashMap<String, List<Integer>>} of per-UA-prefix cumulative token counts (top 10 + "OTHER"),
+	 *         index 2 is a list of cumulative registered answerbot counts.
+	 */
+	public Object[] getActiveInstallationsHistory(int days) {
+		Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		long before = cal.getTimeInMillis();
+
+		cal.add(Calendar.DAY_OF_MONTH, -days);
+		long since = cal.getTimeInMillis();
+
+		List<DailyCount> tokenCounts;
+		List<DailyCount> tokenBaseCounts;
+		List<DailyCount> registeredBotCounts;
+		int registeredBotBase;
+		try (SqlSession session = openSession()) {
+			Users u = session.getMapper(Users.class);
+			tokenCounts = u.getTokenCreationsPerDayByAgent(since, before);
+			tokenBaseCounts = u.getTokenCountBeforeByAgent(since);
+			registeredBotCounts = u.getRegisteredAnswerbotCreationsPerDay(since, before);
+			registeredBotBase = u.getRegisteredAnswerbotCountBefore(since);
+		}
+
+		// Build date labels.
+		java.text.SimpleDateFormat fmt = new java.text.SimpleDateFormat("dd.MM.");
+		fmt.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+		List<String> labels = new ArrayList<>();
+		Calendar iter = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+		iter.setTimeInMillis(since);
+		for (int i = 0; i < days; i++) {
+			labels.add(fmt.format(iter.getTime()));
+			iter.add(Calendar.DAY_OF_MONTH, 1);
+		}
+
+		// Per-agent: compute total token count per UA prefix (base + window sum).
+		Map<String, Integer> agentBaseMap = new HashMap<>();
+		for (DailyCount dc : tokenBaseCounts) {
+			String agent = dc.getDial() == null ? "" : dc.getDial();
+			agentBaseMap.merge(agent, dc.getCnt(), Integer::sum);
+		}
+
+		Map<String, Integer> agentWindowSum = new HashMap<>();
+		for (DailyCount dc : tokenCounts) {
+			String agent = dc.getDial() == null ? "" : dc.getDial();
+			agentWindowSum.merge(agent, dc.getCnt(), Integer::sum);
+		}
+
+		Map<String, Integer> agentTotalMap = new HashMap<>(agentBaseMap);
+		for (Map.Entry<String, Integer> e : agentWindowSum.entrySet()) {
+			agentTotalMap.merge(e.getKey(), e.getValue(), Integer::sum);
+		}
+
+		// Find top 5 UA prefixes by total count.
+		List<String> topAgents = agentTotalMap.entrySet().stream()
+			.sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
+			.limit(5)
+			.map(Map.Entry::getKey)
+			.collect(Collectors.toList());
+
+		Set<String> topAgentSet = new HashSet<>(topAgents);
+
+		// Build per-day map for each UA prefix: agent -> (dayEpoch -> count).
+		Map<String, Map<Long, Integer>> agentDayMap = new HashMap<>();
+		for (DailyCount dc : tokenCounts) {
+			String agent = dc.getDial() == null ? "" : dc.getDial();
+			String key = topAgentSet.contains(agent) ? agent : "OTHER";
+			agentDayMap.computeIfAbsent(key, k -> new HashMap<>())
+				.merge(dc.getDayEpoch(), dc.getCnt(), Integer::sum);
+		}
+
+		// Build base counts for top agents and OTHER.
+		Map<String, Integer> groupedBaseMap = new HashMap<>();
+		for (Map.Entry<String, Integer> e : agentBaseMap.entrySet()) {
+			String key = topAgentSet.contains(e.getKey()) ? e.getKey() : "OTHER";
+			groupedBaseMap.merge(key, e.getValue(), Integer::sum);
+		}
+
+		// Build cumulative series for each group.
+		List<String> orderedKeys = new ArrayList<>(topAgents);
+		if (agentDayMap.containsKey("OTHER") || groupedBaseMap.containsKey("OTHER")) {
+			orderedKeys.add("OTHER");
+		}
+
+		java.util.LinkedHashMap<String, List<Integer>> perAgentData = new java.util.LinkedHashMap<>();
+		for (String key : orderedKeys) {
+			Map<Long, Integer> dayMap = agentDayMap.getOrDefault(key, Collections.emptyMap());
+			int base = groupedBaseMap.getOrDefault(key, 0);
+			List<Integer> series = new ArrayList<>();
+			int cum = base;
+			Calendar iter2 = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+			iter2.setTimeInMillis(since);
+			for (int i = 0; i < days; i++) {
+				long dayEpoch = iter2.getTimeInMillis() / 86400000;
+				cum += dayMap.getOrDefault(dayEpoch, 0);
+				series.add(cum);
+				iter2.add(Calendar.DAY_OF_MONTH, 1);
+			}
+			perAgentData.put(key, series);
+		}
+
+		// Build cumulative answerbot series (registered).
+		Map<Long, Integer> registeredBotDayMap = new HashMap<>();
+		for (DailyCount dc : registeredBotCounts) {
+			registeredBotDayMap.put(dc.getDayEpoch(), dc.getCnt());
+		}
+
+		List<Integer> registeredBotData = new ArrayList<>();
+		int cumRegistered = registeredBotBase;
+		iter.setTimeInMillis(since);
+		for (int i = 0; i < days; i++) {
+			long dayEpoch = iter.getTimeInMillis() / 86400000;
+			cumRegistered += registeredBotDayMap.getOrDefault(dayEpoch, 0);
+			registeredBotData.add(cumRegistered);
+			iter.add(Calendar.DAY_OF_MONTH, 1);
+		}
+
+		return new Object[] { labels, perAgentData, registeredBotData };
+	}
+
+	/**
+	 * Returns blocked number counts per country (DIAL prefix) from NUMBERS_LOCALE.
+	 */
+	public List<DailyCount> getBlockedNumbersByCountry() {
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			return reports.getBlockedNumbersByCountry(MIN_VOTES);
+		}
+	}
+
 	public int getVotes() {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
