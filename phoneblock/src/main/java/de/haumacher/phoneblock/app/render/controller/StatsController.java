@@ -95,6 +95,78 @@ public class StatsController extends DefaultController {
 
 		request.setAttribute("registrationLabels", registrationLabels.toString());
 		request.setAttribute("registrationDatasets", datasets.toString());
+
+		// Active installations chart.
+		Object[] installations = DBService.getInstance().getActiveInstallationsHistory(30);
+
+		@SuppressWarnings("unchecked")
+		List<String> instLabels = (List<String>) installations[0];
+		@SuppressWarnings("unchecked")
+		LinkedHashMap<String, List<Integer>> perAgentData = (LinkedHashMap<String, List<Integer>>) installations[1];
+		@SuppressWarnings("unchecked")
+		List<Integer> enabledBotData = (List<Integer>) installations[2];
+		@SuppressWarnings("unchecked")
+		List<Integer> registeredBotData = (List<Integer>) installations[3];
+
+		StringBuilder installationLabels = new StringBuilder();
+		installationLabels.append('[');
+		first = true;
+		for (String label : instLabels) {
+			if (first) {
+				first = false;
+			} else {
+				installationLabels.append(',');
+			}
+			jsString(installationLabels, label);
+		}
+		installationLabels.append(']');
+
+		String enabledBotsLabel = I18N.getMessage(request, "page.stats.enabledBots");
+		String registeredBotsLabel = I18N.getMessage(request, "page.stats.registeredBots");
+
+		StringBuilder installationDatasets = new StringBuilder();
+		installationDatasets.append('[');
+
+		// Per-agent datasets.
+		colorIndex = 0;
+		boolean firstDataset = true;
+		for (Map.Entry<String, List<Integer>> entry : perAgentData.entrySet()) {
+			if (firstDataset) {
+				firstDataset = false;
+			} else {
+				installationDatasets.append(',');
+			}
+			String key = entry.getKey();
+			String agentLabel = "OTHER".equals(key) ? otherLabel : key.isEmpty() ? "?" : key;
+			String color = DIAL_COLORS[colorIndex % DIAL_COLORS.length];
+
+			installationDatasets.append("{\"label\":");
+			jsString(installationDatasets, agentLabel);
+			installationDatasets.append(",\"data\":");
+			appendIntList(installationDatasets, entry.getValue());
+			installationDatasets.append(",\"fill\":false,\"borderColor\":\"").append(color).append("\",\"tension\":0.1}");
+
+			colorIndex++;
+		}
+
+		// Enabled answerbots (dashed tomato line).
+		installationDatasets.append(",{\"label\":");
+		jsString(installationDatasets, enabledBotsLabel);
+		installationDatasets.append(",\"data\":");
+		appendIntList(installationDatasets, enabledBotData);
+		installationDatasets.append(",\"fill\":false,\"borderColor\":\"rgb(255, 99, 71)\",\"borderDash\":[5,5],\"tension\":0.1}");
+
+		// Registered answerbots (dashed lime green line).
+		installationDatasets.append(",{\"label\":");
+		jsString(installationDatasets, registeredBotsLabel);
+		installationDatasets.append(",\"data\":");
+		appendIntList(installationDatasets, registeredBotData);
+		installationDatasets.append(",\"fill\":false,\"borderColor\":\"rgb(50, 205, 50)\",\"borderDash\":[5,5],\"tension\":0.1}");
+
+		installationDatasets.append(']');
+
+		request.setAttribute("installationLabels", installationLabels.toString());
+		request.setAttribute("installationDatasets", installationDatasets.toString());
 	}
 
 	private static void appendIntList(StringBuilder sb, List<Integer> values) {

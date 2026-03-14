@@ -521,6 +521,33 @@ public interface Users {
 
 	@Select("SELECT DIAL AS dial, COUNT(1) AS cnt FROM USERS WHERE REGISTERED < #{before} GROUP BY dial")
 	List<DailyCount> getUserCountBeforeByDial(long before);
+
+	@Select("SELECT CAST(CREATED / 86400000 AS BIGINT) AS dayEpoch, "
+		+ "CASE WHEN LOCATE('/', USERAGENT) > 0 THEN SUBSTRING(USERAGENT, 1, LOCATE('/', USERAGENT) - 1) ELSE USERAGENT END AS dial, "
+		+ "COUNT(1) AS cnt "
+		+ "FROM TOKENS WHERE NOT IMPLICIT AND CREATED >= #{since} AND CREATED < #{before} "
+		+ "GROUP BY dayEpoch, dial ORDER BY dayEpoch, dial")
+	List<DailyCount> getTokenCreationsPerDayByAgent(long since, long before);
+
+	@Select("SELECT CASE WHEN LOCATE('/', USERAGENT) > 0 THEN SUBSTRING(USERAGENT, 1, LOCATE('/', USERAGENT) - 1) ELSE USERAGENT END AS dial, "
+		+ "COUNT(1) AS cnt FROM TOKENS WHERE NOT IMPLICIT AND CREATED < #{before} GROUP BY dial")
+	List<DailyCount> getTokenCountBeforeByAgent(long before);
+
+	@Select("SELECT CAST(CREATED / 86400000 AS BIGINT) AS dayEpoch, COUNT(1) AS cnt "
+		+ "FROM ANSWERBOT_SIP WHERE ENABLED = true AND CREATED >= #{since} AND CREATED < #{before} "
+		+ "GROUP BY dayEpoch ORDER BY dayEpoch")
+	List<DailyCount> getEnabledAnswerbotCreationsPerDay(long since, long before);
+
+	@Select("SELECT COUNT(1) FROM ANSWERBOT_SIP WHERE ENABLED = true AND CREATED < #{before}")
+	int getEnabledAnswerbotCountBefore(long before);
+
+	@Select("SELECT CAST(CREATED / 86400000 AS BIGINT) AS dayEpoch, COUNT(1) AS cnt "
+		+ "FROM ANSWERBOT_SIP WHERE ENABLED = true AND REGISTERED = true AND CREATED >= #{since} AND CREATED < #{before} "
+		+ "GROUP BY dayEpoch ORDER BY dayEpoch")
+	List<DailyCount> getRegisteredAnswerbotCreationsPerDay(long since, long before);
+
+	@Select("SELECT COUNT(1) FROM ANSWERBOT_SIP WHERE ENABLED = true AND REGISTERED = true AND CREATED < #{before}")
+	int getRegisteredAnswerbotCountBefore(long before);
 	
 	@Update("update ANSWERBOT_SIP set NEW_CALLS=NEW_CALLS + 1, CALLS_ACCEPTED=CALLS_ACCEPTED + 1, TALK_TIME=TALK_TIME + #{duration} where ID=#{id}")
 	void recordCallSummary(long id, long duration);

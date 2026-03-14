@@ -15,33 +15,54 @@
 
 	<p data-tx="t0002:bcfb4bb6">هنا يمكنك أن ترى كيف يتطور مجتمع PhoneBlock.</p>
 
-	<h2 data-tx="t0003:3ef8cd03">التسجيلات الجديدة في اليوم الواحد</h2>
+	<h2 data-tx="t0003:67d1fbf">تطوير المستخدم في آخر 30 يوماً</h2>
 
 	<div>
-		<canvas aria-label="التسجيلات الجديدة في اليوم الواحد" data-tx="t0004:c1f7472e" dir="ltr" height="200" id="registrations" role="img" width="400"></canvas>
+		<canvas aria-label="تطوير المستخدم في آخر 30 يوماً" data-tx="t0004:a5b4387c" dir="ltr" height="200" id="registrations" role="img" width="400"></canvas>
 		<pre class="chartjs-data" id="registrations-data">
 		{
 			"type": "line",
 			"data": {
 				"labels": <th:block th:text="${registrationLabels}"></th:block>,
-				"datasets": [{
-					"label": "Neue Nutzer",
-					"data": <th:block th:text="${registrationData}"></th:block>,
-					"fill": false,
-					"borderColor": "rgb(75, 192, 192)",
-					"tension": 0.1
-				}]
+				"datasets": <th:block th:utext="${registrationDatasets}"></th:block>
 			},
 			"options": {
 				"scales": {
 					"y": {
-						"beginAtZero": true
+						"ticks": {
+							"precision": 0
+						}
 					}
 				}
 			}
 		}
 		</pre>
 		<script th:src="@{/assets/js/stats-registrations.js}" type="text/javascript"></script>
+	</div>
+
+	<h2 data-tx="t0005:ef63903a" th:text="#{page.stats.installationsTitle}">الاستخدامات النشطة في آخر 30 يوماً</h2>
+
+	<div>
+		<canvas aria-label="الاستخدامات النشطة في آخر 30 يوماً" data-tx="t0006:aabe0215" dir="ltr" height="200" id="installations" role="img" width="400"></canvas>
+		<pre class="chartjs-data" id="installations-data">
+		{
+			"type": "line",
+			"data": {
+				"labels": <th:block th:text="${installationLabels}"></th:block>,
+				"datasets": <th:block th:utext="${installationDatasets}"></th:block>
+			},
+			"options": {
+				"scales": {
+					"y": {
+						"ticks": {
+							"precision": 0
+						}
+					}
+				}
+			}
+		}
+		</pre>
+		<script th:src="@{/assets/js/stats-installations.js}" type="text/javascript"></script>
 	</div>
 
 </div>
