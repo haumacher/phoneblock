@@ -505,6 +505,14 @@ public interface Users {
 
 	@Delete("update ANSWERBOT_SIP set NEW_CALLS=0 where ID=#{abId}")
 	void clearCallCounter(long abId);
+
+	@Select("SELECT CAST(REGISTERED / 86400000 AS BIGINT) AS dayEpoch, COUNT(1) AS cnt "
+		+ "FROM USERS WHERE REGISTERED >= #{since} AND REGISTERED < #{before} "
+		+ "GROUP BY dayEpoch ORDER BY dayEpoch")
+	List<DailyCount> getRegistrationsPerDay(long since, long before);
+
+	@Select("SELECT COUNT(1) FROM USERS WHERE REGISTERED < #{before}")
+	int getUserCountBefore(long before);
 	
 	@Update("update ANSWERBOT_SIP set NEW_CALLS=NEW_CALLS + 1, CALLS_ACCEPTED=CALLS_ACCEPTED + 1, TALK_TIME=TALK_TIME + #{duration} where ID=#{id}")
 	void recordCallSummary(long id, long duration);

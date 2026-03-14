@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+<th:block th:replace="~{fragments/page :: headContent(title=#{page.stats.title})}"></th:block>
+
+<script th:src="|${contextPath}${deps.chartjs}/dist/chart.umd.js|" type="text/javascript"></script>
+</head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+<div class="content">
+	<h1 data-tx="t0001:bb73dee2">PhoneBlock 统计数据</h1>
+
+	<p data-tx="t0002:bcfb4bb6">在这里，你可以看到 PhoneBlock 社区是如何发展的。</p>
+
+	<h2 data-tx="t0003:3ef8cd03">每天新注册人数</h2>
+
+	<div>
+		<canvas aria-label="每天新注册人数" data-tx="t0004:c1f7472e" dir="ltr" height="200" id="registrations" role="img" width="400"></canvas>
+		<pre class="chartjs-data" id="registrations-data">
+		{
+			"type": "line",
+			"data": {
+				"labels": <th:block th:text="${registrationLabels}"></th:block>,
+				"datasets": [{
+					"label": "Neue Nutzer",
+					"data": <th:block th:text="${registrationData}"></th:block>,
+					"fill": false,
+					"borderColor": "rgb(75, 192, 192)",
+					"tension": 0.1
+				}]
+			},
+			"options": {
+				"scales": {
+					"y": {
+						"beginAtZero": true
+					}
+				}
+			}
+		}
+		</pre>
+		<script th:src="@{/assets/js/stats-registrations.js}" type="text/javascript"></script>
+	</div>
+
+</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

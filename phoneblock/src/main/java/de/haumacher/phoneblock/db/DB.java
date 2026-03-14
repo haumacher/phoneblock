@@ -2287,6 +2287,58 @@ public class DB {
 		}
 	}
 
+	/**
+	 * Returns cumulative user counts for the last <code>days</code> days (excluding the current day).
+	 *
+	 * @return Two-element array: index 0 is a list of date labels (dd.MM.), index 1 is a list of cumulative user counts.
+	 */
+	public Object[] getUserRegistrationHistory(int days) {
+		Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+		// Start of current UTC day (excludes today).
+		cal.set(Calendar.HOUR_OF_DAY, 0);
+		cal.set(Calendar.MINUTE, 0);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		long before = cal.getTimeInMillis();
+
+		cal.add(Calendar.DAY_OF_MONTH, -days);
+		long since = cal.getTimeInMillis();
+
+		List<DailyCount> counts;
+		int baseCount;
+		try (SqlSession session = openSession()) {
+			Users u = session.getMapper(Users.class);
+			counts = u.getRegistrationsPerDay(since, before);
+			baseCount = u.getUserCountBefore(since);
+		}
+
+		// Build a map for quick lookup.
+		Map<Long, Integer> countByDay = new HashMap<>();
+		for (DailyCount dc : counts) {
+			countByDay.put(dc.getDayEpoch(), dc.getCnt());
+		}
+
+		// Fill gaps and accumulate to get absolute user count per day.
+		java.text.SimpleDateFormat fmt = new java.text.SimpleDateFormat("dd.MM.");
+		fmt.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+		List<String> labels = new ArrayList<>();
+		List<Integer> data = new ArrayList<>();
+
+		int cumulative = baseCount;
+		Calendar iter = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+		iter.setTimeInMillis(since);
+		for (int i = 0; i < days; i++) {
+			long dayEpoch = iter.getTimeInMillis() / 86400000;
+			cumulative += countByDay.getOrDefault(dayEpoch, 0);
+			labels.add(fmt.format(iter.getTime()));
+			data.add(cumulative);
+			iter.add(Calendar.DAY_OF_MONTH, 1);
+		}
+
+		return new Object[] { labels, data };
+	}
+
 	public int getVotes() {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
