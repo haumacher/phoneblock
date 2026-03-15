@@ -3,6 +3,7 @@
  */
 package de.haumacher.phoneblock.mail.check.scraper;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -33,6 +34,10 @@ public class FakeMailGeneratorScraper implements DisposableScraper {
 			domains.add(matcher.group(1).toLowerCase().trim());
 		}
 		return domains;
+	}
+
+	public static void main(String[] args) throws IOException {
+		DisposableScraper.run(new FakeMailGeneratorScraper());
 	}
 
 }

@@ -3,10 +3,7 @@
  */
 package de.haumacher.phoneblock.mail.check.scraper;
 
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Set;
@@ -111,26 +108,10 @@ public class DisposableScraperService implements ServletContextListener {
 		LOG.info("Disposable domain scraping completed.");
 	}
 
-	private void scrapeProvider(DB db, DisposableScraper scraper) throws Exception {
+	private void scrapeProvider(DB db, DisposableScraper scraper) throws IOException {
 		LOG.info("Scraping provider '{}' from: {}", scraper.getId(), scraper.getUrl());
 
-		HttpURLConnection connection = (HttpURLConnection) URI.create(scraper.getUrl()).toURL().openConnection();
-		connection.setConnectTimeout(30_000);
-		connection.setReadTimeout(60_000);
-		connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36");
-
-		int responseCode = connection.getResponseCode();
-		if (responseCode != HttpURLConnection.HTTP_OK) {
-			LOG.warn("Provider '{}' returned HTTP {}", scraper.getId(), responseCode);
-			return;
-		}
-
-		String body;
-		try (InputStream in = connection.getInputStream()) {
-			body = new String(in.readAllBytes(), StandardCharsets.UTF_8);
-		}
-
-		Set<String> domains = scraper.scrape(body);
+		Set<String> domains = scraper.fetchDomains();
 
 		if (domains.isEmpty()) {
 			LOG.warn("No domains found for provider '{}'.", scraper.getId());
