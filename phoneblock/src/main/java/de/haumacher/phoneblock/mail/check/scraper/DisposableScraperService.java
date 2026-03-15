@@ -117,7 +117,7 @@ public class DisposableScraperService implements ServletContextListener {
 		HttpURLConnection connection = (HttpURLConnection) URI.create(scraper.getUrl()).toURL().openConnection();
 		connection.setConnectTimeout(30_000);
 		connection.setReadTimeout(60_000);
-		connection.setRequestProperty("User-Agent", "Mozilla/5.0 (compatible; PhoneBlock/1.0)");
+		connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36");
 
 		int responseCode = connection.getResponseCode();
 		if (responseCode != HttpURLConnection.HTTP_OK) {
