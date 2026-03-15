@@ -43,4 +43,19 @@ public interface DomainCheckProvider {
 	 */
 	DomainCheck checkEmail(String email);
 
+	/**
+	 * Checks a normalized e-mail address on a known public domain.
+	 *
+	 * <p>
+	 * This is called for addresses that have been normalized by {@link EmailNormalizer}
+	 * (e.g. "xy@gmail.com"). The result is cached in the {@code EMAIL_CHECK} table.
+	 * </p>
+	 *
+	 * @param normalizedEmail The normalized e-mail address.
+	 * @return A {@link DomainCheck} result, or {@code null} if this provider cannot answer.
+	 */
+	default DomainCheck checkNormalizedEmail(String normalizedEmail) {
+		return null;
+	}
+
 }

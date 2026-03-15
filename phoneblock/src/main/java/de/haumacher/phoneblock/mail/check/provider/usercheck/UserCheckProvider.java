@@ -85,6 +85,20 @@ public class UserCheckProvider implements DomainCheckProvider {
 		}
 	}
 
+	@Override
+	public DomainCheck checkNormalizedEmail(String normalizedEmail) {
+		try {
+			UserCheckResult result = callEmailCheckService(normalizedEmail);
+			if (result == null) {
+				return null;
+			}
+			return toDomainCheck(result);
+		} catch (Exception ex) {
+			LOG.error("Failed to check normalized e-mail '{}' via UserCheck.", normalizedEmail, ex);
+			return null;
+		}
+	}
+
 	UserCheckResult callCheckService(String domainName) throws IOException, InterruptedException {
 		long pauseUntil = _pauseUntil;
 		if (pauseUntil > 0) {
@@ -124,6 +138,50 @@ public class UserCheckProvider implements DomainCheckProvider {
 		UserCheckResult result = UserCheckResult.readUserCheckResult(new JsonReader(new ReaderAdapter(new StringReader(response.body()))));
 
 		LOG.info("Checked e-mail domain '{}' via UserCheck: {}", domainName,
+				result.isDisposable() ? "DISPOSABLE" : "OK");
+
+		return result;
+	}
+
+	UserCheckResult callEmailCheckService(String email) throws IOException, InterruptedException {
+		long pauseUntil = _pauseUntil;
+		if (pauseUntil > 0) {
+			long now = System.currentTimeMillis();
+			if (pauseUntil > now) {
+				return null;
+			} else {
+				_pauseUntil = 0;
+			}
+		}
+
+		HttpRequest request = HttpRequest.newBuilder()
+				.uri(URI.create("https://api.usercheck.com/email/" + URLEncoder.encode(email, StandardCharsets.UTF_8)))
+				.header("Authorization", "Bearer " + _apiKey)
+				.method("GET", HttpRequest.BodyPublishers.noBody())
+				.build();
+		HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+
+		int statusCode = response.statusCode();
+
+		if (statusCode == 429) {
+			_pauseUntil = System.currentTimeMillis() + PAUSE_DURATION_MS;
+			LOG.warn("UserCheck rate limit exceeded, pausing for {} seconds.", PAUSE_DURATION_MS / 1000);
+			return null;
+		}
+
+		if (statusCode == 400) {
+			LOG.info("UserCheck returned 400 for e-mail '{}', skipping.", email);
+			return null;
+		}
+
+		if (statusCode != HttpServletResponse.SC_OK) {
+			LOG.warn("Failed to check e-mail '{}' via UserCheck: HTTP {}", email, statusCode);
+			return null;
+		}
+
+		UserCheckResult result = UserCheckResult.readUserCheckResult(new JsonReader(new ReaderAdapter(new StringReader(response.body()))));
+
+		LOG.info("Checked e-mail '{}' via UserCheck: {}", email,
 				result.isDisposable() ? "DISPOSABLE" : "OK");
 
 		return result;

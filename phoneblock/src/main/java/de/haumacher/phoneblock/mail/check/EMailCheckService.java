@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.mail.check.db.DBDomainCheck;
+import de.haumacher.phoneblock.mail.check.db.DBEmailCheck;
 import de.haumacher.phoneblock.mail.check.db.Domains;
 import de.haumacher.phoneblock.mail.check.model.DomainCheck;
 import jakarta.mail.internet.AddressException;
@@ -105,6 +106,24 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 		try (SqlSession tx = _dbService.db().openSession()) {
 			Domains domains = tx.getMapper(Domains.class);
 
+			// Step 1: Normalize and check EMAIL_CHECK cache
+			String normalizedEmail = EmailNormalizer.normalize(address);
+			if (normalizedEmail != null) {
+				DBEmailCheck emailCheck = domains.checkEmailAddress(normalizedEmail);
+				if (emailCheck != null) {
+					return emailCheck.isDisposable();
+				}
+
+				for (DomainCheckProvider provider : _providers) {
+					DomainCheck result = provider.checkNormalizedEmail(normalizedEmail);
+					if (result != null) {
+						persistEmailResult(tx, domains, normalizedEmail, result);
+						return result.isDisposable();
+					}
+				}
+			}
+
+			// Step 2: Domain-level check
 			DBDomainCheck check = domains.checkDomain(domainName);
 			if (check != null) {
 				return check.isDisposable();
@@ -122,6 +141,15 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 		}
 
 		return false;
+	}
+
+	private void persistEmailResult(SqlSession tx, Domains domains, String normalizedEmail, DomainCheck result) {
+		try {
+			domains.insertEmailCheck(normalizedEmail, result.isDisposable(), System.currentTimeMillis(), result.getSourceSystem());
+			tx.commit();
+		} catch (Exception ex) {
+			LOG.error("Failed to persist e-mail check result for '{}'.", normalizedEmail, ex);
+		}
 	}
 
 	private void persistResult(SqlSession tx, Domains domains, DomainCheck result) {

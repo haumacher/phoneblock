@@ -13,5 +13,11 @@ public interface Domains {
 	
 	@Insert("insert into DOMAIN_CHECK (DOMAIN_NAME, DISPOSABLE, LAST_CHANGED, SOURCE_SYSTEM, MX_HOST, MX_IP) values (#{domainName}, #{disposable}, #{lastChanged}, #{sourceSystem}, #{mxHost}, #{mxIp})")
 	int insertDomain(String domainName, boolean disposable, long lastChanged, String sourceSystem, String mxHost, String mxIp);
-	
+
+	@Select("select EMAIL_ADDRESS, DISPOSABLE, LAST_CHECKED, SOURCE_SYSTEM from EMAIL_CHECK where EMAIL_ADDRESS=#{emailAddress}")
+	DBEmailCheck checkEmailAddress(String emailAddress);
+
+	@Insert("insert into EMAIL_CHECK (EMAIL_ADDRESS, DISPOSABLE, LAST_CHECKED, SOURCE_SYSTEM) values (#{emailAddress}, #{disposable}, #{lastChecked}, #{sourceSystem})")
+	int insertEmailCheck(String emailAddress, boolean disposable, long lastChecked, String sourceSystem);
+
 }
