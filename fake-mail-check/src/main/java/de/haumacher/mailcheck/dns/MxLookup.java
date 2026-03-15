@@ -36,10 +36,10 @@ public class MxLookup {
 			}
 
 			// Find the MX record with the lowest priority.
-			MXRecord best = null;
-			for (Record record : mxRecords) {
-				MXRecord mx = (MXRecord) record;
-				if (best == null || mx.getPriority() < best.getPriority()) {
+			MXRecord best = (MXRecord) mxRecords[0];
+			for (int i = 1; i < mxRecords.length; i++) {
+				MXRecord mx = (MXRecord) mxRecords[i];
+				if (mx.getPriority() < best.getPriority()) {
 					best = mx;
 				}
 			}
