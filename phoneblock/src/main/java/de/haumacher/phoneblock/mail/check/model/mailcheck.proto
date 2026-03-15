@@ -26,8 +26,8 @@ message DomainCheck {
 	/** Timestamp (Unix milliseconds) when the domain status was last changed at the provider. */
 	long lastChanged;
 
-	/** Identifier of the provider that produced this result (e.g. 1 = RapidAPI). */
-	int sourceSystem;
+	/** Identifier of the provider that produced this result (e.g. "rapidapi"). */
+	string sourceSystem;
 
 	/** The MX hostname resolved for this domain, or {@code null} if unavailable. */
 	@Nullable

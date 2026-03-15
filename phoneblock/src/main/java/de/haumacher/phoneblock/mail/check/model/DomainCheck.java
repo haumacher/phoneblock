@@ -46,7 +46,7 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject {
 
 	private long _lastChanged = 0L;
 
-	private int _sourceSystem = 0;
+	private String _sourceSystem = "";
 
 	private String _mxHost = null;
 
@@ -122,22 +122,22 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject {
 	}
 
 	/**
-	 * Identifier of the provider that produced this result (e.g. 1 = RapidAPI).
+	 * Identifier of the provider that produced this result (e.g. "rapidapi").
 	 */
-	public final int getSourceSystem() {
+	public final String getSourceSystem() {
 		return _sourceSystem;
 	}
 
 	/**
 	 * @see #getSourceSystem()
 	 */
-	public de.haumacher.phoneblock.mail.check.model.DomainCheck setSourceSystem(int value) {
+	public de.haumacher.phoneblock.mail.check.model.DomainCheck setSourceSystem(String value) {
 		internalSetSourceSystem(value);
 		return this;
 	}
 
 	/** Internal setter for {@link #getSourceSystem()} without chain call utility. */
-	protected final void internalSetSourceSystem(int value) {
+	protected final void internalSetSourceSystem(String value) {
 		_sourceSystem = value;
 	}
 
@@ -234,7 +234,7 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject {
 			case DOMAIN_NAME__PROP: setDomainName(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case DISPOSABLE__PROP: setDisposable(in.nextBoolean()); break;
 			case LAST_CHANGED__PROP: setLastChanged(in.nextLong()); break;
-			case SOURCE_SYSTEM__PROP: setSourceSystem(in.nextInt()); break;
+			case SOURCE_SYSTEM__PROP: setSourceSystem(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case MX_HOST__PROP: setMxHost(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case MX_IP__PROP: setMxIP(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			default: super.readField(in, field);

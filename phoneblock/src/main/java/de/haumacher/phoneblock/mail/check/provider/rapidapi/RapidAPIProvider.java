@@ -38,6 +38,9 @@ import jakarta.servlet.http.HttpServletResponse;
  */
 public class RapidAPIProvider implements DomainCheckProvider {
 
+	/** The provider identifier stored in the {@code SOURCE_SYSTEM} column. */
+	public static final String PROVIDER_ID = "rapidapi";
+
 	private static final Logger LOG = LoggerFactory.getLogger(RapidAPIProvider.class);
 
 	private final String _apiKey;
@@ -63,6 +66,11 @@ public class RapidAPIProvider implements DomainCheckProvider {
 	 */
 	public RapidAPIProvider(String apiKey) {
 		_apiKey = apiKey;
+	}
+
+	@Override
+	public String getProviderId() {
+		return PROVIDER_ID;
 	}
 
 	@Override
@@ -154,7 +162,7 @@ public class RapidAPIProvider implements DomainCheckProvider {
 				.setDomainName(result.getDomainName())
 				.setDisposable(result.isDisposable())
 				.setLastChanged(lastChangedMillis)
-				.setSourceSystem(1)
+				.setSourceSystem(PROVIDER_ID)
 				.setMxHost(result.getMxHost())
 				.setMxIP(result.getMxIP());
 	}

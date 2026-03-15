@@ -21,6 +21,16 @@ import de.haumacher.phoneblock.mail.check.model.DomainCheck;
 public interface DomainCheckProvider {
 
 	/**
+	 * A stable identifier for this provider (e.g. "rapidapi").
+	 *
+	 * <p>
+	 * Stored in the {@code SOURCE_SYSTEM} column of the {@code DOMAIN_CHECK} table
+	 * to track which provider produced a cached result.
+	 * </p>
+	 */
+	String getProviderId();
+
+	/**
 	 * Checks the given e-mail address.
 	 *
 	 * <p>

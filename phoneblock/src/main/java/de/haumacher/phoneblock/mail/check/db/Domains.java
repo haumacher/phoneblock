@@ -12,6 +12,6 @@ public interface Domains {
 	DBDomainCheck checkDomain(String domainName);
 	
 	@Insert("insert into DOMAIN_CHECK (DOMAIN_NAME, DISPOSABLE, LAST_CHANGED, SOURCE_SYSTEM, MX_HOST, MX_IP) values (#{domainName}, #{disposable}, #{lastChanged}, #{sourceSystem}, #{mxHost}, #{mxIp})")
-	int insertDomain(String domainName, boolean disposable, long lastChanged, int sourceSystem, String mxHost, String mxIp);
+	int insertDomain(String domainName, boolean disposable, long lastChanged, String sourceSystem, String mxHost, String mxIp);
 	
 }
