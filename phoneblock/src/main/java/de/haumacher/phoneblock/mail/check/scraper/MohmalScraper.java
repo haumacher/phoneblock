@@ -14,7 +14,8 @@ import java.util.regex.Pattern;
  */
 public class MohmalScraper implements DisposableScraper {
 
-	private static final Pattern DOMAIN_PATTERN = Pattern.compile("@([\\w.-]+\\.\\w{2,})");
+	/** Matches domain names inside {@code <option>} value attributes. */
+	private static final Pattern OPTION_PATTERN = Pattern.compile("<option[^>]*value\\s*=\\s*\"([\\w.-]+\\.\\w{2,})\"");
 
 	@Override
 	public String getId() {
@@ -29,7 +30,7 @@ public class MohmalScraper implements DisposableScraper {
 	@Override
 	public Set<String> scrape(String pageContent) {
 		Set<String> domains = new HashSet<>();
-		Matcher matcher = DOMAIN_PATTERN.matcher(pageContent);
+		Matcher matcher = OPTION_PATTERN.matcher(pageContent);
 		while (matcher.find()) {
 			domains.add(matcher.group(1).toLowerCase().trim());
 		}
