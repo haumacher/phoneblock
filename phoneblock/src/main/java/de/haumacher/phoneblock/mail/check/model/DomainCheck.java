@@ -1,5 +1,15 @@
 package de.haumacher.phoneblock.mail.check.model;
 
+/**
+ * Provider-independent result of a disposable e-mail domain check.
+ *
+ * <p>
+ * Cached in the DOMAIN_CHECK database table so that repeated lookups for the
+ * same domain do not require another provider call.
+ * </p>
+ *
+ * @see de.haumacher.phoneblock.mail.check.DomainCheckProvider
+ */
 public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject {
 
 	/**
@@ -51,6 +61,9 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject {
 		super();
 	}
 
+	/**
+	 * The fully qualified domain name that was checked (e.g. "laymro.com").
+	 */
 	public final String getDomainName() {
 		return _domainName;
 	}
@@ -68,6 +81,9 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject {
 		_domainName = value;
 	}
 
+	/**
+	 * Whether this domain is known to provide disposable/temporary e-mail addresses.
+	 */
 	public final boolean isDisposable() {
 		return _disposable;
 	}
@@ -85,6 +101,9 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject {
 		_disposable = value;
 	}
 
+	/**
+	 * Timestamp (Unix milliseconds) when the domain status was last changed at the provider.
+	 */
 	public final long getLastChanged() {
 		return _lastChanged;
 	}
@@ -102,6 +121,9 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject {
 		_lastChanged = value;
 	}
 
+	/**
+	 * Identifier of the provider that produced this result (e.g. 1 = RapidAPI).
+	 */
 	public final int getSourceSystem() {
 		return _sourceSystem;
 	}
@@ -119,6 +141,9 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject {
 		_sourceSystem = value;
 	}
 
+	/**
+	 * The MX hostname resolved for this domain, or {@code null} if unavailable.
+	 */
 	public final String getMxHost() {
 		return _mxHost;
 	}
@@ -143,6 +168,9 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject {
 		return _mxHost != null;
 	}
 
+	/**
+	 * The IP address of the MX host, or {@code null} if unavailable.
+	 */
 	public final String getMxIP() {
 		return _mxIP;
 	}
