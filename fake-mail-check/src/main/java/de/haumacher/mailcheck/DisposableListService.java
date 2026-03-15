@@ -103,7 +103,7 @@ public class DisposableListService implements ServletContextListener {
 	/**
 	 * Downloads the disposable domain blocklist and inserts new domains.
 	 */
-	void runImport() {
+	public void runImport() {
 		LOG.info("Starting disposable domain list import.");
 
 		try {

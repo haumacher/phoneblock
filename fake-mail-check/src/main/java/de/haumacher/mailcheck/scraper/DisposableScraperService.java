@@ -92,7 +92,7 @@ public class DisposableScraperService implements ServletContextListener {
 	/**
 	 * Scrapes all configured providers and inserts newly discovered domains.
 	 */
-	void runScrape() {
+	public void runScrape() {
 		LOG.info("Starting disposable domain scraping.");
 
 		for (DisposableScraper scraper : SCRAPERS) {

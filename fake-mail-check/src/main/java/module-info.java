@@ -7,6 +7,7 @@
  */
 module de.haumacher.mailcheck {
 	exports de.haumacher.mailcheck;
+	exports de.haumacher.mailcheck.cli;
 	exports de.haumacher.mailcheck.scraper;
 
 	exports de.haumacher.mailcheck.db to org.mybatis;
@@ -19,4 +20,5 @@ module de.haumacher.mailcheck {
 	requires java.naming;
 	requires java.net.http;
 	requires java.sql;
+	requires com.h2database;
 }
