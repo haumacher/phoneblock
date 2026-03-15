@@ -11,11 +11,10 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.haumacher.phoneblock.db.DB;
-import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.mail.check.EmailNormalizer;
 import de.haumacher.phoneblock.mail.check.db.Domains;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
@@ -43,16 +42,16 @@ public class DisposableScraperService implements ServletContextListener {
 	);
 
 	private final SchedulerService _schedulerService;
-	private final DBService _dbService;
+	private final SqlSessionFactory _sessionFactory;
 
 	private ScheduledFuture<?> _task;
 
 	/**
 	 * Creates a {@link DisposableScraperService}.
 	 */
-	public DisposableScraperService(SchedulerService scheduler, DBService dbService) {
+	public DisposableScraperService(SchedulerService scheduler, SqlSessionFactory sessionFactory) {
 		_schedulerService = scheduler;
-		_dbService = dbService;
+		_sessionFactory = sessionFactory;
 	}
 
 	@Override
@@ -96,11 +95,9 @@ public class DisposableScraperService implements ServletContextListener {
 	void runScrape() {
 		LOG.info("Starting disposable domain scraping.");
 
-		DB db = _dbService.db();
-
 		for (DisposableScraper scraper : SCRAPERS) {
 			try {
-				scrapeProvider(db, scraper);
+				scrapeProvider(scraper);
 			} catch (Exception ex) {
 				LOG.error("Scraping failed for provider '{}': {}", scraper.getId(), ex.getMessage(), ex);
 			}
@@ -109,7 +106,7 @@ public class DisposableScraperService implements ServletContextListener {
 		LOG.info("Disposable domain scraping completed.");
 	}
 
-	private void scrapeProvider(DB db, DisposableScraper scraper) throws IOException {
+	private void scrapeProvider(DisposableScraper scraper) throws IOException {
 		LOG.info("Scraping provider '{}' from: {}", scraper.getId(), scraper.getUrl());
 
 		Set<String> domains = scraper.fetchDomains();
@@ -122,7 +119,7 @@ public class DisposableScraperService implements ServletContextListener {
 		long now = System.currentTimeMillis();
 		int added = 0;
 
-		try (SqlSession session = db.openSession()) {
+		try (SqlSession session = _sessionFactory.openSession()) {
 			Domains domainMapper = session.getMapper(Domains.class);
 
 			for (String domain : domains) {

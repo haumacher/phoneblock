@@ -14,12 +14,10 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.haumacher.phoneblock.db.DB;
-import de.haumacher.phoneblock.db.DBService;
-import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.mail.check.db.Domains;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
 import jakarta.servlet.ServletContextEvent;
@@ -53,16 +51,18 @@ public class DisposableListService implements ServletContextListener {
 	private static final String PROPERTY_ETAG = "disposable-list.etag";
 
 	private final SchedulerService _schedulerService;
-	private final DBService _dbService;
+	private final SqlSessionFactory _sessionFactory;
+	private final PropertyStore _propertyStore;
 
 	private ScheduledFuture<?> _task;
 
 	/**
 	 * Creates a {@link DisposableListService}.
 	 */
-	public DisposableListService(SchedulerService scheduler, DBService dbService) {
+	public DisposableListService(SchedulerService scheduler, SqlSessionFactory sessionFactory, PropertyStore propertyStore) {
 		_schedulerService = scheduler;
-		_dbService = dbService;
+		_sessionFactory = sessionFactory;
+		_propertyStore = propertyStore;
 	}
 
 	@Override
@@ -106,13 +106,9 @@ public class DisposableListService implements ServletContextListener {
 	void runImport() {
 		LOG.info("Starting disposable domain list import.");
 
-		DB db = _dbService.db();
-		try (SqlSession session = db.openSession()) {
-			Users users = session.getMapper(Users.class);
-			Domains domains = session.getMapper(Domains.class);
-
+		try {
 			// Load cached ETag.
-			String lastEtag = users.getProperty(PROPERTY_ETAG);
+			String lastEtag = _propertyStore.getProperty(PROPERTY_ETAG);
 
 			HttpURLConnection connection = (HttpURLConnection) URI.create(BLOCKLIST_URL).toURL().openConnection();
 			connection.setConnectTimeout(30_000);
@@ -139,40 +135,40 @@ public class DisposableListService implements ServletContextListener {
 			long now = System.currentTimeMillis();
 			int added = 0;
 
-			try (InputStream in = connection.getInputStream();
-				 BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
+			try (SqlSession session = _sessionFactory.openSession()) {
+				Domains domains = session.getMapper(Domains.class);
 
-				String line;
-				while ((line = reader.readLine()) != null) {
-					line = line.trim();
+				try (InputStream in = connection.getInputStream();
+					 BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8))) {
 
-					// Skip empty lines and comments.
-					if (line.isEmpty() || line.startsWith("#")) {
-						continue;
+					String line;
+					while ((line = reader.readLine()) != null) {
+						line = line.trim();
+
+						// Skip empty lines and comments.
+						if (line.isEmpty() || line.startsWith("#")) {
+							continue;
+						}
+
+						String domain = line.toLowerCase();
+
+						// Skip already known domains.
+						if (domains.checkDomain(domain) != null) {
+							continue;
+						}
+
+						domains.insertDomain(domain, true, now, SOURCE_SYSTEM, null, null);
+						added++;
 					}
-
-					String domain = line.toLowerCase();
-
-					// Skip already known domains.
-					if (domains.checkDomain(domain) != null) {
-						continue;
-					}
-
-					domains.insertDomain(domain, true, now, SOURCE_SYSTEM, null, null);
-					added++;
 				}
+
+				session.commit();
 			}
 
 			// Persist ETag.
 			if (newEtag != null) {
-				if (lastEtag != null) {
-					users.updateProperty(PROPERTY_ETAG, newEtag);
-				} else {
-					users.addProperty(PROPERTY_ETAG, newEtag);
-				}
+				_propertyStore.setProperty(PROPERTY_ETAG, newEtag);
 			}
-
-			session.commit();
 
 			LOG.info("Disposable domain list import completed. New domains added: {}", added);
 		} catch (Exception ex) {

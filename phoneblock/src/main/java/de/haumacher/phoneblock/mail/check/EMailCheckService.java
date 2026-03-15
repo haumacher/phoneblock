@@ -9,10 +9,10 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.mail.check.db.DBDomainCheck;
 import de.haumacher.phoneblock.mail.check.db.DBEmailCheck;
 import de.haumacher.phoneblock.mail.check.db.Domains;
@@ -45,11 +45,11 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 
 	private static EMailChecker INSTANCE = NONE;
 
-	private DBService _dbService;
+	private final SqlSessionFactory _sessionFactory;
 	private final List<EMailCheckProvider> _providers = new ArrayList<>();
 
-	public EMailCheckService(DBService db) {
-		_dbService = db;
+	public EMailCheckService(SqlSessionFactory sessionFactory) {
+		_sessionFactory = sessionFactory;
 	}
 
 	@Override
@@ -103,7 +103,7 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 		String domain = (domainSep >= 0) ? address.substring(domainSep + 1) : address;
 		String domainName = domain.toLowerCase();
 
-		try (SqlSession tx = _dbService.db().openSession()) {
+		try (SqlSession tx = _sessionFactory.openSession()) {
 			Domains domains = tx.getMapper(Domains.class);
 
 			// Step 1: Normalize and check EMAIL_CHECK cache

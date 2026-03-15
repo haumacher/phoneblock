@@ -1204,6 +1204,13 @@ public class DB {
 	}
 
 	/**
+	 * The factory for creating database sessions.
+	 */
+	public SqlSessionFactory getSessionFactory() {
+		return _sessionFactory;
+	}
+
+	/**
 	 * Opens a session to query/update the database.
 	 */
 	public SqlSession openSession() {

@@ -34,6 +34,7 @@ import de.haumacher.phoneblock.index.indexnow.IndexNowUpdateService;
 import de.haumacher.phoneblock.jmx.ManagementService;
 import de.haumacher.phoneblock.location.LocationService;
 import de.haumacher.phoneblock.mail.MailServiceStarter;
+import de.haumacher.phoneblock.mail.check.DBPropertyStore;
 import de.haumacher.phoneblock.mail.check.DisposableListService;
 import de.haumacher.phoneblock.mail.check.EMailCheckService;
 import de.haumacher.phoneblock.mail.check.scraper.DisposableScraperService;
@@ -50,18 +51,18 @@ import jakarta.servlet.annotation.WebListener;
  */
 @WebListener
 public class Application implements ServletContextListener {
-	
+
 	// Lately initialized, since configuration must be applied before.
 	private static Logger LOG;
-	
+
 	private ServletContextListener[] _services;
-	
+
 	private static String _contextPath = "/phoneblock";
-	
+
 	public static String getContextPath() {
 		return _contextPath;
 	}
-	
+
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
 		try {
@@ -70,7 +71,7 @@ public class Application implements ServletContextListener {
 				InitialContext initCtx = new InitialContext();
 				Context envCtx = (Context) initCtx.lookup("java:comp/env");
 				String fileName = (String) envCtx.lookup("log/configfile");
-				
+
 				Properties properties = new Properties();
 				configFile = new File(fileName);
 				try (FileInputStream in = new FileInputStream(configFile)) {
@@ -90,11 +91,11 @@ public class Application implements ServletContextListener {
 		} catch (IOException ex) {
 			LOG.error("Failed to load log configuration, using default.", ex);
 		}
-		
+
 		LOG.info("Starting phoneblock application.");
-		
+
 		_contextPath = sce.getServletContext().getContextPath();
-		
+
 		IndexUpdateService indexer;
 		SchedulerService scheduler;
 		DBService db;
@@ -114,9 +115,9 @@ public class Application implements ServletContextListener {
 			mail = new MailServiceStarter(),
 			db = new DBService(rnd, indexer, scheduler, mail),
 			new DnsService(scheduler, db),
-			new EMailCheckService(db),
-			new DisposableListService(scheduler, db),
-			new DisposableScraperService(scheduler, db),
+			new EMailCheckService(db.getSessionFactory()),
+			new DisposableListService(scheduler, db.getSessionFactory(), new DBPropertyStore(db.getSessionFactory())),
+			new DisposableScraperService(scheduler, db.getSessionFactory()),
 			fetcher = new FetchService(),
 			metaSearch = new MetaSearchService(scheduler, fetcher, indexer),
 			new CrawlerService(fetcher, metaSearch),
@@ -129,7 +130,7 @@ public class Application implements ServletContextListener {
 			new BlocklistVersionService(scheduler, db),
 			new FtcImportService(scheduler, db)
 		};
-		
+
 		for (int n = 0, cnt = _services.length; n < cnt; n++) {
 			try {
 				_services[n].contextInitialized(sce);
