@@ -1,12 +1,11 @@
 /*
  * Copyright (c) 2026 Bernhard Haumacher et al. All Rights Reserved.
  */
-package de.haumacher.phoneblock.mail;
+package de.haumacher.phoneblock.db;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
-import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.mail.check.PropertyStore;
 
 /**
