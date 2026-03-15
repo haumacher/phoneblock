@@ -34,6 +34,7 @@ import de.haumacher.phoneblock.index.indexnow.IndexNowUpdateService;
 import de.haumacher.phoneblock.jmx.ManagementService;
 import de.haumacher.phoneblock.location.LocationService;
 import de.haumacher.phoneblock.mail.MailServiceStarter;
+import de.haumacher.phoneblock.mail.check.DisposableListService;
 import de.haumacher.phoneblock.mail.check.EMailCheckService;
 import de.haumacher.phoneblock.meta.MetaSearchService;
 import de.haumacher.phoneblock.random.SecureRandomService;
@@ -113,6 +114,7 @@ public class Application implements ServletContextListener {
 			db = new DBService(rnd, indexer, scheduler, mail),
 			new DnsService(scheduler, db),
 			new EMailCheckService(db),
+			new DisposableListService(scheduler, db),
 			fetcher = new FetchService(),
 			metaSearch = new MetaSearchService(scheduler, fetcher, indexer),
 			new CrawlerService(fetcher, metaSearch),
