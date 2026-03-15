@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2026 Bernhard Haumacher et al. All Rights Reserved.
  */
-package de.haumacher.phoneblock.mail.check.scraper;
+package de.haumacher.mailcheck.scraper;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -10,27 +10,26 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Scrapes disposable e-mail domains from Mohmal.
+ * Scrapes disposable e-mail domains from Fake Mail Generator.
  */
-public class MohmalScraper implements DisposableScraper {
+public class FakeMailGeneratorScraper implements DisposableScraper {
 
-	/** Matches domain names inside {@code <option>} value attributes. */
-	private static final Pattern OPTION_PATTERN = Pattern.compile("<option[^>]*value\\s*=\\s*\"([\\w.-]+\\.\\w{2,})\"");
+	private static final Pattern DOMAIN_PATTERN = Pattern.compile("@([\\w.-]+\\.\\w{2,})");
 
 	@Override
 	public String getId() {
-		return "mohmal";
+		return "fakemailgenerator";
 	}
 
 	@Override
 	public String getUrl() {
-		return "https://www.mohmal.com/en";
+		return "https://www.fakemailgenerator.com";
 	}
 
 	@Override
 	public Set<String> scrape(String pageContent) {
 		Set<String> domains = new HashSet<>();
-		Matcher matcher = OPTION_PATTERN.matcher(pageContent);
+		Matcher matcher = DOMAIN_PATTERN.matcher(pageContent);
 		while (matcher.find()) {
 			domains.add(matcher.group(1).toLowerCase().trim());
 		}
@@ -38,7 +37,7 @@ public class MohmalScraper implements DisposableScraper {
 	}
 
 	public static void main(String[] args) throws IOException {
-		DisposableScraper.run(new MohmalScraper());
+		DisposableScraper.run(new FakeMailGeneratorScraper());
 	}
 
 }

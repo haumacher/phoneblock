@@ -1,4 +1,4 @@
-package de.haumacher.phoneblock.mail.check.provider.rapidapi.model;
+package de.haumacher.mailcheck.provider.rapidapi.model;
 
 /**
  * Check result from <code>https://mailcheck.p.rapidapi.com</code>.
@@ -24,13 +24,13 @@ package de.haumacher.phoneblock.mail.check.provider.rapidapi.model;
 public class RapidAPIResult extends de.haumacher.msgbuf.data.AbstractDataObject {
 
 	/**
-	 * Creates a {@link de.haumacher.phoneblock.mail.check.provider.rapidapi.model.RapidAPIResult} instance.
+	 * Creates a {@link de.haumacher.mailcheck.provider.rapidapi.model.RapidAPIResult} instance.
 	 */
-	public static de.haumacher.phoneblock.mail.check.provider.rapidapi.model.RapidAPIResult create() {
-		return new de.haumacher.phoneblock.mail.check.provider.rapidapi.model.RapidAPIResult();
+	public static de.haumacher.mailcheck.provider.rapidapi.model.RapidAPIResult create() {
+		return new de.haumacher.mailcheck.provider.rapidapi.model.RapidAPIResult();
 	}
 
-	/** Identifier for the {@link de.haumacher.phoneblock.mail.check.provider.rapidapi.model.RapidAPIResult} type in JSON format. */
+	/** Identifier for the {@link de.haumacher.mailcheck.provider.rapidapi.model.RapidAPIResult} type in JSON format. */
 	public static final String RAPID_APIRESULT__TYPE = "RapidAPIResult";
 
 	/** @see #isValid() */
@@ -76,7 +76,7 @@ public class RapidAPIResult extends de.haumacher.msgbuf.data.AbstractDataObject 
 	/**
 	 * Creates a {@link RapidAPIResult} instance.
 	 *
-	 * @see de.haumacher.phoneblock.mail.check.provider.rapidapi.model.RapidAPIResult#create()
+	 * @see de.haumacher.mailcheck.provider.rapidapi.model.RapidAPIResult#create()
 	 */
 	protected RapidAPIResult() {
 		super();
@@ -89,7 +89,7 @@ public class RapidAPIResult extends de.haumacher.msgbuf.data.AbstractDataObject 
 	/**
 	 * @see #isValid()
 	 */
-	public de.haumacher.phoneblock.mail.check.provider.rapidapi.model.RapidAPIResult setValid(boolean value) {
+	public de.haumacher.mailcheck.provider.rapidapi.model.RapidAPIResult setValid(boolean value) {
 		internalSetValid(value);
 		return this;
 	}
@@ -106,7 +106,7 @@ public class RapidAPIResult extends de.haumacher.msgbuf.data.AbstractDataObject 
 	/**
 	 * @see #isBlock()
 	 */
-	public de.haumacher.phoneblock.mail.check.provider.rapidapi.model.RapidAPIResult setBlock(boolean value) {
+	public de.haumacher.mailcheck.provider.rapidapi.model.RapidAPIResult setBlock(boolean value) {
 		internalSetBlock(value);
 		return this;
 	}
@@ -123,7 +123,7 @@ public class RapidAPIResult extends de.haumacher.msgbuf.data.AbstractDataObject 
 	/**
 	 * @see #isDisposable()
 	 */
-	public de.haumacher.phoneblock.mail.check.provider.rapidapi.model.RapidAPIResult setDisposable(boolean value) {
+	public de.haumacher.mailcheck.provider.rapidapi.model.RapidAPIResult setDisposable(boolean value) {
 		internalSetDisposable(value);
 		return this;
 	}
@@ -140,7 +140,7 @@ public class RapidAPIResult extends de.haumacher.msgbuf.data.AbstractDataObject 
 	/**
 	 * @see #isForwarder()
 	 */
-	public de.haumacher.phoneblock.mail.check.provider.rapidapi.model.RapidAPIResult setForwarder(boolean value) {
+	public de.haumacher.mailcheck.provider.rapidapi.model.RapidAPIResult setForwarder(boolean value) {
 		internalSetForwarder(value);
 		return this;
 	}
@@ -157,7 +157,7 @@ public class RapidAPIResult extends de.haumacher.msgbuf.data.AbstractDataObject 
 	/**
 	 * @see #getDomainName()
 	 */
-	public de.haumacher.phoneblock.mail.check.provider.rapidapi.model.RapidAPIResult setDomainName(String value) {
+	public de.haumacher.mailcheck.provider.rapidapi.model.RapidAPIResult setDomainName(String value) {
 		internalSetDomainName(value);
 		return this;
 	}
@@ -174,7 +174,7 @@ public class RapidAPIResult extends de.haumacher.msgbuf.data.AbstractDataObject 
 	/**
 	 * @see #getMxHost()
 	 */
-	public de.haumacher.phoneblock.mail.check.provider.rapidapi.model.RapidAPIResult setMxHost(String value) {
+	public de.haumacher.mailcheck.provider.rapidapi.model.RapidAPIResult setMxHost(String value) {
 		internalSetMxHost(value);
 		return this;
 	}
@@ -191,7 +191,7 @@ public class RapidAPIResult extends de.haumacher.msgbuf.data.AbstractDataObject 
 	/**
 	 * @see #getMxIP()
 	 */
-	public de.haumacher.phoneblock.mail.check.provider.rapidapi.model.RapidAPIResult setMxIP(String value) {
+	public de.haumacher.mailcheck.provider.rapidapi.model.RapidAPIResult setMxIP(String value) {
 		internalSetMxIP(value);
 		return this;
 	}
@@ -208,7 +208,7 @@ public class RapidAPIResult extends de.haumacher.msgbuf.data.AbstractDataObject 
 	/**
 	 * @see #getLastChanged()
 	 */
-	public de.haumacher.phoneblock.mail.check.provider.rapidapi.model.RapidAPIResult setLastChanged(String value) {
+	public de.haumacher.mailcheck.provider.rapidapi.model.RapidAPIResult setLastChanged(String value) {
 		internalSetLastChanged(value);
 		return this;
 	}
@@ -219,8 +219,8 @@ public class RapidAPIResult extends de.haumacher.msgbuf.data.AbstractDataObject 
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static de.haumacher.phoneblock.mail.check.provider.rapidapi.model.RapidAPIResult readRapidAPIResult(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
-		de.haumacher.phoneblock.mail.check.provider.rapidapi.model.RapidAPIResult result = new de.haumacher.phoneblock.mail.check.provider.rapidapi.model.RapidAPIResult();
+	public static de.haumacher.mailcheck.provider.rapidapi.model.RapidAPIResult readRapidAPIResult(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
+		de.haumacher.mailcheck.provider.rapidapi.model.RapidAPIResult result = new de.haumacher.mailcheck.provider.rapidapi.model.RapidAPIResult();
 		result.readContent(in);
 		return result;
 	}

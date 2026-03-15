@@ -5,11 +5,11 @@
 /**
  * Disposable e-mail domain detection service.
  */
-module de.haumacher.phoneblock.mail.check {
-	exports de.haumacher.phoneblock.mail.check;
-	exports de.haumacher.phoneblock.mail.check.scraper;
+module de.haumacher.mailcheck {
+	exports de.haumacher.mailcheck;
+	exports de.haumacher.mailcheck.scraper;
 
-	exports de.haumacher.phoneblock.mail.check.db to org.mybatis;
+	exports de.haumacher.mailcheck.db to org.mybatis;
 
 	requires transitive de.haumacher.msgbuf;
 	requires transitive org.mybatis;

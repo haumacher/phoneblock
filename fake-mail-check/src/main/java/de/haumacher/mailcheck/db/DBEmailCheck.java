@@ -1,4 +1,4 @@
-package de.haumacher.phoneblock.mail.check.db;
+package de.haumacher.mailcheck.db;
 
 /**
  * POJO for the {@code EMAIL_CHECK} table, used by MyBatis constructor-based mapping.

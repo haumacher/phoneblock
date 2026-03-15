@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2026 Bernhard Haumacher et al. All Rights Reserved.
  */
-package de.haumacher.phoneblock.mail.check;
+package de.haumacher.mailcheck;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -19,7 +19,7 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.haumacher.phoneblock.mail.check.db.Domains;
+import de.haumacher.mailcheck.db.Domains;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 

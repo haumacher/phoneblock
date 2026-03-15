@@ -1,6 +1,6 @@
-package de.haumacher.phoneblock.mail.check.db;
+package de.haumacher.mailcheck.db;
 
-import de.haumacher.phoneblock.mail.check.model.DomainCheck;
+import de.haumacher.mailcheck.model.DomainCheck;
 
 public class DBDomainCheck extends DomainCheck {
 	

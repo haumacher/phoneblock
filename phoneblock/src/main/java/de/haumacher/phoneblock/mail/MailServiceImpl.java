@@ -17,12 +17,12 @@ import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.haumacher.mailcheck.EMailCheckService;
 import de.haumacher.phoneblock.app.Application;
 import de.haumacher.phoneblock.app.SettingsServlet;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.settings.AnswerBotSip;
 import de.haumacher.phoneblock.db.settings.UserSettings;
-import de.haumacher.phoneblock.mail.check.EMailCheckService;
 import de.haumacher.phoneblock.shared.Language;
 import de.haumacher.phoneblock.util.I18N;
 import jakarta.mail.Address;

@@ -1,4 +1,4 @@
-package de.haumacher.phoneblock.mail.check.model;
+package de.haumacher.mailcheck.model;
 
 /**
  * Provider-independent result of a disposable e-mail domain check.
@@ -13,13 +13,13 @@ package de.haumacher.phoneblock.mail.check.model;
 public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject {
 
 	/**
-	 * Creates a {@link de.haumacher.phoneblock.mail.check.model.DomainCheck} instance.
+	 * Creates a {@link de.haumacher.mailcheck.model.DomainCheck} instance.
 	 */
-	public static de.haumacher.phoneblock.mail.check.model.DomainCheck create() {
-		return new de.haumacher.phoneblock.mail.check.model.DomainCheck();
+	public static de.haumacher.mailcheck.model.DomainCheck create() {
+		return new de.haumacher.mailcheck.model.DomainCheck();
 	}
 
-	/** Identifier for the {@link de.haumacher.phoneblock.mail.check.model.DomainCheck} type in JSON format. */
+	/** Identifier for the {@link de.haumacher.mailcheck.model.DomainCheck} type in JSON format. */
 	public static final String DOMAIN_CHECK__TYPE = "DomainCheck";
 
 	/** @see #getDomainName() */
@@ -55,7 +55,7 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject {
 	/**
 	 * Creates a {@link DomainCheck} instance.
 	 *
-	 * @see de.haumacher.phoneblock.mail.check.model.DomainCheck#create()
+	 * @see de.haumacher.mailcheck.model.DomainCheck#create()
 	 */
 	protected DomainCheck() {
 		super();
@@ -71,7 +71,7 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject {
 	/**
 	 * @see #getDomainName()
 	 */
-	public de.haumacher.phoneblock.mail.check.model.DomainCheck setDomainName(String value) {
+	public de.haumacher.mailcheck.model.DomainCheck setDomainName(String value) {
 		internalSetDomainName(value);
 		return this;
 	}
@@ -91,7 +91,7 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject {
 	/**
 	 * @see #isDisposable()
 	 */
-	public de.haumacher.phoneblock.mail.check.model.DomainCheck setDisposable(boolean value) {
+	public de.haumacher.mailcheck.model.DomainCheck setDisposable(boolean value) {
 		internalSetDisposable(value);
 		return this;
 	}
@@ -111,7 +111,7 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject {
 	/**
 	 * @see #getLastChanged()
 	 */
-	public de.haumacher.phoneblock.mail.check.model.DomainCheck setLastChanged(long value) {
+	public de.haumacher.mailcheck.model.DomainCheck setLastChanged(long value) {
 		internalSetLastChanged(value);
 		return this;
 	}
@@ -131,7 +131,7 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject {
 	/**
 	 * @see #getSourceSystem()
 	 */
-	public de.haumacher.phoneblock.mail.check.model.DomainCheck setSourceSystem(String value) {
+	public de.haumacher.mailcheck.model.DomainCheck setSourceSystem(String value) {
 		internalSetSourceSystem(value);
 		return this;
 	}
@@ -151,7 +151,7 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject {
 	/**
 	 * @see #getMxHost()
 	 */
-	public de.haumacher.phoneblock.mail.check.model.DomainCheck setMxHost(String value) {
+	public de.haumacher.mailcheck.model.DomainCheck setMxHost(String value) {
 		internalSetMxHost(value);
 		return this;
 	}
@@ -178,7 +178,7 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject {
 	/**
 	 * @see #getMxIP()
 	 */
-	public de.haumacher.phoneblock.mail.check.model.DomainCheck setMxIP(String value) {
+	public de.haumacher.mailcheck.model.DomainCheck setMxIP(String value) {
 		internalSetMxIP(value);
 		return this;
 	}
@@ -196,8 +196,8 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject {
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static de.haumacher.phoneblock.mail.check.model.DomainCheck readDomainCheck(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
-		de.haumacher.phoneblock.mail.check.model.DomainCheck result = new de.haumacher.phoneblock.mail.check.model.DomainCheck();
+	public static de.haumacher.mailcheck.model.DomainCheck readDomainCheck(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
+		de.haumacher.mailcheck.model.DomainCheck result = new de.haumacher.mailcheck.model.DomainCheck();
 		result.readContent(in);
 		return result;
 	}

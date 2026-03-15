@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2026 Bernhard Haumacher et al. All Rights Reserved.
  */
-package de.haumacher.phoneblock.mail.check.scraper;
+package de.haumacher.mailcheck.scraper;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -10,20 +10,20 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Scrapes disposable e-mail domains from YOPmail's domain listing page.
+ * Scrapes disposable e-mail domains from Guerrilla Mail.
  */
-public class YOPmailScraper implements DisposableScraper {
+public class GuerrillaMailScraper implements DisposableScraper {
 
 	private static final Pattern DOMAIN_PATTERN = Pattern.compile("@([\\w.-]+\\.\\w{2,})");
 
 	@Override
 	public String getId() {
-		return "yopmail";
+		return "guerrillamail";
 	}
 
 	@Override
 	public String getUrl() {
-		return "https://yopmail.com/en/domain?d=all";
+		return "https://www.guerrillamail.com";
 	}
 
 	@Override
@@ -37,7 +37,7 @@ public class YOPmailScraper implements DisposableScraper {
 	}
 
 	public static void main(String[] args) throws IOException {
-		DisposableScraper.run(new YOPmailScraper());
+		DisposableScraper.run(new GuerrillaMailScraper());
 	}
 
 }

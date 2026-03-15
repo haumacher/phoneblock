@@ -6,7 +6,7 @@ package de.haumacher.phoneblock.db;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 
-import de.haumacher.phoneblock.mail.check.PropertyStore;
+import de.haumacher.mailcheck.PropertyStore;
 
 /**
  * {@link PropertyStore} backed by the {@link Users} MyBatis mapper.

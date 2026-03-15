@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2026 Bernhard Haumacher et al. All Rights Reserved.
  */
-package de.haumacher.phoneblock.mail.check.scraper;
+package de.haumacher.mailcheck.scraper;
 
 import java.io.IOException;
 import java.io.InputStream;

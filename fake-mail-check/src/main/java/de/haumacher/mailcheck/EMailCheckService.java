@@ -1,4 +1,4 @@
-package de.haumacher.phoneblock.mail.check;
+package de.haumacher.mailcheck;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -18,10 +18,10 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.haumacher.phoneblock.mail.check.db.DBDomainCheck;
-import de.haumacher.phoneblock.mail.check.db.DBEmailCheck;
-import de.haumacher.phoneblock.mail.check.db.Domains;
-import de.haumacher.phoneblock.mail.check.model.DomainCheck;
+import de.haumacher.mailcheck.db.DBDomainCheck;
+import de.haumacher.mailcheck.db.DBEmailCheck;
+import de.haumacher.mailcheck.db.Domains;
+import de.haumacher.mailcheck.model.DomainCheck;
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.servlet.ServletContextEvent;

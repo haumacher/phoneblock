@@ -1,4 +1,4 @@
-package de.haumacher.phoneblock.mail.check;
+package de.haumacher.mailcheck;
 
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;

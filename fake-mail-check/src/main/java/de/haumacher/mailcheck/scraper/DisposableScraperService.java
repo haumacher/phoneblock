@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2026 Bernhard Haumacher et al. All Rights Reserved.
  */
-package de.haumacher.phoneblock.mail.check.scraper;
+package de.haumacher.mailcheck.scraper;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -16,8 +16,8 @@ import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.haumacher.phoneblock.mail.check.EmailNormalizer;
-import de.haumacher.phoneblock.mail.check.db.Domains;
+import de.haumacher.mailcheck.EmailNormalizer;
+import de.haumacher.mailcheck.db.Domains;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 
@@ -26,7 +26,7 @@ import jakarta.servlet.ServletContextListener;
  * their currently offered domains and inserts new ones into the DOMAIN_CHECK table.
  *
  * <p>
- * Runs daily at 05:00, one hour after the passive {@link de.haumacher.phoneblock.mail.check.DisposableListService}.
+ * Runs daily at 05:00, one hour after the passive {@link de.haumacher.mailcheck.DisposableListService}.
  * </p>
  */
 public class DisposableScraperService implements ServletContextListener {

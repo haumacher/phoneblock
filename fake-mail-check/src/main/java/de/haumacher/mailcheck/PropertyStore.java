@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2026 Bernhard Haumacher et al. All Rights Reserved.
  */
-package de.haumacher.phoneblock.mail.check;
+package de.haumacher.mailcheck;
 
 /**
  * Simple key-value store for service properties (e.g. ETag caching).

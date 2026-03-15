@@ -1,8 +1,8 @@
-package de.haumacher.phoneblock.mail.check;
+package de.haumacher.mailcheck;
 
 import javax.naming.Context;
 
-import de.haumacher.phoneblock.mail.check.model.DomainCheck;
+import de.haumacher.mailcheck.model.DomainCheck;
 
 /**
  * Provider that checks whether an e-mail domain or address is disposable.

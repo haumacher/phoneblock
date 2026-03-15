@@ -1,4 +1,4 @@
-package de.haumacher.phoneblock.mail.check.provider.usercheck.model;
+package de.haumacher.mailcheck.provider.usercheck.model;
 
 /**
  * Check result from <code>https://api.usercheck.com/domain/{domain}</code>.
@@ -15,13 +15,13 @@ package de.haumacher.phoneblock.mail.check.provider.usercheck.model;
 public class UserCheckResult extends de.haumacher.msgbuf.data.AbstractDataObject {
 
 	/**
-	 * Creates a {@link de.haumacher.phoneblock.mail.check.provider.usercheck.model.UserCheckResult} instance.
+	 * Creates a {@link de.haumacher.mailcheck.provider.usercheck.model.UserCheckResult} instance.
 	 */
-	public static de.haumacher.phoneblock.mail.check.provider.usercheck.model.UserCheckResult create() {
-		return new de.haumacher.phoneblock.mail.check.provider.usercheck.model.UserCheckResult();
+	public static de.haumacher.mailcheck.provider.usercheck.model.UserCheckResult create() {
+		return new de.haumacher.mailcheck.provider.usercheck.model.UserCheckResult();
 	}
 
-	/** Identifier for the {@link de.haumacher.phoneblock.mail.check.provider.usercheck.model.UserCheckResult} type in JSON format. */
+	/** Identifier for the {@link de.haumacher.mailcheck.provider.usercheck.model.UserCheckResult} type in JSON format. */
 	public static final String USER_CHECK_RESULT__TYPE = "UserCheckResult";
 
 	/** @see #getDomainName() */
@@ -47,7 +47,7 @@ public class UserCheckResult extends de.haumacher.msgbuf.data.AbstractDataObject
 	/**
 	 * Creates a {@link UserCheckResult} instance.
 	 *
-	 * @see de.haumacher.phoneblock.mail.check.provider.usercheck.model.UserCheckResult#create()
+	 * @see de.haumacher.mailcheck.provider.usercheck.model.UserCheckResult#create()
 	 */
 	protected UserCheckResult() {
 		super();
@@ -60,7 +60,7 @@ public class UserCheckResult extends de.haumacher.msgbuf.data.AbstractDataObject
 	/**
 	 * @see #getDomainName()
 	 */
-	public de.haumacher.phoneblock.mail.check.provider.usercheck.model.UserCheckResult setDomainName(String value) {
+	public de.haumacher.mailcheck.provider.usercheck.model.UserCheckResult setDomainName(String value) {
 		internalSetDomainName(value);
 		return this;
 	}
@@ -77,7 +77,7 @@ public class UserCheckResult extends de.haumacher.msgbuf.data.AbstractDataObject
 	/**
 	 * @see #isDisposable()
 	 */
-	public de.haumacher.phoneblock.mail.check.provider.usercheck.model.UserCheckResult setDisposable(boolean value) {
+	public de.haumacher.mailcheck.provider.usercheck.model.UserCheckResult setDisposable(boolean value) {
 		internalSetDisposable(value);
 		return this;
 	}
@@ -94,7 +94,7 @@ public class UserCheckResult extends de.haumacher.msgbuf.data.AbstractDataObject
 	/**
 	 * @see #isMx()
 	 */
-	public de.haumacher.phoneblock.mail.check.provider.usercheck.model.UserCheckResult setMx(boolean value) {
+	public de.haumacher.mailcheck.provider.usercheck.model.UserCheckResult setMx(boolean value) {
 		internalSetMx(value);
 		return this;
 	}
@@ -111,7 +111,7 @@ public class UserCheckResult extends de.haumacher.msgbuf.data.AbstractDataObject
 	/**
 	 * @see #isPublicDomain()
 	 */
-	public de.haumacher.phoneblock.mail.check.provider.usercheck.model.UserCheckResult setPublicDomain(boolean value) {
+	public de.haumacher.mailcheck.provider.usercheck.model.UserCheckResult setPublicDomain(boolean value) {
 		internalSetPublicDomain(value);
 		return this;
 	}
@@ -122,8 +122,8 @@ public class UserCheckResult extends de.haumacher.msgbuf.data.AbstractDataObject
 	}
 
 	/** Reads a new instance from the given reader. */
-	public static de.haumacher.phoneblock.mail.check.provider.usercheck.model.UserCheckResult readUserCheckResult(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
-		de.haumacher.phoneblock.mail.check.provider.usercheck.model.UserCheckResult result = new de.haumacher.phoneblock.mail.check.provider.usercheck.model.UserCheckResult();
+	public static de.haumacher.mailcheck.provider.usercheck.model.UserCheckResult readUserCheckResult(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
+		de.haumacher.mailcheck.provider.usercheck.model.UserCheckResult result = new de.haumacher.mailcheck.provider.usercheck.model.UserCheckResult();
 		result.readContent(in);
 		return result;
 	}

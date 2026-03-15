@@ -1,4 +1,4 @@
-package de.haumacher.phoneblock.mail.check.db;
+package de.haumacher.mailcheck.db;
 
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Select;

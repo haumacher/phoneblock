@@ -1,4 +1,4 @@
-package de.haumacher.phoneblock.mail.check.provider.usercheck;
+package de.haumacher.mailcheck.provider.usercheck;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -15,11 +15,11 @@ import javax.naming.NamingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import de.haumacher.mailcheck.EMailCheckProvider;
+import de.haumacher.mailcheck.model.DomainCheck;
+import de.haumacher.mailcheck.provider.usercheck.model.UserCheckResult;
 import de.haumacher.msgbuf.json.JsonReader;
 import de.haumacher.msgbuf.server.io.ReaderAdapter;
-import de.haumacher.phoneblock.mail.check.EMailCheckProvider;
-import de.haumacher.phoneblock.mail.check.model.DomainCheck;
-import de.haumacher.phoneblock.mail.check.provider.usercheck.model.UserCheckResult;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
