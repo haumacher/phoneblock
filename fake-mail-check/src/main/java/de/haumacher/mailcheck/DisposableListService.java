@@ -46,6 +46,8 @@ public class DisposableListService implements ServletContextListener {
 
 	private static final String SOURCE_SYSTEM = "disposable-list";
 
+	private static final int BATCH_SIZE = 100;
+
 	private static final String BLOCKLIST_URL =
 		"https://raw.githubusercontent.com/disposable-email-domains/disposable-email-domains/refs/heads/main/disposable_email_blocklist.conf";
 
@@ -163,6 +165,11 @@ public class DisposableListService implements ServletContextListener {
 						domains.insertDomain(domain, true, now, SOURCE_SYSTEM, mx.mxHost(), mx.mxIp());
 						LOG.info("New domain: {} (MX: {}, IP: {})", domain, mx.mxHost(), mx.mxIp());
 						added++;
+
+						if (added % BATCH_SIZE == 0) {
+							session.commit();
+							LOG.info("Committed batch ({} domains so far).", added);
+						}
 					}
 				}
 

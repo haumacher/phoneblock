@@ -35,6 +35,8 @@ public class DisposableScraperService implements ServletContextListener {
 
 	private static final Logger LOG = LoggerFactory.getLogger(DisposableScraperService.class);
 
+	private static final int BATCH_SIZE = 100;
+
 	private static final List<DisposableScraper> SCRAPERS = List.of(
 		new YOPmailScraper(),
 		new FakeMailGeneratorScraper(),
@@ -139,6 +141,11 @@ public class DisposableScraperService implements ServletContextListener {
 				domainMapper.insertDomain(domain, true, now, scraper.getId(), mx.mxHost(), mx.mxIp());
 				LOG.info("New domain: {} (MX: {}, IP: {})", domain, mx.mxHost(), mx.mxIp());
 				added++;
+
+				if (added % BATCH_SIZE == 0) {
+					session.commit();
+					LOG.info("Committed batch ({} domains so far).", added);
+				}
 			}
 
 			session.commit();
