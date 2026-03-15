@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -17,7 +18,6 @@ import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.mail.check.EmailNormalizer;
 import de.haumacher.phoneblock.mail.check.db.Domains;
-import de.haumacher.phoneblock.scheduler.SchedulerService;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 
@@ -41,7 +41,7 @@ public class DisposableScraperService implements ServletContextListener {
 		new EmailFakeScraper()
 	);
 
-	private final SchedulerService _schedulerService;
+	private final ScheduledExecutorService _scheduler;
 	private final SqlSessionFactory _sessionFactory;
 
 	private ScheduledFuture<?> _task;
@@ -49,8 +49,8 @@ public class DisposableScraperService implements ServletContextListener {
 	/**
 	 * Creates a {@link DisposableScraperService}.
 	 */
-	public DisposableScraperService(SchedulerService scheduler, SqlSessionFactory sessionFactory) {
-		_schedulerService = scheduler;
+	public DisposableScraperService(ScheduledExecutorService scheduler, SqlSessionFactory sessionFactory) {
+		_scheduler = scheduler;
 		_sessionFactory = sessionFactory;
 	}
 
@@ -74,7 +74,7 @@ public class DisposableScraperService implements ServletContextListener {
 
 		long initialDelay = firstRun.getTimeInMillis() - System.currentTimeMillis();
 
-		_task = _schedulerService.scheduler().scheduleAtFixedRate(
+		_task = _scheduler.scheduleAtFixedRate(
 			this::runScrape,
 			initialDelay,
 			24 * 60 * 60 * 1000L,

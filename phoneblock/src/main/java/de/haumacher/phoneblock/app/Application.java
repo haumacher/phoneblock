@@ -34,7 +34,7 @@ import de.haumacher.phoneblock.index.indexnow.IndexNowUpdateService;
 import de.haumacher.phoneblock.jmx.ManagementService;
 import de.haumacher.phoneblock.location.LocationService;
 import de.haumacher.phoneblock.mail.MailServiceStarter;
-import de.haumacher.phoneblock.mail.check.DBPropertyStore;
+import de.haumacher.phoneblock.mail.DBPropertyStore;
 import de.haumacher.phoneblock.mail.check.DisposableListService;
 import de.haumacher.phoneblock.mail.check.EMailCheckService;
 import de.haumacher.phoneblock.mail.check.scraper.DisposableScraperService;
@@ -116,8 +116,8 @@ public class Application implements ServletContextListener {
 			db = new DBService(rnd, indexer, scheduler, mail),
 			new DnsService(scheduler, db),
 			new EMailCheckService(db.getSessionFactory()),
-			new DisposableListService(scheduler, db.getSessionFactory(), new DBPropertyStore(db.getSessionFactory())),
-			new DisposableScraperService(scheduler, db.getSessionFactory()),
+			new DisposableListService(scheduler.scheduler(), db.getSessionFactory(), new DBPropertyStore(db.getSessionFactory())),
+			new DisposableScraperService(scheduler.scheduler(), db.getSessionFactory()),
 			fetcher = new FetchService(),
 			metaSearch = new MetaSearchService(scheduler, fetcher, indexer),
 			new CrawlerService(fetcher, metaSearch),

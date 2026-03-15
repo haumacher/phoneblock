@@ -10,6 +10,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Calendar;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -19,7 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.mail.check.db.Domains;
-import de.haumacher.phoneblock.scheduler.SchedulerService;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 
@@ -50,7 +50,7 @@ public class DisposableListService implements ServletContextListener {
 	/** Property key in the PROPERTIES table for caching the HTTP ETag. */
 	private static final String PROPERTY_ETAG = "disposable-list.etag";
 
-	private final SchedulerService _schedulerService;
+	private final ScheduledExecutorService _scheduler;
 	private final SqlSessionFactory _sessionFactory;
 	private final PropertyStore _propertyStore;
 
@@ -59,8 +59,8 @@ public class DisposableListService implements ServletContextListener {
 	/**
 	 * Creates a {@link DisposableListService}.
 	 */
-	public DisposableListService(SchedulerService scheduler, SqlSessionFactory sessionFactory, PropertyStore propertyStore) {
-		_schedulerService = scheduler;
+	public DisposableListService(ScheduledExecutorService scheduler, SqlSessionFactory sessionFactory, PropertyStore propertyStore) {
+		_scheduler = scheduler;
 		_sessionFactory = sessionFactory;
 		_propertyStore = propertyStore;
 	}
@@ -85,7 +85,7 @@ public class DisposableListService implements ServletContextListener {
 
 		long initialDelay = firstRun.getTimeInMillis() - System.currentTimeMillis();
 
-		_task = _schedulerService.scheduler().scheduleAtFixedRate(
+		_task = _scheduler.scheduleAtFixedRate(
 			this::runImport,
 			initialDelay,
 			24 * 60 * 60 * 1000L,

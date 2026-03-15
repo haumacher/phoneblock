@@ -26,6 +26,7 @@ module de.haumacher.phoneblock {
 	
 	requires transitive de.haumacher.phoneblock.shared;
 	requires transitive de.haumacher.phoneblock.ab;
+	requires transitive de.haumacher.phoneblock.mail.check;
 
 	requires transitive org.mjsip.sound;
 	requires transitive org.mjsip.sip;

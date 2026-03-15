@@ -62,10 +62,16 @@
 			<artifactId>phoneblock-shared</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-	
+
 		<dependency>
 			<groupId>de.haumacher</groupId>
 			<artifactId>phoneblock-ab</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>de.haumacher</groupId>
+			<artifactId>fake-mail-check</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		
