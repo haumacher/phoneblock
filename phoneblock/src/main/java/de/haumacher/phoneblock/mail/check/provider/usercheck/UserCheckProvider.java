@@ -17,13 +17,13 @@ import org.slf4j.LoggerFactory;
 
 import de.haumacher.msgbuf.json.JsonReader;
 import de.haumacher.msgbuf.server.io.ReaderAdapter;
-import de.haumacher.phoneblock.mail.check.DomainCheckProvider;
+import de.haumacher.phoneblock.mail.check.EMailCheckProvider;
 import de.haumacher.phoneblock.mail.check.model.DomainCheck;
 import de.haumacher.phoneblock.mail.check.provider.usercheck.model.UserCheckResult;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * {@link DomainCheckProvider} that queries the UserCheck API.
+ * {@link EMailCheckProvider} that queries the UserCheck API.
  *
  * <p>
  * Requires the JNDI property {@code usercheck/apiKey} to be set.
@@ -31,7 +31,7 @@ import jakarta.servlet.http.HttpServletResponse;
  *
  * @see <a href="https://app.usercheck.com/docs#check-domain">UserCheck API Documentation</a>
  */
-public class UserCheckProvider implements DomainCheckProvider {
+public class UserCheckProvider implements EMailCheckProvider {
 
 	/** The provider identifier stored in the {@code SOURCE_SYSTEM} column. */
 	public static final String PROVIDER_ID = "usercheck";
@@ -71,30 +71,29 @@ public class UserCheckProvider implements DomainCheckProvider {
 	}
 
 	@Override
-	public DomainCheck checkEmail(String email) {
-		String domainName = extractDomain(email);
+	public DomainCheck checkDomain(String domain) {
 		try {
-			UserCheckResult result = callCheckService(domainName);
+			UserCheckResult result = callCheckService(domain);
 			if (result == null) {
 				return null;
 			}
 			return toDomainCheck(result);
 		} catch (Exception ex) {
-			LOG.error("Failed to check e-mail domain '{}' via UserCheck.", domainName, ex);
+			LOG.error("Failed to check e-mail domain '{}' via UserCheck.", domain, ex);
 			return null;
 		}
 	}
 
 	@Override
-	public DomainCheck checkNormalizedEmail(String normalizedEmail) {
+	public DomainCheck checkEmail(String email) {
 		try {
-			UserCheckResult result = callEmailCheckService(normalizedEmail);
+			UserCheckResult result = callEmailCheckService(email);
 			if (result == null) {
 				return null;
 			}
 			return toDomainCheck(result);
 		} catch (Exception ex) {
-			LOG.error("Failed to check normalized e-mail '{}' via UserCheck.", normalizedEmail, ex);
+			LOG.error("Failed to check e-mail '{}' via UserCheck.", email, ex);
 			return null;
 		}
 	}
@@ -185,12 +184,6 @@ public class UserCheckProvider implements DomainCheckProvider {
 				result.isDisposable() ? "DISPOSABLE" : "OK");
 
 		return result;
-	}
-
-	private static String extractDomain(String email) {
-		int domainSep = email.indexOf('@');
-		String domain = (domainSep >= 0) ? email.substring(domainSep + 1) : email;
-		return domain.toLowerCase();
 	}
 
 	/**

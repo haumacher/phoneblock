@@ -22,13 +22,13 @@ import org.slf4j.LoggerFactory;
 
 import de.haumacher.msgbuf.json.JsonReader;
 import de.haumacher.msgbuf.server.io.ReaderAdapter;
-import de.haumacher.phoneblock.mail.check.DomainCheckProvider;
+import de.haumacher.phoneblock.mail.check.EMailCheckProvider;
 import de.haumacher.phoneblock.mail.check.model.DomainCheck;
 import de.haumacher.phoneblock.mail.check.provider.rapidapi.model.RapidAPIResult;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * {@link DomainCheckProvider} that queries the RapidAPI mailcheck service.
+ * {@link EMailCheckProvider} that queries the RapidAPI mailcheck service.
  *
  * <p>
  * Requires the JNDI property {@code mailcheck/apiKey} to be set.
@@ -36,7 +36,7 @@ import jakarta.servlet.http.HttpServletResponse;
  *
  * @see <a href="https://mailcheck.p.rapidapi.com/">RapidAPI Mailcheck</a>
  */
-public class RapidAPIProvider implements DomainCheckProvider {
+public class RapidAPIProvider implements EMailCheckProvider {
 
 	/** The provider identifier stored in the {@code SOURCE_SYSTEM} column. */
 	public static final String PROVIDER_ID = "rapidapi";
@@ -74,16 +74,15 @@ public class RapidAPIProvider implements DomainCheckProvider {
 	}
 
 	@Override
-	public DomainCheck checkEmail(String email) {
-		String domainName = extractDomain(email);
+	public DomainCheck checkDomain(String domain) {
 		try {
-			RapidAPIResult result = callCheckService(domainName);
+			RapidAPIResult result = callCheckService(domain);
 			if (result == null) {
 				return null;
 			}
 			return toDomainCheck(result);
 		} catch (Exception ex) {
-			LOG.error("Failed to check e-mail domain '{}' via RapidAPI.", domainName, ex);
+			LOG.error("Failed to check e-mail domain '{}' via RapidAPI.", domain, ex);
 			return null;
 		}
 	}
@@ -133,12 +132,6 @@ public class RapidAPIProvider implements DomainCheckProvider {
 				result.isDisposable() ? "DISPOSABLE" : "OK");
 
 		return result;
-	}
-
-	private static String extractDomain(String email) {
-		int domainSep = email.indexOf('@');
-		String domain = (domainSep >= 0) ? email.substring(domainSep + 1) : email;
-		return domain.toLowerCase();
 	}
 
 	/**

@@ -26,7 +26,7 @@ import jakarta.servlet.ServletContextListener;
  * Orchestrator for disposable e-mail domain checks.
  *
  * <p>
- * Delegates to a chain of {@link DomainCheckProvider}s after checking the DB cache.
+ * Delegates to a chain of {@link EMailCheckProvider}s after checking the DB cache.
  * The first provider returning a non-{@code null} result wins.
  * </p>
  *
@@ -46,7 +46,7 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 	private static EMailChecker INSTANCE = NONE;
 
 	private DBService _dbService;
-	private final List<DomainCheckProvider> _providers = new ArrayList<>();
+	private final List<EMailCheckProvider> _providers = new ArrayList<>();
 
 	public EMailCheckService(DBService db) {
 		_dbService = db;
@@ -78,7 +78,7 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 		try {
 			Class<?> clazz = Class.forName(className);
 			Constructor<?> ctor = clazz.getConstructor(Context.class);
-			DomainCheckProvider provider = (DomainCheckProvider) ctor.newInstance(envCtx);
+			EMailCheckProvider provider = (EMailCheckProvider) ctor.newInstance(envCtx);
 			_providers.add(provider);
 			LOG.info("Loaded domain check provider: {}", className);
 		} catch (Exception ex) {
@@ -114,8 +114,8 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 					return emailCheck.isDisposable();
 				}
 
-				for (DomainCheckProvider provider : _providers) {
-					DomainCheck result = provider.checkNormalizedEmail(normalizedEmail);
+				for (EMailCheckProvider provider : _providers) {
+					DomainCheck result = provider.checkEmail(address);
 					if (result != null) {
 						persistEmailResult(tx, domains, normalizedEmail, result);
 						return result.isDisposable();
@@ -129,8 +129,8 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 				return check.isDisposable();
 			}
 
-			for (DomainCheckProvider provider : _providers) {
-				DomainCheck result = provider.checkEmail(address);
+			for (EMailCheckProvider provider : _providers) {
+				DomainCheck result = provider.checkDomain(domainName);
 				if (result != null) {
 					persistResult(tx, domains, result);
 					return result.isDisposable();
