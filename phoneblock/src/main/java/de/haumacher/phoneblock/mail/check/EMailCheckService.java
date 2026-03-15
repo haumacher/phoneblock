@@ -1,18 +1,7 @@
 package de.haumacher.phoneblock.mail.check;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.net.URI;
-import java.net.URLEncoder;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.OptionalLong;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -22,26 +11,28 @@ import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.haumacher.msgbuf.json.JsonReader;
-import de.haumacher.msgbuf.server.io.ReaderAdapter;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.mail.check.db.DBDomainCheck;
 import de.haumacher.phoneblock.mail.check.db.Domains;
-import de.haumacher.phoneblock.mail.check.model.RapidAPIResult;
+import de.haumacher.phoneblock.mail.check.model.DomainCheck;
+import de.haumacher.phoneblock.mail.check.provider.rapidapi.RapidAPIProvider;
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
-import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * Checker for disposable e-mail addresses.
- * 
+ * Orchestrator for disposable e-mail domain checks.
+ *
+ * <p>
+ * Delegates to a chain of {@link DomainCheckProvider}s after checking the DB cache.
+ * The first provider returning a non-{@code null} result wins.
+ * </p>
+ *
  * @see "https://github.com/disposable-email-domains/disposable-email-domains"
- * @see "https://mailcheck.p.rapidapi.com/"
  */
 public class EMailCheckService implements EMailChecker, ServletContextListener {
-	
+
 	private static final Logger LOG = LoggerFactory.getLogger(EMailCheckService.class);
 
 	private static final EMailChecker NONE = new EMailChecker() {
@@ -50,43 +41,41 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 			return false;
 		}
 	};
-	
-	private static EMailChecker INSTANCE = NONE;
-	
-	private DBService _dbService;
-	private String _apiKey;
 
-	volatile private long _pauseUntil;
-	
+	private static EMailChecker INSTANCE = NONE;
+
+	private DBService _dbService;
+	private final List<DomainCheckProvider> _providers = new ArrayList<>();
+
 	public EMailCheckService(DBService db) {
 		_dbService = db;
 	}
-	
+
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
 		try {
 			InitialContext initCtx = new InitialContext();
 			Context envCtx = (Context) initCtx.lookup("java:comp/env");
-			
+
 			Object value = envCtx.lookup("mailcheck/apiKey");
 			if (value == null) {
 				LOG.info("No API key found in JNDI configuration.");
 			} else {
-				_apiKey = value.toString();
-				LOG.info("Using API key from JNDI configuration.");
+				_providers.add(new RapidAPIProvider(value.toString()));
+				LOG.info("Using RapidAPI provider for e-mail domain checks.");
 			}
 		} catch (NamingException ex) {
 			LOG.info("Not using JNDI configuration: " + ex.getMessage());
 		}
-		
+
 		INSTANCE = this;
 	}
-	
+
 	@Override
 	public void contextDestroyed(ServletContextEvent sce) {
 		LOG.info("Shutting down e-mail checker.");
-		_apiKey = null;
-		
+		_providers.clear();
+
 		if (INSTANCE == this) {
 			INSTANCE = NONE;
 		}
@@ -98,97 +87,36 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 		int domainSep = address.indexOf('@');
 		String domain = (domainSep >= 0) ? address.substring(domainSep + 1) : address;
 		String domainName = domain.toLowerCase();
-		
+
 		try (SqlSession tx = _dbService.db().openSession()) {
 			Domains domains = tx.getMapper(Domains.class);
-			
+
 			DBDomainCheck check = domains.checkDomain(domainName);
 			if (check != null) {
 				return check.isDisposable();
 			}
 
-			if (_apiKey != null) {
-				RapidAPIResult result = callCheckService(domainName);
+			for (DomainCheckProvider provider : _providers) {
+				DomainCheck result = provider.checkDomain(domainName);
 				if (result != null) {
-					rememberResult(tx, domains, result);
+					persistResult(tx, domains, result);
 					return result.isDisposable();
 				}
 			}
 		} catch (Exception ex) {
 			LOG.error("Failed to check e-mail domain '" + domainName + "'.", ex);
 		}
-		
+
 		return false;
 	}
 
-	private RapidAPIResult callCheckService(String domainName) throws IOException, InterruptedException {
-		long pauseUntil = _pauseUntil;
-		if (pauseUntil > 0) {
-			long now = System.currentTimeMillis();
-			if (pauseUntil > now) {
-				return null;
-			} else {
-				_pauseUntil = 0;
-			}
-		}
-		
-		HttpRequest request = HttpRequest.newBuilder()
-				.uri(URI.create("https://mailcheck.p.rapidapi.com/?domain=" + URLEncoder.encode(domainName, StandardCharsets.UTF_8)))
-				.header("X-RapidAPI-Key", _apiKey)
-				.header("X-RapidAPI-Host", "mailcheck.p.rapidapi.com")
-				.method("GET", HttpRequest.BodyPublishers.noBody())
-				.build();
-		HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-		
-		OptionalLong cntRemaining = response.headers().firstValueAsLong("x-ratelimit-requests-remaining");
-		if (response.statusCode() != HttpServletResponse.SC_OK) {
-			LOG.warn("Failed to check e-mail domain '" + domainName + "': " + response);
-			
-			// Check limits.
-			// "x-ratelimit-requests-remaining": "995"
-			// "x-ratelimit-requests-reset": "2494052"
-			if (cntRemaining.isPresent()) {
-				long cnt = cntRemaining.getAsLong();
-				if (cnt == 0) {
-					OptionalLong secondsDelay = response.headers().firstValueAsLong("x-ratelimit-requests-reset");
-					if (secondsDelay.isPresent()) {
-						long seconds = secondsDelay.getAsLong();
-						_pauseUntil = System.currentTimeMillis() + seconds * 1000;
-						
-						LOG.warn("Quota exceeded, pausing for " + seconds + " seconds.");
-					}
-				}
-			}
-			
-			return null;
-		}
-		
-		RapidAPIResult result = RapidAPIResult.readRapidAPIResult(new JsonReader(new ReaderAdapter(new StringReader(response.body()))));
-		
-		LOG.info("Checked new e-mail domain '" + domainName + "' (quota left " + cntRemaining.orElse(-1) + "): " + (result.isDisposable() ? "DISPOSABLE": "OK"));
-		
-		return result;
-	}
-
-	private void rememberResult(SqlSession tx, Domains domains, RapidAPIResult result) {
-		// 2024-02-07T17:09:29+01:00
-		String lastChangedString = result.getLastChanged();
-		
-		long lastChangedMillis;
-		DateFormat fmt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
+	private void persistResult(SqlSession tx, Domains domains, DomainCheck result) {
 		try {
-			Date lastChanged = fmt.parse(result.getLastChanged());
-			lastChangedMillis = lastChanged.getTime();
-		} catch (ParseException e) {
-			LOG.error("Failed to parse lastChanged result: " + lastChangedString);
-			lastChangedMillis = 0;
-		}
-		
-		try {
-			domains.insertDomain(result.getDomainName(), result.isDisposable(), lastChangedMillis, 1, result.getMxHost(), result.getMxIP());
+			domains.insertDomain(result.getDomainName(), result.isDisposable(), result.getLastChanged(),
+					result.getSourceSystem(), result.getMxHost(), result.getMxIP());
 			tx.commit();
 		} catch (Exception ex) {
-			LOG.error("Failed to remember e-mail domain check result: " + result, ex);
+			LOG.error("Failed to persist e-mail domain check result: " + result, ex);
 		}
 	}
 
