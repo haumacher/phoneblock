@@ -175,6 +175,12 @@ public class MailCheckCLI {
 			} else {
 				System.out.println("OK — " + domain + " is not disposable (source: " + check.getSourceSystem() + ")");
 			}
+			if (check.getMxHost() != null) {
+				System.out.println("  MX host: " + check.getMxHost());
+			}
+			if (check.getMxIP() != null) {
+				System.out.println("  MX IP:   " + check.getMxIP());
+			}
 		} else {
 			System.out.println("UNKNOWN — " + domain + " is not in the database.");
 		}

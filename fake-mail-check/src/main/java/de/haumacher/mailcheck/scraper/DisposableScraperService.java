@@ -18,6 +18,8 @@ import org.slf4j.LoggerFactory;
 
 import de.haumacher.mailcheck.EmailNormalizer;
 import de.haumacher.mailcheck.db.Domains;
+import de.haumacher.mailcheck.dns.MxLookup;
+import de.haumacher.mailcheck.dns.MxResult;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 
@@ -133,7 +135,8 @@ public class DisposableScraperService implements ServletContextListener {
 					continue;
 				}
 
-				domainMapper.insertDomain(domain, true, now, scraper.getId(), null, null);
+				MxResult mx = MxLookup.lookup(domain);
+				domainMapper.insertDomain(domain, true, now, scraper.getId(), mx.mxHost(), mx.mxIp());
 				added++;
 			}
 
