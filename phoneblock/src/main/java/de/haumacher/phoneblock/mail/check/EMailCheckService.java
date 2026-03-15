@@ -111,7 +111,7 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 			}
 
 			for (DomainCheckProvider provider : _providers) {
-				DomainCheck result = provider.checkDomain(domainName);
+				DomainCheck result = provider.checkEmail(address);
 				if (result != null) {
 					persistResult(tx, domains, result);
 					return result.isDisposable();

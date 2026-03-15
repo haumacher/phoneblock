@@ -66,7 +66,8 @@ public class RapidAPIProvider implements DomainCheckProvider {
 	}
 
 	@Override
-	public DomainCheck checkDomain(String domainName) {
+	public DomainCheck checkEmail(String email) {
+		String domainName = extractDomain(email);
 		try {
 			RapidAPIResult result = callCheckService(domainName);
 			if (result == null) {
@@ -124,6 +125,12 @@ public class RapidAPIProvider implements DomainCheckProvider {
 				result.isDisposable() ? "DISPOSABLE" : "OK");
 
 		return result;
+	}
+
+	private static String extractDomain(String email) {
+		int domainSep = email.indexOf('@');
+		String domain = (domainSep >= 0) ? email.substring(domainSep + 1) : email;
+		return domain.toLowerCase();
 	}
 
 	/**
