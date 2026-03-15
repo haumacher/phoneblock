@@ -20,6 +20,7 @@ module de.haumacher.mailcheck {
 	requires transitive org.slf4j;
 	requires java.naming;
 	requires java.net.http;
+	requires org.dnsjava;
 	requires java.sql;
 	requires com.h2database;
 }

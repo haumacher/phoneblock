@@ -3,20 +3,17 @@
  */
 package de.haumacher.mailcheck.dns;
 
-import java.net.InetAddress;
-import java.util.Hashtable;
-
-import javax.naming.NamingEnumeration;
-import javax.naming.directory.Attribute;
-import javax.naming.directory.Attributes;
-import javax.naming.directory.DirContext;
-import javax.naming.directory.InitialDirContext;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xbill.DNS.ARecord;
+import org.xbill.DNS.DClass;
+import org.xbill.DNS.Lookup;
+import org.xbill.DNS.MXRecord;
+import org.xbill.DNS.Record;
+import org.xbill.DNS.Type;
 
 /**
- * Utility for resolving the MX (mail exchanger) record of a domain.
+ * Utility for resolving the MX (mail exchanger) record of a domain using dnsjava.
  */
 public class MxLookup {
 
@@ -32,67 +29,39 @@ public class MxLookup {
 	 */
 	public static MxResult lookup(String domain) {
 		try {
-			Hashtable<String, String> env = new Hashtable<>();
-			env.put("java.naming.factory.initial", "com.sun.jndi.dns.DnsContextFactory");
-			DirContext ctx = new InitialDirContext(env);
-
-			try {
-				Attributes attrs = ctx.getAttributes(domain, new String[] { "MX" });
-				Attribute mxAttr = attrs.get("MX");
-
-				if (mxAttr == null || mxAttr.size() == 0) {
-					LOG.debug("No MX record found for domain: {}", domain);
-					return EMPTY;
-				}
-
-				// Find the MX record with the lowest priority.
-				String bestHost = null;
-				int bestPriority = Integer.MAX_VALUE;
-
-				NamingEnumeration<?> values = mxAttr.getAll();
-				while (values.hasMore()) {
-					String record = (String) values.next();
-					// MX record format: "priority hostname."
-					String[] parts = record.trim().split("\\s+", 2);
-					if (parts.length < 2) {
-						continue;
-					}
-
-					int priority;
-					try {
-						priority = Integer.parseInt(parts[0]);
-					} catch (NumberFormatException e) {
-						continue;
-					}
-
-					if (priority < bestPriority) {
-						bestPriority = priority;
-						bestHost = parts[1];
-					}
-				}
-
-				if (bestHost == null) {
-					return EMPTY;
-				}
-
-				// Strip trailing dot.
-				if (bestHost.endsWith(".")) {
-					bestHost = bestHost.substring(0, bestHost.length() - 1);
-				}
-
-				// Resolve MX host IP.
-				String mxIp;
-				try {
-					mxIp = InetAddress.getByName(bestHost).getHostAddress();
-				} catch (Exception e) {
-					LOG.debug("Failed to resolve IP for MX host '{}': {}", bestHost, e.getMessage());
-					mxIp = null;
-				}
-
-				return new MxResult(bestHost, mxIp);
-			} finally {
-				ctx.close();
+			Record[] mxRecords = new Lookup(domain, Type.MX, DClass.IN).run();
+			if (mxRecords == null || mxRecords.length == 0) {
+				LOG.debug("No MX record found for domain: {}", domain);
+				return EMPTY;
 			}
+
+			// Find the MX record with the lowest priority.
+			MXRecord best = null;
+			for (Record record : mxRecords) {
+				MXRecord mx = (MXRecord) record;
+				if (best == null || mx.getPriority() < best.getPriority()) {
+					best = mx;
+				}
+			}
+
+			String mxHost = best.getTarget().toString(true);
+			if (".".equals(mxHost)) {
+				// Domain explicitly declares no mail service.
+				return EMPTY;
+			}
+
+			// Resolve MX host to IP address.
+			String mxIp = null;
+			try {
+				Record[] aRecords = new Lookup(mxHost, Type.A, DClass.IN).run();
+				if (aRecords != null && aRecords.length > 0) {
+					mxIp = ((ARecord) aRecords[0]).getAddress().getHostAddress();
+				}
+			} catch (Exception e) {
+				LOG.debug("Failed to resolve IP for MX host '{}': {}", mxHost, e.getMessage());
+			}
+
+			return new MxResult(mxHost, mxIp);
 		} catch (Exception e) {
 			LOG.debug("MX lookup failed for domain '{}': {}", domain, e.getMessage());
 			return EMPTY;
