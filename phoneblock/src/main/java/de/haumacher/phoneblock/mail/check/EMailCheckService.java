@@ -121,6 +121,9 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 						return result.isDisposable();
 					}
 				}
+				
+				// Public E-Mail provider, but not a known disposable address.
+				return false;
 			}
 
 			// Step 2: Domain-level check
