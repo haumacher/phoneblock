@@ -137,6 +137,7 @@ public class DisposableScraperService implements ServletContextListener {
 
 				MxResult mx = MxLookup.lookup(domain);
 				domainMapper.insertDomain(domain, true, now, scraper.getId(), mx.mxHost(), mx.mxIp());
+				LOG.info("New domain: {} (MX: {}, IP: {})", domain, mx.mxHost(), mx.mxIp());
 				added++;
 			}
 
