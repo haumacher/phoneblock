@@ -423,19 +423,27 @@ Configuration for monitoring IMAP mailbox for donation notifications (PayPal ema
 **System Property Prefix:** N/A
 **Source:** `EMailCheckService.java`
 
-Configuration for checking disposable email addresses using RapidAPI's mailcheck service.
+Configuration for checking disposable email addresses. Providers are loaded dynamically via `mailcheck/providers` and each provider reads its own configuration from JNDI.
 
 ### Properties
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
-| `mailcheck/apiKey` | String | Optional | RapidAPI key for mailcheck service |
+| `mailcheck/providers` | String | Optional | Comma-separated list of fully qualified `DomainCheckProvider` class names to load |
+| `mailcheck/apiKey` | String | Optional | RapidAPI key (used by `RapidAPIProvider`) |
+
+### Available Providers
+
+| Class | Required JNDI Properties | Description |
+|-------|--------------------------|-------------|
+| `de.haumacher.phoneblock.mail.check.provider.rapidapi.RapidAPIProvider` | `mailcheck/apiKey` | Queries the RapidAPI mailcheck service |
 
 ### Example Configuration
 
 **Tomcat context.xml:**
 ```xml
 <Context>
+  <Environment name="mailcheck/providers" value="de.haumacher.phoneblock.mail.check.provider.rapidapi.RapidAPIProvider" type="java.lang.String"/>
   <Environment name="mailcheck/apiKey" value="your-rapidapi-key" type="java.lang.String"/>
 </Context>
 ```
@@ -627,6 +635,7 @@ Here's a complete example Tomcat `context.xml` file with common production setti
   <!-- <Environment name="answerbot/configfile" value="/etc/phoneblock/answerbot.conf" type="java.lang.String"/> -->
 
   <!-- Mail Checker -->
+  <!-- <Environment name="mailcheck/providers" value="de.haumacher.phoneblock.mail.check.provider.rapidapi.RapidAPIProvider" type="java.lang.String"/> -->
   <!-- <Environment name="mailcheck/apiKey" value="rapidapi-key" type="java.lang.String"/> -->
 
   <!-- IMAP Donations -->

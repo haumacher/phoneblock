@@ -1,5 +1,6 @@
 package de.haumacher.phoneblock.mail.check;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +16,6 @@ import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.mail.check.db.DBDomainCheck;
 import de.haumacher.phoneblock.mail.check.db.Domains;
 import de.haumacher.phoneblock.mail.check.model.DomainCheck;
-import de.haumacher.phoneblock.mail.check.provider.rapidapi.RapidAPIProvider;
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.servlet.ServletContextEvent;
@@ -57,18 +57,32 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 			InitialContext initCtx = new InitialContext();
 			Context envCtx = (Context) initCtx.lookup("java:comp/env");
 
-			Object value = envCtx.lookup("mailcheck/apiKey");
-			if (value == null) {
-				LOG.info("No API key found in JNDI configuration.");
-			} else {
-				_providers.add(new RapidAPIProvider(value.toString()));
-				LOG.info("Using RapidAPI provider for e-mail domain checks.");
+			Object value = envCtx.lookup("mailcheck/providers");
+			if (value != null) {
+				for (String className : value.toString().split("\\s*,\\s*")) {
+					if (className.isEmpty()) {
+						continue;
+					}
+					loadProvider(envCtx, className);
+				}
 			}
 		} catch (NamingException ex) {
-			LOG.info("Not using JNDI configuration: " + ex.getMessage());
+			LOG.info("No mailcheck providers configured: " + ex.getMessage());
 		}
 
 		INSTANCE = this;
+	}
+
+	private void loadProvider(Context envCtx, String className) {
+		try {
+			Class<?> clazz = Class.forName(className);
+			Constructor<?> ctor = clazz.getConstructor(Context.class);
+			DomainCheckProvider provider = (DomainCheckProvider) ctor.newInstance(envCtx);
+			_providers.add(provider);
+			LOG.info("Loaded domain check provider: {}", className);
+		} catch (Exception ex) {
+			LOG.warn("Failed to load domain check provider '{}': {}", className, ex.getMessage());
+		}
 	}
 
 	@Override

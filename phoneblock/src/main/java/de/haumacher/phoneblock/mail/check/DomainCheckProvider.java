@@ -1,5 +1,7 @@
 package de.haumacher.phoneblock.mail.check;
 
+import javax.naming.Context;
+
 import de.haumacher.phoneblock.mail.check.model.DomainCheck;
 
 /**
@@ -8,6 +10,12 @@ import de.haumacher.phoneblock.mail.check.model.DomainCheck;
  * <p>
  * Multiple providers can be chained in the {@link EMailCheckService} orchestrator.
  * The first provider returning a non-{@code null} result wins.
+ * </p>
+ *
+ * <p>
+ * Implementations must provide a public constructor taking a {@link Context} parameter
+ * to read their own configuration from JNDI. The constructor should throw an exception
+ * if required configuration is missing.
  * </p>
  */
 public interface DomainCheckProvider {

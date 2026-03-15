@@ -14,6 +14,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.OptionalLong;
 
+import javax.naming.Context;
+import javax.naming.NamingException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +30,10 @@ import jakarta.servlet.http.HttpServletResponse;
 /**
  * {@link DomainCheckProvider} that queries the RapidAPI mailcheck service.
  *
+ * <p>
+ * Requires the JNDI property {@code mailcheck/apiKey} to be set.
+ * </p>
+ *
  * @see <a href="https://mailcheck.p.rapidapi.com/">RapidAPI Mailcheck</a>
  */
 public class RapidAPIProvider implements DomainCheckProvider {
@@ -37,6 +44,23 @@ public class RapidAPIProvider implements DomainCheckProvider {
 
 	volatile private long _pauseUntil;
 
+	/**
+	 * Creates a {@link RapidAPIProvider} reading its configuration from JNDI.
+	 *
+	 * @param envCtx The JNDI environment context ({@code java:comp/env}).
+	 * @throws NamingException If the required {@code mailcheck/apiKey} property is not configured.
+	 */
+	public RapidAPIProvider(Context envCtx) throws NamingException {
+		Object value = envCtx.lookup("mailcheck/apiKey");
+		if (value == null) {
+			throw new NamingException("No 'mailcheck/apiKey' configured for RapidAPI provider.");
+		}
+		_apiKey = value.toString();
+	}
+
+	/**
+	 * Creates a {@link RapidAPIProvider} with an explicit API key (e.g. for testing).
+	 */
 	public RapidAPIProvider(String apiKey) {
 		_apiKey = apiKey;
 	}
