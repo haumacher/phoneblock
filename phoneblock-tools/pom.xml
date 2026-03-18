@@ -8,29 +8,29 @@
 		<dependency>
 		    <groupId>org.apache.poi</groupId>
 		    <artifactId>poi</artifactId>
-		    <version>5.4.1</version>
+		    <version>5.5.1</version>
 		</dependency>
 
 		<dependency>
 		    <groupId>org.apache.poi</groupId>
 		    <artifactId>poi-ooxml</artifactId>
-		    <version>5.4.1</version>
+		    <version>5.5.1</version>
 		</dependency>
 
 		<dependency>
 		    <groupId>com.opencsv</groupId>
 		    <artifactId>opencsv</artifactId>
-		    <version>5.9</version>
+		    <version>5.12.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.jsoup</groupId>
 			<artifactId>jsoup</artifactId>
-			<version>1.18.1</version>
+			<version>1.22.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter</artifactId>
-			<version>5.11.4</version>
+			<version>6.0.3</version>
 			<scope>test</scope>
 		</dependency>
   </dependencies>  
@@ -40,15 +40,15 @@
 		<plugin>
 		  <groupId>org.apache.maven.plugins</groupId>
 		  <artifactId>maven-resources-plugin</artifactId>
-		  <version>3.3.0</version>
+		  <version>3.5.0</version>
 		</plugin>
 		
 		<plugin>
 			<groupId>org.apache.maven.plugins</groupId>
 			<artifactId>maven-compiler-plugin</artifactId>
-			<version>3.10.1</version>
+			<version>3.15.0</version>
 			<configuration>
-	            <release>17</release>
+	            <release>25</release>
 				<fork>true</fork>
 			</configuration>
 		</plugin>
