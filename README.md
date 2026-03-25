@@ -22,7 +22,7 @@ Sobald eine Nummer zu der Sperrliste hinzugefügt wird, weist entweder deine FRI
 Das Telefon bleibt stumm.
 
 Solltest du trotzdem einen unerwünschten Anruf erhalten, weil die Nummer noch nicht in der Sperrliste ist, kannst du die Nummer ganz einfach melden und damit die Sperrliste ergänzen. 
-Einen unerwünschten Anrufer meldest Du, indem Du entweder einen neuen Kontakt im PhoneBlock-Adressbuch deiner FRITZ!Box erstellst, die Nummer über die App PhoneBlock Mobile als SPAM markierst, oder die Nummer auf der [PhoneBlock-Wenseite](https://phoneblock.net) suchst und negativ bewertest. 
+Einen unerwünschten Anrufer meldest Du, indem Du entweder einen neuen Kontakt im PhoneBlock-Adressbuch deiner FRITZ!Box erstellst, die Nummer über die App PhoneBlock Mobile als SPAM markierst, oder die Nummer auf der [PhoneBlock-Webseite](https://phoneblock.net) suchst und negativ bewertest. 
 Sobald du dies getan hast, werden Anrufe von dieser neuen Nummer bei Dir und allen anderen Mitgliedern der PhoneBlock-Community sofort abgewiesen.
 
 ## Was sind die Voraussetzungen?
