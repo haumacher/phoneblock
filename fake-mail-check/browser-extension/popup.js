@@ -14,9 +14,8 @@ const logEl = document.getElementById('log');
 
 const requestCountEl = document.getElementById('requestCount');
 const emailCountEl = document.getElementById('emailCount');
-const gmailCountEl = document.getElementById('gmailCount');
-const msCountEl = document.getElementById('msCount');
 const domainCountEl = document.getElementById('domainCount');
+const typeCountsEl = document.getElementById('typeCounts');
 
 startBtn.addEventListener('click', start);
 stopBtn.addEventListener('click', stop);
@@ -104,9 +103,8 @@ async function clear() {
   }
   requestCountEl.textContent = '0';
   emailCountEl.textContent = '0';
-  gmailCountEl.textContent = '0';
-  msCountEl.textContent = '0';
   domainCountEl.textContent = '0';
+  typeCountsEl.textContent = '';
   logEl.innerHTML = '';
   downloadBtn.disabled = true;
   setRunningUI(false);
@@ -125,16 +123,20 @@ function updateCountsFromCollected(collected) {
   emailCountEl.textContent = entries.length;
   downloadBtn.disabled = entries.length === 0;
 
-  let gmail = 0, ms = 0;
   const domains = new Set();
+  const categories = {};  // label -> count
   for (const e of entries) {
-    if (e.type === 'gmail') gmail++;
-    else if (e.type === 'microsoft') ms++;
     domains.add(e.domain);
+    const cat = getEmailCategory(e.email) || 'Other';
+    categories[cat] = (categories[cat] || 0) + 1;
   }
-  gmailCountEl.textContent = gmail;
-  msCountEl.textContent = ms;
   domainCountEl.textContent = domains.size;
+
+  // Render provider counts dynamically.
+  const parts = Object.entries(categories)
+    .sort(([, a], [, b]) => b - a)
+    .map(([label, count]) => `${label}: <span class="count">${count}</span>`);
+  typeCountsEl.innerHTML = parts.join(' | ');
 }
 
 function addLog(text, cssClass) {

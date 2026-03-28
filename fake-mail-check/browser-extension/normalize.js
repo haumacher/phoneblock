@@ -69,3 +69,29 @@ function normalizeEmail(email) {
 
   return localPart.toLowerCase() + '@' + rule.canonicalDomain;
 }
+
+/**
+ * Returns the canonical provider name for an e-mail address, or null
+ * if the domain is not a known public provider.
+ *
+ * @param {string} email Normalized or raw e-mail address.
+ * @returns {string|null} Provider label (e.g. "Gmail", "Outlook") or null.
+ */
+function getEmailCategory(email) {
+  if (!email) return null;
+  const atIndex = email.indexOf('@');
+  if (atIndex < 0) return null;
+  const domain = email.substring(atIndex + 1).toLowerCase();
+  const rule = EMAIL_RULES[domain];
+  if (!rule) return null;
+  return CANONICAL_LABELS[rule.canonicalDomain] || rule.canonicalDomain;
+}
+
+/** Human-readable labels for canonical domains. */
+const CANONICAL_LABELS = {
+  'gmail.com':   'Gmail',
+  'outlook.com': 'Outlook',
+  'yahoo.com':   'Yahoo',
+  'icloud.com':  'iCloud',
+  'proton.me':   'Proton',
+};
