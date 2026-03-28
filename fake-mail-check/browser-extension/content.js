@@ -73,13 +73,6 @@ async function harvestLoop() {
   const state = await loadState();
   const result = await harvestOne(state.collected, state.requestCount);
 
-  // Notify popup if it's listening.
-  try {
-    chrome.runtime.sendMessage({ type: 'update', ...result });
-  } catch (e) {
-    // Popup not open — that's fine.
-  }
-
   if (running) {
     const delay = result.error ? 10000 : 2000 + Math.random() * 3000;
     timerId = setTimeout(harvestLoop, delay);

@@ -23,22 +23,35 @@ stopBtn.addEventListener('click', stop);
 downloadBtn.addEventListener('click', download);
 clearBtn.addEventListener('click', clear);
 
-// Listen for live updates from content script.
-chrome.runtime.onMessage.addListener((msg) => {
-  if (msg.type === 'update') {
-    requestCountEl.textContent = msg.requestCount;
+// Listen for storage changes — reliable live updates without message routing.
+let lastEmailCount = 0;
+chrome.storage.onChanged.addListener((changes, area) => {
+  if (area !== 'local') return;
 
-    if (msg.error) {
-      addLog('Error: ' + msg.error, 'error');
-    } else if (msg.email) {
-      if (msg.isNew) {
-        addLog(msg.email, 'log-' + msg.type);
-      } else {
-        addLog(msg.email + ' (dup)', 'log-skip');
+  if (changes.requestCount) {
+    requestCountEl.textContent = changes.requestCount.newValue || 0;
+  }
+
+  if (changes.collected) {
+    const collected = changes.collected.newValue || {};
+    updateCountsFromCollected(collected);
+
+    // Log new entries by comparing counts.
+    const entries = Object.values(collected);
+    const newCount = entries.length;
+    if (newCount > lastEmailCount) {
+      // Show the newest entries (sorted by firstSeen desc).
+      const sorted = entries.sort((a, b) => b.firstSeen.localeCompare(a.firstSeen));
+      const added = sorted.slice(0, newCount - lastEmailCount);
+      for (const e of added.reverse()) {
+        addLog(e.email, 'log-' + e.type);
       }
     }
+    lastEmailCount = newCount;
+  }
 
-    updateCountsFromCollected(msg.collected);
+  if (changes.running) {
+    setRunningUI(changes.running.newValue);
   }
 });
 
@@ -165,6 +178,9 @@ async function download() {
     requestCountEl.textContent = state.requestCount;
     updateCountsFromCollected(state.collected);
     setRunningUI(state.running);
+
+    // Initialize count so storage listener only logs truly new entries.
+    lastEmailCount = Object.keys(state.collected).length;
 
     // Show recent entries in log.
     const entries = Object.values(state.collected);
