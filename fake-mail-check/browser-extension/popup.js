@@ -125,15 +125,16 @@ function updateCountsFromCollected(collected) {
   emailCountEl.textContent = entries.length;
   downloadBtn.disabled = entries.length === 0;
 
-  let gmail = 0, ms = 0, domain = 0;
+  let gmail = 0, ms = 0;
+  const domains = new Set();
   for (const e of entries) {
     if (e.type === 'gmail') gmail++;
     else if (e.type === 'microsoft') ms++;
-    else domain++;
+    domains.add(e.domain);
   }
   gmailCountEl.textContent = gmail;
   msCountEl.textContent = ms;
-  domainCountEl.textContent = domain;
+  domainCountEl.textContent = domains.size;
 }
 
 function addLog(text, cssClass) {
