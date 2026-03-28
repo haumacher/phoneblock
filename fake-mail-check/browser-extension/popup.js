@@ -127,10 +127,17 @@ function updateCountsFromCollected(collected) {
   const categories = {};  // label -> count
   for (const e of entries) {
     domains.add(e.domain);
-    const cat = getEmailCategory(e.email) || 'Other';
-    categories[cat] = (categories[cat] || 0) + 1;
+    const cat = getEmailCategory(e.email);
+    if (cat) {
+      categories[cat] = (categories[cat] || 0) + 1;
+    }
   }
+
+  // Unique = domains + known-provider emails.
+  const knownTotal = Object.values(categories).reduce((s, n) => s + n, 0);
+  emailCountEl.textContent = domains.size + knownTotal;
   domainCountEl.textContent = domains.size;
+  downloadBtn.disabled = entries.length === 0;
 
   // Render provider counts dynamically.
   const parts = Object.entries(categories)
