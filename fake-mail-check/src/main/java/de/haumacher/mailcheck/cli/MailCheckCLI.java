@@ -3,11 +3,15 @@
  */
 package de.haumacher.mailcheck.cli;
 
+import java.io.IOException;
+import java.io.Reader;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -16,10 +20,15 @@ import org.apache.ibatis.session.SqlSession;
 import de.haumacher.mailcheck.DisposableListService;
 import de.haumacher.mailcheck.EmailNormalizer;
 import de.haumacher.mailcheck.PropertyStore;
+import de.haumacher.mailcheck.cli.model.HarvestedEmail;
 import de.haumacher.mailcheck.db.DBDomainCheck;
 import de.haumacher.mailcheck.db.DBEmailCheck;
 import de.haumacher.mailcheck.db.Domains;
+import de.haumacher.mailcheck.dns.MxLookup;
+import de.haumacher.mailcheck.dns.MxResult;
 import de.haumacher.mailcheck.scraper.DisposableScraperService;
+import de.haumacher.msgbuf.json.JsonReader;
+import de.haumacher.msgbuf.server.io.ReaderAdapter;
 
 /**
  * Command-line interface for the fake-mail-check module.
@@ -31,11 +40,12 @@ import de.haumacher.mailcheck.scraper.DisposableScraperService;
  *   --db &lt;path&gt;    H2 database path (default: ./mailcheck)
  *
  * Commands:
- *   init                     Initialize/upgrade the database schema
- *   import-list              Download and import the GitHub disposable domain list
- *   scrape                   Run all web scrapers for disposable domains
- *   check &lt;email-or-domain&gt;  Check if an email/domain is disposable
- *   stats                    Show database statistics
+ *   init                          Initialize/upgrade the database schema
+ *   import-list                   Download and import the GitHub disposable domain list
+ *   scrape                        Run all web scrapers for disposable domains
+ *   import-emails &lt;file.json&gt;     Import harvested emails from browser extension JSON export
+ *   check &lt;email-or-domain&gt;       Check if an email/domain is disposable
+ *   stats                         Show database statistics
  * </pre>
  */
 public class MailCheckCLI {
@@ -82,6 +92,14 @@ public class MailCheckCLI {
 				break;
 			case "scrape":
 				runScrape(dbPath);
+				break;
+			case "import-emails":
+				if (checkArg == null) {
+					System.err.println("Missing argument for 'import-emails' command.");
+					printUsage();
+					System.exit(1);
+				}
+				runImportEmails(dbPath, checkArg);
 				break;
 			case "check":
 				if (checkArg == null) {
@@ -136,6 +154,70 @@ public class MailCheckCLI {
 
 			System.out.println("Scraping completed.");
 		}
+	}
+
+	private static void runImportEmails(String dbPath, String filePath) throws Exception {
+		Path file = Paths.get(filePath);
+		if (!Files.exists(file)) {
+			System.err.println("File not found: " + filePath);
+			System.exit(1);
+		}
+
+		List<HarvestedEmail> entries = new java.util.ArrayList<>();
+		try (Reader reader = Files.newBufferedReader(file)) {
+			JsonReader json = new JsonReader(new ReaderAdapter(reader));
+			json.beginArray();
+			while (json.hasNext()) {
+				entries.add(HarvestedEmail.readHarvestedEmail(json));
+			}
+			json.endArray();
+		}
+
+		System.out.println("Loaded " + entries.size() + " entries from " + file.getFileName());
+
+		long now = System.currentTimeMillis();
+		int emailsAdded = 0;
+		int domainsAdded = 0;
+		int skipped = 0;
+
+		try (MailCheckDB db = new MailCheckDB(dbPath)) {
+			try (SqlSession session = db.getSessionFactory().openSession()) {
+				Domains domains = session.getMapper(Domains.class);
+
+				for (HarvestedEmail entry : entries) {
+					String email = entry.getEmail();
+					String domain = entry.getDomain();
+					String source = entry.getSource();
+
+					// Insert domain if not yet known.
+					if (domains.checkDomain(domain) == null) {
+						MxResult mx = MxLookup.lookup(domain);
+						domains.insertDomain(domain, true, now, source, mx.mxHost(), mx.mxIp());
+						domainsAdded++;
+					}
+
+					// For known public providers, insert normalized email.
+					String normalized = EmailNormalizer.normalize(email);
+					if (normalized != null) {
+						if (domains.checkEmailAddress(normalized) == null) {
+							domains.insertEmailCheck(normalized, true, now, source);
+							emailsAdded++;
+						} else {
+							skipped++;
+						}
+					}
+
+					if ((emailsAdded + domainsAdded) % 100 == 0 && (emailsAdded + domainsAdded) > 0) {
+						session.commit();
+					}
+				}
+
+				session.commit();
+			}
+		}
+
+		System.out.println("Import complete: " + emailsAdded + " emails added, "
+			+ domainsAdded + " domains added, " + skipped + " duplicates skipped.");
 	}
 
 	private static void runCheck(String dbPath, String arg) throws Exception {
@@ -235,10 +317,11 @@ public class MailCheckCLI {
 		System.err.println("  --db <path>    H2 database path (default: ./mailcheck)");
 		System.err.println();
 		System.err.println("Commands:");
-		System.err.println("  init                     Initialize/upgrade the database schema");
-		System.err.println("  import-list              Download and import the GitHub disposable domain list");
-		System.err.println("  scrape                   Run all web scrapers for disposable domains");
-		System.err.println("  check <email-or-domain>  Check if an email/domain is disposable");
-		System.err.println("  stats                    Show database statistics");
+		System.err.println("  init                          Initialize/upgrade the database schema");
+		System.err.println("  import-list                   Download and import the GitHub disposable domain list");
+		System.err.println("  scrape                        Run all web scrapers for disposable domains");
+		System.err.println("  import-emails <file.json>     Import harvested emails from browser extension export");
+		System.err.println("  check <email-or-domain>       Check if an email/domain is disposable");
+		System.err.println("  stats                         Show database statistics");
 	}
 }

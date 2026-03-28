@@ -1,0 +1,42 @@
+package de.haumacher.mailcheck.cli.model;
+
+option NoInterfaces;
+option NoXml;
+option NoBinary;
+option NoReflection;
+option NoListener;
+
+/**
+ * A harvested e-mail address from a browser extension export.
+ *
+ * <pre>
+ * {
+ *   "email": "user@gmail.com",
+ *   "type": "gmail",
+ *   "domain": "googlemail.com",
+ *   "source": "22do",
+ *   "originalEmail": "u.s.e.r+tag@googlemail.com"
+ * }
+ * </pre>
+ */
+message HarvestedEmail {
+	/** The normalized e-mail address. */
+	@Name("email")
+	string email;
+
+	/** The type reported by the provider ({@code "gmail"}, {@code "microsoft"}, {@code "domain"}). */
+	@Name("type")
+	string type;
+
+	/** The domain as reported by the provider (before normalization). */
+	@Name("domain")
+	string domain;
+
+	/** Identifier of the provider that produced this entry. */
+	@Name("source")
+	string source;
+
+	/** The original (non-normalized) e-mail address, if different from {@link #email}. */
+	@Name("originalEmail")
+	string originalEmail;
+}
