@@ -1,1 +1,4 @@
 /target/
+*.mv.db
+*.trace.db
+mailcheck.properties

@@ -51,3 +51,19 @@ Weitere bekannte Provider:
   fakemail.net
   emailnator.com
   receivemail.com
+  
+Provider mit öffentlicher MX Infrastruktur
+
+  tmailor.com
+  fumail.co
+  tempmail.ninja
+  22.do
+  temporarymail.com
+  tempumail.com
+  tempmailxy.com
+  temp-mail.app
+  mail.chatgpt.org.uk
+  temp-mail.org.in
+  purplemail.neweymail.com
+  
+  
