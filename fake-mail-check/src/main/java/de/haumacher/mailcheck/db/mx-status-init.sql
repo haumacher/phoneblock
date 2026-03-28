@@ -1,3 +1,6 @@
+-- Normalize MX_HOST to lowercase in existing DOMAIN_CHECK data.
+UPDATE DOMAIN_CHECK SET MX_HOST = LOWER(MX_HOST) WHERE MX_HOST <> LOWER(MX_HOST);
+
 -- Initial population of MX_HOST_STATUS from existing DOMAIN_CHECK data.
 -- Idempotent: only inserts hosts/IPs not yet present.
 INSERT INTO MX_HOST_STATUS (MX_HOST, STATUS, LAST_UPDATED)
