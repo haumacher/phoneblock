@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      width: 320px;
+      padding: 12px;
+      font-family: system-ui, sans-serif;
+      font-size: 13px;
+    }
+    h3 { margin: 0 0 8px; }
+    .stats {
+      background: #f5f5f5;
+      padding: 8px;
+      border-radius: 4px;
+      margin-bottom: 10px;
+      font-variant-numeric: tabular-nums;
+    }
+    .stats div { margin: 2px 0; }
+    .count { font-weight: bold; }
+    button {
+      padding: 6px 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-right: 4px;
+      font-size: 13px;
+    }
+    #startBtn { background: #4caf50; color: white; border-color: #4caf50; }
+    #startBtn:hover { background: #43a047; }
+    #stopBtn { background: #f44336; color: white; border-color: #f44336; }
+    #stopBtn:hover { background: #e53935; }
+    #stopBtn:disabled, #downloadBtn:disabled { opacity: 0.5; cursor: default; }
+    #downloadBtn { background: #2196f3; color: white; border-color: #2196f3; }
+    #downloadBtn:hover { background: #1e88e5; }
+    #status { margin-top: 8px; font-style: italic; color: #666; }
+    .error { color: #d32f2f; }
+    #log {
+      margin-top: 8px;
+      max-height: 150px;
+      overflow-y: auto;
+      font-size: 11px;
+      font-family: monospace;
+      background: #fafafa;
+      padding: 6px;
+      border-radius: 4px;
+      border: 1px solid #eee;
+    }
+    #log div { margin: 1px 0; }
+    .log-gmail { color: #d93025; }
+    .log-microsoft { color: #0078d4; }
+    .log-domain { color: #1e8e3e; }
+    .log-skip { color: #999; }
+  </style>
+</head>
+<body>
+  <h3>Fake Mail Harvester</h3>
+  <div class="stats">
+    <div>Requests: <span class="count" id="requestCount">0</span></div>
+    <div>Unique emails: <span class="count" id="emailCount">0</span></div>
+    <div>Gmail: <span class="count" id="gmailCount">0</span> | Microsoft: <span class="count" id="msCount">0</span> | Domain: <span class="count" id="domainCount">0</span></div>
+  </div>
+  <div>
+    <button id="startBtn">Start</button>
+    <button id="stopBtn" disabled>Stop</button>
+    <button id="downloadBtn" disabled>Download JSON</button>
+  </div>
+  <div id="status"></div>
+  <div id="log"></div>
+  <script src="popup.js"></script>
+</body>
+</html>

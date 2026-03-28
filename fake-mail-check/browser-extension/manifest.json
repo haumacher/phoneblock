@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "Fake Mail Harvester",
+  "version": "1.0",
+  "description": "Collects disposable email addresses from temporary mail providers for the PhoneBlock fake-mail-check database.",
+  "permissions": ["activeTab"],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://22.do/*"],
+      "js": ["content.js"]
+    }
+  ]
+}
