@@ -145,7 +145,7 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 			// No MX record → domain cannot receive mail → invalid.
 			if (mx.mxHost() == null) {
 				long now = System.currentTimeMillis();
-				domains.insertDomain(domainName, DomainStatus.INVALID.name().toLowerCase(), now, "mx-lookup", "-", null);
+				domains.insertDomain(domainName, DomainStatus.INVALID.protocolName(), now, "mx-lookup", "-", null);
 				tx.commit();
 				LOG.info("No MX record for '{}' — classified as invalid.", domainName);
 				return true;
@@ -155,7 +155,7 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 			DomainStatus mxVerdict = checkMxStatus(domains, mx);
 			if (mxVerdict != null) {
 				long now = System.currentTimeMillis();
-				domains.insertDomain(domainName, mxVerdict.name().toLowerCase(), now, "mx-lookup", mx.mxHost(), mx.mxIp());
+				domains.insertDomain(domainName, mxVerdict.protocolName(), now, "mx-lookup", mx.mxHost(), mx.mxIp());
 				tx.commit();
 				LOG.info("MX-based classification for '{}': {} (MX: {})", domainName, mxVerdict, mx.mxHost());
 				return mxVerdict == DomainStatus.DISPOSABLE;
@@ -228,7 +228,7 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 			if (mx.mxHost() != null) {
 				DBMxStatus existing = domains.checkMxHost(mx.mxHost());
 				if (existing == null) {
-					domains.insertMxHost(mx.mxHost(), disposable ? DBMxStatus.DISPOSABLE : DBMxStatus.SAFE, now);
+					domains.insertMxHost(mx.mxHost(), DBMxStatus.statusFor(disposable), now);
 				} else {
 					String merged = DBMxStatus.mergeStatus(existing.getStatus(), disposable);
 					if (!merged.equals(existing.getStatus())) {
@@ -240,7 +240,7 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 			if (mx.mxIp() != null) {
 				DBMxStatus existing = domains.checkMxIp(mx.mxIp());
 				if (existing == null) {
-					domains.insertMxIp(mx.mxIp(), disposable ? DBMxStatus.DISPOSABLE : DBMxStatus.SAFE, now);
+					domains.insertMxIp(mx.mxIp(), DBMxStatus.statusFor(disposable), now);
 				} else {
 					String merged = DBMxStatus.mergeStatus(existing.getStatus(), disposable);
 					if (!merged.equals(existing.getStatus())) {
@@ -257,7 +257,7 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 
 	private void persistResult(SqlSession tx, Domains domains, DomainCheck result) {
 		try {
-			domains.insertDomain(result.getDomainName(), result.getStatus().name().toLowerCase(), result.getLastChanged(),
+			domains.insertDomain(result.getDomainName(), result.getStatus().protocolName(), result.getLastChanged(),
 					result.getSourceSystem(), result.getMxHost(), result.getMxIP());
 			tx.commit();
 		} catch (Exception ex) {

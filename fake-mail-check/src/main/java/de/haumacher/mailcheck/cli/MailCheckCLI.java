@@ -205,7 +205,7 @@ public class MailCheckCLI {
 		if (mx.mxHost() != null) {
 			DBMxStatus existing = domains.checkMxHost(mx.mxHost());
 			if (existing == null) {
-				domains.insertMxHost(mx.mxHost(), disposable ? DBMxStatus.DISPOSABLE : DBMxStatus.SAFE, now);
+				domains.insertMxHost(mx.mxHost(), DBMxStatus.statusFor(disposable), now);
 			} else {
 				String merged = DBMxStatus.mergeStatus(existing.getStatus(), disposable);
 				if (!merged.equals(existing.getStatus())) {
@@ -216,7 +216,7 @@ public class MailCheckCLI {
 		if (mx.mxIp() != null) {
 			DBMxStatus existing = domains.checkMxIp(mx.mxIp());
 			if (existing == null) {
-				domains.insertMxIp(mx.mxIp(), disposable ? DBMxStatus.DISPOSABLE : DBMxStatus.SAFE, now);
+				domains.insertMxIp(mx.mxIp(), DBMxStatus.statusFor(disposable), now);
 			} else {
 				String merged = DBMxStatus.mergeStatus(existing.getStatus(), disposable);
 				if (!merged.equals(existing.getStatus())) {
@@ -273,7 +273,7 @@ public class MailCheckCLI {
 						if (domains.checkDomain(domain) == null) {
 							MxResult mx = MxLookup.lookup(domain);
 							String mxHost = mx.mxHost() != null ? mx.mxHost() : "-";
-							domains.insertDomain(domain, "disposable", now, source, mxHost, mx.mxIp());
+							domains.insertDomain(domain, DomainStatus.DISPOSABLE.protocolName(), now, source, mxHost, mx.mxIp());
 							domainsAdded++;
 						}
 					}

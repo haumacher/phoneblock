@@ -8,17 +8,17 @@ public enum DomainStatus implements de.haumacher.msgbuf.data.ProtocolEnum {
 	/**
 	 * Domain provides disposable/temporary e-mail addresses.
 	 */
-	DISPOSABLE("DISPOSABLE"),
+	DISPOSABLE("disposable"),
 
 	/**
 	 * Domain is a legitimate e-mail provider.
 	 */
-	SAFE("SAFE"),
+	SAFE("safe"),
 
 	/**
 	 * Domain has no valid MX record and cannot receive e-mail.
 	 */
-	INVALID("INVALID"),
+	INVALID("invalid"),
 
 	;
 
@@ -42,9 +42,9 @@ public enum DomainStatus implements de.haumacher.msgbuf.data.ProtocolEnum {
 	public static DomainStatus valueOfProtocol(String protocolName) {
 		if (protocolName == null) { return null; }
 		switch (protocolName) {
-			case "DISPOSABLE": return DISPOSABLE;
-			case "SAFE": return SAFE;
-			case "INVALID": return INVALID;
+			case "disposable": return DISPOSABLE;
+			case "safe": return SAFE;
+			case "invalid": return INVALID;
 		}
 		return DISPOSABLE;
 	}

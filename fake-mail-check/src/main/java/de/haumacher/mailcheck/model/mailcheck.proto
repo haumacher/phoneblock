@@ -9,12 +9,15 @@ option NoListener;
 /** Classification status of an e-mail domain. */
 enum DomainStatus {
 	/** Domain provides disposable/temporary e-mail addresses. */
+	@Name("disposable")
 	DISPOSABLE;
 
 	/** Domain is a legitimate e-mail provider. */
+	@Name("safe")
 	SAFE;
 
 	/** Domain has no valid MX record and cannot receive e-mail. */
+	@Name("invalid")
 	INVALID;
 }
 

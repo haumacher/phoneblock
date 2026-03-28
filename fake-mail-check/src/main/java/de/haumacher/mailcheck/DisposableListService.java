@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.haumacher.mailcheck.db.Domains;
+import de.haumacher.mailcheck.model.DomainStatus;
 import de.haumacher.mailcheck.dns.MxLookup;
 import de.haumacher.mailcheck.dns.MxResult;
 import jakarta.servlet.ServletContextEvent;
@@ -163,7 +164,7 @@ public class DisposableListService implements ServletContextListener {
 
 						MxResult mx = MxLookup.lookup(domain);
 						String mxHost = mx.mxHost() != null ? mx.mxHost() : "-";
-						domains.insertDomain(domain, "disposable", now, SOURCE_SYSTEM, mxHost, mx.mxIp());
+						domains.insertDomain(domain, DomainStatus.DISPOSABLE.protocolName(), now, SOURCE_SYSTEM, mxHost, mx.mxIp());
 						LOG.info("New domain: {} (MX: {}, IP: {})", domain, mx.mxHost(), mx.mxIp());
 						added++;
 

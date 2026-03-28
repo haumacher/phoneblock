@@ -3,16 +3,12 @@
  */
 package de.haumacher.mailcheck.db;
 
+import de.haumacher.mailcheck.model.DomainStatus;
+
 /**
  * POJO for the {@code MX_HOST_STATUS} and {@code MX_IP_STATUS} tables.
  */
 public class DBMxStatus {
-
-	/** MX host or IP is only associated with disposable domains. */
-	public static final String DISPOSABLE = "disposable";
-
-	/** MX host or IP is only associated with legitimate domains. */
-	public static final String SAFE = "safe";
 
 	/** MX host or IP is associated with both disposable and legitimate domains. */
 	public static final String MIXED = "mixed";
@@ -40,11 +36,11 @@ public class DBMxStatus {
 	}
 
 	public boolean isDisposable() {
-		return DISPOSABLE.equals(_status);
+		return DomainStatus.DISPOSABLE.protocolName().equals(_status);
 	}
 
 	public boolean isSafe() {
-		return SAFE.equals(_status);
+		return DomainStatus.SAFE.protocolName().equals(_status);
 	}
 
 	/**
@@ -53,10 +49,17 @@ public class DBMxStatus {
 	 * Otherwise, returns {@link #MIXED}.
 	 */
 	public static String mergeStatus(String existing, boolean disposable) {
-		String observed = disposable ? DISPOSABLE : SAFE;
+		String observed = statusFor(disposable);
 		if (existing.equals(observed)) {
 			return existing;
 		}
 		return MIXED;
+	}
+
+	/**
+	 * Returns the MX status string for the given disposable flag.
+	 */
+	public static String statusFor(boolean disposable) {
+		return disposable ? DomainStatus.DISPOSABLE.protocolName() : DomainStatus.SAFE.protocolName();
 	}
 }
