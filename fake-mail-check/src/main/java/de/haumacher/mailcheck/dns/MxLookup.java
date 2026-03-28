@@ -44,7 +44,7 @@ public class MxLookup {
 				}
 			}
 
-			String mxHost = best.getTarget().toString(true);
+			String mxHost = best.getTarget().toString(true).toLowerCase();
 			if (".".equals(mxHost)) {
 				// Domain explicitly declares no mail service.
 				return EMPTY;
