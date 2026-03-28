@@ -1,4 +1,4 @@
-package de.haumacher.phoneblock.mail.check.provider.usercheck.model;
+package de.haumacher.mailcheck.provider.usercheck.model;
 
 option NoInterfaces;
 option NoXml;

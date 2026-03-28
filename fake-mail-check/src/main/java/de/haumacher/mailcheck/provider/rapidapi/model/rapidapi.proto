@@ -1,4 +1,4 @@
-package de.haumacher.phoneblock.mail.check.provider.rapidapi.model;
+package de.haumacher.mailcheck.provider.rapidapi.model;
 
 option NoInterfaces;
 option NoXml;
