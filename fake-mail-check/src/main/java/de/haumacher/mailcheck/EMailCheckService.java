@@ -1,9 +1,6 @@
 package de.haumacher.mailcheck;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,8 +8,6 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.apache.ibatis.jdbc.ScriptRunner;
-import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.slf4j.Logger;
@@ -22,6 +17,7 @@ import de.haumacher.mailcheck.db.DBDomainCheck;
 import de.haumacher.mailcheck.db.DBEmailCheck;
 import de.haumacher.mailcheck.db.DBMxStatus;
 import de.haumacher.mailcheck.db.Domains;
+import de.haumacher.mailcheck.db.MailCheckSchema;
 import de.haumacher.mailcheck.dns.MxLookup;
 import de.haumacher.mailcheck.dns.MxResult;
 import de.haumacher.mailcheck.model.DomainCheck;
@@ -62,28 +58,7 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
-		Configuration cfg = _sessionFactory.getConfiguration();
-		if (!cfg.hasMapper(Domains.class)) {
-			cfg.addMapper(Domains.class);
-		}
-		try (SqlSession session = _sessionFactory.openSession()) {
-			ScriptRunner sr = new ScriptRunner(session.getConnection());
-			sr.setAutoCommit(true);
-			sr.setDelimiter(";");
-			try (InputStreamReader reader = new InputStreamReader(
-					Domains.class.getResourceAsStream("mail-check-schema.sql"), StandardCharsets.UTF_8)) {
-				sr.runScript(reader);
-			} catch (IOException ex) {
-				LOG.error("Failed to run mail-check schema setup.", ex);
-			}
-			// Populate MX status tables from existing data (idempotent).
-			try (InputStreamReader reader = new InputStreamReader(
-					Domains.class.getResourceAsStream("mx-status-init.sql"), StandardCharsets.UTF_8)) {
-				sr.runScript(reader);
-			} catch (IOException ex) {
-				LOG.error("Failed to run MX status init.", ex);
-			}
-		}
+		MailCheckSchema.initialize(_sessionFactory);
 
 		try {
 			InitialContext initCtx = new InitialContext();

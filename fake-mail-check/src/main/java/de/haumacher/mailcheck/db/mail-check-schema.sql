@@ -1,3 +1,13 @@
+-- Mail-check schema version 2.
+-- For fresh installs, this creates all tables at the current version.
+-- For upgrades, migrations are applied incrementally by MailCheckSchema.
+
+CREATE TABLE IF NOT EXISTS MAILCHECK_PROPERTIES (
+    NAME CHARACTER VARYING(255) NOT NULL,
+    VAL CHARACTER VARYING(1024) NOT NULL,
+    CONSTRAINT MAILCHECK_PROPERTIES_PK PRIMARY KEY (NAME)
+);
+
 CREATE TABLE IF NOT EXISTS DOMAIN_CHECK (
 	DOMAIN_NAME CHARACTER VARYING(255) NOT NULL,
 	DISPOSABLE BOOLEAN NOT NULL,

@@ -3,15 +3,10 @@
  */
 package de.haumacher.mailcheck.cli;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 
-import org.apache.ibatis.jdbc.ScriptRunner;
 import org.apache.ibatis.mapping.Environment;
 import org.apache.ibatis.session.Configuration;
-import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 import org.apache.ibatis.transaction.jdbc.JdbcTransactionFactory;
@@ -20,7 +15,7 @@ import org.h2.jdbcx.JdbcDataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.haumacher.mailcheck.db.Domains;
+import de.haumacher.mailcheck.db.MailCheckSchema;
 
 /**
  * Standalone H2 database connection manager for the mail-check CLI.
@@ -51,29 +46,10 @@ public class MailCheckDB implements AutoCloseable {
 
 		Environment environment = new Environment("mailcheck", new JdbcTransactionFactory(), _pool);
 		Configuration configuration = new Configuration(environment);
-		configuration.addMapper(Domains.class);
 
 		_sessionFactory = new SqlSessionFactoryBuilder().build(configuration);
 
-		// Run schema creation (IF NOT EXISTS makes this safe to re-run).
-		try (SqlSession session = _sessionFactory.openSession()) {
-			ScriptRunner sr = new ScriptRunner(session.getConnection());
-			sr.setAutoCommit(true);
-			sr.setDelimiter(";");
-			try (InputStreamReader reader = new InputStreamReader(
-					Domains.class.getResourceAsStream("mail-check-schema.sql"), StandardCharsets.UTF_8)) {
-				sr.runScript(reader);
-			} catch (IOException ex) {
-				throw new SQLException("Failed to run mail-check schema setup.", ex);
-			}
-			// Populate MX status tables from existing data (idempotent).
-			try (InputStreamReader reader = new InputStreamReader(
-					Domains.class.getResourceAsStream("mx-status-init.sql"), StandardCharsets.UTF_8)) {
-				sr.runScript(reader);
-			} catch (IOException ex) {
-				throw new SQLException("Failed to run MX status init.", ex);
-			}
-		}
+		MailCheckSchema.initialize(_sessionFactory);
 
 		LOG.info("Database ready.");
 	}
