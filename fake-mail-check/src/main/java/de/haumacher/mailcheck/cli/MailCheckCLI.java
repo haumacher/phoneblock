@@ -189,13 +189,6 @@ public class MailCheckCLI {
 					String domain = entry.getDomain();
 					String source = entry.getSource();
 
-					// Insert domain if not yet known.
-					if (domains.checkDomain(domain) == null) {
-						MxResult mx = MxLookup.lookup(domain);
-						domains.insertDomain(domain, true, now, source, mx.mxHost(), mx.mxIp());
-						domainsAdded++;
-					}
-
 					// For known public providers, insert normalized email.
 					String normalized = EmailNormalizer.normalize(email);
 					if (normalized != null) {
@@ -204,6 +197,13 @@ public class MailCheckCLI {
 							emailsAdded++;
 						} else {
 							skipped++;
+						}
+					} else {
+						// Unknown domain — insert as disposable domain.
+						if (domains.checkDomain(domain) == null) {
+							MxResult mx = MxLookup.lookup(domain);
+							domains.insertDomain(domain, true, now, source, mx.mxHost(), mx.mxIp());
+							domainsAdded++;
 						}
 					}
 
