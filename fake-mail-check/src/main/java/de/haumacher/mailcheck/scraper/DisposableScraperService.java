@@ -42,7 +42,10 @@ public class DisposableScraperService implements ServletContextListener {
 		new FakeMailGeneratorScraper(),
 		new GuerrillaMailScraper(),
 		new MohmalScraper(),
-		new EmailFakeScraper()
+		new EmailFakeScraper(),
+		new TMailorScraper(),
+		new FumailScraper(),
+		new PurpleMailScraper()
 	);
 
 	private final ScheduledExecutorService _scheduler;

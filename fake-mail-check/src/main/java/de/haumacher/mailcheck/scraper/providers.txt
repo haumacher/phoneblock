@@ -54,16 +54,17 @@ Weitere bekannte Provider:
   
 Provider mit öffentlicher MX Infrastruktur
 
-  tmailor.com
-  fumail.co
-  tempmail.ninja
-  22.do
-  temporarymail.com
-  tempumail.com
-  tempmailxy.com
-  temp-mail.app
-  mail.chatgpt.org.uk
-  temp-mail.org.in
-  purplemail.neweymail.com
-  
-  
+  Implementiert:
+  tmailor.com               ~9 Domains, JSON API (api.internal.temp-mail.io)
+  fumail.co                 ~1 Domain, <select> Dropdown
+  purplemail.neweymail.com  ~6 Domains, Plaintext-Liste
+
+  Nicht scrapebar (403 / JS-only):
+  tempmail.ninja            403 Forbidden
+  22.do                     403 Forbidden
+  temporarymail.com         Redirect → guerrillamail.com (bereits abgedeckt)
+  tempumail.com             403 Forbidden
+  tempmailxy.com            Next.js SPA, Domains nur via JS/API
+  temp-mail.app             Server-side only, keine Client-Domain-Liste
+  mail.chatgpt.org.uk       403 Forbidden
+  temp-mail.org.in          403 Forbidden
