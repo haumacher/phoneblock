@@ -19,12 +19,16 @@
     }
     .stats div { margin: 2px 0; }
     .count { font-weight: bold; }
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
     button {
       padding: 6px 14px;
       border: 1px solid #ccc;
       border-radius: 4px;
       cursor: pointer;
-      margin-right: 4px;
       font-size: 13px;
     }
     #startBtn { background: #4caf50; color: white; border-color: #4caf50; }
@@ -63,7 +67,7 @@
     <div>Unique emails: <span class="count" id="emailCount">0</span></div>
     <div>Gmail: <span class="count" id="gmailCount">0</span> | Microsoft: <span class="count" id="msCount">0</span> | Domain: <span class="count" id="domainCount">0</span></div>
   </div>
-  <div>
+  <div class="buttons">
     <button id="startBtn">Start</button>
     <button id="stopBtn" disabled>Stop</button>
     <button id="downloadBtn" disabled>Download JSON</button>
