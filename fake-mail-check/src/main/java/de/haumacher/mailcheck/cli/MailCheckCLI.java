@@ -22,6 +22,7 @@ import de.haumacher.mailcheck.EmailNormalizer;
 import de.haumacher.mailcheck.PropertyStore;
 import de.haumacher.mailcheck.cli.model.HarvestedEmail;
 import de.haumacher.mailcheck.db.DBDomainCheck;
+import de.haumacher.mailcheck.db.DBMxStatus;
 import de.haumacher.mailcheck.db.DBEmailCheck;
 import de.haumacher.mailcheck.db.Domains;
 import de.haumacher.mailcheck.dns.MxLookup;
@@ -44,6 +45,7 @@ import de.haumacher.msgbuf.server.io.ReaderAdapter;
  *   import-list                   Download and import the GitHub disposable domain list
  *   scrape                        Run all web scrapers for disposable domains
  *   import-emails &lt;file.json&gt;     Import harvested emails from browser extension JSON export
+ *   resolve-mx                    Resolve missing MX records in DOMAIN_CHECK via DNS
  *   check &lt;email-or-domain&gt;       Check if an email/domain is disposable
  *   stats                         Show database statistics
  * </pre>
@@ -101,6 +103,9 @@ public class MailCheckCLI {
 				}
 				runImportEmails(dbPath, checkArg);
 				break;
+			case "resolve-mx":
+				runResolveMx(dbPath);
+				break;
 			case "check":
 				if (checkArg == null) {
 					System.err.println("Missing argument for 'check' command.");
@@ -153,6 +158,69 @@ public class MailCheckCLI {
 			}
 
 			System.out.println("Scraping completed.");
+		}
+	}
+
+	private static void runResolveMx(String dbPath) throws Exception {
+		try (MailCheckDB db = new MailCheckDB(dbPath)) {
+			try (SqlSession session = db.getSessionFactory().openSession()) {
+				Domains domains = session.getMapper(Domains.class);
+
+				List<DBDomainCheck> missing = domains.findDomainsWithoutMx();
+				System.out.println("Domains without MX data: " + missing.size());
+
+				long now = System.currentTimeMillis();
+				int resolved = 0;
+				int failed = 0;
+				int total = missing.size();
+
+				for (int i = 0; i < total; i++) {
+					DBDomainCheck domain = missing.get(i);
+					String name = domain.getDomainName();
+					MxResult mx = MxLookup.lookup(name);
+
+					if (mx.mxHost() == null && mx.mxIp() == null) {
+						failed++;
+					} else {
+						domains.updateDomainMx(name, mx.mxHost(), mx.mxIp());
+						updateMxStatus(domains, mx, domain.isDisposable(), now);
+						resolved++;
+					}
+
+					if ((i + 1) % 100 == 0) {
+						session.commit();
+						System.out.printf("  %d / %d — resolved: %d, failed: %d%n", i + 1, total, resolved, failed);
+					}
+				}
+
+				session.commit();
+				System.out.println("Done: " + resolved + " resolved, " + failed + " failed (no MX record).");
+			}
+		}
+	}
+
+	private static void updateMxStatus(Domains domains, MxResult mx, boolean disposable, long now) {
+		if (mx.mxHost() != null) {
+			DBMxStatus existing = domains.checkMxHost(mx.mxHost());
+			if (existing == null) {
+				domains.insertMxHost(mx.mxHost(), disposable ? DBMxStatus.DISPOSABLE : DBMxStatus.SAFE, now);
+			} else {
+				String merged = DBMxStatus.mergeStatus(existing.getStatus(), disposable);
+				if (!merged.equals(existing.getStatus())) {
+					domains.updateMxHostStatus(mx.mxHost(), merged, now);
+				}
+			}
+		}
+		if (mx.mxIp() != null) {
+			DBMxStatus existing = domains.checkMxIp(mx.mxIp());
+			if (existing == null) {
+				domains.insertMxIp(mx.mxIp(), disposable ? DBMxStatus.DISPOSABLE : DBMxStatus.SAFE, now);
+			} else {
+				String merged = DBMxStatus.mergeStatus(existing.getStatus(), disposable);
+				if (!merged.equals(existing.getStatus())) {
+					domains.updateMxIpStatus(mx.mxIp(), merged, now);
+				}
+			}
 		}
 	}
 
@@ -321,6 +389,7 @@ public class MailCheckCLI {
 		System.err.println("  import-list                   Download and import the GitHub disposable domain list");
 		System.err.println("  scrape                        Run all web scrapers for disposable domains");
 		System.err.println("  import-emails <file.json>     Import harvested emails from browser extension export");
+		System.err.println("  resolve-mx                    Resolve missing MX records via DNS");
 		System.err.println("  check <email-or-domain>       Check if an email/domain is disposable");
 		System.err.println("  stats                         Show database statistics");
 	}

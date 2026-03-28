@@ -48,11 +48,19 @@ public class MailCheckSchema {
 		try (SqlSession session = sessionFactory.openSession()) {
 			Connection connection = session.getConnection();
 
+			// Check current version first — skip setup if already up to date.
+			int version = readVersion(connection);
+			if (version >= CURRENT_VERSION) {
+				return;
+			}
+
 			// Create base schema (IF NOT EXISTS — safe to re-run).
 			runScript(connection, "mail-check-schema.sql");
 
-			// Check current version.
-			int version = readVersion(connection);
+			// Re-read version (MAILCHECK_PROPERTIES may have just been created).
+			if (version == 0) {
+				version = readVersion(connection);
+			}
 
 			if (version == 0 && !hasData(connection)) {
 				// Fresh install — set version to current, no migrations needed.

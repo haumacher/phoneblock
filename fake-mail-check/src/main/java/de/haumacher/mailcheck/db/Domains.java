@@ -1,5 +1,7 @@
 package de.haumacher.mailcheck.db;
 
+import java.util.List;
+
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
@@ -20,6 +22,12 @@ public interface Domains {
 
 	@Insert("insert into EMAIL_CHECK (EMAIL_ADDRESS, DISPOSABLE, LAST_CHECKED, SOURCE_SYSTEM) values (#{emailAddress}, #{disposable}, #{lastChecked}, #{sourceSystem})")
 	int insertEmailCheck(String emailAddress, boolean disposable, long lastChecked, String sourceSystem);
+
+	@Select("select DOMAIN_NAME, DISPOSABLE, LAST_CHANGED, SOURCE_SYSTEM, MX_HOST, MX_IP from DOMAIN_CHECK where MX_HOST is null")
+	List<DBDomainCheck> findDomainsWithoutMx();
+
+	@Update("update DOMAIN_CHECK set MX_HOST=#{mxHost}, MX_IP=#{mxIp} where DOMAIN_NAME=#{domainName}")
+	int updateDomainMx(String domainName, String mxHost, String mxIp);
 
 	@Select("select MX_HOST as `key`, STATUS, LAST_UPDATED as lastUpdated from MX_HOST_STATUS where MX_HOST=#{mxHost}")
 	DBMxStatus checkMxHost(String mxHost);
