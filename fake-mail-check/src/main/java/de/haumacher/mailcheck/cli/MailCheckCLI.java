@@ -11,8 +11,11 @@ import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.apache.ibatis.session.SqlSession;
@@ -166,30 +169,50 @@ public class MailCheckCLI {
 		}
 	}
 
+	private static final int RESOLVE_THREADS = 20;
+
+	private record MxEntry(DBDomainCheck domain, MxResult mx) {}
+
 	private static void runResolveMx(String dbPath) throws Exception {
 		try (MailCheckDB db = new MailCheckDB(dbPath)) {
+			List<DBDomainCheck> missing;
+			try (SqlSession session = db.getSessionFactory().openSession()) {
+				missing = session.getMapper(Domains.class).findDomainsWithoutMx();
+			}
+
+			System.out.println("Domains without MX data: " + missing.size());
+			int total = missing.size();
+
+			// Parallel DNS resolution.
+			ExecutorService executor = Executors.newFixedThreadPool(RESOLVE_THREADS);
+			List<Future<MxEntry>> futures = new ArrayList<>(total);
+
+			for (DBDomainCheck domain : missing) {
+				futures.add(executor.submit(() ->
+					new MxEntry(domain, MxLookup.lookup(domain.getDomainName()))
+				));
+			}
+			executor.shutdown();
+
+			// Process results and write to DB.
+			long now = System.currentTimeMillis();
+			int resolved = 0;
+			int failed = 0;
+
 			try (SqlSession session = db.getSessionFactory().openSession()) {
 				Domains domains = session.getMapper(Domains.class);
 
-				List<DBDomainCheck> missing = domains.findDomainsWithoutMx();
-				System.out.println("Domains without MX data: " + missing.size());
-
-				long now = System.currentTimeMillis();
-				int resolved = 0;
-				int failed = 0;
-				int total = missing.size();
-
 				for (int i = 0; i < total; i++) {
-					DBDomainCheck domain = missing.get(i);
-					String name = domain.getDomainName();
-					MxResult mx = MxLookup.lookup(name);
+					MxEntry entry = futures.get(i).get();
+					String name = entry.domain().getDomainName();
+					MxResult mx = entry.mx();
 
 					if (mx.mxHost() == null && mx.mxIp() == null) {
 						domains.updateDomainMx(name, "-", null);
 						failed++;
 					} else {
 						domains.updateDomainMx(name, mx.mxHost(), mx.mxIp());
-						updateMxStatus(domains, mx, domain.getStatus() == DomainStatus.DISPOSABLE, now);
+						updateMxStatus(domains, mx, entry.domain().getStatus() == DomainStatus.DISPOSABLE, now);
 						resolved++;
 					}
 
@@ -200,8 +223,9 @@ public class MailCheckCLI {
 				}
 
 				session.commit();
-				System.out.println("Done: " + resolved + " resolved, " + failed + " failed (no MX record).");
 			}
+
+			System.out.println("Done: " + resolved + " resolved, " + failed + " failed (no MX record).");
 		}
 	}
 
