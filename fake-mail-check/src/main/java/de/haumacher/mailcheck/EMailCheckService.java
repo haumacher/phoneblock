@@ -18,6 +18,7 @@ import de.haumacher.mailcheck.db.DBEmailCheck;
 import de.haumacher.mailcheck.db.DBMxStatus;
 import de.haumacher.mailcheck.db.Domains;
 import de.haumacher.mailcheck.db.MailCheckSchema;
+import de.haumacher.mailcheck.model.DomainStatus;
 import de.haumacher.mailcheck.dns.MxLookup;
 import de.haumacher.mailcheck.dns.MxResult;
 import de.haumacher.mailcheck.model.DomainCheck;
@@ -124,10 +125,10 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 					DomainCheck result = provider.checkEmail(address);
 					if (result != null) {
 						persistEmailResult(tx, domains, normalizedEmail, result);
-						return result.isDisposable();
+						return result.getStatus() == DomainStatus.DISPOSABLE;
 					}
 				}
-				
+
 				// Public E-Mail provider, but not a known disposable address.
 				return false;
 			}
@@ -135,34 +136,45 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 			// Step 2: Domain-level check
 			DBDomainCheck check = domains.checkDomain(domainName);
 			if (check != null) {
-				return check.isDisposable();
+				return check.getStatus() == DomainStatus.DISPOSABLE;
 			}
 
-			// Step 3: MX-based heuristic
+			// Step 3: MX lookup
 			MxResult mx = MxLookup.lookup(domainName);
-			Boolean mxVerdict = checkMxStatus(domains, mx);
+
+			// No MX record → domain cannot receive mail → invalid.
+			if (mx.mxHost() == null) {
+				long now = System.currentTimeMillis();
+				domains.insertDomain(domainName, DomainStatus.INVALID.name().toLowerCase(), now, "mx-lookup", "-", null);
+				tx.commit();
+				LOG.info("No MX record for '{}' — classified as invalid.", domainName);
+				return true;
+			}
+
+			// Step 4: MX-based heuristic
+			DomainStatus mxVerdict = checkMxStatus(domains, mx);
 			if (mxVerdict != null) {
 				long now = System.currentTimeMillis();
-				domains.insertDomain(domainName, mxVerdict, now, "mx-lookup", mx.mxHost(), mx.mxIp());
+				domains.insertDomain(domainName, mxVerdict.name().toLowerCase(), now, "mx-lookup", mx.mxHost(), mx.mxIp());
 				tx.commit();
-				LOG.info("MX-based classification for '{}': {} (MX: {})", domainName, mxVerdict ? "disposable" : "safe", mx.mxHost());
-				return mxVerdict;
+				LOG.info("MX-based classification for '{}': {} (MX: {})", domainName, mxVerdict, mx.mxHost());
+				return mxVerdict == DomainStatus.DISPOSABLE;
 			}
 
-			// Step 4: Ask external providers
+			// Step 5: Ask external providers
 			for (EMailCheckProvider provider : _providers) {
 				DomainCheck result = provider.checkDomain(domainName);
 				if (result != null) {
 					// Enrich with MX data if provider didn't supply it.
-					if (result.getMxHost() == null && mx.mxHost() != null) {
+					if (result.getMxHost() == null) {
 						result.setMxHost(mx.mxHost());
 					}
 					if (result.getMxIP() == null && mx.mxIp() != null) {
 						result.setMxIP(mx.mxIp());
 					}
 					persistResult(tx, domains, result);
-					updateMxStatus(tx, domains, mx, result.isDisposable());
-					return result.isDisposable();
+					updateMxStatus(tx, domains, mx, result.getStatus() == DomainStatus.DISPOSABLE);
+					return result.getStatus() == DomainStatus.DISPOSABLE;
 				}
 			}
 		} catch (Exception ex) {
@@ -174,7 +186,7 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 
 	private void persistEmailResult(SqlSession tx, Domains domains, String normalizedEmail, DomainCheck result) {
 		try {
-			domains.insertEmailCheck(normalizedEmail, result.isDisposable(), System.currentTimeMillis(), result.getSourceSystem());
+			domains.insertEmailCheck(normalizedEmail, result.getStatus() == DomainStatus.DISPOSABLE, System.currentTimeMillis(), result.getSourceSystem());
 			tx.commit();
 		} catch (Exception ex) {
 			LOG.error("Failed to persist e-mail check result for '{}'.", normalizedEmail, ex);
@@ -184,14 +196,14 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 	/**
 	 * Checks MX_HOST_STATUS and MX_IP_STATUS tables for a verdict.
 	 *
-	 * @return {@code true} if disposable, {@code false} if safe, {@code null} if unknown or mixed.
+	 * @return {@link DomainStatus#DISPOSABLE} or {@link DomainStatus#SAFE}, or {@code null} if unknown or mixed.
 	 */
-	private Boolean checkMxStatus(Domains domains, MxResult mx) {
+	private DomainStatus checkMxStatus(Domains domains, MxResult mx) {
 		if (mx.mxHost() != null) {
 			DBMxStatus hostStatus = domains.checkMxHost(mx.mxHost());
 			if (hostStatus != null) {
-				if (hostStatus.isDisposable()) return Boolean.TRUE;
-				if (hostStatus.isSafe()) return Boolean.FALSE;
+				if (hostStatus.isDisposable()) return DomainStatus.DISPOSABLE;
+				if (hostStatus.isSafe()) return DomainStatus.SAFE;
 				// mixed → fall through
 			}
 		}
@@ -199,8 +211,8 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 		if (mx.mxIp() != null) {
 			DBMxStatus ipStatus = domains.checkMxIp(mx.mxIp());
 			if (ipStatus != null) {
-				if (ipStatus.isDisposable()) return Boolean.TRUE;
-				if (ipStatus.isSafe()) return Boolean.FALSE;
+				if (ipStatus.isDisposable()) return DomainStatus.DISPOSABLE;
+				if (ipStatus.isSafe()) return DomainStatus.SAFE;
 			}
 		}
 
@@ -245,7 +257,7 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 
 	private void persistResult(SqlSession tx, Domains domains, DomainCheck result) {
 		try {
-			domains.insertDomain(result.getDomainName(), result.isDisposable(), result.getLastChanged(),
+			domains.insertDomain(result.getDomainName(), result.getStatus().name().toLowerCase(), result.getLastChanged(),
 					result.getSourceSystem(), result.getMxHost(), result.getMxIP());
 			tx.commit();
 		} catch (Exception ex) {

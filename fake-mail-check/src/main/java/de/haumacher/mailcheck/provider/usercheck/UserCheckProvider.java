@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import de.haumacher.mailcheck.EMailCheckProvider;
 import de.haumacher.mailcheck.model.DomainCheck;
+import de.haumacher.mailcheck.model.DomainStatus;
 import de.haumacher.mailcheck.provider.usercheck.model.UserCheckResult;
 import de.haumacher.msgbuf.json.JsonReader;
 import de.haumacher.msgbuf.server.io.ReaderAdapter;
@@ -192,7 +193,7 @@ public class UserCheckProvider implements EMailCheckProvider {
 	static DomainCheck toDomainCheck(UserCheckResult result) {
 		return DomainCheck.create()
 				.setDomainName(result.getDomainName())
-				.setDisposable(result.isDisposable())
+				.setStatus(result.isDisposable() ? DomainStatus.DISPOSABLE : DomainStatus.SAFE)
 				.setLastChanged(System.currentTimeMillis())
 				.setSourceSystem(PROVIDER_ID);
 	}

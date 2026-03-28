@@ -33,7 +33,7 @@ public class MailCheckSchema {
 	private static final Logger LOG = LoggerFactory.getLogger(MailCheckSchema.class);
 
 	/** Current schema version. Bump this when adding a new migration. */
-	private static final int CURRENT_VERSION = 2;
+	private static final int CURRENT_VERSION = 3;
 
 	/**
 	 * Initializes the mail-check schema: registers the MyBatis mapper,

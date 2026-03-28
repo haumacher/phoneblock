@@ -7,8 +7,6 @@ package de.haumacher.mailcheck.model;
  * Cached in the DOMAIN_CHECK database table so that repeated lookups for the
  * same domain do not require another provider call.
  * </p>
- *
- * @see de.haumacher.phoneblock.mail.check.DomainCheckProvider
  */
 public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject {
 
@@ -25,8 +23,8 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject {
 	/** @see #getDomainName() */
 	private static final String DOMAIN_NAME__PROP = "domainName";
 
-	/** @see #isDisposable() */
-	private static final String DISPOSABLE__PROP = "disposable";
+	/** @see #getStatus() */
+	private static final String STATUS__PROP = "status";
 
 	/** @see #getLastChanged() */
 	private static final String LAST_CHANGED__PROP = "lastChanged";
@@ -42,7 +40,7 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject {
 
 	private String _domainName = "";
 
-	private boolean _disposable = false;
+	private de.haumacher.mailcheck.model.DomainStatus _status = de.haumacher.mailcheck.model.DomainStatus.DISPOSABLE;
 
 	private long _lastChanged = 0L;
 
@@ -82,23 +80,24 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject {
 	}
 
 	/**
-	 * Whether this domain is known to provide disposable/temporary e-mail addresses.
+	 * The classification status of this domain.
 	 */
-	public final boolean isDisposable() {
-		return _disposable;
+	public final de.haumacher.mailcheck.model.DomainStatus getStatus() {
+		return _status;
 	}
 
 	/**
-	 * @see #isDisposable()
+	 * @see #getStatus()
 	 */
-	public de.haumacher.mailcheck.model.DomainCheck setDisposable(boolean value) {
-		internalSetDisposable(value);
+	public de.haumacher.mailcheck.model.DomainCheck setStatus(de.haumacher.mailcheck.model.DomainStatus value) {
+		internalSetStatus(value);
 		return this;
 	}
 
-	/** Internal setter for {@link #isDisposable()} without chain call utility. */
-	protected final void internalSetDisposable(boolean value) {
-		_disposable = value;
+	/** Internal setter for {@link #getStatus()} without chain call utility. */
+	protected final void internalSetStatus(de.haumacher.mailcheck.model.DomainStatus value) {
+		if (value == null) throw new IllegalArgumentException("Property 'status' cannot be null.");
+		_status = value;
 	}
 
 	/**
@@ -212,8 +211,8 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject {
 		super.writeFields(out);
 		out.name(DOMAIN_NAME__PROP);
 		out.value(getDomainName());
-		out.name(DISPOSABLE__PROP);
-		out.value(isDisposable());
+		out.name(STATUS__PROP);
+		getStatus().writeTo(out);
 		out.name(LAST_CHANGED__PROP);
 		out.value(getLastChanged());
 		out.name(SOURCE_SYSTEM__PROP);
@@ -232,7 +231,7 @@ public class DomainCheck extends de.haumacher.msgbuf.data.AbstractDataObject {
 	protected void readField(de.haumacher.msgbuf.json.JsonReader in, String field) throws java.io.IOException {
 		switch (field) {
 			case DOMAIN_NAME__PROP: setDomainName(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
-			case DISPOSABLE__PROP: setDisposable(in.nextBoolean()); break;
+			case STATUS__PROP: setStatus(de.haumacher.mailcheck.model.DomainStatus.readDomainStatus(in)); break;
 			case LAST_CHANGED__PROP: setLastChanged(in.nextLong()); break;
 			case SOURCE_SYSTEM__PROP: setSourceSystem(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case MX_HOST__PROP: setMxHost(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;

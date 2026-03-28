@@ -23,6 +23,7 @@ import de.haumacher.mailcheck.PropertyStore;
 import de.haumacher.mailcheck.cli.model.HarvestedEmail;
 import de.haumacher.mailcheck.db.DBDomainCheck;
 import de.haumacher.mailcheck.db.DBMxStatus;
+import de.haumacher.mailcheck.model.DomainStatus;
 import de.haumacher.mailcheck.db.DBEmailCheck;
 import de.haumacher.mailcheck.db.Domains;
 import de.haumacher.mailcheck.dns.MxLookup;
@@ -180,10 +181,11 @@ public class MailCheckCLI {
 					MxResult mx = MxLookup.lookup(name);
 
 					if (mx.mxHost() == null && mx.mxIp() == null) {
+						domains.updateDomainMx(name, "-", null);
 						failed++;
 					} else {
 						domains.updateDomainMx(name, mx.mxHost(), mx.mxIp());
-						updateMxStatus(domains, mx, domain.isDisposable(), now);
+						updateMxStatus(domains, mx, domain.getStatus() == DomainStatus.DISPOSABLE, now);
 						resolved++;
 					}
 
@@ -270,7 +272,8 @@ public class MailCheckCLI {
 						// Unknown domain — insert as disposable domain.
 						if (domains.checkDomain(domain) == null) {
 							MxResult mx = MxLookup.lookup(domain);
-							domains.insertDomain(domain, true, now, source, mx.mxHost(), mx.mxIp());
+							String mxHost = mx.mxHost() != null ? mx.mxHost() : "-";
+							domains.insertDomain(domain, "disposable", now, source, mxHost, mx.mxIp());
 							domainsAdded++;
 						}
 					}
@@ -320,10 +323,16 @@ public class MailCheckCLI {
 	private static void checkDomain(Domains domains, String domain) {
 		DBDomainCheck check = domains.checkDomain(domain);
 		if (check != null) {
-			if (check.isDisposable()) {
-				System.out.println("DISPOSABLE — " + domain + " (source: " + check.getSourceSystem() + ")");
-			} else {
-				System.out.println("OK — " + domain + " is not disposable (source: " + check.getSourceSystem() + ")");
+			switch (check.getStatus()) {
+				case DISPOSABLE:
+					System.out.println("DISPOSABLE — " + domain + " (source: " + check.getSourceSystem() + ")");
+					break;
+				case INVALID:
+					System.out.println("INVALID — " + domain + " has no valid MX record (source: " + check.getSourceSystem() + ")");
+					break;
+				case SAFE:
+					System.out.println("OK — " + domain + " is not disposable (source: " + check.getSourceSystem() + ")");
+					break;
 			}
 			if (check.getMxHost() != null) {
 				System.out.println("  MX host: " + check.getMxHost());
@@ -353,13 +362,11 @@ public class MailCheckCLI {
 						rs.next();
 						System.out.println("Domains in DOMAIN_CHECK: " + rs.getLong(1));
 					}
-					try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM DOMAIN_CHECK WHERE DISPOSABLE = TRUE")) {
-						rs.next();
-						System.out.println("  Disposable:           " + rs.getLong(1));
-					}
-					try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM DOMAIN_CHECK WHERE DISPOSABLE = FALSE")) {
-						rs.next();
-						System.out.println("  Not disposable:       " + rs.getLong(1));
+					try (ResultSet rs = stmt.executeQuery(
+							"SELECT STATUS, COUNT(*) AS CNT FROM DOMAIN_CHECK GROUP BY STATUS ORDER BY CNT DESC")) {
+						while (rs.next()) {
+							System.out.println("  " + rs.getString(1) + ": " + rs.getLong(2));
+						}
 					}
 					try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM EMAIL_CHECK")) {
 						rs.next();

@@ -162,7 +162,8 @@ public class DisposableListService implements ServletContextListener {
 						}
 
 						MxResult mx = MxLookup.lookup(domain);
-						domains.insertDomain(domain, true, now, SOURCE_SYSTEM, mx.mxHost(), mx.mxIp());
+						String mxHost = mx.mxHost() != null ? mx.mxHost() : "-";
+						domains.insertDomain(domain, "disposable", now, SOURCE_SYSTEM, mxHost, mx.mxIp());
 						LOG.info("New domain: {} (MX: {}, IP: {})", domain, mx.mxHost(), mx.mxIp());
 						added++;
 

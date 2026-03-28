@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import de.haumacher.mailcheck.EMailCheckProvider;
 import de.haumacher.mailcheck.model.DomainCheck;
+import de.haumacher.mailcheck.model.DomainStatus;
 import de.haumacher.mailcheck.provider.rapidapi.model.RapidAPIResult;
 import de.haumacher.msgbuf.json.JsonReader;
 import de.haumacher.msgbuf.server.io.ReaderAdapter;
@@ -153,7 +154,7 @@ public class RapidAPIProvider implements EMailCheckProvider {
 
 		return DomainCheck.create()
 				.setDomainName(result.getDomainName())
-				.setDisposable(result.isDisposable())
+				.setStatus(result.isDisposable() ? DomainStatus.DISPOSABLE : DomainStatus.SAFE)
 				.setLastChanged(lastChangedMillis)
 				.setSourceSystem(PROVIDER_ID)
 				.setMxHost(result.getMxHost())
