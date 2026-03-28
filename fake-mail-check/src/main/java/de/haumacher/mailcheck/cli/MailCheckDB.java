@@ -66,6 +66,13 @@ public class MailCheckDB implements AutoCloseable {
 			} catch (IOException ex) {
 				throw new SQLException("Failed to run mail-check schema setup.", ex);
 			}
+			// Populate MX status tables from existing data (idempotent).
+			try (InputStreamReader reader = new InputStreamReader(
+					Domains.class.getResourceAsStream("mx-status-init.sql"), StandardCharsets.UTF_8)) {
+				sr.runScript(reader);
+			} catch (IOException ex) {
+				throw new SQLException("Failed to run MX status init.", ex);
+			}
 		}
 
 		LOG.info("Database ready.");

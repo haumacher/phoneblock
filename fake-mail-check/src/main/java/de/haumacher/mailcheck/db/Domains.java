@@ -2,6 +2,7 @@ package de.haumacher.mailcheck.db;
 
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Select;
+import org.apache.ibatis.annotations.Update;
 
 /**
  * DB access interface for e-mail domain verification.
@@ -19,5 +20,23 @@ public interface Domains {
 
 	@Insert("insert into EMAIL_CHECK (EMAIL_ADDRESS, DISPOSABLE, LAST_CHECKED, SOURCE_SYSTEM) values (#{emailAddress}, #{disposable}, #{lastChecked}, #{sourceSystem})")
 	int insertEmailCheck(String emailAddress, boolean disposable, long lastChecked, String sourceSystem);
+
+	@Select("select MX_HOST as `key`, STATUS, LAST_UPDATED as lastUpdated from MX_HOST_STATUS where MX_HOST=#{mxHost}")
+	DBMxStatus checkMxHost(String mxHost);
+
+	@Insert("insert into MX_HOST_STATUS (MX_HOST, STATUS, LAST_UPDATED) values (#{mxHost}, #{status}, #{lastUpdated})")
+	int insertMxHost(String mxHost, String status, long lastUpdated);
+
+	@Update("update MX_HOST_STATUS set STATUS=#{status}, LAST_UPDATED=#{lastUpdated} where MX_HOST=#{mxHost}")
+	int updateMxHostStatus(String mxHost, String status, long lastUpdated);
+
+	@Select("select MX_IP as `key`, STATUS, LAST_UPDATED as lastUpdated from MX_IP_STATUS where MX_IP=#{mxIp}")
+	DBMxStatus checkMxIp(String mxIp);
+
+	@Insert("insert into MX_IP_STATUS (MX_IP, STATUS, LAST_UPDATED) values (#{mxIp}, #{status}, #{lastUpdated})")
+	int insertMxIp(String mxIp, String status, long lastUpdated);
+
+	@Update("update MX_IP_STATUS set STATUS=#{status}, LAST_UPDATED=#{lastUpdated} where MX_IP=#{mxIp}")
+	int updateMxIpStatus(String mxIp, String status, long lastUpdated);
 
 }

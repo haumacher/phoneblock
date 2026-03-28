@@ -20,7 +20,10 @@ import org.slf4j.LoggerFactory;
 
 import de.haumacher.mailcheck.db.DBDomainCheck;
 import de.haumacher.mailcheck.db.DBEmailCheck;
+import de.haumacher.mailcheck.db.DBMxStatus;
 import de.haumacher.mailcheck.db.Domains;
+import de.haumacher.mailcheck.dns.MxLookup;
+import de.haumacher.mailcheck.dns.MxResult;
 import de.haumacher.mailcheck.model.DomainCheck;
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
@@ -72,6 +75,13 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 				sr.runScript(reader);
 			} catch (IOException ex) {
 				LOG.error("Failed to run mail-check schema setup.", ex);
+			}
+			// Populate MX status tables from existing data (idempotent).
+			try (InputStreamReader reader = new InputStreamReader(
+					Domains.class.getResourceAsStream("mx-status-init.sql"), StandardCharsets.UTF_8)) {
+				sr.runScript(reader);
+			} catch (IOException ex) {
+				LOG.error("Failed to run MX status init.", ex);
 			}
 		}
 
@@ -153,10 +163,30 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 				return check.isDisposable();
 			}
 
+			// Step 3: MX-based heuristic
+			MxResult mx = MxLookup.lookup(domainName);
+			Boolean mxVerdict = checkMxStatus(domains, mx);
+			if (mxVerdict != null) {
+				long now = System.currentTimeMillis();
+				domains.insertDomain(domainName, mxVerdict, now, "mx-lookup", mx.mxHost(), mx.mxIp());
+				tx.commit();
+				LOG.info("MX-based classification for '{}': {} (MX: {})", domainName, mxVerdict ? "disposable" : "safe", mx.mxHost());
+				return mxVerdict;
+			}
+
+			// Step 4: Ask external providers
 			for (EMailCheckProvider provider : _providers) {
 				DomainCheck result = provider.checkDomain(domainName);
 				if (result != null) {
+					// Enrich with MX data if provider didn't supply it.
+					if (result.getMxHost() == null && mx.mxHost() != null) {
+						result.setMxHost(mx.mxHost());
+					}
+					if (result.getMxIP() == null && mx.mxIp() != null) {
+						result.setMxIP(mx.mxIp());
+					}
 					persistResult(tx, domains, result);
+					updateMxStatus(tx, domains, mx, result.isDisposable());
 					return result.isDisposable();
 				}
 			}
@@ -173,6 +203,68 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 			tx.commit();
 		} catch (Exception ex) {
 			LOG.error("Failed to persist e-mail check result for '{}'.", normalizedEmail, ex);
+		}
+	}
+
+	/**
+	 * Checks MX_HOST_STATUS and MX_IP_STATUS tables for a verdict.
+	 *
+	 * @return {@code true} if disposable, {@code false} if safe, {@code null} if unknown or mixed.
+	 */
+	private Boolean checkMxStatus(Domains domains, MxResult mx) {
+		if (mx.mxHost() != null) {
+			DBMxStatus hostStatus = domains.checkMxHost(mx.mxHost());
+			if (hostStatus != null) {
+				if (hostStatus.isDisposable()) return Boolean.TRUE;
+				if (hostStatus.isSafe()) return Boolean.FALSE;
+				// mixed → fall through
+			}
+		}
+
+		if (mx.mxIp() != null) {
+			DBMxStatus ipStatus = domains.checkMxIp(mx.mxIp());
+			if (ipStatus != null) {
+				if (ipStatus.isDisposable()) return Boolean.TRUE;
+				if (ipStatus.isSafe()) return Boolean.FALSE;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Updates MX_HOST_STATUS and MX_IP_STATUS after a provider response.
+	 */
+	private void updateMxStatus(SqlSession tx, Domains domains, MxResult mx, boolean disposable) {
+		long now = System.currentTimeMillis();
+		try {
+			if (mx.mxHost() != null) {
+				DBMxStatus existing = domains.checkMxHost(mx.mxHost());
+				if (existing == null) {
+					domains.insertMxHost(mx.mxHost(), disposable ? DBMxStatus.DISPOSABLE : DBMxStatus.SAFE, now);
+				} else {
+					String merged = DBMxStatus.mergeStatus(existing.getStatus(), disposable);
+					if (!merged.equals(existing.getStatus())) {
+						domains.updateMxHostStatus(mx.mxHost(), merged, now);
+					}
+				}
+			}
+
+			if (mx.mxIp() != null) {
+				DBMxStatus existing = domains.checkMxIp(mx.mxIp());
+				if (existing == null) {
+					domains.insertMxIp(mx.mxIp(), disposable ? DBMxStatus.DISPOSABLE : DBMxStatus.SAFE, now);
+				} else {
+					String merged = DBMxStatus.mergeStatus(existing.getStatus(), disposable);
+					if (!merged.equals(existing.getStatus())) {
+						domains.updateMxIpStatus(mx.mxIp(), merged, now);
+					}
+				}
+			}
+
+			tx.commit();
+		} catch (Exception ex) {
+			LOG.error("Failed to update MX status for host={}, ip={}.", mx.mxHost(), mx.mxIp(), ex);
 		}
 	}
 
