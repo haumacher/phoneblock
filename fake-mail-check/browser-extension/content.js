@@ -43,12 +43,14 @@ async function harvestOne(collected, requestCount) {
     const data = await response.json();
 
     if (data.status && data.data) {
-      const email = (data.data.account + '@' + data.data.domain).toLowerCase();
+      const rawEmail = (data.data.account + '@' + data.data.domain).toLowerCase();
+      const email = normalizeEmail(rawEmail);
       const isNew = !collected[email];
 
       if (isNew) {
         collected[email] = {
           email: email,
+          originalEmail: rawEmail !== email ? rawEmail : undefined,
           type: data.data.type || 'unknown',
           domain: data.data.domain,
           firstSeen: new Date().toISOString()

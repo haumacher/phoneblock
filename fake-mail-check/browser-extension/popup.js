@@ -149,12 +149,11 @@ function addLog(text, cssClass) {
 async function download() {
   const data = await chrome.storage.local.get('collected');
   const collected = data.collected || {};
-  const entries = Object.values(collected).map(e => ({
-    email: e.email,
-    type: e.type,
-    domain: e.domain,
-    source: '22do'
-  }));
+  const entries = Object.values(collected).map(e => {
+    const entry = { email: e.email, type: e.type, domain: e.domain, source: '22do' };
+    if (e.originalEmail) entry.originalEmail = e.originalEmail;
+    return entry;
+  });
 
   const blob = new Blob([JSON.stringify(entries, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
