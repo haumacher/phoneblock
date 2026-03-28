@@ -11,7 +11,7 @@ import org.apache.ibatis.annotations.Update;
  */
 public interface Domains {
 
-	@Select("select DOMAIN_NAME, STATUS, LAST_CHANGED, SOURCE_SYSTEM, MX_HOST, MX_IP from DOMAIN_CHECK where DOMAIN_NAME=#{domainName}")
+	@Select("select DOMAIN_NAME, STATUS AS statusName, LAST_CHANGED, SOURCE_SYSTEM, MX_HOST, MX_IP from DOMAIN_CHECK where DOMAIN_NAME=#{domainName}")
 	DBDomainCheck checkDomain(String domainName);
 
 	@Insert("insert into DOMAIN_CHECK (DOMAIN_NAME, STATUS, LAST_CHANGED, SOURCE_SYSTEM, MX_HOST, MX_IP) values (#{domainName}, #{status}, #{lastChanged}, #{sourceSystem}, #{mxHost}, #{mxIp})")
@@ -23,7 +23,7 @@ public interface Domains {
 	@Insert("insert into EMAIL_CHECK (EMAIL_ADDRESS, DISPOSABLE, LAST_CHECKED, SOURCE_SYSTEM) values (#{emailAddress}, #{disposable}, #{lastChecked}, #{sourceSystem})")
 	int insertEmailCheck(String emailAddress, boolean disposable, long lastChecked, String sourceSystem);
 
-	@Select("select DOMAIN_NAME, STATUS, LAST_CHANGED, SOURCE_SYSTEM, MX_HOST, MX_IP from DOMAIN_CHECK where MX_HOST is null")
+	@Select("select DOMAIN_NAME, STATUS AS statusName, LAST_CHANGED, SOURCE_SYSTEM, MX_HOST, MX_IP from DOMAIN_CHECK where MX_HOST is null")
 	List<DBDomainCheck> findDomainsWithoutMx();
 
 	@Update("update DOMAIN_CHECK set MX_HOST=#{mxHost}, MX_IP=#{mxIp} where DOMAIN_NAME=#{domainName}")
