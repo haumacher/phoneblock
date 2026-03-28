@@ -14,6 +14,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -184,13 +185,19 @@ public class MailCheckCLI {
 			int total = missing.size();
 
 			// Parallel DNS resolution.
+			AtomicInteger lookupCount = new AtomicInteger();
 			ExecutorService executor = Executors.newFixedThreadPool(RESOLVE_THREADS);
 			List<Future<MxEntry>> futures = new ArrayList<>(total);
 
 			for (DBDomainCheck domain : missing) {
-				futures.add(executor.submit(() ->
-					new MxEntry(domain, MxLookup.lookup(domain.getDomainName()))
-				));
+				futures.add(executor.submit(() -> {
+					MxEntry entry = new MxEntry(domain, MxLookup.lookup(domain.getDomainName()));
+					int done = lookupCount.incrementAndGet();
+					if (done % 100 == 0) {
+						System.out.printf("  DNS lookup: %d / %d%n", done, total);
+					}
+					return entry;
+				}));
 			}
 			executor.shutdown();
 
