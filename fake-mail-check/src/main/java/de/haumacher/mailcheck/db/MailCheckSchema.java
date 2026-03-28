@@ -60,11 +60,10 @@ public class MailCheckSchema {
 				LOG.info("Mail-check schema initialized at version {}.", CURRENT_VERSION);
 			} else {
 				if (version == 0) {
-					// Existing DB from before versioning was introduced.
-					// Base schema (version 1) already exists, start migrations from 2.
-					version = 1;
+					// Existing DB without versioning — detect how far the schema has evolved.
+					version = detectLegacyVersion(connection);
 					setVersion(connection, version);
-					LOG.info("Existing mail-check DB detected, starting migrations from version {}.", version);
+					LOG.info("Existing mail-check DB detected at legacy version {}, migrating to {}.", version, CURRENT_VERSION);
 				}
 				// Apply pending migrations.
 				while (version < CURRENT_VERSION) {
@@ -93,6 +92,63 @@ public class MailCheckSchema {
 			}
 		} catch (SQLException ex) {
 			return false;
+		}
+	}
+
+	/**
+	 * Detects the effective schema version of a legacy DB (before MAILCHECK_PROPERTIES existed).
+	 *
+	 * <p>
+	 * The DOMAIN_CHECK table may come from the old PhoneBlock schema where SOURCE_SYSTEM
+	 * was an integer column. The migration path is:
+	 * </p>
+	 * <ul>
+	 *   <li>Version 0: Old PhoneBlock schema (SOURCE_SYSTEM is integer) — needs migration 01 (type conversion) + 02 (EMAIL_CHECK)</li>
+	 *   <li>Version 1: SOURCE_SYSTEM already VARCHAR, EMAIL_CHECK may or may not exist</li>
+	 *   <li>Version 2: EMAIL_CHECK exists — needs MX table migration</li>
+	 * </ul>
+	 */
+	private static int detectLegacyVersion(Connection connection) {
+		try (Statement stmt = connection.createStatement()) {
+			// Check if SOURCE_SYSTEM is still an integer type (old PhoneBlock schema).
+			try (ResultSet rs = stmt.executeQuery(
+					"SELECT DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS " +
+					"WHERE TABLE_NAME = 'DOMAIN_CHECK' AND COLUMN_NAME = 'SOURCE_SYSTEM'")) {
+				if (rs.next()) {
+					String dataType = rs.getString(1).toUpperCase();
+					if (dataType.contains("INT") || dataType.contains("NUMERIC") || dataType.contains("DECIMAL")) {
+						LOG.info("Detected old PhoneBlock DOMAIN_CHECK schema (SOURCE_SYSTEM is {}).", dataType);
+						return 0;
+					}
+				}
+			}
+
+			// SOURCE_SYSTEM is already VARCHAR. Check if EMAIL_CHECK exists.
+			try (ResultSet rs = stmt.executeQuery(
+					"SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES " +
+					"WHERE TABLE_NAME = 'EMAIL_CHECK'")) {
+				if (rs.next() && rs.getLong(1) == 0) {
+					LOG.info("Detected post-migration-01 schema (no EMAIL_CHECK table yet).");
+					return 1;
+				}
+			}
+
+			// EMAIL_CHECK exists. Check if MX tables have been populated (migration 02).
+			try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM MX_HOST_STATUS")) {
+				if (rs.next() && rs.getLong(1) == 0) {
+					LOG.info("Detected schema with empty MX tables (migration 02 pending).");
+					return 1;
+				}
+			} catch (SQLException ignored) {
+				// Table doesn't exist yet — migration 02 still needed.
+				return 1;
+			}
+
+			// MX tables populated — assume fully migrated.
+			return CURRENT_VERSION;
+		} catch (SQLException ex) {
+			LOG.warn("Failed to detect legacy version, assuming 0: {}", ex.getMessage());
+			return 0;
 		}
 	}
 
