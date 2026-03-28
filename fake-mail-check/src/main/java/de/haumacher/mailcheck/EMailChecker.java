@@ -1,26 +1,32 @@
 package de.haumacher.mailcheck;
 
+import de.haumacher.mailcheck.model.DomainStatus;
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 
 /**
  * API for e-mail domain checking.
- * 
+ *
  * @see EMailCheckService#getInstance()
  */
 public interface EMailChecker {
 
 	/**
-	 * Whether the given e-mail is a disposable address.
+	 * Checks the status of the given e-mail address.
+	 *
+	 * @return {@link DomainStatus#DISPOSABLE} if the address or its domain is
+	 *         known as disposable, {@link DomainStatus#INVALID} if the domain
+	 *         has no valid MX record, {@link DomainStatus#SAFE} otherwise.
 	 */
-	default boolean isDisposable(String email) throws AddressException {
-		InternetAddress contact = new InternetAddress(email);
-		return isDisposable(contact);
+	default DomainStatus check(String email) throws AddressException {
+		return check(new InternetAddress(email));
 	}
 
 	/**
-	 * Whether the given e-mail is a disposable address.
+	 * Checks the status of the given e-mail address.
+	 *
+	 * @see #check(String)
 	 */
-	boolean isDisposable(InternetAddress contact) throws AddressException;
+	DomainStatus check(InternetAddress contact) throws AddressException;
 
 }

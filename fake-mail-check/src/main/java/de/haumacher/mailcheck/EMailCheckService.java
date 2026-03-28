@@ -43,8 +43,8 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 
 	private static final EMailChecker NONE = new EMailChecker() {
 		@Override
-		public boolean isDisposable(InternetAddress contact) throws AddressException {
-			return false;
+		public DomainStatus check(InternetAddress contact) throws AddressException {
+			return DomainStatus.SAFE;
 		}
 	};
 
@@ -104,7 +104,7 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 	}
 
 	@Override
-	public boolean isDisposable(InternetAddress contact) throws AddressException {
+	public DomainStatus check(InternetAddress contact) throws AddressException {
 		String address = contact.getAddress();
 		int domainSep = address.indexOf('@');
 		String domain = (domainSep >= 0) ? address.substring(domainSep + 1) : address;
@@ -118,25 +118,25 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 			if (normalizedEmail != null) {
 				DBEmailCheck emailCheck = domains.checkEmailAddress(normalizedEmail);
 				if (emailCheck != null) {
-					return emailCheck.isDisposable();
+					return emailCheck.isDisposable() ? DomainStatus.DISPOSABLE : DomainStatus.SAFE;
 				}
 
 				for (EMailCheckProvider provider : _providers) {
 					DomainCheck result = provider.checkEmail(address);
 					if (result != null) {
 						persistEmailResult(tx, domains, normalizedEmail, result);
-						return result.getStatus() == DomainStatus.DISPOSABLE;
+						return result.getStatus();
 					}
 				}
 
 				// Public E-Mail provider, but not a known disposable address.
-				return false;
+				return DomainStatus.SAFE;
 			}
 
 			// Step 2: Domain-level check
 			DBDomainCheck check = domains.checkDomain(domainName);
 			if (check != null) {
-				return check.getStatus() == DomainStatus.DISPOSABLE;
+				return check.getStatus();
 			}
 
 			// Step 3: MX lookup
@@ -148,7 +148,7 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 				domains.insertDomain(domainName, DomainStatus.INVALID.protocolName(), now, "mx-lookup", "-", null);
 				tx.commit();
 				LOG.info("No MX record for '{}' — classified as invalid.", domainName);
-				return true;
+				return DomainStatus.INVALID;
 			}
 
 			// Step 4: MX-based heuristic
@@ -158,7 +158,7 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 				domains.insertDomain(domainName, mxVerdict.protocolName(), now, "mx-lookup", mx.mxHost(), mx.mxIp());
 				tx.commit();
 				LOG.info("MX-based classification for '{}': {} (MX: {})", domainName, mxVerdict, mx.mxHost());
-				return mxVerdict == DomainStatus.DISPOSABLE;
+				return mxVerdict;
 			}
 
 			// Step 5: Ask external providers
@@ -174,14 +174,14 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 					}
 					persistResult(tx, domains, result);
 					updateMxStatus(tx, domains, mx, result.getStatus() == DomainStatus.DISPOSABLE);
-					return result.getStatus() == DomainStatus.DISPOSABLE;
+					return result.getStatus();
 				}
 			}
 		} catch (Exception ex) {
 			LOG.error("Failed to check e-mail domain '" + domainName + "'.", ex);
 		}
 
-		return false;
+		return DomainStatus.SAFE;
 	}
 
 	private void persistEmailResult(SqlSession tx, Domains domains, String normalizedEmail, DomainCheck result) {

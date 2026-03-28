@@ -7,6 +7,7 @@
  */
 module de.haumacher.mailcheck {
 	exports de.haumacher.mailcheck;
+	exports de.haumacher.mailcheck.model;
 	exports de.haumacher.mailcheck.cli;
 	exports de.haumacher.mailcheck.dns;
 	exports de.haumacher.mailcheck.scraper;

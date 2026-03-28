@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.haumacher.mailcheck.EMailCheckService;
+import de.haumacher.mailcheck.model.DomainStatus;
 import de.haumacher.phoneblock.app.Application;
 import de.haumacher.phoneblock.app.SettingsServlet;
 import de.haumacher.phoneblock.db.DB;
@@ -108,9 +109,14 @@ public class MailServiceImpl implements MailService {
 
     	InternetAddress address = new InternetAddress(receiver);
 
-    	if (EMailCheckService.getInstance().isDisposable(address)) {
+    	DomainStatus emailStatus = EMailCheckService.getInstance().check(address);
+    	if (emailStatus == DomainStatus.DISPOSABLE) {
 			LOG.warn("Rejected disposable e-mail address: " + receiver);
     		throw new AddressException("Please do not use disposable e-mail addresses.");
+    	}
+    	if (emailStatus == DomainStatus.INVALID) {
+			LOG.warn("Rejected invalid e-mail domain: " + receiver);
+    		throw new AddressException("The e-mail domain does not accept mail.");
     	}
 
 		LOG.info("Sending activation mail to '{}' in language '{}'.", receiver, language.tag);
@@ -134,9 +140,14 @@ public class MailServiceImpl implements MailService {
 
 		InternetAddress address = new InternetAddress(receiver);
 
-		if (EMailCheckService.getInstance().isDisposable(address)) {
+		DomainStatus emailStatus = EMailCheckService.getInstance().check(address);
+		if (emailStatus == DomainStatus.DISPOSABLE) {
 			LOG.warn("Rejected disposable e-mail address: " + receiver);
 			throw new AddressException("Please do not use disposable e-mail addresses.");
+		}
+		if (emailStatus == DomainStatus.INVALID) {
+			LOG.warn("Rejected invalid e-mail domain: " + receiver);
+			throw new AddressException("The e-mail domain does not accept mail.");
 		}
 
 		LOG.info("Sending email change verification mail to '{}' in language '{}'.", receiver, language.tag);
