@@ -47,6 +47,7 @@ import de.haumacher.msgbuf.server.io.ReaderAdapter;
  *   scrape                        Run all web scrapers for disposable domains
  *   import-emails &lt;file.json&gt;     Import harvested emails from browser extension JSON export
  *   resolve-mx                    Resolve missing MX records in DOMAIN_CHECK via DNS
+ *   rebuild-mx                    Rebuild MX_HOST_STATUS and MX_IP_STATUS from DOMAIN_CHECK
  *   check &lt;email-or-domain&gt;       Check if an email/domain is disposable
  *   stats                         Show database statistics
  * </pre>
@@ -106,6 +107,9 @@ public class MailCheckCLI {
 				break;
 			case "resolve-mx":
 				runResolveMx(dbPath);
+				break;
+			case "rebuild-mx":
+				runRebuildMx(dbPath);
 				break;
 			case "check":
 				if (checkArg == null) {
@@ -197,6 +201,33 @@ public class MailCheckCLI {
 
 				session.commit();
 				System.out.println("Done: " + resolved + " resolved, " + failed + " failed (no MX record).");
+			}
+		}
+	}
+
+	private static void runRebuildMx(String dbPath) throws Exception {
+		try (MailCheckDB db = new MailCheckDB(dbPath)) {
+			try (SqlSession session = db.getSessionFactory().openSession()) {
+				Domains domains = session.getMapper(Domains.class);
+
+				String disposable = DomainStatus.DISPOSABLE.protocolName();
+				String safe = DomainStatus.SAFE.protocolName();
+				String mixed = DBMxStatus.MIXED;
+
+				// Clear existing MX status tables.
+				int hostCleared = domains.clearMxHostStatus();
+				int ipCleared = domains.clearMxIpStatus();
+				System.out.println("Cleared MX_HOST_STATUS (" + hostCleared + " rows) and MX_IP_STATUS (" + ipCleared + " rows).");
+
+				// Re-aggregate from DOMAIN_CHECK.
+				int hostRows = domains.aggregateMxHostStatus(disposable, safe, mixed);
+				System.out.println("MX_HOST_STATUS: " + hostRows + " entries.");
+
+				int ipRows = domains.aggregateMxIpStatus(disposable, safe, mixed);
+				System.out.println("MX_IP_STATUS: " + ipRows + " entries.");
+
+				session.commit();
+				System.out.println("MX status tables rebuilt.");
 			}
 		}
 	}
@@ -397,6 +428,7 @@ public class MailCheckCLI {
 		System.err.println("  scrape                        Run all web scrapers for disposable domains");
 		System.err.println("  import-emails <file.json>     Import harvested emails from browser extension export");
 		System.err.println("  resolve-mx                    Resolve missing MX records via DNS");
+		System.err.println("  rebuild-mx                    Rebuild MX status tables from DOMAIN_CHECK");
 		System.err.println("  check <email-or-domain>       Check if an email/domain is disposable");
 		System.err.println("  stats                         Show database statistics");
 	}
