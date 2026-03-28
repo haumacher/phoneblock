@@ -36,7 +36,7 @@ async function harvestOne(collected, requestCount) {
     requestCount++;
 
     if (!response.ok) {
-      await saveState({ collected, requestCount, running: true });
+      await saveState({ collected, requestCount });
       return { collected, requestCount, error: 'HTTP ' + response.status };
     }
 
@@ -57,14 +57,14 @@ async function harvestOne(collected, requestCount) {
         };
       }
 
-      await saveState({ collected, requestCount, running: true });
+      await saveState({ collected, requestCount });
       return { collected, requestCount, email, type: data.data.type, isNew };
     } else {
-      await saveState({ collected, requestCount, running: true });
+      await saveState({ collected, requestCount });
       return { collected, requestCount, error: 'Unexpected response' };
     }
   } catch (e) {
-    await saveState({ collected, requestCount, running: true });
+    await saveState({ collected, requestCount });
     return { collected, requestCount, error: e.message };
   }
 }
@@ -75,10 +75,11 @@ async function harvestLoop() {
   const state = await loadState();
   const result = await harvestOne(state.collected, state.requestCount);
 
-  if (running) {
-    const delay = result.error ? 10000 : 2000 + Math.random() * 3000;
-    timerId = setTimeout(harvestLoop, delay);
-  }
+  // Re-check after async work — stopHarvest may have been called during fetch.
+  if (!running) return;
+
+  const delay = result.error ? 10000 : 2000 + Math.random() * 3000;
+  timerId = setTimeout(harvestLoop, delay);
 }
 
 async function startHarvest() {
