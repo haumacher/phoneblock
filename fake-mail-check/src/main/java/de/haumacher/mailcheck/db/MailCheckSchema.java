@@ -54,11 +54,18 @@ public class MailCheckSchema {
 			// Check current version.
 			int version = readVersion(connection);
 
-			if (version == 0) {
+			if (version == 0 && !hasData(connection)) {
 				// Fresh install — set version to current, no migrations needed.
 				setVersion(connection, CURRENT_VERSION);
 				LOG.info("Mail-check schema initialized at version {}.", CURRENT_VERSION);
 			} else {
+				if (version == 0) {
+					// Existing DB from before versioning was introduced.
+					// Base schema (version 1) already exists, start migrations from 2.
+					version = 1;
+					setVersion(connection, version);
+					LOG.info("Existing mail-check DB detected, starting migrations from version {}.", version);
+				}
 				// Apply pending migrations.
 				while (version < CURRENT_VERSION) {
 					version++;
@@ -72,6 +79,20 @@ public class MailCheckSchema {
 				}
 				LOG.info("Mail-check schema up to date at version {}.", version);
 			}
+		}
+	}
+
+	/**
+	 * Checks whether the DOMAIN_CHECK table already contains data,
+	 * indicating a pre-versioning DB rather than a fresh install.
+	 */
+	private static boolean hasData(Connection connection) {
+		try (Statement stmt = connection.createStatement()) {
+			try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM DOMAIN_CHECK")) {
+				return rs.next() && rs.getLong(1) > 0;
+			}
+		} catch (SQLException ex) {
+			return false;
 		}
 	}
 
