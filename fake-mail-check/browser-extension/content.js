@@ -1,41 +1,31 @@
 /**
  * Content script running on 22.do.
  *
- * Handles harvest commands from the popup by calling the site's own
- * /action/mailbox/create endpoint (same-origin, with all cookies).
+ * Owns the harvest loop and persists all state in chrome.storage.local
+ * so that data survives popup close/reopen and browser backgrounding.
  */
 
 let running = false;
 let timerId = null;
 
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (msg.action === 'start') {
-    running = true;
-    harvest(sendResponse);
-    // Return true to indicate async sendResponse.
-    return true;
-  }
+// --- Storage helpers ---
 
-  if (msg.action === 'stop') {
-    running = false;
-    if (timerId) {
-      clearTimeout(timerId);
-      timerId = null;
-    }
-    sendResponse({ stopped: true });
-  }
+async function loadState() {
+  const data = await chrome.storage.local.get(['collected', 'requestCount', 'running']);
+  return {
+    collected: data.collected || {},  // email -> {email, type, domain, firstSeen}
+    requestCount: data.requestCount || 0,
+    running: data.running || false
+  };
+}
 
-  if (msg.action === 'ping') {
-    sendResponse({ alive: true });
-  }
-});
+async function saveState(state) {
+  await chrome.storage.local.set(state);
+}
 
-async function harvest(sendResponse) {
-  if (!running) {
-    sendResponse({ done: true });
-    return;
-  }
+// --- Harvest logic ---
 
+async function harvestOne(collected, requestCount) {
   try {
     const response = await fetch('/action/mailbox/create', {
       method: 'POST',
@@ -43,24 +33,109 @@ async function harvest(sendResponse) {
       body: JSON.stringify({ type: 'random' })
     });
 
+    requestCount++;
+
     if (!response.ok) {
-      sendResponse({ error: 'HTTP ' + response.status });
-      return;
+      await saveState({ collected, requestCount, running: true });
+      return { collected, requestCount, error: 'HTTP ' + response.status };
     }
 
     const data = await response.json();
 
     if (data.status && data.data) {
-      const email = data.data.account + '@' + data.data.domain;
-      sendResponse({
-        email: email,
-        type: data.data.type || 'unknown',
-        domain: data.data.domain
-      });
+      const email = (data.data.account + '@' + data.data.domain).toLowerCase();
+      const isNew = !collected[email];
+
+      if (isNew) {
+        collected[email] = {
+          email: email,
+          type: data.data.type || 'unknown',
+          domain: data.data.domain,
+          firstSeen: new Date().toISOString()
+        };
+      }
+
+      await saveState({ collected, requestCount, running: true });
+      return { collected, requestCount, email, type: data.data.type, isNew };
     } else {
-      sendResponse({ error: 'Unexpected response', raw: JSON.stringify(data) });
+      await saveState({ collected, requestCount, running: true });
+      return { collected, requestCount, error: 'Unexpected response' };
     }
   } catch (e) {
-    sendResponse({ error: e.message });
+    await saveState({ collected, requestCount, running: true });
+    return { collected, requestCount, error: e.message };
   }
 }
+
+async function harvestLoop() {
+  if (!running) return;
+
+  const state = await loadState();
+  const result = await harvestOne(state.collected, state.requestCount);
+
+  // Notify popup if it's listening.
+  try {
+    chrome.runtime.sendMessage({ type: 'update', ...result });
+  } catch (e) {
+    // Popup not open — that's fine.
+  }
+
+  if (running) {
+    const delay = result.error ? 10000 : 2000 + Math.random() * 3000;
+    timerId = setTimeout(harvestLoop, delay);
+  }
+}
+
+async function startHarvest() {
+  if (running) return;
+  running = true;
+  await saveState({ ...(await loadState()), running: true });
+  harvestLoop();
+}
+
+async function stopHarvest() {
+  running = false;
+  if (timerId) {
+    clearTimeout(timerId);
+    timerId = null;
+  }
+  await saveState({ ...(await loadState()), running: false });
+}
+
+// --- Message handling ---
+
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (msg.action === 'start') {
+    startHarvest().then(() => sendResponse({ started: true }));
+    return true;
+  }
+
+  if (msg.action === 'stop') {
+    stopHarvest().then(() => sendResponse({ stopped: true }));
+    return true;
+  }
+
+  if (msg.action === 'getState') {
+    loadState().then(state => sendResponse(state));
+    return true;
+  }
+
+  if (msg.action === 'clear') {
+    stopHarvest().then(() =>
+      saveState({ collected: {}, requestCount: 0, running: false })
+    ).then(() => sendResponse({ cleared: true }));
+    return true;
+  }
+
+  if (msg.action === 'ping') {
+    sendResponse({ alive: true });
+  }
+});
+
+// Resume harvest if it was running before page reload.
+loadState().then(state => {
+  if (state.running) {
+    running = true;
+    harvestLoop();
+  }
+});

@@ -3,7 +3,7 @@
   "name": "Fake Mail Harvester",
   "version": "1.0",
   "description": "Collects disposable email addresses from temporary mail providers for the PhoneBlock fake-mail-check database.",
-  "permissions": ["activeTab"],
+  "permissions": ["activeTab", "storage"],
   "action": {
     "default_popup": "popup.html"
   },
