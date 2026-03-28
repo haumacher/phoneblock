@@ -116,7 +116,7 @@ public class MailServiceImpl implements MailService {
     	}
     	if (emailStatus == DomainStatus.INVALID) {
 			LOG.warn("Rejected invalid e-mail domain: " + receiver);
-    		throw new AddressException("The e-mail domain does not accept mail.");
+    		throw new AddressException("The e-mail domain does not accept mail. Please check the entered address.");
     	}
 
 		LOG.info("Sending activation mail to '{}' in language '{}'.", receiver, language.tag);
@@ -147,7 +147,7 @@ public class MailServiceImpl implements MailService {
 		}
 		if (emailStatus == DomainStatus.INVALID) {
 			LOG.warn("Rejected invalid e-mail domain: " + receiver);
-			throw new AddressException("The e-mail domain does not accept mail.");
+			throw new AddressException("The e-mail domain does not accept mail. Please check the entered address.");
 		}
 
 		LOG.info("Sending email change verification mail to '{}' in language '{}'.", receiver, language.tag);
