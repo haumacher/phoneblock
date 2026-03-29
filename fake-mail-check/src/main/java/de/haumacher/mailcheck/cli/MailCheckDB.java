@@ -31,10 +31,9 @@ public class MailCheckDB implements AutoCloseable {
 	 * Opens (or creates) an H2 database at the given path and initializes the
 	 * mail-check schema.
 	 *
-	 * @param dbPath File path for the H2 database (without {@code .mv.db} suffix).
+	 * @param url JDBC URL for the H2 database (e.g. <code>jdbc:h2:path-to-db/h2 without {@code .mv.db} suffix).
 	 */
-	public MailCheckDB(String dbPath) throws SQLException {
-		String url = "jdbc:h2:" + dbPath;
+	public MailCheckDB(String url) throws SQLException {
 		LOG.info("Opening H2 database: {}", url);
 
 		JdbcDataSource dataSource = new JdbcDataSource();
