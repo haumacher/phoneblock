@@ -12,10 +12,9 @@ const seen = new Set();
  * Reads all email addresses currently shown in the sidebar list.
  */
 function readSidebarEmails() {
-  const items = document.querySelectorAll('[x-data="create()"] li');
+  const items = document.querySelectorAll('[x-data*="TemporaryEmail"] ul.space-y-2 li');
   const emails = [];
   for (const item of items) {
-    // The address is in nested divs inside each list item.
     const text = item.textContent;
     const match = text.match(/([a-zA-Z0-9.+_-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
     if (match) {
