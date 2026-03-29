@@ -48,7 +48,7 @@ public class EmailNormalizer {
 	 * @return The normalized address (e.g. "xy@gmail.com"), or {@code null} if the
 	 *         domain is not a known public domain.
 	 */
-	public static String normalize(String email) {
+	public static String toCanonicalPublicAddress(String email) {
 		if (email == null) {
 			return null;
 		}

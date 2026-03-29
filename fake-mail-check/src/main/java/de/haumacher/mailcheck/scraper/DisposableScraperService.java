@@ -132,7 +132,7 @@ public class DisposableScraperService implements ServletContextListener {
 
 			for (String domain : domains) {
 				// Skip domains of well-known public providers (e.g. gmail.com).
-				if (EmailNormalizer.normalize("test@" + domain) != null) {
+				if (EmailNormalizer.toCanonicalPublicAddress("test@" + domain) != null) {
 					continue;
 				}
 

@@ -116,7 +116,7 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 			Domains domains = tx.getMapper(Domains.class);
 
 			// Step 1: Normalize and check EMAIL_CHECK cache
-			String normalizedEmail = EmailNormalizer.normalize(address);
+			String normalizedEmail = EmailNormalizer.toCanonicalPublicAddress(address);
 			if (normalizedEmail != null) {
 				DBEmailCheck emailCheck = domains.checkEmailAddress(normalizedEmail);
 				if (emailCheck != null) {

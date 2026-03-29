@@ -326,7 +326,7 @@ public class MailCheckCLI {
 					String source = entry.getSource();
 
 					// For known public providers, insert normalized email.
-					String normalized = EmailNormalizer.normalize(email);
+					String normalized = EmailNormalizer.toCanonicalPublicAddress(email);
 					if (normalized != null) {
 						if (domains.checkEmailAddress(normalized) == null) {
 							domains.insertEmailCheck(normalized, true, now, source);
@@ -364,7 +364,7 @@ public class MailCheckCLI {
 
 				if (arg.contains("@")) {
 					// E-mail address check.
-					String normalized = EmailNormalizer.normalize(arg);
+					String normalized = EmailNormalizer.toCanonicalPublicAddress(arg);
 					if (normalized != null) {
 						// Public provider — check EMAIL_CHECK table.
 						DBEmailCheck emailCheck = domains.checkEmailAddress(normalized);
