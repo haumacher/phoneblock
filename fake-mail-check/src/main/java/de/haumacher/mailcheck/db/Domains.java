@@ -86,6 +86,9 @@ public interface Domains {
 	@Update("update MX_HOST_STATUS set STATUS=#{status}, DOMAIN_COUNT=DOMAIN_COUNT+1, LAST_UPDATED=#{lastUpdated} where MX_HOST=#{mxHost}")
 	int updateMxHostStatus(String mxHost, String status, long lastUpdated);
 
+	@Update("update MX_HOST_STATUS set DOMAIN_COUNT=DOMAIN_COUNT+1, LAST_UPDATED=#{lastUpdated} where MX_HOST=#{mxHost}")
+	int incrementMxHostCount(String mxHost, long lastUpdated);
+
 	@Select("select MX_IP as `key`, STATUS, DOMAIN_COUNT as domainCount, LAST_UPDATED as lastUpdated from MX_IP_STATUS where MX_IP=#{mxIp}")
 	DBMxStatus checkMxIp(String mxIp);
 
@@ -94,5 +97,8 @@ public interface Domains {
 
 	@Update("update MX_IP_STATUS set STATUS=#{status}, DOMAIN_COUNT=DOMAIN_COUNT+1, LAST_UPDATED=#{lastUpdated} where MX_IP=#{mxIp}")
 	int updateMxIpStatus(String mxIp, String status, long lastUpdated);
+
+	@Update("update MX_IP_STATUS set DOMAIN_COUNT=DOMAIN_COUNT+1, LAST_UPDATED=#{lastUpdated} where MX_IP=#{mxIp}")
+	int incrementMxIpCount(String mxIp, long lastUpdated);
 
 }

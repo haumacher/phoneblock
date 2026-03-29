@@ -56,7 +56,11 @@ public class DomainInsert {
 			} else {
 				MxStatus merged = existing.getStatus().merge(disposable);
 				if (merged != existing.getStatus()) {
+					// Status changed — update status and increment count.
 					domains.updateMxHostStatus(mx.mxHost(), merged.name(), now);
+				} else {
+					// Status unchanged — just increment count.
+					domains.incrementMxHostCount(mx.mxHost(), now);
 				}
 			}
 		}
@@ -69,6 +73,8 @@ public class DomainInsert {
 				MxStatus merged = existing.getStatus().merge(disposable);
 				if (merged != existing.getStatus()) {
 					domains.updateMxIpStatus(mx.mxIp(), merged.name(), now);
+				} else {
+					domains.incrementMxIpCount(mx.mxIp(), now);
 				}
 			}
 		}
