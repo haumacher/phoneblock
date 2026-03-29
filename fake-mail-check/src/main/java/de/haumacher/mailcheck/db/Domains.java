@@ -13,6 +13,15 @@ import org.apache.ibatis.annotations.Update;
  */
 public interface Domains {
 
+	@Select("select VAL from MAILCHECK_PROPERTIES where NAME=#{name}")
+	String getProperty(String name);
+
+	@Update("update MAILCHECK_PROPERTIES set VAL=#{value} where NAME=#{name}")
+	int updateProperty(String name, String value);
+
+	@Insert("insert into MAILCHECK_PROPERTIES (NAME, VAL) values (#{name}, #{value})")
+	int insertProperty(String name, String value);
+
 	@Select("select DOMAIN_NAME, STATUS AS statusName, LAST_CHANGED, SOURCE_SYSTEM, MX_HOST, MX_IP from DOMAIN_CHECK where DOMAIN_NAME=#{domainName}")
 	DBDomainCheck checkDomain(String domainName);
 

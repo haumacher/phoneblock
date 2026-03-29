@@ -24,6 +24,7 @@ import org.apache.ibatis.session.SqlSession;
 import de.haumacher.mailcheck.DisposableListService;
 import de.haumacher.mailcheck.EmailNormalizer;
 import de.haumacher.mailcheck.PropertyStore;
+import de.haumacher.mailcheck.db.MailCheckPropertyStore;
 import de.haumacher.mailcheck.cli.model.HarvestedEmail;
 import de.haumacher.mailcheck.db.DBDomainCheck;
 import de.haumacher.mailcheck.db.DBMxStatus;
@@ -60,7 +61,7 @@ import de.haumacher.msgbuf.server.io.ReaderAdapter;
 public class MailCheckCLI {
 
 	public static void main(String[] args) throws Exception {
-		String dbPath = "./mailcheck";
+		String dbUrl = "jdbc:h2:./mailcheck";
 		String command = null;
 		String checkArg = null;
 		boolean allFlag = false;
@@ -75,7 +76,7 @@ public class MailCheckCLI {
 					printUsage();
 					System.exit(1);
 				}
-				dbPath = args[i];
+				dbUrl = args[i];
 			} else if ("--all".equals(arg)) {
 				allFlag = true;
 			} else if (arg.startsWith("-")) {
@@ -97,13 +98,13 @@ public class MailCheckCLI {
 
 		switch (command) {
 			case "init":
-				runInit(dbPath);
+				runInit(dbUrl);
 				break;
 			case "import-list":
-				runImportList(dbPath);
+				runImportList(dbUrl);
 				break;
 			case "scrape":
-				runScrape(dbPath);
+				runScrape(dbUrl);
 				break;
 			case "import-emails":
 				if (checkArg == null) {
@@ -111,13 +112,13 @@ public class MailCheckCLI {
 					printUsage();
 					System.exit(1);
 				}
-				runImportEmails(dbPath, checkArg);
+				runImportEmails(dbUrl, checkArg);
 				break;
 			case "resolve-mx":
-				runResolveMx(dbPath, allFlag);
+				runResolveMx(dbUrl, allFlag);
 				break;
 			case "rebuild-mx":
-				runRebuildMx(dbPath);
+				runRebuildMx(dbUrl);
 				break;
 			case "check":
 				if (checkArg == null) {
@@ -125,10 +126,10 @@ public class MailCheckCLI {
 					printUsage();
 					System.exit(1);
 				}
-				runCheck(dbPath, checkArg);
+				runCheck(dbUrl, checkArg);
 				break;
 			case "stats":
-				runStats(dbPath);
+				runStats(dbUrl);
 				break;
 			default:
 				System.err.println("Unknown command: " + command);
@@ -137,16 +138,15 @@ public class MailCheckCLI {
 		}
 	}
 
-	private static void runInit(String dbPath) throws Exception {
-		try (MailCheckDB db = new MailCheckDB(dbPath)) {
-			System.out.println("Database initialized at: " + dbPath);
+	private static void runInit(String dbUrl) throws Exception {
+		try (MailCheckDB db = new MailCheckDB(dbUrl)) {
+			System.out.println("Database initialized at: " + dbUrl);
 		}
 	}
 
-	private static void runImportList(String dbPath) throws Exception {
-		try (MailCheckDB db = new MailCheckDB(dbPath)) {
-			Path propsFile = Paths.get(dbPath + ".properties");
-			PropertyStore propertyStore = new FilePropertyStore(propsFile);
+	private static void runImportList(String dbUrl) throws Exception {
+		try (MailCheckDB db = new MailCheckDB(dbUrl)) {
+			PropertyStore propertyStore = new MailCheckPropertyStore(db.getSessionFactory());
 
 			ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 			try {
@@ -160,8 +160,8 @@ public class MailCheckCLI {
 		}
 	}
 
-	private static void runScrape(String dbPath) throws Exception {
-		try (MailCheckDB db = new MailCheckDB(dbPath)) {
+	private static void runScrape(String dbUrl) throws Exception {
+		try (MailCheckDB db = new MailCheckDB(dbUrl)) {
 			ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 			try {
 				DisposableScraperService service = new DisposableScraperService(() -> scheduler, db.getSessionFactory());
@@ -178,8 +178,8 @@ public class MailCheckCLI {
 
 	private record MxEntry(DBDomainCheck domain, MxResult mx) {}
 
-	private static void runResolveMx(String dbPath, boolean all) throws Exception {
-		try (MailCheckDB db = new MailCheckDB(dbPath)) {
+	private static void runResolveMx(String dbUrl, boolean all) throws Exception {
+		try (MailCheckDB db = new MailCheckDB(dbUrl)) {
 			List<DBDomainCheck> domains;
 			try (SqlSession session = db.getSessionFactory().openSession()) {
 				Domains mapper = session.getMapper(Domains.class);
@@ -241,8 +241,8 @@ public class MailCheckCLI {
 		}
 	}
 
-	private static void runRebuildMx(String dbPath) throws Exception {
-		try (MailCheckDB db = new MailCheckDB(dbPath)) {
+	private static void runRebuildMx(String dbUrl) throws Exception {
+		try (MailCheckDB db = new MailCheckDB(dbUrl)) {
 			try (SqlSession session = db.getSessionFactory().openSession()) {
 				Domains domains = session.getMapper(Domains.class);
 
@@ -293,7 +293,7 @@ public class MailCheckCLI {
 		}
 	}
 
-	private static void runImportEmails(String dbPath, String filePath) throws Exception {
+	private static void runImportEmails(String dbUrl, String filePath) throws Exception {
 		Path file = Paths.get(filePath);
 		if (!Files.exists(file)) {
 			System.err.println("File not found: " + filePath);
@@ -317,7 +317,7 @@ public class MailCheckCLI {
 		int domainsAdded = 0;
 		int skipped = 0;
 
-		try (MailCheckDB db = new MailCheckDB(dbPath)) {
+		try (MailCheckDB db = new MailCheckDB(dbUrl)) {
 			try (SqlSession session = db.getSessionFactory().openSession()) {
 				Domains domains = session.getMapper(Domains.class);
 
@@ -358,8 +358,8 @@ public class MailCheckCLI {
 			+ domainsAdded + " domains added, " + skipped + " duplicates skipped.");
 	}
 
-	private static void runCheck(String dbPath, String arg) throws Exception {
-		try (MailCheckDB db = new MailCheckDB(dbPath)) {
+	private static void runCheck(String dbUrl, String arg) throws Exception {
+		try (MailCheckDB db = new MailCheckDB(dbUrl)) {
 			try (SqlSession session = db.getSessionFactory().openSession()) {
 				Domains domains = session.getMapper(Domains.class);
 
@@ -420,8 +420,8 @@ public class MailCheckCLI {
 		}
 	}
 
-	private static void runStats(String dbPath) throws Exception {
-		try (MailCheckDB db = new MailCheckDB(dbPath)) {
+	private static void runStats(String dbUrl) throws Exception {
+		try (MailCheckDB db = new MailCheckDB(dbUrl)) {
 			try (SqlSession session = db.getSessionFactory().openSession()) {
 				Connection conn = session.getConnection();
 				try (Statement stmt = conn.createStatement()) {
