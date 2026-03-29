@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import de.haumacher.mailcheck.db.DBDomainCheck;
 import de.haumacher.mailcheck.db.DBEmailCheck;
 import de.haumacher.mailcheck.db.DBMxStatus;
+import de.haumacher.mailcheck.db.DBMxStatus.MxStatus;
 import de.haumacher.mailcheck.db.Domains;
 import de.haumacher.mailcheck.db.MailCheckSchema;
 import de.haumacher.mailcheck.model.DomainStatus;
@@ -230,11 +231,11 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 			if (mx.mxHost() != null) {
 				DBMxStatus existing = domains.checkMxHost(mx.mxHost());
 				if (existing == null) {
-					domains.insertMxHost(mx.mxHost(), mx.mxIp(), DBMxStatus.statusFor(disposable), now);
+					domains.insertMxHost(mx.mxHost(), mx.mxIp(), MxStatus.of(disposable).name(), now);
 				} else {
-					String merged = DBMxStatus.mergeStatus(existing.getStatus(), disposable);
-					if (!merged.equals(existing.getStatus())) {
-						domains.updateMxHostStatus(mx.mxHost(), merged, now);
+					MxStatus merged = existing.getStatus().merge(disposable);
+					if (merged != existing.getStatus()) {
+						domains.updateMxHostStatus(mx.mxHost(), merged.name(), now);
 					}
 				}
 			}
@@ -242,11 +243,11 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 			if (mx.mxIp() != null) {
 				DBMxStatus existing = domains.checkMxIp(mx.mxIp());
 				if (existing == null) {
-					domains.insertMxIp(mx.mxIp(), DBMxStatus.statusFor(disposable), now);
+					domains.insertMxIp(mx.mxIp(), MxStatus.of(disposable).name(), now);
 				} else {
-					String merged = DBMxStatus.mergeStatus(existing.getStatus(), disposable);
-					if (!merged.equals(existing.getStatus())) {
-						domains.updateMxIpStatus(mx.mxIp(), merged, now);
+					MxStatus merged = existing.getStatus().merge(disposable);
+					if (merged != existing.getStatus()) {
+						domains.updateMxIpStatus(mx.mxIp(), merged.name(), now);
 					}
 				}
 			}

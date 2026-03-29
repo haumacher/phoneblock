@@ -3,23 +3,38 @@
  */
 package de.haumacher.mailcheck.db;
 
-import de.haumacher.mailcheck.model.DomainStatus;
-
 /**
  * POJO for the {@code MX_HOST_STATUS} and {@code MX_IP_STATUS} tables.
  */
 public class DBMxStatus {
 
-	/** MX host or IP is associated with both disposable and legitimate domains. */
-	public static final String MIXED = "mixed";
+	/** Classification of an MX host or IP based on the domains it serves. */
+	public enum MxStatus {
+		/** Only associated with disposable domains. */
+		disposable,
+		/** Only associated with legitimate domains. */
+		safe,
+		/** Associated with both disposable and legitimate domains. */
+		mixed;
+
+		/** Returns the status for the given disposable flag. */
+		public static MxStatus of(boolean disposable) {
+			return disposable ? MxStatus.disposable : MxStatus.safe;
+		}
+
+		/** Returns the merged status when a new observation is made. */
+		public MxStatus merge(boolean disposable) {
+			return this == of(disposable) ? this : mixed;
+		}
+	}
 
 	private final String _key;
-	private final String _status;
+	private final MxStatus _status;
 	private final long _lastUpdated;
 
 	public DBMxStatus(String key, String status, long lastUpdated) {
 		_key = key;
-		_status = status;
+		_status = MxStatus.valueOf(status);
 		_lastUpdated = lastUpdated;
 	}
 
@@ -27,7 +42,7 @@ public class DBMxStatus {
 		return _key;
 	}
 
-	public String getStatus() {
+	public MxStatus getStatus() {
 		return _status;
 	}
 
@@ -36,30 +51,10 @@ public class DBMxStatus {
 	}
 
 	public boolean isDisposable() {
-		return DomainStatus.DISPOSABLE.protocolName().equals(_status);
+		return _status == MxStatus.disposable;
 	}
 
 	public boolean isSafe() {
-		return DomainStatus.SAFE.protocolName().equals(_status);
-	}
-
-	/**
-	 * Returns the updated status when a new observation is made.
-	 * If the new observation matches the current status, returns the current status.
-	 * Otherwise, returns {@link #MIXED}.
-	 */
-	public static String mergeStatus(String existing, boolean disposable) {
-		String observed = statusFor(disposable);
-		if (existing.equals(observed)) {
-			return existing;
-		}
-		return MIXED;
-	}
-
-	/**
-	 * Returns the MX status string for the given disposable flag.
-	 */
-	public static String statusFor(boolean disposable) {
-		return disposable ? DomainStatus.DISPOSABLE.protocolName() : DomainStatus.SAFE.protocolName();
+		return _status == MxStatus.safe;
 	}
 }

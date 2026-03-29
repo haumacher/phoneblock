@@ -27,6 +27,7 @@ import de.haumacher.mailcheck.PropertyStore;
 import de.haumacher.mailcheck.cli.model.HarvestedEmail;
 import de.haumacher.mailcheck.db.DBDomainCheck;
 import de.haumacher.mailcheck.db.DBMxStatus;
+import de.haumacher.mailcheck.db.DBMxStatus.MxStatus;
 import de.haumacher.mailcheck.model.DomainStatus;
 import de.haumacher.mailcheck.db.DBEmailCheck;
 import de.haumacher.mailcheck.db.Domains;
@@ -245,9 +246,9 @@ public class MailCheckCLI {
 			try (SqlSession session = db.getSessionFactory().openSession()) {
 				Domains domains = session.getMapper(Domains.class);
 
-				String disposable = DomainStatus.DISPOSABLE.protocolName();
-				String safe = DomainStatus.SAFE.protocolName();
-				String mixed = DBMxStatus.MIXED;
+				String disposable = MxStatus.disposable.name();
+				String safe = MxStatus.safe.name();
+				String mixed = MxStatus.mixed.name();
 
 				// Clear existing MX status tables.
 				int hostCleared = domains.clearMxHostStatus();
@@ -271,22 +272,22 @@ public class MailCheckCLI {
 		if (mx.mxHost() != null) {
 			DBMxStatus existing = domains.checkMxHost(mx.mxHost());
 			if (existing == null) {
-				domains.insertMxHost(mx.mxHost(), mx.mxIp(), DBMxStatus.statusFor(disposable), now);
+				domains.insertMxHost(mx.mxHost(), mx.mxIp(), MxStatus.of(disposable).name(), now);
 			} else {
-				String merged = DBMxStatus.mergeStatus(existing.getStatus(), disposable);
-				if (!merged.equals(existing.getStatus())) {
-					domains.updateMxHostStatus(mx.mxHost(), merged, now);
+				MxStatus merged = existing.getStatus().merge(disposable);
+				if (merged != existing.getStatus()) {
+					domains.updateMxHostStatus(mx.mxHost(), merged.name(), now);
 				}
 			}
 		}
 		if (mx.mxIp() != null) {
 			DBMxStatus existing = domains.checkMxIp(mx.mxIp());
 			if (existing == null) {
-				domains.insertMxIp(mx.mxIp(), DBMxStatus.statusFor(disposable), now);
+				domains.insertMxIp(mx.mxIp(), MxStatus.of(disposable).name(), now);
 			} else {
-				String merged = DBMxStatus.mergeStatus(existing.getStatus(), disposable);
-				if (!merged.equals(existing.getStatus())) {
-					domains.updateMxIpStatus(mx.mxIp(), merged, now);
+				MxStatus merged = existing.getStatus().merge(disposable);
+				if (merged != existing.getStatus()) {
+					domains.updateMxIpStatus(mx.mxIp(), merged.name(), now);
 				}
 			}
 		}
