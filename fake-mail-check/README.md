@@ -156,10 +156,32 @@ switch (status) {
 
 ### Web Application
 
-Register `EMailCheckService` as a `ServletContextListener`. Configure providers via JNDI:
+Register `EMailCheckService` as a `ServletContextListener`. Configure providers and API keys via JNDI (e.g. in Tomcat's `context.xml`):
 
 ```xml
+<!-- Comma-separated list of provider class names -->
 <Environment name="mailcheck/providers"
     value="de.haumacher.mailcheck.provider.rapidapi.RapidAPIProvider,de.haumacher.mailcheck.provider.usercheck.UserCheckProvider"
     type="java.lang.String"/>
+
+<!-- RapidAPI Mailcheck (https://rapidapi.com/Top-Rated/api/mailcheck4) -->
+<Environment name="mailcheck/apiKey"
+    value="your-rapidapi-key"
+    type="java.lang.String"/>
+
+<!-- UserCheck (https://app.usercheck.com) -->
+<Environment name="usercheck/apiKey"
+    value="your-usercheck-key"
+    type="java.lang.String"/>
 ```
+
+### Provider Configuration
+
+| Provider | JNDI Key | API | Free Tier |
+|---|---|---|---|
+| RapidAPI Mailcheck | `mailcheck/apiKey` | `GET https://mailcheck.p.rapidapi.com/?domain={domain}` | 300 requests/month |
+| UserCheck | `usercheck/apiKey` | `GET https://api.usercheck.com/domain/{domain}` | 200 requests/day |
+
+Both providers support rate limiting — the service automatically pauses when quotas are exceeded and resumes after the reset period.
+
+Providers are queried in the order listed in `mailcheck/providers`. The first provider returning a result wins. If no providers are configured, only local data (domain blocklist, scrapers, MX heuristic) is used.
