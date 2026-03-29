@@ -27,6 +27,7 @@ import de.haumacher.mailcheck.PropertyStore;
 import de.haumacher.mailcheck.db.MailCheckPropertyStore;
 import de.haumacher.mailcheck.cli.model.HarvestedEmail;
 import de.haumacher.mailcheck.db.DBDomainCheck;
+import de.haumacher.mailcheck.db.DomainInsert;
 import de.haumacher.mailcheck.db.DBMxStatus;
 import de.haumacher.mailcheck.db.DBMxStatus.MxStatus;
 import de.haumacher.mailcheck.model.DomainStatus;
@@ -366,9 +367,7 @@ public class MailCheckCLI {
 					} else {
 						// Unknown domain — insert as disposable domain.
 						if (domains.checkDomain(domain) == null) {
-							MxResult mx = MxLookup.lookup(domain);
-							String mxHost = mx.mxHost() != null ? mx.mxHost() : "-";
-							domains.insertDomain(domain, DomainStatus.DISPOSABLE.protocolName(), now, source, mxHost, mx.mxIp());
+							DomainInsert.insertWithMxLookup(domains, domain, DomainStatus.DISPOSABLE, now, source);
 							domainsAdded++;
 						}
 					}
