@@ -4,6 +4,7 @@
 package de.haumacher.mailcheck.scraper;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Set;
@@ -11,6 +12,10 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -39,7 +44,8 @@ public class DisposableScraperService implements ServletContextListener {
 
 	private static final int BATCH_SIZE = 100;
 
-	private static final List<DisposableScraper> SCRAPERS = List.of(
+	/** Default scrapers used when no JNDI configuration is present. */
+	private static final List<DisposableScraper> DEFAULT_SCRAPERS = List.of(
 		new YOPmailScraper(),
 		new FakeMailGeneratorScraper(),
 		new GuerrillaMailScraper(),
@@ -52,6 +58,7 @@ public class DisposableScraperService implements ServletContextListener {
 
 	private final Supplier<ScheduledExecutorService> _scheduler;
 	private final SqlSessionFactory _sessionFactory;
+	private List<DisposableScraper> _scrapers;
 
 	private ScheduledFuture<?> _task;
 
@@ -67,7 +74,8 @@ public class DisposableScraperService implements ServletContextListener {
 
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
-		LOG.info("Starting disposable domain scraper service.");
+		_scrapers = loadScrapers();
+		LOG.info("Starting disposable domain scraper service with {} scrapers.", _scrapers.size());
 
 		// Schedule daily at 05:00.
 		Calendar firstRun = Calendar.getInstance();
@@ -101,12 +109,48 @@ public class DisposableScraperService implements ServletContextListener {
 	}
 
 	/**
+	 * Loads scrapers from JNDI ({@code mailcheck/scrapers}) or falls back to defaults.
+	 *
+	 * <p>
+	 * The JNDI value is a comma-separated list of fully qualified class names.
+	 * Each class must implement {@link DisposableScraper} and have a no-arg constructor.
+	 * </p>
+	 */
+	private static List<DisposableScraper> loadScrapers() {
+		try {
+			InitialContext initCtx = new InitialContext();
+			Context envCtx = (Context) initCtx.lookup("java:comp/env");
+			Object value = envCtx.lookup("mailcheck/scrapers");
+			if (value != null) {
+				List<DisposableScraper> scrapers = new ArrayList<>();
+				for (String className : value.toString().split("\\s*,\\s*")) {
+					if (className.isEmpty()) {
+						continue;
+					}
+					try {
+						DisposableScraper scraper = (DisposableScraper) Class.forName(className).getDeclaredConstructor().newInstance();
+						scrapers.add(scraper);
+						LOG.info("Loaded scraper: {}", className);
+					} catch (Exception ex) {
+						LOG.warn("Failed to load scraper '{}': {}", className, ex.getMessage());
+					}
+				}
+				return scrapers;
+			}
+		} catch (NamingException ex) {
+			LOG.debug("No mailcheck/scrapers JNDI config, using defaults.");
+		}
+		return DEFAULT_SCRAPERS;
+	}
+
+	/**
 	 * Scrapes all configured providers and inserts newly discovered domains.
 	 */
 	public void runScrape() {
+		List<DisposableScraper> scrapers = _scrapers != null ? _scrapers : DEFAULT_SCRAPERS;
 		LOG.info("Starting disposable domain scraping.");
 
-		for (DisposableScraper scraper : SCRAPERS) {
+		for (DisposableScraper scraper : scrapers) {
 			try {
 				scrapeProvider(scraper);
 			} catch (Exception ex) {
