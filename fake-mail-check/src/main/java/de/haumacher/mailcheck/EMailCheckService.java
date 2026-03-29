@@ -228,7 +228,7 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 			if (mx.mxHost() != null) {
 				DBMxStatus existing = domains.checkMxHost(mx.mxHost());
 				if (existing == null) {
-					domains.insertMxHost(mx.mxHost(), DBMxStatus.statusFor(disposable), now);
+					domains.insertMxHost(mx.mxHost(), mx.mxIp(), DBMxStatus.statusFor(disposable), now);
 				} else {
 					String merged = DBMxStatus.mergeStatus(existing.getStatus(), disposable);
 					if (!merged.equals(existing.getStatus())) {

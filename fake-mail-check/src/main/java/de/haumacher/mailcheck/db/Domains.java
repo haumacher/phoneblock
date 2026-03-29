@@ -37,8 +37,8 @@ public interface Domains {
 	@Delete("delete from MX_IP_STATUS")
 	int clearMxIpStatus();
 
-	@Insert("INSERT INTO MX_HOST_STATUS (MX_HOST, STATUS, LAST_UPDATED) " +
-		"SELECT MX_HOST, " +
+	@Insert("INSERT INTO MX_HOST_STATUS (MX_HOST, MX_IP, STATUS, LAST_UPDATED) " +
+		"SELECT MX_HOST, MAX(MX_IP), " +
 		"  CASE " +
 		"    WHEN MIN(CASE WHEN STATUS = #{disposable} THEN 1 ELSE 0 END) = 1 THEN #{disposable} " +
 		"    WHEN MAX(CASE WHEN STATUS = #{disposable} THEN 1 ELSE 0 END) = 0 THEN #{safe} " +
@@ -66,8 +66,8 @@ public interface Domains {
 	@Select("select MX_HOST as `key`, STATUS, LAST_UPDATED as lastUpdated from MX_HOST_STATUS where MX_HOST=#{mxHost}")
 	DBMxStatus checkMxHost(String mxHost);
 
-	@Insert("insert into MX_HOST_STATUS (MX_HOST, STATUS, LAST_UPDATED) values (#{mxHost}, #{status}, #{lastUpdated})")
-	int insertMxHost(String mxHost, String status, long lastUpdated);
+	@Insert("insert into MX_HOST_STATUS (MX_HOST, MX_IP, STATUS, LAST_UPDATED) values (#{mxHost}, #{mxIp}, #{status}, #{lastUpdated})")
+	int insertMxHost(String mxHost, String mxIp, String status, long lastUpdated);
 
 	@Update("update MX_HOST_STATUS set STATUS=#{status}, LAST_UPDATED=#{lastUpdated} where MX_HOST=#{mxHost}")
 	int updateMxHostStatus(String mxHost, String status, long lastUpdated);
