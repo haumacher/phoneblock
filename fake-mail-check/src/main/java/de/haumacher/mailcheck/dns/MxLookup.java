@@ -78,7 +78,13 @@ public class MxLookup {
 				LOG.debug("Failed to resolve IP for MX host '{}': {}", mxHost, e.getMessage());
 			}
 
-			if (mxIp != null && mxIp.startsWith("127.")) {
+			if (mxIp == null) {
+				// MX host does not resolve to an IP — not reachable.
+				LOG.debug("MX host '{}' has no A record.", mxHost);
+				return EMPTY;
+			}
+
+			if (mxIp.startsWith("127.")) {
 				// Loopback address — not a real mail server.
 				return EMPTY;
 			}
