@@ -45,6 +45,20 @@ function waitFor(conditionFn, timeoutMs = 15000, intervalMs = 500) {
   });
 }
 
+/**
+ * Deletes the newest (first) email in the sidebar to free up a slot.
+ */
+async function deleteNewestEmail() {
+  const deleteBtn = Array.from(document.querySelectorAll('button'))
+    .find(b => b.textContent.trim().includes('Delete'));
+
+  if (deleteBtn) {
+    deleteBtn.click();
+    // Wait a bit for the deletion to complete.
+    await new Promise(r => setTimeout(r, 1000));
+  }
+}
+
 initHarvester(async function(collected, requestCount) {
   try {
     // Seed seen set on first run.
@@ -95,7 +109,12 @@ initHarvester(async function(collected, requestCount) {
     const type = (domain.includes('gmail') || domain.includes('googlemail')) ? 'gmail' :
                  (domain.includes('outlook') || domain.includes('hotmail')) ? 'microsoft' : 'domain';
 
-    return recordEmail(collected, requestCount, newEmail, type, domain);
+    const result = recordEmail(collected, requestCount, newEmail, type, domain);
+
+    // Delete the address to free up a slot (free tier: max 3 active).
+    await deleteNewestEmail();
+
+    return result;
   } catch (e) {
     return { collected, requestCount, error: e.message };
   }
