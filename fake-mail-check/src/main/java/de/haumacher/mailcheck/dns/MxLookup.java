@@ -22,6 +22,23 @@ public class MxLookup {
 	private static final MxResult EMPTY = new MxResult(null, null);
 
 	/**
+	 * Checks whether the given MX hostname looks like a real mail server.
+	 * Must contain at least one dot and only valid hostname characters.
+	 */
+	private static boolean isValidMxHost(String mxHost) {
+		if (mxHost == null || mxHost.indexOf('.') < 0) {
+			return false;
+		}
+		for (int i = 0; i < mxHost.length(); i++) {
+			char c = mxHost.charAt(i);
+			if (!Character.isLetterOrDigit(c) && c != '.' && c != '-') {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
 	 * Looks up the MX record for the given domain and resolves the MX host's IP address.
 	 *
 	 * @param domain the domain to look up (e.g. "mailinator.com")
@@ -45,8 +62,8 @@ public class MxLookup {
 			}
 
 			String mxHost = best.getTarget().toString(true).toLowerCase();
-			if (".".equals(mxHost) || "localhost".equals(mxHost)) {
-				// Domain explicitly declares no mail service.
+			if (!isValidMxHost(mxHost)) {
+				// Not a usable mail server (e.g. ".", "localhost", "~").
 				return EMPTY;
 			}
 
