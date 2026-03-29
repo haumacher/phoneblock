@@ -1,101 +1,101 @@
 /**
  * Content script for smailpro.com — harvests disposable Gmail/Outlook addresses
- * via the /app/create API with reCAPTCHA v3 token.
+ * by clicking the Create/Generate buttons and reading the result from the sidebar.
  *
- * Since grecaptcha lives in the page context (not the content script's isolated
- * world), we inject a helper script into the page that generates captcha tokens
- * and communicates them back via window.postMessage.
+ * Note: Free tier has a limit of 3 addresses per session.
  */
 
-const SITE_KEY = '6Ldd8-IUAAAAAIdqbOociFKyeBGFsp3nNUM_6_SC';
-
-/** Query parameters to cycle through. */
-const QUERIES = [
-  { username: 'random', type: 'alias', domain: 'gmail.com', server: '1' },
-  { username: 'random', type: 'alias', domain: 'googlemail.com', server: '1' },
-  { username: 'random', type: 'alias', domain: 'outlook.com', server: '1' },
-];
-let queryIndex = 0;
-
-// Inject a helper into the page context for reCAPTCHA access.
-const injected = document.createElement('script');
-injected.textContent = `
-  window.addEventListener('message', async (event) => {
-    if (event.data && event.data.type === 'smailpro-captcha-request') {
-      try {
-        const token = await grecaptcha.execute('${SITE_KEY}', {action: 'create'});
-        window.postMessage({type: 'smailpro-captcha-response', token: token}, '*');
-      } catch(e) {
-        window.postMessage({type: 'smailpro-captcha-response', error: e.message}, '*');
-      }
-    }
-  });
-`;
-document.documentElement.appendChild(injected);
-injected.remove();
+/** Set of already-seen addresses to detect when a new one appears. */
+const seen = new Set();
 
 /**
- * Requests a reCAPTCHA token from the page context via postMessage.
+ * Reads all email addresses currently shown in the sidebar list.
  */
-function getCaptchaToken() {
-  return new Promise((resolve, reject) => {
-    const handler = (event) => {
-      if (event.data && event.data.type === 'smailpro-captcha-response') {
-        window.removeEventListener('message', handler);
-        if (event.data.error) {
-          reject(new Error(event.data.error));
-        } else {
-          resolve(event.data.token);
-        }
-      }
-    };
-    window.addEventListener('message', handler);
-    window.postMessage({type: 'smailpro-captcha-request'}, '*');
-
-    // Timeout after 10 seconds.
-    setTimeout(() => {
-      window.removeEventListener('message', handler);
-      reject(new Error('Captcha timeout'));
-    }, 10000);
-  });
+function readSidebarEmails() {
+  const items = document.querySelectorAll('[x-data="create()"] li');
+  const emails = [];
+  for (const item of items) {
+    // The address is in nested divs inside each list item.
+    const text = item.textContent;
+    const match = text.match(/([a-zA-Z0-9.+_-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
+    if (match) {
+      emails.push(match[1].toLowerCase());
+    }
+  }
+  return emails;
 }
 
-function toQueryString(params) {
-  return '?' + Object.entries(params).map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&');
+/**
+ * Waits for a condition to become true, checking every interval ms.
+ */
+function waitFor(conditionFn, timeoutMs = 15000, intervalMs = 500) {
+  return new Promise((resolve, reject) => {
+    const start = Date.now();
+    const check = () => {
+      const result = conditionFn();
+      if (result) {
+        resolve(result);
+      } else if (Date.now() - start > timeoutMs) {
+        reject(new Error('Timeout waiting for condition'));
+      } else {
+        setTimeout(check, intervalMs);
+      }
+    };
+    check();
+  });
 }
 
 initHarvester(async function(collected, requestCount) {
   try {
-    const token = await getCaptchaToken();
-    const query = QUERIES[queryIndex % QUERIES.length];
-    queryIndex++;
-
-    const url = 'https://smailpro.com/app/create' + toQueryString(query);
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-captcha': token
+    // Seed seen set on first run.
+    if (seen.size === 0) {
+      for (const email of readSidebarEmails()) {
+        seen.add(email);
       }
-    });
+    }
+
+    // Click "Create" button to open the dialog.
+    const createBtn = document.querySelector('button img[src*="create"], button img[src*="add"]');
+    const createButton = createBtn ? createBtn.closest('button') :
+      Array.from(document.querySelectorAll('button')).find(b => b.textContent.includes('Create'));
+
+    if (!createButton) {
+      return { collected, requestCount, error: 'Create button not found' };
+    }
+    createButton.click();
+
+    // Wait for the Generate button to appear in the dialog.
+    await waitFor(() => {
+      const btns = Array.from(document.querySelectorAll('button'));
+      return btns.find(b => b.textContent.trim().includes('Generate'));
+    }, 5000);
+
+    // Small delay for dialog animation.
+    await new Promise(r => setTimeout(r, 500));
+
+    // Click "Generate".
+    const generateBtn = Array.from(document.querySelectorAll('button'))
+      .find(b => b.textContent.trim().includes('Generate'));
+
+    if (!generateBtn) {
+      return { collected, requestCount, error: 'Generate button not found' };
+    }
+    generateBtn.click();
 
     requestCount++;
 
-    if (!response.ok) {
-      const error = await response.json().catch(() => ({}));
-      return { collected, requestCount, error: error.msg || 'HTTP ' + response.status };
-    }
+    // Wait for a new email to appear in the sidebar.
+    const newEmail = await waitFor(() => {
+      const emails = readSidebarEmails();
+      return emails.find(e => !seen.has(e));
+    }, 15000);
 
-    const data = await response.json();
+    seen.add(newEmail);
+    const domain = newEmail.substring(newEmail.indexOf('@') + 1);
+    const type = (domain.includes('gmail') || domain.includes('googlemail')) ? 'gmail' :
+                 (domain.includes('outlook') || domain.includes('hotmail')) ? 'microsoft' : 'domain';
 
-    if (data.address) {
-      const rawEmail = data.address.toLowerCase();
-      const domain = rawEmail.substring(rawEmail.indexOf('@') + 1);
-      const type = (domain.includes('gmail') || domain.includes('googlemail')) ? 'gmail' : 'microsoft';
-      return recordEmail(collected, requestCount, rawEmail, type, domain);
-    } else {
-      return { collected, requestCount, error: 'No address in response' };
-    }
+    return recordEmail(collected, requestCount, newEmail, type, domain);
   } catch (e) {
     return { collected, requestCount, error: e.message };
   }
