@@ -59,9 +59,15 @@ async function getTab() {
   return tab;
 }
 
+const SUPPORTED_SITES = ['22.do', 'mailticking.com'];
+
+function isSupportedSite(url) {
+  return url && SUPPORTED_SITES.some(site => url.includes(site));
+}
+
 async function ensureContentScript(tab) {
-  if (!tab || !tab.url || !tab.url.includes('22.do')) {
-    statusEl.innerHTML = '<span class="error">Bitte zuerst 22.do im Browser öffnen.</span>';
+  if (!tab || !isSupportedSite(tab.url)) {
+    statusEl.innerHTML = '<span class="error">Bitte eine unterstützte Seite öffnen (' + SUPPORTED_SITES.join(', ') + ').</span>';
     return false;
   }
   try {
@@ -169,7 +175,7 @@ async function download() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'fake-emails-22do-' + new Date().toISOString().slice(0, 10) + '.json';
+  a.download = 'fake-emails-' + new Date().toISOString().slice(0, 10) + '.json';
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -177,8 +183,8 @@ async function download() {
 // On popup open: restore UI from persisted state.
 (async () => {
   const tab = await getTab();
-  if (!tab || !tab.url || !tab.url.includes('22.do')) {
-    statusEl.innerHTML = '<span class="error">Bitte zuerst 22.do im Browser öffnen.</span>';
+  if (!tab || !isSupportedSite(tab.url)) {
+    statusEl.innerHTML = '<span class="error">Bitte eine unterstützte Seite öffnen (' + SUPPORTED_SITES.join(', ') + ').</span>';
     return;
   }
 
