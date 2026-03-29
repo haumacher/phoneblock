@@ -185,3 +185,29 @@ Register `EMailCheckService` as a `ServletContextListener`. Configure providers 
 Both providers support rate limiting — the service automatically pauses when quotas are exceeded and resumes after the reset period.
 
 Providers are queried in the order listed in `mailcheck/providers`. The first provider returning a result wins. If no providers are configured, only local data (domain blocklist, scrapers, MX heuristic) is used.
+
+### Scraper Configuration
+
+Scrapers can optionally be configured via JNDI. Without configuration, all built-in scrapers are used.
+
+```xml
+<!-- Optional: comma-separated list of scraper class names (defaults to all built-in scrapers) -->
+<Environment name="mailcheck/scrapers"
+    value="de.haumacher.mailcheck.scraper.YOPmailScraper,de.haumacher.mailcheck.scraper.TMailorScraper,de.haumacher.mailcheck.scraper.PurpleMailScraper"
+    type="java.lang.String"/>
+```
+
+Each class must implement `DisposableScraper` with a no-arg constructor. Built-in scrapers:
+
+| Scraper | Class |
+|---|---|
+| YOPmail | `de.haumacher.mailcheck.scraper.YOPmailScraper` |
+| Fake Mail Generator | `de.haumacher.mailcheck.scraper.FakeMailGeneratorScraper` |
+| Guerrilla Mail | `de.haumacher.mailcheck.scraper.GuerrillaMailScraper` |
+| Mohmal | `de.haumacher.mailcheck.scraper.MohmalScraper` |
+| EmailFake | `de.haumacher.mailcheck.scraper.EmailFakeScraper` |
+| TMailor | `de.haumacher.mailcheck.scraper.TMailorScraper` |
+| Fumail | `de.haumacher.mailcheck.scraper.FumailScraper` |
+| PurpleMail | `de.haumacher.mailcheck.scraper.PurpleMailScraper` |
+
+The CLI always uses all built-in scrapers (JNDI is not available in CLI context).
