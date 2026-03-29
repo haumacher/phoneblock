@@ -45,7 +45,7 @@ public class MxLookup {
 			}
 
 			String mxHost = best.getTarget().toString(true).toLowerCase();
-			if (".".equals(mxHost)) {
+			if (".".equals(mxHost) || "localhost".equals(mxHost)) {
 				// Domain explicitly declares no mail service.
 				return EMPTY;
 			}
@@ -59,6 +59,11 @@ public class MxLookup {
 				}
 			} catch (Exception e) {
 				LOG.debug("Failed to resolve IP for MX host '{}': {}", mxHost, e.getMessage());
+			}
+
+			if (mxIp != null && mxIp.startsWith("127.")) {
+				// Loopback address — not a real mail server.
+				return EMPTY;
 			}
 
 			return new MxResult(mxHost, mxIp);
