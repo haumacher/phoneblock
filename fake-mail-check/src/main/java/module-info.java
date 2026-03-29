@@ -12,7 +12,7 @@ module de.haumacher.mailcheck {
 	exports de.haumacher.mailcheck.dns;
 	exports de.haumacher.mailcheck.scraper;
 
-	exports de.haumacher.mailcheck.db to org.mybatis;
+	exports de.haumacher.mailcheck.db;
 
 	requires transitive de.haumacher.msgbuf;
 	requires transitive org.mybatis;

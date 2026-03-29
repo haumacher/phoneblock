@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import org.tinylog.configuration.Configuration;
 
 import de.haumacher.mailcheck.DisposableListService;
+import de.haumacher.mailcheck.db.MailCheckPropertyStore;
 import de.haumacher.mailcheck.EMailCheckService;
 import de.haumacher.mailcheck.scraper.DisposableScraperService;
 import de.haumacher.phoneblock.ab.CallRetentionService;
@@ -28,7 +29,6 @@ import de.haumacher.phoneblock.chatgpt.ChatGPTService;
 import de.haumacher.phoneblock.crawl.CrawlerService;
 import de.haumacher.phoneblock.crawl.FetchService;
 import de.haumacher.phoneblock.credits.ImapService;
-import de.haumacher.phoneblock.db.DBPropertyStore;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.dns.DnsService;
 import de.haumacher.phoneblock.ftc.FtcImportService;
@@ -116,7 +116,7 @@ public class Application implements ServletContextListener {
 			db = new DBService(rnd, indexer, scheduler, mail),
 			new DnsService(scheduler, db),
 			new EMailCheckService(db.getSessionFactory()),
-			new DisposableListService(scheduler::scheduler, db.getSessionFactory(), new DBPropertyStore(db.getSessionFactory())),
+			new DisposableListService(scheduler::scheduler, db.getSessionFactory(), new MailCheckPropertyStore(db.getSessionFactory())),
 			new DisposableScraperService(scheduler::scheduler, db.getSessionFactory()),
 			fetcher = new FetchService(),
 			metaSearch = new MetaSearchService(scheduler, fetcher, indexer),
