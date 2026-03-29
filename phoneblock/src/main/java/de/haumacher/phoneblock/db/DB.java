@@ -73,7 +73,6 @@ import de.haumacher.phoneblock.db.settings.Contribution;
 import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.index.IndexUpdateService;
 import de.haumacher.phoneblock.mail.MailService;
-import de.haumacher.phoneblock.mail.check.db.Domains;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
 import de.haumacher.phoneblock.shared.PhoneHash;
 import jakarta.mail.internet.AddressException;
@@ -196,7 +195,6 @@ public class DB {
 		configuration.addMapper(SpamReports.class);
 		configuration.addMapper(BlockList.class);
 		configuration.addMapper(Users.class);
-		configuration.addMapper(Domains.class);
 		configuration.addMapper(FtcReports.class);
 		_sessionFactory = new SqlSessionFactoryBuilder().build(configuration);
 		
@@ -1201,6 +1199,13 @@ public class DB {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			return reports.getLastUpdate();
 		}
+	}
+
+	/**
+	 * The factory for creating database sessions.
+	 */
+	public SqlSessionFactory getSessionFactory() {
+		return _sessionFactory;
 	}
 
 	/**

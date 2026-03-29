@@ -3,12 +3,18 @@
  */
 package de.haumacher.phoneblock.db;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
+import org.apache.ibatis.session.Configuration;
+import org.apache.ibatis.session.ExecutorType;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.ibatis.session.TransactionIsolationLevel;
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.h2.jdbcx.JdbcDataSource;
 import org.h2.tools.Server;
@@ -177,12 +183,69 @@ public class DBService implements IDBService, ServletContextListener {
 		return INSTANCE;
 	}
 
-	/** 
+	/**
 	 * Access to the database.
 	 */
 	@Override
 	public DB db() {
 		return INSTANCE;
+	}
+
+	/**
+	 * A {@link SqlSessionFactory} that lazily delegates to the underlying database.
+	 *
+	 * <p>
+	 * Can be called before this service is initialized. The actual database is
+	 * only accessed when a session is opened.
+	 * </p>
+	 */
+	public SqlSessionFactory getSessionFactory() {
+		return new SqlSessionFactory() {
+			@Override
+			public SqlSession openSession() {
+				return db().openSession();
+			}
+
+			@Override
+			public SqlSession openSession(boolean autoCommit) {
+				return db().getSessionFactory().openSession(autoCommit);
+			}
+
+			@Override
+			public SqlSession openSession(Connection connection) {
+				return db().getSessionFactory().openSession(connection);
+			}
+
+			@Override
+			public SqlSession openSession(TransactionIsolationLevel level) {
+				return db().getSessionFactory().openSession(level);
+			}
+
+			@Override
+			public SqlSession openSession(ExecutorType execType) {
+				return db().getSessionFactory().openSession(execType);
+			}
+
+			@Override
+			public SqlSession openSession(ExecutorType execType, boolean autoCommit) {
+				return db().getSessionFactory().openSession(execType, autoCommit);
+			}
+
+			@Override
+			public SqlSession openSession(ExecutorType execType, TransactionIsolationLevel level) {
+				return db().getSessionFactory().openSession(execType, level);
+			}
+
+			@Override
+			public SqlSession openSession(ExecutorType execType, Connection connection) {
+				return db().getSessionFactory().openSession(execType, connection);
+			}
+
+			@Override
+			public Configuration getConfiguration() {
+				return db().getSessionFactory().getConfiguration();
+			}
+		};
 	}
 
     @Override

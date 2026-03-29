@@ -38,6 +38,7 @@
 		<module>phoneblock-ab</module>
 		<module>phoneblock-accounting</module>
 		<module>phoneblock-shared</module>
+		<module>fake-mail-check</module>
 		<module>phoneblock</module>
 	</modules>
 

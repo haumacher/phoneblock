@@ -1,0 +1,2 @@
+-- DOMAIN_CHECK migration moved to fake-mail-check module (mailcheck-migration-01.sql).
+-- This file is kept as placeholder to maintain the PhoneBlock migration chain.

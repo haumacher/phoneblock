@@ -1,0 +1,70 @@
+Disposable Email Provider - Recherche
+======================================
+
+Bereits implementiert:
+  yopmail.com/en/domain?d=all       ~200 Domains, dedizierte Domain-Liste
+  fakemailgenerator.com             ~9 Domains, @domain Links
+  guerrillamail.com                 ~11 Domains, Dropdown
+  mohmal.com/en                     ~6 Domains, <select> Dropdown
+  emailfake.com                     ~15 Domains, rotierend
+
+Cloudflare-geschützt (nicht scrapebar mit HTTP):
+  temp-mail.org                     Sehr populär, aber 403/Captcha
+
+Weitere bekannte Provider:
+  throwaway.email
+  tempmailo.com
+  emailondeck.com
+  10minutemail.com
+  10minemail.com
+  mailinator.com
+  maildrop.cc
+  dispostable.com
+  sharklasers.com
+  guerrillamailblock.com
+  grr.la
+  trash-mail.com
+  mailcatch.com
+  tempail.com
+  inboxes.com
+  generator.email
+  luxusmail.org
+  dropmail.me
+  moakt.com
+  mail.tm
+  crazymailing.com
+  minuteinbox.com
+  tempinbox.xyz
+  internxt.com/temporary-email
+  disposablemail.com
+  getairmail.com
+  mailnesia.com
+  tempr.email
+  burnermail.io
+  nada.email
+  harakirimail.com
+  trashmail.net
+  mailsac.com
+  mytemp.email
+  tempmail.plus
+  tmail.gg
+  fakemail.net
+  emailnator.com
+  receivemail.com
+  
+Provider mit öffentlicher MX Infrastruktur
+
+  Implementiert:
+  tmailor.com               ~9 Domains, JSON API (api.internal.temp-mail.io)
+  fumail.co                 ~1 Domain, <select> Dropdown
+  purplemail.neweymail.com  ~6 Domains, Plaintext-Liste
+
+  Nicht scrapebar (403 / JS-only):
+  tempmail.ninja            403 Forbidden
+  22.do                     403 Forbidden
+  temporarymail.com         Redirect → guerrillamail.com (bereits abgedeckt)
+  tempumail.com             403 Forbidden
+  tempmailxy.com            Next.js SPA, Domains nur via JS/API
+  temp-mail.app             Server-side only, keine Client-Domain-Liste
+  mail.chatgpt.org.uk       403 Forbidden
+  temp-mail.org.in          403 Forbidden

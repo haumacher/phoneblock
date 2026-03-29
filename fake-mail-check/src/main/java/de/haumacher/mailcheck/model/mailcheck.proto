@@ -1,0 +1,53 @@
+package de.haumacher.mailcheck.model;
+
+option NoInterfaces;
+option NoXml;
+option NoBinary;
+option NoReflection;
+option NoListener;
+
+/** Classification status of an e-mail domain. */
+enum DomainStatus {
+	/** Domain provides disposable/temporary e-mail addresses. */
+	@Name("disposable")
+	DISPOSABLE;
+
+	/** Domain is a legitimate e-mail provider. */
+	@Name("safe")
+	SAFE;
+
+	/** Domain has no valid MX record and cannot receive e-mail. */
+	@Name("invalid")
+	INVALID;
+}
+
+/**
+ * Provider-independent result of a disposable e-mail domain check.
+ *
+ * <p>
+ * Cached in the DOMAIN_CHECK database table so that repeated lookups for the
+ * same domain do not require another provider call.
+ * </p>
+ */
+message DomainCheck {
+	/** The fully qualified domain name that was checked (e.g. "laymro.com"). */
+	string domainName;
+
+	/** The classification status of this domain. */
+	DomainStatus status;
+
+	/** Timestamp (Unix milliseconds) when the domain status was last changed at the provider. */
+	long lastChanged;
+
+	/** Identifier of the provider that produced this result (e.g. "rapidapi"). */
+	string sourceSystem;
+
+	/** The MX hostname resolved for this domain, or {@code null} if unavailable. */
+	@Nullable
+	string mxHost;
+
+	/** The IP address of the MX host, or {@code null} if unavailable. */
+	@Nullable
+	string mxIP;
+
+}

@@ -1,0 +1,33 @@
+package de.haumacher.mailcheck.provider.usercheck.model;
+
+option NoInterfaces;
+option NoXml;
+option NoBinary;
+option NoReflection;
+option NoListener;
+
+/**
+ * Check result from <code>https://api.usercheck.com/domain/{domain}</code>.
+ *
+ * <pre>
+ * 	{
+ * 	  "domain": "laymro.com",
+ * 	  "mx": true,
+ * 	  "disposable": true,
+ * 	  "public_domain": false
+ * 	}
+ * </pre>
+ */
+message UserCheckResult {
+	@Name("domain")
+	string domainName;
+
+	@Name("disposable")
+	bool disposable;
+
+	@Name("mx")
+	bool mx;
+
+	@Name("public_domain")
+	bool publicDomain;
+}

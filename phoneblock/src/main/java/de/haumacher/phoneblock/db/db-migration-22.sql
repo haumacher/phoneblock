@@ -1,0 +1,2 @@
+-- EMAIL_CHECK creation moved to fake-mail-check module (mail-check-schema.sql).
+-- This file is kept as placeholder to maintain the PhoneBlock migration chain.

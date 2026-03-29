@@ -1,25 +1,10 @@
-package de.haumacher.phoneblock.mail.check.model;
+package de.haumacher.mailcheck.provider.rapidapi.model;
 
 option NoInterfaces;
 option NoXml;
 option NoBinary;
 option NoReflection;
 option NoListener;
-
-message DomainCheck {
-	string domainName;
-	
-	bool disposable;
-	long lastChanged;
-	int sourceSystem;
-	
-	@Nullable
-	string mxHost;
-	
-	@Nullable
-	string mxIP;
-
-}
 
 /**
  * Check result from <code>https://mailcheck.p.rapidapi.com</code>.
@@ -39,32 +24,31 @@ message DomainCheck {
  * 	  "mx_ip": "167.172.15.120",
  * 	  "mx_info": "Using MX pointer mail.laymro.com from DNS with priority: 10",
  * 	  "last_changed_at": "2024-02-07T17:09:29+01:00"
- * 	} 
+ * 	}
  * </pre>
  */
 message RapidAPIResult {
 	@Name("valid")
 	bool valid;
-	
+
 	@Name("block")
 	bool block;
-	
+
 	@Name("disposable")
 	bool disposable;
-	
+
 	@Name("email_forwarder")
 	bool forwarder;
-	
+
 	@Name("domain")
 	string domainName;
 
 	@Name("mx_host")
 	string mxHost;
-	
+
 	@Name("mx_ip")
 	string mxIP;
-	
+
 	@Name("last_changed_at")
 	string lastChanged;
 }
-
