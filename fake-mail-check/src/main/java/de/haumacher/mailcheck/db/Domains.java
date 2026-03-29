@@ -28,6 +28,9 @@ public interface Domains {
 	@Select("select DOMAIN_NAME, STATUS AS statusName, LAST_CHANGED, SOURCE_SYSTEM, MX_HOST, MX_IP from DOMAIN_CHECK where MX_HOST is null")
 	List<DBDomainCheck> findDomainsWithoutMx();
 
+	@Select("select DOMAIN_NAME, STATUS AS statusName, LAST_CHANGED, SOURCE_SYSTEM, MX_HOST, MX_IP from DOMAIN_CHECK")
+	List<DBDomainCheck> findAllDomains();
+
 	@Update("update DOMAIN_CHECK set MX_HOST=#{mxHost}, MX_IP=#{mxIp} where DOMAIN_NAME=#{domainName}")
 	int updateDomainMx(String domainName, String mxHost, String mxIp);
 

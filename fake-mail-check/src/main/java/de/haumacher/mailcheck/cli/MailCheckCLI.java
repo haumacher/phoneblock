@@ -50,7 +50,7 @@ import de.haumacher.msgbuf.server.io.ReaderAdapter;
  *   import-list                   Download and import the GitHub disposable domain list
  *   scrape                        Run all web scrapers for disposable domains
  *   import-emails &lt;file.json&gt;     Import harvested emails from browser extension JSON export
- *   resolve-mx                    Resolve missing MX records in DOMAIN_CHECK via DNS
+ *   resolve-mx [--all]             Resolve missing (or all) MX records in DOMAIN_CHECK via DNS
  *   rebuild-mx                    Rebuild MX_HOST_STATUS and MX_IP_STATUS from DOMAIN_CHECK
  *   check &lt;email-or-domain&gt;       Check if an email/domain is disposable
  *   stats                         Show database statistics
@@ -62,8 +62,9 @@ public class MailCheckCLI {
 		String dbPath = "./mailcheck";
 		String command = null;
 		String checkArg = null;
+		boolean allFlag = false;
 
-		// Parse arguments (--db can appear anywhere).
+		// Parse arguments (options can appear anywhere).
 		for (int i = 0; i < args.length; i++) {
 			String arg = args[i];
 			if ("--db".equals(arg)) {
@@ -74,6 +75,8 @@ public class MailCheckCLI {
 					System.exit(1);
 				}
 				dbPath = args[i];
+			} else if ("--all".equals(arg)) {
+				allFlag = true;
 			} else if (arg.startsWith("-")) {
 				System.err.println("Unknown option: " + arg);
 				printUsage();
@@ -110,7 +113,7 @@ public class MailCheckCLI {
 				runImportEmails(dbPath, checkArg);
 				break;
 			case "resolve-mx":
-				runResolveMx(dbPath);
+				runResolveMx(dbPath, allFlag);
 				break;
 			case "rebuild-mx":
 				runRebuildMx(dbPath);
@@ -174,22 +177,23 @@ public class MailCheckCLI {
 
 	private record MxEntry(DBDomainCheck domain, MxResult mx) {}
 
-	private static void runResolveMx(String dbPath) throws Exception {
+	private static void runResolveMx(String dbPath, boolean all) throws Exception {
 		try (MailCheckDB db = new MailCheckDB(dbPath)) {
-			List<DBDomainCheck> missing;
+			List<DBDomainCheck> domains;
 			try (SqlSession session = db.getSessionFactory().openSession()) {
-				missing = session.getMapper(Domains.class).findDomainsWithoutMx();
+				Domains mapper = session.getMapper(Domains.class);
+				domains = all ? mapper.findAllDomains() : mapper.findDomainsWithoutMx();
 			}
 
-			System.out.println("Domains without MX data: " + missing.size());
-			int total = missing.size();
+			System.out.println((all ? "All domains" : "Domains without MX data") + ": " + domains.size());
+			int total = domains.size();
 
 			// Parallel DNS resolution.
 			AtomicInteger lookupCount = new AtomicInteger();
 			ExecutorService executor = Executors.newFixedThreadPool(RESOLVE_THREADS);
 			List<Future<MxEntry>> futures = new ArrayList<>(total);
 
-			for (DBDomainCheck domain : missing) {
+			for (DBDomainCheck domain : domains) {
 				futures.add(executor.submit(() -> {
 					MxEntry entry = new MxEntry(domain, MxLookup.lookup(domain.getDomainName()));
 					int done = lookupCount.incrementAndGet();
@@ -207,7 +211,7 @@ public class MailCheckCLI {
 			int failed = 0;
 
 			try (SqlSession session = db.getSessionFactory().openSession()) {
-				Domains domains = session.getMapper(Domains.class);
+				Domains mapper = session.getMapper(Domains.class);
 
 				for (int i = 0; i < total; i++) {
 					MxEntry entry = futures.get(i).get();
@@ -215,11 +219,11 @@ public class MailCheckCLI {
 					MxResult mx = entry.mx();
 
 					if (mx.mxHost() == null && mx.mxIp() == null) {
-						domains.updateDomainMx(name, "-", null);
+						mapper.updateDomainMx(name, "-", null);
 						failed++;
 					} else {
-						domains.updateDomainMx(name, mx.mxHost(), mx.mxIp());
-						updateMxStatus(domains, mx, entry.domain().getStatus() == DomainStatus.DISPOSABLE, now);
+						mapper.updateDomainMx(name, mx.mxHost(), mx.mxIp());
+						updateMxStatus(mapper, mx, entry.domain().getStatus() == DomainStatus.DISPOSABLE, now);
 						resolved++;
 					}
 
@@ -458,7 +462,7 @@ public class MailCheckCLI {
 		System.err.println("  import-list                   Download and import the GitHub disposable domain list");
 		System.err.println("  scrape                        Run all web scrapers for disposable domains");
 		System.err.println("  import-emails <file.json>     Import harvested emails from browser extension export");
-		System.err.println("  resolve-mx                    Resolve missing MX records via DNS");
+		System.err.println("  resolve-mx [--all]             Resolve missing (or all) MX records via DNS");
 		System.err.println("  rebuild-mx                    Rebuild MX status tables from DOMAIN_CHECK");
 		System.err.println("  check <email-or-domain>       Check if an email/domain is disposable");
 		System.err.println("  stats                         Show database statistics");
