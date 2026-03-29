@@ -34,12 +34,23 @@ public class MailCheckDB implements AutoCloseable {
 	 * @param url JDBC URL for the H2 database (e.g. <code>jdbc:h2:path-to-db/h2 without {@code .mv.db} suffix).
 	 */
 	public MailCheckDB(String url) throws SQLException {
-		LOG.info("Opening H2 database: {}", url);
+		this(url, "sa", "");
+	}
+
+	/**
+	 * Opens (or creates) a database and initializes the mail-check schema.
+	 *
+	 * @param url      JDBC URL (e.g. {@code jdbc:h2:./mailcheck} or {@code jdbc:h2:tcp://host/db}).
+	 * @param user     Database user name.
+	 * @param password Database password.
+	 */
+	public MailCheckDB(String url, String user, String password) throws SQLException {
+		LOG.info("Opening database: {}", url);
 
 		JdbcDataSource dataSource = new JdbcDataSource();
 		dataSource.setUrl(url);
-		dataSource.setUser("sa");
-		dataSource.setPassword("");
+		dataSource.setUser(user);
+		dataSource.setPassword(password);
 
 		_pool = JdbcConnectionPool.create(dataSource);
 

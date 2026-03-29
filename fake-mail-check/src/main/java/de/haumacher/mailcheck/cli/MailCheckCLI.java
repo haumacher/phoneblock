@@ -42,10 +42,12 @@ import de.haumacher.msgbuf.server.io.ReaderAdapter;
  * Command-line interface for the fake-mail-check module.
  *
  * <pre>
- * Usage: java -jar fake-mail-check.jar [--db &lt;path&gt;] &lt;command&gt;
+ * Usage: java -jar fake-mail-check.jar [options] &lt;command&gt;
  *
  * Options:
- *   --db &lt;path&gt;    H2 database path (default: ./mailcheck)
+ *   --db &lt;url&gt;         JDBC URL (default: jdbc:h2:./mailcheck)
+ *   --user &lt;name&gt;      Database user (default: sa)
+ *   --password &lt;pw&gt;    Database password (default: empty)
  *
  * Commands:
  *   init                          Initialize/upgrade the database schema
@@ -62,6 +64,8 @@ public class MailCheckCLI {
 
 	public static void main(String[] args) throws Exception {
 		String dbUrl = "jdbc:h2:./mailcheck";
+		String dbUser = "sa";
+		String dbPassword = "";
 		String command = null;
 		String checkArg = null;
 		boolean allFlag = false;
@@ -77,6 +81,22 @@ public class MailCheckCLI {
 					System.exit(1);
 				}
 				dbUrl = args[i];
+			} else if ("--user".equals(arg)) {
+				i++;
+				if (i >= args.length) {
+					System.err.println("Missing value for --user option.");
+					printUsage();
+					System.exit(1);
+				}
+				dbUser = args[i];
+			} else if ("--password".equals(arg)) {
+				i++;
+				if (i >= args.length) {
+					System.err.println("Missing value for --password option.");
+					printUsage();
+					System.exit(1);
+				}
+				dbPassword = args[i];
 			} else if ("--all".equals(arg)) {
 				allFlag = true;
 			} else if (arg.startsWith("-")) {
@@ -96,15 +116,17 @@ public class MailCheckCLI {
 			return;
 		}
 
+		DbConfig dbConfig = new DbConfig(dbUrl, dbUser, dbPassword);
+
 		switch (command) {
 			case "init":
-				runInit(dbUrl);
+				runInit(dbConfig);
 				break;
 			case "import-list":
-				runImportList(dbUrl);
+				runImportList(dbConfig);
 				break;
 			case "scrape":
-				runScrape(dbUrl);
+				runScrape(dbConfig);
 				break;
 			case "import-emails":
 				if (checkArg == null) {
@@ -112,13 +134,13 @@ public class MailCheckCLI {
 					printUsage();
 					System.exit(1);
 				}
-				runImportEmails(dbUrl, checkArg);
+				runImportEmails(dbConfig, checkArg);
 				break;
 			case "resolve-mx":
-				runResolveMx(dbUrl, allFlag);
+				runResolveMx(dbConfig, allFlag);
 				break;
 			case "rebuild-mx":
-				runRebuildMx(dbUrl);
+				runRebuildMx(dbConfig);
 				break;
 			case "check":
 				if (checkArg == null) {
@@ -126,10 +148,10 @@ public class MailCheckCLI {
 					printUsage();
 					System.exit(1);
 				}
-				runCheck(dbUrl, checkArg);
+				runCheck(dbConfig, checkArg);
 				break;
 			case "stats":
-				runStats(dbUrl);
+				runStats(dbConfig);
 				break;
 			default:
 				System.err.println("Unknown command: " + command);
@@ -138,14 +160,20 @@ public class MailCheckCLI {
 		}
 	}
 
-	private static void runInit(String dbUrl) throws Exception {
-		try (MailCheckDB db = new MailCheckDB(dbUrl)) {
-			System.out.println("Database initialized at: " + dbUrl);
+	private record DbConfig(String url, String user, String password) {
+		MailCheckDB open() throws java.sql.SQLException {
+			return new MailCheckDB(url, user, password);
 		}
 	}
 
-	private static void runImportList(String dbUrl) throws Exception {
-		try (MailCheckDB db = new MailCheckDB(dbUrl)) {
+	private static void runInit(DbConfig dbConfig) throws Exception {
+		try (MailCheckDB db = dbConfig.open()) {
+			System.out.println("Database initialized at: " + dbConfig.url());
+		}
+	}
+
+	private static void runImportList(DbConfig dbConfig) throws Exception {
+		try (MailCheckDB db = dbConfig.open()) {
 			PropertyStore propertyStore = new MailCheckPropertyStore(db.getSessionFactory());
 
 			ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
@@ -160,8 +188,8 @@ public class MailCheckCLI {
 		}
 	}
 
-	private static void runScrape(String dbUrl) throws Exception {
-		try (MailCheckDB db = new MailCheckDB(dbUrl)) {
+	private static void runScrape(DbConfig dbConfig) throws Exception {
+		try (MailCheckDB db = dbConfig.open()) {
 			ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 			try {
 				DisposableScraperService service = new DisposableScraperService(() -> scheduler, db.getSessionFactory());
@@ -178,8 +206,8 @@ public class MailCheckCLI {
 
 	private record MxEntry(DBDomainCheck domain, MxResult mx) {}
 
-	private static void runResolveMx(String dbUrl, boolean all) throws Exception {
-		try (MailCheckDB db = new MailCheckDB(dbUrl)) {
+	private static void runResolveMx(DbConfig dbConfig, boolean all) throws Exception {
+		try (MailCheckDB db = dbConfig.open()) {
 			List<DBDomainCheck> domains;
 			try (SqlSession session = db.getSessionFactory().openSession()) {
 				Domains mapper = session.getMapper(Domains.class);
@@ -241,8 +269,8 @@ public class MailCheckCLI {
 		}
 	}
 
-	private static void runRebuildMx(String dbUrl) throws Exception {
-		try (MailCheckDB db = new MailCheckDB(dbUrl)) {
+	private static void runRebuildMx(DbConfig dbConfig) throws Exception {
+		try (MailCheckDB db = dbConfig.open()) {
 			try (SqlSession session = db.getSessionFactory().openSession()) {
 				Domains domains = session.getMapper(Domains.class);
 
@@ -293,7 +321,7 @@ public class MailCheckCLI {
 		}
 	}
 
-	private static void runImportEmails(String dbUrl, String filePath) throws Exception {
+	private static void runImportEmails(DbConfig dbConfig, String filePath) throws Exception {
 		Path file = Paths.get(filePath);
 		if (!Files.exists(file)) {
 			System.err.println("File not found: " + filePath);
@@ -317,7 +345,7 @@ public class MailCheckCLI {
 		int domainsAdded = 0;
 		int skipped = 0;
 
-		try (MailCheckDB db = new MailCheckDB(dbUrl)) {
+		try (MailCheckDB db = dbConfig.open()) {
 			try (SqlSession session = db.getSessionFactory().openSession()) {
 				Domains domains = session.getMapper(Domains.class);
 
@@ -358,8 +386,8 @@ public class MailCheckCLI {
 			+ domainsAdded + " domains added, " + skipped + " duplicates skipped.");
 	}
 
-	private static void runCheck(String dbUrl, String arg) throws Exception {
-		try (MailCheckDB db = new MailCheckDB(dbUrl)) {
+	private static void runCheck(DbConfig dbConfig, String arg) throws Exception {
+		try (MailCheckDB db = dbConfig.open()) {
 			try (SqlSession session = db.getSessionFactory().openSession()) {
 				Domains domains = session.getMapper(Domains.class);
 
@@ -420,8 +448,8 @@ public class MailCheckCLI {
 		}
 	}
 
-	private static void runStats(String dbUrl) throws Exception {
-		try (MailCheckDB db = new MailCheckDB(dbUrl)) {
+	private static void runStats(DbConfig dbConfig) throws Exception {
+		try (MailCheckDB db = dbConfig.open()) {
 			try (SqlSession session = db.getSessionFactory().openSession()) {
 				Connection conn = session.getConnection();
 				try (Statement stmt = conn.createStatement()) {
@@ -453,10 +481,12 @@ public class MailCheckCLI {
 	}
 
 	private static void printUsage() {
-		System.err.println("Usage: java -jar fake-mail-check.jar [--db <path>] <command>");
+		System.err.println("Usage: java -jar fake-mail-check.jar [options] <command>");
 		System.err.println();
 		System.err.println("Options:");
-		System.err.println("  --db <path>    H2 database path (default: ./mailcheck)");
+		System.err.println("  --db <url>         JDBC URL (default: jdbc:h2:./mailcheck)");
+		System.err.println("  --user <name>      Database user (default: sa)");
+		System.err.println("  --password <pw>    Database password (default: empty)");
 		System.err.println();
 		System.err.println("Commands:");
 		System.err.println("  init                          Initialize/upgrade the database schema");
