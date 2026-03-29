@@ -202,26 +202,27 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 	 * <p>
 	 * Only trusts the classification if it is backed by at least
 	 * {@link DBMxStatus#MIN_DOMAIN_COUNT} domains to avoid false
-	 * classifications from small sample sizes.
+	 * classifications from small sample sizes. Only returns
+	 * {@link DomainStatus#DISPOSABLE} as a shortcut — {@code safe}
+	 * MX status is not trusted since there are far more legitimate
+	 * domains than disposable ones, so the external provider should
+	 * always verify.
 	 * </p>
 	 *
-	 * @return {@link DomainStatus#DISPOSABLE} or {@link DomainStatus#SAFE}, or {@code null} if unknown, mixed, or not enough data.
+	 * @return {@link DomainStatus#DISPOSABLE} or {@code null} if not conclusively disposable.
 	 */
 	private DomainStatus checkMxStatus(Domains domains, MxResult mx) {
 		if (mx.mxHost() != null) {
 			DBMxStatus hostStatus = domains.checkMxHost(mx.mxHost());
-			if (hostStatus != null && hostStatus.isTrusted()) {
-				if (hostStatus.isDisposable()) return DomainStatus.DISPOSABLE;
-				if (hostStatus.isSafe()) return DomainStatus.SAFE;
-				// mixed → fall through
+			if (hostStatus != null && hostStatus.isTrusted() && hostStatus.isDisposable()) {
+				return DomainStatus.DISPOSABLE;
 			}
 		}
 
 		if (mx.mxIp() != null) {
 			DBMxStatus ipStatus = domains.checkMxIp(mx.mxIp());
-			if (ipStatus != null && ipStatus.isTrusted()) {
-				if (ipStatus.isDisposable()) return DomainStatus.DISPOSABLE;
-				if (ipStatus.isSafe()) return DomainStatus.SAFE;
+			if (ipStatus != null && ipStatus.isTrusted() && ipStatus.isDisposable()) {
+				return DomainStatus.DISPOSABLE;
 			}
 		}
 
