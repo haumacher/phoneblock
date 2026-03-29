@@ -40,48 +40,50 @@ public interface Domains {
 	@Delete("delete from MX_IP_STATUS")
 	int clearMxIpStatus();
 
-	@Insert("INSERT INTO MX_HOST_STATUS (MX_HOST, MX_IP, STATUS, LAST_UPDATED) " +
+	@Insert("INSERT INTO MX_HOST_STATUS (MX_HOST, MX_IP, STATUS, DOMAIN_COUNT, LAST_UPDATED) " +
 		"SELECT MX_HOST, MAX(MX_IP), " +
 		"  CASE " +
 		"    WHEN MIN(CASE WHEN STATUS = #{disposable} THEN 1 ELSE 0 END) = 1 THEN #{disposable} " +
 		"    WHEN MAX(CASE WHEN STATUS = #{disposable} THEN 1 ELSE 0 END) = 0 THEN #{safe} " +
 		"    ELSE #{mixed} " +
 		"  END, " +
+		"  COUNT(*), " +
 		"  MAX(LAST_CHANGED) " +
 		"FROM DOMAIN_CHECK " +
 		"WHERE MX_HOST IS NOT NULL AND MX_HOST <> '-' " +
 		"GROUP BY MX_HOST")
 	int aggregateMxHostStatus(@Param("disposable") String disposable, @Param("safe") String safe, @Param("mixed") String mixed);
 
-	@Insert("INSERT INTO MX_IP_STATUS (MX_IP, STATUS, LAST_UPDATED) " +
+	@Insert("INSERT INTO MX_IP_STATUS (MX_IP, STATUS, DOMAIN_COUNT, LAST_UPDATED) " +
 		"SELECT MX_IP, " +
 		"  CASE " +
 		"    WHEN MIN(CASE WHEN STATUS = #{disposable} THEN 1 ELSE 0 END) = 1 THEN #{disposable} " +
 		"    WHEN MAX(CASE WHEN STATUS = #{disposable} THEN 1 ELSE 0 END) = 0 THEN #{safe} " +
 		"    ELSE #{mixed} " +
 		"  END, " +
+		"  COUNT(*), " +
 		"  MAX(LAST_CHANGED) " +
 		"FROM DOMAIN_CHECK " +
 		"WHERE MX_IP IS NOT NULL " +
 		"GROUP BY MX_IP")
 	int aggregateMxIpStatus(@Param("disposable") String disposable, @Param("safe") String safe, @Param("mixed") String mixed);
 
-	@Select("select MX_HOST as `key`, STATUS, LAST_UPDATED as lastUpdated from MX_HOST_STATUS where MX_HOST=#{mxHost}")
+	@Select("select MX_HOST as `key`, STATUS, DOMAIN_COUNT as domainCount, LAST_UPDATED as lastUpdated from MX_HOST_STATUS where MX_HOST=#{mxHost}")
 	DBMxStatus checkMxHost(String mxHost);
 
-	@Insert("insert into MX_HOST_STATUS (MX_HOST, MX_IP, STATUS, LAST_UPDATED) values (#{mxHost}, #{mxIp}, #{status}, #{lastUpdated})")
+	@Insert("insert into MX_HOST_STATUS (MX_HOST, MX_IP, STATUS, DOMAIN_COUNT, LAST_UPDATED) values (#{mxHost}, #{mxIp}, #{status}, 1, #{lastUpdated})")
 	int insertMxHost(String mxHost, String mxIp, String status, long lastUpdated);
 
-	@Update("update MX_HOST_STATUS set STATUS=#{status}, LAST_UPDATED=#{lastUpdated} where MX_HOST=#{mxHost}")
+	@Update("update MX_HOST_STATUS set STATUS=#{status}, DOMAIN_COUNT=DOMAIN_COUNT+1, LAST_UPDATED=#{lastUpdated} where MX_HOST=#{mxHost}")
 	int updateMxHostStatus(String mxHost, String status, long lastUpdated);
 
-	@Select("select MX_IP as `key`, STATUS, LAST_UPDATED as lastUpdated from MX_IP_STATUS where MX_IP=#{mxIp}")
+	@Select("select MX_IP as `key`, STATUS, DOMAIN_COUNT as domainCount, LAST_UPDATED as lastUpdated from MX_IP_STATUS where MX_IP=#{mxIp}")
 	DBMxStatus checkMxIp(String mxIp);
 
-	@Insert("insert into MX_IP_STATUS (MX_IP, STATUS, LAST_UPDATED) values (#{mxIp}, #{status}, #{lastUpdated})")
+	@Insert("insert into MX_IP_STATUS (MX_IP, STATUS, DOMAIN_COUNT, LAST_UPDATED) values (#{mxIp}, #{status}, 1, #{lastUpdated})")
 	int insertMxIp(String mxIp, String status, long lastUpdated);
 
-	@Update("update MX_IP_STATUS set STATUS=#{status}, LAST_UPDATED=#{lastUpdated} where MX_IP=#{mxIp}")
+	@Update("update MX_IP_STATUS set STATUS=#{status}, DOMAIN_COUNT=DOMAIN_COUNT+1, LAST_UPDATED=#{lastUpdated} where MX_IP=#{mxIp}")
 	int updateMxIpStatus(String mxIp, String status, long lastUpdated);
 
 }

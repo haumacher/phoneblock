@@ -199,12 +199,18 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 	/**
 	 * Checks MX_HOST_STATUS and MX_IP_STATUS tables for a verdict.
 	 *
-	 * @return {@link DomainStatus#DISPOSABLE} or {@link DomainStatus#SAFE}, or {@code null} if unknown or mixed.
+	 * <p>
+	 * Only trusts the classification if it is backed by at least
+	 * {@link DBMxStatus#MIN_DOMAIN_COUNT} domains to avoid false
+	 * classifications from small sample sizes.
+	 * </p>
+	 *
+	 * @return {@link DomainStatus#DISPOSABLE} or {@link DomainStatus#SAFE}, or {@code null} if unknown, mixed, or not enough data.
 	 */
 	private DomainStatus checkMxStatus(Domains domains, MxResult mx) {
 		if (mx.mxHost() != null) {
 			DBMxStatus hostStatus = domains.checkMxHost(mx.mxHost());
-			if (hostStatus != null) {
+			if (hostStatus != null && hostStatus.isTrusted()) {
 				if (hostStatus.isDisposable()) return DomainStatus.DISPOSABLE;
 				if (hostStatus.isSafe()) return DomainStatus.SAFE;
 				// mixed → fall through
@@ -213,7 +219,7 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 
 		if (mx.mxIp() != null) {
 			DBMxStatus ipStatus = domains.checkMxIp(mx.mxIp());
-			if (ipStatus != null) {
+			if (ipStatus != null && ipStatus.isTrusted()) {
 				if (ipStatus.isDisposable()) return DomainStatus.DISPOSABLE;
 				if (ipStatus.isSafe()) return DomainStatus.SAFE;
 			}

@@ -28,13 +28,18 @@ public class DBMxStatus {
 		}
 	}
 
+	/** Minimum number of domains backing an MX classification before it is trusted. */
+	public static final int MIN_DOMAIN_COUNT = 5;
+
 	private final String _key;
 	private final MxStatus _status;
+	private final int _domainCount;
 	private final long _lastUpdated;
 
-	public DBMxStatus(String key, String status, long lastUpdated) {
+	public DBMxStatus(String key, String status, int domainCount, long lastUpdated) {
 		_key = key;
 		_status = MxStatus.valueOf(status);
+		_domainCount = domainCount;
 		_lastUpdated = lastUpdated;
 	}
 
@@ -46,8 +51,17 @@ public class DBMxStatus {
 		return _status;
 	}
 
+	public int getDomainCount() {
+		return _domainCount;
+	}
+
 	public long getLastUpdated() {
 		return _lastUpdated;
+	}
+
+	/** Whether this entry is trustworthy (backed by enough domains). */
+	public boolean isTrusted() {
+		return _domainCount >= MIN_DOMAIN_COUNT;
 	}
 
 	public boolean isDisposable() {
