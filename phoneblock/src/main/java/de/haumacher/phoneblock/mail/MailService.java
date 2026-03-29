@@ -12,7 +12,18 @@ public interface MailService {
 
 	void startUp();
 
-	void sendActivationMail(String receiver, String code, Language language) throws MessagingException, IOException, AddressException;
+	/**
+	 * Sends an activation mail to the given receiver.
+	 *
+	 * @param receiver     The e-mail address.
+	 * @param code         The verification code.
+	 * @param language     The user's language.
+	 * @param existingUser Whether the receiver is an already registered user.
+	 *                     If {@code true}, the disposable e-mail check is skipped
+	 *                     to allow existing users to log in even if their domain
+	 *                     was later classified as disposable.
+	 */
+	void sendActivationMail(String receiver, String code, Language language, boolean existingUser) throws MessagingException, IOException, AddressException;
 	void sendEmailChangeMail(String receiver, String code, Language language) throws MessagingException, IOException, AddressException;
 	void sendWelcomeMail(UserSettings userSettings);
 

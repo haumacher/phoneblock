@@ -81,7 +81,7 @@ public class RegisterServlet extends HttpServlet {
 		
 		try {
 			// Get language from request (browser Accept-Language header)
-			mailService.sendActivationMail(registration.getEmail(), code, I18N.getUserLanguage(req));
+			mailService.sendActivationMail(registration.getEmail(), code, I18N.getUserLanguage(req), false);
 		} catch (AddressException ex) {
 			removeSession(sessionId);
 			ServletUtil.sendError(resp, "Invalid e-mail address: " + ex.getMessage());

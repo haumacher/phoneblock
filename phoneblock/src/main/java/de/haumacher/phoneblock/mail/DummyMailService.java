@@ -26,7 +26,7 @@ public class DummyMailService implements MailService {
 	}
 
 	@Override
-	public void sendActivationMail(String receiver, String code, Language language)
+	public void sendActivationMail(String receiver, String code, Language language, boolean existingUser)
 			throws MessagingException, IOException, AddressException {
 		LOG.info("Send activation to {} in language {}: {}", receiver, language.tag, code);
 	}

@@ -144,8 +144,12 @@ public class EMailVerificationServlet extends HttpServlet {
 				return;
 			}
 
+			// Skip disposable check for existing users (they may have registered
+			// before their domain was classified as disposable).
+			boolean existingUser = DBService.getInstance().getEmailLogin(email) != null;
+
 			// Get language from request (browser locale or authenticated user's preference)
-			mailService.sendActivationMail(email, code, I18N.getUserLanguage(req));
+			mailService.sendActivationMail(email, code, I18N.getUserLanguage(req), existingUser);
 		} catch (AddressException ex) {
 			LOG.warn("Failed to send message: " + ex.getMessage());
 			sendEmailFailure(req, resp, I18N.getMessage(req, "error.email.verification.send-failed", ex.getMessage()));
