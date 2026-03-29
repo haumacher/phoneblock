@@ -13,6 +13,7 @@ import java.util.Calendar;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -55,7 +56,7 @@ public class DisposableListService implements ServletContextListener {
 	/** Property key in the PROPERTIES table for caching the HTTP ETag. */
 	private static final String PROPERTY_ETAG = "disposable-list.etag";
 
-	private final ScheduledExecutorService _scheduler;
+	private final Supplier<ScheduledExecutorService> _scheduler;
 	private final SqlSessionFactory _sessionFactory;
 	private final PropertyStore _propertyStore;
 
@@ -63,8 +64,11 @@ public class DisposableListService implements ServletContextListener {
 
 	/**
 	 * Creates a {@link DisposableListService}.
+	 *
+	 * @param scheduler Supplier for the scheduler (resolved lazily in {@link #contextInitialized} to
+	 *                  support initialization ordering where the scheduler is not yet available at construction time).
 	 */
-	public DisposableListService(ScheduledExecutorService scheduler, SqlSessionFactory sessionFactory, PropertyStore propertyStore) {
+	public DisposableListService(Supplier<ScheduledExecutorService> scheduler, SqlSessionFactory sessionFactory, PropertyStore propertyStore) {
 		_scheduler = scheduler;
 		_sessionFactory = sessionFactory;
 		_propertyStore = propertyStore;
@@ -90,7 +94,7 @@ public class DisposableListService implements ServletContextListener {
 
 		long initialDelay = firstRun.getTimeInMillis() - System.currentTimeMillis();
 
-		_task = _scheduler.scheduleAtFixedRate(
+		_task = _scheduler.get().scheduleAtFixedRate(
 			this::runImport,
 			initialDelay,
 			24 * 60 * 60 * 1000L,

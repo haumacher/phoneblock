@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -49,15 +50,17 @@ public class DisposableScraperService implements ServletContextListener {
 		new PurpleMailScraper()
 	);
 
-	private final ScheduledExecutorService _scheduler;
+	private final Supplier<ScheduledExecutorService> _scheduler;
 	private final SqlSessionFactory _sessionFactory;
 
 	private ScheduledFuture<?> _task;
 
 	/**
 	 * Creates a {@link DisposableScraperService}.
+	 *
+	 * @param scheduler Supplier for the scheduler (resolved lazily in {@link #contextInitialized}).
 	 */
-	public DisposableScraperService(ScheduledExecutorService scheduler, SqlSessionFactory sessionFactory) {
+	public DisposableScraperService(Supplier<ScheduledExecutorService> scheduler, SqlSessionFactory sessionFactory) {
 		_scheduler = scheduler;
 		_sessionFactory = sessionFactory;
 	}
@@ -82,7 +85,7 @@ public class DisposableScraperService implements ServletContextListener {
 
 		long initialDelay = firstRun.getTimeInMillis() - System.currentTimeMillis();
 
-		_task = _scheduler.scheduleAtFixedRate(
+		_task = _scheduler.get().scheduleAtFixedRate(
 			this::runScrape,
 			initialDelay,
 			24 * 60 * 60 * 1000L,

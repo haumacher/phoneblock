@@ -150,7 +150,7 @@ public class MailCheckCLI {
 
 			ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 			try {
-				DisposableListService service = new DisposableListService(scheduler, db.getSessionFactory(), propertyStore);
+				DisposableListService service = new DisposableListService(() -> scheduler, db.getSessionFactory(), propertyStore);
 				service.runImport();
 			} finally {
 				scheduler.shutdownNow();
@@ -164,7 +164,7 @@ public class MailCheckCLI {
 		try (MailCheckDB db = new MailCheckDB(dbPath)) {
 			ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
 			try {
-				DisposableScraperService service = new DisposableScraperService(scheduler, db.getSessionFactory());
+				DisposableScraperService service = new DisposableScraperService(() -> scheduler, db.getSessionFactory());
 				service.runScrape();
 			} finally {
 				scheduler.shutdownNow();
