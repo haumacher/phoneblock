@@ -19,6 +19,10 @@
     {
       "matches": ["https://smailpro.com/*"],
       "js": ["normalize.js", "harvester.js", "content-smailpro.js"]
+    },
+    {
+      "matches": ["https://www.emailnator.com/*"],
+      "js": ["normalize.js", "harvester.js", "content-emailnator.js"]
     }
   ]
 }
