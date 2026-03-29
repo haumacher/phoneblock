@@ -28,7 +28,6 @@ import de.haumacher.mailcheck.db.MailCheckPropertyStore;
 import de.haumacher.mailcheck.cli.model.HarvestedEmail;
 import de.haumacher.mailcheck.db.DBDomainCheck;
 import de.haumacher.mailcheck.db.DomainInsert;
-import de.haumacher.mailcheck.db.DBMxStatus;
 import de.haumacher.mailcheck.db.DBMxStatus.MxStatus;
 import de.haumacher.mailcheck.model.DomainStatus;
 import de.haumacher.mailcheck.db.DBEmailCheck;
@@ -253,7 +252,7 @@ public class MailCheckCLI {
 						failed++;
 					} else {
 						mapper.updateDomainMx(name, mx.mxHost(), mx.mxIp());
-						updateMxStatus(mapper, mx, entry.domain().getStatus() == DomainStatus.DISPOSABLE, now);
+						DomainInsert.updateMxStatus(mapper, mx, entry.domain().getStatus() == DomainStatus.DISPOSABLE, now);
 						resolved++;
 					}
 
@@ -297,30 +296,6 @@ public class MailCheckCLI {
 		}
 	}
 
-	private static void updateMxStatus(Domains domains, MxResult mx, boolean disposable, long now) {
-		if (mx.mxHost() != null) {
-			DBMxStatus existing = domains.checkMxHost(mx.mxHost());
-			if (existing == null) {
-				domains.insertMxHost(mx.mxHost(), mx.mxIp(), MxStatus.of(disposable).name(), now);
-			} else {
-				MxStatus merged = existing.getStatus().merge(disposable);
-				if (merged != existing.getStatus()) {
-					domains.updateMxHostStatus(mx.mxHost(), merged.name(), now);
-				}
-			}
-		}
-		if (mx.mxIp() != null) {
-			DBMxStatus existing = domains.checkMxIp(mx.mxIp());
-			if (existing == null) {
-				domains.insertMxIp(mx.mxIp(), MxStatus.of(disposable).name(), now);
-			} else {
-				MxStatus merged = existing.getStatus().merge(disposable);
-				if (merged != existing.getStatus()) {
-					domains.updateMxIpStatus(mx.mxIp(), merged.name(), now);
-				}
-			}
-		}
-	}
 
 	private static void runImportEmails(DbConfig dbConfig, String filePath) throws Exception {
 		Path file = Paths.get(filePath);

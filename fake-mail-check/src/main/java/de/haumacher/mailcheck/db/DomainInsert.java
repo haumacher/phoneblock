@@ -3,22 +3,25 @@
  */
 package de.haumacher.mailcheck.db;
 
+import de.haumacher.mailcheck.db.DBMxStatus.MxStatus;
 import de.haumacher.mailcheck.dns.MxLookup;
 import de.haumacher.mailcheck.dns.MxResult;
 import de.haumacher.mailcheck.model.DomainStatus;
 
 /**
  * Utility for inserting a new domain into DOMAIN_CHECK with consistent
- * MX resolution and status classification.
+ * MX resolution, status classification, and MX status table updates.
  */
 public class DomainInsert {
 
 	/**
-	 * Resolves the MX record for the given domain and inserts it into DOMAIN_CHECK.
+	 * Resolves the MX record for the given domain, inserts it into DOMAIN_CHECK,
+	 * and updates MX_HOST_STATUS / MX_IP_STATUS accordingly.
 	 *
 	 * <p>
 	 * If the domain has no valid MX record, it is classified as {@link DomainStatus#INVALID}
-	 * with {@code MX_HOST = "-"}. Otherwise it is classified with the given {@code status}.
+	 * with {@code MX_HOST = "-"}. Otherwise it is classified with the given {@code status}
+	 * and the MX status tables are updated.
 	 * </p>
 	 *
 	 * @param domains      The MyBatis mapper.
@@ -36,9 +39,39 @@ public class DomainInsert {
 			domains.insertDomain(domainName, DomainStatus.INVALID.protocolName(), now, sourceSystem, "-", null);
 		} else {
 			domains.insertDomain(domainName, status.protocolName(), now, sourceSystem, mx.mxHost(), mx.mxIp());
+			updateMxStatus(domains, mx, status == DomainStatus.DISPOSABLE, now);
 		}
 
 		return mx;
+	}
+
+	/**
+	 * Updates MX_HOST_STATUS and MX_IP_STATUS for the given MX result.
+	 */
+	public static void updateMxStatus(Domains domains, MxResult mx, boolean disposable, long now) {
+		if (mx.mxHost() != null) {
+			DBMxStatus existing = domains.checkMxHost(mx.mxHost());
+			if (existing == null) {
+				domains.insertMxHost(mx.mxHost(), mx.mxIp(), MxStatus.of(disposable).name(), now);
+			} else {
+				MxStatus merged = existing.getStatus().merge(disposable);
+				if (merged != existing.getStatus()) {
+					domains.updateMxHostStatus(mx.mxHost(), merged.name(), now);
+				}
+			}
+		}
+
+		if (mx.mxIp() != null) {
+			DBMxStatus existing = domains.checkMxIp(mx.mxIp());
+			if (existing == null) {
+				domains.insertMxIp(mx.mxIp(), MxStatus.of(disposable).name(), now);
+			} else {
+				MxStatus merged = existing.getStatus().merge(disposable);
+				if (merged != existing.getStatus()) {
+					domains.updateMxIpStatus(mx.mxIp(), merged.name(), now);
+				}
+			}
+		}
 	}
 
 }

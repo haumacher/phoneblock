@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 import de.haumacher.mailcheck.db.DBDomainCheck;
 import de.haumacher.mailcheck.db.DBEmailCheck;
 import de.haumacher.mailcheck.db.DBMxStatus;
-import de.haumacher.mailcheck.db.DBMxStatus.MxStatus;
+import de.haumacher.mailcheck.db.DomainInsert;
 import de.haumacher.mailcheck.db.Domains;
 import de.haumacher.mailcheck.db.MailCheckSchema;
 import de.haumacher.mailcheck.model.DomainStatus;
@@ -233,32 +233,8 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 	 * Updates MX_HOST_STATUS and MX_IP_STATUS after a provider response.
 	 */
 	private void updateMxStatus(SqlSession tx, Domains domains, MxResult mx, boolean disposable) {
-		long now = System.currentTimeMillis();
 		try {
-			if (mx.mxHost() != null) {
-				DBMxStatus existing = domains.checkMxHost(mx.mxHost());
-				if (existing == null) {
-					domains.insertMxHost(mx.mxHost(), mx.mxIp(), MxStatus.of(disposable).name(), now);
-				} else {
-					MxStatus merged = existing.getStatus().merge(disposable);
-					if (merged != existing.getStatus()) {
-						domains.updateMxHostStatus(mx.mxHost(), merged.name(), now);
-					}
-				}
-			}
-
-			if (mx.mxIp() != null) {
-				DBMxStatus existing = domains.checkMxIp(mx.mxIp());
-				if (existing == null) {
-					domains.insertMxIp(mx.mxIp(), MxStatus.of(disposable).name(), now);
-				} else {
-					MxStatus merged = existing.getStatus().merge(disposable);
-					if (merged != existing.getStatus()) {
-						domains.updateMxIpStatus(mx.mxIp(), merged.name(), now);
-					}
-				}
-			}
-
+			DomainInsert.updateMxStatus(domains, mx, disposable, System.currentTimeMillis());
 			tx.commit();
 		} catch (Exception ex) {
 			LOG.error("Failed to update MX status for host={}, ip={}.", mx.mxHost(), mx.mxIp(), ex);
