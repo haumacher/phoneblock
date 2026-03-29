@@ -59,7 +59,7 @@ async function getTab() {
   return tab;
 }
 
-const SUPPORTED_SITES = ['22.do', 'mailticking.com', 'smailpro.com', 'emailnator.com'];
+const SUPPORTED_SITES = ['22.do', 'mailticking.com', 'smailpro.com', 'emailnator.com', 'temp-mail.org'];
 
 function isSupportedSite(url) {
   return url && SUPPORTED_SITES.some(site => url.includes(site));
