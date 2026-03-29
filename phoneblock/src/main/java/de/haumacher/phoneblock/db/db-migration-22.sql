@@ -1,7 +1,2 @@
-CREATE TABLE EMAIL_CHECK (
-    EMAIL_ADDRESS CHARACTER VARYING(320) NOT NULL,
-    DISPOSABLE BOOLEAN NOT NULL,
-    LAST_CHECKED BIGINT NOT NULL,
-    SOURCE_SYSTEM CHARACTER VARYING(64) NOT NULL,
-    CONSTRAINT EMAIL_CHECK_PK PRIMARY KEY (EMAIL_ADDRESS)
-);
+-- EMAIL_CHECK creation moved to fake-mail-check module (mail-check-schema.sql).
+-- This file is kept as placeholder to maintain the PhoneBlock migration chain.
