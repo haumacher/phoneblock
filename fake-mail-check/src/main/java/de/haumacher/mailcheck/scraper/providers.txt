@@ -49,7 +49,6 @@ Weitere bekannte Provider:
   tempmail.plus
   tmail.gg
   fakemail.net
-  emailnator.com
   receivemail.com
   
 Provider mit öffentlicher MX Infrastruktur
@@ -61,10 +60,17 @@ Provider mit öffentlicher MX Infrastruktur
 
   Nicht scrapebar (403 / JS-only):
   tempmail.ninja            403 Forbidden
-  22.do                     403 Forbidden
   temporarymail.com         Redirect → guerrillamail.com (bereits abgedeckt)
   tempumail.com             403 Forbidden
   tempmailxy.com            Next.js SPA, Domains nur via JS/API
   temp-mail.app             Server-side only, keine Client-Domain-Liste
   mail.chatgpt.org.uk       403 Forbidden
   temp-mail.org.in          403 Forbidden
+  
+Provider die gmail Addressen vergeben/teilen
+
+  https://22.do/
+  https://www.mailticking.com/
+  https://smailpro.com/temporary-email
+  https://www.emailnator.com/
+  
