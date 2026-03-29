@@ -106,9 +106,11 @@ public class EMailCheckService implements EMailChecker, ServletContextListener {
 	@Override
 	public DomainStatus check(InternetAddress contact) throws AddressException {
 		String address = contact.getAddress();
-		int domainSep = address.indexOf('@');
-		String domain = (domainSep >= 0) ? address.substring(domainSep + 1) : address;
-		String domainName = domain.toLowerCase();
+		if (address == null || address.indexOf('@') < 0) {
+			return DomainStatus.INVALID;
+		}
+
+		String domainName = address.substring(address.indexOf('@') + 1).toLowerCase();
 
 		try (SqlSession tx = _sessionFactory.openSession()) {
 			Domains domains = tx.getMapper(Domains.class);
