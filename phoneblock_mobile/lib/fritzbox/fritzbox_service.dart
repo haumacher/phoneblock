@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:jsontool/jsontool.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_storage.dart';
+import 'package:phoneblock_mobile/logging/app_logger.dart';
 import 'package:phoneblock_mobile/fritzbox/phone_number_utils.dart' as phone_utils;
 import 'package:phoneblock_mobile/main.dart';
 import 'package:phoneblock_mobile/storage.dart';
@@ -41,10 +42,8 @@ Future<String?> normalizePhoneNumber(String phoneNumber, {String? countryCode}) 
       'countryCode': countryCode ?? 'DE', // Default to Germany for Fritz!Box
     });
     return result;
-  } catch (e) {
-    if (kDebugMode) {
-      print('Error normalizing phone number: $e');
-    }
+  } catch (e, s) {
+    AppLogger.instance.error('fritzbox', 'Error normalizing phone number', e, s);
     return null;
   }
 }
@@ -142,10 +141,8 @@ class FritzBoxService {
         try {
           // This call will fail with SoapFaultException if auth is invalid
           await onTelService.getCallList();
-        } catch (e) {
-          if (kDebugMode) {
-            print('Fritz!Box auth verification failed: $e');
-          }
+        } catch (e, s) {
+          AppLogger.instance.error('fritzbox', 'Fritz!Box auth verification failed', e, s);
           _connectionState = FritzBoxConnectionState.error;
           return false;
         }
@@ -167,10 +164,8 @@ class FritzBoxService {
           final ac = await voipService.getVoIPCommonAreaCode();
           trunkPrefix = ac.okzPrefix;
         }
-      } catch (e) {
-        if (kDebugMode) {
-          print('Fritz!Box country code query failed: $e');
-        }
+      } catch (e, s) {
+        AppLogger.instance.error('fritzbox', 'Fritz!Box country code query failed', e, s);
         // Non-fatal: defaults will be used
       }
 
@@ -183,10 +178,8 @@ class FritzBoxService {
       );
 
       return true;
-    } catch (e) {
-      if (kDebugMode) {
-        print('Fritz!Box connection error: $e');
-      }
+    } catch (e, s) {
+      AppLogger.instance.error('fritzbox', 'Fritz!Box connection error', e, s);
       _connectionState = FritzBoxConnectionState.offline;
       return false;
     }
@@ -199,10 +192,8 @@ class FritzBoxService {
   Future<T> _withReconnect<T>(Future<T> Function() action) async {
     try {
       return await action();
-    } catch (e) {
-      if (kDebugMode) {
-        print('_withReconnect: Action failed ($e), attempting reconnect');
-      }
+    } catch (e, s) {
+      AppLogger.instance.error('fritzbox', '_withReconnect: Action failed, attempting reconnect', e, s);
       final credentials = await FritzBoxStorage.instance.getCredentials();
       if (credentials == null) rethrow;
       final success = await _connect(credentials);
@@ -246,10 +237,8 @@ class FritzBoxService {
       }
 
       return await security.getDefaultUsername();
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error discovering default username: $e');
-      }
+    } catch (e, s) {
+      AppLogger.instance.error('fritzbox', 'Error discovering default username', e, s);
       return null;
     } finally {
       anonClient.close();
@@ -275,10 +264,8 @@ class FritzBoxService {
         fritzosVersion: info.softwareVersion,
         serialNumber: info.serialNumber,
       );
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error getting device info: $e');
-      }
+    } catch (e, s) {
+      AppLogger.instance.error('fritzbox', 'Error getting device info', e, s);
       return null;
     }
   }
@@ -315,10 +302,8 @@ class FritzBoxService {
       final calls = _convertCallListEntries(entries, since);
 
       return calls;
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error getting call list: $e');
-      }
+    } catch (e, s) {
+      AppLogger.instance.error('fritzbox', 'Error getting call list', e, s);
       return [];
     }
   }
@@ -578,10 +563,8 @@ class FritzBoxService {
         final data = json.decode(response.body) as Map<String, dynamic>;
         return call.copyWithApiResponse(data);
       }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error enriching call with spam info: $e');
-      }
+    } catch (e, s) {
+      AppLogger.instance.error('fritzbox', 'Error enriching call with spam info', e, s);
     }
 
     return call;
@@ -671,10 +654,8 @@ class FritzBoxService {
               '_getOnlinePhonebooks: [$index] name="${info.name}" url="${info.url}" serviceId="${info.serviceId}" status=${info.status}');
         }
         phonebooks.add((index, info));
-      } catch (e) {
-        if (kDebugMode) {
-          print('_getOnlinePhonebooks: [$index] error: $e');
-        }
+      } catch (e, s) {
+        AppLogger.instance.error('fritzbox', '_getOnlinePhonebooks: [$index] error', e, s);
       }
     }
     return phonebooks;
@@ -776,11 +757,7 @@ class FritzBoxService {
           print('configureCardDav: setConfigByIndex succeeded');
         }
       } catch (e, stackTrace) {
-        if (kDebugMode) {
-          print('configureCardDav: setConfigByIndex FAILED for index $onlineIndex');
-          print('  Error: $e');
-          print('  Stack: $stackTrace');
-        }
+        AppLogger.instance.error('fritzbox', 'configureCardDav: setConfigByIndex FAILED for index $onlineIndex', e, stackTrace);
         rethrow;
       }
     });
@@ -824,10 +801,8 @@ class FritzBoxService {
             }
           }
         });
-      } catch (e) {
-        if (kDebugMode) {
-          print('Error removing CardDAV config: $e');
-        }
+      } catch (e, s) {
+        AppLogger.instance.error('fritzbox', 'Error removing CardDAV config', e, s);
         // Continue anyway to clear local config
       }
     }
@@ -914,10 +889,8 @@ class FritzBoxService {
         // Has lastConnect but no definitive status - consider it synced
         return CardDavStatus.synced;
       }
-    } catch (e) {
-      if (kDebugMode) {
-        print('verifyCardDav: ERROR $e');
-      }
+    } catch (e, s) {
+      AppLogger.instance.error('fritzbox', 'verifyCardDav: ERROR', e, s);
       return CardDavStatus.error;
     }
   }
@@ -941,10 +914,8 @@ class FritzBoxService {
       }
 
       return phonebooks.firstWhere((p) => p.$1 == onlineIndex).$2;
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error getting CardDAV info: $e');
-      }
+    } catch (e, s) {
+      AppLogger.instance.error('fritzbox', 'Error getting CardDAV info', e, s);
       return null;
     }
   }
@@ -1076,10 +1047,8 @@ class FritzBoxService {
             }
           }
         }
-      } catch (e) {
-        if (kDebugMode) {
-          print('setupAnswerBot: MyFritz detection failed: $e');
-        }
+      } catch (e, s) {
+        AppLogger.instance.error('fritzbox', 'setupAnswerBot: MyFritz detection failed', e, s);
       }
 
       // Step 2b: Check existing DynDNS configuration
@@ -1102,10 +1071,8 @@ class FritzBoxService {
               print('setupAnswerBot: Existing DynDNS domain ${ddnsInfo.domain} not accepted (status: ${enterHostResponse.statusCode})');
             }
           }
-        } catch (e) {
-          if (kDebugMode) {
-            print('setupAnswerBot: DynDNS detection failed: $e');
-          }
+        } catch (e, s) {
+          AppLogger.instance.error('fritzbox', 'setupAnswerBot: DynDNS detection failed', e, s);
         }
       }
 
@@ -1353,10 +1320,8 @@ class FritzBoxService {
           }
         }
       }
-    } catch (e) {
-      if (kDebugMode) {
-        print('syncAnswerbotState: Error detecting answerbot: $e');
-      }
+    } catch (e, s) {
+      AppLogger.instance.error('fritzbox', 'syncAnswerbotState: Error detecting answerbot', e, s);
     }
   }
 
@@ -1369,17 +1334,13 @@ class FritzBoxService {
     if (botId != null) {
       try {
         await sendRequest(DisableAnswerBot(id: botId));
-      } catch (e) {
-        if (kDebugMode) {
-          print('removeAnswerBot: Failed to disable bot on server: $e');
-        }
+      } catch (e, s) {
+        AppLogger.instance.error('fritzbox', 'removeAnswerBot: Failed to disable bot on server', e, s);
       }
       try {
         await sendRequest(DeleteAnswerBot(id: botId));
-      } catch (e) {
-        if (kDebugMode) {
-          print('removeAnswerBot: Failed to delete bot on server: $e');
-        }
+      } catch (e, s) {
+        AppLogger.instance.error('fritzbox', 'removeAnswerBot: Failed to delete bot on server', e, s);
       }
     }
 
@@ -1402,10 +1363,8 @@ class FritzBoxService {
             }
           }
         });
-      } catch (e) {
-        if (kDebugMode) {
-          print('removeAnswerBot: Error removing SIP device: $e');
-        }
+      } catch (e, s) {
+        AppLogger.instance.error('fritzbox', 'removeAnswerBot: Error removing SIP device', e, s);
       }
     }
 

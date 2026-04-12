@@ -105,9 +105,6 @@ class BlocklistSyncService {
       return true;
     } catch (e, s) {
       AppLogger.instance.error('sync', 'blocklist sync failed', e, s);
-      if (kDebugMode) {
-        print('BlocklistSync: Error during sync: $e');
-      }
       return false;
     }
   }

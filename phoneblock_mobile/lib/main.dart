@@ -103,17 +103,13 @@ Future<Map<String, String>> getDeviceLocaleSettings() async {
           print('SIM country code not available (possibly simulator or no SIM)');
         }
       }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Could not get SIM country code: $e');
-      }
+    } catch (e, s) {
+      AppLogger.instance.error('api', 'Could not get SIM country code', e, s);
     }
 
     return result;
-  } catch (e) {
-    if (kDebugMode) {
-      print('Error getting device locale settings: $e');
-    }
+  } catch (e, s) {
+    AppLogger.instance.error('api', 'Error getting device locale settings', e, s);
     // Return default values on error
     return {'lang': 'en'};
   }
@@ -148,9 +144,6 @@ Future<void> updateAccountSettings(String authToken, Map<String, String> setting
   } catch (e, s) {
     AppLogger.instance.error('api', 'PUT $pbBaseUrl/api/account failed', e, s);
     // Log error but don't block setup flow
-    if (kDebugMode) {
-      print('Error updating account settings: $e');
-    }
   }
 }
 
@@ -216,9 +209,6 @@ Future<AccountSettings?> fetchAccountSettings(String authToken) async {
     }
   } catch (e, s) {
     AppLogger.instance.error('api', 'GET $pbBaseUrl/api/account failed', e, s);
-    if (kDebugMode) {
-      print('Error fetching account settings: $e');
-    }
     return null;
   }
 }
@@ -384,10 +374,8 @@ Future<api.NumberList?> fetchBlacklist(String authToken) async {
       }
       return null;
     }
-  } catch (e) {
-    if (kDebugMode) {
-      print('Error fetching blacklist: $e');
-    }
+  } catch (e, s) {
+    AppLogger.instance.error('api', 'Error fetching blacklist', e, s);
     return null;
   }
 }
@@ -407,10 +395,8 @@ Future<api.NumberList?> fetchWhitelist(String authToken) async {
       }
       return null;
     }
-  } catch (e) {
-    if (kDebugMode) {
-      print('Error fetching whitelist: $e');
-    }
+  } catch (e, s) {
+    AppLogger.instance.error('api', 'Error fetching whitelist', e, s);
     return null;
   }
 }
@@ -443,9 +429,6 @@ Future<bool> removeFromBlacklist(String phone, String authToken) async {
     }
   } catch (e, s) {
     AppLogger.instance.error('api', 'DELETE $pbBaseUrl/api/blacklist/$phone failed', e, s);
-    if (kDebugMode) {
-      print('Error removing from blacklist: $e');
-    }
     return false;
   }
 }
@@ -473,10 +456,8 @@ Future<bool> removeFromWhitelist(String phone, String authToken) async {
       }
       return false;
     }
-  } catch (e) {
-    if (kDebugMode) {
-      print('Error removing from whitelist: $e');
-    }
+  } catch (e, s) {
+    AppLogger.instance.error('api', 'Error removing from whitelist', e, s);
     return false;
   }
 }
@@ -513,10 +494,8 @@ Future<bool> _updatePersonalizedComment(PersonalizedListType listType, String ph
       }
       return false;
     }
-  } catch (e) {
-    if (kDebugMode) {
-      print('Error updating ${listType.name} comment: $e');
-    }
+  } catch (e, s) {
+    AppLogger.instance.error('api', 'Error updating ${listType.name} comment', e, s);
     return false;
   }
 }
@@ -769,10 +748,8 @@ Future<void> syncStoredScreeningResults() async {
         }
       }
     }
-  } catch (e) {
-    if (kDebugMode) {
-      print('Error syncing stored screening results: $e');
-    }
+  } catch (e, s) {
+    AppLogger.instance.error('api', 'Error syncing stored screening results', e, s);
   }
 }
 
@@ -958,10 +935,8 @@ class _SetupWizardState extends State<SetupWizard> {
           SnackBar(content: Text(context.l10n.permissionNotGranted)),
         );
       }
-    } catch (e) {
-      if (kDebugMode) {
-        print("Error requesting permission: $e");
-      }
+    } catch (e, s) {
+      AppLogger.instance.error('api', 'Error requesting permission', e, s);
     }
   }
 
@@ -1220,10 +1195,8 @@ class _MainScreenState extends State<MainScreen> {
       setState(() {
         _answerbotEnabled = enabled ?? false;
       });
-    } catch (e) {
-      if (kDebugMode) {
-        print("Error loading answerbot enabled setting: $e");
-      }
+    } catch (e, s) {
+      AppLogger.instance.error('api', 'Error loading answerbot enabled setting', e, s);
     }
   }
 
@@ -1242,10 +1215,8 @@ class _MainScreenState extends State<MainScreen> {
           _minRangeVotes = minRangeVotes ?? 10;
         });
       }
-    } catch (e) {
-      if (kDebugMode) {
-        print("Error loading blocking settings: $e");
-      }
+    } catch (e, s) {
+      AppLogger.instance.error('api', 'Error loading blocking settings', e, s);
     }
   }
 
@@ -1287,10 +1258,8 @@ class _MainScreenState extends State<MainScreen> {
         _screenedCalls = calls;
         _isLoading = false;
       });
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error loading screened calls: $e');
-      }
+    } catch (e, s) {
+      AppLogger.instance.error('api', 'Error loading screened calls', e, s);
       setState(() {
         _isLoading = false;
       });
@@ -1938,10 +1907,8 @@ class _MainScreenState extends State<MainScreen> {
           );
         }
       }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error reporting legitimate: $e');
-      }
+    } catch (e, s) {
+      AppLogger.instance.error('api', 'Error reporting legitimate', e, s);
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -2042,10 +2009,8 @@ class _MainScreenState extends State<MainScreen> {
           );
         }
       }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error reporting spam: $e');
-      }
+    } catch (e, s) {
+      AppLogger.instance.error('api', 'Error reporting spam', e, s);
 
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -2156,10 +2121,8 @@ class _MainScreenState extends State<MainScreen> {
       if (kDebugMode) {
         print('Deleted all calls');
       }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error deleting all calls: $e');
-      }
+    } catch (e, s) {
+      AppLogger.instance.error('api', 'Error deleting all calls', e, s);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -2191,10 +2154,8 @@ class _MainScreenState extends State<MainScreen> {
       if (kDebugMode) {
         print('Deleted call: ${call.phoneNumber}');
       }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error deleting call: $e');
-      }
+    } catch (e, s) {
+      AppLogger.instance.error('api', 'Error deleting call', e, s);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -2860,10 +2821,8 @@ Future<void> syncWildcardPrefixesToNative() async {
 Future<bool> checkPermission() async {
   try {
     return await platform.invokeMethod("checkPermission");
-  } catch (e) {
-    if (kDebugMode) {
-      print("Error checking permission: $e");
-    }
+  } catch (e, s) {
+    AppLogger.instance.error('api', 'Error checking permission', e, s);
     return false;
   }
 }
@@ -2879,10 +2838,8 @@ Future<bool> validateAuthToken() async {
 
     final response = await callPhoneBlockApi(pbApiTest, authToken: token);
     return response.statusCode == 200;
-  } catch (e) {
-    if (kDebugMode) {
-      print("Error validating auth token: $e");
-    }
+  } catch (e, s) {
+    AppLogger.instance.error('api', 'Error validating auth token', e, s);
     return false;
   }
 }
@@ -3199,10 +3156,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (kDebugMode) {
         print("Set state - minVotes: $_minVotes, blockRanges: $_blockRanges, minRangeVotes: $_minRangeVotes, themeMode: $_themeMode, answerbotEnabled: $_answerbotEnabled");
       }
-    } catch (e) {
-      if (kDebugMode) {
-        print("Error loading settings: $e");
-      }
+    } catch (e, s) {
+      AppLogger.instance.error('api', 'Error loading settings', e, s);
       setState(() {
         _isLoading = false;
       });
@@ -3230,10 +3185,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         );
       }
-    } catch (e) {
-      if (kDebugMode) {
-        print("Error saving min votes: $e");
-      }
+    } catch (e, s) {
+      AppLogger.instance.error('api', 'Error saving min votes', e, s);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -3258,10 +3211,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       setState(() {
         _blockRanges = value;
       });
-    } catch (e) {
-      if (kDebugMode) {
-        print("Error saving block ranges: $e");
-      }
+    } catch (e, s) {
+      AppLogger.instance.error('api', 'Error saving block ranges', e, s);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -3294,10 +3245,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         );
       }
-    } catch (e) {
-      if (kDebugMode) {
-        print("Error saving min range votes: $e");
-      }
+    } catch (e, s) {
+      AppLogger.instance.error('api', 'Error saving min range votes', e, s);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -3335,10 +3284,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         );
       }
-    } catch (e) {
-      if (kDebugMode) {
-        print("Error saving retention days: $e");
-      }
+    } catch (e, s) {
+      AppLogger.instance.error('api', 'Error saving retention days', e, s);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -3363,10 +3310,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       setState(() {
         _notificationsEnabled = value;
       });
-    } catch (e) {
-      if (kDebugMode) {
-        print("Error saving notifications enabled: $e");
-      }
+    } catch (e, s) {
+      AppLogger.instance.error('api', 'Error saving notifications enabled', e, s);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -3404,10 +3349,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         );
       }
-    } catch (e) {
-      if (kDebugMode) {
-        print("Error saving theme mode: $e");
-      }
+    } catch (e, s) {
+      AppLogger.instance.error('api', 'Error saving theme mode', e, s);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -3440,10 +3383,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         );
       }
-    } catch (e) {
-      if (kDebugMode) {
-        print("Error saving answerbot enabled: $e");
-      }
+    } catch (e, s) {
+      AppLogger.instance.error('api', 'Error saving answerbot enabled', e, s);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -3980,10 +3921,8 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
           _isLoading = false;
         });
       }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error loading ${_isBlacklist ? 'blacklist' : 'whitelist'}: $e');
-      }
+    } catch (e, s) {
+      AppLogger.instance.error('api', 'Error loading ${_isBlacklist ? 'blacklist' : 'whitelist'}', e, s);
       setState(() {
         _errorMessage = context.l10n.errorLoadingList;
         _isLoading = false;
@@ -4377,10 +4316,8 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
           );
         }
       }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error adding number: $e');
-      }
+    } catch (e, s) {
+      AppLogger.instance.error('api', 'Error adding number', e, s);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -4448,10 +4385,8 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
           );
         }
       }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error adding whitelist number: $e');
-      }
+    } catch (e, s) {
+      AppLogger.instance.error('api', 'Error adding whitelist number', e, s);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

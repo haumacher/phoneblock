@@ -1,7 +1,7 @@
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
+import 'package:phoneblock_mobile/logging/app_logger.dart';
 import 'package:xml/xml.dart';
 
 /// Service for discovering Fritz!Box devices on the network.
@@ -54,10 +54,8 @@ class FritzBoxDiscovery {
       }
 
       return null;
-    } catch (e) {
-      if (kDebugMode) {
-        print('Discovery error for $host: $e');
-      }
+    } catch (e, s) {
+      AppLogger.instance.error('fritzbox-discovery', 'Discovery error for $host', e, s);
       return null;
     }
   }
@@ -72,10 +70,8 @@ class FritzBoxDiscovery {
         return _parseDeviceDescription(host, response.body);
       }
       return null;
-    } catch (e) {
-      if (kDebugMode) {
-        print('TR-064 discovery failed for $host: $e');
-      }
+    } catch (e, s) {
+      AppLogger.instance.error('fritzbox-discovery', 'TR-064 discovery failed for $host', e, s);
       return null;
     }
   }
@@ -90,10 +86,8 @@ class FritzBoxDiscovery {
         return _parseDeviceDescription(host, response.body);
       }
       return null;
-    } catch (e) {
-      if (kDebugMode) {
-        print('UPnP discovery failed for $host: $e');
-      }
+    } catch (e, s) {
+      AppLogger.instance.error('fritzbox-discovery', 'UPnP discovery failed for $host', e, s);
       return null;
     }
   }
@@ -143,10 +137,8 @@ class FritzBoxDiscovery {
         fritzosVersion: fritzosVersion,
         serialNumber: serialNumber,
       );
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error parsing device description: $e');
-      }
+    } catch (e, s) {
+      AppLogger.instance.error('fritzbox-discovery', 'Error parsing device description', e, s);
       return FritzBoxDeviceInfo(host: host);
     }
   }
