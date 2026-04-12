@@ -94,8 +94,12 @@ public class StatsController extends DefaultController {
 
 		datasets.append(']');
 
+		int currentUserCount = DBService.getInstance().getUsers();
+		int lastClosedDayCount = data.isEmpty() ? 0 : data.get(data.size() - 1);
 		request.setAttribute("registrationLabels", registrationLabels.toString());
 		request.setAttribute("registrationDatasets", datasets.toString());
+		request.setAttribute("currentUserCount", currentUserCount);
+		request.setAttribute("todayGrowth", currentUserCount - lastClosedDayCount);
 
 		// Active installations chart.
 		Object[] installations = DBService.getInstance().getActiveInstallationsHistory(30);

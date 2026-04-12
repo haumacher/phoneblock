@@ -18,7 +18,9 @@
 	<h2 data-tx="t0003:67d1fbf">Ανάπτυξη χρηστών τις τελευταίες 30 ημέρες</h2>
 
 	<div>
-		<canvas aria-label="Ανάπτυξη χρηστών τις τελευταίες 30 ημέρες" data-tx="t0004:a5b4387c" dir="ltr" height="200" id="registrations" role="img" width="400"></canvas>
+		<div style="position: relative; height: clamp(350px, 60vw, 600px); width: 100%;">
+			<canvas aria-label="Ανάπτυξη χρηστών τις τελευταίες 30 ημέρες" data-tx="t0004:a5b4387c" dir="ltr" id="registrations" role="img"></canvas>
+		</div>
 		<pre class="chartjs-data" id="registrations-data">
 		{
 			"type": "line",
@@ -27,6 +29,8 @@
 				"datasets": <th:block th:utext="${registrationDatasets}"></th:block>
 			},
 			"options": {
+				"responsive": true,
+				"maintainAspectRatio": false,
 				"scales": {
 					"y": {
 						"ticks": {
@@ -38,12 +42,15 @@
 		}
 		</pre>
 		<script th:src="@{/assets/js/stats-registrations.js}" type="text/javascript"></script>
+		<p data-tx="t0009:54ade32b" th:text="#{page.stats.today(${currentUserCount}, ${todayGrowth &gt;= 0 ? '+' + todayGrowth : todayGrowth})}">Σήμερα: 0 χρήστες συνολικά (+0 από χθες)</p>
 	</div>
 
 	<h2 data-tx="t0005:ef63903a" th:text="#{page.stats.installationsTitle}">Ενεργές χρήσεις τις τελευταίες 30 ημέρες</h2>
 
 	<div>
-		<canvas aria-label="Ενεργές χρήσεις τις τελευταίες 30 ημέρες" data-tx="t0006:aabe0215" dir="ltr" height="200" id="installations" role="img" width="400"></canvas>
+		<div style="position: relative; height: clamp(350px, 60vw, 600px); width: 100%;">
+			<canvas aria-label="Ενεργές χρήσεις τις τελευταίες 30 ημέρες" data-tx="t0006:aabe0215" dir="ltr" id="installations" role="img"></canvas>
+		</div>
 		<pre class="chartjs-data" id="installations-data">
 		{
 			"type": "line",
@@ -52,6 +59,8 @@
 				"datasets": <th:block th:utext="${installationDatasets}"></th:block>
 			},
 			"options": {
+				"responsive": true,
+				"maintainAspectRatio": false,
 				"scales": {
 					"y": {
 						"ticks": {
