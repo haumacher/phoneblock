@@ -75,6 +75,12 @@ public class CallChecker extends CallScreeningService {
         Uri handle = callDetails.getHandle();
         Log.d(CallChecker.class.getName(), "onScreenCall: " + handle);
 
+        if (handle == null) {
+            Log.d(CallChecker.class.getName(), "onScreenCall: No handle (e.g. withheld number), accepting.");
+            acceptCall(callDetails);
+            return;
+        }
+
         SharedPreferences prefs = MainActivity.getPreferences(this);
         String authToken = prefs.getString("auth_token", null);
         int minVotes = prefs.getInt("min_votes", 4);
