@@ -79,5 +79,7 @@ flutter {
 
 dependencies {
     implementation 'com.googlecode.libphonenumber:libphonenumber:8.13.27'
+    implementation 'org.slf4j:slf4j-api:2.0.13'
+    implementation 'com.github.tony19:logback-android:3.0.0'
     testImplementation 'junit:junit:4.13.2'
 }
