@@ -142,10 +142,18 @@
 			<version>0.12.2</version>
 		</dependency>
 
+		<!--
+			Do NOT upgrade to Jackson 3 (groupId "tools.jackson.core"):
+			ez-vcard pulls in Jackson 2.x via groupId "com.fasterxml.jackson.core".
+			A Jackson 3 entry here does NOT override that transitive 2.x version
+			(different groupId = different artifact), so the override effect is
+			lost and we end up with two Jackson majors on the classpath.
+			Keep this pinned to the latest 2.x until ez-vcard itself migrates.
+		-->
 		<dependency>
-			<groupId>tools.jackson.core</groupId>
+			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
-			<version>3.1.0</version>
+			<version>2.21.1</version>
 		</dependency>
 
 		<dependency>
@@ -174,10 +182,18 @@
 		    <version>1.43.0</version>
 		</dependency>
 	
+		<!--
+			Do NOT upgrade to httpcore5 (groupId "org.apache.httpcomponents.core5"):
+			CardDavServlet and carddav/resource/Resource import
+			org.apache.http.impl.EnglishReasonPhraseCatalog, which only exists in
+			Apache HttpComponents 4.x (package org.apache.http.*). HttpComponents 5
+			moved everything to org.apache.hc.core5.* and dropped that class.
+			Keep this on 4.4.x until the CardDAV code is ported to httpcore5.
+		-->
 		<dependency>
-			<groupId>org.apache.httpcomponents.core5</groupId>
-			<artifactId>httpcore5</artifactId>
-			<version>5.4.2</version>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpcore</artifactId>
+			<version>4.4.16</version>
 		</dependency>
 
 		<dependency>
