@@ -143,7 +143,7 @@ public class StatsController extends DefaultController {
 			String key = entry.getKey();
 			String agentLabel = "OTHER".equals(key) ? otherLabel : key.isEmpty() ? "?" : key;
 			String color = DIAL_COLORS[colorIndex % DIAL_COLORS.length];
-			boolean hidden = !defaultVisibleAgents.contains(key);
+			boolean hidden = !defaultVisibleAgents.contains(key.toLowerCase());
 
 			installationDatasets.append("{\"label\":");
 			jsString(installationDatasets, agentLabel);
