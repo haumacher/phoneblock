@@ -537,11 +537,11 @@ void callbackDispatcher() {
 }
 
 Future<void> main() async {
+  runZonedGuarded(() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppLogger.instance.init();
   CrashHandler.install();
 
-  runZonedGuarded(() async {
   await Workmanager().initialize(callbackDispatcher);
 
   // Initialize app version from package info
