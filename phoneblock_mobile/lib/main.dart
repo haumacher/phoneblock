@@ -95,13 +95,9 @@ Future<Map<String, String>> getDeviceLocaleSettings() async {
       if (simCountryCode != null && simCountryCode.isNotEmpty) {
         // Send country code to server, which will convert to dial prefix
         result['countryCode'] = simCountryCode.toUpperCase();
-        if (kDebugMode) {
-          print('SIM country code: $simCountryCode');
-        }
+        AppLogger.instance.info('app', 'SIM country code: $simCountryCode');
       } else {
-        if (kDebugMode) {
-          print('SIM country code not available (possibly simulator or no SIM)');
-        }
+        AppLogger.instance.info('app', 'SIM country code not available (possibly simulator or no SIM)');
       }
     } catch (e, s) {
       AppLogger.instance.error('api', 'Could not get SIM country code', e, s);
@@ -133,13 +129,9 @@ Future<void> updateAccountSettings(String authToken, Map<String, String> setting
 
     if (response.statusCode == 200) {
       AppLogger.instance.info('api', 'PUT $url -> ${response.statusCode}');
-      if (kDebugMode) {
-        print('Account settings updated successfully: $settings');
-      }
+      AppLogger.instance.info('api', 'Account settings updated successfully: $settings');
     } else {
-      if (kDebugMode) {
-        print('Failed to update account settings: ${response.statusCode} - ${response.body}');
-      }
+      AppLogger.instance.error('api', 'Failed to update account settings: ${response.statusCode} - ${response.body}');
     }
   } catch (e, s) {
     AppLogger.instance.error('api', 'PUT $pbBaseUrl/api/account failed', e, s);
@@ -202,9 +194,7 @@ Future<AccountSettings?> fetchAccountSettings(String authToken) async {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       return AccountSettings.fromJson(data);
     } else {
-      if (kDebugMode) {
-        print('Failed to fetch account settings: ${response.statusCode}');
-      }
+      AppLogger.instance.error('api', 'Failed to fetch account settings: ${response.statusCode}');
       return null;
     }
   } catch (e, s) {
@@ -294,21 +284,15 @@ String? extractPhoneNumber(String text) {
 Future<void> handleSharedPhoneNumber(String? sharedText) async {
   if (sharedText == null || sharedText.isEmpty) return;
 
-  if (kDebugMode) {
-    print('Received shared text: $sharedText');
-  }
+  AppLogger.instance.info('app', 'Received shared text: $sharedText');
 
   final phoneNumber = extractPhoneNumber(sharedText);
   if (phoneNumber == null) {
-    if (kDebugMode) {
-      print('No valid phone number found');
-    }
+    AppLogger.instance.info('app', 'No valid phone number found');
     return;
   }
 
-  if (kDebugMode) {
-    print('Extracted phone number: $phoneNumber');
-  }
+  AppLogger.instance.info('app', 'Extracted phone number: $phoneNumber');
 
   // Store for processing in MainScreen after auth check
   _pendingSharedNumber = phoneNumber;
@@ -369,9 +353,7 @@ Future<api.NumberList?> fetchBlacklist(String authToken) async {
     if (response.statusCode == 200) {
       return api.NumberList.fromString(response.body);
     } else {
-      if (kDebugMode) {
-        print('Failed to fetch blacklist: ${response.statusCode} - ${response.body}');
-      }
+      AppLogger.instance.error('api', 'Failed to fetch blacklist: ${response.statusCode} - ${response.body}');
       return null;
     }
   } catch (e, s) {
@@ -390,9 +372,7 @@ Future<api.NumberList?> fetchWhitelist(String authToken) async {
     if (response.statusCode == 200) {
       return api.NumberList.fromString(response.body);
     } else {
-      if (kDebugMode) {
-        print('Failed to fetch whitelist: ${response.statusCode} - ${response.body}');
-      }
+      AppLogger.instance.error('api', 'Failed to fetch whitelist: ${response.statusCode} - ${response.body}');
       return null;
     }
   } catch (e, s) {
@@ -422,9 +402,7 @@ Future<bool> removeFromBlacklist(String phone, String authToken) async {
     if (response.statusCode == 204) {
       return true;
     } else {
-      if (kDebugMode) {
-        print('Failed to remove from blacklist: ${response.statusCode} - ${response.body}');
-      }
+      AppLogger.instance.error('api', 'Failed to remove from blacklist: ${response.statusCode} - ${response.body}');
       return false;
     }
   } catch (e, s) {
@@ -451,9 +429,7 @@ Future<bool> removeFromWhitelist(String phone, String authToken) async {
     if (response.statusCode == 204) {
       return true;
     } else {
-      if (kDebugMode) {
-        print('Failed to remove from whitelist: ${response.statusCode} - ${response.body}');
-      }
+      AppLogger.instance.error('api', 'Failed to remove from whitelist: ${response.statusCode} - ${response.body}');
       return false;
     }
   } catch (e, s) {
@@ -489,9 +465,7 @@ Future<bool> _updatePersonalizedComment(PersonalizedListType listType, String ph
     if (response.statusCode == 204) {
       return true;
     } else {
-      if (kDebugMode) {
-        print('Failed to update $listName comment: ${response.statusCode} - ${response.body}');
-      }
+      AppLogger.instance.error('api', 'Failed to update $listName comment: ${response.statusCode} - ${response.body}');
       return false;
     }
   } catch (e, s) {
@@ -578,9 +552,7 @@ Future<void> main() async {
       // Notify any listeners (e.g., MainScreen) about the new call
       callScreenedStreamController.add(insertedCall);
 
-      if (kDebugMode) {
-        print('Screened call saved: ${screenedCall.phoneNumber} (blocked: ${screenedCall.wasBlocked}, votes: ${screenedCall.votes}, rangeVotes: ${screenedCall.votesWildcard}, rating: ${screenedCall.rating})');
-      }
+      AppLogger.instance.info('calls', 'Screened call saved: ${screenedCall.phoneNumber} (blocked: ${screenedCall.wasBlocked}, votes: ${screenedCall.votes}, rangeVotes: ${screenedCall.votesWildcard}, rating: ${screenedCall.rating})');
     }
   });
 
@@ -635,9 +607,7 @@ class _PhoneBlockAppState extends State<PhoneBlockApp> {
         }
       },
       onError: (err) {
-        if (kDebugMode) {
-          print('Error receiving sharing intent: $err');
-        }
+        AppLogger.instance.error('app', 'Error receiving sharing intent', err);
       },
     );
   }
@@ -742,18 +712,14 @@ Future<void> syncStoredScreeningResults() async {
           newCallIds.add(insertedCall.id!);
         }
 
-        if (kDebugMode) {
-          print('Synced stored call: ${screenedCall.phoneNumber} (blocked: ${screenedCall.wasBlocked}, rangeVotes: ${screenedCall.votesWildcard}, rating: ${screenedCall.rating})');
-        }
+        AppLogger.instance.info('calls', 'Synced stored call: ${screenedCall.phoneNumber} (blocked: ${screenedCall.wasBlocked}, rangeVotes: ${screenedCall.votesWildcard}, rating: ${screenedCall.rating})');
       }
 
       // Clear the stored results from SharedPreferences after syncing
       await platform.invokeMethod('clearStoredScreeningResults');
 
-      if (kDebugMode) {
-        if (storedCalls.isNotEmpty) {
-          print('Synced ${storedCalls.length} stored screening results');
-        }
+      if (storedCalls.isNotEmpty) {
+        AppLogger.instance.info('calls', 'Synced ${storedCalls.length} stored screening results');
       }
     }
   } catch (e, s) {
@@ -781,10 +747,7 @@ final router = GoRouter(
           path: '$contextPath/mobile/response',
           builder: (context, state) {
             var loginToken = state.uri.queryParameters["loginToken"];
-            AppLogger.instance.info('app', 'oauth callback received');
-            if (kDebugMode) {
-              print("Token received (${state.path}): $loginToken");
-            }
+            AppLogger.instance.info('auth', 'Token received (${state.path}): $loginToken');
             if (loginToken == null) {
               return LoginFailed();
             } else {
@@ -1234,9 +1197,7 @@ class _MainScreenState extends State<MainScreen> {
       final number = _pendingSharedNumber!;
       _pendingSharedNumber = null; // Clear it
 
-      if (kDebugMode) {
-        print('Processing pending shared number: $number');
-      }
+      AppLogger.instance.info('app', 'Processing pending shared number: $number');
 
       // Brief delay for screen to finish building
       await Future.delayed(const Duration(milliseconds: 300));
@@ -1282,9 +1243,7 @@ class _MainScreenState extends State<MainScreen> {
         _screenedCalls.insert(0, screenedCall);
       });
 
-      if (kDebugMode) {
-        print('MainScreen received new screened call: ${screenedCall.phoneNumber}');
-      }
+      AppLogger.instance.info('calls', 'MainScreen received new screened call: ${screenedCall.phoneNumber}');
     });
   }
 
@@ -2126,9 +2085,7 @@ class _MainScreenState extends State<MainScreen> {
       // Delete all from database
       await ScreenedCallsDatabase.instance.deleteAllScreenedCalls();
 
-      if (kDebugMode) {
-        print('Deleted all calls');
-      }
+      AppLogger.instance.info('calls', 'Deleted all calls');
     } catch (e, s) {
       AppLogger.instance.error('api', 'Error deleting all calls', e, s);
 
@@ -2159,9 +2116,7 @@ class _MainScreenState extends State<MainScreen> {
         await ScreenedCallsDatabase.instance.deleteScreenedCall(call.id!);
       }
 
-      if (kDebugMode) {
-        print('Deleted call: ${call.phoneNumber}');
-      }
+      AppLogger.instance.info('calls', 'Deleted call: ${call.phoneNumber}');
     } catch (e, s) {
       AppLogger.instance.error('api', 'Error deleting call', e, s);
 
@@ -3044,9 +2999,7 @@ class _PhoneBlockWebViewState extends State<PhoneBlockWebView> {
     // Get device locale for Accept-Language header
     final languageTag = getDeviceLocale();
 
-    if (kDebugMode) {
-      print("Loading with language '$languageTag': $url");
-    }
+    AppLogger.instance.info('app', "Loading with language '$languageTag': $url");
 
     await _controller.loadRequest(
       Uri.parse(url),
@@ -3063,9 +3016,7 @@ class _PhoneBlockWebViewState extends State<PhoneBlockWebView> {
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
-      if (kDebugMode) {
-        print('Could not launch external URL: $url');
-      }
+      AppLogger.instance.error('app', 'Could not launch external URL: $url');
     }
   }
 
@@ -3141,9 +3092,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       final syncInfo = await ScreenedCallsDatabase.instance.getBlocklistSyncInfo();
       final blocklistCount = await ScreenedCallsDatabase.instance.getBlocklistCount();
 
-      if (kDebugMode) {
-        print("Loaded settings - minVotes: $minVotesResult, blockRanges: $blockRangesResult, minRangeVotes: $minRangeVotesResult, retentionDays: $retentionDaysResult, themeMode: $themeModeResult, answerbotEnabled: $answerbotEnabledResult");
-      }
+      AppLogger.instance.info('settings', "Loaded settings - minVotes: $minVotesResult, blockRanges: $blockRangesResult, minRangeVotes: $minRangeVotesResult, retentionDays: $retentionDaysResult, themeMode: $themeModeResult, answerbotEnabled: $answerbotEnabledResult");
 
       setState(() {
         _minVotes = minVotesResult ?? 4;
@@ -3161,9 +3110,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _isLoading = false;
       });
 
-      if (kDebugMode) {
-        print("Set state - minVotes: $_minVotes, blockRanges: $_blockRanges, minRangeVotes: $_minRangeVotes, themeMode: $_themeMode, answerbotEnabled: $_answerbotEnabled");
-      }
+      AppLogger.instance.info('settings', "Set state - minVotes: $_minVotes, blockRanges: $_blockRanges, minRangeVotes: $_minRangeVotes, themeMode: $_themeMode, answerbotEnabled: $_answerbotEnabled");
     } catch (e, s) {
       AppLogger.instance.error('api', 'Error loading settings', e, s);
       setState(() {
@@ -3174,14 +3121,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   /// Save minimum votes setting.
   Future<void> _saveMinVotes(int value) async {
-    if (kDebugMode) {
-      print("Saving minVotes: $value");
-    }
+    AppLogger.instance.info('settings', "Saving minVotes: $value");
     try {
       await platform.invokeMethod("setMinVotes", value);
-      if (kDebugMode) {
-        print("Successfully saved minVotes to SharedPreferences: $value");
-      }
+      AppLogger.instance.info('settings', "Successfully saved minVotes to SharedPreferences: $value");
       setState(() {
         _minVotes = value;
       });
@@ -3208,14 +3151,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   /// Save block ranges setting.
   Future<void> _saveBlockRanges(bool value) async {
-    if (kDebugMode) {
-      print("Saving blockRanges: $value");
-    }
+    AppLogger.instance.info('settings', "Saving blockRanges: $value");
     try {
       await platform.invokeMethod("setBlockRanges", value);
-      if (kDebugMode) {
-        print("Successfully saved blockRanges to SharedPreferences: $value");
-      }
+      AppLogger.instance.info('settings', "Successfully saved blockRanges to SharedPreferences: $value");
       setState(() {
         _blockRanges = value;
       });
@@ -3234,14 +3173,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   /// Save minimum range votes setting.
   Future<void> _saveMinRangeVotes(int value) async {
-    if (kDebugMode) {
-      print("Saving minRangeVotes: $value");
-    }
+    AppLogger.instance.info('settings', "Saving minRangeVotes: $value");
     try {
       await platform.invokeMethod("setMinRangeVotes", value);
-      if (kDebugMode) {
-        print("Successfully saved minRangeVotes to SharedPreferences: $value");
-      }
+      AppLogger.instance.info('settings', "Successfully saved minRangeVotes to SharedPreferences: $value");
       setState(() {
         _minRangeVotes = value;
       });
@@ -3268,14 +3203,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   /// Save retention days setting.
   Future<void> _saveRetentionDays(int value) async {
-    if (kDebugMode) {
-      print("Saving retentionDays: $value");
-    }
+    AppLogger.instance.info('settings', "Saving retentionDays: $value");
     try {
       await platform.invokeMethod("setRetentionDays", value);
-      if (kDebugMode) {
-        print("Successfully saved retentionDays to SharedPreferences: $value");
-      }
+      AppLogger.instance.info('settings', "Successfully saved retentionDays to SharedPreferences: $value");
       setState(() {
         _retentionDays = value;
       });
@@ -3307,14 +3238,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   /// Save notifications enabled setting.
   Future<void> _saveNotificationsEnabled(bool value) async {
-    if (kDebugMode) {
-      print("Saving notificationsEnabled: $value");
-    }
+    AppLogger.instance.info('settings', "Saving notificationsEnabled: $value");
     try {
       await platform.invokeMethod("setNotificationsEnabled", value);
-      if (kDebugMode) {
-        print("Successfully saved notificationsEnabled to SharedPreferences: $value");
-      }
+      AppLogger.instance.info('settings', "Successfully saved notificationsEnabled to SharedPreferences: $value");
       setState(() {
         _notificationsEnabled = value;
       });
@@ -3333,14 +3260,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   /// Save theme mode setting.
   Future<void> _saveThemeMode(BuildContext context, String value) async {
-    if (kDebugMode) {
-      print("Saving themeMode: $value");
-    }
+    AppLogger.instance.info('settings', "Saving themeMode: $value");
     try {
       await setThemeMode(value);
-      if (kDebugMode) {
-        print("Successfully saved themeMode to SharedPreferences: $value");
-      }
+      AppLogger.instance.info('settings', "Successfully saved themeMode to SharedPreferences: $value");
       setState(() {
         _themeMode = value;
       });
@@ -3372,14 +3295,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   /// Save answerbot enabled setting.
   Future<void> _saveAnswerbotEnabled(BuildContext context, bool value) async {
-    if (kDebugMode) {
-      print("Saving answerbotEnabled: $value");
-    }
+    AppLogger.instance.info('settings', "Saving answerbotEnabled: $value");
     try {
       await platform.invokeMethod("setAnswerbotEnabled", value);
-      if (kDebugMode) {
-        print("Successfully saved answerbotEnabled to SharedPreferences: $value");
-      }
+      AppLogger.instance.info('settings', "Successfully saved answerbotEnabled to SharedPreferences: $value");
       setState(() {
         _answerbotEnabled = value;
       });

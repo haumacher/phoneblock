@@ -1,6 +1,5 @@
 import 'dart:math';
 
-import 'package:flutter/foundation.dart';
 import 'package:phoneblock_mobile/api.dart' as api;
 import 'package:phoneblock_mobile/logging/app_logger.dart';
 import 'package:phoneblock_mobile/main.dart' show callPhoneBlockApi, getAuthToken, pbBaseUrl;
@@ -42,9 +41,7 @@ class BlocklistSyncService {
     try {
       final authToken = await getAuthToken();
       if (authToken == null || authToken.isEmpty) {
-        if (kDebugMode) {
-          print('BlocklistSync: No auth token, skipping sync');
-        }
+        AppLogger.instance.info('sync', 'BlocklistSync: No auth token, skipping sync');
         return false;
       }
 
@@ -56,33 +53,25 @@ class BlocklistSyncService {
       // Trigger a full resync every 40 syncs to correct accumulated drift.
       final needsFullResync = syncCount >= 40;
       if (needsFullResync) {
-        if (kDebugMode) {
-          print('BlocklistSync: syncCount=$syncCount, triggering full resync');
-        }
+        AppLogger.instance.info('sync', 'BlocklistSync: syncCount=$syncCount, triggering full resync');
         await db.resetForFullSync();
       }
 
       final version = needsFullResync ? 0 : currentVersion;
 
-      if (kDebugMode) {
-        print('BlocklistSync: Starting sync from version $version');
-      }
+      AppLogger.instance.info('sync', 'BlocklistSync: Starting sync from version $version');
 
       final url = '$pbBaseUrl/api/blocklist?since=$version';
       final response = await callPhoneBlockApi(url, authToken: authToken);
 
       if (response.statusCode != 200) {
-        if (kDebugMode) {
-          print('BlocklistSync: Server returned ${response.statusCode}');
-        }
+        AppLogger.instance.error('sync', 'BlocklistSync: Server returned ${response.statusCode}');
         return false;
       }
 
       final blocklist = api.Blocklist.fromString(response.body);
       if (blocklist == null) {
-        if (kDebugMode) {
-          print('BlocklistSync: Failed to parse response');
-        }
+        AppLogger.instance.error('sync', 'BlocklistSync: Failed to parse response');
         return false;
       }
 
@@ -95,11 +84,6 @@ class BlocklistSyncService {
         (u, d) { upserted = u; deleted = d; },
         blocklist.version,
       );
-
-      if (kDebugMode) {
-        print('BlocklistSync: Done. Upserted $upserted, deleted $deleted. '
-            'New version: ${blocklist.version}');
-      }
 
       AppLogger.instance.info('sync', 'blocklist sync done (upserted=$upserted, deleted=$deleted, version=${blocklist.version})');
       return true;
