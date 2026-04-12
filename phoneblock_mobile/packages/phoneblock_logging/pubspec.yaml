@@ -1,0 +1,19 @@
+name: phoneblock_logging
+description: Local Flutter plugin that bridges Dart log calls into the native Logback-Android logger.
+version: 0.0.1
+publish_to: none
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+  flutter: '>=3.3.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+flutter:
+  plugin:
+    platforms:
+      android:
+        package: de.haumacher.phoneblock_logging
+        pluginClass: LogBridge

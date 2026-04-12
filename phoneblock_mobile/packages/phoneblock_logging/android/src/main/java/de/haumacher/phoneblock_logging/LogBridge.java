@@ -1,7 +1,9 @@
-package de.haumacher.phoneblock_mobile.log;
+package de.haumacher.phoneblock_logging;
 
 import android.content.Context;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,31 +12,42 @@ import org.slf4j.event.Level;
 
 import java.io.File;
 
-import io.flutter.plugin.common.BinaryMessenger;
+import io.flutter.embedding.engine.plugins.FlutterPlugin;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 
 /**
- * Bridges Flutter log calls into SLF4J. Registered on the Flutter engine
- * in {@code MainActivity}. Never throws back into Flutter.
+ * Flutter plugin: bridges Dart log calls on channel {@code phoneblock/log}
+ * into SLF4J. Auto-registered on every FlutterEngine created in the
+ * Android process via {@code GeneratedPluginRegistrant}, which means it
+ * works in the main isolate AND in Workmanager background isolates
+ * without any manual wiring.
  */
-public final class LogBridge implements MethodChannel.MethodCallHandler {
+public final class LogBridge implements FlutterPlugin, MethodChannel.MethodCallHandler {
 
     public static final String CHANNEL = "phoneblock/log";
 
-    private final Context appContext;
+    private MethodChannel channel;
+    private Context appContext;
 
-    public LogBridge(Context context) {
-        this.appContext = context.getApplicationContext();
-    }
-
-    public static void register(BinaryMessenger messenger, Context context) {
-        MethodChannel channel = new MethodChannel(messenger, CHANNEL);
-        channel.setMethodCallHandler(new LogBridge(context));
+    @Override
+    public void onAttachedToEngine(@NonNull FlutterPluginBinding binding) {
+        appContext = binding.getApplicationContext();
+        channel = new MethodChannel(binding.getBinaryMessenger(), CHANNEL);
+        channel.setMethodCallHandler(this);
     }
 
     @Override
-    public void onMethodCall(MethodCall call, MethodChannel.Result result) {
+    public void onDetachedFromEngine(@NonNull FlutterPluginBinding binding) {
+        if (channel != null) {
+            channel.setMethodCallHandler(null);
+            channel = null;
+        }
+        appContext = null;
+    }
+
+    @Override
+    public void onMethodCall(@NonNull MethodCall call, @NonNull MethodChannel.Result result) {
         try {
             switch (call.method) {
                 case "log":

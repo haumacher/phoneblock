@@ -453,6 +453,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.1"
+  phoneblock_logging:
+    dependency: "direct main"
+    description:
+      path: "packages/phoneblock_logging"
+      relative: true
+    source: path
+    version: "0.0.1"
   phoneblock_shared:
     dependency: "direct main"
     description:

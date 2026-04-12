@@ -63,6 +63,8 @@ dependencies:
   phoneblock_shared:
     path: ../phoneblock_shared
   crypto: ^3.0.7
+  phoneblock_logging:
+    path: packages/phoneblock_logging
 
 dev_dependencies:
   flutter_test:
