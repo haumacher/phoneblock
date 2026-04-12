@@ -521,10 +521,18 @@ Future<bool> updateWhitelistComment(String phone, String comment, String authTok
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
-    if (task == 'blocklistSync') {
-      return await BlocklistSyncService.instance.sync();
+    WidgetsFlutterBinding.ensureInitialized();
+    await AppLogger.instance.init();
+    AppLogger.instance.info('app', 'workmanager task=$task started');
+    try {
+      if (task == 'blocklistSync') {
+        return await BlocklistSyncService.instance.sync();
+      }
+      return Future.value(true);
+    } catch (e, s) {
+      AppLogger.instance.error('app', 'workmanager task=$task crashed', e, s);
+      rethrow;
     }
-    return Future.value(true);
   });
 }
 
