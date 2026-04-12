@@ -4161,7 +4161,7 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
   Future<void> _addWildcardNumber(BuildContext context, String phoneInput) async {
     final prefix = await _normalizeWildcardPrefix(phoneInput);
 
-    if (prefix == null || prefix.length < 3) {
+    if (prefix == null || prefix.length < 2) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
