@@ -7,7 +7,6 @@ import androidx.annotation.NonNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.slf4j.event.Level;
 
 import java.io.File;
@@ -78,24 +77,18 @@ public final class LogBridge implements FlutterPlugin, MethodChannel.MethodCallH
         String stack = call.argument("stack");
 
         if (tag == null) tag = "dart";
-        Logger log = LoggerFactory.getLogger(tag);
+        String loggerName = src != null ? src : tag;
+        Logger log = LoggerFactory.getLogger(loggerName);
 
         Level level = parseLevel(levelStr);
         String composed = compose(msg, error, stack);
 
-        if (src != null) {
-            MDC.put("src", src);
-        }
-        try {
-            switch (level) {
-                case ERROR: log.error(composed); break;
-                case WARN:  log.warn(composed); break;
-                case INFO:  log.info(composed); break;
-                case DEBUG: log.debug(composed); break;
-                default:    log.trace(composed);
-            }
-        } finally {
-            MDC.remove("src");
+        switch (level) {
+            case ERROR: log.error(composed); break;
+            case WARN:  log.warn(composed); break;
+            case INFO:  log.info(composed); break;
+            case DEBUG: log.debug(composed); break;
+            default:    log.trace(composed);
         }
     }
 

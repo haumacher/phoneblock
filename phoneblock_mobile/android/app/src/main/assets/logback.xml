@@ -4,7 +4,6 @@
 
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_DIR}/app.log</file>
-        <prudent>true</prudent>
 
         <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
             <fileNamePattern>${LOG_DIR}/app.log.%i</fileNamePattern>
@@ -17,7 +16,7 @@
         </triggeringPolicy>
 
         <encoder>
-            <pattern>%d{ISO8601} %-5level [%X{src:-%logger{20}:%L}] - %msg%n</pattern>
+            <pattern>%d{ISO8601} %-5level [%logger{35}] - %msg%n</pattern>
         </encoder>
     </appender>
 
