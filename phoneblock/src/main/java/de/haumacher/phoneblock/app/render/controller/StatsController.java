@@ -131,7 +131,7 @@ public class StatsController extends DefaultController {
 
 		// Per-agent datasets.
 		java.util.Set<String> defaultVisibleAgents = java.util.Set.of(
-			"spamblocker", "fritzbox", "phoneblockmobile", "phonespamblocker");
+			"SpamBlocker", "FritzBox", "PhoneBlockMobile", "PhoneSpamBlocker");
 		colorIndex = 0;
 		boolean firstDataset = true;
 		for (Map.Entry<String, List<Integer>> entry : perAgentData.entrySet()) {
@@ -143,7 +143,7 @@ public class StatsController extends DefaultController {
 			String key = entry.getKey();
 			String agentLabel = "OTHER".equals(key) ? otherLabel : key.isEmpty() ? "?" : key;
 			String color = DIAL_COLORS[colorIndex % DIAL_COLORS.length];
-			boolean hidden = !defaultVisibleAgents.contains(key.toLowerCase());
+			boolean hidden = !defaultVisibleAgents.contains(key);
 
 			installationDatasets.append("{\"label\":");
 			jsString(installationDatasets, agentLabel);
