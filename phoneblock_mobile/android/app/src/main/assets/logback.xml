@@ -20,7 +20,17 @@
         </encoder>
     </appender>
 
+    <appender name="LOGCAT" class="ch.qos.logback.classic.android.LogcatAppender">
+        <tagEncoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%logger{35}</pattern>
+        </tagEncoder>
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%msg</pattern>
+        </encoder>
+    </appender>
+
     <root level="INFO">
         <appender-ref ref="FILE"/>
+        <appender-ref ref="LOGCAT"/>
     </root>
 </configuration>
