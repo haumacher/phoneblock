@@ -271,6 +271,12 @@ public class EmailChangeServlet extends HttpServlet {
 			}
 			LOG.info("Email changed successfully for user '{}' to '{}'.", userName, newEmail);
 
+			UserSettings settings = LoginFilter.getUserSettings(req);
+			if (settings != null) {
+				settings.setEmail(newEmail);
+				LoginFilter.refreshUserSettings(req, settings);
+			}
+
 			// Clear session attributes
 			clearSessionAttributes(session);
 
