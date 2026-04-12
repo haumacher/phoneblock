@@ -20,7 +20,9 @@
 	<h2 data-tx="t0003:67d1fbf">Nutzerentwicklung der letzten 30 Tage</h2>
 
 	<div>
-		<canvas aria-label="Nutzerentwicklung der letzten 30 Tage" data-tx="t0004:a5b4387c" dir="ltr" height="200" id="registrations" role="img" width="400"></canvas>
+		<div style="position: relative; height: 400px; width: 100%;">
+			<canvas aria-label="Nutzerentwicklung der letzten 30 Tage" data-tx="t0004:a5b4387c" dir="ltr" id="registrations" role="img"></canvas>
+		</div>
 		<pre class="chartjs-data" id="registrations-data">
 		{
 			"type": "line",
@@ -29,6 +31,8 @@
 				"datasets": <th:block th:utext="${registrationDatasets}"></th:block>
 			},
 			"options": {
+				"responsive": true,
+				"maintainAspectRatio": false,
 				"scales": {
 					"y": {
 						"ticks": {
@@ -45,7 +49,9 @@
 	<h2 data-tx="t0005:ef63903a" th:text="#{page.stats.installationsTitle}">Aktive Verwendungen der letzten 30 Tage</h2>
 
 	<div>
-		<canvas aria-label="Aktive Verwendungen der letzten 30 Tage" data-tx="t0006:aabe0215" dir="ltr" height="200" id="installations" role="img" width="400"></canvas>
+		<div style="position: relative; height: 400px; width: 100%;">
+			<canvas aria-label="Aktive Verwendungen der letzten 30 Tage" data-tx="t0006:aabe0215" dir="ltr" id="installations" role="img"></canvas>
+		</div>
 		<pre class="chartjs-data" id="installations-data">
 		{
 			"type": "line",
@@ -54,6 +60,8 @@
 				"datasets": <th:block th:utext="${installationDatasets}"></th:block>
 			},
 			"options": {
+				"responsive": true,
+				"maintainAspectRatio": false,
 				"scales": {
 					"y": {
 						"ticks": {
