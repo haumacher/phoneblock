@@ -22,6 +22,7 @@ import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 
+import de.haumacher.phoneblock_mobile.log.LogBridge;
 import de.haumacher.phoneblock_mobile.log.LogContext;
 
 public class MainActivity extends FlutterActivity {
@@ -47,6 +48,7 @@ public class MainActivity extends FlutterActivity {
         _instance = this;
         _channel = new MethodChannel(flutterEngine.getDartExecutor().getBinaryMessenger(), CALL_CHECKER_CHANNEL);
         _channel.setMethodCallHandler(this::processMessage);
+        LogBridge.register(flutterEngine.getDartExecutor().getBinaryMessenger(), this);
 
         // Create notification channel for pending calls
         createNotificationChannel();
