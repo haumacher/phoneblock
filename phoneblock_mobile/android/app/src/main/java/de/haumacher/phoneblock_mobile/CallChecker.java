@@ -19,6 +19,8 @@ import android.database.sqlite.SQLiteDatabase;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import de.haumacher.phoneblock_mobile.log.LogContext;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -39,6 +41,7 @@ public class CallChecker extends CallScreeningService {
     @Override
     public void onCreate() {
         super.onCreate();
+        LogContext.init(getApplicationContext());
 
         _pool = Executors.newScheduledThreadPool(1);
     }
