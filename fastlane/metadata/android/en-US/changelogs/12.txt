@@ -1,7 +1,6 @@
 Version 1.3.1:
 * Diagnostic log viewer in settings with share/clear, covering Dart, native and background-isolate crashes (#282)
 * Background blocklist sync now works reliably by using Flutter SharedPreferences
-* Release APK split per ABI for smaller downloads and F-Droid compatibility
 * Allow single-digit country codes in wildcard blocking
 * Consistent rating avatars in black/whitelist views
 * Fixed crash in call screening when incoming call has no phone number (e.g. withheld numbers, emergency calls, some VoIP scenarios)
