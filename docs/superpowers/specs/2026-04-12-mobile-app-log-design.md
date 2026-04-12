@@ -38,8 +38,27 @@ Lokales Diagnoseprotokoll, das Nutzer bei Problemen per E-Mail an den Support an
 - `RollingFileAppender` mit `prudent=true`, `file=${DATA_DIR}/app.log`.
 - `FixedWindowRollingPolicy`, `fileNamePattern=${DATA_DIR}/app.log.%i`, `minIndex=1`, `maxIndex=1`.
 - `SizeBasedTriggeringPolicy`, `maxFileSize=512KB`.
-- `PatternLayout`: `%d{ISO8601} %-5level %logger{20} - %msg%n`.
+- `PatternLayout`: `%d{ISO8601} %-5level [%X{src:-%logger{20}:%L}] - %msg%n`. Der `%X{src:-…}`-Teil nutzt den MDC-Wert `src` (von Dart gesetzt); ist er leer, fällt die Ausgabe auf Java-Logger-Name und Zeilennummer zurück.
 - Root-Level: `INFO` (Release), `DEBUG` (Debug-Build).
+
+### Aufrufer-Identifikation (Dart → MDC)
+
+Logbacks `%logger`/`%F:%L`-Konverter können nur den Java-Stack inspizieren. Bei Aufrufen aus Dart stünde dort immer nur `LogBridge.log` — der eigentliche Dart-Aufrufer bliebe unsichtbar. Lösung:
+
+- **Dart** ermittelt den ersten Stack-Frame außerhalb des `lib/logging/`-Verzeichnisses über `StackTrace.current` (Skip-Liste per Pfadpräfix, kein fester Frame-Index — robust gegenüber Convenience-Wrappern und Zone-Error-Callbacks). Daraus wird ein kompakter `src`-String wie `api.dart:142` gebildet.
+- **MethodChannel-Payload** erhält ein zusätzliches Feld `src`.
+- **Java `LogBridge`** setzt vor dem SLF4J-Call `MDC.put("src", src)`, führt den Log-Aufruf aus und entfernt den MDC-Eintrag im `finally`-Block.
+- Für native Java-Logs bleibt der MDC-Wert leer; das Pattern fällt auf `%logger{20}:%L` zurück.
+
+Performance: `StackTrace.current` kostet im Release-Build ca. 50–100 µs, bei Breadcrumb-Frequenz vernachlässigbar. `%L` auf Java-Seite erfordert einen Stack-Walk — ebenfalls unkritisch bei der erwarteten Log-Rate.
+
+Beispielausgabe:
+
+```
+2026-04-12T14:23:01,423 INFO  [api.dart:142]    - GET /num/... status=200
+2026-04-12T14:23:02,105 INFO  [CallChecker:88]  - decision=block reason=spam sha1:a3f12b9c
+2026-04-12T14:23:02,890 ERROR [main.dart:67]    - Login failed
+```
 
 ## Datenfluss
 
