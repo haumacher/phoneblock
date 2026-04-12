@@ -300,6 +300,10 @@
 	</dependencies>
 
 	<build>
+		<filters>
+			<filter>.phoneblock</filter>
+		</filters>
+
 		<resources>
 			<resource>
 				<directory>${project.build.sourceDirectory}</directory>
@@ -309,10 +313,39 @@
 			</resource>
 			<resource>
 				<directory>${project.basedir}/src/main/resources-filtered</directory>
+				<filtering>true</filtering>
 			</resource>
 		</resources>
 
 		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>check-phoneblock-config</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>enforce</goal>
+						</goals>
+						<configuration>
+							<rules>
+								<requireFilesExist>
+									<files>
+										<file>${project.basedir}/.phoneblock</file>
+									</files>
+									<message>
+Configuration file '.phoneblock' is missing.
+Copy '.phoneblock.template' to '.phoneblock' and fill in your local values
+(database URL, OAuth credentials, SMTP settings). See CLAUDE.md for details.
+									</message>
+								</requireFilesExist>
+							</rules>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
 			<plugin>
 				<groupId>de.haumacher.msgbuf</groupId>
 				<version>${msgbuf.version}</version>
