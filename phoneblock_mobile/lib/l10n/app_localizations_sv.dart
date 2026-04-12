@@ -99,6 +99,36 @@ class AppLocalizationsSv extends AppLocalizations {
   String get developerName => 'Bernhard Haumacher';
 
   @override
+  String get diagnosticLog => 'Diagnostiskt protokoll';
+
+  @override
+  String get diagnosticLogShare => 'Aktie';
+
+  @override
+  String get diagnosticLogClear => 'Radera';
+
+  @override
+  String get diagnosticLogRefresh => 'Uppdatera';
+
+  @override
+  String get diagnosticLogEmpty => 'Loggen är tom.';
+
+  @override
+  String get diagnosticLogReadError =>
+      '(Loggfilen är för närvarande inte läsbar)';
+
+  @override
+  String get diagnosticLogClearConfirmTitle => 'Radera logg?';
+
+  @override
+  String get diagnosticLogClearConfirmBody =>
+      'Alla poster i diagnosloggen tas bort.';
+
+  @override
+  String get diagnosticLogShareSubject =>
+      'Diagnostiskt protokoll för PhoneBlock';
+
+  @override
   String get website => 'Webbplats';
 
   @override

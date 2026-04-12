@@ -96,6 +96,33 @@ class AppLocalizationsZh extends AppLocalizations {
   String get developerName => '伯恩哈德-豪马赫';
 
   @override
+  String get diagnosticLog => '诊断规程';
+
+  @override
+  String get diagnosticLogShare => '分享';
+
+  @override
+  String get diagnosticLogClear => '删除';
+
+  @override
+  String get diagnosticLogRefresh => '刷新';
+
+  @override
+  String get diagnosticLogEmpty => '日志为空。';
+
+  @override
+  String get diagnosticLogReadError => '(日志文件目前无法读取）';
+
+  @override
+  String get diagnosticLogClearConfirmTitle => '删除日志？';
+
+  @override
+  String get diagnosticLogClearConfirmBody => '删除诊断日志中的所有条目。';
+
+  @override
+  String get diagnosticLogShareSubject => 'PhoneBlock 诊断协议';
+
+  @override
   String get website => '网站';
 
   @override

@@ -150,6 +150,51 @@
     "description": "Developer name",
     "x-translated": "bdf73e4d"
   },
+  "diagnosticLog": "Diagnoseprotokoll",
+  "@diagnosticLog": {
+    "description": "Settings entry and viewer title for the diagnostic log.",
+    "x-translated": "258a66d4"
+  },
+  "diagnosticLogShare": "Teilen",
+  "@diagnosticLogShare": {
+    "description": "Share action in the log viewer.",
+    "x-translated": "c26c4a0f"
+  },
+  "diagnosticLogClear": "Löschen",
+  "@diagnosticLogClear": {
+    "description": "Clear action in the log viewer.",
+    "x-translated": "49d3f662"
+  },
+  "diagnosticLogRefresh": "Aktualisieren",
+  "@diagnosticLogRefresh": {
+    "description": "Refresh action in the log viewer.",
+    "x-translated": "4adf82c3"
+  },
+  "diagnosticLogEmpty": "Das Protokoll ist leer.",
+  "@diagnosticLogEmpty": {
+    "description": "Placeholder when no log content is available.",
+    "x-translated": "91509b5a"
+  },
+  "diagnosticLogReadError": "(Protokolldatei gerade nicht lesbar)",
+  "@diagnosticLogReadError": {
+    "description": "Shown when a log file cannot be read due to concurrent access.",
+    "x-translated": "8b83f79e"
+  },
+  "diagnosticLogClearConfirmTitle": "Protokoll löschen?",
+  "@diagnosticLogClearConfirmTitle": {
+    "description": "Confirmation dialog title.",
+    "x-translated": "91bce68b"
+  },
+  "diagnosticLogClearConfirmBody": "Alle Einträge des Diagnoseprotokolls werden entfernt.",
+  "@diagnosticLogClearConfirmBody": {
+    "description": "Confirmation dialog body.",
+    "x-translated": "f4411c34"
+  },
+  "diagnosticLogShareSubject": "PhoneBlock Diagnoseprotokoll",
+  "@diagnosticLogShareSubject": {
+    "description": "Subject line when sharing the log.",
+    "x-translated": "212483"
+  },
   "website": "Website",
   "@website": {
     "description": "Website label",

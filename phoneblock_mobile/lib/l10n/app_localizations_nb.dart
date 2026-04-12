@@ -99,6 +99,35 @@ class AppLocalizationsNb extends AppLocalizations {
   String get developerName => 'Bernhard Haumacher';
 
   @override
+  String get diagnosticLog => 'Diagnostisk protokoll';
+
+  @override
+  String get diagnosticLogShare => 'Del';
+
+  @override
+  String get diagnosticLogClear => 'Slett';
+
+  @override
+  String get diagnosticLogRefresh => 'Oppdater';
+
+  @override
+  String get diagnosticLogEmpty => 'Loggen er tom.';
+
+  @override
+  String get diagnosticLogReadError =>
+      '(Loggfilen er for øyeblikket ikke lesbar)';
+
+  @override
+  String get diagnosticLogClearConfirmTitle => 'Slett logg?';
+
+  @override
+  String get diagnosticLogClearConfirmBody =>
+      'Alle oppføringer i diagnoseloggen fjernes.';
+
+  @override
+  String get diagnosticLogShareSubject => 'PhoneBlock-diagnoseprotokoll';
+
+  @override
   String get website => 'Nettsted';
 
   @override

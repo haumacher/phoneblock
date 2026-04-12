@@ -99,6 +99,34 @@ class AppLocalizationsDe extends AppLocalizations {
   String get developerName => 'Bernhard Haumacher';
 
   @override
+  String get diagnosticLog => 'Diagnoseprotokoll';
+
+  @override
+  String get diagnosticLogShare => 'Teilen';
+
+  @override
+  String get diagnosticLogClear => 'Löschen';
+
+  @override
+  String get diagnosticLogRefresh => 'Aktualisieren';
+
+  @override
+  String get diagnosticLogEmpty => 'Das Protokoll ist leer.';
+
+  @override
+  String get diagnosticLogReadError => '(Protokolldatei gerade nicht lesbar)';
+
+  @override
+  String get diagnosticLogClearConfirmTitle => 'Protokoll löschen?';
+
+  @override
+  String get diagnosticLogClearConfirmBody =>
+      'Alle Einträge des Diagnoseprotokolls werden entfernt.';
+
+  @override
+  String get diagnosticLogShareSubject => 'PhoneBlock Diagnoseprotokoll';
+
+  @override
   String get website => 'Website';
 
   @override

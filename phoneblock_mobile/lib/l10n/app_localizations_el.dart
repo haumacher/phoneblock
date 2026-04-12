@@ -99,6 +99,35 @@ class AppLocalizationsEl extends AppLocalizations {
   String get developerName => 'Bernhard Haumacher';
 
   @override
+  String get diagnosticLog => 'Διαγνωστικό πρωτόκολλο';
+
+  @override
+  String get diagnosticLogShare => 'Μοιραστείτε το';
+
+  @override
+  String get diagnosticLogClear => 'Διαγραφή';
+
+  @override
+  String get diagnosticLogRefresh => 'Ανανέωση';
+
+  @override
+  String get diagnosticLogEmpty => 'Το αρχείο καταγραφής είναι άδειο.';
+
+  @override
+  String get diagnosticLogReadError =>
+      '(Το αρχείο καταγραφής δεν είναι προς το παρόν αναγνώσιμο)';
+
+  @override
+  String get diagnosticLogClearConfirmTitle => 'Διαγραφή αρχείου καταγραφής;';
+
+  @override
+  String get diagnosticLogClearConfirmBody =>
+      'Όλες οι καταχωρήσεις στο διαγνωστικό αρχείο καταγραφής διαγράφονται.';
+
+  @override
+  String get diagnosticLogShareSubject => 'Διαγνωστικό πρωτόκολλο PhoneBlock';
+
+  @override
   String get website => 'Ιστοσελίδα';
 
   @override

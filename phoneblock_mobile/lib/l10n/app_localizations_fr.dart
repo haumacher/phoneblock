@@ -99,6 +99,35 @@ class AppLocalizationsFr extends AppLocalizations {
   String get developerName => 'Bernhard Haumacher';
 
   @override
+  String get diagnosticLog => 'Protocole de diagnostic';
+
+  @override
+  String get diagnosticLogShare => 'Partager';
+
+  @override
+  String get diagnosticLogClear => 'Supprimer';
+
+  @override
+  String get diagnosticLogRefresh => 'Actualiser';
+
+  @override
+  String get diagnosticLogEmpty => 'Le journal est vide.';
+
+  @override
+  String get diagnosticLogReadError =>
+      '(fichier journal actuellement illisible)';
+
+  @override
+  String get diagnosticLogClearConfirmTitle => 'Supprimer le journal ?';
+
+  @override
+  String get diagnosticLogClearConfirmBody =>
+      'Toutes les entrées du journal de diagnostic sont supprimées.';
+
+  @override
+  String get diagnosticLogShareSubject => 'Protocole de diagnostic PhoneBlock';
+
+  @override
   String get website => 'Site web';
 
   @override
