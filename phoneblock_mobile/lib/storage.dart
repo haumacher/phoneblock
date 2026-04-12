@@ -1,6 +1,7 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:phoneblock_mobile/api.dart' as api;
+import 'package:phoneblock_mobile/logging/app_logger.dart';
 import 'package:phoneblock_mobile/state.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
 
@@ -251,6 +252,7 @@ class ScreenedCallsDatabase {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
+    AppLogger.instance.info('db', 'opening database at $path');
     return await openDatabase(
       path,
       version: 14,
@@ -356,6 +358,7 @@ class ScreenedCallsDatabase {
 
   /// Upgrades the database schema.
   Future<void> _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    AppLogger.instance.info('db', 'migration $oldVersion -> $newVersion');
     if (oldVersion < 2) {
       // Add rating column in version 2
       await db.execute('ALTER TABLE screened_calls ADD COLUMN rating TEXT');
@@ -430,8 +433,8 @@ class ScreenedCallsDatabase {
           // Drop the old fritzbox_calls table
           await db.execute('DROP TABLE fritzbox_calls');
         }
-      } catch (e) {
-        // Table doesn't exist, nothing to migrate
+      } catch (e, s) {
+        AppLogger.instance.error('db', 'migration v5->v6: fritzbox_calls migration failed', e, s);
       }
     }
     if (oldVersion < 7) {

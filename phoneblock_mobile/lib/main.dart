@@ -125,6 +125,7 @@ Future<Map<String, String>> getDeviceLocaleSettings() async {
 Future<void> updateAccountSettings(String authToken, Map<String, String> settings) async {
   try {
     final url = '$pbBaseUrl/api/account';
+    AppLogger.instance.info('api', 'PUT $url');
     final response = await http.put(
       Uri.parse(url),
       headers: {
@@ -135,6 +136,7 @@ Future<void> updateAccountSettings(String authToken, Map<String, String> setting
     );
 
     if (response.statusCode == 200) {
+      AppLogger.instance.info('api', 'PUT $url -> ${response.statusCode}');
       if (kDebugMode) {
         print('Account settings updated successfully: $settings');
       }
@@ -143,7 +145,8 @@ Future<void> updateAccountSettings(String authToken, Map<String, String> setting
         print('Failed to update account settings: ${response.statusCode} - ${response.body}');
       }
     }
-  } catch (e) {
+  } catch (e, s) {
+    AppLogger.instance.error('api', 'PUT $pbBaseUrl/api/account failed', e, s);
     // Log error but don't block setup flow
     if (kDebugMode) {
       print('Error updating account settings: $e');
@@ -192,6 +195,7 @@ class AccountSettings {
 Future<AccountSettings?> fetchAccountSettings(String authToken) async {
   try {
     final url = '$pbBaseUrl/api/account';
+    AppLogger.instance.info('api', 'GET $url');
     final response = await http.get(
       Uri.parse(url),
       headers: {
@@ -201,6 +205,7 @@ Future<AccountSettings?> fetchAccountSettings(String authToken) async {
     );
 
     if (response.statusCode == 200) {
+      AppLogger.instance.info('api', 'GET $url -> ${response.statusCode}');
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       return AccountSettings.fromJson(data);
     } else {
@@ -209,7 +214,8 @@ Future<AccountSettings?> fetchAccountSettings(String authToken) async {
       }
       return null;
     }
-  } catch (e) {
+  } catch (e, s) {
+    AppLogger.instance.error('api', 'GET $pbBaseUrl/api/account failed', e, s);
     if (kDebugMode) {
       print('Error fetching account settings: $e');
     }
@@ -357,7 +363,10 @@ Future<http.Response> callPhoneBlockApi(String url, {String? authToken}) async {
     headers["Authorization"] = "Bearer $authToken";
   }
 
-  return await http.get(Uri.parse(url), headers: headers);
+  AppLogger.instance.info('api', 'GET $url');
+  final response = await http.get(Uri.parse(url), headers: headers);
+  AppLogger.instance.info('api', 'GET $url -> ${response.statusCode}');
+  return response;
 }
 
 /// Fetches the user's blacklist from the PhoneBlock API.
@@ -416,11 +425,14 @@ Future<bool> removeFromBlacklist(String phone, String authToken) async {
       "Authorization": "Bearer $authToken",
     };
 
+    final url = '$pbBaseUrl/api/blacklist/$phone';
+    AppLogger.instance.info('api', 'DELETE $url');
     final response = await http.delete(
-      Uri.parse('$pbBaseUrl/api/blacklist/$phone'),
+      Uri.parse(url),
       headers: headers,
     );
 
+    AppLogger.instance.info('api', 'DELETE $url -> ${response.statusCode}');
     if (response.statusCode == 204) {
       return true;
     } else {
@@ -429,7 +441,8 @@ Future<bool> removeFromBlacklist(String phone, String authToken) async {
       }
       return false;
     }
-  } catch (e) {
+  } catch (e, s) {
+    AppLogger.instance.error('api', 'DELETE $pbBaseUrl/api/blacklist/$phone failed', e, s);
     if (kDebugMode) {
       print('Error removing from blacklist: $e');
     }
@@ -783,6 +796,7 @@ final router = GoRouter(
           path: '$contextPath/mobile/response',
           builder: (context, state) {
             var loginToken = state.uri.queryParameters["loginToken"];
+            AppLogger.instance.info('app', 'oauth callback received');
             if (kDebugMode) {
               print("Token received (${state.path}): $loginToken");
             }
@@ -2710,6 +2724,7 @@ class VerifyLoginState extends State<VerifyLogin> {
     // Verify token and update account settings with device locale
     checkResult = callPhoneBlockApi(pbApiTest, authToken: token).then((response) async {
       if (response.statusCode == 200) {
+        AppLogger.instance.info('app', 'login successful');
         // Token is valid, update account settings with device locale
         final localeSettings = await getDeviceLocaleSettings();
         await updateAccountSettings(token, localeSettings);

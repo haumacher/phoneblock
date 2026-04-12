@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:phoneblock_mobile/api.dart' as api;
+import 'package:phoneblock_mobile/logging/app_logger.dart';
 import 'package:phoneblock_mobile/main.dart' show callPhoneBlockApi, getAuthToken, pbBaseUrl;
 import 'package:phoneblock_mobile/storage.dart';
 
@@ -37,6 +38,7 @@ class BlocklistSyncService {
   ///
   /// Returns `true` if sync succeeded, `false` otherwise.
   Future<bool> sync() async {
+    AppLogger.instance.info('sync', 'blocklist sync started');
     try {
       final authToken = await getAuthToken();
       if (authToken == null || authToken.isEmpty) {
@@ -99,8 +101,10 @@ class BlocklistSyncService {
             'New version: ${blocklist.version}');
       }
 
+      AppLogger.instance.info('sync', 'blocklist sync done (upserted=$upserted, deleted=$deleted, version=${blocklist.version})');
       return true;
-    } catch (e) {
+    } catch (e, s) {
+      AppLogger.instance.error('sync', 'blocklist sync failed', e, s);
       if (kDebugMode) {
         print('BlocklistSync: Error during sync: $e');
       }
