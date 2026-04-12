@@ -46,18 +46,17 @@
 		    <version>${project.version}</version>
 		</dependency>
 		
-		<dependency>	
-		    <groupId>org.mjsip</groupId>
+		<dependency>
+		    <groupId>com.github.haumacher.mjSIP</groupId>
 			<artifactId>mjsip-ua</artifactId>
 		    <version>2.0.5</version>
 		</dependency>
 	</dependencies>
-	
+
 	<repositories>
 		<repository>
-			<id>github</id>
-			<name>GitHub haumacher/mjSIP Apache Maven Packages</name>
-			<url>https://maven.pkg.github.com/haumacher/mjSIP</url>
+			<id>jitpack.io</id>
+			<url>https://jitpack.io</url>
 			<releases>
 				<enabled>true</enabled>
 			</releases>
