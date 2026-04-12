@@ -87,7 +87,7 @@ public class StatsController extends DefaultController {
 			jsString(datasets, dialLabel);
 			datasets.append(",\"data\":");
 			appendIntList(datasets, entry.getValue());
-			datasets.append(",\"fill\":false,\"borderColor\":\"").append(color).append("\",\"tension\":0.1}");
+			datasets.append(",\"fill\":false,\"hidden\":true,\"borderColor\":\"").append(color).append("\",\"tension\":0.1}");
 
 			colorIndex++;
 		}
@@ -126,6 +126,8 @@ public class StatsController extends DefaultController {
 		installationDatasets.append('[');
 
 		// Per-agent datasets.
+		java.util.Set<String> defaultVisibleAgents = java.util.Set.of(
+			"spamblocker", "fritzbox", "phoneblockmobile", "phonespamblocker");
 		colorIndex = 0;
 		boolean firstDataset = true;
 		for (Map.Entry<String, List<Integer>> entry : perAgentData.entrySet()) {
@@ -137,12 +139,17 @@ public class StatsController extends DefaultController {
 			String key = entry.getKey();
 			String agentLabel = "OTHER".equals(key) ? otherLabel : key.isEmpty() ? "?" : key;
 			String color = DIAL_COLORS[colorIndex % DIAL_COLORS.length];
+			boolean hidden = !defaultVisibleAgents.contains(key);
 
 			installationDatasets.append("{\"label\":");
 			jsString(installationDatasets, agentLabel);
 			installationDatasets.append(",\"data\":");
 			appendIntList(installationDatasets, entry.getValue());
-			installationDatasets.append(",\"fill\":false,\"borderColor\":\"").append(color).append("\",\"tension\":0.1}");
+			installationDatasets.append(",\"fill\":false");
+			if (hidden) {
+				installationDatasets.append(",\"hidden\":true");
+			}
+			installationDatasets.append(",\"borderColor\":\"").append(color).append("\",\"tension\":0.1}");
 
 			colorIndex++;
 		}
