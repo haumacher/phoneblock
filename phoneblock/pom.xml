@@ -183,7 +183,6 @@
 		<dependency>
 		    <groupId>com.opencsv</groupId>
 		    <artifactId>opencsv</artifactId>
-		    <version>5.12.0</version>
 
 			<!-- Exclude logging implementation, replaced by jcl-over-slf4j -->
 			<exclusions>
@@ -204,7 +203,6 @@
 		<dependency>
 			<groupId>org.jsoup</groupId>
 			<artifactId>jsoup</artifactId>
-			<version>1.22.1</version>
 		</dependency>
 
 		<dependency>

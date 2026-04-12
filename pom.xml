@@ -60,6 +60,9 @@
 		<junit-jupiter.version>6.0.3</junit-jupiter.version>
 		<h2.version>2.4.240</h2.version>
 		<mybatis.version>3.5.19</mybatis.version>
+		<poi.version>5.5.1</poi.version>
+		<opencsv.version>5.12.0</opencsv.version>
+		<jsoup.version>1.22.1</jsoup.version>
 	</properties>
 
 	<dependencyManagement>
@@ -86,6 +89,30 @@
 				<groupId>org.junit.jupiter</groupId>
 				<artifactId>junit-jupiter</artifactId>
 				<version>${junit-jupiter.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.poi</groupId>
+				<artifactId>poi</artifactId>
+				<version>${poi.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.apache.poi</groupId>
+				<artifactId>poi-ooxml</artifactId>
+				<version>${poi.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>com.opencsv</groupId>
+				<artifactId>opencsv</artifactId>
+				<version>${opencsv.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.jsoup</groupId>
+				<artifactId>jsoup</artifactId>
+				<version>${jsoup.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
