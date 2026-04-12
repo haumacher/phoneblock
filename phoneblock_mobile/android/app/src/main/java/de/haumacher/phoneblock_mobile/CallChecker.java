@@ -20,6 +20,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import de.haumacher.phoneblock_mobile.log.LogContext;
+import de.haumacher.phoneblock_mobile.log.LogSanitizer;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,6 +39,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @RequiresApi(api = Build.VERSION_CODES.N)
 public class CallChecker extends CallScreeningService {
+
+    private static final Logger LOG = LoggerFactory.getLogger(CallChecker.class);
 
     ScheduledExecutorService _pool;
 
@@ -116,7 +122,7 @@ public class CallChecker extends CallScreeningService {
                 location = json.optString("location", null);
                 blackListed = json.optBoolean("blackListed", false);
             } catch (Exception e) {
-                Log.d(CallChecker.class.getName(), "onScreenCall: API failed, using local data: " + number, e);
+                LOG.error("onScreenCall: API failed, using local data: number={}", LogSanitizer.hashPhone(number), e);
                 int localVotes = lookupLocalBlocklist(number);
                 if (localVotes > 0) {
                     votes = localVotes;
@@ -180,10 +186,15 @@ public class CallChecker extends CallScreeningService {
             }
         }
 
+        LOG.info("decision={} reason={} number={}",
+            block ? "block" : "allow",
+            rating != null ? rating : (matchedPrefix != null ? "WILDCARD" : ""),
+            LogSanitizer.hashPhone(number));
+
         if (block) {
-            Log.d(CallChecker.class.getName(), "onScreenCall: Blocking: " + number
+            Log.d(CallChecker.class.getName(), "onScreenCall: Blocking: " + LogSanitizer.hashPhone(number)
                 + " (votes=" + votes + ", rangeVotes=" + votesWildcard
-                + (matchedPrefix != null ? ", wildcard=" + matchedPrefix + "*" : "") + ")");
+                + (matchedPrefix != null ? ", wildcard=*" : "") + ")");
             respondToCall(callDetails, new CallResponse.Builder()
                 .setDisallowCall(true)
                 .setRejectCall(true)
@@ -191,7 +202,7 @@ public class CallChecker extends CallScreeningService {
                 .setSkipNotification(true)
                 .build());
         } else {
-            Log.d(CallChecker.class.getName(), "onScreenCall: Accepting: " + number
+            Log.d(CallChecker.class.getName(), "onScreenCall: Accepting: " + LogSanitizer.hashPhone(number)
                 + " (votes=" + votes + ", rangeVotes=" + votesWildcard + ")");
             acceptCall(callDetails);
         }
