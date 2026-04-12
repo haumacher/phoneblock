@@ -42,7 +42,7 @@
 		}
 		</pre>
 		<script th:src="@{/assets/js/stats-registrations.js}" type="text/javascript"></script>
-		<p data-tx="t0009:54ade32b" th:text="#{page.stats.today(${currentUserCount}, ${todayGrowth &gt;= 0 ? '+' + todayGrowth : todayGrowth})}">Hoy: 0 usuarios en total (+0 desde ayer)</p>
+		<p data-tx="t0009:f42ba651">Hoy: <span th:text="${currentUserCount}">0</span> usuarios en total, <span th:text="${todayGrowth &gt;= 0 ? '+' + todayGrowth : todayGrowth}">+0</span> desde ayer.</p>
 	</div>
 
 	<h2 data-tx="t0005:ef63903a" th:text="#{page.stats.installationsTitle}">Usos activos en los últimos 30 días</h2>
