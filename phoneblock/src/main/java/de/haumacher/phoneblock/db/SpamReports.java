@@ -24,8 +24,8 @@ public interface SpamReports {
 	Long getLastUpdate();
 	
 	@Insert("""
-			insert into NUMBERS (PHONE, SHA1, VOTES, DOWN_VOTES, UP_VOTES, UPDATED, ADDED)
-			values (#{phone}, #{hash}, #{votes}, CASEWHEN (#{votes} > 0, #{votes}, 0), CASEWHEN (#{votes} < 0, 0 - #{votes}, 0), #{now}, #{now})
+			insert into NUMBERS (PHONE, SHA1, VOTES, DOWN_VOTES, UP_VOTES, UPDATED, ADDED, LASTPING)
+			values (#{phone}, #{hash}, #{votes}, CASEWHEN (#{votes} > 0, #{votes}, 0), CASEWHEN (#{votes} < 0, 0 - #{votes}, 0), #{now}, #{now}, #{now})
 			""")
 	void addReport(String phone, byte[] hash, int votes, long now);
 	
