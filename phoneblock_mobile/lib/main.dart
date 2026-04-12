@@ -21,6 +21,8 @@ import 'package:device_region/device_region.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:phoneblock_mobile/blocklist_sync_service.dart';
+import 'package:phoneblock_mobile/logging/app_logger.dart';
+import 'package:phoneblock_mobile/logging/crash_handler.dart';
 import 'package:phoneblock_shared/phoneblock_shared.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_service.dart';
@@ -533,9 +535,12 @@ void callbackDispatcher() {
   });
 }
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await AppLogger.instance.init();
+  CrashHandler.install();
 
+  runZonedGuarded(() async {
   await Workmanager().initialize(callbackDispatcher);
 
   // Initialize app version from package info
@@ -595,6 +600,7 @@ void main() async {
   setAuthProvider(getAuthToken);
 
   runApp(const PhoneBlockApp());
+  }, AppLogger.instance.logZoneError);
 }
 
 /// Main application widget with theme support.
