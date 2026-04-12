@@ -39,8 +39,8 @@
   	<packaging>war</packaging>
 
 	<properties>
-		<maven.compiler.source>25</maven.compiler.source>
-		<maven.compiler.target>25</maven.compiler.target>
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
 
 		<font-awesome.version>7.2.0</font-awesome.version>
 		<bulma.version>1.0.4</bulma.version>
