@@ -5,7 +5,7 @@
 
     <application
         android:label="PhoneBlock Mobile"
-        android:name="${applicationName}"
+        android:name=".App"
         android:icon="@mipmap/ic_launcher"
         android:enableOnBackInvokedCallback="true"
         tools:targetApi="31">

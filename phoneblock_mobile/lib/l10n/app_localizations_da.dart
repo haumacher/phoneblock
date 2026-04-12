@@ -98,6 +98,34 @@ class AppLocalizationsDa extends AppLocalizations {
   String get developerName => 'Bernhard Haumacher';
 
   @override
+  String get diagnosticLog => 'Diagnostisk protokol';
+
+  @override
+  String get diagnosticLogShare => 'Del';
+
+  @override
+  String get diagnosticLogClear => 'Sletning';
+
+  @override
+  String get diagnosticLogRefresh => 'Opdatering';
+
+  @override
+  String get diagnosticLogEmpty => 'Loggen er tom.';
+
+  @override
+  String get diagnosticLogReadError => '(Logfilen er i øjeblikket ikke læsbar)';
+
+  @override
+  String get diagnosticLogClearConfirmTitle => 'Slette loggen?';
+
+  @override
+  String get diagnosticLogClearConfirmBody =>
+      'Alle poster i diagnoseloggen fjernes.';
+
+  @override
+  String get diagnosticLogShareSubject => 'PhoneBlocks diagnostiske protokol';
+
+  @override
   String get website => 'Hjemmeside';
 
   @override

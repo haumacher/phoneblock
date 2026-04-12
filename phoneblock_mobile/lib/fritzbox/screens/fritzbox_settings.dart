@@ -1,5 +1,5 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:phoneblock_mobile/logging/app_logger.dart';
 import 'package:http/http.dart' as http;
 import 'package:jsontool/jsontool.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
@@ -703,10 +703,8 @@ class _FritzBoxSettingsScreenState extends State<FritzBoxSettingsScreen> {
           (b) => b.id == botId,
         ).firstOrNull;
       }
-    } catch (e) {
-      if (kDebugMode) {
-        debugPrint('Failed to fetch answerbot status: $e');
-      }
+    } catch (e, s) {
+      AppLogger.instance.error('fritzbox', 'Failed to fetch answerbot status', e, s);
     }
     return null;
   }

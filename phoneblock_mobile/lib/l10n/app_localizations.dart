@@ -284,6 +284,60 @@ abstract class AppLocalizations {
   /// **'Bernhard Haumacher'**
   String get developerName;
 
+  /// Settings entry and viewer title for the diagnostic log.
+  ///
+  /// In de, this message translates to:
+  /// **'Diagnoseprotokoll'**
+  String get diagnosticLog;
+
+  /// Share action in the log viewer.
+  ///
+  /// In de, this message translates to:
+  /// **'Teilen'**
+  String get diagnosticLogShare;
+
+  /// Clear action in the log viewer.
+  ///
+  /// In de, this message translates to:
+  /// **'Löschen'**
+  String get diagnosticLogClear;
+
+  /// Refresh action in the log viewer.
+  ///
+  /// In de, this message translates to:
+  /// **'Aktualisieren'**
+  String get diagnosticLogRefresh;
+
+  /// Placeholder when no log content is available.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Protokoll ist leer.'**
+  String get diagnosticLogEmpty;
+
+  /// Shown when a log file cannot be read due to concurrent access.
+  ///
+  /// In de, this message translates to:
+  /// **'(Protokolldatei gerade nicht lesbar)'**
+  String get diagnosticLogReadError;
+
+  /// Confirmation dialog title.
+  ///
+  /// In de, this message translates to:
+  /// **'Protokoll löschen?'**
+  String get diagnosticLogClearConfirmTitle;
+
+  /// Confirmation dialog body.
+  ///
+  /// In de, this message translates to:
+  /// **'Alle Einträge des Diagnoseprotokolls werden entfernt.'**
+  String get diagnosticLogClearConfirmBody;
+
+  /// Subject line when sharing the log.
+  ///
+  /// In de, this message translates to:
+  /// **'PhoneBlock Diagnoseprotokoll'**
+  String get diagnosticLogShareSubject;
+
   /// Website label
   ///
   /// In de, this message translates to:

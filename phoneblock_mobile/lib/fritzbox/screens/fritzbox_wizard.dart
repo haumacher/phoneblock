@@ -1,5 +1,5 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:phoneblock_mobile/logging/app_logger.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_discovery.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_models.dart';
 import 'package:phoneblock_mobile/fritzbox/fritzbox_service.dart';
@@ -210,10 +210,7 @@ class _FritzBoxWizardState extends State<FritzBoxWizard> {
 
       await _finishWizard();
     } catch (e, stackTrace) {
-      if (kDebugMode) {
-        print('CardDAV configuration failed: $e');
-        print('Stack trace: $stackTrace');
-      }
+      AppLogger.instance.error('fritzbox-wizard', 'CardDAV configuration failed', e, stackTrace);
       if (mounted) {
         setState(() {
           _errorMessage = '${l10n.fritzboxBlocklistConfigFailed}: $e';

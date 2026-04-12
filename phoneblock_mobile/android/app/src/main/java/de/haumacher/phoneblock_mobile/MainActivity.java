@@ -22,6 +22,8 @@ import io.flutter.embedding.engine.FlutterEngine;
 import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 
+import de.haumacher.phoneblock_mobile.log.LogContext;
+
 public class MainActivity extends FlutterActivity {
 
     public static final String CALL_CHECKER_CHANNEL = "de.haumacher.phoneblock_mobile/call_checker";
@@ -39,6 +41,7 @@ public class MainActivity extends FlutterActivity {
 
     @Override
     public void configureFlutterEngine(@NonNull FlutterEngine flutterEngine) {
+        LogContext.init(getApplicationContext());
         super.configureFlutterEngine(flutterEngine);
 
         _instance = this;

@@ -98,6 +98,35 @@ class AppLocalizationsEs extends AppLocalizations {
   String get developerName => 'Bernhard Haumacher';
 
   @override
+  String get diagnosticLog => 'Protocolo de diagnóstico';
+
+  @override
+  String get diagnosticLogShare => 'Compartir';
+
+  @override
+  String get diagnosticLogClear => 'Borrar';
+
+  @override
+  String get diagnosticLogRefresh => 'Actualizar';
+
+  @override
+  String get diagnosticLogEmpty => 'El registro está vacío.';
+
+  @override
+  String get diagnosticLogReadError =>
+      '(Archivo de registro actualmente no legible)';
+
+  @override
+  String get diagnosticLogClearConfirmTitle => '¿Borrar registro?';
+
+  @override
+  String get diagnosticLogClearConfirmBody =>
+      'Se eliminan todas las entradas del registro de diagnóstico.';
+
+  @override
+  String get diagnosticLogShareSubject => 'Protocolo de diagnóstico PhoneBlock';
+
+  @override
   String get website => 'Página web';
 
   @override

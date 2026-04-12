@@ -99,6 +99,34 @@ class AppLocalizationsAr extends AppLocalizations {
   String get developerName => 'برنهارد هاوماخر';
 
   @override
+  String get diagnosticLog => 'بروتوكول التشخيص';
+
+  @override
+  String get diagnosticLogShare => 'شارك';
+
+  @override
+  String get diagnosticLogClear => 'حذف';
+
+  @override
+  String get diagnosticLogRefresh => 'تحديث';
+
+  @override
+  String get diagnosticLogEmpty => 'السجل فارغ.';
+
+  @override
+  String get diagnosticLogReadError => '(ملف السجل غير قابل للقراءة حالياً)';
+
+  @override
+  String get diagnosticLogClearConfirmTitle => 'حذف السجل؟';
+
+  @override
+  String get diagnosticLogClearConfirmBody =>
+      'تتم إزالة جميع الإدخالات في سجل التشخيص.';
+
+  @override
+  String get diagnosticLogShareSubject => 'بروتوكول تشخيص كتلة الهاتف';
+
+  @override
   String get website => 'الموقع الإلكتروني';
 
   @override

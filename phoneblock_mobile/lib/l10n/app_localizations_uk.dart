@@ -98,6 +98,34 @@ class AppLocalizationsUk extends AppLocalizations {
   String get developerName => 'Бернхард Гаумахер';
 
   @override
+  String get diagnosticLog => 'Діагностичний протокол';
+
+  @override
+  String get diagnosticLogShare => 'Поділіться';
+
+  @override
+  String get diagnosticLogClear => 'Видалити';
+
+  @override
+  String get diagnosticLogRefresh => 'Оновити';
+
+  @override
+  String get diagnosticLogEmpty => 'Журнал порожній.';
+
+  @override
+  String get diagnosticLogReadError => '(Файл журналу наразі не читається)';
+
+  @override
+  String get diagnosticLogClearConfirmTitle => 'Видалити журнал?';
+
+  @override
+  String get diagnosticLogClearConfirmBody =>
+      'Всі записи в діагностичному журналі видаляються.';
+
+  @override
+  String get diagnosticLogShareSubject => 'Протокол діагностики PhoneBlock';
+
+  @override
   String get website => 'Веб-сайт';
 
   @override

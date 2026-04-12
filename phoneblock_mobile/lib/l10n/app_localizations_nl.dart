@@ -100,6 +100,34 @@ class AppLocalizationsNl extends AppLocalizations {
   String get developerName => 'Bernhard Haumacher';
 
   @override
+  String get diagnosticLog => 'Diagnostisch protocol';
+
+  @override
+  String get diagnosticLogShare => 'Deel';
+
+  @override
+  String get diagnosticLogClear => 'Verwijder';
+
+  @override
+  String get diagnosticLogRefresh => 'Vernieuw';
+
+  @override
+  String get diagnosticLogEmpty => 'Het logboek is leeg.';
+
+  @override
+  String get diagnosticLogReadError => '(Logbestand momenteel niet leesbaar)';
+
+  @override
+  String get diagnosticLogClearConfirmTitle => 'Logboek verwijderen?';
+
+  @override
+  String get diagnosticLogClearConfirmBody =>
+      'Alle vermeldingen in het diagnoselogboek worden verwijderd.';
+
+  @override
+  String get diagnosticLogShareSubject => 'PhoneBlock diagnostisch protocol';
+
+  @override
   String get website => 'Website';
 
   @override

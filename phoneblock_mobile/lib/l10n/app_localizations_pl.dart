@@ -99,6 +99,35 @@ class AppLocalizationsPl extends AppLocalizations {
   String get developerName => 'Bernhard Haumacher';
 
   @override
+  String get diagnosticLog => 'Protokół diagnostyczny';
+
+  @override
+  String get diagnosticLogShare => 'Udział';
+
+  @override
+  String get diagnosticLogClear => 'Usuń';
+
+  @override
+  String get diagnosticLogRefresh => 'Odświeżanie';
+
+  @override
+  String get diagnosticLogEmpty => 'Dziennik jest pusty.';
+
+  @override
+  String get diagnosticLogReadError =>
+      '(Plik dziennika jest obecnie nieczytelny)';
+
+  @override
+  String get diagnosticLogClearConfirmTitle => 'Usunąć dziennik?';
+
+  @override
+  String get diagnosticLogClearConfirmBody =>
+      'Wszystkie wpisy w dzienniku diagnostycznym zostaną usunięte.';
+
+  @override
+  String get diagnosticLogShareSubject => 'Protokół diagnostyczny PhoneBlock';
+
+  @override
   String get website => 'Strona internetowa';
 
   @override
