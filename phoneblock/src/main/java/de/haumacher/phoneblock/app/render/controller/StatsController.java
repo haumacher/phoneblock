@@ -87,15 +87,19 @@ public class StatsController extends DefaultController {
 			jsString(datasets, dialLabel);
 			datasets.append(",\"data\":");
 			appendIntList(datasets, entry.getValue());
-			datasets.append(",\"fill\":false,\"borderColor\":\"").append(color).append("\",\"tension\":0.1}");
+			datasets.append(",\"fill\":false,\"hidden\":true,\"borderColor\":\"").append(color).append("\",\"tension\":0.1}");
 
 			colorIndex++;
 		}
 
 		datasets.append(']');
 
+		int currentUserCount = DBService.getInstance().getUsers();
+		int lastClosedDayCount = data.isEmpty() ? 0 : data.get(data.size() - 1);
 		request.setAttribute("registrationLabels", registrationLabels.toString());
 		request.setAttribute("registrationDatasets", datasets.toString());
+		request.setAttribute("currentUserCount", currentUserCount);
+		request.setAttribute("todayGrowth", currentUserCount - lastClosedDayCount);
 
 		// Active installations chart.
 		Object[] installations = DBService.getInstance().getActiveInstallationsHistory(30);
@@ -125,7 +129,13 @@ public class StatsController extends DefaultController {
 		StringBuilder installationDatasets = new StringBuilder();
 		installationDatasets.append('[');
 
-		// Per-agent datasets.
+		// Per-agent datasets. Maps raw User-Agent prefix -> display label; keys not in the map
+		// are hidden by default.
+		java.util.Map<String, String> defaultVisibleAgents = java.util.Map.of(
+			"SpamBlocker", "SpamBlocker",
+			"FRITZOS_CardDAV_Client", "Fritz!Box",
+			"PhoneBlockMobile", "PhoneBlock Mobile",
+			"PhoneSpamBlocker", "PhoneSpamBlocker");
 		colorIndex = 0;
 		boolean firstDataset = true;
 		for (Map.Entry<String, List<Integer>> entry : perAgentData.entrySet()) {
@@ -135,14 +145,20 @@ public class StatsController extends DefaultController {
 				installationDatasets.append(',');
 			}
 			String key = entry.getKey();
-			String agentLabel = "OTHER".equals(key) ? otherLabel : key.isEmpty() ? "?" : key;
+			String mappedLabel = defaultVisibleAgents.get(key);
+			String agentLabel = "OTHER".equals(key) ? otherLabel : key.isEmpty() ? "?" : mappedLabel != null ? mappedLabel : key;
 			String color = DIAL_COLORS[colorIndex % DIAL_COLORS.length];
+			boolean hidden = mappedLabel == null;
 
 			installationDatasets.append("{\"label\":");
 			jsString(installationDatasets, agentLabel);
 			installationDatasets.append(",\"data\":");
 			appendIntList(installationDatasets, entry.getValue());
-			installationDatasets.append(",\"fill\":false,\"borderColor\":\"").append(color).append("\",\"tension\":0.1}");
+			installationDatasets.append(",\"fill\":false");
+			if (hidden) {
+				installationDatasets.append(",\"hidden\":true");
+			}
+			installationDatasets.append(",\"borderColor\":\"").append(color).append("\",\"tension\":0.1}");
 
 			colorIndex++;
 		}

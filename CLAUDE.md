@@ -324,6 +324,29 @@ Example - Adding conditional device name display:
 </p>
 ```
 
+**Where does new user-facing text belong?**
+
+- **Default: inline German text in the `de/` template.** The HTML auto-translate tool regenerates all other locales. Use Thymeleaf expressions for dynamic values:
+  ```html
+  <p>Heute: <span th:text="${currentUserCount}">0</span> Nutzer insgesamt, <span th:text="${todayGrowth >= 0 ? '+' + todayGrowth : todayGrowth}">+0</span> seit gestern.</p>
+  ```
+  Do **not** invent a `Messages_*.properties` key for this.
+- **Use `Messages_*.properties` only when the text is not template body text:** page titles referenced from fragment `th:replace` heads, strings produced from Java code (servlets, error messages), or values passed into templates via `th:text="#{...}"` attributes on elements that otherwise contain no translatable content. Every such key must be added to `Messages_de.properties` and then propagated with the `tl-maven-plugin` translate goal (see next section); never hand-write stubs in the other locale bundles.
+
+### Server Messages Internationalization (Messages_*.properties)
+
+Java `ResourceBundle` keys used by the web app live in `phoneblock/src/main/java/Messages_*.properties`.
+
+- **Only edit `Messages_de.properties`** — it is the source of truth.
+- **All other `Messages_<lang>.properties` files are auto-generated via DeepL** — never edit them directly.
+- Translation is run via the `tl-maven-plugin` (`com.top-logic:tl-maven-plugin:translate`) with the `with-deepl` profile. Eclipse launch: `phoneblock/bin/Translate PhoneBlock Resources.launch`.
+- Manual command-line trigger (uses the `translate-messages` execution configured in `phoneblock/pom.xml`, so the plugin version is taken from there):
+  ```bash
+  cd phoneblock
+  mvn -Pwith-deepl com.top-logic:tl-maven-plugin:translate@translate-messages -N
+  ```
+- After adding/changing a key in `Messages_de.properties`, run the translation before committing so all language bundles stay in sync (otherwise the runtime throws `MissingResourceException`).
+
 ### Mobile App Internationalization (phoneblock_mobile/)
 
 > **STRICT RULES — VIOLATION WILL BREAK ALL TRANSLATIONS:**
