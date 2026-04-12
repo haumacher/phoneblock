@@ -47,7 +47,7 @@
 		<bulma-collapsible.version>1.0.3</bulma-collapsible.version>
 		<chartjs.version>4.4.3</chartjs.version>
 		<jquery.version>4.0.0</jquery.version>
-		<swagger-ui.version>5.32.0</swagger-ui.version>
+		<swagger-ui.version>5.32.1</swagger-ui.version>
 		
 		<jetty.version>12.1.7</jetty.version>
 		
@@ -142,7 +142,14 @@
 			<version>0.12.2</version>
 		</dependency>
 
-		<!-- Explicitly update dependency of ez-vcard to avoid conflict with other transitive dependencies -->
+		<!--
+			Do NOT upgrade to Jackson 3 (groupId "tools.jackson.core"):
+			ez-vcard pulls in Jackson 2.x via groupId "com.fasterxml.jackson.core".
+			A Jackson 3 entry here does NOT override that transitive 2.x version
+			(different groupId = different artifact), so the override effect is
+			lost and we end up with two Jackson majors on the classpath.
+			Keep this pinned to the latest 2.x until ez-vcard itself migrates.
+		-->
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-core</artifactId>
@@ -175,6 +182,14 @@
 		    <version>1.43.0</version>
 		</dependency>
 	
+		<!--
+			Do NOT upgrade to httpcore5 (groupId "org.apache.httpcomponents.core5"):
+			CardDavServlet and carddav/resource/Resource import
+			org.apache.http.impl.EnglishReasonPhraseCatalog, which only exists in
+			Apache HttpComponents 4.x (package org.apache.http.*). HttpComponents 5
+			moved everything to org.apache.hc.core5.* and dropped that class.
+			Keep this on 4.4.x until the CardDAV code is ported to httpcore5.
+		-->
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpcore</artifactId>
@@ -184,7 +199,6 @@
 		<dependency>
 		    <groupId>com.opencsv</groupId>
 		    <artifactId>opencsv</artifactId>
-		    <version>5.12.0</version>
 
 			<!-- Exclude logging implementation, replaced by jcl-over-slf4j -->
 			<exclusions>
@@ -205,7 +219,6 @@
 		<dependency>
 			<groupId>org.jsoup</groupId>
 			<artifactId>jsoup</artifactId>
-			<version>1.22.1</version>
 		</dependency>
 
 		<dependency>
@@ -393,7 +406,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-war-plugin</artifactId>
-				<version>3.4.0</version>
+				<version>3.5.1</version>
 
 				<configuration>
 				</configuration>
@@ -434,7 +447,7 @@
 			<plugin>
 			  <groupId>com.googlecode.maven-download-plugin</groupId>
 			  <artifactId>download-maven-plugin</artifactId>
-			  <version>1.3.0</version>
+			  <version>1.13.0</version>
 			  <executions>
 			    <execution>
 			      <id>download-ip4-database</id>
@@ -521,8 +534,8 @@
 			</plugin>
 
 			<plugin>
-				<groupId>org.eclipse.jetty.ee10</groupId>
-				<artifactId>jetty-ee10-maven-plugin</artifactId>
+				<groupId>org.eclipse.jetty.ee11</groupId>
+				<artifactId>jetty-ee11-maven-plugin</artifactId>
 				<version>${jetty.version}</version>
 				
 				<configuration>
@@ -540,13 +553,13 @@
 				
 				<dependencies>
 					<dependency>
-					    <groupId>org.eclipse.jetty.ee10</groupId>
-					    <artifactId>jetty-ee10-servlets</artifactId>
+					    <groupId>org.eclipse.jetty.ee11</groupId>
+					    <artifactId>jetty-ee11-servlets</artifactId>
 					    <version>${jetty.version}</version>
 					</dependency>
 					<dependency>
-					    <groupId>org.eclipse.jetty.ee10</groupId>
-					    <artifactId>jetty-ee10-jndi</artifactId>
+					    <groupId>org.eclipse.jetty.ee11</groupId>
+					    <artifactId>jetty-ee11-jndi</artifactId>
 					    <version>${jetty.version}</version>
 					</dependency>
 				</dependencies>
@@ -555,7 +568,7 @@
 			<plugin>
 			  <groupId>org.codehaus.mojo</groupId>
 			  <artifactId>properties-maven-plugin</artifactId>
-			  <version>1.2.1</version>
+			  <version>1.3.0</version>
 			  <executions>
 			    <execution>
 			      <goals>
