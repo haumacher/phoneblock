@@ -187,12 +187,20 @@ public class SettingsServlet extends HttpServlet {
 			return;
 		}
 
+		String trimmed = newDisplayName.trim();
 		DB db = DBService.getInstance();
 		try (SqlSession session = db.openSession()) {
 			Users users = session.getMapper(Users.class);
-			users.setDisplayName(userName, newDisplayName.trim());
+			users.setDisplayName(userName, trimmed);
 			session.commit();
 		}
+
+		UserSettings settings = LoginFilter.getUserSettings(req);
+		if (settings != null) {
+			settings.setDisplayName(trimmed);
+			LoginFilter.refreshUserSettings(req, settings);
+		}
+
 		forwardToSettings(req, resp, null);
 	}
 
