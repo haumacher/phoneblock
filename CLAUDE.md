@@ -324,6 +324,21 @@ Example - Adding conditional device name display:
 </p>
 ```
 
+### Server Messages Internationalization (Messages_*.properties)
+
+Java `ResourceBundle` keys used by the web app live in `phoneblock/src/main/java/Messages_*.properties`.
+
+- **Only edit `Messages_de.properties`** — it is the source of truth.
+- **All other `Messages_<lang>.properties` files are auto-generated via DeepL** — never edit them directly.
+- Translation is run via the `tl-maven-plugin` (`com.top-logic:tl-maven-plugin:translate`) with the `with-deepl` profile. Eclipse launch: `phoneblock/bin/Translate PhoneBlock Resources.launch`.
+- Manual command-line trigger:
+  ```bash
+  cd phoneblock
+  mvn -Pwith-deepl com.top-logic:tl-maven-plugin:7.10.0:translate -e \
+      -DsourcePath=src/main/java/Messages_de.properties -N
+  ```
+- After adding/changing a key in `Messages_de.properties`, run the translation before committing so all language bundles stay in sync (otherwise the runtime throws `MissingResourceException`).
+
 ### Mobile App Internationalization (phoneblock_mobile/)
 
 > **STRICT RULES — VIOLATION WILL BREAK ALL TRANSLATIONS:**
