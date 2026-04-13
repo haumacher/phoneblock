@@ -494,7 +494,7 @@ public class SearchServlet extends HttpServlet {
 		// The canonical path of this page (use internationalized zeroZero form).
 		String canonicalPhone = searchResult.getNumber().getZeroZero();
 		req.setAttribute(PATH_ATTR, req.getServletPath() + '/' + canonicalPhone);
-		req.setAttribute("canonical", "https://phoneblock.net" + req.getContextPath() + req.getServletPath() + '/' + canonicalPhone);
+		req.setAttribute(DefaultController.CANONICAL_ATTR, "https://phoneblock.net" + req.getContextPath() + req.getServletPath() + '/' + canonicalPhone);
 		
 		req.setAttribute(INFO_ATTR, info);
 		req.setAttribute("searchResult", searchResult);

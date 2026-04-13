@@ -69,6 +69,11 @@ public class DefaultController implements WebController {
 	 */
 	public static final String TOKEN_VAR = "token";
 
+	/**
+	 * Request attribute / template variable for the canonical URL of the current page.
+	 */
+	public static final String CANONICAL_ATTR = "canonical";
+
 	static final String RENDER_TEMPLATE = "renderTemplate";
 
 	private static final Logger LOG = LoggerFactory.getLogger(DefaultController.class);
@@ -324,11 +329,11 @@ public class DefaultController implements WebController {
         ctx.setVariable("descriptionKey", "app.defaultDescription");
         ctx.setVariable("keywords", "");
         
-		Object explicitCanonical = request.getAttribute("canonical");
+		Object explicitCanonical = request.getAttribute(CANONICAL_ATTR);
 		if (explicitCanonical instanceof String) {
-			ctx.setVariable("canonical", explicitCanonical);
+			ctx.setVariable(CANONICAL_ATTR, explicitCanonical);
 		} else {
-			ctx.setVariable("canonical", "https://phoneblock.net" + request.getContextPath() + request.getServletPath());
+			ctx.setVariable(CANONICAL_ATTR, "https://phoneblock.net" + request.getContextPath() + request.getServletPath());
 		}
         ctx.setVariable("props", PROPS);
         ctx.setVariable("deps", DEPS);
