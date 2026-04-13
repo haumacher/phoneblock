@@ -124,35 +124,16 @@ The `smtp/properties` context can contain any JavaMail SMTP properties:
 
 ---
 
-## ChatGPT Service Configuration
+## Comment Classification & Summarization
 
-**JNDI Prefix:** `chatgpt.`
-**System Property Prefix:** `chatgpt.`
-**Source:** `ChatGPTService.java`
+Comment classification and AI-generated summaries are produced by the standalone
+`phoneblock-tools` classifier (subcommand `classify`), which runs outside of the
+web application as a batch job. The webapp itself no longer consumes any
+OpenAI / ChatGPT JNDI properties — the former `chatgpt.secret` setting has been
+removed.
 
-Configuration for OpenAI ChatGPT integration (automatic comment summarization).
-
-### Properties
-
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `chatgpt.secret` | String | Required | OpenAI API key for ChatGPT access |
-
-### Example Configuration
-
-**Tomcat context.xml:**
-```xml
-<Context>
-  <Environment name="chatgpt/secret" value="sk-..." type="java.lang.String"/>
-</Context>
-```
-
-**System Properties:**
-```bash
--Dchatgpt.secret=sk-...
-```
-
-**Note:** The ChatGPT service is optional. If no API key is configured, the service will not start and no automatic summarization will occur.
+See `phoneblock-tools/.phoneblock-classifier.template` for the classifier's own
+configuration (`anthropic.api-key`, `anthropic.model`, database credentials).
 
 ---
 
@@ -622,9 +603,6 @@ Here's a complete example Tomcat `context.xml` file with common production setti
   <Environment name="log/configfile" value="/etc/phoneblock/tinylog.properties" type="java.lang.String"/>
 
   <!-- Optional Services (uncomment to enable) -->
-
-  <!-- ChatGPT Integration -->
-  <!-- <Environment name="chatgpt/secret" value="sk-..." type="java.lang.String"/> -->
 
   <!-- Google Indexing -->
   <!-- <Environment name="google/accountfile" value="/etc/phoneblock/google-service-account.json" type="java.lang.String"/> -->
