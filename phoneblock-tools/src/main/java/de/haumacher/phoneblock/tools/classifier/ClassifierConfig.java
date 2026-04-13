@@ -39,6 +39,13 @@ public class ClassifierConfig {
 	private final List<String> phones = new ArrayList<>();
 
 	public static ClassifierConfig load(String[] args) {
+		for (String arg : args) {
+			if ("-h".equals(arg) || "--help".equals(arg)) {
+				printUsage(System.out);
+				return null;
+			}
+		}
+
 		ClassifierConfig config = new ClassifierConfig();
 
 		String configFile = DEFAULT_CONFIG_FILE;
@@ -53,6 +60,39 @@ public class ClassifierConfig {
 		config.loadFile(configFile);
 		config.parseArgs(args);
 		return config;
+	}
+
+	public static void printUsage(java.io.PrintStream out) {
+		out.println("""
+				Usage: phoneblock-classifier [options]
+
+				Classifies unclassified COMMENTS rows via Anthropic, then summarizes phone
+				numbers that now have enough GOOD comments. Whitelisted numbers are skipped.
+
+				Options:
+				  -h, --help                 Show this help and exit.
+				  -c, --config <file>        Config file (default: ~/.phoneblock-classifier).
+
+				  --db-url <jdbc-url>        JDBC URL (default: jdbc:h2:./phoneblock).
+				  --db-user <user>           Database user (default: phone).
+				  --db-password <pwd>        Database password (default: block).
+
+				  --anthropic-key <key>      Anthropic API key (required).
+				  --model <id>               Model ID (default: claude-haiku-4-5).
+
+				  --max-requests <n>         Max LLM requests per run (default: 500).
+				  --batch-size <n>           Comments per classification batch (default: 10).
+				  --good-threshold <n>       Stop classifying a phone after this many GOODs
+				                             (default: 5).
+				  --min-good <n>             Min GOOD comments required to run a summary
+				                             (default: 3).
+
+				  --phone <phoneId>          Only process this phone ID. May be repeated.
+				  --phones <id1,id2,...>     Comma-separated list of phone IDs.
+
+				Phone IDs use the internal DB format: German numbers as "0xxx...",
+				international numbers as "00<country><number>".
+				""");
 	}
 
 	private void loadFile(String configFile) {
