@@ -7,6 +7,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -32,6 +34,9 @@ public class ClassifierConfig {
 	private int batchSize = 10;
 	private int goodThreshold = 5;
 	private int minGoodForSummary = 3;
+
+	/** Explicit phone IDs to process. If empty, candidates are chosen automatically. */
+	private final List<String> phones = new ArrayList<>();
 
 	public static ClassifierConfig load(String[] args) {
 		ClassifierConfig config = new ClassifierConfig();
@@ -105,6 +110,15 @@ public class ClassifierConfig {
 				case "--min-good":
 					minGoodForSummary = Integer.parseInt(args[++i]);
 					break;
+				case "--phone":
+					phones.add(args[++i]);
+					break;
+				case "--phones":
+					for (String p : args[++i].split(",")) {
+						String trimmed = p.trim();
+						if (!trimmed.isEmpty()) phones.add(trimmed);
+					}
+					break;
 				default:
 					if (arg.startsWith("-")) {
 						throw new IllegalArgumentException("Unknown option: " + arg);
@@ -122,4 +136,5 @@ public class ClassifierConfig {
 	public int getBatchSize() { return batchSize; }
 	public int getGoodThreshold() { return goodThreshold; }
 	public int getMinGoodForSummary() { return minGoodForSummary; }
+	public List<String> getPhones() { return phones; }
 }

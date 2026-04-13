@@ -74,9 +74,22 @@ public class ClassifyAndSummarize {
 
 		List<String> candidates;
 		try (SqlSession session = _db.openSession()) {
-			candidates = session.getMapper(Comments.class).candidatePhones(_config.getGoodThreshold());
+			Comments mapper = session.getMapper(Comments.class);
+			if (!_config.getPhones().isEmpty()) {
+				candidates = new ArrayList<>();
+				for (String phone : _config.getPhones()) {
+					if (mapper.isWhitelisted(phone) > 0) {
+						LOG.warn("Skipping whitelisted phone {}.", phone);
+						continue;
+					}
+					candidates.add(phone);
+				}
+				LOG.info("Processing {} phone number(s) from --phone/--phones.", candidates.size());
+			} else {
+				candidates = mapper.candidatePhones(_config.getGoodThreshold());
+				LOG.info("Found {} candidate phone numbers with unclassified comments.", candidates.size());
+			}
 		}
-		LOG.info("Found {} candidate phone numbers with unclassified comments.", candidates.size());
 
 		// Initialize good counts and comment iterators for each phone.
 		Map<String, Iterator<PendingComment>> iterators = new LinkedHashMap<>();
