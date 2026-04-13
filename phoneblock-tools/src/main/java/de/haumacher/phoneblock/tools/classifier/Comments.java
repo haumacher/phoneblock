@@ -67,7 +67,9 @@ public interface Comments {
 			  AND c.PHONE NOT IN (SELECT PHONE FROM SUMMARY)
 			  AND (SELECT COUNT(1) FROM COMMENTS g WHERE g.PHONE = c.PHONE AND g.CLASSIFICATION = 1) < #{goodThreshold}
 			  AND (SELECT COUNT(1) FROM COMMENTS u WHERE u.PHONE = c.PHONE AND u.CLASSIFICATION = 0) >= #{minComments}
-			ORDER BY c.PHONE, (c.UP - c.DOWN) DESC, LENGTH(c.COMMENT) DESC, c.CREATED DESC
+			ORDER BY MAX(c.CREATED) OVER (PARTITION BY c.PHONE) DESC,
+			         c.PHONE,
+			         (c.UP - c.DOWN) DESC, LENGTH(c.COMMENT) DESC, c.CREATED DESC
 			""")
 	List<PendingComment> allPendingEligible(
 			@Param("goodThreshold") int goodThreshold,
