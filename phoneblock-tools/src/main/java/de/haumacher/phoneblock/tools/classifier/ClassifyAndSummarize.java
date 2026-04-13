@@ -94,6 +94,10 @@ public class ClassifyAndSummarize {
 						LOG.warn("Skipping whitelisted phone {}.", phone);
 						continue;
 					}
+					if (mapper.hasSummary(phone) > 0) {
+						LOG.warn("Skipping {} — already has a SUMMARY row. Delete it to reprocess.", phone);
+						continue;
+					}
 					candidates.add(phone);
 				}
 				LOG.info("Processing {} phone number(s) from --phone/--phones.", candidates.size());

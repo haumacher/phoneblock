@@ -29,12 +29,16 @@ public interface Comments {
 			FROM COMMENTS c
 			WHERE c.CLASSIFICATION = 0
 			  AND c.PHONE NOT IN (SELECT PHONE FROM WHITELIST)
+			  AND c.PHONE NOT IN (SELECT PHONE FROM SUMMARY)
 			GROUP BY c.PHONE
 			HAVING (SELECT COUNT(1) FROM COMMENTS g WHERE g.PHONE = c.PHONE AND g.CLASSIFICATION = 1) &lt; #{goodThreshold}
 			ORDER BY MAX(c.CREATED) DESC
 			</script>
 			""")
 	List<String> candidatePhones(@Param("goodThreshold") int goodThreshold);
+
+	@Select("SELECT COUNT(1) FROM SUMMARY WHERE PHONE = #{phone}")
+	int hasSummary(@Param("phone") String phone);
 
 	/**
 	 * Unclassified comments for a given phone, ordered by decreasing vote score,
