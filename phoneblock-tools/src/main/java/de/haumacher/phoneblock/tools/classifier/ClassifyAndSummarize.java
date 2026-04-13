@@ -128,34 +128,46 @@ public class ClassifyAndSummarize {
 		}
 
 		// Classification loop — draw from rotating iterators.
+		int totalClassified = 0;
 		while (_requestsUsed < _config.getMaxRequests() && !iterators.isEmpty()) {
 			List<PendingComment> batch = assembleBatch(iterators, goodCount);
 			if (batch.isEmpty()) {
 				break;
 			}
+			long t0 = System.currentTimeMillis();
 			Map<String, Integer> results = classifyBatch(batch);
 			_requestsUsed++;
+			int goodInBatch = (int) results.values().stream().filter(v -> v == 1).count();
 			applyResults(batch, results, goodCount, touchedPhones);
+			totalClassified += batch.size();
+			LOG.info("Batch {}/{}: {} comments ({} good, {} bad) in {} ms — {} phones still open, {} total classified.",
+					_requestsUsed, _config.getMaxRequests(),
+					batch.size(), goodInBatch, batch.size() - goodInBatch,
+					System.currentTimeMillis() - t0,
+					iterators.size(), totalClassified);
 		}
 
 		LOG.info("Classification pass done. LLM requests used: {}. Phones touched: {}.",
 				_requestsUsed, touchedPhones.size());
 
 		// Summarize phones touched in this run that now have enough GOOD comments.
+		List<String> eligible = touchedPhones.stream()
+				.filter(p -> goodCount.getOrDefault(p, 0) >= _config.getMinGoodForSummary())
+				.toList();
+		LOG.info("{} of {} touched phones qualify for summary (>= {} GOOD).",
+				eligible.size(), touchedPhones.size(), _config.getMinGoodForSummary());
 		int summarized = 0;
-		for (String phone : touchedPhones) {
+		for (String phone : eligible) {
 			if (_requestsUsed >= _config.getMaxRequests()) {
 				LOG.info("Max request budget hit, stopping before summarize({}).", phone);
 				break;
 			}
-			int good = goodCount.getOrDefault(phone, 0);
-			if (good < _config.getMinGoodForSummary()) {
-				LOG.debug("Skipping summary for {} (only {} GOOD comments).", phone, good);
-				continue;
-			}
+			long t0 = System.currentTimeMillis();
 			summarizePhone(phone);
 			_requestsUsed++;
 			summarized++;
+			LOG.info("Summary {}/{}: {} in {} ms.", summarized, eligible.size(), phone,
+					System.currentTimeMillis() - t0);
 		}
 		LOG.info("Summaries written: {}. Total LLM requests: {}.", summarized, _requestsUsed);
 	}
@@ -241,7 +253,7 @@ public class ClassifyAndSummarize {
 			session.getMapper(Comments.class).upsertSummary(phone, summary, System.currentTimeMillis());
 			session.commit();
 		}
-		LOG.info("Summary written for {} ({} chars).", phone, summary.length());
+		LOG.debug("Summary written for {} ({} chars).", phone, summary.length());
 	}
 
 	private static String nullSafe(String s) {
