@@ -82,6 +82,57 @@
 	</blockquote>
 </th:block>	
 
+<th:block th:if="${comments.size &gt; 0}">
+	<h2 data-tx="t0029:3b54539d">关于 <th:block th:text="${number.plus}"></th:block> 的评论</h2>
+
+	<th:block th:each="comment,commentIt : ${comments}">
+
+	<input id="votePath" th:value="@{/api/commentVote}" type="hidden"/>
+<div class="box">
+  <article class="media">
+	<div class="media-left">
+	  <figure class="image is-64x64">
+		<i class="fa-solid fa-star" th:if="${#converters.isPositive(comment.rating)}"></i>
+		<i class="fa-solid fa-triangle-exclamation" th:unless="${#converters.isPositive(comment.rating)}"></i>
+	  </figure>
+	</div>
+	<div class="media-content">
+	  <div class="content">
+		<p class="commentHeader" th:with="phoneInfo=${#converters.analyze(comment.phone)}">
+		  <strong>☎ <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span></strong>
+		  <small>
+		  <a target="_blank" th:href="@{/link/{service}/{phone}(service=${comment.service}, phone=${comment.phone})}" th:text="${comment.service}" th:unless="${#strings.isEmpty(comment.service)}"></a>
+		  <span data-tx="t0031:88251796" th:if="${#strings.isEmpty(comment.service)}">PhoneBlock</span>
+		  </small>
+		  <small th:text="${#dates.format(#converters.fromEpoch(comment.created))}"></small>
+		</p>
+		<p class="commentText" th:dir="${comment.direction}" th:lang="${comment.lang}" th:text="${comment.comment}">
+		</p>
+	  </div>
+
+	  <nav class="level is-mobile">
+		<div class="level-left">
+		  <a aria-label="良好提示" class="level-item thumbs-up commentVote" data-tx="t0045:3079fd2d" href="#" th:data-comment-id="${comment.id}" th:data-vote-down-id="'down-' + ${commentIt.current}" th:data-vote-up-id="'up-' + ${commentIt.current}" title="好建议">
+			<span class="icon">
+			  <i class="fa-solid fa-thumbs-up"></i>
+			</span>
+			<span th:id="'up-' + ${commentIt.current}" th:text="${comment.up}"></span>
+		  </a>
+		  <a aria-label="胡说八道" class="level-item thumbs-down commentVote" data-tx="t0046:7987fa19" href="#" th:data-comment-id="${comment.id}" th:data-vote-down-id="'down-' + ${commentIt.current}" th:data-vote-up-id="'up-' + ${commentIt.current}" title="胡说八道！">
+			<span class="icon">
+			  <i class="fa-solid fa-thumbs-down"></i>
+			</span>
+			<span th:id="'down-' + ${commentIt.current}" th:text="${comment.down}"></span>
+		  </a>
+		</div>
+	  </nav>
+	</div>
+  </article>
+</div>
+
+	</th:block>
+</th:block>
+
 	<h2 data-tx="t0022:3a9d86a0" id="writeRating">为 <th:block th:text="${number.plus}"></th:block> 写评论</h2>
 	
 	<div class="notification is-info" data-tx="t0023:d6b3050" id="thanks" th:if="${thanks}">感谢您的评价，您正在帮助其他同样受到召唤的人。</div>
@@ -198,57 +249,6 @@
 	<p data-tx="t0028:9bfce631" th:unless="${searches}">该号码没有搜索查询。</p>
 	</div>
 </div>
-
-<th:block th:if="${comments.size &gt; 0}">
-	<h2 data-tx="t0029:3b54539d">关于 <th:block th:text="${number.plus}"></th:block> 的评论</h2>
-	
-	<th:block th:each="comment,commentIt : ${comments}">
-	
-	<input id="votePath" th:value="@{/api/commentVote}" type="hidden"/>
-<div class="box">
-  <article class="media">
-	<div class="media-left">
-	  <figure class="image is-64x64">
-		<i class="fa-solid fa-star" th:if="${#converters.isPositive(comment.rating)}"></i>
-		<i class="fa-solid fa-triangle-exclamation" th:unless="${#converters.isPositive(comment.rating)}"></i>
-	  </figure>
-	</div>
-	<div class="media-content">
-	  <div class="content">
-		<p class="commentHeader" th:with="phoneInfo=${#converters.analyze(comment.phone)}">
-		  <strong>☎ <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span></strong>
-		  <small>
-		  <a target="_blank" th:href="@{/link/{service}/{phone}(service=${comment.service}, phone=${comment.phone})}" th:text="${comment.service}" th:unless="${#strings.isEmpty(comment.service)}"></a>
-		  <span data-tx="t0031:88251796" th:if="${#strings.isEmpty(comment.service)}">PhoneBlock</span>
-		  </small>
-		  <small th:text="${#dates.format(#converters.fromEpoch(comment.created))}"></small>
-		</p>
-		<p class="commentText" th:dir="${comment.direction}" th:lang="${comment.lang}" th:text="${comment.comment}">
-		</p>
-	  </div>
-			
-	  <nav class="level is-mobile">
-		<div class="level-left">
-		  <a aria-label="良好提示" class="level-item thumbs-up commentVote" data-tx="t0045:3079fd2d" href="#" th:data-comment-id="${comment.id}" th:data-vote-down-id="'down-' + ${commentIt.current}" th:data-vote-up-id="'up-' + ${commentIt.current}" title="好建议">
-			<span class="icon">
-			  <i class="fa-solid fa-thumbs-up"></i>
-			</span>
-			<span th:id="'up-' + ${commentIt.current}" th:text="${comment.up}"></span>
-		  </a>
-		  <a aria-label="胡说八道" class="level-item thumbs-down commentVote" data-tx="t0046:7987fa19" href="#" th:data-comment-id="${comment.id}" th:data-vote-down-id="'down-' + ${commentIt.current}" th:data-vote-up-id="'up-' + ${commentIt.current}" title="胡说八道！">
-			<span class="icon">
-			  <i class="fa-solid fa-thumbs-down"></i>
-			</span>
-			<span th:id="'down-' + ${commentIt.current}" th:text="${comment.down}"></span>
-		  </a>
-		</div>
-	  </nav>
-	</div>
-  </article>
-</div>
-	
-	</th:block>
-</th:block>
 
 	<nav aria-label="分页" class="pagination is-centered" data-tx="t0049:44e35151" role="navigation">
 		<a class="pagination-previous" data-onclick="showNumber" data-tx="t0032:4b5534cb" th:href="@{/nums/{num}(num=${prevInfo.zeroZero})}" th:if="${prev}" th:with="prevInfo=${#converters.analyze(prev)}">前一个号码</a>
