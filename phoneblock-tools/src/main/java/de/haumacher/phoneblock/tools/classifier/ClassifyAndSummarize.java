@@ -175,18 +175,14 @@ public class ClassifyAndSummarize {
 				eligible.size(), touchedPhones.size(), _config.getMinGoodForSummary());
 		int summarized = 0;
 		for (String phone : eligible) {
-			if (_requestsUsed >= _config.getMaxRequests()) {
-				LOG.info("Max request budget hit, stopping before summarize({}).", phone);
-				break;
-			}
 			long t0 = System.currentTimeMillis();
 			summarizePhone(phone);
-			_requestsUsed++;
 			summarized++;
 			LOG.info("Summary {}/{}: {} in {} ms.", summarized, eligible.size(), phone,
 					System.currentTimeMillis() - t0);
 		}
-		LOG.info("Summaries written: {}. Total LLM requests: {}.", summarized, _requestsUsed);
+		LOG.info("Summaries written: {}. Classification LLM requests: {}. Total LLM requests: {}.",
+				summarized, _requestsUsed, _requestsUsed + summarized);
 	}
 
 	private List<PendingComment> assembleBatch(Map<String, Iterator<PendingComment>> iterators,
