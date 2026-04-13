@@ -66,9 +66,12 @@ public interface Comments {
 			  AND c.PHONE NOT IN (SELECT PHONE FROM WHITELIST)
 			  AND c.PHONE NOT IN (SELECT PHONE FROM SUMMARY)
 			  AND (SELECT COUNT(1) FROM COMMENTS g WHERE g.PHONE = c.PHONE AND g.CLASSIFICATION = 1) < #{goodThreshold}
+			  AND (SELECT COUNT(1) FROM COMMENTS u WHERE u.PHONE = c.PHONE AND u.CLASSIFICATION = 0) >= #{minComments}
 			ORDER BY c.PHONE, (c.UP - c.DOWN) DESC, LENGTH(c.COMMENT) DESC, c.CREATED DESC
 			""")
-	List<PendingComment> allPendingEligible(@Param("goodThreshold") int goodThreshold);
+	List<PendingComment> allPendingEligible(
+			@Param("goodThreshold") int goodThreshold,
+			@Param("minComments") int minComments);
 
 	/**
 	 * Initial GOOD counts for all phones that already have at least one GOOD

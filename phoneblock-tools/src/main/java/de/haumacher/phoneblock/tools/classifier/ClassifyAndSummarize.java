@@ -125,7 +125,8 @@ public class ClassifyAndSummarize {
 				LOG.info("Processing {} phone number(s) from --phone/--phones.", iterators.size());
 			} else {
 				LOG.info("Fetching all eligible unclassified comments in one query...");
-				List<PendingComment> all = mapper.allPendingEligible(_config.getGoodThreshold());
+				List<PendingComment> all = mapper.allPendingEligible(
+						_config.getGoodThreshold(), _config.getMinComments());
 				LOG.info("Loaded {} unclassified comments ({} ms). Grouping by phone...",
 						all.size(), System.currentTimeMillis() - tStart);
 				String current = null;

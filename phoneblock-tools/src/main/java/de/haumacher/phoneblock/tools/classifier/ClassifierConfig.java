@@ -32,6 +32,7 @@ public class ClassifierConfig {
 	static final int DEFAULT_BATCH_SIZE = 10;
 	static final int DEFAULT_GOOD_THRESHOLD = 5;
 	static final int DEFAULT_MIN_GOOD_FOR_SUMMARY = 3;
+	static final int DEFAULT_MIN_COMMENTS = 5;
 
 	private String dbUrl = DEFAULT_DB_URL;
 	private String dbUser = DEFAULT_DB_USER;
@@ -44,6 +45,7 @@ public class ClassifierConfig {
 	private int batchSize = DEFAULT_BATCH_SIZE;
 	private int goodThreshold = DEFAULT_GOOD_THRESHOLD;
 	private int minGoodForSummary = DEFAULT_MIN_GOOD_FOR_SUMMARY;
+	private int minComments = DEFAULT_MIN_COMMENTS;
 
 	/** Explicit phone IDs to process. If empty, candidates are chosen automatically. */
 	private final List<String> phones = new ArrayList<>();
@@ -96,6 +98,8 @@ public class ClassifierConfig {
 				                             (default: %d).
 				  --min-good <n>             Min GOOD comments required to run a summary
 				                             (default: %d).
+				  --min-comments <n>         Skip phones with fewer than this many
+				                             unclassified comments (default: %d).
 
 				  --phone <phoneId>          Only process this phone ID. May be repeated.
 				  --phones <id1,id2,...>     Comma-separated list of phone IDs.
@@ -105,7 +109,8 @@ public class ClassifierConfig {
 				""").formatted(
 						DEFAULT_DB_URL, DEFAULT_DB_USER, DEFAULT_DB_PASSWORD, DEFAULT_MODEL,
 						DEFAULT_MAX_REQUESTS, DEFAULT_BATCH_SIZE,
-						DEFAULT_GOOD_THRESHOLD, DEFAULT_MIN_GOOD_FOR_SUMMARY));
+						DEFAULT_GOOD_THRESHOLD, DEFAULT_MIN_GOOD_FOR_SUMMARY,
+						DEFAULT_MIN_COMMENTS));
 	}
 
 	private void loadFile(String configFile) {
@@ -163,6 +168,9 @@ public class ClassifierConfig {
 				case "--min-good":
 					minGoodForSummary = Integer.parseInt(args[++i]);
 					break;
+				case "--min-comments":
+					minComments = Integer.parseInt(args[++i]);
+					break;
 				case "--phone":
 					phones.add(args[++i]);
 					break;
@@ -189,5 +197,6 @@ public class ClassifierConfig {
 	public int getBatchSize() { return batchSize; }
 	public int getGoodThreshold() { return goodThreshold; }
 	public int getMinGoodForSummary() { return minGoodForSummary; }
+	public int getMinComments() { return minComments; }
 	public List<String> getPhones() { return phones; }
 }
