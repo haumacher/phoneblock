@@ -53,6 +53,30 @@ public interface Comments {
 			""")
 	List<PendingComment> pendingForPhone(@Param("phone") String phone, @Param("limit") int limit);
 
+	/**
+	 * All unclassified comments belonging to non-whitelisted phones that don't yet
+	 * have a SUMMARY and have fewer than {@code goodThreshold} GOODs. Used by the
+	 * auto-candidate flow to load everything in one query instead of N+1 queries
+	 * per phone.
+	 */
+	@Select("""
+			SELECT c.ID, c.PHONE, c.RATING, c.COMMENT, c.UP, c.DOWN, c.CREATED
+			FROM COMMENTS c
+			WHERE c.CLASSIFICATION = 0
+			  AND c.PHONE NOT IN (SELECT PHONE FROM WHITELIST)
+			  AND c.PHONE NOT IN (SELECT PHONE FROM SUMMARY)
+			  AND (SELECT COUNT(1) FROM COMMENTS g WHERE g.PHONE = c.PHONE AND g.CLASSIFICATION = 1) < #{goodThreshold}
+			ORDER BY c.PHONE, (c.UP - c.DOWN) DESC, LENGTH(c.COMMENT) DESC, c.CREATED DESC
+			""")
+	List<PendingComment> allPendingEligible(@Param("goodThreshold") int goodThreshold);
+
+	/**
+	 * Initial GOOD counts for all phones that already have at least one GOOD
+	 * comment. Used to seed the good-count bookkeeping in a single query.
+	 */
+	@Select("SELECT PHONE AS phone, COUNT(1) AS count FROM COMMENTS WHERE CLASSIFICATION = 1 GROUP BY PHONE")
+	List<PhoneCount> goodCountsByPhone();
+
 	@Select("SELECT COUNT(1) FROM COMMENTS WHERE PHONE = #{phone} AND CLASSIFICATION = 1")
 	int countGood(@Param("phone") String phone);
 

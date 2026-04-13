@@ -84,13 +84,21 @@ public class ClassifyAndSummarize {
 		LinkedHashMap<String, Integer> goodCount = new LinkedHashMap<>();
 		Set<String> touchedPhones = new HashSet<>();
 
-		LOG.info("Fetching candidate phones...");
 		long tStart = System.currentTimeMillis();
-		List<String> candidates;
+		boolean explicit = !_config.getPhones().isEmpty();
+		Map<String, Iterator<PendingComment>> iterators = new LinkedHashMap<>();
+
 		try (SqlSession session = _db.openSession()) {
 			Comments mapper = session.getMapper(Comments.class);
-			if (!_config.getPhones().isEmpty()) {
-				candidates = new ArrayList<>();
+
+			// Seed goodCount once for every phone that already has GOODs.
+			for (PhoneCount pc : mapper.goodCountsByPhone()) {
+				goodCount.put(pc.getPhone(), pc.getCount());
+			}
+			LOG.info("Seeded {} phones with existing GOOD counts ({} ms).",
+					goodCount.size(), System.currentTimeMillis() - tStart);
+
+			if (explicit) {
 				for (String phone : _config.getPhones()) {
 					if (mapper.isWhitelisted(phone) > 0) {
 						LOG.warn("Skipping whitelisted phone {}.", phone);
@@ -100,12 +108,39 @@ public class ClassifyAndSummarize {
 						LOG.warn("Skipping {} — already has a SUMMARY row. Delete it to reprocess.", phone);
 						continue;
 					}
-					candidates.add(phone);
+					List<PendingComment> pending = mapper.pendingForPhone(phone, 200);
+					if (!pending.isEmpty()) {
+						iterators.put(phone, pending.iterator());
+					} else {
+						int total = mapper.countAll(phone);
+						if (total == 0) {
+							LOG.warn("Phone {} has no COMMENTS rows at all — wrong phone-ID format? "
+									+ "German numbers start with a single 0, non-German with '00<country>'.", phone);
+						} else {
+							LOG.info("Phone {} has no unclassified comments ({} total, {} GOOD already).",
+									phone, total, goodCount.getOrDefault(phone, 0));
+						}
+					}
 				}
-				LOG.info("Processing {} phone number(s) from --phone/--phones.", candidates.size());
+				LOG.info("Processing {} phone number(s) from --phone/--phones.", iterators.size());
 			} else {
-				candidates = mapper.candidatePhones(_config.getGoodThreshold());
-				LOG.info("Found {} candidate phone numbers with unclassified comments.", candidates.size());
+				LOG.info("Fetching all eligible unclassified comments in one query...");
+				List<PendingComment> all = mapper.allPendingEligible(_config.getGoodThreshold());
+				LOG.info("Loaded {} unclassified comments ({} ms). Grouping by phone...",
+						all.size(), System.currentTimeMillis() - tStart);
+				String current = null;
+				List<PendingComment> bucket = null;
+				for (PendingComment c : all) {
+					if (!c.getPhone().equals(current)) {
+						if (bucket != null) iterators.put(current, bucket.iterator());
+						current = c.getPhone();
+						bucket = new ArrayList<>();
+					}
+					bucket.add(c);
+				}
+				if (bucket != null) iterators.put(current, bucket.iterator());
+				LOG.info("Grouped into {} phones with unclassified comments ({} ms).",
+						iterators.size(), System.currentTimeMillis() - tStart);
 			}
 		}
 
