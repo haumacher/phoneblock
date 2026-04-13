@@ -23,17 +23,27 @@ public class ClassifierConfig {
 
 	private static final String DEFAULT_CONFIG_FILE = System.getProperty("user.home") + "/.phoneblock-classifier";
 
-	private String dbUrl = "jdbc:h2:./phoneblock";
-	private String dbUser = "phone";
-	private String dbPassword = "block";
+	/** Single source of truth for defaults — referenced by fields and by {@link #printUsage}. */
+	static final String DEFAULT_DB_URL = "jdbc:h2:./phoneblock";
+	static final String DEFAULT_DB_USER = "phone";
+	static final String DEFAULT_DB_PASSWORD = "block";
+	static final String DEFAULT_MODEL = "claude-haiku-4-5";
+	static final int DEFAULT_MAX_REQUESTS = 500;
+	static final int DEFAULT_BATCH_SIZE = 10;
+	static final int DEFAULT_GOOD_THRESHOLD = 5;
+	static final int DEFAULT_MIN_GOOD_FOR_SUMMARY = 3;
+
+	private String dbUrl = DEFAULT_DB_URL;
+	private String dbUser = DEFAULT_DB_USER;
+	private String dbPassword = DEFAULT_DB_PASSWORD;
 
 	private String anthropicApiKey;
-	private String anthropicModel = "claude-haiku-4-5";
+	private String anthropicModel = DEFAULT_MODEL;
 
-	private int maxRequests = 500;
-	private int batchSize = 10;
-	private int goodThreshold = 5;
-	private int minGoodForSummary = 3;
+	private int maxRequests = DEFAULT_MAX_REQUESTS;
+	private int batchSize = DEFAULT_BATCH_SIZE;
+	private int goodThreshold = DEFAULT_GOOD_THRESHOLD;
+	private int minGoodForSummary = DEFAULT_MIN_GOOD_FOR_SUMMARY;
 
 	/** Explicit phone IDs to process. If empty, candidates are chosen automatically. */
 	private final List<String> phones = new ArrayList<>();
@@ -63,7 +73,7 @@ public class ClassifierConfig {
 	}
 
 	public static void printUsage(java.io.PrintStream out) {
-		out.println("""
+		out.println(("""
 				Usage: phoneblock-classifier [options]
 
 				Classifies unclassified COMMENTS rows via Anthropic, then summarizes phone
@@ -73,26 +83,29 @@ public class ClassifierConfig {
 				  -h, --help                 Show this help and exit.
 				  -c, --config <file>        Config file (default: ~/.phoneblock-classifier).
 
-				  --db-url <jdbc-url>        JDBC URL (default: jdbc:h2:./phoneblock).
-				  --db-user <user>           Database user (default: phone).
-				  --db-password <pwd>        Database password (default: block).
+				  --db-url <jdbc-url>        JDBC URL (default: %s).
+				  --db-user <user>           Database user (default: %s).
+				  --db-password <pwd>        Database password (default: %s).
 
 				  --anthropic-key <key>      Anthropic API key (required).
-				  --model <id>               Model ID (default: claude-haiku-4-5).
+				  --model <id>               Model ID (default: %s).
 
-				  --max-requests <n>         Max LLM requests per run (default: 500).
-				  --batch-size <n>           Comments per classification batch (default: 10).
+				  --max-requests <n>         Max LLM requests per run (default: %d).
+				  --batch-size <n>           Comments per classification batch (default: %d).
 				  --good-threshold <n>       Stop classifying a phone after this many GOODs
-				                             (default: 5).
+				                             (default: %d).
 				  --min-good <n>             Min GOOD comments required to run a summary
-				                             (default: 3).
+				                             (default: %d).
 
 				  --phone <phoneId>          Only process this phone ID. May be repeated.
 				  --phones <id1,id2,...>     Comma-separated list of phone IDs.
 
 				Phone IDs use the internal DB format: German numbers as "0xxx...",
 				international numbers as "00<country><number>".
-				""");
+				""").formatted(
+						DEFAULT_DB_URL, DEFAULT_DB_USER, DEFAULT_DB_PASSWORD, DEFAULT_MODEL,
+						DEFAULT_MAX_REQUESTS, DEFAULT_BATCH_SIZE,
+						DEFAULT_GOOD_THRESHOLD, DEFAULT_MIN_GOOD_FOR_SUMMARY));
 	}
 
 	private void loadFile(String configFile) {
