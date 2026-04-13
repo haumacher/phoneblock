@@ -146,20 +146,13 @@ public class ClassifyAndSummarize {
 	}
 
 	private Map<String, Integer> classifyBatch(List<PendingComment> batch) throws Exception {
-		StringBuilder user = new StringBuilder();
-		user.append("[\n");
-		for (int i = 0; i < batch.size(); i++) {
-			PendingComment c = batch.get(i);
-			if (i > 0) user.append(",\n");
-			user.append("  {\"id\":").append(_json.writeValueAsString(c.getId()))
-				.append(",\"rating\":").append(_json.writeValueAsString(c.getRating()))
-				.append(",\"text\":").append(_json.writeValueAsString(nullSafe(c.getComment())))
-				.append("}");
-		}
-		user.append("\n]\n");
+		List<ClassifierInput> input = batch.stream()
+				.map(c -> new ClassifierInput(c.getId(), c.getRating(), nullSafe(c.getComment())))
+				.toList();
+		String userMessage = _json.writerWithDefaultPrettyPrinter().writeValueAsString(input);
 
 		ClassificationBatchResult result = _llm.completeStructured(
-				CLASSIFY_SYSTEM, user.toString(), 1024, ClassificationBatchResult.class);
+				CLASSIFY_SYSTEM, userMessage, 1024, ClassificationBatchResult.class);
 
 		Map<String, Integer> out = new HashMap<>();
 		for (Entry entry : result.entries()) {
@@ -219,4 +212,7 @@ public class ClassifyAndSummarize {
 	private static String nullSafe(String s) {
 		return s == null ? "" : s;
 	}
+
+	/** Shape of one entry in the classifier's user message. */
+	private record ClassifierInput(String id, String rating, String text) {}
 }
