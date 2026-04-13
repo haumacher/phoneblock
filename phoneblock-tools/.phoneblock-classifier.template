@@ -1,0 +1,18 @@
+# PhoneBlock Comment Classifier Configuration
+# Copy this file to ~/.phoneblock-classifier or specify with -c/--config option
+
+# Database connection settings
+# JDBC URL to the PhoneBlock database (default: jdbc:h2:./phoneblock)
+db.url=jdbc:h2:./phoneblock
+
+# Database credentials (default: phone/block)
+db.user=phone
+db.password=block
+
+# Anthropic API key (required). Get one at https://console.anthropic.com/
+anthropic.api-key=sk-ant-...
+
+# Model used for both classification and summarization.
+# Default: claude-haiku-4-5 (cheap and fast; recommended for batch classification).
+# Alternatives: claude-sonnet-4-6, claude-opus-4-6.
+anthropic.model=claude-haiku-4-5
