@@ -16,8 +16,10 @@ import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import de.haumacher.phoneblock.tools.classifier.ClassificationBatchResult.Entry;
+import de.haumacher.phoneblock.tools.classifier.ClassificationBatchResult.Verdict;
 
 /**
  * Orchestrates the classification + summarization pass:
@@ -36,14 +38,14 @@ public class ClassifyAndSummarize {
 	private static final String CLASSIFY_SYSTEM = """
 			Du bewertest Kommentare zu einer Telefonnummer. Pro Kommentar liegen Text und ein \
 			vom Nutzer vergebenes Rating vor (z.B. A_LEGITIMATE, C_PING, D_POLL, E_ADVERTISING, \
-			F_GAMBLE, G_FRAUD oder B_MISSED). Klassifiziere jeden Kommentar als "good" oder \
-			"bad" nach zwei Kriterien:
+			F_GAMBLE, G_FRAUD oder B_MISSED). Markiere jeden Kommentar als "good" oder "bad" \
+			nach zwei Kriterien:
 			1. Er enthält konkrete Information über den Anrufer (Firma, Gesprächsinhalt, \
 			   Masche, Zielgruppe, Auffälligkeiten).
 			2. Die Textaussage ist mit dem Rating vereinbar (z.B. Rating=G_FRAUD, aber Text \
 			   "netter Anruf, alles ok" ist ein Widerspruch -> bad).
-			Antworte ausschließlich mit reinem JSON, ohne Prosa, als Array von Objekten: \
-			[{"id":"...","classification":"good|bad"}, ...]. Keine weiteren Felder.
+			Nur "good", wenn beide Kriterien erfüllt sind. Pro Eingabe-Kommentar genau ein \
+			Eintrag in der Ausgabe, mit identischer id.
 			""";
 
 	private static final String SUMMARIZE_SYSTEM = """
@@ -144,31 +146,24 @@ public class ClassifyAndSummarize {
 	}
 
 	private Map<String, Integer> classifyBatch(List<PendingComment> batch) throws Exception {
-		ObjectMapper mapper = _json;
 		StringBuilder user = new StringBuilder();
 		user.append("[\n");
 		for (int i = 0; i < batch.size(); i++) {
 			PendingComment c = batch.get(i);
 			if (i > 0) user.append(",\n");
-			user.append("  {\"id\":").append(mapper.writeValueAsString(c.getId()))
-				.append(",\"rating\":").append(mapper.writeValueAsString(c.getRating()))
-				.append(",\"text\":").append(mapper.writeValueAsString(nullSafe(c.getComment())))
+			user.append("  {\"id\":").append(_json.writeValueAsString(c.getId()))
+				.append(",\"rating\":").append(_json.writeValueAsString(c.getRating()))
+				.append(",\"text\":").append(_json.writeValueAsString(nullSafe(c.getComment())))
 				.append("}");
 		}
 		user.append("\n]\n");
 
-		String raw = _llm.complete(CLASSIFY_SYSTEM, user.toString(), 1024);
-		JsonNode node = mapper.readTree(stripCodeFence(raw));
+		ClassificationBatchResult result = _llm.completeStructured(
+				CLASSIFY_SYSTEM, user.toString(), 1024, ClassificationBatchResult.class);
+
 		Map<String, Integer> out = new HashMap<>();
-		if (node.isArray()) {
-			for (JsonNode row : node) {
-				String id = row.path("id").asText(null);
-				String classification = row.path("classification").asText("");
-				if (id == null) continue;
-				out.put(id, "good".equalsIgnoreCase(classification) ? 1 : -1);
-			}
-		} else {
-			LOG.warn("Unexpected classification response (not an array): {}", raw);
+		for (Entry entry : result.entries()) {
+			out.put(entry.id(), entry.classification() == Verdict.good ? 1 : -1);
 		}
 		return out;
 	}
@@ -223,15 +218,5 @@ public class ClassifyAndSummarize {
 
 	private static String nullSafe(String s) {
 		return s == null ? "" : s;
-	}
-
-	private static String stripCodeFence(String raw) {
-		String s = raw.trim();
-		if (s.startsWith("```")) {
-			int nl = s.indexOf('\n');
-			if (nl >= 0) s = s.substring(nl + 1);
-			if (s.endsWith("```")) s = s.substring(0, s.length() - 3);
-		}
-		return s.trim();
 	}
 }

@@ -10,11 +10,13 @@ import com.anthropic.models.messages.CacheControlEphemeral;
 import com.anthropic.models.messages.ContentBlock;
 import com.anthropic.models.messages.Message;
 import com.anthropic.models.messages.MessageCreateParams;
+import com.anthropic.models.messages.StructuredMessage;
+import com.anthropic.models.messages.StructuredMessageCreateParams;
 import com.anthropic.models.messages.TextBlockParam;
 
 /**
- * Thin wrapper around the official Anthropic Java SDK that exposes the single
- * prompt-cached completion call used by the classifier.
+ * Thin wrapper around the official Anthropic Java SDK. Provides one typed and
+ * one plain-text completion, both with a cacheable system prompt.
  */
 public class AnthropicClient implements AutoCloseable {
 
@@ -27,19 +29,37 @@ public class AnthropicClient implements AutoCloseable {
 	}
 
 	/**
-	 * Sends a completion request whose system prompt is marked as ephemerally
-	 * cacheable. Returns the concatenated text of all text blocks in the response.
+	 * Sends a completion request and parses the response against {@code schema}
+	 * using the structured-outputs feature. The model is forced to emit JSON that
+	 * matches the class's shape — no hand-rolled JSON parsing needed.
 	 */
-	public String complete(String cacheableSystemPrompt, String userMessage, long maxTokens) {
-		TextBlockParam system = TextBlockParam.builder()
-				.text(cacheableSystemPrompt)
-				.cacheControl(CacheControlEphemeral.builder().build())
+	public <T> T completeStructured(String cacheableSystemPrompt, String userMessage,
+			long maxTokens, Class<T> schema) {
+		StructuredMessageCreateParams<T> params = MessageCreateParams.builder()
+				.model(_model)
+				.maxTokens(maxTokens)
+				.systemOfTextBlockParams(List.of(cacheableSystem(cacheableSystemPrompt)))
+				.outputConfig(schema)
+				.addUserMessage(userMessage)
 				.build();
 
+		StructuredMessage<T> response = _client.messages().create(params);
+		return response.content().stream()
+				.flatMap(cb -> cb.text().stream())
+				.map(tb -> tb.text())
+				.findFirst()
+				.orElseThrow(() -> new IllegalStateException("No text block in structured response."));
+	}
+
+	/**
+	 * Plain-text completion used for the final summary, where we just want prose
+	 * back.
+	 */
+	public String complete(String cacheableSystemPrompt, String userMessage, long maxTokens) {
 		MessageCreateParams params = MessageCreateParams.builder()
 				.model(_model)
 				.maxTokens(maxTokens)
-				.systemOfTextBlockParams(List.of(system))
+				.systemOfTextBlockParams(List.of(cacheableSystem(cacheableSystemPrompt)))
 				.addUserMessage(userMessage)
 				.build();
 
@@ -49,6 +69,13 @@ public class AnthropicClient implements AutoCloseable {
 			block.text().ifPresent(t -> text.append(t.text()));
 		}
 		return text.toString();
+	}
+
+	private static TextBlockParam cacheableSystem(String text) {
+		return TextBlockParam.builder()
+				.text(text)
+				.cacheControl(CacheControlEphemeral.builder().build())
+				.build();
 	}
 
 	@Override
