@@ -3,90 +3,56 @@
  */
 package de.haumacher.phoneblock.tools.classifier;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.time.Duration;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.util.List;
+
+import com.anthropic.client.okhttp.AnthropicOkHttpClient;
+import com.anthropic.models.messages.CacheControlEphemeral;
+import com.anthropic.models.messages.ContentBlock;
+import com.anthropic.models.messages.Message;
+import com.anthropic.models.messages.MessageCreateParams;
+import com.anthropic.models.messages.TextBlockParam;
 
 /**
- * Thin HTTP client for the Anthropic Messages API.
- * <p>
- * Uses prompt caching on the system prompt so the repeated classification
- * instruction does not get re-billed on every batch.
- * </p>
+ * Thin wrapper around the official Anthropic Java SDK that exposes the single
+ * prompt-cached completion call used by the classifier.
  */
 public class AnthropicClient implements AutoCloseable {
 
-	private static final String API_URL = "https://api.anthropic.com/v1/messages";
-	private static final String ANTHROPIC_VERSION = "2023-06-01";
-
-	private final HttpClient _http;
-	private final ObjectMapper _json;
-	private final String _apiKey;
+	private final com.anthropic.client.AnthropicClient _client;
 	private final String _model;
 
 	public AnthropicClient(String apiKey, String model) {
-		_apiKey = apiKey;
+		_client = AnthropicOkHttpClient.builder().apiKey(apiKey).build();
 		_model = model;
-		_json = new ObjectMapper();
-		_http = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(30)).build();
 	}
 
 	/**
-	 * Sends a message with a cacheable system prompt and returns the text content of
-	 * the first completion. The system prompt is marked with
-	 * {@code cache_control: ephemeral} so Anthropic caches it across batches.
+	 * Sends a completion request whose system prompt is marked as ephemerally
+	 * cacheable. Returns the concatenated text of all text blocks in the response.
 	 */
-	public String complete(String cacheableSystemPrompt, String userMessage, int maxTokens) throws IOException, InterruptedException {
-		ObjectNode root = _json.createObjectNode();
-		root.put("model", _model);
-		root.put("max_tokens", maxTokens);
-
-		ArrayNode systemArr = root.putArray("system");
-		ObjectNode sys = systemArr.addObject();
-		sys.put("type", "text");
-		sys.put("text", cacheableSystemPrompt);
-		sys.putObject("cache_control").put("type", "ephemeral");
-
-		ArrayNode messages = root.putArray("messages");
-		ObjectNode msg = messages.addObject();
-		msg.put("role", "user");
-		msg.put("content", userMessage);
-
-		HttpRequest request = HttpRequest.newBuilder(URI.create(API_URL))
-				.timeout(Duration.ofMinutes(2))
-				.header("x-api-key", _apiKey)
-				.header("anthropic-version", ANTHROPIC_VERSION)
-				.header("content-type", "application/json")
-				.POST(HttpRequest.BodyPublishers.ofString(_json.writeValueAsString(root)))
+	public String complete(String cacheableSystemPrompt, String userMessage, long maxTokens) {
+		TextBlockParam system = TextBlockParam.builder()
+				.text(cacheableSystemPrompt)
+				.cacheControl(CacheControlEphemeral.builder().build())
 				.build();
 
-		HttpResponse<String> response = _http.send(request, HttpResponse.BodyHandlers.ofString());
-		if (response.statusCode() / 100 != 2) {
-			throw new IOException("Anthropic API error " + response.statusCode() + ": " + response.body());
-		}
+		MessageCreateParams params = MessageCreateParams.builder()
+				.model(_model)
+				.maxTokens(maxTokens)
+				.systemOfTextBlockParams(List.of(system))
+				.addUserMessage(userMessage)
+				.build();
 
-		JsonNode body = _json.readTree(response.body());
-		JsonNode content = body.path("content");
+		Message response = _client.messages().create(params);
 		StringBuilder text = new StringBuilder();
-		if (content.isArray()) {
-			for (JsonNode part : content) {
-				if ("text".equals(part.path("type").asText())) {
-					text.append(part.path("text").asText());
-				}
-			}
+		for (ContentBlock block : response.content()) {
+			block.text().ifPresent(t -> text.append(t.text()));
 		}
 		return text.toString();
 	}
 
 	@Override
 	public void close() {
-		// HttpClient has no explicit close in JDK 17.
+		_client.close();
 	}
 }

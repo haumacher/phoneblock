@@ -26,7 +26,7 @@ public class ClassifierConfig {
 	private String dbPassword = "block";
 
 	private String anthropicApiKey;
-	private String anthropicModel = "claude-haiku-4-5-20251001";
+	private String anthropicModel = "claude-haiku-4-5";
 
 	private int maxRequests = 500;
 	private int batchSize = 10;
