@@ -462,28 +462,6 @@ public interface SpamReports {
 	@Insert("MERGE INTO NUMBERS (PHONE, SHA1, ADDED, LASTMETA) KEY (PHONE) VALUES (#{phone}, #{hash}, #{now}, #{now})")
 	void mergeLastMetaSearch(String phone, byte[] hash, long now);
 	
-	@Select("SELECT PHONE FROM SUMMARY_REQUEST sr ORDER BY sr.PRIORITY LIMIT 1")
-	String topSummaryRequest();
-	
-	@Delete("DELETE FROM SUMMARY_REQUEST WHERE PHONE = #{phone}")
-	int dropSummaryRequest(String phone);
-	
-	@Insert("""
-			INSERT INTO SUMMARY_REQUEST (PHONE)
-			SELECT PHONE FROM (
-				SELECT c.PHONE PHONE, COUNT(1) cnt, MAX(c.CREATED) lastComment, MAX(s.CREATED) lastSummary FROM COMMENTS c
-				LEFT OUTER JOIN SUMMARY s
-				ON s.PHONE = c.PHONE
-				LEFT OUTER JOIN SUMMARY_REQUEST sr
-				ON sr.PHONE = c.PHONE
-				WHERE sr.PHONE IS NULL
-				GROUP BY c.PHONE
-			)
-			WHERE cnt > 5 AND (lastSummary IS NULL OR lastSummary + 7 * 24 * 60 * 60 * 1000 < lastComment)
-			ORDER BY cnt DESC
-			""")
-	int scheduleSummaryRequests();
-	
 	@Select("select COMMENT from SUMMARY s where s.PHONE = #{phone}")
 	String getSummary(String phone);
 	

@@ -25,7 +25,6 @@ import de.haumacher.mailcheck.scraper.DisposableScraperService;
 import de.haumacher.phoneblock.ab.CallRetentionService;
 import de.haumacher.phoneblock.ab.SipService;
 import de.haumacher.phoneblock.carddav.resource.AddressBookCache;
-import de.haumacher.phoneblock.chatgpt.ChatGPTService;
 import de.haumacher.phoneblock.crawl.CrawlerService;
 import de.haumacher.phoneblock.crawl.FetchService;
 import de.haumacher.phoneblock.credits.ImapService;
@@ -102,7 +101,6 @@ public class Application implements ServletContextListener {
 		FetchService fetcher;
 		MetaSearchService metaSearch;
 		MailServiceStarter mail;
-		ChatGPTService gpt;
 		SecureRandomService rnd;
 		SipService sip;
 		_services = new ServletContextListener[] {
@@ -121,9 +119,8 @@ public class Application implements ServletContextListener {
 			fetcher = new FetchService(),
 			metaSearch = new MetaSearchService(scheduler, fetcher, indexer),
 			new CrawlerService(fetcher, metaSearch),
-			gpt = new ChatGPTService(db, scheduler, indexer),
 			sip = new SipService(scheduler, db, mail),
-			new ManagementService(indexer, db, gpt, sip),
+			new ManagementService(indexer, db, sip),
 			new AddressBookCache(db),
 			new ImapService(scheduler, db, mail),
 			new CallRetentionService(scheduler, db),

@@ -63,8 +63,6 @@ module de.haumacher.phoneblock {
 	requires transitive pac4j.jakartaee;
 	requires transitive pac4j.oidc;
 	requires transitive org.apache.commons.lang3;
-	requires transitive api;
-	requires transitive service;
 	requires transitive org.tinylog.api;
 	requires transitive jakartaee.pac4j;
 	requires transitive org.eclipse.angus.mail;
