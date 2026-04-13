@@ -84,6 +84,8 @@ public class ClassifyAndSummarize {
 		LinkedHashMap<String, Integer> goodCount = new LinkedHashMap<>();
 		Set<String> touchedPhones = new HashSet<>();
 
+		LOG.info("Fetching candidate phones...");
+		long tStart = System.currentTimeMillis();
 		List<String> candidates;
 		try (SqlSession session = _db.openSession()) {
 			Comments mapper = session.getMapper(Comments.class);
@@ -110,8 +112,11 @@ public class ClassifyAndSummarize {
 		// Initialize good counts and comment iterators for each phone.
 		boolean explicit = !_config.getPhones().isEmpty();
 		Map<String, Iterator<PendingComment>> iterators = new LinkedHashMap<>();
+		LOG.info("Pre-loading pending comments for {} phones ({} ms since start)...",
+				candidates.size(), System.currentTimeMillis() - tStart);
 		try (SqlSession session = _db.openSession()) {
 			Comments mapper = session.getMapper(Comments.class);
+			int done = 0;
 			for (String phone : candidates) {
 				int good = mapper.countGood(phone);
 				goodCount.put(phone, good);
@@ -128,8 +133,15 @@ public class ClassifyAndSummarize {
 								phone, total, good);
 					}
 				}
+				done++;
+				if (!explicit && done % 500 == 0) {
+					LOG.info("Pre-loaded {}/{} phones ({} ms since start, {} queued for classification).",
+							done, candidates.size(), System.currentTimeMillis() - tStart, iterators.size());
+				}
 			}
 		}
+		LOG.info("Pre-load done: {} phones with unclassified comments, {} ms.",
+				iterators.size(), System.currentTimeMillis() - tStart);
 
 		// Classification loop — draw from rotating iterators.
 		int totalClassified = 0;
