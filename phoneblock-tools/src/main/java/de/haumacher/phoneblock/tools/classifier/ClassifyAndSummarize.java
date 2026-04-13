@@ -36,17 +36,36 @@ public class ClassifyAndSummarize {
 	private static final Logger LOG = LoggerFactory.getLogger(ClassifyAndSummarize.class);
 
 	private static final String CLASSIFY_SYSTEM = """
-			Du bewertest Kommentare zu einer Telefonnummer. Pro Kommentar liegen Text und ein \
-			vom Nutzer vergebenes Rating vor (z.B. A_LEGITIMATE, C_PING, D_POLL, E_ADVERTISING, \
-			F_GAMBLE, G_FRAUD oder B_MISSED). Markiere jeden Kommentar als "good" oder "bad" \
-			nach zwei Kriterien:
-			1. Er enthält konkrete Information über den Anrufer (Firma, Gesprächsinhalt, \
-			   Masche, Zielgruppe, Auffälligkeiten).
-			2. Die Textaussage ist mit dem Rating vereinbar (z.B. Rating=G_FRAUD, aber Text \
-			   "netter Anruf, alles ok" ist ein Widerspruch -> bad).
-			Nur "good", wenn beide Kriterien erfüllt sind. Pro Eingabe-Kommentar genau ein \
-			Eintrag in der Ausgabe, mit identischer id.
+			Du bewertest Kommentare zu einer Telefonnummer für eine Spam-Datenbank.
+			Jeder Kommentar kommt mit einem Kategorie-Label: "legitim", "spam" oder "verpasst".
+			"verpasst" heißt nur "Anruf nicht angenommen" und sagt nichts über den Anrufer aus.
+
+			Markiere jeden Kommentar als "good" oder "bad" nach diesen Regeln:
+
+			1. "good" erfordert konkrete Information über den Anrufer: eine benannte Firma/Institution, \
+			   Inhalt oder Zweck des Gesprächs, beschriebene Masche, Zielgruppe, Auffälligkeiten, \
+			   Nummern- oder Rückrufmuster, etc. Reine Meinungsäußerung ("nervt", "Spam", \
+			   "mag ich nicht", "lästig") zählt NICHT als Information. Aussagen wie "ich habe nicht \
+			   abgenommen", "kenne die Nummer nicht", "mein Handy zeigt Spam an" sind ebenfalls \
+			   KEINE Information über den Anrufer. "bad".
+
+			2. Falls das Label "legitim" oder "spam" ist: prüfe ob der Text dem widerspricht \
+			   (z.B. Label "spam" aber Text "netter Anruf, alles in Ordnung" -> Widerspruch -> "bad"). \
+			   Bei Label "verpasst" entfällt dieser Check (keine Aussage über Legitimität).
+
+			Nur "good", wenn Kriterium 1 erfüllt ist UND keine Widerspruchsverletzung bei 2 vorliegt. \
+			Pro Eingabe-Kommentar genau ein Eintrag in der Ausgabe, mit identischer id.
 			""";
+
+	/** Map internal rating enum names to the three buckets the prompt understands. */
+	private static String ratingBucket(String rating) {
+		if (rating == null) return "verpasst";
+		return switch (rating) {
+			case "A_LEGITIMATE" -> "legitim";
+			case "B_MISSED" -> "verpasst";
+			default -> "spam";
+		};
+	}
 
 	private static final String SUMMARIZE_SYSTEM = """
 			Du fasst Nutzerkommentare zu einer deutschen Rufnummer in höchstens 40 Wörtern \
@@ -170,7 +189,7 @@ public class ClassifyAndSummarize {
 
 	private Map<String, Integer> classifyBatch(List<PendingComment> batch) throws Exception {
 		List<ClassifierInput> input = batch.stream()
-				.map(c -> new ClassifierInput(c.getId(), c.getRating(), nullSafe(c.getComment())))
+				.map(c -> new ClassifierInput(c.getId(), ratingBucket(c.getRating()), nullSafe(c.getComment())))
 				.toList();
 		String userMessage = _json.writerWithDefaultPrettyPrinter().writeValueAsString(input);
 
@@ -237,5 +256,5 @@ public class ClassifyAndSummarize {
 	}
 
 	/** Shape of one entry in the classifier's user message. */
-	private record ClassifierInput(String id, String rating, String text) {}
+	private record ClassifierInput(String id, String label, String text) {}
 }
