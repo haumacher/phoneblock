@@ -40,6 +40,7 @@
 		<module>phoneblock-shared</module>
 		<module>fake-mail-check</module>
 		<module>phoneblock</module>
+		<module>phoneblock-tools</module>
 	</modules>
 
 	<properties>

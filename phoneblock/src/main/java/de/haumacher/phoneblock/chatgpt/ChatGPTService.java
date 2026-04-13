@@ -82,25 +82,9 @@ public class ChatGPTService implements ServletContextListener {
 	
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
-		try {
-			JNDIProperties jndi = new JNDIProperties();
-			
-			String apiKey = jndi.lookupString("chatgpt.secret");
-			if (apiKey == null) {
-				LOG.error("No ChatGPT api key, not starting ChatGPTService.");
-				return;
-			}
-			
-			_openai = new OpenAiService(apiKey, Duration.ofMinutes(2));
-		} catch (NamingException ex) {
-			LOG.error("Cannot start ChatGPTService.", ex);
-			return;
-		}
-		
-		LOG.info("Starting ChatGPTService.");
-		
-		_heartBeat = _scheduler.scheduler().scheduleWithFixedDelay(this::heardBeat, 15, 3600, TimeUnit.SECONDS);
-		reschedule();
+		// Summaries are produced by the standalone phoneblock-tools classifier run
+		// (subcommand "classify") rather than by a background thread in the webapp.
+		LOG.info("ChatGPTService is a no-op; summarization is handled by the classifier tool.");
 	}
 
 	@Override
