@@ -378,32 +378,33 @@ public interface SpamReports {
 
 	@Select("""
 			<script>
-			select s.ID, s.PHONE, s.RATING, s.COMMENT, s.LOCALE, s.SERVICE, s.CREATED, s.UP, s.DOWN, s.USERID 
-			from COMMENTS s 
-			where s.PHONE=#{phone} and s.LOCALE in 
+			select s.ID, s.PHONE, s.RATING, s.COMMENT, s.LOCALE, s.SERVICE, s.CREATED, s.UP, s.DOWN, s.USERID
+			from COMMENTS s
+			where s.PHONE=#{phone} and s.CLASSIFICATION &gt;= 0 and s.LOCALE in
 			    <foreach item="item" index="index" collection="langs" open="(" separator="," close=")">
 			        #{item}
 			    </foreach>
 			</script>
 			""")
 	List<DBUserComment> getComments(String phone, Collection<String> langs);
-	
+
 	@Select("""
-			select s.ID, s.PHONE, s.RATING, s.COMMENT, s.LOCALE, s.SERVICE, s.CREATED, s.UP, s.DOWN, s.USERID 
-			from COMMENTS s 
-			where s.PHONE=#{phone}
+			select s.ID, s.PHONE, s.RATING, s.COMMENT, s.LOCALE, s.SERVICE, s.CREATED, s.UP, s.DOWN, s.USERID
+			from COMMENTS s
+			where s.PHONE=#{phone} and s.CLASSIFICATION >= 0
 			""")
 	List<DBUserComment> getAnyComments(String phone);
-	
+
 	@Select("""
 			<script>
-			select s.ID, s.PHONE, s.RATING, s.COMMENT, s.LOCALE, s.SERVICE, s.CREATED, s.UP, s.DOWN, s.USERID 
-			from COMMENTS s 
-			where 
+			select s.ID, s.PHONE, s.RATING, s.COMMENT, s.LOCALE, s.SERVICE, s.CREATED, s.UP, s.DOWN, s.USERID
+			from COMMENTS s
+			where
 				s.PHONE &gt; #{prefix}
 				and s.PHONE &lt; concat(#{prefix}, 'Z')
 				and LENGTH(s.PHONE) = #{expectedLength}
-				and s.LOCALE in 
+				and s.CLASSIFICATION &gt;= 0
+				and s.LOCALE in
 			    <foreach item="item" index="index" collection="langs" open="(" separator="," close=")">
 			        #{item}
 			    </foreach>
