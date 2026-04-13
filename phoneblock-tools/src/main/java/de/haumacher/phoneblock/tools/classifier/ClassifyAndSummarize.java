@@ -92,6 +92,7 @@ public class ClassifyAndSummarize {
 		}
 
 		// Initialize good counts and comment iterators for each phone.
+		boolean explicit = !_config.getPhones().isEmpty();
 		Map<String, Iterator<PendingComment>> iterators = new LinkedHashMap<>();
 		try (SqlSession session = _db.openSession()) {
 			Comments mapper = session.getMapper(Comments.class);
@@ -101,6 +102,15 @@ public class ClassifyAndSummarize {
 				List<PendingComment> pending = mapper.pendingForPhone(phone, 200);
 				if (!pending.isEmpty()) {
 					iterators.put(phone, pending.iterator());
+				} else if (explicit) {
+					int total = mapper.countAll(phone);
+					if (total == 0) {
+						LOG.warn("Phone {} has no COMMENTS rows at all — wrong phone-ID format? "
+								+ "German numbers start with a single 0, non-German with '00<country>'.", phone);
+					} else {
+						LOG.info("Phone {} has no unclassified comments ({} total, {} GOOD already).",
+								phone, total, good);
+					}
 				}
 			}
 		}

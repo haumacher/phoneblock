@@ -52,6 +52,9 @@ public interface Comments {
 	@Select("SELECT COUNT(1) FROM COMMENTS WHERE PHONE = #{phone} AND CLASSIFICATION = 1")
 	int countGood(@Param("phone") String phone);
 
+	@Select("SELECT COUNT(1) FROM COMMENTS WHERE PHONE = #{phone}")
+	int countAll(@Param("phone") String phone);
+
 	@Update("UPDATE COMMENTS SET CLASSIFICATION = #{classification} WHERE ID = #{id}")
 	int setClassification(@Param("id") String id, @Param("classification") int classification);
 
