@@ -37,8 +37,7 @@ public class ClassifyAndSummarize {
 
 	private static final String CLASSIFY_SYSTEM = """
 			Du bewertest Kommentare zu einer Telefonnummer für eine Spam-Datenbank.
-			Jeder Kommentar kommt mit einem Kategorie-Label: "legitim", "spam" oder "verpasst".
-			"verpasst" heißt nur "Anruf nicht angenommen" und sagt nichts über den Anrufer aus.
+			Jeder Kommentar kommt mit einem Kategorie-Label: "legitim" oder "spam".
 
 			Markiere jeden Kommentar als "good" oder "bad" nach diesen Regeln:
 
@@ -49,22 +48,16 @@ public class ClassifyAndSummarize {
 			   abgenommen", "kenne die Nummer nicht", "mein Handy zeigt Spam an" sind ebenfalls \
 			   KEINE Information über den Anrufer. "bad".
 
-			2. Falls das Label "legitim" oder "spam" ist: prüfe ob der Text dem widerspricht \
-			   (z.B. Label "spam" aber Text "netter Anruf, alles in Ordnung" -> Widerspruch -> "bad"). \
-			   Bei Label "verpasst" entfällt dieser Check (keine Aussage über Legitimität).
+			2. Der Text darf dem Label nicht widersprechen (z.B. Label "spam" aber Text \
+			   "netter Anruf, alles in Ordnung" -> Widerspruch -> "bad").
 
 			Nur "good", wenn Kriterium 1 erfüllt ist UND keine Widerspruchsverletzung bei 2 vorliegt. \
 			Pro Eingabe-Kommentar genau ein Eintrag in der Ausgabe, mit identischer id.
 			""";
 
-	/** Map internal rating enum names to the three buckets the prompt understands. */
+	/** Map internal rating enum to the two buckets the prompt understands. */
 	private static String ratingBucket(String rating) {
-		if (rating == null) return "verpasst";
-		return switch (rating) {
-			case "A_LEGITIMATE" -> "legitim";
-			case "B_MISSED" -> "verpasst";
-			default -> "spam";
-		};
+		return "A_LEGITIMATE".equals(rating) ? "legitim" : "spam";
 	}
 
 	private static final String SUMMARIZE_SYSTEM = """
