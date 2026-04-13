@@ -324,7 +324,12 @@ public class DefaultController implements WebController {
         ctx.setVariable("descriptionKey", "app.defaultDescription");
         ctx.setVariable("keywords", "");
         
-		ctx.setVariable("canonical", "https://phoneblock.net" + request.getContextPath() + request.getServletPath());
+		Object explicitCanonical = request.getAttribute("canonical");
+		if (explicitCanonical instanceof String) {
+			ctx.setVariable("canonical", explicitCanonical);
+		} else {
+			ctx.setVariable("canonical", "https://phoneblock.net" + request.getContextPath() + request.getServletPath());
+		}
         ctx.setVariable("props", PROPS);
         ctx.setVariable("deps", DEPS);
         ctx.setVariable("contextPath", request.getContextPath());
