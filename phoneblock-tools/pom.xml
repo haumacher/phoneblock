@@ -88,6 +88,25 @@
               </descriptorRefs>
             </configuration>
           </execution>
+          <execution>
+            <id>phonebook-sync-jar</id>
+            <phase>package</phase>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <configuration>
+              <finalName>phonebook-sync-${project.version}</finalName>
+              <appendAssemblyId>false</appendAssemblyId>
+              <archive>
+                <manifest>
+                  <mainClass>de.haumacher.phoneblock.tools.blocklist.PhonebookSync</mainClass>
+                </manifest>
+              </archive>
+              <descriptorRefs>
+                <descriptorRef>jar-with-dependencies</descriptorRef>
+              </descriptorRefs>
+            </configuration>
+          </execution>
         </executions>
       </plugin>
     </plugins>
