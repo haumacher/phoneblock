@@ -1,0 +1,21 @@
+# Network: Ethernet via OpenCores for QEMU emulation. For real ESP32
+# hardware, switch to WiFi via `idf.py menuconfig`.
+CONFIG_EXAMPLE_CONNECT_WIFI=n
+CONFIG_EXAMPLE_CONNECT_ETHERNET=y
+CONFIG_EXAMPLE_USE_OPENETH=y
+CONFIG_EXAMPLE_CONNECT_IPV4=y
+CONFIG_EXAMPLE_CONNECT_IPV6=y
+
+# TLS: use the bundled Mozilla root CA store so HTTPS to phoneblock.net
+# validates out of the box.
+CONFIG_MBEDTLS_CERTIFICATE_BUNDLE=y
+CONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL=y
+
+# Main task stack: 8 KB is enough for cJSON + TLS + example helpers.
+CONFIG_ESP_MAIN_TASK_STACK_SIZE=8192
+
+# PhoneBlock defaults. Real token goes into sdkconfig.defaults.local
+# (gitignored) or via `idf.py menuconfig`.
+CONFIG_PHONEBLOCK_BASE_URL="https://phoneblock.net/phoneblock/api"
+CONFIG_PHONEBLOCK_TOKEN=""
+CONFIG_PHONEBLOCK_TEST_NUMBER="030123456"

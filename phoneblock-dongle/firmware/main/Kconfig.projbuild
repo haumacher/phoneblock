@@ -1,0 +1,35 @@
+menu "PhoneBlock Dongle"
+
+    config PHONEBLOCK_BASE_URL
+        string "PhoneBlock API base URL"
+        default "https://phoneblock.net/phoneblock/api"
+        help
+            Base URL for the PhoneBlock REST API. Endpoints are appended
+            as /num/{phone}, /rate, etc.
+
+            Two endpoints exist:
+              * https://phoneblock.net/phoneblock/api  — production
+              * https://phoneblock.net/pb-test/api     — test instance
+
+            A token is bound to exactly one instance. Tokens generated on
+            the test instance only work there, and vice versa. The token
+            prefix (pbt_) is the same in both cases.
+
+    config PHONEBLOCK_TOKEN
+        string "PhoneBlock Bearer token"
+        default ""
+        help
+            Bearer token used for API authentication. Generate one in the
+            PhoneBlock web settings. Starts with "pbt_". Leave empty and
+            keep it in sdkconfig.defaults.local (gitignored) instead of
+            committing it.
+
+    config PHONEBLOCK_TEST_NUMBER
+        string "Test phone number"
+        default "030123456"
+        help
+            Phone number queried at startup to verify the setup. Use the
+            PhoneBlock storage format (national: 030..., or 00<cc><num>
+            for international, e.g. 0015551234567).
+
+endmenu
