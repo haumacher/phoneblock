@@ -206,23 +206,31 @@ static void parse_auth_challenge(const char *header_value, auth_challenge_t *out
 // Message building
 // ---------------------------------------------------------------------------
 
+// Via/Contact advertise where the registrar should reach us. On real
+// hardware that's the interface IP/UDP port. Inside QEMU user-mode
+// networking, these have to be overridden to the host-visible address
+// (host LAN IP + hostfwd port), otherwise the registrar cannot deliver
+// an incoming INVITE — it would try to connect to 10.0.2.x which only
+// exists inside the emulator.
+static const char *advertised_host(const sip_ctx_t *c)
+{
+    return strlen(CONFIG_SIP_CONTACT_HOST_OVERRIDE) > 0
+               ? CONFIG_SIP_CONTACT_HOST_OVERRIDE : c->local_ip;
+}
+
+static int advertised_port(void)
+{
+    return CONFIG_SIP_CONTACT_PORT_OVERRIDE != 0
+               ? CONFIG_SIP_CONTACT_PORT_OVERRIDE : SIP_LOCAL_PORT;
+}
+
 static int build_register(sip_ctx_t *c, char *buf, int cap, bool with_auth)
 {
     char branch[20], cnonce[20];
     random_hex(branch, 16);
 
-    // Via/Contact advertise where the registrar should reach us. On real
-    // hardware that's the interface IP/UDP port. Inside QEMU user-mode
-    // networking, these have to be overridden to the host-visible address
-    // (host LAN IP + hostfwd port), otherwise the registrar cannot deliver
-    // an incoming INVITE — it would try to connect to 10.0.2.x which only
-    // exists inside the emulator.
-    const char *advertised_host =
-        strlen(CONFIG_SIP_CONTACT_HOST_OVERRIDE) > 0
-            ? CONFIG_SIP_CONTACT_HOST_OVERRIDE : c->local_ip;
-    int advertised_port =
-        CONFIG_SIP_CONTACT_PORT_OVERRIDE != 0
-            ? CONFIG_SIP_CONTACT_PORT_OVERRIDE : SIP_LOCAL_PORT;
+    const char *our_host = advertised_host(c);
+    int our_port = advertised_port();
 
     char request_uri[96];
     snprintf(request_uri, sizeof(request_uri), "sip:%s", CONFIG_SIP_REGISTRAR_HOST);
@@ -239,12 +247,12 @@ static int build_register(sip_ctx_t *c, char *buf, int cap, bool with_auth)
         "Expires: %d\r\n"
         "User-Agent: phoneblock-dongle/0.1\r\n",
         request_uri,
-        advertised_host, advertised_port, branch,
+        our_host, our_port, branch,
         CONFIG_SIP_USERNAME, CONFIG_SIP_REGISTRAR_HOST, c->from_tag,
         CONFIG_SIP_USERNAME, CONFIG_SIP_REGISTRAR_HOST,
         c->call_id,
         (unsigned long)c->cseq,
-        CONFIG_SIP_USERNAME, advertised_host, advertised_port,
+        CONFIG_SIP_USERNAME, our_host, our_port,
         CONFIG_SIP_EXPIRES);
 
     if (with_auth && c->challenge.valid) {
@@ -503,8 +511,104 @@ cleanup:
 }
 
 // ---------------------------------------------------------------------------
-// Incoming request handling (step 1: log only)
+// Incoming request handling
 // ---------------------------------------------------------------------------
+
+// Copy one full "Name: value\r\n" line from req into out. Returns bytes
+// written (0 if the header is absent or doesn't fit).
+static int echo_header_line(const char *req, int req_len, const char *name,
+                            char *out, int out_cap)
+{
+    const char *val = find_header(req, req_len, name);
+    if (!val) return 0;
+
+    // Scan forward to end of line.
+    const char *end = req + req_len;
+    const char *eol = val;
+    while (eol < end && *eol != '\r' && *eol != '\n') eol++;
+    int val_len = (int)(eol - val);
+
+    int written = snprintf(out, out_cap, "%s: %.*s\r\n", name, val_len, val);
+    return written > 0 && written < out_cap ? written : 0;
+}
+
+// Like echo_header_line, but appends ";tag=<our_tag>" to the To-header's
+// URI part (for generating a valid UAS response to a dialog-forming request).
+static int echo_to_with_tag(const char *req, int req_len,
+                            const char *our_tag, char *out, int out_cap)
+{
+    const char *val = find_header(req, req_len, "To");
+    if (!val) return 0;
+    const char *end = req + req_len;
+    const char *eol = val;
+    while (eol < end && *eol != '\r' && *eol != '\n') eol++;
+    int val_len = (int)(eol - val);
+
+    // Check if the request already has a tag (some re-INVITEs do).
+    if (memmem(val, val_len, ";tag=", 5)) {
+        return snprintf(out, out_cap, "To: %.*s\r\n", val_len, val);
+    }
+    int written = snprintf(out, out_cap, "To: %.*s;tag=%s\r\n",
+                           val_len, val, our_tag);
+    return written > 0 && written < out_cap ? written : 0;
+}
+
+// Build a SIP response that echoes routing headers (Via/From/To/Call-ID/
+// CSeq) from the request, adds Contact + Allow + User-Agent, and terminates
+// with Content-Length: 0. Caller provides the status line content.
+static int build_response(sip_ctx_t *c, const char *req, int req_len,
+                          int status, const char *reason,
+                          char *out, int out_cap)
+{
+    char our_tag[20];
+    random_hex(our_tag, 16);
+
+    int n = snprintf(out, out_cap, "SIP/2.0 %d %s\r\n", status, reason);
+    n += echo_header_line(req, req_len, "Via", out + n, out_cap - n);
+    n += echo_header_line(req, req_len, "From", out + n, out_cap - n);
+    n += echo_to_with_tag(req, req_len, our_tag, out + n, out_cap - n);
+    n += echo_header_line(req, req_len, "Call-ID", out + n, out_cap - n);
+    n += echo_header_line(req, req_len, "CSeq", out + n, out_cap - n);
+    n += snprintf(out + n, out_cap - n,
+        "Contact: <sip:%s@%s:%d>\r\n"
+        "Allow: INVITE, ACK, CANCEL, BYE, OPTIONS\r\n"
+        "User-Agent: phoneblock-dongle/0.1\r\n"
+        "Content-Length: 0\r\n\r\n",
+        CONFIG_SIP_USERNAME, advertised_host(c), advertised_port());
+    return n;
+}
+
+static void send_response(sip_ctx_t *c, const struct sockaddr_in *peer,
+                          const char *req, int req_len,
+                          int status, const char *reason)
+{
+    char *tx = malloc(SIP_TX_BUF_SIZE);
+    if (!tx) {
+        ESP_LOGE(TAG, "malloc failed for response buffer");
+        return;
+    }
+    int tx_len = build_response(c, req, req_len, status, reason,
+                                tx, SIP_TX_BUF_SIZE);
+    ESP_LOGI(TAG, "→ %d %s (%d bytes):\n%.*s", status, reason, tx_len, tx_len, tx);
+    int n = sendto(c->sock, tx, tx_len, 0,
+                   (struct sockaddr *)peer, sizeof(*peer));
+    if (n < 0) {
+        ESP_LOGE(TAG, "sendto() failed: %s", strerror(errno));
+    }
+    free(tx);
+}
+
+// Extract the method (first whitespace-delimited token on the request line).
+static int parse_method(const char *pkt, int len, char *method, int cap)
+{
+    int i = 0;
+    while (i < len && i < cap - 1 && pkt[i] != ' ' && pkt[i] != '\r' && pkt[i] != '\n') {
+        method[i] = pkt[i];
+        i++;
+    }
+    method[i] = '\0';
+    return i;
+}
 
 static void handle_incoming(sip_ctx_t *c, const char *pkt, int len,
                             const struct sockaddr_in *from)
@@ -515,6 +619,22 @@ static void handle_incoming(sip_ctx_t *c, const char *pkt, int len,
     ESP_LOGI(TAG, "← from %s:%d  %d bytes:\n%.*s",
              from_ip, ntohs(from->sin_port),
              len, len, pkt);
+
+    // Ignore responses — we don't track out-of-dialog requests yet, so a
+    // response packet (first line "SIP/2.0 …") is not expected here.
+    if (len >= 7 && strncmp(pkt, "SIP/2.0", 7) == 0) {
+        ESP_LOGW(TAG, "ignoring stray response");
+        return;
+    }
+
+    char method[16];
+    parse_method(pkt, len, method, sizeof(method));
+
+    if (strcmp(method, "OPTIONS") == 0) {
+        send_response(c, from, pkt, len, 200, "OK");
+    } else {
+        ESP_LOGW(TAG, "method %s not implemented yet", method);
+    }
 }
 
 // ---------------------------------------------------------------------------
