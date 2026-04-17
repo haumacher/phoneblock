@@ -6,6 +6,7 @@ idf_component_register(
         esp-tls
         esp_netif
         esp_event
+        esp_timer
         nvs_flash
         json
         protocol_examples_common

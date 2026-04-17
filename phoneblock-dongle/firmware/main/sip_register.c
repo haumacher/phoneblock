@@ -13,6 +13,7 @@
 #include "esp_log.h"
 #include "esp_random.h"
 #include "esp_netif.h"
+#include "esp_timer.h"
 #include "mbedtls/md5.h"
 
 #include "lwip/sockets.h"
@@ -210,6 +211,19 @@ static int build_register(sip_ctx_t *c, char *buf, int cap, bool with_auth)
     char branch[20], cnonce[20];
     random_hex(branch, 16);
 
+    // Via/Contact advertise where the registrar should reach us. On real
+    // hardware that's the interface IP/UDP port. Inside QEMU user-mode
+    // networking, these have to be overridden to the host-visible address
+    // (host LAN IP + hostfwd port), otherwise the registrar cannot deliver
+    // an incoming INVITE — it would try to connect to 10.0.2.x which only
+    // exists inside the emulator.
+    const char *advertised_host =
+        strlen(CONFIG_SIP_CONTACT_HOST_OVERRIDE) > 0
+            ? CONFIG_SIP_CONTACT_HOST_OVERRIDE : c->local_ip;
+    int advertised_port =
+        CONFIG_SIP_CONTACT_PORT_OVERRIDE != 0
+            ? CONFIG_SIP_CONTACT_PORT_OVERRIDE : SIP_LOCAL_PORT;
+
     char request_uri[96];
     snprintf(request_uri, sizeof(request_uri), "sip:%s", CONFIG_SIP_REGISTRAR_HOST);
 
@@ -225,12 +239,12 @@ static int build_register(sip_ctx_t *c, char *buf, int cap, bool with_auth)
         "Expires: %d\r\n"
         "User-Agent: phoneblock-dongle/0.1\r\n",
         request_uri,
-        c->local_ip, SIP_LOCAL_PORT, branch,
+        advertised_host, advertised_port, branch,
         CONFIG_SIP_USERNAME, CONFIG_SIP_REGISTRAR_HOST, c->from_tag,
         CONFIG_SIP_USERNAME, CONFIG_SIP_REGISTRAR_HOST,
         c->call_id,
         (unsigned long)c->cseq,
-        CONFIG_SIP_USERNAME, c->local_ip, SIP_LOCAL_PORT,
+        CONFIG_SIP_USERNAME, advertised_host, advertised_port,
         CONFIG_SIP_EXPIRES);
 
     if (with_auth && c->challenge.valid) {
@@ -429,13 +443,13 @@ static bool do_register(sip_ctx_t *c)
     bool result = false;
     c->cseq++;
     int tx_len = build_register(c, tx, SIP_TX_BUF_SIZE, false);
-    ESP_LOGD(TAG, "→ initial REGISTER (%d bytes):\n%.*s", tx_len, tx_len, tx);
+    ESP_LOGI(TAG, "→ REGISTER (%d bytes):\n%.*s", tx_len, tx_len, tx);
     int rx_len = udp_send_recv(c, tx, tx_len, rx, SIP_RX_BUF_SIZE);
     if (rx_len < 0) {
         ESP_LOGE(TAG, "udp_send_recv failed");
         goto cleanup;
     }
-    ESP_LOGD(TAG, "← %d bytes:\n%.*s", rx_len, rx_len, rx);
+    ESP_LOGI(TAG, "← %d bytes:\n%.*s", rx_len, rx_len, rx);
 
     int status = parse_status_code(rx, rx_len);
     ESP_LOGI(TAG, "← %d (%d bytes)", status, rx_len);
@@ -469,9 +483,10 @@ static bool do_register(sip_ctx_t *c)
     // Resend with Authorization header.
     c->cseq++;
     tx_len = build_register(c, tx, SIP_TX_BUF_SIZE, true);
-    ESP_LOGD(TAG, "→ REGISTER with auth (%d bytes)", tx_len);
+    ESP_LOGI(TAG, "→ REGISTER with auth (%d bytes):\n%.*s", tx_len, tx_len, tx);
     rx_len = udp_send_recv(c, tx, tx_len, rx, SIP_RX_BUF_SIZE);
     if (rx_len < 0) goto cleanup;
+    ESP_LOGI(TAG, "← %d bytes:\n%.*s", rx_len, rx_len, rx);
 
     status = parse_status_code(rx, rx_len);
     ESP_LOGI(TAG, "← %d (authenticated)", status);
@@ -488,7 +503,43 @@ cleanup:
 }
 
 // ---------------------------------------------------------------------------
-// Task
+// Incoming request handling (step 1: log only)
+// ---------------------------------------------------------------------------
+
+static void handle_incoming(sip_ctx_t *c, const char *pkt, int len,
+                            const struct sockaddr_in *from)
+{
+    char from_ip[INET_ADDRSTRLEN];
+    inet_ntoa_r(from->sin_addr, from_ip, sizeof(from_ip));
+
+    ESP_LOGI(TAG, "← from %s:%d  %d bytes:\n%.*s",
+             from_ip, ntohs(from->sin_port),
+             len, len, pkt);
+}
+
+// ---------------------------------------------------------------------------
+// Task — select-based event loop
+//
+// Reads look like a busy `while (1)`, but it's the opposite: the task sleeps
+// inside select() until either a packet arrives or the deadline hits. select()
+// is a blocking POSIX syscall — while the task waits, FreeRTOS parks it and
+// lets the idle task put the core into `waiti` (low-power wait). The wakeup
+// chain is fully interrupt-driven:
+//
+//     +-----------+     +--------+     +-------+     +----------+
+//     | Ethernet/ | IRQ | lwIP   | msg | socket| sig | SIP task |
+//     | WLAN ISR  |---->| stack  |---->| layer |---->| resumes  |
+//     +-----------+     +--------+     +-------+     +----------+
+//
+// The timeout argument to select() turns the socket-wait into an "X or wall
+// clock" wait: whichever comes first wakes us up. We use that to schedule the
+// REGISTER refresh precisely without a separate timer task — when select()
+// returns 0, the refresh deadline was reached; when it returns > 0, a packet
+// is queued on the socket and we drain it with recvfrom().
+//
+// This shape (receive-forever, with a timeout for periodic work) is the
+// canonical way to write a UDP server under POSIX. No polling, no
+// busy-waits — CPU usage is essentially zero between events.
 // ---------------------------------------------------------------------------
 
 static void sip_task(void *arg)
@@ -507,21 +558,79 @@ static void sip_task(void *arg)
         return;
     }
 
-    const int retry_delay = 30;   // seconds between failed attempts
-    while (1) {
-        bool ok = do_register(&ctx);
-        s_registered = ok;
+    // Clear the recv timeout set by open_sip_socket — we use select() now.
+    struct timeval no_timeout = { .tv_sec = 0, .tv_usec = 0 };
+    setsockopt(ctx.sock, SOL_SOCKET, SO_RCVTIMEO, &no_timeout, sizeof(no_timeout));
 
-        if (ok) {
-            ESP_LOGI(TAG, "REGISTERED as %s@%s (expires %d s)",
-                     CONFIG_SIP_USERNAME, CONFIG_SIP_REGISTRAR_HOST,
-                     CONFIG_SIP_EXPIRES);
-            // Refresh halfway through the expiry window.
-            vTaskDelay(pdMS_TO_TICKS((CONFIG_SIP_EXPIRES / 2) * 1000));
-        } else {
-            ESP_LOGE(TAG, "registration failed, retry in %d s", retry_delay);
-            vTaskDelay(pdMS_TO_TICKS(retry_delay * 1000));
+    const int retry_delay_s = 30;
+    char *rx = NULL;
+    int64_t refresh_at_us = 0;  // absolute deadline for next REGISTER (microseconds)
+
+    // Initial registration.
+    bool ok = do_register(&ctx);
+    s_registered = ok;
+    if (ok) {
+        ESP_LOGI(TAG, "REGISTERED as %s@%s (expires %d s)",
+                 CONFIG_SIP_USERNAME, CONFIG_SIP_REGISTRAR_HOST,
+                 CONFIG_SIP_EXPIRES);
+        refresh_at_us = esp_timer_get_time() + (int64_t)(CONFIG_SIP_EXPIRES / 2) * 1000000LL;
+    } else {
+        ESP_LOGE(TAG, "initial registration failed, retry in %d s", retry_delay_s);
+        refresh_at_us = esp_timer_get_time() + (int64_t)retry_delay_s * 1000000LL;
+    }
+
+    rx = malloc(SIP_RX_BUF_SIZE);
+    if (!rx) {
+        ESP_LOGE(TAG, "malloc rx buffer failed");
+        vTaskDelete(NULL);
+        return;
+    }
+
+    while (1) {
+        int64_t now = esp_timer_get_time();
+        int64_t remaining_us = refresh_at_us - now;
+        if (remaining_us <= 0) remaining_us = 1;
+
+        struct timeval tv = {
+            .tv_sec  = remaining_us / 1000000,
+            .tv_usec = remaining_us % 1000000,
+        };
+        fd_set rfds;
+        FD_ZERO(&rfds);
+        FD_SET(ctx.sock, &rfds);
+
+        int s = select(ctx.sock + 1, &rfds, NULL, NULL, &tv);
+        if (s < 0) {
+            ESP_LOGE(TAG, "select(): %s", strerror(errno));
+            vTaskDelay(pdMS_TO_TICKS(1000));
+            continue;
         }
+
+        if (s == 0) {
+            // Deadline hit → refresh REGISTER.
+            ok = do_register(&ctx);
+            s_registered = ok;
+            if (ok) {
+                ESP_LOGI(TAG, "re-REGISTERED (expires %d s)", CONFIG_SIP_EXPIRES);
+                refresh_at_us = esp_timer_get_time() + (int64_t)(CONFIG_SIP_EXPIRES / 2) * 1000000LL;
+            } else {
+                ESP_LOGE(TAG, "re-REGISTER failed, retry in %d s", retry_delay_s);
+                refresh_at_us = esp_timer_get_time() + (int64_t)retry_delay_s * 1000000LL;
+            }
+            continue;
+        }
+
+        // Incoming packet.
+        struct sockaddr_in from;
+        socklen_t from_len = sizeof(from);
+        int n = recvfrom(ctx.sock, rx, SIP_RX_BUF_SIZE - 1, 0,
+                         (struct sockaddr *)&from, &from_len);
+        if (n < 0) {
+            ESP_LOGW(TAG, "recvfrom(): %s", strerror(errno));
+            continue;
+        }
+        rx[n] = '\0';
+        handle_incoming(&ctx, rx, n, &from);
     }
 }
 

@@ -63,4 +63,25 @@ menu "PhoneBlock Dongle"
             Requested lifetime of the REGISTER binding. The dongle
             refreshes halfway through this interval.
 
+    config SIP_CONTACT_HOST_OVERRIDE
+        string "Override local host in Via/Contact (for NAT debugging)"
+        default ""
+        help
+            When running inside QEMU user-mode networking, the ESP32's
+            local IP (e.g. 10.0.2.15) is only reachable from within the
+            emulator. The Fritz!Box cannot deliver an INVITE to that
+            address. Set this to the host-visible address (typically the
+            workstation's LAN IP, e.g. 192.168.178.22) and combine with
+            `-nic user,model=open_eth,hostfwd=udp::5061-:5061` in QEMU.
+            Leave empty to advertise the actual local interface IP,
+            which is the correct behavior on real hardware.
+
+    config SIP_CONTACT_PORT_OVERRIDE
+        int "Override local SIP port in Via/Contact (0 = no override)"
+        default 0
+        range 0 65535
+        help
+            If the hostfwd maps a different host port to the guest, set
+            it here. 0 means "advertise the bound UDP port".
+
 endmenu
