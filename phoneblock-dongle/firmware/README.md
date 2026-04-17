@@ -1,8 +1,29 @@
 # phoneblock-dongle — Firmware
 
-Hello-World-Firmware für den PhoneBlock-Dongle: verbindet sich ins Netz,
-fragt über die PhoneBlock-API eine Telefonnummer ab und loggt das Ergebnis
-als „SPAM" oder „clean".
+Erste Ausbaustufe der Dongle-Firmware. Nach dem Boot:
+
+1. Netzverbindung aufbauen (Ethernet in QEMU, später WiFi auf Hardware).
+2. Einmaliger Selbsttest gegen die PhoneBlock-API mit der konfigurierten
+   Testnummer.
+3. TCP-Server auf Port **5060** starten, der als Stand-in für den späteren
+   SIP-Empfang dient.
+
+## TCP-Server-Protokoll (Port 5060)
+
+- Pro Verbindung eine Zeile mit einer Telefonnummer + `\n` (optional `\r\n`).
+- Server prüft die Nummer über die PhoneBlock-API und antwortet mit einer
+  Zeile:
+    - `SPAM\n`         — Nummer hat eine oder mehr Spam-Stimmen
+    - `LEGITIMATE\n`   — Nummer ist sauber (0 Stimmen)
+    - `ERROR\n`        — Eingabe ungültig oder API-Fehler
+- Verbindung wird sofort nach der Antwort geschlossen.
+
+Beispiel vom Host aus (nc):
+
+```bash
+echo "01749999999" | nc -N localhost 5060
+# → LEGITIMATE
+```
 
 ## Voraussetzungen
 
@@ -55,7 +76,12 @@ cd phoneblock-dongle/firmware
 
 idf.py set-target esp32
 idf.py build
+
+# Einfache Outbound-Only-Variante (Selbsttest gegen die API):
 idf.py qemu --qemu-extra-args="-nic user,model=open_eth"
+
+# Mit TCP-Port-Forwarding, damit der Host auf den Dummy-Server zugreifen kann:
+idf.py qemu --qemu-extra-args="-nic user,model=open_eth,hostfwd=tcp::5060-:5060"
 ```
 
 Erwartete Ausgabe:
