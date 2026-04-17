@@ -19,6 +19,8 @@
 
 #include "protocol_examples_common.h"
 
+#include "sip_register.h"
+
 static const char *TAG = "phoneblock";
 
 #define RESP_BUF_SIZE 4096
@@ -245,4 +247,5 @@ void app_main(void)
     check_number(CONFIG_PHONEBLOCK_TEST_NUMBER);
 
     xTaskCreate(sip_server_task, "sip_server", 8192, NULL, 5, NULL);
+    sip_register_start();
 }

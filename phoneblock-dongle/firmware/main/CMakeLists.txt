@@ -1,5 +1,5 @@
 idf_component_register(
-    SRCS "main.c"
+    SRCS "main.c" "sip_register.c"
     INCLUDE_DIRS "."
     REQUIRES
         esp_http_client

@@ -19,3 +19,11 @@ CONFIG_ESP_MAIN_TASK_STACK_SIZE=8192
 CONFIG_PHONEBLOCK_BASE_URL="https://phoneblock.net/phoneblock/api"
 CONFIG_PHONEBLOCK_TOKEN=""
 CONFIG_PHONEBLOCK_TEST_NUMBER="030123456"
+
+# SIP: left empty so the registration task skips itself unless configured
+# via sdkconfig.defaults.local or menuconfig.
+CONFIG_SIP_REGISTRAR_HOST=""
+CONFIG_SIP_REGISTRAR_PORT=5060
+CONFIG_SIP_USERNAME=""
+CONFIG_SIP_PASSWORD=""
+CONFIG_SIP_EXPIRES=600

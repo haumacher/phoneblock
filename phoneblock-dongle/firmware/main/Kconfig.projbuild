@@ -32,4 +32,35 @@ menu "PhoneBlock Dongle"
             PhoneBlock storage format (national: 030..., or 00<cc><num>
             for international, e.g. 0015551234567).
 
+    config SIP_REGISTRAR_HOST
+        string "SIP registrar hostname or IP"
+        default ""
+        help
+            Fritz!Box LAN address (typically 192.168.178.1 or
+            "fritz.box"). Leave empty to skip the SIP task entirely.
+
+    config SIP_REGISTRAR_PORT
+        int "SIP registrar port"
+        default 5060
+        range 1 65535
+
+    config SIP_USERNAME
+        string "SIP username"
+        default ""
+        help
+            The internal phone number configured on the Fritz!Box
+            for this IP phone, e.g. "620".
+
+    config SIP_PASSWORD
+        string "SIP password"
+        default ""
+
+    config SIP_EXPIRES
+        int "Registration expiry (seconds)"
+        default 600
+        range 60 86400
+        help
+            Requested lifetime of the REGISTER binding. The dongle
+            refreshes halfway through this interval.
+
 endmenu
