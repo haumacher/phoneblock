@@ -105,23 +105,60 @@ Hardware-Entscheidungsmatrix [HARDWARE.md](HARDWARE.md), QEMU-Setup
   PICO-D4) + `CONFIG_STATUS_LED_ACTIVE_LOW`
 
 ### Provisioning & Deployment
-- [ ] Konfiguration im **NVS** statt Kconfig — eine Firmware für alle
-  Dongles, pro Gerät individuelle SSID/PW/SIP/Token
-- [ ] **Auffindbarkeit per Name** statt per IP. Zielname: `answerbot`
-  (bewusst *nicht* `phoneblock`, kollidiert mental mit der Website).
-  Zwei Mechanismen parallel, jeweils ~10 Zeilen:
+
+**Ziel-UX für die erste Inbetriebnahme** („Oma-tauglich"):
+
+1. Dongle einstecken
+2. Am Router den WPS-/„Neues-Gerät"-Knopf drücken → WLAN konfiguriert sich
+3. Im Browser `http://answerbot/` öffnen
+4. Formular: Fritz!Box-Admin-Passwort (fürs Auto-Provisioning der VoIP-
+   Nebenstelle) + PhoneBlock-Bearer-Token
+5. Dongle legt sich selbst als IP-Telefon bei der Fritz!Box an, registriert
+   sich, fertig
+
+Umsetzungsschritte:
+
+- [ ] **WPS-PBC für WLAN** via `esp_wifi_wps_enable(WPS_TYPE_PBC)` +
+  `esp_wifi_wps_start()`. Beim ersten Boot ohne NVS-WLAN-Credentials
+  aktivieren; nach erfolgreichem Erhalt in NVS speichern.
+- [ ] **Auffindbarkeit per Name `answerbot`** (bewusst *nicht* `phoneblock`,
+  kollidiert mental mit der Website). Zwei Mechanismen parallel,
+  jeweils ~10 Zeilen:
   - DHCP-Hostname via `esp_netif_set_hostname(netif, "answerbot")` —
-    die Fritz!Box übernimmt den Namen in ihren internen DNS, dann
-    funktioniert `http://answerbot/` bzw. `http://answerbot.fritz.box/`
+    Fritz!Box übernimmt den Namen in ihren internen DNS → `http://answerbot/`
   - mDNS/Bonjour via `mdns_init()` + `mdns_hostname_set("answerbot")` —
-    deckt macOS/iOS/Linux/Windows-10-mit-Bonjour ab, Android 12+ teils
+    deckt macOS/iOS/Linux/Windows-10-mit-Bonjour ab
   - Umsetzung erst mit echter Hardware testen (QEMU-Routing verzerrt
     DHCP-Hostname-Rückmeldungen)
-- [ ] Web-UI auf dem Dongle für Nutzer-Konfiguration (SIP-Credentials +
-  PhoneBlock-Token), erreichbar unter `http://answerbot/`. Captive-
-  Portal bewusst *nicht* — zu komplex für Laien.
-- [ ] **OTA-Update** über HTTPS, damit nachgeflasht werden kann ohne
-  physisches Anfassen
+- [ ] **Web-UI auf dem Dongle** unter `http://answerbot/`. Minimal:
+  Statusseite + Konfigurationsformular (Fritz!Box-Login,
+  PhoneBlock-Token). Captive-Portal bewusst *nicht* — zu komplex
+  für Laien.
+- [ ] **Auto-Provisioning der Fritz!Box-Nebenstelle via TR-064**
+  (neues Modul `tr064.{c,h}`, ~470 Zeilen). Ablauf:
+  1. Ad-hoc `POST /upnp/control/x_voip` mit SOAPAction
+     `urn:dslforum-org:service:X_VoIP:1#X_AVM-DE_SetClient4`
+  2. HTTP-Digest-Auth gegen die Fritz!Box (`LANConfigSecurity` bzw.
+     `X_AVM-DE_Auth`-Challenge → SHA-256-Response)
+  3. Argumente: zufälliger `ClientUsername` (`phoneblock-<mac-suffix>`),
+     zufälliges `ClientPassword`, `PhoneName="Answerbot"`,
+     `OutGoingNumber=""`, `InComingNumbers=""`
+  4. Response liefert `NewX_AVM-DE_InternalNumber` zurück
+  5. Dongle speichert (username, password, internal-number) im NVS,
+     startet die bereits existierende REGISTER-Schleife
+  6. Validierungs-Regex für Username/Password kommt aus
+     `X_AVM-DE_GetInfoEx` (`ClientUsernameAllowedChars` etc.)
+  7. **Wichtig**: `SetClient3` setzt `ExternalRegistration` seit 2015
+     nur kosmetisch, echte Internet-Exposure braucht das Web-UI-Form-
+     Wizard-Tamtam — der Dongle ist ein reines LAN-Gerät, brauchen wir
+     nicht. Siehe Kommentar in `fritz_tr64/lib/src/services/voip.dart`.
+  8. Referenzimplementierung: `fritz_tr064` Dart-Library, für den
+     C-Port die dortige `Tr64Client` + `VoIP` + `auth.dart` recyceln.
+- [ ] **Konfiguration im NVS** statt Kconfig — eine Firmware für alle
+  Dongles: SSID/WLAN-PW (aus WPS), SIP-Username/-PW (aus TR-064),
+  PhoneBlock-Token (aus Web-UI-Formular), optional TR-064-Credentials
+  nur flüchtig speichern (nach Provisioning vergessen).
+- [ ] **OTA-Update** über HTTPS
 - [ ] WiFi-Reconnect-Strategie bei Router-Ausfall (Backoff, NVS-
   gepinnte Zugangsdaten)
 - [ ] Feldfeste Fehlerbehandlung: Fritz!Box down, API down, TLS-Fehler,
