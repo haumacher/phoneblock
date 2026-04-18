@@ -99,14 +99,13 @@ menu "PhoneBlock Dongle"
             Fritz!Box phone, without blacklisting a real number.
             Leave disabled in production.
 
-    config RTP_TONE_DURATION_MS
-        int "Duration of the tone played to spam callers (ms)"
-        default 2000
-        range 0 10000
+    config RTP_PLAY_ANNOUNCEMENT
+        bool "Play embedded voice announcement to spam callers"
+        default y
         help
-            After answering a spam call we play a 440 Hz sine tone to the
-            caller for this many milliseconds, then send BYE. 0 disables
-            audio streaming entirely — BYE is sent immediately after ACK,
-            which is what earlier firmware versions did.
+            When enabled, answered spam calls stream the audio file
+            embedded from main/audio/announcement.alaw to the caller
+            (G.711 A-law, 8 kHz, 20 ms frames) before BYE. Disable to
+            send BYE immediately after ACK (silent pickup, old behavior).
 
 endmenu

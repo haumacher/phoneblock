@@ -1,7 +1,5 @@
 #include "rtp.h"
-#include "audio.h"
 
-#include <math.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,36 +11,19 @@
 #include "esp_random.h"
 #include "lwip/sockets.h"
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846
-#endif
-
 static const char *TAG = "rtp";
 
-#define SAMPLE_RATE      8000
 #define FRAME_SAMPLES    160          // 20 ms at 8 kHz
 #define FRAME_BYTES      FRAME_SAMPLES // 1 byte per sample for PCMA
 #define RTP_HEADER_BYTES 12
-#define TONE_FREQ        440
-#define TONE_AMPLITUDE   12000        // ~−8 dBFS, not harsh
 
 typedef struct {
     struct sockaddr_in dest;
-    int duration_ms;
+    const uint8_t *alaw;
+    size_t alaw_bytes;
 } rtp_args_t;
 
-static void fill_tone_frame(double *phase, uint8_t *out_alaw)
-{
-    const double step = 2.0 * M_PI * TONE_FREQ / SAMPLE_RATE;
-    for (int i = 0; i < FRAME_SAMPLES; i++) {
-        int16_t pcm = (int16_t)(sin(*phase) * TONE_AMPLITUDE);
-        out_alaw[i] = pcm_to_alaw(pcm);
-        *phase += step;
-        if (*phase > 2.0 * M_PI) *phase -= 2.0 * M_PI;
-    }
-}
-
-static void rtp_tone_task(void *arg)
+static void rtp_audio_task(void *arg)
 {
     rtp_args_t *a = (rtp_args_t *)arg;
 
@@ -69,19 +50,27 @@ static void rtp_tone_task(void *arg)
     uint32_t timestamp = esp_random();
     uint32_t ssrc      = esp_random();
 
-    int frames = (a->duration_ms + 19) / 20;
+    size_t total_frames = (a->alaw_bytes + FRAME_SAMPLES - 1) / FRAME_SAMPLES;
     char ip[INET_ADDRSTRLEN];
     inet_ntoa_r(a->dest.sin_addr, ip, sizeof(ip));
-    ESP_LOGI(TAG, "stream %d ms (%d frames) → %s:%d, ssrc=%08lx",
-             a->duration_ms, frames, ip, ntohs(a->dest.sin_port),
-             (unsigned long)ssrc);
+    ESP_LOGI(TAG, "stream %u bytes (%u frames ≈ %u ms) → %s:%d, ssrc=%08lx",
+             (unsigned)a->alaw_bytes, (unsigned)total_frames,
+             (unsigned)(total_frames * 20),
+             ip, ntohs(a->dest.sin_port), (unsigned long)ssrc);
 
     uint8_t pkt[RTP_HEADER_BYTES + FRAME_BYTES];
-    double phase = 0.0;
 
     TickType_t next = xTaskGetTickCount();
-    for (int i = 0; i < frames; i++) {
-        fill_tone_frame(&phase, pkt + RTP_HEADER_BYTES);
+    for (size_t off = 0; off < a->alaw_bytes; off += FRAME_SAMPLES) {
+        size_t remaining = a->alaw_bytes - off;
+        size_t payload   = remaining < FRAME_SAMPLES ? remaining : FRAME_SAMPLES;
+
+        memcpy(pkt + RTP_HEADER_BYTES, a->alaw + off, payload);
+        // Pad short final frame with A-law silence (0xD5 = 16-bit PCM 0).
+        if (payload < FRAME_SAMPLES) {
+            memset(pkt + RTP_HEADER_BYTES + payload, 0xD5,
+                   FRAME_SAMPLES - payload);
+        }
 
         pkt[0]  = 0x80;                              // V=2, P=X=0, CC=0
         pkt[1]  = 8;                                 // M=0, PT=8 (PCMA)
@@ -96,7 +85,7 @@ static void rtp_tone_task(void *arg)
         pkt[10] = (uint8_t)(ssrc >> 8);
         pkt[11] = (uint8_t)(ssrc);
 
-        int n = sendto(sock, pkt, sizeof(pkt), 0,
+        int n = sendto(sock, pkt, RTP_HEADER_BYTES + FRAME_SAMPLES, 0,
                        (struct sockaddr *)&a->dest, sizeof(a->dest));
         if (n < 0) {
             ESP_LOGW(TAG, "rtp sendto: %s", strerror(errno));
@@ -115,16 +104,18 @@ done:
     vTaskDelete(NULL);
 }
 
-void rtp_play_tone(const struct sockaddr_in *dest, int duration_ms)
+void rtp_play_audio(const struct sockaddr_in *dest,
+                    const uint8_t *alaw, size_t alaw_bytes)
 {
     rtp_args_t *args = malloc(sizeof(*args));
     if (!args) {
         ESP_LOGE(TAG, "malloc rtp args failed");
         return;
     }
-    args->dest        = *dest;
-    args->duration_ms = duration_ms;
-    if (xTaskCreate(rtp_tone_task, "rtp_tone", 4096, args, 6, NULL) != pdPASS) {
+    args->dest       = *dest;
+    args->alaw       = alaw;
+    args->alaw_bytes = alaw_bytes;
+    if (xTaskCreate(rtp_audio_task, "rtp_audio", 4096, args, 6, NULL) != pdPASS) {
         ESP_LOGE(TAG, "xTaskCreate failed");
         free(args);
     }
