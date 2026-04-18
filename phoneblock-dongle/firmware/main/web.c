@@ -20,16 +20,11 @@ static httpd_handle_t s_server = NULL;
 
 // --- Embedded HTML (placeholder; full UI lands in the next step) ---
 
-static const char PLACEHOLDER_HTML[] =
-    "<!doctype html><html lang=\"de\"><head>"
-    "<meta charset=\"utf-8\"><title>PhoneBlock Dongle</title></head>"
-    "<body><h1>PhoneBlock Dongle</h1>"
-    "<p>Web-UI wird gerade gebaut. Aktuell gibt es nur die JSON-Endpunkte:</p>"
-    "<ul>"
-    "<li><a href=\"/api/status\">GET /api/status</a></li>"
-    "<li><a href=\"/api/calls\">GET /api/calls</a></li>"
-    "<li><a href=\"/api/errors\">GET /api/errors</a></li>"
-    "</ul></body></html>";
+// Embedded via EMBED_FILES in CMakeLists.txt; the linker emits
+// _binary_<file>_<ext>_{start,end} symbols which we alias to friendlier
+// C names.
+extern const uint8_t index_html_start[] asm("_binary_index_html_start");
+extern const uint8_t index_html_end[]   asm("_binary_index_html_end");
 
 // --- Helpers --------------------------------------------------------
 
@@ -71,7 +66,8 @@ static void local_ip_str(char *out, size_t cap)
 static esp_err_t handle_root(httpd_req_t *req)
 {
     httpd_resp_set_type(req, "text/html; charset=utf-8");
-    httpd_resp_send(req, PLACEHOLDER_HTML, HTTPD_RESP_USE_STRLEN);
+    httpd_resp_send(req, (const char *)index_html_start,
+                    index_html_end - index_html_start);
     return ESP_OK;
 }
 
