@@ -107,8 +107,19 @@ Hardware-Entscheidungsmatrix [HARDWARE.md](HARDWARE.md), QEMU-Setup
 ### Provisioning & Deployment
 - [ ] Konfiguration im **NVS** statt Kconfig — eine Firmware für alle
   Dongles, pro Gerät individuelle SSID/PW/SIP/Token
-- [ ] **Captive-Portal** zur Ersteinrichtung (Dongle öffnet WLAN-AP,
-  User konfiguriert per Browser)
+- [ ] **Auffindbarkeit per Name** statt per IP. Zielname: `answerbot`
+  (bewusst *nicht* `phoneblock`, kollidiert mental mit der Website).
+  Zwei Mechanismen parallel, jeweils ~10 Zeilen:
+  - DHCP-Hostname via `esp_netif_set_hostname(netif, "answerbot")` —
+    die Fritz!Box übernimmt den Namen in ihren internen DNS, dann
+    funktioniert `http://answerbot/` bzw. `http://answerbot.fritz.box/`
+  - mDNS/Bonjour via `mdns_init()` + `mdns_hostname_set("answerbot")` —
+    deckt macOS/iOS/Linux/Windows-10-mit-Bonjour ab, Android 12+ teils
+  - Umsetzung erst mit echter Hardware testen (QEMU-Routing verzerrt
+    DHCP-Hostname-Rückmeldungen)
+- [ ] Web-UI auf dem Dongle für Nutzer-Konfiguration (SIP-Credentials +
+  PhoneBlock-Token), erreichbar unter `http://answerbot/`. Captive-
+  Portal bewusst *nicht* — zu komplex für Laien.
 - [ ] **OTA-Update** über HTTPS, damit nachgeflasht werden kann ohne
   physisches Anfassen
 - [ ] WiFi-Reconnect-Strategie bei Router-Ausfall (Backoff, NVS-
