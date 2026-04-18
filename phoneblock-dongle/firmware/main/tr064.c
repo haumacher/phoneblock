@@ -372,8 +372,9 @@ esp_err_t tr064_provision_sip_client(const char *host, int port,
     xml_escape(phone_name ? phone_name : "Answerbot",
                phone_name_esc, sizeof(phone_name_esc));
 
-    char args[768];
-    snprintf(args, sizeof(args),
+    char *args = malloc(768);
+    if (!args) return ESP_ERR_NO_MEM;
+    snprintf(args, 768,
         "<NewX_AVM-DE_ClientIndex>%d</NewX_AVM-DE_ClientIndex>"
         "<NewX_AVM-DE_ClientPassword>%s</NewX_AVM-DE_ClientPassword>"
         "<NewX_AVM-DE_ClientUsername>%s</NewX_AVM-DE_ClientUsername>"
@@ -384,10 +385,11 @@ esp_err_t tr064_provision_sip_client(const char *host, int port,
         num_clients, pass_buf, user_esc, phone_name_esc);
 
     char *resp = malloc(SOAP_RESPONSE_CAP);
-    if (!resp) return ESP_ERR_NO_MEM;
+    if (!resp) { free(args); return ESP_ERR_NO_MEM; }
     err = call_action(url, admin_user, admin_pass,
                       "X_AVM-DE_SetClient4", args,
                       resp, SOAP_RESPONSE_CAP);
+    free(args);
     if (err != ESP_OK) { free(resp); return err; }
 
     char internal_num[16] = "";

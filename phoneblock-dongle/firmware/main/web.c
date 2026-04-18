@@ -541,6 +541,10 @@ void web_start(void)
     httpd_config_t cfg = HTTPD_DEFAULT_CONFIG();
     cfg.server_port = 80;
     cfg.max_uri_handlers = sizeof(URIS) / sizeof(URIS[0]) + 2;
+    // The default 4 KB is too tight once /api/fritzbox-setup → tr064_*
+    // nests through call_action → post_soap → esp_http_client. 8 KB
+    // gives us headroom for the deep call chain without overflows.
+    cfg.stack_size = 8192;
     if (httpd_start(&s_server, &cfg) != ESP_OK) {
         ESP_LOGE(TAG, "httpd_start failed");
         return;
