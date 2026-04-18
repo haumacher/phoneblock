@@ -111,11 +111,11 @@ Hardware-Entscheidungsmatrix [HARDWARE.md](HARDWARE.md), QEMU-Setup
 1. Dongle einstecken
 2. Am Router den WPS-/„Neues-Gerät"-Knopf drücken → WLAN konfiguriert sich
 3. Im Browser `http://answerbot/` öffnen
-4. Formular: Fritz!Box-Admin-Passwort (fürs Auto-Provisioning der VoIP-
-   Nebenstelle) + **Activation Code** (vom Aufkleber auf der Dongle-
-   Verpackung — ersetzt die sonst nötige PhoneBlock-Registrierung)
-5. Dongle legt sich selbst als IP-Telefon bei der Fritz!Box an, aktiviert
-   sich bei phoneblock.net und registriert sich, fertig
+4. Fritz!Box-Admin-Passwort eingeben → Dongle legt sich selbst als
+   IP-Telefon bei der Fritz!Box an
+5. Auf „Bei PhoneBlock anmelden" klicken → OAuth-Redirect holt den
+   Bearer-Token vom PhoneBlock-Server zurück (wie in der Mobile-App)
+6. Fertig — Dongle registriert sich, prüft eingehende Anrufe
 
 Umsetzungsschritte:
 
@@ -131,15 +131,14 @@ Umsetzungsschritte:
     deckt macOS/iOS/Linux/Windows-10-mit-Bonjour ab
   - Umsetzung erst mit echter Hardware testen (QEMU-Routing verzerrt
     DHCP-Hostname-Rückmeldungen)
-- [ ] **Web-UI auf dem Dongle** unter `http://answerbot/`. Minimal:
-  Statusseite + Konfigurationsformular (Fritz!Box-Login +
-  Activation Code). Captive-Portal bewusst *nicht* — zu komplex
-  für Laien.
-- [ ] **Anonyme Registrierung via Activation Code** (siehe
-  „Production-Readiness"-Abschnitt für die Server-Seite): Der Dongle
-  POSTet den vom Nutzer eingegebenen Code + seine ESP32-MAC an
-  `/api/device/activate`, bekommt einen Bearer-Token zurück, legt
-  den im NVS ab. Ersetzt die manuelle Registrierung auf phoneblock.net.
+- [ ] **Web-UI auf dem Dongle** unter `http://answerbot/`. Zwei
+  Haupt-Elemente: Fritz!Box-Einrichtung (ein Feld: Admin-Passwort)
+  und PhoneBlock-Anmeldung (ein Button, der zum OAuth-Flow startet).
+  Captive-Portal bewusst *nicht* — zu komplex für Laien.
+- [ ] **OAuth-Redirect für den PhoneBlock-Token** (siehe
+  „Production-Readiness"-Abschnitt für die Server-Seite). Die Web-UI
+  eröffnet den Redirect, der `/token-callback`-Handler landet den
+  frischen Token im NVS.
 - [ ] **Fritz!Box-Auto-Discovery** statt manueller Eingabe der Registrar-
   Adresse. Neues Modul `discovery.{c,h}`, ~100 Zeilen. Drei-Stufen-Suche:
   1. DNS-Lookup `fritz.box` — Fritz!Boxen exportieren diesen Namen auf
@@ -210,9 +209,10 @@ Umsetzungsschritte:
   allen Dongles:
   - SSID/WLAN-PW (aus WPS)
   - SIP-Username/-PW (aus TR-064-Auto-Provisioning)
-  - PhoneBlock-Bearer-Token (aus Activation-Code-Einlösung)
-  - Fritz!Box-Admin-Passwort und Activation-Code nur flüchtig
-    verwenden, nach erfolgreichem Provisioning *nicht* persistieren.
+  - PhoneBlock-Bearer-Token (aus OAuth-Redirect-Callback)
+  - Fritz!Box-Admin-Passwort nur flüchtig — nach erfolgreichem
+    Provisioning verworfen. Die CSRF-Nonce des OAuth-Flows lebt
+    ausschließlich im RAM für die Dauer der Anmeldung.
 - [ ] **OTA-Update** über HTTPS
 - [ ] WiFi-Reconnect-Strategie bei Router-Ausfall (Backoff, NVS-
   gepinnte Zugangsdaten)
@@ -232,49 +232,57 @@ Umsetzungsschritte:
 ### Production-Readiness
 - [ ] Umzug von Test-Instanz auf `phoneblock.net`-Produktions-API
 
-- [ ] **Anonyme Dongle-Accounts via Activation Codes.** Kernidee:
-  Nutzer, die einen Dongle kaufen, haben damit die Berechtigung zur
-  API-Nutzung „bezahlt" — sie sollen sich nicht noch separat mit
-  E-Mail auf phoneblock.net registrieren müssen.
+- [ ] **Token-Beschaffung via OAuth-Redirect** — derselbe Mechanismus,
+  den die PhoneBlock-Mobile-App schon nutzt, adaptiert auf den
+  Browser-basierten Dongle. **Open-Hardware-freundlich**: jeder kann
+  sich selber einen Dongle bauen, mit identischer Firmware flashen
+  und sich einen Token holen, genau wie ein App-Nutzer. Keine
+  Aufkleber, keine Operator-Koordination, keine Batch-Logistik.
 
-  **Code-Format:** z. B. `APB-X7H4-K9M2-B3QP` — 12 Zeichen aus 32-er
-  Alphabet (ambig-frei: kein 0/O, 1/I/L), ≈ 60 bit Entropie,
-  unratebar, noch abschreibbar. Prefix `APB-` als UI-Heuristik.
+  **Flow:**
+  1. Nutzer öffnet `http://answerbot/`, klickt auf *„Bei PhoneBlock
+     anmelden"*.
+  2. Browser wird auf `https://phoneblock.net/pb/dongle-register?
+     callback=http://answerbot/token-callback&state=<nonce>` geschickt.
+  3. phoneblock.net zeigt Login-Seite (Google/Facebook-OAuth oder
+     Klassik-Registrierung). Wer schon eingeloggt ist, überspringt
+     diesen Schritt komplett.
+  4. Nach erfolgreicher Anmeldung erzeugt der Server einen neuen
+     Bearer-Token, bindet ihn an den Account, und leitet den Browser
+     zurück auf `http://answerbot/token-callback?token=pbt_XXXXX&
+     state=<nonce>`.
+  5. Dongle verifiziert `state` (CSRF), speichert den Token ins NVS,
+     zeigt Erfolgsseite, fertig.
 
-  **Lifecycle eines Codes:**
-  1. Bernhard ruft `POST /admin/activation-codes?count=N` auf (admin-
-     authentifizierter Endpunkt), Server gibt N frische Codes + ihren
-     Hash in `ACTIVATION_CODES` zurück (Status `unused`).
-  2. Bernhard druckt die Codes auf Aufkleber, klebt sie auf die
-     Dongle-Verpackungen, flasht die Dongles mit identischer Firmware.
-  3. Endnutzer tippt Code in der Dongle-Web-UI ein → Dongle POSTet
-     an `/api/device/activate` mit `{ code, chip_mac, firmware_version }`.
-  4. Server verifiziert Hash, prüft Status == `unused`, erzeugt einen
-     anonymen User-Account, bindet Code an `chip_mac`, setzt Status
-     auf `activated`, gibt Bearer-Token zurück.
-  5. Dongle speichert Token in NVS, nutzt ihn für alle weiteren
-     API-Calls.
+  **Serverseitig (PhoneBlock):**
+  - Neuer Endpunkt `/pb/dongle-register` analog zum bestehenden
+    App-Deep-Link-Flow. Whitelist für erlaubte Callback-Schemata:
+    `http://` auf Private-IPs und `.fritz.box`/`.local`-Hostnames
+    (damit `http://answerbot/` und `http://answerbot.fritz.box/`
+    durchgehen, aber keine beliebige externe Site).
+  - Token-Generierung nutzt die existierende Logik der Mobile-App —
+    kein neuer Token-Typ.
+  - Aufwand: ~0,5 Tag Serverseite (neuer Endpunkt, Callback-URL-
+    Validierung, Wiederverwendung der App-OAuth-Maschine).
 
-  **Sicherheits-Eigenschaften:**
-  - Jeder Code ist einmalig benutzbar — ein geleakter Aufkleber =
-    *ein* kompromittierter Account, kein systemischer Schaden.
-  - MAC-Bindung nach Aktivierung: gleicher Code, anderer Chip → 403.
-  - Revocation: Admin-Endpunkt setzt `revoked=true` → assoziierter
-    Bearer-Token wird ungültig. Support-Weg für verlorene Dongles oder
-    Missbrauchsmeldungen.
-  - **Kein Flash-Encryption und kein per-device-Flashen nötig**, weil
-    das Secret erst *nach* Aktivierung im NVS landet und dann
-    per-device einzigartig ist.
+  **Firmwareseitig:**
+  - Web-UI-Button → Redirect auf phoneblock.net mit State-Nonce, die
+    der Dongle vorher im RAM merkt.
+  - Neuer Endpoint `/token-callback` im `web.c`: liest `token` und
+    `state`, verifiziert Nonce, schreibt Token via `config_update()`,
+    antwortet mit Erfolgs-/Fehlerseite.
+  - Aufwand: ~0,5 Tag.
 
-  **Umsetzung:**
-  - Server: Tabelle `ACTIVATION_CODES (code_hash, status, chip_mac,
-    activated_at, revoked, user_id_fk)`, Endpunkte
-    `/admin/activation-codes`, `/api/device/activate`, Admin-UI
-    zum Generieren/Revoken — ~0,5 Tag.
-  - Firmware: HTTP-Call aus der Web-UI, Token in NVS — ~0,5 Tag
-    (läuft parallel zum ohnehin nötigen Web-UI-Flow).
-  - Operativ: Aufkleber-Drucker-Template, Verpackungs-Workflow —
-    ~2 h einmalig.
+  **Vergleich zum verworfenen Activation-Code-Ansatz:**
+  - ✅ Keine Aufkleber-Logistik, keine Code-Batches, keine
+    `ACTIVATION_CODES`-Tabelle.
+  - ✅ Funktioniert für gekaufte *und* selbstgebaute Dongles identisch.
+  - ⚠️ Nutzer braucht einen PhoneBlock-Account — aber derselbe, den
+    er für die Mobile-App eh schon hat. Google-OAuth macht das zu
+    einem Drei-Klick-Vorgang.
+  - ⚠️ Etwas schwerer zu revoken auf Gerät-Ebene: das ist ein
+    regulärer Benutzer-Account, der eine ganze Sammlung an Tokens
+    haben kann. Account-weise Sperrung via bestehendem Account-Management.
 
 - [ ] Optionales Reporting zurück an PhoneBlock (geblockte Calls,
   welche Nummern)
