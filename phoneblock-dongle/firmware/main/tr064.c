@@ -241,7 +241,9 @@ static void build_client_auth(char *out, size_t cap,
 static esp_err_t call_action(const char *url,
                              const char *admin_user, const char *admin_pass,
                              const char *action, const char *args_xml,
-                             char *resp, int resp_cap)
+                             char *resp, int resp_cap,
+                             int *out_err_code,
+                             char *out_err_msg, size_t err_msg_cap)
 {
     char *env = malloc(SOAP_ENVELOPE_CAP);
     if (!env) return ESP_ERR_NO_MEM;
@@ -281,11 +283,21 @@ static esp_err_t call_action(const char *url,
     ESP_LOGI(TAG, "ClientAuth %s → HTTP %d, %d bytes", action, status, (int)strlen(resp));
 
     if (status != 200) {
-        // Typically 503 with faultstring "Unauthenticated" on bad password.
-        char fault[128] = "";
-        xml_find_text(resp, "faultstring", fault, sizeof(fault));
-        ESP_LOGE(TAG, "%s rejected: HTTP %d, fault='%s'\n%s",
-                 action, status, fault, resp);
+        // Typically 503 with faultstring "Unauthenticated" on bad password,
+        // or 500 with UPnPError errorCode (e.g. 866 = 2FA required).
+        char fault[128]     = "";
+        char err_code_s[16] = "";
+        char err_desc[128]  = "";
+        xml_find_text(resp, "faultstring",       fault,      sizeof(fault));
+        xml_find_text(resp, "errorCode",         err_code_s, sizeof(err_code_s));
+        xml_find_text(resp, "errorDescription",  err_desc,   sizeof(err_desc));
+        ESP_LOGE(TAG, "%s rejected: HTTP %d, fault='%s' code=%s desc='%s'\n%s",
+                 action, status, fault, err_code_s, err_desc, resp);
+        if (out_err_code) *out_err_code = atoi(err_code_s);
+        if (out_err_msg && err_msg_cap) {
+            strncpy(out_err_msg, err_desc[0] ? err_desc : fault, err_msg_cap - 1);
+            out_err_msg[err_msg_cap - 1] = '\0';
+        }
         return ESP_FAIL;
     }
     return ESP_OK;
@@ -297,13 +309,16 @@ static esp_err_t call_action(const char *url,
 
 static esp_err_t get_num_clients(const char *url,
                                  const char *admin_user, const char *admin_pass,
-                                 int *out_count)
+                                 int *out_count,
+                                 int *out_err_code,
+                                 char *out_err_msg, size_t err_msg_cap)
 {
     char *resp = malloc(SOAP_RESPONSE_CAP);
     if (!resp) return ESP_ERR_NO_MEM;
     esp_err_t err = call_action(url, admin_user, admin_pass,
                                 "X_AVM-DE_GetNumberOfClients", NULL,
-                                resp, SOAP_RESPONSE_CAP);
+                                resp, SOAP_RESPONSE_CAP,
+                                out_err_code, out_err_msg, err_msg_cap);
     if (err != ESP_OK) { free(resp); return err; }
 
     char count_str[16] = "";
@@ -349,6 +364,8 @@ esp_err_t tr064_provision_sip_client(const char *host, int port,
                                      tr064_sip_result_t *out)
 {
     if (!host || !admin_user || !admin_pass || !out) return ESP_ERR_INVALID_ARG;
+    out->error_code = 0;
+    out->error_message[0] = '\0';
 
     char url[96];
     snprintf(url, sizeof(url), "http://%s:%d" X_VOIP_CONTROL, host, port);
@@ -356,7 +373,9 @@ esp_err_t tr064_provision_sip_client(const char *host, int port,
 
     // 1) Learn the next free client index.
     int num_clients = 0;
-    esp_err_t err = get_num_clients(url, admin_user, admin_pass, &num_clients);
+    esp_err_t err = get_num_clients(url, admin_user, admin_pass, &num_clients,
+                                    &out->error_code,
+                                    out->error_message, sizeof(out->error_message));
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "GetNumberOfClients failed");
         return err;
@@ -397,7 +416,9 @@ esp_err_t tr064_provision_sip_client(const char *host, int port,
     if (!resp) { free(args); return ESP_ERR_NO_MEM; }
     err = call_action(url, admin_user, admin_pass,
                       "X_AVM-DE_SetClient4", args,
-                      resp, SOAP_RESPONSE_CAP);
+                      resp, SOAP_RESPONSE_CAP,
+                      &out->error_code,
+                      out->error_message, sizeof(out->error_message));
     free(args);
     if (err != ESP_OK) { free(resp); return err; }
 

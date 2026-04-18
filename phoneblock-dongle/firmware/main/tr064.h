@@ -15,6 +15,11 @@ typedef struct {
     char sip_user[32];
     char sip_pass[48];
     char internal_number[16];
+    // Filled in on failure: the Fritz!Box's own errorCode + Description
+    // extracted from the UPnPError SOAP fault, so the caller can show a
+    // specific hint to the user ("wrong password", "2FA required", …).
+    int  error_code;         // 0 on success
+    char error_message[128];
 } tr064_sip_result_t;
 
 // Create a new SIP client on the Fritz!Box and return the generated

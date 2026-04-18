@@ -324,7 +324,35 @@ static esp_err_t handle_fritzbox_setup(httpd_req_t *req)
     esp_err_t err = tr064_provision_sip_client(
         fritz_host, 49000, fritz_user, fritz_pass, phone_name, &res);
     if (err != ESP_OK) {
-        send_fail(req, "TR-064-Provisioning fehlgeschlagen — Passwort falsch?");
+        char msg[240];
+        switch (res.error_code) {
+            case 866:
+                snprintf(msg, sizeof(msg),
+                    "Fritz!Box verlangt Zwei-Faktor-Bestaetigung (Code 866). "
+                    "Entweder die Option 'Bestaetigung notwendig' fuer "
+                    "'Telefonie' im Fritz!Box-Benutzerkonto deaktivieren, "
+                    "oder unten im Experten-Modus die SIP-Daten manuell "
+                    "eintragen.");
+                break;
+            case 820:
+            case 402:
+                snprintf(msg, sizeof(msg),
+                    "Fritz!Box lehnt die Argumente ab (Code %d, %s).",
+                    res.error_code, res.error_message);
+                break;
+            case 0:
+                snprintf(msg, sizeof(msg),
+                    "TR-064-Anfrage fehlgeschlagen — Fritz!Box erreichbar? "
+                    "Adresse, Benutzer und Passwort korrekt?");
+                break;
+            default:
+                snprintf(msg, sizeof(msg),
+                    "Fritz!Box-Fehler %d: %s",
+                    res.error_code,
+                    res.error_message[0] ? res.error_message : "(keine Details)");
+                break;
+        }
+        send_fail(req, msg);
         return ESP_OK;
     }
 
