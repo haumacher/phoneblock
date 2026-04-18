@@ -453,7 +453,13 @@ esp_err_t tr064_auth_get_state(const char *host, int port,
                                 NULL, NULL, 0);
     if (err != ESP_OK) { free(resp); return err; }
 
-    if (out_state && state_cap) xml_find_text(resp, "NewState", out_state, state_cap);
+    char state_local[32] = "";
+    xml_find_text(resp, "NewState", state_local, sizeof(state_local));
+    ESP_LOGI(TAG, "2FA state → %s", state_local);
+    if (out_state && state_cap) {
+        strncpy(out_state, state_local, state_cap - 1);
+        out_state[state_cap - 1] = '\0';
+    }
     free(resp);
     return ESP_OK;
 }
