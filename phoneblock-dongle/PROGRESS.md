@@ -257,9 +257,19 @@ Umsetzungsschritte:
   QEMU ohne `--gdb` nicht öffnet. Stattdessen `idf.py qemu --qemu-extra-args=…`
   und Logs auf stdio.
 - **User-mode NAT leitet keine unangeforderten Inbound-Pakete weiter.**
-  Für eingehende SIP-INVITEs ist `hostfwd=udp::5061-:5061` +
-  Via/Contact-Override zwingend. Für den RTP-Rückkanal analog
-  `hostfwd=udp::16000-:16000`.
+  Die drei heute gebrauchten Forwards, zusammen einmalig für bequemes
+  Debugging:
+  ```
+  -nic user,model=open_eth,\
+    hostfwd=udp::5061-:5061,\
+    hostfwd=udp::16000-:16000,\
+    hostfwd=tcp::8080-:80
+  ```
+  - `udp::5061` → eingehende SIP-INVITEs von der Fritz!Box
+  - `udp::16000` → RTP-Rückkanal (nicht funktional, aber Fritz!Box
+    meldet sonst in `X-RTP-Stat` einseitigen Stream)
+  - `tcp::8080` → Zugriff auf die Dongle-Web-UI unter `http://localhost:8080/`
+    (Port 80 im Guest, 8080 auf dem Host, damit man kein sudo braucht)
 - **`CONFIG_SIP_CONTACT_HOST_OVERRIDE` gilt auch für die SDP-`c=`-Zeile.**
   Ohne Override bewirbt der Dongle `10.0.2.15` — eine Adresse, die
   außerhalb QEMUs nicht existiert, und der RTP-Rückweg kommt nie an.

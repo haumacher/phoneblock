@@ -198,9 +198,34 @@ Content-Type: application/sdp
 ...
 ```
 
-Noch kommt keine Antwort zurück — das `handle_incoming` schreibt das
-Paket nur ins Log. Der vollständige Dialog (100 Trying / 180 Ringing /
-200 OK / ACK / BYE) folgt in den nächsten Ausbaustufen.
+Der Dongle antwortet auf eingehende INVITEs mit dem vollständigen
+Dialog: `100 Trying` → Caller-Lookup via PhoneBlock-API → bei Spam
+`200 OK` + SDP + 9,84 s RTP-Ansage + `BYE`, sonst `486 Busy Here`.
+Das komplette Verhalten, inkl. Retransmit-Dedupe, CANCEL-Handling und
+Tonausspielung, landet im gleichen `sip_register.c`.
+
+### 5) Web-UI im Browser öffnen
+
+Der Dongle serviert unter Port 80 ein Status-Dashboard. Mit einem
+TCP-Hostfwd kommt man vom Host-Browser dran:
+
+```bash
+idf.py qemu --qemu-extra-args="-nic user,model=open_eth,\
+  hostfwd=udp::5061-:5061,\
+  hostfwd=udp::16000-:16000,\
+  hostfwd=tcp::8080-:80"
+```
+
+Dann im Browser `http://localhost:8080/` aufrufen. Das Dashboard zeigt:
+
+- SIP-Registrierungsstatus, IP, Uptime, Firmware-Version
+- Zähler (Anrufe gesamt / Spam geblockt / legitim / Fehler)
+- Letzte 10 Anrufe mit Urteil
+- Letzte 10 Fehlermeldungen
+- Konfigurationsformular für SIP- + PhoneBlock-Zugangsdaten. Speichern
+  triggert automatisch einen Re-REGISTER mit den neuen Credentials.
+
+JSON-Endpunkte für Debug: `/api/status`, `/api/calls`, `/api/errors`.
 
 ## Flashen auf echte Hardware (später)
 
