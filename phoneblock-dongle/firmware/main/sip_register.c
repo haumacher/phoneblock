@@ -21,6 +21,7 @@
 
 #include "sdkconfig.h"
 #include "api.h"
+#include "config.h"
 #include "sip_parse.h"
 #include "rtp.h"
 #include "stats.h"
@@ -259,14 +260,14 @@ static void parse_auth_challenge(const char *header_value, auth_challenge_t *out
 // exists inside the emulator.
 static const char *advertised_host(const sip_ctx_t *c)
 {
-    return strlen(CONFIG_SIP_CONTACT_HOST_OVERRIDE) > 0
-               ? CONFIG_SIP_CONTACT_HOST_OVERRIDE : c->local_ip;
+    return strlen(config_contact_host_override()) > 0
+               ? config_contact_host_override() : c->local_ip;
 }
 
 static int advertised_port(void)
 {
-    return CONFIG_SIP_CONTACT_PORT_OVERRIDE != 0
-               ? CONFIG_SIP_CONTACT_PORT_OVERRIDE : SIP_LOCAL_PORT;
+    return config_contact_port_override() != 0
+               ? config_contact_port_override() : SIP_LOCAL_PORT;
 }
 
 static int build_register(sip_ctx_t *c, char *buf, int cap, bool with_auth)
@@ -278,7 +279,7 @@ static int build_register(sip_ctx_t *c, char *buf, int cap, bool with_auth)
     int our_port = advertised_port();
 
     char request_uri[96];
-    snprintf(request_uri, sizeof(request_uri), "sip:%s", CONFIG_SIP_REGISTRAR_HOST);
+    snprintf(request_uri, sizeof(request_uri), "sip:%s", config_sip_host());
 
     int n = snprintf(buf, cap,
         "REGISTER %s SIP/2.0\r\n"
@@ -293,12 +294,12 @@ static int build_register(sip_ctx_t *c, char *buf, int cap, bool with_auth)
         "User-Agent: phoneblock-dongle/0.1\r\n",
         request_uri,
         our_host, our_port, branch,
-        CONFIG_SIP_USERNAME, CONFIG_SIP_REGISTRAR_HOST, c->from_tag,
-        CONFIG_SIP_USERNAME, CONFIG_SIP_REGISTRAR_HOST,
+        config_sip_user(), config_sip_host(), c->from_tag,
+        config_sip_user(), config_sip_host(),
         c->call_id,
         (unsigned long)c->cseq,
-        CONFIG_SIP_USERNAME, our_host, our_port,
-        CONFIG_SIP_EXPIRES);
+        config_sip_user(), our_host, our_port,
+        config_sip_expires());
 
     if (with_auth && c->challenge.valid) {
         char response[33];
@@ -307,7 +308,7 @@ static int build_register(sip_ctx_t *c, char *buf, int cap, bool with_auth)
         random_hex(cnonce, 16);
 
         digest_response(
-            CONFIG_SIP_USERNAME, CONFIG_SIP_PASSWORD,
+            config_sip_user(), config_sip_pass(),
             c->challenge.realm, c->challenge.nonce,
             "REGISTER", request_uri,
             qop, nc, cnonce,
@@ -316,7 +317,7 @@ static int build_register(sip_ctx_t *c, char *buf, int cap, bool with_auth)
         n += snprintf(buf + n, cap - n,
             "Authorization: Digest username=\"%s\", realm=\"%s\", "
             "nonce=\"%s\", uri=\"%s\", response=\"%s\", algorithm=%s",
-            CONFIG_SIP_USERNAME, c->challenge.realm,
+            config_sip_user(), c->challenge.realm,
             c->challenge.nonce, request_uri,
             response, c->challenge.algorithm);
 
@@ -368,11 +369,11 @@ static bool resolve_registrar(sip_ctx_t *c)
     struct addrinfo *res = NULL;
 
     char port_str[8];
-    snprintf(port_str, sizeof(port_str), "%d", CONFIG_SIP_REGISTRAR_PORT);
+    snprintf(port_str, sizeof(port_str), "%d", config_sip_port());
 
-    int err = getaddrinfo(CONFIG_SIP_REGISTRAR_HOST, port_str, &hints, &res);
+    int err = getaddrinfo(config_sip_host(), port_str, &hints, &res);
     if (err != 0 || !res) {
-        ESP_LOGE(TAG, "DNS lookup of %s failed: %d", CONFIG_SIP_REGISTRAR_HOST, err);
+        ESP_LOGE(TAG, "DNS lookup of %s failed: %d", config_sip_host(), err);
         return false;
     }
     memcpy(&c->registrar, res->ai_addr, sizeof(c->registrar));
@@ -380,8 +381,8 @@ static bool resolve_registrar(sip_ctx_t *c)
 
     char ip[INET_ADDRSTRLEN];
     inet_ntoa_r(c->registrar.sin_addr, ip, sizeof(ip));
-    ESP_LOGI(TAG, "registrar %s:%d → %s", CONFIG_SIP_REGISTRAR_HOST,
-             CONFIG_SIP_REGISTRAR_PORT, ip);
+    ESP_LOGI(TAG, "registrar %s:%d → %s", config_sip_host(),
+             config_sip_port(), ip);
     return true;
 }
 
@@ -580,7 +581,7 @@ static int build_response(sip_ctx_t *c, const char *req, int req_len,
         "Contact: <sip:%s@%s:%d>\r\n"
         "Allow: INVITE, ACK, CANCEL, BYE, OPTIONS\r\n"
         "User-Agent: phoneblock-dongle/0.1\r\n",
-        CONFIG_SIP_USERNAME, advertised_host(c), advertised_port());
+        config_sip_user(), advertised_host(c), advertised_port());
 
     if (body_len > 0) {
         n += snprintf(out + n, out_cap - n,
@@ -706,11 +707,11 @@ static int build_bye(sip_ctx_t *c, char *buf, int cap)
         "Content-Length: 0\r\n\r\n",
         d->remote_uri,
         our_host, our_port, branch,
-        CONFIG_SIP_USERNAME, advertised_host(c), our_port, d->our_tag,
+        config_sip_user(), advertised_host(c), our_port, d->our_tag,
         d->remote_uri, d->from_tag,
         d->call_id,
         (unsigned long)d->out_cseq,
-        CONFIG_SIP_USERNAME, our_host, our_port);
+        config_sip_user(), our_host, our_port);
 }
 
 static void send_bye(sip_ctx_t *c)
@@ -1064,9 +1065,9 @@ static void sip_task(void *arg)
     stats_record_sip_state(ok);
     if (ok) {
         ESP_LOGI(TAG, "REGISTERED as %s@%s (expires %d s)",
-                 CONFIG_SIP_USERNAME, CONFIG_SIP_REGISTRAR_HOST,
-                 CONFIG_SIP_EXPIRES);
-        refresh_at_us = esp_timer_get_time() + (int64_t)(CONFIG_SIP_EXPIRES / 2) * 1000000LL;
+                 config_sip_user(), config_sip_host(),
+                 config_sip_expires());
+        refresh_at_us = esp_timer_get_time() + (int64_t)(config_sip_expires() / 2) * 1000000LL;
     } else {
         ESP_LOGE(TAG, "initial registration failed, retry in %d s", retry_delay_s);
         stats_record_error("sip", "initial REGISTER failed");
@@ -1123,8 +1124,8 @@ static void sip_task(void *arg)
             s_registered = ok;
             stats_record_sip_state(ok);
             if (ok) {
-                ESP_LOGI(TAG, "re-REGISTERED (expires %d s)", CONFIG_SIP_EXPIRES);
-                refresh_at_us = esp_timer_get_time() + (int64_t)(CONFIG_SIP_EXPIRES / 2) * 1000000LL;
+                ESP_LOGI(TAG, "re-REGISTERED (expires %d s)", config_sip_expires());
+                refresh_at_us = esp_timer_get_time() + (int64_t)(config_sip_expires() / 2) * 1000000LL;
             } else {
                 ESP_LOGE(TAG, "re-REGISTER failed, retry in %d s", retry_delay_s);
                 stats_record_error("sip", "re-REGISTER failed");
@@ -1149,13 +1150,13 @@ static void sip_task(void *arg)
 
 void sip_register_start(void)
 {
-    if (strlen(CONFIG_SIP_REGISTRAR_HOST) == 0 ||
-        strlen(CONFIG_SIP_USERNAME) == 0 ||
-        strlen(CONFIG_SIP_PASSWORD) == 0) {
+    if (strlen(config_sip_host()) == 0 ||
+        strlen(config_sip_user()) == 0 ||
+        strlen(config_sip_pass()) == 0) {
         ESP_LOGW(TAG, "SIP config incomplete, skipping registration");
         return;
     }
     ESP_LOGI(TAG, "starting SIP registrar task (host=%s user=%s)",
-             CONFIG_SIP_REGISTRAR_HOST, CONFIG_SIP_USERNAME);
+             config_sip_host(), config_sip_user());
     xTaskCreate(sip_task, "sip_register", 8192, NULL, 5, NULL);
 }

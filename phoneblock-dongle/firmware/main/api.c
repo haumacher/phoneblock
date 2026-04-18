@@ -10,7 +10,7 @@
 #include "esp_timer.h"
 #include "cJSON.h"
 
-#include "sdkconfig.h"
+#include "config.h"
 #include "stats.h"
 
 static const char *TAG = "api";
@@ -45,10 +45,10 @@ verdict_t phoneblock_check(const char *phone_number)
 
     char url[256];
     snprintf(url, sizeof(url), "%s/num/%s?format=json",
-             CONFIG_PHONEBLOCK_BASE_URL, phone_number);
+             config_phoneblock_base_url(), phone_number);
 
     char auth_header[128];
-    snprintf(auth_header, sizeof(auth_header), "Bearer %s", CONFIG_PHONEBLOCK_TOKEN);
+    snprintf(auth_header, sizeof(auth_header), "Bearer %s", config_phoneblock_token());
 
     response_buffer_t resp = {
         .data = calloc(1, RESP_BUF_SIZE),

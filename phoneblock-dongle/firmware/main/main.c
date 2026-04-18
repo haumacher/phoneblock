@@ -17,6 +17,7 @@
 #include "protocol_examples_common.h"
 
 #include "api.h"
+#include "config.h"
 #include "sip_register.h"
 #include "stats.h"
 
@@ -136,17 +137,18 @@ void app_main(void)
     ESP_ERROR_CHECK(esp_event_loop_create_default());
 
     stats_setup();
+    config_load();
 
     ESP_ERROR_CHECK(example_connect());
 
-    if (strlen(CONFIG_PHONEBLOCK_TOKEN) == 0) {
-        ESP_LOGE(TAG, "CONFIG_PHONEBLOCK_TOKEN is empty — run idf.py menuconfig");
+    if (strlen(config_phoneblock_token()) == 0) {
+        ESP_LOGE(TAG, "PhoneBlock token empty — configure via web UI or sdkconfig.defaults.local");
         return;
     }
 
     // Sanity query at startup to verify API connectivity.
     ESP_LOGI(TAG, "initial self-test query");
-    phoneblock_check(CONFIG_PHONEBLOCK_TEST_NUMBER);
+    phoneblock_check(config_phoneblock_test_number());
 
     xTaskCreate(sip_server_task, "sip_server", 8192, NULL, 5, NULL);
     sip_register_start();
