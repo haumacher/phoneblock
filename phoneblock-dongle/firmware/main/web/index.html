@@ -37,6 +37,9 @@
   input{width:100%;padding:.4rem;border:1px solid #ccc;border-radius:4px;
         font-size:.95rem;font-family:inherit}
   input:read-only{background:#fafafa;color:#555}
+  .btn-primary{background:#1a73e8;color:#fff;border:0;padding:.55rem 1.2rem;
+               border-radius:4px;font-size:1rem;cursor:pointer;font-family:inherit}
+  .btn-primary:disabled{background:#aaa;cursor:wait}
   footer{text-align:center;color:#888;font-size:.8rem;padding:1rem}
   footer a{color:#888}
 </style>
@@ -75,29 +78,55 @@
 </section>
 
 <section>
-  <h2>Konfiguration</h2>
-  <form id="cfg">
-    <label>SIP-Registrar (Fritz!Box, IP oder „fritz.box")
-      <input type="text" id="sipHost" name="sip_host"></label>
-    <label>SIP-Port
-      <input type="number" id="sipPort" name="sip_port" min="1" max="65535"></label>
-    <label>SIP-Benutzer
-      <input type="text" id="sipUser" name="sip_user"></label>
-    <label>SIP-Passwort <span class="muted">(leer lassen → unverändert)</span>
-      <input type="password" id="sipPass" name="sip_pass" autocomplete="off"></label>
-    <label>PhoneBlock-Server
-      <input type="url" id="pbUrl" name="pb_url"></label>
-    <label>PhoneBlock-Token <span class="muted">(leer lassen → unverändert)</span>
-      <input type="password" id="pbToken" name="pb_token" autocomplete="off"></label>
+  <h2>Fritz!Box-Einrichtung</h2>
+  <p class="muted">
+    Der Dongle richtet sich automatisch als IP-Telefon an deiner
+    Fritz!Box ein. Dazu braucht er einmalig dein Fritz!Box-Admin-Passwort —
+    es wird <strong>nicht</strong> gespeichert.
+  </p>
+  <form id="fb">
+    <label>Fritz!Box (Host oder IP)
+      <input type="text" id="fbHost" name="fritz_host" value="fritz.box"></label>
+    <label>Benutzer <span class="muted">(meist „admin")</span>
+      <input type="text" id="fbUser" name="fritz_user" value="admin"></label>
+    <label>Passwort
+      <input type="password" id="fbPass" name="fritz_pass" required autocomplete="off"></label>
     <p style="margin-top:.8rem">
-      <button type="submit"
-              style="background:#1a73e8;color:#fff;border:0;padding:.55rem 1.2rem;
-                     border-radius:4px;font-size:1rem;cursor:pointer">
-        Speichern
-      </button>
-      <span id="cfgMsg" class="muted" style="margin-left:.6rem"></span>
+      <button type="submit" class="btn-primary">Nebenstelle einrichten</button>
+      <span id="fbMsg" class="muted" style="margin-left:.6rem"></span>
     </p>
   </form>
+</section>
+
+<section>
+  <h2 style="display:flex;align-items:center;justify-content:space-between;cursor:pointer"
+      onclick="toggleExpert()">
+    <span>Manuelle Konfiguration</span>
+    <span id="expertChevron" style="font-size:.75rem;color:#888">▸ anzeigen</span>
+  </h2>
+  <div id="expertBody" style="display:none">
+    <p class="muted">Für Setups ohne TR-064 oder bei bereits angelegter
+      Nebenstelle. Die Felder überschreiben die Werte aus der Fritz!Box-
+      Einrichtung. Passwörter leer lassen heißt „unverändert".</p>
+    <form id="cfg">
+      <label>SIP-Registrar
+        <input type="text" id="sipHost" name="sip_host"></label>
+      <label>SIP-Port
+        <input type="number" id="sipPort" name="sip_port" min="1" max="65535"></label>
+      <label>SIP-Benutzer
+        <input type="text" id="sipUser" name="sip_user"></label>
+      <label>SIP-Passwort
+        <input type="password" id="sipPass" name="sip_pass" autocomplete="off"></label>
+      <label>PhoneBlock-Server
+        <input type="url" id="pbUrl" name="pb_url"></label>
+      <label>PhoneBlock-Token
+        <input type="password" id="pbToken" name="pb_token" autocomplete="off"></label>
+      <p style="margin-top:.8rem">
+        <button type="submit" class="btn-primary">Speichern</button>
+        <span id="cfgMsg" class="muted" style="margin-left:.6rem"></span>
+      </p>
+    </form>
+  </div>
 </section>
 
 </main>
@@ -152,33 +181,63 @@ async function refreshStatus(){
   }
 }
 
-$("cfg").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const msg = $("cfgMsg");
-  msg.textContent = "Speichere…";
-  msg.style.color = "#888";
-  const form = new FormData(e.target);
+function toggleExpert(){
+  const body = $("expertBody");
+  const chev = $("expertChevron");
+  const show = body.style.display === "none";
+  body.style.display = show ? "block" : "none";
+  chev.textContent  = show ? "▾ ausblenden" : "▸ anzeigen";
+}
+
+async function postForm(url, form, msgEl){
+  msgEl.textContent = "Wird gesendet…";
+  msgEl.style.color = "#888";
   const body = new URLSearchParams();
-  for (const [k, v] of form.entries()) body.append(k, v);
+  for (const [k, v] of new FormData(form).entries()) body.append(k, v);
   try {
-    const r = await fetch("/api/config", {
+    const r = await fetch(url, {
       method: "POST",
       headers: {"Content-Type": "application/x-www-form-urlencoded"},
       body: body.toString(),
     });
     const d = await r.json().catch(() => ({}));
-    if (r.ok && d.ok){
-      msg.textContent = d.message || "Gespeichert.";
-      msg.style.color = "#188038";
-      // Clear the password fields so they don't linger.
-      $("sipPass").value = "";
-      $("pbToken").value = "";
-    } else {
-      msg.textContent = "Fehler: " + (d.message || r.statusText);
-      msg.style.color = "#d93025";
-    }
+    return { ok: r.ok && d.ok, data: d, statusText: r.statusText };
   } catch (err) {
-    msg.textContent = "Netzwerkfehler";
+    return { ok: false, data: {}, statusText: "Netzwerkfehler" };
+  }
+}
+
+$("fb").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const msg = $("fbMsg");
+  const btn = e.target.querySelector("button");
+  btn.disabled = true;
+  msg.textContent = "Richte Nebenstelle ein (~2–5 s)…";
+  msg.style.color = "#888";
+  const r = await postForm("/api/fritzbox-setup", e.target, msg);
+  btn.disabled = false;
+  if (r.ok){
+    msg.innerHTML = r.data.message
+      + (r.data.internal_number ? ` (Interne Nummer <strong>${esc(r.data.internal_number)}</strong>)` : "");
+    msg.style.color = "#188038";
+    $("fbPass").value = "";
+  } else {
+    msg.textContent = "Fehler: " + (r.data.message || r.statusText);
+    msg.style.color = "#d93025";
+  }
+});
+
+$("cfg").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const msg = $("cfgMsg");
+  const r = await postForm("/api/config", e.target, msg);
+  if (r.ok){
+    msg.textContent = r.data.message || "Gespeichert.";
+    msg.style.color = "#188038";
+    $("sipPass").value = "";
+    $("pbToken").value = "";
+  } else {
+    msg.textContent = "Fehler: " + (r.data.message || r.statusText);
     msg.style.color = "#d93025";
   }
 });

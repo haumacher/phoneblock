@@ -14,6 +14,7 @@
 #include "config.h"
 #include "sip_register.h"
 #include "stats.h"
+#include "tr064.h"
 
 static const char *TAG = "web";
 
@@ -255,6 +256,93 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     return ESP_OK;
 }
 
+// Receive up to `cap` bytes from the request body into `buf`.
+// Returns bytes read, or a negative error code. NUL-terminates.
+static int recv_body(httpd_req_t *req, char *buf, int cap)
+{
+    int total = req->content_len;
+    if (total <= 0 || total > cap - 1) return -1;
+    int got = 0;
+    while (got < total) {
+        int n = httpd_req_recv(req, buf + got, total - got);
+        if (n <= 0) return -1;
+        got += n;
+    }
+    buf[got] = '\0';
+    return got;
+}
+
+static void send_fail(httpd_req_t *req, const char *message)
+{
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddBoolToObject(root, "ok", false);
+    cJSON_AddStringToObject(root, "message", message);
+    httpd_resp_set_status(req, "400 Bad Request");
+    send_json(req, root);
+}
+
+// POST /api/fritzbox-setup
+// Body (URL-encoded): fritz_host=…&fritz_user=…&fritz_pass=…&phone_name=…
+// Runs tr064_provision_sip_client; on success, stores the generated
+// SIP credentials (plus the registrar host) via config_update() and
+// triggers sip_register_request_reload() so the dongle registers
+// with the new identity right away.
+static esp_err_t handle_fritzbox_setup(httpd_req_t *req)
+{
+    char body[512];
+    if (recv_body(req, body, sizeof(body)) < 0) {
+        send_fail(req, "Body fehlt oder zu groß");
+        return ESP_OK;
+    }
+
+    char fritz_host[64]  = "";
+    char fritz_user[32]  = "";
+    char fritz_pass[64]  = "";
+    char phone_name[48]  = "";
+    form_get(body, "fritz_host", fritz_host, sizeof(fritz_host));
+    form_get(body, "fritz_user", fritz_user, sizeof(fritz_user));
+    form_get(body, "fritz_pass", fritz_pass, sizeof(fritz_pass));
+    form_get(body, "phone_name", phone_name, sizeof(phone_name));
+
+    if (!fritz_host[0]) strncpy(fritz_host, "fritz.box", sizeof(fritz_host) - 1);
+    if (!fritz_user[0]) strncpy(fritz_user, "admin", sizeof(fritz_user) - 1);
+    if (!phone_name[0]) strncpy(phone_name, "Answerbot", sizeof(phone_name) - 1);
+    if (!fritz_pass[0]) {
+        send_fail(req, "Fritz!Box-Passwort fehlt");
+        return ESP_OK;
+    }
+
+    tr064_sip_result_t res;
+    memset(&res, 0, sizeof(res));
+    esp_err_t err = tr064_provision_sip_client(
+        fritz_host, 49000, fritz_user, fritz_pass, phone_name, &res);
+    if (err != ESP_OK) {
+        send_fail(req, "TR-064-Provisioning fehlgeschlagen — Passwort falsch?");
+        return ESP_OK;
+    }
+
+    // Commit generated SIP credentials + registrar to NVS.
+    config_update_t u = {
+        .sip_host = fritz_host,
+        .sip_port = 5060,
+        .sip_user = res.sip_user,
+        .sip_pass = res.sip_pass,
+    };
+    if (config_update(&u) != ESP_OK) {
+        send_fail(req, "NVS-Schreibfehler");
+        return ESP_OK;
+    }
+    sip_register_request_reload();
+
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddBoolToObject(root, "ok", true);
+    cJSON_AddStringToObject(root, "message", "Nebenstelle eingerichtet, Anmeldung läuft");
+    cJSON_AddStringToObject(root, "sip_user", res.sip_user);
+    cJSON_AddStringToObject(root, "internal_number", res.internal_number);
+    send_json(req, root);
+    return ESP_OK;
+}
+
 static esp_err_t handle_errors(httpd_req_t *req)
 {
     stats_error_t errs[STATS_MAX_ERRORS];
@@ -281,7 +369,8 @@ static const httpd_uri_t URIS[] = {
     { .uri = "/api/status",  .method = HTTP_GET,  .handler = handle_status,      .user_ctx = NULL },
     { .uri = "/api/calls",   .method = HTTP_GET,  .handler = handle_calls,       .user_ctx = NULL },
     { .uri = "/api/errors",  .method = HTTP_GET,  .handler = handle_errors,      .user_ctx = NULL },
-    { .uri = "/api/config",  .method = HTTP_POST, .handler = handle_config_post, .user_ctx = NULL },
+    { .uri = "/api/config",          .method = HTTP_POST, .handler = handle_config_post,    .user_ctx = NULL },
+    { .uri = "/api/fritzbox-setup",  .method = HTTP_POST, .handler = handle_fritzbox_setup, .user_ctx = NULL },
 };
 
 void web_start(void)
