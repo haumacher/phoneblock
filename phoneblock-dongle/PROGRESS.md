@@ -140,6 +140,30 @@ Umsetzungsschritte:
   POSTet den vom Nutzer eingegebenen Code + seine ESP32-MAC an
   `/api/device/activate`, bekommt einen Bearer-Token zurück, legt
   den im NVS ab. Ersetzt die manuelle Registrierung auf phoneblock.net.
+- [ ] **Fritz!Box-Auto-Discovery** statt manueller Eingabe der Registrar-
+  Adresse. Neues Modul `discovery.{c,h}`, ~100 Zeilen. Drei-Stufen-Suche:
+  1. DNS-Lookup `fritz.box` — Fritz!Boxen exportieren diesen Namen auf
+     ihrem internen DNS, sofortiger Treffer in intakten Setups.
+  2. DHCP-Gateway als Fallback — die IP, die der Dongle bei der
+     Adresszuteilung als Default-Route bekommen hat, *ist* per Definition
+     der Router-Kandidat.
+  3. Jeder Kandidat wird mit `GET http://<ip>:49000/tr64desc.xml`
+     verifiziert; das XML muss `<manufacturer>AVM Berlin</manufacturer>`
+     enthalten, sonst verworfen.
+
+  **Mehrere Fritz!Boxen im Netz:** In praktisch allen realen Setups
+  unproblematisch — im AVM-Mesh kennt nur der Master den SIP-Registrar,
+  und der DHCP-Gateway zeigt genau auf diesen. Für den echten Edge-Case
+  (zwei unabhängige AVM-Boxen auf demselben Subnetz) liefert
+  SSDP-M-SEARCH mit `ST: urn:schemas-upnp-org:device:InternetGatewayDevice:1`
+  eine Liste → Web-UI fragt den Nutzer.
+
+  Wird in `config_load()` aufgerufen, wenn `sip_host` im NVS leer ist;
+  der Treffer wird dort persistiert und ersetzt die manuelle Eingabe
+  im Formular. Umsetzung erst mit echter Hardware — QEMUs
+  User-mode-Netzwerk simuliert keinen sinnvollen Gateway/DNS-Raum, in
+  dem Auto-Discovery verifizierbar wäre.
+
 - [ ] **Auto-Provisioning der Fritz!Box-Nebenstelle via TR-064**
   (neues Modul `tr064.{c,h}`, ~470 Zeilen). Ablauf:
   1. Ad-hoc `POST /upnp/control/x_voip` mit SOAPAction
