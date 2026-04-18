@@ -255,17 +255,18 @@ static esp_err_t call_action(const char *url,
     int status = 0;
     esp_err_t err = post_soap(url, soap_action, env, resp, resp_cap, &status);
     if (err != ESP_OK) { free(env); return err; }
-    ESP_LOGD(TAG, "InitChallenge %s → HTTP %d, %d bytes", action, status, (int)strlen(resp));
+    ESP_LOGI(TAG, "InitChallenge %s → HTTP %d, %d bytes", action, status, (int)strlen(resp));
 
     char nonce[64] = "";
     char realm[64] = "";
     if (xml_find_text(resp, "Nonce", nonce, sizeof(nonce)) < 0
         || xml_find_text(resp, "Realm", realm, sizeof(realm)) < 0) {
-        ESP_LOGE(TAG, "%s: no Nonce/Realm in InitChallenge response (HTTP %d)",
-                 action, status);
+        ESP_LOGE(TAG, "%s: no Nonce/Realm in InitChallenge response (HTTP %d):\n%s",
+                 action, status, resp);
         free(env);
         return ESP_FAIL;
     }
+    ESP_LOGI(TAG, "%s challenge: realm=\"%s\" nonce=\"%s\"", action, realm, nonce);
 
     // --- Step 2: ClientAuth with computed response ---
     char auth_hex[33];
@@ -277,13 +278,14 @@ static esp_err_t call_action(const char *url,
     err = post_soap(url, soap_action, env, resp, resp_cap, &status);
     free(env);
     if (err != ESP_OK) return err;
-    ESP_LOGD(TAG, "ClientAuth %s → HTTP %d, %d bytes", action, status, (int)strlen(resp));
+    ESP_LOGI(TAG, "ClientAuth %s → HTTP %d, %d bytes", action, status, (int)strlen(resp));
 
     if (status != 200) {
         // Typically 503 with faultstring "Unauthenticated" on bad password.
         char fault[128] = "";
         xml_find_text(resp, "faultstring", fault, sizeof(fault));
-        ESP_LOGE(TAG, "%s rejected: HTTP %d, fault='%s'", action, status, fault);
+        ESP_LOGE(TAG, "%s rejected: HTTP %d, fault='%s'\n%s",
+                 action, status, fault, resp);
         return ESP_FAIL;
     }
     return ESP_OK;
@@ -305,9 +307,9 @@ static esp_err_t get_num_clients(const char *url,
     if (err != ESP_OK) { free(resp); return err; }
 
     char count_str[16] = "";
-    if (xml_find_text(resp, "NewX_AVM-DE_ClientNumber", count_str, sizeof(count_str)) < 0
-        && xml_find_text(resp, "NewX_AVM-DE_ClientIndex", count_str, sizeof(count_str)) < 0) {
-        ESP_LOGE(TAG, "GetNumberOfClients: no count in response");
+    if (xml_find_text(resp, "NewX_AVM-DE_NumberOfClients",
+                      count_str, sizeof(count_str)) < 0) {
+        ESP_LOGE(TAG, "GetNumberOfClients: no count in response:\n%s", resp);
         free(resp);
         return ESP_FAIL;
     }
