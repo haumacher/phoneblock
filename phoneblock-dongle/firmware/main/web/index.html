@@ -227,6 +227,40 @@ async function postForm(url, form, msgEl){
   }
 }
 
+function render2FAInstructions(methods){
+  const hints = [];
+  if (/\bbutton\b/.test(methods)) hints.push("beliebigen Knopf an der Fritz!Box drücken");
+  const dtmf = methods.match(/dtmf;(\S+)/);
+  if (dtmf) hints.push(`Folge <code>${esc(dtmf[1])}</code> an einem angeschlossenen Telefon wählen`);
+  return hints.length ? hints.join(" oder ") : "Bestätigung am Router abwarten";
+}
+
+async function poll2FA(msgEl, btn){
+  const deadline = Date.now() + 130 * 1000;
+  while (Date.now() < deadline){
+    await new Promise(r => setTimeout(r, 2000));
+    const r = await fetchJson("/api/fritzbox-2fa-status");
+    if (!r){ continue; }
+    if (r.ok){
+      msgEl.innerHTML = r.message
+        + (r.internal_number ? ` (Interne Nummer <strong>${esc(r.internal_number)}</strong>)` : "");
+      msgEl.style.color = "#188038";
+      btn.disabled = false;
+      return;
+    }
+    if (r.terminal){
+      msgEl.textContent = "Fehler: " + (r.message || "2FA abgebrochen.");
+      msgEl.style.color = "#d93025";
+      btn.disabled = false;
+      return;
+    }
+    // still waiting — leave the instructions text as-is
+  }
+  msgEl.textContent = "Zeitüberschreitung. Bitte erneut versuchen.";
+  msgEl.style.color = "#d93025";
+  btn.disabled = false;
+}
+
 $("fb").addEventListener("submit", async (e) => {
   e.preventDefault();
   const msg = $("fbMsg");
@@ -235,15 +269,24 @@ $("fb").addEventListener("submit", async (e) => {
   msg.textContent = "Richte Nebenstelle ein (~2–5 s)…";
   msg.style.color = "#888";
   const r = await postForm("/api/fritzbox-setup", e.target, msg);
-  btn.disabled = false;
   if (r.ok){
     msg.innerHTML = r.data.message
       + (r.data.internal_number ? ` (Interne Nummer <strong>${esc(r.data.internal_number)}</strong>)` : "");
     msg.style.color = "#188038";
     $("fbPass").value = "";
+    btn.disabled = false;
+  } else if (r.data && r.data.two_factor){
+    $("fbPass").value = "";
+    msg.innerHTML = "Zwei-Faktor-Bestätigung: bitte jetzt "
+                  + render2FAInstructions(r.data.methods || "");
+    msg.style.color = "#e8710a";
+    // Keep button disabled and poll /api/fritzbox-2fa-status until
+    // authenticated or timeout.
+    await poll2FA(msg, btn);
   } else {
     msg.textContent = "Fehler: " + (r.data.message || r.statusText);
     msg.style.color = "#d93025";
+    btn.disabled = false;
   }
 });
 

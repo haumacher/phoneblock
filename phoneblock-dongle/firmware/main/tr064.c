@@ -14,6 +14,8 @@ static const char *TAG = "tr064";
 
 #define X_VOIP_SERVICE   "urn:dslforum-org:service:X_VoIP:1"
 #define X_VOIP_CONTROL   "/upnp/control/x_voip"
+#define X_AUTH_SERVICE   "urn:dslforum-org:service:X_AVM-DE_Auth:1"
+#define X_AUTH_CONTROL   "/upnp/control/x_auth"
 
 #define SOAP_ENVELOPE_CAP 2048
 #define SOAP_RESPONSE_CAP 4096
@@ -192,11 +194,25 @@ static esp_err_t post_soap(const char *url, const char *soap_action,
 // SOAP envelope builders
 // ---------------------------------------------------------------------------
 
+// Optional <avm:token> SOAP header, needed for 2FA-protected calls
+// after the user completed the second factor.
+static int append_token_header(char *buf, size_t cap, const char *token)
+{
+    if (!token || !*token) return 0;
+    return snprintf(buf, cap,
+        "<avm:token xmlns:avm=\"avm.de\" s:mustUnderstand=\"1\">%s</avm:token>",
+        token);
+}
+
 static void build_init_challenge(char *out, size_t cap,
+                                 const char *service,
                                  const char *action,
                                  const char *user,
-                                 const char *args_xml)
+                                 const char *args_xml,
+                                 const char *token_2fa)
 {
+    char token_hdr[160] = "";
+    append_token_header(token_hdr, sizeof(token_hdr), token_2fa);
     snprintf(out, cap,
         "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
         "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\""
@@ -204,18 +220,23 @@ static void build_init_challenge(char *out, size_t cap,
         "<s:Header>"
         "<h:InitChallenge xmlns:h=\"http://soap-authentication.org/digest/2001/10/\""
         " s:mustUnderstand=\"1\"><UserID>%s</UserID></h:InitChallenge>"
+        "%s"
         "</s:Header>"
-        "<s:Body><u:%s xmlns:u=\"" X_VOIP_SERVICE "\">%s</u:%s></s:Body>"
+        "<s:Body><u:%s xmlns:u=\"%s\">%s</u:%s></s:Body>"
         "</s:Envelope>",
-        user, action, args_xml ? args_xml : "", action);
+        user, token_hdr, action, service, args_xml ? args_xml : "", action);
 }
 
 static void build_client_auth(char *out, size_t cap,
+                              const char *service,
                               const char *action,
                               const char *user, const char *realm,
                               const char *nonce, const char *auth_hex,
-                              const char *args_xml)
+                              const char *args_xml,
+                              const char *token_2fa)
 {
+    char token_hdr[160] = "";
+    append_token_header(token_hdr, sizeof(token_hdr), token_2fa);
     snprintf(out, cap,
         "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
         "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\""
@@ -225,11 +246,12 @@ static void build_client_auth(char *out, size_t cap,
         " s:mustUnderstand=\"1\">"
         "<Nonce>%s</Nonce><Auth>%s</Auth><UserID>%s</UserID><Realm>%s</Realm>"
         "</h:ClientAuth>"
+        "%s"
         "</s:Header>"
-        "<s:Body><u:%s xmlns:u=\"" X_VOIP_SERVICE "\">%s</u:%s></s:Body>"
+        "<s:Body><u:%s xmlns:u=\"%s\">%s</u:%s></s:Body>"
         "</s:Envelope>",
-        nonce, auth_hex, user, realm,
-        action, args_xml ? args_xml : "", action);
+        nonce, auth_hex, user, realm, token_hdr,
+        action, service, args_xml ? args_xml : "", action);
 }
 
 // ---------------------------------------------------------------------------
@@ -239,8 +261,10 @@ static void build_client_auth(char *out, size_t cap,
 // ---------------------------------------------------------------------------
 
 static esp_err_t call_action(const char *url,
+                             const char *service,
                              const char *admin_user, const char *admin_pass,
                              const char *action, const char *args_xml,
+                             const char *token_2fa,
                              char *resp, int resp_cap,
                              int *out_err_code,
                              char *out_err_msg, size_t err_msg_cap)
@@ -248,12 +272,12 @@ static esp_err_t call_action(const char *url,
     char *env = malloc(SOAP_ENVELOPE_CAP);
     if (!env) return ESP_ERR_NO_MEM;
 
-    char soap_action[128];
-    snprintf(soap_action, sizeof(soap_action),
-             X_VOIP_SERVICE "#%s", action);
+    char soap_action[160];
+    snprintf(soap_action, sizeof(soap_action), "%s#%s", service, action);
 
     // --- Step 1: InitChallenge ---
-    build_init_challenge(env, SOAP_ENVELOPE_CAP, action, admin_user, args_xml);
+    build_init_challenge(env, SOAP_ENVELOPE_CAP, service, action,
+                         admin_user, args_xml, token_2fa);
     int status = 0;
     esp_err_t err = post_soap(url, soap_action, env, resp, resp_cap, &status);
     if (err != ESP_OK) { free(env); return err; }
@@ -274,8 +298,8 @@ static esp_err_t call_action(const char *url,
     char auth_hex[33];
     compute_auth_response(admin_user, realm, admin_pass, nonce, auth_hex);
 
-    build_client_auth(env, SOAP_ENVELOPE_CAP, action,
-                      admin_user, realm, nonce, auth_hex, args_xml);
+    build_client_auth(env, SOAP_ENVELOPE_CAP, service, action,
+                      admin_user, realm, nonce, auth_hex, args_xml, token_2fa);
     resp[0] = '\0';
     err = post_soap(url, soap_action, env, resp, resp_cap, &status);
     free(env);
@@ -315,8 +339,10 @@ static esp_err_t get_num_clients(const char *url,
 {
     char *resp = malloc(SOAP_RESPONSE_CAP);
     if (!resp) return ESP_ERR_NO_MEM;
-    esp_err_t err = call_action(url, admin_user, admin_pass,
+    esp_err_t err = call_action(url, X_VOIP_SERVICE,
+                                admin_user, admin_pass,
                                 "X_AVM-DE_GetNumberOfClients", NULL,
+                                NULL,
                                 resp, SOAP_RESPONSE_CAP,
                                 out_err_code, out_err_msg, err_msg_cap);
     if (err != ESP_OK) { free(resp); return err; }
@@ -358,9 +384,64 @@ static void gen_sip_username(char *out, size_t cap)
 // Public entry point
 // ---------------------------------------------------------------------------
 
+// --- 2FA (X_AVM-DE_Auth) -------------------------------------------
+
+esp_err_t tr064_auth_start(const char *host, int port,
+                           const char *admin_user, const char *admin_pass,
+                           char *out_token, size_t token_cap,
+                           char *out_state, size_t state_cap,
+                           char *out_methods, size_t methods_cap)
+{
+    char url[96];
+    snprintf(url, sizeof(url), "http://%s:%d" X_AUTH_CONTROL, host, port);
+
+    const char *args = "<NewAction>start</NewAction>";
+
+    char *resp = malloc(SOAP_RESPONSE_CAP);
+    if (!resp) return ESP_ERR_NO_MEM;
+    esp_err_t err = call_action(url, X_AUTH_SERVICE,
+                                admin_user, admin_pass,
+                                "SetConfig", args, NULL,
+                                resp, SOAP_RESPONSE_CAP,
+                                NULL, NULL, 0);
+    if (err != ESP_OK) { free(resp); return err; }
+
+    if (out_token   && token_cap)   xml_find_text(resp, "NewToken",   out_token,   token_cap);
+    if (out_state   && state_cap)   xml_find_text(resp, "NewState",   out_state,   state_cap);
+    if (out_methods && methods_cap) xml_find_text(resp, "NewMethods", out_methods, methods_cap);
+
+    ESP_LOGI(TAG, "2FA start → token=%.16s… state=%s methods=%s",
+             out_token ? out_token : "", out_state ? out_state : "",
+             out_methods ? out_methods : "");
+    free(resp);
+    return ESP_OK;
+}
+
+esp_err_t tr064_auth_get_state(const char *host, int port,
+                               const char *admin_user, const char *admin_pass,
+                               char *out_state, size_t state_cap)
+{
+    char url[96];
+    snprintf(url, sizeof(url), "http://%s:%d" X_AUTH_CONTROL, host, port);
+
+    char *resp = malloc(SOAP_RESPONSE_CAP);
+    if (!resp) return ESP_ERR_NO_MEM;
+    esp_err_t err = call_action(url, X_AUTH_SERVICE,
+                                admin_user, admin_pass,
+                                "GetState", NULL, NULL,
+                                resp, SOAP_RESPONSE_CAP,
+                                NULL, NULL, 0);
+    if (err != ESP_OK) { free(resp); return err; }
+
+    if (out_state && state_cap) xml_find_text(resp, "NewState", out_state, state_cap);
+    free(resp);
+    return ESP_OK;
+}
+
 esp_err_t tr064_provision_sip_client(const char *host, int port,
                                      const char *admin_user, const char *admin_pass,
                                      const char *phone_name,
+                                     const char *token_2fa,
                                      tr064_sip_result_t *out)
 {
     if (!host || !admin_user || !admin_pass || !out) return ESP_ERR_INVALID_ARG;
@@ -414,8 +495,10 @@ esp_err_t tr064_provision_sip_client(const char *host, int port,
 
     char *resp = malloc(SOAP_RESPONSE_CAP);
     if (!resp) { free(args); return ESP_ERR_NO_MEM; }
-    err = call_action(url, admin_user, admin_pass,
+    err = call_action(url, X_VOIP_SERVICE,
+                      admin_user, admin_pass,
                       "X_AVM-DE_SetClient4", args,
+                      token_2fa,
                       resp, SOAP_RESPONSE_CAP,
                       &out->error_code,
                       out->error_message, sizeof(out->error_message));

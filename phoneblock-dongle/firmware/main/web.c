@@ -27,6 +27,22 @@ static httpd_handle_t s_server = NULL;
 // matches the "user sets up the dongle once" UX.
 static char s_oauth_nonce[33] = "";
 
+// In-flight Fritz!Box 2FA state: when the initial TR-064 SetClient4 call
+// fails with errorCode 866 we stash enough context here to complete the
+// provisioning once the user has pressed a button / entered a DTMF code.
+// Polled from the web UI via /api/fritzbox-2fa-status.
+static struct {
+    bool  active;
+    int64_t started_us;
+    char  fritz_host[64];
+    char  fritz_user[32];
+    char  fritz_pass[64];
+    char  phone_name[48];
+    char  token[64];
+    char  state[32];
+    char  methods[64];
+} s_2fa;
+
 // --- Embedded HTML (placeholder; full UI lands in the next step) ---
 
 // Embedded via EMBED_FILES in CMakeLists.txt; the linker emits
@@ -322,18 +338,42 @@ static esp_err_t handle_fritzbox_setup(httpd_req_t *req)
     tr064_sip_result_t res;
     memset(&res, 0, sizeof(res));
     esp_err_t err = tr064_provision_sip_client(
-        fritz_host, 49000, fritz_user, fritz_pass, phone_name, &res);
+        fritz_host, 49000, fritz_user, fritz_pass, phone_name, NULL, &res);
+    if (err != ESP_OK && res.error_code == 866) {
+        // Fritz!Box requires 2FA — start the handshake, stash the
+        // credentials + phone name for the retry, and tell the web UI
+        // to show the "press a button" instructions + start polling.
+        memset(&s_2fa, 0, sizeof(s_2fa));
+        esp_err_t aerr = tr064_auth_start(fritz_host, 49000,
+            fritz_user, fritz_pass,
+            s_2fa.token,   sizeof(s_2fa.token),
+            s_2fa.state,   sizeof(s_2fa.state),
+            s_2fa.methods, sizeof(s_2fa.methods));
+        if (aerr != ESP_OK || !s_2fa.token[0]) {
+            send_fail(req, "2FA-Start fehlgeschlagen (X_AVM-DE_Auth nicht erreichbar?)");
+            return ESP_OK;
+        }
+        s_2fa.active      = true;
+        s_2fa.started_us  = esp_timer_get_time();
+        strncpy(s_2fa.fritz_host, fritz_host, sizeof(s_2fa.fritz_host) - 1);
+        strncpy(s_2fa.fritz_user, fritz_user, sizeof(s_2fa.fritz_user) - 1);
+        strncpy(s_2fa.fritz_pass, fritz_pass, sizeof(s_2fa.fritz_pass) - 1);
+        strncpy(s_2fa.phone_name, phone_name, sizeof(s_2fa.phone_name) - 1);
+
+        cJSON *root = cJSON_CreateObject();
+        cJSON_AddBoolToObject  (root, "ok", false);
+        cJSON_AddBoolToObject  (root, "two_factor", true);
+        cJSON_AddStringToObject(root, "methods", s_2fa.methods);
+        cJSON_AddStringToObject(root, "state",   s_2fa.state);
+        cJSON_AddStringToObject(root, "message",
+            "Bitte jetzt einen beliebigen Knopf an der Fritz!Box druecken. "
+            "Alternativ DTMF-Folge an einem verbundenen Telefon eingeben.");
+        send_json(req, root);
+        return ESP_OK;
+    }
     if (err != ESP_OK) {
         char msg[240];
         switch (res.error_code) {
-            case 866:
-                snprintf(msg, sizeof(msg),
-                    "Fritz!Box verlangt Zwei-Faktor-Bestaetigung (Code 866). "
-                    "Entweder die Option 'Bestaetigung notwendig' fuer "
-                    "'Telefonie' im Fritz!Box-Benutzerkonto deaktivieren, "
-                    "oder unten im Experten-Modus die SIP-Daten manuell "
-                    "eintragen.");
-                break;
             case 820:
             case 402:
                 snprintf(msg, sizeof(msg),
@@ -342,7 +382,7 @@ static esp_err_t handle_fritzbox_setup(httpd_req_t *req)
                 break;
             case 0:
                 snprintf(msg, sizeof(msg),
-                    "TR-064-Anfrage fehlgeschlagen — Fritz!Box erreichbar? "
+                    "TR-064-Anfrage fehlgeschlagen - Fritz!Box erreichbar? "
                     "Adresse, Benutzer und Passwort korrekt?");
                 break;
             default:
@@ -528,6 +568,98 @@ static esp_err_t handle_token_callback(httpd_req_t *req)
     return ESP_OK;
 }
 
+// GET /api/fritzbox-2fa-status
+// Polled by the web UI while a 2FA handshake is pending. Reports the
+// current X_AVM-DE_Auth state. When the box reports "authenticated",
+// retries SetClient4 with the stashed credentials + token, stores the
+// resulting SIP credentials in NVS, and returns ok=true with the same
+// shape as a direct success. On "stopped"/"blocked" or on a timeout
+// (2 minutes) the pending state is wiped and an error returned.
+static esp_err_t handle_fritzbox_2fa_status(httpd_req_t *req)
+{
+    if (!s_2fa.active) {
+        send_fail(req, "Keine 2FA-Anfrage aktiv.");
+        return ESP_OK;
+    }
+    // 2-minute hard cap, mirroring the Fritz!Box's own timeout.
+    int64_t age_us = esp_timer_get_time() - s_2fa.started_us;
+    if (age_us > 120LL * 1000 * 1000) {
+        s_2fa.active = false;
+        send_fail(req, "Zeitueberschreitung. Bitte neu starten.");
+        return ESP_OK;
+    }
+
+    char state[32] = "";
+    esp_err_t err = tr064_auth_get_state(s_2fa.fritz_host, 49000,
+        s_2fa.fritz_user, s_2fa.fritz_pass, state, sizeof(state));
+    if (err != ESP_OK) {
+        send_fail(req, "GetState fehlgeschlagen.");
+        return ESP_OK;
+    }
+
+    if (strcmp(state, "authenticated") != 0) {
+        // Still waiting / cancelled / blocked — report state, let UI poll on.
+        cJSON *root = cJSON_CreateObject();
+        bool terminal = (strcmp(state, "stopped") == 0
+                      || strcmp(state, "blocked") == 0
+                      || strcmp(state, "failure") == 0);
+        cJSON_AddBoolToObject  (root, "ok",         false);
+        cJSON_AddBoolToObject  (root, "two_factor", true);
+        cJSON_AddBoolToObject  (root, "terminal",   terminal);
+        cJSON_AddStringToObject(root, "state",      state);
+        cJSON_AddStringToObject(root, "message",
+            terminal ? "2FA abgebrochen oder gesperrt."
+                     : "Warte auf Bestaetigung am Router...");
+        if (terminal) s_2fa.active = false;
+        send_json(req, root);
+        return ESP_OK;
+    }
+
+    // 2FA done → retry SetClient4 with the token.
+    tr064_sip_result_t res;
+    memset(&res, 0, sizeof(res));
+    err = tr064_provision_sip_client(s_2fa.fritz_host, 49000,
+        s_2fa.fritz_user, s_2fa.fritz_pass, s_2fa.phone_name,
+        s_2fa.token, &res);
+
+    // Whatever the outcome, the 2FA round-trip is over; wipe the
+    // cached admin password ASAP.
+    memset(s_2fa.fritz_pass, 0, sizeof(s_2fa.fritz_pass));
+    s_2fa.active = false;
+
+    if (err != ESP_OK) {
+        char msg[200];
+        snprintf(msg, sizeof(msg),
+            "Nach 2FA weiterhin Fehler %d: %s",
+            res.error_code,
+            res.error_message[0] ? res.error_message : "(keine Details)");
+        send_fail(req, msg);
+        return ESP_OK;
+    }
+
+    // Commit SIP credentials, re-register.
+    config_update_t u = {
+        .sip_host = s_2fa.fritz_host,
+        .sip_port = 5060,
+        .sip_user = res.sip_user,
+        .sip_pass = res.sip_pass,
+    };
+    if (config_update(&u) != ESP_OK) {
+        send_fail(req, "NVS-Schreibfehler");
+        return ESP_OK;
+    }
+    sip_register_request_reload();
+
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddBoolToObject  (root, "ok",              true);
+    cJSON_AddStringToObject(root, "message",
+        "Nebenstelle eingerichtet, Anmeldung laeuft");
+    cJSON_AddStringToObject(root, "sip_user",        res.sip_user);
+    cJSON_AddStringToObject(root, "internal_number", res.internal_number);
+    send_json(req, root);
+    return ESP_OK;
+}
+
 static esp_err_t handle_errors(httpd_req_t *req)
 {
     stats_error_t errs[STATS_MAX_ERRORS];
@@ -555,7 +687,8 @@ static const httpd_uri_t URIS[] = {
     { .uri = "/api/calls",   .method = HTTP_GET,  .handler = handle_calls,       .user_ctx = NULL },
     { .uri = "/api/errors",  .method = HTTP_GET,  .handler = handle_errors,      .user_ctx = NULL },
     { .uri = "/api/config",          .method = HTTP_POST, .handler = handle_config_post,    .user_ctx = NULL },
-    { .uri = "/api/fritzbox-setup",  .method = HTTP_POST, .handler = handle_fritzbox_setup, .user_ctx = NULL },
+    { .uri = "/api/fritzbox-setup",      .method = HTTP_POST, .handler = handle_fritzbox_setup,      .user_ctx = NULL },
+    { .uri = "/api/fritzbox-2fa-status", .method = HTTP_GET,  .handler = handle_fritzbox_2fa_status, .user_ctx = NULL },
     { .uri = "/register-start",      .method = HTTP_GET,  .handler = handle_register_start, .user_ctx = NULL },
     { .uri = "/token-callback",      .method = HTTP_GET,  .handler = handle_token_callback, .user_ctx = NULL },
 };

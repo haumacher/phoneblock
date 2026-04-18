@@ -37,13 +37,44 @@ typedef struct {
 // `host` may be an IP or hostname ("fritz.box", "192.168.178.1").
 // `port` is 49000 for all current Fritz!Boxen.
 // `phone_name` is the human-readable label shown in the Fritz!Box UI.
+// `token_2fa` is an optional <avm:token>-header value obtained from
+// tr064_auth_start + tr064_auth_poll once the user completed the
+// second factor. Pass NULL for the initial attempt; on 2FA-enforced
+// boxes this fails with out->error_code == 866 and the caller then
+// drives the 2FA handshake and retries with the received token.
 //
-// Returns ESP_OK on success and fills `out`. Any failure returns an
-// ESP_FAIL-ish error and leaves `out` untouched.
+// Returns ESP_OK on success and fills `out`. On failure out->error_code
+// and out->error_message carry the Fritz!Box's UPnPError details.
 esp_err_t tr064_provision_sip_client(
     const char *host,
     int         port,
     const char *admin_user,
     const char *admin_pass,
     const char *phone_name,
+    const char *token_2fa,
     tr064_sip_result_t *out);
+
+// Two-factor-authentication helpers
+// ---------------------------------
+
+// Start a 2FA session against X_AVM-DE_Auth:SetConfig(NewAction=start).
+// The Fritz!Box returns a token to carry in the <avm:token> SOAP header
+// of subsequent 2FA-protected actions, its current state (typically
+// "waitingforauth") and a comma-separated list of usable methods
+// ("button", "dtmf;<seq>", "googleauth"). See X_AVM-DE_Auth SCPD.
+esp_err_t tr064_auth_start(
+    const char *host, int port,
+    const char *admin_user, const char *admin_pass,
+    char *out_token,   size_t token_cap,
+    char *out_state,   size_t state_cap,
+    char *out_methods, size_t methods_cap);
+
+// Poll the current 2FA state via X_AVM-DE_Auth:GetState.
+//   "waitingforauth"   — user hasn't confirmed yet
+//   "authenticated"    — good to go, retry the original action
+//   "stopped"          — user cancelled
+//   "blocked"          — too many tries
+esp_err_t tr064_auth_get_state(
+    const char *host, int port,
+    const char *admin_user, const char *admin_pass,
+    char *out_state, size_t state_cap);
