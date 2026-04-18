@@ -21,6 +21,7 @@
 
 #include "sdkconfig.h"
 #include "api.h"
+#include "sip_parse.h"
 
 static const char *TAG = "sip";
 
@@ -328,56 +329,6 @@ static int build_register(sip_ctx_t *c, char *buf, int cap, bool with_auth)
 }
 
 // ---------------------------------------------------------------------------
-// Response parsing
-// ---------------------------------------------------------------------------
-
-static int parse_status_code(const char *resp, int len)
-{
-    // "SIP/2.0 401 Unauthorized\r\n"
-    if (len < 12) return -1;
-    if (strncmp(resp, "SIP/2.0 ", 8) != 0) return -1;
-    int status = 0;
-    for (int i = 8; i < len && i < 12; i++) {
-        if (resp[i] >= '0' && resp[i] <= '9') {
-            status = status * 10 + (resp[i] - '0');
-        } else break;
-    }
-    return status;
-}
-
-static const char *find_header(const char *resp, int len, const char *name)
-{
-    size_t name_len = strlen(name);
-    const char *p = resp;
-    const char *end = resp + len;
-    // Skip first line.
-    while (p < end && *p != '\n') p++;
-    if (p < end) p++;
-    while (p + name_len + 1 < end) {
-        if (strncasecmp(p, name, name_len) == 0 && p[name_len] == ':') {
-            p += name_len + 1;
-            while (p < end && (*p == ' ' || *p == '\t')) p++;
-            return p;
-        }
-        // Advance to next line.
-        while (p < end && *p != '\n') p++;
-        if (p < end) p++;
-    }
-    return NULL;
-}
-
-// Copy a header value into out, up to CR/LF (folded continuations not handled).
-static int header_value(const char *p, const char *end, char *out, int cap)
-{
-    int n = 0;
-    while (p < end && *p != '\r' && *p != '\n' && n < cap - 1) {
-        out[n++] = *p++;
-    }
-    out[n] = '\0';
-    return n;
-}
-
-// ---------------------------------------------------------------------------
 // Networking
 // ---------------------------------------------------------------------------
 
@@ -657,147 +608,6 @@ static void send_response(sip_ctx_t *c, const struct sockaddr_in *peer,
     free(tx);
 }
 
-// Extract the method (first whitespace-delimited token on the request line).
-static int parse_method(const char *pkt, int len, char *method, int cap)
-{
-    int i = 0;
-    while (i < len && i < cap - 1 && pkt[i] != ' ' && pkt[i] != '\r' && pkt[i] != '\n') {
-        method[i] = pkt[i];
-        i++;
-    }
-    method[i] = '\0';
-    return i;
-}
-
-// Extract the CSeq number from the request ("CSeq: 12345 METHOD").
-static uint32_t parse_cseq(const char *req, int req_len)
-{
-    const char *p = find_header(req, req_len, "CSeq");
-    if (!p) return 0;
-    uint32_t n = 0;
-    while (*p >= '0' && *p <= '9') {
-        n = n * 10 + (*p - '0');
-        p++;
-    }
-    return n;
-}
-
-// Extract the Call-ID value, trimmed.
-static void parse_call_id(const char *req, int req_len, char *out, int cap)
-{
-    const char *p = find_header(req, req_len, "Call-ID");
-    if (!p) { out[0] = '\0'; return; }
-    const char *end = req + req_len;
-    int n = 0;
-    while (p < end && *p != '\r' && *p != '\n' && n < cap - 1) {
-        out[n++] = *p++;
-    }
-    out[n] = '\0';
-    // trim trailing whitespace
-    while (n > 0 && (out[n - 1] == ' ' || out[n - 1] == '\t')) out[--n] = '\0';
-}
-
-// Extract the value of a ";tag=..." parameter from a header value.
-static void parse_tag(const char *hdr_val, int val_len, char *out, int cap)
-{
-    const char *end = hdr_val + val_len;
-    const char *p = hdr_val;
-    while (p + 5 < end) {
-        if (strncasecmp(p, ";tag=", 5) == 0) {
-            p += 5;
-            int n = 0;
-            while (p < end && *p != ';' && *p != ' ' && *p != '\t'
-                   && *p != '\r' && *p != '\n' && n < cap - 1) {
-                out[n++] = *p++;
-            }
-            out[n] = '\0';
-            return;
-        }
-        p++;
-    }
-    out[0] = '\0';
-}
-
-// Extract the URI from a SIP URI-containing header (From/To/Contact):
-//   "Name" <sip:user@host:port;params>;tag=xyz
-//                ^^^^^^^^^^^^^^^^^^
-//   → sip:user@host:port (parameters stripped)
-// If no <...> brackets present, take from "sip:" up to ';' or whitespace.
-static void parse_uri(const char *hdr_val, int val_len, char *out, int cap)
-{
-    const char *end = hdr_val + val_len;
-    const char *lt = NULL, *gt = NULL;
-    for (const char *p = hdr_val; p < end; p++) {
-        if (*p == '<') lt = p + 1;
-        else if (*p == '>') { gt = p; break; }
-    }
-    const char *start, *stop;
-    if (lt && gt && gt > lt) {
-        start = lt; stop = gt;
-    } else {
-        // Find "sip:" in the value.
-        start = hdr_val;
-        while (start + 4 < end && strncasecmp(start, "sip:", 4) != 0) start++;
-        if (start + 4 >= end) { out[0] = '\0'; return; }
-        stop = start;
-        while (stop < end && *stop != ';' && *stop != ' ' && *stop != '\t'
-               && *stop != '\r' && *stop != '\n') stop++;
-    }
-    // Strip URI parameters (everything after the first ';').
-    const char *semi = start;
-    while (semi < stop && *semi != ';') semi++;
-    if (semi < stop) stop = semi;
-
-    int n = stop - start;
-    if (n >= cap) n = cap - 1;
-    memcpy(out, start, n);
-    out[n] = '\0';
-}
-
-// Extract the user part of a SIP URI: "sip:01234@fritz.box" → "01234".
-// Returns length written (excluding NUL). Empty if URI malformed.
-static int user_from_uri(const char *uri, char *out, int cap)
-{
-    const char *p = uri;
-    if (strncasecmp(p, "sip:", 4) == 0) p += 4;
-    else if (strncasecmp(p, "sips:", 5) == 0) p += 5;
-    else if (strncasecmp(p, "tel:", 4) == 0) p += 4;
-    int n = 0;
-    while (*p && *p != '@' && *p != ';' && *p != ':' && n < cap - 1) {
-        out[n++] = *p++;
-    }
-    out[n] = '\0';
-    return n;
-}
-
-// Minimal German-centric number normalization for the PhoneBlock API.
-// The server normalizes further (national/international format), but we
-// standardize the leading prefix: international "+49..." becomes national
-// "0...", and whitespace/dashes are dropped.
-static void normalize_de(const char *raw, char *out, int cap)
-{
-    char buf[48];
-    int n = 0;
-    for (const char *p = raw; *p && n < (int)sizeof(buf) - 1; p++) {
-        if (*p == ' ' || *p == '-' || *p == '(' || *p == ')' || *p == '/') continue;
-        buf[n++] = *p;
-    }
-    buf[n] = '\0';
-
-    const char *src = buf;
-    int w = 0;
-    if (strncmp(src, "+49", 3) == 0) {
-        out[w++] = '0';
-        src += 3;
-    } else if (strncmp(src, "0049", 4) == 0) {
-        out[w++] = '0';
-        src += 4;
-    }
-    while (*src && w < cap - 1) {
-        out[w++] = *src++;
-    }
-    out[w] = '\0';
-}
 
 // Write a minimal SDP body announcing PCMA audio. The port is a fixed
 // placeholder — the dongle never actually listens on it. Fritz!Box
@@ -820,13 +630,6 @@ static int build_sdp_body(const char *our_ip, char *out, int cap)
 // ---------------------------------------------------------------------------
 // Dialog / INVITE handling
 // ---------------------------------------------------------------------------
-
-// Compare two non-empty Call-IDs (case-insensitive, trimmed).
-static bool same_call_id(const char *a, const char *b)
-{
-    if (!a || !b || !*a || !*b) return false;
-    return strcasecmp(a, b) == 0;
-}
 
 // Extract and store the dialog-identifying fields of a fresh INVITE so we
 // can reference them when sending ACK/BYE/responses later.
@@ -907,6 +710,16 @@ static void send_bye(sip_ctx_t *c)
 
 // Extract the caller's number (user part of the From URI), normalize it
 // for Germany, and query the PhoneBlock API.
+//
+// Two short-circuits skip the API call:
+//  1. Fritz!Box delivers a non-numeric display-name ("Haui Mobil") → the
+//     caller matched an address-book entry, so the user already trusts
+//     them. Don't waste an API round-trip.
+//  2. The dialed number isn't a real external number (internal **NN
+//     codes, *21# feature dials, etc.). The API would reject them with
+//     HTTP 400 anyway, but the TLS handshake still costs ~1–2 s.
+// Both cases return VERDICT_LEGITIMATE so the dongle sends 486 Busy and
+// the Fritz!Box continues its normal ring routing.
 static verdict_t check_invite_caller(const char *req, int req_len)
 {
     const char *hdr = find_header(req, req_len, "From");
@@ -918,6 +731,15 @@ static verdict_t check_invite_caller(const char *req, int req_len)
     const char *eol = hdr;
     while (eol < end && *eol != '\r' && *eol != '\n') eol++;
     int val_len = (int)(eol - hdr);
+
+    char display[64];
+    parse_display_name(hdr, val_len, display, sizeof(display));
+
+    if (display[0] && !is_phone_number_like(display)) {
+        ESP_LOGI(TAG, "caller '%s' resolved via phone book → skip API",
+                 display);
+        return VERDICT_LEGITIMATE;
+    }
 
     char uri[128];
     parse_uri(hdr, val_len, uri, sizeof(uri));
@@ -931,6 +753,11 @@ static verdict_t check_invite_caller(const char *req, int req_len)
     char number[64];
     normalize_de(raw_user, number, sizeof(number));
     ESP_LOGI(TAG, "caller URI=%s raw=%s normalized=%s", uri, raw_user, number);
+
+    if (!looks_dialable(number)) {
+        ESP_LOGI(TAG, "non-external caller '%s' → skip API", number);
+        return VERDICT_LEGITIMATE;
+    }
 
     return phoneblock_check(number);
 }
