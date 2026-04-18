@@ -23,6 +23,7 @@
 #include "api.h"
 #include "sip_parse.h"
 #include "rtp.h"
+#include "stats.h"
 
 // Voice announcement baked into the binary via EMBED_FILES (see
 // main/CMakeLists.txt). The linker emits _binary_<file>_<ext>_{start,end}
@@ -751,6 +752,7 @@ static verdict_t check_invite_caller(const char *req, int req_len)
     const char *hdr = find_header(req, req_len, "From");
     if (!hdr) {
         ESP_LOGW(TAG, "INVITE without From header");
+        stats_record_call("", "", VERDICT_ERROR);
         return VERDICT_ERROR;
     }
     const char *end = req + req_len;
@@ -764,8 +766,12 @@ static verdict_t check_invite_caller(const char *req, int req_len)
     char raw_user[64];
     if (user_from_uri(uri, raw_user, sizeof(raw_user)) == 0) {
         ESP_LOGW(TAG, "could not extract user from From URI '%s'", uri);
+        stats_record_call(uri, "", VERDICT_ERROR);
         return VERDICT_ERROR;
     }
+
+    char display[64];
+    parse_display_name(hdr, val_len, display, sizeof(display));
 
 #if CONFIG_SIP_TEST_FORCE_SPAM_STAR_NUMBERS
     // Dev hook: any '*'-prefixed internal dial code (**622, *21#, …)
@@ -773,16 +779,15 @@ static verdict_t check_invite_caller(const char *req, int req_len)
     // exercised without blacklisting a real external number.
     if (raw_user[0] == '*') {
         ESP_LOGW(TAG, "TEST MODE: caller '%s' forced to SPAM", raw_user);
+        stats_record_call(raw_user, display, VERDICT_SPAM);
         return VERDICT_SPAM;
     }
 #endif
 
-    char display[64];
-    parse_display_name(hdr, val_len, display, sizeof(display));
-
     if (display[0] && !is_phone_number_like(display)) {
         ESP_LOGI(TAG, "caller '%s' resolved via phone book → skip API",
                  display);
+        stats_record_call(raw_user, display, VERDICT_LEGITIMATE);
         return VERDICT_LEGITIMATE;
     }
 
@@ -792,10 +797,13 @@ static verdict_t check_invite_caller(const char *req, int req_len)
 
     if (!looks_dialable(number)) {
         ESP_LOGI(TAG, "non-external caller '%s' → skip API", number);
+        stats_record_call(number, display, VERDICT_LEGITIMATE);
         return VERDICT_LEGITIMATE;
     }
 
-    return phoneblock_check(number);
+    verdict_t v = phoneblock_check(number);
+    stats_record_call(number, display, v);
+    return v;
 }
 
 // Resend our most recent response for the active dialog — needed when the
@@ -1053,6 +1061,7 @@ static void sip_task(void *arg)
     // Initial registration.
     bool ok = do_register(&ctx);
     s_registered = ok;
+    stats_record_sip_state(ok);
     if (ok) {
         ESP_LOGI(TAG, "REGISTERED as %s@%s (expires %d s)",
                  CONFIG_SIP_USERNAME, CONFIG_SIP_REGISTRAR_HOST,
@@ -1060,6 +1069,7 @@ static void sip_task(void *arg)
         refresh_at_us = esp_timer_get_time() + (int64_t)(CONFIG_SIP_EXPIRES / 2) * 1000000LL;
     } else {
         ESP_LOGE(TAG, "initial registration failed, retry in %d s", retry_delay_s);
+        stats_record_error("sip", "initial REGISTER failed");
         refresh_at_us = esp_timer_get_time() + (int64_t)retry_delay_s * 1000000LL;
     }
 
@@ -1111,11 +1121,13 @@ static void sip_task(void *arg)
             // REGISTER refresh.
             ok = do_register(&ctx);
             s_registered = ok;
+            stats_record_sip_state(ok);
             if (ok) {
                 ESP_LOGI(TAG, "re-REGISTERED (expires %d s)", CONFIG_SIP_EXPIRES);
                 refresh_at_us = esp_timer_get_time() + (int64_t)(CONFIG_SIP_EXPIRES / 2) * 1000000LL;
             } else {
                 ESP_LOGE(TAG, "re-REGISTER failed, retry in %d s", retry_delay_s);
+                stats_record_error("sip", "re-REGISTER failed");
                 refresh_at_us = esp_timer_get_time() + (int64_t)retry_delay_s * 1000000LL;
             }
             continue;

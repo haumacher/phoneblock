@@ -7,9 +7,11 @@
 #include "esp_log.h"
 #include "esp_http_client.h"
 #include "esp_crt_bundle.h"
+#include "esp_timer.h"
 #include "cJSON.h"
 
 #include "sdkconfig.h"
+#include "stats.h"
 
 static const char *TAG = "api";
 
@@ -71,10 +73,15 @@ verdict_t phoneblock_check(const char *phone_number)
     esp_http_client_set_header(client, "Accept", "application/json");
 
     ESP_LOGI(TAG, "GET %s", url);
+    int64_t started = esp_timer_get_time();
     esp_err_t err = esp_http_client_perform(client);
+    stats_record_api_duration(esp_timer_get_time() - started);
 
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "HTTP request failed: %s", esp_err_to_name(err));
+        char msg[96];
+        snprintf(msg, sizeof(msg), "HTTP transport: %s", esp_err_to_name(err));
+        stats_record_error("api", msg);
         goto cleanup;
     }
 
@@ -82,12 +89,16 @@ verdict_t phoneblock_check(const char *phone_number)
     ESP_LOGI(TAG, "HTTP %d, %d bytes: %s", status, resp.len, resp.data);
 
     if (status != 200) {
+        char msg[96];
+        snprintf(msg, sizeof(msg), "HTTP %d for number %s", status, phone_number);
+        stats_record_error("api", msg);
         goto cleanup;
     }
 
     cJSON *root = cJSON_Parse(resp.data);
     if (!root) {
         ESP_LOGE(TAG, "JSON parse failed");
+        stats_record_error("api", "JSON parse failed");
         goto cleanup;
     }
 
