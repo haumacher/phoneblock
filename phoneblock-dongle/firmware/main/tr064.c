@@ -320,9 +320,11 @@ static esp_err_t get_num_clients(const char *url,
 
 static void gen_random_password(char *out, size_t len)
 {
-    // 64-char alphabet, ambiguity-free (no 0/O, 1/I/l).
+    // Alphanumeric only — Fritz!Box's SIP-client password validator
+    // rejects punctuation (errorCode 803 "Argument contains invalid
+    // characters"). Matches the Dart reference library's _generatePassword.
     static const char alpha[] =
-        "abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$%-_+=";
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     size_t n = strlen(alpha);
     for (size_t i = 0; i < len - 1; i++) {
         out[i] = alpha[esp_random() % n];
@@ -367,10 +369,15 @@ esp_err_t tr064_provision_sip_client(const char *host, int port,
     gen_sip_username(user_buf, sizeof(user_buf));
     gen_random_password(pass_buf, sizeof(pass_buf));
 
-    // 3) SetClient4 at index num_clients (creates a new entry).
-    char phone_name_esc[64];
+    // 3) SetClient4 at index num_clients (creates a new entry). All
+    //    string-shaped values get XML-escaped on the way in; user_buf
+    //    and pass_buf are currently alphanumeric so this is defensive,
+    //    but phone_name may come from user input.
+    char phone_name_esc[96];
     char user_esc[64];
-    xml_escape(user_buf,   user_esc,       sizeof(user_esc));
+    char pass_esc[96];
+    xml_escape(user_buf,  user_esc,       sizeof(user_esc));
+    xml_escape(pass_buf,  pass_esc,       sizeof(pass_esc));
     xml_escape(phone_name ? phone_name : "Answerbot",
                phone_name_esc, sizeof(phone_name_esc));
 
@@ -384,7 +391,7 @@ esp_err_t tr064_provision_sip_client(const char *host, int port,
         "<NewX_AVM-DE_ClientId></NewX_AVM-DE_ClientId>"
         "<NewX_AVM-DE_OutGoingNumber></NewX_AVM-DE_OutGoingNumber>"
         "<NewX_AVM-DE_InComingNumbers></NewX_AVM-DE_InComingNumbers>",
-        num_clients, pass_buf, user_esc, phone_name_esc);
+        num_clients, pass_esc, user_esc, phone_name_esc);
 
     char *resp = malloc(SOAP_RESPONSE_CAP);
     if (!resp) { free(args); return ESP_ERR_NO_MEM; }
