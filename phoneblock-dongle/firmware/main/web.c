@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "esp_log.h"
+#include "esp_random.h"
 #include "esp_timer.h"
 #include "esp_app_desc.h"
 #include "esp_netif.h"
@@ -19,6 +20,12 @@
 static const char *TAG = "web";
 
 static httpd_handle_t s_server = NULL;
+
+// In-flight OAuth provisioning state: a random nonce set by
+// /register-start, consumed once by /token-callback to defeat CSRF.
+// Single entry — only one browser tab can provision at a time, which
+// matches the "user sets up the dongle once" UX.
+static char s_oauth_nonce[33] = "";
 
 // --- Embedded HTML (placeholder; full UI lands in the next step) ---
 
@@ -343,6 +350,137 @@ static esp_err_t handle_fritzbox_setup(httpd_req_t *req)
     return ESP_OK;
 }
 
+// Percent-encode the unsafe characters in `in` into `out`. RFC 3986
+// unreserved set (letters, digits, -_.~) plus a safe colon-safe
+// handling for URLs. Good enough for our `callback=` parameter.
+static void url_encode(const char *in, char *out, size_t cap)
+{
+    static const char hex[] = "0123456789ABCDEF";
+    size_t o = 0;
+    for (const unsigned char *p = (const unsigned char *)in;
+         *p && o + 4 < cap; p++) {
+        unsigned char c = *p;
+        if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z')
+            || (c >= '0' && c <= '9')
+            || c == '-' || c == '_' || c == '.' || c == '~') {
+            out[o++] = c;
+        } else {
+            out[o++] = '%';
+            out[o++] = hex[c >> 4];
+            out[o++] = hex[c & 0x0f];
+        }
+    }
+    out[o] = '\0';
+}
+
+// GET /register-start
+// Generate a CSRF nonce, build http(s)://<phoneblock>/pb/dongle-register
+// ?callback=<us>&state=<nonce>, redirect the browser there. The server
+// handles OAuth, then redirects back to /token-callback with ?token=…
+// &state=<nonce>.
+static esp_err_t handle_register_start(httpd_req_t *req)
+{
+    // Random 32-hex-char nonce.
+    static const char hex[] = "0123456789abcdef";
+    for (int i = 0; i < 32; i++) {
+        s_oauth_nonce[i] = hex[esp_random() & 0x0f];
+    }
+    s_oauth_nonce[32] = '\0';
+
+    // Callback URL uses whatever Host the browser reached us under
+    // (answerbot / fritz.box-local-name / raw IP) so phoneblock.net
+    // redirects back to the same origin the user came from.
+    char host[64] = "answerbot";
+    httpd_req_get_hdr_value_str(req, "Host", host, sizeof(host));
+
+    char callback_plain[128];
+    snprintf(callback_plain, sizeof(callback_plain),
+             "http://%s/token-callback", host);
+
+    char callback_enc[256];
+    url_encode(callback_plain, callback_enc, sizeof(callback_enc));
+
+    char url[512];
+    snprintf(url, sizeof(url),
+             "%s/dongle-register?callback=%s&state=%s",
+             config_phoneblock_base_url(), callback_enc, s_oauth_nonce);
+
+    ESP_LOGI(TAG, "register-start → redirect to %s", url);
+    httpd_resp_set_status(req, "302 Found");
+    httpd_resp_set_hdr(req, "Location", url);
+    httpd_resp_send(req, NULL, 0);
+    return ESP_OK;
+}
+
+// GET /token-callback?token=…&state=<nonce>
+// phoneblock.net redirects the user's browser here after successful
+// login. We verify the CSRF nonce, commit the token to NVS, and show
+// the user a friendly success page that links back to the main UI.
+static esp_err_t handle_token_callback(httpd_req_t *req)
+{
+    char query[512];
+    if (httpd_req_get_url_query_str(req, query, sizeof(query)) != ESP_OK) {
+        httpd_resp_set_type(req, "text/html; charset=utf-8");
+        httpd_resp_send(req,
+            "<p>Fehlende Query-Parameter. "
+            "<a href=\"/\">Zurück zur Konfiguration</a>.</p>",
+            HTTPD_RESP_USE_STRLEN);
+        return ESP_OK;
+    }
+    char token[128] = "";
+    char state[64]  = "";
+    httpd_query_key_value(query, "token", token, sizeof(token));
+    httpd_query_key_value(query, "state", state, sizeof(state));
+
+    if (!s_oauth_nonce[0] || strcmp(state, s_oauth_nonce) != 0) {
+        s_oauth_nonce[0] = '\0';
+        ESP_LOGW(TAG, "token-callback: bad or missing CSRF state");
+        httpd_resp_set_status(req, "400 Bad Request");
+        httpd_resp_set_type(req, "text/html; charset=utf-8");
+        httpd_resp_send(req,
+            "<p>Ungültiger oder abgelaufener CSRF-State. "
+            "<a href=\"/\">Bitte erneut von vorne</a>.</p>",
+            HTTPD_RESP_USE_STRLEN);
+        return ESP_OK;
+    }
+    s_oauth_nonce[0] = '\0';  // single-use
+
+    if (!token[0]) {
+        httpd_resp_set_status(req, "400 Bad Request");
+        httpd_resp_set_type(req, "text/html; charset=utf-8");
+        httpd_resp_send(req,
+            "<p>Kein Token in der Rückleitung. "
+            "<a href=\"/\">Zurück</a>.</p>",
+            HTTPD_RESP_USE_STRLEN);
+        return ESP_OK;
+    }
+
+    config_update_t u = { .phoneblock_token = token };
+    if (config_update(&u) != ESP_OK) {
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "nvs");
+        return ESP_OK;
+    }
+
+    ESP_LOGI(TAG, "token-callback: stored new PhoneBlock token (%d chars)",
+             (int)strlen(token));
+
+    httpd_resp_set_type(req, "text/html; charset=utf-8");
+    httpd_resp_send(req,
+        "<!doctype html><html lang=\"de\"><head><meta charset=\"utf-8\">"
+        "<title>PhoneBlock — verbunden</title>"
+        "<meta http-equiv=\"refresh\" content=\"3; url=/\">"
+        "<style>body{font-family:system-ui,sans-serif;max-width:480px;"
+        "margin:4rem auto;padding:0 1rem;text-align:center}"
+        "h1{color:#188038}</style></head><body>"
+        "<h1>✓ Verbunden</h1>"
+        "<p>Der Dongle ist jetzt mit deinem PhoneBlock-Konto gekoppelt.</p>"
+        "<p class=\"muted\">Du wirst in 3 Sekunden zur Startseite geleitet. "
+        "<a href=\"/\">Oder direkt klicken</a>.</p>"
+        "</body></html>",
+        HTTPD_RESP_USE_STRLEN);
+    return ESP_OK;
+}
+
 static esp_err_t handle_errors(httpd_req_t *req)
 {
     stats_error_t errs[STATS_MAX_ERRORS];
@@ -371,6 +509,8 @@ static const httpd_uri_t URIS[] = {
     { .uri = "/api/errors",  .method = HTTP_GET,  .handler = handle_errors,      .user_ctx = NULL },
     { .uri = "/api/config",          .method = HTTP_POST, .handler = handle_config_post,    .user_ctx = NULL },
     { .uri = "/api/fritzbox-setup",  .method = HTTP_POST, .handler = handle_fritzbox_setup, .user_ctx = NULL },
+    { .uri = "/register-start",      .method = HTTP_GET,  .handler = handle_register_start, .user_ctx = NULL },
+    { .uri = "/token-callback",      .method = HTTP_GET,  .handler = handle_token_callback, .user_ctx = NULL },
 };
 
 void web_start(void)

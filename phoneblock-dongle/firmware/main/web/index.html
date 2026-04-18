@@ -98,6 +98,23 @@
   </form>
 </section>
 
+<section id="pbSection">
+  <h2>PhoneBlock-Anmeldung</h2>
+  <p class="muted">
+    Damit der Dongle Anrufe gegen die PhoneBlock-Spam-Datenbank prüfen
+    darf, braucht er einen Token. Mit einem Klick unten wirst du zu
+    phoneblock.net weitergeleitet, meldest dich dort einmalig an (Google,
+    Facebook oder Account) — und landest anschließend zurück hier mit
+    fertig eingerichtetem Token.
+  </p>
+  <p id="pbTokenHint" class="muted" style="margin-top:.5rem"></p>
+  <p style="margin-top:.8rem">
+    <a href="/register-start" class="btn-primary" style="text-decoration:none;display:inline-block">
+      Bei PhoneBlock anmelden
+    </a>
+  </p>
+</section>
+
 <section>
   <h2 style="display:flex;align-items:center;justify-content:space-between;cursor:pointer"
       onclick="toggleExpert()">
@@ -179,6 +196,9 @@ async function refreshStatus(){
     $("pbToken").placeholder = s.phoneblock.token_set ? "••• gesetzt •••" : "Token eingeben";
     window._cfgInit = true;
   }
+  $("pbTokenHint").textContent = s.phoneblock.token_set
+    ? "Token ist bereits eingerichtet. Ein erneuter Klick erzeugt einen neuen Token."
+    : "Noch kein Token eingerichtet.";
 }
 
 function toggleExpert(){
