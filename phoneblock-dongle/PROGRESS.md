@@ -128,7 +128,11 @@ und für Test­szenarien [firmware/README.md](firmware/README.md).
   `idf.py qemu --qemu-extra-args="…"` direkt und Logs auf stdio lesen.
 - **User-mode NAT leitet keine unangeforderten Inbound-Pakete weiter.**
   Für eingehende SIP-INVITEs ist `hostfwd=udp::5061-:5061` + Via/Contact-
-  Override zwingend.
+  Override zwingend. Analog für den RTP-Rückkanal vom Angerufenen:
+  `hostfwd=udp::16000-:16000`. Die gleiche `CONFIG_SIP_CONTACT_HOST_OVERRIDE`
+  wird auch für die SDP-Connection-Line (`c=IN IP4 …`) verwendet, sonst
+  bewirbt der Dongle `10.0.2.15` — ein Adresse, die außerhalb QEMUs
+  nirgendwohin führt.
 - **Die Kombination `CONFIG_X=""` in defaults + nicht-leer in .local hat
   bei uns sporadisch nicht gezogen** (vermutlich Build-Cache-Artefakt).
   Immer `rm -rf build && idf.py build` nach Konfig-Änderungen, wenn

@@ -808,7 +808,7 @@ static void resend_last_response(sip_ctx_t *c, const char *req, int req_len,
         case DIALOG_ANSWERED:
         case DIALOG_STREAMING: {
             char sdp[256];
-            build_sdp_body(c->local_ip, sdp, sizeof(sdp));
+            build_sdp_body(advertised_host(c), sdp, sizeof(sdp));
             send_response(c, from, req, req_len, 200, "OK",
                           d->our_tag, sdp);
             break;
@@ -857,7 +857,7 @@ static void handle_invite(sip_ctx_t *c, const char *req, int req_len,
 
     if (d->verdict == VERDICT_SPAM) {
         char sdp[256];
-        build_sdp_body(c->local_ip, sdp, sizeof(sdp));
+        build_sdp_body(advertised_host(c), sdp, sizeof(sdp));
         send_response(c, from, req, req_len, 200, "OK", d->our_tag, sdp);
         d->state = DIALOG_ANSWERED;
         ESP_LOGI(TAG, "SPAM → 200 OK sent, waiting for ACK to hang up");
