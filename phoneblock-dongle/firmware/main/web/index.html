@@ -76,12 +76,27 @@
 
 <section>
   <h2>Konfiguration</h2>
-  <p class="muted">Speichern folgt im nächsten Schritt. Aktuell nur Anzeige.</p>
-  <form id="cfg" onsubmit="event.preventDefault()">
-    <label>SIP-Registrar (Fritz!Box)<input type="text" id="sipHost" readonly></label>
-    <label>SIP-Benutzer<input type="text" id="sipUser" readonly></label>
-    <label>PhoneBlock-Server<input type="url" id="pbUrl" readonly></label>
-    <label>PhoneBlock-Token<input type="text" id="pbToken" readonly value="–"></label>
+  <form id="cfg">
+    <label>SIP-Registrar (Fritz!Box, IP oder „fritz.box")
+      <input type="text" id="sipHost" name="sip_host"></label>
+    <label>SIP-Port
+      <input type="number" id="sipPort" name="sip_port" min="1" max="65535"></label>
+    <label>SIP-Benutzer
+      <input type="text" id="sipUser" name="sip_user"></label>
+    <label>SIP-Passwort <span class="muted">(leer lassen → unverändert)</span>
+      <input type="password" id="sipPass" name="sip_pass" autocomplete="off"></label>
+    <label>PhoneBlock-Server
+      <input type="url" id="pbUrl" name="pb_url"></label>
+    <label>PhoneBlock-Token <span class="muted">(leer lassen → unverändert)</span>
+      <input type="password" id="pbToken" name="pb_token" autocomplete="off"></label>
+    <p style="margin-top:.8rem">
+      <button type="submit"
+              style="background:#1a73e8;color:#fff;border:0;padding:.55rem 1.2rem;
+                     border-radius:4px;font-size:1rem;cursor:pointer">
+        Speichern
+      </button>
+      <span id="cfgMsg" class="muted" style="margin-left:.6rem"></span>
+    </p>
   </form>
 </section>
 
@@ -125,11 +140,48 @@ async function refreshStatus(){
   $("ip").textContent     = s.ip_address || "–";
   $("uptime").textContent = fmtSec(s.uptime_s);
   $("apiMs").textContent  = s.phoneblock.last_api_ms > 0 ? s.phoneblock.last_api_ms + " ms" : "–";
-  $("sipHost").value = (s.sip.host || "") + ":" + s.sip.port;
-  $("sipUser").value = s.sip.user || "";
-  $("pbUrl").value   = s.phoneblock.base_url || "";
-  $("pbToken").value = s.phoneblock.token_set ? "gesetzt" : "fehlt";
+  // Only populate config fields the first time so in-flight edits
+  // aren't clobbered while the user is typing.
+  if (!window._cfgInit){
+    $("sipHost").value = s.sip.host || "";
+    $("sipPort").value = s.sip.port || 5060;
+    $("sipUser").value = s.sip.user || "";
+    $("pbUrl").value   = s.phoneblock.base_url || "";
+    $("pbToken").placeholder = s.phoneblock.token_set ? "••• gesetzt •••" : "Token eingeben";
+    window._cfgInit = true;
+  }
 }
+
+$("cfg").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const msg = $("cfgMsg");
+  msg.textContent = "Speichere…";
+  msg.style.color = "#888";
+  const form = new FormData(e.target);
+  const body = new URLSearchParams();
+  for (const [k, v] of form.entries()) body.append(k, v);
+  try {
+    const r = await fetch("/api/config", {
+      method: "POST",
+      headers: {"Content-Type": "application/x-www-form-urlencoded"},
+      body: body.toString(),
+    });
+    const d = await r.json().catch(() => ({}));
+    if (r.ok && d.ok){
+      msg.textContent = d.message || "Gespeichert.";
+      msg.style.color = "#188038";
+      // Clear the password fields so they don't linger.
+      $("sipPass").value = "";
+      $("pbToken").value = "";
+    } else {
+      msg.textContent = "Fehler: " + (d.message || r.statusText);
+      msg.style.color = "#d93025";
+    }
+  } catch (err) {
+    msg.textContent = "Netzwerkfehler";
+    msg.style.color = "#d93025";
+  }
+});
 
 async function refreshCalls(){
   const d = await fetchJson("/api/calls");

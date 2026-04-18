@@ -12,6 +12,7 @@
 #include "cJSON.h"
 
 #include "config.h"
+#include "sip_register.h"
 #include "stats.h"
 
 static const char *TAG = "web";
@@ -134,6 +135,126 @@ static esp_err_t handle_calls(httpd_req_t *req)
     return ESP_OK;
 }
 
+// --- URL-encoded form parsing --------------------------------------
+
+static int hex_digit(char c)
+{
+    if (c >= '0' && c <= '9') return c - '0';
+    if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+    if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+    return -1;
+}
+
+// Decode src (percent-encoded, '+' = space) into dst; NUL-terminates.
+static void url_decode(const char *src, int src_len, char *dst, size_t cap)
+{
+    size_t o = 0;
+    for (int i = 0; i < src_len && o + 1 < cap; i++) {
+        char c = src[i];
+        if (c == '+') {
+            dst[o++] = ' ';
+        } else if (c == '%' && i + 2 < src_len) {
+            int hi = hex_digit(src[i + 1]);
+            int lo = hex_digit(src[i + 2]);
+            if (hi >= 0 && lo >= 0) {
+                dst[o++] = (char)((hi << 4) | lo);
+                i += 2;
+            } else {
+                dst[o++] = c;
+            }
+        } else {
+            dst[o++] = c;
+        }
+    }
+    dst[o] = '\0';
+}
+
+// Look up `key` in a URL-encoded body, copy the (decoded) value into
+// `out`. Returns true if the key was present (even if empty value).
+static bool form_get(const char *body, const char *key, char *out, size_t cap)
+{
+    size_t keylen = strlen(key);
+    const char *p = body;
+    while (*p) {
+        if (strncmp(p, key, keylen) == 0 && p[keylen] == '=') {
+            const char *v = p + keylen + 1;
+            const char *end = v;
+            while (*end && *end != '&') end++;
+            url_decode(v, (int)(end - v), out, cap);
+            return true;
+        }
+        while (*p && *p != '&') p++;
+        if (*p == '&') p++;
+    }
+    out[0] = '\0';
+    return false;
+}
+
+static esp_err_t handle_config_post(httpd_req_t *req)
+{
+    int total = req->content_len;
+    if (total <= 0 || total > 1024) {
+        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "body missing or too large");
+        return ESP_OK;
+    }
+    char *body = malloc(total + 1);
+    if (!body) {
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "oom");
+        return ESP_OK;
+    }
+    int got = 0;
+    while (got < total) {
+        int n = httpd_req_recv(req, body + got, total - got);
+        if (n <= 0) {
+            free(body);
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "recv");
+            return ESP_OK;
+        }
+        got += n;
+    }
+    body[got] = '\0';
+
+    char sip_host[64], sip_user[32], sip_pass[64];
+    char pb_url[128],  pb_token[64];
+    char sip_port_s[8] = "", sip_exp_s[8] = "";
+
+    bool have_sip_host  = form_get(body, "sip_host",  sip_host,  sizeof(sip_host));
+    bool have_sip_user  = form_get(body, "sip_user",  sip_user,  sizeof(sip_user));
+    bool have_sip_pass  = form_get(body, "sip_pass",  sip_pass,  sizeof(sip_pass));
+    bool have_sip_port  = form_get(body, "sip_port",  sip_port_s, sizeof(sip_port_s));
+    bool have_sip_exp   = form_get(body, "sip_expires", sip_exp_s, sizeof(sip_exp_s));
+    bool have_pb_url    = form_get(body, "pb_url",    pb_url,    sizeof(pb_url));
+    bool have_pb_token  = form_get(body, "pb_token",  pb_token,  sizeof(pb_token));
+    free(body);
+
+    config_update_t u = {
+        .sip_host   = have_sip_host && sip_host[0]  ? sip_host  : NULL,
+        .sip_port   = have_sip_port && sip_port_s[0] ? atoi(sip_port_s) : 0,
+        .sip_user   = have_sip_user && sip_user[0]  ? sip_user  : NULL,
+        // Empty password submitted = keep existing (so user doesn't have to
+        // re-type it when editing other fields).
+        .sip_pass   = have_sip_pass && sip_pass[0]  ? sip_pass  : NULL,
+        .sip_expires = have_sip_exp && sip_exp_s[0] ? atoi(sip_exp_s) : 0,
+        .phoneblock_base_url = have_pb_url   && pb_url[0]   ? pb_url   : NULL,
+        .phoneblock_token    = have_pb_token && pb_token[0] ? pb_token : NULL,
+    };
+
+    esp_err_t err = config_update(&u);
+    if (err != ESP_OK) {
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "nvs write failed");
+        return ESP_OK;
+    }
+
+    // Signal the SIP task to re-register with the new credentials.
+    sip_register_request_reload();
+
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddBoolToObject(root, "ok", true);
+    cJSON_AddStringToObject(root, "message", "Gespeichert, Re-Registrierung läuft");
+    send_json(req, root);
+    return ESP_OK;
+}
+
 static esp_err_t handle_errors(httpd_req_t *req)
 {
     stats_error_t errs[STATS_MAX_ERRORS];
@@ -156,10 +277,11 @@ static esp_err_t handle_errors(httpd_req_t *req)
 // --- Server lifecycle -----------------------------------------------
 
 static const httpd_uri_t URIS[] = {
-    { .uri = "/",            .method = HTTP_GET, .handler = handle_root,    .user_ctx = NULL },
-    { .uri = "/api/status",  .method = HTTP_GET, .handler = handle_status,  .user_ctx = NULL },
-    { .uri = "/api/calls",   .method = HTTP_GET, .handler = handle_calls,   .user_ctx = NULL },
-    { .uri = "/api/errors",  .method = HTTP_GET, .handler = handle_errors,  .user_ctx = NULL },
+    { .uri = "/",            .method = HTTP_GET,  .handler = handle_root,        .user_ctx = NULL },
+    { .uri = "/api/status",  .method = HTTP_GET,  .handler = handle_status,      .user_ctx = NULL },
+    { .uri = "/api/calls",   .method = HTTP_GET,  .handler = handle_calls,       .user_ctx = NULL },
+    { .uri = "/api/errors",  .method = HTTP_GET,  .handler = handle_errors,      .user_ctx = NULL },
+    { .uri = "/api/config",  .method = HTTP_POST, .handler = handle_config_post, .user_ctx = NULL },
 };
 
 void web_start(void)

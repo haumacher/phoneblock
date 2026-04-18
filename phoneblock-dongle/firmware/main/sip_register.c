@@ -87,10 +87,16 @@ typedef struct {
 } sip_ctx_t;
 
 static bool s_registered = false;
+static volatile bool s_reload_requested = false;
 
 bool sip_register_is_registered(void)
 {
     return s_registered;
+}
+
+void sip_register_request_reload(void)
+{
+    s_reload_requested = true;
 }
 
 // ---------------------------------------------------------------------------
@@ -1082,6 +1088,27 @@ static void sip_task(void *arg)
     }
 
     while (1) {
+        // Config changed? Re-register with the new credentials before
+        // going back to sleep in select(). The web-UI POST handler sets
+        // the flag via sip_register_request_reload().
+        if (s_reload_requested) {
+            s_reload_requested = false;
+            ESP_LOGI(TAG, "config reload requested → re-REGISTER with new creds");
+            // Refresh registrar address too, in case host changed.
+            resolve_registrar(&ctx);
+            ok = do_register(&ctx);
+            s_registered = ok;
+            stats_record_sip_state(ok);
+            if (ok) {
+                ESP_LOGI(TAG, "re-REGISTERED after config change");
+                refresh_at_us = esp_timer_get_time() + (int64_t)(config_sip_expires() / 2) * 1000000LL;
+            } else {
+                ESP_LOGE(TAG, "REGISTER with new config failed, retry in %d s", retry_delay_s);
+                stats_record_error("sip", "REGISTER with new config failed");
+                refresh_at_us = esp_timer_get_time() + (int64_t)retry_delay_s * 1000000LL;
+            }
+        }
+
         int64_t now = esp_timer_get_time();
         // Next wake-up: whichever of {REGISTER refresh, BYE-after-stream}
         // is sooner. bye_at_us == 0 disables that deadline.
