@@ -14,6 +14,13 @@ CONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL=y
 # Main task stack: 8 KB is enough for cJSON + TLS + example helpers.
 CONFIG_ESP_MAIN_TASK_STACK_SIZE=8192
 
+# HTTP server: browsers return from the phoneblock.net OAuth flow with
+# sizeable referrer + cookie + security headers (Chrome easily hits 1.5 kB
+# on a single request). The default 512-byte buffer rejects those with
+# HTTP 431. 4 kB covers anything a real browser will ever send.
+CONFIG_HTTPD_MAX_REQ_HDR_LEN=4096
+CONFIG_HTTPD_MAX_URI_LEN=1024
+
 # PhoneBlock defaults. Real token goes into sdkconfig.defaults.local
 # (gitignored) or via `idf.py menuconfig`.
 CONFIG_PHONEBLOCK_BASE_URL="https://phoneblock.net/phoneblock/api"
