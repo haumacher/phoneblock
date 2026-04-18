@@ -22,6 +22,7 @@
 #include "sdkconfig.h"
 #include "api.h"
 #include "sip_parse.h"
+#include "rtp.h"
 
 static const char *TAG = "sip";
 
@@ -31,28 +32,28 @@ static const char *TAG = "sip";
 #define SIP_RECV_TIMEOUT_S   3
 #define SIP_MAX_CHALLENGE    256
 
-// Dummy RTP port advertised in the SDP of our 200 OK. The dongle never
-// actually listens on it; any RTP arriving there is dropped by the kernel.
-#define SIP_DUMMY_RTP_PORT   5004
-
 typedef enum {
     DIALOG_IDLE,        // no active call
     DIALOG_TRYING,      // received INVITE, 100 Trying sent, deciding
-    DIALOG_ANSWERED,    // sent 200 OK with SDP, waiting for ACK → then BYE
+    DIALOG_ANSWERED,    // sent 200 OK with SDP, waiting for ACK → then stream
+    DIALOG_STREAMING,   // playing tone to spam caller, BYE scheduled
     DIALOG_REJECTED,    // sent 486/480, waiting for ACK
     DIALOG_BYE_SENT,    // sent BYE, waiting for 200 OK
 } dialog_state_t;
 
 typedef struct {
     dialog_state_t state;
-    char call_id[128];        // Call-ID of the active INVITE (dedupe key)
-    char from_tag[64];        // remote's From tag
-    char our_tag[20];         // our To tag (used as From tag in later BYE)
-    char remote_uri[128];     // From URI, used as R-URI of our BYE
-    uint32_t in_cseq;         // CSeq number of the original INVITE
-    uint32_t out_cseq;        // next CSeq for our outgoing in-dialog requests
-    struct sockaddr_in peer;  // where to send in-dialog responses/requests
-    verdict_t verdict;        // cached API result for this call
+    char call_id[128];            // Call-ID of the active INVITE (dedupe key)
+    char from_tag[64];            // remote's From tag
+    char our_tag[20];             // our To tag (used as From tag in later BYE)
+    char remote_uri[128];         // From URI, used as R-URI of our BYE
+    uint32_t in_cseq;             // CSeq number of the original INVITE
+    uint32_t out_cseq;            // next CSeq for our outgoing in-dialog requests
+    struct sockaddr_in peer;      // where to send in-dialog responses/requests
+    struct sockaddr_in rtp_dest;  // remote RTP endpoint (from INVITE SDP)
+    bool     rtp_dest_valid;      // true if we successfully parsed c= / m=
+    int64_t  bye_at_us;           // abs. deadline to send BYE (0 = no deadline)
+    verdict_t verdict;            // cached API result for this call
 } dialog_t;
 
 typedef struct {
@@ -609,10 +610,8 @@ static void send_response(sip_ctx_t *c, const struct sockaddr_in *peer,
 }
 
 
-// Write a minimal SDP body announcing PCMA audio. The port is a fixed
-// placeholder — the dongle never actually listens on it. Fritz!Box
-// accepts the call, the caller may start sending RTP, the kernel drops
-// the packets, and we hang up via BYE anyway.
+// Write a minimal SDP body announcing PCMA audio on our local RTP port.
+// The RTP task binds that port just-in-time and streams a tone there.
 static int build_sdp_body(const char *our_ip, char *out, int cap)
 {
     return snprintf(out, cap,
@@ -624,7 +623,7 @@ static int build_sdp_body(const char *our_ip, char *out, int cap)
         "m=audio %d RTP/AVP 8\r\n"
         "a=rtpmap:8 PCMA/8000\r\n"
         "a=sendrecv\r\n",
-        our_ip, our_ip, SIP_DUMMY_RTP_PORT);
+        our_ip, our_ip, SIP_RTP_PORT);
 }
 
 // ---------------------------------------------------------------------------
@@ -654,6 +653,27 @@ static void capture_dialog(sip_ctx_t *c, const char *req, int req_len,
     }
 
     random_hex(d->our_tag, 16);
+
+    // Parse the remote RTP endpoint from the INVITE's SDP body, so we
+    // can stream a tone there after answering. Failure here is tolerable
+    // — we just skip the streaming and send BYE immediately after ACK.
+    char rtp_ip[INET_ADDRSTRLEN] = {0};
+    parse_sdp_connection_ip(req, req_len, rtp_ip, sizeof(rtp_ip));
+    int rtp_port = parse_sdp_audio_port(req, req_len);
+    d->rtp_dest_valid = false;
+    if (rtp_ip[0] && rtp_port > 0) {
+        struct in_addr addr;
+        if (inet_aton(rtp_ip, &addr)) {
+            d->rtp_dest.sin_family      = AF_INET;
+            d->rtp_dest.sin_addr        = addr;
+            d->rtp_dest.sin_port        = htons(rtp_port);
+            d->rtp_dest_valid           = true;
+            ESP_LOGI(TAG, "remote RTP endpoint parsed: %s:%d", rtp_ip, rtp_port);
+        }
+    }
+    if (!d->rtp_dest_valid) {
+        ESP_LOGW(TAG, "could not parse remote RTP endpoint — no tone will play");
+    }
 }
 
 // Build a BYE for the active answered dialog.
@@ -775,7 +795,8 @@ static void resend_last_response(sip_ctx_t *c, const char *req, int req_len,
             send_response(c, from, req, req_len, 100, "Trying",
                           d->our_tag, NULL);
             break;
-        case DIALOG_ANSWERED: {
+        case DIALOG_ANSWERED:
+        case DIALOG_STREAMING: {
             char sdp[256];
             build_sdp_body(c->local_ip, sdp, sizeof(sdp));
             send_response(c, from, req, req_len, 200, "OK",
@@ -852,9 +873,18 @@ static void handle_ack(sip_ctx_t *c, const char *req, int req_len,
     }
 
     if (d->state == DIALOG_ANSWERED) {
-        // Spam call: we answered with 200, ACK confirms, now hang up.
-        ESP_LOGI(TAG, "ACK received after 200 OK → sending BYE");
-        send_bye(c);
+        // Spam call: we answered with 200 OK, ACK confirms.
+        int duration = CONFIG_RTP_TONE_DURATION_MS;
+        if (duration > 0 && d->rtp_dest_valid) {
+            ESP_LOGI(TAG, "ACK received → starting tone (%d ms), then BYE",
+                     duration);
+            rtp_play_tone(&d->rtp_dest, duration);
+            d->bye_at_us = esp_timer_get_time() + (int64_t)duration * 1000LL;
+            d->state = DIALOG_STREAMING;
+        } else {
+            ESP_LOGI(TAG, "ACK received → skipping tone, sending BYE");
+            send_bye(c);
+        }
     } else if (d->state == DIALOG_REJECTED) {
         // Non-spam: we rejected with 486, ACK confirms, dialog done.
         ESP_LOGI(TAG, "ACK received after 486 → dialog closed");
@@ -1018,7 +1048,13 @@ static void sip_task(void *arg)
 
     while (1) {
         int64_t now = esp_timer_get_time();
-        int64_t remaining_us = refresh_at_us - now;
+        // Next wake-up: whichever of {REGISTER refresh, BYE-after-stream}
+        // is sooner. bye_at_us == 0 disables that deadline.
+        int64_t deadline = refresh_at_us;
+        if (ctx.dialog.bye_at_us && ctx.dialog.bye_at_us < deadline) {
+            deadline = ctx.dialog.bye_at_us;
+        }
+        int64_t remaining_us = deadline - now;
         if (remaining_us <= 0) remaining_us = 1;
 
         struct timeval tv = {
@@ -1037,7 +1073,18 @@ static void sip_task(void *arg)
         }
 
         if (s == 0) {
-            // Deadline hit → refresh REGISTER.
+            now = esp_timer_get_time();
+            // BYE deadline first — the dialog is still active and needs
+            // tearing down before anything else.
+            if (ctx.dialog.bye_at_us && now >= ctx.dialog.bye_at_us) {
+                ctx.dialog.bye_at_us = 0;
+                if (ctx.dialog.state == DIALOG_STREAMING) {
+                    ESP_LOGI(TAG, "tone finished → sending BYE");
+                    send_bye(&ctx);
+                }
+                continue;
+            }
+            // REGISTER refresh.
             ok = do_register(&ctx);
             s_registered = ok;
             if (ok) {

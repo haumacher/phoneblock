@@ -84,4 +84,14 @@ menu "PhoneBlock Dongle"
             If the hostfwd maps a different host port to the guest, set
             it here. 0 means "advertise the bound UDP port".
 
+    config RTP_TONE_DURATION_MS
+        int "Duration of the tone played to spam callers (ms)"
+        default 2000
+        range 0 10000
+        help
+            After answering a spam call we play a 440 Hz sine tone to the
+            caller for this many milliseconds, then send BYE. 0 disables
+            audio streaming entirely — BYE is sent immediately after ACK,
+            which is what earlier firmware versions did.
+
 endmenu

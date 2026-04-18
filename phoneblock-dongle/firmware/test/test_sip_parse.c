@@ -14,6 +14,7 @@
 #include <stdbool.h>
 
 #include "sip_parse.h"
+#include "audio.h"
 
 // ---------------------------------------------------------------------------
 // Assertion helpers — each one runs a parser and compares to expected.
@@ -148,6 +149,27 @@ static void expect_same_call_id(bool expected, const char *a, const char *b)
     char both[128];
     snprintf(both, sizeof(both), "'%s' vs '%s'", a ? a : "(null)", b ? b : "(null)");
     report_bool("same_call_id", both, expected, same_call_id(a, b));
+}
+
+static void expect_sdp_ip(const char *expected, const char *msg)
+{
+    char out[32] = {0};
+    parse_sdp_connection_ip(msg, (int)strlen(msg), out, sizeof(out));
+    report_str("parse_sdp_connection_ip", msg, expected, out);
+}
+
+static void expect_sdp_port(int expected, const char *msg)
+{
+    int got = parse_sdp_audio_port(msg, (int)strlen(msg));
+    report_int("parse_sdp_audio_port", msg, expected, got);
+}
+
+static void expect_alaw(uint8_t expected, int16_t pcm)
+{
+    char label[32];
+    snprintf(label, sizeof(label), "%d", pcm);
+    uint8_t got = pcm_to_alaw(pcm);
+    report_int("pcm_to_alaw", label, (long)expected, (long)got);
 }
 
 // ---------------------------------------------------------------------------
@@ -336,6 +358,59 @@ static void test_same_call_id(void)
     expect_same_call_id(false, "abc@host", NULL);
 }
 
+// Sample SDP body as received from a real Fritz!Box INVITE (slightly
+// trimmed). The parsers operate on the full message — SIP headers
+// present or not — so we test both forms.
+static const char *SAMPLE_SDP =
+    "v=0\r\n"
+    "o=user 8030809 8030809 IN IP4 192.168.178.1\r\n"
+    "s=call\r\n"
+    "c=IN IP4 192.168.178.1\r\n"
+    "t=0 0\r\n"
+    "m=audio 7078 RTP/AVP 9 8 0 120 121 101\r\n"
+    "a=rtpmap:120 PCMA/16000\r\n";
+
+static const char *SAMPLE_INVITE_WITH_SDP =
+    "INVITE sip:a@b SIP/2.0\r\n"
+    "Via: SIP/2.0/UDP x\r\n"
+    "From: <sip:c@d>;tag=x\r\nTo: <sip:e@f>\r\n"
+    "Call-ID: abc\r\nCSeq: 1 INVITE\r\n"
+    "Content-Type: application/sdp\r\nContent-Length: 120\r\n\r\n"
+    "v=0\r\nc=IN IP4 10.20.30.40\r\n"
+    "m=audio 49170 RTP/AVP 8\r\na=rtpmap:8 PCMA/8000\r\n";
+
+static void test_parse_sdp(void)
+{
+    expect_sdp_ip("192.168.178.1", SAMPLE_SDP);
+    expect_sdp_port(7078,           SAMPLE_SDP);
+    expect_sdp_ip("10.20.30.40",    SAMPLE_INVITE_WITH_SDP);
+    expect_sdp_port(49170,          SAMPLE_INVITE_WITH_SDP);
+    // Absent SDP.
+    expect_sdp_ip("",               SAMPLE_INVITE);
+    expect_sdp_port(0,              SAMPLE_INVITE);
+    // Empty.
+    expect_sdp_ip("",               "");
+    expect_sdp_port(0,              "");
+    // "c=" mentioned in a header value (not line-anchored) must not match.
+    expect_sdp_ip("", "Subject: note c=IN IP4 1.2.3.4 inline\r\n\r\n");
+}
+
+static void test_pcm_to_alaw(void)
+{
+    // Reference values for the classic G.711 A-law encoding.
+    expect_alaw(0xD5,  0);            // zero / silence
+    expect_alaw(0xAA,  32767);        // positive full scale (after 13-bit)
+    expect_alaw(0x2A, -32768);        // negative full scale
+    // Symmetric: +/-1 flips the sign bit.
+    expect_alaw(0xD5,  7);            // still within the smallest segment
+    expect_alaw(0x55, -8);
+    // Monotonicity spot-check: larger positive PCM → different A-law byte
+    // (exact values follow G.711, we pin a few so the encoder can't be
+    // silently changed).
+    expect_alaw(0xFA,  1000);
+    expect_alaw(0x7A, -1000);
+}
+
 // ---------------------------------------------------------------------------
 
 int main(void)
@@ -353,6 +428,8 @@ int main(void)
     test_looks_dialable();
     test_normalize_de();
     test_same_call_id();
+    test_parse_sdp();
+    test_pcm_to_alaw();
 
     printf("%d tests, %d failures\n", g_tests, g_failures);
     return g_failures == 0 ? 0 : 1;

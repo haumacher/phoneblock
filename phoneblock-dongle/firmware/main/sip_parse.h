@@ -83,3 +83,11 @@ void normalize_de(const char *raw, char *out, int cap);
 // Case-insensitive compare of two non-empty Call-IDs. Returns false if
 // either side is NULL or empty.
 bool same_call_id(const char *a, const char *b);
+
+// Extract the connection IP from the SDP "c=IN IP4 <ip>" line. out is
+// empty if the line is absent.
+void parse_sdp_connection_ip(const char *msg, int msg_len, char *out, int cap);
+
+// Extract the RTP port from the SDP "m=audio <port> …" line. Returns 0
+// if the line is absent or malformed.
+int parse_sdp_audio_port(const char *msg, int msg_len);

@@ -239,3 +239,50 @@ bool same_call_id(const char *a, const char *b)
     if (!a || !b || !*a || !*b) return false;
     return strcasecmp(a, b) == 0;
 }
+
+// Find a line (LF-separated) that starts with the given prefix and
+// return a pointer to the first character *after* the prefix. Matches
+// are line-anchored: "c=" on its own line, not embedded inside some
+// header value. Returns NULL if no such line exists.
+static const char *find_sdp_line(const char *msg, int msg_len,
+                                 const char *prefix)
+{
+    size_t plen = strlen(prefix);
+    const char *p = msg;
+    const char *end = msg + msg_len;
+    bool at_line_start = true;
+    while (p < end) {
+        if (at_line_start && (size_t)(end - p) >= plen
+            && strncmp(p, prefix, plen) == 0) {
+            return p + plen;
+        }
+        at_line_start = (*p == '\n');
+        p++;
+    }
+    return NULL;
+}
+
+void parse_sdp_connection_ip(const char *msg, int msg_len, char *out, int cap)
+{
+    const char *p = find_sdp_line(msg, msg_len, "c=IN IP4 ");
+    if (!p) { out[0] = '\0'; return; }
+    const char *end = msg + msg_len;
+    int n = 0;
+    while (p < end && *p != '\r' && *p != '\n' && *p != ' ' && *p != '/'
+           && n < cap - 1) {
+        out[n++] = *p++;
+    }
+    out[n] = '\0';
+}
+
+int parse_sdp_audio_port(const char *msg, int msg_len)
+{
+    const char *p = find_sdp_line(msg, msg_len, "m=audio ");
+    if (!p) return 0;
+    int port = 0;
+    while (*p >= '0' && *p <= '9') {
+        port = port * 10 + (*p - '0');
+        p++;
+    }
+    return port;
+}
