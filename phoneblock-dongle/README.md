@@ -34,6 +34,11 @@ billigen ESP32 und wird zu einem unauffälligen USB-Stick am Router.
 Varianten wie `WROOM-32UE` (externe Antenne) oder `WROVER-E/IE` (mit PSRAM)
 bringen für diesen Anwendungsfall keinen Mehrwert.
 
+Eine ausführliche Diskussion der Modul- und Board-Alternativen, der
+USB-Seriell-Wandler-Optionen (CP2102 / CH340C / CH9102), des Formfaktors
+(DevKit + Adapterkabel vs. LilyGO T-Dongle-S3 vs. Custom-PCB) und der
+Budget-Analyse findet sich in [HARDWARE.md](HARDWARE.md).
+
 ### Trägerboard
 
 Ein fertiges NodeMCU-32E-Devkit mit CH340- oder CP2102-USB-Seriell-Wandler und
