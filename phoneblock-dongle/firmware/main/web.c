@@ -400,10 +400,25 @@ static esp_err_t handle_register_start(httpd_req_t *req)
     char callback_enc[256];
     url_encode(callback_plain, callback_enc, sizeof(callback_enc));
 
+    // Reuse the existing mobile-login flow on phoneblock.net via its
+    // /mobile/login endpoint. `appId=PhoneBlockDongle` switches the
+    // /create-token servlet into the dynamic-callback branch, where it
+    // echoes our CSRF state back and redirects to our callback URL.
+    // Web context path is at the site root for *.phoneblock.net/pb or
+    // the main deployment; config_phoneblock_base_url() points at the
+    // /api slice, so strip that suffix.
+    char base_site[128];
+    strncpy(base_site, config_phoneblock_base_url(), sizeof(base_site) - 1);
+    base_site[sizeof(base_site) - 1] = '\0';
+    char *api_slash = strstr(base_site, "/api");
+    if (api_slash) *api_slash = '\0';
+
     char url[512];
     snprintf(url, sizeof(url),
-             "%s/dongle-register?callback=%s&state=%s",
-             config_phoneblock_base_url(), callback_enc, s_oauth_nonce);
+             "%s/mobile/login?appId=PhoneBlockDongle&tokenLabel=%s"
+             "&callback=%s&state=%s",
+             base_site, "PhoneBlock-Dongle",
+             callback_enc, s_oauth_nonce);
 
     ESP_LOGI(TAG, "register-start → redirect to %s", url);
     httpd_resp_set_status(req, "302 Found");
@@ -429,7 +444,11 @@ static esp_err_t handle_token_callback(httpd_req_t *req)
     }
     char token[128] = "";
     char state[64]  = "";
-    httpd_query_key_value(query, "token", token, sizeof(token));
+    // Server's /create-token uses `loginToken` as the parameter name;
+    // accept `token` too for robustness if we ever change the server.
+    if (httpd_query_key_value(query, "loginToken", token, sizeof(token)) != ESP_OK) {
+        httpd_query_key_value(query, "token", token, sizeof(token));
+    }
     httpd_query_key_value(query, "state", state, sizeof(state));
 
     if (!s_oauth_nonce[0] || strcmp(state, s_oauth_nonce) != 0) {
