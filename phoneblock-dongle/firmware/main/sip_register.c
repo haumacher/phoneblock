@@ -20,6 +20,7 @@
 #include "lwip/netdb.h"
 
 #include "sdkconfig.h"
+#include "api.h"
 
 static const char *TAG = "sip";
 
@@ -28,6 +29,30 @@ static const char *TAG = "sip";
 #define SIP_TX_BUF_SIZE      2048
 #define SIP_RECV_TIMEOUT_S   3
 #define SIP_MAX_CHALLENGE    256
+
+// Dummy RTP port advertised in the SDP of our 200 OK. The dongle never
+// actually listens on it; any RTP arriving there is dropped by the kernel.
+#define SIP_DUMMY_RTP_PORT   5004
+
+typedef enum {
+    DIALOG_IDLE,        // no active call
+    DIALOG_TRYING,      // received INVITE, 100 Trying sent, deciding
+    DIALOG_ANSWERED,    // sent 200 OK with SDP, waiting for ACK → then BYE
+    DIALOG_REJECTED,    // sent 486/480, waiting for ACK
+    DIALOG_BYE_SENT,    // sent BYE, waiting for 200 OK
+} dialog_state_t;
+
+typedef struct {
+    dialog_state_t state;
+    char call_id[128];        // Call-ID of the active INVITE (dedupe key)
+    char from_tag[64];        // remote's From tag
+    char our_tag[20];         // our To tag (used as From tag in later BYE)
+    char remote_uri[128];     // From URI, used as R-URI of our BYE
+    uint32_t in_cseq;         // CSeq number of the original INVITE
+    uint32_t out_cseq;        // next CSeq for our outgoing in-dialog requests
+    struct sockaddr_in peer;  // where to send in-dialog responses/requests
+    verdict_t verdict;        // cached API result for this call
+} dialog_t;
 
 typedef struct {
     // Parsed auth challenge from the 401 response.
@@ -41,13 +66,14 @@ typedef struct {
 
 typedef struct {
     char     local_ip[INET_ADDRSTRLEN];
-    char     call_id[40];
-    char     from_tag[20];
-    uint32_t cseq;
+    char     call_id[40];       // Call-ID we use for REGISTER
+    char     from_tag[20];      // From tag we use for REGISTER
+    uint32_t cseq;              // CSeq for REGISTER
     int      sock;
     struct sockaddr_in registrar;
     auth_challenge_t challenge;
     bool     registered;
+    dialog_t dialog;            // at most one call at a time
 } sip_ctx_t;
 
 static bool s_registered = false;
@@ -78,12 +104,22 @@ static void md5_str(const char *in, char *out_hex33)
     bytes_to_hex(digest, 16, out_hex33);
 }
 
-static void random_hex(char *out, size_t hex_bytes)
+// Write exactly hex_chars of random hex into out, NUL-terminated.
+// Previous implementation always wrote 33 bytes regardless of hex_chars,
+// causing a silent stack/struct overflow for any smaller buffer.
+static void random_hex(char *out, size_t hex_chars)
 {
-    uint32_t r[4];
-    for (int i = 0; i < 4; i++) r[i] = esp_random();
-    bytes_to_hex((uint8_t *)r, sizeof(r), out);
-    out[hex_bytes] = '\0';
+    static const char hex[] = "0123456789abcdef";
+    size_t i = 0;
+    while (i < hex_chars) {
+        uint32_t r = esp_random();
+        for (int b = 0; b < 4 && i < hex_chars; b++) {
+            out[i++] = hex[(r >> 4) & 0x0f];
+            if (i < hex_chars) out[i++] = hex[r & 0x0f];
+            r >>= 8;
+        }
+    }
+    out[hex_chars] = '\0';
 }
 
 // ---------------------------------------------------------------------------
@@ -554,14 +590,26 @@ static int echo_to_with_tag(const char *req, int req_len,
 }
 
 // Build a SIP response that echoes routing headers (Via/From/To/Call-ID/
-// CSeq) from the request, adds Contact + Allow + User-Agent, and terminates
-// with Content-Length: 0. Caller provides the status line content.
+// CSeq) from the request, adds Contact + Allow + User-Agent, an optional
+// SDP body, and a matching Content-Length. Caller provides the status line,
+// an optional fixed To-tag (NULL → generate a fresh one, for stateless
+// responses like OPTIONS), and an optional body (NULL → empty).
 static int build_response(sip_ctx_t *c, const char *req, int req_len,
                           int status, const char *reason,
+                          const char *our_tag_override,
+                          const char *body,
                           char *out, int out_cap)
 {
-    char our_tag[20];
-    random_hex(our_tag, 16);
+    char tag_buf[20];
+    const char *our_tag;
+    if (our_tag_override && our_tag_override[0]) {
+        our_tag = our_tag_override;
+    } else {
+        random_hex(tag_buf, 16);
+        our_tag = tag_buf;
+    }
+
+    int body_len = body ? (int)strlen(body) : 0;
 
     int n = snprintf(out, out_cap, "SIP/2.0 %d %s\r\n", status, reason);
     n += echo_header_line(req, req_len, "Via", out + n, out_cap - n);
@@ -572,15 +620,26 @@ static int build_response(sip_ctx_t *c, const char *req, int req_len,
     n += snprintf(out + n, out_cap - n,
         "Contact: <sip:%s@%s:%d>\r\n"
         "Allow: INVITE, ACK, CANCEL, BYE, OPTIONS\r\n"
-        "User-Agent: phoneblock-dongle/0.1\r\n"
-        "Content-Length: 0\r\n\r\n",
+        "User-Agent: phoneblock-dongle/0.1\r\n",
         CONFIG_SIP_USERNAME, advertised_host(c), advertised_port());
+
+    if (body_len > 0) {
+        n += snprintf(out + n, out_cap - n,
+            "Content-Type: application/sdp\r\n"
+            "Content-Length: %d\r\n\r\n%s",
+            body_len, body);
+    } else {
+        n += snprintf(out + n, out_cap - n,
+            "Content-Length: 0\r\n\r\n");
+    }
     return n;
 }
 
 static void send_response(sip_ctx_t *c, const struct sockaddr_in *peer,
                           const char *req, int req_len,
-                          int status, const char *reason)
+                          int status, const char *reason,
+                          const char *our_tag_override,
+                          const char *body)
 {
     char *tx = malloc(SIP_TX_BUF_SIZE);
     if (!tx) {
@@ -588,7 +647,7 @@ static void send_response(sip_ctx_t *c, const struct sockaddr_in *peer,
         return;
     }
     int tx_len = build_response(c, req, req_len, status, reason,
-                                tx, SIP_TX_BUF_SIZE);
+                                our_tag_override, body, tx, SIP_TX_BUF_SIZE);
     ESP_LOGI(TAG, "→ %d %s (%d bytes):\n%.*s", status, reason, tx_len, tx_len, tx);
     int n = sendto(c->sock, tx, tx_len, 0,
                    (struct sockaddr *)peer, sizeof(*peer));
@@ -610,6 +669,417 @@ static int parse_method(const char *pkt, int len, char *method, int cap)
     return i;
 }
 
+// Extract the CSeq number from the request ("CSeq: 12345 METHOD").
+static uint32_t parse_cseq(const char *req, int req_len)
+{
+    const char *p = find_header(req, req_len, "CSeq");
+    if (!p) return 0;
+    uint32_t n = 0;
+    while (*p >= '0' && *p <= '9') {
+        n = n * 10 + (*p - '0');
+        p++;
+    }
+    return n;
+}
+
+// Extract the Call-ID value, trimmed.
+static void parse_call_id(const char *req, int req_len, char *out, int cap)
+{
+    const char *p = find_header(req, req_len, "Call-ID");
+    if (!p) { out[0] = '\0'; return; }
+    const char *end = req + req_len;
+    int n = 0;
+    while (p < end && *p != '\r' && *p != '\n' && n < cap - 1) {
+        out[n++] = *p++;
+    }
+    out[n] = '\0';
+    // trim trailing whitespace
+    while (n > 0 && (out[n - 1] == ' ' || out[n - 1] == '\t')) out[--n] = '\0';
+}
+
+// Extract the value of a ";tag=..." parameter from a header value.
+static void parse_tag(const char *hdr_val, int val_len, char *out, int cap)
+{
+    const char *end = hdr_val + val_len;
+    const char *p = hdr_val;
+    while (p + 5 < end) {
+        if (strncasecmp(p, ";tag=", 5) == 0) {
+            p += 5;
+            int n = 0;
+            while (p < end && *p != ';' && *p != ' ' && *p != '\t'
+                   && *p != '\r' && *p != '\n' && n < cap - 1) {
+                out[n++] = *p++;
+            }
+            out[n] = '\0';
+            return;
+        }
+        p++;
+    }
+    out[0] = '\0';
+}
+
+// Extract the URI from a SIP URI-containing header (From/To/Contact):
+//   "Name" <sip:user@host:port;params>;tag=xyz
+//                ^^^^^^^^^^^^^^^^^^
+//   → sip:user@host:port (parameters stripped)
+// If no <...> brackets present, take from "sip:" up to ';' or whitespace.
+static void parse_uri(const char *hdr_val, int val_len, char *out, int cap)
+{
+    const char *end = hdr_val + val_len;
+    const char *lt = NULL, *gt = NULL;
+    for (const char *p = hdr_val; p < end; p++) {
+        if (*p == '<') lt = p + 1;
+        else if (*p == '>') { gt = p; break; }
+    }
+    const char *start, *stop;
+    if (lt && gt && gt > lt) {
+        start = lt; stop = gt;
+    } else {
+        // Find "sip:" in the value.
+        start = hdr_val;
+        while (start + 4 < end && strncasecmp(start, "sip:", 4) != 0) start++;
+        if (start + 4 >= end) { out[0] = '\0'; return; }
+        stop = start;
+        while (stop < end && *stop != ';' && *stop != ' ' && *stop != '\t'
+               && *stop != '\r' && *stop != '\n') stop++;
+    }
+    // Strip URI parameters (everything after the first ';').
+    const char *semi = start;
+    while (semi < stop && *semi != ';') semi++;
+    if (semi < stop) stop = semi;
+
+    int n = stop - start;
+    if (n >= cap) n = cap - 1;
+    memcpy(out, start, n);
+    out[n] = '\0';
+}
+
+// Extract the user part of a SIP URI: "sip:01234@fritz.box" → "01234".
+// Returns length written (excluding NUL). Empty if URI malformed.
+static int user_from_uri(const char *uri, char *out, int cap)
+{
+    const char *p = uri;
+    if (strncasecmp(p, "sip:", 4) == 0) p += 4;
+    else if (strncasecmp(p, "sips:", 5) == 0) p += 5;
+    else if (strncasecmp(p, "tel:", 4) == 0) p += 4;
+    int n = 0;
+    while (*p && *p != '@' && *p != ';' && *p != ':' && n < cap - 1) {
+        out[n++] = *p++;
+    }
+    out[n] = '\0';
+    return n;
+}
+
+// Minimal German-centric number normalization for the PhoneBlock API.
+// The server normalizes further (national/international format), but we
+// standardize the leading prefix: international "+49..." becomes national
+// "0...", and whitespace/dashes are dropped.
+static void normalize_de(const char *raw, char *out, int cap)
+{
+    char buf[48];
+    int n = 0;
+    for (const char *p = raw; *p && n < (int)sizeof(buf) - 1; p++) {
+        if (*p == ' ' || *p == '-' || *p == '(' || *p == ')' || *p == '/') continue;
+        buf[n++] = *p;
+    }
+    buf[n] = '\0';
+
+    const char *src = buf;
+    int w = 0;
+    if (strncmp(src, "+49", 3) == 0) {
+        out[w++] = '0';
+        src += 3;
+    } else if (strncmp(src, "0049", 4) == 0) {
+        out[w++] = '0';
+        src += 4;
+    }
+    while (*src && w < cap - 1) {
+        out[w++] = *src++;
+    }
+    out[w] = '\0';
+}
+
+// Write a minimal SDP body announcing PCMA audio. The port is a fixed
+// placeholder — the dongle never actually listens on it. Fritz!Box
+// accepts the call, the caller may start sending RTP, the kernel drops
+// the packets, and we hang up via BYE anyway.
+static int build_sdp_body(const char *our_ip, char *out, int cap)
+{
+    return snprintf(out, cap,
+        "v=0\r\n"
+        "o=phoneblock-dongle 0 0 IN IP4 %s\r\n"
+        "s=-\r\n"
+        "c=IN IP4 %s\r\n"
+        "t=0 0\r\n"
+        "m=audio %d RTP/AVP 8\r\n"
+        "a=rtpmap:8 PCMA/8000\r\n"
+        "a=sendrecv\r\n",
+        our_ip, our_ip, SIP_DUMMY_RTP_PORT);
+}
+
+// ---------------------------------------------------------------------------
+// Dialog / INVITE handling
+// ---------------------------------------------------------------------------
+
+// Compare two non-empty Call-IDs (case-insensitive, trimmed).
+static bool same_call_id(const char *a, const char *b)
+{
+    if (!a || !b || !*a || !*b) return false;
+    return strcasecmp(a, b) == 0;
+}
+
+// Extract and store the dialog-identifying fields of a fresh INVITE so we
+// can reference them when sending ACK/BYE/responses later.
+static void capture_dialog(sip_ctx_t *c, const char *req, int req_len,
+                           const struct sockaddr_in *from)
+{
+    dialog_t *d = &c->dialog;
+
+    parse_call_id(req, req_len, d->call_id, sizeof(d->call_id));
+    d->in_cseq = parse_cseq(req, req_len);
+    d->out_cseq = 1;
+    d->peer = *from;
+
+    const char *hdr = find_header(req, req_len, "From");
+    if (hdr) {
+        const char *end = req + req_len;
+        const char *eol = hdr;
+        while (eol < end && *eol != '\r' && *eol != '\n') eol++;
+        int val_len = (int)(eol - hdr);
+        parse_uri(hdr, val_len, d->remote_uri, sizeof(d->remote_uri));
+        parse_tag(hdr, val_len, d->from_tag, sizeof(d->from_tag));
+    }
+
+    random_hex(d->our_tag, 16);
+}
+
+// Build a BYE for the active answered dialog.
+static int build_bye(sip_ctx_t *c, char *buf, int cap)
+{
+    dialog_t *d = &c->dialog;
+    char branch[20];
+    random_hex(branch, 16);
+
+    const char *our_host = advertised_host(c);
+    int our_port = advertised_port();
+
+    return snprintf(buf, cap,
+        "BYE %s SIP/2.0\r\n"
+        "Via: SIP/2.0/UDP %s:%d;branch=z9hG4bK%s;rport\r\n"
+        "Max-Forwards: 70\r\n"
+        "From: <sip:%s@%s:%d>;tag=%s\r\n"
+        "To: <%s>;tag=%s\r\n"
+        "Call-ID: %s\r\n"
+        "CSeq: %lu BYE\r\n"
+        "Contact: <sip:%s@%s:%d>\r\n"
+        "User-Agent: phoneblock-dongle/0.1\r\n"
+        "Content-Length: 0\r\n\r\n",
+        d->remote_uri,
+        our_host, our_port, branch,
+        CONFIG_SIP_USERNAME, advertised_host(c), our_port, d->our_tag,
+        d->remote_uri, d->from_tag,
+        d->call_id,
+        (unsigned long)d->out_cseq,
+        CONFIG_SIP_USERNAME, our_host, our_port);
+}
+
+static void send_bye(sip_ctx_t *c)
+{
+    dialog_t *d = &c->dialog;
+    d->out_cseq++;
+
+    char *tx = malloc(SIP_TX_BUF_SIZE);
+    if (!tx) {
+        ESP_LOGE(TAG, "malloc for BYE failed");
+        return;
+    }
+    int tx_len = build_bye(c, tx, SIP_TX_BUF_SIZE);
+    ESP_LOGI(TAG, "→ BYE (%d bytes):\n%.*s", tx_len, tx_len, tx);
+
+    int n = sendto(c->sock, tx, tx_len, 0,
+                   (struct sockaddr *)&d->peer, sizeof(d->peer));
+    if (n < 0) {
+        ESP_LOGE(TAG, "sendto(BYE): %s", strerror(errno));
+    }
+    free(tx);
+    d->state = DIALOG_BYE_SENT;
+}
+
+// Extract the caller's number (user part of the From URI), normalize it
+// for Germany, and query the PhoneBlock API.
+static verdict_t check_invite_caller(const char *req, int req_len)
+{
+    const char *hdr = find_header(req, req_len, "From");
+    if (!hdr) {
+        ESP_LOGW(TAG, "INVITE without From header");
+        return VERDICT_ERROR;
+    }
+    const char *end = req + req_len;
+    const char *eol = hdr;
+    while (eol < end && *eol != '\r' && *eol != '\n') eol++;
+    int val_len = (int)(eol - hdr);
+
+    char uri[128];
+    parse_uri(hdr, val_len, uri, sizeof(uri));
+
+    char raw_user[64];
+    if (user_from_uri(uri, raw_user, sizeof(raw_user)) == 0) {
+        ESP_LOGW(TAG, "could not extract user from From URI '%s'", uri);
+        return VERDICT_ERROR;
+    }
+
+    char number[64];
+    normalize_de(raw_user, number, sizeof(number));
+    ESP_LOGI(TAG, "caller URI=%s raw=%s normalized=%s", uri, raw_user, number);
+
+    return phoneblock_check(number);
+}
+
+// Resend our most recent response for the active dialog — needed when the
+// Fritz!Box retransmits an INVITE because its earlier wait for our final
+// response timed out. Must be idempotent: reuses the stored dialog tag, no
+// state change.
+static void resend_last_response(sip_ctx_t *c, const char *req, int req_len,
+                                 const struct sockaddr_in *from)
+{
+    dialog_t *d = &c->dialog;
+    switch (d->state) {
+        case DIALOG_TRYING:
+            send_response(c, from, req, req_len, 100, "Trying",
+                          d->our_tag, NULL);
+            break;
+        case DIALOG_ANSWERED: {
+            char sdp[256];
+            build_sdp_body(c->local_ip, sdp, sizeof(sdp));
+            send_response(c, from, req, req_len, 200, "OK",
+                          d->our_tag, sdp);
+            break;
+        }
+        case DIALOG_REJECTED:
+            send_response(c, from, req, req_len, 486, "Busy Here",
+                          d->our_tag, NULL);
+            break;
+        default:
+            ESP_LOGW(TAG, "INVITE retransmit in state %d, ignoring", d->state);
+            break;
+    }
+}
+
+static void handle_invite(sip_ctx_t *c, const char *req, int req_len,
+                          const struct sockaddr_in *from)
+{
+    dialog_t *d = &c->dialog;
+    char incoming_cid[128];
+    parse_call_id(req, req_len, incoming_cid, sizeof(incoming_cid));
+
+    // Re-transmission of the INVITE we're already processing?
+    if (d->state != DIALOG_IDLE && same_call_id(d->call_id, incoming_cid)) {
+        ESP_LOGI(TAG, "INVITE retransmit for active Call-ID, resending");
+        resend_last_response(c, req, req_len, from);
+        return;
+    }
+
+    // Second call arriving while we're busy with another: politely decline.
+    if (d->state != DIALOG_IDLE) {
+        ESP_LOGW(TAG, "second INVITE while dialog active → 486 Busy Here");
+        send_response(c, from, req, req_len, 486, "Busy Here", NULL, NULL);
+        return;
+    }
+
+    capture_dialog(c, req, req_len, from);
+    d->state = DIALOG_TRYING;
+    ESP_LOGI(TAG, "INVITE accepted, Call-ID=%s, checking caller…", d->call_id);
+
+    // Stop Fritz!Box retransmits immediately.
+    send_response(c, from, req, req_len, 100, "Trying", d->our_tag, NULL);
+
+    // Synchronous API check. Budget is ~500 ms–1 s; Fritz!Box waits longer
+    // than that. Later this can move to a worker task if needed.
+    d->verdict = check_invite_caller(req, req_len);
+
+    if (d->verdict == VERDICT_SPAM) {
+        char sdp[256];
+        build_sdp_body(c->local_ip, sdp, sizeof(sdp));
+        send_response(c, from, req, req_len, 200, "OK", d->our_tag, sdp);
+        d->state = DIALOG_ANSWERED;
+        ESP_LOGI(TAG, "SPAM → 200 OK sent, waiting for ACK to hang up");
+    } else {
+        // VERDICT_LEGITIMATE or VERDICT_ERROR → don't take the call. 486
+        // Busy Here lets the Fritz!Box continue ringing the real phones.
+        send_response(c, from, req, req_len, 486, "Busy Here", d->our_tag, NULL);
+        d->state = DIALOG_REJECTED;
+        ESP_LOGI(TAG, "%s → 486 Busy sent",
+                 d->verdict == VERDICT_LEGITIMATE ? "LEGITIMATE" : "ERROR");
+    }
+}
+
+static void handle_ack(sip_ctx_t *c, const char *req, int req_len,
+                       const struct sockaddr_in *from)
+{
+    dialog_t *d = &c->dialog;
+    char cid[128];
+    parse_call_id(req, req_len, cid, sizeof(cid));
+    if (!same_call_id(d->call_id, cid)) {
+        ESP_LOGW(TAG, "ACK for unknown Call-ID %s, ignoring", cid);
+        return;
+    }
+
+    if (d->state == DIALOG_ANSWERED) {
+        // Spam call: we answered with 200, ACK confirms, now hang up.
+        ESP_LOGI(TAG, "ACK received after 200 OK → sending BYE");
+        send_bye(c);
+    } else if (d->state == DIALOG_REJECTED) {
+        // Non-spam: we rejected with 486, ACK confirms, dialog done.
+        ESP_LOGI(TAG, "ACK received after 486 → dialog closed");
+        memset(d, 0, sizeof(*d));
+    } else {
+        ESP_LOGW(TAG, "ACK in unexpected state %d", d->state);
+    }
+}
+
+static void handle_bye(sip_ctx_t *c, const char *req, int req_len,
+                       const struct sockaddr_in *from)
+{
+    dialog_t *d = &c->dialog;
+    char cid[128];
+    parse_call_id(req, req_len, cid, sizeof(cid));
+
+    // Always answer BYE with 200 OK — even if we don't recognize the dialog
+    // (some edge cases, UDP retransmits after we wiped state).
+    send_response(c, from, req, req_len, 200, "OK", d->our_tag, NULL);
+
+    if (same_call_id(d->call_id, cid)) {
+        ESP_LOGI(TAG, "BYE from remote → dialog closed");
+        memset(d, 0, sizeof(*d));
+    }
+}
+
+static void handle_cancel(sip_ctx_t *c, const char *req, int req_len,
+                          const struct sockaddr_in *from)
+{
+    dialog_t *d = &c->dialog;
+    char cid[128];
+    parse_call_id(req, req_len, cid, sizeof(cid));
+
+    // 200 OK on the CANCEL itself.
+    send_response(c, from, req, req_len, 200, "OK", d->our_tag, NULL);
+
+    // If we still had a pending INVITE for this Call-ID, answer it with
+    // 487 Request Terminated so the remote knows the original INVITE is
+    // fully resolved.
+    if (d->state == DIALOG_TRYING && same_call_id(d->call_id, cid)) {
+        ESP_LOGI(TAG, "CANCEL → 487 Request Terminated on original INVITE");
+        // Synthesize a 487 response. We cannot easily reconstruct the
+        // original INVITE's headers here, but the CANCEL's Via/From/To/
+        // Call-ID/CSeq number match by spec — only the CSeq method differs
+        // from INVITE. Fritz!Box is lenient about the CSeq method of 4xx
+        // for a cancelled INVITE; if not, this needs refinement.
+        send_response(c, from, req, req_len, 487, "Request Terminated",
+                      d->our_tag, NULL);
+        memset(d, 0, sizeof(*d));
+    }
+}
+
 static void handle_incoming(sip_ctx_t *c, const char *pkt, int len,
                             const struct sockaddr_in *from)
 {
@@ -620,10 +1090,15 @@ static void handle_incoming(sip_ctx_t *c, const char *pkt, int len,
              from_ip, ntohs(from->sin_port),
              len, len, pkt);
 
-    // Ignore responses — we don't track out-of-dialog requests yet, so a
-    // response packet (first line "SIP/2.0 …") is not expected here.
+    // Handle responses to our own out-of-dialog requests (BYE from us).
     if (len >= 7 && strncmp(pkt, "SIP/2.0", 7) == 0) {
-        ESP_LOGW(TAG, "ignoring stray response");
+        int status = parse_status_code(pkt, len);
+        if (c->dialog.state == DIALOG_BYE_SENT) {
+            ESP_LOGI(TAG, "← %d on BYE → dialog closed", status);
+            memset(&c->dialog, 0, sizeof(c->dialog));
+        } else {
+            ESP_LOGW(TAG, "ignoring stray response %d", status);
+        }
         return;
     }
 
@@ -631,7 +1106,15 @@ static void handle_incoming(sip_ctx_t *c, const char *pkt, int len,
     parse_method(pkt, len, method, sizeof(method));
 
     if (strcmp(method, "OPTIONS") == 0) {
-        send_response(c, from, pkt, len, 200, "OK");
+        send_response(c, from, pkt, len, 200, "OK", NULL, NULL);
+    } else if (strcmp(method, "INVITE") == 0) {
+        handle_invite(c, pkt, len, from);
+    } else if (strcmp(method, "ACK") == 0) {
+        handle_ack(c, pkt, len, from);
+    } else if (strcmp(method, "BYE") == 0) {
+        handle_bye(c, pkt, len, from);
+    } else if (strcmp(method, "CANCEL") == 0) {
+        handle_cancel(c, pkt, len, from);
     } else {
         ESP_LOGW(TAG, "method %s not implemented yet", method);
     }
