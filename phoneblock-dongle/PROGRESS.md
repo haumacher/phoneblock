@@ -112,9 +112,10 @@ Hardware-Entscheidungsmatrix [HARDWARE.md](HARDWARE.md), QEMU-Setup
 2. Am Router den WPS-/„Neues-Gerät"-Knopf drücken → WLAN konfiguriert sich
 3. Im Browser `http://answerbot/` öffnen
 4. Formular: Fritz!Box-Admin-Passwort (fürs Auto-Provisioning der VoIP-
-   Nebenstelle) + PhoneBlock-Bearer-Token
-5. Dongle legt sich selbst als IP-Telefon bei der Fritz!Box an, registriert
-   sich, fertig
+   Nebenstelle) + **Activation Code** (vom Aufkleber auf der Dongle-
+   Verpackung — ersetzt die sonst nötige PhoneBlock-Registrierung)
+5. Dongle legt sich selbst als IP-Telefon bei der Fritz!Box an, aktiviert
+   sich bei phoneblock.net und registriert sich, fertig
 
 Umsetzungsschritte:
 
@@ -131,9 +132,14 @@ Umsetzungsschritte:
   - Umsetzung erst mit echter Hardware testen (QEMU-Routing verzerrt
     DHCP-Hostname-Rückmeldungen)
 - [ ] **Web-UI auf dem Dongle** unter `http://answerbot/`. Minimal:
-  Statusseite + Konfigurationsformular (Fritz!Box-Login,
-  PhoneBlock-Token). Captive-Portal bewusst *nicht* — zu komplex
+  Statusseite + Konfigurationsformular (Fritz!Box-Login +
+  Activation Code). Captive-Portal bewusst *nicht* — zu komplex
   für Laien.
+- [ ] **Anonyme Registrierung via Activation Code** (siehe
+  „Production-Readiness"-Abschnitt für die Server-Seite): Der Dongle
+  POSTet den vom Nutzer eingegebenen Code + seine ESP32-MAC an
+  `/api/device/activate`, bekommt einen Bearer-Token zurück, legt
+  den im NVS ab. Ersetzt die manuelle Registrierung auf phoneblock.net.
 - [ ] **Auto-Provisioning der Fritz!Box-Nebenstelle via TR-064**
   (neues Modul `tr064.{c,h}`, ~470 Zeilen). Ablauf:
   1. Ad-hoc `POST /upnp/control/x_voip` mit SOAPAction
@@ -154,10 +160,13 @@ Umsetzungsschritte:
      nicht. Siehe Kommentar in `fritz_tr64/lib/src/services/voip.dart`.
   8. Referenzimplementierung: `fritz_tr064` Dart-Library, für den
      C-Port die dortige `Tr64Client` + `VoIP` + `auth.dart` recyceln.
-- [ ] **Konfiguration im NVS** statt Kconfig — eine Firmware für alle
-  Dongles: SSID/WLAN-PW (aus WPS), SIP-Username/-PW (aus TR-064),
-  PhoneBlock-Token (aus Web-UI-Formular), optional TR-064-Credentials
-  nur flüchtig speichern (nach Provisioning vergessen).
+- [ ] **Konfiguration im NVS** statt Kconfig — identische Firmware auf
+  allen Dongles:
+  - SSID/WLAN-PW (aus WPS)
+  - SIP-Username/-PW (aus TR-064-Auto-Provisioning)
+  - PhoneBlock-Bearer-Token (aus Activation-Code-Einlösung)
+  - Fritz!Box-Admin-Passwort und Activation-Code nur flüchtig
+    verwenden, nach erfolgreichem Provisioning *nicht* persistieren.
 - [ ] **OTA-Update** über HTTPS
 - [ ] WiFi-Reconnect-Strategie bei Router-Ausfall (Backoff, NVS-
   gepinnte Zugangsdaten)
@@ -176,12 +185,54 @@ Umsetzungsschritte:
 
 ### Production-Readiness
 - [ ] Umzug von Test-Instanz auf `phoneblock.net`-Produktions-API
-- [ ] **Bearer-Token pro Nutzer** generieren statt geteilter Dev-Token
+
+- [ ] **Anonyme Dongle-Accounts via Activation Codes.** Kernidee:
+  Nutzer, die einen Dongle kaufen, haben damit die Berechtigung zur
+  API-Nutzung „bezahlt" — sie sollen sich nicht noch separat mit
+  E-Mail auf phoneblock.net registrieren müssen.
+
+  **Code-Format:** z. B. `APB-X7H4-K9M2-B3QP` — 12 Zeichen aus 32-er
+  Alphabet (ambig-frei: kein 0/O, 1/I/L), ≈ 60 bit Entropie,
+  unratebar, noch abschreibbar. Prefix `APB-` als UI-Heuristik.
+
+  **Lifecycle eines Codes:**
+  1. Bernhard ruft `POST /admin/activation-codes?count=N` auf (admin-
+     authentifizierter Endpunkt), Server gibt N frische Codes + ihren
+     Hash in `ACTIVATION_CODES` zurück (Status `unused`).
+  2. Bernhard druckt die Codes auf Aufkleber, klebt sie auf die
+     Dongle-Verpackungen, flasht die Dongles mit identischer Firmware.
+  3. Endnutzer tippt Code in der Dongle-Web-UI ein → Dongle POSTet
+     an `/api/device/activate` mit `{ code, chip_mac, firmware_version }`.
+  4. Server verifiziert Hash, prüft Status == `unused`, erzeugt einen
+     anonymen User-Account, bindet Code an `chip_mac`, setzt Status
+     auf `activated`, gibt Bearer-Token zurück.
+  5. Dongle speichert Token in NVS, nutzt ihn für alle weiteren
+     API-Calls.
+
+  **Sicherheits-Eigenschaften:**
+  - Jeder Code ist einmalig benutzbar — ein geleakter Aufkleber =
+    *ein* kompromittierter Account, kein systemischer Schaden.
+  - MAC-Bindung nach Aktivierung: gleicher Code, anderer Chip → 403.
+  - Revocation: Admin-Endpunkt setzt `revoked=true` → assoziierter
+    Bearer-Token wird ungültig. Support-Weg für verlorene Dongles oder
+    Missbrauchsmeldungen.
+  - **Kein Flash-Encryption und kein per-device-Flashen nötig**, weil
+    das Secret erst *nach* Aktivierung im NVS landet und dann
+    per-device einzigartig ist.
+
+  **Umsetzung:**
+  - Server: Tabelle `ACTIVATION_CODES (code_hash, status, chip_mac,
+    activated_at, revoked, user_id_fk)`, Endpunkte
+    `/admin/activation-codes`, `/api/device/activate`, Admin-UI
+    zum Generieren/Revoken — ~0,5 Tag.
+  - Firmware: HTTP-Call aus der Web-UI, Token in NVS — ~0,5 Tag
+    (läuft parallel zum ohnehin nötigen Web-UI-Flow).
+  - Operativ: Aufkleber-Drucker-Template, Verpackungs-Workflow —
+    ~2 h einmalig.
+
 - [ ] Optionales Reporting zurück an PhoneBlock (geblockte Calls,
   welche Nummern)
 - [ ] Firmware-Versionierung + Changelog-Policy
-- [ ] **Sicherheitsreview**: Token im NVS verschlüsselt, optional
-  Flash-Encryption, Integritätsprüfung OTA-Payload
 
 ### Tech-Debt / Feinschliff
 - [ ] **CANCEL-Handler**: 487 Request Terminated wird mit den CANCEL-
