@@ -20,6 +20,7 @@
 #include "config.h"
 #include "sip_register.h"
 #include "stats.h"
+#include "web.h"
 
 static const char *TAG = "phoneblock";
 
@@ -152,4 +153,5 @@ void app_main(void)
 
     xTaskCreate(sip_server_task, "sip_server", 8192, NULL, 5, NULL);
     sip_register_start();
+    web_start();
 }
