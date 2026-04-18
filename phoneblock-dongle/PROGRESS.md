@@ -165,7 +165,11 @@ Umsetzungsschritte:
   dem Auto-Discovery verifizierbar wäre.
 
 - [ ] **Auto-Provisioning der Fritz!Box-Nebenstelle via TR-064**
-  (neues Modul `tr064.{c,h}`, ~470 Zeilen). Ablauf:
+  (neues Modul `tr064.{c,h}`, ~470 Zeilen). **Im Emulator testbar** —
+  TR-064 läuft outbound über `http://<box>:49000/` durch QEMUs
+  user-mode NAT. Kann sofort angegangen werden.
+
+  Ablauf:
   1. Ad-hoc `POST /upnp/control/x_voip` mit SOAPAction
      `urn:dslforum-org:service:X_VoIP:1#X_AVM-DE_SetClient4`
   2. HTTP-Digest-Auth gegen die Fritz!Box (`LANConfigSecurity` bzw.
@@ -184,6 +188,24 @@ Umsetzungsschritte:
      nicht. Siehe Kommentar in `fritz_tr64/lib/src/services/voip.dart`.
   8. Referenzimplementierung: `fritz_tr064` Dart-Library, für den
      C-Port die dortige `Tr64Client` + `VoIP` + `auth.dart` recyceln.
+
+- [ ] **Web-UI-Design für die Fritz!Box-Einrichtung**: Zwei Modi,
+  Default = einfach, „Experte" = manuell.
+
+  **Default („Fritz!Box-Einrichtung"):** Ein einziges Eingabefeld für
+  das Fritz!Box-Admin-Passwort (+ Activation Code, wenn vorhanden).
+  Dongle macht TR-064-Auto-Provisioning, Registrar-Discovery,
+  Aktivierung, alles automatisch.
+
+  **Experte („Manuelle SIP-Konfiguration"):** Aufklappbarer Abschnitt
+  mit den klassischen Feldern SIP-Host, -Port, -User, -Passwort. Für
+  Setups, in denen TR-064 nicht gewünscht/verfügbar ist (fremder
+  Router, andere PBX, bewusste manuelle Anlage der Nebenstelle).
+  Aktuelle Config-Form wird dort weiterleben.
+
+  Im NVS werden in beiden Fällen die gleichen Felder abgelegt
+  (`sip_host`, `sip_user`, `sip_pass`) — die Registrierungs-Schleife
+  merkt keinen Unterschied.
 - [ ] **Konfiguration im NVS** statt Kconfig — identische Firmware auf
   allen Dongles:
   - SSID/WLAN-PW (aus WPS)
