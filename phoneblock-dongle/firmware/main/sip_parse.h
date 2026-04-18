@@ -67,9 +67,17 @@ bool is_phone_number_like(const char *s);
 // (*21#...), and anything that doesn't start with a digit or '+'.
 bool looks_dialable(const char *number);
 
-// Minimal German-centric normalization for the PhoneBlock API:
-// international "+49…" / "0049…" → national "0…". Also strips
-// whitespace/dashes/parens. The server normalizes further.
+// Normalize a phone number to E.164 international form, assuming the
+// Fritz!Box is in Germany:
+//   national "030123"          → "+4930123"
+//   international "0049…"      → "+49…"
+//   international "+49…"       → "+49…" (unchanged)
+//   international "00<cc>…"    → "+<cc>…" (non-DE country codes)
+// Non-phone inputs (**622, *21#, empty) pass through unchanged so the
+// caller can recognize them via looks_dialable(). Whitespace, dashes,
+// parentheses and slashes are stripped before prefix handling.
+// The "always-send-international" shape is needed for PhoneBlock's
+// privacy-extension hashed-number lookup.
 void normalize_de(const char *raw, char *out, int cap);
 
 // Case-insensitive compare of two non-empty Call-IDs. Returns false if

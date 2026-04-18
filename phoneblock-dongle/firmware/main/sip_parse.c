@@ -210,13 +210,24 @@ void normalize_de(const char *raw, char *out, int cap)
 
     const char *src = buf;
     int w = 0;
-    if (strncmp(src, "+49", 3) == 0) {
-        out[w++] = '0';
-        src += 3;
-    } else if (strncmp(src, "0049", 4) == 0) {
-        out[w++] = '0';
-        src += 4;
+
+    if (src[0] == '+') {
+        // Already in E.164 form — pass through.
+    } else if (src[0] == '0' && src[1] == '0') {
+        // International with "00" escape ("0049…", "001…") → "+<cc>…".
+        out[w++] = '+';
+        src += 2;
+    } else if (src[0] == '0' && src[1] >= '0' && src[1] <= '9') {
+        // National German (single leading zero) → strip zero, prepend +49.
+        out[w++] = '+';
+        out[w++] = '4';
+        out[w++] = '9';
+        src += 1;
     }
+    // Else (empty, "**622", "*21#", anything not starting with '+' or a
+    // digit-with-leading-0) → pass through unchanged; looks_dialable()
+    // will reject it.
+
     while (*src && w < cap - 1) {
         out[w++] = *src++;
     }

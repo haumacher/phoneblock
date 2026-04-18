@@ -303,22 +303,26 @@ static void test_looks_dialable(void)
 
 static void test_normalize_de(void)
 {
-    // +49 / 0049 → 0
-    expect_normalize_de("017412345678",  "+4917412345678");
-    expect_normalize_de("01741234",      "00491741234");
-    // Already national: untouched.
-    expect_normalize_de("017412345678",  "017412345678");
-    expect_normalize_de("030123456",     "030123456");
-    // Whitespace / dashes / parens stripped.
-    expect_normalize_de("030123456",     "030 123 456");
-    expect_normalize_de("030123456",     "030-123-456");
-    expect_normalize_de("030123456",     "(030) 123456");
-    expect_normalize_de("030123456",     "030/123456");
-    // Edge cases passed through.
-    expect_normalize_de("**622",         "**622");
-    expect_normalize_de("",              "");
-    // Non-German international prefix not special-cased — survives.
-    expect_normalize_de("+18886749072",  "+18886749072");
+    // National German → international +49 (leading 0 dropped).
+    expect_normalize_de("+4917412345678",  "017412345678");
+    expect_normalize_de("+4930123456",     "030123456");
+    // Already E.164: untouched.
+    expect_normalize_de("+4917412345678",  "+4917412345678");
+    expect_normalize_de("+18886749072",    "+18886749072");
+    // "00" international escape → "+".
+    expect_normalize_de("+491741234",      "00491741234");
+    expect_normalize_de("+18886749072",    "0018886749072");
+    // Whitespace / dashes / parens / slashes stripped before prefix logic.
+    expect_normalize_de("+4930123456",     "030 123 456");
+    expect_normalize_de("+4930123456",     "030-123-456");
+    expect_normalize_de("+4930123456",     "(030) 123456");
+    expect_normalize_de("+4930123456",     "030/123456");
+    expect_normalize_de("+4917412345678",  "+49 174 1234 5678");
+    // Non-external inputs pass through unchanged; looks_dialable rejects
+    // them later.
+    expect_normalize_de("**622",           "**622");
+    expect_normalize_de("*21#",            "*21#");
+    expect_normalize_de("",                "");
 }
 
 static void test_same_call_id(void)
