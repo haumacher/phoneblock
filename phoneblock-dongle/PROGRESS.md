@@ -79,6 +79,14 @@ und für Test­szenarien [firmware/README.md](firmware/README.md).
 - [ ] SDP-Parse des INVITE-Body nicht nötig — wir ignorieren das
   Audio-Angebot komplett
 
+### Status-LED
+- [ ] On-Board-LED als Betriebsanzeige nutzen (IDLE / REGISTERED /
+  CHECKING / SPAM-BLOCKED, z. B. via Blink-Pattern)
+- [ ] GPIO-Pin über Kconfig konfigurierbar machen —
+  `CONFIG_STATUS_LED_GPIO` mit Default `2` (WROOM-32-DevKit) und Override
+  `10` für den EGBO-PICO-D4-Dongle, da die LED dort an GPIO 10 hängt
+- [ ] Aktiv-High/Aktiv-Low ebenfalls per Kconfig, falls Boards invertieren
+
 ### Provisioning & Deployment
 - [ ] Konfiguration via NVS statt Kconfig — gleiche Firmware, pro Gerät
   individuelle SSID/Passwort/Credentials
