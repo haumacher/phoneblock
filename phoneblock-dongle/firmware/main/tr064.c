@@ -386,6 +386,24 @@ static void gen_sip_username(char *out, size_t cap)
 
 // --- 2FA (X_AVM-DE_Auth) -------------------------------------------
 
+// Best-effort: cancel any stale 2FA session before starting a fresh
+// one. A previous failed SetClient4 attempt leaves the Fritz!Box in a
+// "busy" state (errorCode 868) that blocks the next SetConfig(start)
+// until either the user responds or the server-side timeout expires.
+// Ignore any errors — this is housekeeping.
+static void auth_cancel_pending(const char *url,
+                                const char *admin_user, const char *admin_pass)
+{
+    char *resp = malloc(SOAP_RESPONSE_CAP);
+    if (!resp) return;
+    (void)call_action(url, X_AUTH_SERVICE,
+                      admin_user, admin_pass,
+                      "SetConfig", "<NewAction>stop</NewAction>", NULL,
+                      resp, SOAP_RESPONSE_CAP,
+                      NULL, NULL, 0);
+    free(resp);
+}
+
 esp_err_t tr064_auth_start(const char *host, int port,
                            const char *admin_user, const char *admin_pass,
                            char *out_token, size_t token_cap,
@@ -394,6 +412,8 @@ esp_err_t tr064_auth_start(const char *host, int port,
 {
     char url[96];
     snprintf(url, sizeof(url), "http://%s:%d" X_AUTH_CONTROL, host, port);
+
+    auth_cancel_pending(url, admin_user, admin_pass);
 
     const char *args = "<NewAction>start</NewAction>";
 
