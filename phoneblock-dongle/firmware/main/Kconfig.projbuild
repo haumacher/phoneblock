@@ -84,6 +84,21 @@ menu "PhoneBlock Dongle"
             If the hostfwd maps a different host port to the guest, set
             it here. 0 means "advertise the bound UDP port".
 
+    config SIP_TEST_FORCE_SPAM_STAR_NUMBERS
+        bool "Test hook: treat *-prefix callers as SPAM"
+        default n
+        help
+            For development only: when enabled, calls from numbers
+            starting with '*' (Fritz!Box internal dial codes like
+            **622 or *21#) are treated as SPAM and answered with
+            200 OK + tone + BYE, bypassing both the display-name
+            phone-book skip and the PhoneBlock API.
+
+            Lets you exercise the full answer + audio + hangup path
+            by calling your IP-phone extension from another internal
+            Fritz!Box phone, without blacklisting a real number.
+            Leave disabled in production.
+
     config RTP_TONE_DURATION_MS
         int "Duration of the tone played to spam callers (ms)"
         default 2000

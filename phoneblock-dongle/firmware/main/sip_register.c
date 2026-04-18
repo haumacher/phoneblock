@@ -752,15 +752,6 @@ static verdict_t check_invite_caller(const char *req, int req_len)
     while (eol < end && *eol != '\r' && *eol != '\n') eol++;
     int val_len = (int)(eol - hdr);
 
-    char display[64];
-    parse_display_name(hdr, val_len, display, sizeof(display));
-
-    if (display[0] && !is_phone_number_like(display)) {
-        ESP_LOGI(TAG, "caller '%s' resolved via phone book → skip API",
-                 display);
-        return VERDICT_LEGITIMATE;
-    }
-
     char uri[128];
     parse_uri(hdr, val_len, uri, sizeof(uri));
 
@@ -768,6 +759,25 @@ static verdict_t check_invite_caller(const char *req, int req_len)
     if (user_from_uri(uri, raw_user, sizeof(raw_user)) == 0) {
         ESP_LOGW(TAG, "could not extract user from From URI '%s'", uri);
         return VERDICT_ERROR;
+    }
+
+#if CONFIG_SIP_TEST_FORCE_SPAM_STAR_NUMBERS
+    // Dev hook: any '*'-prefixed internal dial code (**622, *21#, …)
+    // is treated as spam so the 200 OK + tone + BYE path can be
+    // exercised without blacklisting a real external number.
+    if (raw_user[0] == '*') {
+        ESP_LOGW(TAG, "TEST MODE: caller '%s' forced to SPAM", raw_user);
+        return VERDICT_SPAM;
+    }
+#endif
+
+    char display[64];
+    parse_display_name(hdr, val_len, display, sizeof(display));
+
+    if (display[0] && !is_phone_number_like(display)) {
+        ESP_LOGI(TAG, "caller '%s' resolved via phone book → skip API",
+                 display);
+        return VERDICT_LEGITIMATE;
     }
 
     char number[64];
