@@ -89,6 +89,63 @@ Hardware-Entscheidungsmatrix [HARDWARE.md](HARDWARE.md), QEMU-Setup
 - [x] End-to-End gegen echte Fritz!Box verifiziert (`X-RTP-Stat: PR=100`,
   Codec-Match PCMA beidseitig)
 
+### Web-UI + Config-Management
+- [x] **Stats-Modul** (`stats.{c,h}`): Mutex-geschützte Counter
+  (gesamt / spam_blocked / legitimate / errors / sip_registered /
+  api_latency) + Ring-Buffer für die letzten 10 Anrufe und die
+  letzten 10 Fehler.
+- [x] **Config-Modul** (`config.{c,h}`): NVS-gestützte Konfiguration
+  mit Kconfig als Fallback, atomarer Multi-Field-Update via
+  `config_update()`. Alle SIP-/PhoneBlock-/NAT-Nutzer auf Getter
+  umgestellt.
+- [x] **Web-Server** (`web.{c,h}`, `esp_http_server`, Port 80):
+  Routen `/`, `/api/status`, `/api/calls`, `/api/errors`,
+  `/api/config`, `/api/fritzbox-setup`, `/api/fritzbox-2fa-status`,
+  `/register-start`, `/token-callback`. Heap-4 KB Header-Buffer für
+  Browser-Round-Trips (`CONFIG_HTTPD_MAX_REQ_HDR_LEN`), 8 KB Task-
+  Stack für die tiefe TR-064-Aufrufkette.
+- [x] **HTML-Dashboard** (`web/index.html` via `EMBED_FILES`):
+  Status-Pill + Firmware-Version + Uptime + IP, vier Counter-
+  Kacheln, letzte 10 Anrufe als Tabelle, letzte 10 Fehler,
+  Default-Einrichtung (Fritz!Box) + aufklappbarer Experten-Block
+  für manuelle SIP-Eingabe. Vanilla-ES, pollt alle 3 s.
+- [x] **Config-Form → Re-REGISTER**: POST `/api/config`, `config_update()`,
+  `sip_register_request_reload()` triggert den SIP-Task, die
+  aktuellen Getter zu benutzen.
+
+### TR-064-Auto-Provisioning (firmware, komplett mit 2FA)
+- [x] `tr064.{c,h}` mit generischem `call_action` für beliebige
+  Services + optionalem `<avm:token>`-Header.
+- [x] `X_AVM-DE_GetNumberOfClients` → nächster freier ClientIndex.
+- [x] `X_AVM-DE_SetClient4` → legt IP-Phone mit generiertem Username
+  (`phoneblock-<mac-suffix>`) und alphanumerischem 22-Zeichen-
+  Passwort an, liefert die interne Nebenstellennummer zurück.
+- [x] **Zwei-Faktor-Flow**: `X_AVM-DE_Auth:SetConfig(start)` →
+  Token + Methoden (button/dtmf/googleauth), Web-UI pollt
+  `/api/fritzbox-2fa-status`, Dongle ruft alle 2 s
+  `X_AVM-DE_Auth:GetState` auf. Bei `authenticated` wird `SetClient4`
+  mit `<avm:token>`-Header wiederholt.
+- [x] **Stale-Session-Cleanup**: vor jedem `SetConfig(start)` ein
+  Best-Effort-`SetConfig(stop)`, räumt hängengebliebene
+  2FA-Sitzungen früherer Versuche weg (Fehlercode 868 „busy").
+- [x] UPnPError-Codes/-Beschreibungen werden aus dem Fault-XML
+  extrahiert und in der Web-UI als deutsche Klartexte angezeigt
+  (866 = 2FA, 803 = Zeichen, 820/402 = Argumentfehler, etc.).
+- [x] Fritz!Box-Admin-Passwort nur flüchtig im RAM während der
+  2FA-Sitzung, `memset` beim Abschluss.
+
+### OAuth-Redirect für den PhoneBlock-Token
+- [x] **Firmware-Seite** (`web.c`): `/register-start` erzeugt eine
+  32-Hex-Char-CSRF-Nonce, baut die Callback-URL aus dem `Host`-Header
+  (inkl. QEMU-Port), redirected auf das bestehende PhoneBlock-Mobile-
+  Login (`/mobile/login?appId=PhoneBlockDongle&…`). `/token-callback`
+  verifiziert die Nonce, speichert den Token via `config_update()`.
+- [x] **Server-Seite** (`CreateAuthTokenServlet`): neuer
+  `appId=PhoneBlockDongle` plus `callback`+`state`-Parameter,
+  Whitelist für `http://`-Callbacks auf Private-IPs, `.fritz.box`,
+  `.local`, `localhost`, `answerbot`. `MobileLoginController` schleppt
+  die Parameter durch Captcha-/Login-Rundreisen.
+
 ### Entwicklungs-Infrastruktur
 - [x] Pure-C-Parser-Modul `sip_parse.{c,h}` ohne ESP-IDF-Abhängigkeiten
 - [x] Host-basierte Unit-Tests unter `firmware/test/` — 107 Assertions,
@@ -97,6 +154,13 @@ Hardware-Entscheidungsmatrix [HARDWARE.md](HARDWARE.md), QEMU-Setup
   RTP/Audio-Pfad ohne echte Spam-Nummer getestet werden kann
 
 ## Offen / Nächste Schritte
+
+### Laufende Arbeit
+- [ ] **2FA-Flow End-to-End verifizieren** — SetClient4 → 866 →
+  SetConfig(start) → Polling → (Button/DTMF) → authenticated →
+  SetClient4 mit Token → SIP-Creds in NVS. Bisher: Flow läuft bis
+  `waitingforauth`, steht dort und wartet; der Schritt „Knopf am
+  Router drücken / DTMF-Folge wählen" ist noch offen.
 
 ### Status-LED
 - [ ] On-Board-LED als Betriebsanzeige (Blink-Pattern für IDLE /
@@ -112,10 +176,14 @@ Hardware-Entscheidungsmatrix [HARDWARE.md](HARDWARE.md), QEMU-Setup
 2. Am Router den WPS-/„Neues-Gerät"-Knopf drücken → WLAN konfiguriert sich
 3. Im Browser `http://answerbot/` öffnen
 4. Fritz!Box-Admin-Passwort eingeben → Dongle legt sich selbst als
-   IP-Telefon bei der Fritz!Box an
+   IP-Telefon bei der Fritz!Box an (inkl. 2FA-Dialog, falls nötig)
 5. Auf „Bei PhoneBlock anmelden" klicken → OAuth-Redirect holt den
    Bearer-Token vom PhoneBlock-Server zurück (wie in der Mobile-App)
 6. Fertig — Dongle registriert sich, prüft eingehende Anrufe
+
+Schritt 3–5 sind firmware-seitig umgesetzt (und server-seitig für 5);
+Schritt 2 fehlt noch (WPS), und Schritt 3 setzt den Hostname-Eintrag
+voraus.
 
 Umsetzungsschritte:
 
@@ -131,88 +199,18 @@ Umsetzungsschritte:
     deckt macOS/iOS/Linux/Windows-10-mit-Bonjour ab
   - Umsetzung erst mit echter Hardware testen (QEMU-Routing verzerrt
     DHCP-Hostname-Rückmeldungen)
-- [ ] **Web-UI auf dem Dongle** unter `http://answerbot/`. Zwei
-  Haupt-Elemente: Fritz!Box-Einrichtung (ein Feld: Admin-Passwort)
-  und PhoneBlock-Anmeldung (ein Button, der zum OAuth-Flow startet).
-  Captive-Portal bewusst *nicht* — zu komplex für Laien.
-- [ ] **OAuth-Redirect für den PhoneBlock-Token** (siehe
-  „Production-Readiness"-Abschnitt für die Server-Seite). Die Web-UI
-  eröffnet den Redirect, der `/token-callback`-Handler landet den
-  frischen Token im NVS.
-- [ ] **Fritz!Box-Auto-Discovery** statt manueller Eingabe der Registrar-
-  Adresse. Neues Modul `discovery.{c,h}`, ~100 Zeilen. Drei-Stufen-Suche:
-  1. DNS-Lookup `fritz.box` — Fritz!Boxen exportieren diesen Namen auf
-     ihrem internen DNS, sofortiger Treffer in intakten Setups.
-  2. DHCP-Gateway als Fallback — die IP, die der Dongle bei der
-     Adresszuteilung als Default-Route bekommen hat, *ist* per Definition
-     der Router-Kandidat.
-  3. Jeder Kandidat wird mit `GET http://<ip>:49000/tr64desc.xml`
-     verifiziert; das XML muss `<manufacturer>AVM Berlin</manufacturer>`
-     enthalten, sonst verworfen.
-
-  **Mehrere Fritz!Boxen im Netz:** In praktisch allen realen Setups
-  unproblematisch — im AVM-Mesh kennt nur der Master den SIP-Registrar,
-  und der DHCP-Gateway zeigt genau auf diesen. Für den echten Edge-Case
-  (zwei unabhängige AVM-Boxen auf demselben Subnetz) liefert
-  SSDP-M-SEARCH mit `ST: urn:schemas-upnp-org:device:InternetGatewayDevice:1`
-  eine Liste → Web-UI fragt den Nutzer.
-
-  Wird in `config_load()` aufgerufen, wenn `sip_host` im NVS leer ist;
-  der Treffer wird dort persistiert und ersetzt die manuelle Eingabe
-  im Formular. Umsetzung erst mit echter Hardware — QEMUs
-  User-mode-Netzwerk simuliert keinen sinnvollen Gateway/DNS-Raum, in
-  dem Auto-Discovery verifizierbar wäre.
-
-- [ ] **Auto-Provisioning der Fritz!Box-Nebenstelle via TR-064**
-  (neues Modul `tr064.{c,h}`, ~470 Zeilen). **Im Emulator testbar** —
-  TR-064 läuft outbound über `http://<box>:49000/` durch QEMUs
-  user-mode NAT. Kann sofort angegangen werden.
-
-  Ablauf:
-  1. Ad-hoc `POST /upnp/control/x_voip` mit SOAPAction
-     `urn:dslforum-org:service:X_VoIP:1#X_AVM-DE_SetClient4`
-  2. HTTP-Digest-Auth gegen die Fritz!Box (`LANConfigSecurity` bzw.
-     `X_AVM-DE_Auth`-Challenge → SHA-256-Response)
-  3. Argumente: zufälliger `ClientUsername` (`phoneblock-<mac-suffix>`),
-     zufälliges `ClientPassword`, `PhoneName="Answerbot"`,
-     `OutGoingNumber=""`, `InComingNumbers=""`
-  4. Response liefert `NewX_AVM-DE_InternalNumber` zurück
-  5. Dongle speichert (username, password, internal-number) im NVS,
-     startet die bereits existierende REGISTER-Schleife
-  6. Validierungs-Regex für Username/Password kommt aus
-     `X_AVM-DE_GetInfoEx` (`ClientUsernameAllowedChars` etc.)
-  7. **Wichtig**: `SetClient3` setzt `ExternalRegistration` seit 2015
-     nur kosmetisch, echte Internet-Exposure braucht das Web-UI-Form-
-     Wizard-Tamtam — der Dongle ist ein reines LAN-Gerät, brauchen wir
-     nicht. Siehe Kommentar in `fritz_tr64/lib/src/services/voip.dart`.
-  8. Referenzimplementierung: `fritz_tr064` Dart-Library, für den
-     C-Port die dortige `Tr64Client` + `VoIP` + `auth.dart` recyceln.
-
-- [ ] **Web-UI-Design für die Fritz!Box-Einrichtung**: Zwei Modi,
-  Default = einfach, „Experte" = manuell.
-
-  **Default („Fritz!Box-Einrichtung"):** Ein einziges Eingabefeld für
-  das Fritz!Box-Admin-Passwort (+ Activation Code, wenn vorhanden).
-  Dongle macht TR-064-Auto-Provisioning, Registrar-Discovery,
-  Aktivierung, alles automatisch.
-
-  **Experte („Manuelle SIP-Konfiguration"):** Aufklappbarer Abschnitt
-  mit den klassischen Feldern SIP-Host, -Port, -User, -Passwort. Für
-  Setups, in denen TR-064 nicht gewünscht/verfügbar ist (fremder
-  Router, andere PBX, bewusste manuelle Anlage der Nebenstelle).
-  Aktuelle Config-Form wird dort weiterleben.
-
-  Im NVS werden in beiden Fällen die gleichen Felder abgelegt
-  (`sip_host`, `sip_user`, `sip_pass`) — die Registrierungs-Schleife
-  merkt keinen Unterschied.
-- [ ] **Konfiguration im NVS** statt Kconfig — identische Firmware auf
-  allen Dongles:
-  - SSID/WLAN-PW (aus WPS)
-  - SIP-Username/-PW (aus TR-064-Auto-Provisioning)
-  - PhoneBlock-Bearer-Token (aus OAuth-Redirect-Callback)
-  - Fritz!Box-Admin-Passwort nur flüchtig — nach erfolgreichem
-    Provisioning verworfen. Die CSRF-Nonce des OAuth-Flows lebt
-    ausschließlich im RAM für die Dauer der Anmeldung.
+- [ ] **Fritz!Box-Auto-Discovery** statt Feld „Host" im Formular.
+  Neues Modul `discovery.{c,h}`, ~100 Zeilen. Drei-Stufen-Suche:
+  1. DNS-Lookup `fritz.box`.
+  2. DHCP-Gateway als Fallback.
+  3. Verifikation via `GET http://<ip>:49000/tr64desc.xml`, muss
+     `<manufacturer>AVM Berlin</manufacturer>` enthalten.
+  Wird in `config_load()` aufgerufen, wenn `sip_host` im NVS leer ist.
+  Umsetzung erst mit echter Hardware — QEMUs User-mode-Netzwerk
+  simuliert keinen sinnvollen Gateway/DNS-Raum.
+- [ ] **Konfigurations-Cleanup** — Kconfig-Defaults entfernen, sobald
+  NVS über das Web-UI durchgängig zuverlässig bespielt wird. Aktuell
+  bleiben die Kconfig-Werte als Entwickler-Fallback sinnvoll.
 - [ ] **OTA-Update** über HTTPS
 - [ ] WiFi-Reconnect-Strategie bei Router-Ausfall (Backoff, NVS-
   gepinnte Zugangsdaten)
@@ -231,59 +229,8 @@ Umsetzungsschritte:
 
 ### Production-Readiness
 - [ ] Umzug von Test-Instanz auf `phoneblock.net`-Produktions-API
-
-- [ ] **Token-Beschaffung via OAuth-Redirect** — derselbe Mechanismus,
-  den die PhoneBlock-Mobile-App schon nutzt, adaptiert auf den
-  Browser-basierten Dongle. **Open-Hardware-freundlich**: jeder kann
-  sich selber einen Dongle bauen, mit identischer Firmware flashen
-  und sich einen Token holen, genau wie ein App-Nutzer. Keine
-  Aufkleber, keine Operator-Koordination, keine Batch-Logistik.
-
-  **Flow:**
-  1. Nutzer öffnet `http://answerbot/`, klickt auf *„Bei PhoneBlock
-     anmelden"*.
-  2. Browser wird auf `https://phoneblock.net/pb/dongle-register?
-     callback=http://answerbot/token-callback&state=<nonce>` geschickt.
-  3. phoneblock.net zeigt Login-Seite (Google/Facebook-OAuth oder
-     Klassik-Registrierung). Wer schon eingeloggt ist, überspringt
-     diesen Schritt komplett.
-  4. Nach erfolgreicher Anmeldung erzeugt der Server einen neuen
-     Bearer-Token, bindet ihn an den Account, und leitet den Browser
-     zurück auf `http://answerbot/token-callback?token=pbt_XXXXX&
-     state=<nonce>`.
-  5. Dongle verifiziert `state` (CSRF), speichert den Token ins NVS,
-     zeigt Erfolgsseite, fertig.
-
-  **Serverseitig (PhoneBlock):**
-  - Neuer Endpunkt `/pb/dongle-register` analog zum bestehenden
-    App-Deep-Link-Flow. Whitelist für erlaubte Callback-Schemata:
-    `http://` auf Private-IPs und `.fritz.box`/`.local`-Hostnames
-    (damit `http://answerbot/` und `http://answerbot.fritz.box/`
-    durchgehen, aber keine beliebige externe Site).
-  - Token-Generierung nutzt die existierende Logik der Mobile-App —
-    kein neuer Token-Typ.
-  - Aufwand: ~0,5 Tag Serverseite (neuer Endpunkt, Callback-URL-
-    Validierung, Wiederverwendung der App-OAuth-Maschine).
-
-  **Firmwareseitig:**
-  - Web-UI-Button → Redirect auf phoneblock.net mit State-Nonce, die
-    der Dongle vorher im RAM merkt.
-  - Neuer Endpoint `/token-callback` im `web.c`: liest `token` und
-    `state`, verifiziert Nonce, schreibt Token via `config_update()`,
-    antwortet mit Erfolgs-/Fehlerseite.
-  - Aufwand: ~0,5 Tag.
-
-  **Vergleich zum verworfenen Activation-Code-Ansatz:**
-  - ✅ Keine Aufkleber-Logistik, keine Code-Batches, keine
-    `ACTIVATION_CODES`-Tabelle.
-  - ✅ Funktioniert für gekaufte *und* selbstgebaute Dongles identisch.
-  - ⚠️ Nutzer braucht einen PhoneBlock-Account — aber derselbe, den
-    er für die Mobile-App eh schon hat. Google-OAuth macht das zu
-    einem Drei-Klick-Vorgang.
-  - ⚠️ Etwas schwerer zu revoken auf Gerät-Ebene: das ist ein
-    regulärer Benutzer-Account, der eine ganze Sammlung an Tokens
-    haben kann. Account-weise Sperrung via bestehendem Account-Management.
-
+- [ ] OAuth-Endpunkt deployen — `CreateAuthTokenServlet`-Erweiterung
+  ist committed, muss aber mit der nächsten Server-Release rausgehen.
 - [ ] Optionales Reporting zurück an PhoneBlock (geblockte Calls,
   welche Nummern)
 - [ ] Firmware-Versionierung + Changelog-Policy
@@ -298,6 +245,10 @@ Umsetzungsschritte:
   Pakete kurz liegenlässt. Für den 1-Call-at-a-time-Dongle unkritisch.
 - [ ] Audio-Partition: Wenn die Ansage über ~200 KB wächst, Partition-
   Layout überdenken (App-Slot auf 2 MB, Audio separat in SPIFFS).
+- [ ] `tr064.c` holt die Control-URLs hardcoded (`/upnp/control/x_voip`
+  und `/upnp/control/x_auth`). Saubere Implementierung fetcht sie aus
+  `http://<box>:49000/tr64desc.xml`. Fällt als Nebeneffekt der
+  Discovery-Arbeit aus dem oben genannten Auto-Discovery-Modul ab.
 
 ## Gotchas, die wir unterwegs gelernt haben
 
@@ -342,6 +293,14 @@ Umsetzungsschritte:
 - **`EMBED_FILES` in `idf_component_register`** erzeugt Linker-Symbole
   `_binary_<name>_<ext>_start` / `_end`. Aliasing via `asm("_binary…")`
   auf saubere C-Namen macht den Aufrufcode lesbar.
+- **Typografische Anführungszeichen („…") in C-Stringliteralen** brechen
+  den Compiler (`stray '\342' in program`). Nur ASCII-Quotes verwenden.
+- **`esp_http_server`-Default-Puffer sind klein**: 512 B Header und
+  512 B URI reichen für browserbasierte Rückleitungen nicht. Auf
+  4 KB bzw. 1 KB via `CONFIG_HTTPD_MAX_REQ_HDR_LEN` /
+  `CONFIG_HTTPD_MAX_URI_LEN` heben. Der httpd-Worker-Task-Default
+  (4 KB Stack) ist ebenfalls zu klein für die TR-064-Aufrufkette —
+  in `web_start()` auf 8 KB setzen.
 
 ### Firmware-Design
 - **Große Puffer nie auf den Task-Stack legen.** SIP-TX-/RX-Puffer
@@ -353,6 +312,8 @@ Umsetzungsschritte:
 - **`random_hex`-Overflow** (hat früher immer 33 Bytes in beliebig große
   Buffer geschrieben) war ein latenter Memory-Corruption-Bug. Jetzt
   schreibt die Funktion genau `hex_chars + 1` Bytes.
+- **Namenskollision `stats_init`**: lwip exportiert ein gleichnamiges
+  Macro — deshalb heißt unsere Init-Funktion `stats_setup()`.
 
 ### SIP-Protokoll
 - **Fritz!Box nutzt Legacy-Digest ohne `qop`** (`realm="fritz.box"`,
@@ -365,3 +326,28 @@ Umsetzungsschritte:
 - **Interne Nebenstellen haben `**NN`-Präfix** und werden vom
   PhoneBlock-Server mit HTTP 400 abgelehnt — daher Early-Skip
   vor der API.
+
+### TR-064 / 2FA
+- **Feldnamen *müssen* aus der `fritz_tr064`-Dart-Lib übernommen
+  werden — Raten scheitert.** Beispiel: Count von
+  `GetNumberOfClients` steckt in `NewX_AVM-DE_NumberOfClients`, nicht
+  in `NewX_AVM-DE_ClientNumber` oder `…ClientIndex`.
+- **Control-URLs:** `/upnp/control/x_voip` (X_VoIP) und
+  `/upnp/control/x_auth` (X_AVM-DE_Auth). Stabil seit Jahren, derzeit
+  hardcoded; sauberer wäre aus `tr64desc.xml` (→ Discovery).
+- **Passwort-Alphabet für SIP-Clients: nur `[A-Za-z0-9]`.** Sonderzeichen
+  (`!@#$%-_+=`) führen zu UPnPError 803 „Argument contains invalid
+  characters".
+- **2FA-Sessions bleiben „busy"** (Code 868) nach fehlgeschlagenen
+  SetClient4-Versuchen, bis entweder der Router-Timeout (~60 s)
+  abläuft oder wir `SetConfig(stop)` schicken. Vor jedem
+  `SetConfig(start)` daher Best-Effort-Stop.
+- **`<avm:token>`-Header in SOAP-Envelope** ist der Weg, wie 2FA-
+  Freigaben an 2FA-pflichtige Aktionen gekoppelt werden — *nicht*
+  via HTTP-Header oder Cookie.
+
+### Web-UI
+- Die Dashboard-Seite ist ein **Einmalnutzungs-Werkzeug** (Setup plus
+  gelegentlicher Diagnosebesuch). 3-Sekunden-Polling reicht, SSE/
+  WebSocket wäre Overkill. Siehe Memory-Eintrag
+  [feedback_dongle_web_ui_scope](../.claude/…/feedback_dongle_web_ui_scope.md).
