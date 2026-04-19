@@ -124,6 +124,7 @@ const I18N = {
     'status.errors.title': 'Fehler',
     'status.errors.empty': 'keine Fehler',
     'status.errors.ago': 'vor {age}',
+    'status.errors.clear': 'Log leeren',
     'hero.title': 'Einrichtung',
     'hero.intro': 'Zwei Schritte, dann blockt dein Dongle Spam-Anrufe automatisch. Beide abhaken, erst dann ist das Gerät einsatzbereit.',
     'hero.step1.todo': 'Den Dongle bei deiner Telefonanlage anmelden',
@@ -337,7 +338,11 @@ function renderStatus(){
     + '</tr></thead><tbody id="callsBody"></tbody></table>'
     + '</section>'
     + '<section id="errorsSection" style="display:none">'
-    + '<h2>' + esc(t('status.errors.title')) + '</h2>'
+    + '<h2 style="display:flex;align-items:center;justify-content:space-between">'
+    + '  <span>' + esc(t('status.errors.title')) + '</span>'
+    + '  <button id="errorsClear" class="btn-ghost" style="display:none;padding:.2rem .6rem;font-size:.75rem;text-transform:none;letter-spacing:0">'
+    +    esc(t('status.errors.clear')) + '</button>'
+    + '</h2>'
     + '<div id="errorsList"></div>'
     + '</section>';
   refreshAll();
@@ -484,7 +489,9 @@ async function refreshAll(){
 
   // Errors
   const list = $('errorsList');
-  if (errs && errs.errors.length){
+  const clearBtn = $('errorsClear');
+  const hasErrs = errs && errs.errors.length;
+  if (hasErrs){
     list.innerHTML = errs.errors.map(e =>
       '<div class="error-row"><strong>[' + esc(e.tag) + ']</strong> '
       + esc(e.message) + ' <span class="muted">'
@@ -492,6 +499,16 @@ async function refreshAll(){
     ).join('');
   } else {
     list.innerHTML = '<p class="muted">' + esc(t('status.errors.empty')) + '</p>';
+  }
+  clearBtn.style.display = hasErrs ? '' : 'none';
+  if (!clearBtn.onclick){
+    clearBtn.onclick = async () => {
+      clearBtn.disabled = true;
+      try { await fetch('/api/errors/clear', { method: 'POST' }); }
+      catch (_){ /* next poll will reflect whatever state we end up in */ }
+      await refreshAll();
+      clearBtn.disabled = false;
+    };
   }
 }
 

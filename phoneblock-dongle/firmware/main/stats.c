@@ -147,3 +147,11 @@ int stats_snapshot_errors(stats_error_t *out, int max)
     unlock();
     return n;
 }
+
+void stats_clear_errors(void)
+{
+    lock();
+    s_errors_head = 0;
+    s_errors_count = 0;
+    unlock();
+}

@@ -708,6 +708,16 @@ static esp_err_t handle_errors(httpd_req_t *req)
     return ESP_OK;
 }
 
+// POST /api/errors/clear — drops all buffered error entries.
+static esp_err_t handle_errors_clear(httpd_req_t *req)
+{
+    stats_clear_errors();
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddBoolToObject(root, "ok", true);
+    send_json(req, root);
+    return ESP_OK;
+}
+
 // POST /api/token-test
 // Runs phoneblock_selftest() against GET /test and reports whether the
 // currently stored token is still accepted by the server. Always
@@ -739,6 +749,7 @@ static const httpd_uri_t URIS[] = {
     { .uri = "/api/status",  .method = HTTP_GET,  .handler = handle_status,      .user_ctx = NULL },
     { .uri = "/api/calls",   .method = HTTP_GET,  .handler = handle_calls,       .user_ctx = NULL },
     { .uri = "/api/errors",  .method = HTTP_GET,  .handler = handle_errors,      .user_ctx = NULL },
+    { .uri = "/api/errors/clear",    .method = HTTP_POST, .handler = handle_errors_clear,   .user_ctx = NULL },
     { .uri = "/api/config",          .method = HTTP_POST, .handler = handle_config_post,    .user_ctx = NULL },
     { .uri = "/api/fritzbox-setup",      .method = HTTP_POST, .handler = handle_fritzbox_setup,      .user_ctx = NULL },
     { .uri = "/api/fritzbox-2fa-status", .method = HTTP_GET,  .handler = handle_fritzbox_2fa_status, .user_ctx = NULL },

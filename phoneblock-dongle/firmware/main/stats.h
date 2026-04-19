@@ -60,3 +60,6 @@ void stats_snapshot_counters(stats_counters_t *out);
 // number of entries actually written (<= max and <= STATS_MAX_*).
 int stats_snapshot_calls(stats_call_t *out, int max);
 int stats_snapshot_errors(stats_error_t *out, int max);
+
+// Drop all buffered error entries.
+void stats_clear_errors(void);
