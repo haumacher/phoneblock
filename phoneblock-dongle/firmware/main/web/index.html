@@ -402,21 +402,23 @@ async function refreshAll(){
     sipPill.className = 'pill warn';
     $('sipDetail').textContent = '';
     sipCta.textContent = t('status.sip.setup_cta');
-    sipCta.style.display = '';
   } else if (s.sip.registered){
     sipPill.textContent = t('status.sip.connected');
     sipPill.className = 'pill ok';
     $('sipDetail').textContent =
       t('status.sip.since', {duration: fmtSec(s.sip.registered_for_s)})
       + ' · ' + t('status.sip.at', {host: s.sip.host, user: s.sip.user});
-    sipCta.style.display = 'none';
+    sipCta.textContent = t('status.sip.redo_cta');
   } else {
     sipPill.textContent = t('status.sip.disconnected');
     sipPill.className = 'pill bad';
     $('sipDetail').textContent = t('status.sip.at', {host: s.sip.host, user: s.sip.user});
     sipCta.textContent = t('status.sip.redo_cta');
-    sipCta.style.display = '';
   }
+  // Always offer a way into the wizard — hiding the button on the
+  // "happy path" leaves the user stranded when they need to change
+  // the registrar or the admin password later.
+  sipCta.style.display = '';
 
   // Token pill + actions
   const tokenPill  = $('tokenPill');
