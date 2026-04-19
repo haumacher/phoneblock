@@ -236,6 +236,12 @@ Umsetzungsschritte:
 - [ ] Firmware-Versionierung + Changelog-Policy
 
 ### Tech-Debt / Feinschliff
+- [ ] **Event-getriebener Reload-Wakeup für den SIP-Task**: aktuell
+  cappt der select()-Timeout auf 500 ms, damit der vom Web-UI gesetzte
+  `s_reload_requested`-Flag schnell wirksam wird. Saubere Variante:
+  Self-Wake-UDP-Socket (Loopback) oder `esp_vfs_eventfd` in die fd_set
+  aufnehmen und beim Setzen des Flags ein Byte hineinschreiben. Spart
+  die 2 Hz Leerlauf-Wakeups und reagiert innerhalb von Millisekunden.
 - [ ] **CANCEL-Handler**: 487 Request Terminated wird mit den CANCEL-
   Headern gebaut, spec-konform wäre, die ursprünglichen INVITE-Header
   zu nehmen (CSeq-Method INVITE). Fritz!Box ist tolerant; könnte bei

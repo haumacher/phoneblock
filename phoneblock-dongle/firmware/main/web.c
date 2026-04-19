@@ -440,7 +440,9 @@ static esp_err_t handle_fritzbox_setup(httpd_req_t *req)
 
     cJSON *root = cJSON_CreateObject();
     cJSON_AddBoolToObject(root, "ok", true);
-    cJSON_AddStringToObject(root, "message", "Nebenstelle eingerichtet, Anmeldung läuft");
+    cJSON_AddStringToObject(root, "message",
+        "Nebenstelle angelegt. Der Dongle meldet sich jetzt an - "
+        "aktueller Stand siehe Statuszeile oben.");
     cJSON_AddStringToObject(root, "sip_user", res.sip_user);
     cJSON_AddStringToObject(root, "internal_number", res.internal_number);
     send_json(req, root);
@@ -683,7 +685,8 @@ static esp_err_t handle_fritzbox_2fa_status(httpd_req_t *req)
     cJSON *root = cJSON_CreateObject();
     cJSON_AddBoolToObject  (root, "ok",              true);
     cJSON_AddStringToObject(root, "message",
-        "Nebenstelle eingerichtet, Anmeldung laeuft");
+        "Nebenstelle angelegt. Der Dongle meldet sich jetzt an - "
+        "aktueller Stand siehe Statuszeile oben.");
     cJSON_AddStringToObject(root, "sip_user",        res.sip_user);
     cJSON_AddStringToObject(root, "internal_number", res.internal_number);
     send_json(req, root);
