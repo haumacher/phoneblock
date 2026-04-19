@@ -12,17 +12,21 @@
   header{background:#008f7a;color:#fff;padding:.8rem 1rem;
          display:flex;align-items:center;gap:.6rem}
   header img{display:block;width:32px;height:32px}
-  header h1{margin:0;font-size:1.25rem;font-weight:600}
+  header h1{margin:0;font-size:1.25rem;font-weight:600;flex:1}
+  header a{color:#cdeee7;text-decoration:none;font-size:.9rem}
+  header a:hover{color:#fff}
   main{max-width:900px;margin:0 auto;padding:1rem}
   section{background:#fff;border-radius:8px;padding:1rem;margin-bottom:1rem;
           box-shadow:0 1px 2px rgba(0,0,0,.06)}
   h2{margin:0 0 .6rem;font-size:.85rem;color:#555;text-transform:uppercase;
      letter-spacing:.6px;font-weight:600;border-bottom:1px solid #eee;
      padding-bottom:.4rem}
+  h3{margin:1rem 0 .4rem;font-size:1rem;font-weight:600;color:#222}
   .pill{display:inline-block;padding:.15rem .6rem;border-radius:999px;
         font-size:.85rem;font-weight:600}
   .ok{background:#d4edda;color:#155724}
   .bad{background:#f8d7da;color:#721c24}
+  .warn{background:#fff3cd;color:#856404}
   .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.5rem}
   .stat{padding:.6rem;background:#fafafa;border-radius:4px;text-align:center}
   .stat-label{font-size:.75rem;color:#666;text-transform:uppercase;letter-spacing:.3px}
@@ -37,139 +41,161 @@
   .error-row{border-left:3px solid #f44336;padding:.2rem .5rem;margin-bottom:.35rem;
              font-size:.9rem;background:#fffafa}
   label{display:block;margin:.6rem 0 .2rem;font-size:.8rem;color:#555}
-  input{width:100%;padding:.4rem;border:1px solid #ccc;border-radius:4px;
+  input, select{width:100%;padding:.4rem;border:1px solid #ccc;border-radius:4px;
         font-size:.95rem;font-family:inherit}
   input:read-only{background:#fafafa;color:#555}
   .btn-primary{background:#008f7a;color:#fff;border:0;padding:.55rem 1.2rem;
-               border-radius:4px;font-size:1rem;cursor:pointer;font-family:inherit}
+               border-radius:4px;font-size:1rem;cursor:pointer;font-family:inherit;
+               text-decoration:none;display:inline-block}
   .btn-primary:disabled{background:#aaa;cursor:wait}
+  .btn-ghost{background:#fff;color:#008f7a;border:1px solid #008f7a;
+             padding:.55rem 1.2rem;border-radius:4px;font-size:1rem;
+             cursor:pointer;font-family:inherit;text-decoration:none;display:inline-block}
+  .hero{background:linear-gradient(135deg,#008f7a,#00b894);color:#fff;
+        border-radius:8px;padding:1.5rem;margin-bottom:1rem}
+  .hero h2{color:#fff;border-bottom:1px solid rgba(255,255,255,.3)}
+  .hero p{margin:.4rem 0}
+  .hero .btn-primary{background:#fff;color:#008f7a;margin-top:.8rem;margin-right:.6rem}
+  .choice{display:block;padding:1rem;background:#fafafa;border:1px solid #e0e0e0;
+          border-radius:6px;margin-bottom:.6rem;text-decoration:none;color:inherit}
+  .choice:hover{border-color:#008f7a;background:#f0f9f6}
+  .choice strong{color:#008f7a;display:block;margin-bottom:.2rem}
+  .cta-row{margin:.4rem 0 .2rem}
+  .status-row{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;
+              margin:.4rem 0}
+  .status-row .pill{min-width:10rem;text-align:center}
   footer{text-align:center;color:#888;font-size:.8rem;padding:1rem}
   footer a{color:#888}
+  .crumb{font-size:.85rem;color:#888;margin-bottom:.4rem}
+  .crumb a{color:#008f7a;text-decoration:none}
+  .crumb a:hover{text-decoration:underline}
 </style>
 </head>
 <body>
 <header>
   <img src="/ab-logo-bot.svg" alt="" width="32" height="32">
   <h1>PhoneBlock Dongle</h1>
+  <a href="#/" id="homeLink"></a>
 </header>
-<main>
-
-<section>
-  <h2>Status</h2>
-  <p><span id="sipPill" class="pill bad">lade…</span>
-     <span class="muted" id="sipDetail"></span></p>
-  <div class="grid">
-    <div class="stat"><div class="stat-label">Gesamt</div><div class="stat-value" id="cTotal">–</div></div>
-    <div class="stat"><div class="stat-label">Spam geblockt</div><div class="stat-value" id="cSpam">–</div></div>
-    <div class="stat"><div class="stat-label">Legitim</div><div class="stat-value" id="cLegit">–</div></div>
-    <div class="stat"><div class="stat-label">Fehler</div><div class="stat-value" id="cErr">–</div></div>
-  </div>
-  <p class="muted" style="margin:.6rem 0 0">
-    Firmware <span id="fw">–</span> · IP <span id="ip">–</span> ·
-    Uptime <span id="uptime">–</span> · API-Latenz <span id="apiMs">–</span>
-  </p>
-</section>
-
-<section>
-  <h2>Letzte Anrufe</h2>
-  <table>
-    <thead><tr><th>vor</th><th>Nummer</th><th>Name</th><th>Urteil</th></tr></thead>
-    <tbody id="callsBody"><tr><td colspan="4" class="muted">noch keine Anrufe</td></tr></tbody>
-  </table>
-</section>
-
-<section id="errorsSection">
-  <h2>Fehler</h2>
-  <div id="errorsList"><p class="muted">keine Fehler</p></div>
-</section>
-
-<section>
-  <h2>Fritz!Box-Einrichtung</h2>
-  <p class="muted">
-    Der Dongle richtet sich automatisch als IP-Telefon an deiner
-    Fritz!Box ein. Dazu braucht er einmalig dein Fritz!Box-Admin-Passwort —
-    es wird <strong>nicht</strong> gespeichert.
-  </p>
-  <form id="fb">
-    <label>Fritz!Box (Host oder IP)
-      <input type="text" id="fbHost" name="fritz_host" value="fritz.box"></label>
-    <label>Benutzer <span class="muted">(meist „admin")</span>
-      <input type="text" id="fbUser" name="fritz_user" value="admin"></label>
-    <label>Passwort
-      <input type="password" id="fbPass" name="fritz_pass" required autocomplete="off"></label>
-    <p style="margin-top:.8rem">
-      <button type="submit" class="btn-primary">Nebenstelle einrichten</button>
-      <span id="fbMsg" class="muted" style="margin-left:.6rem"></span>
-    </p>
-  </form>
-</section>
-
-<section id="pbSection">
-  <h2>PhoneBlock-Anmeldung</h2>
-  <p class="muted">
-    Damit der Dongle Anrufe gegen die PhoneBlock-Spam-Datenbank prüfen
-    darf, braucht er einen Token. Mit einem Klick unten wirst du zu
-    phoneblock.net weitergeleitet, meldest dich dort einmalig an (Google,
-    Facebook oder Account) — und landest anschließend zurück hier mit
-    fertig eingerichtetem Token.
-  </p>
-  <p id="pbTokenHint" class="muted" style="margin-top:.5rem"></p>
-  <p style="margin-top:.8rem">
-    <a href="/register-start" class="btn-primary" style="text-decoration:none;display:inline-block">
-      Bei PhoneBlock anmelden
-    </a>
-  </p>
-</section>
-
-<section>
-  <h2 style="display:flex;align-items:center;justify-content:space-between;cursor:pointer"
-      onclick="toggleExpert()">
-    <span>Manuelle Konfiguration</span>
-    <span id="expertChevron" style="font-size:.75rem;color:#888">▸ anzeigen</span>
-  </h2>
-  <div id="expertBody" style="display:none">
-    <p class="muted">Für Setups ohne TR-064 oder bei bereits angelegter
-      Nebenstelle. Die Felder überschreiben die Werte aus der Fritz!Box-
-      Einrichtung. Passwörter leer lassen heißt „unverändert".</p>
-    <form id="cfg">
-      <label>SIP-Registrar
-        <input type="text" id="sipHost" name="sip_host"></label>
-      <label>SIP-Port
-        <input type="number" id="sipPort" name="sip_port" min="1" max="65535"></label>
-      <label>SIP-Benutzer
-        <input type="text" id="sipUser" name="sip_user"></label>
-      <label>SIP-Passwort
-        <input type="password" id="sipPass" name="sip_pass" autocomplete="off"></label>
-      <label>PhoneBlock-Server
-        <input type="url" id="pbUrl" name="pb_url"></label>
-      <label>PhoneBlock-Token
-        <input type="password" id="pbToken" name="pb_token" autocomplete="off"></label>
-      <p style="margin-top:.8rem">
-        <button type="submit" class="btn-primary">Speichern</button>
-        <span id="cfgMsg" class="muted" style="margin-left:.6rem"></span>
-      </p>
-    </form>
-  </div>
-</section>
-
-</main>
+<main id="app"></main>
 <footer>PhoneBlock Dongle · <a href="https://phoneblock.net">phoneblock.net</a></footer>
 
 <script>
+// --- i18n -----------------------------------------------------------
+
+const I18N = {
+  de: {
+    'nav.home': 'Status',
+    'status.title': 'Status',
+    'status.sip.connected': 'Angemeldet',
+    'status.sip.disconnected': 'Nicht verbunden',
+    'status.sip.not_configured': 'Nicht eingerichtet',
+    'status.sip.since': 'seit {duration}',
+    'status.sip.at': 'bei {host} als {user}',
+    'status.sip.setup_cta': 'Telefonie einrichten',
+    'status.token.set': 'PhoneBlock-Token gesetzt',
+    'status.token.missing': 'Kein PhoneBlock-Token',
+    'status.token.cta': 'Token anlegen',
+    'status.counters.total': 'Gesamt',
+    'status.counters.spam': 'Spam geblockt',
+    'status.counters.legit': 'Legitim',
+    'status.counters.errors': 'Fehler',
+    'status.info': 'Firmware {fw} · IP {ip} · Uptime {uptime} · API-Latenz {api}',
+    'status.calls.title': 'Letzte Anrufe',
+    'status.calls.empty': 'noch keine Anrufe',
+    'status.calls.col.when': 'vor',
+    'status.calls.col.number': 'Nummer',
+    'status.calls.col.name': 'Name',
+    'status.calls.col.verdict': 'Urteil',
+    'status.errors.title': 'Fehler',
+    'status.errors.empty': 'keine Fehler',
+    'status.errors.ago': 'vor {age}',
+    'status.footer.redo_sip': 'Telefonie neu einrichten',
+    'status.footer.redo_token': 'Token neu anlegen',
+    'hero.title': 'Willkommen beim PhoneBlock Dongle',
+    'hero.intro': 'Zwei Schritte, dann blockt dein Dongle Spam-Anrufe automatisch:',
+    'hero.step1': '1. Den Dongle bei deiner Telefonanlage anmelden',
+    'hero.step2': '2. Mit PhoneBlock verbinden, damit er weiß, was Spam ist',
+    'hero.cta.sip': 'Telefonie einrichten',
+    'hero.cta.token': 'PhoneBlock verbinden',
+    'sip.entry.title': 'Telefonie einrichten',
+    'sip.entry.intro': 'Wähle, wie der Dongle sich bei deiner Telefonanlage anmeldet.',
+    'sip.entry.fritzbox': 'Fritz!Box (empfohlen)',
+    'sip.entry.fritzbox.desc': 'Automatische Einrichtung. Der Dongle legt sich selbst als IP-Telefon an.',
+    'sip.entry.provider': 'Anderer Anbieter',
+    'sip.entry.provider.desc': 'Direkt bei Telekom, Vodafone, 1&1, sipgate oder easybell anmelden.',
+    'sip.entry.manual': 'Manuell (Experte)',
+    'sip.entry.manual.desc': 'Alle SIP-Felder selbst ausfüllen.',
+    'sip.fb.title': 'Fritz!Box-Einrichtung',
+    'sip.fb.intro': 'Einmalig das Fritz!Box-Admin-Passwort eingeben. Es wird nicht gespeichert.',
+    'sip.fb.host': 'Fritz!Box (Host oder IP)',
+    'sip.fb.user': 'Benutzer',
+    'sip.fb.user.hint': '(meist „admin")',
+    'sip.fb.pass': 'Passwort',
+    'sip.fb.submit': 'Nebenstelle einrichten',
+    'sip.fb.working': 'Richte Nebenstelle ein (~2–5 s)…',
+    'sip.fb.done': 'Nebenstelle angelegt — Anmeldung startet.',
+    'sip.fb.done.withnum': 'Nebenstelle angelegt (interne Nummer {n}) — Anmeldung startet.',
+    'sip.fb.error': 'Fehler: {msg}',
+    'sip.fb.2fa.title': 'Zwei-Faktor-Bestätigung',
+    'sip.fb.2fa.button': 'beliebigen Knopf an der Fritz!Box drücken',
+    'sip.fb.2fa.dtmf': 'Folge {seq} an einem angeschlossenen Telefon wählen',
+    'sip.fb.2fa.instructions': 'Bitte jetzt {hints}.',
+    'sip.fb.2fa.cancelled': '2FA abgebrochen.',
+    'sip.fb.2fa.timeout': 'Zeitüberschreitung. Bitte erneut versuchen.',
+    'sip.prov.title': 'Anbieter wählen',
+    'sip.prov.intro': 'Wähle deinen Anbieter; die Zugangsdaten bekommst du aus dem jeweiligen Kundenportal.',
+    'sip.prov.provider': 'Anbieter',
+    'sip.prov.vorwahl': 'Vorwahl (ohne führende 0)',
+    'sip.prov.user': 'SIP-Benutzer / Rufnummer',
+    'sip.prov.pass': 'Passwort',
+    'sip.prov.submit': 'Zugangsdaten speichern',
+    'sip.prov.done': 'Gespeichert. Anmeldung startet.',
+    'sip.prov.error': 'Fehler: {msg}',
+    'sip.manual.title': 'Manuelle Konfiguration',
+    'sip.manual.intro': 'Vollständige SIP-Felder. Passwort leer lassen heißt „unverändert".',
+    'sip.manual.host': 'SIP-Registrar',
+    'sip.manual.port': 'SIP-Port',
+    'sip.manual.user': 'SIP-Benutzer',
+    'sip.manual.pass': 'SIP-Passwort',
+    'sip.manual.submit': 'Speichern',
+    'sip.manual.done': 'Gespeichert.',
+    'sip.manual.error': 'Fehler: {msg}',
+    'token.title': 'PhoneBlock verbinden',
+    'token.intro': 'Der Dongle fragt für jeden eingehenden Anruf die PhoneBlock-Datenbank ab. Dafür brauchst du einen Token.',
+    'token.how': 'Ein Klick auf den Knopf unten leitet dich zu phoneblock.net, wo du dich einmalig anmelden kannst (Google, Facebook oder Account). Anschließend landest du zurück hier — der Token ist dann gesetzt.',
+    'token.current.set': 'Ein Token ist bereits eingerichtet. Eine erneute Anmeldung erzeugt einen neuen.',
+    'token.current.missing': 'Noch kein Token eingerichtet.',
+    'token.submit': 'Bei PhoneBlock anmelden',
+    'back.status': '← zurück zum Status',
+    'back.sip': '← zurück zur Auswahl',
+  },
+};
+const LANG = 'de';
+const t = (k, p) => {
+  let s = I18N[LANG][k];
+  if (s === undefined) return k;
+  if (p) for (const [name, val] of Object.entries(p))
+    s = s.replaceAll('{' + name + '}', val);
+  return s;
+};
+
+// --- helpers --------------------------------------------------------
+
 const $ = id => document.getElementById(id);
+
+function esc(s){
+  if (s === null || s === undefined || s === '') return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+          .replace(/"/g,'&quot;');
+}
 
 function fmtSec(s){
   s = Math.max(0, Math.round(s));
-  if (s < 60) return s + " s";
-  if (s < 3600) return Math.round(s/60) + " min";
-  if (s < 86400) return Math.round(s/3600) + " h";
-  return Math.round(s/86400) + " T";
-}
-
-function esc(s){
-  if (!s) return "";
-  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
-          .replace(/"/g,"&quot;");
+  if (s < 60) return s + ' s';
+  if (s < 3600) return Math.round(s/60) + ' min';
+  if (s < 86400) return Math.round(s/3600) + ' h';
+  return Math.round(s/86400) + ' T';
 }
 
 async function fetchJson(url){
@@ -177,171 +203,514 @@ async function fetchJson(url){
   catch(e){ return null; }
 }
 
-async function refreshStatus(){
-  const s = await fetchJson("/api/status");
-  if (!s) return;
-  const pill = $("sipPill");
-  pill.textContent = s.sip.registered ? "Angemeldet" : "Nicht verbunden";
-  pill.className = "pill " + (s.sip.registered ? "ok" : "bad");
-  $("sipDetail").textContent = s.sip.registered ? "seit " + fmtSec(s.sip.registered_for_s) : "";
-  $("cTotal").textContent = s.counters.total;
-  $("cSpam").textContent  = s.counters.spam_blocked;
-  $("cLegit").textContent = s.counters.legitimate;
-  $("cErr").textContent   = s.counters.errors;
-  $("fw").textContent     = s.firmware_version || "–";
-  $("ip").textContent     = s.ip_address || "–";
-  $("uptime").textContent = fmtSec(s.uptime_s);
-  $("apiMs").textContent  = s.phoneblock.last_api_ms > 0 ? s.phoneblock.last_api_ms + " ms" : "–";
-  // Only populate config fields the first time so in-flight edits
-  // aren't clobbered while the user is typing.
-  if (!window._cfgInit){
-    $("sipHost").value = s.sip.host || "";
-    $("sipPort").value = s.sip.port || 5060;
-    $("sipUser").value = s.sip.user || "";
-    $("pbUrl").value   = s.phoneblock.base_url || "";
-    $("pbToken").placeholder = s.phoneblock.token_set ? "••• gesetzt •••" : "Token eingeben";
-    window._cfgInit = true;
-  }
-  $("pbTokenHint").textContent = s.phoneblock.token_set
-    ? "Token ist bereits eingerichtet. Ein erneuter Klick erzeugt einen neuen Token."
-    : "Noch kein Token eingerichtet.";
-}
-
-function toggleExpert(){
-  const body = $("expertBody");
-  const chev = $("expertChevron");
-  const show = body.style.display === "none";
-  body.style.display = show ? "block" : "none";
-  chev.textContent  = show ? "▾ ausblenden" : "▸ anzeigen";
-}
-
-async function postForm(url, form, msgEl){
-  msgEl.textContent = "Wird gesendet…";
-  msgEl.style.color = "#888";
+async function postForm(url, form){
   const body = new URLSearchParams();
   for (const [k, v] of new FormData(form).entries()) body.append(k, v);
   try {
     const r = await fetch(url, {
-      method: "POST",
-      headers: {"Content-Type": "application/x-www-form-urlencoded"},
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
       body: body.toString(),
     });
     const d = await r.json().catch(() => ({}));
     return { ok: r.ok && d.ok, data: d, statusText: r.statusText };
   } catch (err) {
-    return { ok: false, data: {}, statusText: "Netzwerkfehler" };
+    return { ok: false, data: {}, statusText: 'Netzwerkfehler' };
   }
+}
+
+// --- provider presets (top 5, PROVIDERS.md) -------------------------
+
+const PROVIDERS = {
+  telekom: {
+    name: 'Telekom MagentaZuhause',
+    host: 'tel.t-online.de',
+    port: 5060,
+    userHint: 'Format: +49… (E.164). Benutzer = E-Mail des T-Online-Kontos, Passwort = T-Online-Webpasswort.',
+  },
+  vodafone: {
+    name: 'Vodafone (DSL/Kabel)',
+    hostTemplate: '{vorwahl}.sip.arcor.de',
+    port: 5060,
+    needsVorwahl: true,
+    userHint: 'Rufnummer ohne führende 0. Passwort aus „MeinVodafone" → separates SIP-Passwort.',
+  },
+  einsundeins: {
+    name: '1&1',
+    host: 'sip.1und1.de',
+    port: 5060,
+    userHint: 'Format: 49…, ohne „+" und ohne führende 0. Passwort = „Telefoniepasswort" aus dem 1&1-Control-Center.',
+  },
+  sipgate: {
+    name: 'sipgate',
+    host: 'sipgate.de',
+    port: 5060,
+    userHint: 'SIP-ID aus dem sipgate-Webportal. Passwort = separates SIP-Passwort.',
+  },
+  easybell: {
+    name: 'easybell',
+    host: 'voip.easybell.de',
+    port: 5060,
+    userHint: 'SIP-Benutzer und -Passwort aus dem easybell-Kundenportal.',
+  },
+};
+
+// --- router ---------------------------------------------------------
+
+const app = $('app');
+let pollTimer = null;
+
+function stopPolling(){
+  if (pollTimer){ clearInterval(pollTimer); pollTimer = null; }
+}
+
+function route(){
+  stopPolling();
+  const hash = location.hash || '#/';
+  const [_, section, subsection] = hash.split('/');
+  const homeLink = $('homeLink');
+  homeLink.textContent = hash === '#/' ? '' : t('back.status');
+  if (section === 'setup' && subsection === 'sip'){
+    const sub = hash.split('/')[3] || '';
+    if (sub === 'fritzbox') return renderSipFritzbox();
+    if (sub === 'provider') return renderSipProvider();
+    if (sub === 'manual')   return renderSipManual();
+    return renderSipEntry();
+  }
+  if (section === 'setup' && subsection === 'token') return renderToken();
+  return renderStatus();
+}
+
+window.addEventListener('hashchange', route);
+
+// --- views: status --------------------------------------------------
+
+function renderStatus(){
+  app.innerHTML = ''
+    + '<div id="heroSlot"></div>'
+    + '<section id="statusSection" style="display:none">'
+    + '<h2>' + esc(t('status.title')) + '</h2>'
+    + '<div class="status-row">'
+    + '  <span id="sipPill" class="pill bad">…</span>'
+    + '  <span class="muted" id="sipDetail"></span>'
+    + '  <a id="sipCta" href="#/setup/sip" class="btn-ghost" style="display:none;padding:.3rem .7rem;font-size:.85rem">'
+    +    esc(t('status.sip.setup_cta')) + '</a>'
+    + '</div>'
+    + '<div class="status-row">'
+    + '  <span id="tokenPill" class="pill bad">…</span>'
+    + '  <a id="tokenCta" href="#/setup/token" class="btn-ghost" style="display:none;padding:.3rem .7rem;font-size:.85rem">'
+    +    esc(t('status.token.cta')) + '</a>'
+    + '</div>'
+    + '<div class="grid" style="margin-top:.8rem">'
+    + '  <div class="stat"><div class="stat-label">' + esc(t('status.counters.total'))  + '</div><div class="stat-value" id="cTotal">–</div></div>'
+    + '  <div class="stat"><div class="stat-label">' + esc(t('status.counters.spam'))   + '</div><div class="stat-value" id="cSpam">–</div></div>'
+    + '  <div class="stat"><div class="stat-label">' + esc(t('status.counters.legit')) + '</div><div class="stat-value" id="cLegit">–</div></div>'
+    + '  <div class="stat"><div class="stat-label">' + esc(t('status.counters.errors'))+ '</div><div class="stat-value" id="cErr">–</div></div>'
+    + '</div>'
+    + '<p class="muted" id="statusInfo" style="margin:.6rem 0 0"></p>'
+    + '</section>'
+    + '<section id="callsSection" style="display:none">'
+    + '<h2>' + esc(t('status.calls.title')) + '</h2>'
+    + '<table><thead><tr>'
+    + '<th>' + esc(t('status.calls.col.when'))    + '</th>'
+    + '<th>' + esc(t('status.calls.col.number'))  + '</th>'
+    + '<th>' + esc(t('status.calls.col.name'))    + '</th>'
+    + '<th>' + esc(t('status.calls.col.verdict')) + '</th>'
+    + '</tr></thead><tbody id="callsBody"></tbody></table>'
+    + '</section>'
+    + '<section id="errorsSection" style="display:none">'
+    + '<h2>' + esc(t('status.errors.title')) + '</h2>'
+    + '<div id="errorsList"></div>'
+    + '</section>'
+    + '<section id="statusFooter" style="display:none">'
+    + '<p class="muted" style="margin:0">'
+    + '<a href="#/setup/sip">' + esc(t('status.footer.redo_sip'))   + '</a> · '
+    + '<a href="#/setup/token">' + esc(t('status.footer.redo_token')) + '</a>'
+    + '</p>'
+    + '</section>';
+  refreshAll();
+  pollTimer = setInterval(refreshAll, 3000);
+}
+
+function renderHero(){
+  const slot = $('heroSlot');
+  if (!slot) return;
+  slot.innerHTML = ''
+    + '<section class="hero">'
+    + '<h2>' + esc(t('hero.title')) + '</h2>'
+    + '<p>'  + esc(t('hero.intro')) + '</p>'
+    + '<p>'  + esc(t('hero.step1')) + '</p>'
+    + '<p>'  + esc(t('hero.step2')) + '</p>'
+    + '<p style="margin-top:.8rem">'
+    + '<a class="btn-primary" href="#/setup/sip">'   + esc(t('hero.cta.sip'))   + '</a>'
+    + '<a class="btn-primary" href="#/setup/token">' + esc(t('hero.cta.token')) + '</a>'
+    + '</p>'
+    + '</section>';
+}
+
+async function refreshAll(){
+  const [s, calls, errs] = await Promise.all([
+    fetchJson('/api/status'), fetchJson('/api/calls'), fetchJson('/api/errors'),
+  ]);
+  if (!s) return;
+  const sipConfigured = !!(s.sip.host && s.sip.user);
+  const tokenSet      = !!s.phoneblock.token_set;
+  const heroSlot      = $('heroSlot');
+  const statusSec     = $('statusSection');
+  const callsSec      = $('callsSection');
+  const errorsSec     = $('errorsSection');
+  const footerSec     = $('statusFooter');
+  if (!sipConfigured && !tokenSet){
+    // Empty NVS — first-run hero covers everything.
+    renderHero();
+    statusSec.style.display = 'none';
+    callsSec.style.display = 'none';
+    errorsSec.style.display = 'none';
+    footerSec.style.display = 'none';
+    return;
+  }
+  heroSlot.innerHTML = '';
+  statusSec.style.display = '';
+  callsSec.style.display = '';
+  errorsSec.style.display = '';
+  footerSec.style.display = '';
+
+  // SIP pill + detail
+  const sipPill = $('sipPill');
+  const sipCta  = $('sipCta');
+  if (!sipConfigured){
+    sipPill.textContent = t('status.sip.not_configured');
+    sipPill.className = 'pill warn';
+    $('sipDetail').textContent = '';
+    sipCta.style.display = '';
+  } else if (s.sip.registered){
+    sipPill.textContent = t('status.sip.connected');
+    sipPill.className = 'pill ok';
+    $('sipDetail').textContent =
+      t('status.sip.since', {duration: fmtSec(s.sip.registered_for_s)})
+      + ' · ' + t('status.sip.at', {host: s.sip.host, user: s.sip.user});
+    sipCta.style.display = 'none';
+  } else {
+    sipPill.textContent = t('status.sip.disconnected');
+    sipPill.className = 'pill bad';
+    $('sipDetail').textContent = t('status.sip.at', {host: s.sip.host, user: s.sip.user});
+    sipCta.style.display = '';
+  }
+
+  // Token pill
+  const tokenPill = $('tokenPill');
+  const tokenCta  = $('tokenCta');
+  if (tokenSet){
+    tokenPill.textContent = t('status.token.set');
+    tokenPill.className = 'pill ok';
+    tokenCta.style.display = 'none';
+  } else {
+    tokenPill.textContent = t('status.token.missing');
+    tokenPill.className = 'pill warn';
+    tokenCta.style.display = '';
+  }
+
+  $('cTotal').textContent = s.counters.total;
+  $('cSpam').textContent  = s.counters.spam_blocked;
+  $('cLegit').textContent = s.counters.legitimate;
+  $('cErr').textContent   = s.counters.errors;
+  $('statusInfo').textContent = t('status.info', {
+    fw: s.firmware_version || '–',
+    ip: s.ip_address || '–',
+    uptime: fmtSec(s.uptime_s),
+    api: s.phoneblock.last_api_ms > 0 ? s.phoneblock.last_api_ms + ' ms' : '–',
+  });
+
+  // Calls
+  const tbody = $('callsBody');
+  if (calls && calls.calls.length){
+    tbody.innerHTML = calls.calls.map(c =>
+      '<tr><td>' + esc(fmtSec(c.age_s)) + '</td>'
+      + '<td>' + esc(c.number) + '</td>'
+      + '<td>' + esc(c.display) + '</td>'
+      + '<td class="v-' + esc(c.verdict) + '">' + esc(c.verdict) + '</td></tr>'
+    ).join('');
+  } else {
+    tbody.innerHTML = '<tr><td colspan="4" class="muted">' + esc(t('status.calls.empty')) + '</td></tr>';
+  }
+
+  // Errors
+  const list = $('errorsList');
+  if (errs && errs.errors.length){
+    list.innerHTML = errs.errors.map(e =>
+      '<div class="error-row"><strong>[' + esc(e.tag) + ']</strong> '
+      + esc(e.message) + ' <span class="muted">'
+      + esc(t('status.errors.ago', {age: fmtSec(e.age_s)})) + '</span></div>'
+    ).join('');
+  } else {
+    list.innerHTML = '<p class="muted">' + esc(t('status.errors.empty')) + '</p>';
+  }
+}
+
+// --- views: SIP wizard entry ---------------------------------------
+
+function renderSipEntry(){
+  app.innerHTML = ''
+    + '<section>'
+    + '<div class="crumb"><a href="#/">' + esc(t('back.status')) + '</a></div>'
+    + '<h2>' + esc(t('sip.entry.title')) + '</h2>'
+    + '<p class="muted">' + esc(t('sip.entry.intro')) + '</p>'
+    + '<a class="choice" href="#/setup/sip/fritzbox">'
+    +   '<strong>' + esc(t('sip.entry.fritzbox')) + '</strong>'
+    +   esc(t('sip.entry.fritzbox.desc'))
+    + '</a>'
+    + '<a class="choice" href="#/setup/sip/provider">'
+    +   '<strong>' + esc(t('sip.entry.provider')) + '</strong>'
+    +   esc(t('sip.entry.provider.desc'))
+    + '</a>'
+    + '<a class="choice" href="#/setup/sip/manual">'
+    +   '<strong>' + esc(t('sip.entry.manual')) + '</strong>'
+    +   esc(t('sip.entry.manual.desc'))
+    + '</a>'
+    + '</section>';
+}
+
+// --- views: Fritz!Box path -----------------------------------------
+
+function renderSipFritzbox(){
+  app.innerHTML = ''
+    + '<section>'
+    + '<div class="crumb"><a href="#/setup/sip">' + esc(t('back.sip')) + '</a></div>'
+    + '<h2>' + esc(t('sip.fb.title')) + '</h2>'
+    + '<p class="muted">' + esc(t('sip.fb.intro')) + '</p>'
+    + '<form id="fbForm">'
+    + '<label>' + esc(t('sip.fb.host'))
+    + '<input type="text" name="fritz_host" value="fritz.box"></label>'
+    + '<label>' + esc(t('sip.fb.user'))
+    + ' <span class="muted">' + esc(t('sip.fb.user.hint')) + '</span>'
+    + '<input type="text" name="fritz_user" value="admin"></label>'
+    + '<label>' + esc(t('sip.fb.pass'))
+    + '<input type="password" name="fritz_pass" required autocomplete="off"></label>'
+    + '<p style="margin-top:.8rem">'
+    + '<button type="submit" class="btn-primary">' + esc(t('sip.fb.submit')) + '</button>'
+    + '<span id="fbMsg" class="muted" style="margin-left:.6rem"></span>'
+    + '</p></form></section>';
+  $('fbForm').addEventListener('submit', onFritzboxSubmit);
+}
+
+async function onFritzboxSubmit(e){
+  e.preventDefault();
+  const msg = $('fbMsg');
+  const btn = e.target.querySelector('button');
+  btn.disabled = true;
+  msg.textContent = t('sip.fb.working');
+  msg.style.color = '#888';
+  const r = await postForm('/api/fritzbox-setup', e.target);
+  if (r.ok){
+    const n = r.data.internal_number;
+    msg.textContent = n ? t('sip.fb.done.withnum', {n}) : t('sip.fb.done');
+    msg.style.color = '#188038';
+    setTimeout(() => location.hash = '#/', 800);
+    return;
+  }
+  if (r.data && r.data.two_factor){
+    e.target.querySelector('input[name=fritz_pass]').value = '';
+    msg.innerHTML = esc(t('sip.fb.2fa.instructions', {hints: ''}))
+                  + render2FAInstructions(r.data.methods || '');
+    msg.style.color = '#e8710a';
+    await poll2FA(msg, btn);
+    return;
+  }
+  msg.textContent = t('sip.fb.error', {msg: r.data.message || r.statusText});
+  msg.style.color = '#d93025';
+  btn.disabled = false;
 }
 
 function render2FAInstructions(methods){
   const hints = [];
-  if (/\bbutton\b/.test(methods)) hints.push("beliebigen Knopf an der Fritz!Box drücken");
+  if (/\bbutton\b/.test(methods)) hints.push(esc(t('sip.fb.2fa.button')));
   const dtmf = methods.match(/dtmf;(\S+)/);
-  if (dtmf) hints.push(`Folge <code>${esc(dtmf[1])}</code> an einem angeschlossenen Telefon wählen`);
-  return hints.length ? hints.join(" oder ") : "Bestätigung am Router abwarten";
+  if (dtmf) hints.push(t('sip.fb.2fa.dtmf', {seq: '<code>' + esc(dtmf[1]) + '</code>'}));
+  return hints.length ? hints.join(' ' + esc('oder') + ' ') : '';
 }
 
 async function poll2FA(msgEl, btn){
   const deadline = Date.now() + 130 * 1000;
   while (Date.now() < deadline){
     await new Promise(r => setTimeout(r, 2000));
-    const r = await fetchJson("/api/fritzbox-2fa-status");
-    if (!r){ continue; }
+    const r = await fetchJson('/api/fritzbox-2fa-status');
+    if (!r) continue;
     if (r.ok){
-      msgEl.innerHTML = r.message
-        + (r.internal_number ? ` (Interne Nummer <strong>${esc(r.internal_number)}</strong>)` : "");
-      msgEl.style.color = "#188038";
-      btn.disabled = false;
+      const n = r.internal_number;
+      msgEl.textContent = n ? t('sip.fb.done.withnum', {n}) : t('sip.fb.done');
+      msgEl.style.color = '#188038';
+      setTimeout(() => location.hash = '#/', 800);
       return;
     }
     if (r.terminal){
-      msgEl.textContent = "Fehler: " + (r.message || "2FA abgebrochen.");
-      msgEl.style.color = "#d93025";
+      msgEl.textContent = t('sip.fb.error', {msg: r.message || t('sip.fb.2fa.cancelled')});
+      msgEl.style.color = '#d93025';
       btn.disabled = false;
       return;
     }
-    // still waiting — leave the instructions text as-is
   }
-  msgEl.textContent = "Zeitüberschreitung. Bitte erneut versuchen.";
-  msgEl.style.color = "#d93025";
+  msgEl.textContent = t('sip.fb.2fa.timeout');
+  msgEl.style.color = '#d93025';
   btn.disabled = false;
 }
 
-$("fb").addEventListener("submit", async (e) => {
+// --- views: provider preset ----------------------------------------
+
+function renderSipProvider(){
+  let opts = '<option value="">—</option>';
+  for (const [k, p] of Object.entries(PROVIDERS)){
+    opts += '<option value="' + esc(k) + '">' + esc(p.name) + '</option>';
+  }
+  app.innerHTML = ''
+    + '<section>'
+    + '<div class="crumb"><a href="#/setup/sip">' + esc(t('back.sip')) + '</a></div>'
+    + '<h2>' + esc(t('sip.prov.title')) + '</h2>'
+    + '<p class="muted">' + esc(t('sip.prov.intro')) + '</p>'
+    + '<form id="provForm">'
+    + '<label>' + esc(t('sip.prov.provider'))
+    + '<select name="provider" id="provSelect" required>' + opts + '</select></label>'
+    + '<div id="provHint" class="muted" style="margin:.5rem 0"></div>'
+    + '<div id="provVorwahlBlock" style="display:none">'
+    + '<label>' + esc(t('sip.prov.vorwahl'))
+    + '<input type="text" id="provVorwahl" pattern="[0-9]{2,5}" placeholder="211"></label>'
+    + '</div>'
+    + '<label>' + esc(t('sip.prov.user'))
+    + '<input type="text" name="sip_user" required></label>'
+    + '<label>' + esc(t('sip.prov.pass'))
+    + '<input type="password" name="sip_pass" required autocomplete="off"></label>'
+    + '<p style="margin-top:.8rem">'
+    + '<button type="submit" class="btn-primary">' + esc(t('sip.prov.submit')) + '</button>'
+    + '<span id="provMsg" class="muted" style="margin-left:.6rem"></span>'
+    + '</p></form></section>';
+  $('provSelect').addEventListener('change', onProviderChange);
+  $('provForm').addEventListener('submit', onProviderSubmit);
+}
+
+function onProviderChange(e){
+  const key = e.target.value;
+  const p = PROVIDERS[key];
+  $('provHint').textContent = p ? p.userHint : '';
+  $('provVorwahlBlock').style.display = p && p.needsVorwahl ? '' : 'none';
+}
+
+async function onProviderSubmit(e){
   e.preventDefault();
-  const msg = $("fbMsg");
-  const btn = e.target.querySelector("button");
+  const msg = $('provMsg');
+  const btn = e.target.querySelector('button');
+  const key = $('provSelect').value;
+  const p = PROVIDERS[key];
+  if (!p){
+    msg.textContent = t('sip.prov.error', {msg: '—'});
+    msg.style.color = '#d93025';
+    return;
+  }
+  let host = p.host;
+  if (p.needsVorwahl){
+    const v = ($('provVorwahl').value || '').replace(/^0+/, '');
+    if (!v){ msg.textContent = t('sip.prov.error', {msg: 'Vorwahl fehlt'}); msg.style.color = '#d93025'; return; }
+    host = p.hostTemplate.replaceAll('{vorwahl}', v);
+  }
+  // Build the POST body ourselves since the preset supplies host/port.
   btn.disabled = true;
-  msg.textContent = "Richte Nebenstelle ein (~2–5 s)…";
-  msg.style.color = "#888";
-  const r = await postForm("/api/fritzbox-setup", e.target, msg);
-  if (r.ok){
-    msg.innerHTML = r.data.message
-      + (r.data.internal_number ? ` (Interne Nummer <strong>${esc(r.data.internal_number)}</strong>)` : "");
-    msg.style.color = "#188038";
-    $("fbPass").value = "";
+  msg.textContent = t('sip.fb.working');
+  msg.style.color = '#888';
+  const body = new URLSearchParams();
+  body.append('sip_host', host);
+  body.append('sip_port', String(p.port));
+  body.append('sip_user', e.target.sip_user.value);
+  body.append('sip_pass', e.target.sip_pass.value);
+  try {
+    const r = await fetch('/api/config', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: body.toString(),
+    });
+    const d = await r.json().catch(() => ({}));
+    if (r.ok && d.ok){
+      msg.textContent = t('sip.prov.done');
+      msg.style.color = '#188038';
+      setTimeout(() => location.hash = '#/', 800);
+      return;
+    }
+    msg.textContent = t('sip.prov.error', {msg: d.message || r.statusText});
+    msg.style.color = '#d93025';
     btn.disabled = false;
-  } else if (r.data && r.data.two_factor){
-    $("fbPass").value = "";
-    msg.innerHTML = "Zwei-Faktor-Bestätigung: bitte jetzt "
-                  + render2FAInstructions(r.data.methods || "");
-    msg.style.color = "#e8710a";
-    // Keep button disabled and poll /api/fritzbox-2fa-status until
-    // authenticated or timeout.
-    await poll2FA(msg, btn);
-  } else {
-    msg.textContent = "Fehler: " + (r.data.message || r.statusText);
-    msg.style.color = "#d93025";
+  } catch (_){
+    msg.textContent = t('sip.prov.error', {msg: 'Netzwerkfehler'});
+    msg.style.color = '#d93025';
     btn.disabled = false;
   }
-});
+}
 
-$("cfg").addEventListener("submit", async (e) => {
+// --- views: manual (expert) ----------------------------------------
+
+async function renderSipManual(){
+  const s = await fetchJson('/api/status');
+  const host = (s && s.sip.host) || '';
+  const port = (s && s.sip.port) || 5060;
+  const user = (s && s.sip.user) || '';
+  app.innerHTML = ''
+    + '<section>'
+    + '<div class="crumb"><a href="#/setup/sip">' + esc(t('back.sip')) + '</a></div>'
+    + '<h2>' + esc(t('sip.manual.title')) + '</h2>'
+    + '<p class="muted">' + esc(t('sip.manual.intro')) + '</p>'
+    + '<form id="manForm">'
+    + '<label>' + esc(t('sip.manual.host'))
+    + '<input type="text"   name="sip_host" value="' + esc(host) + '"></label>'
+    + '<label>' + esc(t('sip.manual.port'))
+    + '<input type="number" name="sip_port" min="1" max="65535" value="' + esc(port) + '"></label>'
+    + '<label>' + esc(t('sip.manual.user'))
+    + '<input type="text"   name="sip_user" value="' + esc(user) + '"></label>'
+    + '<label>' + esc(t('sip.manual.pass'))
+    + '<input type="password" name="sip_pass" autocomplete="off"></label>'
+    + '<p style="margin-top:.8rem">'
+    + '<button type="submit" class="btn-primary">' + esc(t('sip.manual.submit')) + '</button>'
+    + '<span id="manMsg" class="muted" style="margin-left:.6rem"></span>'
+    + '</p></form></section>';
+  $('manForm').addEventListener('submit', onManualSubmit);
+}
+
+async function onManualSubmit(e){
   e.preventDefault();
-  const msg = $("cfgMsg");
-  const r = await postForm("/api/config", e.target, msg);
+  const msg = $('manMsg');
+  const btn = e.target.querySelector('button');
+  btn.disabled = true;
+  msg.textContent = t('sip.fb.working');
+  msg.style.color = '#888';
+  const r = await postForm('/api/config', e.target);
   if (r.ok){
-    msg.textContent = r.data.message || "Gespeichert.";
-    msg.style.color = "#188038";
-    $("sipPass").value = "";
-    $("pbToken").value = "";
-  } else {
-    msg.textContent = "Fehler: " + (r.data.message || r.statusText);
-    msg.style.color = "#d93025";
-  }
-});
-
-async function refreshCalls(){
-  const d = await fetchJson("/api/calls");
-  if (!d) return;
-  const tbody = $("callsBody");
-  if (!d.calls.length){
-    tbody.innerHTML = '<tr><td colspan="4" class="muted">noch keine Anrufe</td></tr>';
+    msg.textContent = t('sip.manual.done');
+    msg.style.color = '#188038';
+    setTimeout(() => location.hash = '#/', 800);
     return;
   }
-  tbody.innerHTML = d.calls.map(c =>
-    `<tr><td>${fmtSec(c.age_s)}</td><td>${esc(c.number)}</td>`
-    + `<td>${esc(c.display)}</td><td class="v-${c.verdict}">${c.verdict}</td></tr>`
-  ).join("");
+  msg.textContent = t('sip.manual.error', {msg: r.data.message || r.statusText});
+  msg.style.color = '#d93025';
+  btn.disabled = false;
 }
 
-async function refreshErrors(){
-  const d = await fetchJson("/api/errors");
-  if (!d) return;
-  const list = $("errorsList");
-  if (!d.errors.length){
-    list.innerHTML = '<p class="muted">keine Fehler</p>';
-    return;
-  }
-  list.innerHTML = d.errors.map(e =>
-    `<div class="error-row"><strong>[${esc(e.tag)}]</strong> ${esc(e.message)} `
-    + `<span class="muted">vor ${fmtSec(e.age_s)}</span></div>`
-  ).join("");
+// --- views: token wizard -------------------------------------------
+
+async function renderToken(){
+  const s = await fetchJson('/api/status');
+  const set = !!(s && s.phoneblock.token_set);
+  app.innerHTML = ''
+    + '<section>'
+    + '<div class="crumb"><a href="#/">' + esc(t('back.status')) + '</a></div>'
+    + '<h2>' + esc(t('token.title')) + '</h2>'
+    + '<p class="muted">' + esc(t('token.intro')) + '</p>'
+    + '<p class="muted">' + esc(t('token.how'))   + '</p>'
+    + '<p class="muted">'
+    + (set ? esc(t('token.current.set')) : esc(t('token.current.missing')))
+    + '</p>'
+    + '<p style="margin-top:.8rem">'
+    + '<a href="/register-start" class="btn-primary">' + esc(t('token.submit')) + '</a>'
+    + '</p></section>';
 }
 
-function refreshAll(){ refreshStatus(); refreshCalls(); refreshErrors(); }
-refreshAll();
-setInterval(refreshAll, 3000);
+// --- boot ----------------------------------------------------------
+
+route();
 </script>
 </body>
 </html>

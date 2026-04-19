@@ -582,20 +582,11 @@ static esp_err_t handle_token_callback(httpd_req_t *req)
     ESP_LOGI(TAG, "token-callback: stored new PhoneBlock token (%d chars)",
              (int)strlen(token));
 
-    httpd_resp_set_type(req, "text/html; charset=utf-8");
-    httpd_resp_send(req,
-        "<!doctype html><html lang=\"de\"><head><meta charset=\"utf-8\">"
-        "<title>PhoneBlock — verbunden</title>"
-        "<meta http-equiv=\"refresh\" content=\"3; url=/\">"
-        "<style>body{font-family:system-ui,sans-serif;max-width:480px;"
-        "margin:4rem auto;padding:0 1rem;text-align:center}"
-        "h1{color:#188038}</style></head><body>"
-        "<h1>✓ Verbunden</h1>"
-        "<p>Der Dongle ist jetzt mit deinem PhoneBlock-Konto gekoppelt.</p>"
-        "<p class=\"muted\">Du wirst in 3 Sekunden zur Startseite geleitet. "
-        "<a href=\"/\">Oder direkt klicken</a>.</p>"
-        "</body></html>",
-        HTTPD_RESP_USE_STRLEN);
+    // Hand the user straight back to the status landing — the pill
+    // there flips to green on the next 3s poll.
+    httpd_resp_set_status(req, "302 Found");
+    httpd_resp_set_hdr(req, "Location", "/");
+    httpd_resp_send(req, NULL, 0);
     return ESP_OK;
 }
 
