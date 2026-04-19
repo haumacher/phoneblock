@@ -1,3 +1,8 @@
+// memmem() is a GNU extension; glibc needs _GNU_SOURCE to expose it
+// on the host-test build. ESP-IDF's newlib-based libc declares it
+// unconditionally, so the guard is benign there.
+#define _GNU_SOURCE
+
 #include "tr064_parse.h"
 
 #include <string.h>
@@ -132,4 +137,44 @@ bool tr064_pick_default_user(char *xml, char *out, size_t cap)
 
     // Fallback: first Username element (ignoring any attributes).
     return tr064_xml_find_text(xml, "Username", out, cap) >= 0 && out[0];
+}
+
+int tr064_parse_phonebook_contacts(char *xml, int xml_len,
+                                   tr064_contact_cb_t cb, void *user)
+{
+    if (!xml || xml_len <= 0 || !cb) return 0;
+    int count = 0;
+    char *p = xml;
+    int remaining = xml_len;
+    while (remaining > 0) {
+        char *open = memmem(p, remaining, "<contact", 8);
+        if (!open) break;
+        char after = open[8];
+        if (after != '>' && after != ' ' && after != '\t'
+            && after != '\r' && after != '\n') {
+            // False match like <contacts>; advance past it.
+            p = open + 8;
+            remaining = xml_len - (p - xml);
+            continue;
+        }
+        char *close = memmem(open, remaining - (open - p),
+                             "</contact>", 10);
+        if (!close) break;
+
+        char save = *close;
+        *close = '\0';
+        char uid[32]    = "";
+        char number[48] = "";
+        tr064_xml_find_text(open, "uniqueid", uid,    sizeof(uid));
+        tr064_xml_find_text(open, "number",   number, sizeof(number));
+        *close = save;
+
+        if (uid[0] && number[0]) {
+            cb(uid, number, user);
+            count++;
+        }
+        p = close + 10;
+        remaining = xml_len - (p - xml);
+    }
+    return count;
 }

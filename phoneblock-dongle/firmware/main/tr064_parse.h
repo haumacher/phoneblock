@@ -29,3 +29,17 @@ void tr064_xml_escape(const char *in, char *out, size_t cap);
 // Falls back to the first <Username> element if no marker is
 // present. Returns true on success and writes the username to `out`.
 bool tr064_pick_default_user(char *xml, char *out, size_t cap);
+
+// Walk a Fritz!Box phonebook XML and invoke `cb()` for each contact
+// entry, passing its uniqueid and first number. Handles
+// "<contact>" as well as "<contact …>"-with-attributes; inner
+// <number …> and <uniqueid> are parsed through the attribute-
+// aware tr064_xml_find_text. Returns the number of contacts for
+// which both fields were non-empty.
+//
+// `xml` must be mutable (the implementation NUL-terminates each
+// <contact>…</contact> block temporarily).
+typedef void (*tr064_contact_cb_t)(const char *uid, const char *number,
+                                   void *user);
+int tr064_parse_phonebook_contacts(char *xml, int xml_len,
+                                   tr064_contact_cb_t cb, void *user);

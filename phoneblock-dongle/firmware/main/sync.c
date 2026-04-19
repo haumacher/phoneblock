@@ -106,53 +106,9 @@ static int http_get_to_buf(const char *url, char *buf, int cap)
     return hb.len;
 }
 
-// Walk a Fritz!Box phonebook-style XML and invoke cb() for each
-// <contact> block, passing its (uid, number). Handles "<contact>"
-// as well as "<contact …>"-with-attributes; inner tags are parsed
-// via tr064_xml_find_text, which is attribute-aware — Fritz!OS
-// emits <number type="home" prio="1" …>069…</number>, not plain
-// <number>.
-typedef void (*contact_cb_t)(const char *uid, const char *number, void *user);
-
-static int parse_contacts(char *xml, int xml_len,
-                          contact_cb_t cb, void *user)
-{
-    int count = 0;
-    char *p = xml;
-    int remaining = xml_len;
-    while (remaining > 0) {
-        char *open = memmem(p, remaining, "<contact", 8);
-        if (!open) break;
-        char after = open[8];
-        if (after != '>' && after != ' ' && after != '\t'
-            && after != '\r' && after != '\n') {
-            p = open + 8;
-            remaining = xml_len - (p - xml);
-            continue;
-        }
-        char *close = memmem(open, remaining - (open - p),
-                             "</contact>", 10);
-        if (!close) break;
-
-        // Temporarily NUL-terminate the contact block so
-        // tr064_xml_find_text treats it as a standalone string.
-        char save = *close;
-        *close = '\0';
-        char uid[32]    = "";
-        char number[48] = "";
-        tr064_xml_find_text(open, "uniqueid", uid,    sizeof(uid));
-        tr064_xml_find_text(open, "number",   number, sizeof(number));
-        *close = save;
-
-        if (uid[0] && number[0]) {
-            cb(uid, number, user);
-            count++;
-        }
-        p = close + 10;
-        remaining = xml_len - (p - xml);
-    }
-    return count;
-}
+// Contact parser lives in tr064_parse.c so the host test harness
+// can exercise the real AVM XML shapes. sync.c only glues the
+// callback plus per-entry PhoneBlock submission around it.
 
 // Convert what we read from the Fritz!Box into a form the PhoneBlock
 // /api/rate endpoint accepts. The server is lenient but prefers +49…
@@ -280,7 +236,8 @@ static void run_once(void)
         .host = host, .app_user = app_user, .app_pass = app_pass,
         .pushed = 0, .failed = 0,
     };
-    int total = parse_contacts(xml, len, process_contact, &ctx);
+    int total = tr064_parse_phonebook_contacts(xml, len,
+                                                process_contact, &ctx);
     free(xml);
     ESP_LOGI(TAG, "sync done: %d contacts, %d pushed, %d failed",
              total, ctx.pushed, ctx.failed);

@@ -219,6 +219,126 @@ static void test_pick_default_user_single_entry(void)
     CHECK_STR(out, "fritz9344");
 }
 
+// --- Phonebook contact parser -------------------------------------
+
+typedef struct { char uid[32]; char num[48]; } contact_rec_t;
+typedef struct { contact_rec_t *arr; int max; int n; } contact_sink_t;
+
+static void collect_contact(const char *uid, const char *number, void *user)
+{
+    contact_sink_t *s = user;
+    if (s->n >= s->max) return;
+    strncpy(s->arr[s->n].uid, uid, sizeof(s->arr[s->n].uid) - 1);
+    s->arr[s->n].uid[sizeof(s->arr[s->n].uid) - 1] = '\0';
+    strncpy(s->arr[s->n].num, number, sizeof(s->arr[s->n].num) - 1);
+    s->arr[s->n].num[sizeof(s->arr[s->n].num) - 1] = '\0';
+    s->n++;
+}
+
+static void test_contacts_real_world(void)
+{
+    // Copied verbatim from the user's real Fritz!Box 6670 Cable
+    // "Rufsperren"-Export: <contact> plain, <number …> with four
+    // attributes, newlines inside the <telephony …> opening tag.
+    char xml[] =
+        "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+        "<phonebooks>\n"
+        "<phonebook owner=\"258\">"
+        "<contact><category /><person><realName>069200940084</realName></person><telephony\n"
+        "nid=\"1\"><number type=\"home\" vanity=\"\" prio=\"1\" id=\"0\">069200940084</number></telephony><services /><setup><ringTone\n"
+        "prefix=\"0\" /></setup><mod_time>1772023418</mod_time><uniqueid>74</uniqueid></contact>"
+        "<contact><category /><person><realName>SPAM</realName></person><telephony\n"
+        "nid=\"1\"><number type=\"home\" vanity=\"\" prio=\"1\" id=\"0\">030330759014</number></telephony><services /><setup><ringTone\n"
+        "prefix=\"0\" /></setup><mod_time>1776621077</mod_time><uniqueid>95</uniqueid></contact>"
+        "</phonebook>\n"
+        "</phonebooks>\n";
+    contact_rec_t recs[4];
+    contact_sink_t sink = { .arr = recs, .max = 4, .n = 0 };
+    int n = tr064_parse_phonebook_contacts(xml, strlen(xml),
+                                           collect_contact, &sink);
+    CHECK(n == 2);
+    CHECK(sink.n == 2);
+    CHECK_STR(sink.arr[0].uid, "74");
+    CHECK_STR(sink.arr[0].num, "069200940084");
+    CHECK_STR(sink.arr[1].uid, "95");
+    CHECK_STR(sink.arr[1].num, "030330759014");
+}
+
+static void test_contacts_plain_tags(void)
+{
+    char xml[] =
+        "<phonebooks><phonebook>"
+        "<contact>"
+          "<person><realName>X</realName></person>"
+          "<telephony><number>12345</number></telephony>"
+          "<uniqueid>1</uniqueid>"
+        "</contact>"
+        "</phonebook></phonebooks>";
+    contact_rec_t recs[2];
+    contact_sink_t sink = { .arr = recs, .max = 2, .n = 0 };
+    int n = tr064_parse_phonebook_contacts(xml, strlen(xml),
+                                           collect_contact, &sink);
+    CHECK(n == 1);
+    CHECK_STR(sink.arr[0].uid, "1");
+    CHECK_STR(sink.arr[0].num, "12345");
+}
+
+static void test_contacts_attribute_on_contact(void)
+{
+    // Some Fritz!OS versions/clients emit attributes on <contact>.
+    char xml[] =
+        "<phonebook>"
+        "<contact id=\"42\"><number>999</number><uniqueid>7</uniqueid></contact>"
+        "</phonebook>";
+    contact_rec_t recs[2];
+    contact_sink_t sink = { .arr = recs, .max = 2, .n = 0 };
+    int n = tr064_parse_phonebook_contacts(xml, strlen(xml),
+                                           collect_contact, &sink);
+    CHECK(n == 1);
+    CHECK_STR(sink.arr[0].uid, "7");
+    CHECK_STR(sink.arr[0].num, "999");
+}
+
+static void test_contacts_no_match_for_contacts_tag(void)
+{
+    // <contacts> must not be mistaken for <contact>.
+    char xml[] =
+        "<contacts count=\"0\"></contacts>";
+    contact_rec_t recs[2];
+    contact_sink_t sink = { .arr = recs, .max = 2, .n = 0 };
+    int n = tr064_parse_phonebook_contacts(xml, strlen(xml),
+                                           collect_contact, &sink);
+    CHECK(n == 0);
+    CHECK(sink.n == 0);
+}
+
+static void test_contacts_skips_incomplete(void)
+{
+    // Contact without a <number> — skipped, but iteration continues.
+    char xml[] =
+        "<phonebook>"
+        "<contact><uniqueid>1</uniqueid></contact>"
+        "<contact><uniqueid>2</uniqueid><number>5551234</number></contact>"
+        "</phonebook>";
+    contact_rec_t recs[4];
+    contact_sink_t sink = { .arr = recs, .max = 4, .n = 0 };
+    int n = tr064_parse_phonebook_contacts(xml, strlen(xml),
+                                           collect_contact, &sink);
+    CHECK(n == 1);
+    CHECK_STR(sink.arr[0].uid, "2");
+    CHECK_STR(sink.arr[0].num, "5551234");
+}
+
+static void test_contacts_empty(void)
+{
+    char xml[] = "<phonebook></phonebook>";
+    contact_rec_t recs[1];
+    contact_sink_t sink = { .arr = recs, .max = 1, .n = 0 };
+    int n = tr064_parse_phonebook_contacts(xml, strlen(xml),
+                                           collect_contact, &sink);
+    CHECK(n == 0);
+}
+
 int main(void)
 {
     test_find_text_simple();
@@ -243,6 +363,13 @@ int main(void)
     test_pick_default_user_fallback_first();
     test_pick_default_user_empty();
     test_pick_default_user_single_entry();
+
+    test_contacts_real_world();
+    test_contacts_plain_tags();
+    test_contacts_attribute_on_contact();
+    test_contacts_no_match_for_contacts_tag();
+    test_contacts_skips_incomplete();
+    test_contacts_empty();
 
     if (failures) {
         fprintf(stderr, "%d test(s) failed\n", failures);
