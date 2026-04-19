@@ -10,8 +10,8 @@
 		<h1 data-tx="t0001:c6b15d09">Candidarsi come beta tester</h1>
 
 		<div class="notification is-success" th:if="${param.ok}">
-			<p><strong data-tx="t0002:fb69fbb">Grazie per la vostra candidatura!</strong></p>
-			<p data-tx="t0003:d79d5517">Vi risponderemo non appena avremo aggiunto la vostra configurazione alla nostra matrice di test. Nel frattempo, non è necessario fare altro. Se desiderate correggere i vostri dati, vi preghiamo di <a th:href="@{/}">farcelo sapere</a>.</p>
+			<p><strong data-tx="t0069:fb69fbb">Grazie per la vostra candidatura!</strong></p>
+			<p data-tx="t0070:e815b5c1">Vi risponderò non appena la vostra configurazione sarà stata aggiunta alla matrice di test. Fino ad allora, non dovete fare nient'altro.</p>
 		</div>
 
 		<div class="notification is-danger" th:if="${param.error != null and param.error[0] == 'invalid'}">
@@ -19,12 +19,12 @@
 		</div>
 
 		<div class="notification is-danger" th:if="${param.error != null and param.error[0] == 'commitment'}">
-			<p data-tx="t0005:98a30556"><strong>Non possiamo inviare un dongle senza la conferma del questionario.</strong> Il feedback è il motivo per cui offriamo il programma tester.</p>
+			<p data-tx="t0071:515e9f32"><strong>Non posso inviare un dongle senza la conferma del questionario.</strong> Il feedback è il motivo per cui esiste il programma tester.</p>
 		</div>
 
 		<th:block th:unless="${param.ok}">
 
-		<p data-tx="t0006:32d2fa39">È fantastico che tu voglia partecipare! Stiamo cercando tester che provino il dongle PhoneBlock con il loro provider specifico e la configurazione del router. Abbiamo bisogno di alcuni dettagli da parte vostra per poter selezionare un mix colorato. Ci vorranno 2-3 minuti per compilare il modulo.</p>
+		<p data-tx="t0072:fe5c9755">È bello che tu voglia partecipare! Sto cercando dei tester che provino il dongle PhoneBlock con il loro provider specifico e la loro configurazione del router. Ho bisogno di alcuni dettagli per poter selezionare un mix colorato. Ci vorranno 2-3 minuti per compilare il modulo.</p>
 
 		<p class="has-text-grey-dark" data-tx="t0007:2f2c6f55"><span class="icon"><i class="fas fa-shield-alt"></i></span> L'indirizzo di spedizione sarà utilizzato solo per l'invio del dongle e sarà cancellato al più tardi dopo 6 mesi. Vedi anche <a th:href="@{/datenschutz}">Privacy Policy</a>.</p>
 
@@ -168,7 +168,7 @@
 						</select>
 					</div>
 				</div>
-				<p class="help" data-tx="t0054:ce35ea7d">Se non ricevi quasi mai spam, hai poco da fare come tester - questa domanda ci aiuta a selezionare i tester con materiale di prova reale.</p>
+				<p class="help" data-tx="t0073:3d6caf09">Se non ricevi quasi nessuno spam, hai poco da fare come tester - la domanda mi aiuta a selezionare i tester con materiale di prova reale.</p>
 			</div>
 
 			<hr/>
@@ -187,7 +187,7 @@
 						</select>
 					</div>
 				</div>
-				<p class="help" data-tx="t0061:4cdb32d">Ci aiuta con l'assistenza alla configurazione: va benissimo iniziare con le basi.</p>
+				<p class="help" data-tx="t0074:b290afd6">Mi aiuta con l'assistenza alla configurazione: va benissimo iniziare con le basi.</p>
 			</div>
 
 			<hr/>

@@ -12,12 +12,12 @@
 		<p class="subtitle" data-tx="t0002:f19cc129">Ett USB-minne i tumstorlek som fångar upp reklamsamtal innan telefonen ens ringer - och som inte är knutet till Fritz!Box, utan fungerar på alla moderna routrar eller telefonsystem med SIP.</p>
 
 		<div class="notification is-warning">
-			<p data-tx="t0003:f8f65c55"><strong>Status: Beta.</strong> Dongeln fungerar, men innan vi rekommenderar den brett vill vi ha testat den på så många olika anslutningstyper som möjligt. Vi letar efter testpersoner och ger bort enheter i utbyte - <a href="#tester">se nedan</a>.</p>
+			<p data-tx="t0080:bceb1cbd"><strong>Status: Beta.</strong> Dongeln fungerar, men innan jag rekommenderar den brett skulle jag vilja ha testat den på så många olika anslutningstyper som möjligt. Jag letar efter testare och ger bort enheter i gengäld - <a href="#tester">se nedan</a>.</p>
 		</div>
 
 		<h2 data-tx="t0004:6b104c7a">Idén i en mening</h2>
 
-		<p data-tx="t0005:d1cd2c85">Dongeln loggar in på din router som en extra IP-telefon. Varje gång ett samtal kommer in frågar den PhoneBlock-databasen blixtsnabbt: <em>"Är det här spam?"</em> Om så är fallet svarar den själv på samtalet och lägger på direkt. Din riktiga telefon har inte ens ringt i det ögonblicket.</p>
+		<p data-tx="t0081:67bb8b12">Dongeln loggar in på din router som en extra IP-telefon. Varje gång ett samtal kommer in frågar den blixtsnabbt PhoneBlock-databasen: <em>"Är det här spam?"</em> Om så är fallet svarar den själv, spelar upp en kort hälsning om så önskas och lägger på luren igen. Din riktiga telefon har inte ens ringt i det ögonblicket.</p>
 
 		<div class="columns is-centered mt-5">
 			<div class="column is-one-quarter has-text-centered">
@@ -28,12 +28,12 @@
 			<div class="column is-one-quarter has-text-centered">
 				<p><span class="icon is-large has-text-warning"><i class="fas fa-bolt fa-3x"></i></span></p>
 				<h4 data-tx="t0008:acac085a">2. Flashkontroll</h4>
-				<p data-tx="t0009:fc2f56f4">Inom några hundra millisekunder frågar dongeln PhoneBlock om det är känt att numret är skräppost. Förfrågan körs via krypterad HTTPS.</p>
+				<p data-tx="t0082:c18bf1d6">Inom några hundra millisekunder frågar dongeln PhoneBlock om det är känt att numret är skräppost. Förfrågan körs via krypterad HTTPS och överför endast en hash av numret.</p>
 			</div>
 			<div class="column is-one-quarter has-text-centered">
 				<p><span class="icon is-large has-text-danger"><i class="fas fa-ban fa-3x"></i></span></p>
 				<h4 data-tx="t0010:be667d0f">3. göra sig av med den</h4>
-				<p data-tx="t0011:c7c6f4fb">Om numret är skräppost svarar dongeln och lägger på igen omedelbart. Telefonen i vardagsrummet förblir tyst. Om det är ofarligt gör dongeln helt enkelt ingenting - samtalet går igenom normalt.</p>
+				<p data-tx="t0083:e858f50">Om numret är spam svarar dongeln, spelar upp ett meddelande om så önskas och lägger på luren. Telefonen i vardagsrummet förblir tyst. Om det är ett ofarligt nummer gör dongeln helt enkelt ingenting - samtalet går igenom som vanligt.</p>
 			</div>
 		</div>
 
@@ -59,38 +59,38 @@
 					<tr>
 						<td data-tx="t0019:9e08101d">Telefonen förblir helt tyst under spam</td>
 						<td data-tx="t0020:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ja</td>
-						<td data-tx="t0021:75373880"><span class="icon has-text-warning"><i class="fas fa-circle-half-stroke"></i></span> Endast om blockering av routersamtal är konfigurerad</td>
+						<td data-tx="t0084:cf12d799"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Valfri visning eller låsning</td>
 						<td data-tx="t0022:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ja</td>
 					</tr>
 					<tr>
 						<td data-tx="t0023:90691916">Krav på router</td>
 						<td data-tx="t0024:115dd48e"><span class="icon has-text-success"><i class="fas fa-globe"></i></span> Alla (SIP + fördröjning av klocka)</td>
-						<td data-tx="t0025:102d3ed3"><span class="icon has-text-warning"><i class="fas fa-wifi"></i></span> Fritz!Box med CardDAV</td>
-						<td data-tx="t0026:d2213069"><span class="icon has-text-info"><i class="fas fa-server"></i></span> Router med SIP-registrator</td>
+						<td data-tx="t0085:120e2e30"><span class="icon has-text-warning"><i class="fas fa-wifi"></i></span> Nyare Fritz!Box med CardDAV</td>
+						<td data-tx="t0086:93c556cc"><span class="icon has-text-warning"><i class="fas fa-server"></i></span> Router med Internet-åtkomlig SIP-registrator (blockerad för vissa operatörsboxar, t.ex. Vodafone)</td>
 					</tr>
 					<tr>
 						<td data-tx="t0027:e66ba2b">Ytterligare hårdvara</td>
 						<td data-tx="t0028:99294924"><span class="icon has-text-info"><i class="fas fa-usb"></i></span> USB-dongle, ca 10 €.</td>
 						<td data-tx="t0029:58a26498"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ingen</td>
-						<td data-tx="t0030:6a476e10"><span class="icon has-text-warning"><i class="fas fa-server"></i></span> Server eller Raspberry Pi</td>
+						<td data-tx="t0087:fe8232e3"><span class="icon has-text-success"><i class="fas fa-cloud"></i></span> Ingen (molntjänst)</td>
 					</tr>
 					<tr>
 						<td data-tx="t0031:83c9a19b">Inställningsarbete</td>
 						<td data-tx="t0032:e09b2ea8"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Plugga in, konfigurera WLAN + åtkomst</td>
 						<td data-tx="t0033:ad1a2520"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Lagra CardDAV URL i routern</td>
-						<td data-tx="t0034:ff07d9a3"><span class="icon has-text-warning"><i class="fas fa-user-graduate"></i></span> Java/Docker + ljudsamtal</td>
+						<td data-tx="t0088:ca8f4268"><span class="icon has-text-info"><i class="fas fa-gear"></i></span> Skapa telefonsvarare, ange SIP-autentiseringsuppgifter i routern</td>
 					</tr>
 					<tr>
 						<td data-tx="t0035:4532187f">Aktualitet för blocklistan</td>
 						<td data-tx="t0036:4134c6e2"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Live-fråga vid varje samtal</td>
-						<td data-tx="t0037:4dab9851"><span class="icon has-text-info"><i class="fas fa-sync"></i></span> Periodisk synkronisering (≤ 1 ×/dag)</td>
+						<td data-tx="t0089:a868030b"><span class="icon has-text-warning"><i class="fas fa-sync"></i></span> Endast del av blocklistan, synk ≤ 1 ×/dag</td>
 						<td data-tx="t0038:4134c6e2"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Live-fråga vid varje samtal</td>
 					</tr>
 					<tr>
 						<td data-tx="t0039:a8c2cfff">Strömförbrukning vid kontinuerlig drift</td>
 						<td data-tx="t0040:3d07b53b"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> ca 0,4 W (USB)</td>
 						<td data-tx="t0041:30562f18"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> 0 W (använder router)</td>
-						<td data-tx="t0042:e74172dc"><span class="icon has-text-warning"><i class="fas fa-bolt"></i></span> 3-10 W (server)</td>
+						<td data-tx="t0090:c0b4a4fd"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> 0 W (molntjänst)</td>
 					</tr>
 					<tr>
 						<td data-tx="t0043:f4c95d3e">Aktivt anställa spammare</td>
@@ -113,7 +113,7 @@
 			<ul>
 				<li data-tx="t0052:b79437c1"><strong>Blocklist-telefonbok</strong> - om du har en Fritz!Box och en enkel markering eller manuell router räcker det med att blockera samtal.</li>
 				<li data-tx="t0053:f8bcce39"><strong>Dongle</strong> - om du <em>inte</em> har en Fritz!Box eller inte vill driva en permanent server, men ändå vill att telefonen ska vara tillförlitligt tyst i händelse av spam.</li>
-				<li data-tx="t0054:af7903e3"><strong>Answer Bot</strong> - om du aktivt vill anställa spammare och har en server eller Raspberry Pi att avvara.</li>
+				<li data-tx="t0091:74ac18af"><strong>Answer Bot</strong> - om du aktivt vill anställa spammare och din router tillåter en SIP-inloggning från Internet.</li>
 			</ul>
 		</div>
 
@@ -123,22 +123,21 @@
 			<li data-tx="t0057:1c59c72e"><strong>Konfigurerbar ringfördröjning</strong> för de "riktiga" telefonerna (vanligtvis 3-5 sekunder) så att dongeln kan avlyssna samtalet i förväg.</li>
 			<li data-tx="t0058:be2e6f7c"><strong>2,4 GHz WLAN</strong> inom räckvidd.</li>
 			<li data-tx="t0059:41e630a8"><strong>5 V USB-strömförsörjning</strong> - helst direkt på routern, annars på valfri USB-strömförsörjningsenhet.</li>
-			<li data-tx="t0060:f8c04413"><strong>Gratis <a th:href="@{/signup}">PhoneBlock-konto</a></strong> med API-åtkomsttoken.</li>
+			<li data-tx="t0092:f8c04413"><strong>Gratis <a th:href="@{/login}">PhoneBlock-konto</a></strong> med API-åtkomsttoken.</li>
 		</ul>
 
 		<hr class="my-5"/>
 
 		<h2 data-tx="t0061:6db43a5a" id="tester">Bli en betatestare</h2>
 
-		<p data-tx="t0062:bdb9e1d5">Donglen fungerar tillförlitligt hemma på en Fritz!-box - men "router", "leverantör" och "anslutningstyp" är en brokig blandning i Tyskland (och ännu mer utomlands). Varje kombination har sina egna särdrag: olika SIP-dialekter, olika NAT-regler, olika alternativ för ringfördröjning.</p>
+		<p data-tx="t0093:cdf5c098">Donglen fungerar tillförlitligt på en Fritz!-box hemma hos mig - men "router", "leverantör" och "anslutningstyp" är en brokig blandning i Tyskland (och ännu mer utomlands). Varje kombination har sina egna särdrag: olika SIP-dialekter, olika NAT-regler, olika alternativ för ringfördröjning.</p>
 
-		<p data-tx="t0063:80dccb54">Vi letar därför efter <strong>medtestare</strong> som kan testa dongeln i sin specifika installation och ge oss strukturerad feedback. Särskilt intressant:</p>
+		<p data-tx="t0094:14288f3">Jag söker därför <strong>medtestare</strong> som vill testa dongeln i sin specifika installation och ge mig strukturerad feedback. Särskilt intressant:</p>
 
 		<ul>
 			<li data-tx="t0064:e1971ce0">Telekom-anslutning med <strong>Speedport</strong>-router</li>
 			<li data-tx="t0065:61cce24d">Kabelanslutning Vodafone/Unitymedia med den medföljande providerboxen</li>
 			<li data-tx="t0066:ea506b90">1&amp;1, o2, Deutsche Glasfaser och andra leverantörer</li>
-			<li data-tx="t0067:c7c7f4b3"><strong>Asterisk</strong>, <strong>FreePBX</strong>, <strong>3CX</strong> eller andra självbetjänade SIP-system</li>
 			<li data-tx="t0068:e5ffca52">Internationella förbindelser (Schweiz, Österrike, övriga Europa)</li>
 		</ul>
 

@@ -12,12 +12,12 @@
 		<p class="subtitle" data-tx="t0002:f19cc129">USB-накопичувач розміром з великий палець, який перехоплює рекламні дзвінки ще до того, як ваш телефон задзвонить - і який не прив'язаний до Fritz!Box, а працює з будь-яким сучасним роутером або телефонною системою з SIP.</p>
 
 		<div class="notification is-warning">
-			<p data-tx="t0003:f8f65c55"><strong>Статус: Бета-версія.</strong> Ключ працює, але перш ніж рекомендувати його широкому загалу, ми хочемо випробувати його на якомога більшій кількості різних типів підключення. Ми шукаємо тестувальників і роздаємо пристрої натомість - <a href="#tester">див. нижче</a>.</p>
+			<p data-tx="t0080:bceb1cbd"><strong>Статус: Бета-версія.</strong> Ключ працює, але перш ніж рекомендувати його широкому загалу, я хотів би випробувати його на якомога більшій кількості різних типів підключення. Я шукаю тестувальників і роздаю пристрої натомість - <a href="#tester">див. нижче</a>.</p>
 		</div>
 
 		<h2 data-tx="t0004:6b104c7a">Ідея в одному реченні</h2>
 
-		<p data-tx="t0005:d1cd2c85">Донгл підключається до вашого роутера як додатковий IP-телефон. Щоразу, коли надходить дзвінок, він блискавично запитує базу даних PhoneBlock: <em>"Це спам?" </em> Якщо так, він сам відповідає на дзвінок і негайно кладе слухавку. Ваш справжній телефон у цей момент навіть не дзвонив.</p>
+		<p data-tx="t0081:67bb8b12">Донгл підключається до вашого роутера як додатковий IP-телефон. Щоразу, коли надходить дзвінок, він блискавично запитує базу даних PhoneBlock: <em>"Це спам?" </em> Якщо так, він сам відповідає на дзвінок, відтворює коротке привітання за бажанням і знову кладе слухавку. Ваш справжній телефон у цей момент навіть не дзвонив.</p>
 
 		<div class="columns is-centered mt-5">
 			<div class="column is-one-quarter has-text-centered">
@@ -28,12 +28,12 @@
 			<div class="column is-one-quarter has-text-centered">
 				<p><span class="icon is-large has-text-warning"><i class="fas fa-bolt fa-3x"></i></span></p>
 				<h4 data-tx="t0008:acac085a">2. перевірка флеш-пам'яті</h4>
-				<p data-tx="t0009:fc2f56f4">Протягом декількох сотень мілісекунд донгл запитує PhoneBlock, чи відомо, що номер є спамом. Запит проходить через зашифрований HTTPS.</p>
+				<p data-tx="t0082:c18bf1d6">Протягом декількох сотень мілісекунд донгл запитує PhoneBlock, чи відомо, що номер є спамом. Запит виконується через зашифрований HTTPS і передає лише хеш номера.</p>
 			</div>
 			<div class="column is-one-quarter has-text-centered">
 				<p><span class="icon is-large has-text-danger"><i class="fas fa-ban fa-3x"></i></span></p>
 				<h4 data-tx="t0010:be667d0f">3. позбутися його</h4>
-				<p data-tx="t0011:c7c6f4fb">Якщо номер є спамом, ключ піднімає трубку і одразу ж кладе її знову. Телефон у вітальні мовчить. Якщо це нешкідливий дзвінок, донгл просто нічого не робить - дзвінок проходить у звичайному режимі.</p>
+				<p data-tx="t0083:e858f50">Якщо номер - спам, донгл піднімає слухавку, за бажанням відтворює оголошення і кладе слухавку. Телефон у вітальні мовчить. Якщо це нешкідливий дзвінок, донгл просто нічого не робить - дзвінок проходить у звичайному режимі.</p>
 			</div>
 		</div>
 
@@ -59,38 +59,38 @@
 					<tr>
 						<td data-tx="t0019:9e08101d">Телефон повністю мовчить під час спаму</td>
 						<td data-tx="t0020:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Так</td>
-						<td data-tx="t0021:75373880"><span class="icon has-text-warning"><i class="fas fa-circle-half-stroke"></i></span> Тільки якщо налаштовано блокування дзвінків на маршрутизатор</td>
+						<td data-tx="t0084:cf12d799"><span class="icon has-text-success"><i class="fas fa-check"></i></span> За бажанням відображати або блокувати</td>
 						<td data-tx="t0022:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Так</td>
 					</tr>
 					<tr>
 						<td data-tx="t0023:90691916">Вимоги до маршрутизатора</td>
 						<td data-tx="t0024:115dd48e"><span class="icon has-text-success"><i class="fas fa-globe"></i></span> Будь-який (SIP + затримка дзвінка)</td>
-						<td data-tx="t0025:102d3ed3"><span class="icon has-text-warning"><i class="fas fa-wifi"></i></span> Fritz!Box з CardDAV</td>
-						<td data-tx="t0026:d2213069"><span class="icon has-text-info"><i class="fas fa-server"></i></span> Маршрутизатор з SIP-реєстратором</td>
+						<td data-tx="t0085:120e2e30"><span class="icon has-text-warning"><i class="fas fa-wifi"></i></span> Новіший Fritz!Box з CardDAV</td>
+						<td data-tx="t0086:93c556cc"><span class="icon has-text-warning"><i class="fas fa-server"></i></span> Маршрутизатор з SIP-реєстратором з доступом до Інтернету (заблоковано для деяких провайдерів, таких як Vodafone)</td>
 					</tr>
 					<tr>
 						<td data-tx="t0027:e66ba2b">Додаткове обладнання</td>
 						<td data-tx="t0028:99294924"><span class="icon has-text-info"><i class="fas fa-usb"></i></span> USB-ключ, приблизно 10 євро</td>
 						<td data-tx="t0029:58a26498"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Немає</td>
-						<td data-tx="t0030:6a476e10"><span class="icon has-text-warning"><i class="fas fa-server"></i></span> Сервер або Raspberry Pi</td>
+						<td data-tx="t0087:fe8232e3"><span class="icon has-text-success"><i class="fas fa-cloud"></i></span> Немає (хмарний сервіс)</td>
 					</tr>
 					<tr>
 						<td data-tx="t0031:83c9a19b">Зусилля по налаштуванню</td>
 						<td data-tx="t0032:e09b2ea8"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Підключіться, налаштуйте WLAN + доступ</td>
 						<td data-tx="t0033:ad1a2520"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Зберегти URL-адресу CardDAV в маршрутизаторі</td>
-						<td data-tx="t0034:ff07d9a3"><span class="icon has-text-warning"><i class="fas fa-user-graduate"></i></span> Java/Docker + аудіовиклики</td>
+						<td data-tx="t0088:ca8f4268"><span class="icon has-text-info"><i class="fas fa-gear"></i></span> Створіть автовідповідач, введіть облікові дані SIP у роутері</td>
 					</tr>
 					<tr>
 						<td data-tx="t0035:4532187f">Актуальність списку блокування</td>
 						<td data-tx="t0036:4134c6e2"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Живий запит на кожен дзвінок</td>
-						<td data-tx="t0037:4dab9851"><span class="icon has-text-info"><i class="fas fa-sync"></i></span> Періодична синхронізація (≤ 1 × на день)</td>
+						<td data-tx="t0089:a868030b"><span class="icon has-text-warning"><i class="fas fa-sync"></i></span> Лише частина списку блоків, синхронізація ≤ 1 ×/день</td>
 						<td data-tx="t0038:4134c6e2"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Живий запит на кожен дзвінок</td>
 					</tr>
 					<tr>
 						<td data-tx="t0039:a8c2cfff">Енергоспоживання в режимі безперервної роботи</td>
 						<td data-tx="t0040:3d07b53b"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> прибл. 0,4 Вт (USB)</td>
 						<td data-tx="t0041:30562f18"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> 0 Вт (використовується роутер)</td>
-						<td data-tx="t0042:e74172dc"><span class="icon has-text-warning"><i class="fas fa-bolt"></i></span> 3-10 Вт (сервер)</td>
+						<td data-tx="t0090:c0b4a4fd"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> 0 Вт (хмарний сервіс)</td>
 					</tr>
 					<tr>
 						<td data-tx="t0043:f4c95d3e">Активно використовувати спамерів</td>
@@ -113,7 +113,7 @@
 			<ul>
 				<li data-tx="t0052:b79437c1"><strong>Блокувати телефонну книгу</strong> - якщо у вас є Fritz!Box і достатньо простої позначки або ручного блокування викликів роутера.</li>
 				<li data-tx="t0053:f8bcce39"><strong>Донгл</strong> - якщо у вас <em>немає</em> Fritz!Box або ви не хочете використовувати постійний сервер, але хочете, щоб телефон надійно замовк у випадку спаму.</li>
-				<li data-tx="t0054:af7903e3"><strong>Бот-відповідь</strong> - якщо ви хочете активно використовувати спамерів і маєте сервер або Raspberry Pi в запасі.</li>
+				<li data-tx="t0091:74ac18af"><strong>Бот-відповідь</strong> - якщо ви хочете активно використовувати спамерів, а ваш маршрутизатор дозволяє SIP-логін з інтернету.</li>
 			</ul>
 		</div>
 
@@ -123,22 +123,21 @@
 			<li data-tx="t0057:1c59c72e"><strong>Настроювана затримка дзвінка</strong> для "справжніх" телефонів (зазвичай 3-5 секунд), щоб донгл міг перехопити дзвінок заздалегідь.</li>
 			<li data-tx="t0058:be2e6f7c"><strong>2,4 ГГц WLAN</strong> в межах досяжності.</li>
 			<li data-tx="t0059:41e630a8"><strong>5 В USB-живлення</strong> - в ідеалі безпосередньо на роутері, в іншому випадку - на будь-якому USB-блоці живлення.</li>
-			<li data-tx="t0060:f8c04413"><strong>Займіть <a th:href="@{/signup}">акаунт PhoneBlock</a></strong> з токеном доступу до API.</li>
+			<li data-tx="t0092:f8c04413"><strong>Залічіть безкоштовний <a th:href="@{/login}">акаунт PhoneBlock</a></strong> з токеном доступу до API.</li>
 		</ul>
 
 		<hr class="my-5"/>
 
 		<h2 data-tx="t0061:6db43a5a" id="tester">Стати бета-тестером</h2>
 
-		<p data-tx="t0062:bdb9e1d5">Вдома на Fritz! box донгл надійно працює, а от "роутер", "провайдер" і "тип з'єднання" в Німеччині (і тим більше за кордоном) - це строкатий мікс з різних слів. Кожна комбінація має свої особливості: різні діалекти SIP, різні правила NAT, різні параметри затримки дзвінка.</p>
+		<p data-tx="t0093:cdf5c098">У мене вдома донгл надійно працює з приставкою Fritz!, але "роутер", "провайдер" і "тип з'єднання" - це строката суміш у Німеччині (і тим більше за кордоном). Кожна комбінація має свої особливості: різні діалекти SIP, різні правила NAT, різні параметри затримки дзвінка.</p>
 
-		<p data-tx="t0063:80dccb54">Тому ми шукаємо <strong>ко-тестерів</strong>, щоб випробувати донгл у своїх конкретних налаштуваннях і надати нам структурований відгук. Це особливо цікаво:</p>
+		<p data-tx="t0094:14288f3">Тому я шукаю <strong>ко-тестерів</strong>, які випробують донгл у своїх конкретних налаштуваннях і нададуть мені структурований відгук. Це особливо цікаво:</p>
 
 		<ul>
 			<li data-tx="t0064:e1971ce0">З'єднання Telekom з маршрутизатором <strong>Speedport</strong></li>
 			<li data-tx="t0065:61cce24d">Підключення кабелем Vodafone/Unitymedia за допомогою коробки провайдера, що входить до комплекту постачання</li>
 			<li data-tx="t0066:ea506b90">1&amp;1, o2, Deutsche Glasfaser та інші провайдери</li>
-			<li data-tx="t0067:c7c7f4b3"><strong>Asterisk</strong>, <strong>FreePBX</strong>, <strong>3CX</strong> або інші самостійні SIP-системи</li>
 			<li data-tx="t0068:e5ffca52">Міжнародні зв'язки (Швейцарія, Австрія, решта Європи)</li>
 		</ul>
 

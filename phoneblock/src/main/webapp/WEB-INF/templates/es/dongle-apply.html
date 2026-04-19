@@ -10,8 +10,8 @@
 		<h1 data-tx="t0001:c6b15d09">Solicitar una prueba beta</h1>
 
 		<div class="notification is-success" th:if="${param.ok}">
-			<p><strong data-tx="t0002:fb69fbb">Gracias por su solicitud.</strong></p>
-			<p data-tx="t0003:d79d5517">Nos pondremos en contacto contigo en cuanto hayamos añadido tu configuración a nuestra matriz de pruebas. Mientras tanto, no tienes que hacer nada más. Si deseas corregir tus datos, <a th:href="@{/}">háznoslo saber</a>.</p>
+			<p><strong data-tx="t0069:fb69fbb">Gracias por su solicitud.</strong></p>
+			<p data-tx="t0070:e815b5c1">Me pondré en contacto contigo en cuanto tu configuración se haya añadido a la matriz de pruebas. Hasta entonces, no tienes que hacer nada más.</p>
 		</div>
 
 		<div class="notification is-danger" th:if="${param.error != null and param.error[0] == 'invalid'}">
@@ -19,12 +19,12 @@
 		</div>
 
 		<div class="notification is-danger" th:if="${param.error != null and param.error[0] == 'commitment'}">
-			<p data-tx="t0005:98a30556"><strong>No podemos enviar un dongle sin la confirmación del cuestionario.</strong> Los comentarios son la razón por la que ofrecemos el programa de probadores.</p>
+			<p data-tx="t0071:515e9f32"><strong>No puedo enviar un dongle sin la confirmación del cuestionario.</strong> Los comentarios son la razón de ser del programa de probadores.</p>
 		</div>
 
 		<th:block th:unless="${param.ok}">
 
-		<p data-tx="t0006:32d2fa39">¡Genial que quieras formar parte de ello! Estamos buscando probadores para probar el PhoneBlock dongle en su proveedor específico y la configuración del router. Necesitamos algunos detalles de usted para que podamos seleccionar una mezcla de colores. Tardarás 2-3 minutos en rellenarlo.</p>
+		<p data-tx="t0072:fe5c9755">¡Que bueno que quieras ser parte de esto! Estoy buscando probadores para probar el PhoneBlock dongle en su proveedor específico y la configuración del router. Necesito algunos detalles de usted para que pueda seleccionar una mezcla de colores. Tardarás 2-3 minutos en rellenarlo.</p>
 
 		<p class="has-text-grey-dark" data-tx="t0007:2f2c6f55"><span class="icon"><i class="fas fa-shield-alt"></i></span>Su dirección de envío solo se utilizará para enviar el dongle y se eliminará después de 6 meses como máximo. Véase también <a th:href="@{/datenschutz}">Política de privacidad</a>.</p>
 
@@ -168,7 +168,7 @@
 						</select>
 					</div>
 				</div>
-				<p class="help" data-tx="t0054:ce35ea7d">Si apenas recibes spam, tienes poco que hacer como probador - esta pregunta nos ayuda a seleccionar probadores con material de prueba real.</p>
+				<p class="help" data-tx="t0073:3d6caf09">Si apenas recibes spam, tienes poco que hacer como probador - la pregunta me ayuda a seleccionar probadores con material de prueba real.</p>
 			</div>
 
 			<hr/>
@@ -187,7 +187,7 @@
 						</select>
 					</div>
 				</div>
-				<p class="help" data-tx="t0061:4cdb32d">Nos ayuda con la configuración: está perfectamente bien empezar con lo básico.</p>
+				<p class="help" data-tx="t0074:b290afd6">Me ayuda con la puesta en marcha - está perfectamente bien empezar con lo básico.</p>
 			</div>
 
 			<hr/>

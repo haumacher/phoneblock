@@ -12,12 +12,12 @@
 		<p class="subtitle" data-tx="t0002:f19cc129">A thumb-sized USB stick that snatches away advertising calls before your phone even rings - and which is not tied to the Fritz!Box, but works on any modern router or telephone system with SIP.</p>
 
 		<div class="notification is-warning">
-			<p data-tx="t0003:f8f65c55"><strong>Status: Beta.</strong> The dongle works, but before we recommend it widely, we want to have tried it out on as many different connection types as possible. We are looking for testers and are giving away devices - <a href="#tester">see below</a>.</p>
+			<p data-tx="t0080:bceb1cbd"><strong>Status: Beta.</strong> The dongle works, but before I recommend it widely, I would like to have tried it out on as many different connection types as possible. I am looking for testers and am giving away devices in return - <a href="#tester">see below</a>.</p>
 		</div>
 
 		<h2 data-tx="t0004:6b104c7a">The idea in one sentence</h2>
 
-		<p data-tx="t0005:d1cd2c85">The dongle logs on to your router like an additional IP phone. Every time a call comes in, it asks the PhoneBlock database at lightning speed: <em>"Is this spam?"</em> If so, it answers the call itself and hangs up immediately. Your real phone hasn't even rung at that moment.</p>
+		<p data-tx="t0081:67bb8b12">The dongle logs on to your router like an additional IP phone. Every time a call comes in, it asks the PhoneBlock database at lightning speed: <em>"Is this spam?"</em> If so, it answers the call itself, plays a short announcement if desired and hangs up again. Your real phone hasn't even rung at that moment.</p>
 
 		<div class="columns is-centered mt-5">
 			<div class="column is-one-quarter has-text-centered">
@@ -28,12 +28,12 @@
 			<div class="column is-one-quarter has-text-centered">
 				<p><span class="icon is-large has-text-warning"><i class="fas fa-bolt fa-3x"></i></span></p>
 				<h4 data-tx="t0008:acac085a">2. flash check</h4>
-				<p data-tx="t0009:fc2f56f4">The dongle asks PhoneBlock within a few hundred milliseconds whether the number is known as spam. The query runs via encrypted HTTPS.</p>
+				<p data-tx="t0082:c18bf1d6">The dongle asks PhoneBlock within a few hundred milliseconds whether the number is known to be spam. The query runs via encrypted HTTPS and only transmits a hash of the number.</p>
 			</div>
 			<div class="column is-one-quarter has-text-centered">
 				<p><span class="icon is-large has-text-danger"><i class="fas fa-ban fa-3x"></i></span></p>
 				<h4 data-tx="t0010:be667d0f">3. get rid of it</h4>
-				<p data-tx="t0011:c7c6f4fb">If the number is spam, the dongle picks up and hangs up again immediately. The phone in the living room remains silent. If it is harmless, the dongle simply does nothing - the call goes through normally.</p>
+				<p data-tx="t0083:e858f50">If the number is spam, the dongle picks up, plays an announcement if desired and hangs up. The telephone in the living room remains silent. If it is harmless, the dongle simply does nothing - the call goes through normally.</p>
 			</div>
 		</div>
 
@@ -59,38 +59,38 @@
 					<tr>
 						<td data-tx="t0019:9e08101d">Phone remains completely silent during spam</td>
 						<td data-tx="t0020:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Yes</td>
-						<td data-tx="t0021:75373880"><span class="icon has-text-warning"><i class="fas fa-circle-half-stroke"></i></span> Only if router call blocking is configured</td>
+						<td data-tx="t0084:cf12d799"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Optionally display or lock</td>
 						<td data-tx="t0022:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Yes</td>
 					</tr>
 					<tr>
 						<td data-tx="t0023:90691916">Router requirement</td>
 						<td data-tx="t0024:115dd48e"><span class="icon has-text-success"><i class="fas fa-globe"></i></span> Any (SIP + bell delay)</td>
-						<td data-tx="t0025:102d3ed3"><span class="icon has-text-warning"><i class="fas fa-wifi"></i></span> Fritz!Box with CardDAV</td>
-						<td data-tx="t0026:d2213069"><span class="icon has-text-info"><i class="fas fa-server"></i></span> Router with SIP registrar</td>
+						<td data-tx="t0085:120e2e30"><span class="icon has-text-warning"><i class="fas fa-wifi"></i></span> Newer Fritz!Box with CardDAV</td>
+						<td data-tx="t0086:93c556cc"><span class="icon has-text-warning"><i class="fas fa-server"></i></span> Router with Internet-accessible SIP registrar (blocked for some provider boxes such as Vodafone)</td>
 					</tr>
 					<tr>
 						<td data-tx="t0027:e66ba2b">Additional hardware</td>
 						<td data-tx="t0028:99294924"><span class="icon has-text-info"><i class="fas fa-usb"></i></span> USB dongle, approx. 10 €</td>
 						<td data-tx="t0029:58a26498"><span class="icon has-text-success"><i class="fas fa-check"></i></span> None</td>
-						<td data-tx="t0030:6a476e10"><span class="icon has-text-warning"><i class="fas fa-server"></i></span> Server or Raspberry Pi</td>
+						<td data-tx="t0087:fe8232e3"><span class="icon has-text-success"><i class="fas fa-cloud"></i></span> None (cloud service)</td>
 					</tr>
 					<tr>
 						<td data-tx="t0031:83c9a19b">Setup effort</td>
 						<td data-tx="t0032:e09b2ea8"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Plug in, configure WLAN + access</td>
 						<td data-tx="t0033:ad1a2520"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Store CardDAV URL in the router</td>
-						<td data-tx="t0034:ff07d9a3"><span class="icon has-text-warning"><i class="fas fa-user-graduate"></i></span> Java/Docker + audio conversations</td>
+						<td data-tx="t0088:ca8f4268"><span class="icon has-text-info"><i class="fas fa-gear"></i></span> Create answering machine, enter SIP credentials in router</td>
 					</tr>
 					<tr>
 						<td data-tx="t0035:4532187f">Up-to-dateness of the block list</td>
 						<td data-tx="t0036:4134c6e2"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Live query with every call</td>
-						<td data-tx="t0037:4dab9851"><span class="icon has-text-info"><i class="fas fa-sync"></i></span> Periodic sync (≤ 1 ×/day)</td>
+						<td data-tx="t0089:a868030b"><span class="icon has-text-warning"><i class="fas fa-sync"></i></span> Only section of the block list, sync ≤ 1 ×/day</td>
 						<td data-tx="t0038:4134c6e2"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Live query with every call</td>
 					</tr>
 					<tr>
 						<td data-tx="t0039:a8c2cfff">Power consumption in continuous operation</td>
 						<td data-tx="t0040:3d07b53b"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> approx. 0.4 W (USB)</td>
 						<td data-tx="t0041:30562f18"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> 0 W (uses router)</td>
-						<td data-tx="t0042:e74172dc"><span class="icon has-text-warning"><i class="fas fa-bolt"></i></span> 3-10 W (server)</td>
+						<td data-tx="t0090:c0b4a4fd"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> 0 W (cloud service)</td>
 					</tr>
 					<tr>
 						<td data-tx="t0043:f4c95d3e">Actively employ spammers</td>
@@ -113,7 +113,7 @@
 			<ul>
 				<li data-tx="t0052:b79437c1"><strong>Blocklist phonebook</strong> - if you have a Fritz!Box and a simple marking or the manual router call blocking is sufficient for you.</li>
 				<li data-tx="t0053:f8bcce39"><strong>Dongle</strong> - if you <em>don't have</em> a Fritz!Box or don't want to operate a permanent server, but still want the phone to be reliably silent in the event of spam.</li>
-				<li data-tx="t0054:af7903e3"><strong>Answer Bot</strong> - if you want to actively employ spammers and have a server or Raspberry Pi to spare.</li>
+				<li data-tx="t0091:74ac18af"><strong>Answer Bot</strong> - if you want to actively employ spammers and your router allows a SIP login from the Internet.</li>
 			</ul>
 		</div>
 
@@ -123,22 +123,21 @@
 			<li data-tx="t0057:1c59c72e"><strong>Configurable ring delay</strong> for the "real" telephones (typically 3-5 seconds) so that the dongle can intercept the call beforehand.</li>
 			<li data-tx="t0058:be2e6f7c"><strong>2.4 GHz WLAN</strong> within range.</li>
 			<li data-tx="t0059:41e630a8"><strong>5 V USB power supply</strong> - ideally directly on the router, otherwise on any USB power supply unit.</li>
-			<li data-tx="t0060:f8c04413"><strong>Free <a th:href="@{/signup}">PhoneBlock account</a></strong> with API access token.</li>
+			<li data-tx="t0092:f8c04413"><strong>Free <a th:href="@{/login}">PhoneBlock account</a></strong> with API access token.</li>
 		</ul>
 
 		<hr class="my-5"/>
 
 		<h2 data-tx="t0061:6db43a5a" id="tester">Become a beta tester</h2>
 
-		<p data-tx="t0062:bdb9e1d5">The dongle runs reliably at home on a Fritz! box - but "router", "provider" and "connection type" are a mixed bag in Germany (and even more so abroad). Each combination has its own peculiarities: different SIP dialects, different NAT rules, different ring delay options.</p>
+		<p data-tx="t0093:cdf5c098">The dongle runs reliably on a Fritz! box in my home - but "router", "provider" and "connection type" are a mixed bag in Germany (and even more so abroad). Each combination has its own peculiarities: different SIP dialects, different NAT rules, different ring delay options.</p>
 
-		<p data-tx="t0063:80dccb54">We are therefore looking for <strong>co-testers</strong> to try out the dongle in their specific setup and give us structured feedback. Particularly interesting:</p>
+		<p data-tx="t0094:14288f3">I am therefore looking for <strong>co-testers</strong> who will try out the dongle in their specific setup and give me structured feedback. Particularly interesting:</p>
 
 		<ul>
 			<li data-tx="t0064:e1971ce0">Telekom connection with <strong>Speedport</strong> router</li>
 			<li data-tx="t0065:61cce24d">Vodafone/Unitymedia cable connection with the supplied provider box</li>
 			<li data-tx="t0066:ea506b90">1&amp;1, o2, Deutsche Glasfaser and other providers</li>
-			<li data-tx="t0067:c7c7f4b3"><strong>Asterisk</strong>, <strong>FreePBX</strong>, <strong>3CX</strong> or other self-hosted SIP systems</li>
 			<li data-tx="t0068:e5ffca52">International connections (Switzerland, Austria, rest of Europe)</li>
 		</ul>
 

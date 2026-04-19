@@ -10,8 +10,8 @@
 		<h1 data-tx="t0001:c6b15d09">Apply as a beta tester</h1>
 
 		<div class="notification is-success" th:if="${param.ok}">
-			<p><strong data-tx="t0002:fb69fbb">Thank you for your application!</strong></p>
-			<p data-tx="t0003:d79d5517">We will get back to you as soon as we have added your setup to our test matrix. In the meantime, you don't have to do anything else. If you would like to correct your details, please <a th:href="@{/}">let us</a> know.</p>
+			<p><strong data-tx="t0069:fb69fbb">Thank you for your application!</strong></p>
+			<p data-tx="t0070:e815b5c1">I'll get back to you as soon as your setup has been added to the test matrix. Until then, you don't have to do anything else.</p>
 		</div>
 
 		<div class="notification is-danger" th:if="${param.error != null and param.error[0] == 'invalid'}">
@@ -19,12 +19,12 @@
 		</div>
 
 		<div class="notification is-danger" th:if="${param.error != null and param.error[0] == 'commitment'}">
-			<p data-tx="t0005:98a30556"><strong>We cannot send out a dongle without the confirmation of the questionnaire.</strong> The feedback is the reason why we offer the tester program at all.</p>
+			<p data-tx="t0071:515e9f32"><strong>I can't send out a dongle without the confirmation of the questionnaire.</strong> The feedback is the reason why the tester program exists at all.</p>
 		</div>
 
 		<th:block th:unless="${param.ok}">
 
-		<p data-tx="t0006:32d2fa39">Great that you want to be part of it! We are looking for testers to try out the PhoneBlock dongle in their specific provider and router setup. We need a few details from you so that we can select a colorful mix. It takes 2-3 minutes to fill in.</p>
+		<p data-tx="t0072:fe5c9755">Great that you want to be part of it! I'm looking for testers to try out the PhoneBlock dongle in their specific provider and router setup. I need a few details from you so that I can select a colorful mix. It will take 2-3 minutes to fill in.</p>
 
 		<p class="has-text-grey-dark" data-tx="t0007:2f2c6f55"><span class="icon"><i class="fas fa-shield-alt"></i></span> Your shipping address will only be used to send the dongle and will be deleted after 6 months at the latest. See also <a th:href="@{/datenschutz}">Privacy Policy</a>.</p>
 
@@ -168,7 +168,7 @@
 						</select>
 					</div>
 				</div>
-				<p class="help" data-tx="t0054:ce35ea7d">If you hardly get any spam, you have little to do as a tester - this question helps us to select testers with real test material.</p>
+				<p class="help" data-tx="t0073:3d6caf09">If you hardly get any spam, you have little to do as a tester - the question helps me to select testers with real test material.</p>
 			</div>
 
 			<hr/>
@@ -187,7 +187,7 @@
 						</select>
 					</div>
 				</div>
-				<p class="help" data-tx="t0061:4cdb32d">Helps us with set-up support - it's perfectly fine to start with the basics.</p>
+				<p class="help" data-tx="t0074:b290afd6">Helps me with setup support - it's perfectly fine to start with the basics.</p>
 			</div>
 
 			<hr/>

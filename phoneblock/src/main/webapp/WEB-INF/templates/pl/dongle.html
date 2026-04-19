@@ -12,12 +12,12 @@
 		<p class="subtitle" data-tx="t0002:f19cc129">Pamięć USB wielkości kciuka, która odbiera połączenia reklamowe, zanim jeszcze zadzwoni telefon - i która nie jest powiązana z Fritz!Box, ale działa z każdym nowoczesnym routerem lub systemem telefonicznym z SIP.</p>
 
 		<div class="notification is-warning">
-			<p data-tx="t0003:f8f65c55"><strong>Status: Beta.</strong> Klucz sprzętowy działa, ale zanim go szeroko zarekomendujemy, chcemy wypróbować go na jak największej liczbie różnych typów połączeń. Szukamy testerów i w zamian rozdajemy urządzenia - <a href="#tester">patrz poniżej</a>.</p>
+			<p data-tx="t0080:bceb1cbd"><strong>Status: Beta.</strong> Klucz sprzętowy działa, ale zanim polecę go szeroko, chciałbym wypróbować go na jak największej liczbie różnych typów połączeń. Szukam testerów i w zamian rozdaję urządzenia - <a href="#tester">patrz poniżej</a>.</p>
 		</div>
 
 		<h2 data-tx="t0004:6b104c7a">Pomysł w jednym zdaniu</h2>
 
-		<p data-tx="t0005:d1cd2c85">Klucz sprzętowy loguje się do routera jak dodatkowy telefon IP. Za każdym razem, gdy przychodzi połączenie, błyskawicznie pyta bazę danych PhoneBlock: <em>"Czy to spam?"</em> Jeśli tak, sam odbiera połączenie i natychmiast się rozłącza. Twój prawdziwy telefon nawet nie zadzwonił w tym momencie.</p>
+		<p data-tx="t0081:67bb8b12">Klucz sprzętowy loguje się do routera jak dodatkowy telefon IP. Za każdym razem, gdy przychodzi połączenie, błyskawicznie pyta bazę danych PhoneBlock: <em>"Czy to spam?"</em> Jeśli tak, sam odbiera połączenie, odtwarza krótką zapowiedź i rozłącza się ponownie. Twój prawdziwy telefon nawet nie zadzwonił w tym momencie.</p>
 
 		<div class="columns is-centered mt-5">
 			<div class="column is-one-quarter has-text-centered">
@@ -28,12 +28,12 @@
 			<div class="column is-one-quarter has-text-centered">
 				<p><span class="icon is-large has-text-warning"><i class="fas fa-bolt fa-3x"></i></span></p>
 				<h4 data-tx="t0008:acac085a">2. sprawdzenie lampy błyskowej</h4>
-				<p data-tx="t0009:fc2f56f4">W ciągu kilkuset milisekund klucz sprzętowy pyta PhoneBlock, czy numer jest znany jako spam. Zapytanie odbywa się za pośrednictwem szyfrowanego protokołu HTTPS.</p>
+				<p data-tx="t0082:c18bf1d6">W ciągu kilkuset milisekund klucz sprzętowy pyta PhoneBlock, czy numer jest znany jako spam. Zapytanie odbywa się za pośrednictwem szyfrowanego protokołu HTTPS i przesyła jedynie skrót numeru.</p>
 			</div>
 			<div class="column is-one-quarter has-text-centered">
 				<p><span class="icon is-large has-text-danger"><i class="fas fa-ban fa-3x"></i></span></p>
 				<h4 data-tx="t0010:be667d0f">3. pozbyć się go</h4>
-				<p data-tx="t0011:c7c6f4fb">Jeśli numer jest spamem, klucz sprzętowy odbiera i natychmiast się rozłącza. Telefon w salonie pozostaje cichy. Jeśli numer jest nieszkodliwy, klucz sprzętowy po prostu nic nie robi - połączenie przechodzi normalnie.</p>
+				<p data-tx="t0083:e858f50">Jeśli numer jest spamem, klucz sprzętowy odbierze połączenie, odtworzy komunikat i rozłączy się. Telefon w salonie pozostaje cichy. Jeśli numer jest nieszkodliwy, klucz sprzętowy po prostu nic nie robi - połączenie przechodzi normalnie.</p>
 			</div>
 		</div>
 
@@ -59,38 +59,38 @@
 					<tr>
 						<td data-tx="t0019:9e08101d">Telefon pozostaje całkowicie cichy podczas spamowania</td>
 						<td data-tx="t0020:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Tak</td>
-						<td data-tx="t0021:75373880"><span class="icon has-text-warning"><i class="fas fa-circle-half-stroke"></i></span> Tylko jeśli skonfigurowano blokowanie połączeń routera.</td>
+						<td data-tx="t0084:cf12d799"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Opcjonalnie wyświetl lub zablokuj</td>
 						<td data-tx="t0022:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Tak</td>
 					</tr>
 					<tr>
 						<td data-tx="t0023:90691916">Wymagania dotyczące routera</td>
 						<td data-tx="t0024:115dd48e"><span class="icon has-text-success"><i class="fas fa-globe"></i></span> Dowolny (SIP + opóźnienie dzwonka)</td>
-						<td data-tx="t0025:102d3ed3"><span class="icon has-text-warning"><i class="fas fa-wifi"></i></span> Fritz!Box z CardDAV</td>
-						<td data-tx="t0026:d2213069"><span class="icon has-text-info"><i class="fas fa-server"></i></span> Router z rejestratorem SIP</td>
+						<td data-tx="t0085:120e2e30"><span class="icon has-text-warning"><i class="fas fa-wifi"></i></span> Nowszy Fritz!Box z CardDAV</td>
+						<td data-tx="t0086:93c556cc"><span class="icon has-text-warning"><i class="fas fa-server"></i></span> Router z rejestratorem SIP dostępnym przez Internet (zablokowany dla niektórych dostawców, takich jak Vodafone)</td>
 					</tr>
 					<tr>
 						<td data-tx="t0027:e66ba2b">Dodatkowy sprzęt</td>
 						<td data-tx="t0028:99294924"><span class="icon has-text-info"><i class="fas fa-usb"></i></span> Klucz sprzętowy USB, ok. 10 €</td>
 						<td data-tx="t0029:58a26498"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Brak</td>
-						<td data-tx="t0030:6a476e10"><span class="icon has-text-warning"><i class="fas fa-server"></i></span> Serwer lub Raspberry Pi</td>
+						<td data-tx="t0087:fe8232e3"><span class="icon has-text-success"><i class="fas fa-cloud"></i></span> Brak (usługa w chmurze)</td>
 					</tr>
 					<tr>
 						<td data-tx="t0031:83c9a19b">Wysiłek związany z konfiguracją</td>
 						<td data-tx="t0032:e09b2ea8"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Podłącz, skonfiguruj WLAN + dostęp</td>
 						<td data-tx="t0033:ad1a2520"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Zapisz adres URL CardDAV w routerze</td>
-						<td data-tx="t0034:ff07d9a3"><span class="icon has-text-warning"><i class="fas fa-user-graduate"></i></span> Java/Docker + połączenia audio</td>
+						<td data-tx="t0088:ca8f4268"><span class="icon has-text-info"><i class="fas fa-gear"></i></span> Utwórz automatyczną sekretarkę, wprowadź poświadczenia SIP w routerze</td>
 					</tr>
 					<tr>
 						<td data-tx="t0035:4532187f">Aktualność listy bloków</td>
 						<td data-tx="t0036:4134c6e2"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Zapytanie na żywo przy każdym połączeniu</td>
-						<td data-tx="t0037:4dab9851"><span class="icon has-text-info"><i class="fas fa-sync"></i></span> Synchronizacja okresowa (≤ 1 ×/dzień)</td>
+						<td data-tx="t0089:a868030b"><span class="icon has-text-warning"><i class="fas fa-sync"></i></span> Tylko sekcja listy bloków, synchronizacja ≤ 1 ×/dzień</td>
 						<td data-tx="t0038:4134c6e2"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Zapytanie na żywo przy każdym połączeniu</td>
 					</tr>
 					<tr>
 						<td data-tx="t0039:a8c2cfff">Pobór mocy w trybie ciągłym</td>
 						<td data-tx="t0040:3d07b53b"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> ok. 0,4 W (USB)</td>
 						<td data-tx="t0041:30562f18"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> 0 W (używa routera)</td>
-						<td data-tx="t0042:e74172dc"><span class="icon has-text-warning"><i class="fas fa-bolt"></i></span> 3-10 W (serwer)</td>
+						<td data-tx="t0090:c0b4a4fd"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> 0 W (usługa w chmurze)</td>
 					</tr>
 					<tr>
 						<td data-tx="t0043:f4c95d3e">Aktywne zatrudnianie spamerów</td>
@@ -113,7 +113,7 @@
 			<ul>
 				<li data-tx="t0052:b79437c1"><strong>Blocklist phonebook</strong> - jeśli masz Fritz!Box i proste oznaczenie lub ręczne blokowanie połączeń routera jest wystarczające.</li>
 				<li data-tx="t0053:f8bcce39"><strong>Dongle</strong> - jeśli <em>nie masz</em> Fritz!Box lub nie chcesz obsługiwać stałego serwera, ale nadal chcesz, aby telefon był niezawodnie cichy w przypadku spamu.</li>
-				<li data-tx="t0054:af7903e3"><strong>Answer Bot</strong> - jeśli chcesz aktywnie zatrudniać spamerów i masz do dyspozycji serwer lub Raspberry Pi.</li>
+				<li data-tx="t0091:74ac18af"><strong>Answer Bot</strong> - jeśli chcesz aktywnie zatrudniać spamerów, a twój router pozwala na logowanie SIP z Internetu.</li>
 			</ul>
 		</div>
 
@@ -123,22 +123,21 @@
 			<li data-tx="t0057:1c59c72e"><strong>Konfigurowalne opóźnienie dzwonka</strong> dla "prawdziwych" telefonów (zwykle 3-5 sekund), aby klucz sprzętowy mógł wcześniej przechwycić połączenie.</li>
 			<li data-tx="t0058:be2e6f7c"><strong>2,4 GHz WLAN</strong> w zasięgu.</li>
 			<li data-tx="t0059:41e630a8"><strong>Zasilacz USB 5 V</strong> - najlepiej bezpośrednio na routerze, w przeciwnym razie na dowolnym zasilaczu USB.</li>
-			<li data-tx="t0060:f8c04413"><strong>Darmowe konto <a th:href="@{/signup}">PhoneBlock</a></strong> z tokenem dostępu API.</li>
+			<li data-tx="t0092:f8c04413"><strong>Darmowe konto <a th:href="@{/login}">PhoneBlock</a></strong> z tokenem dostępu API.</li>
 		</ul>
 
 		<hr class="my-5"/>
 
 		<h2 data-tx="t0061:6db43a5a" id="tester">Zostań beta testerem</h2>
 
-		<p data-tx="t0062:bdb9e1d5">Klucz sprzętowy działa niezawodnie w domu na skrzynce Fritz! - ale "router", "dostawca" i "typ połączenia" to kolorowa mieszanka w Niemczech (a jeszcze bardziej za granicą). Każda kombinacja ma swoje osobliwości: różne dialekty SIP, różne reguły NAT, różne opcje opóźnienia dzwonka.</p>
+		<p data-tx="t0093:cdf5c098">Klucz sprzętowy działa niezawodnie na skrzynce Fritz! w moim domu - ale "router", "dostawca" i "typ połączenia" to kolorowa mieszanka w Niemczech (a jeszcze bardziej za granicą). Każda kombinacja ma swoje osobliwości: różne dialekty SIP, różne reguły NAT, różne opcje opóźnienia dzwonka.</p>
 
-		<p data-tx="t0063:80dccb54">W związku z tym poszukujemy <strong>współtesterów</strong>, którzy wypróbują klucz sprzętowy w swojej konkretnej konfiguracji i przekażą nam uporządkowane informacje zwrotne. Szczególnie interesujące:</p>
+		<p data-tx="t0094:14288f3">Dlatego szukam <strong>współtesterów</strong>, którzy mogliby wypróbować klucz sprzętowy w swojej konkretnej konfiguracji i przekazać mi uporządkowane informacje zwrotne. Szczególnie interesujące:</p>
 
 		<ul>
 			<li data-tx="t0064:e1971ce0">Połączenie Telekom z routerem <strong>Speedport</strong></li>
 			<li data-tx="t0065:61cce24d">Połączenie kablowe Vodafone/Unitymedia z dostarczoną skrzynką operatora</li>
 			<li data-tx="t0066:ea506b90">1&amp;1, o2, Deutsche Glasfaser i inni operatorzy</li>
-			<li data-tx="t0067:c7c7f4b3"><strong>Asterisk</strong>, <strong>FreePBX</strong>, <strong>3CX</strong> lub inne samoobsługowe systemy SIP</li>
 			<li data-tx="t0068:e5ffca52">Połączenia międzynarodowe (Szwajcaria, Austria, reszta Europy)</li>
 		</ul>
 

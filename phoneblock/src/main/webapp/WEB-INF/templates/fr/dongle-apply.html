@@ -10,8 +10,8 @@
 		<h1 data-tx="t0001:c6b15d09">Postuler comme bêta-testeur</h1>
 
 		<div class="notification is-success" th:if="${param.ok}">
-			<p><strong data-tx="t0002:fb69fbb">Merci pour ta candidature !</strong></p>
-			<p data-tx="t0003:d79d5517">Nous te contacterons dès que nous aurons ajouté ta configuration à notre matrice de test. Entre-temps, tu n'as rien à faire. Si tu souhaites corriger tes données, <a th:href="@{/}">écris-nous</a> brièvement.</p>
+			<p><strong data-tx="t0069:fb69fbb">Merci pour ta candidature !</strong></p>
+			<p data-tx="t0070:e815b5c1">Je te contacterai dès que ta configuration sera intégrée dans la matrice de test. D'ici là, tu n'as rien à faire.</p>
 		</div>
 
 		<div class="notification is-danger" th:if="${param.error != null and param.error[0] == 'invalid'}">
@@ -19,12 +19,12 @@
 		</div>
 
 		<div class="notification is-danger" th:if="${param.error != null and param.error[0] == 'commitment'}">
-			<p data-tx="t0005:98a30556"><strong>Sans l'acceptation du questionnaire, nous ne pouvons pas envoyer de dongle.</strong> Les réactions sont la raison pour laquelle nous proposons le programme de testeurs.</p>
+			<p data-tx="t0071:515e9f32"><strong>Sans l'acceptation du questionnaire, je ne peux pas envoyer de dongle.</strong> Les réactions sont la raison d'être du programme de testeurs.</p>
 		</div>
 
 		<th:block th:unless="${param.ok}">
 
-		<p data-tx="t0006:32d2fa39">Nous sommes ravis que tu veuilles en faire partie ! Nous recherchons des testeurs pour tester le dongle PhoneBlock dans leur configuration concrète de fournisseur d'accès et de routeur. Nous avons besoin de quelques informations de ta part afin de pouvoir sélectionner un mélange varié et ciblé. Le remplissage prend 2 à 3 minutes.</p>
+		<p data-tx="t0072:fe5c9755">Je suis heureux que tu veuilles en faire partie ! Je cherche des testeurs pour essayer le dongle PhoneBlock dans leur configuration concrète de fournisseur d'accès et de routeur. Pour que je puisse sélectionner un mélange varié de manière ciblée, j'ai besoin de quelques informations de ta part. Le remplissage prend 2 à 3 minutes.</p>
 
 		<p class="has-text-grey-dark" data-tx="t0007:2f2c6f55"><span class="icon"><i class="fas fa-shield-alt"></i></span> Ton adresse d'expédition sera utilisée exclusivement pour l'envoi du dongle et sera supprimée au plus tard après 6 mois. Voir aussi <a th:href="@{/datenschutz}">Déclaration de protection des données</a>.</p>
 
@@ -168,7 +168,7 @@
 						</select>
 					</div>
 				</div>
-				<p class="help" data-tx="t0054:ce35ea7d">Celui qui ne reçoit presque pas de spam a peu à faire en tant que testeur - cette question nous aide à sélectionner des testeurs avec du matériel de test réel.</p>
+				<p class="help" data-tx="t0073:3d6caf09">Celui qui ne reçoit presque pas de spam a peu à faire en tant que testeur - cette question m'aide à sélectionner des testeurs avec du matériel de test réel.</p>
 			</div>
 
 			<hr/>
@@ -187,7 +187,7 @@
 						</select>
 					</div>
 				</div>
-				<p class="help" data-tx="t0061:4cdb32d">Nous aide à nous installer - il est tout à fait normal de commencer par les bases.</p>
+				<p class="help" data-tx="t0074:b290afd6">M'aide à m'installer - il est tout à fait normal de commencer par les bases.</p>
 			</div>
 
 			<hr/>

@@ -10,8 +10,8 @@
 		<h1 data-tx="t0001:c6b15d09">Aanmelden als beta-tester</h1>
 
 		<div class="notification is-success" th:if="${param.ok}">
-			<p><strong data-tx="t0002:fb69fbb">Bedankt voor je sollicitatie!</strong></p>
-			<p data-tx="t0003:d79d5517">We nemen contact met je op zodra we je installatie hebben toegevoegd aan onze testmatrix. In de tussentijd hoeft u verder niets te doen. Als u uw gegevens wilt corrigeren, laat het ons dan <a th:href="@{/}">weten</a>.</p>
+			<p><strong data-tx="t0069:fb69fbb">Bedankt voor je sollicitatie!</strong></p>
+			<p data-tx="t0070:e815b5c1">Ik neem contact met je op zodra je opstelling is toegevoegd aan de testmatrix. Tot die tijd hoef je verder niets te doen.</p>
 		</div>
 
 		<div class="notification is-danger" th:if="${param.error != null and param.error[0] == 'invalid'}">
@@ -19,12 +19,12 @@
 		</div>
 
 		<div class="notification is-danger" th:if="${param.error != null and param.error[0] == 'commitment'}">
-			<p data-tx="t0005:98a30556"><strong>We kunnen geen dongle versturen zonder de bevestiging van de vragenlijst.</strong> De feedback is de reden waarom we het testerprogramma überhaupt aanbieden.</p>
+			<p data-tx="t0071:515e9f32"><strong>Ik kan geen dongle versturen zonder de bevestiging van de vragenlijst.</strong> De feedback is de reden waarom het testerprogramma überhaupt bestaat.</p>
 		</div>
 
 		<th:block th:unless="${param.ok}">
 
-		<p data-tx="t0006:32d2fa39">Geweldig dat je mee wilt doen! We zijn op zoek naar testers die de PhoneBlock dongle willen uitproberen in hun specifieke provider en router setup. We hebben een paar details van je nodig zodat we een bonte mix kunnen selecteren. Het invullen duurt 2-3 minuten.</p>
+		<p data-tx="t0072:fe5c9755">Leuk dat je mee wilt doen! Ik ben op zoek naar testers die de PhoneBlock dongle willen uitproberen in hun specifieke provider en router setup. Ik heb een paar details van je nodig zodat ik een bonte mix kan selecteren. Het invullen duurt 2-3 minuten.</p>
 
 		<p class="has-text-grey-dark" data-tx="t0007:2f2c6f55"><span class="icon"><i class="fas fa-shield-alt"></i></span> Uw verzendadres wordt alleen gebruikt voor het verzenden van de dongle en wordt uiterlijk na 6 maanden verwijderd. Zie ook <a th:href="@{/datenschutz}">Privacybeleid</a>.</p>
 
@@ -168,7 +168,7 @@
 						</select>
 					</div>
 				</div>
-				<p class="help" data-tx="t0054:ce35ea7d">Als je nauwelijks spam krijgt, heb je weinig te doen als tester - deze vraag helpt ons om testers te selecteren met echt testmateriaal.</p>
+				<p class="help" data-tx="t0073:3d6caf09">Als je nauwelijks spam krijgt, heb je weinig te doen als tester - de vraag helpt me om testers te selecteren met echt testmateriaal.</p>
 			</div>
 
 			<hr/>
@@ -187,7 +187,7 @@
 						</select>
 					</div>
 				</div>
-				<p class="help" data-tx="t0061:4cdb32d">Helpt ons met set-up ondersteuning - het is prima om met de basis te beginnen.</p>
+				<p class="help" data-tx="t0074:b290afd6">Helpt me met set-upondersteuning - het is prima om met de basis te beginnen.</p>
 			</div>
 
 			<hr/>

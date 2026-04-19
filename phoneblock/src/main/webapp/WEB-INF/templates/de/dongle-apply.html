@@ -10,9 +10,8 @@
 		<h1 data-tx="t0001:c6b15d09">Als Beta-Tester bewerben</h1>
 
 		<div class="notification is-success" th:if="${param.ok}">
-			<p><strong data-tx="t0002:fb69fbb">Danke für deine Bewerbung!</strong></p>
-			<p data-tx="t0003:d79d5517">Wir melden uns bei dir, sobald wir dein Setup in unserer Test-Matrix aufgenommen haben. In der Zwischenzeit
-			musst du nichts weiter tun. Falls du deine Angaben korrigieren möchtest, <a th:href="@{/}">schreib uns</a> kurz Bescheid.</p>
+			<p><strong data-tx="t0069:fb69fbb">Danke für deine Bewerbung!</strong></p>
+			<p data-tx="t0070:e815b5c1">Ich melde mich bei dir, sobald dein Setup in der Test-Matrix aufgenommen ist. Bis dahin musst du nichts weiter tun.</p>
 		</div>
 
 		<div class="notification is-danger" th:if="${param.error != null and param.error[0] == 'invalid'}">
@@ -21,15 +20,15 @@
 		</div>
 
 		<div class="notification is-danger" th:if="${param.error != null and param.error[0] == 'commitment'}">
-			<p data-tx="t0005:98a30556"><strong>Ohne die Zusage zum Fragebogen können wir keinen Dongle verschicken.</strong>
-			Die Rückmeldungen sind der Grund, warum wir das Tester-Programm überhaupt anbieten.</p>
+			<p data-tx="t0071:515e9f32"><strong>Ohne die Zusage zum Fragebogen kann ich keinen Dongle verschicken.</strong>
+			Die Rückmeldungen sind der Grund, warum es das Tester-Programm überhaupt gibt.</p>
 		</div>
 
 		<th:block th:unless="${param.ok}">
 
-		<p data-tx="t0006:32d2fa39">
-			Schön, dass du dabei sein möchtest! Wir suchen Tester, die den PhoneBlock-Dongle in ihrem konkreten
-			Provider- und Router-Setup ausprobieren. Damit wir gezielt eine bunte Mischung auswählen können, brauchen wir
+		<p data-tx="t0072:fe5c9755">
+			Schön, dass du dabei sein möchtest! Ich suche Tester, die den PhoneBlock-Dongle in ihrem konkreten
+			Provider- und Router-Setup ausprobieren. Damit ich gezielt eine bunte Mischung auswählen kann, brauche ich
 			ein paar Angaben von dir. Das Ausfüllen dauert 2–3 Minuten.
 		</p>
 
@@ -179,7 +178,7 @@
 						</select>
 					</div>
 				</div>
-				<p class="help" data-tx="t0054:ce35ea7d">Wer kaum Spam bekommt, hat als Tester wenig zu tun — die Frage hilft uns, Tester mit echtem Testmaterial auszuwählen.</p>
+				<p class="help" data-tx="t0073:3d6caf09">Wer kaum Spam bekommt, hat als Tester wenig zu tun — die Frage hilft mir, Tester mit echtem Testmaterial auszuwählen.</p>
 			</div>
 
 			<hr/>
@@ -198,7 +197,7 @@
 						</select>
 					</div>
 				</div>
-				<p class="help" data-tx="t0061:4cdb32d">Hilft uns bei der Einrichtungs-Unterstützung — es ist völlig in Ordnung, bei den Basics anzufangen.</p>
+				<p class="help" data-tx="t0074:b290afd6">Hilft mir bei der Einrichtungs-Unterstützung — es ist völlig in Ordnung, bei den Basics anzufangen.</p>
 			</div>
 
 			<hr/>

@@ -12,12 +12,12 @@
 		<p class="subtitle" data-tx="t0002:f19cc129">عصا USB بحجم الإبهام تلتقط المكالمات الإعلانية قبل أن يرن هاتفك، وهي غير مرتبطة بـ Fritz!Box، بل تعمل على أي جهاز توجيه أو نظام هاتف حديث مزود بـ SIP.</p>
 
 		<div class="notification is-warning">
-			<p data-tx="t0003:f8f65c55"><strong>الحالة: بيتا.</strong> الدونجل يعمل، ولكن قبل أن نوصي به على نطاق واسع، نريد أن نجربه على أكبر عدد ممكن من أنواع الاتصال المختلفة. نحن نبحث عن مختبرين ونقدم أجهزة في المقابل - <a href="#tester"> انظر أدناه</a>.</p>
+			<p data-tx="t0080:bceb1cbd"><strong>الحالة: بيتا.</strong> الدونجل يعمل، ولكن قبل أن أوصي به على نطاق واسع، أود أن أجربه على أكبر عدد ممكن من أنواع الاتصال المختلفة. أنا أبحث عن مختبرين وأقوم بإعطاء الأجهزة في المقابل - <a href="#tester"> انظر أدناه</a>.</p>
 		</div>
 
 		<h2 data-tx="t0004:6b104c7a">الفكرة في جملة واحدة</h2>
 
-		<p data-tx="t0005:d1cd2c85">يقوم الدونجل بتسجيل الدخول إلى جهاز التوجيه الخاص بك مثل هاتف IP إضافي. في كل مرة ترد فيها مكالمة، يسأل قاعدة بيانات PhoneBlock بسرعة البرق: <em>"هل هذا هاتف غير مرغوب فيه؟"</em> إذا كان الأمر كذلك، فإنه يجيب على المكالمة بنفسه ويغلق الخط على الفور. لم يرن هاتفك الحقيقي في تلك اللحظة.</p>
+		<p data-tx="t0081:67bb8b12">يقوم الدونجل بتسجيل الدخول إلى جهاز التوجيه الخاص بك مثل هاتف IP إضافي. في كل مرة ترد فيها مكالمة، يسأل قاعدة بيانات PhoneBlock بسرعة البرق: <em> "هل هذا هاتف غير مرغوب فيه؟"</em> إذا كان الأمر كذلك، فإنه يرد على المكالمة بنفسه، ويشغل إعلانًا قصيرًا إذا رغبت في ذلك ويغلق الخط مرة أخرى. لم يرن هاتفك الحقيقي في تلك اللحظة.</p>
 
 		<div class="columns is-centered mt-5">
 			<div class="column is-one-quarter has-text-centered">
@@ -28,12 +28,12 @@
 			<div class="column is-one-quarter has-text-centered">
 				<p><span class="icon is-large has-text-warning"><i class="fas fa-bolt fa-3x"></i></span></p>
 				<h4 data-tx="t0008:acac085a">2. فحص الوميض</h4>
-				<p data-tx="t0009:fc2f56f4">في غضون بضع مئات من المللي ثانية، يسأل الدونجل PhoneBlock عما إذا كان الرقم معروفاً بأنه رقم غير مرغوب فيه. يتم تشغيل الاستعلام عبر HTTPS المشفر.</p>
+				<p data-tx="t0082:c18bf1d6">في غضون بضع مئات من المللي ثانية، يسأل الدونجل PhoneBlock عما إذا كان الرقم معروفاً بأنه رقم غير مرغوب فيه. يتم تشغيل الاستعلام عبر HTTPS مشفّر وينقل فقط تجزئة الرقم.</p>
 			</div>
 			<div class="column is-one-quarter has-text-centered">
 				<p><span class="icon is-large has-text-danger"><i class="fas fa-ban fa-3x"></i></span></p>
 				<h4 data-tx="t0010:be667d0f">3. تخلص منه</h4>
-				<p data-tx="t0011:c7c6f4fb">إذا كان الرقم غير مرغوب فيه، يلتقط الدونجل السماعة ويغلق الخط مرة أخرى على الفور. يبقى الهاتف في غرفة المعيشة صامتاً. أما إذا كان الرقم غير ضار، فإن الدونجل ببساطة لا يفعل شيئاً - تمر المكالمة بشكل طبيعي.</p>
+				<p data-tx="t0083:e858f50">إذا كان الرقم غير مرغوب فيه، يقوم الدونجل بالرد وتشغيل إعلان إذا رغبت في ذلك ثم يغلق الخط. يبقى الهاتف في غرفة المعيشة صامتاً. إذا كان الرقم غير ضار، لا يقوم الدونجل ببساطة بأي شيء - تمر المكالمة كالمعتاد.</p>
 			</div>
 		</div>
 
@@ -59,38 +59,38 @@
 					<tr>
 						<td data-tx="t0019:9e08101d">يظل الهاتف صامتاً تماماً أثناء الرسائل غير المرغوب فيها</td>
 						<td data-tx="t0020:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> نعم</td>
-						<td data-tx="t0021:75373880"><span class="icon has-text-warning"><i class="fas fa-circle-half-stroke"></i></span> فقط إذا تم تكوين حظر مكالمات الموجه</td>
+						<td data-tx="t0084:cf12d799"><span class="icon has-text-success"><i class="fas fa-check"></i></span> عرض أو قفل اختياري</td>
 						<td data-tx="t0022:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> نعم</td>
 					</tr>
 					<tr>
 						<td data-tx="t0023:90691916">متطلبات جهاز التوجيه</td>
 						<td data-tx="t0024:115dd48e"><span class="icon has-text-success"><i class="fas fa-globe"></i></span> أي (SIP + تأخير الجرس)</td>
-						<td data-tx="t0025:102d3ed3"><span class="icon has-text-warning"><i class="fas fa-wifi">&lt;&gt;</i></span> فريتز!</td>
-						<td data-tx="t0026:d2213069"><span class="icon has-text-info"><i class="fas fa-server"></i></span> جهاز التوجيه مع مسجل SIP</td>
+						<td data-tx="t0085:120e2e30"><span class="icon has-text-warning"><i class="fas fa-wifi">&lt;&gt;</i></span> أحدث صندوق فريتز!</td>
+						<td data-tx="t0086:93c556cc"><span class="icon has-text-warning"><i class="fas fa-server"></i></span> جهاز توجيه مع مسجل SIP يمكن الوصول إليه عبر الإنترنت (محظور على بعض صناديق المزودين مثل Vodafone)</td>
 					</tr>
 					<tr>
 						<td data-tx="t0027:e66ba2b">الأجهزة الإضافية</td>
 						<td data-tx="t0028:99294924"><span class="icon has-text-info"><i class="fas fa-usb"></i></span> دونجل USB، حوالي 10 يورو</td>
 						<td data-tx="t0029:58a26498"><span class="icon has-text-success"><i class="fas fa-check"></i></span> لا شيء</td>
-						<td data-tx="t0030:6a476e10"><span class="icon has-text-warning"><i class="fas fa-server"></i></span> خادم أو Raspberry Pi</td>
+						<td data-tx="t0087:fe8232e3"><span class="icon has-text-success"><i class="fas fa-cloud"></i></span> لا يوجد (خدمة سحابية)</td>
 					</tr>
 					<tr>
 						<td data-tx="t0031:83c9a19b">جهد الإعداد</td>
 						<td data-tx="t0032:e09b2ea8"><span class="icon has-text-success"><i class="fas fa-star"></i></span> التوصيل، تكوين شبكة WLAN + الوصول</td>
 						<td data-tx="t0033:ad1a2520"><span class="icon has-text-success"><i class="fas fa-star"></i></span> تخزين عنوان URL ل CardDAV في الموجه</td>
-						<td data-tx="t0034:ff07d9a3"><span class="icon has-text-warning"><i class="fas fa-user-graduate">&lt;&gt;</i></span> جافا/رصيف + مكالمات صوتية</td>
+						<td data-tx="t0088:ca8f4268"><span class="icon has-text-info"><i class="fas fa-gear"></i></span> إنشاء جهاز الرد على المكالمات، وإدخال بيانات اعتماد SIP في جهاز التوجيه</td>
 					</tr>
 					<tr>
 						<td data-tx="t0035:4532187f">تحديث قائمة الحظر</td>
 						<td data-tx="t0036:4134c6e2"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> استعلام مباشر مع كل مكالمة</td>
-						<td data-tx="t0037:4dab9851"><span class="icon has-text-info"><i class="fas fa-sync"></i></span> المزامنة الدورية (≤ 1 ×/يوم)</td>
+						<td data-tx="t0089:a868030b"><span class="icon has-text-warning"><i class="fas fa-sync"></i></span> قسم قائمة الحظر فقط، المزامنة ≤ 1 ×/يوم</td>
 						<td data-tx="t0038:4134c6e2"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> استعلام مباشر مع كل مكالمة</td>
 					</tr>
 					<tr>
 						<td data-tx="t0039:a8c2cfff">استهلاك الطاقة في التشغيل المستمر</td>
 						<td data-tx="t0040:3d07b53b"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> 0.4 وات تقريبًا (USB)</td>
 						<td data-tx="t0041:30562f18"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> 0 واط (يستخدم جهاز التوجيه)</td>
-						<td data-tx="t0042:e74172dc"><span class="icon has-text-warning"><i class="fas fa-bolt"></i></span> 3-10 واط (الخادم)</td>
+						<td data-tx="t0090:c0b4a4fd"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> 0 واط (خدمة السحابة)</td>
 					</tr>
 					<tr>
 						<td data-tx="t0043:f4c95d3e">توظيف مرسلي الرسائل غير المرغوب فيها بنشاط</td>
@@ -113,7 +113,7 @@
 			<ul>
 				<li data-tx="t0052:b79437c1"><strong> دليل هاتف قائمة الحظر</strong> - إذا كان لديك فريتز! بوكس ويكفي وضع علامة بسيطة أو حظر مكالمات الموجه اليدوي.</li>
 				<li data-tx="t0053:f8bcce39"><strong> دونجل </strong> - إذا لم يكن لديك جهاز Fritz!Box أو لا تريد تشغيل خادم دائم، ولكنك لا تزال تريد أن يكون الهاتف صامتًا بشكل موثوق في حالة وجود رسائل غير مرغوب فيها.<em></em></li>
-				<li data-tx="t0054:af7903e3"><strong>الروبوت المجيب</strong> - إذا كنت ترغب في توظيف مرسلي البريد العشوائي بنشاط ولديك خادم أو Raspberry Pi للاستغناء عنه.</li>
+				<li data-tx="t0091:74ac18af"><strong>الروبوت المجيب</strong> - إذا كنت ترغب في توظيف مرسلي البريد العشوائي بشكل نشط وكان جهاز التوجيه الخاص بك يسمح بتسجيل الدخول عبر بروتوكول الإنترنت SIP من الإنترنت.</li>
 			</ul>
 		</div>
 
@@ -123,22 +123,21 @@
 			<li data-tx="t0057:1c59c72e"><strong>تأخير رنين قابل للتكوين</strong> للهواتف "الحقيقية" (عادةً 3-5 ثوانٍ) حتى يتمكن الدونجل من اعتراض المكالمة مسبقًا.</li>
 			<li data-tx="t0058:be2e6f7c"><strong>2.4 جيجا هرتز WLAN</strong> ضمن النطاق.</li>
 			<li data-tx="t0059:41e630a8"><strong>مصدر طاقة USB بجهد 5 فولت</strong> - من الناحية المثالية مباشرة على جهاز التوجيه، وإلا فعلى أي وحدة إمداد طاقة USB.</li>
-			<li data-tx="t0060:f8c04413"><strong>حساب <a th:href="@{/signup}">حساب كتلة الهاتف المجاني</a></strong> مع رمز وصول API.</li>
+			<li data-tx="t0092:f8c04413"><strong>حساب <a th:href="@{/login}">حساب كتلة الهاتف المجاني</a></strong> مع رمز وصول API.</li>
 		</ul>
 
 		<hr class="my-5"/>
 
 		<h2 data-tx="t0061:6db43a5a" id="tester">كن مختبِرًا تجريبيًا</h2>
 
-		<p data-tx="t0062:bdb9e1d5">يعمل الدونجل بشكل موثوق به في المنزل على صندوق Fritz! - لكن "جهاز التوجيه" و "المزود" و "نوع الاتصال" مزيج ملون في ألمانيا (وأكثر من ذلك في الخارج). كل مزيج له خصائصه الخاصة: لهجات SIP مختلفة، وقواعد NAT مختلفة، وخيارات مختلفة لتأخير الحلقة.</p>
+		<p data-tx="t0093:cdf5c098">يعمل الدونجل بشكل موثوق على صندوق Fritz! في منزلي - لكن "جهاز التوجيه" و "المزود" و "نوع الاتصال" مزيج ملون في ألمانيا (وأكثر من ذلك في الخارج). كل تركيبة لها خصائصها الخاصة: لهجات SIP مختلفة، وقواعد NAT مختلفة، وخيارات مختلفة لتأخير الرنين.</p>
 
-		<p data-tx="t0063:80dccb54">لذلك نحن نبحث عن <strong>مختبرين مشاركين لتجربة الدونجل في إعداداتهم الخاصة وإعطائنا ملاحظات منظمة. مثيرة للاهتمام بشكل خاص:</strong></p>
+		<p data-tx="t0094:14288f3">لذلك أنا أبحث عن <strong>مختبرين مشاركين الذين سيجربون الدونجل في إعداداتهم الخاصة ويعطونني ملاحظات منظمة. مثيرة للاهتمام بشكل خاص:</strong></p>
 
 		<ul>
 			<li data-tx="t0064:e1971ce0">اتصال Telekom مع جهاز توجيه <strong>Speedport</strong></li>
 			<li data-tx="t0065:61cce24d">توصيل كابل Vodafone/Unitymedia مع صندوق الموفر المرفق</li>
 			<li data-tx="t0066:ea506b90">1&amp;1، O2، O2، دويتشه جلازفيزر ومزودون آخرون</li>
-			<li data-tx="t0067:c7c7f4b3"><strong>Asterisk</strong> أو <strong>FreePBX</strong> أو <strong>3CX</strong> أو غيرها من أنظمة SIP المستضافة ذاتيًا</li>
 			<li data-tx="t0068:e5ffca52">الاتصالات الدولية (سويسرا والنمسا وبقية أوروبا)</li>
 		</ul>
 

@@ -10,8 +10,8 @@
 		<h1 data-tx="t0001:c6b15d09">Aplikuj jako beta tester</h1>
 
 		<div class="notification is-success" th:if="${param.ok}">
-			<p><strong data-tx="t0002:fb69fbb">Dziękujemy za zgłoszenie!</strong></p>
-			<p data-tx="t0003:d79d5517">Skontaktujemy się z Tobą, gdy tylko dodamy Twoją konfigurację do naszej macierzy testowej. W międzyczasie nie musisz robić nic więcej. Jeśli chcesz poprawić swoje dane, <a th:href="@{/}">poinformuj nas</a>.</p>
+			<p><strong data-tx="t0069:fb69fbb">Dziękujemy za zgłoszenie!</strong></p>
+			<p data-tx="t0070:e815b5c1">Odezwę się, gdy tylko twoja konfiguracja zostanie dodana do macierzy testowej. Do tego czasu nie musisz robić nic więcej.</p>
 		</div>
 
 		<div class="notification is-danger" th:if="${param.error != null and param.error[0] == 'invalid'}">
@@ -19,12 +19,12 @@
 		</div>
 
 		<div class="notification is-danger" th:if="${param.error != null and param.error[0] == 'commitment'}">
-			<p data-tx="t0005:98a30556"><strong>Nie możemy wysłać klucza sprzętowego bez potwierdzenia ankiety.</strong> Informacje zwrotne są powodem, dla którego w ogóle oferujemy program dla testerów.</p>
+			<p data-tx="t0071:515e9f32"><strong>Nie mogę wysłać klucza sprzętowego bez potwierdzenia ankiety.</strong> Informacje zwrotne są powodem, dla którego program dla testerów w ogóle istnieje.</p>
 		</div>
 
 		<th:block th:unless="${param.ok}">
 
-		<p data-tx="t0006:32d2fa39">Świetnie, że chcesz wziąć w tym udział! Szukamy testerów, którzy wypróbują klucz PhoneBlock w konfiguracji z konkretnym operatorem i routerem. Potrzebujemy kilku szczegółów, abyśmy mogli wybrać kolorową mieszankę. Wypełnienie formularza zajmie 2-3 minuty.</p>
+		<p data-tx="t0072:fe5c9755">Miło, że chcesz wziąć w tym udział! Szukam testerów do wypróbowania klucza sprzętowego PhoneBlock w ich konkretnej konfiguracji operatora i routera. Potrzebuję od ciebie kilku szczegółów, abym mógł wybrać kolorową mieszankę. Wypełnienie formularza zajmie 2-3 minuty.</p>
 
 		<p class="has-text-grey-dark" data-tx="t0007:2f2c6f55"><span class="icon"><i class="fas fa-shield-alt"></i></span> Twój adres wysyłki zostanie użyty tylko do wysłania klucza sprzętowego i zostanie usunięty najpóźniej po 6 miesiącach. Zobacz także <a th:href="@{/datenschutz}">Polityka prywatności</a>.</p>
 
@@ -168,7 +168,7 @@
 						</select>
 					</div>
 				</div>
-				<p class="help" data-tx="t0054:ce35ea7d">Jeśli prawie nie dostajesz spamu, nie masz wiele do roboty jako tester - to pytanie pomaga nam wybrać testerów z prawdziwym materiałem testowym.</p>
+				<p class="help" data-tx="t0073:3d6caf09">Jeśli prawie nie dostajesz spamu, nie masz wiele do roboty jako tester - pytanie pomaga mi wybrać testerów z prawdziwym materiałem testowym.</p>
 			</div>
 
 			<hr/>
@@ -187,7 +187,7 @@
 						</select>
 					</div>
 				</div>
-				<p class="help" data-tx="t0061:4cdb32d">Pomaga nam w konfiguracji - dobrze jest zacząć od podstaw.</p>
+				<p class="help" data-tx="t0074:b290afd6">Pomaga mi w konfiguracji - dobrze jest zacząć od podstaw.</p>
 			</div>
 
 			<hr/>

@@ -10,8 +10,8 @@
 		<h1 data-tx="t0001:c6b15d09">Søk om å bli betatester</h1>
 
 		<div class="notification is-success" th:if="${param.ok}">
-			<p><strong data-tx="t0002:fb69fbb">Takk for din søknad!</strong></p>
-			<p data-tx="t0003:d79d5517">Vi vil kontakte deg så snart vi har lagt til oppsettet ditt i testmatrisen vår. I mellomtiden trenger du ikke å gjøre noe annet. Hvis du ønsker å korrigere opplysningene dine, vennligst <a th:href="@{/}">gi oss beskjed</a>.</p>
+			<p><strong data-tx="t0069:fb69fbb">Takk for din søknad!</strong></p>
+			<p data-tx="t0070:e815b5c1">Jeg kommer tilbake til deg så snart oppsettet ditt er lagt til i testmatrisen. Inntil da trenger du ikke å gjøre noe mer.</p>
 		</div>
 
 		<div class="notification is-danger" th:if="${param.error != null and param.error[0] == 'invalid'}">
@@ -19,12 +19,12 @@
 		</div>
 
 		<div class="notification is-danger" th:if="${param.error != null and param.error[0] == 'commitment'}">
-			<p data-tx="t0005:98a30556"><strong>Vi kan ikke sende ut en dongle uten bekreftelse på spørreskjemaet.</strong> Tilbakemeldingene er grunnen til at vi i det hele tatt tilbyr testerprogrammet.</p>
+			<p data-tx="t0071:515e9f32"><strong>Jeg kan ikke sende ut en dongle uten bekreftelse på spørreskjemaet </strong> Tilbakemeldingene er grunnen til at testerprogrammet i det hele tatt eksisterer.</p>
 		</div>
 
 		<th:block th:unless="${param.ok}">
 
-		<p data-tx="t0006:32d2fa39">Flott at du vil være med på det! Vi er på utkikk etter testere som kan prøve PhoneBlock-dongelen med sin egen leverandør og ruteroppsett. Vi trenger noen få detaljer fra deg, slik at vi kan velge en fargerik miks. Det tar 2-3 minutter å fylle ut.</p>
+		<p data-tx="t0072:fe5c9755">Hyggelig at du vil være en del av det! Jeg er på utkikk etter testere som kan prøve ut PhoneBlock-donglen i deres spesifikke leverandør- og ruteroppsett. Jeg trenger noen få detaljer fra deg, slik at jeg kan velge en fargerik miks. Det tar 2-3 minutter å fylle ut.</p>
 
 		<p class="has-text-grey-dark" data-tx="t0007:2f2c6f55"><span class="icon"><i class="fas fa-shield-alt"></i></span> Din leveringsadresse vil kun bli brukt til å sende donglen og vil bli slettet senest etter 6 måneder. Se også <a th:href="@{/datenschutz}">Privatlivspolitikk</a>.</p>
 
@@ -168,7 +168,7 @@
 						</select>
 					</div>
 				</div>
-				<p class="help" data-tx="t0054:ce35ea7d">Hvis du nesten ikke får spam, har du lite å gjøre som tester - dette spørsmålet hjelper oss med å velge ut testere med ekte testmateriale.</p>
+				<p class="help" data-tx="t0073:3d6caf09">Hvis du nesten ikke får spam, har du lite å gjøre som tester - spørsmålet hjelper meg med å velge ut testere med ekte testmateriale.</p>
 			</div>
 
 			<hr/>
@@ -187,7 +187,7 @@
 						</select>
 					</div>
 				</div>
-				<p class="help" data-tx="t0061:4cdb32d">Hjelper oss med oppsettstøtte - det er helt greit å starte med det grunnleggende.</p>
+				<p class="help" data-tx="t0074:b290afd6">Hjelper meg med oppsettstøtte - det er helt greit å begynne med det grunnleggende.</p>
 			</div>
 
 			<hr/>

@@ -12,12 +12,12 @@
 		<p class="subtitle" data-tx="t0002:f19cc129">Una chiavetta USB delle dimensioni di un pollice, che cattura le chiamate pubblicitarie prima ancora che il telefono squilli, e che non è legata al Fritz!Box, ma funziona su qualsiasi router o sistema telefonico moderno con SIP.</p>
 
 		<div class="notification is-warning">
-			<p data-tx="t0003:f8f65c55"><strong>Stato: Beta.</strong> Il dongle funziona, ma prima di raccomandarlo su larga scala, vogliamo provarlo su quanti più tipi di connessione possibile. Stiamo cercando tester e stiamo regalando dispositivi in cambio - <a href="#tester">vedi sotto</a>.</p>
+			<p data-tx="t0080:bceb1cbd"><strong>Stato: Beta.</strong> Il dongle funziona, ma prima di raccomandarlo ampiamente, vorrei averlo provato su quanti più tipi di connessione possibile. Sto cercando tester e sto regalando dispositivi in cambio - <a href="#tester">vedi sotto</a>.</p>
 		</div>
 
 		<h2 data-tx="t0004:6b104c7a">L'idea in una frase</h2>
 
-		<p data-tx="t0005:d1cd2c85">Il dongle si collega al router come un telefono IP aggiuntivo. Ogni volta che arriva una chiamata, chiede al database PhoneBlock alla velocità della luce: <em>"Questo è spam?"</em> In caso affermativo, risponde alla chiamata stessa e riaggancia immediatamente. Il vostro telefono reale non ha nemmeno squillato in quel momento.</p>
+		<p data-tx="t0081:67bb8b12">Il dongle si collega al router come un telefono IP aggiuntivo. Ogni volta che arriva una chiamata, chiede al database di PhoneBlock alla velocità della luce: <em>"Questo è spam?"</em> In caso affermativo, risponde alla chiamata stessa, riproduce un breve saluto se desiderato e riaggancia. In quel momento il vostro telefono reale non ha ancora squillato.</p>
 
 		<div class="columns is-centered mt-5">
 			<div class="column is-one-quarter has-text-centered">
@@ -28,12 +28,12 @@
 			<div class="column is-one-quarter has-text-centered">
 				<p><span class="icon is-large has-text-warning"><i class="fas fa-bolt fa-3x"></i></span></p>
 				<h4 data-tx="t0008:acac085a">2. controllo del flash</h4>
-				<p data-tx="t0009:fc2f56f4">Entro poche centinaia di millisecondi, il dongle chiede a PhoneBlock se il numero è noto come spam. La richiesta viene eseguita tramite HTTPS crittografato.</p>
+				<p data-tx="t0082:c18bf1d6">Entro poche centinaia di millisecondi, il dongle chiede a PhoneBlock se il numero è noto come spam. La richiesta viene eseguita tramite HTTPS crittografato e trasmette solo un hash del numero.</p>
 			</div>
 			<div class="column is-one-quarter has-text-centered">
 				<p><span class="icon is-large has-text-danger"><i class="fas fa-ban fa-3x"></i></span></p>
 				<h4 data-tx="t0010:be667d0f">3. sbarazzarsene</h4>
-				<p data-tx="t0011:c7c6f4fb">Se il numero è uno spam, il dongle risponde e riaggancia immediatamente. Il telefono in salotto rimane silenzioso. Se il numero è innocuo, il dongle non fa nulla: la chiamata passa normalmente.</p>
+				<p data-tx="t0083:e858f50">Se il numero è spam, il dongle risponde, riproduce un annuncio se desiderato e riaggancia. Il telefono in salotto rimane silenzioso. Se il numero è innocuo, il dongle non fa nulla: la chiamata passa normalmente.</p>
 			</div>
 		</div>
 
@@ -59,38 +59,38 @@
 					<tr>
 						<td data-tx="t0019:9e08101d">Il telefono rimane completamente silenzioso durante lo spam</td>
 						<td data-tx="t0020:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Sì</td>
-						<td data-tx="t0021:75373880"><span class="icon has-text-warning"><i class="fas fa-circle-half-stroke"></i></span> Solo se il blocco delle chiamate del router è configurato</td>
+						<td data-tx="t0084:cf12d799"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Visualizzare o bloccare a scelta</td>
 						<td data-tx="t0022:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Sì</td>
 					</tr>
 					<tr>
 						<td data-tx="t0023:90691916">Requisiti del router</td>
 						<td data-tx="t0024:115dd48e"><span class="icon has-text-success"><i class="fas fa-globe"></i></span> Qualsiasi (SIP + ritardo campanello)</td>
-						<td data-tx="t0025:102d3ed3"><span class="icon has-text-warning"><i class="fas fa-wifi"></i></span> Fritz!Box con CardDAV</td>
-						<td data-tx="t0026:d2213069"><span class="icon has-text-info"><i class="fas fa-server"></i></span> Router con registrar SIP</td>
+						<td data-tx="t0085:120e2e30"><span class="icon has-text-warning"><i class="fas fa-wifi"></i></span> Fritz!Box più recente con CardDAV</td>
+						<td data-tx="t0086:93c556cc"><span class="icon has-text-warning"><i class="fas fa-server"></i></span> Router con registrar SIP accessibile a Internet (bloccato per alcune caselle di provider come Vodafone)</td>
 					</tr>
 					<tr>
 						<td data-tx="t0027:e66ba2b">Hardware aggiuntivo</td>
 						<td data-tx="t0028:99294924"><span class="icon has-text-info"><i class="fas fa-usb"></i></span> Dongle USB, circa 10 €</td>
 						<td data-tx="t0029:58a26498"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Nessuno</td>
-						<td data-tx="t0030:6a476e10"><span class="icon has-text-warning"><i class="fas fa-server"></i></span> Server o Raspberry Pi</td>
+						<td data-tx="t0087:fe8232e3"><span class="icon has-text-success"><i class="fas fa-cloud"></i></span> Nessuno (servizio cloud)</td>
 					</tr>
 					<tr>
 						<td data-tx="t0031:83c9a19b">Sforzo di allestimento</td>
 						<td data-tx="t0032:e09b2ea8"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Collegare, configurare WLAN + accesso</td>
 						<td data-tx="t0033:ad1a2520"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Memorizzare l'URL CardDAV nel router</td>
-						<td data-tx="t0034:ff07d9a3"><span class="icon has-text-warning"><i class="fas fa-user-graduate"></i></span> Java/Docker + chiamate audio</td>
+						<td data-tx="t0088:ca8f4268"><span class="icon has-text-info"><i class="fas fa-gear"></i></span> Creare la segreteria telefonica, inserire le credenziali SIP nel router</td>
 					</tr>
 					<tr>
 						<td data-tx="t0035:4532187f">Aggiornamento dell'elenco dei blocchi</td>
 						<td data-tx="t0036:4134c6e2"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Interrogazione in tempo reale ad ogni chiamata</td>
-						<td data-tx="t0037:4dab9851"><span class="icon has-text-info"><i class="fas fa-sync"></i></span> Sincronizzazione periodica (≤ 1 ×/giorno)</td>
+						<td data-tx="t0089:a868030b"><span class="icon has-text-warning"><i class="fas fa-sync"></i></span> Unica sezione dell'elenco blocchi, sincronizzazione ≤ 1 ×/giorno</td>
 						<td data-tx="t0038:4134c6e2"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Interrogazione in tempo reale ad ogni chiamata</td>
 					</tr>
 					<tr>
 						<td data-tx="t0039:a8c2cfff">Consumo di energia in funzionamento continuo</td>
 						<td data-tx="t0040:3d07b53b"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> circa 0,4 W (USB)</td>
 						<td data-tx="t0041:30562f18"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> 0 W (utilizza il router)</td>
-						<td data-tx="t0042:e74172dc"><span class="icon has-text-warning"><i class="fas fa-bolt"></i></span> 3-10 W (server)</td>
+						<td data-tx="t0090:c0b4a4fd"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> 0 W (servizio cloud)</td>
 					</tr>
 					<tr>
 						<td data-tx="t0043:f4c95d3e">Impiegare attivamente gli spammer</td>
@@ -113,7 +113,7 @@
 			<ul>
 				<li data-tx="t0052:b79437c1"><strong>Lista telefonica di blocco</strong> - se si dispone di un Fritz!Box e di una semplice marcatura o di un blocco manuale delle chiamate del router è sufficiente.</li>
 				<li data-tx="t0053:f8bcce39"><strong>Dongle</strong> - se <em>non avete</em> un Fritz!Box o non volete gestire un server permanente, ma volete comunque che il telefono sia silenzioso in modo affidabile in caso di spam.</li>
-				<li data-tx="t0054:af7903e3"><strong>Answer Bot</strong> - se volete impiegare attivamente gli spammer e avete a disposizione un server o un Raspberry Pi.</li>
+				<li data-tx="t0091:74ac18af"><strong>Answer Bot</strong> - se volete impiegare attivamente gli spammer e il vostro router consente un accesso SIP da Internet.</li>
 			</ul>
 		</div>
 
@@ -123,22 +123,21 @@
 			<li data-tx="t0057:1c59c72e"><strong>Ritardo di squillo configurabile</strong> per i telefoni "reali" (in genere 3-5 secondi), in modo che il dongle possa intercettare la chiamata in anticipo.</li>
 			<li data-tx="t0058:be2e6f7c"><strong>WLAN a 2,4 GHz</strong> nel raggio d'azione.</li>
 			<li data-tx="t0059:41e630a8"><strong>Alimentazione USB a 5 V</strong> - idealmente direttamente sul router, altrimenti su qualsiasi alimentatore USB.</li>
-			<li data-tx="t0060:f8c04413"><strong>Account gratuito <a th:href="@{/signup}">PhoneBlock</a></strong> con token di accesso API.</li>
+			<li data-tx="t0092:f8c04413"><strong>Account gratuito <a th:href="@{/login}">PhoneBlock</a></strong> con token di accesso API.</li>
 		</ul>
 
 		<hr class="my-5"/>
 
 		<h2 data-tx="t0061:6db43a5a" id="tester">Diventare un beta tester</h2>
 
-		<p data-tx="t0062:bdb9e1d5">Il dongle funziona in modo affidabile a casa su un box Fritz! ma "router", "provider" e "tipo di connessione" sono un mix variopinto in Germania (e ancor più all'estero). Ogni combinazione ha le sue peculiarità: diversi dialetti SIP, diverse regole NAT, diverse opzioni di ritardo dell'anello.</p>
+		<p data-tx="t0093:cdf5c098">Il dongle funziona in modo affidabile su un box Fritz! a casa mia, ma "router", "provider" e "tipo di connessione" sono un mix variopinto in Germania (e ancor più all'estero). Ogni combinazione ha le sue peculiarità: diversi dialetti SIP, diverse regole NAT, diverse opzioni di ritardo di chiamata.</p>
 
-		<p data-tx="t0063:80dccb54">Stiamo quindi cercando <strong>co-tester</strong> che provino il dongle nella loro configurazione specifica e ci forniscano un feedback strutturato. Particolarmente interessante:</p>
+		<p data-tx="t0094:14288f3">Sono quindi alla ricerca di <strong>co-tester</strong> che provino il dongle nella loro configurazione specifica e mi forniscano un feedback strutturato. Particolarmente interessante:</p>
 
 		<ul>
 			<li data-tx="t0064:e1971ce0">Connessione Telekom con router <strong>Speedport</strong></li>
 			<li data-tx="t0065:61cce24d">Collegamento via cavo Vodafone/Unitymedia con il box provider in dotazione</li>
 			<li data-tx="t0066:ea506b90">1&amp;1, o2, Deutsche Glasfaser e altri provider</li>
-			<li data-tx="t0067:c7c7f4b3"><strong>Asterisk</strong>, <strong>FreePBX</strong>, <strong>3CX</strong> o altri sistemi SIP self-hosted</li>
 			<li data-tx="t0068:e5ffca52">Collegamenti internazionali (Svizzera, Austria, resto d'Europa)</li>
 		</ul>
 

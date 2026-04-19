@@ -12,12 +12,12 @@
 		<p class="subtitle" data-tx="t0002:f19cc129">Ένα στικάκι USB σε μέγεθος αντίχειρα, το οποίο αρπάζει διαφημιστικές κλήσεις πριν καν χτυπήσει το τηλέφωνό σας - και το οποίο δεν είναι συνδεδεμένο με το Fritz!Box, αλλά λειτουργεί σε οποιοδήποτε σύγχρονο δρομολογητή ή τηλεφωνικό σύστημα με SIP.</p>
 
 		<div class="notification is-warning">
-			<p data-tx="t0003:f8f65c55"><strong>Κατάσταση: Beta.</strong> Το dongle λειτουργεί, αλλά πριν το προτείνουμε ευρέως, θέλουμε να το έχουμε δοκιμάσει σε όσο το δυνατόν περισσότερους διαφορετικούς τύπους σύνδεσης. Ψάχνουμε για δοκιμαστές και δίνουμε συσκευές σε αντάλλαγμα - <a href="#tester">βλέπε παρακάτω</a>.</p>
+			<p data-tx="t0080:bceb1cbd"><strong>Κατάσταση: Beta.</strong> Το dongle λειτουργεί, αλλά πριν το προτείνω ευρέως, θα ήθελα να το έχω δοκιμάσει σε όσο το δυνατόν περισσότερους διαφορετικούς τύπους σύνδεσης. Ψάχνω για δοκιμαστές και χαρίζω συσκευές σε αντάλλαγμα - <a href="#tester">βλέπε παρακάτω</a>.</p>
 		</div>
 
 		<h2 data-tx="t0004:6b104c7a">Η ιδέα σε μια πρόταση</h2>
 
-		<p data-tx="t0005:d1cd2c85">Το dongle συνδέεται στο δρομολογητή σας σαν ένα πρόσθετο τηλέφωνο IP. Κάθε φορά που έρχεται μια κλήση, ρωτάει τη βάση δεδομένων του PhoneBlock με αστραπιαία ταχύτητα: <em>"Είναι αυτό spam;"</em> Αν ναι, απαντάει το ίδιο στην κλήση και κλείνει αμέσως. Το πραγματικό σας τηλέφωνο δεν έχει καν χτυπήσει εκείνη τη στιγμή.</p>
+		<p data-tx="t0081:67bb8b12">Το dongle συνδέεται στο δρομολογητή σας σαν ένα πρόσθετο τηλέφωνο IP. Κάθε φορά που λαμβάνεται μια κλήση, ρωτάει τη βάση δεδομένων PhoneBlock με αστραπιαία ταχύτητα: <em>"Είναι αυτό spam;"</em> Αν ναι, απαντάει μόνο του στην κλήση, αναπαράγει έναν σύντομο χαιρετισμό, αν το επιθυμείτε, και το κλείνει ξανά. Το πραγματικό σας τηλέφωνο δεν έχει καν χτυπήσει εκείνη τη στιγμή.</p>
 
 		<div class="columns is-centered mt-5">
 			<div class="column is-one-quarter has-text-centered">
@@ -28,12 +28,12 @@
 			<div class="column is-one-quarter has-text-centered">
 				<p><span class="icon is-large has-text-warning"><i class="fas fa-bolt fa-3x"></i></span></p>
 				<h4 data-tx="t0008:acac085a">2. έλεγχος φλας</h4>
-				<p data-tx="t0009:fc2f56f4">Μέσα σε μερικές εκατοντάδες χιλιοστά του δευτερολέπτου, το Dongle ρωτά το PhoneBlock αν ο αριθμός είναι γνωστό ότι είναι ανεπιθύμητος. Το ερώτημα εκτελείται μέσω κρυπτογραφημένου HTTPS.</p>
+				<p data-tx="t0082:c18bf1d6">Μέσα σε μερικές εκατοντάδες χιλιοστά του δευτερολέπτου, το Dongle ρωτά το PhoneBlock αν ο αριθμός είναι γνωστό ότι είναι ανεπιθύμητος. Το ερώτημα εκτελείται μέσω κρυπτογραφημένου HTTPS και μεταδίδει μόνο ένα hash του αριθμού.</p>
 			</div>
 			<div class="column is-one-quarter has-text-centered">
 				<p><span class="icon is-large has-text-danger"><i class="fas fa-ban fa-3x"></i></span></p>
 				<h4 data-tx="t0010:be667d0f">3. απαλλαγείτε από αυτό</h4>
-				<p data-tx="t0011:c7c6f4fb">Εάν ο αριθμός είναι ανεπιθύμητος, το dongle απαντά και κλείνει ξανά αμέσως. Το τηλέφωνο στο σαλόνι παραμένει σιωπηλό. Εάν πρόκειται για ακίνδυνο αριθμό, το dongle απλώς δεν κάνει τίποτα - η κλήση πραγματοποιείται κανονικά.</p>
+				<p data-tx="t0083:e858f50">Εάν ο αριθμός είναι ανεπιθύμητος, το dongle απαντά, αναπαράγει μια ανακοίνωση εάν είναι επιθυμητό και κλείνει το τηλέφωνο. Το τηλέφωνο στο σαλόνι παραμένει σιωπηλό. Εάν πρόκειται για ακίνδυνο αριθμό, το dongle απλώς δεν κάνει τίποτα - η κλήση πραγματοποιείται κανονικά.</p>
 			</div>
 		</div>
 
@@ -59,38 +59,38 @@
 					<tr>
 						<td data-tx="t0019:9e08101d">Το τηλέφωνο παραμένει εντελώς αθόρυβο κατά τη διάρκεια της ανεπιθύμητης αλληλογραφίας</td>
 						<td data-tx="t0020:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ναι</td>
-						<td data-tx="t0021:75373880"><span class="icon has-text-warning"><i class="fas fa-circle-half-stroke"></i></span> Μόνο αν έχει ρυθμιστεί η φραγή κλήσεων δρομολογητή.</td>
+						<td data-tx="t0084:cf12d799"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Προαιρετικά εμφανίζει ή κλειδώνει</td>
 						<td data-tx="t0022:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ναι</td>
 					</tr>
 					<tr>
 						<td data-tx="t0023:90691916">Απαίτηση δρομολογητή</td>
 						<td data-tx="t0024:115dd48e"><span class="icon has-text-success"><i class="fas fa-globe"></i></span> Οποιοδήποτε (SIP + καθυστέρηση κουδουνιού)</td>
-						<td data-tx="t0025:102d3ed3"><span class="icon has-text-warning"><i class="fas fa-wifi"></i></span> Fritz!Box με CardDAV</td>
-						<td data-tx="t0026:d2213069"><span class="icon has-text-info"><i class="fas fa-server"></i></span> Δρομολογητής με καταχωρητή SIP</td>
+						<td data-tx="t0085:120e2e30"><span class="icon has-text-warning"><i class="fas fa-wifi"></i></span> Νεότερο Fritz!Box με CardDAV</td>
+						<td data-tx="t0086:93c556cc"><span class="icon has-text-warning"><i class="fas fa-server"></i></span> Δρομολογητής με καταχωρητή SIP με πρόσβαση στο Διαδίκτυο (μπλοκαρισμένος για ορισμένα κουτιά παρόχων όπως η Vodafone)</td>
 					</tr>
 					<tr>
 						<td data-tx="t0027:e66ba2b">Πρόσθετο υλικό</td>
 						<td data-tx="t0028:99294924"><span class="icon has-text-info"><i class="fas fa-usb"></i></span> USB dongle, περίπου 10 €</td>
 						<td data-tx="t0029:58a26498"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Κανένα</td>
-						<td data-tx="t0030:6a476e10"><span class="icon has-text-warning"><i class="fas fa-server"></i></span> Διακομιστής ή Raspberry Pi</td>
+						<td data-tx="t0087:fe8232e3"><span class="icon has-text-success"><i class="fas fa-cloud"></i></span> Καμία (υπηρεσία cloud)</td>
 					</tr>
 					<tr>
 						<td data-tx="t0031:83c9a19b">Προσπάθεια εγκατάστασης</td>
 						<td data-tx="t0032:e09b2ea8"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Συνδέστε, ρυθμίστε το WLAN + πρόσβαση</td>
 						<td data-tx="t0033:ad1a2520"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Αποθηκεύστε τη διεύθυνση URL CardDAV στο δρομολογητή.</td>
-						<td data-tx="t0034:ff07d9a3"><span class="icon has-text-warning"><i class="fas fa-user-graduate"></i></span> Java/Docker + κλήσεις ήχου</td>
+						<td data-tx="t0088:ca8f4268"><span class="icon has-text-info"><i class="fas fa-gear"></i></span> Δημιουργία αυτόματου τηλεφωνητή, εισαγωγή διαπιστευτηρίων SIP στο δρομολογητή</td>
 					</tr>
 					<tr>
 						<td data-tx="t0035:4532187f">Επικαιροποίηση του καταλόγου αποκλεισμών</td>
 						<td data-tx="t0036:4134c6e2"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Ζωντανό ερώτημα με κάθε κλήση</td>
-						<td data-tx="t0037:4dab9851"><span class="icon has-text-info"><i class="fas fa-sync"></i></span> Περιοδικός συγχρονισμός (≤ 1 ×/ημέρα)</td>
+						<td data-tx="t0089:a868030b"><span class="icon has-text-warning"><i class="fas fa-sync"></i></span> Μόνο τμήμα του καταλόγου μπλοκ, συγχρονισμός ≤ 1 ×/ημέρα</td>
 						<td data-tx="t0038:4134c6e2"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Ζωντανό ερώτημα με κάθε κλήση</td>
 					</tr>
 					<tr>
 						<td data-tx="t0039:a8c2cfff">Κατανάλωση ισχύος σε συνεχή λειτουργία</td>
 						<td data-tx="t0040:3d07b53b"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> περίπου 0,4 W (USB)</td>
 						<td data-tx="t0041:30562f18"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> 0 W (χρησιμοποιεί δρομολογητή)</td>
-						<td data-tx="t0042:e74172dc"><span class="icon has-text-warning"><i class="fas fa-bolt"></i></span> 3-10 W (διακομιστής)</td>
+						<td data-tx="t0090:c0b4a4fd"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> 0 W (υπηρεσία cloud)</td>
 					</tr>
 					<tr>
 						<td data-tx="t0043:f4c95d3e">Χρησιμοποιούν ενεργά spammers</td>
@@ -113,7 +113,7 @@
 			<ul>
 				<li data-tx="t0052:b79437c1"><strong>Φωνητικός κατάλογος αποκλεισμού</strong> - αν έχετε ένα Fritz!Box και μια απλή σήμανση ή χειροκίνητη δέσμευση κλήσεων δρομολογητή είναι επαρκής.</li>
 				<li data-tx="t0053:f8bcce39"><strong>Dongle</strong> - αν <em>δεν έχετε</em> ένα Fritz!Box ή δεν θέλετε να λειτουργήσετε μόνιμο διακομιστή, αλλά θέλετε το τηλέφωνο να είναι αξιόπιστα αθόρυβο σε περίπτωση spam.</li>
-				<li data-tx="t0054:af7903e3"><strong>Answer Bot</strong> - αν θέλετε να απασχολείτε ενεργά τους spammers και έχετε έναν διακομιστή ή ένα Raspberry Pi στη διάθεσή σας.</li>
+				<li data-tx="t0091:74ac18af"><strong>Answer Bot</strong> - αν θέλετε να απασχολείτε ενεργά τους spammers και ο δρομολογητής σας επιτρέπει τη σύνδεση SIP από το Διαδίκτυο.</li>
 			</ul>
 		</div>
 
@@ -123,22 +123,21 @@
 			<li data-tx="t0057:1c59c72e"><strong>Ρυθμιζόμενη καθυστέρηση κουδουνίσματος</strong> για τα "πραγματικά" τηλέφωνα (συνήθως 3-5 δευτερόλεπτα), ώστε το dongle να μπορεί να αναχαιτίσει την κλήση εκ των προτέρων.</li>
 			<li data-tx="t0058:be2e6f7c"><strong>2,4 GHz WLAN</strong> εντός εμβέλειας.</li>
 			<li data-tx="t0059:41e630a8"><strong>Τροφοδοτικό USB 5 V</strong> - ιδανικά απευθείας στο δρομολογητή, διαφορετικά σε οποιαδήποτε μονάδα τροφοδοσίας USB.</li>
-			<li data-tx="t0060:f8c04413"><strong>Δωρεάν λογαριασμός <a th:href="@{/signup}">PhoneBlock</a></strong> με κωδικό πρόσβασης API.</li>
+			<li data-tx="t0092:f8c04413"><strong>Δωρεάν λογαριασμός <a th:href="@{/login}">PhoneBlock</a></strong> με κωδικό πρόσβασης API.</li>
 		</ul>
 
 		<hr class="my-5"/>
 
 		<h2 data-tx="t0061:6db43a5a" id="tester">Γίνετε δοκιμαστής beta</h2>
 
-		<p data-tx="t0062:bdb9e1d5">Το dongle λειτουργεί αξιόπιστα στο σπίτι σε ένα κουτί Fritz!, αλλά οι όροι "δρομολογητής", "πάροχος" και "τύπος σύνδεσης" είναι ένα πολύχρωμο μείγμα στη Γερμανία (και ακόμη περισσότερο στο εξωτερικό). Κάθε συνδυασμός έχει τις δικές του ιδιαιτερότητες: διαφορετικές διάλεκτοι SIP, διαφορετικοί κανόνες NAT, διαφορετικές επιλογές καθυστέρησης κλήσης.</p>
+		<p data-tx="t0093:cdf5c098">Το dongle λειτουργεί αξιόπιστα σε ένα κουτί Fritz! στο σπίτι μου - αλλά οι όροι "δρομολογητής", "πάροχος" και "τύπος σύνδεσης" είναι ένα πολύχρωμο μείγμα στη Γερμανία (και ακόμη περισσότερο στο εξωτερικό). Κάθε συνδυασμός έχει τις δικές του ιδιαιτερότητες: διαφορετικές διάλεκτοι SIP, διαφορετικοί κανόνες NAT, διαφορετικές επιλογές καθυστέρησης κλήσης.</p>
 
-		<p data-tx="t0063:80dccb54">Ως εκ τούτου, αναζητούμε <strong>συν-δοκιμαστές</strong> για να δοκιμάσουν το dongle στη δική τους εγκατάσταση και να μας δώσουν δομημένα σχόλια. Ιδιαίτερα ενδιαφέροντα:</p>
+		<p data-tx="t0094:14288f3">Ως εκ τούτου, αναζητώ <strong>συν-δοκιμαστές</strong> για να δοκιμάσουν το dongle στη συγκεκριμένη εγκατάσταση και να μου δώσουν δομημένα σχόλια. Ιδιαίτερα ενδιαφέροντα:</p>
 
 		<ul>
 			<li data-tx="t0064:e1971ce0">Σύνδεση Telekom με δρομολογητή <strong>Speedport</strong></li>
 			<li data-tx="t0065:61cce24d">Καλωδιακή σύνδεση Vodafone/Unitymedia με το παρεχόμενο κουτί παρόχου</li>
 			<li data-tx="t0066:ea506b90">1&amp;1, o2, Deutsche Glasfaser και άλλοι πάροχοι</li>
-			<li data-tx="t0067:c7c7f4b3"><strong>Asterisk</strong>, <strong>FreePBX</strong>, <strong>3CX</strong> ή άλλα αυτοδιαχειριζόμενα συστήματα SIP.</li>
 			<li data-tx="t0068:e5ffca52">Διεθνείς συνδέσεις (Ελβετία, Αυστρία, υπόλοιπη Ευρώπη)</li>
 		</ul>
 

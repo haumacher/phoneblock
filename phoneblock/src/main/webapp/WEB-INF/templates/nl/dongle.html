@@ -12,12 +12,12 @@
 		<p class="subtitle" data-tx="t0002:f19cc129">Een USB-stick ter grootte van een duim die reclameoproepen onderschept nog voor je telefoon overgaat - en die niet gebonden is aan de Fritz!Box, maar werkt op elke moderne router of telefoonsysteem met SIP.</p>
 
 		<div class="notification is-warning">
-			<p data-tx="t0003:f8f65c55"><strong>Status: Beta.</strong> De dongle werkt, maar voordat we hem op grote schaal aanbevelen, willen we hem op zoveel mogelijk verschillende verbindingstypes hebben uitgeprobeerd. We zijn op zoek naar testers en geven in ruil daarvoor apparaten weg - <a href="#tester">zie hieronder</a>.</p>
+			<p data-tx="t0080:bceb1cbd"><strong>Status: Beta.</strong> De dongle werkt, maar voordat ik hem op grote schaal aanbeveel, wil ik hem op zoveel mogelijk verschillende verbindingstypes hebben uitgeprobeerd. Ik ben op zoek naar testers en geef in ruil daarvoor apparaten weg - <a href="#tester">zie hieronder</a>.</p>
 		</div>
 
 		<h2 data-tx="t0004:6b104c7a">Het idee in één zin</h2>
 
-		<p data-tx="t0005:d1cd2c85">De dongle logt in op je router als een extra IP-telefoon. Elke keer dat er een gesprek binnenkomt, vraagt hij razendsnel aan de PhoneBlock database: <em>"Is dit spam?"</em> Zo ja, dan beantwoordt hij het gesprek zelf en hangt meteen op. Je echte telefoon is op dat moment nog niet eens overgegaan.</p>
+		<p data-tx="t0081:67bb8b12">De dongle logt in op je router als een extra IP-telefoon. Elke keer dat er een gesprek binnenkomt, vraagt hij razendsnel aan de PhoneBlock database: <em>"Is dit spam?"</em> Zo ja, dan beantwoordt hij het gesprek zelf, speelt desgewenst een korte begroeting af en hangt weer op. Je echte telefoon is op dat moment nog niet eens overgegaan.</p>
 
 		<div class="columns is-centered mt-5">
 			<div class="column is-one-quarter has-text-centered">
@@ -28,12 +28,12 @@
 			<div class="column is-one-quarter has-text-centered">
 				<p><span class="icon is-large has-text-warning"><i class="fas fa-bolt fa-3x"></i></span></p>
 				<h4 data-tx="t0008:acac085a">2. flitscontrole</h4>
-				<p data-tx="t0009:fc2f56f4">Binnen een paar honderd milliseconden vraagt de dongle aan PhoneBlock of het nummer bekend staat als spam. De query verloopt via versleutelde HTTPS.</p>
+				<p data-tx="t0082:c18bf1d6">Binnen een paar honderd milliseconden vraagt de dongle aan PhoneBlock of het nummer bekend staat als spam. De query verloopt via versleutelde HTTPS en verzendt alleen een hash van het nummer.</p>
 			</div>
 			<div class="column is-one-quarter has-text-centered">
 				<p><span class="icon is-large has-text-danger"><i class="fas fa-ban fa-3x"></i></span></p>
 				<h4 data-tx="t0010:be667d0f">3. weg ermee</h4>
-				<p data-tx="t0011:c7c6f4fb">Als het nummer spam is, neemt de dongle op en hangt meteen weer op. De telefoon in de woonkamer blijft stil. Als het geen kwaad kan, doet de dongle gewoon niets - het gesprek wordt normaal doorverbonden.</p>
+				<p data-tx="t0083:e858f50">Als het nummer spam is, neemt de dongle op, speelt desgewenst een meldtekst af en hangt op. De telefoon in de woonkamer blijft stil. Als het geen kwaad kan, doet de dongle gewoon niets - het gesprek wordt gewoon doorverbonden.</p>
 			</div>
 		</div>
 
@@ -59,38 +59,38 @@
 					<tr>
 						<td data-tx="t0019:9e08101d">Telefoon blijft volledig stil tijdens spam</td>
 						<td data-tx="t0020:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ja</td>
-						<td data-tx="t0021:75373880"><span class="icon has-text-warning"><i class="fas fa-circle-half-stroke"></i></span> Alleen als blokkeren van routeroproepen is geconfigureerd</td>
+						<td data-tx="t0084:cf12d799"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Optioneel weergeven of vergrendelen</td>
 						<td data-tx="t0022:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ja</td>
 					</tr>
 					<tr>
 						<td data-tx="t0023:90691916">Vereiste router</td>
 						<td data-tx="t0024:115dd48e"><span class="icon has-text-success"><i class="fas fa-globe"></i></span> Elke (SIP + belvertraging)</td>
-						<td data-tx="t0025:102d3ed3"><span class="icon has-text-warning"><i class="fas fa-wifi"></i></span> Fritz!Box met CardDAV</td>
-						<td data-tx="t0026:d2213069"><span class="icon has-text-info"><i class="fas fa-server"></i></span> Router met SIP-registrar</td>
+						<td data-tx="t0085:120e2e30"><span class="icon has-text-warning"><i class="fas fa-wifi"></i></span> Nieuwere Fritz!Box met CardDAV</td>
+						<td data-tx="t0086:93c556cc"><span class="icon has-text-warning"><i class="fas fa-server"></i></span> Router met internet-toegankelijke SIP-registrar (geblokkeerd voor sommige providerboxen zoals Vodafone)</td>
 					</tr>
 					<tr>
 						<td data-tx="t0027:e66ba2b">Extra hardware</td>
 						<td data-tx="t0028:99294924"><span class="icon has-text-info"><i class="fas fa-usb"></i></span> USB-dongle, ca. 10 €</td>
 						<td data-tx="t0029:58a26498"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Geen</td>
-						<td data-tx="t0030:6a476e10"><span class="icon has-text-warning"><i class="fas fa-server"></i></span> Server of Raspberry Pi</td>
+						<td data-tx="t0087:fe8232e3"><span class="icon has-text-success"><i class="fas fa-cloud"></i></span> Geen (cloudservice)</td>
 					</tr>
 					<tr>
 						<td data-tx="t0031:83c9a19b">Opzet inspanning</td>
 						<td data-tx="t0032:e09b2ea8"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Aansluiten, WLAN + toegang configureren</td>
 						<td data-tx="t0033:ad1a2520"><span class="icon has-text-success"><i class="fas fa-star"></i></span> CardDAV URL opslaan in de router</td>
-						<td data-tx="t0034:ff07d9a3"><span class="icon has-text-warning"><i class="fas fa-user-graduate"></i></span> Java/Docker + audio-oproepen</td>
+						<td data-tx="t0088:ca8f4268"><span class="icon has-text-info"><i class="fas fa-gear"></i></span> Antwoordapparaat maken, SIP-referenties invoeren in router</td>
 					</tr>
 					<tr>
 						<td data-tx="t0035:4532187f">Actualiteit van de blokkadelijst</td>
 						<td data-tx="t0036:4134c6e2"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Live query bij elke oproep</td>
-						<td data-tx="t0037:4dab9851"><span class="icon has-text-info"><i class="fas fa-sync"></i></span> Periodieke synchronisatie (≤ 1 ×/dag)</td>
+						<td data-tx="t0089:a868030b"><span class="icon has-text-warning"><i class="fas fa-sync"></i></span> Alleen gedeelte van de blokkenlijst, synchronisatie ≤ 1 ×/dag</td>
 						<td data-tx="t0038:4134c6e2"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Live query bij elke oproep</td>
 					</tr>
 					<tr>
 						<td data-tx="t0039:a8c2cfff">Stroomverbruik in continubedrijf</td>
 						<td data-tx="t0040:3d07b53b"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> ca. 0,4 W (USB)</td>
 						<td data-tx="t0041:30562f18"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> 0 W (gebruikt router)</td>
-						<td data-tx="t0042:e74172dc"><span class="icon has-text-warning"><i class="fas fa-bolt"></i></span> 3-10 W (server)</td>
+						<td data-tx="t0090:c0b4a4fd"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> 0 W (cloudservice)</td>
 					</tr>
 					<tr>
 						<td data-tx="t0043:f4c95d3e">Actief spammers inzetten</td>
@@ -113,7 +113,7 @@
 			<ul>
 				<li data-tx="t0052:b79437c1"><strong>Blocklist telefoonboek</strong> - als je een Fritz!Box hebt en een eenvoudige markering of handmatige routerblokkering is voldoende.</li>
 				<li data-tx="t0053:f8bcce39"><strong>Dongle</strong> - als je <em>geen</em> Fritz!Box hebt of geen permanente server wilt gebruiken, maar toch wilt dat de telefoon betrouwbaar stil is in geval van spam.</li>
-				<li data-tx="t0054:af7903e3"><strong>Answer Bot</strong> - als je actief spammers wilt inzetten en een server of Raspberry Pi over hebt.</li>
+				<li data-tx="t0091:74ac18af"><strong>Answer Bot</strong> - als je spammers actief wilt inzetten en je router een SIP-aanmelding vanaf het internet toestaat.</li>
 			</ul>
 		</div>
 
@@ -123,22 +123,21 @@
 			<li data-tx="t0057:1c59c72e"><strong>Instelbare belvertraging</strong> voor de "echte" telefoons (meestal 3-5 seconden) zodat de dongle het gesprek van tevoren kan onderscheppen.</li>
 			<li data-tx="t0058:be2e6f7c"><strong>2,4 GHz WLAN</strong> binnen bereik.</li>
 			<li data-tx="t0059:41e630a8"><strong>5 V USB-voeding</strong> - idealiter direct op de router, anders op een USB-voedingseenheid.</li>
-			<li data-tx="t0060:f8c04413"><strong>Gratis <a th:href="@{/signup}">PhoneBlock-account</a></strong> met API-toegangstoken.</li>
+			<li data-tx="t0092:f8c04413"><strong>Gratis <a th:href="@{/login}">PhoneBlock-account</a></strong> met API-toegangstoken.</li>
 		</ul>
 
 		<hr class="my-5"/>
 
 		<h2 data-tx="t0061:6db43a5a" id="tester">Beta-tester worden</h2>
 
-		<p data-tx="t0062:bdb9e1d5">De dongle werkt betrouwbaar thuis op een Fritz! box - maar "router", "provider" en "verbindingstype" zijn een bonte mengeling in Duitsland (en nog meer in het buitenland). Elke combinatie heeft zijn eigen bijzonderheden: verschillende SIP-dialecten, verschillende NAT-regels, verschillende opties voor belvertraging.</p>
+		<p data-tx="t0093:cdf5c098">De dongle werkt betrouwbaar op een Fritz! box bij mij thuis - maar "router", "provider" en "verbindingstype" zijn een bonte mengeling in Duitsland (en nog meer in het buitenland). Elke combinatie heeft zijn eigen eigenaardigheden: verschillende SIP-dialecten, verschillende NAT-regels, verschillende opties voor belvertraging.</p>
 
-		<p data-tx="t0063:80dccb54">We zijn daarom op zoek naar <strong>co-testers</strong> die de dongle in hun specifieke opstelling willen uitproberen en ons gestructureerde feedback willen geven. Bijzonder interessant:</p>
+		<p data-tx="t0094:14288f3">Ik ben daarom op zoek naar <strong>co-testers</strong> die de dongle in hun specifieke opstelling willen uitproberen en mij gestructureerde feedback willen geven. Vooral interessant:</p>
 
 		<ul>
 			<li data-tx="t0064:e1971ce0">Telekom-verbinding met <strong>Speedport</strong>-router</li>
 			<li data-tx="t0065:61cce24d">Vodafone/Unitymedia-kabelverbinding met de meegeleverde providerbox</li>
 			<li data-tx="t0066:ea506b90">1&amp;1, o2, Deutsche Glasfaser en andere providers</li>
-			<li data-tx="t0067:c7c7f4b3"><strong>Asterisk</strong>, <strong>FreePBX</strong>, <strong>3CX</strong> of andere zelfgehoste SIP-systemen</li>
 			<li data-tx="t0068:e5ffca52">Internationale verbindingen (Zwitserland, Oostenrijk, rest van Europa)</li>
 		</ul>
 

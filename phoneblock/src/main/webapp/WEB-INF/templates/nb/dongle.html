@@ -12,12 +12,12 @@
 		<p class="subtitle" data-tx="t0002:f19cc129">En USB-pinne i tommelfingerstørrelse som snapper opp reklameanrop før telefonen ringer - og som ikke er knyttet til Fritz!Box, men fungerer på alle moderne rutere eller telefonsystemer med SIP.</p>
 
 		<div class="notification is-warning">
-			<p data-tx="t0003:f8f65c55"><strong>Status: Beta.</strong> Dongelen fungerer, men før vi anbefaler den bredt, ønsker vi å ha prøvd den ut på så mange forskjellige tilkoblingstyper som mulig. Vi er på utkikk etter testere og gir bort enheter i gjengjeld - <a href="#tester">se nedenfor</a>.</p>
+			<p data-tx="t0080:bceb1cbd"><strong>Status: Beta.</strong> Dongelen fungerer, men før jeg anbefaler den bredt, vil jeg gjerne ha prøvd den ut på så mange forskjellige tilkoblingstyper som mulig. Jeg er på utkikk etter testere og gir bort enheter i gjengjeld - <a href="#tester">se nedenfor</a>.</p>
 		</div>
 
 		<h2 data-tx="t0004:6b104c7a">Ideen i én setning</h2>
 
-		<p data-tx="t0005:d1cd2c85">Dongelen logger seg på ruteren din som en ekstra IP-telefon. Hver gang en samtale kommer inn, spør den lynraskt PhoneBlock-databasen: <em>"Er dette spam?"</em> Hvis ja, besvarer den selv samtalen og legger på umiddelbart. Den virkelige telefonen din har ikke engang ringt i det øyeblikket.</p>
+		<p data-tx="t0081:67bb8b12">Dongelen logger seg på ruteren din som en ekstra IP-telefon. Hver gang en samtale kommer inn, spør den lynraskt PhoneBlock-databasen: <em>"Er dette spam?"</em> Hvis ja, besvarer den selv samtalen, spiller av en kort kunngjøring om ønskelig og legger på igjen. Den virkelige telefonen din har ikke engang ringt i det øyeblikket.</p>
 
 		<div class="columns is-centered mt-5">
 			<div class="column is-one-quarter has-text-centered">
@@ -28,12 +28,12 @@
 			<div class="column is-one-quarter has-text-centered">
 				<p><span class="icon is-large has-text-warning"><i class="fas fa-bolt fa-3x"></i></span></p>
 				<h4 data-tx="t0008:acac085a">2. Blitsjekk</h4>
-				<p data-tx="t0009:fc2f56f4">I løpet av noen få hundre millisekunder spør donglen PhoneBlock om nummeret er kjent for å være spam. Forespørselen kjøres via kryptert HTTPS.</p>
+				<p data-tx="t0082:c18bf1d6">I løpet av noen få hundre millisekunder spør donglen PhoneBlock om nummeret er kjent for å være spam. Forespørselen kjøres via kryptert HTTPS og overfører kun en hash av nummeret.</p>
 			</div>
 			<div class="column is-one-quarter has-text-centered">
 				<p><span class="icon is-large has-text-danger"><i class="fas fa-ban fa-3x"></i></span></p>
 				<h4 data-tx="t0010:be667d0f">3. Bli kvitt den</h4>
-				<p data-tx="t0011:c7c6f4fb">Hvis nummeret er spam, tar donglen telefonen og legger på igjen umiddelbart. Telefonen i stuen forblir stille. Hvis det er ufarlig, gjør dongelen rett og slett ingenting - samtalen går gjennom som normalt.</p>
+				<p data-tx="t0083:e858f50">Hvis nummeret er spam, tar donglen telefonen, spiller av en melding om ønskelig og legger på. Telefonen i stuen forblir stille. Hvis det er ufarlig, gjør dongelen rett og slett ingenting - samtalen går gjennom som normalt.</p>
 			</div>
 		</div>
 
@@ -59,38 +59,38 @@
 					<tr>
 						<td data-tx="t0019:9e08101d">Telefonen forblir helt stille under spam</td>
 						<td data-tx="t0020:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ja</td>
-						<td data-tx="t0021:75373880"><span class="icon has-text-warning"><i class="fas fa-circle-half-stroke"></i></span> Bare hvis ruteren er konfigurert for anropsblokkering</td>
+						<td data-tx="t0084:cf12d799"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Valgfri visning eller låsing</td>
 						<td data-tx="t0022:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ja</td>
 					</tr>
 					<tr>
 						<td data-tx="t0023:90691916">Krav til ruter</td>
 						<td data-tx="t0024:115dd48e"><span class="icon has-text-success"><i class="fas fa-globe"></i></span> Alle (SIP + klokkeforsinkelse)</td>
-						<td data-tx="t0025:102d3ed3"><span class="icon has-text-warning"><i class="fas fa-wifi"></i></span> Fritz!Box med CardDAV</td>
-						<td data-tx="t0026:d2213069"><span class="icon has-text-info"><i class="fas fa-server"></i></span> Ruter med SIP-registrator</td>
+						<td data-tx="t0085:120e2e30"><span class="icon has-text-warning"><i class="fas fa-wifi"></i></span> Nyere Fritz!Box med CardDAV</td>
+						<td data-tx="t0086:93c556cc"><span class="icon has-text-warning"><i class="fas fa-server"></i></span> Ruter med Internett-tilgjengelig SIP-registrator (blokkert for noen leverandørbokser, for eksempel Vodafone)</td>
 					</tr>
 					<tr>
 						<td data-tx="t0027:e66ba2b">Ekstra maskinvare</td>
 						<td data-tx="t0028:99294924"><span class="icon has-text-info"><i class="fas fa-usb"></i></span> USB-dongle, ca. 10 €.</td>
 						<td data-tx="t0029:58a26498"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ingen</td>
-						<td data-tx="t0030:6a476e10"><span class="icon has-text-warning"><i class="fas fa-server"></i></span> Server eller Raspberry Pi</td>
+						<td data-tx="t0087:fe8232e3"><span class="icon has-text-success"><i class="fas fa-cloud"></i></span> Ingen (skytjeneste)</td>
 					</tr>
 					<tr>
 						<td data-tx="t0031:83c9a19b">Innsats for oppsett</td>
 						<td data-tx="t0032:e09b2ea8"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Koble til, konfigurer WLAN + tilgang</td>
 						<td data-tx="t0033:ad1a2520"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Lagre CardDAV URL i ruteren</td>
-						<td data-tx="t0034:ff07d9a3"><span class="icon has-text-warning"><i class="fas fa-user-graduate"></i></span> Java/Docker + lydanrop</td>
+						<td data-tx="t0088:ca8f4268"><span class="icon has-text-info"><i class="fas fa-gear"></i></span> Opprett telefonsvarer, skriv inn SIP-legitimasjon i ruteren</td>
 					</tr>
 					<tr>
 						<td data-tx="t0035:4532187f">Oppdatering av blokkeringslisten</td>
 						<td data-tx="t0036:4134c6e2"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Direkte spørring ved hver samtale</td>
-						<td data-tx="t0037:4dab9851"><span class="icon has-text-info"><i class="fas fa-sync"></i></span> Periodisk synkronisering (≤ 1 ×/dag)</td>
+						<td data-tx="t0089:a868030b"><span class="icon has-text-warning"><i class="fas fa-sync"></i></span> Kun del av blokklisten, synkronisering ≤ 1 ×/dag</td>
 						<td data-tx="t0038:4134c6e2"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Direkte spørring ved hver samtale</td>
 					</tr>
 					<tr>
 						<td data-tx="t0039:a8c2cfff">Strømforbruk ved kontinuerlig drift</td>
 						<td data-tx="t0040:3d07b53b"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> ca. 0,4 W (USB)</td>
 						<td data-tx="t0041:30562f18"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> 0 W (bruker ruter)</td>
-						<td data-tx="t0042:e74172dc"><span class="icon has-text-warning"><i class="fas fa-bolt"></i></span> 3-10 W (server)</td>
+						<td data-tx="t0090:c0b4a4fd"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> 0 W (skytjeneste)</td>
 					</tr>
 					<tr>
 						<td data-tx="t0043:f4c95d3e">Aktivt ansette spammere</td>
@@ -113,7 +113,7 @@
 			<ul>
 				<li data-tx="t0052:b79437c1"><strong>Blokkeringsliste telefonbok</strong> - hvis du har en Fritz!Box og en enkel merking eller manuell ruterblokkering er tilstrekkelig.</li>
 				<li data-tx="t0053:f8bcce39"><strong>Dongle</strong> - hvis du <em>ikke</em> har en Fritz!Box eller ikke ønsker å bruke en permanent server, men likevel vil at telefonen skal være pålitelig lydløs i tilfelle spam.</li>
-				<li data-tx="t0054:af7903e3"><strong>Answer Bot</strong> - hvis du ønsker å aktivt ansette spammere og har en server eller Raspberry Pi til overs.</li>
+				<li data-tx="t0091:74ac18af"><strong>Answer Bot</strong> - hvis du ønsker å bruke spammere aktivt og ruteren din tillater SIP-pålogging fra Internett.</li>
 			</ul>
 		</div>
 
@@ -123,22 +123,21 @@
 			<li data-tx="t0057:1c59c72e"><strong>Konfigurerbar ringforsinkelse</strong> for de "ekte" telefonene (vanligvis 3-5 sekunder), slik at donglen kan avlytte samtalen på forhånd.</li>
 			<li data-tx="t0058:be2e6f7c"><strong>2,4 GHz WLAN</strong> innenfor rekkevidde.</li>
 			<li data-tx="t0059:41e630a8"><strong>5 V USB-strømforsyning</strong> - ideelt sett direkte på ruteren, ellers på en hvilken som helst USB-strømforsyningsenhet.</li>
-			<li data-tx="t0060:f8c04413"><strong>Gratis <a th:href="@{/signup}">PhoneBlock-konto</a></strong> med API-tilgangstoken.</li>
+			<li data-tx="t0092:f8c04413"><strong>Gratis <a th:href="@{/login}">PhoneBlock-konto</a></strong> med API-tilgangstoken.</li>
 		</ul>
 
 		<hr class="my-5"/>
 
 		<h2 data-tx="t0061:6db43a5a" id="tester">Bli en betatester</h2>
 
-		<p data-tx="t0062:bdb9e1d5">Dongelen kjører pålitelig hjemme på en Fritz!-boks - men "ruter", "leverandør" og "tilkoblingstype" er en fargerik blanding i Tyskland (og enda mer i utlandet). Hver kombinasjon har sine egne særegenheter: forskjellige SIP-dialekter, forskjellige NAT-regler, forskjellige ringetidsalternativer.</p>
+		<p data-tx="t0093:cdf5c098">Donglen kjører pålitelig på en Fritz!-boks hjemme hos meg - men "ruter", "leverandør" og "tilkoblingstype" er en fargerik blanding i Tyskland (og enda mer i utlandet). Hver kombinasjon har sine egne særegenheter: forskjellige SIP-dialekter, forskjellige NAT-regler, forskjellige ringforsinkelsesalternativer.</p>
 
-		<p data-tx="t0063:80dccb54">Vi er derfor på utkikk etter <strong>medtestere</strong> som kan prøve ut donglen i sitt spesifikke oppsett og gi oss strukturerte tilbakemeldinger. Spesielt interessant:</p>
+		<p data-tx="t0094:14288f3">Jeg er derfor på utkikk etter <strong>medtestere</strong> som kan prøve ut donglen i sitt spesifikke oppsett og gi meg strukturert tilbakemelding. Spesielt interessant:</p>
 
 		<ul>
 			<li data-tx="t0064:e1971ce0">Telekom-tilkobling med <strong>Speedport</strong>-ruter</li>
 			<li data-tx="t0065:61cce24d">Vodafone/Unitymedia-kabeltilkobling med den medfølgende leverandørboksen</li>
 			<li data-tx="t0066:ea506b90">1&amp;1, o2, Deutsche Glasfaser og andre leverandører</li>
-			<li data-tx="t0067:c7c7f4b3"><strong>Asterisk</strong>, <strong>FreePBBX</strong>, <strong>3CX</strong> eller andre selvbetjente SIP-systemer</li>
 			<li data-tx="t0068:e5ffca52">Internasjonale forbindelser (Sveits, Østerrike, resten av Europa)</li>
 		</ul>
 

@@ -10,8 +10,8 @@
 		<h1 data-tx="t0001:c6b15d09">申请成为测试员</h1>
 
 		<div class="notification is-success" th:if="${param.ok}">
-			<p><strong data-tx="t0002:fb69fbb">感谢您的申请！</strong></p>
-			<p data-tx="t0003:d79d5517">一旦我们将您的设置添加到我们的测试矩阵中，我们将尽快与您联系。在此期间，您不需要做任何其他事情。如果您想更正详细信息，请<a th:href="@{/}">告知我们</a>。</p>
+			<p><strong data-tx="t0069:fb69fbb">感谢您的申请！</strong></p>
+			<p data-tx="t0070:e815b5c1">一旦您的设置被添加到测试矩阵中，我会尽快给您回复。在此之前，您无需做其他任何事情。</p>
 		</div>
 
 		<div class="notification is-danger" th:if="${param.error != null and param.error[0] == 'invalid'}">
@@ -19,12 +19,12 @@
 		</div>
 
 		<div class="notification is-danger" th:if="${param.error != null and param.error[0] == 'commitment'}">
-			<p data-tx="t0005:98a30556"><strong>在没有得到问卷确认的情况下，我们无法发送加密狗。</strong>反馈意见是我们提供测试仪计划的原因。</p>
+			<p data-tx="t0071:515e9f32"><strong>没有调查问卷的确认，我就无法发送加密狗。</strong>反馈意见是测试员计划存在的原因。</p>
 		</div>
 
 		<th:block th:unless="${param.ok}">
 
-		<p data-tx="t0006:32d2fa39">很高兴你能参与其中！我们正在寻找测试者，在他们特定的服务提供商和路由器设置中试用 PhoneBlock 加密狗。我们需要您提供一些详细信息，以便我们选择一个色彩丰富的组合。只需 2-3 分钟即可完成填写。</p>
+		<p data-tx="t0072:fe5c9755">很高兴你能参与其中！我正在寻找测试者，在他们特定的服务提供商和路由器设置中试用 PhoneBlock 加密狗。我需要您提供一些详细信息，以便我选择一个色彩组合。只需 2-3 分钟即可完成填写。</p>
 
 		<p class="has-text-grey-dark" data-tx="t0007:2f2c6f55"><span class="icon"><i class="fas fa-shield-alt"></i></span> 您的送货地址将仅用于发送加密狗，最迟在 6 个月后删除。另请参阅 <a th:href="@{/datenschutz}">隐私政策</a>。</p>
 
@@ -168,7 +168,7 @@
 						</select>
 					</div>
 				</div>
-				<p class="help" data-tx="t0054:ce35ea7d">如果您几乎没有收到任何垃圾邮件，那么作为测试员您就没什么可做的--这个问题有助于我们通过真实的测试材料来挑选测试员。</p>
+				<p class="help" data-tx="t0073:3d6caf09">如果你几乎收不到垃圾邮件，那么作为测试员你就没什么可做的了--这个问题有助于我用真实的测试材料来挑选测试员。</p>
 			</div>
 
 			<hr/>
@@ -187,7 +187,7 @@
 						</select>
 					</div>
 				</div>
-				<p class="help" data-tx="t0061:4cdb32d">帮助我们进行设置支持--从最基本的开始完全没问题。</p>
+				<p class="help" data-tx="t0074:b290afd6">帮助我进行设置支持--从基础开始是完全没问题的。</p>
 			</div>
 
 			<hr/>
