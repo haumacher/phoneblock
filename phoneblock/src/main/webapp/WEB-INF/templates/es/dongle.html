@@ -9,10 +9,10 @@
 	<div class="content">
 		<h1 data-tx="t0001:365a40ae">Dongle PhoneBlock</h1>
 
-		<p class="subtitle" data-tx="t0002:f19cc129">Una memoria USB del tamaño de un pulgar que capta las llamadas publicitarias incluso antes de que suene el teléfono, y que no está vinculada a Fritz!Box, sino que funciona en cualquier router o sistema telefónico moderno con SIP.</p>
+		<p class="subtitle" data-tx="t0095:dab19814">Un contestador automático inteligente con apariencia de teléfono IP. Del tamaño de un pulgar, se conecta al puerto USB del router, se registra como un teléfono SIP adicional e intercepta las llamadas comerciales antes de que suene su teléfono real. Funciona independientemente del modelo de router, ¡incluso sin Fritz!</p>
 
 		<div class="notification is-warning">
-			<p data-tx="t0080:bceb1cbd"><strong>Estado: Beta.</strong> El dongle funciona, pero antes de recomendarlo ampliamente, me gustaría haberlo probado en tantos tipos de conexión diferentes como sea posible. Estoy buscando probadores y estoy regalando dispositivos a cambio - <a href="#tester">ver más abajo</a>.</p>
+			<p data-tx="t0096:59767eb8"><strong>Estado: Beta.</strong> El dongle funciona de forma fiable en mi Fritz!Box - pero antes de recomendarlo ampliamente, me gustaría haberlo probado en tantos tipos de conexión como sea posible. Estoy buscando probadores y estoy regalando dispositivos a cambio - <a href="#tester">ver más abajo</a>.</p>
 		</div>
 
 		<h2 data-tx="t0004:6b104c7a">La idea en una frase</h2>
@@ -23,22 +23,22 @@
 			<div class="column is-one-quarter has-text-centered">
 				<p><span class="icon is-large has-text-info"><i class="fas fa-phone-volume fa-3x"></i></span></p>
 				<h4 data-tx="t0006:fbca4eec">Entra la primera llamada</h4>
-				<p data-tx="t0007:d0d29543">El router envía la llamada a todos los teléfonos registrados, incluido el dongle. Los teléfonos "reales" están configurados con un retardo de llamada de 3-5 segundos.</p>
+				<p data-tx="t0097:e81f88f3">El router señala la llamada a todos los teléfonos registrados, incluido el dongle. Los teléfonos "reales" pueden configurarse con un retardo de llamada de 3-5 segundos.</p>
 			</div>
 			<div class="column is-one-quarter has-text-centered">
 				<p><span class="icon is-large has-text-warning"><i class="fas fa-bolt fa-3x"></i></span></p>
 				<h4 data-tx="t0008:acac085a">2. comprobación del flash</h4>
-				<p data-tx="t0082:c18bf1d6">En unos pocos cientos de milisegundos, el dongle pregunta a PhoneBlock si se sabe que el número es spam. La consulta se ejecuta a través de HTTPS cifrado y solo transmite un hash del número.</p>
+				<p data-tx="t0098:b7f3abe5">El dongle pregunta a PhoneBlock a la velocidad del rayo si se sabe que el número es spam. La consulta se ejecuta a través de HTTPS cifrado y sólo transmite un hash del número. Las llamadas de los contactos de la agenda ni siquiera se comprueban: nunca salen de la red doméstica.</p>
 			</div>
 			<div class="column is-one-quarter has-text-centered">
 				<p><span class="icon is-large has-text-danger"><i class="fas fa-ban fa-3x"></i></span></p>
 				<h4 data-tx="t0010:be667d0f">3. deshacerse de él</h4>
-				<p data-tx="t0083:e858f50">Si el número es spam, el dongle descuelga, reproduce un anuncio si se desea y cuelga. El teléfono del salón permanece en silencio. Si es inofensivo, el dongle simplemente no hace nada: la llamada pasa con normalidad.</p>
+				<p data-tx="t0099:f1599c42">Si el número es spam, el dongle descuelga, reproduce un anuncio si se desea y cuelga. El teléfono del salón permanece en silencio. Si el número no es spam conocido, el dongle simplemente no hace nada: la llamada pasa con normalidad.</p>
 			</div>
 		</div>
 
 		<div class="notification is-info">
-			<p data-tx="t0012:1612490f"><strong>Por qué es tan encantador:</strong> El dongle no necesita nada más que alimentación y Wi-Fi. Sin servidor adicional, sin función especial Fritz!Box, sin contrato. El microcontrolador ESP32 que lleva en su interior consume menos de medio vatio: basta con conectarlo al puerto USB del router y olvidarse de él.</p>
+			<p data-tx="t0100:21b36aaa"><strong>Por qué es tan encantador:</strong> El dongle sólo necesita un mínimo de energía y Wi-Fi. Sin servidor adicional, sin función especial Fritz!Box, sin contrato. El microcontrolador ESP32 que lleva en su interior consume menos de medio vatio: basta con conectarlo al puerto USB del router y olvidarse de él.</p>
 		</div>
 
 		<h2 data-tx="t0013:755fe635">Comparativa: Tres formas de bloquear el spam de telefonía fija</h2>
@@ -66,7 +66,7 @@
 						<td data-tx="t0023:90691916">Requisitos del router</td>
 						<td data-tx="t0024:115dd48e"><span class="icon has-text-success"><i class="fas fa-globe"></i></span> Cualquiera (SIP + retardo de timbre)</td>
 						<td data-tx="t0085:120e2e30"><span class="icon has-text-warning"><i class="fas fa-wifi"></i></span> Nuevo Fritz!Box con CardDAV</td>
-						<td data-tx="t0086:93c556cc"><span class="icon has-text-warning"><i class="fas fa-server"></i></span> Enrutador con registrador SIP accesible desde Internet (bloqueado para algunas cajas de proveedores como Vodafone).</td>
+						<td data-tx="t0101:da4c1004"><span class="icon has-text-warning"><i class="fas fa-server"></i></span> Fritz!Box con inicio de sesión SIP desde Internet (bloqueado para los boxes de Vodafone)</td>
 					</tr>
 					<tr>
 						<td data-tx="t0027:e66ba2b">Hardware adicional</td>
@@ -77,14 +77,14 @@
 					<tr>
 						<td data-tx="t0031:83c9a19b">Esfuerzo de preparación</td>
 						<td data-tx="t0032:e09b2ea8"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Enchufar, configurar WLAN + acceso</td>
-						<td data-tx="t0033:ad1a2520"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Almacenar la URL CardDAV en el router.</td>
+						<td data-tx="t0102:68527b14"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Almacenar la URL CardDAV en el router y configurar el bloqueo de llamadas.</td>
 						<td data-tx="t0088:ca8f4268"><span class="icon has-text-info"><i class="fas fa-gear"></i></span> Crear contestador automático, introducir credenciales SIP en el router.</td>
 					</tr>
 					<tr>
 						<td data-tx="t0035:4532187f">Actualización de la lista de bloqueo</td>
-						<td data-tx="t0036:4134c6e2"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Consulta en directo con cada llamada</td>
+						<td data-tx="t0103:1984a240"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Consulta en directo, lista de bloques completa</td>
 						<td data-tx="t0089:a868030b"><span class="icon has-text-warning"><i class="fas fa-sync"></i></span> Única sección de la lista de bloques, sincronización ≤ 1 ×/día.</td>
-						<td data-tx="t0038:4134c6e2"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Consulta en directo con cada llamada</td>
+						<td data-tx="t0104:1984a240"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Consulta en directo, lista de bloques completa</td>
 					</tr>
 					<tr>
 						<td data-tx="t0039:a8c2cfff">Consumo de energía en funcionamiento continuo</td>
@@ -111,9 +111,9 @@
 		<div class="notification is-info mt-4">
 			<p><strong data-tx="t0051:8125e3d9">¿Qué solución le conviene?</strong></p>
 			<ul>
-				<li data-tx="t0052:b79437c1"><strong>Lista de bloqueo de llamadas</strong> - si tiene un Fritz!Box y un simple marcado o bloqueo manual de llamadas del router es suficiente.</li>
-				<li data-tx="t0053:f8bcce39"><strong>Dongle</strong> - si <em>no tiene</em> un Fritz!Box o no quiere operar un servidor permanente, pero aún así quiere que el teléfono esté en silencio de forma fiable en caso de spam.</li>
-				<li data-tx="t0091:74ac18af"><strong>Answer Bot</strong> - si desea emplear activamente spammers y su router permite el inicio de sesión SIP desde Internet.</li>
+				<li data-tx="t0105:b8fe802f"><strong>Answer Bot</strong> - si desea emplear activamente spammers y su Fritz!Box permite el inicio de sesión SIP desde Internet.</li>
+				<li data-tx="t0106:f8bcce39"><strong>Dongle</strong> - si <em>no tiene</em> un Fritz!Box o no quiere operar un servidor permanente, pero aún así quiere que el teléfono esté en silencio de forma fiable en caso de spam.</li>
+				<li data-tx="t0107:e2dfc"><strong>Lista de teléfonos bloqueados</strong> - si tienes un Fritz!Box, una simple marca o el bloqueo manual de llamadas del router es suficiente para ti y no te importa si un spammer que está realmente en la lista de bloqueo se cuela de todos modos.</li>
 			</ul>
 		</div>
 
