@@ -348,7 +348,7 @@ static esp_err_t call_action(const char *url,
             // Fritz!Box digest rejection — wrong admin user or password.
             SET_SENTINEL(TR064_ERR_AUTH, fault);
         } else {
-            char detail[128];
+            char detail[160];
             snprintf(detail, sizeof(detail), "HTTP %d%s%s", status,
                      fault[0] ? " " : "", fault);
             SET_SENTINEL(TR064_ERR_HTTP, detail);

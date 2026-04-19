@@ -383,7 +383,7 @@ static esp_err_t handle_fritzbox_setup(httpd_req_t *req)
         return ESP_OK;
     }
     if (err != ESP_OK) {
-        char msg[240];
+        char msg[320];
         switch (res.error_code) {
             case TR064_ERR_TRANSPORT:
                 snprintf(msg, sizeof(msg),
