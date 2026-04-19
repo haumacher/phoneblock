@@ -79,6 +79,29 @@ esp_err_t tr064_get_default_username(
     int *out_err_code,
     char *out_err_msg, size_t err_msg_cap);
 
+// Register a dedicated Fritz!Box "app" instance for the dongle via
+// X_AVM-DE_AppSetup:RegisterApp. Only Phone rights (read-write),
+// no internet access. Used so the later sync task can talk TR-064
+// without us having to keep the admin password around.
+//
+// On success writes the generated username + password (buffers owned
+// by caller) and returns ESP_OK. On failure, *out_err_code /
+// out_err_msg are populated with the same sentinel/AVM-code scheme
+// as tr064_provision_sip_client.
+//
+// `token_2fa` is the <avm:token> from the 2FA handshake when the
+// admin user requires it (pass NULL otherwise). The same token
+// that was used for SetClient4 is valid for RegisterApp within the
+// same session.
+esp_err_t tr064_register_dongle_app(
+    const char *host, int port,
+    const char *admin_user, const char *admin_pass,
+    const char *token_2fa,
+    char *out_user, size_t user_cap,
+    char *out_pass, size_t pass_cap,
+    int  *out_err_code,
+    char *out_err_msg, size_t err_msg_cap);
+
 // Two-factor-authentication helpers
 // ---------------------------------
 

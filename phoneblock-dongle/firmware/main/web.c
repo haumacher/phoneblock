@@ -495,13 +495,39 @@ static esp_err_t handle_fritzbox_setup(httpd_req_t *req)
         return ESP_OK;
     }
 
-    // Commit generated SIP credentials + registrar to NVS.
+    // Best-effort register a dedicated app instance on the box. Gives
+    // the sync task its own Phone-rights-only credentials so we don't
+    // have to persist the admin password. Failure (e.g. older Fritz!OS
+    // without AppSetup, or rate-limit) is logged but does not fail the
+    // whole setup — SIP still works without it, the sync feature just
+    // stays disabled.
+    char app_user[32] = "";
+    char app_pass[40] = "";
+    int  app_err_code = 0;
+    char app_err_msg[128] = "";
+    esp_err_t app_err = tr064_register_dongle_app(
+        fritz_host, 49000, fritz_user, fritz_pass, NULL,
+        app_user, sizeof(app_user),
+        app_pass, sizeof(app_pass),
+        &app_err_code, app_err_msg, sizeof(app_err_msg));
+    if (app_err != ESP_OK) {
+        ESP_LOGW(TAG,
+            "RegisterApp failed (code %d, %s) — sync feature disabled",
+            app_err_code, app_err_msg);
+        app_user[0] = '\0';
+        app_pass[0] = '\0';
+    }
+
+    // Commit generated SIP credentials + registrar + (optional) app
+    // credentials to NVS.
     config_update_t u = {
         .sip_host = fritz_host,
         .sip_port = 5060,
         .sip_user = res.sip_user,
         .sip_pass = res.sip_pass,
         .sip_internal_number = res.internal_number,
+        .fritzbox_app_user = app_user,
+        .fritzbox_app_pass = app_pass,
     };
     if (config_update(&u) != ESP_OK) {
         send_fail(req, "NVS write failed.");
@@ -516,6 +542,7 @@ static esp_err_t handle_fritzbox_setup(httpd_req_t *req)
         "see the status bar above for the current state.");
     cJSON_AddStringToObject(root, "sip_user", res.sip_user);
     cJSON_AddStringToObject(root, "internal_number", res.internal_number);
+    cJSON_AddBoolToObject  (root, "app_registered", app_user[0] != '\0');
     send_json(req, root);
     return ESP_OK;
 }
@@ -728,6 +755,30 @@ static esp_err_t handle_fritzbox_2fa_status(httpd_req_t *req)
         s_2fa.fritz_user, s_2fa.fritz_pass, s_2fa.phone_name,
         s_2fa.token, &res);
 
+    // Register the dongle app instance using the same 2FA token (still
+    // valid for the whole auth session). Best effort — see the direct
+    // setup path for why a failure here is non-fatal.
+    char app_user[32] = "";
+    char app_pass[40] = "";
+    if (err == ESP_OK) {
+        int  app_err_code = 0;
+        char app_err_msg[128] = "";
+        esp_err_t app_err = tr064_register_dongle_app(
+            s_2fa.fritz_host, 49000,
+            s_2fa.fritz_user, s_2fa.fritz_pass, s_2fa.token,
+            app_user, sizeof(app_user),
+            app_pass, sizeof(app_pass),
+            &app_err_code, app_err_msg, sizeof(app_err_msg));
+        if (app_err != ESP_OK) {
+            ESP_LOGW(TAG,
+                "RegisterApp after 2FA failed (code %d, %s) — "
+                "sync feature disabled",
+                app_err_code, app_err_msg);
+            app_user[0] = '\0';
+            app_pass[0] = '\0';
+        }
+    }
+
     // Whatever the outcome, the 2FA round-trip is over; wipe the
     // cached admin password ASAP.
     memset(s_2fa.fritz_pass, 0, sizeof(s_2fa.fritz_pass));
@@ -750,6 +801,8 @@ static esp_err_t handle_fritzbox_2fa_status(httpd_req_t *req)
         .sip_user = res.sip_user,
         .sip_pass = res.sip_pass,
         .sip_internal_number = res.internal_number,
+        .fritzbox_app_user = app_user,
+        .fritzbox_app_pass = app_pass,
     };
     if (config_update(&u) != ESP_OK) {
         send_fail(req, "NVS write failed.");

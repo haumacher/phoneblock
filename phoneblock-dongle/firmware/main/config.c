@@ -23,6 +23,8 @@ static const char *NS   = "phoneblock";
 #define K_SIP_OUTBOUND  "sip_outbound"
 #define K_SIP_REALM     "sip_realm"
 #define K_SIP_SRTP      "sip_srtp"
+#define K_FB_APP_USER   "fb_app_user"
+#define K_FB_APP_PASS   "fb_app_pass"
 #define K_CONTACT_HOST  "contact_host"
 #define K_CONTACT_PORT  "contact_port"
 #define K_PB_URL        "pb_url"
@@ -40,6 +42,8 @@ typedef struct {
     char sip_outbound[80];
     char sip_realm[64];
     char sip_srtp[16];       // "off" | "optional" | "mandatory"
+    char fb_app_user[32];
+    char fb_app_pass[40];    // spec cap is 32; 40 for NUL + padding
     char contact_host[64];
     int  contact_port;
     char pb_base_url[128];
@@ -95,6 +99,8 @@ void config_load(void)
         s_config.sip_outbound[0]  = '\0';
         s_config.sip_realm[0]     = '\0';
         copy_default(s_config.sip_srtp,   sizeof(s_config.sip_srtp),   "off");
+        s_config.fb_app_user[0]   = '\0';
+        s_config.fb_app_pass[0]   = '\0';
         copy_default(s_config.contact_host, sizeof(s_config.contact_host), CONFIG_SIP_CONTACT_HOST_OVERRIDE);
         s_config.contact_port = CONFIG_SIP_CONTACT_PORT_OVERRIDE;
         copy_default(s_config.pb_base_url,  sizeof(s_config.pb_base_url),  CONFIG_PHONEBLOCK_BASE_URL);
@@ -126,6 +132,10 @@ void config_load(void)
              s_config.sip_realm,    sizeof(s_config.sip_realm));
     load_str(h, K_SIP_SRTP,     "off",
              s_config.sip_srtp,     sizeof(s_config.sip_srtp));
+    load_str(h, K_FB_APP_USER,  "",
+             s_config.fb_app_user,  sizeof(s_config.fb_app_user));
+    load_str(h, K_FB_APP_PASS,  "",
+             s_config.fb_app_pass,  sizeof(s_config.fb_app_pass));
     load_str(h, K_CONTACT_HOST, CONFIG_SIP_CONTACT_HOST_OVERRIDE,
              s_config.contact_host, sizeof(s_config.contact_host));
     s_config.contact_port = load_int(h, K_CONTACT_PORT, CONFIG_SIP_CONTACT_PORT_OVERRIDE);
@@ -151,6 +161,8 @@ const char *config_sip_auth_user(void)       { return s_config.sip_authuser; }
 const char *config_sip_outbound(void)        { return s_config.sip_outbound; }
 const char *config_sip_realm(void)           { return s_config.sip_realm; }
 const char *config_sip_srtp(void)            { return s_config.sip_srtp[0] ? s_config.sip_srtp : "off"; }
+const char *config_fritzbox_app_user(void)   { return s_config.fb_app_user; }
+const char *config_fritzbox_app_pass(void)   { return s_config.fb_app_pass; }
 const char *config_contact_host_override(void) { return s_config.contact_host; }
 int         config_contact_port_override(void) { return s_config.contact_port; }
 const char *config_phoneblock_base_url(void) { return s_config.pb_base_url; }
@@ -220,6 +232,10 @@ esp_err_t config_update(const config_update_t *u)
                                         s_config.sip_realm, sizeof(s_config.sip_realm));
     if (err == ESP_OK) err = set_str_if(h, K_SIP_SRTP, u->sip_srtp,
                                         s_config.sip_srtp, sizeof(s_config.sip_srtp));
+    if (err == ESP_OK) err = set_str_if(h, K_FB_APP_USER, u->fritzbox_app_user,
+                                        s_config.fb_app_user, sizeof(s_config.fb_app_user));
+    if (err == ESP_OK) err = set_str_if(h, K_FB_APP_PASS, u->fritzbox_app_pass,
+                                        s_config.fb_app_pass, sizeof(s_config.fb_app_pass));
     if (err == ESP_OK) err = set_str_if(h, K_PB_URL, u->phoneblock_base_url,
                                         s_config.pb_base_url, sizeof(s_config.pb_base_url));
     if (err == ESP_OK) err = set_str_if(h, K_PB_TOKEN, u->phoneblock_token,

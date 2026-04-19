@@ -29,6 +29,8 @@ static const char *TAG = "tr064";
 #define X_AUTH_CONTROL   "/upnp/control/x_auth"
 #define LANSEC_SERVICE   "urn:dslforum-org:service:LANConfigSecurity:1"
 #define LANSEC_CONTROL   "/upnp/control/lanconfigsecurity"
+#define APPSETUP_SERVICE "urn:dslforum-org:service:X_AVM-DE_AppSetup:1"
+#define APPSETUP_CONTROL "/upnp/control/x_appsetup"
 
 #define SOAP_ENVELOPE_CAP 2048
 #define SOAP_RESPONSE_CAP 4096
@@ -488,6 +490,92 @@ esp_err_t tr064_get_default_username(const char *host, int port,
         return ESP_FAIL;
     }
     ESP_LOGI(TAG, "Fritz!Box default user: %s", out);
+    return ESP_OK;
+}
+
+// Generate an app password that satisfies AVM's RegisterApp strength
+// rules: ≥8 ASCII-printable chars with at least one digit, one upper,
+// one lower, one special. We go 20 chars long for comfort. Special
+// is fixed to '!' to avoid XML-escape surprises in the SOAP body.
+static void gen_app_password(char *out, size_t cap)
+{
+    static const char alnum[] =
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    const size_t alnum_n = sizeof(alnum) - 1;
+    size_t want = 20;
+    if (want + 1 > cap) want = cap - 1;
+    if (want < 8) want = 8;
+
+    // Seed the four mandatory classes.
+    out[0] = '0' + (esp_random() % 10);
+    out[1] = 'A' + (esp_random() % 26);
+    out[2] = 'a' + (esp_random() % 26);
+    out[3] = '!';
+    for (size_t i = 4; i < want; i++) out[i] = alnum[esp_random() % alnum_n];
+
+    // Fisher-Yates shuffle so the required chars aren't predictable.
+    for (size_t i = want - 1; i > 0; i--) {
+        size_t j = esp_random() % (i + 1);
+        char tmp = out[i]; out[i] = out[j]; out[j] = tmp;
+    }
+    out[want] = '\0';
+}
+
+esp_err_t tr064_register_dongle_app(const char *host, int port,
+                                    const char *admin_user, const char *admin_pass,
+                                    const char *token_2fa,
+                                    char *out_user, size_t user_cap,
+                                    char *out_pass, size_t pass_cap,
+                                    int  *out_err_code,
+                                    char *out_err_msg, size_t err_msg_cap)
+{
+    if (!out_user || user_cap < 20 || !out_pass || pass_cap < 16) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    // Fixed username — AppId is unique-per-box and re-registering
+    // overwrites the previous entry. "phoneblockdongle" is 16 chars,
+    // starts with a letter (required), only [a-z].
+    strncpy(out_user, "phoneblockdongle", user_cap - 1);
+    out_user[user_cap - 1] = '\0';
+    gen_app_password(out_pass, pass_cap);
+
+    char url[96];
+    snprintf(url, sizeof(url), "http://%s:%d" APPSETUP_CONTROL, host, port);
+
+    // Read-write Phone rights, everything else NO, no internet access.
+    // PhoneBlock sync only needs OnTel's CallBarring API, which lives
+    // under the Phone right.
+    char *args = malloc(512);
+    if (!args) return ESP_ERR_NO_MEM;
+    snprintf(args, 512,
+        "<NewAppId>phoneblock-dongle</NewAppId>"
+        "<NewAppDisplayName>PhoneBlock Dongle</NewAppDisplayName>"
+        "<NewAppDeviceMAC></NewAppDeviceMAC>"
+        "<NewAppUsername>%s</NewAppUsername>"
+        "<NewAppPassword>%s</NewAppPassword>"
+        "<NewAppRight>NO</NewAppRight>"
+        "<NewNasRight>NO</NewNasRight>"
+        "<NewPhoneRight>RW</NewPhoneRight>"
+        "<NewHomeautoRight>NO</NewHomeautoRight>"
+        "<NewAppInternetRights>0</NewAppInternetRights>",
+        out_user, out_pass);
+
+    char *resp = malloc(SOAP_RESPONSE_CAP);
+    if (!resp) { free(args); return ESP_ERR_NO_MEM; }
+    esp_err_t err = call_action(url, APPSETUP_SERVICE,
+                                admin_user, admin_pass,
+                                "RegisterApp", args, token_2fa,
+                                resp, SOAP_RESPONSE_CAP,
+                                out_err_code, out_err_msg, err_msg_cap);
+    free(args);
+    free(resp);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "RegisterApp failed");
+        return err;
+    }
+    ESP_LOGI(TAG, "dongle app registered (user='%s', %zu-char password)",
+             out_user, strlen(out_pass));
     return ESP_OK;
 }
 

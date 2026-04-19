@@ -45,6 +45,15 @@ const char *config_sip_srtp(void);
 const char *config_contact_host_override(void);
 int         config_contact_port_override(void);
 
+// Fritz!Box "app" credentials created by
+// X_AVM-DE_AppSetup:RegisterApp during the setup wizard. Only
+// Phone rights, no internet access — used by the later sync task
+// to talk TR-064 without keeping the admin password around.
+// Empty strings mean "setup never ran successfully against a
+// Fritz!Box" (or ran against an older one without AppSetup).
+const char *config_fritzbox_app_user(void);
+const char *config_fritzbox_app_pass(void);
+
 // PhoneBlock
 const char *config_phoneblock_base_url(void);
 const char *config_phoneblock_token(void);
@@ -64,6 +73,8 @@ typedef struct {
     const char *sip_outbound;
     const char *sip_realm;
     const char *sip_srtp;
+    const char *fritzbox_app_user;
+    const char *fritzbox_app_pass;
     const char *phoneblock_base_url;
     const char *phoneblock_token;
 } config_update_t;
