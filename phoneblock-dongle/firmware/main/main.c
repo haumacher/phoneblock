@@ -142,16 +142,25 @@ void app_main(void)
 
     ESP_ERROR_CHECK(example_connect());
 
-    if (strlen(config_phoneblock_token()) == 0) {
-        ESP_LOGE(TAG, "PhoneBlock token empty — configure via web UI or sdkconfig.defaults.local");
-        return;
+    // Web UI comes up unconditionally so the setup wizards are reachable
+    // even on a fresh device. SIP registration and the API self-test
+    // only run when their respective NVS fields are populated.
+    web_start();
+
+    bool token_set = strlen(config_phoneblock_token()) > 0;
+    bool sip_set   = strlen(config_sip_host()) > 0;
+
+    if (token_set) {
+        ESP_LOGI(TAG, "initial self-test query");
+        phoneblock_check(config_phoneblock_test_number());
+        xTaskCreate(sip_server_task, "sip_server", 8192, NULL, 5, NULL);
+    } else {
+        ESP_LOGI(TAG, "PhoneBlock token not configured yet — set via web UI");
     }
 
-    // Sanity query at startup to verify API connectivity.
-    ESP_LOGI(TAG, "initial self-test query");
-    phoneblock_check(config_phoneblock_test_number());
-
-    xTaskCreate(sip_server_task, "sip_server", 8192, NULL, 5, NULL);
-    sip_register_start();
-    web_start();
+    if (sip_set) {
+        sip_register_start();
+    } else {
+        ESP_LOGI(TAG, "SIP not configured yet — set via web UI");
+    }
 }
