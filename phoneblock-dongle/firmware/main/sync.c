@@ -18,6 +18,7 @@
 #include "http_util.h"
 #include "stats.h"
 #include "tr064.h"
+#include "tr064_parse.h"
 
 static const char *TAG = "sync";
 
@@ -105,44 +106,22 @@ static int http_get_to_buf(const char *url, char *buf, int cap)
     return hb.len;
 }
 
-// Extract the text content of the first <tag>…</tag> inside the region
-// [from, from+len). Returns bytes copied or -1 on miss.
-static int find_inside(const char *from, int len, const char *tag,
-                       char *out, size_t out_cap)
-{
-    char open[32], close[32];
-    snprintf(open,  sizeof(open),  "<%s>",  tag);
-    snprintf(close, sizeof(close), "</%s>", tag);
-    const char *a = memmem(from, len, open,  strlen(open));
-    if (!a) return -1;
-    a += strlen(open);
-    int rem = len - (a - from);
-    const char *b = memmem(a, rem, close, strlen(close));
-    if (!b) return -1;
-    int n = b - a;
-    if ((size_t)n >= out_cap) n = out_cap - 1;
-    memcpy(out, a, n);
-    out[n] = '\0';
-    return n;
-}
-
 // Walk a Fritz!Box phonebook-style XML and invoke cb() for each
-// <contact> block, passing its (uid, number). Handles both the
-// plain "<contact>" and the attributed "<contact …>" opening tag,
-// which Fritz!OS does emit on some firmware versions.
+// <contact> block, passing its (uid, number). Handles "<contact>"
+// as well as "<contact …>"-with-attributes; inner tags are parsed
+// via tr064_xml_find_text, which is attribute-aware — Fritz!OS
+// emits <number type="home" prio="1" …>069…</number>, not plain
+// <number>.
 typedef void (*contact_cb_t)(const char *uid, const char *number, void *user);
 
-static int parse_contacts(const char *xml, int xml_len,
+static int parse_contacts(char *xml, int xml_len,
                           contact_cb_t cb, void *user)
 {
     int count = 0;
-    const char *p = xml;
+    char *p = xml;
     int remaining = xml_len;
     while (remaining > 0) {
-        // Find next "<contact" (8 chars); make sure the next char is
-        // '>' or whitespace so we don't accidentally match <contacts>
-        // or similar.
-        const char *open = memmem(p, remaining, "<contact", 8);
+        char *open = memmem(p, remaining, "<contact", 8);
         if (!open) break;
         char after = open[8];
         if (after != '>' && after != ' ' && after != '\t'
@@ -151,14 +130,20 @@ static int parse_contacts(const char *xml, int xml_len,
             remaining = xml_len - (p - xml);
             continue;
         }
-        const char *close = memmem(open, remaining - (open - p),
-                                   "</contact>", 10);
+        char *close = memmem(open, remaining - (open - p),
+                             "</contact>", 10);
         if (!close) break;
-        int block_len = (close - open) + 10;
+
+        // Temporarily NUL-terminate the contact block so
+        // tr064_xml_find_text treats it as a standalone string.
+        char save = *close;
+        *close = '\0';
         char uid[32]    = "";
         char number[48] = "";
-        find_inside(open, block_len, "uniqueid", uid,    sizeof(uid));
-        find_inside(open, block_len, "number",   number, sizeof(number));
+        tr064_xml_find_text(open, "uniqueid", uid,    sizeof(uid));
+        tr064_xml_find_text(open, "number",   number, sizeof(number));
+        *close = save;
+
         if (uid[0] && number[0]) {
             cb(uid, number, user);
             count++;
