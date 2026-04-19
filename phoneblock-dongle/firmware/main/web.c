@@ -385,16 +385,34 @@ static esp_err_t handle_fritzbox_setup(httpd_req_t *req)
     if (err != ESP_OK) {
         char msg[240];
         switch (res.error_code) {
+            case TR064_ERR_TRANSPORT:
+                snprintf(msg, sizeof(msg),
+                    "Fritz!Box unter '%s:49000' nicht erreichbar (%s). "
+                    "Hostname/IP pruefen und ob der Dongle im gleichen Netz haengt.",
+                    fritz_host,
+                    res.error_message[0] ? res.error_message : "unbekannt");
+                break;
+            case TR064_ERR_AUTH:
+                snprintf(msg, sizeof(msg),
+                    "Fritz!Box lehnt die Anmeldung ab: Benutzername oder Passwort falsch. "
+                    "Hinweis: das Box-Admin-Konto ist gemeint, nicht MyFRITZ!.");
+                break;
+            case TR064_ERR_HTTP:
+                snprintf(msg, sizeof(msg),
+                    "Unerwartete Antwort der Fritz!Box: %s. "
+                    "Ist TR-064 im Router aktiviert (Heimnetz → Netzwerkeinstellungen)?",
+                    res.error_message[0] ? res.error_message : "(keine Details)");
+                break;
+            case TR064_ERR_PARSE:
+                snprintf(msg, sizeof(msg),
+                    "Antwort der Fritz!Box konnte nicht verarbeitet werden: %s.",
+                    res.error_message);
+                break;
             case 820:
             case 402:
                 snprintf(msg, sizeof(msg),
                     "Fritz!Box lehnt die Argumente ab (Code %d, %s).",
                     res.error_code, res.error_message);
-                break;
-            case 0:
-                snprintf(msg, sizeof(msg),
-                    "TR-064-Anfrage fehlgeschlagen - Fritz!Box erreichbar? "
-                    "Adresse, Benutzer und Passwort korrekt?");
                 break;
             default:
                 snprintf(msg, sizeof(msg),

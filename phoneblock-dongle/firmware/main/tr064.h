@@ -11,13 +11,22 @@
 // Reference implementation: ~/git/fritz_tr064 (Dart).
 // Spec: https://avm.de/service/schnittstellen/ → TR-064_VoIP.pdf.
 
+// Sentinel values for tr064_sip_result_t::error_code when the failure
+// did not produce a UPnPError SOAP fault. Real AVM codes are positive
+// (402, 820, 866, …), so negative sentinels do not collide.
+#define TR064_ERR_TRANSPORT  (-1)   // DNS, TCP, TLS, timeout — box not reached
+#define TR064_ERR_HTTP       (-2)   // HTTP status != 200 without UPnPError body
+#define TR064_ERR_AUTH       (-3)   // HTTP 503 + faultstring "Unauthenticated"
+#define TR064_ERR_PARSE      (-4)   // unexpected/malformed response body
+
 typedef struct {
     char sip_user[32];
     char sip_pass[48];
     char internal_number[16];
     // Filled in on failure: the Fritz!Box's own errorCode + Description
-    // extracted from the UPnPError SOAP fault, so the caller can show a
-    // specific hint to the user ("wrong password", "2FA required", …).
+    // extracted from the UPnPError SOAP fault (positive AVM codes), or
+    // one of the TR064_ERR_* sentinels above with a human-readable
+    // diagnostic in error_message.
     int  error_code;         // 0 on success
     char error_message[128];
 } tr064_sip_result_t;

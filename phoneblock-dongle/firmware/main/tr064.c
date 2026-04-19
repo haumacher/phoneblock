@@ -275,12 +275,27 @@ static esp_err_t call_action(const char *url,
     char soap_action[160];
     snprintf(soap_action, sizeof(soap_action), "%s#%s", service, action);
 
+    // Sentinel setter for the non-UPnPError failure paths, so the web
+    // layer can show a specific hint instead of a generic "check
+    // address, user, password" catch-all.
+    #define SET_SENTINEL(code, msg) do {                                   \
+        if (out_err_code) *out_err_code = (code);                          \
+        if (out_err_msg && err_msg_cap) {                                  \
+            strncpy(out_err_msg, (msg), err_msg_cap - 1);                  \
+            out_err_msg[err_msg_cap - 1] = '\0';                           \
+        }                                                                  \
+    } while (0)
+
     // --- Step 1: InitChallenge ---
     build_init_challenge(env, SOAP_ENVELOPE_CAP, service, action,
                          admin_user, args_xml, token_2fa);
     int status = 0;
     esp_err_t err = post_soap(url, soap_action, env, resp, resp_cap, &status);
-    if (err != ESP_OK) { free(env); return err; }
+    if (err != ESP_OK) {
+        SET_SENTINEL(TR064_ERR_TRANSPORT, esp_err_to_name(err));
+        free(env);
+        return err;
+    }
     ESP_LOGI(TAG, "InitChallenge %s → HTTP %d, %d bytes", action, status, (int)strlen(resp));
 
     char nonce[64] = "";
@@ -289,6 +304,8 @@ static esp_err_t call_action(const char *url,
         || xml_find_text(resp, "Realm", realm, sizeof(realm)) < 0) {
         ESP_LOGE(TAG, "%s: no Nonce/Realm in InitChallenge response (HTTP %d):\n%s",
                  action, status, resp);
+        SET_SENTINEL(TR064_ERR_PARSE,
+                     "InitChallenge-Antwort ohne Nonce/Realm");
         free(env);
         return ESP_FAIL;
     }
@@ -303,7 +320,10 @@ static esp_err_t call_action(const char *url,
     resp[0] = '\0';
     err = post_soap(url, soap_action, env, resp, resp_cap, &status);
     free(env);
-    if (err != ESP_OK) return err;
+    if (err != ESP_OK) {
+        SET_SENTINEL(TR064_ERR_TRANSPORT, esp_err_to_name(err));
+        return err;
+    }
     ESP_LOGI(TAG, "ClientAuth %s → HTTP %d, %d bytes", action, status, (int)strlen(resp));
 
     if (status != 200) {
@@ -317,14 +337,27 @@ static esp_err_t call_action(const char *url,
         xml_find_text(resp, "errorDescription",  err_desc,   sizeof(err_desc));
         ESP_LOGE(TAG, "%s rejected: HTTP %d, fault='%s' code=%s desc='%s'\n%s",
                  action, status, fault, err_code_s, err_desc, resp);
-        if (out_err_code) *out_err_code = atoi(err_code_s);
-        if (out_err_msg && err_msg_cap) {
-            strncpy(out_err_msg, err_desc[0] ? err_desc : fault, err_msg_cap - 1);
-            out_err_msg[err_msg_cap - 1] = '\0';
+        int code = atoi(err_code_s);
+        if (code > 0) {
+            if (out_err_code) *out_err_code = code;
+            if (out_err_msg && err_msg_cap) {
+                strncpy(out_err_msg, err_desc[0] ? err_desc : fault, err_msg_cap - 1);
+                out_err_msg[err_msg_cap - 1] = '\0';
+            }
+        } else if (status == 503 && strstr(fault, "nauthenticated")) {
+            // Fritz!Box digest rejection — wrong admin user or password.
+            SET_SENTINEL(TR064_ERR_AUTH, fault);
+        } else {
+            char detail[128];
+            snprintf(detail, sizeof(detail), "HTTP %d%s%s", status,
+                     fault[0] ? " " : "", fault);
+            SET_SENTINEL(TR064_ERR_HTTP, detail);
         }
         return ESP_FAIL;
     }
     return ESP_OK;
+
+    #undef SET_SENTINEL
 }
 
 // ---------------------------------------------------------------------------
