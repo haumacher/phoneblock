@@ -609,7 +609,7 @@ async function postForm(url, form){
     const d = await r.json().catch(() => ({}));
     return { ok: r.ok && d.ok, data: d, statusText: r.statusText };
   } catch (err) {
-    return { ok: false, data: {}, statusText: 'Netzwerkfehler' };
+    return { ok: false, data: {}, statusText: 'Network error' };
   }
 }
 
@@ -857,7 +857,7 @@ async function refreshAll(){
         m.textContent = d.message || (d.ok ? '✓' : '✗');
         m.style.color = d.ok ? '#188038' : '#d93025';
       } catch (_){
-        m.textContent = 'Netzwerkfehler';
+        m.textContent = 'Network error';
         m.style.color = '#d93025';
       }
       tokenTest.disabled = false;
@@ -935,7 +935,7 @@ async function refreshAll(){
           resetBtn.disabled = false;
         }
       } catch (_){
-        resetMsg.textContent = t('status.reset.error', {msg: 'Netzwerkfehler'});
+        resetMsg.textContent = t('status.reset.error', {msg: 'Network error'});
         resetMsg.style.color = '#d93025';
         resetBtn.disabled = false;
       }
@@ -1132,7 +1132,7 @@ async function onProviderSubmit(e){
     msg.style.color = '#d93025';
     btn.disabled = false;
   } catch (_){
-    msg.textContent = t('sip.prov.error', {msg: 'Netzwerkfehler'});
+    msg.textContent = t('sip.prov.error', {msg: 'Network error'});
     msg.style.color = '#d93025';
     btn.disabled = false;
   }

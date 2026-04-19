@@ -269,7 +269,7 @@ static esp_err_t call_action(const char *url,
         ESP_LOGE(TAG, "%s: no Nonce/Realm in InitChallenge response (HTTP %d):\n%s",
                  action, status, resp);
         SET_SENTINEL(TR064_ERR_PARSE,
-                     "InitChallenge-Antwort ohne Nonce/Realm");
+                     "InitChallenge response without Nonce/Realm");
         free(env);
         return ESP_FAIL;
     }

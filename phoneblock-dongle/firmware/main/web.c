@@ -323,7 +323,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
 
     cJSON *root = cJSON_CreateObject();
     cJSON_AddBoolToObject(root, "ok", true);
-    cJSON_AddStringToObject(root, "message", "Gespeichert, Re-Registrierung läuft");
+    cJSON_AddStringToObject(root, "message", "Saved, re-registering.");
     send_json(req, root);
     return ESP_OK;
 }
@@ -363,7 +363,7 @@ static esp_err_t handle_fritzbox_setup(httpd_req_t *req)
 {
     char body[512];
     if (recv_body(req, body, sizeof(body)) < 0) {
-        send_fail(req, "Body fehlt oder zu groß");
+        send_fail(req, "Body missing or too large.");
         return ESP_OK;
     }
 
@@ -393,16 +393,16 @@ static esp_err_t handle_fritzbox_setup(httpd_req_t *req)
         if (lerr != ESP_OK || !fritz_user[0]) {
             char msg[240];
             snprintf(msg, sizeof(msg),
-                "Benutzername konnte nicht automatisch ermittelt werden "
-                "(%s). Bitte Fritz!Box-Benutzernamen explizit angeben.",
-                detail[0] ? detail : "keine Details");
+                "Could not auto-detect the Fritz!Box username (%s). "
+                "Please enter it explicitly.",
+                detail[0] ? detail : "no details");
             send_fail(req, msg);
             return ESP_OK;
         }
     }
     if (!fritz_user[0]) strncpy(fritz_user, "admin", sizeof(fritz_user) - 1);
     if (!fritz_pass[0]) {
-        send_fail(req, "Fritz!Box-Passwort fehlt");
+        send_fail(req, "Fritz!Box password missing.");
         return ESP_OK;
     }
 
@@ -421,7 +421,7 @@ static esp_err_t handle_fritzbox_setup(httpd_req_t *req)
             s_2fa.state,   sizeof(s_2fa.state),
             s_2fa.methods, sizeof(s_2fa.methods));
         if (aerr != ESP_OK || !s_2fa.token[0]) {
-            send_fail(req, "2FA-Start fehlgeschlagen (X_AVM-DE_Auth nicht erreichbar?)");
+            send_fail(req, "2FA start failed (X_AVM-DE_Auth unreachable?)");
             return ESP_OK;
         }
         s_2fa.active      = true;
@@ -437,8 +437,8 @@ static esp_err_t handle_fritzbox_setup(httpd_req_t *req)
         cJSON_AddStringToObject(root, "methods", s_2fa.methods);
         cJSON_AddStringToObject(root, "state",   s_2fa.state);
         cJSON_AddStringToObject(root, "message",
-            "Bitte jetzt einen beliebigen Knopf an der Fritz!Box druecken. "
-            "Alternativ DTMF-Folge an einem verbundenen Telefon eingeben.");
+            "Please press any button on the Fritz!Box now. "
+            "Alternatively dial the DTMF sequence on a connected phone.");
         send_json(req, root);
         return ESP_OK;
     }
@@ -447,38 +447,38 @@ static esp_err_t handle_fritzbox_setup(httpd_req_t *req)
         switch (res.error_code) {
             case TR064_ERR_TRANSPORT:
                 snprintf(msg, sizeof(msg),
-                    "Fritz!Box unter '%s:49000' nicht erreichbar (%s). "
-                    "Hostname/IP pruefen und ob der Dongle im gleichen Netz haengt.",
+                    "Fritz!Box at '%s:49000' unreachable (%s). "
+                    "Check the hostname/IP and that the dongle is on the same LAN.",
                     fritz_host,
-                    res.error_message[0] ? res.error_message : "unbekannt");
+                    res.error_message[0] ? res.error_message : "unknown");
                 break;
             case TR064_ERR_AUTH:
                 snprintf(msg, sizeof(msg),
-                    "Fritz!Box lehnt die Anmeldung ab: Benutzername oder Passwort falsch. "
-                    "Hinweis: das Box-Admin-Konto ist gemeint, nicht MyFRITZ!.");
+                    "Fritz!Box rejected the login: wrong username or password. "
+                    "Note: this is the box's admin account, not MyFRITZ!.");
                 break;
             case TR064_ERR_HTTP:
                 snprintf(msg, sizeof(msg),
-                    "Unerwartete Antwort der Fritz!Box: %s. "
-                    "Ist TR-064 im Router aktiviert (Heimnetz → Netzwerkeinstellungen)?",
-                    res.error_message[0] ? res.error_message : "(keine Details)");
+                    "Unexpected response from the Fritz!Box: %s. "
+                    "Is TR-064 enabled on the router (Home Network → Network Settings)?",
+                    res.error_message[0] ? res.error_message : "(no details)");
                 break;
             case TR064_ERR_PARSE:
                 snprintf(msg, sizeof(msg),
-                    "Antwort der Fritz!Box konnte nicht verarbeitet werden: %s.",
+                    "Could not parse the Fritz!Box response: %s.",
                     res.error_message);
                 break;
             case 820:
             case 402:
                 snprintf(msg, sizeof(msg),
-                    "Fritz!Box lehnt die Argumente ab (Code %d, %s).",
+                    "Fritz!Box rejected the arguments (code %d, %s).",
                     res.error_code, res.error_message);
                 break;
             default:
                 snprintf(msg, sizeof(msg),
-                    "Fritz!Box-Fehler %d: %s",
+                    "Fritz!Box error %d: %s",
                     res.error_code,
-                    res.error_message[0] ? res.error_message : "(keine Details)");
+                    res.error_message[0] ? res.error_message : "(no details)");
                 break;
         }
         send_fail(req, msg);
@@ -494,7 +494,7 @@ static esp_err_t handle_fritzbox_setup(httpd_req_t *req)
         .sip_internal_number = res.internal_number,
     };
     if (config_update(&u) != ESP_OK) {
-        send_fail(req, "NVS-Schreibfehler");
+        send_fail(req, "NVS write failed.");
         return ESP_OK;
     }
     sip_register_request_reload();
@@ -502,8 +502,8 @@ static esp_err_t handle_fritzbox_setup(httpd_req_t *req)
     cJSON *root = cJSON_CreateObject();
     cJSON_AddBoolToObject(root, "ok", true);
     cJSON_AddStringToObject(root, "message",
-        "Nebenstelle angelegt. Der Dongle meldet sich jetzt an - "
-        "aktueller Stand siehe Statuszeile oben.");
+        "Extension created. The dongle is registering now — "
+        "see the status bar above for the current state.");
     cJSON_AddStringToObject(root, "sip_user", res.sip_user);
     cJSON_AddStringToObject(root, "internal_number", res.internal_number);
     send_json(req, root);
@@ -597,8 +597,8 @@ static esp_err_t handle_token_callback(httpd_req_t *req)
     if (httpd_req_get_url_query_str(req, query, sizeof(query)) != ESP_OK) {
         httpd_resp_set_type(req, "text/html; charset=utf-8");
         httpd_resp_send(req,
-            "<p>Fehlende Query-Parameter. "
-            "<a href=\"/\">Zurück zur Konfiguration</a>.</p>",
+            "<p>Missing query parameters. "
+            "<a href=\"/\">Back to configuration</a>.</p>",
             HTTPD_RESP_USE_STRLEN);
         return ESP_OK;
     }
@@ -625,8 +625,8 @@ static esp_err_t handle_token_callback(httpd_req_t *req)
         httpd_resp_set_status(req, "400 Bad Request");
         httpd_resp_set_type(req, "text/html; charset=utf-8");
         httpd_resp_send(req,
-            "<p>Ungültiger oder abgelaufener CSRF-State. "
-            "<a href=\"/\">Bitte erneut von vorne</a>.</p>",
+            "<p>Invalid or expired CSRF state. "
+            "<a href=\"/\">Please start over</a>.</p>",
             HTTPD_RESP_USE_STRLEN);
         return ESP_OK;
     }
@@ -636,8 +636,8 @@ static esp_err_t handle_token_callback(httpd_req_t *req)
         httpd_resp_set_status(req, "400 Bad Request");
         httpd_resp_set_type(req, "text/html; charset=utf-8");
         httpd_resp_send(req,
-            "<p>Kein Token in der Rückleitung. "
-            "<a href=\"/\">Zurück</a>.</p>",
+            "<p>No token in the redirect. "
+            "<a href=\"/\">Back</a>.</p>",
             HTTPD_RESP_USE_STRLEN);
         return ESP_OK;
     }
@@ -673,14 +673,14 @@ static esp_err_t handle_token_callback(httpd_req_t *req)
 static esp_err_t handle_fritzbox_2fa_status(httpd_req_t *req)
 {
     if (!s_2fa.active) {
-        send_fail(req, "Keine 2FA-Anfrage aktiv.");
+        send_fail(req, "No 2FA request in progress.");
         return ESP_OK;
     }
     // 2-minute hard cap, mirroring the Fritz!Box's own timeout.
     int64_t age_us = esp_timer_get_time() - s_2fa.started_us;
     if (age_us > 120LL * 1000 * 1000) {
         s_2fa.active = false;
-        send_fail(req, "Zeitueberschreitung. Bitte neu starten.");
+        send_fail(req, "Timed out. Please start over.");
         return ESP_OK;
     }
 
@@ -689,7 +689,7 @@ static esp_err_t handle_fritzbox_2fa_status(httpd_req_t *req)
         s_2fa.fritz_user, s_2fa.fritz_pass, s_2fa.token,
         state, sizeof(state));
     if (err != ESP_OK) {
-        send_fail(req, "GetState fehlgeschlagen.");
+        send_fail(req, "GetState failed.");
         return ESP_OK;
     }
 
@@ -704,8 +704,8 @@ static esp_err_t handle_fritzbox_2fa_status(httpd_req_t *req)
         cJSON_AddBoolToObject  (root, "terminal",   terminal);
         cJSON_AddStringToObject(root, "state",      state);
         cJSON_AddStringToObject(root, "message",
-            terminal ? "2FA abgebrochen oder gesperrt."
-                     : "Warte auf Bestaetigung am Router...");
+            terminal ? "2FA cancelled or blocked."
+                     : "Waiting for confirmation on the router…");
         if (terminal) s_2fa.active = false;
         send_json(req, root);
         return ESP_OK;
@@ -726,9 +726,9 @@ static esp_err_t handle_fritzbox_2fa_status(httpd_req_t *req)
     if (err != ESP_OK) {
         char msg[200];
         snprintf(msg, sizeof(msg),
-            "Nach 2FA weiterhin Fehler %d: %s",
+            "Still failing after 2FA — error %d: %s",
             res.error_code,
-            res.error_message[0] ? res.error_message : "(keine Details)");
+            res.error_message[0] ? res.error_message : "(no details)");
         send_fail(req, msg);
         return ESP_OK;
     }
@@ -742,7 +742,7 @@ static esp_err_t handle_fritzbox_2fa_status(httpd_req_t *req)
         .sip_internal_number = res.internal_number,
     };
     if (config_update(&u) != ESP_OK) {
-        send_fail(req, "NVS-Schreibfehler");
+        send_fail(req, "NVS write failed.");
         return ESP_OK;
     }
     sip_register_request_reload();
@@ -750,8 +750,8 @@ static esp_err_t handle_fritzbox_2fa_status(httpd_req_t *req)
     cJSON *root = cJSON_CreateObject();
     cJSON_AddBoolToObject  (root, "ok",              true);
     cJSON_AddStringToObject(root, "message",
-        "Nebenstelle angelegt. Der Dongle meldet sich jetzt an - "
-        "aktueller Stand siehe Statuszeile oben.");
+        "Extension created. The dongle is registering now — "
+        "see the status bar above for the current state.");
     cJSON_AddStringToObject(root, "sip_user",        res.sip_user);
     cJSON_AddStringToObject(root, "internal_number", res.internal_number);
     send_json(req, root);
@@ -796,13 +796,13 @@ static esp_err_t handle_factory_reset(httpd_req_t *req)
     if (err != ESP_OK) {
         cJSON_AddBoolToObject  (root, "ok", false);
         cJSON_AddStringToObject(root, "message",
-            "NVS-Löschen fehlgeschlagen.");
+            "NVS erase failed.");
         send_json(req, root);
         return ESP_OK;
     }
     cJSON_AddBoolToObject  (root, "ok", true);
     cJSON_AddStringToObject(root, "message",
-        "Konfiguration gelöscht — Neustart läuft.");
+        "Configuration erased — rebooting.");
     send_json(req, root);
     xTaskCreate(factory_reset_task, "factory_reset", 2048, NULL, 5, NULL);
     return ESP_OK;
@@ -827,15 +827,15 @@ static esp_err_t handle_token_test(httpd_req_t *req)
     cJSON *root = cJSON_CreateObject();
     if (strlen(config_phoneblock_token()) == 0) {
         cJSON_AddBoolToObject  (root, "ok", false);
-        cJSON_AddStringToObject(root, "message", "Kein Token gesetzt.");
+        cJSON_AddStringToObject(root, "message", "No token configured.");
         send_json(req, root);
         return ESP_OK;
     }
     bool ok = phoneblock_selftest();
     cJSON_AddBoolToObject  (root, "ok", ok);
     cJSON_AddStringToObject(root, "message",
-        ok ? "Token gültig — PhoneBlock erreichbar."
-           : "Token wurde abgelehnt. Bitte neu anfordern.");
+        ok ? "Token valid — PhoneBlock reachable."
+           : "Token was rejected. Please request a new one.");
     send_json(req, root);
     return ESP_OK;
 }
