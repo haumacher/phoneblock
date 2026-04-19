@@ -103,6 +103,7 @@ const I18N = {
     'status.sip.since': 'seit {duration}',
     'status.sip.at': 'bei {host} als {user}',
     'status.sip.setup_cta': 'Telefonie einrichten',
+    'status.sip.redo_cta': 'Telefonie neu einrichten',
     'status.token.set': 'PhoneBlock-Token gesetzt',
     'status.token.missing': 'Kein PhoneBlock-Token',
     'status.token.cta': 'Token anlegen',
@@ -305,8 +306,7 @@ function renderStatus(){
     + '<div class="status-row">'
     + '  <span id="sipPill" class="pill bad">…</span>'
     + '  <span class="muted" id="sipDetail"></span>'
-    + '  <a id="sipCta" href="#/setup/sip" class="btn-ghost" style="display:none;padding:.3rem .7rem;font-size:.85rem">'
-    +    esc(t('status.sip.setup_cta')) + '</a>'
+    + '  <a id="sipCta" href="#/setup/sip" class="btn-ghost" style="display:none;padding:.3rem .7rem;font-size:.85rem"></a>'
     + '</div>'
     + '<div class="status-row">'
     + '  <span id="tokenPill" class="pill bad">…</span>'
@@ -404,6 +404,7 @@ async function refreshAll(){
     sipPill.textContent = t('status.sip.not_configured');
     sipPill.className = 'pill warn';
     $('sipDetail').textContent = '';
+    sipCta.textContent = t('status.sip.setup_cta');
     sipCta.style.display = '';
   } else if (s.sip.registered){
     sipPill.textContent = t('status.sip.connected');
@@ -416,6 +417,7 @@ async function refreshAll(){
     sipPill.textContent = t('status.sip.disconnected');
     sipPill.className = 'pill bad';
     $('sipDetail').textContent = t('status.sip.at', {host: s.sip.host, user: s.sip.user});
+    sipCta.textContent = t('status.sip.redo_cta');
     sipCta.style.display = '';
   }
 
