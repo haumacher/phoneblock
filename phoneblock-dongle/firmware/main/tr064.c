@@ -429,6 +429,52 @@ static esp_err_t get_num_clients(const char *url,
     return ESP_OK;
 }
 
+// Look for an existing SIP client with the given username. Returns
+// its index in *out_index if found; otherwise returns the next free
+// slot (== num_clients) so SetClient4 creates a new entry. Lets the
+// dongle re-run setup idempotently: the second attempt overwrites
+// the entry it created before instead of colliding with it (which
+// the Fritz!Box reports as UPnPError 820).
+static esp_err_t find_client_slot(const char *url,
+                                  const char *admin_user, const char *admin_pass,
+                                  const char *username,
+                                  int *out_index,
+                                  int *out_err_code,
+                                  char *out_err_msg, size_t err_msg_cap)
+{
+    int num = 0;
+    esp_err_t err = get_num_clients(url, admin_user, admin_pass, &num,
+                                    out_err_code, out_err_msg, err_msg_cap);
+    if (err != ESP_OK) return err;
+
+    for (int i = 0; i < num; i++) {
+        char *resp = malloc(SOAP_RESPONSE_CAP);
+        if (!resp) return ESP_ERR_NO_MEM;
+        char args[64];
+        snprintf(args, sizeof(args),
+                 "<NewX_AVM-DE_ClientIndex>%d</NewX_AVM-DE_ClientIndex>", i);
+        err = call_action(url, X_VOIP_SERVICE,
+                          admin_user, admin_pass,
+                          "X_AVM-DE_GetClient3", args, NULL,
+                          resp, SOAP_RESPONSE_CAP,
+                          out_err_code, out_err_msg, err_msg_cap);
+        if (err != ESP_OK) { free(resp); return err; }
+        char found[64] = "";
+        xml_find_text(resp, "NewX_AVM-DE_ClientUsername", found, sizeof(found));
+        free(resp);
+        if (strcmp(found, username) == 0) {
+            ESP_LOGI(TAG, "found existing SIP client '%s' at index %d — will overwrite",
+                     username, i);
+            *out_index = i;
+            return ESP_OK;
+        }
+    }
+    ESP_LOGI(TAG, "no existing SIP client '%s', using next free slot %d",
+             username, num);
+    *out_index = num;
+    return ESP_OK;
+}
+
 static void gen_random_password(char *out, size_t len)
 {
     // Alphanumeric only — Fritz!Box's SIP-client password validator
@@ -560,24 +606,29 @@ esp_err_t tr064_provision_sip_client(const char *host, int port,
     snprintf(url, sizeof(url), "http://%s:%d" X_VOIP_CONTROL, host, port);
     ESP_LOGI(TAG, "provisioning SIP client on %s (user=%s)", url, admin_user);
 
-    // 1) Learn the next free client index.
-    int num_clients = 0;
-    esp_err_t err = get_num_clients(url, admin_user, admin_pass, &num_clients,
-                                    &out->error_code,
-                                    out->error_message, sizeof(out->error_message));
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "GetNumberOfClients failed");
-        return err;
-    }
-    ESP_LOGI(TAG, "Fritz!Box has %d existing SIP clients", num_clients);
-
-    // 2) Generate credentials.
+    // 1) Generate credentials. Username is MAC-derived and stable across
+    //    re-runs — that is what lets us find and reuse an existing slot
+    //    on a second setup attempt.
     char user_buf[32];
     char pass_buf[24];   // 23 chars + NUL
     gen_sip_username(user_buf, sizeof(user_buf));
     gen_random_password(pass_buf, sizeof(pass_buf));
 
-    // 3) SetClient4 at index num_clients (creates a new entry). All
+    // 2) Pick a client slot: existing index if our username is already
+    //    registered, else the next free slot. Avoids UPnPError 820 on a
+    //    re-run.
+    int client_index = 0;
+    esp_err_t err = find_client_slot(url, admin_user, admin_pass, user_buf,
+                                     &client_index,
+                                     &out->error_code,
+                                     out->error_message,
+                                     sizeof(out->error_message));
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "find_client_slot failed");
+        return err;
+    }
+
+    // 3) SetClient4 at the chosen index (creates or overwrites). All
     //    string-shaped values get XML-escaped on the way in; user_buf
     //    and pass_buf are currently alphanumeric so this is defensive,
     //    but phone_name may come from user input.
@@ -599,7 +650,7 @@ esp_err_t tr064_provision_sip_client(const char *host, int port,
         "<NewX_AVM-DE_ClientId></NewX_AVM-DE_ClientId>"
         "<NewX_AVM-DE_OutGoingNumber></NewX_AVM-DE_OutGoingNumber>"
         "<NewX_AVM-DE_InComingNumbers></NewX_AVM-DE_InComingNumbers>",
-        num_clients, pass_esc, user_esc, phone_name_esc);
+        client_index, pass_esc, user_esc, phone_name_esc);
 
     char *resp = malloc(SOAP_RESPONSE_CAP);
     if (!resp) { free(args); return ESP_ERR_NO_MEM; }
