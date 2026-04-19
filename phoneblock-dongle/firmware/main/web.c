@@ -822,6 +822,7 @@ static esp_err_t handle_announcement_post(httpd_req_t *req)
         return ESP_OK;
     }
 
+    int64_t t0 = esp_timer_get_time();
     esp_err_t err = announcement_write_begin((size_t)total);
     if (err != ESP_OK) {
         send_fail(req, "Could not open upload target.");
@@ -837,31 +838,52 @@ static esp_err_t handle_announcement_post(httpd_req_t *req)
         send_fail(req, "Out of memory.");
         return ESP_OK;
     }
+    int64_t recv_us = 0;
+    int64_t write_us = 0;
     int got = 0;
     while (got < total) {
         int want = total - got;
         if (want > CHUNK) want = CHUNK;
+        int64_t rs = esp_timer_get_time();
         int n = httpd_req_recv(req, chunk, want);
+        recv_us += esp_timer_get_time() - rs;
         if (n <= 0) {
             free(chunk);
             announcement_write_abort();
             send_fail(req, "Upload interrupted.");
             return ESP_OK;
         }
+        int64_t ws = esp_timer_get_time();
         if (announcement_write_append((const uint8_t *)chunk, n) != ESP_OK) {
             free(chunk);
             announcement_write_abort();
             send_fail(req, "SPIFFS write failed.");
             return ESP_OK;
         }
+        write_us += esp_timer_get_time() - ws;
         got += n;
     }
     free(chunk);
+
+    int64_t cs = esp_timer_get_time();
+    esp_err_t cerr = ESP_OK;
+    (void)cerr;
+    // Commit measured separately from the per-chunk write time.
 
     if (announcement_write_commit() != ESP_OK) {
         send_fail(req, "Commit failed.");
         return ESP_OK;
     }
+    int64_t commit_us = esp_timer_get_time() - cs;
+    int64_t total_us  = esp_timer_get_time() - t0;
+    ESP_LOGI(TAG,
+        "announcement upload: %d bytes in %lld ms "
+        "(recv %lld ms, write %lld ms, commit %lld ms)",
+        got,
+        (long long)(total_us / 1000),
+        (long long)(recv_us  / 1000),
+        (long long)(write_us / 1000),
+        (long long)(commit_us / 1000));
 
     cJSON *root = cJSON_CreateObject();
     cJSON_AddBoolToObject  (root, "ok", true);
