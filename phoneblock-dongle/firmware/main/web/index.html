@@ -896,10 +896,24 @@ async function refreshAll(){
 
   // Calls
   const tbody = $('callsBody');
+  // PhoneBlock's web UI serves per-number detail pages at
+  // <site>/nums/<zeroZero>. The `base_url` returned by /api/status
+  // ends in "/api"; strip it to get the site root. Internal Fritz!Box
+  // codes (starting with "*" or "**") have no public page, so we
+  // leave them as plain text.
+  const siteBase = (s.phoneblock && s.phoneblock.base_url || '')
+    .replace(/\/api\/?$/, '');
+  const numCell = (num) => {
+    if (!num)             return '';
+    if (num.startsWith('*')) return esc(num);
+    if (!siteBase)        return esc(num);
+    return '<a href="' + esc(siteBase) + '/nums/' + encodeURIComponent(num)
+         + '" target="_blank" rel="noopener">' + esc(num) + '</a>';
+  };
   if (calls && calls.calls.length){
     tbody.innerHTML = calls.calls.map(c =>
       '<tr><td>' + esc(fmtSec(c.age_s)) + '</td>'
-      + '<td>' + esc(c.number) + '</td>'
+      + '<td>' + numCell(c.number) + '</td>'
       + '<td>' + esc(c.display) + '</td>'
       + '<td class="v-' + esc(c.verdict) + '">' + esc(c.verdict) + '</td></tr>'
     ).join('');
