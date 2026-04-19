@@ -151,6 +151,11 @@ static esp_err_t handle_status(httpd_req_t *req)
     cJSON_AddBoolToObject  (pb,   "token_set",          strlen(config_phoneblock_token()) > 0);
     cJSON_AddNumberToObject(pb,   "last_api_ms",        (double)(c.last_api_duration_us / 1000));
 
+    cJSON *ann = cJSON_AddObjectToObject(root, "announcement");
+    cJSON_AddBoolToObject  (ann,  "custom",  announcement_is_custom());
+    cJSON_AddNumberToObject(ann,  "bytes",   (double)announcement_length());
+    cJSON_AddNumberToObject(ann,  "max_bytes", (double)ANNOUNCEMENT_MAX_BYTES);
+
     cJSON *cnt = cJSON_AddObjectToObject(root, "counters");
     cJSON_AddNumberToObject(cnt,  "total",        c.total_calls);
     cJSON_AddNumberToObject(cnt,  "spam_blocked", c.spam_blocked);
@@ -782,6 +787,84 @@ static esp_err_t handle_errors(httpd_req_t *req)
     return ESP_OK;
 }
 
+// GET /api/announcement — streams the currently active A-law audio.
+// Content-Type: audio/basic (the IANA-registered type for G.711
+// µ-law, close enough to A-law for a "audio payload" hint; browsers
+// don't decode either natively, the UI wraps it in a WAV header).
+static esp_err_t handle_announcement_get(httpd_req_t *req)
+{
+    const uint8_t *buf = NULL;
+    size_t len = 0;
+    if (announcement_get(&buf, &len) != ESP_OK || len == 0) {
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "no announcement");
+        return ESP_OK;
+    }
+    httpd_resp_set_type(req, "audio/basic");
+    httpd_resp_set_hdr(req, "Cache-Control", "no-store");
+    httpd_resp_send(req, (const char *)buf, len);
+    return ESP_OK;
+}
+
+// POST /api/announcement — replaces the current announcement with the
+// request body. Body is raw A-law bytes (8 kHz mono, no header); the
+// UI does the WAV/MP3/OGG → A-law conversion via the browser's Web
+// Audio API before uploading.
+static esp_err_t handle_announcement_post(httpd_req_t *req)
+{
+    int total = req->content_len;
+    if (total <= 0 || total > (int)ANNOUNCEMENT_MAX_BYTES) {
+        char msg[64];
+        snprintf(msg, sizeof(msg),
+            "Audio missing or over %u bytes cap.",
+            (unsigned)ANNOUNCEMENT_MAX_BYTES);
+        send_fail(req, msg);
+        return ESP_OK;
+    }
+
+    uint8_t *buf = malloc(total);
+    if (!buf) {
+        send_fail(req, "Out of memory.");
+        return ESP_OK;
+    }
+
+    int got = 0;
+    while (got < total) {
+        int n = httpd_req_recv(req, (char *)buf + got, total - got);
+        if (n <= 0) {
+            free(buf);
+            send_fail(req, "Upload interrupted.");
+            return ESP_OK;
+        }
+        got += n;
+    }
+
+    esp_err_t err = announcement_write(buf, got);
+    free(buf);
+    if (err != ESP_OK) {
+        send_fail(req, "SPIFFS write failed.");
+        return ESP_OK;
+    }
+
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddBoolToObject  (root, "ok", true);
+    cJSON_AddNumberToObject(root, "bytes", got);
+    cJSON_AddStringToObject(root, "message", "Announcement saved.");
+    send_json(req, root);
+    return ESP_OK;
+}
+
+// POST /api/announcement/reset — drop the custom announcement, fall
+// back to the embedded default.
+static esp_err_t handle_announcement_reset(httpd_req_t *req)
+{
+    announcement_reset();
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddBoolToObject  (root, "ok", true);
+    cJSON_AddStringToObject(root, "message", "Announcement reset to default.");
+    send_json(req, root);
+    return ESP_OK;
+}
+
 // POST /api/factory-reset — erases our NVS namespace and reboots.
 // Answer the HTTP request before rebooting so the browser sees the
 // JSON confirmation; the actual esp_restart() runs from a short-
@@ -865,6 +948,9 @@ static const httpd_uri_t URIS[] = {
     { .uri = "/api/errors",  .method = HTTP_GET,  .handler = handle_errors,      .user_ctx = NULL },
     { .uri = "/api/errors/clear",    .method = HTTP_POST, .handler = handle_errors_clear,   .user_ctx = NULL },
     { .uri = "/api/factory-reset",   .method = HTTP_POST, .handler = handle_factory_reset,  .user_ctx = NULL },
+    { .uri = "/api/announcement",    .method = HTTP_GET,  .handler = handle_announcement_get,   .user_ctx = NULL },
+    { .uri = "/api/announcement",    .method = HTTP_POST, .handler = handle_announcement_post,  .user_ctx = NULL },
+    { .uri = "/api/announcement/reset", .method = HTTP_POST, .handler = handle_announcement_reset, .user_ctx = NULL },
     { .uri = "/api/config",          .method = HTTP_POST, .handler = handle_config_post,    .user_ctx = NULL },
     { .uri = "/api/fritzbox-setup",      .method = HTTP_POST, .handler = handle_fritzbox_setup,      .user_ctx = NULL },
     { .uri = "/api/fritzbox-2fa-status", .method = HTTP_GET,  .handler = handle_fritzbox_2fa_status, .user_ctx = NULL },
