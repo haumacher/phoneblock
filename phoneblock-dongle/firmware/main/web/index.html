@@ -55,7 +55,17 @@
         border-radius:8px;padding:1.5rem;margin-bottom:1rem}
   .hero h2{color:#fff;border-bottom:1px solid rgba(255,255,255,.3)}
   .hero p{margin:.4rem 0}
-  .hero .btn-primary{background:#fff;color:#008f7a;margin-top:.8rem;margin-right:.6rem}
+  .hero .btn-primary{background:#fff;color:#008f7a;margin-top:.4rem}
+  .hero-step{display:flex;align-items:center;gap:.8rem;
+             padding:.8rem 1rem;margin-top:.8rem;
+             background:rgba(255,255,255,.12);border-radius:6px}
+  .hero-step .mark{display:flex;align-items:center;justify-content:center;
+                   width:1.8rem;height:1.8rem;flex-shrink:0;
+                   border-radius:50%;font-weight:700;font-size:1rem;
+                   background:rgba(255,255,255,.18);color:#fff}
+  .hero-step.done .mark{background:#fff;color:#008f7a}
+  .hero-step .body{flex:1;min-width:0}
+  .hero-step .body strong{display:block;font-size:1rem}
   .choice{display:block;padding:1rem;background:#fafafa;border:1px solid #e0e0e0;
           border-radius:6px;margin-bottom:.6rem;text-decoration:none;color:inherit}
   .choice:hover{border-color:#008f7a;background:#f0f9f6}
@@ -112,10 +122,12 @@ const I18N = {
     'status.errors.ago': 'vor {age}',
     'status.footer.redo_sip': 'Telefonie neu einrichten',
     'status.footer.redo_token': 'Token neu anlegen',
-    'hero.title': 'Willkommen beim PhoneBlock Dongle',
-    'hero.intro': 'Zwei Schritte, dann blockt dein Dongle Spam-Anrufe automatisch:',
-    'hero.step1': '1. Den Dongle bei deiner Telefonanlage anmelden',
-    'hero.step2': '2. Mit PhoneBlock verbinden, damit er weiß, was Spam ist',
+    'hero.title': 'Einrichtung',
+    'hero.intro': 'Zwei Schritte, dann blockt dein Dongle Spam-Anrufe automatisch. Beide abhaken, erst dann ist das Gerät einsatzbereit.',
+    'hero.step1.todo': 'Den Dongle bei deiner Telefonanlage anmelden',
+    'hero.step1.done': 'Telefonie eingerichtet',
+    'hero.step2.todo': 'Mit PhoneBlock verbinden — damit der Dongle weiß, was Spam ist',
+    'hero.step2.done': 'Mit PhoneBlock verbunden',
     'hero.cta.sip': 'Telefonie einrichten',
     'hero.cta.token': 'PhoneBlock verbinden',
     'sip.entry.title': 'Telefonie einrichten',
@@ -332,19 +344,26 @@ function renderStatus(){
   pollTimer = setInterval(refreshAll, 3000);
 }
 
-function renderHero(){
+function renderHero(sipDone, tokenDone){
   const slot = $('heroSlot');
   if (!slot) return;
+  const step = (done, num, labelKey, ctaKey, href) =>
+      '<div class="hero-step' + (done ? ' done' : '') + '">'
+    + '<div class="mark">' + (done ? '✓' : num) + '</div>'
+    + '<div class="body"><strong>' + esc(t(labelKey)) + '</strong>'
+    + (done ? '' : '<a class="btn-primary" href="' + href + '">'
+                 + esc(t(ctaKey)) + '</a>')
+    + '</div></div>';
   slot.innerHTML = ''
     + '<section class="hero">'
     + '<h2>' + esc(t('hero.title')) + '</h2>'
     + '<p>'  + esc(t('hero.intro')) + '</p>'
-    + '<p>'  + esc(t('hero.step1')) + '</p>'
-    + '<p>'  + esc(t('hero.step2')) + '</p>'
-    + '<p style="margin-top:.8rem">'
-    + '<a class="btn-primary" href="#/setup/sip">'   + esc(t('hero.cta.sip'))   + '</a>'
-    + '<a class="btn-primary" href="#/setup/token">' + esc(t('hero.cta.token')) + '</a>'
-    + '</p>'
+    + step(sipDone,   '1',
+           sipDone   ? 'hero.step1.done' : 'hero.step1.todo',
+           'hero.cta.sip',   '#/setup/sip')
+    + step(tokenDone, '2',
+           tokenDone ? 'hero.step2.done' : 'hero.step2.todo',
+           'hero.cta.token', '#/setup/token')
     + '</section>';
 }
 
@@ -360,9 +379,12 @@ async function refreshAll(){
   const callsSec      = $('callsSection');
   const errorsSec     = $('errorsSection');
   const footerSec     = $('statusFooter');
-  if (!sipConfigured && !tokenSet){
-    // Empty NVS — first-run hero covers everything.
-    renderHero();
+  if (!sipConfigured || !tokenSet){
+    // Setup incomplete — show the hero with per-step progress until
+    // both SIP and the PhoneBlock token are configured. The status
+    // dashboard below would otherwise advertise a "ready" state that
+    // the device cannot actually deliver.
+    renderHero(sipConfigured, tokenSet);
     statusSec.style.display = 'none';
     callsSec.style.display = 'none';
     errorsSec.style.display = 'none';
