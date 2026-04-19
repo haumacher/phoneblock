@@ -405,7 +405,7 @@ async function refreshAll(){
   const sipCta  = $('sipCta');
   if (!sipConfigured){
     sipPill.textContent = t('status.sip.not_configured');
-    sipPill.className = 'pill warn';
+    sipPill.className = 'pill bad';
     $('sipDetail').textContent = '';
     sipCta.textContent = t('status.sip.setup_cta');
   } else if (s.sip.registered){
@@ -450,7 +450,7 @@ async function refreshAll(){
     tokenRenew.style.display = '';
   } else {
     tokenPill.textContent = t('status.token.missing');
-    tokenPill.className = 'pill warn';
+    tokenPill.className = 'pill bad';
     tokenCta.style.display   = '';
     tokenTest.style.display  = 'none';
     tokenRenew.style.display = 'none';
