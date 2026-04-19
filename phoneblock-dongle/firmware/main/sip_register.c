@@ -1118,6 +1118,10 @@ static void sip_task(void *arg)
         }
         int64_t remaining_us = deadline - now;
         if (remaining_us <= 0) remaining_us = 1;
+        // Cap so s_reload_requested (set from the web UI on config save)
+        // is noticed within half a second instead of waiting out the
+        // full REGISTER-refresh interval.
+        if (remaining_us > 500000) remaining_us = 500000;
 
         struct timeval tv = {
             .tv_sec  = remaining_us / 1000000,
@@ -1146,6 +1150,9 @@ static void sip_task(void *arg)
                 }
                 continue;
             }
+            // Most select() returns now are just the 500ms reload-poll
+            // cap firing; only refresh when the real deadline is due.
+            if (now < refresh_at_us) continue;
             // REGISTER refresh.
             ok = do_register(&ctx);
             s_registered = ok;
