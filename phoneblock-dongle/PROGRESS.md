@@ -235,6 +235,15 @@ Umsetzungsschritte:
   welche Nummern)
 - [ ] Firmware-Versionierung + Changelog-Policy
 
+### Generisches Provider-Setup (ohne Fritz!Box)
+- [ ] **UI für beliebige VoIP-Anbieter** — Provider-Preset-Dropdown
+  (Fritz!Box-Auto / Telekom / Vodafone / 1&1 / sipgate / easybell /
+  eigen) + Felder für Registrar, Transport (UDP/TCP/TLS), SIP-User,
+  Auth-User, Passwort, Outbound-Proxy, Realm, SRTP-Modus.
+  Parameter und Stolperfallen je Anbieter dokumentiert in
+  [PROVIDERS.md](PROVIDERS.md). Top-5-Anbieter abdecken, O2/MagentaZuhause
+  bleiben Fritz!Box-only.
+
 ### Tech-Debt / Feinschliff
 - [ ] **Event-getriebener Reload-Wakeup für den SIP-Task**: aktuell
   cappt der select()-Timeout auf 500 ms, damit der vom Web-UI gesetzte
