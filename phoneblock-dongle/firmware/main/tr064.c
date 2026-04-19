@@ -326,36 +326,57 @@ static esp_err_t call_action(const char *url,
     }
     ESP_LOGI(TAG, "ClientAuth %s → HTTP %d, %d bytes", action, status, (int)strlen(resp));
 
-    if (status != 200) {
-        // Typically 503 with faultstring "Unauthenticated" on bad password,
-        // or 500 with UPnPError errorCode (e.g. 866 = 2FA required).
-        char fault[128]     = "";
-        char err_code_s[16] = "";
-        char err_desc[128]  = "";
-        xml_find_text(resp, "faultstring",       fault,      sizeof(fault));
-        xml_find_text(resp, "errorCode",         err_code_s, sizeof(err_code_s));
-        xml_find_text(resp, "errorDescription",  err_desc,   sizeof(err_desc));
-        ESP_LOGE(TAG, "%s rejected: HTTP %d, fault='%s' code=%s desc='%s'\n%s",
-                 action, status, fault, err_code_s, err_desc, resp);
-        int code = atoi(err_code_s);
-        if (code > 0) {
-            if (out_err_code) *out_err_code = code;
-            if (out_err_msg && err_msg_cap) {
-                strncpy(out_err_msg, err_desc[0] ? err_desc : fault, err_msg_cap - 1);
-                out_err_msg[err_msg_cap - 1] = '\0';
-            }
-        } else if (status == 503 && strstr(fault, "nauthenticated")) {
-            // Fritz!Box digest rejection — wrong admin user or password.
-            SET_SENTINEL(TR064_ERR_AUTH, fault);
-        } else {
-            char detail[160];
-            snprintf(detail, sizeof(detail), "HTTP %d%s%s", status,
-                     fault[0] ? " " : "", fault);
-            SET_SENTINEL(TR064_ERR_HTTP, detail);
-        }
-        return ESP_FAIL;
+    // AVM's digest scheme returns HTTP 200 *even on auth failure* — it
+    // embeds <Status>Unauthenticated</Status> plus a <s:Fault> with
+    // errorCode 503 "Auth. failed" in the body and a fresh Nonce for
+    // the next attempt. So we have to inspect the body regardless of
+    // the HTTP status to tell success from failure.
+    char fault[128]     = "";
+    char err_code_s[16] = "";
+    char err_desc[128]  = "";
+    xml_find_text(resp, "faultstring",       fault,      sizeof(fault));
+    xml_find_text(resp, "errorCode",         err_code_s, sizeof(err_code_s));
+    xml_find_text(resp, "errorDescription",  err_desc,   sizeof(err_desc));
+    bool has_fault = fault[0] || err_code_s[0];
+    // Match only inside the h:Challenge header to avoid false positives
+    // on any <Status> element a future SOAP action body might contain.
+    bool auth_rejected = strstr(resp, "<Status>Unauthenticated</Status>") != NULL;
+
+    if (status == 200 && !has_fault && !auth_rejected) {
+        return ESP_OK;
     }
-    return ESP_OK;
+
+    int code = atoi(err_code_s);
+    ESP_LOGE(TAG, "%s rejected: HTTP %d, auth=%s fault='%s' code=%d desc='%s'\n%s",
+             action, status, auth_rejected ? "Unauthenticated" : "(ok)",
+             fault, code, err_desc, resp);
+
+    // AVM signals a bad admin password two ways:
+    //   - HTTP 503 + faultstring "Unauthenticated"         (old behaviour)
+    //   - HTTP 200 + <Status>Unauthenticated</Status>
+    //     + UPnPError code 503 "Auth. failed"              (seen in the wild)
+    // Both map to the same user-facing hint.
+    bool auth_failure =
+        auth_rejected
+        || (status == 503 && strstr(fault, "nauthenticated"))
+        || (code == 503 && strstr(err_desc, "Auth"));
+    if (auth_failure) {
+        SET_SENTINEL(TR064_ERR_AUTH,
+                     err_desc[0] ? err_desc :
+                     fault[0]    ? fault    : "Unauthenticated");
+    } else if (code > 0) {
+        if (out_err_code) *out_err_code = code;
+        if (out_err_msg && err_msg_cap) {
+            strncpy(out_err_msg, err_desc[0] ? err_desc : fault, err_msg_cap - 1);
+            out_err_msg[err_msg_cap - 1] = '\0';
+        }
+    } else {
+        char detail[160];
+        snprintf(detail, sizeof(detail), "HTTP %d%s%s", status,
+                 fault[0] ? " " : "", fault);
+        SET_SENTINEL(TR064_ERR_HTTP, detail);
+    }
+    return ESP_FAIL;
 
     #undef SET_SENTINEL
 }
