@@ -21,7 +21,6 @@ static const char *NS   = "phoneblock";
 #define K_CONTACT_PORT  "contact_port"
 #define K_PB_URL        "pb_url"
 #define K_PB_TOKEN      "pb_token"
-#define K_PB_TEST       "pb_test"
 
 typedef struct {
     char sip_host[64];
@@ -33,7 +32,6 @@ typedef struct {
     int  contact_port;
     char pb_base_url[128];
     char pb_token[64];
-    char pb_test[32];
 } config_cache_t;
 
 static config_cache_t s_config;
@@ -83,7 +81,6 @@ void config_load(void)
         s_config.contact_port = CONFIG_SIP_CONTACT_PORT_OVERRIDE;
         copy_default(s_config.pb_base_url,  sizeof(s_config.pb_base_url),  CONFIG_PHONEBLOCK_BASE_URL);
         s_config.pb_token[0]  = '\0';
-        copy_default(s_config.pb_test,      sizeof(s_config.pb_test),      CONFIG_PHONEBLOCK_TEST_NUMBER);
         return;
     }
     if (err != ESP_OK) {
@@ -106,8 +103,6 @@ void config_load(void)
              s_config.pb_base_url,  sizeof(s_config.pb_base_url));
     load_str(h, K_PB_TOKEN,     "",
              s_config.pb_token,     sizeof(s_config.pb_token));
-    load_str(h, K_PB_TEST,      CONFIG_PHONEBLOCK_TEST_NUMBER,
-             s_config.pb_test,      sizeof(s_config.pb_test));
     nvs_close(h);
 
     ESP_LOGI(TAG, "loaded config: sip=%s@%s:%d, pb=%s",
@@ -124,7 +119,6 @@ const char *config_contact_host_override(void) { return s_config.contact_host; }
 int         config_contact_port_override(void) { return s_config.contact_port; }
 const char *config_phoneblock_base_url(void) { return s_config.pb_base_url; }
 const char *config_phoneblock_token(void)    { return s_config.pb_token; }
-const char *config_phoneblock_test_number(void) { return s_config.pb_test; }
 
 // --- Updating -------------------------------------------------------
 

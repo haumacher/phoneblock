@@ -117,3 +117,49 @@ cleanup:
     free(resp.data);
     return verdict;
 }
+
+bool phoneblock_selftest(void)
+{
+    char url[160];
+    snprintf(url, sizeof(url), "%s/test", config_phoneblock_base_url());
+
+    char auth_header[128];
+    snprintf(auth_header, sizeof(auth_header), "Bearer %s", config_phoneblock_token());
+
+    esp_http_client_config_t config = {
+        .url = url,
+        .crt_bundle_attach = esp_crt_bundle_attach,
+        .timeout_ms = 10000,
+    };
+    esp_http_client_handle_t client = esp_http_client_init(&config);
+    esp_http_client_set_header(client, "Authorization", auth_header);
+    esp_http_client_set_header(client, "Accept", "text/plain");
+
+    ESP_LOGI(TAG, "GET %s", url);
+    int64_t started = esp_timer_get_time();
+    esp_err_t err = esp_http_client_perform(client);
+    stats_record_api_duration(esp_timer_get_time() - started);
+
+    bool ok = false;
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "self-test transport: %s", esp_err_to_name(err));
+        char msg[96];
+        snprintf(msg, sizeof(msg), "self-test transport: %s", esp_err_to_name(err));
+        stats_record_error("api", msg);
+    } else {
+        int status = esp_http_client_get_status_code(client);
+        if (status == 200) {
+            ESP_LOGI(TAG, "self-test: HTTP 200, token accepted");
+            ok = true;
+        } else {
+            ESP_LOGE(TAG, "self-test: HTTP %d (check token)", status);
+            char msg[64];
+            snprintf(msg, sizeof(msg),
+                     status == 401 ? "self-test: token rejected (401)"
+                                   : "self-test: HTTP %d", status);
+            stats_record_error("api", msg);
+        }
+    }
+    esp_http_client_cleanup(client);
+    return ok;
+}

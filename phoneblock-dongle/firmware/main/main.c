@@ -151,8 +151,8 @@ void app_main(void)
     bool sip_set   = strlen(config_sip_host()) > 0;
 
     if (token_set) {
-        ESP_LOGI(TAG, "initial self-test query");
-        phoneblock_check(config_phoneblock_test_number());
+        ESP_LOGI(TAG, "initial self-test");
+        phoneblock_selftest();
         xTaskCreate(sip_server_task, "sip_server", 8192, NULL, 5, NULL);
     } else {
         ESP_LOGI(TAG, "PhoneBlock token not configured yet — set via web UI");

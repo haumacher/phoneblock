@@ -28,7 +28,6 @@ int         config_contact_port_override(void);
 // PhoneBlock
 const char *config_phoneblock_base_url(void);
 const char *config_phoneblock_token(void);
-const char *config_phoneblock_test_number(void);
 
 // Update the NVS-backed settings atomically. Any field passed as NULL
 // or 0 is left untouched. The in-RAM cache is refreshed after NVS

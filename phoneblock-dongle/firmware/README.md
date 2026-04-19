@@ -56,7 +56,6 @@ Dev-relevante Kconfig-Optionen (in `sdkconfig.defaults.local` oder
 `idf.py menuconfig`):
 
 - `CONFIG_PHONEBLOCK_BASE_URL` — Produktions- vs. Testinstanz
-- `CONFIG_PHONEBLOCK_TEST_NUMBER` — Testnummer für den Startup-Check
 - `CONFIG_SIP_CONTACT_HOST_OVERRIDE` / `CONFIG_SIP_CONTACT_PORT_OVERRIDE`
   — NAT-Overrides für den QEMU-Betrieb
 - `CONFIG_SIP_TEST_FORCE_SPAM_STAR_NUMBERS` — Test-Hook für den

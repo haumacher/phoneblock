@@ -30,7 +30,6 @@ CONFIG_LWIP_MAX_SOCKETS=16
 # PhoneBlock defaults. Token is set via the setup wizard (OAuth) and
 # persisted in NVS — no Kconfig knob for it.
 CONFIG_PHONEBLOCK_BASE_URL="https://phoneblock.net/phoneblock/api"
-CONFIG_PHONEBLOCK_TEST_NUMBER="030123456"
 
 # SIP: registrar/username/password are written to NVS by the web
 # setup wizard. Only port and expiry have Kconfig defaults.
