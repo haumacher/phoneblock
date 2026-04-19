@@ -1106,6 +1106,12 @@ static void sip_task(void *arg)
             ESP_LOGI(TAG, "config reload requested → re-REGISTER with new creds");
             // Refresh registrar address too, in case host changed.
             resolve_registrar(&ctx);
+            // Give the Fritz!Box a moment to settle after TR-064 has
+            // just created the extension — a REGISTER fired too early
+            // hits a not-yet-active slot, times out, and falls into the
+            // 30 s retry. 1.5 s is enough to catch the common case
+            // without making the UX feel laggy.
+            vTaskDelay(pdMS_TO_TICKS(1500));
             ok = do_register(&ctx);
             s_registered = ok;
             stats_record_sip_state(ok);
