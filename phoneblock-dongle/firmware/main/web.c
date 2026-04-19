@@ -583,6 +583,10 @@ static esp_err_t handle_token_callback(httpd_req_t *req)
     ESP_LOGI(TAG, "token-callback: stored new PhoneBlock token (%d chars)",
              (int)strlen(token));
 
+    // Immediately exercise the new token so the dashboard has an API
+    // latency to show on the first poll, instead of an empty "–".
+    phoneblock_selftest();
+
     // Hand the user straight back to the status landing — the pill
     // there flips to green on the next 3s poll.
     httpd_resp_set_status(req, "302 Found");
