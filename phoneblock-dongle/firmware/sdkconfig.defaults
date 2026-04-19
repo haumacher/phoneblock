@@ -21,6 +21,12 @@ CONFIG_ESP_MAIN_TASK_STACK_SIZE=8192
 CONFIG_HTTPD_MAX_REQ_HDR_LEN=4096
 CONFIG_HTTPD_MAX_URI_LEN=1024
 
+# lwip socket pool. Default 10 is too tight: SIP-UDP + HTTPD-listen +
+# 4–6 parallel browser-polling connections + mDNS/DHCP already crowd
+# the pool, and a TR-064 HTTP-client started during a browser poll
+# then fails with "Failed to create socket" / ESP_ERR_HTTP_CONNECT.
+CONFIG_LWIP_MAX_SOCKETS=16
+
 # PhoneBlock defaults. Real token goes into sdkconfig.defaults.local
 # (gitignored) or via `idf.py menuconfig`.
 CONFIG_PHONEBLOCK_BASE_URL="https://phoneblock.net/phoneblock/api"

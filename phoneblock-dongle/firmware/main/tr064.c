@@ -8,6 +8,8 @@
 #include "esp_http_client.h"
 #include "esp_random.h"
 #include "esp_mac.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 #include "mbedtls/md5.h"
 
 static const char *TAG = "tr064";
@@ -160,34 +162,48 @@ static esp_err_t post_soap(const char *url, const char *soap_action,
                            const char *body, char *resp, int resp_cap,
                            int *out_status)
 {
-    resp_buf_t rb = { .buf = resp, .len = 0, .cap = resp_cap };
-    resp[0] = '\0';
+    esp_err_t err    = ESP_FAIL;
+    int       status = 0;
 
-    esp_http_client_config_t cfg = {
-        .url            = url,
-        .method         = HTTP_METHOD_POST,
-        .event_handler  = http_evt_cb,
-        .user_data      = &rb,
-        .timeout_ms     = 5000,
-    };
-    esp_http_client_handle_t c = esp_http_client_init(&cfg);
-    if (!c) return ESP_FAIL;
+    // ESP_ERR_HTTP_CONNECT here often means lwip's socket pool is
+    // momentarily exhausted (browser polling /api/status in parallel
+    // hogs several slots). Give it up to three attempts with a short
+    // back-off; a real network failure still surfaces after that.
+    for (int attempt = 0; attempt < 3; attempt++) {
+        resp_buf_t rb = { .buf = resp, .len = 0, .cap = resp_cap };
+        resp[0] = '\0';
 
-    esp_http_client_set_header(c, "Content-Type",
-                               "text/xml; charset=\"utf-8\"");
-    esp_http_client_set_header(c, "SoapAction", soap_action);
-    esp_http_client_set_post_field(c, body, (int)strlen(body));
+        esp_http_client_config_t cfg = {
+            .url            = url,
+            .method         = HTTP_METHOD_POST,
+            .event_handler  = http_evt_cb,
+            .user_data      = &rb,
+            .timeout_ms     = 5000,
+        };
+        esp_http_client_handle_t c = esp_http_client_init(&cfg);
+        if (!c) return ESP_FAIL;
 
-    esp_err_t err = esp_http_client_perform(c);
-    int status = esp_http_client_get_status_code(c);
-    esp_http_client_cleanup(c);
+        esp_http_client_set_header(c, "Content-Type",
+                                   "text/xml; charset=\"utf-8\"");
+        esp_http_client_set_header(c, "SoapAction", soap_action);
+        esp_http_client_set_post_field(c, body, (int)strlen(body));
+
+        err    = esp_http_client_perform(c);
+        status = esp_http_client_get_status_code(c);
+        esp_http_client_cleanup(c);
+
+        if (err == ESP_OK) break;
+        if (err != ESP_ERR_HTTP_CONNECT || attempt == 2) {
+            ESP_LOGE(TAG, "POST %s: %s", url, esp_err_to_name(err));
+            break;
+        }
+        ESP_LOGW(TAG, "POST %s: %s, retry %d/2", url,
+                 esp_err_to_name(err), attempt + 1);
+        vTaskDelay(pdMS_TO_TICKS(250));
+    }
 
     if (out_status) *out_status = status;
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "POST %s: %s", url, esp_err_to_name(err));
-        return err;
-    }
-    return ESP_OK;
+    return err;
 }
 
 // ---------------------------------------------------------------------------
