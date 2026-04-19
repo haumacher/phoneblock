@@ -15,15 +15,6 @@ menu "PhoneBlock Dongle"
             the test instance only work there, and vice versa. The token
             prefix (pbt_) is the same in both cases.
 
-    config PHONEBLOCK_TOKEN
-        string "PhoneBlock Bearer token"
-        default ""
-        help
-            Bearer token used for API authentication. Generate one in the
-            PhoneBlock web settings. Starts with "pbt_". Leave empty and
-            keep it in sdkconfig.defaults.local (gitignored) instead of
-            committing it.
-
     config PHONEBLOCK_TEST_NUMBER
         string "Test phone number"
         default "030123456"
@@ -32,28 +23,15 @@ menu "PhoneBlock Dongle"
             PhoneBlock storage format (national: 030..., or 00<cc><num>
             for international, e.g. 0015551234567).
 
-    config SIP_REGISTRAR_HOST
-        string "SIP registrar hostname or IP"
-        default ""
-        help
-            Fritz!Box LAN address (typically 192.168.178.1 or
-            "fritz.box"). Leave empty to skip the SIP task entirely.
-
     config SIP_REGISTRAR_PORT
         int "SIP registrar port"
         default 5060
         range 1 65535
-
-    config SIP_USERNAME
-        string "SIP username"
-        default ""
         help
-            The internal phone number configured on the Fritz!Box
-            for this IP phone, e.g. "620".
-
-    config SIP_PASSWORD
-        string "SIP password"
-        default ""
+            Default port written into NVS when the user does not
+            override it through the web UI. Registrar host, username
+            and password are not configurable via Kconfig — they go
+            through the setup wizard.
 
     config SIP_EXPIRES
         int "Registration expiry (seconds)"

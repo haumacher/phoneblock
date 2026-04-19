@@ -47,29 +47,20 @@ menuconfig`) fest.
 
 ## Konfiguration
 
-Zwei Wege, deinen Token zu hinterlegen:
+Der PhoneBlock-Token und die SIP-Zugangsdaten werden zur Laufzeit über
+das Web-UI des Dongles gesetzt (OAuth-Redirect für den Token, TR-064-
+Autoprovisioning oder manuelles Formular für SIP) und im NVS-Flash
+persistiert. Es gibt keinen Kconfig-Weg mehr, sie zu hinterlegen.
 
-### A) Lokales Default-File (empfohlen für Dev)
+Dev-relevante Kconfig-Optionen (in `sdkconfig.defaults.local` oder
+`idf.py menuconfig`):
 
-Lege `sdkconfig.defaults.local` in diesem Verzeichnis an. Die Datei ist in
-`.gitignore`:
-
-```
-CONFIG_PHONEBLOCK_TOKEN="pbt_DEIN_TOKEN"
-CONFIG_PHONEBLOCK_TEST_NUMBER="030123456"
-```
-
-ESP-IDF merged diese Datei automatisch über `sdkconfig.defaults`.
-
-### B) `idf.py menuconfig`
-
-```
-PhoneBlock Dongle
-  → PhoneBlock Bearer token
-  → Test phone number
-```
-
-Das schreibt die Werte in `sdkconfig` — ebenfalls gitignored.
+- `CONFIG_PHONEBLOCK_BASE_URL` — Produktions- vs. Testinstanz
+- `CONFIG_PHONEBLOCK_TEST_NUMBER` — Testnummer für den Startup-Check
+- `CONFIG_SIP_CONTACT_HOST_OVERRIDE` / `CONFIG_SIP_CONTACT_PORT_OVERRIDE`
+  — NAT-Overrides für den QEMU-Betrieb
+- `CONFIG_SIP_TEST_FORCE_SPAM_STAR_NUMBERS` — Test-Hook für den
+  RTP/Audio-Pfad
 
 ## Bauen
 
@@ -173,12 +164,17 @@ Nach dem Rebuild (`idf.py build`) enthält die REGISTER-Nachricht dann
 Die Fritz!Box sendet INVITEs an die Host-IP → `hostfwd` leitet an den
 Guest → `recvfrom` liefert sie an den SIP-Task.
 
-**Fritz!Box-seitige Einrichtung (einmalig):**
+**Fritz!Box-seitige Einrichtung:**
+
+Im Regelbetrieb legt der Dongle die Nebenstelle per TR-064 selbst an
+(Web-UI → „Nebenstelle einrichten"). Manuell über die Fritz!Box-
+Weboberfläche geht es genauso:
 
 1. Telefonie → Telefoniegeräte → Neues Gerät einrichten →
    **Telefon (mit und ohne Anrufbeantworter)** → **LAN/WLAN (IP-Telefon)**.
-2. Benutzername + Passwort setzen (identisch mit `CONFIG_SIP_USERNAME` /
-   `CONFIG_SIP_PASSWORD`).
+2. Benutzername + Passwort setzen. Die Werte trägst du anschließend
+   im Dongle-Web-UI unter „Manuelle Konfiguration" ein — Kconfig kennt
+   die SIP-Credentials nicht mehr.
 3. Dem Gerät eine **interne Rufnummer** zuweisen (z. B. `620`) und in
    der Rufbehandlung berücksichtigen.
 

@@ -69,17 +69,20 @@ void config_load(void)
     nvs_handle_t h;
     esp_err_t err = nvs_open(NS, NVS_READONLY, &h);
     if (err == ESP_ERR_NVS_NOT_FOUND) {
-        // Namespace not yet created — pure Kconfig defaults, no NVS to read.
+        // Namespace not yet created. SIP credentials + PhoneBlock
+        // token stay empty — the setup wizard fills them. Other
+        // fields keep their Kconfig defaults (port, expiry, contact
+        // overrides for QEMU, API base URL).
         ESP_LOGI(TAG, "NVS namespace '%s' empty, using Kconfig defaults", NS);
-        copy_default(s_config.sip_host,     sizeof(s_config.sip_host),     CONFIG_SIP_REGISTRAR_HOST);
-        s_config.sip_port    = CONFIG_SIP_REGISTRAR_PORT;
-        copy_default(s_config.sip_user,     sizeof(s_config.sip_user),     CONFIG_SIP_USERNAME);
-        copy_default(s_config.sip_pass,     sizeof(s_config.sip_pass),     CONFIG_SIP_PASSWORD);
-        s_config.sip_expires = CONFIG_SIP_EXPIRES;
+        s_config.sip_host[0]  = '\0';
+        s_config.sip_port     = CONFIG_SIP_REGISTRAR_PORT;
+        s_config.sip_user[0]  = '\0';
+        s_config.sip_pass[0]  = '\0';
+        s_config.sip_expires  = CONFIG_SIP_EXPIRES;
         copy_default(s_config.contact_host, sizeof(s_config.contact_host), CONFIG_SIP_CONTACT_HOST_OVERRIDE);
         s_config.contact_port = CONFIG_SIP_CONTACT_PORT_OVERRIDE;
         copy_default(s_config.pb_base_url,  sizeof(s_config.pb_base_url),  CONFIG_PHONEBLOCK_BASE_URL);
-        copy_default(s_config.pb_token,     sizeof(s_config.pb_token),     CONFIG_PHONEBLOCK_TOKEN);
+        s_config.pb_token[0]  = '\0';
         copy_default(s_config.pb_test,      sizeof(s_config.pb_test),      CONFIG_PHONEBLOCK_TEST_NUMBER);
         return;
     }
@@ -88,12 +91,12 @@ void config_load(void)
         return;
     }
 
-    load_str(h, K_SIP_HOST,     CONFIG_SIP_REGISTRAR_HOST,
+    load_str(h, K_SIP_HOST,     "",
              s_config.sip_host,     sizeof(s_config.sip_host));
     s_config.sip_port     = load_int(h, K_SIP_PORT,     CONFIG_SIP_REGISTRAR_PORT);
-    load_str(h, K_SIP_USER,     CONFIG_SIP_USERNAME,
+    load_str(h, K_SIP_USER,     "",
              s_config.sip_user,     sizeof(s_config.sip_user));
-    load_str(h, K_SIP_PASS,     CONFIG_SIP_PASSWORD,
+    load_str(h, K_SIP_PASS,     "",
              s_config.sip_pass,     sizeof(s_config.sip_pass));
     s_config.sip_expires  = load_int(h, K_SIP_EXPIRES,  CONFIG_SIP_EXPIRES);
     load_str(h, K_CONTACT_HOST, CONFIG_SIP_CONTACT_HOST_OVERRIDE,
@@ -101,7 +104,7 @@ void config_load(void)
     s_config.contact_port = load_int(h, K_CONTACT_PORT, CONFIG_SIP_CONTACT_PORT_OVERRIDE);
     load_str(h, K_PB_URL,       CONFIG_PHONEBLOCK_BASE_URL,
              s_config.pb_base_url,  sizeof(s_config.pb_base_url));
-    load_str(h, K_PB_TOKEN,     CONFIG_PHONEBLOCK_TOKEN,
+    load_str(h, K_PB_TOKEN,     "",
              s_config.pb_token,     sizeof(s_config.pb_token));
     load_str(h, K_PB_TEST,      CONFIG_PHONEBLOCK_TEST_NUMBER,
              s_config.pb_test,      sizeof(s_config.pb_test));

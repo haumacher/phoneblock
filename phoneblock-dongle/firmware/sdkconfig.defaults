@@ -27,16 +27,12 @@ CONFIG_HTTPD_MAX_URI_LEN=1024
 # then fails with "Failed to create socket" / ESP_ERR_HTTP_CONNECT.
 CONFIG_LWIP_MAX_SOCKETS=16
 
-# PhoneBlock defaults. Real token goes into sdkconfig.defaults.local
-# (gitignored) or via `idf.py menuconfig`.
+# PhoneBlock defaults. Token is set via the setup wizard (OAuth) and
+# persisted in NVS — no Kconfig knob for it.
 CONFIG_PHONEBLOCK_BASE_URL="https://phoneblock.net/phoneblock/api"
-CONFIG_PHONEBLOCK_TOKEN=""
 CONFIG_PHONEBLOCK_TEST_NUMBER="030123456"
 
-# SIP: left empty so the registration task skips itself unless configured
-# via sdkconfig.defaults.local or menuconfig.
-CONFIG_SIP_REGISTRAR_HOST=""
+# SIP: registrar/username/password are written to NVS by the web
+# setup wizard. Only port and expiry have Kconfig defaults.
 CONFIG_SIP_REGISTRAR_PORT=5060
-CONFIG_SIP_USERNAME=""
-CONFIG_SIP_PASSWORD=""
 CONFIG_SIP_EXPIRES=600
