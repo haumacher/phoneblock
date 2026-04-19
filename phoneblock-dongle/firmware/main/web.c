@@ -51,6 +51,9 @@ static struct {
 extern const uint8_t index_html_start[] asm("_binary_index_html_start");
 extern const uint8_t index_html_end[]   asm("_binary_index_html_end");
 
+extern const uint8_t ab_logo_bot_svg_start[] asm("_binary_ab_logo_bot_svg_start");
+extern const uint8_t ab_logo_bot_svg_end[]   asm("_binary_ab_logo_bot_svg_end");
+
 // --- Helpers --------------------------------------------------------
 
 static void send_json(httpd_req_t *req, cJSON *root)
@@ -87,6 +90,14 @@ static void local_ip_str(char *out, size_t cap)
 }
 
 // --- Handlers -------------------------------------------------------
+
+static esp_err_t handle_favicon(httpd_req_t *req)
+{
+    httpd_resp_set_type(req, "image/svg+xml");
+    httpd_resp_set_hdr(req, "Cache-Control", "public, max-age=31536000, immutable");
+    return httpd_resp_send(req, (const char *)ab_logo_bot_svg_start,
+                           ab_logo_bot_svg_end - ab_logo_bot_svg_start);
+}
 
 static esp_err_t handle_root(httpd_req_t *req)
 {
@@ -682,7 +693,9 @@ static esp_err_t handle_errors(httpd_req_t *req)
 // --- Server lifecycle -----------------------------------------------
 
 static const httpd_uri_t URIS[] = {
-    { .uri = "/",            .method = HTTP_GET,  .handler = handle_root,        .user_ctx = NULL },
+    { .uri = "/",                .method = HTTP_GET,  .handler = handle_root,        .user_ctx = NULL },
+    { .uri = "/favicon.ico",     .method = HTTP_GET,  .handler = handle_favicon,     .user_ctx = NULL },
+    { .uri = "/ab-logo-bot.svg", .method = HTTP_GET,  .handler = handle_favicon,     .user_ctx = NULL },
     { .uri = "/api/status",  .method = HTTP_GET,  .handler = handle_status,      .user_ctx = NULL },
     { .uri = "/api/calls",   .method = HTTP_GET,  .handler = handle_calls,       .user_ctx = NULL },
     { .uri = "/api/errors",  .method = HTTP_GET,  .handler = handle_errors,      .user_ctx = NULL },

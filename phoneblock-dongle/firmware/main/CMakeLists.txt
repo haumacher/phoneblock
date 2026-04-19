@@ -1,7 +1,7 @@
 idf_component_register(
     SRCS "main.c" "sip_register.c" "api.c" "sip_parse.c" "audio.c" "rtp.c" "stats.c" "config.c" "web.c" "tr064.c"
     INCLUDE_DIRS "."
-    EMBED_FILES "audio/announcement.alaw" "web/index.html"
+    EMBED_FILES "audio/announcement.alaw" "web/index.html" "web/ab-logo-bot.svg"
     REQUIRES
         esp_http_client
         esp_http_server
