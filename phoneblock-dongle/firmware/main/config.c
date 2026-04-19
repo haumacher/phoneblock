@@ -175,6 +175,18 @@ static esp_err_t set_int_if(nvs_handle_t h, const char *key, int val, int *cache
     return err;
 }
 
+esp_err_t config_erase(void)
+{
+    nvs_handle_t h;
+    esp_err_t err = nvs_open(NS, NVS_READWRITE, &h);
+    if (err != ESP_OK) return err;
+    err = nvs_erase_all(h);
+    if (err == ESP_OK) err = nvs_commit(h);
+    nvs_close(h);
+    ESP_LOGI(TAG, "config_erase: %s", esp_err_to_name(err));
+    return err;
+}
+
 esp_err_t config_update(const config_update_t *u)
 {
     nvs_handle_t h;

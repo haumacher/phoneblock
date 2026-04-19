@@ -9,6 +9,9 @@
 #include "esp_app_desc.h"
 #include "esp_netif.h"
 #include "esp_http_server.h"
+#include "esp_system.h"       // esp_restart
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 #include "lwip/sockets.h"     // INET_ADDRSTRLEN
 #include "cJSON.h"
 
@@ -774,6 +777,37 @@ static esp_err_t handle_errors(httpd_req_t *req)
     return ESP_OK;
 }
 
+// POST /api/factory-reset — erases our NVS namespace and reboots.
+// Answer the HTTP request before rebooting so the browser sees the
+// JSON confirmation; the actual esp_restart() runs from a short-
+// lived task so the httpd worker has time to finish sending.
+static void factory_reset_task(void *arg)
+{
+    (void)arg;
+    vTaskDelay(pdMS_TO_TICKS(300));
+    ESP_LOGW(TAG, "factory-reset: restarting now");
+    esp_restart();
+}
+
+static esp_err_t handle_factory_reset(httpd_req_t *req)
+{
+    esp_err_t err = config_erase();
+    cJSON *root = cJSON_CreateObject();
+    if (err != ESP_OK) {
+        cJSON_AddBoolToObject  (root, "ok", false);
+        cJSON_AddStringToObject(root, "message",
+            "NVS-Löschen fehlgeschlagen.");
+        send_json(req, root);
+        return ESP_OK;
+    }
+    cJSON_AddBoolToObject  (root, "ok", true);
+    cJSON_AddStringToObject(root, "message",
+        "Konfiguration gelöscht — Neustart läuft.");
+    send_json(req, root);
+    xTaskCreate(factory_reset_task, "factory_reset", 2048, NULL, 5, NULL);
+    return ESP_OK;
+}
+
 // POST /api/errors/clear — drops all buffered error entries.
 static esp_err_t handle_errors_clear(httpd_req_t *req)
 {
@@ -816,6 +850,7 @@ static const httpd_uri_t URIS[] = {
     { .uri = "/api/calls",   .method = HTTP_GET,  .handler = handle_calls,       .user_ctx = NULL },
     { .uri = "/api/errors",  .method = HTTP_GET,  .handler = handle_errors,      .user_ctx = NULL },
     { .uri = "/api/errors/clear",    .method = HTTP_POST, .handler = handle_errors_clear,   .user_ctx = NULL },
+    { .uri = "/api/factory-reset",   .method = HTTP_POST, .handler = handle_factory_reset,  .user_ctx = NULL },
     { .uri = "/api/config",          .method = HTTP_POST, .handler = handle_config_post,    .user_ctx = NULL },
     { .uri = "/api/fritzbox-setup",      .method = HTTP_POST, .handler = handle_fritzbox_setup,      .user_ctx = NULL },
     { .uri = "/api/fritzbox-2fa-status", .method = HTTP_GET,  .handler = handle_fritzbox_2fa_status, .user_ctx = NULL },

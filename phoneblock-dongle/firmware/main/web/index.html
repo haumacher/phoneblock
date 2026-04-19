@@ -134,6 +134,12 @@ const I18N = {
     'status.errors.empty': 'keine Fehler',
     'status.errors.ago': 'vor {age}',
     'status.errors.clear': 'Log leeren',
+    'status.reset.title': 'Werkseinstellungen',
+    'status.reset.intro': 'Löscht alle Einstellungen im Dongle (SIP-Zugangsdaten, PhoneBlock-Token, Fehlerverlauf) und startet neu.',
+    'status.reset.button': 'Konfiguration zurücksetzen',
+    'status.reset.confirm': 'Alle Dongle-Einstellungen wirklich löschen und neu starten?',
+    'status.reset.running': 'Wird zurückgesetzt — der Dongle startet gleich neu.',
+    'status.reset.error': 'Zurücksetzen fehlgeschlagen: {msg}',
     'hero.title': 'Einrichtung',
     'hero.intro': 'Zwei Schritte, dann blockt dein Dongle Spam-Anrufe automatisch. Beide abhaken, erst dann ist das Gerät einsatzbereit.',
     'hero.step1.todo': 'Den Dongle bei deiner Telefonanlage anmelden',
@@ -240,6 +246,12 @@ const I18N = {
     'status.errors.empty': 'no errors',
     'status.errors.ago': '{age} ago',
     'status.errors.clear': 'Clear log',
+    'status.reset.title': 'Factory reset',
+    'status.reset.intro': 'Erases all dongle settings (SIP credentials, PhoneBlock token, error history) and reboots.',
+    'status.reset.button': 'Reset configuration',
+    'status.reset.confirm': 'Really erase all dongle settings and reboot?',
+    'status.reset.running': 'Resetting — the dongle is rebooting now.',
+    'status.reset.error': 'Reset failed: {msg}',
     'hero.title': 'Setup',
     'hero.intro': 'Two steps, then the dongle blocks spam calls automatically. Both need to be ticked before the device is ready.',
     'hero.step1.todo': 'Register the dongle with your phone system',
@@ -346,6 +358,12 @@ const I18N = {
     'status.errors.empty': 'aucune erreur',
     'status.errors.ago': 'il y a {age}',
     'status.errors.clear': 'Vider le journal',
+    'status.reset.title': 'Réinitialisation',
+    'status.reset.intro': 'Efface tous les réglages du dongle (identifiants SIP, jeton PhoneBlock, historique des erreurs) et redémarre.',
+    'status.reset.button': 'Réinitialiser la configuration',
+    'status.reset.confirm': 'Effacer vraiment tous les réglages du dongle et redémarrer ?',
+    'status.reset.running': 'Réinitialisation — le dongle redémarre.',
+    'status.reset.error': 'Échec de la réinitialisation : {msg}',
     'hero.title': 'Configuration',
     'hero.intro': 'Deux étapes, et le dongle bloque les appels indésirables automatiquement. Les deux doivent être cochées pour que l’appareil soit prêt.',
     'hero.step1.todo': 'Enregistrer le dongle auprès de votre système téléphonique',
@@ -452,6 +470,12 @@ const I18N = {
     'status.errors.empty': 'sin errores',
     'status.errors.ago': 'hace {age}',
     'status.errors.clear': 'Vaciar registro',
+    'status.reset.title': 'Restablecimiento',
+    'status.reset.intro': 'Borra todos los ajustes del dongle (credenciales SIP, token PhoneBlock, historial de errores) y reinicia.',
+    'status.reset.button': 'Restablecer configuración',
+    'status.reset.confirm': '¿Borrar de verdad todos los ajustes del dongle y reiniciar?',
+    'status.reset.running': 'Restableciendo — el dongle se reinicia.',
+    'status.reset.error': 'El restablecimiento falló: {msg}',
     'hero.title': 'Configuración',
     'hero.intro': 'Dos pasos y el dongle bloqueará llamadas spam automáticamente. Ambos deben completarse para que el dispositivo esté listo.',
     'hero.step1.todo': 'Registra el dongle en tu sistema telefónico',
@@ -699,7 +723,15 @@ function renderStatus(){
     +    esc(t('status.errors.clear')) + '</button>'
     + '</h2>'
     + '<div id="errorsList"></div>'
-    + '</section>';
+    + '</section>'
+    + '<section id="resetSection" style="display:none">'
+    + '<h2>' + esc(t('status.reset.title')) + '</h2>'
+    + '<p class="muted">' + esc(t('status.reset.intro')) + '</p>'
+    + '<p style="margin-top:.6rem">'
+    + '<button id="resetBtn" class="btn-ghost" style="border-color:#d93025;color:#d93025;padding:.3rem .7rem;font-size:.85rem">'
+    +   esc(t('status.reset.button')) + '</button>'
+    + '<span id="resetMsg" class="muted" style="margin-left:.6rem"></span>'
+    + '</p></section>';
   refreshAll();
   pollTimer = setInterval(refreshAll, 3000);
 }
@@ -738,6 +770,7 @@ async function refreshAll(){
   const statusSec     = $('statusSection');
   const callsSec      = $('callsSection');
   const errorsSec     = $('errorsSection');
+  const resetSec      = $('resetSection');
   if (!sipConfigured || !tokenSet){
     // Setup incomplete — show the hero with per-step progress until
     // both SIP and the PhoneBlock token are configured. The status
@@ -747,12 +780,14 @@ async function refreshAll(){
     statusSec.style.display = 'none';
     callsSec.style.display = 'none';
     errorsSec.style.display = 'none';
+    resetSec.style.display = 'none';
     return;
   }
   heroSlot.innerHTML = '';
   statusSec.style.display = '';
   callsSec.style.display = '';
   errorsSec.style.display = '';
+  resetSec.style.display = '';
 
   // SIP pill + detail
   const sipPill = $('sipPill');
@@ -874,6 +909,36 @@ async function refreshAll(){
       catch (_){ /* next poll will reflect whatever state we end up in */ }
       await refreshAll();
       clearBtn.disabled = false;
+    };
+  }
+
+  const resetBtn = $('resetBtn');
+  const resetMsg = $('resetMsg');
+  if (resetBtn && !resetBtn.onclick){
+    resetBtn.onclick = async () => {
+      if (!confirm(t('status.reset.confirm'))) return;
+      resetBtn.disabled = true;
+      resetMsg.textContent = '';
+      try {
+        const r = await fetch('/api/factory-reset', { method: 'POST' });
+        const d = await r.json().catch(() => ({}));
+        if (r.ok && d.ok){
+          resetMsg.textContent = t('status.reset.running');
+          resetMsg.style.color = '#e8710a';
+          // Device is about to reboot; stop the poll loop so we do
+          // not flood the log with error noise during the outage.
+          stopPolling();
+        } else {
+          resetMsg.textContent = t('status.reset.error',
+            {msg: d.message || r.statusText});
+          resetMsg.style.color = '#d93025';
+          resetBtn.disabled = false;
+        }
+      } catch (_){
+        resetMsg.textContent = t('status.reset.error', {msg: 'Netzwerkfehler'});
+        resetMsg.style.color = '#d93025';
+        resetBtn.disabled = false;
+      }
     };
   }
 }

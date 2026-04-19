@@ -69,3 +69,10 @@ typedef struct {
 } config_update_t;
 
 esp_err_t config_update(const config_update_t *u);
+
+// Erase the entire NVS namespace used by the dongle. Leaves other
+// namespaces (WiFi credentials in the `nvs.net80211` namespace, etc.)
+// intact. Caller should call esp_restart() afterwards, as the RAM
+// cache is *not* refreshed to mirror the erase — a fresh boot
+// guarantees a clean state.
+esp_err_t config_erase(void);
