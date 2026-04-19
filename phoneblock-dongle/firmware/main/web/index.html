@@ -154,6 +154,8 @@ const I18N = {
     'status.sync.run_now': 'Jetzt synchronisieren',
     'status.sync.triggered': 'Sync gestartet.',
     'status.sync.busy': 'Sync läuft bereits.',
+    'status.sync.enable': 'Sperrlisten-Sync aktivieren',
+    'status.sync.disabled': 'Sync ist deaktiviert.',
     'status.ann.title': 'Spam-Ansage',
     'status.ann.default': 'Eingebaute Standard-Ansage ({kb} KB).',
     'status.ann.custom': 'Eigene Ansage ({kb} KB).',
@@ -296,6 +298,8 @@ const I18N = {
     'status.sync.run_now': 'Sync now',
     'status.sync.triggered': 'Sync triggered.',
     'status.sync.busy': 'Sync already running.',
+    'status.sync.enable': 'Enable blocklist sync',
+    'status.sync.disabled': 'Sync is disabled.',
     'status.ann.title': 'Spam announcement',
     'status.ann.default': 'Built-in default announcement ({kb} KB).',
     'status.ann.custom': 'Custom announcement ({kb} KB).',
@@ -438,6 +442,8 @@ const I18N = {
     'status.sync.run_now': 'Synchroniser maintenant',
     'status.sync.triggered': 'Synchro démarrée.',
     'status.sync.busy': 'Synchro déjà en cours.',
+    'status.sync.enable': 'Activer la synchronisation',
+    'status.sync.disabled': 'Synchro désactivée.',
     'status.ann.title': 'Message anti-spam',
     'status.ann.default': 'Message par défaut intégré ({kb} Ko).',
     'status.ann.custom': 'Message personnalisé ({kb} Ko).',
@@ -580,6 +586,8 @@ const I18N = {
     'status.sync.run_now': 'Sincronizar ahora',
     'status.sync.triggered': 'Sincronización iniciada.',
     'status.sync.busy': 'Sincronización ya en curso.',
+    'status.sync.enable': 'Activar sincronización',
+    'status.sync.disabled': 'Sincronización desactivada.',
     'status.ann.title': 'Mensaje anti-spam',
     'status.ann.default': 'Mensaje predeterminado integrado ({kb} KB).',
     'status.ann.custom': 'Mensaje personalizado ({kb} KB).',
@@ -867,6 +875,10 @@ function renderStatus(){
     + '<section id="syncSection" style="display:none">'
     + '<h2>' + esc(t('status.sync.title')) + '</h2>'
     + '<p class="muted">' + esc(t('status.sync.intro')) + '</p>'
+    + '<label style="display:flex;align-items:center;gap:.5rem;margin:.4rem 0;font-size:.9rem;color:#222">'
+    + '  <input type="checkbox" id="syncEnable" style="width:auto;margin:0">'
+    + '  <span>' + esc(t('status.sync.enable')) + '</span>'
+    + '</label>'
     + '<p id="syncStatus" class="muted" style="margin-top:.4rem"></p>'
     + '<p style="margin:.4rem 0 0">'
     + '  <button id="syncRun" class="btn-ghost" style="padding:.3rem .7rem;font-size:.85rem">'
@@ -951,9 +963,16 @@ async function refreshAll(){
   const sync = s.sync || {};
   const syncStatus = $('syncStatus');
   const syncRun    = $('syncRun');
+  const syncEnable = $('syncEnable');
   const ago        = sync.last_ago_s >= 0 ? fmtSec(sync.last_ago_s) : '–';
+  syncEnable.checked = !!sync.enabled;
+  syncEnable.disabled = !sync.available;
   if (!sync.available){
     syncStatus.textContent = t('status.sync.unavailable');
+    syncStatus.style.color = '#888';
+    syncRun.disabled = true;
+  } else if (!sync.enabled){
+    syncStatus.textContent = t('status.sync.disabled');
     syncStatus.style.color = '#888';
     syncRun.disabled = true;
   } else if (sync.running){
@@ -979,6 +998,22 @@ async function refreshAll(){
       {ago, n: sync.last_pushed});
     syncStatus.style.color = '#188038';
     syncRun.disabled = false;
+  }
+  if (!syncEnable.onchange){
+    syncEnable.onchange = async () => {
+      const want = syncEnable.checked;
+      syncEnable.disabled = true;
+      const body = new URLSearchParams();
+      body.append('sync_enabled', want ? '1' : '0');
+      try {
+        await fetch('/api/config', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: body.toString(),
+        });
+      } catch (_){ /* next poll will reconcile */ }
+      refreshAll();
+    };
   }
   if (!syncRun.onclick){
     syncRun.onclick = async () => {

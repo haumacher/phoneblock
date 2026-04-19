@@ -157,6 +157,7 @@ static esp_err_t handle_status(httpd_req_t *req)
     sync_snapshot(&ss);
     int64_t ago_s = ss.ever_ran ? (now_us - ss.last_at_us) / 1000000 : -1;
     cJSON_AddBoolToObject  (syn, "available", config_fritzbox_app_user()[0] != '\0');
+    cJSON_AddBoolToObject  (syn, "enabled",   config_sync_enabled());
     cJSON_AddBoolToObject  (syn, "ever_ran",  ss.ever_ran);
     cJSON_AddBoolToObject  (syn, "last_ok",   ss.last_ok);
     cJSON_AddBoolToObject  (syn, "running",   ss.running);
@@ -287,6 +288,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     char sip_outbound[80] = "";
     char sip_realm[64]    = "";
     char sip_srtp[16]     = "";
+    char sync_en_s[4]     = "";
 
     bool have_sip_host  = form_get(body, "sip_host",  sip_host,  sizeof(sip_host));
     bool have_sip_user  = form_get(body, "sip_user",  sip_user,  sizeof(sip_user));
@@ -298,6 +300,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     bool have_sip_out   = form_get(body, "sip_outbound",  sip_outbound, sizeof(sip_outbound));
     bool have_sip_realm = form_get(body, "sip_realm",     sip_realm,    sizeof(sip_realm));
     bool have_sip_srtp  = form_get(body, "sip_srtp",      sip_srtp,     sizeof(sip_srtp));
+    bool have_sync_en   = form_get(body, "sync_enabled",  sync_en_s,    sizeof(sync_en_s));
     bool have_pb_url    = form_get(body, "pb_url",    pb_url,    sizeof(pb_url));
     bool have_pb_token  = form_get(body, "pb_token",  pb_token,  sizeof(pb_token));
     free(body);
@@ -328,6 +331,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
         .sip_outbound  = have_sip_out   ? sip_outbound : NULL,
         .sip_realm     = have_sip_realm ? sip_realm    : NULL,
         .sip_srtp      = have_sip_srtp  ? sip_srtp     : NULL,
+        .sync_enabled  = have_sync_en   ? sync_en_s    : NULL,
         .phoneblock_base_url = have_pb_url   && pb_url[0]   ? pb_url   : NULL,
         .phoneblock_token    = have_pb_token && pb_token[0] ? pb_token : NULL,
     };

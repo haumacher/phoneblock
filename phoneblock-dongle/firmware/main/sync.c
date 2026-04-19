@@ -237,6 +237,11 @@ static void run_once(void)
         set_status_result(false, 0, 0, "no PhoneBlock token");
         return;
     }
+    if (!config_sync_enabled()) {
+        ESP_LOGI(TAG, "sync skipped — disabled by user");
+        set_status_result(false, 0, 0, "disabled");
+        return;
+    }
 
     ESP_LOGI(TAG, "sync run starting");
     set_status_running(true);

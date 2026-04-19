@@ -54,6 +54,10 @@ int         config_contact_port_override(void);
 const char *config_fritzbox_app_user(void);
 const char *config_fritzbox_app_pass(void);
 
+// Whether the daily + manual Fritz!Box-blocklist sync is enabled.
+// Default true once Fritz!Box setup has persisted app credentials.
+bool        config_sync_enabled(void);
+
 // PhoneBlock
 const char *config_phoneblock_base_url(void);
 const char *config_phoneblock_token(void);
@@ -75,6 +79,8 @@ typedef struct {
     const char *sip_srtp;
     const char *fritzbox_app_user;
     const char *fritzbox_app_pass;
+    // "1" = enable sync, "0" = disable, NULL = leave unchanged.
+    const char *sync_enabled;
     const char *phoneblock_base_url;
     const char *phoneblock_token;
 } config_update_t;
