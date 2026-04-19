@@ -554,14 +554,22 @@ static esp_err_t handle_token_callback(httpd_req_t *req)
             HTTPD_RESP_USE_STRLEN);
         return ESP_OK;
     }
-    char token[128] = "";
-    char state[64]  = "";
+    char token_raw[128] = "";
+    char token[128]     = "";
+    char state_raw[64]  = "";
+    char state[64]      = "";
     // Server's /create-token uses `loginToken` as the parameter name;
     // accept `token` too for robustness if we ever change the server.
-    if (httpd_query_key_value(query, "loginToken", token, sizeof(token)) != ESP_OK) {
-        httpd_query_key_value(query, "token", token, sizeof(token));
+    if (httpd_query_key_value(query, "loginToken", token_raw, sizeof(token_raw)) != ESP_OK) {
+        httpd_query_key_value(query, "token", token_raw, sizeof(token_raw));
     }
-    httpd_query_key_value(query, "state", state, sizeof(state));
+    httpd_query_key_value(query, "state", state_raw, sizeof(state_raw));
+    // httpd_query_key_value does *not* unescape %XX sequences. A token
+    // containing e.g. '+' or '/' arrives here as "%2B"/"%2F" and, if
+    // stored raw, the server never recognises it — length mismatch
+    // (35 vs 37 chars) was the tell. Decode both values.
+    url_decode(token_raw, strlen(token_raw), token, sizeof(token));
+    url_decode(state_raw, strlen(state_raw), state, sizeof(state));
 
     if (!s_oauth_nonce[0] || strcmp(state, s_oauth_nonce) != 0) {
         s_oauth_nonce[0] = '\0';
