@@ -12,6 +12,7 @@
 #include "lwip/sockets.h"     // INET_ADDRSTRLEN
 #include "cJSON.h"
 
+#include "api.h"
 #include "config.h"
 #include "sip_register.h"
 #include "stats.h"
@@ -703,6 +704,28 @@ static esp_err_t handle_errors(httpd_req_t *req)
     return ESP_OK;
 }
 
+// POST /api/token-test
+// Runs phoneblock_selftest() against GET /test and reports whether the
+// currently stored token is still accepted by the server. Always
+// returns HTTP 200; `ok` in the JSON body tells the UI the outcome.
+static esp_err_t handle_token_test(httpd_req_t *req)
+{
+    cJSON *root = cJSON_CreateObject();
+    if (strlen(config_phoneblock_token()) == 0) {
+        cJSON_AddBoolToObject  (root, "ok", false);
+        cJSON_AddStringToObject(root, "message", "Kein Token gesetzt.");
+        send_json(req, root);
+        return ESP_OK;
+    }
+    bool ok = phoneblock_selftest();
+    cJSON_AddBoolToObject  (root, "ok", ok);
+    cJSON_AddStringToObject(root, "message",
+        ok ? "Token gültig — PhoneBlock erreichbar."
+           : "Token wurde abgelehnt. Bitte neu anfordern.");
+    send_json(req, root);
+    return ESP_OK;
+}
+
 // --- Server lifecycle -----------------------------------------------
 
 static const httpd_uri_t URIS[] = {
@@ -715,6 +738,7 @@ static const httpd_uri_t URIS[] = {
     { .uri = "/api/config",          .method = HTTP_POST, .handler = handle_config_post,    .user_ctx = NULL },
     { .uri = "/api/fritzbox-setup",      .method = HTTP_POST, .handler = handle_fritzbox_setup,      .user_ctx = NULL },
     { .uri = "/api/fritzbox-2fa-status", .method = HTTP_GET,  .handler = handle_fritzbox_2fa_status, .user_ctx = NULL },
+    { .uri = "/api/token-test",          .method = HTTP_POST, .handler = handle_token_test,          .user_ctx = NULL },
     { .uri = "/register-start",      .method = HTTP_GET,  .handler = handle_register_start, .user_ctx = NULL },
     { .uri = "/token-callback",      .method = HTTP_GET,  .handler = handle_token_callback, .user_ctx = NULL },
 };

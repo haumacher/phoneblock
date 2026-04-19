@@ -107,6 +107,9 @@ const I18N = {
     'status.token.set': 'PhoneBlock-Token gesetzt',
     'status.token.missing': 'Kein PhoneBlock-Token',
     'status.token.cta': 'Token anlegen',
+    'status.token.test': 'Testen',
+    'status.token.renew': 'Neu anfordern',
+    'status.token.testing': 'Prüfe Token…',
     'status.counters.total': 'Gesamt',
     'status.counters.spam': 'Spam geblockt',
     'status.counters.legit': 'Legitim',
@@ -121,8 +124,6 @@ const I18N = {
     'status.errors.title': 'Fehler',
     'status.errors.empty': 'keine Fehler',
     'status.errors.ago': 'vor {age}',
-    'status.footer.redo_sip': 'Telefonie neu einrichten',
-    'status.footer.redo_token': 'Token neu anlegen',
     'hero.title': 'Einrichtung',
     'hero.intro': 'Zwei Schritte, dann blockt dein Dongle Spam-Anrufe automatisch. Beide abhaken, erst dann ist das Gerät einsatzbereit.',
     'hero.step1.todo': 'Den Dongle bei deiner Telefonanlage anmelden',
@@ -310,8 +311,13 @@ function renderStatus(){
     + '</div>'
     + '<div class="status-row">'
     + '  <span id="tokenPill" class="pill bad">…</span>'
+    + '  <span id="tokenMsg" class="muted"></span>'
     + '  <a id="tokenCta" href="#/setup/token" class="btn-ghost" style="display:none;padding:.3rem .7rem;font-size:.85rem">'
     +    esc(t('status.token.cta')) + '</a>'
+    + '  <button id="tokenTest" class="btn-ghost" style="display:none;padding:.3rem .7rem;font-size:.85rem">'
+    +    esc(t('status.token.test')) + '</button>'
+    + '  <a id="tokenRenew" href="/register-start" class="btn-ghost" style="display:none;padding:.3rem .7rem;font-size:.85rem">'
+    +    esc(t('status.token.renew')) + '</a>'
     + '</div>'
     + '<div class="grid" style="margin-top:.8rem">'
     + '  <div class="stat"><div class="stat-label">' + esc(t('status.counters.total'))  + '</div><div class="stat-value" id="cTotal">–</div></div>'
@@ -333,12 +339,6 @@ function renderStatus(){
     + '<section id="errorsSection" style="display:none">'
     + '<h2>' + esc(t('status.errors.title')) + '</h2>'
     + '<div id="errorsList"></div>'
-    + '</section>'
-    + '<section id="statusFooter" style="display:none">'
-    + '<p class="muted" style="margin:0">'
-    + '<a href="#/setup/sip">' + esc(t('status.footer.redo_sip'))   + '</a> · '
-    + '<a href="#/setup/token">' + esc(t('status.footer.redo_token')) + '</a>'
-    + '</p>'
     + '</section>';
   refreshAll();
   pollTimer = setInterval(refreshAll, 3000);
@@ -378,7 +378,6 @@ async function refreshAll(){
   const statusSec     = $('statusSection');
   const callsSec      = $('callsSection');
   const errorsSec     = $('errorsSection');
-  const footerSec     = $('statusFooter');
   if (!sipConfigured || !tokenSet){
     // Setup incomplete — show the hero with per-step progress until
     // both SIP and the PhoneBlock token are configured. The status
@@ -388,14 +387,12 @@ async function refreshAll(){
     statusSec.style.display = 'none';
     callsSec.style.display = 'none';
     errorsSec.style.display = 'none';
-    footerSec.style.display = 'none';
     return;
   }
   heroSlot.innerHTML = '';
   statusSec.style.display = '';
   callsSec.style.display = '';
   errorsSec.style.display = '';
-  footerSec.style.display = '';
 
   // SIP pill + detail
   const sipPill = $('sipPill');
@@ -421,17 +418,42 @@ async function refreshAll(){
     sipCta.style.display = '';
   }
 
-  // Token pill
-  const tokenPill = $('tokenPill');
-  const tokenCta  = $('tokenCta');
+  // Token pill + actions
+  const tokenPill  = $('tokenPill');
+  const tokenCta   = $('tokenCta');
+  const tokenTest  = $('tokenTest');
+  const tokenRenew = $('tokenRenew');
   if (tokenSet){
     tokenPill.textContent = t('status.token.set');
     tokenPill.className = 'pill ok';
-    tokenCta.style.display = 'none';
+    tokenCta.style.display   = 'none';
+    tokenTest.style.display  = '';
+    tokenRenew.style.display = '';
   } else {
     tokenPill.textContent = t('status.token.missing');
     tokenPill.className = 'pill warn';
-    tokenCta.style.display = '';
+    tokenCta.style.display   = '';
+    tokenTest.style.display  = 'none';
+    tokenRenew.style.display = 'none';
+    $('tokenMsg').textContent = '';
+  }
+  if (!tokenTest.onclick){
+    tokenTest.onclick = async () => {
+      const m = $('tokenMsg');
+      tokenTest.disabled = true;
+      m.textContent = t('status.token.testing');
+      m.style.color = '#888';
+      try {
+        const r = await fetch('/api/token-test', { method: 'POST' });
+        const d = await r.json().catch(() => ({}));
+        m.textContent = d.message || (d.ok ? '✓' : '✗');
+        m.style.color = d.ok ? '#188038' : '#d93025';
+      } catch (_){
+        m.textContent = 'Netzwerkfehler';
+        m.style.color = '#d93025';
+      }
+      tokenTest.disabled = false;
+    };
   }
 
   $('cTotal').textContent = s.counters.total;
