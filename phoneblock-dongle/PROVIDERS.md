@@ -19,10 +19,10 @@ gegenchecken — Registrar-Namen und Port-/Transport-Zwang können sich
 | Vodafone (DSL/Kabel) | ✅ | MeinVodafone, separates SIP-PW | regionsabhängiger Registrar |
 | NetCologne / NetAachen | ✅ | `einstellungen.netcologne.de` | „immer über Internet" in FB **aus** |
 | M-net | ✅ | M-net-Kundenportal | Premium-Trunks TLS |
-| Congstar | ⚠️ | Kundencenter | toleriert, kein Support |
-| Telekom MagentaZuhause | ⚠️ | Kundencenter (E-Mail + Webpasswort) | **nur aus Telekom-Netz** |
+| Telekom MagentaZuhause | ✅ | Kundencenter (E-Mail + Webpasswort) | nur aus Telekom-Netz — für stationären Dongle unkritisch |
 | Telekom CompanyFlex / DeutschlandLAN | ✅ | Geschäftskunden-Portal | **TLS+SRTP Pflicht** |
-| O2 / Telefónica | ❌ | nur per TR-069 an CPE | Registrierung nur aus O2-IP-Range |
+| Congstar | ⚠️ | Kundencenter | toleriert, kein Support |
+| O2 / Telefónica | ❌ | nur per TR-069 an CPE | Registrierung nur aus O2-IP-Range, Daten nicht ausgehändigt |
 
 ## Parameter je Anbieter
 
@@ -160,18 +160,23 @@ Deckt die Top-5 ohne Provider-Preset komplett ab.
   1&1 / sipgate / easybell / „Eigener Registrar") — füllt alle Felder
   vor und versteckt den Rest hinter „Experteneinstellungen".
 
-## Anbieter, die generische Clients faktisch ablehnen
+## Anbieter mit Einschränkungen
 
 - **O2 / Telefónica** — SIP-Daten werden grundsätzlich nicht
   herausgegeben, Registrierung nur aus O2-IP-Range. Dongle realistisch
   nur *hinter* einem O2-Router per Fritz!Box-Autoprovisioning.
-- **Telekom MagentaZuhause** — registriert nur aus Telekom-Netz; im
-  Telekom-Anschluss selbst problemlos.
 - **Congstar** — toleriert, aber kein Support. Funktioniert, sobald
   SIP-Daten ausgehändigt sind.
 
-Für O2- und MagentaZuhause-Anschlüsse bleibt TR-064-Autoprovisioning
-via Fritz!Box der einzig zuverlässige Weg.
+**Nicht einschränkend für den stationären Dongle:**
+- Telekom MagentaZuhause — „nur aus Telekom-Netz" heißt nur:
+  nicht nomadisch nutzbar (kein Hotel-WLAN, kein Ausland). Der Dongle
+  hängt immer beim Kunden daheim, also im Telekom-Netz. Damit ist
+  MagentaZuhause regulär als Provider-Preset aufnehmbar. TLS wird aber
+  voraussichtlich Pflicht.
+
+Für O2-Anschlüsse bleibt TR-064-Autoprovisioning via Fritz!Box der
+einzig zuverlässige Weg.
 
 ## Quellen
 
