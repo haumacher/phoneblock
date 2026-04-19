@@ -174,8 +174,11 @@ esp_err_t announcement_write_commit(void)
         s_write_got = s_write_total = 0;
         return ESP_ERR_INVALID_SIZE;
     }
-    // Atomic replace: the previous announcement stays intact if the
-    // rename step itself fails.
+    // SPIFFS rename fails with EIO if the destination already exists,
+    // so remove any previous file first. Short window where neither
+    // file is present — on a crash in this gap we fall back to the
+    // embedded default on next boot, which is acceptable.
+    unlink(SPIFFS_FILE);
     if (rename(SPIFFS_TEMP, SPIFFS_FILE) != 0) {
         ESP_LOGE(TAG, "rename(%s → %s): %s",
                  SPIFFS_TEMP, SPIFFS_FILE, strerror(errno));
