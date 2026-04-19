@@ -18,6 +18,11 @@ static const char *NS   = "phoneblock";
 #define K_SIP_PASS      "sip_pass"
 #define K_SIP_EXPIRES   "sip_expires"
 #define K_SIP_INT_NUM   "sip_int_num"
+#define K_SIP_TRANSP    "sip_transp"
+#define K_SIP_AUTHUSER  "sip_authuser"
+#define K_SIP_OUTBOUND  "sip_outbound"
+#define K_SIP_REALM     "sip_realm"
+#define K_SIP_SRTP      "sip_srtp"
 #define K_CONTACT_HOST  "contact_host"
 #define K_CONTACT_PORT  "contact_port"
 #define K_PB_URL        "pb_url"
@@ -30,6 +35,11 @@ typedef struct {
     char sip_pass[64];
     int  sip_expires;
     char sip_int_num[16];
+    char sip_transp[8];      // "udp" | "tcp" | "tls"
+    char sip_authuser[32];
+    char sip_outbound[80];
+    char sip_realm[64];
+    char sip_srtp[16];       // "off" | "optional" | "mandatory"
     char contact_host[64];
     int  contact_port;
     char pb_base_url[128];
@@ -79,7 +89,12 @@ void config_load(void)
         s_config.sip_user[0]    = '\0';
         s_config.sip_pass[0]    = '\0';
         s_config.sip_expires    = CONFIG_SIP_EXPIRES;
-        s_config.sip_int_num[0] = '\0';
+        s_config.sip_int_num[0]   = '\0';
+        copy_default(s_config.sip_transp, sizeof(s_config.sip_transp), "udp");
+        s_config.sip_authuser[0]  = '\0';
+        s_config.sip_outbound[0]  = '\0';
+        s_config.sip_realm[0]     = '\0';
+        copy_default(s_config.sip_srtp,   sizeof(s_config.sip_srtp),   "off");
         copy_default(s_config.contact_host, sizeof(s_config.contact_host), CONFIG_SIP_CONTACT_HOST_OVERRIDE);
         s_config.contact_port = CONFIG_SIP_CONTACT_PORT_OVERRIDE;
         copy_default(s_config.pb_base_url,  sizeof(s_config.pb_base_url),  CONFIG_PHONEBLOCK_BASE_URL);
@@ -101,6 +116,16 @@ void config_load(void)
     s_config.sip_expires  = load_int(h, K_SIP_EXPIRES,  CONFIG_SIP_EXPIRES);
     load_str(h, K_SIP_INT_NUM,  "",
              s_config.sip_int_num,  sizeof(s_config.sip_int_num));
+    load_str(h, K_SIP_TRANSP,   "udp",
+             s_config.sip_transp,   sizeof(s_config.sip_transp));
+    load_str(h, K_SIP_AUTHUSER, "",
+             s_config.sip_authuser, sizeof(s_config.sip_authuser));
+    load_str(h, K_SIP_OUTBOUND, "",
+             s_config.sip_outbound, sizeof(s_config.sip_outbound));
+    load_str(h, K_SIP_REALM,    "",
+             s_config.sip_realm,    sizeof(s_config.sip_realm));
+    load_str(h, K_SIP_SRTP,     "off",
+             s_config.sip_srtp,     sizeof(s_config.sip_srtp));
     load_str(h, K_CONTACT_HOST, CONFIG_SIP_CONTACT_HOST_OVERRIDE,
              s_config.contact_host, sizeof(s_config.contact_host));
     s_config.contact_port = load_int(h, K_CONTACT_PORT, CONFIG_SIP_CONTACT_PORT_OVERRIDE);
@@ -121,6 +146,11 @@ const char *config_sip_user(void)            { return s_config.sip_user; }
 const char *config_sip_pass(void)            { return s_config.sip_pass; }
 int         config_sip_expires(void)         { return s_config.sip_expires; }
 const char *config_sip_internal_number(void) { return s_config.sip_int_num; }
+const char *config_sip_transport(void)       { return s_config.sip_transp[0] ? s_config.sip_transp : "udp"; }
+const char *config_sip_auth_user(void)       { return s_config.sip_authuser; }
+const char *config_sip_outbound(void)        { return s_config.sip_outbound; }
+const char *config_sip_realm(void)           { return s_config.sip_realm; }
+const char *config_sip_srtp(void)            { return s_config.sip_srtp[0] ? s_config.sip_srtp : "off"; }
 const char *config_contact_host_override(void) { return s_config.contact_host; }
 int         config_contact_port_override(void) { return s_config.contact_port; }
 const char *config_phoneblock_base_url(void) { return s_config.pb_base_url; }
@@ -161,6 +191,16 @@ esp_err_t config_update(const config_update_t *u)
     if (err == ESP_OK) err = set_int_if(h, K_SIP_EXPIRES, u->sip_expires, &s_config.sip_expires);
     if (err == ESP_OK) err = set_str_if(h, K_SIP_INT_NUM, u->sip_internal_number,
                                         s_config.sip_int_num, sizeof(s_config.sip_int_num));
+    if (err == ESP_OK) err = set_str_if(h, K_SIP_TRANSP, u->sip_transport,
+                                        s_config.sip_transp, sizeof(s_config.sip_transp));
+    if (err == ESP_OK) err = set_str_if(h, K_SIP_AUTHUSER, u->sip_auth_user,
+                                        s_config.sip_authuser, sizeof(s_config.sip_authuser));
+    if (err == ESP_OK) err = set_str_if(h, K_SIP_OUTBOUND, u->sip_outbound,
+                                        s_config.sip_outbound, sizeof(s_config.sip_outbound));
+    if (err == ESP_OK) err = set_str_if(h, K_SIP_REALM, u->sip_realm,
+                                        s_config.sip_realm, sizeof(s_config.sip_realm));
+    if (err == ESP_OK) err = set_str_if(h, K_SIP_SRTP, u->sip_srtp,
+                                        s_config.sip_srtp, sizeof(s_config.sip_srtp));
     if (err == ESP_OK) err = set_str_if(h, K_PB_URL, u->phoneblock_base_url,
                                         s_config.pb_base_url, sizeof(s_config.pb_base_url));
     if (err == ESP_OK) err = set_str_if(h, K_PB_TOKEN, u->phoneblock_token,

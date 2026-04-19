@@ -185,6 +185,20 @@ const I18N = {
     'sip.manual.submit': 'Speichern',
     'sip.manual.done': 'Gespeichert.',
     'sip.manual.error': 'Fehler: {msg}',
+    'sip.manual.advanced': 'Erweiterte Parameter',
+    'sip.manual.transport': 'Transport',
+    'sip.manual.transport.hint': 'Derzeit ist nur UDP im Firmware-Stack implementiert.',
+    'sip.manual.auth_user': 'Auth-Benutzer',
+    'sip.manual.auth_user.hint': 'Leer lassen = SIP-Benutzer auch als Auth. Bei Telekom: E-Mail.',
+    'sip.manual.outbound': 'Outbound-Proxy',
+    'sip.manual.outbound.hint': 'Optional, Format host[:port]. Leer = direkt zum Registrar.',
+    'sip.manual.realm': 'Realm',
+    'sip.manual.realm.hint': 'Leer = aus Challenge übernehmen.',
+    'sip.manual.srtp': 'SRTP',
+    'sip.manual.srtp.hint': 'Derzeit deaktiviert, Feld wird persistiert für spätere Nutzung.',
+    'sip.manual.srtp.off': 'aus',
+    'sip.manual.srtp.optional': 'optional',
+    'sip.manual.srtp.mandatory': 'Pflicht',
     'token.title': 'PhoneBlock verbinden',
     'token.intro': 'Der Dongle fragt für jeden eingehenden Anruf die PhoneBlock-Datenbank ab. Dafür brauchst du einen Token.',
     'token.how': 'Ein Klick auf den Knopf unten leitet dich zu phoneblock.net, wo du dich einmalig anmelden kannst (Google, Facebook oder Account). Anschließend landest du zurück hier — der Token ist dann gesetzt.',
@@ -277,6 +291,20 @@ const I18N = {
     'sip.manual.submit': 'Save',
     'sip.manual.done': 'Saved.',
     'sip.manual.error': 'Error: {msg}',
+    'sip.manual.advanced': 'Advanced parameters',
+    'sip.manual.transport': 'Transport',
+    'sip.manual.transport.hint': 'Only UDP is implemented in the firmware stack at the moment.',
+    'sip.manual.auth_user': 'Auth user',
+    'sip.manual.auth_user.hint': 'Empty = use SIP user for auth. Telekom: e-mail address.',
+    'sip.manual.outbound': 'Outbound proxy',
+    'sip.manual.outbound.hint': 'Optional, format host[:port]. Empty = register via the registrar directly.',
+    'sip.manual.realm': 'Realm',
+    'sip.manual.realm.hint': 'Empty = take from the server challenge.',
+    'sip.manual.srtp': 'SRTP',
+    'sip.manual.srtp.hint': 'Currently disabled; the field is persisted for later use.',
+    'sip.manual.srtp.off': 'off',
+    'sip.manual.srtp.optional': 'optional',
+    'sip.manual.srtp.mandatory': 'mandatory',
     'token.title': 'Connect PhoneBlock',
     'token.intro': 'The dongle queries the PhoneBlock database for every incoming call. For that it needs a token.',
     'token.how': 'Clicking the button below sends you to phoneblock.net for a one-time login (Google, Facebook or account). You then return here with the token set.',
@@ -369,6 +397,20 @@ const I18N = {
     'sip.manual.submit': 'Enregistrer',
     'sip.manual.done': 'Enregistré.',
     'sip.manual.error': 'Erreur : {msg}',
+    'sip.manual.advanced': 'Paramètres avancés',
+    'sip.manual.transport': 'Transport',
+    'sip.manual.transport.hint': 'Seul UDP est implémenté dans la pile du firmware pour l’instant.',
+    'sip.manual.auth_user': 'Utilisateur d’auth',
+    'sip.manual.auth_user.hint': 'Vide = utiliser l’utilisateur SIP pour l’auth. Telekom : adresse e-mail.',
+    'sip.manual.outbound': 'Proxy sortant',
+    'sip.manual.outbound.hint': 'Optionnel, format hôte[:port]. Vide = passer directement par le registrar.',
+    'sip.manual.realm': 'Realm',
+    'sip.manual.realm.hint': 'Vide = reprendre la valeur du challenge du serveur.',
+    'sip.manual.srtp': 'SRTP',
+    'sip.manual.srtp.hint': 'Actuellement désactivé ; le champ est persisté pour un usage ultérieur.',
+    'sip.manual.srtp.off': 'désactivé',
+    'sip.manual.srtp.optional': 'optionnel',
+    'sip.manual.srtp.mandatory': 'obligatoire',
     'token.title': 'Connecter PhoneBlock',
     'token.intro': 'Le dongle interroge la base PhoneBlock pour chaque appel entrant. Un jeton est donc nécessaire.',
     'token.how': 'Un clic sur le bouton ci-dessous vous dirige vers phoneblock.net pour une connexion unique (Google, Facebook ou compte). Vous revenez ensuite ici avec le jeton enregistré.',
@@ -461,6 +503,20 @@ const I18N = {
     'sip.manual.submit': 'Guardar',
     'sip.manual.done': 'Guardado.',
     'sip.manual.error': 'Error: {msg}',
+    'sip.manual.advanced': 'Parámetros avanzados',
+    'sip.manual.transport': 'Transporte',
+    'sip.manual.transport.hint': 'Por ahora el firmware solo implementa UDP.',
+    'sip.manual.auth_user': 'Usuario de auth',
+    'sip.manual.auth_user.hint': 'Vacío = usar el usuario SIP para auth. Telekom: correo electrónico.',
+    'sip.manual.outbound': 'Proxy saliente',
+    'sip.manual.outbound.hint': 'Opcional, formato host[:puerto]. Vacío = registrar directamente.',
+    'sip.manual.realm': 'Realm',
+    'sip.manual.realm.hint': 'Vacío = tomarlo del challenge del servidor.',
+    'sip.manual.srtp': 'SRTP',
+    'sip.manual.srtp.hint': 'Actualmente desactivado; el campo se guarda para uso futuro.',
+    'sip.manual.srtp.off': 'desactivado',
+    'sip.manual.srtp.optional': 'opcional',
+    'sip.manual.srtp.mandatory': 'obligatorio',
     'token.title': 'Conectar PhoneBlock',
     'token.intro': 'El dongle consulta la base de PhoneBlock en cada llamada entrante. Para ello necesita un token.',
     'token.how': 'Al pulsar el botón de abajo irás a phoneblock.net para iniciar sesión una sola vez (Google, Facebook o cuenta). Después vuelves aquí con el token configurado.',
@@ -1021,9 +1077,18 @@ async function onProviderSubmit(e){
 
 async function renderSipManual(){
   const s = await fetchJson('/api/status');
-  const host = (s && s.sip.host) || '';
-  const port = (s && s.sip.port) || 5060;
-  const user = (s && s.sip.user) || '';
+  const sip = s ? s.sip : {};
+  const host  = sip.host  || '';
+  const port  = sip.port  || 5060;
+  const user  = sip.user  || '';
+  const tr    = sip.transport || 'udp';
+  const au    = sip.auth_user || '';
+  const outb  = sip.outbound  || '';
+  const realm = sip.realm     || '';
+  const srtp  = sip.srtp      || 'off';
+  const opt = (value, cur, label) =>
+    '<option value="' + esc(value) + '"' + (value === cur ? ' selected' : '') + '>'
+    + esc(label) + '</option>';
   app.innerHTML = ''
     + '<section>'
     + '<div class="crumb"><a href="#/setup/sip">' + esc(t('back.sip')) + '</a></div>'
@@ -1038,6 +1103,36 @@ async function renderSipManual(){
     + '<input type="text"   name="sip_user" value="' + esc(user) + '"></label>'
     + '<label>' + esc(t('sip.manual.pass'))
     + '<input type="password" name="sip_pass" autocomplete="off"></label>'
+    + '<details style="margin:1rem 0">'
+    +   '<summary style="cursor:pointer;color:#008f7a;font-size:.9rem">'
+    +     esc(t('sip.manual.advanced')) + '</summary>'
+    +   '<label>' + esc(t('sip.manual.transport'))
+    +     '<select name="sip_transport">'
+    +       opt('udp', tr, 'UDP') + opt('tcp', tr, 'TCP') + opt('tls', tr, 'TLS')
+    +     '</select></label>'
+    +   '<p class="muted" style="font-size:.75rem;margin:.2rem 0 .6rem">'
+    +     esc(t('sip.manual.transport.hint')) + '</p>'
+    +   '<label>' + esc(t('sip.manual.auth_user'))
+    +     '<input type="text" name="sip_auth_user" value="' + esc(au) + '"></label>'
+    +   '<p class="muted" style="font-size:.75rem;margin:.2rem 0 .6rem">'
+    +     esc(t('sip.manual.auth_user.hint')) + '</p>'
+    +   '<label>' + esc(t('sip.manual.outbound'))
+    +     '<input type="text" name="sip_outbound" value="' + esc(outb) + '"></label>'
+    +   '<p class="muted" style="font-size:.75rem;margin:.2rem 0 .6rem">'
+    +     esc(t('sip.manual.outbound.hint')) + '</p>'
+    +   '<label>' + esc(t('sip.manual.realm'))
+    +     '<input type="text" name="sip_realm" value="' + esc(realm) + '"></label>'
+    +   '<p class="muted" style="font-size:.75rem;margin:.2rem 0 .6rem">'
+    +     esc(t('sip.manual.realm.hint')) + '</p>'
+    +   '<label>' + esc(t('sip.manual.srtp'))
+    +     '<select name="sip_srtp">'
+    +       opt('off',       srtp, t('sip.manual.srtp.off'))
+    +     + opt('optional',  srtp, t('sip.manual.srtp.optional'))
+    +     + opt('mandatory', srtp, t('sip.manual.srtp.mandatory'))
+    +     '</select></label>'
+    +   '<p class="muted" style="font-size:.75rem;margin:.2rem 0 .6rem">'
+    +     esc(t('sip.manual.srtp.hint')) + '</p>'
+    + '</details>'
     + '<p style="margin-top:.8rem">'
     + '<button type="submit" class="btn-primary">' + esc(t('sip.manual.submit')) + '</button>'
     + '<span id="manMsg" class="muted" style="margin-left:.6rem"></span>'

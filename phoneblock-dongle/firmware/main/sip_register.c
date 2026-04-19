@@ -1065,6 +1065,33 @@ static void sip_task(void *arg)
         return;
     }
 
+    // Extended SIP parameters are persisted but the current stack only
+    // does UDP + registrar-derived auth realm + no SRTP. Warn once per
+    // start so the user sees in the dashboard errors that a setting is
+    // being ignored, and can react instead of wondering why TLS never
+    // engaged.
+    if (strcmp(config_sip_transport(), "udp") != 0) {
+        char msg[80];
+        snprintf(msg, sizeof(msg),
+                 "transport %.8s ignored — firmware only implements UDP",
+                 config_sip_transport());
+        ESP_LOGW(TAG, "%s", msg);
+        stats_record_error("sip", msg);
+    }
+    if (strcmp(config_sip_srtp(), "off") != 0
+        && strcmp(config_sip_srtp(), "") != 0) {
+        char msg[80];
+        snprintf(msg, sizeof(msg),
+                 "SRTP %.12s ignored — firmware only does plain RTP",
+                 config_sip_srtp());
+        ESP_LOGW(TAG, "%s", msg);
+        stats_record_error("sip", msg);
+    }
+    if (config_sip_outbound()[0]) {
+        ESP_LOGW(TAG, "outbound proxy '%s' ignored — using registrar directly",
+                 config_sip_outbound());
+    }
+
     // Keep the SO_RCVTIMEO from open_sip_socket — udp_send_recv() (used
     // by do_register, both on initial registration and after every
     // s_reload_requested) does a blocking recvfrom that would otherwise

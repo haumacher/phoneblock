@@ -26,6 +26,22 @@ int         config_sip_expires(void);
 // for display in the dashboard. Empty when SIP is configured manually
 // or via a provider preset (the server does not hand it back).
 const char *config_sip_internal_number(void);
+// Extended SIP parameters persisted for provider setups that need
+// more than the Fritz!Box happy path. The current sip_register.c
+// only implements UDP + single-user digest; these fields are still
+// captured so the UI can round-trip them and so later backend
+// extensions (TLS, separate auth-user, outbound proxy, realm, SRTP)
+// do not need another NVS migration.
+//   transport: "udp" (default) | "tcp" | "tls"
+//   auth_user: empty = use sip_user
+//   outbound:  outbound proxy "host[:port]", empty = go via registrar
+//   realm:     override the realm from the server's challenge
+//   srtp:      "off" (default) | "optional" | "mandatory"
+const char *config_sip_transport(void);
+const char *config_sip_auth_user(void);
+const char *config_sip_outbound(void);
+const char *config_sip_realm(void);
+const char *config_sip_srtp(void);
 const char *config_contact_host_override(void);
 int         config_contact_port_override(void);
 
@@ -43,6 +59,11 @@ typedef struct {
     const char *sip_pass;
     int         sip_expires;        // 0 = keep current
     const char *sip_internal_number;
+    const char *sip_transport;
+    const char *sip_auth_user;
+    const char *sip_outbound;
+    const char *sip_realm;
+    const char *sip_srtp;
     const char *phoneblock_base_url;
     const char *phoneblock_token;
 } config_update_t;

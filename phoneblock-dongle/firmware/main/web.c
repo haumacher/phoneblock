@@ -136,6 +136,11 @@ static esp_err_t handle_status(httpd_req_t *req)
     cJSON_AddNumberToObject(sip,  "port",              config_sip_port());
     cJSON_AddStringToObject(sip,  "user",              config_sip_user());
     cJSON_AddStringToObject(sip,  "internal_number",   config_sip_internal_number());
+    cJSON_AddStringToObject(sip,  "transport",         config_sip_transport());
+    cJSON_AddStringToObject(sip,  "auth_user",         config_sip_auth_user());
+    cJSON_AddStringToObject(sip,  "outbound",          config_sip_outbound());
+    cJSON_AddStringToObject(sip,  "realm",             config_sip_realm());
+    cJSON_AddStringToObject(sip,  "srtp",              config_sip_srtp());
 
     cJSON *pb = cJSON_AddObjectToObject(root, "phoneblock");
     cJSON_AddStringToObject(pb,   "base_url",           config_phoneblock_base_url());
@@ -254,12 +259,22 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     char sip_host[64], sip_user[32], sip_pass[64];
     char pb_url[128],  pb_token[64];
     char sip_port_s[8] = "", sip_exp_s[8] = "";
+    char sip_transp[8]    = "";
+    char sip_authuser[32] = "";
+    char sip_outbound[80] = "";
+    char sip_realm[64]    = "";
+    char sip_srtp[16]     = "";
 
     bool have_sip_host  = form_get(body, "sip_host",  sip_host,  sizeof(sip_host));
     bool have_sip_user  = form_get(body, "sip_user",  sip_user,  sizeof(sip_user));
     bool have_sip_pass  = form_get(body, "sip_pass",  sip_pass,  sizeof(sip_pass));
     bool have_sip_port  = form_get(body, "sip_port",  sip_port_s, sizeof(sip_port_s));
     bool have_sip_exp   = form_get(body, "sip_expires", sip_exp_s, sizeof(sip_exp_s));
+    bool have_sip_trans = form_get(body, "sip_transport", sip_transp, sizeof(sip_transp));
+    bool have_sip_auth  = form_get(body, "sip_auth_user", sip_authuser, sizeof(sip_authuser));
+    bool have_sip_out   = form_get(body, "sip_outbound",  sip_outbound, sizeof(sip_outbound));
+    bool have_sip_realm = form_get(body, "sip_realm",     sip_realm,    sizeof(sip_realm));
+    bool have_sip_srtp  = form_get(body, "sip_srtp",      sip_srtp,     sizeof(sip_srtp));
     bool have_pb_url    = form_get(body, "pb_url",    pb_url,    sizeof(pb_url));
     bool have_pb_token  = form_get(body, "pb_token",  pb_token,  sizeof(pb_token));
     free(body);
@@ -282,6 +297,14 @@ static esp_err_t handle_config_post(httpd_req_t *req)
         .sip_pass   = have_sip_pass && sip_pass[0]  ? sip_pass  : NULL,
         .sip_expires = have_sip_exp && sip_exp_s[0] ? atoi(sip_exp_s) : 0,
         .sip_internal_number = clear_int_num,
+        // Extended SIP parameters: explicit empty string clears, missing
+        // field (e.g. manual form without expert row visible) leaves
+        // current value untouched.
+        .sip_transport = have_sip_trans ? sip_transp   : NULL,
+        .sip_auth_user = have_sip_auth  ? sip_authuser : NULL,
+        .sip_outbound  = have_sip_out   ? sip_outbound : NULL,
+        .sip_realm     = have_sip_realm ? sip_realm    : NULL,
+        .sip_srtp      = have_sip_srtp  ? sip_srtp     : NULL,
         .phoneblock_base_url = have_pb_url   && pb_url[0]   ? pb_url   : NULL,
         .phoneblock_token    = have_pb_token && pb_token[0] ? pb_token : NULL,
     };
