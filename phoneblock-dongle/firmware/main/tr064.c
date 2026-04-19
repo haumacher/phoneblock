@@ -339,6 +339,17 @@ static esp_err_t call_action(const char *url,
     char realm[64] = "";
     if (xml_find_text(resp, "Nonce", nonce, sizeof(nonce)) < 0
         || xml_find_text(resp, "Realm", realm, sizeof(realm)) < 0) {
+        // Some Fritz!Box services (observed on LANConfigSecurity's
+        // X_AVM-DE_GetUserList) answer the InitChallenge directly with
+        // the action result — no challenge at all. Treat that as
+        // success when the expected <actionResponse> body is present.
+        char resp_tag[64];
+        snprintf(resp_tag, sizeof(resp_tag), "%sResponse", action);
+        if (status == 200 && strstr(resp, resp_tag)) {
+            ESP_LOGI(TAG, "%s: answered without challenge", action);
+            free(env);
+            return ESP_OK;
+        }
         ESP_LOGE(TAG, "%s: no Nonce/Realm in InitChallenge response (HTTP %d):\n%s",
                  action, status, resp);
         SET_SENTINEL(TR064_ERR_PARSE,
@@ -532,37 +543,56 @@ static void gen_sip_username(char *out, size_t cap)
 // Public entry point
 // ---------------------------------------------------------------------------
 
-// Given the entity-decoded <List> body of X_AVM-DE_GetUserList's
-// NewX_AVM-DE_UserList response, pick the username the Fritz!Box web
-// UI would preselect: the user flagged LastUser=1, or the first one
-// if no flag is set. Returns true on success.
+// Given the entity-decoded UserList body, pick the username the
+// Fritz!Box web UI would preselect: the entry marked as last-used,
+// or the first one. Observed formats:
+//   <List><Username last_user="1">fritz9344</Username>…</List>
+//   <List><User><Username>admin</Username><LastUser>1</LastUser></User>…</List>
 static bool pick_default_user(char *xml, char *out, size_t cap)
 {
-    char *marker = strstr(xml, "<LastUser>1</LastUser>");
-    char *block_start = NULL;
-    char *block_end   = NULL;
+    if (!out || !cap) return false;
+    out[0] = '\0';
 
-    if (marker) {
-        // Walk all <User> tags forwards and keep the last one before
-        // the marker.
+    // Preferred: the attribute-form last_user="1" marker.
+    const char *markers[] = {
+        "last_user=\"1\"", "last_user='1'", "last_user=1", NULL
+    };
+    for (int i = 0; markers[i]; i++) {
+        const char *m = strstr(xml, markers[i]);
+        if (!m) continue;
+        const char *gt = strchr(m, '>');
+        if (!gt) continue;
+        const char *start = gt + 1;
+        const char *end = strstr(start, "</Username>");
+        if (!end) continue;
+        size_t n = end - start;
+        if (n >= cap) n = cap - 1;
+        memcpy(out, start, n);
+        out[n] = '\0';
+        if (out[0]) return true;
+    }
+
+    // Legacy wrapper form.
+    char *flag = strstr(xml, "<LastUser>1</LastUser>");
+    char *block_start = NULL, *block_end = NULL;
+    if (flag) {
         const char *p = xml;
-        while ((p = strstr(p, "<User>")) != NULL && p < marker) {
+        while ((p = strstr(p, "<User>")) != NULL && p < flag) {
             block_start = (char *)p;
             p++;
         }
-        if (block_start) block_end = strstr(marker, "</User>");
+        if (block_start) block_end = strstr(flag, "</User>");
     }
-    if (!block_start || !block_end) {
-        block_start = strstr(xml, "<User>");
-        if (block_start) block_end = strstr(block_start, "</User>");
+    if (block_start && block_end) {
+        char save = *block_end;
+        *block_end = '\0';
+        int found = xml_find_text(block_start, "Username", out, cap);
+        *block_end = save;
+        if (found >= 0 && out[0]) return true;
     }
-    if (!block_start || !block_end) return false;
 
-    char save = *block_end;
-    *block_end = '\0';
-    int found = xml_find_text(block_start, "Username", out, cap);
-    *block_end = save;
-    return found >= 0 && out[0] != '\0';
+    // Fallback: first Username element (ignoring any attributes).
+    return xml_find_text(xml, "Username", out, cap) >= 0 && out[0];
 }
 
 esp_err_t tr064_get_default_username(const char *host, int port,
