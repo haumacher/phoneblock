@@ -351,8 +351,30 @@ static esp_err_t handle_fritzbox_setup(httpd_req_t *req)
     form_get(body, "phone_name", phone_name, sizeof(phone_name));
 
     if (!fritz_host[0]) strncpy(fritz_host, "fritz.box", sizeof(fritz_host) - 1);
-    if (!fritz_user[0]) strncpy(fritz_user, "admin", sizeof(fritz_user) - 1);
     if (!phone_name[0]) strncpy(phone_name, "Answerbot", sizeof(phone_name) - 1);
+
+    // Username is optional — mirror the Fritz!Box web UI that only
+    // asks for a password and falls back to the default (last-used)
+    // account. Probe LANConfigSecurity:X_AVM-DE_GetUserList for the
+    // preferred name before running the provisioning flow.
+    if (!fritz_user[0] && fritz_pass[0]) {
+        int code = 0;
+        char detail[128] = "";
+        esp_err_t lerr = tr064_get_default_username(
+            fritz_host, 49000, "", fritz_pass,
+            fritz_user, sizeof(fritz_user),
+            &code, detail, sizeof(detail));
+        if (lerr != ESP_OK || !fritz_user[0]) {
+            char msg[240];
+            snprintf(msg, sizeof(msg),
+                "Benutzername konnte nicht automatisch ermittelt werden "
+                "(%s). Bitte Fritz!Box-Benutzernamen explizit angeben.",
+                detail[0] ? detail : "keine Details");
+            send_fail(req, msg);
+            return ESP_OK;
+        }
+    }
+    if (!fritz_user[0]) strncpy(fritz_user, "admin", sizeof(fritz_user) - 1);
     if (!fritz_pass[0]) {
         send_fail(req, "Fritz!Box-Passwort fehlt");
         return ESP_OK;

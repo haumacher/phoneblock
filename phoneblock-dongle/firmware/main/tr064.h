@@ -63,6 +63,22 @@ esp_err_t tr064_provision_sip_client(
     const char *token_2fa,
     tr064_sip_result_t *out);
 
+// Return the Fritz!Box's default login username — the account whose
+// password the web login form would accept by itself (matches the
+// "last logged-in user" logic the AVM UI uses). Lets the dongle's
+// setup wizard make the user-name input optional: the user only has
+// to type their password.
+//
+// On success writes the username into `out` and returns ESP_OK.
+// On failure writes the AVM UPnPError (or one of the TR064_ERR_*
+// sentinels) into `*out_err_code` / `out_err_msg`, returns ESP_FAIL.
+esp_err_t tr064_get_default_username(
+    const char *host, int port,
+    const char *admin_user, const char *admin_pass,
+    char *out, size_t cap,
+    int *out_err_code,
+    char *out_err_msg, size_t err_msg_cap);
+
 // Two-factor-authentication helpers
 // ---------------------------------
 

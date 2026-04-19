@@ -18,6 +18,8 @@ static const char *TAG = "tr064";
 #define X_VOIP_CONTROL   "/upnp/control/x_voip"
 #define X_AUTH_SERVICE   "urn:dslforum-org:service:X_AVM-DE_Auth:1"
 #define X_AUTH_CONTROL   "/upnp/control/x_auth"
+#define LANSEC_SERVICE   "urn:dslforum-org:service:LANConfigSecurity:1"
+#define LANSEC_CONTROL   "/upnp/control/lanconfigsecurity"
 
 #define SOAP_ENVELOPE_CAP 2048
 #define SOAP_RESPONSE_CAP 4096
@@ -114,6 +116,25 @@ static int xml_find_text(const char *xml, const char *tag,
         p = tag_end;
     }
     return -1;
+}
+
+// In-place XML-entity decode for the five predefined entities. Only
+// ever shrinks the buffer (worst case `&amp;` → `&`), so doing it in
+// place is safe. Anything unrecognised is kept verbatim.
+static void xml_unescape_inplace(char *s)
+{
+    char *w = s;
+    for (const char *r = s; *r; ) {
+        if (*r == '&') {
+            if (strncmp(r, "&amp;",  5) == 0) { *w++ = '&';  r += 5; continue; }
+            if (strncmp(r, "&lt;",   4) == 0) { *w++ = '<';  r += 4; continue; }
+            if (strncmp(r, "&gt;",   4) == 0) { *w++ = '>';  r += 4; continue; }
+            if (strncmp(r, "&quot;", 6) == 0) { *w++ = '"';  r += 6; continue; }
+            if (strncmp(r, "&apos;", 6) == 0) { *w++ = '\''; r += 6; continue; }
+        }
+        *w++ = *r++;
+    }
+    *w = '\0';
 }
 
 static void xml_escape(const char *in, char *out, size_t cap)
@@ -510,6 +531,77 @@ static void gen_sip_username(char *out, size_t cap)
 // ---------------------------------------------------------------------------
 // Public entry point
 // ---------------------------------------------------------------------------
+
+// Given the entity-decoded <List> body of X_AVM-DE_GetUserList's
+// NewX_AVM-DE_UserList response, pick the username the Fritz!Box web
+// UI would preselect: the user flagged LastUser=1, or the first one
+// if no flag is set. Returns true on success.
+static bool pick_default_user(char *xml, char *out, size_t cap)
+{
+    char *marker = strstr(xml, "<LastUser>1</LastUser>");
+    char *block_start = NULL;
+    char *block_end   = NULL;
+
+    if (marker) {
+        // Walk all <User> tags forwards and keep the last one before
+        // the marker.
+        const char *p = xml;
+        while ((p = strstr(p, "<User>")) != NULL && p < marker) {
+            block_start = (char *)p;
+            p++;
+        }
+        if (block_start) block_end = strstr(marker, "</User>");
+    }
+    if (!block_start || !block_end) {
+        block_start = strstr(xml, "<User>");
+        if (block_start) block_end = strstr(block_start, "</User>");
+    }
+    if (!block_start || !block_end) return false;
+
+    char save = *block_end;
+    *block_end = '\0';
+    int found = xml_find_text(block_start, "Username", out, cap);
+    *block_end = save;
+    return found >= 0 && out[0] != '\0';
+}
+
+esp_err_t tr064_get_default_username(const char *host, int port,
+                                     const char *admin_user, const char *admin_pass,
+                                     char *out, size_t cap,
+                                     int *out_err_code,
+                                     char *out_err_msg, size_t err_msg_cap)
+{
+    if (out && cap) out[0] = '\0';
+    char url[96];
+    snprintf(url, sizeof(url), "http://%s:%d" LANSEC_CONTROL, host, port);
+
+    char *resp = malloc(SOAP_RESPONSE_CAP);
+    if (!resp) return ESP_ERR_NO_MEM;
+    esp_err_t err = call_action(url, LANSEC_SERVICE,
+                                admin_user, admin_pass,
+                                "X_AVM-DE_GetUserList", NULL, NULL,
+                                resp, SOAP_RESPONSE_CAP,
+                                out_err_code, out_err_msg, err_msg_cap);
+    if (err != ESP_OK) { free(resp); return err; }
+
+    // The <NewX_AVM-DE_UserList> value is a serialised <List>…</List>
+    // XML payload with its angle brackets entity-escaped.
+    char *list = malloc(SOAP_RESPONSE_CAP);
+    if (!list) { free(resp); return ESP_ERR_NO_MEM; }
+    list[0] = '\0';
+    xml_find_text(resp, "NewX_AVM-DE_UserList", list, SOAP_RESPONSE_CAP);
+    free(resp);
+
+    xml_unescape_inplace(list);
+    bool ok = pick_default_user(list, out, cap);
+    free(list);
+    if (!ok) {
+        ESP_LOGE(TAG, "GetUserList: no Username found");
+        return ESP_FAIL;
+    }
+    ESP_LOGI(TAG, "Fritz!Box default user: %s", out);
+    return ESP_OK;
+}
 
 // --- 2FA (X_AVM-DE_Auth) -------------------------------------------
 

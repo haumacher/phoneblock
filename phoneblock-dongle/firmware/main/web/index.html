@@ -146,7 +146,7 @@ const I18N = {
     'sip.fb.intro': 'Einmalig das Fritz!Box-Admin-Passwort eingeben. Es wird nicht gespeichert.',
     'sip.fb.host': 'Fritz!Box (Host oder IP)',
     'sip.fb.user': 'Benutzer',
-    'sip.fb.user.hint': '(meist „admin")',
+    'sip.fb.user.hint': '(leer lassen → Standard-Benutzer der Fritz!Box)',
     'sip.fb.pass': 'Passwort',
     'sip.fb.submit': 'Nebenstelle einrichten',
     'sip.fb.working': 'Richte Nebenstelle ein (~2–5 s)…',
@@ -560,7 +560,7 @@ function renderSipFritzbox(){
     + '<input type="text" name="fritz_host" value="fritz.box"></label>'
     + '<label>' + esc(t('sip.fb.user'))
     + ' <span class="muted">' + esc(t('sip.fb.user.hint')) + '</span>'
-    + '<input type="text" name="fritz_user" value="admin"></label>'
+    + '<input type="text" name="fritz_user" autocomplete="off"></label>'
     + '<label>' + esc(t('sip.fb.pass'))
     + '<input type="password" name="fritz_pass" required autocomplete="off"></label>'
     + '<p style="margin-top:.8rem">'
