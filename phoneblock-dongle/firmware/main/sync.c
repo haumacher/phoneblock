@@ -60,8 +60,11 @@ typedef struct { char *buf; int len; int cap; } http_buf_t;
 static esp_err_t http_collect_cb(esp_http_client_event_t *evt)
 {
     http_buf_t *b = evt->user_data;
-    if (evt->event_id == HTTP_EVENT_ON_DATA
-        && !esp_http_client_is_chunked_response(evt->client)) {
+    if (evt->event_id == HTTP_EVENT_ON_DATA) {
+        // esp_http_client already de-chunks chunked bodies before the
+        // ON_DATA callback — copy unconditionally. Some earlier code
+        // in this project gated on !is_chunked_response() which drops
+        // exactly the payloads we care about here.
         int remaining = b->cap - b->len - 1;
         int copy = evt->data_len < remaining ? evt->data_len : remaining;
         if (copy > 0) {
@@ -254,6 +257,7 @@ static void run_once(void)
         return;
     }
 
+    ESP_LOGI(TAG, "GET %s", url);
     char *xml = malloc(8192);
     if (!xml) {
         set_status_result(false, 0, 0, "out of memory");
@@ -261,10 +265,12 @@ static void run_once(void)
     }
     int len = http_get_to_buf(url, xml, 8192);
     if (len <= 0) {
+        ESP_LOGE(TAG, "list download failed (len=%d)", len);
         free(xml);
         set_status_result(false, 0, 0, "list download failed");
         return;
     }
+    ESP_LOGI(TAG, "phonebook XML: %d bytes, head: %.200s", len, xml);
 
     run_ctx_t ctx = {
         .host = host, .app_user = app_user, .app_pass = app_pass,
