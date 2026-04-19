@@ -22,15 +22,10 @@
 #include "sdkconfig.h"
 #include "api.h"
 #include "config.h"
+#include "announcement.h"
 #include "sip_parse.h"
 #include "rtp.h"
 #include "stats.h"
-
-// Voice announcement baked into the binary via EMBED_FILES (see
-// main/CMakeLists.txt). The linker emits _binary_<file>_<ext>_{start,end}
-// symbols; we alias them to cleaner C names.
-extern const uint8_t announcement_start[] asm("_binary_announcement_alaw_start");
-extern const uint8_t announcement_end[]   asm("_binary_announcement_alaw_end");
 
 static const char *TAG = "sip";
 
@@ -914,14 +909,16 @@ static void handle_ack(sip_ctx_t *c, const char *req, int req_len,
     if (d->state == DIALOG_ANSWERED) {
         // Spam call: we answered with 200 OK, ACK confirms.
 #if CONFIG_RTP_PLAY_ANNOUNCEMENT
-        size_t bytes = announcement_end - announcement_start;
+        const uint8_t *audio = NULL;
+        size_t bytes = 0;
+        announcement_get(&audio, &bytes);
         if (bytes > 0 && d->rtp_dest_valid) {
             // PCMA at 8 kHz → 8000 bytes == 1 s, so duration_us = bytes * 125.
             // Add a short tail margin so the last frame is delivered before BYE.
             int64_t duration_us = (int64_t)bytes * 125LL;
             ESP_LOGI(TAG, "ACK received → streaming announcement (%u bytes ≈ %lld ms), then BYE",
                      (unsigned)bytes, (long long)(duration_us / 1000));
-            rtp_play_audio(&d->rtp_dest, announcement_start, bytes);
+            rtp_play_audio(&d->rtp_dest, audio, bytes);
             d->bye_at_us = esp_timer_get_time() + duration_us + 200000LL;
             d->state = DIALOG_STREAMING;
         } else {

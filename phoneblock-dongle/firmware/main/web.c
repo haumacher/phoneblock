@@ -15,6 +15,7 @@
 #include "lwip/sockets.h"     // INET_ADDRSTRLEN
 #include "cJSON.h"
 
+#include "announcement.h"
 #include "api.h"
 #include "config.h"
 #include "sip_register.h"
@@ -796,6 +797,9 @@ static void factory_reset_task(void *arg)
 static esp_err_t handle_factory_reset(httpd_req_t *req)
 {
     esp_err_t err = config_erase();
+    // Also drop any uploaded announcement, so the factory-reset
+    // return-to-defaults promise really includes the audio.
+    announcement_reset();
     cJSON *root = cJSON_CreateObject();
     if (err != ESP_OK) {
         cJSON_AddBoolToObject  (root, "ok", false);

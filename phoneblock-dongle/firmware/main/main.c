@@ -16,6 +16,7 @@
 
 #include "protocol_examples_common.h"
 
+#include "announcement.h"
 #include "api.h"
 #include "config.h"
 #include "sip_register.h"
@@ -139,6 +140,7 @@ void app_main(void)
 
     stats_setup();
     config_load();
+    announcement_init();
 
     ESP_ERROR_CHECK(example_connect());
 

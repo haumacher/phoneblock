@@ -27,6 +27,11 @@ CONFIG_HTTPD_MAX_URI_LEN=1024
 # then fails with "Failed to create socket" / ESP_ERR_HTTP_CONNECT.
 CONFIG_LWIP_MAX_SOCKETS=16
 
+# Custom partition table: factory + SPIFFS slot for user-uploaded
+# voice announcement. See partitions.csv for the layout.
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+
 # PhoneBlock defaults. Token is set via the setup wizard (OAuth) and
 # persisted in NVS — no Kconfig knob for it.
 CONFIG_PHONEBLOCK_BASE_URL="https://phoneblock.net/phoneblock/api"

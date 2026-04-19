@@ -1,0 +1,12 @@
+# Name,     Type, SubType, Offset,    Size
+# Custom partition table for the dongle: keeps the single-app layout
+# but carves out a SPIFFS slot so the user can upload their own voice
+# announcement via the web UI. Factory app grows from the default 1 MB
+# to 1.25 MB (the embedded-audio binary already sits close to 1 MB with
+# TLS + SIP + HTTP; 1 MB leaves almost no headroom for future features).
+# Remaining 704 KB become SPIFFS — plenty for a 30-second A-law
+# announcement (~240 KB) plus filesystem overhead.
+nvs,        data, nvs,     0x9000,    0x6000
+phy_init,   data, phy,     0xf000,    0x1000
+factory,    app,  factory, 0x10000,   0x140000
+storage,    data, spiffs,  0x150000,  0xB0000
