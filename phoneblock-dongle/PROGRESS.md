@@ -83,8 +83,24 @@ Hardware-Entscheidungsmatrix [HARDWARE.md](HARDWARE.md), QEMU-Setup
 - [x] G.711 A-law Encoder (`audio.c/h`), pure C, host-testbar
 - [x] RTP-Sender-Task (`rtp.c/h`): UDP-Socket, 160-Byte/20-ms-Frames,
   zufällige SSRC/Seq/Timestamp, vTaskDelayUntil-paced
-- [x] Eingebettete Sprachansage via `EMBED_FILES` — ElevenLabs-TTS →
-  `ffmpeg -ar 8000 -ac 1 -f alaw` → `main/audio/announcement.alaw`
+- [x] Eingebettete Sprachansage via `EMBED_FILES` als Default —
+  ElevenLabs-TTS → `ffmpeg -ar 8000 -ac 1 -f alaw` →
+  `main/audio/announcement.alaw`
+- [x] **User-Upload** (`announcement.{c,h}`): SPIFFS-Partition
+  (704 KB, Page-Size 1 KB getunet) für eine eigene Ansage. POST
+  `/api/announcement` streamt direkt in eine .tmp-Datei und
+  committet per atomic rename — kein 240-KB-Heap-Buffer für den
+  Upload. Fallback auf Embedded-Default, wenn SPIFFS leer.
+  GET `/api/announcement` liefert die aktiven A-law-Bytes;
+  POST `/api/announcement/reset` löscht den Custom-Upload.
+- [x] **Browser-Seite** in `index.html`: File-Input akzeptiert
+  WAV/MP3/OGG, Konvertierung via Web Audio API
+  (`decodeAudioData` → `OfflineAudioContext` 8 kHz mono →
+  JS-implementierter G.711-A-law-Encoder nach ITU-Regeln).
+  30-Sekunden-Cap im UI erzwungen. Abspiel-Button holt die
+  gespeicherten Bytes, wrappt sie in einen PCM16-WAV-Header und
+  spielt sie im `<audio>`-Element. „Auf Standard zurücksetzen"
+  nur sichtbar, solange tatsächlich eine Custom-Ansage aktiv ist.
 - [x] BYE-Zeitsteuerung nach Audiolänge via select-Timeout
 - [x] End-to-End gegen echte Fritz!Box verifiziert (`X-RTP-Stat: PR=100`,
   Codec-Match PCMA beidseitig)
@@ -145,6 +161,35 @@ Hardware-Entscheidungsmatrix [HARDWARE.md](HARDWARE.md), QEMU-Setup
 - [x] **URL-Decode des OAuth-Tokens**: `httpd_query_key_value` gibt
   rohe Escapes zurück — Tokens mit `+`/`/` landeten als `%2B`/`%2F`
   im NVS und wurden vom Server abgelehnt. Jetzt korrekt dekodiert.
+- [x] **i18n vollständig**: DE / EN / FR / ES-Blöcke gefüllt,
+  Sprachumschalter im Footer, Auswahl persistent in `localStorage`,
+  Default aus `navigator.language` mit DE-Fallback. Backend-
+  Error-Strings bewusst durchgehend Englisch; Info-Strings
+  werden über `code`-Diskriminatoren (`status.token.test.ok` etc.)
+  im UI lokalisiert.
+- [x] **Erweiterte SIP-Parameter im UI** (Transport / Auth-User /
+  Outbound-Proxy / Realm / SRTP-Modus) als ausklappbarer
+  „Erweitert"-Block im Manuell-Wizard. NVS-round-trip gebaut;
+  `sip_register.c` loggt eine `stats_record_error`-Warnung, wenn
+  ein Setting aktiviert wird, das der UDP-only-Stack noch nicht
+  umsetzt — damit der User im Dashboard sieht, warum sein
+  TLS-Toggle nicht greift.
+- [x] **Factory-Reset** via POST `/api/factory-reset` —
+  `nvs_erase_all` auf den `phoneblock`-Namespace plus
+  `announcement_reset()`, dann `esp_restart()` aus einer kurz-
+  lebigen Task (damit die HTTP-Antwort erst noch rausgeht).
+  „Konfiguration zurücksetzen"-Button in der Status-Seite mit
+  Confirm-Dialog.
+- [x] **Anrufliste mit PhoneBlock-Links**: Nummern in „Letzte
+  Anrufe" werden zu `<site>/nums/<number>`-Links (neuer Tab),
+  interne `*`/`**`-Codes bleiben Klartext. Basis-URL kommt aus
+  `phoneblock.base_url` mit gestripptem `/api`, also passt für
+  Prod- und Test-Instanz gleichermaßen.
+- [x] **Stabiler User-Agent**: `http_util.{c,h}` baut einen cache-
+  baren String `PhoneBlock-Dongle/<esp_app_desc.version>` aus der
+  Firmware-Version und stempelt ihn an jedem outbound HTTP-Call
+  an (api.c, tr064.c, sync.c). Server-Logs zeigen jetzt die echte
+  Firmware statt `ESP32 HTTP Client/1.0`.
 
 ### TR-064-Auto-Provisioning (firmware, komplett mit 2FA)
 - [x] `tr064.{c,h}` mit generischem `call_action` für beliebige
@@ -186,6 +231,52 @@ Hardware-Entscheidungsmatrix [HARDWARE.md](HARDWARE.md), QEMU-Setup
   (866 = 2FA, 803 = Zeichen, 820/402 = Argumentfehler, etc.).
 - [x] Fritz!Box-Admin-Passwort nur flüchtig im RAM während der
   2FA-Sitzung, `memset` beim Abschluss.
+- [x] **Dedizierte App-Credentials via RegisterApp**:
+  `tr064_register_dongle_app()` wrappt
+  `X_AVM-DE_AppSetup:RegisterApp`. Beim Setup (direkter Pfad + 2FA-
+  Abschluss) wird eine App-Instance `phoneblockdongle` mit
+  Phone-Right-only, kein Internet-Zugriff, 20-Zeichen-Random-
+  Passwort nach AVMs Strength-Regeln (Ziffer/Groß/Klein/Special,
+  Fisher-Yates-shuffle) angelegt und in NVS persistiert. Damit
+  kann der Sync-Task TR-064 ansprechen, ohne dass das Admin-
+  Passwort persistent im Flash liegen muss. Fehler beim
+  RegisterApp ist nicht fatal — Setup läuft ohne Sync-Option
+  weiter.
+
+### Fritz!Box-Blocklist-Sync
+- [x] **Ziel**: Am Mobilteil gesperrte Nummern („Nummer sperren")
+  als Contribution zur PhoneBlock-Datenbank weiterleiten und
+  danach aus der FB-Sperrliste löschen — dann fängt der AB alle
+  Anrufer ab, nicht nur die lokalen Einträge.
+- [x] **TR-064-API-Wrapper**: `tr064_call_barring_list_url()`
+  (`X_AVM-DE_OnTel:GetCallBarringList` → signierte URL) und
+  `tr064_call_barring_delete()` (`DeleteCallBarringEntryUID`).
+  Nutzen die App-Credentials (Phone-Right reicht).
+- [x] **PhoneBlock-API-Wrapper**: `phoneblock_rate()` postet
+  `{phone, rating, comment?}` nach `/api/rate`. Rating für
+  mobiltiel-gesperrte Nummern: `B_MISSED` — SPAM ohne Aussage
+  über die Art.
+- [x] **Sync-Task** (`sync.{c,h}`): FreeRTOS-Task blockt auf
+  Binary-Semaphore mit 24-h-Timeout. Pro Lauf:
+  `GetCallBarringList` → HTTP GET (8 KB Heap) → XML parsen →
+  normalisieren (`0…` → `+49…`, `00…` → `+…`) →
+  `phoneblock_rate(B_MISSED)` → bei HTTP 200:
+  `DeleteCallBarringEntryUID`. Fehler werden gezählt, nicht
+  fatal — nächster Lauf retryed.
+- [x] **UI-Integration**: Sektion „Sperrlisten-Sync" auf dem
+  Status-Dashboard. Checkbox „Sperrlisten-Sync aktivieren"
+  (Default **aus** — das Feature ist opt-in, weil es Nummern im
+  Namen des Users als Spam meldet). „Jetzt synchronisieren"-
+  Button umgeht den Toggle als Escape-Hatch für manuelles
+  Testen. Statuszeile zeigt den letzten Lauf (grün / orange bei
+  Teil-Erfolgen / rot bei Fehler) mit Anzahl gepushter + gescheiterten
+  Nummern. Deaktiviert, wenn keine Fritz!Box-App-Credentials im
+  NVS liegen.
+- [x] **Phonebook-XML-Parser** (`tr064_parse_phonebook_contacts`):
+  Hostseitige Testabdeckung für die realen AVM-Export-Shapes
+  (Attribute auf `<number …>` und `<contact …>`, Newlines
+  zwischen Tag-Name und Attribut, `<contacts>` nicht versehentlich
+  als `<contact>` matchen, unvollständige Einträge skippen).
 
 ### OAuth-Redirect für den PhoneBlock-Token
 - [x] **Firmware-Seite** (`web.c`): `/register-start` erzeugt eine
@@ -200,40 +291,34 @@ Hardware-Entscheidungsmatrix [HARDWARE.md](HARDWARE.md), QEMU-Setup
   die Parameter durch Captcha-/Login-Rundreisen.
 
 ### Entwicklungs-Infrastruktur
-- [x] Pure-C-Parser-Modul `sip_parse.{c,h}` ohne ESP-IDF-Abhängigkeiten
-- [x] Host-basierte Unit-Tests unter `firmware/test/` — 107 Assertions,
-  Laufzeit ≪ 100 ms, Aufruf `make test`
+- [x] Pure-C-Parser-Module `sip_parse.{c,h}` und `tr064_parse.{c,h}`
+  ohne ESP-IDF-Abhängigkeiten. tr064_parse umfasst
+  `xml_find_text`/`xml_escape`/`xml_unescape_inplace` (attribut- und
+  namespace-tolerant), `pick_default_user` (User-List-Heuristik),
+  `parse_phonebook_contacts` (Call-Barring-XML).
+- [x] Host-basierte Unit-Tests unter `firmware/test/` — sip_parse
+  (107 Assertions) + tr064_parse (25 Fälle inkl. verbatim Real-
+  World-Fritz!Box-Export). Laufzeit ≪ 100 ms, Aufruf `make test`.
 - [x] Dev-Hook `CONFIG_SIP_TEST_FORCE_SPAM_STAR_NUMBERS`, damit das
-  RTP/Audio-Pfad ohne echte Spam-Nummer getestet werden kann
+  RTP/Audio-Pfad ohne echte Spam-Nummer getestet werden kann.
+- [x] Shared-HTTP-Utility (`http_util.{c,h}`) für den einheitlichen
+  User-Agent-Stempel und künftige HTTP-Client-Defaults.
 
 ## Offen / Nächste Schritte
 
 ### Ohne echte Hardware machbar (nächste Kandidaten)
 
-- [ ] **Host-Unit-Tests für `tr064.c`-Parser** — `xml_find_text`,
-  `xml_unescape_inplace`, `pick_default_user` sind alle reine
-  String-Funktionen ohne ESP-IDF-Abhängigkeiten. Analog zu
-  `sip_parse.c` als Pure-C-Modul extrahieren oder einen zweiten
-  Test-Slot unter `firmware/test/` anlegen. Würde die Lookup-
-  Logik gegen die realen AVM-Antwort-Shapes absichern.
-- [ ] **i18n-Sprachen füllen** — Gerüst in `index.html` ist da
-  (`I18N.de` komplett). `en`, `fr`, `es` anhand des DE-Blocks
-  generieren; dazu einen kleinen Sprachumschalter im Footer oder
-  via `Accept-Language`.
-- [ ] **Erweiterte SIP-Parameter im Backend** — `sip_register.c`
-  unterstützt nur UDP. Transport (TCP/TLS), Outbound-Proxy,
-  Realm/Authname-Separation (Telekom-Case), SRTP. Ohne echte
-  Hardware kann man wenigstens die Feldaufnahme in NVS +
-  `/api/config` + Provider-Preset-UI bauen, der Stack-Teil
-  folgt später.
+- [ ] **Extended-SIP-Backend** — `sip_register.c` macht weiterhin
+  nur UDP, ohne Outbound-Proxy, ohne Realm-Override, ohne SRTP.
+  Die UI-Felder + NVS-Persistierung stehen bereits; zu tun ist
+  der Stack-Teil. Reihenfolge nach Bedarf: TCP und TLS (Telekom-
+  Pflicht), dann Auth-User-Separation (Telekom: Login = E-Mail,
+  Authname = Rufnummer), Outbound-Proxy für Fälle wo der
+  Registrar nicht direkt erreichbar ist, zuletzt SRTP.
 - [ ] **Paralleler API-Check** — synchroner `phoneblock_check`
   blockiert den SIP-Task 1–2 s. Umbau auf einen zweiten Task
   mit Message-Queue; testbar in QEMU über den bestehenden
   `CONFIG_SIP_TEST_FORCE_SPAM_STAR_NUMBERS`-Hook.
-- [ ] **NVS-Reset + Neustart** als Web-Action —
-  POST `/api/factory-reset` löscht das NVS-Namespace und bootet
-  neu. Nützlich vor Ort zum Hand-Over/Owner-Wechsel. Button im
-  Dashboard (mit Confirm-Dialog).
 - [ ] **Logging-Level-Regler** im Dashboard —
   `esp_log_level_set("sip", ESP_LOG_DEBUG)` zur Laufzeit, damit
   man bei Feldproblemen verboser werden kann ohne Reflash.
@@ -242,6 +327,10 @@ Hardware-Entscheidungsmatrix [HARDWARE.md](HARDWARE.md), QEMU-Setup
 - [ ] **Event-getriebener Reload-Wakeup** (siehe Tech-Debt) —
   reiner Refactor, lässt sich mit den existierenden Host-Tests
   absichern.
+- [ ] **OTA-Update** — eigentlich QEMU-machbar (siehe Notizen zur
+  Partition-Layout-Umstellung auf ota_0/ota_1 + simplem Python-
+  HTTP-Server auf 10.0.2.2). Nicht angefasst, weil wir auf echten
+  Hardware-Builds eh bald auf ota_0/ota_1 umschwenken werden.
 - [ ] **OAuth-Endpoint ins nächste Server-Release rollen** —
   `CreateAuthTokenServlet`-Erweiterung ist committed, muss aber
   auf `phoneblock.net` deployed werden, damit neue Tokens auch
@@ -266,9 +355,11 @@ Hardware-Entscheidungsmatrix [HARDWARE.md](HARDWARE.md), QEMU-Setup
    Bearer-Token vom PhoneBlock-Server zurück (wie in der Mobile-App)
 6. Fertig — Dongle registriert sich, prüft eingehende Anrufe
 
-Schritt 3–5 sind firmware-seitig umgesetzt (und server-seitig für 5);
-Schritt 2 fehlt noch (WPS), und Schritt 3 setzt den Hostname-Eintrag
-voraus.
+Schritt 3–5 sind firmware-seitig umgesetzt und End-to-End gegen
+eine reale Fritz!Box getestet (SIP-Registrierung + Blocklist-Sync
+laufen durch). Server-seitig ist Schritt 5 committed, aber noch
+nicht deployed. Schritt 2 fehlt (WPS), Schritt 3 setzt den
+Hostname-Eintrag voraus.
 
 Umsetzungsschritte:
 
@@ -293,14 +384,13 @@ Umsetzungsschritte:
   Wird in `config_load()` aufgerufen, wenn `sip_host` im NVS leer ist.
   Umsetzung erst mit echter Hardware — QEMUs User-mode-Netzwerk
   simuliert keinen sinnvollen Gateway/DNS-Raum.
-- [ ] **Konfigurations-Cleanup** — Kconfig-Defaults entfernen, sobald
-  NVS über das Web-UI durchgängig zuverlässig bespielt wird. Aktuell
-  bleiben die Kconfig-Werte als Entwickler-Fallback sinnvoll.
-- [ ] **OTA-Update** über HTTPS
-- [ ] WiFi-Reconnect-Strategie bei Router-Ausfall (Backoff, NVS-
-  gepinnte Zugangsdaten)
-- [ ] Feldfeste Fehlerbehandlung: Fritz!Box down, API down, TLS-Fehler,
-  Zertifikatsrotation
+- [ ] **OTA-Update** über HTTPS (Partition-Layout-Wechsel auf
+  ota_0/ota_1, `esp_https_ota`, Endpunkt im Web-UI zum Hochladen
+  oder Pull-from-URL).
+- [ ] **WiFi-Reconnect-Strategie** bei Router-Ausfall (Backoff,
+  NVS-gepinnte Zugangsdaten).
+- [ ] **Feldfeste Fehlerbehandlung**: Fritz!Box down, API down,
+  TLS-Fehler, Zertifikatsrotation.
 
 ### Hardware-Reife
 - [ ] 10er-Pack WROOM-32 bestellen (liegt noch, siehe
@@ -325,9 +415,10 @@ Umsetzungsschritte:
   easybell) als Provider-Preset mit Credential-Feldern. Nur O2 bleibt
   Fritz!Box-only; MagentaZuhause ist im stationären Dongle-Einsatz
   direkt nutzbar. Quelle: [PROVIDERS.md](PROVIDERS.md).
-- [ ] **Erweiterte SIP-Parameter**: Transport (UDP/TCP/TLS), Auth-User
-  separat vom SIP-User (Telekom: E-Mail), Outbound-Proxy, Realm,
-  SRTP-Modus. Braucht Backend-Erweiterung im `sip_register.c`.
+- [x] **Erweiterte SIP-Parameter im UI + NVS**: Transport, Auth-User,
+  Outbound-Proxy, Realm, SRTP-Modus werden vom Manuell-Wizard
+  entgegengenommen und persistiert. Backend-Umsetzung steht noch
+  aus (siehe „Ohne echte Hardware machbar" / Extended-SIP-Backend).
 
 ### Tech-Debt / Feinschliff
 - [ ] **Event-getriebener Reload-Wakeup für den SIP-Task**: aktuell
