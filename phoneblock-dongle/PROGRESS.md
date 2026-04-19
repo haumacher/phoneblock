@@ -123,22 +123,64 @@ Hardware-Entscheidungsmatrix [HARDWARE.md](HARDWARE.md), QEMU-Setup
   sind raus — Credentials leben nur noch im NVS und werden über die
   Wizards gesetzt. Dadurch signalisieren leere Felder eindeutig
   „noch nicht konfiguriert".
+- [x] **Status-Pillen** nach konsistentem Schema: rot = Handlung nötig
+  (nicht eingerichtet / kein Token), gelb = Zwischenzustand
+  („Verbinde…"), grün = OK. Inline-CTAs an jeder Pille:
+  SIP-„neu einrichten", Token-„Testen" + „Neu anfordern".
+- [x] **Self-Test via `/test`**: `phoneblock_selftest()` prüft API-
+  Erreichbarkeit + Token-Gültigkeit ohne synthetische Nummer.
+  Läuft beim Boot, direkt nach einem OAuth-Token-Callback und per
+  POST `/api/token-test` manuell aus der Web-UI. Dashboard zeigt
+  API-Latenz + Body-Detail bei Token-Ablehnung.
+- [x] **Fehler-Log leeren**: POST `/api/errors/clear` +
+  `stats_clear_errors()`. Kleiner „Log leeren"-Button in der
+  Fehler-Sektion, sichtbar solange Einträge vorhanden sind.
+- [x] **Bootstrap-Safety**: `app_main` bringt den Web-Server
+  unconditional hoch, bevor SIP/Self-Test starten. Fehlender Token
+  oder fehlende SIP-Config sind INFO, nicht ERROR — ein frisches
+  Gerät ist erreichbar, ohne sich still zu beenden.
+- [x] **Sockets aufgeräumt**: `CONFIG_LWIP_MAX_SOCKETS=16` (Default 10
+  reicht nicht bei paralleler Browser-Polling + SIP + TR-064);
+  `post_soap` retry bei `ESP_ERR_HTTP_CONNECT`.
+- [x] **URL-Decode des OAuth-Tokens**: `httpd_query_key_value` gibt
+  rohe Escapes zurück — Tokens mit `+`/`/` landeten als `%2B`/`%2F`
+  im NVS und wurden vom Server abgelehnt. Jetzt korrekt dekodiert.
 
 ### TR-064-Auto-Provisioning (firmware, komplett mit 2FA)
 - [x] `tr064.{c,h}` mit generischem `call_action` für beliebige
   Services + optionalem `<avm:token>`-Header.
-- [x] `X_AVM-DE_GetNumberOfClients` → nächster freier ClientIndex.
-- [x] `X_AVM-DE_SetClient4` → legt IP-Phone mit generiertem Username
-  (`phoneblock-<mac-suffix>`) und alphanumerischem 22-Zeichen-
+- [x] `X_AVM-DE_GetNumberOfClients` → Anzahl vorhandener Clients.
+- [x] `X_AVM-DE_SetClient4` → legt IP-Phone mit MAC-basiertem
+  Username (`phoneblock-<base-mac-suffix>`, mit `esp_random`-
+  Fallback bei leerem eFuse) und alphanumerischem 22-Zeichen-
   Passwort an, liefert die interne Nebenstellennummer zurück.
-- [x] **Zwei-Faktor-Flow**: `X_AVM-DE_Auth:SetConfig(start)` →
-  Token + Methoden (button/dtmf/googleauth), Web-UI pollt
-  `/api/fritzbox-2fa-status`, Dongle ruft alle 2 s
-  `X_AVM-DE_Auth:GetState` auf. Bei `authenticated` wird `SetClient4`
-  mit `<avm:token>`-Header wiederholt.
+- [x] **Idempotent-Setup**: `find_client_slot` iteriert
+  `X_AVM-DE_GetClient3` über die vorhandenen Clients und liefert
+  entweder den existierenden Index für unseren Username oder den
+  nächsten freien — beseitigt UPnPError 820 beim zweiten Setup-
+  Durchlauf. Interne Nebenstellennummer wird persistent in NVS
+  gespeichert und auf dem Dashboard angezeigt; Registrar-Wechsel
+  löscht sie automatisch.
+- [x] **Default-User-Lookup**: wenn der User das „Benutzer"-Feld
+  leer lässt, ermittelt `tr064_get_default_username()` via
+  `LANConfigSecurity:X_AVM-DE_GetUserList` den last-logged-in
+  Account (Attribut `last_user="1"`) und verwendet ihn für die
+  Digest-Auth. Die Box akzeptiert diesen Call ohne Challenge;
+  `call_action` erkennt das und überspringt den ClientAuth-Schritt.
+- [x] **Zwei-Faktor-Flow** (End-to-End verifiziert):
+  `X_AVM-DE_Auth:SetConfig(start)` → Token + Methoden
+  (button/dtmf/googleauth), Web-UI pollt `/api/fritzbox-2fa-status`,
+  Dongle ruft alle 2 s `X_AVM-DE_Auth:GetState` mit dem Token im
+  `<avm:token>`-SOAP-Header auf. Bei `authenticated` wird
+  `SetClient4` mit demselben Token wiederholt.
 - [x] **Stale-Session-Cleanup**: vor jedem `SetConfig(start)` ein
   Best-Effort-`SetConfig(stop)`, räumt hängengebliebene
   2FA-Sitzungen früherer Versuche weg (Fehlercode 868 „busy").
+- [x] **Diagnostische Fehlermeldungen**: `call_action` klassifiziert
+  Fehler via Sentinel-Codes TR064_ERR_TRANSPORT / _AUTH / _HTTP /
+  _PARSE und erkennt AVMs HTTP-200-mit-Fault-Variante („Auth. failed"
+  im Body), damit die Web-UI spezifische Hinweise zeigt statt
+  generischem „TR-064 fehlgeschlagen".
 - [x] UPnPError-Codes/-Beschreibungen werden aus dem Fault-XML
   extrahiert und in der Web-UI als deutsche Klartexte angezeigt
   (866 = 2FA, 803 = Zeichen, 820/402 = Argumentfehler, etc.).
@@ -166,12 +208,44 @@ Hardware-Entscheidungsmatrix [HARDWARE.md](HARDWARE.md), QEMU-Setup
 
 ## Offen / Nächste Schritte
 
-### Laufende Arbeit
-- [ ] **2FA-Flow End-to-End verifizieren** — SetClient4 → 866 →
-  SetConfig(start) → Polling → (Button/DTMF) → authenticated →
-  SetClient4 mit Token → SIP-Creds in NVS. Bisher: Flow läuft bis
-  `waitingforauth`, steht dort und wartet; der Schritt „Knopf am
-  Router drücken / DTMF-Folge wählen" ist noch offen.
+### Ohne echte Hardware machbar (nächste Kandidaten)
+
+- [ ] **Host-Unit-Tests für `tr064.c`-Parser** — `xml_find_text`,
+  `xml_unescape_inplace`, `pick_default_user` sind alle reine
+  String-Funktionen ohne ESP-IDF-Abhängigkeiten. Analog zu
+  `sip_parse.c` als Pure-C-Modul extrahieren oder einen zweiten
+  Test-Slot unter `firmware/test/` anlegen. Würde die Lookup-
+  Logik gegen die realen AVM-Antwort-Shapes absichern.
+- [ ] **i18n-Sprachen füllen** — Gerüst in `index.html` ist da
+  (`I18N.de` komplett). `en`, `fr`, `es` anhand des DE-Blocks
+  generieren; dazu einen kleinen Sprachumschalter im Footer oder
+  via `Accept-Language`.
+- [ ] **Erweiterte SIP-Parameter im Backend** — `sip_register.c`
+  unterstützt nur UDP. Transport (TCP/TLS), Outbound-Proxy,
+  Realm/Authname-Separation (Telekom-Case), SRTP. Ohne echte
+  Hardware kann man wenigstens die Feldaufnahme in NVS +
+  `/api/config` + Provider-Preset-UI bauen, der Stack-Teil
+  folgt später.
+- [ ] **Paralleler API-Check** — synchroner `phoneblock_check`
+  blockiert den SIP-Task 1–2 s. Umbau auf einen zweiten Task
+  mit Message-Queue; testbar in QEMU über den bestehenden
+  `CONFIG_SIP_TEST_FORCE_SPAM_STAR_NUMBERS`-Hook.
+- [ ] **NVS-Reset + Neustart** als Web-Action —
+  POST `/api/factory-reset` löscht das NVS-Namespace und bootet
+  neu. Nützlich vor Ort zum Hand-Over/Owner-Wechsel. Button im
+  Dashboard (mit Confirm-Dialog).
+- [ ] **Logging-Level-Regler** im Dashboard —
+  `esp_log_level_set("sip", ESP_LOG_DEBUG)` zur Laufzeit, damit
+  man bei Feldproblemen verboser werden kann ohne Reflash.
+- [ ] **CANCEL-Handler spec-konform** (siehe Tech-Debt) — Testbar
+  via QEMU+Fritz!Box, braucht keine neue Hardware.
+- [ ] **Event-getriebener Reload-Wakeup** (siehe Tech-Debt) —
+  reiner Refactor, lässt sich mit den existierenden Host-Tests
+  absichern.
+- [ ] **OAuth-Endpoint ins nächste Server-Release rollen** —
+  `CreateAuthTokenServlet`-Erweiterung ist committed, muss aber
+  auf `phoneblock.net` deployed werden, damit neue Tokens auch
+  produktiv funktionieren.
 
 ### Status-LED
 - [ ] On-Board-LED als Betriebsanzeige (Blink-Pattern für IDLE /
