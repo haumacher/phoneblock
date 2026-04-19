@@ -127,8 +127,9 @@ static int find_inside(const char *from, int len, const char *tag,
 }
 
 // Walk a Fritz!Box phonebook-style XML and invoke cb() for each
-// <contact> block, passing its (uid, number). Returns the number of
-// blocks iterated.
+// <contact> block, passing its (uid, number). Handles both the
+// plain "<contact>" and the attributed "<contact …>" opening tag,
+// which Fritz!OS does emit on some firmware versions.
 typedef void (*contact_cb_t)(const char *uid, const char *number, void *user);
 
 static int parse_contacts(const char *xml, int xml_len,
@@ -137,9 +138,19 @@ static int parse_contacts(const char *xml, int xml_len,
     int count = 0;
     const char *p = xml;
     int remaining = xml_len;
-    while (1) {
-        const char *open  = memmem(p,    remaining, "<contact>",  9);
+    while (remaining > 0) {
+        // Find next "<contact" (8 chars); make sure the next char is
+        // '>' or whitespace so we don't accidentally match <contacts>
+        // or similar.
+        const char *open = memmem(p, remaining, "<contact", 8);
         if (!open) break;
+        char after = open[8];
+        if (after != '>' && after != ' ' && after != '\t'
+            && after != '\r' && after != '\n') {
+            p = open + 8;
+            remaining = xml_len - (p - xml);
+            continue;
+        }
         const char *close = memmem(open, remaining - (open - p),
                                    "</contact>", 10);
         if (!close) break;
@@ -154,7 +165,6 @@ static int parse_contacts(const char *xml, int xml_len,
         }
         p = close + 10;
         remaining = xml_len - (p - xml);
-        if (remaining <= 0) break;
     }
     return count;
 }
@@ -274,7 +284,12 @@ static void run_once(void)
         set_status_result(false, 0, 0, "list download failed");
         return;
     }
-    ESP_LOGI(TAG, "phonebook XML: %d bytes, head: %.200s", len, xml);
+    ESP_LOGI(TAG, "phonebook XML: %d bytes", len);
+    // Emit the body in chunks — ESP_LOG caps per-line length at ~1 KB.
+    for (int off = 0; off < len; off += 700) {
+        int chunk = (len - off) > 700 ? 700 : (len - off);
+        ESP_LOGI(TAG, "  [%d..%d] %.*s", off, off + chunk, chunk, xml + off);
+    }
 
     run_ctx_t ctx = {
         .host = host, .app_user = app_user, .app_pass = app_pass,
