@@ -64,6 +64,9 @@ esp_err_t announcement_init(void)
         ESP_LOGI(TAG, "SPIFFS mounted: %u B used of %u B",
                  (unsigned)used, (unsigned)total);
     }
+    // Clear any orphan temp left over by an upload that crashed
+    // mid-flight on the previous boot.
+    unlink(SPIFFS_TEMP);
     return ESP_OK;
 }
 
@@ -133,6 +136,16 @@ esp_err_t announcement_write_begin(size_t total_bytes)
     if (total_bytes == 0 || total_bytes > ANNOUNCEMENT_MAX_BYTES) {
         return ESP_ERR_INVALID_ARG;
     }
+    // Free both the previous live file and any stale temp before we
+    // start writing. Without this, SPIFFS has to garbage-collect the
+    // old pages while the new data streams in — observed as 4 KB/s
+    // throughput on a ~66 KB upload. With the slot empty up front,
+    // write speed drops back to the ~30–40 KB/s SPIFFS can sustain
+    // on free pages.
+    unlink(SPIFFS_TEMP);
+    unlink(SPIFFS_FILE);
+    invalidate_cache();
+
     s_write_file = fopen(SPIFFS_TEMP, "wb");
     if (!s_write_file) {
         ESP_LOGE(TAG, "fopen(%s): %s", SPIFFS_TEMP, strerror(errno));
@@ -174,11 +187,9 @@ esp_err_t announcement_write_commit(void)
         s_write_got = s_write_total = 0;
         return ESP_ERR_INVALID_SIZE;
     }
-    // SPIFFS rename fails with EIO if the destination already exists,
-    // so remove any previous file first. Short window where neither
-    // file is present — on a crash in this gap we fall back to the
-    // embedded default on next boot, which is acceptable.
-    unlink(SPIFFS_FILE);
+    // Live file was already unlinked in write_begin (so SPIFFS had
+    // free pages during the body write). Just rename the temp into
+    // place.
     if (rename(SPIFFS_TEMP, SPIFFS_FILE) != 0) {
         ESP_LOGE(TAG, "rename(%s → %s): %s",
                  SPIFFS_TEMP, SPIFFS_FILE, strerror(errno));
@@ -209,6 +220,7 @@ esp_err_t announcement_reset(void)
     if (unlink(SPIFFS_FILE) != 0 && errno != ENOENT) {
         ESP_LOGW(TAG, "unlink(%s): %s", SPIFFS_FILE, strerror(errno));
     }
+    unlink(SPIFFS_TEMP);  // best-effort cleanup of any stale temp
     invalidate_cache();
     ESP_LOGI(TAG, "announcement reset to embedded default");
     return ESP_OK;

@@ -32,6 +32,14 @@ CONFIG_LWIP_MAX_SOCKETS=16
 CONFIG_PARTITION_TABLE_CUSTOM=y
 CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
 
+# SPIFFS tuning for the announcement slot: the default 256-byte
+# logical-page size is optimised for many tiny files; we have one
+# 60–240 KB blob, and 1024-byte pages ~quadruple raw write
+# throughput. Requires a reformat — we mount with
+# format_if_mount_failed=true, so the change takes effect on the
+# next boot after flashing.
+CONFIG_SPIFFS_PAGE_SIZE=1024
+
 # PhoneBlock defaults. Token is set via the setup wizard (OAuth) and
 # persisted in NVS — no Kconfig knob for it.
 CONFIG_PHONEBLOCK_BASE_URL="https://phoneblock.net/phoneblock/api"
