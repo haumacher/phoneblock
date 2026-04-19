@@ -104,14 +104,25 @@ Hardware-Entscheidungsmatrix [HARDWARE.md](HARDWARE.md), QEMU-Setup
   `/register-start`, `/token-callback`. Heap-4 KB Header-Buffer für
   Browser-Round-Trips (`CONFIG_HTTPD_MAX_REQ_HDR_LEN`), 8 KB Task-
   Stack für die tiefe TR-064-Aufrufkette.
-- [x] **HTML-Dashboard** (`web/index.html` via `EMBED_FILES`):
-  Status-Pill + Firmware-Version + Uptime + IP, vier Counter-
-  Kacheln, letzte 10 Anrufe als Tabelle, letzte 10 Fehler,
-  Default-Einrichtung (Fritz!Box) + aufklappbarer Experten-Block
-  für manuelle SIP-Eingabe. Vanilla-ES, pollt alle 3 s.
+- [x] **HTML-Dashboard** (`web/index.html` via `EMBED_FILES`): Status-
+  First-Architektur mit Hash-Router, Status-Pille + Token-Pille +
+  Counter-Kacheln + Anrufe + Fehler als Landing. Bei leerem NVS
+  erscheint ein „Willkommen"-Hero mit zwei CTAs zu den Wizards.
+  i18n-Gerüst via `t(key, params?)`; aktuell nur `de` befüllt.
+- [x] **Setup-Wizards** (alle als Sub-Views unter `#/setup/…`):
+  Fritz!Box-Autoprovisioning (TR-064 + 2FA), Provider-Preset-
+  Auswahl (Top-5: Telekom / Vodafone / 1&1 / sipgate / easybell),
+  manuelles Expert-Formular, PhoneBlock-Token via OAuth-Redirect.
+  Erfolgreiche Wizards springen per `location.hash='#/'` zurück
+  aufs Status-Dashboard.
 - [x] **Config-Form → Re-REGISTER**: POST `/api/config`, `config_update()`,
   `sip_register_request_reload()` triggert den SIP-Task, die
   aktuellen Getter zu benutzen.
+- [x] **Kconfig-Credential-Fallbacks ausgebaut**: `CONFIG_SIP_REGISTRAR_HOST`,
+  `CONFIG_SIP_USERNAME`, `CONFIG_SIP_PASSWORD`, `CONFIG_PHONEBLOCK_TOKEN`
+  sind raus — Credentials leben nur noch im NVS und werden über die
+  Wizards gesetzt. Dadurch signalisieren leere Felder eindeutig
+  „noch nicht konfiguriert".
 
 ### TR-064-Auto-Provisioning (firmware, komplett mit 2FA)
 - [x] `tr064.{c,h}` mit generischem `call_action` für beliebige
@@ -236,13 +247,13 @@ Umsetzungsschritte:
 - [ ] Firmware-Versionierung + Changelog-Policy
 
 ### Generisches Provider-Setup (ohne Fritz!Box)
-- [ ] **UI für beliebige VoIP-Anbieter** — Provider-Preset-Dropdown
-  (Fritz!Box-Auto / Telekom / Vodafone / 1&1 / sipgate / easybell /
-  eigen) + Felder für Registrar, Transport (UDP/TCP/TLS), SIP-User,
-  Auth-User, Passwort, Outbound-Proxy, Realm, SRTP-Modus.
-  Parameter und Stolperfallen je Anbieter dokumentiert in
-  [PROVIDERS.md](PROVIDERS.md). Nur O2 bleibt Fritz!Box-only;
-  MagentaZuhause ist im stationären Dongle-Einsatz direkt nutzbar.
+- [x] **UI-Wizard für Top-5-Anbieter** (Telekom, Vodafone, 1&1, sipgate,
+  easybell) als Provider-Preset mit Credential-Feldern. Nur O2 bleibt
+  Fritz!Box-only; MagentaZuhause ist im stationären Dongle-Einsatz
+  direkt nutzbar. Quelle: [PROVIDERS.md](PROVIDERS.md).
+- [ ] **Erweiterte SIP-Parameter**: Transport (UDP/TCP/TLS), Auth-User
+  separat vom SIP-User (Telekom: E-Mail), Outbound-Proxy, Realm,
+  SRTP-Modus. Braucht Backend-Erweiterung im `sip_register.c`.
 
 ### Tech-Debt / Feinschliff
 - [ ] **Event-getriebener Reload-Wakeup für den SIP-Task**: aktuell
