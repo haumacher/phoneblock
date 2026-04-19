@@ -602,7 +602,8 @@ static esp_err_t handle_fritzbox_2fa_status(httpd_req_t *req)
 
     char state[32] = "";
     esp_err_t err = tr064_auth_get_state(s_2fa.fritz_host, 49000,
-        s_2fa.fritz_user, s_2fa.fritz_pass, state, sizeof(state));
+        s_2fa.fritz_user, s_2fa.fritz_pass, s_2fa.token,
+        state, sizeof(state));
     if (err != ESP_OK) {
         send_fail(req, "GetState fehlgeschlagen.");
         return ESP_OK;

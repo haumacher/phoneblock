@@ -74,7 +74,12 @@ esp_err_t tr064_auth_start(
 //   "authenticated"    — good to go, retry the original action
 //   "stopped"          — user cancelled
 //   "blocked"          — too many tries
+//
+// `token_2fa` must be the token returned by tr064_auth_start — per the
+// TR-064 Authentication spec (§6.4), GetState requires the token in the
+// `<avm:token>` SOAP header to identify the running 2FA context.
 esp_err_t tr064_auth_get_state(
     const char *host, int port,
     const char *admin_user, const char *admin_pass,
+    const char *token_2fa,
     char *out_state, size_t state_cap);

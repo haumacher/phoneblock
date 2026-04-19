@@ -439,6 +439,7 @@ esp_err_t tr064_auth_start(const char *host, int port,
 
 esp_err_t tr064_auth_get_state(const char *host, int port,
                                const char *admin_user, const char *admin_pass,
+                               const char *token_2fa,
                                char *out_state, size_t state_cap)
 {
     char url[96];
@@ -448,7 +449,7 @@ esp_err_t tr064_auth_get_state(const char *host, int port,
     if (!resp) return ESP_ERR_NO_MEM;
     esp_err_t err = call_action(url, X_AUTH_SERVICE,
                                 admin_user, admin_pass,
-                                "GetState", NULL, NULL,
+                                "GetState", NULL, token_2fa,
                                 resp, SOAP_RESPONSE_CAP,
                                 NULL, NULL, 0);
     if (err != ESP_OK) { free(resp); return err; }
