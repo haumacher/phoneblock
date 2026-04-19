@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.dongle.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001:365a40ae">PhoneBlock 加密狗</h1>
+
+		<p class="subtitle" data-tx="t0002:f19cc129">这是一个拇指大小的 USB 记忆棒，可以在电话铃响之前抢走广告电话--它与 Fritz！Box 无关，但可以在任何带 SIP 功能的现代路由器或电话系统上使用。</p>
+
+		<div class="notification is-warning">
+			<p data-tx="t0003:f8f65c55"><strong>状态：测试版</strong>加密狗可以工作，但在广泛推荐之前，我们希望在尽可能多的不同连接类型上试用它。我们正在寻找测试者，并将赠送设备作为回报--<a href="#tester">见下文</a>。</p>
+		</div>
+
+		<h2 data-tx="t0004:6b104c7a">一句话说清想法</h2>
+
+		<p data-tx="t0005:d1cd2c85">加密狗就像一个额外的 IP 电话一样登录到路由器。每次有电话打进来，它都会以闪电般的速度询问 PhoneBlock 数据库：<em>"这是垃圾邮件吗？"</em>如果是，它就会自己接听电话并立即挂断。此时，你真正的电话还没有响起。</p>
+
+		<div class="columns is-centered mt-5">
+			<div class="column is-one-quarter has-text-centered">
+				<p><span class="icon is-large has-text-info"><i class="fas fa-phone-volume fa-3x"></i></span></p>
+				<h4 data-tx="t0006:fbca4eec">第一个电话打进来</h4>
+				<p data-tx="t0007:d0d29543">路由器向包括加密狗在内的所有注册电话发出呼叫信号。真实 "电话的铃声延迟为 3-5 秒。</p>
+			</div>
+			<div class="column is-one-quarter has-text-centered">
+				<p><span class="icon is-large has-text-warning"><i class="fas fa-bolt fa-3x"></i></span></p>
+				<h4 data-tx="t0008:acac085a">2. 闪光灯检查</h4>
+				<p data-tx="t0009:fc2f56f4">在几百毫秒内，加密狗会询问 PhoneBlock 该号码是否为垃圾号码。查询通过加密的 HTTPS 进行。</p>
+			</div>
+			<div class="column is-one-quarter has-text-centered">
+				<p><span class="icon is-large has-text-danger"><i class="fas fa-ban fa-3x"></i></span></p>
+				<h4 data-tx="t0010:be667d0f">3. 摆脱它</h4>
+				<p data-tx="t0011:c7c6f4fb">如果号码是垃圾邮件，加密狗会立即接听并再次挂断。客厅里的电话则保持沉默。如果是无害号码，加密狗什么也不会做，电话会正常接通。</p>
+			</div>
+		</div>
+
+		<div class="notification is-info">
+			<p data-tx="t0012:1612490f"><strong>为何如此迷人：</strong>加密狗只需电源和 Wi-Fi 即可使用。不需要额外的服务器，不需要 Fritz！Box 的特殊功能，也不需要合同。内部的 ESP32 微控制器耗电不到半瓦，您只需将其插入路由器的 USB 端口，然后就可以不用管它了。</p>
+		</div>
+
+		<h2 data-tx="t0013:755fe635">比较： 拦截固定电话垃圾邮件的三种方法</h2>
+
+		<p data-tx="t0014:f78318d5">所有这三种解决方案都使用由 PhoneBlock 用户维护的相同垃圾邮件数据库，但在工作量、有效性和对连接的要求方面有很大不同。</p>
+
+		<div class="table-container">
+			<table class="table is-fullwidth is-striped">
+				<thead>
+					<tr>
+						<th data-tx="t0015:ece15d25">特点</th>
+						<th data-tx="t0016:365a40ae">PhoneBlock 加密狗</th>
+						<th data-tx="t0017:b7a22f37">Blocklist 电话簿</th>
+						<th data-tx="t0018:150f46ce">电话拦截应答机器人</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td data-tx="t0019:9e08101d">发送垃圾邮件时手机保持完全静音</td>
+						<td data-tx="t0020:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> 是</td>
+						<td data-tx="t0021:75373880"><span class="icon has-text-warning"><i class="fas fa-circle-half-stroke"></i></span> 仅当配置了路由器呼叫阻断时</td>
+						<td data-tx="t0022:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> 是</td>
+					</tr>
+					<tr>
+						<td data-tx="t0023:90691916">路由器要求</td>
+						<td data-tx="t0024:115dd48e"><span class="icon has-text-success"><i class="fas fa-globe"></i></span>任意（SIP + 铃音延迟）</td>
+						<td data-tx="t0025:102d3ed3"><span class="icon has-text-warning"><i class="fas fa-wifi"></i></span> 带有 CardDAV 的 Fritz!Box</td>
+						<td data-tx="t0026:d2213069"><span class="icon has-text-info"><i class="fas fa-server"></i></span> 带有 SIP 注册器的路由器</td>
+					</tr>
+					<tr>
+						<td data-tx="t0027:e66ba2b">附加硬件</td>
+						<td data-tx="t0028:99294924"><span class="icon has-text-info"><i class="fas fa-usb"></i></span> USB 加密狗，约 10 欧元</td>
+						<td data-tx="t0029:58a26498"><span class="icon has-text-success"><i class="fas fa-check"></i></span> 无</td>
+						<td data-tx="t0030:6a476e10"><span class="icon has-text-warning"><i class="fas fa-server"></i></span> 服务器或 Raspberry Pi</td>
+					</tr>
+					<tr>
+						<td data-tx="t0031:83c9a19b">设置工作</td>
+						<td data-tx="t0032:e09b2ea8"><span class="icon has-text-success"><i class="fas fa-star"></i></span> 插入、配置 WLAN + 接入</td>
+						<td data-tx="t0033:ad1a2520"><span class="icon has-text-success"><i class="fas fa-star"></i></span> 在路由器中存储 CardDAV URL</td>
+						<td data-tx="t0034:ff07d9a3"><span class="icon has-text-warning"><i class="fas fa-user-graduate"></i></span> Java/Docker + 音频呼叫</td>
+					</tr>
+					<tr>
+						<td data-tx="t0035:4532187f">封锁清单的最新情况</td>
+						<td data-tx="t0036:4134c6e2"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span>每次呼叫都进行实时查询</td>
+						<td data-tx="t0037:4dab9851"><span class="icon has-text-info"><i class="fas fa-sync"></i></span> 周期性同步（≤ 1 ×/天）</td>
+						<td data-tx="t0038:4134c6e2"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span>每次呼叫都进行实时查询</td>
+					</tr>
+					<tr>
+						<td data-tx="t0039:a8c2cfff">连续运行功耗</td>
+						<td data-tx="t0040:3d07b53b"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span>约 0.4 W (USB)</td>
+						<td data-tx="t0041:30562f18"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> 0 W（使用路由器）</td>
+						<td data-tx="t0042:e74172dc"><span class="icon has-text-warning"><i class="fas fa-bolt"></i></span> 3-10 W（服务器）</td>
+					</tr>
+					<tr>
+						<td data-tx="t0043:f4c95d3e">积极雇用垃圾邮件发送者</td>
+						<td data-tx="t0044:fc6557f4"><span class="icon has-text-danger"><i class="fas fa-times"></i></span>没有--简短地一笔带过</td>
+						<td data-tx="t0045:d0af0aa8"><span class="icon has-text-danger"><i class="fas fa-times"></i></span>否</td>
+						<td data-tx="t0046:cafb9dda"><span class="icon has-text-success"><i class="fas fa-comments"></i></span> 是 - 参与对话</td>
+					</tr>
+					<tr>
+						<td data-tx="t0047:2762a4e5">成熟度</td>
+						<td data-tx="t0048:8639cb45"><span class="icon has-text-warning"><i class="fas fa-flask"></i></span> Beta</td>
+						<td data-tx="t0049:770dd04"><span class="icon has-text-success"><i class="fas fa-check"></i></span> 卓有成效</td>
+						<td data-tx="t0050:770dd04"><span class="icon has-text-success"><i class="fas fa-check"></i></span> 卓有成效</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<div class="notification is-info mt-4">
+			<p><strong data-tx="t0051:8125e3d9">哪种解决方案适合您？</strong></p>
+			<ul>
+				<li data-tx="t0052:b79437c1"><strong>Blocklist 电话簿</strong> - 如果您有一个 Fritz!Box 和一个简单的标记或手动路由器呼叫阻断就足够了。</li>
+				<li data-tx="t0053:f8bcce39"><strong>加密狗</strong>--如果您<em>没有</em>Fritz！Box 或不想运行永久服务器，但仍希望在收到垃圾邮件时手机保持可靠的静音。</li>
+				<li data-tx="t0054:af7903e3"><strong>Answer Bot</strong> - 如果您想积极雇用垃圾邮件发送者，并且有服务器或 Raspberry Pi 可用。</li>
+			</ul>
+		</div>
+
+		<h2 data-tx="t0055:984ebad2">先决条件</h2>
+		<ul>
+			<li data-tx="t0056:dd9212f7"><strong>带有 SIP 注册器的路由器或电话系统</strong> - Fritz!Box、Speedport、Provider-Box、Asterisk、FreePBX、3CX 和类似系统。</li>
+			<li data-tx="t0057:1c59c72e"><strong>为 "真实 "电话配置铃声延迟</strong>（通常为 3-5 秒），以便加密狗可以提前拦截通话。</li>
+			<li data-tx="t0058:be2e6f7c"><strong>2.4 GHz WLAN</strong> 范围内。</li>
+			<li data-tx="t0059:41e630a8"><strong>5 V USB 电源</strong> - 最好直接安装在路由器上，否则可安装在任何 USB 电源装置上。</li>
+			<li data-tx="t0060:f8c04413"><strong>免费 <a th:href="@{/signup}">PhoneBlock 帐户</a></strong>，带 API 访问令牌。</li>
+		</ul>
+
+		<hr class="my-5"/>
+
+		<h2 data-tx="t0061:6db43a5a" id="tester">成为测试员</h2>
+
+		<p data-tx="t0062:bdb9e1d5">在德国，"路由器"、"提供商 "和 "连接类型 "是五花八门的组合（在国外更是如此）。每种组合都有自己的特点：不同的 SIP 方言、不同的 NAT 规则、不同的环路延迟选项。</p>
+
+		<p data-tx="t0063:80dccb54">因此，我们正在寻找 <strong> 合作测试者</strong>，在他们的特定设置中试用加密狗，并向我们提供有条理的反馈。特别有意思的是</p>
+
+		<ul>
+			<li data-tx="t0064:e1971ce0">使用 <strong>Speedport</strong> 路由器的 Telekom 连接</li>
+			<li data-tx="t0065:61cce24d">通过提供的提供盒连接 Vodafone/Unitymedia 电缆</li>
+			<li data-tx="t0066:ea506b90">1&amp;1、o2、Deutsche Glasfaser 和其他供应商</li>
+			<li data-tx="t0067:c7c7f4b3"><strong>Asterisk</strong>、<strong>FreePBX</strong>、<strong>3CX</strong>或其他自托管 SIP 系统</li>
+			<li data-tx="t0068:e5ffca52">国际连接（瑞士、奥地利、欧洲其他国家）</li>
+		</ul>
+
+		<p data-tx="t0069:ca5fda9b">作为测试人员，您将收到一份<strong>准备好的加密狗作为礼物</strong>。回访服务：填写结构化问卷--一次设置，一次报告，一次完成。如果您愿意，也欢迎您撰写一份公开体验报告。</p>
+
+		<p>
+			<a class="button is-primary is-medium" th:href="@{/dongle-apply}">
+				<span class="icon"><i class="fas fa-paper-plane"></i></span>
+				<span data-tx="t0070:9528579f">申请成为测试员</span>
+			</a>
+		</p>
+
+		<hr class="my-5"/>
+
+		<h2 data-tx="t0071:6d74d666">自己建造</h2>
+
+		<p data-tx="t0072:424f589f">加密狗完全开源。如果您精通 ESP32（或想成为 ESP32 专家），您可以自己制作一个 - 材料成本约为 <strong>8-12 欧元</strong>，具体取决于您在哪里订购部件。</p>
+
+		<div class="columns mt-4">
+			<div class="column">
+				<h4 data-tx="t0073:15a0fb2a"><span class="icon"><i class="fas fa-microchip"></i></span> 硬件</h4>
+				<p data-tx="t0074:35d5f964">您只需一个带有 <strong>ESP-WROOM-32E</strong> 模块（如 NodeMCU-32E）的标准 ESP32 DevKit。无需焊接，只需用短 USB 电缆连接到路由器即可。详细的模块和电路板购买说明可在软件仓库中找到。</p>
+			</div>
+			<div class="column">
+				<h4 data-tx="t0075:29886ac5"><span class="icon"><i class="fas fa-code"></i></span> 固件</h4>
+				<p data-tx="t0076:a40b2de8">基于 ESP-IDF 的开源固件。可使用 ESP-IDF 工具链通过 USB 或现成的二进制文件进行更新。完整的初始配置（WLAN、SIP、令牌）可通过一个小型网络前端直接在加密狗上运行。</p>
+			</div>
+			<div class="column">
+				<h4 data-tx="t0077:d0101c48"><span class="icon"><i class="fab fa-github"></i></span> 源代码和说明</h4>
+				<p data-tx="t0078:1e74076c">硬件选择、闪存说明、配置和故障排除--全部都在 GitHub 存储库中。进一步的开发工作也在这里进行；欢迎提出拉取请求和问题。</p>
+				<p class="mt-2">
+					<a class="button is-dark" href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" target="_blank">
+						<span class="icon"><i class="fab fa-github"></i></span>
+						<span data-tx="t0079:c01bbd3">GitHub 上的 phoneblock-dongle</span>
+					</a>
+				</p>
+			</div>
+		</div>
+
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

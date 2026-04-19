@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.dongle-apply.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001:c6b15d09">申请成为测试员</h1>
+
+		<div class="notification is-success" th:if="${param.ok}">
+			<p><strong data-tx="t0002:fb69fbb">感谢您的申请！</strong></p>
+			<p data-tx="t0003:d79d5517">一旦我们将您的设置添加到我们的测试矩阵中，我们将尽快与您联系。在此期间，您不需要做任何其他事情。如果您想更正详细信息，请<a th:href="@{/}">告知我们</a>。</p>
+		</div>
+
+		<div class="notification is-danger" th:if="${param.error != null and param.error[0] == 'invalid'}">
+			<p data-tx="t0004:f1be1917"><strong>某些必填字段缺失或无效</strong> 请检查所有带*号的字段并重新提交表格。</p>
+		</div>
+
+		<div class="notification is-danger" th:if="${param.error != null and param.error[0] == 'commitment'}">
+			<p data-tx="t0005:98a30556"><strong>在没有得到问卷确认的情况下，我们无法发送加密狗。</strong>反馈意见是我们提供测试仪计划的原因。</p>
+		</div>
+
+		<th:block th:unless="${param.ok}">
+
+		<p data-tx="t0006:32d2fa39">很高兴你能参与其中！我们正在寻找测试者，在他们特定的服务提供商和路由器设置中试用 PhoneBlock 加密狗。我们需要您提供一些详细信息，以便我们选择一个色彩丰富的组合。只需 2-3 分钟即可完成填写。</p>
+
+		<p class="has-text-grey-dark" data-tx="t0007:2f2c6f55"><span class="icon"><i class="fas fa-shield-alt"></i></span> 您的送货地址将仅用于发送加密狗，最迟在 6 个月后删除。另请参阅 <a th:href="@{/datenschutz}">隐私政策</a>。</p>
+
+		<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/dongle-apply-submit}">
+
+			<h2 data-tx="t0008:c7756a86">1. 联系和派遣</h2>
+
+			<div class="field">
+				<label class="label" data-tx="t0009:dd9fa4cb">姓名 *</label>
+				<div class="control">
+					<input class="input" maxlength="128" name="name" required="required" type="text"/>
+				</div>
+			</div>
+
+			<div class="field">
+				<label class="label" data-tx="t0010:518c0e4e">街道和门牌号 *</label>
+				<div class="control">
+					<input class="input" maxlength="128" name="street" required="required" type="text"/>
+				</div>
+			</div>
+
+			<div class="columns">
+				<div class="column is-one-third">
+					<div class="field">
+						<label class="label" data-tx="t0011:4713bd6c">邮政编码 *</label>
+						<div class="control">
+							<input class="input" maxlength="16" name="zip" required="required" type="text"/>
+						</div>
+					</div>
+				</div>
+				<div class="column">
+					<div class="field">
+						<label class="label" data-tx="t0012:eb6fd3c8">地点 *</label>
+						<div class="control">
+							<input class="input" maxlength="128" name="city" required="required" type="text"/>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="field">
+				<label class="label" data-tx="t0013:b51ca857">国家 *</label>
+				<div class="control">
+					<div class="select">
+						<select name="country" required="required">
+							<option data-tx="t0014:ef79573e" value="">请选择 ...</option>
+							<option data-tx="t0015:be4829b4" value="DE">德国</option>
+							<option data-tx="t0016:2d1c61b" value="AT">奥地利</option>
+							<option data-tx="t0017:f55900ed" value="CH">瑞士</option>
+							<option data-tx="t0018:6e40f814" value="OTHER">其他国家</option>
+						</select>
+					</div>
+				</div>
+			</div>
+
+			<hr/>
+
+			<h2 data-tx="t0019:daeeacea">2. 您的连接</h2>
+
+			<div class="field">
+				<label class="label" data-tx="t0020:fa8e5a9e">互联网提供商 *</label>
+				<div class="control">
+					<div class="select is-fullwidth">
+						<select name="provider" required="required">
+							<option data-tx="t0021:ef79573e" value="">请选择 ...</option>
+							<option data-tx="t0022:fc2c352d" value="TELEKOM">电信</option>
+							<option data-tx="t0023:780f436c" value="VODAFONE">沃达丰</option>
+							<option value="1UND1">1&amp;1</option>
+							<option data-tx="t0024:191fc1f8" value="O2">o2 / 西班牙电信</option>
+							<option data-tx="t0025:9e908c9c" value="DEUTSCHE_GLASFASER">德国光纤</option>
+							<option data-tx="t0026:8d111022" value="PYUR">Pÿur</option>
+							<option data-tx="t0027:40240f2a" value="NETCOLOGNE">科隆网络</option>
+							<option data-tx="t0028:99c2a998" value="SWISSCOM">瑞士电信</option>
+							<option data-tx="t0029:c7768309" value="MAGENTA_AT">品红（奥地利）</option>
+							<option data-tx="t0030:57aa58c7" value="OTHER">其他供应商</option>
+						</select>
+					</div>
+				</div>
+			</div>
+
+			<div class="field">
+				<label class="label" data-tx="t0031:e368b52d">其他提供方（如上文选择了 "其他提供方）</label>
+				<div class="control">
+					<input class="input" data-tx="t0032:86270fdc" maxlength="128" name="providerOther" placeholder="z.例如，willy.tel、expio ..." type="text"/>
+				</div>
+			</div>
+
+			<div class="field">
+				<label class="label" data-tx="t0033:f3e1f02b">连接类型 *</label>
+				<div class="control">
+					<div class="select">
+						<select name="connectionType" required="required">
+							<option data-tx="t0034:ef79573e" value="">请选择 ...</option>
+							<option data-tx="t0035:4639ec22" value="DSL">DSL / VDSL</option>
+							<option data-tx="t0036:f2bed367" value="CABLE">电缆</option>
+							<option data-tx="t0037:c54eb3ee" value="FIBER">玻璃纤维</option>
+							<option data-tx="t0038:2b7de5fb" value="MOBILE">移动无线电/LTE 路由器</option>
+							<option data-tx="t0039:b1353ba5" value="ISDN">ISDN / 模拟适配器</option>
+						</select>
+					</div>
+				</div>
+			</div>
+
+			<div class="columns">
+				<div class="column">
+					<div class="field">
+						<label class="label" data-tx="t0040:93208048">路由器类型 *</label>
+						<div class="control">
+							<div class="select is-fullwidth">
+								<select name="routerKind" required="required">
+									<option data-tx="t0041:ef79573e" value="">请选择 ...</option>
+									<option data-tx="t0042:cbc40c39" value="FRITZBOX">弗里茨盒子</option>
+									<option data-tx="t0043:640f617a" value="SPEEDPORT">高速端口</option>
+									<option data-tx="t0044:346a46c2" value="PROVIDER_BOX">提供商箱（已提供）</option>
+									<option data-tx="t0045:3fffcc1f" value="OTHER">其他路由器</option>
+								</select>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="column">
+					<div class="field">
+						<label class="label" data-tx="t0046:9154d7">路由器型号（如果知道）</label>
+						<div class="control">
+							<input class="input" data-tx="t0047:a2224e7d" maxlength="128" name="routerModel" placeholder="z.例如 7590、Smart 4、Giga TV Box ..." type="text"/>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="field">
+				<label class="label" data-tx="t0048:df01939e">每周大约有多少垃圾电话？*</label>
+				<div class="control">
+					<div class="select">
+						<select name="spamFrequency" required="required">
+							<option data-tx="t0049:ef79573e" value="">请选择 ...</option>
+							<option data-tx="t0050:162afdc4" value="BELOW_1">小于 1</option>
+							<option data-tx="t0051:47bd880a" value="1_TO_3">1 至 3</option>
+							<option data-tx="t0052:beff1d5d" value="4_TO_10">4 至 10</option>
+							<option data-tx="t0053:2d23093b" value="MORE">超过 10</option>
+						</select>
+					</div>
+				</div>
+				<p class="help" data-tx="t0054:ce35ea7d">如果您几乎没有收到任何垃圾邮件，那么作为测试员您就没什么可做的--这个问题有助于我们通过真实的测试材料来挑选测试员。</p>
+			</div>
+
+			<hr/>
+
+			<h2 data-tx="t0055:5e04a654">3. 您的技术简介 <span class="has-text-grey is-size-6">（可选）&lt;/x1</span></h2>
+
+			<div class="field">
+				<label class="label" data-tx="t0056:e18d6fd5">你有多精通？</label>
+				<div class="control">
+					<div class="select is-fullwidth">
+						<select name="skillLevel">
+							<option data-tx="t0057:139b66aa" value="">未说明</option>
+							<option data-tx="t0058:1010496d" value="BASIC">我可以将设备连接到无线局域网并填写网络表格</option>
+							<option data-tx="t0059:30fa2c42" value="ESP32">我以前给 ESP32 / Arduino 安装过闪存</option>
+							<option data-tx="t0060:63a63cc5" value="VOIP_EXPERT">我熟悉 SIP / VoIP</option>
+						</select>
+					</div>
+				</div>
+				<p class="help" data-tx="t0061:4cdb32d">帮助我们进行设置支持--从最基本的开始完全没问题。</p>
+			</div>
+
+			<hr/>
+
+			<h2 data-tx="t0062:f43363f3">第 4 项承诺</h2>
+
+			<div class="field">
+				<div class="control">
+					<label class="checkbox" data-tx="t0063:331474f7"><input name="acceptFollowup" required="required" type="checkbox" value="yes"/> 我愿意在 2-4 周后填写一份简短的问卷。*</label>
+				</div>
+			</div>
+
+			<div class="field">
+				<div class="control">
+					<label class="checkbox" data-tx="t0064:b9a4dde6"><input name="allowPublish" type="checkbox" value="yes"/> 在 phoneblock.net 的兼容性矩阵中，我的提供商/路由器设置可能是匿名的。</label>
+				</div>
+			</div>
+
+			<hr/>
+
+			<h2 data-tx="t0065:8919bd21">5. 评论 <span class="has-text-grey is-size-6">（可选）&lt;/x1</span></h2>
+
+			<div class="field">
+				<label class="label" data-tx="t0066:2c809dd2">您的设置有何特点？</label>
+				<div class="control">
+					<textarea class="textarea" maxlength="4096" name="notes" rows="4"></textarea>
+				</div>
+			</div>
+
+			<hr/>
+
+			<div class="field is-grouped">
+				<div class="control">
+					<button class="button is-primary is-medium" type="submit">
+						<span class="icon"><i class="fas fa-paper-plane"></i></span>
+						<span data-tx="t0067:a587c4a6">发送申请</span>
+					</button>
+				</div>
+				<div class="control">
+					<a class="button is-light is-medium" data-tx="t0068:b551b861" th:href="@{/dongle}">取消</a>
+				</div>
+			</div>
+
+		</form>
+
+		</th:block>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

@@ -9,6 +9,7 @@ import org.thymeleaf.web.servlet.IServletWebExchange;
 import org.thymeleaf.web.servlet.JakartaServletWebApplication;
 
 import de.haumacher.phoneblock.app.CreateAuthTokenServlet;
+import de.haumacher.phoneblock.app.DongleApplicationServlet;
 import de.haumacher.phoneblock.app.SettingsServlet;
 import de.haumacher.phoneblock.app.render.controller.LoginController;
 import de.haumacher.phoneblock.app.render.controller.MobileLoginController;
@@ -43,6 +44,7 @@ public class TemplateRenderer {
         controllersByURL.put(SettingsServlet.PATH, new SettingsController());
         controllersByURL.put(PhoneInfoController.PHONE_INFO_PAGE, new PhoneInfoController());
         controllersByURL.put(SUPPORT_BANKTRANSFER_PAGE, new RequireLoginController());
+        controllersByURL.put(DongleApplicationServlet.FORM_PATH, new RequireLoginController());
         controllersByURL.put(ShowCredentialsController.SHOW_CREDENTIALS_PAGE, new ShowCredentialsController());
         controllersByURL.put(ShowApiKeyController.SHOW_API_KEY_PAGE, new ShowApiKeyController());
     }

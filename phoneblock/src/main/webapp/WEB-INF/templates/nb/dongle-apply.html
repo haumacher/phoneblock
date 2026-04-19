@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.dongle-apply.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001:c6b15d09">Søk om å bli betatester</h1>
+
+		<div class="notification is-success" th:if="${param.ok}">
+			<p><strong data-tx="t0002:fb69fbb">Takk for din søknad!</strong></p>
+			<p data-tx="t0003:d79d5517">Vi vil kontakte deg så snart vi har lagt til oppsettet ditt i testmatrisen vår. I mellomtiden trenger du ikke å gjøre noe annet. Hvis du ønsker å korrigere opplysningene dine, vennligst <a th:href="@{/}">gi oss beskjed</a>.</p>
+		</div>
+
+		<div class="notification is-danger" th:if="${param.error != null and param.error[0] == 'invalid'}">
+			<p data-tx="t0004:f1be1917"><strong>Noen obligatoriske felt mangler eller er ugyldige</strong> Vennligst sjekk alle feltene merket med * og send inn skjemaet på nytt.</p>
+		</div>
+
+		<div class="notification is-danger" th:if="${param.error != null and param.error[0] == 'commitment'}">
+			<p data-tx="t0005:98a30556"><strong>Vi kan ikke sende ut en dongle uten bekreftelse på spørreskjemaet.</strong> Tilbakemeldingene er grunnen til at vi i det hele tatt tilbyr testerprogrammet.</p>
+		</div>
+
+		<th:block th:unless="${param.ok}">
+
+		<p data-tx="t0006:32d2fa39">Flott at du vil være med på det! Vi er på utkikk etter testere som kan prøve PhoneBlock-dongelen med sin egen leverandør og ruteroppsett. Vi trenger noen få detaljer fra deg, slik at vi kan velge en fargerik miks. Det tar 2-3 minutter å fylle ut.</p>
+
+		<p class="has-text-grey-dark" data-tx="t0007:2f2c6f55"><span class="icon"><i class="fas fa-shield-alt"></i></span> Din leveringsadresse vil kun bli brukt til å sende donglen og vil bli slettet senest etter 6 måneder. Se også <a th:href="@{/datenschutz}">Privatlivspolitikk</a>.</p>
+
+		<form enctype="application/x-www-form-urlencoded" method="post" th:action="@{/dongle-apply-submit}">
+
+			<h2 data-tx="t0008:c7756a86">1. Kontakt og utsendelse</h2>
+
+			<div class="field">
+				<label class="label" data-tx="t0009:dd9fa4cb">Navn</label>
+				<div class="control">
+					<input class="input" maxlength="128" name="name" required="required" type="text"/>
+				</div>
+			</div>
+
+			<div class="field">
+				<label class="label" data-tx="t0010:518c0e4e">Gate- og husnummer *</label>
+				<div class="control">
+					<input class="input" maxlength="128" name="street" required="required" type="text"/>
+				</div>
+			</div>
+
+			<div class="columns">
+				<div class="column is-one-third">
+					<div class="field">
+						<label class="label" data-tx="t0011:4713bd6c">POSTCODE *</label>
+						<div class="control">
+							<input class="input" maxlength="16" name="zip" required="required" type="text"/>
+						</div>
+					</div>
+				</div>
+				<div class="column">
+					<div class="field">
+						<label class="label" data-tx="t0012:eb6fd3c8">Place *</label>
+						<div class="control">
+							<input class="input" maxlength="128" name="city" required="required" type="text"/>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="field">
+				<label class="label" data-tx="t0013:b51ca857">Land *</label>
+				<div class="control">
+					<div class="select">
+						<select name="country" required="required">
+							<option data-tx="t0014:ef79573e" value="">Vennligst velg ...</option>
+							<option data-tx="t0015:be4829b4" value="DE">Tyskland</option>
+							<option data-tx="t0016:2d1c61b" value="AT">Østerrike</option>
+							<option data-tx="t0017:f55900ed" value="CH">Sveits</option>
+							<option data-tx="t0018:6e40f814" value="OTHER">Annet land</option>
+						</select>
+					</div>
+				</div>
+			</div>
+
+			<hr/>
+
+			<h2 data-tx="t0019:daeeacea">2. Tilkoblingen din</h2>
+
+			<div class="field">
+				<label class="label" data-tx="t0020:fa8e5a9e">Internettleverandør *</label>
+				<div class="control">
+					<div class="select is-fullwidth">
+						<select name="provider" required="required">
+							<option data-tx="t0021:ef79573e" value="">Vennligst velg ...</option>
+							<option data-tx="t0022:fc2c352d" value="TELEKOM">Telekommunikasjon</option>
+							<option data-tx="t0023:780f436c" value="VODAFONE">Vodafone</option>
+							<option value="1UND1">1&amp;1</option>
+							<option data-tx="t0024:191fc1f8" value="O2">o2 / Telefónica</option>
+							<option data-tx="t0025:9e908c9c" value="DEUTSCHE_GLASFASER">Tysk fiberoptikk</option>
+							<option data-tx="t0026:8d111022" value="PYUR">Pÿur</option>
+							<option data-tx="t0027:40240f2a" value="NETCOLOGNE">NetCologne</option>
+							<option data-tx="t0028:99c2a998" value="SWISSCOM">Swisscom</option>
+							<option data-tx="t0029:c7768309" value="MAGENTA_AT">Magenta (Østerrike)</option>
+							<option data-tx="t0030:57aa58c7" value="OTHER">Annen leverandør</option>
+						</select>
+					</div>
+				</div>
+			</div>
+
+			<div class="field">
+				<label class="label" data-tx="t0031:e368b52d">Annen leverandør (hvis "Annen leverandør" er valgt ovenfor)</label>
+				<div class="control">
+					<input class="input" data-tx="t0032:86270fdc" maxlength="128" name="providerOther" placeholder="z. f.eks. willy.tel, inexio ..." type="text"/>
+				</div>
+			</div>
+
+			<div class="field">
+				<label class="label" data-tx="t0033:f3e1f02b">Tilkoblingstype *</label>
+				<div class="control">
+					<div class="select">
+						<select name="connectionType" required="required">
+							<option data-tx="t0034:ef79573e" value="">Vennligst velg ...</option>
+							<option data-tx="t0035:4639ec22" value="DSL">DSL / VDSL</option>
+							<option data-tx="t0036:f2bed367" value="CABLE">Kabler</option>
+							<option data-tx="t0037:c54eb3ee" value="FIBER">Glassfiber</option>
+							<option data-tx="t0038:2b7de5fb" value="MOBILE">Mobil radio / LTE-ruter</option>
+							<option data-tx="t0039:b1353ba5" value="ISDN">ISDN/analog adapter</option>
+						</select>
+					</div>
+				</div>
+			</div>
+
+			<div class="columns">
+				<div class="column">
+					<div class="field">
+						<label class="label" data-tx="t0040:93208048">Rutertype *</label>
+						<div class="control">
+							<div class="select is-fullwidth">
+								<select name="routerKind" required="required">
+									<option data-tx="t0041:ef79573e" value="">Vennligst velg ...</option>
+									<option data-tx="t0042:cbc40c39" value="FRITZBOX">Fritz!Box</option>
+									<option data-tx="t0043:640f617a" value="SPEEDPORT">Speedport</option>
+									<option data-tx="t0044:346a46c2" value="PROVIDER_BOX">Leverandørboks (medfølger)</option>
+									<option data-tx="t0045:3fffcc1f" value="OTHER">Annen ruter</option>
+								</select>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="column">
+					<div class="field">
+						<label class="label" data-tx="t0046:9154d7">Rutermodell (hvis kjent)</label>
+						<div class="control">
+							<input class="input" data-tx="t0047:a2224e7d" maxlength="128" name="routerModel" placeholder="z. f.eks. 7590, Smart 4, Giga TV Box ..." type="text"/>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="field">
+				<label class="label" data-tx="t0048:df01939e">Omtrent hvor mange spam-anrop per uke? *</label>
+				<div class="control">
+					<div class="select">
+						<select name="spamFrequency" required="required">
+							<option data-tx="t0049:ef79573e" value="">Vennligst velg ...</option>
+							<option data-tx="t0050:162afdc4" value="BELOW_1">Mindre enn 1</option>
+							<option data-tx="t0051:47bd880a" value="1_TO_3">1 til 3</option>
+							<option data-tx="t0052:beff1d5d" value="4_TO_10">4 til 10</option>
+							<option data-tx="t0053:2d23093b" value="MORE">Mer enn 10</option>
+						</select>
+					</div>
+				</div>
+				<p class="help" data-tx="t0054:ce35ea7d">Hvis du nesten ikke får spam, har du lite å gjøre som tester - dette spørsmålet hjelper oss med å velge ut testere med ekte testmateriale.</p>
+			</div>
+
+			<hr/>
+
+			<h2 data-tx="t0055:5e04a654">3. Din teknologiprofil <span class="has-text-grey is-size-6">(valgfritt)</span>.</h2>
+
+			<div class="field">
+				<label class="label" data-tx="t0056:e18d6fd5">Hvor godt bevandret er du?</label>
+				<div class="control">
+					<div class="select is-fullwidth">
+						<select name="skillLevel">
+							<option data-tx="t0057:139b66aa" value="">Ikke spesifisert</option>
+							<option data-tx="t0058:1010496d" value="BASIC">Jeg kan koble en enhet til WLAN og fylle ut et webskjema</option>
+							<option data-tx="t0059:30fa2c42" value="ESP32">Jeg har flashet ESP32 / Arduino før</option>
+							<option data-tx="t0060:63a63cc5" value="VOIP_EXPERT">Jeg er kjent med SIP / VoIP</option>
+						</select>
+					</div>
+				</div>
+				<p class="help" data-tx="t0061:4cdb32d">Hjelper oss med oppsettstøtte - det er helt greit å starte med det grunnleggende.</p>
+			</div>
+
+			<hr/>
+
+			<h2 data-tx="t0062:f43363f3">4. forpliktelse</h2>
+
+			<div class="field">
+				<div class="control">
+					<label class="checkbox" data-tx="t0063:331474f7"><input name="acceptFollowup" required="required" type="checkbox" value="yes"/> Jeg er villig til å fylle ut et kort spørreskjema etter 2-4 uker. *</label>
+				</div>
+			</div>
+
+			<div class="field">
+				<div class="control">
+					<label class="checkbox" data-tx="t0064:b9a4dde6"><input name="allowPublish" type="checkbox" value="yes"/> Min leverandør/ruteroppsett kan vises anonymisert i kompatibilitetsmatrisen på phoneblock.net.</label>
+				</div>
+			</div>
+
+			<hr/>
+
+			<h2 data-tx="t0065:8919bd21">5. Kommentarer <span class="has-text-grey is-size-6">(valgfritt)</span>.</h2>
+
+			<div class="field">
+				<label class="label" data-tx="t0066:2c809dd2">Spesielle egenskaper ved oppsettet ditt, grunner til din interesse?</label>
+				<div class="control">
+					<textarea class="textarea" maxlength="4096" name="notes" rows="4"></textarea>
+				</div>
+			</div>
+
+			<hr/>
+
+			<div class="field is-grouped">
+				<div class="control">
+					<button class="button is-primary is-medium" type="submit">
+						<span class="icon"><i class="fas fa-paper-plane"></i></span>
+						<span data-tx="t0067:a587c4a6">Send søknad</span>
+					</button>
+				</div>
+				<div class="control">
+					<a class="button is-light is-medium" data-tx="t0068:b551b861" th:href="@{/dongle}">Avbryt</a>
+				</div>
+			</div>
+
+		</form>
+
+		</th:block>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

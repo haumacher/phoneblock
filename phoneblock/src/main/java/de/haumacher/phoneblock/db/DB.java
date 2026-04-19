@@ -196,6 +196,7 @@ public class DB {
 		configuration.addMapper(BlockList.class);
 		configuration.addMapper(Users.class);
 		configuration.addMapper(FtcReports.class);
+		configuration.addMapper(DongleApplications.class);
 		_sessionFactory = new SqlSessionFactoryBuilder().build(configuration);
 		
 		setupSchema();

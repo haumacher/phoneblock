@@ -38,6 +38,7 @@ import de.haumacher.phoneblock.app.EpcQrCodeServlet;
 import de.haumacher.phoneblock.util.I18N;
 import de.haumacher.phoneblock.app.CreateAuthTokenServlet;
 import de.haumacher.phoneblock.app.DeleteAccountServlet;
+import de.haumacher.phoneblock.app.DongleApplicationServlet;
 import de.haumacher.phoneblock.app.EMailVerificationServlet;
 import de.haumacher.phoneblock.app.EmailChangeServlet;
 import de.haumacher.phoneblock.app.ErrorServlet;
@@ -319,6 +320,7 @@ public class ContentFilter extends LoginFilter {
 			path.startsWith(EpcQrCodeServlet.PATH) ||
 			path.startsWith(CreateAuthTokenServlet.CREATE_TOKEN) ||
 			path.startsWith(DeleteAccountServlet.PATH) ||
+			path.startsWith(DongleApplicationServlet.SUBMIT_PATH) ||
 			path.startsWith(EMailVerificationServlet.LOGIN_WEB) ||
 			path.startsWith(EMailVerificationServlet.LOGIN_MOBILE) ||
 			path.startsWith(ExternalLinkServlet.LINK_PREFIX) ||
