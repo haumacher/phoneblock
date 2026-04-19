@@ -17,10 +17,16 @@ extern const uint8_t announcement_default_end[]   asm("_binary_announcement_alaw
 #define SPIFFS_BASE_PATH  "/spiffs"
 #define SPIFFS_LABEL      "storage"
 #define SPIFFS_FILE       "/spiffs/announcement.alaw"
+#define SPIFFS_TEMP       "/spiffs/announcement.alaw.tmp"
 
 static bool     s_spiffs_mounted = false;
 static uint8_t *s_cache           = NULL;    // NULL = use embedded default
 static size_t   s_cache_len       = 0;
+
+// Streaming-write session state (see announcement_write_begin).
+static FILE    *s_write_file     = NULL;
+static size_t   s_write_total    = 0;
+static size_t   s_write_got      = 0;
 
 static void invalidate_cache(void)
 {
@@ -110,29 +116,73 @@ esp_err_t announcement_get(const uint8_t **buf, size_t *len)
     return ESP_OK;
 }
 
-esp_err_t announcement_write(const uint8_t *buf, size_t len)
+esp_err_t announcement_write_begin(size_t total_bytes)
 {
     if (!s_spiffs_mounted) return ESP_ERR_INVALID_STATE;
-    if (!buf || len == 0 || len > ANNOUNCEMENT_MAX_BYTES) {
+    if (s_write_file)      return ESP_ERR_INVALID_STATE;
+    if (total_bytes == 0 || total_bytes > ANNOUNCEMENT_MAX_BYTES) {
         return ESP_ERR_INVALID_ARG;
     }
-
-    FILE *f = fopen(SPIFFS_FILE, "wb");
-    if (!f) {
-        ESP_LOGE(TAG, "fopen(%s, wb): %s", SPIFFS_FILE, strerror(errno));
+    s_write_file = fopen(SPIFFS_TEMP, "wb");
+    if (!s_write_file) {
+        ESP_LOGE(TAG, "fopen(%s): %s", SPIFFS_TEMP, strerror(errno));
         return ESP_FAIL;
     }
-    size_t written = fwrite(buf, 1, len, f);
-    fclose(f);
-    if (written != len) {
-        ESP_LOGE(TAG, "short write: %u of %u bytes",
-                 (unsigned)written, (unsigned)len);
-        unlink(SPIFFS_FILE);
-        return ESP_FAIL;
-    }
-    invalidate_cache();
-    ESP_LOGI(TAG, "stored custom announcement: %u bytes", (unsigned)len);
+    s_write_total = total_bytes;
+    s_write_got   = 0;
     return ESP_OK;
+}
+
+esp_err_t announcement_write_append(const uint8_t *buf, size_t len)
+{
+    if (!s_write_file) return ESP_ERR_INVALID_STATE;
+    if (!buf || len == 0) return ESP_ERR_INVALID_ARG;
+    if (s_write_got + len > s_write_total) return ESP_ERR_INVALID_SIZE;
+    size_t w = fwrite(buf, 1, len, s_write_file);
+    if (w != len) {
+        ESP_LOGE(TAG, "short write: %u of %u bytes", (unsigned)w, (unsigned)len);
+        return ESP_FAIL;
+    }
+    s_write_got += len;
+    return ESP_OK;
+}
+
+esp_err_t announcement_write_commit(void)
+{
+    if (!s_write_file) return ESP_ERR_INVALID_STATE;
+    fclose(s_write_file);
+    s_write_file = NULL;
+    if (s_write_got != s_write_total) {
+        ESP_LOGE(TAG, "commit: got %u of expected %u",
+                 (unsigned)s_write_got, (unsigned)s_write_total);
+        unlink(SPIFFS_TEMP);
+        s_write_got = s_write_total = 0;
+        return ESP_ERR_INVALID_SIZE;
+    }
+    // Atomic replace: the previous announcement stays intact if the
+    // rename step itself fails.
+    if (rename(SPIFFS_TEMP, SPIFFS_FILE) != 0) {
+        ESP_LOGE(TAG, "rename(%s → %s): %s",
+                 SPIFFS_TEMP, SPIFFS_FILE, strerror(errno));
+        unlink(SPIFFS_TEMP);
+        s_write_got = s_write_total = 0;
+        return ESP_FAIL;
+    }
+    size_t stored = s_write_got;
+    s_write_got = s_write_total = 0;
+    invalidate_cache();
+    ESP_LOGI(TAG, "stored custom announcement: %u bytes", (unsigned)stored);
+    return ESP_OK;
+}
+
+void announcement_write_abort(void)
+{
+    if (s_write_file) {
+        fclose(s_write_file);
+        s_write_file = NULL;
+    }
+    unlink(SPIFFS_TEMP);
+    s_write_got = s_write_total = 0;
 }
 
 esp_err_t announcement_reset(void)

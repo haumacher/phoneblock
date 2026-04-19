@@ -808,7 +808,8 @@ static esp_err_t handle_announcement_get(httpd_req_t *req)
 // POST /api/announcement — replaces the current announcement with the
 // request body. Body is raw A-law bytes (8 kHz mono, no header); the
 // UI does the WAV/MP3/OGG → A-law conversion via the browser's Web
-// Audio API before uploading.
+// Audio API before uploading. Streamed straight into SPIFFS via the
+// announcement_write_* API so we don't hold the full 240 KB on heap.
 static esp_err_t handle_announcement_post(httpd_req_t *req)
 {
     int total = req->content_len;
@@ -821,27 +822,33 @@ static esp_err_t handle_announcement_post(httpd_req_t *req)
         return ESP_OK;
     }
 
-    uint8_t *buf = malloc(total);
-    if (!buf) {
-        send_fail(req, "Out of memory.");
+    esp_err_t err = announcement_write_begin((size_t)total);
+    if (err != ESP_OK) {
+        send_fail(req, "Could not open upload target.");
         return ESP_OK;
     }
 
+    char chunk[2048];
     int got = 0;
     while (got < total) {
-        int n = httpd_req_recv(req, (char *)buf + got, total - got);
+        int want = total - got;
+        if (want > (int)sizeof(chunk)) want = (int)sizeof(chunk);
+        int n = httpd_req_recv(req, chunk, want);
         if (n <= 0) {
-            free(buf);
+            announcement_write_abort();
             send_fail(req, "Upload interrupted.");
+            return ESP_OK;
+        }
+        if (announcement_write_append((const uint8_t *)chunk, n) != ESP_OK) {
+            announcement_write_abort();
+            send_fail(req, "SPIFFS write failed.");
             return ESP_OK;
         }
         got += n;
     }
 
-    esp_err_t err = announcement_write(buf, got);
-    free(buf);
-    if (err != ESP_OK) {
-        send_fail(req, "SPIFFS write failed.");
+    if (announcement_write_commit() != ESP_OK) {
+        send_fail(req, "Commit failed.");
         return ESP_OK;
     }
 

@@ -35,10 +35,20 @@ esp_err_t   announcement_init(void);
 // to BYE without streaming).
 esp_err_t   announcement_get(const uint8_t **buf, size_t *len);
 
-// Persist `buf` (length `len`) as the new user-provided announcement.
-// Enforces the ANNOUNCEMENT_MAX_BYTES cap. On success invalidates the
-// cache so the next get() serves the new content.
-esp_err_t   announcement_write(const uint8_t *buf, size_t len);
+// Streaming write API — lets the web handler spool the upload
+// directly from HTTP into SPIFFS without a 240 KB heap buffer.
+//
+//   announcement_write_begin(total) → writes to a temp file
+//   announcement_write_append(...)  → append a received chunk
+//   announcement_write_commit()     → atomic rename to live file
+//   announcement_write_abort()      → clean up on error
+//
+// Only one write session at a time. Not thread-safe — call from a
+// single request handler.
+esp_err_t   announcement_write_begin(size_t total_bytes);
+esp_err_t   announcement_write_append(const uint8_t *buf, size_t len);
+esp_err_t   announcement_write_commit(void);
+void        announcement_write_abort(void);
 
 // Discard any user-provided announcement; the next get() returns the
 // embedded default.
