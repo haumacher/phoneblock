@@ -162,9 +162,14 @@ Deckt die Top-5 ohne Provider-Preset komplett ab.
 
 ## Anbieter mit Einschränkungen
 
-- **O2 / Telefónica** — SIP-Daten werden grundsätzlich nicht
-  herausgegeben, Registrierung nur aus O2-IP-Range. Dongle realistisch
-  nur *hinter* einem O2-Router per Fritz!Box-Autoprovisioning.
+- **O2 / Telefónica** — SIP-Daten werden bei O2-gelieferter Hardware
+  nicht herausgegeben (nur per TR-069 an die CPE gepusht),
+  Registrierung nur aus O2-IP-Range. Wer einen eigenen Router
+  mitbringt, bekommt die Credentials zwar, hat dann aber ohnehin eine
+  Fritz!Box o.ä. im Netz — der Dongle kann sich genauso gut per
+  TR-064-Autoprovisioning als Nebenstelle daran anmelden, statt die
+  Credentials direkt zu verwenden. Damit entfällt der Use-Case für
+  ein „O2-Preset" im generischen Provider-Setup.
 - **Congstar** — toleriert, aber kein Support. Funktioniert, sobald
   SIP-Daten ausgehändigt sind.
 
