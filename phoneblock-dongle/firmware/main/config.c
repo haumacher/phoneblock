@@ -17,6 +17,7 @@ static const char *NS   = "phoneblock";
 #define K_SIP_USER      "sip_user"
 #define K_SIP_PASS      "sip_pass"
 #define K_SIP_EXPIRES   "sip_expires"
+#define K_SIP_INT_NUM   "sip_int_num"
 #define K_CONTACT_HOST  "contact_host"
 #define K_CONTACT_PORT  "contact_port"
 #define K_PB_URL        "pb_url"
@@ -28,6 +29,7 @@ typedef struct {
     char sip_user[32];
     char sip_pass[64];
     int  sip_expires;
+    char sip_int_num[16];
     char contact_host[64];
     int  contact_port;
     char pb_base_url[128];
@@ -72,11 +74,12 @@ void config_load(void)
         // fields keep their Kconfig defaults (port, expiry, contact
         // overrides for QEMU, API base URL).
         ESP_LOGI(TAG, "NVS namespace '%s' empty, using Kconfig defaults", NS);
-        s_config.sip_host[0]  = '\0';
-        s_config.sip_port     = CONFIG_SIP_REGISTRAR_PORT;
-        s_config.sip_user[0]  = '\0';
-        s_config.sip_pass[0]  = '\0';
-        s_config.sip_expires  = CONFIG_SIP_EXPIRES;
+        s_config.sip_host[0]    = '\0';
+        s_config.sip_port       = CONFIG_SIP_REGISTRAR_PORT;
+        s_config.sip_user[0]    = '\0';
+        s_config.sip_pass[0]    = '\0';
+        s_config.sip_expires    = CONFIG_SIP_EXPIRES;
+        s_config.sip_int_num[0] = '\0';
         copy_default(s_config.contact_host, sizeof(s_config.contact_host), CONFIG_SIP_CONTACT_HOST_OVERRIDE);
         s_config.contact_port = CONFIG_SIP_CONTACT_PORT_OVERRIDE;
         copy_default(s_config.pb_base_url,  sizeof(s_config.pb_base_url),  CONFIG_PHONEBLOCK_BASE_URL);
@@ -96,6 +99,8 @@ void config_load(void)
     load_str(h, K_SIP_PASS,     "",
              s_config.sip_pass,     sizeof(s_config.sip_pass));
     s_config.sip_expires  = load_int(h, K_SIP_EXPIRES,  CONFIG_SIP_EXPIRES);
+    load_str(h, K_SIP_INT_NUM,  "",
+             s_config.sip_int_num,  sizeof(s_config.sip_int_num));
     load_str(h, K_CONTACT_HOST, CONFIG_SIP_CONTACT_HOST_OVERRIDE,
              s_config.contact_host, sizeof(s_config.contact_host));
     s_config.contact_port = load_int(h, K_CONTACT_PORT, CONFIG_SIP_CONTACT_PORT_OVERRIDE);
@@ -115,6 +120,7 @@ int         config_sip_port(void)            { return s_config.sip_port; }
 const char *config_sip_user(void)            { return s_config.sip_user; }
 const char *config_sip_pass(void)            { return s_config.sip_pass; }
 int         config_sip_expires(void)         { return s_config.sip_expires; }
+const char *config_sip_internal_number(void) { return s_config.sip_int_num; }
 const char *config_contact_host_override(void) { return s_config.contact_host; }
 int         config_contact_port_override(void) { return s_config.contact_port; }
 const char *config_phoneblock_base_url(void) { return s_config.pb_base_url; }
@@ -153,6 +159,8 @@ esp_err_t config_update(const config_update_t *u)
     if (err == ESP_OK) err = set_str_if(h, K_SIP_PASS, u->sip_pass,
                                         s_config.sip_pass, sizeof(s_config.sip_pass));
     if (err == ESP_OK) err = set_int_if(h, K_SIP_EXPIRES, u->sip_expires, &s_config.sip_expires);
+    if (err == ESP_OK) err = set_str_if(h, K_SIP_INT_NUM, u->sip_internal_number,
+                                        s_config.sip_int_num, sizeof(s_config.sip_int_num));
     if (err == ESP_OK) err = set_str_if(h, K_PB_URL, u->phoneblock_base_url,
                                         s_config.pb_base_url, sizeof(s_config.pb_base_url));
     if (err == ESP_OK) err = set_str_if(h, K_PB_TOKEN, u->phoneblock_token,

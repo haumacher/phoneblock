@@ -135,6 +135,7 @@ static esp_err_t handle_status(httpd_req_t *req)
     cJSON_AddStringToObject(sip,  "host",              config_sip_host());
     cJSON_AddNumberToObject(sip,  "port",              config_sip_port());
     cJSON_AddStringToObject(sip,  "user",              config_sip_user());
+    cJSON_AddStringToObject(sip,  "internal_number",   config_sip_internal_number());
 
     cJSON *pb = cJSON_AddObjectToObject(root, "phoneblock");
     cJSON_AddStringToObject(pb,   "base_url",           config_phoneblock_base_url());
@@ -263,14 +264,24 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     bool have_pb_token  = form_get(body, "pb_token",  pb_token,  sizeof(pb_token));
     free(body);
 
+    const char *new_host = have_sip_host && sip_host[0] ? sip_host : NULL;
+    // A changed registrar (provider / manual edit moving to a different
+    // box) invalidates the Fritz!Box-supplied extension number — blank
+    // it out explicitly so the dashboard does not keep showing it.
+    const char *clear_int_num = NULL;
+    if (new_host && strcmp(new_host, config_sip_host()) != 0) {
+        clear_int_num = "";
+    }
+
     config_update_t u = {
-        .sip_host   = have_sip_host && sip_host[0]  ? sip_host  : NULL,
+        .sip_host   = new_host,
         .sip_port   = have_sip_port && sip_port_s[0] ? atoi(sip_port_s) : 0,
         .sip_user   = have_sip_user && sip_user[0]  ? sip_user  : NULL,
         // Empty password submitted = keep existing (so user doesn't have to
         // re-type it when editing other fields).
         .sip_pass   = have_sip_pass && sip_pass[0]  ? sip_pass  : NULL,
         .sip_expires = have_sip_exp && sip_exp_s[0] ? atoi(sip_exp_s) : 0,
+        .sip_internal_number = clear_int_num,
         .phoneblock_base_url = have_pb_url   && pb_url[0]   ? pb_url   : NULL,
         .phoneblock_token    = have_pb_token && pb_token[0] ? pb_token : NULL,
     };
@@ -432,6 +443,7 @@ static esp_err_t handle_fritzbox_setup(httpd_req_t *req)
         .sip_port = 5060,
         .sip_user = res.sip_user,
         .sip_pass = res.sip_pass,
+        .sip_internal_number = res.internal_number,
     };
     if (config_update(&u) != ESP_OK) {
         send_fail(req, "NVS-Schreibfehler");
@@ -671,6 +683,7 @@ static esp_err_t handle_fritzbox_2fa_status(httpd_req_t *req)
         .sip_port = 5060,
         .sip_user = res.sip_user,
         .sip_pass = res.sip_pass,
+        .sip_internal_number = res.internal_number,
     };
     if (config_update(&u) != ESP_OK) {
         send_fail(req, "NVS-Schreibfehler");

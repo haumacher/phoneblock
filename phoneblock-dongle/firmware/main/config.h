@@ -22,6 +22,10 @@ int         config_sip_port(void);
 const char *config_sip_user(void);
 const char *config_sip_pass(void);
 int         config_sip_expires(void);
+// Internal extension number assigned by the Fritz!Box TR-064 flow,
+// for display in the dashboard. Empty when SIP is configured manually
+// or via a provider preset (the server does not hand it back).
+const char *config_sip_internal_number(void);
 const char *config_contact_host_override(void);
 int         config_contact_port_override(void);
 
@@ -38,6 +42,7 @@ typedef struct {
     const char *sip_user;
     const char *sip_pass;
     int         sip_expires;        // 0 = keep current
+    const char *sip_internal_number;
     const char *phoneblock_base_url;
     const char *phoneblock_token;
 } config_update_t;

@@ -102,6 +102,7 @@ const I18N = {
     'status.sip.not_configured': 'Nicht eingerichtet',
     'status.sip.since': 'seit {duration}',
     'status.sip.at': 'bei {host} als {user}',
+    'status.sip.ext': 'Interne Nummer {n}',
     'status.sip.setup_cta': 'Telefonie einrichten',
     'status.sip.redo_cta': 'Telefonie neu einrichten',
     'status.token.set': 'PhoneBlock-Token gesetzt',
@@ -410,14 +411,23 @@ async function refreshAll(){
   } else if (s.sip.registered){
     sipPill.textContent = t('status.sip.connected');
     sipPill.className = 'pill ok';
-    $('sipDetail').textContent =
-      t('status.sip.since', {duration: fmtSec(s.sip.registered_for_s)})
-      + ' · ' + t('status.sip.at', {host: s.sip.host, user: s.sip.user});
+    const parts = [
+      t('status.sip.since', {duration: fmtSec(s.sip.registered_for_s)}),
+      t('status.sip.at', {host: s.sip.host, user: s.sip.user}),
+    ];
+    if (s.sip.internal_number){
+      parts.push(t('status.sip.ext', {n: s.sip.internal_number}));
+    }
+    $('sipDetail').textContent = parts.join(' · ');
     sipCta.textContent = t('status.sip.redo_cta');
   } else {
     sipPill.textContent = t('status.sip.disconnected');
     sipPill.className = 'pill bad';
-    $('sipDetail').textContent = t('status.sip.at', {host: s.sip.host, user: s.sip.user});
+    const parts = [ t('status.sip.at', {host: s.sip.host, user: s.sip.user}) ];
+    if (s.sip.internal_number){
+      parts.push(t('status.sip.ext', {n: s.sip.internal_number}));
+    }
+    $('sipDetail').textContent = parts.join(' · ');
     sipCta.textContent = t('status.sip.redo_cta');
   }
   // Always offer a way into the wizard — hiding the button on the
