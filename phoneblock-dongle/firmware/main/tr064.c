@@ -13,6 +13,7 @@
 #include "mbedtls/md5.h"
 
 #include "config.h"
+#include "http_util.h"
 #include "tr064_parse.h"
 
 // Short aliases for the parser helpers — keeps call sites compact.
@@ -125,6 +126,7 @@ static esp_err_t post_soap(const char *url, const char *soap_action,
         esp_http_client_handle_t c = esp_http_client_init(&cfg);
         if (!c) return ESP_FAIL;
 
+        http_util_set_user_agent(c);
         esp_http_client_set_header(c, "Content-Type",
                                    "text/xml; charset=\"utf-8\"");
         esp_http_client_set_header(c, "SoapAction", soap_action);
@@ -551,7 +553,12 @@ esp_err_t tr064_register_dongle_app(const char *host, int port,
     char *args = malloc(512);
     if (!args) return ESP_ERR_NO_MEM;
     snprintf(args, 512,
-        "<NewAppId>phoneblock-dongle</NewAppId>"
+        // No dashes: the Fritz!Box rejects "phoneblock-dongle" with
+        // errorCode 823 "AppID contains invalid characters". AppID
+        // allowed charset is the alphanumeric subset, same as the
+        // username. Display name keeps the dash/space for the admin
+        // UI.
+        "<NewAppId>phoneblockdongle</NewAppId>"
         "<NewAppDisplayName>PhoneBlock Dongle</NewAppDisplayName>"
         "<NewAppDeviceMAC></NewAppDeviceMAC>"
         "<NewAppUsername>%s</NewAppUsername>"

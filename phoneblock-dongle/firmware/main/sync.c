@@ -15,6 +15,7 @@
 
 #include "api.h"
 #include "config.h"
+#include "http_util.h"
 #include "stats.h"
 #include "tr064.h"
 
@@ -86,6 +87,7 @@ static int http_get_to_buf(const char *url, char *buf, int cap)
     };
     esp_http_client_handle_t c = esp_http_client_init(&cfg);
     if (!c) return -1;
+    http_util_set_user_agent(c);
     esp_err_t err = esp_http_client_perform(c);
     int status = (err == ESP_OK) ? esp_http_client_get_status_code(c) : 0;
     esp_http_client_cleanup(c);

@@ -11,6 +11,7 @@
 #include "cJSON.h"
 
 #include "config.h"
+#include "http_util.h"
 #include "stats.h"
 
 static const char *TAG = "api";
@@ -69,6 +70,7 @@ verdict_t phoneblock_check(const char *phone_number)
     };
 
     esp_http_client_handle_t client = esp_http_client_init(&config);
+    http_util_set_user_agent(client);
     esp_http_client_set_header(client, "Authorization", auth_header);
     esp_http_client_set_header(client, "Accept", "application/json");
 
@@ -150,6 +152,7 @@ bool phoneblock_rate(const char *phone, const char *rating, const char *comment)
         .auth_type = HTTP_AUTH_TYPE_NONE,
     };
     esp_http_client_handle_t client = esp_http_client_init(&config);
+    http_util_set_user_agent(client);
     esp_http_client_set_header(client, "Authorization", auth_header);
     esp_http_client_set_header(client, "Content-Type", "application/json");
     esp_http_client_set_post_field(client, body, strlen(body));
@@ -201,6 +204,7 @@ bool phoneblock_selftest(void)
         .auth_type = HTTP_AUTH_TYPE_NONE,
     };
     esp_http_client_handle_t client = esp_http_client_init(&config);
+    http_util_set_user_agent(client);
     esp_http_client_set_header(client, "Authorization", auth_header);
     esp_http_client_set_header(client, "Accept", "text/plain");
 
