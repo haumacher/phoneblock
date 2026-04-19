@@ -170,9 +170,12 @@ const char *config_fritzbox_app_user(void)   { return s_config.fb_app_user; }
 const char *config_fritzbox_app_pass(void)   { return s_config.fb_app_pass; }
 bool        config_sync_enabled(void)
 {
-    // Stored as "0"/"1"; anything empty / unrecognised defaults to
-    // enabled, matching the "default-on" UX decision.
-    return s_config.sync_enabled[0] != '0';
+    // Stored as "0"/"1"; anything empty / unrecognised means "off".
+    // The sync feature is fairly invasive (mass-submits numbers to
+    // PhoneBlock as spam on the user's behalf and then deletes them
+    // from the Fritz!Box), so the user has to opt in explicitly
+    // before anything happens automatically.
+    return s_config.sync_enabled[0] == '1';
 }
 const char *config_contact_host_override(void) { return s_config.contact_host; }
 int         config_contact_port_override(void) { return s_config.contact_port; }

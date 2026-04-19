@@ -155,7 +155,7 @@ const I18N = {
     'status.sync.triggered': 'Sync gestartet.',
     'status.sync.busy': 'Sync läuft bereits.',
     'status.sync.enable': 'Sperrlisten-Sync aktivieren',
-    'status.sync.disabled': 'Sync ist deaktiviert.',
+    'status.sync.disabled': 'Automatischer Sync deaktiviert — manuell weiterhin möglich.',
     'status.ann.title': 'Spam-Ansage',
     'status.ann.default': 'Eingebaute Standard-Ansage ({kb} KB).',
     'status.ann.custom': 'Eigene Ansage ({kb} KB).',
@@ -299,7 +299,7 @@ const I18N = {
     'status.sync.triggered': 'Sync triggered.',
     'status.sync.busy': 'Sync already running.',
     'status.sync.enable': 'Enable blocklist sync',
-    'status.sync.disabled': 'Sync is disabled.',
+    'status.sync.disabled': 'Automatic sync disabled — manual run still available.',
     'status.ann.title': 'Spam announcement',
     'status.ann.default': 'Built-in default announcement ({kb} KB).',
     'status.ann.custom': 'Custom announcement ({kb} KB).',
@@ -443,7 +443,7 @@ const I18N = {
     'status.sync.triggered': 'Synchro démarrée.',
     'status.sync.busy': 'Synchro déjà en cours.',
     'status.sync.enable': 'Activer la synchronisation',
-    'status.sync.disabled': 'Synchro désactivée.',
+    'status.sync.disabled': 'Synchro auto désactivée — exécution manuelle toujours possible.',
     'status.ann.title': 'Message anti-spam',
     'status.ann.default': 'Message par défaut intégré ({kb} Ko).',
     'status.ann.custom': 'Message personnalisé ({kb} Ko).',
@@ -587,7 +587,7 @@ const I18N = {
     'status.sync.triggered': 'Sincronización iniciada.',
     'status.sync.busy': 'Sincronización ya en curso.',
     'status.sync.enable': 'Activar sincronización',
-    'status.sync.disabled': 'Sincronización desactivada.',
+    'status.sync.disabled': 'Sincronización auto desactivada — ejecución manual aún posible.',
     'status.ann.title': 'Mensaje anti-spam',
     'status.ann.default': 'Mensaje predeterminado integrado ({kb} KB).',
     'status.ann.custom': 'Mensaje personalizado ({kb} KB).',
@@ -972,9 +972,11 @@ async function refreshAll(){
     syncStatus.style.color = '#888';
     syncRun.disabled = true;
   } else if (!sync.enabled){
+    // Auto sync off but the manual button stays available so the
+    // user can still test or do one-off submissions.
     syncStatus.textContent = t('status.sync.disabled');
     syncStatus.style.color = '#888';
-    syncRun.disabled = true;
+    syncRun.disabled = false;
   } else if (sync.running){
     syncStatus.textContent = t('status.sync.running');
     syncStatus.style.color = '#e8710a';

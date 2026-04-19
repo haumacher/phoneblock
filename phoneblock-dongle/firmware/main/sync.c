@@ -237,11 +237,10 @@ static void run_once(void)
         set_status_result(false, 0, 0, "no PhoneBlock token");
         return;
     }
-    if (!config_sync_enabled()) {
-        ESP_LOGI(TAG, "sync skipped — disabled by user");
-        set_status_result(false, 0, 0, "disabled");
-        return;
-    }
+    // The config_sync_enabled() gate is applied in the task loop
+    // only for the timer-driven path — a manual trigger always
+    // reaches run_once, so the user can fire one-off syncs without
+    // flipping the auto toggle on.
 
     ESP_LOGI(TAG, "sync run starting");
     set_status_running(true);
@@ -297,10 +296,11 @@ static void sync_task(void *arg)
     // in the middle of setup. Wait one interval before the first
     // scheduled run; a manual trigger can fire sooner.
     while (1) {
-        if (xSemaphoreTake(s_trigger, timeout) == pdTRUE) {
-            // Manual trigger.
-        } else {
-            // Timer expired.
+        bool manual = (xSemaphoreTake(s_trigger, timeout) == pdTRUE);
+        if (!manual && !config_sync_enabled()) {
+            // Scheduled run with auto-sync disabled — skip silently.
+            // Manual triggers always run (see run_once()).
+            continue;
         }
         run_once();
     }

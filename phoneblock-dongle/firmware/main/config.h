@@ -57,7 +57,7 @@ const char *config_fritzbox_app_user(void);
 const char *config_fritzbox_app_pass(void);
 
 // Whether the daily + manual Fritz!Box-blocklist sync is enabled.
-// Default true once Fritz!Box setup has persisted app credentials.
+// Default off — the feature is explicit opt-in.
 bool        config_sync_enabled(void);
 
 // PhoneBlock
