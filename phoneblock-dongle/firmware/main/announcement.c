@@ -138,6 +138,11 @@ esp_err_t announcement_write_begin(size_t total_bytes)
         ESP_LOGE(TAG, "fopen(%s): %s", SPIFFS_TEMP, strerror(errno));
         return ESP_FAIL;
     }
+    // Crank the stdio buffer up: SPIFFS pays per flush, not per byte,
+    // so bigger batched writes are noticeably faster than the default
+    // BUFSIZ (~1 KB on IDF).
+    static char s_write_bufio[8192];
+    setvbuf(s_write_file, s_write_bufio, _IOFBF, sizeof(s_write_bufio));
     s_write_total = total_bytes;
     s_write_got   = 0;
     return ESP_OK;

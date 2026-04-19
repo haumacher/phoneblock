@@ -828,24 +828,35 @@ static esp_err_t handle_announcement_post(httpd_req_t *req)
         return ESP_OK;
     }
 
-    char chunk[2048];
+    // 8 KB chunks on the heap: bigger batches keep SPIFFS flushes
+    // coarse and the httpd-worker stack uncluttered.
+    const int CHUNK = 8192;
+    char *chunk = malloc(CHUNK);
+    if (!chunk) {
+        announcement_write_abort();
+        send_fail(req, "Out of memory.");
+        return ESP_OK;
+    }
     int got = 0;
     while (got < total) {
         int want = total - got;
-        if (want > (int)sizeof(chunk)) want = (int)sizeof(chunk);
+        if (want > CHUNK) want = CHUNK;
         int n = httpd_req_recv(req, chunk, want);
         if (n <= 0) {
+            free(chunk);
             announcement_write_abort();
             send_fail(req, "Upload interrupted.");
             return ESP_OK;
         }
         if (announcement_write_append((const uint8_t *)chunk, n) != ESP_OK) {
+            free(chunk);
             announcement_write_abort();
             send_fail(req, "SPIFFS write failed.");
             return ESP_OK;
         }
         got += n;
     }
+    free(chunk);
 
     if (announcement_write_commit() != ESP_OK) {
         send_fail(req, "Commit failed.");
