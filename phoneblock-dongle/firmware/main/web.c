@@ -436,6 +436,10 @@ static esp_err_t handle_fritzbox_setup(httpd_req_t *req)
         cJSON_AddBoolToObject  (root, "two_factor", true);
         cJSON_AddStringToObject(root, "methods", s_2fa.methods);
         cJSON_AddStringToObject(root, "state",   s_2fa.state);
+        // `methods` is the machine-readable discriminator; the UI
+        // renders the actual localised instructions from that (see
+        // render2FAInstructions in index.html). `message` is just an
+        // English fallback for direct API consumers.
         cJSON_AddStringToObject(root, "message",
             "Please press any button on the Fritz!Box now. "
             "Alternatively dial the DTMF sequence on a connected phone.");
@@ -824,15 +828,21 @@ static esp_err_t handle_errors_clear(httpd_req_t *req)
 // returns HTTP 200; `ok` in the JSON body tells the UI the outcome.
 static esp_err_t handle_token_test(httpd_req_t *req)
 {
+    // Response shape: { ok: bool, code: "ok"|"fail"|"none", message: ... }
+    // `code` is a stable discriminator the UI localises via i18n; the
+    // `message` is the English default, only shown if the UI cannot
+    // map the code.
     cJSON *root = cJSON_CreateObject();
     if (strlen(config_phoneblock_token()) == 0) {
         cJSON_AddBoolToObject  (root, "ok", false);
+        cJSON_AddStringToObject(root, "code", "none");
         cJSON_AddStringToObject(root, "message", "No token configured.");
         send_json(req, root);
         return ESP_OK;
     }
     bool ok = phoneblock_selftest();
     cJSON_AddBoolToObject  (root, "ok", ok);
+    cJSON_AddStringToObject(root, "code", ok ? "ok" : "fail");
     cJSON_AddStringToObject(root, "message",
         ok ? "Token valid — PhoneBlock reachable."
            : "Token was rejected. Please request a new one.");

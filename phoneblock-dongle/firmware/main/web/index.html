@@ -119,6 +119,9 @@ const I18N = {
     'status.token.test': 'Testen',
     'status.token.renew': 'Neu anfordern',
     'status.token.testing': 'Prüfe Token…',
+    'status.token.test.ok': 'Token gültig — PhoneBlock erreichbar.',
+    'status.token.test.fail': 'Token wurde abgelehnt. Bitte neu anfordern.',
+    'status.token.test.none': 'Kein Token gesetzt.',
     'status.counters.total': 'Gesamt',
     'status.counters.spam': 'Spam geblockt',
     'status.counters.legit': 'Legitim',
@@ -231,6 +234,9 @@ const I18N = {
     'status.token.test': 'Test',
     'status.token.renew': 'Renew',
     'status.token.testing': 'Checking token…',
+    'status.token.test.ok': 'Token valid — PhoneBlock reachable.',
+    'status.token.test.fail': 'Token was rejected. Please request a new one.',
+    'status.token.test.none': 'No token configured.',
     'status.counters.total': 'Total',
     'status.counters.spam': 'Spam blocked',
     'status.counters.legit': 'Legitimate',
@@ -343,6 +349,9 @@ const I18N = {
     'status.token.test': 'Tester',
     'status.token.renew': 'Renouveler',
     'status.token.testing': 'Vérification du jeton…',
+    'status.token.test.ok': 'Jeton valide — PhoneBlock joignable.',
+    'status.token.test.fail': 'Jeton rejeté. Veuillez en demander un nouveau.',
+    'status.token.test.none': 'Aucun jeton configuré.',
     'status.counters.total': 'Total',
     'status.counters.spam': 'Spam bloqué',
     'status.counters.legit': 'Légitime',
@@ -455,6 +464,9 @@ const I18N = {
     'status.token.test': 'Probar',
     'status.token.renew': 'Renovar',
     'status.token.testing': 'Comprobando el token…',
+    'status.token.test.ok': 'Token válido — PhoneBlock accesible.',
+    'status.token.test.fail': 'Token rechazado. Solicita uno nuevo.',
+    'status.token.test.none': 'No hay token configurado.',
     'status.counters.total': 'Total',
     'status.counters.spam': 'Spam bloqueado',
     'status.counters.legit': 'Legítimas',
@@ -854,7 +866,14 @@ async function refreshAll(){
       try {
         const r = await fetch('/api/token-test', { method: 'POST' });
         const d = await r.json().catch(() => ({}));
-        m.textContent = d.message || (d.ok ? '✓' : '✗');
+        // Render the outcome from i18n instead of echoing the
+        // server's English message — the server ships ok + a
+        // stable result code so the UI stays localised.
+        let key;
+        if (d.ok)                   key = 'status.token.test.ok';
+        else if (d.code === 'none') key = 'status.token.test.none';
+        else                        key = 'status.token.test.fail';
+        m.textContent = t(key);
         m.style.color = d.ok ? '#188038' : '#d93025';
       } catch (_){
         m.textContent = 'Network error';
