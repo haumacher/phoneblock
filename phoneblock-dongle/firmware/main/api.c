@@ -123,19 +123,41 @@ bool phoneblock_selftest(void)
     char url[160];
     snprintf(url, sizeof(url), "%s/test", config_phoneblock_base_url());
 
+    const char *token = config_phoneblock_token();
     char auth_header[128];
-    snprintf(auth_header, sizeof(auth_header), "Bearer %s", config_phoneblock_token());
+    snprintf(auth_header, sizeof(auth_header), "Bearer %s", token);
+
+    response_buffer_t resp = {
+        .data = calloc(1, 512),
+        .len = 0,
+        .cap = 512,
+    };
+    if (!resp.data) {
+        ESP_LOGE(TAG, "self-test: out of memory");
+        return false;
+    }
 
     esp_http_client_config_t config = {
         .url = url,
+        .event_handler = http_event_handler,
+        .user_data = &resp,
         .crt_bundle_attach = esp_crt_bundle_attach,
         .timeout_ms = 10000,
+        // Tell esp_http_client not to auto-retry with a challenged auth
+        // scheme — we set Authorization ourselves. Silences the noisy
+        // "Basic realm=... not supported" error on every 401.
+        .auth_type = HTTP_AUTH_TYPE_NONE,
     };
     esp_http_client_handle_t client = esp_http_client_init(&config);
     esp_http_client_set_header(client, "Authorization", auth_header);
     esp_http_client_set_header(client, "Accept", "text/plain");
 
-    ESP_LOGI(TAG, "GET %s", url);
+    // Log a short token fingerprint so a wrong-instance or truncated
+    // token is obvious from the log without leaking the secret.
+    size_t tlen = strlen(token);
+    ESP_LOGI(TAG, "GET %s (token %zu chars, prefix \"%.6s…\")",
+             url, tlen, tlen > 0 ? token : "");
+
     int64_t started = esp_timer_get_time();
     esp_err_t err = esp_http_client_perform(client);
     stats_record_api_duration(esp_timer_get_time() - started);
@@ -152,14 +174,16 @@ bool phoneblock_selftest(void)
             ESP_LOGI(TAG, "self-test: HTTP 200, token accepted");
             ok = true;
         } else {
-            ESP_LOGE(TAG, "self-test: HTTP %d (check token)", status);
-            char msg[64];
-            snprintf(msg, sizeof(msg),
-                     status == 401 ? "self-test: token rejected (401)"
-                                   : "self-test: HTTP %d", status);
+            ESP_LOGE(TAG, "self-test: HTTP %d, body: %.*s",
+                     status, resp.len, resp.data);
+            char msg[96];
+            int body_len = resp.len < 48 ? resp.len : 48;
+            snprintf(msg, sizeof(msg), "self-test: HTTP %d: %.*s",
+                     status, body_len, resp.data);
             stats_record_error("api", msg);
         }
     }
     esp_http_client_cleanup(client);
+    free(resp.data);
     return ok;
 }
