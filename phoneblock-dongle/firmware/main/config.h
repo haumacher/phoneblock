@@ -77,11 +77,12 @@ esp_err_t config_update(const config_update_t *u);
 // guarantees a clean state.
 esp_err_t config_erase(void);
 
-// Return the dongle's stable SIP-client username, creating + persisting
-// it on first call. The username is derived from the chip's base MAC
-// ("phoneblock-<mac-suffix>"); on QEMU runs where the eFuse MAC is
-// zeroed a random suffix is used instead. Either way the value is
-// stored in NVS on first generation, so subsequent setups reuse the
-// same name and overwrite the existing Fritz!Box client entry
-// instead of piling up new ones.
+// Fixed SIP-client username used when provisioning the dongle on a
+// Fritz!Box. Same value on every device and every boot: the box's
+// tr064_provision_sip_client path finds an existing entry with this
+// name via find_client_slot and overwrites it, so re-running setup
+// does not pile up new "phoneblock-<hex>" clients. The only case
+// this collides is two dongles on the same box — so unusual that
+// we'd add an explicit "device name" UI field before trying to
+// derive one automatically again.
 void config_dongle_username(char *out, size_t cap);

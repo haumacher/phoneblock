@@ -3,8 +3,6 @@
 #include <string.h>
 
 #include "esp_log.h"
-#include "esp_mac.h"
-#include "esp_random.h"
 #include "nvs_flash.h"
 #include "nvs.h"
 
@@ -189,48 +187,11 @@ esp_err_t config_erase(void)
     return err;
 }
 
-#define K_DONGLE_USER   "dongle_user"
-
 void config_dongle_username(char *out, size_t cap)
 {
     if (!out || cap == 0) return;
-    out[0] = '\0';
-
-    nvs_handle_t h;
-    esp_err_t err = nvs_open(NS, NVS_READWRITE, &h);
-    if (err != ESP_OK) {
-        // Fall back to a fresh suffix just this once — NVS failure
-        // should never drop us into an empty username.
-        uint32_t r = esp_random();
-        snprintf(out, cap, "phoneblock-%02x%02x%02x",
-                 (unsigned)(r & 0xff), (unsigned)((r >> 8) & 0xff),
-                 (unsigned)((r >> 16) & 0xff));
-        return;
-    }
-
-    size_t len = cap;
-    if (nvs_get_str(h, K_DONGLE_USER, out, &len) == ESP_OK && out[0]) {
-        nvs_close(h);
-        return;
-    }
-
-    // Not stored yet. Build from the eFuse base MAC; on QEMU that's
-    // often zeroed, use esp_random to still get something distinct.
-    uint8_t mac[6] = {0};
-    esp_read_mac(mac, ESP_MAC_BASE);
-    if (mac[3] == 0 && mac[4] == 0 && mac[5] == 0) {
-        uint32_t r = esp_random();
-        mac[3] = (uint8_t)(r);
-        mac[4] = (uint8_t)(r >> 8);
-        mac[5] = (uint8_t)(r >> 16);
-    }
-    snprintf(out, cap, "phoneblock-%02x%02x%02x", mac[3], mac[4], mac[5]);
-
-    if (nvs_set_str(h, K_DONGLE_USER, out) == ESP_OK) {
-        nvs_commit(h);
-        ESP_LOGI(TAG, "dongle username generated and persisted: %s", out);
-    }
-    nvs_close(h);
+    strncpy(out, "phoneblock-dongle", cap - 1);
+    out[cap - 1] = '\0';
 }
 
 esp_err_t config_update(const config_update_t *u)
