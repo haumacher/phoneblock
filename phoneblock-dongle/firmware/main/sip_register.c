@@ -1065,9 +1065,11 @@ static void sip_task(void *arg)
         return;
     }
 
-    // Clear the recv timeout set by open_sip_socket — we use select() now.
-    struct timeval no_timeout = { .tv_sec = 0, .tv_usec = 0 };
-    setsockopt(ctx.sock, SOL_SOCKET, SO_RCVTIMEO, &no_timeout, sizeof(no_timeout));
+    // Keep the SO_RCVTIMEO from open_sip_socket — udp_send_recv() (used
+    // by do_register, both on initial registration and after every
+    // s_reload_requested) does a blocking recvfrom that would otherwise
+    // hang forever if the registrar never answers. select() in the main
+    // loop below is independent of this timeout.
 
     const int retry_delay_s = 30;
     char *rx = NULL;
