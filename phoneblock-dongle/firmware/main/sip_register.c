@@ -88,6 +88,7 @@ typedef struct {
 
 static bool s_registered = false;
 static volatile bool s_reload_requested = false;
+static TaskHandle_t s_sip_task = NULL;
 
 bool sip_register_is_registered(void)
 {
@@ -96,6 +97,13 @@ bool sip_register_is_registered(void)
 
 void sip_register_request_reload(void)
 {
+    // First-time configuration at runtime: the SIP task may not be
+    // running yet because the device booted with empty credentials.
+    // Kick it off now so the newly stored creds actually get used.
+    if (!s_sip_task) {
+        sip_register_start();
+        return;
+    }
     s_reload_requested = true;
 }
 
@@ -1190,7 +1198,11 @@ void sip_register_start(void)
         ESP_LOGW(TAG, "SIP config incomplete, skipping registration");
         return;
     }
+    if (s_sip_task) {
+        // Already running — request_reload() handles credential changes.
+        return;
+    }
     ESP_LOGI(TAG, "starting SIP registrar task (host=%s user=%s)",
              config_sip_host(), config_sip_user());
-    xTaskCreate(sip_task, "sip_register", 8192, NULL, 5, NULL);
+    xTaskCreate(sip_task, "sip_register", 8192, NULL, 5, &s_sip_task);
 }

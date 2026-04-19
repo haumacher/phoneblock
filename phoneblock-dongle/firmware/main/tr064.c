@@ -445,8 +445,19 @@ static void gen_random_password(char *out, size_t len)
 
 static void gen_sip_username(char *out, size_t cap)
 {
-    uint8_t mac[6];
-    esp_read_mac(mac, ESP_MAC_WIFI_STA);
+    // ESP_MAC_WIFI_STA was empty when the build runs on Ethernet-only
+    // (QEMU OpenEth) with WiFi never brought up — produced the fixed
+    // username "phoneblock-000000". Use the base MAC from eFuse which
+    // is available regardless of which netif is initialised, and fall
+    // back to esp_random on a zeroed eFuse (some QEMU runs).
+    uint8_t mac[6] = {0};
+    esp_read_mac(mac, ESP_MAC_BASE);
+    if (mac[3] == 0 && mac[4] == 0 && mac[5] == 0) {
+        uint32_t r = esp_random();
+        mac[3] = (uint8_t)(r);
+        mac[4] = (uint8_t)(r >> 8);
+        mac[5] = (uint8_t)(r >> 16);
+    }
     snprintf(out, cap, "phoneblock-%02x%02x%02x", mac[3], mac[4], mac[5]);
 }
 
