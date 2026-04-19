@@ -23,6 +23,10 @@ extern const uint8_t announcement_default_end[]   asm("_binary_announcement_alaw
 static bool     s_spiffs_mounted = false;
 static uint8_t *s_cache           = NULL;    // NULL = use embedded default
 static size_t   s_cache_len       = 0;
+// Latch for "there is no custom file" so we don't keep stat()-ing
+// SPIFFS on every /api/status poll. Cleared whenever a new file is
+// written or the current one is reset.
+static bool     s_no_custom       = false;
 
 // Streaming-write session state (see announcement_write_begin).
 static FILE    *s_write_file     = NULL;
@@ -36,6 +40,7 @@ static void invalidate_cache(void)
         s_cache = NULL;
     }
     s_cache_len = 0;
+    s_no_custom = false;
 }
 
 esp_err_t announcement_init(void)
@@ -66,9 +71,13 @@ esp_err_t announcement_init(void)
 static bool try_load_spiffs(void)
 {
     if (!s_spiffs_mounted) return false;
+    if (s_no_custom) return false;
 
     struct stat st;
-    if (stat(SPIFFS_FILE, &st) != 0) return false;
+    if (stat(SPIFFS_FILE, &st) != 0) {
+        s_no_custom = true;
+        return false;
+    }
     if (st.st_size <= 0 || (size_t)st.st_size > ANNOUNCEMENT_MAX_BYTES) {
         ESP_LOGW(TAG, "SPIFFS file has invalid size %ld, ignoring",
                  (long)st.st_size);
