@@ -51,64 +51,64 @@
 					<tr>
 						<th data-tx="t0015:ece15d25">Funktion</th>
 						<th data-tx="t0016:365a40ae">PhoneBlock-dongle</th>
-						<th data-tx="t0017:b7a22f37">Telefonbog med blokeringsliste</th>
 						<th data-tx="t0018:150f46ce">PhoneBlock svar-bot</th>
+						<th data-tx="t0017:b7a22f37">Telefonbog med blokeringsliste</th>
 					</tr>
 				</thead>
 				<tbody>
 					<tr>
 						<td><strong data-tx="t0108:9e08101d">Telefonen forbliver helt lydløs under spam</strong></td>
 						<td data-tx="t0020:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ja</td>
-						<td data-tx="t0084:cf12d799"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Vis eller lås eventuelt</td>
 						<td data-tx="t0022:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ja</td>
+						<td data-tx="t0084:cf12d799"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Vis eller lås eventuelt</td>
 					</tr>
 					<tr>
 						<td><strong data-tx="t0109:90691916">Krav til router</strong></td>
 						<td data-tx="t0024:115dd48e"><span class="icon has-text-success"><i class="fas fa-globe"></i></span> Enhver (SIP + klokkeforsinkelse)</td>
-						<td data-tx="t0085:120e2e30"><span class="icon has-text-warning"><i class="fas fa-wifi"></i></span> Nyere Fritz!Box med CardDAV</td>
 						<td data-tx="t0101:da4c1004"><span class="icon has-text-warning"><i class="fas fa-server"></i></span> Fritz!Box med SIP-login fra internettet (blokeret for Vodafone-bokse)</td>
+						<td data-tx="t0085:120e2e30"><span class="icon has-text-warning"><i class="fas fa-wifi"></i></span> Nyere Fritz!Box med CardDAV</td>
 					</tr>
 					<tr>
 						<td><strong data-tx="t0110:e66ba2b">Ekstra hardware</strong></td>
 						<td data-tx="t0028:99294924"><span class="icon has-text-info"><i class="fas fa-usb"></i></span> USB-dongle, ca. 10 €.</td>
-						<td data-tx="t0029:58a26498"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ingen</td>
 						<td data-tx="t0087:fe8232e3"><span class="icon has-text-success"><i class="fas fa-cloud"></i></span> Ingen (skytjeneste)</td>
+						<td data-tx="t0029:58a26498"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ingen</td>
 					</tr>
 					<tr>
 						<td><strong data-tx="t0111:83c9a19b">Indsats for opsætning</strong></td>
 						<td data-tx="t0032:e09b2ea8"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Sæt stikket i, konfigurer WLAN + adgang</td>
-						<td data-tx="t0102:68527b14"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Gem CardDAV-URL i routeren, og konfigurer opkaldsblokering</td>
 						<td data-tx="t0088:ca8f4268"><span class="icon has-text-info"><i class="fas fa-gear"></i></span> Opret telefonsvarer, indtast SIP-legitimationsoplysninger i routeren</td>
+						<td data-tx="t0102:68527b14"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Gem CardDAV-URL i routeren, og konfigurer opkaldsblokering</td>
 					</tr>
 					<tr>
 						<td><strong data-tx="t0112:4532187f">Opdatering af bloklisten</strong></td>
 						<td data-tx="t0103:1984a240"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Live-forespørgsel, hele bloklisten</td>
-						<td data-tx="t0089:a868030b"><span class="icon has-text-warning"><i class="fas fa-sync"></i></span> Kun del af bloklisten, synkronisering ≤ 1 ×/dag</td>
 						<td data-tx="t0104:1984a240"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Live-forespørgsel, hele bloklisten</td>
+						<td data-tx="t0089:a868030b"><span class="icon has-text-warning"><i class="fas fa-sync"></i></span> Kun del af bloklisten, synkronisering ≤ 1 ×/dag</td>
 					</tr>
 					<tr>
 						<td><strong data-tx="t0113:a8c2cfff">Strømforbrug ved kontinuerlig drift</strong></td>
 						<td data-tx="t0040:3d07b53b"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> ca. 0,4 W (USB)</td>
-						<td data-tx="t0041:30562f18"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> 0 W (bruger router)</td>
 						<td data-tx="t0090:c0b4a4fd"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> 0 W (skytjeneste)</td>
+						<td data-tx="t0041:30562f18"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> 0 W (bruger router)</td>
 					</tr>
 					<tr>
 						<td><strong data-tx="t0114:5f4450bc">Beskyttelse af data</strong></td>
-						<td data-tx="t0115:185a1a07"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Kun hash til server, opkald forbliver lokalt</td>
+						<td data-tx="t0120:9c548b5d"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Kun hash til server, opkald forbliver lokalt; kontakter tjekkes ikke</td>
+						<td data-tx="t0121:294f8242"><span class="icon has-text-warning"><i class="fas fa-cloud"></i></span> Signalering af alle opkald (også fra kontakter) kører via PhoneBlock-serveren</td>
 						<td data-tx="t0116:7a42296d"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Intet forlader routeren</td>
-						<td data-tx="t0117:a0811083"><span class="icon has-text-warning"><i class="fas fa-cloud"></i></span> Opkald kører via PhoneBlock-server</td>
 					</tr>
 					<tr>
 						<td><strong data-tx="t0118:f4c95d3e">Aktivt at ansætte spammere</strong></td>
 						<td data-tx="t0044:fc6557f4"><span class="icon has-text-danger"><i class="fas fa-times"></i></span> Nej - kortvarigt affejet</td>
-						<td data-tx="t0045:d0af0aa8"><span class="icon has-text-danger"><i class="fas fa-times"></i></span> Nej</td>
 						<td data-tx="t0046:cafb9dda"><span class="icon has-text-success"><i class="fas fa-comments"></i></span> Ja - involveret i dialog</td>
+						<td data-tx="t0122:1b0bf702"><span class="icon has-text-danger"><i class="fas fa-times"></i></span> Nej - opkaldet er blokeret</td>
 					</tr>
 					<tr>
 						<td><strong data-tx="t0119:2762a4e5">Modenhed</strong></td>
 						<td data-tx="t0048:8639cb45"><span class="icon has-text-warning"><i class="fas fa-flask"></i></span> Beta</td>
-						<td data-tx="t0049:770dd04"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Produktiv</td>
 						<td data-tx="t0050:770dd04"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Produktiv</td>
+						<td data-tx="t0049:770dd04"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Produktiv</td>
 					</tr>
 				</tbody>
 			</table>
@@ -117,16 +117,16 @@
 		<div class="notification is-info mt-4">
 			<p><strong data-tx="t0051:8125e3d9">Hvilken løsning passer til dig?</strong></p>
 			<ul>
-				<li data-tx="t0105:b8fe802f"><strong>Answer Bot</strong> - hvis du vil bruge spammere aktivt, og din Fritz!Box tillader SIP-login fra internettet.</li>
 				<li data-tx="t0106:f8bcce39"><strong>Dongle</strong> - hvis du <em>ikke</em> har en Fritz!Box eller ikke ønsker at drive en permanent server, men stadig ønsker, at telefonen skal være pålideligt lydløs i tilfælde af spam.</li>
+				<li data-tx="t0105:b8fe802f"><strong>Answer Bot</strong> - hvis du vil bruge spammere aktivt, og din Fritz!Box tillader SIP-login fra internettet.</li>
 				<li data-tx="t0107:e2dfc"><strong>Blocklist-telefonbog</strong> - hvis du har en Fritz!Box, er en simpel markering eller den manuelle routeropkaldsblokering nok for dig, og du har ikke noget imod, at en spammer, der faktisk er på blokeringslisten, alligevel slipper igennem.</li>
 			</ul>
 		</div>
 
 		<h2 data-tx="t0055:984ebad2">Forudsætninger</h2>
 		<ul>
-			<li data-tx="t0056:dd9212f7"><strong>Router eller telefonsystem med SIP-registrator</strong> - Fritz!Box, Speedport, Provider-Box, Asterisk, FreePBX, 3CX og lignende.</li>
-			<li data-tx="t0057:1c59c72e"><strong>Konfigurerbar ringeforsinkelse</strong> for de "rigtige" telefoner (typisk 3-5 sekunder), så donglen kan opfange opkaldet på forhånd.</li>
+			<li data-tx="t0123:116251e5"><strong>SIP-registrator</strong> - enten i routeren (Fritz!Box, Speedport, udbyderboks) eller direkte hos telefoniudbyderen, forudsat at de eksterne SIP-klienter er tilladt.</li>
+			<li data-tx="t0124:d322a975"><strong>Ringforsinkelse (valgfrit)</strong> - 3-5 sekunder på hovedtelefonen hjælper med at opfange spam før den første ringning. Mange DECT-telefoner er allerede noget langsomme til at reagere.</li>
 			<li data-tx="t0058:be2e6f7c"><strong>2,4 GHz WLAN</strong> inden for rækkevidde.</li>
 			<li data-tx="t0059:41e630a8"><strong>5 V USB-strømforsyning</strong> - ideelt set direkte på routeren, ellers på en hvilken som helst USB-strømforsyningsenhed.</li>
 			<li data-tx="t0092:f8c04413"><strong>Gratis <a th:href="@{/login}">PhoneBlock-konto</a></strong> med API-adgangstoken.</li>
@@ -160,7 +160,7 @@
 
 		<h2 data-tx="t0071:6d74d666">Byg det selv</h2>
 
-		<p data-tx="t0072:424f589f">Donglen er fuldstændig open source. Hvis du er ESP32-kyndig (eller har lyst til at blive det), kan du bygge en selv - materialeomkostningerne er omkring <strong>8-12 €</strong>, afhængigt af hvor du bestiller delene.</p>
+		<p data-tx="t0125:64bf64e9">Donglen er fuldstændig open source. Hvis du er ESP32-kyndig (eller har lyst til at blive det), kan du bygge en selv og komme i gang med det samme - materialeomkostningerne er omkring <strong>8-12 €</strong>, afhængigt af hvor du bestiller delene.</p>
 
 		<div class="columns mt-4">
 			<div class="column">
