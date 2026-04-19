@@ -98,7 +98,7 @@ const I18N = {
     'nav.home': 'Status',
     'status.title': 'Status',
     'status.sip.connected': 'Angemeldet',
-    'status.sip.disconnected': 'Nicht verbunden',
+    'status.sip.connecting': 'Verbinde…',
     'status.sip.not_configured': 'Nicht eingerichtet',
     'status.sip.since': 'seit {duration}',
     'status.sip.at': 'bei {host} als {user}',
@@ -421,8 +421,10 @@ async function refreshAll(){
     $('sipDetail').textContent = parts.join(' · ');
     sipCta.textContent = t('status.sip.redo_cta');
   } else {
-    sipPill.textContent = t('status.sip.disconnected');
-    sipPill.className = 'pill bad';
+    // Configured but not yet registered — treat as "connecting" while
+    // the task retries in the background, rather than as a hard error.
+    sipPill.textContent = t('status.sip.connecting');
+    sipPill.className = 'pill warn';
     const parts = [ t('status.sip.at', {host: s.sip.host, user: s.sip.user}) ];
     if (s.sip.internal_number){
       parts.push(t('status.sip.ext', {n: s.sip.internal_number}));

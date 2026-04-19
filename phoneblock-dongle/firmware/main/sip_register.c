@@ -1075,6 +1075,13 @@ static void sip_task(void *arg)
     char *rx = NULL;
     int64_t refresh_at_us = 0;  // absolute deadline for next REGISTER (microseconds)
 
+    // Give the registrar a moment before the first REGISTER — when the
+    // task was just spawned by sip_register_request_reload() after a
+    // fresh TR-064 setup, the Fritz!Box sometimes needs a beat for the
+    // new extension to become live on its SIP stack. The cost on a
+    // cold boot is negligible (WLAN/DHCP take longer than this).
+    vTaskDelay(pdMS_TO_TICKS(1500));
+
     // Initial registration.
     bool ok = do_register(&ctx);
     s_registered = ok;
