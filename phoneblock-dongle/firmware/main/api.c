@@ -118,6 +118,58 @@ cleanup:
     return verdict;
 }
 
+bool phoneblock_rate(const char *phone, const char *rating, const char *comment)
+{
+    if (!phone || !*phone || !rating || !*rating) return false;
+
+    char url[160];
+    snprintf(url, sizeof(url), "%s/rate", config_phoneblock_base_url());
+
+    char auth_header[128];
+    snprintf(auth_header, sizeof(auth_header), "Bearer %s", config_phoneblock_token());
+
+    // JSON body — small enough for a stack buffer; phone is typically
+    // +49... (16 chars), rating is the enum name (≤16 chars), comment
+    // cap 120 keeps us well under 256 bytes.
+    char body[256];
+    if (comment && *comment) {
+        snprintf(body, sizeof(body),
+            "{\"phone\":\"%s\",\"rating\":\"%s\",\"comment\":\"%.120s\"}",
+            phone, rating, comment);
+    } else {
+        snprintf(body, sizeof(body),
+            "{\"phone\":\"%s\",\"rating\":\"%s\"}",
+            phone, rating);
+    }
+
+    esp_http_client_config_t config = {
+        .url = url,
+        .method = HTTP_METHOD_POST,
+        .crt_bundle_attach = esp_crt_bundle_attach,
+        .timeout_ms = 10000,
+        .auth_type = HTTP_AUTH_TYPE_NONE,
+    };
+    esp_http_client_handle_t client = esp_http_client_init(&config);
+    esp_http_client_set_header(client, "Authorization", auth_header);
+    esp_http_client_set_header(client, "Content-Type", "application/json");
+    esp_http_client_set_post_field(client, body, strlen(body));
+
+    ESP_LOGI(TAG, "POST %s (phone=%s rating=%s)", url, phone, rating);
+    esp_err_t err = esp_http_client_perform(client);
+    int status = (err == ESP_OK) ? esp_http_client_get_status_code(client) : 0;
+    esp_http_client_cleanup(client);
+
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "rate transport: %s", esp_err_to_name(err));
+        return false;
+    }
+    if (status != 200) {
+        ESP_LOGE(TAG, "rate: HTTP %d for %s", status, phone);
+        return false;
+    }
+    return true;
+}
+
 bool phoneblock_selftest(void)
 {
     char url[160];

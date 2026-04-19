@@ -20,6 +20,7 @@
 #include "config.h"
 #include "sip_register.h"
 #include "stats.h"
+#include "sync.h"
 #include "tr064.h"
 
 static const char *TAG = "web";
@@ -150,6 +151,19 @@ static esp_err_t handle_status(httpd_req_t *req)
     cJSON_AddStringToObject(pb,   "base_url",           config_phoneblock_base_url());
     cJSON_AddBoolToObject  (pb,   "token_set",          strlen(config_phoneblock_token()) > 0);
     cJSON_AddNumberToObject(pb,   "last_api_ms",        (double)(c.last_api_duration_us / 1000));
+
+    cJSON *syn = cJSON_AddObjectToObject(root, "sync");
+    sync_status_t ss;
+    sync_snapshot(&ss);
+    int64_t ago_s = ss.ever_ran ? (now_us - ss.last_at_us) / 1000000 : -1;
+    cJSON_AddBoolToObject  (syn, "available", config_fritzbox_app_user()[0] != '\0');
+    cJSON_AddBoolToObject  (syn, "ever_ran",  ss.ever_ran);
+    cJSON_AddBoolToObject  (syn, "last_ok",   ss.last_ok);
+    cJSON_AddBoolToObject  (syn, "running",   ss.running);
+    cJSON_AddNumberToObject(syn, "last_ago_s", (double)ago_s);
+    cJSON_AddNumberToObject(syn, "last_pushed", ss.last_pushed);
+    cJSON_AddNumberToObject(syn, "last_failed", ss.last_failed);
+    cJSON_AddStringToObject(syn, "last_error", ss.last_error);
 
     cJSON *ann = cJSON_AddObjectToObject(root, "announcement");
     cJSON_AddBoolToObject  (ann,  "custom",  announcement_is_custom());
@@ -992,6 +1006,18 @@ static esp_err_t handle_factory_reset(httpd_req_t *req)
     return ESP_OK;
 }
 
+// POST /api/sync/run — trigger an immediate blocklist sync.
+static esp_err_t handle_sync_run(httpd_req_t *req)
+{
+    bool triggered = sync_trigger_now();
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddBoolToObject  (root, "ok", triggered);
+    cJSON_AddStringToObject(root, "message",
+        triggered ? "Sync triggered." : "Sync is already running.");
+    send_json(req, root);
+    return ESP_OK;
+}
+
 // POST /api/errors/clear — drops all buffered error entries.
 static esp_err_t handle_errors_clear(httpd_req_t *req)
 {
@@ -1044,6 +1070,7 @@ static const httpd_uri_t URIS[] = {
     { .uri = "/api/announcement",    .method = HTTP_GET,  .handler = handle_announcement_get,   .user_ctx = NULL },
     { .uri = "/api/announcement",    .method = HTTP_POST, .handler = handle_announcement_post,  .user_ctx = NULL },
     { .uri = "/api/announcement/reset", .method = HTTP_POST, .handler = handle_announcement_reset, .user_ctx = NULL },
+    { .uri = "/api/sync/run",        .method = HTTP_POST, .handler = handle_sync_run,       .user_ctx = NULL },
     { .uri = "/api/config",          .method = HTTP_POST, .handler = handle_config_post,    .user_ctx = NULL },
     { .uri = "/api/fritzbox-setup",      .method = HTTP_POST, .handler = handle_fritzbox_setup,      .user_ctx = NULL },
     { .uri = "/api/fritzbox-2fa-status", .method = HTTP_GET,  .handler = handle_fritzbox_2fa_status, .user_ctx = NULL },

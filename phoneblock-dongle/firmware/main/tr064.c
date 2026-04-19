@@ -31,6 +31,8 @@ static const char *TAG = "tr064";
 #define LANSEC_CONTROL   "/upnp/control/lanconfigsecurity"
 #define APPSETUP_SERVICE "urn:dslforum-org:service:X_AVM-DE_AppSetup:1"
 #define APPSETUP_CONTROL "/upnp/control/x_appsetup"
+#define ONTEL_SERVICE    "urn:dslforum-org:service:X_AVM-DE_OnTel:1"
+#define ONTEL_CONTROL    "/upnp/control/x_contact"
 
 #define SOAP_ENVELOPE_CAP 2048
 #define SOAP_RESPONSE_CAP 4096
@@ -577,6 +579,66 @@ esp_err_t tr064_register_dongle_app(const char *host, int port,
     ESP_LOGI(TAG, "dongle app registered (user='%s', %zu-char password)",
              out_user, strlen(out_pass));
     return ESP_OK;
+}
+
+// --- Call-barring (X_AVM-DE_OnTel) ---------------------------------
+
+esp_err_t tr064_call_barring_list_url(const char *host, int port,
+                                      const char *user, const char *pass,
+                                      char *out_url, size_t url_cap,
+                                      int *out_err_code,
+                                      char *out_err_msg, size_t err_msg_cap)
+{
+    if (!out_url || url_cap == 0) return ESP_ERR_INVALID_ARG;
+    out_url[0] = '\0';
+
+    char url[96];
+    snprintf(url, sizeof(url), "http://%s:%d" ONTEL_CONTROL, host, port);
+
+    char *resp = malloc(SOAP_RESPONSE_CAP);
+    if (!resp) return ESP_ERR_NO_MEM;
+    esp_err_t err = call_action(url, ONTEL_SERVICE,
+                                user, pass,
+                                "GetCallBarringList", NULL, NULL,
+                                resp, SOAP_RESPONSE_CAP,
+                                out_err_code, out_err_msg, err_msg_cap);
+    if (err != ESP_OK) { free(resp); return err; }
+
+    xml_find_text(resp, "NewPhonebookURL", out_url, url_cap);
+    free(resp);
+    if (!out_url[0]) {
+        ESP_LOGE(TAG, "GetCallBarringList: no PhonebookURL in response");
+        return ESP_FAIL;
+    }
+    return ESP_OK;
+}
+
+esp_err_t tr064_call_barring_delete(const char *host, int port,
+                                    const char *user, const char *pass,
+                                    const char *uid,
+                                    int *out_err_code,
+                                    char *out_err_msg, size_t err_msg_cap)
+{
+    if (!uid || !*uid) return ESP_ERR_INVALID_ARG;
+
+    char url[96];
+    snprintf(url, sizeof(url), "http://%s:%d" ONTEL_CONTROL, host, port);
+
+    char args[128];
+    char uid_esc[32];
+    xml_escape(uid, uid_esc, sizeof(uid_esc));
+    snprintf(args, sizeof(args),
+        "<NewPhonebookEntryUniqueID>%s</NewPhonebookEntryUniqueID>", uid_esc);
+
+    char *resp = malloc(SOAP_RESPONSE_CAP);
+    if (!resp) return ESP_ERR_NO_MEM;
+    esp_err_t err = call_action(url, ONTEL_SERVICE,
+                                user, pass,
+                                "DeleteCallBarringEntryUID", args, NULL,
+                                resp, SOAP_RESPONSE_CAP,
+                                out_err_code, out_err_msg, err_msg_cap);
+    free(resp);
+    return err;
 }
 
 // --- 2FA (X_AVM-DE_Auth) -------------------------------------------

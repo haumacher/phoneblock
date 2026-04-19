@@ -102,6 +102,30 @@ esp_err_t tr064_register_dongle_app(
     int  *out_err_code,
     char *out_err_msg, size_t err_msg_cap);
 
+// Call-barring phonebook ("Rufsperre") helpers
+// --------------------------------------------
+//
+// The Fritz!Box exposes its call-barring list as a dedicated phone
+// book. Both actions live under X_AVM-DE_OnTel and only require the
+// Phone right — the dongle's app credentials are sufficient, the
+// admin password is not needed.
+
+// Fetch the signed URL of an XML document listing all call-barring
+// entries. The caller then does a plain HTTP GET on that URL.
+esp_err_t tr064_call_barring_list_url(
+    const char *host, int port,
+    const char *user, const char *pass,
+    char *out_url, size_t url_cap,
+    int *out_err_code, char *out_err_msg, size_t err_msg_cap);
+
+// Remove a specific call-barring entry by its UniqueID (as returned
+// inside a <contact><uniqueid>…</uniqueid></contact> block).
+esp_err_t tr064_call_barring_delete(
+    const char *host, int port,
+    const char *user, const char *pass,
+    const char *uid,
+    int *out_err_code, char *out_err_msg, size_t err_msg_cap);
+
 // Two-factor-authentication helpers
 // ---------------------------------
 

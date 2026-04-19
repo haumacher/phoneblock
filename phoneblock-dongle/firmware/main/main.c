@@ -21,6 +21,7 @@
 #include "config.h"
 #include "sip_register.h"
 #include "stats.h"
+#include "sync.h"
 #include "web.h"
 
 static const char *TAG = "phoneblock";
@@ -165,4 +166,9 @@ void app_main(void)
     } else {
         ESP_LOGI(TAG, "SIP not configured yet — set via web UI");
     }
+
+    // Blocklist sync task — safe to start even when no Fritz!Box
+    // credentials are configured yet; the task itself will skip its
+    // runs until a later setup fills those in.
+    sync_start();
 }

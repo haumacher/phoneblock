@@ -18,3 +18,8 @@ verdict_t phoneblock_check(const char *phone_number);
 // HTTP 200 body "ok"). Returns true on success, false on any failure.
 // Logs the outcome and records a stats error on failure.
 bool phoneblock_selftest(void);
+
+// Submit a spam rating for `phone` with the given rating code (e.g.
+// "B_MISSED", "E_ADVERTISING"). Optional short comment (NULL for
+// none). Returns true when the server accepts the rating (HTTP 200).
+bool phoneblock_rate(const char *phone, const char *rating, const char *comment);
