@@ -12,6 +12,7 @@
 #include "freertos/task.h"
 #include "mbedtls/md5.h"
 
+#include "config.h"
 #include "tr064_parse.h"
 
 // Short aliases for the parser helpers — keeps call sites compact.
@@ -439,20 +440,13 @@ static void gen_random_password(char *out, size_t len)
 
 static void gen_sip_username(char *out, size_t cap)
 {
-    // ESP_MAC_WIFI_STA was empty when the build runs on Ethernet-only
-    // (QEMU OpenEth) with WiFi never brought up — produced the fixed
-    // username "phoneblock-000000". Use the base MAC from eFuse which
-    // is available regardless of which netif is initialised, and fall
-    // back to esp_random on a zeroed eFuse (some QEMU runs).
-    uint8_t mac[6] = {0};
-    esp_read_mac(mac, ESP_MAC_BASE);
-    if (mac[3] == 0 && mac[4] == 0 && mac[5] == 0) {
-        uint32_t r = esp_random();
-        mac[3] = (uint8_t)(r);
-        mac[4] = (uint8_t)(r >> 8);
-        mac[5] = (uint8_t)(r >> 16);
-    }
-    snprintf(out, cap, "phoneblock-%02x%02x%02x", mac[3], mac[4], mac[5]);
+    // Delegated to config_dongle_username: on first call it derives
+    // the suffix from the base MAC (or esp_random when eFuse is
+    // zeroed, e.g. in QEMU) and persists the result in NVS. All
+    // later setups reuse that exact name so find_client_slot finds
+    // and overwrites the Fritz!Box entry instead of piling up new
+    // ones.
+    config_dongle_username(out, cap);
 }
 
 // ---------------------------------------------------------------------------
