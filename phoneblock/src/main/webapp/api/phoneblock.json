@@ -182,8 +182,8 @@
 											"location": "Berlin"
 										}
 									],
-									"range10":  [ { "prefix": "+491234567", "votes": 24, "cnt": 5 } ],
-									"range100": [ { "prefix": "+49123456",  "votes": 78, "cnt": 12 } ]
+									"range10":  [ { "prefix": "+4912345678", "votes": 24, "cnt": 5 } ],
+									"range100": [ { "prefix": "+491234567",  "votes": 78, "cnt": 12 } ]
 								}
 							}
 						}
