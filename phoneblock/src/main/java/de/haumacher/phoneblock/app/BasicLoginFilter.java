@@ -70,27 +70,30 @@ public class BasicLoginFilter extends LoginFilter {
 	@Override
 	protected boolean allowSessionAuth(HttpServletRequest request) {
 		switch (request.getServletPath()) {
-		case TestConnectServlet.PATH: 
+		case TestConnectServlet.PATH:
+		case PrefixCheckServlet.PATH:
 			return false;
 		default:
 			return true;
 		}
 	}
-	
+
 	@Override
 	protected boolean allowCookieAuth(HttpServletRequest request) {
 		switch (request.getServletPath()) {
-		case TestConnectServlet.PATH: 
+		case TestConnectServlet.PATH:
+		case PrefixCheckServlet.PATH:
 			return false;
 		default:
 			return true;
 		}
 	}
-	
+
 	@Override
 	protected boolean allowBasicAuth(HttpServletRequest request) {
 		switch (request.getServletPath()) {
-		case TestConnectServlet.PATH: 
+		case TestConnectServlet.PATH:
+		case PrefixCheckServlet.PATH:
 			return false;
 		default:
 			return true;

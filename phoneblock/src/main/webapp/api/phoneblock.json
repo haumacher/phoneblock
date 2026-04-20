@@ -192,12 +192,11 @@
 						"description": "Missing 'sha1' parameter, or a prefix value is not between 4 and 40 hex characters (even length)."
 					},
 					"401": {
-						"description": "Authentication required — unlike the cache-friendly HIBP-style endpoints this API requires a bearer token. The server must know the user to apply personal block/whitelist entries, and authenticating individual queries does not weaken privacy because the hash prefix alone covers thousands of candidate numbers."
+						"description": "Authentication required — unlike the cache-friendly HIBP-style endpoints this API requires a bearer token. The server must know the user to apply personal block/whitelist entries, and authenticating individual queries does not weaken privacy because the hash prefix alone covers thousands of candidate numbers. Only API keys are accepted: session cookies and Basic auth (username/password) are rejected for this endpoint so that only machine clients holding a dedicated token can reach it."
 					}
 				},
 				"security": [
 					{
-						"PhoneBlockUser": [],
 						"APIKey": []
 					}
 				]
