@@ -120,6 +120,21 @@ public class PrefixCheckServlet extends HttpServlet {
 					pi.setBlackListed(true);
 				} else {
 					// Personal whitelist overrides the community rating for this user.
+					//
+					// The alternative would be to drop the community entry entirely so the
+					// client sees no direct match (treating the number as legitimate by
+					// default). That is not enough on its own: any range10/range100
+					// aggregation covering the whitelisted number stays in the response and
+					// would push the client's wildcard-vote computation past the block
+					// threshold for numbers in a hot SPAM range — re-blocking a number the
+					// user explicitly whitelisted. Scrubbing the ranges server-side would
+					// require re-hashing the whitelisted number, adds complexity, and still
+					// only buys a cleaner response payload.
+					//
+					// Returning an explicit A_LEGITIMATE record short-circuits that: a
+					// well-behaved client treats a direct rating of A_LEGITIMATE as a hard
+					// override of any wildcard signal, exactly as the non-prefix /api/check
+					// path already relies on.
 					pi.setWhiteListed(true);
 					pi.setRating(Rating.A_LEGITIMATE);
 				}
