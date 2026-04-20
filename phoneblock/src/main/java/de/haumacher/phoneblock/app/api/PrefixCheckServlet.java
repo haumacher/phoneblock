@@ -4,7 +4,6 @@
 package de.haumacher.phoneblock.app.api;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -54,6 +53,10 @@ public class PrefixCheckServlet extends HttpServlet {
 	/** Maximum prefix length = full SHA-1. */
 	public static final int MAX_PREFIX_HEX = 40;
 
+	// The prefix is interpreted as whole bytes — the length must be even. This keeps the
+	// range-bound arithmetic to pure byte[] decoding with a ripple-carry increment and
+	// avoids any BigInteger / bit-shift shenanigans on the request path.
+
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		AuthToken auth = LoginFilter.getAuthorization(req);
@@ -72,7 +75,8 @@ public class PrefixCheckServlet extends HttpServlet {
 		}
 		if (!isValidHexPrefix(sha1Hex)) {
 			ServletUtil.sendError(resp,
-				"Invalid 'sha1' prefix: " + MIN_PREFIX_HEX + "–" + MAX_PREFIX_HEX + " hex characters required.");
+				"Invalid 'sha1' prefix: expected an even number of hex characters, "
+					+ MIN_PREFIX_HEX + "–" + MAX_PREFIX_HEX + ".");
 			return;
 		}
 		if (prefix10Hex != null && !isValidHexPrefix(prefix10Hex)) {
@@ -172,7 +176,7 @@ public class PrefixCheckServlet extends HttpServlet {
 			return false;
 		}
 		int len = s.length();
-		if (len < MIN_PREFIX_HEX || len > MAX_PREFIX_HEX) {
+		if (len < MIN_PREFIX_HEX || len > MAX_PREFIX_HEX || (len & 1) != 0) {
 			return false;
 		}
 		for (int i = 0; i < len; i++) {
@@ -185,35 +189,35 @@ public class PrefixCheckServlet extends HttpServlet {
 		return true;
 	}
 
-	/** Inclusive lower bound: the prefix, left-aligned in a 20-byte SHA-1, padded with zeros. */
+	/** Inclusive lower bound: the prefix bytes, padded with zeros to a 20-byte SHA-1. */
 	static byte[] prefixLow(String hexPrefix) {
-		int bits = hexPrefix.length() * 4;
-		BigInteger value = new BigInteger(hexPrefix, 16).shiftLeft(160 - bits);
-		return toSha1Bytes(value);
+		int prefixBytes = hexPrefix.length() / 2;
+		byte[] result = new byte[20];
+		for (int i = 0; i < prefixBytes; i++) {
+			int hi = Character.digit(hexPrefix.charAt(i * 2), 16);
+			int lo = Character.digit(hexPrefix.charAt(i * 2 + 1), 16);
+			result[i] = (byte) ((hi << 4) | lo);
+		}
+		return result;
 	}
 
 	/** Exclusive upper bound: the first SHA-1 value just past the prefix. */
 	static byte[] prefixHigh(String hexPrefix) {
-		int bits = hexPrefix.length() * 4;
-		BigInteger next = new BigInteger(hexPrefix, 16).add(BigInteger.ONE).shiftLeft(160 - bits);
-		if (next.bitLength() > 160) {
-			// Prefix is all-ones — saturate to the 20-byte maximum. The only SHA-1
-			// this excludes is the (astronomically unlikely) all-ones hash itself.
-			byte[] max = new byte[20];
-			for (int i = 0; i < 20; i++) {
-				max[i] = (byte) 0xff;
+		byte[] result = prefixLow(hexPrefix);
+		int prefixBytes = hexPrefix.length() / 2;
+		for (int i = prefixBytes - 1; i >= 0; i--) {
+			int v = (result[i] & 0xff) + 1;
+			result[i] = (byte) v;
+			if (v < 0x100) {
+				return result;
 			}
-			return max;
+			// Overflow of this byte — carry into the more significant one.
 		}
-		return toSha1Bytes(next);
-	}
-
-	private static byte[] toSha1Bytes(BigInteger value) {
-		byte[] result = new byte[20];
-		byte[] raw = value.toByteArray();
-		int srcOff = Math.max(0, raw.length - 20);
-		int copyLen = raw.length - srcOff;
-		System.arraycopy(raw, srcOff, result, 20 - copyLen, copyLen);
+		// Every prefix byte was 0xff: saturate to the 20-byte maximum. The only SHA-1
+		// value this excludes is the (astronomically unlikely) all-ones hash itself.
+		for (int i = 0; i < 20; i++) {
+			result[i] = (byte) 0xff;
+		}
 		return result;
 	}
 

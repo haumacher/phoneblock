@@ -189,7 +189,7 @@
 						}
 					},
 					"400": {
-						"description": "Missing 'sha1' parameter, or a prefix value is not between 4 and 40 hex characters."
+						"description": "Missing 'sha1' parameter, or a prefix value is not between 4 and 40 hex characters (even length)."
 					},
 					"401": {
 						"description": "Authentication required — unlike the cache-friendly HIBP-style endpoints this API requires a bearer token. The server must know the user to apply personal block/whitelist entries, and authenticating individual queries does not weaken privacy because the hash prefix alone covers thousands of candidate numbers."
@@ -206,7 +206,7 @@
 				{
 					"name": "sha1",
 					"in": "query",
-					"description": "Hex prefix of the SHA1 hash of the phone number (4–40 hex characters). 4 hex characters (16 bit) keep on average ~3000 plausible German numbers per bucket and are the recommended minimum. Longer prefixes are accepted — 40 characters is equivalent to an exact lookup like /check.",
+					"description": "Hex prefix of the SHA1 hash of the phone number (4–40 hex characters, even length). 4 hex characters (16 bit) keep on average ~3000 plausible German numbers per bucket and are the recommended minimum. Longer prefixes are accepted — 40 characters is equivalent to an exact lookup like /check.",
 					"required": true,
 					"schema": {
 						"type": "string",
@@ -216,7 +216,7 @@
 				{
 					"name": "prefix10",
 					"in": "query",
-					"description": "Optional hex prefix (4–40 hex characters) of the SHA1 hash of the phone number with the last digit removed. Needed for 10-digit range-based spam detection.",
+					"description": "Optional hex prefix (4–40 hex characters, even length) of the SHA1 hash of the phone number with the last digit removed. Needed for 10-digit range-based spam detection.",
 					"required": false,
 					"schema": {
 						"type": "string"
@@ -225,7 +225,7 @@
 				{
 					"name": "prefix100",
 					"in": "query",
-					"description": "Optional hex prefix (4–40 hex characters) of the SHA1 hash of the phone number with the last two digits removed. Needed for 100-digit range-based spam detection.",
+					"description": "Optional hex prefix (4–40 hex characters, even length) of the SHA1 hash of the phone number with the last two digits removed. Needed for 100-digit range-based spam detection.",
 					"required": false,
 					"schema": {
 						"type": "string"
