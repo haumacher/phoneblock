@@ -17,7 +17,7 @@
 		"/num/{num}": {
 			"get": {
 				"summary": "Checks whether the given phone number in on the blocklist.",
-				"description": "The calling phone number is sent in plaintext — the server learns which number the authenticated user is asking about. For a privacy-preserving alternative that reveals only a SHA1 hash of the number, see /check; for the strongest privacy (k-anonymity prefix lookup) use /check-prefix instead.",
+				"description": "The calling phone number is sent in plaintext — the server learns which number the authenticated user is asking about. For a privacy-preserving alternative that hides the queried number from the server, use the k-anonymity prefix lookup at /check-prefix.",
 				"responses": {
 					"200": {
 						"description": "Checks whether the given phone number is in the PhoneBlock database.",
