@@ -246,6 +246,40 @@
 				}
 			]
 		},
+		"/report-call/{phone}": {
+			"post": {
+				"summary": "Report an incoming SPAM call for blocklist-tailoring statistics.",
+				"description": "Intended to be invoked after a client (e.g. a light-weight device that uses /check-prefix) has identified an incoming call as SPAM. Increments NUMBERS.CALLS and refreshes NUMBERS.LASTPING for known blocklist numbers so that the server knows which numbers are currently active and can select them for space-constrained tailored blocklists.\n\nThis is not a rating — /rate accepts at most one rating per (user, number); /report-call accepts many events for the same number and exists to measure activity, not opinion.\n\nAbuse controls: per (user, phone) the global counter is updated at most once per UTC day (same-day reports are still recorded in the per-user call history). Additionally, every user may contribute to the global counter for at most 100 distinct phones per UTC day.\n\nReports for numbers that are not in the blocklist database are silently accepted but have no effect — the server never creates new rows from report-call input.",
+				"responses": {
+					"204": {
+						"description": "Report accepted. The body is empty. The response does not tell whether the number was in the database or whether the global counter was actually updated — that is by design, so clients cannot probe the blocklist contents via this endpoint."
+					},
+					"400": {
+						"description": "Missing or invalid phone number in the URL."
+					},
+					"401": {
+						"description": "Authentication required. Only API keys (bearer tokens with the 'rate' privilege) are accepted; session cookies and Basic auth are rejected for this endpoint."
+					}
+				},
+				"security": [
+					{
+						"APIKey": []
+					}
+				]
+			},
+			"parameters": [
+				{
+					"name": "phone",
+					"in": "path",
+					"description": "The calling phone number in international format. To avoid URL-encoding the leading '+', clients may equivalently send the legacy '00'-prefix form (e.g. '0049301234567' instead of '+49301234567').",
+					"required": true,
+					"schema": {
+						"type": "string",
+						"example": "0049301234567"
+					}
+				}
+			]
+		},
 		"/search/{num}": {
 			"get": {
 				"summary": "Retrieve extensive information for the given phone number.",

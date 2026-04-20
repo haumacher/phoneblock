@@ -200,12 +200,12 @@ public interface SpamReports {
 			update NUMBERS s
 			set
 				CALLS = CALLS + 1,
-				s.UPDATED = greatest(s.UPDATED, #{now}), 
-				s.LASTPING = greatest(s.LASTPING, #{now}) 
+				s.UPDATED = greatest(s.UPDATED, #{now}),
+				s.LASTPING = greatest(s.LASTPING, #{now})
 			where
 				PHONE = #{phone}
 			""")
-	void recordCall(String phone, long now);
+	int recordCall(String phone, long now);
 	
 	@Select("""
 			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.VOTES as PUBLISHED_VOTES from NUMBERS s

@@ -18,6 +18,7 @@ import de.haumacher.phoneblock.app.api.BlocklistServlet;
 import de.haumacher.phoneblock.app.api.PersonalizationServlet;
 import de.haumacher.phoneblock.app.api.PrefixCheckServlet;
 import de.haumacher.phoneblock.app.api.RateServlet;
+import de.haumacher.phoneblock.app.api.ReportCallServlet;
 import de.haumacher.phoneblock.app.api.SearchApiServlet;
 import de.haumacher.phoneblock.app.api.SpamCheckServlet;
 import de.haumacher.phoneblock.app.api.TestConnectServlet;
@@ -44,6 +45,7 @@ import jakarta.servlet.http.HttpServletResponse;
 	BlocklistServlet.PATH,
 	SpamCheckServlet.PATH,
 	PrefixCheckServlet.PATH,
+	ReportCallServlet.PATTERN,
 	TestConnectServlet.PATH,
 	RateServlet.PATH,
 	CallReportServlet.URL_PATTERN,
@@ -72,6 +74,7 @@ public class BasicLoginFilter extends LoginFilter {
 		switch (request.getServletPath()) {
 		case TestConnectServlet.PATH:
 		case PrefixCheckServlet.PATH:
+		case ReportCallServlet.PATH:
 			return false;
 		default:
 			return true;
@@ -83,6 +86,7 @@ public class BasicLoginFilter extends LoginFilter {
 		switch (request.getServletPath()) {
 		case TestConnectServlet.PATH:
 		case PrefixCheckServlet.PATH:
+		case ReportCallServlet.PATH:
 			return false;
 		default:
 			return true;
@@ -94,6 +98,7 @@ public class BasicLoginFilter extends LoginFilter {
 		switch (request.getServletPath()) {
 		case TestConnectServlet.PATH:
 		case PrefixCheckServlet.PATH:
+		case ReportCallServlet.PATH:
 			return false;
 		default:
 			return true;
@@ -107,6 +112,7 @@ public class BasicLoginFilter extends LoginFilter {
 			return authorization.isAccessDownload();
 		case RateServlet.PATH:
 		case CallReportServlet.URL_PATTERN:
+		case ReportCallServlet.PATH:
 		case PersonalizationServlet.BLACKLIST_PATH:
 		case PersonalizationServlet.WHITELIST_PATH:
 		case AccountManagementServlet.PATH:

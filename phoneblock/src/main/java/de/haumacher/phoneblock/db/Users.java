@@ -349,9 +349,31 @@ public interface Users {
 	
 	@Insert("insert into CALLERS (USERID, PHONE, CALLS, LASTUPDATE) values (#{userId}, #{phone}, 1, #{now})")
 	void insertCaller(long userId, String phone, long now);
-	
+
 	@Update("update CALLERS set CALLS=CALLS + 1, LASTUPDATE=#{now} where USERID=#{userId} and PHONE=#{phone}")
 	int addCall(long userId, String phone, long now);
+
+	@Select("select LASTUPDATE from CALLERS where USERID=#{userId} and PHONE=#{phone}")
+	Long getCallerLastUpdate(long userId, String phone);
+
+	/**
+	 * Atomic per-day call-report quota check with lazy reset.
+	 *
+	 * <p>If the user's stored {@code FLAG_DAY} does not yet match {@code today}, the
+	 * counter is reset to 1 and the new day is recorded. Otherwise the counter is
+	 * incremented, but only while it is strictly less than {@code quota}. The method
+	 * returns the number of affected rows: {@code 1} if the caller is within the
+	 * quota and may contribute the current report to the global counters,
+	 * {@code 0} if the daily quota for this user is already exhausted.</p>
+	 */
+	@Update("""
+			update USERS
+			set FLAG_DAY = #{today},
+				FLAG_COUNT = case when FLAG_DAY = #{today} then FLAG_COUNT + 1 else 1 end
+			where ID = #{userId}
+				and (FLAG_DAY <> #{today} or FLAG_COUNT < #{quota})
+			""")
+	int tryConsumeCallReportQuota(long userId, int today, int quota);
 
 	@Select("select ABID, USERID, CREATED, UPDATED, DYNDNS_USER, DYNDNS_PASSWD, IP4, IP6 from ANSWERBOT_DYNDNS where DYNDNS_USER=#{dynDnsUser}")
 	DBAnswerBotDynDns getDynDns(String dynDnsUser);
