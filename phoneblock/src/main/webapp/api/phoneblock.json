@@ -155,6 +155,98 @@
 				}
 			]
 		},
+		"/check-prefix": {
+			"get": {
+				"summary": "Privacy-preserving k-anonymity lookup against the SPAM database.",
+				"description": "Instead of a full SHA1 hash (as used by /check) the client sends only the first 4 or more hex characters of the hash. The server responds with every matching entry so the client can match locally — the server never learns which specific number the client was asking about. Optional prefix10/prefix100 parameters enable range-based spam detection. When a match is on the user's personal block- or whitelist, the server merges that information into the returned entry (flags 'blackListed' / 'whiteListed').",
+				"responses": {
+					"200": {
+						"description": "All entries whose SHA1 hash starts with the supplied prefix(es).",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/PrefixCheckResult"
+								},
+								"example": {
+									"numbers": [
+										{
+											"phone": "+49123456789",
+											"votes": 42,
+											"rating": "C_POLL",
+											"whiteListed": false,
+											"blackListed": false,
+											"archived": false,
+											"dateAdded": 1700000000000,
+											"lastUpdate": 1710000000000,
+											"label": "(DE) 0123 456789",
+											"location": "Berlin"
+										}
+									],
+									"range10":  [ { "prefix": "+491234567", "votes": 24, "cnt": 5 } ],
+									"range100": [ { "prefix": "+49123456",  "votes": 78, "cnt": 12 } ]
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "Missing 'sha1' parameter, or a prefix value is not between 4 and 40 hex characters."
+					},
+					"401": {
+						"description": "Authentication required — unlike the cache-friendly HIBP-style endpoints this API requires a bearer token. The server must know the user to apply personal block/whitelist entries, and authenticating individual queries does not weaken privacy because the hash prefix alone covers thousands of candidate numbers."
+					}
+				},
+				"security": [
+					{
+						"PhoneBlockUser": [],
+						"APIKey": []
+					}
+				]
+			},
+			"parameters": [
+				{
+					"name": "sha1",
+					"in": "query",
+					"description": "Hex prefix of the SHA1 hash of the phone number (4–40 hex characters). 4 hex characters (16 bit) keep on average ~3000 plausible German numbers per bucket and are the recommended minimum. Longer prefixes are accepted — 40 characters is equivalent to an exact lookup like /check.",
+					"required": true,
+					"schema": {
+						"type": "string",
+						"example": "3d1d"
+					}
+				},
+				{
+					"name": "prefix10",
+					"in": "query",
+					"description": "Optional hex prefix (4–40 hex characters) of the SHA1 hash of the phone number with the last digit removed. Needed for 10-digit range-based spam detection.",
+					"required": false,
+					"schema": {
+						"type": "string"
+					}
+				},
+				{
+					"name": "prefix100",
+					"in": "query",
+					"description": "Optional hex prefix (4–40 hex characters) of the SHA1 hash of the phone number with the last two digits removed. Needed for 100-digit range-based spam detection.",
+					"required": false,
+					"schema": {
+						"type": "string"
+					}
+				},
+				{
+					"name": "format",
+					"in": "query",
+					"description": "The format to return.",
+					"required": false,
+					"default": "json",
+					"schema": {
+						"type": "string",
+						"enum": [
+							"json",
+							"xml"
+						]
+					}
+				}
+			]
+		},
 		"/search/{num}": {
 			"get": {
 				"summary": "Retrieve extensive information for the given phone number.",
@@ -1130,6 +1222,51 @@
 	},
 	"components": {
 		"schemas": {
+			"RangeMatch": {
+				"type": "object",
+				"description": "A single aggregated SPAM range matching a hash prefix in a PrefixCheckResult.",
+				"properties": {
+					"prefix": {
+						"type": "string",
+						"description": "The plaintext prefix of the aggregated range (e.g. '+4930123')."
+					},
+					"votes": {
+						"type": "integer",
+						"description": "Aggregated number of SPAM votes for all numbers in this range."
+					},
+					"cnt": {
+						"type": "integer",
+						"description": "Number of distinct SPAM numbers known for this range."
+					}
+				}
+			},
+			"PrefixCheckResult": {
+				"type": "object",
+				"description": "Response of the privacy-preserving k-anonymity prefix lookup. Each array contains every entry whose SHA1 hash starts with the corresponding prefix from the request; the client matches them against its own (locally-hashed) number to decide whether the caller is on the blocklist.",
+				"properties": {
+					"numbers": {
+						"type": "array",
+						"description": "Phone numbers whose SHA1 hash starts with the 'sha1' prefix from the request. The per-number 'votes' is the raw direct-vote count — the client computes the wildcard-combined value locally from 'range10' / 'range100'.",
+						"items": {
+							"$ref": "#/components/schemas/PhoneInfo"
+						}
+					},
+					"range10": {
+						"type": "array",
+						"description": "10-digit range aggregations whose SHA1 hash starts with the 'prefix10' prefix from the request. Empty if no 'prefix10' was supplied or no match was found.",
+						"items": {
+							"$ref": "#/components/schemas/RangeMatch"
+						}
+					},
+					"range100": {
+						"type": "array",
+						"description": "100-digit range aggregations whose SHA1 hash starts with the 'prefix100' prefix from the request. Empty if no 'prefix100' was supplied or no match was found.",
+						"items": {
+							"$ref": "#/components/schemas/RangeMatch"
+						}
+					}
+				}
+			},
 			"PhoneInfo": {
 				"type": "object",
 				"description": "Information about a phone number published by the PhoneBlock API.",
