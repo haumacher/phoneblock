@@ -353,9 +353,6 @@ public interface Users {
 	@Update("update CALLERS set CALLS=CALLS + 1, LASTUPDATE=#{now} where USERID=#{userId} and PHONE=#{phone}")
 	int addCall(long userId, String phone, long now);
 
-	@Select("select LASTUPDATE from CALLERS where USERID=#{userId} and PHONE=#{phone}")
-	Long getCallerLastUpdate(long userId, String phone);
-
 	/**
 	 * Atomic per-day call-report quota check with lazy reset.
 	 *

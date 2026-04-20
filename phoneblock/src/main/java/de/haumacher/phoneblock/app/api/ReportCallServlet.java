@@ -37,16 +37,13 @@ import jakarta.servlet.http.HttpServletResponse;
  * is what decides which numbers make it onto space-constrained blocklists
  * (e.g. Fritz!Box phonebooks).</p>
  *
- * <p>Abuse is kept at bay by two cheap checks that share the already existing
- * {@code CALLERS} table:</p>
- * <ol>
- *   <li><b>Debounce per (user, phone):</b> the same user can contribute to
- *       the global counter at most once per UTC day for the same number.</li>
- *   <li><b>Daily per-user quota:</b> a lazy-reset counter on the
- *       {@code USERS} row caps the number of distinct phones a user may push
- *       into the global counter per day — implemented as a single atomic
- *       {@code UPDATE} (see {@link Users#tryConsumeCallReportQuota}).</li>
- * </ol>
+ * <p>Abuse is kept at bay by a single per-user daily quota: a lazy-reset
+ * counter on the {@code USERS} row caps how many reports a user may push
+ * into the global counter per UTC day. It is implemented as one atomic
+ * {@code UPDATE} (see {@link Users#tryConsumeCallReportQuota}) — no periodic
+ * reset job, no aggregate query. Reports beyond the quota are still written
+ * to the per-user call log ({@code CALLERS}) for the user's own activity
+ * history, but do not move the global counter.</p>
  *
  * <p>Reports for numbers that are not in the {@code NUMBERS} table are
  * silently accepted but have no effect — we do not create new rows, since
@@ -62,11 +59,13 @@ public class ReportCallServlet extends HttpServlet {
 	public static final String PATTERN = PATH + "/*";
 
 	/**
-	 * Maximum number of distinct phones a user may contribute to the global
-	 * counter per UTC day. Chosen generously so that heavy but legitimate
-	 * users (e.g. small businesses behind a Fritz!Box) do not hit the cap.
+	 * Maximum number of call reports a user may push into the global counter
+	 * per UTC day. Generous for typical spam exposure (even heavily targeted
+	 * users rarely see more than a handful of spam calls per day) while
+	 * leaving abuse from a single account clearly below the legitimate
+	 * baseline of independent reports.
 	 */
-	public static final int DAILY_QUOTA = 100;
+	public static final int DAILY_QUOTA = 20;
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -98,7 +97,6 @@ public class ReportCallServlet extends HttpServlet {
 
 		long now = System.currentTimeMillis();
 		int today = (int) LocalDate.ofInstant(Instant.ofEpochMilli(now), ZoneOffset.UTC).toEpochDay();
-		long todayStartMillis = LocalDate.ofEpochDay(today).atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli();
 
 		DB db = DBService.getInstance();
 		try (SqlSession session = db.openSession()) {
@@ -107,19 +105,10 @@ public class ReportCallServlet extends HttpServlet {
 
 			long userId = auth.getUserId();
 
-			Long lastUpdate = users.getCallerLastUpdate(userId, phoneId);
-			boolean firstToday = lastUpdate == null || lastUpdate.longValue() < todayStartMillis;
-
-			if (firstToday) {
-				// Atomic lazy-reset quota check. If the user has already exhausted today's
-				// quota, we still proceed to touch CALLERS below — the user's own activity
-				// log stays honest — but skip the global counter update.
-				int consumed = users.tryConsumeCallReportQuota(userId, today, DAILY_QUOTA);
-				if (consumed == 1) {
-					// recordCall is a no-op for phones that are not in NUMBERS, which is
-					// exactly the "only count known SPAM numbers" semantic we want.
-					reports.recordCall(phoneId, now);
-				}
+			if (users.tryConsumeCallReportQuota(userId, today, DAILY_QUOTA) == 1) {
+				// recordCall is a no-op for phones that are not in NUMBERS, which is
+				// exactly the "only count known SPAM numbers" semantic we want.
+				reports.recordCall(phoneId, now);
 			}
 
 			// Maintain the per-user call log regardless of global-counter outcome.
