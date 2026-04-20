@@ -17,6 +17,7 @@
 		"/num/{num}": {
 			"get": {
 				"summary": "Checks whether the given phone number in on the blocklist.",
+				"description": "The calling phone number is sent in plaintext — the server learns which number the authenticated user is asking about. For a privacy-preserving alternative that reveals only a SHA1 hash of the number, see /check; for the strongest privacy (k-anonymity prefix lookup) use /check-prefix instead.",
 				"responses": {
 					"200": {
 						"description": "Checks whether the given phone number is in the PhoneBlock database.",
@@ -78,6 +79,7 @@
 		"/check": {
 			"get": {
 				"summary": "Checks a phone number hash against the SPAM database. This API provides better privacy than the direct lookup with the phone number.",
+				"description": "Clients hash the calling number locally with SHA1 and send only the hash, so the server never sees the plaintext number. For maximum privacy — where the server cannot link the authenticated user to a specific number at all — use /check-prefix (k-anonymity prefix lookup) instead: the full SHA1 still uniquely identifies the queried number against a rainbow table.",
 				"responses": {
 					"200": {
 						"description": "Checks whether the phone number with the given SHA1 hash is in the PhoneBlock database. If the exact number is not found but prefix hashes are provided, range-based detection is attempted.",
@@ -158,7 +160,7 @@
 		"/check-prefix": {
 			"get": {
 				"summary": "Privacy-preserving k-anonymity lookup against the SPAM database.",
-				"description": "Instead of a full SHA1 hash (as used by /check) the client sends only the first 4 or more hex characters of the hash. The server responds with every matching entry so the client can match locally — the server never learns which specific number the client was asking about. Optional prefix10/prefix100 parameters enable range-based spam detection. When a match is on the user's personal block- or whitelist, the server merges that information into the returned entry (flags 'blackListed' / 'whiteListed').",
+				"description": "Instead of a full SHA1 hash (as used by /check) the client sends only the first 4 or more hex characters of the hash. The server responds with every matching entry so the client can match locally — the server never learns which specific number the client was asking about. Optional prefix10/prefix100 parameters enable range-based spam detection. When a match is on the user's personal block- or whitelist, the server merges that information into the returned entry (flags 'blackListed' / 'whiteListed').\n\nFair-use contribution: because this endpoint hides which number the client asked about, the server no longer sees activity data that it needs to keep community blocklists tailored (especially space-constrained variants for devices like Fritz!Box routers). Well-behaved clients that get a positive local match are expected to report the plaintext calling number back via POST /report-call/{phone}, which lets the server increment the call counter without having to learn the full set of queried numbers.",
 				"responses": {
 					"200": {
 						"description": "All entries whose SHA1 hash starts with the supplied prefix(es).",
