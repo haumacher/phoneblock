@@ -335,6 +335,18 @@ Hardware-Entscheidungsmatrix [HARDWARE.md](HARDWARE.md), QEMU-Setup
   `CreateAuthTokenServlet`-Erweiterung ist committed, muss aber
   auf `phoneblock.net` deployed werden, damit neue Tokens auch
   produktiv funktionieren.
+- [ ] **Privacy-Upgrade: API-Query auf SHA1-Hash umstellen** —
+  aktuell sendet `phoneblock_check` die Klartext-Rufnummer an
+  `GET /api/num/{phone}?format=json`. Die Mobile-App und der
+  Docker-AnswerBot nutzen stattdessen `GET /api/check?sha1=…`,
+  wodurch die Nummer den Server nie im Klartext erreicht. Zu tun:
+  SHA1-Hashing der international normalisierten Nummer im
+  Dongle-Client, Umstellung der URL, Auswertung des
+  `blackListed`-Flags aus der Response (persönliche Blacklist
+  des angemeldeten Users hat Vorrang vor der Vote-Schwelle;
+  ohne dieses Flag ist das Verhalten analog zum Bug aus
+  Issue #297). `/api/num/` bleibt parallel erhalten und honoriert
+  das Flag inzwischen ebenfalls, ist aber nicht datenschutzoptimal.
 
 ### Status-LED
 - [ ] On-Board-LED als Betriebsanzeige (Blink-Pattern für IDLE /
