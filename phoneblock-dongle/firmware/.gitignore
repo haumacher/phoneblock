@@ -4,5 +4,6 @@ dependencies.lock
 sdkconfig
 sdkconfig.old
 sdkconfig.defaults.local
+sdkconfig.defaults.local.*
 *.bin
 !sdkconfig.defaults
