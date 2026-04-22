@@ -9,6 +9,7 @@
 #include "esp_wps.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
+#include "freertos/task.h"
 #include "sdkconfig.h"
 
 static const char *TAG = "wifi";
@@ -33,6 +34,28 @@ static void start_wps(void)
     s_wps_active = true;
     ESP_ERROR_CHECK(esp_wifi_wps_enable(&cfg));
     ESP_ERROR_CHECK(esp_wifi_wps_start(0));
+}
+
+// WPS retry runs on a throwaway task rather than from the Wi-Fi
+// event handler: calling esp_wifi_wps_enable right after a timeout
+// while the STA was still mid-association produced
+// "STA is connecting, scan are not allowed!" and left the driver in
+// a wedged state. Disconnecting first + a short grace period lets
+// the driver settle before the next WPS round begins.
+static void wps_restart_task(void *arg)
+{
+    (void)arg;
+    esp_wifi_disconnect();
+    vTaskDelay(pdMS_TO_TICKS(500));
+    esp_wifi_wps_disable();
+    start_wps();
+    vTaskDelete(NULL);
+}
+
+static void schedule_wps_restart(void)
+{
+    s_wps_active = false;
+    xTaskCreate(wps_restart_task, "wps_restart", 3072, NULL, 3, NULL);
 }
 
 static void on_wifi_event(void *arg, esp_event_base_t base, int32_t id, void *data)
@@ -81,16 +104,12 @@ static void on_wifi_event(void *arg, esp_event_base_t base, int32_t id, void *da
 
         case WIFI_EVENT_STA_WPS_ER_FAILED:
             ESP_LOGW(TAG, "WPS failed — restarting pairing mode");
-            esp_wifi_wps_disable();
-            s_wps_active = false;
-            start_wps();
+            schedule_wps_restart();
             break;
 
         case WIFI_EVENT_STA_WPS_ER_TIMEOUT:
             ESP_LOGW(TAG, "WPS timed out — restarting pairing mode");
-            esp_wifi_wps_disable();
-            s_wps_active = false;
-            start_wps();
+            schedule_wps_restart();
             break;
 
         default:
