@@ -13,5 +13,7 @@ idf_component_register(
         nvs_flash
         spiffs
         json
+        mdns
+        app_update
         protocol_examples_common
 )

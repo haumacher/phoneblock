@@ -1,12 +1,16 @@
 # Name,     Type, SubType, Offset,    Size
-# Custom partition table for the dongle: keeps the single-app layout
-# but carves out a SPIFFS slot so the user can upload their own voice
-# announcement via the web UI. Factory app grows from the default 1 MB
-# to 1.25 MB (the embedded-audio binary already sits close to 1 MB with
-# TLS + SIP + HTTP; 1 MB leaves almost no headroom for future features).
-# Remaining 704 KB become SPIFFS — plenty for a 30-second A-law
-# announcement (~240 KB) plus filesystem overhead.
+# OTA-capable layout on 4 MB flash. Two equal app slots (ota_0/ota_1)
+# of 1280 KB each — enough headroom for the current ~1 MB binary plus
+# TLS/SIP/HTTP/OTA code. otadata picks the active slot, esp_https_ota
+# writes to the inactive one. Storage partition keeps the "storage"
+# label so announcement.c continues to mount it unchanged.
+#
+# One-way migration: existing dongles running the old factory-only
+# layout must be reflashed over USB once. From there on, OTA updates
+# flip between ota_0 and ota_1 automatically.
 nvs,        data, nvs,     0x9000,    0x6000
-phy_init,   data, phy,     0xf000,    0x1000
-factory,    app,  factory, 0x10000,   0x140000
-storage,    data, spiffs,  0x150000,  0xB0000
+otadata,    data, ota,     0xf000,    0x2000
+phy_init,   data, phy,     0x11000,   0x1000
+ota_0,      app,  ota_0,   0x20000,   0x140000
+ota_1,      app,  ota_1,   0x160000,  0x140000
+storage,    data, spiffs,  0x2a0000,  0x160000

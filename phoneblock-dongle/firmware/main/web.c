@@ -9,6 +9,8 @@
 #include "esp_app_desc.h"
 #include "esp_netif.h"
 #include "esp_http_server.h"
+#include "esp_ota_ops.h"
+#include "esp_partition.h"
 #include "esp_system.h"       // esp_restart
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -976,6 +978,109 @@ static esp_err_t handle_announcement_reset(httpd_req_t *req)
     return ESP_OK;
 }
 
+// POST /api/firmware — upload a new firmware binary. Streams the
+// request body into the inactive OTA slot (ota_0/ota_1), verifies
+// the image, flips the boot partition, and reboots. The new image
+// comes up in "pending verify" state; unless the boot path reaches
+// esp_ota_mark_app_valid_cancel_rollback() (in app_main after
+// web_start), the bootloader rolls back on the next reset.
+static void firmware_reboot_task(void *arg)
+{
+    (void)arg;
+    vTaskDelay(pdMS_TO_TICKS(500));
+    ESP_LOGW(TAG, "firmware upload complete — restarting");
+    esp_restart();
+}
+
+static esp_err_t handle_firmware_upload(httpd_req_t *req)
+{
+    int total = req->content_len;
+    if (total <= 0) {
+        send_fail(req, "Upload body missing.");
+        return ESP_OK;
+    }
+
+    const esp_partition_t *target = esp_ota_get_next_update_partition(NULL);
+    if (!target) {
+        send_fail(req, "No OTA slot configured.");
+        return ESP_OK;
+    }
+    if ((size_t)total > target->size) {
+        char msg[96];
+        snprintf(msg, sizeof(msg),
+            "Firmware %d bytes exceeds partition size %u.",
+            total, (unsigned)target->size);
+        send_fail(req, msg);
+        return ESP_OK;
+    }
+
+    esp_ota_handle_t ota = 0;
+    esp_err_t err = esp_ota_begin(target, OTA_WITH_SEQUENTIAL_WRITES, &ota);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "esp_ota_begin: %s", esp_err_to_name(err));
+        send_fail(req, "Could not start OTA write.");
+        return ESP_OK;
+    }
+
+    const int CHUNK = 4096;
+    char *buf = malloc(CHUNK);
+    if (!buf) {
+        esp_ota_abort(ota);
+        send_fail(req, "Out of memory.");
+        return ESP_OK;
+    }
+    int64_t t0 = esp_timer_get_time();
+    int got = 0;
+    while (got < total) {
+        int want = total - got;
+        if (want > CHUNK) want = CHUNK;
+        int n = httpd_req_recv(req, buf, want);
+        if (n <= 0) {
+            free(buf);
+            esp_ota_abort(ota);
+            send_fail(req, "Upload interrupted.");
+            return ESP_OK;
+        }
+        err = esp_ota_write(ota, buf, n);
+        if (err != ESP_OK) {
+            ESP_LOGE(TAG, "esp_ota_write: %s", esp_err_to_name(err));
+            free(buf);
+            esp_ota_abort(ota);
+            send_fail(req, "Flash write failed.");
+            return ESP_OK;
+        }
+        got += n;
+    }
+    free(buf);
+
+    err = esp_ota_end(ota);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "esp_ota_end: %s", esp_err_to_name(err));
+        send_fail(req, "Image verification failed.");
+        return ESP_OK;
+    }
+    err = esp_ota_set_boot_partition(target);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "esp_ota_set_boot_partition: %s", esp_err_to_name(err));
+        send_fail(req, "Could not activate new partition.");
+        return ESP_OK;
+    }
+
+    int64_t total_us = esp_timer_get_time() - t0;
+    ESP_LOGI(TAG, "firmware upload: %d bytes to %s in %lld ms",
+             got, target->label, (long long)(total_us / 1000));
+
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddBoolToObject  (root, "ok", true);
+    cJSON_AddNumberToObject(root, "bytes", got);
+    cJSON_AddStringToObject(root, "partition", target->label);
+    cJSON_AddStringToObject(root, "message", "Firmware gespeichert — Neustart folgt.");
+    send_json(req, root);
+
+    xTaskCreate(firmware_reboot_task, "fw_reboot", 2048, NULL, 5, NULL);
+    return ESP_OK;
+}
+
 // POST /api/factory-reset — erases our NVS namespace and reboots.
 // Answer the HTTP request before rebooting so the browser sees the
 // JSON confirmation; the actual esp_restart() runs from a short-
@@ -1071,6 +1176,7 @@ static const httpd_uri_t URIS[] = {
     { .uri = "/api/errors",  .method = HTTP_GET,  .handler = handle_errors,      .user_ctx = NULL },
     { .uri = "/api/errors/clear",    .method = HTTP_POST, .handler = handle_errors_clear,   .user_ctx = NULL },
     { .uri = "/api/factory-reset",   .method = HTTP_POST, .handler = handle_factory_reset,  .user_ctx = NULL },
+    { .uri = "/api/firmware",        .method = HTTP_POST, .handler = handle_firmware_upload, .user_ctx = NULL },
     { .uri = "/api/announcement",    .method = HTTP_GET,  .handler = handle_announcement_get,   .user_ctx = NULL },
     { .uri = "/api/announcement",    .method = HTTP_POST, .handler = handle_announcement_post,  .user_ctx = NULL },
     { .uri = "/api/announcement/reset", .method = HTTP_POST, .handler = handle_announcement_reset, .user_ctx = NULL },

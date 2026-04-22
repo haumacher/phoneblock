@@ -9,6 +9,8 @@
 #include "esp_log.h"
 #include "esp_event.h"
 #include "esp_netif.h"
+#include "esp_ota_ops.h"
+#include "mdns.h"
 #include "nvs_flash.h"
 
 #include "lwip/sockets.h"
@@ -83,6 +85,28 @@ static void handle_client(int client_sock)
     send(client_sock, line, strlen(line), 0);
 }
 
+// Announce the dongle on the LAN as "answerbot" — the hostname the
+// PhoneBlock server's OAuth callback validator whitelists, and the one
+// the Fritz!Box displays in Heimnetz → Netzwerk instead of a bare MAC.
+// Reachable as http://answerbot/, http://answerbot.local/, or by IP.
+static void setup_hostname(void)
+{
+    static const char *HOSTNAME = "answerbot";
+
+    esp_netif_t *netif = esp_netif_get_default_netif();
+    if (netif) {
+        esp_err_t err = esp_netif_set_hostname(netif, HOSTNAME);
+        if (err != ESP_OK) {
+            ESP_LOGW(TAG, "esp_netif_set_hostname: %s", esp_err_to_name(err));
+        }
+    }
+
+    ESP_ERROR_CHECK(mdns_init());
+    ESP_ERROR_CHECK(mdns_hostname_set(HOSTNAME));
+    ESP_ERROR_CHECK(mdns_instance_name_set("PhoneBlock Dongle"));
+    mdns_service_add(NULL, "_http", "_tcp", 80, NULL, 0);
+}
+
 static void sip_server_task(void *arg)
 {
     int listen_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -144,11 +168,28 @@ void app_main(void)
     announcement_init();
 
     ESP_ERROR_CHECK(example_connect());
+    setup_hostname();
 
     // Web UI comes up unconditionally so the setup wizards are reachable
     // even on a fresh device. SIP registration and the API self-test
     // only run when their respective NVS fields are populated.
     web_start();
+
+    // Reaching this point means: WiFi is up, the web server is
+    // listening — minimum viable "this firmware works". Mark the
+    // running image valid so the bootloader does not roll back on
+    // the next reset. A fresh USB-flash lands in ota_0 in state
+    // ESP_OTA_IMG_VALID (no rollback active); OTA uploads land in
+    // ESP_OTA_IMG_PENDING_VERIFY and need this confirmation.
+    const esp_partition_t *running = esp_ota_get_running_partition();
+    esp_ota_img_states_t ota_state;
+    if (running != NULL
+            && esp_ota_get_state_partition(running, &ota_state) == ESP_OK
+            && ota_state == ESP_OTA_IMG_PENDING_VERIFY) {
+        ESP_LOGI(TAG, "marking running firmware (%s) valid — rollback cancelled",
+                 running->label);
+        esp_ota_mark_app_valid_cancel_rollback();
+    }
 
     bool token_set = strlen(config_phoneblock_token()) > 0;
     bool sip_set   = strlen(config_sip_host()) > 0;

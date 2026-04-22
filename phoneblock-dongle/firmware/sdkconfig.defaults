@@ -27,10 +27,24 @@ CONFIG_HTTPD_MAX_URI_LEN=1024
 # then fails with "Failed to create socket" / ESP_ERR_HTTP_CONNECT.
 CONFIG_LWIP_MAX_SOCKETS=16
 
-# Custom partition table: factory + SPIFFS slot for user-uploaded
-# voice announcement. See partitions.csv for the layout.
+# 4 MB of SPI flash: the ESP32-WROOM-32 modules we ship with have
+# 4 MB onboard. The IDF default is 2 MB, which cuts our partition
+# table (two 1280 KB OTA slots + 1408 KB SPIFFS) in half.
+CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
+CONFIG_ESPTOOLPY_FLASHSIZE="4MB"
+
+# Custom partition table: OTA-capable layout (ota_0/ota_1/otadata)
+# plus a SPIFFS slot for the user-uploaded voice announcement.
+# See partitions.csv for the offsets and sizes.
 CONFIG_PARTITION_TABLE_CUSTOM=y
 CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
+
+# OTA rollback: the bootloader marks a freshly flashed image as
+# "pending verify". The app must call
+# esp_ota_mark_app_valid_cancel_rollback() after a successful
+# self-test (WiFi up + PhoneBlock API reachable), otherwise the
+# bootloader reverts to the previous slot on the next reboot.
+CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE=y
 
 # SPIFFS tuning for the announcement slot: the default 256-byte
 # logical-page size is optimised for many tiny files; we have one
