@@ -278,3 +278,7 @@ LAN, hat eine echte DHCP-IP und braucht keine NAT-Akrobatik mehr.
   TLS-Bundle, leere Credentials-Placeholder)
 - `sdkconfig.defaults.local` — lokale Credential- und NAT-Overrides,
   **gitignored**
+- `sdkconfig.defaults.local.handy` / `sdkconfig.defaults.local.fritzbox`
+  — versionierte Templates für die gängigen Testumgebungen. Vor dem
+  ersten Build eine davon nach `sdkconfig.defaults.local` kopieren,
+  SSID + Passwort eintragen, dann `rm sdkconfig && idf.py build`.

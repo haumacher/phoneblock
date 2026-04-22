@@ -1,0 +1,29 @@
+# Local override template — mobile-phone hotspot (2,4 GHz, WPA2).
+#
+# Copy into place before building:
+#
+#   cp sdkconfig.defaults.local.handy sdkconfig.defaults.local
+#   rm sdkconfig && idf.py build
+#
+# sdkconfig.defaults.local is gitignored; the values below are the
+# only ones that should differ between environments.
+
+# Dev instance. Tokens created on pb-test only work there.
+CONFIG_PHONEBLOCK_BASE_URL="https://phoneblock.net/pb-test"
+
+# Real hardware → WiFi instead of the Ethernet/OpenCores default from
+# sdkconfig.defaults.
+CONFIG_EXAMPLE_CONNECT_ETHERNET=n
+CONFIG_EXAMPLE_USE_OPENETH=n
+CONFIG_EXAMPLE_CONNECT_WIFI=y
+CONFIG_EXAMPLE_WIFI_SSID="REPLACE_WITH_HOTSPOT_SSID"
+CONFIG_EXAMPLE_WIFI_PASSWORD="REPLACE_WITH_HOTSPOT_PASSWORD"
+
+# Shorter re-register interval is friendlier when debugging over a
+# mobile hotspot that may drop clients when the phone locks.
+CONFIG_SIP_EXPIRES=300
+
+# Dev-only: internal Fritz!Box callers (**622, *21#, …) are answered
+# as spam so the 200 OK + tone + BYE path is exercised without
+# blacklisting a real number on PhoneBlock.
+CONFIG_SIP_TEST_FORCE_SPAM_STAR_NUMBERS=y

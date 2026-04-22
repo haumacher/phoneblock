@@ -1,0 +1,33 @@
+# Local override template — home Fritz!Box WLAN.
+#
+# Copy into place before building:
+#
+#   cp sdkconfig.defaults.local.fritzbox sdkconfig.defaults.local
+#   rm sdkconfig && idf.py build
+#
+# sdkconfig.defaults.local is gitignored; the values below are the
+# only ones that should differ between environments.
+
+# Dev instance. Switch to
+#   CONFIG_PHONEBLOCK_BASE_URL="https://phoneblock.net/phoneblock"
+# for a production build.
+CONFIG_PHONEBLOCK_BASE_URL="https://phoneblock.net/pb-test"
+
+# Real hardware → WiFi instead of the Ethernet/OpenCores default from
+# sdkconfig.defaults.
+CONFIG_EXAMPLE_CONNECT_ETHERNET=n
+CONFIG_EXAMPLE_USE_OPENETH=n
+CONFIG_EXAMPLE_CONNECT_WIFI=y
+CONFIG_EXAMPLE_WIFI_SSID="REPLACE_WITH_FRITZBOX_SSID"
+CONFIG_EXAMPLE_WIFI_PASSWORD="REPLACE_WITH_FRITZBOX_PASSWORD"
+
+# Re-register every 5 min. The Fritz!Box expires IP-phone bindings at
+# 600 s by default; halving the interval gives us one retry budget
+# before the box drops us.
+CONFIG_SIP_EXPIRES=300
+
+# Dev-only: internal Fritz!Box callers (**622, *21#, …) are answered
+# as spam so the 200 OK + tone + BYE path is exercised without
+# blacklisting a real number on PhoneBlock. Remove once real call
+# handling is being validated.
+CONFIG_SIP_TEST_FORCE_SPAM_STAR_NUMBERS=y
