@@ -25,6 +25,7 @@
 #include "stats.h"
 #include "sync.h"
 #include "web.h"
+#include "wifi.h"
 
 static const char *TAG = "phoneblock";
 
@@ -167,7 +168,14 @@ void app_main(void)
     config_load();
     announcement_init();
 
+    // On real hardware we drive WiFi ourselves so first-boot pairing
+    // via WPS-PBC works without baked credentials. example_connect
+    // is kept for the QEMU/Ethernet path, where WPS does not apply.
+#if CONFIG_EXAMPLE_CONNECT_WIFI
+    ESP_ERROR_CHECK(wifi_connect());
+#else
     ESP_ERROR_CHECK(example_connect());
+#endif
     setup_hostname();
 
     // Web UI comes up unconditionally so the setup wizards are reachable

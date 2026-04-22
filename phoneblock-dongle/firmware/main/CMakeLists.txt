@@ -1,5 +1,5 @@
 idf_component_register(
-    SRCS "main.c" "sip_register.c" "api.c" "sip_parse.c" "audio.c" "rtp.c" "stats.c" "config.c" "web.c" "tr064.c" "tr064_parse.c" "announcement.c" "sync.c" "http_util.c"
+    SRCS "main.c" "sip_register.c" "api.c" "sip_parse.c" "audio.c" "rtp.c" "stats.c" "config.c" "web.c" "tr064.c" "tr064_parse.c" "announcement.c" "sync.c" "http_util.c" "wifi.c"
     INCLUDE_DIRS "."
     EMBED_FILES "audio/announcement.alaw" "web/index.html" "web/ab-logo-bot.svg"
     REQUIRES
@@ -8,6 +8,8 @@ idf_component_register(
         esp-tls
         esp_netif
         esp_event
+        esp_wifi
+        wpa_supplicant
         esp_timer
         esp_app_format
         nvs_flash

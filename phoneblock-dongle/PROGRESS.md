@@ -382,18 +382,24 @@ Hostname-Eintrag voraus.
 
 Umsetzungsschritte:
 
-- [ ] **WPS-PBC für WLAN** via `esp_wifi_wps_enable(WPS_TYPE_PBC)` +
-  `esp_wifi_wps_start()`. Beim ersten Boot ohne NVS-WLAN-Credentials
-  aktivieren; nach erfolgreichem Erhalt in NVS speichern.
-- [ ] **Auffindbarkeit per Name `answerbot`** (bewusst *nicht* `phoneblock`,
-  kollidiert mental mit der Website). Zwei Mechanismen parallel,
-  jeweils ~10 Zeilen:
-  - DHCP-Hostname via `esp_netif_set_hostname(netif, "answerbot")` —
-    Fritz!Box übernimmt den Namen in ihren internen DNS → `http://answerbot/`
-  - mDNS/Bonjour via `mdns_init()` + `mdns_hostname_set("answerbot")` —
-    deckt macOS/iOS/Linux/Windows-10-mit-Bonjour ab
-  - Umsetzung erst mit echter Hardware testen (QEMU-Routing verzerrt
-    DHCP-Hostname-Rückmeldungen)
+- [x] **WPS-PBC für WLAN** — eigenes `wifi.c`/`wifi.h` ersetzt den
+  WiFi-Pfad von `example_connect` (Ethernet/QEMU bleibt bei
+  `example_connect`). `wifi_connect()` probiert der Reihe nach:
+  1. persistente Credentials aus dem WiFi-NVS (von einem früheren
+     WPS-Erfolg oder Baked-Seed),
+  2. kompilierte `CONFIG_EXAMPLE_WIFI_SSID/PASSWORD` als Seed für
+     die Entwicklerumgebung (`sdkconfig.defaults.local.fritzbox`),
+  3. WPS-PBC — `esp_wifi_wps_enable(WPS_TYPE_PBC) +
+     esp_wifi_wps_start(0)`; bei Timeout/Failure endloses Retry,
+     bei Success werden die Credentials automatisch ins WiFi-NVS
+     geschrieben. `WIFI_STORAGE_FLASH` stellt sicher, dass der
+     nächste Boot ohne weitere Aktion durchläuft.
+- [x] **Auffindbarkeit per Name `answerbot`** — `setup_hostname()` in
+  `main.c` setzt parallel `esp_netif_set_hostname(netif, "answerbot")`
+  (Fritz!Box übernimmt das in ihren internen DNS) und
+  `mdns_hostname_set("answerbot")` + `_http._tcp`-Service
+  (macOS/iOS/Linux/Windows-10). Erreichbar als `http://answerbot/` oder
+  `http://answerbot.local/`.
 - [ ] **Fritz!Box-Auto-Discovery** statt Feld „Host" im Formular.
   Neues Modul `discovery.{c,h}`, ~100 Zeilen. Drei-Stufen-Suche:
   1. DNS-Lookup `fritz.box`.
