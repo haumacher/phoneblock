@@ -23,6 +23,7 @@
 #include "config.h"
 #include "sip_register.h"
 #include "stats.h"
+#include "status_led.h"
 #include "sync.h"
 #include "web.h"
 #include "wifi.h"
@@ -167,6 +168,9 @@ void app_main(void)
     stats_setup();
     config_load();
     announcement_init();
+    // Start the LED early so the user sees "CONNECTING" (or
+    // "PAIRING" a few hundred ms later) before WiFi blocks us.
+    status_led_start();
 
     // On real hardware we drive WiFi ourselves so first-boot pairing
     // via WPS-PBC works without baked credentials. example_connect

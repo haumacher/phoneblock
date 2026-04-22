@@ -356,10 +356,19 @@ Hardware-Entscheidungsmatrix [HARDWARE.md](HARDWARE.md), QEMU-Setup
   das Flag inzwischen ebenfalls, ist aber nicht datenschutzoptimal.
 
 ### Status-LED
-- [ ] On-Board-LED als Betriebsanzeige (Blink-Pattern für IDLE /
-  REGISTERED / CHECKING / ANSWERED)
-- [ ] `CONFIG_STATUS_LED_GPIO` (Default 2 für WROOM-32, 10 für EGBO-
-  PICO-D4) + `CONFIG_STATUS_LED_ACTIVE_LOW`
+- [x] On-Board-LED als Betriebsanzeige — `status_led.{c,h}`-Modul
+  mit 50-ms-Tick-FSM, vier Zuständen:
+  - `PAIRING` (100 ms on/off) — WPS aktiv
+  - `CONNECTING` (500 ms on/off) — WiFi sucht / reconnect
+  - `SETUP` (100 ms on, 900 ms off) — Netz da, Config unvollständig
+  - `READY` (dauer-an) — SIP registriert + Token gesetzt
+  State-Probes aus `wifi_is_wps_active()` + `wifi_has_ip()` +
+  `sip_register_is_registered()` + `config_phoneblock_token()`.
+  `CONFIG_STATUS_LED_GPIO` (Default 2 für WROOM-32) und
+  `CONFIG_STATUS_LED_ACTIVE_LOW` (Default n — WROOM ist active-high).
+  GPIO < 0 deaktiviert das Task komplett.
+- [ ] Folgezustände: `ERROR` (Doppel-Blink-Burst, z. B. SIP-401,
+  API unreachable) und `CALL` (Flicker während Anruf-Handling).
 
 ### Provisioning & Deployment
 

@@ -26,6 +26,7 @@ static const char *TAG = "wifi";
 
 static EventGroupHandle_t s_events;
 static bool               s_wps_active;
+static bool               s_has_ip;
 // Guards the time between esp_wifi_disconnect() and the next
 // esp_wifi_wps_start(): during this window the DISCONNECTED event
 // must not trigger a plain esp_wifi_connect(), or the STA races
@@ -81,6 +82,7 @@ static void on_wifi_event(void *arg, esp_event_base_t base, int32_t id, void *da
         case WIFI_EVENT_STA_DISCONNECTED: {
             wifi_event_sta_disconnected_t *d = data;
             ESP_LOGW(TAG, "disconnected (reason %d)", d ? d->reason : -1);
+            s_has_ip = false;
             if (!s_wps_active && !s_wps_restart_pending) {
                 esp_wifi_connect();
             }
@@ -132,8 +134,12 @@ static void on_got_ip(void *arg, esp_event_base_t base, int32_t id, void *data)
 {
     ip_event_got_ip_t *e = data;
     ESP_LOGI(TAG, "got IP " IPSTR, IP2STR(&e->ip_info.ip));
+    s_has_ip = true;
     xEventGroupSetBits(s_events, WIFI_CONNECTED_BIT);
 }
+
+bool wifi_is_wps_active(void) { return s_wps_active || s_wps_restart_pending; }
+bool wifi_has_ip(void)        { return s_has_ip; }
 
 static bool load_persisted_creds(wifi_config_t *out)
 {
