@@ -15,6 +15,7 @@
 #include "esp_ota_ops.h"
 #include "esp_partition.h"
 #include "esp_system.h"       // esp_restart
+#include "esp_wifi.h"         // esp_wifi_restore for factory-reset
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "lwip/sockets.h"     // INET_ADDRSTRLEN
@@ -1197,10 +1198,14 @@ static esp_err_t handle_firmware_check(httpd_req_t *req)
     return ESP_OK;
 }
 
-// POST /api/factory-reset — erases our NVS namespace and reboots.
-// Answer the HTTP request before rebooting so the browser sees the
-// JSON confirmation; the actual esp_restart() runs from a short-
-// lived task so the httpd worker has time to finish sending.
+// POST /api/factory-reset — erases our NVS namespace, the stored
+// WiFi credentials and the uploaded announcement, then reboots.
+// On the next boot wifi_connect sees an empty nvs.net80211 and
+// falls through to WPS-PBC, so the dongle can be re-paired from
+// scratch without a re-flash. Answer the HTTP request before
+// rebooting so the browser sees the JSON confirmation; the actual
+// esp_restart() runs from a short-lived task so the httpd worker
+// has time to finish sending.
 static void factory_reset_task(void *arg)
 {
     (void)arg;
@@ -1212,6 +1217,13 @@ static void factory_reset_task(void *arg)
 static esp_err_t handle_factory_reset(httpd_req_t *req)
 {
     esp_err_t err = config_erase();
+    // esp_wifi_restore clears the sta_config stored in nvs.net80211
+    // by WIFI_STORAGE_FLASH. Without this the next boot would still
+    // see the last-paired SSID/passphrase and WPS would never run.
+    esp_err_t wifi_err = esp_wifi_restore();
+    if (wifi_err != ESP_OK) {
+        ESP_LOGW(TAG, "esp_wifi_restore: %s", esp_err_to_name(wifi_err));
+    }
     // Also drop any uploaded announcement, so the factory-reset
     // return-to-defaults promise really includes the audio.
     announcement_reset();
