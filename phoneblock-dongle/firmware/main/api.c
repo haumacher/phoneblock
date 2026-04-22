@@ -45,7 +45,7 @@ verdict_t phoneblock_check(const char *phone_number)
     verdict_t verdict = VERDICT_ERROR;
 
     char url[256];
-    snprintf(url, sizeof(url), "%s/num/%s?format=json",
+    snprintf(url, sizeof(url), "%s/api/num/%s?format=json",
              config_phoneblock_base_url(), phone_number);
 
     char auth_header[128];
@@ -125,7 +125,7 @@ bool phoneblock_rate(const char *phone, const char *rating, const char *comment)
     if (!phone || !*phone || !rating || !*rating) return false;
 
     char url[160];
-    snprintf(url, sizeof(url), "%s/rate", config_phoneblock_base_url());
+    snprintf(url, sizeof(url), "%s/api/rate", config_phoneblock_base_url());
 
     char auth_header[128];
     snprintf(auth_header, sizeof(auth_header), "Bearer %s", config_phoneblock_token());
@@ -176,7 +176,7 @@ bool phoneblock_rate(const char *phone, const char *rating, const char *comment)
 bool phoneblock_selftest(void)
 {
     char url[160];
-    snprintf(url, sizeof(url), "%s/test", config_phoneblock_base_url());
+    snprintf(url, sizeof(url), "%s/api/test", config_phoneblock_base_url());
 
     const char *token = config_phoneblock_token();
     char auth_header[128];

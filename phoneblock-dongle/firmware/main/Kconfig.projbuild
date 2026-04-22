@@ -1,15 +1,16 @@
 menu "PhoneBlock Dongle"
 
     config PHONEBLOCK_BASE_URL
-        string "PhoneBlock API base URL"
-        default "https://phoneblock.net/phoneblock/api"
+        string "PhoneBlock base URL"
+        default "https://phoneblock.net/phoneblock"
         help
-            Base URL for the PhoneBlock REST API. Endpoints are appended
-            as /num/{phone}, /rate, etc.
+            Root URL of the PhoneBlock web deployment. The firmware
+            appends /api/num/{phone}, /api/rate, /api/test etc. for
+            REST calls, and /mobile/login for the OAuth token flow.
 
-            Two endpoints exist:
-              * https://phoneblock.net/phoneblock/api  — production
-              * https://phoneblock.net/pb-test/api     — test instance
+            Two deployments exist:
+              * https://phoneblock.net/phoneblock — production
+              * https://phoneblock.net/pb-test    — test instance
 
             A token is bound to exactly one instance. Tokens generated on
             the test instance only work there, and vice versa. The token

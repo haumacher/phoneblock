@@ -621,20 +621,11 @@ static esp_err_t handle_register_start(httpd_req_t *req)
     // /mobile/login endpoint. `appId=PhoneBlockDongle` switches the
     // /create-token servlet into the dynamic-callback branch, where it
     // echoes our CSRF state back and redirects to our callback URL.
-    // Web context path is at the site root for *.phoneblock.net/pb or
-    // the main deployment; config_phoneblock_base_url() points at the
-    // /api slice, so strip that suffix.
-    char base_site[128];
-    strncpy(base_site, config_phoneblock_base_url(), sizeof(base_site) - 1);
-    base_site[sizeof(base_site) - 1] = '\0';
-    char *api_slash = strstr(base_site, "/api");
-    if (api_slash) *api_slash = '\0';
-
     char url[512];
     snprintf(url, sizeof(url),
              "%s/mobile/login?appId=PhoneBlockDongle&tokenLabel=%s"
              "&callback=%s&state=%s",
-             base_site, "PhoneBlock-Dongle",
+             config_phoneblock_base_url(), "PhoneBlock-Dongle",
              callback_enc, s_oauth_nonce);
 
     ESP_LOGI(TAG, "register-start → redirect to %s", url);

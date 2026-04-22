@@ -61,6 +61,8 @@ const char *config_fritzbox_app_pass(void);
 bool        config_sync_enabled(void);
 
 // PhoneBlock
+// Site root URL, without "/api" suffix — api.c appends "/api/…",
+// web.c appends "/mobile/…" directly.
 const char *config_phoneblock_base_url(void);
 const char *config_phoneblock_token(void);
 

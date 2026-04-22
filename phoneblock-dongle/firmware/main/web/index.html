@@ -1142,12 +1142,9 @@ async function refreshAll(){
   // Calls
   const tbody = $('callsBody');
   // PhoneBlock's web UI serves per-number detail pages at
-  // <site>/nums/<zeroZero>. The `base_url` returned by /api/status
-  // ends in "/api"; strip it to get the site root. Internal Fritz!Box
-  // codes (starting with "*" or "**") have no public page, so we
-  // leave them as plain text.
-  const siteBase = (s.phoneblock && s.phoneblock.base_url || '')
-    .replace(/\/api\/?$/, '');
+  // <site>/nums/<zeroZero>. Internal Fritz!Box codes (starting with
+  // "*" or "**") have no public page, so we leave them as plain text.
+  const siteBase = s.phoneblock && s.phoneblock.base_url || '';
   const numCell = (num) => {
     if (!num)             return '';
     if (num.startsWith('*')) return esc(num);

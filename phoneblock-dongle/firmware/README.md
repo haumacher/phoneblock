@@ -55,7 +55,9 @@ persistiert. Es gibt keinen Kconfig-Weg mehr, sie zu hinterlegen.
 Dev-relevante Kconfig-Optionen (in `sdkconfig.defaults.local` oder
 `idf.py menuconfig`):
 
-- `CONFIG_PHONEBLOCK_BASE_URL` — Produktions- vs. Testinstanz
+- `CONFIG_PHONEBLOCK_BASE_URL` — Produktions- vs. Testinstanz (Site-
+  Root ohne `/api`-Suffix; die Firmware hängt `/api/num/…`, `/api/rate`,
+  `/mobile/login` usw. selbst an)
 - `CONFIG_SIP_CONTACT_HOST_OVERRIDE` / `CONFIG_SIP_CONTACT_PORT_OVERRIDE`
   — NAT-Overrides für den QEMU-Betrieb
 - `CONFIG_SIP_TEST_FORCE_SPAM_STAR_NUMBERS` — Test-Hook für den
