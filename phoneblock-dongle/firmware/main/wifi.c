@@ -26,6 +26,12 @@ static const char *TAG = "wifi";
 
 static EventGroupHandle_t s_events;
 static bool               s_wps_active;
+// Guards the time between esp_wifi_disconnect() and the next
+// esp_wifi_wps_start(): during this window the DISCONNECTED event
+// must not trigger a plain esp_wifi_connect(), or the STA races
+// with the about-to-fire WPS restart and the driver logs
+// "STA is connecting, scan are not allowed!".
+static bool               s_wps_restart_pending;
 
 static void start_wps(void)
 {
@@ -48,13 +54,18 @@ static void wps_restart_task(void *arg)
     esp_wifi_disconnect();
     vTaskDelay(pdMS_TO_TICKS(500));
     esp_wifi_wps_disable();
+    s_wps_restart_pending = false;
     start_wps();
     vTaskDelete(NULL);
 }
 
 static void schedule_wps_restart(void)
 {
+    // Stay in "WPS-owned" state until the restart task has actually
+    // fired start_wps(); otherwise the DISCONNECTED event from
+    // esp_wifi_disconnect() races with esp_wifi_wps_start().
     s_wps_active = false;
+    s_wps_restart_pending = true;
     xTaskCreate(wps_restart_task, "wps_restart", 3072, NULL, 3, NULL);
 }
 
@@ -62,7 +73,7 @@ static void on_wifi_event(void *arg, esp_event_base_t base, int32_t id, void *da
 {
     switch (id) {
         case WIFI_EVENT_STA_START:
-            if (!s_wps_active) {
+            if (!s_wps_active && !s_wps_restart_pending) {
                 esp_wifi_connect();
             }
             break;
@@ -70,7 +81,7 @@ static void on_wifi_event(void *arg, esp_event_base_t base, int32_t id, void *da
         case WIFI_EVENT_STA_DISCONNECTED: {
             wifi_event_sta_disconnected_t *d = data;
             ESP_LOGW(TAG, "disconnected (reason %d)", d ? d->reason : -1);
-            if (!s_wps_active) {
+            if (!s_wps_active && !s_wps_restart_pending) {
                 esp_wifi_connect();
             }
             break;

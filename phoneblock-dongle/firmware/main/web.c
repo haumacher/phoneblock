@@ -39,6 +39,23 @@ static httpd_handle_t s_server = NULL;
 // matches the "user sets up the dongle once" UX.
 static char s_oauth_nonce[33] = "";
 
+// Per-boot confirmation nonce for /api/factory-reset. Generated once
+// at web_start and exposed through /api/status. Without this defense
+// Firefox silently re-submits a queued factory-reset POST (body
+// "confirm=yes" and all) as soon as the dongle is reachable again
+// after reboot — so pressing the red button once and then rebooting
+// the device (for any reason) effectively rearms another reset.
+static char s_reset_nonce[17] = "";
+
+static void generate_reset_nonce(void)
+{
+    static const char hex[] = "0123456789abcdef";
+    for (int i = 0; i < 16; i++) {
+        s_reset_nonce[i] = hex[esp_random() & 0xf];
+    }
+    s_reset_nonce[16] = '\0';
+}
+
 // In-flight Fritz!Box 2FA state: when the initial TR-064 SetClient4 call
 // fails with errorCode 866 we stash enough context here to complete the
 // provisioning once the user has pressed a button / entered a DTMF code.
@@ -142,6 +159,7 @@ static esp_err_t handle_status(httpd_req_t *req)
     cJSON_AddStringToObject(root, "project_name",       app ? app->project_name : "");
     cJSON_AddNumberToObject(root, "uptime_s",         (double)uptime_s);
     cJSON_AddStringToObject(root, "ip_address",       ip);
+    cJSON_AddStringToObject(root, "reset_nonce",      s_reset_nonce);
 
     cJSON *sip = cJSON_AddObjectToObject(root, "sip");
     cJSON_AddBoolToObject  (sip,  "registered",        c.sip_registered);
@@ -1202,44 +1220,100 @@ static esp_err_t handle_firmware_check(httpd_req_t *req)
 // WiFi credentials and the uploaded announcement, then reboots.
 // On the next boot wifi_connect sees an empty nvs.net80211 and
 // falls through to WPS-PBC, so the dongle can be re-paired from
-// scratch without a re-flash. Answer the HTTP request before
-// rebooting so the browser sees the JSON confirmation; the actual
-// esp_restart() runs from a short-lived task so the httpd worker
-// has time to finish sending.
+// scratch without a re-flash.
+//
+// The destructive work happens on a background task after a grace
+// period so the HTTP response has time to reach the browser before
+// esp_wifi_restore() tears down the TCP socket. Previously all of
+// config_erase / esp_wifi_restore / announcement_reset ran in the
+// URI handler and produced "httpd_sock_err: error in send : 113"
+// because WiFi was already down by the time send_json() returned.
 static void factory_reset_task(void *arg)
 {
     (void)arg;
-    vTaskDelay(pdMS_TO_TICKS(300));
+    // Let the HTTP response drain and the client close its socket.
+    vTaskDelay(pdMS_TO_TICKS(1000));
+
+    esp_err_t err = config_erase();
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "config_erase failed: %s", esp_err_to_name(err));
+    }
+    esp_err_t wifi_err = esp_wifi_restore();
+    if (wifi_err != ESP_OK) {
+        ESP_LOGW(TAG, "esp_wifi_restore: %s", esp_err_to_name(wifi_err));
+    }
+    announcement_reset();
+
+    vTaskDelay(pdMS_TO_TICKS(200));
     ESP_LOGW(TAG, "factory-reset: restarting now");
     esp_restart();
 }
 
 static esp_err_t handle_factory_reset(httpd_req_t *req)
 {
-    esp_err_t err = config_erase();
-    // esp_wifi_restore clears the sta_config stored in nvs.net80211
-    // by WIFI_STORAGE_FLASH. Without this the next boot would still
-    // see the last-paired SSID/passphrase and WPS would never run.
-    esp_err_t wifi_err = esp_wifi_restore();
-    if (wifi_err != ESP_OK) {
-        ESP_LOGW(TAG, "esp_wifi_restore: %s", esp_err_to_name(wifi_err));
+    // Users have reported surprise factory resets without pressing the
+    // red button. Log the caller so a recurrence is diagnosable — the
+    // UI is behind a confirm() dialog, so any call reaching us is
+    // either a deliberate click or an unexpected client (stale tab,
+    // extension, scanner, ...).
+    char peer_ip[INET6_ADDRSTRLEN] = "?";
+    int fd = httpd_req_to_sockfd(req);
+    if (fd >= 0) {
+        struct sockaddr_in6 sa;
+        socklen_t sa_len = sizeof(sa);
+        if (getpeername(fd, (struct sockaddr *)&sa, &sa_len) == 0) {
+            if (sa.sin6_family == AF_INET6) {
+                inet_ntop(AF_INET6, &sa.sin6_addr, peer_ip, sizeof(peer_ip));
+            }
+        }
     }
-    // Also drop any uploaded announcement, so the factory-reset
-    // return-to-defaults promise really includes the audio.
-    announcement_reset();
-    cJSON *root = cJSON_CreateObject();
-    if (err != ESP_OK) {
-        cJSON_AddBoolToObject  (root, "ok", false);
-        cJSON_AddStringToObject(root, "message",
-            "NVS erase failed.");
-        send_json(req, root);
+    char ua[128] = "";
+    if (httpd_req_get_hdr_value_str(req, "User-Agent", ua, sizeof(ua)) != ESP_OK) {
+        ua[0] = '\0';
+    }
+    ESP_LOGW(TAG, "factory-reset request from %s, UA=\"%s\"", peer_ip, ua);
+
+    // Require an explicit confirmation token in the POST body. A naked
+    // fetch('/api/factory-reset', {method:'POST'}) — stale tab, browser
+    // replay, scanner — will have no body and is rejected. The UI
+    // sends the token only after the user confirmed the dialog.
+    char body[32] = "";
+    int want = req->content_len;
+    if (want > 0 && want < (int)sizeof(body)) {
+        int have = 0;
+        while (have < want) {
+            int r = httpd_req_recv(req, body + have, want - have);
+            if (r <= 0) break;
+            have += r;
+        }
+        body[have] = '\0';
+    }
+    char expected[48];
+    snprintf(expected, sizeof(expected), "confirm=%s", s_reset_nonce);
+    if (s_reset_nonce[0] == '\0' || strcmp(body, expected) != 0) {
+        ESP_LOGW(TAG, "factory-reset: stale/missing nonce — rejected");
+        httpd_resp_set_status(req, "400 Bad Request");
+        cJSON *err_root = cJSON_CreateObject();
+        cJSON_AddBoolToObject  (err_root, "ok", false);
+        cJSON_AddStringToObject(err_root, "message",
+            "Stale or missing confirmation nonce.");
+        send_json(req, err_root);
         return ESP_OK;
     }
+
+    // Acknowledge first. The actual erase + reboot runs on the
+    // background task after a 1 s grace period so the TCP socket
+    // can flush cleanly before esp_wifi_restore tears it down.
+    cJSON *root = cJSON_CreateObject();
     cJSON_AddBoolToObject  (root, "ok", true);
     cJSON_AddStringToObject(root, "message",
-        "Configuration erased — rebooting.");
+        "Configuration will be erased — rebooting.");
     send_json(req, root);
-    xTaskCreate(factory_reset_task, "factory_reset", 2048, NULL, 5, NULL);
+    // Make sure the next firefox replay after reboot carries a stale
+    // nonce: invalidating the server-side value now is belt-and-braces
+    // on top of the fresh nonce that will be generated next boot.
+    s_reset_nonce[0] = '\0';
+    xTaskCreate(factory_reset_task, "factory_reset", 3072, NULL, 5, NULL);
     return ESP_OK;
 }
 
@@ -1324,6 +1398,7 @@ void web_start(void)
         ESP_LOGW(TAG, "web_start() called twice — ignoring");
         return;
     }
+    generate_reset_nonce();
     httpd_config_t cfg = HTTPD_DEFAULT_CONFIG();
     cfg.server_port = 80;
     cfg.max_uri_handlers = sizeof(URIS) / sizeof(URIS[0]) + 2;

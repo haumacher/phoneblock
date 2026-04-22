@@ -997,11 +997,17 @@ function renderHero(sipDone, tokenDone){
     + '</section>';
 }
 
+// Latest per-boot factory-reset nonce, updated every status poll.
+// Used in the /api/factory-reset POST body so that a POST replayed
+// by the browser across a reboot carries a now-stale value.
+let resetNonce = '';
+
 async function refreshAll(){
   const [s, calls, errs] = await Promise.all([
     fetchJson('/api/status'), fetchJson('/api/calls'), fetchJson('/api/errors'),
   ]);
   if (!s) return;
+  resetNonce = s.reset_nonce || '';
   const sipConfigured = !!(s.sip.host && s.sip.user);
   const tokenSet      = !!s.phoneblock.token_set;
   const heroSlot      = $('heroSlot');
@@ -1275,7 +1281,18 @@ async function refreshAll(){
       resetBtn.disabled = true;
       resetMsg.textContent = '';
       try {
-        const r = await fetch('/api/factory-reset', { method: 'POST' });
+        if (!resetNonce){
+          resetMsg.textContent = t('status.reset.error',
+            {msg: 'No nonce'});
+          resetMsg.style.color = '#d93025';
+          resetBtn.disabled = false;
+          return;
+        }
+        const r = await fetch('/api/factory-reset', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: 'confirm=' + encodeURIComponent(resetNonce),
+        });
         const d = await r.json().catch(() => ({}));
         if (r.ok && d.ok){
           resetMsg.textContent = t('status.reset.running');
