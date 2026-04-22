@@ -451,10 +451,9 @@ Umsetzungsschritte:
   TLS-Fehler, Zertifikatsrotation.
 
 ### Hardware-Reife
-- [ ] 10er-Pack WROOM-32 bestellen (liegt noch, siehe
-  [HARDWARE.md](HARDWARE.md))
-- [ ] USB-A-Stecker-auf-USB-C-Adapter dazu
-- [ ] Test auf echter Hardware: WLAN statt QEMU-Ethernet, NAT-Overrides
+- [x] 10er-Pack WROOM-32 bestellen (siehe [HARDWARE.md](HARDWARE.md))
+- [x] USB-A-Stecker-auf-USB-C-Adapter dazu
+- [x] Test auf echter Hardware: WLAN statt QEMU-Ethernet, NAT-Overrides
   leeren, gegen Produktions-Fritz!Box
 - [ ] Stromaufnahme + Wärmeentwicklung im Dauerbetrieb messen
 - [ ] Gehäuse/Formfaktor (Schrumpfschlauch für den Start, später 3D-Druck
