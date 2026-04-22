@@ -23,6 +23,44 @@ cd esp-idf
 ./install.sh esp32
 ```
 
+### Stolperstein: BRLTTY kapert den CH340-USB-Seriell-Chip
+
+Ubuntu/Debian installieren standardmäßig **BRLTTY** (Braille-Display-
+Treiber). BRLTTY bringt eine udev-Regel mit, die den CH340/CH341-Chip
+(`VID:PID 1a86:7523`) fälschlicherweise als Braille-Zeile beansprucht
+und den Port sofort nach dem Kernel-Attach wieder wegreißt. Im `dmesg`
+sieht das so aus:
+
+```
+ch341 1-9:1.0: ch341-uart converter detected
+usb 1-9: ch341-uart converter now attached to ttyUSB0
+...
+usb 1-9: usbfs: interface 0 claimed by ch341 while 'brltty' sets config #1
+ch341-uart ttyUSB0: ch341-uart converter now disconnected from ttyUSB0
+```
+
+Ergebnis: `/dev/ttyUSB0` verschwindet nach einer Sekunde wieder, `idf.py
+flash` scheitert. Fix:
+
+```bash
+sudo apt remove --purge brltty
+```
+
+Danach Board einmal abziehen und wieder einstecken. `/dev/ttyUSB0`
+bleibt dann stabil erhalten. Wer BRLTTY behalten muss, kann stattdessen
+die Zeile mit `1a86 7523` aus `/usr/lib/udev/rules.d/85-brltty.rules`
+entfernen und `sudo udevadm control --reload-rules` ausführen — das
+überlebt allerdings keine `apt`-Upgrades.
+
+Zusätzlich den Benutzer in die `dialout`-Gruppe aufnehmen, damit
+`idf.py flash` ohne `sudo` auskommt:
+
+```bash
+sudo usermod -aG dialout $USER
+```
+
+(Danach einmal aus- und wieder einloggen.)
+
 Für bequemes Aktivieren der Umgebung einen Alias in `~/.bashrc` eintragen:
 
 ```bash

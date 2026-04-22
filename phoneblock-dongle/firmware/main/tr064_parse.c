@@ -1,7 +1,10 @@
 // memmem() is a GNU extension; glibc needs _GNU_SOURCE to expose it
 // on the host-test build. ESP-IDF's newlib-based libc declares it
-// unconditionally, so the guard is benign there.
+// unconditionally and the IDF build system sets _GNU_SOURCE on the
+// command line, so guard against redefinition warnings there.
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 
 #include "tr064_parse.h"
 
