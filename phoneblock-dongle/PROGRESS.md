@@ -342,6 +342,18 @@ Hardware-Entscheidungsmatrix [HARDWARE.md](HARDWARE.md), QEMU-Setup
   `CreateAuthTokenServlet`-Erweiterung ist committed, muss aber
   auf `phoneblock.net` deployed werden, damit neue Tokens auch
   produktiv funktionieren.
+- [ ] **Täglicher PhoneBlock-Token-Health-Check** — aktuell wird das
+  Token nur einmal beim Boot (und direkt nach OAuth) via
+  `phoneblock_selftest` gegen `/api/test` geprüft. Löscht der Nutzer
+  das Token serverseitig im PhoneBlock-Account, bleibt der Dongle
+  still kaputt: eingehende Calls werden nicht mehr korrekt klassi-
+  fiziert, aber der Status zeigt weiterhin „READY". Task alle 24 h
+  (mit zufälligem Offset pro Device, damit die CDN-Hits nicht
+  synchron einlaufen), `stats_record_error` bei 401/403, plus einen
+  neuen Status-Bit („token_invalid") in `/api/status`, damit die
+  LED-FSM das als ERROR-Pattern rendert (siehe Status-LED-Folge-
+  punkt unten). Idealerweise die gleiche Task-Infrastruktur wie
+  `sync_start` (Scheduler + Wake-Callback).
 - [ ] **Privacy-Upgrade: API-Query auf SHA1-Hash umstellen** —
   aktuell sendet `phoneblock_check` die Klartext-Rufnummer an
   `GET /api/num/{phone}?format=json`. Die Mobile-App und der
@@ -368,7 +380,9 @@ Hardware-Entscheidungsmatrix [HARDWARE.md](HARDWARE.md), QEMU-Setup
   `CONFIG_STATUS_LED_ACTIVE_LOW` (Default n — WROOM ist active-high).
   GPIO < 0 deaktiviert das Task komplett.
 - [ ] Folgezustände: `ERROR` (Doppel-Blink-Burst, z. B. SIP-401,
-  API unreachable) und `CALL` (Flicker während Anruf-Handling).
+  API unreachable, **Token serverseitig gelöscht/invalide** — siehe
+  „Täglicher PhoneBlock-Token-Health-Check" oben) und `CALL`
+  (Flicker während Anruf-Handling).
 
 ### Provisioning & Deployment
 
