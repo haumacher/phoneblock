@@ -7,3 +7,4 @@ sdkconfig.defaults.local
 sdkconfig.defaults.local.*
 *.bin
 !sdkconfig.defaults
+!sdkconfig.defaults.local.template

@@ -1,0 +1,29 @@
+# Template for sdkconfig.defaults.local. Copy, fill in, rebuild:
+#
+#   cp sdkconfig.defaults.local.template sdkconfig.defaults.local
+#   $EDITOR sdkconfig.defaults.local
+#   rm sdkconfig && idf.py build
+#
+# Only values that need to differ from sdkconfig.defaults belong here.
+# sdkconfig.defaults.local is gitignored — real credentials stay local.
+
+# Dev backend. Switch to https://phoneblock.net/phoneblock for prod.
+CONFIG_PHONEBLOCK_BASE_URL="https://phoneblock.net/pb-test"
+
+# Real hardware → WiFi (sdkconfig.defaults ships Ethernet/OpenCores
+# for QEMU). Leave commented on QEMU.
+CONFIG_EXAMPLE_CONNECT_ETHERNET=n
+CONFIG_EXAMPLE_USE_OPENETH=n
+CONFIG_EXAMPLE_CONNECT_WIFI=y
+CONFIG_EXAMPLE_WIFI_SSID="YOUR_SSID"
+CONFIG_EXAMPLE_WIFI_PASSWORD="YOUR_PASSWORD"
+
+# Dev-only: answer **/* internal Fritz!Box codes as spam so the
+# 200 OK + tone + BYE path runs without blacklisting a real number.
+CONFIG_SIP_TEST_FORCE_SPAM_STAR_NUMBERS=y
+
+# QEMU only: host-visible address + forwarded port so the Fritz!Box
+# can deliver INVITEs through QEMU's user-mode NAT. Leave commented
+# on real hardware.
+#CONFIG_SIP_CONTACT_HOST_OVERRIDE="192.168.178.22"
+#CONFIG_SIP_CONTACT_PORT_OVERRIDE=5061
