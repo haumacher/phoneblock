@@ -1,9 +1,9 @@
 # Name,     Type, SubType, Offset,    Size
 # OTA-capable layout on 4 MB flash. Two equal app slots (ota_0/ota_1)
-# of 1280 KB each — enough headroom for the current ~1 MB binary plus
-# TLS/SIP/HTTP/OTA code. otadata picks the active slot, esp_https_ota
-# writes to the inactive one. Storage partition keeps the "storage"
-# label so announcement.c continues to mount it unchanged.
+# of 1472 KB each — sized to fit the WiFi-enabled build (~1.3 MB)
+# with ~10 % headroom. Previously 1280 KB which overflowed as soon
+# as the Ethernet default flipped to WiFi. Storage partition keeps
+# the "storage" label so announcement.c continues to mount it.
 #
 # One-way migration: existing dongles running the old factory-only
 # layout must be reflashed over USB once. From there on, OTA updates
@@ -11,6 +11,6 @@
 nvs,        data, nvs,     0x9000,    0x6000
 otadata,    data, ota,     0xf000,    0x2000
 phy_init,   data, phy,     0x11000,   0x1000
-ota_0,      app,  ota_0,   0x20000,   0x140000
-ota_1,      app,  ota_1,   0x160000,  0x140000
-storage,    data, spiffs,  0x2a0000,  0x160000
+ota_0,      app,  ota_0,   0x20000,   0x170000
+ota_1,      app,  ota_1,   0x190000,  0x170000
+storage,    data, spiffs,  0x300000,  0x100000
