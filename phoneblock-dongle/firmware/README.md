@@ -224,6 +224,31 @@ Dann im Browser `http://localhost:8080/` aufrufen. Das Dashboard zeigt:
 
 JSON-Endpunkte für Debug: `/api/status`, `/api/calls`, `/api/errors`.
 
+### QEMU-Limit: Software-Reset crasht im Emulator
+
+Der Xtensa-QEMU räumt den Hardware-Timer-Peripherie-State bei
+`esp_restart()` nicht sauber auf. Ein pending Timer-Interrupt-Flag
+überlebt den Reset und feuert beim nächsten Boot, bevor
+`esp_intr_alloc` seinen Handler registriert hat — Sprung auf NULL,
+Guru Meditation mit `PC=0x00000000` direkt nach `spi_flash: flash
+io: dio`.
+
+Konsequenz für OTA-Tests:
+
+- **Upload-Pfad** (Bytes im Flash) lässt sich in QEMU voll validieren.
+  Ein `diff` gegen `build/flash_image.bin` an den ota_0/ota_1-Offsets
+  bestätigt Byte-Identität nach dem POST auf `/api/firmware`.
+- **Reboot-in-neuen-Slot** lässt sich in QEMU **nicht** Ende-zu-Ende
+  testen — jede `esp_restart()`-Auslösung (OTA-Abschluss,
+  Factory-Reset, Watchdog) trifft denselben Bug. Echte Hardware hat
+  das Problem nicht, weil der ESP32-Reset-Controller die
+  Peripherien korrekt mit-resettet.
+
+Workaround während QEMU-Entwicklung: nach jedem Szenario, das
+`esp_restart()` triggern würde, QEMU komplett beenden (`Ctrl-A X`)
+und per `idf.py qemu …` neu starten. Der Kaltstart umgeht den
+Emulator-Fehler.
+
 ## Flashen auf echte Hardware (später)
 
 Vor dem Flashen auf WiFi umstellen:
