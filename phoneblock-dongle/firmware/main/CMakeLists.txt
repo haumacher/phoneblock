@@ -15,5 +15,6 @@ idf_component_register(
         json
         mdns
         app_update
+        esp_https_ota
         protocol_examples_common
 )

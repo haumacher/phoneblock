@@ -327,10 +327,17 @@ Hardware-Entscheidungsmatrix [HARDWARE.md](HARDWARE.md), QEMU-Setup
 - [ ] **Event-getriebener Reload-Wakeup** (siehe Tech-Debt) —
   reiner Refactor, lässt sich mit den existierenden Host-Tests
   absichern.
-- [ ] **OTA-Update** — eigentlich QEMU-machbar (siehe Notizen zur
-  Partition-Layout-Umstellung auf ota_0/ota_1 + simplem Python-
-  HTTP-Server auf 10.0.2.2). Nicht angefasst, weil wir auf echten
-  Hardware-Builds eh bald auf ota_0/ota_1 umschwenken werden.
+- [x] **OTA-Update** — Partitionslayout auf ota_0/ota_1/otadata
+  umgestellt (1280 KB pro Slot, 4 MB Flash voll genutzt, SPIFFS auf
+  1408 KB vergrößert). Zwei Upload-Pfade im Web-UI:
+  `POST /api/firmware` für lokal hochgeladene .bin-Dateien und
+  `POST /api/firmware/check` für den HTTPS-Pull vom PhoneBlock-CDN
+  (`CONFIG_PHONEBLOCK_OTA_MANIFEST_URL`, Default
+  `https://cdn.phoneblock.net/dongle/latest.json`). In beiden Fällen
+  bootet der neue Slot in PENDING_VERIFY; `app_main` markiert ihn
+  nach erfolgreichem `example_connect` + `web_start` valid, sonst
+  rollt der Bootloader auf die vorige Version zurück. Rollback-
+  Kriterien sind bewusst weich — WLAN up + Webserver reichen.
 - [ ] **OAuth-Endpoint ins nächste Server-Release rollen** —
   `CreateAuthTokenServlet`-Erweiterung ist committed, muss aber
   auf `phoneblock.net` deployed werden, damit neue Tokens auch
@@ -396,9 +403,19 @@ Umsetzungsschritte:
   Wird in `config_load()` aufgerufen, wenn `sip_host` im NVS leer ist.
   Umsetzung erst mit echter Hardware — QEMUs User-mode-Netzwerk
   simuliert keinen sinnvollen Gateway/DNS-Raum.
-- [ ] **OTA-Update** über HTTPS (Partition-Layout-Wechsel auf
-  ota_0/ota_1, `esp_https_ota`, Endpunkt im Web-UI zum Hochladen
-  oder Pull-from-URL).
+- [ ] **Periodischer OTA-Check** (aktuell nur manuell über den
+  „Auf Aktualisierung prüfen"-Button). Timer-Task, der z. B. alle
+  24 h `handle_firmware_check`-Logik ausführt — mit zufälligem
+  Offset pro Device, damit die CDN-Hits nicht synchron einlaufen.
+- [ ] **Signatur-Verifikation im OTA-Pfad** — derzeit verlassen
+  wir uns rein auf TLS zum CDN. Bei CDN-Kompromittierung oder DNS-
+  Hijacking käme eine manipulierte Firmware durch. Lösung: Build-
+  Pipeline signiert die `.bin` mit einem Entwickler-Key, Public-Key
+  als Byte-Array in die Firmware eingebacken, `esp_https_ota` nur
+  nach erfolgreicher Signaturprüfung `esp_ota_set_boot_partition`
+  aufrufen lassen (custom validation hook). Kein Secure Boot V2 —
+  lokaler USB-Flash soll weiterhin ohne Signatur möglich bleiben,
+  damit Community-Forks und Bastler nicht ausgesperrt werden.
 - [ ] **WiFi-Reconnect-Strategie** bei Router-Ausfall (Backoff,
   NVS-gepinnte Zugangsdaten).
 - [ ] **Feldfeste Fehlerbehandlung**: Fritz!Box down, API down,

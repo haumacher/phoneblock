@@ -9,6 +9,9 @@
 #include "esp_app_desc.h"
 #include "esp_netif.h"
 #include "esp_http_server.h"
+#include "esp_crt_bundle.h"
+#include "esp_http_client.h"
+#include "esp_https_ota.h"
 #include "esp_ota_ops.h"
 #include "esp_partition.h"
 #include "esp_system.h"       // esp_restart
@@ -130,9 +133,12 @@ static esp_err_t handle_status(httpd_req_t *req)
     char ip[INET_ADDRSTRLEN] = "";
     local_ip_str(ip, sizeof(ip));
 
+    const esp_partition_t *running = esp_ota_get_running_partition();
+
     cJSON *root = cJSON_CreateObject();
-    cJSON_AddStringToObject(root, "firmware_version", app ? app->version : "");
-    cJSON_AddStringToObject(root, "project_name",     app ? app->project_name : "");
+    cJSON_AddStringToObject(root, "firmware_version",   app ? app->version : "");
+    cJSON_AddStringToObject(root, "firmware_partition", running ? running->label : "");
+    cJSON_AddStringToObject(root, "project_name",       app ? app->project_name : "");
     cJSON_AddNumberToObject(root, "uptime_s",         (double)uptime_s);
     cJSON_AddStringToObject(root, "ip_address",       ip);
 
@@ -1072,6 +1078,125 @@ static esp_err_t handle_firmware_upload(httpd_req_t *req)
     return ESP_OK;
 }
 
+// POST /api/firmware/check — fetch the OTA manifest from the
+// configured CDN URL, compare its "version" field with the running
+// image, and, if newer, pull+flash the binary referenced by the
+// manifest's "url" field. Synchronous: the HTTP response is held
+// until the download completes (or the version is determined to be
+// current). The newly flashed slot comes up in PENDING_VERIFY, same
+// rollback protection as local uploads.
+static esp_err_t fetch_ota_manifest(char *body, size_t cap)
+{
+    esp_http_client_config_t cfg = {
+        .url = CONFIG_PHONEBLOCK_OTA_MANIFEST_URL,
+        .crt_bundle_attach = esp_crt_bundle_attach,
+        .timeout_ms = 10000,
+    };
+    esp_http_client_handle_t client = esp_http_client_init(&cfg);
+    if (!client) return ESP_FAIL;
+    esp_http_client_set_header(client, "Accept", "application/json");
+
+    esp_err_t err = esp_http_client_open(client, 0);
+    if (err != ESP_OK) {
+        esp_http_client_cleanup(client);
+        return err;
+    }
+    int content_len = esp_http_client_fetch_headers(client);
+    int status = esp_http_client_get_status_code(client);
+    if (status != 200) {
+        ESP_LOGE(TAG, "manifest HTTP %d", status);
+        esp_http_client_close(client);
+        esp_http_client_cleanup(client);
+        return ESP_FAIL;
+    }
+    int total = 0;
+    // Chunked responses return -1 from fetch_headers; read until
+    // the server closes in that case.
+    while (total < (int)cap - 1) {
+        int n = esp_http_client_read(client, body + total, cap - 1 - total);
+        if (n <= 0) break;
+        total += n;
+        if (content_len > 0 && total >= content_len) break;
+    }
+    body[total] = '\0';
+    esp_http_client_close(client);
+    esp_http_client_cleanup(client);
+    return total > 0 ? ESP_OK : ESP_FAIL;
+}
+
+static esp_err_t handle_firmware_check(httpd_req_t *req)
+{
+    const esp_app_desc_t *app = esp_app_get_description();
+    const char *current_version = app ? app->version : "";
+
+    char body[1024];
+    if (fetch_ota_manifest(body, sizeof(body)) != ESP_OK) {
+        send_fail(req, "Could not fetch OTA manifest.");
+        return ESP_OK;
+    }
+    ESP_LOGI(TAG, "manifest: %s", body);
+
+    cJSON *root = cJSON_Parse(body);
+    if (!root) {
+        send_fail(req, "Manifest JSON invalid.");
+        return ESP_OK;
+    }
+    const cJSON *j_ver = cJSON_GetObjectItem(root, "version");
+    const cJSON *j_url = cJSON_GetObjectItem(root, "url");
+    if (!cJSON_IsString(j_ver) || !cJSON_IsString(j_url)) {
+        cJSON_Delete(root);
+        send_fail(req, "Manifest missing version/url.");
+        return ESP_OK;
+    }
+    const char *new_version = j_ver->valuestring;
+    const char *new_url     = j_url->valuestring;
+
+    bool newer = (strcmp(new_version, current_version) != 0);
+    if (!newer) {
+        cJSON *ok = cJSON_CreateObject();
+        cJSON_AddBoolToObject  (ok, "ok", true);
+        cJSON_AddBoolToObject  (ok, "available", false);
+        cJSON_AddBoolToObject  (ok, "installed", false);
+        cJSON_AddStringToObject(ok, "current_version", current_version);
+        cJSON_AddStringToObject(ok, "new_version",     new_version);
+        send_json(req, ok);
+        cJSON_Delete(root);
+        return ESP_OK;
+    }
+
+    ESP_LOGI(TAG, "OTA: %s → %s from %s",
+             current_version, new_version, new_url);
+
+    esp_http_client_config_t http_cfg = {
+        .url = new_url,
+        .crt_bundle_attach = esp_crt_bundle_attach,
+        .timeout_ms = 30000,
+        .keep_alive_enable = true,
+    };
+    esp_https_ota_config_t ota_cfg = {
+        .http_config = &http_cfg,
+    };
+    esp_err_t err = esp_https_ota(&ota_cfg);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "esp_https_ota: %s", esp_err_to_name(err));
+        cJSON_Delete(root);
+        send_fail(req, esp_err_to_name(err));
+        return ESP_OK;
+    }
+
+    cJSON *ok = cJSON_CreateObject();
+    cJSON_AddBoolToObject  (ok, "ok", true);
+    cJSON_AddBoolToObject  (ok, "available", true);
+    cJSON_AddBoolToObject  (ok, "installed", true);
+    cJSON_AddStringToObject(ok, "current_version", current_version);
+    cJSON_AddStringToObject(ok, "new_version",     new_version);
+    send_json(req, ok);
+    cJSON_Delete(root);
+
+    xTaskCreate(firmware_reboot_task, "fw_reboot", 2048, NULL, 5, NULL);
+    return ESP_OK;
+}
+
 // POST /api/factory-reset — erases our NVS namespace and reboots.
 // Answer the HTTP request before rebooting so the browser sees the
 // JSON confirmation; the actual esp_restart() runs from a short-
@@ -1168,6 +1293,7 @@ static const httpd_uri_t URIS[] = {
     { .uri = "/api/errors/clear",    .method = HTTP_POST, .handler = handle_errors_clear,   .user_ctx = NULL },
     { .uri = "/api/factory-reset",   .method = HTTP_POST, .handler = handle_factory_reset,  .user_ctx = NULL },
     { .uri = "/api/firmware",        .method = HTTP_POST, .handler = handle_firmware_upload, .user_ctx = NULL },
+    { .uri = "/api/firmware/check",  .method = HTTP_POST, .handler = handle_firmware_check,  .user_ctx = NULL },
     { .uri = "/api/announcement",    .method = HTTP_GET,  .handler = handle_announcement_get,   .user_ctx = NULL },
     { .uri = "/api/announcement",    .method = HTTP_POST, .handler = handle_announcement_post,  .user_ctx = NULL },
     { .uri = "/api/announcement/reset", .method = HTTP_POST, .handler = handle_announcement_reset, .user_ctx = NULL },

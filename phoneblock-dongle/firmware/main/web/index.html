@@ -143,6 +143,21 @@ const I18N = {
     'status.reset.confirm': 'Alle Dongle-Einstellungen wirklich löschen und neu starten?',
     'status.reset.running': 'Wird zurückgesetzt — der Dongle startet gleich neu.',
     'status.reset.error': 'Zurücksetzen fehlgeschlagen: {msg}',
+    'status.fw.title': 'Firmware aktualisieren',
+    'status.fw.intro': 'Neue Firmware-Datei hochladen oder direkt gegen die PhoneBlock-CDN prüfen. In beiden Fällen landet die neue Version im inaktiven Flash-Slot; nach dem Neustart bootet der Dongle die neue Version und rollt bei Fehlern automatisch zurück.',
+    'status.fw.current': 'Aktive Partition: {partition} · Version {version}',
+    'status.fw.pick': 'Firmware wählen (.bin)',
+    'status.fw.submit': 'Hochladen & neu starten',
+    'status.fw.confirm': 'Neue Firmware installieren und Dongle neu starten?',
+    'status.fw.uploading': 'Übertrage… {pct} %',
+    'status.fw.done': 'Firmware übertragen — Dongle startet neu.',
+    'status.fw.error': 'Fehler: {msg}',
+    'status.fw.check': 'Auf Aktualisierung prüfen',
+    'status.fw.checking': 'Prüfe auf Aktualisierung…',
+    'status.fw.check.none': 'Keine neue Version verfügbar (aktuell {version}).',
+    'status.fw.check.found': 'Neue Version {version} wird installiert…',
+    'status.fw.check.installed': 'Version {version} installiert — Dongle startet neu.',
+    'status.fw.check.error': 'Prüfung fehlgeschlagen: {msg}',
     'status.sync.title': 'Sperrlisten-Sync',
     'status.sync.intro': 'Am Mobilteil gesperrte Nummern („Nummer sperren") werden einmal pro Tag zur PhoneBlock-Datenbank übertragen und danach aus der Fritz!Box entfernt. Der Answerbot fängt die Anrufer dann für alle PhoneBlock-Nutzer ab.',
     'status.sync.unavailable': 'Nicht verfügbar — nur mit Fritz!Box-Einrichtung nutzbar.',
@@ -287,6 +302,21 @@ const I18N = {
     'status.reset.confirm': 'Really erase all dongle settings and reboot?',
     'status.reset.running': 'Resetting — the dongle is rebooting now.',
     'status.reset.error': 'Reset failed: {msg}',
+    'status.fw.title': 'Update firmware',
+    'status.fw.intro': 'Upload a new firmware binary or check the PhoneBlock CDN for updates. Either way, the new version is written to the inactive flash slot; after the reboot the dongle boots it and automatically rolls back on failure.',
+    'status.fw.current': 'Active partition: {partition} · Version {version}',
+    'status.fw.pick': 'Choose firmware (.bin)',
+    'status.fw.submit': 'Upload & reboot',
+    'status.fw.confirm': 'Install the new firmware and reboot the dongle?',
+    'status.fw.uploading': 'Uploading… {pct}%',
+    'status.fw.done': 'Firmware uploaded — dongle is rebooting.',
+    'status.fw.error': 'Error: {msg}',
+    'status.fw.check': 'Check for update',
+    'status.fw.checking': 'Checking for update…',
+    'status.fw.check.none': 'No newer version available (currently {version}).',
+    'status.fw.check.found': 'New version {version} is being installed…',
+    'status.fw.check.installed': 'Version {version} installed — dongle is rebooting.',
+    'status.fw.check.error': 'Check failed: {msg}',
     'status.sync.title': 'Blocklist sync',
     'status.sync.intro': 'Numbers blocked at the handset ("Block number") are uploaded to the PhoneBlock database once a day and then removed from the Fritz!Box. The answer bot afterwards catches those callers for every PhoneBlock user.',
     'status.sync.unavailable': 'Unavailable — requires a Fritz!Box setup.',
@@ -431,6 +461,21 @@ const I18N = {
     'status.reset.confirm': 'Effacer vraiment tous les réglages du dongle et redémarrer ?',
     'status.reset.running': 'Réinitialisation — le dongle redémarre.',
     'status.reset.error': 'Échec de la réinitialisation : {msg}',
+    'status.fw.title': 'Mettre à jour le firmware',
+    'status.fw.intro': 'Téléverser un nouveau binaire de firmware ou vérifier directement le CDN PhoneBlock. Dans les deux cas, la nouvelle version est écrite dans le slot flash inactif ; après le redémarrage, le dongle démarre la nouvelle version et revient automatiquement en arrière en cas d’échec.',
+    'status.fw.current': 'Partition active : {partition} · Version {version}',
+    'status.fw.pick': 'Choisir le firmware (.bin)',
+    'status.fw.submit': 'Téléverser et redémarrer',
+    'status.fw.confirm': 'Installer le nouveau firmware et redémarrer le dongle ?',
+    'status.fw.uploading': 'Téléversement… {pct} %',
+    'status.fw.done': 'Firmware téléversé — le dongle redémarre.',
+    'status.fw.error': 'Erreur : {msg}',
+    'status.fw.check': 'Vérifier les mises à jour',
+    'status.fw.checking': 'Vérification en cours…',
+    'status.fw.check.none': 'Aucune nouvelle version disponible (actuellement {version}).',
+    'status.fw.check.found': 'Nouvelle version {version} en cours d’installation…',
+    'status.fw.check.installed': 'Version {version} installée — le dongle redémarre.',
+    'status.fw.check.error': 'Échec de la vérification : {msg}',
     'status.sync.title': 'Synchro liste de blocage',
     'status.sync.intro': 'Les numéros bloqués depuis le combiné (« Bloquer le numéro ») sont envoyés à la base PhoneBlock une fois par jour, puis retirés de la Fritz!Box. Le bot répondeur intercepte ensuite ces appelants pour tous les utilisateurs PhoneBlock.',
     'status.sync.unavailable': 'Indisponible — nécessite une configuration Fritz!Box.',
@@ -575,6 +620,21 @@ const I18N = {
     'status.reset.confirm': '¿Borrar de verdad todos los ajustes del dongle y reiniciar?',
     'status.reset.running': 'Restableciendo — el dongle se reinicia.',
     'status.reset.error': 'El restablecimiento falló: {msg}',
+    'status.fw.title': 'Actualizar firmware',
+    'status.fw.intro': 'Sube un nuevo binario de firmware o comprueba directamente el CDN de PhoneBlock. En ambos casos la nueva versión se escribe en el slot de flash inactivo; tras el reinicio el dongle arranca la nueva versión y revierte automáticamente si falla.',
+    'status.fw.current': 'Partición activa: {partition} · Versión {version}',
+    'status.fw.pick': 'Elegir firmware (.bin)',
+    'status.fw.submit': 'Subir y reiniciar',
+    'status.fw.confirm': '¿Instalar el nuevo firmware y reiniciar el dongle?',
+    'status.fw.uploading': 'Subiendo… {pct} %',
+    'status.fw.done': 'Firmware subido — el dongle se reinicia.',
+    'status.fw.error': 'Error: {msg}',
+    'status.fw.check': 'Buscar actualizaciones',
+    'status.fw.checking': 'Buscando actualizaciones…',
+    'status.fw.check.none': 'No hay versión más reciente (actualmente {version}).',
+    'status.fw.check.found': 'Instalando la nueva versión {version}…',
+    'status.fw.check.installed': 'Versión {version} instalada — el dongle se reinicia.',
+    'status.fw.check.error': 'La comprobación falló: {msg}',
     'status.sync.title': 'Sincronización de lista de bloqueo',
     'status.sync.intro': 'Los números bloqueados desde el terminal («Bloquear número») se envían a la base de PhoneBlock una vez al día y luego se eliminan de la Fritz!Box. El bot luego intercepta esas llamadas para todos los usuarios de PhoneBlock.',
     'status.sync.unavailable': 'No disponible — requiere configuración Fritz!Box.',
@@ -885,6 +945,23 @@ function renderStatus(){
     +   esc(t('status.sync.run_now')) + '</button>'
     + '  <span id="syncMsg" class="muted" style="margin-left:.6rem"></span>'
     + '</p></section>'
+    + '<section id="fwSection" style="display:none">'
+    + '<h2>' + esc(t('status.fw.title')) + '</h2>'
+    + '<p class="muted">' + esc(t('status.fw.intro')) + '</p>'
+    + '<p id="fwCurrent" class="muted" style="margin-top:.3rem"></p>'
+    + '<p style="margin-top:.6rem">'
+    + '  <input type="file" id="fwFile" accept=".bin,application/octet-stream" style="display:none">'
+    + '  <button id="fwPick" class="btn-ghost" style="padding:.3rem .7rem;font-size:.85rem">'
+    +   esc(t('status.fw.pick')) + '</button>'
+    + '  <span id="fwFileName" class="muted" style="margin-left:.6rem"></span>'
+    + '</p>'
+    + '<p style="margin-top:.4rem">'
+    + '  <button id="fwUpload" class="btn-primary" style="padding:.4rem .9rem;font-size:.9rem" disabled>'
+    +   esc(t('status.fw.submit')) + '</button>'
+    + '  <button id="fwCheck" class="btn-ghost" style="padding:.3rem .7rem;font-size:.85rem;margin-left:.4rem">'
+    +   esc(t('status.fw.check')) + '</button>'
+    + '  <span id="fwMsg" class="muted" style="margin-left:.6rem"></span>'
+    + '</p></section>'
     + '<section id="resetSection" style="display:none">'
     + '<h2>' + esc(t('status.reset.title')) + '</h2>'
     + '<p class="muted">' + esc(t('status.reset.intro')) + '</p>'
@@ -934,6 +1011,7 @@ async function refreshAll(){
   const resetSec      = $('resetSection');
   const annSec        = $('annSection');
   const syncSec       = $('syncSection');
+  const fwSec         = $('fwSection');
   if (!sipConfigured || !tokenSet){
     // Setup incomplete — show the hero with per-step progress until
     // both SIP and the PhoneBlock token are configured. The status
@@ -946,6 +1024,7 @@ async function refreshAll(){
     annSec.style.display = 'none';
     syncSec.style.display = 'none';
     resetSec.style.display = 'none';
+    fwSec.style.display = 'none';
     return;
   }
   heroSlot.innerHTML = '';
@@ -955,6 +1034,7 @@ async function refreshAll(){
   annSec.style.display = '';
   syncSec.style.display = '';
   resetSec.style.display = '';
+  fwSec.style.display = '';
 
   // Blocklist sync section: show either "unavailable" (no FB app
   // creds in NVS), "never run", "running", "last ok", "last partial"
@@ -1213,6 +1293,113 @@ async function refreshAll(){
         resetMsg.textContent = t('status.reset.error', {msg: 'Network error'});
         resetMsg.style.color = '#d93025';
         resetBtn.disabled = false;
+      }
+    };
+  }
+
+  // Firmware update: file picker + upload, or check PhoneBlock CDN
+  // for a newer version.
+  const fwCurrent  = $('fwCurrent');
+  if (fwCurrent){
+    fwCurrent.textContent = t('status.fw.current', {
+      partition: s.firmware_partition || '–',
+      version:   s.firmware_version   || '–',
+    });
+  }
+  const fwPick     = $('fwPick');
+  const fwFile     = $('fwFile');
+  const fwFileName = $('fwFileName');
+  const fwUpload   = $('fwUpload');
+  const fwCheck    = $('fwCheck');
+  const fwMsg      = $('fwMsg');
+  if (fwPick && !fwPick.onclick){
+    fwPick.onclick = () => fwFile.click();
+    fwFile.onchange = () => {
+      const f = fwFile.files[0];
+      fwFileName.textContent = f ? f.name + ' (' + Math.round(f.size/1024) + ' KB)' : '';
+      fwUpload.disabled = !f;
+      fwMsg.textContent = '';
+    };
+    fwUpload.onclick = () => {
+      const f = fwFile.files[0];
+      if (!f) return;
+      if (!confirm(t('status.fw.confirm'))) return;
+      fwUpload.disabled = true;
+      fwPick.disabled   = true;
+      fwCheck.disabled  = true;
+      // XHR over fetch(): we want upload-progress events, which
+      // the fetch API does not expose.
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/api/firmware', true);
+      xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+      xhr.upload.onprogress = (e) => {
+        if (!e.lengthComputable) return;
+        const pct = Math.round(e.loaded * 100 / e.total);
+        fwMsg.textContent = t('status.fw.uploading', {pct: pct});
+        fwMsg.style.color = '#1a73e8';
+      };
+      xhr.onload = () => {
+        let d = {}; try { d = JSON.parse(xhr.responseText); } catch (_){}
+        if (xhr.status >= 200 && xhr.status < 300 && d.ok){
+          fwMsg.textContent = t('status.fw.done');
+          fwMsg.style.color = '#e8710a';
+          stopPolling();
+        } else {
+          fwMsg.textContent = t('status.fw.error',
+            {msg: d.message || xhr.statusText || 'HTTP ' + xhr.status});
+          fwMsg.style.color = '#d93025';
+          fwUpload.disabled = false;
+          fwPick.disabled   = false;
+          fwCheck.disabled  = false;
+        }
+      };
+      xhr.onerror = () => {
+        fwMsg.textContent = t('status.fw.error', {msg: 'Network error'});
+        fwMsg.style.color = '#d93025';
+        fwUpload.disabled = false;
+        fwPick.disabled   = false;
+        fwCheck.disabled  = false;
+      };
+      xhr.send(f);
+    };
+    fwCheck.onclick = async () => {
+      fwCheck.disabled  = true;
+      fwUpload.disabled = true;
+      fwPick.disabled   = true;
+      fwMsg.textContent = t('status.fw.checking');
+      fwMsg.style.color = '#1a73e8';
+      try {
+        const r = await fetch('/api/firmware/check', {method: 'POST'});
+        const d = await r.json().catch(() => ({}));
+        if (r.ok && d.ok){
+          if (d.installed){
+            fwMsg.textContent = t('status.fw.check.installed',
+              {version: d.new_version});
+            fwMsg.style.color = '#e8710a';
+            stopPolling();
+            return;
+          }
+          if (d.available){
+            fwMsg.textContent = t('status.fw.check.found',
+              {version: d.new_version});
+            fwMsg.style.color = '#1a73e8';
+          } else {
+            fwMsg.textContent = t('status.fw.check.none',
+              {version: d.current_version || s.firmware_version});
+            fwMsg.style.color = '#666';
+          }
+        } else {
+          fwMsg.textContent = t('status.fw.check.error',
+            {msg: d.message || r.statusText});
+          fwMsg.style.color = '#d93025';
+        }
+      } catch (_){
+        fwMsg.textContent = t('status.fw.check.error', {msg: 'Network error'});
+        fwMsg.style.color = '#d93025';
+      } finally {
+        fwCheck.disabled  = false;
+        fwPick.disabled   = false;
+        fwUpload.disabled = !fwFile.files[0];
       }
     };
   }

@@ -16,6 +16,22 @@ menu "PhoneBlock Dongle"
             the test instance only work there, and vice versa. The token
             prefix (pbt_) is the same in both cases.
 
+    config PHONEBLOCK_OTA_MANIFEST_URL
+        string "OTA update manifest URL"
+        default "https://cdn.phoneblock.net/dongle/latest.json"
+        help
+            HTTPS URL the dongle polls for OTA updates. The endpoint
+            must return JSON of the form:
+
+              {"version": "0.3.1",
+               "url": "https://cdn.phoneblock.net/dongle/firmware-0.3.1.bin"}
+
+            When the version differs from the running image,
+            esp_https_ota fetches the binary from the embedded "url"
+            field and flips the boot partition. TLS trust is provided
+            by the bundled Mozilla root CA store (enabled via
+            CONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL).
+
     config SIP_REGISTRAR_PORT
         int "SIP registrar port"
         default 5060
