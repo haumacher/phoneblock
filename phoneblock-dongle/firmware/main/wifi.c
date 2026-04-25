@@ -161,7 +161,20 @@ esp_err_t wifi_connect(void)
 {
     s_events = xEventGroupCreate();
 
-    esp_netif_create_default_wifi_sta();
+    esp_netif_t *sta_netif = esp_netif_create_default_wifi_sta();
+
+    // DHCP option 12 (host-name) is built from the netif's hostname at
+    // the time DHCPDISCOVER/REQUEST is sent. Setting it later (e.g.
+    // after GOT_IP) is too late: the Fritz!Box has already cached the
+    // lease under the lwIP default "espressif" and pins the Heimnetz
+    // name to that first value. Set it before esp_wifi_start() so the
+    // very first DHCP exchange announces "answerbot".
+    if (sta_netif) {
+        esp_err_t err = esp_netif_set_hostname(sta_netif, "answerbot");
+        if (err != ESP_OK) {
+            ESP_LOGW(TAG, "esp_netif_set_hostname: %s", esp_err_to_name(err));
+        }
+    }
 
     wifi_init_config_t init_cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&init_cfg));

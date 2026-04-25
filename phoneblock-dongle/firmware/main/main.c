@@ -87,21 +87,14 @@ static void handle_client(int client_sock)
     send(client_sock, line, strlen(line), 0);
 }
 
-// Announce the dongle on the LAN as "answerbot" — the hostname the
-// PhoneBlock server's OAuth callback validator whitelists, and the one
-// the Fritz!Box displays in Heimnetz → Netzwerk instead of a bare MAC.
+// Announce the dongle on the LAN as "answerbot" via mDNS. The matching
+// DHCP host-name (option 12) is set earlier in wifi_connect(), before
+// the first DHCPREQUEST goes out — otherwise the Fritz!Box pins the
+// Heimnetz name to the lwIP default "espressif".
 // Reachable as http://answerbot/, http://answerbot.local/, or by IP.
-static void setup_hostname(void)
+static void setup_mdns(void)
 {
     static const char *HOSTNAME = "answerbot";
-
-    esp_netif_t *netif = esp_netif_get_default_netif();
-    if (netif) {
-        esp_err_t err = esp_netif_set_hostname(netif, HOSTNAME);
-        if (err != ESP_OK) {
-            ESP_LOGW(TAG, "esp_netif_set_hostname: %s", esp_err_to_name(err));
-        }
-    }
 
     ESP_ERROR_CHECK(mdns_init());
     ESP_ERROR_CHECK(mdns_hostname_set(HOSTNAME));
@@ -180,7 +173,7 @@ void app_main(void)
 #else
     ESP_ERROR_CHECK(example_connect());
 #endif
-    setup_hostname();
+    setup_mdns();
 
     // Web UI comes up unconditionally so the setup wizards are reachable
     // even on a fresh device. SIP registration and the API self-test
