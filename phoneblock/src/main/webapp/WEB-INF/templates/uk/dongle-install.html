@@ -25,7 +25,18 @@
 			<p data-tx="t0005:bb075478"><strong>Цей браузер не може прошивати ключ.</strong> Веб-прошивання працює лише в <strong>Google Chrome</strong> або <strong>Microsoft Edge</strong> на комп'ютері (не на смартфоні). Відкрийте цю сторінку в Chrome або Edge і спробуйте ще раз.</p>
 		</div>
 
-		<h2 data-tx="t0006:1cedb9ee" id="schritt-1">Крок 1 - Замовлення ключа</h2>
+		<h2 data-tx="t0052:93c33292" id="voraussetzungen">Перш ніж почати</h2>
+
+		<p data-tx="t0053:657fcf42">Перевірте, чи виконали ви ці чотири пункти - інакше навіть готовий донгл не принесе вам ніякої користі:</p>
+
+		<ul>
+			<li data-tx="t0054:b4ac4baa"><strong>SIP-реєстратор</strong> - або в маршрутизаторі (наприклад, Fritz!Box), або безпосередньо у провайдера телефонії, якщо це дозволяє використовувати зовнішні SIP-клієнти ("Можлива реєстрація IP-телефону").</li>
+			<li data-tx="t0055:95617e20"><strong>2,4 ГГц WLAN</strong> в межах досяжності порту USB.</li>
+			<li data-tx="t0056:de519524"><strong>5 В USB-живлення</strong> - в ідеалі безпосередньо на роутері, або будь-який USB-блок живлення.</li>
+			<li data-tx="t0057:66935893"><strong>Звільнити <a th:href="@{/login}">акаунт PhoneBlock</a></strong> для токена API.</li>
+		</ul>
+
+		<h2 data-tx="t0058:1cedb9ee" id="schritt-1">Крок 1 - Замовлення ключа</h2>
 
 		<p data-tx="t0007:4a8aea0f">Замовте цю плату ESP32. Вона досить компактна, щоб підключатися безпосередньо до роутера як USB-накопичувач, має відповідний послідовний USB-чіп (CH340), а також донгл PhoneBlock, розроблений і протестований разом з нею.</p>
 
@@ -72,7 +83,7 @@
 
 		<h2 data-tx="t0020:62d0966b" id="schritt-3">Крок 3 - Вставте ключ у комп'ютер</h2>
 
-		<p data-tx="t0021:70a70ae6">Підключіть донгл безпосередньо до вільного USB-порту на вашому комп'ютері. Невеликий світлодіод на платі повинен негайно загорітися або заблимати.</p>
+		<p data-tx="t0021:11c66231">Підключіть донгл безпосередньо до вільного USB-порту на вашому комп'ютері. Невеликий світлодіод на платі повинен негайно загорітися.</p>
 
 		<figure>
 			<div data-tx="t0022:a85e1a1d" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Заміщення: фото "Донгл, вставлений в USB-порт ноутбука"].</div>
@@ -139,9 +150,9 @@
 
 		<p data-tx="t0043:f4d3bf5f">Відкрийте в браузері:</p>
 
-		<p><a class="button is-link is-large" data-tx="t0044:f04a859b" href="http://answerbot.local/">http://answerbot.local/</a></p>
+		<p><a class="button is-link is-large" data-tx="t0044:9be1c030" href="http://answerbot/">http://answerbot/</a></p>
 
-		<p data-tx="t0045:c627eba9">Якщо це посилання не працює (Windows без Bonjour, деякі mesh WLAN), знайдіть у списку пристроїв вашого роутера пристрій з назвою <code>answerbot</code>, запишіть його IP-адресу і викличте його в браузері - наприклад, <code>http://192.168.178.42/</code>.</p>
+		<p data-tx="t0045:de303f98">Якщо це посилання не працює (Windows без Bonjour, деякі mesh WLAN), знайдіть у списку пристроїв вашого роутера пристрій з назвою <code>answerbot</code>, запишіть його IP-адресу і викличте його в браузері - наприклад, <code>http://192.168.178.xxx/</code>.</p>
 
 		<figure>
 			<div data-tx="t0046:8bb491f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Заповнювач: Скріншот веб-інтерфейсу ключа з полями для введення SIP і токена]</div>
@@ -159,7 +170,31 @@
 
 		<p class="has-text-grey" data-tx="t0051:9316079d">Щось не працює, ви використовуєте Firefox/Safari, Linux з особливостями або іншу плату? Детальну інструкцію з усіма параметрами, підводними каменями Linux та інструментарієм ESP-IDF можна знайти в репозиторії: <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</p>
 
-		<p class="has-text-grey" data-tx="t0052:8a689eeb">Вихідний код прошивки: <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank"> phoneblock-dongle на GitHub</a>.</p>
+		<h2 data-tx="t0059:c258f25f" id="tester">Подати звіт про досвід</h2>
+
+		<p data-tx="t0060:493a28c5">Донгл надійно працює вдома на Fritz!Box - але моделі роутерів, провайдерів і типи з'єднань - це строката суміш, і кожна комбінація має свої особливості: різні діалекти SIP, різні правила NAT, різні затримки дзвінків. Щоб я міг розпізнавати закономірності і цілеспрямовано вирішувати проблеми, <strong>структуровані звіти про досвід</strong> на вагу золота - незалежно від того, чи все у вас вийшло, чи щось застрягло.</p>
+
+		<p data-tx="t0061:49f94506">Особливо цікавими є інсталяції, які досі мало висвітлені:</p>
+
+		<ul>
+			<li data-tx="t0062:e1971ce0">З'єднання Telekom з маршрутизатором <strong>Speedport</strong></li>
+			<li data-tx="t0063:61cce24d">Кабельне з'єднання Vodafone/Unitymedia за допомогою коробки провайдера, що входить до комплекту поставки</li>
+			<li data-tx="t0064:ea506b90">1&amp;1, o2, Deutsche Glasfaser та інші провайдери</li>
+			<li data-tx="t0065:e5ffca52">Міжнародні зв'язки (Швейцарія, Австрія, решта Європи)</li>
+		</ul>
+
+		<p data-tx="t0066:3fcb6dd2">Звіти запускаються через GitHub issues - попередньо заповнена форма запитує найважливіші ключові дані (обладнання, роутер, провайдер, версія прошивки, висновки) у структурованому вигляді. Інші тестувальники можуть безпосередньо бачити, які налаштування вже охоплені, а які ні.</p>
+
+		<p>
+			<a class="button is-primary is-medium" href="https://github.com/haumacher/phoneblock/issues/new?template=dongle-test-report.yml" rel="noopener" target="_blank">
+				<span class="icon"><i class="fab fa-github"></i></span>
+				<span data-tx="t0067:92ec79b">Відкритий звіт про досвід</span>
+			</a>
+		</p>
+
+		<hr class="my-5"/>
+
+		<p class="has-text-grey" data-tx="t0068:8a689eeb">Вихідний код прошивки: <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank"> phoneblock-dongle на GitHub</a>.</p>
 	</div>
 </section>
 

@@ -25,7 +25,18 @@
 			<p data-tx="t0005:bb075478"><strong>Denne nettleseren kan ikke flashe donglen.</strong> Webblinking fungerer bare i <strong>Google Chrome</strong> eller <strong>Microsoft Edge</strong> på en datamaskin (ikke på en smarttelefon). Åpne denne siden med Chrome eller Edge og prøv på nytt.</p>
 		</div>
 
-		<h2 data-tx="t0006:1cedb9ee" id="schritt-1">Trinn 1 - Bestill dongle</h2>
+		<h2 data-tx="t0052:93c33292" id="voraussetzungen">Før du setter i gang</h2>
+
+		<p data-tx="t0053:657fcf42">Sjekk kort at du oppfyller disse fire punktene - ellers har du ingen nytte av den ferdige donglen:</p>
+
+		<ul>
+			<li data-tx="t0054:b4ac4baa"><strong>SIP-registrator</strong> - enten i ruteren (f.eks. Fritz!Box) eller direkte hos telefonileverandøren, forutsatt at denne tillater eksterne SIP-klienter ("Registrering av en IP-telefon mulig").</li>
+			<li data-tx="t0055:95617e20"><strong>2,4 GHz WLAN</strong> innenfor rekkevidden til USB-porten.</li>
+			<li data-tx="t0056:de519524"><strong>5 V USB-strømforsyning</strong> - ideelt sett direkte på ruteren, alternativt en hvilken som helst USB-strømforsyningsenhet.</li>
+			<li data-tx="t0057:66935893"><strong>Gratis <a th:href="@{/login}">PhoneBlock-konto</a></strong> for API-tokenet.</li>
+		</ul>
+
+		<h2 data-tx="t0058:1cedb9ee" id="schritt-1">Trinn 1 - Bestill dongle</h2>
 
 		<p data-tx="t0007:4a8aea0f">Bestill dette ESP32-kortet. Det er kompakt nok til å plugges direkte inn i ruteren som en USB-pinne, har den riktige serielle USB-brikken (CH340), og PhoneBlock-dongelen ble utviklet og testet med den.</p>
 
@@ -72,7 +83,7 @@
 
 		<h2 data-tx="t0020:62d0966b" id="schritt-3">Trinn 3 - Sett donglen inn i datamaskinen</h2>
 
-		<p data-tx="t0021:70a70ae6">Koble donglen direkte til en ledig USB-port på datamaskinen. En liten LED-lampe på kortet skal lyse eller blinke umiddelbart.</p>
+		<p data-tx="t0021:11c66231">Koble donglen direkte til en ledig USB-port på datamaskinen. En liten LED-lampe på kortet skal lyse umiddelbart.</p>
 
 		<figure>
 			<div data-tx="t0022:a85e1a1d" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Plassholder: Foto "Dongle satt inn i USB-porten på en bærbar PC"]</div>
@@ -139,9 +150,9 @@
 
 		<p data-tx="t0043:f4d3bf5f">Åpne i nettleseren:</p>
 
-		<p><a class="button is-link is-large" data-tx="t0044:f04a859b" href="http://answerbot.local/">http://answerbot.local/</a></p>
+		<p><a class="button is-link is-large" data-tx="t0044:9be1c030" href="http://answerbot/">http://answerbot/</a></p>
 
-		<p data-tx="t0045:c627eba9">Hvis denne koblingen ikke fungerer (Windows uten Bonjour, noen mesh-WLAN), kan du se etter en enhet med navnet <code>answerbot</code> i enhetslisten til ruteren din, notere IP-adressen og hente den opp i nettleseren - f.eks. <code>http://192.168.178.42/</code>.</p>
+		<p data-tx="t0045:de303f98">Hvis denne koblingen ikke fungerer (Windows uten Bonjour, noen mesh-WLAN), kan du se etter en enhet med navnet <code>answerbot</code> i enhetslisten til ruteren din, notere IP-adressen og hente den opp i nettleseren - f.eks. <code>http://192.168.178.xxx/</code>.</p>
 
 		<figure>
 			<div data-tx="t0046:8bb491f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Plassholder: Skjermbilde av donglens webgrensesnitt med inndatafelt for SIP og token].</div>
@@ -159,7 +170,31 @@
 
 		<p class="has-text-grey" data-tx="t0051:9316079d">Er det noe som ikke fungerer, bruker du Firefox/Safari, Linux med særegenheter eller et annet brett? Detaljerte instruksjoner med alle alternativer, Linux-fallgruver og ESP-IDF-verktøykjeden finner du i repoen: <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</p>
 
-		<p class="has-text-grey" data-tx="t0052:8a689eeb">Kildekoden til fastvaren: <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank"> phoneblock-dongle på GitHub</a>.</p>
+		<h2 data-tx="t0059:c258f25f" id="tester">Bidra med erfaringsrapport</h2>
+
+		<p data-tx="t0060:493a28c5">Her hjemme på en Fritz!Box kjører donglen pålitelig - men rutermodeller, leverandører og tilkoblingstyper er en fargerik blanding, og hver kombinasjon har sine egne særegenheter: ulike SIP-dialekter, ulike NAT-regler, ulike ringetider. For at jeg skal kunne gjenkjenne mønstre og løse problemer på en målrettet måte, er <strong>strukturerte erfaringsrapporter</strong> gull verdt - uavhengig av om alt fungerte for deg eller om det var noe som satte seg fast.</p>
+
+		<p data-tx="t0061:49f94506">Spesielt interessante er oppsett som fortsatt er dårlig dekket:</p>
+
+		<ul>
+			<li data-tx="t0062:e1971ce0">Telekom-tilkobling med <strong>Speedport</strong>-ruter</li>
+			<li data-tx="t0063:61cce24d">Vodafone/Unitymedia-kabeltilkobling med den medfølgende leverandørboksen</li>
+			<li data-tx="t0064:ea506b90">1&amp;1, o2, Deutsche Glasfaser og andre leverandører</li>
+			<li data-tx="t0065:e5ffca52">Internasjonale forbindelser (Sveits, Østerrike, resten av Europa)</li>
+		</ul>
+
+		<p data-tx="t0066:3fcb6dd2">Rapporter kjøres via GitHub-problemer - et forhåndsutfylt skjema ber om de viktigste nøkkeldataene (maskinvare, ruter, leverandør, fastvareversjon, funn) på en strukturert måte. Andre testere kan se direkte hvilke oppsett som allerede er dekket og hvilke som ikke er det.</p>
+
+		<p>
+			<a class="button is-primary is-medium" href="https://github.com/haumacher/phoneblock/issues/new?template=dongle-test-report.yml" rel="noopener" target="_blank">
+				<span class="icon"><i class="fab fa-github"></i></span>
+				<span data-tx="t0067:92ec79b">Åpen erfaringsrapport</span>
+			</a>
+		</p>
+
+		<hr class="my-5"/>
+
+		<p class="has-text-grey" data-tx="t0068:8a689eeb">Kildekoden til fastvaren: <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank"> phoneblock-dongle på GitHub</a>.</p>
 	</div>
 </section>
 

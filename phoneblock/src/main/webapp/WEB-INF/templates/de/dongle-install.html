@@ -36,7 +36,23 @@
 			versuche es erneut.</p>
 		</div>
 
-		<h2 data-tx="t0006:1cedb9ee" id="schritt-1">Schritt 1 — Dongle bestellen</h2>
+		<h2 data-tx="t0052:93c33292" id="voraussetzungen">Bevor du loslegst</h2>
+
+		<p data-tx="t0053:657fcf42">Prüf kurz, dass diese vier Punkte bei dir erfüllt sind — sonst nützt dir auch der fertige
+		Dongle nichts:</p>
+
+		<ul>
+			<li data-tx="t0054:b4ac4baa"><strong>SIP-Registrar</strong> — entweder im Router (z. B. Fritz!Box) oder direkt
+			beim Telefonie-Provider, sofern dieser externe SIP-Clients erlaubt („Anmeldung eines
+			IP-Telefons möglich").</li>
+			<li data-tx="t0055:95617e20"><strong>2,4-GHz-WLAN</strong> in Reichweite des USB-Ports.</li>
+			<li data-tx="t0056:de519524"><strong>5-V-USB-Stromversorgung</strong> — idealerweise direkt am Router, alternativ
+			ein beliebiges USB-Netzteil.</li>
+			<li data-tx="t0057:66935893"><strong>Kostenloses <a th:href="@{/login}">PhoneBlock-Konto</a></strong> für den
+			API-Token.</li>
+		</ul>
+
+		<h2 data-tx="t0058:1cedb9ee" id="schritt-1">Schritt 1 — Dongle bestellen</h2>
 
 		<p data-tx="t0007:4a8aea0f">Bestelle dieses ESP32-Board. Es ist kompakt genug, um direkt als USB-Stick im Router zu
 		stecken, hat den passenden USB-Serial-Chip (CH340), und mit ihm wurde der PhoneBlock-Dongle
@@ -98,8 +114,8 @@
 
 		<h2 data-tx="t0020:62d0966b" id="schritt-3">Schritt 3 — Dongle in den Computer stecken</h2>
 
-		<p data-tx="t0021:70a70ae6">Steck den Dongle direkt in einen freien USB-Port deines Computers. Eine kleine LED auf
-		dem Board sollte sofort leuchten oder blinken.</p>
+		<p data-tx="t0021:11c66231">Steck den Dongle direkt in einen freien USB-Port deines Computers. Eine kleine LED auf
+		dem Board sollte sofort leuchten.</p>
 
 		<figure>
 			<div data-tx="t0022:a85e1a1d" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">
@@ -198,11 +214,11 @@
 
 		<p data-tx="t0043:f4d3bf5f">Öffne im Browser:</p>
 
-		<p><a class="button is-link is-large" data-tx="t0044:f04a859b" href="http://answerbot.local/">http://answerbot.local/</a></p>
+		<p><a class="button is-link is-large" data-tx="t0044:9be1c030" href="http://answerbot/">http://answerbot/</a></p>
 
-		<p data-tx="t0045:c627eba9">Funktioniert dieser Link nicht (Windows ohne Bonjour, manche Mesh-WLANs), schau in der
+		<p data-tx="t0045:de303f98">Funktioniert dieser Link nicht (Windows ohne Bonjour, manche Mesh-WLANs), schau in der
 		Geräteliste deines Routers nach einem Gerät mit dem Namen <code>answerbot</code>, notiere
-		dessen IP-Adresse und ruf diese im Browser auf — z. B. <code>http://192.168.178.42/</code>.</p>
+		dessen IP-Adresse und ruf diese im Browser auf — z. B. <code>http://192.168.178.xxx/</code>.</p>
 
 		<figure>
 			<div data-tx="t0046:8bb491f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">
@@ -234,7 +250,37 @@
 			<a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.
 		</p>
 
-		<p class="has-text-grey" data-tx="t0052:8a689eeb">
+		<h2 data-tx="t0059:c258f25f" id="tester">Erfahrungsbericht beisteuern</h2>
+
+		<p data-tx="t0060:493a28c5">Der Dongle läuft hier zuhause an einer Fritz!Box zuverlässig — aber Router-Modelle,
+		Provider und Anschlussarten sind bunt gemischt, und jede Kombination hat ihre Eigenheiten:
+		andere SIP-Dialekte, andere NAT-Regeln, andere Klingelverzögerungen. Damit ich Muster
+		erkenne und Probleme gezielt fixen kann, sind <strong>strukturierte Erfahrungsberichte</strong>
+		Gold wert — egal ob bei dir alles geklappt hat oder etwas hakt.</p>
+
+		<p data-tx="t0061:49f94506">Besonders interessant sind Setups, die noch wenig abgedeckt sind:</p>
+
+		<ul>
+			<li data-tx="t0062:e1971ce0">Telekom-Anschluss mit <strong>Speedport</strong>-Router</li>
+			<li data-tx="t0063:61cce24d">Vodafone-/Unitymedia-Kabelanschluss mit der mitgelieferten Provider-Box</li>
+			<li data-tx="t0064:ea506b90">1&amp;1, o2, Deutsche Glasfaser und weitere Provider</li>
+			<li data-tx="t0065:e5ffca52">Auslandsanschlüsse (Schweiz, Österreich, restliches Europa)</li>
+		</ul>
+
+		<p data-tx="t0066:3fcb6dd2">Berichte laufen über GitHub-Issues — ein vorausgefülltes Formular fragt die wichtigsten
+		Eckdaten (Hardware, Router, Provider, Firmware-Version, Befund) strukturiert ab. Andere
+		Tester sehen so direkt, welche Setups schon abgedeckt sind und welche nicht.</p>
+
+		<p>
+			<a class="button is-primary is-medium" href="https://github.com/haumacher/phoneblock/issues/new?template=dongle-test-report.yml" rel="noopener" target="_blank">
+				<span class="icon"><i class="fab fa-github"></i></span>
+				<span data-tx="t0067:92ec79b">Erfahrungsbericht öffnen</span>
+			</a>
+		</p>
+
+		<hr class="my-5"/>
+
+		<p class="has-text-grey" data-tx="t0068:8a689eeb">
 			Quellcode der Firmware:
 			<a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank">
 				phoneblock-dongle auf GitHub</a>.

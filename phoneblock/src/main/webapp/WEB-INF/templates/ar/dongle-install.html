@@ -25,7 +25,18 @@
 			<p data-tx="t0005:bb075478"><strong>لا يمكن لهذا المتصفح وميض الدونجل. لا يعمل وميض الويب إلا في <strong>Google Chrome</strong> أو <strong>Microsoft Edge</strong> على جهاز كمبيوتر (وليس على هاتف ذكي). افتح هذه الصفحة باستخدام Chrome أو Edge وحاول مرة أخرى.</strong></p>
 		</div>
 
-		<h2 data-tx="t0006:1cedb9ee" id="schritt-1">الخطوة 1 - اطلب الدونجل</h2>
+		<h2 data-tx="t0052:93c33292" id="voraussetzungen">قبل أن تبدأ</h2>
+
+		<p data-tx="t0053:657fcf42">تحقق بإيجاز من استيفاء هذه النقاط الأربع - وإلا فلن يكون الدونجل النهائي ذا فائدة لك:</p>
+
+		<ul>
+			<li data-tx="t0054:b4ac4baa"><strong>مسجل بروتوكول الإنترنت عبر بروتوكول الإنترنت</strong> - إما في جهاز التوجيه (مثل Fritz!Box) أو مباشرة مع مزود خدمة الاتصال الهاتفي، شريطة أن يسمح ذلك بعملاء SIP الخارجيين ("تسجيل هاتف IP ممكن").</li>
+			<li data-tx="t0055:95617e20"><strong>2.4 جيجا هرتز WLAN</strong> ضمن نطاق منفذ USB.</li>
+			<li data-tx="t0056:de519524"><strong> مصدر إمداد طاقة USB بجهد 5 فولت</strong> - من الأفضل أن يكون ذلك مباشرة على جهاز التوجيه، أو أي وحدة إمداد طاقة USB بدلاً من ذلك.</li>
+			<li data-tx="t0057:66935893"><strong>حساب <a th:href="@{/login}">حساب كتلة الهاتف</a></strong> مجانًا لرمز واجهة برمجة التطبيقات.</li>
+		</ul>
+
+		<h2 data-tx="t0058:1cedb9ee" id="schritt-1">الخطوة 1 - اطلب الدونجل</h2>
 
 		<p data-tx="t0007:4a8aea0f">اطلب لوحة ESP32 هذه. وهي مدمجة بما يكفي لتوصيلها مباشرةً بجهاز التوجيه كوحدة USB، وتحتوي على شريحة USB التسلسلية المناسبة (CH340)، وتم تطوير واختبار دونجل PhoneBlock معها.</p>
 
@@ -72,7 +83,7 @@
 
 		<h2 data-tx="t0020:62d0966b" id="schritt-3">الخطوة 3 - أدخل الدونجل في الكمبيوتر</h2>
 
-		<p data-tx="t0021:70a70ae6">قم بتوصيل الدونجل مباشرة بمنفذ USB مجاني على جهاز الكمبيوتر الخاص بك. يجب أن يضيء مؤشر LED صغير على اللوحة أو يومض على الفور.</p>
+		<p data-tx="t0021:11c66231">قم بتوصيل الدونجل مباشرة بمنفذ USB مجاني على جهاز الكمبيوتر الخاص بك. يجب أن يضيء مصباح LED صغير على اللوحة على الفور.</p>
 
 		<figure>
 			<div data-tx="t0022:a85e1a1d" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[العنصر النائب: صورة "دونجل تم إدخاله في منفذ USB في جهاز كمبيوتر محمول"]</div>
@@ -139,9 +150,9 @@
 
 		<p data-tx="t0043:f4d3bf5f">افتح في المتصفح:</p>
 
-		<p><a class="button is-link is-large" data-tx="t0044:f04a859b" href="http://answerbot.local/">http://answerbot.local/</a></p>
+		<p><a class="button is-link is-large" data-tx="t0044:9be1c030" href="http://answerbot/">http://answerbot/</a></p>
 
-		<p data-tx="t0045:c627eba9">إذا كان هذا الرابط لا يعمل (ويندوز بدون بونجور، وبعض شبكات WLAN الشبكية)، ابحث في قائمة الأجهزة في جهاز التوجيه الخاص بك عن جهاز يحمل الاسم <code>answerbot</code>، وقم بتدوين عنوان IP الخاص به واستدعاءه في المتصفح - على سبيل المثال <code>http://192.168.178.42/</code>.</p>
+		<p data-tx="t0045:de303f98">إذا كان هذا الرابط لا يعمل (ويندوز بدون بونجور، وبعض شبكات WLAN الشبكية)، ابحث في قائمة الأجهزة في جهاز التوجيه الخاص بك عن جهاز يحمل الاسم <code>answerbot</code>، وقم بتدوين عنوان IP الخاص به واستدعائه في المتصفح - على سبيل المثال <code>http://192.168.178.xxx/</code>.</p>
 
 		<figure>
 			<div data-tx="t0046:8bb491f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[العنصر النائب: لقطة شاشة لواجهة الويب الخاصة بالدونجل مع حقول الإدخال ل SIP والرمز المميز]</div>
@@ -159,7 +170,31 @@
 
 		<p class="has-text-grey" data-tx="t0051:9316079d">هل هناك شيء ما لا يعمل، هل تستخدم فايرفوكس/سفاري أو لينكس بخصائص معينة أو لوحة أخرى؟ يمكن العثور على الإرشادات التفصيلية مع جميع الخيارات ومزالق لينكس وسلسلة أدوات ESP-IDF في الريبو: <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md.</a></p>
 
-		<p class="has-text-grey" data-tx="t0052:8a689eeb">الكود المصدري للبرنامج الثابت: <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank"> phoneblock-dongle على GitHub</a>.</p>
+		<h2 data-tx="t0059:c258f25f" id="tester">المساهمة بتقرير الخبرة</h2>
+
+		<p data-tx="t0060:493a28c5">يعمل الدونجل بشكل موثوق هنا في المنزل على جهاز Fritz! Box - لكن نماذج أجهزة التوجيه ومزودي الخدمة وأنواع الاتصال مزيج ملون، ولكل مجموعة خصائصها الخاصة: لهجات SIP مختلفة، وقواعد NAT مختلفة، وتأخيرات رنين مختلفة. ولكي أتمكن من التعرف على الأنماط وإصلاح المشاكل بطريقة مستهدفة، فإن تقارير التجربة المنظمة <strong> تستحق وزنها ذهباً - بغض النظر عما إذا كان كل شيء يعمل بشكل جيد أو أن هناك مشكلة ما قد تعطلت.</strong></p>
+
+		<p data-tx="t0061:49f94506">من المثير للاهتمام بشكل خاص الإعدادات التي لا تزال غير مغطاة بشكل جيد:</p>
+
+		<ul>
+			<li data-tx="t0062:e1971ce0">اتصال Telekom مع جهاز توجيه <strong>Speedport</strong></li>
+			<li data-tx="t0063:61cce24d">توصيل كابل Vodafone/Unitymedia مع صندوق الموفر المرفق</li>
+			<li data-tx="t0064:ea506b90">1&amp;1، O2، O2، دويتشه جلازفاسر ومزودون آخرون</li>
+			<li data-tx="t0065:e5ffca52">الاتصالات الدولية (سويسرا والنمسا وبقية أوروبا)</li>
+		</ul>
+
+		<p data-tx="t0066:3fcb6dd2">يتم تشغيل التقارير عبر مشكلات GitHub - يطلب نموذج مملوء مسبقًا أهم البيانات الرئيسية (الأجهزة، وجهاز التوجيه، والمزود، وإصدار البرنامج الثابت، والنتائج) بطريقة منظمة. يمكن للمختبرين الآخرين أن يروا مباشرةً الإعدادات التي تمت تغطيتها بالفعل وتلك التي لم تتم تغطيتها.</p>
+
+		<p>
+			<a class="button is-primary is-medium" href="https://github.com/haumacher/phoneblock/issues/new?template=dongle-test-report.yml" rel="noopener" target="_blank">
+				<span class="icon"><i class="fab fa-github"></i></span>
+				<span data-tx="t0067:92ec79b">تقرير التجربة المفتوحة</span>
+			</a>
+		</p>
+
+		<hr class="my-5"/>
+
+		<p class="has-text-grey" data-tx="t0068:8a689eeb">الكود المصدري للبرنامج الثابت: <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank"> phoneblock-dongle على GitHub</a>.</p>
 	</div>
 </section>
 

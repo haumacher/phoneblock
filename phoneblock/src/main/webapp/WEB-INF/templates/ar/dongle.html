@@ -12,7 +12,7 @@
 		<p class="subtitle" data-tx="t0095:dab19814">جهاز رد آلي ذكي في شكل هاتف IP. بحجم الإبهام، يتم توصيله بمنفذ USB في جهاز التوجيه، ويسجل كهاتف SIP إضافي - ويعترض المكالمات التجارية قبل أن يرن هاتفك الفعلي. يعمل بغض النظر عن طراز جهاز التوجيه، حتى من دون فريتز!</p>
 
 		<div class="notification is-warning">
-			<p data-tx="t0096:e25954d6"><strong>الحالة: بيتا.</strong> الإصدار الأول يعمل بالفعل بشكل موثوق. أنا أبحث عن المزيد من المختبرين لتجربة الدونجل في أكبر عدد ممكن من البيئات المختلفة، <a href="#tester"> انظر أدناه</a>.</p>
+			<p data-tx="t0123:cedc07e4"><strong>الحالة: بيتا.</strong> الإصدار الأول يعمل بالفعل بشكل موثوق. أنا أبحث عن المزيد من المختبرين لتجربة الدونجل في أكبر عدد ممكن من البيئات المختلفة - <a th:href="@{/dongle-install#tester}"> نرحب بتقارير الخبرة</a>.</p>
 		</div>
 
 		<h2 data-tx="t0004:6b104c7a">الفكرة في جملة واحدة</h2>
@@ -41,6 +41,16 @@
 			<p data-tx="t0100:86bdb13f"><strong>لماذا هذا ساحر للغاية:</strong> لا يحتاج الدونجل إلا إلى الحد الأدنى من الطاقة وWi-Fi. لا يوجد خادم إضافي ولا فريتز! بوكس ولا عقد. يستهلك المتحكم الدقيق ESP32 الموجود بداخله أقل من نصف واط - يمكنك ببساطة توصيله بمنفذ USB في جهاز التوجيه الخاص بك ونسيانه.</p>
 		</div>
 
+		<div class="notification is-success has-text-centered">
+			<p data-tx="t0124:9318d7b6"><strong>هل اقتنعت بالفعل؟ </strong> تبلغ تكلفة الدونجل حوالي 9 يورو ويمكن إعداده في غضون ساعة. ترشدك التعليمات خطوة بخطوة خلال الطلب والوميض وإعداد WLAN.</p>
+			<p class="mt-3">
+				<a class="button is-primary is-large" th:href="@{/dongle-install}">
+					<span class="icon"><i class="fas fa-bolt"></i></span>
+					<span data-tx="t0125:74c6d692">إلى التعليمات - قم ببناء الدونجل الخاص بك</span>
+				</a>
+			</p>
+		</div>
+
 		<h2 data-tx="t0013:755fe635">مقارنة: ثلاث طرق لحظر الرسائل غير المرغوب فيها عبر الهاتف الأرضي</h2>
 
 		<p data-tx="t0014:f78318d5">تستخدم جميع الحلول الثلاثة قاعدة بيانات الرسائل غير المرغوب فيها نفسها التي يحتفظ بها مستخدمو PhoneBlock، ولكنها تختلف بشكل كبير من حيث الجهد والفعالية ومتطلبات الاتصال.</p>
@@ -60,7 +70,7 @@
 						<td><strong data-tx="t0112:ebecddaf">الفعالية</strong></td>
 						<td data-tx="t0103:df4b4973"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> الحد الأقصى، قائمة الكتل بأكملها</td>
 						<td data-tx="t0104:df4b4973"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> الحد الأقصى، قائمة الكتل بأكملها</td>
-						<td data-tx="t0089:2e61bee2"><span class="icon has-text-warning"><i class="fas fa-sync"></i></span> جيد، ولكن فقط جزء صغير من قائمة الحظر، المزامنة ≤ 1 ×/يوم</td>
+						<td data-tx="t0089:8af26113"><span class="icon has-text-warning"><i class="fas fa-sync"></i></span> جيد، ولكن فقط جزء صغير من قائمة الحظر، المزامنة ≤ 1 ×/يوم</td>
 					</tr>
 					<tr>
 						<td><strong data-tx="t0109:984ebad2">المتطلبات الأساسية</strong></td>
@@ -82,7 +92,7 @@
 					</tr>
 					<tr>
 						<td><strong data-tx="t0110:e66ba2b">الأجهزة الإضافية</strong></td>
-						<td data-tx="t0028:99294924"><span class="icon has-text-info"><i class="fa-solid fa-coins"></i></span> دونجل USB، حوالي 10 يورو</td>
+						<td data-tx="t0028:301e2ef7"><span class="icon has-text-info"><i class="fa-solid fa-coins"></i></span> دونجل USB، حوالي 10 يورو</td>
 						<td data-tx="t0087:fe8232e3"><span class="icon has-text-success"><i class="fas fa-cloud"></i></span> لا يوجد (خدمة سحابية)</td>
 						<td data-tx="t0029:4d86e32e"><span class="icon has-text-success"><i class="fas fa-check"></i></span> لا يوجد (مدمج في Fritz!Box)</td>
 					</tr>
@@ -111,69 +121,25 @@
 			</ul>
 		</div>
 
-		<h2 data-tx="t0055:984ebad2">المتطلبات الأساسية</h2>
-		<ul>
-			<li data-tx="t0123:a6d81845"><strong> مسجل SIP - إما في جهاز التوجيه أو مباشرة مع موفر خدمة الاتصال الهاتفي، شريطة أن يكون عملاء SIP الخارجيين مسموحًا بهم ("تسجيل هاتف VOIP ممكن").</strong></li>
-			<li data-tx="t0058:be2e6f7c"><strong>2.4 جيجا هرتز WLAN</strong> ضمن النطاق.</li>
-			<li data-tx="t0059:76b831cc"><strong>مصدر طاقة USB بجهد 5 فولت</strong> - من الأفضل أن يكون منفذ USB في جهاز التوجيه، أو أي وحدة إمداد طاقة USB.</li>
-			<li><strong data-tx="t0126:c7ef7b58">حساب مجاني <a th:href="@{/login}">حساب كتلة الهاتف</a></strong>.</li>
-		</ul>
-
 		<hr class="my-5"/>
 
-		<h2 data-tx="t0129:c258f25f" id="tester">المساهمة بتقرير الخبرة</h2>
+		<h2 data-tx="t0126:4124bd4b">قم ببناء الدونجل الخاص بك</h2>
 
-		<p data-tx="t0130:45ae07fa">يعمل الدونجل بشكل موثوق به على جهاز Fritz! Box في منزلي - لكن نماذج أجهزة التوجيه ومزودي الخدمة وأنواع الاتصال مزيج ملون، ولكل مجموعة خصائصها الخاصة: لهجات SIP مختلفة، وقواعد NAT مختلفة، وخيارات تأخير الحلقة المختلفة. لمساعدتي في التعرف على الأنماط وإصلاح المشاكل، فإن تقارير الخبرة المنظمة <strong> تستحق وزنها ذهباً.</strong></p>
+		<p data-tx="t0127:96a70aeb">الدونجل مفتوح المصدر وجاهز للاستخدام في غضون ساعة. لا تحتاج إلى لحام أي شيء - ما عليك سوى طلب لوحة ESP32 المطابقة (حوالي 9 يورو بما في ذلك الشحن)، وتثبيت البرنامج الثابت مباشرةً في المتصفح والاتصال بشبكة WLAN عبر WPS. ترشدك التعليمات خطوة بخطوة خلال كل ما تحتاج إلى القيام به - من الطلب إلى أول مكالمة صامتة غير مرغوب فيها.</p>
 
-		<p data-tx="t0131:49f94506">من المثير للاهتمام بشكل خاص الإعدادات التي لا تزال غير مغطاة بشكل جيد:</p>
-
-		<ul>
-			<li data-tx="t0132:e1971ce0">اتصال Telekom مع جهاز توجيه <strong>Speedport</strong></li>
-			<li data-tx="t0133:61cce24d">توصيل كابل Vodafone/Unitymedia مع صندوق الموفر المرفق</li>
-			<li data-tx="t0134:ea506b90">1&amp;1، O2، O2، دويتشه جلازفاسر ومزودون آخرون</li>
-			<li data-tx="t0135:e5ffca52">الاتصالات الدولية (سويسرا والنمسا وبقية أوروبا)</li>
-		</ul>
-
-		<p data-tx="t0136:3fcb6dd2">يتم تشغيل التقارير عبر مشكلات GitHub - يطلب نموذج مملوء مسبقًا أهم البيانات الرئيسية (الأجهزة، وجهاز التوجيه، والمزود، وإصدار البرنامج الثابت، والنتائج) بطريقة منظمة. يمكن للمختبرين الآخرين أن يروا مباشرةً الإعدادات التي تمت تغطيتها بالفعل وتلك التي لم تتم تغطيتها.</p>
-
-		<p>
-			<a class="button is-primary is-medium" href="https://github.com/haumacher/phoneblock/issues/new?template=dongle-test-report.yml" rel="noopener" target="_blank">
-				<span class="icon"><i class="fab fa-github"></i></span>
-				<span data-tx="t0137:92ec79b">تقرير التجربة المفتوحة</span>
-			</a>
-		</p>
-
-		<hr class="my-5"/>
-
-		<h2 data-tx="t0071:6d74d666">اصنعها بنفسك</h2>
-
-		<p data-tx="t0125:64bf64e9">الدونجل مفتوح المصدر بالكامل. إذا كنت بارعًا في ESP32 (أو تريد أن تصبح كذلك)، يمكنك بناء واحد بنفسك والبدء على الفور - تبلغ تكاليف المواد حوالي <strong>8-12 يورو، اعتمادًا على المكان الذي تطلب منه الأجزاء.</strong></p>
-
-		<div class="columns mt-4">
-			<div class="column">
-				<h4 data-tx="t0073:15a0fb2a"><span class="icon"><i class="fas fa-microchip"></i></span> الأجهزة</h4>
-				<p data-tx="t0074:35d5f964">كل ما تحتاجه هو وحدة ESP32 DevKit القياسية مع وحدة <strong>ESP-WROOM-32E</strong> (مثل NodeMCU-32E). لا حاجة للحام - ما عليك سوى الاتصال بجهاز التوجيه باستخدام كابل USB قصير. يمكن العثور على تعليمات مفصلة لشراء الوحدة واللوحة في الريبو.</p>
-			</div>
-			<div class="column">
-				<h4 data-tx="t0075:29886ac5"><span class="icon"><i class="fas fa-code"></i></span> البرامج الثابتة</h4>
-				<p data-tx="t0127:5aa93352">برنامج ثابت مفتوح المصدر يعتمد على ESP-IDF. فلاش مباشرة في متصفح Chrome أو Edge عبر USB - أو بشكل كلاسيكي باستخدام سلسلة أدوات ESP-IDF. يتم إجراء التكوين الأولي بالكامل (WLAN، SIP، الرمز المميز) مباشرةً على الدونجل عبر واجهة ويب صغيرة.</p>
-				<p class="mt-2">
-					<a class="button is-primary" th:href="@{/dongle-install}">
-						<span class="icon"><i class="fas fa-bolt"></i></span>
-						<span data-tx="t0128:adfc6ffe">وميض في المتصفح</span>
-					</a>
-				</p>
-			</div>
-			<div class="column">
-				<h4 data-tx="t0077:d0101c48"><span class="icon"><i class="fab fa-github"></i></span> كود المصدر والتعليمات</h4>
-				<p data-tx="t0078:1e74076c">اختيار الأجهزة وتعليمات الفلاش والتهيئة واستكشاف الأخطاء وإصلاحها - كل ذلك في مستودع GitHub. يتم إجراء المزيد من التطوير هناك أيضًا؛ نرحب بطلبات السحب والمشكلات.</p>
-				<p class="mt-2">
-					<a class="button is-dark" href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" target="_blank">
-						<span class="icon"><i class="fab fa-github"></i></span>
-						<span data-tx="t0079:c01bbd3">دونجل قفل الهاتف على GitHub</span>
-					</a>
-				</p>
-			</div>
+		<div class="notification is-success has-text-centered mt-4">
+			<p>
+				<a class="button is-primary is-large" th:href="@{/dongle-install}">
+					<span class="icon"><i class="fas fa-bolt"></i></span>
+					<span data-tx="t0128:74c6d692">إلى التعليمات - قم ببناء الدونجل الخاص بك</span>
+				</a>
+			</p>
+			<p class="mt-3">
+				<a class="has-text-grey" href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank">
+					<span class="icon"><i class="fab fa-github"></i></span>
+					<span data-tx="t0129:97d67640">الكود المصدري على GitHub</span>
+				</a>
+			</p>
 		</div>
 
 	</div>

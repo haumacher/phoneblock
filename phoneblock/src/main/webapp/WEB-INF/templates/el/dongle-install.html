@@ -25,7 +25,18 @@
 			<p data-tx="t0005:bb075478"><strong>Αυτό το πρόγραμμα περιήγησης δεν μπορεί να κάνει flash το dongle.</strong> Το web flashing λειτουργεί μόνο σε <strong>Google Chrome</strong> ή <strong>Microsoft Edge</strong> σε υπολογιστή (όχι σε smartphone). Ανοίξτε αυτή τη σελίδα με το Chrome ή τον Edge και δοκιμάστε ξανά.</p>
 		</div>
 
-		<h2 data-tx="t0006:1cedb9ee" id="schritt-1">Βήμα 1 - Παραγγελία dongle</h2>
+		<h2 data-tx="t0052:93c33292" id="voraussetzungen">Πριν ξεκινήσετε</h2>
+
+		<p data-tx="t0053:657fcf42">Βεβαιωθείτε εν συντομία ότι πληροίτε αυτά τα τέσσερα σημεία - διαφορετικά, ακόμη και το έτοιμο dongle δεν θα σας είναι χρήσιμο:</p>
+
+		<ul>
+			<li data-tx="t0054:b4ac4baa"><strong>SIP registrar</strong> - είτε στο δρομολογητή (π.χ. Fritz!Box) είτε απευθείας με τον πάροχο τηλεφωνίας, εφόσον αυτός επιτρέπει εξωτερικούς πελάτες SIP ("Registration of an IP telephone possible").</li>
+			<li data-tx="t0055:95617e20"><strong>2,4 GHz WLAN</strong> εντός της εμβέλειας της θύρας USB.</li>
+			<li data-tx="t0056:de519524"><strong>Παροχή ρεύματος USB 5 V</strong> - ιδανικά απευθείας στο δρομολογητή, εναλλακτικά σε οποιοδήποτε τροφοδοτικό USB.</li>
+			<li data-tx="t0057:66935893"><strong>Δωρεάν <a th:href="@{/login}">Λογαριασμός PhoneBlock</a></strong> για το κουπόνι API.</li>
+		</ul>
+
+		<h2 data-tx="t0058:1cedb9ee" id="schritt-1">Βήμα 1 - Παραγγελία dongle</h2>
 
 		<p data-tx="t0007:4a8aea0f">Παραγγείλετε αυτή την πλακέτα ESP32. Είναι αρκετά συμπαγής ώστε να μπορεί να συνδεθεί απευθείας στο δρομολογητή ως USB stick, διαθέτει το κατάλληλο σειριακό τσιπ USB (CH340) και το PhoneBlock dongle αναπτύχθηκε και δοκιμάστηκε με αυτό.</p>
 
@@ -72,7 +83,7 @@
 
 		<h2 data-tx="t0020:62d0966b" id="schritt-3">Βήμα 3 - Τοποθετήστε το dongle στον υπολογιστή</h2>
 
-		<p data-tx="t0021:70a70ae6">Συνδέστε το dongle απευθείας σε μια ελεύθερη θύρα USB του υπολογιστή σας. Μια μικρή λυχνία LED στην πλακέτα θα πρέπει να ανάψει ή να αναβοσβήσει αμέσως.</p>
+		<p data-tx="t0021:11c66231">Συνδέστε το dongle απευθείας σε μια ελεύθερη θύρα USB του υπολογιστή σας. Μια μικρή λυχνία LED στην πλακέτα θα πρέπει να ανάψει αμέσως.</p>
 
 		<figure>
 			<div data-tx="t0022:a85e1a1d" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Placeholder: Φωτογραφία "Dongle τοποθετημένο στη θύρα USB ενός φορητού υπολογιστή"]</div>
@@ -139,9 +150,9 @@
 
 		<p data-tx="t0043:f4d3bf5f">Ανοίξτε στο πρόγραμμα περιήγησης:</p>
 
-		<p><a class="button is-link is-large" data-tx="t0044:f04a859b" href="http://answerbot.local/">http://answerbot.local/</a></p>
+		<p><a class="button is-link is-large" data-tx="t0044:9be1c030" href="http://answerbot/">http://answerbot/</a></p>
 
-		<p data-tx="t0045:c627eba9">Εάν αυτός ο σύνδεσμος δεν λειτουργεί (Windows χωρίς Bonjour, ορισμένα WLAN με πλέγμα), αναζητήστε στη λίστα συσκευών του δρομολογητή σας μια συσκευή με το όνομα <code>answerbot</code>, σημειώστε τη διεύθυνση IP της και καλέστε την στο πρόγραμμα περιήγησης - π.χ. <code>http://192.168.178.42/</code>.</p>
+		<p data-tx="t0045:de303f98">Εάν αυτός ο σύνδεσμος δεν λειτουργεί (Windows χωρίς Bonjour, ορισμένα WLAN με πλέγμα), αναζητήστε στη λίστα συσκευών του δρομολογητή σας μια συσκευή με το όνομα <code>answerbot</code>, σημειώστε τη διεύθυνση IP της και καλέστε την στο πρόγραμμα περιήγησης - π.χ. <code>http://192.168.178.xxx/</code>.</p>
 
 		<figure>
 			<div data-tx="t0046:8bb491f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Placeholder: Στιγμιότυπο της διαδικτυακής διεπαφής του dongle με πεδία εισαγωγής για SIP και token]</div>
@@ -159,7 +170,31 @@
 
 		<p class="has-text-grey" data-tx="t0051:9316079d">Κάτι δεν λειτουργεί, χρησιμοποιείτε τον Firefox/Safari, Linux με ιδιαιτερότητες ή άλλο πίνακα? Οι λεπτομερείς οδηγίες με όλες τις επιλογές, τις παγίδες του Linux και την αλυσίδα εργαλείων ESP-IDF βρίσκονται στο repo: <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</p>
 
-		<p class="has-text-grey" data-tx="t0052:8a689eeb">Πηγαίος κώδικας του υλικολογισμικού: <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank"> phoneblock-dongle στο GitHub</a>.</p>
+		<h2 data-tx="t0059:c258f25f" id="tester">Συμβολή στην έκθεση εμπειρίας</h2>
+
+		<p data-tx="t0060:493a28c5">Το dongle λειτουργεί αξιόπιστα εδώ στο σπίτι σε ένα Fritz!Box - αλλά τα μοντέλα δρομολογητών, οι πάροχοι και οι τύποι σύνδεσης είναι ένα πολύχρωμο μείγμα και κάθε συνδυασμός έχει τις δικές του ιδιαιτερότητες: διαφορετικές διαλέκτους SIP, διαφορετικούς κανόνες NAT, διαφορετικές καθυστερήσεις κλήσης. Για να μπορώ να αναγνωρίζω μοτίβα και να διορθώνω προβλήματα με στοχευμένο τρόπο, οι <strong>δομημένες αναφορές εμπειρίας</strong> αξίζουν το βάρος τους σε χρυσό - ανεξάρτητα από το αν όλα λειτούργησαν για εσάς ή αν κάτι κόλλησε.</p>
+
+		<p data-tx="t0061:49f94506">Ιδιαίτερα ενδιαφέρουσες είναι οι ρυθμίσεις που εξακολουθούν να καλύπτονται ανεπαρκώς:</p>
+
+		<ul>
+			<li data-tx="t0062:e1971ce0">Σύνδεση Telekom με δρομολογητή <strong>Speedport</strong></li>
+			<li data-tx="t0063:61cce24d">Καλωδιακή σύνδεση Vodafone/Unitymedia με το παρεχόμενο κουτί παρόχου</li>
+			<li data-tx="t0064:ea506b90">1&amp;1, o2, Deutsche Glasfaser και άλλοι πάροχοι</li>
+			<li data-tx="t0065:e5ffca52">Διεθνείς συνδέσεις (Ελβετία, Αυστρία, υπόλοιπη Ευρώπη)</li>
+		</ul>
+
+		<p data-tx="t0066:3fcb6dd2">Οι αναφορές εκτελούνται μέσω θεμάτων του GitHub - μια προσυμπληρωμένη φόρμα ζητά τα πιο σημαντικά βασικά δεδομένα (υλικό, δρομολογητής, πάροχος, έκδοση υλικολογισμικού, ευρήματα) με δομημένο τρόπο. Άλλοι δοκιμαστές μπορούν να δουν άμεσα ποιες ρυθμίσεις έχουν ήδη καλυφθεί και ποιες όχι.</p>
+
+		<p>
+			<a class="button is-primary is-medium" href="https://github.com/haumacher/phoneblock/issues/new?template=dongle-test-report.yml" rel="noopener" target="_blank">
+				<span class="icon"><i class="fab fa-github"></i></span>
+				<span data-tx="t0067:92ec79b">Ανοιχτή έκθεση εμπειρίας</span>
+			</a>
+		</p>
+
+		<hr class="my-5"/>
+
+		<p class="has-text-grey" data-tx="t0068:8a689eeb">Πηγαίος κώδικας του υλικολογισμικού: <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank"> phoneblock-dongle στο GitHub</a>.</p>
 	</div>
 </section>
 

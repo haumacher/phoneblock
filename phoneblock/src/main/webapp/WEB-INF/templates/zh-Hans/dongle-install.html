@@ -25,7 +25,18 @@
 			<p data-tx="t0005:bb075478"><strong>此浏览器无法闪存加密狗。</strong>网络闪存仅适用于电脑上的 <strong>Google Chrome 浏览器</strong>或 <strong>Microsoft Edge 浏览器</strong>（不适用于智能手机）。使用 Chrome 或 Edge 打开此页面，然后再试一次。</p>
 		</div>
 
-		<h2 data-tx="t0006:1cedb9ee" id="schritt-1">步骤 1 - 订购加密狗</h2>
+		<h2 data-tx="t0052:93c33292" id="voraussetzungen">开始之前</h2>
+
+		<p data-tx="t0053:657fcf42">请简要检查您是否满足这四点要求，否则即使是完成的加密狗对您也毫无用处：</p>
+
+		<ul>
+			<li data-tx="t0054:b4ac4baa"><strong>SIP 注册器</strong> - 路由器（如 Fritz！Box）或直接与电话供应商连接，前提是允许外部 SIP 客户端（"可注册 IP 电话"）。</li>
+			<li data-tx="t0055:95617e20"><strong>2.4 GHz WLAN</strong> USB 端口范围内。</li>
+			<li data-tx="t0056:de519524"><strong>5 V USB 电源</strong> - 最好直接安装在路由器上，也可选择任何 USB 电源装置。</li>
+			<li data-tx="t0057:66935893"><strong>免费 <a th:href="@{/login}">PhoneBlock 帐户</a></strong>用于 API 令牌。</li>
+		</ul>
+
+		<h2 data-tx="t0058:1cedb9ee" id="schritt-1">步骤 1 - 订购加密狗</h2>
 
 		<p data-tx="t0007:4a8aea0f">订购这款 ESP32 板。它非常小巧，可以作为 U 盘直接插入路由器，具有相应的 USB 串行芯片（CH340），PhoneBlock 加密狗就是用它开发和测试的。</p>
 
@@ -72,7 +83,7 @@
 
 		<h2 data-tx="t0020:62d0966b" id="schritt-3">步骤 3 - 将加密狗插入电脑</h2>
 
-		<p data-tx="t0021:70a70ae6">将加密狗直接插入电脑上空闲的 USB 端口。电路板上的小型 LED 指示灯应立即亮起或闪烁。</p>
+		<p data-tx="t0021:11c66231">将加密狗直接插入电脑上空闲的 USB 端口。电路板上的小型 LED 灯会立即亮起。</p>
 
 		<figure>
 			<div data-tx="t0022:a85e1a1d" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[占位符：图片 "插入笔记本 USB 端口的加密狗"]</div>
@@ -139,9 +150,9 @@
 
 		<p data-tx="t0043:f4d3bf5f">在浏览器中打开：</p>
 
-		<p><a class="button is-link is-large" data-tx="t0044:f04a859b" href="http://answerbot.local/">http://answerbot.local/</a></p>
+		<p><a class="button is-link is-large" data-tx="t0044:9be1c030" href="http://answerbot/">http://answerbot/</a></p>
 
-		<p data-tx="t0045:c627eba9">如果此链接不起作用（没有 Bonjour 的 Windows 系统、某些网状 WLAN），请在路由器的设备列表中查找名称为 <code>answerbot</code> 的设备，记下其 IP 地址并在浏览器中调用，例如 <code>http://192.168.178.42/</code>。</p>
+		<p data-tx="t0045:de303f98">如果此链接不起作用（没有 Bonjour 的 Windows 系统、某些网状 WLAN），请在路由器的设备列表中查找名称为 <code>answerbot</code> 的设备，记下其 IP 地址并在浏览器中调用，例如 <code>http://192.168.178.xxx/</code>。</p>
 
 		<figure>
 			<div data-tx="t0046:8bb491f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[占位符：加密狗网络界面截图，包含 SIP 和令牌的输入字段。］</div>
@@ -159,7 +170,31 @@
 
 		<p class="has-text-grey" data-tx="t0051:9316079d">有什么问题吗？您使用的是 Firefox/Safari，Linux 有特殊问题，还是另一块板子？详细说明包括所有选项、Linux 漏洞和 ESP-IDF 工具链，请参阅软件仓库：<a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>。</p>
 
-		<p class="has-text-grey" data-tx="t0052:8a689eeb">固件源代码：<a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank"> GitHub 上的 phoneblock-dongle</a>.</p>
+		<h2 data-tx="t0059:c258f25f" id="tester">提交经验报告</h2>
+
+		<p data-tx="t0060:493a28c5">在家里的 Fritz！Box 上，加密狗运行稳定，但路由器型号、供应商和连接类型五花八门，每种组合都有自己的特点：不同的 SIP 方言、不同的 NAT 规则、不同的振铃延迟。为了让我能够识别模式并有针对性地解决问题，<strong>结构化经验报告</strong>的价值不言而喻--无论您是一切顺利还是出现了问题。</p>
+
+		<p data-tx="t0061:49f94506">尤其有趣的是，这些设置的覆盖面仍然很窄：</p>
+
+		<ul>
+			<li data-tx="t0062:e1971ce0">使用 <strong>Speedport</strong> 路由器的 Telekom 连接</li>
+			<li data-tx="t0063:61cce24d">通过提供的提供盒连接 Vodafone/Unitymedia 电缆</li>
+			<li data-tx="t0064:ea506b90">1&amp;1、o2、Deutsche Glasfaser 和其他供应商</li>
+			<li data-tx="t0065:e5ffca52">国际连接（瑞士、奥地利、欧洲其他国家）</li>
+		</ul>
+
+		<p data-tx="t0066:3fcb6dd2">报告通过 GitHub 问题运行--预先填写的表格以结构化的方式要求提供最重要的关键数据（硬件、路由器、提供商、固件版本、结果）。其他测试人员可直接查看哪些设置已涵盖，哪些未涵盖。</p>
+
+		<p>
+			<a class="button is-primary is-medium" href="https://github.com/haumacher/phoneblock/issues/new?template=dongle-test-report.yml" rel="noopener" target="_blank">
+				<span class="icon"><i class="fab fa-github"></i></span>
+				<span data-tx="t0067:92ec79b">开放体验报告</span>
+			</a>
+		</p>
+
+		<hr class="my-5"/>
+
+		<p class="has-text-grey" data-tx="t0068:8a689eeb">固件源代码：<a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank"> GitHub 上的 phoneblock-dongle</a>.</p>
 	</div>
 </section>
 

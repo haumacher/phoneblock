@@ -25,7 +25,18 @@
 			<p data-tx="t0005:bb075478"><strong>Deze browser kan de dongle niet flashen.</strong> Webflashing werkt alleen in <strong>Google Chrome</strong> of <strong>Microsoft Edge</strong> op een computer (niet op een smartphone). Open deze pagina met Chrome of Edge en probeer het opnieuw.</p>
 		</div>
 
-		<h2 data-tx="t0006:1cedb9ee" id="schritt-1">Stap 1 - Bestel dongle</h2>
+		<h2 data-tx="t0052:93c33292" id="voraussetzungen">Voordat je begint</h2>
+
+		<p data-tx="t0053:657fcf42">Controleer kort of je aan deze vier punten voldoet - anders heb je zelfs niets aan de afgewerkte dongle:</p>
+
+		<ul>
+			<li data-tx="t0054:b4ac4baa"><strong>SIP-registrar</strong> - ofwel in de router (bijv. Fritz!Box) of rechtstreeks bij de telefonieprovider, mits deze externe SIP-clients toestaat ("Registratie van een IP-telefoon mogelijk").</li>
+			<li data-tx="t0055:95617e20"><strong>2,4 GHz WLAN</strong> binnen het bereik van de USB-poort.</li>
+			<li data-tx="t0056:de519524"><strong>5 V USB-voeding</strong> - idealiter direct op de router, maar je kunt ook een USB-voeding gebruiken.</li>
+			<li data-tx="t0057:66935893"><strong>Gratis <a th:href="@{/login}">PhoneBlock-account</a></strong> voor het API-token.</li>
+		</ul>
+
+		<h2 data-tx="t0058:1cedb9ee" id="schritt-1">Stap 1 - Bestel dongle</h2>
 
 		<p data-tx="t0007:4a8aea0f">Bestel dit ESP32-bord. Het is compact genoeg om als USB-stick direct in de router te worden gestoken, heeft de juiste USB seriële chip (CH340) en de PhoneBlock dongle is ermee ontwikkeld en getest.</p>
 
@@ -72,7 +83,7 @@
 
 		<h2 data-tx="t0020:62d0966b" id="schritt-3">Stap 3 - Plaats de dongle in de computer</h2>
 
-		<p data-tx="t0021:70a70ae6">Sluit de dongle rechtstreeks aan op een vrije USB-poort van je computer. Een klein LED-lampje op de printplaat moet onmiddellijk gaan branden of knipperen.</p>
+		<p data-tx="t0021:11c66231">Sluit de dongle rechtstreeks aan op een vrije USB-poort van je computer. Een klein LED-lampje op de printplaat moet onmiddellijk gaan branden.</p>
 
 		<figure>
 			<div data-tx="t0022:a85e1a1d" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Plaatshouder: Foto "Dongle geplaatst in de USB-poort van een notebook"].</div>
@@ -139,9 +150,9 @@
 
 		<p data-tx="t0043:f4d3bf5f">Open in de browser:</p>
 
-		<p><a class="button is-link is-large" data-tx="t0044:f04a859b" href="http://answerbot.local/">http://answerbot.local/</a></p>
+		<p><a class="button is-link is-large" data-tx="t0044:9be1c030" href="http://answerbot/">http://answerbot/</a></p>
 
-		<p data-tx="t0045:c627eba9">Als deze link niet werkt (Windows zonder Bonjour, sommige mesh WLAN's), zoek dan in de apparatenlijst van je router naar een apparaat met de naam <code>answerbot</code>, noteer het IP-adres en roep het op in de browser - bijvoorbeeld <code>http://192.168.178.42/</code>.</p>
+		<p data-tx="t0045:de303f98">Als deze link niet werkt (Windows zonder Bonjour, sommige mesh WLAN's), zoek dan in de apparatenlijst van je router naar een apparaat met de naam <code>answerbot</code>, noteer het IP-adres en roep het op in de browser - bijvoorbeeld <code>http://192.168.178.xxx/</code>.</p>
 
 		<figure>
 			<div data-tx="t0046:8bb491f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Placeholder: Screenshot van de dongle webinterface met invoervelden voor SIP en token].</div>
@@ -159,7 +170,31 @@
 
 		<p class="has-text-grey" data-tx="t0051:9316079d">Werkt er iets niet, gebruik je Firefox/Safari, Linux met eigenaardigheden of een ander bord? De gedetailleerde instructies met alle opties, Linux valkuilen en de ESP-IDF toolchain zijn te vinden in de repo: <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</p>
 
-		<p class="has-text-grey" data-tx="t0052:8a689eeb">Broncode van de firmware: <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank"> phoneblock-dongle op GitHub</a>.</p>
+		<h2 data-tx="t0059:c258f25f" id="tester">Ervaringsverslag bijdragen</h2>
+
+		<p data-tx="t0060:493a28c5">De dongle draait hier thuis betrouwbaar op een Fritz!Box - maar router-modellen, providers en verbindingstypes zijn een bonte mengeling en elke combinatie heeft zijn eigenaardigheden: verschillende SIP-dialecten, verschillende NAT-regels, verschillende belvertragingen. Zodat ik patronen kan herkennen en problemen gericht kan oplossen, zijn <strong>gestructureerde ervaringsrapporten</strong> goud waard - ongeacht of alles bij jou werkte of dat er iets vastliep.</p>
+
+		<p data-tx="t0061:49f94506">Bijzonder interessant zijn opstellingen die nog steeds slecht worden behandeld:</p>
+
+		<ul>
+			<li data-tx="t0062:e1971ce0">Telekom-verbinding met <strong>Speedport</strong>-router</li>
+			<li data-tx="t0063:61cce24d">Vodafone/Unitymedia-kabelverbinding met de meegeleverde providerbox</li>
+			<li data-tx="t0064:ea506b90">1&amp;1, o2, Deutsche Glasfaser en andere providers</li>
+			<li data-tx="t0065:e5ffca52">Internationale verbindingen (Zwitserland, Oostenrijk, rest van Europa)</li>
+		</ul>
+
+		<p data-tx="t0066:3fcb6dd2">Rapporten worden uitgevoerd via GitHub issues - een vooraf ingevuld formulier vraagt op een gestructureerde manier naar de belangrijkste kerngegevens (hardware, router, provider, firmwareversie, bevindingen). Andere testers kunnen direct zien welke setups al gedekt zijn en welke niet.</p>
+
+		<p>
+			<a class="button is-primary is-medium" href="https://github.com/haumacher/phoneblock/issues/new?template=dongle-test-report.yml" rel="noopener" target="_blank">
+				<span class="icon"><i class="fab fa-github"></i></span>
+				<span data-tx="t0067:92ec79b">Open ervaringsverslag</span>
+			</a>
+		</p>
+
+		<hr class="my-5"/>
+
+		<p class="has-text-grey" data-tx="t0068:8a689eeb">Broncode van de firmware: <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank"> phoneblock-dongle op GitHub</a>.</p>
 	</div>
 </section>
 

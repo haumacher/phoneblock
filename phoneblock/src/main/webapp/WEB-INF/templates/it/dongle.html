@@ -12,7 +12,7 @@
 		<p class="subtitle" data-tx="t0095:dab19814">Una segreteria telefonica intelligente sotto forma di telefono IP. Grande come un pollice, si collega alla porta USB del router, si registra come telefono SIP aggiuntivo e intercetta le chiamate commerciali prima che squilli il telefono vero e proprio. Funziona indipendentemente dal modello di router, anche senza Fritz!</p>
 
 		<div class="notification is-warning">
-			<p data-tx="t0096:e25954d6"><strong>Stato: Beta.</strong> La prima versione funziona già in modo affidabile. Sto cercando altri tester per provare il dongle in quanti più ambienti possibili, <a href="#tester">vedi sotto</a>.</p>
+			<p data-tx="t0123:cedc07e4"><strong>Stato: Beta.</strong> La prima versione funziona già in modo affidabile. Sto cercando altri tester per provare il dongle in quanti più ambienti possibili - <a th:href="@{/dongle-install#tester}">segnalazioni di esperienze benvenute</a>.</p>
 		</div>
 
 		<h2 data-tx="t0004:6b104c7a">L'idea in una frase</h2>
@@ -41,6 +41,16 @@
 			<p data-tx="t0100:86bdb13f"><strong>Perché è così affascinante:</strong> Il dongle ha bisogno solo di un minimo di alimentazione e di Wi-Fi. Nessun server aggiuntivo, nessuna Fritz!Box, nessun contratto. Il microcontrollore ESP32 al suo interno assorbe meno di mezzo watt: basta collegarlo alla porta USB del router e dimenticarsene.</p>
 		</div>
 
+		<div class="notification is-success has-text-centered">
+			<p data-tx="t0124:9318d7b6"><strong>Ti sei già convinto? </strong> Il dongle costa circa 9 euro e può essere configurato in un'ora. Le istruzioni guidano l'utente passo dopo passo attraverso l'ordine, il flashing e la configurazione della WLAN.</p>
+			<p class="mt-3">
+				<a class="button is-primary is-large" th:href="@{/dongle-install}">
+					<span class="icon"><i class="fas fa-bolt"></i></span>
+					<span data-tx="t0125:74c6d692">Alle istruzioni: costruire il proprio dongle</span>
+				</a>
+			</p>
+		</div>
+
 		<h2 data-tx="t0013:755fe635">Confronto: tre modi per bloccare lo spam su rete fissa</h2>
 
 		<p data-tx="t0014:f78318d5">Tutte e tre le soluzioni utilizzano lo stesso database di spam gestito dagli utenti di PhoneBlock, ma differiscono in modo significativo in termini di impegno, efficacia e requisiti della vostra connessione.</p>
@@ -60,7 +70,7 @@
 						<td><strong data-tx="t0112:ebecddaf">Efficacia</strong></td>
 						<td data-tx="t0103:df4b4973"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Massimo, intero elenco di blocchi</td>
 						<td data-tx="t0104:df4b4973"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Massimo, intero elenco di blocchi</td>
-						<td data-tx="t0089:2e61bee2"><span class="icon has-text-warning"><i class="fas fa-sync"></i></span> Bene, ma solo una piccola sezione dell'elenco dei blocchi, sincronizzazione ≤ 1 ×/giorno</td>
+						<td data-tx="t0089:8af26113"><span class="icon has-text-warning"><i class="fas fa-sync"></i></span> Bene, ma solo una piccola sezione dell'elenco dei blocchi, sincronizzazione ≤ 1 ×/giorno</td>
 					</tr>
 					<tr>
 						<td><strong data-tx="t0109:984ebad2">Prerequisiti</strong></td>
@@ -82,7 +92,7 @@
 					</tr>
 					<tr>
 						<td><strong data-tx="t0110:e66ba2b">Hardware aggiuntivo</strong></td>
-						<td data-tx="t0028:99294924"><span class="icon has-text-info"><i class="fa-solid fa-coins"></i></span> Dongle USB, circa 10 €</td>
+						<td data-tx="t0028:301e2ef7"><span class="icon has-text-info"><i class="fa-solid fa-coins"></i></span> Dongle USB, circa 10 €</td>
 						<td data-tx="t0087:fe8232e3"><span class="icon has-text-success"><i class="fas fa-cloud"></i></span> Nessuno (servizio cloud)</td>
 						<td data-tx="t0029:4d86e32e"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Nessuno (integrato in Fritz!Box)</td>
 					</tr>
@@ -111,69 +121,25 @@
 			</ul>
 		</div>
 
-		<h2 data-tx="t0055:984ebad2">Prerequisiti</h2>
-		<ul>
-			<li data-tx="t0123:a6d81845"><strong>Registratore SIP</strong> - nel router o direttamente presso il provider di telefonia, a condizione che siano consentiti i client SIP esterni ("Possibilità di registrazione di un telefono VOIP").</li>
-			<li data-tx="t0058:be2e6f7c"><strong>WLAN a 2,4 GHz</strong> nel raggio d'azione.</li>
-			<li data-tx="t0059:76b831cc"><strong>Alimentazione USB a 5 V</strong> - idealmente porta USB del router o qualsiasi alimentatore USB.</li>
-			<li><strong data-tx="t0126:c7ef7b58">Account gratuito <a th:href="@{/login}">PhoneBlock</a></strong>.</li>
-		</ul>
-
 		<hr class="my-5"/>
 
-		<h2 data-tx="t0129:c258f25f" id="tester">Contribuire al rapporto sull'esperienza</h2>
+		<h2 data-tx="t0126:4124bd4b">Costruire il proprio dongle</h2>
 
-		<p data-tx="t0130:45ae07fa">Il dongle funziona in modo affidabile su un box Fritz! a casa mia, ma i modelli di router, i provider e i tipi di connessione sono un mix variopinto e ogni combinazione ha le sue peculiarità: diversi dialetti SIP, diverse regole NAT, diverse opzioni di ritardo dell'anello. Per aiutarmi a riconoscere gli schemi e a risolvere i problemi, i <strong>rapporti di esperienza strutturati</strong> valgono oro.</p>
+		<p data-tx="t0127:96a70aeb">Il dongle è open source e pronto all'uso in un'ora. Non è necessario saldare nulla: è sufficiente ordinare la scheda ESP32 corrispondente (circa 9 euro, spedizione inclusa), installare il firmware direttamente nel browser e connettersi alla WLAN tramite WPS. Le istruzioni vi guidano passo dopo passo in tutto ciò che dovete fare, dall'ordine alla prima chiamata silenziosa di spam.</p>
 
-		<p data-tx="t0131:49f94506">Particolarmente interessanti sono le configurazioni ancora poco coperte:</p>
-
-		<ul>
-			<li data-tx="t0132:e1971ce0">Connessione Telekom con router <strong>Speedport</strong></li>
-			<li data-tx="t0133:61cce24d">Collegamento via cavo Vodafone/Unitymedia con il box provider in dotazione</li>
-			<li data-tx="t0134:ea506b90">1&amp;1, o2, Deutsche Glasfaser e altri provider</li>
-			<li data-tx="t0135:e5ffca52">Collegamenti internazionali (Svizzera, Austria, resto d'Europa)</li>
-		</ul>
-
-		<p data-tx="t0136:3fcb6dd2">I rapporti vengono eseguiti tramite i problemi di GitHub: un modulo precompilato richiede i dati chiave più importanti (hardware, router, provider, versione del firmware, risultati) in modo strutturato. Gli altri tester possono vedere direttamente quali configurazioni sono già coperte e quali no.</p>
-
-		<p>
-			<a class="button is-primary is-medium" href="https://github.com/haumacher/phoneblock/issues/new?template=dongle-test-report.yml" rel="noopener" target="_blank">
-				<span class="icon"><i class="fab fa-github"></i></span>
-				<span data-tx="t0137:92ec79b">Rapporto sull'esperienza aperta</span>
-			</a>
-		</p>
-
-		<hr class="my-5"/>
-
-		<h2 data-tx="t0071:6d74d666">Costruire da soli</h2>
-
-		<p data-tx="t0125:64bf64e9">Il dongle è completamente open source. Se siete esperti di ESP32 (o volete diventarlo), potete costruirne uno voi stessi e iniziare subito - il costo del materiale è di circa <strong>8-12 €</strong>, a seconda di dove ordinate i componenti.</p>
-
-		<div class="columns mt-4">
-			<div class="column">
-				<h4 data-tx="t0073:15a0fb2a"><span class="icon"><i class="fas fa-microchip"></i></span> Hardware</h4>
-				<p data-tx="t0074:35d5f964">È sufficiente un DevKit ESP32 standard con modulo <strong>ESP-WROOM-32E</strong> (ad es. NodeMCU-32E). Non sono necessarie saldature: è sufficiente collegarsi al router con un breve cavo USB. Le istruzioni dettagliate per l'acquisto del modulo e della scheda sono disponibili nel repo.</p>
-			</div>
-			<div class="column">
-				<h4 data-tx="t0075:29886ac5"><span class="icon"><i class="fas fa-code"></i></span> Firmware</h4>
-				<p data-tx="t0127:5aa93352">Firmware open source basato su ESP-IDF. Flash direttamente nel browser Chrome o Edge via USB - o classicamente con la toolchain ESP-IDF. L'intera configurazione iniziale (WLAN, SIP, token) viene eseguita direttamente sul dongle tramite un piccolo frontend web.</p>
-				<p class="mt-2">
-					<a class="button is-primary" th:href="@{/dongle-install}">
-						<span class="icon"><i class="fas fa-bolt"></i></span>
-						<span data-tx="t0128:adfc6ffe">Lampeggiante nel browser</span>
-					</a>
-				</p>
-			</div>
-			<div class="column">
-				<h4 data-tx="t0077:d0101c48"><span class="icon"><i class="fab fa-github"></i></span> Codice sorgente e istruzioni</h4>
-				<p data-tx="t0078:1e74076c">Selezione dell'hardware, istruzioni per il flash, configurazione e risoluzione dei problemi: tutto nel repository GitHub. È in corso anche un ulteriore sviluppo; richieste di pull e problemi sono benvenuti.</p>
-				<p class="mt-2">
-					<a class="button is-dark" href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" target="_blank">
-						<span class="icon"><i class="fab fa-github"></i></span>
-						<span data-tx="t0079:c01bbd3">blocco-telefono-dongle su GitHub</span>
-					</a>
-				</p>
-			</div>
+		<div class="notification is-success has-text-centered mt-4">
+			<p>
+				<a class="button is-primary is-large" th:href="@{/dongle-install}">
+					<span class="icon"><i class="fas fa-bolt"></i></span>
+					<span data-tx="t0128:74c6d692">Alle istruzioni: costruire il proprio dongle</span>
+				</a>
+			</p>
+			<p class="mt-3">
+				<a class="has-text-grey" href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank">
+					<span class="icon"><i class="fab fa-github"></i></span>
+					<span data-tx="t0129:97d67640">Codice sorgente su GitHub</span>
+				</a>
+			</p>
 		</div>
 
 	</div>

@@ -25,7 +25,18 @@
 			<p data-tx="t0005:bb075478"><strong>Ce navigateur ne peut pas flasher le dongle.</strong> Le flashage web ne fonctionne que dans <strong>Google Chrome</strong> ou <strong>Microsoft Edge</strong> sur un ordinateur (pas sur un smartphone). Ouvre cette page avec Chrome ou Edge et réessaie.</p>
 		</div>
 
-		<h2 data-tx="t0006:1cedb9ee" id="schritt-1">Étape 1 - Commander le dongle</h2>
+		<h2 data-tx="t0052:93c33292" id="voraussetzungen">Avant de commencer</h2>
+
+		<p data-tx="t0053:657fcf42">Vérifie brièvement que ces quatre points sont remplis dans ton cas - sinon, même le dongle prêt à l'emploi ne te servira à rien :</p>
+
+		<ul>
+			<li data-tx="t0054:b4ac4baa"><strong>SIP-Registrar</strong> - soit dans le routeur (par ex. Fritz!Box), soit directement chez le fournisseur de téléphonie, si celui-ci autorise les clients SIP externes ("inscription d'un téléphone IP possible").</li>
+			<li data-tx="t0055:95617e20"><strong>WLAN 2,4 GHz</strong> à portée du port USB.</li>
+			<li data-tx="t0056:de519524"><strong> Alimentation USB 5 V</strong> - idéalement directement sur le routeur, ou à défaut n'importe quel bloc d'alimentation USB.</li>
+			<li data-tx="t0057:66935893"><strong>Compte gratuit <a th:href="@{/login}">PhoneBlock</a></strong> pour le jeton API.</li>
+		</ul>
+
+		<h2 data-tx="t0058:1cedb9ee" id="schritt-1">Étape 1 - Commander le dongle</h2>
 
 		<p data-tx="t0007:4a8aea0f">Commande cette carte ESP32. Elle est suffisamment compacte pour être insérée directement comme clé USB dans le routeur, elle possède la puce série USB appropriée (CH340), et c'est avec elle que le dongle PhoneBlock a été développé et testé.</p>
 
@@ -72,7 +83,7 @@
 
 		<h2 data-tx="t0020:62d0966b" id="schritt-3">Étape 3 - Insérer la clé électronique dans l'ordinateur</h2>
 
-		<p data-tx="t0021:70a70ae6">Branche le dongle directement dans un port USB libre de ton ordinateur. Une petite LED sur la carte devrait s'allumer ou clignoter immédiatement.</p>
+		<p data-tx="t0021:11c66231">Branche le dongle directement dans un port USB libre de ton ordinateur. Une petite LED sur la carte devrait s'allumer immédiatement.</p>
 
 		<figure>
 			<div data-tx="t0022:a85e1a1d" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Caractère de remplacement : Photo "Le dongle est branché sur le port USB d'un ordinateur portable"]</div>
@@ -139,9 +150,9 @@
 
 		<p data-tx="t0043:f4d3bf5f">Ouvre dans le navigateur :</p>
 
-		<p><a class="button is-link is-large" data-tx="t0044:f04a859b" href="http://answerbot.local/">http://answerbot.local/</a></p>
+		<p><a class="button is-link is-large" data-tx="t0044:9be1c030" href="http://answerbot/">http://answerbot/</a></p>
 
-		<p data-tx="t0045:c627eba9">Si ce lien ne fonctionne pas (Windows sans Bonjour, certains réseaux locaux sans fil maillés), consulte la liste des périphériques de ton routeur pour trouver un périphérique nommé <code>answerbot</code>, note son adresse IP et accède à celle-ci dans ton navigateur - par exemple <code>http://192.168.178.42/</code>.</p>
+		<p data-tx="t0045:de303f98">Si ce lien ne fonctionne pas (Windows sans Bonjour, certains réseaux locaux sans fil maillés), consulte la liste des périphériques de ton routeur pour trouver un périphérique nommé <code>answerbot</code>, note son adresse IP et accède à celle-ci dans ton navigateur - par exemple <code>http://192.168.178.xxx/</code>.</p>
 
 		<figure>
 			<div data-tx="t0046:8bb491f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Caractère générique : Capture d'écran de l'interface web du dongle avec champs de saisie pour SIP et token]</div>
@@ -159,7 +170,31 @@
 
 		<p class="has-text-grey" data-tx="t0051:9316079d">Quelque chose ne fonctionne pas, tu utilises Firefox/Safari, Linux avec des particularités ou un autre board ? Les instructions détaillées avec toutes les options, les pièges de Linux et la toolchain ESP-IDF se trouvent dans le repo : <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</p>
 
-		<p class="has-text-grey" data-tx="t0052:8a689eeb">Code source du firmware : <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank"> phoneblock-dongle sur GitHub</a>.</p>
+		<h2 data-tx="t0059:c258f25f" id="tester">Contribuer au rapport d'expérience</h2>
+
+		<p data-tx="t0060:493a28c5">Le dongle fonctionne ici à la maison sur une Fritz!Box de manière fiable - mais les modèles de routeurs, les fournisseurs d'accès et les types de connexion sont très variés et chaque combinaison a ses particularités : d'autres dialectes SIP, d'autres règles NAT, d'autres retards de sonnerie. Pour que je puisse identifier des modèles et résoudre les problèmes de manière ciblée, les <strong>rapports d'expérience structurés</strong> valent de l'or - peu importe que tout ait fonctionné chez toi ou que quelque chose coince.</p>
+
+		<p data-tx="t0061:49f94506">Les configurations qui sont encore peu couvertes sont particulièrement intéressantes :</p>
+
+		<ul>
+			<li data-tx="t0062:e1971ce0">Raccordement Telekom avec routeur <strong>Speedport&lt;/x1</strong></li>
+			<li data-tx="t0063:61cce24d">Connexion au câble Vodafone/Unitymedia avec le boîtier d'opérateur fourni</li>
+			<li data-tx="t0064:ea506b90">1&amp;1, o2, Deutsche Glasfaser et autres fournisseurs d'accès</li>
+			<li data-tx="t0065:e5ffca52">Connexions à l'étranger (Suisse, Autriche, reste de l'Europe)</li>
+		</ul>
+
+		<p data-tx="t0066:3fcb6dd2">Les rapports sont générés via GitHub-Issues - un formulaire pré-rempli demande de manière structurée les données clés les plus importantes (matériel, routeur, fournisseur, version du firmware, résultat). Les autres testeurs voient ainsi directement quelles configurations sont déjà couvertes et lesquelles ne le sont pas.</p>
+
+		<p>
+			<a class="button is-primary is-medium" href="https://github.com/haumacher/phoneblock/issues/new?template=dongle-test-report.yml" rel="noopener" target="_blank">
+				<span class="icon"><i class="fab fa-github"></i></span>
+				<span data-tx="t0067:92ec79b">Ouvrir le témoignage</span>
+			</a>
+		</p>
+
+		<hr class="my-5"/>
+
+		<p class="has-text-grey" data-tx="t0068:8a689eeb">Code source du firmware : <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank"> phoneblock-dongle sur GitHub</a>.</p>
 	</div>
 </section>
 

@@ -25,7 +25,18 @@
 			<p data-tx="t0005:bb075478"><strong>Questo browser non è in grado di eseguire il flashing del dongle.</strong> Il flashing del Web funziona solo con <strong>Google Chrome</strong> o <strong>Microsoft Edge</strong> su un computer (non su uno smartphone). Aprire questa pagina con Chrome o Edge e riprovare.</p>
 		</div>
 
-		<h2 data-tx="t0006:1cedb9ee" id="schritt-1">Passo 1 - Ordinare il dongle</h2>
+		<h2 data-tx="t0052:93c33292" id="voraussetzungen">Prima di iniziare</h2>
+
+		<p data-tx="t0053:657fcf42">Verificate brevemente che siano soddisfatti questi quattro punti, altrimenti anche il dongle finito non vi servirà a nulla:</p>
+
+		<ul>
+			<li data-tx="t0054:b4ac4baa"><strong>Registratore SIP</strong> - o nel router (ad es. Fritz!Box) o direttamente presso il provider di telefonia, a condizione che questo consenta l'utilizzo di client SIP esterni ("Possibilità di registrazione di un telefono IP").</li>
+			<li data-tx="t0055:95617e20"><strong>WLAN a 2,4 GHz</strong> nel raggio d'azione della porta USB.</li>
+			<li data-tx="t0056:de519524"><strong>Alimentazione USB a 5 V</strong> - idealmente direttamente sul router, in alternativa qualsiasi alimentatore USB.</li>
+			<li data-tx="t0057:66935893"><strong>Account gratuito <a th:href="@{/login}">PhoneBlock</a></strong> per il token API.</li>
+		</ul>
+
+		<h2 data-tx="t0058:1cedb9ee" id="schritt-1">Passo 1 - Ordinare il dongle</h2>
 
 		<p data-tx="t0007:4a8aea0f">Ordinate questa scheda ESP32. È abbastanza compatta da poter essere collegata direttamente al router come una chiavetta USB, ha il chip seriale USB appropriato (CH340) e il dongle PhoneBlock è stato sviluppato e testato con essa.</p>
 
@@ -72,7 +83,7 @@
 
 		<h2 data-tx="t0020:62d0966b" id="schritt-3">Fase 3 - Inserire il dongle nel computer</h2>
 
-		<p data-tx="t0021:70a70ae6">Collegare il dongle direttamente a una porta USB libera del computer. Un piccolo LED sulla scheda dovrebbe accendersi o lampeggiare immediatamente.</p>
+		<p data-tx="t0021:11c66231">Collegare il dongle direttamente a una porta USB libera del computer. Un piccolo LED sulla scheda dovrebbe accendersi immediatamente.</p>
 
 		<figure>
 			<div data-tx="t0022:a85e1a1d" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Segnaposto: Foto "Dongle inserito nella porta USB di un notebook"].</div>
@@ -139,9 +150,9 @@
 
 		<p data-tx="t0043:f4d3bf5f">Aprire il browser:</p>
 
-		<p><a class="button is-link is-large" data-tx="t0044:f04a859b" href="http://answerbot.local/">http://answerbot.local/</a></p>
+		<p><a class="button is-link is-large" data-tx="t0044:9be1c030" href="http://answerbot/">http://answerbot/</a></p>
 
-		<p data-tx="t0045:c627eba9">Se questo collegamento non funziona (Windows senza Bonjour, alcune WLAN mesh), cercate nell'elenco dei dispositivi del router un dispositivo con il nome <code>answerbot</code>, annotate il suo indirizzo IP e richiamatelo nel browser, ad esempio <code>http://192.168.178.42/</code>.</p>
+		<p data-tx="t0045:de303f98">Se questo collegamento non funziona (Windows senza Bonjour, alcune WLAN mesh), cercate nell'elenco dei dispositivi del router un dispositivo con il nome <code>answerbot</code>, annotate il suo indirizzo IP e richiamatelo nel browser, ad esempio <code>http://192.168.178.xxx/</code>.</p>
 
 		<figure>
 			<div data-tx="t0046:8bb491f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Segnaposto: schermata dell'interfaccia web del dongle con i campi di immissione per SIP e token].</div>
@@ -159,7 +170,31 @@
 
 		<p class="has-text-grey" data-tx="t0051:9316079d">Qualcosa non funziona, state usando Firefox/Safari, Linux con delle particolarità o un'altra scheda? Le istruzioni dettagliate con tutte le opzioni, le insidie di Linux e la toolchain ESP-IDF si trovano nel repo: <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</p>
 
-		<p class="has-text-grey" data-tx="t0052:8a689eeb">Codice sorgente del firmware: <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank"> phoneblock-dongle su GitHub</a>.</p>
+		<h2 data-tx="t0059:c258f25f" id="tester">Contribuire al rapporto sull'esperienza</h2>
+
+		<p data-tx="t0060:493a28c5">Il dongle funziona in modo affidabile qui a casa su un Fritz!Box, ma i modelli di router, i provider e i tipi di connessione sono un mix variopinto e ogni combinazione ha le sue peculiarità: diversi dialetti SIP, diverse regole NAT, diversi ritardi di chiamata. Per poter riconoscere gli schemi e risolvere i problemi in modo mirato, i <strong>rapporti di esperienza strutturati</strong> valgono oro, indipendentemente dal fatto che tutto abbia funzionato o che qualcosa si sia bloccato.</p>
+
+		<p data-tx="t0061:49f94506">Particolarmente interessanti sono le configurazioni ancora poco coperte:</p>
+
+		<ul>
+			<li data-tx="t0062:e1971ce0">Connessione Telekom con router <strong>Speedport</strong></li>
+			<li data-tx="t0063:61cce24d">Collegamento via cavo Vodafone/Unitymedia con il box provider in dotazione</li>
+			<li data-tx="t0064:ea506b90">1&amp;1, o2, Deutsche Glasfaser e altri provider</li>
+			<li data-tx="t0065:e5ffca52">Collegamenti internazionali (Svizzera, Austria, resto d'Europa)</li>
+		</ul>
+
+		<p data-tx="t0066:3fcb6dd2">I rapporti vengono eseguiti tramite i problemi di GitHub: un modulo precompilato richiede i dati chiave più importanti (hardware, router, provider, versione del firmware, risultati) in modo strutturato. Gli altri tester possono vedere direttamente quali configurazioni sono già coperte e quali no.</p>
+
+		<p>
+			<a class="button is-primary is-medium" href="https://github.com/haumacher/phoneblock/issues/new?template=dongle-test-report.yml" rel="noopener" target="_blank">
+				<span class="icon"><i class="fab fa-github"></i></span>
+				<span data-tx="t0067:92ec79b">Rapporto sull'esperienza aperta</span>
+			</a>
+		</p>
+
+		<hr class="my-5"/>
+
+		<p class="has-text-grey" data-tx="t0068:8a689eeb">Codice sorgente del firmware: <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank"> phoneblock-dongle su GitHub</a>.</p>
 	</div>
 </section>
 
