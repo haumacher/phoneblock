@@ -1,0 +1,113 @@
+name: Dongle-Erfahrungsbericht
+description: Berichten, wie der PhoneBlock-Dongle in deinem Setup läuft (oder nicht).
+title: "[Dongle] "
+labels: ["dongle", "test-report"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Danke, dass du den Dongle in deinem Setup ausprobierst! Bitte fülle die folgenden Felder aus,
+        damit andere Tester ihre Setups einordnen können und ich Muster über mehrere Berichte hinweg
+        erkenne. Pflichtfelder sind mit \* markiert; alles andere ist hilfreich, aber optional.
+
+  - type: input
+    id: hardware
+    attributes:
+      label: Hardware / Board
+      description: Konkretes ESP32-DevKit. Falls nicht eindeutig, gerne Hersteller + USB-Serial-Chip.
+      placeholder: "z. B. NodeMCU-32E (ESP-WROOM-32E, CP2102)"
+    validations:
+      required: true
+
+  - type: input
+    id: firmware-version
+    attributes:
+      label: Firmware-Version
+      description: Steht auf der Status-Seite des Dongles unter „firmware_version".
+      placeholder: "z. B. dongle-v0.3.1"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: flash-method
+    attributes:
+      label: Flash-Methode
+      options:
+        - Browser-Installer (phoneblock.net/dongle-install)
+        - ESP-IDF-Toolchain (idf.py flash)
+        - sonstige
+    validations:
+      required: true
+
+  - type: input
+    id: router
+    attributes:
+      label: Router-Modell
+      placeholder: "z. B. Fritz!Box 7590, Speedport Smart 4, Vodafone Station"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: connection-type
+    attributes:
+      label: Anschlussart
+      options:
+        - DSL
+        - Glasfaser (FTTH)
+        - Kabel
+        - Mobilfunk / LTE-Router
+        - sonstige
+    validations:
+      required: true
+
+  - type: dropdown
+    id: provider
+    attributes:
+      label: Telefonie-Provider
+      options:
+        - Telekom
+        - Vodafone / Unitymedia
+        - 1&1
+        - o2 / Telefónica
+        - Deutsche Glasfaser
+        - sonstige
+    validations:
+      required: true
+
+  - type: dropdown
+    id: sip-source
+    attributes:
+      label: SIP-Registrierung
+      description: Wo meldet sich der Dongle als IP-Telefon an?
+      options:
+        - Router (eigener SIP-Registrar)
+        - direkt beim Telefonie-Provider
+        - eigener / externer SIP-Server
+    validations:
+      required: true
+
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Was funktioniert, was nicht?
+      description: |
+        Bitte konkret: blockiert er Spam, klingelt das echte Telefon trotzdem mit, hängt sich der
+        Dongle auf, kommt er gar nicht ins WLAN? Auch positive Ergebnisse sind wertvoll.
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / Status-Ausgabe (optional)
+      description: |
+        Relevante Zeilen aus der seriellen Konsole oder Inhalt der Status-Seite. Bitte als Codeblock.
+      render: text
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: Bestätigung
+      options:
+        - label: Ich habe vor dem Schreiben geprüft, ob mein Setup nicht schon in einem offenen Issue beschrieben ist.
+          required: true
