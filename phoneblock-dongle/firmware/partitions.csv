@@ -5,12 +5,20 @@
 # as the Ethernet default flipped to WiFi. Storage partition keeps
 # the "storage" label so announcement.c continues to mount it.
 #
+# The "pairing" partition (4 KB, custom data subtype 0x40) is written
+# only by the browser-side flasher: it carries a per-install random
+# secret that lets the install page locate the freshly-flashed dongle
+# on the LAN without relying on mDNS / DHCP host-name. OTA-only dongles
+# leave it 0xFF-erased and the firmware silently skips the pairing
+# handshake.
+#
 # One-way migration: existing dongles running the old factory-only
 # layout must be reflashed over USB once. From there on, OTA updates
 # flip between ota_0 and ota_1 automatically.
 nvs,        data, nvs,     0x9000,    0x6000
 otadata,    data, ota,     0xf000,    0x2000
 phy_init,   data, phy,     0x11000,   0x1000
+pairing,    data, 0x40,    0x12000,   0x1000
 ota_0,      app,  ota_0,   0x20000,   0x170000
 ota_1,      app,  ota_1,   0x190000,  0x170000
 storage,    data, spiffs,  0x300000,  0x100000
