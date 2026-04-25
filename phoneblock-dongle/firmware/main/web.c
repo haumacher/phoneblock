@@ -118,6 +118,84 @@ static void local_ip_str(char *out, size_t cap)
     esp_ip4addr_ntoa(&info.ip, out, cap);
 }
 
+// --- Private Network Access opt-in ---------------------------------
+//
+// Chrome 130+ / current Edge enforce a CORS preflight when a top-level
+// navigation crosses from a public origin (https://phoneblock.net) to a
+// private IP target (this dongle on http://192.168.x.x/). Without an
+// explicit Allow-Private-Network: true response the navigation is
+// silently blocked and the install page appears to "do nothing" after
+// flashing — every diagnostic looks fine, the browser just refuses to
+// hop networks. The opt-in is two pieces:
+//
+//  1. Answer the OPTIONS preflight on any URI with the PNA + ACAO
+//     headers (handle_pna_preflight, registered as a wildcard route).
+//  2. Mirror the PNA + ACAO headers on the regular response the
+//     browser actually navigates to (set_pna_response_headers, called
+//     from handle_root).
+//
+// The Origin allowlist is exactly one value. Anything else gets the
+// regular 404/no-headers response so drive-by scanners don't see we
+// even speak PNA.
+
+static const char PNA_ALLOWED_ORIGIN[] = "https://phoneblock.net";
+
+static bool pna_origin_allowed(const char *origin)
+{
+    return origin != NULL && strcmp(origin, PNA_ALLOWED_ORIGIN) == 0;
+}
+
+// Mirrors the PNA/ACAO headers onto a regular 2xx response if the
+// caller's Origin is on the allowlist. No-op otherwise.
+static void set_pna_response_headers(httpd_req_t *req)
+{
+    char origin[64];
+    if (httpd_req_get_hdr_value_str(req, "Origin", origin, sizeof(origin)) != ESP_OK) {
+        return;
+    }
+    if (!pna_origin_allowed(origin)) {
+        return;
+    }
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin",          PNA_ALLOWED_ORIGIN);
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Private-Network", "true");
+    httpd_resp_set_hdr(req, "Vary",
+                       "Origin, Access-Control-Request-Private-Network");
+}
+
+static esp_err_t handle_pna_preflight(httpd_req_t *req)
+{
+    char origin[64];
+    if (httpd_req_get_hdr_value_str(req, "Origin", origin, sizeof(origin)) != ESP_OK
+            || !pna_origin_allowed(origin)) {
+        httpd_resp_set_status(req, "404 Not Found");
+        httpd_resp_send(req, NULL, 0);
+        return ESP_OK;
+    }
+
+    // The preflight is *triggered* by the PNA header; mirror it back
+    // only when present so plain CORS-only callers (no PNA in use) see
+    // a clean ACAO response.
+    char pna[8];
+    bool wants_pna = httpd_req_get_hdr_value_str(
+        req, "Access-Control-Request-Private-Network",
+        pna, sizeof(pna)) == ESP_OK
+        && strcmp(pna, "true") == 0;
+
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin",  PNA_ALLOWED_ORIGIN);
+    if (wants_pna) {
+        httpd_resp_set_hdr(req, "Access-Control-Allow-Private-Network", "true");
+    }
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    httpd_resp_set_hdr(req, "Access-Control-Allow-Headers", "Content-Type");
+    httpd_resp_set_hdr(req, "Access-Control-Max-Age",       "600");
+    httpd_resp_set_hdr(req, "Vary",
+                       "Origin, Access-Control-Request-Private-Network");
+
+    httpd_resp_set_status(req, "204 No Content");
+    httpd_resp_send(req, NULL, 0);
+    return ESP_OK;
+}
+
 // --- Handlers -------------------------------------------------------
 
 static esp_err_t handle_favicon(httpd_req_t *req)
@@ -130,6 +208,7 @@ static esp_err_t handle_favicon(httpd_req_t *req)
 
 static esp_err_t handle_root(httpd_req_t *req)
 {
+    set_pna_response_headers(req);
     httpd_resp_set_type(req, "text/html; charset=utf-8");
     httpd_resp_send(req, (const char *)index_html_start,
                     index_html_end - index_html_start);
@@ -1390,6 +1469,11 @@ static const httpd_uri_t URIS[] = {
     { .uri = "/api/token-test",          .method = HTTP_POST, .handler = handle_token_test,          .user_ctx = NULL },
     { .uri = "/register-start",      .method = HTTP_GET,  .handler = handle_register_start, .user_ctx = NULL },
     { .uri = "/token-callback",      .method = HTTP_GET,  .handler = handle_token_callback, .user_ctx = NULL },
+    // Catch-all OPTIONS handler for the PNA preflight Chrome/Edge sends
+    // before navigating from https://phoneblock.net to this dongle's
+    // LAN IP. Method-scoped to OPTIONS so it doesn't shadow any of the
+    // GET/POST routes above.
+    { .uri = "/*",                   .method = HTTP_OPTIONS, .handler = handle_pna_preflight, .user_ctx = NULL },
 };
 
 void web_start(void)
@@ -1402,6 +1486,10 @@ void web_start(void)
     httpd_config_t cfg = HTTPD_DEFAULT_CONFIG();
     cfg.server_port = 80;
     cfg.max_uri_handlers = sizeof(URIS) / sizeof(URIS[0]) + 2;
+    // Enables glob matching so the catch-all "/*" OPTIONS preflight
+    // entry covers every URI. All other routes use literal paths, so
+    // wildcard matching has no effect on them.
+    cfg.uri_match_fn = httpd_uri_match_wildcard;
     // The default 4 KB is too tight once /api/fritzbox-setup → tr064_*
     // nests through call_action → post_soap → esp_http_client. 8 KB
     // gives us headroom for the deep call chain without overflows.
