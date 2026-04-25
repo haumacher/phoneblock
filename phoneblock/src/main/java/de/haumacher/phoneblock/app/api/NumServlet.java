@@ -13,10 +13,12 @@ import de.haumacher.phoneblock.app.SearchServlet;
 import de.haumacher.phoneblock.app.api.model.PhoneInfo;
 import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 import de.haumacher.phoneblock.app.api.model.Rating;
+import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.Users;
+import de.haumacher.phoneblock.db.settings.AuthToken;
 import de.haumacher.phoneblock.location.LocationService;
 import de.haumacher.phoneblock.meta.MetaSearchService;
 import de.haumacher.phoneblock.util.ServletUtil;
@@ -32,7 +34,7 @@ import jakarta.servlet.http.HttpServletResponse;
 @WebServlet(urlPatterns = NumServlet.PREFIX + "/*")
 public class NumServlet extends HttpServlet {
 
-	static final String PREFIX = "/api/num";
+	public static final String PREFIX = "/api/num";
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -53,6 +55,39 @@ public class NumServlet extends HttpServlet {
 		if (number == null) {
 			ServletUtil.sendError(resp, "Invalid phone number.");
 			return;
+		}
+
+		// For authenticated requests, honor the user's personal blacklist/whitelist
+		// (same semantics as SpamCheckServlet, but by plain phone number instead of
+		// SHA1 hash). Anonymous requests fall through to the public lookup.
+		AuthToken auth = LoginFilter.getAuthorization(req);
+		if (auth != null) {
+			String phoneId = NumberAnalyzer.getPhoneId(number);
+			DB db = DBService.getInstance();
+			try (SqlSession session = db.openSession()) {
+				BlockList blocklist = session.getMapper(BlockList.class);
+				Boolean state = blocklist.getPersonalizationState(auth.getUserId(), phoneId);
+				if (state != null) {
+					PhoneInfo info;
+					if (state.booleanValue()) {
+						// User has personally blocked this number — return real community data
+						// with blackListed flag so the client can force-block.
+						SpamReports reports = session.getMapper(SpamReports.class);
+						info = db.getPhoneApiInfo(reports, phoneId);
+						info.setBlackListed(true);
+					} else {
+						// User has personally whitelisted this number.
+						info = NumberAnalyzer.phoneInfoFromId(phoneId)
+							.setRating(Rating.A_LEGITIMATE);
+					}
+					info.setLabel(number.getShortcut());
+					if (number.hasCity()) {
+						info.setLocation(number.getCity());
+					}
+					ServletUtil.sendResult(req, resp, info);
+					return;
+				}
+			}
 		}
 
 		ServletUtil.sendResult(req, resp, lookup(req, number));

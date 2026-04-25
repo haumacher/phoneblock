@@ -15,6 +15,7 @@ import de.haumacher.phoneblock.ab.CreateABServlet;
 import de.haumacher.phoneblock.ab.ListABServlet;
 import de.haumacher.phoneblock.app.api.AccountManagementServlet;
 import de.haumacher.phoneblock.app.api.BlocklistServlet;
+import de.haumacher.phoneblock.app.api.NumServlet;
 import de.haumacher.phoneblock.app.api.PersonalizationServlet;
 import de.haumacher.phoneblock.app.api.RateServlet;
 import de.haumacher.phoneblock.app.api.SearchApiServlet;
@@ -25,6 +26,7 @@ import de.haumacher.phoneblock.carddav.CardDavServlet;
 import de.haumacher.phoneblock.db.settings.AuthToken;
 import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -47,6 +49,7 @@ import jakarta.servlet.http.HttpServletResponse;
 	CallReportServlet.URL_PATTERN,
 	SearchApiServlet.PATTERN,
 	CardDavServlet.URL_PATTERN,
+	NumServlet.PREFIX + "/*",
 })
 public class BasicLoginFilter extends LoginFilter {
 
@@ -60,7 +63,13 @@ public class BasicLoginFilter extends LoginFilter {
 	}
 	
 	@Override
-	protected void requestLogin(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException {
+	protected void requestLogin(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
+		if (NumServlet.PREFIX.equals(request.getServletPath())) {
+			// /api/num/* accepts anonymous access; authentication is only used to
+			// apply personal blacklist/whitelist when a valid token is presented.
+			chain.doFilter(request, response);
+			return;
+		}
 		LOG.debug("Requesting authentication for: {}", request.getServletPath());
 		ServletUtil.sendAuthenticationRequest(response);
 	}
@@ -111,6 +120,7 @@ public class BasicLoginFilter extends LoginFilter {
 		case SearchApiServlet.PREFIX:
 		case SpamCheckServlet.PATH:
 		case TestConnectServlet.PATH:
+		case NumServlet.PREFIX:
 			return authorization.isAccessQuery();
 		case CardDavServlet.DIR_NAME:
 			return authorization.isAccessCarddav();
