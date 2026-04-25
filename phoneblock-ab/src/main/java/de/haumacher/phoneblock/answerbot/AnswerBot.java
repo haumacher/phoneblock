@@ -274,7 +274,16 @@ public class AnswerBot extends MultipleUAS {
 				LOG.info("Ignoring call from {}, failed to retrieve rating.", from);
 				return rejectHandler();
 			}
-			
+
+			if (info.isBlackListed()) {
+				LOG.info("Accepting call from {} (number on personal blacklist).", from);
+				return spamHandler(userName, from);
+			}
+
+			// Note: The corresponding personal whitelist case needs no explicit handling here.
+			// The server already reports whitelisted numbers with rating A_LEGITIMATE and
+			// zero votes, so the vote-restriction check below rejects the call (i.e. the
+			// answerbot does not pick up and the phone rings normally).
 			int votes = user.getWildcard() ? info.getVotesWildcard() : info.getVotes();
 			if (votes < user.getMinVotes()) {
 				// Not considered SPAM.

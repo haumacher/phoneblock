@@ -166,6 +166,40 @@ message PhoneInfo {
 	string location;
 }
 
+/** A single aggregated SPAM range matching a hash prefix in a {@link PrefixCheckResult}. */
+message RangeMatch {
+	/** The plaintext prefix of the aggregated range (e.g. "+4930123"). */
+	string prefix;
+
+	/** Aggregated number of SPAM votes for all numbers in this range. */
+	int votes;
+
+	/** Number of distinct SPAM numbers known for this range. */
+	int cnt;
+}
+
+/**
+ * Response of the privacy-preserving k-anonymity prefix lookup
+ * (see {@link de.haumacher.phoneblock.app.api.PrefixCheckServlet}).
+ *
+ * <p>
+ * The server returns all SPAM numbers / range aggregations whose SHA-1 hashes
+ * start with the provided hex prefixes. The client matches the entries
+ * against its own (locally-hashed) number to decide whether the caller is on
+ * the blocklist — the server never sees the plaintext number.
+ * </p>
+ */
+message PrefixCheckResult {
+	/** Phone numbers whose SHA-1 hash starts with the {@code sha1} prefix from the request. */
+	repeated PhoneInfo numbers;
+
+	/** 10-digit range aggregations whose SHA-1 hash starts with the {@code prefix10} prefix from the request. Empty if no {@code prefix10} was supplied or no match was found. */
+	repeated RangeMatch range10;
+
+	/** 100-digit range aggregations whose SHA-1 hash starts with the {@code prefix100} prefix from the request. Empty if no {@code prefix100} was supplied or no match was found. */
+	repeated RangeMatch range100;
+}
+
 /** Info about how often a number was searched. */
 message SearchInfo {
 	/** The phone number */

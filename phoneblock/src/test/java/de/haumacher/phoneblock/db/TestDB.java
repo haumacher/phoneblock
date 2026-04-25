@@ -85,6 +85,29 @@ public class TestDB {
 	}
 	
 	@Test
+	void testCallReportQuota() {
+		_db.createUser("flagger", "Flagger", "de", "+49");
+
+		try (SqlSession session = _db.openSession()) {
+			Users users = session.getMapper(Users.class);
+			long userId = users.getUserId("flagger").longValue();
+
+			// First flag of day 100 — counter resets to 1.
+			assertEquals(1, users.tryConsumeCallReportQuota(userId, 100, 3));
+			// Two further flags still fit within the quota (quota = 3).
+			assertEquals(1, users.tryConsumeCallReportQuota(userId, 100, 3));
+			assertEquals(1, users.tryConsumeCallReportQuota(userId, 100, 3));
+			// Fourth flag on the same day is refused.
+			assertEquals(0, users.tryConsumeCallReportQuota(userId, 100, 3));
+			// Day change triggers a lazy reset — the new day starts fresh.
+			assertEquals(1, users.tryConsumeCallReportQuota(userId, 101, 3));
+			assertEquals(1, users.tryConsumeCallReportQuota(userId, 101, 3));
+
+			session.commit();
+		}
+	}
+
+	@Test
 	void testAuthToken() {
 		_db.createUser("user1", "User 1", "de", "+49");
 
