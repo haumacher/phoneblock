@@ -3,10 +3,12 @@
 #   - manifest.json per fetch()            (CORS-Pflicht)
 #   - bootloader/partition-table/app.bin   (CORS-Pflicht)
 # Static, keine Credentials → ACAO "*" ist sicher.
-# A server-wide rule already sets ACAO to https://phoneblock.net. Unset any
-# existing value first, then set it once — otherwise browsers reject the
-# response for having duplicate ACAO headers.
+# A server-wide rule already sets ACAO to https://phoneblock.net (in the
+# "regular" header table, applied to 2xx). Unset both tables before our own
+# `set` — otherwise the response carries two ACAO headers and browsers
+# reject the request as CORS-broken.
 <IfModule mod_headers.c>
+    Header unset Access-Control-Allow-Origin
     Header always unset Access-Control-Allow-Origin
     Header always set Access-Control-Allow-Origin "*"
 </IfModule>
