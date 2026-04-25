@@ -34,6 +34,23 @@ static bool               s_has_ip;
 // "STA is connecting, scan are not allowed!".
 static bool               s_wps_restart_pending;
 
+// Number of consecutive WIFI_EVENT_STA_DISCONNECTED events without an
+// interleaving GOT_IP. Reset by on_got_ip(). Used to detect a stuck
+// reconnect loop — typically caused by stored credentials whose
+// security profile no longer matches the AP (Reason 210).
+static int                s_consecutive_disconnects;
+
+// Once-per-power-cycle latch so a recovery wipe can't flash NVS in a
+// runaway loop if the recovered WPS pairing fails for an unrelated
+// reason. Cleared only by a power cycle.
+static bool               s_recovery_done;
+
+// Trigger threshold: ~30 disconnects ≈ 75 s on a typical router that
+// rejects with Reason 210 every ~2.4 s. Long enough to ride out a
+// transient AP reboot without burning NVS, short enough that a
+// genuinely stuck dongle recovers within a couple of minutes.
+#define RECOVERY_DISCONNECT_THRESHOLD 30
+
 static void start_wps(void)
 {
     esp_wps_config_t cfg = WPS_CONFIG_INIT_DEFAULT(WPS_TYPE_PBC);
@@ -70,6 +87,51 @@ static void schedule_wps_restart(void)
     xTaskCreate(wps_restart_task, "wps_restart", 3072, NULL, 3, NULL);
 }
 
+// Last-resort recovery for a dongle whose stored credentials no longer
+// associate (typical cause: AP firmware update changed the security
+// profile, e.g. WPA2 → WPA2/WPA3-Transitional with PMF, and the
+// previously stored config has no PMF capability bit set, so the STA
+// gets Reason 210 — NO_AP_FOUND_W_COMPATIBLE_SECURITY — on every
+// reconnect attempt). Wipes NVS-stored credentials via
+// esp_wifi_restore() and restarts WPS pairing so the user can re-pair
+// without USB-flashing the device.
+//
+// Same task-based shape as wps_restart_task: get out of the event-
+// handler context, disconnect cleanly, then change driver state.
+static void recovery_task(void *arg)
+{
+    (void)arg;
+
+    ESP_LOGW(TAG, "wiping stored Wi-Fi credentials and restarting WPS pairing");
+    esp_wifi_disconnect();
+    vTaskDelay(pdMS_TO_TICKS(500));
+
+    // Clears the sta_config that's been getting us nowhere, including
+    // SSID, passphrase, and any security flags. Next boot would land
+    // in the no-credentials path; we save the user that reboot by
+    // jumping straight into WPS here.
+    esp_err_t err = esp_wifi_restore();
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "esp_wifi_restore: %s", esp_err_to_name(err));
+    }
+
+    s_wps_restart_pending = false;
+    s_consecutive_disconnects = 0;
+    start_wps();
+    vTaskDelete(NULL);
+}
+
+static void schedule_recovery(void)
+{
+    // Same wedge-prevention pattern as schedule_wps_restart(): keep
+    // the disconnect handler from firing esp_wifi_connect() while the
+    // recovery task is mid-cleanup.
+    s_recovery_done = true;
+    s_wps_active = false;
+    s_wps_restart_pending = true;
+    xTaskCreate(recovery_task, "wifi_recovery", 3072, NULL, 3, NULL);
+}
+
 static void on_wifi_event(void *arg, esp_event_base_t base, int32_t id, void *data)
 {
     switch (id) {
@@ -83,8 +145,24 @@ static void on_wifi_event(void *arg, esp_event_base_t base, int32_t id, void *da
             wifi_event_sta_disconnected_t *d = data;
             ESP_LOGW(TAG, "disconnected (reason %d)", d ? d->reason : -1);
             s_has_ip = false;
+
+            // Only count disconnects that happen during normal
+            // reconnect attempts. WPS-driven disconnects are noise
+            // for this counter — they reset on every WPS restart.
             if (!s_wps_active && !s_wps_restart_pending) {
-                esp_wifi_connect();
+                s_consecutive_disconnects++;
+
+                if (!s_recovery_done
+                        && s_consecutive_disconnects >= RECOVERY_DISCONNECT_THRESHOLD) {
+                    ESP_LOGW(TAG,
+                        "no successful association after %d disconnects "
+                        "(last reason %d) — wiping stored credentials and "
+                        "falling back to WPS pairing",
+                        s_consecutive_disconnects, d ? d->reason : -1);
+                    schedule_recovery();
+                } else {
+                    esp_wifi_connect();
+                }
             }
             break;
         }
@@ -135,6 +213,10 @@ static void on_got_ip(void *arg, esp_event_base_t base, int32_t id, void *data)
     ip_event_got_ip_t *e = data;
     ESP_LOGI(TAG, "got IP " IPSTR, IP2STR(&e->ip_info.ip));
     s_has_ip = true;
+    // A single successful association proves the stored credentials
+    // are usable. Reset the recovery counter so a later transient
+    // outage doesn't spuriously trigger a credential wipe.
+    s_consecutive_disconnects = 0;
     xEventGroupSetBits(s_events, WIFI_CONNECTED_BIT);
 }
 
