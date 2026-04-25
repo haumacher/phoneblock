@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.dongle-install.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001:dae96b09">Blinker donglen i nettleseren</h1>
+
+		<p class="subtitle" data-tx="t0002:ea8fbc11">Ett ESP32-kort, én USB-kabel, ett klikk - den gjeldende PhoneBlock-fastvaren overføres direkte fra denne nettleseren til donglen din.</p>
+
+		<noscript>
+			<div class="notification is-danger">
+				<p data-tx="t0003:3515d43b">Denne siden krever JavaScript. Vennligst aktiver det i nettleseren din eller følg de <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle">manuelle Flash-instruksjonene i repoen</a>.</p>
+			</div>
+		</noscript>
+
+		<div class="notification is-warning" id="dongle-install-unsupported" style="display:none;">
+			<p data-tx="t0004:9e289a24"><strong>Leseren din støtter ikke webseriell</strong> Webblinking kjører bare i desktop <strong>Chrome</strong>, <strong>Edge</strong> eller <strong>Opera</strong>. På Firefox, Safari, Android og iOS kan du blinke donglen med <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle">ESP-IDF toolchain via USB</a> i stedet.</p>
+		</div>
+
+		<h2 data-tx="t0005:50a8a929">1. Klargjør maskinvaren</h2>
+
+		<ul>
+			<li data-tx="t0006:9797814d">ESP32-DevKit med ESP-WROOM-32E (f.eks. NodeMCU-32E) - se <a th:href="@{/dongle}">Hardware notes</a>.</li>
+			<li data-tx="t0007:831bfe23">USB-<strong>datakabel</strong> (ikke bare en ladekabel) mellom datamaskin og dongle.</li>
+			<li data-tx="t0008:13116d83">På <strong>Windows</strong> kan det hende du må installere den serielle USB-driveren - vanligvis <a href="https://www.silabs.com/developer-tools/usb-to-uart-bridge-vcp-drivers" rel="noopener" target="_blank">CP210x</a> (Silicon Labs) eller <a href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">CH340/CH341</a> (WCH).</li>
+			<li data-tx="t0009:a030a88a">På <strong>Linux</strong> må brukeren din være i gruppen <code>dialout</code> (<code>sudo usermod -aG dialout $USER</code>, og logg deretter ut og inn igjen én gang).</li>
+		</ul>
+
+		<h2 data-tx="t0010:2abc78eb">2. Blinker</h2>
+
+		<p data-tx="t0011:d9654236">Klikk på knappen, velg din dongle i nettleserdialogen, og vent til prosessen er fullført. Flash-minnet slettes under en første blits - all eksisterende konfigurasjon vil gå tapt.</p>
+
+		<p>
+			<esp-web-install-button manifest="https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json">
+				<button class="button is-primary is-large" slot="activate" type="button">
+					<span class="icon"><i class="fas fa-bolt"></i></span>
+					<span data-tx="t0012:1b4594a6">Flash nå</span>
+				</button>
+				<span slot="unsupported"></span>
+				<span slot="not-allowed"></span>
+			</esp-web-install-button>
+		</p>
+
+		<h2 data-tx="t0013:f0d7c4e4">3. Etter blinking</h2>
+
+		<ol>
+			<li data-tx="t0014:a549ef8">Dongelen starter på nytt og åpner WLAN <code>PhoneBlock-Dongle-XXXX</code>.</li>
+			<li data-tx="t0015:bb7d40cb">Bytt til dette WLAN med smarttelefonen eller den bærbare PC-en, og nettleseren åpner automatisk oppsettssiden (captive portal).</li>
+			<li data-tx="t0016:cd9ce37d">Velg hjemme-WLAN, angi SIP-tilgangsdata og PhoneBlock-token - mer informasjon finner du i <a th:href="@{/dongle}">Dongle-instruksjoner</a>.</li>
+		</ol>
+
+		<hr class="my-5"/>
+
+		<p class="has-text-grey" data-tx="t0017:8a689eeb">Kildekoden til fastvaren: <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank"> phoneblock-dongle på GitHub</a>.</p>
+	</div>
+</section>
+
+<script src="https://cdn.phoneblock.net/dongle/installer/esp-web-tools/install-button.js" type="module"></script>
+
+<script>
+(function() {
+	if (!('serial' in navigator)) {
+		var box = document.getElementById('dongle-install-unsupported');
+		if (box) { box.style.display = ''; }
+	}
+})();
+</script>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

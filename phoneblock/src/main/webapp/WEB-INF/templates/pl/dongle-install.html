@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.dongle-install.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001:dae96b09">Flashowanie klucza sprzętowego w przeglądarce</h1>
+
+		<p class="subtitle" data-tx="t0002:ea8fbc11">Jedna płytka ESP32, jeden kabel USB, jedno kliknięcie - aktualne oprogramowanie układowe PhoneBlock jest przesyłane bezpośrednio z tej przeglądarki do klucza sprzętowego.</p>
+
+		<noscript>
+			<div class="notification is-danger">
+				<p data-tx="t0003:3515d43b">Ta strona wymaga JavaScript. Aktywuj ją w przeglądarce lub postępuj zgodnie z instrukcjami <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle">manual Flash w repozytorium</a>.</p>
+			</div>
+		</noscript>
+
+		<div class="notification is-warning" id="dongle-install-unsupported" style="display:none;">
+			<p data-tx="t0004:9e289a24"><strong>Twoja przeglądarka nie obsługuje web serial</strong> Web flashing działa tylko w desktopowych <strong>Chrome</strong>, <strong>Edge</strong> lub <strong>Opera</strong>. W przeglądarkach Firefox, Safari, Android i iOS można zamiast tego flashować klucz sprzętowy za pomocą łańcucha narzędzi <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle">ESP-IDF przez USB</a>.</p>
+		</div>
+
+		<h2 data-tx="t0005:50a8a929">1. przygotowanie sprzętu</h2>
+
+		<ul>
+			<li data-tx="t0006:9797814d">ESP32-DevKit z ESP-WROOM-32E (np. NodeMCU-32E) - patrz <a th:href="@{/dongle}">Uwagi dotyczące sprzętu</a>.</li>
+			<li data-tx="t0007:831bfe23">Kabel USB <strong>data</strong> (nie tylko kabel do ładowania) między komputerem a kluczem sprzętowym.</li>
+			<li data-tx="t0008:13116d83">W systemie <strong>Windows</strong> może być konieczne zainstalowanie sterownika szeregowego USB - zwykle <a href="https://www.silabs.com/developer-tools/usb-to-uart-bridge-vcp-drivers" rel="noopener" target="_blank">CP210x</a> (Silicon Labs) lub <a href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">CH340/CH341</a> (WCH).</li>
+			<li data-tx="t0009:a030a88a">W systemie <strong>Linux</strong> użytkownik musi należeć do grupy <code>dialout</code> (<code>sudo usermod -aG dialout $USER</code>, a następnie wyloguj się i zaloguj ponownie).</li>
+		</ul>
+
+		<h2 data-tx="t0010:2abc78eb">2. miganie</h2>
+
+		<p data-tx="t0011:d9654236">Kliknij przycisk, wybierz klucz sprzętowy w oknie dialogowym przeglądarki i poczekaj na zakończenie procesu. Pamięć flash jest usuwana podczas początkowego flashowania - wszelkie istniejące konfiguracje zostaną utracone.</p>
+
+		<p>
+			<esp-web-install-button manifest="https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json">
+				<button class="button is-primary is-large" slot="activate" type="button">
+					<span class="icon"><i class="fas fa-bolt"></i></span>
+					<span data-tx="t0012:1b4594a6">Flash teraz</span>
+				</button>
+				<span slot="unsupported"></span>
+				<span slot="not-allowed"></span>
+			</esp-web-install-button>
+		</p>
+
+		<h2 data-tx="t0013:f0d7c4e4">3. po flashowaniu</h2>
+
+		<ol>
+			<li data-tx="t0014:a549ef8">Klucz sprzętowy uruchomi się ponownie i otworzy sieć WLAN <code>PhoneBlock-Dongle-XXXX</code>.</li>
+			<li data-tx="t0015:bb7d40cb">Po połączeniu się z tą siecią WLAN za pomocą smartfona lub notebooka przeglądarka automatycznie otworzy stronę konfiguracji (captive portal).</li>
+			<li data-tx="t0016:cd9ce37d">Wybierz domową sieć WLAN, wprowadź dane dostępu SIP i token PhoneBlock - szczegóły w instrukcji <a th:href="@{/dongle}">Klucza sprzętowego</a>.</li>
+		</ol>
+
+		<hr class="my-5"/>
+
+		<p class="has-text-grey" data-tx="t0017:8a689eeb">Kod źródłowy oprogramowania sprzętowego: <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank"> phoneblock-dongle na GitHub</a>.</p>
+	</div>
+</section>
+
+<script src="https://cdn.phoneblock.net/dongle/installer/esp-web-tools/install-button.js" type="module"></script>
+
+<script>
+(function() {
+	if (!('serial' in navigator)) {
+		var box = document.getElementById('dongle-install-unsupported');
+		if (box) { box.style.display = ''; }
+	}
+})();
+</script>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

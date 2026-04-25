@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.dongle-install.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001:dae96b09">在浏览器中闪烁加密狗</h1>
+
+		<p class="subtitle" data-tx="t0002:ea8fbc11">一块 ESP32 板、一根 USB 电缆、一次点击--当前的 PhoneBlock 固件将直接从浏览器传输到您的加密狗。</p>
+
+		<noscript>
+			<div class="notification is-danger">
+				<p data-tx="t0003:3515d43b">本页面需要 JavaScript。请在浏览器中激活它，或按照软件仓库中的 <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle">Flash 手册说明进行操作</a>。</p>
+			</div>
+		</noscript>
+
+		<div class="notification is-warning" id="dongle-install-unsupported" style="display:none;">
+			<p data-tx="t0004:9e289a24"><strong>您的浏览器不支持网络串行</strong>网络闪存只能在桌面<strong>Chrome</strong>、<strong>Edge</strong>或<strong>Opera</strong>中运行。在 Firefox、Safari、Android 和 iOS 上，您可以使用 <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle">ESP-IDF 工具链通过 USB</a> 闪存加密狗。</p>
+		</div>
+
+		<h2 data-tx="t0005:50a8a929">1. 准备硬件</h2>
+
+		<ul>
+			<li data-tx="t0006:9797814d">带有 ESP-WROOM-32E 的 ESP32-DevKit （例如 NodeMCU-32E） - 参见 <a th:href="@{/dongle}">硬件说明</a>。</li>
+			<li data-tx="t0007:831bfe23">电脑和加密狗之间的 USB <strong>数据线</strong>（不只是充电线）。</li>
+			<li data-tx="t0008:13116d83">在 <strong>Windows</strong> 上，您可能需要安装 USB 串行驱动程序 - 通常是 <a href="https://www.silabs.com/developer-tools/usb-to-uart-bridge-vcp-drivers" rel="noopener" target="_blank">CP210x</a> (Silicon Labs) 或 <a href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">CH340/CH341</a> (WCH)。</li>
+			<li data-tx="t0009:a030a88a">在 <strong>Linux</strong> 上，用户必须在 <code>dialout</code> 组中（<code>sudo usermod -aG dialout $USER</code>，然后退出并重新登录一次）。</li>
+		</ul>
+
+		<h2 data-tx="t0010:2abc78eb">2. 闪烁</h2>
+
+		<p data-tx="t0011:d9654236">单击该按钮，在浏览器对话框中选择加密狗，然后等待该过程完成。闪存在初始闪存过程中会被删除，任何现有配置都将丢失。</p>
+
+		<p>
+			<esp-web-install-button manifest="https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json">
+				<button class="button is-primary is-large" slot="activate" type="button">
+					<span class="icon"><i class="fas fa-bolt"></i></span>
+					<span data-tx="t0012:1b4594a6">立即 Flash</span>
+				</button>
+				<span slot="unsupported"></span>
+				<span slot="not-allowed"></span>
+			</esp-web-install-button>
+		</p>
+
+		<h2 data-tx="t0013:f0d7c4e4">3. 闪烁后</h2>
+
+		<ol>
+			<li data-tx="t0014:a549ef8">加密狗重新启动并打开 WLAN <code>PhoneBlock-Dongle-XXXX</code>。</li>
+			<li data-tx="t0015:bb7d40cb">使用智能手机或笔记本电脑切换到该 WLAN，浏览器会自动打开设置页面（专属门户）。</li>
+			<li data-tx="t0016:cd9ce37d">选择家庭 WLAN，输入 SIP 接入数据和 PhoneBlock 令牌 - 详见<a th:href="@{/dongle}">加密狗说明</a>。</li>
+		</ol>
+
+		<hr class="my-5"/>
+
+		<p class="has-text-grey" data-tx="t0017:8a689eeb">固件源代码：<a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank"> GitHub 上的 phoneblock-dongle</a>.</p>
+	</div>
+</section>
+
+<script src="https://cdn.phoneblock.net/dongle/installer/esp-web-tools/install-button.js" type="module"></script>
+
+<script>
+(function() {
+	if (!('serial' in navigator)) {
+		var box = document.getElementById('dongle-install-unsupported');
+		if (box) { box.style.display = ''; }
+	}
+})();
+</script>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

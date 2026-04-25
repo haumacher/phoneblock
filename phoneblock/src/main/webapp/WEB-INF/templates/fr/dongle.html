@@ -12,12 +12,12 @@
 		<p class="subtitle" data-tx="t0095:dab19814">Un répondeur intelligent dans l'habit d'un téléphone IP. De la taille du pouce, il se branche sur le port USB du routeur, s'enregistre comme téléphone SIP supplémentaire - et intercepte les appels publicitaires avant que ton véritable téléphone ne sonne. Fonctionne indépendamment du modèle de routeur, même sans Fritz!Box.</p>
 
 		<div class="notification is-warning">
-			<p data-tx="t0096:59767eb8"><strong>Status : Beta.</strong> Chez moi, le dongle fonctionne de manière fiable sur la Fritz!Box - mais avant de le recommander largement, j'aimerais l'essayer sur le plus de types de connexion possibles. Je cherche des testeurs et je donne des appareils en échange - <a href="#tester">voir ci-dessous</a>.</p>
+			<p data-tx="t0096:bfb7afe0"><strong>Status : Beta.</strong> La première version fonctionne déjà de manière fiable. Je cherche d'autres testeurs pour essayer le dongle dans des environnements aussi différents que possible, <a href="#tester">voir ci-dessous</a>.</p>
 		</div>
 
 		<h2 data-tx="t0004:6b104c7a">L'idée en une phrase</h2>
 
-		<p data-tx="t0081:67bb8b12">Le dongle se connecte à ton routeur comme un téléphone IP supplémentaire. Chaque fois qu'un appel arrive, il demande en un clin d'œil à la base de données PhoneBlock : <em>"Est-ce un spam ?"</em> Si c'est le cas, il répond lui-même à l'appel, joue un court message d'accueil si tu le souhaites et raccroche. Ton vrai téléphone n'a même pas encore sonné à ce moment-là.</p>
+		<p data-tx="t0081:567e2d4a">Le dongle se connecte à ton routeur comme un téléphone IP supplémentaire. Chaque fois qu'un appel arrive, il demande en un clin d'œil à la base de données PhoneBlock : <em>"Est-ce un spam ?"</em> Si c'est le cas, il répond lui-même à l'appel, joue un court message d'accueil si tu le souhaites et raccroche. Ton vrai téléphone n'a pas encore sonné à ce moment-là. Contrairement au <a th:href="@{/anrufbeantworter}">répondeur cloud</a>, le traitement complet des appels se fait localement, chez toi.</p>
 
 		<div class="columns is-centered mt-5">
 			<div class="column is-one-quarter has-text-centered">
@@ -33,12 +33,12 @@
 			<div class="column is-one-quarter has-text-centered">
 				<p><span class="icon is-large has-text-danger"><i class="fas fa-ban fa-3x"></i></span></p>
 				<h4 data-tx="t0010:be667d0f">3. le jeter</h4>
-				<p data-tx="t0099:f1599c42">Si le numéro est un spam, le dongle décroche, joue une annonce si on le souhaite et raccroche. Le téléphone du salon reste silencieux. Si le numéro n'est pas un spam connu, le dongle ne fait tout simplement rien - l'appel passe normalement.</p>
+				<p data-tx="t0099:5eb763c7">Si le numéro est un spam, le dongle décroche, fait entendre une annonce et raccroche. Le téléphone du salon reste silencieux. Si le numéro n'est pas un spam connu, le dongle ne fait tout simplement rien - l'appel passe normalement.</p>
 			</div>
 		</div>
 
 		<div class="notification is-info">
-			<p data-tx="t0100:21b36aaa"><strong>Pourquoi c'est si charmant:</strong> Le dongle n'a besoin que d'un minimum de courant et de WLAN. Pas de serveur supplémentaire, pas de fonction spéciale Fritz!Box, pas de contrat. Le microcontrôleur ESP32 à l'intérieur consomme moins d'un demi-watt - tu peux simplement le brancher sur le port USB de ton routeur et l'oublier.</p>
+			<p data-tx="t0100:86bdb13f"><strong>Pourquoi c'est si charmant:</strong> Le dongle ne nécessite qu'un minimum d'électricité et de WLAN. Pas de serveur supplémentaire, pas de Fritz!Box, pas de contrat. Le microcontrôleur ESP32 à l'intérieur consomme moins d'un demi-watt - tu peux simplement le brancher sur le port USB de ton routeur et l'oublier.</p>
 		</div>
 
 		<h2 data-tx="t0013:755fe635">Comparaison : trois moyens de bloquer le spam sur le réseau fixe</h2>
@@ -51,16 +51,16 @@
 					<tr>
 						<th data-tx="t0015:ece15d25">Propriété</th>
 						<th data-tx="t0016:365a40ae">Dongle PhoneBlock</th>
-						<th data-tx="t0018:150f46ce">PhoneBlock Answer Bot</th>
+						<th data-tx="t0018:a17f6b5">Répondeur téléphonique Clound</th>
 						<th data-tx="t0017:b7a22f37">Répertoire téléphonique des listes de blocage</th>
 					</tr>
 				</thead>
 				<tbody>
 					<tr>
-						<td><strong data-tx="t0108:9e08101d">Le téléphone reste complètement silencieux en cas de spam</strong></td>
-						<td data-tx="t0020:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Oui</td>
-						<td data-tx="t0022:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Oui</td>
-						<td data-tx="t0084:cf12d799"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Au choix : affichage ou blocage</td>
+						<td><strong data-tx="t0112:ebecddaf">Efficacité</strong></td>
+						<td data-tx="t0103:df4b4973"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Maximum, liste complète des blocs</td>
+						<td data-tx="t0104:df4b4973"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Maximum, liste complète des blocs</td>
+						<td data-tx="t0089:2e61bee2"><span class="icon has-text-warning"><i class="fas fa-sync"></i></span> Bien, mais seulement un petit extrait de la liste de blocs, sync ≤ 1 ×/jour</td>
 					</tr>
 					<tr>
 						<td><strong data-tx="t0109:90691916">Conditions requises pour le routeur</strong></td>
@@ -69,46 +69,34 @@
 						<td data-tx="t0085:120e2e30"><span class="icon has-text-warning"><i class="fas fa-wifi"></i></span> Fritz!Box plus récente avec CardDAV</td>
 					</tr>
 					<tr>
-						<td><strong data-tx="t0110:e66ba2b">Matériel supplémentaire</strong></td>
-						<td data-tx="t0028:99294924"><span class="icon has-text-info"><i class="fas fa-usb"></i></span> Clé USB, environ 10</td>
-						<td data-tx="t0087:fe8232e3"><span class="icon has-text-success"><i class="fas fa-cloud"></i></span> Aucun (service cloud)</td>
-						<td data-tx="t0029:58a26498"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Aucune</td>
+						<td><strong data-tx="t0114:5f4450bc">Protection des données</strong></td>
+						<td data-tx="t0120:ba0feedd"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Optimal ; L'appel reste local ; Uniquement la comparaison de hachage des appelants inconnus</td>
+						<td data-tx="t0121:294f8242"><span class="icon has-text-danger"><i class="fas fa-cloud"></i></span> La signalisation de chaque appel (y compris des contacts) passe par le serveur PhoneBlock</td>
+						<td data-tx="t0116:7a42296d"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Rien ne quitte le routeur</td>
 					</tr>
 					<tr>
 						<td><strong data-tx="t0111:83c9a19b">Frais d'installation</strong></td>
-						<td data-tx="t0032:e09b2ea8"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Brancher, configurer WLAN + accès</td>
-						<td data-tx="t0088:ca8f4268"><span class="icon has-text-info"><i class="fas fa-gear"></i></span> Créer un répondeur téléphonique, entrer les crédentiels SIP dans le routeur</td>
-						<td data-tx="t0102:68527b14"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Enregistrer l'URL CardDAV dans le routeur et configurer le blocage d'appel</td>
+						<td data-tx="t0032:4e6c7d5d"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Plug &amp; Play</td>
+						<td data-tx="t0088:aa5e1238"><span class="icon has-text-info"><i class="fas fa-gear"></i></span> élevé</td>
+						<td data-tx="t0102:e51ea302"><span class="icon has-text-info"><i class="fas fa-gear"></i></span> modérée</td>
 					</tr>
 					<tr>
-						<td><strong data-tx="t0112:4532187f">Actualité de la liste de blocage</strong></td>
-						<td data-tx="t0103:1984a240"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Consultation en direct, liste complète des blocs</td>
-						<td data-tx="t0104:1984a240"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Consultation en direct, liste complète des blocs</td>
-						<td data-tx="t0089:a868030b"><span class="icon has-text-warning"><i class="fas fa-sync"></i></span> Uniquement extrait de la liste des blocs, sync ≤ 1 ×/jour</td>
+						<td><strong data-tx="t0110:e66ba2b">Matériel supplémentaire</strong></td>
+						<td data-tx="t0028:99294924"><span class="icon has-text-info"><i class="fas fa-usb"></i></span> Clé USB, environ 10</td>
+						<td data-tx="t0087:fe8232e3"><span class="icon has-text-success"><i class="fas fa-cloud"></i></span> Aucun (service cloud)</td>
+						<td data-tx="t0029:4d86e32e"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Aucun (intégré dans la Fritz!Box)</td>
 					</tr>
 					<tr>
-						<td><strong data-tx="t0113:a8c2cfff">Consommation de courant en fonctionnement continu</strong></td>
-						<td data-tx="t0040:3d07b53b"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> environ 0,4 W (USB)</td>
-						<td data-tx="t0090:c0b4a4fd"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> 0 W (service cloud)</td>
-						<td data-tx="t0041:30562f18"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> 0 W (utilise le routeur)</td>
-					</tr>
-					<tr>
-						<td><strong data-tx="t0114:5f4450bc">Protection des données</strong></td>
-						<td data-tx="t0120:9c548b5d"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Hachage uniquement vers le serveur, l'appel reste local ; les contacts ne sont pas vérifiés</td>
-						<td data-tx="t0121:294f8242"><span class="icon has-text-warning"><i class="fas fa-cloud"></i></span> La signalisation de chaque appel (y compris des contacts) passe par le serveur PhoneBlock</td>
-						<td data-tx="t0116:7a42296d"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Rien ne quitte le routeur</td>
+						<td><strong data-tx="t0108:9e08101d">Le téléphone reste complètement silencieux en cas de spam</strong></td>
+						<td data-tx="t0020:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Oui</td>
+						<td data-tx="t0022:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Oui</td>
+						<td data-tx="t0084:cf12d799"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Au choix : affichage ou blocage</td>
 					</tr>
 					<tr>
 						<td><strong data-tx="t0118:f4c95d3e">Occuper activement les spammeurs</strong></td>
 						<td data-tx="t0044:fc6557f4"><span class="icon has-text-danger"><i class="fas fa-times"></i></span> Non - brièvement éconduit</td>
 						<td data-tx="t0046:cafb9dda"><span class="icon has-text-success"><i class="fas fa-comments"></i></span> Oui - impliqué dans le dialogue</td>
 						<td data-tx="t0122:1b0bf702"><span class="icon has-text-danger"><i class="fas fa-times"></i></span> Non - l'appel est bloqué</td>
-					</tr>
-					<tr>
-						<td><strong data-tx="t0119:2762a4e5">Maturité</strong></td>
-						<td data-tx="t0048:8639cb45"><span class="icon has-text-warning"><i class="fas fa-flask"></i></span> Bêta</td>
-						<td data-tx="t0050:770dd04"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Productive</td>
-						<td data-tx="t0049:770dd04"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Productive</td>
 					</tr>
 				</tbody>
 			</table>
@@ -117,19 +105,18 @@
 		<div class="notification is-info mt-4">
 			<p><strong data-tx="t0051:8125e3d9">Quelle est la solution qui te convient le mieux ?</strong></p>
 			<ul>
-				<li data-tx="t0106:f8bcce39"><strong>Dongle</strong> - si tu n'as <em>pas de Fritz!Box</em> ou si tu ne veux pas exploiter un serveur permanent, mais que tu veux quand même que le téléphone se taise de manière fiable en cas de spam.</li>
-				<li data-tx="t0105:b8fe802f"><strong>Answer Bot</strong> - si tu veux employer activement des spammeurs et que ta Fritz!Box autorise une connexion SIP depuis Internet.</li>
-				<li data-tx="t0107:e2dfc"><strong>L'annuaire des listes de blocage</strong> - si tu as une Fritz!Box, qu'un simple marquage ou le blocage manuel des appels du routeur te suffisent et que cela ne te dérange pas si un spammeur qui se trouve en fait sur la liste de blocage passe quand même à travers.</li>
+				<li data-tx="t0106:8a963c4e"><strong>Dongle</strong> - si tu veux une défense optimale contre le SPAM avec la meilleure protection des données.</li>
+				<li data-tx="t0105:1ab5fa6c"><strong>Answer Bot</strong> - tu as ta propre Fritz!Box (pas de boîte de location) et, pour une défense optimale contre le SPAM, tu acceptes que tous tes appels soient vérifiés par le serveur PhoneBlock.</li>
+				<li data-tx="t0107:c59e2c7f"><strong>Blocklisten-Telefonbuch</strong> - si tu as une Fritz!Box (même une box de location), et que cela ne te dérange pas si un spammeur passe de temps en temps alors qu'il est en fait sur la liste de blocage.</li>
 			</ul>
 		</div>
 
 		<h2 data-tx="t0055:984ebad2">Conditions préalables</h2>
 		<ul>
-			<li data-tx="t0123:116251e5"><strong>SIP-Registrar</strong> - soit dans le routeur (Fritz!Box, Speedport, Provider-Box), soit directement chez le fournisseur de téléphonie, si celui-ci autorise les clients SIP externes.</li>
-			<li data-tx="t0124:d322a975"><strong>Délai de sonnerie (optionnel)</strong> - 3 à 5 secondes sur le téléphone principal permettent d'intercepter les spams avant la première sonnerie. De nombreux téléphones DECT réagissent déjà un peu lentement.</li>
+			<li data-tx="t0123:a6d81845"><strong>Enregistreur SIP</strong> - soit dans le routeur, soit directement chez le fournisseur de téléphonie, si celui-ci autorise les clients SIP externes ("inscription d'un téléphone VOIP possible").</li>
 			<li data-tx="t0058:be2e6f7c"><strong>WLAN 2,4 GHz</strong> à portée de main.</li>
-			<li data-tx="t0059:41e630a8"><strong> Alimentation USB 5 V</strong> - idéalement directement sur le routeur, sinon sur n'importe quel bloc d'alimentation USB.</li>
-			<li data-tx="t0092:f8c04413"><strong>Compte gratuit <a th:href="@{/login}">PhoneBlock</a></strong> avec jeton d'accès à l'API.</li>
+			<li data-tx="t0059:76b831cc"><strong> Alimentation USB 5 V</strong> - idéalement un port USB dans le routeur, ou n'importe quel bloc d'alimentation USB.</li>
+			<li><strong data-tx="t0126:c7ef7b58">Compte <a th:href="@{/login}">PhoneBlock</a> gratuit</strong>.</li>
 		</ul>
 
 		<hr class="my-5"/>
@@ -169,7 +156,13 @@
 			</div>
 			<div class="column">
 				<h4 data-tx="t0075:29886ac5"><span class="icon"><i class="fas fa-code"></i></span> Firmware</h4>
-				<p data-tx="t0076:a40b2de8">Micrologiciel open source basé sur ESP-IDF. Flasher via USB avec la toolchain ESP-IDF ou plus tard via un binaire préfabriqué. La configuration initiale complète (WLAN, SIP, token) se fait directement sur le dongle via un petit front-end web.</p>
+				<p data-tx="t0127:5aa93352">Micrologiciel open source basé sur ESP-IDF. Flasher directement dans le navigateur Chrome ou Edge via USB - ou de manière classique avec la toolchain ESP-IDF. La configuration initiale complète (WLAN, SIP, token) se fait directement sur le dongle via un petit front-end web.</p>
+				<p class="mt-2">
+					<a class="button is-primary" th:href="@{/dongle-install}">
+						<span class="icon"><i class="fas fa-bolt"></i></span>
+						<span data-tx="t0128:adfc6ffe">Flasher dans le navigateur</span>
+					</a>
+				</p>
 			</div>
 			<div class="column">
 				<h4 data-tx="t0077:d0101c48"><span class="icon"><i class="fab fa-github"></i></span> Code source &amp; instructions</h4>

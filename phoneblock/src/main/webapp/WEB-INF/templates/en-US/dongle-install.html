@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.dongle-install.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001:dae96b09">Flashing the dongle in the browser</h1>
+
+		<p class="subtitle" data-tx="t0002:ea8fbc11">One ESP32 board, one USB cable, one click - the latest PhoneBlock firmware is transferred directly from this browser to your dongle.</p>
+
+		<noscript>
+			<div class="notification is-danger">
+				<p data-tx="t0003:3515d43b">This page requires JavaScript. Please activate it in your browser or follow the <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle">manual Flash instructions in the repo</a>.</p>
+			</div>
+		</noscript>
+
+		<div class="notification is-warning" id="dongle-install-unsupported" style="display:none;">
+			<p data-tx="t0004:9e289a24"><strong>Your browser does not support web serial</strong> Web flashing only works in desktop <strong>Chrome</strong>, <strong>Edge</strong> or <strong>Opera</strong>. On Firefox, Safari, Android and iOS, you can flash the dongle with the <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle">ESP-IDF toolchain via USB</a> instead.</p>
+		</div>
+
+		<h2 data-tx="t0005:50a8a929">1. prepare hardware</h2>
+
+		<ul>
+			<li data-tx="t0006:9797814d">ESP32-DevKit with ESP-WROOM-32E (e.g. NodeMCU-32E) - see <a th:href="@{/dongle}">Hardware notes</a>.</li>
+			<li data-tx="t0007:831bfe23">USB-<strong>data cable</strong> (not just a charging cable) between computer and dongle.</li>
+			<li data-tx="t0008:13116d83">On <strong>Windows</strong> you may need to install the USB serial driver - usually <a href="https://www.silabs.com/developer-tools/usb-to-uart-bridge-vcp-drivers" rel="noopener" target="_blank">CP210x</a> (Silicon Labs) or <a href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">CH340/CH341</a> (WCH).</li>
+			<li data-tx="t0009:a030a88a">On <strong>Linux</strong> your user must be in the <code>dialout</code> group (<code>sudo usermod -aG dialout $USER</code>, then log out and back in once).</li>
+		</ul>
+
+		<h2 data-tx="t0010:2abc78eb">2. flashing</h2>
+
+		<p data-tx="t0011:d9654236">Click on the button, select your dongle in the browser dialog and wait until the process is complete. During an initial flash, the flash memory is deleted - any existing configuration will be lost.</p>
+
+		<p>
+			<esp-web-install-button manifest="https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json">
+				<button class="button is-primary is-large" slot="activate" type="button">
+					<span class="icon"><i class="fas fa-bolt"></i></span>
+					<span data-tx="t0012:1b4594a6">Flash now</span>
+				</button>
+				<span slot="unsupported"></span>
+				<span slot="not-allowed"></span>
+			</esp-web-install-button>
+		</p>
+
+		<h2 data-tx="t0013:f0d7c4e4">3. after flashing</h2>
+
+		<ol>
+			<li data-tx="t0014:a549ef8">The dongle restarts and opens the WLAN <code>PhoneBlock-Dongle-XXXX</code>.</li>
+			<li data-tx="t0015:bb7d40cb">Switch to this WLAN with your smartphone or notebook, the browser opens the setup page automatically (captive portal).</li>
+			<li data-tx="t0016:cd9ce37d">Select home WLAN, enter SIP access data and PhoneBlock token - details in the <a th:href="@{/dongle}">Dongle instructions</a>.</li>
+		</ol>
+
+		<hr class="my-5"/>
+
+		<p class="has-text-grey" data-tx="t0017:8a689eeb">Source code of the firmware: <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank"> phoneblock-dongle on GitHub</a>.</p>
+	</div>
+</section>
+
+<script src="https://cdn.phoneblock.net/dongle/installer/esp-web-tools/install-button.js" type="module"></script>
+
+<script>
+(function() {
+	if (!('serial' in navigator)) {
+		var box = document.getElementById('dongle-install-unsupported');
+		if (box) { box.style.display = ''; }
+	}
+})();
+</script>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

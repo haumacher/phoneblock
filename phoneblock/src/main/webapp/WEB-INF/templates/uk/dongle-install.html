@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.dongle-install.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001:dae96b09">Прошивання ключа в браузері</h1>
+
+		<p class="subtitle" data-tx="t0002:ea8fbc11">Одна плата ESP32, один USB-кабель, один клік - поточна прошивка PhoneBlock передається безпосередньо з цього браузера на ваш донгл.</p>
+
+		<noscript>
+			<div class="notification is-danger">
+				<p data-tx="t0003:3515d43b">Ця сторінка потребує JavaScript. Будь ласка, активуйте його у вашому браузері або дотримуйтесь інструкцій <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle">Ручний Flash в репо</a>.</p>
+			</div>
+		</noscript>
+
+		<div class="notification is-warning" id="dongle-install-unsupported" style="display:none;">
+			<p data-tx="t0004:9e289a24"><strong>Ваш браузер не підтримує веб-прошивання</strong> Веб-прошивання працює лише у десктопних <strong>Chrome</strong>, <strong>Edge</strong> або <strong>Opera</strong>. У Firefox, Safari, Android та iOS замість цього ви можете прошити ключ за допомогою набору інструментів <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle">ESP-IDF через USB</a>.</p>
+		</div>
+
+		<h2 data-tx="t0005:50a8a929">1. підготувати обладнання</h2>
+
+		<ul>
+			<li data-tx="t0006:9797814d">ESP32-DevKit з ESP-WROOM-32E (наприклад, NodeMCU-32E) - див. <a th:href="@{/dongle}">Зауваження до обладнання</a>.</li>
+			<li data-tx="t0007:831bfe23">USB-<strong>кабель для передачі даних</strong> (не тільки зарядний кабель) між комп'ютером і ключем.</li>
+			<li data-tx="t0008:13116d83">На <strong>Windows</strong> може знадобитися встановити послідовний драйвер USB - зазвичай <a href="https://www.silabs.com/developer-tools/usb-to-uart-bridge-vcp-drivers" rel="noopener" target="_blank">CP210x</a> (Silicon Labs) або <a href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">CH340/CH341</a> (WCH).</li>
+			<li data-tx="t0009:a030a88a">У <strong>Linux</strong> ваш користувач має бути у групі <code>dialout</code> (<code>sudo usermod -aG dialout $USER</code>, потім вийдіть і увійдіть один раз).</li>
+		</ul>
+
+		<h2 data-tx="t0010:2abc78eb">2. блимає</h2>
+
+		<p data-tx="t0011:d9654236">Натисніть на кнопку, виберіть ваш ключ у діалоговому вікні браузера і дочекайтеся завершення процесу. Під час першого перепрошивання флеш-пам'ять видаляється - будь-яка наявна конфігурація буде втрачена.</p>
+
+		<p>
+			<esp-web-install-button manifest="https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json">
+				<button class="button is-primary is-large" slot="activate" type="button">
+					<span class="icon"><i class="fas fa-bolt"></i></span>
+					<span data-tx="t0012:1b4594a6">Спалахніть зараз.</span>
+				</button>
+				<span slot="unsupported"></span>
+				<span slot="not-allowed"></span>
+			</esp-web-install-button>
+		</p>
+
+		<h2 data-tx="t0013:f0d7c4e4">3. після спалаху</h2>
+
+		<ol>
+			<li data-tx="t0014:a549ef8">Ключ перезапуститься і відкриє WLAN <code>PhoneBlock-Dongle-XXXX</code>.</li>
+			<li data-tx="t0015:bb7d40cb">Переключіться на цю WLAN за допомогою смартфона або ноутбука, браузер автоматично відкриє сторінку налаштувань (captive portal).</li>
+			<li data-tx="t0016:cd9ce37d">Виберіть домашню WLAN, введіть дані доступу до SIP і токен PhoneBlock - деталі в інструкції до ключа.<a th:href="@{/dongle}"></a></li>
+		</ol>
+
+		<hr class="my-5"/>
+
+		<p class="has-text-grey" data-tx="t0017:8a689eeb">Вихідний код прошивки: <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank"> phoneblock-dongle на GitHub</a>.</p>
+	</div>
+</section>
+
+<script src="https://cdn.phoneblock.net/dongle/installer/esp-web-tools/install-button.js" type="module"></script>
+
+<script>
+(function() {
+	if (!('serial' in navigator)) {
+		var box = document.getElementById('dongle-install-unsupported');
+		if (box) { box.style.display = ''; }
+	}
+})();
+</script>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

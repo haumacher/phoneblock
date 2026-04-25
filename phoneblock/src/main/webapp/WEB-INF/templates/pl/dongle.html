@@ -12,12 +12,12 @@
 		<p class="subtitle" data-tx="t0095:dab19814">Inteligentna automatyczna sekretarka pod postacią telefonu IP. Urządzenie wielkości kciuka podłącza się do portu USB routera, rejestruje jako dodatkowy telefon SIP - i przechwytuje połączenia komercyjne, zanim zadzwoni telefon. Działa niezależnie od modelu routera, nawet bez Fritza!</p>
 
 		<div class="notification is-warning">
-			<p data-tx="t0096:59767eb8"><strong>Status: Beta.</strong> Klucz sprzętowy działa niezawodnie na moim Fritz!Box - ale zanim polecę go szeroko, chciałbym wypróbować go na jak największej liczbie różnych typów połączeń. Szukam testerów i w zamian rozdaję urządzenia - <a href="#tester">patrz poniżej</a>.</p>
+			<p data-tx="t0096:bfb7afe0"><strong>Status: Beta.</strong> Pierwsza wersja działa już niezawodnie. Szukam więcej testerów, aby wypróbować klucz sprzętowy w jak największej liczbie różnych środowisk, <a href="#tester">patrz poniżej</a>.</p>
 		</div>
 
 		<h2 data-tx="t0004:6b104c7a">Pomysł w jednym zdaniu</h2>
 
-		<p data-tx="t0081:67bb8b12">Klucz sprzętowy loguje się do routera jak dodatkowy telefon IP. Za każdym razem, gdy przychodzi połączenie, błyskawicznie pyta bazę danych PhoneBlock: <em>"Czy to spam?"</em> Jeśli tak, sam odbiera połączenie, odtwarza krótką zapowiedź i rozłącza się ponownie. Twój prawdziwy telefon nawet nie zadzwonił w tym momencie.</p>
+		<p data-tx="t0081:567e2d4a">Klucz sprzętowy loguje się do routera jak dodatkowy telefon IP. Za każdym razem, gdy przychodzi połączenie, błyskawicznie pyta bazę danych PhoneBlock: <em>"Czy to spam?"</em> Jeśli tak, sam odbiera połączenie, odtwarza krótką zapowiedź i rozłącza się ponownie. Twój prawdziwy telefon nawet nie zadzwonił w tym momencie. W przeciwieństwie do <a th:href="@{/anrufbeantworter}">automatycznej sekretarki w chmurze</a>, całe przetwarzanie połączeń odbywa się lokalnie w domu użytkownika.</p>
 
 		<div class="columns is-centered mt-5">
 			<div class="column is-one-quarter has-text-centered">
@@ -33,12 +33,12 @@
 			<div class="column is-one-quarter has-text-centered">
 				<p><span class="icon is-large has-text-danger"><i class="fas fa-ban fa-3x"></i></span></p>
 				<h4 data-tx="t0010:be667d0f">3. pozbyć się go</h4>
-				<p data-tx="t0099:f1599c42">Jeśli numer jest spamem, klucz sprzętowy odbierze połączenie, odtworzy komunikat i rozłączy się. Telefon w salonie pozostaje cichy. Jeśli numer nie jest spamem, klucz sprzętowy po prostu nic nie robi - połączenie przechodzi normalnie.</p>
+				<p data-tx="t0099:5eb763c7">Jeśli numer jest spamem, klucz sprzętowy odbierze połączenie, odtworzy komunikat i rozłączy się. Telefon w salonie pozostaje cichy. Jeśli numer nie jest spamem, klucz sprzętowy po prostu nic nie robi - połączenie przechodzi normalnie.</p>
 			</div>
 		</div>
 
 		<div class="notification is-info">
-			<p data-tx="t0100:21b36aaa"><strong>Dlaczego to takie urocze:</strong> Klucz sprzętowy potrzebuje tylko minimalnej mocy i Wi-Fi. Żadnego dodatkowego serwera, żadnej specjalnej funkcji Fritz!Box, żadnej umowy. Znajdujący się wewnątrz mikrokontroler ESP32 pobiera mniej niż pół wata - można go po prostu podłączyć do portu USB routera i zapomnieć o nim.</p>
+			<p data-tx="t0100:86bdb13f"><strong>Dlaczego to takie urocze:</strong> Klucz sprzętowy potrzebuje tylko minimalnej mocy i Wi-Fi. Bez dodatkowego serwera, bez Fritz!Box, bez umowy. Znajdujący się wewnątrz mikrokontroler ESP32 pobiera mniej niż pół wata - można go po prostu podłączyć do portu USB routera i zapomnieć o nim.</p>
 		</div>
 
 		<h2 data-tx="t0013:755fe635">Porównanie: Trzy sposoby blokowania spamu z telefonów stacjonarnych</h2>
@@ -51,16 +51,16 @@
 					<tr>
 						<th data-tx="t0015:ece15d25">Cecha</th>
 						<th data-tx="t0016:365a40ae">Klucz sprzętowy PhoneBlock</th>
-						<th data-tx="t0018:150f46ce">Bot odpowiedzi PhoneBlock</th>
+						<th data-tx="t0018:a17f6b5">Automatyczna sekretarka</th>
 						<th data-tx="t0017:b7a22f37">Książka telefoniczna z blokadą</th>
 					</tr>
 				</thead>
 				<tbody>
 					<tr>
-						<td><strong data-tx="t0108:9e08101d">Telefon pozostaje całkowicie cichy podczas spamowania</strong></td>
-						<td data-tx="t0020:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Tak</td>
-						<td data-tx="t0022:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Tak</td>
-						<td data-tx="t0084:cf12d799"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Opcjonalnie wyświetl lub zablokuj</td>
+						<td><strong data-tx="t0112:ebecddaf">Skuteczność</strong></td>
+						<td data-tx="t0103:df4b4973"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Maksymalnie, cała lista bloków</td>
+						<td data-tx="t0104:df4b4973"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Maksymalnie, cała lista bloków</td>
+						<td data-tx="t0089:2e61bee2"><span class="icon has-text-warning"><i class="fas fa-sync"></i></span> Dobrze, ale tylko mała część listy bloków, synchronizacja ≤ 1 ×/dzień</td>
 					</tr>
 					<tr>
 						<td><strong data-tx="t0109:90691916">Wymagania dotyczące routera</strong></td>
@@ -69,46 +69,34 @@
 						<td data-tx="t0085:120e2e30"><span class="icon has-text-warning"><i class="fas fa-wifi"></i></span> Nowszy Fritz!Box z CardDAV</td>
 					</tr>
 					<tr>
-						<td><strong data-tx="t0110:e66ba2b">Dodatkowy sprzęt</strong></td>
-						<td data-tx="t0028:99294924"><span class="icon has-text-info"><i class="fas fa-usb"></i></span> Klucz sprzętowy USB, ok. 10 €</td>
-						<td data-tx="t0087:fe8232e3"><span class="icon has-text-success"><i class="fas fa-cloud"></i></span> Brak (usługa w chmurze)</td>
-						<td data-tx="t0029:58a26498"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Brak</td>
+						<td><strong data-tx="t0114:5f4450bc">Ochrona danych</strong></td>
+						<td data-tx="t0120:ba0feedd"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Optymalnie; połączenie pozostaje lokalne; tylko dopasowanie hash nieznanych rozmówców</td>
+						<td data-tx="t0121:294f8242"><span class="icon has-text-danger"><i class="fas fa-cloud"></i></span> Sygnalizacja każdego połączenia (również z kontaktów) odbywa się za pośrednictwem serwera PhoneBlock</td>
+						<td data-tx="t0116:7a42296d"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Nic nie opuszcza routera</td>
 					</tr>
 					<tr>
 						<td><strong data-tx="t0111:83c9a19b">Wysiłek związany z konfiguracją</strong></td>
-						<td data-tx="t0032:e09b2ea8"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Podłącz, skonfiguruj WLAN + dostęp</td>
-						<td data-tx="t0088:ca8f4268"><span class="icon has-text-info"><i class="fas fa-gear"></i></span> Utwórz automatyczną sekretarkę, wprowadź poświadczenia SIP w routerze</td>
-						<td data-tx="t0102:68527b14"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Zapisz adres URL CardDAV w routerze i skonfiguruj blokowanie połączeń</td>
+						<td data-tx="t0032:4e6c7d5d"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Plug &amp; Play</td>
+						<td data-tx="t0088:aa5e1238"><span class="icon has-text-info"><i class="fas fa-gear"></i></span> wysoki</td>
+						<td data-tx="t0102:e51ea302"><span class="icon has-text-info"><i class="fas fa-gear"></i></span> umiarkowany</td>
 					</tr>
 					<tr>
-						<td><strong data-tx="t0112:4532187f">Aktualność listy bloków</strong></td>
-						<td data-tx="t0103:1984a240"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Zapytanie na żywo, cała lista bloków</td>
-						<td data-tx="t0104:1984a240"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Zapytanie na żywo, cała lista bloków</td>
-						<td data-tx="t0089:a868030b"><span class="icon has-text-warning"><i class="fas fa-sync"></i></span> Tylko sekcja listy bloków, synchronizacja ≤ 1 ×/dzień</td>
+						<td><strong data-tx="t0110:e66ba2b">Dodatkowy sprzęt</strong></td>
+						<td data-tx="t0028:99294924"><span class="icon has-text-info"><i class="fas fa-usb"></i></span> Klucz sprzętowy USB, ok. 10 €</td>
+						<td data-tx="t0087:fe8232e3"><span class="icon has-text-success"><i class="fas fa-cloud"></i></span> Brak (usługa w chmurze)</td>
+						<td data-tx="t0029:4d86e32e"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Brak (zintegrowany z Fritz!Box)</td>
 					</tr>
 					<tr>
-						<td><strong data-tx="t0113:a8c2cfff">Pobór mocy w trybie ciągłym</strong></td>
-						<td data-tx="t0040:3d07b53b"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> ok. 0,4 W (USB)</td>
-						<td data-tx="t0090:c0b4a4fd"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> 0 W (usługa w chmurze)</td>
-						<td data-tx="t0041:30562f18"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> 0 W (używa routera)</td>
-					</tr>
-					<tr>
-						<td><strong data-tx="t0114:5f4450bc">Ochrona danych</strong></td>
-						<td data-tx="t0120:9c548b5d"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Tylko hash do serwera, połączenie pozostaje lokalne; kontakty nie są sprawdzane.</td>
-						<td data-tx="t0121:294f8242"><span class="icon has-text-warning"><i class="fas fa-cloud"></i></span> Sygnalizacja każdego połączenia (również z kontaktów) odbywa się za pośrednictwem serwera PhoneBlock</td>
-						<td data-tx="t0116:7a42296d"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Nic nie opuszcza routera</td>
+						<td><strong data-tx="t0108:9e08101d">Telefon pozostaje całkowicie cichy podczas spamowania</strong></td>
+						<td data-tx="t0020:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Tak</td>
+						<td data-tx="t0022:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Tak</td>
+						<td data-tx="t0084:cf12d799"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Opcjonalnie wyświetl lub zablokuj</td>
 					</tr>
 					<tr>
 						<td><strong data-tx="t0118:f4c95d3e">Aktywne zatrudnianie spamerów</strong></td>
 						<td data-tx="t0044:fc6557f4"><span class="icon has-text-danger"><i class="fas fa-times"></i></span> Nie - krótko odparł</td>
 						<td data-tx="t0046:cafb9dda"><span class="icon has-text-success"><i class="fas fa-comments"></i></span> Tak - zaangażowany w dialog</td>
 						<td data-tx="t0122:1b0bf702"><span class="icon has-text-danger"><i class="fas fa-times"></i></span> Nie - połączenie jest zablokowane</td>
-					</tr>
-					<tr>
-						<td><strong data-tx="t0119:2762a4e5">Dojrzałość</strong></td>
-						<td data-tx="t0048:8639cb45"><span class="icon has-text-warning"><i class="fas fa-flask"></i></span> Beta</td>
-						<td data-tx="t0050:770dd04"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Wydajny</td>
-						<td data-tx="t0049:770dd04"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Wydajny</td>
 					</tr>
 				</tbody>
 			</table>
@@ -117,19 +105,18 @@
 		<div class="notification is-info mt-4">
 			<p><strong data-tx="t0051:8125e3d9">Które rozwiązanie Ci odpowiada?</strong></p>
 			<ul>
-				<li data-tx="t0106:f8bcce39"><strong>Dongle</strong> - jeśli <em>nie masz</em> Fritz!Box lub nie chcesz obsługiwać stałego serwera, ale nadal chcesz, aby telefon był niezawodnie cichy w przypadku spamu.</li>
-				<li data-tx="t0105:b8fe802f"><strong>Answer Bot</strong> - jeśli chcesz aktywnie zatrudniać spamerów, a Twój Fritz!Box umożliwia logowanie SIP z Internetu.</li>
-				<li data-tx="t0107:e2dfc"><strong>Blocklist phonebook</strong> - jeśli masz Fritz!Box, proste oznaczenie lub ręczne blokowanie połączeń routera jest dla Ciebie wystarczające i nie przeszkadza Ci, jeśli spamer, który faktycznie znajduje się na liście blokowanych połączeń, i tak się prześlizgnie.</li>
+				<li data-tx="t0106:8a963c4e"><strong>Klucz sprzętowy</strong> - jeśli chcesz optymalnej ochrony przed spamem i najlepszej ochrony danych.</li>
+				<li data-tx="t0105:1ab5fa6c"><strong>Answer Bot</strong> - posiadasz własny Fritz!Box (nie wypożyczony) i akceptujesz, że wszystkie Twoje połączenia są sprawdzane przez serwer PhoneBlock w celu optymalnej ochrony przed SPAMem.</li>
+				<li data-tx="t0107:c59e2c7f"><strong>Blocklist phonebook</strong> - jeśli masz Fritz!Box (również skrzynkę do wypożyczenia) i nie przeszkadza ci, że od czasu do czasu prześlizgnie się spamer, który faktycznie znajduje się na liście zablokowanych.</li>
 			</ul>
 		</div>
 
 		<h2 data-tx="t0055:984ebad2">Wymagania wstępne</h2>
 		<ul>
-			<li data-tx="t0123:116251e5"><strong>Rejestrator SIP</strong> - w routerze (Fritz!Box, Speedport, provider box) lub bezpośrednio u dostawcy telefonii, pod warunkiem, że zewnętrzni klienci SIP są dozwoleni.</li>
-			<li data-tx="t0124:d322a975"><strong>Opóźnienie dzwonka (opcjonalnie)</strong> - 3-5 sekund na głównym telefonie pomaga przechwycić spam przed pierwszym dzwonkiem. Wiele telefonów DECT reaguje już nieco wolniej.</li>
+			<li data-tx="t0123:a6d81845"><strong>Rejestrator SIP</strong> - w routerze lub bezpośrednio u operatora telefonii, pod warunkiem, że zewnętrzni klienci SIP są dozwoleni ("Możliwa rejestracja telefonu VOIP").</li>
 			<li data-tx="t0058:be2e6f7c"><strong>2,4 GHz WLAN</strong> w zasięgu.</li>
-			<li data-tx="t0059:41e630a8"><strong>Zasilacz USB 5 V</strong> - najlepiej bezpośrednio na routerze, w przeciwnym razie na dowolnym zasilaczu USB.</li>
-			<li data-tx="t0092:f8c04413"><strong>Darmowe konto <a th:href="@{/login}">PhoneBlock</a></strong> z tokenem dostępu API.</li>
+			<li data-tx="t0059:76b831cc"><strong>Zasilacz USB 5 V</strong> - najlepiej port USB w routerze lub dowolny zasilacz USB.</li>
+			<li><strong data-tx="t0126:c7ef7b58">Darmowe konto <a th:href="@{/login}">PhoneBlock</a></strong>.</li>
 		</ul>
 
 		<hr class="my-5"/>
@@ -169,7 +156,13 @@
 			</div>
 			<div class="column">
 				<h4 data-tx="t0075:29886ac5"><span class="icon"><i class="fas fa-code"></i></span> Oprogramowanie sprzętowe</h4>
-				<p data-tx="t0076:a40b2de8">Firmware open source oparty na ESP-IDF. Flashowanie przez USB za pomocą łańcucha narzędzi ESP-IDF lub później za pomocą gotowego pliku binarnego. Pełna początkowa konfiguracja (WLAN, SIP, token) działa bezpośrednio na kluczu sprzętowym za pośrednictwem małej nakładki internetowej.</p>
+				<p data-tx="t0127:5aa93352">Oprogramowanie układowe open source oparte na ESP-IDF. Flash bezpośrednio w przeglądarce Chrome lub Edge przez USB - lub klasycznie za pomocą łańcucha narzędzi ESP-IDF. Cała początkowa konfiguracja (WLAN, SIP, token) jest przeprowadzana bezpośrednio na kluczu sprzętowym za pośrednictwem małego interfejsu internetowego.</p>
+				<p class="mt-2">
+					<a class="button is-primary" th:href="@{/dongle-install}">
+						<span class="icon"><i class="fas fa-bolt"></i></span>
+						<span data-tx="t0128:adfc6ffe">Miganie w przeglądarce</span>
+					</a>
+				</p>
 			</div>
 			<div class="column">
 				<h4 data-tx="t0077:d0101c48"><span class="icon"><i class="fab fa-github"></i></span> Kod źródłowy i instrukcje</h4>

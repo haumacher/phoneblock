@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.dongle-install.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001:dae96b09">وميض الدونجل في المتصفح</h1>
+
+		<p class="subtitle" data-tx="t0002:ea8fbc11">لوحة ESP32 واحدة، وكابل USB واحد، ونقرة واحدة - يتم نقل أحدث البرامج الثابتة لـ PhoneBlock مباشرةً من هذا المتصفح إلى الدونجل الخاص بك.</p>
+
+		<noscript>
+			<div class="notification is-danger">
+				<p data-tx="t0003:3515d43b">تتطلب هذه الصفحة JavaScript. يرجى تنشيطه في متصفحك أو اتبع تعليمات الفلاش اليدوية في الريبو <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle">.</a></p>
+			</div>
+		</noscript>
+
+		<div class="notification is-warning" id="dongle-install-unsupported" style="display:none;">
+			<p data-tx="t0004:9e289a24"><strong>المتصفح الخاص بك لا يدعم تسلسل الويب</strong> يعمل الوميض عبر الويب فقط على سطح المكتب <strong>Chrome</strong> أو <strong>Edge</strong> أو <strong>Opera</strong>. على Firefox و Safari و Android و iOS، يمكنك وميض الدونجل باستخدام <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle"> سلسلة أدوات ESP-IDF عبر USB بدلاً من ذلك.</a></p>
+		</div>
+
+		<h2 data-tx="t0005:50a8a929">1. إعداد الأجهزة</h2>
+
+		<ul>
+			<li data-tx="t0006:9797814d">ESP32-DevKit مع ESP-WROOM-32E (مثل NodeMCU-32E) - انظر <a th:href="@{/dongle}">ملاحظات الأجهزة</a>.</li>
+			<li data-tx="t0007:831bfe23">USB-<strong>كابل بيانات (وليس مجرد كابل شحن) بين الكمبيوتر والدونجل.</strong></li>
+			<li data-tx="t0008:13116d83">على <strong>Windows</strong> قد تحتاج إلى تثبيت برنامج التشغيل التسلسلي USB - عادةً <a href="https://www.silabs.com/developer-tools/usb-to-uart-bridge-vcp-drivers" rel="noopener" target="_blank">CP210x</a> (مختبرات السيليكون) أو <a href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">CH340/CH341</a> (WCH).</li>
+			<li data-tx="t0009:a030a88a">على <strong>Linux</strong>، يجب أن يكون المستخدم في مجموعة <code>الطلب الهاتفي</code> (<code>sudo usermod -aG dialout $USER</code>، ثم تسجيل الخروج والدخول مرة واحدة).</li>
+		</ul>
+
+		<h2 data-tx="t0010:2abc78eb">2- الوميض</h2>
+
+		<p data-tx="t0011:d9654236">انقر على الزر، وحدد الدونجل الخاص بك في حوار المتصفح وانتظر حتى تكتمل العملية. يتم حذف ذاكرة الفلاش أثناء الوميض الأولي - سيتم فقدان أي تكوين موجود.</p>
+
+		<p>
+			<esp-web-install-button manifest="https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json">
+				<button class="button is-primary is-large" slot="activate" type="button">
+					<span class="icon"><i class="fas fa-bolt"></i></span>
+					<span data-tx="t0012:1b4594a6">فلاش الآن</span>
+				</button>
+				<span slot="unsupported"></span>
+				<span slot="not-allowed"></span>
+			</esp-web-install-button>
+		</p>
+
+		<h2 data-tx="t0013:f0d7c4e4">3. بعد الوميض</h2>
+
+		<ol>
+			<li data-tx="t0014:a549ef8">يُعاد تشغيل الدونجل ويفتح شبكة WLAN <code>PhoneBlock-Dongle-XXXX</code>.</li>
+			<li data-tx="t0015:bb7d40cb">قم بالتبديل إلى شبكة WLAN هذه باستخدام هاتفك الذكي أو الكمبيوتر المحمول، يفتح المتصفح صفحة الإعداد تلقائيًا (البوابة الأسيرة).</li>
+			<li data-tx="t0016:cd9ce37d">حدد شبكة WLAN المنزلية، وأدخل بيانات الوصول SIP ورمز PhoneBlock المميز - التفاصيل في <a th:href="@{/dongle}"> تعليمات الدونجل</a>.</li>
+		</ol>
+
+		<hr class="my-5"/>
+
+		<p class="has-text-grey" data-tx="t0017:8a689eeb">الكود المصدري للبرنامج الثابت: <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank"> phoneblock-dongle على GitHub</a>.</p>
+	</div>
+</section>
+
+<script src="https://cdn.phoneblock.net/dongle/installer/esp-web-tools/install-button.js" type="module"></script>
+
+<script>
+(function() {
+	if (!('serial' in navigator)) {
+		var box = document.getElementById('dongle-install-unsupported');
+		if (box) { box.style.display = ''; }
+	}
+})();
+</script>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

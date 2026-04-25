@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.dongle-install.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001:dae96b09">Flasha dongeln i webbläsaren</h1>
+
+		<p class="subtitle" data-tx="t0002:ea8fbc11">Ett ESP32-kort, en USB-kabel, ett klick - den senaste inbyggda programvaran för PhoneBlock överförs direkt från webbläsaren till din dongel.</p>
+
+		<noscript>
+			<div class="notification is-danger">
+				<p data-tx="t0003:3515d43b">Denna sida kräver JavaScript. Aktivera det i din webbläsare eller följ de <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle">manuella Flash-instruktionerna i repot</a>.</p>
+			</div>
+		</noscript>
+
+		<div class="notification is-warning" id="dongle-install-unsupported" style="display:none;">
+			<p data-tx="t0004:9e289a24"><strong>Din webbläsare stöder inte web serial</strong> Web flashing körs endast i desktop <strong>Chrome</strong>, <strong>Edge</strong> eller <strong>Opera</strong>. På Firefox, Safari, Android och iOS kan du flasha dongeln med <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle">ESP-IDF toolchain via USB</a> istället.</p>
+		</div>
+
+		<h2 data-tx="t0005:50a8a929">1. Förbered hårdvara</h2>
+
+		<ul>
+			<li data-tx="t0006:9797814d">ESP32-DevKit med ESP-WROOM-32E (t.ex. NodeMCU-32E) - se <a th:href="@{/dongle}">Hårdvarunoter</a>.</li>
+			<li data-tx="t0007:831bfe23">USB-<strong>datakabel</strong> (inte bara en laddningskabel) mellan dator och dongel.</li>
+			<li data-tx="t0008:13116d83">På <strong>Windows</strong> kan du behöva installera den seriella USB-drivrutinen - vanligtvis <a href="https://www.silabs.com/developer-tools/usb-to-uart-bridge-vcp-drivers" rel="noopener" target="_blank">CP210x</a> (Silicon Labs) eller <a href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">CH340/CH341</a> (WCH).</li>
+			<li data-tx="t0009:a030a88a">På <strong>Linux</strong> måste din användare vara med i gruppen <code>dialout</code> (<code>sudo usermod -aG dialout $USER</code>, logga sedan ut och in igen en gång).</li>
+		</ul>
+
+		<h2 data-tx="t0010:2abc78eb">2. Blinkande</h2>
+
+		<p data-tx="t0011:d9654236">Klicka på knappen, välj din dongle i webbläsarens dialogruta och vänta tills processen är klar. Flashminnet raderas under en första flash - eventuell befintlig konfiguration går förlorad.</p>
+
+		<p>
+			<esp-web-install-button manifest="https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json">
+				<button class="button is-primary is-large" slot="activate" type="button">
+					<span class="icon"><i class="fas fa-bolt"></i></span>
+					<span data-tx="t0012:1b4594a6">Flash nu</span>
+				</button>
+				<span slot="unsupported"></span>
+				<span slot="not-allowed"></span>
+			</esp-web-install-button>
+		</p>
+
+		<h2 data-tx="t0013:f0d7c4e4">3. efter blinkning</h2>
+
+		<ol>
+			<li data-tx="t0014:a549ef8">Dongeln startar om och öppnar WLAN <code>PhoneBlock-Dongle-XXXX</code>.</li>
+			<li data-tx="t0015:bb7d40cb">Växla till detta WLAN med din smartphone eller bärbara dator, webbläsaren öppnar installationssidan automatiskt (captive portal).</li>
+			<li data-tx="t0016:cd9ce37d">Välj hem-WLAN, ange SIP-åtkomstdata och PhoneBlock-token - mer information finns i instruktionerna för <a th:href="@{/dongle}">Dongle</a>.</li>
+		</ol>
+
+		<hr class="my-5"/>
+
+		<p class="has-text-grey" data-tx="t0017:8a689eeb">Källkod för den inbyggda programvaran: <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank"> phoneblock-dongle på GitHub</a>.</p>
+	</div>
+</section>
+
+<script src="https://cdn.phoneblock.net/dongle/installer/esp-web-tools/install-button.js" type="module"></script>
+
+<script>
+(function() {
+	if (!('serial' in navigator)) {
+		var box = document.getElementById('dongle-install-unsupported');
+		if (box) { box.style.display = ''; }
+	}
+})();
+</script>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

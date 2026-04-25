@@ -1,0 +1,17 @@
+{
+  "name": "PhoneBlock Dongle",
+  "version": "@VERSION@",
+  "funding_url": "https://phoneblock.net/phoneblock/support",
+  "new_install_prompt_erase": true,
+  "builds": [
+    {
+      "chipFamily": "ESP32",
+      "parts": [
+        { "path": "bootloader.bin",        "offset": 4096   },
+        { "path": "partition-table.bin",   "offset": 32768  },
+        { "path": "ota_data_initial.bin",  "offset": 61440  },
+        { "path": "phoneblock_dongle.bin", "offset": 131072 }
+      ]
+    }
+  ]
+}

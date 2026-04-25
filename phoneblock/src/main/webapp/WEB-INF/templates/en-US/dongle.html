@@ -12,12 +12,12 @@
 		<p class="subtitle" data-tx="t0095:dab19814">An intelligent answering machine in the guise of an IP phone. The size of a thumb, it plugs into the router's USB port, registers as an additional SIP phone - and intercepts commercial calls before your actual phone rings. Works regardless of the router model, even without a Fritz!</p>
 
 		<div class="notification is-warning">
-			<p data-tx="t0096:59767eb8"><strong>Status: Beta.</strong> The dongle works reliably on my Fritz!Box - but before I recommend it widely, I would like to have tried it out on as many different types of connection as possible. I am looking for testers and am giving away devices - <a href="#tester">see below</a>.</p>
+			<p data-tx="t0096:bfb7afe0"><strong>Status: Beta.</strong> The first version is already running reliably. I am looking for more testers to try out the dongle in as many different environments as possible, <a href="#tester">see below</a>.</p>
 		</div>
 
 		<h2 data-tx="t0004:6b104c7a">The idea in one sentence</h2>
 
-		<p data-tx="t0081:67bb8b12">The dongle logs on to your router like an additional IP phone. Every time a call comes in, it asks the PhoneBlock database at lightning speed: <em>"Is this spam?"</em> If so, it answers the call itself, plays a short announcement if desired and hangs up again. Your real phone hasn't even rung at that moment.</p>
+		<p data-tx="t0081:567e2d4a">The dongle logs on to your router like an additional IP phone. Every time a call comes in, it asks the PhoneBlock database at lightning speed: <em>"Is this spam?"</em> If so, it answers the call itself, plays a short announcement if desired and hangs up again. Your real phone has not even rung at that moment. In contrast to the <a th:href="@{/anrufbeantworter}">cloud answering machine</a>, all call processing takes place locally at your home.</p>
 
 		<div class="columns is-centered mt-5">
 			<div class="column is-one-quarter has-text-centered">
@@ -33,12 +33,12 @@
 			<div class="column is-one-quarter has-text-centered">
 				<p><span class="icon is-large has-text-danger"><i class="fas fa-ban fa-3x"></i></span></p>
 				<h4 data-tx="t0010:be667d0f">3. get rid of it</h4>
-				<p data-tx="t0099:f1599c42">If the number is spam, the dongle picks up, plays an announcement if desired and hangs up. The telephone in the living room remains silent. If the number is not known spam, the dongle simply does nothing - the call goes through normally.</p>
+				<p data-tx="t0099:5eb763c7">If the number is spam, the dongle picks up, plays an announcement and hangs up. The telephone in the living room remains silent. If the number is not known spam, the dongle simply does nothing - the call goes through normally.</p>
 			</div>
 		</div>
 
 		<div class="notification is-info">
-			<p data-tx="t0100:21b36aaa"><strong>Why this is so charming:</strong> The dongle only needs minimal power and Wi-Fi. No additional server, no special Fritz!Box function, no contract. The ESP32 microcontroller inside draws less than half a watt - you can simply plug it into the USB port of your router and forget about it.</p>
+			<p data-tx="t0100:86bdb13f"><strong>Why this is so charming:</strong> The dongle only needs minimal power and WLAN. No additional server, no Fritz!Box, no contract. The ESP32 microcontroller inside draws less than half a watt - you can simply plug it into the USB port of your router and forget about it.</p>
 		</div>
 
 		<h2 data-tx="t0013:755fe635">Comparison: Three ways to block landline spam</h2>
@@ -51,16 +51,16 @@
 					<tr>
 						<th data-tx="t0015:ece15d25">Feature</th>
 						<th data-tx="t0016:365a40ae">PhoneBlock Dongle</th>
-						<th data-tx="t0018:150f46ce">PhoneBlock Answer Bot</th>
+						<th data-tx="t0018:a17f6b5">Clound answering machine</th>
 						<th data-tx="t0017:b7a22f37">Blocklist phonebook</th>
 					</tr>
 				</thead>
 				<tbody>
 					<tr>
-						<td><strong data-tx="t0108:9e08101d">Phone remains completely silent during spam</strong></td>
-						<td data-tx="t0020:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Yes</td>
-						<td data-tx="t0022:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Yes</td>
-						<td data-tx="t0084:cf12d799"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Optionally display or lock</td>
+						<td><strong data-tx="t0112:ebecddaf">Effectiveness</strong></td>
+						<td data-tx="t0103:df4b4973"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Maximum, entire block list</td>
+						<td data-tx="t0104:df4b4973"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Maximum, entire block list</td>
+						<td data-tx="t0089:2e61bee2"><span class="icon has-text-warning"><i class="fas fa-sync"></i></span> Good, but only a small section of the block list, sync ≤ 1 ×/day</td>
 					</tr>
 					<tr>
 						<td><strong data-tx="t0109:90691916">Router requirement</strong></td>
@@ -69,46 +69,34 @@
 						<td data-tx="t0085:120e2e30"><span class="icon has-text-warning"><i class="fas fa-wifi"></i></span> Newer Fritz!Box with CardDAV</td>
 					</tr>
 					<tr>
-						<td><strong data-tx="t0110:e66ba2b">Additional hardware</strong></td>
-						<td data-tx="t0028:99294924"><span class="icon has-text-info"><i class="fas fa-usb"></i></span> USB dongle, approx. 10 €</td>
-						<td data-tx="t0087:fe8232e3"><span class="icon has-text-success"><i class="fas fa-cloud"></i></span> None (cloud service)</td>
-						<td data-tx="t0029:58a26498"><span class="icon has-text-success"><i class="fas fa-check"></i></span> None</td>
+						<td><strong data-tx="t0114:5f4450bc">Data protection</strong></td>
+						<td data-tx="t0120:ba0feedd"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Optimal; call remains local; only hash matching of unknown callers</td>
+						<td data-tx="t0121:294f8242"><span class="icon has-text-danger"><i class="fas fa-cloud"></i></span> Signaling of every call (also from contacts) runs via PhoneBlock server</td>
+						<td data-tx="t0116:7a42296d"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Nothing leaves the router</td>
 					</tr>
 					<tr>
 						<td><strong data-tx="t0111:83c9a19b">Setup effort</strong></td>
-						<td data-tx="t0032:e09b2ea8"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Plug in, configure WLAN + access</td>
-						<td data-tx="t0088:ca8f4268"><span class="icon has-text-info"><i class="fas fa-gear"></i></span> Create answering machine, enter SIP credentials in router</td>
-						<td data-tx="t0102:68527b14"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Store CardDAV URL in the router and configure call blocking</td>
+						<td data-tx="t0032:4e6c7d5d"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Plug &amp; Play</td>
+						<td data-tx="t0088:aa5e1238"><span class="icon has-text-info"><i class="fas fa-gear"></i></span> high</td>
+						<td data-tx="t0102:e51ea302"><span class="icon has-text-info"><i class="fas fa-gear"></i></span> moderate</td>
 					</tr>
 					<tr>
-						<td><strong data-tx="t0112:4532187f">Up-to-dateness of the block list</strong></td>
-						<td data-tx="t0103:1984a240"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Live query, entire block list</td>
-						<td data-tx="t0104:1984a240"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Live query, entire block list</td>
-						<td data-tx="t0089:a868030b"><span class="icon has-text-warning"><i class="fas fa-sync"></i></span> Only section of the block list, sync ≤ 1 ×/day</td>
+						<td><strong data-tx="t0110:e66ba2b">Additional hardware</strong></td>
+						<td data-tx="t0028:99294924"><span class="icon has-text-info"><i class="fas fa-usb"></i></span> USB dongle, approx. 10 €</td>
+						<td data-tx="t0087:fe8232e3"><span class="icon has-text-success"><i class="fas fa-cloud"></i></span> None (cloud service)</td>
+						<td data-tx="t0029:4d86e32e"><span class="icon has-text-success"><i class="fas fa-check"></i></span> None (integrated in Fritz!Box)</td>
 					</tr>
 					<tr>
-						<td><strong data-tx="t0113:a8c2cfff">Power consumption in continuous operation</strong></td>
-						<td data-tx="t0040:3d07b53b"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> approx. 0.4 W (USB)</td>
-						<td data-tx="t0090:c0b4a4fd"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> 0 W (cloud service)</td>
-						<td data-tx="t0041:30562f18"><span class="icon has-text-success"><i class="fas fa-leaf"></i></span> 0 W (uses router)</td>
-					</tr>
-					<tr>
-						<td><strong data-tx="t0114:5f4450bc">Data protection</strong></td>
-						<td data-tx="t0120:9c548b5d"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Only hash to server, call remains local; contacts are not checked</td>
-						<td data-tx="t0121:294f8242"><span class="icon has-text-warning"><i class="fas fa-cloud"></i></span> Signaling of every call (also from contacts) runs via PhoneBlock server</td>
-						<td data-tx="t0116:7a42296d"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Nothing leaves the router</td>
+						<td><strong data-tx="t0108:9e08101d">Phone remains completely silent during spam</strong></td>
+						<td data-tx="t0020:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Yes</td>
+						<td data-tx="t0022:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Yes</td>
+						<td data-tx="t0084:cf12d799"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Optionally display or lock</td>
 					</tr>
 					<tr>
 						<td><strong data-tx="t0118:f4c95d3e">Actively employ spammers</strong></td>
 						<td data-tx="t0044:fc6557f4"><span class="icon has-text-danger"><i class="fas fa-times"></i></span> No - briefly waved off</td>
 						<td data-tx="t0046:cafb9dda"><span class="icon has-text-success"><i class="fas fa-comments"></i></span> Yes - involved in dialog</td>
 						<td data-tx="t0122:1b0bf702"><span class="icon has-text-danger"><i class="fas fa-times"></i></span> No - call is blocked</td>
-					</tr>
-					<tr>
-						<td><strong data-tx="t0119:2762a4e5">Maturity</strong></td>
-						<td data-tx="t0048:8639cb45"><span class="icon has-text-warning"><i class="fas fa-flask"></i></span> Beta</td>
-						<td data-tx="t0050:770dd04"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Productive</td>
-						<td data-tx="t0049:770dd04"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Productive</td>
 					</tr>
 				</tbody>
 			</table>
@@ -117,19 +105,18 @@
 		<div class="notification is-info mt-4">
 			<p><strong data-tx="t0051:8125e3d9">Which solution suits you?</strong></p>
 			<ul>
-				<li data-tx="t0106:f8bcce39"><strong>Dongle</strong> - if you <em>don't have</em> a Fritz!Box or don't want to operate a permanent server, but still want the phone to be reliably silent in the event of spam.</li>
-				<li data-tx="t0105:b8fe802f"><strong>Answer Bot</strong> - if you want to actively employ spammers and your Fritz!Box allows a SIP login from the Internet.</li>
-				<li data-tx="t0107:e2dfc"><strong>Blocklist phonebook</strong> - if you have a Fritz!Box, a simple marking or the manual router call blocking is enough for you and it doesn't bother you if a spammer who is actually on the blocklist slips through anyway.</li>
+				<li data-tx="t0106:8a963c4e"><strong>Dongle</strong> - if you want optimum SPAM protection with the best data protection.</li>
+				<li data-tx="t0105:1ab5fa6c"><strong>Answer Bot</strong> - you have your own Fritz!Box (not a rental box) and accept that all your calls are checked by the PhoneBlock server for optimal SPAM defense.</li>
+				<li data-tx="t0107:c59e2c7f"><strong>Blocklist phonebook</strong> - if you have a Fritz!Box (also a rental box), and you don't mind if a spammer slips through every now and then who is actually on the blocklist.</li>
 			</ul>
 		</div>
 
 		<h2 data-tx="t0055:984ebad2">Prerequisites</h2>
 		<ul>
-			<li data-tx="t0123:116251e5"><strong>SIP registrar</strong> - either in the router (Fritz!Box, Speedport, provider box) or directly with the telephony provider, provided the external SIP clients are permitted.</li>
-			<li data-tx="t0124:d322a975"><strong>Ring delay (optional)</strong> - 3-5 seconds on the main phone helps to intercept spam before the first ring. Many DECT telephones already react somewhat slowly anyway.</li>
+			<li data-tx="t0123:a6d81845"><strong>SIP registrar</strong> - either in the router or directly with the telephony provider, provided the external SIP clients are permitted ("Registration of a VOIP telephone possible").</li>
 			<li data-tx="t0058:be2e6f7c"><strong>2.4 GHz WLAN</strong> within range.</li>
-			<li data-tx="t0059:41e630a8"><strong>5 V USB power supply</strong> - ideally directly on the router, otherwise on any USB power supply unit.</li>
-			<li data-tx="t0092:f8c04413"><strong>Free <a th:href="@{/login}">PhoneBlock account</a></strong> with API access token.</li>
+			<li data-tx="t0059:76b831cc"><strong>5 V USB power supply</strong> - ideally USB port in the router, or any USB power supply unit.</li>
+			<li><strong data-tx="t0126:c7ef7b58">Free <a th:href="@{/login}">PhoneBlock account</a></strong>.</li>
 		</ul>
 
 		<hr class="my-5"/>
@@ -169,7 +156,13 @@
 			</div>
 			<div class="column">
 				<h4 data-tx="t0075:29886ac5"><span class="icon"><i class="fas fa-code"></i></span> Firmware</h4>
-				<p data-tx="t0076:a40b2de8">Open source firmware based on ESP-IDF. Flashing via USB with the ESP-IDF toolchain or later via a ready-made binary. The complete initial configuration (WLAN, SIP, token) runs via a small web frontend directly on the dongle.</p>
+				<p data-tx="t0127:5aa93352">Open source firmware based on ESP-IDF. Flash directly in the Chrome or Edge browser via USB - or classically with the ESP-IDF toolchain. The complete initial configuration (WLAN, SIP, token) runs via a small web frontend directly on the dongle.</p>
+				<p class="mt-2">
+					<a class="button is-primary" th:href="@{/dongle-install}">
+						<span class="icon"><i class="fas fa-bolt"></i></span>
+						<span data-tx="t0128:adfc6ffe">Flashing in the browser</span>
+					</a>
+				</p>
 			</div>
 			<div class="column">
 				<h4 data-tx="t0077:d0101c48"><span class="icon"><i class="fab fa-github"></i></span> Source code &amp; instructions</h4>
