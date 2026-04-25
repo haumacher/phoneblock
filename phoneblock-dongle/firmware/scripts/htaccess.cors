@@ -3,8 +3,15 @@
 #   - manifest.json per fetch()            (CORS-Pflicht)
 #   - bootloader/partition-table/app.bin   (CORS-Pflicht)
 # Static, keine Credentials → ACAO "*" ist sicher.
-Options +FollowSymLinks
+# Some shared hosts disallow +FollowSymLinks via .htaccess but accept the
+# weaker +SymLinksIfOwnerMatch (target and link must share the owner — they
+# do, both belong to haumac).
+Options +SymLinksIfOwnerMatch
 
+# A server-wide rule already sets ACAO to https://phoneblock.net. Unset any
+# existing value first, then set it once — otherwise browsers reject the
+# response for having duplicate ACAO headers.
 <IfModule mod_headers.c>
+    Header always unset Access-Control-Allow-Origin
     Header always set Access-Control-Allow-Origin "*"
 </IfModule>
