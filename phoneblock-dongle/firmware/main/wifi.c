@@ -168,22 +168,48 @@ static void on_wifi_event(void *arg, esp_event_base_t base, int32_t id, void *da
         }
 
         case WIFI_EVENT_STA_WPS_ER_SUCCESS: {
-            // Most routers hand us a single credential set here, and
-            // the WPS driver also pushes it into the default
-            // sta_config internally. The explicit copy covers
-            // multi-AP scenarios where the event carries ap_cred_cnt
-            // > 0 and we need to pick one.
+            // The WPS state machine has already populated the driver's
+            // internal sta_config with everything derived from the
+            // M2/M8 exchange — SSID, passphrase, AND the security
+            // fields (threshold.authmode, pmf_cfg, sae_pwe_h2e, …)
+            // needed to associate with the AP we just paired with.
+            //
+            // For the single-AP case (ap_cred_cnt <= 1) we therefore
+            // do NOT touch sta_config — leaving the driver-populated
+            // version in place, which esp_wifi_set_storage(FLASH)
+            // also persists to NVS for the next boot. Earlier code
+            // here built a fresh wifi_config_t = {0} and copied only
+            // SSID/passphrase into it; that wiped the security
+            // fields, so on the next boot the STA loaded a config
+            // with no PMF capability, no auth-mode threshold, and
+            // got Reason 210 on every reconnect against any modern
+            // PMF-enabled AP. See recovery path above for the
+            // user-visible symptom.
+            //
+            // For the rare multi-AP case (ap_cred_cnt > 1) we still
+            // need to pick one credential set. We then read-modify-
+            // write: get the driver's cfg first, override only the
+            // SSID/passphrase fields, set it back. Security fields
+            // stay intact.
             wifi_event_sta_wps_er_success_t *evt = data;
-            if (evt && evt->ap_cred_cnt > 0) {
-                wifi_config_t cfg = { 0 };
-                memcpy(cfg.sta.ssid,
-                       evt->ap_cred[0].ssid,
-                       sizeof(cfg.sta.ssid));
-                memcpy(cfg.sta.password,
-                       evt->ap_cred[0].passphrase,
-                       sizeof(cfg.sta.password));
-                ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &cfg));
-                ESP_LOGI(TAG, "WPS success — SSID=%s (persisted)", cfg.sta.ssid);
+            if (evt && evt->ap_cred_cnt > 1) {
+                wifi_config_t cfg;
+                if (esp_wifi_get_config(WIFI_IF_STA, &cfg) == ESP_OK) {
+                    memset(cfg.sta.ssid,     0, sizeof(cfg.sta.ssid));
+                    memset(cfg.sta.password, 0, sizeof(cfg.sta.password));
+                    memcpy(cfg.sta.ssid,
+                           evt->ap_cred[0].ssid,
+                           sizeof(cfg.sta.ssid));
+                    memcpy(cfg.sta.password,
+                           evt->ap_cred[0].passphrase,
+                           sizeof(cfg.sta.password));
+                    ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &cfg));
+                    ESP_LOGI(TAG, "WPS success — picked SSID=%s of %d offered",
+                             cfg.sta.ssid, evt->ap_cred_cnt);
+                } else {
+                    ESP_LOGW(TAG, "esp_wifi_get_config failed — "
+                                  "trusting driver-internal cfg");
+                }
             } else {
                 ESP_LOGI(TAG, "WPS success — credentials auto-persisted");
             }
@@ -236,6 +262,18 @@ static void seed_baked_creds(void)
     wifi_config_t cfg = { 0 };
     strncpy((char *)cfg.sta.ssid,     BAKED_SSID,     sizeof(cfg.sta.ssid) - 1);
     strncpy((char *)cfg.sta.password, BAKED_PASSWORD, sizeof(cfg.sta.password) - 1);
+
+    // Defensive baseline for any STA config we build from scratch.
+    // Without these the driver would not associate with WPA2/WPA3-
+    // Transitional APs that have PMF "capable" — symptom is Reason
+    // 210 (NO_AP_FOUND_W_COMPATIBLE_SECURITY) on every connect.
+    // The WPS-driven path goes through the driver-populated cfg and
+    // doesn't need this; only here, where we hand in a freshly
+    // zero-initialised struct, do we have to fill the defaults.
+    cfg.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
+    cfg.sta.pmf_cfg.capable    = true;
+    cfg.sta.pmf_cfg.required   = false;
+
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &cfg));
 }
 
