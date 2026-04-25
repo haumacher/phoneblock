@@ -27,31 +27,37 @@
 
 		<h2 data-tx="t0052:93c33292" id="voraussetzungen">Перш ніж почати</h2>
 
-		<p data-tx="t0053:657fcf42">Перевірте, чи виконали ви ці чотири пункти - інакше навіть готовий донгл не принесе вам ніякої користі:</p>
+		<p data-tx="t0053:5ffae555">Перевірте, чи виконані ці пункти, щоб не було розчарувань:</p>
 
 		<ul>
 			<li data-tx="t0054:b4ac4baa"><strong>SIP-реєстратор</strong> - або в маршрутизаторі (наприклад, Fritz!Box), або безпосередньо у провайдера телефонії, якщо це дозволяє використовувати зовнішні SIP-клієнти ("Можлива реєстрація IP-телефону").</li>
-			<li data-tx="t0055:95617e20"><strong>2,4 ГГц WLAN</strong> в межах досяжності порту USB.</li>
-			<li data-tx="t0056:de519524"><strong>5 В USB-живлення</strong> - в ідеалі безпосередньо на роутері, або будь-який USB-блок живлення.</li>
-			<li data-tx="t0057:66935893"><strong>Звільнити <a th:href="@{/login}">акаунт PhoneBlock</a></strong> для токена API.</li>
+			<li data-tx="t0055:be2e6f7c"><strong>2,4 ГГц WLAN</strong> в межах досяжності.</li>
+			<li data-tx="t0056:573b2c92"><strong>5 В USB-живлення</strong> - в ідеалі USB-порт на роутері, або будь-який USB-блок живлення.</li>
 		</ul>
 
 		<h2 data-tx="t0058:1cedb9ee" id="schritt-1">Крок 1 - Замовлення ключа</h2>
 
-		<p data-tx="t0007:4a8aea0f">Замовте цю плату ESP32. Вона досить компактна, щоб підключатися безпосередньо до роутера як USB-накопичувач, має відповідний послідовний USB-чіп (CH340), а також донгл PhoneBlock, розроблений і протестований разом з нею.</p>
+		<p data-tx="t0007:1367b791">Замовте цю плату ESP32. Вона досить компактна, щоб підключатися безпосередньо до роутера як USB-накопичувач, має відповідний послідовний USB-чіп (CH340), і з нею було протестовано донгл PhoneBlock.</p>
 
 		<figure class="image" style="max-width:300px;">
 			<img alt="Ключ ESP32" data-tx="t0008:31cdc7dc" th:src="@{/assets/img/dongle/dongle-option.png}"/>
 		</figure>
 
 		<div class="notification is-info">
-			<p data-tx="t0009:1bd1b6a9"><strong>Доставка з Китаю - приблизно 3-4 тижні.</strong> Ціна наразі становить приблизно 9 євро з урахуванням доставки.</p>
+			<p data-tx="t0009:7fa685b8"><strong>Доставка з Китаю - приблизно 2 тижні.</strong> Ціна наразі становить приблизно 9 євро з урахуванням доставки.</p>
 			<p class="mt-2">
 				<a class="button is-primary is-large" href="https://de.aliexpress.com/item/1005006593432047.html" rel="noopener" target="_blank">
 					<span class="icon"><i class="fas fa-cart-shopping"></i></span>
 					<span data-tx="t0010:49b731d6">Замовлення на AliExpress</span>
 				</a>
 			</p>
+			<p class="mt-2">
+				<a class="button is-primary is-large" href="https://www.ebay.de/itm/404930369895" rel="noopener" target="_blank">
+					<span class="icon"><i class="fas fa-cart-shopping"></i></span>
+					<span data-tx="t0069:4bfe505a">Замовлення на eBay</span>
+				</a>
+			</p>
+			<p data-tx="t0070:1caf402b">Ці пропозиції жодним чином не пов'язані з PhoneBlock, і PhoneBlock жодним чином не бере участі в отриманні прибутку. Мова йде виключно про апаратне забезпечення. Програмне забезпечення (прошивку) PhoneBlock ви встановлюєте самостійно після отримання (див. нижче).</p>
 		</div>
 
 		<p data-tx="t0011:326831c9"><strong>Ви хочете використовувати іншу плату</strong> Інші ESP32 DevKits працюють точно так само, але можуть потребувати іншого послідовного USB-драйвера (наприклад, CP2102 замість CH340) і подовжувача USB, якщо конструкція не підходить безпосередньо до роутера. Деталі та рекомендації: <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/HARDWARE.md" rel="noopener" target="_blank">HARDWARE.md у репозиторії</a>.</p>
@@ -77,7 +83,7 @@
 			<summary><strong data-tx="t0017:ded51310">Ви використовуєте macOS або Linux?</strong></summary>
 			<ul>
 				<li data-tx="t0018:5410eb20"><strong>macOS</strong>: Починаючи з macOS Big Sur, драйвер включено до системи - встановлення не потрібне.</li>
-				<li data-tx="t0019:b1eb5a7e"><strong>Linux</strong>: Драйвер ядра встановлено. В Ubuntu служба BRLTTY може перехопити CH340 і змусити файл пристрою знову зникнути через кілька секунд - тоді допоможе видалення BRLTTY. Ваш користувач також має бути у групі <code>dialout</code>. Обидва кроки детально описано у <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
+				<li data-tx="t0019:35f91b38"><strong>Linux</strong>: Драйвер ядра встановлено. В Ubuntu служба BRLTTY може викрасти CH340 так, що ви не зможете побачити файл пристрою - у цьому випадку допоможе видалення BRLTTY: <code>sudo apt remove --purge brltty</code>. Ваш користувач також має бути у групі <code>dialout</code>: <code>sudo usermod -aG dialout $USER</code>. Обидва кроки детально описано у <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
 			</ul>
 		</details>
 
@@ -91,7 +97,7 @@
 
 		<h2 data-tx="t0023:4325c49c" id="schritt-4">Крок 4 - Прошивання прошивки</h2>
 
-		<p data-tx="t0024:230fc89e">Натисніть на кнопку. Браузер запитає, до якого підключеного пристрою він має доступ.</p>
+		<p data-tx="t0024:a0900784">Натисніть на кнопку. Браузер запитає, до якого підключеного пристрою він може звернутися. Виберіть запис з <strong>"USB-SERIAL CH340"</strong> (Windows) або <strong>"USB Single Serial"</strong> чи <strong>"wch.cn"</strong> (macOS/Linux) у назві і підтвердіть за допомогою <strong>"Підключити"</strong>.</p>
 
 		<p>
 			<esp-web-install-button manifest="https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json">
@@ -110,7 +116,7 @@
 			</esp-web-install-button>
 		</p>
 
-		<p data-tx="t0028:34c84b34">У діалозі вибору з'явиться список усіх послідовних пристроїв на комп'ютері. Виберіть запис з <strong>"USB-SERIAL CH340"</strong> (Windows) або <strong>"USB Single Serial"</strong> чи <strong>"wch.cn"</strong> (macOS/Linux) у назві і підтвердіть вибір натисканням <strong>"Connect"</strong>. Якщо відображається декілька пристроїв CH340, тому що інший пристрій з цією мікросхемою вже підключено, від'єднайте інші на даний момент.</p>
+		<p data-tx="t0028:8a955c74">У діалоговому вікні вибору з'явиться список усіх послідовних пристроїв на комп'ютері. Якщо відображається декілька пристроїв CH340, тому що до комп'ютера підключено інший пристрій з цією мікросхемою, вилучіть інші пристрої на даний момент.</p>
 
 		<figure>
 			<div data-tx="t0029:b5c3a2f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Заповнювач: Скріншот діалогу вибору пристрою браузера з виділеним записом CH340]</div>
@@ -150,7 +156,11 @@
 
 		<p data-tx="t0043:f4d3bf5f">Відкрийте в браузері:</p>
 
-		<p><a class="button is-link is-large" data-tx="t0044:9be1c030" href="http://answerbot/">http://answerbot/</a></p>
+		<p><a class="button is-link is-large" data-tx="t0044:9be1c030" href="http://answerbot/" id="dongle-step7-link" target="_blank">http://answerbot/</a></p>
+
+		<div class="notification is-success" id="dongle-located-banner" style="display:none;">
+			<p data-tx="t0071:c20257a1"><strong>Донгл розпізнано:</strong> <a href="" id="dongle-located-link" target="_blank">http://192.168.178.xxx/</a> - кнопка вгорі відкриває його безпосередньо.</p>
+		</div>
 
 		<p data-tx="t0045:de303f98">Якщо це посилання не працює (Windows без Bonjour, деякі mesh WLAN), знайдіть у списку пристроїв вашого роутера пристрій з назвою <code>answerbot</code>, запишіть його IP-адресу і викличте його в браузері - наприклад, <code>http://192.168.178.xxx/</code>.</p>
 
@@ -208,6 +218,8 @@
 	}
 })();
 </script>
+
+<script th:src="@{/assets/js/dongle-pairing.js}" type="text/javascript"></script>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>

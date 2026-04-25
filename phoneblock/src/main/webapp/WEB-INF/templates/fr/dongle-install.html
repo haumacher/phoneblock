@@ -27,31 +27,37 @@
 
 		<h2 data-tx="t0052:93c33292" id="voraussetzungen">Avant de commencer</h2>
 
-		<p data-tx="t0053:657fcf42">Vérifie brièvement que ces quatre points sont remplis dans ton cas - sinon, même le dongle prêt à l'emploi ne te servira à rien :</p>
+		<p data-tx="t0053:5ffae555">Vérifie brièvement que ces points sont remplis - pour éviter toute déception :</p>
 
 		<ul>
 			<li data-tx="t0054:b4ac4baa"><strong>SIP-Registrar</strong> - soit dans le routeur (par ex. Fritz!Box), soit directement chez le fournisseur de téléphonie, si celui-ci autorise les clients SIP externes ("inscription d'un téléphone IP possible").</li>
-			<li data-tx="t0055:95617e20"><strong>WLAN 2,4 GHz</strong> à portée du port USB.</li>
-			<li data-tx="t0056:de519524"><strong> Alimentation USB 5 V</strong> - idéalement directement sur le routeur, ou à défaut n'importe quel bloc d'alimentation USB.</li>
-			<li data-tx="t0057:66935893"><strong>Compte gratuit <a th:href="@{/login}">PhoneBlock</a></strong> pour le jeton API.</li>
+			<li data-tx="t0055:be2e6f7c"><strong>WLAN 2,4 GHz</strong> à portée de main.</li>
+			<li data-tx="t0056:573b2c92"><strong> Alimentation USB 5 V</strong> - idéalement port USB sur le routeur, alternativement n'importe quel bloc d'alimentation USB.</li>
 		</ul>
 
 		<h2 data-tx="t0058:1cedb9ee" id="schritt-1">Étape 1 - Commander le dongle</h2>
 
-		<p data-tx="t0007:4a8aea0f">Commande cette carte ESP32. Elle est suffisamment compacte pour être insérée directement comme clé USB dans le routeur, elle possède la puce série USB appropriée (CH340), et c'est avec elle que le dongle PhoneBlock a été développé et testé.</p>
+		<p data-tx="t0007:1367b791">Commande cette carte ESP32. Elle est suffisamment compacte pour être insérée directement comme clé USB dans le routeur, elle a la puce série USB appropriée (CH340), et c'est avec elle que le dongle PhoneBlock a été testé.</p>
 
 		<figure class="image" style="max-width:300px;">
 			<img alt="Clé électronique ESP32" data-tx="t0008:31cdc7dc" th:src="@{/assets/img/dongle/dongle-option.png}"/>
 		</figure>
 
 		<div class="notification is-info">
-			<p data-tx="t0009:1bd1b6a9"><strong>Livraison depuis la Chine - environ 3-4 semaines de délai de livraison.</strong> Prix actuel : environ 9 €, frais de port inclus.</p>
+			<p data-tx="t0009:7fa685b8"><strong>Livraison depuis la Chine - environ 2 semaines de délai de livraison.</strong> Prix actuel : environ 9 €, frais de port inclus.</p>
 			<p class="mt-2">
 				<a class="button is-primary is-large" href="https://de.aliexpress.com/item/1005006593432047.html" rel="noopener" target="_blank">
 					<span class="icon"><i class="fas fa-cart-shopping"></i></span>
 					<span data-tx="t0010:49b731d6">Commander sur AliExpress</span>
 				</a>
 			</p>
+			<p class="mt-2">
+				<a class="button is-primary is-large" href="https://www.ebay.de/itm/404930369895" rel="noopener" target="_blank">
+					<span class="icon"><i class="fas fa-cart-shopping"></i></span>
+					<span data-tx="t0069:4bfe505a">Commander sur eBay</span>
+				</a>
+			</p>
+			<p data-tx="t0070:1caf402b">Ces offres n'ont aucun lien avec PhoneBlock et PhoneBlock ne participe en aucune manière aux bénéfices. Il s'agit uniquement du matériel. Tu installes toi-même le logiciel PhoneBlock (firmware) après l'avoir reçu (voir ci-dessous).</p>
 		</div>
 
 		<p data-tx="t0011:326831c9"><strong>Tu veux prendre une autre carte?</strong> D'autres DevKits ESP32 fonctionnent techniquement de la même manière, mais peuvent avoir besoin d'un autre pilote série USB (par ex. CP2102 au lieu de CH340) et d'un câble d'extension USB, si la forme de construction ne convient pas directement au routeur. Détails et recommandations : <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/HARDWARE.md" rel="noopener" target="_blank">HARDWARE.md dans le repo</a>.</p>
@@ -77,7 +83,7 @@
 			<summary><strong data-tx="t0017:ded51310">Tu utilises macOS ou Linux ?</strong></summary>
 			<ul>
 				<li data-tx="t0018:5410eb20"><strong>macOS</strong> : à partir de macOS Big Sur, le pilote est inclus dans le système - aucune étape d'installation n'est nécessaire.</li>
-				<li data-tx="t0019:b1eb5a7e"><strong>Linux</strong> : le pilote du noyau est intégré. Sur Ubuntu, le service BRLTTY peut s'emparer du CH340 et faire disparaître le fichier du périphérique après quelques secondes - la désinstallation de BRLTTY peut alors aider. Ton utilisateur doit également être dans le groupe <code>dialout</code>. Ces deux étapes sont détaillées dans <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
+				<li data-tx="t0019:35f91b38"><strong>Linux</strong> : le pilote du noyau est intégré. Sur Ubuntu, le service BRLTTY peut s'emparer du CH340, de sorte que tu ne vois pas le fichier du périphérique - dans ce cas, la désinstallation de BRLTTY aide : <code>sudo apt remove --purge brltty</code>. Ton utilisateur doit également être dans le groupe <code>dialout</code> : <code>sudo usermod -aG dialout $USER</code>. Les deux étapes sont détaillées dans <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
 			</ul>
 		</details>
 
@@ -91,7 +97,7 @@
 
 		<h2 data-tx="t0023:4325c49c" id="schritt-4">Étape 4 - Flasher le firmware</h2>
 
-		<p data-tx="t0024:230fc89e">Cliquer sur le bouton. Le navigateur demande ensuite à quel appareil connecté il peut s'adresser.</p>
+		<p data-tx="t0024:a0900784">Cliquer sur le bouton. Le navigateur demande ensuite à quel appareil connecté il peut s'adresser. Sélectionne l'entrée avec <strong>"USB-SERIAL CH340"</strong> (Windows) ou <strong>"USB Single Serial"</strong> ou <strong>"wch.cn"</strong> (macOS/Linux) dans le nom et confirme avec <strong>"Connecter"</strong>.</p>
 
 		<p>
 			<esp-web-install-button manifest="https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json">
@@ -110,7 +116,7 @@
 			</esp-web-install-button>
 		</p>
 
-		<p data-tx="t0028:34c84b34">La boîte de dialogue de sélection affiche une liste de tous les appareils sériels de l'ordinateur. Sélectionne l'entrée avec <strong>"USB-SERIAL CH340"</strong> (Windows) ou <strong>"USB Single Serial"</strong> ou <strong>"wch.cn"</strong> (macOS/Linux) dans son nom et confirme avec <strong>"Connecter"</strong>. Si plusieurs appareils CH340 s'affichent parce qu'il se trouve qu'un autre appareil avec cette puce est connecté, retire les autres pour le moment.</p>
+		<p data-tx="t0028:8a955c74">La boîte de dialogue de sélection affiche une liste de tous les appareils série de l'ordinateur. Si plusieurs appareils CH340 s'affichent parce qu'il se trouve qu'un autre appareil avec cette puce est connecté, retire les autres pour le moment.</p>
 
 		<figure>
 			<div data-tx="t0029:b5c3a2f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Caractère de remplacement : Capture d'écran de la boîte de dialogue de sélection de l'appareil du navigateur avec l'entrée CH340 en surbrillance]</div>
@@ -150,7 +156,11 @@
 
 		<p data-tx="t0043:f4d3bf5f">Ouvre dans le navigateur :</p>
 
-		<p><a class="button is-link is-large" data-tx="t0044:9be1c030" href="http://answerbot/">http://answerbot/</a></p>
+		<p><a class="button is-link is-large" data-tx="t0044:9be1c030" href="http://answerbot/" id="dongle-step7-link" target="_blank">http://answerbot/</a></p>
+
+		<div class="notification is-success" id="dongle-located-banner" style="display:none;">
+			<p data-tx="t0071:c20257a1"><strong>Dongle détecté:</strong> <a href="" id="dongle-located-link" target="_blank">http://192.168.178.xxx/</a> - le bouton ci-dessus l'ouvre directement.</p>
+		</div>
 
 		<p data-tx="t0045:de303f98">Si ce lien ne fonctionne pas (Windows sans Bonjour, certains réseaux locaux sans fil maillés), consulte la liste des périphériques de ton routeur pour trouver un périphérique nommé <code>answerbot</code>, note son adresse IP et accède à celle-ci dans ton navigateur - par exemple <code>http://192.168.178.xxx/</code>.</p>
 
@@ -208,6 +218,8 @@
 	}
 })();
 </script>
+
+<script th:src="@{/assets/js/dongle-pairing.js}" type="text/javascript"></script>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>

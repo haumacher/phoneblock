@@ -27,31 +27,37 @@
 
 		<h2 data-tx="t0052:93c33292" id="voraussetzungen">Voordat je begint</h2>
 
-		<p data-tx="t0053:657fcf42">Controleer kort of je aan deze vier punten voldoet - anders heb je zelfs niets aan de afgewerkte dongle:</p>
+		<p data-tx="t0053:5ffae555">Controleer kort of aan deze punten is voldaan - zodat er geen teleurstelling ontstaat:</p>
 
 		<ul>
 			<li data-tx="t0054:b4ac4baa"><strong>SIP-registrar</strong> - ofwel in de router (bijv. Fritz!Box) of rechtstreeks bij de telefonieprovider, mits deze externe SIP-clients toestaat ("Registratie van een IP-telefoon mogelijk").</li>
-			<li data-tx="t0055:95617e20"><strong>2,4 GHz WLAN</strong> binnen het bereik van de USB-poort.</li>
-			<li data-tx="t0056:de519524"><strong>5 V USB-voeding</strong> - idealiter direct op de router, maar je kunt ook een USB-voeding gebruiken.</li>
-			<li data-tx="t0057:66935893"><strong>Gratis <a th:href="@{/login}">PhoneBlock-account</a></strong> voor het API-token.</li>
+			<li data-tx="t0055:be2e6f7c"><strong>2,4 GHz WLAN</strong> binnen bereik.</li>
+			<li data-tx="t0056:573b2c92"><strong>5 V USB-voeding</strong> - idealiter USB-poort op de router, of een USB-voedingseenheid.</li>
 		</ul>
 
 		<h2 data-tx="t0058:1cedb9ee" id="schritt-1">Stap 1 - Bestel dongle</h2>
 
-		<p data-tx="t0007:4a8aea0f">Bestel dit ESP32-bord. Het is compact genoeg om als USB-stick direct in de router te worden gestoken, heeft de juiste USB seriële chip (CH340) en de PhoneBlock dongle is ermee ontwikkeld en getest.</p>
+		<p data-tx="t0007:1367b791">Bestel dit ESP32-bord. Het is compact genoeg om direct in de router te worden gestoken als een USB-stick, heeft de juiste USB seriële chip (CH340) en de PhoneBlock dongle is ermee getest.</p>
 
 		<figure class="image" style="max-width:300px;">
 			<img alt="ESP32 dongle" data-tx="t0008:31cdc7dc" th:src="@{/assets/img/dongle/dongle-option.png}"/>
 		</figure>
 
 		<div class="notification is-info">
-			<p data-tx="t0009:1bd1b6a9"><strong>Levering vanuit China - levertijd ca. 3-4 weken.</strong> Prijs momenteel ca. 9 € inclusief verzendkosten.</p>
+			<p data-tx="t0009:7fa685b8"><strong>Levering vanuit China - levertijd ca. 2 weken.</strong> Prijs momenteel ca. 9 € inclusief verzendkosten.</p>
 			<p class="mt-2">
 				<a class="button is-primary is-large" href="https://de.aliexpress.com/item/1005006593432047.html" rel="noopener" target="_blank">
 					<span class="icon"><i class="fas fa-cart-shopping"></i></span>
 					<span data-tx="t0010:49b731d6">Bestel op AliExpress</span>
 				</a>
 			</p>
+			<p class="mt-2">
+				<a class="button is-primary is-large" href="https://www.ebay.de/itm/404930369895" rel="noopener" target="_blank">
+					<span class="icon"><i class="fas fa-cart-shopping"></i></span>
+					<span data-tx="t0069:4bfe505a">Bestel op eBay</span>
+				</a>
+			</p>
+			<p data-tx="t0070:1caf402b">Deze aanbiedingen zijn op geen enkele manier gerelateerd aan PhoneBlock en PhoneBlock is op geen enkele manier betrokken bij de winst. Het gaat uitsluitend om de hardware. U installeert de PhoneBlock software (firmware) zelf na ontvangst (zie hieronder).</p>
 		</div>
 
 		<p data-tx="t0011:326831c9"><strong>U wilt een ander bord gebruiken</strong> Andere ESP32 DevKits werken op precies dezelfde manier, maar hebben mogelijk een ander USB serieel stuurprogramma nodig (bijvoorbeeld CP2102 in plaats van CH340) en een USB verlengkabel als het ontwerp niet direct in de router past. Details en aanbevelingen: <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/HARDWARE.md" rel="noopener" target="_blank">HARDWARE.md in de repo</a>.</p>
@@ -77,7 +83,7 @@
 			<summary><strong data-tx="t0017:ded51310">Gebruik je macOS of Linux?</strong></summary>
 			<ul>
 				<li data-tx="t0018:5410eb20"><strong>macOS</strong>: Vanaf macOS Big Sur is het stuurprogramma inbegrepen in het systeem - geen installatiestap nodig.</li>
-				<li data-tx="t0019:b1eb5a7e"><strong>Linux</strong>: Het kerneldriver is geïnstalleerd. Op Ubuntu kan de BRLTTY-service de CH340 pakken en het apparaatbestand na een paar seconden weer laten verdwijnen - het verwijderen van BRLTTY zal dan helpen. Je gebruiker moet ook in de <code>dialout</code> groep zitten. Beide stappen worden in detail beschreven in <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
+				<li data-tx="t0019:35f91b38"><strong>Linux</strong>: Het kerneldriver is geïnstalleerd. Op Ubuntu kan de BRLTTY-service de CH340 wegnemen, zodat je het apparaatbestand niet kunt zien - in dit geval helpt het om BRLTTY te verwijderen: <code>sudo apt remove --purge brltty</code>. Je gebruiker moet ook in de <code>dialout</code> groep zitten: <code>sudo usermod -aG dialout $USER</code>. Beide stappen worden in detail beschreven in <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
 			</ul>
 		</details>
 
@@ -91,7 +97,7 @@
 
 		<h2 data-tx="t0023:4325c49c" id="schritt-4">Stap 4 - Firmware flashen</h2>
 
-		<p data-tx="t0024:230fc89e">Klik op de knop. De browser vraagt dan voor welk aangesloten apparaat hij toestemming heeft.</p>
+		<p data-tx="t0024:a0900784">Klik op de knop. De browser vraagt dan welk aangesloten apparaat hij mag aanspreken. Selecteer het item met <strong>"USB-SERIAL CH340"</strong> (Windows) of <strong>"USB Single Serial"</strong> of <strong>"wch.cn"</strong> (macOS/Linux) in de naam en bevestig met <strong>"Connect"</strong>.</p>
 
 		<p>
 			<esp-web-install-button manifest="https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json">
@@ -110,7 +116,7 @@
 			</esp-web-install-button>
 		</p>
 
-		<p data-tx="t0028:34c84b34">Een lijst met alle seriële apparaten op de computer verschijnt in het selectiedialoogvenster. Selecteer het item met <strong>"USB-SERIAL CH340"</strong> (Windows) of <strong>"USB Single Serial"</strong> of <strong>"wch.cn"</strong> (macOS/Linux) in de naam en bevestig met <strong>"Connect"</strong>. Als er meerdere CH340-apparaten worden weergegeven omdat er toevallig nog een ander apparaat met deze chip is aangesloten, ontkoppel de andere apparaten dan even.</p>
+		<p data-tx="t0028:8a955c74">In het selectiedialoogvenster verschijnt een lijst met alle seriële apparaten op de computer. Als er meerdere CH340-apparaten worden weergegeven omdat er toevallig een ander apparaat met deze chip is aangesloten, verwijder dan de andere apparaten voor dit moment.</p>
 
 		<figure>
 			<div data-tx="t0029:b5c3a2f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Plaatshouder: Screenshot van het browserdialoogvenster voor apparaatselectie met gemarkeerde CH340-invoer].</div>
@@ -150,7 +156,11 @@
 
 		<p data-tx="t0043:f4d3bf5f">Open in de browser:</p>
 
-		<p><a class="button is-link is-large" data-tx="t0044:9be1c030" href="http://answerbot/">http://answerbot/</a></p>
+		<p><a class="button is-link is-large" data-tx="t0044:9be1c030" href="http://answerbot/" id="dongle-step7-link" target="_blank">http://answerbot/</a></p>
+
+		<div class="notification is-success" id="dongle-located-banner" style="display:none;">
+			<p data-tx="t0071:c20257a1"><strong>Dongle herkend:</strong> <a href="" id="dongle-located-link" target="_blank">http://192.168.178.xxx/</a> - de knop bovenaan opent deze direct.</p>
+		</div>
 
 		<p data-tx="t0045:de303f98">Als deze link niet werkt (Windows zonder Bonjour, sommige mesh WLAN's), zoek dan in de apparatenlijst van je router naar een apparaat met de naam <code>answerbot</code>, noteer het IP-adres en roep het op in de browser - bijvoorbeeld <code>http://192.168.178.xxx/</code>.</p>
 
@@ -208,6 +218,8 @@
 	}
 })();
 </script>
+
+<script th:src="@{/assets/js/dongle-pairing.js}" type="text/javascript"></script>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>

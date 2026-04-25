@@ -38,37 +38,44 @@
 
 		<h2 data-tx="t0052:93c33292" id="voraussetzungen">Bevor du loslegst</h2>
 
-		<p data-tx="t0053:657fcf42">Prüf kurz, dass diese vier Punkte bei dir erfüllt sind — sonst nützt dir auch der fertige
-		Dongle nichts:</p>
+		<p data-tx="t0053:5ffae555">Prüf kurz, dass diese Punkte erfüllt sind — damit's keine Enttäuschung gibt:</p>
 
 		<ul>
 			<li data-tx="t0054:b4ac4baa"><strong>SIP-Registrar</strong> — entweder im Router (z. B. Fritz!Box) oder direkt
 			beim Telefonie-Provider, sofern dieser externe SIP-Clients erlaubt („Anmeldung eines
 			IP-Telefons möglich").</li>
-			<li data-tx="t0055:95617e20"><strong>2,4-GHz-WLAN</strong> in Reichweite des USB-Ports.</li>
-			<li data-tx="t0056:de519524"><strong>5-V-USB-Stromversorgung</strong> — idealerweise direkt am Router, alternativ
-			ein beliebiges USB-Netzteil.</li>
-			<li data-tx="t0057:66935893"><strong>Kostenloses <a th:href="@{/login}">PhoneBlock-Konto</a></strong> für den
-			API-Token.</li>
+			<li data-tx="t0055:be2e6f7c"><strong>2,4-GHz-WLAN</strong> in Reichweite.</li>
+			<li data-tx="t0056:573b2c92"><strong>5-V-USB-Stromversorgung</strong> — idealerweise USB-Port am Router, alternativ
+			beliebiges USB-Netzteil.</li>
 		</ul>
 
 		<h2 data-tx="t0058:1cedb9ee" id="schritt-1">Schritt 1 — Dongle bestellen</h2>
 
-		<p data-tx="t0007:4a8aea0f">Bestelle dieses ESP32-Board. Es ist kompakt genug, um direkt als USB-Stick im Router zu
-		stecken, hat den passenden USB-Serial-Chip (CH340), und mit ihm wurde der PhoneBlock-Dongle
-		entwickelt und getestet.</p>
+		<p data-tx="t0007:1367b791">Bestelle dieses ESP32-Board. Es ist kompakt genug, um direkt als USB-Stick im Router zu
+		stecken, hat den passenden USB-Serial-Chip (CH340), und mit ihm wurde der PhoneBlock-Dongle getestet.</p>
 
 		<figure class="image" style="max-width:300px;">
 			<img alt="ESP32-Dongle" data-tx="t0008:31cdc7dc" th:src="@{/assets/img/dongle/dongle-option.png}"/>
 		</figure>
 
 		<div class="notification is-info">
-			<p data-tx="t0009:1bd1b6a9"><strong>Lieferung aus China — etwa 3–4 Wochen Lieferzeit.</strong> Preis derzeit ca. 9 € inklusive Versand.</p>
+			<p data-tx="t0009:7fa685b8"><strong>Lieferung aus China — etwa 2 Wochen Lieferzeit.</strong> Preis derzeit ca. 9 € inklusive Versand.</p>
 			<p class="mt-2">
 				<a class="button is-primary is-large" href="https://de.aliexpress.com/item/1005006593432047.html" rel="noopener" target="_blank">
 					<span class="icon"><i class="fas fa-cart-shopping"></i></span>
 					<span data-tx="t0010:49b731d6">Auf AliExpress bestellen</span>
 				</a>
+			</p>
+			<p class="mt-2">
+				<a class="button is-primary is-large" href="https://www.ebay.de/itm/404930369895" rel="noopener" target="_blank">
+					<span class="icon"><i class="fas fa-cart-shopping"></i></span>
+					<span data-tx="t0069:4bfe505a">Bei eBay bestellen</span>
+				</a>
+			</p>
+			<p data-tx="t0070:1caf402b">
+				Diese Angebote stehen mit PhoneBlock in keinerlei Beziehung und PhoneBlock ist in keiner Weise am Gewinn beteiligt. 
+				Es handelt sich hierbei ausschließlich um die Hardware. Die PhoneBlock-Software (Firmware) installierst Du nach
+				Erhalt selbst (siehe unten).
 			</p>
 		</div>
 
@@ -104,10 +111,10 @@
 			<ul>
 				<li data-tx="t0018:5410eb20"><strong>macOS</strong>: Ab macOS Big Sur ist der Treiber im System enthalten —
 				kein Installationsschritt nötig.</li>
-				<li data-tx="t0019:b1eb5a7e"><strong>Linux</strong>: Der Kernel-Treiber ist eingebaut. Auf Ubuntu kann der
-				BRLTTY-Dienst den CH340 wegschnappen und die Geräte-Datei nach Sekunden wieder
-				verschwinden lassen — dann hilft das Deinstallieren von BRLTTY. Dein Benutzer muss
-				außerdem in der Gruppe <code>dialout</code> sein. Beide Schritte stehen ausführlich in
+				<li data-tx="t0019:35f91b38"><strong>Linux</strong>: Der Kernel-Treiber ist eingebaut. Auf Ubuntu kann der
+				BRLTTY-Dienst den CH340 wegschnappen, so dass Du die Geräte-Datei nicht siehst — dann hilft das Deinstallieren 
+				von BRLTTY: <code>sudo apt remove --purge brltty</code>. Dein Benutzer muss
+				außerdem in der Gruppe <code>dialout</code> sein: <code>sudo usermod -aG dialout $USER</code>. Beide Schritte stehen ausführlich in
 				<a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
 			</ul>
 		</details>
@@ -125,8 +132,11 @@
 
 		<h2 data-tx="t0023:4325c49c" id="schritt-4">Schritt 4 — Firmware flashen</h2>
 
-		<p data-tx="t0024:230fc89e">Klick auf den Knopf. Der Browser fragt anschließend, welches angeschlossene Gerät er
-		ansprechen darf.</p>
+		<p data-tx="t0024:a0900784">Klick auf den Knopf. Der Browser fragt anschließend, welches angeschlossene Gerät er
+		ansprechen darf. Wähle den
+		Eintrag mit <strong>„USB-SERIAL CH340"</strong> (Windows) bzw. <strong>„USB Single Serial"</strong>
+		oder <strong>„wch.cn"</strong> (macOS/Linux) im Namen aus und bestätige mit
+		<strong>„Verbinden"</strong>.</p>
 
 		<p>
 			<esp-web-install-button manifest="https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json">
@@ -145,10 +155,8 @@
 			</esp-web-install-button>
 		</p>
 
-		<p data-tx="t0028:34c84b34">Im Auswahldialog erscheint eine Liste aller seriellen Geräte am Computer. Wähle den
-		Eintrag mit <strong>„USB-SERIAL CH340"</strong> (Windows) bzw. <strong>„USB Single Serial"</strong>
-		oder <strong>„wch.cn"</strong> (macOS/Linux) im Namen aus und bestätige mit
-		<strong>„Verbinden"</strong>. Falls mehrere CH340-Geräte angezeigt werden, weil zufällig noch
+		<p data-tx="t0028:8a955c74">Im Auswahldialog erscheint eine Liste aller seriellen Geräte am Computer. 
+		Falls mehrere CH340-Geräte angezeigt werden, weil zufällig noch
 		ein anderes Gerät mit diesem Chip angeschlossen ist, zieh die anderen für den Moment ab.</p>
 
 		<figure>
@@ -214,7 +222,14 @@
 
 		<p data-tx="t0043:f4d3bf5f">Öffne im Browser:</p>
 
-		<p><a class="button is-link is-large" data-tx="t0044:9be1c030" href="http://answerbot/">http://answerbot/</a></p>
+		<p><a class="button is-link is-large" data-tx="t0044:9be1c030" href="http://answerbot/" id="dongle-step7-link" target="_blank">http://answerbot/</a></p>
+
+		<div class="notification is-success" id="dongle-located-banner" style="display:none;">
+			<p data-tx="t0071:c20257a1">
+				<strong>Dongle erkannt:</strong> <a href="" id="dongle-located-link" target="_blank">http://192.168.178.xxx/</a>
+				— der Knopf oben öffnet ihn direkt.
+			</p>
+		</div>
 
 		<p data-tx="t0045:de303f98">Funktioniert dieser Link nicht (Windows ohne Bonjour, manche Mesh-WLANs), schau in der
 		Geräteliste deines Routers nach einem Gerät mit dem Namen <code>answerbot</code>, notiere
@@ -298,6 +313,8 @@
 	}
 })();
 </script>
+
+<script th:src="@{/assets/js/dongle-pairing.js}" type="text/javascript"></script>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>

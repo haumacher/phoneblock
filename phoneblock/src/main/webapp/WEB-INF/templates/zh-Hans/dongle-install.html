@@ -27,31 +27,37 @@
 
 		<h2 data-tx="t0052:93c33292" id="voraussetzungen">开始之前</h2>
 
-		<p data-tx="t0053:657fcf42">请简要检查您是否满足这四点要求，否则即使是完成的加密狗对您也毫无用处：</p>
+		<p data-tx="t0053:5ffae555">简要检查这些要点是否得到满足，以免失望：</p>
 
 		<ul>
 			<li data-tx="t0054:b4ac4baa"><strong>SIP 注册器</strong> - 路由器（如 Fritz！Box）或直接与电话供应商连接，前提是允许外部 SIP 客户端（"可注册 IP 电话"）。</li>
-			<li data-tx="t0055:95617e20"><strong>2.4 GHz WLAN</strong> USB 端口范围内。</li>
-			<li data-tx="t0056:de519524"><strong>5 V USB 电源</strong> - 最好直接安装在路由器上，也可选择任何 USB 电源装置。</li>
-			<li data-tx="t0057:66935893"><strong>免费 <a th:href="@{/login}">PhoneBlock 帐户</a></strong>用于 API 令牌。</li>
+			<li data-tx="t0055:be2e6f7c"><strong>2.4 GHz WLAN</strong> 范围内。</li>
+			<li data-tx="t0056:573b2c92"><strong>5 V USB 电源</strong> - 最好是路由器上的 USB 端口，或者任何 USB 电源装置。</li>
 		</ul>
 
 		<h2 data-tx="t0058:1cedb9ee" id="schritt-1">步骤 1 - 订购加密狗</h2>
 
-		<p data-tx="t0007:4a8aea0f">订购这款 ESP32 板。它非常小巧，可以作为 U 盘直接插入路由器，具有相应的 USB 串行芯片（CH340），PhoneBlock 加密狗就是用它开发和测试的。</p>
+		<p data-tx="t0007:1367b791">订购这块 ESP32 板。它非常小巧，可以作为 USB 记忆棒直接插入路由器，有相应的 USB 串行芯片（CH340），PhoneBlock 加密狗也用它进行了测试。</p>
 
 		<figure class="image" style="max-width:300px;">
 			<img alt="ESP32 加密狗" data-tx="t0008:31cdc7dc" th:src="@{/assets/img/dongle/dongle-option.png}"/>
 		</figure>
 
 		<div class="notification is-info">
-			<p data-tx="t0009:1bd1b6a9"><strong>从中国发货 - 约需 3-4 周。</strong>目前价格约为 9 欧元（含运费）。</p>
+			<p data-tx="t0009:7fa685b8"><strong>从中国发货 - 约需 2 周时间。</strong>目前价格约为 9 欧元（含运费）。</p>
 			<p class="mt-2">
 				<a class="button is-primary is-large" href="https://de.aliexpress.com/item/1005006593432047.html" rel="noopener" target="_blank">
 					<span class="icon"><i class="fas fa-cart-shopping"></i></span>
 					<span data-tx="t0010:49b731d6">在阿里巴巴订购</span>
 				</a>
 			</p>
+			<p class="mt-2">
+				<a class="button is-primary is-large" href="https://www.ebay.de/itm/404930369895" rel="noopener" target="_blank">
+					<span class="icon"><i class="fas fa-cart-shopping"></i></span>
+					<span data-tx="t0069:4bfe505a">在 eBay 上订购</span>
+				</a>
+			</p>
+			<p data-tx="t0070:1caf402b">这些优惠与 PhoneBlock 毫无关系，PhoneBlock 也绝不参与盈利。这完全是关于硬件。在收到产品后，您可以自行安装 PhoneBlock 软件（固件）（见下文）。</p>
 		</div>
 
 		<p data-tx="t0011:326831c9"><strong>您想使用不同的电路板</strong> 其他 ESP32 DevKits 的工作方式完全相同，但如果设计不能直接插入路由器，则可能需要不同的 USB 串行驱动程序（例如用 CP2102 代替 CH340）和 USB 延长线。详细信息和建议：<a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/HARDWARE.md" rel="noopener" target="_blank">repo 中的 HARDWARE.md</a>。</p>
@@ -77,7 +83,7 @@
 			<summary><strong data-tx="t0017:ded51310">您使用 macOS 还是 Linux？</strong></summary>
 			<ul>
 				<li data-tx="t0018:5410eb20"><strong>macOS</strong>：从 macOS Big Sur 开始，驱动程序已包含在系统中，无需任何安装步骤。</li>
-				<li data-tx="t0019:b1eb5a7e"><strong>Linux</strong>：已安装内核驱动程序。在 Ubuntu 上，BRLTTY 服务会抢占 CH340，并在几秒钟后使设备文件再次消失--卸载 BRLTTY 会有帮助。您的用户还必须在 <code>dialout</code> 组中。这两个步骤在 <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a> 中都有详细说明。</li>
+				<li data-tx="t0019:35f91b38"><strong>Linux</strong>：已安装内核驱动程序。在 Ubuntu 上，BRLTTY 服务可能会抢走 CH340，使你无法看到设备文件 - 在这种情况下，卸载 BRLTTY 会有帮助：<code>sudo apt remove --purge brltty</code>。你的用户还必须在 <code>dialout</code> 组中：<code>sudo usermod -aG dialout $USER</code>。这两个步骤在 <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a> 中都有详细说明。</li>
 			</ul>
 		</details>
 
@@ -91,7 +97,7 @@
 
 		<h2 data-tx="t0023:4325c49c" id="schritt-4">步骤 4 - 固件闪存</h2>
 
-		<p data-tx="t0024:230fc89e">点击按钮。然后浏览器会询问授权访问哪个连接设备。</p>
+		<p data-tx="t0024:a0900784">点击按钮。然后，浏览器会询问可寻址的连接设备。选择名称中包含<strong>"USB-SERIAL CH340"</strong>（Windows）或<strong>"USB Single Serial"</strong>或<strong>"wch.cn"</strong>（macOS/Linux）的条目，并用<strong>"Connect"</strong>确认。</p>
 
 		<p>
 			<esp-web-install-button manifest="https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json">
@@ -110,7 +116,7 @@
 			</esp-web-install-button>
 		</p>
 
-		<p data-tx="t0028:34c84b34">选择对话框中会显示计算机上所有串行设备的列表。选择名称为 <strong>"USB-SERIAL CH340"</strong> (Windows) 或 <strong>"USB Single Serial"</strong> 或 <strong>"wch.cn"</strong> (macOS/Linux) 的条目，并用 <strong>"Connect"</strong>确认。如果显示多个 CH340 设备，是因为恰好连接了其他带有该芯片的设备，请暂时断开其他设备。</p>
+		<p data-tx="t0028:8a955c74">选择对话框中将显示计算机上所有串行设备的列表。如果显示了多个 CH340 设备，是因为恰好连接了另一个带有该芯片的设备，请暂时移除其他设备。</p>
 
 		<figure>
 			<div data-tx="t0029:b5c3a2f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[占位符：浏览器设备选择对话框截图，CH340 条目突出显示］</div>
@@ -150,7 +156,11 @@
 
 		<p data-tx="t0043:f4d3bf5f">在浏览器中打开：</p>
 
-		<p><a class="button is-link is-large" data-tx="t0044:9be1c030" href="http://answerbot/">http://answerbot/</a></p>
+		<p><a class="button is-link is-large" data-tx="t0044:9be1c030" href="http://answerbot/" id="dongle-step7-link" target="_blank">http://answerbot/</a></p>
+
+		<div class="notification is-success" id="dongle-located-banner" style="display:none;">
+			<p data-tx="t0071:c20257a1"><strong>已识别加密狗：</strong> <a href="" id="dongle-located-link" target="_blank">http://192.168.178.xxx/</a> - 顶部的按钮可直接打开。</p>
+		</div>
 
 		<p data-tx="t0045:de303f98">如果此链接不起作用（没有 Bonjour 的 Windows 系统、某些网状 WLAN），请在路由器的设备列表中查找名称为 <code>answerbot</code> 的设备，记下其 IP 地址并在浏览器中调用，例如 <code>http://192.168.178.xxx/</code>。</p>
 
@@ -208,6 +218,8 @@
 	}
 })();
 </script>
+
+<script th:src="@{/assets/js/dongle-pairing.js}" type="text/javascript"></script>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>

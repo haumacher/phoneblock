@@ -27,31 +27,37 @@
 
 		<h2 data-tx="t0052:93c33292" id="voraussetzungen">قبل أن تبدأ</h2>
 
-		<p data-tx="t0053:657fcf42">تحقق بإيجاز من استيفاء هذه النقاط الأربع - وإلا فلن يكون الدونجل النهائي ذا فائدة لك:</p>
+		<p data-tx="t0053:5ffae555">تحقق بإيجاز من استيفاء هذه النقاط - حتى لا تكون هناك خيبة أمل:</p>
 
 		<ul>
 			<li data-tx="t0054:b4ac4baa"><strong>مسجل بروتوكول الإنترنت عبر بروتوكول الإنترنت</strong> - إما في جهاز التوجيه (مثل Fritz!Box) أو مباشرة مع مزود خدمة الاتصال الهاتفي، شريطة أن يسمح ذلك بعملاء SIP الخارجيين ("تسجيل هاتف IP ممكن").</li>
-			<li data-tx="t0055:95617e20"><strong>2.4 جيجا هرتز WLAN</strong> ضمن نطاق منفذ USB.</li>
-			<li data-tx="t0056:de519524"><strong> مصدر إمداد طاقة USB بجهد 5 فولت</strong> - من الأفضل أن يكون ذلك مباشرة على جهاز التوجيه، أو أي وحدة إمداد طاقة USB بدلاً من ذلك.</li>
-			<li data-tx="t0057:66935893"><strong>حساب <a th:href="@{/login}">حساب كتلة الهاتف</a></strong> مجانًا لرمز واجهة برمجة التطبيقات.</li>
+			<li data-tx="t0055:be2e6f7c"><strong>2.4 جيجا هرتز WLAN</strong> ضمن النطاق.</li>
+			<li data-tx="t0056:573b2c92"><strong>مصدر طاقة USB بجهد 5 فولت</strong> - من الأفضل أن يكون منفذ USB على جهاز التوجيه، أو أي وحدة إمداد طاقة USB بدلاً من ذلك.</li>
 		</ul>
 
 		<h2 data-tx="t0058:1cedb9ee" id="schritt-1">الخطوة 1 - اطلب الدونجل</h2>
 
-		<p data-tx="t0007:4a8aea0f">اطلب لوحة ESP32 هذه. وهي مدمجة بما يكفي لتوصيلها مباشرةً بجهاز التوجيه كوحدة USB، وتحتوي على شريحة USB التسلسلية المناسبة (CH340)، وتم تطوير واختبار دونجل PhoneBlock معها.</p>
+		<p data-tx="t0007:1367b791">اطلب لوحة ESP32 هذه. إنها مدمجة بما يكفي لتوصيلها مباشرةً في جهاز التوجيه على شكل عصا USB، وتحتوي على شريحة USB التسلسلية المناسبة (CH340)، وتم اختبار دونجل PhoneBlock معها.</p>
 
 		<figure class="image" style="max-width:300px;">
 			<img alt="دونجل ESP32" data-tx="t0008:31cdc7dc" th:src="@{/assets/img/dongle/dongle-option.png}"/>
 		</figure>
 
 		<div class="notification is-info">
-			<p data-tx="t0009:1bd1b6a9"><strong>التسليم من الصين - تقريبًا. 3-4 أسابيع وقت التسليم.</strong> السعر حاليًا حوالي 9 يورو بما في ذلك الشحن.</p>
+			<p data-tx="t0009:7fa685b8"><strong>التسليم من الصين - تقريبًا. 2 أسابيع وقت التسليم.</strong> السعر حاليًا حوالي 9 يورو بما في ذلك الشحن.</p>
 			<p class="mt-2">
 				<a class="button is-primary is-large" href="https://de.aliexpress.com/item/1005006593432047.html" rel="noopener" target="_blank">
 					<span class="icon"><i class="fas fa-cart-shopping"></i></span>
 					<span data-tx="t0010:49b731d6">اطلب على AliExpress</span>
 				</a>
 			</p>
+			<p class="mt-2">
+				<a class="button is-primary is-large" href="https://www.ebay.de/itm/404930369895" rel="noopener" target="_blank">
+					<span class="icon"><i class="fas fa-cart-shopping"></i></span>
+					<span data-tx="t0069:4bfe505a">اطلب على موقع إي باي</span>
+				</a>
+			</p>
+			<p data-tx="t0070:1caf402b">لا ترتبط هذه العروض بأي شكل من الأشكال بـ PhoneBlock ولا تشارك PhoneBlock بأي شكل من الأشكال في الأرباح. هذا يتعلق حصرياً بالأجهزة. يمكنك تثبيت برنامج PhoneBlock (البرنامج الثابت) بنفسك بعد الاستلام (انظر أدناه).</p>
 		</div>
 
 		<p data-tx="t0011:326831c9"><strong>تريد استخدام لوحة مختلفة</strong> تعمل مجموعات ESP32 DevKits الأخرى بنفس الطريقة تمامًا، ولكن قد تحتاج إلى برنامج تشغيل USB تسلسلي مختلف (على سبيل المثال CP2102 بدلاً من CH340) وكابل تمديد USB إذا كان التصميم لا يتناسب مباشرةً مع جهاز التوجيه. التفاصيل والتوصيات: <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/HARDWARE.md" rel="noopener" target="_blank">HARDWARE.md في الريبو.</a></p>
@@ -77,7 +83,7 @@
 			<summary><strong data-tx="t0017:ded51310">هل تستخدم نظام التشغيل macOS أو Linux؟</strong></summary>
 			<ul>
 				<li data-tx="t0018:5410eb20"><strong>macOS: اعتبارًا من macOS Big Sur، يتم تضمين برنامج التشغيل في النظام - لا حاجة لخطوة التثبيت.</strong></li>
-				<li data-tx="t0019:b1eb5a7e"><strong>Linux</strong>: تم تثبيت برنامج تشغيل kernel. على Ubuntu، يمكن لخدمة BRLTTY انتزاع CH340 وجعل ملف الجهاز يختفي مرة أخرى بعد بضع ثوانٍ - سيساعد إلغاء تثبيت BRLTTY بعد ذلك. يجب أن يكون المستخدم الخاص بك أيضًا في مجموعة <code>dialout</code>. كلتا الخطوتين موصوفتان بالتفصيل في <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
+				<li data-tx="t0019:35f91b38"><strong>لينكس</strong>: تم تثبيت برنامج تشغيل النواة. في Ubuntu، يمكن لخدمة BRLTTY انتزاع CH340 بحيث لا يمكنك رؤية ملف الجهاز - في هذه الحالة، سيساعدك إلغاء تثبيت BRLTTY: <code>sudo apt apt remove --purge brltty</code>. يجب أن يكون المستخدم الخاص بك أيضًا في مجموعة <code>dialout</code>: <code>sudo usermod -aG dialout $USER</code>. كلتا الخطوتين موصوفتان بالتفصيل في <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md.</a></li>
 			</ul>
 		</details>
 
@@ -91,7 +97,7 @@
 
 		<h2 data-tx="t0023:4325c49c" id="schritt-4">الخطوة 4 - فلاش البرامج الثابتة</h2>
 
-		<p data-tx="t0024:230fc89e">انقر على الزر. ثم يسأل المتصفح عن الجهاز المتصل الذي تم التصريح له بالوصول إليه.</p>
+		<p data-tx="t0024:a0900784">انقر على الزر. يسأل المتصفح بعد ذلك عن الجهاز المتصل الذي يمكن أن يخاطبه. حدد الإدخال الذي يحتوي على <strong>"USB-SERIAL CH340"</strong> (ويندوز) أو <strong>"USB Single Serial"</strong> أو <strong>"wch.cn"</strong> (macOS/Linux) في الاسم وأكد باستخدام <strong>"اتصال"</strong>.</p>
 
 		<p>
 			<esp-web-install-button manifest="https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json">
@@ -110,7 +116,7 @@
 			</esp-web-install-button>
 		</p>
 
-		<p data-tx="t0028:34c84b34">تظهر قائمة بجميع الأجهزة التسلسلية على الكمبيوتر في حوار التحديد. حدد الإدخال الذي يحتوي على <strong>"USB-SERIAL CH340"</strong> (ويندوز) أو <strong>"USB Single Serial"</strong> أو <strong>"wch.cn"</strong> (macOS/Linux) في الاسم وقم بالتأكيد باستخدام <strong>"Connect"</strong>. إذا تم عرض عدة أجهزة CH340 بسبب توصيل جهاز آخر بهذه الشريحة، افصل الأجهزة الأخرى في الوقت الحالي.</p>
+		<p data-tx="t0028:8a955c74">تظهر قائمة بجميع الأجهزة التسلسلية على الكمبيوتر في حوار التحديد. إذا تم عرض العديد من أجهزة CH340 بسبب توصيل جهاز آخر بهذه الشريحة، فقم بإزالة الأجهزة الأخرى في الوقت الحالي.</p>
 
 		<figure>
 			<div data-tx="t0029:b5c3a2f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[العنصر النائب: لقطة شاشة لحوار اختيار جهاز المتصفح مع تمييز إدخال CH340]</div>
@@ -150,7 +156,11 @@
 
 		<p data-tx="t0043:f4d3bf5f">افتح في المتصفح:</p>
 
-		<p><a class="button is-link is-large" data-tx="t0044:9be1c030" href="http://answerbot/">http://answerbot/</a></p>
+		<p><a class="button is-link is-large" data-tx="t0044:9be1c030" href="http://answerbot/" id="dongle-step7-link" target="_blank">http://answerbot/</a></p>
+
+		<div class="notification is-success" id="dongle-located-banner" style="display:none;">
+			<p data-tx="t0071:c20257a1"><strong> تم التعرف على الدونجل: <a href="" id="dongle-located-link" target="_blank">http://192.168.178.xxx/</a> - الزر الموجود في الأعلى يفتحه مباشرة.</strong></p>
+		</div>
 
 		<p data-tx="t0045:de303f98">إذا كان هذا الرابط لا يعمل (ويندوز بدون بونجور، وبعض شبكات WLAN الشبكية)، ابحث في قائمة الأجهزة في جهاز التوجيه الخاص بك عن جهاز يحمل الاسم <code>answerbot</code>، وقم بتدوين عنوان IP الخاص به واستدعائه في المتصفح - على سبيل المثال <code>http://192.168.178.xxx/</code>.</p>
 
@@ -208,6 +218,8 @@
 	}
 })();
 </script>
+
+<script th:src="@{/assets/js/dongle-pairing.js}" type="text/javascript"></script>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>

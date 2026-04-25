@@ -27,31 +27,37 @@
 
 		<h2 data-tx="t0052:93c33292" id="voraussetzungen">Innan du sätter igång</h2>
 
-		<p data-tx="t0053:657fcf42">Kontrollera kortfattat att du uppfyller dessa fyra punkter - annars kommer inte ens den färdiga dongeln att vara till någon nytta för dig:</p>
+		<p data-tx="t0053:5ffae555">Kontrollera kortfattat att dessa punkter är uppfyllda - så att det inte blir någon besvikelse:</p>
 
 		<ul>
 			<li data-tx="t0054:b4ac4baa"><strong>SIP-registrator</strong> - antingen i routern (t.ex. Fritz!Box) eller direkt hos telefonileverantören, förutsatt att denna tillåter externa SIP-klienter ("Registrering av en IP-telefon möjlig").</li>
-			<li data-tx="t0055:95617e20"><strong>2,4 GHz WLAN</strong> inom räckhåll för USB-porten.</li>
-			<li data-tx="t0056:de519524"><strong>5 V USB-strömförsörjning</strong> - helst direkt på routern, alternativt valfri USB-strömförsörjningsenhet.</li>
-			<li data-tx="t0057:66935893"><strong>Gratis <a th:href="@{/login}">PhoneBlock-konto</a></strong> för API-token.</li>
+			<li data-tx="t0055:be2e6f7c"><strong>2,4 GHz WLAN</strong> inom räckvidd.</li>
+			<li data-tx="t0056:573b2c92"><strong>5 V USB-strömförsörjning</strong> - helst USB-port på routern, alternativt valfri USB-strömförsörjningsenhet.</li>
 		</ul>
 
 		<h2 data-tx="t0058:1cedb9ee" id="schritt-1">Steg 1 - Beställ dongle</h2>
 
-		<p data-tx="t0007:4a8aea0f">Beställ det här ESP32-kortet. Det är tillräckligt kompakt för att anslutas direkt till routern som ett USB-minne, har rätt USB-seriellchip (CH340) och PhoneBlock-dongeln utvecklades och testades med det.</p>
+		<p data-tx="t0007:1367b791">Beställ det här ESP32-kortet. Det är tillräckligt kompakt för att anslutas direkt till routern som ett USB-minne, har rätt USB-seriellchip (CH340) och PhoneBlock-dongeln testades med det.</p>
 
 		<figure class="image" style="max-width:300px;">
 			<img alt="ESP32-dongle" data-tx="t0008:31cdc7dc" th:src="@{/assets/img/dongle/dongle-option.png}"/>
 		</figure>
 
 		<div class="notification is-info">
-			<p data-tx="t0009:1bd1b6a9"><strong>Leverans från Kina - ca 3-4 veckors leveranstid.</strong> Pris för närvarande ca. 9 € inklusive frakt.</p>
+			<p data-tx="t0009:7fa685b8"><strong>Leverans från Kina - ca. 2 veckors leveranstid.</strong> Pris för närvarande ca. 9 € inklusive frakt.</p>
 			<p class="mt-2">
 				<a class="button is-primary is-large" href="https://de.aliexpress.com/item/1005006593432047.html" rel="noopener" target="_blank">
 					<span class="icon"><i class="fas fa-cart-shopping"></i></span>
 					<span data-tx="t0010:49b731d6">Beställ på AliExpress</span>
 				</a>
 			</p>
+			<p class="mt-2">
+				<a class="button is-primary is-large" href="https://www.ebay.de/itm/404930369895" rel="noopener" target="_blank">
+					<span class="icon"><i class="fas fa-cart-shopping"></i></span>
+					<span data-tx="t0069:4bfe505a">Beställ på eBay</span>
+				</a>
+			</p>
+			<p data-tx="t0070:1caf402b">Dessa erbjudanden är inte på något sätt relaterade till PhoneBlock och PhoneBlock är inte på något sätt involverat i vinsterna. Detta handlar uteslutande om hårdvaran. Du installerar själv PhoneBlocks programvara (firmware) efter mottagandet (se nedan).</p>
 		</div>
 
 		<p data-tx="t0011:326831c9"><strong>Du vill använda ett annat kort</strong> Andra ESP32 DevKits fungerar på exakt samma sätt, men kan behöva en annan USB-seriell drivrutin (t.ex. CP2102 istället för CH340) och en USB-förlängningskabel om designen inte passar direkt i routern. Detaljer och rekommendationer: <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/HARDWARE.md" rel="noopener" target="_blank">HARDWARE.md i repot</a>.</p>
@@ -77,7 +83,7 @@
 			<summary><strong data-tx="t0017:ded51310">Använder du macOS eller Linux?</strong></summary>
 			<ul>
 				<li data-tx="t0018:5410eb20"><strong>macOS</strong>: Från och med macOS Big Sur ingår drivrutinen i systemet - inget installationssteg krävs.</li>
-				<li data-tx="t0019:b1eb5a7e"><strong>Linux</strong>: Kärndrivrutinen är installerad. På Ubuntu kan tjänsten BRLTTY sno åt sig CH340 och få enhetsfilen att försvinna igen efter några sekunder - avinstallation av BRLTTY hjälper då. Din användare måste också vara med i gruppen <code>dialout</code>. Båda stegen beskrivs i detalj i <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
+				<li data-tx="t0019:35f91b38"><strong>Linux</strong>: Kärndrivrutinen är installerad. På Ubuntu kan tjänsten BRLTTY sno åt sig CH340 så att du inte kan se enhetsfilen - i det här fallet hjälper det att avinstallera BRLTTY: <code>sudo apt remove --purge brltty</code>. Din användare måste också vara med i gruppen <code>dialout</code>: <code>sudo usermod -aG dialout $USER</code>. Båda stegen beskrivs i detalj i <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
 			</ul>
 		</details>
 
@@ -91,7 +97,7 @@
 
 		<h2 data-tx="t0023:4325c49c" id="schritt-4">Steg 4 - Flasha firmware</h2>
 
-		<p data-tx="t0024:230fc89e">Klicka på knappen. Webbläsaren frågar sedan vilken ansluten enhet den har behörighet att komma åt.</p>
+		<p data-tx="t0024:a0900784">Klicka på knappen. Webbläsaren frågar sedan vilken ansluten enhet den får adressera. Välj posten med <strong>"USB-SERIAL CH340"</strong> (Windows) eller <strong>"USB Single Serial"</strong> eller <strong>"wch.cn"</strong> (macOS/Linux) i namnet och bekräfta med <strong>"Connect"</strong>.</p>
 
 		<p>
 			<esp-web-install-button manifest="https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json">
@@ -110,7 +116,7 @@
 			</esp-web-install-button>
 		</p>
 
-		<p data-tx="t0028:34c84b34">I urvalsdialogen visas en lista över alla seriella enheter på datorn. Välj posten med <strong>"USB-SERIAL CH340"</strong> (Windows) eller <strong>"USB Single Serial"</strong> eller <strong>"wch.cn"</strong> (macOS/Linux) i namnet och bekräfta med <strong>"Connect"</strong>. Om flera CH340-enheter visas på grund av att en annan enhet med detta chip råkar vara ansluten, koppla bort de andra för tillfället.</p>
+		<p data-tx="t0028:8a955c74">En lista över alla seriella enheter på datorn visas i urvalsdialogen. Om flera CH340-enheter visas eftersom en annan enhet med detta chip råkar vara ansluten, tar du bort de andra för tillfället.</p>
 
 		<figure>
 			<div data-tx="t0029:b5c3a2f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Platshållare: Skärmdump av dialogen för val av enhet i webbläsaren med markerad CH340-post].</div>
@@ -150,7 +156,11 @@
 
 		<p data-tx="t0043:f4d3bf5f">Öppna i webbläsaren:</p>
 
-		<p><a class="button is-link is-large" data-tx="t0044:9be1c030" href="http://answerbot/">http://answerbot/</a></p>
+		<p><a class="button is-link is-large" data-tx="t0044:9be1c030" href="http://answerbot/" id="dongle-step7-link" target="_blank">http://answerbot/</a></p>
+
+		<div class="notification is-success" id="dongle-located-banner" style="display:none;">
+			<p data-tx="t0071:c20257a1"><strong>Dongle identifierad:</strong> <a href="" id="dongle-located-link" target="_blank">http://192.168.178.xxx/</a> - knappen längst upp öppnar den direkt.</p>
+		</div>
 
 		<p data-tx="t0045:de303f98">Om den här länken inte fungerar (Windows utan Bonjour, vissa mesh WLAN), leta i enhetslistan i din router efter en enhet med namnet <code>answerbot</code>, notera dess IP-adress och ring upp den i webbläsaren - t.ex. <code>http://192.168.178.xxx/</code>.</p>
 
@@ -208,6 +218,8 @@
 	}
 })();
 </script>
+
+<script th:src="@{/assets/js/dongle-pairing.js}" type="text/javascript"></script>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>
