@@ -12,7 +12,7 @@
 		<p class="subtitle" data-tx="t0095:dab19814">Un répondeur intelligent dans l'habit d'un téléphone IP. De la taille du pouce, il se branche sur le port USB du routeur, s'enregistre comme téléphone SIP supplémentaire - et intercepte les appels publicitaires avant que ton véritable téléphone ne sonne. Fonctionne indépendamment du modèle de routeur, même sans Fritz!Box.</p>
 
 		<div class="notification is-warning">
-			<p data-tx="t0096:bfb7afe0"><strong>Status : Beta.</strong> La première version fonctionne déjà de manière fiable. Je cherche d'autres testeurs pour essayer le dongle dans des environnements aussi différents que possible, <a href="#tester">voir ci-dessous</a>.</p>
+			<p data-tx="t0096:e25954d6"><strong>Status : Beta.</strong> La première version fonctionne déjà de manière fiable. Je cherche d'autres testeurs pour essayer le dongle dans des environnements aussi différents que possible, <a href="#tester">voir ci-dessous</a>.</p>
 		</div>
 
 		<h2 data-tx="t0004:6b104c7a">L'idée en une phrase</h2>
@@ -49,7 +49,7 @@
 			<table class="table is-fullwidth is-striped">
 				<thead>
 					<tr>
-						<th data-tx="t0015:ece15d25">Propriété</th>
+						<th></th>
 						<th data-tx="t0016:365a40ae">Dongle PhoneBlock</th>
 						<th data-tx="t0018:a17f6b5">Répondeur téléphonique Clound</th>
 						<th data-tx="t0017:b7a22f37">Répertoire téléphonique des listes de blocage</th>
@@ -63,26 +63,26 @@
 						<td data-tx="t0089:2e61bee2"><span class="icon has-text-warning"><i class="fas fa-sync"></i></span> Bien, mais seulement un petit extrait de la liste de blocs, sync ≤ 1 ×/jour</td>
 					</tr>
 					<tr>
-						<td><strong data-tx="t0109:90691916">Conditions requises pour le routeur</strong></td>
-						<td data-tx="t0024:115dd48e"><span class="icon has-text-success"><i class="fas fa-globe"></i></span> Au choix (SIP + délai de sonnerie)</td>
-						<td data-tx="t0101:da4c1004"><span class="icon has-text-warning"><i class="fas fa-server"></i></span> Fritz!Box avec connexion SIP depuis Internet (bloquée sur les box Vodafone)</td>
+						<td><strong data-tx="t0109:984ebad2">Conditions préalables</strong></td>
+						<td data-tx="t0024:e372dde7"><span class="icon has-text-success"><i class="fas fa-globe"></i></span> Presque chaque combinaison routeur/fournisseur</td>
+						<td data-tx="t0101:956188d1"><span class="icon has-text-warning"><i class="fas fa-server"></i></span> Uniquement votre propre Fritz!Box (pas de location de box fournisseur)</td>
 						<td data-tx="t0085:120e2e30"><span class="icon has-text-warning"><i class="fas fa-wifi"></i></span> Fritz!Box plus récente avec CardDAV</td>
 					</tr>
 					<tr>
 						<td><strong data-tx="t0114:5f4450bc">Protection des données</strong></td>
-						<td data-tx="t0120:ba0feedd"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Optimal ; L'appel reste local ; Uniquement la comparaison de hachage des appelants inconnus</td>
-						<td data-tx="t0121:294f8242"><span class="icon has-text-danger"><i class="fas fa-cloud"></i></span> La signalisation de chaque appel (y compris des contacts) passe par le serveur PhoneBlock</td>
-						<td data-tx="t0116:7a42296d"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Rien ne quitte le routeur</td>
+						<td data-tx="t0120:1d9445c1"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Optimal ; Traitement local des appels ; Comparaison de hachage uniquement pour les appelants inconnus</td>
+						<td data-tx="t0121:b26fbac9"><span class="icon has-text-danger"><i class="fas fa-cloud"></i></span> Problématique ; la signalisation de chaque appel (même de contacts) passe par le serveur PhoneBlock</td>
+						<td data-tx="t0116:2452770"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Optimal ; rien ne sort du routeur</td>
 					</tr>
 					<tr>
 						<td><strong data-tx="t0111:83c9a19b">Frais d'installation</strong></td>
 						<td data-tx="t0032:4e6c7d5d"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Plug &amp; Play</td>
-						<td data-tx="t0088:aa5e1238"><span class="icon has-text-info"><i class="fas fa-gear"></i></span> élevé</td>
-						<td data-tx="t0102:e51ea302"><span class="icon has-text-info"><i class="fas fa-gear"></i></span> modérée</td>
+						<td data-tx="t0088:45c38866"><span class="icon has-text-warning"><i class="fas fa-gear"></i></span> élevé (automatique avec l'application PhoneBlock Mobile)</td>
+						<td data-tx="t0102:e51ea302"><span class="icon has-text-warning"><i class="fas fa-gear"></i></span> modérée</td>
 					</tr>
 					<tr>
 						<td><strong data-tx="t0110:e66ba2b">Matériel supplémentaire</strong></td>
-						<td data-tx="t0028:99294924"><span class="icon has-text-info"><i class="fas fa-usb"></i></span> Clé USB, environ 10</td>
+						<td data-tx="t0028:99294924"><span class="icon has-text-info"><i class="fa-solid fa-coins"></i></span> Clé USB, environ 10</td>
 						<td data-tx="t0087:fe8232e3"><span class="icon has-text-success"><i class="fas fa-cloud"></i></span> Aucun (service cloud)</td>
 						<td data-tx="t0029:4d86e32e"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Aucun (intégré dans la Fritz!Box)</td>
 					</tr>
@@ -90,7 +90,7 @@
 						<td><strong data-tx="t0108:9e08101d">Le téléphone reste complètement silencieux en cas de spam</strong></td>
 						<td data-tx="t0020:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Oui</td>
 						<td data-tx="t0022:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Oui</td>
-						<td data-tx="t0084:cf12d799"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Au choix : affichage ou blocage</td>
+						<td data-tx="t0084:7b5cfc02"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Verrouillage ou affichage uniquement, au choix</td>
 					</tr>
 					<tr>
 						<td><strong data-tx="t0118:f4c95d3e">Occuper activement les spammeurs</strong></td>

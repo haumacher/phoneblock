@@ -12,7 +12,7 @@
 		<p class="subtitle" data-tx="t0095:dab19814">En intelligent telefonsvarer i skikkelse af en IP-telefon. Den er på størrelse med en tommelfinger, tilsluttes routerens USB-port, registreres som en ekstra SIP-telefon - og opfanger kommercielle opkald, før din rigtige telefon ringer. Fungerer uanset routermodel, selv uden en Fritz!</p>
 
 		<div class="notification is-warning">
-			<p data-tx="t0096:bfb7afe0"><strong>Status: Beta.</strong> Den første version kører allerede pålideligt. Jeg er på udkig efter flere testere til at afprøve donglen i så mange forskellige miljøer som muligt, <a href="#tester">se nedenfor</a>.</p>
+			<p data-tx="t0096:e25954d6"><strong>Status: Beta.</strong> Den første version kører allerede pålideligt. Jeg er på udkig efter flere testere til at afprøve donglen i så mange forskellige miljøer som muligt, <a href="#tester">se nedenfor</a>.</p>
 		</div>
 
 		<h2 data-tx="t0004:6b104c7a">Ideen i én sætning</h2>
@@ -49,7 +49,7 @@
 			<table class="table is-fullwidth is-striped">
 				<thead>
 					<tr>
-						<th data-tx="t0015:ece15d25">Funktion</th>
+						<th></th>
 						<th data-tx="t0016:365a40ae">PhoneBlock-dongle</th>
 						<th data-tx="t0018:a17f6b5">Clound telefonsvarer</th>
 						<th data-tx="t0017:b7a22f37">Telefonbog med blokeringsliste</th>
@@ -63,26 +63,26 @@
 						<td data-tx="t0089:2e61bee2"><span class="icon has-text-warning"><i class="fas fa-sync"></i></span> Godt, men kun en lille del af bloklisten, synkronisering ≤ 1 ×/dag</td>
 					</tr>
 					<tr>
-						<td><strong data-tx="t0109:90691916">Krav til router</strong></td>
-						<td data-tx="t0024:115dd48e"><span class="icon has-text-success"><i class="fas fa-globe"></i></span> Enhver (SIP + klokkeforsinkelse)</td>
-						<td data-tx="t0101:da4c1004"><span class="icon has-text-warning"><i class="fas fa-server"></i></span> Fritz!Box med SIP-login fra internettet (blokeret for Vodafone-bokse)</td>
+						<td><strong data-tx="t0109:984ebad2">Forudsætninger</strong></td>
+						<td data-tx="t0024:e372dde7"><span class="icon has-text-success"><i class="fas fa-globe"></i></span> Næsten enhver kombination af router og udbyder</td>
+						<td data-tx="t0101:956188d1"><span class="icon has-text-warning"><i class="fas fa-server"></i></span> Kun egen Fritz!Box (ingen udlejningsboks hos udbyder)</td>
 						<td data-tx="t0085:120e2e30"><span class="icon has-text-warning"><i class="fas fa-wifi"></i></span> Nyere Fritz!Box med CardDAV</td>
 					</tr>
 					<tr>
 						<td><strong data-tx="t0114:5f4450bc">Beskyttelse af data</strong></td>
-						<td data-tx="t0120:ba0feedd"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Optimal; opkaldet forbliver lokalt; kun hash-matchning af ukendte opkaldere</td>
-						<td data-tx="t0121:294f8242"><span class="icon has-text-danger"><i class="fas fa-cloud"></i></span> Signalering af alle opkald (også fra kontakter) kører via PhoneBlock-serveren</td>
-						<td data-tx="t0116:7a42296d"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Intet forlader routeren</td>
+						<td data-tx="t0120:1d9445c1"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Optimal; Lokal opkaldshåndtering; Kun hash-matchning for ukendte opkaldere</td>
+						<td data-tx="t0121:b26fbac9"><span class="icon has-text-danger"><i class="fas fa-cloud"></i></span> Problematisk; signalering af alle opkald (også fra kontakter) kører via PhoneBlock-serveren</td>
+						<td data-tx="t0116:2452770"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Optimalt; intet forlader routeren</td>
 					</tr>
 					<tr>
 						<td><strong data-tx="t0111:83c9a19b">Indsats for opsætning</strong></td>
 						<td data-tx="t0032:4e6c7d5d"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Plug &amp; Play</td>
-						<td data-tx="t0088:aa5e1238"><span class="icon has-text-info"><i class="fas fa-gear"></i></span> høj</td>
-						<td data-tx="t0102:e51ea302"><span class="icon has-text-info"><i class="fas fa-gear"></i></span> moderat</td>
+						<td data-tx="t0088:45c38866"><span class="icon has-text-warning"><i class="fas fa-gear"></i></span> op (automatisk med PhoneBlock Mobile App)</td>
+						<td data-tx="t0102:e51ea302"><span class="icon has-text-warning"><i class="fas fa-gear"></i></span> moderat</td>
 					</tr>
 					<tr>
 						<td><strong data-tx="t0110:e66ba2b">Ekstra hardware</strong></td>
-						<td data-tx="t0028:99294924"><span class="icon has-text-info"><i class="fas fa-usb"></i></span> USB-dongle, ca. 10 €.</td>
+						<td data-tx="t0028:99294924"><span class="icon has-text-info"><i class="fa-solid fa-coins"></i></span> USB-dongle, ca. 10 €.</td>
 						<td data-tx="t0087:fe8232e3"><span class="icon has-text-success"><i class="fas fa-cloud"></i></span> Ingen (skytjeneste)</td>
 						<td data-tx="t0029:4d86e32e"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ingen (integreret i Fritz!Box)</td>
 					</tr>
@@ -90,7 +90,7 @@
 						<td><strong data-tx="t0108:9e08101d">Telefonen forbliver helt lydløs under spam</strong></td>
 						<td data-tx="t0020:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ja</td>
 						<td data-tx="t0022:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ja</td>
-						<td data-tx="t0084:cf12d799"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Vis eller lås eventuelt</td>
+						<td data-tx="t0084:7b5cfc02"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Lås eller vis kun valgfrit</td>
 					</tr>
 					<tr>
 						<td><strong data-tx="t0118:f4c95d3e">Aktivt at ansætte spammere</strong></td>

@@ -12,7 +12,7 @@
 		<p class="subtitle" data-tx="t0095:dab19814">Een intelligent antwoordapparaat in de vorm van een IP-telefoon. Het apparaat is zo groot als een duim, kan worden aangesloten op de USB-poort van de router, wordt geregistreerd als een extra SIP-telefoon en onderschept commerciële gesprekken voordat je eigenlijke telefoon overgaat. Werkt ongeacht het model router, zelfs zonder Fritz!</p>
 
 		<div class="notification is-warning">
-			<p data-tx="t0096:bfb7afe0"><strong>Status: Beta.</strong> De eerste versie draait al betrouwbaar. Ik ben op zoek naar meer testers om de dongle in zoveel mogelijk verschillende omgevingen uit te proberen, <a href="#tester">zie hieronder</a>.</p>
+			<p data-tx="t0096:e25954d6"><strong>Status: Beta.</strong> De eerste versie draait al betrouwbaar. Ik ben op zoek naar meer testers om de dongle in zoveel mogelijk verschillende omgevingen uit te proberen, <a href="#tester">zie hieronder</a>.</p>
 		</div>
 
 		<h2 data-tx="t0004:6b104c7a">Het idee in één zin</h2>
@@ -49,7 +49,7 @@
 			<table class="table is-fullwidth is-striped">
 				<thead>
 					<tr>
-						<th data-tx="t0015:ece15d25">Functie</th>
+						<th></th>
 						<th data-tx="t0016:365a40ae">PhoneBlock Dongle</th>
 						<th data-tx="t0018:a17f6b5">Klink antwoordapparaat</th>
 						<th data-tx="t0017:b7a22f37">Blocklist telefoonboek</th>
@@ -63,26 +63,26 @@
 						<td data-tx="t0089:2e61bee2"><span class="icon has-text-warning"><i class="fas fa-sync"></i></span> Goed, maar slechts een klein deel van de blokkenlijst, sync ≤ 1 ×/dag</td>
 					</tr>
 					<tr>
-						<td><strong data-tx="t0109:90691916">Vereiste router</strong></td>
-						<td data-tx="t0024:115dd48e"><span class="icon has-text-success"><i class="fas fa-globe"></i></span> Elke (SIP + belvertraging)</td>
-						<td data-tx="t0101:da4c1004"><span class="icon has-text-warning"><i class="fas fa-server"></i></span> Fritz!Box met SIP-login vanaf internet (geblokkeerd voor Vodafone-boxen)</td>
+						<td><strong data-tx="t0109:984ebad2">Vereisten</strong></td>
+						<td data-tx="t0024:e372dde7"><span class="icon has-text-success"><i class="fas fa-globe"></i></span> Bijna elke combinatie van router en provider</td>
+						<td data-tx="t0101:956188d1"><span class="icon has-text-warning"><i class="fas fa-server"></i></span> Alleen eigen Fritz!Box (geen huurbox van provider)</td>
 						<td data-tx="t0085:120e2e30"><span class="icon has-text-warning"><i class="fas fa-wifi"></i></span> Nieuwere Fritz!Box met CardDAV</td>
 					</tr>
 					<tr>
 						<td><strong data-tx="t0114:5f4450bc">Gegevensbescherming</strong></td>
-						<td data-tx="t0120:ba0feedd"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Optimaal; oproep blijft lokaal; alleen hash matching van onbekende bellers</td>
-						<td data-tx="t0121:294f8242"><span class="icon has-text-danger"><i class="fas fa-cloud"></i></span> Signalering van elke oproep (ook van contactpersonen) loopt via PhoneBlock server</td>
-						<td data-tx="t0116:7a42296d"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Niets verlaat de router</td>
+						<td data-tx="t0120:1d9445c1"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Optimaal; Lokale oproepafhandeling; Alleen hash matching voor onbekende bellers</td>
+						<td data-tx="t0121:b26fbac9"><span class="icon has-text-danger"><i class="fas fa-cloud"></i></span> Problematisch; signalering van elk gesprek (ook van contactpersonen) loopt via PhoneBlock-server</td>
+						<td data-tx="t0116:2452770"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Optimaal; niets verlaat de router</td>
 					</tr>
 					<tr>
 						<td><strong data-tx="t0111:83c9a19b">Opzet inspanning</strong></td>
 						<td data-tx="t0032:4e6c7d5d"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Plug &amp; Play</td>
-						<td data-tx="t0088:aa5e1238"><span class="icon has-text-info"><i class="fas fa-gear"></i></span> hoog</td>
-						<td data-tx="t0102:e51ea302"><span class="icon has-text-info"><i class="fas fa-gear"></i></span> matig</td>
+						<td data-tx="t0088:45c38866"><span class="icon has-text-warning"><i class="fas fa-gear"></i></span> omhoog (automatisch met PhoneBlock Mobile App)</td>
+						<td data-tx="t0102:e51ea302"><span class="icon has-text-warning"><i class="fas fa-gear"></i></span> matig</td>
 					</tr>
 					<tr>
 						<td><strong data-tx="t0110:e66ba2b">Extra hardware</strong></td>
-						<td data-tx="t0028:99294924"><span class="icon has-text-info"><i class="fas fa-usb"></i></span> USB-dongle, ca. 10 €</td>
+						<td data-tx="t0028:99294924"><span class="icon has-text-info"><i class="fa-solid fa-coins"></i></span> USB-dongle, ca. 10 €</td>
 						<td data-tx="t0087:fe8232e3"><span class="icon has-text-success"><i class="fas fa-cloud"></i></span> Geen (cloudservice)</td>
 						<td data-tx="t0029:4d86e32e"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Geen (geïntegreerd in Fritz!Box)</td>
 					</tr>
@@ -90,7 +90,7 @@
 						<td><strong data-tx="t0108:9e08101d">Telefoon blijft volledig stil tijdens spam</strong></td>
 						<td data-tx="t0020:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ja</td>
 						<td data-tx="t0022:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ja</td>
-						<td data-tx="t0084:cf12d799"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Optioneel weergeven of vergrendelen</td>
+						<td data-tx="t0084:7b5cfc02"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Optioneel alleen vergrendelen of weergeven</td>
 					</tr>
 					<tr>
 						<td><strong data-tx="t0118:f4c95d3e">Actief spammers inzetten</strong></td>
