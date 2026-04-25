@@ -4,19 +4,25 @@
 #
 # Run this once per esp-web-tools version bump. The install page on
 # phoneblock.net loads /dongle/installer/install-button.js, which redirects
-# (via symlink) to the currently-pinned major version directory.
+# (via symlink) to the currently-pinned version directory.
 #
-#   ./scripts/mirror-installer-deps.sh 10.4.0
+#   ./scripts/mirror-installer-deps.sh           # use latest from npm
+#   ./scripts/mirror-installer-deps.sh 10.4.0    # pin a specific version
 #
 
 set -euo pipefail
 
-if [[ $# -ne 1 ]]; then
-    echo "Usage: $0 <esp-web-tools-version>" >&2
+if [[ $# -gt 1 ]]; then
+    echo "Usage: $0 [esp-web-tools-version]" >&2
     exit 2
 fi
 
-VERSION="$1"
+if [[ $# -eq 1 ]]; then
+    VERSION="$1"
+else
+    VERSION="$(npm view esp-web-tools version)"
+    echo "Latest esp-web-tools on npm: ${VERSION}"
+fi
 CDN_HOST="haumac@cdn.phoneblock.net"
 CDN_INSTALLER="/public_html/cdn/dongle/installer"
 
