@@ -3,8 +3,9 @@
 # Mirror esp-web-tools to cdn.phoneblock.net/dongle/installer/.
 #
 # Run this once per esp-web-tools version bump. The install page on
-# phoneblock.net loads /dongle/installer/install-button.js, which redirects
-# (via symlink) to the currently-pinned version directory.
+# phoneblock.net loads /dongle/installer/esp-web-tools/install-button.js
+# directly — no symlink layer, since the host's SFTP subsystem silently
+# rejects symlink creation.
 #
 #   ./scripts/mirror-installer-deps.sh           # use latest from npm
 #   ./scripts/mirror-installer-deps.sh 10.4.0    # pin a specific version
@@ -27,6 +28,7 @@ fi
 CDN_HOST="haumac@cdn.phoneblock.net"
 CDN_BASE="/public_html/cdn/dongle"
 CDN_INSTALLER="${CDN_BASE}/installer"
+REMOTE_DIR="${CDN_INSTALLER}/esp-web-tools"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 WORK="$(mktemp -d)"
@@ -41,8 +43,6 @@ if [[ ! -d package/dist/web ]]; then
     exit 1
 fi
 
-REMOTE_VER="${CDN_INSTALLER}/esp-web-tools-${VERSION}"
-
 # CDN host accepts sftp/scp only — no shell access. Create the target dir
 # via sftp's -mkdir (silently ignores "already exists") so the subsequent scp
 # always sees an existing destination — that side-steps the
@@ -50,24 +50,21 @@ REMOTE_VER="${CDN_INSTALLER}/esp-web-tools-${VERSION}"
 sftp -b - "$CDN_HOST" <<SFTP
 -mkdir ${CDN_BASE}
 -mkdir ${CDN_INSTALLER}
--mkdir ${REMOTE_VER}
+-mkdir ${REMOTE_DIR}
 SFTP
 
 # dist/web is a flat list of files — local shell expands the glob, scp ships
-# each file directly into REMOTE_VER. No subdirectory wrapping.
-scp "${WORK}"/package/dist/web/* "${CDN_HOST}:${REMOTE_VER}/"
+# each file directly into REMOTE_DIR. No subdirectory wrapping. Files from a
+# previous version with the same name get overwritten; chunk filenames carry
+# a content hash so old ones (e.g. install-dialog-C5LjR_e6.js from one bundle
+# vs install-dialog-aB3xZ_q1.js from the next) accumulate harmlessly until
+# the next manual cleanup.
+scp "${WORK}"/package/dist/web/* "${CDN_HOST}:${REMOTE_DIR}/"
 
 # Drop the CORS .htaccess at the dongle/ root. Apache inherits it into
 # firmware/ and installer/, which is what the web installer needs to fetch
 # install-button.js as an ES module and the manifest/firmware bins via fetch().
 scp "${SCRIPT_DIR}/htaccess.cors" "${CDN_HOST}:${CDN_BASE}/.htaccess"
 
-sftp -b - "$CDN_HOST" <<SFTP
--rm ${CDN_INSTALLER}/esp-web-tools.new
-symlink esp-web-tools-${VERSION} ${CDN_INSTALLER}/esp-web-tools.new
-rename ${CDN_INSTALLER}/esp-web-tools.new ${CDN_INSTALLER}/esp-web-tools
-SFTP
-
 echo "Mirrored esp-web-tools ${VERSION}."
-echo "  Pinned: https://cdn.phoneblock.net/dongle/installer/esp-web-tools-${VERSION}/install-button.js"
-echo "  Latest: https://cdn.phoneblock.net/dongle/installer/esp-web-tools/install-button.js"
+echo "  https://cdn.phoneblock.net/dongle/installer/esp-web-tools/install-button.js"
