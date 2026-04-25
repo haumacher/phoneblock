@@ -54,7 +54,7 @@ Rest of the 4 KB stays 0xFF. An OTA-only dongle has 0xFF everywhere → magic mi
 New module `pairing.c` / `pairing.h`:
 
 - `bool pairing_load(uint8_t out[16])` — finds partition via `esp_partition_find_first(ESP_PARTITION_TYPE_DATA, 0x40, "pairing")`, reads first 28 bytes, validates magic + version + CRC32. Returns false on any mismatch.
-- `void pairing_register_async(const uint8_t secret[16])` — copies the secret onto the heap and starts a one-shot task that POSTs `{"secret":"<hex>","ip":"<local_ip>"}` to `https://phoneblock.net/phoneblock/api/dongle/register` over TLS. Retries with exponential backoff (1 s, 4 s, 15 s, 60 s, give up). Frees the heap copy when done.
+- `void pairing_register_async(const uint8_t secret[16])` — copies the secret onto the heap and starts a one-shot task that POSTs `{"secret":"<hex>","lanIp":"<local_ip>"}` to `https://phoneblock.net/phoneblock/api/dongle/register` over TLS. Retries with exponential backoff (1 s, 4 s, 15 s, 60 s, give up). Frees the heap copy when done.
 
 Hook in `main.c` `app_main()` after `web_start()`, before SIP work:
 
@@ -74,7 +74,7 @@ New package `de.haumacher.phoneblock.dongle.pairing`. All endpoints under `/phon
 | Endpoint | Caller | Purpose |
 | --- | --- | --- |
 | `GET /dongle/pairing.bin?secret=<hex>` | esp-web-tools | 4 KB binary blob in the format above. `Content-Type: application/octet-stream`, `Cache-Control: no-store`. |
-| `POST /api/dongle/register` | dongle | Body `{"secret":"<hex>","ip":"<lan_ip>"}`. Server stores `secret → (lan_ip, now)`. Rate-limited per public IP (anti-abuse only, no trust). Returns 204. |
+| `POST /api/dongle/register` | dongle | Body `{"secret":"<hex>","lanIp":"<lan_ip>"}`. Server stores `secret → (lan_ip, now)`. Rate-limited per public IP (anti-abuse only, no trust). Returns 204. |
 | `GET /api/dongle/lookup?secret=<hex>` | browser | Returns `{"ip":"<lan_ip>"}` iff a registration with this secret exists. Otherwise 404. |
 
 State: `ConcurrentHashMap<String, PairingEntry>` plus a scheduled cleaner (e.g. `SchedulerService`) that drops entries older than 30 minutes. Single-VM, no DB persistence — short-lived discovery state, not an asset worth surviving a restart.

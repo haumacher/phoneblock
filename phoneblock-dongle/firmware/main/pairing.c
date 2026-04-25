@@ -87,7 +87,7 @@ static bool register_post_once(const char *secret_hex)
 
     char body[128];
     int body_len = snprintf(body, sizeof(body),
-            "{\"secret\":\"%s\",\"ip\":\"%s\"}", secret_hex, ip);
+            "{\"secret\":\"%s\",\"lanIp\":\"%s\"}", secret_hex, ip);
     if (body_len < 0 || body_len >= (int)sizeof(body)) {
         ESP_LOGE(TAG, "body buffer overflow");
         return false;

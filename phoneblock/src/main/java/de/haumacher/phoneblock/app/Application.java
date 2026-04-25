@@ -40,6 +40,7 @@ import de.haumacher.phoneblock.mail.MailServiceStarter;
 import de.haumacher.phoneblock.meta.MetaSearchService;
 import de.haumacher.phoneblock.random.SecureRandomService;
 import de.haumacher.phoneblock.scheduler.BlocklistVersionService;
+import de.haumacher.phoneblock.dongle.pairing.PairingRegistry;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
@@ -125,7 +126,8 @@ public class Application implements ServletContextListener {
 			new ImapService(scheduler, db, mail),
 			new CallRetentionService(scheduler, db),
 			new BlocklistVersionService(scheduler, db),
-			new FtcImportService(scheduler, db)
+			new FtcImportService(scheduler, db),
+			new PairingRegistry(scheduler)
 		};
 
 		for (int n = 0, cnt = _services.length; n < cnt; n++) {

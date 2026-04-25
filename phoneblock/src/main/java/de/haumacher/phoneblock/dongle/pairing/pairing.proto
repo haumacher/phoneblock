@@ -1,0 +1,36 @@
+package de.haumacher.phoneblock.dongle.pairing;
+
+option NoInterfaces;
+option NoXml;
+option NoBinary;
+option NoListener;
+option NoReflection;
+
+/**
+ * Body of POST /api/dongle/register, sent by the dongle once at boot when
+ * its "pairing" partition holds a valid secret. Lets the install page on
+ * phoneblock.net learn this dongle's LAN IP without depending on
+ * mDNS/Fritz!Box host-name resolution.
+ */
+message RegisterRequest {
+
+	/** 16-byte session secret as 32 lowercase-hex characters. */
+	string secret;
+
+	/**
+	 * The dongle's IPv4 address inside the user's LAN, dotted-quad. The
+	 * server stores this verbatim and replays it to the install page on
+	 * lookup, which then navigates the user's browser there.
+	 */
+	string lanIp;
+}
+
+/**
+ * Body of GET /api/dongle/lookup when a matching registration exists.
+ * Returns 404 with no body if the secret is unknown or expired.
+ */
+message LookupResponse {
+
+	/** Same value the dongle sent as RegisterRequest.lanIp. */
+	string lanIp;
+}
