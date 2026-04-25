@@ -21,6 +21,7 @@
 #include "announcement.h"
 #include "api.h"
 #include "config.h"
+#include "pairing.h"
 #include "sip_register.h"
 #include "stats.h"
 #include "status_led.h"
@@ -194,6 +195,18 @@ void app_main(void)
         ESP_LOGI(TAG, "marking running firmware (%s) valid — rollback cancelled",
                  running->label);
         esp_ota_mark_app_valid_cancel_rollback();
+    }
+
+    // If the browser flasher injected a pairing secret, hand it back to
+    // phoneblock.net so the install page can locate this dongle on the
+    // LAN without depending on mDNS / Fritz!Box host-name resolution.
+    // Best-effort and fully async — never blocks subsequent boot steps.
+    {
+        uint8_t secret[PAIRING_SECRET_LEN];
+        if (pairing_load(secret)) {
+            pairing_register_async(secret);
+            memset(secret, 0, sizeof(secret));
+        }
     }
 
     bool token_set = strlen(config_phoneblock_token()) > 0;
