@@ -25,7 +25,9 @@ else
     echo "Latest esp-web-tools on npm: ${VERSION}"
 fi
 CDN_HOST="haumac@cdn.phoneblock.net"
-CDN_INSTALLER="/public_html/cdn/dongle/installer"
+CDN_BASE="/public_html/cdn/dongle"
+CDN_INSTALLER="${CDN_BASE}/installer"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
@@ -45,11 +47,16 @@ REMOTE_VER="${CDN_INSTALLER}/esp-web-tools-${VERSION}"
 # sftp's -mkdir (silently ignores "already exists"), bulk-upload via scp -r,
 # then atomically flip the unversioned 'esp-web-tools' symlink.
 sftp -b - "$CDN_HOST" <<SFTP
--mkdir /public_html/cdn/dongle
+-mkdir ${CDN_BASE}
 -mkdir ${CDN_INSTALLER}
 SFTP
 
 scp -r "${WORK}/package/dist/web" "${CDN_HOST}:${REMOTE_VER}"
+
+# Drop the CORS .htaccess at the dongle/ root. Apache inherits it into
+# firmware/ and installer/, which is what the web installer needs to fetch
+# install-button.js as an ES module and the manifest/firmware bins via fetch().
+scp "${SCRIPT_DIR}/htaccess.cors" "${CDN_HOST}:${CDN_BASE}/.htaccess"
 
 sftp -b - "$CDN_HOST" <<SFTP
 -rm ${CDN_INSTALLER}/esp-web-tools.new
