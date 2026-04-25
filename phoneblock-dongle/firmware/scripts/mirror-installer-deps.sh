@@ -43,13 +43,17 @@ if [[ ! -d package/dist/web ]]; then
     exit 1
 fi
 
-# CDN host accepts sftp/scp only — no shell access. Create the target dir
-# via sftp's -mkdir (silently ignores "already exists") so the subsequent scp
-# always sees an existing destination — that side-steps the
-# `scp -r DIR DEST`-footgun where the result depends on whether DEST exists.
+# CDN host accepts sftp/scp only — no shell access. The leading `-rm`
+# clears any leftover non-directory entry at REMOTE_DIR (e.g. a dangling
+# symlink from earlier experiments); if it's already a real directory the
+# rm silently fails and mkdir does too, leaving the existing dir in place.
+# Either way, the subsequent scp sees an existing destination — that
+# side-steps the `scp -r DIR DEST`-footgun where the result depends on
+# whether DEST exists.
 sftp -b - "$CDN_HOST" <<SFTP
 -mkdir ${CDN_BASE}
 -mkdir ${CDN_INSTALLER}
+-rm ${REMOTE_DIR}
 -mkdir ${REMOTE_DIR}
 SFTP
 
