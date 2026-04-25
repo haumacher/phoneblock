@@ -124,14 +124,21 @@ REMOTE_VERSION="${CDN_FIRMWARE}/${VERSION}"
 REMOTE_STABLE="${CDN_FIRMWARE}/stable"
 
 # The CDN host accepts sftp/scp only — no shell access. Parent dirs are
-# created via sftp (-mkdir ignores "already exists"); bulk upload via scp -r.
+# created via sftp (-mkdir ignores "already exists"). The version dir is
+# explicitly mkdir'd so the subsequent scp always sees an existing target —
+# that avoids the `scp -r DIR DEST`-footgun where the result depends on
+# whether DEST exists (creates DEST.flat the first time, DEST/DIR/... the
+# second time).
 sftp_batch <<SFTP
 -mkdir ${CDN_BASE}
 -mkdir ${CDN_FIRMWARE}
+-mkdir ${REMOTE_VERSION}
 -mkdir ${REMOTE_STABLE}
 SFTP
 
-run scp -r "${STAGE_VERSION}" "${CDN_HOST}:${CDN_FIRMWARE}/"
+# Local shell expands the glob; scp ships each file into REMOTE_VERSION
+# directly — no subdirectory wrapping.
+run scp "${STAGE_VERSION}"/* "${CDN_HOST}:${REMOTE_VERSION}/"
 
 # Atomic flip: upload to *.tmp, then rename over the live file. OpenSSH's sftp
 # uses posix-rename, which atomically replaces the target. The window in which

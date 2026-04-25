@@ -43,15 +43,19 @@ fi
 
 REMOTE_VER="${CDN_INSTALLER}/esp-web-tools-${VERSION}"
 
-# CDN host accepts sftp/scp only — no shell access. Create parent dirs via
-# sftp's -mkdir (silently ignores "already exists"), bulk-upload via scp -r,
-# then atomically flip the unversioned 'esp-web-tools' symlink.
+# CDN host accepts sftp/scp only — no shell access. Create the target dir
+# via sftp's -mkdir (silently ignores "already exists") so the subsequent scp
+# always sees an existing destination — that side-steps the
+# `scp -r DIR DEST`-footgun where the result depends on whether DEST exists.
 sftp -b - "$CDN_HOST" <<SFTP
 -mkdir ${CDN_BASE}
 -mkdir ${CDN_INSTALLER}
+-mkdir ${REMOTE_VER}
 SFTP
 
-scp -r "${WORK}/package/dist/web" "${CDN_HOST}:${REMOTE_VER}"
+# dist/web is a flat list of files — local shell expands the glob, scp ships
+# each file directly into REMOTE_VER. No subdirectory wrapping.
+scp "${WORK}"/package/dist/web/* "${CDN_HOST}:${REMOTE_VER}/"
 
 # Drop the CORS .htaccess at the dongle/ root. Apache inherits it into
 # firmware/ and installer/, which is what the web installer needs to fetch

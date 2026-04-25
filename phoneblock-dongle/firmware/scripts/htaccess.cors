@@ -3,6 +3,8 @@
 #   - manifest.json per fetch()            (CORS-Pflicht)
 #   - bootloader/partition-table/app.bin   (CORS-Pflicht)
 # Static, keine Credentials → ACAO "*" ist sicher.
+Options +FollowSymLinks
+
 <IfModule mod_headers.c>
-    Header set Access-Control-Allow-Origin "*"
+    Header always set Access-Control-Allow-Origin "*"
 </IfModule>
