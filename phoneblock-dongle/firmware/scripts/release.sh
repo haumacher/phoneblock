@@ -37,6 +37,17 @@ run() {
     fi
 }
 
+# Run an sftp batch script (heredoc on stdin). In dry-run, just print it.
+sftp_batch() {
+    local script
+    script="$(cat)"
+    if [[ "$MODE" == "dry-run" ]]; then
+        printf '+ sftp -b - %s <<EOF\n%s\nEOF\n' "$CDN_HOST" "$script"
+    else
+        printf '%s\n' "$script" | sftp -b - "$CDN_HOST"
+    fi
+}
+
 # ---------------------------------------------------------------------------
 # 1. Resolve version from git tag.
 # ---------------------------------------------------------------------------
@@ -111,23 +122,27 @@ fi
 # ---------------------------------------------------------------------------
 REMOTE_VERSION="${CDN_FIRMWARE}/${VERSION}"
 REMOTE_STABLE="${CDN_FIRMWARE}/stable"
-REMOTE_STABLE_TMP="${CDN_FIRMWARE}/stable.tmp"
-REMOTE_STABLE_OLD="${CDN_FIRMWARE}/stable.old"
 
-run ssh "$CDN_HOST" "mkdir -p '${REMOTE_VERSION}' '${CDN_FIRMWARE}'"
-run scp -r "${STAGE_VERSION}/." "${CDN_HOST}:${REMOTE_VERSION}/"
+# The CDN host accepts sftp/scp only — no shell access. Parent dirs are
+# created via sftp (-mkdir ignores "already exists"); bulk upload via scp -r.
+sftp_batch <<SFTP
+-mkdir ${CDN_BASE}
+-mkdir ${CDN_FIRMWARE}
+-mkdir ${REMOTE_STABLE}
+SFTP
 
-# Two-phase rename keeps the URL pointing at *some* valid manifest at all times.
-run ssh "$CDN_HOST" "rm -rf '${REMOTE_STABLE_TMP}' && mkdir -p '${REMOTE_STABLE_TMP}'"
-run scp "${STAGE_STABLE}/manifest.json" "${CDN_HOST}:${REMOTE_STABLE_TMP}/manifest.json"
-run scp "${STAGE_STABLE}/version.json"  "${CDN_HOST}:${REMOTE_STABLE_TMP}/version.json"
-run ssh "$CDN_HOST" "
-    set -e
-    rm -rf '${REMOTE_STABLE_OLD}'
-    if [ -d '${REMOTE_STABLE}' ]; then mv '${REMOTE_STABLE}' '${REMOTE_STABLE_OLD}'; fi
-    mv '${REMOTE_STABLE_TMP}' '${REMOTE_STABLE}'
-    rm -rf '${REMOTE_STABLE_OLD}'
-"
+run scp -r "${STAGE_VERSION}" "${CDN_HOST}:${CDN_FIRMWARE}/"
+
+# Atomic flip: upload to *.tmp, then rename over the live file. OpenSSH's sftp
+# uses posix-rename, which atomically replaces the target. The window in which
+# stable/manifest.json doesn't exist is zero (after the first release) or one
+# upload (on the very first release, where there's nothing to overwrite yet).
+sftp_batch <<SFTP
+put ${STAGE_STABLE}/manifest.json ${REMOTE_STABLE}/manifest.json.tmp
+put ${STAGE_STABLE}/version.json  ${REMOTE_STABLE}/version.json.tmp
+rename ${REMOTE_STABLE}/manifest.json.tmp ${REMOTE_STABLE}/manifest.json
+rename ${REMOTE_STABLE}/version.json.tmp  ${REMOTE_STABLE}/version.json
+SFTP
 
 echo
 echo "Released ${VERSION}."

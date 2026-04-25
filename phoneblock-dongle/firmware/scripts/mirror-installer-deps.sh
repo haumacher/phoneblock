@@ -11,6 +11,7 @@
 #
 
 set -euo pipefail
+set -x
 
 if [[ $# -gt 1 ]]; then
     echo "Usage: $0 [esp-web-tools-version]" >&2
@@ -39,16 +40,22 @@ if [[ ! -d package/dist/web ]]; then
 fi
 
 REMOTE_VER="${CDN_INSTALLER}/esp-web-tools-${VERSION}"
-ssh "$CDN_HOST" "mkdir -p '${REMOTE_VER}'"
-scp -r package/dist/web/. "${CDN_HOST}:${REMOTE_VER}/"
 
-# Flip the unversioned symlink so the install page picks up the new version.
-ssh "$CDN_HOST" "
-    set -e
-    cd '${CDN_INSTALLER}'
-    ln -sfn 'esp-web-tools-${VERSION}' esp-web-tools.new
-    mv -Tf esp-web-tools.new esp-web-tools
-"
+# CDN host accepts sftp/scp only — no shell access. Create parent dirs via
+# sftp's -mkdir (silently ignores "already exists"), bulk-upload via scp -r,
+# then atomically flip the unversioned 'esp-web-tools' symlink.
+sftp -b - "$CDN_HOST" <<SFTP
+-mkdir /public_html/cdn/dongle
+-mkdir ${CDN_INSTALLER}
+SFTP
+
+scp -r "${WORK}/package/dist/web" "${CDN_HOST}:${REMOTE_VER}"
+
+sftp -b - "$CDN_HOST" <<SFTP
+-rm ${CDN_INSTALLER}/esp-web-tools.new
+symlink esp-web-tools-${VERSION} ${CDN_INSTALLER}/esp-web-tools.new
+rename ${CDN_INSTALLER}/esp-web-tools.new ${CDN_INSTALLER}/esp-web-tools
+SFTP
 
 echo "Mirrored esp-web-tools ${VERSION}."
 echo "  Pinned: https://cdn.phoneblock.net/dongle/installer/esp-web-tools-${VERSION}/install-button.js"
