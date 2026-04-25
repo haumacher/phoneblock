@@ -110,14 +110,29 @@ static void recovery_task(void *arg)
     // SSID, passphrase, and any security flags. Next boot would land
     // in the no-credentials path; we save the user that reboot by
     // jumping straight into WPS here.
+    //
+    // Side-effect not obvious from the API name: esp_wifi_restore()
+    // also stops the WiFi driver and resets the storage mode + STA
+    // mode to defaults. esp_wifi_wps_enable() requires the driver to
+    // be running in STA mode, so we have to re-establish that
+    // sequence before start_wps() — otherwise the next call panics
+    // with ESP_ERR_WIFI_STATE.
     esp_err_t err = esp_wifi_restore();
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "esp_wifi_restore: %s", esp_err_to_name(err));
     }
+    ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_FLASH));
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+    ESP_ERROR_CHECK(esp_wifi_start());
 
-    s_wps_restart_pending = false;
+    // Order matters: esp_wifi_start() fires STA_START asynchronously.
+    // The on_wifi_event handler treats !s_wps_active && !s_wps_restart_pending
+    // as the cue to call esp_wifi_connect(). Keep s_wps_restart_pending
+    // true until start_wps() has set s_wps_active = true, so neither
+    // window is open.
     s_consecutive_disconnects = 0;
     start_wps();
+    s_wps_restart_pending = false;
     vTaskDelete(NULL);
 }
 
