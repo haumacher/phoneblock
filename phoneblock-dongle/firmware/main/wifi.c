@@ -79,6 +79,18 @@ static void wps_restart_task(void *arg)
 
 static void schedule_wps_restart(void)
 {
+    // The driver fires WPS_ER_FAILED and WPS_ER_TIMEOUT (and sometimes
+    // a duplicate WPS_ER_FAILED on the way out of "run" state) within
+    // a few ms of each other. Without this guard each event spawns its
+    // own wps_restart_task, the tasks race on
+    // esp_wifi_wps_disable / esp_wifi_wps_start, the second one's
+    // disable kills the first one's enable, and the driver wedges in
+    // "STA is connecting, scan are not allowed!". Skipping further
+    // schedules until the in-flight task has fired start_wps()
+    // collapses the duplicate events to a single restart.
+    if (s_wps_restart_pending) {
+        return;
+    }
     // Stay in "WPS-owned" state until the restart task has actually
     // fired start_wps(); otherwise the DISCONNECTED event from
     // esp_wifi_disconnect() races with esp_wifi_wps_start().
