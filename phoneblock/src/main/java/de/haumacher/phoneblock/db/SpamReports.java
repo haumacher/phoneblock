@@ -96,6 +96,18 @@ public interface SpamReports {
 	@Select("select PREFIX, CNT, VOTES from NUMBERS_AGGREGATION_100 where SHA1 = #{hash}")
 	AggregationInfo getAggregation100ByHash(byte[] hash);
 
+	@Select("""
+			select PREFIX, CNT, VOTES from NUMBERS_AGGREGATION_10
+			where SHA1 >= #{low} and SHA1 < #{high}
+			""")
+	List<AggregationInfo> getAggregation10ByHashPrefix(byte[] low, byte[] high);
+
+	@Select("""
+			select PREFIX, CNT, VOTES from NUMBERS_AGGREGATION_100
+			where SHA1 >= #{low} and SHA1 < #{high}
+			""")
+	List<AggregationInfo> getAggregation100ByHashPrefix(byte[] low, byte[] high);
+
 	@Update("update NUMBERS_AGGREGATION_10 set SHA1 = #{hash} where PREFIX = #{prefix}")
 	int updateAggregation10Hash(String prefix, byte[] hash);
 
@@ -188,12 +200,12 @@ public interface SpamReports {
 			update NUMBERS s
 			set
 				CALLS = CALLS + 1,
-				s.UPDATED = greatest(s.UPDATED, #{now}), 
-				s.LASTPING = greatest(s.LASTPING, #{now}) 
+				s.UPDATED = greatest(s.UPDATED, #{now}),
+				s.LASTPING = greatest(s.LASTPING, #{now})
 			where
 				PHONE = #{phone}
 			""")
-	void recordCall(String phone, long now);
+	int recordCall(String phone, long now);
 	
 	@Select("""
 			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.VOTES as PUBLISHED_VOTES from NUMBERS s
@@ -215,6 +227,12 @@ public interface SpamReports {
 			where s.PHONE = #{phone}
 			""")
 	DBNumberInfo getPhoneInfo(String phone);
+
+	@Select("""
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.VOTES as PUBLISHED_VOTES from NUMBERS s
+			where s.SHA1 >= #{low} and s.SHA1 < #{high} and s.VOTES > 0 and s.ACTIVE
+			""")
+	List<DBNumberInfo> getPhoneInfosByHashPrefix(byte[] low, byte[] high);
 	
 	@Select("""
 			select #{prefix}, max(s.ADDED), max(s.UPDATED), max(s.LASTSEARCH), true, sum(s.CALLS), sum(s.VOTES), sum(s.LEGITIMATE), sum(s.PING), sum(s.POLL), sum(s.ADVERTISING), sum(s.GAMBLE), sum(s.FRAUD), sum(s.SEARCHES), max(s.LASTPING), sum(s.VOTES) as PUBLISHED_VOTES

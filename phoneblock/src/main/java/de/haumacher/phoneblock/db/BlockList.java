@@ -122,6 +122,13 @@ public interface BlockList {
 			""")
 	DBPersonalization resolvePersonalizationByHash(long userId, byte[] sha1);
 
+	@Select("""
+			select PHONE, BLOCKED
+			from PERSONALIZATION
+			where USERID=#{userId} and SHA1 >= #{low} and SHA1 < #{high}
+			""")
+	List<DBPersonalization> getPersonalizationsByHashPrefix(long userId, byte[] low, byte[] high);
+
 	/**
 	 * All phone numbers in personalizations that do not yet have a SHA1 hash.
 	 */

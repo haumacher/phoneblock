@@ -17,7 +17,9 @@ import de.haumacher.phoneblock.app.api.AccountManagementServlet;
 import de.haumacher.phoneblock.app.api.BlocklistServlet;
 import de.haumacher.phoneblock.app.api.NumServlet;
 import de.haumacher.phoneblock.app.api.PersonalizationServlet;
+import de.haumacher.phoneblock.app.api.PrefixCheckServlet;
 import de.haumacher.phoneblock.app.api.RateServlet;
+import de.haumacher.phoneblock.app.api.ReportCallServlet;
 import de.haumacher.phoneblock.app.api.SearchApiServlet;
 import de.haumacher.phoneblock.app.api.SpamCheckServlet;
 import de.haumacher.phoneblock.app.api.TestConnectServlet;
@@ -44,6 +46,8 @@ import jakarta.servlet.http.HttpServletResponse;
 	PersonalizationServlet.WHITELIST_PATTERN,
 	BlocklistServlet.PATH,
 	SpamCheckServlet.PATH,
+	PrefixCheckServlet.PATH,
+	ReportCallServlet.PATTERN,
 	TestConnectServlet.PATH,
 	RateServlet.PATH,
 	CallReportServlet.URL_PATTERN,
@@ -77,27 +81,33 @@ public class BasicLoginFilter extends LoginFilter {
 	@Override
 	protected boolean allowSessionAuth(HttpServletRequest request) {
 		switch (request.getServletPath()) {
-		case TestConnectServlet.PATH: 
+		case TestConnectServlet.PATH:
+		case PrefixCheckServlet.PATH:
+		case ReportCallServlet.PATH:
 			return false;
 		default:
 			return true;
 		}
 	}
-	
+
 	@Override
 	protected boolean allowCookieAuth(HttpServletRequest request) {
 		switch (request.getServletPath()) {
-		case TestConnectServlet.PATH: 
+		case TestConnectServlet.PATH:
+		case PrefixCheckServlet.PATH:
+		case ReportCallServlet.PATH:
 			return false;
 		default:
 			return true;
 		}
 	}
-	
+
 	@Override
 	protected boolean allowBasicAuth(HttpServletRequest request) {
 		switch (request.getServletPath()) {
-		case TestConnectServlet.PATH: 
+		case TestConnectServlet.PATH:
+		case PrefixCheckServlet.PATH:
+		case ReportCallServlet.PATH:
 			return false;
 		default:
 			return true;
@@ -111,6 +121,7 @@ public class BasicLoginFilter extends LoginFilter {
 			return authorization.isAccessDownload();
 		case RateServlet.PATH:
 		case CallReportServlet.URL_PATTERN:
+		case ReportCallServlet.PATH:
 		case PersonalizationServlet.BLACKLIST_PATH:
 		case PersonalizationServlet.WHITELIST_PATH:
 		case AccountManagementServlet.PATH:
@@ -119,6 +130,7 @@ public class BasicLoginFilter extends LoginFilter {
 		case ListABServlet.PATH:
 		case SearchApiServlet.PREFIX:
 		case SpamCheckServlet.PATH:
+		case PrefixCheckServlet.PATH:
 		case TestConnectServlet.PATH:
 		case NumServlet.PREFIX:
 			return authorization.isAccessQuery();
