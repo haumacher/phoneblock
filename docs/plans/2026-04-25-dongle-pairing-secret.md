@@ -8,8 +8,8 @@
 
 1. Browser on `https://phoneblock.net/.../dongle-install` loads the page.
 2. Page generates `secret = crypto.getRandomValues(16)`, stores it in `sessionStorage["pairingSecret"]` (hex).
-3. Page sets `esp-web-install-button[manifest]` at runtime to `https://phoneblock.net/phoneblock/dongle/manifest.json?secret=<hex>`.
-4. esp-web-tools fetches the manifest. Server returns absolute CDN URLs for the four static parts plus one dynamic part: `pairing.bin?secret=<hex>` at offset `0x12000`, served from phoneblock.net with the secret embedded.
+3. Page fetches the static upstream manifest (`https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json`), appends one extra part — `pairing.bin?secret=<hex>` at offset `0x12000`, with an absolute URL to the current webapp context (`/phoneblock/...` in prod, `/pb-test/...` for test builds) — and hands the result to esp-web-tools as a `Blob` object URL.
+4. esp-web-tools flashes the four static parts straight from the CDN plus the per-install `pairing.bin` from phoneblock.net.
 5. Flash completes, dongle reboots.
 6. Firmware reads the `pairing` partition. If magic + CRC are valid, fires an async task that POSTs `{secret, ip}` to `/api/dongle/register`.
 7. Server records `secret → (local_ip, ts)` in an in-memory map (TTL 30 min).
@@ -73,7 +73,6 @@ New package `de.haumacher.phoneblock.dongle.pairing`. All endpoints under `/phon
 
 | Endpoint | Caller | Purpose |
 | --- | --- | --- |
-| `GET /dongle/manifest.json?secret=<hex>` | esp-web-tools | Dynamic manifest. Static parts → absolute CDN URLs. Adds `pairing.bin?secret=<hex>` at offset `0x12000`. `Cache-Control: no-store`. |
 | `GET /dongle/pairing.bin?secret=<hex>` | esp-web-tools | 4 KB binary blob in the format above. `Content-Type: application/octet-stream`, `Cache-Control: no-store`. |
 | `POST /api/dongle/register` | dongle | Body `{"secret":"<hex>","ip":"<lan_ip>"}`. Server stores `secret → (lan_ip, now)`. Rate-limited per public IP (anti-abuse only, no trust). Returns 204. |
 | `GET /api/dongle/lookup?secret=<hex>` | browser | Returns `{"ip":"<lan_ip>"}` iff a registration with this secret exists. Otherwise 404. |
@@ -84,11 +83,11 @@ Secret validation everywhere: regex `^[0-9a-f]{32}$`. Anything else → 400.
 
 Trust model: 128-bit unguessable secret + 30-minute TTL. The looked-up `lan_ip` is a private-range address that is not routable from outside the user's LAN, so even a leaked secret discloses no externally actionable information.
 
-### Manifest hosting (status quo vs. proposed)
+### Manifest assembly (browser-side)
 
-Today the manifest is a static file on `cdn.phoneblock.net/dongle/firmware/stable/manifest.json` referenced from `dongle-install.html`. With this design it moves to a Java servlet on `phoneblock.net` (`/phoneblock/dongle/manifest.json?secret=<hex>`). The CDN keeps its role: the static parts (bootloader, partition-table, ota_data, app) are still hosted there, and the dynamic manifest references them with **absolute** CDN URLs. Only the per-install `pairing.bin` is generated and served by phoneblock.net itself. Net effect on traffic: ~99 % of bytes still flow from the CDN; phoneblock.net adds ~1 KB of manifest plus a 4 KB `pairing.bin` per install.
+The static manifest stays on the CDN at `cdn.phoneblock.net/dongle/firmware/stable/manifest.json` exactly as today; the release pipeline is unchanged. The install page fetches it, appends one extra `parts` entry for the per-install `pairing.bin` (absolute URL into the current webapp context, e.g. `https://phoneblock.net/phoneblock/dongle/pairing.bin?secret=<hex>`), wraps the result in a `Blob`, and hands `URL.createObjectURL(blob)` to `<esp-web-install-button manifest=…>`. esp-web-tools then fetches the four static parts directly from the CDN and the one dynamic part from phoneblock.net.
 
-Reason it cannot stay on the CDN: esp-web-tools resolves part paths relative to the manifest URL. A static manifest cannot reference a per-session dynamic binary, and the CDN does not generate bytes on demand.
+Reason for browser-side assembly: the only dynamic input is a per-session secret that already lives in the browser; routing the manifest through phoneblock.net would force an avoidable upstream-fetch round trip on the server with no extra capability to show for it. The server-side pairing.bin endpoint is the only new origin involved.
 
 ## Private Network Access (PNA)
 
@@ -152,7 +151,7 @@ The fallback block (`http://answerbot/`, `http://answerbot.local/`, manual IP) s
 
 1. **Partition + firmware loader.** `partitions.csv`, `pairing.c/.h` with parser + CRC32, unit test for parse-success and parse-fail-on-erased-flash.
 2. **Firmware register task.** HTTPS POST with retries; reuses the existing TLS bundle the rest of the firmware uses for phoneblock.net.
-3. **Server pairing.bin generator + manifest endpoint.** Pure byte-buffer generation, ~30 lines.
+3. **Server pairing.bin generator endpoint.** Pure byte-buffer generation matching the firmware on-flash layout, ~30 lines.
 4. **Server register + lookup endpoints.** `ConcurrentHashMap`, scheduled cleanup, public-IP guard, rate limit.
 5. **Dongle PNA preflight handler** in `web.c` — global `OPTIONS` route plus PNA/ACAO headers on the regular routes that the browser may navigate to.
 6. **Browser changes** in `de/dongle-install.html` plus a Messages_de.properties entry for any new UI strings (then run translate plugin).
