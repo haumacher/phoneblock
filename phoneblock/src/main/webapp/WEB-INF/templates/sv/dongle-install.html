@@ -7,61 +7,159 @@
 
 <section class="section">
 	<div class="content">
-		<h1 data-tx="t0001:dae96b09">Flasha dongeln i webbläsaren</h1>
+		<h1 data-tx="t0001:f211f9c6">Bygg din egen dongle - steg för steg</h1>
 
-		<p class="subtitle" data-tx="t0002:ea8fbc11">Ett ESP32-kort, en USB-kabel, ett klick - den senaste inbyggda programvaran för PhoneBlock överförs direkt från webbläsaren till din dongel.</p>
+		<p class="subtitle" data-tx="t0002:dd445b5">Följ instruktionerna i tur och ordning. I slutet är den färdiga dongeln ansluten till USB-porten på din router och blockerar skräppostsamtal tyst i bakgrunden.</p>
+
+		<div class="notification is-warning">
+			<p data-tx="t0003:47a426be"><strong>Status: Beta.</strong> Dessa instruktioner är anpassade till en enda, testad hårdvarutyp - köp exakt kortet från steg 1, så kommer alla ytterligare steg att passa. Andra kort fungerar ofta lika bra, men kräver andra drivrutiner och eget detektivarbete (se länk nedan).</p>
+		</div>
 
 		<noscript>
 			<div class="notification is-danger">
-				<p data-tx="t0003:3515d43b">Denna sida kräver JavaScript. Aktivera det i din webbläsare eller följ de <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle">manuella Flash-instruktionerna i repot</a>.</p>
+				<p data-tx="t0004:ba65a265">Denna sida kräver JavaScript. Vänligen aktivera det i din webbläsare eller följ <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md">Instruktioner för avancerade användare</a> i repot.</p>
 			</div>
 		</noscript>
 
 		<div class="notification is-warning" id="dongle-install-unsupported" style="display:none;">
-			<p data-tx="t0004:9e289a24"><strong>Din webbläsare stöder inte web serial</strong> Web flashing körs endast i desktop <strong>Chrome</strong>, <strong>Edge</strong> eller <strong>Opera</strong>. På Firefox, Safari, Android och iOS kan du flasha dongeln med <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle">ESP-IDF toolchain via USB</a> istället.</p>
+			<p data-tx="t0005:bb075478"><strong>Den här webbläsaren kan inte flasha dongeln.</strong> Webblashing fungerar bara i <strong>Google Chrome</strong> eller <strong>Microsoft Edge</strong> på en dator (inte på en smartphone). Öppna den här sidan med Chrome eller Edge och försök igen.</p>
 		</div>
 
-		<h2 data-tx="t0005:50a8a929">1. Förbered hårdvara</h2>
+		<h2 data-tx="t0006:1cedb9ee" id="schritt-1">Steg 1 - Beställ dongle</h2>
 
-		<ul>
-			<li data-tx="t0006:9797814d">ESP32-DevKit med ESP-WROOM-32E (t.ex. NodeMCU-32E) - se <a th:href="@{/dongle}">Hårdvarunoter</a>.</li>
-			<li data-tx="t0007:831bfe23">USB-<strong>datakabel</strong> (inte bara en laddningskabel) mellan dator och dongel.</li>
-			<li data-tx="t0008:13116d83">På <strong>Windows</strong> kan du behöva installera den seriella USB-drivrutinen - vanligtvis <a href="https://www.silabs.com/developer-tools/usb-to-uart-bridge-vcp-drivers" rel="noopener" target="_blank">CP210x</a> (Silicon Labs) eller <a href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">CH340/CH341</a> (WCH).</li>
-			<li data-tx="t0009:a030a88a">På <strong>Linux</strong> måste din användare vara med i gruppen <code>dialout</code> (<code>sudo usermod -aG dialout $USER</code>, logga sedan ut och in igen en gång).</li>
-		</ul>
+		<p data-tx="t0007:4a8aea0f">Beställ det här ESP32-kortet. Det är tillräckligt kompakt för att anslutas direkt till routern som ett USB-minne, har rätt USB-seriellchip (CH340) och PhoneBlock-dongeln utvecklades och testades med det.</p>
 
-		<h2 data-tx="t0010:2abc78eb">2. Blinkande</h2>
+		<figure class="image" style="max-width:300px;">
+			<img alt="ESP32-dongle" data-tx="t0008:31cdc7dc" th:src="@{/assets/img/dongle/dongle-option.png}"/>
+		</figure>
 
-		<p data-tx="t0011:d9654236">Klicka på knappen, välj din dongle i webbläsarens dialogruta och vänta tills processen är klar. Flashminnet raderas under en första flash - eventuell befintlig konfiguration går förlorad.</p>
+		<div class="notification is-info">
+			<p data-tx="t0009:1bd1b6a9"><strong>Leverans från Kina - ca 3-4 veckors leveranstid.</strong> Pris för närvarande ca. 9 € inklusive frakt.</p>
+			<p class="mt-2">
+				<a class="button is-primary is-large" href="https://de.aliexpress.com/item/1005006593432047.html" rel="noopener" target="_blank">
+					<span class="icon"><i class="fas fa-cart-shopping"></i></span>
+					<span data-tx="t0010:49b731d6">Beställ på AliExpress</span>
+				</a>
+			</p>
+		</div>
+
+		<p data-tx="t0011:326831c9"><strong>Du vill använda ett annat kort</strong> Andra ESP32 DevKits fungerar på exakt samma sätt, men kan behöva en annan USB-seriell drivrutin (t.ex. CP2102 istället för CH340) och en USB-förlängningskabel om designen inte passar direkt i routern. Detaljer och rekommendationer: <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/HARDWARE.md" rel="noopener" target="_blank">HARDWARE.md i repot</a>.</p>
+
+		<h2 data-tx="t0012:fe30aa8a" id="schritt-2">Steg 2 - Installera USB-drivrutin (endast Windows)</h2>
+
+		<p data-tx="t0013:ba1650a4">Dongeln använder det seriella USB-chipet <strong>CH340</strong>. För att Windows ska känna igen det som en COM-port behöver du en gång lämplig drivrutin.</p>
+
+		<p>
+			<a class="button is-link" href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">
+				<span class="icon"><i class="fas fa-download"></i></span>
+				<span data-tx="t0014:88df56ee">Ladda ner CH340 drivrutin (wch-ic.com)</span>
+			</a>
+		</p>
+
+		<p data-tx="t0015:864e1d6">Kör den nedladdade filen <code>CH341SER.EXE</code> → klicka på <strong>"INSTALL"</strong> i fönstret → klart. Ingen omstart är nödvändig.</p>
+
+		<figure>
+			<div data-tx="t0016:42f1fe49" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Platshållare: Skärmdump av installationsprogrammet för CH340-drivrutinen med markerad INSTALL-knapp].</div>
+		</figure>
+
+		<details class="mt-4">
+			<summary><strong data-tx="t0017:ded51310">Använder du macOS eller Linux?</strong></summary>
+			<ul>
+				<li data-tx="t0018:5410eb20"><strong>macOS</strong>: Från och med macOS Big Sur ingår drivrutinen i systemet - inget installationssteg krävs.</li>
+				<li data-tx="t0019:b1eb5a7e"><strong>Linux</strong>: Kärndrivrutinen är installerad. På Ubuntu kan tjänsten BRLTTY sno åt sig CH340 och få enhetsfilen att försvinna igen efter några sekunder - avinstallation av BRLTTY hjälper då. Din användare måste också vara med i gruppen <code>dialout</code>. Båda stegen beskrivs i detalj i <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
+			</ul>
+		</details>
+
+		<h2 data-tx="t0020:62d0966b" id="schritt-3">Steg 3 - Sätt i dongeln i datorn</h2>
+
+		<p data-tx="t0021:70a70ae6">Anslut dongeln direkt till en ledig USB-port på din dator. En liten LED-lampa på kortet bör tändas eller blinka omedelbart.</p>
+
+		<figure>
+			<div data-tx="t0022:a85e1a1d" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Platshållare: Foto "Dongle som sätts in i USB-porten på en bärbar dator"]</div>
+		</figure>
+
+		<h2 data-tx="t0023:4325c49c" id="schritt-4">Steg 4 - Flasha firmware</h2>
+
+		<p data-tx="t0024:230fc89e">Klicka på knappen. Webbläsaren frågar sedan vilken ansluten enhet den har behörighet att komma åt.</p>
 
 		<p>
 			<esp-web-install-button manifest="https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json">
 				<button class="button is-primary is-large" slot="activate" type="button">
 					<span class="icon"><i class="fas fa-bolt"></i></span>
-					<span data-tx="t0012:1b4594a6">Flash nu</span>
+					<span data-tx="t0025:1b4594a6">Flash nu</span>
 				</button>
 				<button class="button is-primary is-large" disabled="disabled" slot="unsupported" type="button">
 					<span class="icon"><i class="fas fa-bolt"></i></span>
-					<span data-tx="t0018:1b4594a6">Flash nu</span>
+					<span data-tx="t0026:1b4594a6">Flash nu</span>
 				</button>
 				<button class="button is-primary is-large" disabled="disabled" slot="not-allowed" type="button">
 					<span class="icon"><i class="fas fa-bolt"></i></span>
-					<span data-tx="t0019:1b4594a6">Flash nu</span>
+					<span data-tx="t0027:1b4594a6">Flash nu</span>
 				</button>
 			</esp-web-install-button>
 		</p>
 
-		<h2 data-tx="t0013:f0d7c4e4">3. efter blinkning</h2>
+		<p data-tx="t0028:34c84b34">I urvalsdialogen visas en lista över alla seriella enheter på datorn. Välj posten med <strong>"USB-SERIAL CH340"</strong> (Windows) eller <strong>"USB Single Serial"</strong> eller <strong>"wch.cn"</strong> (macOS/Linux) i namnet och bekräfta med <strong>"Connect"</strong>. Om flera CH340-enheter visas på grund av att en annan enhet med detta chip råkar vara ansluten, koppla bort de andra för tillfället.</p>
 
-		<ol>
-			<li data-tx="t0014:a549ef8">Dongeln startar om och öppnar WLAN <code>PhoneBlock-Dongle-XXXX</code>.</li>
-			<li data-tx="t0015:bb7d40cb">Växla till detta WLAN med din smartphone eller bärbara dator, webbläsaren öppnar installationssidan automatiskt (captive portal).</li>
-			<li data-tx="t0016:cd9ce37d">Välj hem-WLAN, ange SIP-åtkomstdata och PhoneBlock-token - mer information finns i instruktionerna för <a th:href="@{/dongle}">Dongle</a>.</li>
-		</ol>
+		<figure>
+			<div data-tx="t0029:b5c3a2f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Platshållare: Skärmdump av dialogen för val av enhet i webbläsaren med markerad CH340-post].</div>
+		</figure>
+
+		<p data-tx="t0030:5fcdc08c">Bekräfta säkerhetsfrågan "Radera enheten och installera PhoneBlock Dongle?" med <strong>"Installera"</strong>. Under den första flashen raderas hela minnet och den fasta programvaran installeras - detta tar ungefär en minut. Koppla inte bort dongeln under denna tid.</p>
+
+		<figure>
+			<div data-tx="t0031:177a19e2" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Platshållare: Skärmdump av förloppsindikatorn för esp-web-tools under flashning].</div>
+		</figure>
+
+		<h2 data-tx="t0032:e5862ff8" id="schritt-5">Steg 5 - Anslut dongeln till routern</h2>
+
+		<p data-tx="t0033:cbcaee11">När webbläsaren rapporterar "Installation slutförd!" tar du bort dongeln från datorn och ansluter den till en ledig USB-port på routern (eller till en 5 V USB-strömkälla inom WLAN-räckvidd).</p>
+
+		<figure>
+			<div data-tx="t0034:a5796f78" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Platshållare: Foto "Dongle inkopplad i USB-porten på Fritz!Box"]</div>
+		</figure>
+
+		<h2 data-tx="t0035:b184a512" id="schritt-6">Steg 6 - Lägg till dongeln i WLAN (WPS)</h2>
+
+		<p data-tx="t0036:6ac463a1">Den nyuppladdade dongeln har ännu inga Wi-Fi-åtkomstdata och väntar på parkoppling via <strong>WPS</strong>. LED-lampan <strong>blinkar snabbt</strong> (ca fem gånger per sekund) och signalerar "Pairing mode active".</p>
+
+		<p data-tx="t0037:83cbb4c2">Tryck nu på <strong>WPS-knappen</strong> på routern. På Fritz!Box är detta <strong>"Connect / WPS"</strong>-knappen på enhetens ovansida - tryck kort tills Wi-Fi-lampan på själva routern börjar blinka. Andra routrar märker knappen "WPS" eller "Pair". Inom några sekunder överför routern dina Wi-Fi-åtkomstdata till dongeln, som sparar dem och ansluter.</p>
+
+		<figure>
+			<div data-tx="t0038:5f50dac7" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Platshållare: Foto "Anslut/WPS-knapp på Fritz!Box med pil"]</div>
+		</figure>
+
+		<p data-tx="t0039:61c90640"><strong>Har fungerat:</strong> LED-lampan blinkar nu långsamt (ca en gång per sekund) - dongeln är i WLAN, har tilldelats en IP och väntar på konfigurationen i steg 7.</p>
+
+		<p data-tx="t0040:96351c92"><strong>Fungerade inte</strong> Kontrollera i routerinställningarna om WPS är aktiverat överhuvudtaget (på Fritz!Box: <em>WLAN → Säkerhet → WPS</em>). Om WPS-fönstret var för kort kommer dongeln automatiskt att starta om parkopplingsprocessen - tryck sedan bara på WPS-knappen igen.</p>
+
+		<h2 data-tx="t0041:5dee0d65" id="schritt-7">Steg 7 - Ange SIP-åtkomst och PhoneBlock-token</h2>
+
+		<p data-tx="t0042:58c22345">För att dongeln ska kunna avlyssna samtal behöver den fortfarande två saker: dina SIP-åtkomstdata (så att den kan logga in på routern som en extra telefon) och en PhoneBlock-token (så att den kan fråga spamdatabasen). Du anger båda i dongelns webbgränssnitt.</p>
+
+		<p data-tx="t0043:f4d3bf5f">Öppna i webbläsaren:</p>
+
+		<p><a class="button is-link is-large" data-tx="t0044:f04a859b" href="http://answerbot.local/">http://answerbot.local/</a></p>
+
+		<p data-tx="t0045:c627eba9">Om den här länken inte fungerar (Windows utan Bonjour, vissa mesh WLAN), leta i enhetslistan i din router efter en enhet med namnet <code>answerbot</code>, notera dess IP-adress och ring upp den i webbläsaren - t.ex. <code>http://192.168.178.42/</code>.</p>
+
+		<figure>
+			<div data-tx="t0046:8bb491f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Platshållare: Skärmdump av dongelns webbgränssnitt med inmatningsfält för SIP och token].</div>
+		</figure>
+
+		<p data-tx="t0047:a09627c1">Ange i webbgränssnittet:</p>
+		<ul>
+			<li data-tx="t0048:4b81384d"><strong>SIP-åtkomstdata</strong> - användarnamn, lösenord och adress till registrator. För en Fritz!Box skapar du en extra anslutning under <em>Telefoni → Telefonienheter → Konfigurera ny enhet → Telefon (med och utan telefonsvarare) → LAN/WLAN (IP-telefon)</em>. Ange de åtkomstdata som tilldelats där här och ange <code>fritz.box</code> som registrator.</li>
+			<li data-tx="t0049:9fd0fd46"><strong>PhoneBlock-token</strong> - skapa en API-token i dina <a th:href="@{/settings}">PhoneBlock-inställningar</a> och kopiera den till motsvarande fält.</li>
+		</ul>
+
+		<p data-tx="t0050:2f4a93c2">Spara → LED-lampan är nu permanent tänd → dongeln är klar att användas. Spam-samtal kommer nu att tyst fångas upp innan din telefon ringer.</p>
 
 		<hr class="my-5"/>
 
-		<p class="has-text-grey" data-tx="t0017:8a689eeb">Källkod för den inbyggda programvaran: <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank"> phoneblock-dongle på GitHub</a>.</p>
+		<p class="has-text-grey" data-tx="t0051:9316079d">Är det något som inte fungerar, använder du Firefox/Safari, Linux med egenheter eller ett annat kort? Detaljerade instruktioner med alla alternativ, fallgropar i Linux och ESP-IDF:s verktygskedja finns i repot: <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</p>
+
+		<p class="has-text-grey" data-tx="t0052:8a689eeb">Källkod för den inbyggda programvaran: <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank"> phoneblock-dongle på GitHub</a>.</p>
 	</div>
 </section>
 

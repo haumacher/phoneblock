@@ -7,61 +7,159 @@
 
 <section class="section">
 	<div class="content">
-		<h1 data-tx="t0001:dae96b09">وميض الدونجل في المتصفح</h1>
+		<h1 data-tx="t0001:f211f9c6">بناء الدونجل الخاص بك - خطوة بخطوة</h1>
 
-		<p class="subtitle" data-tx="t0002:ea8fbc11">لوحة ESP32 واحدة، وكابل USB واحد، ونقرة واحدة - يتم نقل أحدث البرامج الثابتة لـ PhoneBlock مباشرةً من هذا المتصفح إلى الدونجل الخاص بك.</p>
+		<p class="subtitle" data-tx="t0002:dd445b5">اتبع التعليمات بالتسلسل. في النهاية، يتم توصيل الدونجل النهائي بمنفذ USB في جهاز التوجيه الخاص بك ويحظر المكالمات غير المرغوب فيها بصمت في الخلفية.</p>
+
+		<div class="notification is-warning">
+			<p data-tx="t0003:47a426be"><strong>الحالة: بيتا.</strong> هذه التعليمات مصممة لنوع واحد من الأجهزة المختبرة - اشترِ اللوحة بالضبط من الخطوة 1، ثم ستعمل كل خطوة أخرى. غالبًا ما تعمل اللوحات الأخرى أيضًا، ولكنها تتطلب برامج تشغيل مختلفة وعملك التحقيقي الخاص بك (انظر الرابط أدناه).</p>
+		</div>
 
 		<noscript>
 			<div class="notification is-danger">
-				<p data-tx="t0003:3515d43b">تتطلب هذه الصفحة JavaScript. يرجى تنشيطه في متصفحك أو اتبع تعليمات الفلاش اليدوية في الريبو <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle">.</a></p>
+				<p data-tx="t0004:ba65a265">تتطلب هذه الصفحة JavaScript. يرجى تفعيله في متصفحك أو اتبع <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md">تعليمات للمستخدمين المتقدمين</a> في الريبو.</p>
 			</div>
 		</noscript>
 
 		<div class="notification is-warning" id="dongle-install-unsupported" style="display:none;">
-			<p data-tx="t0004:9e289a24"><strong>المتصفح الخاص بك لا يدعم تسلسل الويب</strong> يعمل الوميض عبر الويب فقط على سطح المكتب <strong>Chrome</strong> أو <strong>Edge</strong> أو <strong>Opera</strong>. على Firefox و Safari و Android و iOS، يمكنك وميض الدونجل باستخدام <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle"> سلسلة أدوات ESP-IDF عبر USB بدلاً من ذلك.</a></p>
+			<p data-tx="t0005:bb075478"><strong>لا يمكن لهذا المتصفح وميض الدونجل. لا يعمل وميض الويب إلا في <strong>Google Chrome</strong> أو <strong>Microsoft Edge</strong> على جهاز كمبيوتر (وليس على هاتف ذكي). افتح هذه الصفحة باستخدام Chrome أو Edge وحاول مرة أخرى.</strong></p>
 		</div>
 
-		<h2 data-tx="t0005:50a8a929">1. إعداد الأجهزة</h2>
+		<h2 data-tx="t0006:1cedb9ee" id="schritt-1">الخطوة 1 - اطلب الدونجل</h2>
 
-		<ul>
-			<li data-tx="t0006:9797814d">ESP32-DevKit مع ESP-WROOM-32E (مثل NodeMCU-32E) - انظر <a th:href="@{/dongle}">ملاحظات الأجهزة</a>.</li>
-			<li data-tx="t0007:831bfe23">USB-<strong>كابل بيانات (وليس مجرد كابل شحن) بين الكمبيوتر والدونجل.</strong></li>
-			<li data-tx="t0008:13116d83">على <strong>Windows</strong> قد تحتاج إلى تثبيت برنامج التشغيل التسلسلي USB - عادةً <a href="https://www.silabs.com/developer-tools/usb-to-uart-bridge-vcp-drivers" rel="noopener" target="_blank">CP210x</a> (مختبرات السيليكون) أو <a href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">CH340/CH341</a> (WCH).</li>
-			<li data-tx="t0009:a030a88a">على <strong>Linux</strong>، يجب أن يكون المستخدم في مجموعة <code>الطلب الهاتفي</code> (<code>sudo usermod -aG dialout $USER</code>، ثم تسجيل الخروج والدخول مرة واحدة).</li>
-		</ul>
+		<p data-tx="t0007:4a8aea0f">اطلب لوحة ESP32 هذه. وهي مدمجة بما يكفي لتوصيلها مباشرةً بجهاز التوجيه كوحدة USB، وتحتوي على شريحة USB التسلسلية المناسبة (CH340)، وتم تطوير واختبار دونجل PhoneBlock معها.</p>
 
-		<h2 data-tx="t0010:2abc78eb">2- الوميض</h2>
+		<figure class="image" style="max-width:300px;">
+			<img alt="دونجل ESP32" data-tx="t0008:31cdc7dc" th:src="@{/assets/img/dongle/dongle-option.png}"/>
+		</figure>
 
-		<p data-tx="t0011:d9654236">انقر على الزر، وحدد الدونجل الخاص بك في حوار المتصفح وانتظر حتى تكتمل العملية. يتم حذف ذاكرة الفلاش أثناء الوميض الأولي - سيتم فقدان أي تكوين موجود.</p>
+		<div class="notification is-info">
+			<p data-tx="t0009:1bd1b6a9"><strong>التسليم من الصين - تقريبًا. 3-4 أسابيع وقت التسليم.</strong> السعر حاليًا حوالي 9 يورو بما في ذلك الشحن.</p>
+			<p class="mt-2">
+				<a class="button is-primary is-large" href="https://de.aliexpress.com/item/1005006593432047.html" rel="noopener" target="_blank">
+					<span class="icon"><i class="fas fa-cart-shopping"></i></span>
+					<span data-tx="t0010:49b731d6">اطلب على AliExpress</span>
+				</a>
+			</p>
+		</div>
+
+		<p data-tx="t0011:326831c9"><strong>تريد استخدام لوحة مختلفة</strong> تعمل مجموعات ESP32 DevKits الأخرى بنفس الطريقة تمامًا، ولكن قد تحتاج إلى برنامج تشغيل USB تسلسلي مختلف (على سبيل المثال CP2102 بدلاً من CH340) وكابل تمديد USB إذا كان التصميم لا يتناسب مباشرةً مع جهاز التوجيه. التفاصيل والتوصيات: <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/HARDWARE.md" rel="noopener" target="_blank">HARDWARE.md في الريبو.</a></p>
+
+		<h2 data-tx="t0012:fe30aa8a" id="schritt-2">الخطوة 2 - تثبيت برنامج تشغيل USB (ويندوز فقط)</h2>
+
+		<p data-tx="t0013:ba1650a4">يستخدم الدونجل شريحة USB التسلسلية <strong>CH340</strong>. لكي يتعرف عليها Windows كمنفذ COM، تحتاج إلى برنامج التشغيل المناسب مرة واحدة.</p>
+
+		<p>
+			<a class="button is-link" href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">
+				<span class="icon"><i class="fas fa-download"></i></span>
+				<span data-tx="t0014:88df56ee">تنزيل برنامج التشغيل CH340 (wch-ic.com)</span>
+			</a>
+		</p>
+
+		<p data-tx="t0015:864e1d6">قم بتشغيل الملف الذي تم تنزيله <code>CH341SER.EXE</code> → انقر على <strong>"INSTALL"</strong> في النافذة → تم. لا حاجة لإعادة التشغيل.</p>
+
+		<figure>
+			<div data-tx="t0016:42f1fe49" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[العنصر النائب: لقطة شاشة لمثبت برنامج التشغيل CH340 مع تمييز زر INSTALL]</div>
+		</figure>
+
+		<details class="mt-4">
+			<summary><strong data-tx="t0017:ded51310">هل تستخدم نظام التشغيل macOS أو Linux؟</strong></summary>
+			<ul>
+				<li data-tx="t0018:5410eb20"><strong>macOS: اعتبارًا من macOS Big Sur، يتم تضمين برنامج التشغيل في النظام - لا حاجة لخطوة التثبيت.</strong></li>
+				<li data-tx="t0019:b1eb5a7e"><strong>Linux</strong>: تم تثبيت برنامج تشغيل kernel. على Ubuntu، يمكن لخدمة BRLTTY انتزاع CH340 وجعل ملف الجهاز يختفي مرة أخرى بعد بضع ثوانٍ - سيساعد إلغاء تثبيت BRLTTY بعد ذلك. يجب أن يكون المستخدم الخاص بك أيضًا في مجموعة <code>dialout</code>. كلتا الخطوتين موصوفتان بالتفصيل في <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
+			</ul>
+		</details>
+
+		<h2 data-tx="t0020:62d0966b" id="schritt-3">الخطوة 3 - أدخل الدونجل في الكمبيوتر</h2>
+
+		<p data-tx="t0021:70a70ae6">قم بتوصيل الدونجل مباشرة بمنفذ USB مجاني على جهاز الكمبيوتر الخاص بك. يجب أن يضيء مؤشر LED صغير على اللوحة أو يومض على الفور.</p>
+
+		<figure>
+			<div data-tx="t0022:a85e1a1d" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[العنصر النائب: صورة "دونجل تم إدخاله في منفذ USB في جهاز كمبيوتر محمول"]</div>
+		</figure>
+
+		<h2 data-tx="t0023:4325c49c" id="schritt-4">الخطوة 4 - فلاش البرامج الثابتة</h2>
+
+		<p data-tx="t0024:230fc89e">انقر على الزر. ثم يسأل المتصفح عن الجهاز المتصل الذي تم التصريح له بالوصول إليه.</p>
 
 		<p>
 			<esp-web-install-button manifest="https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json">
 				<button class="button is-primary is-large" slot="activate" type="button">
 					<span class="icon"><i class="fas fa-bolt"></i></span>
-					<span data-tx="t0012:1b4594a6">فلاش الآن</span>
+					<span data-tx="t0025:1b4594a6">فلاش الآن</span>
 				</button>
 				<button class="button is-primary is-large" disabled="disabled" slot="unsupported" type="button">
 					<span class="icon"><i class="fas fa-bolt"></i></span>
-					<span data-tx="t0018:1b4594a6">فلاش الآن</span>
+					<span data-tx="t0026:1b4594a6">فلاش الآن</span>
 				</button>
 				<button class="button is-primary is-large" disabled="disabled" slot="not-allowed" type="button">
 					<span class="icon"><i class="fas fa-bolt"></i></span>
-					<span data-tx="t0019:1b4594a6">فلاش الآن</span>
+					<span data-tx="t0027:1b4594a6">فلاش الآن</span>
 				</button>
 			</esp-web-install-button>
 		</p>
 
-		<h2 data-tx="t0013:f0d7c4e4">3. بعد الوميض</h2>
+		<p data-tx="t0028:34c84b34">تظهر قائمة بجميع الأجهزة التسلسلية على الكمبيوتر في حوار التحديد. حدد الإدخال الذي يحتوي على <strong>"USB-SERIAL CH340"</strong> (ويندوز) أو <strong>"USB Single Serial"</strong> أو <strong>"wch.cn"</strong> (macOS/Linux) في الاسم وقم بالتأكيد باستخدام <strong>"Connect"</strong>. إذا تم عرض عدة أجهزة CH340 بسبب توصيل جهاز آخر بهذه الشريحة، افصل الأجهزة الأخرى في الوقت الحالي.</p>
 
-		<ol>
-			<li data-tx="t0014:a549ef8">يُعاد تشغيل الدونجل ويفتح شبكة WLAN <code>PhoneBlock-Dongle-XXXX</code>.</li>
-			<li data-tx="t0015:bb7d40cb">قم بالتبديل إلى شبكة WLAN هذه باستخدام هاتفك الذكي أو الكمبيوتر المحمول، يفتح المتصفح صفحة الإعداد تلقائيًا (البوابة الأسيرة).</li>
-			<li data-tx="t0016:cd9ce37d">حدد شبكة WLAN المنزلية، وأدخل بيانات الوصول SIP ورمز PhoneBlock المميز - التفاصيل في <a th:href="@{/dongle}"> تعليمات الدونجل</a>.</li>
-		</ol>
+		<figure>
+			<div data-tx="t0029:b5c3a2f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[العنصر النائب: لقطة شاشة لحوار اختيار جهاز المتصفح مع تمييز إدخال CH340]</div>
+		</figure>
+
+		<p data-tx="t0030:5fcdc08c">قم بتأكيد مطالبة الأمان "محو الجهاز وتثبيت PhoneBlock Dongle؟" بـ <strong> "تثبيت"</strong>. أثناء الوميض الأول، يتم مسح الذاكرة بالكامل وتثبيت البرنامج الثابت - يستغرق ذلك حوالي دقيقة. لا تفصل الدونجل خلال هذا الوقت.</p>
+
+		<figure>
+			<div data-tx="t0031:177a19e2" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[العنصر النائب: لقطة شاشة لشريط تقدم أدوات الويب esp-web-tools أثناء الوميض]</div>
+		</figure>
+
+		<h2 data-tx="t0032:e5862ff8" id="schritt-5">الخطوة 5 - قم بتوصيل الدونجل بجهاز التوجيه</h2>
+
+		<p data-tx="t0033:cbcaee11">عندما يُبلغ المتصفح عن "اكتمل التثبيت!"، قم بإزالة الدونجل من الكمبيوتر وقم بتوصيله بمنفذ USB مجاني على جهاز التوجيه (أو أي مصدر طاقة USB 5 فولت ضمن نطاق شبكة WLAN).</p>
+
+		<figure>
+			<div data-tx="t0034:a5796f78" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[العنصر النائب: صورة "دونجل مُدخَل في منفذ USB في Fritz!Box"]</div>
+		</figure>
+
+		<h2 data-tx="t0035:b184a512" id="schritt-6">الخطوة 6 - إضافة الدونجل إلى شبكة WLAN (WPS)</h2>
+
+		<p data-tx="t0036:6ac463a1">لا يحتوي الدونجل الذي تم وميضه حديثًا على أي بيانات وصول إلى شبكة Wi-Fi وينتظر الاقتران عبر <strong>WPS</strong>. يومض مؤشر LED <strong> بسرعة (حوالي خمس مرات في الثانية) ويشير إلى "وضع الاقتران نشط".</strong></p>
+
+		<p data-tx="t0037:83cbb4c2">اضغط الآن على الزر <strong>"WPS" على جهاز التوجيه. في جهاز Fritz! Box، هذا هو الزر <strong>"Connect / WPS"</strong> الموجود أعلى الجهاز - اضغط لفترة وجيزة حتى يبدأ مؤشر Wi-Fi LED على جهاز التوجيه نفسه في الوميض. تسمي أجهزة التوجيه الأخرى الزر "WPS" أو "إقران". في غضون ثوانٍ قليلة، ينقل جهاز التوجيه بيانات الوصول إلى شبكة Wi-Fi إلى الدونجل الذي يحفظها ويتصل.</strong></p>
+
+		<figure>
+			<div data-tx="t0038:5f50dac7" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[العنصر النائب: صورة "زر التوصيل/التوصيل/الإنترنت الثابت على صندوق فريتز! مع سهم"]</div>
+		</figure>
+
+		<p data-tx="t0039:61c90640"><strong>يعمل:</strong> يومض مؤشر LED الآن ببطء (مرة واحدة في الثانية تقريبًا) - الدونجل في شبكة WLAN، وقد تم تعيين عنوان IP له وينتظر التكوين في الخطوة 7.</p>
+
+		<p data-tx="t0040:96351c92"><strong> لم يعمل</strong> تحقق في إعدادات جهاز التوجيه مما إذا كان WPS مفعلًا على الإطلاق (على Fritz!Box: <em>WLAN → الأمان → WPS</em>). إذا كانت نافذة WPS قصيرة جدًا، فسيقوم الدونجل بإعادة تشغيل عملية الاقتران تلقائيًا - ثم اضغط ببساطة على زر WPS مرة أخرى.</p>
+
+		<h2 data-tx="t0041:5dee0d65" id="schritt-7">الخطوة 7 - أدخل رمز الوصول عبر بروتوكول SIP ورمز PhoneBlock المميز</h2>
+
+		<p data-tx="t0042:58c22345">لكي يتمكن الدونجل من اعتراض المكالمات، فإنه لا يزال بحاجة إلى شيئين: بيانات الوصول إلى بروتوكول SIP الخاص بك (حتى يتمكن من تسجيل الدخول إلى جهاز التوجيه كهاتف إضافي) ورمز PhoneBlock (حتى يتمكن من الاستعلام عن قاعدة بيانات الرسائل غير المرغوب فيها). يمكنك إدخال كليهما في واجهة الويب الخاصة بالدونجل.</p>
+
+		<p data-tx="t0043:f4d3bf5f">افتح في المتصفح:</p>
+
+		<p><a class="button is-link is-large" data-tx="t0044:f04a859b" href="http://answerbot.local/">http://answerbot.local/</a></p>
+
+		<p data-tx="t0045:c627eba9">إذا كان هذا الرابط لا يعمل (ويندوز بدون بونجور، وبعض شبكات WLAN الشبكية)، ابحث في قائمة الأجهزة في جهاز التوجيه الخاص بك عن جهاز يحمل الاسم <code>answerbot</code>، وقم بتدوين عنوان IP الخاص به واستدعاءه في المتصفح - على سبيل المثال <code>http://192.168.178.42/</code>.</p>
+
+		<figure>
+			<div data-tx="t0046:8bb491f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[العنصر النائب: لقطة شاشة لواجهة الويب الخاصة بالدونجل مع حقول الإدخال ل SIP والرمز المميز]</div>
+		</figure>
+
+		<p data-tx="t0047:a09627c1">أدخل في واجهة الويب:</p>
+		<ul>
+			<li data-tx="t0048:4b81384d"><strong> بيانات الوصول إلى بروتوكول بروتوكول الإنترنت - اسم المستخدم وكلمة المرور وعنوان المسجل. بالنسبة لـ Fritz!Box، قم بإنشاء اتصال إضافي ضمن <em> الاتصال الهاتفي ← أجهزة الاتصال الهاتفي ← إعداد جهاز جديد ← الهاتف (مع جهاز الرد الآلي وبدون جهاز الرد الآلي) ← شبكة محلية/شبكة محلية لاسلكية (هاتف IP). أدخل بيانات الوصول المعينة هناك هنا وأدخل <code>fritz.box كمسجل.</code></em></strong></li>
+			<li data-tx="t0049:9fd0fd46"><strong> الرمز المميز لحظر الهاتف</strong> - أنشئ رمزًا مميزًا لواجهة برمجة التطبيقات في <a th:href="@{/settings}">إعدادات حظر الهاتف</a> وانسخه في الحقل المقابل.</li>
+		</ul>
+
+		<p data-tx="t0050:2f4a93c2">احفظ ← مؤشر LED مضاء الآن بشكل دائم ← الدونجل جاهز للاستخدام. سيتم الآن اعتراض المكالمات المزعجة بصمت قبل أن يرن هاتفك.</p>
 
 		<hr class="my-5"/>
 
-		<p class="has-text-grey" data-tx="t0017:8a689eeb">الكود المصدري للبرنامج الثابت: <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank"> phoneblock-dongle على GitHub</a>.</p>
+		<p class="has-text-grey" data-tx="t0051:9316079d">هل هناك شيء ما لا يعمل، هل تستخدم فايرفوكس/سفاري أو لينكس بخصائص معينة أو لوحة أخرى؟ يمكن العثور على الإرشادات التفصيلية مع جميع الخيارات ومزالق لينكس وسلسلة أدوات ESP-IDF في الريبو: <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md.</a></p>
+
+		<p class="has-text-grey" data-tx="t0052:8a689eeb">الكود المصدري للبرنامج الثابت: <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank"> phoneblock-dongle على GitHub</a>.</p>
 	</div>
 </section>
 

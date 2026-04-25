@@ -301,8 +301,7 @@ When modifying `phoneblock-shared/`:
 
 Rules when modifying templates:
 - **Never duplicate `data-tx` attributes** - Each unique text should have only one `data-tx` reference
-- **Remove `data-tx` when changing text content** - Modified text breaks the I18N linkage
-- **Keep `data-tx` on unmodified fallback text** - Original translations remain linked
+- **Leave `data-tx` attributes alone when changing text content** - The I18N generation tool reassigns `data-tx` values automatically during build, no manual cleanup needed
 - I18N generation tool automatically assigns `data-tx` values during build
 
 Example - Adding conditional device name display:
@@ -315,7 +314,7 @@ Example - Adding conditional device name display:
     Link to your device
 </p>
 
-<!-- CORRECT: Remove data-tx from modified version -->
+<!-- CORRECT: Omit data-tx on the new variant; build tool assigns a fresh id -->
 <p th:if="${!#strings.isEmpty(label)}">
     Link to <strong th:text="${label}">device</strong>
 </p>

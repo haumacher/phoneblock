@@ -7,61 +7,159 @@
 
 <section class="section">
 	<div class="content">
-		<h1 data-tx="t0001:dae96b09">Αναβοσβήνει το dongle στο πρόγραμμα περιήγησης</h1>
+		<h1 data-tx="t0001:f211f9c6">Κατασκευάζοντας το δικό σας dongle - βήμα προς βήμα</h1>
 
-		<p class="subtitle" data-tx="t0002:ea8fbc11">Μία πλακέτα ESP32, ένα καλώδιο USB, ένα κλικ - το τρέχον υλικολογισμικό PhoneBlock μεταφέρεται απευθείας από αυτό το πρόγραμμα περιήγησης στο dongle σας.</p>
+		<p class="subtitle" data-tx="t0002:dd445b5">Ακολουθήστε τις οδηγίες με τη σειρά. Στο τέλος, το έτοιμο dongle συνδέεται στη θύρα USB του δρομολογητή σας και μπλοκάρει αθόρυβα στο παρασκήνιο τις κλήσεις ανεπιθύμητης αλληλογραφίας.</p>
+
+		<div class="notification is-warning">
+			<p data-tx="t0003:47a426be"><strong>Κατάσταση: Beta.</strong> Αυτές οι οδηγίες είναι προσαρμοσμένες σε έναν μόνο, δοκιμασμένο τύπο υλικού - αγοράστε ακριβώς την πλακέτα από το βήμα 1, τότε κάθε επόμενο βήμα θα ταιριάζει. Συχνά λειτουργούν και άλλες πλακέτες, αλλά απαιτούν διαφορετικούς οδηγούς και τη δική σας ερευνητική εργασία (βλ. σύνδεσμο παρακάτω).</p>
+		</div>
 
 		<noscript>
 			<div class="notification is-danger">
-				<p data-tx="t0003:3515d43b">Αυτή η σελίδα απαιτεί JavaScript. Παρακαλούμε ενεργοποιήστε την στο πρόγραμμα περιήγησής σας ή ακολουθήστε τις <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle">χειροκίνητες οδηγίες για το Flash στο repo</a>.</p>
+				<p data-tx="t0004:ba65a265">Αυτή η σελίδα απαιτεί JavaScript. Παρακαλούμε ενεργοποιήστε την στο πρόγραμμα περιήγησής σας ή ακολουθήστε τις <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md">Οδηγίες για προχωρημένους χρήστες</a> στο repo.</p>
 			</div>
 		</noscript>
 
 		<div class="notification is-warning" id="dongle-install-unsupported" style="display:none;">
-			<p data-tx="t0004:9e289a24"><strong>Το πρόγραμμα περιήγησής σας δεν υποστηρίζει τη σειριακή σύνδεση στο διαδίκτυο</strong> Το Web flashing εκτελείται μόνο σε περιβάλλον εργασίας <strong>Chrome</strong>, <strong>Edge</strong> ή <strong>Opera</strong>. Στον Firefox, τον Safari, το Android και το iOS, μπορείτε να κάνετε flash το dongle με την <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle">αλυσίδα εργαλείων ESP-IDF μέσω USB</a> αντί αυτού.</p>
+			<p data-tx="t0005:bb075478"><strong>Αυτό το πρόγραμμα περιήγησης δεν μπορεί να κάνει flash το dongle.</strong> Το web flashing λειτουργεί μόνο σε <strong>Google Chrome</strong> ή <strong>Microsoft Edge</strong> σε υπολογιστή (όχι σε smartphone). Ανοίξτε αυτή τη σελίδα με το Chrome ή τον Edge και δοκιμάστε ξανά.</p>
 		</div>
 
-		<h2 data-tx="t0005:50a8a929">1. προετοιμάστε το υλικό</h2>
+		<h2 data-tx="t0006:1cedb9ee" id="schritt-1">Βήμα 1 - Παραγγελία dongle</h2>
 
-		<ul>
-			<li data-tx="t0006:9797814d">ESP32-DevKit με ESP-WROOM-32E (π.χ. NodeMCU-32E) - βλέπε <a th:href="@{/dongle}">Σημειώσεις υλικού</a>.</li>
-			<li data-tx="t0007:831bfe23">Καλώδιο USB <strong> δεδομένων</strong> (όχι μόνο καλώδιο φόρτισης) μεταξύ υπολογιστή και dongle.</li>
-			<li data-tx="t0008:13116d83">Στα <strong>Windows</strong> μπορεί να χρειαστεί να εγκαταστήσετε το σειριακό πρόγραμμα οδήγησης USB - συνήθως <a href="https://www.silabs.com/developer-tools/usb-to-uart-bridge-vcp-drivers" rel="noopener" target="_blank">CP210x</a> (Silicon Labs) ή <a href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">CH340/CH341</a> (WCH).</li>
-			<li data-tx="t0009:a030a88a">Στο <strong>Linux</strong>, ο χρήστης σας πρέπει να είναι στην ομάδα <code>dialout</code> (<code>sudo usermod -aG dialout $USER</code>, στη συνέχεια αποσυνδεθείτε και ξαναμπείτε μία φορά).</li>
-		</ul>
+		<p data-tx="t0007:4a8aea0f">Παραγγείλετε αυτή την πλακέτα ESP32. Είναι αρκετά συμπαγής ώστε να μπορεί να συνδεθεί απευθείας στο δρομολογητή ως USB stick, διαθέτει το κατάλληλο σειριακό τσιπ USB (CH340) και το PhoneBlock dongle αναπτύχθηκε και δοκιμάστηκε με αυτό.</p>
 
-		<h2 data-tx="t0010:2abc78eb">2. αναβοσβήνει</h2>
+		<figure class="image" style="max-width:300px;">
+			<img alt="ESP32 dongle" data-tx="t0008:31cdc7dc" th:src="@{/assets/img/dongle/dongle-option.png}"/>
+		</figure>
 
-		<p data-tx="t0011:d9654236">Κάντε κλικ στο κουμπί, επιλέξτε το dongle σας στον διάλογο του προγράμματος περιήγησης και περιμένετε μέχρι να ολοκληρωθεί η διαδικασία. Η μνήμη flash διαγράφεται κατά τη διάρκεια μιας αρχικής ανανέωσης - τυχόν υπάρχουσες ρυθμίσεις θα χαθούν.</p>
+		<div class="notification is-info">
+			<p data-tx="t0009:1bd1b6a9"><strong>Παράδοση από την Κίνα - περίπου 3-4 εβδομάδες χρόνος παράδοσης.</strong> Τιμή σήμερα περίπου 9 € συμπεριλαμβανομένων των μεταφορικών.</p>
+			<p class="mt-2">
+				<a class="button is-primary is-large" href="https://de.aliexpress.com/item/1005006593432047.html" rel="noopener" target="_blank">
+					<span class="icon"><i class="fas fa-cart-shopping"></i></span>
+					<span data-tx="t0010:49b731d6">Παραγγελία στο AliExpress</span>
+				</a>
+			</p>
+		</div>
+
+		<p data-tx="t0011:326831c9"><strong>Θέλεις να χρησιμοποιήσεις μια διαφορετική πλακέτα</strong> Άλλα ESP32 DevKits λειτουργούν με τον ίδιο ακριβώς τρόπο, αλλά ενδέχεται να χρειάζονται διαφορετικό σειριακό πρόγραμμα οδήγησης USB (π.χ. CP2102 αντί για CH340) και καλώδιο επέκτασης USB, εάν το σχέδιο δεν ταιριάζει απευθείας στον δρομολογητή. Λεπτομέρειες και συστάσεις: <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/HARDWARE.md" rel="noopener" target="_blank">HARDWARE.md στο repo</a>.</p>
+
+		<h2 data-tx="t0012:fe30aa8a" id="schritt-2">Βήμα 2 - Εγκατάσταση προγράμματος οδήγησης USB (μόνο για Windows)</h2>
+
+		<p data-tx="t0013:ba1650a4">Το dongle χρησιμοποιεί το σειριακό τσιπ USB <strong>CH340</strong>. Προκειμένου τα Windows να το αναγνωρίσουν ως θύρα COM, θα χρειαστείτε το κατάλληλο πρόγραμμα οδήγησης μία φορά.</p>
+
+		<p>
+			<a class="button is-link" href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">
+				<span class="icon"><i class="fas fa-download"></i></span>
+				<span data-tx="t0014:88df56ee">Κατεβάστε τον οδηγό CH340 (wch-ic.com)</span>
+			</a>
+		</p>
+
+		<p data-tx="t0015:864e1d6">Εκτελέστε το αρχείο που κατεβάσατε <code>CH341SER.EXE</code> → κάντε κλικ στο <strong>"INSTALL"</strong> στο παράθυρο → έτοιμο. Δεν απαιτείται επανεκκίνηση.</p>
+
+		<figure>
+			<div data-tx="t0016:42f1fe49" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Placeholder: Στιγμιότυπο του προγράμματος εγκατάστασης του οδηγού CH340 με επισημασμένο το κουμπί INSTALL]</div>
+		</figure>
+
+		<details class="mt-4">
+			<summary><strong data-tx="t0017:ded51310">Χρησιμοποιείτε macOS ή Linux;</strong></summary>
+			<ul>
+				<li data-tx="t0018:5410eb20"><strong>macOS</strong>: Από το macOS Big Sur, το πρόγραμμα οδήγησης περιλαμβάνεται στο σύστημα - δεν απαιτείται βήμα εγκατάστασης.</li>
+				<li data-tx="t0019:b1eb5a7e"><strong>Linux</strong>: Το πρόγραμμα οδήγησης του πυρήνα έχει εγκατασταθεί. Στο Ubuntu, η υπηρεσία BRLTTY μπορεί να αρπάξει το CH340 και να κάνει το αρχείο συσκευής να εξαφανιστεί ξανά μετά από μερικά δευτερόλεπτα - η απεγκατάσταση του BRLTTY θα βοηθήσει στη συνέχεια. Ο χρήστης σας πρέπει επίσης να ανήκει στην ομάδα <code>dialout</code>. Και τα δύο βήματα περιγράφονται λεπτομερώς στο <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
+			</ul>
+		</details>
+
+		<h2 data-tx="t0020:62d0966b" id="schritt-3">Βήμα 3 - Τοποθετήστε το dongle στον υπολογιστή</h2>
+
+		<p data-tx="t0021:70a70ae6">Συνδέστε το dongle απευθείας σε μια ελεύθερη θύρα USB του υπολογιστή σας. Μια μικρή λυχνία LED στην πλακέτα θα πρέπει να ανάψει ή να αναβοσβήσει αμέσως.</p>
+
+		<figure>
+			<div data-tx="t0022:a85e1a1d" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Placeholder: Φωτογραφία "Dongle τοποθετημένο στη θύρα USB ενός φορητού υπολογιστή"]</div>
+		</figure>
+
+		<h2 data-tx="t0023:4325c49c" id="schritt-4">Βήμα 4 - Flash firmware</h2>
+
+		<p data-tx="t0024:230fc89e">Κάντε κλικ στο κουμπί. Στη συνέχεια, το πρόγραμμα περιήγησης ρωτά ποια συνδεδεμένη συσκευή έχει εξουσιοδότηση πρόσβασης.</p>
 
 		<p>
 			<esp-web-install-button manifest="https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json">
 				<button class="button is-primary is-large" slot="activate" type="button">
 					<span class="icon"><i class="fas fa-bolt"></i></span>
-					<span data-tx="t0012:1b4594a6">Flash τώρα</span>
+					<span data-tx="t0025:1b4594a6">Flash τώρα</span>
 				</button>
 				<button class="button is-primary is-large" disabled="disabled" slot="unsupported" type="button">
 					<span class="icon"><i class="fas fa-bolt"></i></span>
-					<span data-tx="t0018:1b4594a6">Flash τώρα</span>
+					<span data-tx="t0026:1b4594a6">Flash τώρα</span>
 				</button>
 				<button class="button is-primary is-large" disabled="disabled" slot="not-allowed" type="button">
 					<span class="icon"><i class="fas fa-bolt"></i></span>
-					<span data-tx="t0019:1b4594a6">Flash τώρα</span>
+					<span data-tx="t0027:1b4594a6">Flash τώρα</span>
 				</button>
 			</esp-web-install-button>
 		</p>
 
-		<h2 data-tx="t0013:f0d7c4e4">3. μετά την αναλαμπή</h2>
+		<p data-tx="t0028:34c84b34">Στον διάλογο επιλογής εμφανίζεται ένας κατάλογος όλων των σειριακών συσκευών του υπολογιστή. Επιλέξτε την καταχώρηση με <strong>"USB-SERIAL CH340"</strong> (Windows) ή <strong>"USB Single Serial"</strong> ή <strong>"wch.cn"</strong> (macOS/Linux) στο όνομα και επιβεβαιώστε με <strong>"Connect"</strong>. Εάν εμφανίζονται πολλές συσκευές CH340 επειδή τυχαίνει να είναι συνδεδεμένη και άλλη συσκευή με αυτό το τσιπ, αποσυνδέστε προς το παρόν τις υπόλοιπες.</p>
 
-		<ol>
-			<li data-tx="t0014:a549ef8">Το Dongle επανεκκινείται και ανοίγει το WLAN <code>PhoneBlock-Dongle-XXXX</code>.</li>
-			<li data-tx="t0015:bb7d40cb">Μεταβείτε σε αυτό το WLAN με το smartphone ή το φορητό σας υπολογιστή, το πρόγραμμα περιήγησης ανοίγει αυτόματα τη σελίδα ρύθμισης (captive portal).</li>
-			<li data-tx="t0016:cd9ce37d">Επιλέξτε το οικιακό WLAN, εισαγάγετε τα δεδομένα πρόσβασης SIP και το κωδικό PhoneBlock - λεπτομέρειες στις οδηγίες για το <a th:href="@{/dongle}">Dongle</a>.</li>
-		</ol>
+		<figure>
+			<div data-tx="t0029:b5c3a2f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Placeholder: Στιγμιότυπο του διαλόγου επιλογής συσκευής του προγράμματος περιήγησης με επισημασμένη την καταχώρηση CH340]</div>
+		</figure>
+
+		<p data-tx="t0030:5fcdc08c">Επιβεβαιώστε την ερώτηση ασφαλείας "Διαγραφή της συσκευής και εγκατάσταση του PhoneBlock Dongle;" με <strong>"Εγκατάσταση"</strong>. Κατά τη διάρκεια του πρώτου flash, διαγράφεται ολόκληρη η μνήμη και εγκαθίσταται το υλικολογισμικό - αυτό διαρκεί περίπου ένα λεπτό. Μην αποσυνδέσετε το dongle κατά τη διάρκεια αυτού του χρόνου.</p>
+
+		<figure>
+			<div data-tx="t0031:177a19e2" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Placeholder: Στιγμιότυπο της γραμμής προόδου του esp-web-tools κατά τη διάρκεια της αναλαμπής]</div>
+		</figure>
+
+		<h2 data-tx="t0032:e5862ff8" id="schritt-5">Βήμα 5 - Συνδέστε το dongle στο δρομολογητή</h2>
+
+		<p data-tx="t0033:cbcaee11">Όταν το πρόγραμμα περιήγησης αναφέρει "Η εγκατάσταση ολοκληρώθηκε!", αφαιρέστε το dongle από τον υπολογιστή και συνδέστε το σε μια ελεύθερη θύρα USB του δρομολογητή σας (ή σε οποιοδήποτε τροφοδοτικό USB 5 V εντός εμβέλειας WLAN).</p>
+
+		<figure>
+			<div data-tx="t0034:a5796f78" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Placeholder: Φωτογραφία "Dongle τοποθετημένο στη θύρα USB του Fritz!Box"]</div>
+		</figure>
+
+		<h2 data-tx="t0035:b184a512" id="schritt-6">Βήμα 6 - Προσθήκη του dongle στο WLAN (WPS)</h2>
+
+		<p data-tx="t0036:6ac463a1">Το πρόσφατα αναβαθμισμένο dongle δεν έχει ακόμη δεδομένα πρόσβασης Wi-Fi και περιμένει για ζεύξη μέσω <strong>WPS</strong>. Η λυχνία LED <strong>αναβοσβήνει γρήγορα</strong> (περίπου πέντε φορές ανά δευτερόλεπτο) και σηματοδοτεί "Λειτουργία ζεύξης ενεργή".</p>
+
+		<p data-tx="t0037:83cbb4c2">Τώρα πατήστε το κουμπί <strong>WPS</strong> στο δρομολογητή. Στο Fritz!Box, αυτό είναι το κουμπί <strong>"Connect / WPS"</strong> στο επάνω μέρος της συσκευής - πατήστε το για λίγο μέχρι να αρχίσει να αναβοσβήνει η λυχνία LED Wi-Fi στον ίδιο το δρομολογητή. Άλλοι δρομολογητές ονομάζουν το κουμπί "WPS" ή "Pair". Μέσα σε λίγα δευτερόλεπτα, ο δρομολογητής μεταδίδει τα δεδομένα πρόσβασης Wi-Fi στο dongle, το οποίο τα αποθηκεύει και συνδέεται.</p>
+
+		<figure>
+			<div data-tx="t0038:5f50dac7" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Placeholder: Φωτογραφία "Κουμπί Connect/WPS στο Fritz!Box με βέλος"]</div>
+		</figure>
+
+		<p data-tx="t0039:61c90640"><strong>Έχει λειτουργήσει:</strong> Η λυχνία LED αναβοσβήνει τώρα αργά (περίπου μία φορά ανά δευτερόλεπτο) - το dongle βρίσκεται στο WLAN, του έχει εκχωρηθεί IP και περιμένει τη διαμόρφωση στο βήμα 7.</p>
+
+		<p data-tx="t0040:96351c92"><strong>Δεν λειτούργησε</strong> Ελέγξτε στις ρυθμίσεις του δρομολογητή αν το WPS είναι ενεργοποιημένο (στο Fritz!Box: <em>WLAN → Ασφάλεια → WPS</em>). Εάν το παράθυρο WPS ήταν πολύ μικρό, το dongle θα επανεκκινήσει αυτόματα τη διαδικασία σύζευξης - τότε απλά πατήστε ξανά το κουμπί WPS.</p>
+
+		<h2 data-tx="t0041:5dee0d65" id="schritt-7">Βήμα 7 - Εισάγετε την πρόσβαση SIP και το διακριτικό PhoneBlock</h2>
+
+		<p data-tx="t0042:58c22345">Για να μπορέσει το dongle να υποκλέψει κλήσεις, χρειάζεται ακόμα δύο πράγματα: τα δεδομένα πρόσβασης SIP (ώστε να μπορεί να συνδεθεί στο δρομολογητή ως πρόσθετο τηλέφωνο) και ένα διακριτικό PhoneBlock (ώστε να μπορεί να κάνει αναζήτηση στη βάση δεδομένων spam). Εισάγετε και τα δύο στη διαδικτυακή διεπαφή του dongle.</p>
+
+		<p data-tx="t0043:f4d3bf5f">Ανοίξτε στο πρόγραμμα περιήγησης:</p>
+
+		<p><a class="button is-link is-large" data-tx="t0044:f04a859b" href="http://answerbot.local/">http://answerbot.local/</a></p>
+
+		<p data-tx="t0045:c627eba9">Εάν αυτός ο σύνδεσμος δεν λειτουργεί (Windows χωρίς Bonjour, ορισμένα WLAN με πλέγμα), αναζητήστε στη λίστα συσκευών του δρομολογητή σας μια συσκευή με το όνομα <code>answerbot</code>, σημειώστε τη διεύθυνση IP της και καλέστε την στο πρόγραμμα περιήγησης - π.χ. <code>http://192.168.178.42/</code>.</p>
+
+		<figure>
+			<div data-tx="t0046:8bb491f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Placeholder: Στιγμιότυπο της διαδικτυακής διεπαφής του dongle με πεδία εισαγωγής για SIP και token]</div>
+		</figure>
+
+		<p data-tx="t0047:a09627c1">Εισάγετε στο περιβάλλον εργασίας web:</p>
+		<ul>
+			<li data-tx="t0048:4b81384d"><strong>Δεδομένα πρόσβασης SIP</strong> - όνομα χρήστη, κωδικός πρόσβασης και διεύθυνση καταχωρητή. Για ένα Fritz!Box, δημιουργήστε μια πρόσθετη σύνδεση στην ενότητα <em>Τηλεφωνία → Συσκευές τηλεφωνίας → Ρύθμιση νέας συσκευής → Τηλέφωνο (με και χωρίς αυτόματο τηλεφωνητή) → LAN/WLAN (τηλέφωνο IP)</em>. Εισάγετε εδώ τα δεδομένα πρόσβασης που έχουν εκχωρηθεί εκεί και καταχωρίστε <code>fritz.box</code> ως καταχωρητή.</li>
+			<li data-tx="t0049:9fd0fd46"><strong>PhoneBlock token</strong> - δημιουργήστε ένα token API στις ρυθμίσεις <a th:href="@{/settings}">PhoneBlock settings</a> και αντιγράψτε το στο αντίστοιχο πεδίο.</li>
+		</ul>
+
+		<p data-tx="t0050:2f4a93c2">Αποθήκευση → η λυχνία LED είναι πλέον μόνιμα αναμμένη → το dongle είναι έτοιμο για χρήση. Οι ανεπιθύμητες κλήσεις θα αναχαιτίζονται πλέον αθόρυβα πριν χτυπήσει το τηλέφωνό σας.</p>
 
 		<hr class="my-5"/>
 
-		<p class="has-text-grey" data-tx="t0017:8a689eeb">Πηγαίος κώδικας του υλικολογισμικού: <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank"> phoneblock-dongle στο GitHub</a>.</p>
+		<p class="has-text-grey" data-tx="t0051:9316079d">Κάτι δεν λειτουργεί, χρησιμοποιείτε τον Firefox/Safari, Linux με ιδιαιτερότητες ή άλλο πίνακα? Οι λεπτομερείς οδηγίες με όλες τις επιλογές, τις παγίδες του Linux και την αλυσίδα εργαλείων ESP-IDF βρίσκονται στο repo: <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</p>
+
+		<p class="has-text-grey" data-tx="t0052:8a689eeb">Πηγαίος κώδικας του υλικολογισμικού: <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank"> phoneblock-dongle στο GitHub</a>.</p>
 	</div>
 </section>
 

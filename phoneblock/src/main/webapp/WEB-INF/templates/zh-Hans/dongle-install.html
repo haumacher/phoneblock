@@ -7,61 +7,159 @@
 
 <section class="section">
 	<div class="content">
-		<h1 data-tx="t0001:dae96b09">在浏览器中闪烁加密狗</h1>
+		<h1 data-tx="t0001:f211f9c6">制作自己的加密狗 - 一步一步来</h1>
 
-		<p class="subtitle" data-tx="t0002:ea8fbc11">一块 ESP32 板、一根 USB 电缆、一次点击--当前的 PhoneBlock 固件将直接从浏览器传输到您的加密狗。</p>
+		<p class="subtitle" data-tx="t0002:dd445b5">按照说明依次操作。最后，将完成的加密狗插入路由器的 USB 端口，就可以在后台静静地阻止垃圾电话了。</p>
+
+		<div class="notification is-warning">
+			<p data-tx="t0003:47a426be"><strong>Status: Beta.</strong> 这些说明是为经过测试的单一硬件类型量身定制的--购买步骤 1 中的电路板，那么接下来的每个步骤都将适用。其他电路板通常也能正常工作，但需要不同的驱动程序和你自己的侦查工作（请参阅下面的链接）。</p>
+		</div>
 
 		<noscript>
 			<div class="notification is-danger">
-				<p data-tx="t0003:3515d43b">本页面需要 JavaScript。请在浏览器中激活它，或按照软件仓库中的 <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle">Flash 手册说明进行操作</a>。</p>
+				<p data-tx="t0004:ba65a265">本页面需要 JavaScript。请在浏览器中激活它，或遵循软件包中的 <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md">高级用户说明</a>。</p>
 			</div>
 		</noscript>
 
 		<div class="notification is-warning" id="dongle-install-unsupported" style="display:none;">
-			<p data-tx="t0004:9e289a24"><strong>您的浏览器不支持网络串行</strong>网络闪存只能在桌面<strong>Chrome</strong>、<strong>Edge</strong>或<strong>Opera</strong>中运行。在 Firefox、Safari、Android 和 iOS 上，您可以使用 <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle">ESP-IDF 工具链通过 USB</a> 闪存加密狗。</p>
+			<p data-tx="t0005:bb075478"><strong>此浏览器无法闪存加密狗。</strong>网络闪存仅适用于电脑上的 <strong>Google Chrome 浏览器</strong>或 <strong>Microsoft Edge 浏览器</strong>（不适用于智能手机）。使用 Chrome 或 Edge 打开此页面，然后再试一次。</p>
 		</div>
 
-		<h2 data-tx="t0005:50a8a929">1. 准备硬件</h2>
+		<h2 data-tx="t0006:1cedb9ee" id="schritt-1">步骤 1 - 订购加密狗</h2>
 
-		<ul>
-			<li data-tx="t0006:9797814d">带有 ESP-WROOM-32E 的 ESP32-DevKit （例如 NodeMCU-32E） - 参见 <a th:href="@{/dongle}">硬件说明</a>。</li>
-			<li data-tx="t0007:831bfe23">电脑和加密狗之间的 USB <strong>数据线</strong>（不只是充电线）。</li>
-			<li data-tx="t0008:13116d83">在 <strong>Windows</strong> 上，您可能需要安装 USB 串行驱动程序 - 通常是 <a href="https://www.silabs.com/developer-tools/usb-to-uart-bridge-vcp-drivers" rel="noopener" target="_blank">CP210x</a> (Silicon Labs) 或 <a href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">CH340/CH341</a> (WCH)。</li>
-			<li data-tx="t0009:a030a88a">在 <strong>Linux</strong> 上，用户必须在 <code>dialout</code> 组中（<code>sudo usermod -aG dialout $USER</code>，然后退出并重新登录一次）。</li>
-		</ul>
+		<p data-tx="t0007:4a8aea0f">订购这款 ESP32 板。它非常小巧，可以作为 U 盘直接插入路由器，具有相应的 USB 串行芯片（CH340），PhoneBlock 加密狗就是用它开发和测试的。</p>
 
-		<h2 data-tx="t0010:2abc78eb">2. 闪烁</h2>
+		<figure class="image" style="max-width:300px;">
+			<img alt="ESP32 加密狗" data-tx="t0008:31cdc7dc" th:src="@{/assets/img/dongle/dongle-option.png}"/>
+		</figure>
 
-		<p data-tx="t0011:d9654236">单击该按钮，在浏览器对话框中选择加密狗，然后等待该过程完成。闪存在初始闪存过程中会被删除，任何现有配置都将丢失。</p>
+		<div class="notification is-info">
+			<p data-tx="t0009:1bd1b6a9"><strong>从中国发货 - 约需 3-4 周。</strong>目前价格约为 9 欧元（含运费）。</p>
+			<p class="mt-2">
+				<a class="button is-primary is-large" href="https://de.aliexpress.com/item/1005006593432047.html" rel="noopener" target="_blank">
+					<span class="icon"><i class="fas fa-cart-shopping"></i></span>
+					<span data-tx="t0010:49b731d6">在阿里巴巴订购</span>
+				</a>
+			</p>
+		</div>
+
+		<p data-tx="t0011:326831c9"><strong>您想使用不同的电路板</strong> 其他 ESP32 DevKits 的工作方式完全相同，但如果设计不能直接插入路由器，则可能需要不同的 USB 串行驱动程序（例如用 CP2102 代替 CH340）和 USB 延长线。详细信息和建议：<a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/HARDWARE.md" rel="noopener" target="_blank">repo 中的 HARDWARE.md</a>。</p>
+
+		<h2 data-tx="t0012:fe30aa8a" id="schritt-2">第 2 步 - 安装 USB 驱动程序（仅限 Windows）</h2>
+
+		<p data-tx="t0013:ba1650a4">加密狗使用 <strong>CH340</strong> USB 串行芯片。为了让 Windows 将其识别为 COM 端口，需要安装相应的驱动程序。</p>
+
+		<p>
+			<a class="button is-link" href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">
+				<span class="icon"><i class="fas fa-download"></i></span>
+				<span data-tx="t0014:88df56ee">下载 CH340 驱动程序 (wch-ic.com)</span>
+			</a>
+		</p>
+
+		<p data-tx="t0015:864e1d6">运行下载的文件 <code>CH341SER.EXE</code> → 点击窗口中的 <strong>"INSTALL"</strong>→完成。无需重新启动。</p>
+
+		<figure>
+			<div data-tx="t0016:42f1fe49" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[占位符：CH340 驱动程序安装程序的屏幕截图，其中 INSTALL 按钮突出显示]</div>
+		</figure>
+
+		<details class="mt-4">
+			<summary><strong data-tx="t0017:ded51310">您使用 macOS 还是 Linux？</strong></summary>
+			<ul>
+				<li data-tx="t0018:5410eb20"><strong>macOS</strong>：从 macOS Big Sur 开始，驱动程序已包含在系统中，无需任何安装步骤。</li>
+				<li data-tx="t0019:b1eb5a7e"><strong>Linux</strong>：已安装内核驱动程序。在 Ubuntu 上，BRLTTY 服务会抢占 CH340，并在几秒钟后使设备文件再次消失--卸载 BRLTTY 会有帮助。您的用户还必须在 <code>dialout</code> 组中。这两个步骤在 <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a> 中都有详细说明。</li>
+			</ul>
+		</details>
+
+		<h2 data-tx="t0020:62d0966b" id="schritt-3">步骤 3 - 将加密狗插入电脑</h2>
+
+		<p data-tx="t0021:70a70ae6">将加密狗直接插入电脑上空闲的 USB 端口。电路板上的小型 LED 指示灯应立即亮起或闪烁。</p>
+
+		<figure>
+			<div data-tx="t0022:a85e1a1d" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[占位符：图片 "插入笔记本 USB 端口的加密狗"]</div>
+		</figure>
+
+		<h2 data-tx="t0023:4325c49c" id="schritt-4">步骤 4 - 固件闪存</h2>
+
+		<p data-tx="t0024:230fc89e">点击按钮。然后浏览器会询问授权访问哪个连接设备。</p>
 
 		<p>
 			<esp-web-install-button manifest="https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json">
 				<button class="button is-primary is-large" slot="activate" type="button">
 					<span class="icon"><i class="fas fa-bolt"></i></span>
-					<span data-tx="t0012:1b4594a6">立即 Flash</span>
+					<span data-tx="t0025:1b4594a6">立即 Flash</span>
 				</button>
 				<button class="button is-primary is-large" disabled="disabled" slot="unsupported" type="button">
 					<span class="icon"><i class="fas fa-bolt"></i></span>
-					<span data-tx="t0018:1b4594a6">立即 Flash</span>
+					<span data-tx="t0026:1b4594a6">立即 Flash</span>
 				</button>
 				<button class="button is-primary is-large" disabled="disabled" slot="not-allowed" type="button">
 					<span class="icon"><i class="fas fa-bolt"></i></span>
-					<span data-tx="t0019:1b4594a6">立即 Flash</span>
+					<span data-tx="t0027:1b4594a6">立即 Flash</span>
 				</button>
 			</esp-web-install-button>
 		</p>
 
-		<h2 data-tx="t0013:f0d7c4e4">3. 闪烁后</h2>
+		<p data-tx="t0028:34c84b34">选择对话框中会显示计算机上所有串行设备的列表。选择名称为 <strong>"USB-SERIAL CH340"</strong> (Windows) 或 <strong>"USB Single Serial"</strong> 或 <strong>"wch.cn"</strong> (macOS/Linux) 的条目，并用 <strong>"Connect"</strong>确认。如果显示多个 CH340 设备，是因为恰好连接了其他带有该芯片的设备，请暂时断开其他设备。</p>
 
-		<ol>
-			<li data-tx="t0014:a549ef8">加密狗重新启动并打开 WLAN <code>PhoneBlock-Dongle-XXXX</code>。</li>
-			<li data-tx="t0015:bb7d40cb">使用智能手机或笔记本电脑切换到该 WLAN，浏览器会自动打开设置页面（专属门户）。</li>
-			<li data-tx="t0016:cd9ce37d">选择家庭 WLAN，输入 SIP 接入数据和 PhoneBlock 令牌 - 详见<a th:href="@{/dongle}">加密狗说明</a>。</li>
-		</ol>
+		<figure>
+			<div data-tx="t0029:b5c3a2f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[占位符：浏览器设备选择对话框截图，CH340 条目突出显示］</div>
+		</figure>
+
+		<p data-tx="t0030:5fcdc08c">用 <strong>"安装"</strong>确认安全提示 "擦除设备并安装 PhoneBlock 加密狗？在第一次闪存过程中，整个内存将被擦除，固件将被安装--这需要大约一分钟的时间。在此期间不要断开加密狗。</p>
+
+		<figure>
+			<div data-tx="t0031:177a19e2" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[占位符：闪烁过程中 esp-web-tools 进度条的截图］</div>
+		</figure>
+
+		<h2 data-tx="t0032:e5862ff8" id="schritt-5">步骤 5 - 将加密狗插入路由器</h2>
+
+		<p data-tx="t0033:cbcaee11">当浏览器报告 "安装完成！"时，从电脑上取下加密狗，并将其插入路由器上的空闲 USB 端口（或 WLAN 范围内的任何 5 V USB 电源）。</p>
+
+		<figure>
+			<div data-tx="t0034:a5796f78" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[占位符：照片 "插入 Fritz!Box USB 端口的加密狗"]</div>
+		</figure>
+
+		<h2 data-tx="t0035:b184a512" id="schritt-6">步骤 6 - 将加密狗添加到无线局域网（WPS）</h2>
+
+		<p data-tx="t0036:6ac463a1">刚刷新的加密狗还没有任何 Wi-Fi 访问数据，正在等待通过 <strong>WPS</strong> 配对。LED 指示灯<strong>快速闪烁</strong>（每秒约闪烁五次），发出 "配对模式激活 "的信号。</p>
+
+		<p data-tx="t0037:83cbb4c2">现在按下路由器上的 <strong>WPS 按钮</strong>。在 Fritz！Box 上，这是设备顶部的 <strong>"连接/WPS"</strong>按钮 - 短按，直到路由器上的 Wi-Fi LED 指示灯开始闪烁。其他路由器则将该按钮标为 "WPS "或 "配对"。几秒钟后，路由器就会将您的 Wi-Fi 访问数据传输给加密狗，加密狗会保存数据并进行连接。</p>
+
+		<figure>
+			<div data-tx="t0038:5f50dac7" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[占位符：图片 "Fritz！Box 上带箭头的连接/WPS 按钮"]</div>
+		</figure>
+
+		<p data-tx="t0039:61c90640"><strong>已工作：</strong> LED 指示灯现在缓慢闪烁（大约每秒一次）--加密狗已进入 WLAN，已分配 IP，正在等待步骤 7 中的配置。</p>
+
+		<p data-tx="t0040:96351c92"><strong>不起作用</strong>请在路由器设置中检查是否激活了 WPS（在 Fritz!Box 上：<em>WLAN → 安全 → WPS</em>）。如果 WPS 窗口太短，加密狗会自动重新启动配对过程，这时只需再次按下 WPS 按钮即可。</p>
+
+		<h2 data-tx="t0041:5dee0d65" id="schritt-7">第 7 步 - 输入 SIP 访问权限和 PhoneBlock 令牌</h2>
+
+		<p data-tx="t0042:58c22345">为了让加密狗拦截通话，它还需要两样东西：您的 SIP 访问数据（以便它能作为附加电话登录路由器）和 PhoneBlock 令牌（以便它能查询垃圾邮件数据库）。您可以在加密狗的网页界面上输入这两样东西。</p>
+
+		<p data-tx="t0043:f4d3bf5f">在浏览器中打开：</p>
+
+		<p><a class="button is-link is-large" data-tx="t0044:f04a859b" href="http://answerbot.local/">http://answerbot.local/</a></p>
+
+		<p data-tx="t0045:c627eba9">如果此链接不起作用（没有 Bonjour 的 Windows 系统、某些网状 WLAN），请在路由器的设备列表中查找名称为 <code>answerbot</code> 的设备，记下其 IP 地址并在浏览器中调用，例如 <code>http://192.168.178.42/</code>。</p>
+
+		<figure>
+			<div data-tx="t0046:8bb491f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[占位符：加密狗网络界面截图，包含 SIP 和令牌的输入字段。］</div>
+		</figure>
+
+		<p data-tx="t0047:a09627c1">输入网络界面：</p>
+		<ul>
+			<li data-tx="t0048:4b81384d"><strong>SIP 访问数据</strong> - 用户名、密码和注册商地址。对于 Fritz！Box，请在 <em>Telephony → Telephony devices → Set up new device → Telephone (with and without answering machine) → LAN/WLAN (IP telephone)</em> 下创建附加连接。在此输入分配的访问数据，并输入 <code>fritz.box</code> 作为注册商。</li>
+			<li data-tx="t0049:9fd0fd46"><strong>PhoneBlock 标记</strong> - 在<a th:href="@{/settings}">PhoneBlock 设置</a>中创建一个 API 标记，并将其复制到相应字段。</li>
+		</ul>
+
+		<p data-tx="t0050:2f4a93c2">保存→LED 指示灯长亮→加密狗准备就绪。现在，垃圾电话将在手机响铃前被悄悄拦截。</p>
 
 		<hr class="my-5"/>
 
-		<p class="has-text-grey" data-tx="t0017:8a689eeb">固件源代码：<a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank"> GitHub 上的 phoneblock-dongle</a>.</p>
+		<p class="has-text-grey" data-tx="t0051:9316079d">有什么问题吗？您使用的是 Firefox/Safari，Linux 有特殊问题，还是另一块板子？详细说明包括所有选项、Linux 漏洞和 ESP-IDF 工具链，请参阅软件仓库：<a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>。</p>
+
+		<p class="has-text-grey" data-tx="t0052:8a689eeb">固件源代码：<a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank"> GitHub 上的 phoneblock-dongle</a>.</p>
 	</div>
 </section>
 
