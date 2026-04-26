@@ -1,7 +1,13 @@
 CC      ?= gcc
 CFLAGS  ?= -Wall -Wextra -Werror -O0 -g -I../main
 
-BINS = test_sip_parse test_tr064_parse test_pairing_parse
+# api_scan depends on cJSON, which ships with ESP-IDF. We compile it
+# in via $(IDF_PATH); no toolchain is needed, only the source files.
+# Relax warnings on the third-party cJSON.c only.
+IDF_PATH ?= $(HOME)/tools/esp/esp-idf
+CJSON_DIR := $(IDF_PATH)/components/json/cJSON
+
+BINS = test_sip_parse test_tr064_parse test_pairing_parse test_api_scan
 
 test_sip_parse: test_sip_parse.c ../main/sip_parse.c ../main/sip_parse.h \
                 ../main/audio.c ../main/audio.h
@@ -13,10 +19,16 @@ test_tr064_parse: test_tr064_parse.c ../main/tr064_parse.c ../main/tr064_parse.h
 test_pairing_parse: test_pairing_parse.c ../main/pairing_parse.c ../main/pairing_parse.h
 	$(CC) $(CFLAGS) test_pairing_parse.c ../main/pairing_parse.c -o $@
 
+cjson.o: $(CJSON_DIR)/cJSON.c $(CJSON_DIR)/cJSON.h
+	$(CC) -O0 -g -I$(CJSON_DIR) -c $< -o $@
+
+test_api_scan: test_api_scan.c ../main/api_scan.c ../main/api_scan.h cjson.o
+	$(CC) $(CFLAGS) -I$(CJSON_DIR) test_api_scan.c ../main/api_scan.c cjson.o -o $@
+
 test: $(BINS)
 	@set -e; for b in $(BINS); do echo "→ $$b"; ./$$b; done
 
 clean:
-	rm -f $(BINS)
+	rm -f $(BINS) cjson.o
 
 .PHONY: test clean

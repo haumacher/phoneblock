@@ -11,6 +11,7 @@
 #include "cJSON.h"
 #include "mbedtls/sha1.h"
 
+#include "api_scan.h"
 #include "config.h"
 #include "http_util.h"
 #include "stats.h"
@@ -27,13 +28,6 @@ static const char *TAG = "api";
 // (DB.computeWildcardVotes).
 #define MIN_AGGREGATE_10  4
 #define MIN_AGGREGATE_100 3
-
-// Per-entry buffer for the streaming check-prefix scanner. Each entry
-// in the response is a single PhoneInfo (or RangeMatch) JSON object
-// — typically 200–300 bytes, never plausibly close to this limit.
-// Sized so a deformed/oversized entry triggers a loud, recorded error
-// instead of silently misclassifying a call.
-#define ENTRY_BUF_SIZE 2048
 
 typedef struct {
     char *data;
@@ -86,197 +80,14 @@ static int compute_wildcard_votes(int votes10, int cnt10, int votes100, int cnt1
     return 0;
 }
 
-// --- Streaming /api/check-prefix response scanner -----------------------
-//
-// /api/check-prefix returns:
-//   {"numbers":[{...},{...}],"range10":[{...}],"range100":[{...}]}
-//
-// At a 4-hex-char prefix the response is small in the typical case but
-// has no upper bound — a hot bucket could be tens of KB. Buffering the
-// whole response and trusting the buffer size would silently
-// misclassify SPAM whenever the bucket exceeds the buffer. The
-// scanner below feeds bytes from HTTP_EVENT_ON_DATA chunks through a
-// tiny depth-tracking state machine, isolates each per-entry JSON
-// object, and parses each entry independently with cJSON on a small
-// fixed-size buffer (ENTRY_BUF_SIZE). Memory cost is O(1) in the
-// number of entries.
-//
-// A per-entry overflow (one PhoneInfo > 2 KB — never plausible for the
-// schema) sets `obj_overflow` so the caller produces VERDICT_ERROR
-// and a recorded stats error instead of a silent miss.
-
-typedef enum {
-    ARR_NONE,
-    ARR_NUMBERS,
-    ARR_RANGE10,
-    ARR_RANGE100,
-} current_array_t;
-
-typedef struct {
-    const char *phone;
-    int phone_len;
-
-    // Top-level JSON-scanner state.
-    bool in_string;
-    bool escape_next;
-    int  brace_depth;     // counts {} only
-    int  bracket_depth;   // counts [] only
-    current_array_t current_array;
-
-    // Most recent string seen at brace_depth==1, bracket_depth==0 —
-    // used to identify which top-level array follows.
-    bool collecting_key;
-    char key_buf[16];
-    int  key_len;
-
-    // Buffer for the current per-entry object.
-    bool collecting_obj;
-    char obj_buf[ENTRY_BUF_SIZE];
-    int  obj_len;
-    bool obj_overflow;
-
-    // Accumulated results.
-    int direct_votes;
-    int v10, c10;
-    int v100, c100;
-
-    bool error;
-} scan_state_t;
-
-static void scan_handle_object(scan_state_t *s)
-{
-    cJSON *o = cJSON_Parse(s->obj_buf);
-    if (!o) {
-        ESP_LOGW(TAG, "failed to parse entry");
-        s->error = true;
-        return;
-    }
-
-    if (s->current_array == ARR_NUMBERS) {
-        const cJSON *p = cJSON_GetObjectItemCaseSensitive(o, "phone");
-        if (cJSON_IsString(p) && p->valuestring &&
-            strcmp(p->valuestring, s->phone) == 0) {
-            const cJSON *v = cJSON_GetObjectItemCaseSensitive(o, "votes");
-            if (cJSON_IsNumber(v)) s->direct_votes = v->valueint;
-        }
-    } else if (s->current_array == ARR_RANGE10 ||
-               s->current_array == ARR_RANGE100) {
-        int expected_len = (s->current_array == ARR_RANGE10)
-            ? s->phone_len - 1 : s->phone_len - 2;
-        if (expected_len > 0) {
-            const cJSON *p = cJSON_GetObjectItemCaseSensitive(o, "prefix");
-            if (cJSON_IsString(p) && p->valuestring &&
-                (int)strlen(p->valuestring) == expected_len &&
-                strncmp(p->valuestring, s->phone, expected_len) == 0) {
-                const cJSON *v = cJSON_GetObjectItemCaseSensitive(o, "votes");
-                const cJSON *c = cJSON_GetObjectItemCaseSensitive(o, "cnt");
-                int votes = cJSON_IsNumber(v) ? v->valueint : 0;
-                int cnt   = cJSON_IsNumber(c) ? c->valueint : 0;
-                if (s->current_array == ARR_RANGE10) { s->v10 = votes;  s->c10 = cnt; }
-                else                                  { s->v100 = votes; s->c100 = cnt; }
-            }
-        }
-    }
-
-    cJSON_Delete(o);
-}
-
-static void scan_feed(scan_state_t *s, const char *data, int len)
-{
-    for (int i = 0; i < len; i++) {
-        char b = data[i];
-
-        // Raw passthrough into the per-entry buffer — preserves strings,
-        // whitespace, and any unknown fields verbatim for cJSON.
-        if (s->collecting_obj) {
-            if (s->obj_len < (int)sizeof(s->obj_buf) - 1) {
-                s->obj_buf[s->obj_len++] = b;
-            } else {
-                s->obj_overflow = true;
-            }
-        }
-
-        if (s->in_string) {
-            if (s->collecting_key && !s->escape_next && b != '\\' && b != '"') {
-                if (s->key_len < (int)sizeof(s->key_buf) - 1) {
-                    s->key_buf[s->key_len++] = b;
-                }
-            } else if (s->collecting_key && s->escape_next) {
-                if (s->key_len < (int)sizeof(s->key_buf) - 1) {
-                    s->key_buf[s->key_len++] = b;
-                }
-            }
-            if (s->escape_next)        s->escape_next = false;
-            else if (b == '\\')        s->escape_next = true;
-            else if (b == '"') {
-                s->in_string = false;
-                if (s->collecting_key) {
-                    s->collecting_key = false;
-                    s->key_buf[s->key_len] = '\0';
-                }
-            }
-            continue;
-        }
-
-        switch (b) {
-        case '"':
-            s->in_string = true;
-            // Top-level keys live at brace_depth==1, bracket_depth==0.
-            if (s->brace_depth == 1 && s->bracket_depth == 0 && !s->collecting_obj) {
-                s->collecting_key = true;
-                s->key_len = 0;
-            }
-            break;
-        case '{':
-            s->brace_depth++;
-            // Entry object opens at brace_depth==2 inside one of the
-            // recognised top-level arrays.
-            if (!s->collecting_obj && s->bracket_depth == 1 &&
-                s->brace_depth == 2 && s->current_array != ARR_NONE) {
-                s->collecting_obj = true;
-                s->obj_len = 0;
-                s->obj_overflow = false;
-                s->obj_buf[s->obj_len++] = '{';
-            }
-            break;
-        case '}':
-            s->brace_depth--;
-            if (s->collecting_obj && s->brace_depth == 1) {
-                if (s->obj_overflow) {
-                    ESP_LOGE(TAG, "entry exceeded %u-byte buffer",
-                             (unsigned)sizeof(s->obj_buf));
-                    s->error = true;
-                } else {
-                    s->obj_buf[s->obj_len] = '\0';
-                    scan_handle_object(s);
-                }
-                s->collecting_obj = false;
-            }
-            break;
-        case '[':
-            s->bracket_depth++;
-            if (s->brace_depth == 1 && s->bracket_depth == 1) {
-                if      (strcmp(s->key_buf, "numbers")  == 0) s->current_array = ARR_NUMBERS;
-                else if (strcmp(s->key_buf, "range10")  == 0) s->current_array = ARR_RANGE10;
-                else if (strcmp(s->key_buf, "range100") == 0) s->current_array = ARR_RANGE100;
-                else                                          s->current_array = ARR_NONE;
-            }
-            break;
-        case ']':
-            s->bracket_depth--;
-            if (s->bracket_depth == 0) s->current_array = ARR_NONE;
-            break;
-        default:
-            break;
-        }
-    }
-}
-
+// HTTP_EVENT_ON_DATA dispatcher for the streaming /api/check-prefix
+// scanner. Logic lives in api_scan.{c,h} so it can be unit-tested
+// host-side without ESP-IDF dependencies.
 static esp_err_t http_event_check(esp_http_client_event_t *evt)
 {
     if (evt->event_id == HTTP_EVENT_ON_DATA) {
-        scan_state_t *s = (scan_state_t *)evt->user_data;
-        scan_feed(s, (const char *)evt->data, evt->data_len);
+        api_scan_t *s = (api_scan_t *)evt->user_data;
+        api_scan_feed(s, (const char *)evt->data, evt->data_len);
     }
     return ESP_OK;
 }
@@ -328,11 +139,8 @@ verdict_t phoneblock_check(const char *phone_number)
     char auth_header[128];
     snprintf(auth_header, sizeof(auth_header), "Bearer %s", config_phoneblock_token());
 
-    scan_state_t scan = {
-        .phone = phone_number,
-        .phone_len = phone_len,
-        .current_array = ARR_NONE,
-    };
+    api_scan_t scan;
+    api_scan_init(&scan, phone_number);
 
     esp_http_client_config_t config = {
         .url = url,
@@ -374,9 +182,13 @@ verdict_t phoneblock_check(const char *phone_number)
     if (scan.error) {
         // Per-entry buffer overflow or per-entry parse failure — verdict
         // intentionally stays VERDICT_ERROR so the call is not silently
-        // misclassified. The scanner has already logged the cause; record
-        // a stats error so the failure shows up on the device dashboard.
-        stats_record_error("api", "check-prefix scanner: oversized/invalid entry");
+        // misclassified. Surface the scanner's reason on both the log
+        // and the device dashboard.
+        const char *reason = scan.error_reason ? scan.error_reason : "unknown";
+        ESP_LOGE(TAG, "check-prefix scanner: %s", reason);
+        char msg[96];
+        snprintf(msg, sizeof(msg), "check-prefix scanner: %s", reason);
+        stats_record_error("api", msg);
         goto cleanup;
     }
 

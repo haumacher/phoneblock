@@ -1,8 +1,14 @@
 # Firmware-Tests
 
-Host-basierte Unit-Tests für die pure-C-Parser aus `../main/sip_parse.{c,h}`.
-Keine ESP-IDF-Abhängigkeit, keine QEMU-Emulation — direkt mit `gcc` ausführbar,
+Host-basierte Unit-Tests für die pure-C-Parser unter `../main/`
+(`sip_parse`, `tr064_parse`, `pairing_parse`, `api_scan`). Keine
+ESP-IDF-Toolchain, keine QEMU-Emulation — direkt mit `gcc` ausführbar,
 einmal Suite-Durchlauf dauert ≪ 100 ms.
+
+`test_api_scan` zieht zusätzlich `cJSON` aus
+`$(IDF_PATH)/components/json/cJSON/` (nur die `.c`-/`.h`-Dateien, keine
+Toolchain-Aktivierung). Default `IDF_PATH=$(HOME)/tools/esp/esp-idf`,
+bei abweichendem Pfad: `make test IDF_PATH=/...`.
 
 ## Ausführen
 
