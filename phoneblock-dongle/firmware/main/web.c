@@ -24,7 +24,6 @@
 #include "announcement.h"
 #include "api.h"
 #include "config.h"
-#include "selftest.h"
 #include "sip_register.h"
 #include "stats.h"
 #include "sync.h"
@@ -258,18 +257,6 @@ static esp_err_t handle_status(httpd_req_t *req)
     cJSON_AddStringToObject(pb,   "base_url",           config_phoneblock_base_url());
     cJSON_AddBoolToObject  (pb,   "token_set",          strlen(config_phoneblock_token()) > 0);
     cJSON_AddNumberToObject(pb,   "last_api_ms",        (double)(c.last_api_duration_us / 1000));
-
-    // Daily token health-check — surfaces a stale or revoked token
-    // before the next real call hits a 401.
-    cJSON *st = cJSON_AddObjectToObject(root, "selftest");
-    selftest_status_t sts;
-    selftest_snapshot(&sts);
-    int64_t st_ago_s = sts.ever_ran ? (now_us - sts.last_at_us) / 1000000 : -1;
-    cJSON_AddBoolToObject  (st, "ever_ran",   sts.ever_ran);
-    cJSON_AddBoolToObject  (st, "last_ok",    sts.last_ok);
-    cJSON_AddBoolToObject  (st, "running",    sts.running);
-    cJSON_AddNumberToObject(st, "last_ago_s", (double)st_ago_s);
-    cJSON_AddStringToObject(st, "last_error", sts.last_error);
 
     cJSON *syn = cJSON_AddObjectToObject(root, "sync");
     sync_status_t ss;
@@ -818,8 +805,7 @@ static esp_err_t handle_token_callback(httpd_req_t *req)
 
     // Immediately exercise the new token so the dashboard has an API
     // latency to show on the first poll, instead of an empty "–".
-    // Also resets the daily-check snapshot to "ok now".
-    selftest_run_now();
+    phoneblock_selftest();
 
     // Hand the user straight back to the status landing — the pill
     // there flips to green on the next 3s poll.
@@ -1450,7 +1436,7 @@ static esp_err_t handle_token_test(httpd_req_t *req)
         send_json(req, root);
         return ESP_OK;
     }
-    bool ok = selftest_run_now();
+    bool ok = phoneblock_selftest();
     cJSON_AddBoolToObject  (root, "ok", ok);
     cJSON_AddStringToObject(root, "code", ok ? "ok" : "fail");
     cJSON_AddStringToObject(root, "message",

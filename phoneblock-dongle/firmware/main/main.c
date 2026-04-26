@@ -221,7 +221,7 @@ void app_main(void)
 
     if (token_set) {
         ESP_LOGI(TAG, "initial self-test");
-        selftest_run_now();
+        phoneblock_selftest();
         xTaskCreate(sip_server_task, "sip_server", 8192, NULL, 5, NULL);
     } else {
         ESP_LOGI(TAG, "PhoneBlock token not configured yet — set via web UI");
