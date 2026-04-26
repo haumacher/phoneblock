@@ -5,19 +5,16 @@
 #include <string.h>
 #include <strings.h>
 #include <stdbool.h>
-#include <errno.h>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
 #include "esp_log.h"
 #include "esp_random.h"
-#include "esp_netif.h"
 #include "esp_timer.h"
 #include "mbedtls/md5.h"
 
 #include "lwip/sockets.h"
-#include "lwip/netdb.h"
 
 #include "sdkconfig.h"
 #include "api.h"
@@ -25,6 +22,7 @@
 #include "announcement.h"
 #include "report_queue.h"
 #include "sip_parse.h"
+#include "sip_transport.h"
 #include "rtp.h"
 #include "stats.h"
 
@@ -33,7 +31,9 @@ static const char *TAG = "sip";
 #define SIP_LOCAL_PORT       5061  // local UDP for SIP (not the TCP dummy server)
 #define SIP_RX_BUF_SIZE      4096
 #define SIP_TX_BUF_SIZE      2048
-#define SIP_RECV_TIMEOUT_S   3
+// REGISTER round-trip wait: how long to block on the 401/200 response
+// before giving up. Old value, preserved for the same SIP retry timing.
+#define SIP_REGISTER_RECV_TIMEOUT_MS 3000
 #define SIP_MAX_CHALLENGE    256
 
 typedef enum {
@@ -71,12 +71,10 @@ typedef struct {
 } auth_challenge_t;
 
 typedef struct {
-    char     local_ip[INET_ADDRSTRLEN];
     char     call_id[40];       // Call-ID we use for REGISTER
     char     from_tag[20];      // From tag we use for REGISTER
     uint32_t cseq;              // CSeq for REGISTER
-    int      sock;
-    struct sockaddr_in registrar;
+    sip_transport_t *transport; // owns socket, registrar address, local IP
     auth_challenge_t challenge;
     bool     registered;
     dialog_t dialog;            // at most one call at a time
@@ -271,7 +269,8 @@ static void parse_auth_challenge(const char *header_value, auth_challenge_t *out
 static const char *advertised_host(const sip_ctx_t *c)
 {
     return strlen(config_contact_host_override()) > 0
-               ? config_contact_host_override() : c->local_ip;
+               ? config_contact_host_override()
+               : sip_transport_local_ip(c->transport);
 }
 
 static int advertised_port(void)
@@ -348,94 +347,28 @@ static int build_register(sip_ctx_t *c, char *buf, int cap, bool with_auth)
 }
 
 // ---------------------------------------------------------------------------
-// Networking
+// REGISTER round-trip helper
 // ---------------------------------------------------------------------------
 
-static int udp_send_recv(sip_ctx_t *c, const char *tx, int tx_len,
+// Send a request to the registrar and block for the response. Returns
+// the response length (NUL-terminated in rx) or -1 on send/recv error
+// or timeout.
+static int sip_send_recv(sip_ctx_t *c, const char *tx, int tx_len,
                          char *rx, int rx_cap)
 {
-    int n = sendto(c->sock, tx, tx_len, 0,
-                   (struct sockaddr *)&c->registrar, sizeof(c->registrar));
-    if (n < 0) {
-        ESP_LOGE(TAG, "sendto(): %s", strerror(errno));
+    if (sip_transport_send(c->transport, tx, tx_len) < 0) {
         return -1;
     }
-
     struct sockaddr_in from;
-    socklen_t from_len = sizeof(from);
-    int r = recvfrom(c->sock, rx, rx_cap - 1, 0,
-                     (struct sockaddr *)&from, &from_len);
-    if (r < 0) {
-        ESP_LOGW(TAG, "recvfrom(): %s", strerror(errno));
+    int r = sip_transport_recv(c->transport, SIP_REGISTER_RECV_TIMEOUT_MS,
+                               rx, rx_cap - 1, &from);
+    if (r <= 0) {
+        if (r == 0) ESP_LOGW(TAG, "no response from registrar within %d ms",
+                             SIP_REGISTER_RECV_TIMEOUT_MS);
         return -1;
     }
     rx[r] = '\0';
     return r;
-}
-
-static bool resolve_registrar(sip_ctx_t *c)
-{
-    struct addrinfo hints = { .ai_family = AF_INET, .ai_socktype = SOCK_DGRAM };
-    struct addrinfo *res = NULL;
-
-    char port_str[8];
-    snprintf(port_str, sizeof(port_str), "%d", config_sip_port());
-
-    int err = getaddrinfo(config_sip_host(), port_str, &hints, &res);
-    if (err != 0 || !res) {
-        ESP_LOGE(TAG, "DNS lookup of %s failed: %d", config_sip_host(), err);
-        return false;
-    }
-    memcpy(&c->registrar, res->ai_addr, sizeof(c->registrar));
-    freeaddrinfo(res);
-
-    char ip[INET_ADDRSTRLEN];
-    inet_ntoa_r(c->registrar.sin_addr, ip, sizeof(ip));
-    ESP_LOGI(TAG, "registrar %s:%d → %s", config_sip_host(),
-             config_sip_port(), ip);
-    return true;
-}
-
-static bool discover_local_ip(sip_ctx_t *c)
-{
-    esp_netif_t *netif = esp_netif_get_default_netif();
-    if (!netif) {
-        ESP_LOGE(TAG, "no default netif");
-        return false;
-    }
-    esp_netif_ip_info_t ip;
-    if (esp_netif_get_ip_info(netif, &ip) != ESP_OK) {
-        ESP_LOGE(TAG, "get_ip_info failed");
-        return false;
-    }
-    esp_ip4addr_ntoa(&ip.ip, c->local_ip, sizeof(c->local_ip));
-    ESP_LOGI(TAG, "local IP %s, SIP UDP port %d", c->local_ip, SIP_LOCAL_PORT);
-    return true;
-}
-
-static bool open_sip_socket(sip_ctx_t *c)
-{
-    c->sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-    if (c->sock < 0) {
-        ESP_LOGE(TAG, "socket(): %s", strerror(errno));
-        return false;
-    }
-
-    struct sockaddr_in local = {
-        .sin_family      = AF_INET,
-        .sin_addr.s_addr = htonl(INADDR_ANY),
-        .sin_port        = htons(SIP_LOCAL_PORT),
-    };
-    if (bind(c->sock, (struct sockaddr *)&local, sizeof(local)) < 0) {
-        ESP_LOGE(TAG, "bind(): %s", strerror(errno));
-        close(c->sock);
-        c->sock = -1;
-        return false;
-    }
-
-    struct timeval tv = { .tv_sec = SIP_RECV_TIMEOUT_S, .tv_usec = 0 };
-    setsockopt(c->sock, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
-    return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -458,9 +391,9 @@ static bool do_register(sip_ctx_t *c)
     c->cseq++;
     int tx_len = build_register(c, tx, SIP_TX_BUF_SIZE, false);
     ESP_LOGI(TAG, "→ REGISTER (%d bytes):\n%.*s", tx_len, tx_len, tx);
-    int rx_len = udp_send_recv(c, tx, tx_len, rx, SIP_RX_BUF_SIZE);
+    int rx_len = sip_send_recv(c, tx, tx_len, rx, SIP_RX_BUF_SIZE);
     if (rx_len < 0) {
-        ESP_LOGE(TAG, "udp_send_recv failed");
+        ESP_LOGE(TAG, "sip_send_recv failed");
         goto cleanup;
     }
     ESP_LOGI(TAG, "← %d bytes:\n%.*s", rx_len, rx_len, rx);
@@ -498,7 +431,7 @@ static bool do_register(sip_ctx_t *c)
     c->cseq++;
     tx_len = build_register(c, tx, SIP_TX_BUF_SIZE, true);
     ESP_LOGI(TAG, "→ REGISTER with auth (%d bytes):\n%.*s", tx_len, tx_len, tx);
-    rx_len = udp_send_recv(c, tx, tx_len, rx, SIP_RX_BUF_SIZE);
+    rx_len = sip_send_recv(c, tx, tx_len, rx, SIP_RX_BUF_SIZE);
     if (rx_len < 0) goto cleanup;
     ESP_LOGI(TAG, "← %d bytes:\n%.*s", rx_len, rx_len, rx);
 
@@ -619,11 +552,7 @@ static void send_response(sip_ctx_t *c, const struct sockaddr_in *peer,
     int tx_len = build_response(c, req, req_len, status, reason,
                                 our_tag_override, body, tx, SIP_TX_BUF_SIZE);
     ESP_LOGI(TAG, "→ %d %s (%d bytes):\n%.*s", status, reason, tx_len, tx_len, tx);
-    int n = sendto(c->sock, tx, tx_len, 0,
-                   (struct sockaddr *)peer, sizeof(*peer));
-    if (n < 0) {
-        ESP_LOGE(TAG, "sendto() failed: %s", strerror(errno));
-    }
+    sip_transport_send_to(c->transport, peer, tx, tx_len);
     free(tx);
 }
 
@@ -737,11 +666,7 @@ static void send_bye(sip_ctx_t *c)
     int tx_len = build_bye(c, tx, SIP_TX_BUF_SIZE);
     ESP_LOGI(TAG, "→ BYE (%d bytes):\n%.*s", tx_len, tx_len, tx);
 
-    int n = sendto(c->sock, tx, tx_len, 0,
-                   (struct sockaddr *)&d->peer, sizeof(d->peer));
-    if (n < 0) {
-        ESP_LOGE(TAG, "sendto(BYE): %s", strerror(errno));
-    }
+    sip_transport_send_to(c->transport, &d->peer, tx, tx_len);
     free(tx);
     d->state = DIALOG_BYE_SENT;
 }
@@ -1102,8 +1027,12 @@ static void sip_task(void *arg)
     snprintf(ctx.call_id, sizeof(ctx.call_id), "%08lx@phoneblock",
              (unsigned long)cid_rand);
 
-    if (!discover_local_ip(&ctx) || !resolve_registrar(&ctx) || !open_sip_socket(&ctx)) {
-        ESP_LOGE(TAG, "setup failed; aborting SIP task");
+    ctx.transport = sip_transport_open(config_sip_transport(),
+                                       config_sip_host(),
+                                       config_sip_port(),
+                                       SIP_LOCAL_PORT);
+    if (!ctx.transport) {
+        ESP_LOGE(TAG, "transport setup failed; aborting SIP task");
         vTaskDelete(NULL);
         return;
     }
@@ -1134,12 +1063,6 @@ static void sip_task(void *arg)
         ESP_LOGW(TAG, "outbound proxy '%s' ignored — using registrar directly",
                  config_sip_outbound());
     }
-
-    // Keep the SO_RCVTIMEO from open_sip_socket — udp_send_recv() (used
-    // by do_register, both on initial registration and after every
-    // s_reload_requested) does a blocking recvfrom that would otherwise
-    // hang forever if the registrar never answers. select() in the main
-    // loop below is independent of this timeout.
 
     const int retry_delay_s = 30;
     char *rx = NULL;
@@ -1182,7 +1105,9 @@ static void sip_task(void *arg)
             s_reload_requested = false;
             ESP_LOGI(TAG, "config reload requested → re-REGISTER with new creds");
             // Refresh registrar address too, in case host changed.
-            resolve_registrar(&ctx);
+            sip_transport_resolve(ctx.transport,
+                                  config_sip_host(),
+                                  config_sip_port());
             // Give the Fritz!Box a moment to settle after TR-064 has
             // just created the extension — a REGISTER fired too early
             // hits a not-yet-active slot, times out, and falls into the
@@ -1216,22 +1141,15 @@ static void sip_task(void *arg)
         // full REGISTER-refresh interval.
         if (remaining_us > 500000) remaining_us = 500000;
 
-        struct timeval tv = {
-            .tv_sec  = remaining_us / 1000000,
-            .tv_usec = remaining_us % 1000000,
-        };
-        fd_set rfds;
-        FD_ZERO(&rfds);
-        FD_SET(ctx.sock, &rfds);
-
-        int s = select(ctx.sock + 1, &rfds, NULL, NULL, &tv);
-        if (s < 0) {
-            ESP_LOGE(TAG, "select(): %s", strerror(errno));
+        struct sockaddr_in from;
+        int n = sip_transport_recv(ctx.transport, (int)(remaining_us / 1000),
+                                   rx, SIP_RX_BUF_SIZE - 1, &from);
+        if (n < 0) {
             vTaskDelay(pdMS_TO_TICKS(1000));
             continue;
         }
 
-        if (s == 0) {
+        if (n == 0) {
             now = esp_timer_get_time();
             // BYE deadline first — the dialog is still active and needs
             // tearing down before anything else.
@@ -1262,14 +1180,6 @@ static void sip_task(void *arg)
         }
 
         // Incoming packet.
-        struct sockaddr_in from;
-        socklen_t from_len = sizeof(from);
-        int n = recvfrom(ctx.sock, rx, SIP_RX_BUF_SIZE - 1, 0,
-                         (struct sockaddr *)&from, &from_len);
-        if (n < 0) {
-            ESP_LOGW(TAG, "recvfrom(): %s", strerror(errno));
-            continue;
-        }
         rx[n] = '\0';
         handle_incoming(&ctx, rx, n, &from);
     }

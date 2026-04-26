@@ -37,22 +37,28 @@ PROGRESS.md → "Extended-SIP-Backend".
 Transport-Handling in eine schmale Schicht gezogen, sonst zerfasert
 die Datei vollends.
 
-- [ ] Neuer `sip_transport.{c,h}` mit `sip_transport_t {
+- [x] Neuer `sip_transport.{c,h}` mit `sip_transport_t {
       open, send, recv, close }` und Implementierung `udp` als
       ersten Aufrufer (Verhalten bit-genau identisch).
-- [ ] Empfangsseite vereinheitlichen: bei UDP bleibt eine
-      Datagram-Grenze pro `recv`; das Interface bringt aber bereits
-      einen Hook für stream-reassembly mit, damit Phase 1/2 nur die
-      neue Implementierung brauchen.
+- [x] Empfangsseite vereinheitlichen: `sip_transport_recv` liefert
+      bei UDP genau ein Datagramm pro Aufruf zurück, mit `timeout_ms`-
+      Argument statt der bisherigen `SO_RCVTIMEO`/`select`-Mischung.
+      TCP/TLS-Implementierungen können denselben Vertrag mit interner
+      Reassembly erfüllen, ohne dass `sip_register.c` etwas davon
+      mitbekommt.
 - [ ] `advertised_host()` / `advertised_port()` pro Transport mit
       passenden Defaults (5060/5060/5061) und korrektem
-      Transport-Token (`UDP`/`TCP`/`TLS`) im `Via`.
+      Transport-Token (`UDP`/`TCP`/`TLS`) im `Via`. Nur der Host
+      kommt heute aus dem Transport; Port-Default und `Via`-Token
+      werden mit Phase 1 (TCP) konkret.
 - [ ] Host-Tests in `firmware/test/` für den Frame-Parser
       (Reassembly, Split-Pakete, mehrere Responses in einem
       TCP-Read) — die Klasse Bug, die in QEMU sonst nur sporadisch
       auftritt.
 - [ ] Gate: ESP32-Build grün, REGISTER + spam-Anruf gegen die
       Referenz-Fritz!Box läuft wie vor dem Refactor.
+      (`idf.py build` grün; FB-Roundtrip steht noch aus, vor
+      Phase-1-Beginn auf realer Hardware verifizieren.)
 
 ### Phase 1 — TCP (~0,5 d)
 
