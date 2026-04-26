@@ -158,6 +158,7 @@ const I18N = {
     'status.fw.check.found': 'Neue Version {version} wird installiert…',
     'status.fw.check.installed': 'Version {version} installiert — Dongle startet neu.',
     'status.fw.check.error': 'Prüfung fehlgeschlagen: {msg}',
+    'status.fw.failed': 'Letztes Update auf Version {version} hat den Boot nicht überstanden — automatisch zurückgerollt. Auto-Update überspringt diese Version. Klick auf „Auf Aktualisierung prüfen", um es erneut zu versuchen.',
     'status.sync.title': 'Sperrlisten-Sync',
     'status.sync.intro': 'Am Mobilteil gesperrte Nummern („Nummer sperren") werden einmal pro Tag zur PhoneBlock-Datenbank übertragen und danach aus der Fritz!Box entfernt. Der Answerbot fängt die Anrufer dann für alle PhoneBlock-Nutzer ab.',
     'status.sync.unavailable': 'Nicht verfügbar — nur mit Fritz!Box-Einrichtung nutzbar.',
@@ -317,6 +318,7 @@ const I18N = {
     'status.fw.check.found': 'New version {version} is being installed…',
     'status.fw.check.installed': 'Version {version} installed — dongle is rebooting.',
     'status.fw.check.error': 'Check failed: {msg}',
+    'status.fw.failed': 'Last update to version {version} did not survive the boot — automatically rolled back. Auto-update will skip this version. Click "Check for update" to retry.',
     'status.sync.title': 'Blocklist sync',
     'status.sync.intro': 'Numbers blocked at the handset ("Block number") are uploaded to the PhoneBlock database once a day and then removed from the Fritz!Box. The answer bot afterwards catches those callers for every PhoneBlock user.',
     'status.sync.unavailable': 'Unavailable — requires a Fritz!Box setup.',
@@ -476,6 +478,7 @@ const I18N = {
     'status.fw.check.found': 'Nouvelle version {version} en cours d’installation…',
     'status.fw.check.installed': 'Version {version} installée — le dongle redémarre.',
     'status.fw.check.error': 'Échec de la vérification : {msg}',
+    'status.fw.failed': 'La dernière mise à jour vers la version {version} n’a pas survécu au démarrage — restauration automatique. La mise à jour automatique ignore cette version. Cliquez sur « Vérifier les mises à jour » pour réessayer.',
     'status.sync.title': 'Synchro liste de blocage',
     'status.sync.intro': 'Les numéros bloqués depuis le combiné (« Bloquer le numéro ») sont envoyés à la base PhoneBlock une fois par jour, puis retirés de la Fritz!Box. Le bot répondeur intercepte ensuite ces appelants pour tous les utilisateurs PhoneBlock.',
     'status.sync.unavailable': 'Indisponible — nécessite une configuration Fritz!Box.',
@@ -635,6 +638,7 @@ const I18N = {
     'status.fw.check.found': 'Instalando la nueva versión {version}…',
     'status.fw.check.installed': 'Versión {version} instalada — el dongle se reinicia.',
     'status.fw.check.error': 'La comprobación falló: {msg}',
+    'status.fw.failed': 'La última actualización a la versión {version} no superó el arranque — se revirtió automáticamente. La actualización automática omitirá esta versión. Pulsa «Buscar actualizaciones» para volver a intentarlo.',
     'status.sync.title': 'Sincronización de lista de bloqueo',
     'status.sync.intro': 'Los números bloqueados desde el terminal («Bloquear número») se envían a la base de PhoneBlock una vez al día y luego se eliminan de la Fritz!Box. El bot luego intercepta esas llamadas para todos los usuarios de PhoneBlock.',
     'status.sync.unavailable': 'No disponible — requiere configuración Fritz!Box.',
@@ -948,6 +952,7 @@ function renderStatus(){
     + '<section id="fwSection" style="display:none">'
     + '<h2>' + esc(t('status.fw.title')) + '</h2>'
     + '<p class="muted">' + esc(t('status.fw.intro')) + '</p>'
+    + '<p id="fwFailed" style="display:none;margin-top:.3rem;color:#d93025"></p>'
     + '<p id="fwCurrent" class="muted" style="margin-top:.3rem"></p>'
     + '<p style="margin-top:.6rem">'
     + '  <input type="file" id="fwFile" accept=".bin,application/octet-stream" style="display:none">'
@@ -1322,6 +1327,18 @@ async function refreshAll(){
       partition: s.firmware_partition || '–',
       version:   s.firmware_version   || '–',
     });
+  }
+  // Surface a previously rolled-back update so the user knows why
+  // auto-update isn't progressing. The "Check for update" button
+  // below resends with force=true and clears the marker on its own.
+  const fwFailed = $('fwFailed');
+  if (fwFailed){
+    if (s.firmware_failed && s.firmware_failed !== ''){
+      fwFailed.textContent = t('status.fw.failed', {version: s.firmware_failed});
+      fwFailed.style.display = '';
+    } else {
+      fwFailed.style.display = 'none';
+    }
   }
   const fwPick     = $('fwPick');
   const fwFile     = $('fwFile');

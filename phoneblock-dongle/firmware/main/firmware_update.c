@@ -1,0 +1,218 @@
+#include "firmware_update.h"
+
+#include <string.h>
+
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+
+#include "esp_app_desc.h"
+#include "esp_crt_bundle.h"
+#include "esp_http_client.h"
+#include "esp_https_ota.h"
+#include "esp_log.h"
+#include "esp_random.h"
+#include "esp_system.h"
+#include "cJSON.h"
+
+#include "sdkconfig.h"
+
+#include "config.h"
+
+static const char *TAG = "fwup";
+
+// 24 h between scheduled checks — same cadence as the daily token
+// self-test, with the same ±30 min skew so a fleet-wide power blip
+// doesn't line every dongle up onto the same minute on the CDN.
+#define FWUP_INTERVAL_MS    (24 * 3600 * 1000)
+#define FWUP_JITTER_MS      (30 * 60 * 1000)
+
+static TaskHandle_t s_task = NULL;
+
+// --- helpers --------------------------------------------------------
+
+static void copy_str(char *dst, size_t cap, const char *src)
+{
+    if (cap == 0) return;
+    if (!src) { dst[0] = '\0'; return; }
+    size_t n = strnlen(src, cap - 1);
+    memcpy(dst, src, n);
+    dst[n] = '\0';
+}
+
+static void reboot_task(void *arg)
+{
+    (void)arg;
+    vTaskDelay(pdMS_TO_TICKS(500));
+    ESP_LOGW(TAG, "firmware update complete — restarting");
+    esp_restart();
+}
+
+void firmware_schedule_reboot(void)
+{
+    xTaskCreate(reboot_task, "fw_reboot", 2048, NULL, 5, NULL);
+}
+
+// Fetch the JSON manifest into the caller-provided buffer. Returns
+// ESP_OK with a NUL-terminated body on success.
+static esp_err_t fetch_manifest(char *body, size_t cap)
+{
+    esp_http_client_config_t cfg = {
+        .url = CONFIG_PHONEBLOCK_OTA_MANIFEST_URL,
+        .crt_bundle_attach = esp_crt_bundle_attach,
+        .timeout_ms = 10000,
+    };
+    esp_http_client_handle_t client = esp_http_client_init(&cfg);
+    if (!client) return ESP_FAIL;
+    esp_http_client_set_header(client, "Accept", "application/json");
+
+    esp_err_t err = esp_http_client_open(client, 0);
+    if (err != ESP_OK) {
+        esp_http_client_cleanup(client);
+        return err;
+    }
+    int content_len = esp_http_client_fetch_headers(client);
+    int status = esp_http_client_get_status_code(client);
+    if (status != 200) {
+        ESP_LOGE(TAG, "manifest HTTP %d", status);
+        esp_http_client_close(client);
+        esp_http_client_cleanup(client);
+        return ESP_FAIL;
+    }
+    int total = 0;
+    // Chunked responses return -1 from fetch_headers; read until the
+    // server closes in that case.
+    while (total < (int)cap - 1) {
+        int n = esp_http_client_read(client, body + total, cap - 1 - total);
+        if (n <= 0) break;
+        total += n;
+        if (content_len > 0 && total >= content_len) break;
+    }
+    body[total] = '\0';
+    esp_http_client_close(client);
+    esp_http_client_cleanup(client);
+    return total > 0 ? ESP_OK : ESP_FAIL;
+}
+
+// --- public API -----------------------------------------------------
+
+void firmware_try_update(bool force, fw_update_outcome_t *out)
+{
+    fw_update_outcome_t scratch;
+    if (!out) out = &scratch;
+    memset(out, 0, sizeof(*out));
+
+    const esp_app_desc_t *app = esp_app_get_description();
+    copy_str(out->current_version, sizeof(out->current_version),
+             app ? app->version : "");
+
+    char body[1024];
+    if (fetch_manifest(body, sizeof(body)) != ESP_OK) {
+        out->result = FW_UPDATE_ERR_NETWORK;
+        copy_str(out->error, sizeof(out->error), "Could not fetch OTA manifest.");
+        return;
+    }
+    ESP_LOGI(TAG, "manifest: %s", body);
+
+    cJSON *root = cJSON_Parse(body);
+    if (!root) {
+        out->result = FW_UPDATE_ERR_PARSE;
+        copy_str(out->error, sizeof(out->error), "Manifest JSON invalid.");
+        return;
+    }
+    const cJSON *j_ver = cJSON_GetObjectItem(root, "version");
+    const cJSON *j_url = cJSON_GetObjectItem(root, "url");
+    if (!cJSON_IsString(j_ver) || !cJSON_IsString(j_url)) {
+        cJSON_Delete(root);
+        out->result = FW_UPDATE_ERR_PARSE;
+        copy_str(out->error, sizeof(out->error),
+                 "Manifest missing version/url.");
+        return;
+    }
+    const char *new_version = j_ver->valuestring;
+    const char *new_url     = j_url->valuestring;
+    copy_str(out->new_version, sizeof(out->new_version), new_version);
+
+    if (strcmp(new_version, out->current_version) == 0) {
+        cJSON_Delete(root);
+        out->result = FW_UPDATE_NO_NEW;
+        return;
+    }
+
+    const char *failed = config_last_failed_ota();
+    if (failed[0] != '\0' && strcmp(failed, new_version) == 0) {
+        if (!force) {
+            ESP_LOGW(TAG, "skipping update to %s — same version previously "
+                          "rolled back; clear via web UI to retry", new_version);
+            cJSON_Delete(root);
+            out->result = FW_UPDATE_SKIPPED_FAILED;
+            return;
+        }
+        // Manual override: forget the prior failure, the user is asking
+        // us to try again.
+        ESP_LOGW(TAG, "force-update: clearing last_failed_ota=%s", failed);
+        config_set_last_failed_ota(NULL);
+    }
+
+    ESP_LOGI(TAG, "OTA: %s → %s from %s",
+             out->current_version, new_version, new_url);
+
+    // Pessimistic marker: write *before* the OTA so a brick + rollback
+    // can be detected on the next boot. Cleared in main.c once the
+    // running image equals this version (i.e. it survived).
+    config_set_last_failed_ota(new_version);
+
+    esp_http_client_config_t http_cfg = {
+        .url = new_url,
+        .crt_bundle_attach = esp_crt_bundle_attach,
+        .timeout_ms = 30000,
+        .keep_alive_enable = true,
+    };
+    esp_https_ota_config_t ota_cfg = {
+        .http_config = &http_cfg,
+    };
+    esp_err_t err = esp_https_ota(&ota_cfg);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "esp_https_ota: %s", esp_err_to_name(err));
+        // The download itself failed (network / signature / flash
+        // write). Nothing was activated, so don't keep the pessimistic
+        // marker around — leaving it set would block a healthy retry
+        // after a transient WiFi glitch.
+        config_set_last_failed_ota(NULL);
+        cJSON_Delete(root);
+        out->result = FW_UPDATE_ERR_OTA;
+        copy_str(out->error, sizeof(out->error), esp_err_to_name(err));
+        return;
+    }
+
+    cJSON_Delete(root);
+    out->result = FW_UPDATE_INSTALLED;
+    firmware_schedule_reboot();
+}
+
+// --- background task ------------------------------------------------
+
+static void update_task(void *arg)
+{
+    (void)arg;
+    // First iteration runs after a full (jittered) interval. The boot
+    // path already validated the running image; no point overwriting
+    // it the moment we come up.
+    while (1) {
+        uint32_t jitter = esp_random() % (2u * FWUP_JITTER_MS);
+        uint32_t delay  = FWUP_INTERVAL_MS - FWUP_JITTER_MS + jitter;
+        vTaskDelay(pdMS_TO_TICKS(delay));
+        // Skip until the device is provisioned. Using the PhoneBlock
+        // token as the "is configured" proxy mirrors the self-test
+        // task — an unconfigured dongle has nothing to lose by
+        // staying on its current build.
+        if (strlen(config_phoneblock_token()) == 0) continue;
+        ESP_LOGI(TAG, "scheduled firmware update check");
+        firmware_try_update(false, NULL);
+    }
+}
+
+void firmware_update_start(void)
+{
+    if (s_task) return;
+    xTaskCreate(update_task, "fw_update", 8192, NULL, 3, &s_task);
+}

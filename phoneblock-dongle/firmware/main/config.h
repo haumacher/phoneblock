@@ -66,6 +66,19 @@ bool        config_sync_enabled(void);
 const char *config_phoneblock_base_url(void);
 const char *config_phoneblock_token(void);
 
+// Version string of the most recent OTA download that did NOT survive
+// to the next successful boot, or "" if no such record exists. Set by
+// the auto-update task before invoking esp_https_ota; cleared in
+// app_main once the running image equals this version (i.e. the
+// bootloader did not roll back). Used as a guard against the
+// download → brick → rollback → retry-same-bits loop.
+const char *config_last_failed_ota(void);
+
+// Persist or clear the "last failed OTA" marker. Pass NULL or "" to
+// clear. Writes through to NVS immediately; the in-RAM cache is
+// updated on success.
+esp_err_t   config_set_last_failed_ota(const char *version);
+
 // Update the NVS-backed settings atomically. Any field passed as NULL
 // or 0 is left untouched. The in-RAM cache is refreshed after NVS
 // commit succeeds; on failure the cache is unchanged.

@@ -6,6 +6,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+#include "esp_app_desc.h"
 #include "esp_log.h"
 #include "esp_event.h"
 #include "esp_netif.h"
@@ -21,6 +22,7 @@
 #include "announcement.h"
 #include "api.h"
 #include "config.h"
+#include "firmware_update.h"
 #include "pairing.h"
 #include "selftest.h"
 #include "sip_register.h"
@@ -198,6 +200,21 @@ void app_main(void)
         esp_ota_mark_app_valid_cancel_rollback();
     }
 
+    // Clear the auto-update guard if we successfully booted into the
+    // version that was last attempted. If the marker names a *different*
+    // version, we got here via rollback — leave it in place so the
+    // background task does not try the same broken bits again.
+    {
+        const char *failed = config_last_failed_ota();
+        const esp_app_desc_t *app = esp_app_get_description();
+        const char *current = app ? app->version : "";
+        if (failed[0] != '\0' && strcmp(failed, current) == 0) {
+            ESP_LOGI(TAG, "running version %s matches last_failed_ota — "
+                          "marker cleared (boot survived)", current);
+            config_set_last_failed_ota(NULL);
+        }
+    }
+
     // If the browser flasher injected a pairing secret, hand it back to
     // phoneblock.net so the install page can locate this dongle on the
     // LAN without depending on mDNS / Fritz!Box host-name resolution.
@@ -218,6 +235,12 @@ void app_main(void)
     // before the next real call. Spawned even without a token; the
     // task itself skips runs until one is configured.
     selftest_start();
+
+    // Background auto-update task — checks the CDN manifest once a
+    // day, with the same skip-without-token guard as the self-test.
+    // The last_failed_ota marker (cleared above on a healthy boot)
+    // keeps a brick-and-rollback build from being re-tried in a loop.
+    firmware_update_start();
 
     if (token_set) {
         ESP_LOGI(TAG, "initial self-test");

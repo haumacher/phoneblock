@@ -30,6 +30,13 @@ static const char *NS   = "phoneblock";
 #define K_CONTACT_PORT  "contact_port"
 #define K_PB_URL        "pb_url"
 #define K_PB_TOKEN      "pb_token"
+// Version string of the most recent OTA download that did NOT survive
+// to the next successful boot. Set pessimistically before
+// esp_https_ota() runs and only cleared once main.c sees the running
+// image is the version stored here — i.e. the bootloader did not roll
+// back. The auto-update task uses this to break the
+// download → brick → rollback → retry-same-bits loop.
+#define K_LAST_FAIL_OTA "last_fail_ota"
 
 typedef struct {
     char sip_host[64];
@@ -50,6 +57,7 @@ typedef struct {
     int  contact_port;
     char pb_base_url[128];
     char pb_token[64];
+    char last_failed_ota[32];   // semver, plus headroom for "-rcN" suffixes
 } config_cache_t;
 
 static config_cache_t s_config;
@@ -108,6 +116,7 @@ void config_load(void)
         s_config.contact_port = CONFIG_SIP_CONTACT_PORT_OVERRIDE;
         copy_default(s_config.pb_base_url,  sizeof(s_config.pb_base_url),  CONFIG_PHONEBLOCK_BASE_URL);
         s_config.pb_token[0]  = '\0';
+        s_config.last_failed_ota[0] = '\0';
         return;
     }
     if (err != ESP_OK) {
@@ -148,6 +157,8 @@ void config_load(void)
              s_config.pb_base_url,  sizeof(s_config.pb_base_url));
     load_str(h, K_PB_TOKEN,     "",
              s_config.pb_token,     sizeof(s_config.pb_token));
+    load_str(h, K_LAST_FAIL_OTA, "",
+             s_config.last_failed_ota, sizeof(s_config.last_failed_ota));
     nvs_close(h);
 
     ESP_LOGI(TAG, "loaded config: sip=%s@%s:%d, pb=%s",
@@ -181,6 +192,32 @@ const char *config_contact_host_override(void) { return s_config.contact_host; }
 int         config_contact_port_override(void) { return s_config.contact_port; }
 const char *config_phoneblock_base_url(void) { return s_config.pb_base_url; }
 const char *config_phoneblock_token(void)    { return s_config.pb_token; }
+const char *config_last_failed_ota(void)     { return s_config.last_failed_ota; }
+
+esp_err_t config_set_last_failed_ota(const char *version)
+{
+    nvs_handle_t h;
+    esp_err_t err = nvs_open(NS, NVS_READWRITE, &h);
+    if (err != ESP_OK) return err;
+    if (version == NULL || version[0] == '\0') {
+        // Tolerate "key never written" — that's the steady state.
+        err = nvs_erase_key(h, K_LAST_FAIL_OTA);
+        if (err == ESP_ERR_NVS_NOT_FOUND) err = ESP_OK;
+        s_config.last_failed_ota[0] = '\0';
+    } else {
+        err = nvs_set_str(h, K_LAST_FAIL_OTA, version);
+        if (err == ESP_OK) {
+            copy_default(s_config.last_failed_ota,
+                         sizeof(s_config.last_failed_ota), version);
+        }
+    }
+    if (err == ESP_OK) err = nvs_commit(h);
+    nvs_close(h);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "config_set_last_failed_ota: %s", esp_err_to_name(err));
+    }
+    return err;
+}
 
 // --- Updating -------------------------------------------------------
 
