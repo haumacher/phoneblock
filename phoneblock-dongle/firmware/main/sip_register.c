@@ -877,11 +877,30 @@ static void handle_invite(sip_ctx_t *c, const char *req, int req_len,
         return;
     }
 
-    // Second call arriving while we're busy with another: politely decline.
+    // Second call arriving while we're busy with another.
     if (d->state != DIALOG_IDLE) {
-        ESP_LOGW(TAG, "second INVITE while dialog active → 486 Busy Here");
-        send_response(c, from, req, req_len, 486, "Busy Here", NULL, NULL);
-        return;
+        // The only state worth preempting is DIALOG_STREAMING — there
+        // we'd otherwise hold the new caller off for 5–15 s of audio
+        // playback against an already-classified spammer. All other
+        // states (TRYING/ANSWERED/REJECTED/BYE_SENT) clear within
+        // milliseconds; making the new caller wait that out is fine,
+        // and bailing during TRYING would just be caller-roulette
+        // since we don't even have a verdict yet.
+        if (d->state != DIALOG_STREAMING) {
+            ESP_LOGW(TAG, "second INVITE in state %d → 486 Busy Here",
+                     d->state);
+            send_response(c, from, req, req_len, 486, "Busy Here",
+                          NULL, NULL);
+            return;
+        }
+        ESP_LOGI(TAG, "second INVITE during STREAMING → preempt: "
+                      "abort announcement, BYE old dialog, take new call");
+        rtp_request_abort();
+        send_bye(c);
+        // BYE is fire-and-forget UDP. Any straggler 200/ACK/BYE for
+        // the old Call-ID will Call-ID-mismatch in handle_incoming
+        // and be discarded — wipe and fall through to the IDLE path.
+        memset(d, 0, sizeof(*d));
     }
 
     capture_dialog(c, req, req_len, from);

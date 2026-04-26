@@ -17,11 +17,22 @@ static const char *TAG = "rtp";
 #define FRAME_BYTES      FRAME_SAMPLES // 1 byte per sample for PCMA
 #define RTP_HEADER_BYTES 12
 
+// Abort flag. Single-call-at-a-time semantics elsewhere in the SIP
+// stack guarantee at most one rtp_audio_task ever runs, so a single
+// volatile bool is enough. Same pattern as s_reload_requested in
+// sip_register.c — set by SIP task, polled by RTP task per frame.
+static volatile bool s_abort = false;
+
 typedef struct {
     struct sockaddr_in dest;
     const uint8_t *alaw;
     size_t alaw_bytes;
 } rtp_args_t;
+
+void rtp_request_abort(void)
+{
+    s_abort = true;
+}
 
 static void rtp_audio_task(void *arg)
 {
@@ -62,6 +73,12 @@ static void rtp_audio_task(void *arg)
 
     TickType_t next = xTaskGetTickCount();
     for (size_t off = 0; off < a->alaw_bytes; off += FRAME_SAMPLES) {
+        if (s_abort) {
+            ESP_LOGI(TAG, "stream aborted at frame %u/%u",
+                     (unsigned)(off / FRAME_SAMPLES),
+                     (unsigned)total_frames);
+            break;
+        }
         size_t remaining = a->alaw_bytes - off;
         size_t payload   = remaining < FRAME_SAMPLES ? remaining : FRAME_SAMPLES;
 
@@ -115,6 +132,7 @@ void rtp_play_audio(const struct sockaddr_in *dest,
     args->dest       = *dest;
     args->alaw       = alaw;
     args->alaw_bytes = alaw_bytes;
+    s_abort = false;
     if (xTaskCreate(rtp_audio_task, "rtp_audio", 4096, args, 6, NULL) != pdPASS) {
         ESP_LOGE(TAG, "xTaskCreate failed");
         free(args);

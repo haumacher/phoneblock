@@ -16,3 +16,10 @@
 // ideal, which is the intended use.
 void rtp_play_audio(const struct sockaddr_in *dest,
                     const uint8_t *alaw, size_t alaw_bytes);
+
+// Signal an in-flight rtp_play_audio task to stop at the next 20 ms
+// frame boundary. Used by the SIP task to preempt the announcement
+// when a second INVITE arrives while the first SPAM dialog is still
+// streaming — no point making the new caller wait through 5–15 s of
+// our own audio. Safe to call when no streaming task is active.
+void rtp_request_abort(void);

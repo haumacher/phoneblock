@@ -322,10 +322,16 @@ Hardware-Entscheidungsmatrix [HARDWARE.md](HARDWARE.md), QEMU-Setup
   `phoneblock_check` bleibt synchron (ein Roundtrip ist zwingend),
   aber `phoneblock_report_call` läuft jetzt über `report_queue`
   → kleiner Worker-Task, Drop-on-Overflow, keine Persistenz
-  (Best-Effort). Ein „echter" paralleler `check` mit Message-Queue
-  würde gegen das eigentliche Problem (5–15 s `DIALOG_STREAMING`-
-  Belegung blockiert Back-to-Back-SPAM) nichts ausrichten und
-  wurde verworfen.
+  (Best-Effort).
+- [x] **Back-to-Back-SPAM: Streaming-Preemption** — wenn während
+  laufender Ansage (`DIALOG_STREAMING`, 5–15 s) ein zweites INVITE
+  reinkommt, bricht der RTP-Task am nächsten 20 ms-Frame ab
+  (`rtp_request_abort()`), der alte Dialog wird mit BYE
+  fire-and-forget abgeräumt, der neue Anruf läuft normal durch
+  API-Check + 200/486. Andere States (TRYING/ANSWERED/REJECTED/
+  BYE_SENT) bleiben bei 486 Busy — sie clearen in Millisekunden,
+  und ein Preempt während TRYING wäre nur Caller-Roulette ohne
+  Verdict.
 - [ ] **Logging-Level-Regler** im Dashboard —
   `esp_log_level_set("sip", ESP_LOG_DEBUG)` zur Laufzeit, damit
   man bei Feldproblemen verboser werden kann ohne Reflash.
