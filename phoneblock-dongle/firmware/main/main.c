@@ -22,6 +22,7 @@
 #include "api.h"
 #include "config.h"
 #include "pairing.h"
+#include "selftest.h"
 #include "sip_register.h"
 #include "stats.h"
 #include "status_led.h"
@@ -212,9 +213,15 @@ void app_main(void)
     bool token_set = strlen(config_phoneblock_token()) > 0;
     bool sip_set   = strlen(config_sip_host()) > 0;
 
+    // Background self-test task — repeats the token check once a
+    // day so a revoked or rotated token shows up on the dashboard
+    // before the next real call. Spawned even without a token; the
+    // task itself skips runs until one is configured.
+    selftest_start();
+
     if (token_set) {
         ESP_LOGI(TAG, "initial self-test");
-        phoneblock_selftest();
+        selftest_run_now();
         xTaskCreate(sip_server_task, "sip_server", 8192, NULL, 5, NULL);
     } else {
         ESP_LOGI(TAG, "PhoneBlock token not configured yet — set via web UI");
