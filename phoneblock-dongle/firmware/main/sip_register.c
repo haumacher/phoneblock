@@ -813,6 +813,16 @@ static verdict_t check_invite_caller(const char *req, int req_len)
 
     verdict_t v = phoneblock_check(number);
     stats_record_call(number, display, v);
+
+    // Fair-use contribution required by /api/check-prefix: when our
+    // privacy-preserving lookup hides which number we queried, the
+    // server cannot keep tailored compact blocklists current on its
+    // own. POST the plaintext number back on a positive match so the
+    // call counter / LASTPING are refreshed. Failures are non-fatal
+    // (already logged + recorded as a stats error).
+    if (v == VERDICT_SPAM) {
+        phoneblock_report_call(number);
+    }
     return v;
 }
 

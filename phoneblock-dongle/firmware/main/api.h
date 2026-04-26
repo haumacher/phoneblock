@@ -23,3 +23,11 @@ bool phoneblock_selftest(void);
 // "B_MISSED", "E_ADVERTISING"). Optional short comment (NULL for
 // none). Returns true when the server accepts the rating (HTTP 200).
 bool phoneblock_rate(const char *phone, const char *rating, const char *comment);
+
+// Reports a confirmed SPAM call to the server (POST /api/report-call/{phone}).
+// Called after phoneblock_check() returns VERDICT_SPAM via the privacy-
+// preserving k-anonymity endpoint, so the server can keep its space-
+// constrained blocklists tailored. Phone is in international form
+// ("+49..."); we send it in the legacy "00"-prefix form to avoid
+// URL-encoding the leading "+". Returns true on HTTP 204.
+bool phoneblock_report_call(const char *phone);
