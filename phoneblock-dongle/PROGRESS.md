@@ -315,10 +315,17 @@ Hardware-Entscheidungsmatrix [HARDWARE.md](HARDWARE.md), QEMU-Setup
   Pflicht), dann Auth-User-Separation (Telekom: Login = E-Mail,
   Authname = Rufnummer), Outbound-Proxy für Fälle wo der
   Registrar nicht direkt erreichbar ist, zuletzt SRTP.
-- [ ] **Paralleler API-Check** — synchroner `phoneblock_check`
-  blockiert den SIP-Task 1–2 s. Umbau auf einen zweiten Task
-  mit Message-Queue; testbar in QEMU über den bestehenden
-  `CONFIG_SIP_TEST_FORCE_SPAM_STAR_NUMBERS`-Hook.
+- [x] **`/api/report-call` async vom kritischen Pfad weg** —
+  zweiter TLS-Handshake (300–600 ms cert-verify + RTT) saß zwischen
+  Verdict und 200 OK / 486, also genau im Fenster, in dem die
+  Fritz!Box auf Eskalation zu den echten Nebenstellen entscheidet.
+  `phoneblock_check` bleibt synchron (ein Roundtrip ist zwingend),
+  aber `phoneblock_report_call` läuft jetzt über `report_queue`
+  → kleiner Worker-Task, Drop-on-Overflow, keine Persistenz
+  (Best-Effort). Ein „echter" paralleler `check` mit Message-Queue
+  würde gegen das eigentliche Problem (5–15 s `DIALOG_STREAMING`-
+  Belegung blockiert Back-to-Back-SPAM) nichts ausrichten und
+  wurde verworfen.
 - [ ] **Logging-Level-Regler** im Dashboard —
   `esp_log_level_set("sip", ESP_LOG_DEBUG)` zur Laufzeit, damit
   man bei Feldproblemen verboser werden kann ohne Reflash.
@@ -488,9 +495,13 @@ Umsetzungsschritte:
   Headern gebaut, spec-konform wäre, die ursprünglichen INVITE-Header
   zu nehmen (CSeq-Method INVITE). Fritz!Box ist tolerant; könnte bei
   strengeren Registrars ein Problem werden.
-- [ ] Paralleler API-Check statt synchroner Aufruf im SIP-Task — heute
-  blockiert der Task 1–2 s während der TLS-Abfrage, was eingehende
-  Pakete kurz liegenlässt. Für den 1-Call-at-a-time-Dongle unkritisch.
+- [x] `/api/report-call` läuft inzwischen async über `report_queue`,
+  damit nur noch der unvermeidliche `phoneblock_check`-Roundtrip
+  (1–2 s) auf dem kritischen Pfad zwischen Verdict und 200 OK / 486
+  liegt. Echte Parallelität von `phoneblock_check` würde nur
+  einen CANCEL-Race-Edgecase entschärfen, nicht aber die
+  Back-to-Back-SPAM-Belegung durch `DIALOG_STREAMING` (5–15 s
+  Audio) — daher verworfen.
 - [ ] Audio-Partition: Wenn die Ansage über ~200 KB wächst, Partition-
   Layout überdenken (App-Slot auf 2 MB, Audio separat in SPIFFS).
 - [ ] `tr064.c` holt die Control-URLs hardcoded (`/upnp/control/x_voip`

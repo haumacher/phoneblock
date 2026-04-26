@@ -23,6 +23,7 @@
 #include "api.h"
 #include "config.h"
 #include "announcement.h"
+#include "report_queue.h"
 #include "sip_parse.h"
 #include "rtp.h"
 #include "stats.h"
@@ -818,10 +819,15 @@ static verdict_t check_invite_caller(const char *req, int req_len)
     // privacy-preserving lookup hides which number we queried, the
     // server cannot keep tailored compact blocklists current on its
     // own. POST the plaintext number back on a positive match so the
-    // call counter / LASTPING are refreshed. Failures are non-fatal
-    // (already logged + recorded as a stats error).
+    // call counter / LASTPING are refreshed.
+    //
+    // Enqueued for an async worker rather than POSTed synchronously:
+    // the second TLS handshake (300–600 ms cert-verify + RTT) sat on
+    // the critical path between verdict and 200 OK / 486, exactly
+    // the window where the Fritz!Box decides whether to escalate to
+    // ringing the real phones.
     if (v == VERDICT_SPAM) {
-        phoneblock_report_call(number);
+        report_queue_enqueue(number);
     }
     return v;
 }

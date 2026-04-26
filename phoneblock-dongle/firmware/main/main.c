@@ -24,6 +24,7 @@
 #include "config.h"
 #include "firmware_update.h"
 #include "pairing.h"
+#include "report_queue.h"
 #include "selftest.h"
 #include "sip_register.h"
 #include "stats.h"
@@ -241,6 +242,11 @@ void app_main(void)
     // The last_failed_ota marker (cleared above on a healthy boot)
     // keeps a brick-and-rollback build from being re-tried in a loop.
     firmware_update_start();
+
+    // Async /api/report-call worker — keeps the second TLS handshake
+    // off the SIP critical path. Drains a small queue at its own
+    // pace; SPAM verdicts enqueue here instead of POSTing inline.
+    report_queue_start();
 
     if (token_set) {
         ESP_LOGI(TAG, "initial self-test");
