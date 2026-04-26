@@ -18,18 +18,33 @@ menu "PhoneBlock Dongle"
 
     config PHONEBLOCK_OTA_MANIFEST_URL
         string "OTA update manifest URL"
-        default "https://cdn.phoneblock.net/dongle/latest.json"
+        default "https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json"
         help
-            HTTPS URL the dongle polls for OTA updates. The endpoint
-            must return JSON of the form:
+            HTTPS URL the dongle polls for OTA updates. This is the
+            same esp-web-tools manifest that the browser-based
+            installer uses, so there is exactly one source of truth
+            per release. Expected shape (as written by release.sh):
 
-              {"version": "0.3.1",
-               "url": "https://cdn.phoneblock.net/dongle/firmware-0.3.1.bin"}
+              {"name": "PhoneBlock Dongle",
+               "version": "1.0.3",
+               "builds": [{
+                 "chipFamily": "ESP32",
+                 "parts": [
+                   {"path": ".../bootloader.bin",        "offset": 4096},
+                   {"path": ".../partition-table.bin",   "offset": 32768},
+                   {"path": ".../ota_data_initial.bin",  "offset": 61440},
+                   {"path": ".../phoneblock_dongle.bin", "offset": 131072}]}]}
 
-            When the version differs from the running image,
-            esp_https_ota fetches the binary from the embedded "url"
-            field and flips the boot partition. TLS trust is provided
-            by the bundled Mozilla root CA store (enabled via
+            Browser-side esp-web-tools flashes all four parts; OTA
+            here picks the part whose path ends in
+            "phoneblock_dongle.bin" (the app slot) and ignores the
+            rest, since bootloader / partition-table / ota_data are
+            only needed on the very first USB flash.
+
+            When `version` differs from the running image,
+            esp_https_ota fetches the picked binary and flips the
+            boot partition. TLS trust is provided by the bundled
+            Mozilla root CA store (enabled via
             CONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL).
 
     config SIP_REGISTRAR_PORT

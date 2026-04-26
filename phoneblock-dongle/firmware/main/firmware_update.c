@@ -125,7 +125,11 @@ void firmware_try_update(bool force, fw_update_outcome_t *out)
     copy_str(out->current_version, sizeof(out->current_version),
              app ? app->version : "");
 
-    char body[1024];
+    // Manifest is the esp-web-tools format also consumed by the
+    // browser installer (same file at .../firmware/stable/manifest.json).
+    // 2 KiB is comfortably above the ~700 B we currently see and leaves
+    // room for longer version strings / multiple chip families.
+    char body[2048];
     if (fetch_manifest(body, sizeof(body),
                        out->error, sizeof(out->error)) != ESP_OK) {
         out->result = FW_UPDATE_ERR_NETWORK;
@@ -143,17 +147,55 @@ void firmware_try_update(bool force, fw_update_outcome_t *out)
         copy_str(out->error, sizeof(out->error), "Manifest JSON invalid.");
         return;
     }
-    const cJSON *j_ver = cJSON_GetObjectItem(root, "version");
-    const cJSON *j_url = cJSON_GetObjectItem(root, "url");
-    if (!cJSON_IsString(j_ver) || !cJSON_IsString(j_url)) {
+    const cJSON *j_ver    = cJSON_GetObjectItem(root, "version");
+    const cJSON *j_builds = cJSON_GetObjectItem(root, "builds");
+    if (!cJSON_IsString(j_ver)) {
         cJSON_Delete(root);
         out->result = FW_UPDATE_ERR_PARSE;
         copy_str(out->error, sizeof(out->error),
-                 "Manifest missing version/url.");
+                 "Manifest missing version field.");
+        return;
+    }
+    if (!cJSON_IsArray(j_builds) || cJSON_GetArraySize(j_builds) == 0) {
+        cJSON_Delete(root);
+        out->result = FW_UPDATE_ERR_PARSE;
+        copy_str(out->error, sizeof(out->error),
+                 "Manifest has no builds[].");
+        return;
+    }
+    // The browser installer flashes every entry in parts[]
+    // (bootloader, partition-table, ota_data, app). OTA only writes
+    // the app slot, so pick the part whose URL ends in the build's
+    // app binary name. Suffix match keeps us decoupled from the
+    // partition layout (offsets) and from absolute URL prefixes.
+    static const char APP_SUFFIX[] = "/phoneblock_dongle.bin";
+    const cJSON *j_build0 = cJSON_GetArrayItem(j_builds, 0);
+    const cJSON *j_parts  = cJSON_IsObject(j_build0)
+                          ? cJSON_GetObjectItem(j_build0, "parts") : NULL;
+    const char *new_url = NULL;
+    if (cJSON_IsArray(j_parts)) {
+        int n = cJSON_GetArraySize(j_parts);
+        for (int i = 0; i < n; i++) {
+            const cJSON *p = cJSON_GetArrayItem(j_parts, i);
+            const cJSON *jp = cJSON_GetObjectItem(p, "path");
+            if (!cJSON_IsString(jp)) continue;
+            const char *path = jp->valuestring;
+            size_t plen = strlen(path);
+            size_t slen = sizeof(APP_SUFFIX) - 1;
+            if (plen >= slen && strcmp(path + plen - slen, APP_SUFFIX) == 0) {
+                new_url = path;
+                break;
+            }
+        }
+    }
+    if (!new_url) {
+        cJSON_Delete(root);
+        out->result = FW_UPDATE_ERR_PARSE;
+        copy_str(out->error, sizeof(out->error),
+                 "Manifest has no app binary part.");
         return;
     }
     const char *new_version = j_ver->valuestring;
-    const char *new_url     = j_url->valuestring;
     copy_str(out->new_version, sizeof(out->new_version), new_version);
 
     if (strcmp(new_version, out->current_version) == 0) {
