@@ -311,10 +311,8 @@ Hardware-Entscheidungsmatrix [HARDWARE.md](HARDWARE.md), QEMU-Setup
 - [ ] **Extended-SIP-Backend** — `sip_register.c` macht weiterhin
   nur UDP, ohne Outbound-Proxy, ohne Realm-Override, ohne SRTP.
   Die UI-Felder + NVS-Persistierung stehen bereits; zu tun ist
-  der Stack-Teil. Reihenfolge nach Bedarf: TCP und TLS (Telekom-
-  Pflicht), dann Auth-User-Separation (Telekom: Login = E-Mail,
-  Authname = Rufnummer), Outbound-Proxy für Fälle wo der
-  Registrar nicht direkt erreichbar ist, zuletzt SRTP.
+  der Stack-Teil. Phasen-Plan mit abhakbaren Punkten:
+  [EXTENDED_SIP.md](EXTENDED_SIP.md).
 - [x] **`/api/report-call` async vom kritischen Pfad weg** —
   zweiter TLS-Handshake (300–600 ms cert-verify + RTT) saß zwischen
   Verdict und 200 OK / 486, also genau im Fenster, in dem die
