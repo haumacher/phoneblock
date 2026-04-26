@@ -1,5 +1,6 @@
 #include "firmware_update.h"
 
+#include <stdio.h>
 #include <string.h>
 
 #include "freertos/FreeRTOS.h"
@@ -53,27 +54,37 @@ void firmware_schedule_reboot(void)
 }
 
 // Fetch the JSON manifest into the caller-provided buffer. Returns
-// ESP_OK with a NUL-terminated body on success.
-static esp_err_t fetch_manifest(char *body, size_t cap)
+// ESP_OK with a NUL-terminated body on success. On failure, writes a
+// human-readable cause into `err` (DNS/TLS/HTTP-status/empty-body) so
+// the web UI can show it instead of a generic "could not fetch".
+static esp_err_t fetch_manifest(char *body, size_t cap,
+                                char *err, size_t err_cap)
 {
+    const char *url = CONFIG_PHONEBLOCK_OTA_MANIFEST_URL;
     esp_http_client_config_t cfg = {
-        .url = CONFIG_PHONEBLOCK_OTA_MANIFEST_URL,
+        .url = url,
         .crt_bundle_attach = esp_crt_bundle_attach,
         .timeout_ms = 10000,
     };
     esp_http_client_handle_t client = esp_http_client_init(&cfg);
-    if (!client) return ESP_FAIL;
+    if (!client) {
+        copy_str(err, err_cap, "esp_http_client_init failed");
+        return ESP_FAIL;
+    }
     esp_http_client_set_header(client, "Accept", "application/json");
 
-    esp_err_t err = esp_http_client_open(client, 0);
-    if (err != ESP_OK) {
+    esp_err_t e = esp_http_client_open(client, 0);
+    if (e != ESP_OK) {
+        ESP_LOGE(TAG, "esp_http_client_open(%s): %s", url, esp_err_to_name(e));
+        snprintf(err, err_cap, "Connect failed: %s", esp_err_to_name(e));
         esp_http_client_cleanup(client);
-        return err;
+        return e;
     }
     int content_len = esp_http_client_fetch_headers(client);
     int status = esp_http_client_get_status_code(client);
     if (status != 200) {
-        ESP_LOGE(TAG, "manifest HTTP %d", status);
+        ESP_LOGE(TAG, "manifest HTTP %d (%s)", status, url);
+        snprintf(err, err_cap, "HTTP %d from manifest URL", status);
         esp_http_client_close(client);
         esp_http_client_cleanup(client);
         return ESP_FAIL;
@@ -90,7 +101,16 @@ static esp_err_t fetch_manifest(char *body, size_t cap)
     body[total] = '\0';
     esp_http_client_close(client);
     esp_http_client_cleanup(client);
-    return total > 0 ? ESP_OK : ESP_FAIL;
+    if (total == 0) {
+        copy_str(err, err_cap, "Manifest response was empty");
+        return ESP_FAIL;
+    }
+    if (content_len > 0 && total < content_len) {
+        snprintf(err, err_cap,
+                 "Manifest truncated (%d of %d bytes)", total, content_len);
+        return ESP_FAIL;
+    }
+    return ESP_OK;
 }
 
 // --- public API -----------------------------------------------------
@@ -106,9 +126,13 @@ void firmware_try_update(bool force, fw_update_outcome_t *out)
              app ? app->version : "");
 
     char body[1024];
-    if (fetch_manifest(body, sizeof(body)) != ESP_OK) {
+    if (fetch_manifest(body, sizeof(body),
+                       out->error, sizeof(out->error)) != ESP_OK) {
         out->result = FW_UPDATE_ERR_NETWORK;
-        copy_str(out->error, sizeof(out->error), "Could not fetch OTA manifest.");
+        if (out->error[0] == '\0') {
+            copy_str(out->error, sizeof(out->error),
+                     "Could not fetch OTA manifest.");
+        }
         return;
     }
     ESP_LOGI(TAG, "manifest: %s", body);
