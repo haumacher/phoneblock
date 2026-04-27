@@ -391,3 +391,76 @@ bool phoneblock_selftest(void)
     free(resp.data);
     return ok;
 }
+
+bool phoneblock_verify_auth_code(const char *code, const char *state)
+{
+    if (!code || !*code) return false;
+
+    char url[160];
+    snprintf(url, sizeof(url), "%s/api/verify-auth-code",
+             config_phoneblock_base_url());
+
+    char auth_header[128];
+    snprintf(auth_header, sizeof(auth_header), "Bearer %s",
+             config_phoneblock_token());
+
+    // Form-encoded body: the code is a JWT (URL-safe Base64), state
+    // is a 32-char hex nonce — neither needs escaping. Cap at 1 KB to
+    // bound the stack allocation.
+    char body[1024];
+    int body_len = snprintf(body, sizeof(body),
+        "code=%s&state=%s", code, state ? state : "");
+    if (body_len < 0 || body_len >= (int)sizeof(body)) {
+        ESP_LOGE(TAG, "verify-auth-code: body too large");
+        return false;
+    }
+
+    response_buffer_t resp = {
+        .data = calloc(1, 256),
+        .len = 0,
+        .cap = 256,
+    };
+    if (!resp.data) {
+        ESP_LOGE(TAG, "verify-auth-code: out of memory");
+        return false;
+    }
+
+    esp_http_client_config_t config = {
+        .url = url,
+        .method = HTTP_METHOD_POST,
+        .event_handler = http_event_handler,
+        .user_data = &resp,
+        .crt_bundle_attach = esp_crt_bundle_attach,
+        .timeout_ms = 10000,
+        .auth_type = HTTP_AUTH_TYPE_NONE,
+    };
+    esp_http_client_handle_t client = esp_http_client_init(&config);
+    http_util_set_user_agent(client);
+    esp_http_client_set_header(client, "Authorization", auth_header);
+    esp_http_client_set_header(client, "Content-Type",
+        "application/x-www-form-urlencoded");
+    esp_http_client_set_post_field(client, body, body_len);
+
+    ESP_LOGI(TAG, "POST %s", url);
+    esp_err_t err = esp_http_client_perform(client);
+    int status = (err == ESP_OK) ? esp_http_client_get_status_code(client) : 0;
+    esp_http_client_cleanup(client);
+
+    bool ok = false;
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "verify-auth-code transport: %s", esp_err_to_name(err));
+    } else if (status != 200) {
+        ESP_LOGE(TAG, "verify-auth-code: HTTP %d", status);
+    } else {
+        // Naive substring scan is sufficient for the well-known shape
+        // returned by VerifyAuthCodeServlet: {"ok":true} or
+        // {"ok":false,"reason":"..."}. We only care about the bool.
+        ok = (strstr(resp.data, "\"ok\":true") != NULL);
+        if (!ok) {
+            ESP_LOGW(TAG, "verify-auth-code: rejected: %.*s",
+                     resp.len, resp.data);
+        }
+    }
+    free(resp.data);
+    return ok;
+}

@@ -31,3 +31,10 @@ bool phoneblock_rate(const char *phone, const char *rating, const char *comment)
 // ("+49..."); we send it in the legacy "00"-prefix form to avoid
 // URL-encoding the leading "+". Returns true on HTTP 204.
 bool phoneblock_report_call(const char *phone);
+
+// Verifies an identity-assertion JWT against the server, using the
+// dongle's own bearer token for authentication. Returns true only if
+// the server confirms `{ "ok": true }` — i.e. the JWT's subject is
+// the same PhoneBlock user that owns the configured API token. Used
+// as the proof step in the "Login with PhoneBlock" SSO flow.
+bool phoneblock_verify_auth_code(const char *code, const char *state);

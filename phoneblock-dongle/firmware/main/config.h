@@ -68,6 +68,14 @@ bool        config_sync_enabled(void);
 // Default on so new users see every call the dongle handled.
 bool        config_log_known_calls(void);
 
+// Whether the web UI requires "Login with PhoneBlock" before
+// showing call data or accepting setting changes. Default off —
+// during initial provisioning the LAN-local UI must be reachable
+// without credentials. Activated explicitly by the user only after
+// a successful round-trip through the SSO flow, which proves the
+// browser will be able to log in (avoids the lockout case).
+bool        config_auth_enabled(void);
+
 // PhoneBlock
 // Site root URL, without "/api" suffix — api.c appends "/api/…",
 // web.c appends "/mobile/…" directly.
@@ -109,6 +117,10 @@ typedef struct {
     // "1" = log known/internal calls, "0" = skip them, NULL = leave
     // unchanged. Default when the key is unset is "log them".
     const char *log_known_calls;
+    // "1" = require "Login with PhoneBlock" before serving the UI,
+    // "0" = open access. NULL = leave unchanged. Default when the
+    // key is unset is "open access" (setup phase).
+    const char *auth_enabled;
     const char *phoneblock_base_url;
     const char *phoneblock_token;
 } config_update_t;

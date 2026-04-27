@@ -26,10 +26,23 @@
 #include "stats.h"
 #include "sync.h"
 #include "tr064.h"
+#include "web_auth.h"
 
 static const char *TAG = "web";
 
 static httpd_handle_t s_server = NULL;
+
+// Gate handlers behind the SSO session cookie. With the gate
+// disabled (config_auth_enabled() == false) these are no-ops; once
+// activated they bounce unauthenticated callers either to
+// /auth/login (HTML) or to a 401 (API). The do/while wrapper keeps
+// the macro safe inside an if/else without braces.
+#define REQUIRE_AUTH_HTML(req) do { \
+    if (!web_auth_required((req), false)) return ESP_OK; \
+} while (0)
+#define REQUIRE_AUTH_API(req) do { \
+    if (!web_auth_required((req), true)) return ESP_OK; \
+} while (0)
 
 // In-flight OAuth provisioning state: a random nonce set by
 // /register-start, consumed once by /token-callback to defeat CSRF.
@@ -206,6 +219,7 @@ static esp_err_t handle_favicon(httpd_req_t *req)
 
 static esp_err_t handle_root(httpd_req_t *req)
 {
+    REQUIRE_AUTH_HTML(req);
     set_pna_response_headers(req);
     httpd_resp_set_type(req, "text/html; charset=utf-8");
     httpd_resp_send(req, (const char *)index_html_start,
@@ -215,6 +229,7 @@ static esp_err_t handle_root(httpd_req_t *req)
 
 static esp_err_t handle_status(httpd_req_t *req)
 {
+    REQUIRE_AUTH_API(req);
     stats_counters_t c;
     stats_snapshot_counters(&c);
 
@@ -285,12 +300,17 @@ static esp_err_t handle_status(httpd_req_t *req)
     cJSON *cl = cJSON_AddObjectToObject(root, "calls");
     cJSON_AddBoolToObject  (cl,   "log_known",   config_log_known_calls());
 
+    cJSON *au = cJSON_AddObjectToObject(root, "auth");
+    cJSON_AddBoolToObject  (au,   "enabled",     config_auth_enabled());
+    cJSON_AddBoolToObject  (au,   "logged_in",   web_auth_is_logged_in(req));
+
     send_json(req, root);
     return ESP_OK;
 }
 
 static esp_err_t handle_calls(httpd_req_t *req)
 {
+    REQUIRE_AUTH_API(req);
     stats_call_t calls[STATS_MAX_CALLS];
     int n = stats_snapshot_calls(calls, STATS_MAX_CALLS);
     int64_t now_us = esp_timer_get_time();
@@ -366,6 +386,7 @@ static bool form_get(const char *body, const char *key, char *out, size_t cap)
 
 static esp_err_t handle_config_post(httpd_req_t *req)
 {
+    REQUIRE_AUTH_API(req);
     int total = req->content_len;
     if (total <= 0 || total > 1024) {
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "body missing or too large");
@@ -496,6 +517,7 @@ static void send_fail(httpd_req_t *req, const char *message)
 // with the new identity right away.
 static esp_err_t handle_fritzbox_setup(httpd_req_t *req)
 {
+    REQUIRE_AUTH_API(req);
     char body[512];
     if (recv_body(req, body, sizeof(body)) < 0) {
         send_fail(req, "Body missing or too large.");
@@ -706,6 +728,7 @@ static void url_encode(const char *in, char *out, size_t cap)
 // &state=<nonce>.
 static esp_err_t handle_register_start(httpd_req_t *req)
 {
+    REQUIRE_AUTH_HTML(req);
     // Random 32-hex-char nonce.
     static const char hex[] = "0123456789abcdef";
     for (int i = 0; i < 32; i++) {
@@ -750,6 +773,7 @@ static esp_err_t handle_register_start(httpd_req_t *req)
 // the user a friendly success page that links back to the main UI.
 static esp_err_t handle_token_callback(httpd_req_t *req)
 {
+    REQUIRE_AUTH_HTML(req);
     char query[512];
     if (httpd_req_get_url_query_str(req, query, sizeof(query)) != ESP_OK) {
         httpd_resp_set_type(req, "text/html; charset=utf-8");
@@ -829,6 +853,7 @@ static esp_err_t handle_token_callback(httpd_req_t *req)
 // (2 minutes) the pending state is wiped and an error returned.
 static esp_err_t handle_fritzbox_2fa_status(httpd_req_t *req)
 {
+    REQUIRE_AUTH_API(req);
     if (!s_2fa.active) {
         send_fail(req, "No 2FA request in progress.");
         return ESP_OK;
@@ -943,6 +968,7 @@ static esp_err_t handle_fritzbox_2fa_status(httpd_req_t *req)
 
 static esp_err_t handle_errors(httpd_req_t *req)
 {
+    REQUIRE_AUTH_API(req);
     stats_error_t errs[STATS_MAX_ERRORS];
     int n = stats_snapshot_errors(errs, STATS_MAX_ERRORS);
     int64_t now_us = esp_timer_get_time();
@@ -966,6 +992,7 @@ static esp_err_t handle_errors(httpd_req_t *req)
 // don't decode either natively, the UI wraps it in a WAV header).
 static esp_err_t handle_announcement_get(httpd_req_t *req)
 {
+    REQUIRE_AUTH_API(req);
     const uint8_t *buf = NULL;
     size_t len = 0;
     if (announcement_get(&buf, &len) != ESP_OK || len == 0) {
@@ -985,6 +1012,7 @@ static esp_err_t handle_announcement_get(httpd_req_t *req)
 // announcement_write_* API so we don't hold the full 240 KB on heap.
 static esp_err_t handle_announcement_post(httpd_req_t *req)
 {
+    REQUIRE_AUTH_API(req);
     int total = req->content_len;
     if (total <= 0 || total > (int)ANNOUNCEMENT_MAX_BYTES) {
         char msg[64];
@@ -1070,6 +1098,7 @@ static esp_err_t handle_announcement_post(httpd_req_t *req)
 // back to the embedded default.
 static esp_err_t handle_announcement_reset(httpd_req_t *req)
 {
+    REQUIRE_AUTH_API(req);
     announcement_reset();
     cJSON *root = cJSON_CreateObject();
     cJSON_AddBoolToObject  (root, "ok", true);
@@ -1086,6 +1115,7 @@ static esp_err_t handle_announcement_reset(httpd_req_t *req)
 // web_start), the bootloader rolls back on the next reset.
 static esp_err_t handle_firmware_upload(httpd_req_t *req)
 {
+    REQUIRE_AUTH_API(req);
     int total = req->content_len;
     if (total <= 0) {
         send_fail(req, "Upload body missing.");
@@ -1182,6 +1212,7 @@ static esp_err_t handle_firmware_upload(httpd_req_t *req)
 // is scheduled by firmware_try_update on success.
 static esp_err_t handle_firmware_check(httpd_req_t *req)
 {
+    REQUIRE_AUTH_API(req);
     fw_update_outcome_t out;
     firmware_try_update(true, &out);
 
@@ -1246,6 +1277,7 @@ static void factory_reset_task(void *arg)
 
 static esp_err_t handle_factory_reset(httpd_req_t *req)
 {
+    REQUIRE_AUTH_API(req);
     // Users have reported surprise factory resets without pressing the
     // red button. Log the caller so a recurrence is diagnosable — the
     // UI is behind a confirm() dialog, so any call reaching us is
@@ -1315,6 +1347,7 @@ static esp_err_t handle_factory_reset(httpd_req_t *req)
 // POST /api/sync/run — trigger an immediate blocklist sync.
 static esp_err_t handle_sync_run(httpd_req_t *req)
 {
+    REQUIRE_AUTH_API(req);
     bool triggered = sync_trigger_now();
     cJSON *root = cJSON_CreateObject();
     cJSON_AddBoolToObject  (root, "ok", triggered);
@@ -1327,6 +1360,7 @@ static esp_err_t handle_sync_run(httpd_req_t *req)
 // POST /api/errors/clear — drops all buffered error entries.
 static esp_err_t handle_errors_clear(httpd_req_t *req)
 {
+    REQUIRE_AUTH_API(req);
     stats_clear_errors();
     cJSON *root = cJSON_CreateObject();
     cJSON_AddBoolToObject(root, "ok", true);
@@ -1337,6 +1371,7 @@ static esp_err_t handle_errors_clear(httpd_req_t *req)
 // POST /api/calls/clear — drops all buffered call entries.
 static esp_err_t handle_calls_clear(httpd_req_t *req)
 {
+    REQUIRE_AUTH_API(req);
     stats_clear_calls();
     cJSON *root = cJSON_CreateObject();
     cJSON_AddBoolToObject(root, "ok", true);
@@ -1350,6 +1385,7 @@ static esp_err_t handle_calls_clear(httpd_req_t *req)
 // returns HTTP 200; `ok` in the JSON body tells the UI the outcome.
 static esp_err_t handle_token_test(httpd_req_t *req)
 {
+    REQUIRE_AUTH_API(req);
     // Response shape: { ok: bool, code: "ok"|"fail"|"none", message: ... }
     // `code` is a stable discriminator the UI localises via i18n; the
     // `message` is the English default, only shown if the UI cannot
@@ -1396,6 +1432,10 @@ static const httpd_uri_t URIS[] = {
     { .uri = "/api/token-test",          .method = HTTP_POST, .handler = handle_token_test,          .user_ctx = NULL },
     { .uri = "/register-start",      .method = HTTP_GET,  .handler = handle_register_start, .user_ctx = NULL },
     { .uri = "/token-callback",      .method = HTTP_GET,  .handler = handle_token_callback, .user_ctx = NULL },
+    { .uri = "/auth/login",          .method = HTTP_GET,  .handler = web_auth_handle_login,    .user_ctx = NULL },
+    { .uri = "/auth/callback",       .method = HTTP_GET,  .handler = web_auth_handle_callback, .user_ctx = NULL },
+    { .uri = "/auth/logout",         .method = HTTP_POST, .handler = web_auth_handle_logout,   .user_ctx = NULL },
+    { .uri = "/auth/disable",        .method = HTTP_POST, .handler = web_auth_handle_disable,  .user_ctx = NULL },
     // Catch-all OPTIONS handler for the PNA preflight Chrome/Edge sends
     // before navigating from https://phoneblock.net to this dongle's
     // LAN IP. Method-scoped to OPTIONS so it doesn't shadow any of the
@@ -1410,6 +1450,7 @@ void web_start(void)
         return;
     }
     generate_reset_nonce();
+    web_auth_setup();
     httpd_config_t cfg = HTTPD_DEFAULT_CONFIG();
     cfg.server_port = 80;
     cfg.max_uri_handlers = sizeof(URIS) / sizeof(URIS[0]) + 2;

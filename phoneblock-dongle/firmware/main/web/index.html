@@ -140,6 +140,15 @@ const I18N = {
     'status.errors.empty': 'keine Fehler',
     'status.errors.ago': 'vor {age}',
     'status.errors.clear': 'Log leeren',
+    'status.auth.title': 'Zugangsschutz',
+    'status.auth.intro': 'Schützt die Konfigurationsoberfläche im laufenden Betrieb. Aktivierst Du den Schutz, fragt diese Seite ab dann nach einer Anmeldung über Deinen PhoneBlock-Account, bevor sie Anrufdaten zeigt oder Einstellungen entgegennimmt.',
+    'status.auth.disabled': 'Zugangsschutz aus — jeder im LAN erreicht das Dashboard ohne Anmeldung.',
+    'status.auth.enabled': 'Zugangsschutz aktiv — angemeldet als PhoneBlock-Nutzer.',
+    'status.auth.no_token': 'Zugangsschutz benötigt einen konfigurierten PhoneBlock-Token (siehe Schritt 2 oben). Erst dann kann der Dongle Deine Identität gegen den Server prüfen.',
+    'status.auth.enable': 'Zugangsschutz einschalten',
+    'status.auth.disable': 'Zugangsschutz ausschalten',
+    'status.auth.logout': 'Abmelden',
+    'status.auth.activate.intro': 'Vor dem Einschalten wirst Du zu phoneblock.net umgeleitet, um Dich anzumelden — erst nach erfolgreicher Anmeldung wird der Schutz aktiviert. So kannst Du Dich nicht aussperren.',
     'status.reset.title': 'Werkseinstellungen',
     'status.reset.intro': 'Löscht alle Einstellungen im Dongle (SIP-Zugangsdaten, PhoneBlock-Token, Fehlerverlauf) und startet neu.',
     'status.reset.button': 'Konfiguration zurücksetzen',
@@ -303,6 +312,15 @@ const I18N = {
     'status.errors.empty': 'no errors',
     'status.errors.ago': '{age} ago',
     'status.errors.clear': 'Clear log',
+    'status.auth.title': 'Access protection',
+    'status.auth.intro': 'Protects the configuration UI in everyday operation. When you turn this on, the page asks for a "Login with PhoneBlock" before it shows call data or accepts setting changes.',
+    'status.auth.disabled': 'Access protection off — anyone on the LAN can reach the dashboard without logging in.',
+    'status.auth.enabled': 'Access protection on — signed in as your PhoneBlock user.',
+    'status.auth.no_token': 'Access protection needs a configured PhoneBlock token (see step 2 above). Only then can the dongle verify your identity against the server.',
+    'status.auth.enable': 'Enable access protection',
+    'status.auth.disable': 'Disable access protection',
+    'status.auth.logout': 'Sign out',
+    'status.auth.activate.intro': 'Before turning it on you are redirected to phoneblock.net to sign in — protection is only activated after a successful login. That way you cannot lock yourself out.',
     'status.reset.title': 'Factory reset',
     'status.reset.intro': 'Erases all dongle settings (SIP credentials, PhoneBlock token, error history) and reboots.',
     'status.reset.button': 'Reset configuration',
@@ -466,6 +484,15 @@ const I18N = {
     'status.errors.empty': 'aucune erreur',
     'status.errors.ago': 'il y a {age}',
     'status.errors.clear': 'Vider le journal',
+    'status.auth.title': 'Protection d’accès',
+    'status.auth.intro': 'Protège l’interface de configuration en exploitation. Une fois activée, la page demande une « Connexion avec PhoneBlock » avant d’afficher les appels ou d’accepter des modifications.',
+    'status.auth.disabled': 'Protection d’accès désactivée — n’importe qui sur le LAN peut atteindre le tableau de bord sans se connecter.',
+    'status.auth.enabled': 'Protection d’accès active — connecté en tant qu’utilisateur PhoneBlock.',
+    'status.auth.no_token': 'La protection d’accès nécessite un jeton PhoneBlock configuré (voir l’étape 2 ci-dessus). Le dongle ne peut vérifier ton identité auprès du serveur qu’ensuite.',
+    'status.auth.enable': 'Activer la protection d’accès',
+    'status.auth.disable': 'Désactiver la protection d’accès',
+    'status.auth.logout': 'Se déconnecter',
+    'status.auth.activate.intro': 'Avant d’activer, tu es redirigé vers phoneblock.net pour te connecter — la protection n’est activée qu’après une connexion réussie. Tu ne peux donc pas te bloquer dehors.',
     'status.reset.title': 'Réinitialisation',
     'status.reset.intro': 'Efface tous les réglages du dongle (identifiants SIP, jeton PhoneBlock, historique des erreurs) et redémarre.',
     'status.reset.button': 'Réinitialiser la configuration',
@@ -629,6 +656,15 @@ const I18N = {
     'status.errors.empty': 'sin errores',
     'status.errors.ago': 'hace {age}',
     'status.errors.clear': 'Vaciar registro',
+    'status.auth.title': 'Protección de acceso',
+    'status.auth.intro': 'Protege la interfaz de configuración durante el uso diario. Si la activas, la página pedirá un «Inicio de sesión con PhoneBlock» antes de mostrar llamadas o aceptar cambios.',
+    'status.auth.disabled': 'Protección de acceso desactivada — cualquiera en la LAN puede llegar al panel sin iniciar sesión.',
+    'status.auth.enabled': 'Protección de acceso activa — sesión iniciada como usuario de PhoneBlock.',
+    'status.auth.no_token': 'La protección de acceso necesita un token PhoneBlock configurado (paso 2 arriba). Solo entonces el dongle puede verificar tu identidad frente al servidor.',
+    'status.auth.enable': 'Activar protección de acceso',
+    'status.auth.disable': 'Desactivar protección de acceso',
+    'status.auth.logout': 'Cerrar sesión',
+    'status.auth.activate.intro': 'Antes de activarla se te redirige a phoneblock.net para iniciar sesión — la protección solo se activa tras un inicio de sesión correcto. Así no puedes bloquearte fuera.',
     'status.reset.title': 'Restablecimiento',
     'status.reset.intro': 'Borra todos los ajustes del dongle (credenciales SIP, token PhoneBlock, historial de errores) y reinicia.',
     'status.reset.button': 'Restablecer configuración',
@@ -989,6 +1025,20 @@ function renderStatus(){
     +   esc(t('status.fw.check')) + '</button>'
     + '  <span id="fwMsg" class="muted" style="margin-left:.6rem"></span>'
     + '</p></section>'
+    + '<section id="authSection" style="display:none">'
+    + '<h2>' + esc(t('status.auth.title')) + '</h2>'
+    + '<p class="muted">' + esc(t('status.auth.intro')) + '</p>'
+    + '<p id="authState" class="muted" style="margin-top:.4rem"></p>'
+    + '<p id="authActivateHint" class="muted" style="display:none;margin-top:.4rem">'
+    +   esc(t('status.auth.activate.intro')) + '</p>'
+    + '<p style="margin-top:.6rem">'
+    + '  <button id="authEnable" class="btn-primary" style="display:none;padding:.4rem .9rem;font-size:.9rem">'
+    +    esc(t('status.auth.enable')) + '</button>'
+    + '  <button id="authLogout" class="btn-ghost" style="display:none;padding:.3rem .7rem;font-size:.85rem">'
+    +    esc(t('status.auth.logout')) + '</button>'
+    + '  <button id="authDisable" class="btn-ghost" style="display:none;border-color:#d93025;color:#d93025;padding:.3rem .7rem;font-size:.85rem;margin-left:.4rem">'
+    +    esc(t('status.auth.disable')) + '</button>'
+    + '</p></section>'
     + '<section id="resetSection" style="display:none">'
     + '<h2>' + esc(t('status.reset.title')) + '</h2>'
     + '<p class="muted">' + esc(t('status.reset.intro')) + '</p>'
@@ -1045,6 +1095,7 @@ async function refreshAll(){
   const annSec        = $('annSection');
   const syncSec       = $('syncSection');
   const fwSec         = $('fwSection');
+  const authSec       = $('authSection');
   if (!sipConfigured || !tokenSet){
     // Setup incomplete — show the hero with per-step progress until
     // both SIP and the PhoneBlock token are configured. The status
@@ -1058,6 +1109,7 @@ async function refreshAll(){
     syncSec.style.display = 'none';
     resetSec.style.display = 'none';
     fwSec.style.display = 'none';
+    authSec.style.display = 'none';
     return;
   }
   heroSlot.innerHTML = '';
@@ -1068,6 +1120,7 @@ async function refreshAll(){
   syncSec.style.display = '';
   resetSec.style.display = '';
   fwSec.style.display = '';
+  authSec.style.display = '';
 
   // Blocklist sync section: show either "unavailable" (no FB app
   // creds in NVS), "never run", "running", "last ok", "last partial"
@@ -1330,6 +1383,69 @@ async function refreshAll(){
       catch (_){ /* next poll will reflect whatever state we end up in */ }
       await refreshAll();
       clearBtn.disabled = false;
+    };
+  }
+
+  // Access protection ("Login mit PhoneBlock"). Counter buttons:
+  //   - off + token set      → "Enable" button visible
+  //   - off + token missing  → "needs token" hint, no buttons
+  //   - on  + logged in      → state line + Logout + Disable
+  //   - on  + not logged in  → cannot happen here; auth gate would
+  //     have 302'd us to /auth/login before this script even ran
+  const auth = s.auth || { enabled: false, logged_in: false };
+  const authState     = $('authState');
+  const authHint      = $('authActivateHint');
+  const authEnableBtn = $('authEnable');
+  const authLogoutBtn = $('authLogout');
+  const authDisableBtn= $('authDisable');
+  if (auth.enabled){
+    authState.textContent = t('status.auth.enabled');
+    authState.style.color = '#188038';
+    authHint.style.display = 'none';
+    authEnableBtn.style.display = 'none';
+    authLogoutBtn.style.display = '';
+    authDisableBtn.style.display = '';
+  } else if (tokenSet){
+    authState.textContent = t('status.auth.disabled');
+    authState.style.color = '';
+    authHint.style.display = '';
+    authEnableBtn.style.display = '';
+    authLogoutBtn.style.display = 'none';
+    authDisableBtn.style.display = 'none';
+  } else {
+    authState.textContent = t('status.auth.no_token');
+    authState.style.color = '#e8710a';
+    authHint.style.display = 'none';
+    authEnableBtn.style.display = 'none';
+    authLogoutBtn.style.display = 'none';
+    authDisableBtn.style.display = 'none';
+  }
+  if (!authEnableBtn.onclick){
+    // Real navigation: the dongle 302s to phoneblock.net, login,
+    // 302 back to /auth/callback, which sets the cookie and persists
+    // auth_enabled=1 only on success. No JS-side state to manage.
+    authEnableBtn.onclick = () => {
+      window.location.href = '/auth/login?activate=1';
+    };
+  }
+  if (!authLogoutBtn.onclick){
+    authLogoutBtn.onclick = async () => {
+      authLogoutBtn.disabled = true;
+      try {
+        // Server returns a 302 to /auth/login; fetch follows it but
+        // stops once we read .ok — we navigate explicitly below.
+        await fetch('/auth/logout', { method: 'POST', redirect: 'manual' });
+      } catch (_){ /* navigate anyway */ }
+      window.location.href = '/auth/login';
+    };
+  }
+  if (!authDisableBtn.onclick){
+    authDisableBtn.onclick = async () => {
+      authDisableBtn.disabled = true;
+      try { await fetch('/auth/disable', { method: 'POST' }); }
+      catch (_){ /* next poll will reconcile */ }
+      authDisableBtn.disabled = false;
+      refreshAll();
     };
   }
 

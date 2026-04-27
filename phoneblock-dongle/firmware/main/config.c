@@ -27,6 +27,7 @@ static const char *NS   = "phoneblock";
 #define K_FB_APP_PASS   "fb_app_pass"
 #define K_SYNC_ENABLED  "sync_enabled"
 #define K_LOG_KNOWN     "log_known_calls"
+#define K_AUTH_ENABLED  "auth_enabled"
 #define K_CONTACT_HOST  "contact_host"
 #define K_CONTACT_PORT  "contact_port"
 #define K_PB_URL        "pb_url"
@@ -55,6 +56,7 @@ typedef struct {
     char fb_app_pass[40];    // spec cap is 32; 40 for NUL + padding
     char sync_enabled[4];    // "1" | "0" (or empty = default off)
     char log_known[4];       // "1" | "0" (or empty = default on)
+    char auth_enabled[4];    // "1" | "0" (or empty = default off)
     char contact_host[64];
     int  contact_port;
     char pb_base_url[128];
@@ -115,6 +117,7 @@ void config_load(void)
         s_config.fb_app_pass[0]   = '\0';
         s_config.sync_enabled[0]  = '\0';
         s_config.log_known[0]     = '\0';
+        s_config.auth_enabled[0]  = '\0';
         copy_default(s_config.contact_host, sizeof(s_config.contact_host), CONFIG_SIP_CONTACT_HOST_OVERRIDE);
         s_config.contact_port = CONFIG_SIP_CONTACT_PORT_OVERRIDE;
         copy_default(s_config.pb_base_url,  sizeof(s_config.pb_base_url),  CONFIG_PHONEBLOCK_BASE_URL);
@@ -155,6 +158,8 @@ void config_load(void)
              s_config.sync_enabled, sizeof(s_config.sync_enabled));
     load_str(h, K_LOG_KNOWN, "",
              s_config.log_known, sizeof(s_config.log_known));
+    load_str(h, K_AUTH_ENABLED, "",
+             s_config.auth_enabled, sizeof(s_config.auth_enabled));
     load_str(h, K_CONTACT_HOST, CONFIG_SIP_CONTACT_HOST_OVERRIDE,
              s_config.contact_host, sizeof(s_config.contact_host));
     s_config.contact_port = load_int(h, K_CONTACT_PORT, CONFIG_SIP_CONTACT_PORT_OVERRIDE);
@@ -198,6 +203,12 @@ bool        config_log_known_calls(void)
     // Default on (empty / unrecognised → log) so new users see every
     // call the dongle handled. Only an explicit "0" disables listing.
     return s_config.log_known[0] != '0';
+}
+bool        config_auth_enabled(void)
+{
+    // Default off (empty / unrecognised → open) so the LAN-local UI
+    // stays reachable during initial setup. Only "1" closes it.
+    return s_config.auth_enabled[0] == '1';
 }
 const char *config_contact_host_override(void) { return s_config.contact_host; }
 int         config_contact_port_override(void) { return s_config.contact_port; }
@@ -302,6 +313,8 @@ esp_err_t config_update(const config_update_t *u)
                                         s_config.sync_enabled, sizeof(s_config.sync_enabled));
     if (err == ESP_OK) err = set_str_if(h, K_LOG_KNOWN, u->log_known_calls,
                                         s_config.log_known, sizeof(s_config.log_known));
+    if (err == ESP_OK) err = set_str_if(h, K_AUTH_ENABLED, u->auth_enabled,
+                                        s_config.auth_enabled, sizeof(s_config.auth_enabled));
     if (err == ESP_OK) err = set_str_if(h, K_PB_URL, u->phoneblock_base_url,
                                         s_config.pb_base_url, sizeof(s_config.pb_base_url));
     if (err == ESP_OK) err = set_str_if(h, K_PB_TOKEN, u->phoneblock_token,
