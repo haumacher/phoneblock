@@ -134,6 +134,8 @@ const I18N = {
     'status.calls.col.name': 'Name',
     'status.calls.col.verdict': 'Urteil',
     'status.calls.clear': 'Liste leeren',
+    'status.calls.log_known': 'Bekannte Anrufer protokollieren',
+    'status.calls.log_known.help': 'Wenn deaktiviert, erscheinen Anrufe von Nummern aus dem Telefonbuch und interne Codes (**, *…) nicht in der Liste — die Zähler oben werden trotzdem aktualisiert.',
     'status.errors.title': 'Fehler',
     'status.errors.empty': 'keine Fehler',
     'status.errors.ago': 'vor {age}',
@@ -295,6 +297,8 @@ const I18N = {
     'status.calls.col.name': 'Name',
     'status.calls.col.verdict': 'Verdict',
     'status.calls.clear': 'Clear list',
+    'status.calls.log_known': 'Log known callers',
+    'status.calls.log_known.help': 'When off, calls from numbers in the address book and internal codes (**, *…) are not added to the list — counters above still update.',
     'status.errors.title': 'Errors',
     'status.errors.empty': 'no errors',
     'status.errors.ago': '{age} ago',
@@ -456,6 +460,8 @@ const I18N = {
     'status.calls.col.name': 'Nom',
     'status.calls.col.verdict': 'Verdict',
     'status.calls.clear': 'Vider la liste',
+    'status.calls.log_known': 'Journaliser les appels connus',
+    'status.calls.log_known.help': 'Si désactivé, les appels provenant de numéros du carnet d’adresses et les codes internes (**, *…) n’apparaissent pas dans la liste — les compteurs ci-dessus restent mis à jour.',
     'status.errors.title': 'Erreurs',
     'status.errors.empty': 'aucune erreur',
     'status.errors.ago': 'il y a {age}',
@@ -617,6 +623,8 @@ const I18N = {
     'status.calls.col.name': 'Nombre',
     'status.calls.col.verdict': 'Veredicto',
     'status.calls.clear': 'Vaciar lista',
+    'status.calls.log_known': 'Registrar llamadas conocidas',
+    'status.calls.log_known.help': 'Si está desactivado, las llamadas de números de la agenda y los códigos internos (**, *…) no aparecen en la lista — los contadores de arriba se siguen actualizando.',
     'status.errors.title': 'Errores',
     'status.errors.empty': 'sin errores',
     'status.errors.ago': 'hace {age}',
@@ -904,10 +912,16 @@ function renderStatus(){
     + '<p class="muted" id="statusInfo" style="margin:.6rem 0 0"></p>'
     + '</section>'
     + '<section id="callsSection" style="display:none">'
-    + '<h2 style="display:flex;align-items:center;justify-content:space-between">'
+    + '<h2 style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.6rem">'
     + '  <span>' + esc(t('status.calls.title')) + '</span>'
-    + '  <button id="callsClear" class="btn-ghost" style="display:none;padding:.2rem .6rem;font-size:.75rem;text-transform:none;letter-spacing:0">'
-    +    esc(t('status.calls.clear')) + '</button>'
+    + '  <span style="display:flex;align-items:center;gap:.8rem">'
+    + '    <label title="' + esc(t('status.calls.log_known.help')) + '" style="font-size:.75rem;font-weight:400;color:#444;display:flex;align-items:center;gap:.3rem">'
+    + '      <input id="callsLogKnown" type="checkbox" style="width:auto;margin:0">'
+    + '      <span>' + esc(t('status.calls.log_known')) + '</span>'
+    + '    </label>'
+    + '    <button id="callsClear" class="btn-ghost" style="display:none;padding:.2rem .6rem;font-size:.75rem;text-transform:none;letter-spacing:0">'
+    +      esc(t('status.calls.clear')) + '</button>'
+    + '  </span>'
     + '</h2>'
     + '<table><thead><tr>'
     + '<th>' + esc(t('status.calls.col.when'))    + '</th>'
@@ -1271,6 +1285,27 @@ async function refreshAll(){
       catch (_){ /* next poll will reflect whatever state we end up in */ }
       await refreshAll();
       callsClearBtn.disabled = false;
+    };
+  }
+  const callsLogKnown = $('callsLogKnown');
+  // s.calls.log_known is the persisted device flag; default true so
+  // bestand-dongles keep their current "list everything" behaviour.
+  callsLogKnown.checked = !s || !s.calls || s.calls.log_known !== false;
+  if (!callsLogKnown.onchange){
+    callsLogKnown.onchange = async () => {
+      const want = callsLogKnown.checked;
+      callsLogKnown.disabled = true;
+      const body = new URLSearchParams();
+      body.append('log_known_calls', want ? '1' : '0');
+      try {
+        await fetch('/api/config', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: body.toString(),
+        });
+      } catch (_){ /* next poll will reconcile */ }
+      callsLogKnown.disabled = false;
+      refreshAll();
     };
   }
 

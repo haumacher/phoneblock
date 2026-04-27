@@ -60,6 +60,14 @@ const char *config_fritzbox_app_pass(void);
 // Default off — the feature is explicit opt-in.
 bool        config_sync_enabled(void);
 
+// Whether calls that bypass the PhoneBlock API check — Fritz!Box
+// address-book matches and internal/non-dialable numbers (**NN
+// codes, *21# feature dials, …) — should be added to the recent-
+// calls list. Counters (total/legitimate) are always updated; this
+// flag only controls whether the list itself records the call.
+// Default on so new users see every call the dongle handled.
+bool        config_log_known_calls(void);
+
 // PhoneBlock
 // Site root URL, without "/api" suffix — api.c appends "/api/…",
 // web.c appends "/mobile/…" directly.
@@ -98,6 +106,9 @@ typedef struct {
     const char *fritzbox_app_pass;
     // "1" = enable sync, "0" = disable, NULL = leave unchanged.
     const char *sync_enabled;
+    // "1" = log known/internal calls, "0" = skip them, NULL = leave
+    // unchanged. Default when the key is unset is "log them".
+    const char *log_known_calls;
     const char *phoneblock_base_url;
     const char *phoneblock_token;
 } config_update_t;

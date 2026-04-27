@@ -48,6 +48,13 @@ void stats_setup(void);
 // --- Event hooks (called from the SIP / API code) -------------------
 
 void stats_record_call(const char *number, const char *display, verdict_t verdict);
+
+// Bumps counters for a call without adding it to the recent-calls
+// ring buffer. Used by sip_register.c when the user has opted out of
+// listing "known" calls (phone-book matches, internal Fritz!Box
+// codes) but still wants the dashboard counters (total/legitimate)
+// to reflect that a call happened.
+void stats_record_call_counters_only(verdict_t verdict);
 void stats_record_error(const char *tag, const char *message);
 void stats_record_sip_state(bool registered);
 void stats_record_api_duration(int64_t duration_us);

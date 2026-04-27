@@ -798,7 +798,11 @@ static verdict_t check_invite_caller(const char *req, int req_len)
     if (display[0] && !is_phone_number_like(display)) {
         ESP_LOGI(TAG, "caller '%s' resolved via phone book → skip API",
                  display);
-        stats_record_call(raw_user, display, VERDICT_LEGITIMATE);
+        if (config_log_known_calls()) {
+            stats_record_call(raw_user, display, VERDICT_LEGITIMATE);
+        } else {
+            stats_record_call_counters_only(VERDICT_LEGITIMATE);
+        }
         return VERDICT_LEGITIMATE;
     }
 
@@ -808,7 +812,11 @@ static verdict_t check_invite_caller(const char *req, int req_len)
 
     if (!looks_dialable(number)) {
         ESP_LOGI(TAG, "non-external caller '%s' → skip API", number);
-        stats_record_call(number, display, VERDICT_LEGITIMATE);
+        if (config_log_known_calls()) {
+            stats_record_call(number, display, VERDICT_LEGITIMATE);
+        } else {
+            stats_record_call_counters_only(VERDICT_LEGITIMATE);
+        }
         return VERDICT_LEGITIMATE;
     }
 

@@ -49,6 +49,16 @@ static void copy_trim(char *dst, size_t cap, const char *src)
     dst[n] = '\0';
 }
 
+static void bump_counters(verdict_t verdict)
+{
+    s_counters.total_calls++;
+    switch (verdict) {
+        case VERDICT_SPAM:       s_counters.spam_blocked++; break;
+        case VERDICT_LEGITIMATE: s_counters.legitimate++;   break;
+        case VERDICT_ERROR:      s_counters.errors++;       break;
+    }
+}
+
 void stats_record_call(const char *number, const char *display, verdict_t verdict)
 {
     lock();
@@ -62,13 +72,15 @@ void stats_record_call(const char *number, const char *display, verdict_t verdic
     s_calls_head = (s_calls_head + 1) % STATS_MAX_CALLS;
     if (s_calls_count < STATS_MAX_CALLS) s_calls_count++;
 
-    s_counters.total_calls++;
-    switch (verdict) {
-        case VERDICT_SPAM:       s_counters.spam_blocked++; break;
-        case VERDICT_LEGITIMATE: s_counters.legitimate++;   break;
-        case VERDICT_ERROR:      s_counters.errors++;       break;
-    }
+    bump_counters(verdict);
 
+    unlock();
+}
+
+void stats_record_call_counters_only(verdict_t verdict)
+{
+    lock();
+    bump_counters(verdict);
     unlock();
 }
 
