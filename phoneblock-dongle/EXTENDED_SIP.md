@@ -7,14 +7,25 @@ PROGRESS.md → "Extended-SIP-Backend".
 
 ## Ausgangslage
 
-- UI + NVS für `transport`, `auth_user`, `outbound`, `realm`, `srtp`
-  sind komplett (`firmware/main/config.h:42–46`).
-- `firmware/main/sip_register.c:1080–1100` warnt heute nur, dass diese
-  Felder ignoriert werden — der ganze Stack ist UDP, Auth-User =
-  SIP-User, Realm aus dem Challenge, kein SRTP, kein Outbound-Proxy.
-- Reihenfolge nach Bedarf: **TCP → TLS → Auth-User-Trennung →
-  Outbound-Proxy → SRTP**. TLS ist Telekom-Pflicht und damit der
-  wichtigste Treiber, TCP fällt als billige Vorstufe ab.
+UI + NVS für `transport`, `auth_user`, `outbound`, `realm`, `srtp`
+waren von Anfang an persistiert (`firmware/main/config.h:42–46`),
+aber der Stack ignorierte alles außer UDP. Reihenfolge der Umsetzung:
+**TCP → TLS → Auth-User-Trennung → Outbound-Proxy → SRTP**, TLS als
+Telekom-Pflicht und wichtigster Treiber.
+
+## Stand (2026-04-27)
+
+- ✅ Phase 0 — Transport-Abstraktion in `sip_transport.{c,h}`
+- ✅ Phase 1 — TCP (`tcp_connect`/`tcp_recv`, Reassembly via
+  `sip_frame_t`, Reconnect + Re-REGISTER)
+- ✅ Phase 2 — TLS via `esp-tls` + ESP-IDF-Root-Bundle, SNI, Default-Port 5061
+- ✅ Phase 3 — Identity / Auth-User / Realm-Override über
+  `current_*`-Helfer
+- ✅ Phase 4 — Outbound-Proxy via `dial_destination()`
+- ✅ Folge-Punkt — DNS-SRV (`sip_srv.{c,h}`) integriert in `dial_destination()`
+- ✅ Web-UI — Manual-Form mit allen Feldern, Port-leer = SRV/Default
+- ⏳ Phase 5 — SRTP (wartet auf realen Test-Anschluss)
+- ⏳ End-to-End-Tests gegen sipgate-basic / Provider-Matrix
 
 ## Was bewusst nicht im Scope ist
 
@@ -108,10 +119,9 @@ die Datei vollends.
       but RTP is still plaintext (SRTP arrives in Phase 5)")`
       einmalig beim SIP-Task-Start, wenn `config_sip_transport()
       == "tls"`.
-- [ ] DNS-NAPTR/SRV bewusst **nicht jetzt** — Telekom verlangt es
-      laut PROVIDERS.md:33, in lwip aber nicht trivial. Erst
-      A-Record erzwingen, SRV als optionalen Folge-Punkt
-      (siehe unten).
+- [x] DNS-SRV-Lookup nachgezogen als Folge-Punkt (siehe unten);
+      NAPTR bleibt bewusst draußen, A-Records reichen für die
+      Top-5-Provider.
 
 ### Phase 3 — Auth-User getrennt von SIP-User (~0,5 d)
 
@@ -179,9 +189,12 @@ Contact-User **und** Digest-Username. Trennen in:
 
 ## Tests / Validierung
 
-- [ ] Host-Unit-Tests (`firmware/test/`): TCP-Frame-Reassembly,
-      Realm-Override-Verhalten in Digest-Berechnung
-      (Erweiterung `test_sip_parse`).
+- [x] Host-Unit-Tests `firmware/test/test_sip_frame.c` (24 Checks
+      für die TCP-Reassembly) und `test_sip_srv.c` (23 Checks für
+      DNS-SRV-Parser + RFC-2782-Auswahl).
+- [ ] Host-Test für Realm-Override-Verhalten im Digest (Erweiterung
+      `test_sip_parse`) steht noch aus — der Code-Pfad ist drin,
+      aber nicht regressionsgesichert.
 - [ ] QEMU: TCP gegen lokalen Kamailio (UDP/TCP/TLS-Profile).
 - [ ] QEMU: TLS mit selbstsigniertem Cert + temporärem
       `CONFIG_*_INSECURE_SKIP_VERIFY` als Dev-Flag.
@@ -213,4 +226,11 @@ Contact-User **und** Digest-Username. Trennen in:
 - [PROGRESS.md](PROGRESS.md) → "Extended-SIP-Backend",
   "Generisches Provider-Setup (ohne Fritz!Box)".
 - `firmware/main/config.h` — Persistierte UI-Felder.
-- `firmware/main/sip_register.c` — heutiger UDP-only-Stack.
+- `firmware/main/sip_register.c` — SIP-Task, Helfer für Identity /
+  Auth / Realm / Outbound / Dial-Destination.
+- `firmware/main/sip_transport.{c,h}` — UDP/TCP/TLS-Dispatch,
+  Reassembly via `sip_frame_t`, transparenter Reconnect.
+- `firmware/main/sip_srv.{c,h}` — DNS-SRV-Resolver (RFC 2782),
+  `_sip._{udp,tcp}` und `_sips._tcp`.
+- `firmware/main/sip_frame.{c,h}` — pure-C-Framer für TCP/TLS-
+  Reassembly (Content-Length-basiert).
