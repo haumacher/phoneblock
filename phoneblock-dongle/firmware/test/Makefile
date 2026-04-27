@@ -7,7 +7,7 @@ CFLAGS  ?= -Wall -Wextra -Werror -O0 -g -I../main
 IDF_PATH ?= $(HOME)/tools/esp/esp-idf
 CJSON_DIR := $(IDF_PATH)/components/json/cJSON
 
-BINS = test_sip_parse test_sip_frame test_sip_srv test_tr064_parse test_pairing_parse test_api_scan
+BINS = test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_tr064_parse test_pairing_parse test_api_scan
 
 test_sip_parse: test_sip_parse.c ../main/sip_parse.c ../main/sip_parse.h \
                 ../main/audio.c ../main/audio.h
@@ -19,6 +19,9 @@ test_sip_frame: test_sip_frame.c ../main/sip_frame.c ../main/sip_frame.h \
 
 test_sip_srv: test_sip_srv.c ../main/sip_srv.c ../main/sip_srv.h
 	$(CC) $(CFLAGS) test_sip_srv.c ../main/sip_srv.c -o $@
+
+test_sip_auth: test_sip_auth.c ../main/sip_auth.c ../main/sip_auth.h
+	$(CC) $(CFLAGS) test_sip_auth.c ../main/sip_auth.c -o $@
 
 test_tr064_parse: test_tr064_parse.c ../main/tr064_parse.c ../main/tr064_parse.h
 	$(CC) $(CFLAGS) test_tr064_parse.c ../main/tr064_parse.c -o $@

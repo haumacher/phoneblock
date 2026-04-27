@@ -22,6 +22,7 @@
 #include "announcement.h"
 #include "report_queue.h"
 #include "sip_parse.h"
+#include "sip_auth.h"
 #include "sip_transport.h"
 #include "sip_srv.h"
 #include "rtp.h"
@@ -35,7 +36,6 @@ static const char *TAG = "sip";
 // REGISTER round-trip wait: how long to block on the 401/200 response
 // before giving up. Old value, preserved for the same SIP retry timing.
 #define SIP_REGISTER_RECV_TIMEOUT_MS 3000
-#define SIP_MAX_CHALLENGE    256
 
 typedef enum {
     DIALOG_IDLE,        // no active call
@@ -60,16 +60,6 @@ typedef struct {
     int64_t  bye_at_us;           // abs. deadline to send BYE (0 = no deadline)
     verdict_t verdict;            // cached API result for this call
 } dialog_t;
-
-typedef struct {
-    // Parsed auth challenge from the 401 response.
-    char realm[64];
-    char nonce[SIP_MAX_CHALLENGE];
-    char opaque[64];
-    char qop[16];        // "auth" or empty
-    char algorithm[16];  // "MD5" or empty (default MD5)
-    bool valid;
-} auth_challenge_t;
 
 typedef struct {
     char     call_id[40];       // Call-ID we use for REGISTER
@@ -167,15 +157,12 @@ static const char *current_identity_user(void)
 
 static const char *current_auth_user(void)
 {
-    const char *u = config_sip_auth_user();
-    return (u && u[0]) ? u : config_sip_user();
+    return sip_auth_effective_user(config_sip_auth_user(), config_sip_user());
 }
 
 static const char *current_realm(const auth_challenge_t *challenge)
 {
-    const char *r = config_sip_realm();
-    if (r && r[0]) return r;
-    return challenge->realm;
+    return sip_auth_effective_realm(config_sip_realm(), challenge);
 }
 
 // ---------------------------------------------------------------------------
@@ -292,80 +279,6 @@ static void digest_response(
 // Handles the subset we care about: digest scheme, comma-separated
 // key=value pairs, quoted values. Lenient w.r.t. whitespace.
 // ---------------------------------------------------------------------------
-
-static void copy_value(const char *src, size_t src_len, char *dst, size_t dst_cap)
-{
-    size_t n = src_len < dst_cap - 1 ? src_len : dst_cap - 1;
-    memcpy(dst, src, n);
-    dst[n] = '\0';
-}
-
-static void parse_auth_challenge(const char *header_value, auth_challenge_t *out)
-{
-    memset(out, 0, sizeof(*out));
-    // Default algorithm is MD5.
-    strcpy(out->algorithm, "MD5");
-
-    // Skip "Digest" scheme prefix if present.
-    const char *p = header_value;
-    while (*p == ' ') p++;
-    if (strncasecmp(p, "Digest", 6) == 0) {
-        p += 6;
-        while (*p == ' ') p++;
-    }
-
-    while (*p) {
-        // Skip whitespace and commas.
-        while (*p == ' ' || *p == ',' || *p == '\t') p++;
-        if (!*p) break;
-
-        const char *key = p;
-        while (*p && *p != '=' && *p != ',') p++;
-        size_t key_len = p - key;
-        if (*p != '=') {
-            // Malformed; skip to next comma.
-            while (*p && *p != ',') p++;
-            continue;
-        }
-        p++;  // '='
-
-        const char *val;
-        size_t val_len;
-        if (*p == '"') {
-            p++;
-            val = p;
-            while (*p && *p != '"') p++;
-            val_len = p - val;
-            if (*p == '"') p++;
-        } else {
-            val = p;
-            while (*p && *p != ',' && *p != ' ' && *p != '\r' && *p != '\n') p++;
-            val_len = p - val;
-        }
-
-        if (key_len == 5 && strncasecmp(key, "realm", 5) == 0) {
-            copy_value(val, val_len, out->realm, sizeof(out->realm));
-        } else if (key_len == 5 && strncasecmp(key, "nonce", 5) == 0) {
-            copy_value(val, val_len, out->nonce, sizeof(out->nonce));
-        } else if (key_len == 6 && strncasecmp(key, "opaque", 6) == 0) {
-            copy_value(val, val_len, out->opaque, sizeof(out->opaque));
-        } else if (key_len == 3 && strncasecmp(key, "qop", 3) == 0) {
-            // qop may be a comma-list (e.g., "auth,auth-int"). Pick "auth".
-            char qvals[32];
-            copy_value(val, val_len, qvals, sizeof(qvals));
-            if (strstr(qvals, "auth-int") && !strstr(qvals, "auth,") && !strstr(qvals, "auth ")) {
-                // only auth-int offered; not supported
-                strcpy(out->qop, "");
-            } else if (strstr(qvals, "auth")) {
-                strcpy(out->qop, "auth");
-            }
-        } else if (key_len == 9 && strncasecmp(key, "algorithm", 9) == 0) {
-            copy_value(val, val_len, out->algorithm, sizeof(out->algorithm));
-        }
-    }
-
-    out->valid = out->realm[0] != '\0' && out->nonce[0] != '\0';
-}
 
 // ---------------------------------------------------------------------------
 // Message building
@@ -535,7 +448,7 @@ static bool do_register(sip_ctx_t *c)
     }
     char val[SIP_MAX_CHALLENGE + 64];
     header_value(hdr, rx + rx_len, val, sizeof(val));
-    parse_auth_challenge(val, &c->challenge);
+    sip_auth_parse_challenge(val, &c->challenge);
     if (!c->challenge.valid) {
         ESP_LOGE(TAG, "auth challenge missing realm/nonce");
         goto cleanup;

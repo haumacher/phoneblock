@@ -190,11 +190,12 @@ Contact-User **und** Digest-Username. Trennen in:
 ## Tests / Validierung
 
 - [x] Host-Unit-Tests `firmware/test/test_sip_frame.c` (24 Checks
-      für die TCP-Reassembly) und `test_sip_srv.c` (23 Checks für
-      DNS-SRV-Parser + RFC-2782-Auswahl).
-- [ ] Host-Test für Realm-Override-Verhalten im Digest (Erweiterung
-      `test_sip_parse`) steht noch aus — der Code-Pfad ist drin,
-      aber nicht regressionsgesichert.
+      für die TCP-Reassembly), `test_sip_srv.c` (23 Checks für
+      DNS-SRV-Parser + RFC-2782-Auswahl) und `test_sip_auth.c`
+      (26 Checks für Challenge-Parser, Realm-Override und
+      Auth-User-Fallback). Die Realm-/Auth-Selektion lebt in
+      `sip_auth.{c,h}` und wird vom Host-Test gegen den
+      tatsächlich auf dem Gerät laufenden Code geprüft.
 - [ ] QEMU: TCP gegen lokalen Kamailio (UDP/TCP/TLS-Profile).
 - [ ] QEMU: TLS mit selbstsigniertem Cert + temporärem
       `CONFIG_*_INSECURE_SKIP_VERIFY` als Dev-Flag.
@@ -230,6 +231,8 @@ Contact-User **und** Digest-Username. Trennen in:
   Auth / Realm / Outbound / Dial-Destination.
 - `firmware/main/sip_transport.{c,h}` — UDP/TCP/TLS-Dispatch,
   Reassembly via `sip_frame_t`, transparenter Reconnect.
+- `firmware/main/sip_auth.{c,h}` — Challenge-Parser und
+  Realm-/Auth-User-Override-Helfer (host-getestet).
 - `firmware/main/sip_srv.{c,h}` — DNS-SRV-Resolver (RFC 2782),
   `_sip._{udp,tcp}` und `_sips._tcp`.
 - `firmware/main/sip_frame.{c,h}` — pure-C-Framer für TCP/TLS-
