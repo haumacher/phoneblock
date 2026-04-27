@@ -284,27 +284,29 @@ esp_err_t web_auth_handle_callback(httpd_req_t *req)
         return ESP_OK;
     }
 
-    // Round-trip to phoneblock.net: proves both that the JWT was
-    // signed by the server (network access alone is not enough) AND
-    // that the JWT subject matches the user owning our API token.
-    if (!phoneblock_verify_auth_code(code, state)) {
+    // Round-trip to phoneblock.net: server validates JWT signature
+    // and expiry, returns the subject (PhoneBlock user-name).
+    char verified_user[64];
+    if (!phoneblock_verify_auth_code(code, state,
+                                     verified_user, sizeof(verified_user))) {
         ESP_LOGW(TAG, "auth/callback: server rejected verification");
         httpd_resp_set_status(req, "403 Forbidden");
         httpd_resp_set_type(req, "text/html; charset=utf-8");
         httpd_resp_sendstr(req,
-            "<p>Anmeldung fehlgeschlagen — Konto stimmt nicht mit dem "
-            "konfigurierten PhoneBlock-Token überein. "
-            "<a href=\"/auth/login\">Erneut versuchen</a>.</p>");
+            "<p>Anmeldung fehlgeschlagen — der Server hat das Token "
+            "abgelehnt. <a href=\"/auth/login\">Erneut versuchen</a>.</p>");
         return ESP_OK;
     }
 
-    // Persist activation BEFORE handing out the session cookie so a
-    // browser race cannot end up with a cookie pointing at a still-
-    // open dongle (no harm done, just confusing). Activation failure
-    // is fatal — without the persisted flag the cookie would be
-    // useless on the next reboot.
-    if (was_activate && !config_auth_enabled()) {
-        config_update_t u = { .auth_enabled = "1" };
+    if (was_activate) {
+        // Trust-on-first-use: pin the verified user as the dongle's
+        // owner. From here on, only this PhoneBlock account can log
+        // in to the gate, regardless of what happens to the API
+        // token on the server side.
+        config_update_t u = {
+            .auth_enabled = "1",
+            .auth_user    = verified_user,
+        };
         if (config_update(&u) != ESP_OK) {
             ESP_LOGE(TAG, "auth/callback: failed to persist activation");
             httpd_resp_set_status(req, "500 Internal Server Error");
@@ -312,6 +314,23 @@ esp_err_t web_auth_handle_callback(httpd_req_t *req)
             httpd_resp_sendstr(req,
                 "<p>Konnte Aktivierung nicht speichern. "
                 "<a href=\"/\">Zurück</a>.</p>");
+            return ESP_OK;
+        }
+        ESP_LOGI(TAG, "auth/callback: activated for user '%s'", verified_user);
+    } else {
+        // Normal login: the JWT must be for the same user the
+        // dongle was activated for. Without this check, anyone with
+        // a PhoneBlock account could log in to anyone's dongle.
+        const char *expected = config_auth_user();
+        if (!expected[0] || strcmp(verified_user, expected) != 0) {
+            ESP_LOGW(TAG, "auth/callback: user mismatch (got '%s', want '%s')",
+                     verified_user, expected);
+            httpd_resp_set_status(req, "403 Forbidden");
+            httpd_resp_set_type(req, "text/html; charset=utf-8");
+            httpd_resp_sendstr(req,
+                "<p>Anmeldung fehlgeschlagen — dieser PhoneBlock-Account "
+                "ist nicht der Eigentümer dieses Dongles. "
+                "<a href=\"/auth/login\">Erneut versuchen</a>.</p>");
             return ESP_OK;
         }
     }
@@ -356,7 +375,13 @@ esp_err_t web_auth_handle_disable(httpd_req_t *req)
 {
     if (!web_auth_required(req, true)) return ESP_OK;
 
-    config_update_t u = { .auth_enabled = "0" };
+    // Clear both flag and pinned user — re-enabling later goes
+    // through trust-on-first-use again, allowing the (potentially
+    // changed) PhoneBlock account name to take over cleanly.
+    config_update_t u = {
+        .auth_enabled = "0",
+        .auth_user    = "",
+    };
     if (config_update(&u) != ESP_OK) {
         httpd_resp_set_status(req, "500 Internal Server Error");
         httpd_resp_set_type(req, "application/json");

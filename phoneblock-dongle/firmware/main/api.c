@@ -392,17 +392,15 @@ bool phoneblock_selftest(void)
     return ok;
 }
 
-bool phoneblock_verify_auth_code(const char *code, const char *state)
+bool phoneblock_verify_auth_code(const char *code, const char *state,
+                                 char *user_out, size_t user_cap)
 {
+    if (user_out && user_cap > 0) user_out[0] = '\0';
     if (!code || !*code) return false;
 
     char url[160];
-    snprintf(url, sizeof(url), "%s/api/verify-auth-code",
+    snprintf(url, sizeof(url), "%s/auth/verify-code",
              config_phoneblock_base_url());
-
-    char auth_header[128];
-    snprintf(auth_header, sizeof(auth_header), "Bearer %s",
-             config_phoneblock_token());
 
     // Form-encoded body: the code is a JWT (URL-safe Base64), state
     // is a 32-char hex nonce — neither needs escaping. Cap at 1 KB to
@@ -411,17 +409,17 @@ bool phoneblock_verify_auth_code(const char *code, const char *state)
     int body_len = snprintf(body, sizeof(body),
         "code=%s&state=%s", code, state ? state : "");
     if (body_len < 0 || body_len >= (int)sizeof(body)) {
-        ESP_LOGE(TAG, "verify-auth-code: body too large");
+        ESP_LOGE(TAG, "verify-code: body too large");
         return false;
     }
 
     response_buffer_t resp = {
-        .data = calloc(1, 256),
+        .data = calloc(1, 512),
         .len = 0,
-        .cap = 256,
+        .cap = 512,
     };
     if (!resp.data) {
-        ESP_LOGE(TAG, "verify-auth-code: out of memory");
+        ESP_LOGE(TAG, "verify-code: out of memory");
         return false;
     }
 
@@ -436,7 +434,6 @@ bool phoneblock_verify_auth_code(const char *code, const char *state)
     };
     esp_http_client_handle_t client = esp_http_client_init(&config);
     http_util_set_user_agent(client);
-    esp_http_client_set_header(client, "Authorization", auth_header);
     esp_http_client_set_header(client, "Content-Type",
         "application/x-www-form-urlencoded");
     esp_http_client_set_post_field(client, body, body_len);
@@ -448,17 +445,30 @@ bool phoneblock_verify_auth_code(const char *code, const char *state)
 
     bool ok = false;
     if (err != ESP_OK) {
-        ESP_LOGE(TAG, "verify-auth-code transport: %s", esp_err_to_name(err));
+        ESP_LOGE(TAG, "verify-code transport: %s", esp_err_to_name(err));
     } else if (status != 200) {
-        ESP_LOGE(TAG, "verify-auth-code: HTTP %d", status);
+        ESP_LOGE(TAG, "verify-code: HTTP %d", status);
     } else {
-        // Naive substring scan is sufficient for the well-known shape
-        // returned by VerifyAuthCodeServlet: {"ok":true} or
-        // {"ok":false,"reason":"..."}. We only care about the bool.
-        ok = (strstr(resp.data, "\"ok\":true") != NULL);
-        if (!ok) {
-            ESP_LOGW(TAG, "verify-auth-code: rejected: %.*s",
-                     resp.len, resp.data);
+        cJSON *root = cJSON_Parse(resp.data);
+        if (!root) {
+            ESP_LOGW(TAG, "verify-code: bad JSON: %.*s", resp.len, resp.data);
+        } else {
+            cJSON *ok_node   = cJSON_GetObjectItem(root, "ok");
+            cJSON *user_node = cJSON_GetObjectItem(root, "user");
+            if (cJSON_IsTrue(ok_node) && cJSON_IsString(user_node)
+                && user_node->valuestring && user_node->valuestring[0]
+                && user_out && user_cap > 0) {
+                size_t n = strnlen(user_node->valuestring, user_cap - 1);
+                memcpy(user_out, user_node->valuestring, n);
+                user_out[n] = '\0';
+                ok = true;
+            } else {
+                cJSON *reason = cJSON_GetObjectItem(root, "reason");
+                ESP_LOGW(TAG, "verify-code: rejected (reason=%s)",
+                    (cJSON_IsString(reason) && reason->valuestring)
+                        ? reason->valuestring : "unknown");
+            }
+            cJSON_Delete(root);
         }
     }
     free(resp.data);

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stddef.h>
 
 typedef enum {
     VERDICT_LEGITIMATE,
@@ -32,9 +33,15 @@ bool phoneblock_rate(const char *phone, const char *rating, const char *comment)
 // URL-encoding the leading "+". Returns true on HTTP 204.
 bool phoneblock_report_call(const char *phone);
 
-// Verifies an identity-assertion JWT against the server, using the
-// dongle's own bearer token for authentication. Returns true only if
-// the server confirms `{ "ok": true }` — i.e. the JWT's subject is
-// the same PhoneBlock user that owns the configured API token. Used
-// as the proof step in the "Login with PhoneBlock" SSO flow.
-bool phoneblock_verify_auth_code(const char *code, const char *state);
+// Verifies an identity-assertion JWT against the public
+// /auth/verify-code endpoint. On success, returns true and writes
+// the JWT subject (PhoneBlock user-name) into `user_out` (NUL-
+// terminated, truncated to user_cap). Returns false on any failure.
+//
+// Intentionally NOT bearer-authenticated: the auth gate must keep
+// working even if the user later deletes the dongle's API token on
+// phoneblock.net. Lockout protection lives on the dongle, which
+// pins the owner name at first activation and refuses any
+// subsequent JWT whose subject does not match.
+bool phoneblock_verify_auth_code(const char *code, const char *state,
+                                 char *user_out, size_t user_cap);

@@ -76,6 +76,15 @@ bool        config_log_known_calls(void);
 // browser will be able to log in (avoids the lockout case).
 bool        config_auth_enabled(void);
 
+// PhoneBlock user-name pinned at first activation of the access
+// gate. Subsequent logins are accepted only when the JWT subject
+// returned by the server matches this string. Empty when the gate
+// is off; cleared together with config_auth_enabled when the user
+// disables the gate. Trust-on-first-use: deliberately *not* tied
+// to the configured API token, so deleting that token on
+// phoneblock.net does not lock the user out of their own dongle.
+const char *config_auth_user(void);
+
 // PhoneBlock
 // Site root URL, without "/api" suffix — api.c appends "/api/…",
 // web.c appends "/mobile/…" directly.
@@ -121,6 +130,10 @@ typedef struct {
     // "0" = open access. NULL = leave unchanged. Default when the
     // key is unset is "open access" (setup phase).
     const char *auth_enabled;
+    // PhoneBlock user-name pinned as the dongle's "owner" at first
+    // activation. Empty string clears the pin (used when disabling
+    // the gate); NULL leaves the current value untouched.
+    const char *auth_user;
     const char *phoneblock_base_url;
     const char *phoneblock_token;
 } config_update_t;
