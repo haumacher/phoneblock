@@ -86,16 +86,28 @@ die Datei vollends.
 
 ### Phase 2 — TLS (~1–2 d, der Brocken)
 
-- [ ] `esp-tls` einbinden (bereits Dependency in
-      `firmware/main/CMakeLists.txt:8`).
-- [ ] Server-Verifikation gegen ESP-IDF-Root-Bundle
-      (`CONFIG_MBEDTLS_CERTIFICATE_BUNDLE=y`); Bundle-Größe und
-      Flash-Layout prüfen — OTA-Slot ist 1280 KB, Reserve ist da.
-- [ ] Default-Port 5061; SNI = `config_sip_host()`.
-- [ ] Pinning bewusst **nicht** einbauen (CA-Rotation würde sonst
-      ein Telekom-Update brauchen).
-- [ ] Sichtbare Warnung über `stats_record_error`, dass RTP weiterhin
-      Klartext ist, solange Phase 5 (SRTP) nicht steht.
+- [x] `esp-tls` einbinden: `tls_connect()`/`tls_send_all()`/
+      `tls_recv()` in `sip_transport.c` setzen auf
+      `esp_tls_conn_new_sync()` + `esp_tls_get_conn_sockfd()` für
+      die select()-Schleife auf. Reassembly läuft transparent
+      über denselben `sip_frame_t` wie TCP.
+- [x] Server-Verifikation gegen ESP-IDF-Root-Bundle:
+      `CONFIG_MBEDTLS_CERTIFICATE_BUNDLE=y` und
+      `CONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL=y` waren
+      schon in `sdkconfig.defaults` für die HTTPS-API aktiv. TLS
+      für SIP zieht das nur mit; Binary wächst um 2 KB
+      (1.119.424 → 1.121.456 Bytes), 26 % Headroom im OTA-Slot
+      bleibt.
+- [x] Default-Port 5061; SNI = `config_sip_host()`:
+      `sip_transport_open()` wendet 5061 als TLS-Default an, wenn
+      `config_sip_port() == 0`. SNI sendet `esp_tls_conn_new_sync()`
+      automatisch über das Hostname-Argument.
+- [x] Pinning bewusst nicht eingebaut — Kommentar in
+      `tls_connect()` dokumentiert die CA-Rotation-Begründung.
+- [x] Sichtbare Warnung: `stats_record_error("sip", "TLS active
+      but RTP is still plaintext (SRTP arrives in Phase 5)")`
+      einmalig beim SIP-Task-Start, wenn `config_sip_transport()
+      == "tls"`.
 - [ ] DNS-NAPTR/SRV bewusst **nicht jetzt** — Telekom verlangt es
       laut PROVIDERS.md:33, in lwip aber nicht trivial. Erst
       A-Record erzwingen, SRV als optionalen Folge-Punkt

@@ -15,9 +15,10 @@ typedef struct sip_transport sip_transport_t;
 // socket bound to local_port, and discovers our outgoing IP. Returns
 // NULL on any failure (errors logged with TAG="sip_transport").
 //
-// The "transport" string mirrors config_sip_transport(). Phase 0/1
-// implements "udp" and "tcp"; "tls" logs a warning and falls back to
-// UDP.
+// The "transport" string mirrors config_sip_transport(). "udp", "tcp"
+// and "tls" are implemented; an unknown value logs a warning and falls
+// back to UDP. If registrar_port == 0, a per-transport default is
+// applied (5060 for UDP/TCP, 5061 for TLS).
 sip_transport_t *sip_transport_open(const char *transport,
                                     const char *registrar_host,
                                     int registrar_port,

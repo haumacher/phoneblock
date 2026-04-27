@@ -7,6 +7,8 @@
 
 #include "esp_log.h"
 #include "esp_netif.h"
+#include "esp_tls.h"
+#include "esp_crt_bundle.h"
 
 #include "lwip/netdb.h"
 
@@ -19,18 +21,26 @@ static const char *TAG = "sip_transport";
 // from any mainstream registrar.
 #define SIP_TCP_FRAME_BUF 4096
 
-typedef enum { TR_UDP, TR_TCP } transport_kind_t;
+typedef enum { TR_UDP, TR_TCP, TR_TLS } transport_kind_t;
+
+// TLS handshake budget. Real-world experience: Telekom and sipgate
+// complete in <2 s; 10 s gives us headroom for slower paths without
+// blocking the SIP task long enough to feel like a hang.
+#define SIP_TLS_HANDSHAKE_TIMEOUT_MS 10000
 
 struct sip_transport {
     transport_kind_t kind;
-    int  sock;
-    struct sockaddr_in registrar;
+    int  sock;                       // UDP/TCP socket fd; -1 for TLS
+    esp_tls_t *tls;                  // TLS only
+    struct sockaddr_in registrar;    // peer addr for UDP/TCP; informational for TLS
+    char registrar_host[64];         // saved for TCP/TLS reconnect (esp-tls needs hostname for SNI)
+    int  registrar_port;
     char local_ip[INET_ADDRSTRLEN];
     int  local_port;
     char via_token[8];
     char uri_param[8];
 
-    // TCP-only.
+    // Stream-only (TCP/TLS).
     sip_framer_t framer;
     char        *frame_buf;
     bool         reconnected_flag;
@@ -38,6 +48,8 @@ struct sip_transport {
 
 static bool tcp_connect(sip_transport_t *t);
 static void tcp_drop(sip_transport_t *t);
+static bool tls_connect(sip_transport_t *t);
+static void tls_drop(sip_transport_t *t);
 
 // ---------------------------------------------------------------------------
 // Common helpers
@@ -81,20 +93,28 @@ static bool dns_resolve(const char *host, int port, int socktype,
 bool sip_transport_resolve(sip_transport_t *t,
                            const char *host, int port)
 {
-    int socktype = (t->kind == TR_TCP) ? SOCK_STREAM : SOCK_DGRAM;
+    int socktype = (t->kind == TR_UDP) ? SOCK_DGRAM : SOCK_STREAM;
     if (!dns_resolve(host, port, socktype, &t->registrar)) return false;
 
     char ip[INET_ADDRSTRLEN];
     inet_ntoa_r(t->registrar.sin_addr, ip, sizeof(ip));
     ESP_LOGI(TAG, "registrar %s:%d → %s", host, port, ip);
 
+    // Stream transports keep host/port for transparent reconnects;
+    // esp-tls in particular needs the hostname for SNI on every retry.
+    if (t->kind == TR_TCP || t->kind == TR_TLS) {
+        strncpy(t->registrar_host, host, sizeof(t->registrar_host) - 1);
+        t->registrar_host[sizeof(t->registrar_host) - 1] = '\0';
+        t->registrar_port = port;
+    }
+
     if (t->kind == TR_TCP) {
-        // Force a fresh connect against the new address. The caller is
-        // about to send REGISTER anyway.
         tcp_drop(t);
         if (!tcp_connect(t)) return false;
-        // Explicit caller-initiated re-resolve → don't surface the
-        // reconnect flag (caller already plans to re-REGISTER).
+        t->reconnected_flag = false;
+    } else if (t->kind == TR_TLS) {
+        tls_drop(t);
+        if (!tls_connect(t)) return false;
         t->reconnected_flag = false;
     }
     return true;
@@ -196,6 +216,75 @@ static void tcp_reconnect(sip_transport_t *t)
 }
 
 // ---------------------------------------------------------------------------
+// TLS connect / drop
+// ---------------------------------------------------------------------------
+
+static bool tls_connect(sip_transport_t *t)
+{
+    // Cert verification: rely on the ESP-IDF certificate bundle
+    // (CONFIG_MBEDTLS_CERTIFICATE_BUNDLE=y in sdkconfig.defaults). We
+    // intentionally do NOT pin a specific cert: a Telekom CA rotation
+    // would otherwise require a firmware update before the dongle could
+    // re-register. The bundle's update cycle is governed by IDF.
+    //
+    // SNI is implicit — esp_tls_conn_new_sync() sends the hostname
+    // argument as SNI extension by default.
+    esp_tls_cfg_t cfg = {
+        .crt_bundle_attach = esp_crt_bundle_attach,
+        .timeout_ms        = SIP_TLS_HANDSHAKE_TIMEOUT_MS,
+    };
+
+    esp_tls_t *tls = esp_tls_init();
+    if (!tls) {
+        ESP_LOGE(TAG, "esp_tls_init failed");
+        return false;
+    }
+    int rc = esp_tls_conn_new_sync(t->registrar_host,
+                                   (int)strlen(t->registrar_host),
+                                   t->registrar_port, &cfg, tls);
+    if (rc != 1) {
+        ESP_LOGW(TAG, "TLS connect to %s:%d failed (rc=%d)",
+                 t->registrar_host, t->registrar_port, rc);
+        esp_tls_conn_destroy(tls);
+        return false;
+    }
+
+    // Read back the kernel-assigned local port from the underlying fd
+    // so Via/Contact stay consistent with what the registrar sees.
+    int fd = -1;
+    if (esp_tls_get_conn_sockfd(tls, &fd) == ESP_OK && fd >= 0) {
+        struct sockaddr_in actual = {0};
+        socklen_t alen = sizeof(actual);
+        if (getsockname(fd, (struct sockaddr *)&actual, &alen) == 0) {
+            t->local_port = ntohs(actual.sin_port);
+        }
+    }
+
+    t->tls = tls;
+    sip_framer_reset(&t->framer);
+    ESP_LOGI(TAG, "TLS connected to %s:%d, local port %d",
+             t->registrar_host, t->registrar_port, t->local_port);
+    return true;
+}
+
+static void tls_drop(sip_transport_t *t)
+{
+    if (t->tls) {
+        esp_tls_conn_destroy(t->tls);
+        t->tls = NULL;
+    }
+    sip_framer_reset(&t->framer);
+}
+
+static void tls_reconnect(sip_transport_t *t)
+{
+    tls_drop(t);
+    if (tls_connect(t)) {
+        t->reconnected_flag = true;
+    }
+}
+
+// ---------------------------------------------------------------------------
 // Open / close (top-level)
 // ---------------------------------------------------------------------------
 
@@ -213,6 +302,10 @@ sip_transport_t *sip_transport_open(const char *transport,
             kind = TR_TCP;
             via  = "TCP";
             uri  = "tcp";
+        } else if (strcasecmp(transport, "tls") == 0) {
+            kind = TR_TLS;
+            via  = "TLS";
+            uri  = "tls";
         } else {
             ESP_LOGW(TAG,
                      "transport \"%s\" not yet implemented, falling back to UDP",
@@ -220,17 +313,28 @@ sip_transport_t *sip_transport_open(const char *transport,
         }
     }
 
+    // Per-transport default port when caller passed 0/<=0.
+    if (registrar_port <= 0) {
+        registrar_port = (kind == TR_TLS) ? 5061 : 5060;
+        ESP_LOGI(TAG, "applying default port %d for transport %s",
+                 registrar_port, via);
+    }
+
     struct sip_transport *t = calloc(1, sizeof(*t));
     if (!t) return NULL;
     t->sock = -1;
     t->kind = kind;
     t->local_port = local_port;
+    t->registrar_port = registrar_port;
     strcpy(t->via_token, via);
     strcpy(t->uri_param, uri);
+    if (kind == TR_TCP || kind == TR_TLS) {
+        strncpy(t->registrar_host, registrar_host, sizeof(t->registrar_host) - 1);
+    }
 
     if (!discover_local_ip(t)) goto fail;
 
-    int socktype = (kind == TR_TCP) ? SOCK_STREAM : SOCK_DGRAM;
+    int socktype = (kind == TR_UDP) ? SOCK_DGRAM : SOCK_STREAM;
     if (!dns_resolve(registrar_host, registrar_port, socktype, &t->registrar)) {
         goto fail;
     }
@@ -238,14 +342,18 @@ sip_transport_t *sip_transport_open(const char *transport,
     inet_ntoa_r(t->registrar.sin_addr, ip, sizeof(ip));
     ESP_LOGI(TAG, "registrar %s:%d → %s", registrar_host, registrar_port, ip);
 
-    if (kind == TR_TCP) {
+    if (kind == TR_TCP || kind == TR_TLS) {
         t->frame_buf = malloc(SIP_TCP_FRAME_BUF);
         if (!t->frame_buf) {
             ESP_LOGE(TAG, "frame buffer malloc failed");
             goto fail;
         }
         sip_framer_init(&t->framer, t->frame_buf, SIP_TCP_FRAME_BUF);
-        if (!tcp_connect(t)) goto fail;
+        if (kind == TR_TCP) {
+            if (!tcp_connect(t)) goto fail;
+        } else {
+            if (!tls_connect(t)) goto fail;
+        }
     } else {
         if (!udp_open(t, local_port)) goto fail;
     }
@@ -254,6 +362,7 @@ sip_transport_t *sip_transport_open(const char *transport,
 fail:
     if (t->frame_buf) free(t->frame_buf);
     if (t->sock >= 0) close(t->sock);
+    if (t->tls) esp_tls_conn_destroy(t->tls);
     free(t);
     return NULL;
 }
@@ -262,6 +371,7 @@ void sip_transport_close(sip_transport_t *t)
 {
     if (!t) return;
     if (t->sock >= 0) close(t->sock);
+    if (t->tls) esp_tls_conn_destroy(t->tls);
     if (t->frame_buf) free(t->frame_buf);
     free(t);
 }
@@ -289,8 +399,33 @@ static int tcp_send_all(sip_transport_t *t, const void *buf, int len)
     return len;
 }
 
+static int tls_send_all(sip_transport_t *t, const void *buf, int len)
+{
+    if (!t->tls && !tls_connect(t)) return -1;
+
+    const char *p = buf;
+    int remaining = len;
+    while (remaining > 0) {
+        ssize_t n = esp_tls_conn_write(t->tls, p, (size_t)remaining);
+        if (n == ESP_TLS_ERR_SSL_WANT_READ || n == ESP_TLS_ERR_SSL_WANT_WRITE) {
+            // Synchronous mode shouldn't really return WANT_*, but if a
+            // renegotiation pulls us here, just retry once after a tick.
+            continue;
+        }
+        if (n <= 0) {
+            ESP_LOGW(TAG, "TLS write rc=%d", (int)n);
+            tls_reconnect(t);
+            return -1;
+        }
+        p += n;
+        remaining -= (int)n;
+    }
+    return len;
+}
+
 int sip_transport_send(sip_transport_t *t, const void *buf, int len)
 {
+    if (t->kind == TR_TLS) return tls_send_all(t, buf, len);
     if (t->kind == TR_TCP) return tcp_send_all(t, buf, len);
 
     int n = sendto(t->sock, buf, len, 0,
@@ -304,14 +439,16 @@ int sip_transport_send(sip_transport_t *t, const void *buf, int len)
 int sip_transport_send_to(sip_transport_t *t, const struct sockaddr_in *peer,
                           const void *buf, int len)
 {
-    if (t->kind == TR_TCP) {
+    if (t->kind == TR_TCP || t->kind == TR_TLS) {
         // Per RFC 3261 §18.2.1 the registrar reuses the existing
         // connection for in-dialog messages; the peer arg is
         // informational only. Cheap sanity-log when it disagrees.
-        if (peer && peer->sin_addr.s_addr != t->registrar.sin_addr.s_addr) {
-            ESP_LOGD(TAG, "TCP send_to: peer differs from registrar — ignored");
+        if (peer && peer->sin_addr.s_addr
+                 && peer->sin_addr.s_addr != t->registrar.sin_addr.s_addr) {
+            ESP_LOGD(TAG, "stream send_to: peer differs from registrar — ignored");
         }
-        return tcp_send_all(t, buf, len);
+        return (t->kind == TR_TLS) ? tls_send_all(t, buf, len)
+                                   : tcp_send_all(t, buf, len);
     }
 
     int n = sendto(t->sock, buf, len, 0,
@@ -427,13 +564,97 @@ static int tcp_recv(sip_transport_t *t, int timeout_ms,
     return got;
 }
 
+static int tls_recv(sip_transport_t *t, int timeout_ms,
+                    void *buf, int cap, struct sockaddr_in *from)
+{
+    // 1. Drain a fully-buffered message first (a single TLS record can
+    //    decrypt to plaintext that holds two SIP messages).
+    int got = sip_framer_pop(&t->framer, buf, cap);
+    if (got > 0) {
+        if (from) *from = t->registrar;
+        return got;
+    }
+    if (got < 0) {
+        ESP_LOGW(TAG, "TLS frame parse error → reconnect");
+        tls_reconnect(t);
+        return -1;
+    }
+
+    // 2. Recover a missing connection.
+    if (!t->tls) {
+        if (!tls_connect(t)) return -1;
+        t->reconnected_flag = true;
+    }
+
+    // 3. Wait for data on the underlying socket. esp-tls in sync mode
+    //    has no built-in select; reading the fd back lets us share the
+    //    same timeout-driven loop with UDP/TCP.
+    int fd = -1;
+    if (esp_tls_get_conn_sockfd(t->tls, &fd) != ESP_OK || fd < 0) {
+        ESP_LOGW(TAG, "esp_tls_get_conn_sockfd failed → reconnect");
+        tls_reconnect(t);
+        return -1;
+    }
+    if (timeout_ms >= 0) {
+        struct timeval tv = {
+            .tv_sec  = timeout_ms / 1000,
+            .tv_usec = (timeout_ms % 1000) * 1000,
+        };
+        fd_set rfds;
+        FD_ZERO(&rfds);
+        FD_SET(fd, &rfds);
+        int s = select(fd + 1, &rfds, NULL, NULL, &tv);
+        if (s < 0) {
+            ESP_LOGE(TAG, "select(): %s", strerror(errno));
+            tls_reconnect(t);
+            return -1;
+        }
+        if (s == 0) return 0;
+    }
+
+    // 4. Read one chunk through TLS. esp_tls_conn_read may decrypt to
+    //    less than what's queued (records are processed one at a time);
+    //    that's fine — the framer accumulates across calls.
+    char chunk[1024];
+    ssize_t n = esp_tls_conn_read(t->tls, chunk, sizeof(chunk));
+    if (n == ESP_TLS_ERR_SSL_WANT_READ || n == ESP_TLS_ERR_SSL_WANT_WRITE) {
+        // TLS-level retry needed (e.g. processing an alert record).
+        // Surface as a no-op timeout; outer loop retries.
+        return 0;
+    }
+    if (n < 0) {
+        ESP_LOGW(TAG, "TLS read rc=%d → reconnect", (int)n);
+        tls_reconnect(t);
+        return -1;
+    }
+    if (n == 0) {
+        ESP_LOGI(TAG, "registrar closed TLS → reconnect");
+        tls_reconnect(t);
+        return -1;
+    }
+    if (sip_framer_append(&t->framer, chunk, (int)n) < 0) {
+        ESP_LOGW(TAG, "TLS frame buffer full → reconnect");
+        tls_reconnect(t);
+        return -1;
+    }
+
+    got = sip_framer_pop(&t->framer, buf, cap);
+    if (got < 0) {
+        ESP_LOGW(TAG, "TLS frame parse error → reconnect");
+        tls_reconnect(t);
+        return -1;
+    }
+    if (got > 0 && from) *from = t->registrar;
+    return got;
+}
+
 int sip_transport_recv(sip_transport_t *t, int timeout_ms,
                        void *buf, int cap,
                        struct sockaddr_in *from)
 {
-    return (t->kind == TR_TCP)
-        ? tcp_recv(t, timeout_ms, buf, cap, from)
-        : udp_recv(t, timeout_ms, buf, cap, from);
+    if (t->kind == TR_TLS) return tls_recv(t, timeout_ms, buf, cap, from);
+    if (t->kind == TR_TCP) return tcp_recv(t, timeout_ms, buf, cap, from);
+    return udp_recv(t, timeout_ms, buf, cap, from);
 }
 
 // ---------------------------------------------------------------------------

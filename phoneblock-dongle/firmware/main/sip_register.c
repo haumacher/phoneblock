@@ -1054,13 +1054,24 @@ static void sip_task(void *arg)
     // Extended SIP parameters are persisted but the firmware doesn't
     // (yet) implement all of them. Warn once per start so the user sees
     // in the dashboard errors that a setting is being ignored, and can
-    // react instead of wondering why TLS never engaged.
+    // react instead of wondering why a feature never engaged.
     const char *tr = config_sip_transport();
-    if (tr[0] && strcmp(tr, "udp") != 0 && strcmp(tr, "tcp") != 0) {
+    if (tr[0] && strcmp(tr, "udp") != 0
+              && strcmp(tr, "tcp") != 0
+              && strcmp(tr, "tls") != 0) {
         char msg[80];
         snprintf(msg, sizeof(msg),
-                 "transport %.8s ignored — firmware implements UDP/TCP only",
+                 "transport %.8s ignored — firmware implements UDP/TCP/TLS only",
                  tr);
+        ESP_LOGW(TAG, "%s", msg);
+        stats_record_error("sip", msg);
+    }
+    // TLS protects only the signaling. Without SRTP (Phase 5) the audio
+    // path is still RTP/AVP cleartext on UDP/RTP. Surface that visibly
+    // so users do not have a false sense of end-to-end encryption.
+    if (strcmp(tr, "tls") == 0) {
+        const char *msg =
+            "TLS active but RTP is still plaintext (SRTP arrives in Phase 5)";
         ESP_LOGW(TAG, "%s", msg);
         stats_record_error("sip", msg);
     }
