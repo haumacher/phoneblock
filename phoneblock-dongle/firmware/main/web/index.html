@@ -260,6 +260,7 @@ const I18N = {
     'sip.manual.intro': 'Vollständige SIP-Felder. Passwort leer lassen heißt „unverändert".',
     'sip.manual.host': 'SIP-Registrar',
     'sip.manual.port': 'SIP-Port',
+    'sip.manual.port.hint': 'Leer lassen = automatisch via DNS-SRV bzw. Transport-Default (5060 UDP/TCP, 5061 TLS).',
     'sip.manual.user': 'SIP-Benutzer',
     'sip.manual.pass': 'SIP-Passwort',
     'sip.manual.submit': 'Speichern',
@@ -267,7 +268,7 @@ const I18N = {
     'sip.manual.error': 'Fehler: {msg}',
     'sip.manual.advanced': 'Erweiterte Parameter',
     'sip.manual.transport': 'Transport',
-    'sip.manual.transport.hint': 'Derzeit ist nur UDP im Firmware-Stack implementiert.',
+    'sip.manual.transport.hint': 'UDP, TCP und TLS sind alle nutzbar. TLS prüft das Server-Zertifikat gegen das ESP-IDF-Root-Bundle (kein Pinning). Audio läuft weiter unverschlüsselt — SRTP folgt.',
     'sip.manual.auth_user': 'Auth-Benutzer',
     'sip.manual.auth_user.hint': 'Leer lassen = SIP-Benutzer auch als Auth. Bei Telekom: E-Mail.',
     'sip.manual.outbound': 'Outbound-Proxy',
@@ -444,6 +445,7 @@ const I18N = {
     'sip.manual.intro': 'All SIP fields. Leaving the password blank means “unchanged”.',
     'sip.manual.host': 'SIP registrar',
     'sip.manual.port': 'SIP port',
+    'sip.manual.port.hint': 'Leave empty for auto via DNS-SRV or the transport default (5060 UDP/TCP, 5061 TLS).',
     'sip.manual.user': 'SIP user',
     'sip.manual.pass': 'SIP password',
     'sip.manual.submit': 'Save',
@@ -451,7 +453,7 @@ const I18N = {
     'sip.manual.error': 'Error: {msg}',
     'sip.manual.advanced': 'Advanced parameters',
     'sip.manual.transport': 'Transport',
-    'sip.manual.transport.hint': 'Only UDP is implemented in the firmware stack at the moment.',
+    'sip.manual.transport.hint': 'UDP, TCP and TLS are all available. TLS verifies the server certificate against the ESP-IDF root bundle (no pinning). Audio is still sent in the clear — SRTP comes later.',
     'sip.manual.auth_user': 'Auth user',
     'sip.manual.auth_user.hint': 'Empty = use SIP user for auth. Telekom: e-mail address.',
     'sip.manual.outbound': 'Outbound proxy',
@@ -628,6 +630,7 @@ const I18N = {
     'sip.manual.intro': 'Tous les champs SIP. Laisser le mot de passe vide signifie « inchangé ».',
     'sip.manual.host': 'Registrar SIP',
     'sip.manual.port': 'Port SIP',
+    'sip.manual.port.hint': 'Vide = automatique via DNS-SRV ou la valeur par défaut du transport (5060 UDP/TCP, 5061 TLS).',
     'sip.manual.user': 'Utilisateur SIP',
     'sip.manual.pass': 'Mot de passe SIP',
     'sip.manual.submit': 'Enregistrer',
@@ -635,7 +638,7 @@ const I18N = {
     'sip.manual.error': 'Erreur : {msg}',
     'sip.manual.advanced': 'Paramètres avancés',
     'sip.manual.transport': 'Transport',
-    'sip.manual.transport.hint': 'Seul UDP est implémenté dans la pile du firmware pour l’instant.',
+    'sip.manual.transport.hint': 'UDP, TCP et TLS sont disponibles. TLS vérifie le certificat serveur contre le bundle racine d’ESP-IDF (pas d’épinglage). L’audio reste en clair — SRTP arrive plus tard.',
     'sip.manual.auth_user': 'Utilisateur d’auth',
     'sip.manual.auth_user.hint': 'Vide = utiliser l’utilisateur SIP pour l’auth. Telekom : adresse e-mail.',
     'sip.manual.outbound': 'Proxy sortant',
@@ -812,6 +815,7 @@ const I18N = {
     'sip.manual.intro': 'Todos los campos SIP. Dejar la contraseña vacía significa «sin cambios».',
     'sip.manual.host': 'Registrar SIP',
     'sip.manual.port': 'Puerto SIP',
+    'sip.manual.port.hint': 'Déjelo en blanco para usar DNS-SRV o el valor predeterminado del transporte (5060 UDP/TCP, 5061 TLS).',
     'sip.manual.user': 'Usuario SIP',
     'sip.manual.pass': 'Contraseña SIP',
     'sip.manual.submit': 'Guardar',
@@ -819,7 +823,7 @@ const I18N = {
     'sip.manual.error': 'Error: {msg}',
     'sip.manual.advanced': 'Parámetros avanzados',
     'sip.manual.transport': 'Transporte',
-    'sip.manual.transport.hint': 'Por ahora el firmware solo implementa UDP.',
+    'sip.manual.transport.hint': 'UDP, TCP y TLS están disponibles. TLS verifica el certificado del servidor con el paquete raíz de ESP-IDF (sin pinning). El audio sigue en claro — SRTP llegará más tarde.',
     'sip.manual.auth_user': 'Usuario de auth',
     'sip.manual.auth_user.hint': 'Vacío = usar el usuario SIP para auth. Telekom: correo electrónico.',
     'sip.manual.outbound': 'Proxy saliente',
@@ -2025,7 +2029,8 @@ async function renderSipManual(){
   const s = await fetchJson('/api/status');
   const sip = s ? s.sip : {};
   const host  = sip.host  || '';
-  const port  = sip.port  || 5060;
+  // 0 means "auto" — let the firmware pick via DNS-SRV or transport default.
+  const port  = sip.port ? String(sip.port) : '';
   const user  = sip.user  || '';
   const tr    = sip.transport || 'udp';
   const au    = sip.auth_user || '';
@@ -2044,7 +2049,9 @@ async function renderSipManual(){
     + '<label>' + esc(t('sip.manual.host'))
     + '<input type="text"   name="sip_host" value="' + esc(host) + '"></label>'
     + '<label>' + esc(t('sip.manual.port'))
-    + '<input type="number" name="sip_port" min="1" max="65535" value="' + esc(port) + '"></label>'
+    + '<input type="number" name="sip_port" min="0" max="65535" value="' + esc(port) + '"></label>'
+    + '<p class="muted" style="font-size:.75rem;margin:.2rem 0 .6rem">'
+    +   esc(t('sip.manual.port.hint')) + '</p>'
     + '<label>' + esc(t('sip.manual.user'))
     + '<input type="text"   name="sip_user" value="' + esc(user) + '"></label>'
     + '<label>' + esc(t('sip.manual.pass'))
