@@ -178,6 +178,51 @@ static const char *current_realm(const auth_challenge_t *challenge)
 }
 
 // ---------------------------------------------------------------------------
+// Outbound proxy — Phase 4 of EXTENDED_SIP.md
+//
+// The SIP-level identity (R-URI, From, To) is always the registrar
+// host (config_sip_host()). When config_sip_outbound() is set, the
+// IP-layer destination of every signalling message is the outbound
+// proxy instead — useful when the registrar lives on an internal
+// hostname that the dongle cannot reach directly, or when a provider
+// loadbalances via a separate edge proxy.
+//
+// Spec format: "host" or "host:port". Empty → fall through to the
+// registrar address. The transport-level default port still applies
+// when only "host" was given.
+// ---------------------------------------------------------------------------
+
+// Split "host[:port]" into a host buffer + port. Returns the parsed
+// port, or 0 if no ":port" suffix is present (transport default
+// applies). Truncates host to cap-1 bytes silently — outbound specs
+// are short DNS names in practice.
+static int parse_host_port(const char *spec, char *host_out, int cap)
+{
+    if (cap > 0) host_out[0] = '\0';
+    if (!spec || !spec[0] || cap <= 0) return 0;
+    const char *colon = strchr(spec, ':');
+    int host_len = colon ? (int)(colon - spec) : (int)strlen(spec);
+    if (host_len >= cap) host_len = cap - 1;
+    memcpy(host_out, spec, host_len);
+    host_out[host_len] = '\0';
+    return colon ? atoi(colon + 1) : 0;
+}
+
+// Compute the actual dial destination for the transport. Uses the
+// outbound proxy when set, otherwise the registrar.
+static void dial_destination(char *host_out, int cap, int *port_out)
+{
+    const char *outbound = config_sip_outbound();
+    if (outbound && outbound[0]) {
+        *port_out = parse_host_port(outbound, host_out, cap);
+        return;
+    }
+    strncpy(host_out, config_sip_host(), cap - 1);
+    host_out[cap - 1] = '\0';
+    *port_out = config_sip_port();
+}
+
+// ---------------------------------------------------------------------------
 // Digest response
 //
 //   HA1 = MD5(user:realm:password)
@@ -1082,14 +1127,22 @@ static void sip_task(void *arg)
     snprintf(ctx.call_id, sizeof(ctx.call_id), "%08lx@phoneblock",
              (unsigned long)cid_rand);
 
+    char dial_host[64];
+    int  dial_port;
+    dial_destination(dial_host, sizeof(dial_host), &dial_port);
+
     ctx.transport = sip_transport_open(config_sip_transport(),
-                                       config_sip_host(),
-                                       config_sip_port(),
+                                       dial_host,
+                                       dial_port,
                                        SIP_LOCAL_PORT);
     if (!ctx.transport) {
         ESP_LOGE(TAG, "transport setup failed; aborting SIP task");
         vTaskDelete(NULL);
         return;
+    }
+    if (strcmp(dial_host, config_sip_host()) != 0) {
+        ESP_LOGI(TAG, "outbound proxy %s:%d active (SIP host: %s)",
+                 dial_host, dial_port, config_sip_host());
     }
 
     // Extended SIP parameters are persisted but the firmware doesn't
@@ -1125,11 +1178,6 @@ static void sip_task(void *arg)
         ESP_LOGW(TAG, "%s", msg);
         stats_record_error("sip", msg);
     }
-    if (config_sip_outbound()[0]) {
-        ESP_LOGW(TAG, "outbound proxy '%s' ignored — using registrar directly",
-                 config_sip_outbound());
-    }
-
     const int retry_delay_s = 30;
     char *rx = NULL;
     int64_t refresh_at_us = 0;  // absolute deadline for next REGISTER (microseconds)
@@ -1170,10 +1218,12 @@ static void sip_task(void *arg)
         if (s_reload_requested) {
             s_reload_requested = false;
             ESP_LOGI(TAG, "config reload requested → re-REGISTER with new creds");
-            // Refresh registrar address too, in case host changed.
-            sip_transport_resolve(ctx.transport,
-                                  config_sip_host(),
-                                  config_sip_port());
+            // Refresh dial address too, in case the registrar host or
+            // outbound proxy changed.
+            char new_dial_host[64];
+            int  new_dial_port;
+            dial_destination(new_dial_host, sizeof(new_dial_host), &new_dial_port);
+            sip_transport_resolve(ctx.transport, new_dial_host, new_dial_port);
             // Give the Fritz!Box a moment to settle after TR-064 has
             // just created the extension — a REGISTER fired too early
             // hits a not-yet-active slot, times out, and falls into the

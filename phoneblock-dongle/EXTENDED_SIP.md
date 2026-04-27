@@ -141,15 +141,20 @@ Contact-User **und** Digest-Username. Trennen in:
 
 ### Phase 4 — Outbound-Proxy (~0,5 d)
 
-- [ ] `resolve_registrar()` löst weiterhin den **Registrar**-
-      Hostnamen für die R-URI auf.
-- [ ] Neue Funktion `resolve_outbound()` löst
-      `config_sip_outbound()` (Format `host[:port]`) auf und
-      liefert die Ziel-`sockaddr`. Wenn leer → fällt auf den
-      Registrar zurück.
-- [ ] Sämtliche `sendto(c->sock, …, &c->registrar)`-Aufrufe nutzen
-      stattdessen `&c->outbound_dest`. Symmetrisch für TCP/TLS-
-      Connect-Ziel.
+- [x] `config_sip_host()` bleibt der Registrar-Hostname für
+      R-URI / From / To in den Builders — keine Änderung an den
+      bestehenden Helfern nötig.
+- [x] Neuer Helfer `dial_destination(host_out, cap, *port_out)`
+      in `sip_register.c` löst `config_sip_outbound()` (Format
+      `host[:port]`, geparst von `parse_host_port()`) auf und
+      fällt bei leerem Wert auf `config_sip_host()` /
+      `config_sip_port()` zurück.
+- [x] `sip_transport_open()` und `sip_transport_resolve()`
+      bekommen das Dial-Ziel statt des Registrar-Hosts. Damit
+      treffen UDP-`sendto`, TCP-`connect` und TLS-Handshake
+      automatisch auf den Outbound-Proxy, wenn einer gesetzt ist.
+      Eine einmalige `LOGI`-Zeile beim Start dokumentiert den
+      Unterschied.
 - [ ] `Route`-Header (Loose-Routing) **nicht** für die erste
       Version — sipgate/easybell/Telekom funktionieren ohne. Erst
       nachziehen, wenn ein Provider per `Record-Route` darauf
