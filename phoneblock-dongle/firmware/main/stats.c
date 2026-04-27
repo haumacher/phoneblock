@@ -155,3 +155,11 @@ void stats_clear_errors(void)
     s_errors_count = 0;
     unlock();
 }
+
+void stats_clear_calls(void)
+{
+    lock();
+    s_calls_head = 0;
+    s_calls_count = 0;
+    unlock();
+}

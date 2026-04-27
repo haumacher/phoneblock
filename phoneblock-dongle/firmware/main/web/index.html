@@ -133,6 +133,7 @@ const I18N = {
     'status.calls.col.number': 'Nummer',
     'status.calls.col.name': 'Name',
     'status.calls.col.verdict': 'Urteil',
+    'status.calls.clear': 'Liste leeren',
     'status.errors.title': 'Fehler',
     'status.errors.empty': 'keine Fehler',
     'status.errors.ago': 'vor {age}',
@@ -293,6 +294,7 @@ const I18N = {
     'status.calls.col.number': 'Number',
     'status.calls.col.name': 'Name',
     'status.calls.col.verdict': 'Verdict',
+    'status.calls.clear': 'Clear list',
     'status.errors.title': 'Errors',
     'status.errors.empty': 'no errors',
     'status.errors.ago': '{age} ago',
@@ -453,6 +455,7 @@ const I18N = {
     'status.calls.col.number': 'Numéro',
     'status.calls.col.name': 'Nom',
     'status.calls.col.verdict': 'Verdict',
+    'status.calls.clear': 'Vider la liste',
     'status.errors.title': 'Erreurs',
     'status.errors.empty': 'aucune erreur',
     'status.errors.ago': 'il y a {age}',
@@ -613,6 +616,7 @@ const I18N = {
     'status.calls.col.number': 'Número',
     'status.calls.col.name': 'Nombre',
     'status.calls.col.verdict': 'Veredicto',
+    'status.calls.clear': 'Vaciar lista',
     'status.errors.title': 'Errores',
     'status.errors.empty': 'sin errores',
     'status.errors.ago': 'hace {age}',
@@ -900,7 +904,11 @@ function renderStatus(){
     + '<p class="muted" id="statusInfo" style="margin:.6rem 0 0"></p>'
     + '</section>'
     + '<section id="callsSection" style="display:none">'
-    + '<h2>' + esc(t('status.calls.title')) + '</h2>'
+    + '<h2 style="display:flex;align-items:center;justify-content:space-between">'
+    + '  <span>' + esc(t('status.calls.title')) + '</span>'
+    + '  <button id="callsClear" class="btn-ghost" style="display:none;padding:.2rem .6rem;font-size:.75rem;text-transform:none;letter-spacing:0">'
+    +    esc(t('status.calls.clear')) + '</button>'
+    + '</h2>'
     + '<table><thead><tr>'
     + '<th>' + esc(t('status.calls.col.when'))    + '</th>'
     + '<th>' + esc(t('status.calls.col.number'))  + '</th>'
@@ -1243,7 +1251,8 @@ async function refreshAll(){
     return '<a href="' + esc(siteBase) + '/nums/' + encodeURIComponent(num)
          + '" target="_blank" rel="noopener">' + esc(num) + '</a>';
   };
-  if (calls && calls.calls.length){
+  const hasCalls = calls && calls.calls.length;
+  if (hasCalls){
     tbody.innerHTML = calls.calls.map(c =>
       '<tr><td>' + esc(fmtSec(c.age_s)) + '</td>'
       + '<td>' + numCell(c.number) + '</td>'
@@ -1252,6 +1261,17 @@ async function refreshAll(){
     ).join('');
   } else {
     tbody.innerHTML = '<tr><td colspan="4" class="muted">' + esc(t('status.calls.empty')) + '</td></tr>';
+  }
+  const callsClearBtn = $('callsClear');
+  callsClearBtn.style.display = hasCalls ? '' : 'none';
+  if (!callsClearBtn.onclick){
+    callsClearBtn.onclick = async () => {
+      callsClearBtn.disabled = true;
+      try { await fetch('/api/calls/clear', { method: 'POST' }); }
+      catch (_){ /* next poll will reflect whatever state we end up in */ }
+      await refreshAll();
+      callsClearBtn.disabled = false;
+    };
   }
 
   // Errors

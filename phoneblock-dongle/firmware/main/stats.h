@@ -63,3 +63,6 @@ int stats_snapshot_errors(stats_error_t *out, int max);
 
 // Drop all buffered error entries.
 void stats_clear_errors(void);
+
+// Drop all buffered call entries (counters are kept).
+void stats_clear_calls(void);

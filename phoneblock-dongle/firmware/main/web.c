@@ -1328,6 +1328,16 @@ static esp_err_t handle_errors_clear(httpd_req_t *req)
     return ESP_OK;
 }
 
+// POST /api/calls/clear — drops all buffered call entries.
+static esp_err_t handle_calls_clear(httpd_req_t *req)
+{
+    stats_clear_calls();
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddBoolToObject(root, "ok", true);
+    send_json(req, root);
+    return ESP_OK;
+}
+
 // POST /api/token-test
 // Runs phoneblock_selftest() against GET /test and reports whether the
 // currently stored token is still accepted by the server. Always
@@ -1366,6 +1376,7 @@ static const httpd_uri_t URIS[] = {
     { .uri = "/api/calls",   .method = HTTP_GET,  .handler = handle_calls,       .user_ctx = NULL },
     { .uri = "/api/errors",  .method = HTTP_GET,  .handler = handle_errors,      .user_ctx = NULL },
     { .uri = "/api/errors/clear",    .method = HTTP_POST, .handler = handle_errors_clear,   .user_ctx = NULL },
+    { .uri = "/api/calls/clear",     .method = HTTP_POST, .handler = handle_calls_clear,    .user_ctx = NULL },
     { .uri = "/api/factory-reset",   .method = HTTP_POST, .handler = handle_factory_reset,  .user_ctx = NULL },
     { .uri = "/api/firmware",        .method = HTTP_POST, .handler = handle_firmware_upload, .user_ctx = NULL },
     { .uri = "/api/firmware/check",  .method = HTTP_POST, .handler = handle_firmware_check,  .user_ctx = NULL },
