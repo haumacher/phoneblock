@@ -1,13 +1,13 @@
 package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
 
 import de.haumacher.phoneblock.app.render.TemplateRenderer;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.settings.AuthToken;
+import de.haumacher.phoneblock.util.IdentityJwt;
+import de.haumacher.phoneblock.util.LoopbackCallbacks;
 import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -68,6 +68,16 @@ public class CreateAuthTokenServlet extends HttpServlet {
 	 * parameter path.
 	 */
 	public static final String APP_ID_DONGLE = "PhoneBlockDongle";
+
+	/**
+	 * App-ID for the "Login with PhoneBlock" SSO flow. Switches the
+	 * POST handler from minting a new API token to signing a short-
+	 * lived identity JWT that the caller verifies via
+	 * {@code /api/verify-auth-code}.
+	 */
+	public static final String APP_ID_AUTH = "PhoneBlockAuth";
+
+	private static final String CODE_PARAM = "code";
 	
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -88,12 +98,12 @@ public class CreateAuthTokenServlet extends HttpServlet {
 			appId = "PhoneBlockMobile";
 		}
 
-		// Validate the dongle-specific callback parameter BEFORE creating
-		// the token — we don't want to hand out credentials if we'd have
-		// to refuse to deliver them afterwards.
+		// Validate the loopback callback parameter BEFORE creating
+		// the credential — we don't want to hand out a token / JWT
+		// if we'd have to refuse to deliver it afterwards.
 		String callback = null;
-		if (APP_ID_DONGLE.equals(appId)) {
-			callback = validateDongleCallback(req.getParameter(CALLBACK));
+		if (APP_ID_DONGLE.equals(appId) || APP_ID_AUTH.equals(appId)) {
+			callback = LoopbackCallbacks.validate(req.getParameter(CALLBACK));
 			if (callback == null) {
 				ServletUtil.sendMessage(resp, HttpServletResponse.SC_BAD_REQUEST,
 					"Ungültige Callback-URL");
@@ -101,87 +111,50 @@ public class CreateAuthTokenServlet extends HttpServlet {
 			}
 		}
 
-		long now = System.currentTimeMillis();
-		DB db = DBService.getInstance();
-		String label = req.getParameter(TOKEN_LABEL);
-		AuthToken loginToken = db.createAPIToken(user, now, req.getHeader("User-Agent"), label);
-
 		String redirectUrl;
 		// TODO: This might better come from a DB table (registered integrations):
 		switch (appId) {
+			case APP_ID_AUTH: {
+				// SSO flow: do NOT mint an API token. Sign a short-
+				// lived JWT that the caller verifies via
+				// /api/verify-auth-code with its existing bearer token.
+				String state = req.getParameter(STATE);
+				String jwt = IdentityJwt.sign(user, state == null ? "" : state);
+				redirectUrl = ServletUtil.withParam(callback, CODE_PARAM, jwt);
+				if (state != null) {
+					redirectUrl = ServletUtil.withParam(redirectUrl, STATE, state);
+				}
+				break;
+			}
 			case "PhoneSpamBlocker":
-				redirectUrl = ServletUtil.withParam("PhoneSpamBlocker://auth",
-					TOKEN_PARAM, loginToken.getToken());
-				break;
 			case APP_ID_DONGLE:
-				redirectUrl = ServletUtil.withParam(callback,
-					TOKEN_PARAM, loginToken.getToken());
-				redirectUrl = ServletUtil.withParam(redirectUrl,
-					STATE, req.getParameter(STATE));
+			default: {
+				long now = System.currentTimeMillis();
+				DB db = DBService.getInstance();
+				String label = req.getParameter(TOKEN_LABEL);
+				AuthToken loginToken = db.createAPIToken(user, now, req.getHeader("User-Agent"), label);
+				switch (appId) {
+					case "PhoneSpamBlocker":
+						redirectUrl = ServletUtil.withParam("PhoneSpamBlocker://auth",
+							TOKEN_PARAM, loginToken.getToken());
+						break;
+					case APP_ID_DONGLE:
+						redirectUrl = ServletUtil.withParam(callback,
+							TOKEN_PARAM, loginToken.getToken());
+						redirectUrl = ServletUtil.withParam(redirectUrl,
+							STATE, req.getParameter(STATE));
+						break;
+					default:
+						redirectUrl = ServletUtil.withParam(
+							req.getContextPath() + MOBILE_RESPONSE,
+							TOKEN_PARAM, loginToken.getToken());
+						break;
+				}
 				break;
-			default:
-				redirectUrl = ServletUtil.withParam(
-					req.getContextPath() + MOBILE_RESPONSE,
-					TOKEN_PARAM, loginToken.getToken());
-				break;
+			}
 		}
 
 		resp.sendRedirect(redirectUrl);
 	}
 
-	/**
-	 * Reject any callback URL that could leak a bearer token outside the
-	 * user's LAN. Returns the (possibly normalized) URL on success,
-	 * {@code null} if it should be refused.
-	 *
-	 * <p>
-	 * Accepted: plain {@code http://} scheme, and a host that is either a
-	 * private-range IPv4 address, a hostname ending in {@code .fritz.box}
-	 * or {@code .local}, or the bare literal {@code answerbot}/{@code localhost}.
-	 * Everything else — public hostnames, odd schemes, userinfo, fragments —
-	 * is refused.
-	 */
-	static String validateDongleCallback(String raw) {
-		if (raw == null || raw.isBlank()) return null;
-		URI uri;
-		try {
-			uri = new URI(raw);
-		} catch (URISyntaxException e) {
-			return null;
-		}
-		if (!"http".equalsIgnoreCase(uri.getScheme())) return null;
-		if (uri.getUserInfo() != null)  return null;
-		if (uri.getFragment() != null)  return null;
-		String host = uri.getHost();
-		if (host == null) return null;
-		String h = host.toLowerCase();
-		boolean hostOk =
-			h.equals("localhost") ||
-			h.equals("answerbot") ||
-			h.endsWith(".fritz.box") ||
-			h.endsWith(".local") ||
-			isPrivateIp(h);
-		if (!hostOk) return null;
-		return uri.toString();
-	}
-
-	private static boolean isPrivateIp(String host) {
-		String[] parts = host.split("\\.");
-		if (parts.length != 4) return false;
-		int[] o = new int[4];
-		for (int i = 0; i < 4; i++) {
-			try {
-				o[i] = Integer.parseInt(parts[i]);
-			} catch (NumberFormatException e) {
-				return false;
-			}
-			if (o[i] < 0 || o[i] > 255) return false;
-		}
-		if (o[0] == 10) return true;
-		if (o[0] == 127) return true;
-		if (o[0] == 169 && o[1] == 254) return true;
-		if (o[0] == 172 && o[1] >= 16 && o[1] <= 31) return true;
-		if (o[0] == 192 && o[1] == 168) return true;
-		return false;
-	}
 }
