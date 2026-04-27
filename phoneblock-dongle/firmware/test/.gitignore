@@ -1,5 +1,6 @@
 test_sip_parse
 test_sip_frame
+test_sip_srv
 test_tr064_parse
 test_pairing_parse
 test_api_scan

@@ -194,8 +194,14 @@ Contact-User **und** Digest-Username. Trennen in:
 
 ## Folge-Punkte (nicht im Hauptplan)
 
-- DNS-SRV/NAPTR-Lookup für Telekom — separat, sobald die TLS-Phase
-  steht und das echte Bedürfnis klar ist.
+- [x] DNS-SRV-Lookup für Telekom — `sip_srv.{c,h}` mit pure-C-Parser
+  (DNS-Wire-Format inkl. Compression-Pointers + RFC-2782-Auswahl,
+  23 Host-Tests in `test_sip_srv.c`) und on-device-Lookup gegen den
+  vom DHCP gelieferten Resolver. `dial_destination()` versucht SRV,
+  wenn weder ein Outbound-Proxy noch ein expliziter Port gesetzt
+  ist (Mapping `udp/tcp/tls` → `_sip._udp` / `_sip._tcp` /
+  `_sips._tcp`); fällt sonst auf den A-Record zurück. NAPTR bleibt
+  bewusst draußen — A-Records reichen für die Top-5-Provider.
 - `Route`-Header / Record-Route-Verarbeitung, falls ein realer
   Provider das verlangt.
 - DTLS-SRTP statt SDES, falls ein Provider SDES nicht (mehr) anbietet.

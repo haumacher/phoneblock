@@ -23,6 +23,7 @@
 #include "report_queue.h"
 #include "sip_parse.h"
 #include "sip_transport.h"
+#include "sip_srv.h"
 #include "rtp.h"
 #include "stats.h"
 
@@ -208,8 +209,16 @@ static int parse_host_port(const char *spec, char *host_out, int cap)
     return colon ? atoi(colon + 1) : 0;
 }
 
-// Compute the actual dial destination for the transport. Uses the
-// outbound proxy when set, otherwise the registrar.
+// Compute the actual dial destination for the transport. Order of
+// preference:
+//   1. config_sip_outbound() — explicit user override always wins
+//      (skip SRV; if the user typed a host, they meant that host).
+//   2. DNS-SRV record for the (transport, sip_host) pair, but only
+//      when no explicit port was configured. Some providers (Telekom)
+//      publish only an SRV record and do not have an A record on the
+//      bare domain, so SRV is the only working path.
+//   3. Direct A-record lookup on config_sip_host() with the configured
+//      (or transport-default) port.
 static void dial_destination(char *host_out, int cap, int *port_out)
 {
     const char *outbound = config_sip_outbound();
@@ -217,6 +226,26 @@ static void dial_destination(char *host_out, int cap, int *port_out)
         *port_out = parse_host_port(outbound, host_out, cap);
         return;
     }
+
+#ifdef ESP_PLATFORM
+    // SRV only when the user did not override the port; the lookup is
+    // free to suggest a non-default port (e.g. 5061 for sips/tcp).
+    if (config_sip_port() == 0) {
+        const char *tr = config_sip_transport();
+        const char *svc   = (strcmp(tr, "tls") == 0) ? "sips" : "sip";
+        const char *proto = (strcmp(tr, "udp") == 0) ? "udp"  : "tcp";
+        char srv_target[SIP_SRV_TARGET_MAX];
+        int  srv_port = 0;
+        if (sip_srv_lookup(svc, proto, config_sip_host(),
+                           srv_target, sizeof(srv_target), &srv_port)) {
+            strncpy(host_out, srv_target, cap - 1);
+            host_out[cap - 1] = '\0';
+            *port_out = srv_port;
+            return;
+        }
+    }
+#endif
+
     strncpy(host_out, config_sip_host(), cap - 1);
     host_out[cap - 1] = '\0';
     *port_out = config_sip_port();
@@ -1141,8 +1170,10 @@ static void sip_task(void *arg)
         return;
     }
     if (strcmp(dial_host, config_sip_host()) != 0) {
-        ESP_LOGI(TAG, "outbound proxy %s:%d active (SIP host: %s)",
-                 dial_host, dial_port, config_sip_host());
+        const char *outbound = config_sip_outbound();
+        const char *via = (outbound && outbound[0]) ? "outbound proxy" : "SRV";
+        ESP_LOGI(TAG, "%s %s:%d active (SIP host: %s)",
+                 via, dial_host, dial_port, config_sip_host());
     }
 
     // Extended SIP parameters are persisted but the firmware doesn't
