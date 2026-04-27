@@ -141,6 +141,43 @@ static void random_hex(char *out, size_t hex_chars)
 }
 
 // ---------------------------------------------------------------------------
+// Identity / auth / realm — Phase 3 of EXTENDED_SIP.md
+//
+// Three concepts that used to share config_sip_user():
+//
+//   identity = R-URI / From / To / Contact user. For Fritz!Box-driven
+//              setups the dashboard shows config_sip_internal_number()
+//              alongside it, but the registrar still authenticates the
+//              configured SIP user — the internal extension is purely
+//              informational.
+//   auth     = Digest "username=" attribute. Some providers (1&1) hand
+//              out a separate auth-user that does not match the SIP
+//              identity. Falls back to the identity if not configured.
+//   realm    = Digest "realm=" attribute. Normally taken from the
+//              server's challenge, but some providers want a fixed
+//              realm regardless of what their challenge advertises
+//              (1&1 sends realm=1und1.de via a multi-host setup).
+// ---------------------------------------------------------------------------
+
+static const char *current_identity_user(void)
+{
+    return config_sip_user();
+}
+
+static const char *current_auth_user(void)
+{
+    const char *u = config_sip_auth_user();
+    return (u && u[0]) ? u : config_sip_user();
+}
+
+static const char *current_realm(const auth_challenge_t *challenge)
+{
+    const char *r = config_sip_realm();
+    if (r && r[0]) return r;
+    return challenge->realm;
+}
+
+// ---------------------------------------------------------------------------
 // Digest response
 //
 //   HA1 = MD5(user:realm:password)
@@ -290,6 +327,8 @@ static int build_register(sip_ctx_t *c, char *buf, int cap, bool with_auth)
     char request_uri[96];
     snprintf(request_uri, sizeof(request_uri), "sip:%s", config_sip_host());
 
+    const char *identity = current_identity_user();
+
     int n = snprintf(buf, cap,
         "REGISTER %s SIP/2.0\r\n"
         "Via: SIP/2.0/%s %s:%d;branch=z9hG4bK%s;rport\r\n"
@@ -304,22 +343,24 @@ static int build_register(sip_ctx_t *c, char *buf, int cap, bool with_auth)
         request_uri,
         sip_transport_via_token(c->transport),
         our_host, our_port, branch,
-        config_sip_user(), config_sip_host(), c->from_tag,
-        config_sip_user(), config_sip_host(),
+        identity, config_sip_host(), c->from_tag,
+        identity, config_sip_host(),
         c->call_id,
         (unsigned long)c->cseq,
-        config_sip_user(), our_host, our_port,
+        identity, our_host, our_port,
         config_sip_expires());
 
     if (with_auth && c->challenge.valid) {
         char response[33];
         const char *qop = c->challenge.qop;
         const char *nc  = "00000001";
+        const char *auth_user = current_auth_user();
+        const char *realm     = current_realm(&c->challenge);
         random_hex(cnonce, 16);
 
         digest_response(
-            config_sip_user(), config_sip_pass(),
-            c->challenge.realm, c->challenge.nonce,
+            auth_user, config_sip_pass(),
+            realm, c->challenge.nonce,
             "REGISTER", request_uri,
             qop, nc, cnonce,
             response);
@@ -327,7 +368,7 @@ static int build_register(sip_ctx_t *c, char *buf, int cap, bool with_auth)
         n += snprintf(buf + n, cap - n,
             "Authorization: Digest username=\"%s\", realm=\"%s\", "
             "nonce=\"%s\", uri=\"%s\", response=\"%s\", algorithm=%s",
-            config_sip_user(), c->challenge.realm,
+            auth_user, realm,
             c->challenge.nonce, request_uri,
             response, c->challenge.algorithm);
 
@@ -525,7 +566,7 @@ static int build_response(sip_ctx_t *c, const char *req, int req_len,
         "Contact: <sip:%s@%s:%d>\r\n"
         "Allow: INVITE, ACK, CANCEL, BYE, OPTIONS\r\n"
         "User-Agent: phoneblock-dongle/0.1\r\n",
-        config_sip_user(), advertised_host(c), advertised_port());
+        current_identity_user(), advertised_host(c), advertised_port());
 
     if (body_len > 0) {
         n += snprintf(out + n, out_cap - n,
@@ -660,11 +701,11 @@ static int build_bye(sip_ctx_t *c, char *buf, int cap)
         ruri,
         sip_transport_via_token(c->transport),
         our_host, our_port, branch,
-        config_sip_user(), advertised_host(c), our_port, d->our_tag,
+        current_identity_user(), advertised_host(c), our_port, d->our_tag,
         d->remote_uri, d->from_tag,
         d->call_id,
         (unsigned long)d->out_cseq,
-        config_sip_user(), our_host, our_port);
+        current_identity_user(), our_host, our_port);
 }
 
 static void send_bye(sip_ctx_t *c)

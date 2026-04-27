@@ -118,20 +118,26 @@ die Datei vollends.
 Heute dient `config_sip_user()` als R-URI-User, From-User,
 Contact-User **und** Digest-Username. Trennen in:
 
-- [ ] **Identity** (R-URI, From, To, Contact) =
-      `config_sip_user()` bzw. `config_sip_internal_number()` falls
-      Fritz!Box.
-- [ ] **Authentifizierung** (Digest `username=`) =
-      `config_sip_auth_user()` mit Fallback auf `config_sip_user()`.
-- [ ] **Realm-Override**: wenn `config_sip_realm()` gesetzt, den
-      verwenden statt des Challenge-Realms — der 1&1-Fall
-      (`Realm=1und1.de`).
-- [ ] Helfer `current_identity_user()` / `current_auth_user()` /
-      `current_realm(challenge)` einführen und alle direkten
-      `config_sip_user()`-Aufrufe in `digest_response()`
-      (`sip_register.c:155`), `build_register()` (`:282`),
-      `build_bye()` (`:697`), `build_response()` (`:566`) darüber
-      routen.
+- [x] **Identity** (R-URI, From, To, Contact) =
+      `current_identity_user()` → `config_sip_user()`.
+      `config_sip_internal_number()` bleibt rein informativ
+      (Dashboard-Anzeige der vom Fritz!Box vergebenen Nebenstelle);
+      die SIP-Header verwenden nach wie vor den Auth-User-Wert,
+      den der Registrar kennt.
+- [x] **Authentifizierung** (Digest `username=`) =
+      `current_auth_user()` → `config_sip_auth_user()` mit
+      Fallback auf `config_sip_user()`.
+- [x] **Realm-Override**: `current_realm(challenge)` →
+      `config_sip_realm()` wenn gesetzt, sonst der Realm aus dem
+      Challenge. Deckt den 1&1-Fall (`realm=1und1.de`) ab, ohne
+      bestehende Provider zu brechen.
+- [x] Helfer eingeführt und alle direkten `config_sip_user()`-
+      Aufrufe in `digest_response()`-Aufrufer, `build_register()`,
+      `build_bye()` und `build_response()` (Contact-Header) über
+      die drei Helfer geführt. Die verbleibenden `config_sip_user()`-
+      Stellen (Logs, Empty-Config-Check beim SIP-Task-Start) sind
+      bewusst nicht angefasst — sie geben Diagnose-Werte aus, kein
+      Header-Inhalt.
 
 ### Phase 4 — Outbound-Proxy (~0,5 d)
 
