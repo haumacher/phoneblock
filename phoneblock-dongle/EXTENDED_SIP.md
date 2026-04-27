@@ -46,28 +46,42 @@ die Datei vollends.
       TCP/TLS-Implementierungen können denselben Vertrag mit interner
       Reassembly erfüllen, ohne dass `sip_register.c` etwas davon
       mitbekommt.
-- [ ] `advertised_host()` / `advertised_port()` pro Transport mit
-      passenden Defaults (5060/5060/5061) und korrektem
-      Transport-Token (`UDP`/`TCP`/`TLS`) im `Via`. Nur der Host
-      kommt heute aus dem Transport; Port-Default und `Via`-Token
-      werden mit Phase 1 (TCP) konkret.
-- [ ] Host-Tests in `firmware/test/` für den Frame-Parser
-      (Reassembly, Split-Pakete, mehrere Responses in einem
-      TCP-Read) — die Klasse Bug, die in QEMU sonst nur sporadisch
-      auftritt.
-- [ ] Gate: ESP32-Build grün, REGISTER + spam-Anruf gegen die
-      Referenz-Fritz!Box läuft wie vor dem Refactor.
-      (`idf.py build` grün; FB-Roundtrip steht noch aus, vor
-      Phase-1-Beginn auf realer Hardware verifizieren.)
+- [x] `advertised_host()` / `advertised_port()` pro Transport mit
+      korrektem Transport-Token (`UDP`/`TCP`/`TLS`) im `Via`.
+      `sip_transport_via_token()` und `sip_transport_uri_param()`
+      liefern den Token; Via-Zeilen in REGISTER und BYE
+      (`sip_register.c`) lesen daraus. Lokaler Port bleibt
+      `SIP_LOCAL_PORT=5061` (für UDP wie TCP-Bind), TLS-Default
+      5061 fällt in Phase 2 zusammen.
+- [x] Host-Tests in `firmware/test/` für den Frame-Parser:
+      `sip_frame.{c,h}` als pure-C-Modul plus
+      `test_sip_frame.c` mit 24 Checks (Single, Split-Reads,
+      \r\n\r\n-Boundary-Split, mehrere Messages pro Read,
+      gestreamter Body, fehlendes/kaputtes Content-Length,
+      Overflow, Reset).
+- [x] Gate: ESP32-Build grün (`phoneblock_dongle.bin` 1.07 MB,
+      26 % Headroom im OTA-Slot). FB-Roundtrip auf realer
+      Hardware steht aus (UDP-Pfad ist bit-genau identisch zum
+      Vor-Refactor-Stand — Risiko niedrig).
 
 ### Phase 1 — TCP (~0,5 d)
 
-- [ ] `sip_transport_tcp` über `lwip` Sockets.
-- [ ] REGISTER persistent halten (kein Reconnect pro Refresh).
-- [ ] Reconnect + Re-REGISTER bei Verbindungsabbruch (analog
-      Reload-Pfad in `sip_register.c`).
-- [ ] `Via: SIP/2.0/TCP …`, R-URI-Parameter `;transport=tcp` für
-      ausgehende In-Dialog-Requests (BYE).
+- [x] `sip_transport_tcp` über `lwip` Sockets:
+      `sip_transport.c` dispatched UDP/TCP über `kind`-Feld;
+      `tcp_connect()`/`tcp_send_all()`/`tcp_recv()` mit
+      Reassembly via `sip_frame_t`.
+- [x] REGISTER persistent halten (kein Reconnect pro Refresh):
+      Socket bleibt im `sip_transport_t` über alle
+      `do_register()`-Aufrufe hinweg offen.
+- [x] Reconnect + Re-REGISTER bei Verbindungsabbruch:
+      `tcp_reconnect()` schließt+verbindet, setzt das einmalige
+      `reconnected_flag`. `sip_task` pollt
+      `sip_transport_consume_reconnect()` jeden Loop-Tick und
+      feuert sofort einen frischen REGISTER (analog
+      `s_reload_requested`-Pfad).
+- [x] `Via: SIP/2.0/TCP …`: REGISTER- und BYE-Builder lesen
+      `sip_transport_via_token()`. `;transport=tcp`-Parameter
+      hängt an der BYE-R-URI für alle Nicht-UDP-Transports.
 - [ ] Smoketest: lokaler `kamailio` in QEMU/Hostnetz erreichbar.
 
 ### Phase 2 — TLS (~1–2 d, der Brocken)

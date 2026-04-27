@@ -28,7 +28,7 @@
 
 static const char *TAG = "sip";
 
-#define SIP_LOCAL_PORT       5061  // local UDP for SIP (not the TCP dummy server)
+#define SIP_LOCAL_PORT       5061  // local UDP/TCP port advertised in Via/Contact
 #define SIP_RX_BUF_SIZE      4096
 #define SIP_TX_BUF_SIZE      2048
 // REGISTER round-trip wait: how long to block on the 401/200 response
@@ -292,7 +292,7 @@ static int build_register(sip_ctx_t *c, char *buf, int cap, bool with_auth)
 
     int n = snprintf(buf, cap,
         "REGISTER %s SIP/2.0\r\n"
-        "Via: SIP/2.0/UDP %s:%d;branch=z9hG4bK%s;rport\r\n"
+        "Via: SIP/2.0/%s %s:%d;branch=z9hG4bK%s;rport\r\n"
         "Max-Forwards: 70\r\n"
         "From: <sip:%s@%s>;tag=%s\r\n"
         "To: <sip:%s@%s>\r\n"
@@ -302,6 +302,7 @@ static int build_register(sip_ctx_t *c, char *buf, int cap, bool with_auth)
         "Expires: %d\r\n"
         "User-Agent: phoneblock-dongle/0.1\r\n",
         request_uri,
+        sip_transport_via_token(c->transport),
         our_host, our_port, branch,
         config_sip_user(), config_sip_host(), c->from_tag,
         config_sip_user(), config_sip_host(),
@@ -633,9 +634,21 @@ static int build_bye(sip_ctx_t *c, char *buf, int cap)
     const char *our_host = advertised_host(c);
     int our_port = advertised_port();
 
+    // For non-UDP transports, the in-dialog R-URI carries an explicit
+    // ";transport=<tcp|tls>" so the registrar/UA on the other side
+    // doesn't fall back to UDP for our BYE.
+    const char *uri_param = sip_transport_uri_param(c->transport);
+    char ruri[160];
+    if (strcmp(uri_param, "udp") == 0) {
+        snprintf(ruri, sizeof(ruri), "%s", d->remote_uri);
+    } else {
+        snprintf(ruri, sizeof(ruri), "%s;transport=%s",
+                 d->remote_uri, uri_param);
+    }
+
     return snprintf(buf, cap,
         "BYE %s SIP/2.0\r\n"
-        "Via: SIP/2.0/UDP %s:%d;branch=z9hG4bK%s;rport\r\n"
+        "Via: SIP/2.0/%s %s:%d;branch=z9hG4bK%s;rport\r\n"
         "Max-Forwards: 70\r\n"
         "From: <sip:%s@%s:%d>;tag=%s\r\n"
         "To: <%s>;tag=%s\r\n"
@@ -644,7 +657,8 @@ static int build_bye(sip_ctx_t *c, char *buf, int cap)
         "Contact: <sip:%s@%s:%d>\r\n"
         "User-Agent: phoneblock-dongle/0.1\r\n"
         "Content-Length: 0\r\n\r\n",
-        d->remote_uri,
+        ruri,
+        sip_transport_via_token(c->transport),
         our_host, our_port, branch,
         config_sip_user(), advertised_host(c), our_port, d->our_tag,
         d->remote_uri, d->from_tag,
@@ -1037,16 +1051,16 @@ static void sip_task(void *arg)
         return;
     }
 
-    // Extended SIP parameters are persisted but the current stack only
-    // does UDP + registrar-derived auth realm + no SRTP. Warn once per
-    // start so the user sees in the dashboard errors that a setting is
-    // being ignored, and can react instead of wondering why TLS never
-    // engaged.
-    if (strcmp(config_sip_transport(), "udp") != 0) {
+    // Extended SIP parameters are persisted but the firmware doesn't
+    // (yet) implement all of them. Warn once per start so the user sees
+    // in the dashboard errors that a setting is being ignored, and can
+    // react instead of wondering why TLS never engaged.
+    const char *tr = config_sip_transport();
+    if (tr[0] && strcmp(tr, "udp") != 0 && strcmp(tr, "tcp") != 0) {
         char msg[80];
         snprintf(msg, sizeof(msg),
-                 "transport %.8s ignored — firmware only implements UDP",
-                 config_sip_transport());
+                 "transport %.8s ignored — firmware implements UDP/TCP only",
+                 tr);
         ESP_LOGW(TAG, "%s", msg);
         stats_record_error("sip", msg);
     }
@@ -1123,6 +1137,24 @@ static void sip_task(void *arg)
             } else {
                 ESP_LOGE(TAG, "REGISTER with new config failed, retry in %d s", retry_delay_s);
                 stats_record_error("sip", "REGISTER with new config failed");
+                refresh_at_us = esp_timer_get_time() + (int64_t)retry_delay_s * 1000000LL;
+            }
+        }
+
+        // For TCP/TLS the transport reconnects transparently after a
+        // dropped connection. Surface that here as an immediate REGISTER
+        // refresh so the registrar binds the new connection to our
+        // extension, rather than waiting out the (expires/2) refresh
+        // window during which incoming INVITEs would be lost.
+        if (sip_transport_consume_reconnect(ctx.transport)) {
+            ESP_LOGI(TAG, "transport reconnected → re-REGISTER");
+            stats_record_error("sip", "TCP reconnect → re-REGISTER");
+            ok = do_register(&ctx);
+            s_registered = ok;
+            stats_record_sip_state(ok);
+            if (ok) {
+                refresh_at_us = esp_timer_get_time() + (int64_t)(config_sip_expires() / 2) * 1000000LL;
+            } else {
                 refresh_at_us = esp_timer_get_time() + (int64_t)retry_delay_s * 1000000LL;
             }
         }
