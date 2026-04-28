@@ -371,6 +371,57 @@ esp_err_t web_auth_handle_logout(httpd_req_t *req)
     return ESP_OK;
 }
 
+esp_err_t web_auth_handle_login_link(httpd_req_t *req)
+{
+    if (!web_auth_required(req, false)) return ESP_OK;
+
+    char query[256];
+    if (httpd_req_get_url_query_str(req, query, sizeof(query)) != ESP_OK) {
+        httpd_resp_set_status(req, "400 Bad Request");
+        httpd_resp_set_type(req, "text/html; charset=utf-8");
+        httpd_resp_sendstr(req,
+            "<p>Missing 'next' parameter. <a href=\"/\">Back</a>.</p>");
+        return ESP_OK;
+    }
+    char next[192];
+    if (httpd_query_key_value(query, "next", next, sizeof(next)) != ESP_OK
+            || !next[0]) {
+        httpd_resp_set_status(req, "400 Bad Request");
+        httpd_resp_set_type(req, "text/html; charset=utf-8");
+        httpd_resp_sendstr(req,
+            "<p>Missing 'next' parameter. <a href=\"/\">Back</a>.</p>");
+        return ESP_OK;
+    }
+    // Reject anything that isn't a server-relative path. Without this
+    // a hostile link inside the dongle UI could trick the user into a
+    // login flow that lands on a third-party site.
+    if (next[0] != '/' || next[1] == '/') {
+        ESP_LOGW(TAG, "auth/login-link: refusing 'next' = %s", next);
+        httpd_resp_set_status(req, "400 Bad Request");
+        httpd_resp_set_type(req, "text/html; charset=utf-8");
+        httpd_resp_sendstr(req,
+            "<p>'next' must be a server-relative path. "
+            "<a href=\"/\">Back</a>.</p>");
+        return ESP_OK;
+    }
+
+    char redirect_url[512];
+    if (!phoneblock_mint_login_ticket(next, redirect_url, sizeof(redirect_url))) {
+        httpd_resp_set_status(req, "502 Bad Gateway");
+        httpd_resp_set_type(req, "text/html; charset=utf-8");
+        httpd_resp_sendstr(req,
+            "<p>Konnte Anmelde-Ticket nicht erzeugen. "
+            "<a href=\"/\">Zur&uuml;ck</a>.</p>");
+        return ESP_OK;
+    }
+
+    ESP_LOGI(TAG, "auth/login-link: 302 → %s", next);
+    httpd_resp_set_status(req, "302 Found");
+    httpd_resp_set_hdr(req, "Location", redirect_url);
+    httpd_resp_send(req, NULL, 0);
+    return ESP_OK;
+}
+
 esp_err_t web_auth_handle_disable(httpd_req_t *req)
 {
     if (!web_auth_required(req, true)) return ESP_OK;

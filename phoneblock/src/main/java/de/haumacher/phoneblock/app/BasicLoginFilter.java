@@ -15,6 +15,7 @@ import de.haumacher.phoneblock.ab.CreateABServlet;
 import de.haumacher.phoneblock.ab.ListABServlet;
 import de.haumacher.phoneblock.app.api.AccountManagementServlet;
 import de.haumacher.phoneblock.app.api.BlocklistServlet;
+import de.haumacher.phoneblock.app.api.LoginTicketServlet;
 import de.haumacher.phoneblock.app.api.NumServlet;
 import de.haumacher.phoneblock.app.api.PersonalizationServlet;
 import de.haumacher.phoneblock.app.api.PrefixCheckServlet;
@@ -50,6 +51,7 @@ import jakarta.servlet.http.HttpServletResponse;
 	ReportCallServlet.PATTERN,
 	TestConnectServlet.PATH,
 	RateServlet.PATH,
+	LoginTicketServlet.PATH,
 	CallReportServlet.URL_PATTERN,
 	SearchApiServlet.PATTERN,
 	CardDavServlet.URL_PATTERN,
@@ -125,6 +127,7 @@ public class BasicLoginFilter extends LoginFilter {
 		case PersonalizationServlet.BLACKLIST_PATH:
 		case PersonalizationServlet.WHITELIST_PATH:
 		case AccountManagementServlet.PATH:
+		case LoginTicketServlet.PATH:
 			return authorization.isAccessRate();
 		case CreateABServlet.PATH:
 		case ListABServlet.PATH:

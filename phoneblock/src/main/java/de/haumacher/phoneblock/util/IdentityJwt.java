@@ -16,24 +16,44 @@ import de.haumacher.msgbuf.server.io.ReaderAdapter;
 import de.haumacher.msgbuf.server.io.WriterAdapter;
 
 /**
- * Signs and verifies short-lived identity assertions for the
- * "Login with PhoneBlock" SSO flow used by the dongle (and any
- * future on-prem integration).
+ * Signs and verifies short-lived identity assertions.
  *
  * <p>
- * Format is a minimal HS256 JWT with three claims:
- * <pre>
- *   { "sub": &lt;userName&gt;, "exp": &lt;unix-seconds&gt;, "nonce": &lt;state&gt; }
- * </pre>
- * The signing secret is generated at JVM startup and lives in
- * memory only — these tokens have a five-minute lifetime, so a
- * server restart simply forces in-flight logins to be retried,
- * which is acceptable.
+ * Two flows currently use this primitive:
+ * <ul>
+ *   <li><b>Auth gate</b> ({@link #PURPOSE_AUTH_GATE}) — server proves to an
+ *       on-prem device (e.g. the dongle) that a user successfully logged in.
+ *       Carries a CSRF {@code nonce}; verified via {@code /auth/verify-code}.
+ *   <li><b>Login ticket</b> ({@link #PURPOSE_LOGIN}) — device proves to the
+ *       server that its API token's owner authorized opening a specific page
+ *       in the user's browser. Carries the target path in {@code next};
+ *       consumed once via {@code /auth/login-ticket}.
+ * </ul>
+ *
+ * <p>
+ * Format is a minimal HS256 JWT. The signing secret is generated at JVM
+ * startup and lives in memory only — these tokens are short-lived, so a
+ * server restart simply forces in-flight flows to be retried.
+ *
+ * <p>
+ * The {@code purpose} claim is mandatory and is checked by
+ * {@link #verify(String, String)} against the caller's expectation. This
+ * prevents a JWT minted for one flow from being replayed against the
+ * verifier of another.
  */
 public final class IdentityJwt {
 
-	/** Lifetime applied by {@link #sign(String, String)}. */
-	public static final long DEFAULT_TTL_MS = 5 * 60 * 1000L;
+	/** Purpose claim for the dongle "Login with PhoneBlock" gate. */
+	public static final String PURPOSE_AUTH_GATE = "auth-gate";
+
+	/** Purpose claim for one-shot browser auto-login tickets. */
+	public static final String PURPOSE_LOGIN = "login";
+
+	/** TTL for {@link #signAuthGate(String, String)}. */
+	public static final long AUTH_GATE_TTL_MS = 5 * 60 * 1000L;
+
+	/** TTL for {@link #signLoginTicket(String, String)}. */
+	public static final long LOGIN_TICKET_TTL_MS = 30 * 1000L;
 
 	private static final byte[] SECRET = generateSecret();
 
@@ -53,18 +73,42 @@ public final class IdentityJwt {
 	}
 
 	/**
-	 * Issues an assertion that {@code userName} authenticated via the
-	 * server-side login flow, valid for {@link #DEFAULT_TTL_MS}.
+	 * Issues an auth-gate assertion that {@code userName} authenticated via the
+	 * server-side login flow. Bound to {@code nonce} so a stolen JWT cannot be
+	 * replayed against a different login attempt.
 	 */
-	public static String sign(String userName, String nonce) {
-		long expSec = (System.currentTimeMillis() + DEFAULT_TTL_MS) / 1000L;
+	public static String signAuthGate(String userName, String nonce) {
+		return sign(userName, PURPOSE_AUTH_GATE, AUTH_GATE_TTL_MS,
+				nonce == null ? "" : nonce, null);
+	}
+
+	/**
+	 * Issues a one-shot login ticket that grants a browser session for
+	 * {@code userName} and redirects to {@code next}. The path is part of the
+	 * signed payload, so the consumer cannot be tricked into redirecting to a
+	 * different target than the API caller authorized.
+	 */
+	public static String signLoginTicket(String userName, String next) {
+		return sign(userName, PURPOSE_LOGIN, LOGIN_TICKET_TTL_MS,
+				"", next == null ? "" : next);
+	}
+
+	private static String sign(String userName, String purpose, long ttlMs,
+			String nonce, String next) {
+		long expSec = (System.currentTimeMillis() + ttlMs) / 1000L;
 
 		StringWriter buf = new StringWriter();
 		try (JsonWriter w = new JsonWriter(new WriterAdapter(buf))) {
 			w.beginObject();
-			w.name("sub");   w.value(userName);
-			w.name("exp");   w.value(expSec);
-			w.name("nonce"); w.value(nonce == null ? "" : nonce);
+			w.name("sub");     w.value(userName);
+			w.name("exp");     w.value(expSec);
+			w.name("purpose"); w.value(purpose);
+			if (nonce != null && !nonce.isEmpty()) {
+				w.name("nonce"); w.value(nonce);
+			}
+			if (next != null && !next.isEmpty()) {
+				w.name("next"); w.value(next);
+			}
 			w.endObject();
 		} catch (IOException e) {
 			// StringWriter does not throw — propagate as unchecked.
@@ -80,16 +124,20 @@ public final class IdentityJwt {
 
 	/**
 	 * Holder for the verified claims of a token. Returned by
-	 * {@link #verify(String)} on success.
+	 * {@link #verify(String, String)} on success.
 	 */
 	public static final class Claims {
 		public final String sub;
+		public final String purpose;
 		public final String nonce;
+		public final String next;
 		public final long expSec;
 
-		Claims(String sub, String nonce, long expSec) {
+		Claims(String sub, String purpose, String nonce, String next, long expSec) {
 			this.sub = sub;
+			this.purpose = purpose;
 			this.nonce = nonce;
+			this.next = next;
 			this.expSec = expSec;
 		}
 	}
@@ -101,11 +149,15 @@ public final class IdentityJwt {
 	}
 
 	/**
-	 * Verifies signature and expiry, returns the decoded claims.
+	 * Verifies signature, expiry and {@code purpose}, returns the decoded claims.
 	 * Throws {@link InvalidTokenException} on any failure — the caller
 	 * should treat the token as if it had never been seen.
+	 *
+	 * @param expectedPurpose the {@code purpose} claim the token must carry;
+	 *        rejects everything else, including legacy tokens that predate the
+	 *        purpose claim (those expire within their original TTL).
 	 */
-	public static Claims verify(String jwt) throws InvalidTokenException {
+	public static Claims verify(String jwt, String expectedPurpose) throws InvalidTokenException {
 		if (jwt == null) throw new InvalidTokenException("missing token");
 		int dot1 = jwt.indexOf('.');
 		int dot2 = dot1 < 0 ? -1 : jwt.indexOf('.', dot1 + 1);
@@ -141,18 +193,19 @@ public final class IdentityJwt {
 			throw new InvalidTokenException("bad payload encoding");
 		}
 
-		String sub = null, nonce = null;
+		String sub = null, nonce = null, next = null, purpose = null;
 		long expSec = 0;
-		try {
-			JsonReader json = new JsonReader(new ReaderAdapter(
-				new StringReader(new String(payload, StandardCharsets.UTF_8))));
+		try (JsonReader json = new JsonReader(new ReaderAdapter(
+				new StringReader(new String(payload, StandardCharsets.UTF_8))))) {
 			json.beginObject();
 			while (json.hasNext()) {
 				switch (json.nextName()) {
-					case "sub":   sub = json.nextString(); break;
-					case "nonce": nonce = json.nextString(); break;
-					case "exp":   expSec = json.nextLong(); break;
-					default:      json.skipValue();
+					case "sub":     sub = json.nextString(); break;
+					case "nonce":   nonce = json.nextString(); break;
+					case "next":    next = json.nextString(); break;
+					case "purpose": purpose = json.nextString(); break;
+					case "exp":     expSec = json.nextLong(); break;
+					default:        json.skipValue();
 				}
 			}
 			json.endObject();
@@ -163,7 +216,13 @@ public final class IdentityJwt {
 		if (System.currentTimeMillis() / 1000L > expSec) {
 			throw new InvalidTokenException("expired");
 		}
-		return new Claims(sub, nonce == null ? "" : nonce, expSec);
+		if (!expectedPurpose.equals(purpose)) {
+			throw new InvalidTokenException("purpose mismatch");
+		}
+		return new Claims(sub, purpose,
+				nonce == null ? "" : nonce,
+				next == null ? "" : next,
+				expSec);
 	}
 
 	private static byte[] hmacSha256(byte[] data) {

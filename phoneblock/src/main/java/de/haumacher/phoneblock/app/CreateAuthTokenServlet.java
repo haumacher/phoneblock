@@ -119,7 +119,7 @@ public class CreateAuthTokenServlet extends HttpServlet {
 				// lived JWT that the caller verifies via
 				// /api/verify-auth-code with its existing bearer token.
 				String state = req.getParameter(STATE);
-				String jwt = IdentityJwt.sign(user, state == null ? "" : state);
+				String jwt = IdentityJwt.signAuthGate(user, state == null ? "" : state);
 				redirectUrl = ServletUtil.withParam(callback, CODE_PARAM, jwt);
 				if (state != null) {
 					redirectUrl = ServletUtil.withParam(redirectUrl, STATE, state);

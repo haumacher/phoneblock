@@ -1310,12 +1310,14 @@ async function refreshAll(){
   // PhoneBlock's web UI serves per-number detail pages at
   // <site>/nums/<zeroZero>. Internal Fritz!Box codes (starting with
   // "*" or "**") have no public page, so we leave them as plain text.
-  const siteBase = s.phoneblock && s.phoneblock.base_url || '';
+  // We don't link to phoneblock.net directly: the dongle's broker
+  // /auth/login-link mints a one-shot login ticket using the API
+  // token (which never leaves the dongle) and 302s the browser.
   const numCell = (num) => {
     if (!num)             return '';
     if (num.startsWith('*')) return esc(num);
-    if (!siteBase)        return esc(num);
-    return '<a href="' + esc(siteBase) + '/nums/' + encodeURIComponent(num)
+    const next = '/nums/' + encodeURIComponent(num);
+    return '<a href="/auth/login-link?next=' + encodeURIComponent(next)
          + '" target="_blank" rel="noopener">' + esc(num) + '</a>';
   };
   const hasCalls = calls && calls.calls.length;

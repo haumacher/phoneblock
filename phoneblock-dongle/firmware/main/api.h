@@ -45,3 +45,11 @@ bool phoneblock_report_call(const char *phone);
 // subsequent JWT whose subject does not match.
 bool phoneblock_verify_auth_code(const char *code, const char *state,
                                  char *user_out, size_t user_cap);
+
+// Exchanges the dongle's API token for a short-lived one-shot login
+// ticket bound to `next` (a server-relative path on phoneblock.net).
+// On success, writes the full redemption URL
+// "<base-url>/auth/login-ticket?t=<jwt>" to `url_out` and returns
+// true. Caller hands `url_out` to the browser via a 302; the long-
+// lived API token never leaves the dongle.
+bool phoneblock_mint_login_ticket(const char *next, char *url_out, size_t url_cap);

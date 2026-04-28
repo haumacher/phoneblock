@@ -1432,10 +1432,11 @@ static const httpd_uri_t URIS[] = {
     { .uri = "/api/token-test",          .method = HTTP_POST, .handler = handle_token_test,          .user_ctx = NULL },
     { .uri = "/register-start",      .method = HTTP_GET,  .handler = handle_register_start, .user_ctx = NULL },
     { .uri = "/token-callback",      .method = HTTP_GET,  .handler = handle_token_callback, .user_ctx = NULL },
-    { .uri = "/auth/login",          .method = HTTP_GET,  .handler = web_auth_handle_login,    .user_ctx = NULL },
-    { .uri = "/auth/callback",       .method = HTTP_GET,  .handler = web_auth_handle_callback, .user_ctx = NULL },
-    { .uri = "/auth/logout",         .method = HTTP_POST, .handler = web_auth_handle_logout,   .user_ctx = NULL },
-    { .uri = "/auth/disable",        .method = HTTP_POST, .handler = web_auth_handle_disable,  .user_ctx = NULL },
+    { .uri = "/auth/login",          .method = HTTP_GET,  .handler = web_auth_handle_login,      .user_ctx = NULL },
+    { .uri = "/auth/login-link",     .method = HTTP_GET,  .handler = web_auth_handle_login_link, .user_ctx = NULL },
+    { .uri = "/auth/callback",       .method = HTTP_GET,  .handler = web_auth_handle_callback,   .user_ctx = NULL },
+    { .uri = "/auth/logout",         .method = HTTP_POST, .handler = web_auth_handle_logout,     .user_ctx = NULL },
+    { .uri = "/auth/disable",        .method = HTTP_POST, .handler = web_auth_handle_disable,    .user_ctx = NULL },
     // Catch-all OPTIONS handler for the PNA preflight Chrome/Edge sends
     // before navigating from https://phoneblock.net to this dongle's
     // LAN IP. Method-scoped to OPTIONS so it doesn't shadow any of the

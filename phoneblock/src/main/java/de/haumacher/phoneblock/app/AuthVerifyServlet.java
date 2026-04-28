@@ -57,7 +57,7 @@ public class AuthVerifyServlet extends HttpServlet {
 
 		IdentityJwt.Claims claims;
 		try {
-			claims = IdentityJwt.verify(code);
+			claims = IdentityJwt.verify(code, IdentityJwt.PURPOSE_AUTH_GATE);
 		} catch (IdentityJwt.InvalidTokenException e) {
 			LOG.info("verify-code: rejected: {}", e.getMessage());
 			writeResult(resp, false, null, "invalid_token");

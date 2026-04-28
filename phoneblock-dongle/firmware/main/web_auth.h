@@ -66,3 +66,10 @@ esp_err_t web_auth_handle_disable(httpd_req_t *req);
 // True iff the user is currently logged in via a valid session
 // cookie. Used by /api/status to surface the state to the UI.
 bool web_auth_is_logged_in(httpd_req_t *req);
+
+// GET /auth/login-link?next=/nums/<id> — broker for browser auto-
+// login on phoneblock.net. Exchanges the dongle's API token for a
+// short-lived login ticket bound to `next` and 302s the browser to
+// the redemption URL. The long-lived API token never reaches the
+// browser. Gated behind the dongle's own SSO session.
+esp_err_t web_auth_handle_login_link(httpd_req_t *req);

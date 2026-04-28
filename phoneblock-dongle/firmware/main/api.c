@@ -474,3 +474,120 @@ bool phoneblock_verify_auth_code(const char *code, const char *state,
     free(resp.data);
     return ok;
 }
+
+// Percent-encode `src` into `dst` for use as a form-encoded value.
+// Slash is allowed unencoded since it's the dominant character in the
+// `next` paths we send. Returns false if `dst` would overflow.
+static bool form_encode(const char *src, char *dst, size_t cap)
+{
+    char *p = dst;
+    while (*src) {
+        if ((size_t)(p - dst) + 4 >= cap) return false;
+        unsigned c = (unsigned char)*src++;
+        if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ||
+            (c >= '0' && c <= '9') || c == '-' || c == '_' ||
+            c == '.' || c == '~' || c == '/') {
+            *p++ = (char)c;
+        } else {
+            static const char H[] = "0123456789ABCDEF";
+            *p++ = '%';
+            *p++ = H[(c >> 4) & 0xF];
+            *p++ = H[c & 0xF];
+        }
+    }
+    if ((size_t)(p - dst) + 1 >= cap) return false;
+    *p = '\0';
+    return true;
+}
+
+bool phoneblock_mint_login_ticket(const char *next, char *url_out, size_t url_cap)
+{
+    if (url_out && url_cap > 0) url_out[0] = '\0';
+    if (!next || !*next || !url_out || url_cap == 0) return false;
+
+    const char *token = config_phoneblock_token();
+    if (!token || !token[0]) {
+        ESP_LOGE(TAG, "mint-ticket: no API token configured");
+        return false;
+    }
+
+    char url[160];
+    snprintf(url, sizeof(url), "%s/api/auth/login-ticket",
+             config_phoneblock_base_url());
+
+    char next_enc[256];
+    if (!form_encode(next, next_enc, sizeof(next_enc))) {
+        ESP_LOGE(TAG, "mint-ticket: 'next' too long");
+        return false;
+    }
+    char body[320];
+    int body_len = snprintf(body, sizeof(body), "next=%s", next_enc);
+    if (body_len < 0 || body_len >= (int)sizeof(body)) {
+        ESP_LOGE(TAG, "mint-ticket: body too large");
+        return false;
+    }
+
+    char auth_header[128];
+    snprintf(auth_header, sizeof(auth_header), "Bearer %s", token);
+
+    response_buffer_t resp = {
+        .data = calloc(1, 1024),
+        .len = 0,
+        .cap = 1024,
+    };
+    if (!resp.data) {
+        ESP_LOGE(TAG, "mint-ticket: out of memory");
+        return false;
+    }
+
+    esp_http_client_config_t config = {
+        .url = url,
+        .method = HTTP_METHOD_POST,
+        .event_handler = http_event_handler,
+        .user_data = &resp,
+        .crt_bundle_attach = esp_crt_bundle_attach,
+        .timeout_ms = 10000,
+    };
+    esp_http_client_handle_t client = esp_http_client_init(&config);
+    http_util_set_user_agent(client);
+    esp_http_client_set_header(client, "Authorization", auth_header);
+    esp_http_client_set_header(client, "Content-Type",
+        "application/x-www-form-urlencoded");
+    esp_http_client_set_post_field(client, body, body_len);
+
+    ESP_LOGI(TAG, "POST %s next=%s", url, next);
+    esp_err_t err = esp_http_client_perform(client);
+    int status = (err == ESP_OK) ? esp_http_client_get_status_code(client) : 0;
+    esp_http_client_cleanup(client);
+
+    bool ok = false;
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "mint-ticket transport: %s", esp_err_to_name(err));
+    } else if (status != 200) {
+        ESP_LOGE(TAG, "mint-ticket: HTTP %d", status);
+    } else {
+        cJSON *root = cJSON_Parse(resp.data);
+        if (!root) {
+            ESP_LOGW(TAG, "mint-ticket: bad JSON: %.*s", resp.len, resp.data);
+        } else {
+            cJSON *ticket_node = cJSON_GetObjectItem(root, "ticket");
+            if (cJSON_IsString(ticket_node) && ticket_node->valuestring
+                && ticket_node->valuestring[0]) {
+                int n = snprintf(url_out, url_cap,
+                    "%s/auth/login-ticket?t=%s",
+                    config_phoneblock_base_url(),
+                    ticket_node->valuestring);
+                if (n > 0 && n < (int)url_cap) {
+                    ok = true;
+                } else {
+                    ESP_LOGE(TAG, "mint-ticket: URL buffer too small");
+                }
+            } else {
+                ESP_LOGW(TAG, "mint-ticket: response missing ticket");
+            }
+            cJSON_Delete(root);
+        }
+    }
+    free(resp.data);
+    return ok;
+}
