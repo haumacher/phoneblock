@@ -245,15 +245,26 @@ esp_err_t web_auth_handle_start(httpd_req_t *req)
     return ESP_OK;
 }
 
+// 302 the browser back to the SPA's login state with a machine-readable
+// `?login_error=<code>` query the JS side maps to a localized banner.
+// Keeps this handler from rendering its own (untranslated, unstyled)
+// error pages.
+static esp_err_t redirect_login_error(httpd_req_t *req, const char *code)
+{
+    char location[64];
+    snprintf(location, sizeof(location), "/?login_error=%s", code);
+    httpd_resp_set_status(req, "302 Found");
+    httpd_resp_set_hdr(req, "Location", location);
+    httpd_resp_send(req, NULL, 0);
+    return ESP_OK;
+}
+
 esp_err_t web_auth_handle_callback(httpd_req_t *req)
 {
     char query[1024];
     if (httpd_req_get_url_query_str(req, query, sizeof(query)) != ESP_OK) {
-        httpd_resp_set_status(req, "400 Bad Request");
-        httpd_resp_set_type(req, "text/html; charset=utf-8");
-        httpd_resp_sendstr(req,
-            "<p>Missing query parameters. <a href=\"/\">Back</a>.</p>");
-        return ESP_OK;
+        ESP_LOGW(TAG, "auth/callback: missing query");
+        return redirect_login_error(req, "missing");
     }
     char code[768] = "";
     char state[64] = "";
@@ -270,21 +281,11 @@ esp_err_t web_auth_handle_callback(httpd_req_t *req)
 
     if (!nonce_ok) {
         ESP_LOGW(TAG, "auth/callback: bad CSRF state");
-        httpd_resp_set_status(req, "400 Bad Request");
-        httpd_resp_set_type(req, "text/html; charset=utf-8");
-        httpd_resp_sendstr(req,
-            "<p>Invalid or expired CSRF state. "
-            "<a href=\"/\">Try again</a>.</p>");
-        return ESP_OK;
+        return redirect_login_error(req, "expired");
     }
     if (!code[0]) {
         ESP_LOGW(TAG, "auth/callback: missing code");
-        httpd_resp_set_status(req, "400 Bad Request");
-        httpd_resp_set_type(req, "text/html; charset=utf-8");
-        httpd_resp_sendstr(req,
-            "<p>No code in callback. "
-            "<a href=\"/\">Try again</a>.</p>");
-        return ESP_OK;
+        return redirect_login_error(req, "missing");
     }
 
     // Round-trip to phoneblock.net: server validates JWT signature
@@ -293,12 +294,7 @@ esp_err_t web_auth_handle_callback(httpd_req_t *req)
     if (!phoneblock_verify_auth_code(code, state,
                                      verified_user, sizeof(verified_user))) {
         ESP_LOGW(TAG, "auth/callback: server rejected verification");
-        httpd_resp_set_status(req, "403 Forbidden");
-        httpd_resp_set_type(req, "text/html; charset=utf-8");
-        httpd_resp_sendstr(req,
-            "<p>Anmeldung fehlgeschlagen — der Server hat das Token "
-            "abgelehnt. <a href=\"/\">Erneut versuchen</a>.</p>");
-        return ESP_OK;
+        return redirect_login_error(req, "rejected");
     }
 
     if (was_activate) {
@@ -312,12 +308,7 @@ esp_err_t web_auth_handle_callback(httpd_req_t *req)
         };
         if (config_update(&u) != ESP_OK) {
             ESP_LOGE(TAG, "auth/callback: failed to persist activation");
-            httpd_resp_set_status(req, "500 Internal Server Error");
-            httpd_resp_set_type(req, "text/html; charset=utf-8");
-            httpd_resp_sendstr(req,
-                "<p>Konnte Aktivierung nicht speichern. "
-                "<a href=\"/\">Zurück</a>.</p>");
-            return ESP_OK;
+            return redirect_login_error(req, "persist");
         }
         ESP_LOGI(TAG, "auth/callback: activated for user '%s'", verified_user);
     } else {
@@ -328,13 +319,7 @@ esp_err_t web_auth_handle_callback(httpd_req_t *req)
         if (!expected[0] || strcmp(verified_user, expected) != 0) {
             ESP_LOGW(TAG, "auth/callback: user mismatch (got '%s', want '%s')",
                      verified_user, expected);
-            httpd_resp_set_status(req, "403 Forbidden");
-            httpd_resp_set_type(req, "text/html; charset=utf-8");
-            httpd_resp_sendstr(req,
-                "<p>Anmeldung fehlgeschlagen — dieser PhoneBlock-Account "
-                "ist nicht der Eigentümer dieses Dongles. "
-                "<a href=\"/\">Erneut versuchen</a>.</p>");
-            return ESP_OK;
+            return redirect_login_error(req, "mismatch");
         }
     }
 

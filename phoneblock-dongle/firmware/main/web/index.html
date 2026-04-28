@@ -40,6 +40,8 @@
   .muted{color:#888;font-size:.85rem}
   .error-row{border-left:3px solid #f44336;padding:.2rem .5rem;margin-bottom:.35rem;
              font-size:.9rem;background:#fffafa}
+  .login-error{color:#d93025;background:#fce8e6;border-left:3px solid #d93025;
+               padding:.6rem .8rem;border-radius:4px;margin:.4rem 0 1rem}
   label{display:block;margin:.6rem 0 .2rem;font-size:.8rem;color:#555}
   input, select{width:100%;padding:.4rem;border:1px solid #ccc;border-radius:4px;
         font-size:.95rem;font-family:inherit}
@@ -152,6 +154,12 @@ const I18N = {
     'login.title': 'Anmeldung erforderlich',
     'login.intro': 'Der Zugangsschutz für diesen Dongle ist aktiv. Klicke unten, um Dich über Deinen PhoneBlock-Account anzumelden — Du wirst kurz zu phoneblock.net umgeleitet und automatisch zurückgeschickt.',
     'login.button': 'Mit PhoneBlock anmelden',
+    'login.error.mismatch': 'Anmeldung fehlgeschlagen — dieser PhoneBlock-Account ist nicht der Eigentümer dieses Dongles.',
+    'login.error.rejected': 'Anmeldung fehlgeschlagen — der PhoneBlock-Server hat die Identität nicht bestätigt.',
+    'login.error.expired': 'Die Anmeldung ist abgelaufen oder ungültig. Bitte erneut versuchen.',
+    'login.error.persist': 'Aktivierung konnte nicht gespeichert werden. Bitte erneut versuchen.',
+    'login.error.missing': 'Die Antwort von phoneblock.net war unvollständig. Bitte erneut versuchen.',
+    'login.error.generic': 'Anmeldung fehlgeschlagen. Bitte erneut versuchen.',
     'status.reset.title': 'Werkseinstellungen',
     'status.reset.intro': 'Löscht alle Einstellungen im Dongle (SIP-Zugangsdaten, PhoneBlock-Token, Fehlerverlauf) und startet neu.',
     'status.reset.button': 'Konfiguration zurücksetzen',
@@ -327,6 +335,12 @@ const I18N = {
     'login.title': 'Sign in required',
     'login.intro': 'Access protection on this dongle is active. Click below to sign in with your PhoneBlock account — you will briefly be redirected to phoneblock.net and sent back automatically.',
     'login.button': 'Sign in with PhoneBlock',
+    'login.error.mismatch': 'Sign-in failed — this PhoneBlock account is not the owner of this dongle.',
+    'login.error.rejected': 'Sign-in failed — the PhoneBlock server did not confirm the identity.',
+    'login.error.expired': 'The sign-in expired or was invalid. Please try again.',
+    'login.error.persist': 'Activation could not be saved. Please try again.',
+    'login.error.missing': 'The response from phoneblock.net was incomplete. Please try again.',
+    'login.error.generic': 'Sign-in failed. Please try again.',
     'status.reset.title': 'Factory reset',
     'status.reset.intro': 'Erases all dongle settings (SIP credentials, PhoneBlock token, error history) and reboots.',
     'status.reset.button': 'Reset configuration',
@@ -502,6 +516,12 @@ const I18N = {
     'login.title': 'Connexion requise',
     'login.intro': 'La protection d’accès de ce dongle est active. Clique ci-dessous pour te connecter avec ton compte PhoneBlock — tu seras brièvement redirigé vers phoneblock.net puis renvoyé automatiquement.',
     'login.button': 'Se connecter avec PhoneBlock',
+    'login.error.mismatch': 'Échec de la connexion — ce compte PhoneBlock n’est pas le propriétaire de ce dongle.',
+    'login.error.rejected': 'Échec de la connexion — le serveur PhoneBlock n’a pas confirmé l’identité.',
+    'login.error.expired': 'La connexion a expiré ou n’est pas valide. Réessaie.',
+    'login.error.persist': 'L’activation n’a pas pu être enregistrée. Réessaie.',
+    'login.error.missing': 'La réponse de phoneblock.net était incomplète. Réessaie.',
+    'login.error.generic': 'Échec de la connexion. Réessaie.',
     'status.reset.title': 'Réinitialisation',
     'status.reset.intro': 'Efface tous les réglages du dongle (identifiants SIP, jeton PhoneBlock, historique des erreurs) et redémarre.',
     'status.reset.button': 'Réinitialiser la configuration',
@@ -677,6 +697,12 @@ const I18N = {
     'login.title': 'Inicio de sesión necesario',
     'login.intro': 'La protección de acceso de este dongle está activa. Haz clic abajo para iniciar sesión con tu cuenta de PhoneBlock — serás redirigido brevemente a phoneblock.net y devuelto automáticamente.',
     'login.button': 'Iniciar sesión con PhoneBlock',
+    'login.error.mismatch': 'Inicio de sesión fallido — esta cuenta de PhoneBlock no es la propietaria de este dongle.',
+    'login.error.rejected': 'Inicio de sesión fallido — el servidor de PhoneBlock no confirmó la identidad.',
+    'login.error.expired': 'El inicio de sesión ha caducado o no es válido. Inténtalo de nuevo.',
+    'login.error.persist': 'No se pudo guardar la activación. Inténtalo de nuevo.',
+    'login.error.missing': 'La respuesta de phoneblock.net estaba incompleta. Inténtalo de nuevo.',
+    'login.error.generic': 'Inicio de sesión fallido. Inténtalo de nuevo.',
     'status.reset.title': 'Restablecimiento',
     'status.reset.intro': 'Borra todos los ajustes del dongle (credenciales SIP, token PhoneBlock, historial de errores) y reinicia.',
     'status.reset.button': 'Restablecer configuración',
@@ -935,6 +961,7 @@ function renderStatus(){
   app.innerHTML = ''
     + '<section id="loginSection" style="display:none">'
     + '<h2>' + esc(t('login.title')) + '</h2>'
+    + '<p id="loginError" class="login-error" style="display:none"></p>'
     + '<p>' + esc(t('login.intro')) + '</p>'
     + '<p style="margin-top:1.2rem">'
     + '<a href="/auth/start" class="btn-primary">'
@@ -1106,12 +1133,47 @@ const DASHBOARD_SECTIONS = ['heroSlot', 'statusSection', 'callsSection',
   'errorsSection', 'resetSection', 'annSection', 'syncSection',
   'fwSection', 'authSection'];
 
+// Maps `?login_error=<code>` query values that web_auth_handle_callback
+// emits to localized text shown in the login section's red banner.
+const LOGIN_ERROR_KEYS = {
+  mismatch: 'login.error.mismatch',
+  rejected: 'login.error.rejected',
+  expired:  'login.error.expired',
+  persist:  'login.error.persist',
+  missing:  'login.error.missing',
+};
+
+// True once a callback error has been surfaced. Pins the SPA on the
+// login screen so e.g. an activation persist failure (gate stays off,
+// /api/status would return 200 → dashboard) cannot bury the error.
+// Cleared by reloading the page (URL is stripped on first show).
+let stickyLoginError = false;
+
 function showLoginState(){
   const loginSec = $('loginSection');
   if (loginSec) loginSec.style.display = '';
   for (const id of DASHBOARD_SECTIONS){
     const el = $(id);
     if (el) el.style.display = 'none';
+  }
+
+  // Surface a callback error once, then strip it from the URL so a
+  // browser reload doesn't re-show a stale message. The DOM keeps it
+  // visible via stickyLoginError until the user navigates away.
+  const params = new URLSearchParams(location.search);
+  const errCode = params.get('login_error');
+  if (errCode){
+    const key = LOGIN_ERROR_KEYS[errCode] || 'login.error.generic';
+    const errEl = $('loginError');
+    if (errEl){
+      errEl.textContent = t(key);
+      errEl.style.display = '';
+    }
+    stickyLoginError = true;
+    params.delete('login_error');
+    const qs = params.toString();
+    history.replaceState(null, '',
+      location.pathname + (qs ? '?' + qs : '') + location.hash);
   }
 }
 
@@ -1121,6 +1183,16 @@ function hideLoginState(){
 }
 
 async function refreshAll(){
+  // Sticky login error from a previous /auth/callback bounce — keep
+  // the user on the login screen until they take action. Checked
+  // before /api/status so a gate-off state (e.g. persist failure
+  // during activation) can't immediately dismiss the banner. The URL
+  // form covers the very first poll right after the redirect; the
+  // sticky flag covers every subsequent poll once the URL is stripped.
+  if (stickyLoginError || new URLSearchParams(location.search).has('login_error')){
+    showLoginState();
+    return;
+  }
   const sResp = await fetch('/api/status').catch(() => null);
   if (sResp && sResp.status === 401){
     showLoginState();
