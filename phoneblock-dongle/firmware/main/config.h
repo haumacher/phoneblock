@@ -85,6 +85,14 @@ bool        config_auth_enabled(void);
 // phoneblock.net does not lock the user out of their own dongle.
 const char *config_auth_user(void);
 
+// Whether the daily firmware self-update task is allowed to install
+// a newer version from the CDN. Default on. Auto-disabled when the
+// user uploads a firmware image manually via the web UI — without
+// this guard the auto-updater would happily overwrite a hand-picked
+// build on the next nightly poll. Re-enable explicitly from the UI
+// when ready to follow the released stream again.
+bool        config_auto_update_enabled(void);
+
 // PhoneBlock
 // Site root URL, without "/api" suffix — api.c appends "/api/…",
 // web.c appends "/mobile/…" directly.
@@ -134,6 +142,10 @@ typedef struct {
     // activation. Empty string clears the pin (used when disabling
     // the gate); NULL leaves the current value untouched.
     const char *auth_user;
+    // "1" = let the daily self-update task install newer firmware,
+    // "0" = freeze on the current build. NULL = leave unchanged.
+    // Default when unset is "1" (auto-update on).
+    const char *auto_update;
     const char *phoneblock_base_url;
     const char *phoneblock_token;
 } config_update_t;

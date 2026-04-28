@@ -182,6 +182,8 @@ const I18N = {
     'status.fw.check.installed': 'Version {version} installiert — Dongle startet neu.',
     'status.fw.check.error': 'Prüfung fehlgeschlagen: {msg}',
     'status.fw.failed': 'Letztes Update auf Version {version} hat den Boot nicht überstanden — automatisch zurückgerollt. Auto-Update überspringt diese Version. Klick auf „Auf Aktualisierung prüfen", um es erneut zu versuchen.',
+    'status.fw.auto_update': 'Tägliche Auto-Aktualisierung',
+    'status.fw.auto_update.help': 'Wenn aktiv, prüft der Dongle einmal pro Tag, ob auf der PhoneBlock-CDN eine neuere Version liegt, und installiert sie automatisch. Beim manuellen Hochladen einer Firmware wird diese Option automatisch ausgeschaltet, damit der Daily-Check Deinen handgewählten Build nicht überschreibt — schalte sie hier wieder ein, wenn Du dem Release-Strom folgen willst.',
     'status.sync.title': 'Sperrlisten-Sync',
     'status.sync.intro': 'Am Mobilteil gesperrte Nummern („Nummer sperren") werden einmal pro Tag zur PhoneBlock-Datenbank übertragen und danach aus der Fritz!Box entfernt. Der Answerbot fängt die Anrufer dann für alle PhoneBlock-Nutzer ab.',
     'status.sync.unavailable': 'Nicht verfügbar — nur mit Fritz!Box-Einrichtung nutzbar.',
@@ -363,6 +365,8 @@ const I18N = {
     'status.fw.check.installed': 'Version {version} installed — dongle is rebooting.',
     'status.fw.check.error': 'Check failed: {msg}',
     'status.fw.failed': 'Last update to version {version} did not survive the boot — automatically rolled back. Auto-update will skip this version. Click "Check for update" to retry.',
+    'status.fw.auto_update': 'Daily auto-update',
+    'status.fw.auto_update.help': 'When on, the dongle checks the PhoneBlock CDN once a day for a newer version and installs it automatically. Manually uploading a firmware turns this off so the daily check does not overwrite your hand-picked build — turn it back on here once you want to follow the released stream again.',
     'status.sync.title': 'Blocklist sync',
     'status.sync.intro': 'Numbers blocked at the handset ("Block number") are uploaded to the PhoneBlock database once a day and then removed from the Fritz!Box. The answer bot afterwards catches those callers for every PhoneBlock user.',
     'status.sync.unavailable': 'Unavailable — requires a Fritz!Box setup.',
@@ -544,6 +548,8 @@ const I18N = {
     'status.fw.check.installed': 'Version {version} installée — le dongle redémarre.',
     'status.fw.check.error': 'Échec de la vérification : {msg}',
     'status.fw.failed': 'La dernière mise à jour vers la version {version} n’a pas survécu au démarrage — restauration automatique. La mise à jour automatique ignore cette version. Cliquez sur « Vérifier les mises à jour » pour réessayer.',
+    'status.fw.auto_update': 'Mise à jour automatique quotidienne',
+    'status.fw.auto_update.help': 'Si activée, le dongle vérifie une fois par jour la présence d’une version plus récente sur le CDN PhoneBlock et l’installe automatiquement. Téléverser un firmware manuellement désactive cette option pour que la vérification quotidienne n’écrase pas ta version choisie — réactive-la ici quand tu veux suivre le flux des versions publiées.',
     'status.sync.title': 'Synchro liste de blocage',
     'status.sync.intro': 'Les numéros bloqués depuis le combiné (« Bloquer le numéro ») sont envoyés à la base PhoneBlock une fois par jour, puis retirés de la Fritz!Box. Le bot répondeur intercepte ensuite ces appelants pour tous les utilisateurs PhoneBlock.',
     'status.sync.unavailable': 'Indisponible — nécessite une configuration Fritz!Box.',
@@ -725,6 +731,8 @@ const I18N = {
     'status.fw.check.installed': 'Versión {version} instalada — el dongle se reinicia.',
     'status.fw.check.error': 'La comprobación falló: {msg}',
     'status.fw.failed': 'La última actualización a la versión {version} no superó el arranque — se revirtió automáticamente. La actualización automática omitirá esta versión. Pulsa «Buscar actualizaciones» para volver a intentarlo.',
+    'status.fw.auto_update': 'Actualización automática diaria',
+    'status.fw.auto_update.help': 'Si está activada, el dongle comprueba una vez al día si hay una versión más nueva en la CDN de PhoneBlock y la instala automáticamente. Subir un firmware manualmente desactiva esta opción para que la comprobación diaria no sobrescriba tu compilación elegida — vuelve a activarla aquí cuando quieras seguir el flujo de versiones publicadas.',
     'status.sync.title': 'Sincronización de lista de bloqueo',
     'status.sync.intro': 'Los números bloqueados desde el terminal («Bloquear número») se envían a la base de PhoneBlock una vez al día y luego se eliminan de la Fritz!Box. El bot luego intercepta esas llamadas para todos los usuarios de PhoneBlock.',
     'status.sync.unavailable': 'No disponible — requiere configuración Fritz!Box.',
@@ -1071,6 +1079,13 @@ function renderStatus(){
     + '  <button id="fwCheck" class="btn-ghost" style="padding:.3rem .7rem;font-size:.85rem;margin-left:.4rem">'
     +   esc(t('status.fw.check')) + '</button>'
     + '  <span id="fwMsg" class="muted" style="margin-left:.6rem"></span>'
+    + '</p>'
+    + '<p style="margin-top:.6rem;font-size:.85rem">'
+    + '  <label title="' + esc(t('status.fw.auto_update.help')) + '" '
+    +    'style="display:flex;align-items:center;gap:.4rem;font-weight:400;color:#444;margin:0">'
+    + '    <input id="fwAutoUpdate" type="checkbox" style="width:auto;margin:0">'
+    + '    <span>' + esc(t('status.fw.auto_update')) + '</span>'
+    + '  </label>'
     + '</p></section>'
     + '<section id="authSection" style="display:none">'
     + '<h2>' + esc(t('status.auth.title')) + '</h2>'
@@ -1662,12 +1677,36 @@ async function refreshAll(){
       fwFailed.style.display = 'none';
     }
   }
-  const fwPick     = $('fwPick');
-  const fwFile     = $('fwFile');
-  const fwFileName = $('fwFileName');
-  const fwUpload   = $('fwUpload');
-  const fwCheck    = $('fwCheck');
-  const fwMsg      = $('fwMsg');
+  const fwPick       = $('fwPick');
+  const fwFile       = $('fwFile');
+  const fwFileName   = $('fwFileName');
+  const fwUpload     = $('fwUpload');
+  const fwCheck      = $('fwCheck');
+  const fwMsg        = $('fwMsg');
+  const fwAutoUpdate = $('fwAutoUpdate');
+  // s.firmware.auto_update is the persisted device flag. Default true:
+  // a missing value (older firmware that didn't expose the field)
+  // shouldn't make the toggle look "off" in the UI.
+  if (fwAutoUpdate){
+    fwAutoUpdate.checked = !s || !s.firmware || s.firmware.auto_update !== false;
+    if (!fwAutoUpdate.onchange){
+      fwAutoUpdate.onchange = async () => {
+        const want = fwAutoUpdate.checked;
+        fwAutoUpdate.disabled = true;
+        const body = new URLSearchParams();
+        body.append('auto_update', want ? '1' : '0');
+        try {
+          await fetch('/api/config', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: body.toString(),
+          });
+        } catch (_){ /* next poll will reconcile */ }
+        fwAutoUpdate.disabled = false;
+        refreshAll();
+      };
+    }
+  }
   if (fwPick && !fwPick.onclick){
     fwPick.onclick = () => fwFile.click();
     fwFile.onchange = () => {

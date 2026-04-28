@@ -40,6 +40,29 @@ static void copy_str(char *dst, size_t cap, const char *src)
     dst[n] = '\0';
 }
 
+// Lightweight semver-ish comparison for our own version strings
+// (Project version from CMakeLists.txt, e.g. "1.5.3" or "1.5.3-rc1").
+// Returns <0 / 0 / >0 like strcmp. Numeric major.minor.patch compare,
+// then any pre-release suffix ("-rc1", "-dev", …) is treated as
+// strictly less than the same release without the suffix — enough
+// to keep "1.5.3-rc1" from displacing a freshly flashed "1.5.3".
+// Two pre-release suffixes are treated as equal; we don't have rc
+// orderings to worry about today.
+static int semver_cmp(const char *a, const char *b)
+{
+    int aMaj = 0, aMin = 0, aPat = 0;
+    int bMaj = 0, bMin = 0, bPat = 0;
+    sscanf(a, "%d.%d.%d", &aMaj, &aMin, &aPat);
+    sscanf(b, "%d.%d.%d", &bMaj, &bMin, &bPat);
+    if (aMaj != bMaj) return aMaj < bMaj ? -1 : 1;
+    if (aMin != bMin) return aMin < bMin ? -1 : 1;
+    if (aPat != bPat) return aPat < bPat ? -1 : 1;
+    int aPre = strchr(a, '-') ? 1 : 0;
+    int bPre = strchr(b, '-') ? 1 : 0;
+    if (aPre != bPre) return aPre ? -1 : 1;
+    return 0;
+}
+
 static void reboot_task(void *arg)
 {
     (void)arg;
@@ -198,7 +221,21 @@ void firmware_try_update(bool force, fw_update_outcome_t *out)
     const char *new_version = j_ver->valuestring;
     copy_str(out->new_version, sizeof(out->new_version), new_version);
 
-    if (strcmp(new_version, out->current_version) == 0) {
+    int vcmp = semver_cmp(new_version, out->current_version);
+    if (vcmp == 0) {
+        cJSON_Delete(root);
+        out->result = FW_UPDATE_NO_NEW;
+        return;
+    }
+    if (vcmp < 0 && !force) {
+        // Manifest is older than what we're running. The unforced path
+        // (auto-update background task, "Auf Aktualisierung prüfen"
+        // without manual override) treats this as "nothing newer" so
+        // a CDN downgrade — accidental or otherwise — never silently
+        // overwrites a newer locally-flashed build. The forced manual
+        // path still allows downgrades on explicit user request.
+        ESP_LOGI(TAG, "manifest version %s is older than running %s; skipping",
+                 new_version, out->current_version);
         cJSON_Delete(root);
         out->result = FW_UPDATE_NO_NEW;
         return;
@@ -272,6 +309,15 @@ static void update_task(void *arg)
         // task — an unconfigured dongle has nothing to lose by
         // staying on its current build.
         if (strlen(config_phoneblock_token()) == 0) continue;
+        // Honour the user's "freeze on this build" choice (set
+        // automatically by the manual firmware-upload path, or
+        // explicitly via the web UI toggle). The "Auf Aktualisierung
+        // prüfen" button bypasses this — that's a manual call and
+        // signals intent.
+        if (!config_auto_update_enabled()) {
+            ESP_LOGI(TAG, "scheduled update check skipped (auto-update off)");
+            continue;
+        }
         ESP_LOGI(TAG, "scheduled firmware update check");
         firmware_try_update(false, NULL);
     }

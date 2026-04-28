@@ -309,6 +309,9 @@ static esp_err_t handle_status(httpd_req_t *req)
     cJSON_AddBoolToObject  (au,   "enabled",     config_auth_enabled());
     cJSON_AddBoolToObject  (au,   "logged_in",   web_auth_is_logged_in(req));
 
+    cJSON *fw = cJSON_AddObjectToObject(root, "firmware");
+    cJSON_AddBoolToObject  (fw,   "auto_update", config_auto_update_enabled());
+
     send_json(req, root);
     return ESP_OK;
 }
@@ -424,6 +427,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     char sip_srtp[16]     = "";
     char sync_en_s[4]     = "";
     char log_known_s[4]   = "";
+    char auto_update_s[4] = "";
 
     bool have_sip_host  = form_get(body, "sip_host",  sip_host,  sizeof(sip_host));
     bool have_sip_user  = form_get(body, "sip_user",  sip_user,  sizeof(sip_user));
@@ -437,6 +441,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     bool have_sip_srtp  = form_get(body, "sip_srtp",      sip_srtp,     sizeof(sip_srtp));
     bool have_sync_en   = form_get(body, "sync_enabled",  sync_en_s,    sizeof(sync_en_s));
     bool have_log_known = form_get(body, "log_known_calls", log_known_s, sizeof(log_known_s));
+    bool have_auto_upd  = form_get(body, "auto_update",   auto_update_s, sizeof(auto_update_s));
     bool have_pb_url    = form_get(body, "pb_url",    pb_url,    sizeof(pb_url));
     bool have_pb_token  = form_get(body, "pb_token",  pb_token,  sizeof(pb_token));
     free(body);
@@ -469,6 +474,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
         .sip_srtp      = have_sip_srtp  ? sip_srtp     : NULL,
         .sync_enabled    = have_sync_en   ? sync_en_s    : NULL,
         .log_known_calls = have_log_known ? log_known_s  : NULL,
+        .auto_update     = have_auto_upd  ? auto_update_s : NULL,
         .phoneblock_base_url = have_pb_url   && pb_url[0]   ? pb_url   : NULL,
         .phoneblock_token    = have_pb_token && pb_token[0] ? pb_token : NULL,
     };
@@ -1191,6 +1197,18 @@ static esp_err_t handle_firmware_upload(httpd_req_t *req)
         ESP_LOGE(TAG, "esp_ota_set_boot_partition: %s", esp_err_to_name(err));
         send_fail(req, "Could not activate new partition.");
         return ESP_OK;
+    }
+
+    // Manual upload trumps the auto-update toggle: the user just
+    // hand-picked this build, so the daily updater must not silently
+    // overwrite it on the next nightly poll. The toggle in the web UI
+    // surfaces the new state and lets the user re-enable auto-update
+    // when ready to follow the released stream again.
+    config_update_t off = { .auto_update = "0" };
+    if (config_update(&off) != ESP_OK) {
+        ESP_LOGW(TAG, "firmware upload: auto-update disable failed (continuing)");
+    } else {
+        ESP_LOGI(TAG, "firmware upload: auto-update disabled");
     }
 
     int64_t total_us = esp_timer_get_time() - t0;
