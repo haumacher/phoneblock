@@ -16,7 +16,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * Public verifier for assertions produced by {@link AuthLoginServlet}.
+ * Public verifier for assertions produced by {@link AuthGateServlet}.
  *
  * <p>
  * Validates signature, expiry and optional CSRF nonce of a JWT, and
@@ -33,8 +33,8 @@ import jakarta.servlet.http.HttpServletResponse;
  * <b>POST /auth/verify-code</b><br>
  * Body (form-encoded):
  * <ul>
- *   <li>{@code code}  — JWT received from {@code /auth-login}'s callback redirect.
- *   <li>{@code state} — nonce the caller sent to {@code /auth-login} (optional).
+ *   <li>{@code code}  — JWT received from {@code /auth-gate}'s callback redirect.
+ *   <li>{@code state} — nonce the caller sent to {@code /auth-gate} (optional).
  * </ul>
  *
  * <p>Always returns HTTP 200 with a JSON body:

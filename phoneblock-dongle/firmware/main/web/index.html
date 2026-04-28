@@ -149,6 +149,9 @@ const I18N = {
     'status.auth.disable': 'Zugangsschutz ausschalten',
     'status.auth.logout': 'Abmelden',
     'status.auth.activate.intro': 'Vor dem Einschalten wirst Du zu phoneblock.net umgeleitet, um Dich anzumelden — erst nach erfolgreicher Anmeldung wird der Schutz aktiviert. So kannst Du Dich nicht aussperren.',
+    'login.title': 'Anmeldung erforderlich',
+    'login.intro': 'Der Zugangsschutz für diesen Dongle ist aktiv. Klicke unten, um Dich über Deinen PhoneBlock-Account anzumelden — Du wirst kurz zu phoneblock.net umgeleitet und automatisch zurückgeschickt.',
+    'login.button': 'Mit PhoneBlock anmelden',
     'status.reset.title': 'Werkseinstellungen',
     'status.reset.intro': 'Löscht alle Einstellungen im Dongle (SIP-Zugangsdaten, PhoneBlock-Token, Fehlerverlauf) und startet neu.',
     'status.reset.button': 'Konfiguration zurücksetzen',
@@ -321,6 +324,9 @@ const I18N = {
     'status.auth.disable': 'Disable access protection',
     'status.auth.logout': 'Sign out',
     'status.auth.activate.intro': 'Before turning it on you are redirected to phoneblock.net to sign in — protection is only activated after a successful login. That way you cannot lock yourself out.',
+    'login.title': 'Sign in required',
+    'login.intro': 'Access protection on this dongle is active. Click below to sign in with your PhoneBlock account — you will briefly be redirected to phoneblock.net and sent back automatically.',
+    'login.button': 'Sign in with PhoneBlock',
     'status.reset.title': 'Factory reset',
     'status.reset.intro': 'Erases all dongle settings (SIP credentials, PhoneBlock token, error history) and reboots.',
     'status.reset.button': 'Reset configuration',
@@ -493,6 +499,9 @@ const I18N = {
     'status.auth.disable': 'Désactiver la protection d’accès',
     'status.auth.logout': 'Se déconnecter',
     'status.auth.activate.intro': 'Avant d’activer, tu es redirigé vers phoneblock.net pour te connecter — la protection n’est activée qu’après une connexion réussie. Tu ne peux donc pas te bloquer dehors.',
+    'login.title': 'Connexion requise',
+    'login.intro': 'La protection d’accès de ce dongle est active. Clique ci-dessous pour te connecter avec ton compte PhoneBlock — tu seras brièvement redirigé vers phoneblock.net puis renvoyé automatiquement.',
+    'login.button': 'Se connecter avec PhoneBlock',
     'status.reset.title': 'Réinitialisation',
     'status.reset.intro': 'Efface tous les réglages du dongle (identifiants SIP, jeton PhoneBlock, historique des erreurs) et redémarre.',
     'status.reset.button': 'Réinitialiser la configuration',
@@ -665,6 +674,9 @@ const I18N = {
     'status.auth.disable': 'Desactivar protección de acceso',
     'status.auth.logout': 'Cerrar sesión',
     'status.auth.activate.intro': 'Antes de activarla se te redirige a phoneblock.net para iniciar sesión — la protección solo se activa tras un inicio de sesión correcto. Así no puedes bloquearte fuera.',
+    'login.title': 'Inicio de sesión necesario',
+    'login.intro': 'La protección de acceso de este dongle está activa. Haz clic abajo para iniciar sesión con tu cuenta de PhoneBlock — serás redirigido brevemente a phoneblock.net y devuelto automáticamente.',
+    'login.button': 'Iniciar sesión con PhoneBlock',
     'status.reset.title': 'Restablecimiento',
     'status.reset.intro': 'Borra todos los ajustes del dongle (credenciales SIP, token PhoneBlock, historial de errores) y reinicia.',
     'status.reset.button': 'Restablecer configuración',
@@ -921,6 +933,14 @@ window.addEventListener('hashchange', route);
 
 function renderStatus(){
   app.innerHTML = ''
+    + '<section id="loginSection" style="display:none">'
+    + '<h2>' + esc(t('login.title')) + '</h2>'
+    + '<p>' + esc(t('login.intro')) + '</p>'
+    + '<p style="margin-top:1.2rem">'
+    + '<a href="/auth/start" class="btn-primary">'
+    +   esc(t('login.button')) + '</a>'
+    + '</p>'
+    + '</section>'
     + '<div id="heroSlot"></div>'
     + '<section id="statusSection" style="display:none">'
     + '<h2>' + esc(t('status.title')) + '</h2>'
@@ -1079,11 +1099,40 @@ function renderHero(sipDone, tokenDone){
 // by the browser across a reboot carries a now-stale value.
 let resetNonce = '';
 
+// IDs of sections that the dashboard shows or hides on each poll, so
+// we can toggle the entire dashboard visibility in one go when the
+// gate kicks us out (401 from /api/status).
+const DASHBOARD_SECTIONS = ['heroSlot', 'statusSection', 'callsSection',
+  'errorsSection', 'resetSection', 'annSection', 'syncSection',
+  'fwSection', 'authSection'];
+
+function showLoginState(){
+  const loginSec = $('loginSection');
+  if (loginSec) loginSec.style.display = '';
+  for (const id of DASHBOARD_SECTIONS){
+    const el = $(id);
+    if (el) el.style.display = 'none';
+  }
+}
+
+function hideLoginState(){
+  const loginSec = $('loginSection');
+  if (loginSec) loginSec.style.display = 'none';
+}
+
 async function refreshAll(){
+  const sResp = await fetch('/api/status').catch(() => null);
+  if (sResp && sResp.status === 401){
+    showLoginState();
+    return;
+  }
   const [s, calls, errs] = await Promise.all([
-    fetchJson('/api/status'), fetchJson('/api/calls'), fetchJson('/api/errors'),
+    sResp && sResp.ok ? sResp.json().catch(() => null) : null,
+    fetchJson('/api/calls'),
+    fetchJson('/api/errors'),
   ]);
   if (!s) return;
+  hideLoginState();
   resetNonce = s.reset_nonce || '';
   const sipConfigured = !!(s.sip.host && s.sip.user);
   const tokenSet      = !!s.phoneblock.token_set;
@@ -1418,8 +1467,9 @@ async function refreshAll(){
   //   - off + token set      → "Enable" button visible
   //   - off + token missing  → "needs token" hint, no buttons
   //   - on  + logged in      → state line + Logout + Disable
-  //   - on  + not logged in  → cannot happen here; auth gate would
-  //     have 302'd us to /auth/login before this script even ran
+  //   - on  + not logged in  → cannot happen here; refreshAll would
+  //     have caught the 401 from /api/status and switched to the
+  //     in-page login state before reaching this branch
   const auth = s.auth || { enabled: false, logged_in: false };
   const authState     = $('authState');
   const authHint      = $('authActivateHint');
@@ -1453,18 +1503,19 @@ async function refreshAll(){
     // 302 back to /auth/callback, which sets the cookie and persists
     // auth_enabled=1 only on success. No JS-side state to manage.
     authEnableBtn.onclick = () => {
-      window.location.href = '/auth/login?activate=1';
+      window.location.href = '/auth/start?activate=1';
     };
   }
   if (!authLogoutBtn.onclick){
     authLogoutBtn.onclick = async () => {
       authLogoutBtn.disabled = true;
       try {
-        // Server returns a 302 to /auth/login; fetch follows it but
-        // stops once we read .ok — we navigate explicitly below.
+        // Server's logout 302s back to /; fetch follows it but stops
+        // once we read .ok — we navigate explicitly below to land
+        // back on the SPA, which then renders the in-page login state.
         await fetch('/auth/logout', { method: 'POST', redirect: 'manual' });
       } catch (_){ /* navigate anyway */ }
-      window.location.href = '/auth/login';
+      window.location.href = '/';
     };
   }
   if (!authDisableBtn.onclick){

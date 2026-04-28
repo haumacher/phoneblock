@@ -31,7 +31,7 @@ static SemaphoreHandle_t s_mutex;
 // concurrent activations from two browsers would simply race, and the
 // later one wins, which matches the user's expectation.
 static char s_login_nonce[SESSION_ID_HEX + 1];
-// True while /auth/login was invoked with `activate=1` — the
+// True while /auth/start was invoked with `activate=1` — the
 // callback will then persist auth_enabled=1 if verification succeeds.
 static bool s_login_activates;
 
@@ -167,8 +167,11 @@ bool web_auth_required(httpd_req_t *req, bool is_api)
         httpd_resp_set_type(req, "application/json");
         httpd_resp_sendstr(req, "{\"ok\":false,\"reason\":\"login_required\"}");
     } else {
+        // Send the user back to the SPA; index.html itself decides
+        // whether to render the dashboard or the in-page login state
+        // based on the result of /api/status.
         httpd_resp_set_status(req, "302 Found");
-        httpd_resp_set_hdr(req, "Location", "/auth/login");
+        httpd_resp_set_hdr(req, "Location", "/");
         httpd_resp_send(req, NULL, 0);
     }
     return false;
@@ -176,7 +179,7 @@ bool web_auth_required(httpd_req_t *req, bool is_api)
 
 // --- HTTP handlers --------------------------------------------------
 
-esp_err_t web_auth_handle_login(httpd_req_t *req)
+esp_err_t web_auth_handle_start(httpd_req_t *req)
 {
     // The "activate=1" query flag persists across the round-trip via
     // s_login_activates; only the dongle UI passes it. The CSRF
@@ -232,10 +235,10 @@ esp_err_t web_auth_handle_login(httpd_req_t *req)
 
     char url[512];
     snprintf(url, sizeof(url),
-        "%s/auth-login?callback=%s&state=%s",
+        "%s/auth-gate?callback=%s&state=%s",
         config_phoneblock_base_url(), callback_enc, nonce_copy);
 
-    ESP_LOGI(TAG, "auth/login → redirect to %s (activate=%d)", url, (int)activate);
+    ESP_LOGI(TAG, "auth/start → redirect to %s (activate=%d)", url, (int)activate);
     httpd_resp_set_status(req, "302 Found");
     httpd_resp_set_hdr(req, "Location", url);
     httpd_resp_send(req, NULL, 0);
@@ -271,7 +274,7 @@ esp_err_t web_auth_handle_callback(httpd_req_t *req)
         httpd_resp_set_type(req, "text/html; charset=utf-8");
         httpd_resp_sendstr(req,
             "<p>Invalid or expired CSRF state. "
-            "<a href=\"/auth/login\">Try again</a>.</p>");
+            "<a href=\"/\">Try again</a>.</p>");
         return ESP_OK;
     }
     if (!code[0]) {
@@ -280,7 +283,7 @@ esp_err_t web_auth_handle_callback(httpd_req_t *req)
         httpd_resp_set_type(req, "text/html; charset=utf-8");
         httpd_resp_sendstr(req,
             "<p>No code in callback. "
-            "<a href=\"/auth/login\">Try again</a>.</p>");
+            "<a href=\"/\">Try again</a>.</p>");
         return ESP_OK;
     }
 
@@ -294,7 +297,7 @@ esp_err_t web_auth_handle_callback(httpd_req_t *req)
         httpd_resp_set_type(req, "text/html; charset=utf-8");
         httpd_resp_sendstr(req,
             "<p>Anmeldung fehlgeschlagen — der Server hat das Token "
-            "abgelehnt. <a href=\"/auth/login\">Erneut versuchen</a>.</p>");
+            "abgelehnt. <a href=\"/\">Erneut versuchen</a>.</p>");
         return ESP_OK;
     }
 
@@ -330,7 +333,7 @@ esp_err_t web_auth_handle_callback(httpd_req_t *req)
             httpd_resp_sendstr(req,
                 "<p>Anmeldung fehlgeschlagen — dieser PhoneBlock-Account "
                 "ist nicht der Eigentümer dieses Dongles. "
-                "<a href=\"/auth/login\">Erneut versuchen</a>.</p>");
+                "<a href=\"/\">Erneut versuchen</a>.</p>");
             return ESP_OK;
         }
     }
@@ -364,7 +367,7 @@ esp_err_t web_auth_handle_logout(httpd_req_t *req)
         unlock();
     }
     httpd_resp_set_status(req, "302 Found");
-    httpd_resp_set_hdr(req, "Location", "/auth/login");
+    httpd_resp_set_hdr(req, "Location", "/");
     httpd_resp_set_hdr(req, "Set-Cookie",
         "pb_session=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax");
     httpd_resp_send(req, NULL, 0);

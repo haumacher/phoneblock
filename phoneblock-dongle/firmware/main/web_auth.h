@@ -35,18 +35,20 @@ bool web_auth_session_valid(httpd_req_t *req);
 //
 // `is_api`:
 //   - true  → unauthenticated requests get a 401 + JSON body
-//   - false → unauthenticated requests are 302-redirected to /auth/login
+//   - false → unauthenticated requests are 302-redirected to "/" so
+//             index.html can render its in-page login state.
 bool web_auth_required(httpd_req_t *req, bool is_api);
 
 // HTTP handlers (registered in web.c's URI table).
 
-// GET /auth/login — start an authentication round-trip. Used both
-// for first activation (called from the UI toggle) and for re-login
-// after the session expired. The "activate" semantics — i.e. flip
-// config_auth_enabled to true on a successful round-trip — are
-// driven entirely from the web UI: it calls /auth/login with
-// `?activate=1`, which the callback respects.
-esp_err_t web_auth_handle_login(httpd_req_t *req);
+// GET /auth/start — start an authentication round-trip. Used both
+// for first activation (called from the UI's Enable toggle) and for
+// re-login after the session expired (called from the in-page login
+// button). The "activate" semantics — i.e. flip config_auth_enabled
+// to true on a successful round-trip — are driven entirely from the
+// web UI: it calls /auth/start with `?activate=1`, which the
+// callback respects.
+esp_err_t web_auth_handle_start(httpd_req_t *req);
 
 // GET /auth/callback — receive ?code=&state=&[activate=1] from the
 // loopback redirect, verify the JWT against PhoneBlock, and on
@@ -55,8 +57,8 @@ esp_err_t web_auth_handle_login(httpd_req_t *req);
 // for an activation round-trip.
 esp_err_t web_auth_handle_callback(httpd_req_t *req);
 
-// POST /auth/logout — drop the current session, redirect to
-// /auth/login (so the user lands on the login page again).
+// POST /auth/logout — drop the current session, redirect to "/" so
+// the SPA renders its in-page login state.
 esp_err_t web_auth_handle_logout(httpd_req_t *req);
 
 // POST /auth/disable — turn the gate off, drop all sessions. Only

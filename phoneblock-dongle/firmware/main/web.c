@@ -34,9 +34,10 @@ static httpd_handle_t s_server = NULL;
 
 // Gate handlers behind the SSO session cookie. With the gate
 // disabled (config_auth_enabled() == false) these are no-ops; once
-// activated they bounce unauthenticated callers either to
-// /auth/login (HTML) or to a 401 (API). The do/while wrapper keeps
-// the macro safe inside an if/else without braces.
+// activated they bounce unauthenticated callers either to "/" (HTML
+// — index.html itself renders the in-page login state) or to a 401
+// (API). The do/while wrapper keeps the macro safe inside an
+// if/else without braces.
 #define REQUIRE_AUTH_HTML(req) do { \
     if (!web_auth_required((req), false)) return ESP_OK; \
 } while (0)
@@ -219,7 +220,11 @@ static esp_err_t handle_favicon(httpd_req_t *req)
 
 static esp_err_t handle_root(httpd_req_t *req)
 {
-    REQUIRE_AUTH_HTML(req);
+    // Intentionally NOT gated. The SPA shell is harmless static markup
+    // and contains both the dashboard and the in-page login state; it
+    // chooses between them at runtime based on a 200/401 from the
+    // gated /api/status. Gating "/" here would break the in-page login
+    // bounce, since web_auth_required redirects HTML routes to "/".
     set_pna_response_headers(req);
     httpd_resp_set_type(req, "text/html; charset=utf-8");
     httpd_resp_send(req, (const char *)index_html_start,
@@ -1432,7 +1437,7 @@ static const httpd_uri_t URIS[] = {
     { .uri = "/api/token-test",          .method = HTTP_POST, .handler = handle_token_test,          .user_ctx = NULL },
     { .uri = "/register-start",      .method = HTTP_GET,  .handler = handle_register_start, .user_ctx = NULL },
     { .uri = "/token-callback",      .method = HTTP_GET,  .handler = handle_token_callback, .user_ctx = NULL },
-    { .uri = "/auth/login",          .method = HTTP_GET,  .handler = web_auth_handle_login,      .user_ctx = NULL },
+    { .uri = "/auth/start",          .method = HTTP_GET,  .handler = web_auth_handle_start,      .user_ctx = NULL },
     { .uri = "/auth/login-link",     .method = HTTP_GET,  .handler = web_auth_handle_login_link, .user_ctx = NULL },
     { .uri = "/auth/callback",       .method = HTTP_GET,  .handler = web_auth_handle_callback,   .user_ctx = NULL },
     { .uri = "/auth/logout",         .method = HTTP_POST, .handler = web_auth_handle_logout,     .user_ctx = NULL },
