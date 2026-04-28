@@ -17,6 +17,7 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * Public consumer for one-shot login tickets minted by
@@ -61,6 +62,19 @@ public class AuthLoginTicketServlet extends HttpServlet {
 			LOG.info("login-ticket: refusing redirect to '{}' (sub={})", next, claims.sub);
 			ServletUtil.sendMessage(resp, HttpServletResponse.SC_BAD_REQUEST,
 					"Ungültiges Weiterleitungsziel.");
+			return;
+		}
+
+		// Fast path: the browser is already logged in as the same user the
+		// ticket attests to. Skip the DB lookup and session reset; the
+		// existing session is already exactly what the ticket would create.
+		// This endpoint sits outside any LoginFilter, so we read the session
+		// attribute directly instead of going through getAuthContext(req).
+		HttpSession session = req.getSession(false);
+		AuthContext existing = session == null ? null : LoginFilter.getAuthContext(session);
+		if (existing != null && claims.sub.equals(existing.getUserName())) {
+			LOG.info("login-ticket: shortcut for already-logged-in {} → {}", claims.sub, next);
+			resp.sendRedirect(req.getContextPath() + next);
 			return;
 		}
 
