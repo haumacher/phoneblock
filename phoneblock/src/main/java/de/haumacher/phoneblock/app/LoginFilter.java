@@ -257,12 +257,7 @@ public abstract class LoginFilter implements Filter {
 		return (AuthContext) req.getAttribute(AUTH_CONTEXT_ATTR);
 	}
 
-	/**
-	 * The authentication context held by an existing session, or {@code null}.
-	 * Useful on public endpoints that want to detect an already-logged-in
-	 * browser without going through a {@link LoginFilter} themselves.
-	 */
-	public static AuthContext getAuthContext(HttpSession session) {
+	private static AuthContext getAuthContext(HttpSession session) {
 		return (AuthContext) session.getAttribute(AUTH_CONTEXT_ATTR);
 	}
 
