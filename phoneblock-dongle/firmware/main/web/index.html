@@ -1308,14 +1308,40 @@ async function refreshAll(){
   // Calls
   const tbody = $('callsBody');
   // PhoneBlock's web UI serves per-number detail pages at
-  // <site>/nums/<zeroZero>. Internal Fritz!Box codes (starting with
-  // "*" or "**") have no public page, so we leave them as plain text.
-  // We don't link to phoneblock.net directly: the dongle's broker
-  // /auth/login-link mints a one-shot login ticket using the API
-  // token (which never leaves the dongle) and 302s the browser.
-  const numCell = (num) => {
-    if (!num)             return '';
-    if (num.startsWith('*')) return esc(num);
+  // <site>/nums/<zeroZero>. We don't link to phoneblock.net directly:
+  // the dongle's broker /auth/login-link mints a one-shot login
+  // ticket using the API token (which never leaves the dongle) and
+  // 302s the browser.
+  //
+  // Two categories are kept off the public lookup so that they never
+  // leak to phoneblock.net via clicks:
+  //   - non-dialable numbers (internal Fritz!Box codes like *21#,
+  //     **622) — same predicate the firmware uses to skip the API
+  //     query in the first place.
+  //   - phone-book matches (display name contains letters) — the user
+  //     already knows who called; sending the contact's number to
+  //     phoneblock.net just to render a public detail page would be
+  //     careless with private contact data.
+  const isPhoneNumberLike = (s) => {
+    if (!s) return false;
+    let digit = false;
+    for (const ch of s) {
+      if (ch >= '0' && ch <= '9') { digit = true; continue; }
+      if ('+ -/().\t'.indexOf(ch) >= 0) continue;
+      return false;
+    }
+    return digit;
+  };
+  const looksDialable = (num) => {
+    if (!num) return false;
+    const first = num[0];
+    if (first === '+') return num.length > 1 && num[1] >= '0' && num[1] <= '9';
+    return first >= '0' && first <= '9';
+  };
+  const numCell = (num, display) => {
+    if (!num)                                       return '';
+    if (!looksDialable(num))                        return esc(num);
+    if (display && !isPhoneNumberLike(display))     return esc(num);
     const next = '/nums/' + encodeURIComponent(num);
     return '<a href="/auth/login-link?next=' + encodeURIComponent(next)
          + '" target="_blank" rel="noopener">' + esc(num) + '</a>';
@@ -1324,7 +1350,7 @@ async function refreshAll(){
   if (hasCalls){
     tbody.innerHTML = calls.calls.map(c =>
       '<tr><td>' + esc(fmtSec(c.age_s)) + '</td>'
-      + '<td>' + numCell(c.number) + '</td>'
+      + '<td>' + numCell(c.number, c.display) + '</td>'
       + '<td>' + esc(c.display) + '</td>'
       + '<td class="v-' + esc(c.verdict) + '">' + esc(c.verdict) + '</td></tr>'
     ).join('');
