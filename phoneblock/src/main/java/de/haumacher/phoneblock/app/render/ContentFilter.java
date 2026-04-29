@@ -33,6 +33,7 @@ import org.thymeleaf.web.IWebApplication;
 import org.thymeleaf.web.servlet.JakartaServletWebApplication;
 
 import de.haumacher.phoneblock.app.AssignContributionServlet;
+import de.haumacher.phoneblock.app.AuthGateServlet;
 import de.haumacher.phoneblock.app.BasicLoginFilter;
 import de.haumacher.phoneblock.app.EpcQrCodeServlet;
 import de.haumacher.phoneblock.util.I18N;
@@ -105,6 +106,7 @@ public class ContentFilter extends LoginFilter {
 		NO_POW.add(LoginController.LOGIN_PAGE);
 		NO_POW.add(EMailVerificationServlet.LOGIN_WEB);
 		NO_POW.add(LoginServlet.PATH);
+		NO_POW.add(AuthGateServlet.PATH);
 		NO_POW.add(RegistrationServlet.REGISTER_WEB);
 		NO_POW.add(RegistrationServlet.REGISTER_MOBILE);
 		NO_POW.add(RatingServlet.PATH);
