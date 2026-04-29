@@ -1053,7 +1053,7 @@ function renderStatus(){
     + '<th>' + esc(t('status.calls.col.verdict')) + '</th>'
     + '</tr></thead><tbody id="callsBody"></tbody></table>'
     + '</section>'
-    + '<section id="thresholdsSection">'
+    + '<section id="thresholdsSection" style="display:none">'
     + '<h2>' + esc(t('status.thresholds.title')) + '</h2>'
     + '<p class="muted" style="font-size:.85rem;margin:.2rem 0 .8rem">'
     +   esc(t('status.thresholds.intro')) + '</p>'
@@ -1197,8 +1197,8 @@ let resetNonce = '';
 // we can toggle the entire dashboard visibility in one go when the
 // gate kicks us out (401 from /api/status).
 const DASHBOARD_SECTIONS = ['heroSlot', 'statusSection', 'callsSection',
-  'errorsSection', 'resetSection', 'annSection', 'syncSection',
-  'fwSection', 'authSection'];
+  'thresholdsSection', 'errorsSection', 'resetSection', 'annSection',
+  'syncSection', 'fwSection', 'authSection'];
 
 // Maps `?login_error=<code>` query values that web_auth_handle_callback
 // emits to localized text shown in the login section's red banner.
@@ -1285,6 +1285,7 @@ async function refreshAll(){
   const heroSlot      = $('heroSlot');
   const statusSec     = $('statusSection');
   const callsSec      = $('callsSection');
+  const thresholdsSec = $('thresholdsSection');
   const errorsSec     = $('errorsSection');
   const resetSec      = $('resetSection');
   const annSec        = $('annSection');
@@ -1299,6 +1300,7 @@ async function refreshAll(){
     renderHero(sipConfigured, tokenSet);
     statusSec.style.display = 'none';
     callsSec.style.display = 'none';
+    thresholdsSec.style.display = 'none';
     errorsSec.style.display = 'none';
     annSec.style.display = 'none';
     syncSec.style.display = 'none';
@@ -1310,6 +1312,7 @@ async function refreshAll(){
   heroSlot.innerHTML = '';
   statusSec.style.display = '';
   callsSec.style.display = '';
+  thresholdsSec.style.display = '';
   errorsSec.style.display = '';
   annSec.style.display = '';
   syncSec.style.display = '';
