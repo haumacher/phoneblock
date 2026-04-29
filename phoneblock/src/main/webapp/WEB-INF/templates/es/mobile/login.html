@@ -25,6 +25,8 @@
 		<form method="post" th:action="@{/create-token}">
 			<input name="appId" th:value="${appId}" type="hidden"/>
 			<input name="tokenLabel" th:value="${tokenLabel}" type="hidden"/>
+			<input name="callback" th:value="${callback}" type="hidden"/>
+			<input name="state" th:value="${state}" type="hidden"/>
 			<div class="field is-grouped">
 			  <p class="control">
 			    <button class="button is-primary" type="submit">
