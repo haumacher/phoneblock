@@ -49,29 +49,57 @@
   </send>
 
   <!--
-    Verify the dongle's Authorization header. Both regexes are
-    `check_it="true"` so SIPp fails the call if either field is
-    wrong — that is what makes this a real auth test rather than a
-    decorative one. The expected digest response is supplied at
-    invocation time via `-key expected_response <hash>`.
+    Verify the dongle's Authorization header. We need to actually
+    *branch* on the result rather than only flag a check failure:
+    `check_it="true"` only marks the call as failed in stats — sipp
+    still runs the next `<send>`, which would 200-OK the dongle
+    even when the password is wrong (verified empirically).
+
+    Approach: capture both fields into variables, then guard the
+    200 OK and the 403 Forbidden sends with `condexec` / inverse so
+    only one fires per call.
   -->
   <recv request="REGISTER">
     <action>
-      <ereg regexp='username="phoneblock-dongle"'
+      <!-- Capture the actual response value into actual_resp.
+           One assign_to name + one capture group → the variable
+           gets the captured group (sipp aborts on a placeholder
+           "$dummy referenced 1 times" error if we add a throwaway
+           for the whole match). -->
+      <ereg regexp='response="([0-9a-fA-F]+)"'
             search_in="hdr"
             header="Authorization:"
-            check_it="true"
-            assign_to="user_match"/>
-      <ereg regexp='response="[$expected_response]"'
-            search_in="hdr"
-            header="Authorization:"
-            check_it="true"
-            assign_to="hash_match"/>
-      <log message="REGISTER authenticated: user_match=[$user_match] hash_match=[$hash_match]"/>
+            assign_to="actual_resp"/>
+      <!-- Park the expected hash in a string variable so strcmp can
+           compare two variables (it cannot take a literal). The
+           `<log>` line below references [$expected_response] a
+           second time — sipp aborts with "Variable referenced 1
+           times!" if any variable is referenced exactly once, so
+           the log is also a workaround for that quirk. -->
+      <assignstr assign_to="expected_resp" value="[$expected_response]"/>
+      <log message="REGISTER auth check (expected=[$expected_response])"/>
+      <!-- strcmp returns "0" when the two strings are equal,
+           non-zero otherwise (length difference of the first
+           differing byte, like libc strcmp). -->
+      <strcmp variable="actual_resp" variable2="expected_resp" assign_to="cmp_result"/>
+      <log message="REGISTER auth: actual=[$actual_resp] expected=[$expected_resp] cmp=[$cmp_result]"/>
     </action>
   </recv>
 
-  <send>
+  <!--
+    Two mutually-exclusive sends, each gated on cmp_result. No
+    `next` jumps — sipp's `next="end"` apparently fires even when
+    the message was skipped by condexec, which means the second
+    send never gets a chance and the dongle sees no response at all.
+    Without next, both sends are evaluated; exactly one fires.
+
+      cmp_result = "0" (strings equal) → first send fires (200 OK),
+                                         second skipped.
+      cmp_result = "1" (strings differ) → first skipped (because
+                                         condexec_inverse="true"),
+                                         second fires (403).
+  -->
+  <send condexec="cmp_result" condexec_inverse="true">
     <![CDATA[
 
       SIP/2.0 200 OK
@@ -82,6 +110,22 @@
       [last_CSeq:]
       [last_Contact:];expires=300
       Server: SIPp Mock Registrar (PhoneBlock dongle test-rig)
+      Content-Length: 0
+
+    ]]>
+  </send>
+
+  <send condexec="cmp_result">
+    <![CDATA[
+
+      SIP/2.0 403 Forbidden
+      [last_Via:]
+      [last_From:]
+      [last_To:];tag=[pid]SIPpTag03[call_number]
+      [last_Call-ID:]
+      [last_CSeq:]
+      Server: SIPp Mock Registrar (PhoneBlock dongle test-rig)
+      Warning: 399 phoneblock.test "Password verification failed"
       Content-Length: 0
 
     ]]>

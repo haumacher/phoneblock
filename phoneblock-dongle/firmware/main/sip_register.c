@@ -425,6 +425,7 @@ static bool do_register(sip_ctx_t *c)
     char *rx = malloc(SIP_RX_BUF_SIZE);
     if (!tx || !rx) {
         ESP_LOGE(TAG, "malloc failed for SIP buffers");
+        stats_record_error("sip", "REGISTER aborted: out of memory for SIP buffers");
         free(tx); free(rx);
         return false;
     }
@@ -1189,8 +1190,10 @@ static void sip_task(void *arg)
                  config_sip_expires());
         refresh_at_us = esp_timer_get_time() + (int64_t)(config_sip_expires() / 2) * 1000000LL;
     } else {
+        // Specific reason already recorded inside do_register
+        // (timeout, auth rejected, …) — no generic follow-up here so
+        // the dashboard doesn't show two entries per failure.
         ESP_LOGE(TAG, "initial registration failed, retry in %d s", retry_delay_s);
-        stats_record_error("sip", "initial REGISTER failed");
         refresh_at_us = esp_timer_get_time() + (int64_t)retry_delay_s * 1000000LL;
     }
 
@@ -1235,7 +1238,6 @@ static void sip_task(void *arg)
                 refresh_at_us = esp_timer_get_time() + (int64_t)(config_sip_expires() / 2) * 1000000LL;
             } else {
                 ESP_LOGE(TAG, "REGISTER with new config failed, retry in %d s", retry_delay_s);
-                stats_record_error("sip", "REGISTER with new config failed");
                 refresh_at_us = esp_timer_get_time() + (int64_t)retry_delay_s * 1000000LL;
             }
         }
@@ -1304,7 +1306,6 @@ static void sip_task(void *arg)
                 refresh_at_us = esp_timer_get_time() + (int64_t)(config_sip_expires() / 2) * 1000000LL;
             } else {
                 ESP_LOGE(TAG, "re-REGISTER failed, retry in %d s", retry_delay_s);
-                stats_record_error("sip", "re-REGISTER failed");
                 refresh_at_us = esp_timer_get_time() + (int64_t)retry_delay_s * 1000000LL;
             }
             continue;
