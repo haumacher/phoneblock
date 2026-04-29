@@ -191,6 +191,34 @@ bool is_phone_number_like(const char *s)
     return saw_digit;
 }
 
+bool is_known_contact(const char *display)
+{
+    if (!display || !*display) return false;
+    if (is_phone_number_like(display)) return false;
+
+    // Skip leading whitespace. Fritz!Box does not normally pad display
+    // names, but stay defensive against vCard quoting artefacts.
+    const char *p = display;
+    while (*p == ' ' || *p == '\t') p++;
+
+    // "SPAM" prefix (case-insensitive) marks Fritz!Box phonebook
+    // entries that were imported from PhoneBlock's CardDAV blocklist
+    // — those still need an API check and a public-detail link.
+    if ((p[0] == 'S' || p[0] == 's') &&
+        (p[1] == 'P' || p[1] == 'p') &&
+        (p[2] == 'A' || p[2] == 'a') &&
+        (p[3] == 'M' || p[3] == 'm')) {
+        // Match only as a token boundary so a hypothetical real name
+        // like "Spamer GmbH" is still treated as a known contact.
+        char next = p[4];
+        if (next == '\0' || next == ':' || next == ' ' || next == '\t'
+            || next == '-' || next == '_' || next == '.') {
+            return false;
+        }
+    }
+    return true;
+}
+
 bool looks_dialable(const char *number)
 {
     if (!*number) return false;

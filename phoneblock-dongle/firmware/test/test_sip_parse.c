@@ -132,6 +132,11 @@ static void expect_phone_number_like(bool expected, const char *s)
     report_bool("is_phone_number_like", s, expected, is_phone_number_like(s));
 }
 
+static void expect_known_contact(bool expected, const char *display)
+{
+    report_bool("is_known_contact", display, expected, is_known_contact(display));
+}
+
 static void expect_dialable(bool expected, const char *n)
 {
     report_bool("looks_dialable", n, expected, looks_dialable(n));
@@ -310,6 +315,30 @@ static void test_is_phone_number_like(void)
     expect_phone_number_like(false, "   ");             // no digit
 }
 
+static void test_is_known_contact(void)
+{
+    // Real phonebook contacts → known.
+    expect_known_contact(true,  "Haui Mobil");
+    expect_known_contact(true,  "Alice");
+    expect_known_contact(true,  "Max Meier");
+    // "Spamer GmbH" is a real name, not the SPAM marker.
+    expect_known_contact(true,  "Spamer GmbH");
+
+    // Empty / numeric display names → not a known contact.
+    expect_known_contact(false, "");
+    expect_known_contact(false, "030123456");
+    expect_known_contact(false, "+49 (030) 123-456");
+
+    // SPAM-prefixed entries (Fritz!Box CardDAV blocklist subscription)
+    // must NOT be treated as a known contact, regardless of casing or
+    // separator. "SPAM:" is the literal AnswerBot.SPAM_MARKER.
+    expect_known_contact(false, "SPAM: Werbeanruf");
+    expect_known_contact(false, "SPAM Werbeanruf");
+    expect_known_contact(false, "spam: foo");
+    expect_known_contact(false, "Spam-Anrufer");
+    expect_known_contact(false, "SPAM");
+}
+
 static void test_looks_dialable(void)
 {
     expect_dialable(true,  "01234");
@@ -425,6 +454,7 @@ int main(void)
     test_user_from_uri();
     test_parse_display_name();
     test_is_phone_number_like();
+    test_is_known_contact();
     test_looks_dialable();
     test_normalize_de();
     test_same_call_id();

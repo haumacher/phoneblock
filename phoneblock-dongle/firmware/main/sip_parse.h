@@ -62,6 +62,19 @@ int parse_display_name(const char *hdr_val, int val_len, char *out, int cap);
 // really just the number" from "display name is an actual name".
 bool is_phone_number_like(const char *s);
 
+// True if the SIP From display name names a real phonebook contact the
+// user has saved locally — i.e., a non-empty, non-numeric label that
+// is *not* the "SPAM" tag the Fritz!Box stamps onto entries pulled in
+// via PhoneBlock's CardDAV blocklist subscription. Those SPAM entries
+// must continue to be checked against the API and reported, even
+// though they technically live in the phonebook.
+//
+// Returns false for: empty strings, plain numbers (handled by
+// is_phone_number_like), and any label whose first non-space token is
+// "SPAM" (case-insensitive, with or without trailing punctuation like
+// the "SPAM:" marker used by AddressResource.vCardContent()).
+bool is_known_contact(const char *display);
+
 // True if the normalized number is plausible as an external phone number
 // to query. Excludes Fritz!Box dial codes (**NN), feature codes
 // (*21#...), and anything that doesn't start with a digit or '+'.

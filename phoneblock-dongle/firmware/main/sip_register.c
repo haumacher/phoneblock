@@ -751,8 +751,11 @@ static void send_bye(sip_ctx_t *c)
 //
 // Two short-circuits skip the API call:
 //  1. Fritz!Box delivers a non-numeric display-name ("Haui Mobil") → the
-//     caller matched an address-book entry, so the user already trusts
-//     them. Don't waste an API round-trip.
+//     caller matched a phonebook entry the user added themselves, so
+//     they already trust them. Don't waste an API round-trip.
+//     Phonebook entries imported via PhoneBlock's CardDAV blocklist
+//     carry the "SPAM:" marker (see is_known_contact()) and must NOT
+//     short-circuit — those are exactly the calls we want to block.
 //  2. The dialed number isn't a real external number (internal **NN
 //     codes, *21# feature dials, etc.). The API would reject them with
 //     HTTP 400 anyway, but the TLS handshake still costs ~1–2 s.
@@ -795,7 +798,7 @@ static verdict_t check_invite_caller(const char *req, int req_len)
     }
 #endif
 
-    if (display[0] && !is_phone_number_like(display)) {
+    if (is_known_contact(display)) {
         ESP_LOGI(TAG, "caller '%s' resolved via phone book → skip API",
                  display);
         if (config_log_known_calls()) {
