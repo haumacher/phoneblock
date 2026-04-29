@@ -19,7 +19,8 @@ sudo apt install sip-tester
 | Datei                     | Rolle                                                                             |
 |---------------------------|-----------------------------------------------------------------------------------|
 | `registrar.xml`           | UAS, akzeptiert REGISTER ohne Auth, antwortet 200 OK                              |
-| `registrar-auth.xml`      | UAS mit `401 + WWW-Authenticate` → 200 OK                                         |
+| `registrar-auth.xml`      | UAS mit Digest-Challenge **und** Passwort-Verifikation                            |
+| `run-auth-registrar.sh`   | Wrapper, der den erwarteten Digest-Hash vorab rechnet und sipp damit startet      |
 | `caller.xml`              | UAC, sendet INVITE direkt an den Dongle (UDP)                                     |
 | `register-and-call.xml`   | Kombiniertes UAS-Szenario für TCP — REGISTER und INVITE über *eine* Connection    |
 
@@ -106,6 +107,41 @@ Ablauf des Szenarios:
 Die RTP-Medien laufen bei beiden Setups weiter über UDP — `transport=t1`
 betrifft nur die Signalisierung.
 
+## Setup C — Digest-Auth mit echter Passwort-Verifikation
+
+`registrar-auth.xml` + `run-auth-registrar.sh` zusammen prüfen, dass
+der Dongle sich mit den richtigen Credentials anmeldet — nicht nur,
+dass *irgendein* Authorization-Header ankommt.
+
+Dongle-Config:
+- Transport: `udp`
+- Host: `<HOST_IP>`
+- Port: `5060`
+- SIP-User: `phoneblock-dongle`
+- SIP-Pass: `dongle-password`
+- Realm: leer (Dongle übernimmt `phoneblock.test` aus dem Challenge)
+
+Starten:
+
+```bash
+./run-auth-registrar.sh <HOST_IP>
+```
+
+Was der Wrapper macht:
+
+1. Rechnet `MD5(HA1:0123456789abcdef:HA2)` mit den Test-Credentials
+   für die mitgegebene HOST_IP (= `sip:<HOST_IP>` als Authorization-URI).
+2. Übergibt den Hash als `[$expected_response]` an Sipp.
+3. Sipp prüft im zweiten REGISTER mit `<ereg check_it="true">`, dass
+   sowohl `username="phoneblock-dongle"` als auch das `response="…"`
+   exakt dem erwarteten Hash entspricht. Mismatch → Failed call.
+
+Der Sipp-Challenge enthält **bewusst kein `qop`** — dadurch fällt der
+Dongle in den deterministischen `MD5(HA1:nonce:HA2)`-Pfad
+(`sip_register.c:267-272`), und der Hash ist vorab berechenbar. Mit
+`qop="auth"` würden cnonce + nc mit reinspielen, das geht nicht ohne
+Skripting im Sipp.
+
 ## Bekannte Einschränkungen
 
 - **TLS noch nicht eingerichtet.** Funktional analog zu TCP — Sipp
@@ -113,12 +149,10 @@ betrifft nur die Signalisierung.
   noch Server-Cert-Setup und ggf. ein `CONFIG_*_INSECURE_SKIP_VERIFY`
   Dev-Flag im Dongle. Wenn benötigt: gleiche Szenario-Struktur wie
   `register-and-call.xml`, mit `[transport]` = TLS.
-- **Digest wird nicht geprüft.** `registrar-auth.xml` akzeptiert
-  jeden Authorization-Header, ohne den Hash zu validieren — SIPp
-  kann MD5 nicht zur Laufzeit über den Challenge berechnen. Für
-  echte Digest-Tests Kamailio oder Provider verwenden; die
-  Auth-User-/Realm-Logik des Dongles ist über `test_sip_auth`
-  schon host-getestet.
+- **qop="auth" wird nicht getestet.** Setup C deckt RFC 2617 ohne
+  qop ab. Den qop-Pfad des Dongles (mit cnonce + nc) prüft
+  `firmware/test/test_sip_auth` host-seitig; ein Live-Test gegen
+  Sipp würde Skript-Hooks erfordern, die das Tool nicht hat.
 - **Kein RTP-Replay.** Die Caller-Szenarien schicken nur SIP-Signalling
   und SDP, kein Audio. Für Audio-Tests `pcap_play_audio` ergänzen und
   eine PCMA-PCAP-Datei mit-shippen — bewusst weggelassen, weil der
@@ -143,3 +177,11 @@ betrifft nur die Signalisierung.
   (`Direkt-Stimmen` / `Range-Stimmen`); Build mit
   `SIP_TEST_FORCE_SPAM_STAR_NUMBERS=1` oder eine bekannte
   Spam-Nummer aus den Recent-Calls verwenden.
+- **Auth-Setup C: REGISTER schlägt fehl mit "Failed call"**:
+  `[$expected_response]` und der vom Dongle berechnete Hash gehen
+  auseinander. Häufigste Ursachen: SIP-Pass hat einen Tippfehler;
+  SIP-User ist nicht `phoneblock-dongle`; SIP-Host hat nicht denselben
+  Wert wie das `<HOST_IP>`-Argument von `run-auth-registrar.sh` (R-URI
+  fließt in HA2 ein). Sipp loggt den empfangenen `response="…"` in
+  `registrar-auth_messages.log`; vergleichen mit dem vom Wrapper am
+  Anfang ausgegebenen `Expected digest response`.

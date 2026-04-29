@@ -2,22 +2,31 @@
 <!DOCTYPE scenario SYSTEM "sipp.dtd">
 
 <!--
-  Mock SIP registrar with Digest challenge.
+  Mock SIP registrar with Digest challenge AND password verification.
 
   Flow:
     REGISTER  ->  401 Unauthorized + WWW-Authenticate
-    REGISTER  ->  200 OK   (with Authorization header)
+    REGISTER  ->  200 OK if username + digest response match,
+                  call fails (check_it="true") otherwise.
 
-  This is the path that exercises the dongle's sip_auth.c logic:
-    * realm override (Phase 3 — set "phoneblock.test" as realm)
-    * auth-user vs identity user split
-    * digest_response()
+  Required dongle credentials:
+    SIP-User:    phoneblock-dongle
+    SIP-Pass:    dongle-password
 
-  We do NOT actually validate the digest response; SIPp just checks
-  that an Authorization header is present on the second REGISTER.
-  Verifying the digest hash would require evaluating MD5 over the
-  challenge inside SIPp, which sipp can't do natively. For a real
-  digest test, point the dongle at Kamailio or a real provider.
+  Run via run-auth-registrar.sh — the wrapper computes the
+  expected digest response for the configured host IP and passes
+  it in via `-key expected_response`. The challenge intentionally
+  drops qop, so the response is deterministic:
+
+      HA1      = MD5("phoneblock-dongle:phoneblock.test:dongle-password")
+      HA2      = MD5("REGISTER:sip:<HOST_IP>")
+      response = MD5(HA1:0123456789abcdef:HA2)
+
+  The dongle picks the no-qop branch in digest_response() when our
+  challenge omits qop (sip_register.c:267-272), so this matches the
+  on-device math exactly. With qop="auth" the response would mix in
+  cnonce + nc and we couldn't pre-compute it; that's why qop is left
+  out here.
 -->
 <scenario name="PhoneBlock Dongle Mock Registrar (Digest)">
 
@@ -32,20 +41,33 @@
       [last_To:];tag=[pid]SIPpTag01[call_number]
       [last_Call-ID:]
       [last_CSeq:]
-      WWW-Authenticate: Digest realm="phoneblock.test", nonce="0123456789abcdef", algorithm=MD5, qop="auth"
+      WWW-Authenticate: Digest realm="phoneblock.test", nonce="0123456789abcdef", algorithm=MD5
       Server: SIPp Mock Registrar (PhoneBlock dongle test-rig)
       Content-Length: 0
 
     ]]>
   </send>
 
+  <!--
+    Verify the dongle's Authorization header. Both regexes are
+    `check_it="true"` so SIPp fails the call if either field is
+    wrong — that is what makes this a real auth test rather than a
+    decorative one. The expected digest response is supplied at
+    invocation time via `-key expected_response <hash>`.
+  -->
   <recv request="REGISTER">
     <action>
-      <ereg regexp="username=&quot;([^&quot;]+)&quot;"
+      <ereg regexp='username="phoneblock-dongle"'
             search_in="hdr"
             header="Authorization:"
-            assign_to="garbage,auth_user"/>
-      <log message="Authenticated REGISTER, username=[$auth_user]"/>
+            check_it="true"
+            assign_to="user_match"/>
+      <ereg regexp='response="[$expected_response]"'
+            search_in="hdr"
+            header="Authorization:"
+            check_it="true"
+            assign_to="hash_match"/>
+      <log message="REGISTER authenticated: user_match=[$user_match] hash_match=[$hash_match]"/>
     </action>
   </recv>
 
