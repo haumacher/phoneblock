@@ -4,10 +4,16 @@
 package de.haumacher.phoneblock.app.api;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
+
+import de.haumacher.phoneblock.app.api.model.RangeMatch;
+import de.haumacher.phoneblock.db.AggregationInfo;
 
 public class TestPrefixCheckServlet {
 
@@ -88,5 +94,26 @@ public class TestPrefixCheckServlet {
 		for (byte b : high) {
 			assertTrue(b == (byte) 0xff);
 		}
+	}
+
+	@Test
+	public void testRangePrefixIsInternationalForm() {
+		// The aggregation tables key on the national-format DB prefix
+		// ("0163…", "0018…"), but clients hash and compare against the
+		// international form. toRangeMatches() must convert.
+		List<RangeMatch> result = PrefixCheckServlet.toRangeMatches(List.of(
+			new AggregationInfo("016378657599", 5, 32),    // German block-of-10
+			new AggregationInfo("01637865759", 7, 384),    // German block-of-100
+			new AggregationInfo("001833378903", 1, 1)));   // US toll-free in DB form
+
+		assertEquals("+4916378657599", result.get(0).getPrefix());
+		assertEquals(5, result.get(0).getCnt());
+		assertEquals(32, result.get(0).getVotes());
+
+		assertEquals("+491637865759", result.get(1).getPrefix());
+		assertEquals(7, result.get(1).getCnt());
+		assertEquals(384, result.get(1).getVotes());
+
+		assertEquals("+1833378903", result.get(2).getPrefix());
 	}
 }

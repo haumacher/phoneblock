@@ -160,11 +160,16 @@ public class PrefixCheckServlet extends HttpServlet {
 		ServletUtil.sendResult(req, resp, result);
 	}
 
-	private static List<RangeMatch> toRangeMatches(List<AggregationInfo> aggs) {
+	static List<RangeMatch> toRangeMatches(List<AggregationInfo> aggs) {
 		List<RangeMatch> result = new ArrayList<>(aggs.size());
 		for (AggregationInfo a : aggs) {
+			// Return the prefix in international (E.164) format so it lines up with
+			// the E.164 form returned in `numbers[]` and the form clients hash.
+			// Aggregation rows are stored as national keys ("0163…", "0018…") but
+			// the SHA-1 columns are computed over the international form, so the
+			// client's prefix-length comparison must also see the +-form here.
 			result.add(RangeMatch.create()
-				.setPrefix(a.getPrefix())
+				.setPrefix(NumberAnalyzer.toInternationalFormat(a.getPrefix()))
 				.setVotes(a.getVotes())
 				.setCnt(a.getCnt()));
 		}
