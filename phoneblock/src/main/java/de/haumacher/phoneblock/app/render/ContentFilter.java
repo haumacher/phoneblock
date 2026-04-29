@@ -107,6 +107,9 @@ public class ContentFilter extends LoginFilter {
 		NO_POW.add(EMailVerificationServlet.LOGIN_WEB);
 		NO_POW.add(LoginServlet.PATH);
 		NO_POW.add(AuthGateServlet.PATH);
+		// /auth/login-ticket and /auth/verify-code are exempted via the
+		// "/auth/" prefix below. /auth-gate is stand-alone (no slash) so
+		// it is listed explicitly here.
 		NO_POW.add(RegistrationServlet.REGISTER_WEB);
 		NO_POW.add(RegistrationServlet.REGISTER_MOBILE);
 		NO_POW.add(RatingServlet.PATH);
@@ -164,6 +167,7 @@ public class ContentFilter extends LoginFilter {
 				|| uri.startsWith("/assets") 
 				|| uri.startsWith("/webjars")
 				|| uri.startsWith("/oauth")
+				|| uri.startsWith("/auth/")  // login-ticket, verify-code, future auth callbacks
 				|| uri.startsWith("/api")
 				|| uri.startsWith("/mobile") 
 				|| uri.startsWith("/ab") // Many resources being requested from the web UI. 
