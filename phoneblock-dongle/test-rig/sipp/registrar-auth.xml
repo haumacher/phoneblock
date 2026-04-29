@@ -30,6 +30,16 @@
 -->
 <scenario name="PhoneBlock Dongle Mock Registrar (Digest)">
 
+  <!--
+    Loop entry. Sipp by default tracks call-ids per scenario instance
+    and marks the instance "dead" when the scenario ends. The dongle
+    keeps the same Call-ID for every REGISTER refresh, so a refresh
+    after the first round lands as "Dead call ... received a UDP
+    message" and goes unanswered. Looping the scenario keeps the
+    instance alive forever and lets it handle every refresh.
+  -->
+  <label id="loop"/>
+
   <recv request="REGISTER"/>
 
   <send>
@@ -61,26 +71,39 @@
   -->
   <recv request="REGISTER">
     <action>
-      <!-- Capture the actual response value into actual_resp.
-           One assign_to name + one capture group → the variable
-           gets the captured group (sipp aborts on a placeholder
-           "$dummy referenced 1 times" error if we add a throwaway
-           for the whole match). -->
-      <ereg regexp='response="([0-9a-fA-F]+)"'
-            search_in="hdr"
-            header="Authorization:"
+      <!-- Capture the actual response value.
+           Two assign_to names: the first gets the whole match
+           ("response=\"…\""), the second gets capture-group 1 (the
+           hex digest itself). With only one name, sipp assigns the
+           whole match — which is why an earlier version compared
+           `response="…"` against the bare expected hash and never
+           matched. The whole_match name is referenced in <log>
+           below to satisfy sipp's "every variable must be referenced
+           more than once" abort check. -->
+      <!-- The MD5 response is the only 32-char hex run anywhere in
+           a REGISTER (nonce is 16 hex). No capture group needed —
+           a regex without parens makes sipp put the entire match
+           into the assign_to variable, and that's exactly the bare
+           hash we want to compare. (Patterns *with* parens behaved
+           strangely on this sipp build — assign_to never received
+           anything; sipp's reference docs/examples use parenless
+           patterns for this kind of single-token extraction.) -->
+      <ereg regexp="[0-9a-fA-F]{32}"
+            search_in="msg"
             assign_to="actual_resp"/>
       <!-- Park the expected hash in a string variable so strcmp can
-           compare two variables (it cannot take a literal). The
-           `<log>` line below references [$expected_response] a
-           second time — sipp aborts with "Variable referenced 1
-           times!" if any variable is referenced exactly once, so
-           the log is also a workaround for that quirk. -->
-      <assignstr assign_to="expected_resp" value="[$expected_response]"/>
-      <log message="REGISTER auth check (expected=[$expected_response])"/>
+           compare two variables (strcmp's two operands have to be
+           variables, not literals).
+           NOTE the syntax: `[expected_response]` (no `$`) is the
+           keyword substitution of `-key`; `[$varname]` is an action
+           variable. The previous `[$expected_response]` resolved to
+           the empty string at runtime — every comparison failed,
+           even with the right password. -->
+      <assignstr assign_to="expected_resp" value="[expected_response]"/>
+      <log message="REGISTER auth check expecting [expected_response]"/>
       <!-- strcmp returns "0" when the two strings are equal,
-           non-zero otherwise (length difference of the first
-           differing byte, like libc strcmp). -->
+           non-zero otherwise (libc strcmp semantics — could be the
+           ASCII diff of the first differing byte). -->
       <strcmp variable="actual_resp" variable2="expected_resp" assign_to="cmp_result"/>
       <log message="REGISTER auth: actual=[$actual_resp] expected=[$expected_resp] cmp=[$cmp_result]"/>
     </action>
@@ -130,6 +153,9 @@
 
     ]]>
   </send>
+
+  <!-- Back to the top so the next REGISTER refresh lands here. -->
+  <nop next="loop"/>
 
   <ResponseTimeRepartition value="10, 50, 100, 250, 500, 1000"/>
 </scenario>

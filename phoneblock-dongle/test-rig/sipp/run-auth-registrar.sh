@@ -77,7 +77,9 @@ EOF
 exec sipp -sf registrar-auth.xml \
     -key expected_response "$EXPECTED" \
     -p 5060 -i "$HOST_IP" \
-    -trace_msg -trace_screen \
+    -deadcall_wait 0 \
+    -trace_msg -trace_screen -trace_logs \
     -message_file registrar-auth_messages.log \
     -screen_file registrar-auth_screen.log \
+    -log_file registrar-auth_logs.log \
     "$@"
