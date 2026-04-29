@@ -16,13 +16,14 @@ sudo apt install sip-tester
 
 ## Dateien
 
-| Datei                  | Rolle                                                |
-|------------------------|------------------------------------------------------|
-| `registrar.xml`        | UAS, akzeptiert REGISTER ohne Auth, antwortet 200 OK |
-| `registrar-auth.xml`   | UAS mit `401 + WWW-Authenticate` → 200 OK            |
-| `caller.xml`           | UAC, sendet INVITE direkt an den Dongle              |
+| Datei                     | Rolle                                                                             |
+|---------------------------|-----------------------------------------------------------------------------------|
+| `registrar.xml`           | UAS, akzeptiert REGISTER ohne Auth, antwortet 200 OK                              |
+| `registrar-auth.xml`      | UAS mit `401 + WWW-Authenticate` → 200 OK                                         |
+| `caller.xml`              | UAC, sendet INVITE direkt an den Dongle (UDP)                                     |
+| `register-and-call.xml`   | Kombiniertes UAS-Szenario für TCP — REGISTER und INVITE über *eine* Connection    |
 
-## Setup
+## Setup A — UDP (zwei separate Sipp-Prozesse)
 
 1. **Sipp-Registrar starten** (in einem Terminal):
 
@@ -54,9 +55,9 @@ sudo apt install sip-tester
 
    ```bash
    sipp -sf caller.xml -m 1 \
-        -s +4915112345678 \
-        -rsa <DONGLE_IP>:5061 \
-        -i <HOST_IP>
+        -s 0163786575999 \
+        -i <HOST_IP> -p 5070 \
+        <DONGLE_IP>:5061
    ```
 
    - `-m 1` — genau ein Anruf, dann beenden.
@@ -65,28 +66,62 @@ sudo apt install sip-tester
      bewertet ist; alternativ den Build-Schalter
      `SIP_TEST_FORCE_SPAM_STAR_NUMBERS` setzen und dann `*123`
      anrufen.
-   - `-rsa <DONGLE_IP>:5061` — Ziel des INVITE; lokaler SIP-Port des
+   - `-p 5070` — eigener lokaler Port (5060 ist vom Registrar belegt).
+   - `<DONGLE_IP>:5061` — Ziel des INVITE; lokaler SIP-Port des
      Dongles (Standard 5061).
 
    Erwartung: Dongle nimmt ab, spielt Ansage, sendet BYE. SIPp
    beendet das Szenario "successful call".
 
+## Setup B — TCP (ein kombiniertes Sipp-Szenario)
+
+Über TCP **kann** der UAS keine zweite Connection zum Dongle aufbauen
+(der Dongle hört auf TCP nicht eingehend, sondern öffnet nur eine
+ausgehende Connection zum Registrar — Stand-RFC 5626-Flow). Folge:
+REGISTER und INVITE müssen auf demselben Socket laufen, also vom
+selben Sipp-Scenario gefahren werden. `register-and-call.xml` macht
+genau das mit `transport=t1` (single-socket TCP UAS):
+
+```bash
+sipp -sf register-and-call.xml -t t1 -p 5060 -i <HOST_IP> \
+     -m 1 -s 0163786575999 -trace_msg
+```
+
+Dongle-Config:
+- Transport: `tcp`
+- Host: `<HOST_IP>`
+- Port: `5060`
+- Rest wie bei UDP.
+
+Ablauf des Szenarios:
+
+1. Sipp lauscht auf TCP 5060, akzeptiert die ausgehende Verbindung
+   des Dongles.
+2. Dongle schickt REGISTER → Sipp antwortet 200 OK.
+3. 3 Sekunden Pause (Dongle-Settling).
+4. Sipp schickt INVITE auf **demselben** Socket (neuer Call-ID, neuer
+   Dialog).
+5. Dongle nimmt an, spielt Ansage, sendet BYE.
+
+Die RTP-Medien laufen bei beiden Setups weiter über UDP — `transport=t1`
+betrifft nur die Signalisierung.
+
 ## Bekannte Einschränkungen
 
-- **Nur UDP.** TCP/TLS würde voraussetzen, dass das INVITE auf
-  derselben persistent-Connection ankommt wie REGISTER — das ist
-  zwischen zwei SIPp-Instanzen nicht ohne Weiteres koordinierbar.
-  Für TCP-/TLS-Stack-Tests Kamailio oder einen echten Provider
-  verwenden.
+- **TLS noch nicht eingerichtet.** Funktional analog zu TCP — Sipp
+  unterstützt `-t l1` als TLS-Single-Socket-Modus. Dazu fehlen aber
+  noch Server-Cert-Setup und ggf. ein `CONFIG_*_INSECURE_SKIP_VERIFY`
+  Dev-Flag im Dongle. Wenn benötigt: gleiche Szenario-Struktur wie
+  `register-and-call.xml`, mit `[transport]` = TLS.
 - **Digest wird nicht geprüft.** `registrar-auth.xml` akzeptiert
   jeden Authorization-Header, ohne den Hash zu validieren — SIPp
   kann MD5 nicht zur Laufzeit über den Challenge berechnen. Für
   echte Digest-Tests Kamailio oder Provider verwenden; die
   Auth-User-/Realm-Logik des Dongles ist über `test_sip_auth`
   schon host-getestet.
-- **Kein RTP-Replay.** `caller.xml` schickt nur SIP-Signalling,
-  kein Audio. Für Audio-Tests `pcap_play_audio` ergänzen und eine
-  PCMA-PCAP-Datei mit-shippen — bewusst weggelassen, weil der
+- **Kein RTP-Replay.** Die Caller-Szenarien schicken nur SIP-Signalling
+  und SDP, kein Audio. Für Audio-Tests `pcap_play_audio` ergänzen und
+  eine PCMA-PCAP-Datei mit-shippen — bewusst weggelassen, weil der
   Dongle die Spam-Erkennung *vor* der Audio-Phase macht
   (CallerID → `/api/check-prefix`).
 
@@ -95,10 +130,16 @@ sudo apt install sip-tester
 - **Dongle bleibt auf "Verbinde…"**: SIPp läuft auf `127.0.0.1`
   statt LAN-IP. `-i <HOST_IP>` prüfen.
 - **REGISTER kommt, aber kein 200 OK zurück**: Firewall (`ufw`,
-  `firewalld`) blockiert eingehende UDP-Pakete an Port 5060.
-- **INVITE kommt nicht beim Dongle an**: Dongle bindet auf 5061,
-  nicht 5060. `-rsa <DONGLE_IP>:5061` (nicht `:5060`).
+  `firewalld`) blockiert eingehende UDP-/TCP-Pakete an Port 5060.
+- **INVITE kommt nicht beim Dongle an** (UDP-Setup): Dongle bindet
+  auf 5061, nicht 5060. Argument `<DONGLE_IP>:5061` (nicht `:5060`).
+- **TCP-Setup: nach REGISTER kommt kein INVITE durch**: Sipp wurde
+  ohne `-t t1` gestartet — Default ist UDP, dann hört Sipp gar nicht
+  auf TCP. Auch prüfen, dass der Dongle wirklich `transport=tcp`
+  konfiguriert hat (Dashboard zeigt das in der SIP-Sektion).
 - **Anruf landet als "kein Spam"**: Caller-Nummer ist auf
-  phoneblock.net nicht als Spam bewertet. Build mit
+  phoneblock.net nicht als Spam bewertet **oder** liegt unter den
+  Block-Schwellen. Schwellen im Dashboard prüfen
+  (`Direkt-Stimmen` / `Range-Stimmen`); Build mit
   `SIP_TEST_FORCE_SPAM_STAR_NUMBERS=1` oder eine bekannte
   Spam-Nummer aus den Recent-Calls verwenden.

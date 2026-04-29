@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE scenario SYSTEM "sipp.dtd">
+
+<!--
+  Combined REGISTER + spam-INVITE scenario for SIP-over-TCP.
+
+  Why one combined scenario instead of running registrar.xml + caller.xml
+  side by side: the dongle's TCP transport is outbound-only — it
+  connect()s to the registrar but never listen()s on its own. Once the
+  dongle is registered, the only path the registrar has to reach it is
+  to reuse that same TCP socket (RFC 5626-style flow). Two separate
+  sipp processes can't share a socket, so REGISTER and INVITE must be
+  driven by the same scenario instance.
+
+  Run with:
+
+    sipp -sf register-and-call.xml -t t1 -p 5060 -i <HOST_IP> \
+         -m 1 -s <CALLER_NUMBER>
+
+    -t t1   single-socket TCP UAS — accept one inbound connection,
+            reuse it for outbound messages too.
+    No -rsa / no positional remote: in UAS mode the dongle dials in.
+
+  Dongle config for the test:
+    Transport: tcp
+    Host: <HOST_IP>
+    Port: 5060
+    rest as for the UDP variant.
+
+  Note that the announcement RTP still flows over UDP regardless —
+  sipp opens the media port (default 6000) on UDP. Only signalling
+  uses TCP here.
+-->
+
+<scenario name="PhoneBlock Dongle Mock Registrar (TCP) + Spam Caller">
+
+  <!-- 1. Accept REGISTER on the dongle-initiated TCP connection. -->
+  <recv request="REGISTER">
+    <action>
+      <log message="REGISTER received on TCP socket"/>
+    </action>
+  </recv>
+
+  <send>
+    <![CDATA[
+
+      SIP/2.0 200 OK
+      [last_Via:]
+      [last_From:]
+      [last_To:];tag=[pid]SIPpTagReg[call_number]
+      [last_Call-ID:]
+      [last_CSeq:]
+      [last_Contact:];expires=300
+      Server: SIPp Mock Registrar (TCP, PhoneBlock dongle test-rig)
+      Content-Length: 0
+
+    ]]>
+  </send>
+
+  <!--
+    Settle pause. Gives the dongle time to finish its post-REGISTER
+    housekeeping (e.g. updating the dashboard) before the call lands —
+    otherwise we'd race the very first registration round.
+  -->
+  <pause milliseconds="3000"/>
+
+  <!--
+    2. Send INVITE on the SAME TCP socket. New Call-ID for the new
+    dialog (REGISTER lives in its own dialog), but sipp routes it
+    over the existing connection because we're in -t t1 mode.
+  -->
+  <send retrans="500">
+    <![CDATA[
+
+      INVITE sip:[service]@[remote_ip]:[remote_port] SIP/2.0
+      Via: SIP/2.0/[transport] [local_ip]:[local_port];branch=[branch]
+      From: "Spam Caller" <sip:[service]@[local_ip]:[local_port]>;tag=[pid]SIPpTagInv[call_number]
+      To: <sip:[service]@[remote_ip]:[remote_port]>
+      Call-ID: invite-[pid]-[call_number]@[local_ip]
+      CSeq: 1 INVITE
+      Contact: <sip:caller@[local_ip]:[local_port];transport=tcp>
+      Max-Forwards: 70
+      User-Agent: SIPp Spam Caller (PhoneBlock dongle test-rig, TCP)
+      Subject: Spam call test (TCP)
+      Content-Type: application/sdp
+      Content-Length: [len]
+
+      v=0
+      o=caller 53655765 2353687637 IN IP[local_ip_type] [local_ip]
+      s=Spam call test
+      c=IN IP[media_ip_type] [media_ip]
+      t=0 0
+      m=audio [media_port] RTP/AVP 8 101
+      a=rtpmap:8 PCMA/8000
+      a=rtpmap:101 telephone-event/8000
+      a=fmtp:101 0-15
+      a=sendrecv
+
+    ]]>
+  </send>
+
+  <recv response="100" optional="true"/>
+  <recv response="180" optional="true"/>
+  <recv response="183" optional="true"/>
+  <recv response="200" rtd="true"/>
+
+  <send>
+    <![CDATA[
+
+      ACK sip:[service]@[remote_ip]:[remote_port] SIP/2.0
+      Via: SIP/2.0/[transport] [local_ip]:[local_port];branch=[branch]
+      From: "Spam Caller" <sip:[service]@[local_ip]:[local_port]>;tag=[pid]SIPpTagInv[call_number]
+      To: <sip:[service]@[remote_ip]:[remote_port]>[peer_tag_param]
+      Call-ID: invite-[pid]-[call_number]@[local_ip]
+      CSeq: 1 ACK
+      Contact: <sip:caller@[local_ip]:[local_port];transport=tcp>
+      Max-Forwards: 70
+      Content-Length: 0
+
+    ]]>
+  </send>
+
+  <!--
+    Dongle plays its announcement, then sends BYE.
+    60 s window: announcement plus PhoneBlock /api/check-prefix RTT.
+  -->
+  <recv request="BYE" timeout="60000" ontimeout_next="hangup"/>
+
+  <send>
+    <![CDATA[
+
+      SIP/2.0 200 OK
+      [last_Via:]
+      [last_From:]
+      [last_To:]
+      [last_Call-ID:]
+      [last_CSeq:]
+      Content-Length: 0
+
+    ]]>
+  </send>
+
+  <label id="end"/>
+  <ResponseTimeRepartition value="500, 1000, 2000, 5000, 10000, 30000"/>
+
+  <!-- Fallback: dongle didn't BYE in time, hang up ourselves. -->
+  <label id="hangup"/>
+  <send>
+    <![CDATA[
+
+      BYE sip:[service]@[remote_ip]:[remote_port] SIP/2.0
+      Via: SIP/2.0/[transport] [local_ip]:[local_port];branch=[branch]
+      From: "Spam Caller" <sip:[service]@[local_ip]:[local_port]>;tag=[pid]SIPpTagInv[call_number]
+      To: <sip:[service]@[remote_ip]:[remote_port]>[peer_tag_param]
+      Call-ID: invite-[pid]-[call_number]@[local_ip]
+      CSeq: 2 BYE
+      Max-Forwards: 70
+      Content-Length: 0
+
+    ]]>
+  </send>
+
+  <recv response="200" optional="true"/>
+
+</scenario>
