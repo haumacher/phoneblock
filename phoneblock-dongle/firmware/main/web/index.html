@@ -138,6 +138,10 @@ const I18N = {
     'status.calls.clear': 'Liste leeren',
     'status.calls.log_known': 'Bekannte Anrufer protokollieren',
     'status.calls.log_known.help': 'Wenn deaktiviert, erscheinen Anrufe von Nummern aus dem Telefonbuch und interne Codes (**, *…) nicht in der Liste — die Zähler oben werden trotzdem aktualisiert.',
+    'status.calls.min_votes': 'Blocken ab Stimmen',
+    'status.calls.min_votes.help': 'Erst ab dieser Anzahl PhoneBlock-Stimmen blockt der Dongle den Anruf. Darunter zeigt die Liste „SPAM-VERDACHT" an, der Anruf wird aber an die Fritz!Box durchgelassen. Default 4 (gleicher Wert wie die öffentliche Sperrliste).',
+    'status.calls.verdict.spam': 'SPAM ({votes} Stimmen)',
+    'status.calls.verdict.suspect': 'SPAM-VERDACHT ({votes} Stimmen)',
     'status.errors.title': 'Fehler',
     'status.errors.empty': 'keine Fehler',
     'status.errors.ago': 'vor {age}',
@@ -323,6 +327,10 @@ const I18N = {
     'status.calls.clear': 'Clear list',
     'status.calls.log_known': 'Log known callers',
     'status.calls.log_known.help': 'When off, calls from numbers in the address book and internal codes (**, *…) are not added to the list — counters above still update.',
+    'status.calls.min_votes': 'Block from votes',
+    'status.calls.min_votes.help': 'The dongle blocks a call only when PhoneBlock reports at least this many votes against the number. Below the threshold the list shows "SPAM-SUSPECT"; the call still rings through to the Fritz!Box. Default 4 (matches the public blocklist).',
+    'status.calls.verdict.spam': 'SPAM ({votes} votes)',
+    'status.calls.verdict.suspect': 'SPAM-SUSPECT ({votes} votes)',
     'status.errors.title': 'Errors',
     'status.errors.empty': 'no errors',
     'status.errors.ago': '{age} ago',
@@ -1013,7 +1021,11 @@ function renderStatus(){
     + '<section id="callsSection" style="display:none">'
     + '<h2 style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.6rem">'
     + '  <span>' + esc(t('status.calls.title')) + '</span>'
-    + '  <span style="display:flex;align-items:center;gap:.8rem">'
+    + '  <span style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap">'
+    + '    <label title="' + esc(t('status.calls.min_votes.help')) + '" style="font-size:.75rem;font-weight:400;color:#444;display:flex;align-items:center;gap:.3rem">'
+    + '      <span>' + esc(t('status.calls.min_votes')) + '</span>'
+    + '      <input id="callsMinVotes" type="number" min="1" max="99" style="width:3.5rem;padding:.1rem .3rem;font-size:.8rem">'
+    + '    </label>'
     + '    <label title="' + esc(t('status.calls.log_known.help')) + '" style="font-size:.75rem;font-weight:400;color:#444;display:flex;align-items:center;gap:.3rem">'
     + '      <input id="callsLogKnown" type="checkbox" style="width:auto;margin:0">'
     + '      <span>' + esc(t('status.calls.log_known')) + '</span>'
@@ -1526,8 +1538,8 @@ async function refreshAll(){
   // The phone-book / non-dialable entries never went through the
   // API check (label is empty) — keep their verdict as-is.
   const verdictLabel = (c) => {
-    if (c.verdict === 'SPAM')       return 'SPAM (' + c.votes + ' Votes)';
-    if (c.suspected)                return 'SPAM-VERDACHT (' + c.votes + ' Votes)';
+    if (c.verdict === 'SPAM') return t('status.calls.verdict.spam', {votes: c.votes});
+    if (c.suspected)          return t('status.calls.verdict.suspect', {votes: c.votes});
     return c.verdict;
   };
   const hasCalls = calls && calls.calls.length;
@@ -1581,6 +1593,33 @@ async function refreshAll(){
         });
       } catch (_){ /* next poll will reconcile */ }
       callsLogKnown.disabled = false;
+      refreshAll();
+    };
+  }
+  const callsMinVotes = $('callsMinVotes');
+  // Server always returns a positive value (DEFAULT_MIN_VOTES on first
+  // boot, the persisted value afterwards), so we don't need a fallback.
+  if (s && s.phoneblock && s.phoneblock.min_votes && document.activeElement !== callsMinVotes) {
+    callsMinVotes.value = s.phoneblock.min_votes;
+  }
+  if (!callsMinVotes.onchange){
+    callsMinVotes.onchange = async () => {
+      const v = parseInt(callsMinVotes.value, 10);
+      if (!(v >= 1 && v <= 99)) {
+        callsMinVotes.value = (s && s.phoneblock && s.phoneblock.min_votes) || '';
+        return;
+      }
+      callsMinVotes.disabled = true;
+      const body = new URLSearchParams();
+      body.append('min_votes', String(v));
+      try {
+        await fetch('/api/config', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: body.toString(),
+        });
+      } catch (_){ /* next poll will reconcile */ }
+      callsMinVotes.disabled = false;
       refreshAll();
     };
   }

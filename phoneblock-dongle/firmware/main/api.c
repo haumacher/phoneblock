@@ -195,12 +195,13 @@ verdict_t phoneblock_check(const char *phone_number, pb_check_result_t *out)
 
     int wildcard_votes = compute_wildcard_votes(scan.v10, scan.c10,
                                                 scan.v100, scan.c100);
-    verdict = (scan.direct_votes > 0 || wildcard_votes > 0)
+    int min_votes = config_min_votes();
+    verdict = (scan.direct_votes >= min_votes || wildcard_votes >= min_votes)
         ? VERDICT_SPAM : VERDICT_LEGITIMATE;
 
-    ESP_LOGI(TAG, "Number %s → votes=%d wildcard=%d (range10 v=%d cnt=%d, range100 v=%d cnt=%d) → %s",
+    ESP_LOGI(TAG, "Number %s → direct=%d wildcard=%d (range10 v=%d cnt=%d, range100 v=%d cnt=%d) min_votes=%d → %s",
              phone_number, scan.direct_votes, wildcard_votes,
-             scan.v10, scan.c10, scan.v100, scan.c100,
+             scan.v10, scan.c10, scan.v100, scan.c100, min_votes,
              verdict == VERDICT_SPAM ? "SPAM" : "LEGITIMATE");
 
     if (out) {
@@ -208,13 +209,20 @@ verdict_t phoneblock_check(const char *phone_number, pb_check_result_t *out)
         strncpy(out->label,    scan.label,    sizeof(out->label)    - 1);
         strncpy(out->location, scan.location, sizeof(out->location) - 1);
         if (verdict == VERDICT_SPAM) {
-            out->votes = scan.direct_votes + wildcard_votes;
+            // Show whichever side cleared the threshold; if both did,
+            // direct dominates (more specific signal).
+            out->votes = scan.direct_votes >= min_votes
+                ? scan.direct_votes : wildcard_votes;
             out->suspected = false;
-        } else if (scan.v10 > 0 || scan.v100 > 0) {
-            // Range votes exist but their cnt is below MIN_AGGREGATE,
-            // so wildcard_votes was 0 and the dongle let the call
-            // through. Surface the soft signal as SPAM-VERDACHT.
-            out->votes = scan.v10 > scan.v100 ? scan.v10 : scan.v100;
+        } else if (scan.direct_votes > 0 ||
+                   scan.v10 > 0 || scan.v100 > 0) {
+            // Some signal exists but it didn't clear min_votes (or the
+            // wildcard cnt threshold). Surface the strongest single
+            // value as the SPAM-VERDACHT count.
+            int v = scan.direct_votes;
+            if (scan.v10  > v) v = scan.v10;
+            if (scan.v100 > v) v = scan.v100;
+            out->votes = v;
             out->suspected = true;
         } else {
             out->votes = 0;

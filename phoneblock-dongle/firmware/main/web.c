@@ -276,6 +276,7 @@ static esp_err_t handle_status(httpd_req_t *req)
     cJSON_AddStringToObject(pb,   "base_url",           config_phoneblock_base_url());
     cJSON_AddBoolToObject  (pb,   "token_set",          strlen(config_phoneblock_token()) > 0);
     cJSON_AddNumberToObject(pb,   "last_api_ms",        (double)(c.last_api_duration_us / 1000));
+    cJSON_AddNumberToObject(pb,   "min_votes",          config_min_votes());
 
     cJSON *syn = cJSON_AddObjectToObject(root, "sync");
     sync_status_t ss;
@@ -424,6 +425,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     char sip_host[64], sip_user[32], sip_pass[64];
     char pb_url[128],  pb_token[64];
     char sip_port_s[8] = "", sip_exp_s[8] = "";
+    char min_votes_s[8] = "";
     char sip_transp[8]    = "";
     char sip_authuser[32] = "";
     char sip_outbound[80] = "";
@@ -448,6 +450,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     bool have_auto_upd  = form_get(body, "auto_update",   auto_update_s, sizeof(auto_update_s));
     bool have_pb_url    = form_get(body, "pb_url",    pb_url,    sizeof(pb_url));
     bool have_pb_token  = form_get(body, "pb_token",  pb_token,  sizeof(pb_token));
+    bool have_min_votes = form_get(body, "min_votes", min_votes_s, sizeof(min_votes_s));
     free(body);
 
     const char *new_host = have_sip_host && sip_host[0] ? sip_host : NULL;
@@ -481,6 +484,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
         .auto_update     = have_auto_upd  ? auto_update_s : NULL,
         .phoneblock_base_url = have_pb_url   && pb_url[0]   ? pb_url   : NULL,
         .phoneblock_token    = have_pb_token && pb_token[0] ? pb_token : NULL,
+        .min_votes  = have_min_votes && min_votes_s[0] ? atoi(min_votes_s) : 0,
     };
 
     esp_err_t err = config_update(&u);

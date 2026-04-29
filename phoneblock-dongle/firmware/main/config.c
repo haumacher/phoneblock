@@ -34,6 +34,13 @@ static const char *NS   = "phoneblock";
 #define K_CONTACT_PORT  "contact_port"
 #define K_PB_URL        "pb_url"
 #define K_PB_TOKEN      "pb_token"
+#define K_MIN_VOTES     "min_votes"
+
+// Mirrors DB.MIN_VOTES on the server (the confidence floor the public
+// blocklist export already enforces). Single source of truth for the
+// "no min_votes configured yet" fallback used by the loader, the
+// NVS-empty bootstrap, and the getter.
+#define DEFAULT_MIN_VOTES 4
 // Version string of the most recent OTA download that did NOT survive
 // to the next successful boot. Set pessimistically before
 // esp_https_ota() runs and only cleared once main.c sees the running
@@ -65,6 +72,7 @@ typedef struct {
     int  contact_port;
     char pb_base_url[128];
     char pb_token[64];
+    int  min_votes;          // SPAM threshold for direct + wildcard votes
     char last_failed_ota[32];   // semver, plus headroom for "-rcN" suffixes
 } config_cache_t;
 
@@ -128,6 +136,7 @@ void config_load(void)
         s_config.contact_port = CONFIG_SIP_CONTACT_PORT_OVERRIDE;
         copy_default(s_config.pb_base_url,  sizeof(s_config.pb_base_url),  CONFIG_PHONEBLOCK_BASE_URL);
         s_config.pb_token[0]  = '\0';
+        s_config.min_votes    = DEFAULT_MIN_VOTES;
         s_config.last_failed_ota[0] = '\0';
         return;
     }
@@ -177,6 +186,7 @@ void config_load(void)
              s_config.pb_base_url,  sizeof(s_config.pb_base_url));
     load_str(h, K_PB_TOKEN,     "",
              s_config.pb_token,     sizeof(s_config.pb_token));
+    s_config.min_votes = load_int(h, K_MIN_VOTES, DEFAULT_MIN_VOTES);
     load_str(h, K_LAST_FAIL_OTA, "",
              s_config.last_failed_ota, sizeof(s_config.last_failed_ota));
     nvs_close(h);
@@ -232,6 +242,7 @@ const char *config_contact_host_override(void) { return s_config.contact_host; }
 int         config_contact_port_override(void) { return s_config.contact_port; }
 const char *config_phoneblock_base_url(void) { return s_config.pb_base_url; }
 const char *config_phoneblock_token(void)    { return s_config.pb_token; }
+int         config_min_votes(void)            { return s_config.min_votes; }
 const char *config_last_failed_ota(void)     { return s_config.last_failed_ota; }
 
 esp_err_t config_set_last_failed_ota(const char *version)
@@ -341,6 +352,7 @@ esp_err_t config_update(const config_update_t *u)
                                         s_config.pb_base_url, sizeof(s_config.pb_base_url));
     if (err == ESP_OK) err = set_str_if(h, K_PB_TOKEN, u->phoneblock_token,
                                         s_config.pb_token, sizeof(s_config.pb_token));
+    if (err == ESP_OK) err = set_int_if(h, K_MIN_VOTES, u->min_votes, &s_config.min_votes);
 
     if (err == ESP_OK) err = nvs_commit(h);
     nvs_close(h);

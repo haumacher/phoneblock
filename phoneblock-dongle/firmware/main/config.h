@@ -99,6 +99,16 @@ bool        config_auto_update_enabled(void);
 const char *config_phoneblock_base_url(void);
 const char *config_phoneblock_token(void);
 
+// Minimum vote threshold for blocking. The dongle classifies a call as
+// SPAM only when direct_votes >= this OR wildcard_votes >= this. Below
+// the threshold the verdict stays LEGITIMATE; the recent-calls UI then
+// shows "SPAM-VERDACHT (n Votes)" for any soft signal that was found.
+// Default 4 — same value the server uses for DB.MIN_VOTES (the
+// confidence floor the public blocklist export already enforces).
+// 1 = aggressive (block on the first report), higher = more
+// conservative.
+int         config_min_votes(void);
+
 // Version string of the most recent OTA download that did NOT survive
 // to the next successful boot, or "" if no such record exists. Set by
 // the auto-update task before invoking esp_https_ota; cleared in
@@ -148,6 +158,9 @@ typedef struct {
     const char *auto_update;
     const char *phoneblock_base_url;
     const char *phoneblock_token;
+    // Minimum vote threshold for SPAM. 0 = leave current value
+    // untouched. Persisted as an int; reasonable values 1..20.
+    int         min_votes;
 } config_update_t;
 
 esp_err_t config_update(const config_update_t *u);
