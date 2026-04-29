@@ -155,6 +155,7 @@ const I18N = {
     'login.intro': 'Der Zugangsschutz für diesen Dongle ist aktiv. Klicke unten, um Dich über Deinen PhoneBlock-Account anzumelden — Du wirst kurz zu phoneblock.net umgeleitet und automatisch zurückgeschickt.',
     'login.button': 'Mit PhoneBlock anmelden',
     'login.error.mismatch': 'Anmeldung fehlgeschlagen — dieser PhoneBlock-Account ist nicht der Eigentümer dieses Dongles.',
+    'login.error.mismatch_named': 'Anmeldung fehlgeschlagen — dieser Dongle gehört zum Account {expected}, Du bist aber als anderer Nutzer angemeldet.',
     'login.error.rejected': 'Anmeldung fehlgeschlagen — der PhoneBlock-Server hat die Identität nicht bestätigt.',
     'login.error.expired': 'Die Anmeldung ist abgelaufen oder ungültig. Bitte erneut versuchen.',
     'login.error.persist': 'Aktivierung konnte nicht gespeichert werden. Bitte erneut versuchen.',
@@ -338,6 +339,7 @@ const I18N = {
     'login.intro': 'Access protection on this dongle is active. Click below to sign in with your PhoneBlock account — you will briefly be redirected to phoneblock.net and sent back automatically.',
     'login.button': 'Sign in with PhoneBlock',
     'login.error.mismatch': 'Sign-in failed — this PhoneBlock account is not the owner of this dongle.',
+    'login.error.mismatch_named': 'Sign-in failed — this dongle belongs to account {expected}, but you are signed in as a different user.',
     'login.error.rejected': 'Sign-in failed — the PhoneBlock server did not confirm the identity.',
     'login.error.expired': 'The sign-in expired or was invalid. Please try again.',
     'login.error.persist': 'Activation could not be saved. Please try again.',
@@ -521,6 +523,7 @@ const I18N = {
     'login.intro': 'La protection d’accès de ce dongle est active. Clique ci-dessous pour te connecter avec ton compte PhoneBlock — tu seras brièvement redirigé vers phoneblock.net puis renvoyé automatiquement.',
     'login.button': 'Se connecter avec PhoneBlock',
     'login.error.mismatch': 'Échec de la connexion — ce compte PhoneBlock n’est pas le propriétaire de ce dongle.',
+    'login.error.mismatch_named': 'Échec de la connexion — ce dongle appartient au compte {expected}, mais tu es connecté avec un autre utilisateur.',
     'login.error.rejected': 'Échec de la connexion — le serveur PhoneBlock n’a pas confirmé l’identité.',
     'login.error.expired': 'La connexion a expiré ou n’est pas valide. Réessaie.',
     'login.error.persist': 'L’activation n’a pas pu être enregistrée. Réessaie.',
@@ -704,6 +707,7 @@ const I18N = {
     'login.intro': 'La protección de acceso de este dongle está activa. Haz clic abajo para iniciar sesión con tu cuenta de PhoneBlock — serás redirigido brevemente a phoneblock.net y devuelto automáticamente.',
     'login.button': 'Iniciar sesión con PhoneBlock',
     'login.error.mismatch': 'Inicio de sesión fallido — esta cuenta de PhoneBlock no es la propietaria de este dongle.',
+    'login.error.mismatch_named': 'Inicio de sesión fallido — este dongle pertenece a la cuenta {expected}, pero has iniciado sesión con otro usuario.',
     'login.error.rejected': 'Inicio de sesión fallido — el servidor de PhoneBlock no confirmó la identidad.',
     'login.error.expired': 'El inicio de sesión ha caducado o no es válido. Inténtalo de nuevo.',
     'login.error.persist': 'No se pudo guardar la activación. Inténtalo de nuevo.',
@@ -1178,14 +1182,21 @@ function showLoginState(){
   const params = new URLSearchParams(location.search);
   const errCode = params.get('login_error');
   if (errCode){
-    const key = LOGIN_ERROR_KEYS[errCode] || 'login.error.generic';
+    const expected = params.get('expected') || '';
+    // For mismatch, the dongle attaches the pinned owner-name so the
+    // banner can name it explicitly — much friendlier than a generic
+    // "wrong account" message that leaves the user guessing which one.
+    const key = (errCode === 'mismatch' && expected)
+      ? 'login.error.mismatch_named'
+      : (LOGIN_ERROR_KEYS[errCode] || 'login.error.generic');
     const errEl = $('loginError');
     if (errEl){
-      errEl.textContent = t(key);
+      errEl.textContent = t(key, {expected});
       errEl.style.display = '';
     }
     stickyLoginError = true;
     params.delete('login_error');
+    params.delete('expected');
     const qs = params.toString();
     history.replaceState(null, '',
       location.pathname + (qs ? '?' + qs : '') + location.hash);

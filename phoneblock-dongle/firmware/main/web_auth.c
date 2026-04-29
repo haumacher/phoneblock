@@ -179,6 +179,32 @@ bool web_auth_required(httpd_req_t *req, bool is_api)
 
 // --- HTTP handlers --------------------------------------------------
 
+// Percent-encode `src` into `dst` using the unreserved-character set
+// (RFC 3986 §2.3). The dongle only ever encodes simple LAN host names
+// and ASCII PhoneBlock user-names; this is enough for both. Returns
+// false if `dst` would overflow.
+static bool pct_encode(const char *src, char *dst, size_t cap)
+{
+    char *end = dst + cap;
+    while (*src) {
+        if (dst + 4 >= end) return false;
+        unsigned c = (unsigned char)*src++;
+        if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ||
+            (c >= '0' && c <= '9') || c == '-' || c == '_' ||
+            c == '.' || c == '~') {
+            *dst++ = (char)c;
+        } else {
+            static const char H[] = "0123456789ABCDEF";
+            *dst++ = '%';
+            *dst++ = H[(c >> 4) & 0xF];
+            *dst++ = H[c & 0xF];
+        }
+    }
+    if (dst >= end) return false;
+    *dst = '\0';
+    return true;
+}
+
 esp_err_t web_auth_handle_start(httpd_req_t *req)
 {
     // The "activate=1" query flag persists across the round-trip via
@@ -209,34 +235,30 @@ esp_err_t web_auth_handle_start(httpd_req_t *req)
     char callback[160];
     snprintf(callback, sizeof(callback), "http://%s/auth/callback", host);
 
-    // URL-encode the callback before passing it to the server. We
-    // can reuse the simple alphanumeric/-_./ rule since LAN host
-    // names and our fixed path won't contain anything else.
     char callback_enc[256];
-    {
-        const char *src = callback;
-        char *dst = callback_enc;
-        size_t cap = sizeof(callback_enc);
-        while (*src && (size_t)(dst - callback_enc) + 4 < cap) {
-            unsigned c = (unsigned char)*src++;
-            if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') ||
-                (c >= '0' && c <= '9') || c == '-' || c == '_' ||
-                c == '.' || c == '~') {
-                *dst++ = (char)c;
-            } else {
-                static const char H[] = "0123456789ABCDEF";
-                *dst++ = '%';
-                *dst++ = H[(c >> 4) & 0xF];
-                *dst++ = H[c & 0xF];
-            }
-        }
-        *dst = '\0';
+    pct_encode(callback, callback_enc, sizeof(callback_enc));
+
+    // Tell phoneblock.net which PhoneBlock account this dongle expects,
+    // so a wrong-account browser session is silently logged out and the
+    // user gets the standard sign-in form (instead of a mint → mismatch
+    // → retry → re-mint loop). Only sent once the gate has been
+    // activated; pre-activation the user is whoever logs in first.
+    const char *expected = config_auth_user();
+    char hint_enc[96] = "";
+    if (expected[0]) {
+        pct_encode(expected, hint_enc, sizeof(hint_enc));
     }
 
-    char url[512];
-    snprintf(url, sizeof(url),
-        "%s/auth-gate?callback=%s&state=%s",
-        config_phoneblock_base_url(), callback_enc, nonce_copy);
+    char url[640];
+    if (hint_enc[0]) {
+        snprintf(url, sizeof(url),
+            "%s/auth-gate?callback=%s&state=%s&user_hint=%s",
+            config_phoneblock_base_url(), callback_enc, nonce_copy, hint_enc);
+    } else {
+        snprintf(url, sizeof(url),
+            "%s/auth-gate?callback=%s&state=%s",
+            config_phoneblock_base_url(), callback_enc, nonce_copy);
+    }
 
     ESP_LOGI(TAG, "auth/start → redirect to %s (activate=%d)", url, (int)activate);
     httpd_resp_set_status(req, "302 Found");
@@ -247,12 +269,23 @@ esp_err_t web_auth_handle_start(httpd_req_t *req)
 
 // 302 the browser back to the SPA's login state with a machine-readable
 // `?login_error=<code>` query the JS side maps to a localized banner.
+// `expected_user`, if non-NULL/non-empty, is appended as `expected=…`
+// so the banner can show "expected: alice@…" instead of a generic
+// "wrong account" message.
 // Keeps this handler from rendering its own (untranslated, unstyled)
 // error pages.
-static esp_err_t redirect_login_error(httpd_req_t *req, const char *code)
+static esp_err_t redirect_login_error(httpd_req_t *req, const char *code,
+                                      const char *expected_user)
 {
-    char location[64];
-    snprintf(location, sizeof(location), "/?login_error=%s", code);
+    char location[256];
+    if (expected_user && expected_user[0]) {
+        char enc[96];
+        if (!pct_encode(expected_user, enc, sizeof(enc))) enc[0] = '\0';
+        snprintf(location, sizeof(location),
+                 "/?login_error=%s&expected=%s", code, enc);
+    } else {
+        snprintf(location, sizeof(location), "/?login_error=%s", code);
+    }
     httpd_resp_set_status(req, "302 Found");
     httpd_resp_set_hdr(req, "Location", location);
     httpd_resp_send(req, NULL, 0);
@@ -264,7 +297,7 @@ esp_err_t web_auth_handle_callback(httpd_req_t *req)
     char query[1024];
     if (httpd_req_get_url_query_str(req, query, sizeof(query)) != ESP_OK) {
         ESP_LOGW(TAG, "auth/callback: missing query");
-        return redirect_login_error(req, "missing");
+        return redirect_login_error(req, "missing", NULL);
     }
     char code[768] = "";
     char state[64] = "";
@@ -281,11 +314,11 @@ esp_err_t web_auth_handle_callback(httpd_req_t *req)
 
     if (!nonce_ok) {
         ESP_LOGW(TAG, "auth/callback: bad CSRF state");
-        return redirect_login_error(req, "expired");
+        return redirect_login_error(req, "expired", NULL);
     }
     if (!code[0]) {
         ESP_LOGW(TAG, "auth/callback: missing code");
-        return redirect_login_error(req, "missing");
+        return redirect_login_error(req, "missing", NULL);
     }
 
     // Round-trip to phoneblock.net: server validates JWT signature
@@ -294,7 +327,7 @@ esp_err_t web_auth_handle_callback(httpd_req_t *req)
     if (!phoneblock_verify_auth_code(code, state,
                                      verified_user, sizeof(verified_user))) {
         ESP_LOGW(TAG, "auth/callback: server rejected verification");
-        return redirect_login_error(req, "rejected");
+        return redirect_login_error(req, "rejected", NULL);
     }
 
     if (was_activate) {
@@ -308,7 +341,7 @@ esp_err_t web_auth_handle_callback(httpd_req_t *req)
         };
         if (config_update(&u) != ESP_OK) {
             ESP_LOGE(TAG, "auth/callback: failed to persist activation");
-            return redirect_login_error(req, "persist");
+            return redirect_login_error(req, "persist", NULL);
         }
         ESP_LOGI(TAG, "auth/callback: activated for user '%s'", verified_user);
     } else {
@@ -319,7 +352,7 @@ esp_err_t web_auth_handle_callback(httpd_req_t *req)
         if (!expected[0] || strcmp(verified_user, expected) != 0) {
             ESP_LOGW(TAG, "auth/callback: user mismatch (got '%s', want '%s')",
                      verified_user, expected);
-            return redirect_login_error(req, "mismatch");
+            return redirect_login_error(req, "mismatch", expected);
         }
     }
 
