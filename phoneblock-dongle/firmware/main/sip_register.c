@@ -436,6 +436,7 @@ static bool do_register(sip_ctx_t *c)
     int rx_len = sip_send_recv(c, tx, tx_len, rx, SIP_RX_BUF_SIZE);
     if (rx_len < 0) {
         ESP_LOGE(TAG, "sip_send_recv failed");
+        stats_record_error("sip", "REGISTER: no response from registrar (timeout/transport)");
         goto cleanup;
     }
     ESP_LOGI(TAG, "← %d bytes:\n%.*s", rx_len, rx_len, rx);
@@ -448,7 +449,11 @@ static bool do_register(sip_ctx_t *c)
         goto cleanup;
     }
     if (status != 401 && status != 407) {
-        ESP_LOGE(TAG, "unexpected status %d", status);
+        char msg[STATS_ERROR_MSG_LEN];
+        snprintf(msg, sizeof(msg),
+                 "REGISTER rejected: %d (check user / extension / Fritz!Box log)", status);
+        ESP_LOGE(TAG, "%s", msg);
+        stats_record_error("sip", msg);
         goto cleanup;
     }
 
@@ -456,7 +461,11 @@ static bool do_register(sip_ctx_t *c)
     const char *hdr = find_header(rx, rx_len, "WWW-Authenticate");
     if (!hdr) hdr = find_header(rx, rx_len, "Proxy-Authenticate");
     if (!hdr) {
-        ESP_LOGE(TAG, "%d without auth header", status);
+        char msg[STATS_ERROR_MSG_LEN];
+        snprintf(msg, sizeof(msg),
+                 "REGISTER %d without WWW-Authenticate header — bad registrar", status);
+        ESP_LOGE(TAG, "%s", msg);
+        stats_record_error("sip", msg);
         goto cleanup;
     }
     char val[SIP_MAX_CHALLENGE + 64];
@@ -464,6 +473,7 @@ static bool do_register(sip_ctx_t *c)
     sip_auth_parse_challenge(val, &c->challenge);
     if (!c->challenge.valid) {
         ESP_LOGE(TAG, "auth challenge missing realm/nonce");
+        stats_record_error("sip", "REGISTER: auth challenge missing realm/nonce");
         goto cleanup;
     }
     ESP_LOGI(TAG, "challenge: realm=\"%s\" qop=\"%s\"",
@@ -474,13 +484,20 @@ static bool do_register(sip_ctx_t *c)
     tx_len = build_register(c, tx, SIP_TX_BUF_SIZE, true);
     ESP_LOGI(TAG, "→ REGISTER with auth (%d bytes):\n%.*s", tx_len, tx_len, tx);
     rx_len = sip_send_recv(c, tx, tx_len, rx, SIP_RX_BUF_SIZE);
-    if (rx_len < 0) goto cleanup;
+    if (rx_len < 0) {
+        stats_record_error("sip", "REGISTER (with auth): no response from registrar");
+        goto cleanup;
+    }
     ESP_LOGI(TAG, "← %d bytes:\n%.*s", rx_len, rx_len, rx);
 
     status = parse_status_code(rx, rx_len);
     ESP_LOGI(TAG, "← %d (authenticated)", status);
     if (status != 200) {
-        ESP_LOGE(TAG, "authentication rejected: %d", status);
+        char msg[STATS_ERROR_MSG_LEN];
+        snprintf(msg, sizeof(msg),
+                 "authentication rejected: %d — check SIP user/password/realm", status);
+        ESP_LOGE(TAG, "%s", msg);
+        stats_record_error("sip", msg);
         goto cleanup;
     }
     result = true;
