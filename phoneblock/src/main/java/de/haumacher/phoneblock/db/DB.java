@@ -966,6 +966,17 @@ public class DB {
 		return wasSpam ? (isSpam ? 0 : -1) : (isSpam ? 1 : 0);
 	}
 
+	/**
+	 * Apply a delta to {@code AGGREGATION_10}, and — when the 10-block crosses
+	 * {@link #MIN_AGGREGATE_10} in either direction — promote (or unpromote) the corresponding
+	 * contribution into {@code AGGREGATION_100}.
+	 *
+	 * <p>Promotion semantics: {@code AGGREGATION_100.cnt} is <em>not</em> a count of phone
+	 * numbers in the 100-block — it is the count of 10-sub-blocks within that 100-block whose
+	 * own {@code cnt} has reached {@code MIN_AGGREGATE_10}. {@code AGGREGATION_100.votes}
+	 * sums votes only across those qualified sub-blocks. {@link #computeWildcardVotes} relies
+	 * on this invariant to avoid double-counting when both aggregations are consulted.
+	 */
 	private void updateAggregation10(SpamReports reports, String phone, int deltaCnt, int deltaVotes) {
 		String prefix = prefix10(phone);
 
@@ -989,11 +1000,16 @@ public class DB {
 
 					int cntBefore = cnt - deltaCnt;
 					if (cntBefore < MIN_AGGREGATE_10 && cnt >= MIN_AGGREGATE_10) {
+						// Crossed up: this 10-block now qualifies. Promote its full
+						// vote count to AGGREGATION_100 (cnt100 += 1, votes100 += votes).
 						updateAggregation100(reports, phone, 1, votes);
 					}
 					else if (cntBefore >= MIN_AGGREGATE_10 && cnt < MIN_AGGREGATE_10) {
+						// Crossed down: this 10-block no longer qualifies. Subtract the
+						// votes it contributed *before* the current delta — that is the
+						// amount that was previously promoted to AGGREGATION_100.
 						int votesBefore = votes - deltaVotes;
-						
+
 						updateAggregation100(reports, phone, -1, -votesBefore);
 					}
 				}
@@ -1624,11 +1640,33 @@ public class DB {
 
 	/**
 	 * Computes wildcard votes from aggregation data alone (for numbers not in the DB).
+	 *
+	 * <p>The aggregation tables have asymmetric semantics:
+	 * <ul>
+	 * <li>{@code AGGREGATION_10}: {@code cnt} = number of distinct numbers reported in this
+	 *     10-block; {@code votes} = sum of their votes.</li>
+	 * <li>{@code AGGREGATION_100}: {@code cnt} = number of <em>10-sub-blocks</em> within this
+	 *     100-block that have crossed {@link #MIN_AGGREGATE_10}; {@code votes} = sum of votes
+	 *     across just those qualified sub-blocks. Promotion happens incrementally in
+	 *     {@link #updateAggregation10(SpamReports, String, int, int)}.</li>
+	 * </ul>
+	 *
+	 * <p>The four branches below are disjoint and exhaustive in {@code (cnt10, cnt100)}:
+	 * <pre>
+	 * cnt10 ≥ 4, cnt100 ≥ 3: my 10-block is promoted, neighborhood qualifies →
+	 *                        votes100 already contains my votes10. Return votes100.
+	 * cnt10 ≥ 4, cnt100 < 3: my 10-block alone qualifies → return votes10.
+	 * cnt10 < 4, cnt100 ≥ 3: my 10-block not promoted → votes100 does NOT contain
+	 *                        my votes10; the two sums are disjoint and we return
+	 *                        votes100 + votes10 (no double-count).
+	 * cnt10 < 4, cnt100 < 3: nothing qualifies → 0.
+	 * </pre>
 	 */
 	public int computeWildcardVotes(AggregationInfo aggregation10, AggregationInfo aggregation100) {
 		if (aggregation100.getCnt() >= MIN_AGGREGATE_100) {
 			int votes = aggregation100.getVotes();
 			if (aggregation10.getCnt() < MIN_AGGREGATE_10) {
+				// Disjoint because votes10 has not yet been promoted to AGGREGATION_100.
 				votes += aggregation10.getVotes();
 			}
 			return votes;
