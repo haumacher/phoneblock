@@ -13,6 +13,41 @@
 
 static const char *TAG = "web_auth";
 
+// Local copy of web.c's URL-decoder. esp_http_server's
+// httpd_query_key_value() does not percent-decode, so any caller that
+// reads a path-bearing query parameter has to decode it itself before
+// validating. Keep this in sync with web.c::url_decode().
+static int hex_digit(char c)
+{
+    if (c >= '0' && c <= '9') return c - '0';
+    if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+    if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+    return -1;
+}
+
+static void url_decode(const char *src, int src_len, char *dst, size_t cap)
+{
+    size_t o = 0;
+    for (int i = 0; i < src_len && o + 1 < cap; i++) {
+        char c = src[i];
+        if (c == '+') {
+            dst[o++] = ' ';
+        } else if (c == '%' && i + 2 < src_len) {
+            int hi = hex_digit(src[i + 1]);
+            int lo = hex_digit(src[i + 2]);
+            if (hi >= 0 && lo >= 0) {
+                dst[o++] = (char)((hi << 4) | lo);
+                i += 2;
+            } else {
+                dst[o++] = c;
+            }
+        } else {
+            dst[o++] = c;
+        }
+    }
+    dst[o] = '\0';
+}
+
 // --- Session store --------------------------------------------------
 
 #define SESSION_ID_HEX 32                  // 16 bytes of entropy
@@ -404,15 +439,20 @@ esp_err_t web_auth_handle_login_link(httpd_req_t *req)
             "<p>Missing 'next' parameter. <a href=\"/\">Back</a>.</p>");
         return ESP_OK;
     }
-    char next[192];
-    if (httpd_query_key_value(query, "next", next, sizeof(next)) != ESP_OK
-            || !next[0]) {
+    char next_raw[192];
+    if (httpd_query_key_value(query, "next", next_raw, sizeof(next_raw)) != ESP_OK
+            || !next_raw[0]) {
         httpd_resp_set_status(req, "400 Bad Request");
         httpd_resp_set_type(req, "text/html; charset=utf-8");
         httpd_resp_sendstr(req,
             "<p>Missing 'next' parameter. <a href=\"/\">Back</a>.</p>");
         return ESP_OK;
     }
+    // httpd_query_key_value() does not percent-decode the value; the
+    // browser sends the path encoded ("/nums/%2B49…" → "%2Fnums%2F%252B49…"),
+    // so the validation below would always reject it. Decode first.
+    char next[192];
+    url_decode(next_raw, strlen(next_raw), next, sizeof(next));
     // Reject anything that isn't a server-relative path. Without this
     // a hostile link inside the dongle UI could trick the user into a
     // login flow that lands on a third-party site.
