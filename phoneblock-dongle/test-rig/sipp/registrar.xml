@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE scenario SYSTEM "sipp.dtd">
+
+<!--
+  Mock SIP registrar for the PhoneBlock dongle (no authentication).
+
+  Accepts every REGISTER and replies with 200 OK, echoing the dongle's
+  Contact back so the dongle considers itself successfully registered.
+  Each REGISTER refresh is treated by SIPp as a fresh "call" instance
+  (SIPp matches by Call-ID; new instance is spawned on demand).
+
+  Use registrar-auth.xml instead if you want to exercise the digest /
+  realm / auth-user code paths.
+-->
+<scenario name="PhoneBlock Dongle Mock Registrar">
+
+  <recv request="REGISTER">
+    <action>
+      <ereg regexp="sip:[^&gt;]+"
+            search_in="hdr"
+            header="Contact:"
+            assign_to="dongle_contact"/>
+      <log message="REGISTER from [$dongle_contact]"/>
+    </action>
+  </recv>
+
+  <send>
+    <![CDATA[
+
+      SIP/2.0 200 OK
+      [last_Via:]
+      [last_From:]
+      [last_To:];tag=[pid]SIPpTag00[call_number]
+      [last_Call-ID:]
+      [last_CSeq:]
+      [last_Contact:];expires=300
+      Server: SIPp Mock Registrar (PhoneBlock dongle test-rig)
+      Content-Length: 0
+
+    ]]>
+  </send>
+
+  <ResponseTimeRepartition value="10, 50, 100, 250, 500, 1000"/>
+</scenario>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE scenario SYSTEM "sipp.dtd">
+
+<!--
+  Mock SIP registrar with Digest challenge.
+
+  Flow:
+    REGISTER  ->  401 Unauthorized + WWW-Authenticate
+    REGISTER  ->  200 OK   (with Authorization header)
+
+  This is the path that exercises the dongle's sip_auth.c logic:
+    * realm override (Phase 3 — set "phoneblock.test" as realm)
+    * auth-user vs identity user split
+    * digest_response()
+
+  We do NOT actually validate the digest response; SIPp just checks
+  that an Authorization header is present on the second REGISTER.
+  Verifying the digest hash would require evaluating MD5 over the
+  challenge inside SIPp, which sipp can't do natively. For a real
+  digest test, point the dongle at Kamailio or a real provider.
+-->
+<scenario name="PhoneBlock Dongle Mock Registrar (Digest)">
+
+  <recv request="REGISTER"/>
+
+  <send>
+    <![CDATA[
+
+      SIP/2.0 401 Unauthorized
+      [last_Via:]
+      [last_From:]
+      [last_To:];tag=[pid]SIPpTag01[call_number]
+      [last_Call-ID:]
+      [last_CSeq:]
+      WWW-Authenticate: Digest realm="phoneblock.test", nonce="0123456789abcdef", algorithm=MD5, qop="auth"
+      Server: SIPp Mock Registrar (PhoneBlock dongle test-rig)
+      Content-Length: 0
+
+    ]]>
+  </send>
+
+  <recv request="REGISTER">
+    <action>
+      <ereg regexp="username=&quot;([^&quot;]+)&quot;"
+            search_in="hdr"
+            header="Authorization:"
+            assign_to="garbage,auth_user"/>
+      <log message="Authenticated REGISTER, username=[$auth_user]"/>
+    </action>
+  </recv>
+
+  <send>
+    <![CDATA[
+
+      SIP/2.0 200 OK
+      [last_Via:]
+      [last_From:]
+      [last_To:];tag=[pid]SIPpTag02[call_number]
+      [last_Call-ID:]
+      [last_CSeq:]
+      [last_Contact:];expires=300
+      Server: SIPp Mock Registrar (PhoneBlock dongle test-rig)
+      Content-Length: 0
+
+    ]]>
+  </send>
+
+  <ResponseTimeRepartition value="10, 50, 100, 250, 500, 1000"/>
+</scenario>
