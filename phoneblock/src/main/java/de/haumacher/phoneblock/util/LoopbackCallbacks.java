@@ -23,9 +23,13 @@ public final class LoopbackCallbacks {
 	 * <p>
 	 * Accepted: plain {@code http://} scheme, and a host that is
 	 * either a private-range IPv4 address, a hostname ending in
-	 * {@code .fritz.box} or {@code .local}, or the bare literal
-	 * {@code answerbot}/{@code localhost}. Everything else — public
-	 * hostnames, odd schemes, userinfo, fragments — is refused.
+	 * {@code .fritz.box} or {@code .local}, or any single-label name
+	 * (no dots, e.g. {@code answerbot}, {@code localhost}, or a
+	 * user-renamed dongle). Single-label names cannot be resolved by
+	 * public DNS — they only ever map to a host on the local network
+	 * via mDNS, NetBIOS, or the LAN resolver — so they're safe to
+	 * treat as loopback. Everything else — public hostnames, odd
+	 * schemes, userinfo, fragments — is refused.
 	 */
 	public static String validate(String raw) {
 		if (raw == null || raw.isBlank()) return null;
@@ -42,8 +46,7 @@ public final class LoopbackCallbacks {
 		if (host == null) return null;
 		String h = host.toLowerCase();
 		boolean hostOk =
-			h.equals("localhost") ||
-			h.equals("answerbot") ||
+			!h.contains(".") ||
 			h.endsWith(".fritz.box") ||
 			h.endsWith(".local") ||
 			isPrivateIp(h);
