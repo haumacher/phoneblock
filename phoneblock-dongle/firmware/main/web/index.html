@@ -36,6 +36,7 @@
   th{font-weight:600;color:#666;font-size:.75rem;text-transform:uppercase;letter-spacing:.3px}
   .v-SPAM{color:#d93025;font-weight:600}
   .v-LEGITIMATE{color:#188038}
+  .v-SUSPECT{color:#e8710a;font-weight:500}
   .v-ERROR{color:#e8710a}
   .muted{color:#888;font-size:.85rem}
   .error-row{border-left:3px solid #f44336;padding:.2rem .5rem;margin-bottom:.35rem;
@@ -1596,10 +1597,17 @@ async function refreshAll(){
       const nameCol = apiChecked
         ? esc(c.location)
         : esc(c.display);
+      // SPAM-VERDACHT keeps c.verdict=LEGITIMATE (dongle let the call
+      // through), but green is the wrong colour for "soft signal,
+      // user should look at this". Promote it to a separate v-SUSPECT
+      // (orange) class. Whitelist/blacklist follow their underlying
+      // verdict colour (green / red), which already matches the
+      // outcome the user gets.
+      const verdictCls = c.suspected ? 'SUSPECT' : c.verdict;
       return '<tr><td>' + esc(fmtSec(c.age_s)) + '</td>'
         + '<td>' + numCol + '</td>'
         + '<td>' + nameCol + '</td>'
-        + '<td class="v-' + esc(c.verdict) + '">' + esc(verdictLabel(c)) + '</td></tr>';
+        + '<td class="v-' + esc(verdictCls) + '">' + esc(verdictLabel(c)) + '</td></tr>';
     }).join('');
   } else {
     tbody.innerHTML = '<tr><td colspan="4" class="muted">' + esc(t('status.calls.empty')) + '</td></tr>';
