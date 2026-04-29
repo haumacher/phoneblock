@@ -1092,7 +1092,20 @@ static void sip_task(void *arg)
                                        dial_port,
                                        SIP_LOCAL_PORT);
     if (!ctx.transport) {
-        ESP_LOGE(TAG, "transport setup failed; aborting SIP task");
+        // Surface the failure on the dashboard — without this the SIP
+        // section just hangs on "Verbinde…" forever and the user has
+        // no clue why. Also clear s_sip_task so the next config Save
+        // gets a fresh task (sip_register_request_reload() sees NULL
+        // → spawns one), instead of latching onto the dead handle.
+        // dial_host is up to 64 chars; cap to keep the formatted
+        // line within the stats error-message buffer.
+        char msg[STATS_ERROR_MSG_LEN];
+        snprintf(msg, sizeof(msg),
+                 "transport open failed (%s %.40s:%d) — check host/port",
+                 config_sip_transport(), dial_host, dial_port);
+        ESP_LOGE(TAG, "%s — aborting SIP task", msg);
+        stats_record_error("sip", msg);
+        s_sip_task = NULL;
         vTaskDelete(NULL);
         return;
     }
@@ -1166,7 +1179,9 @@ static void sip_task(void *arg)
 
     rx = malloc(SIP_RX_BUF_SIZE);
     if (!rx) {
-        ESP_LOGE(TAG, "malloc rx buffer failed");
+        ESP_LOGE(TAG, "malloc rx buffer failed — aborting SIP task");
+        stats_record_error("sip", "out of memory in SIP task");
+        s_sip_task = NULL;
         vTaskDelete(NULL);
         return;
     }
