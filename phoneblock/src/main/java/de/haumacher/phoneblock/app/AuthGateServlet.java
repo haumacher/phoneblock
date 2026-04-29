@@ -41,9 +41,10 @@ import jakarta.servlet.http.HttpServletResponse;
  *   <li>{@code user_hint} — optional. The PhoneBlock user-name the
  *        caller expects to be authenticated. When the existing browser
  *        session is for a <em>different</em> user, this servlet
- *        silently logs that session out and bounces back to itself,
- *        so the user lands on the standard sign-in form instead of a
- *        "wrong account" mint → mismatch → retry → mint loop.
+ *        silently logs that session out <em>once</em> and bounces back
+ *        to itself, so the user lands on the standard sign-in form
+ *        instead of a "wrong account" mint → mismatch → retry → mint
+ *        loop.
  * </ul>
  *
  * <p>
@@ -51,10 +52,16 @@ import jakarta.servlet.http.HttpServletResponse;
  * <ul>
  *   <li>Authenticated, no hint or hint matches → 302 to
  *       {@code <callback>?code=<jwt>&state=<state>}.
- *   <li>Authenticated, hint differs → 302 to {@code /logout?url=…}
- *       pointing back at this servlet. After pac4j's session cleanup
- *       and redirect we re-enter with no session and fall through to
- *       the unauthenticated path.
+ *   <li>Authenticated, hint differs, no prior retry → 302 to
+ *       {@code /logout?url=…} pointing back at this servlet with
+ *       {@code relogged=1}. After pac4j's session cleanup and the
+ *       follow-up login we re-enter here.
+ *   <li>Authenticated, hint differs, {@code relogged=1} already set →
+ *       mint the JWT anyway and redirect to the callback. The caller
+ *       will detect the mismatch and surface a localized error banner
+ *       to the user; without this fall-through, a user whose only
+ *       PhoneBlock account is the "wrong" one (relative to the hint)
+ *       would loop through logout / login / mismatch indefinitely.
  *   <li>Unauthenticated → bounced through {@link LoginServlet}; after
  *       login the user lands back here and gets the same redirect.
  * </ul>
@@ -69,6 +76,13 @@ public class AuthGateServlet extends HttpServlet {
 	public static final String STATE = "state";
 
 	public static final String USER_HINT = "user_hint";
+
+	/**
+	 * Internal flag set on the come-back URL of the silent logout-retry
+	 * to break the wrong-account loop after one attempt — see class
+	 * Javadoc.
+	 */
+	public static final String RELOGGED = "relogged";
 
 	private static final String CODE_PARAM = "code";
 
@@ -89,24 +103,38 @@ public class AuthGateServlet extends HttpServlet {
 
 		String hint = req.getParameter(USER_HINT);
 		String user = LoginFilter.getAuthenticatedUser(req);
+		boolean relogged = "1".equals(req.getParameter(RELOGGED));
 
 		if (user != null && hint != null && !hint.isEmpty() && !hint.equals(user)) {
-			// Wrong PhoneBlock account in the browser. Send through pac4j's
-			// logout filter, redirect back here without the session, so the
-			// user gets a clean sign-in form for the right account. The
-			// hint stays in the come-back URL so the same check runs again
-			// on return — protects against pathological cases where logout
-			// somehow doesn't actually clear the session.
-			String comeBack = req.getContextPath() + PATH
-					+ "?" + CALLBACK  + "=" + urlEncode(callback)
-					+ "&" + STATE     + "=" + urlEncode(state)
-					+ "&" + USER_HINT + "=" + urlEncode(hint);
-			String logoutUrl = req.getContextPath() + "/logout"
-					+ "?" + Pac4jConstants.URL + "=" + urlEncode(comeBack);
-			LOG.info("auth-gate: session user '{}' ≠ hint '{}' — bouncing through /logout",
-					user, hint);
-			resp.sendRedirect(logoutUrl);
-			return;
+			if (relogged) {
+				// We already cleaned the session once and the user came
+				// back logged in as a different account again — most
+				// likely they only have this one PhoneBlock account, or
+				// they ignored the hint on purpose. Don't loop: mint
+				// the JWT and let the caller's mismatch handler render
+				// a banner ("this dongle belongs to <hint>, you signed
+				// in as <user>"). Falls through to the mint path below.
+				LOG.info("auth-gate: session user '{}' ≠ hint '{}' even after relogin — minting anyway",
+						user, hint);
+			} else {
+				// Wrong PhoneBlock account in the browser. Send through
+				// pac4j's logout filter, redirect back here without the
+				// session, so the user gets a clean sign-in form for the
+				// right account. The come-back URL carries `relogged=1`
+				// so a second mismatch falls through to JWT mint instead
+				// of looping.
+				String comeBack = req.getContextPath() + PATH
+						+ "?" + CALLBACK  + "=" + urlEncode(callback)
+						+ "&" + STATE     + "=" + urlEncode(state)
+						+ "&" + USER_HINT + "=" + urlEncode(hint)
+						+ "&" + RELOGGED  + "=1";
+				String logoutUrl = req.getContextPath() + "/logout"
+						+ "?" + Pac4jConstants.URL + "=" + urlEncode(comeBack);
+				LOG.info("auth-gate: session user '{}' ≠ hint '{}' — bouncing through /logout",
+						user, hint);
+				resp.sendRedirect(logoutUrl);
+				return;
+			}
 		}
 
 		if (user == null) {
