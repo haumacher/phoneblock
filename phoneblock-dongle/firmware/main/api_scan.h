@@ -23,6 +23,8 @@
 
 #define API_SCAN_ENTRY_BUF_SIZE 2048
 #define API_SCAN_KEY_BUF_SIZE   16
+#define API_SCAN_LABEL_LEN      32
+#define API_SCAN_LOCATION_LEN   80
 
 typedef enum {
     API_SCAN_ARR_NONE,
@@ -61,6 +63,12 @@ typedef struct {
     int direct_votes;
     int v10, c10;
     int v100, c100;
+
+    // Display fields lifted from the matching numbers[] entry. Empty
+    // when the number was not in the bucket (e.g. archived rows that
+    // /api/check-prefix omits because of `AND s.ACTIVE`).
+    char label[API_SCAN_LABEL_LEN];
+    char location[API_SCAN_LOCATION_LEN];
 
     // Set on per-entry overflow or per-entry cJSON parse failure. The
     // caller must surface this and refrain from acting on votes —

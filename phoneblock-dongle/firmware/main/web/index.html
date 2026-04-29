@@ -1502,22 +1502,53 @@ async function refreshAll(){
     if (first === '+') return num.length > 1 && num[1] >= '0' && num[1] <= '9';
     return first >= '0' && first <= '9';
   };
+  // For API-checked entries we wrap the number-column text (whatever
+  // we display there) in a login-broker link to phoneblock.net's
+  // detail page. Phone-book entries skip this step entirely so
+  // private contacts never get round-tripped via phoneblock.net.
+  const linkToNumber = (num, text) => {
+    const next = '/nums/' + encodeURIComponent(num);
+    return '<a href="/auth/login-link?next=' + encodeURIComponent(next)
+         + '" target="_blank" rel="noopener">' + text + '</a>';
+  };
   const numCell = (num, display) => {
     if (!num)                          return '';
     if (!looksDialable(num))           return esc(num);
     if (isKnownContact(display))       return esc(num);
-    const next = '/nums/' + encodeURIComponent(num);
-    return '<a href="/auth/login-link?next=' + encodeURIComponent(next)
-         + '" target="_blank" rel="noopener">' + esc(num) + '</a>';
+    return linkToNumber(num, esc(num));
+  };
+  // Verdict label rules (per user spec):
+  //   verdict=SPAM           → "SPAM (n Votes)"
+  //   verdict=LEGITIMATE,
+  //     suspected=true       → "SPAM-VERDACHT (n Votes)"
+  //     suspected=false      → "LEGITIMATE"  (or empty for non-checked)
+  //   verdict=ERROR          → "ERROR"
+  // The phone-book / non-dialable entries never went through the
+  // API check (label is empty) — keep their verdict as-is.
+  const verdictLabel = (c) => {
+    if (c.verdict === 'SPAM')       return 'SPAM (' + c.votes + ' Votes)';
+    if (c.suspected)                return 'SPAM-VERDACHT (' + c.votes + ' Votes)';
+    return c.verdict;
   };
   const hasCalls = calls && calls.calls.length;
   if (hasCalls){
-    tbody.innerHTML = calls.calls.map(c =>
-      '<tr><td>' + esc(fmtSec(c.age_s)) + '</td>'
-      + '<td>' + numCell(c.number, c.display) + '</td>'
-      + '<td>' + esc(c.display) + '</td>'
-      + '<td class="v-' + esc(c.verdict) + '">' + esc(c.verdict) + '</td></tr>'
-    ).join('');
+    tbody.innerHTML = calls.calls.map(c => {
+      // API-checked entries carry a label/location from PhoneBlock;
+      // phone-book matches and internal codes don't. Switch the
+      // number- and name-columns to the PhoneBlock display variant
+      // when it's available.
+      const apiChecked = !!(c.label && c.label.length);
+      const numCol = apiChecked
+        ? linkToNumber(c.number, esc(c.label))
+        : numCell(c.number, c.display);
+      const nameCol = apiChecked
+        ? esc(c.location)
+        : esc(c.display);
+      return '<tr><td>' + esc(fmtSec(c.age_s)) + '</td>'
+        + '<td>' + numCol + '</td>'
+        + '<td>' + nameCol + '</td>'
+        + '<td class="v-' + esc(c.verdict) + '">' + esc(verdictLabel(c)) + '</td></tr>';
+    }).join('');
   } else {
     tbody.innerHTML = '<tr><td colspan="4" class="muted">' + esc(t('status.calls.empty')) + '</td></tr>';
   }

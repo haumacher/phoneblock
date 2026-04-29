@@ -327,10 +327,14 @@ static esp_err_t handle_calls(httpd_req_t *req)
     cJSON *arr  = cJSON_AddArrayToObject(root, "calls");
     for (int i = 0; i < n; i++) {
         cJSON *o = cJSON_CreateObject();
-        cJSON_AddNumberToObject(o, "age_s",   (double)((now_us - calls[i].at_us) / 1000000));
-        cJSON_AddStringToObject(o, "number",  calls[i].number);
-        cJSON_AddStringToObject(o, "display", calls[i].display);
-        cJSON_AddStringToObject(o, "verdict", verdict_string(calls[i].verdict));
+        cJSON_AddNumberToObject(o, "age_s",     (double)((now_us - calls[i].at_us) / 1000000));
+        cJSON_AddStringToObject(o, "number",    calls[i].number);
+        cJSON_AddStringToObject(o, "display",   calls[i].display);
+        cJSON_AddStringToObject(o, "label",     calls[i].label);
+        cJSON_AddStringToObject(o, "location",  calls[i].location);
+        cJSON_AddNumberToObject(o, "votes",     calls[i].votes);
+        cJSON_AddBoolToObject  (o, "suspected", calls[i].suspected);
+        cJSON_AddStringToObject(o, "verdict",   verdict_string(calls[i].verdict));
         cJSON_AddItemToArray(arr, o);
     }
     send_json(req, root);

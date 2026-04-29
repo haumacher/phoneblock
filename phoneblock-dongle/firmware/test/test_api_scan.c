@@ -165,7 +165,45 @@ static void test_direct_match_with_unknown_fields(void)
         "}],\"range10\":[],\"range100\":[]}");
     CHECK(!s.error);
     CHECK(s.direct_votes == 42);
+    CHECK(strcmp(s.label, "(DE) 030 12345678") == 0);
+    CHECK(strcmp(s.location, "Berlin") == 0);
     printf("  direct match with unknown fields: ok\n");
+}
+
+static void test_direct_match_label_location_absent(void)
+{
+    // A bucket entry without label/location (e.g. a sparse row).
+    // The scanner must leave both fields as empty strings.
+    api_scan_t s;
+    api_scan_init(&s, "+49301234567");
+    feed_all(&s,
+        "{\"numbers\":[{\"phone\":\"+49301234567\",\"votes\":7}],"
+        "\"range10\":[],\"range100\":[]}");
+    CHECK(!s.error);
+    CHECK(s.direct_votes == 7);
+    CHECK(s.label[0] == '\0');
+    CHECK(s.location[0] == '\0');
+    printf("  direct match without label/location: ok\n");
+}
+
+static void test_direct_no_match_label_not_lifted(void)
+{
+    // Label/location belongs to a NON-matching entry — must NOT bleed
+    // into the scan result.
+    api_scan_t s;
+    api_scan_init(&s, "+49301234567");
+    feed_all(&s,
+        "{\"numbers\":[{"
+            "\"phone\":\"+49309999999\","
+            "\"votes\":99,"
+            "\"label\":\"(DE) 030 99999999\","
+            "\"location\":\"Frankfurt\""
+        "}],\"range10\":[],\"range100\":[]}");
+    CHECK(!s.error);
+    CHECK(s.direct_votes == 0);
+    CHECK(s.label[0] == '\0');
+    CHECK(s.location[0] == '\0');
+    printf("  no match leaves label/location empty: ok\n");
 }
 
 // ----------------------------- C. Range matches ----------------------------
@@ -580,6 +618,8 @@ int main(void)
     test_direct_match_among_many();
     test_direct_match_field_order_swapped();
     test_direct_match_with_unknown_fields();
+    test_direct_match_label_location_absent();
+    test_direct_no_match_label_not_lifted();
 
     test_range10_match();
     test_range100_match();

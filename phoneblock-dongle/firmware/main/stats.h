@@ -15,6 +15,8 @@
 #define STATS_MAX_ERRORS     10
 #define STATS_NUMBER_LEN     48
 #define STATS_DISPLAY_LEN    32
+#define STATS_LABEL_LEN      32
+#define STATS_LOCATION_LEN   80
 #define STATS_ERROR_TAG_LEN  16
 #define STATS_ERROR_MSG_LEN  128
 
@@ -23,6 +25,13 @@ typedef struct {
     char      number[STATS_NUMBER_LEN];        // raw From-user or normalized
     char      display[STATS_DISPLAY_LEN];      // Fritz!Box display name, may be empty
     verdict_t verdict;                         // decision taken by the dongle
+    // Populated only for API-checked entries (stats_record_call_checked);
+    // empty for phone-book / non-dialable entries. The web UI keys on
+    // a non-empty `label` to switch to the rich rendering.
+    char      label[STATS_LABEL_LEN];          // PhoneBlock shortcut, e.g. "(DE) 015735…"
+    char      location[STATS_LOCATION_LEN];    // operator / area, e.g. "Telefónica …"
+    int       votes;                           // count to display next to verdict
+    bool      suspected;                       // votes>0 but below SPAM threshold
 } stats_call_t;
 
 typedef struct {
@@ -48,6 +57,14 @@ void stats_setup(void);
 // --- Event hooks (called from the SIP / API code) -------------------
 
 void stats_record_call(const char *number, const char *display, verdict_t verdict);
+
+// Like stats_record_call but for entries that went through
+// /api/check-prefix. Copies label/location/votes/suspected from the
+// API result onto the stored entry so the UI can render the
+// PhoneBlock-side display variant, location, and "SPAM (n Votes)" /
+// "SPAM-VERDACHT (n Votes)" labels.
+void stats_record_call_checked(const char *number, const char *display,
+                               const pb_check_result_t *result);
 
 // Bumps counters for a call without adding it to the recent-calls
 // ring buffer. Used by sip_register.c when the user has opted out of

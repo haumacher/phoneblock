@@ -87,7 +87,7 @@ static void handle_client(int client_sock)
     }
 
     ESP_LOGI(TAG, "client query: \"%s\"", number);
-    verdict_t v = phoneblock_check(number);
+    verdict_t v = phoneblock_check(number, NULL);
     const char *line = verdict_to_line(v);
     send(client_sock, line, strlen(line), 0);
 }

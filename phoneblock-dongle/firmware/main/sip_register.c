@@ -790,8 +790,9 @@ static verdict_t check_invite_caller(const char *req, int req_len)
         return VERDICT_LEGITIMATE;
     }
 
-    verdict_t v = phoneblock_check(number);
-    stats_record_call(number, display, v);
+    pb_check_result_t result;
+    verdict_t v = phoneblock_check(number, &result);
+    stats_record_call_checked(number, display, &result);
 
     // Fair-use contribution required by /api/check-prefix: when our
     // privacy-preserving lookup hides which number we queried, the

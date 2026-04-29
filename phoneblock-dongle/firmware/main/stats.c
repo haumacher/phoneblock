@@ -64,6 +64,7 @@ void stats_record_call(const char *number, const char *display, verdict_t verdic
     lock();
 
     stats_call_t *slot = &s_calls[s_calls_head];
+    memset(slot, 0, sizeof(*slot));
     slot->at_us   = esp_timer_get_time();
     slot->verdict = verdict;
     copy_trim(slot->number,  sizeof(slot->number),  number);
@@ -73,6 +74,30 @@ void stats_record_call(const char *number, const char *display, verdict_t verdic
     if (s_calls_count < STATS_MAX_CALLS) s_calls_count++;
 
     bump_counters(verdict);
+
+    unlock();
+}
+
+void stats_record_call_checked(const char *number, const char *display,
+                               const pb_check_result_t *result)
+{
+    lock();
+
+    stats_call_t *slot = &s_calls[s_calls_head];
+    memset(slot, 0, sizeof(*slot));
+    slot->at_us     = esp_timer_get_time();
+    slot->verdict   = result->verdict;
+    slot->votes     = result->votes;
+    slot->suspected = result->suspected;
+    copy_trim(slot->number,   sizeof(slot->number),   number);
+    copy_trim(slot->display,  sizeof(slot->display),  display);
+    copy_trim(slot->label,    sizeof(slot->label),    result->label);
+    copy_trim(slot->location, sizeof(slot->location), result->location);
+
+    s_calls_head = (s_calls_head + 1) % STATS_MAX_CALLS;
+    if (s_calls_count < STATS_MAX_CALLS) s_calls_count++;
+
+    bump_counters(result->verdict);
 
     unlock();
 }

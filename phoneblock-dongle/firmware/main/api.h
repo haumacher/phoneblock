@@ -9,11 +9,41 @@ typedef enum {
     VERDICT_ERROR,
 } verdict_t;
 
+// Display + count info lifted from the /api/check-prefix response.
+// Populated by phoneblock_check() when called with a non-NULL `out`.
+//
+// `label` and `location` are non-empty only if the queried number had
+// an active row in the NUMBERS table. Archived rows are filtered out
+// by the server (`AND s.ACTIVE`) and produce empty strings here.
+//
+// `votes` is the count to surface in the UI:
+//   - direct + effective wildcard votes when verdict == SPAM
+//   - max(raw range10, raw range100) when verdict == LEGITIMATE but
+//     `suspected` is set (votes exist in the bucket aggregations but
+//     didn't pass the cnt threshold to count as SPAM)
+//   - 0 otherwise
+//
+// `suspected` is true exactly when verdict == LEGITIMATE and any range
+// votes were present in the response — i.e. there is a soft signal
+// that the number is in a SPAM neighborhood without enough evidence
+// to block.
+typedef struct {
+    verdict_t verdict;
+    int       votes;
+    bool      suspected;
+    char      label[32];
+    char      location[80];
+} pb_check_result_t;
+
 // Query the PhoneBlock API for the given phone number.
 // The number is passed through unmodified — the server normalizes.
 // Returns VERDICT_SPAM, VERDICT_LEGITIMATE, or VERDICT_ERROR on
 // transport/parse problems.
-verdict_t phoneblock_check(const char *phone_number);
+//
+// If `out` is non-NULL it is populated with display fields and vote
+// counts (see pb_check_result_t). Pass NULL when the caller only
+// needs the verdict.
+verdict_t phoneblock_check(const char *phone_number, pb_check_result_t *out);
 
 // Verify API reachability + token validity via GET /test (expects
 // HTTP 200 body "ok"). Returns true on success, false on any failure.

@@ -27,6 +27,16 @@ static void scan_handle_object(api_scan_t *s)
             strcmp(p->valuestring, s->phone) == 0) {
             const cJSON *v = cJSON_GetObjectItemCaseSensitive(o, "votes");
             if (cJSON_IsNumber(v)) s->direct_votes = v->valueint;
+            const cJSON *lbl = cJSON_GetObjectItemCaseSensitive(o, "label");
+            if (cJSON_IsString(lbl) && lbl->valuestring) {
+                strncpy(s->label, lbl->valuestring, sizeof(s->label) - 1);
+                s->label[sizeof(s->label) - 1] = '\0';
+            }
+            const cJSON *loc = cJSON_GetObjectItemCaseSensitive(o, "location");
+            if (cJSON_IsString(loc) && loc->valuestring) {
+                strncpy(s->location, loc->valuestring, sizeof(s->location) - 1);
+                s->location[sizeof(s->location) - 1] = '\0';
+            }
         }
     } else if (s->current_array == API_SCAN_ARR_RANGE10 ||
                s->current_array == API_SCAN_ARR_RANGE100) {

@@ -92,8 +92,9 @@ static esp_err_t http_event_check(esp_http_client_event_t *evt)
     return ESP_OK;
 }
 
-verdict_t phoneblock_check(const char *phone_number)
+verdict_t phoneblock_check(const char *phone_number, pb_check_result_t *out)
 {
+    if (out) memset(out, 0, sizeof(*out));
     verdict_t verdict = VERDICT_ERROR;
     int phone_len = (int)strlen(phone_number);
 
@@ -201,6 +202,25 @@ verdict_t phoneblock_check(const char *phone_number)
              phone_number, scan.direct_votes, wildcard_votes,
              scan.v10, scan.c10, scan.v100, scan.c100,
              verdict == VERDICT_SPAM ? "SPAM" : "LEGITIMATE");
+
+    if (out) {
+        out->verdict = verdict;
+        strncpy(out->label,    scan.label,    sizeof(out->label)    - 1);
+        strncpy(out->location, scan.location, sizeof(out->location) - 1);
+        if (verdict == VERDICT_SPAM) {
+            out->votes = scan.direct_votes + wildcard_votes;
+            out->suspected = false;
+        } else if (scan.v10 > 0 || scan.v100 > 0) {
+            // Range votes exist but their cnt is below MIN_AGGREGATE,
+            // so wildcard_votes was 0 and the dongle let the call
+            // through. Surface the soft signal as SPAM-VERDACHT.
+            out->votes = scan.v10 > scan.v100 ? scan.v10 : scan.v100;
+            out->suspected = true;
+        } else {
+            out->votes = 0;
+            out->suspected = false;
+        }
+    }
 
 cleanup:
     esp_http_client_cleanup(client);
