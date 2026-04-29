@@ -99,15 +99,20 @@ bool        config_auto_update_enabled(void);
 const char *config_phoneblock_base_url(void);
 const char *config_phoneblock_token(void);
 
-// Minimum vote threshold for blocking. The dongle classifies a call as
-// SPAM only when direct_votes >= this OR wildcard_votes >= this. Below
-// the threshold the verdict stays LEGITIMATE; the recent-calls UI then
-// shows "SPAM-VERDACHT (n Votes)" for any soft signal that was found.
-// Default 4 — same value the server uses for DB.MIN_VOTES (the
-// confidence floor the public blocklist export already enforces).
-// 1 = aggressive (block on the first report), higher = more
-// conservative.
-int         config_min_votes(void);
+// Minimum-vote thresholds for SPAM blocking. Two independent values
+// because direct hits ("this exact number was reported") are a much
+// stronger signal than range hits ("numbers in the same 10/100-block
+// were reported"); applying one threshold to both flattens that
+// distinction.
+//
+//   SPAM ⟺  direct  >= min_direct_votes
+//        ∨  (min_range_votes >= 1  ∧  wildcard >= min_range_votes)
+//
+// Defaults: direct=4 (matches DB.MIN_VOTES on the server / public
+// blocklist export), range=10 (more conservative since range evidence
+// is weaker). min_range_votes=0 disables range-blocking entirely.
+int         config_min_direct_votes(void);
+int         config_min_range_votes(void);
 
 // Version string of the most recent OTA download that did NOT survive
 // to the next successful boot, or "" if no such record exists. Set by
@@ -158,9 +163,15 @@ typedef struct {
     const char *auto_update;
     const char *phoneblock_base_url;
     const char *phoneblock_token;
-    // Minimum vote threshold for SPAM. 0 = leave current value
-    // untouched. Persisted as an int; reasonable values 1..20.
-    int         min_votes;
+    // Direct-hit SPAM threshold. 0 = leave current value untouched
+    // (0 itself is not a meaningful value — would block on no
+    // evidence at all).
+    int         min_direct_votes;
+    // Range-hit SPAM threshold. Uses an explicit has_min_range_votes
+    // flag rather than the 0-sentinel pattern because 0 is a real
+    // value here (= disable range-blocking).
+    bool        has_min_range_votes;
+    int         min_range_votes;
 } config_update_t;
 
 esp_err_t config_update(const config_update_t *u);

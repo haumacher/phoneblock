@@ -34,13 +34,18 @@ static const char *NS   = "phoneblock";
 #define K_CONTACT_PORT  "contact_port"
 #define K_PB_URL        "pb_url"
 #define K_PB_TOKEN      "pb_token"
-#define K_MIN_VOTES     "min_votes"
+#define K_MIN_DIRECT    "min_direct"
+#define K_MIN_RANGE     "min_range"
 
-// Mirrors DB.MIN_VOTES on the server (the confidence floor the public
-// blocklist export already enforces). Single source of truth for the
-// "no min_votes configured yet" fallback used by the loader, the
-// NVS-empty bootstrap, and the getter.
-#define DEFAULT_MIN_VOTES 4
+// Direct-vote default mirrors DB.MIN_VOTES on the server (the
+// confidence floor the public blocklist export already enforces).
+#define DEFAULT_MIN_DIRECT_VOTES 4
+// Range votes are weaker evidence (numbers in the same 10/100-block
+// reported, not the queried number itself). Default at 10 keeps the
+// dongle conservative on neighborhood signals; users who want
+// aggressive range-blocking can lower it, users who want to disable
+// range entirely can set it to 0.
+#define DEFAULT_MIN_RANGE_VOTES 10
 // Version string of the most recent OTA download that did NOT survive
 // to the next successful boot. Set pessimistically before
 // esp_https_ota() runs and only cleared once main.c sees the running
@@ -72,7 +77,8 @@ typedef struct {
     int  contact_port;
     char pb_base_url[128];
     char pb_token[64];
-    int  min_votes;          // SPAM threshold for direct + wildcard votes
+    int  min_direct_votes;   // SPAM threshold for direct hits
+    int  min_range_votes;    // SPAM threshold for wildcard/range hits; 0 = off
     char last_failed_ota[32];   // semver, plus headroom for "-rcN" suffixes
 } config_cache_t;
 
@@ -136,7 +142,8 @@ void config_load(void)
         s_config.contact_port = CONFIG_SIP_CONTACT_PORT_OVERRIDE;
         copy_default(s_config.pb_base_url,  sizeof(s_config.pb_base_url),  CONFIG_PHONEBLOCK_BASE_URL);
         s_config.pb_token[0]  = '\0';
-        s_config.min_votes    = DEFAULT_MIN_VOTES;
+        s_config.min_direct_votes = DEFAULT_MIN_DIRECT_VOTES;
+        s_config.min_range_votes  = DEFAULT_MIN_RANGE_VOTES;
         s_config.last_failed_ota[0] = '\0';
         return;
     }
@@ -186,7 +193,8 @@ void config_load(void)
              s_config.pb_base_url,  sizeof(s_config.pb_base_url));
     load_str(h, K_PB_TOKEN,     "",
              s_config.pb_token,     sizeof(s_config.pb_token));
-    s_config.min_votes = load_int(h, K_MIN_VOTES, DEFAULT_MIN_VOTES);
+    s_config.min_direct_votes = load_int(h, K_MIN_DIRECT, DEFAULT_MIN_DIRECT_VOTES);
+    s_config.min_range_votes  = load_int(h, K_MIN_RANGE,  DEFAULT_MIN_RANGE_VOTES);
     load_str(h, K_LAST_FAIL_OTA, "",
              s_config.last_failed_ota, sizeof(s_config.last_failed_ota));
     nvs_close(h);
@@ -242,7 +250,8 @@ const char *config_contact_host_override(void) { return s_config.contact_host; }
 int         config_contact_port_override(void) { return s_config.contact_port; }
 const char *config_phoneblock_base_url(void) { return s_config.pb_base_url; }
 const char *config_phoneblock_token(void)    { return s_config.pb_token; }
-int         config_min_votes(void)            { return s_config.min_votes; }
+int         config_min_direct_votes(void)     { return s_config.min_direct_votes; }
+int         config_min_range_votes(void)      { return s_config.min_range_votes; }
 const char *config_last_failed_ota(void)     { return s_config.last_failed_ota; }
 
 esp_err_t config_set_last_failed_ota(const char *version)
@@ -284,6 +293,18 @@ static esp_err_t set_str_if(nvs_handle_t h, const char *key, const char *val,
 static esp_err_t set_int_if(nvs_handle_t h, const char *key, int val, int *cache)
 {
     if (val == 0) return ESP_OK;
+    esp_err_t err = nvs_set_i32(h, key, val);
+    if (err == ESP_OK) *cache = val;
+    return err;
+}
+
+// Like set_int_if, but the caller decides explicitly via `has_value`
+// whether to write — for fields where 0 is a meaningful value (e.g.
+// "range-block disabled") and can't share the "0 = unchanged" shortcut.
+static esp_err_t set_int_explicit(nvs_handle_t h, const char *key,
+                                  bool has_value, int val, int *cache)
+{
+    if (!has_value) return ESP_OK;
     esp_err_t err = nvs_set_i32(h, key, val);
     if (err == ESP_OK) *cache = val;
     return err;
@@ -352,7 +373,12 @@ esp_err_t config_update(const config_update_t *u)
                                         s_config.pb_base_url, sizeof(s_config.pb_base_url));
     if (err == ESP_OK) err = set_str_if(h, K_PB_TOKEN, u->phoneblock_token,
                                         s_config.pb_token, sizeof(s_config.pb_token));
-    if (err == ESP_OK) err = set_int_if(h, K_MIN_VOTES, u->min_votes, &s_config.min_votes);
+    if (err == ESP_OK) err = set_int_if(h, K_MIN_DIRECT, u->min_direct_votes,
+                                        &s_config.min_direct_votes);
+    if (err == ESP_OK) err = set_int_explicit(h, K_MIN_RANGE,
+                                              u->has_min_range_votes,
+                                              u->min_range_votes,
+                                              &s_config.min_range_votes);
 
     if (err == ESP_OK) err = nvs_commit(h);
     nvs_close(h);

@@ -195,13 +195,16 @@ verdict_t phoneblock_check(const char *phone_number, pb_check_result_t *out)
 
     int wildcard_votes = compute_wildcard_votes(scan.v10, scan.c10,
                                                 scan.v100, scan.c100);
-    int min_votes = config_min_votes();
-    verdict = (scan.direct_votes >= min_votes || wildcard_votes >= min_votes)
-        ? VERDICT_SPAM : VERDICT_LEGITIMATE;
+    int min_direct = config_min_direct_votes();
+    int min_range  = config_min_range_votes();
+    bool direct_hit = scan.direct_votes >= min_direct;
+    bool range_hit  = (min_range >= 1) && (wildcard_votes >= min_range);
+    verdict = (direct_hit || range_hit) ? VERDICT_SPAM : VERDICT_LEGITIMATE;
 
-    ESP_LOGI(TAG, "Number %s → direct=%d wildcard=%d (range10 v=%d cnt=%d, range100 v=%d cnt=%d) min_votes=%d → %s",
+    ESP_LOGI(TAG, "Number %s → direct=%d wildcard=%d (range10 v=%d cnt=%d, range100 v=%d cnt=%d) thresholds=(direct=%d range=%d) → %s",
              phone_number, scan.direct_votes, wildcard_votes,
-             scan.v10, scan.c10, scan.v100, scan.c100, min_votes,
+             scan.v10, scan.c10, scan.v100, scan.c100,
+             min_direct, min_range,
              verdict == VERDICT_SPAM ? "SPAM" : "LEGITIMATE");
 
     if (out) {
@@ -209,16 +212,15 @@ verdict_t phoneblock_check(const char *phone_number, pb_check_result_t *out)
         strncpy(out->label,    scan.label,    sizeof(out->label)    - 1);
         strncpy(out->location, scan.location, sizeof(out->location) - 1);
         if (verdict == VERDICT_SPAM) {
-            // Show whichever side cleared the threshold; if both did,
-            // direct dominates (more specific signal).
-            out->votes = scan.direct_votes >= min_votes
-                ? scan.direct_votes : wildcard_votes;
+            // Show whichever side actually cleared its threshold;
+            // direct dominates when both did (more specific signal).
+            out->votes = direct_hit ? scan.direct_votes : wildcard_votes;
             out->suspected = false;
         } else if (scan.direct_votes > 0 ||
                    scan.v10 > 0 || scan.v100 > 0) {
-            // Some signal exists but it didn't clear min_votes (or the
-            // wildcard cnt threshold). Surface the strongest single
-            // value as the SPAM-VERDACHT count.
+            // Some evidence exists but it didn't clear the relevant
+            // threshold (or range-blocking is off). Surface the
+            // strongest single value as the SPAM-VERDACHT count.
             int v = scan.direct_votes;
             if (scan.v10  > v) v = scan.v10;
             if (scan.v100 > v) v = scan.v100;

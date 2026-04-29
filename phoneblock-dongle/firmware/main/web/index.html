@@ -138,10 +138,16 @@ const I18N = {
     'status.calls.clear': 'Liste leeren',
     'status.calls.log_known': 'Bekannte Anrufer protokollieren',
     'status.calls.log_known.help': 'Wenn deaktiviert, erscheinen Anrufe von Nummern aus dem Telefonbuch und interne Codes (**, *…) nicht in der Liste — die Zähler oben werden trotzdem aktualisiert.',
-    'status.calls.min_votes': 'Blocken ab Stimmen',
-    'status.calls.min_votes.help': 'Erst ab dieser Anzahl PhoneBlock-Stimmen blockt der Dongle den Anruf. Darunter zeigt die Liste „SPAM-VERDACHT" an, der Anruf wird aber an die Fritz!Box durchgelassen. Default 4 (gleicher Wert wie die öffentliche Sperrliste).',
     'status.calls.verdict.spam': 'SPAM ({votes} Stimmen)',
     'status.calls.verdict.suspect': 'SPAM-VERDACHT ({votes} Stimmen)',
+    'status.thresholds.title': 'Block-Schwellen',
+    'status.thresholds.intro': 'Ab wie vielen PhoneBlock-Stimmen der Dongle einen Anruf wegnimmt. Direkt-Stimmen wiegen schwerer als Range-Stimmen, deshalb getrennte Werte.',
+    'status.thresholds.direct': 'Direkt-Stimmen',
+    'status.thresholds.direct.help': 'Stimmen direkt gegen die anrufende Nummer. Default 4 — gleicher Wert wie die öffentliche PhoneBlock-Sperrliste.',
+    'status.thresholds.range': 'Range-Stimmen',
+    'status.thresholds.range.help': 'Stimmen gegen Nachbarn im selben 10er- oder 100er-Block. Default 10. Wert 0 schaltet Range-Block ab — dann zählen nur Direkt-Treffer.',
+    'status.thresholds.saved': 'Gespeichert.',
+    'status.thresholds.invalid': 'Ungültiger Wert.',
     'status.errors.title': 'Fehler',
     'status.errors.empty': 'keine Fehler',
     'status.errors.ago': 'vor {age}',
@@ -327,10 +333,16 @@ const I18N = {
     'status.calls.clear': 'Clear list',
     'status.calls.log_known': 'Log known callers',
     'status.calls.log_known.help': 'When off, calls from numbers in the address book and internal codes (**, *…) are not added to the list — counters above still update.',
-    'status.calls.min_votes': 'Block from votes',
-    'status.calls.min_votes.help': 'The dongle blocks a call only when PhoneBlock reports at least this many votes against the number. Below the threshold the list shows "SPAM-SUSPECT"; the call still rings through to the Fritz!Box. Default 4 (matches the public blocklist).',
     'status.calls.verdict.spam': 'SPAM ({votes} votes)',
     'status.calls.verdict.suspect': 'SPAM-SUSPECT ({votes} votes)',
+    'status.thresholds.title': 'Block thresholds',
+    'status.thresholds.intro': 'How many PhoneBlock votes the dongle requires before it traps a call. Direct votes weigh more than range votes, so each side has its own threshold.',
+    'status.thresholds.direct': 'Direct votes',
+    'status.thresholds.direct.help': 'Votes against the calling number itself. Default 4 — same value as the public PhoneBlock blocklist.',
+    'status.thresholds.range': 'Range votes',
+    'status.thresholds.range.help': 'Votes against neighbors in the same 10/100-block. Default 10. Set to 0 to disable range-based blocking — only direct hits count then.',
+    'status.thresholds.saved': 'Saved.',
+    'status.thresholds.invalid': 'Invalid value.',
     'status.errors.title': 'Errors',
     'status.errors.empty': 'no errors',
     'status.errors.ago': '{age} ago',
@@ -1021,11 +1033,7 @@ function renderStatus(){
     + '<section id="callsSection" style="display:none">'
     + '<h2 style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.6rem">'
     + '  <span>' + esc(t('status.calls.title')) + '</span>'
-    + '  <span style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap">'
-    + '    <label title="' + esc(t('status.calls.min_votes.help')) + '" style="font-size:.75rem;font-weight:400;color:#444;display:flex;align-items:center;gap:.3rem">'
-    + '      <span>' + esc(t('status.calls.min_votes')) + '</span>'
-    + '      <input id="callsMinVotes" type="number" min="1" max="99" style="width:3.5rem;padding:.1rem .3rem;font-size:.8rem">'
-    + '    </label>'
+    + '  <span style="display:flex;align-items:center;gap:.8rem">'
     + '    <label title="' + esc(t('status.calls.log_known.help')) + '" style="font-size:.75rem;font-weight:400;color:#444;display:flex;align-items:center;gap:.3rem">'
     + '      <input id="callsLogKnown" type="checkbox" style="width:auto;margin:0">'
     + '      <span>' + esc(t('status.calls.log_known')) + '</span>'
@@ -1040,6 +1048,26 @@ function renderStatus(){
     + '<th>' + esc(t('status.calls.col.name'))    + '</th>'
     + '<th>' + esc(t('status.calls.col.verdict')) + '</th>'
     + '</tr></thead><tbody id="callsBody"></tbody></table>'
+    + '</section>'
+    + '<section id="thresholdsSection">'
+    + '<h2>' + esc(t('status.thresholds.title')) + '</h2>'
+    + '<p class="muted" style="font-size:.85rem;margin:.2rem 0 .8rem">'
+    +   esc(t('status.thresholds.intro')) + '</p>'
+    + '<div style="display:flex;gap:1.5rem;flex-wrap:wrap;align-items:flex-start">'
+    + '<label style="display:flex;flex-direction:column;gap:.2rem">'
+    + '  <span style="font-size:.85rem">' + esc(t('status.thresholds.direct')) + '</span>'
+    + '  <input id="thrDirect" type="number" min="1" max="99" style="width:5rem">'
+    + '  <span class="muted" style="font-size:.7rem;max-width:18rem">'
+    +     esc(t('status.thresholds.direct.help')) + '</span>'
+    + '</label>'
+    + '<label style="display:flex;flex-direction:column;gap:.2rem">'
+    + '  <span style="font-size:.85rem">' + esc(t('status.thresholds.range')) + '</span>'
+    + '  <input id="thrRange" type="number" min="0" max="999" style="width:5rem">'
+    + '  <span class="muted" style="font-size:.7rem;max-width:18rem">'
+    +     esc(t('status.thresholds.range.help')) + '</span>'
+    + '</label>'
+    + '</div>'
+    + '<p id="thrMsg" class="muted" style="font-size:.75rem;margin:.4rem 0 0;min-height:1em"></p>'
     + '</section>'
     + '<section id="errorsSection" style="display:none">'
     + '<h2 style="display:flex;align-items:center;justify-content:space-between">'
@@ -1596,30 +1624,69 @@ async function refreshAll(){
       refreshAll();
     };
   }
-  const callsMinVotes = $('callsMinVotes');
-  // Server always returns a positive value (DEFAULT_MIN_VOTES on first
-  // boot, the persisted value afterwards), so we don't need a fallback.
-  if (s && s.phoneblock && s.phoneblock.min_votes && document.activeElement !== callsMinVotes) {
-    callsMinVotes.value = s.phoneblock.min_votes;
+  // Block thresholds. Both inputs save on blur/change. The server
+  // always returns positive defaults on first boot, so there is no
+  // need for a client-side fallback. We only refresh the visible
+  // value when the user is not currently editing the field — avoids
+  // the polling loop snatching a value out from under their cursor.
+  const thrDirect = $('thrDirect');
+  const thrRange  = $('thrRange');
+  const thrMsg    = $('thrMsg');
+  const pb = (s && s.phoneblock) || {};
+  if (document.activeElement !== thrDirect && pb.min_direct_votes != null) {
+    thrDirect.value = pb.min_direct_votes;
   }
-  if (!callsMinVotes.onchange){
-    callsMinVotes.onchange = async () => {
-      const v = parseInt(callsMinVotes.value, 10);
+  if (document.activeElement !== thrRange && pb.min_range_votes != null) {
+    thrRange.value = pb.min_range_votes;
+  }
+  const flashMsg = (text, color) => {
+    thrMsg.textContent = text;
+    thrMsg.style.color = color;
+    setTimeout(() => { if (thrMsg.textContent === text) thrMsg.textContent = ''; }, 2000);
+  };
+  if (!thrDirect.onchange){
+    thrDirect.onchange = async () => {
+      const v = parseInt(thrDirect.value, 10);
       if (!(v >= 1 && v <= 99)) {
-        callsMinVotes.value = (s && s.phoneblock && s.phoneblock.min_votes) || '';
+        thrDirect.value = pb.min_direct_votes || '';
+        flashMsg(t('status.thresholds.invalid'), '#d93025');
         return;
       }
-      callsMinVotes.disabled = true;
+      thrDirect.disabled = true;
       const body = new URLSearchParams();
-      body.append('min_votes', String(v));
+      body.append('min_direct_votes', String(v));
       try {
-        await fetch('/api/config', {
+        const r = await fetch('/api/config', {
           method: 'POST',
           headers: {'Content-Type': 'application/x-www-form-urlencoded'},
           body: body.toString(),
         });
-      } catch (_){ /* next poll will reconcile */ }
-      callsMinVotes.disabled = false;
+        if (r.ok) flashMsg(t('status.thresholds.saved'), '#188038');
+      } catch (_){ /* next poll reconciles */ }
+      thrDirect.disabled = false;
+      refreshAll();
+    };
+  }
+  if (!thrRange.onchange){
+    thrRange.onchange = async () => {
+      const v = parseInt(thrRange.value, 10);
+      if (!(v >= 0 && v <= 999)) {
+        thrRange.value = pb.min_range_votes != null ? pb.min_range_votes : '';
+        flashMsg(t('status.thresholds.invalid'), '#d93025');
+        return;
+      }
+      thrRange.disabled = true;
+      const body = new URLSearchParams();
+      body.append('min_range_votes', String(v));
+      try {
+        const r = await fetch('/api/config', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: body.toString(),
+        });
+        if (r.ok) flashMsg(t('status.thresholds.saved'), '#188038');
+      } catch (_){ /* next poll reconciles */ }
+      thrRange.disabled = false;
       refreshAll();
     };
   }
