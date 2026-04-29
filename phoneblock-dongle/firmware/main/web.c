@@ -348,7 +348,7 @@ static int hex_digit(char c)
 }
 
 // Decode src (percent-encoded, '+' = space) into dst; NUL-terminates.
-static void url_decode(const char *src, int src_len, char *dst, size_t cap)
+void url_decode(const char *src, int src_len, char *dst, size_t cap)
 {
     size_t o = 0;
     for (int i = 0; i < src_len && o + 1 < cap; i++) {

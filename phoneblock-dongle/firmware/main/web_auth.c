@@ -10,43 +10,9 @@
 
 #include "api.h"
 #include "config.h"
+#include "web.h"
 
 static const char *TAG = "web_auth";
-
-// Local copy of web.c's URL-decoder. esp_http_server's
-// httpd_query_key_value() does not percent-decode, so any caller that
-// reads a path-bearing query parameter has to decode it itself before
-// validating. Keep this in sync with web.c::url_decode().
-static int hex_digit(char c)
-{
-    if (c >= '0' && c <= '9') return c - '0';
-    if (c >= 'a' && c <= 'f') return c - 'a' + 10;
-    if (c >= 'A' && c <= 'F') return c - 'A' + 10;
-    return -1;
-}
-
-static void url_decode(const char *src, int src_len, char *dst, size_t cap)
-{
-    size_t o = 0;
-    for (int i = 0; i < src_len && o + 1 < cap; i++) {
-        char c = src[i];
-        if (c == '+') {
-            dst[o++] = ' ';
-        } else if (c == '%' && i + 2 < src_len) {
-            int hi = hex_digit(src[i + 1]);
-            int lo = hex_digit(src[i + 2]);
-            if (hi >= 0 && lo >= 0) {
-                dst[o++] = (char)((hi << 4) | lo);
-                i += 2;
-            } else {
-                dst[o++] = c;
-            }
-        } else {
-            dst[o++] = c;
-        }
-    }
-    dst[o] = '\0';
-}
 
 // --- Session store --------------------------------------------------
 
