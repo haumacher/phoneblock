@@ -252,11 +252,11 @@ esp_err_t web_auth_handle_start(httpd_req_t *req)
     char url[640];
     if (hint_enc[0]) {
         snprintf(url, sizeof(url),
-            "%s/auth-gate?callback=%s&state=%s&user_hint=%s",
+            "%s/auth/gate?callback=%s&state=%s&user_hint=%s",
             config_phoneblock_base_url(), callback_enc, nonce_copy, hint_enc);
     } else {
         snprintf(url, sizeof(url),
-            "%s/auth-gate?callback=%s&state=%s",
+            "%s/auth/gate?callback=%s&state=%s",
             config_phoneblock_base_url(), callback_enc, nonce_copy);
     }
 

@@ -33,7 +33,7 @@ import jakarta.servlet.http.HttpServletResponse;
  * and the user is sent straight back to the caller's loopback callback.
  *
  * <p>
- * <b>GET /auth-gate</b><br>
+ * <b>GET /auth/gate</b><br>
  * Parameters:
  * <ul>
  *   <li>{@code callback}  — loopback URL to redirect to on success.
@@ -69,7 +69,7 @@ import jakarta.servlet.http.HttpServletResponse;
 @WebServlet(urlPatterns = AuthGateServlet.PATH)
 public class AuthGateServlet extends HttpServlet {
 
-	public static final String PATH = "/auth-gate";
+	public static final String PATH = "/auth/gate";
 
 	public static final String CALLBACK = "callback";
 
