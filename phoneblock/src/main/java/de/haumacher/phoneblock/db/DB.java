@@ -1557,8 +1557,9 @@ public class DB {
 	public PhoneInfo getPhoneInfo(NumberInfo info, AggregationInfo aggregation10, AggregationInfo aggregation100) {
 		PhoneInfo result = NumberAnalyzer.phoneInfoFromId(info.getPhone())
 			.setDateAdded(info.getAdded())
-			.setLastUpdate(info.getUpdated());
-		
+			.setLastUpdate(info.getUpdated())
+			.setArchived(!info.isActive());
+
 		Rating rating = rating(info);
 		int votesWildcard;
 		if (aggregation100.getCnt() >= MIN_AGGREGATE_100) {
@@ -1567,7 +1568,7 @@ public class DB {
 				// Direct votes did not count yet.
 				votesWildcard += info.getVotes();
 			}
-			
+
 			if (aggregation10.getCnt() < MIN_AGGREGATE_10) {
 				// The votes of this number did not yet count to the aggregation of the block.
 				votesWildcard += aggregation10.getVotes();
@@ -1580,13 +1581,12 @@ public class DB {
 			}
 		} else {
 			votesWildcard = info.getVotes();
-			result.setArchived(!info.isActive());
 		}
-		
+
 		result.setVotes(info.getVotes());
 		result.setVotesWildcard(votesWildcard);
 		result.setRating(rating);
-		
+
 		return result;
 	}
 
