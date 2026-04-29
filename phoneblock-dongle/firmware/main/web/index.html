@@ -140,6 +140,8 @@ const I18N = {
     'status.calls.log_known.help': 'Wenn deaktiviert, erscheinen Anrufe von Nummern aus dem Telefonbuch und interne Codes (**, *…) nicht in der Liste — die Zähler oben werden trotzdem aktualisiert.',
     'status.calls.verdict.spam': 'SPAM ({votes} Stimmen)',
     'status.calls.verdict.suspect': 'SPAM-VERDACHT ({votes} Stimmen)',
+    'status.calls.verdict.whitelist': 'Whitelist',
+    'status.calls.verdict.blacklist': 'Blacklist',
     'status.thresholds.title': 'Block-Schwellen',
     'status.thresholds.intro': 'Ab wie vielen PhoneBlock-Stimmen der Dongle einen Anruf wegnimmt. Direkt-Stimmen wiegen schwerer als Range-Stimmen, deshalb getrennte Werte.',
     'status.thresholds.direct': 'Direkt-Stimmen',
@@ -335,6 +337,8 @@ const I18N = {
     'status.calls.log_known.help': 'When off, calls from numbers in the address book and internal codes (**, *…) are not added to the list — counters above still update.',
     'status.calls.verdict.spam': 'SPAM ({votes} votes)',
     'status.calls.verdict.suspect': 'SPAM-SUSPECT ({votes} votes)',
+    'status.calls.verdict.whitelist': 'Whitelist',
+    'status.calls.verdict.blacklist': 'Blacklist',
     'status.thresholds.title': 'Block thresholds',
     'status.thresholds.intro': 'How many PhoneBlock votes the dongle requires before it traps a call. Direct votes weigh more than range votes, so each side has its own threshold.',
     'status.thresholds.direct': 'Direct votes',
@@ -1566,6 +1570,11 @@ async function refreshAll(){
   // The phone-book / non-dialable entries never went through the
   // API check (label is empty) — keep their verdict as-is.
   const verdictLabel = (c) => {
+    // User-personal overrides win over the community signal — display
+    // them distinctively so it's obvious which evidence drove the
+    // verdict.
+    if (c.whitelisted)        return t('status.calls.verdict.whitelist');
+    if (c.blacklisted)        return t('status.calls.verdict.blacklist');
     if (c.verdict === 'SPAM') return t('status.calls.verdict.spam', {votes: c.votes});
     if (c.suspected)          return t('status.calls.verdict.suspect', {votes: c.votes});
     return c.verdict;

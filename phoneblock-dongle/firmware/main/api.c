@@ -199,32 +199,51 @@ verdict_t phoneblock_check(const char *phone_number, pb_check_result_t *out)
     int min_range  = config_min_range_votes();
     bool direct_hit = scan.direct_votes >= min_direct;
     bool range_hit  = (min_range >= 1) && (wildcard_votes >= min_range);
-    verdict = (direct_hit || range_hit) ? VERDICT_SPAM : VERDICT_LEGITIMATE;
 
-    ESP_LOGI(TAG, "Number %s → direct=%d wildcard=%d (range10 v=%d cnt=%d, range100 v=%d cnt=%d) thresholds=(direct=%d range=%d) → %s",
+    // Per-user personalization wins over the community signal. The
+    // server emits these flags on numbers[] entries when the bearer
+    // token belongs to a user who has the number on their personal
+    // BLOCKLIST. White-list trumps black-list if both are somehow set.
+    if (scan.white_listed) {
+        verdict = VERDICT_LEGITIMATE;
+    } else if (scan.black_listed) {
+        verdict = VERDICT_SPAM;
+    } else {
+        verdict = (direct_hit || range_hit) ? VERDICT_SPAM : VERDICT_LEGITIMATE;
+    }
+
+    ESP_LOGI(TAG, "Number %s → direct=%d wildcard=%d (range10 v=%d cnt=%d, range100 v=%d cnt=%d) thresholds=(direct=%d range=%d) wl=%d bl=%d → %s",
              phone_number, scan.direct_votes, wildcard_votes,
              scan.v10, scan.c10, scan.v100, scan.c100,
              min_direct, min_range,
+             scan.white_listed, scan.black_listed,
              verdict == VERDICT_SPAM ? "SPAM" : "LEGITIMATE");
 
     if (out) {
         out->verdict = verdict;
+        out->white_listed = scan.white_listed;
+        out->black_listed = scan.black_listed;
         strncpy(out->label,    scan.label,    sizeof(out->label)    - 1);
         strncpy(out->location, scan.location, sizeof(out->location) - 1);
-        if (verdict == VERDICT_SPAM) {
+        // For the count: keep showing the underlying community signal
+        // even when an override is in effect. Lets the UI render
+        // "Whitelist (sonst SPAM, 12 Stimmen)" / "Blacklist (0 Stimmen
+        // in Community)" without losing context.
+        int community = scan.direct_votes;
+        if (scan.v10  > community) community = scan.v10;
+        if (scan.v100 > community) community = scan.v100;
+        if (scan.white_listed || scan.black_listed) {
+            out->votes = community;
+            out->suspected = false;  // override is final, no soft state
+        } else if (verdict == VERDICT_SPAM) {
             // Show whichever side actually cleared its threshold;
             // direct dominates when both did (more specific signal).
             out->votes = direct_hit ? scan.direct_votes : wildcard_votes;
             out->suspected = false;
-        } else if (scan.direct_votes > 0 ||
-                   scan.v10 > 0 || scan.v100 > 0) {
+        } else if (community > 0) {
             // Some evidence exists but it didn't clear the relevant
-            // threshold (or range-blocking is off). Surface the
-            // strongest single value as the SPAM-VERDACHT count.
-            int v = scan.direct_votes;
-            if (scan.v10  > v) v = scan.v10;
-            if (scan.v100 > v) v = scan.v100;
-            out->votes = v;
+            // threshold (or range-blocking is off). SPAM-VERDACHT.
+            out->votes = community;
             out->suspected = true;
         } else {
             out->votes = 0;

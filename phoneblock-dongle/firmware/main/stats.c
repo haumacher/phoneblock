@@ -86,9 +86,11 @@ void stats_record_call_checked(const char *number, const char *display,
     stats_call_t *slot = &s_calls[s_calls_head];
     memset(slot, 0, sizeof(*slot));
     slot->at_us     = esp_timer_get_time();
-    slot->verdict   = result->verdict;
-    slot->votes     = result->votes;
-    slot->suspected = result->suspected;
+    slot->verdict      = result->verdict;
+    slot->votes        = result->votes;
+    slot->suspected    = result->suspected;
+    slot->white_listed = result->white_listed;
+    slot->black_listed = result->black_listed;
     copy_trim(slot->number,   sizeof(slot->number),   number);
     copy_trim(slot->display,  sizeof(slot->display),  display);
     copy_trim(slot->label,    sizeof(slot->label),    result->label);

@@ -37,6 +37,10 @@ static void scan_handle_object(api_scan_t *s)
                 strncpy(s->location, loc->valuestring, sizeof(s->location) - 1);
                 s->location[sizeof(s->location) - 1] = '\0';
             }
+            const cJSON *wl = cJSON_GetObjectItemCaseSensitive(o, "whiteListed");
+            if (cJSON_IsBool(wl)) s->white_listed = cJSON_IsTrue(wl);
+            const cJSON *bl = cJSON_GetObjectItemCaseSensitive(o, "blackListed");
+            if (cJSON_IsBool(bl)) s->black_listed = cJSON_IsTrue(bl);
         }
     } else if (s->current_array == API_SCAN_ARR_RANGE10 ||
                s->current_array == API_SCAN_ARR_RANGE100) {

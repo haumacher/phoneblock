@@ -32,6 +32,8 @@ typedef struct {
     char      location[STATS_LOCATION_LEN];    // operator / area, e.g. "Telefónica …"
     int       votes;                           // count to display next to verdict
     bool      suspected;                       // votes>0 but below SPAM threshold
+    bool      white_listed;                    // user-personal whitelist hit (hard override)
+    bool      black_listed;                    // user-personal blacklist hit (hard override)
 } stats_call_t;
 
 typedef struct {

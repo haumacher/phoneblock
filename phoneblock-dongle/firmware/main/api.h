@@ -27,10 +27,26 @@ typedef enum {
 // votes were present in the response — i.e. there is a soft signal
 // that the number is in a SPAM neighborhood without enough evidence
 // to block.
+//
+// `white_listed` / `black_listed` reflect the per-user BLOCKLIST entry
+// the server attaches to a matching numbers[] row, when the API
+// request was authenticated with a token belonging to a user who has
+// personalized this number. They are *hard* overrides:
+//
+//   white_listed → verdict = LEGITIMATE  (regardless of votes)
+//   black_listed → verdict = SPAM        (regardless of votes)
+//   white_listed wins over black_listed if both are somehow set.
+//
+// When an override is in effect, `votes` reflects the underlying
+// community signal (so the UI can still show "you whitelisted this
+// despite N reports"), but `suspected` is forced to false — the
+// override is final, the soft-signal label would just confuse.
 typedef struct {
     verdict_t verdict;
     int       votes;
     bool      suspected;
+    bool      white_listed;
+    bool      black_listed;
     char      label[32];
     char      location[80];
 } pb_check_result_t;

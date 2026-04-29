@@ -186,6 +186,60 @@ static void test_direct_match_label_location_absent(void)
     printf("  direct match without label/location: ok\n");
 }
 
+static void test_direct_match_whitelisted(void)
+{
+    api_scan_t s;
+    api_scan_init(&s, "+49301234567");
+    feed_all(&s,
+        "{\"numbers\":[{"
+            "\"phone\":\"+49301234567\","
+            "\"votes\":50,"
+            "\"whiteListed\":true,"
+            "\"blackListed\":false"
+        "}],\"range10\":[],\"range100\":[]}");
+    CHECK(!s.error);
+    CHECK(s.direct_votes == 50);
+    CHECK(s.white_listed);
+    CHECK(!s.black_listed);
+    printf("  whitelisted flag captured: ok\n");
+}
+
+static void test_direct_match_blacklisted(void)
+{
+    api_scan_t s;
+    api_scan_init(&s, "+49301234567");
+    feed_all(&s,
+        "{\"numbers\":[{"
+            "\"phone\":\"+49301234567\","
+            "\"votes\":0,"
+            "\"whiteListed\":false,"
+            "\"blackListed\":true"
+        "}],\"range10\":[],\"range100\":[]}");
+    CHECK(!s.error);
+    CHECK(s.direct_votes == 0);
+    CHECK(!s.white_listed);
+    CHECK(s.black_listed);
+    printf("  blacklisted flag captured: ok\n");
+}
+
+static void test_no_match_flags_not_lifted(void)
+{
+    // Flags belong to a non-matching entry — must NOT bleed across.
+    api_scan_t s;
+    api_scan_init(&s, "+49301234567");
+    feed_all(&s,
+        "{\"numbers\":[{"
+            "\"phone\":\"+49309999999\","
+            "\"votes\":99,"
+            "\"whiteListed\":true,"
+            "\"blackListed\":true"
+        "}],\"range10\":[],\"range100\":[]}");
+    CHECK(!s.error);
+    CHECK(!s.white_listed);
+    CHECK(!s.black_listed);
+    printf("  flags don't leak from non-matching entries: ok\n");
+}
+
 static void test_direct_no_match_label_not_lifted(void)
 {
     // Label/location belongs to a NON-matching entry — must NOT bleed
@@ -620,6 +674,9 @@ int main(void)
     test_direct_match_with_unknown_fields();
     test_direct_match_label_location_absent();
     test_direct_no_match_label_not_lifted();
+    test_direct_match_whitelisted();
+    test_direct_match_blacklisted();
+    test_no_match_flags_not_lifted();
 
     test_range10_match();
     test_range100_match();

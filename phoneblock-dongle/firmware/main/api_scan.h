@@ -70,6 +70,14 @@ typedef struct {
     char label[API_SCAN_LABEL_LEN];
     char location[API_SCAN_LOCATION_LEN];
 
+    // Per-user personalization flags lifted from the matching
+    // numbers[] entry. The server emits these on top of the community
+    // rating when the authenticated user has the number on their own
+    // BLOCKLIST table (whitelist or blacklist). Hard overrides — see
+    // phoneblock_check() for the precedence rules.
+    bool white_listed;
+    bool black_listed;
+
     // Set on per-entry overflow or per-entry cJSON parse failure. The
     // caller must surface this and refrain from acting on votes —
     // the scan is incomplete.
