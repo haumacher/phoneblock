@@ -16,6 +16,14 @@ bool sip_register_is_registered(void);
 // Signal the SIP task to tear down its current binding and re-register
 // with whatever credentials are currently in config.c's cache. The
 // request is latched; the task picks it up the next time its select()
-// wakes up (either from incoming traffic or at the next refresh
-// deadline — worst case CONFIG_SIP_EXPIRES/2 seconds).
-void sip_register_request_reload(void);
+// wakes up (capped at 500 ms by the loop, so worst case ~0.5 s
+// before the new REGISTER goes out — plus `needs_settle` if asked).
+//
+// `needs_settle`: insert a 1.5 s pause before the new REGISTER. Pass
+// `true` only after Fritz!Box TR-064 provisioning, where the box
+// needs a beat to make the freshly created extension live on its own
+// SIP stack — without the pause the first REGISTER hits a not-yet-
+// live slot, times out, and falls into the 30 s retry. For manual
+// edits and provider presets, pass `false` so the user does not eat
+// 1.5 s of dead air after every Save.
+void sip_register_request_reload(bool needs_settle);

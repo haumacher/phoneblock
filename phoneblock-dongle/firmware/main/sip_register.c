@@ -73,6 +73,11 @@ typedef struct {
 
 static bool s_registered = false;
 static volatile bool s_reload_requested = false;
+// Whether the next REGISTER (initial after task spawn, or post-reload)
+// should wait 1.5 s for the registrar to settle. Set together with
+// s_reload_requested by sip_register_request_reload(); cleared by the
+// task once it has consumed the delay.
+static volatile bool s_settle_pending  = false;
 static TaskHandle_t s_sip_task = NULL;
 
 bool sip_register_is_registered(void)
@@ -80,11 +85,19 @@ bool sip_register_is_registered(void)
     return s_registered;
 }
 
-void sip_register_request_reload(void)
+void sip_register_request_reload(bool needs_settle)
 {
+    // Latch the settle preference *before* the task wakes up — the
+    // task reads it once and clears it. Set it before s_reload_requested
+    // so a busy task that picks up the reload flag right away still
+    // sees the right settle value.
+    s_settle_pending = needs_settle;
+
     // First-time configuration at runtime: the SIP task may not be
     // running yet because the device booted with empty credentials.
     // Kick it off now so the newly stored creds actually get used.
+    // The initial-register block in the task reads s_settle_pending
+    // and applies the same 1.5 s pause as the reload-handler.
     if (!s_sip_task) {
         sip_register_start();
         return;
@@ -1127,12 +1140,14 @@ static void sip_task(void *arg)
     char *rx = NULL;
     int64_t refresh_at_us = 0;  // absolute deadline for next REGISTER (microseconds)
 
-    // Give the registrar a moment before the first REGISTER — when the
-    // task was just spawned by sip_register_request_reload() after a
-    // fresh TR-064 setup, the Fritz!Box sometimes needs a beat for the
-    // new extension to become live on its SIP stack. The cost on a
-    // cold boot is negligible (WLAN/DHCP take longer than this).
-    vTaskDelay(pdMS_TO_TICKS(1500));
+    // Settle pause only when the caller asked for it (TR-064
+    // provisioning sets s_settle_pending). For boot or manual config
+    // there's no FB-internal race to absorb, and 1.5 s of "Verbinde…"
+    // on every Save is bad UX.
+    if (s_settle_pending) {
+        s_settle_pending = false;
+        vTaskDelay(pdMS_TO_TICKS(1500));
+    }
 
     // Initial registration.
     bool ok = do_register(&ctx);
@@ -1169,12 +1184,17 @@ static void sip_task(void *arg)
             int  new_dial_port;
             dial_destination(new_dial_host, sizeof(new_dial_host), &new_dial_port);
             sip_transport_resolve(ctx.transport, new_dial_host, new_dial_port);
-            // Give the Fritz!Box a moment to settle after TR-064 has
-            // just created the extension — a REGISTER fired too early
-            // hits a not-yet-active slot, times out, and falls into the
-            // 30 s retry. 1.5 s is enough to catch the common case
-            // without making the UX feel laggy.
-            vTaskDelay(pdMS_TO_TICKS(1500));
+            // Settle pause only when the caller asked for it
+            // (TR-064 provisioning). FB needs a beat for a newly
+            // created extension to go live on its own SIP stack;
+            // without that beat the first REGISTER hits a not-yet-
+            // active slot and falls into the 30 s retry. Manual
+            // edits / provider presets skip the pause so the
+            // "Verbinde…" state clears within ~500 ms after Save.
+            if (s_settle_pending) {
+                s_settle_pending = false;
+                vTaskDelay(pdMS_TO_TICKS(1500));
+            }
             ok = do_register(&ctx);
             s_registered = ok;
             stats_record_sip_state(ok);

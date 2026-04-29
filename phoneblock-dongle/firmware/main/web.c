@@ -502,7 +502,9 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     }
 
     // Signal the SIP task to re-register with the new credentials.
-    sip_register_request_reload();
+    // Manual edit / provider preset — no Fritz!Box-internal extension
+    // race to absorb, no settle delay needed.
+    sip_register_request_reload(false);
 
     cJSON *root = cJSON_CreateObject();
     cJSON_AddBoolToObject(root, "ok", true);
@@ -711,7 +713,10 @@ static esp_err_t handle_fritzbox_setup(httpd_req_t *req)
         send_fail(req, "NVS write failed.");
         return ESP_OK;
     }
-    sip_register_request_reload();
+    // TR-064 just provisioned a new extension on the Fritz!Box — give
+    // the box 1.5 s to make it live before the first REGISTER, otherwise
+    // the REGISTER hits a not-yet-active slot and falls into 30 s retry.
+    sip_register_request_reload(true);
 
     cJSON *root = cJSON_CreateObject();
     cJSON_AddBoolToObject(root, "ok", true);
@@ -980,7 +985,10 @@ static esp_err_t handle_fritzbox_2fa_status(httpd_req_t *req)
         send_fail(req, "NVS write failed.");
         return ESP_OK;
     }
-    sip_register_request_reload();
+    // TR-064 just provisioned a new extension on the Fritz!Box — give
+    // the box 1.5 s to make it live before the first REGISTER, otherwise
+    // the REGISTER hits a not-yet-active slot and falls into 30 s retry.
+    sip_register_request_reload(true);
 
     cJSON *root = cJSON_CreateObject();
     cJSON_AddBoolToObject  (root, "ok",              true);
