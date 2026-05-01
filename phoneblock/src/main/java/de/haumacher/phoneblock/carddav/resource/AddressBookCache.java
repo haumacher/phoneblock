@@ -84,11 +84,16 @@ public class AddressBookCache implements ServletContextListener {
 			String principal, UserSettings settings) {
 		AddressBookResource cachedResult = _userCache.lookup(principal);
 		if (cachedResult != null) {
+			if (LOG.isDebugEnabled()) {
+				LOG.debug("Address book served from cache for: " + principal);
+			}
 			return cachedResult;
 		}
 
 		long now = System.currentTimeMillis();
 		LoadResult result = computeBlocks(principal, now, settings);
+		LOG.info("Address book computed for: " + principal
+			+ " (" + result.path + ", " + result.blocks.size() + " blocks)");
 		AddressBookResource addressBook = new AddressBookResource(rootUrl, serverRoot, resourcePath, principal,
 				result.blocks, result.settingsHash);
 		return _userCache.put(principal, addressBook);
@@ -116,16 +121,19 @@ public class AddressBookCache implements ServletContextListener {
 			Set<String> exclusions = blocklist.getExcluded(userId);
 
 			if (personalizations.isEmpty() && exclusions.isEmpty()) {
-				return new LoadResult(getCommonList(reports, listType, now).blocks(), listType.hashCode());
+				return new LoadResult(getCommonList(reports, listType, now).blocks(),
+						listType.hashCode(), "common-only");
 			}
 
 			CommonList common = getCommonList(reports, listType, now);
 			List<NumberBlock> blocks;
+			String path;
 			if (hasEffectiveExclusion(exclusions, common)) {
 				// Rare path (~0.3% of users): a personal exclusion intersects the
 				// common list and would change wildcard structure. Run the full
 				// per-user pipeline.
 				blocks = loadNumbersFull(reports, personalizations, exclusions, listType, now);
+				path = "full pipeline";
 			} else {
 				// Common buckets + personal singletons (deduplicated against common).
 				blocks = new ArrayList<>(common.blocks());
@@ -136,18 +144,21 @@ public class AddressBookCache implements ServletContextListener {
 					}
 					blocks.add(new NumberBlock(phone, List.of(phone)));
 				}
+				path = "common+personal";
 			}
 			int settingsHash = listType.hashCode() ^ personalSettingsHash(personalizations, exclusions);
-			return new LoadResult(blocks, settingsHash);
+			return new LoadResult(blocks, settingsHash, path);
 		}
 	}
 
 	private static final class LoadResult {
 		final List<NumberBlock> blocks;
 		final int settingsHash;
+		final String path;
 
-		LoadResult(List<NumberBlock> blocks, int settingsHash) {
+		LoadResult(List<NumberBlock> blocks, int settingsHash, String path) {
 			this.blocks = blocks;
+			this.path = path;
 			this.settingsHash = settingsHash;
 		}
 	}
