@@ -19,12 +19,14 @@ import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.Users;
+import de.haumacher.phoneblock.carddav.resource.AddressBookCache;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 
 /**
  * Service for assigning version numbers to blocklist changes for incremental synchronization.
- * Runs at a configurable interval (default: daily at 3:00 AM) to process all pending updates.
+ * Runs at a configurable interval (default: daily at 22:00) to process all pending updates,
+ * timed so the new release is in place before the bulk of FritzBox CardDAV syncs at night.
  *
  * <p>The schedule can be configured via JNDI or system properties:</p>
  * <ul>
@@ -49,7 +51,7 @@ public class BlocklistVersionService implements ServletContextListener {
 
 	private ScheduledFuture<?> _task;
 
-	private int _scheduleHour = 3;
+	private int _scheduleHour = 22;
 	private int _scheduleMinute = 0;
 	private long _initialDelayMinutes = -1; // -1 means use calculated delay based on schedule time
 	private long _intervalMinutes = 1440; // 24 hours in minutes (1440 = 24 * 60)
@@ -166,8 +168,8 @@ public class BlocklistVersionService implements ServletContextListener {
 
 		// Validate configuration
 		if (_scheduleHour < 0 || _scheduleHour > 23) {
-			LOG.warn("Invalid schedule hour {}, using default 3", _scheduleHour);
-			_scheduleHour = 3;
+			LOG.warn("Invalid schedule hour {}, using default 22", _scheduleHour);
+			_scheduleHour = 22;
 		}
 		if (_scheduleMinute < 0 || _scheduleMinute > 59) {
 			LOG.warn("Invalid schedule minute {}, using default 0", _scheduleMinute);
@@ -199,6 +201,12 @@ public class BlocklistVersionService implements ServletContextListener {
 		LOG.info("Starting scheduled blocklist version assignment");
 
 		DB db = _dbService.db();
+
+		// Archive vote-decayed rows first so their ACTIVE=false transition is part of
+		// this release; otherwise CardDAV's published view would shed those numbers
+		// on its own schedule and the address-book ETag would change between releases.
+		db.archiveOldReports();
+
 		long now = System.currentTimeMillis();
 		try (SqlSession session = db.openSession()) {
 			Users users = session.getMapper(Users.class);
@@ -235,6 +243,13 @@ public class BlocklistVersionService implements ServletContextListener {
 
 				session.commit();
 				LOG.info("Completed blocklist version assignment: version {} assigned to {} entries", newVersion, updated);
+
+				// CardDAV serves the published snapshot — invalidate its caches so users
+				// see the fresh release on the next sync without waiting for TTL expiry.
+				AddressBookCache cache = AddressBookCache.getInstance();
+				if (cache != null) {
+					cache.flushAllCaches();
+				}
 			} else {
 				LOG.debug("No pending blocklist updates to process.");
 			}

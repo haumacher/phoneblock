@@ -339,6 +339,25 @@ public interface SpamReports {
 			where ACTIVE
 			""")
 	List<DBNumberInfo> getReports();
+
+	/**
+	 * Reports as of the last released blocklist version: votes from PUBLISHED_VOTES,
+	 * last activity from PUBLISHED_LASTPING, restricted to entries that are
+	 * currently active, have been included in at least one release (VERSION &gt; 0)
+	 * and still carried positive published votes at that release (otherwise they
+	 * are effectively a deletion in the released list). The result is stable
+	 * between releases — used by the CardDAV pipeline so the address-book ETag
+	 * does not flap on every individual vote.
+	 */
+	@Select("""
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS,
+			       s.PUBLISHED_VOTES as VOTES, s.LEGITIMATE, s.PING, s.POLL,
+			       s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES,
+			       s.PUBLISHED_LASTPING as LASTPING, s.PUBLISHED_VOTES
+			from NUMBERS s
+			where s.ACTIVE AND s.VERSION > 0 AND s.PUBLISHED_VOTES > 0
+			""")
+	List<DBNumberInfo> getPublishedReports();
 	
 	@Select("""
 			select PHONE from WHITELIST

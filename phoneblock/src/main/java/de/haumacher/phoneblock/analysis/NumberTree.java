@@ -5,7 +5,9 @@ package de.haumacher.phoneblock.analysis;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -313,66 +315,93 @@ public class NumberTree {
 		
 	}
 	
-	public List<NumberBlock> createNumberBlocks(int minVotes, int maxEntries, String dialPrefix) {
-		class BlockCreator implements NumberIterator {
-			List<WeightedNumber> _numbers = new ArrayList<>();
-			
-			@Override
-			public void accept(String number, int votes, int age) {
-				int weight = votes - weight(age);
-				
-				if (weight < minVotes) {
-					return;
-				}
-				
-				if (number.startsWith(dialPrefix)) {
-					// Increase weight of local numbers. This is a heuristics until votes are also counted per country.
-					weight = weight + 100;
-				}
-				
-				_numbers.add(new WeightedNumber(number, weight));
+	/**
+	 * Maximum prefix length tried during recursive bucket splitting before giving up.
+	 *
+	 * <p>
+	 * Caps pathological cases where many numbers share a very long common prefix. Such a
+	 * bucket then stays larger than 9 — accepted, the alternative would be unbounded
+	 * recursion.
+	 * </p>
+	 */
+	static final int MAX_BUCKET_PREFIX_DEPTH = 15;
+
+	/**
+	 * Initial prefix depth used by {@link #createNumberBlocksByPrefix(int, int, String)}.
+	 */
+	static final int INITIAL_BUCKET_PREFIX_DEPTH = 4;
+
+	/**
+	 * Variant of {@link #createNumberBlocks(int, int, String)} that builds buckets using a
+	 * deterministic prefix-bucketing algorithm.
+	 *
+	 * <p>
+	 * Top-K-selection (weight calculation, age decay, dial-prefix boost, max-entries cap) is
+	 * identical to {@link #createNumberBlocks(int, int, String)}; only the assignment of
+	 * numbers to buckets differs. Each number is placed in the shallowest prefix bucket
+	 * (starting at {@value #INITIAL_BUCKET_PREFIX_DEPTH} characters) whose population is
+	 * &le; 9. Buckets with more members are split deterministically by extending the prefix
+	 * by one character.
+	 * </p>
+	 *
+	 * <p>
+	 * Block IDs are the bucket prefix strings — independent of which numbers happen to be
+	 * neighbours in the sorted top-K list. This makes IDs stable under typical voting
+	 * activity.
+	 * </p>
+	 */
+	public List<NumberBlock> createNumberBlocksByPrefix(int minVotes, int maxEntries, String dialPrefix) {
+		List<WeightedNumber> weighted = new ArrayList<>();
+		createBlockEntries((number, votes, age) -> {
+			int weight = votes - ageDecay(age);
+			if (weight < minVotes) {
+				return;
 			}
-
-			private int weight(int age) {
-				if (age < 14) {
-					return 0;
-				}
-				if (age < 30) {
-					// One month.
-					return 2;
-				}
-				return (age / 7) * 2;
+			if (number.startsWith(dialPrefix)) {
+				weight += 100;
 			}
+			weighted.add(new WeightedNumber(number, weight));
+		});
 
-			public List<NumberBlock> createBlocks() {
-				createBlockEntries(this);
-				
-				// Sort by weight decreasing.
-				_numbers.sort((n1, n2) -> -Integer.compare(n1._weight, n2._weight));
-				
-				// Sort prefix of max entries by number.
-				List<WeightedNumber> prefix = new ArrayList<>(_numbers.subList(0, Math.min(maxEntries, _numbers.size())));
-				prefix.sort((n1, n2) -> n1._number.compareTo(n2._number));
-				
-				// Create blocks of filtered numbers.
-				NumberBlock block = null;
-				List<NumberBlock> blocks = new ArrayList<>();
+		weighted.sort((n1, n2) -> -Integer.compare(n1._weight, n2._weight));
+		List<WeightedNumber> topK = new ArrayList<>(weighted.subList(0, Math.min(maxEntries, weighted.size())));
+		List<String> sortedNumbers = new ArrayList<>(topK.size());
+		for (WeightedNumber wn : topK) {
+			sortedNumbers.add(wn._number);
+		}
+		sortedNumbers.sort(String::compareTo);
 
-				for (WeightedNumber weightedNumber : prefix) {
-					String number = weightedNumber._number;
-					if (block == null || block.size() >= 9 || !number.startsWith(block.getName())) {
-						String blockName = number.substring(0, Math.min(number.length(), 4));
-						block = new NumberBlock(blockName);
-						blocks.add(block);
-					}
-					
-					block.add(number);
-				}
-				
-				return blocks;
+		List<NumberBlock> result = new ArrayList<>();
+		bucketize(sortedNumbers, INITIAL_BUCKET_PREFIX_DEPTH, result);
+		return result;
+	}
+
+	private static void bucketize(List<String> sortedNumbers, int depth, List<NumberBlock> out) {
+		// Group by prefix at the current depth, preserving sort order within each group.
+		LinkedHashMap<String, List<String>> grouped = new LinkedHashMap<>();
+		for (String number : sortedNumbers) {
+			String key = number.length() >= depth ? number.substring(0, depth) : number;
+			grouped.computeIfAbsent(key, k -> new ArrayList<>()).add(number);
+		}
+		for (Map.Entry<String, List<String>> entry : grouped.entrySet()) {
+			String key = entry.getKey();
+			List<String> members = entry.getValue();
+			if (members.size() <= 9 || key.length() >= MAX_BUCKET_PREFIX_DEPTH) {
+				out.add(new NumberBlock(key, members));
+			} else {
+				bucketize(members, depth + 1, out);
 			}
 		}
-		
-		return new BlockCreator().createBlocks();
 	}
+
+	private static int ageDecay(int age) {
+		if (age < 14) {
+			return 0;
+		}
+		if (age < 30) {
+			return 2;
+		}
+		return (age / 7) * 2;
+	}
+
 }
