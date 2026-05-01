@@ -9,6 +9,81 @@ Clients, die das deutlich häufiger als einmal pro Tag tun.
 
 Dieser Plan dokumentiert die Diagnose und priorisiert die Optimierungs-Hebel.
 
+## Status nach Hebel A (Rollout am 2026-05-02)
+
+PR [#304](https://github.com/haumacher/phoneblock/pull/304) ist gemergt und
+deployt. Beobachtung am Nachmittag/Abend des Rollouts: **CPU-Last hat sich
+knapp halbiert** — gut, aber noch nicht auf einem Niveau, das das ursprüngliche
+Kapazitätsproblem erledigt. Belastbare Messungen frühestens am Folgetag, weil
+beim Rollout eine FritzBox-Sync-Welle läuft (alle Boxen sehen nach Deploy
+einen geänderten URL-Schemastand und machen Vollsync).
+
+Strukturelle Beobachtungen aus dem Live-Log:
+
+- Cache-Miss-Logs (`Address book computed for: …`) feuern pro User-Sync: bei
+  iOS-Polling alle 18 min und Cache-TTL 5 / 15 min ist der `_userCache` immer
+  stale, wenn der Client wiederkommt. Funktional OK (`_numberCache` warm,
+  ETag stabil → nächster Sync mit `If-None-Match` wird 304), aber jeder Poll
+  läuft durch den Compute-Pfad und allokiert eine eigene
+  `AddressBookResource` mit ~700 `AddressResource`-Wrappern. Drei
+  common-only-User mit je 715 Blocks innerhalb einer Sekunde sind nichts
+  Ungewöhnliches im Log — genau die Verschwendung, die Hebel C / Stufe 2
+  adressieren würde.
+- Verbleibende Last sitzt vermutlich überwiegend auf dem FritzBox-Pfad: 72 %
+  der Requests, davon 50 % Auth-401-Roundtrips ohne Nutzdaten und 50 %
+  gerenderte 207-Antworten ohne `If-None-Match`-Support. Hebel A wirkt dort
+  per Design nicht.
+
+## Nächste Schritte
+
+In dieser Reihenfolge, jeweils mit klarer Wirkungs-Hypothese:
+
+1. **Cache-TTL hochziehen.** Quick-Win, ein paar Konstanten in
+   `AddressBookCache.Cache`. Heute 5 min unused / 15 min max — das stammt aus
+   der Zeit, als `getReports` live aus NUMBERS las. Mit dem published-Snapshot
+   und dem Release-Hook (`flushAllCaches` um 22:00) ist Staleness nur noch via
+   Release möglich; alle anderen Invalidate-Pfade sind explizit
+   (`flushUserCache` bei Settings-Change und PUT). Vorschlag 6 h / 24 h.
+   Memory-Schätzung: pro User-Cache-Eintrag ~50 KB, bei realistisch 7000
+   aktiven Usern in einem 6-h-Fenster ~350 MB. Wirkung: weniger Compute, weniger
+   Allokation, leiseres Log; auf den 304-Anteil hat das keinen Einfluss.
+2. **Hebel B (StAX-Streaming-Render).** Wirkt auf jede 207-Antwort, also auch
+   auf die FritzBox. Ersetzt DOM-Aufbau + `LSSerializer` durch direkten
+   `XMLStreamWriter` in den Output-Stream. Erwarteter Effekt: Faktor 2-3
+   schnellerer Render und drastisch weniger Heap-Druck.
+3. **Hebel C (geteilte `AddressBookResource` pro `ListType`).** Setzt die in
+   Hebel A bereits angedeutete Stufe 2 um: `AddressBookResource` ist heute
+   user-spezifisch, obwohl der Inhalt für alle no-personalization-User
+   identisch ist. Eine geteilte Instanz pro `ListType` eliminiert
+   ~21k redundante Wrapper-Allokationen. Erfordert HREF-Schema-Entscheidung
+   (relativ vs. absolut mit Render-Time-Substitution).
+4. **Hebel D (FritzBox-Auth-Loop).** Heute 3 RPS reine 401-Antworten. Lohnt
+   sich erst wenn Hebel B/C ausgeschöpft sind, denn Hebel D braucht
+   Reverse-Proxy-Konfiguration oder Auth-Filter-Tuning und ist nicht trivial
+   für tokenbasierte Auth.
+
+Schritt 1 ist klein und in eigenständig deploybar. Schritt 2 ist der nächste
+große Hebel; Schritt 3 ist der Folgeschritt, der Hebel B in seiner Wirkung
+verstärkt (weniger gerenderte 207, plus pro Render weniger Wrapper-Bauen).
+
+## Was nach Hebel A schon korrekt ist (gegen den ursprünglichen Plan)
+
+Der Plan unten beschreibt teilweise noch den Ausgangszustand. Konkret hat
+sich seit dem Rollout geändert:
+
+- **Datengrundlage:** CardDAV liest jetzt aus dem published Snapshot
+  (`PUBLISHED_VOTES` + `PUBLISHED_LASTPING`), nicht mehr live.
+- **Release-Zyklus:** `BlocklistVersionService` läuft Default 22:00 statt
+  03:00 (kurz vor der nächtlichen FritzBox-Sync-Welle). Cleanup
+  (`archiveOldReports`) ist in den Release-Job integriert; der separate
+  20:00-Cleanup-Schedule ist weg. Beide Schritte gehören zu **einem**
+  Release.
+- **Cache-Invalidate:** Nach erfolgreichem Snapshot ruft
+  `BlocklistVersionService` `AddressBookCache.flushAllCaches()`. Damit sehen
+  alle User den frischen Stand spätestens beim nächsten Sync und nicht erst
+  nach TTL-Ablauf — und das macht es überhaupt erst sicher, längere TTLs zu
+  setzen (siehe Schritt 1 oben).
+
 ## Constraint: Semantik der Blockliste bleibt unverändert
 
 Die Auswahl der Nummern auf der Blockliste hat reale Wirkung — eine Nummer auf
@@ -176,11 +251,18 @@ Bei jedem PROPFIND/REPORT:
 Jeder FritzBox-CardDAV-Request kommt zweimal an: erst 401-Challenge, dann mit
 `Authorization`-Header. Verdoppelt die FritzBox-Last.
 
-### Verworfen — Common-Number-Cache-TTL hochziehen
+### Damals verworfen — Common-Number-Cache-TTL hochziehen
 
-Bei 8.6 RPS Gesamtlast wird der `_numberCache` (TTL 5 min) ohnehin permanent
-warm gehalten. Cache-Misses sind statistisch selten und nicht der dominante
-Cost.
+Beim Original-Design der Optimierung argumentiert: bei 8.6 RPS Gesamtlast wird
+der `_numberCache` ohnehin permanent warm gehalten, Misses sind nicht der
+dominante Cost.
+
+**Nach Rollout neu bewertet:** Das Argument galt für `_numberCache` und stimmt
+weiterhin. Aber für den **`_userCache`** ist es falsch — pro User-Sync ein
+eigener Eintrag, und mit TTL 15 min < 18 min iOS-Polling ist quasi jeder Poll
+ein Cache-Miss. Mit dem neuen Release-Hook wird der Cache ohnehin nur einmal
+am Tag (22:00) und ad-hoc bei Settings/PUT-Änderungen invalidiert. TTLs auf
+6 h / 24 h zu setzen (siehe "Nächste Schritte") ist jetzt der Standard-Move.
 
 ### Verworfen — sync-collection (RFC 6578)
 
@@ -554,6 +636,8 @@ ausgeschöpft sind.
 
 - `sync-collection`-Implementierung (RFC 6578) — separates Thema.
 - Antwort-Komprimierung via `gzip` — kostet zusätzliche CPU, spart Bandbreite.
-- Cache-TTL-Tuning — durch Datenlage als unwirksam ausgeschlossen.
+- Cache-TTL-Tuning — wurde initial als unwirksam ausgeschlossen, ist nach
+  Rollout für `_userCache` aber wieder auf der Liste (siehe "Nächste
+  Schritte").
 - Modifikation der Top-K- oder Wildcard-Schwellen — verstößt gegen den
   Semantik-Constraint.
