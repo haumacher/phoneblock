@@ -27,20 +27,16 @@ import de.haumacher.phoneblock.carddav.resource.AddressBookCache.CommonList;
 class TestPersonalLayer {
 
 	private static NumberBlock blockOf(String prefix, String... numbers) {
-		NumberBlock b = new NumberBlock(prefix, prefix);
-		for (String n : numbers) {
-			b.add(n);
-		}
-		return b;
+		return new NumberBlock(prefix, Arrays.asList(numbers));
 	}
 
 	private static CommonList commonOf(NumberBlock... blocks) {
 		return new CommonList(Arrays.asList(blocks));
 	}
 
-	private static NumberBlock findById(List<NumberBlock> blocks, String id) {
+	private static NumberBlock findByName(List<NumberBlock> blocks, String name) {
 		for (NumberBlock b : blocks) {
-			if (id.equals(b.getBlockId())) {
+			if (name.equals(b.getName())) {
 				return b;
 			}
 		}
@@ -62,13 +58,11 @@ class TestPersonalLayer {
 		java.util.List<NumberBlock> result = new java.util.ArrayList<>(common.blocks());
 		String personal = "+491521010"; // already in common
 		if (!common.covers(personal)) {
-			NumberBlock singleton = new NumberBlock(personal, personal);
-			singleton.add(personal);
-			result.add(singleton);
+			result.add(new NumberBlock(personal, List.of(personal)));
 		}
 
 		assertEquals(1, result.size(), "no extra singleton bucket for concrete overlap");
-		assertNull(findById(result, personal),
+		assertNull(findByName(result, personal),
 			"personal number must not appear as its own bucket id");
 	}
 
@@ -85,12 +79,10 @@ class TestPersonalLayer {
 
 		java.util.List<NumberBlock> result = new java.util.ArrayList<>(common.blocks());
 		if (!common.covers(personal)) {
-			NumberBlock singleton = new NumberBlock(personal, personal);
-			singleton.add(personal);
-			result.add(singleton);
+			result.add(new NumberBlock(personal, List.of(personal)));
 		}
 		assertEquals(1, result.size());
-		assertNull(findById(result, personal));
+		assertNull(findByName(result, personal));
 	}
 
 	/**
@@ -106,16 +98,13 @@ class TestPersonalLayer {
 
 		java.util.List<NumberBlock> result = new java.util.ArrayList<>(common.blocks());
 		if (!common.covers(personal)) {
-			NumberBlock singleton = new NumberBlock(personal, personal);
-			singleton.add(personal);
-			result.add(singleton);
+			result.add(new NumberBlock(personal, List.of(personal)));
 		}
 
 		assertEquals(2, result.size());
-		NumberBlock added = findById(result, personal);
+		NumberBlock added = findByName(result, personal);
 		assertNotNull(added, "personal number must appear as its own bucket");
 		assertEquals(List.of(personal), added.getNumbers());
-		assertEquals(NumberBlock.SPAM_TITLE_PREFIX + personal, added.getBlockTitle());
 	}
 
 	// ===== Tests 13-15: exclusion effectiveness =====

@@ -54,7 +54,7 @@ public class AddressBookResource extends Resource {
 
 		_addressById = numbers
 			.stream()
-			.map(r -> newAddressResource(r, r.getBlockId()))
+			.map(r -> newAddressResource(r, r.getName()))
 			.collect(Collectors.toMap(AddressResource::getId, r -> r));
 	}
 
@@ -119,7 +119,7 @@ public class AddressBookResource extends Resource {
 		AddressResource result = _addressById.get(id);
 		if (result == null) {
 			// Maybe this is a put operation, create an empty entry.
-			return newAddressResource(new NumberBlock(id).initSingleton(id), id);
+			return newAddressResource(new NumberBlock(id, java.util.List.of(id)), id);
 		}
 		return result;
 	}

@@ -159,7 +159,7 @@ class TestNumberTree {
 		int wildcard = 0;
 		
 		for (NumberBlock block : blocks) {
-			System.out.println("## " + block.getBlockTitle());
+			System.out.println("## " + block.getName());
 			for (String number : block.getNumbers()) {
 				System.out.println(number);
 				
@@ -195,7 +195,7 @@ class TestNumberTree {
 	private static List<String> blockIds(List<NumberBlock> blocks) {
 		List<String> ids = new ArrayList<>(blocks.size());
 		for (NumberBlock b : blocks) {
-			ids.add(b.getBlockId());
+			ids.add(b.getName());
 		}
 		return ids;
 	}
@@ -255,7 +255,7 @@ class TestNumberTree {
 
 		List<NumberBlock> blocks = treeWith(sample).createNumberBlocksByPrefix(1, 1000, "+49");
 		for (NumberBlock b : blocks) {
-			assertTrue(b.size() <= 9, "Bucket " + b.getBlockId() + " has " + b.size() + " members");
+			assertTrue(b.size() <= 9, "Bucket " + b.getName() + " has " + b.size() + " members");
 		}
 	}
 
@@ -296,7 +296,7 @@ class TestNumberTree {
 
 		List<NumberBlock> blocks = treeWith(sample).createNumberBlocksByPrefix(1, 1000, "+49");
 		for (NumberBlock b : blocks) {
-			String id = b.getBlockId();
+			String id = b.getName();
 			for (String n : b.getNumbers()) {
 				assertTrue(n.startsWith(id) || n.equals(id),
 					"Number " + n + " does not start with bucket id " + id);
@@ -339,13 +339,13 @@ class TestNumberTree {
 
 		// Buckets outside the +4915 subtree must remain byte-identical.
 		for (NumberBlock b : baseBlocks) {
-			String id = b.getBlockId();
+			String id = b.getName();
 			if (id.startsWith("+4915") || "+4915".startsWith(id) || "+491".equals(id)) {
 				// inside or above the affected subtree — change permitted
 				continue;
 			}
 			NumberBlock match = perturbedBlocks.stream()
-				.filter(p -> p.getBlockId().equals(id))
+				.filter(p -> p.getName().equals(id))
 				.findFirst()
 				.orElse(null);
 			assertTrue(match != null, "Bucket " + id + " from quiet area disappeared");

@@ -19,11 +19,7 @@ import de.haumacher.phoneblock.analysis.NumberBlock;
 class TestAddressBookEtag {
 
 	private static NumberBlock blockOf(String prefix, String... numbers) {
-		NumberBlock b = new NumberBlock(prefix, prefix);
-		for (String n : numbers) {
-			b.add(n);
-		}
-		return b;
+		return new NumberBlock(prefix, java.util.Arrays.asList(numbers));
 	}
 
 	private static AddressBookResource bookOf(int settingsHash, NumberBlock... blocks) {
@@ -35,24 +31,24 @@ class TestAddressBookEtag {
 	/** Identical members → identical block ETag. */
 	@Test
 	void blockEtag_stableOnIdenticalMembers() {
-		String etag1 = AddressResource.computeEtag(blockOf("+491", "+491521010", "+491521011"));
-		String etag2 = AddressResource.computeEtag(blockOf("+491", "+491521010", "+491521011"));
+		String etag1 = blockOf("+491", "+491521010", "+491521011").contentHash();
+		String etag2 = blockOf("+491", "+491521010", "+491521011").contentHash();
 		assertEquals(etag1, etag2);
 	}
 
 	/** Member insertion order must not influence the ETag. */
 	@Test
 	void blockEtag_orderIndependentOnMembers() {
-		String etag1 = AddressResource.computeEtag(blockOf("+491", "+491521010", "+491521011"));
-		String etag2 = AddressResource.computeEtag(blockOf("+491", "+491521011", "+491521010"));
+		String etag1 = blockOf("+491", "+491521010", "+491521011").contentHash();
+		String etag2 = blockOf("+491", "+491521011", "+491521010").contentHash();
 		assertEquals(etag1, etag2);
 	}
 
 	/** A changed member → different ETag. */
 	@Test
 	void blockEtag_changesOnDifferentMember() {
-		String etag1 = AddressResource.computeEtag(blockOf("+491", "+491521010", "+491521011"));
-		String etag2 = AddressResource.computeEtag(blockOf("+491", "+491521010", "+491521099"));
+		String etag1 = blockOf("+491", "+491521010", "+491521011").contentHash();
+		String etag2 = blockOf("+491", "+491521010", "+491521099").contentHash();
 		assertNotEquals(etag1, etag2);
 	}
 

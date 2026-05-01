@@ -387,11 +387,7 @@ public class NumberTree {
 			String key = entry.getKey();
 			List<String> members = entry.getValue();
 			if (members.size() <= 9 || key.length() >= MAX_BUCKET_PREFIX_DEPTH) {
-				NumberBlock block = new NumberBlock(key, key);
-				for (String n : members) {
-					block.add(n);
-				}
-				out.add(block);
+				out.add(new NumberBlock(key, members));
 			} else {
 				bucketize(members, depth + 1, out);
 			}

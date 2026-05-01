@@ -134,9 +134,7 @@ public class AddressBookCache implements ServletContextListener {
 					if (common.covers(phone)) {
 						continue;
 					}
-					NumberBlock singleton = new NumberBlock(phone, phone);
-					singleton.add(phone);
-					blocks.add(singleton);
+					blocks.add(new NumberBlock(phone, List.of(phone)));
 				}
 			}
 			int settingsHash = listType.hashCode() ^ personalSettingsHash(personalizations, exclusions);

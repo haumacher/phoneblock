@@ -55,9 +55,9 @@ public class AddressResource extends Resource {
 	}
 	
 	public String getId() {
-		return _block.getBlockId();
+		return _block.getName();
 	}
-	
+
 	@Override
 	protected QName getResourceType() {
 		return CardDavSchema.CARDDAV_ADDRESS_DATA;
@@ -65,36 +65,9 @@ public class AddressResource extends Resource {
 
 	@Override
 	public String getEtag() {
-		return computeEtag(_block);
+		return _block.contentHash();
 	}
 
-	/**
-	 * Content-based ETag for an address resource: deterministic hash over the
-	 * block's title and the sorted list of its numbers. Truncated SHA-1 (12 hex
-	 * chars) for collision resistance and stability across JVM versions.
-	 */
-	static String computeEtag(NumberBlock block) {
-		try {
-			java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-1");
-			md.update(block.getBlockTitle().getBytes(java.nio.charset.StandardCharsets.UTF_8));
-			md.update((byte) 0);
-			java.util.List<String> sorted = new java.util.ArrayList<>(block.getNumbers());
-			java.util.Collections.sort(sorted);
-			for (String n : sorted) {
-				md.update(n.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-				md.update((byte) 0);
-			}
-			byte[] digest = md.digest();
-			StringBuilder hex = new StringBuilder(12);
-			for (int i = 0; i < 6; i++) {
-				hex.append(String.format("%02x", digest[i]));
-			}
-			return hex.toString();
-		} catch (java.security.NoSuchAlgorithmException ex) {
-			throw new IllegalStateException("SHA-1 not available", ex);
-		}
-	}
-	
 	@Override
 	public void get(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		resp.setStatus(HttpServletResponse.SC_OK);
@@ -102,37 +75,17 @@ public class AddressResource extends Resource {
 		resp.setCharacterEncoding("utf-8");
 		resp.setHeader("ETag", quote(getEtag()));
 		
-		resp.getWriter().append(vCardContent());
+		resp.getWriter().append(_block.vCardContent());
 	}
-	
+
 	@Override
 	public int fillProperty(HttpServletRequest req, Element propElement, QName property) {
 		if (CardDavSchema.CARDDAV_ADDRESS_DATA.equals(property)) {
 			Element container = appendElement(propElement, CardDavSchema.CARDDAV_ADDRESS_DATA);
-			appendText(container, vCardContent());
+			appendText(container, _block.vCardContent());
 			return HttpServletResponse.SC_OK;
 		}
 		return super.fillProperty(req, propElement, property);
-	}
-
-	private String vCardContent() {
-		StringBuilder buffer = new StringBuilder();
-		buffer.append("BEGIN:VCARD\n");
-		buffer.append("VERSION:3.0\n");
-		buffer.append("UID:");
-		buffer.append(_block.getBlockId());
-		buffer.append("\n");
-		buffer.append("FN:");
-		buffer.append(_block.getBlockTitle());
-		buffer.append("\n");
-		buffer.append("CATEGORIES:SPAM\n");
-		for (String number : _block.getNumbers()) {
-			buffer.append("TEL;TYPE=WORK:");
-			buffer.append(number);
-			buffer.append("\n");
-		}
-		buffer.append("END:VCARD");
-		return buffer.toString();
 	}
 	
 	@Override
@@ -192,7 +145,7 @@ public class AddressResource extends Resource {
 	@Override
 	public void delete(HttpServletResponse resp) {
 		// Cannot allow to delete a potential block of numbers.
-		LOG.warn("Prevent deleting card: " + _block.getBlockTitle());
+		LOG.warn("Prevent deleting card: " + _block.getName());
 		
 		resp.setStatus(HttpServletResponse.SC_OK);
 	}
