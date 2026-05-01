@@ -153,8 +153,8 @@ class TestNumberTree {
 		}
 		
 		tree.markWildcards();
-		
-		List<NumberBlock> blocks = tree.createNumberBlocks(1, 300, "+49");
+
+		List<NumberBlock> blocks = tree.createNumberBlocksByPrefix(1, 300, "+49");
 		int numbers = 0;
 		int wildcard = 0;
 		
@@ -179,7 +179,7 @@ class TestNumberTree {
 		assertEquals(10049, cnt);
 		assertEquals(266, wildcard);
 		assertEquals(300, numbers);
-		assertEquals(99, blocks.size());
+		assertEquals(114, blocks.size());
 	}
 
 	// === Prefix-bucketing tests for createNumberBlocksByPrefix ===
