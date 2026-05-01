@@ -129,17 +129,19 @@ public class ClassifyAndSummarize {
 						_config.getGoodThreshold(), _config.getMinComments());
 				LOG.info("Loaded {} unclassified comments ({} ms). Grouping by phone...",
 						all.size(), System.currentTimeMillis() - tStart);
-				String current = null;
-				List<PendingComment> bucket = null;
-				for (PendingComment c : all) {
-					if (!c.getPhone().equals(current)) {
-						if (bucket != null) iterators.put(current, bucket.iterator());
-						current = c.getPhone();
-						bucket = new ArrayList<>();
+				if (!all.isEmpty()) {
+					String current = all.get(0).getPhone();
+					List<PendingComment> bucket = new ArrayList<>();
+					for (PendingComment c : all) {
+						if (!c.getPhone().equals(current)) {
+							iterators.put(current, bucket.iterator());
+							current = c.getPhone();
+							bucket = new ArrayList<>();
+						}
+						bucket.add(c);
 					}
-					bucket.add(c);
+					iterators.put(current, bucket.iterator());
 				}
-				if (bucket != null) iterators.put(current, bucket.iterator());
 				LOG.info("Grouped into {} phones with unclassified comments ({} ms).",
 						iterators.size(), System.currentTimeMillis() - tStart);
 			}
