@@ -21,7 +21,10 @@ Was unverändert bleibt:
 - Top-K-Auswahl (`maxEntries`, `minVotes`, Weight-Berechnung, Age-Decay).
 - Wildcard-Erkennung (`markWildcards`, alle Schwellenwerte).
 - Personalisations-/Exclusions-Mechanik.
-- vCard-Inhalt pro Block (Title, TEL-Einträge, Kategorie).
+- vCard TEL-Einträge und CATEGORIES pro Block.
+
+Was sich kosmetisch ändert (siehe A2): der angezeigte Name pro Kontakt
+(`FN:`-Feld) wird vereinheitlicht.
 
 Insbesondere: keine Hysterese auf Top-K-Mitgliedschaft oder
 Wildcard-Schwellen — beides würde die Listen-Semantik modifizieren.
@@ -41,6 +44,40 @@ CardDAV-Stack unter `phoneblock/src/main/java/de/haumacher/phoneblock/carddav/`:
 - `analysis/NumberTree.java`, `NumberBlock.java` — Block-Bildung.
 - DB-Pfad: `SpamReports.getReports()` → `SELECT ... FROM NUMBERS WHERE ACTIVE`
   (Vollscan).
+
+## Listen-Varianten (`ListType`)
+
+Aus `ListType.java` und `SettingsServlet.java:289–319`:
+
+| Feld | Erlaubte Werte | Anzahl |
+|---|---|---|
+| `minVotes` | {2, 4, 10, 100} | 4 |
+| `maxLength` | {1000, 2000, 3000, 4000, 5000, 6000} | 6 |
+| `wildcards` | {true, false} | 2 |
+| `nationalOnly` | {true, false} | 2 |
+| `dialPrefix` | 210 ISO-Country-Codes (`trunk-prefixes.csv`) | ~210 |
+
+**Theoretischer Cache-Schlüsselraum:** 4 × 6 × 2 × 2 × 210 = 20 160. Praktisch
+dominieren wenige Defaults (Plattform ist deutsch, also DE/AT/CH); plausible
+aktive Varianten 5–30. Der `_numberCache` räumt selten genutzte Einträge per
+TTL weg.
+
+**Beobachtungen für die Hebel A/C:**
+
+- `dialPrefix` ist auch bei `nationalOnly=false` relevant: er bestimmt den
+  Weight-Boost (`AddressBookCache.java:330`, `+100` für lokale Nummern) und
+  damit die Top-K-Auswahl. Unterschiedliche `dialPrefix` → unterschiedliche
+  Listen, auch ohne Filter.
+- `maxLength` ist Cap nach dem Sortieren. Top-6000 cachen und für kleinere
+  `maxLength` einen Prefix daraus nehmen ist nicht möglich, weil das
+  Bucketing-Ergebnis pro Cap unterschiedlich ist.
+- `wildcards=false` und `wildcards=true` produzieren völlig unterschiedliche
+  Tree-Outputs.
+- ETag muss `ListType.hashCode()` mitberücksichtigen — sonst sähen zwei User
+  mit unterschiedlichen Settings, aber identischer NUMBERS-Tabelle, denselben
+  ETag.
+- Hebel C: `byte[]`-Cache pro Variante mit ~30 aktiven ListTypes à 50–200 KB
+  ergibt 1.5–6 MB RAM — vertretbar.
 
 ## Datenlage (Apache-Access-Logs, 18.04.–01.05.2026, 14 Tage)
 
@@ -200,13 +237,32 @@ ihrer Nachbarschaft auf Buckets abbildet:
 Bei Hinzufügen einer Nummer in einen "ruhigen" Bereich: nur der eine Bucket
 ändert sich, alle anderen Block-IDs bleiben unverändert.
 
-#### A2 — Stabile, content-basierte ETags
+#### A2 — Stabile, content-basierte ETags und neuer Title
+
+**Block-IDs:**
 
 - `NumberBlock.getBlockId()` = der Präfix-String aus A1.
+
+**Block-Titel** vereinheitlicht und immer mit `SPAM:`-Präfix versehen
+(`AnswerBot.SPAM_MARKER` heute schon im FN-Feld der vCard, aber an den Title
+vorgehängt — wir konsolidieren das in den Title selbst):
+
+- size > 1 → `SPAM: <bucket-prefix>...` (z. B. `SPAM: +491521...`).
+- size = 1 → `SPAM: <number>` (z. B. `SPAM: +491521098765`).
+
+`AddressResource.vCardContent()` schreibt das Title-Feld dann ohne separat
+vorangestellten `SPAM_MARKER`. Macht in Anrufer-Anzeigen klar, was zusammengehört.
+
+**ETags:**
+
 - `AddressResource.getEtag()` = Hash über Title + sortierte Nummern
   (deterministisch, kollisionssicher → SHA-1 truncated, ~12 Hex-Zeichen).
-- `AddressBookResource.getEtag()` = Hash über sortierten konkatenierten Block-ID-
-  und Block-ETag-Strom. Heute `Sum(hashCode)` — kollisionsanfällig.
+- `AddressBookResource.getEtag()` = Hash über sortierten konkatenierten
+  Block-ID- und Block-ETag-Strom. Heute `Sum(hashCode)` — kollisionsanfällig.
+- Beide ETags müssen `ListType.hashCode()` (siehe Listen-Varianten-Abschnitt)
+  und für personalisierte User Personalizations- + Exclusions-Hash
+  mitmischen — sonst sehen zwei User mit identischer NUMBERS-Tabelle, aber
+  unterschiedlichen Settings denselben ETag.
 
 #### A3 — `If-None-Match` im Servlet auswerten
 
@@ -229,9 +285,11 @@ ist der Render.
 
 #### A4 — Personalisations einbeziehen
 
-Für User mit Personalizations/Exclusions:
+Für User mit Personalizations/Exclusions wird die ETag-Komposition aus A2 um
+die User-spezifischen Hashes erweitert:
 
-- ETag = Hash(Common-Collection-ETag, Personalizations-Hash, Exclusions-Hash).
+- ETag = Hash(Common-Collection-ETag, ListType-Hash, Personalizations-Hash,
+  Exclusions-Hash).
 - Personalizations und Exclusions ändern sich selten → diese User profitieren
   ebenso.
 - Personalisations werden in `loadNumbers()` ohnehin in den NumberTree
@@ -305,6 +363,9 @@ Optionen:
 
 Wirkung: Render-CPU geht für Common-List-User auf praktisch null. Macht Hebel B
 obsolet.
+
+Speicher: ~30 aktive Listen-Varianten (siehe Listen-Varianten-Abschnitt) à
+50–200 KB serialisiert ergibt 1.5–6 MB RAM für den `byte[]`-Cache — vertretbar.
 
 ### Hebel D — FritzBox-Auth-Loop (offen)
 
