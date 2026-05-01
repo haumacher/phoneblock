@@ -12,18 +12,33 @@ import java.util.List;
  * @author <a href="mailto:haui@haumacher.de">Bernhard Haumacher</a>
  */
 public class NumberBlock {
-	
+
 	private final String _name;
+	private final String _id;
 	private List<String> _numbers = new ArrayList<>();
-	
+
 	StringBuilder _prefixBuffer;
 	private String _title;
 
-	/** 
+	/**
 	 * Creates a {@link NumberBlock}.
 	 */
 	public NumberBlock(String name) {
+		this(name, null);
+	}
+
+	/**
+	 * Creates a {@link NumberBlock} with a stable identifier independent of its members.
+	 *
+	 * <p>
+	 * Used by the prefix-bucketing algorithm where the bucket prefix is the identifier and
+	 * does not change when concrete members enter or leave the bucket (as long as they
+	 * still match the prefix).
+	 * </p>
+	 */
+	public NumberBlock(String name, String id) {
 		_name = name;
+		_id = id;
 	}
 
 	/**
@@ -108,10 +123,10 @@ public class NumberBlock {
 		return _numbers;
 	}
 
-	/** 
+	/**
 	 * An identifier for this block.
 	 */
 	public String getBlockId() {
-		return _numbers.get(0);
+		return _id != null ? _id : _numbers.get(0);
 	}
 }
