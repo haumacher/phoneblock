@@ -17,7 +17,6 @@ import org.w3c.dom.Element;
 
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.analysis.NumberBlock;
-import de.haumacher.phoneblock.answerbot.AnswerBot;
 import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 import de.haumacher.phoneblock.carddav.schema.CardDavSchema;
 import de.haumacher.phoneblock.db.BlockList;
@@ -56,9 +55,9 @@ public class AddressResource extends Resource {
 	}
 	
 	public String getId() {
-		return _block.getBlockId();
+		return _block.getName();
 	}
-	
+
 	@Override
 	protected QName getResourceType() {
 		return CardDavSchema.CARDDAV_ADDRESS_DATA;
@@ -66,9 +65,9 @@ public class AddressResource extends Resource {
 
 	@Override
 	public String getEtag() {
-		return Integer.toHexString(_block.getBlockTitle().hashCode());
+		return _block.contentHash();
 	}
-	
+
 	@Override
 	public void get(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		resp.setStatus(HttpServletResponse.SC_OK);
@@ -76,39 +75,17 @@ public class AddressResource extends Resource {
 		resp.setCharacterEncoding("utf-8");
 		resp.setHeader("ETag", quote(getEtag()));
 		
-		resp.getWriter().append(vCardContent());
+		resp.getWriter().append(_block.vCardContent());
 	}
-	
+
 	@Override
 	public int fillProperty(HttpServletRequest req, Element propElement, QName property) {
 		if (CardDavSchema.CARDDAV_ADDRESS_DATA.equals(property)) {
 			Element container = appendElement(propElement, CardDavSchema.CARDDAV_ADDRESS_DATA);
-			appendText(container, vCardContent());
+			appendText(container, _block.vCardContent());
 			return HttpServletResponse.SC_OK;
 		}
 		return super.fillProperty(req, propElement, property);
-	}
-
-	private String vCardContent() {
-		StringBuilder buffer = new StringBuilder();
-		buffer.append("BEGIN:VCARD\n");
-		buffer.append("VERSION:3.0\n");
-		buffer.append("UID:");
-		buffer.append(_block.getBlockId());
-		buffer.append("\n");
-		buffer.append("FN:");
-		buffer.append(AnswerBot.SPAM_MARKER);
-		buffer.append(" ");
-		buffer.append(_block.getBlockTitle());
-		buffer.append("\n");
-		buffer.append("CATEGORIES:SPAM\n");
-		for (String number : _block.getNumbers()) {
-			buffer.append("TEL;TYPE=WORK:");
-			buffer.append(number);
-			buffer.append("\n");
-		}
-		buffer.append("END:VCARD");
-		return buffer.toString();
 	}
 	
 	@Override
@@ -168,7 +145,7 @@ public class AddressResource extends Resource {
 	@Override
 	public void delete(HttpServletResponse resp) {
 		// Cannot allow to delete a potential block of numbers.
-		LOG.warn("Prevent deleting card: " + _block.getBlockTitle());
+		LOG.warn("Prevent deleting card: " + _block.getName());
 		
 		resp.setStatus(HttpServletResponse.SC_OK);
 	}

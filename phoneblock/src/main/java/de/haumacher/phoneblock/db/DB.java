@@ -199,12 +199,13 @@ public class DB {
 		_sessionFactory = new SqlSessionFactoryBuilder().build(configuration);
 		
 		setupSchema();
-		
-		 cleanup();
 
-		 Date timeCleanup = schedule(20, this::cleanup);
-		 LOG.info("Scheduled next DB cleanup: " + timeCleanup);
-		 
+		 archiveOldReports();
+
+		 // Periodic archive runs are handled by BlocklistVersionService so that
+		 // ACTIVE=false transitions land in the same release as the snapshot of
+		 // PUBLISHED_VOTES. The init-time call above primes the table on startup.
+
 		 Date timeHistory = schedule(0, this::runUpdateHistory);
 		 LOG.info("Scheduled search history cleanup: " + timeHistory);
 		 
@@ -2001,28 +2002,34 @@ public class DB {
 		return sha256().digest(passwd.getBytes(StandardCharsets.UTF_8));
 	}
 
-	private void cleanup() {
+	/**
+	 * Deactivates report rows whose vote-decay has carried them below the visibility
+	 * threshold. Sets {@code ACTIVE=false} and {@code PENDING_UPDATE=true} so the next
+	 * blocklist release picks the change up. Called from {@code BlocklistVersionService}
+	 * as the first step of the scheduled release, and once at startup to prime the table.
+	 */
+	public void archiveOldReports() {
 		LOG.info("Starting DB cleanup.");
-		
+
 		Calendar cal = GregorianCalendar.getInstance();
 		cal.add(Calendar.DAY_OF_MONTH, -OLD_VOTE_DAYS);
 		cal.set(Calendar.HOUR_OF_DAY, 0);
 		cal.set(Calendar.MINUTE, 0);
 		cal.set(Calendar.MILLISECOND, 0);
 		long before = cal.getTimeInMillis();
-		
+
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			
+
 			int archived = reports.archiveReportsWithLowVotes(before, MIN_VOTES, WEEK_PER_VOTE);
-			
+
 			LOG.info("Archived " + archived + " reports.");
-			
+
 			session.commit();
 		} catch (Exception ex) {
 			LOG.error("Failed to cleanup DB.", ex);
 		}
-		
+
 		LOG.info("Finished DB cleanup.");
 	}
 

@@ -43,6 +43,7 @@ import de.haumacher.phoneblock.carddav.schema.CardDavSchema;
 import de.haumacher.phoneblock.carddav.schema.DavSchema;
 import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.util.DebugUtil;
+import de.haumacher.phoneblock.util.EtagUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -181,6 +182,13 @@ public class CardDavServlet extends HttpServlet {
 			return;
 		}
 
+		String etag = resource.getEtag();
+		if (etag != null && EtagUtil.matchesIfNoneMatch(req.getHeader("If-None-Match"), etag)) {
+			resp.setHeader("ETag", EtagUtil.quote(etag));
+			resp.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+			return;
+		}
+
 		DocumentBuilder builder = createDocumentBuilder();
 		Document requestDoc = builder.parse(req.getInputStream());
 		Depth depth = Depth.fromHeader(req.getHeader("depth"));
@@ -205,12 +213,15 @@ public class CardDavServlet extends HttpServlet {
 				content.propfind(req, resource, multistatus, properties);
 			}
 		}
-		
-		marshalMultiStatus(resp, responseDoc);
+
+		marshalMultiStatus(resp, responseDoc, etag);
 	}
 
 	private void marshalMultiStatus(HttpServletResponse resp,
-			Document responseDoc) throws IOException {
+			Document responseDoc, String etag) throws IOException {
+		if (etag != null) {
+			resp.setHeader("ETag", EtagUtil.quote(etag));
+		}
 		resp.setStatus(SC_MULTI_STATUS);
 		resp.setCharacterEncoding("utf-8");
 		resp.setContentType("application/xml");
@@ -235,7 +246,14 @@ public class CardDavServlet extends HttpServlet {
 			handleNotFound(req, resp);
 			return;
 		}
-		
+
+		String collectionEtag = resource.getEtag();
+		if (collectionEtag != null && EtagUtil.matchesIfNoneMatch(req.getHeader("If-None-Match"), collectionEtag)) {
+			resp.setHeader("ETag", EtagUtil.quote(collectionEtag));
+			resp.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+			return;
+		}
+
 		DocumentBuilder builder = createDocumentBuilder();
 		Document requestDoc = builder.parse(req.getInputStream());
 		if (CardDavSchema.CARDDAV_ADDRESSBOOK_MULTIGET.equals(qname(requestDoc.getDocumentElement()))) {
@@ -288,7 +306,7 @@ public class CardDavServlet extends HttpServlet {
 				}
 			}
 			
-			marshalMultiStatus(resp, responseDoc);
+			marshalMultiStatus(resp, responseDoc, collectionEtag);
 		} else {
 			StringWriter out = new StringWriter();
 			DebugUtil.dumpMethod(out, req);

@@ -28,20 +28,34 @@ public class AddressBookResource extends Resource {
 
 	private final Map<String, AddressResource> _addressById;
 
-	/** 
+	private final int _settingsHash;
+
+	/**
 	 * Creates a {@link AddressBookResource}.
-	 * 
-	 * @param rootUrl The full URl (including protocol) of the CardDAV servlet.
-	 * @param serverRoot The absolute path of the CardDAV servlet relative to the server.
+	 *
+	 * @param rootUrl
+	 *        The full URL (including protocol) of the CardDAV servlet.
+	 * @param serverRoot
+	 *        The absolute path of the CardDAV servlet relative to the server.
+	 * @param numbers
+	 *        Blocks visible to the user. May be the common list alone, the common list
+	 *        with personal singletons appended, or the result of a full per-user pipeline —
+	 *        from this resource's point of view they are all just blocks.
+	 * @param settingsHash
+	 *        Additional hash mixed into the collection ETag to differentiate users
+	 *        whose visible block list happens to coincide but whose settings or personal
+	 *        list differ.
 	 */
-	AddressBookResource(String rootUrl, String serverRoot, String resourcePath, String principal, List<NumberBlock> numbers) {
+	AddressBookResource(String rootUrl, String serverRoot, String resourcePath, String principal,
+			List<NumberBlock> numbers, int settingsHash) {
 		super(rootUrl, resourcePath);
 		_serverRoot = serverRoot;
 		_principal = principal;
-		
+		_settingsHash = settingsHash;
+
 		_addressById = numbers
 			.stream()
-			.map(r -> newAddressResource(r, r.getBlockId()))
+			.map(r -> newAddressResource(r, r.getName()))
 			.collect(Collectors.toMap(AddressResource::getId, r -> r));
 	}
 
@@ -106,13 +120,32 @@ public class AddressBookResource extends Resource {
 		AddressResource result = _addressById.get(id);
 		if (result == null) {
 			// Maybe this is a put operation, create an empty entry.
-			return newAddressResource(new NumberBlock(id).initSingleton(id), id);
+			return newAddressResource(new NumberBlock(id, java.util.List.of(id)), id);
 		}
 		return result;
 	}
 
 	@Override
 	public String getEtag() {
-		return Integer.toString(_addressById.keySet().stream().map(r -> r.hashCode()).reduce(0, (x, y) -> x + y));
+		try {
+			java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-1");
+			java.util.List<String> ids = new java.util.ArrayList<>(_addressById.keySet());
+			java.util.Collections.sort(ids);
+			for (String id : ids) {
+				md.update(id.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+				md.update((byte) 0);
+				md.update(_addressById.get(id).getEtag().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+				md.update((byte) 0);
+			}
+			md.update(Integer.toString(_settingsHash).getBytes(java.nio.charset.StandardCharsets.UTF_8));
+			byte[] digest = md.digest();
+			StringBuilder hex = new StringBuilder(12);
+			for (int i = 0; i < 6; i++) {
+				hex.append(String.format("%02x", digest[i]));
+			}
+			return hex.toString();
+		} catch (java.security.NoSuchAlgorithmException ex) {
+			throw new IllegalStateException("SHA-1 not available", ex);
+		}
 	}
 }
