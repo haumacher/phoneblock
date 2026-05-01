@@ -201,6 +201,12 @@ public class BlocklistVersionService implements ServletContextListener {
 		LOG.info("Starting scheduled blocklist version assignment");
 
 		DB db = _dbService.db();
+
+		// Archive vote-decayed rows first so their ACTIVE=false transition is part of
+		// this release; otherwise CardDAV's published view would shed those numbers
+		// on its own schedule and the address-book ETag would change between releases.
+		db.archiveOldReports();
+
 		long now = System.currentTimeMillis();
 		try (SqlSession session = db.openSession()) {
 			Users users = session.getMapper(Users.class);
