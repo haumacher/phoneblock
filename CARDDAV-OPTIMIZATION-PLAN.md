@@ -293,19 +293,25 @@ Exclusions mit `−1.000.000` in den Tree eingespritzt.
 
 **Verteilung in der DB (Stand 2026-05-01, ohne Aktivitäts-Filter):**
 
-| Kategorie | User | Pfad in der neuen Lösung |
-|---|---:|---|
-| keine Personalisierung | 21 012 | Common-Cache pur |
-| nur Personalizations | 7 039 | Common-Cache + Personal-Buckets |
-| Personalizations *und* Exclusions | 331 | volle Pipeline (wie heute) |
-| nur Exclusions | 149 | volle Pipeline (wie heute) |
+| Kategorie | User | Anteil | Pfad in der neuen Lösung |
+|---|---:|---:|---|
+| keine Personalisierung | 21 012 | 73.6% | Common-Cache pur |
+| nur Personalizations | 7 039 | 24.7% | Common-Cache + Personal-Buckets |
+| Exclusions, alle aktuell ineffektiv | ~393 | 1.4% | wie Personalization-only |
+| Exclusions, ≥ 1 effektiv | ~98 | 0.3% | volle Pipeline (wie heute) |
 
 Personal-Listen sind klein: 68% der personalisierten User haben 1–5 Einträge,
 Median ~3, nur 251 User haben >100.
 
-**Konsequenz:** 28 051 von 28 531 User-Sessions (~98%) lassen sich aus dem
-Common-Cache heraus bedienen. Die 480 Exclusion-User bleiben im individuellen
-Pfad, das ist kostenneutral zur heutigen Lage.
+Die Aufteilung der Exclusion-User wurde gegen die aktuelle NUMBERS-Tabelle
+gemessen (`PERSONALIZATION` ⨝ `NUMBERS WHERE ACTIVE AND VOTES >= 4`). 80% der
+Exclusions zeigen auf Nummern, die heute gar nicht in der Common-Liste stehen —
+typisch sind Reverts früherer Falschmeldungen, die ohne den eigenen Vote nie
+über `minVotes` gekommen sind.
+
+**Konsequenz:** ~99.7% aller User-Sessions lassen sich aus dem Common-Cache
+heraus bedienen. Nur ~0.3% (effektive Exclusions) brauchen die volle Pipeline,
+das ist kostenneutral zur heutigen Lage.
 
 **Kein zweites Adressbuch:** Der User richtet seine Box mit *einem* CardDAV-
 Endpoint ein. Common- und Personal-Einträge erscheinen in *derselben*
@@ -360,11 +366,31 @@ Personal-Bucket beim nächsten Sync weg. Semantisch korrekt, der Block bleibt
 aktiv. Der User-ETag ändert sich dabei sowieso, weil die Common-ETag
 mitgehasht ist. Kein Sonderhandling nötig.
 
-**Exclusion-User (480) bleiben im vollen Pfad.** Hier müsste eine Exclusion
-einen Common-Bucket modifizieren oder eine Wildcard auflösen — Komplexität,
-die sich für 480 von 28 531 Sessions nicht lohnt. Diese User profitieren
-nicht von Hebel A, sind aber in der heutigen Performance ohnehin schon
-abgedeckt.
+**Exclusion-User: Effektivitätsprüfung pro Sync.** Eine Exclusion auf eine
+Nummer, die gar nicht in der Common-Liste steht (weder konkret noch unter
+einer Wildcard), ist semantisch ein No-Op. Solche User können wie
+Personalization-only behandelt werden:
+
+```
+für jede excludedNumber aus Exclusions:
+    falls commonNumbers.contains(excludedNumber): effektiv
+    falls matchesAnyWildcard(commonWildcards, excludedNumber): effektiv
+    sonst: ineffektiv
+
+falls alle Exclusions ineffektiv:
+    Pfad = Common-Cache + Personal-Buckets
+sonst:
+    Pfad = volle Pipeline wie heute
+```
+
+Der Check ist billig (n Lookups gegen die Strukturen, die A4 ohnehin baut)
+und muss pro Sync gemacht werden, weil sich der Effektivitäts-Status mit der
+Common-Liste ändern kann. Wenn eine bisher ineffektive Exclusion durch
+ein Common-Liste-Update relevant wird, ändert sich Common-ETag → User-ETag →
+Re-Sync → der nimmt dann die volle Pipeline. Korrekt automatisch.
+
+Damit verbleiben nur die ~98 User mit effektiven Exclusions im individuellen
+Pfad — die heutige Performance dort ist akzeptabel.
 
 #### Migration
 
