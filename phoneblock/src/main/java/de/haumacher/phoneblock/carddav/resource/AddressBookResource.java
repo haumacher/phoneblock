@@ -33,17 +33,18 @@ public class AddressBookResource extends Resource {
 	/**
 	 * Creates a {@link AddressBookResource}.
 	 *
-	 * @param rootUrl The full URl (including protocol) of the CardDAV servlet.
-	 * @param serverRoot The absolute path of the CardDAV servlet relative to the server.
-	 */
-	AddressBookResource(String rootUrl, String serverRoot, String resourcePath, String principal, List<NumberBlock> numbers) {
-		this(rootUrl, serverRoot, resourcePath, principal, numbers, 0);
-	}
-
-	/**
-	 * Creates a {@link AddressBookResource} with an additional hash representing user
-	 * settings (the {@code ListType}) and personalisation that should influence the
-	 * collection ETag without being visible as content.
+	 * @param rootUrl
+	 *        The full URL (including protocol) of the CardDAV servlet.
+	 * @param serverRoot
+	 *        The absolute path of the CardDAV servlet relative to the server.
+	 * @param numbers
+	 *        Blocks visible to the user. May be the common list alone, the common list
+	 *        with personal singletons appended, or the result of a full per-user pipeline —
+	 *        from this resource's point of view they are all just blocks.
+	 * @param settingsHash
+	 *        Additional hash mixed into the collection ETag to differentiate users
+	 *        whose visible block list happens to coincide but whose settings or personal
+	 *        list differ.
 	 */
 	AddressBookResource(String rootUrl, String serverRoot, String resourcePath, String principal,
 			List<NumberBlock> numbers, int settingsHash) {
