@@ -392,6 +392,64 @@ Re-Sync → der nimmt dann die volle Pipeline. Korrekt automatisch.
 Damit verbleiben nur die ~98 User mit effektiven Exclusions im individuellen
 Pfad — die heutige Performance dort ist akzeptabel.
 
+#### Tests
+
+Vorhanden: `TestNumberTree`, JUnit Jupiter, kein Mockito, kein Spring-Test,
+keine Servlet-Container-Test-Infrastruktur.
+
+**Bucketing — `TestNumberTree` erweitern:**
+
+1. Determinismus: gleicher Input liefert byte-identische Bucket-Liste.
+2. Reihenfolge-Robustheit: permutierter Input liefert identische Buckets.
+3. 9er-Limit auf konstruierten und realen Eingaben.
+4. Vollständigkeit + Disjunktheit: `union(buckets) == top-K`, kein Eintrag
+   doppelt.
+5. Bucket-ID = Präfix: für jede Nummer im Bucket gilt
+   `n.startsWith(bucket.id)` (Wildcard-Marker als Sonderfall).
+6. Lokale Stabilität: eine Nummer im Top-K hinzufügen oder entfernen ändert
+   ≤ 2 Bucket-IDs.
+
+**Block-Effekt-Äquivalenz — neue Klasse `TestBlockingEquivalence`:**
+
+7. Set der effektiv geblockten Nummern (alle TEL-Einträge plus
+   Wildcard-Expansion gegen Eingabe-Universum) ist beim alten und neuen
+   Algorithmus identisch. Fixture: heruntergeladene Blocklist (15 800
+   Nummern). Matrix: ListType-Default + drei Variationen (Wildcards an/aus,
+   nationalOnly an/aus, maxLength 1000/3000). Das ist der einzige Test, der
+   "semantisch unverändert" wirklich beweist.
+
+**ETags — neue Klasse `TestAddressBookEtag`:**
+
+8. Block-ETag stabil bei identischen Mitgliedern, anders bei einer geänderten
+   Nummer oder geändertem Title.
+9. Collection-ETag stabil bei identischer Bucket-Menge, anders bei
+   Bucket-Add/Remove und bei anderem `ListType.hashCode()`.
+
+**Personal-Layer + Dedup — neue Klasse `TestPersonalLayer`:**
+
+10. Personalization, die in Common konkret existiert → wird gefiltert.
+11. Personalization unter Common-Wildcard → wird gefiltert.
+12. Personalization, die nicht in Common ist → erscheint als
+    Singleton-Bucket mit ID = Nummer.
+
+**Exclusion-Effektivitätsprüfung — in `TestPersonalLayer`:**
+
+13. Exclusion auf konkrete Common-Nummer → effektiv.
+14. Exclusion außerhalb Common → ineffektiv.
+15. Exclusion unter Common-Wildcard → effektiv.
+
+**Conditional-GET — als pure Logik:**
+
+`If-None-Match`-Auswertung in eine reine Methode (`HttpUtil.matchesEtag`)
+extrahieren, dort testen — keine Servlet-Container-Infrastruktur nötig:
+
+16. `If-None-Match: "abc"` matcht `etag = "abc"` → true.
+17. Liste `If-None-Match: "abc", "def"` matcht jeden enthaltenen ETag.
+18. `If-None-Match: *` → true (wenn überhaupt ein ETag existiert).
+19. Mismatch → false.
+20. Quoting (RFC 7232: ETags müssen in Anführungszeichen stehen) korrekt
+    behandelt.
+
 #### Migration
 
 - Block-ID-Schema ändert sich strukturell → einmalige Cache-Invalidierung bei
