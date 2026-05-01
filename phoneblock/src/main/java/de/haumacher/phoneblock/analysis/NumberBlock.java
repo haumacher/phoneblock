@@ -17,7 +17,6 @@ public class NumberBlock {
 	private final String _id;
 	private List<String> _numbers = new ArrayList<>();
 
-	StringBuilder _prefixBuffer;
 	private String _title;
 
 	/**
@@ -59,22 +58,11 @@ public class NumberBlock {
 	/** Prefix for the FN: field; identifies PhoneBlock entries in the user's contact list. */
 	public static final String SPAM_TITLE_PREFIX = "SPAM: ";
 
-	/** 
+	/**
 	 * Adds a new number to this block.
 	 */
 	public void add(String number) {
 		_numbers.add(number);
-		if (_prefixBuffer == null) {
-			_prefixBuffer = new StringBuilder();
-			_prefixBuffer.append(number);
-		} else {
-			for (int n = 0, cnt = Math.min(_prefixBuffer.length(), number.length()); n < cnt; n++) {
-				if (_prefixBuffer.charAt(n) != number.charAt(n)) {
-					_prefixBuffer.setLength(n);
-					break;
-				}
-			}
-		}
 	}
 	
 	/**
@@ -88,13 +76,14 @@ public class NumberBlock {
 	}
 
 	private String computeTitle() {
-		if (_prefixBuffer == null) {
+		if (_numbers.isEmpty()) {
 			return SPAM_TITLE_PREFIX;
 		}
 		if (_numbers.size() == 1) {
 			return SPAM_TITLE_PREFIX + _numbers.get(0);
 		}
-		return SPAM_TITLE_PREFIX + _prefixBuffer.toString() + "...";
+		String prefix = _id != null ? _id : _name;
+		return SPAM_TITLE_PREFIX + prefix + "...";
 	}
 
 	/** 
