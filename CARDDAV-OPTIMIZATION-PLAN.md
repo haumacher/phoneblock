@@ -260,9 +260,9 @@ vorangestellten `SPAM_MARKER`. Macht in Anrufer-Anzeigen klar, was zusammengehö
 - `AddressBookResource.getEtag()` = Hash über sortierten konkatenierten
   Block-ID- und Block-ETag-Strom. Heute `Sum(hashCode)` — kollisionsanfällig.
 - Beide ETags müssen `ListType.hashCode()` (siehe Listen-Varianten-Abschnitt)
-  und für personalisierte User Personalizations- + Exclusions-Hash
   mitmischen — sonst sehen zwei User mit identischer NUMBERS-Tabelle, aber
-  unterschiedlichen Settings denselben ETag.
+  unterschiedlichen Settings denselben ETag. Personalisations-Hash kommt für
+  betroffene User in A4 dazu.
 
 #### A3 — `If-None-Match` im Servlet auswerten
 
@@ -283,17 +283,88 @@ materialisierten Block-Set kein ETag bestimmbar ist. Bei warmem Cache
 (praktisch immer der Fall, siehe Datenlage) ist das billig — der gesparte Teil
 ist der Render.
 
-#### A4 — Personalisations einbeziehen
+#### A4 — Personalisierte User: Common-Cache + Personal-Buckets
 
-Für User mit Personalizations/Exclusions wird die ETag-Komposition aus A2 um
-die User-spezifischen Hashes erweitert:
+**Heute:** Sobald ein User Personalizations *oder* Exclusions hat, wird in
+`AddressBookCache.loadNumbers()` der gesamte Pfad neu gerechnet — voller
+NUMBERS-Scan, neuer NumberTree, Wildcards, Top-K — und der `_numberCache` wird
+für diesen User umgangen. Personalizations werden mit Weight `+10.000.000`,
+Exclusions mit `−1.000.000` in den Tree eingespritzt.
 
-- ETag = Hash(Common-Collection-ETag, ListType-Hash, Personalizations-Hash,
-  Exclusions-Hash).
-- Personalizations und Exclusions ändern sich selten → diese User profitieren
-  ebenso.
-- Personalisations werden in `loadNumbers()` ohnehin in den NumberTree
-  eingespritzt; ihre Hashes sind klein und schnell ableitbar.
+**Verteilung in der DB (Stand 2026-05-01, ohne Aktivitäts-Filter):**
+
+| Kategorie | User | Pfad in der neuen Lösung |
+|---|---:|---|
+| keine Personalisierung | 21 012 | Common-Cache pur |
+| nur Personalizations | 7 039 | Common-Cache + Personal-Buckets |
+| Personalizations *und* Exclusions | 331 | volle Pipeline (wie heute) |
+| nur Exclusions | 149 | volle Pipeline (wie heute) |
+
+Personal-Listen sind klein: 68% der personalisierten User haben 1–5 Einträge,
+Median ~3, nur 251 User haben >100.
+
+**Konsequenz:** 28 051 von 28 531 User-Sessions (~98%) lassen sich aus dem
+Common-Cache heraus bedienen. Die 480 Exclusion-User bleiben im individuellen
+Pfad, das ist kostenneutral zur heutigen Lage.
+
+**Kein zweites Adressbuch:** Der User richtet seine Box mit *einem* CardDAV-
+Endpoint ein. Common- und Personal-Einträge erscheinen in *derselben*
+Collection — der Server rendert sie aus zwei Quellen, der Client sieht eine
+einheitliche Liste.
+
+**Common-Cache erweitern:**
+
+Beim Aufbau des `_numberCache` zusätzlich zu `List<NumberBlock>` zwei
+Lookup-Strukturen ablegen:
+
+- `Set<String> commonNumbers` — alle konkreten Nummern in den Common-Buckets.
+- `List<String> commonWildcards` — alle Wildcard-Präfixe, sortiert für
+  schnellen Präfix-Match.
+
+Beide entstehen ohnehin im selben Pfad — ihr Aufbau ist im Cache-Refresh
+billig.
+
+**Personal-Buckets bauen (für die 7 039 User):**
+
+```
+für jede personalNumber aus Personalizations:
+    falls commonNumbers.contains(personalNumber):    // schon konkret drin
+        überspringen
+    falls matchesAnyWildcard(commonWildcards, personalNumber):  // unter Wildcard abgedeckt
+        überspringen
+    sonst:
+        als Singleton-Bucket der Collection beifügen
+```
+
+- Block-ID = die Nummer selbst (perfekt stabil — kann nie wackeln).
+- Block-Title = `SPAM: <number>` (Format aus A2).
+- vCard mit der einen TEL-Zeile.
+
+Singletons (statt Personal-Nummern in Common-Bucketing einzumischen) gewählt,
+damit Personal-Einträge die Common-Bucket-IDs nicht kippen können.
+
+**ETag-Komposition für Common+Personal-User:**
+
+```
+ETag = Hash(Common-Collection-ETag, ListType-Hash,
+            Hash(deduplicated-personalizations))
+```
+
+Personalizations ändern sich nur, wenn der User selbst eine Nummer meldet →
+`flushUserCache()` invalidiert den User-Eintrag (Mechanismus existiert bereits
+in `AddressResource.put()`).
+
+**Subtilität — Common-Liste verändert sich:** Wenn die Common-Liste eine
+bisher als Personal-Bucket serialisierte Nummer aufnimmt, fällt der
+Personal-Bucket beim nächsten Sync weg. Semantisch korrekt, der Block bleibt
+aktiv. Der User-ETag ändert sich dabei sowieso, weil die Common-ETag
+mitgehasht ist. Kein Sonderhandling nötig.
+
+**Exclusion-User (480) bleiben im vollen Pfad.** Hier müsste eine Exclusion
+einen Common-Bucket modifizieren oder eine Wildcard auflösen — Komplexität,
+die sich für 480 von 28 531 Sessions nicht lohnt. Diese User profitieren
+nicht von Hebel A, sind aber in der heutigen Performance ohnehin schon
+abgedeckt.
 
 #### Migration
 
