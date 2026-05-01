@@ -17,7 +17,6 @@ import org.w3c.dom.Element;
 
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.analysis.NumberBlock;
-import de.haumacher.phoneblock.answerbot.AnswerBot;
 import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 import de.haumacher.phoneblock.carddav.schema.CardDavSchema;
 import de.haumacher.phoneblock.db.BlockList;
@@ -66,7 +65,34 @@ public class AddressResource extends Resource {
 
 	@Override
 	public String getEtag() {
-		return Integer.toHexString(_block.getBlockTitle().hashCode());
+		return computeEtag(_block);
+	}
+
+	/**
+	 * Content-based ETag for an address resource: deterministic hash over the
+	 * block's title and the sorted list of its numbers. Truncated SHA-1 (12 hex
+	 * chars) for collision resistance and stability across JVM versions.
+	 */
+	static String computeEtag(NumberBlock block) {
+		try {
+			java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-1");
+			md.update(block.getBlockTitle().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+			md.update((byte) 0);
+			java.util.List<String> sorted = new java.util.ArrayList<>(block.getNumbers());
+			java.util.Collections.sort(sorted);
+			for (String n : sorted) {
+				md.update(n.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+				md.update((byte) 0);
+			}
+			byte[] digest = md.digest();
+			StringBuilder hex = new StringBuilder(12);
+			for (int i = 0; i < 6; i++) {
+				hex.append(String.format("%02x", digest[i]));
+			}
+			return hex.toString();
+		} catch (java.security.NoSuchAlgorithmException ex) {
+			throw new IllegalStateException("SHA-1 not available", ex);
+		}
 	}
 	
 	@Override
@@ -97,8 +123,6 @@ public class AddressResource extends Resource {
 		buffer.append(_block.getBlockId());
 		buffer.append("\n");
 		buffer.append("FN:");
-		buffer.append(AnswerBot.SPAM_MARKER);
-		buffer.append(" ");
 		buffer.append(_block.getBlockTitle());
 		buffer.append("\n");
 		buffer.append("CATEGORIES:SPAM\n");

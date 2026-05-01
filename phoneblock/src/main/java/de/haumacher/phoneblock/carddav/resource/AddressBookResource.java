@@ -28,17 +28,30 @@ public class AddressBookResource extends Resource {
 
 	private final Map<String, AddressResource> _addressById;
 
-	/** 
+	private final int _settingsHash;
+
+	/**
 	 * Creates a {@link AddressBookResource}.
-	 * 
+	 *
 	 * @param rootUrl The full URl (including protocol) of the CardDAV servlet.
 	 * @param serverRoot The absolute path of the CardDAV servlet relative to the server.
 	 */
 	AddressBookResource(String rootUrl, String serverRoot, String resourcePath, String principal, List<NumberBlock> numbers) {
+		this(rootUrl, serverRoot, resourcePath, principal, numbers, 0);
+	}
+
+	/**
+	 * Creates a {@link AddressBookResource} with an additional hash representing user
+	 * settings (the {@code ListType}) and personalisation that should influence the
+	 * collection ETag without being visible as content.
+	 */
+	AddressBookResource(String rootUrl, String serverRoot, String resourcePath, String principal,
+			List<NumberBlock> numbers, int settingsHash) {
 		super(rootUrl, resourcePath);
 		_serverRoot = serverRoot;
 		_principal = principal;
-		
+		_settingsHash = settingsHash;
+
 		_addressById = numbers
 			.stream()
 			.map(r -> newAddressResource(r, r.getBlockId()))
@@ -113,6 +126,25 @@ public class AddressBookResource extends Resource {
 
 	@Override
 	public String getEtag() {
-		return Integer.toString(_addressById.keySet().stream().map(r -> r.hashCode()).reduce(0, (x, y) -> x + y));
+		try {
+			java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-1");
+			java.util.List<String> ids = new java.util.ArrayList<>(_addressById.keySet());
+			java.util.Collections.sort(ids);
+			for (String id : ids) {
+				md.update(id.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+				md.update((byte) 0);
+				md.update(_addressById.get(id).getEtag().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+				md.update((byte) 0);
+			}
+			md.update(Integer.toString(_settingsHash).getBytes(java.nio.charset.StandardCharsets.UTF_8));
+			byte[] digest = md.digest();
+			StringBuilder hex = new StringBuilder(12);
+			for (int i = 0; i < 6; i++) {
+				hex.append(String.format("%02x", digest[i]));
+			}
+			return hex.toString();
+		} catch (java.security.NoSuchAlgorithmException ex) {
+			throw new IllegalStateException("SHA-1 not available", ex);
+		}
 	}
 }

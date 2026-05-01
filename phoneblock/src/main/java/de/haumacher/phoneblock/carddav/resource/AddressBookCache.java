@@ -86,8 +86,11 @@ public class AddressBookCache implements ServletContextListener {
 		}
 
 		long now = System.currentTimeMillis();
+		ListType listType = ListType.valueOf(settings.getDialPrefix(), settings.getMinVotes(),
+				settings.getMaxLength(), settings.isWildcards(), settings.isNationalOnly());
 		List<NumberBlock> phoneNumbers = loadNumbers(principal, now, settings);
-		AddressBookResource addressBook = new AddressBookResource(rootUrl, serverRoot, resourcePath, principal, phoneNumbers);
+		AddressBookResource addressBook = new AddressBookResource(rootUrl, serverRoot, resourcePath, principal,
+				phoneNumbers, listType.hashCode());
 		return _userCache.put(principal, addressBook);
 	}
 

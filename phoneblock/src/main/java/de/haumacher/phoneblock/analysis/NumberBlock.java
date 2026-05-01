@@ -43,7 +43,7 @@ public class NumberBlock {
 
 	/**
 	 * Initializes this block containing exactly one number.
-	 * 
+	 *
 	 * <p>
 	 * Such a block is only created in a CardDAV lookup when the requested ID is not found in the
 	 * current address book. In that case, the request normally could only be a PUT request that
@@ -51,10 +51,13 @@ public class NumberBlock {
 	 * </p>
 	 */
 	public NumberBlock initSingleton(String id) {
-		_title = id;
+		_title = SPAM_TITLE_PREFIX + id;
 		_numbers.add(id);
 		return this;
 	}
+
+	/** Prefix for the FN: field; identifies PhoneBlock entries in the user's contact list. */
+	public static final String SPAM_TITLE_PREFIX = "SPAM: ";
 
 	/** 
 	 * Adds a new number to this block.
@@ -86,20 +89,12 @@ public class NumberBlock {
 
 	private String computeTitle() {
 		if (_prefixBuffer == null) {
-			return "";
-		} else {
-			String prefix = _prefixBuffer.toString();
-
-			int size = _numbers.size();
-			if (size > 1) {
-				String first = _numbers.get(0);
-				String last = _numbers.get(size - 1);
-				int prefixLength = prefix.length();
-				return prefix + "(" + first.substring(prefixLength) + ".." + last.substring(prefixLength) + ")";
-			}
-			
-			return prefix;
+			return SPAM_TITLE_PREFIX;
 		}
+		if (_numbers.size() == 1) {
+			return SPAM_TITLE_PREFIX + _numbers.get(0);
+		}
+		return SPAM_TITLE_PREFIX + _prefixBuffer.toString() + "...";
 	}
 
 	/** 

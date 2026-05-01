@@ -200,7 +200,7 @@ class TestNumberTree {
 		return ids;
 	}
 
-	/** Test 1: Determinismus — gleicher Input zweimal liefert byte-identische Bucket-Liste. */
+	/** Test 1: Determinism — same input twice yields a byte-identical bucket list. */
 	@Test
 	void prefixBucketing_isDeterministic() {
 		String[] sample = {
@@ -218,7 +218,7 @@ class TestNumberTree {
 		}
 	}
 
-	/** Test 2: Reihenfolge-Robustheit — permutierter Input liefert identische Buckets. */
+	/** Test 2: Order independence — permuted input yields identical buckets. */
 	@Test
 	void prefixBucketing_orderIndependent() {
 		List<String> base = List.of(
@@ -244,10 +244,10 @@ class TestNumberTree {
 		}
 	}
 
-	/** Test 3: 9er-Limit — kein Bucket > 9 Mitglieder (außer pathologisch identische Präfixe). */
+	/** Test 3: 9-member limit — no bucket holds more than 9 entries (except pathologically identical prefixes). */
 	@Test
 	void prefixBucketing_respectsNineLimit() {
-		// 25 Nummern mit gemeinsamem 5er-Präfix, dann unterscheidende Stellen
+		// 25 numbers with a shared 5-char prefix, then distinguishing digits.
 		String[] sample = new String[25];
 		for (int i = 0; i < 25; i++) {
 			sample[i] = String.format("+49152%07d", i);
@@ -255,11 +255,11 @@ class TestNumberTree {
 
 		List<NumberBlock> blocks = treeWith(sample).createNumberBlocksByPrefix(1, 1000, "+49");
 		for (NumberBlock b : blocks) {
-			assertTrue(b.size() <= 9, "Bucket " + b.getBlockId() + " hat " + b.size() + " Mitglieder");
+			assertTrue(b.size() <= 9, "Bucket " + b.getBlockId() + " has " + b.size() + " members");
 		}
 	}
 
-	/** Test 4: Vollständigkeit + Disjunktheit — jedes Eingabe-Element landet in genau einem Bucket. */
+	/** Test 4: Completeness + disjointness — every input number ends up in exactly one bucket. */
 	@Test
 	void prefixBucketing_completeAndDisjoint() {
 		String[] sample = {
@@ -275,17 +275,17 @@ class TestNumberTree {
 		int total = 0;
 		for (NumberBlock b : blocks) {
 			for (String n : b.getNumbers()) {
-				assertTrue(collected.add(n), "Nummer " + n + " ist in mehr als einem Bucket");
+				assertTrue(collected.add(n), "Number " + n + " appears in more than one bucket");
 				total++;
 			}
 		}
 		assertEquals(sample.length, total);
 		for (String n : sample) {
-			assertTrue(collected.contains(n), "Nummer " + n + " fehlt in den Buckets");
+			assertTrue(collected.contains(n), "Number " + n + " missing from buckets");
 		}
 	}
 
-	/** Test 5: Bucket-ID = Präfix — jede Nummer im Bucket startet mit dem Bucket-ID-String. */
+	/** Test 5: Bucket-ID is a prefix — every number in a bucket starts with the bucket-ID string. */
 	@Test
 	void prefixBucketing_blockIdIsPrefix() {
 		String[] sample = {
@@ -299,17 +299,17 @@ class TestNumberTree {
 			String id = b.getBlockId();
 			for (String n : b.getNumbers()) {
 				assertTrue(n.startsWith(id) || n.equals(id),
-					"Nummer " + n + " startet nicht mit Bucket-ID " + id);
+					"Number " + n + " does not start with bucket id " + id);
 			}
 		}
 	}
 
-	/** Test 6: Lokale Stabilität — eine Nummer hinzufügen ändert ≤ 2 Bucket-IDs. */
+	/** Test 6: Local stability — adding one number changes at most 2 bucket IDs. */
 	@Test
 	void prefixBucketing_localStabilityOnAdd() {
-		// Genug Nummern, dass der +491-Bucket auf depth=5 aufsplittet:
-		// +4915xxx (5 numbers) und +4916xxx (5 numbers) bei depth=4 wären 10 Mitglieder
-		// unter +491 → muss auf depth=5 splitten in +4915 (5 nums) und +4916 (5 nums).
+		// Enough numbers so that the +491 bucket splits at depth 5:
+		// +4915xxx (5 numbers) and +4916xxx (5 numbers) → 10 members under +491
+		// → must split at depth 5 into +4915 (5 nums) and +4916 (5 nums).
 		String[] base = {
 			"+491521010", "+491521011", "+491521012", "+491521013", "+491521014",
 			"+491632000", "+491632001", "+491632002", "+491632003", "+491632004",
@@ -318,7 +318,7 @@ class TestNumberTree {
 		List<NumberBlock> baseBlocks = treeWith(base).createNumberBlocksByPrefix(1, 1000, "+49");
 		Set<String> baseIds = new HashSet<>(blockIds(baseBlocks));
 
-		// In den +4915-Bereich eine sechste Nummer einfügen.
+		// Add a sixth number in the +4915 area.
 		String[] perturbed = new String[base.length + 1];
 		System.arraycopy(base, 0, perturbed, 0, base.length);
 		perturbed[base.length] = "+491521099";
@@ -331,26 +331,26 @@ class TestNumberTree {
 		Set<String> added = new HashSet<>(perturbedIds);
 		added.removeAll(baseIds);
 
-		// Stabilität: höchstens 2 ID-Änderungen erwartet
-		// (bei reinem Hinzufügen in den +4915-Bucket eigentlich 0; bei Splitting maximal 2).
+		// Stability: at most 2 ID changes expected
+		// (zero on a pure add into the +4915 bucket; up to 2 on a split).
 		int idChurn = removed.size() + added.size();
 		assertTrue(idChurn <= 2,
-			"Mehr als 2 Bucket-ID-Änderungen: removed=" + removed + ", added=" + added);
+			"More than 2 bucket-id changes: removed=" + removed + ", added=" + added);
 
-		// Buckets außerhalb des +4915-Subtrees müssen byte-identisch bleiben.
+		// Buckets outside the +4915 subtree must remain byte-identical.
 		for (NumberBlock b : baseBlocks) {
 			String id = b.getBlockId();
 			if (id.startsWith("+4915") || "+4915".startsWith(id) || "+491".equals(id)) {
-				// im oder über dem betroffenen Subtree — Änderung erlaubt
+				// inside or above the affected subtree — change permitted
 				continue;
 			}
 			NumberBlock match = perturbedBlocks.stream()
 				.filter(p -> p.getBlockId().equals(id))
 				.findFirst()
 				.orElse(null);
-			assertTrue(match != null, "Bucket " + id + " im ruhigen Bereich verschwunden");
+			assertTrue(match != null, "Bucket " + id + " from quiet area disappeared");
 			assertEquals(b.getNumbers(), match.getNumbers(),
-				"Bucket " + id + " im ruhigen Bereich hat geänderten Inhalt");
+				"Bucket " + id + " from quiet area changed contents");
 		}
 	}
 
