@@ -8,10 +8,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.apache.ibatis.session.SqlSession;
+
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.analysis.NumberBlock;
 import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.db.DB;
+import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.TestDB;
 import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
@@ -34,13 +37,28 @@ public class TestAddressBookCache {
 		_scheduler.contextInitialized(null);
 		
 		_db = new DB(TestDB.createTestDataSource(), _scheduler);
-		
+		// Drop the visibility threshold so even small-vote test numbers get marked
+		// PENDING_UPDATE and end up in the published snapshot below.
+		_db.setMinVisibleVotes(1);
+
 		_db.processVotes(NumberAnalyzer.analyze("+39011111111", "+49"), "+39", 20, _now);
 		_db.processVotes(NumberAnalyzer.analyze("+39022222222", "+49"), "+39", 2, _now);
 		_db.processVotes(NumberAnalyzer.analyze("+49333333333", "+49"), "+39", 20, _now);
 		_db.processVotes(NumberAnalyzer.analyze("+49444444444", "+49"), "+39", 2, _now);
-		
+
+		// CardDAV reads the published snapshot — assign version 1 so the rows show up.
+		publishSnapshot();
+
 		_cache = new AddressBookCache(() -> _db);
+	}
+
+	/** Promotes pending NUMBERS rows into the published snapshot the CardDAV pipeline reads from. */
+	private void publishSnapshot() {
+		try (SqlSession session = _db.openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			reports.assignVersionToPendingUpdates(1L, 0L, 1);
+			session.commit();
+		}
 	}
 	
 	@AfterEach

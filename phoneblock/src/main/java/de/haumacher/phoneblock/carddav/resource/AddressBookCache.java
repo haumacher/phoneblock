@@ -74,6 +74,16 @@ public class AddressBookCache implements ServletContextListener {
 	public void flushUserCache(String principal) {
 		_userCache.flush(principal);
 	}
+
+	/**
+	 * Drops every entry from both the per-user and the per-{@link ListType} cache.
+	 * Called after a new blocklist release is published so all clients see the
+	 * fresh content immediately rather than waiting up to the cache TTL.
+	 */
+	public void flushAllCaches() {
+		_userCache.flushAll();
+		_numberCache.flushAll();
+	}
 	
 	/**
 	 * Looks up the block list resource for the given user.
@@ -226,7 +236,10 @@ public class AddressBookCache implements ServletContextListener {
 		boolean nationalOnly = listType.isNationalOnly();
 		String dialPrefix = listType.getDialPrefix();
 
-		List<DBNumberInfo> result = reports.getReports();
+		// Use the snapshot from the last released blocklist version so the address-book
+		// content (and its ETag) only changes once per release, not on every individual
+		// vote. PUBLISHED_VOTES is aliased into VOTES, PUBLISHED_LASTPING into LASTPING.
+		List<DBNumberInfo> result = reports.getPublishedReports();
 		NumberTree numberTree = new NumberTree();
 		for (DBNumberInfo report : result) {
 			String phoneId = report.getPhone();
@@ -236,9 +249,9 @@ public class AddressBookCache implements ServletContextListener {
 			if (nationalOnly && !phone.startsWith(dialPrefix)) {
 				continue;
 			}
-			
+
 			int votes = report.getVotes();
-			int ageInDays = (int) ((now - report.getUpdated()) / 1000 / 60 / 60 / 24);
+			int ageInDays = (int) ((now - report.getLastPing()) / 1000 / 60 / 60 / 24);
 			
 			numberTree.insert(phone, votes, ageInDays);
 		}
@@ -349,6 +362,13 @@ public class AddressBookCache implements ServletContextListener {
 		 */
 		public void flush(K key) {
 			_index.remove(key);
+		}
+
+		/**
+		 * Drops every entry from this cache.
+		 */
+		public void flushAll() {
+			_index.clear();
 		}
 		
 		public V lookup(K key) {
