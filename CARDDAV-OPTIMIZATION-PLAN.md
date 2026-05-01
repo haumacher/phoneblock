@@ -3,11 +3,28 @@
 ## Hintergrund
 
 Der PhoneBlock-Server läuft in CPU-Kapazitätsgrenzen. Die Re-Registrierung der
-Answerbots scheidet als Hauptursache aus (~1000 Geräte, langsam wachsend). Verdacht
-liegt auf der CardDAV-Synchronisation der Fritz!Boxen und anderer Clients, die das
-deutlich häufiger als einmal pro Tag tun.
+Answerbots scheidet als Hauptursache aus (~1000 Geräte, langsam wachsend).
+Verdacht liegt auf der CardDAV-Synchronisation der Fritz!Boxen und anderer
+Clients, die das deutlich häufiger als einmal pro Tag tun.
 
 Dieser Plan dokumentiert die Diagnose und priorisiert die Optimierungs-Hebel.
+
+## Constraint: Semantik der Blockliste bleibt unverändert
+
+Die Auswahl der Nummern auf der Blockliste hat reale Wirkung — eine Nummer auf
+der Liste bedeutet eine Anrufsperre für tausende Nutzer. Diese Optimierung ist
+**rein technisch**: sie betrifft ausschließlich, wie die unveränderte Liste in
+CardDAV-Kontakte aufbereitet, identifiziert und ausgeliefert wird.
+
+Was unverändert bleibt:
+
+- Top-K-Auswahl (`maxEntries`, `minVotes`, Weight-Berechnung, Age-Decay).
+- Wildcard-Erkennung (`markWildcards`, alle Schwellenwerte).
+- Personalisations-/Exclusions-Mechanik.
+- vCard-Inhalt pro Block (Title, TEL-Einträge, Kategorie).
+
+Insbesondere: keine Hysterese auf Top-K-Mitgliedschaft oder
+Wildcard-Schwellen — beides würde die Listen-Semantik modifizieren.
 
 ## Untersuchter Code
 
@@ -21,6 +38,7 @@ CardDAV-Stack unter `phoneblock/src/main/java/de/haumacher/phoneblock/carddav/`:
   - TTL: 5 min unused, 15 min max.
 - `resource/AddressBookResource.java`, `AddressResource.java`, `Resource.java`,
   `RootResource.java`, `PrincipalResource.java`.
+- `analysis/NumberTree.java`, `NumberBlock.java` — Block-Bildung.
 - DB-Pfad: `SpamReports.getReports()` → `SELECT ... FROM NUMBERS WHERE ACTIVE`
   (Vollscan).
 
@@ -45,12 +63,7 @@ Adressbuch-Collection (`/contacts/addresses/{user}/`).
 |---|---|---|---|
 | FritzBox REPORT | 2.65 M | 2.65 M | **50%** |
 | FritzBox PROPFIND | 1.12 M | 1.10 M | **50%** |
-| iOS PROPFIND | 36 k | 1.23 M | 3% |
-| iOS REPORT | 9.5 k | 0.31 M | 3% |
-| DAVx5 / PeopleSync | <2% | | <2% |
-
-→ **3.8 Mio FritzBox-401-Antworten in 14 Tagen, ~3 RPS reine Auth-Roundtrips
-ohne Nutzdaten.**
+| iOS / DAVx5 / PeopleSync | < 4% | | < 4% |
 
 **Antwortgrößen 207 (Mittel):**
 
@@ -64,15 +77,18 @@ ohne Nutzdaten.**
 
 **Polling-Intervall zwischen Sync-Sessions (p50):**
 
-| Client | p25 | **p50** | p75 | p90 |
-|---|---|---|---|---|
-| iOS | 17 min | **18 min** | 38 min | 72 min |
-| macOS | 15 min | **52 min** | 60 min | 62 min |
-| PeopleSync | 1 h | **3.8 h** | 4 h | 4.8 h |
-| DAVx5 | 55 min | **3.5 h** | 4 h | 5 h |
-| FritzBox | 4.5 h | **21.6 h** | 24 h | 238 h |
+| Client | p50 |
+|---|---|
+| iOS | **18 min** |
+| macOS | 52 min |
+| PeopleSync | 3.8 h |
+| DAVx5 | 3.5 h |
+| FritzBox | 21.6 h |
 
-iOS pollt aggressiv, FritzBox tagesweise.
+iOS pollt aggressiv, FritzBox tagesweise. Conditional-GET ist bei
+PeopleSync verifiziert (vom Maintainer getestet); iOS, macOS, DAVx5 schicken
+ETags ebenfalls (Annahme — die Verifizierung im laufenden Betrieb erfolgt
+implizit über die 304-Quote nach Deployment).
 
 ## Befunde im Code
 
@@ -83,99 +99,173 @@ ETags werden generiert (`AddressBookResource.java:115`,
 wird nirgends gegen den Request-Header geprüft**. Suche nach `If-None-Match` im
 Servlet liefert 0 Treffer.
 
-iOS, macOS, DAVx5, PeopleSync schicken `If-None-Match` mit hoher
-Wahrscheinlichkeit — würden also `304 Not Modified` akzeptieren und damit den
-gesamten Render-Pfad sparen. FritzBox profitiert nicht.
+### Hot Spot 2 — Block-IDs sind nicht stabil
 
-### Hot Spot 2 — Render pro Request, auch bei Cache-Hit
+`NumberBlock.getBlockId()` liefert `_numbers.get(0)` — die kleinste Nummer im
+Block (NumberBlock.java:115). Die Block-Bildung in `NumberTree.createNumberBlocks`
+ist **greedy** (4-Präfix + 9er-Cap) und ordnet Nummern im Kontext ihrer
+Nachbarn zu. Dadurch ist die Block-ID einer Nummer **nicht ihre eigene
+Eigenschaft**, sondern hängt von der Top-K-Nachbarschaft ab.
+
+**Empirisch gemessen** (Top-1000 Blockliste, 14.500 Nummern): bei einem
+simulierten Vote-Wackler mit k Nummern Austausch zwischen Top-K und Reserve:
+
+| k | Heute: ID-Wechsel | Prefix-Bucketing: ID-Wechsel |
+|---:|---:|---:|
+| 1 | 12.5% | 1.2% |
+| 5 | 58.6% | 1.8% |
+| 10 | **77.9%** | 1.5% |
+| 20 | 92.4% | 4.2% |
+| 50 | >100% | 8.5% |
+
+Bedeutet: **10 Vote-Wackler kippen heute 78% aller Block-URLs**, beim
+Prefix-Bucketing 1.5%. Damit ist Conditional-GET heute praktisch wirkungslos —
+selbst wenn der Servlet If-None-Match auswerten würde, würde der ETag bei
+typischer Voting-Aktivität ständig kippen.
+
+### Hot Spot 3 — Render pro Request, auch bei Cache-Hit
 
 Bei jedem PROPFIND/REPORT:
 
-- DOM-Tree mit 10k–100k `<response>`-Elementen aufbauen
+- DOM-Tree mit 10k+ `<response>`-Elementen aufbauen
   (`CardDavServlet.java:197–209`).
 - Pro Child eine vCard via `StringBuilder` neu generieren
-  (`AddressResource.java:92`) — wird **nicht** gecacht.
+  (`AddressResource.java:92`) — wird nicht gecacht.
 - Zwei Pässe: erst DOM-Tree komplett bauen, dann `LSSerializer.write()` darüber
   (`CardDavServlet.java:218–223`).
 
-Auch bei vollständigem Cache-Hit auf der `AddressBookResource` läuft dieser
-Pfad bei jeder Antwort komplett neu durch.
-
-### Hot Spot 3 — Auth-Loop bei FritzBox
+### Hot Spot 4 — Auth-Loop bei FritzBox
 
 Jeder FritzBox-CardDAV-Request kommt zweimal an: erst 401-Challenge, dann mit
 `Authorization`-Header. Verdoppelt die FritzBox-Last.
 
-### Verworfen — Common-Number-Cache-TTL
+### Verworfen — Common-Number-Cache-TTL hochziehen
 
-Initial vorgeschlagen, dann verworfen: Bei 8.6 RPS Gesamtlast wird der
-`_numberCache` (TTL 5 min) ohnehin permanent warm gehalten. Die Cache-Misses
-sind statistisch selten und nicht der dominante Cost. Die TTL hochzuziehen
-würde messbar nichts bringen.
+Bei 8.6 RPS Gesamtlast wird der `_numberCache` (TTL 5 min) ohnehin permanent
+warm gehalten. Cache-Misses sind statistisch selten und nicht der dominante
+Cost.
 
 ### Verworfen — sync-collection (RFC 6578)
 
 `sync-token` ist explizit als unsupported markiert (`Resource.java:55`).
 Implementierung wäre aufwendig (DB-Schema für Versionierung der NUMBERS-Tabelle
-nötig). Lohnt sich nicht, solange die einfachere Conditional-GET-Optimierung
-(Hebel A) noch offen ist.
+nötig). Lohnt sich nicht, solange Hebel A noch offen ist.
+
+### Verworfen — Hysterese auf Top-K oder Wildcard-Schwellen
+
+Würde die Listen-Semantik ändern (siehe Constraint-Abschnitt oben). Stabilität
+muss aus der technischen Aufbereitung kommen, nicht aus modifizierten
+Schwellwerten.
 
 ## Optimierungs-Hebel
 
-### Hebel A — Conditional GET (`If-None-Match` auf Collection)
+### Hebel A — Stabile Block-Aufteilung + Conditional GET
 
-**Wirkt auf:** iOS, macOS, DAVx5, PeopleSync (geschätzt ~25% aller
-CardDAV-Requests).
+**Wirkt auf:** iOS, macOS, DAVx5, PeopleSync (~25% aller CardDAV-Requests).
+FritzBox profitiert nicht.
 
-**Idee:** `doPropfind()` und `doReport()` werten `If-None-Match` gegen den
-Collection-ETag aus. Bei Match: `304 Not Modified` ohne Render.
+Hebel A ist mehrstufig, weil Conditional-GET nur dann nicht-trivial wirkt, wenn
+die Block-IDs unter typischer Voting-Aktivität stabil bleiben (siehe Hot Spot 2
+oben).
 
-**Stabiler ETag — wichtig:** Der heutige
-`AddressBookResource.getEtag()` (Hash-Summe der Block-IDs) ist
-kollisionsanfällig und wird erst nach Cache-Miss + NumberTree-Aufbau berechnet.
-Stattdessen aus DB-Aggregat ableiten:
+#### A1 — Deterministisches Präfix-Bucketing
 
-```sql
-SELECT MAX(UPDATED), COUNT(*) FROM NUMBERS WHERE ACTIVE
+Block-Bildung neu auf einen Algorithmus umstellen, der Nummern unabhängig von
+ihrer Nachbarschaft auf Buckets abbildet:
+
+```
+1. Top-K-Auswahl wie heute (deterministisch nach Weight + Nummer).
+   Wildcard-Marker aus markWildcards() bleiben Teil der Liste.
+2. Initial: jede Nummer (oder Wildcard-Marker) wird ihrem 4-stelligen
+   Präfix-Bucket zugeordnet.
+3. Solange irgendein Bucket > 9 Mitglieder enthält:
+   - Spalte diesen Bucket in (n+1)-Präfix-Sub-Buckets auf.
+   - Wiederhole, bis alle Buckets ≤ 9 Mitglieder haben.
+4. Block-ID = der konkrete Präfix-String des Buckets ("030", "0301",
+   "+49152187", …).
+5. Block-Title = "prefix (first..last)" wie heute.
 ```
 
-Plus User-Settings-Hash (für `ListType`) und Personalizations/Exclusions-Hash
-(falls vorhanden). Diese Aggregat-Query ist schnell und kann **vor** dem
-Cache-Lookup ausgewertet werden, sodass der 304-Pfad nicht nur den Render,
-sondern auch den `loadNumbers()`-Pfad einspart.
+**Eigenschaften:**
 
-**Konkret:**
+- Lokal stabil: Eine Nummer landet immer im flachsten Präfix-Bucket, dessen
+  Population ≤ 9 ist. Ändert sich was bei `+490900xxx`, sind die `+49301xxx`-Buckets
+  unbeeinflusst.
+- ID = Präfix-String, menschenlesbar, URL-tauglich.
+- Wildcards aus `markWildcards()` werden wie konkrete Nummern behandelt — der
+  Marker `+491521*` landet im `+49152`-Bucket bzw. tiefer, je nach
+  Nachbar-Population.
 
-1. Methode `getCollectionEtag(principal, settings)` in `AddressBookCache` oder
-   neu in `SpamReports` Mapper, die das DB-Aggregat zurückgibt.
-2. In `doPropfind()` / `doReport()` für Collection-Requests:
-   - ETag bestimmen.
-   - `If-None-Match`-Header parsen (RFC 7232: kommagetrennte Liste, `*` als
-     Wildcard).
-   - Bei Match: `setStatus(304)`, `setHeader("ETag", quote(etag))`, return.
-3. Bei Hit-Pfad: Der bisherige `getEtag()` der `AddressBookResource` muss zum
-   neuen DB-basierten ETag konsistent sein (sonst sendet der Server in der
-   207-Antwort einen anderen ETag, als er beim 304 erwartet).
+**Test:** Bei Konstruktion mit identischem Top-K-Input identische Block-IDs.
+Bei Hinzufügen einer Nummer in einen "ruhigen" Bereich: nur der eine Bucket
+ändert sich, alle anderen Block-IDs bleiben unverändert.
 
-**Risiko:** ETag muss zuverlässig wechseln, sobald sich für den User
-relevante Daten ändern. Andernfalls: Clients sehen Updates verspätet.
+#### A2 — Stabile, content-basierte ETags
 
-**Test:** Logs prüfen, ob iOS tatsächlich `If-None-Match` schickt — falls nicht,
-ist Hebel A weniger wirksam als geschätzt. Header-Logging temporär aktivieren.
+- `NumberBlock.getBlockId()` = der Präfix-String aus A1.
+- `AddressResource.getEtag()` = Hash über Title + sortierte Nummern
+  (deterministisch, kollisionssicher → SHA-1 truncated, ~12 Hex-Zeichen).
+- `AddressBookResource.getEtag()` = Hash über sortierten konkatenierten Block-ID-
+  und Block-ETag-Strom. Heute `Sum(hashCode)` — kollisionsanfällig.
+
+#### A3 — `If-None-Match` im Servlet auswerten
+
+In `CardDavServlet.doPropfind()` und `doReport()` für Collection-Requests:
+
+1. Ressource resolven (Cache-Lookup, ggf. Compute).
+2. Collection-ETag bestimmen.
+3. `If-None-Match`-Header parsen (RFC 7232, kommagetrennte Liste, `*` als
+   Wildcard berücksichtigen).
+4. Bei Match: `setStatus(304)`, ETag-Header zurücksenden, kein Body.
+5. Sonst: bisheriger Pfad.
+
+REPORT-multiget: pro adressierter Resource individuelles ETag-Match (spart die
+vCard-Generierung pro Eintrag).
+
+Achtung: Auch der Cache-Lookup-Pfad muss vor dem 304 laufen, weil ohne
+materialisierten Block-Set kein ETag bestimmbar ist. Bei warmem Cache
+(praktisch immer der Fall, siehe Datenlage) ist das billig — der gesparte Teil
+ist der Render.
+
+#### A4 — Personalisations einbeziehen
+
+Für User mit Personalizations/Exclusions:
+
+- ETag = Hash(Common-Collection-ETag, Personalizations-Hash, Exclusions-Hash).
+- Personalizations und Exclusions ändern sich selten → diese User profitieren
+  ebenso.
+- Personalisations werden in `loadNumbers()` ohnehin in den NumberTree
+  eingespritzt; ihre Hashes sind klein und schnell ableitbar.
+
+#### Migration
+
+- Block-ID-Schema ändert sich strukturell → einmalige Cache-Invalidierung bei
+  allen Clients beim Deploy. Alle Clients machen einen Vollsync, danach
+  Normalbetrieb.
+- Deployment-Fenster wählen, in dem das Volumen verkraftbar ist.
+
+#### Erwartete Wirkung
+
+- 304-Anteil bei iOS/macOS/DAVx5/PeopleSync sollte hoch werden — wie hoch
+  hängt davon ab, wie häufig die effektive Block-ID-Menge wirklich kippt
+  (= Top-K-Mitgliedschaftswechsel + lokale Bucket-Splits an der 9er-Grenze).
+- Realistisches Ziel: ~70–90% der Apple/Android-PROPFINDs werden 304.
+- Reduktion der CardDAV-CPU-Last: geschätzt 20–25%.
 
 ### Hebel B — Render-Pfad: DOM → StAX
 
-**Wirkt auf:** Alle 207-Antworten, vor allem die großen iOS- (68 KB) und
-macOS-Antworten (169 KB).
+**Wirkt auf:** Alle verbleibenden 207-Antworten, vor allem die großen
+iOS- (68 KB) und macOS-Antworten (169 KB), sowie alle FritzBox-Renders
+(die nicht von Hebel A profitieren).
 
-**Idee:** `XMLStreamWriter` (StAX) statt DOM + `LSSerializer`. Schreibt direkt
-in den Response-OutputStream:
+`XMLStreamWriter` (StAX) statt DOM + `LSSerializer`. Schreibt direkt in den
+Response-OutputStream:
 
 - Keine Zwischenrepräsentation.
 - Ein Pass statt zwei.
-- Keine MB-große DOM-Allocation mehr → GC-Druck weg.
+- Keine MB-große DOM-Allocation → GC-Druck weg.
 
-**Konkret:**
+Konkret:
 
 - `CardDavServlet.doPropfind()` / `doReport()` öffnen einen
   `XMLOutputFactory.newInstance().createXMLStreamWriter(resp.getOutputStream(), "utf-8")`.
@@ -185,76 +275,69 @@ in den Response-OutputStream:
 - vCard-Inhalt: `writer.writeCharacters(vCardContent())` statt
   `appendText(container, vCardContent())`.
 
-**Aufwand:** ~Tag. Touchiert die Resource-Hierarchie, aber das Datenmodell
-bleibt unverändert.
+Aufwand: ~Tag. Touchiert die Resource-Hierarchie, aber das Datenmodell bleibt
+unverändert.
 
-**Wirkung:** ~Faktor 2–3 schnellerer Render, deutlich weniger Heap-Druck.
+Wirkung: ~Faktor 2–3 schnellerer Render, deutlich weniger Heap-Druck.
 
 ### Hebel C — Pre-rendered `byte[]`-Cache pro `ListType`
 
 **Nur einsetzen, wenn A + B nicht ausreichen.**
 
-**Idee:** Die fertig serialisierte XML-Antwort der Collection-PROPFIND wird als
-`byte[]` neben der `List<NumberBlock>` im `_numberCache` gehalten. Pro Request
-reduziert sich der Pfad auf:
+Die fertig serialisierte XML-Antwort wird als `byte[]` neben der
+`List<NumberBlock>` im `_numberCache` gehalten. Pro Request reduziert sich der
+Pfad auf:
 
 ```
 Auth → ListType bestimmen → byte[] in Output schreiben
 ```
 
-**Voraussetzung:** Die Antwort muss user-unabhängig sein. Aktuell stehen in
-HREFs absolute Pfade `/phoneblock/contacts/addresses/{user}/{blockId}`.
+Voraussetzung: Antwort muss user-unabhängig sein. Aktuell stehen in HREFs
+absolute Pfade `/phoneblock/contacts/addresses/{user}/{blockId}`.
 
-**Optionen:**
+Optionen:
 
 - HREFs relativ machen (RFC 4918 erlaubt). Der Kommentar in
   `Resource.java:264–271` deutet an, dass das schon mal probiert wurde, aber
-  wegen FritzBox-DELETE-Verhalten zurückgenommen wurde. Müsste neu evaluiert
-  werden.
-- Alternativ: HREFs mit Platzhalter (`{{user}}`) in den `byte[]`-Stream
-  einbauen, beim Senden in zwei Hälften + UTF-8-bytes-of-username schreiben.
-  Komplexer, aber nicht user-abhängig im Cache.
+  wegen FritzBox-DELETE-Verhalten zurückgenommen wurde — neu evaluieren.
+- Alternativ: HREFs mit Platzhalter (`{{user}}`) im `byte[]`-Stream einbauen,
+  beim Senden in zwei Hälften + UTF-8-bytes-of-username schreiben.
 
-**Wirkung:** Render-CPU geht für Common-List-User auf praktisch null. Macht
-Hebel B obsolet.
+Wirkung: Render-CPU geht für Common-List-User auf praktisch null. Macht Hebel B
+obsolet.
 
-**Aufwand:** Größer als A + B zusammen.
-
-### Hebel D — FritzBox-Auth-Loop (optional)
+### Hebel D — FritzBox-Auth-Loop (offen)
 
 **Nicht in dieser Iteration.** Untersuchen, ob:
 
 - Der `LoginFilter`-Pfad bei 401-Antworten DB-Hits macht (sollte nicht, aber
   verifizieren).
-- Apache `mod_auth_basic` mit `mod_authn_socache` 401-Antworten direkt
-  liefern könnte, ohne Tomcat zu erreichen.
+- Apache `mod_auth_basic` mit `mod_authn_socache` 401-Antworten direkt liefern
+  könnte, ohne Tomcat zu erreichen.
 
-Da PhoneBlock-Auth tokenbasiert ist, nicht trivial. Erst angehen, wenn A + B
+PhoneBlock-Auth ist tokenbasiert, nicht trivial. Erst angehen, wenn A + B
 ausgeschöpft sind.
 
 ## Reihenfolge / Entscheidungspunkte
 
-1. **Hebel A umsetzen** — überschaubarer Eingriff, sofort messbar.
-   - Vorher: Header-Logging temporär aktivieren, prüfen ob iOS/macOS/DAVx5
-     tatsächlich `If-None-Match` mitschicken (sollte bei allen drei der Fall
-     sein, aber verifizieren).
-   - Erwartete Last-Reduktion: ~25% der CardDAV-CPU-Zeit (alle 207-Renders der
-     Apple/Android-Welt).
-
-2. **Wirkung messen** — CPU-Last vor/nach. Logs auf 304-Anteil prüfen.
-
-3. **Entscheidungspunkt:** Reicht Hebel A?
+1. **Hebel A umsetzen** (A1–A4) als zusammenhängender Wechsel — A1 allein bringt
+   nichts, A2/A3 ohne A1 kippt der ETag zu oft, A4 ist die Erweiterung auf
+   personalisierte User.
+2. **Wirkung messen** — 304-Quote pro User-Agent aus Access-Logs, CPU-Last
+   vor/nach.
+3. **Entscheidung:** Reicht Hebel A?
    - Wenn ja: B/C zurückstellen.
-   - Wenn nein: Hebel B (StAX) als sicherer nächster Schritt. Wirkt auf alle
+   - Wenn nein: Hebel B (StAX) als nächster Schritt — wirkt auf alle
      verbleibenden 207-Renders inkl. FritzBox.
-
 4. **Hebel C** nur, wenn auch nach A + B noch CPU-Last auf der CardDAV-Strecke
-   dominant ist — dann radikalste Variante.
+   dominant ist.
+5. **Hebel D** unabhängig, falls FritzBox-Auth-Roundtrips ein nennenswerter
+   Anteil der verbleibenden Last sind.
 
-## Nicht zum Plan gehörig (separate Themen)
+## Nicht zum Plan gehörig
 
-- Auth-Filter-Pfad-Optimierung (Hebel D).
-- `sync-collection`-Implementierung (RFC 6578).
-- Cache-TTL-Tuning (durch Datenlage als unwirksam ausgeschlossen).
-- Antwort-Komprimierung via `gzip` — kostet zusätzliche CPU, spart Bandbreite,
-  nicht hilfreich gegen das eigentliche Problem.
+- `sync-collection`-Implementierung (RFC 6578) — separates Thema.
+- Antwort-Komprimierung via `gzip` — kostet zusätzliche CPU, spart Bandbreite.
+- Cache-TTL-Tuning — durch Datenlage als unwirksam ausgeschlossen.
+- Modifikation der Top-K- oder Wildcard-Schwellen — verstößt gegen den
+  Semantik-Constraint.
