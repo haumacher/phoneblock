@@ -11,9 +11,16 @@
 #include "esp_http_client.h"
 #include "esp_https_ota.h"
 #include "esp_log.h"
+#include "esp_ota_ops.h"
+#include "esp_partition.h"
 #include "esp_random.h"
 #include "esp_system.h"
 #include "cJSON.h"
+
+#include "mbedtls/base64.h"
+#include "mbedtls/md.h"
+#include "mbedtls/pk.h"
+#include "mbedtls/sha256.h"
 
 #include "sdkconfig.h"
 
@@ -28,6 +35,133 @@ static const char *TAG = "fwup";
 #define FWUP_JITTER_MS      (30 * 60 * 1000)
 
 static TaskHandle_t s_task = NULL;
+
+// ---------------------------------------------------------------------------
+// OTA signing keys.
+//
+// ECDSA-P256 (prime256v1) public keys in DER SubjectPublicKeyInfo format
+// (91 bytes each). The build host signs `manifest.json.integrity.signature`
+// with the matching private key (kept in KeePassXC, see RELEASE.md). Verify
+// only runs on the CDN-pull path; local USB flash and `POST /api/firmware`
+// uploads bypass it on purpose, so a lost private key isn't a brick.
+//
+// `OTA_PUBKEY_NEXT` is the rotation slot. During key rotation the new
+// public key gets baked in here for one release first; the next release
+// signs with the new key, the one after that promotes it into PRIMARY
+// and clears NEXT. See RELEASE.md → "Schlüssel rotieren".
+// ---------------------------------------------------------------------------
+static const uint8_t OTA_PUBKEY_PRIMARY[] = {
+    0x30, 0x59, 0x30, 0x13, 0x06, 0x07, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x02,
+    0x01, 0x06, 0x08, 0x2a, 0x86, 0x48, 0xce, 0x3d, 0x03, 0x01, 0x07, 0x03,
+    0x42, 0x00, 0x04, 0xdb, 0x14, 0x2d, 0x82, 0x18, 0xdd, 0x79, 0x2e, 0x08,
+    0x60, 0x33, 0xd0, 0x2e, 0xc6, 0xba, 0x5d, 0x6e, 0xa6, 0xad, 0x21, 0x7f,
+    0xb1, 0xf1, 0xd9, 0xae, 0x08, 0xb6, 0xde, 0x07, 0xa5, 0x6e, 0x6f, 0x96,
+    0x01, 0x2c, 0xa7, 0x4e, 0xa3, 0x7e, 0x86, 0x4b, 0xcc, 0x52, 0x8d, 0x37,
+    0x94, 0x33, 0x52, 0xf3, 0x73, 0x15, 0x0a, 0xda, 0xdd, 0x31, 0x3a, 0xbe,
+    0x52, 0x58, 0x16, 0xb2, 0x7f, 0xf7, 0xd9
+};
+
+static const struct {
+    const uint8_t *der;
+    size_t         len;
+} OTA_PUBKEYS[] = {
+    { OTA_PUBKEY_PRIMARY, sizeof(OTA_PUBKEY_PRIMARY) },
+    // Add an entry here during rotation, e.g.:
+    // { OTA_PUBKEY_NEXT,    sizeof(OTA_PUBKEY_NEXT) },
+};
+
+// ---------------------------------------------------------------------------
+// Manifest signature verify.
+// ---------------------------------------------------------------------------
+
+// Signed payload — must match sign-manifest.sh byte-for-byte. Kept tiny
+// so it fits comfortably on the task stack: domain tag + version + hex
+// hash plus three newlines and two `key=` literals stays well under 200 B.
+static int build_signing_payload(char *buf, size_t cap,
+                                 const char *version,
+                                 const char *app_sha256_hex)
+{
+    int n = snprintf(buf, cap,
+                     "phoneblock-dongle-ota-v1\n"
+                     "version=%s\n"
+                     "app_sha256=%s\n",
+                     version, app_sha256_hex);
+    if (n <= 0 || n >= (int)cap) return -1;
+    return n;
+}
+
+static bool verify_with_pubkey(const uint8_t *pubkey_der, size_t pubkey_len,
+                               const uint8_t *payload, size_t payload_len,
+                               const uint8_t *sig, size_t sig_len)
+{
+    mbedtls_pk_context pk;
+    mbedtls_pk_init(&pk);
+    bool ok = false;
+
+    int rc = mbedtls_pk_parse_public_key(&pk, pubkey_der, pubkey_len);
+    if (rc != 0) {
+        ESP_LOGE(TAG, "pk_parse_public_key: -0x%04x", -rc);
+        goto done;
+    }
+    uint8_t hash[32];
+    rc = mbedtls_md(mbedtls_md_info_from_type(MBEDTLS_MD_SHA256),
+                    payload, payload_len, hash);
+    if (rc != 0) {
+        ESP_LOGE(TAG, "mbedtls_md(SHA-256): -0x%04x", -rc);
+        goto done;
+    }
+    rc = mbedtls_pk_verify(&pk, MBEDTLS_MD_SHA256,
+                           hash, sizeof(hash), sig, sig_len);
+    if (rc != 0) {
+        // -0x4e80 = MBEDTLS_ERR_ECP_VERIFY_FAILED for ECDSA. Logged at
+        // WARN — a single failure here is recoverable across the
+        // remaining pubkey slots.
+        ESP_LOGW(TAG, "pk_verify: -0x%04x", -rc);
+        goto done;
+    }
+    ok = true;
+done:
+    mbedtls_pk_free(&pk);
+    return ok;
+}
+
+static bool verify_manifest_signature(const char *version,
+                                      const char *app_sha256_hex,
+                                      const uint8_t *sig, size_t sig_len)
+{
+    char payload[200];
+    int n = build_signing_payload(payload, sizeof(payload),
+                                  version, app_sha256_hex);
+    if (n < 0) return false;
+
+    for (size_t i = 0; i < sizeof(OTA_PUBKEYS) / sizeof(OTA_PUBKEYS[0]); i++) {
+        if (verify_with_pubkey(OTA_PUBKEYS[i].der, OTA_PUBKEYS[i].len,
+                               (const uint8_t *)payload, (size_t)n,
+                               sig, sig_len)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// hex_decode: dst gets `len/2` bytes from `len` hex chars. Returns true
+// iff the input is exactly hex and even-length.
+static bool hex_decode(const char *src, size_t len,
+                       uint8_t *dst, size_t dst_cap)
+{
+    if (len % 2 != 0 || dst_cap < len / 2) return false;
+    for (size_t i = 0; i < len; i++) {
+        char c = src[i];
+        int  v;
+        if      (c >= '0' && c <= '9') v = c - '0';
+        else if (c >= 'a' && c <= 'f') v = 10 + c - 'a';
+        else if (c >= 'A' && c <= 'F') v = 10 + c - 'A';
+        else return false;
+        if ((i & 1) == 0) dst[i / 2]  = (uint8_t)(v << 4);
+        else              dst[i / 2] |= (uint8_t)v;
+    }
+    return true;
+}
 
 // --- helpers --------------------------------------------------------
 
@@ -170,8 +304,16 @@ void firmware_try_update(bool force, fw_update_outcome_t *out)
         copy_str(out->error, sizeof(out->error), "Manifest JSON invalid.");
         return;
     }
-    const cJSON *j_ver    = cJSON_GetObjectItem(root, "version");
-    const cJSON *j_builds = cJSON_GetObjectItem(root, "builds");
+
+    // ---- Pull the fields we need to verify before trusting anything. ----
+    const cJSON *j_ver       = cJSON_GetObjectItem(root, "version");
+    const cJSON *j_builds    = cJSON_GetObjectItem(root, "builds");
+    const cJSON *j_integrity = cJSON_GetObjectItem(root, "integrity");
+    const cJSON *j_app_hash  = cJSON_IsObject(j_integrity)
+                             ? cJSON_GetObjectItem(j_integrity, "app_sha256") : NULL;
+    const cJSON *j_sig_b64   = cJSON_IsObject(j_integrity)
+                             ? cJSON_GetObjectItem(j_integrity, "signature")  : NULL;
+
     if (!cJSON_IsString(j_ver)) {
         cJSON_Delete(root);
         out->result = FW_UPDATE_ERR_PARSE;
@@ -179,6 +321,65 @@ void firmware_try_update(bool force, fw_update_outcome_t *out)
                  "Manifest missing version field.");
         return;
     }
+    if (!cJSON_IsString(j_app_hash) || strlen(j_app_hash->valuestring) != 64) {
+        cJSON_Delete(root);
+        out->result = FW_UPDATE_ERR_SIGNATURE;
+        copy_str(out->error, sizeof(out->error),
+                 "Manifest missing integrity.app_sha256.");
+        return;
+    }
+    if (!cJSON_IsString(j_sig_b64)) {
+        cJSON_Delete(root);
+        out->result = FW_UPDATE_ERR_SIGNATURE;
+        copy_str(out->error, sizeof(out->error),
+                 "Manifest missing integrity.signature.");
+        return;
+    }
+
+    const char *new_version  = j_ver->valuestring;
+    const char *app_hash_hex = j_app_hash->valuestring;
+    const char *sig_b64      = j_sig_b64->valuestring;
+
+    // ---- Verify signature over (domain-tag, version, app_sha256). ----
+    // Up to ~80 B of base64 holds the typical ~70 B ASN.1-DER ECDSA-P256
+    // signature comfortably; reject anything wildly larger as a sanity
+    // guard before we feed it to mbedtls.
+    uint8_t sig[96];
+    size_t  sig_len = 0;
+    int rc = mbedtls_base64_decode(sig, sizeof(sig), &sig_len,
+                                   (const unsigned char *)sig_b64,
+                                   strlen(sig_b64));
+    if (rc != 0) {
+        ESP_LOGE(TAG, "base64_decode(signature): -0x%04x", -rc);
+        cJSON_Delete(root);
+        out->result = FW_UPDATE_ERR_SIGNATURE;
+        copy_str(out->error, sizeof(out->error),
+                 "Signature is not valid base64.");
+        return;
+    }
+    if (!verify_manifest_signature(new_version, app_hash_hex, sig, sig_len)) {
+        ESP_LOGE(TAG, "manifest signature verification failed");
+        cJSON_Delete(root);
+        out->result = FW_UPDATE_ERR_SIGNATURE;
+        copy_str(out->error, sizeof(out->error),
+                 "Manifest signature does not match.");
+        return;
+    }
+    ESP_LOGI(TAG, "manifest signature OK (version=%s)", new_version);
+
+    // Decode the expected hash now so the post-download compare is just
+    // a memcmp.
+    uint8_t expected_hash[32];
+    if (!hex_decode(app_hash_hex, 64, expected_hash, sizeof(expected_hash))) {
+        cJSON_Delete(root);
+        out->result = FW_UPDATE_ERR_SIGNATURE;
+        copy_str(out->error, sizeof(out->error),
+                 "app_sha256 is not 64 hex chars.");
+        return;
+    }
+
+    // ---- Pick app URL from builds[] (URL is *not* signed; trust comes
+    // from the post-download hash compare against the signed value). ----
     if (!cJSON_IsArray(j_builds) || cJSON_GetArraySize(j_builds) == 0) {
         cJSON_Delete(root);
         out->result = FW_UPDATE_ERR_PARSE;
@@ -218,7 +419,6 @@ void firmware_try_update(bool force, fw_update_outcome_t *out)
                  "Manifest has no app binary part.");
         return;
     }
-    const char *new_version = j_ver->valuestring;
     copy_str(out->new_version, sizeof(out->new_version), new_version);
 
     int vcmp = semver_cmp(new_version, out->current_version);
@@ -264,6 +464,10 @@ void firmware_try_update(bool force, fw_update_outcome_t *out)
     // running image equals this version (i.e. it survived).
     config_set_last_failed_ota(new_version);
 
+    // ---- Download via begin/perform/finish so we can hash the
+    // just-written partition before activating it. The all-in-one
+    // esp_https_ota() flips the boot partition implicitly, leaving no
+    // room to reject a wrong-hash binary. ----
     esp_http_client_config_t http_cfg = {
         .url = new_url,
         .crt_bundle_attach = esp_crt_bundle_attach,
@@ -273,13 +477,96 @@ void firmware_try_update(bool force, fw_update_outcome_t *out)
     esp_https_ota_config_t ota_cfg = {
         .http_config = &http_cfg,
     };
-    esp_err_t err = esp_https_ota(&ota_cfg);
+
+    esp_https_ota_handle_t ota_h = NULL;
+    esp_err_t err = esp_https_ota_begin(&ota_cfg, &ota_h);
+    if (err != ESP_OK || ota_h == NULL) {
+        ESP_LOGE(TAG, "esp_https_ota_begin: %s", esp_err_to_name(err));
+        config_set_last_failed_ota(NULL);
+        cJSON_Delete(root);
+        out->result = FW_UPDATE_ERR_OTA;
+        copy_str(out->error, sizeof(out->error), esp_err_to_name(err));
+        return;
+    }
+
+    while ((err = esp_https_ota_perform(ota_h)) == ESP_ERR_HTTPS_OTA_IN_PROGRESS) {
+        // perform() yields after each chunk; let lower-priority tasks run.
+        vTaskDelay(1);
+    }
+    if (err != ESP_OK || !esp_https_ota_is_complete_data_received(ota_h)) {
+        ESP_LOGE(TAG, "esp_https_ota_perform: %s", esp_err_to_name(err));
+        esp_https_ota_abort(ota_h);
+        config_set_last_failed_ota(NULL);
+        cJSON_Delete(root);
+        out->result = FW_UPDATE_ERR_OTA;
+        copy_str(out->error, sizeof(out->error), esp_err_to_name(err));
+        return;
+    }
+
+    // Hash the partition we just wrote. esp_https_ota writes into the
+    // *next* OTA slot; reading from there is safe even though it
+    // hasn't been activated yet (otadata still points at the running
+    // slot). 4 KiB chunks: an even multiple of the flash sector size.
+    const esp_partition_t *next = esp_ota_get_next_update_partition(NULL);
+    int written = esp_https_ota_get_image_len_read(ota_h);
+    if (next == NULL || written <= 0) {
+        ESP_LOGE(TAG, "OTA partition/length unavailable (next=%p len=%d)",
+                 next, written);
+        esp_https_ota_abort(ota_h);
+        config_set_last_failed_ota(NULL);
+        cJSON_Delete(root);
+        out->result = FW_UPDATE_ERR_OTA;
+        copy_str(out->error, sizeof(out->error),
+                 "OTA finished without a writable partition.");
+        return;
+    }
+    uint8_t computed_hash[32];
+    {
+        mbedtls_sha256_context sha;
+        mbedtls_sha256_init(&sha);
+        mbedtls_sha256_starts(&sha, 0);
+        uint8_t chunk[1024];
+        size_t  off = 0;
+        while (off < (size_t)written) {
+            size_t take = sizeof(chunk);
+            if (off + take > (size_t)written) take = (size_t)written - off;
+            esp_err_t re = esp_partition_read(next, off, chunk, take);
+            if (re != ESP_OK) {
+                ESP_LOGE(TAG, "esp_partition_read @%u: %s",
+                         (unsigned)off, esp_err_to_name(re));
+                mbedtls_sha256_free(&sha);
+                esp_https_ota_abort(ota_h);
+                config_set_last_failed_ota(NULL);
+                cJSON_Delete(root);
+                out->result = FW_UPDATE_ERR_OTA;
+                copy_str(out->error, sizeof(out->error),
+                         "Partition read-back failed.");
+                return;
+            }
+            mbedtls_sha256_update(&sha, chunk, take);
+            off += take;
+        }
+        mbedtls_sha256_finish(&sha, computed_hash);
+        mbedtls_sha256_free(&sha);
+    }
+
+    if (memcmp(computed_hash, expected_hash, sizeof(expected_hash)) != 0) {
+        ESP_LOGE(TAG, "downloaded image hash does not match signed manifest");
+        esp_https_ota_abort(ota_h);
+        // Pessimistic marker stays cleared: this is an integrity
+        // failure, not a "this version always bricks me". The next
+        // attempt should retry with the same target.
+        config_set_last_failed_ota(NULL);
+        cJSON_Delete(root);
+        out->result = FW_UPDATE_ERR_SIGNATURE;
+        copy_str(out->error, sizeof(out->error),
+                 "App binary hash does not match signed manifest.");
+        return;
+    }
+
+    err = esp_https_ota_finish(ota_h);
     if (err != ESP_OK) {
-        ESP_LOGE(TAG, "esp_https_ota: %s", esp_err_to_name(err));
-        // The download itself failed (network / signature / flash
-        // write). Nothing was activated, so don't keep the pessimistic
-        // marker around — leaving it set would block a healthy retry
-        // after a transient WiFi glitch.
+        ESP_LOGE(TAG, "esp_https_ota_finish: %s", esp_err_to_name(err));
         config_set_last_failed_ota(NULL);
         cJSON_Delete(root);
         out->result = FW_UPDATE_ERR_OTA;

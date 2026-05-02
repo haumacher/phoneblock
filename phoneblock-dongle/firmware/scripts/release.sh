@@ -94,8 +94,26 @@ cp "${BUILD_DIR}/partition_table/partition-table.bin" "${STAGE_VERSION}/"
 cp "${BUILD_DIR}/ota_data_initial.bin"                "${STAGE_VERSION}/"
 cp "${BUILD_DIR}/phoneblock_dongle.bin"               "${STAGE_VERSION}/"
 
+# Sign the app binary. sign-manifest.sh pulls the Ed25519 private key from
+# KeePassXC (master password prompt on tty), signs a deterministic payload
+# of (domain-tag, version, app-sha256), and emits two KEY=VALUE lines. The
+# signature lands in both the versioned and the stable manifest below.
+SIGN_OUT="$("${SCRIPT_DIR}/sign-manifest.sh" \
+    "${STAGE_VERSION}/phoneblock_dongle.bin" "${VERSION}")"
+APP_SHA256="$(printf '%s\n' "$SIGN_OUT" | sed -n 's/^SHA256=//p')"
+APP_SIG="$(printf '%s\n' "$SIGN_OUT" | sed -n 's/^SIG=//p')"
+if [[ -z "$APP_SHA256" || -z "$APP_SIG" ]]; then
+    echo "ERROR: sign-manifest.sh did not return SHA256 + SIG." >&2
+    exit 1
+fi
+
 # Versioned manifest: relative paths, served from /dongle/firmware/<version>/.
-sed "s/@VERSION@/${VERSION}/g" "${SCRIPT_DIR}/manifest.json.tmpl" \
+# `|` as sed-delimiter for the signature line because the base64 output may
+# contain `/` (no need for an explicit escape, and `+`/`=` are already safe).
+sed -e "s/@VERSION@/${VERSION}/g" \
+    -e "s/@APP_SHA256@/${APP_SHA256}/g" \
+    -e "s|@SIGNATURE@|${APP_SIG}|g" \
+    "${SCRIPT_DIR}/manifest.json.tmpl" \
     > "${STAGE_VERSION}/manifest.json"
 
 # Stable manifest: absolute URLs into the version directory. The install page
@@ -103,6 +121,8 @@ sed "s/@VERSION@/${VERSION}/g" "${SCRIPT_DIR}/manifest.json.tmpl" \
 # the URL never changes; only this single file flips at release time.
 BASE_URL="https://cdn.phoneblock.net/dongle/firmware/${VERSION}"
 sed -e "s/@VERSION@/${VERSION}/g" \
+    -e "s/@APP_SHA256@/${APP_SHA256}/g" \
+    -e "s|@SIGNATURE@|${APP_SIG}|g" \
     -e "s|\"path\": \"|\"path\": \"${BASE_URL}/|g" \
     "${SCRIPT_DIR}/manifest.json.tmpl" \
     > "${STAGE_STABLE}/manifest.json"

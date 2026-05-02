@@ -37,6 +37,7 @@ test_api_scan: test_api_scan.c ../main/api_scan.c ../main/api_scan.h cjson.o
 
 test: $(BINS)
 	@set -e; for b in $(BINS); do echo "→ $$b"; ./$$b; done
+	@echo "→ test-signing-roundtrip.sh"; ./test-signing-roundtrip.sh
 
 clean:
 	rm -f $(BINS) cjson.o

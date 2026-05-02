@@ -30,6 +30,7 @@ typedef enum {
     FW_UPDATE_SKIPPED_FAILED,   // manifest matches last_failed_ota (and !force)
     FW_UPDATE_ERR_NETWORK,      // could not fetch manifest
     FW_UPDATE_ERR_PARSE,        // manifest invalid / missing fields
+    FW_UPDATE_ERR_SIGNATURE,    // manifest signature / app-binary hash invalid
     FW_UPDATE_ERR_OTA,          // esp_https_ota failed
 } fw_update_result_t;
 

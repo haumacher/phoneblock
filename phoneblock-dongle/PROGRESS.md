@@ -353,30 +353,19 @@ Hardware-Entscheidungsmatrix [HARDWARE.md](HARDWARE.md), QEMU-Setup
   `CreateAuthTokenServlet`-Erweiterung ist committed, muss aber
   auf `phoneblock.net` deployed werden, damit neue Tokens auch
   produktiv funktionieren.
-- [ ] **Täglicher PhoneBlock-Token-Health-Check** — aktuell wird das
-  Token nur einmal beim Boot (und direkt nach OAuth) via
-  `phoneblock_selftest` gegen `/api/test` geprüft. Löscht der Nutzer
-  das Token serverseitig im PhoneBlock-Account, bleibt der Dongle
-  still kaputt: eingehende Calls werden nicht mehr korrekt klassi-
-  fiziert, aber der Status zeigt weiterhin „READY". Task alle 24 h
-  (mit zufälligem Offset pro Device, damit die CDN-Hits nicht
-  synchron einlaufen), `stats_record_error` bei 401/403, plus einen
-  neuen Status-Bit („token_invalid") in `/api/status`, damit die
-  LED-FSM das als ERROR-Pattern rendert (siehe Status-LED-Folge-
-  punkt unten). Idealerweise die gleiche Task-Infrastruktur wie
-  `sync_start` (Scheduler + Wake-Callback).
-- [ ] **Privacy-Upgrade: API-Query auf SHA1-Hash umstellen** —
-  aktuell sendet `phoneblock_check` die Klartext-Rufnummer an
-  `GET /api/num/{phone}?format=json`. Die Mobile-App und der
-  Docker-AnswerBot nutzen stattdessen `GET /api/check?sha1=…`,
-  wodurch die Nummer den Server nie im Klartext erreicht. Zu tun:
-  SHA1-Hashing der international normalisierten Nummer im
-  Dongle-Client, Umstellung der URL, Auswertung des
-  `blackListed`-Flags aus der Response (persönliche Blacklist
-  des angemeldeten Users hat Vorrang vor der Vote-Schwelle;
-  ohne dieses Flag ist das Verhalten analog zum Bug aus
-  Issue #297). `/api/num/` bleibt parallel erhalten und honoriert
-  das Flag inzwischen ebenfalls, ist aber nicht datenschutzoptimal.
+- [x] **Täglicher PhoneBlock-Token-Health-Check** — `selftest.{c,h}`
+  ruft `phoneblock_selftest()` alle 24 h mit ±30 min Jitter (`esp_random`-
+  basiert), damit Fleet-Power-Blip nicht jeden Dongle auf dieselbe
+  CDN-Minute synchronisiert. Skip, wenn kein Token gesetzt. Boot-Run
+  bleibt synchron; das Task ergänzt nur den langlaufenden Schedule.
+  Noch offen: Status-Bit „token_invalid" in `/api/status` und das
+  daran hängende LED-`ERROR`-Pattern (siehe Status-LED-Folgepunkt unten).
+- [x] **Privacy-Upgrade: hash-basierte API-Query** — `api.c` ruft
+  `GET /api/check-prefix?sha1=<hash>&format=json` mit zusätzlichen
+  `prefix10`/`prefix100`-Hashes (letzte 1–2 Ziffern abgeschnitten)
+  für die k-Anonymity-Auswertung. Die Klartext-Nummer verlässt
+  den Dongle nie. Die persönliche Blacklist wird über das
+  `blackListed`-Flag aus der Response geehrt.
 
 ### Status-LED
 - [x] On-Board-LED als Betriebsanzeige — `status_led.{c,h}`-Modul
@@ -443,21 +432,41 @@ Umsetzungsschritte:
   Wird in `config_load()` aufgerufen, wenn `sip_host` im NVS leer ist.
   Umsetzung erst mit echter Hardware — QEMUs User-mode-Netzwerk
   simuliert keinen sinnvollen Gateway/DNS-Raum.
-- [ ] **Periodischer OTA-Check** (aktuell nur manuell über den
-  „Auf Aktualisierung prüfen"-Button). Timer-Task, der z. B. alle
-  24 h `handle_firmware_check`-Logik ausführt — mit zufälligem
-  Offset pro Device, damit die CDN-Hits nicht synchron einlaufen.
-- [ ] **Signatur-Verifikation im OTA-Pfad** — derzeit verlassen
-  wir uns rein auf TLS zum CDN. Bei CDN-Kompromittierung oder DNS-
-  Hijacking käme eine manipulierte Firmware durch. Lösung: Build-
-  Pipeline signiert die `.bin` mit einem Entwickler-Key, Public-Key
-  als Byte-Array in die Firmware eingebacken, `esp_https_ota` nur
-  nach erfolgreicher Signaturprüfung `esp_ota_set_boot_partition`
-  aufrufen lassen (custom validation hook). Kein Secure Boot V2 —
-  lokaler USB-Flash soll weiterhin ohne Signatur möglich bleiben,
-  damit Community-Forks und Bastler nicht ausgesperrt werden.
-- [ ] **WiFi-Reconnect-Strategie** bei Router-Ausfall (Backoff,
-  NVS-gepinnte Zugangsdaten).
+- [x] **Periodischer OTA-Check** — `firmware_update.c::update_task`
+  läuft alle 24 h mit ±30 min Jitter, ruft `firmware_try_update()`
+  gegen das Manifest. Skip, wenn kein Token gesetzt oder
+  `config_auto_update_enabled()` ausgeschaltet (gesetzt automatisch
+  beim manuellen Firmware-Upload). Boot-Path lässt die erste
+  Iteration ein volles Intervall warten — die laufende Image-
+  Validierung passiert ohnehin schon beim Start.
+- [x] **Signatur-Verifikation im OTA-Pfad** — ECDSA-P256-SHA256 über
+  ein domain-separiertes Manifest-Payload (`phoneblock-dongle-ota-v1
+  \nversion=…\napp_sha256=…\n`). Public Key (91 B DER-SPKI) als
+  Konstante in `firmware_update.c` (`OTA_PUBKEY_PRIMARY` + freier
+  Rotations-Slot), Verify via `mbedtls_pk_verify` (zero new deps —
+  ECDSA + SHA-256 sind in mbedtls schon für TLS gelinkt).
+  `firmware_try_update` ist auf `esp_https_ota_begin/perform/finish`
+  umgestellt: nach erfolgreichem Download wird die geschriebene
+  Partition zurückgelesen und SHA-256 berechnet, vor `finish` gegen
+  den signierten `app_sha256` verglichen — Mismatch ⇒ `abort`, Slot
+  bleibt deaktiviert. Lokales `idf.py flash` und manueller
+  `POST /api/firmware`-Upload bleiben **bewusst** signaturfrei,
+  damit Community-Forks und Recovery-Pfade möglich bleiben (kein
+  Secure Boot V2). Build-Seite signiert via
+  `firmware/scripts/sign-manifest.sh` (zieht den Privat-Key aus
+  KeePassXC ins tmpfs, `openssl dgst -sha256 -sign`, shred). End-to-
+  End-Roundtrip-Test in `firmware/test/test-signing-roundtrip.sh`
+  (8 Checks: Clean-Path + 5 Tamper-Varianten + Hash-Post-Check).
+  Setup + Rotation: [RELEASE.md](RELEASE.md) → „OTA-Signing-Key".
+- [x] **WiFi-Reconnect-Strategie** bei Router-Ausfall — `wifi.c`
+  zählt aufeinanderfolgende `WIFI_EVENT_STA_DISCONNECTED`-Events
+  ohne dazwischenliegendes `GOT_IP` und löst nach
+  `RECOVERY_DISCONNECT_THRESHOLD = 30` (≈ 75 s bei Reason-210-Loop)
+  einen einmaligen Recovery-Wipe der NVS-Credentials + WPS-Restart
+  aus (`s_recovery_done`-Latch verhindert Loop). Reicht für
+  AP-Reboots (kurzer Disconnect-Burst, GOT_IP danach) und für
+  Wechsel des AP-Security-Profils (Credentials passen nicht mehr
+  → Repairing).
 - [ ] **Feldfeste Fehlerbehandlung**: Fritz!Box down, API down,
   TLS-Fehler, Zertifikatsrotation.
 
@@ -471,9 +480,16 @@ Umsetzungsschritte:
   oder Wechsel auf EGBO-PICO-D4-Dongle)
 
 ### Production-Readiness
-- [ ] Umzug von Test-Instanz auf `phoneblock.net`-Produktions-API
-- [ ] OAuth-Endpunkt deployen — `CreateAuthTokenServlet`-Erweiterung
-  ist committed, muss aber mit der nächsten Server-Release rausgehen.
+- [x] Default-API auf Produktions-Instanz — `Kconfig.projbuild`
+  liefert `https://phoneblock.net/phoneblock` als
+  `CONFIG_PHONEBLOCK_BASE_URL`. Test-Instanz `…/pb-test` bleibt
+  optional über die Web-UI / `sdkconfig.defaults.local` erreichbar.
+- [ ] **OAuth-Endpunkt deployen** — `CreateAuthTokenServlet`-
+  Erweiterung (`APP_ID_DONGLE = "PhoneBlockDongle"`, Whitelist für
+  LAN-Callbacks) lebt im Commit `d15550d6` auf Branch
+  `phoneblock-dongle`. Erst Branch-Merge nach `master`, dann
+  Server-Release. **Beta-Blocker** — ohne das holt sich kein neuer
+  Nutzer einen Token.
 - [ ] Optionales Reporting zurück an PhoneBlock (geblockte Calls,
   welche Nummern)
 - [ ] Firmware-Versionierung + Changelog-Policy
