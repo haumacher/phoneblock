@@ -20,6 +20,7 @@ import org.xml.sax.SAXException;
 import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.carddav.CardDavRequestParser.MultiGetRequest;
 import de.haumacher.phoneblock.carddav.resource.AddressBookCache;
+import de.haumacher.phoneblock.carddav.resource.AddressBookCollectionResource;
 import de.haumacher.phoneblock.carddav.resource.AddressBookResource;
 import de.haumacher.phoneblock.carddav.resource.MultiStatusWriter;
 import de.haumacher.phoneblock.carddav.resource.PrincipalResource;
@@ -162,7 +163,18 @@ public class CardDavServlet extends HttpServlet {
 	}
 
 	private void doPropfind(HttpServletRequest req, HttpServletResponse resp) throws IOException, SAXException, XMLStreamException {
-		Resource resource = getResource(req);
+		Depth depth = Depth.fromHeader(req.getHeader("depth"));
+
+		Resource resource;
+		if (depth == Depth.EMPTY) {
+			// Lightweight path for Depth: 0 PROPFIND on the address-book URL —
+			// the dominant iOS-polling pattern. Falls through to the heavy
+			// resolver for everything else (root, principal, sub-resources).
+			Resource lightweight = resolveAddressBookCollectionLightweight(req);
+			resource = lightweight != null ? lightweight : getResource(req);
+		} else {
+			resource = getResource(req);
+		}
 		if (resource == null) {
 			handleNotFound(req, resp);
 			return;
@@ -176,7 +188,6 @@ public class CardDavServlet extends HttpServlet {
 		}
 
 		List<QName> properties = CardDavRequestParser.parsePropfindBody(req.getInputStream());
-		Depth depth = Depth.fromHeader(req.getHeader("depth"));
 
 		if (LOG.isDebugEnabled()) {
 			StringWriter out = new StringWriter();
@@ -199,6 +210,33 @@ public class CardDavServlet extends HttpServlet {
 		} finally {
 			MultiStatusWriter.close(writer);
 		}
+	}
+
+	/**
+	 * Resolves the request to a {@link AddressBookCollectionResource} if it
+	 * targets exactly the address-book URL ({@code /addresses/{user}/}) and
+	 * the user is authenticated. Returns {@code null} for any other path,
+	 * for sub-resources, or when authentication fails — caller falls through
+	 * to {@link #getResource}.
+	 */
+	private AddressBookCollectionResource resolveAddressBookCollectionLightweight(HttpServletRequest req) {
+		String resourcePath = req.getPathInfo();
+		if (resourcePath == null || !resourcePath.startsWith(ADDRESSES_PATH)) {
+			return null;
+		}
+		int endIdx = resourcePath.indexOf('/', ADDRESSES_PATH.length());
+		if (endIdx < 0 || endIdx != resourcePath.length() - 1) {
+			// Not exactly /addresses/{user}/ — could be a sub-resource (PUT/GET).
+			return null;
+		}
+		String principal = resourcePath.substring(ADDRESSES_PATH.length(), endIdx);
+		if (!isAuthenticated(req, principal, resourcePath)) {
+			return null;
+		}
+		UserSettings settings = LoginFilter.getUserSettings(req);
+		String etag = AddressBookCache.getInstance().lookupCollectionEtag(principal, settings);
+		String rootUrl = SERVER_LOC + req.getContextPath() + req.getServletPath();
+		return new AddressBookCollectionResource(rootUrl, resourcePath, etag);
 	}
 
 	private void doReport(HttpServletRequest req, HttpServletResponse resp) throws IOException, SAXException, XMLStreamException {

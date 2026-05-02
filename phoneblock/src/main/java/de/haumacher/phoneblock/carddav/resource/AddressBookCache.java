@@ -117,6 +117,22 @@ public class AddressBookCache implements ServletContextListener {
 		return computeBlocks(principal, now, settings).blocks;
 	}
 
+	/**
+	 * Computes the collection ETag for the given user without materializing an
+	 * {@link AddressBookResource} (and therefore without allocating the
+	 * per-block {@link AddressResource} wrappers). Used to serve Depth: 0
+	 * PROPFINDs on the address-book URL — the dominant iOS-polling pattern.
+	 *
+	 * <p>
+	 * The returned ETag is byte-identical to
+	 * {@link AddressBookResource#getEtag()} for the same user state, because
+	 * both go through {@link CollectionEtag}.
+	 * </p>
+	 */
+	public String lookupCollectionEtag(String principal, UserSettings settings) {
+		return computeBlocks(principal, System.currentTimeMillis(), settings).etag;
+	}
+
 	private LoadResult computeBlocks(String principal, long now, UserSettings settings) {
 		ListType listType = ListType.valueOf(settings.getDialPrefix(), settings.getMinVotes(),
 				settings.getMaxLength(), settings.isWildcards(), settings.isNationalOnly());

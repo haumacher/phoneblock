@@ -16,14 +16,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.analysis.NumberBlock;
-import de.haumacher.phoneblock.carddav.schema.CardDavSchema;
 import de.haumacher.phoneblock.carddav.schema.DavSchema;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * {@link Resource} representing a collection of {@link AddressBookResource}s.
  */
-public class AddressBookResource extends Resource {
+public class AddressBookResource extends AbstractAddressBook {
 
 	private static final Logger LOG = LoggerFactory.getLogger(AddressBookResource.class);
 
@@ -67,23 +66,8 @@ public class AddressBookResource extends Resource {
 	}
 
 	@Override
-	protected boolean isCollection() {
-		return true;
-	}
-
-	@Override
-	protected QName getResourceType() {
-		return CardDavSchema.CARDDAV_ADDRESSBOOK;
-	}
-
-	@Override
 	public Collection<? extends Resource> list() {
 		return _addressById.values();
-	}
-
-	@Override
-	protected String getDisplayName() {
-		return "BLOCKLIST";
 	}
 
 	@Override

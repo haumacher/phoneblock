@@ -215,6 +215,50 @@ class TestRenderPipeline {
 		assertEquals(ROOT_URL + "/addresses/alice/", singleText(home, DavSchema.DAV_NS, "href"));
 	}
 
+	/**
+	 * Phase-3 regression: the lightweight {@link AddressBookCollectionResource}
+	 * must render byte-identical Depth: 0 output to the heavy
+	 * {@link AddressBookResource} when both carry the same ETag — otherwise
+	 * the two paths would emit different XML for the same client poll.
+	 */
+	@Test
+	void addressBookCollection_lightweight_matchesHeavyForCollectionProps() throws Exception {
+		AddressBookResource heavy = fixtureBook();
+		RenderContext ctx = new RenderContext("alice");
+
+		AddressBookCollectionResource light = new AddressBookCollectionResource(
+			ROOT_URL, "/addresses/alice/", heavy.getEtag());
+
+		Document heavyDoc = render(writer -> heavy.propfind(ctx, null, writer, COLLECTION_PROPS));
+		Document lightDoc = render(writer -> light.propfind(ctx, null, writer, COLLECTION_PROPS));
+
+		Element heavyResponse = (Element) heavyDoc.getElementsByTagNameNS(DavSchema.DAV_NS, "response").item(0);
+		Element lightResponse = (Element) lightDoc.getElementsByTagNameNS(DavSchema.DAV_NS, "response").item(0);
+
+		// Property values must coincide one-by-one.
+		assertEquals(singleText(heavyResponse, DavSchema.DAV_NS, "displayname"),
+			singleText(lightResponse, DavSchema.DAV_NS, "displayname"));
+		assertEquals(singleText(heavyResponse, DavSchema.DAV_NS, "getetag"),
+			singleText(lightResponse, DavSchema.DAV_NS, "getetag"));
+		assertEquals(singleText(heavyResponse, CardDavSchema.CALENDARSERVER_NS, "getctag"),
+			singleText(lightResponse, CardDavSchema.CALENDARSERVER_NS, "getctag"));
+
+		// resourcetype contents are identical (both have collection + addressbook children).
+		Element heavyType = descendant(heavyResponse, DavSchema.DAV_NS, "resourcetype");
+		Element lightType = descendant(lightResponse, DavSchema.DAV_NS, "resourcetype");
+		assertNotNull(childElement(lightType, DavSchema.DAV_NS, "collection"));
+		assertNotNull(childElement(lightType, CardDavSchema.CARDDAV_NS, "addressbook"));
+		assertNotNull(childElement(heavyType, DavSchema.DAV_NS, "collection"));
+		assertNotNull(childElement(heavyType, CardDavSchema.CARDDAV_NS, "addressbook"));
+	}
+
+	@Test
+	void addressBookCollection_lightweight_listIsEmpty() {
+		AddressBookCollectionResource light = new AddressBookCollectionResource(
+			ROOT_URL, "/addresses/alice/", "abc123");
+		assertEquals(0, light.list().size());
+	}
+
 	@Test
 	void principal_currentUserPrincipal_unauthenticated_returns404() throws Exception {
 		PrincipalResource principal = new PrincipalResource(ROOT_URL, "/principals/alice", "alice");
