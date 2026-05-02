@@ -2,7 +2,7 @@
 <html>
 <head th:fragment="head(titleKey, descriptionKey, titleText, descriptionText)">
 <th:block th:fragment="headContent(titleKey, descriptionKey, titleText, descriptionText)">
-	<title th:text="${titleText ?: #messages.msg(titleKey ?: 'app.defaultTitle')}"></title>
+	<title th:text="${titleText != null ? titleText : #messages.msg(titleKey != null ? titleKey : 'app.defaultTitle')}"></title>
 
 	<meta content="text/html;charset=utf-8" http-equiv="content-type"/>
 
@@ -10,17 +10,17 @@
 	<link rel="alternate" th:each="lang : ${languages}" th:href="|https://phoneblock.net${contextPath}${currentPage}?lang=${lang.tag}|" th:hreflang="${lang.tag}" th:unless="${lang == currentLang}"/>
 
 	<meta content="width=device-width, initial-scale=1" name="viewport"/>
-	<meta name="description" th:content="${descriptionText ?: #messages.msg(descriptionKey ?: 'app.defaultDescription')}"/>
+	<meta name="description" th:content="${descriptionText != null ? descriptionText : #messages.msg(descriptionKey != null ? descriptionKey : 'app.defaultDescription')}"/>
 	<meta name="keywords" th:content="${keywords}" th:if="${keywords}"/>
 	<meta content="summary" name="twitter:card"/>
 	<meta content="@bhaumacher" name="twitter:site"/>
 	<meta content="@bhaumacher" name="twitter:creator"/>
 	<meta name="twitter:image" th:content="@{/assets/img/app-preview.png}"/>
 
-	<meta name="og:title" th:content="${titleText ?: #messages.msg(titleKey ?: 'app.defaultTitle')}"/>
+	<meta name="og:title" th:content="${titleText != null ? titleText : #messages.msg(titleKey != null ? titleKey : 'app.defaultTitle')}"/>
 	<meta name="og:url" th:content="${canonical}"/>
 	<link rel="canonical" th:href="${canonical}"/>
-	<meta name="og:description" th:content="${descriptionText ?: #messages.msg(descriptionKey ?: 'app.defaultDescription')}"/>
+	<meta name="og:description" th:content="${descriptionText != null ? descriptionText : #messages.msg(descriptionKey != null ? descriptionKey : 'app.defaultDescription')}"/>
 	<meta name="og:image" th:content="@{/assets/img/app-preview.png}"/>
 	<meta content="website" name="og:type"/>
 	<meta content="de_DE" name="og:locale"/>
