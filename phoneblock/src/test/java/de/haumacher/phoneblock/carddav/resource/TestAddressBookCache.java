@@ -109,6 +109,68 @@ public class TestAddressBookCache {
 		Assertions.assertEquals(Arrays.asList("+39011111111", "+49333333333"), phoneNumbers(numbers));
 	}
 	
+	/**
+	 * The lightweight {@link AddressBookCache#lookupCollectionEtag} must
+	 * produce a byte-identical ETag to the heavy
+	 * {@link AddressBookCache#lookupAddressBook} path for the same user —
+	 * otherwise iOS would see a flapping ctag between the two paths and
+	 * resync constantly.
+	 */
+	@Test
+	public void testLookupCollectionEtag_matchesHeavyPath_commonOnly() {
+		_db.createUser("u1", "u1", "fr", "+39");
+		UserSettings settings = _db.getSettings("u1");
+		settings.setNationalOnly(false);
+		settings.setMinVotes(2);
+		_db.updateSettings(settings);
+
+		AddressBookResource heavy = _cache.lookupAddressBook(
+			"https://x", "/x", "/addresses/u1/", "u1", settings);
+		String light = _cache.lookupCollectionEtag("u1", settings);
+
+		Assertions.assertEquals(heavy.getEtag(), light);
+	}
+
+	@Test
+	public void testLookupCollectionEtag_matchesHeavyPath_personalized() {
+		_db.createUser("u1", "u1", "fr", "+39");
+		UserSettings settings = _db.getSettings("u1");
+		settings.setNationalOnly(false);
+		settings.setMinVotes(2);
+		_db.updateSettings(settings);
+
+		_db.addRating("u1", NumberAnalyzer.analyze("+39055555555", "+49"), "+39",
+			Rating.E_ADVERTISING, null, "fr", _now);
+
+		// Force a fresh lookup — settings changes invalidate caches but personal
+		// rating writes don't, so flush the user cache to mirror what the live
+		// PUT path does.
+		_cache.flushUserCache("u1");
+
+		AddressBookResource heavy = _cache.lookupAddressBook(
+			"https://x", "/x", "/addresses/u1/", "u1", settings);
+		String light = _cache.lookupCollectionEtag("u1", settings);
+
+		Assertions.assertEquals(heavy.getEtag(), light);
+	}
+
+	@Test
+	public void testLookupCollectionEtag_changesWithPersonalization() {
+		_db.createUser("u1", "u1", "fr", "+39");
+		UserSettings settings = _db.getSettings("u1");
+		settings.setNationalOnly(false);
+		settings.setMinVotes(2);
+		_db.updateSettings(settings);
+
+		String before = _cache.lookupCollectionEtag("u1", settings);
+
+		_db.addRating("u1", NumberAnalyzer.analyze("+39055555555", "+49"), "+39",
+			Rating.E_ADVERTISING, null, "fr", _now);
+
+		String after = _cache.lookupCollectionEtag("u1", settings);
+		Assertions.assertNotEquals(before, after);
+	}
+
 	@Test
 	public void testLookupPersonalized() {
 		_db.createUser("u1", "u1", "fr", "+39");

@@ -41,37 +41,6 @@ public class DomUtil {
 		}
 	}
 
-	public static void appendTextElement(Element response, QName qname, String text) {
-		appendTextElement(response, qname.getNamespaceURI(), qname.getLocalPart(), qname.getPrefix(), text);
-	}
-	
-	public static void appendTextElement(Element response, String nsUri, String localName, String prefix, String text) {
-		appendText(appendElement(response, nsUri, localName, prefix), text);
-	}
-
-	public static void appendText(Element element, String string) {
-		element.appendChild(element.getOwnerDocument().createTextNode(string));
-	}
-
-	public static Element appendElement(Node parent, QName qname) {
-		return appendElement(parent, qname.getNamespaceURI(), qname.getLocalPart(), qname.getPrefix());
-	}
-	
-	public static Element appendElement(Node parent, String nsUri, String localName, String prefix) {
-		Element element;
-		if (prefix.isEmpty()) {
-			element = ownerDocument(parent).createElementNS(nsUri, localName);
-		} else {
-			element = ownerDocument(parent).createElementNS(nsUri, prefix + ':' + localName);
-		}
-		parent.appendChild(element);
-		return element;
-	}
-
-	public static Document ownerDocument(Node parent) {
-		return parent.getNodeType() == Node.DOCUMENT_NODE ? (Document) parent : parent.getOwnerDocument();
-	}
-
 	public static Iterable<Element> elements(Node root, QName... names) {
 		Iterable<Element> children = elements(root);
 		for (QName name : names) {

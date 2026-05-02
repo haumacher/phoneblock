@@ -3,22 +3,13 @@
  */
 package de.haumacher.phoneblock.carddav.resource;
 
-import static de.haumacher.phoneblock.util.DomUtil.appendElement;
-
-import java.util.List;
-
 import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
-import org.w3c.dom.Element;
-
-import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.carddav.CardDavServlet;
 import de.haumacher.phoneblock.carddav.schema.CardDavSchema;
 import de.haumacher.phoneblock.carddav.schema.DavSchema;
-import de.haumacher.phoneblock.db.DBService;
-import de.haumacher.phoneblock.db.settings.UserSettings;
-import de.haumacher.phoneblock.util.DomUtil;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
@@ -26,34 +17,28 @@ import jakarta.servlet.http.HttpServletResponse;
  */
 public class PrincipalResource extends Resource {
 
-	private String _principal;
+	private final String _principal;
 
-	/** 
+	/**
 	 * Creates a {@link PrincipalResource}.
 	 */
 	public PrincipalResource(String rootUrl, String resourcePath, String principal) {
 		super(rootUrl, resourcePath);
 		_principal = principal;
 	}
-	
-	@Override
-	public void propfind(HttpServletRequest req, Resource parent, Element multistatus, List<QName> properties) {
-		String userAgent = req.getHeader("User-Agent");
-		UserSettings cachedSettings = LoginFilter.getUserSettings(req);
 
-		DBService.getInstance().updateLastAccess(_principal, System.currentTimeMillis(), userAgent, cachedSettings);
-
-		super.propfind(req, parent, multistatus, properties);
-	}
-	
 	@Override
-	public int fillProperty(HttpServletRequest req, Element propElement, QName property) {
+	public int fillProperty(RenderContext ctx, XMLStreamWriter writer, QName property)
+			throws XMLStreamException {
 		if (CardDavSchema.CARDDAV_ADDRESSBOOK_HOME_SET.equals(property)) {
-			Element container = appendElement(propElement, CardDavSchema.CARDDAV_ADDRESSBOOK_HOME_SET);
-			DomUtil.appendTextElement(container, DavSchema.DAV_HREF, url(CardDavServlet.ADDRESSES_PATH + _principal + "/"));
+			writer.writeStartElement(CardDavSchema.CARDDAV_NS, "addressbook-home-set");
+			writer.writeStartElement(DavSchema.DAV_NS, "href");
+			writer.writeCharacters(url(CardDavServlet.ADDRESSES_PATH + _principal + "/"));
+			writer.writeEndElement();
+			writer.writeEndElement();
 			return HttpServletResponse.SC_OK;
 		}
-		return super.fillProperty(req, propElement, property);
+		return super.fillProperty(ctx, writer, property);
 	}
 
 }

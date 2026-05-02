@@ -105,7 +105,7 @@ public class AddressBookCache implements ServletContextListener {
 		LOG.info("Address book computed for: " + principal
 			+ " (" + result.path + ", " + result.blocks.size() + " blocks)");
 		AddressBookResource addressBook = new AddressBookResource(rootUrl, serverRoot, resourcePath, principal,
-				result.blocks, result.settingsHash);
+				result.blocks, result.etag);
 		return _userCache.put(principal, addressBook);
 	}
 
@@ -115,6 +115,22 @@ public class AddressBookCache implements ServletContextListener {
 	 */
 	List<NumberBlock> loadNumbers(String principal, long now, UserSettings settings) {
 		return computeBlocks(principal, now, settings).blocks;
+	}
+
+	/**
+	 * Computes the collection ETag for the given user without materializing an
+	 * {@link AddressBookResource} (and therefore without allocating the
+	 * per-block {@link AddressResource} wrappers). Used to serve Depth: 0
+	 * PROPFINDs on the address-book URL — the dominant iOS-polling pattern.
+	 *
+	 * <p>
+	 * The returned ETag is byte-identical to
+	 * {@link AddressBookResource#getEtag()} for the same user state, because
+	 * both go through {@link CollectionEtag}.
+	 * </p>
+	 */
+	public String lookupCollectionEtag(String principal, UserSettings settings) {
+		return computeBlocks(principal, System.currentTimeMillis(), settings).etag;
 	}
 
 	private LoadResult computeBlocks(String principal, long now, UserSettings settings) {
@@ -131,45 +147,53 @@ public class AddressBookCache implements ServletContextListener {
 			Set<String> exclusions = blocklist.getExcluded(userId);
 
 			if (personalizations.isEmpty() && exclusions.isEmpty()) {
-				return new LoadResult(getCommonList(reports, listType, now).blocks(),
-						listType.hashCode(), "common-only");
+				CommonList common = getCommonList(reports, listType, now);
+				int settingsHash = listType.hashCode();
+				String etag = CollectionEtag.compose(common.blocksHash(),
+					CollectionEtag.hashPersonalSingletons(List.of()), settingsHash);
+				return new LoadResult(common.blocks(), settingsHash, etag, "common-only");
 			}
 
 			CommonList common = getCommonList(reports, listType, now);
-			List<NumberBlock> blocks;
-			String path;
+			int settingsHash = listType.hashCode() ^ personalSettingsHash(personalizations, exclusions);
+
 			if (hasEffectiveExclusion(exclusions, common)) {
 				// Rare path (~0.3% of users): a personal exclusion intersects the
 				// common list and would change wildcard structure. Run the full
 				// per-user pipeline.
-				blocks = loadNumbersFull(reports, personalizations, exclusions, listType, now);
-				path = "full pipeline";
-			} else {
-				// Common buckets + personal singletons (deduplicated against common).
-				blocks = new ArrayList<>(common.blocks());
-				for (String phoneId : personalizations) {
-					String phone = NumberAnalyzer.toInternationalFormat(phoneId);
-					if (common.covers(phone)) {
-						continue;
-					}
-					blocks.add(new NumberBlock(phone, List.of(phone)));
-				}
-				path = "common+personal";
+				List<NumberBlock> blocks = loadNumbersFull(reports, personalizations, exclusions, listType, now);
+				String etag = CollectionEtag.forFullPipeline(blocks, settingsHash);
+				return new LoadResult(blocks, settingsHash, etag, "full pipeline");
 			}
-			int settingsHash = listType.hashCode() ^ personalSettingsHash(personalizations, exclusions);
-			return new LoadResult(blocks, settingsHash, path);
+
+			// Common buckets + personal singletons (deduplicated against common).
+			List<NumberBlock> blocks = new ArrayList<>(common.blocks());
+			List<String> personalSingletons = new ArrayList<>();
+			for (String phoneId : personalizations) {
+				String phone = NumberAnalyzer.toInternationalFormat(phoneId);
+				if (common.covers(phone)) {
+					continue;
+				}
+				blocks.add(new NumberBlock(phone, List.of(phone)));
+				personalSingletons.add(phone);
+			}
+			String etag = CollectionEtag.compose(common.blocksHash(),
+				CollectionEtag.hashPersonalSingletons(personalSingletons), settingsHash);
+			return new LoadResult(blocks, settingsHash, etag, "common+personal");
 		}
 	}
 
 	private static final class LoadResult {
 		final List<NumberBlock> blocks;
 		final int settingsHash;
+		final String etag;
 		final String path;
 
-		LoadResult(List<NumberBlock> blocks, int settingsHash, String path) {
+		LoadResult(List<NumberBlock> blocks, int settingsHash, String etag, String path) {
 			this.blocks = blocks;
-			this.path = path;
 			this.settingsHash = settingsHash;
+			this.etag = etag;
+			this.path = path;
 		}
 	}
 
@@ -292,6 +316,7 @@ public class AddressBookCache implements ServletContextListener {
 		private final List<NumberBlock> _blocks;
 		private final Set<String> _concrete;
 		private final List<String> _wildcardPrefixes;
+		private final String _blocksHash;
 
 		CommonList(List<NumberBlock> blocks) {
 			_blocks = blocks;
@@ -309,10 +334,20 @@ public class AddressBookCache implements ServletContextListener {
 			Collections.sort(wildcards);
 			_concrete = concrete;
 			_wildcardPrefixes = wildcards;
+			_blocksHash = CollectionEtag.hashBlocks(blocks);
 		}
 
 		List<NumberBlock> blocks() {
 			return _blocks;
+		}
+
+		/**
+		 * Precomputed hash of the {@link #blocks()} content, fed into the
+		 * collection ETag composition for every user that shares this common
+		 * list. Computed once per refresh of this cache entry.
+		 */
+		String blocksHash() {
+			return _blocksHash;
 		}
 
 		/**
