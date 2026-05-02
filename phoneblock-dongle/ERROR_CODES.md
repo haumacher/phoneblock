@@ -20,7 +20,7 @@ Quellcode:
 | `PAIRING`    | 100 ms an / 100 ms aus| WPS-PBC läuft — Kopplung mit dem Router      |
 | `CONNECTING` | 500 ms an / 500 ms aus| WLAN-Verbindung wird aufgebaut               |
 | `SETUP`      | 100 ms an / 900 ms aus| Online, aber Konfiguration unvollständig     |
-| `DEGRADED`   | 900 ms an / 100 ms aus| Konfiguriert, aber Token vom Server abgelehnt|
+| `DEGRADED`   | 900 ms an / 100 ms aus| Konfiguriert, aber etwas funktioniert gerade nicht |
 | `READY`      | Dauerlicht            | Alles betriebsbereit                         |
 
 In jeder Zeile steht ein Block für 50 ms (entspricht dem Polling-Tick der
@@ -79,20 +79,16 @@ Bleibt das Muster länger bestehen:
 100 ms an, 900 ms aus. Ein kurzes „Blink" einmal pro Sekunde.
 
 **Bedeutet:** Der Dongle ist online (WLAN steht, IP vorhanden), aber die
-Konfiguration ist noch unvollständig. Konkret: entweder fehlt der
-PhoneBlock-API-Token, oder die SIP-Registrierung beim Router/Provider ist
-nicht erfolgreich (oder beides).
+Konfiguration ist noch nicht vollständig eingegeben. Konkret: entweder
+fehlt der PhoneBlock-API-Token, oder die SIP-Zugangsdaten (Host und
+Benutzer) sind noch nicht hinterlegt — oder beides.
+
+(Sind die Felder gesetzt, scheitert aber die SIP-Anmeldung oder die
+Server-Akzeptanz, zeigt die LED `DEGRADED`, nicht `SETUP`.)
 
 **Was tun:** Die Web-Oberfläche des Dongles öffnen — die IP steht im
-Router-Verzeichnis der angemeldeten Geräte. Dort prüfen:
-
-- **PhoneBlock-Token gesetzt?** Über die Pairing-Seite mit dem
-  PhoneBlock-Konto verknüpfen.
-- **SIP-Zugangsdaten korrekt?** Benutzername, Passwort und Registrar (die
-  Fritz!Box wird normalerweise automatisch erkannt; bei externem Provider
-  muss der Registrar manuell gesetzt werden).
-- **Anmeldung am Router erlaubt?** In der Fritz!Box muss „Anmeldung von
-  IP-Telefonen erlauben" aktiv sein.
+Router-Verzeichnis der angemeldeten Geräte. Die Setup-Seite führt durch
+die fehlenden Schritte: Token anlegen und SIP-Zugangsdaten eintragen.
 
 ## `DEGRADED` — kurzer Aussetzer
 
@@ -103,23 +99,30 @@ Router-Verzeichnis der angemeldeten Geräte. Dort prüfen:
 900 ms an, 100 ms aus. Die LED ist fast durchgehend hell und zuckt einmal
 pro Sekunde kurz dunkel — das **visuelle Negativ** zu `SETUP`.
 
-**Bedeutet:** Der Dongle ist vollständig konfiguriert (WLAN steht, SIP
-registriert, ein PhoneBlock-Token ist eingetragen), aber der letzte
-HTTPS-Aufruf gegen `phoneblock.net` hat **HTTP 401 oder 403** geliefert. Das
-heißt: das Token wurde serverseitig abgelehnt — typischerweise weil es
-revoziert oder rotiert wurde, nachdem es einmal eingerichtet war. Die Spam-
-Datenbank-Abfrage funktioniert in diesem Zustand nicht mehr; eingehende
-Anrufe können nicht mehr klassifiziert werden.
+**Bedeutet:** Alles ist eingerichtet (WLAN, SIP-Zugangsdaten, PhoneBlock-
+Token), aber gerade funktioniert etwas nicht. Mögliche Ursachen:
 
-Den gleichen Zustand zeigt auch die Web-Oberfläche an („Token abgelehnt"
-mit Hinweis „Bitte neu anfordern"). LED und Web-UI ziehen aus derselben
-Quelle ([`api_token_is_valid()`](firmware/main/api.h)), die nach jedem
-API-Aufruf aktualisiert wird — kein Latch, keine Hysterese.
+- **SIP-Registrierung nicht aktiv** — Router/Provider antwortet nicht oder
+  hat die Anmeldung abgelehnt (falsche Zugangsdaten, MFA am Router läuft
+  ab, „Anmeldung von IP-Telefonen erlauben" deaktiviert, Registrar gerade
+  nicht erreichbar, kurzer Reconnect läuft).
+- **PhoneBlock-Token serverseitig abgelehnt** — der letzte HTTPS-Aufruf
+  gegen `phoneblock.net` hat HTTP 401 oder 403 geliefert. Typische
+  Ursache: das Token wurde nach der Einrichtung revoziert oder rotiert.
 
-**Was tun:** In der Web-Oberfläche des Dongles unter dem Token-Status auf
-„Neu anfordern" klicken — das startet den OAuth-Flow erneut und hinterlegt
-ein frisches Token. Sobald der nächste API-Aufruf eine 2xx-Antwort liefert,
-wechselt die LED automatisch wieder auf `READY`.
+Beide Signale sind **Live-Werte** — kein Latch, keine Hysterese. Sobald
+der Auslöser verschwindet (SIP wieder registriert, Token wieder akzeptiert),
+springt die LED ohne Eingreifen zurück auf `READY`. Ein einminütiger
+Reconnect-Glitch zeigt also kurz `DEGRADED` und ist danach wieder weg.
+
+LED und Web-UI ziehen aus derselben Quelle:
+[`sip_register_is_registered()`](firmware/main/sip_register.h) für den
+SIP-Teil, [`api_token_is_valid()`](firmware/main/api.h) für den Token.
+
+**Was tun:** Wenn das Muster länger als ein paar Sekunden steht, die Web-
+Oberfläche öffnen — sie zeigt unter dem SIP- bzw. Token-Status, was genau
+das Problem ist. Bei abgelehntem Token: über „Neu anfordern" ein frisches
+Token erzeugen. Bei SIP: Zugangsdaten und Routereinstellungen prüfen.
 
 ## `READY` — Dauerlicht
 

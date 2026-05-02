@@ -9,11 +9,15 @@
 //   CONNECTING — slow blink (500 ms on / 500 ms off):
 //                WiFi up but no IP yet, or reconnecting
 //   SETUP      — short pulse (100 ms on / 900 ms off, mostly dark):
-//                online but SIP unregistered or PhoneBlock token missing
+//                online but SIP credentials or PhoneBlock token not
+//                yet entered — the web UI's setup steps are unfinished
 //   DEGRADED   — short dropout (900 ms on / 100 ms off, mostly lit):
-//                fully configured but the API token was rejected by
-//                phoneblock.net (401/403) — same signal the dashboard
-//                surfaces, mirrored on the LED
+//                fully configured but something is currently failing —
+//                SIP REGISTER not in place (bad credentials, registrar
+//                unreachable, transient reconnect) or the API token
+//                was rejected by phoneblock.net (401/403). Same
+//                signals the dashboard surfaces; the LED tells the
+//                user "open the web UI to see what's wrong"
 //   READY      — solid on:
 //                WiFi up + SIP registered + token set + token accepted
 //

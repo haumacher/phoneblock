@@ -26,15 +26,27 @@ static led_state_t derive_state(void)
 {
     if (wifi_is_wps_active())                  return ST_PAIRING;
     if (!wifi_has_ip())                        return ST_CONNECTING;
-    bool token_set = strlen(config_phoneblock_token()) > 0;
-    bool sip_ok    = sip_register_is_registered();
-    if (!token_set || !sip_ok)                 return ST_SETUP;
-    // Network is up and the device is configured — but the last
-    // Bearer call to phoneblock.net got a 401/403, meaning the token
-    // was revoked or rotated server-side. Same signal the dashboard
-    // surfaces; mirror it on the LED so the user sees the problem
-    // without opening the web UI.
+
+    // SETUP — the user still has to fill something in. SIP is "not
+    // configured" when host or user is empty (same definition the
+    // web UI uses to gate its setup hero); the token is "not set"
+    // when no Bearer string is stored.
+    bool token_set     = strlen(config_phoneblock_token()) > 0;
+    bool sip_configured = strlen(config_sip_host()) > 0
+                         && strlen(config_sip_user()) > 0;
+    if (!token_set || !sip_configured)         return ST_SETUP;
+
+    // DEGRADED — everything has been filled in, but the dongle
+    // cannot actually use it: either the SIP REGISTER is currently
+    // not in place (bad credentials, registrar unreachable, transient
+    // reconnect), or the last Bearer call to phoneblock.net got a
+    // 401/403. Both are level signals — the LED returns to READY
+    // automatically once the underlying state recovers, so the user
+    // is not punished for a momentary glitch. For the why/what,
+    // they open the web UI.
+    if (!sip_register_is_registered())         return ST_DEGRADED;
     if (!api_token_is_valid())                 return ST_DEGRADED;
+
     return ST_READY;
 }
 
