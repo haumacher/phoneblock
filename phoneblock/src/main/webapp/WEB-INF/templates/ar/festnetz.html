@@ -11,6 +11,129 @@
 
 		<p class="subtitle" data-tx="t0002:f50c45ab">هناك ثلاث طرق لإيقاف تشغيل المكالمات الإعلانية على خطك الأرضي - تستخدم الطرق الثلاث قاعدة البيانات نفسها التي يحتفظ بها مجتمع PhoneBlock، ولكنها تختلف بشكل كبير من حيث الجهد والتأثير ومتطلبات اتصالك. ستساعدك هذه الصفحة على الاختيار.</p>
 
+		<div class="box festnetz-wizard" id="festnetzWizard">
+			<h2 class="title is-4" data-tx="t0053:c661ec28">ما البديل الذي يناسبك؟</h2>
+			<p data-tx="t0054:44e93c3">ثلاثة أسئلة سريعة وستعرف الخيارات المناسبة لاتصالك.</p>
+
+			<div class="wizard-step" data-step="router">
+				<p class="title is-5 mt-4" data-tx="t0055:86a286b">1- أي جهاز توجيه لديك؟</p>
+				<div class="buttons">
+					<button class="button is-info wizard-btn" data-route="fritzbox" type="button">
+						<span class="icon"><i class="fa-solid fa-network-wired"></i></span>
+						<span data-tx="t0056:42829262">صندوق فريتز! بوكس (سواء كان خاصًا بك أو من المزود)</span>
+					</button>
+					<button class="button is-info wizard-btn" data-route="other" type="button">
+						<span class="icon"><i class="fa-solid fa-router"></i></span>
+						<span data-tx="t0057:c38f2422">جهاز توجيه آخر (سبيدبورت، محطة فودافون، ...)</span>
+					</button>
+				</div>
+			</div>
+
+			<div class="wizard-step" data-step="ownership" hidden="hidden">
+				<p class="title is-5 mt-4" data-tx="t0058:b5160124">2. هل تمتلك صندوق Fritz! أم تستأجره من المزود؟</p>
+				<p class="help" data-tx="t0059:beb0cb62">مع الصندوق المستأجر، لا يتوفر لديك بشكل عام إمكانية الوصول إلى تكوين الاتصال الهاتفي عبر بروتوكول الإنترنت - وبالتالي لا يتوفر جهاز الرد على المكالمات السحابية.</p>
+				<div class="buttons">
+					<button class="button is-info wizard-btn" data-route="own" type="button">
+						<span class="icon"><i class="fa-solid fa-house"></i></span>
+						<span data-tx="t0060:1a9e1f09">امتلك صندوق فريتز!</span>
+					</button>
+					<button class="button is-info wizard-btn" data-route="rental" type="button">
+						<span class="icon"><i class="fa-solid fa-handshake"></i></span>
+						<span data-tx="t0061:37e11458">صندوق فريتز! صندوق مستأجر من المزود</span>
+					</button>
+				</div>
+			</div>
+
+			<div class="wizard-step" data-step="age" hidden="hidden">
+				<p class="title is-5 mt-4" data-tx="t0062:88f1b45d">3. كم عمر صندوق فريتز!</p>
+				<p class="help" data-tx="t0063:34e286b1">تتمتع الموديلات من عام 2018 المزودة بنظام التشغيل FRITZ! OS 7 أو أحدث بدعم CardDAV - وهو شرط أساسي لدليل الهاتف في قائمة الحظر.</p>
+				<div class="buttons">
+					<button class="button is-info wizard-btn" data-route="modern" type="button">
+						<span class="icon"><i class="fa-solid fa-circle-check"></i></span>
+						<span data-tx="t0064:59be671a">عام 2018 أو أحدث (FRITZ!OS 7+)</span>
+					</button>
+					<button class="button is-info wizard-btn" data-route="old" type="button">
+						<span class="icon"><i class="fa-solid fa-circle-question"></i></span>
+						<span data-tx="t0065:7bd456ae">أقدم أو لا أعرف</span>
+					</button>
+				</div>
+			</div>
+
+			<div class="wizard-step" data-step="provider" hidden="hidden">
+				<p class="title is-5 mt-4" data-tx="t0066:59312a9">2 ما هو مزود خدمات الاتصالات الهاتفية؟</p>
+				<p class="help" data-tx="t0067:4b92fb6">يسمح بعض مقدمي الخدمة بالتسجيل المباشر لجهاز VoIP في بنيتهم التحتية - ومن ثم يعمل الدونجل أيضًا بدون فريتز!</p>
+				<div class="buttons">
+					<button class="button is-info wizard-btn" data-route="telekom" type="button">
+						<span data-tx="t0068:fc2c352d">الاتصالات</span>
+					</button>
+					<button class="button is-info wizard-btn" data-route="vodafone" type="button">
+						<span data-tx="t0069:780f436c">فودافون</span>
+					</button>
+					<button class="button is-info wizard-btn" data-route="other-isp" type="button">
+						<span data-tx="t0070:19bcf9a0">1&amp;1 / O2 / أخرى</span>
+					</button>
+				</div>
+			</div>
+
+			<div class="wizard-result" data-result="all-three" hidden="hidden">
+				<div class="notification is-success">
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0071:aeb1936">جميع المتغيرات الثلاثة تناسبك.</span></p>
+					<p data-tx="t0072:3617ea57">يوصى به: <strong> دونجل حظر الهاتف</strong> - أفضل دفاع، وأفضل حماية للبيانات، ومستقل عن تحديثات جهاز التوجيه. <strong> جهاز الرد على المكالمات السحابية  أو <strong> دليل الهاتف المحظور ممكن أيضًا.</strong></strong></p>
+				</div>
+			</div>
+
+			<div class="wizard-result" data-result="dongle-cloudab" hidden="hidden">
+				<div class="notification is-success">
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0073:74c70212">دونجل وجهاز الرد على المكالمات السحابية مناسبان.</span></p>
+					<p data-tx="t0074:416ac031">موصى به: <strong> دونجل فون بلوك</strong>. بدلاً من ذلك: <strong> جهاز الرد الآلي السحابي</strong>. يتطلب <strong> دفتر الهاتف  دفتر الهاتف  جهاز Fritz!Box من 2018 وهو غير متوفر في صندوقك.</strong></p>
+				</div>
+			</div>
+
+			<div class="wizard-result" data-result="dongle-blockliste" hidden="hidden">
+				<div class="notification is-success">
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0075:34eeca5e">تناسب دونجل وقائمة الهاتف المحظورة.</span></p>
+					<p data-tx="t0076:43e00ed6">موصى به: <strong>دونجل حظر الهاتف</strong>. أو بدلاً من ذلك: <strong>دليل الهاتف المحظور</strong>. لا يمكنك إعداد <strong> جهاز الرد على المكالمات الهاتفية السحابية  على جهاز Fritz!Box المستأجر - تحتاج إلى الوصول إلى تكوين المهاتفة عبر بروتوكول الإنترنت.</strong></p>
+				</div>
+			</div>
+
+			<div class="wizard-result" data-result="dongle-only" hidden="hidden">
+				<div class="notification is-success">
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0077:a9f972a2">الدونجل هو البديل الخاص بك.</span></p>
+					<p data-tx="t0078:9ad36c38">يعمل <strong> دونجل فون بلوك</strong> مع التكوين الخاص بك - المتغيران الآخران لا يعملان: يحتاج جهاز الرد على المكالمات السحابية إلى الوصول إلى تكوين VoIP الخاص به من Fritz!Box، ويحتاج دفتر هاتف قائمة الحظر إلى Fritz!Box من 2018 فصاعدًا.</p>
+				</div>
+			</div>
+
+			<div class="wizard-result" data-result="dongle-telekom" hidden="hidden">
+				<div class="notification is-success">
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0079:40d1c735">الدونجل يعمل لصالحك.</span></p>
+					<p data-tx="t0080:1938636f">تسمح Telekom بالتسجيل المباشر لجهاز VoIP على بنيتها التحتية - حيث يتم تسجيل دونجل <strong> PhoneBlock  هناك، ولا يهم جهاز التوجيه. يتطلب جهاز الرد على المكالمات السحابية ودليل الهاتف المحظور وجود جهاز Fritz!Box وغير متوفر.</strong></p>
+				</div>
+			</div>
+
+			<div class="wizard-result" data-result="dongle-other-isp" hidden="hidden">
+				<div class="notification is-info">
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-info"></i></span> <span data-tx="t0081:5aa4a799">ربما يكون الدونجل - يرجى مراجعة مزود الخدمة الخاص بك.</span></p>
+					<p data-tx="t0082:b2d14a7b">من دون Fritz!Box، فإن <strong>دونجل فون بلوك</strong> هو الخيار الوحيد، ويجب أن يسمح مزودك بتسجيل جهاز SIP المباشر لهذا الغرض. إذا كنت في شك، اسأل دعم مزودك أو قم بتشغيل Fritz!Box الخاص بك - عندها يكون الاختيار مجانيًا مرة أخرى.</p>
+				</div>
+			</div>
+
+			<div class="wizard-result" data-result="vodafone-deadend" hidden="hidden">
+				<div class="notification is-warning">
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-triangle-exclamation"></i></span> <span data-tx="t0083:9edc79ef">لسوء الحظ، ليس لدى PhoneBlock أي فرصة مع هذه الكوكبة.</span></p>
+					<p data-tx="t0084:70dc4cbf">تقوم فودافون بحظر التسجيل المباشر لجهاز SIP، وبدون Fritz!Box لا توجد نقطة نهاية هاتفية للمتغيرات الأخرى. <strong>التوصية:</strong> قم بتعليق Fritz!Box الخاص بك خلف صندوق فودافون (وضع الجسر / وضع مودم الكابل) - عندها ستعمل جميع المتغيرات الثلاثة. يمكنك بعد ذلك تشغيل المعالج مرة أخرى.</p>
+				</div>
+			</div>
+
+			<p class="wizard-restart mt-4" hidden="hidden">
+				<a class="button is-light is-small" href="#festnetzWizard">
+					<span class="icon"><i class="fa-solid fa-rotate-left"></i></span>
+					<span data-tx="t0085:675cadf4">إعادة تعيين الإجابات</span>
+				</a>
+			</p>
+		</div>
+
+		<script th:src="@{/assets/js/festnetz-wizard.js(v=1)}" type="text/javascript"></script>
+
 		<h2 data-tx="t0003:755fe635">مقارنة: ثلاث طرق لحظر الرسائل غير المرغوب فيها عبر الهاتف الأرضي</h2>
 
 		<div class="table-container">

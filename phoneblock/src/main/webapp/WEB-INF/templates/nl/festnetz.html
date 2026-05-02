@@ -11,6 +11,129 @@
 
 		<p class="subtitle" data-tx="t0002:f50c45ab">Er zijn drie manieren om reclameoproepen op uw vaste lijn uit te schakelen - alle drie maken ze gebruik van dezelfde spamdatabase die wordt onderhouden door de PhoneBlock-community, maar ze verschillen aanzienlijk qua inspanning, effect en vereisten voor uw verbinding. Deze pagina helpt u bij het maken van uw keuze.</p>
 
+		<div class="box festnetz-wizard" id="festnetzWizard">
+			<h2 class="title is-4" data-tx="t0053:c661ec28">Welke variant past bij jou?</h2>
+			<p data-tx="t0054:44e93c3">Drie snelle vragen en je weet welke opties geschikt zijn voor jouw verbinding.</p>
+
+			<div class="wizard-step" data-step="router">
+				<p class="title is-5 mt-4" data-tx="t0055:86a286b">1. Welke router heb je?</p>
+				<div class="buttons">
+					<button class="button is-info wizard-btn" data-route="fritzbox" type="button">
+						<span class="icon"><i class="fa-solid fa-network-wired"></i></span>
+						<span data-tx="t0056:42829262">Een Fritz!Box (van jezelf of van de leverancier)</span>
+					</button>
+					<button class="button is-info wizard-btn" data-route="other" type="button">
+						<span class="icon"><i class="fa-solid fa-router"></i></span>
+						<span data-tx="t0057:c38f2422">Een andere router (Speedport, Vodafone-station, ...)</span>
+					</button>
+				</div>
+			</div>
+
+			<div class="wizard-step" data-step="ownership" hidden="hidden">
+				<p class="title is-5 mt-4" data-tx="t0058:b5160124">2. eigen Fritz! box of gehuurd van de provider?</p>
+				<p class="help" data-tx="t0059:beb0cb62">Met een huurbox heb je meestal geen toegang tot de VoIP-telefonieconfiguratie - het cloudantwoordapparaat is dus niet beschikbaar.</p>
+				<div class="buttons">
+					<button class="button is-info wizard-btn" data-route="own" type="button">
+						<span class="icon"><i class="fa-solid fa-house"></i></span>
+						<span data-tx="t0060:1a9e1f09">Eigen aangeschafte Fritz!Box</span>
+					</button>
+					<button class="button is-info wizard-btn" data-route="rental" type="button">
+						<span class="icon"><i class="fa-solid fa-handshake"></i></span>
+						<span data-tx="t0061:37e11458">Fritz!Box gehuurd van de aanbieder</span>
+					</button>
+				</div>
+			</div>
+
+			<div class="wizard-step" data-step="age" hidden="hidden">
+				<p class="title is-5 mt-4" data-tx="t0062:88f1b45d">3. Hoe oud is jouw Fritz! doos?</p>
+				<p class="help" data-tx="t0063:34e286b1">Modellen uit 2018 met FRITZ!OS 7 of nieuwer hebben CardDAV-ondersteuning - een vereiste voor het telefoonboek van de blokkadelijst.</p>
+				<div class="buttons">
+					<button class="button is-info wizard-btn" data-route="modern" type="button">
+						<span class="icon"><i class="fa-solid fa-circle-check"></i></span>
+						<span data-tx="t0064:59be671a">Jaar 2018 of nieuwer (FRITZ!OS 7+)</span>
+					</button>
+					<button class="button is-info wizard-btn" data-route="old" type="button">
+						<span class="icon"><i class="fa-solid fa-circle-question"></i></span>
+						<span data-tx="t0065:7bd456ae">Ouder of weet niet</span>
+					</button>
+				</div>
+			</div>
+
+			<div class="wizard-step" data-step="provider" hidden="hidden">
+				<p class="title is-5 mt-4" data-tx="t0066:59312a9">2 Welke telefonieprovider?</p>
+				<p class="help" data-tx="t0067:4b92fb6">Sommige providers staan directe VoIP-toestelregistratie bij hun infrastructuur toe - dan werkt de dongle ook zonder Fritz!</p>
+				<div class="buttons">
+					<button class="button is-info wizard-btn" data-route="telekom" type="button">
+						<span data-tx="t0068:fc2c352d">Telecom</span>
+					</button>
+					<button class="button is-info wizard-btn" data-route="vodafone" type="button">
+						<span data-tx="t0069:780f436c">Vodafone</span>
+					</button>
+					<button class="button is-info wizard-btn" data-route="other-isp" type="button">
+						<span data-tx="t0070:19bcf9a0">1&amp;1 / O2 / Andere</span>
+					</button>
+				</div>
+			</div>
+
+			<div class="wizard-result" data-result="all-three" hidden="hidden">
+				<div class="notification is-success">
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0071:aeb1936">Alle drie de varianten werken voor jou.</span></p>
+					<p data-tx="t0072:3617ea57">Aanbevolen: <strong>PhoneBlock dongle</strong> - beste verdediging, beste gegevensbescherming, onafhankelijk van routerupdates. <strong>Cloud antwoordapparaat</strong> of <strong>blocklist telefoonboek</strong> zijn ook mogelijk.</p>
+				</div>
+			</div>
+
+			<div class="wizard-result" data-result="dongle-cloudab" hidden="hidden">
+				<div class="notification is-success">
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0073:74c70212">Geschikt voor dongle en cloud-beantwoorder.</span></p>
+					<p data-tx="t0074:416ac031">Aanbevolen: <strong>PhoneBlock dongle</strong>. Alternatief: <strong>Cloud antwoordapparaat</strong>. De <strong>Blocklist telefoonlijst</strong> vereist een Fritz!Box uit 2018 en is niet beschikbaar voor jouw box.</p>
+				</div>
+			</div>
+
+			<div class="wizard-result" data-result="dongle-blockliste" hidden="hidden">
+				<div class="notification is-success">
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0075:34eeca5e">Telefoonboek van dongle en bloklijst passen.</span></p>
+					<p data-tx="t0076:43e00ed6">Aanbevolen: <strong>PhoneBlock dongle</strong>. Alternatief: <strong>Blocklist telefoonboek</strong>. Je kunt het <strong>Cloud antwoordapparaat</strong> niet instellen op een gehuurde Fritz!Box - je hebt toegang nodig tot de VoIP-telefonieconfiguratie.</p>
+				</div>
+			</div>
+
+			<div class="wizard-result" data-result="dongle-only" hidden="hidden">
+				<div class="notification is-success">
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0077:a9f972a2">De dongle is jouw variant.</span></p>
+					<p data-tx="t0078:9ad36c38">De <strong>PhoneBlock dongle</strong> werkt met jouw configuratie - de andere twee varianten werken niet: Cloud antwoordapparaat heeft toegang nodig tot de VoIP configuratie van zijn eigen Fritz!Box, de blocklist telefoonlijst heeft vanaf 2018 een Fritz!Box nodig.</p>
+				</div>
+			</div>
+
+			<div class="wizard-result" data-result="dongle-telekom" hidden="hidden">
+				<div class="notification is-success">
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0079:40d1c735">De dongle werkt voor jou.</span></p>
+					<p data-tx="t0080:1938636f">Telekom staat directe VoIP-toestelregistratie op haar infrastructuur toe - de <strong>PhoneBlock dongle</strong> registreert daar, de router maakt niet uit. Voor het antwoordapparaat in de cloud en het telefoonboek in de blocklist is een Fritz!Box nodig en deze zijn niet beschikbaar.</p>
+				</div>
+			</div>
+
+			<div class="wizard-result" data-result="dongle-other-isp" hidden="hidden">
+				<div class="notification is-info">
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-info"></i></span> <span data-tx="t0081:5aa4a799">Waarschijnlijk de dongle - neem contact op met je provider.</span></p>
+					<p data-tx="t0082:b2d14a7b">Zonder Fritz!Box is alleen de <strong>PhoneBlock dongle</strong> een optie, en je provider moet hiervoor directe SIP-registratie toestaan. Vraag bij twijfel de support van uw provider of schakel uw eigen Fritz!Box in - dan is de keuze weer vrij.</p>
+				</div>
+			</div>
+
+			<div class="wizard-result" data-result="vodafone-deadend" hidden="hidden">
+				<div class="notification is-warning">
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-triangle-exclamation"></i></span> <span data-tx="t0083:9edc79ef">PhoneBlock maakt helaas geen kans bij deze constellatie.</span></p>
+					<p data-tx="t0084:70dc4cbf">Vodafone blokkeert directe SIP-registratie en zonder Fritz!Box is er geen telefonie-eindpunt voor de andere varianten. <strong>Aanbeveling:</strong> Hang je eigen Fritz!Box achter de Vodafone box (bridge-modus / kabelmodem-modus) - dan werken alle drie de varianten. Daarna kun je de wizard opnieuw uitvoeren.</p>
+				</div>
+			</div>
+
+			<p class="wizard-restart mt-4" hidden="hidden">
+				<a class="button is-light is-small" href="#festnetzWizard">
+					<span class="icon"><i class="fa-solid fa-rotate-left"></i></span>
+					<span data-tx="t0085:675cadf4">Antwoorden resetten</span>
+				</a>
+			</p>
+		</div>
+
+		<script th:src="@{/assets/js/festnetz-wizard.js(v=1)}" type="text/javascript"></script>
+
 		<h2 data-tx="t0003:755fe635">Vergelijking: Drie manieren om vaste spam te blokkeren</h2>
 
 		<div class="table-container">

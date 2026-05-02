@@ -11,6 +11,129 @@
 
 		<p class="subtitle" data-tx="t0002:f50c45ab">有三种方法可以关闭固定电话上的广告电话 - 这三种方法都使用由 PhoneBlock 社区维护的相同垃圾邮件数据库，但在工作强度、效果和对连接的要求方面有很大不同。本页将帮助您做出选择。</p>
 
+		<div class="box festnetz-wizard" id="festnetzWizard">
+			<h2 class="title is-4" data-tx="t0053:c661ec28">哪种变体适合您？</h2>
+			<p data-tx="t0054:44e93c3">只需简单问三个问题，您就能知道哪些选项适合您的连接。</p>
+
+			<div class="wizard-step" data-step="router">
+				<p class="title is-5 mt-4" data-tx="t0055:86a286b">1. 您使用的是哪种路由器？</p>
+				<div class="buttons">
+					<button class="button is-info wizard-btn" data-route="fritzbox" type="button">
+						<span class="icon"><i class="fa-solid fa-network-wired"></i></span>
+						<span data-tx="t0056:42829262">一个 Fritz！Box（无论是您自己的还是供应商提供的）</span>
+					</button>
+					<button class="button is-info wizard-btn" data-route="other" type="button">
+						<span class="icon"><i class="fa-solid fa-router"></i></span>
+						<span data-tx="t0057:c38f2422">另一个路由器（Speedport、Vodafone 站......）。</span>
+					</button>
+				</div>
+			</div>
+
+			<div class="wizard-step" data-step="ownership" hidden="hidden">
+				<p class="title is-5 mt-4" data-tx="t0058:b5160124">2. 自己的 Fritz!</p>
+				<p class="help" data-tx="t0059:beb0cb62">租用盒子时，您一般无法访问网络电话配置，因此无法使用云答录机。</p>
+				<div class="buttons">
+					<button class="button is-info wizard-btn" data-route="own" type="button">
+						<span class="icon"><i class="fa-solid fa-house"></i></span>
+						<span data-tx="t0060:1a9e1f09">自己购买的 Fritz！Box</span>
+					</button>
+					<button class="button is-info wizard-btn" data-route="rental" type="button">
+						<span class="icon"><i class="fa-solid fa-handshake"></i></span>
+						<span data-tx="t0061:37e11458">从供应商处租用的 Fritz!</span>
+					</button>
+				</div>
+			</div>
+
+			<div class="wizard-step" data-step="age" hidden="hidden">
+				<p class="title is-5 mt-4" data-tx="t0062:88f1b45d">3. 您的 Fritz!</p>
+				<p class="help" data-tx="t0063:34e286b1">配备 FRITZ!OS 7 或更新版本的 2018 年款机型支持 CardDAV，这是使用块表电话簿的前提条件。</p>
+				<div class="buttons">
+					<button class="button is-info wizard-btn" data-route="modern" type="button">
+						<span class="icon"><i class="fa-solid fa-circle-check"></i></span>
+						<span data-tx="t0064:59be671a">2018 年或更新版本（FRITZ！OS 7 以上）</span>
+					</button>
+					<button class="button is-info wizard-btn" data-route="old" type="button">
+						<span class="icon"><i class="fa-solid fa-circle-question"></i></span>
+						<span data-tx="t0065:7bd456ae">年龄较大或不知道</span>
+					</button>
+				</div>
+			</div>
+
+			<div class="wizard-step" data-step="provider" hidden="hidden">
+				<p class="title is-5 mt-4" data-tx="t0066:59312a9">2 选择哪家电话服务提供商？</p>
+				<p class="help" data-tx="t0067:4b92fb6">有些提供商允许将网络电话设备直接注册到其基础设施上，这样，加密狗也可以在没有 Fritz 的情况下工作！</p>
+				<div class="buttons">
+					<button class="button is-info wizard-btn" data-route="telekom" type="button">
+						<span data-tx="t0068:fc2c352d">电信</span>
+					</button>
+					<button class="button is-info wizard-btn" data-route="vodafone" type="button">
+						<span data-tx="t0069:780f436c">沃达丰</span>
+					</button>
+					<button class="button is-info wizard-btn" data-route="other-isp" type="button">
+						<span data-tx="t0070:19bcf9a0">1&amp;1 / O2 / 其他</span>
+					</button>
+				</div>
+			</div>
+
+			<div class="wizard-result" data-result="all-three" hidden="hidden">
+				<div class="notification is-success">
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0071:aeb1936">这三种变体都适合你。</span></p>
+					<p data-tx="t0072:3617ea57">推荐：<strong>PhoneBlock 加密狗</strong> - 最佳防御、最佳数据保护，不受路由器更新的影响。<strong>云答录机</strong>或<strong>阻止列表电话簿</strong>也是可行的。</p>
+				</div>
+			</div>
+
+			<div class="wizard-result" data-result="dongle-cloudab" hidden="hidden">
+				<div class="notification is-success">
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0073:74c70212">适配加密狗和云答录机。</span></p>
+					<p data-tx="t0074:416ac031">建议使用：<strong>PhoneBlock 加密狗</strong>。或者：<strong>云答录机</strong>。<strong>Blocklist电话簿</strong>需要2018年以后的Fritz！Box，您的盒子无法使用。</p>
+				</div>
+			</div>
+
+			<div class="wizard-result" data-result="dongle-blockliste" hidden="hidden">
+				<div class="notification is-success">
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0075:34eeca5e">适配加密狗和 blocklist 电话簿。</span></p>
+					<p data-tx="t0076:43e00ed6">建议使用：<strong>PhoneBlock 加密狗</strong>。或者：<strong>Blocklist 电话簿</strong>。您不能在租用的 Fritz!Box 上设置 <strong>Cloud 应答机</strong> - 您需要访问 VoIP 电话配置。</p>
+				</div>
+			</div>
+
+			<div class="wizard-result" data-result="dongle-only" hidden="hidden">
+				<div class="notification is-success">
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0077:a9f972a2">加密狗是你的变体。</span></p>
+					<p data-tx="t0078:9ad36c38"><strong>PhoneBlock 加密狗</strong>可与您的配置一起使用，而其他两种变体则无法使用：云应答机需要访问其自身 Fritz！Box 的 VoIP 配置，从 2018 年起，拦截列表电话簿需要一个 Fritz！Box。</p>
+				</div>
+			</div>
+
+			<div class="wizard-result" data-result="dongle-telekom" hidden="hidden">
+				<div class="notification is-success">
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0079:40d1c735">加密狗为你工作。</span></p>
+					<p data-tx="t0080:1938636f">Telekom 允许在其基础设施上直接注册 VoIP 设备 - <strong>PhoneBlock 加密狗</strong>可在此注册，路由器并不重要。云应答机和块列表电话簿需要 Fritz!Box 才能使用，因此不可用。</p>
+				</div>
+			</div>
+
+			<div class="wizard-result" data-result="dongle-other-isp" hidden="hidden">
+				<div class="notification is-info">
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-info"></i></span> <span data-tx="t0081:5aa4a799">可能是加密狗的问题，请向供应商咨询。</span></p>
+					<p data-tx="t0082:b2d14a7b">如果没有 Fritz！Box，则只能选择 <strong>PhoneBlock 加密狗</strong>，而且您的服务提供商必须允许直接注册 SIP 设备。如果有疑问，请咨询您的服务提供商支持人员或打开您自己的 Fritz！Box - 然后就可以重新自由选择了。</p>
+				</div>
+			</div>
+
+			<div class="wizard-result" data-result="vodafone-deadend" hidden="hidden">
+				<div class="notification is-warning">
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-triangle-exclamation"></i></span> <span data-tx="t0083:9edc79ef">不幸的是，PhoneBlock 与这个星座无缘。</span></p>
+					<p data-tx="t0084:70dc4cbf">沃达丰阻止直接 SIP 设备注册，如果没有 Fritz！Box，其他变体就无法使用电话终端。<strong>建议：</strong>将您自己的 Fritz!Box 挂在 Vodafone 盒子后面（桥接模式/电缆调制解调器模式），这样所有三种变体都可以工作。然后您可以再次运行向导。</p>
+				</div>
+			</div>
+
+			<p class="wizard-restart mt-4" hidden="hidden">
+				<a class="button is-light is-small" href="#festnetzWizard">
+					<span class="icon"><i class="fa-solid fa-rotate-left"></i></span>
+					<span data-tx="t0085:675cadf4">重置答案</span>
+				</a>
+			</p>
+		</div>
+
+		<script th:src="@{/assets/js/festnetz-wizard.js(v=1)}" type="text/javascript"></script>
+
 		<h2 data-tx="t0003:755fe635">比较： 拦截固定电话垃圾邮件的三种方法</h2>
 
 		<div class="table-container">

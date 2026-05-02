@@ -11,6 +11,129 @@
 
 		<p class="subtitle" data-tx="t0002:f50c45ab">Istnieją trzy sposoby na wyłączenie połączeń reklamowych na telefonie stacjonarnym - wszystkie trzy korzystają z tej samej bazy danych spamu utrzymywanej przez społeczność PhoneBlock, ale różnią się znacznie pod względem wysiłku, efektu i wymagań dotyczących połączenia. Ta strona pomoże ci dokonać wyboru.</p>
 
+		<div class="box festnetz-wizard" id="festnetzWizard">
+			<h2 class="title is-4" data-tx="t0053:c661ec28">Który wariant Ci odpowiada?</h2>
+			<p data-tx="t0054:44e93c3">Trzy krótkie pytania i będziesz wiedział, które opcje są odpowiednie dla Twojego połączenia.</p>
+
+			<div class="wizard-step" data-step="router">
+				<p class="title is-5 mt-4" data-tx="t0055:86a286b">1. jaki router posiadasz?</p>
+				<div class="buttons">
+					<button class="button is-info wizard-btn" data-route="fritzbox" type="button">
+						<span class="icon"><i class="fa-solid fa-network-wired"></i></span>
+						<span data-tx="t0056:42829262">Fritz!Box (własny lub od dostawcy)</span>
+					</button>
+					<button class="button is-info wizard-btn" data-route="other" type="button">
+						<span class="icon"><i class="fa-solid fa-router"></i></span>
+						<span data-tx="t0057:c38f2422">Inny router (Speedport, stacja Vodafone, ...)</span>
+					</button>
+				</div>
+			</div>
+
+			<div class="wizard-step" data-step="ownership" hidden="hidden">
+				<p class="title is-5 mt-4" data-tx="t0058:b5160124">2. własny Fritz! box czy wypożyczony od dostawcy?</p>
+				<p class="help" data-tx="t0059:beb0cb62">W przypadku wynajmu skrzynki zazwyczaj nie ma dostępu do konfiguracji telefonii VoIP - automatyczna sekretarka w chmurze nie jest zatem dostępna.</p>
+				<div class="buttons">
+					<button class="button is-info wizard-btn" data-route="own" type="button">
+						<span class="icon"><i class="fa-solid fa-house"></i></span>
+						<span data-tx="t0060:1a9e1f09">Własny zakup Fritz!Box</span>
+					</button>
+					<button class="button is-info wizard-btn" data-route="rental" type="button">
+						<span class="icon"><i class="fa-solid fa-handshake"></i></span>
+						<span data-tx="t0061:37e11458">Fritz!Box wypożyczony od dostawcy</span>
+					</button>
+				</div>
+			</div>
+
+			<div class="wizard-step" data-step="age" hidden="hidden">
+				<p class="title is-5 mt-4" data-tx="t0062:88f1b45d">3. Ile lat ma pudełko Fritz!</p>
+				<p class="help" data-tx="t0063:34e286b1">Modele z 2018 roku z systemem FRITZ!OS 7 lub nowszym obsługują CardDAV - jest to warunek wstępny dla książki telefonicznej z listą bloków.</p>
+				<div class="buttons">
+					<button class="button is-info wizard-btn" data-route="modern" type="button">
+						<span class="icon"><i class="fa-solid fa-circle-check"></i></span>
+						<span data-tx="t0064:59be671a">Rok 2018 lub nowszy (FRITZ!OS 7+)</span>
+					</button>
+					<button class="button is-info wizard-btn" data-route="old" type="button">
+						<span class="icon"><i class="fa-solid fa-circle-question"></i></span>
+						<span data-tx="t0065:7bd456ae">Starszy lub nie wiem</span>
+					</button>
+				</div>
+			</div>
+
+			<div class="wizard-step" data-step="provider" hidden="hidden">
+				<p class="title is-5 mt-4" data-tx="t0066:59312a9">2 Który dostawca usług telefonicznych?</p>
+				<p class="help" data-tx="t0067:4b92fb6">Niektórzy dostawcy umożliwiają bezpośrednią rejestrację urządzeń VoIP w swojej infrastrukturze - wtedy klucz sprzętowy działa również bez Fritza!</p>
+				<div class="buttons">
+					<button class="button is-info wizard-btn" data-route="telekom" type="button">
+						<span data-tx="t0068:fc2c352d">Telekomunikacja</span>
+					</button>
+					<button class="button is-info wizard-btn" data-route="vodafone" type="button">
+						<span data-tx="t0069:780f436c">Vodafone</span>
+					</button>
+					<button class="button is-info wizard-btn" data-route="other-isp" type="button">
+						<span data-tx="t0070:19bcf9a0">1&amp;1 / O2 / Inne</span>
+					</button>
+				</div>
+			</div>
+
+			<div class="wizard-result" data-result="all-three" hidden="hidden">
+				<div class="notification is-success">
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0071:aeb1936">Wszystkie trzy warianty działają dla Ciebie.</span></p>
+					<p data-tx="t0072:3617ea57">Zalecane: <strong>PhoneBlock dongle</strong> - najlepsza obrona, najlepsza ochrona danych, niezależna od aktualizacji routera. <strong>Możliwa jest również automatyczna sekretarka w chmurze</strong> lub <strong>blokada książki telefonicznej</strong>.</p>
+				</div>
+			</div>
+
+			<div class="wizard-result" data-result="dongle-cloudab" hidden="hidden">
+				<div class="notification is-success">
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0073:74c70212">Klucz sprzętowy i automatyczna sekretarka w chmurze.</span></p>
+					<p data-tx="t0074:416ac031">Zalecane: <strong>Klucz sprzętowy PhoneBlock</strong>. Alternatywnie: <strong>Automatyczna sekretarka w chmurze</strong>. Książka telefoniczna <strong>Blocklist</strong> wymaga Fritz!Box z 2018 roku i nie jest dostępna dla Twojego urządzenia.</p>
+				</div>
+			</div>
+
+			<div class="wizard-result" data-result="dongle-blockliste" hidden="hidden">
+				<div class="notification is-success">
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0075:34eeca5e">Dopasowanie klucza sprzętowego i książki telefonicznej.</span></p>
+					<p data-tx="t0076:43e00ed6">Zalecane: <strong>PhoneBlock dongle</strong>. Alternatywnie: <strong>Blocklist phone book</strong>. Nie można skonfigurować <strong>Automatycznej sekretarki w chmurze</strong> na wypożyczonym urządzeniu Fritz!Box - potrzebny jest dostęp do konfiguracji telefonii VoIP.</p>
+				</div>
+			</div>
+
+			<div class="wizard-result" data-result="dongle-only" hidden="hidden">
+				<div class="notification is-success">
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0077:a9f972a2">Klucz sprzętowy to twój wariant.</span></p>
+					<p data-tx="t0078:9ad36c38">Klucz sprzętowy <strong>PhoneBlock</strong> działa z Twoją konfiguracją - pozostałe dwa warianty zawodzą: Automatyczna sekretarka w chmurze wymaga dostępu do konfiguracji VoIP własnego Fritz!Box, książka telefoniczna z listą bloków wymaga Fritz!Box od 2018 roku.</p>
+				</div>
+			</div>
+
+			<div class="wizard-result" data-result="dongle-telekom" hidden="hidden">
+				<div class="notification is-success">
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0079:40d1c735">Klucz sprzętowy działa.</span></p>
+					<p data-tx="t0080:1938636f">Telekom umożliwia bezpośrednią rejestrację urządzeń VoIP na swojej infrastrukturze - klucz sprzętowy <strong>PhoneBlock</strong> rejestruje się tam, router nie ma znaczenia. Automatyczna sekretarka w chmurze i książka telefoniczna z blokadą wymagają Fritz!Box i nie są dostępne.</p>
+				</div>
+			</div>
+
+			<div class="wizard-result" data-result="dongle-other-isp" hidden="hidden">
+				<div class="notification is-info">
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-info"></i></span> <span data-tx="t0081:5aa4a799">Prawdopodobnie klucz sprzętowy - sprawdź u swojego dostawcy.</span></p>
+					<p data-tx="t0082:b2d14a7b">Bez Fritz!Box, tylko klucz sprzętowy <strong>PhoneBlock</strong> jest opcją, a operator musi zezwolić na bezpośrednią rejestrację urządzenia SIP. W razie wątpliwości należy zwrócić się do pomocy technicznej operatora lub włączyć własny Fritz!Box - wtedy wybór znów będzie wolny.</p>
+				</div>
+			</div>
+
+			<div class="wizard-result" data-result="vodafone-deadend" hidden="hidden">
+				<div class="notification is-warning">
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-triangle-exclamation"></i></span> <span data-tx="t0083:9edc79ef">Niestety, PhoneBlock nie ma szans z tą konstelacją.</span></p>
+					<p data-tx="t0084:70dc4cbf">Vodafone blokuje bezpośrednią rejestrację urządzeń SIP, a bez Fritz!Box nie ma punktu końcowego telefonii dla innych wariantów. <strong>Zalecenie:</strong> Zawieś własny Fritz!Box za skrzynką Vodafone (tryb mostu / tryb modemu kablowego) - wtedy wszystkie trzy warianty będą działać. Następnie można ponownie uruchomić kreatora.</p>
+				</div>
+			</div>
+
+			<p class="wizard-restart mt-4" hidden="hidden">
+				<a class="button is-light is-small" href="#festnetzWizard">
+					<span class="icon"><i class="fa-solid fa-rotate-left"></i></span>
+					<span data-tx="t0085:675cadf4">Zresetuj odpowiedzi</span>
+				</a>
+			</p>
+		</div>
+
+		<script th:src="@{/assets/js/festnetz-wizard.js(v=1)}" type="text/javascript"></script>
+
 		<h2 data-tx="t0003:755fe635">Porównanie: Trzy sposoby blokowania spamu z telefonów stacjonarnych</h2>
 
 		<div class="table-container">
