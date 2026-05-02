@@ -26,14 +26,75 @@ Render-Pipeline, in dem E und B gemeinsam landen.
   tolerabel, sofern alle relevanten Clients den Output akzeptieren (Live-
   Smoke gegen iOS und FritzBox auf Staging).
 
+## Schichtenschnitt
+
+Damit die Render-Logik unit-testbar ohne Servlet-Container wird, müssen
+die `Resource`-Methoden frei von `HttpServletRequest` sein. Heute lesen
+sie genau eine Information aus dem Request — den authentifizierten User
+für `current-user-principal`. Den Rest verarbeitet das Servlet vor dem
+Aufruf.
+
+**Lösung**: schmaler Render-Context als Wertobjekt, kein Servlet-Bezug.
+
+```java
+public record RenderContext(String authenticatedUser, String rootUrl) {}
+```
+
+Die Render-Schicht ist anschließend die `Resource`-Hierarchie selbst —
+**kein separater `Renderer`-Typ**. Polymorphie auf `Resource` ist die
+natürliche Modellierung des Konzepts „jede Resource-Sorte hat ihr
+eigenes Property-Set".
+
+Die einzige geteilte Hilfsfunktion ist die Multistatus-Envelope. Die
+liegt als Mini-Helper in einem neuen `MultiStatusWriter` (statische
+Methoden):
+
+```java
+public final class MultiStatusWriter {
+    public static XMLStreamWriter open(OutputStream out) throws XMLStreamException;
+    public static void close(XMLStreamWriter writer) throws XMLStreamException;
+}
+```
+
+`open(...)` öffnet `<d:multistatus>` mit den nötigen Namespace-Bindings
+(`DAV:`, `CARDDAV`, ggf. `calendarserver.org/ns/`); `close(...)` schließt
+das Element und das Dokument. Ein einziger zentraler Punkt für
+Namespace-Handling — dort wo sonst die meisten StAX-Stolpersteine
+liegen.
+
+Die Servlet-Schicht wird zum dünnen I/O-Adapter:
+
+1. Auth + Resource-Resolution (`getResource(req)`).
+2. Request-Body parsen → `List<QName> properties` bzw.
+   `List<String> hrefs + List<QName> properties`. Beide Parser sind reine
+   Funktionen über `InputStream` und liegen in einem neuen
+   `CardDavRequestParser` (auch unit-testbar).
+3. ETag bestimmen, `If-None-Match` über `EtagUtil` matchen → ggf. 304.
+4. `RenderContext` aus `req` konstruieren (User + rootUrl), Envelope per
+   `MultiStatusWriter.open(...)` öffnen, `resource.propfind(...)` /
+   `resource.renderMultiGet(...)` aufrufen, schließen.
+5. ETag-Header und Status setzen.
+
+Das Servlet hat damit keine XML-Logik mehr, nur Routing + I/O.
+
 ## Code-Berührung
 
 - `de.haumacher.phoneblock.carddav.CardDavServlet` — `doPropfind`,
   `doReport`, `marshalMultiStatus` (entfällt).
+- `de.haumacher.phoneblock.carddav.resource.RenderContext` — neu, kleines
+  Wertobjekt.
+- `de.haumacher.phoneblock.carddav.resource.MultiStatusWriter` — neu,
+  statischer Envelope-Helper.
+- `de.haumacher.phoneblock.carddav.CardDavRequestParser` — neu, reines
+  Input-Parsing (PROPFIND-Body, REPORT-Multiget-Body) ohne
+  Servlet-Bezug.
 - `de.haumacher.phoneblock.carddav.resource.Resource` — `propfind`,
-  `fillProperty`, `quote` (umbenannt nach `EtagUtil` schon erledigt).
+  `fillProperty` auf `XMLStreamWriter`-Signatur und `RenderContext`
+  umstellen.
 - `RootResource`, `PrincipalResource`, `AddressBookResource`,
   `AddressResource` — Override-Methoden auf neue Write-API.
+- `de.haumacher.phoneblock.carddav.resource.AddressBookCollectionResource`
+  — neu, Lightweight-Variante für Depth-0 (siehe Phase 3).
 - `AddressBookCache` — `lookupCollectionMeta` neu, `CommonList` bekommt
   `commonEtag`.
 - `de.haumacher.phoneblock.util.DomUtil` — Output-Helper (`appendElement`,
@@ -42,68 +103,70 @@ Render-Pipeline, in dem E und B gemeinsam landen.
 
 ## Render-API
 
-Neue Signatur auf `Resource`:
+Resource-Methoden ohne Servlet-Abhängigkeit:
 
 ```java
-public abstract void propfind(HttpServletRequest req, Resource parent,
+public abstract void propfind(RenderContext ctx, Resource parent,
     XMLStreamWriter writer, List<QName> properties) throws XMLStreamException;
 
-public int fillProperty(HttpServletRequest req, XMLStreamWriter writer,
+public int fillProperty(RenderContext ctx, XMLStreamWriter writer,
     QName property) throws XMLStreamException;
 ```
 
-Multistatus-Envelope öffnet/schließt `CardDavServlet`:
+Multi-get ist ein Address-Book-Konzept und bekommt eine eigene Methode
+auf `AddressBookResource` (statt im Servlet zu leben):
 
 ```java
-XMLOutputFactory factory = XMLOutputFactory.newInstance();
-XMLStreamWriter writer = factory.createXMLStreamWriter(
-    resp.getOutputStream(), "UTF-8");
-writer.writeStartDocument("UTF-8", "1.0");
-writer.setPrefix("d", DavSchema.DAV_NS);
-writer.setPrefix(CardDavSchema.CARDDAV_PREFIX, CardDavSchema.CARDDAV_NS);
-writer.writeStartElement(DavSchema.DAV_NS, "multistatus");
-writer.writeNamespace("d", DavSchema.DAV_NS);
-writer.writeNamespace(CardDavSchema.CARDDAV_PREFIX, CardDavSchema.CARDDAV_NS);
-// resource.propfind(req, null, writer, properties);
-// for child : resource.list() child.propfind(req, resource, writer, properties);
-writer.writeEndElement();
-writer.writeEndDocument();
-writer.flush();
+public void renderMultiGet(RenderContext ctx, XMLStreamWriter writer,
+    List<String> hrefs, List<QName> properties) throws XMLStreamException;
 ```
 
-Achtung beim Namespace-Handling: `setPrefix` muss **vor**
+Sie iteriert intern, schlägt jeden href über `lookupAddress(...)` nach
+und ruft pro Treffer `child.propfind(...)` mit denselben Bausteinen wie
+der Depth-1-Pfad.
+
+Achtung beim Namespace-Handling: `setPrefix` muss **vor** dem ersten
 `writeStartElement` für jedes verwendete Namespace passieren, sonst
-generiert der Writer ungewollt `xmlns:ns0`-artige Bindings. Ein
-gemeinsamer Helper `openMultiStatus(writer)` / `closeMultiStatus(writer)`
-fasst das zusammen.
+generiert der Writer ungewollt `xmlns:ns0`-artige Bindings.
+`MultiStatusWriter.open(...)` ist die einzige Stelle, an der das
+festgelegt wird.
 
 ## Phasen
 
-### Phase 1 — Pipeline auf StAX umstellen
+### Phase 1 — Pipeline auf StAX umstellen, RenderContext einführen
 
 Eine kohärente Änderung über den ganzen Resource-Baum. Doppel-API mit DOM
 parallel ist unnötig — der Code ist überschaubar (Resource + 4
 Subklassen), und ein sauberer Diff hilft mehr als eine Übergangsphase.
 
-1. `Resource.propfind` und `fillProperty` auf `XMLStreamWriter`-Signatur
-   umstellen. `quote(...)` ist schon in `EtagUtil` ausgelagert.
-2. `RootResource`, `PrincipalResource`, `AddressBookResource`,
+1. `RenderContext`-Record und `MultiStatusWriter`-Helper einführen.
+2. `Resource.propfind` und `fillProperty` auf neue Signatur umstellen
+   (`RenderContext` + `XMLStreamWriter`).
+3. `RootResource`, `PrincipalResource`, `AddressBookResource`,
    `AddressResource`: alle `appendElement`-/`appendText`-Aufrufe durch
    `writer.writeStartElement` / `writer.writeCharacters` /
-   `writer.writeEndElement` ersetzen.
-3. `CardDavServlet.doPropfind` und `doReport`: DOM-Document-Aufbau durch
-   Stream-Envelope ersetzen, `marshalMultiStatus` entfällt. Conditional-
-   GET-Pfad (`If-None-Match` → 304) bleibt unverändert.
-4. `AddressResource.fillProperty` für die `address-data`-Property
+   `writer.writeEndElement` ersetzen. `LoginFilter.getAuthenticatedUser(req)`
+   wird zu `ctx.authenticatedUser()`.
+4. `AddressBookResource.renderMultiGet(...)` neu — verschiebt die Schleife
+   aus `CardDavServlet.doReport` in die Resource.
+5. `CardDavRequestParser` einziehen mit zwei Methoden:
+   `parsePropfindBody(InputStream)` → `List<QName>` und
+   `parseMultiGetBody(InputStream)` → `(List<String> hrefs, List<QName>)`.
+6. `CardDavServlet.doPropfind` und `doReport`: DOM-Document-Aufbau durch
+   `MultiStatusWriter.open(...)` + Resource-Aufruf + `close(...)` ersetzen,
+   Body-Parsing auf den neuen Parser umstellen, `marshalMultiStatus`
+   entfällt. Conditional-GET-Pfad (`If-None-Match` → 304) bleibt
+   unverändert.
+7. `AddressResource.fillProperty` für die `address-data`-Property
    schreibt `vCardContent()` direkt per `writer.writeCharacters` in den
    Stream — keine Zwischen-Stringifizierung in eine `Element`-Textnode.
 
 **Test**: ein neuer Equivalence-Test rendert das Multistatus-Output für
 einen Fixture-`AddressBook` einmal über den (kurz noch parallel
 mitgehaltenen) DOM-Pfad und einmal über den neuen Stream-Pfad und
-vergleicht XML-kanonisch (z. B. `Canonicalizer` aus `xmlsec`, oder
-einfacher: beide Outputs durch denselben DOM-Parser jagen und per
-`isEqualNode()` vergleichen). Sobald grün, DOM-Pfad löschen.
+vergleicht XML-kanonisch — beide Outputs durch denselben DOM-Parser
+jagen und per `isEqualNode()` vergleichen. Sobald grün, DOM-Pfad
+löschen.
 
 ### Phase 2 — ETag inputbasiert
 
@@ -132,24 +195,38 @@ bei identischen Inputs) und Sensitivität gegenüber: einer einzelnen
 Personal-Nummer mehr/weniger, einer einzelnen Common-Block-Änderung,
 geändertem `ListType`.
 
-### Phase 3 — Lightweight Depth-0-Pfad
+### Phase 3 — Lightweight Depth-0-Pfad als eigene Resource-Subklasse
 
-1. `AddressBookCache.lookupCollectionMeta(principal, settings)` liefert
-   `record CollectionMeta(String etag, String displayName, String path)`
-   ohne `AddressBookResource`-Konstruktion. Verzweigt intern wie der
-   heutige `computeBlocks`-Pfad zwischen common-only / common+personal /
-   full-pipeline; nutzt für die ersten beiden Pfade nur den
-   `_numberCache` und die `getPersonalizations` / `getExcluded`-Reads.
-   Für full-pipeline materialisiert sie wie heute (selten genug, ~98
-   User).
-2. `CardDavServlet.doPropfind` erkennt **Depth: 0** + Pfad-Match auf
-   `/addresses/{user}/`, ruft `lookupCollectionMeta`, ruft Helper
-   `writeAddressBookCollectionProps(writer, req, meta, properties)`. Kein
-   `getResource(req)`, kein `lookupAddressBook`.
-3. `writeAddressBookCollectionProps` wird **auch** vom Heavy-Pfad
-   (`AddressBookResource.propfind` für Depth: 1) für die Collection-
-   Eigen-Response verwendet. Eine Implementierung, beide Pfade.
-4. Die Address-Book-Children im Heavy-Pfad bleiben über
+Polymorphie statt Sonderfall: der Lightweight-Pfad bekommt eine eigene
+Resource-Subklasse mit denselben Render-Methoden, aber ohne Children.
+
+1. `CollectionMeta` als `record CollectionMeta(String etag, String
+   displayName, String path)` einführen.
+2. `AddressBookCollectionResource extends Resource` neu — hält eine
+   `CollectionMeta`, `list()` ist leer, `getEtag()` liefert `meta.etag()`,
+   `propfind(...)` und `fillProperty(...)` bedienen dieselben Properties
+   wie `AddressBookResource` für die Collection-Eigen-Response
+   (`getctag`, `getetag`, `displayname`, `resourcetype`,
+   `current-user-principal`).
+3. **Property-Logik geteilt**: das gemeinsame Property-Set für die
+   Address-Book-Collection wird aus beiden Subklassen über einen
+   protected Helper bedient (z. B. `fillCollectionProperty(...)` auf
+   einer gemeinsamen Basis oder als statische Methode in
+   `AddressBookProps`). Eine Implementierung, beide Pfade.
+4. `AddressBookCache.lookupCollectionMeta(principal, settings)` liefert
+   `CollectionMeta` ohne `AddressBookResource`-Konstruktion. Verzweigt
+   intern wie der heutige `computeBlocks`-Pfad zwischen common-only /
+   common+personal / full-pipeline; nutzt für die ersten beiden Pfade
+   nur den `_numberCache` und die `getPersonalizations` /
+   `getExcluded`-Reads. Für full-pipeline materialisiert sie wie heute
+   (selten genug, ~98 User).
+5. `CardDavServlet.doPropfind` interpretiert den `Depth`-Header **vor**
+   der Resource-Resolution: bei Depth: 0 auf `/addresses/{user}/` ruft
+   sie `lookupCollectionMeta` und konstruiert eine
+   `AddressBookCollectionResource`; bei Depth: 1 (oder REPORT) wie
+   heute `lookupAddressBook`. Ab da identischer Code-Pfad — beide
+   Resources implementieren dasselbe Interface.
+6. Die Address-Book-Children im Heavy-Pfad bleiben über
    `resource.list()` + `child.propfind(...)` wie heute.
 
 **Test**: Goldfile-Vergleich der Depth-0-Antwort gegen den heutigen
@@ -169,24 +246,124 @@ denselben User+Settings.
    (Hebel B und Hebel E von "geplant" auf "umgesetzt" verschieben,
    "Nächste Schritte" auf C und D verkürzen).
 
-## Tests im Detail
+## Test-Plan
 
-- **XML-Equivalenz pro Resource × Property-Set** (Phase 1): konstruierter
-  Fixture-User, Liste der relevanten Properties, kanonischer XML-
-  Vergleich gegen einen Snapshot des heutigen Outputs.
-- **ETag-Stabilität** (Phase 2): selber Input → byteidentischer ETag bei
-  wiederholten Aufrufen; Mutation an Common, Personal oder Settings
-  ändert ETag.
-- **ETag-Identität Lightweight vs. Heavy** (Phase 3): für denselben User
-  liefert `lookupCollectionMeta(...).etag` denselben Wert wie
-  `lookupAddressBook(...).getEtag()`.
-- **Goldfile Depth-0** (Phase 3): heutiger Depth-0-Output vs. neuer
-  Lightweight-Output, kanonisch gleich.
-- **Live-Smoke auf Staging** (vor Merge): iOS-Sync läuft (ctag wird
-  akzeptiert, kein leeres Adressbuch); FritzBox-Sync läuft (Full-Sync
-  gibt korrekte Liste, DELETE-Verhalten unverändert);
-  Conditional-GET-Pfad (PeopleSync) liefert weiterhin 304 bei
-  unverändertem ETag.
+Die Schichten-Trennung ist die Voraussetzung für sinnvoll fokussierte
+Tests. Drei Test-Ebenen, jede mit klarer Zuständigkeit:
+
+### Ebene 1 — Unit-Tests auf der Resource-Hierarchie
+
+Setzen direkt auf den Resource-Subklassen auf. Konstruieren eine Resource
+mit Test-Daten, rufen `propfind(...)` mit einem `RenderContext` und
+einem `XMLStreamWriter` auf einen `ByteArrayOutputStream`, vergleichen
+das Ergebnis kanonisch (`isEqualNode()` nach DOM-Re-Parse) gegen ein
+Goldfile.
+
+Keine Servlet-Infrastruktur, kein `HttpServletRequest`-Stub, keine DB.
+Was die Resource an externen Daten braucht (Block-Liste, Principal-
+Name, rootUrl), wird im Test-Setup geliefert.
+
+**`TestRootResourceRender`**:
+- Property-Set `{resourcetype, displayname, current-user-principal}` →
+  Goldfile.
+- Einzeln pro Property: nur `resourcetype` angefragt → nur
+  `<d:resourcetype>`-Block; nur `current-user-principal` mit
+  authenticatedUser=null → `404 Not Found`-Status im Propstat.
+
+**`TestPrincipalResourceRender`**:
+- Standard-Property-Set für CardDAV-Discovery → Goldfile.
+- Unbekannte Property → `404`-Status.
+
+**`TestAddressBookResourceRender`** (Heavy-Pfad):
+- Depth: 0 (Eigen-Response) mit `{getctag, getetag, displayname,
+  resourcetype}` → Goldfile.
+- Depth: 1 (Eigen + Children) mit drei NumberBlock-Fixtures → Goldfile;
+  drei `<d:response>`-Elemente für Children.
+- `renderMultiGet` mit gemischten hrefs (existent + nicht existent) →
+  Goldfile mit 200 / 404-Statuszeilen.
+
+**`TestAddressResourceRender`**:
+- vCard-Inhalt für Single-Number-Block, Multi-Number-Block,
+  Wildcard-Block — Goldfiles.
+- ETag stabil über wiederholte Aufrufe.
+
+**`TestAddressBookCollectionResourceRender`** (Lightweight-Pfad):
+- Depth: 0 mit identischem Property-Set wie `AddressBookResource`,
+  identische `CollectionMeta` → kanonisch gleiches XML wie
+  `TestAddressBookResourceRender` Depth: 0.
+- `list()` ist leer (Smoke).
+
+**Gemeinsamer Goldfile-Helper**: `resources/de/.../carddav/golden/*.xml`,
+Lese-Vergleich-Utility in einer `RenderTestSupport`-Klasse.
+
+### Ebene 2 — Unit-Tests auf den reinen Funktionen
+
+**`TestCardDavRequestParser`**:
+- `parsePropfindBody`: Real-World-Beispiele aus iOS, FritzBox, DAVx5,
+  PeopleSync → erwartete `List<QName>`. Beispiel-Bodies als
+  Test-Resources einchecken.
+- `parsePropfindBody` mit kaputtem XML → klare Exception.
+- `parseMultiGetBody`: hrefs + property-Liste extrahiert, Reihenfolge
+  erhalten.
+
+**`TestEtagUtil`** (existiert schon nach Hebel A — beibehalten).
+
+**`TestCommonListEtag`** (Phase 2):
+- Stabilität: gleiche Block-Liste → byteidentischer `commonEtag` über
+  N Aufrufe.
+- Sensitivität: ein Block hinzu/weg → anderer `commonEtag`; eine Nummer
+  in einem Block geändert → anderer `commonEtag`; `ListType` geändert
+  → anderer Wert.
+- Reihenfolge-Robustheit: Block-Liste vorher permutieren → identischer
+  `commonEtag`.
+
+**`TestAddressBookEtag`** (existiert nach Hebel A — erweitern für
+Phase 3):
+- ETag-Identität Lightweight vs. Heavy: für denselben User+Settings
+  liefert `lookupCollectionMeta(...).etag()` denselben Wert wie
+  `lookupAddressBook(...).getEtag()` — über alle drei Pfade
+  (common-only, common+personal, full-pipeline).
+- ETag-Sensitivität: Personal-Add/Remove ändert ETag; Common-Mutation
+  ändert ETag; Settings-Change ändert ETag.
+
+### Ebene 3 — Servlet-Integration (schmal)
+
+Hand-gestrickte Stubs für `HttpServletRequest` / `HttpServletResponse`
+(getHeader / getInputStream / getOutputStream / setStatus / setHeader),
+keine Mockito, kein Servlet-Container. Decken nur Glue-Logik ab —
+**nicht** den XML-Inhalt (das machen Ebene 1).
+
+**`TestCardDavServlet`**:
+- Auth fehlt → 401-Challenge.
+- Auth passt + PROPFIND Depth: 0 → 207, ETag-Header gesetzt,
+  `MultiStatusWriter`-Pfad aufgerufen (Smoke: irgendein gültiges
+  Multistatus-XML im Body).
+- `If-None-Match` matcht aktuellen ETag → 304, kein Body.
+- `If-None-Match` mit `*` und vorhandenem ETag → 304.
+- PROPFIND Depth: 0 auf Address-Book → `AddressBookCollectionResource`
+  wird konstruiert (über Cache-Stub verifizierbar); Depth: 1 →
+  `AddressBookResource`.
+- METHOD-Routing: OPTIONS, PROPFIND, REPORT, GET, PUT, DELETE.
+
+### Ebene 4 — Live-Smoke auf Staging (vor Merge)
+
+Manuell, nicht automatisiert:
+
+- **iOS-Sync** läuft: ctag wird akzeptiert, kein leeres Adressbuch,
+  Übergang von altem zu neuem ETag löst genau einen Vollsync aus.
+- **FritzBox-Sync** läuft: Full-Sync gibt korrekte Liste, DELETE-
+  Verhalten unverändert (ein Test-Block per Web-UI entfernen, FritzBox
+  übernimmt das).
+- **PeopleSync** liefert weiterhin 304 bei unverändertem ETag (das ist
+  der einzige Client mit echtem `If-None-Match`-Pfad).
+
+### Was Tests nicht abdecken
+
+- Performance der `lookupCollectionMeta`-Pfads — die wird über die
+  Live-Beobachtung nach Deploy gemessen (`Address book computed for: …`
+  -Logs sollten für den iOS-Pfad auf null fallen).
+- StAX-Whitespace-Layout — kanonischer Vergleich toleriert das per
+  Design; Live-Smoke fängt, falls ein Client doch pingelig ist.
 
 ## Risiken
 
