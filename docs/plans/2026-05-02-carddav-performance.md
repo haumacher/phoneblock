@@ -20,50 +20,58 @@ einen geänderten URL-Schemastand und machen Vollsync).
 
 Strukturelle Beobachtungen aus dem Live-Log:
 
-- Cache-Miss-Logs (`Address book computed for: …`) feuern pro User-Sync: bei
-  iOS-Polling alle 18 min und Cache-TTL 5 / 15 min ist der `_userCache` immer
-  stale, wenn der Client wiederkommt. Funktional OK (`_numberCache` warm,
-  ETag stabil → nächster Sync mit `If-None-Match` wird 304), aber jeder Poll
-  läuft durch den Compute-Pfad und allokiert eine eigene
-  `AddressBookResource` mit ~700 `AddressResource`-Wrappern. Drei
-  common-only-User mit je 715 Blocks innerhalb einer Sekunde sind nichts
-  Ungewöhnliches im Log — genau die Verschwendung, die Hebel C / Stufe 2
-  adressieren würde.
-- Verbleibende Last sitzt vermutlich überwiegend auf dem FritzBox-Pfad: 72 %
-  der Requests, davon 50 % Auth-401-Roundtrips ohne Nutzdaten und 50 %
-  gerenderte 207-Antworten ohne `If-None-Match`-Support. Hebel A wirkt dort
-  per Design nicht.
+- iOS pollt alle ~18 min mit PROPFIND Depth: 0 und fragt nur
+  Collection-Metadaten (`getctag`/`getetag`/`displayname`/`resourcetype`).
+  Diese Requests setzen **kein** `If-None-Match` — A3 greift dort also nicht,
+  alle Antworten bleiben 207 (~3.5 KB Body). iOS vergleicht den ctag
+  clientseitig und zieht den großen Depth: 1-Sync nur, wenn der ctag sich
+  geändert hat (im 4-h-Slice einmal beobachtet beim Übergang
+  1086 → 1087 Blocks). Trotzdem materialisiert der Server pro Mini-PROPFIND
+  eine volle `AddressBookResource` mit ~1086 `AddressResource`-Wrappern, nur
+  um den ETag aus den Wrappern zu hashen. Genau die Verschwendung, auf die
+  Hebel E zielt.
+- FritzBox macht **keinen** ctag-basierten Sync — jeder ihrer Polls (täglich)
+  ist ein Full-Sync mit Depth: 1. Damit ist die volle Block-Materialisierung
+  + 207-Render der dominante Pfad: 72 % des Volumens, davon 50 %
+  Auth-401-Roundtrips ohne Nutzdaten und 50 % gerenderte 207-Antworten ohne
+  `If-None-Match`-Support. Hebel A wirkt dort per Design nicht; das ist die
+  Domäne von Hebel B (StAX-Render) und Hebel C (geteilte Resource pro
+  `ListType`).
 
 ## Nächste Schritte
 
 In dieser Reihenfolge, jeweils mit klarer Wirkungs-Hypothese:
 
-1. **Cache-TTL hochziehen.** Quick-Win, ein paar Konstanten in
-   `AddressBookCache.Cache`. Heute 5 min unused / 15 min max — das stammt aus
-   der Zeit, als `getReports` live aus NUMBERS las. Mit dem published-Snapshot
-   und dem Release-Hook (`flushAllCaches` um 22:00) ist Staleness nur noch via
-   Release möglich; alle anderen Invalidate-Pfade sind explizit
-   (`flushUserCache` bei Settings-Change und PUT). Vorschlag 6 h / 24 h.
-   Memory-Schätzung: pro User-Cache-Eintrag ~50 KB, bei realistisch 7000
-   aktiven Usern in einem 6-h-Fenster ~350 MB. Wirkung: weniger Compute, weniger
-   Allokation, leiseres Log; auf den 304-Anteil hat das keinen Einfluss.
-2. **Hebel B (StAX-Streaming-Render).** Wirkt auf jede 207-Antwort, also auch
-   auf die FritzBox. Ersetzt DOM-Aufbau + `LSSerializer` durch direkten
-   `XMLStreamWriter` in den Output-Stream. Erwarteter Effekt: Faktor 2-3
-   schnellerer Render und drastisch weniger Heap-Druck.
+1. **Hebel E — Depth-0-PROPFIND ohne Block-Materialisierung.** Wirkt auf
+   ctag-basierte Clients, primär iOS (~21 % Volumen, alle 18 min ein
+   PROPFIND Depth: 0 pro aktivem Gerät). Die Mini-PROPFIND-Antwort hängt nur
+   an Collection-Metadaten + ETag, nicht an den Block-Children. ETag
+   inputbasiert berechnen aus Common-ETag (auf `CommonList` mitgehalten) +
+   Personal-Hash + `ListType.hashCode()`. Statt 1086
+   `AddressResource`-Wrappern pro Poll: ein paar Set-Probes und ein
+   SHA-1-Update. `_userCache` bleibt eine kurze Sync-Session-Brücke und
+   bekommt explizit *keine* längere TTL — ~50 KB pro Eintrag × Userzahl ×
+   TTL-Fenster skaliert nicht im Heap. Details in Hebel E unten.
+2. **Hebel B (StAX-Streaming-Render).** Wirkt auf jeden 207-Render mit Body —
+   das ist vor allem der FritzBox-Pfad, der jeden Sync als Depth: 1-Full-Sync
+   fährt (72 % Volumen, kein ctag-Skip). Ersetzt DOM-Aufbau + `LSSerializer`
+   durch direkten `XMLStreamWriter` in den Output-Stream. Erwarteter Effekt:
+   Faktor 2-3 schnellerer Render und drastisch weniger Heap-Druck.
 3. **Hebel C (geteilte `AddressBookResource` pro `ListType`).** Setzt die in
    Hebel A bereits angedeutete Stufe 2 um: `AddressBookResource` ist heute
    user-spezifisch, obwohl der Inhalt für alle no-personalization-User
-   identisch ist. Eine geteilte Instanz pro `ListType` eliminiert
-   ~21k redundante Wrapper-Allokationen. Erfordert HREF-Schema-Entscheidung
-   (relativ vs. absolut mit Render-Time-Substitution).
+   identisch ist. Eine geteilte Instanz pro `ListType` eliminiert ~21k
+   redundante Wrapper-Allokationen pro FritzBox-Welle. Erfordert
+   HREF-Schema-Entscheidung (relativ vs. absolut mit
+   Render-Time-Substitution).
 4. **Hebel D (FritzBox-Auth-Loop).** Heute 3 RPS reine 401-Antworten. Lohnt
    sich erst wenn Hebel B/C ausgeschöpft sind, denn Hebel D braucht
    Reverse-Proxy-Konfiguration oder Auth-Filter-Tuning und ist nicht trivial
    für tokenbasierte Auth.
 
-Schritt 1 ist klein und in eigenständig deploybar. Schritt 2 ist der nächste
-große Hebel; Schritt 3 ist der Folgeschritt, der Hebel B in seiner Wirkung
+Schritt 1 ist klein und eigenständig deploybar (reine Server-interne
+Refaktorierung, keine URL-/ID-Änderung). Schritt 2 ist der nächste große
+Hebel; Schritt 3 ist der Folgeschritt, der Hebel B in seiner Wirkung
 verstärkt (weniger gerenderte 207, plus pro Render weniger Wrapper-Bauen).
 
 ## Was nach Hebel A schon korrekt ist (gegen den ursprünglichen Plan)
@@ -251,18 +259,23 @@ Bei jedem PROPFIND/REPORT:
 Jeder FritzBox-CardDAV-Request kommt zweimal an: erst 401-Challenge, dann mit
 `Authorization`-Header. Verdoppelt die FritzBox-Last.
 
-### Damals verworfen — Common-Number-Cache-TTL hochziehen
+### Verworfen — Cache-TTL hochziehen
 
 Beim Original-Design der Optimierung argumentiert: bei 8.6 RPS Gesamtlast wird
 der `_numberCache` ohnehin permanent warm gehalten, Misses sind nicht der
 dominante Cost.
 
-**Nach Rollout neu bewertet:** Das Argument galt für `_numberCache` und stimmt
-weiterhin. Aber für den **`_userCache`** ist es falsch — pro User-Sync ein
-eigener Eintrag, und mit TTL 15 min < 18 min iOS-Polling ist quasi jeder Poll
-ein Cache-Miss. Mit dem neuen Release-Hook wird der Cache ohnehin nur einmal
-am Tag (22:00) und ad-hoc bei Settings/PUT-Änderungen invalidiert. TTLs auf
-6 h / 24 h zu setzen (siehe "Nächste Schritte") ist jetzt der Standard-Move.
+**Nach Rollout zwischenzeitlich revisited** — Beobachtung war: für den
+`_userCache` ist 15 min TTL < 18 min iOS-Polling, jeder Poll ein Miss. Idee
+TTL auf 6 h / 24 h zu setzen.
+
+**Wieder verworfen:** ~50 KB pro User-Cache-Eintrag × Userzahl × Fensterdauer
+skaliert nicht im Heap (~350 MB allein für ein 6-h-Fenster bei 7000 aktiven
+Usern, und faktisch wären es alle Sync-aktiven User der letzten 24 h). Der
+`_userCache` ist konzeptionell eine Sync-Session-Brücke, kein Long-Term-Cache.
+Stattdessen Hebel E: ETag und Mini-PROPFIND-Antwort aus den Inputs erzeugen,
+ohne pro Poll eine Materialisierung zu provozieren. Damit wird der `_userCache`
+für den iOS-Pfad ohnehin nicht mehr getroffen.
 
 ### Verworfen — sync-collection (RFC 6578)
 
@@ -541,11 +554,22 @@ extrahieren, dort testen — keine Servlet-Container-Infrastruktur nötig:
 
 #### Erwartete Wirkung
 
-- 304-Anteil bei iOS/macOS/DAVx5/PeopleSync sollte hoch werden — wie hoch
-  hängt davon ab, wie häufig die effektive Block-ID-Menge wirklich kippt
-  (= Top-K-Mitgliedschaftswechsel + lokale Bucket-Splits an der 9er-Grenze).
-- Realistisches Ziel: ~70–90% der Apple/Android-PROPFINDs werden 304.
-- Reduktion der CardDAV-CPU-Last: geschätzt 20–25%.
+Original-Annahme: ~70-90 % der Apple/Android-PROPFINDs werden 304;
+CardDAV-CPU-Last −20 bis −25 %.
+
+**Stand 2026-05-02 (Live-Log nach Rollout):** Die 304-Quote auf iOS ist 0 % —
+nicht weil der ETag instabil ist, sondern weil iOS bei Mini-PROPFINDs (Depth:
+0) **kein** `If-None-Match` setzt. iOS verwendet stattdessen den
+`getctag`-Wert clientseitig zur Sync-Entscheidung und springt nur dann in den
+großen Depth: 1-Sync, wenn der ctag sich geändert hat. PeopleSync-Pfad
+funktional korrekt (ist vor Rollout verifiziert worden); macOS und DAVx5
+verhalten sich vermutlich wie iOS, das bestätigt sich live mit der gleichen
+0 %-Quote. CPU-Last hat sich nach Rollout etwa halbiert — Beitrag aus Hebel A
+ist der stabile ctag (kein Vollsync mehr bei jedem Vote), nicht der
+304-Pfad.
+
+Konsequenz: die Wirkung auf den iOS-Pfad muss aus Hebel E kommen
+(Materialisierung pro Poll vermeiden), nicht aus 304.
 
 ### Hebel B — Render-Pfad: DOM → StAX
 
@@ -616,28 +640,106 @@ Speicher: ~30 aktive Listen-Varianten (siehe Listen-Varianten-Abschnitt) à
 PhoneBlock-Auth ist tokenbasiert, nicht trivial. Erst angehen, wenn A + B
 ausgeschöpft sind.
 
+### Hebel E — Depth-0-PROPFIND ohne Block-Materialisierung
+
+**Wirkt auf:** Clients, die per ctag synchronisieren und Mini-PROPFINDs ohne
+`If-None-Match` schicken — primär iOS / `dataaccessd` (~21 % Volumen, p50
+18 min Polling, ein PROPFIND Depth: 0 pro Poll). macOS und DAVx5 zeigen
+denselben Pfad in deutlich kleinerem Volumen. **Nicht** auf FritzBox: deren
+PROPFINDs sind Depth: 1 und ziehen jedes Mal die volle Block-Liste.
+
+#### Beobachtung
+
+iOS-Mini-PROPFIND (~3.5 KB Antwort) fragt nur Collection-Properties
+(`getctag`/`getetag`/`displayname`/`resourcetype`, optional
+`current-user-principal`). Der Server materialisiert dafür heute eine volle
+`AddressBookResource` mit ~1086 `AddressResource`-Wrappern, weil
+`AddressBookResource.getEtag()` über die schon konstruierten Wrapper hasht.
+Ein 304 ist nicht möglich, weil iOS kein `If-None-Match` setzt.
+
+#### Idee
+
+1. **Collection-ETag inputbasiert berechnen.** Inputs sind alle in der
+   Cache-Hierarchie schon vorhanden:
+   - **Common-ETag** pro `ListType`: in `CommonList` mitgehalten und einmal
+     pro Release berechnet — Hash über die sortierten Block-IDs +
+     Block-ETags der `_numberCache`-Liste.
+   - **Personal-Hash**: Hash über die deduplizierte Personal-Singleton-Menge
+     (Personalisations nach `common.covers(...)`-Filter) und
+     `personalSettingsHash(personalizations, exclusions)`.
+   - **Settings-Hash**: `ListType.hashCode()`.
+
+   Kosten pro Aufruf: 1 × `getUserId`, 1 × `getPersonalizations`, 1 ×
+   `getExcluded`, ein paar Set-Probes gegen `commonNumbers` /
+   `commonWildcards`, ein SHA-1-Update.
+2. **`AddressBookCache.lookupCollectionMeta(principal, settings)`** liefert
+   ein kleines Wertobjekt `(etag, displayname, path)` ohne
+   `AddressBookResource`-Konstruktion. Verzweigt intern wie heute zwischen
+   common-only / common+personal / full-pipeline; nur die ~98 effektive
+   Exclusion-User landen weiterhin auf dem materialisierenden Pfad.
+3. **`CardDavServlet.doPropfind`** zweigt für Depth: 0 auf den
+   Address-Book-Pfad in einen Lightweight-Renderer ab, der direkt in den
+   Response-Stream schreibt:
+   - `<href>` der Collection
+   - `<displayname>BLOCKLIST</displayname>`
+   - `<resourcetype><collection/><cs:addressbook/></resourcetype>`
+   - `<getctag>{etag}</getctag>`, `<getetag>"{etag}"</getetag>`
+   - `<current-user-principal>` aus dem Login-Context
+
+   Keine Block-Information, keine Wrapper, keine vCards.
+4. **Depth: 1-PROPFIND und REPORT mit Body** laufen unverändert durch
+   `lookupAddressBook` — dort bleibt die Materialisierung notwendig, weil
+   tatsächlich Children gerendert werden. Hebel C kann diesen Pfad weiter
+   reduzieren.
+
+#### Effekt
+
+- iOS-Polling-Pfad (1 PROPFIND alle 18 min × ~5k aktive Geräte ≈ 4–5 RPS)
+  kostet künftig nur noch DB-Reads + ein paar Bytes Stream-Output. Keine
+  Wrapper-Allokation, kein Top-K-Bauen pro Poll.
+- `_userCache` darf auf der heutigen kurzen TTL bleiben — sein Job ist nur
+  noch die Sync-Session-Brücke für Depth: 1-Renders. TTL hochziehen wäre
+  weiterhin falsch (Heap-Skalierung).
+- Kein 304-Effekt — die Mini-PROPFINDs bleiben 207, weil iOS so synct. Aber
+  sie kosten nichts mehr.
+
+#### Migration / Risiko
+
+- Reine Server-interne Refaktorierung. Keine ID-/URL-Änderungen, kein
+  Cache-Invalidate beim Deploy, keine Client-Welle.
+- Test: Property-für-Property-Vergleich der Lightweight-Antwort gegen die
+  heutige Materialisierungsantwort auf einem konstruierten Fixture
+  (verschiedene `ListType`s, common-only / common+personal /
+  full-pipeline-User). Plus: ETag aus dem Lightweight-Pfad muss byteweise
+  identisch zum ETag aus dem Full-Pfad sein, damit Clients-Caches kohärent
+  bleiben.
+
 ## Reihenfolge / Entscheidungspunkte
 
-1. **Hebel A umsetzen** (A1–A4) als zusammenhängender Wechsel — A1 allein bringt
-   nichts, A2/A3 ohne A1 kippt der ETag zu oft, A4 ist die Erweiterung auf
-   personalisierte User.
-2. **Wirkung messen** — 304-Quote pro User-Agent aus Access-Logs, CPU-Last
-   vor/nach.
-3. **Entscheidung:** Reicht Hebel A?
-   - Wenn ja: B/C zurückstellen.
-   - Wenn nein: Hebel B (StAX) als nächster Schritt — wirkt auf alle
-     verbleibenden 207-Renders inkl. FritzBox.
-4. **Hebel C** nur, wenn auch nach A + B noch CPU-Last auf der CardDAV-Strecke
-   dominant ist.
-5. **Hebel D** unabhängig, falls FritzBox-Auth-Roundtrips ein nennenswerter
+1. **Hebel A** (A1–A4) ist umgesetzt und live. Beobachtung siehe "Status nach
+   Hebel A": stabiler ctag wirkt, 304-Pfad bleibt ungenutzt weil iOS kein
+   `If-None-Match` schickt.
+2. **Hebel E (Lightweight Depth-0)** — der Move für den iOS-Pfad. Klein,
+   eigenständig deploybar, keine Client-Migration.
+3. **Wirkung messen** — Anzahl `Address book computed for: …`-Logs pro
+   Stunde (sollte für common-only und common+personal-User auf ~0 fallen),
+   CPU-Last vor/nach.
+4. **Hebel B (StAX)** — der Move für den FritzBox-Pfad. FritzBox macht
+   Depth: 1-Full-Sync, das ist der teure Render und bleibt nach Hebel E die
+   dominante Last.
+5. **Hebel C** verstärkt Hebel B für common-only-User (geteilte Resource pro
+   `ListType`); Reihenfolge B-dann-C, weil C ohne den schlanken Render von B
+   weniger trägt.
+6. **Hebel D** unabhängig, falls FritzBox-Auth-Roundtrips ein nennenswerter
    Anteil der verbleibenden Last sind.
 
 ## Nicht zum Plan gehörig
 
 - `sync-collection`-Implementierung (RFC 6578) — separates Thema.
 - Antwort-Komprimierung via `gzip` — kostet zusätzliche CPU, spart Bandbreite.
-- Cache-TTL-Tuning — wurde initial als unwirksam ausgeschlossen, ist nach
-  Rollout für `_userCache` aber wieder auf der Liste (siehe "Nächste
-  Schritte").
+- Cache-TTL-Tuning — initial als unwirksam ausgeschlossen, nach
+  Rollout-Beobachtung kurz wieder erwogen, dann als nicht-skalierend
+  verworfen (Heap pro User × Userzahl × TTL-Fenster). Siehe "Verworfen —
+  Cache-TTL hochziehen".
 - Modifikation der Top-K- oder Wildcard-Schwellen — verstößt gegen den
   Semantik-Constraint.
