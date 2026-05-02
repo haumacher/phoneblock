@@ -3,44 +3,30 @@
  */
 package de.haumacher.phoneblock.carddav;
 
-import static de.haumacher.phoneblock.util.DomUtil.appendElement;
-import static de.haumacher.phoneblock.util.DomUtil.appendText;
-import static de.haumacher.phoneblock.util.DomUtil.appendTextElement;
-import static de.haumacher.phoneblock.util.DomUtil.createDocumentBuilder;
-import static de.haumacher.phoneblock.util.DomUtil.elements;
-import static de.haumacher.phoneblock.util.DomUtil.filter;
-import static de.haumacher.phoneblock.util.DomUtil.qname;
-import static de.haumacher.phoneblock.util.DomUtil.qnames;
-import static de.haumacher.phoneblock.util.DomUtil.toList;
-
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.xml.XMLConstants;
 import javax.xml.namespace.QName;
-import javax.xml.parsers.DocumentBuilder;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
-import org.apache.http.impl.EnglishReasonPhraseCatalog;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.ls.DOMImplementationLS;
-import org.w3c.dom.ls.LSOutput;
-import org.w3c.dom.ls.LSSerializer;
 import org.xml.sax.SAXException;
 
 import de.haumacher.phoneblock.app.LoginFilter;
+import de.haumacher.phoneblock.carddav.CardDavRequestParser.MultiGetRequest;
 import de.haumacher.phoneblock.carddav.resource.AddressBookCache;
 import de.haumacher.phoneblock.carddav.resource.AddressBookResource;
+import de.haumacher.phoneblock.carddav.resource.MultiStatusWriter;
 import de.haumacher.phoneblock.carddav.resource.PrincipalResource;
+import de.haumacher.phoneblock.carddav.resource.RenderContext;
 import de.haumacher.phoneblock.carddav.resource.Resource;
 import de.haumacher.phoneblock.carddav.resource.RootResource;
-import de.haumacher.phoneblock.carddav.schema.CardDavSchema;
-import de.haumacher.phoneblock.carddav.schema.DavSchema;
+import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.util.DebugUtil;
 import de.haumacher.phoneblock.util.EtagUtil;
@@ -57,7 +43,7 @@ import jakarta.servlet.http.HttpServletResponse;
 public class CardDavServlet extends HttpServlet {
 
 	private static final Logger LOG = LoggerFactory.getLogger(CardDavServlet.class);
-	
+
 	public static final String DIR_NAME = "/contacts";
 
 	private static final String BASE_PATH = DIR_NAME + "/";
@@ -72,7 +58,7 @@ public class CardDavServlet extends HttpServlet {
 	public static final String URL_PATTERN = BASE_PATH + "*";
 
 	private static final int SC_MULTI_STATUS = 207;
-	
+
 	/**
 	 * The request path where user-specific information is served.
 	 */
@@ -84,7 +70,7 @@ public class CardDavServlet extends HttpServlet {
 	public static final String ADDRESSES_PATH = "/addresses/";
 
 	public static final String SERVER_LOC = "https://phoneblock.net";
-	
+
 	private static final Pattern WHITE_SPACE_PREFIX = Pattern.compile("/\\s*/");
 
 	@Override
@@ -93,7 +79,7 @@ public class CardDavServlet extends HttpServlet {
 			resp.sendRedirect(req.getContextPath() + BASE_PATH);
 			return;
 		}
-		
+
 		try {
 			if (METHOD_PROPFIND.equals(req.getMethod())) {
 				doPropfind(req, resp);
@@ -106,18 +92,18 @@ public class CardDavServlet extends HttpServlet {
 			}
 		} catch (Exception ex) {
 			LOG.error("Failed to process CardDAV request.", ex);
-			
+
 			resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 		}
 	}
 
 	@Override
 	protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		resp.setHeader("Allow", 
+		resp.setHeader("Allow",
 			"GET" + ", " + "HEAD" + ", " + METHOD_PROPFIND + ", " + METHOD_REPORT + ", " + "TRACE" + ", " + "OPTIONS");
 		resp.setHeader("DAV", "addressbook");
 	}
-	
+
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		Resource resource = getResource(req);
@@ -125,7 +111,7 @@ public class CardDavServlet extends HttpServlet {
 			handleNotFound(req, resp);
 			return;
 		}
-		
+
 		if (LOG.isDebugEnabled()) {
 			StringWriter out = new StringWriter();
 			out.write(req.getMethod() + " " + req.getPathInfo() + ": " + resource);
@@ -136,7 +122,7 @@ public class CardDavServlet extends HttpServlet {
 
 		resource.get(req, resp);
 	}
-	
+
 	@Override
 	protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		Resource resource = getResource(req);
@@ -152,10 +138,10 @@ public class CardDavServlet extends HttpServlet {
 			DebugUtil.dumpHeaders(out, req);
 			LOG.debug(out.toString());
 		}
-		
+
 		resource.put(req, resp);
 	}
-	
+
 	@Override
 	protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		Resource resource = getResource(req);
@@ -175,7 +161,7 @@ public class CardDavServlet extends HttpServlet {
 		resource.delete(resp);
 	}
 
-	private void doPropfind(HttpServletRequest req, HttpServletResponse resp) throws IOException, SAXException {
+	private void doPropfind(HttpServletRequest req, HttpServletResponse resp) throws IOException, SAXException, XMLStreamException {
 		Resource resource = getResource(req);
 		if (resource == null) {
 			handleNotFound(req, resp);
@@ -189,10 +175,8 @@ public class CardDavServlet extends HttpServlet {
 			return;
 		}
 
-		DocumentBuilder builder = createDocumentBuilder();
-		Document requestDoc = builder.parse(req.getInputStream());
+		List<QName> properties = CardDavRequestParser.parsePropfindBody(req.getInputStream());
 		Depth depth = Depth.fromHeader(req.getHeader("depth"));
-		List<QName> properties = qnames(toList(elements(requestDoc, DavSchema.DAV_PROPFIND, DavSchema.DAV_PROP)));
 
 		if (LOG.isDebugEnabled()) {
 			StringWriter out = new StringWriter();
@@ -202,45 +186,22 @@ public class CardDavServlet extends HttpServlet {
 			LOG.debug(out.toString());
 		}
 
-		Document responseDoc = builder.newDocument();
-		Element multistatus = appendElement(responseDoc, DavSchema.DAV_MULTISTATUS);
-		multistatus.setAttributeNS(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, XMLConstants.XMLNS_ATTRIBUTE, DavSchema.DAV_NS);
-		multistatus.setAttributeNS(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, XMLConstants.XMLNS_ATTRIBUTE + ':' + CardDavSchema.CARDDAV_PREFIX, CardDavSchema.CARDDAV_NS);
-
-		resource.propfind(req, null, multistatus, properties);
-		if (depth != Depth.EMPTY) {
-			for (Resource content : resource.list()) {
-				content.propfind(req, resource, multistatus, properties);
+		RenderContext ctx = renderContextOf(req);
+		beginMultiStatus(resp, etag);
+		XMLStreamWriter writer = MultiStatusWriter.open(resp.getOutputStream());
+		try {
+			resource.propfind(ctx, null, writer, properties);
+			if (depth != Depth.EMPTY) {
+				for (Resource content : resource.list()) {
+					content.propfind(ctx, resource, writer, properties);
+				}
 			}
-		}
-
-		marshalMultiStatus(resp, responseDoc, etag);
-	}
-
-	private void marshalMultiStatus(HttpServletResponse resp,
-			Document responseDoc, String etag) throws IOException {
-		if (etag != null) {
-			resp.setHeader("ETag", EtagUtil.quote(etag));
-		}
-		resp.setStatus(SC_MULTI_STATUS);
-		resp.setCharacterEncoding("utf-8");
-		resp.setContentType("application/xml");
-		
-		DOMImplementationLS ls = (DOMImplementationLS) responseDoc.getImplementation().getFeature("LS", "3.0");
-		LSOutput output = ls.createLSOutput();
-		output.setEncoding("utf-8");
-		output.setByteStream(resp.getOutputStream());
-		LSSerializer serializer = ls.createLSSerializer();
-		serializer.write(responseDoc, output);
-		
-		if (LOG.isDebugEnabled()) {
-			StringWriter out = new StringWriter();
-			DebugUtil.dumpDoc(out, responseDoc);
-			LOG.debug("Response: " + out.toString());
+		} finally {
+			MultiStatusWriter.close(writer);
 		}
 	}
 
-	private void doReport(HttpServletRequest req, HttpServletResponse resp) throws IOException, SAXException {
+	private void doReport(HttpServletRequest req, HttpServletResponse resp) throws IOException, SAXException, XMLStreamException {
 		Resource resource = getResource(req);
 		if (resource == null) {
 			handleNotFound(req, resp);
@@ -254,79 +215,59 @@ public class CardDavServlet extends HttpServlet {
 			return;
 		}
 
-		DocumentBuilder builder = createDocumentBuilder();
-		Document requestDoc = builder.parse(req.getInputStream());
-		if (CardDavSchema.CARDDAV_ADDRESSBOOK_MULTIGET.equals(qname(requestDoc.getDocumentElement()))) {
-			List<Element> properties = toList(elements(requestDoc, CardDavSchema.CARDDAV_ADDRESSBOOK_MULTIGET, DavSchema.DAV_PROP));
-			
-			if (LOG.isDebugEnabled()) {
-				StringWriter out = new StringWriter();
-				out.write(req.getMethod() + " " + req.getPathInfo() + ": " + toList(qnames(properties)));
-				out.write('\n');
-				DebugUtil.dumpHeaders(out, req);
-				DebugUtil.dumpDoc(out, requestDoc);
-				LOG.debug(out.toString());
-			}
-			
-			Document responseDoc = builder.newDocument();
-			Element multistatus = appendElement(responseDoc, DavSchema.DAV_MULTISTATUS);
-			multistatus.setAttributeNS(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, XMLConstants.XMLNS_ATTRIBUTE, DavSchema.DAV_NS);
-			multistatus.setAttributeNS(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, XMLConstants.XMLNS_ATTRIBUTE + ':' + CardDavSchema.CARDDAV_PREFIX, CardDavSchema.CARDDAV_NS);
-
-			for (Element href : filter(elements(filter(elements(requestDoc), CardDavSchema.CARDDAV_ADDRESSBOOK_MULTIGET)), DavSchema.DAV_HREF)) {
-				String url = href.getTextContent();
-				
-				Element response = appendElement(multistatus, DavSchema.DAV_RESPONSE);
-				appendTextElement(response, DavSchema.DAV_HREF, url);
-				
-				Resource content = resource.get(url);
-				
-				Element propstat = appendElement(response, DavSchema.DAV_PROPSTAT);
-				if (content != null) {
-					Element propElement = appendElement(propstat, DavSchema.DAV_PROP);
-					
-					String etag = content.getEtag();
-					if (etag != null) {
-						Element container = appendElement(propElement, DavSchema.DAV_GETETAG);
-						appendText(container, Resource.quote(etag));
-					}
-					
-					for (Element property : properties) {
-						QName qname = qname(property);
-						if (DavSchema.DAV_GETETAG.equals(qname)) {
-							// Unconditionally added above.
-							continue;
-						}
-						
-						content.fillProperty(req, propElement, qname);
-					}
-					appendTextElement(propstat, DavSchema.DAV_STATUS, "HTTP/1.1 " + HttpServletResponse.SC_OK + " " + EnglishReasonPhraseCatalog.INSTANCE.getReason(HttpServletResponse.SC_OK, null));
-				} else {
-					appendTextElement(propstat, DavSchema.DAV_STATUS, "HTTP/1.1 " + HttpServletResponse.SC_NOT_FOUND + " " + EnglishReasonPhraseCatalog.INSTANCE.getReason(HttpServletResponse.SC_NOT_FOUND, null));
-				}
-			}
-			
-			marshalMultiStatus(resp, responseDoc, collectionEtag);
-		} else {
-			StringWriter out = new StringWriter();
-			DebugUtil.dumpMethod(out, req);
-			DebugUtil.dumpHeaders(out, req);
-			DebugUtil.dumpDoc(out, requestDoc);
-			LOG.warn("Not implemented: " + out.toString());
-
+		MultiGetRequest report = CardDavRequestParser.parseMultiGetBody(req.getInputStream());
+		if (report == null) {
+			LOG.warn("Not implemented: " + DebugUtil.dumpRequestFull(req));
 			resp.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+			return;
 		}
+
+		if (!(resource instanceof AddressBookResource addressBook)) {
+			LOG.warn("addressbook-multiget on non-address-book resource: " + req.getPathInfo());
+			resp.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+			return;
+		}
+
+		if (LOG.isDebugEnabled()) {
+			StringWriter out = new StringWriter();
+			out.write(req.getMethod() + " " + req.getPathInfo() + ": " + report.properties());
+			out.write('\n');
+			DebugUtil.dumpHeaders(out, req);
+			LOG.debug(out.toString());
+		}
+
+		RenderContext ctx = renderContextOf(req);
+		beginMultiStatus(resp, collectionEtag);
+		XMLStreamWriter writer = MultiStatusWriter.open(resp.getOutputStream());
+		try {
+			addressBook.renderMultiGet(ctx, writer, report.hrefs(), report.properties());
+		} finally {
+			MultiStatusWriter.close(writer);
+		}
+	}
+
+	private static RenderContext renderContextOf(HttpServletRequest req) {
+		return new RenderContext(LoginFilter.getAuthenticatedUser(req));
+	}
+
+	private static void beginMultiStatus(HttpServletResponse resp, String etag) {
+		if (etag != null) {
+			resp.setHeader("ETag", EtagUtil.quote(etag));
+		}
+		resp.setStatus(SC_MULTI_STATUS);
+		resp.setCharacterEncoding("utf-8");
+		resp.setContentType("application/xml");
 	}
 
 	private void handleNotFound(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		LOG.warn("Not found: " + DebugUtil.dumpRequestFull(req));
-			
+
 		resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
 	}
 
 	private Resource getResource(HttpServletRequest req) {
 		String serverRoot = req.getContextPath() + req.getServletPath();
-		
+
 		String rootUrl = CardDavServlet.SERVER_LOC + serverRoot;
 		String resourcePath = req.getPathInfo();
 
@@ -334,29 +275,32 @@ public class CardDavServlet extends HttpServlet {
 			if ("/".equals(resourcePath)) {
 				return new RootResource(rootUrl, resourcePath);
 			}
-			
+
 			else if (resourcePath.startsWith(PRINCIPALS_PATH)) {
 				if (resourcePath.endsWith("/")) {
 					// Note: dataaccessd/1.0 on iOS adds a slash to the principal resource.
 					resourcePath = resourcePath.substring(0, resourcePath.length() - 1);
 				}
-				
+
 				String principal = resourcePath.substring(PRINCIPALS_PATH.length());
 				if (!isAuthenticated(req, principal, resourcePath)) {
 					return null;
 				}
-				
+
 				LOG.info("Starting synchronization for: " + principal);
+				String userAgent = req.getHeader("User-Agent");
+				UserSettings cachedSettings = LoginFilter.getUserSettings(req);
+				DBService.getInstance().updateLastAccess(principal, System.currentTimeMillis(), userAgent, cachedSettings);
 				return new PrincipalResource(rootUrl, resourcePath, principal);
 			}
-			
+
 			else if (resourcePath.startsWith(ADDRESSES_PATH)) {
 				int endIdx = resourcePath.indexOf('/', ADDRESSES_PATH.length());
 				if (endIdx < 0) {
 					LOG.warn("No principal found in address path: " + resourcePath);
 					return null;
 				}
-				
+
 				String principal = resourcePath.substring(ADDRESSES_PATH.length(), endIdx);
 				if (!isAuthenticated(req, principal, resourcePath)) {
 					return null;
@@ -378,7 +322,7 @@ public class CardDavServlet extends HttpServlet {
 					resourcePath = resourcePath.substring(matcher.end() - 1);
 					continue;
 				}
-				
+
 				LOG.warn("Addressbook resource not found: " + resourcePath);
 				return null;
 			}
@@ -391,12 +335,12 @@ public class CardDavServlet extends HttpServlet {
 			LOG.warn("No authentication accessing: " + resourcePath);
 			return false;
 		}
-		
+
 		if (!principal.equals(currentUser)) {
 			LOG.warn("Wrong user '" + principal + "' (expecting '" + currentUser + "') accessing: " + resourcePath);
 			return false;
 		}
-		
+
 		return true;
 	}
 

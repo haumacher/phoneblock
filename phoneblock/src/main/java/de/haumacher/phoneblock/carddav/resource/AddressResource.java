@@ -3,17 +3,15 @@
  */
 package de.haumacher.phoneblock.carddav.resource;
 
-import static de.haumacher.phoneblock.util.DomUtil.appendElement;
-import static de.haumacher.phoneblock.util.DomUtil.appendText;
-
 import java.io.IOException;
 
 import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Element;
 
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.analysis.NumberBlock;
@@ -42,9 +40,9 @@ public class AddressResource extends Resource {
 
 	private NumberBlock _block;
 
-	/** 
+	/**
 	 * Creates a {@link AddressResource}.
-	 * 
+	 *
 	 * @param block The block of numbers represented by this resource.
 	 * @param principal The user name of the address books owner.
 	 */
@@ -53,7 +51,7 @@ public class AddressResource extends Resource {
 		_block = block;
 		_principal = principal;
 	}
-	
+
 	public String getId() {
 		return _block.getName();
 	}
@@ -74,20 +72,22 @@ public class AddressResource extends Resource {
 		resp.setContentType("text/x-vcard");
 		resp.setCharacterEncoding("utf-8");
 		resp.setHeader("ETag", quote(getEtag()));
-		
+
 		resp.getWriter().append(_block.vCardContent());
 	}
 
 	@Override
-	public int fillProperty(HttpServletRequest req, Element propElement, QName property) {
+	public int fillProperty(RenderContext ctx, XMLStreamWriter writer, QName property)
+			throws XMLStreamException {
 		if (CardDavSchema.CARDDAV_ADDRESS_DATA.equals(property)) {
-			Element container = appendElement(propElement, CardDavSchema.CARDDAV_ADDRESS_DATA);
-			appendText(container, _block.vCardContent());
+			writer.writeStartElement(CardDavSchema.CARDDAV_NS, "address-data");
+			writer.writeCharacters(_block.vCardContent());
+			writer.writeEndElement();
 			return HttpServletResponse.SC_OK;
 		}
-		return super.fillProperty(req, propElement, property);
+		return super.fillProperty(ctx, writer, property);
 	}
-	
+
 	@Override
 	public void put(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		VCardReader reader = new VCardReader(req.getReader(), VCardVersion.V3_0);
@@ -96,28 +96,28 @@ public class AddressResource extends Resource {
 			resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
 			return;
 		}
-		
+
 		DB db = DBService.getInstance();
 		try (SqlSession session = db.openSession()) {
 			SpamReports spamreport = session.getMapper(SpamReports.class);
 			BlockList blockList = session.getMapper(BlockList.class);
 			Users users = session.getMapper(Users.class);
-			
+
 			long currentUser = users.getUserId(_principal);
 			String dialPrefix = users.getDialPrefix(_principal);
-			
+
 			if (card.getTelephoneNumbers().size() > 1) {
 				LOG.warn("Prevent putting card with multiple numbers: " + card);
 			} else {
 				for (Telephone phone : card.getTelephoneNumbers()) {
 					String phoneText = phone.getText();
-					
+
 					PhoneNumer number = NumberAnalyzer.parsePhoneNumber(phoneText, dialPrefix);
 					if (number == null) {
 						continue;
 					}
 					String phoneId = NumberAnalyzer.getPhoneId(number);
-					
+
 					Boolean state = blockList.getPersonalizationState(currentUser, phoneId);
 					if (state == null || !state.booleanValue()) {
 						LOG.info("Adding to block list: " + phoneId);
@@ -127,18 +127,18 @@ public class AddressResource extends Resource {
 						// Safety, prevent duplicate key constraint violation.
 						blockList.removePersonalization(currentUser, phoneId);
 						blockList.addPersonalization(currentUser, phoneId, sha1, System.currentTimeMillis());
-						
+
 						db.processVotesAndPublish(spamreport, number, dialPrefix, 2, System.currentTimeMillis());
 					}
 				}
-				
+
 				session.commit();
-				
+
 				// Ensure that the new number is added to the user's address book immediately.
 				AddressBookCache.getInstance().flushUserCache(_principal);
 			}
 		}
-		
+
 		resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
 	}
 
@@ -146,7 +146,7 @@ public class AddressResource extends Resource {
 	public void delete(HttpServletResponse resp) {
 		// Cannot allow to delete a potential block of numbers.
 		LOG.warn("Prevent deleting card: " + _block.getName());
-		
+
 		resp.setStatus(HttpServletResponse.SC_OK);
 	}
 }

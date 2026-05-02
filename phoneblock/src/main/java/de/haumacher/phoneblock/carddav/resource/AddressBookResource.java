@@ -9,12 +9,16 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.analysis.NumberBlock;
 import de.haumacher.phoneblock.carddav.schema.CardDavSchema;
+import de.haumacher.phoneblock.carddav.schema.DavSchema;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * {@link Resource} representing a collection of {@link AddressBookResource}s.
@@ -67,12 +71,12 @@ public class AddressBookResource extends Resource {
 	protected boolean isCollection() {
 		return true;
 	}
-	
+
 	@Override
 	protected QName getResourceType() {
 		return CardDavSchema.CARDDAV_ADDRESSBOOK;
 	}
-	
+
 	@Override
 	public Collection<? extends Resource> list() {
 		return _addressById.values();
@@ -82,11 +86,11 @@ public class AddressBookResource extends Resource {
 	protected String getDisplayName() {
 		return "BLOCKLIST";
 	}
-	
+
 	@Override
 	public Resource get(String url) {
 		String rootUrl = getRootUrl();
-		
+
 		int prefixLength;
 		if (url.startsWith(rootUrl)) {
 			prefixLength = rootUrl.length();
@@ -111,7 +115,7 @@ public class AddressBookResource extends Resource {
 			LOG.warn("Received invalid contact URL outside address book '" + getResourcePath() + "': " + url);
 			return null;
 		}
-		
+
 		return lookupAddress(url.substring(prefixLength + getResourcePath().length()));
 	}
 
@@ -147,5 +151,54 @@ public class AddressBookResource extends Resource {
 		} catch (java.security.NoSuchAlgorithmException ex) {
 			throw new IllegalStateException("SHA-1 not available", ex);
 		}
+	}
+
+	/**
+	 * Renders the multistatus body of a {@code <c:addressbook-multiget>} REPORT
+	 * request: one {@code <d:response>} per addressed href, with the requested
+	 * properties of the resolved child resource (or 404 if it does not exist).
+	 */
+	public void renderMultiGet(RenderContext ctx, XMLStreamWriter writer,
+			List<String> hrefs, List<QName> properties) throws XMLStreamException {
+		for (String url : hrefs) {
+			writer.writeStartElement(DavSchema.DAV_NS, "response");
+			writer.writeStartElement(DavSchema.DAV_NS, "href");
+			writer.writeCharacters(url);
+			writer.writeEndElement();
+
+			Resource content = get(url);
+			writer.writeStartElement(DavSchema.DAV_NS, "propstat");
+			if (content != null) {
+				writer.writeStartElement(DavSchema.DAV_NS, "prop");
+
+				String etag = content.getEtag();
+				if (etag != null) {
+					writer.writeStartElement(DavSchema.DAV_NS, "getetag");
+					writer.writeCharacters(quote(etag));
+					writer.writeEndElement();
+				}
+
+				for (QName qname : properties) {
+					if (DavSchema.DAV_GETETAG.equals(qname)) {
+						// Unconditionally added above.
+						continue;
+					}
+					content.fillProperty(ctx, writer, qname);
+				}
+				writer.writeEndElement();
+				writeStatus(writer, HttpServletResponse.SC_OK, "OK");
+			} else {
+				writeStatus(writer, HttpServletResponse.SC_NOT_FOUND, "Not Found");
+			}
+			writer.writeEndElement();
+			writer.writeEndElement();
+		}
+	}
+
+	private static void writeStatus(XMLStreamWriter writer, int code, String reason)
+			throws XMLStreamException {
+		writer.writeStartElement(DavSchema.DAV_NS, "status");
+		writer.writeCharacters("HTTP/1.1 " + code + " " + reason);
+		writer.writeEndElement();
 	}
 }
