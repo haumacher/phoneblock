@@ -7,12 +7,12 @@
 
 <section class="section">
 	<div class="content">
-		<h1 data-tx="t0001:365a40ae">Dongle PhoneBlock</h1>
+		<h1 data-tx="t0192:3c01c047">PhoneBlock Dongle <span class="tag is-info is-medium ml-2">Nuevo</span></h1>
 
 		<p class="subtitle" data-tx="t0095:dab19814">Un contestador automático inteligente con apariencia de teléfono IP. Del tamaño de un pulgar, se conecta al puerto USB del router, se registra como un teléfono SIP adicional e intercepta las llamadas comerciales antes de que suene su teléfono real. Funciona independientemente del modelo de router, ¡incluso sin Fritz!</p>
 
 		<div class="notification is-warning">
-			<p data-tx="t0123:cedc07e4"><strong>Estado: Beta.</strong> La primera versión ya funciona de forma fiable. Estoy buscando más testers para probar el dongle en tantos entornos diferentes como sea posible - <a th:href="@{/dongle-install#tester}">informes de experiencia bienvenidos</a>.</p>
+			<p data-tx="t0123:cedc07e4"><strong>Estado: Beta.</strong> La primera versión ya funciona de forma fiable. Estoy buscando más testers para probar el dongle en tantos entornos diferentes como sea posible - <a href="#tester">informes de experiencia bienvenidos</a>.</p>
 		</div>
 
 		<h2 data-tx="t0004:6b104c7a">La idea en una frase</h2>
@@ -41,24 +41,218 @@
 			<p data-tx="t0100:86bdb13f"><strong>Por qué es tan encantador:</strong> El dongle sólo necesita un mínimo de energía y Wi-Fi. Sin servidor adicional, sin Fritz!Box, sin contrato. El microcontrolador ESP32 que lleva en su interior consume menos de medio vatio: basta con conectarlo al puerto USB del router y olvidarse de él.</p>
 		</div>
 
-		<div class="notification is-success has-text-centered">
-			<p data-tx="t0124:73607539"><strong>¿Convencido?</strong> El hardware cuesta unos 9 euros y puede configurarse en unos minutos. Las instrucciones te guiarán paso a paso durante el pedido, el flasheo y la instalación.</p>
-			<p class="mt-3">
-				<a class="button is-primary is-large" th:href="@{/dongle-install}">
-					<span class="icon"><i class="fas fa-bolt"></i></span>
-					<span data-tx="t0125:650ed7eb">A las instrucciones - Instalar PhoneBlock dongle</span>
-				</a>
-			</p>
-			<p class="mt-3">
-				<a class="has-text-grey" href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank">
-					<span class="icon"><i class="fab fa-github"></i></span>
-					<span data-tx="t0129:97d67640">Código fuente en GitHub</span>
-				</a>
-			</p>
+		<p class="subtitle mt-6" data-tx="t0124:b14ca93b">Aquí es donde la cosa se pone práctica: las instrucciones te guían paso a paso por el pedido, el flasheo y la configuración -un hardware de unos 10 euros, un esfuerzo único de 10 minutos-.</p>
+
+		<div class="notification is-warning">
+			<p data-tx="t0125:bd2333ac"><strong>Estado: Beta.</strong> Esta guía está adaptada a un único tipo de hardware probado - compra exactamente la placa del paso 1, entonces todos los pasos posteriores se ajustarán. Otras placas a menudo funcionan también, pero requieren diferentes controladores y su propio trabajo de detective (ver enlace más abajo).</p>
 		</div>
+
+		<noscript>
+			<div class="notification is-danger">
+				<p data-tx="t0126:ba65a265">Esta página requiere JavaScript. Actívelo en su navegador o siga las <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md">Instrucciones para usuarios avanzados</a> del repositorio.</p>
+			</div>
+		</noscript>
+
+		<div class="notification is-warning" id="dongle-install-unsupported" style="display:none;">
+			<p data-tx="t0127:bb075478"><strong>Este navegador no puede flashear el dongle.</strong> El flasheo web solo funciona en <strong>Google Chrome</strong> o <strong>Microsoft Edge</strong> en un ordenador (no en un smartphone). Abre esta página con Chrome o Edge e inténtalo de nuevo.</p>
+		</div>
+
+		<h2 data-tx="t0128:93c33292" id="voraussetzungen">Antes de empezar</h2>
+
+		<p data-tx="t0129:5ffae555">Compruebe brevemente que estos puntos se cumplen, para que no haya decepciones:</p>
+
+		<ul>
+			<li data-tx="t0130:b4ac4baa"><strong>Registrador SIP</strong> - ya sea en el router (por ejemplo, Fritz!Box) o directamente con el proveedor de telefonía, siempre que éste permita clientes SIP externos ("Registro de un teléfono IP posible").</li>
+			<li data-tx="t0131:be2e6f7c"><strong>WLAN de 2,4 GHz</strong> dentro del alcance.</li>
+			<li data-tx="t0132:573b2c92"><strong>Fuente de alimentación USB de 5 V</strong> - idealmente el puerto USB del router, alternativamente cualquier fuente de alimentación USB.</li>
+		</ul>
+
+		<h2 data-tx="t0133:1cedb9ee" id="schritt-1">Paso 1 - Pedir el dongle</h2>
+
+		<p data-tx="t0134:1367b791">Pide esta placa ESP32. Es lo suficientemente compacto como para ser conectado directamente en el router como una memoria USB, tiene el chip serie USB apropiado (CH340), y el dongle PhoneBlock fue probado con él.</p>
+
+		<figure class="image" style="max-width:300px;">
+			<img alt="Mochila ESP32" data-tx="t0135:31cdc7dc" th:src="@{/assets/img/dongle/dongle-option.png}"/>
+		</figure>
+
+		<div class="notification is-info">
+			<p data-tx="t0136:bbe31efa"><strong>Entrega desde China - aprox. 2 semanas de plazo de entrega.</strong> Precio actual aprox. 10 € gastos de envío incluidos.</p>
+			<p class="mt-2">
+				<a class="button is-primary is-large" href="https://de.aliexpress.com/item/1005006593432047.html" rel="noopener" target="_blank">
+					<span class="icon"><i class="fas fa-cart-shopping"></i></span>
+					<span data-tx="t0137:49b731d6">Pedidos en AliExpress</span>
+				</a>
+			</p>
+			<p class="mt-2">
+				<a class="button is-primary is-large" href="https://www.ebay.de/itm/404930369895" rel="noopener" target="_blank">
+					<span class="icon"><i class="fas fa-cart-shopping"></i></span>
+					<span data-tx="t0138:4bfe505a">Pedidos en eBay</span>
+				</a>
+			</p>
+			<p data-tx="t0139:1caf402b">Estas ofertas no están relacionadas en modo alguno con PhoneBlock y PhoneBlock no participa en modo alguno en los beneficios. Se trata exclusivamente del hardware. Usted mismo instala el software PhoneBlock (firmware) después de la recepción (véase más adelante).</p>
+		</div>
+
+		<p data-tx="t0140:eb2aefa3"><strong>Quieres usar una placa diferente</strong> Otros DevKits ESP32 funcionan exactamente igual, pero pueden necesitar un controlador serie USB diferente (por ejemplo, CP2102 en lugar de CH340) y un cable de extensión USB si el diseño no encaja directamente en el router. Detalles y recomendaciones: <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/HARDWARE.md" rel="noopener" target="_blank">HARDWARE.md en el repo</a>.</p>
+
+		<h2 data-tx="t0141:fe30aa8a" id="schritt-2">Paso 2 - Instalar el controlador USB (sólo Windows)</h2>
+
+		<p data-tx="t0142:ba1650a4">El dongle utiliza el chip serie USB <strong>CH340</strong>. Para que Windows lo reconozca como un puerto COM, necesita una vez el controlador adecuado.</p>
+
+		<p>
+			<a class="button is-link" href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">
+				<span class="icon"><i class="fas fa-download"></i></span>
+				<span data-tx="t0143:88df56ee">Descargar controlador CH340 (wch-ic.com)</span>
+			</a>
+		</p>
+
+		<p data-tx="t0144:864e1d6">Ejecute el archivo descargado <code>CH341SER.EXE</code> → haga clic en <strong>"INSTALAR"</strong> en la ventana → listo. No es necesario reiniciar.</p>
+
+		<figure>
+			<div data-tx="t0145:42f1fe49" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Marcador de posición: Captura de pantalla del instalador del controlador CH340 con el botón INSTALL resaltado].</div>
+		</figure>
+
+		<details class="mt-4">
+			<summary><strong data-tx="t0146:ded51310">¿Utiliza macOS o Linux?</strong></summary>
+			<ul>
+				<li data-tx="t0147:901b0f79"><strong>macOS</strong>: A partir de macOS Big Sur, el controlador está incluido en el sistema - no es necesario ningún paso de instalación.</li>
+				<li data-tx="t0148:35f91b38"><strong>Linux</strong>: El controlador del kernel está instalado. En Ubuntu, el servicio BRLTTY puede arrebatar el CH340 para que no pueda ver el archivo de dispositivo - en este caso, desinstalar BRLTTY ayudará: <code>sudo apt remove --purge brltty</code>. Su usuario también debe estar en el grupo <code>dialout</code>: <code>sudo usermod -aG dialout $USER</code>. Ambos pasos se describen en detalle en <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
+			</ul>
+		</details>
+
+		<h2 data-tx="t0149:62d0966b" id="schritt-3">Paso 3 - Inserte el dongle en el ordenador</h2>
+
+		<p data-tx="t0150:11c66231">Conecta el dongle directamente a un puerto USB libre de tu ordenador. Inmediatamente debería encenderse un pequeño LED en la placa.</p>
+
+		<figure>
+			<div data-tx="t0151:a85e1a1d" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Marcador de posición: Foto "Dongle insertado en el puerto USB de un portátil"].</div>
+		</figure>
+
+		<h2 data-tx="t0152:4325c49c" id="schritt-4">Paso 4 - Flashear el firmware</h2>
+
+		<p data-tx="t0153:a0900784">Haga clic en el botón. A continuación, el navegador pregunta a qué dispositivo conectado puede dirigirse. Seleccione la entrada con <strong>"USB-SERIAL CH340"</strong> (Windows) o <strong>"USB Single Serial"</strong> o <strong>"wch.cn"</strong> (macOS/Linux) en el nombre y confirme con <strong>"Connect"</strong>.</p>
+
+		<p>
+			<esp-web-install-button manifest="https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json">
+				<button class="button is-primary is-large" slot="activate" type="button">
+					<span class="icon"><i class="fas fa-bolt"></i></span>
+					<span data-tx="t0154:1b4594a6">Flash ahora</span>
+				</button>
+				<button class="button is-primary is-large" disabled="disabled" slot="unsupported" type="button">
+					<span class="icon"><i class="fas fa-bolt"></i></span>
+					<span data-tx="t0155:1b4594a6">Flash ahora</span>
+				</button>
+				<button class="button is-primary is-large" disabled="disabled" slot="not-allowed" type="button">
+					<span class="icon"><i class="fas fa-bolt"></i></span>
+					<span data-tx="t0156:1b4594a6">Flash ahora</span>
+				</button>
+			</esp-web-install-button>
+		</p>
+
+		<p data-tx="t0157:8a955c74">En el cuadro de diálogo de selección aparece una lista de todos los dispositivos serie del ordenador. Si aparecen varios dispositivos CH340 porque casualmente hay conectado otro dispositivo con este chip, elimine los demás por el momento.</p>
+
+		<figure>
+			<div data-tx="t0158:b5c3a2f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Marcador de posición: captura de pantalla del cuadro de diálogo de selección de dispositivos del navegador con la entrada CH340 resaltada].</div>
+		</figure>
+
+		<p data-tx="t0159:5fcdc08c">Confirme la pregunta de seguridad "¿Borrar dispositivo e instalar PhoneBlock Dongle?" con <strong>"Instalar"</strong>. Durante el primer flasheo, se borra toda la memoria y se instala el firmware - esto tarda aproximadamente un minuto. No desconecte el dongle durante este tiempo.</p>
+
+		<figure>
+			<div data-tx="t0160:177a19e2" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Marcador de posición: Captura de pantalla de la barra de progreso de esp-web-tools durante el flasheo].</div>
+		</figure>
+
+		<h2 data-tx="t0161:e5862ff8" id="schritt-5">Paso 5 - Conecte el dongle al router</h2>
+
+		<p data-tx="t0162:cbcaee11">Cuando el navegador indique "¡Instalación finalizada!", retire el dongle del ordenador y conéctelo a un puerto USB libre del router (o a cualquier fuente de alimentación USB de 5 V dentro del alcance de la WLAN).</p>
+
+		<figure>
+			<div data-tx="t0163:a5796f78" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Marcador de posición: Foto "Dongle insertado en el puerto USB del Fritz!Box"].</div>
+		</figure>
+
+		<h2 data-tx="t0164:b184a512" id="schritt-6">Paso 6 - Añadir el dongle a la WLAN (WPS)</h2>
+
+		<p data-tx="t0165:6ac463a1">El dongle recién flasheado aún no tiene datos de acceso Wi-Fi y está esperando el emparejamiento mediante <strong>WPS</strong>. El LED <strong>parpadea rápidamente</strong> (unas cinco veces por segundo) y señala "Modo de emparejamiento activo".</p>
+
+		<p data-tx="t0166:83cbb4c2">Ahora pulse el botón <strong>WPS</strong> del router. En el Fritz!Box, es el botón <strong>"Conectar / WPS"</strong> en la parte superior del dispositivo - púlselo brevemente hasta que el LED Wi-Fi del propio router empiece a parpadear. Otros routers etiquetan el botón como "WPS" o "Pair". En unos segundos, el router transmite tus datos de acceso Wi-Fi al dongle, que los guarda y se conecta.</p>
+
+		<figure>
+			<div data-tx="t0167:5f50dac7" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Marcador de posición: Foto "Botón Connect/WPS en el Fritz!Box con flecha"].</div>
+		</figure>
+
+		<p data-tx="t0168:8eba89fd"><strong>Ha funcionado:</strong> El LED ahora parpadea lentamente (aproximadamente una vez por segundo) - el dongle está en la WLAN, se le ha asignado una IP y está esperando la configuración en el paso 7.</p>
+
+		<p data-tx="t0169:96351c92"><strong>No funcionó</strong> Compruebe en la configuración del router si WPS está activado en absoluto (en el Fritz!Box: <em>WLAN → Seguridad → WPS</em>). Si la ventana WPS fue demasiado corta, el dongle reiniciará automáticamente el proceso de emparejamiento - entonces simplemente pulse el botón WPS de nuevo.</p>
+
+		<h2 data-tx="t0170:5dee0d65" id="schritt-7">Paso 7 - Introduzca el acceso SIP y el token PhoneBlock</h2>
+
+		<p data-tx="t0171:58c22345">Para que el dongle pueda interceptar llamadas, aún necesita dos cosas: tus datos de acceso SIP (para poder conectarse al router como un teléfono más) y un token PhoneBlock (para poder consultar la base de datos de spam). Ambos datos se introducen en la interfaz web del dongle.</p>
+
+		<p data-tx="t0172:f4d3bf5f">Abrir en el navegador:</p>
+
+		<p><a class="button is-link is-large" data-tx="t0173:9be1c030" href="http://answerbot/" id="dongle-step7-link" target="_blank">http://answerbot/</a></p>
+
+		<div class="notification is-success" id="dongle-located-banner" style="display:none;">
+			<p data-tx="t0174:c20257a1"><strong>Dongle reconocido:</strong> <a href="" id="dongle-located-link" target="_blank">http://192.168.178.xxx/</a> - el botón de arriba lo abre directamente.</p>
+		</div>
+
+		<p data-tx="t0175:fda77eed">Si este enlace no funciona (Windows sin Bonjour, algunas WLAN en malla), busque en la lista de dispositivos de su router un dispositivo con el nombre <code>answerbot</code>, anote su dirección IP y llámelo en el navegador - por ejemplo <code>http://192.168.178.xxx/</code>.</p>
+
+		<figure>
+			<div data-tx="t0176:8bb491f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Marcador de posición: Captura de pantalla de la interfaz web del dongle con campos de entrada para SIP y token].</div>
+		</figure>
+
+		<p data-tx="t0177:a09627c1">Entra en la interfaz web:</p>
+		<ul>
+			<li data-tx="t0178:4b81384d"><strong>Datos de acceso SIP</strong> - nombre de usuario, contraseña y dirección del registrador. Para un Fritz!Box, cree una conexión adicional en <em>Telefonía → Dispositivos de telefonía → Configurar nuevo dispositivo → Teléfono (con y sin contestador automático) → LAN/WLAN (teléfono IP)</em>. Introduzca aquí los datos de acceso asignados allí e introduzca <code>fritz.box</code> como registrador.</li>
+			<li data-tx="t0179:9fd0fd46"><strong>Token de Bloqueo Telefónico</strong> - crea un token de API en tus <a th:href="@{/settings}">configuraciones de Bloqueo Telefónico</a> y cópialo en el campo correspondiente.</li>
+		</ul>
+
+		<p data-tx="t0180:2f4a93c2">Guardar → el LED está ahora permanentemente encendido → el dongle está listo para su uso. Ahora las llamadas de spam se interceptarán silenciosamente antes de que suene el teléfono.</p>
+
+		<hr class="my-5"/>
+
+		<p class="has-text-grey" data-tx="t0181:9316079d">¿Algo no funciona, estás usando Firefox/Safari, Linux con peculiaridades u otra placa? Las instrucciones detalladas con todas las opciones, las peculiaridades de Linux y la cadena de herramientas ESP-IDF se pueden encontrar en el repositorio: <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</p>
+
+		<h2 data-tx="t0182:c258f25f" id="tester">Contribuir con un informe de experiencia</h2>
+
+		<p data-tx="t0183:493a28c5">Pero los modelos de router, los proveedores y los tipos de conexión son una mezcla de colores, y cada combinación tiene sus propias peculiaridades: diferentes dialectos SIP, diferentes reglas NAT, diferentes retardos de llamada. Para que pueda reconocer patrones y solucionar problemas de forma específica, los <strong>informes de experiencia estructurados</strong> valen su peso en oro, independientemente de si todo funcionó bien o si algo se atascó.</p>
+
+		<p data-tx="t0184:49f94506">Especialmente interesantes son los montajes que aún están poco cubiertos:</p>
+
+		<ul>
+			<li data-tx="t0185:e1971ce0">Conexión Telekom con router <strong>Speedport</strong>.</li>
+			<li data-tx="t0186:61cce24d">Conexión por cable Vodafone/Unitymedia con la caja del proveedor suministrada</li>
+			<li data-tx="t0187:ea506b90">1&amp;1, o2, Deutsche Glasfaser y otros proveedores</li>
+			<li data-tx="t0188:e5ffca52">Conexiones internacionales (Suiza, Austria, resto de Europa)</li>
+		</ul>
+
+		<p data-tx="t0189:3fcb6dd2">Los informes se ejecutan a través de incidencias de GitHub: un formulario precumplimentado solicita los datos clave más importantes (hardware, enrutador, proveedor, versión de firmware, hallazgos) de forma estructurada. Otros probadores pueden ver directamente qué configuraciones ya están cubiertas y cuáles no.</p>
+
+		<p>
+			<a class="button is-primary is-medium" href="https://github.com/haumacher/phoneblock/issues/new?template=dongle-test-report.yml" rel="noopener" target="_blank">
+				<span class="icon"><i class="fab fa-github"></i></span>
+				<span data-tx="t0190:92ec79b">Informe sobre la experiencia abierta</span>
+			</a>
+		</p>
+
+		<hr class="my-5"/>
+
+		<p class="has-text-grey" data-tx="t0191:8a689eeb">Código fuente del firmware: <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank"> phoneblock-dongle en GitHub</a>.</p>
 
 	</div>
 </section>
+
+<script src="https://cdn.phoneblock.net/dongle/installer/esp-web-tools/install-button.js" type="module"></script>
+
+<script>
+(function() {
+	if (!('serial' in navigator)) {
+		var box = document.getElementById('dongle-install-unsupported');
+		if (box) { box.style.display = ''; }
+	}
+})();
+</script>
+
+<script th:src="@{/assets/js/dongle-pairing.js}" type="text/javascript"></script>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>

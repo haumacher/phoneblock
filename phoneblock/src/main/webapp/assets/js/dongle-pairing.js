@@ -47,7 +47,7 @@
 	// install page came from. Falls back to /phoneblock if we can't pick
 	// the prefix off the URL — that matches production.
 	function contextPath() {
-		var m = location.pathname.match(/^(\/[^/]+)\/dongle-install/);
+		var m = location.pathname.match(/^(\/[^/]+)\/dongle(?:-install)?\b/);
 		return m ? m[1] : '/phoneblock';
 	}
 

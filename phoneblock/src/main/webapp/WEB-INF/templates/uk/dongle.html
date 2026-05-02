@@ -7,12 +7,12 @@
 
 <section class="section">
 	<div class="content">
-		<h1 data-tx="t0001:365a40ae">Док-станція PhoneBlock</h1>
+		<h1 data-tx="t0192:3c01c047">Док-станція PhoneBlock <span class="tag is-info is-medium ml-2">Новий</span></h1>
 
 		<p class="subtitle" data-tx="t0095:dab19814">Інтелектуальний автовідповідач під виглядом IP-телефону. Розміром з великий палець, він підключається до USB-порту роутера, реєструється як додатковий SIP-телефон - і перехоплює комерційні дзвінки ще до того, як ваш телефон задзвонить. Працює незалежно від моделі роутера, навіть без Fritz!</p>
 
 		<div class="notification is-warning">
-			<p data-tx="t0123:cedc07e4"><strong>Статус: Бета-версія.</strong> Перша версія вже працює надійно. Я шукаю більше тестувальників, щоб випробувати донгл у якомога більшій кількості різних середовищ - <a th:href="@{/dongle-install#tester}">звіти про досвід вітаються</a>.</p>
+			<p data-tx="t0123:cedc07e4"><strong>Статус: Бета-версія.</strong> Перша версія вже працює надійно. Я шукаю більше тестувальників, щоб випробувати донгл у якомога більшій кількості різних середовищ - <a href="#tester">звіти про досвід вітаються</a>.</p>
 		</div>
 
 		<h2 data-tx="t0004:6b104c7a">Ідея в одному реченні</h2>
@@ -41,24 +41,218 @@
 			<p data-tx="t0100:86bdb13f"><strong>Чому це так чарівно:</strong> Донгл потребує лише мінімального живлення та Wi-Fi. Ні додаткового сервера, ні Fritz!Box, ні контракту. Мікроконтролер ESP32 всередині споживає менше половини вата - ви можете просто підключити його до USB-порту вашого роутера і забути про нього.</p>
 		</div>
 
-		<div class="notification is-success has-text-centered">
-			<p data-tx="t0124:73607539"><strong>Переконалися? </strong> Апаратне забезпечення коштує близько 9 євро і може бути налаштоване всього за кілька хвилин. Інструкція крок за кроком проведе вас через замовлення, прошивання та налаштування.</p>
-			<p class="mt-3">
-				<a class="button is-primary is-large" th:href="@{/dongle-install}">
-					<span class="icon"><i class="fas fa-bolt"></i></span>
-					<span data-tx="t0125:650ed7eb">До інструкції - Встановлення донгла PhoneBlock</span>
-				</a>
-			</p>
-			<p class="mt-3">
-				<a class="has-text-grey" href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank">
-					<span class="icon"><i class="fab fa-github"></i></span>
-					<span data-tx="t0129:97d67640">Вихідний код на GitHub</span>
-				</a>
-			</p>
+		<p class="subtitle mt-6" data-tx="t0124:b14ca93b">Ось де все стає практичним: інструкції крок за кроком допоможуть вам замовити, перепрошити та налаштувати обладнання - близько 10 євро, разова витрата часу - 10 хвилин.</p>
+
+		<div class="notification is-warning">
+			<p data-tx="t0125:bd2333ac"><strong>Статус: Бета-версія.</strong> Цей посібник адаптовано до одного перевіреного типу обладнання - купуйте саме ту плату, що з кроку 1, тоді всі наступні кроки будуть підходити. Інші плати часто працюють так само, але вимагають інших драйверів і вашої власної детективної роботи (див. посилання нижче).</p>
 		</div>
+
+		<noscript>
+			<div class="notification is-danger">
+				<p data-tx="t0126:ba65a265">Ця сторінка потребує JavaScript. Будь ласка, активуйте його у вашому браузері або дотримуйтесь <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md">Інструкції для досвідчених користувачів</a> в репозиторії.</p>
+			</div>
+		</noscript>
+
+		<div class="notification is-warning" id="dongle-install-unsupported" style="display:none;">
+			<p data-tx="t0127:bb075478"><strong>Цей браузер не може прошивати ключ.</strong> Веб-прошивання працює лише в <strong>Google Chrome</strong> або <strong>Microsoft Edge</strong> на комп'ютері (не на смартфоні). Відкрийте цю сторінку в Chrome або Edge і спробуйте ще раз.</p>
+		</div>
+
+		<h2 data-tx="t0128:93c33292" id="voraussetzungen">Перш ніж почати</h2>
+
+		<p data-tx="t0129:5ffae555">Перевірте, чи виконані ці пункти, щоб не було розчарувань:</p>
+
+		<ul>
+			<li data-tx="t0130:b4ac4baa"><strong>SIP-реєстратор</strong> - або в маршрутизаторі (наприклад, Fritz!Box), або безпосередньо у провайдера телефонії, якщо це дозволяє використовувати зовнішні SIP-клієнти ("Можлива реєстрація IP-телефону").</li>
+			<li data-tx="t0131:be2e6f7c"><strong>2,4 ГГц WLAN</strong> в межах досяжності.</li>
+			<li data-tx="t0132:573b2c92"><strong>5 В USB-живлення</strong> - в ідеалі USB-порт на роутері, або будь-який USB-блок живлення.</li>
+		</ul>
+
+		<h2 data-tx="t0133:1cedb9ee" id="schritt-1">Крок 1 - Замовлення ключа</h2>
+
+		<p data-tx="t0134:1367b791">Замовте цю плату ESP32. Вона досить компактна, щоб підключатися безпосередньо до роутера як USB-накопичувач, має відповідний послідовний USB-чіп (CH340), і з нею було протестовано донгл PhoneBlock.</p>
+
+		<figure class="image" style="max-width:300px;">
+			<img alt="Ключ ESP32" data-tx="t0135:31cdc7dc" th:src="@{/assets/img/dongle/dongle-option.png}"/>
+		</figure>
+
+		<div class="notification is-info">
+			<p data-tx="t0136:bbe31efa"><strong>Доставка з Китаю - приблизно 2 тижні.</strong> Ціна наразі становить приблизно 10 євро з урахуванням доставки.</p>
+			<p class="mt-2">
+				<a class="button is-primary is-large" href="https://de.aliexpress.com/item/1005006593432047.html" rel="noopener" target="_blank">
+					<span class="icon"><i class="fas fa-cart-shopping"></i></span>
+					<span data-tx="t0137:49b731d6">Замовлення на AliExpress</span>
+				</a>
+			</p>
+			<p class="mt-2">
+				<a class="button is-primary is-large" href="https://www.ebay.de/itm/404930369895" rel="noopener" target="_blank">
+					<span class="icon"><i class="fas fa-cart-shopping"></i></span>
+					<span data-tx="t0138:4bfe505a">Замовлення на eBay</span>
+				</a>
+			</p>
+			<p data-tx="t0139:1caf402b">Ці пропозиції жодним чином не пов'язані з PhoneBlock, і PhoneBlock жодним чином не бере участі в отриманні прибутку. Мова йде виключно про апаратне забезпечення. Програмне забезпечення (прошивку) PhoneBlock ви встановлюєте самостійно після отримання (див. нижче).</p>
+		</div>
+
+		<p data-tx="t0140:eb2aefa3"><strong>Ви хочете використовувати іншу плату</strong> Інші ESP32 DevKits працюють точно так само, але можуть потребувати іншого послідовного USB-драйвера (наприклад, CP2102 замість CH340) і подовжувача USB, якщо конструкція не підходить безпосередньо до роутера. Деталі та рекомендації: <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/HARDWARE.md" rel="noopener" target="_blank">HARDWARE.md у репозиторії</a>.</p>
+
+		<h2 data-tx="t0141:fe30aa8a" id="schritt-2">Крок 2 - Встановіть драйвер USB (лише для Windows)</h2>
+
+		<p data-tx="t0142:ba1650a4">У ключі використовується послідовний USB-чіп <strong>CH340</strong>. Для того, щоб Windows розпізнала його як COM-порт, вам потрібно один раз встановити відповідний драйвер.</p>
+
+		<p>
+			<a class="button is-link" href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">
+				<span class="icon"><i class="fas fa-download"></i></span>
+				<span data-tx="t0143:88df56ee">Завантажити драйвер CH340 (wch-ic.com)</span>
+			</a>
+		</p>
+
+		<p data-tx="t0144:864e1d6">Запустіть завантажений файл <code>CH341SER.EXE</code> → натисніть на <strong>"ВСТАНОВИТИ"</strong> у вікні → готово. Перезапуск не потрібен.</p>
+
+		<figure>
+			<div data-tx="t0145:42f1fe49" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Заповнювач: Скріншот інсталятора драйверів CH340 з виділеною кнопкою ВСТАНОВИТИ]</div>
+		</figure>
+
+		<details class="mt-4">
+			<summary><strong data-tx="t0146:ded51310">Ви використовуєте macOS або Linux?</strong></summary>
+			<ul>
+				<li data-tx="t0147:901b0f79"><strong>macOS</strong>: Починаючи з macOS Big Sur, драйвер включено до системи - встановлення не потрібне.</li>
+				<li data-tx="t0148:35f91b38"><strong>Linux</strong>: Драйвер ядра встановлено. В Ubuntu служба BRLTTY може викрасти CH340 так, що ви не зможете побачити файл пристрою - у цьому випадку допоможе видалення BRLTTY: <code>sudo apt remove --purge brltty</code>. Ваш користувач також має бути у групі <code>dialout</code>: <code>sudo usermod -aG dialout $USER</code>. Обидва кроки детально описано у <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
+			</ul>
+		</details>
+
+		<h2 data-tx="t0149:62d0966b" id="schritt-3">Крок 3 - Вставте ключ у комп'ютер</h2>
+
+		<p data-tx="t0150:11c66231">Підключіть донгл безпосередньо до вільного USB-порту на вашому комп'ютері. Невеликий світлодіод на платі повинен негайно загорітися.</p>
+
+		<figure>
+			<div data-tx="t0151:a85e1a1d" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Заміщення: фото "Донгл, вставлений в USB-порт ноутбука"].</div>
+		</figure>
+
+		<h2 data-tx="t0152:4325c49c" id="schritt-4">Крок 4 - Прошивання прошивки</h2>
+
+		<p data-tx="t0153:a0900784">Натисніть на кнопку. Браузер запитає, до якого підключеного пристрою йому дозволено звертатися. Виберіть запис з <strong>"USB-SERIAL CH340"</strong> (Windows) або <strong>"USB Single Serial"</strong> чи <strong>"wch.cn"</strong> (macOS/Linux) у назві і підтвердіть за допомогою <strong>"Connect"</strong>.</p>
+
+		<p>
+			<esp-web-install-button manifest="https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json">
+				<button class="button is-primary is-large" slot="activate" type="button">
+					<span class="icon"><i class="fas fa-bolt"></i></span>
+					<span data-tx="t0154:1b4594a6">Спалахніть зараз.</span>
+				</button>
+				<button class="button is-primary is-large" disabled="disabled" slot="unsupported" type="button">
+					<span class="icon"><i class="fas fa-bolt"></i></span>
+					<span data-tx="t0155:1b4594a6">Спалахніть зараз.</span>
+				</button>
+				<button class="button is-primary is-large" disabled="disabled" slot="not-allowed" type="button">
+					<span class="icon"><i class="fas fa-bolt"></i></span>
+					<span data-tx="t0156:1b4594a6">Спалахніть зараз.</span>
+				</button>
+			</esp-web-install-button>
+		</p>
+
+		<p data-tx="t0157:8a955c74">У діалоговому вікні вибору з'явиться список усіх послідовних пристроїв на комп'ютері. Якщо відображається декілька пристроїв CH340, тому що до комп'ютера підключено інший пристрій з цією мікросхемою, вилучіть інші пристрої на даний момент.</p>
+
+		<figure>
+			<div data-tx="t0158:b5c3a2f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Заповнювач: Скріншот діалогу вибору пристрою браузера з виділеним записом CH340]</div>
+		</figure>
+
+		<p data-tx="t0159:5fcdc08c">Підтвердіть запит безпеки "Стерети пристрій і встановити PhoneBlock Dongle?", натиснувши <strong>"Встановити"</strong>. Під час першого перепрошивання стирається вся пам'ять і встановлюється прошивка - це займає близько хвилини. Не від'єднуйте донгл протягом цього часу.</p>
+
+		<figure>
+			<div data-tx="t0160:177a19e2" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Заповнювач: Скріншот індикатора прогресу esp-web-tools під час перепрошивки]</div>
+		</figure>
+
+		<h2 data-tx="t0161:e5862ff8" id="schritt-5">Крок 5 - Підключіть ключ до роутера</h2>
+
+		<p data-tx="t0162:cbcaee11">Коли браузер повідомить "Встановлення завершено!", вийміть ключ з комп'ютера і підключіть його до вільного USB-порту роутера (або до будь-якого USB-джерела живлення 5 В у зоні дії бездротової локальної мережі).</p>
+
+		<figure>
+			<div data-tx="t0163:a5796f78" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Заміщення: фото "Донгл, вставлений в USB-порт Fritz!Box"].</div>
+		</figure>
+
+		<h2 data-tx="t0164:b184a512" id="schritt-6">Крок 6 - Додайте ключ до бездротової локальної мережі (WPS)</h2>
+
+		<p data-tx="t0165:6ac463a1">Щойно прошитий донгл ще не має даних доступу до Wi-Fi і очікує на сполучення через <strong>WPS</strong>. Світлодіод <strong>швидко блимає</strong> (приблизно п'ять разів на секунду) і сигналізує "Режим сполучення активний".</p>
+
+		<p data-tx="t0166:83cbb4c2">Тепер натисніть кнопку <strong>WPS</strong> на роутері. На Fritz!Box це кнопка <strong>"Connect / WPS"</strong> у верхній частині пристрою - натисніть коротко, поки не почне блимати індикатор Wi-Fi на самому роутері. На інших роутерах кнопка позначена як "WPS" або "Pair". Протягом декількох секунд роутер передає ваші дані доступу до Wi-Fi на донгл, який зберігає їх і встановлює з'єднання.</p>
+
+		<figure>
+			<div data-tx="t0167:5f50dac7" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Заміщення: Фото "Кнопка Connect/WPS на Fritz!Box зі стрілкою"].</div>
+		</figure>
+
+		<p data-tx="t0168:8eba89fd"><strong>Спрацювало:</strong> Світлодіод тепер повільно блимає (приблизно раз на секунду) - ключ підключено до бездротової локальної мережі, йому призначено IP-адресу і він очікує на конфігурацію на кроці 7.</p>
+
+		<p data-tx="t0169:96351c92"><strong>Не спрацювало</strong> Перевірте в налаштуваннях роутера, чи увімкнено WPS взагалі (на Fritz!Box: <em>Бездротова мережа → Безпека → WPS</em>). Якщо вікно WPS було надто коротким, донгл автоматично перезапустить процес сполучення - просто натисніть кнопку WPS ще раз.</p>
+
+		<h2 data-tx="t0170:5dee0d65" id="schritt-7">Крок 7 - Введіть SIP-доступ і токен PhoneBlock</h2>
+
+		<p data-tx="t0171:58c22345">Для того, щоб донгл міг перехоплювати дзвінки, йому все ще потрібні дві речі: ваші дані доступу до SIP (щоб він міг увійти до роутера як додатковий телефон) і токен PhoneBlock (щоб він міг запитувати базу даних спаму). Ви вводите обидві дані у веб-інтерфейсі ключа.</p>
+
+		<p data-tx="t0172:f4d3bf5f">Відкрийте в браузері:</p>
+
+		<p><a class="button is-link is-large" data-tx="t0173:9be1c030" href="http://answerbot/" id="dongle-step7-link" target="_blank">http://answerbot/</a></p>
+
+		<div class="notification is-success" id="dongle-located-banner" style="display:none;">
+			<p data-tx="t0174:c20257a1"><strong>Донгл розпізнано:</strong> <a href="" id="dongle-located-link" target="_blank">http://192.168.178.xxx/</a> - кнопка вгорі відкриває його безпосередньо.</p>
+		</div>
+
+		<p data-tx="t0175:fda77eed">Якщо це посилання не працює (Windows без Bonjour, деякі mesh WLAN), знайдіть у списку пристроїв вашого роутера пристрій з назвою <code>answerbot</code>, запишіть його IP-адресу і викличте його в браузері - наприклад, <code>http://192.168.178.xxx/</code>.</p>
+
+		<figure>
+			<div data-tx="t0176:8bb491f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Заповнювач: Скріншот веб-інтерфейсу ключа з полями для введення SIP і токена]</div>
+		</figure>
+
+		<p data-tx="t0177:a09627c1">Введіть у веб-інтерфейсі:</p>
+		<ul>
+			<li data-tx="t0178:4b81384d"><strong>Дані доступу до SIP</strong> - ім'я користувача, пароль та адреса реєстратора. Для Fritz!Box створіть додаткове підключення в розділі <em>Телефонія → Пристрої телефонії → Налаштування нового пристрою → Телефон (з автовідповідачем і без) → LAN/WLAN (IP-телефон)</em>. Введіть тут дані доступу, призначені там, і введіть <code>fritz.box</code> як реєстратор.</li>
+			<li data-tx="t0179:9fd0fd46"><strong>Токен PhoneBlock</strong> - створіть токен API у ваших налаштуваннях <a th:href="@{/settings}">PhoneBlock</a> та скопіюйте його у відповідне поле.</li>
+		</ul>
+
+		<p data-tx="t0180:2f4a93c2">Зберегти → індикатор світиться постійно → ключ готовий до використання. Спам-дзвінки тепер будуть тихо перехоплюватися ще до того, як ваш телефон задзвонить.</p>
+
+		<hr class="my-5"/>
+
+		<p class="has-text-grey" data-tx="t0181:9316079d">Щось не працює, ви використовуєте Firefox/Safari, Linux з особливостями або іншу плату? Детальну інструкцію з усіма параметрами, підводними каменями Linux та інструментарієм ESP-IDF можна знайти в репозиторії: <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</p>
+
+		<h2 data-tx="t0182:c258f25f" id="tester">Подати звіт про досвід</h2>
+
+		<p data-tx="t0183:493a28c5">Донгл надійно працює вдома на Fritz!Box - але моделі роутерів, провайдерів і типи з'єднань - це строката суміш, і кожна комбінація має свої особливості: різні діалекти SIP, різні правила NAT, різні затримки дзвінків. Щоб я міг розпізнавати закономірності і цілеспрямовано вирішувати проблеми, <strong>структуровані звіти про досвід</strong> на вагу золота - незалежно від того, чи все у вас вийшло, чи щось застрягло.</p>
+
+		<p data-tx="t0184:49f94506">Особливо цікавими є інсталяції, які досі мало висвітлені:</p>
+
+		<ul>
+			<li data-tx="t0185:e1971ce0">З'єднання Telekom з маршрутизатором <strong>Speedport</strong></li>
+			<li data-tx="t0186:61cce24d">Кабельне з'єднання Vodafone/Unitymedia за допомогою коробки провайдера, що входить до комплекту поставки</li>
+			<li data-tx="t0187:ea506b90">1&amp;1, o2, Deutsche Glasfaser та інші провайдери</li>
+			<li data-tx="t0188:e5ffca52">Міжнародні зв'язки (Швейцарія, Австрія, решта Європи)</li>
+		</ul>
+
+		<p data-tx="t0189:3fcb6dd2">Звіти запускаються через GitHub issues - попередньо заповнена форма запитує найважливіші ключові дані (обладнання, роутер, провайдер, версія прошивки, висновки) у структурованому вигляді. Інші тестувальники можуть безпосередньо бачити, які налаштування вже охоплені, а які ні.</p>
+
+		<p>
+			<a class="button is-primary is-medium" href="https://github.com/haumacher/phoneblock/issues/new?template=dongle-test-report.yml" rel="noopener" target="_blank">
+				<span class="icon"><i class="fab fa-github"></i></span>
+				<span data-tx="t0190:92ec79b">Відкритий звіт про досвід</span>
+			</a>
+		</p>
+
+		<hr class="my-5"/>
+
+		<p class="has-text-grey" data-tx="t0191:8a689eeb">Вихідний код прошивки: <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank"> phoneblock-dongle на GitHub</a>.</p>
 
 	</div>
 </section>
+
+<script src="https://cdn.phoneblock.net/dongle/installer/esp-web-tools/install-button.js" type="module"></script>
+
+<script>
+(function() {
+	if (!('serial' in navigator)) {
+		var box = document.getElementById('dongle-install-unsupported');
+		if (box) { box.style.display = ''; }
+	}
+})();
+</script>
+
+<script th:src="@{/assets/js/dongle-pairing.js}" type="text/javascript"></script>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>

@@ -7,12 +7,12 @@
 
 <section class="section">
 	<div class="content">
-		<h1 data-tx="t0001:365a40ae">Klucz sprzętowy PhoneBlock</h1>
+		<h1 data-tx="t0192:3c01c047">Klucz sprzętowy PhoneBlock <span class="tag is-info is-medium ml-2">Nowy</span></h1>
 
 		<p class="subtitle" data-tx="t0095:dab19814">Inteligentna automatyczna sekretarka pod postacią telefonu IP. Urządzenie wielkości kciuka podłącza się do portu USB routera, rejestruje jako dodatkowy telefon SIP - i przechwytuje połączenia komercyjne, zanim zadzwoni telefon. Działa niezależnie od modelu routera, nawet bez Fritza!</p>
 
 		<div class="notification is-warning">
-			<p data-tx="t0123:cedc07e4"><strong>Status: Beta.</strong> Pierwsza wersja działa już niezawodnie. Poszukuję większej liczby testerów do wypróbowania klucza sprzętowego w jak największej liczbie różnych środowisk - <a th:href="@{/dongle-install#tester}">raporty z doświadczeń mile widziane</a>.</p>
+			<p data-tx="t0123:cedc07e4"><strong>Status: Beta.</strong> Pierwsza wersja działa już niezawodnie. Poszukuję większej liczby testerów do wypróbowania klucza sprzętowego w jak największej liczbie różnych środowisk - <a href="#tester">raporty z doświadczeń mile widziane</a>.</p>
 		</div>
 
 		<h2 data-tx="t0004:6b104c7a">Pomysł w jednym zdaniu</h2>
@@ -41,24 +41,218 @@
 			<p data-tx="t0100:86bdb13f"><strong>Dlaczego to takie urocze:</strong> Klucz sprzętowy potrzebuje tylko minimalnej mocy i Wi-Fi. Bez dodatkowego serwera, bez Fritz!Box, bez umowy. Znajdujący się wewnątrz mikrokontroler ESP32 pobiera mniej niż pół wata - można go po prostu podłączyć do portu USB routera i zapomnieć o nim.</p>
 		</div>
 
-		<div class="notification is-success has-text-centered">
-			<p data-tx="t0124:73607539"><strong>Przekonany? </strong> Sprzęt kosztuje około 9 euro i można go skonfigurować w zaledwie kilka minut. Instrukcje prowadzą krok po kroku przez proces zamawiania, flashowania i konfiguracji.</p>
-			<p class="mt-3">
-				<a class="button is-primary is-large" th:href="@{/dongle-install}">
-					<span class="icon"><i class="fas fa-bolt"></i></span>
-					<span data-tx="t0125:650ed7eb">Do instrukcji - Instalacja klucza sprzętowego PhoneBlock</span>
-				</a>
-			</p>
-			<p class="mt-3">
-				<a class="has-text-grey" href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank">
-					<span class="icon"><i class="fab fa-github"></i></span>
-					<span data-tx="t0129:97d67640">Kod źródłowy na GitHub</span>
-				</a>
-			</p>
+		<p class="subtitle mt-6" data-tx="t0124:b14ca93b">W tym miejscu staje się to praktyczne: instrukcje prowadzą krok po kroku przez zamawianie, flashowanie i konfigurację - około 10 euro za sprzęt, jednorazowy wysiłek 10 minut.</p>
+
+		<div class="notification is-warning">
+			<p data-tx="t0125:bd2333ac"><strong>Status: Beta.</strong> Ten przewodnik jest dostosowany do jednego, przetestowanego typu sprzętu - kup dokładnie tę płytę z kroku 1, a każdy kolejny krok będzie pasował. Inne płyty często również działają, ale wymagają innych sterowników i własnej pracy detektywistycznej (patrz link poniżej).</p>
 		</div>
+
+		<noscript>
+			<div class="notification is-danger">
+				<p data-tx="t0126:ba65a265">Ta strona wymaga JavaScript. Aktywuj ją w przeglądarce lub postępuj zgodnie z <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md">Instrukcjami dla zaawansowanych użytkowników</a> w repozytorium.</p>
+			</div>
+		</noscript>
+
+		<div class="notification is-warning" id="dongle-install-unsupported" style="display:none;">
+			<p data-tx="t0127:bb075478"><strong>Ta przeglądarka nie może flashować klucza sprzętowego.</strong> Flashowanie sieci działa tylko w przeglądarce <strong>Google Chrome</strong> lub <strong>Microsoft Edge</strong> na komputerze (nie na smartfonie). Otwórz tę stronę w przeglądarce Chrome lub Edge i spróbuj ponownie.</p>
+		</div>
+
+		<h2 data-tx="t0128:93c33292" id="voraussetzungen">Przed rozpoczęciem</h2>
+
+		<p data-tx="t0129:5ffae555">Sprawdź krótko, czy te punkty są spełnione - aby nie było rozczarowania:</p>
+
+		<ul>
+			<li data-tx="t0130:b4ac4baa"><strong>Rejestrator SIP</strong> - albo w routerze (np. Fritz!Box), albo bezpośrednio u dostawcy usług telefonicznych, pod warunkiem, że umożliwia on korzystanie z zewnętrznych klientów SIP ("Możliwa rejestracja telefonu IP").</li>
+			<li data-tx="t0131:be2e6f7c"><strong>2,4 GHz WLAN</strong> w zasięgu.</li>
+			<li data-tx="t0132:573b2c92"><strong>Zasilacz USB 5 V</strong> - najlepiej port USB w routerze, alternatywnie dowolny zasilacz USB.</li>
+		</ul>
+
+		<h2 data-tx="t0133:1cedb9ee" id="schritt-1">Krok 1 - Zamówienie klucza sprzętowego</h2>
+
+		<p data-tx="t0134:1367b791">Zamów tę płytkę ESP32. Jest wystarczająco kompaktowa, aby można ją było podłączyć bezpośrednio do routera jako pamięć USB, ma odpowiedni układ szeregowy USB (CH340), a klucz PhoneBlock został z nią przetestowany.</p>
+
+		<figure class="image" style="max-width:300px;">
+			<img alt="Klucz sprzętowy ESP32" data-tx="t0135:31cdc7dc" th:src="@{/assets/img/dongle/dongle-option.png}"/>
+		</figure>
+
+		<div class="notification is-info">
+			<p data-tx="t0136:bbe31efa"><strong>Dostawa z Chin - czas dostawy ok. 2 tygodni.</strong> Cena obecnie ok. 10 € wraz z wysyłką.</p>
+			<p class="mt-2">
+				<a class="button is-primary is-large" href="https://de.aliexpress.com/item/1005006593432047.html" rel="noopener" target="_blank">
+					<span class="icon"><i class="fas fa-cart-shopping"></i></span>
+					<span data-tx="t0137:49b731d6">Zamówienie na AliExpress</span>
+				</a>
+			</p>
+			<p class="mt-2">
+				<a class="button is-primary is-large" href="https://www.ebay.de/itm/404930369895" rel="noopener" target="_blank">
+					<span class="icon"><i class="fas fa-cart-shopping"></i></span>
+					<span data-tx="t0138:4bfe505a">Zamów w serwisie eBay</span>
+				</a>
+			</p>
+			<p data-tx="t0139:1caf402b">Oferty te nie są w żaden sposób związane z PhoneBlock, a PhoneBlock nie jest w żaden sposób zaangażowany w zyski. Dotyczy to wyłącznie sprzętu. Oprogramowanie PhoneBlock (firmware) należy zainstalować samodzielnie po otrzymaniu urządzenia (patrz poniżej).</p>
+		</div>
+
+		<p data-tx="t0140:eb2aefa3"><strong>Chcesz użyć innej płytki</strong> Inne ESP32 DevKits działają dokładnie w ten sam sposób, ale mogą wymagać innego sterownika szeregowego USB (np. CP2102 zamiast CH340) i przedłużacza USB, jeśli projekt nie pasuje bezpośrednio do routera. Szczegóły i zalecenia: <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/HARDWARE.md" rel="noopener" target="_blank">HARDWARE.md w repozytorium</a>.</p>
+
+		<h2 data-tx="t0141:fe30aa8a" id="schritt-2">Krok 2 - Zainstaluj sterownik USB (tylko Windows)</h2>
+
+		<p data-tx="t0142:ba1650a4">Klucz sprzętowy wykorzystuje układ szeregowy USB <strong>CH340</strong>. Aby system Windows rozpoznał go jako port COM, potrzebny jest odpowiedni sterownik.</p>
+
+		<p>
+			<a class="button is-link" href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">
+				<span class="icon"><i class="fas fa-download"></i></span>
+				<span data-tx="t0143:88df56ee">Pobierz sterownik CH340 (wch-ic.com)</span>
+			</a>
+		</p>
+
+		<p data-tx="t0144:864e1d6">Uruchom pobrany plik <code>CH341SER.EXE</code> → kliknij <strong>"INSTALL"</strong> w oknie → gotowe. Ponowne uruchomienie nie jest konieczne.</p>
+
+		<figure>
+			<div data-tx="t0145:42f1fe49" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Symbol zastępczy: Zrzut ekranu instalatora sterownika CH340 z podświetlonym przyciskiem INSTALUJ].</div>
+		</figure>
+
+		<details class="mt-4">
+			<summary><strong data-tx="t0146:ded51310">Używasz systemu macOS czy Linux?</strong></summary>
+			<ul>
+				<li data-tx="t0147:901b0f79"><strong>macOS</strong>: Od wersji macOS Big Sur sterownik jest dołączony do systemu - nie jest wymagana instalacja.</li>
+				<li data-tx="t0148:35f91b38"><strong>Linux</strong>: Sterownik jądra jest zainstalowany. Na Ubuntu, usługa BRLTTY może wyrwać CH340 tak, że nie można zobaczyć pliku urządzenia - w tym przypadku, odinstalowanie BRLTTY pomoże: <code>sudo apt remove --purge brltty</code>. Użytkownik musi również należeć do grupy <code>dialout</code>: <code>sudo usermod -aG dialout $USER</code>. Oba kroki zostały szczegółowo opisane w <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
+			</ul>
+		</details>
+
+		<h2 data-tx="t0149:62d0966b" id="schritt-3">Krok 3 - Podłącz klucz sprzętowy do komputera</h2>
+
+		<p data-tx="t0150:11c66231">Podłącz klucz sprzętowy bezpośrednio do wolnego portu USB w komputerze. Mała dioda LED na płytce powinna natychmiast się zaświecić.</p>
+
+		<figure>
+			<div data-tx="t0151:a85e1a1d" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Symbol zastępczy: Zdjęcie "Klucz sprzętowy włożony do portu USB notebooka"]</div>
+		</figure>
+
+		<h2 data-tx="t0152:4325c49c" id="schritt-4">Krok 4 - Flashowanie oprogramowania sprzętowego</h2>
+
+		<p data-tx="t0153:a0900784">Kliknij przycisk. Następnie przeglądarka zapyta, które podłączone urządzenie może zaadresować. Wybierz wpis z <strong>"USB-SERIAL CH340"</strong> (Windows) lub <strong>"USB Single Serial"</strong> lub <strong>"wch.cn"</strong> (macOS/Linux) w nazwie i potwierdź przyciskiem <strong>"Connect"</strong>.</p>
+
+		<p>
+			<esp-web-install-button manifest="https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json">
+				<button class="button is-primary is-large" slot="activate" type="button">
+					<span class="icon"><i class="fas fa-bolt"></i></span>
+					<span data-tx="t0154:1b4594a6">Flash teraz</span>
+				</button>
+				<button class="button is-primary is-large" disabled="disabled" slot="unsupported" type="button">
+					<span class="icon"><i class="fas fa-bolt"></i></span>
+					<span data-tx="t0155:1b4594a6">Flash teraz</span>
+				</button>
+				<button class="button is-primary is-large" disabled="disabled" slot="not-allowed" type="button">
+					<span class="icon"><i class="fas fa-bolt"></i></span>
+					<span data-tx="t0156:1b4594a6">Flash teraz</span>
+				</button>
+			</esp-web-install-button>
+		</p>
+
+		<p data-tx="t0157:8a955c74">Lista wszystkich urządzeń szeregowych na komputerze pojawi się w oknie dialogowym wyboru. Jeśli wyświetlanych jest kilka urządzeń CH340, ponieważ podłączone jest inne urządzenie z tym chipem, należy na razie usunąć pozostałe.</p>
+
+		<figure>
+			<div data-tx="t0158:b5c3a2f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Symbol zastępczy: Zrzut ekranu okna dialogowego wyboru urządzenia przeglądarki z podświetlonym wpisem CH340].</div>
+		</figure>
+
+		<p data-tx="t0159:5fcdc08c">Potwierdź monit bezpieczeństwa "Erase device and install PhoneBlock Dongle?" za pomocą <strong>"Install"</strong>. Podczas pierwszego flashowania cała pamięć zostanie wymazana i zainstalowane zostanie oprogramowanie sprzętowe - trwa to około minuty. W tym czasie nie należy odłączać klucza sprzętowego.</p>
+
+		<figure>
+			<div data-tx="t0160:177a19e2" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Symbol zastępczy: Zrzut ekranu paska postępu esp-web-tools podczas flashowania].</div>
+		</figure>
+
+		<h2 data-tx="t0161:e5862ff8" id="schritt-5">Krok 5 - Podłącz klucz sprzętowy do routera</h2>
+
+		<p data-tx="t0162:cbcaee11">Gdy przeglądarka wyświetli komunikat "Instalacja zakończona!", odłącz klucz sprzętowy od komputera i podłącz go do wolnego portu USB routera (lub dowolnego zasilacza USB 5 V w zasięgu sieci WLAN).</p>
+
+		<figure>
+			<div data-tx="t0163:a5796f78" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Symbol zastępczy: zdjęcie "Klucz sprzętowy włożony do portu USB urządzenia Fritz!Box"].</div>
+		</figure>
+
+		<h2 data-tx="t0164:b184a512" id="schritt-6">Krok 6 - Dodanie klucza sprzętowego do sieci WLAN (WPS)</h2>
+
+		<p data-tx="t0165:6ac463a1">Świeżo sflashowany klucz sprzętowy nie ma jeszcze żadnych danych dostępu Wi-Fi i czeka na sparowanie za pomocą <strong>WPS</strong>. Dioda LED <strong>miga szybko</strong> (około pięć razy na sekundę) i sygnalizuje "Tryb parowania aktywny".</p>
+
+		<p data-tx="t0166:83cbb4c2">Teraz naciśnij przycisk <strong>WPS</strong> na routerze. W Fritz!Box jest to przycisk <strong>"Connect / WPS"</strong> na górze urządzenia - naciśnij krótko, aż dioda LED Wi-Fi na samym routerze zacznie migać. Inne routery oznaczają ten przycisk jako "WPS" lub "Pair". W ciągu kilku sekund router przesyła dane dostępu do sieci Wi-Fi do klucza sprzętowego, który zapisuje je i nawiązuje połączenie.</p>
+
+		<figure>
+			<div data-tx="t0167:5f50dac7" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Symbol zastępczy: Zdjęcie "Przycisk Connect/WPS na Fritz!Box ze strzałką"]</div>
+		</figure>
+
+		<p data-tx="t0168:8eba89fd"><strong>Działało:</strong> Dioda LED miga teraz powoli (około raz na sekundę) - klucz sprzętowy jest w sieci WLAN, ma przypisany adres IP i czeka na konfigurację w kroku 7.</p>
+
+		<p data-tx="t0169:96351c92"><strong>Nie działa</strong> Sprawdź w ustawieniach routera, czy WPS jest w ogóle aktywowany (na Fritz!Box: <em>WLAN → Security → WPS</em>). Jeśli okno WPS było zbyt krótkie, klucz sprzętowy automatycznie wznowi proces parowania - wystarczy ponownie nacisnąć przycisk WPS.</p>
+
+		<h2 data-tx="t0170:5dee0d65" id="schritt-7">Krok 7 - Wprowadź dostęp SIP i token PhoneBlock</h2>
+
+		<p data-tx="t0171:58c22345">Aby klucz sprzętowy mógł przechwytywać połączenia, potrzebuje jeszcze dwóch rzeczy: danych dostępowych SIP (aby mógł zalogować się do routera jako dodatkowy telefon) i tokena PhoneBlock (aby mógł odpytywać bazę danych spamu). Obie te informacje wprowadza się w interfejsie internetowym klucza sprzętowego.</p>
+
+		<p data-tx="t0172:f4d3bf5f">Otwórz w przeglądarce:</p>
+
+		<p><a class="button is-link is-large" data-tx="t0173:9be1c030" href="http://answerbot/" id="dongle-step7-link" target="_blank">http://answerbot/</a></p>
+
+		<div class="notification is-success" id="dongle-located-banner" style="display:none;">
+			<p data-tx="t0174:c20257a1"><strong>Klucz sprzętowy rozpoznany:</strong> <a href="" id="dongle-located-link" target="_blank">http://192.168.178.xxx/</a> - przycisk na górze otwiera go bezpośrednio.</p>
+		</div>
+
+		<p data-tx="t0175:fda77eed">Jeśli ten link nie działa (Windows bez Bonjour, niektóre sieci WLAN typu mesh), poszukaj na liście urządzeń routera urządzenia o nazwie <code>answerbot</code>, zanotuj jego adres IP i wywołaj go w przeglądarce - np. <code>http://192.168.178.xxx/</code>.</p>
+
+		<figure>
+			<div data-tx="t0176:8bb491f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Symbol zastępczy: Zrzut ekranu interfejsu internetowego klucza sprzętowego z polami wprowadzania danych dla SIP i tokena].</div>
+		</figure>
+
+		<p data-tx="t0177:a09627c1">Wejdź do interfejsu internetowego:</p>
+		<ul>
+			<li data-tx="t0178:4b81384d"><strong>Dane dostępu IP</strong> - nazwa użytkownika, hasło i adres rejestratora. W przypadku urządzenia Fritz!Box utwórz dodatkowe połączenie w obszarze <em>Telefonia → Urządzenia telefoniczne → Skonfiguruj nowe urządzenie → Telefon (z automatyczną sekretarką lub bez) → LAN/WLAN (telefon IP)</em>. Wprowadź dane dostępu przypisane tutaj i wprowadź <code>fritz.box</code> jako rejestrator.</li>
+			<li data-tx="t0179:9fd0fd46"><strong>PhoneBlock token</strong> - utwórz token API w ustawieniach <a th:href="@{/settings}">PhoneBlock</a> i skopiuj go do odpowiedniego pola.</li>
+		</ul>
+
+		<p data-tx="t0180:2f4a93c2">Zapisz → dioda LED świeci się na stałe → klucz sprzętowy jest gotowy do użycia. Połączenia spamowe będą teraz po cichu przechwytywane, zanim zadzwoni telefon.</p>
+
+		<hr class="my-5"/>
+
+		<p class="has-text-grey" data-tx="t0181:9316079d">Coś nie działa, używasz Firefoxa/Safari, Linuksa z osobliwościami lub innej płyty? Szczegółowe instrukcje ze wszystkimi opcjami, pułapkami Linuksa i łańcuchem narzędzi ESP-IDF można znaleźć w repozytorium: <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</p>
+
+		<h2 data-tx="t0182:c258f25f" id="tester">Raport z doświadczeń</h2>
+
+		<p data-tx="t0183:493a28c5">Klucz sprzętowy działa niezawodnie u nas w domu na Fritz!Box - ale modele routerów, dostawcy i typy połączeń to barwna mieszanka, a każda kombinacja ma swoje osobliwości: różne dialekty SIP, różne reguły NAT, różne opóźnienia dzwonienia. Abym mógł rozpoznawać wzorce i naprawiać problemy w ukierunkowany sposób, <strong>uporządkowane raporty z doświadczeń</strong> są na wagę złota - niezależnie od tego, czy wszystko działało, czy coś się zacięło.</p>
+
+		<p data-tx="t0184:49f94506">Szczególnie interesujące są konfiguracje, które wciąż są słabo opisane:</p>
+
+		<ul>
+			<li data-tx="t0185:e1971ce0">Połączenie Telekom z routerem <strong>Speedport</strong></li>
+			<li data-tx="t0186:61cce24d">Połączenie kablowe Vodafone/Unitymedia z dostarczoną skrzynką operatora</li>
+			<li data-tx="t0187:ea506b90">1&amp;1, o2, Deutsche Glasfaser i inni operatorzy</li>
+			<li data-tx="t0188:e5ffca52">Połączenia międzynarodowe (Szwajcaria, Austria, reszta Europy)</li>
+		</ul>
+
+		<p data-tx="t0189:3fcb6dd2">Raporty są uruchamiane za pośrednictwem wydań GitHub - wstępnie wypełniony formularz prosi o podanie najważniejszych kluczowych danych (sprzęt, router, dostawca, wersja oprogramowania układowego, ustalenia) w ustrukturyzowany sposób. Inni testerzy mogą bezpośrednio zobaczyć, które konfiguracje zostały już uwzględnione, a które nie.</p>
+
+		<p>
+			<a class="button is-primary is-medium" href="https://github.com/haumacher/phoneblock/issues/new?template=dongle-test-report.yml" rel="noopener" target="_blank">
+				<span class="icon"><i class="fab fa-github"></i></span>
+				<span data-tx="t0190:92ec79b">Raport z otwartych doświadczeń</span>
+			</a>
+		</p>
+
+		<hr class="my-5"/>
+
+		<p class="has-text-grey" data-tx="t0191:8a689eeb">Kod źródłowy oprogramowania sprzętowego: <a href="https://github.com/haumacher/phoneblock/tree/master/phoneblock-dongle" rel="noopener" target="_blank"> phoneblock-dongle na GitHub</a>.</p>
 
 	</div>
 </section>
+
+<script src="https://cdn.phoneblock.net/dongle/installer/esp-web-tools/install-button.js" type="module"></script>
+
+<script>
+(function() {
+	if (!('serial' in navigator)) {
+		var box = document.getElementById('dongle-install-unsupported');
+		if (box) { box.style.display = ''; }
+	}
+})();
+</script>
+
+<script th:src="@{/assets/js/dongle-pairing.js}" type="text/javascript"></script>
 
 <div th:replace="~{fragments/page :: footer}"></div>
 </body>
