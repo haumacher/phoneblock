@@ -99,3 +99,14 @@ bool phoneblock_verify_auth_code(const char *code, const char *state,
 // true. Caller hands `url_out` to the browser via a 302; the long-
 // lived API token never leaves the dongle.
 bool phoneblock_mint_login_ticket(const char *next, char *url_out, size_t url_cap);
+
+// Live token-health flag, fed from every Bearer-authenticated API
+// call: 401/403 flips it to false, any 2xx flips it back. Transport
+// errors and 5xx responses leave it untouched, since they say nothing
+// about the token. Used by the web-UI status panel and the LED's
+// DEGRADED state to surface a server-side token revocation without
+// waiting for the next daily self-test.
+//
+// Boot default is true so a freshly powered dongle does not announce
+// "rejected" before the first call has even run.
+bool api_token_is_valid(void);

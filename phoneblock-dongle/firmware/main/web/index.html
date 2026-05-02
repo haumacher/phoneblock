@@ -118,6 +118,8 @@ const I18N = {
     'status.sip.redo_cta': 'Telefonie neu einrichten',
     'status.token.set': 'PhoneBlock-Token gesetzt',
     'status.token.missing': 'Kein PhoneBlock-Token',
+    'status.token.rejected': 'Token abgelehnt',
+    'status.token.rejected.msg': 'PhoneBlock hat das Token zurückgewiesen. Bitte über „Neu anfordern" ein neues Token erzeugen.',
     'status.token.cta': 'Token anlegen',
     'status.token.test': 'Testen',
     'status.token.renew': 'Neu anfordern',
@@ -1308,6 +1310,9 @@ async function refreshAll(){
   resetNonce = s.reset_nonce || '';
   const sipConfigured = !!(s.sip.host && s.sip.user);
   const tokenSet      = !!s.phoneblock.token_set;
+  // token_ok defaults to true when the field is missing (older
+  // firmware) so a stale frontend never falsely reports "rejected".
+  const tokenOk       = s.phoneblock.token_ok !== false;
   const heroSlot      = $('heroSlot');
   const statusSec     = $('statusSection');
   const callsSec      = $('callsSection');
@@ -1479,8 +1484,26 @@ async function refreshAll(){
   const tokenTest  = $('tokenTest');
   const tokenRenew = $('tokenRenew');
   if (tokenSet){
-    tokenPill.textContent = t('status.token.set');
-    tokenPill.className = 'pill ok';
+    if (tokenOk){
+      tokenPill.textContent = t('status.token.set');
+      tokenPill.className = 'pill ok';
+      // Don't clobber an inline test result the user may just have
+      // produced — clear only when we are switching away from the
+      // rejected state.
+      const m = $('tokenMsg');
+      if (m.dataset.persist === 'rejected'){
+        m.textContent = '';
+        m.style.color = '';
+        delete m.dataset.persist;
+      }
+    } else {
+      tokenPill.textContent = t('status.token.rejected');
+      tokenPill.className = 'pill bad';
+      const m = $('tokenMsg');
+      m.textContent = t('status.token.rejected.msg');
+      m.style.color = '#d93025';
+      m.dataset.persist = 'rejected';
+    }
     tokenCta.style.display   = 'none';
     tokenTest.style.display  = '';
     tokenRenew.style.display = '';

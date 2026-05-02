@@ -275,6 +275,7 @@ static esp_err_t handle_status(httpd_req_t *req)
     cJSON *pb = cJSON_AddObjectToObject(root, "phoneblock");
     cJSON_AddStringToObject(pb,   "base_url",           config_phoneblock_base_url());
     cJSON_AddBoolToObject  (pb,   "token_set",          strlen(config_phoneblock_token()) > 0);
+    cJSON_AddBoolToObject  (pb,   "token_ok",           api_token_is_valid());
     cJSON_AddNumberToObject(pb,   "last_api_ms",        (double)(c.last_api_duration_us / 1000));
     cJSON_AddNumberToObject(pb,   "min_direct_votes",   config_min_direct_votes());
     cJSON_AddNumberToObject(pb,   "min_range_votes",    config_min_range_votes());

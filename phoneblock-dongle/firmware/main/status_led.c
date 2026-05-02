@@ -7,6 +7,7 @@
 #include "freertos/task.h"
 #include "sdkconfig.h"
 
+#include "api.h"
 #include "config.h"
 #include "sip_register.h"
 #include "wifi.h"
@@ -17,6 +18,7 @@ typedef enum {
     ST_PAIRING,
     ST_CONNECTING,
     ST_SETUP,
+    ST_DEGRADED,
     ST_READY,
 } led_state_t;
 
@@ -27,6 +29,12 @@ static led_state_t derive_state(void)
     bool token_set = strlen(config_phoneblock_token()) > 0;
     bool sip_ok    = sip_register_is_registered();
     if (!token_set || !sip_ok)                 return ST_SETUP;
+    // Network is up and the device is configured — but the last
+    // Bearer call to phoneblock.net got a 401/403, meaning the token
+    // was revoked or rotated server-side. Same signal the dashboard
+    // surfaces; mirror it on the LED so the user sees the problem
+    // without opening the web UI.
+    if (!api_token_is_valid())                 return ST_DEGRADED;
     return ST_READY;
 }
 
@@ -50,6 +58,11 @@ static pattern_t pattern_for(led_state_t s)
         case ST_SETUP:
             // 100 ms on / 900 ms off  →  period 20 ticks, first 2 on
             return (pattern_t){ .on_mask = 0x00000003u, .ticks = 20 };
+        case ST_DEGRADED:
+            // 900 ms on / 100 ms off  →  period 20 ticks, first 18 on.
+            // Visual inverse of SETUP — mostly lit, brief dropout once
+            // a second.
+            return (pattern_t){ .on_mask = 0x0003FFFFu, .ticks = 20 };
         case ST_READY:
         default:
             // Solid on: every tick lit. ticks=1 keeps the mask simple.

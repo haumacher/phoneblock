@@ -1,5 +1,6 @@
 #include "api.h"
 
+#include <stdatomic.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -17,6 +18,34 @@
 #include "stats.h"
 
 static const char *TAG = "api";
+
+// Live token-health flag, fed from every Bearer-authenticated call.
+// Optimistic boot default: until the first call has run, "ok" is the
+// safer assumption — otherwise the LED would briefly drop to DEGRADED
+// at every power-up. The first selftest (synchronous from app_main)
+// or the first real /api/check-prefix lookup overwrites it.
+static atomic_int s_token_ok = 1;
+
+bool api_token_is_valid(void) { return atomic_load(&s_token_ok) != 0; }
+
+// Updates s_token_ok after a Bearer-authenticated request. 401/403
+// flips to "bad" — the server has explicitly rejected the token, and
+// that signal is deterministic enough to act on without hysteresis.
+// 2xx flips back to "ok" — proves the token is currently accepted.
+// Transport errors and 5xx are deliberately ignored: they say nothing
+// about the token's validity, only about the network or server, and
+// must not flap the dashboard between "valid" and "rejected" while
+// the user's connection is just blinking.
+static void note_api_response(esp_err_t transport_err, int http_status)
+{
+    if (transport_err != ESP_OK) return;
+    if (http_status >= 500)      return;
+    if (http_status == 401 || http_status == 403) {
+        atomic_store(&s_token_ok, 0);
+    } else if (http_status >= 200 && http_status < 300) {
+        atomic_store(&s_token_ok, 1);
+    }
+}
 
 // Hash-prefix length sent to /api/check-prefix (k-anonymity bucket
 // size). 4 hex chars = 16 bit ≈ ~3000 plausible German numbers per
@@ -162,6 +191,9 @@ verdict_t phoneblock_check(const char *phone_number, pb_check_result_t *out)
     esp_err_t err = esp_http_client_perform(client);
     stats_record_api_duration(esp_timer_get_time() - started);
 
+    int status = (err == ESP_OK) ? esp_http_client_get_status_code(client) : 0;
+    note_api_response(err, status);
+
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "HTTP request failed: %s", esp_err_to_name(err));
         char msg[96];
@@ -170,7 +202,6 @@ verdict_t phoneblock_check(const char *phone_number, pb_check_result_t *out)
         goto cleanup;
     }
 
-    int status = esp_http_client_get_status_code(client);
     ESP_LOGI(TAG, "HTTP %d", status);
 
     if (status != 200) {
@@ -298,6 +329,7 @@ bool phoneblock_report_call(const char *phone)
     ESP_LOGI(TAG, "POST %s", url);
     esp_err_t err = esp_http_client_perform(client);
     int status = (err == ESP_OK) ? esp_http_client_get_status_code(client) : 0;
+    note_api_response(err, status);
     esp_http_client_cleanup(client);
 
     if (err != ESP_OK) {
@@ -357,6 +389,7 @@ bool phoneblock_rate(const char *phone, const char *rating, const char *comment)
     ESP_LOGI(TAG, "POST %s (phone=%s rating=%s)", url, phone, rating);
     esp_err_t err = esp_http_client_perform(client);
     int status = (err == ESP_OK) ? esp_http_client_get_status_code(client) : 0;
+    note_api_response(err, status);
     esp_http_client_cleanup(client);
 
     if (err != ESP_OK) {
@@ -415,6 +448,9 @@ bool phoneblock_selftest(void)
     esp_err_t err = esp_http_client_perform(client);
     stats_record_api_duration(esp_timer_get_time() - started);
 
+    int status = (err == ESP_OK) ? esp_http_client_get_status_code(client) : 0;
+    note_api_response(err, status);
+
     bool ok = false;
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "self-test transport: %s", esp_err_to_name(err));
@@ -422,7 +458,6 @@ bool phoneblock_selftest(void)
         snprintf(msg, sizeof(msg), "self-test transport: %s", esp_err_to_name(err));
         stats_record_error("api", msg);
     } else {
-        int status = esp_http_client_get_status_code(client);
         if (status == 200) {
             ESP_LOGI(TAG, "self-test: HTTP 200, token accepted");
             ok = true;
@@ -607,6 +642,7 @@ bool phoneblock_mint_login_ticket(const char *next, char *url_out, size_t url_ca
     ESP_LOGI(TAG, "POST %s next=%s", url, next);
     esp_err_t err = esp_http_client_perform(client);
     int status = (err == ESP_OK) ? esp_http_client_get_status_code(client) : 0;
+    note_api_response(err, status);
     esp_http_client_cleanup(client);
 
     bool ok = false;
