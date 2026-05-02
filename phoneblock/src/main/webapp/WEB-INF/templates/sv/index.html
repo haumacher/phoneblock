@@ -76,7 +76,7 @@
 						<i class="fas fa-cogs fa-3x"></i>
 					</span>
 					<h3 class="title is-5" data-tx="t0027:754345bd">Flexibel</h3>
-					<p data-tx="t0028:d6e69698">Fungerar på <a th:href="@{/anrufbeantworter}">FRITZ!Box</a>, <a th:href="@{/setup-android}">Android</a>, <a th:href="@{/setup-iphone}">iPhone</a> och <a th:href="@{/setup-switchboard}">telefonsystem</a> - du bestämmer hur.</p>
+					<p data-tx="t0053:91c8788c">Fungerar i <a th:href="@{/festnetz}">landline</a>, på <a th:href="@{/setup-android}">Android</a>, <a th:href="@{/setup-iphone}">iPhone</a> och <a th:href="@{/setup-switchboard}">telefonsystem</a> - du bestämmer hur.</p>
 				</div>
 			</div>
 		</div>
@@ -123,13 +123,18 @@
 					<h3 class="title is-5">
 						<span class="icon-text">
 							<span class="icon">
-								<i class="fa-solid fa-network-wired"></i>
+								<i class="fa-solid fa-phone"></i>
 							</span>
-							<span data-tx="t0037:7852d066">FRITZ!Box</span>
+							<span data-tx="t0054:374baf20">Fast telefoni</span>
 						</span>
 					</h3>
-					<p data-tx="t0038:160340"><strong>Rekommenderas:</strong> Installera <a th:href="@{/anrufbeantworter}">PhoneBlocks telefonsvarare</a> som en VoIP-enhet. Telefonsvararen accepterar automatiskt spam-samtal och engagerar uppringare i meningslösa konversationer - din telefon kommer inte ens att ringa.</p>
-					<p class="mt-3" data-tx="t0039:9a3c1d09"><strong>Alternativ:</strong> Importera den blockerade listan som en <a th:href="@{/setup}">telefonbok</a> till din <a th:href="@{/link/fritzbox}">FRITZ!Box från AVM</a>. Uppringare avvisas direkt (Obs: telefonbokens storlek är begränsad, därför registreras inte alla nummer).</p>
+					<p data-tx="t0055:414d6689">Tre varianter att välja mellan: <strong>PhoneBlock-dongle</strong> som ett litet USB-minne i routern, <strong>Cloud-svarare</strong> via Fritz!Box eller <strong>Blocklist-telefonbok</strong> som CardDAV-synkronisering. Vilken som passar dig bäst beror på din router, leverantör och dataskyddskrav - på översiktssidan jämförs alla tre sida vid sida.</p>
+					<p class="mt-4">
+						<a class="button is-primary" th:href="@{/festnetz}">
+							<span class="icon"><i class="fas fa-arrow-right"></i></span>
+							<span data-tx="t0056:f69b313">Välj variant för fast nät</span>
+						</a>
+					</p>
 				</div>
 			</div>
 
@@ -145,6 +150,12 @@
 					</h3>
 					<p data-tx="t0041:cee8e47c">Blockera spam-samtal direkt på din Android-mobiltelefon med <a th:href="@{/setup-android}">PhoneBlock-appen</a>. Appen kontrollerar inkommande samtal i realtid och blockerar automatiskt kända spamnummer. Du kan själv ställa in hur många negativa meddelanden ett nummer ska blockeras för.</p>
 					<p class="mt-3" data-tx="t0042:56561506"><strong>Funktioner:</strong> Samtalshistorik, rapportera och taxera nummer, egen spärrlista, ingen behörighet krävs för att läsa dina kontakter.</p>
+					<p class="mt-4">
+						<a class="button is-primary" th:href="@{/setup-android}">
+							<span class="icon"><i class="fas fa-arrow-right"></i></span>
+							<span data-tx="t0057:b0eb119f">Konfigurera Android</span>
+						</a>
+					</p>
 				</div>
 			</div>
 
@@ -159,6 +170,12 @@
 						</span>
 					</h3>
 					<p data-tx="t0044:b45f7cac">Inkludera PhoneBlock-blockeringslistan i dina iPhone-kontakter. iOS visar dig sedan automatiskt när en uppringare finns på blockeringslistan. <a th:href="@{/setup-iphone}">Inställningen</a> görs via CardDAV - din iPhone håller automatiskt listan uppdaterad.</p>
+					<p class="mt-4">
+						<a class="button is-primary" th:href="@{/setup-iphone}">
+							<span class="icon"><i class="fas fa-arrow-right"></i></span>
+							<span data-tx="t0058:c278f9d5">Konfigurera iPhone</span>
+						</a>
+					</p>
 				</div>
 			</div>
 
@@ -173,6 +190,12 @@
 						</span>
 					</h3>
 					<p data-tx="t0046:99335f28">Integrera PhoneBlock i ditt <a th:href="@{/setup-switchboard}">telefonsystem</a> eller PBX. Blocklistan kan laddas ner i olika format eller hämtas via API. Idealisk för företag och professionella telefonsystem.</p>
+					<p class="mt-4">
+						<a class="button is-primary" th:href="@{/setup-switchboard}">
+							<span class="icon"><i class="fas fa-arrow-right"></i></span>
+							<span data-tx="t0059:aa28e976">Sätta upp telefonsystem</span>
+						</a>
+					</p>
 				</div>
 			</div>
 		</div>

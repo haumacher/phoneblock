@@ -51,79 +51,19 @@
 			</p>
 		</div>
 
-		<h2 data-tx="t0013:755fe635">Comparison: Three ways to block landline spam</h2>
-
-		<p data-tx="t0014:f78318d5">All three solutions use the same spam database maintained by PhoneBlock users, but differ significantly in terms of effort, effectiveness and the requirements for your connection.</p>
-
-		<div class="table-container">
-			<table class="table is-fullwidth is-striped">
-				<thead>
-					<tr>
-						<th></th>
-						<th data-tx="t0016:365a40ae">PhoneBlock Dongle</th>
-						<th data-tx="t0018:a17f6b5">Clound answering machine</th>
-						<th data-tx="t0017:b7a22f37">Blocklist phonebook</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td><strong data-tx="t0112:ebecddaf">Effectiveness</strong></td>
-						<td data-tx="t0103:df4b4973"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Maximum, entire block list</td>
-						<td data-tx="t0104:df4b4973"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Maximum, entire block list</td>
-						<td data-tx="t0089:8af26113"><span class="icon has-text-warning"><i class="fas fa-sync"></i></span> Good, but only a small section of the block list, sync ≤ 1 ×/day</td>
-					</tr>
-					<tr>
-						<td><strong data-tx="t0109:984ebad2">Prerequisites</strong></td>
-						<td data-tx="t0024:e372dde7"><span class="icon has-text-success"><i class="fas fa-globe"></i></span> Almost every router/provider combination</td>
-						<td data-tx="t0101:956188d1"><span class="icon has-text-warning"><i class="fas fa-server"></i></span> Only own Fritz!Box (no provider rental box)</td>
-						<td data-tx="t0085:120e2e30"><span class="icon has-text-warning"><i class="fas fa-wifi"></i></span> Newer Fritz!Box with CardDAV</td>
-					</tr>
-					<tr>
-						<td><strong data-tx="t0114:5f4450bc">Data protection</strong></td>
-						<td data-tx="t0120:1d9445c1"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Optimal; Local call handling; Only hash matching for unknown callers</td>
-						<td data-tx="t0121:b26fbac9"><span class="icon has-text-danger"><i class="fas fa-cloud"></i></span> Problematic; signaling of every call (also from contacts) runs via PhoneBlock server</td>
-						<td data-tx="t0116:2452770"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Optimal; nothing leaves the router</td>
-					</tr>
-					<tr>
-						<td><strong data-tx="t0111:83c9a19b">Setup effort</strong></td>
-						<td data-tx="t0032:4e6c7d5d"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Plug &amp; Play</td>
-						<td data-tx="t0088:45c38866"><span class="icon has-text-warning"><i class="fas fa-gear"></i></span> up (automatically with PhoneBlock Mobile App)</td>
-						<td data-tx="t0102:e51ea302"><span class="icon has-text-warning"><i class="fas fa-gear"></i></span> moderate</td>
-					</tr>
-					<tr>
-						<td><strong data-tx="t0110:e66ba2b">Additional hardware</strong></td>
-						<td data-tx="t0028:301e2ef7"><span class="icon has-text-info"><i class="fa-solid fa-coins"></i></span> USB dongle, approx. 10 €</td>
-						<td data-tx="t0087:fe8232e3"><span class="icon has-text-success"><i class="fas fa-cloud"></i></span> None (cloud service)</td>
-						<td data-tx="t0029:4d86e32e"><span class="icon has-text-success"><i class="fas fa-check"></i></span> None (integrated in Fritz!Box)</td>
-					</tr>
-					<tr>
-						<td><strong data-tx="t0108:9e08101d">Phone remains completely silent during spam</strong></td>
-						<td data-tx="t0020:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Yes</td>
-						<td data-tx="t0022:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Yes</td>
-						<td data-tx="t0084:7b5cfc02"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Optionally lock or display only</td>
-					</tr>
-					<tr>
-						<td><strong data-tx="t0118:f4c95d3e">Actively employ spammers</strong></td>
-						<td data-tx="t0044:fc6557f4"><span class="icon has-text-danger"><i class="fas fa-times"></i></span> No - briefly waved off</td>
-						<td data-tx="t0046:cafb9dda"><span class="icon has-text-success"><i class="fas fa-comments"></i></span> Yes - involved in dialog</td>
-						<td data-tx="t0122:1b0bf702"><span class="icon has-text-danger"><i class="fas fa-times"></i></span> No - call is blocked</td>
-					</tr>
-				</tbody>
-			</table>
-		</div>
-
-		<div class="notification is-info mt-4">
-			<p><strong data-tx="t0051:8125e3d9">Which solution suits you?</strong></p>
-			<ul>
-				<li data-tx="t0106:8a963c4e"><strong>Dongle</strong> - if you want optimum SPAM protection with the best data protection.</li>
-				<li data-tx="t0105:1ab5fa6c"><strong>Answer Bot</strong> - you have your own Fritz!Box (not a rental box) and accept that all your calls are checked by the PhoneBlock server for optimal SPAM defense.</li>
-				<li data-tx="t0107:c59e2c7f"><strong>Blocklist phonebook</strong> - if you have a Fritz!Box (also a rental box), and you don't mind if a spammer slips through every now and then who is actually on the blocklist.</li>
-			</ul>
+		<div class="notification is-light has-text-centered">
+			<p data-tx="t0130:17a01e9c">Still not sure whether the dongle is the right choice? On the overview page, we compare all three landline variants - dongle, cloud answering machine and blocklist phonebook - side by side.</p>
+			<p class="mt-3">
+				<a class="button is-link" th:href="@{/festnetz}">
+					<span class="icon"><i class="fas fa-scale-balanced"></i></span>
+					<span data-tx="t0131:8cc9013">Compare landline variants</span>
+				</a>
+			</p>
 		</div>
 
 		<hr class="my-5"/>
 
-		<h2 data-tx="t0126:d2b5e1a4">How to get the PhoneBlock dongle</h2>
+		<h2 data-tx="t0132:d2b5e1a4">How to get the PhoneBlock dongle</h2>
 
 		<p data-tx="t0127:7b44c4e3">The dongle is open source and ready to use in just a few minutes. The hardware is ready to buy (around €9 including shipping) and installation is done in the browser. The instructions guide you step by step through everything you need to do - from ordering to the first intercepted spam call.</p>
 

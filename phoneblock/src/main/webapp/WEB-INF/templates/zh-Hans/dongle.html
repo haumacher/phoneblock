@@ -51,79 +51,19 @@
 			</p>
 		</div>
 
-		<h2 data-tx="t0013:755fe635">比较： 拦截固定电话垃圾邮件的三种方法</h2>
-
-		<p data-tx="t0014:f78318d5">所有这三种解决方案都使用由 PhoneBlock 用户维护的相同垃圾邮件数据库，但在工作量、有效性和对连接的要求方面有很大不同。</p>
-
-		<div class="table-container">
-			<table class="table is-fullwidth is-striped">
-				<thead>
-					<tr>
-						<th></th>
-						<th data-tx="t0016:365a40ae">PhoneBlock 加密狗</th>
-						<th data-tx="t0018:a17f6b5">电话答录机</th>
-						<th data-tx="t0017:b7a22f37">Blocklist 电话簿</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td><strong data-tx="t0112:ebecddaf">有效性</strong></td>
-						<td data-tx="t0103:df4b4973"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> 最大值，整个区块列表</td>
-						<td data-tx="t0104:df4b4973"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> 最大值，整个区块列表</td>
-						<td data-tx="t0089:8af26113"><span class="icon has-text-warning"><i class="fas fa-sync"></i></span>很好，但只是区块列表的一小部分，同步 ≤ 1 ×/day</td>
-					</tr>
-					<tr>
-						<td><strong data-tx="t0109:984ebad2">先决条件</strong></td>
-						<td data-tx="t0024:e372dde7"><span class="icon has-text-success"><i class="fas fa-globe"></i></span>几乎所有路由器/提供商组合</td>
-						<td data-tx="t0101:956188d1"><span class="icon has-text-warning"><i class="fas fa-server"></i></span>仅拥有 Fritz！Box（无提供商租赁盒子）</td>
-						<td data-tx="t0085:120e2e30"><span class="icon has-text-warning"><i class="fas fa-wifi"></i></span> 带有 CardDAV 的较新 Fritz!Box</td>
-					</tr>
-					<tr>
-						<td><strong data-tx="t0114:5f4450bc">数据保护</strong></td>
-						<td data-tx="t0120:1d9445c1"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span>最佳；本地呼叫处理；只对未知呼叫者进行哈希匹配</td>
-						<td data-tx="t0121:b26fbac9"><span class="icon has-text-danger"><i class="fas fa-cloud"></i></span>有问题；每个呼叫（也包括来自联系人的呼叫）的信令都通过 PhoneBlock 服务器运行</td>
-						<td data-tx="t0116:2452770"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span>最佳；没有任何东西离开路由器</td>
-					</tr>
-					<tr>
-						<td><strong data-tx="t0111:83c9a19b">设置工作</strong></td>
-						<td data-tx="t0032:4e6c7d5d"><span class="icon has-text-success"><i class="fas fa-star"></i></span> 即插即用</td>
-						<td data-tx="t0088:45c38866"><span class="icon has-text-warning"><i class="fas fa-gear"></i></span>向上（使用 PhoneBlock Mobile App 自动运行）</td>
-						<td data-tx="t0102:e51ea302"><span class="icon has-text-warning"><i class="fas fa-gear"></i></span>适中</td>
-					</tr>
-					<tr>
-						<td><strong data-tx="t0110:e66ba2b">附加硬件</strong></td>
-						<td data-tx="t0028:301e2ef7"><span class="icon has-text-info"><i class="fa-solid fa-coins"></i></span> USB 加密狗，约 10 欧元</td>
-						<td data-tx="t0087:fe8232e3"><span class="icon has-text-success"><i class="fas fa-cloud"></i></span>无（云服务）</td>
-						<td data-tx="t0029:4d86e32e"><span class="icon has-text-success"><i class="fas fa-check"></i></span>无（集成在 Fritz!Box 中）</td>
-					</tr>
-					<tr>
-						<td><strong data-tx="t0108:9e08101d">发送垃圾邮件时手机保持完全静音</strong></td>
-						<td data-tx="t0020:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> 是</td>
-						<td data-tx="t0022:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> 是</td>
-						<td data-tx="t0084:7b5cfc02"><span class="icon has-text-success"><i class="fas fa-check"></i></span> 可选锁定或仅显示</td>
-					</tr>
-					<tr>
-						<td><strong data-tx="t0118:f4c95d3e">积极雇用垃圾邮件发送者</strong></td>
-						<td data-tx="t0044:fc6557f4"><span class="icon has-text-danger"><i class="fas fa-times"></i></span>没有--简短地一笔带过</td>
-						<td data-tx="t0046:cafb9dda"><span class="icon has-text-success"><i class="fas fa-comments"></i></span> 是 - 参与对话</td>
-						<td data-tx="t0122:1b0bf702"><span class="icon has-text-danger"><i class="fas fa-times"></i></span>否 - 呼叫被阻止</td>
-					</tr>
-				</tbody>
-			</table>
-		</div>
-
-		<div class="notification is-info mt-4">
-			<p><strong data-tx="t0051:8125e3d9">哪种解决方案适合您？</strong></p>
-			<ul>
-				<li data-tx="t0106:8a963c4e"><strong>Dongle</strong> - 如果您希望获得最佳的垃圾邮件防御和最佳的数据保护。</li>
-				<li data-tx="t0105:1ab5fa6c"><strong>Answer Bot</strong> - 您拥有自己的 Fritz！Box（非租用 Box），并接受 PhoneBlock 服务器对您的所有呼叫进行检查，以实现最佳的垃圾邮件防御。</li>
-				<li data-tx="t0107:c59e2c7f"><strong>Blocklist 电话簿</strong> - 如果您有一个 Fritz！Box（也是一个租用盒），而且您不介意偶尔有垃圾邮件发送者溜进来，但他确实在拦截列表上。</li>
-			</ul>
+		<div class="notification is-light has-text-centered">
+			<p data-tx="t0130:17a01e9c">还不确定加密狗是否是正确的选择？在概览页面中，我们对加密狗、云答录机和 blocklist 电话簿这三种固定电话类型进行了并列比较。</p>
+			<p class="mt-3">
+				<a class="button is-link" th:href="@{/festnetz}">
+					<span class="icon"><i class="fas fa-scale-balanced"></i></span>
+					<span data-tx="t0131:8cc9013">比较各种固定电话</span>
+				</a>
+			</p>
 		</div>
 
 		<hr class="my-5"/>
 
-		<h2 data-tx="t0126:d2b5e1a4">如何获取 PhoneBlock 加密狗</h2>
+		<h2 data-tx="t0132:d2b5e1a4">如何获取 PhoneBlock 加密狗</h2>
 
 		<p data-tx="t0127:7b44c4e3">加密狗是开源的，只需几分钟即可使用。硬件可以购买（含运费约 9 欧元），安装在浏览器中完成。从订购到拦截第一个垃圾电话，说明书将一步步指导您完成所有操作。</p>
 

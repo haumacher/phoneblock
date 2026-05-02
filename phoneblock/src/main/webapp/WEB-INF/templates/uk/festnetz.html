@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.festnetz.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001:fa239257">Блокування спаму у фіксованій мережі</h1>
+
+		<p class="subtitle" data-tx="t0002:f50c45ab">Існує три способи вимкнути рекламні дзвінки на вашому стаціонарному телефоні - всі три використовують одну і ту ж базу даних спаму, яку веде спільнота PhoneBlock, але суттєво відрізняються за зусиллями, ефектом і вимогами до вашого з'єднання. Ця сторінка допоможе вам зробити вибір.</p>
+
+		<h2 data-tx="t0003:755fe635">Порівняння: Три способи блокування стаціонарного спаму</h2>
+
+		<div class="table-container">
+			<table class="table is-fullwidth is-striped">
+				<thead>
+					<tr>
+						<th></th>
+						<th data-tx="t0004:365a40ae">Док-станція PhoneBlock</th>
+						<th data-tx="t0005:1cdaad3">Хмарний автовідповідач</th>
+						<th data-tx="t0006:b7a22f37">Блокування телефонної книги</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><strong data-tx="t0007:ebecddaf">Ефективність</strong></td>
+						<td data-tx="t0008:df4b4973"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Максимально, весь список блоків</td>
+						<td data-tx="t0009:df4b4973"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Максимально, весь список блоків</td>
+						<td data-tx="t0010:8af26113"><span class="icon has-text-warning"><i class="fas fa-sync"></i></span> Добре, але лише невелика частина списку блоків, синхронізація ≤ 1 ×/день</td>
+					</tr>
+					<tr>
+						<td><strong data-tx="t0011:984ebad2">Передумови</strong></td>
+						<td data-tx="t0012:e372dde7"><span class="icon has-text-success"><i class="fas fa-globe"></i></span> Майже будь-яка комбінація маршрутизаторів/провайдерів</td>
+						<td data-tx="t0013:956188d1"><span class="icon has-text-warning"><i class="fas fa-server"></i></span> Тільки власний Fritz!Box (не орендований у провайдера)</td>
+						<td data-tx="t0014:120e2e30"><span class="icon has-text-warning"><i class="fas fa-wifi"></i></span> Новіший Fritz!Box з CardDAV</td>
+					</tr>
+					<tr>
+						<td><strong data-tx="t0015:5f4450bc">Захист даних</strong></td>
+						<td data-tx="t0016:1d9445c1"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Оптимальний; Локальна обробка викликів; Тільки співставлення хешів для невідомих абонентів</td>
+						<td data-tx="t0017:b26fbac9"><span class="icon has-text-danger"><i class="fas fa-cloud"></i></span> Проблематично; сигналізація кожного дзвінка (в тому числі від контактів) проходить через сервер PhoneBlock</td>
+						<td data-tx="t0018:2452770"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Оптимально; нічого не виходить з роутера</td>
+					</tr>
+					<tr>
+						<td><strong data-tx="t0019:83c9a19b">Зусилля по налаштуванню</strong></td>
+						<td data-tx="t0020:4e6c7d5d"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Plug &amp; Play</td>
+						<td data-tx="t0021:45c38866"><span class="icon has-text-warning"><i class="fas fa-gear"></i></span> вгору (автоматично з мобільним додатком PhoneBlock)</td>
+						<td data-tx="t0022:e51ea302"><span class="icon has-text-warning"><i class="fas fa-gear"></i></span> помірний</td>
+					</tr>
+					<tr>
+						<td><strong data-tx="t0023:e66ba2b">Додаткове обладнання</strong></td>
+						<td data-tx="t0024:301e2ef7"><span class="icon has-text-info"><i class="fa-solid fa-coins"></i></span> USB-ключ, приблизно 10 євро</td>
+						<td data-tx="t0025:fe8232e3"><span class="icon has-text-success"><i class="fas fa-cloud"></i></span> Немає (хмарний сервіс)</td>
+						<td data-tx="t0026:4d86e32e"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Немає (інтегровано в Fritz!Box)</td>
+					</tr>
+					<tr>
+						<td><strong data-tx="t0027:9e08101d">Телефон повністю мовчить під час спаму</strong></td>
+						<td data-tx="t0028:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Так</td>
+						<td data-tx="t0029:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Так</td>
+						<td data-tx="t0030:7b5cfc02"><span class="icon has-text-success"><i class="fas fa-check"></i></span> За бажанням тільки блокування або відображення</td>
+					</tr>
+					<tr>
+						<td><strong data-tx="t0031:f4c95d3e">Активно використовувати спамерів</strong></td>
+						<td data-tx="t0032:fc6557f4"><span class="icon has-text-danger"><i class="fas fa-times"></i></span> Ні - коротко відмахнулися</td>
+						<td data-tx="t0033:cafb9dda"><span class="icon has-text-success"><i class="fas fa-comments"></i></span> Так - залучені до діалогу</td>
+						<td data-tx="t0034:1b0bf702"><span class="icon has-text-danger"><i class="fas fa-times"></i></span> Ні - виклик заблоковано</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<div class="notification is-info mt-4">
+			<p><strong data-tx="t0035:8125e3d9">Яке рішення підходить саме вам?</strong></p>
+			<ul>
+				<li data-tx="t0036:e982c3b9"><strong>Донгл</strong> - якщо вам потрібен оптимальний захист від спаму з найкращим захистом даних, незалежно від моделі роутера та провайдера.</li>
+				<li data-tx="t0037:263869ed"><strong>Хмарний автовідповідач</strong> - якщо у вас є власний Fritz!Box (не орендований) і ви згодні з тим, що всі ваші дзвінки перевіряються сервером PhoneBlock для оптимального захисту від спаму.</li>
+				<li data-tx="t0038:d89599d7"><strong>Телефонна книга блокування</strong> - якщо у вас є Fritz!Box (також орендований) і ви не проти, якщо спамер, який дійсно є в списку блокування, час від часу прослизає.</li>
+			</ul>
+		</div>
+
+		<h2 class="mt-6" data-tx="t0039:aeafcde8">Я вирішив - поїхали</h2>
+
+		<div class="columns is-multiline mt-4">
+			<div class="column is-one-third">
+				<div class="card is-fullheight">
+					<div class="card-content">
+						<p class="title is-4">
+							<span class="icon-text">
+								<span class="icon has-text-primary"><i class="fas fa-bolt"></i></span>
+								<span data-tx="t0040:365a40ae">Док-станція PhoneBlock</span>
+							</span>
+						</p>
+						<p class="subtitle is-6 has-text-grey" data-tx="t0041:3a1686ef">Рекомендовано - найкращий захист, найкращий захист даних</p>
+						<p data-tx="t0042:ae11194">USB-накопичувач розміром з великий палець у роутері. Автовідповідач у форматі IP-телефону, блокує спам локально у вашому домі. Апаратне забезпечення приблизно 10 €, налаштовується в браузері.</p>
+					</div>
+					<footer class="card-footer">
+						<a class="card-footer-item button is-primary is-medium" th:href="@{/dongle}">
+							<span class="icon"><i class="fas fa-arrow-right"></i></span>
+							<span data-tx="t0043:526888ef">До ключа</span>
+						</a>
+					</footer>
+				</div>
+			</div>
+
+			<div class="column is-one-third">
+				<div class="card is-fullheight">
+					<div class="card-content">
+						<p class="title is-4">
+							<span class="icon-text">
+								<span class="icon has-text-info"><img alt="" data-tx="t0044" th:src="@{/assets/img/ab/logo/ab-logo.svg}"/></span>
+								<span data-tx="t0045:1cdaad3">Хмарний автовідповідач</span>
+							</span>
+						</p>
+						<p class="subtitle is-6 has-text-grey" data-tx="t0046:61de7fcf">Залучайте спамерів до безглуздих діалогів</p>
+						<p data-tx="t0047:21db9fe">Використовує ваш Fritz!Box як VoIP-реєстратор. PhoneBlock приймає спам-дзвінки і тримає абонентів зайнятими. Вимога: власний Fritz! box (не орендований).</p>
+					</div>
+					<footer class="card-footer">
+						<a class="card-footer-item button is-info is-medium" th:href="@{/anrufbeantworter}">
+							<span class="icon"><i class="fas fa-arrow-right"></i></span>
+							<span data-tx="t0048:98b00790">На автовідповідач</span>
+						</a>
+					</footer>
+				</div>
+			</div>
+
+			<div class="column is-one-third">
+				<div class="card is-fullheight">
+					<div class="card-content">
+						<p class="title is-4">
+							<span class="icon-text">
+								<span class="icon has-text-info"><i class="fas fa-address-book"></i></span>
+								<span data-tx="t0049:b7a22f37">Блокування телефонної книги</span>
+							</span>
+						</p>
+						<p class="subtitle is-6 has-text-grey" data-tx="t0050:ae13b6e9">Без додаткового обладнання, прямо у Fritz!</p>
+						<p data-tx="t0051:c00621dd">Імпортує список блокування у ваш Fritz! у вигляді телефонної книги. Ніщо не залишає роутер. Також працює з орендованими у провайдера боксами, якщо вони підтримують CardDAV.</p>
+					</div>
+					<footer class="card-footer">
+						<a class="card-footer-item button is-info is-medium" th:href="@{/setup}">
+							<span class="icon"><i class="fas fa-arrow-right"></i></span>
+							<span data-tx="t0052:85ecd6f2">До списку блокування</span>
+						</a>
+					</footer>
+				</div>
+			</div>
+		</div>
+
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

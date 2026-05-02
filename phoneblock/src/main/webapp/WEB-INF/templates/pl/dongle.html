@@ -51,79 +51,19 @@
 			</p>
 		</div>
 
-		<h2 data-tx="t0013:755fe635">Porównanie: Trzy sposoby blokowania spamu z telefonów stacjonarnych</h2>
-
-		<p data-tx="t0014:f78318d5">Wszystkie trzy rozwiązania wykorzystują tę samą bazę danych spamu prowadzoną przez użytkowników PhoneBlock, ale różnią się znacznie pod względem wysiłku, skuteczności i wymagań dotyczących połączenia.</p>
-
-		<div class="table-container">
-			<table class="table is-fullwidth is-striped">
-				<thead>
-					<tr>
-						<th></th>
-						<th data-tx="t0016:365a40ae">Klucz sprzętowy PhoneBlock</th>
-						<th data-tx="t0018:a17f6b5">Automatyczna sekretarka</th>
-						<th data-tx="t0017:b7a22f37">Książka telefoniczna z blokadą</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td><strong data-tx="t0112:ebecddaf">Skuteczność</strong></td>
-						<td data-tx="t0103:df4b4973"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Maksymalnie, cała lista bloków</td>
-						<td data-tx="t0104:df4b4973"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Maksymalnie, cała lista bloków</td>
-						<td data-tx="t0089:8af26113"><span class="icon has-text-warning"><i class="fas fa-sync"></i></span> Dobrze, ale tylko mała część listy bloków, synchronizacja ≤ 1 ×/dzień</td>
-					</tr>
-					<tr>
-						<td><strong data-tx="t0109:984ebad2">Wymagania wstępne</strong></td>
-						<td data-tx="t0024:e372dde7"><span class="icon has-text-success"><i class="fas fa-globe"></i></span> Prawie każda kombinacja router/dostawca</td>
-						<td data-tx="t0101:956188d1"><span class="icon has-text-warning"><i class="fas fa-server"></i></span> Tylko własny Fritz!Box (bez wypożyczalni)</td>
-						<td data-tx="t0085:120e2e30"><span class="icon has-text-warning"><i class="fas fa-wifi"></i></span> Nowszy Fritz!Box z CardDAV</td>
-					</tr>
-					<tr>
-						<td><strong data-tx="t0114:5f4450bc">Ochrona danych</strong></td>
-						<td data-tx="t0120:1d9445c1"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Optymalne; Lokalna obsługa połączeń; Tylko dopasowanie hash dla nieznanych rozmówców</td>
-						<td data-tx="t0121:b26fbac9"><span class="icon has-text-danger"><i class="fas fa-cloud"></i></span> Problematyczne; sygnalizacja każdego połączenia (również z kontaktów) odbywa się przez serwer PhoneBlock</td>
-						<td data-tx="t0116:2452770"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Optymalnie; nic nie opuszcza routera</td>
-					</tr>
-					<tr>
-						<td><strong data-tx="t0111:83c9a19b">Wysiłek związany z konfiguracją</strong></td>
-						<td data-tx="t0032:4e6c7d5d"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Plug &amp; Play</td>
-						<td data-tx="t0088:45c38866"><span class="icon has-text-warning"><i class="fas fa-gear"></i></span> w górę (automatycznie za pomocą aplikacji mobilnej PhoneBlock)</td>
-						<td data-tx="t0102:e51ea302"><span class="icon has-text-warning"><i class="fas fa-gear"></i></span> umiarkowany</td>
-					</tr>
-					<tr>
-						<td><strong data-tx="t0110:e66ba2b">Dodatkowy sprzęt</strong></td>
-						<td data-tx="t0028:301e2ef7"><span class="icon has-text-info"><i class="fa-solid fa-coins"></i></span> Klucz sprzętowy USB, ok. 10 €</td>
-						<td data-tx="t0087:fe8232e3"><span class="icon has-text-success"><i class="fas fa-cloud"></i></span> Brak (usługa w chmurze)</td>
-						<td data-tx="t0029:4d86e32e"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Brak (zintegrowany z Fritz!Box)</td>
-					</tr>
-					<tr>
-						<td><strong data-tx="t0108:9e08101d">Telefon pozostaje całkowicie cichy podczas spamowania</strong></td>
-						<td data-tx="t0020:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Tak</td>
-						<td data-tx="t0022:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Tak</td>
-						<td data-tx="t0084:7b5cfc02"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Opcjonalnie blokada lub tylko wyświetlanie</td>
-					</tr>
-					<tr>
-						<td><strong data-tx="t0118:f4c95d3e">Aktywne zatrudnianie spamerów</strong></td>
-						<td data-tx="t0044:fc6557f4"><span class="icon has-text-danger"><i class="fas fa-times"></i></span> Nie - krótko odparł</td>
-						<td data-tx="t0046:cafb9dda"><span class="icon has-text-success"><i class="fas fa-comments"></i></span> Tak - zaangażowany w dialog</td>
-						<td data-tx="t0122:1b0bf702"><span class="icon has-text-danger"><i class="fas fa-times"></i></span> Nie - połączenie jest zablokowane</td>
-					</tr>
-				</tbody>
-			</table>
-		</div>
-
-		<div class="notification is-info mt-4">
-			<p><strong data-tx="t0051:8125e3d9">Które rozwiązanie Ci odpowiada?</strong></p>
-			<ul>
-				<li data-tx="t0106:8a963c4e"><strong>Klucz sprzętowy</strong> - jeśli chcesz optymalnej ochrony przed spamem i najlepszej ochrony danych.</li>
-				<li data-tx="t0105:1ab5fa6c"><strong>Answer Bot</strong> - posiadasz własny Fritz!Box (nie wypożyczony) i akceptujesz, że wszystkie Twoje połączenia są sprawdzane przez serwer PhoneBlock w celu optymalnej ochrony przed SPAMem.</li>
-				<li data-tx="t0107:c59e2c7f"><strong>Blocklist phonebook</strong> - jeśli masz Fritz!Box (również skrzynkę do wypożyczenia) i nie przeszkadza ci, że od czasu do czasu prześlizgnie się spamer, który faktycznie znajduje się na liście zablokowanych.</li>
-			</ul>
+		<div class="notification is-light has-text-centered">
+			<p data-tx="t0130:17a01e9c">Wciąż nie jesteś pewien, czy klucz sprzętowy jest właściwym wyborem? Na stronie przeglądu porównujemy wszystkie trzy warianty telefonów stacjonarnych - klucz sprzętowy, automatyczną sekretarkę w chmurze i książkę telefoniczną z blokadą - obok siebie.</p>
+			<p class="mt-3">
+				<a class="button is-link" th:href="@{/festnetz}">
+					<span class="icon"><i class="fas fa-scale-balanced"></i></span>
+					<span data-tx="t0131:8cc9013">Porównanie wariantów telefonów stacjonarnych</span>
+				</a>
+			</p>
 		</div>
 
 		<hr class="my-5"/>
 
-		<h2 data-tx="t0126:d2b5e1a4">Jak uzyskać klucz sprzętowy PhoneBlock</h2>
+		<h2 data-tx="t0132:d2b5e1a4">Jak uzyskać klucz sprzętowy PhoneBlock</h2>
 
 		<p data-tx="t0127:7b44c4e3">Klucz sprzętowy jest open source i jest gotowy do użycia w ciągu zaledwie kilku minut. Sprzęt jest gotowy do zakupu (około 9 euro wraz z wysyłką), a instalacja odbywa się w przeglądarce. Instrukcje prowadzą krok po kroku przez wszystko, co należy zrobić - od zamówienia do pierwszego przechwyconego połączenia spamowego.</p>
 

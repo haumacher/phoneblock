@@ -76,7 +76,7 @@
 						<i class="fas fa-cogs fa-3x"></i>
 					</span>
 					<h3 class="title is-5" data-tx="t0027:754345bd">灵活</h3>
-					<p data-tx="t0028:d6e69698">可在<a th:href="@{/anrufbeantworter}">FRITZ！Box</a>、<a th:href="@{/setup-android}">Android</a>、<a th:href="@{/setup-iphone}">iPhone</a>和<a th:href="@{/setup-switchboard}">电话系统</a>上使用，具体方式由您决定。</p>
+					<p data-tx="t0053:91c8788c">可在<a th:href="@{/festnetz}">陆线</a>、<a th:href="@{/setup-android}">Android</a>、<a th:href="@{/setup-iphone}">iPhone</a>和<a th:href="@{/setup-switchboard}">电话系统</a>上运行，具体方式由您决定。</p>
 				</div>
 			</div>
 		</div>
@@ -123,13 +123,18 @@
 					<h3 class="title is-5">
 						<span class="icon-text">
 							<span class="icon">
-								<i class="fa-solid fa-network-wired"></i>
+								<i class="fa-solid fa-phone"></i>
 							</span>
-							<span data-tx="t0037:7852d066">盒子</span>
+							<span data-tx="t0054:374baf20">固定电话</span>
 						</span>
 					</h3>
-					<p data-tx="t0038:160340"><strong>建议：</strong>安装 <a th:href="@{/anrufbeantworter}">PhoneBlock 应答机</a>作为 VoIP 设备。电话答录机会自动接受垃圾电话，并与来电者进行毫无意义的对话，您的电话甚至不会响起。</p>
-					<p class="mt-3" data-tx="t0039:9a3c1d09"><strong>替代方法：</strong>将被阻止的列表作为 <a th:href="@{/setup}"> 电话簿</a>导入您的 <a th:href="@{/link/fritzbox}">FRITZ!Box from AVM</a>。来电者将被直接拒接（注意：电话簿大小有限，因此不会记录所有号码）。</p>
+					<p data-tx="t0055:414d6689">有三种版本可供选择：<strong>PhoneBlock 加密狗</strong>是路由器中的一个小型 USB 记忆棒，<strong>通过 Fritz!Box 的云应答机</strong>，或 <strong>Blocklist 电话簿</strong>是 CardDAV 同步。哪种方式最适合您，取决于您的路由器、提供商和数据保护要求，概览页面将并列比较这三种方式。</p>
+					<p class="mt-4">
+						<a class="button is-primary" th:href="@{/festnetz}">
+							<span class="icon"><i class="fas fa-arrow-right"></i></span>
+							<span data-tx="t0056:f69b313">选择固定网络变体</span>
+						</a>
+					</p>
 				</div>
 			</div>
 
@@ -145,6 +150,12 @@
 					</h3>
 					<p data-tx="t0041:cee8e47c">使用 <a th:href="@{/setup-android}">PhoneBlock 应用程序</a>直接在您的 Android 手机上阻止垃圾电话。该应用程序会实时检查来电，并自动阻止已知的垃圾号码。您可以自行设置一个号码应阻止多少负面信息。</p>
 					<p class="mt-3" data-tx="t0042:56561506"><strong>功能：</strong>通话记录、号码报告和评级、自有拦截列表、无需授权即可读取联系人信息。</p>
+					<p class="mt-4">
+						<a class="button is-primary" th:href="@{/setup-android}">
+							<span class="icon"><i class="fas fa-arrow-right"></i></span>
+							<span data-tx="t0057:b0eb119f">设置安卓系统</span>
+						</a>
+					</p>
 				</div>
 			</div>
 
@@ -159,6 +170,12 @@
 						</span>
 					</h3>
 					<p data-tx="t0044:b45f7cac">将 PhoneBlock blocklist 包含在 iPhone 通讯录中，当来电者出现在 blocklist 中时，iOS 会自动显示出来。<a th:href="@{/setup-iphone}">设置</a>通过 CardDAV 完成，iPhone 会自动更新列表。</p>
+					<p class="mt-4">
+						<a class="button is-primary" th:href="@{/setup-iphone}">
+							<span class="icon"><i class="fas fa-arrow-right"></i></span>
+							<span data-tx="t0058:c278f9d5">设置 iPhone</span>
+						</a>
+					</p>
 				</div>
 			</div>
 
@@ -173,6 +190,12 @@
 						</span>
 					</h3>
 					<p data-tx="t0046:99335f28">将 PhoneBlock 集成到您的<a th:href="@{/setup-switchboard}">电话系统</a>或 PBX 中。可下载各种格式的区块列表，或通过 API 进行查询。是公司和专业电话系统的理想之选。</p>
+					<p class="mt-4">
+						<a class="button is-primary" th:href="@{/setup-switchboard}">
+							<span class="icon"><i class="fas fa-arrow-right"></i></span>
+							<span data-tx="t0059:aa28e976">设置电话系统</span>
+						</a>
+					</p>
 				</div>
 			</div>
 		</div>

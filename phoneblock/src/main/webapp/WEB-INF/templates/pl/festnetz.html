@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.festnetz.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001:fa239257">Blokowanie spamu w sieci stacjonarnej</h1>
+
+		<p class="subtitle" data-tx="t0002:f50c45ab">Istnieją trzy sposoby na wyłączenie połączeń reklamowych na telefonie stacjonarnym - wszystkie trzy korzystają z tej samej bazy danych spamu utrzymywanej przez społeczność PhoneBlock, ale różnią się znacznie pod względem wysiłku, efektu i wymagań dotyczących połączenia. Ta strona pomoże ci dokonać wyboru.</p>
+
+		<h2 data-tx="t0003:755fe635">Porównanie: Trzy sposoby blokowania spamu z telefonów stacjonarnych</h2>
+
+		<div class="table-container">
+			<table class="table is-fullwidth is-striped">
+				<thead>
+					<tr>
+						<th></th>
+						<th data-tx="t0004:365a40ae">Klucz sprzętowy PhoneBlock</th>
+						<th data-tx="t0005:1cdaad3">Automatyczna sekretarka w chmurze</th>
+						<th data-tx="t0006:b7a22f37">Książka telefoniczna z blokadą</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><strong data-tx="t0007:ebecddaf">Skuteczność</strong></td>
+						<td data-tx="t0008:df4b4973"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Maksymalnie, cała lista bloków</td>
+						<td data-tx="t0009:df4b4973"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Maksymalnie, cała lista bloków</td>
+						<td data-tx="t0010:8af26113"><span class="icon has-text-warning"><i class="fas fa-sync"></i></span> Dobrze, ale tylko mała część listy bloków, synchronizacja ≤ 1 ×/dzień</td>
+					</tr>
+					<tr>
+						<td><strong data-tx="t0011:984ebad2">Wymagania wstępne</strong></td>
+						<td data-tx="t0012:e372dde7"><span class="icon has-text-success"><i class="fas fa-globe"></i></span> Prawie każda kombinacja router/dostawca</td>
+						<td data-tx="t0013:956188d1"><span class="icon has-text-warning"><i class="fas fa-server"></i></span> Tylko własny Fritz!Box (bez wypożyczalni)</td>
+						<td data-tx="t0014:120e2e30"><span class="icon has-text-warning"><i class="fas fa-wifi"></i></span> Nowszy Fritz!Box z CardDAV</td>
+					</tr>
+					<tr>
+						<td><strong data-tx="t0015:5f4450bc">Ochrona danych</strong></td>
+						<td data-tx="t0016:1d9445c1"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Optymalne; Lokalna obsługa połączeń; Tylko dopasowanie hash dla nieznanych rozmówców</td>
+						<td data-tx="t0017:b26fbac9"><span class="icon has-text-danger"><i class="fas fa-cloud"></i></span> Problematyczne; sygnalizacja każdego połączenia (również z kontaktów) odbywa się przez serwer PhoneBlock</td>
+						<td data-tx="t0018:2452770"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Optymalnie; nic nie opuszcza routera</td>
+					</tr>
+					<tr>
+						<td><strong data-tx="t0019:83c9a19b">Wysiłek związany z konfiguracją</strong></td>
+						<td data-tx="t0020:4e6c7d5d"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Plug &amp; Play</td>
+						<td data-tx="t0021:45c38866"><span class="icon has-text-warning"><i class="fas fa-gear"></i></span> w górę (automatycznie za pomocą aplikacji mobilnej PhoneBlock)</td>
+						<td data-tx="t0022:e51ea302"><span class="icon has-text-warning"><i class="fas fa-gear"></i></span> umiarkowany</td>
+					</tr>
+					<tr>
+						<td><strong data-tx="t0023:e66ba2b">Dodatkowy sprzęt</strong></td>
+						<td data-tx="t0024:301e2ef7"><span class="icon has-text-info"><i class="fa-solid fa-coins"></i></span> Klucz sprzętowy USB, ok. 10 €</td>
+						<td data-tx="t0025:fe8232e3"><span class="icon has-text-success"><i class="fas fa-cloud"></i></span> Brak (usługa w chmurze)</td>
+						<td data-tx="t0026:4d86e32e"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Brak (zintegrowany z Fritz!Box)</td>
+					</tr>
+					<tr>
+						<td><strong data-tx="t0027:9e08101d">Telefon pozostaje całkowicie cichy podczas spamowania</strong></td>
+						<td data-tx="t0028:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Tak</td>
+						<td data-tx="t0029:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Tak</td>
+						<td data-tx="t0030:7b5cfc02"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Opcjonalnie blokada lub tylko wyświetlanie</td>
+					</tr>
+					<tr>
+						<td><strong data-tx="t0031:f4c95d3e">Aktywne zatrudnianie spamerów</strong></td>
+						<td data-tx="t0032:fc6557f4"><span class="icon has-text-danger"><i class="fas fa-times"></i></span> Nie - krótko odparł</td>
+						<td data-tx="t0033:cafb9dda"><span class="icon has-text-success"><i class="fas fa-comments"></i></span> Tak - zaangażowany w dialog</td>
+						<td data-tx="t0034:1b0bf702"><span class="icon has-text-danger"><i class="fas fa-times"></i></span> Nie - połączenie jest zablokowane</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<div class="notification is-info mt-4">
+			<p><strong data-tx="t0035:8125e3d9">Które rozwiązanie Ci odpowiada?</strong></p>
+			<ul>
+				<li data-tx="t0036:e982c3b9"><strong>Klucz sprzętowy</strong> - jeśli chcesz optymalnej ochrony przed spamem z najlepszą ochroną danych, niezależnie od modelu routera i dostawcy.</li>
+				<li data-tx="t0037:263869ed"><strong>Automatyczna sekretarka w chmurze</strong> - jeśli masz własną skrzynkę Fritz!Box (nie wypożyczoną) i akceptujesz, że wszystkie połączenia są sprawdzane przez serwer PhoneBlock w celu optymalnej ochrony przed spamem.</li>
+				<li data-tx="t0038:d89599d7"><strong>Blocklist phonebook</strong> - jeśli masz Fritz!Box (również skrzynkę do wypożyczenia) i nie przeszkadza ci, że spamer, który faktycznie znajduje się na liście zablokowanych, prześlizgnie się od czasu do czasu.</li>
+			</ul>
+		</div>
+
+		<h2 class="mt-6" data-tx="t0039:aeafcde8">Zdecydowałem - zaczynamy</h2>
+
+		<div class="columns is-multiline mt-4">
+			<div class="column is-one-third">
+				<div class="card is-fullheight">
+					<div class="card-content">
+						<p class="title is-4">
+							<span class="icon-text">
+								<span class="icon has-text-primary"><i class="fas fa-bolt"></i></span>
+								<span data-tx="t0040:365a40ae">Klucz sprzętowy PhoneBlock</span>
+							</span>
+						</p>
+						<p class="subtitle is-6 has-text-grey" data-tx="t0041:3a1686ef">Zalecane - najlepsza obrona, najlepsza ochrona danych</p>
+						<p data-tx="t0042:ae11194">Pamięć USB wielkości kciuka w routerze. Automatyczna sekretarka w formacie telefonu IP, blokuje spam lokalnie w domu. Sprzęt ok. 10 €, konfiguracja w przeglądarce.</p>
+					</div>
+					<footer class="card-footer">
+						<a class="card-footer-item button is-primary is-medium" th:href="@{/dongle}">
+							<span class="icon"><i class="fas fa-arrow-right"></i></span>
+							<span data-tx="t0043:526888ef">Do klucza sprzętowego</span>
+						</a>
+					</footer>
+				</div>
+			</div>
+
+			<div class="column is-one-third">
+				<div class="card is-fullheight">
+					<div class="card-content">
+						<p class="title is-4">
+							<span class="icon-text">
+								<span class="icon has-text-info"><img alt="" data-tx="t0044" th:src="@{/assets/img/ab/logo/ab-logo.svg}"/></span>
+								<span data-tx="t0045:1cdaad3">Automatyczna sekretarka w chmurze</span>
+							</span>
+						</p>
+						<p class="subtitle is-6 has-text-grey" data-tx="t0046:61de7fcf">Angażowanie spamerów w bezcelowe dialogi</p>
+						<p data-tx="t0047:21db9fe">Używa Fritz!Box jako rejestratora VoIP. PhoneBlock akceptuje połączenia spamowe i sprawia, że dzwoniący są zajęci. Wymagania: własny Fritz! Box (nie wypożyczony).</p>
+					</div>
+					<footer class="card-footer">
+						<a class="card-footer-item button is-info is-medium" th:href="@{/anrufbeantworter}">
+							<span class="icon"><i class="fas fa-arrow-right"></i></span>
+							<span data-tx="t0048:98b00790">Do automatycznej sekretarki</span>
+						</a>
+					</footer>
+				</div>
+			</div>
+
+			<div class="column is-one-third">
+				<div class="card is-fullheight">
+					<div class="card-content">
+						<p class="title is-4">
+							<span class="icon-text">
+								<span class="icon has-text-info"><i class="fas fa-address-book"></i></span>
+								<span data-tx="t0049:b7a22f37">Książka telefoniczna z blokadą</span>
+							</span>
+						</p>
+						<p class="subtitle is-6 has-text-grey" data-tx="t0050:ae13b6e9">Bez dodatkowego sprzętu, bezpośrednio w Fritz!</p>
+						<p data-tx="t0051:c00621dd">Importuje listę blokad jako książkę telefoniczną do routera Fritz! Nic nie opuszcza routera. Działa również z wypożyczalniami operatorów, pod warunkiem, że obsługują CardDAV.</p>
+					</div>
+					<footer class="card-footer">
+						<a class="card-footer-item button is-info is-medium" th:href="@{/setup}">
+							<span class="icon"><i class="fas fa-arrow-right"></i></span>
+							<span data-tx="t0052:85ecd6f2">Do listy bloków</span>
+						</a>
+					</footer>
+				</div>
+			</div>
+		</div>
+
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

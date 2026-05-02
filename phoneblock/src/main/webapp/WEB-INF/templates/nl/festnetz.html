@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(title=#{page.festnetz.title})}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>
+
+<section class="section">
+	<div class="content">
+		<h1 data-tx="t0001:fa239257">Spam blokkeren in het vaste netwerk</h1>
+
+		<p class="subtitle" data-tx="t0002:f50c45ab">Er zijn drie manieren om reclameoproepen op uw vaste lijn uit te schakelen - alle drie maken ze gebruik van dezelfde spamdatabase die wordt onderhouden door de PhoneBlock-community, maar ze verschillen aanzienlijk qua inspanning, effect en vereisten voor uw verbinding. Deze pagina helpt u bij het maken van uw keuze.</p>
+
+		<h2 data-tx="t0003:755fe635">Vergelijking: Drie manieren om vaste spam te blokkeren</h2>
+
+		<div class="table-container">
+			<table class="table is-fullwidth is-striped">
+				<thead>
+					<tr>
+						<th></th>
+						<th data-tx="t0004:365a40ae">PhoneBlock Dongle</th>
+						<th data-tx="t0005:1cdaad3">Cloud antwoordapparaat</th>
+						<th data-tx="t0006:b7a22f37">Blocklist telefoonboek</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><strong data-tx="t0007:ebecddaf">Doeltreffendheid</strong></td>
+						<td data-tx="t0008:df4b4973"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Maximaal, hele bloklijst</td>
+						<td data-tx="t0009:df4b4973"><span class="icon has-text-success"><i class="fas fa-bolt"></i></span> Maximaal, hele bloklijst</td>
+						<td data-tx="t0010:8af26113"><span class="icon has-text-warning"><i class="fas fa-sync"></i></span> Goed, maar slechts een klein deel van de blokkenlijst, sync ≤ 1 ×/dag</td>
+					</tr>
+					<tr>
+						<td><strong data-tx="t0011:984ebad2">Vereisten</strong></td>
+						<td data-tx="t0012:e372dde7"><span class="icon has-text-success"><i class="fas fa-globe"></i></span> Bijna elke combinatie van router en provider</td>
+						<td data-tx="t0013:956188d1"><span class="icon has-text-warning"><i class="fas fa-server"></i></span> Alleen eigen Fritz!Box (geen huurbox voor provider)</td>
+						<td data-tx="t0014:120e2e30"><span class="icon has-text-warning"><i class="fas fa-wifi"></i></span> Nieuwere Fritz!Box met CardDAV</td>
+					</tr>
+					<tr>
+						<td><strong data-tx="t0015:5f4450bc">Gegevensbescherming</strong></td>
+						<td data-tx="t0016:1d9445c1"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Optimaal; Lokale oproepafhandeling; Alleen hash matching voor onbekende bellers</td>
+						<td data-tx="t0017:b26fbac9"><span class="icon has-text-danger"><i class="fas fa-cloud"></i></span> Problematisch; signalering van elk gesprek (ook van contactpersonen) loopt via PhoneBlock-server</td>
+						<td data-tx="t0018:2452770"><span class="icon has-text-success"><i class="fas fa-shield-halved"></i></span> Optimaal; niets verlaat de router</td>
+					</tr>
+					<tr>
+						<td><strong data-tx="t0019:83c9a19b">Opzet inspanning</strong></td>
+						<td data-tx="t0020:4e6c7d5d"><span class="icon has-text-success"><i class="fas fa-star"></i></span> Plug &amp; Play</td>
+						<td data-tx="t0021:45c38866"><span class="icon has-text-warning"><i class="fas fa-gear"></i></span> omhoog (automatisch met PhoneBlock Mobile App)</td>
+						<td data-tx="t0022:e51ea302"><span class="icon has-text-warning"><i class="fas fa-gear"></i></span> matig</td>
+					</tr>
+					<tr>
+						<td><strong data-tx="t0023:e66ba2b">Extra hardware</strong></td>
+						<td data-tx="t0024:301e2ef7"><span class="icon has-text-info"><i class="fa-solid fa-coins"></i></span> USB-dongle, ca. 10 €</td>
+						<td data-tx="t0025:fe8232e3"><span class="icon has-text-success"><i class="fas fa-cloud"></i></span> Geen (cloudservice)</td>
+						<td data-tx="t0026:4d86e32e"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Geen (geïntegreerd in Fritz!Box)</td>
+					</tr>
+					<tr>
+						<td><strong data-tx="t0027:9e08101d">Telefoon blijft volledig stil tijdens spam</strong></td>
+						<td data-tx="t0028:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ja</td>
+						<td data-tx="t0029:74f7490d"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Ja</td>
+						<td data-tx="t0030:7b5cfc02"><span class="icon has-text-success"><i class="fas fa-check"></i></span> Optioneel alleen vergrendelen of weergeven</td>
+					</tr>
+					<tr>
+						<td><strong data-tx="t0031:f4c95d3e">Actief spammers inzetten</strong></td>
+						<td data-tx="t0032:fc6557f4"><span class="icon has-text-danger"><i class="fas fa-times"></i></span> Nee - kort afgewimpeld</td>
+						<td data-tx="t0033:cafb9dda"><span class="icon has-text-success"><i class="fas fa-comments"></i></span> Ja - betrokken bij dialoog</td>
+						<td data-tx="t0034:1b0bf702"><span class="icon has-text-danger"><i class="fas fa-times"></i></span> Nee - oproep is geblokkeerd</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+
+		<div class="notification is-info mt-4">
+			<p><strong data-tx="t0035:8125e3d9">Welke oplossing past bij jou?</strong></p>
+			<ul>
+				<li data-tx="t0036:e982c3b9"><strong>Dongle</strong> - als je optimale SPAM-verdediging wilt met de beste gegevensbescherming, ongeacht het model router en de provider.</li>
+				<li data-tx="t0037:263869ed"><strong>Cloud antwoordapparaat</strong> - als u uw eigen Fritz!Box hebt (geen huurbox) en accepteert dat al uw oproepen door de PhoneBlock server worden gecontroleerd op optimale SPAM-afweer.</li>
+				<li data-tx="t0038:d89599d7"><strong>Blocklist telefoonboek</strong> - als je een Fritz!Box hebt (ook een huurbox) en het niet erg vindt als er af en toe een spammer doorheen glipt die echt op de blocklist staat.</li>
+			</ul>
+		</div>
+
+		<h2 class="mt-6" data-tx="t0039:aeafcde8">Ik heb besloten - hier gaan we</h2>
+
+		<div class="columns is-multiline mt-4">
+			<div class="column is-one-third">
+				<div class="card is-fullheight">
+					<div class="card-content">
+						<p class="title is-4">
+							<span class="icon-text">
+								<span class="icon has-text-primary"><i class="fas fa-bolt"></i></span>
+								<span data-tx="t0040:365a40ae">PhoneBlock Dongle</span>
+							</span>
+						</p>
+						<p class="subtitle is-6 has-text-grey" data-tx="t0041:3a1686ef">Aanbevolen - beste verdediging, beste gegevensbescherming</p>
+						<p data-tx="t0042:ae11194">USB-stick ter grootte van een duim in de router. Antwoordapparaat in IP-telefoonformaat, blokkeert spam lokaal bij je thuis. Hardware ca. 10 €, in te stellen in de browser.</p>
+					</div>
+					<footer class="card-footer">
+						<a class="card-footer-item button is-primary is-medium" th:href="@{/dongle}">
+							<span class="icon"><i class="fas fa-arrow-right"></i></span>
+							<span data-tx="t0043:526888ef">Naar de dongle</span>
+						</a>
+					</footer>
+				</div>
+			</div>
+
+			<div class="column is-one-third">
+				<div class="card is-fullheight">
+					<div class="card-content">
+						<p class="title is-4">
+							<span class="icon-text">
+								<span class="icon has-text-info"><img alt="" data-tx="t0044" th:src="@{/assets/img/ab/logo/ab-logo.svg}"/></span>
+								<span data-tx="t0045:1cdaad3">Cloud antwoordapparaat</span>
+							</span>
+						</p>
+						<p class="subtitle is-6 has-text-grey" data-tx="t0046:61de7fcf">Ga een zinloze dialoog aan met spammers</p>
+						<p data-tx="t0047:21db9fe">Gebruikt je Fritz!Box als VoIP-registrator. PhoneBlock accepteert spamoproepen en houdt bellers bezig. Vereiste: je eigen Fritz!Box (geen huurbox).</p>
+					</div>
+					<footer class="card-footer">
+						<a class="card-footer-item button is-info is-medium" th:href="@{/anrufbeantworter}">
+							<span class="icon"><i class="fas fa-arrow-right"></i></span>
+							<span data-tx="t0048:98b00790">Naar het antwoordapparaat</span>
+						</a>
+					</footer>
+				</div>
+			</div>
+
+			<div class="column is-one-third">
+				<div class="card is-fullheight">
+					<div class="card-content">
+						<p class="title is-4">
+							<span class="icon-text">
+								<span class="icon has-text-info"><i class="fas fa-address-book"></i></span>
+								<span data-tx="t0049:b7a22f37">Blocklist telefoonboek</span>
+							</span>
+						</p>
+						<p class="subtitle is-6 has-text-grey" data-tx="t0050:ae13b6e9">Zonder extra hardware, direct in de Fritz!</p>
+						<p data-tx="t0051:c00621dd">Importeert de blokkadelijst in je Fritz! box als een telefoonboek. Niets verlaat de router. Werkt ook met huurboxen van providers, op voorwaarde dat ze CardDAV ondersteunen.</p>
+					</div>
+					<footer class="card-footer">
+						<a class="card-footer-item button is-info is-medium" th:href="@{/setup}">
+							<span class="icon"><i class="fas fa-arrow-right"></i></span>
+							<span data-tx="t0052:85ecd6f2">Naar de blokkadelijst</span>
+						</a>
+					</footer>
+				</div>
+			</div>
+		</div>
+
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>
