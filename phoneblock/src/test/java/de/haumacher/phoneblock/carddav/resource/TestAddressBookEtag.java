@@ -23,7 +23,9 @@ class TestAddressBookEtag {
 	}
 
 	private static AddressBookResource bookOf(int settingsHash, NumberBlock... blocks) {
-		return new AddressBookResource("https://x/", "/x/", "/x/", "u", Arrays.asList(blocks), settingsHash);
+		List<NumberBlock> blockList = Arrays.asList(blocks);
+		String etag = CollectionEtag.forFullPipeline(blockList, settingsHash);
+		return new AddressBookResource("https://x/", "/x/", "/x/", "u", blockList, etag);
 	}
 
 	// ===== Test 8: Block-ETag =====
@@ -78,8 +80,10 @@ class TestAddressBookEtag {
 		List<NumberBlock> second = List.of(
 			blockOf("+493012", "+493012345"),
 			blockOf("+491521", "+491521010"));
-		AddressBookResource a = new AddressBookResource("https://x/", "/x/", "/x/", "u", first, 42);
-		AddressBookResource b = new AddressBookResource("https://x/", "/x/", "/x/", "u", second, 42);
+		AddressBookResource a = new AddressBookResource("https://x/", "/x/", "/x/", "u", first,
+			CollectionEtag.forFullPipeline(first, 42));
+		AddressBookResource b = new AddressBookResource("https://x/", "/x/", "/x/", "u", second,
+			CollectionEtag.forFullPipeline(second, 42));
 		assertEquals(a.getEtag(), b.getEtag());
 	}
 

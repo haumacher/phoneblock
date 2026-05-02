@@ -56,7 +56,8 @@ class TestRenderPipeline {
 			new NumberBlock("+491521", Arrays.asList("+491521010", "+491521011")),
 			new NumberBlock("+493012", Arrays.asList("+493012345")));
 		return new AddressBookResource(ROOT_URL, SERVER_ROOT,
-			"/addresses/alice/", "alice", blocks, 42);
+			"/addresses/alice/", "alice", blocks,
+			CollectionEtag.forFullPipeline(blocks, 42));
 	}
 
 	private static Document render(RenderHook hook) throws Exception {

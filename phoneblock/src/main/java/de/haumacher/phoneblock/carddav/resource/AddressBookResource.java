@@ -32,7 +32,7 @@ public class AddressBookResource extends Resource {
 
 	private final Map<String, AddressResource> _addressById;
 
-	private final int _settingsHash;
+	private final String _etag;
 
 	/**
 	 * Creates a {@link AddressBookResource}.
@@ -45,17 +45,16 @@ public class AddressBookResource extends Resource {
 	 *        Blocks visible to the user. May be the common list alone, the common list
 	 *        with personal singletons appended, or the result of a full per-user pipeline —
 	 *        from this resource's point of view they are all just blocks.
-	 * @param settingsHash
-	 *        Additional hash mixed into the collection ETag to differentiate users
-	 *        whose visible block list happens to coincide but whose settings or personal
-	 *        list differ.
+	 * @param etag
+	 *        The collection ETag, precomputed from the user's blocks, personal
+	 *        singletons and settings. See {@link CollectionEtag}.
 	 */
-	AddressBookResource(String rootUrl, String serverRoot, String resourcePath, String principal,
-			List<NumberBlock> numbers, int settingsHash) {
+	public AddressBookResource(String rootUrl, String serverRoot, String resourcePath, String principal,
+			List<NumberBlock> numbers, String etag) {
 		super(rootUrl, resourcePath);
 		_serverRoot = serverRoot;
 		_principal = principal;
-		_settingsHash = settingsHash;
+		_etag = etag;
 
 		_addressById = numbers
 			.stream()
@@ -131,26 +130,7 @@ public class AddressBookResource extends Resource {
 
 	@Override
 	public String getEtag() {
-		try {
-			java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-1");
-			java.util.List<String> ids = new java.util.ArrayList<>(_addressById.keySet());
-			java.util.Collections.sort(ids);
-			for (String id : ids) {
-				md.update(id.getBytes(java.nio.charset.StandardCharsets.UTF_8));
-				md.update((byte) 0);
-				md.update(_addressById.get(id).getEtag().getBytes(java.nio.charset.StandardCharsets.UTF_8));
-				md.update((byte) 0);
-			}
-			md.update(Integer.toString(_settingsHash).getBytes(java.nio.charset.StandardCharsets.UTF_8));
-			byte[] digest = md.digest();
-			StringBuilder hex = new StringBuilder(12);
-			for (int i = 0; i < 6; i++) {
-				hex.append(String.format("%02x", digest[i]));
-			}
-			return hex.toString();
-		} catch (java.security.NoSuchAlgorithmException ex) {
-			throw new IllegalStateException("SHA-1 not available", ex);
-		}
+		return _etag;
 	}
 
 	/**
