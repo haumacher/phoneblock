@@ -167,6 +167,8 @@ const I18N = {
     'login.title': 'Anmeldung erforderlich',
     'login.intro': 'Der Zugangsschutz für diesen Dongle ist aktiv. Klicke unten, um Dich über Deinen PhoneBlock-Account anzumelden — Du wirst kurz zu phoneblock.net umgeleitet und automatisch zurückgeschickt.',
     'login.button': 'Mit PhoneBlock anmelden',
+    'login.remember': 'Angemeldet bleiben',
+    'login.remember.help': 'Setzt einen Cookie auf diesem Gerät, damit der Dongle Dich beim nächsten Mal ohne Umweg über phoneblock.net wiedererkennt. Es wird nur ein Browser gleichzeitig „gemerkt“.',
     'login.error.mismatch': 'Anmeldung fehlgeschlagen — dieser PhoneBlock-Account ist nicht der Eigentümer dieses Dongles.',
     'login.error.mismatch_named': 'Anmeldung fehlgeschlagen — dieser Dongle gehört zum Account {expected}, Du bist aber als anderer Nutzer angemeldet.',
     'login.error.rejected': 'Anmeldung fehlgeschlagen — der PhoneBlock-Server hat die Identität nicht bestätigt.',
@@ -364,6 +366,8 @@ const I18N = {
     'login.title': 'Sign in required',
     'login.intro': 'Access protection on this dongle is active. Click below to sign in with your PhoneBlock account — you will briefly be redirected to phoneblock.net and sent back automatically.',
     'login.button': 'Sign in with PhoneBlock',
+    'login.remember': 'Stay signed in',
+    'login.remember.help': 'Sets a cookie on this device so the dongle remembers you next time without bouncing through phoneblock.net. Only one browser at a time can be remembered.',
     'login.error.mismatch': 'Sign-in failed — this PhoneBlock account is not the owner of this dongle.',
     'login.error.mismatch_named': 'Sign-in failed — this dongle belongs to account {expected}, but you are signed in as a different user.',
     'login.error.rejected': 'Sign-in failed — the PhoneBlock server did not confirm the identity.',
@@ -549,6 +553,8 @@ const I18N = {
     'login.title': 'Connexion requise',
     'login.intro': 'La protection d’accès de ce dongle est active. Clique ci-dessous pour te connecter avec ton compte PhoneBlock — tu seras brièvement redirigé vers phoneblock.net puis renvoyé automatiquement.',
     'login.button': 'Se connecter avec PhoneBlock',
+    'login.remember': 'Rester connecté',
+    'login.remember.help': 'Place un cookie sur cet appareil pour que le dongle te reconnaisse la prochaine fois sans détour par phoneblock.net. Un seul navigateur à la fois peut être mémorisé.',
     'login.error.mismatch': 'Échec de la connexion — ce compte PhoneBlock n’est pas le propriétaire de ce dongle.',
     'login.error.mismatch_named': 'Échec de la connexion — ce dongle appartient au compte {expected}, mais tu es connecté avec un autre utilisateur.',
     'login.error.rejected': 'Échec de la connexion — le serveur PhoneBlock n’a pas confirmé l’identité.',
@@ -734,6 +740,8 @@ const I18N = {
     'login.title': 'Inicio de sesión necesario',
     'login.intro': 'La protección de acceso de este dongle está activa. Haz clic abajo para iniciar sesión con tu cuenta de PhoneBlock — serás redirigido brevemente a phoneblock.net y devuelto automáticamente.',
     'login.button': 'Iniciar sesión con PhoneBlock',
+    'login.remember': 'Mantener la sesión iniciada',
+    'login.remember.help': 'Coloca una cookie en este dispositivo para que el dongle te reconozca la próxima vez sin pasar por phoneblock.net. Solo se recuerda un navegador a la vez.',
     'login.error.mismatch': 'Inicio de sesión fallido — esta cuenta de PhoneBlock no es la propietaria de este dongle.',
     'login.error.mismatch_named': 'Inicio de sesión fallido — este dongle pertenece a la cuenta {expected}, pero has iniciado sesión con otro usuario.',
     'login.error.rejected': 'Inicio de sesión fallido — el servidor de PhoneBlock no confirmó la identidad.',
@@ -1004,8 +1012,13 @@ function renderStatus(){
     + '<h2>' + esc(t('login.title')) + '</h2>'
     + '<p id="loginError" class="login-error" style="display:none"></p>'
     + '<p>' + esc(t('login.intro')) + '</p>'
+    + '<label title="' + esc(t('login.remember.help')) + '" '
+    +   'style="display:flex;align-items:center;gap:.4rem;margin:.8rem 0;font-size:.9rem;color:#444">'
+    + '  <input id="loginRemember" type="checkbox" style="width:auto;margin:0">'
+    + '  <span>' + esc(t('login.remember')) + '</span>'
+    + '</label>'
     + '<p style="margin-top:1.2rem">'
-    + '<a href="/auth/start" class="btn-primary">'
+    + '<a id="loginButton" href="/auth/start" class="btn-primary">'
     +   esc(t('login.button')) + '</a>'
     + '</p>'
     + '</section>'
@@ -1223,6 +1236,18 @@ function showLoginState(){
   for (const id of DASHBOARD_SECTIONS){
     const el = $(id);
     if (el) el.style.display = 'none';
+  }
+
+  // Lazily wire the login button so the "stay signed in" checkbox is
+  // forwarded to /auth/start as ?remember=1. Plain navigation works
+  // unchanged when JS is disabled — server will just not remember.
+  const loginBtn = $('loginButton');
+  if (loginBtn && !loginBtn.onclick){
+    loginBtn.onclick = (e) => {
+      e.preventDefault();
+      const remember = $('loginRemember') && $('loginRemember').checked;
+      window.location.href = '/auth/start' + (remember ? '?remember=1' : '');
+    };
   }
 
   // Surface a callback error once, then strip it from the URL so a

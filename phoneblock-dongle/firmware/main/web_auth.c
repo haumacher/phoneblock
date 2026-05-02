@@ -35,6 +35,17 @@ static char s_login_nonce[SESSION_ID_HEX + 1];
 // True while /auth/start was invoked with `activate=1` — the
 // callback will then persist auth_enabled=1 if verification succeeds.
 static bool s_login_activates;
+// True while /auth/start was invoked with `remember=1` — the
+// callback will then mint a persistent cookie (with Max-Age) and
+// pin its value in NVS so it survives reboots. Only one browser at
+// a time is "remembered"; a second remember-login overwrites the
+// first.
+static bool s_login_remember;
+
+// Lifetime of the "stay logged in" cookie when the user opts in.
+// One year is long enough to feel like "stays logged in", short
+// enough that a forgotten cookie eventually expires on its own.
+#define REMEMBER_MAX_AGE_SEC (60 * 60 * 24 * 365)
 
 static void lock(void)   { xSemaphoreTake(s_mutex, portMAX_DELAY); }
 static void unlock(void) { xSemaphoreGive(s_mutex); }
@@ -45,6 +56,7 @@ void web_auth_setup(void)
     memset(s_sessions, 0, sizeof(s_sessions));
     s_login_nonce[0] = '\0';
     s_login_activates = false;
+    s_login_remember  = false;
 }
 
 // --- Helpers --------------------------------------------------------
@@ -149,7 +161,20 @@ bool web_auth_session_valid(httpd_req_t *req)
         ok = true;
     }
     unlock();
-    return ok;
+    if (ok) return true;
+
+    // No RAM session — but the cookie may still match the dongle's
+    // single "remembered" browser persisted in NVS. Constant-time
+    // compare against the stored token; the persist value is also
+    // a 32-char hex blob, so the lengths line up.
+    const char *persist = config_auth_persist();
+    if (persist[0]
+            && strlen(persist) == SESSION_ID_HEX
+            && strlen(id) == SESSION_ID_HEX
+            && hex_eq(persist, id, SESSION_ID_HEX)) {
+        return true;
+    }
+    return false;
 }
 
 bool web_auth_is_logged_in(httpd_req_t *req)
@@ -213,17 +238,23 @@ esp_err_t web_auth_handle_start(httpd_req_t *req)
     // nonce is stored alongside so we can match it on the callback.
     char query[128];
     bool activate = false;
+    bool remember = false;
     if (httpd_req_get_url_query_str(req, query, sizeof(query)) == ESP_OK) {
         char val[8];
         if (httpd_query_key_value(query, "activate", val, sizeof(val)) == ESP_OK
             && strcmp(val, "1") == 0) {
             activate = true;
         }
+        if (httpd_query_key_value(query, "remember", val, sizeof(val)) == ESP_OK
+            && strcmp(val, "1") == 0) {
+            remember = true;
+        }
     }
 
     lock();
     random_hex(s_login_nonce, SESSION_ID_HEX);
     s_login_activates = activate;
+    s_login_remember  = remember;
     char nonce_copy[SESSION_ID_HEX + 1];
     memcpy(nonce_copy, s_login_nonce, sizeof(nonce_copy));
     unlock();
@@ -261,7 +292,8 @@ esp_err_t web_auth_handle_start(httpd_req_t *req)
             config_phoneblock_base_url(), callback_enc, nonce_copy);
     }
 
-    ESP_LOGI(TAG, "auth/start → redirect to %s (activate=%d)", url, (int)activate);
+    ESP_LOGI(TAG, "auth/start → redirect to %s (activate=%d, remember=%d)",
+             url, (int)activate, (int)remember);
     httpd_resp_set_status(req, "302 Found");
     httpd_resp_set_hdr(req, "Location", url);
     httpd_resp_send(req, NULL, 0);
@@ -309,8 +341,10 @@ esp_err_t web_auth_handle_callback(httpd_req_t *req)
     bool nonce_ok = s_login_nonce[0] && strlen(state) == SESSION_ID_HEX
                     && hex_eq(s_login_nonce, state, SESSION_ID_HEX);
     bool was_activate = s_login_activates;
+    bool was_remember = s_login_remember;
     s_login_nonce[0] = '\0';     // single-use
     s_login_activates = false;
+    s_login_remember  = false;
     unlock();
 
     if (!nonce_ok) {
@@ -359,16 +393,36 @@ esp_err_t web_auth_handle_callback(httpd_req_t *req)
 
     char id[SESSION_ID_HEX + 1];
     random_hex(id, SESSION_ID_HEX);
-    lock();
-    store_session(id);
-    unlock();
 
-    char cookie[128];
-    snprintf(cookie, sizeof(cookie),
-        "pb_session=%s; Path=/; HttpOnly; SameSite=Lax", id);
+    char cookie[160];
+    if (was_remember) {
+        // "Stay logged in": pin the cookie value in NVS so it
+        // survives a reboot, and hand it out with an explicit
+        // Max-Age. Overwrites any previously remembered browser —
+        // by design only one persistent cookie is tracked at a time
+        // (so a second remember-login from a different browser
+        // silently logs the first one out).
+        config_update_t u = {
+            .auth_persist = id,
+        };
+        if (config_update(&u) != ESP_OK) {
+            ESP_LOGE(TAG, "auth/callback: failed to persist cookie");
+            return redirect_login_error(req, "persist", NULL);
+        }
+        snprintf(cookie, sizeof(cookie),
+            "pb_session=%s; Path=/; Max-Age=%d; HttpOnly; SameSite=Lax",
+            id, REMEMBER_MAX_AGE_SEC);
+    } else {
+        lock();
+        store_session(id);
+        unlock();
+        snprintf(cookie, sizeof(cookie),
+            "pb_session=%s; Path=/; HttpOnly; SameSite=Lax", id);
+    }
 
-    ESP_LOGI(TAG, "auth/callback: session created%s",
-             was_activate ? " (and gate activated)" : "");
+    ESP_LOGI(TAG, "auth/callback: session created%s%s",
+             was_activate ? " (and gate activated)" : "",
+             was_remember ? " (remembered)"         : "");
     httpd_resp_set_status(req, "302 Found");
     httpd_resp_set_hdr(req, "Location", "/");
     httpd_resp_set_hdr(req, "Set-Cookie", cookie);
@@ -384,6 +438,18 @@ esp_err_t web_auth_handle_logout(httpd_req_t *req)
         session_t *s = find_session(id);
         if (s) s->id[0] = '\0';
         unlock();
+
+        // If the user logged out from the "remembered" browser,
+        // drop the NVS pin too — otherwise the cookie we just told
+        // the browser to discard would still be a valid login on
+        // any other device that happens to hold a copy.
+        const char *persist = config_auth_persist();
+        if (persist[0] && strlen(persist) == SESSION_ID_HEX
+                && strlen(id) == SESSION_ID_HEX
+                && hex_eq(persist, id, SESSION_ID_HEX)) {
+            config_update_t u = { .auth_persist = "" };
+            (void) config_update(&u);
+        }
     }
     httpd_resp_set_status(req, "302 Found");
     httpd_resp_set_hdr(req, "Location", "/");
@@ -459,6 +525,7 @@ esp_err_t web_auth_handle_disable(httpd_req_t *req)
     config_update_t u = {
         .auth_enabled = "0",
         .auth_user    = "",
+        .auth_persist = "",
     };
     if (config_update(&u) != ESP_OK) {
         httpd_resp_set_status(req, "500 Internal Server Error");

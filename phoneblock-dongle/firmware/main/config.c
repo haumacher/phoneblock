@@ -29,6 +29,7 @@ static const char *NS   = "phoneblock";
 #define K_LOG_KNOWN     "log_known_calls"
 #define K_AUTH_ENABLED  "auth_enabled"
 #define K_AUTH_USER     "auth_user"
+#define K_AUTH_PERSIST  "auth_persist"
 #define K_AUTO_UPDATE   "auto_update"
 #define K_CONTACT_HOST  "contact_host"
 #define K_CONTACT_PORT  "contact_port"
@@ -72,6 +73,7 @@ typedef struct {
     char log_known[4];       // "1" | "0" (or empty = default on)
     char auth_enabled[4];    // "1" | "0" (or empty = default off)
     char auth_user[64];      // pinned PhoneBlock user-name; empty = no pin
+    char auth_persist[33];   // 32 hex chars + NUL; empty = nobody is "remembered"
     char auto_update[4];     // "1" | "0" (or empty = default on)
     char contact_host[64];
     int  contact_port;
@@ -137,6 +139,7 @@ void config_load(void)
         s_config.log_known[0]     = '\0';
         s_config.auth_enabled[0]  = '\0';
         s_config.auth_user[0]     = '\0';
+        s_config.auth_persist[0]  = '\0';
         s_config.auto_update[0]   = '\0';
         copy_default(s_config.contact_host, sizeof(s_config.contact_host), CONFIG_SIP_CONTACT_HOST_OVERRIDE);
         s_config.contact_port = CONFIG_SIP_CONTACT_PORT_OVERRIDE;
@@ -184,6 +187,8 @@ void config_load(void)
              s_config.auth_enabled, sizeof(s_config.auth_enabled));
     load_str(h, K_AUTH_USER, "",
              s_config.auth_user, sizeof(s_config.auth_user));
+    load_str(h, K_AUTH_PERSIST, "",
+             s_config.auth_persist, sizeof(s_config.auth_persist));
     load_str(h, K_AUTO_UPDATE, "",
              s_config.auto_update, sizeof(s_config.auto_update));
     load_str(h, K_CONTACT_HOST, CONFIG_SIP_CONTACT_HOST_OVERRIDE,
@@ -239,6 +244,7 @@ bool        config_auth_enabled(void)
     return s_config.auth_enabled[0] == '1';
 }
 const char *config_auth_user(void)        { return s_config.auth_user; }
+const char *config_auth_persist(void)     { return s_config.auth_persist; }
 bool        config_auto_update_enabled(void)
 {
     // Default on (empty / unrecognised → enabled) so a fresh device
@@ -367,6 +373,8 @@ esp_err_t config_update(const config_update_t *u)
                                         s_config.auth_enabled, sizeof(s_config.auth_enabled));
     if (err == ESP_OK) err = set_str_if(h, K_AUTH_USER, u->auth_user,
                                         s_config.auth_user, sizeof(s_config.auth_user));
+    if (err == ESP_OK) err = set_str_if(h, K_AUTH_PERSIST, u->auth_persist,
+                                        s_config.auth_persist, sizeof(s_config.auth_persist));
     if (err == ESP_OK) err = set_str_if(h, K_AUTO_UPDATE, u->auto_update,
                                         s_config.auto_update, sizeof(s_config.auto_update));
     if (err == ESP_OK) err = set_str_if(h, K_PB_URL, u->phoneblock_base_url,

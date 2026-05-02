@@ -85,6 +85,16 @@ bool        config_auth_enabled(void);
 // phoneblock.net does not lock the user out of their own dongle.
 const char *config_auth_user(void);
 
+// Persistent "stay logged in" cookie value. Set when the user
+// completes a successful SSO round-trip with the "remember me" box
+// checked, cleared on logout, factory-reset, gate-disable, or
+// when another browser opts-in (only one remembered browser at a
+// time). Empty string = no remembered browser. The plaintext hex
+// blob is also the cookie value sent to the browser, so anyone
+// with NVS read access could replay it — the threat model already
+// assumes physical custody of the dongle.
+const char *config_auth_persist(void);
+
 // Whether the daily firmware self-update task is allowed to install
 // a newer version from the CDN. Default on. Auto-disabled when the
 // user uploads a firmware image manually via the web UI — without
@@ -157,6 +167,9 @@ typedef struct {
     // activation. Empty string clears the pin (used when disabling
     // the gate); NULL leaves the current value untouched.
     const char *auth_user;
+    // Persistent "remember me" cookie value. Empty string clears the
+    // pin (logout / disable); NULL leaves the current value untouched.
+    const char *auth_persist;
     // "1" = let the daily self-update task install newer firmware,
     // "0" = freeze on the current build. NULL = leave unchanged.
     // Default when unset is "1" (auto-update on).
