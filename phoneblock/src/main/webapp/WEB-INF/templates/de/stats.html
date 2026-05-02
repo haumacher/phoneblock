@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<th:block th:replace="~{fragments/page :: headContent(title=#{page.stats.title})}"></th:block>
+<th:block th:replace="~{fragments/page :: headContent(titleKey='page.stats.title', descriptionKey='page.stats.description')}"></th:block>
 
 <script th:src="|${contextPath}${deps.chartjs}/dist/chart.umd.js|" type="text/javascript"></script>
 </head>

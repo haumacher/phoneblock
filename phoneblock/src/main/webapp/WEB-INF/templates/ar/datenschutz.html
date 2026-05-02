@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-<head th:replace="~{fragments/page :: head(title=#{page.datenschutz.title})}"></head>
+<head th:replace="~{fragments/page :: head(titleKey='page.datenschutz.title', descriptionKey='page.datenschutz.description')}"></head>
 
 <body th:dir="${currentLang.direction}">
 <div th:replace="~{fragments/page :: header}"></div>

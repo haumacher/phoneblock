@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-<head th:replace="~{fragments/page :: head(title=#{page.dongle-install.title})}"></head>
+<head th:replace="~{fragments/page :: head(titleKey='page.dongle-install.title', descriptionKey='page.dongle-install.description')}"></head>
 
 <body th:dir="${currentLang.direction}">
 <div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>

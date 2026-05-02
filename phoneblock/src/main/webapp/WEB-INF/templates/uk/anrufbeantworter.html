@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-<head th:replace="~{fragments/page :: head(title=#{page.anrufbeantworter.title})}"></head>
+<head th:replace="~{fragments/page :: head(titleKey='page.anrufbeantworter.title', descriptionKey='page.anrufbeantworter.description')}"></head>
 
 <body th:dir="${currentLang.direction}">
 <div th:replace="~{fragments/page :: header(location=${currentPage})}"></div>

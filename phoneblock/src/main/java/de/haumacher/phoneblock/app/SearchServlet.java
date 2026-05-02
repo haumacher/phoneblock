@@ -561,6 +561,39 @@ public class SearchServlet extends HttpServlet {
   			);
 		
 		req.setAttribute("state", state);
+
+		PhoneNumer number = searchResult.getNumber();
+		String displayNumber = number.getShortcut() != null ? number.getShortcut() : number.getZeroZero();
+		String descKey;
+		Object[] descParams;
+		switch (state) {
+			case "blocked":
+				descKey = "page.phone-info.description.blocked";
+				descParams = new Object[] { displayNumber, Integer.valueOf(info.getVotes()) };
+				break;
+			case "suspicious":
+				descKey = "page.phone-info.description.suspicious";
+				descParams = new Object[] { displayNumber, Integer.valueOf(info.getVotes()) };
+				break;
+			case "wildcard":
+				descKey = "page.phone-info.description.wildcard";
+				descParams = new Object[] { displayNumber, Integer.valueOf(info.getVotesWildcard()) };
+				break;
+			case "archived":
+				descKey = "page.phone-info.description.archived";
+				descParams = new Object[] { displayNumber };
+				break;
+			case "whitelisted":
+				descKey = "page.phone-info.description.whitelisted";
+				descParams = new Object[] { displayNumber };
+				break;
+			default:
+				descKey = "page.phone-info.description.legitimate";
+				descParams = new Object[] { displayNumber };
+				break;
+		}
+		req.setAttribute("titleText", I18N.getMessage(lang.locale, "page.phone-info.title__nr", displayNumber));
+		req.setAttribute("descriptionText", I18N.getMessage(lang.locale, descKey, descParams));
 		
 		// Create ratings chart
 		StringBuilder ratingLabels = new StringBuilder();
