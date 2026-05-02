@@ -20,26 +20,26 @@
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="fritzbox" type="button">
 						<span class="icon"><i class="fa-solid fa-network-wired"></i></span>
-						<span data-tx="t0056:42829262">Un Fritz!Box (proprio o del fornitore)</span>
+						<span data-tx="t0056:cbc40c39">Fritz!Box</span>
 					</button>
 					<button class="button is-info wizard-btn" data-route="other" type="button">
 						<span class="icon"><i class="fa-solid fa-router"></i></span>
-						<span data-tx="t0057:c38f2422">Un altro router (Speedport, Vodafone station, ...)</span>
+						<span data-tx="t0057:9ddca9ce">Altro router (Speedport, ...)</span>
 					</button>
 				</div>
 			</div>
 
 			<div class="wizard-step" data-step="ownership" hidden="hidden">
 				<p class="title is-5 mt-4" data-tx="t0058:b5160124">2. box Fritz! di proprietà o noleggiato dal fornitore?</p>
-				<p class="help" data-tx="t0059:beb0cb62">Con un box a noleggio, in genere non si ha accesso alla configurazione della telefonia VoIP: la segreteria telefonica cloud non è quindi disponibile.</p>
+				<p class="help" data-tx="t0059:fe71ab83">Con un box a noleggio, il provider può bloccare la registrazione dei telefoni da Internet (ad es. Vodafone) - la segreteria telefonica cloud non è quindi più disponibile.</p>
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="own" type="button">
 						<span class="icon"><i class="fa-solid fa-house"></i></span>
-						<span data-tx="t0060:1a9e1f09">Fritz!Box acquistato in proprio</span>
+						<span data-tx="t0060:9fdfe3d6">Proprietario di Fritz!Box</span>
 					</button>
 					<button class="button is-info wizard-btn" data-route="rental" type="button">
 						<span class="icon"><i class="fa-solid fa-handshake"></i></span>
-						<span data-tx="t0061:37e11458">Fritz!Box noleggiato dal fornitore</span>
+						<span data-tx="t0061:f20dd83b">Fritz!Box a noleggio</span>
 					</button>
 				</div>
 			</div>
@@ -61,7 +61,7 @@
 
 			<div class="wizard-step" data-step="provider" hidden="hidden">
 				<p class="title is-5 mt-4" data-tx="t0066:59312a9">2 Quale provider di telefonia?</p>
-				<p class="help" data-tx="t0067:4b92fb6">Alcuni provider consentono la registrazione diretta del dispositivo VoIP alla loro infrastruttura - allora il dongle funziona anche senza Fritz!</p>
+				<p class="help" data-tx="t0067:eaceffb">Alcuni provider consentono la registrazione diretta dei dispositivi VoIP sulla loro infrastruttura: il dongle funziona quindi anche se il router non supporta i telefoni VOIP.</p>
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="telekom" type="button">
 						<span data-tx="t0068:fc2c352d">Telecomunicazioni</span>
@@ -99,7 +99,7 @@
 			<div class="wizard-result" data-result="dongle-only" hidden="hidden">
 				<div class="notification is-success">
 					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0077:a9f972a2">Il dongle è la vostra variante.</span></p>
-					<p data-tx="t0078:9ad36c38">Il dongle <strong>PhoneBlock</strong> funziona con la vostra configurazione - le altre due varianti non funzionano: La segreteria telefonica cloud ha bisogno di accedere alla configurazione VoIP del proprio Fritz!Box, la rubrica blocklist ha bisogno di un Fritz!Box dal 2018 in poi.</p>
+					<p data-tx="t0078:cbd60954">Il dongle <strong>PhoneBlock</strong> funziona con la vostra configurazione - le altre due varianti non funzionano: La segreteria telefonica cloud necessita di un Fritz!Box con login da Internet, la rubrica telefonica blocklist necessita di un Fritz!Box dal 2018 in poi.</p>
 				</div>
 			</div>
 

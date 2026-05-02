@@ -7,7 +7,7 @@
 
 <section class="section">
 	<div class="content">
-		<h1 data-tx="t0192:3c01c047">PhoneBlock-dongle <span class="tag is-info is-medium ml-2">Ny</span></h1>
+		<h1 data-tx="t0192:f91bfd8">PhoneBlock Dongle <sup><span class="tag is-info is-medium ml-2">Ny</span></sup></h1>
 
 		<p class="subtitle" data-tx="t0095:dab19814">En intelligent telefonsvarer i form av en IP-telefon. Den er på størrelse med en tommel, kobles til ruterens USB-port, registreres som en ekstra SIP-telefon - og fanger opp kommersielle anrop før den faktiske telefonen ringer. Fungerer uavhengig av rutermodell, selv uten Fritz!</p>
 
@@ -41,11 +41,7 @@
 			<p data-tx="t0100:86bdb13f"><strong>Hvorfor dette er så sjarmerende:</strong> Dongelen trenger bare minimalt med strøm og Wi-Fi. Ingen ekstra server, ingen Fritz!Box, ingen kontrakt. ESP32-mikrokontrolleren på innsiden trekker mindre enn en halv watt - du kan bare koble den til USB-porten på ruteren og glemme alt om den.</p>
 		</div>
 
-		<p class="subtitle mt-6" data-tx="t0124:b14ca93b">Det er her det blir praktisk: instruksjonene veileder deg trinn for trinn gjennom bestilling, blinking og oppsett - rundt € 10 maskinvare, en engangsinnsats på 10 minutter.</p>
-
-		<div class="notification is-warning">
-			<p data-tx="t0125:bd2333ac"><strong>Status: Beta.</strong> Denne veiledningen er skreddersydd for en enkelt, testet maskinvaretype - kjøp nøyaktig det samme kortet som i trinn 1, så vil alle de videre trinnene passe. Andre kort fungerer ofte like bra, men krever andre drivere og eget detektivarbeid (se lenken nedenfor).</p>
-		</div>
+		<p class="subtitle mt-6" data-tx="t0124:bd004e4f">Det er her det blir praktisk: instruksjonene veileder deg trinn for trinn gjennom bestilling og oppsett - rundt €10 maskinvare, en engangsinnsats på noen få minutter.</p>
 
 		<noscript>
 			<div class="notification is-danger">
@@ -53,23 +49,9 @@
 			</div>
 		</noscript>
 
-		<div class="notification is-warning" id="dongle-install-unsupported" style="display:none;">
-			<p data-tx="t0127:bb075478"><strong>Denne nettleseren kan ikke flashe donglen.</strong> Webblinking fungerer bare i <strong>Google Chrome</strong> eller <strong>Microsoft Edge</strong> på en datamaskin (ikke på en smarttelefon). Åpne denne siden med Chrome eller Edge og prøv på nytt.</p>
-		</div>
-
-		<h2 data-tx="t0128:93c33292" id="voraussetzungen">Før du setter i gang</h2>
-
-		<p data-tx="t0129:5ffae555">Sjekk kort at disse punktene er oppfylt - slik at du ikke blir skuffet:</p>
-
-		<ul>
-			<li data-tx="t0130:b4ac4baa"><strong>SIP-registrator</strong> - enten i ruteren (f.eks. Fritz!Box) eller direkte hos telefonileverandøren, forutsatt at denne tillater eksterne SIP-klienter ("Registrering av en IP-telefon mulig").</li>
-			<li data-tx="t0131:be2e6f7c"><strong>2,4 GHz WLAN</strong> innenfor rekkevidde.</li>
-			<li data-tx="t0132:573b2c92"><strong>5 V USB-strømforsyning</strong> - ideelt sett USB-port på ruteren, alternativt en hvilken som helst USB-strømforsyningsenhet.</li>
-		</ul>
-
 		<h2 data-tx="t0133:1cedb9ee" id="schritt-1">Trinn 1 - Bestill dongle</h2>
 
-		<p data-tx="t0134:1367b791">Bestill dette ESP32-kortet. Det er kompakt nok til å plugges direkte inn i ruteren som en USB-pinne, har den riktige serielle USB-brikken (CH340), og PhoneBlock-dongelen ble testet med den.</p>
+		<p data-tx="t0134:2e54f376">Bestill denne USB-dongelen ("ESP32 developer board"). Du trenger ikke å "utvikle" noe som helst, det er bare å installere den ferdige PhoneBlock-programvaren fra nettleseren.</p>
 
 		<figure class="image" style="max-width:300px;">
 			<img alt="ESP32-dongle" data-tx="t0135:31cdc7dc" th:src="@{/assets/img/dongle/dongle-option.png}"/>
@@ -92,11 +74,11 @@
 			<p data-tx="t0139:1caf402b">Disse tilbudene er på ingen måte relatert til PhoneBlock, og PhoneBlock er ikke på noen måte involvert i fortjenesten. Dette handler utelukkende om maskinvaren. Du installerer selv PhoneBlock-programvaren (firmware) etter mottak (se nedenfor).</p>
 		</div>
 
-		<p data-tx="t0140:eb2aefa3"><strong>Du vil bruke et annet kort</strong> Andre ESP32 DevKits fungerer på nøyaktig samme måte, men kan trenge en annen USB-seriell driver (f.eks. CP2102 i stedet for CH340) og en USB-forlengelseskabel hvis designet ikke passer direkte inn i ruteren. Detaljer og anbefalinger: <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/HARDWARE.md" rel="noopener" target="_blank">HARDWARE.md i repoen</a>.</p>
+		<p data-tx="t0140:41c85d87"><strong>Har du allerede en ESP32 i skuffen? </strong> PhoneBlock vil nesten helt sikkert fungere på kortet ditt hvis det har minst 4 MB flashminne. Det kan hende du trenger en annen USB-seriell driver eller må omkonfigurere PIN-koden slik at status-LED-en blinker - det er best å ta en titt på <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/" rel="noopener" target="_blank">prosjektsiden</a>.</p>
 
 		<h2 data-tx="t0141:fe30aa8a" id="schritt-2">Trinn 2 - Installer USB-driver (kun Windows)</h2>
 
-		<p data-tx="t0142:ba1650a4">Dongelen bruker den serielle USB-brikken <strong>CH340</strong>. For at Windows skal gjenkjenne den som en COM-port, må du ha den riktige driveren en gang.</p>
+		<p data-tx="t0142:155cb329">Donglen bruker den serielle USB-brikken <strong>CH340</strong>. For at Windows skal gjenkjenne den, må du ha den riktige driveren en gang, slik at du kan laste inn ("flashe") programmet på donglen.</p>
 
 		<p>
 			<a class="button is-link" href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">
@@ -119,15 +101,13 @@
 			</ul>
 		</details>
 
-		<h2 data-tx="t0149:62d0966b" id="schritt-3">Trinn 3 - Sett donglen inn i datamaskinen</h2>
+		<h2 data-tx="t0149:ccccec4c" id="schritt-3">Trinn 3 - Klargjør donglen</h2>
 
-		<p data-tx="t0150:11c66231">Koble donglen direkte til en ledig USB-port på datamaskinen. En liten LED-lampe på kortet skal lyse umiddelbart.</p>
+		<p data-tx="t0150:a212e6cf">Du må laste inn PhoneBlock-programvaren på donglen én gang. Dette gjør du ved å koble dongelen til en ledig USB-port på datamaskinen.</p>
 
-		<figure>
-			<div data-tx="t0151:a85e1a1d" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Plassholder: Foto "Dongle satt inn i USB-porten på en bærbar PC"]</div>
-		</figure>
-
-		<h2 data-tx="t0152:4325c49c" id="schritt-4">Trinn 4 - Flash fastvare</h2>
+		<div class="notification is-warning" id="dongle-install-unsupported" style="display:none;">
+			<p data-tx="t0127:cc2d5f5e"><strong>Denne nettleseren kan ikke flashe donglen.</strong> For å klargjøre donglen for bruk trenger du en <strong>Google Chrome</strong> eller <strong>Microsoft Edge</strong>-nettleser på en datamaskin (ikke på en smarttelefon). Åpne denne siden med Chrome eller Edge og prøv igjen.</p>
+		</div>
 
 		<p data-tx="t0153:a0900784">Klikk på knappen. Nettleseren spør deretter hvilken tilkoblet enhet den kan adressere. Velg oppføringen med <strong>"USB-SERIAL CH340"</strong> (Windows) eller <strong>"USB Single Serial"</strong> eller <strong>"wch.cn"</strong> (macOS/Linux) i navnet, og bekreft med <strong>"Connect"</strong>.</p>
 
@@ -154,13 +134,13 @@
 			<div data-tx="t0158:b5c3a2f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Plassholder: Skjermbilde av dialogboksen for valg av enhet i nettleseren med uthevet CH340-oppføring].</div>
 		</figure>
 
-		<p data-tx="t0159:5fcdc08c">Bekreft sikkerhetsprompten "Slett enheten og installer PhoneBlock Dongle?" med <strong>"Installer"</strong>. Under den første blitsen slettes hele minnet og fastvaren installeres - dette tar omtrent ett minutt. Ikke koble fra donglen i løpet av denne tiden.</p>
+		<p data-tx="t0159:d037e970">Bekreft sikkerhetsprompten "Install PhoneBlock Dongle?" med <strong>"Install"</strong>. PhoneBlock-programvaren lastes nå inn på donglen - dette tar omtrent ett minutt. Ikke koble fra dongelen i løpet av denne tiden.</p>
 
 		<figure>
 			<div data-tx="t0160:177a19e2" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Plassholder: Skjermbilde av fremdriftslinjen for esp-web-tools under blinking].</div>
 		</figure>
 
-		<h2 data-tx="t0161:e5862ff8" id="schritt-5">Trinn 5 - Koble donglen til ruteren</h2>
+		<h2 data-tx="t0161:657638e7" id="schritt-5">Trinn 4 - Koble donglen til ruteren</h2>
 
 		<p data-tx="t0162:cbcaee11">Når nettleseren melder "Installasjon fullført!", tar du ut donglen fra datamaskinen og kobler den til en ledig USB-port på ruteren (eller en hvilken som helst 5 V USB-strømforsyning innenfor WLAN-rekkevidde).</p>
 
@@ -168,9 +148,9 @@
 			<div data-tx="t0163:a5796f78" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Plassholder: Foto "Dongle satt inn i USB-porten på Fritz!Box"]</div>
 		</figure>
 
-		<h2 data-tx="t0164:b184a512" id="schritt-6">Trinn 6 - Legg til dongelen i WLAN (WPS)</h2>
+		<h2 data-tx="t0164:fc6ca575" id="schritt-6">Trinn 5 - Legg til dongelen i WLAN (WPS)</h2>
 
-		<p data-tx="t0165:6ac463a1">Den nyopplastede donglen har ennå ingen Wi-Fi-tilgangsdata og venter på sammenkobling via <strong>WPS</strong>. LED-lampen <strong>blinker raskt</strong> (ca. fem ganger i sekundet) og signaliserer "Paringsmodus aktiv".</p>
+		<p data-tx="t0165:b5b221d5">Den nyoppdaterte donglen har ennå ingen Wi-Fi-tilgangsdata og venter på at du skal koble den til Wi-Fi. LED-lampen <strong>blinker raskt</strong> (ca. fem ganger i sekundet) og signaliserer "Paringsmodus aktiv".</p>
 
 		<p data-tx="t0166:83cbb4c2">Trykk nå på <strong>WPS-knappen</strong> på ruteren. På Fritz!Box er dette <strong>"Connect / WPS"</strong>-knappen på toppen av enheten - trykk kort til Wi-Fi-LED-en på selve ruteren begynner å blinke. Andre rutere merker knappen "WPS" eller "Pair". I løpet av få sekunder overfører ruteren Wi-Fi-tilgangsdataene dine til dongelen, som lagrer dem og kobler seg til.</p>
 
@@ -178,13 +158,13 @@
 			<div data-tx="t0167:5f50dac7" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Plassholder: Foto "Koble til/WPS-knapp på Fritz!Box med pil"]</div>
 		</figure>
 
-		<p data-tx="t0168:8eba89fd"><strong>Har fungert:</strong> LED-lampen blinker nå sakte (ca. én gang i sekundet) - donglen er i WLAN, har fått tildelt en IP og venter på konfigurasjonen i trinn 7.</p>
+		<p data-tx="t0168:32d2921"><strong>Har fungert:</strong> LED-lampen blinker nå sakte (ca. én gang i sekundet) - donglen er i WLAN, har mottatt en adresse og venter på konfigurasjon (neste trinn).</p>
 
-		<p data-tx="t0169:96351c92"><strong>Fungerte ikke</strong> Sjekk i ruterinnstillingene om WPS i det hele tatt er aktivert (på Fritz!Box: <em>WLAN → Sikkerhet → WPS</em>). Hvis WPS-vinduet var for kort, vil donglen automatisk starte paringsprosessen på nytt - da er det bare å trykke på WPS-knappen igjen.</p>
+		<p data-tx="t0169:f91aa6d5"><strong>Fungerte ikke</strong> Sjekk i ruterinnstillingene om WPS er aktivert (på Fritz!Box: <em>WLAN → Sikkerhet → WPS</em>). Hvis WPS-vinduet var for kort, starter donglen automatisk sammenkoblingen på nytt - da er det bare å trykke på WPS-knappen igjen.</p>
 
-		<h2 data-tx="t0170:5dee0d65" id="schritt-7">Trinn 7 - Angi SIP-tilgang og PhoneBlock-token</h2>
+		<h2 data-tx="t0170:82df9e2a" id="schritt-7">Trinn 6 - Registrer deg som telefon og konfigurer PhoneBlock-tilgang</h2>
 
-		<p data-tx="t0171:58c22345">For at dongelen skal kunne avlytte samtaler, trenger den fortsatt to ting: SIP-tilgangsdataene dine (slik at den kan logge seg på ruteren som en ekstra telefon) og et PhoneBlock-token (slik at den kan spørre i spamdatabasen). Du angir begge deler i donglens webgrensesnitt.</p>
+		<p data-tx="t0171:4e4b9d0f">For at dongelen skal kunne avlytte samtaler, trenger den fortsatt to ting: SIP-tilgangsdataene dine (slik at den kan logge seg på som en ekstra telefon) og et PhoneBlock-token (slik at den kan spørre i spamdatabasen). Du angir begge deler i donglenes webgrensesnitt.</p>
 
 		<p data-tx="t0172:f4d3bf5f">Åpne i nettleseren:</p>
 
@@ -214,7 +194,7 @@
 
 		<h2 data-tx="t0182:c258f25f" id="tester">Bidra med erfaringsrapport</h2>
 
-		<p data-tx="t0183:493a28c5">Her hjemme på en Fritz!Box kjører donglen pålitelig - men rutermodeller, leverandører og tilkoblingstyper er en fargerik blanding, og hver kombinasjon har sine egne særegenheter: ulike SIP-dialekter, ulike NAT-regler, ulike ringetider. For at jeg skal kunne gjenkjenne mønstre og løse problemer på en målrettet måte, er <strong>strukturerte erfaringsrapporter</strong> gull verdt - uavhengig av om alt fungerte for deg eller om det var noe som satte seg fast.</p>
+		<p data-tx="t0183:351d7eb2">De første donglene kjører allerede pålitelig - men rutermodeller, leverandører og tilkoblingstyper er en fargerik blanding, og hver kombinasjon har sine egne særegenheter. For å forbedre installasjonsveiviseren er <strong>strukturerte erfaringsrapporter</strong> gull verdt - uansett om alt fungerte for deg eller om det oppstod problemer.</p>
 
 		<p data-tx="t0184:49f94506">Spesielt interessante er oppsett som fortsatt er dårlig dekket:</p>
 
@@ -222,7 +202,7 @@
 			<li data-tx="t0185:e1971ce0">Telekom-tilkobling med <strong>Speedport</strong>-ruter</li>
 			<li data-tx="t0186:61cce24d">Vodafone/Unitymedia-kabeltilkobling med den medfølgende leverandørboksen</li>
 			<li data-tx="t0187:ea506b90">1&amp;1, o2, Deutsche Glasfaser og andre leverandører</li>
-			<li data-tx="t0188:e5ffca52">Internasjonale forbindelser (Sveits, Østerrike, resten av Europa)</li>
+			<li data-tx="t0188:3d2d85c2">Internasjonale forbindelser (Sveits, Østerrike, resten av Europa og verden)</li>
 		</ul>
 
 		<p data-tx="t0189:3fcb6dd2">Rapporter kjøres via GitHub-problemer - et forhåndsutfylt skjema ber om de viktigste nøkkeldataene (maskinvare, ruter, leverandør, fastvareversjon, funn) på en strukturert måte. Andre testere kan se direkte hvilke oppsett som allerede er dekket og hvilke som ikke er det.</p>

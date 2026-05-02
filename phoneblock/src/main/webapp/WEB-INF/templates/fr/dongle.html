@@ -7,7 +7,7 @@
 
 <section class="section">
 	<div class="content">
-		<h1 data-tx="t0192:3c01c047">PhoneBlock Dongle <span class="tag is-info is-medium ml-2">Nouveau</span></h1>
+		<h1 data-tx="t0192:f91bfd8">PhoneBlock Dongle <sup><span class="tag is-info is-medium ml-2">Nouveau</span></sup></h1>
 
 		<p class="subtitle" data-tx="t0095:dab19814">Un répondeur intelligent dans l'habit d'un téléphone IP. De la taille du pouce, il se branche sur le port USB du routeur, s'enregistre comme téléphone SIP supplémentaire - et intercepte les appels publicitaires avant que ton véritable téléphone ne sonne. Fonctionne indépendamment du modèle de routeur, même sans Fritz!Box.</p>
 
@@ -41,11 +41,7 @@
 			<p data-tx="t0100:86bdb13f"><strong>Pourquoi c'est si charmant:</strong> Le dongle ne nécessite qu'un minimum d'électricité et de WLAN. Pas de serveur supplémentaire, pas de Fritz!Box, pas de contrat. Le microcontrôleur ESP32 à l'intérieur consomme moins d'un demi-watt - tu peux simplement le brancher sur le port USB de ton routeur et l'oublier.</p>
 		</div>
 
-		<p class="subtitle mt-6" data-tx="t0124:b14ca93b">À partir d'ici, les choses deviennent pratiques : le mode d'emploi vous guide pas à pas dans la commande, le flashage et l'installation - environ 10 € de matériel, 10 minutes d'effort unique.</p>
-
-		<div class="notification is-warning">
-			<p data-tx="t0125:bd2333ac"><strong>Status : Beta.</strong> Ces instructions sont conçues pour un seul type de matériel testé - achetez exactement la carte de l'étape 1, et toutes les autres étapes seront adaptées. D'autres cartes fonctionnent souvent aussi, mais nécessitent d'autres pilotes et votre propre travail de détective (voir le lien ci-dessous).</p>
-		</div>
+		<p class="subtitle mt-6" data-tx="t0124:bd004e4f">À partir d'ici, les choses deviennent pratiques : les instructions vous guident pas à pas dans la commande et l'installation - environ 10 € de matériel, quelques minutes d'effort unique.</p>
 
 		<noscript>
 			<div class="notification is-danger">
@@ -53,23 +49,9 @@
 			</div>
 		</noscript>
 
-		<div class="notification is-warning" id="dongle-install-unsupported" style="display:none;">
-			<p data-tx="t0127:bb075478"><strong>Ce navigateur ne peut pas flasher le dongle.</strong> Le flashage web ne fonctionne que dans <strong>Google Chrome</strong> ou <strong>Microsoft Edge</strong> sur un ordinateur (pas sur un smartphone). Ouvre cette page avec Chrome ou Edge et réessaie.</p>
-		</div>
-
-		<h2 data-tx="t0128:93c33292" id="voraussetzungen">Avant de commencer</h2>
-
-		<p data-tx="t0129:5ffae555">Vérifie brièvement que ces points sont remplis - pour éviter toute déception :</p>
-
-		<ul>
-			<li data-tx="t0130:b4ac4baa"><strong>SIP-Registrar</strong> - soit dans le routeur (par ex. Fritz!Box), soit directement chez le fournisseur de téléphonie, si celui-ci autorise les clients SIP externes ("inscription d'un téléphone IP possible").</li>
-			<li data-tx="t0131:be2e6f7c"><strong>WLAN 2,4 GHz</strong> à portée de main.</li>
-			<li data-tx="t0132:573b2c92"><strong> Alimentation USB 5 V</strong> - idéalement port USB sur le routeur, alternativement n'importe quel bloc d'alimentation USB.</li>
-		</ul>
-
 		<h2 data-tx="t0133:1cedb9ee" id="schritt-1">Étape 1 - Commander le dongle</h2>
 
-		<p data-tx="t0134:1367b791">Commande cette carte ESP32. Elle est suffisamment compacte pour être insérée directement comme clé USB dans le routeur, elle a la puce série USB appropriée (CH340), et c'est avec elle que le dongle PhoneBlock a été testé.</p>
+		<p data-tx="t0134:2e54f376">Commande ce dongle USB ("carte de développement ESP32"). Ne t'inquiète pas, tu n'as rien à "développer", il te suffit d'installer le logiciel PhoneBlock prêt à l'emploi depuis ton navigateur.</p>
 
 		<figure class="image" style="max-width:300px;">
 			<img alt="Clé électronique ESP32" data-tx="t0135:31cdc7dc" th:src="@{/assets/img/dongle/dongle-option.png}"/>
@@ -92,11 +74,11 @@
 			<p data-tx="t0139:1caf402b">Ces offres n'ont aucun lien avec PhoneBlock et PhoneBlock ne participe en aucune manière aux bénéfices. Il s'agit uniquement du matériel. Tu installes toi-même le logiciel PhoneBlock (firmware) après l'avoir reçu (voir ci-dessous).</p>
 		</div>
 
-		<p data-tx="t0140:eb2aefa3"><strong>Tu veux prendre une autre carte?</strong> D'autres DevKits ESP32 fonctionnent techniquement de la même manière, mais peuvent avoir besoin d'un autre pilote série USB (par ex. CP2102 au lieu de CH340) et d'un câble d'extension USB, si la forme de construction ne convient pas directement au routeur. Détails et recommandations : <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/HARDWARE.md" rel="noopener" target="_blank">HARDWARE.md dans le repo</a>.</p>
+		<p data-tx="t0140:41c85d87"><strong>Tu bricoles toi-même et tu as déjà un ESP32 dans ton tiroir?</strong> PhoneBlock fonctionne presque certainement aussi sur ta carte, si elle a au moins 4MB de mémoire flash. Il est possible que tu aies besoin d'un autre pilote sériel USB ou que tu doives reconfigurer l'affectation des PIN pour que la LED d'état clignote - pour cela, le mieux est de consulter la page <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/" rel="noopener" target="_blank">Projet</a>.</p>
 
 		<h2 data-tx="t0141:fe30aa8a" id="schritt-2">Étape 2 - Installer le pilote USB (Windows uniquement)</h2>
 
-		<p data-tx="t0142:ba1650a4">Le dongle utilise la puce sérielle USB <strong>CH340</strong>. Pour que Windows le reconnaisse comme port COM, tu as besoin une seule fois du pilote approprié.</p>
+		<p data-tx="t0142:155cb329">Le dongle utilise la puce sérielle USB <strong>CH340</strong>. Pour que Windows le reconnaisse, tu as besoin une fois du pilote approprié, afin de pouvoir charger ("flasher") le programme sur le dongle.</p>
 
 		<p>
 			<a class="button is-link" href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">
@@ -119,15 +101,13 @@
 			</ul>
 		</details>
 
-		<h2 data-tx="t0149:62d0966b" id="schritt-3">Étape 3 - Insérer la clé électronique dans l'ordinateur</h2>
+		<h2 data-tx="t0149:ccccec4c" id="schritt-3">Étape 3 - Préparer le dongle</h2>
 
-		<p data-tx="t0150:11c66231">Branche le dongle directement dans un port USB libre de ton ordinateur. Une petite LED sur la carte devrait s'allumer immédiatement.</p>
+		<p data-tx="t0150:a212e6cf">Tu dois télécharger une seule fois le logiciel PhoneBlock sur ton dongle. Pour ce faire, insère le dongle dans un port USB libre de ton ordinateur.</p>
 
-		<figure>
-			<div data-tx="t0151:a85e1a1d" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Caractère générique : Photo "Le dongle est inséré dans le port USB d'un ordinateur portable"]</div>
-		</figure>
-
-		<h2 data-tx="t0152:4325c49c" id="schritt-4">Étape 4 - Flasher le firmware</h2>
+		<div class="notification is-warning" id="dongle-install-unsupported" style="display:none;">
+			<p data-tx="t0127:cc2d5f5e"><strong>Ce navigateur ne peut pas flasher le dongle.</strong> Pour préparer ton dongle à l'utilisation, tu as besoin d'un navigateur <strong>Google Chrome</strong> ou <strong>Microsoft Edge</strong> sur un ordinateur (pas sur un smartphone). Ouvre cette page avec Chrome ou Edge et réessaie.</p>
+		</div>
 
 		<p data-tx="t0153:a0900784">Cliquer sur le bouton. Le navigateur demande ensuite à quel appareil connecté il peut s'adresser. Sélectionne l'entrée avec <strong>"USB-SERIAL CH340"</strong> (Windows) ou <strong>"USB Single Serial"</strong> ou <strong>"wch.cn"</strong> (macOS/Linux) dans le nom et confirme avec <strong>"Connecter"</strong>.</p>
 
@@ -154,13 +134,13 @@
 			<div data-tx="t0158:b5c3a2f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Caractère générique : Capture d'écran de la boîte de dialogue de sélection des appareils du navigateur avec l'entrée CH340 sélectionnée]</div>
 		</figure>
 
-		<p data-tx="t0159:5fcdc08c">Confirme la question de sécurité "Erase device and install PhoneBlock Dongle ?" avec <strong>"Install"</strong>. Lors du premier flash, toute la mémoire est effacée et le firmware est installé - cela dure environ une minute. Ne déconnecte pas le dongle pendant ce temps.</p>
+		<p data-tx="t0159:d037e970">Confirme la question de sécurité "Install PhoneBlock Dongle ?" en cliquant sur <strong>"Install"</strong>. Le logiciel PhoneBlock est maintenant chargé sur le dongle - cela prend environ une minute. Ne débranchez pas le dongle pendant ce temps.</p>
 
 		<figure>
 			<div data-tx="t0160:177a19e2" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Caractère générique : capture d'écran de la barre de progression esp-web-tools lors du flashage]</div>
 		</figure>
 
-		<h2 data-tx="t0161:e5862ff8" id="schritt-5">Étape 5 - Replacer la clé électronique dans le routeur</h2>
+		<h2 data-tx="t0161:657638e7" id="schritt-5">Étape 4 - Replacer la clé électronique dans le routeur</h2>
 
 		<p data-tx="t0162:cbcaee11">Lorsque le navigateur indique "Installation complete !", retire le dongle de l'ordinateur et branche-le sur un port USB libre de ton routeur (ou sur n'importe quel bloc d'alimentation USB 5 V à portée de WLAN).</p>
 
@@ -168,9 +148,9 @@
 			<div data-tx="t0163:a5796f78" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Caractère générique : photo "Le dongle est branché sur le port USB de la Fritz!Box]</div>
 		</figure>
 
-		<h2 data-tx="t0164:b184a512" id="schritt-6">Étape 6 - Ajouter la clé électronique au réseau sans fil (WPS)</h2>
+		<h2 data-tx="t0164:fc6ca575" id="schritt-6">Étape 5 - Ajouter la clé électronique au réseau sans fil (WPS)</h2>
 
-		<p data-tx="t0165:6ac463a1">Le dongle fraîchement flashé n'a pas encore de données d'accès WLAN et attend l'appairage par <strong>WPS</strong>. La LED <strong> clignote rapidement</strong> (environ cinq fois par seconde) et signale "mode d'appairage actif".</p>
+		<p data-tx="t0165:b5b221d5">Le dongle fraîchement flashé n'a pas encore de données d'accès WLAN et attend que tu le connectes à ton WLAN. La LED <strong> clignote rapidement</strong> (environ cinq fois par seconde) et signale "mode d'appairage actif".</p>
 
 		<p data-tx="t0166:83cbb4c2">Appuie maintenant sur le bouton <strong>WPS</strong> du routeur. Sur la Fritz!Box, il s'agit du bouton <strong>"Connect / WPS"</strong> sur le dessus de l'appareil - appuie brièvement jusqu'à ce que le voyant WLAN du routeur commence à clignoter. D'autres routeurs indiquent "WPS" ou "Pair" sur le bouton. En quelques secondes, le routeur transmettra tes données d'accès WLAN au dongle, qui les enregistrera et se connectera.</p>
 
@@ -178,13 +158,13 @@
 			<div data-tx="t0167:5f50dac7" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Espace réservé : Photo "Bouton Connect/WPS sur la Fritz!Box avec flèche d'indication"]]</div>
 		</figure>
 
-		<p data-tx="t0168:8eba89fd"><strong>Ça a marché:</strong> La LED clignote maintenant lentement (environ une fois par seconde) - le dongle est sur le WLAN, a reçu une IP et attend la configuration à l'étape 7.</p>
+		<p data-tx="t0168:32d2921"><strong>Ça a marché:</strong> La LED clignote maintenant lentement (environ une fois par seconde) - le dongle est sur le WLAN, a reçu une adresse et attend d'être configuré (étape suivante).</p>
 
-		<p data-tx="t0169:96351c92"><strong>Ça n'a pas marché?</strong> Vérifie dans les paramètres du routeur si le WPS est vraiment activé (sur la Fritz!Box : <em>WLAN → Sécurité → WPS</em>). Si la fenêtre WPS a été trop courte, le dongle redémarre automatiquement l'appairage - il suffit alors d'appuyer à nouveau sur le bouton WPS.</p>
+		<p data-tx="t0169:f91aa6d5"><strong>Ça n'a pas marché?</strong> Vérifie dans les paramètres du routeur si le WPS est activé (sur la Fritz!Box : <em>WLAN → Sécurité → WPS</em>). Si la fenêtre WPS a été trop courte, le dongle redémarre automatiquement l'appairage - il suffit alors d'appuyer à nouveau sur le bouton WPS.</p>
 
-		<h2 data-tx="t0170:5dee0d65" id="schritt-7">Étape 7 - Inscrire l'accès SIP et le token PhoneBlock</h2>
+		<h2 data-tx="t0170:82df9e2a" id="schritt-7">Étape 6 - Se connecter en tant que téléphone et configurer l'accès PhoneBlock</h2>
 
-		<p data-tx="t0171:58c22345">Pour que le dongle puisse intercepter des appels, il lui manque encore deux choses : tes données d'accès SIP (pour qu'il puisse se connecter au routeur en tant que téléphone supplémentaire) et un token PhoneBlock (pour qu'il puisse interroger la base de données des spams). Tu inscris ces deux éléments dans l'interface web du dongle.</p>
+		<p data-tx="t0171:4e4b9d0f">Pour que le dongle puisse intercepter des appels, il lui manque encore deux choses : tes données d'accès SIP (pour qu'il puisse se connecter comme téléphone supplémentaire) et un jeton PhoneBlock (pour qu'il puisse interroger la base de données des spams). Tu inscris ces deux éléments dans l'interface web du dongle.</p>
 
 		<p data-tx="t0172:f4d3bf5f">Ouvre dans le navigateur :</p>
 
@@ -214,7 +194,7 @@
 
 		<h2 data-tx="t0182:c258f25f" id="tester">Contribuer au rapport d'expérience</h2>
 
-		<p data-tx="t0183:493a28c5">Le dongle fonctionne ici à la maison sur une Fritz!Box de manière fiable - mais les modèles de routeurs, les fournisseurs d'accès et les types de connexion sont très variés et chaque combinaison a ses particularités : d'autres dialectes SIP, d'autres règles NAT, d'autres retards de sonnerie. Pour que je puisse identifier des modèles et résoudre les problèmes de manière ciblée, les <strong>rapports d'expérience structurés</strong> valent de l'or - peu importe que tout ait fonctionné chez toi ou que quelque chose coince.</p>
+		<p data-tx="t0183:351d7eb2">Les premiers dongles fonctionnent déjà de manière fiable - mais les modèles de routeurs, les fournisseurs d'accès et les types de connexion sont très variés, et chaque combinaison a ses particularités. Pour que l'assistant d'installation puisse s'améliorer, les <strong>rapports d'expérience structurés</strong> valent de l'or - peu importe si tout a fonctionné pour toi ou si quelque chose coince.</p>
 
 		<p data-tx="t0184:49f94506">Les configurations qui sont encore peu couvertes sont particulièrement intéressantes :</p>
 
@@ -222,7 +202,7 @@
 			<li data-tx="t0185:e1971ce0">Raccordement Telekom avec routeur <strong>Speedport&lt;/x1</strong></li>
 			<li data-tx="t0186:61cce24d">Connexion au câble Vodafone/Unitymedia avec le boîtier d'opérateur fourni</li>
 			<li data-tx="t0187:ea506b90">1&amp;1, o2, Deutsche Glasfaser et autres fournisseurs d'accès</li>
-			<li data-tx="t0188:e5ffca52">Connexions à l'étranger (Suisse, Autriche, reste de l'Europe)</li>
+			<li data-tx="t0188:3d2d85c2">Connexions internationales (Suisse, Autriche, reste de l'Europe et du monde)</li>
 		</ul>
 
 		<p data-tx="t0189:3fcb6dd2">Les rapports sont générés via GitHub-Issues - un formulaire pré-rempli demande de manière structurée les données clés les plus importantes (matériel, routeur, fournisseur, version du firmware, résultat). Les autres testeurs voient ainsi directement quelles configurations sont déjà couvertes et lesquelles ne le sont pas.</p>

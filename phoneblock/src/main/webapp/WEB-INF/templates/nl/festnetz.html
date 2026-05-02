@@ -20,26 +20,26 @@
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="fritzbox" type="button">
 						<span class="icon"><i class="fa-solid fa-network-wired"></i></span>
-						<span data-tx="t0056:42829262">Een Fritz!Box (van jezelf of van de leverancier)</span>
+						<span data-tx="t0056:cbc40c39">Fritz!Box</span>
 					</button>
 					<button class="button is-info wizard-btn" data-route="other" type="button">
 						<span class="icon"><i class="fa-solid fa-router"></i></span>
-						<span data-tx="t0057:c38f2422">Een andere router (Speedport, Vodafone-station, ...)</span>
+						<span data-tx="t0057:9ddca9ce">Andere router (Speedport, ...)</span>
 					</button>
 				</div>
 			</div>
 
 			<div class="wizard-step" data-step="ownership" hidden="hidden">
 				<p class="title is-5 mt-4" data-tx="t0058:b5160124">2. eigen Fritz! box of gehuurd van de provider?</p>
-				<p class="help" data-tx="t0059:beb0cb62">Met een huurbox heb je meestal geen toegang tot de VoIP-telefonieconfiguratie - het cloudantwoordapparaat is dus niet beschikbaar.</p>
+				<p class="help" data-tx="t0059:fe71ab83">Met een huurbox kan de provider de registratie van telefoons vanaf het internet blokkeren (bijv. Vodafone) - het antwoordapparaat in de cloud is dan niet meer beschikbaar.</p>
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="own" type="button">
 						<span class="icon"><i class="fa-solid fa-house"></i></span>
-						<span data-tx="t0060:1a9e1f09">Eigen aangeschafte Fritz!Box</span>
+						<span data-tx="t0060:9fdfe3d6">Eigen Fritz!Box</span>
 					</button>
 					<button class="button is-info wizard-btn" data-route="rental" type="button">
 						<span class="icon"><i class="fa-solid fa-handshake"></i></span>
-						<span data-tx="t0061:37e11458">Fritz!Box gehuurd van de aanbieder</span>
+						<span data-tx="t0061:f20dd83b">Gehuurd Fritz!Box</span>
 					</button>
 				</div>
 			</div>
@@ -61,7 +61,7 @@
 
 			<div class="wizard-step" data-step="provider" hidden="hidden">
 				<p class="title is-5 mt-4" data-tx="t0066:59312a9">2 Welke telefonieprovider?</p>
-				<p class="help" data-tx="t0067:4b92fb6">Sommige providers staan directe VoIP-toestelregistratie bij hun infrastructuur toe - dan werkt de dongle ook zonder Fritz!</p>
+				<p class="help" data-tx="t0067:eaceffb">Sommige providers staan directe VoIP-toestelregistratie op hun infrastructuur toe - de dongle werkt dan zelfs als de router geen VOIP-telefoons ondersteunt.</p>
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="telekom" type="button">
 						<span data-tx="t0068:fc2c352d">Telecom</span>
@@ -99,7 +99,7 @@
 			<div class="wizard-result" data-result="dongle-only" hidden="hidden">
 				<div class="notification is-success">
 					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0077:a9f972a2">De dongle is jouw variant.</span></p>
-					<p data-tx="t0078:9ad36c38">De <strong>PhoneBlock dongle</strong> werkt met jouw configuratie - de andere twee varianten werken niet: Cloud antwoordapparaat heeft toegang nodig tot de VoIP configuratie van zijn eigen Fritz!Box, de blocklist telefoonlijst heeft vanaf 2018 een Fritz!Box nodig.</p>
+					<p data-tx="t0078:cbd60954">De <strong>PhoneBlock dongle</strong> werkt met jouw configuratie - de andere twee varianten werken niet: Cloud antwoordapparaat heeft Fritz!Box nodig met login vanaf internet, het blocklist telefoonboek heeft vanaf 2018 een Fritz!Box nodig.</p>
 				</div>
 			</div>
 

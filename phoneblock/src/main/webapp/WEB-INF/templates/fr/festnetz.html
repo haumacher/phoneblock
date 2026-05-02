@@ -20,26 +20,26 @@
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="fritzbox" type="button">
 						<span class="icon"><i class="fa-solid fa-network-wired"></i></span>
-						<span data-tx="t0056:42829262">Une Fritz!Box (que ce soit la vôtre ou celle de votre fournisseur d'accès)</span>
+						<span data-tx="t0056:cbc40c39">Fritz!Box</span>
 					</button>
 					<button class="button is-info wizard-btn" data-route="other" type="button">
 						<span class="icon"><i class="fa-solid fa-router"></i></span>
-						<span data-tx="t0057:c38f2422">Un autre routeur (Speedport, station Vodafone, ...)</span>
+						<span data-tx="t0057:9ddca9ce">Autre routeur (Speedport, ...)</span>
 					</button>
 				</div>
 			</div>
 
 			<div class="wizard-step" data-step="ownership" hidden="hidden">
 				<p class="title is-5 mt-4" data-tx="t0058:b5160124">2. une Fritz!Box personnelle ou louée auprès d'un fournisseur d'accès ?</p>
-				<p class="help" data-tx="t0059:beb0cb62">Avec une box de location, tu n'as généralement pas accès à la configuration de la téléphonie VoIP - la messagerie vocale dans le nuage n'est donc pas disponible.</p>
+				<p class="help" data-tx="t0059:fe71ab83">Dans le cas d'une boîte louée, l'opérateur peut bloquer l'enregistrement des téléphones depuis Internet (par exemple Vodafone) - le répondeur dans le nuage est donc supprimé.</p>
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="own" type="button">
 						<span class="icon"><i class="fa-solid fa-house"></i></span>
-						<span data-tx="t0060:1a9e1f09">Propre Fritz!Box achetée</span>
+						<span data-tx="t0060:9fdfe3d6">Propre Fritz!Box</span>
 					</button>
 					<button class="button is-info wizard-btn" data-route="rental" type="button">
 						<span class="icon"><i class="fa-solid fa-handshake"></i></span>
-						<span data-tx="t0061:37e11458">Fritz!Box louée par l'opérateur</span>
+						<span data-tx="t0061:f20dd83b">Fritz!Box louée</span>
 					</button>
 				</div>
 			</div>
@@ -61,7 +61,7 @@
 
 			<div class="wizard-step" data-step="provider" hidden="hidden">
 				<p class="title is-5 mt-4" data-tx="t0066:59312a9">2. quel fournisseur de téléphonie ?</p>
-				<p class="help" data-tx="t0067:4b92fb6">Certains fournisseurs autorisent une inscription directe des appareils VoIP à leur infrastructure - le dongle fonctionne alors également sans Fritz!Box.</p>
+				<p class="help" data-tx="t0067:eaceffb">Certains fournisseurs autorisent une inscription directe des appareils VoIP sur leur infrastructure - dans ce cas, le dongle fonctionne même si le routeur ne supporte pas les téléphones VOIP.</p>
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="telekom" type="button">
 						<span data-tx="t0068:fc2c352d">Télécoms</span>
@@ -99,7 +99,7 @@
 			<div class="wizard-result" data-result="dongle-only" hidden="hidden">
 				<div class="notification is-success">
 					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0077:a9f972a2">Le dongle est ta variante.</span></p>
-					<p data-tx="t0078:9ad36c38">Avec ta constellation, le dongle <strong>PhoneBlock</strong> fonctionne - les deux autres variantes ne fonctionnent pas : Le répondeur cloud a besoin d'un accès à la configuration VoIP d'une propre Fritz!Box, le répertoire téléphonique des listes de blocage d'une Fritz!Box à partir de l'année 2018.</p>
+					<p data-tx="t0078:cbd60954">Avec ta constellation, le dongle <strong>PhoneBlock</strong> fonctionne - les deux autres variantes ne fonctionnent pas : La messagerie vocale dans le nuage nécessite une Fritz!Box avec connexion depuis Internet, le répertoire téléphonique des listes de blocage nécessite une Fritz!Box à partir de l'année 2018.</p>
 				</div>
 			</div>
 

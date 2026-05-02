@@ -24,26 +24,26 @@
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="fritzbox" type="button">
 						<span class="icon"><i class="fa-solid fa-network-wired"></i></span>
-						<span data-tx="t0056:42829262">Eine Fritz!Box (egal ob eigene oder vom Provider)</span>
+						<span data-tx="t0056:cbc40c39">Fritz!Box</span>
 					</button>
 					<button class="button is-info wizard-btn" data-route="other" type="button">
 						<span class="icon"><i class="fa-solid fa-router"></i></span>
-						<span data-tx="t0057:c38f2422">Ein anderer Router (Speedport, Vodafone-Station, …)</span>
+						<span data-tx="t0057:9ddca9ce">Anderer Router (Speedport, …)</span>
 					</button>
 				</div>
 			</div>
 
 			<div class="wizard-step" data-step="ownership" hidden="hidden">
 				<p class="title is-5 mt-4" data-tx="t0058:b5160124">2. Eigene Fritz!Box oder vom Provider gemietet?</p>
-				<p class="help" data-tx="t0059:beb0cb62">Bei einer Miet-Box hast Du in der Regel keinen Zugriff auf die VoIP-Telefonie-Konfiguration — der Cloud-Anrufbeantworter fällt damit weg.</p>
+				<p class="help" data-tx="t0059:fe71ab83">Bei einer Miet-Box kann der Provider die Anmeldung von Telefonen aus dem Internet blockieren (z.B. Vodafone) — der Cloud-Anrufbeantworter fällt damit weg.</p>
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="own" type="button">
 						<span class="icon"><i class="fa-solid fa-house"></i></span>
-						<span data-tx="t0060:1a9e1f09">Eigene gekaufte Fritz!Box</span>
+						<span data-tx="t0060:9fdfe3d6">Eigene Fritz!Box</span>
 					</button>
 					<button class="button is-info wizard-btn" data-route="rental" type="button">
 						<span class="icon"><i class="fa-solid fa-handshake"></i></span>
-						<span data-tx="t0061:37e11458">Vom Provider gemietete Fritz!Box</span>
+						<span data-tx="t0061:f20dd83b">Gemietete Fritz!Box</span>
 					</button>
 				</div>
 			</div>
@@ -65,7 +65,7 @@
 
 			<div class="wizard-step" data-step="provider" hidden="hidden">
 				<p class="title is-5 mt-4" data-tx="t0066:59312a9">2. Welcher Telefonie-Provider?</p>
-				<p class="help" data-tx="t0067:4b92fb6">Manche Provider lassen eine direkte VoIP-Geräte-Anmeldung an deren Infrastruktur zu — dann funktioniert der Dongle auch ohne Fritz!Box.</p>
+				<p class="help" data-tx="t0067:eaceffb">Manche Provider lassen eine direkte VoIP-Geräte-Anmeldung an ihrer Infrastruktur zu — dann funktioniert der Dongle auch wenn der Router keine VOIP-Telefone unterstützt.</p>
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="telekom" type="button">
 						<span data-tx="t0068:fc2c352d">Telekom</span>
@@ -103,7 +103,7 @@
 			<div class="wizard-result" data-result="dongle-only" hidden="hidden">
 				<div class="notification is-success">
 					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0077:a9f972a2">Der Dongle ist Deine Variante.</span></p>
-					<p data-tx="t0078:9ad36c38">Mit Deiner Konstellation funktioniert der <strong>PhoneBlock-Dongle</strong> — die anderen beiden Varianten fallen aus: Cloud-Anrufbeantworter braucht Zugriff auf die VoIP-Konfiguration einer eigenen Fritz!Box, das Blocklisten-Telefonbuch eine Fritz!Box ab Bj. 2018.</p>
+					<p data-tx="t0078:cbd60954">Mit Deiner Konstellation funktioniert der <strong>PhoneBlock-Dongle</strong> — die anderen beiden Varianten fallen aus: Cloud-Anrufbeantworter braucht Fritz!Box mit Anmeldung aus dem Internet, das Blocklisten-Telefonbuch eine Fritz!Box ab Bj. 2018.</p>
 				</div>
 			</div>
 

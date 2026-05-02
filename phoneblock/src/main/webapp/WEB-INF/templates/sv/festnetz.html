@@ -20,26 +20,26 @@
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="fritzbox" type="button">
 						<span class="icon"><i class="fa-solid fa-network-wired"></i></span>
-						<span data-tx="t0056:42829262">En Fritz!Box (antingen din egen eller från leverantören)</span>
+						<span data-tx="t0056:cbc40c39">Fritz!Box</span>
 					</button>
 					<button class="button is-info wizard-btn" data-route="other" type="button">
 						<span class="icon"><i class="fa-solid fa-router"></i></span>
-						<span data-tx="t0057:c38f2422">En annan router (Speedport, Vodafone-station, ...)</span>
+						<span data-tx="t0057:9ddca9ce">Annan router (Speedport, ...)</span>
 					</button>
 				</div>
 			</div>
 
 			<div class="wizard-step" data-step="ownership" hidden="hidden">
 				<p class="title is-5 mt-4" data-tx="t0058:b5160124">2. egen Fritz!-box eller hyrd från leverantören?</p>
-				<p class="help" data-tx="t0059:beb0cb62">Med en hyrd box har du i allmänhet inte tillgång till VoIP-telefonikonfigurationen - molntelefonsvararen är därför inte tillgänglig.</p>
+				<p class="help" data-tx="t0059:fe71ab83">Med en hyresbox kan leverantören blockera registreringen av telefoner från Internet (t.ex. Vodafone) - molnens telefonsvarare är därför inte längre tillgänglig.</p>
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="own" type="button">
 						<span class="icon"><i class="fa-solid fa-house"></i></span>
-						<span data-tx="t0060:1a9e1f09">Egen inköpt Fritz!Box</span>
+						<span data-tx="t0060:9fdfe3d6">Own Fritz!Box</span>
 					</button>
 					<button class="button is-info wizard-btn" data-route="rental" type="button">
 						<span class="icon"><i class="fa-solid fa-handshake"></i></span>
-						<span data-tx="t0061:37e11458">Fritz!Box hyrs från leverantören</span>
+						<span data-tx="t0061:f20dd83b">Hyrd Fritz!Box</span>
 					</button>
 				</div>
 			</div>
@@ -61,7 +61,7 @@
 
 			<div class="wizard-step" data-step="provider" hidden="hidden">
 				<p class="title is-5 mt-4" data-tx="t0066:59312a9">2 Vilken telefonileverantör?</p>
-				<p class="help" data-tx="t0067:4b92fb6">Vissa leverantörer tillåter direkt registrering av VoIP-enheter i deras infrastruktur - då fungerar även dongeln utan problem!</p>
+				<p class="help" data-tx="t0067:eaceffb">Vissa leverantörer tillåter direkt registrering av VoIP-enheter på sin infrastruktur - dongeln fungerar då även om routern inte stöder VOIP-telefoner.</p>
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="telekom" type="button">
 						<span data-tx="t0068:fc2c352d">Telekom</span>
@@ -99,7 +99,7 @@
 			<div class="wizard-result" data-result="dongle-only" hidden="hidden">
 				<div class="notification is-success">
 					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0077:a9f972a2">Donglen är din variant.</span></p>
-					<p data-tx="t0078:9ad36c38"><strong>PhoneBlock-dongeln</strong> fungerar med din konfiguration - de andra två varianterna misslyckas: Molnbaserad telefonsvarare behöver tillgång till VoIP-konfigurationen i sin egen Fritz!Box, blocklistans telefonbok behöver en Fritz!Box från 2018 och framåt.</p>
+					<p data-tx="t0078:cbd60954"><strong>PhoneBlock-dongeln</strong> fungerar med din konfiguration - de andra två varianterna misslyckas: Molnbaserad telefonsvarare behöver Fritz!Box med inloggning från Internet, blocklistans telefonbok behöver en Fritz!Box från 2018 och framåt.</p>
 				</div>
 			</div>
 

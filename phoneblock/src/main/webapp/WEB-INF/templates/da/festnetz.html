@@ -20,26 +20,26 @@
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="fritzbox" type="button">
 						<span class="icon"><i class="fa-solid fa-network-wired"></i></span>
-						<span data-tx="t0056:42829262">En Fritz!Box (enten din egen eller fra udbyderen)</span>
+						<span data-tx="t0056:cbc40c39">Fritz!Box</span>
 					</button>
 					<button class="button is-info wizard-btn" data-route="other" type="button">
 						<span class="icon"><i class="fa-solid fa-router"></i></span>
-						<span data-tx="t0057:c38f2422">En anden router (Speedport, Vodafone station, ...)</span>
+						<span data-tx="t0057:9ddca9ce">Anden router (Speedport, ...)</span>
 					</button>
 				</div>
 			</div>
 
 			<div class="wizard-step" data-step="ownership" hidden="hidden">
 				<p class="title is-5 mt-4" data-tx="t0058:b5160124">2. Egen Fritz!-boks eller lejet fra udbyderen?</p>
-				<p class="help" data-tx="t0059:beb0cb62">Med en lejeboks har du som regel ikke adgang til VoIP-telefonikonfigurationen - cloud-telefonsvareren er derfor ikke tilgængelig.</p>
+				<p class="help" data-tx="t0059:fe71ab83">Med en lejeboks kan udbyderen blokere for registrering af telefoner fra internettet (f.eks. Vodafone) - skyens telefonsvarer er derfor ikke længere tilgængelig.</p>
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="own" type="button">
 						<span class="icon"><i class="fa-solid fa-house"></i></span>
-						<span data-tx="t0060:1a9e1f09">Egen købt Fritz!Box</span>
+						<span data-tx="t0060:9fdfe3d6">Egen Fritz!Box</span>
 					</button>
 					<button class="button is-info wizard-btn" data-route="rental" type="button">
 						<span class="icon"><i class="fa-solid fa-handshake"></i></span>
-						<span data-tx="t0061:37e11458">Fritz!Box lejet fra udbyderen</span>
+						<span data-tx="t0061:f20dd83b">Lejede Fritz!Box</span>
 					</button>
 				</div>
 			</div>
@@ -61,7 +61,7 @@
 
 			<div class="wizard-step" data-step="provider" hidden="hidden">
 				<p class="title is-5 mt-4" data-tx="t0066:59312a9">2 Hvilken telefoniudbyder?</p>
-				<p class="help" data-tx="t0067:4b92fb6">Nogle udbydere tillader direkte registrering af VoIP-enheder til deres infrastruktur - så fungerer donglen også uden en Fritz!</p>
+				<p class="help" data-tx="t0067:eaceffb">Nogle udbydere tillader direkte registrering af VoIP-enheder på deres infrastruktur - donglen fungerer så, selv om routeren ikke understøtter VOIP-telefoner.</p>
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="telekom" type="button">
 						<span data-tx="t0068:fc2c352d">Telekommunikation</span>
@@ -99,7 +99,7 @@
 			<div class="wizard-result" data-result="dongle-only" hidden="hidden">
 				<div class="notification is-success">
 					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0077:a9f972a2">Donglen er din variant.</span></p>
-					<p data-tx="t0078:9ad36c38"><strong>PhoneBlock-donglen</strong> fungerer med din konfiguration - de to andre varianter fejler: Cloud-telefonsvareren har brug for adgang til VoIP-konfigurationen på sin egen Fritz!Box, og telefonbogen med bloklister har brug for en Fritz!Box fra 2018 og fremefter.</p>
+					<p data-tx="t0078:cbd60954"><strong>PhoneBlock-donglen</strong> fungerer med din konfiguration - de to andre varianter fejler: Cloud-telefonsvareren har brug for en Fritz!Box med login fra internettet, og telefonbogen med bloklister har brug for en Fritz!Box fra 2018 og fremefter.</p>
 				</div>
 			</div>
 

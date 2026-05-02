@@ -20,26 +20,26 @@
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="fritzbox" type="button">
 						<span class="icon"><i class="fa-solid fa-network-wired"></i></span>
-						<span data-tx="t0056:42829262">Fritz!Box (własny lub od dostawcy)</span>
+						<span data-tx="t0056:cbc40c39">Fritz!Box</span>
 					</button>
 					<button class="button is-info wizard-btn" data-route="other" type="button">
 						<span class="icon"><i class="fa-solid fa-router"></i></span>
-						<span data-tx="t0057:c38f2422">Inny router (Speedport, stacja Vodafone, ...)</span>
+						<span data-tx="t0057:9ddca9ce">Inny router (Speedport, ...)</span>
 					</button>
 				</div>
 			</div>
 
 			<div class="wizard-step" data-step="ownership" hidden="hidden">
 				<p class="title is-5 mt-4" data-tx="t0058:b5160124">2. własny Fritz! box czy wypożyczony od dostawcy?</p>
-				<p class="help" data-tx="t0059:beb0cb62">W przypadku wynajmu skrzynki zazwyczaj nie ma dostępu do konfiguracji telefonii VoIP - automatyczna sekretarka w chmurze nie jest zatem dostępna.</p>
+				<p class="help" data-tx="t0059:fe71ab83">W przypadku wynajmu skrzynki operator może zablokować rejestrację telefonów z Internetu (np. Vodafone) - automatyczna sekretarka w chmurze nie jest już zatem dostępna.</p>
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="own" type="button">
 						<span class="icon"><i class="fa-solid fa-house"></i></span>
-						<span data-tx="t0060:1a9e1f09">Własny zakup Fritz!Box</span>
+						<span data-tx="t0060:9fdfe3d6">Własny Fritz!Box</span>
 					</button>
 					<button class="button is-info wizard-btn" data-route="rental" type="button">
 						<span class="icon"><i class="fa-solid fa-handshake"></i></span>
-						<span data-tx="t0061:37e11458">Fritz!Box wypożyczony od dostawcy</span>
+						<span data-tx="t0061:f20dd83b">Wypożyczony Fritz!Box</span>
 					</button>
 				</div>
 			</div>
@@ -61,7 +61,7 @@
 
 			<div class="wizard-step" data-step="provider" hidden="hidden">
 				<p class="title is-5 mt-4" data-tx="t0066:59312a9">2 Który dostawca usług telefonicznych?</p>
-				<p class="help" data-tx="t0067:4b92fb6">Niektórzy dostawcy umożliwiają bezpośrednią rejestrację urządzeń VoIP w swojej infrastrukturze - wtedy klucz sprzętowy działa również bez Fritza!</p>
+				<p class="help" data-tx="t0067:eaceffb">Niektórzy dostawcy umożliwiają bezpośrednią rejestrację urządzeń VoIP w swojej infrastrukturze - klucz sprzętowy działa wtedy nawet wtedy, gdy router nie obsługuje telefonów VOIP.</p>
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="telekom" type="button">
 						<span data-tx="t0068:fc2c352d">Telekomunikacja</span>
@@ -99,7 +99,7 @@
 			<div class="wizard-result" data-result="dongle-only" hidden="hidden">
 				<div class="notification is-success">
 					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0077:a9f972a2">Klucz sprzętowy to twój wariant.</span></p>
-					<p data-tx="t0078:9ad36c38">Klucz sprzętowy <strong>PhoneBlock</strong> działa z Twoją konfiguracją - pozostałe dwa warianty zawodzą: Automatyczna sekretarka w chmurze wymaga dostępu do konfiguracji VoIP własnego Fritz!Box, książka telefoniczna z listą bloków wymaga Fritz!Box od 2018 roku.</p>
+					<p data-tx="t0078:cbd60954">Klucz sprzętowy <strong>PhoneBlock</strong> działa z Twoją konfiguracją - pozostałe dwa warianty zawodzą: Automatyczna sekretarka w chmurze wymaga Fritz!Box z logowaniem z internetu, książka telefoniczna z blokadą wymaga Fritz!Box od 2018 roku.</p>
 				</div>
 			</div>
 

@@ -20,26 +20,26 @@
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="fritzbox" type="button">
 						<span class="icon"><i class="fa-solid fa-network-wired"></i></span>
-						<span data-tx="t0056:42829262">Una Fritz Box (propia o del proveedor)</span>
+						<span data-tx="t0056:cbc40c39">Caja Fritz</span>
 					</button>
 					<button class="button is-info wizard-btn" data-route="other" type="button">
 						<span class="icon"><i class="fa-solid fa-router"></i></span>
-						<span data-tx="t0057:c38f2422">Otro router (Speedport, estación Vodafone, ...)</span>
+						<span data-tx="t0057:9ddca9ce">Otro router (Speedport, ...)</span>
 					</button>
 				</div>
 			</div>
 
 			<div class="wizard-step" data-step="ownership" hidden="hidden">
 				<p class="title is-5 mt-4" data-tx="t0058:b5160124">2. ¿Caja Fritz! propia o alquilada al proveedor?</p>
-				<p class="help" data-tx="t0059:beb0cb62">Con un buzón de alquiler, generalmente no tienes acceso a la configuración de telefonía VoIP, por lo que el contestador automático en la nube no está disponible.</p>
+				<p class="help" data-tx="t0059:fe71ab83">Con un buzón de alquiler, el proveedor puede bloquear el registro de teléfonos desde Internet (por ejemplo, Vodafone), con lo que el contestador automático en la nube deja de estar disponible.</p>
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="own" type="button">
 						<span class="icon"><i class="fa-solid fa-house"></i></span>
-						<span data-tx="t0060:1a9e1f09">Caja Fritz comprada por el propietario</span>
+						<span data-tx="t0060:9fdfe3d6">Su propia caja Fritz</span>
 					</button>
 					<button class="button is-info wizard-btn" data-route="rental" type="button">
 						<span class="icon"><i class="fa-solid fa-handshake"></i></span>
-						<span data-tx="t0061:37e11458">Fritz Box alquilado al proveedor</span>
+						<span data-tx="t0061:f20dd83b">Caja Fritz alquilada</span>
 					</button>
 				</div>
 			</div>
@@ -61,7 +61,7 @@
 
 			<div class="wizard-step" data-step="provider" hidden="hidden">
 				<p class="title is-5 mt-4" data-tx="t0066:59312a9">2 ¿Qué proveedor de telefonía?</p>
-				<p class="help" data-tx="t0067:4b92fb6">Algunos proveedores permiten el registro directo del dispositivo VoIP en su infraestructura: ¡entonces el dongle también funciona sin un Fritz!</p>
+				<p class="help" data-tx="t0067:eaceffb">Algunos proveedores permiten el registro directo de dispositivos VoIP en su infraestructura: el dongle funciona entonces aunque el router no admita teléfonos VOIP.</p>
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="telekom" type="button">
 						<span data-tx="t0068:fc2c352d">Telecomunicaciones</span>
@@ -99,7 +99,7 @@
 			<div class="wizard-result" data-result="dongle-only" hidden="hidden">
 				<div class="notification is-success">
 					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0077:a9f972a2">El dongle es tu variante.</span></p>
-					<p data-tx="t0078:9ad36c38">El <strong>PhoneBlock dongle</strong> funciona con su configuración - las otras dos variantes fallan: El contestador automático en la nube necesita acceso a la configuración VoIP de su propio Fritz!Box, la agenda telefónica de bloqueo necesita un Fritz!Box a partir de 2018.</p>
+					<p data-tx="t0078:cbd60954">El <strong>PhoneBlock dongle</strong> funciona con su configuración - las otras dos variantes fallan: El contestador automático en la nube necesita Fritz!Box con inicio de sesión desde Internet, la guía telefónica de bloqueo necesita un Fritz!Box a partir de 2018.</p>
 				</div>
 			</div>
 

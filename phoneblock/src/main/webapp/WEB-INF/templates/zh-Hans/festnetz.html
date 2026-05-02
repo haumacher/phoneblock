@@ -20,26 +20,26 @@
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="fritzbox" type="button">
 						<span class="icon"><i class="fa-solid fa-network-wired"></i></span>
-						<span data-tx="t0056:42829262">一个 Fritz！Box（无论是您自己的还是供应商提供的）</span>
+						<span data-tx="t0056:cbc40c39">弗里茨盒子</span>
 					</button>
 					<button class="button is-info wizard-btn" data-route="other" type="button">
 						<span class="icon"><i class="fa-solid fa-router"></i></span>
-						<span data-tx="t0057:c38f2422">另一个路由器（Speedport、Vodafone 站......）。</span>
+						<span data-tx="t0057:9ddca9ce">其他路由器（快速端口...）</span>
 					</button>
 				</div>
 			</div>
 
 			<div class="wizard-step" data-step="ownership" hidden="hidden">
 				<p class="title is-5 mt-4" data-tx="t0058:b5160124">2. 自己的 Fritz!</p>
-				<p class="help" data-tx="t0059:beb0cb62">租用盒子时，您一般无法访问网络电话配置，因此无法使用云答录机。</p>
+				<p class="help" data-tx="t0059:fe71ab83">有了租用盒，提供商就可以阻止从互联网上注册电话（如沃达丰）--云答录机因此不再可用。</p>
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="own" type="button">
 						<span class="icon"><i class="fa-solid fa-house"></i></span>
-						<span data-tx="t0060:1a9e1f09">自己购买的 Fritz！Box</span>
+						<span data-tx="t0060:9fdfe3d6">拥有弗里茨盒子</span>
 					</button>
 					<button class="button is-info wizard-btn" data-route="rental" type="button">
 						<span class="icon"><i class="fa-solid fa-handshake"></i></span>
-						<span data-tx="t0061:37e11458">从供应商处租用的 Fritz!</span>
+						<span data-tx="t0061:f20dd83b">租用 Fritz！Box</span>
 					</button>
 				</div>
 			</div>
@@ -61,7 +61,7 @@
 
 			<div class="wizard-step" data-step="provider" hidden="hidden">
 				<p class="title is-5 mt-4" data-tx="t0066:59312a9">2 选择哪家电话服务提供商？</p>
-				<p class="help" data-tx="t0067:4b92fb6">有些提供商允许将网络电话设备直接注册到其基础设施上，这样，加密狗也可以在没有 Fritz 的情况下工作！</p>
+				<p class="help" data-tx="t0067:eaceffb">有些提供商允许在其基础设施上直接注册网络电话设备，这样即使路由器不支持网络电话，加密狗也能正常工作。</p>
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="telekom" type="button">
 						<span data-tx="t0068:fc2c352d">电信</span>
@@ -99,7 +99,7 @@
 			<div class="wizard-result" data-result="dongle-only" hidden="hidden">
 				<div class="notification is-success">
 					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0077:a9f972a2">加密狗是你的变体。</span></p>
-					<p data-tx="t0078:9ad36c38"><strong>PhoneBlock 加密狗</strong>可与您的配置一起使用，而其他两种变体则无法使用：云应答机需要访问其自身 Fritz！Box 的 VoIP 配置，从 2018 年起，拦截列表电话簿需要一个 Fritz！Box。</p>
+					<p data-tx="t0078:cbd60954"><strong>PhoneBlock 加密狗</strong>可与您的配置一起使用，而其他两种变体则无法使用：云应答机需要从互联网登录 Fritz！Box，从 2018 年起，拦截列表电话簿需要 Fritz！Box。</p>
 				</div>
 			</div>
 

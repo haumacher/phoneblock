@@ -20,26 +20,26 @@
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="fritzbox" type="button">
 						<span class="icon"><i class="fa-solid fa-network-wired"></i></span>
-						<span data-tx="t0056:42829262">Fritz!Box (власний або від провайдера)</span>
+						<span data-tx="t0056:cbc40c39">Фріц! Коробка!</span>
 					</button>
 					<button class="button is-info wizard-btn" data-route="other" type="button">
 						<span class="icon"><i class="fa-solid fa-router"></i></span>
-						<span data-tx="t0057:c38f2422">Інший роутер (Speedport, станція Vodafone, ...)</span>
+						<span data-tx="t0057:9ddca9ce">Інший маршрутизатор (Speedport, ...)</span>
 					</button>
 				</div>
 			</div>
 
 			<div class="wizard-step" data-step="ownership" hidden="hidden">
 				<p class="title is-5 mt-4" data-tx="t0058:b5160124">2. власний Fritz! box чи орендований у провайдера?</p>
-				<p class="help" data-tx="t0059:beb0cb62">З орендованою коробкою ви, як правило, не маєте доступу до конфігурації VoIP-телефонії, тому хмарний автовідповідач недоступний.</p>
+				<p class="help" data-tx="t0059:fe71ab83">При оренді боксу провайдер може заблокувати реєстрацію телефонів з Інтернету (наприклад, Vodafone) - хмарний автовідповідач, таким чином, більше не буде доступний.</p>
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="own" type="button">
 						<span class="icon"><i class="fa-solid fa-house"></i></span>
-						<span data-tx="t0060:1a9e1f09">Власноруч придбаний Fritz!Box</span>
+						<span data-tx="t0060:9fdfe3d6">Власний Fritz!Box</span>
 					</button>
 					<button class="button is-info wizard-btn" data-route="rental" type="button">
 						<span class="icon"><i class="fa-solid fa-handshake"></i></span>
-						<span data-tx="t0061:37e11458">Fritz!Box, орендований у провайдера</span>
+						<span data-tx="t0061:f20dd83b">Орендований Fritz!Box</span>
 					</button>
 				</div>
 			</div>
@@ -61,7 +61,7 @@
 
 			<div class="wizard-step" data-step="provider" hidden="hidden">
 				<p class="title is-5 mt-4" data-tx="t0066:59312a9">2 Який провайдер телефонії?</p>
-				<p class="help" data-tx="t0067:4b92fb6">Деякі провайдери дозволяють пряму реєстрацію VoIP-пристроїв у своїй інфраструктурі - тоді донгл також працює без проблем!</p>
+				<p class="help" data-tx="t0067:eaceffb">Деякі провайдери дозволяють пряму реєстрацію VoIP-пристроїв на своїй інфраструктурі - тоді донгл працює, навіть якщо маршрутизатор не підтримує VOIP-телефони.</p>
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="telekom" type="button">
 						<span data-tx="t0068:fc2c352d">Телекомунікації</span>
@@ -99,7 +99,7 @@
 			<div class="wizard-result" data-result="dongle-only" hidden="hidden">
 				<div class="notification is-success">
 					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0077:a9f972a2">Донгл - це ваш варіант.</span></p>
-					<p data-tx="t0078:9ad36c38">Ключ <strong>PhoneBlock</strong> працює з вашою конфігурацією - інші два варіанти не працюють: Хмарний автовідповідач потребує доступу до конфігурації VoIP власного Fritz!Box, телефонна книга блокування потребує Fritz!Box від 2018 року.</p>
+					<p data-tx="t0078:cbd60954">З вашою конфігурацією працює донгл <strong>PhoneBlock</strong> - інші два варіанти не працюють: Хмарний автовідповідач потребує Fritz!Box з можливістю входу з Інтернету, телефонна книга блокування потребує Fritz!Box починаючи з 2018 року.</p>
 				</div>
 			</div>
 

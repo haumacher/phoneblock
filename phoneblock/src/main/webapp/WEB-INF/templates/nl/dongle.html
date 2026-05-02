@@ -7,7 +7,7 @@
 
 <section class="section">
 	<div class="content">
-		<h1 data-tx="t0192:3c01c047">PhoneBlock Dongle <span class="tag is-info is-medium ml-2">New</span></h1>
+		<h1 data-tx="t0192:f91bfd8">PhoneBlock Dongle <sup><span class="tag is-info is-medium ml-2">New</span></sup></h1>
 
 		<p class="subtitle" data-tx="t0095:dab19814">Een intelligent antwoordapparaat in de vorm van een IP-telefoon. Het apparaat is zo groot als een duim, kan worden aangesloten op de USB-poort van de router, wordt geregistreerd als een extra SIP-telefoon en onderschept commerciële gesprekken voordat je eigenlijke telefoon overgaat. Werkt ongeacht het model router, zelfs zonder Fritz!</p>
 
@@ -41,11 +41,7 @@
 			<p data-tx="t0100:86bdb13f"><strong>Waarom dit zo charmant is:</strong> De dongle heeft alleen minimale voeding en Wi-Fi nodig. Geen extra server, geen Fritz!Box, geen contract. De ESP32 microcontroller binnenin verbruikt minder dan een halve watt - je kunt hem gewoon op de USB-poort van je router aansluiten en het verder vergeten.</p>
 		</div>
 
-		<p class="subtitle mt-6" data-tx="t0124:b14ca93b">Dit is waar het praktisch wordt: de instructies leiden je stap voor stap door het bestellen, flashen en instellen - ongeveer €10 hardware, een eenmalige inspanning van 10 minuten.</p>
-
-		<div class="notification is-warning">
-			<p data-tx="t0125:bd2333ac"><strong>Status: Beta.</strong> Deze handleiding is afgestemd op een enkel, getest hardwaretype - koop precies het bord uit stap 1, dan past elke verdere stap. Andere borden werken vaak ook, maar vereisen andere stuurprogramma's en je eigen speurwerk (zie onderstaande link).</p>
-		</div>
+		<p class="subtitle mt-6" data-tx="t0124:bd004e4f">Dit is waar het praktisch wordt: de instructies leiden je stap voor stap door het bestellen en instellen - ongeveer €10 hardware, een eenmalige inspanning van een paar minuten.</p>
 
 		<noscript>
 			<div class="notification is-danger">
@@ -53,23 +49,9 @@
 			</div>
 		</noscript>
 
-		<div class="notification is-warning" id="dongle-install-unsupported" style="display:none;">
-			<p data-tx="t0127:bb075478"><strong>Deze browser kan de dongle niet flashen.</strong> Webflashing werkt alleen in <strong>Google Chrome</strong> of <strong>Microsoft Edge</strong> op een computer (niet op een smartphone). Open deze pagina met Chrome of Edge en probeer het opnieuw.</p>
-		</div>
-
-		<h2 data-tx="t0128:93c33292" id="voraussetzungen">Voordat je begint</h2>
-
-		<p data-tx="t0129:5ffae555">Controleer kort of aan deze punten is voldaan - zodat er geen teleurstelling ontstaat:</p>
-
-		<ul>
-			<li data-tx="t0130:b4ac4baa"><strong>SIP-registrar</strong> - ofwel in de router (bijv. Fritz!Box) of rechtstreeks bij de telefonieprovider, mits deze externe SIP-clients toestaat ("Registratie van een IP-telefoon mogelijk").</li>
-			<li data-tx="t0131:be2e6f7c"><strong>2,4 GHz WLAN</strong> binnen bereik.</li>
-			<li data-tx="t0132:573b2c92"><strong>5 V USB-voeding</strong> - idealiter USB-poort op de router, of een USB-voedingseenheid.</li>
-		</ul>
-
 		<h2 data-tx="t0133:1cedb9ee" id="schritt-1">Stap 1 - Bestel dongle</h2>
 
-		<p data-tx="t0134:1367b791">Bestel dit ESP32-bord. Het is compact genoeg om rechtstreeks in de router te worden gestoken als een USB-stick, heeft de juiste USB seriële chip (CH340) en de PhoneBlock dongle is ermee getest.</p>
+		<p data-tx="t0134:2e54f376">Bestel deze USB dongle ("ESP32 developer board"). Maak je geen zorgen, je hoeft niets te "ontwikkelen", installeer gewoon de voltooide PhoneBlock-software vanuit de browser.</p>
 
 		<figure class="image" style="max-width:300px;">
 			<img alt="ESP32 dongle" data-tx="t0135:31cdc7dc" th:src="@{/assets/img/dongle/dongle-option.png}"/>
@@ -92,11 +74,11 @@
 			<p data-tx="t0139:1caf402b">Deze aanbiedingen zijn op geen enkele manier gerelateerd aan PhoneBlock en PhoneBlock is op geen enkele manier betrokken bij de winst. Het gaat uitsluitend om de hardware. U installeert de PhoneBlock software (firmware) zelf na ontvangst (zie hieronder).</p>
 		</div>
 
-		<p data-tx="t0140:eb2aefa3"><strong>U wilt een ander bord gebruiken</strong> Andere ESP32 DevKits werken op precies dezelfde manier, maar hebben mogelijk een ander USB serieel stuurprogramma nodig (bijvoorbeeld CP2102 in plaats van CH340) en een USB verlengkabel als het ontwerp niet direct in de router past. Details en aanbevelingen: <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/HARDWARE.md" rel="noopener" target="_blank">HARDWARE.md in de repo</a>.</p>
+		<p data-tx="t0140:41c85d87"><strong>Je bent zelf aan het knutselen en hebt al een ESP32 in de la liggen?</strong> PhoneBlock zal vrijwel zeker werken op je board als het minstens 4MB flashgeheugen heeft. Het kan zijn dat je een andere USB seriële driver nodig hebt of dat je de PIN toewijzing opnieuw moet configureren zodat de status LED knippert - je kunt het beste even kijken op de <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/" rel="noopener" target="_blank">projectpagina</a>.</p>
 
 		<h2 data-tx="t0141:fe30aa8a" id="schritt-2">Stap 2 - USB-stuurprogramma installeren (alleen Windows)</h2>
 
-		<p data-tx="t0142:ba1650a4">De dongle gebruikt de <strong>CH340</strong> USB seriële chip. Om Windows deze als COM-poort te laten herkennen, heb je eenmalig het juiste stuurprogramma nodig.</p>
+		<p data-tx="t0142:155cb329">De dongle gebruikt de <strong>CH340</strong> USB seriële chip. Om deze door Windows te laten herkennen, heb je eenmalig het juiste stuurprogramma nodig, zodat je het programma op de dongle kunt laden ("flashen").</p>
 
 		<p>
 			<a class="button is-link" href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">
@@ -119,15 +101,13 @@
 			</ul>
 		</details>
 
-		<h2 data-tx="t0149:62d0966b" id="schritt-3">Stap 3 - Plaats de dongle in de computer</h2>
+		<h2 data-tx="t0149:ccccec4c" id="schritt-3">Stap 3 - De dongle voorbereiden</h2>
 
-		<p data-tx="t0150:11c66231">Sluit de dongle rechtstreeks aan op een vrije USB-poort van je computer. Een klein LED-lampje op de printplaat moet onmiddellijk gaan branden.</p>
+		<p data-tx="t0150:a212e6cf">U moet de PhoneBlock software eenmalig op uw dongle laden. Sluit hiervoor de dongle aan op een vrije USB-poort van uw computer.</p>
 
-		<figure>
-			<div data-tx="t0151:a85e1a1d" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Plaatshouder: Foto "Dongle geplaatst in de USB-poort van een notebook"].</div>
-		</figure>
-
-		<h2 data-tx="t0152:4325c49c" id="schritt-4">Stap 4 - Firmware flashen</h2>
+		<div class="notification is-warning" id="dongle-install-unsupported" style="display:none;">
+			<p data-tx="t0127:cc2d5f5e"><strong>Deze browser kan de dongle niet flashen.</strong> Om je dongle gebruiksklaar te maken, heb je een <strong>Google Chrome</strong> of <strong>Microsoft Edge</strong> browser nodig op een computer (niet op een smartphone). Open deze pagina met Chrome of Edge en probeer het opnieuw.</p>
+		</div>
 
 		<p data-tx="t0153:a0900784">Klik op de knop. De browser vraagt dan welk aangesloten apparaat hij mag aanspreken. Selecteer het item met <strong>"USB-SERIAL CH340"</strong> (Windows) of <strong>"USB Single Serial"</strong> of <strong>"wch.cn"</strong> (macOS/Linux) in de naam en bevestig met <strong>"Connect"</strong>.</p>
 
@@ -154,13 +134,13 @@
 			<div data-tx="t0158:b5c3a2f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Plaatshouder: Screenshot van het browserdialoogvenster voor apparaatselectie met gemarkeerde CH340-invoer].</div>
 		</figure>
 
-		<p data-tx="t0159:5fcdc08c">Bevestig de beveiligingsprompt "Apparaat wissen en PhoneBlock Dongle installeren?" met <strong>"Installeren"</strong>. Tijdens de eerste flash wordt het volledige geheugen gewist en wordt de firmware geïnstalleerd - dit duurt ongeveer een minuut. Ontkoppel de dongle niet gedurende deze tijd.</p>
+		<p data-tx="t0159:d037e970">Bevestig de beveiligingsprompt "Install PhoneBlock Dongle?" met <strong>"Install"</strong>. De PhoneBlock-software wordt nu op de dongle geladen - dit duurt ongeveer een minuut. Koppel de dongle gedurende deze tijd niet los.</p>
 
 		<figure>
 			<div data-tx="t0160:177a19e2" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Plaatshouder: Screenshot van de esp-web-tools voortgangsbalk tijdens het flashen].</div>
 		</figure>
 
-		<h2 data-tx="t0161:e5862ff8" id="schritt-5">Stap 5 - Sluit de dongle aan op de router</h2>
+		<h2 data-tx="t0161:657638e7" id="schritt-5">Stap 4 - Sluit de dongle aan op de router</h2>
 
 		<p data-tx="t0162:cbcaee11">Wanneer de browser meldt "Installatie voltooid!", haal je de dongle uit de computer en sluit je deze aan op een vrije USB-poort van je router (of een willekeurige 5 V USB-voeding binnen WLAN-bereik).</p>
 
@@ -168,9 +148,9 @@
 			<div data-tx="t0163:a5796f78" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Placeholder: Photo "Dongle geplaatst in de USB-poort van de Fritz!Box"].</div>
 		</figure>
 
-		<h2 data-tx="t0164:b184a512" id="schritt-6">Stap 6 - De dongle toevoegen aan het WLAN (WPS)</h2>
+		<h2 data-tx="t0164:fc6ca575" id="schritt-6">Stap 5 - De dongle toevoegen aan het WLAN (WPS)</h2>
 
-		<p data-tx="t0165:6ac463a1">De pas geflashte dongle heeft nog geen Wi-Fi-toegangsgegevens en wacht op koppeling via <strong>WPS</strong>. De LED <strong>knippert snel</strong> (ongeveer vijf keer per seconde) en geeft "Koppelingsmodus actief" aan.</p>
+		<p data-tx="t0165:b5b221d5">De pas geflashte dongle heeft nog geen Wi-Fi-toegangsgegevens en wacht tot je hem met je Wi-Fi verbindt. De LED <strong>knippert snel</strong> (ongeveer vijf keer per seconde) en geeft "Koppelingsmodus actief" aan.</p>
 
 		<p data-tx="t0166:83cbb4c2">Druk nu op de <strong>WPS-knop</strong> op de router. Bij de Fritz!Box is dit de <strong>"Connect / WPS"</strong>-knop aan de bovenkant van het apparaat - druk kort totdat het Wi-Fi-lampje op de router zelf begint te knipperen. Andere routers noemen de knop "WPS" of "Pair". Binnen een paar seconden stuurt de router je Wi-Fi-toegangsgegevens naar de dongle, die ze opslaat en verbinding maakt.</p>
 
@@ -178,13 +158,13 @@
 			<div data-tx="t0167:5f50dac7" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Plaatshouder: Foto "Verbind/WPS-knop op de Fritz!Box met pijl"]</div>
 		</figure>
 
-		<p data-tx="t0168:8eba89fd"><strong>Heeft gewerkt:</strong> De LED knippert nu langzaam (ongeveer eenmaal per seconde) - de dongle bevindt zich in het WLAN, heeft een IP toegewezen gekregen en wacht op de configuratie in stap 7.</p>
+		<p data-tx="t0168:32d2921"><strong>Heeft gewerkt:</strong> De LED knippert nu langzaam (ongeveer eenmaal per seconde) - de dongle bevindt zich in het WLAN, heeft een adres ontvangen en wacht op configuratie (volgende stap).</p>
 
-		<p data-tx="t0169:96351c92"><strong>Werkt niet</strong> Controleer in de routerinstellingen of WPS is geactiveerd (op de Fritz!Box: <em>WLAN → Beveiliging → WPS</em>). Als het WPS-venster te kort was, zal de dongle het koppelproces automatisch opnieuw starten - druk dan gewoon opnieuw op de WPS-knop.</p>
+		<p data-tx="t0169:f91aa6d5"><strong>Werkt niet</strong> Controleer in de routerinstellingen of WPS is geactiveerd (op de Fritz!Box: <em>WLAN → Beveiliging → WPS</em>). Als het WPS-venster te kort was, begint de dongle automatisch opnieuw met koppelen - druk dan gewoon opnieuw op de WPS-knop.</p>
 
-		<h2 data-tx="t0170:5dee0d65" id="schritt-7">Stap 7 - SIP-toegang en PhoneBlock-token invoeren</h2>
+		<h2 data-tx="t0170:82df9e2a" id="schritt-7">Stap 6 - Registreren als telefoon en PhoneBlock-toegang instellen</h2>
 
-		<p data-tx="t0171:58c22345">Om de dongle gesprekken te laten onderscheppen, heeft hij nog twee dingen nodig: uw SIP-toegangsgegevens (zodat hij zich bij de router kan aanmelden als een extra telefoon) en een PhoneBlock-token (zodat hij de spamdatabase kan bevragen). U voert beide in de webinterface van de dongle in.</p>
+		<p data-tx="t0171:4e4b9d0f">Om de dongle gesprekken te laten onderscheppen, heeft hij nog twee dingen nodig: uw SIP-toegangsgegevens (zodat hij zich kan aanmelden als een extra telefoon) en een PhoneBlock-token (zodat hij de spamdatabase kan raadplegen). U voert beide in de webinterface van de dongle in.</p>
 
 		<p data-tx="t0172:f4d3bf5f">Open in de browser:</p>
 
@@ -214,7 +194,7 @@
 
 		<h2 data-tx="t0182:c258f25f" id="tester">Ervaringsverslag bijdragen</h2>
 
-		<p data-tx="t0183:493a28c5">De dongle draait hier thuis betrouwbaar op een Fritz!Box - maar router modellen, providers en verbindingstypes zijn een bonte mengeling en elke combinatie heeft zijn eigenaardigheden: verschillende SIP-dialecten, verschillende NAT-regels, verschillende belvertragingen. Zodat ik patronen kan herkennen en problemen gericht kan oplossen, zijn <strong>gestructureerde ervaringsrapporten</strong> goud waard - ongeacht of alles bij jou werkte of dat er iets vastliep.</p>
+		<p data-tx="t0183:351d7eb2">De eerste dongles werken al betrouwbaar - maar router modellen, providers en verbindingstypes zijn een bonte mengeling en elke combinatie heeft zijn eigen eigenaardigheden. Om de installatiewizard te verbeteren, zijn <strong>gestructureerde ervaringsrapporten</strong> goud waard - ongeacht of alles werkte of dat er een probleem was.</p>
 
 		<p data-tx="t0184:49f94506">Bijzonder interessant zijn opstellingen die nog steeds slecht worden behandeld:</p>
 
@@ -222,7 +202,7 @@
 			<li data-tx="t0185:e1971ce0">Telekom-verbinding met <strong>Speedport</strong>-router</li>
 			<li data-tx="t0186:61cce24d">Vodafone/Unitymedia-kabelverbinding met de meegeleverde providerbox</li>
 			<li data-tx="t0187:ea506b90">1&amp;1, o2, Deutsche Glasfaser en andere providers</li>
-			<li data-tx="t0188:e5ffca52">Internationale verbindingen (Zwitserland, Oostenrijk, rest van Europa)</li>
+			<li data-tx="t0188:3d2d85c2">Internationale verbindingen (Zwitserland, Oostenrijk, de rest van Europa en de wereld)</li>
 		</ul>
 
 		<p data-tx="t0189:3fcb6dd2">Rapporten worden uitgevoerd via GitHub issues - een vooraf ingevuld formulier vraagt op een gestructureerde manier naar de belangrijkste kerngegevens (hardware, router, provider, firmwareversie, bevindingen). Andere testers kunnen direct zien welke setups al gedekt zijn en welke niet.</p>

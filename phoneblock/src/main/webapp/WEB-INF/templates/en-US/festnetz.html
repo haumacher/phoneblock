@@ -20,26 +20,26 @@
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="fritzbox" type="button">
 						<span class="icon"><i class="fa-solid fa-network-wired"></i></span>
-						<span data-tx="t0056:42829262">A Fritz!Box (whether your own or from the provider)</span>
+						<span data-tx="t0056:cbc40c39">Fritz!Box</span>
 					</button>
 					<button class="button is-info wizard-btn" data-route="other" type="button">
 						<span class="icon"><i class="fa-solid fa-router"></i></span>
-						<span data-tx="t0057:c38f2422">Another router (Speedport, Vodafone station, ...)</span>
+						<span data-tx="t0057:9ddca9ce">Other router (Speedport, ...)</span>
 					</button>
 				</div>
 			</div>
 
 			<div class="wizard-step" data-step="ownership" hidden="hidden">
 				<p class="title is-5 mt-4" data-tx="t0058:b5160124">2. own Fritz! box or rented from the provider?</p>
-				<p class="help" data-tx="t0059:beb0cb62">With a rental box, you generally do not have access to the VoIP telephony configuration - the cloud answering machine is therefore not available.</p>
+				<p class="help" data-tx="t0059:fe71ab83">With a rental box, the provider can block the registration of telephones from the Internet (e.g. Vodafone) - the cloud answering machine is therefore no longer available.</p>
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="own" type="button">
 						<span class="icon"><i class="fa-solid fa-house"></i></span>
-						<span data-tx="t0060:1a9e1f09">Own purchased Fritz!Box</span>
+						<span data-tx="t0060:9fdfe3d6">Own Fritz!Box</span>
 					</button>
 					<button class="button is-info wizard-btn" data-route="rental" type="button">
 						<span class="icon"><i class="fa-solid fa-handshake"></i></span>
-						<span data-tx="t0061:37e11458">Fritz!Box rented from the provider</span>
+						<span data-tx="t0061:f20dd83b">Rented Fritz!Box</span>
 					</button>
 				</div>
 			</div>
@@ -61,7 +61,7 @@
 
 			<div class="wizard-step" data-step="provider" hidden="hidden">
 				<p class="title is-5 mt-4" data-tx="t0066:59312a9">2. which telephony provider?</p>
-				<p class="help" data-tx="t0067:4b92fb6">Some providers allow direct VoIP device registration to their infrastructure - then the dongle also works without a Fritz!</p>
+				<p class="help" data-tx="t0067:eaceffb">Some providers allow direct VoIP device registration on their infrastructure - the dongle then works even if the router does not support VOIP telephones.</p>
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="telekom" type="button">
 						<span data-tx="t0068:fc2c352d">Telecom</span>
@@ -99,7 +99,7 @@
 			<div class="wizard-result" data-result="dongle-only" hidden="hidden">
 				<div class="notification is-success">
 					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0077:a9f972a2">The dongle is your variant.</span></p>
-					<p data-tx="t0078:9ad36c38">The <strong>PhoneBlock dongle</strong> works with your configuration - the other two variants fail: Cloud answering machine needs access to the VoIP configuration of its own Fritz!Box, the blocklist phone book needs a Fritz!Box from 2018 onwards.</p>
+					<p data-tx="t0078:cbd60954">The <strong>PhoneBlock dongle</strong> works with your configuration - the other two variants fail: Cloud answering machine needs Fritz!Box with login from the Internet, the blocklist phone book needs a Fritz!Box from 2018 onwards.</p>
 				</div>
 			</div>
 

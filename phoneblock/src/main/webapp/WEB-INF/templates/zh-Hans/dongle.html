@@ -7,7 +7,7 @@
 
 <section class="section">
 	<div class="content">
-		<h1 data-tx="t0192:3c01c047">PhoneBlock 加密狗 <span class="tag is-info is-medium ml-2">新&lt;/x1</span></h1>
+		<h1 data-tx="t0192:f91bfd8">PhoneBlock 加密狗 <sup><span class="tag is-info is-medium ml-2">New</span></sup></h1>
 
 		<p class="subtitle" data-tx="t0095:dab19814">一台披着 IP 电话外衣的智能应答机。它只有拇指大小，可插入路由器的 USB 端口，注册为一个额外的 SIP 电话，并在实际电话响起之前拦截商业来电。无论路由器型号如何，即使没有 Fritz 也能使用！</p>
 
@@ -41,11 +41,7 @@
 			<p data-tx="t0100:86bdb13f"><strong>它为何如此迷人：</strong>加密狗只需最低限度的电源和 Wi-Fi 即可使用。无需额外的服务器，无需 Fritz！Box，无需合同。内部的 ESP32 微控制器耗电不到半瓦，您只需将其插入路由器的 USB 端口，然后就可以不用管它了。</p>
 		</div>
 
-		<p class="subtitle mt-6" data-tx="t0124:b14ca93b">这就是它的实用之处：说明书一步一步地指导你完成订购、闪存和设置--大约 10 欧元的硬件，10 分钟的一次性努力。</p>
-
-		<div class="notification is-warning">
-			<p data-tx="t0125:bd2333ac"><strong>Status: Beta.</strong> 本指南是为经过测试的单一硬件类型量身定制的--购买步骤 1 中的板卡，那么接下来的每个步骤都将适用。其他板通常也能正常工作，但需要不同的驱动程序和你自己的侦查工作（请参阅下面的链接）。</p>
-		</div>
+		<p class="subtitle mt-6" data-tx="t0124:bd004e4f">这就是它的实用之处：说明书一步一步地指导你进行订购和设置--大约 10 欧元的硬件，只需几分钟的一次性努力。</p>
 
 		<noscript>
 			<div class="notification is-danger">
@@ -53,23 +49,9 @@
 			</div>
 		</noscript>
 
-		<div class="notification is-warning" id="dongle-install-unsupported" style="display:none;">
-			<p data-tx="t0127:bb075478"><strong>此浏览器无法闪存加密狗。</strong>网络闪存仅适用于电脑上的 <strong>Google Chrome 浏览器</strong>或 <strong>Microsoft Edge 浏览器</strong>（不适用于智能手机）。使用 Chrome 或 Edge 打开此页面，然后再试一次。</p>
-		</div>
-
-		<h2 data-tx="t0128:93c33292" id="voraussetzungen">开始之前</h2>
-
-		<p data-tx="t0129:5ffae555">简要检查这些要点是否得到满足，以免失望：</p>
-
-		<ul>
-			<li data-tx="t0130:b4ac4baa"><strong>SIP 注册器</strong> - 路由器（如 Fritz！Box）或直接与电话供应商连接，前提是允许外部 SIP 客户端（"可注册 IP 电话"）。</li>
-			<li data-tx="t0131:be2e6f7c"><strong>2.4 GHz WLAN</strong> 范围内。</li>
-			<li data-tx="t0132:573b2c92"><strong>5 V USB 电源</strong> - 最好是路由器上的 USB 端口，或者任何 USB 电源装置。</li>
-		</ul>
-
 		<h2 data-tx="t0133:1cedb9ee" id="schritt-1">步骤 1 - 订购加密狗</h2>
 
-		<p data-tx="t0134:1367b791">订购这块 ESP32 板。它非常小巧，可以作为 USB 记忆棒直接插入路由器，有相应的 USB 串行芯片（CH340），PhoneBlock 加密狗也用它进行了测试。</p>
+		<p data-tx="t0134:2e54f376">订购 USB 加密狗（"ESP32 开发板"）。别担心，你不需要 "开发 "任何东西，只需在浏览器中安装完成的 PhoneBlock 软件即可。</p>
 
 		<figure class="image" style="max-width:300px;">
 			<img alt="ESP32 加密狗" data-tx="t0135:31cdc7dc" th:src="@{/assets/img/dongle/dongle-option.png}"/>
@@ -92,11 +74,11 @@
 			<p data-tx="t0139:1caf402b">这些优惠与 PhoneBlock 毫无关系，PhoneBlock 也绝不参与盈利。这完全是关于硬件。在收到产品后，您可以自行安装 PhoneBlock 软件（固件）（见下文）。</p>
 		</div>
 
-		<p data-tx="t0140:eb2aefa3"><strong>您想使用不同的电路板</strong> 其他 ESP32 DevKits 的工作方式完全相同，但如果设计不能直接插入路由器，则可能需要不同的 USB 串行驱动程序（例如，用 CP2102 代替 CH340）和 USB 延长线。详细信息和建议：<a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/HARDWARE.md" rel="noopener" target="_blank">repo 中的 HARDWARE.md</a>。</p>
+		<p data-tx="t0140:41c85d87"><strong>你正在自己捣鼓，而且抽屉里已经有了一个ESP32？</strong>如果你的电路板至少有4MB闪存，那么PhoneBlock几乎肯定可以在你的电路板上工作。您可能需要不同的 USB 串口驱动程序，或者需要重新配置 PIN 分配，以便 LED 状态指示灯闪烁 - 最好查看一下 <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/" rel="noopener" target="_blank"> 项目页面</a>。</p>
 
 		<h2 data-tx="t0141:fe30aa8a" id="schritt-2">第 2 步 - 安装 USB 驱动程序（仅限 Windows）</h2>
 
-		<p data-tx="t0142:ba1650a4">加密狗使用 <strong>CH340</strong> USB 串行芯片。为了让 Windows 将其识别为 COM 端口，需要安装相应的驱动程序。</p>
+		<p data-tx="t0142:155cb329">加密狗使用 <strong>CH340</strong> USB 串行芯片。为了让 Windows 能识别它，您需要安装相应的驱动程序，以便将程序加载（"闪存"）到加密狗上。</p>
 
 		<p>
 			<a class="button is-link" href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">
@@ -119,15 +101,13 @@
 			</ul>
 		</details>
 
-		<h2 data-tx="t0149:62d0966b" id="schritt-3">步骤 3 - 将加密狗插入电脑</h2>
+		<h2 data-tx="t0149:ccccec4c" id="schritt-3">步骤 3 - 准备加密狗</h2>
 
-		<p data-tx="t0150:11c66231">将加密狗直接插入电脑上空闲的 USB 端口。电路板上的小型 LED 灯会立即亮起。</p>
+		<p data-tx="t0150:a212e6cf">您需要将 PhoneBlock 软件加载到加密狗上。为此，请将加密狗插入电脑的空闲 USB 端口。</p>
 
-		<figure>
-			<div data-tx="t0151:a85e1a1d" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[占位符：图片 "插入笔记本 USB 端口的加密狗"]</div>
-		</figure>
-
-		<h2 data-tx="t0152:4325c49c" id="schritt-4">步骤 4 - 固件闪存</h2>
+		<div class="notification is-warning" id="dongle-install-unsupported" style="display:none;">
+			<p data-tx="t0127:cc2d5f5e"><strong>此浏览器无法闪烁加密狗。</strong>要准备使用加密狗，您需要在电脑上（非智能手机上）安装 <strong>Google Chrome</strong> 或 <strong>Microsoft Edge</strong> 浏览器。用 Chrome 浏览器或 Edge 浏览器打开此页面，然后再试一次。</p>
+		</div>
 
 		<p data-tx="t0153:a0900784">点击按钮。然后，浏览器会询问允许其寻址的连接设备。选择名称为 <strong>"USB-SERIAL CH340"</strong> (Windows) 或 <strong>"USB Single Serial"</strong> 或 <strong>"wch.cn"</strong> (macOS/Linux) 的条目，然后用 <strong>"连接"</strong>确认。</p>
 
@@ -154,13 +134,13 @@
 			<div data-tx="t0158:b5c3a2f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[占位符：浏览器设备选择对话框截图，CH340 条目突出显示］</div>
 		</figure>
 
-		<p data-tx="t0159:5fcdc08c">使用 <strong>"安装"</strong>确认安全提示 "擦除设备并安装 PhoneBlock 加密狗？在第一次闪存过程中，整个内存将被擦除，固件将被安装--这需要大约一分钟的时间。在此期间不要断开加密狗。</p>
+		<p data-tx="t0159:d037e970">使用 <strong>"安装"</strong>确认安全提示 "安装 PhoneBlock 加密狗？现在，PhoneBlock 软件已加载到加密狗上，这需要大约一分钟的时间。在此期间不要拔下加密狗。</p>
 
 		<figure>
 			<div data-tx="t0160:177a19e2" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[占位符：闪烁过程中 esp-web-tools 进度条的截图］</div>
 		</figure>
 
-		<h2 data-tx="t0161:e5862ff8" id="schritt-5">步骤 5 - 将加密狗插入路由器</h2>
+		<h2 data-tx="t0161:657638e7" id="schritt-5">步骤 4 - 将加密狗插入路由器</h2>
 
 		<p data-tx="t0162:cbcaee11">当浏览器报告 "安装完成！"时，从电脑上取下加密狗，并将其插入路由器上的空闲 USB 端口（或 WLAN 范围内的任何 5 V USB 电源）。</p>
 
@@ -168,9 +148,9 @@
 			<div data-tx="t0163:a5796f78" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[占位符：图片 "插入 Fritz!Box USB 端口的加密狗"]</div>
 		</figure>
 
-		<h2 data-tx="t0164:b184a512" id="schritt-6">步骤 6 - 将加密狗添加到无线局域网（WPS）</h2>
+		<h2 data-tx="t0164:fc6ca575" id="schritt-6">步骤 5 - 将加密狗添加到无线局域网（WPS）</h2>
 
-		<p data-tx="t0165:6ac463a1">刚刷新的加密狗还没有任何 Wi-Fi 访问数据，正在等待通过 <strong>WPS</strong> 配对。LED 指示灯<strong>快速闪烁</strong>（每秒约闪烁五次），发出 "配对模式激活 "的信号。</p>
+		<p data-tx="t0165:b5b221d5">刚刷新的加密狗还没有任何 Wi-Fi 访问数据，正在等待您将其连接到 Wi-Fi 上。LED 指示灯<strong>快速闪烁</strong>（每秒约闪烁五次），发出 "配对模式激活 "的信号。</p>
 
 		<p data-tx="t0166:83cbb4c2">现在按下路由器上的 <strong>WPS 按钮</strong>。在 Fritz！Box 上，这是设备顶部的 <strong>"连接/WPS"</strong>按钮 - 短按，直到路由器上的 Wi-Fi LED 指示灯开始闪烁。其他路由器则将该按钮标为 "WPS "或 "配对"。几秒钟内，路由器就会将您的 Wi-Fi 访问数据传输给加密狗，加密狗会保存数据并进行连接。</p>
 
@@ -178,13 +158,13 @@
 			<div data-tx="t0167:5f50dac7" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[占位符：图片 "Fritz！Box 上带箭头的连接/WPS 按钮"]</div>
 		</figure>
 
-		<p data-tx="t0168:8eba89fd"><strong>已工作：</strong> LED 指示灯现在缓慢闪烁（大约每秒一次）--加密狗已进入 WLAN，已分配 IP，正在等待步骤 7 中的配置。</p>
+		<p data-tx="t0168:32d2921"><strong>已工作：</strong> LED 指示灯现在缓慢闪烁（大约每秒一次）--加密狗已进入 WLAN，收到地址并等待配置（下一步）。</p>
 
-		<p data-tx="t0169:96351c92"><strong>不起作用</strong>请在路由器设置中检查是否激活了 WPS（在 Fritz!Box 上：<em>WLAN → 安全 → WPS</em>）。如果 WPS 窗口太短，加密狗会自动重新启动配对过程，然后只需再次按下 WPS 按钮即可。</p>
+		<p data-tx="t0169:f91aa6d5"><strong>不起作用</strong>请在路由器设置中检查是否激活了 WPS（在 Fritz!Box 上：<em>WLAN → Security → WPS</em>）。如果 WPS 窗口太短，加密狗会自动重新启动配对 - 然后只需再次按下 WPS 按钮即可。</p>
 
-		<h2 data-tx="t0170:5dee0d65" id="schritt-7">第 7 步 - 输入 SIP 访问权限和 PhoneBlock 令牌</h2>
+		<h2 data-tx="t0170:82df9e2a" id="schritt-7">第 6 步 - 注册手机并设置 PhoneBlock 访问权限</h2>
 
-		<p data-tx="t0171:58c22345">为了让加密狗拦截通话，它还需要两样东西：您的 SIP 访问数据（以便它能作为附加电话登录路由器）和 PhoneBlock 令牌（以便它能查询垃圾邮件数据库）。您可以在加密狗的网页界面上输入这两样东西。</p>
+		<p data-tx="t0171:4e4b9d0f">为了让加密狗拦截通话，它还需要两样东西：您的 SIP 访问数据（以便它能作为附加电话登录）和 PhoneBlock 令牌（以便它能查询垃圾邮件数据库）。您可以在加密狗的网页界面上输入这两样东西。</p>
 
 		<p data-tx="t0172:f4d3bf5f">在浏览器中打开：</p>
 
@@ -214,7 +194,7 @@
 
 		<h2 data-tx="t0182:c258f25f" id="tester">提交经验报告</h2>
 
-		<p data-tx="t0183:493a28c5">在家里的 Fritz!Box 上，加密狗运行稳定，但路由器型号、供应商和连接类型五花八门，每种组合都有自己的特点：不同的 SIP 方言、不同的 NAT 规则、不同的振铃延迟。为了让我能够识别模式并有针对性地解决问题，<strong>结构化经验报告</strong>的价值不言而喻--无论您是一切顺利还是出现了问题。</p>
+		<p data-tx="t0183:351d7eb2">第一批加密狗已经开始可靠运行，但路由器型号、提供商和连接类型五花八门，每种组合都有其特殊性。为了改进设置向导，<strong>结构化体验报告</strong>的价值不言而喻--无论一切是否为您所用，也无论是否出现故障。</p>
 
 		<p data-tx="t0184:49f94506">尤其有趣的是，这些设置的覆盖面仍然很窄：</p>
 
@@ -222,7 +202,7 @@
 			<li data-tx="t0185:e1971ce0">使用 <strong>Speedport</strong> 路由器的 Telekom 连接</li>
 			<li data-tx="t0186:61cce24d">通过提供的提供盒连接 Vodafone/Unitymedia 电缆</li>
 			<li data-tx="t0187:ea506b90">1&amp;1、o2、Deutsche Glasfaser 和其他供应商</li>
-			<li data-tx="t0188:e5ffca52">国际连接（瑞士、奥地利、欧洲其他国家）</li>
+			<li data-tx="t0188:3d2d85c2">国际联系（瑞士、奥地利、欧洲其他国家和世界）</li>
 		</ul>
 
 		<p data-tx="t0189:3fcb6dd2">报告通过 GitHub 问题运行--预先填写的表格以结构化的方式要求提供最重要的关键数据（硬件、路由器、提供商、固件版本、结果）。其他测试人员可直接查看哪些设置已涵盖，哪些未涵盖。</p>
