@@ -21,7 +21,7 @@
 # produce signatures that some other code path would accept.
 #
 # The private key lives in a KeePassXC database as an ECDSA-P256 PEM. We pull
-# it via keepassxc-cli into a tmpfs file, sign, and shred. Required env / tools:
+# it via keepassxc-cli into a temp file, sign, and shred. Required env / tools:
 #
 #   KEEPASS_DB    path to the .kdbx                (required)
 #   KEEPASS_ENTRY entry title in the database      (default: "PhoneBlock-Dongle Signing Key")
@@ -61,12 +61,15 @@ command -v shred >/dev/null || { echo "ERROR: shred missing" >&2; exit 1; }
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Tmpfs for the extracted key. /dev/shm is RAM-backed on Linux; the key
-# file never touches a physical disk.
-TMP_KEY="$(mktemp -p /dev/shm dongle-ota-key.XXXXXX)"
+# Where to materialize the extracted key. /dev/shm is the safest pick
+# (tmpfs, never touches a physical disk), but Flatpak'd KeePassXC has
+# its own private /dev/shm we can't reach from the host, so default
+# to ${TMPDIR:-/tmp}, which Flatpak passes through. Set TMPDIR=/dev/shm
+# explicitly when keepassxc-cli runs from a host install.
+TMP_KEY="$(mktemp -p "${TMPDIR:-/tmp}" dongle-ota-key.XXXXXX)"
 cleanup() {
-    # `shred -u` overwrites then unlinks. tmpfs lives in RAM, so this is
-    # belt-and-braces, but cheap.
+    # `shred -u` overwrites then unlinks. On tmpfs that's belt-and-braces;
+    # on a disk-backed /tmp it's the actual reason this matters.
     shred -u "$TMP_KEY" 2>/dev/null || true
 }
 trap cleanup EXIT

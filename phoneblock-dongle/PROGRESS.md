@@ -466,7 +466,7 @@ Umsetzungsschritte:
   damit Community-Forks und Recovery-Pfade möglich bleiben (kein
   Secure Boot V2). Build-Seite signiert via
   `firmware/scripts/sign-manifest.sh` (zieht den Privat-Key aus
-  KeePassXC ins tmpfs, `openssl dgst -sha256 -sign`, shred). End-to-
+  KeePassXC nach `${TMPDIR:-/tmp}`, `openssl dgst -sha256 -sign`, shred). End-to-
   End-Roundtrip-Test in `firmware/test/test-signing-roundtrip.sh`
   (8 Checks: Clean-Path + 5 Tamper-Varianten + Hash-Post-Check).
   Setup + Rotation: [RELEASE.md](RELEASE.md) → „OTA-Signing-Key".

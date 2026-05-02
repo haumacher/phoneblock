@@ -13,6 +13,22 @@ git push --tags
 Voraussetzung: sauberer Tree, HEAD genau auf einem `dongle-v*`-Tag,
 KeePassXC-Master-Passwort zur Hand (siehe „OTA-Signing-Key").
 
+Der Schlüssel wird beim Signieren in `${TMPDIR:-/tmp}` materialisiert
+und nach dem Signieren `shred`et. Wer einen Host-`keepassxc-cli` (≥ 2.7.5)
+hat, kann mit `TMPDIR=/dev/shm` das tmpfs erzwingen — Flatpak'd KeePassXC
+sieht den Host-`/dev/shm` nicht und braucht den `/tmp`-Default.
+
+Flatpak'd KeePassXC: einmalig einen Wrapper anlegen, damit `release.sh`
+das CLI findet:
+
+```
+sudo tee /usr/local/bin/keepassxc-cli >/dev/null <<'EOF'
+#!/bin/sh
+exec flatpak run --command=keepassxc-cli org.keepassxc.KeePassXC "$@"
+EOF
+sudo chmod +x /usr/local/bin/keepassxc-cli
+```
+
 `release.sh` baut, signiert die App-Binary, lädt nach
 `cdn.phoneblock.net:/public_html/cdn/dongle/firmware/<version>/`
 und flippt `stable/manifest.json` atomar. Vorige Versionen bleiben liegen — Rollback heißt
@@ -39,9 +55,11 @@ Custom-Config-Header, keine vendored Crypto-Lib, keine extra Komponente.
 ### Schlüssel anlegen (einmalig)
 
 ```
-# Privater Schlüssel im RAM-Tmpfs erzeugen.
-mkdir -p /dev/shm/dongle-keygen
-cd /dev/shm/dongle-keygen
+# Privater Schlüssel in einem temporären Verzeichnis erzeugen — /tmp,
+# weil Flatpak'd KeePassXC sich aus /dev/shm nichts holen kann. Auf
+# einem reinen Host-Setup zur Sicherheit lieber /dev/shm nehmen.
+WORK=$(mktemp -d)
+cd "$WORK"
 openssl ecparam -name prime256v1 -genkey -noout -out private.pem
 openssl pkey -in private.pem -pubout -out public.pem
 
@@ -65,11 +83,9 @@ Den Inhalt von `private.pem` in KeePassXC ablegen:
 4. Als Backup: zweite Kopie der `.kdbx` auf einem Offline-Stick.
 
 ```
-# Tmpfs aufräumen.
-shred -u /dev/shm/dongle-keygen/private.pem \
-        /dev/shm/dongle-keygen/public.pem \
-        /dev/shm/dongle-keygen/public.der
-rmdir   /dev/shm/dongle-keygen
+# Aufräumen.
+shred -u "$WORK"/private.pem "$WORK"/public.pem "$WORK"/public.der
+rmdir   "$WORK"
 ```
 
 ### Schlüssel rotieren
