@@ -130,7 +130,7 @@
 						<p data-tx="t0055:414d6689">U kunt kiezen uit drie varianten: <strong>PhoneBlock dongle</strong> als kleine USB-stick in de router, <strong>Cloud antwoordapparaat</strong> via de Fritz!Box, of <strong>Blocklist telefoonboek</strong> als CardDAV sync. Welke het beste bij je past, hangt af van je router, provider en vereisten voor gegevensbescherming - op de overzichtspagina worden alle drie naast elkaar gezet.</p>
 					</div>
 					<footer class="card-footer">
-						<a class="card-footer-item button is-primary is-medium" th:href="@{/festnetz}">
+						<a th:class="|card-footer-item button ${fritzbox ? 'is-primary' : 'is-info'} is-medium|" th:href="@{/festnetz}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
 							<span data-tx="t0056:f69b313">Selecteer vaste netwerkvariant</span>
 						</a>
@@ -150,7 +150,7 @@
 						<p data-tx="t0058:cee8e47c">Blokkeer spamoproepen direct op je Android mobiele telefoon met de <a th:href="@{/setup-android}">PhoneBlock app</a>. De app controleert inkomende gesprekken in realtime en blokkeert automatisch bekende spornummers. Je kunt zelf instellen voor hoeveel negatieve berichten een nummer moet worden geblokkeerd.</p>
 					</div>
 					<footer class="card-footer">
-						<a class="card-footer-item button is-primary is-medium" th:href="@{/setup-android}">
+						<a th:class="|card-footer-item button ${android ? 'is-primary' : 'is-info'} is-medium|" th:href="@{/setup-android}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
 							<span data-tx="t0059:b0eb119f">Android instellen</span>
 						</a>
@@ -170,7 +170,7 @@
 						<p data-tx="t0061:b45f7cac">Neem de PhoneBlock-blokkeringslijst op in je iPhone-contactpersonen. iOS laat je dan automatisch zien wanneer een beller op de blokkeringslijst staat. De <a th:href="@{/setup-iphone}">instelling</a> gebeurt via CardDAV - je iPhone houdt de lijst automatisch bij.</p>
 					</div>
 					<footer class="card-footer">
-						<a class="card-footer-item button is-primary is-medium" th:href="@{/setup-iphone}">
+						<a th:class="|card-footer-item button ${iphone ? 'is-primary' : 'is-info'} is-medium|" th:href="@{/setup-iphone}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
 							<span data-tx="t0062:c278f9d5">iPhone instellen</span>
 						</a>
@@ -190,7 +190,7 @@
 						<p data-tx="t0064:99335f28">Integreer PhoneBlock in je <a th:href="@{/setup-switchboard}">telefoonsysteem</a> of PBX. De blokkadelijst kan worden gedownload in verschillende formaten of worden opgevraagd via API. Ideaal voor bedrijven en professionele telefoonsystemen.</p>
 					</div>
 					<footer class="card-footer">
-						<a class="card-footer-item button is-primary is-medium" th:href="@{/setup-switchboard}">
+						<a class="card-footer-item button is-info is-medium" th:href="@{/setup-switchboard}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
 							<span data-tx="t0065:aa28e976">Telefoonsysteem instellen</span>
 						</a>

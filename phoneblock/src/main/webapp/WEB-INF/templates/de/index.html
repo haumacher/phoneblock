@@ -169,7 +169,7 @@
 						</p>
 					</div>
 					<footer class="card-footer">
-						<a class="card-footer-item button is-primary is-medium" th:href="@{/festnetz}">
+						<a th:class="|card-footer-item button ${fritzbox ? 'is-primary' : 'is-info'} is-medium|" th:href="@{/festnetz}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
 							<span data-tx="t0056:f69b313">Festnetz-Variante wählen</span>
 						</a>
@@ -195,7 +195,7 @@
 						</p>
 					</div>
 					<footer class="card-footer">
-						<a class="card-footer-item button is-primary is-medium" th:href="@{/setup-android}">
+						<a th:class="|card-footer-item button ${android ? 'is-primary' : 'is-info'} is-medium|" th:href="@{/setup-android}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
 							<span data-tx="t0059:b0eb119f">Android einrichten</span>
 						</a>
@@ -220,7 +220,7 @@
 						</p>
 					</div>
 					<footer class="card-footer">
-						<a class="card-footer-item button is-primary is-medium" th:href="@{/setup-iphone}">
+						<a th:class="|card-footer-item button ${iphone ? 'is-primary' : 'is-info'} is-medium|" th:href="@{/setup-iphone}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
 							<span data-tx="t0062:c278f9d5">iPhone einrichten</span>
 						</a>
@@ -245,7 +245,7 @@
 						</p>
 					</div>
 					<footer class="card-footer">
-						<a class="card-footer-item button is-primary is-medium" th:href="@{/setup-switchboard}">
+						<a class="card-footer-item button is-info is-medium" th:href="@{/setup-switchboard}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
 							<span data-tx="t0065:aa28e976">Telefonanlage einrichten</span>
 						</a>

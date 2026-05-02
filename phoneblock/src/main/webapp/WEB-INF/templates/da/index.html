@@ -130,7 +130,7 @@
 						<p data-tx="t0055:414d6689">Tre varianter at vælge imellem: <strong>PhoneBlock-dongle</strong> som en lille USB-stick i routeren, <strong>Cloud-telefonsvarer</strong> via Fritz!Box eller <strong>Blocklist-telefonbog</strong> som CardDAV-synkronisering. Hvilken der passer dig bedst, afhænger af din router, udbyder og krav til databeskyttelse - oversigtssiden sammenligner alle tre side om side.</p>
 					</div>
 					<footer class="card-footer">
-						<a class="card-footer-item button is-primary is-medium" th:href="@{/festnetz}">
+						<a th:class="|card-footer-item button ${fritzbox ? 'is-primary' : 'is-info'} is-medium|" th:href="@{/festnetz}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
 							<span data-tx="t0056:f69b313">Vælg variant af fast netværk</span>
 						</a>
@@ -150,7 +150,7 @@
 						<p data-tx="t0058:cee8e47c">Bloker spamopkald direkte på din Android-mobiltelefon med <a th:href="@{/setup-android}">PhoneBlock-appen</a>. Appen tjekker indgående opkald i realtid og blokerer automatisk kendte spamnumre. Du kan selv indstille, hvor mange negative beskeder et nummer skal blokeres for.</p>
 					</div>
 					<footer class="card-footer">
-						<a class="card-footer-item button is-primary is-medium" th:href="@{/setup-android}">
+						<a th:class="|card-footer-item button ${android ? 'is-primary' : 'is-info'} is-medium|" th:href="@{/setup-android}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
 							<span data-tx="t0059:b0eb119f">Sæt Android op</span>
 						</a>
@@ -170,7 +170,7 @@
 						<p data-tx="t0061:b45f7cac">Inkluder PhoneBlock-blokeringslisten i dine iPhone-kontakter. iOS viser dig derefter automatisk, når en opkalder er på blokeringslisten. <a th:href="@{/setup-iphone}">opsætningen</a> sker via CardDAV - din iPhone holder automatisk listen opdateret.</p>
 					</div>
 					<footer class="card-footer">
-						<a class="card-footer-item button is-primary is-medium" th:href="@{/setup-iphone}">
+						<a th:class="|card-footer-item button ${iphone ? 'is-primary' : 'is-info'} is-medium|" th:href="@{/setup-iphone}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
 							<span data-tx="t0062:c278f9d5">Sæt iPhone op</span>
 						</a>
@@ -190,7 +190,7 @@
 						<p data-tx="t0064:99335f28">Integrer PhoneBlock i dit <a th:href="@{/setup-switchboard}">telefonsystem</a> eller PBX. Bloklisten kan downloades i forskellige formater eller forespørges via API. Ideel til virksomheder og professionelle telefonsystemer.</p>
 					</div>
 					<footer class="card-footer">
-						<a class="card-footer-item button is-primary is-medium" th:href="@{/setup-switchboard}">
+						<a class="card-footer-item button is-info is-medium" th:href="@{/setup-switchboard}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
 							<span data-tx="t0065:aa28e976">Opsætning af telefonsystem</span>
 						</a>

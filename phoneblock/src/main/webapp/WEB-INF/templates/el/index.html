@@ -130,7 +130,7 @@
 						<p data-tx="t0055:414d6689">Τρεις παραλλαγές για να διαλέξετε: &lt;Box, ή <strong>Φωνητικός κατάλογος με λίστα μπλοκ</strong> ως συγχρονισμός CardDAV. Το ποιο σας ταιριάζει καλύτερα εξαρτάται από το δρομολογητή, τον πάροχο και τις απαιτήσεις προστασίας δεδομένων - στη σελίδα επισκόπησης συγκρίνονται και τα τρία δίπλα-δίπλα.<strong></strong><strong></strong></p>
 					</div>
 					<footer class="card-footer">
-						<a class="card-footer-item button is-primary is-medium" th:href="@{/festnetz}">
+						<a th:class="|card-footer-item button ${fritzbox ? 'is-primary' : 'is-info'} is-medium|" th:href="@{/festnetz}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
 							<span data-tx="t0056:f69b313">Επιλέξτε παραλλαγή σταθερού δικτύου</span>
 						</a>
@@ -150,7 +150,7 @@
 						<p data-tx="t0058:cee8e47c">Αποκλείστε τις ανεπιθύμητες κλήσεις απευθείας στο κινητό σας τηλέφωνο Android με την εφαρμογή <a th:href="@{/setup-android}">PhoneBlock</a>. Η εφαρμογή ελέγχει τις εισερχόμενες κλήσεις σε πραγματικό χρόνο και μπλοκάρει αυτόματα γνωστούς αριθμούς spam. Μπορείτε να ορίσετε μόνοι σας πόσα αρνητικά μηνύματα θα πρέπει να μπλοκάρονται για έναν αριθμό.</p>
 					</div>
 					<footer class="card-footer">
-						<a class="card-footer-item button is-primary is-medium" th:href="@{/setup-android}">
+						<a th:class="|card-footer-item button ${android ? 'is-primary' : 'is-info'} is-medium|" th:href="@{/setup-android}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
 							<span data-tx="t0059:b0eb119f">Ρύθμιση του Android</span>
 						</a>
@@ -170,7 +170,7 @@
 						<p data-tx="t0061:b45f7cac">Συμπεριλάβετε τη λίστα αποκλεισμού PhoneBlock στις επαφές του iPhone σας. Το iOS σας εμφανίζει αυτόματα όταν ένας καλών βρίσκεται στη λίστα αποκλεισμού. Η <a th:href="@{/setup-iphone}">ρύθμιση</a> γίνεται μέσω CardDAV - το iPhone σας ενημερώνει αυτόματα τη λίστα.</p>
 					</div>
 					<footer class="card-footer">
-						<a class="card-footer-item button is-primary is-medium" th:href="@{/setup-iphone}">
+						<a th:class="|card-footer-item button ${iphone ? 'is-primary' : 'is-info'} is-medium|" th:href="@{/setup-iphone}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
 							<span data-tx="t0062:c278f9d5">Ρύθμιση iPhone</span>
 						</a>
@@ -190,7 +190,7 @@
 						<p data-tx="t0064:99335f28">Ενσωματώστε το PhoneBlock στο <a th:href="@{/setup-switchboard}">τηλεφωνικό σας σύστημα</a> ή στο PBX σας. Η λίστα αποκλεισμού μπορεί να μεταφορτωθεί σε διάφορες μορφές ή να αναζητηθεί μέσω API. Ιδανικό για εταιρείες και επαγγελματικά τηλεφωνικά συστήματα.</p>
 					</div>
 					<footer class="card-footer">
-						<a class="card-footer-item button is-primary is-medium" th:href="@{/setup-switchboard}">
+						<a class="card-footer-item button is-info is-medium" th:href="@{/setup-switchboard}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
 							<span data-tx="t0065:aa28e976">Ρύθμιση τηλεφωνικού συστήματος</span>
 						</a>

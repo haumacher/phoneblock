@@ -130,7 +130,7 @@
 						<p data-tx="t0055:414d6689">Tres variantes a elegir: <strong>PhoneBlock dongle</strong> como pequeña memoria USB en el router, <strong>Contestador en la nube</strong> a través del Fritz!Box, o <strong>Blocklist phonebook</strong> como CardDAV sync. Cuál te conviene más depende de tu router, proveedor y requisitos de protección de datos; en la página de resumen se comparan los tres uno al lado del otro.</p>
 					</div>
 					<footer class="card-footer">
-						<a class="card-footer-item button is-primary is-medium" th:href="@{/festnetz}">
+						<a th:class="|card-footer-item button ${fritzbox ? 'is-primary' : 'is-info'} is-medium|" th:href="@{/festnetz}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
 							<span data-tx="t0056:f69b313">Seleccione la variante de red fija</span>
 						</a>
@@ -150,7 +150,7 @@
 						<p data-tx="t0058:cee8e47c">Bloquee las llamadas de spam directamente en su teléfono móvil Android con la aplicación <a th:href="@{/setup-android}">PhoneBlock</a>. La aplicación comprueba las llamadas entrantes en tiempo real y bloquea automáticamente los números de spam conocidos. Puedes configurar tú mismo cuántos mensajes negativos debe bloquear un número.</p>
 					</div>
 					<footer class="card-footer">
-						<a class="card-footer-item button is-primary is-medium" th:href="@{/setup-android}">
+						<a th:class="|card-footer-item button ${android ? 'is-primary' : 'is-info'} is-medium|" th:href="@{/setup-android}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
 							<span data-tx="t0059:b0eb119f">Configurar Android</span>
 						</a>
@@ -170,7 +170,7 @@
 						<p data-tx="t0061:b45f7cac">Incluye la lista de bloqueo PhoneBlock en los contactos de tu iPhone. iOS te mostrará automáticamente cuándo una persona está en la lista de bloqueo. La <a th:href="@{/setup-iphone}">configuración</a> se realiza a través de CardDAV - tu iPhone mantiene la lista actualizada automáticamente.</p>
 					</div>
 					<footer class="card-footer">
-						<a class="card-footer-item button is-primary is-medium" th:href="@{/setup-iphone}">
+						<a th:class="|card-footer-item button ${iphone ? 'is-primary' : 'is-info'} is-medium|" th:href="@{/setup-iphone}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
 							<span data-tx="t0062:c278f9d5">Configurar el iPhone</span>
 						</a>
@@ -190,7 +190,7 @@
 						<p data-tx="t0064:99335f28">Integre PhoneBlock en su <a th:href="@{/setup-switchboard}">sistema telefónico</a> o centralita. La lista de bloqueos se puede descargar en varios formatos o consultar vía API. Ideal para empresas y sistemas telefónicos profesionales.</p>
 					</div>
 					<footer class="card-footer">
-						<a class="card-footer-item button is-primary is-medium" th:href="@{/setup-switchboard}">
+						<a class="card-footer-item button is-info is-medium" th:href="@{/setup-switchboard}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
 							<span data-tx="t0065:aa28e976">Configurar el sistema telefónico</span>
 						</a>
