@@ -353,13 +353,17 @@ Hardware-Entscheidungsmatrix [HARDWARE.md](HARDWARE.md), QEMU-Setup
   `CreateAuthTokenServlet`-Erweiterung ist committed, muss aber
   auf `phoneblock.net` deployed werden, damit neue Tokens auch
   produktiv funktionieren.
-- [x] **Täglicher PhoneBlock-Token-Health-Check** — `selftest.{c,h}`
-  ruft `phoneblock_selftest()` alle 24 h mit ±30 min Jitter (`esp_random`-
+- [x] **PhoneBlock-Token-Health-Check** — `selftest.{c,h}` ruft
+  `phoneblock_selftest()` alle 24 h mit ±30 min Jitter (`esp_random`-
   basiert), damit Fleet-Power-Blip nicht jeden Dongle auf dieselbe
   CDN-Minute synchronisiert. Skip, wenn kein Token gesetzt. Boot-Run
   bleibt synchron; das Task ergänzt nur den langlaufenden Schedule.
-  Noch offen: Status-Bit „token_invalid" in `/api/status` und das
-  daran hängende LED-`ERROR`-Pattern (siehe Status-LED-Folgepunkt unten).
+  Zusätzlich liefert `api_token_is_valid()` einen Live-Status, der
+  von **jedem** Bearer-Aufruf gefüttert wird (401/403 → false, 2xx →
+  true, Transport-/5xx-Fehler ignoriert). Damit reagiert der Status
+  auch auf reale Anrufe sofort, nicht erst beim nächsten Tagesselftest.
+  Web-UI (`phoneblock.token_ok` in `/api/status`) und Status-LED
+  (`ST_DEGRADED`) ziehen aus derselben Quelle.
 - [x] **Privacy-Upgrade: hash-basierte API-Query** — `api.c` ruft
   `GET /api/check-prefix?sha1=<hash>&format=json` mit zusätzlichen
   `prefix10`/`prefix100`-Hashes (letzte 1–2 Ziffern abgeschnitten)
@@ -369,20 +373,28 @@ Hardware-Entscheidungsmatrix [HARDWARE.md](HARDWARE.md), QEMU-Setup
 
 ### Status-LED
 - [x] On-Board-LED als Betriebsanzeige — `status_led.{c,h}`-Modul
-  mit 50-ms-Tick-FSM, vier Zuständen:
+  mit 50-ms-Tick-FSM, fünf Zuständen:
   - `PAIRING` (100 ms on/off) — WPS aktiv
   - `CONNECTING` (500 ms on/off) — WiFi sucht / reconnect
-  - `SETUP` (100 ms on, 900 ms off) — Netz da, Config unvollständig
-  - `READY` (dauer-an) — SIP registriert + Token gesetzt
+  - `SETUP` (100 ms on, 900 ms off) — Netz da, Config-Felder leer
+  - `DEGRADED` (900 ms on, 100 ms off) — konfiguriert, aber gerade
+    nicht funktional: SIP-REGISTER nicht in place oder Token vom
+    Server abgelehnt. Visuelles Negativ zu `SETUP`. Reine Level-
+    Signale, kein Latch — ein 2-Sekunden-Reconnect-Glitch zeigt
+    kurz `DEGRADED` und ist danach automatisch wieder `READY`.
+  - `READY` (dauer-an) — SIP registriert, Token gesetzt UND vom
+    Server akzeptiert
   State-Probes aus `wifi_is_wps_active()` + `wifi_has_ip()` +
-  `sip_register_is_registered()` + `config_phoneblock_token()`.
+  `sip_register_is_registered()` + `config_sip_host/user()` +
+  `config_phoneblock_token()` + `api_token_is_valid()`.
   `CONFIG_STATUS_LED_GPIO` (Default 2 für WROOM-32) und
   `CONFIG_STATUS_LED_ACTIVE_LOW` (Default n — WROOM ist active-high).
-  GPIO < 0 deaktiviert das Task komplett.
-- [ ] Folgezustände: `ERROR` (Doppel-Blink-Burst, z. B. SIP-401,
-  API unreachable, **Token serverseitig gelöscht/invalide** — siehe
-  „Täglicher PhoneBlock-Token-Health-Check" oben) und `CALL`
-  (Flicker während Anruf-Handling).
+  GPIO < 0 deaktiviert das Task komplett. Vollständige Beschreibung
+  der Muster + Diagnose: [`ERROR_CODES.md`](ERROR_CODES.md).
+- [ ] `CALL` (Flicker während Anruf-Handling) — bisher nicht
+  umgesetzt, kollidiert mit den persistenten Status-Mustern; offen,
+  ob es als sechstes Pattern oder als kurzer Override (Anruf
+  überlagert für ~200 ms den aktuellen Status) sinnvoll ist.
 
 ### Provisioning & Deployment
 
