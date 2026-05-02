@@ -38,41 +38,67 @@ Strukturelle Beobachtungen aus dem Live-Log:
   Domäne von Hebel B (StAX-Render) und Hebel C (geteilte Resource pro
   `ListType`).
 
+## Status nach Hebel B + E (umgesetzt)
+
+Hebel B (StAX-Render) und Hebel E (Lightweight Depth-0) sind in einem
+gemeinsamen Branch gebaut, weil sie beide den Render-Pfad anfassen — siehe
+Implementierungsplan
+[2026-05-02-carddav-render-pipeline.md](2026-05-02-carddav-render-pipeline.md).
+Vier Phasen, ein PR:
+
+1. Pipeline auf StAX umgestellt — `Resource`-Hierarchie schreibt direkt per
+   `XMLStreamWriter` in den Output-Stream. DOM und `LSSerializer` raus.
+   Schmaler `RenderContext` statt `HttpServletRequest`,
+   `MultiStatusWriter`-Helper für die Envelope, `CardDavRequestParser` für
+   die Body-Parser.
+2. Collection-ETag inputbasiert komponiert via `CollectionEtag` — Common-
+   Blocks-Hash auf der `CommonList` einmal pro Refresh berechnet,
+   Personal-Singletons-Hash und Settings-Hash pro Aufruf in
+   konstanter Zeit.
+3. `AddressBookCollectionResource` als schlanke `Resource`-Subklasse für
+   Depth: 0 PROPFIND. `AddressBookCache.lookupCollectionEtag` umgeht die
+   Materialisierung der ~1086 `AddressResource`-Wrapper pro iOS-Poll.
+4. DOM-Output-Helper aus `DomUtil` entfernt.
+
+Erwartete Effekte (zu verifizieren nach Deploy):
+
+- iOS-Polling-Pfad kostet praktisch nichts mehr —
+  `Address book computed for: …`-Logs fallen für common-only und
+  common+personal-User auf null, weil der `_userCache` für Depth-0-
+  PROPFINDs nicht mehr getroffen wird.
+- FritzBox-Full-Syncs (72 % Volumen, alle Depth: 1) renderen jetzt per
+  StAX direkt in den Output-Stream — Faktor 2-3 schneller, weniger
+  Heap-Druck.
+- ETag-Migrationswelle einmalig beim Deploy: alle Clients sehen einen
+  neuen ETag-Wert (Komposition geändert), machen einen Vollsync, danach
+  stationärer Zustand.
+
 ## Nächste Schritte
 
 In dieser Reihenfolge, jeweils mit klarer Wirkungs-Hypothese:
 
-1. **Hebel E — Depth-0-PROPFIND ohne Block-Materialisierung.** Wirkt auf
-   ctag-basierte Clients, primär iOS (~21 % Volumen, alle 18 min ein
-   PROPFIND Depth: 0 pro aktivem Gerät). Die Mini-PROPFIND-Antwort hängt nur
-   an Collection-Metadaten + ETag, nicht an den Block-Children. ETag
-   inputbasiert berechnen aus Common-ETag (auf `CommonList` mitgehalten) +
-   Personal-Hash + `ListType.hashCode()`. Statt 1086
-   `AddressResource`-Wrappern pro Poll: ein paar Set-Probes und ein
-   SHA-1-Update. `_userCache` bleibt eine kurze Sync-Session-Brücke und
-   bekommt explizit *keine* längere TTL — ~50 KB pro Eintrag × Userzahl ×
-   TTL-Fenster skaliert nicht im Heap. Details in Hebel E unten.
-2. **Hebel B (StAX-Streaming-Render).** Wirkt auf jeden 207-Render mit Body —
-   das ist vor allem der FritzBox-Pfad, der jeden Sync als Depth: 1-Full-Sync
-   fährt (72 % Volumen, kein ctag-Skip). Ersetzt DOM-Aufbau + `LSSerializer`
-   durch direkten `XMLStreamWriter` in den Output-Stream. Erwarteter Effekt:
-   Faktor 2-3 schnellerer Render und drastisch weniger Heap-Druck.
-3. **Hebel C (geteilte `AddressBookResource` pro `ListType`).** Setzt die in
-   Hebel A bereits angedeutete Stufe 2 um: `AddressBookResource` ist heute
-   user-spezifisch, obwohl der Inhalt für alle no-personalization-User
-   identisch ist. Eine geteilte Instanz pro `ListType` eliminiert ~21k
-   redundante Wrapper-Allokationen pro FritzBox-Welle. Erfordert
-   HREF-Schema-Entscheidung (relativ vs. absolut mit
-   Render-Time-Substitution).
-4. **Hebel D (FritzBox-Auth-Loop).** Heute 3 RPS reine 401-Antworten. Lohnt
-   sich erst wenn Hebel B/C ausgeschöpft sind, denn Hebel D braucht
-   Reverse-Proxy-Konfiguration oder Auth-Filter-Tuning und ist nicht trivial
-   für tokenbasierte Auth.
+1. **Wirkung messen.** Live-Logs nach Deploy: `Address book computed for: …`
+   pro Stunde (sollte für common-only/common+personal-User auf null
+   fallen), CPU-Last vor/nach, FritzBox-Render-Zeit. Bestimmt, ob
+   Hebel C noch nötig ist.
+2. **Hebel C (geteilte `AddressBookResource` pro `ListType`).** Setzt die
+   in Hebel A bereits angedeutete Stufe 2 um. `AddressBookResource` ist
+   heute user-spezifisch, obwohl der Inhalt für alle no-personalization-
+   User identisch ist. Eine geteilte Instanz (oder ein vorgerenderter
+   `byte[]`-Cache) pro `ListType` eliminiert ~21k redundante Wrapper-
+   Allokationen pro FritzBox-Welle. Erfordert HREF-Schema-Entscheidung
+   (relativ vs. absolut mit Render-Time-Substitution). Macht nach
+   Hebel B in der Render-Geschwindigkeit den größten verbleibenden
+   Sprung.
+3. **Hebel D (FritzBox-Auth-Loop).** Heute 3 RPS reine 401-Antworten.
+   Lohnt sich erst wenn Hebel B/C ausgeschöpft sind, denn Hebel D braucht
+   Reverse-Proxy-Konfiguration oder Auth-Filter-Tuning und ist nicht
+   trivial für tokenbasierte Auth.
 
-Schritt 1 ist klein und eigenständig deploybar (reine Server-interne
-Refaktorierung, keine URL-/ID-Änderung). Schritt 2 ist der nächste große
-Hebel; Schritt 3 ist der Folgeschritt, der Hebel B in seiner Wirkung
-verstärkt (weniger gerenderte 207, plus pro Render weniger Wrapper-Bauen).
+Schritt 1 (Messung) ist nur eine Beobachtung post-Deploy — keine
+Code-Änderung. Schritt 2 ist der größte verbleibende Render-Hebel;
+Schritt 3 ist orthogonal zur Render-Optimierung und kann unabhängig
+angegangen werden.
 
 ## Was nach Hebel A schon korrekt ist (gegen den ursprünglichen Plan)
 
@@ -571,7 +597,7 @@ ist der stabile ctag (kein Vollsync mehr bei jedem Vote), nicht der
 Konsequenz: die Wirkung auf den iOS-Pfad muss aus Hebel E kommen
 (Materialisierung pro Poll vermeiden), nicht aus 304.
 
-### Hebel B — Render-Pfad: DOM → StAX
+### Hebel B — Render-Pfad: DOM → StAX (umgesetzt)
 
 **Wirkt auf:** Alle verbleibenden 207-Antworten, vor allem die großen
 iOS- (68 KB) und macOS-Antworten (169 KB), sowie alle FritzBox-Renders
@@ -640,7 +666,7 @@ Speicher: ~30 aktive Listen-Varianten (siehe Listen-Varianten-Abschnitt) à
 PhoneBlock-Auth ist tokenbasiert, nicht trivial. Erst angehen, wenn A + B
 ausgeschöpft sind.
 
-### Hebel E — Depth-0-PROPFIND ohne Block-Materialisierung
+### Hebel E — Depth-0-PROPFIND ohne Block-Materialisierung (umgesetzt)
 
 **Wirkt auf:** Clients, die per ctag synchronisieren und Mini-PROPFINDs ohne
 `If-None-Match` schicken — primär iOS / `dataaccessd` (~21 % Volumen, p50
