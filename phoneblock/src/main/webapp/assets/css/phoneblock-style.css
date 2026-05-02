@@ -226,3 +226,8 @@ button.showaddr:after {
 	--bulma-text: var(--bulma-info-invert);
 	--bulma-text-strong: var(--bulma-info-invert);
 }
+
+/* CTA cards: drop Bulma's hairline above the footer button so the call-to-action reads as one block. */
+.card .card-footer {
+	border-top: 0;
+}

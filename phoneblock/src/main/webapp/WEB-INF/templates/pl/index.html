@@ -119,83 +119,82 @@
 
 		<div class="columns is-multiline">
 			<div class="column is-half">
-				<div class="box">
-					<h3 class="title is-5">
-						<span class="icon-text">
-							<span class="icon">
-								<i class="fa-solid fa-phone"></i>
+				<div class="card is-fullheight">
+					<div class="card-content">
+						<p class="title is-5">
+							<span class="icon-text">
+								<span class="icon"><i class="fa-solid fa-phone"></i></span>
+								<span data-tx="t0054:374baf20">Telefon stacjonarny</span>
 							</span>
-							<span data-tx="t0054:374baf20">Telefon stacjonarny</span>
-						</span>
-					</h3>
-					<p data-tx="t0055:414d6689">Trzy warianty do wyboru: <strong>PhoneBlock dongle</strong> jako mała pamięć USB w routerze, <strong>Chmurowa automatyczna sekretarka</strong> poprzez Fritz!Box, lub <strong>Blocklist phonebook</strong> jako synchronizacja CardDAV. To, który z nich jest najbardziej odpowiedni, zależy od routera, dostawcy i wymagań dotyczących ochrony danych - strona przeglądu porównuje wszystkie trzy obok siebie.</p>
-					<p class="mt-4">
-						<a class="button is-primary" th:href="@{/festnetz}">
+						</p>
+						<p data-tx="t0055:414d6689">Trzy warianty do wyboru: <strong>PhoneBlock dongle</strong> jako mała pamięć USB w routerze, <strong>Chmurowa automatyczna sekretarka</strong> poprzez Fritz!Box, lub <strong>Blocklist phonebook</strong> jako synchronizacja CardDAV. To, który z nich jest najbardziej odpowiedni, zależy od routera, dostawcy i wymagań dotyczących ochrony danych - strona przeglądu porównuje wszystkie trzy obok siebie.</p>
+					</div>
+					<footer class="card-footer">
+						<a class="card-footer-item button is-primary is-medium" th:href="@{/festnetz}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
 							<span data-tx="t0056:f69b313">Wybierz wariant sieci stacjonarnej</span>
 						</a>
-					</p>
+					</footer>
 				</div>
 			</div>
 
 			<div class="column is-half">
-				<div class="box">
-					<h3 class="title is-5">
-						<span class="icon-text">
-							<span class="icon">
-								<i class="fa-brands fa-android"></i>
+				<div class="card is-fullheight">
+					<div class="card-content">
+						<p class="title is-5">
+							<span class="icon-text">
+								<span class="icon"><i class="fa-brands fa-android"></i></span>
+								<span data-tx="t0057:aecec7cb">Android</span>
 							</span>
-							<span data-tx="t0040:aecec7cb">Android</span>
-						</span>
-					</h3>
-					<p data-tx="t0041:cee8e47c">Aplikacja <a th:href="@{/setup-android}">PhoneBlock</a> umożliwia blokowanie połączeń spamowych bezpośrednio na telefonie komórkowym z systemem Android. Aplikacja sprawdza połączenia przychodzące w czasie rzeczywistym i automatycznie blokuje znane numery spamowe. Użytkownik może samodzielnie określić, po ilu negatywnych wiadomościach dany numer ma zostać zablokowany.</p>
-					<p class="mt-3" data-tx="t0042:56561506"><strong>Funkcje:</strong> Historia połączeń, raportowanie i ocenianie numerów, własna lista blokad, brak konieczności autoryzacji do odczytu kontaktów.</p>
-					<p class="mt-4">
-						<a class="button is-primary" th:href="@{/setup-android}">
+						</p>
+						<p data-tx="t0058:cee8e47c">Aplikacja <a th:href="@{/setup-android}">PhoneBlock</a> umożliwia blokowanie połączeń spamowych bezpośrednio na telefonie komórkowym z systemem Android. Aplikacja sprawdza połączenia przychodzące w czasie rzeczywistym i automatycznie blokuje znane numery spamowe. Użytkownik może samodzielnie określić, po ilu negatywnych wiadomościach dany numer ma zostać zablokowany.</p>
+					</div>
+					<footer class="card-footer">
+						<a class="card-footer-item button is-primary is-medium" th:href="@{/setup-android}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
-							<span data-tx="t0057:b0eb119f">Konfiguracja systemu Android</span>
+							<span data-tx="t0059:b0eb119f">Konfiguracja systemu Android</span>
 						</a>
-					</p>
+					</footer>
 				</div>
 			</div>
 
 			<div class="column is-half">
-				<div class="box">
-					<h3 class="title is-5">
-						<span class="icon-text">
-							<span class="icon">
-								<i class="fa-brands fa-apple"></i>
+				<div class="card is-fullheight">
+					<div class="card-content">
+						<p class="title is-5">
+							<span class="icon-text">
+								<span class="icon"><i class="fa-brands fa-apple"></i></span>
+								<span data-tx="t0060:b21bebc5">iPhone</span>
 							</span>
-							<span data-tx="t0043:b21bebc5">iPhone</span>
-						</span>
-					</h3>
-					<p data-tx="t0044:b45f7cac">Dołącz listę blokad PhoneBlock do kontaktów iPhone'a. iOS automatycznie pokaże, kiedy dzwoniący znajduje się na liście blokad. <a th:href="@{/setup-iphone}">konfiguracja</a> odbywa się za pośrednictwem CardDAV - iPhone automatycznie aktualizuje listę.</p>
-					<p class="mt-4">
-						<a class="button is-primary" th:href="@{/setup-iphone}">
+						</p>
+						<p data-tx="t0061:b45f7cac">Dołącz listę blokad PhoneBlock do kontaktów iPhone'a. iOS automatycznie pokaże, kiedy dzwoniący znajduje się na liście blokad. <a th:href="@{/setup-iphone}">konfiguracja</a> odbywa się za pośrednictwem CardDAV - iPhone automatycznie aktualizuje listę.</p>
+					</div>
+					<footer class="card-footer">
+						<a class="card-footer-item button is-primary is-medium" th:href="@{/setup-iphone}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
-							<span data-tx="t0058:c278f9d5">Konfiguracja iPhone'a</span>
+							<span data-tx="t0062:c278f9d5">Konfiguracja iPhone'a</span>
 						</a>
-					</p>
+					</footer>
 				</div>
 			</div>
 
 			<div class="column is-half">
-				<div class="box">
-					<h3 class="title is-5">
-						<span class="icon-text">
-							<span class="icon">
-								<i class="fa-solid fa-asterisk"></i>
+				<div class="card is-fullheight">
+					<div class="card-content">
+						<p class="title is-5">
+							<span class="icon-text">
+								<span class="icon"><i class="fa-solid fa-asterisk"></i></span>
+								<span data-tx="t0063:9faa419a">System telefoniczny</span>
 							</span>
-							<span data-tx="t0045:9faa419a">System telefoniczny</span>
-						</span>
-					</h3>
-					<p data-tx="t0046:99335f28">Zintegruj PhoneBlock ze swoim <a th:href="@{/setup-switchboard}">systemem telefonicznym</a> lub centralą PBX. Lista bloków może być pobierana w różnych formatach lub odpytywana przez API. Idealny dla firm i profesjonalnych systemów telefonicznych.</p>
-					<p class="mt-4">
-						<a class="button is-primary" th:href="@{/setup-switchboard}">
+						</p>
+						<p data-tx="t0064:99335f28">Zintegruj PhoneBlock ze swoim <a th:href="@{/setup-switchboard}">systemem telefonicznym</a> lub centralą PBX. Lista bloków może być pobierana w różnych formatach lub odpytywana przez API. Idealny dla firm i profesjonalnych systemów telefonicznych.</p>
+					</div>
+					<footer class="card-footer">
+						<a class="card-footer-item button is-primary is-medium" th:href="@{/setup-switchboard}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
-							<span data-tx="t0059:aa28e976">Konfiguracja systemu telefonicznego</span>
+							<span data-tx="t0065:aa28e976">Konfiguracja systemu telefonicznego</span>
 						</a>
-					</p>
+					</footer>
 				</div>
 			</div>
 		</div>
