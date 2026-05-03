@@ -79,6 +79,10 @@
 		<h2 data-tx="t0149:69477c42" id="schritt-3">Trin 2 - Forbered donglen</h2>
 
 		<p data-tx="t0150:a212e6cf">Du skal indlæse PhoneBlock-softwaren på din dongle én gang. Det gør du ved at sætte donglen i en ledig USB-port på din computer.</p>
+		
+		<figure>
+			<img alt="Donglens velkomstskærm" data-tx="t0198:4f273df1" th:src="@{/assets/img/dongle/plugged-into-computer.jpg}"/>
+		</figure>
 
 		<div class="notification is-warning" id="dongle-install-unsupported" style="display:none;">
 			<p data-tx="t0127:cc2d5f5e"><strong>Denne browser kan ikke flashe donglen.</strong> For at gøre din dongle klar til brug skal du have en <strong>Google Chrome</strong> eller <strong>Microsoft Edge</strong> browser på en computer (ikke på en smartphone). Åbn denne side med Chrome eller Edge, og prøv igen.</p>
@@ -130,7 +134,7 @@
 		<p data-tx="t0162:cbcaee11">Når browseren melder "Installation completed!", skal du tage donglen ud af computeren og sætte den i en ledig USB-port på din router (eller en hvilken som helst 5 V USB-strømforsyning inden for WLAN-rækkevidde).</p>
 
 		<figure>
-			<div data-tx="t0163:a5796f78" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Pladsholder: Foto "Dongle sat i USB-porten på Fritz!Box"].</div>
+			<img alt="ESP32-dongle i Fritz!Box" data-tx="t0196:d0a4fea7" th:src="@{/assets/img/dongle/plugged-into-router.jpg}"/>
 		</figure>
 
 		<h2 data-tx="t0164:71e45897" id="schritt-6">Trin 4 - Føj donglen til WLAN (WPS)</h2>
@@ -140,7 +144,7 @@
 		<p data-tx="t0166:83cbb4c2">Tryk nu på <strong>WPS-knappen</strong> på routeren. På Fritz!Box er det <strong>"Connect / WPS"</strong>-knappen på toppen af enheden - tryk kort, indtil Wi-Fi-LED'en på selve routeren begynder at blinke. Andre routere kalder knappen "WPS" eller "Pair". I løbet af få sekunder overfører routeren dine wifi-adgangsdata til donglen, som gemmer dem og opretter forbindelse.</p>
 
 		<figure>
-			<div data-tx="t0167:5f50dac7" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Pladsholder: Foto "Connect/WPS-knap på Fritz!Box med pil"].</div>
+			<img alt="WPS-knap på Fritz!Box" data-tx="t0197:fe3e8d05" th:src="@{/assets/img/dongle/wps-button.jpg}"/>
 		</figure>
 
 		<p data-tx="t0168:32d2921"><strong>Har virket:</strong> LED'en blinker nu langsomt (ca. en gang i sekundet) - donglen er i WLAN, har modtaget en adresse og venter på konfiguration (næste trin).</p>
@@ -162,7 +166,22 @@
 		<p data-tx="t0175:fda77eed">Hvis dette link ikke virker (Windows uden Bonjour, nogle mesh-WLAN'er), skal du kigge i enhedslisten på din router efter en enhed med navnet <code>answerbot</code>, notere dens IP-adresse og kalde den op i browseren - f.eks. <code>http://192.168.178.xxx/</code>.</p>
 
 		<figure>
-			<div data-tx="t0176:8bb491f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Pladsholder: Skærmbillede af donglens webinterface med inputfelter til SIP og token].</div>
+			<img alt="Donglens velkomstskærm" data-tx="t0204:4f273df1" th:src="@{/assets/img/dongle/01-welcome-screen.jpg}"/>
+		</figure>
+		<figure>
+			<img alt="Valg af telefonudbyder" data-tx="t0199:d59036f6" th:src="@{/assets/img/dongle/02-select-telephony-provider.jpg}"/>
+		</figure>
+		<figure>
+			<img alt="Opsætning af telefoni via Fritz!Box Assistant" data-tx="t0200:3d467669" th:src="@{/assets/img/dongle/03-fritzbox-password.jpg}"/>
+		</figure>
+		<figure>
+			<img alt="Bekræftelse af opsætningen på en mobil enhed" data-tx="t0201:be2f6fb4" th:src="@{/assets/img/dongle/04-confirm-with-phone.jpg}"/>
+		</figure>
+		<figure>
+			<img alt="Opsætning af telefoni" data-tx="t0202:ca12a560" th:src="@{/assets/img/dongle/05-telephony-set-up.jpg}"/>
+		</figure>
+		<figure>
+			<img alt="Dongle-opsætning afsluttet" data-tx="t0203:ecb8f314" th:src="@{/assets/img/dongle/06-setup-completed.jpg}"/>
 		</figure>
 
 		<p data-tx="t0177:a09627c1">Gå ind i webgrænsefladen:</p>

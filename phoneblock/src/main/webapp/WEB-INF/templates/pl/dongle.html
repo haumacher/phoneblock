@@ -79,6 +79,10 @@
 		<h2 data-tx="t0149:69477c42" id="schritt-3">Krok 2 - Przygotowanie klucza sprzętowego</h2>
 
 		<p data-tx="t0150:a212e6cf">Należy jednorazowo załadować oprogramowanie PhoneBlock do klucza sprzętowego. Aby to zrobić, podłącz klucz sprzętowy do wolnego portu USB w komputerze.</p>
+		
+		<figure>
+			<img alt="Ekran powitalny klucza sprzętowego" data-tx="t0198:4f273df1" th:src="@{/assets/img/dongle/plugged-into-computer.jpg}"/>
+		</figure>
 
 		<div class="notification is-warning" id="dongle-install-unsupported" style="display:none;">
 			<p data-tx="t0127:cc2d5f5e"><strong>Ta przeglądarka nie może sflashować klucza sprzętowego.</strong> Aby przygotować klucz sprzętowy do użycia, potrzebujesz przeglądarki <strong>Google Chrome</strong> lub <strong>Microsoft Edge</strong> na komputerze (nie na smartfonie). Otwórz tę stronę w przeglądarce Chrome lub Edge i spróbuj ponownie.</p>
@@ -130,7 +134,7 @@
 		<p data-tx="t0162:cbcaee11">Gdy przeglądarka wyświetli komunikat "Instalacja zakończona!", odłącz klucz sprzętowy od komputera i podłącz go do wolnego portu USB routera (lub dowolnego zasilacza USB 5 V w zasięgu sieci WLAN).</p>
 
 		<figure>
-			<div data-tx="t0163:a5796f78" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Symbol zastępczy: zdjęcie "Klucz sprzętowy włożony do portu USB urządzenia Fritz!Box"].</div>
+			<img alt="Klucz sprzętowy ESP32 w Fritz!Box" data-tx="t0196:d0a4fea7" th:src="@{/assets/img/dongle/plugged-into-router.jpg}"/>
 		</figure>
 
 		<h2 data-tx="t0164:71e45897" id="schritt-6">Krok 4 - Dodanie klucza sprzętowego do sieci WLAN (WPS)</h2>
@@ -140,7 +144,7 @@
 		<p data-tx="t0166:83cbb4c2">Teraz naciśnij przycisk <strong>WPS</strong> na routerze. W Fritz!Box jest to przycisk <strong>"Connect / WPS"</strong> na górze urządzenia - naciśnij krótko, aż dioda LED Wi-Fi na samym routerze zacznie migać. Inne routery oznaczają ten przycisk jako "WPS" lub "Pair". W ciągu kilku sekund router przesyła dane dostępu do sieci Wi-Fi do klucza sprzętowego, który zapisuje je i nawiązuje połączenie.</p>
 
 		<figure>
-			<div data-tx="t0167:5f50dac7" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Symbol zastępczy: Zdjęcie "Przycisk Connect/WPS na Fritz!Box ze strzałką"]</div>
+			<img alt="Przycisk WPS na urządzeniu Fritz!Box" data-tx="t0197:fe3e8d05" th:src="@{/assets/img/dongle/wps-button.jpg}"/>
 		</figure>
 
 		<p data-tx="t0168:32d2921"><strong>Działało:</strong> Dioda LED miga teraz powoli (około raz na sekundę) - klucz sprzętowy jest w sieci WLAN, otrzymał adres i czeka na konfigurację (następny krok).</p>
@@ -162,7 +166,22 @@
 		<p data-tx="t0175:fda77eed">Jeśli ten link nie działa (Windows bez Bonjour, niektóre sieci WLAN typu mesh), poszukaj na liście urządzeń routera urządzenia o nazwie <code>answerbot</code>, zanotuj jego adres IP i wywołaj go w przeglądarce - np. <code>http://192.168.178.xxx/</code>.</p>
 
 		<figure>
-			<div data-tx="t0176:8bb491f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Symbol zastępczy: Zrzut ekranu interfejsu internetowego klucza sprzętowego z polami wprowadzania danych dla SIP i tokena].</div>
+			<img alt="Ekran powitalny klucza sprzętowego" data-tx="t0204:4f273df1" th:src="@{/assets/img/dongle/01-welcome-screen.jpg}"/>
+		</figure>
+		<figure>
+			<img alt="Wybór operatora telefonicznego" data-tx="t0199:d59036f6" th:src="@{/assets/img/dongle/02-select-telephony-provider.jpg}"/>
+		</figure>
+		<figure>
+			<img alt="Konfiguracja telefonii za pomocą aplikacji Fritz!Box Assistant" data-tx="t0200:3d467669" th:src="@{/assets/img/dongle/03-fritzbox-password.jpg}"/>
+		</figure>
+		<figure>
+			<img alt="Potwierdzenie konfiguracji na urządzeniu mobilnym" data-tx="t0201:be2f6fb4" th:src="@{/assets/img/dongle/04-confirm-with-phone.jpg}"/>
+		</figure>
+		<figure>
+			<img alt="Konfiguracja telefonii" data-tx="t0202:ca12a560" th:src="@{/assets/img/dongle/05-telephony-set-up.jpg}"/>
+		</figure>
+		<figure>
+			<img alt="Konfiguracja klucza sprzętowego zakończona" data-tx="t0203:ecb8f314" th:src="@{/assets/img/dongle/06-setup-completed.jpg}"/>
 		</figure>
 
 		<p data-tx="t0177:a09627c1">Wejdź do interfejsu internetowego:</p>

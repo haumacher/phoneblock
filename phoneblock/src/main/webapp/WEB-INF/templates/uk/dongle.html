@@ -79,6 +79,10 @@
 		<h2 data-tx="t0149:69477c42" id="schritt-3">Крок 2 - Підготуйте ключ</h2>
 
 		<p data-tx="t0150:a212e6cf">Вам потрібно один раз завантажити програмне забезпечення PhoneBlock на ваш ключ. Для цього під'єднайте брелок до вільного USB-порту комп'ютера.</p>
+		
+		<figure>
+			<img alt="Екран привітання донгла" data-tx="t0198:4f273df1" th:src="@{/assets/img/dongle/plugged-into-computer.jpg}"/>
+		</figure>
 
 		<div class="notification is-warning" id="dongle-install-unsupported" style="display:none;">
 			<p data-tx="t0127:cc2d5f5e"><strong>Цей браузер не може прошити ключ.</strong> Щоб підготувати ключ до використання, вам потрібен браузер <strong>Google Chrome</strong> або <strong>Microsoft Edge</strong> на комп'ютері (не на смартфоні). Відкрийте цю сторінку в Chrome або Edge і спробуйте ще раз.</p>
@@ -130,7 +134,7 @@
 		<p data-tx="t0162:cbcaee11">Коли браузер повідомить "Встановлення завершено!", вийміть ключ з комп'ютера і підключіть його до вільного USB-порту роутера (або до будь-якого USB-джерела живлення 5 В у зоні дії бездротової локальної мережі).</p>
 
 		<figure>
-			<div data-tx="t0163:a5796f78" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Заміщення: фото "Донгл, вставлений в USB-порт Fritz!Box"].</div>
+			<img alt="ESP32-ключ у Fritz!Box" data-tx="t0196:d0a4fea7" th:src="@{/assets/img/dongle/plugged-into-router.jpg}"/>
 		</figure>
 
 		<h2 data-tx="t0164:71e45897" id="schritt-6">Крок 4 - Додайте ключ до бездротової локальної мережі (WPS)</h2>
@@ -140,7 +144,7 @@
 		<p data-tx="t0166:83cbb4c2">Тепер натисніть кнопку <strong>WPS</strong> на роутері. На Fritz!Box це кнопка <strong>"Connect / WPS"</strong> у верхній частині пристрою - натисніть коротко, поки не почне блимати індикатор Wi-Fi на самому роутері. На інших роутерах кнопка позначена як "WPS" або "Pair". Протягом декількох секунд роутер передає ваші дані доступу до Wi-Fi на донгл, який зберігає їх і встановлює з'єднання.</p>
 
 		<figure>
-			<div data-tx="t0167:5f50dac7" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Заміщення: Фото "Кнопка Connect/WPS на Fritz!Box зі стрілкою"].</div>
+			<img alt="Кнопка WPS на Fritz!Box" data-tx="t0197:fe3e8d05" th:src="@{/assets/img/dongle/wps-button.jpg}"/>
 		</figure>
 
 		<p data-tx="t0168:32d2921"><strong>Спрацювало:</strong> Світлодіод тепер повільно блимає (приблизно раз на секунду) - ключ знаходиться у бездротовій мережі, отримав адресу і чекає на конфігурацію (наступний крок).</p>
@@ -162,7 +166,22 @@
 		<p data-tx="t0175:fda77eed">Якщо це посилання не працює (Windows без Bonjour, деякі mesh WLAN), знайдіть у списку пристроїв вашого роутера пристрій з назвою <code>answerbot</code>, запишіть його IP-адресу і викличте його в браузері - наприклад, <code>http://192.168.178.xxx/</code>.</p>
 
 		<figure>
-			<div data-tx="t0176:8bb491f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Заповнювач: Скріншот веб-інтерфейсу ключа з полями для введення SIP і токена]</div>
+			<img alt="Екран привітання донгла" data-tx="t0204:4f273df1" th:src="@{/assets/img/dongle/01-welcome-screen.jpg}"/>
+		</figure>
+		<figure>
+			<img alt="Вибір телефонного оператора" data-tx="t0199:d59036f6" th:src="@{/assets/img/dongle/02-select-telephony-provider.jpg}"/>
+		</figure>
+		<figure>
+			<img alt="Налаштування телефонії через Fritz!Box Assistant" data-tx="t0200:3d467669" th:src="@{/assets/img/dongle/03-fritzbox-password.jpg}"/>
+		</figure>
+		<figure>
+			<img alt="Підтвердження налаштування на мобільному пристрої" data-tx="t0201:be2f6fb4" th:src="@{/assets/img/dongle/04-confirm-with-phone.jpg}"/>
+		</figure>
+		<figure>
+			<img alt="Налаштування телефонії" data-tx="t0202:ca12a560" th:src="@{/assets/img/dongle/05-telephony-set-up.jpg}"/>
+		</figure>
+		<figure>
+			<img alt="Налаштування донгла завершено" data-tx="t0203:ecb8f314" th:src="@{/assets/img/dongle/06-setup-completed.jpg}"/>
 		</figure>
 
 		<p data-tx="t0177:a09627c1">Введіть у веб-інтерфейсі:</p>

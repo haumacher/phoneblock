@@ -79,6 +79,10 @@
 		<h2 data-tx="t0149:69477c42" id="schritt-3">Stap 2 - De dongle voorbereiden</h2>
 
 		<p data-tx="t0150:a212e6cf">U moet de PhoneBlock software eenmalig op uw dongle laden. Sluit hiervoor de dongle aan op een vrije USB-poort van uw computer.</p>
+		
+		<figure>
+			<img alt="Dongle welkomstscherm" data-tx="t0198:4f273df1" th:src="@{/assets/img/dongle/plugged-into-computer.jpg}"/>
+		</figure>
 
 		<div class="notification is-warning" id="dongle-install-unsupported" style="display:none;">
 			<p data-tx="t0127:cc2d5f5e"><strong>Deze browser kan de dongle niet flashen.</strong> Om je dongle gebruiksklaar te maken, heb je een <strong>Google Chrome</strong> of <strong>Microsoft Edge</strong> browser nodig op een computer (niet op een smartphone). Open deze pagina met Chrome of Edge en probeer het opnieuw.</p>
@@ -130,7 +134,7 @@
 		<p data-tx="t0162:cbcaee11">Wanneer de browser meldt "Installatie voltooid!", haal je de dongle uit de computer en sluit je deze aan op een vrije USB-poort van je router (of een willekeurige 5 V USB-voeding binnen WLAN-bereik).</p>
 
 		<figure>
-			<div data-tx="t0163:a5796f78" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Placeholder: Photo "Dongle geplaatst in de USB-poort van de Fritz!Box"].</div>
+			<img alt="ESP32 dongle in de Fritz!Box" data-tx="t0196:d0a4fea7" th:src="@{/assets/img/dongle/plugged-into-router.jpg}"/>
 		</figure>
 
 		<h2 data-tx="t0164:71e45897" id="schritt-6">Stap 4 - De dongle toevoegen aan het WLAN (WPS)</h2>
@@ -140,7 +144,7 @@
 		<p data-tx="t0166:83cbb4c2">Druk nu op de <strong>WPS-knop</strong> op de router. Bij de Fritz!Box is dit de <strong>"Connect / WPS"</strong>-knop aan de bovenkant van het apparaat - druk kort totdat het Wi-Fi-lampje op de router zelf begint te knipperen. Andere routers noemen de knop "WPS" of "Pair". Binnen een paar seconden stuurt de router je Wi-Fi-toegangsgegevens naar de dongle, die ze opslaat en verbinding maakt.</p>
 
 		<figure>
-			<div data-tx="t0167:5f50dac7" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Plaatshouder: Foto "Verbind/WPS-knop op de Fritz!Box met pijl"]</div>
+			<img alt="WPS-knop op de Fritz!Box" data-tx="t0197:fe3e8d05" th:src="@{/assets/img/dongle/wps-button.jpg}"/>
 		</figure>
 
 		<p data-tx="t0168:32d2921"><strong>Heeft gewerkt:</strong> De LED knippert nu langzaam (ongeveer eenmaal per seconde) - de dongle bevindt zich in het WLAN, heeft een adres ontvangen en wacht op configuratie (volgende stap).</p>
@@ -162,7 +166,22 @@
 		<p data-tx="t0175:fda77eed">Als deze link niet werkt (Windows zonder Bonjour, sommige mesh WLAN's), zoek dan in de apparatenlijst van je router naar een apparaat met de naam <code>answerbot</code>, noteer het IP-adres en roep het op in de browser - bijvoorbeeld <code>http://192.168.178.xxx/</code>.</p>
 
 		<figure>
-			<div data-tx="t0176:8bb491f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Placeholder: Screenshot van de dongle webinterface met invoervelden voor SIP en token].</div>
+			<img alt="Dongle welkomstscherm" data-tx="t0204:4f273df1" th:src="@{/assets/img/dongle/01-welcome-screen.jpg}"/>
+		</figure>
+		<figure>
+			<img alt="Keuze van telefoonaanbieder" data-tx="t0199:d59036f6" th:src="@{/assets/img/dongle/02-select-telephony-provider.jpg}"/>
+		</figure>
+		<figure>
+			<img alt="Telefonie instellen via Fritz!Box Assistant" data-tx="t0200:3d467669" th:src="@{/assets/img/dongle/03-fritzbox-password.jpg}"/>
+		</figure>
+		<figure>
+			<img alt="Bevestiging van de installatie op een mobiel apparaat" data-tx="t0201:be2f6fb4" th:src="@{/assets/img/dongle/04-confirm-with-phone.jpg}"/>
+		</figure>
+		<figure>
+			<img alt="Telefonie instellen" data-tx="t0202:ca12a560" th:src="@{/assets/img/dongle/05-telephony-set-up.jpg}"/>
+		</figure>
+		<figure>
+			<img alt="Installatie dongle voltooid" data-tx="t0203:ecb8f314" th:src="@{/assets/img/dongle/06-setup-completed.jpg}"/>
 		</figure>
 
 		<p data-tx="t0177:a09627c1">Voer in de webinterface in:</p>
