@@ -98,11 +98,13 @@ CONFIG_SIP_EXPIRES=3600
 CONFIG_SIP_CONTACT_HOST_OVERRIDE=""
 CONFIG_SIP_CONTACT_PORT_OVERRIDE=0
 
-# SIP test hook: when y, callers whose number starts with '*' (Fritz!Box
-# internal codes like **622) are answered as SPAM, bypassing the
-# PhoneBlock API and the phone-book-name skip. Off in production —
-# dev .local files enable it to exercise the answer/audio/BYE path
-# without blacklisting a real number.
+# Default state of the runtime "Accept local test calls" toggle in
+# the web UI (Spam-Ansage section). Used only when the dongle's NVS
+# key is empty — i.e. on first boot or after factory reset. Once the
+# user touches the toggle, the persisted runtime value wins.
+# Off in production; dev .local files enable it so a fresh test
+# build comes up answering Fritz!Box *-codes as spam without having
+# to click through the UI first.
 CONFIG_SIP_TEST_FORCE_SPAM_STAR_NUMBERS=n
 
 # Status LED: GPIO 10 is the EGBO PICO-D4 dongle's LED pin. The

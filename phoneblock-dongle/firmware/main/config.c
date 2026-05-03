@@ -31,6 +31,7 @@ static const char *NS   = "phoneblock";
 #define K_AUTH_USER     "auth_user"
 #define K_AUTH_PERSIST  "auth_persist"
 #define K_AUTO_UPDATE   "auto_update"
+#define K_ACCEPT_TEST   "accept_test"
 #define K_CONTACT_HOST  "contact_host"
 #define K_CONTACT_PORT  "contact_port"
 #define K_PB_URL        "pb_url"
@@ -75,6 +76,7 @@ typedef struct {
     char auth_user[64];      // pinned PhoneBlock user-name; empty = no pin
     char auth_persist[33];   // 32 hex chars + NUL; empty = nobody is "remembered"
     char auto_update[4];     // "1" | "0" (or empty = default on)
+    char accept_test[4];     // "1" | "0" (empty = use Kconfig default)
     char contact_host[64];
     int  contact_port;
     char pb_base_url[128];
@@ -141,6 +143,7 @@ void config_load(void)
         s_config.auth_user[0]     = '\0';
         s_config.auth_persist[0]  = '\0';
         s_config.auto_update[0]   = '\0';
+        s_config.accept_test[0]   = '\0';
         copy_default(s_config.contact_host, sizeof(s_config.contact_host), CONFIG_SIP_CONTACT_HOST_OVERRIDE);
         s_config.contact_port = CONFIG_SIP_CONTACT_PORT_OVERRIDE;
         copy_default(s_config.pb_base_url,  sizeof(s_config.pb_base_url),  CONFIG_PHONEBLOCK_BASE_URL);
@@ -191,6 +194,8 @@ void config_load(void)
              s_config.auth_persist, sizeof(s_config.auth_persist));
     load_str(h, K_AUTO_UPDATE, "",
              s_config.auto_update, sizeof(s_config.auto_update));
+    load_str(h, K_ACCEPT_TEST, "",
+             s_config.accept_test, sizeof(s_config.accept_test));
     load_str(h, K_CONTACT_HOST, CONFIG_SIP_CONTACT_HOST_OVERRIDE,
              s_config.contact_host, sizeof(s_config.contact_host));
     s_config.contact_port = load_int(h, K_CONTACT_PORT, CONFIG_SIP_CONTACT_PORT_OVERRIDE);
@@ -251,6 +256,16 @@ bool        config_auto_update_enabled(void)
     // tracks the released stream. Only an explicit "0" freezes it,
     // typically after a manual firmware upload from the web UI.
     return s_config.auto_update[0] != '0';
+}
+bool        config_accept_test_calls(void)
+{
+    // Empty (= NVS key never written) defers to the Kconfig default
+    // so dev builds with CONFIG_SIP_TEST_FORCE_SPAM_STAR_NUMBERS=y
+    // come up with the hook on out of the box. Once the user has
+    // touched the toggle in the web UI, the persisted "0" / "1"
+    // wins regardless of the build-time default.
+    if (s_config.accept_test[0] == '\0') return CONFIG_SIP_TEST_FORCE_SPAM_STAR_NUMBERS;
+    return s_config.accept_test[0] == '1';
 }
 const char *config_contact_host_override(void) { return s_config.contact_host; }
 int         config_contact_port_override(void) { return s_config.contact_port; }
@@ -377,6 +392,8 @@ esp_err_t config_update(const config_update_t *u)
                                         s_config.auth_persist, sizeof(s_config.auth_persist));
     if (err == ESP_OK) err = set_str_if(h, K_AUTO_UPDATE, u->auto_update,
                                         s_config.auto_update, sizeof(s_config.auto_update));
+    if (err == ESP_OK) err = set_str_if(h, K_ACCEPT_TEST, u->accept_test_calls,
+                                        s_config.accept_test, sizeof(s_config.accept_test));
     if (err == ESP_OK) err = set_str_if(h, K_PB_URL, u->phoneblock_base_url,
                                         s_config.pb_base_url, sizeof(s_config.pb_base_url));
     if (err == ESP_OK) err = set_str_if(h, K_PB_TOKEN, u->phoneblock_token,

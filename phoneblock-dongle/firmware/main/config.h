@@ -103,6 +103,16 @@ const char *config_auth_persist(void);
 // when ready to follow the released stream again.
 bool        config_auto_update_enabled(void);
 
+// Whether '*'-prefixed callers (Fritz!Box internal dial codes like
+// **622 or *21#) are answered as SPAM, bypassing the API and the
+// phone-book skip. Lets the user exercise the full
+// answer + audio + BYE path by calling the dongle's extension from
+// another internal Fritz!Box phone, without blacklisting a real
+// external number on PhoneBlock. Default comes from
+// CONFIG_SIP_TEST_FORCE_SPAM_STAR_NUMBERS until the user toggles
+// the runtime setting in the web UI.
+bool        config_accept_test_calls(void);
+
 // PhoneBlock
 // Site root URL, without "/api" suffix — api.c appends "/api/…",
 // web.c appends "/mobile/…" directly.
@@ -174,6 +184,10 @@ typedef struct {
     // "0" = freeze on the current build. NULL = leave unchanged.
     // Default when unset is "1" (auto-update on).
     const char *auto_update;
+    // "1" = answer Fritz!Box internal *-codes as SPAM (test hook),
+    // "0" = treat them like any other caller. NULL = leave unchanged.
+    // Default when unset comes from CONFIG_SIP_TEST_FORCE_SPAM_STAR_NUMBERS.
+    const char *accept_test_calls;
     const char *phoneblock_base_url;
     const char *phoneblock_token;
     // Direct-hit SPAM threshold. 0 = leave current value untouched

@@ -93,19 +93,25 @@ menu "PhoneBlock Dongle"
             it here. 0 means "advertise the bound UDP port".
 
     config SIP_TEST_FORCE_SPAM_STAR_NUMBERS
-        bool "Test hook: treat *-prefix callers as SPAM"
+        bool "Default for the runtime 'Accept local test calls' toggle"
         default n
         help
-            For development only: when enabled, calls from numbers
-            starting with '*' (Fritz!Box internal dial codes like
-            **622 or *21#) are treated as SPAM and answered with
-            200 OK + tone + BYE, bypassing both the display-name
-            phone-book skip and the PhoneBlock API.
+            Initial state of the runtime "Lokale Testanrufe annehmen"
+            checkbox in the web UI under Spam-Ansage. The first time
+            the dongle boots (NVS key empty), this Kconfig value
+            decides whether the test hook is on or off; once the user
+            toggles the checkbox, the persisted runtime value wins
+            and survives reboots / firmware updates until factory
+            reset.
 
-            Lets you exercise the full answer + audio + hangup path
-            by calling your IP-phone extension from another internal
-            Fritz!Box phone, without blacklisting a real number.
-            Leave disabled in production.
+            When the toggle is on, callers whose number starts with
+            '*' (Fritz!Box internal dial codes like **622 or *21#)
+            are treated as SPAM and answered with 200 OK + tone +
+            BYE, bypassing both the display-name phone-book skip
+            and the PhoneBlock API. Lets you exercise the full
+            answer + audio + hangup path by calling your IP-phone
+            extension from another internal Fritz!Box phone,
+            without blacklisting a real number.
 
     config STATUS_LED_GPIO
         int "Status LED GPIO (-1 to disable)"

@@ -797,16 +797,17 @@ static verdict_t check_invite_caller(const char *req, int req_len)
     char display[64];
     parse_display_name(hdr, val_len, display, sizeof(display));
 
-#if CONFIG_SIP_TEST_FORCE_SPAM_STAR_NUMBERS
-    // Dev hook: any '*'-prefixed internal dial code (**622, *21#, …)
-    // is treated as spam so the 200 OK + tone + BYE path can be
-    // exercised without blacklisting a real external number.
-    if (raw_user[0] == '*') {
+    // Optional: any '*'-prefixed internal Fritz!Box dial code (**622,
+    // *21#, …) is treated as spam so the 200 OK + tone + BYE path
+    // can be exercised by calling the dongle's extension from another
+    // internal phone, without blacklisting a real external number.
+    // Toggleable in the web UI under Spam-Ansage; default comes from
+    // CONFIG_SIP_TEST_FORCE_SPAM_STAR_NUMBERS until the user changes it.
+    if (config_accept_test_calls() && raw_user[0] == '*') {
         ESP_LOGW(TAG, "TEST MODE: caller '%s' forced to SPAM", raw_user);
         stats_record_call(raw_user, display, VERDICT_SPAM);
         return VERDICT_SPAM;
     }
-#endif
 
     if (is_known_contact(display)) {
         ESP_LOGI(TAG, "caller '%s' resolved via phone book → skip API",

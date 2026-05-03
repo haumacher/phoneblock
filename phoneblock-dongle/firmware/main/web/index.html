@@ -231,6 +231,8 @@ const I18N = {
     'status.ann.upload.decode_fail': 'Datei konnte nicht dekodiert werden.',
     'status.ann.reset.button': 'Auf Standard zurücksetzen',
     'status.ann.reset.confirm': 'Eigene Ansage wirklich verwerfen?',
+    'status.ann.accept_test': 'Lokale Testanrufe annehmen',
+    'status.ann.accept_test.help': 'Wenn aktiviert, beantwortet der Dongle Anrufe auf interne Fritz!Box-Codes (**622, *21#, …) wie Spam — also mit Ansage und Auflegen. So lässt sich der Anruf-Ablauf von einem internen Telefon aus testen, ohne eine echte Nummer auf PhoneBlock zu melden.',
     'hero.title': 'Einrichtung',
     'hero.intro': 'Zwei Schritte, dann blockt dein Dongle Spam-Anrufe automatisch. Beide abhaken, erst dann ist das Gerät einsatzbereit.',
     'hero.step1.todo': 'Den Dongle bei deiner Telefonanlage anmelden',
@@ -430,6 +432,8 @@ const I18N = {
     'status.ann.upload.decode_fail': 'Could not decode the file.',
     'status.ann.reset.button': 'Reset to default',
     'status.ann.reset.confirm': 'Really discard the custom announcement?',
+    'status.ann.accept_test': 'Accept local test calls',
+    'status.ann.accept_test.help': 'When enabled, the dongle answers calls to internal Fritz!Box codes (**622, *21#, …) as spam — i.e. with the announcement and a hang-up. Lets you test the full call flow from another internal phone without reporting a real number to PhoneBlock.',
     'hero.title': 'Setup',
     'hero.intro': 'Two steps, then the dongle blocks spam calls automatically. Both need to be ticked before the device is ready.',
     'hero.step1.todo': 'Register the dongle with your phone system',
@@ -617,6 +621,8 @@ const I18N = {
     'status.ann.upload.decode_fail': 'Impossible de décoder le fichier.',
     'status.ann.reset.button': 'Revenir au message par défaut',
     'status.ann.reset.confirm': 'Vraiment supprimer le message personnalisé ?',
+    'status.ann.accept_test': 'Accepter les appels de test locaux',
+    'status.ann.accept_test.help': 'Si activé, le dongle traite les appels vers les codes internes Fritz!Box (**622, *21#, …) comme du spam — avec annonce puis raccrochage. Permet de tester le flux complet depuis un autre téléphone interne sans signaler un vrai numéro à PhoneBlock.',
     'hero.title': 'Configuration',
     'hero.intro': 'Deux étapes, et le dongle bloque les appels indésirables automatiquement. Les deux doivent être cochées pour que l’appareil soit prêt.',
     'hero.step1.todo': 'Enregistrer le dongle auprès de votre système téléphonique',
@@ -804,6 +810,8 @@ const I18N = {
     'status.ann.upload.decode_fail': 'No se pudo decodificar el archivo.',
     'status.ann.reset.button': 'Restablecer al predeterminado',
     'status.ann.reset.confirm': '¿Descartar realmente el mensaje personalizado?',
+    'status.ann.accept_test': 'Aceptar llamadas de prueba locales',
+    'status.ann.accept_test.help': 'Si está activado, el dongle responde a las llamadas a códigos internos del Fritz!Box (**622, *21#, …) como spam — con el anuncio y colgando. Permite probar el flujo completo desde otro teléfono interno sin denunciar un número real a PhoneBlock.',
     'hero.title': 'Configuración',
     'hero.intro': 'Dos pasos y el dongle bloqueará llamadas spam automáticamente. Ambos deben completarse para que el dispositivo esté listo.',
     'hero.step1.todo': 'Registra el dongle en tu sistema telefónico',
@@ -1116,6 +1124,13 @@ function renderStatus(){
     + '  <button id="annUpload" class="btn-primary" style="padding:.4rem .9rem;font-size:.9rem" disabled>'
     +   esc(t('status.ann.upload.submit')) + '</button>'
     + '  <span id="annMsg" class="muted" style="margin-left:.6rem"></span>'
+    + '</p>'
+    + '<p style="margin-top:.8rem;font-size:.85rem">'
+    + '  <label title="' + esc(t('status.ann.accept_test.help')) + '" '
+    +    'style="display:flex;align-items:center;gap:.4rem;font-weight:400;color:#444;margin:0">'
+    + '    <input id="annAcceptTest" type="checkbox" style="width:auto;margin:0">'
+    + '    <span>' + esc(t('status.ann.accept_test')) + '</span>'
+    + '  </label>'
     + '</p></section>'
     + '<section id="syncSection" style="display:none">'
     + '<h2>' + esc(t('status.sync.title')) + '</h2>'
@@ -1440,6 +1455,30 @@ async function refreshAll(){
     : t('status.ann.default', {kb});
   $('annReset').style.display = ann.custom ? '' : 'none';
   if (!$('annPlay').onclick)  wireAnnouncement();
+
+  // Accept-test-calls toggle: wired here rather than in
+  // wireAnnouncement() because the persisted device flag flows
+  // through the polled /api/status payload, not the announcement
+  // upload helpers.
+  const annAcceptTest = $('annAcceptTest');
+  annAcceptTest.checked = ann.accept_test_calls === true;
+  if (!annAcceptTest.onchange){
+    annAcceptTest.onchange = async () => {
+      const want = annAcceptTest.checked;
+      annAcceptTest.disabled = true;
+      const body = new URLSearchParams();
+      body.append('accept_test_calls', want ? '1' : '0');
+      try {
+        await fetch('/api/config', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: body.toString(),
+        });
+      } catch (_){ /* next poll will reconcile */ }
+      annAcceptTest.disabled = false;
+      refreshAll();
+    };
+  }
 
   // SIP pill + detail
   const sipPill = $('sipPill');

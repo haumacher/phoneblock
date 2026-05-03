@@ -48,8 +48,11 @@
 #CONFIG_SIP_CONTACT_HOST_OVERRIDE="192.168.178.22"
 #CONFIG_SIP_CONTACT_PORT_OVERRIDE=5061
 
-# --- Dev-only test hook --------------------------------------------
-# Treat callers whose number starts with '*' (Fritz!Box internal
-# codes like **622, *21#) as SPAM, so the 200 OK + tone + BYE path
-# runs without blacklisting a real number on PhoneBlock.
+# --- Dev test hook: pre-tick the runtime toggle --------------------
+# This Kconfig only sets the default state of the "Accept local test
+# calls" toggle in the web UI for fresh / factory-reset devices.
+# Enabling it here means a freshly flashed dev build comes up already
+# answering Fritz!Box *-codes (**622, *21#) as spam, without needing
+# to click through the UI first; the user can still flip the toggle
+# at runtime and the persisted state wins from then on.
 #CONFIG_SIP_TEST_FORCE_SPAM_STAR_NUMBERS=y

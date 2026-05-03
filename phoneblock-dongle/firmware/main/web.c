@@ -298,6 +298,7 @@ static esp_err_t handle_status(httpd_req_t *req)
     cJSON_AddBoolToObject  (ann,  "custom",  announcement_is_custom());
     cJSON_AddNumberToObject(ann,  "bytes",   (double)announcement_length());
     cJSON_AddNumberToObject(ann,  "max_bytes", (double)ANNOUNCEMENT_MAX_BYTES);
+    cJSON_AddBoolToObject  (ann,  "accept_test_calls", config_accept_test_calls());
 
     cJSON *cnt = cJSON_AddObjectToObject(root, "counters");
     cJSON_AddNumberToObject(cnt,  "total",        c.total_calls);
@@ -438,6 +439,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     char sync_en_s[4]     = "";
     char log_known_s[4]   = "";
     char auto_update_s[4] = "";
+    char test_calls_s[4]  = "";
 
     bool have_sip_host  = form_get(body, "sip_host",  sip_host,  sizeof(sip_host));
     bool have_sip_user  = form_get(body, "sip_user",  sip_user,  sizeof(sip_user));
@@ -452,6 +454,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     bool have_sync_en   = form_get(body, "sync_enabled",  sync_en_s,    sizeof(sync_en_s));
     bool have_log_known = form_get(body, "log_known_calls", log_known_s, sizeof(log_known_s));
     bool have_auto_upd  = form_get(body, "auto_update",   auto_update_s, sizeof(auto_update_s));
+    bool have_test_call = form_get(body, "accept_test_calls", test_calls_s, sizeof(test_calls_s));
     bool have_pb_url     = form_get(body, "pb_url",    pb_url,    sizeof(pb_url));
     bool have_pb_token   = form_get(body, "pb_token",  pb_token,  sizeof(pb_token));
     bool have_min_direct = form_get(body, "min_direct_votes", min_direct_s, sizeof(min_direct_s));
@@ -487,6 +490,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
         .sync_enabled    = have_sync_en   ? sync_en_s    : NULL,
         .log_known_calls = have_log_known ? log_known_s  : NULL,
         .auto_update     = have_auto_upd  ? auto_update_s : NULL,
+        .accept_test_calls = have_test_call ? test_calls_s : NULL,
         .phoneblock_base_url = have_pb_url   && pb_url[0]   ? pb_url   : NULL,
         .phoneblock_token    = have_pb_token && pb_token[0] ? pb_token : NULL,
         .min_direct_votes = have_min_direct && min_direct_s[0] ? atoi(min_direct_s) : 0,
