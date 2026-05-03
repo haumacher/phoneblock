@@ -270,28 +270,30 @@ static esp_err_t fetch_manifest(char *body, size_t cap,
     return ESP_OK;
 }
 
-// --- public API -----------------------------------------------------
+// --- internal: manifest decision (no side-effects on flash / NVS) ---
 
-void firmware_try_update(bool force, fw_update_outcome_t *out)
+// Result of a read-only manifest evaluation. URL + expected_hash are
+// only valid when result == FW_UPDATE_NEW_AVAILABLE; the install path
+// then takes them straight from here without re-fetching the cJSON.
+typedef struct {
+    fw_update_result_t result;
+    char    new_version[32];
+    char    app_url[256];
+    uint8_t expected_hash[32];
+    char    error[64];
+} manifest_decision_t;
+
+static void resolve_manifest(bool force, const char *current_version,
+                             manifest_decision_t *d)
 {
-    fw_update_outcome_t scratch;
-    if (!out) out = &scratch;
-    memset(out, 0, sizeof(*out));
+    memset(d, 0, sizeof(*d));
 
-    const esp_app_desc_t *app = esp_app_get_description();
-    copy_str(out->current_version, sizeof(out->current_version),
-             app ? app->version : "");
-
-    // Manifest is the esp-web-tools format also consumed by the
-    // browser installer (same file at .../firmware/stable/manifest.json).
-    // 2 KiB is comfortably above the ~700 B we currently see and leaves
-    // room for longer version strings / multiple chip families.
     char body[2048];
     if (fetch_manifest(body, sizeof(body),
-                       out->error, sizeof(out->error)) != ESP_OK) {
-        out->result = FW_UPDATE_ERR_NETWORK;
-        if (out->error[0] == '\0') {
-            copy_str(out->error, sizeof(out->error),
+                       d->error, sizeof(d->error)) != ESP_OK) {
+        d->result = FW_UPDATE_ERR_NETWORK;
+        if (d->error[0] == '\0') {
+            copy_str(d->error, sizeof(d->error),
                      "Could not fetch OTA manifest.");
         }
         return;
@@ -300,8 +302,8 @@ void firmware_try_update(bool force, fw_update_outcome_t *out)
 
     cJSON *root = cJSON_Parse(body);
     if (!root) {
-        out->result = FW_UPDATE_ERR_PARSE;
-        copy_str(out->error, sizeof(out->error), "Manifest JSON invalid.");
+        d->result = FW_UPDATE_ERR_PARSE;
+        copy_str(d->error, sizeof(d->error), "Manifest JSON invalid.");
         return;
     }
 
@@ -316,22 +318,22 @@ void firmware_try_update(bool force, fw_update_outcome_t *out)
 
     if (!cJSON_IsString(j_ver)) {
         cJSON_Delete(root);
-        out->result = FW_UPDATE_ERR_PARSE;
-        copy_str(out->error, sizeof(out->error),
+        d->result = FW_UPDATE_ERR_PARSE;
+        copy_str(d->error, sizeof(d->error),
                  "Manifest missing version field.");
         return;
     }
     if (!cJSON_IsString(j_app_hash) || strlen(j_app_hash->valuestring) != 64) {
         cJSON_Delete(root);
-        out->result = FW_UPDATE_ERR_SIGNATURE;
-        copy_str(out->error, sizeof(out->error),
+        d->result = FW_UPDATE_ERR_SIGNATURE;
+        copy_str(d->error, sizeof(d->error),
                  "Manifest missing integrity.app_sha256.");
         return;
     }
     if (!cJSON_IsString(j_sig_b64)) {
         cJSON_Delete(root);
-        out->result = FW_UPDATE_ERR_SIGNATURE;
-        copy_str(out->error, sizeof(out->error),
+        d->result = FW_UPDATE_ERR_SIGNATURE;
+        copy_str(d->error, sizeof(d->error),
                  "Manifest missing integrity.signature.");
         return;
     }
@@ -352,16 +354,16 @@ void firmware_try_update(bool force, fw_update_outcome_t *out)
     if (rc != 0) {
         ESP_LOGE(TAG, "base64_decode(signature): -0x%04x", -rc);
         cJSON_Delete(root);
-        out->result = FW_UPDATE_ERR_SIGNATURE;
-        copy_str(out->error, sizeof(out->error),
+        d->result = FW_UPDATE_ERR_SIGNATURE;
+        copy_str(d->error, sizeof(d->error),
                  "Signature is not valid base64.");
         return;
     }
     if (!verify_manifest_signature(new_version, app_hash_hex, sig, sig_len)) {
         ESP_LOGE(TAG, "manifest signature verification failed");
         cJSON_Delete(root);
-        out->result = FW_UPDATE_ERR_SIGNATURE;
-        copy_str(out->error, sizeof(out->error),
+        d->result = FW_UPDATE_ERR_SIGNATURE;
+        copy_str(d->error, sizeof(d->error),
                  "Manifest signature does not match.");
         return;
     }
@@ -369,11 +371,11 @@ void firmware_try_update(bool force, fw_update_outcome_t *out)
 
     // Decode the expected hash now so the post-download compare is just
     // a memcmp.
-    uint8_t expected_hash[32];
-    if (!hex_decode(app_hash_hex, 64, expected_hash, sizeof(expected_hash))) {
+    if (!hex_decode(app_hash_hex, 64, d->expected_hash,
+                    sizeof(d->expected_hash))) {
         cJSON_Delete(root);
-        out->result = FW_UPDATE_ERR_SIGNATURE;
-        copy_str(out->error, sizeof(out->error),
+        d->result = FW_UPDATE_ERR_SIGNATURE;
+        copy_str(d->error, sizeof(d->error),
                  "app_sha256 is not 64 hex chars.");
         return;
     }
@@ -382,8 +384,8 @@ void firmware_try_update(bool force, fw_update_outcome_t *out)
     // from the post-download hash compare against the signed value). ----
     if (!cJSON_IsArray(j_builds) || cJSON_GetArraySize(j_builds) == 0) {
         cJSON_Delete(root);
-        out->result = FW_UPDATE_ERR_PARSE;
-        copy_str(out->error, sizeof(out->error),
+        d->result = FW_UPDATE_ERR_PARSE;
+        copy_str(d->error, sizeof(d->error),
                  "Manifest has no builds[].");
         return;
     }
@@ -414,17 +416,18 @@ void firmware_try_update(bool force, fw_update_outcome_t *out)
     }
     if (!new_url) {
         cJSON_Delete(root);
-        out->result = FW_UPDATE_ERR_PARSE;
-        copy_str(out->error, sizeof(out->error),
+        d->result = FW_UPDATE_ERR_PARSE;
+        copy_str(d->error, sizeof(d->error),
                  "Manifest has no app binary part.");
         return;
     }
-    copy_str(out->new_version, sizeof(out->new_version), new_version);
+    copy_str(d->new_version, sizeof(d->new_version), new_version);
+    copy_str(d->app_url,     sizeof(d->app_url),     new_url);
 
-    int vcmp = semver_cmp(new_version, out->current_version);
+    int vcmp = semver_cmp(new_version, current_version);
     if (vcmp == 0) {
         cJSON_Delete(root);
-        out->result = FW_UPDATE_NO_NEW;
+        d->result = FW_UPDATE_NO_NEW;
         return;
     }
     if (vcmp < 0 && !force) {
@@ -435,41 +438,46 @@ void firmware_try_update(bool force, fw_update_outcome_t *out)
         // overwrites a newer locally-flashed build. The forced manual
         // path still allows downgrades on explicit user request.
         ESP_LOGI(TAG, "manifest version %s is older than running %s; skipping",
-                 new_version, out->current_version);
+                 new_version, current_version);
         cJSON_Delete(root);
-        out->result = FW_UPDATE_NO_NEW;
+        d->result = FW_UPDATE_NO_NEW;
         return;
     }
 
     const char *failed = config_last_failed_ota();
-    if (failed[0] != '\0' && strcmp(failed, new_version) == 0) {
-        if (!force) {
-            ESP_LOGW(TAG, "skipping update to %s — same version previously "
-                          "rolled back; clear via web UI to retry", new_version);
-            cJSON_Delete(root);
-            out->result = FW_UPDATE_SKIPPED_FAILED;
-            return;
-        }
-        // Manual override: forget the prior failure, the user is asking
-        // us to try again.
-        ESP_LOGW(TAG, "force-update: clearing last_failed_ota=%s", failed);
-        config_set_last_failed_ota(NULL);
+    if (failed[0] != '\0' && strcmp(failed, new_version) == 0 && !force) {
+        ESP_LOGW(TAG, "skipping update to %s — same version previously "
+                      "rolled back; clear via web UI to retry", new_version);
+        cJSON_Delete(root);
+        d->result = FW_UPDATE_SKIPPED_FAILED;
+        return;
     }
 
+    cJSON_Delete(root);
+    d->result = FW_UPDATE_NEW_AVAILABLE;
+}
+
+// --- internal: download + flash (writes NVS marker, schedules reboot)
+
+static void install_resolved(const manifest_decision_t *d,
+                             fw_update_outcome_t *out)
+{
     ESP_LOGI(TAG, "OTA: %s → %s from %s",
-             out->current_version, new_version, new_url);
+             out->current_version, d->new_version, d->app_url);
 
     // Pessimistic marker: write *before* the OTA so a brick + rollback
     // can be detected on the next boot. Cleared in main.c once the
-    // running image equals this version (i.e. it survived).
-    config_set_last_failed_ota(new_version);
+    // running image equals this version (i.e. it survived). Overwrites
+    // any prior marker — the manual force=true path comes through here
+    // even when an old failure named the same version.
+    config_set_last_failed_ota(d->new_version);
 
     // ---- Download via begin/perform/finish so we can hash the
     // just-written partition before activating it. The all-in-one
     // esp_https_ota() flips the boot partition implicitly, leaving no
     // room to reject a wrong-hash binary. ----
     esp_http_client_config_t http_cfg = {
-        .url = new_url,
+        .url = d->app_url,
         .crt_bundle_attach = esp_crt_bundle_attach,
         .timeout_ms = 30000,
         .keep_alive_enable = true,
@@ -483,7 +491,6 @@ void firmware_try_update(bool force, fw_update_outcome_t *out)
     if (err != ESP_OK || ota_h == NULL) {
         ESP_LOGE(TAG, "esp_https_ota_begin: %s", esp_err_to_name(err));
         config_set_last_failed_ota(NULL);
-        cJSON_Delete(root);
         out->result = FW_UPDATE_ERR_OTA;
         copy_str(out->error, sizeof(out->error), esp_err_to_name(err));
         return;
@@ -497,7 +504,6 @@ void firmware_try_update(bool force, fw_update_outcome_t *out)
         ESP_LOGE(TAG, "esp_https_ota_perform: %s", esp_err_to_name(err));
         esp_https_ota_abort(ota_h);
         config_set_last_failed_ota(NULL);
-        cJSON_Delete(root);
         out->result = FW_UPDATE_ERR_OTA;
         copy_str(out->error, sizeof(out->error), esp_err_to_name(err));
         return;
@@ -514,7 +520,6 @@ void firmware_try_update(bool force, fw_update_outcome_t *out)
                  next, written);
         esp_https_ota_abort(ota_h);
         config_set_last_failed_ota(NULL);
-        cJSON_Delete(root);
         out->result = FW_UPDATE_ERR_OTA;
         copy_str(out->error, sizeof(out->error),
                  "OTA finished without a writable partition.");
@@ -537,7 +542,6 @@ void firmware_try_update(bool force, fw_update_outcome_t *out)
                 mbedtls_sha256_free(&sha);
                 esp_https_ota_abort(ota_h);
                 config_set_last_failed_ota(NULL);
-                cJSON_Delete(root);
                 out->result = FW_UPDATE_ERR_OTA;
                 copy_str(out->error, sizeof(out->error),
                          "Partition read-back failed.");
@@ -550,14 +554,13 @@ void firmware_try_update(bool force, fw_update_outcome_t *out)
         mbedtls_sha256_free(&sha);
     }
 
-    if (memcmp(computed_hash, expected_hash, sizeof(expected_hash)) != 0) {
+    if (memcmp(computed_hash, d->expected_hash, sizeof(d->expected_hash)) != 0) {
         ESP_LOGE(TAG, "downloaded image hash does not match signed manifest");
         esp_https_ota_abort(ota_h);
         // Pessimistic marker stays cleared: this is an integrity
         // failure, not a "this version always bricks me". The next
         // attempt should retry with the same target.
         config_set_last_failed_ota(NULL);
-        cJSON_Delete(root);
         out->result = FW_UPDATE_ERR_SIGNATURE;
         copy_str(out->error, sizeof(out->error),
                  "App binary hash does not match signed manifest.");
@@ -568,15 +571,65 @@ void firmware_try_update(bool force, fw_update_outcome_t *out)
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "esp_https_ota_finish: %s", esp_err_to_name(err));
         config_set_last_failed_ota(NULL);
-        cJSON_Delete(root);
         out->result = FW_UPDATE_ERR_OTA;
         copy_str(out->error, sizeof(out->error), esp_err_to_name(err));
         return;
     }
 
-    cJSON_Delete(root);
     out->result = FW_UPDATE_INSTALLED;
     firmware_schedule_reboot();
+}
+
+// --- public API -----------------------------------------------------
+
+// Fill out->current_version from the running app descriptor; copy
+// shared fields from the manifest decision. Does not touch out->result
+// or out->error — the caller picks those depending on whether they
+// stop at the check or proceed to install.
+static void prime_outcome(fw_update_outcome_t *out)
+{
+    memset(out, 0, sizeof(*out));
+    const esp_app_desc_t *app = esp_app_get_description();
+    copy_str(out->current_version, sizeof(out->current_version),
+             app ? app->version : "");
+}
+
+static void copy_decision_into_outcome(const manifest_decision_t *d,
+                                       fw_update_outcome_t *out)
+{
+    out->result = d->result;
+    copy_str(out->new_version, sizeof(out->new_version), d->new_version);
+    copy_str(out->error,       sizeof(out->error),       d->error);
+}
+
+void firmware_check_manifest(bool force, fw_update_outcome_t *out)
+{
+    fw_update_outcome_t scratch;
+    if (!out) out = &scratch;
+    prime_outcome(out);
+
+    manifest_decision_t d;
+    resolve_manifest(force, out->current_version, &d);
+    copy_decision_into_outcome(&d, out);
+}
+
+void firmware_try_update(bool force, fw_update_outcome_t *out)
+{
+    fw_update_outcome_t scratch;
+    if (!out) out = &scratch;
+    prime_outcome(out);
+
+    manifest_decision_t d;
+    resolve_manifest(force, out->current_version, &d);
+    if (d.result != FW_UPDATE_NEW_AVAILABLE) {
+        copy_decision_into_outcome(&d, out);
+        return;
+    }
+
+    // Carry version forward for the success-path JSON; install_resolved
+    // sets out->result and (on failure) out->error.
+    copy_str(out->new_version, sizeof(out->new_version), d.new_version);
+    install_resolved(&d, out);
 }
 
 // --- background task ------------------------------------------------

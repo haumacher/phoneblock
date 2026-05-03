@@ -2053,35 +2053,47 @@ async function refreshAll(){
       fwMsg.textContent = t('status.fw.checking');
       fwMsg.style.color = '#1a73e8';
       try {
-        const r = await fetch('/api/firmware/check', {method: 'POST'});
-        const d = await r.json().catch(() => ({}));
-        if (r.ok && d.ok){
-          if (d.installed){
-            fwMsg.textContent = t('status.fw.check.installed',
-              {version: d.new_version});
-            fwMsg.style.color = '#e8710a';
-            stopPolling();
-            // The browser is now stuck on the pre-reboot HTML and
-            // would never see the marker get cleared from the next
-            // boot's /api/status. Hide the banner ourselves so the
-            // page does not have to be reloaded just to look right.
-            if (fwFailedEl) fwFailedEl.style.display = 'none';
-            return;
-          }
-          if (d.available){
-            fwMsg.textContent = t('status.fw.check.found',
-              {version: d.new_version});
-            fwMsg.style.color = '#1a73e8';
-          } else {
-            fwMsg.textContent = t('status.fw.check.none',
-              {version: d.current_version || s.firmware_version});
-            fwMsg.style.color = '#666';
-          }
-        } else {
+        // Phase 1: read-only manifest check (~1-2 s). The user gets
+        // immediate feedback ("none" / "version X gefunden") before
+        // we commit to the long download.
+        const rc = await fetch('/api/firmware/check', {method: 'POST'});
+        const dc = await rc.json().catch(() => ({}));
+        if (!rc.ok || !dc.ok){
           fwMsg.textContent = t('status.fw.check.error',
-            {msg: d.message || r.statusText});
+            {msg: dc.message || rc.statusText});
           fwMsg.style.color = '#d93025';
+          return;
         }
+        if (!dc.available){
+          fwMsg.textContent = t('status.fw.check.none',
+            {version: dc.current_version || s.firmware_version});
+          fwMsg.style.color = '#666';
+          return;
+        }
+
+        // Phase 2: install. Show the "wird installiert" line during
+        // the ~30 s download so the message reflects what is actually
+        // happening, instead of "Prüfe…" freezing for half a minute.
+        fwMsg.textContent = t('status.fw.check.found',
+          {version: dc.new_version});
+        fwMsg.style.color = '#1a73e8';
+        const ri = await fetch('/api/firmware/install', {method: 'POST'});
+        const di = await ri.json().catch(() => ({}));
+        if (ri.ok && di.ok && di.installed){
+          fwMsg.textContent = t('status.fw.check.installed',
+            {version: di.new_version});
+          fwMsg.style.color = '#e8710a';
+          stopPolling();
+          // The browser is now stuck on the pre-reboot HTML and
+          // would never see the marker get cleared from the next
+          // boot's /api/status. Hide the banner ourselves so the
+          // page does not have to be reloaded just to look right.
+          if (fwFailedEl) fwFailedEl.style.display = 'none';
+          return;
+        }
+        fwMsg.textContent = t('status.fw.check.error',
+          {msg: di.message || ri.statusText});
+        fwMsg.style.color = '#d93025';
       } catch (_){
         fwMsg.textContent = t('status.fw.check.error', {msg: 'Network error'});
         fwMsg.style.color = '#d93025';

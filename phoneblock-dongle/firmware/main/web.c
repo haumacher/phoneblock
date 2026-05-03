@@ -1255,23 +1255,27 @@ static esp_err_t handle_firmware_upload(httpd_req_t *req)
     return ESP_OK;
 }
 
-// POST /api/firmware/check — manual update trigger from the web UI.
-// Delegates to firmware_try_update with force=true: if the manifest
-// version matches a previously rolled-back build (last_failed_ota),
-// the user clicking this button is interpreted as "I want to retry
-// it anyway", so the marker is cleared. The download itself is
-// synchronous — the HTTP response is held until done — and a reboot
-// is scheduled by firmware_try_update on success.
+// POST /api/firmware/check — read-only manifest check (no download).
+// Returns within ~1-2 s. If a newer version is available, the frontend
+// shows the version number to the user before posting to /install, so
+// the long "Lade Aktualisierung…" wait is no longer the first feedback
+// the user sees after clicking "Auf Aktualisierung prüfen".
+//
+// force=true so the manual flow ignores the last_failed_ota guard the
+// auto-update task uses to break a brick→rollback→retry-same-bits
+// loop; the user pressing this button means "yes, try again". The
+// matching marker is left in NVS until /install actually overwrites
+// it, so a check + cancel never silently forgets the prior failure.
 static esp_err_t handle_firmware_check(httpd_req_t *req)
 {
     REQUIRE_AUTH_API(req);
     fw_update_outcome_t out;
-    firmware_try_update(true, &out);
+    firmware_check_manifest(true, &out);
 
     switch (out.result) {
         case FW_UPDATE_ERR_NETWORK:
         case FW_UPDATE_ERR_PARSE:
-        case FW_UPDATE_ERR_OTA:
+        case FW_UPDATE_ERR_SIGNATURE:
             send_fail(req, out.error);
             return ESP_OK;
         // SKIPPED_FAILED is unreachable with force=true, but treat it
@@ -1286,7 +1290,41 @@ static esp_err_t handle_firmware_check(httpd_req_t *req)
 
     cJSON *ok = cJSON_CreateObject();
     cJSON_AddBoolToObject  (ok, "ok", true);
-    cJSON_AddBoolToObject  (ok, "available", out.result == FW_UPDATE_INSTALLED);
+    cJSON_AddBoolToObject  (ok, "available", out.result == FW_UPDATE_NEW_AVAILABLE);
+    cJSON_AddStringToObject(ok, "current_version", out.current_version);
+    cJSON_AddStringToObject(ok, "new_version",     out.new_version);
+    send_json(req, ok);
+    return ESP_OK;
+}
+
+// POST /api/firmware/install — download + flash the version the
+// preceding /check call advertised. Held synchronously for the full
+// ~30 s download; the frontend shows "Neue Version X wird
+// installiert…" while it waits. Re-fetches the manifest internally —
+// keeps the protocol stateless and tolerates the rare case where the
+// CDN flips between check and install.
+static esp_err_t handle_firmware_install(httpd_req_t *req)
+{
+    REQUIRE_AUTH_API(req);
+    fw_update_outcome_t out;
+    firmware_try_update(true, &out);
+
+    switch (out.result) {
+        case FW_UPDATE_ERR_NETWORK:
+        case FW_UPDATE_ERR_PARSE:
+        case FW_UPDATE_ERR_SIGNATURE:
+        case FW_UPDATE_ERR_OTA:
+            send_fail(req, out.error);
+            return ESP_OK;
+        case FW_UPDATE_SKIPPED_FAILED:
+            send_fail(req, "Update skipped — previously rolled back.");
+            return ESP_OK;
+        default:
+            break;
+    }
+
+    cJSON *ok = cJSON_CreateObject();
+    cJSON_AddBoolToObject  (ok, "ok", true);
     cJSON_AddBoolToObject  (ok, "installed", out.result == FW_UPDATE_INSTALLED);
     cJSON_AddStringToObject(ok, "current_version", out.current_version);
     cJSON_AddStringToObject(ok, "new_version",     out.new_version);
@@ -1472,8 +1510,9 @@ static const httpd_uri_t URIS[] = {
     { .uri = "/api/errors/clear",    .method = HTTP_POST, .handler = handle_errors_clear,   .user_ctx = NULL },
     { .uri = "/api/calls/clear",     .method = HTTP_POST, .handler = handle_calls_clear,    .user_ctx = NULL },
     { .uri = "/api/factory-reset",   .method = HTTP_POST, .handler = handle_factory_reset,  .user_ctx = NULL },
-    { .uri = "/api/firmware",        .method = HTTP_POST, .handler = handle_firmware_upload, .user_ctx = NULL },
-    { .uri = "/api/firmware/check",  .method = HTTP_POST, .handler = handle_firmware_check,  .user_ctx = NULL },
+    { .uri = "/api/firmware",         .method = HTTP_POST, .handler = handle_firmware_upload,  .user_ctx = NULL },
+    { .uri = "/api/firmware/check",   .method = HTTP_POST, .handler = handle_firmware_check,   .user_ctx = NULL },
+    { .uri = "/api/firmware/install", .method = HTTP_POST, .handler = handle_firmware_install, .user_ctx = NULL },
     { .uri = "/api/announcement",    .method = HTTP_GET,  .handler = handle_announcement_get,   .user_ctx = NULL },
     { .uri = "/api/announcement",    .method = HTTP_POST, .handler = handle_announcement_post,  .user_ctx = NULL },
     { .uri = "/api/announcement/reset", .method = HTTP_POST, .handler = handle_announcement_reset, .user_ctx = NULL },
