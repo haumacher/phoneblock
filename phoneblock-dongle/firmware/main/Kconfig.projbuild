@@ -128,10 +128,15 @@ menu "PhoneBlock Dongle"
                              on-board blue LED of ESP32-WROOM-32
                              dev boards, where GPIO 10 carries the
                              external flash WP signal and is unsafe
-                             to drive).
+                             to drive). Polarity is auto-detected
+                             too: the GPIO 10 dongle LED is wired
+                             active-low, the WROOM-32 on-board LED
+                             active-high; STATUS_LED_ACTIVE_LOW is
+                             ignored in this mode.
               -1           = disable the LED task entirely.
               0..48        = explicit pin override for non-standard
-                             hardware.
+                             hardware. Polarity then comes from
+                             STATUS_LED_ACTIVE_LOW.
 
     config STATUS_LED_ACTIVE_LOW
         bool "Status LED is active-low"
@@ -141,6 +146,11 @@ menu "PhoneBlock Dongle"
             turns it on (e.g. LED-to-3V3-via-resistor topology).
             The WROOM-32 on-board LED is active-high; leave
             disabled for that case.
+
+            Only consulted when STATUS_LED_GPIO is an explicit pin
+            (0..48). In auto-detect mode (STATUS_LED_GPIO=-2) the
+            polarity is derived together with the pin from the
+            chip type and this setting is ignored.
 
     config RTP_PLAY_ANNOUNCEMENT
         bool "Play embedded voice announcement to spam callers"

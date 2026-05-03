@@ -18,29 +18,44 @@ static const char *TAG = "status_led";
 
 #define TICK_MS 50
 
-// Resolve CONFIG_STATUS_LED_GPIO into a concrete pin (or a sentinel
-// telling the caller to disable the task):
+// Resolve CONFIG_STATUS_LED_GPIO into a concrete pin and polarity
+// (or a sentinel telling the caller to disable the task):
 //   -1            → caller-side "disable" sentinel kept verbatim.
 //   -2 (default)  → auto-detect: chips with flash-in-package
 //                   (PICO-D4) drive GPIO 10, which is the dongle
-//                   target board's LED; everything else falls back
-//                   to GPIO 2, the on-board LED of ESP32-WROOM-32
-//                   dev boards. WROOM-32 routes the external SPI
-//                   flash WP signal through GPIO 10, so we must
-//                   not drive it there.
-//   0..48         → explicit override, returned as-is.
-static int resolve_status_led_gpio(void)
+//                   target board's LED and is wired active-low;
+//                   everything else falls back to GPIO 2, the
+//                   on-board LED of ESP32-WROOM-32 dev boards
+//                   (active-high). WROOM-32 routes the external
+//                   SPI flash WP signal through GPIO 10, so we
+//                   must not drive it there.
+//   0..48         → explicit override, returned as-is. Polarity is
+//                   then taken from CONFIG_STATUS_LED_ACTIVE_LOW so
+//                   the user stays in control for non-standard
+//                   wiring.
+static int resolve_status_led(bool *active_low_out)
 {
     const int kcfg = CONFIG_STATUS_LED_GPIO;
-    if (kcfg >= 0) return kcfg;
     if (kcfg == -1) return -1;
+    if (kcfg >= 0) {
+#ifdef CONFIG_STATUS_LED_ACTIVE_LOW
+        *active_low_out = true;
+#else
+        *active_low_out = false;
+#endif
+        return kcfg;
+    }
 
     esp_chip_info_t info;
     esp_chip_info(&info);
-    int pin = (info.features & CHIP_FEATURE_EMB_FLASH) ? 10 : 2;
-    ESP_LOGI(TAG, "auto-detect → GPIO %d (%s flash)",
+    bool emb_flash = (info.features & CHIP_FEATURE_EMB_FLASH) != 0;
+    int  pin       = emb_flash ? 10 : 2;
+    bool active_low = emb_flash;
+    *active_low_out = active_low;
+    ESP_LOGI(TAG, "auto-detect → GPIO %d, active-%s (%s flash)",
              pin,
-             (info.features & CHIP_FEATURE_EMB_FLASH) ? "embedded" : "external");
+             active_low ? "low" : "high",
+             emb_flash ? "embedded" : "external");
     return pin;
 }
 
@@ -112,14 +127,18 @@ static pattern_t pattern_for(led_state_t s)
     }
 }
 
+// Packed (gpio, active_low) → single intptr_t for xTaskCreate's void*
+// arg, so we don't need a separately allocated heap struct that would
+// outlive status_led_start(). GPIO range is 0..48, polarity is one bit.
+#define LED_ARG_PACK(gpio, active_low) \
+    ((intptr_t)(((unsigned)(gpio) & 0x7Fu) | ((active_low) ? 0x80u : 0u)))
+#define LED_ARG_GPIO(arg)        ((int)((intptr_t)(arg) & 0x7F))
+#define LED_ARG_ACTIVE_LOW(arg)  (((intptr_t)(arg) & 0x80) != 0)
+
 static void led_task(void *arg)
 {
-    const int  gpio       = (int)(intptr_t)arg;
-#ifdef CONFIG_STATUS_LED_ACTIVE_LOW
-    const bool active_low = true;
-#else
-    const bool active_low = false;
-#endif
+    const int  gpio       = LED_ARG_GPIO(arg);
+    const bool active_low = LED_ARG_ACTIVE_LOW(arg);
 
     gpio_config_t cfg = {
         .pin_bit_mask = 1ULL << gpio,
@@ -152,10 +171,12 @@ static void led_task(void *arg)
 
 void status_led_start(void)
 {
-    int gpio = resolve_status_led_gpio();
+    bool active_low = false;
+    int  gpio       = resolve_status_led(&active_low);
     if (gpio < 0) {
         ESP_LOGI(TAG, "LED task disabled (CONFIG_STATUS_LED_GPIO=-1)");
         return;
     }
-    xTaskCreate(led_task, "status_led", 2048, (void *)(intptr_t)gpio, 1, NULL);
+    xTaskCreate(led_task, "status_led", 2048,
+                (void *)LED_ARG_PACK(gpio, active_low), 1, NULL);
 }
