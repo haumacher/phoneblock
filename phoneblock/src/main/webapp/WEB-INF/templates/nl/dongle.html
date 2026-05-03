@@ -76,32 +76,7 @@
 
 		<p data-tx="t0140:41c85d87"><strong>Je bent zelf aan het knutselen en hebt al een ESP32 in de la liggen?</strong> PhoneBlock zal vrijwel zeker werken op je board als het minstens 4MB flashgeheugen heeft. Het kan zijn dat je een andere USB seriële driver nodig hebt of dat je de PIN toewijzing opnieuw moet configureren zodat de status LED knippert - je kunt het beste even kijken op de <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/" rel="noopener" target="_blank">projectpagina</a>.</p>
 
-		<h2 data-tx="t0141:fe30aa8a" id="schritt-2">Stap 2 - USB-stuurprogramma installeren (alleen Windows)</h2>
-
-		<p data-tx="t0142:155cb329">De dongle gebruikt de <strong>CH340</strong> USB seriële chip. Om deze door Windows te laten herkennen, heb je eenmalig het juiste stuurprogramma nodig, zodat je het programma op de dongle kunt laden ("flashen").</p>
-
-		<p>
-			<a class="button is-link" href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">
-				<span class="icon"><i class="fas fa-download"></i></span>
-				<span data-tx="t0143:88df56ee">CH340 stuurprogramma downloaden (wch-ic.com)</span>
-			</a>
-		</p>
-
-		<p data-tx="t0144:864e1d6">Start het gedownloade bestand <code>CH341SER.EXE</code> → klik op <strong>"INSTALL"</strong> in het venster → klaar. Opnieuw opstarten is niet nodig.</p>
-
-		<figure>
-			<div data-tx="t0145:42f1fe49" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Plaatshouder: Screenshot van het CH340 driver installatieprogramma met gemarkeerde INSTALL knop].</div>
-		</figure>
-
-		<details class="mt-4">
-			<summary><strong data-tx="t0146:ded51310">Gebruik je macOS of Linux?</strong></summary>
-			<ul>
-				<li data-tx="t0147:901b0f79"><strong>macOS</strong>: Vanaf macOS Big Sur is het stuurprogramma inbegrepen in het systeem - geen installatiestap nodig.</li>
-				<li data-tx="t0148:35f91b38"><strong>Linux</strong>: Het kerneldriver is geïnstalleerd. Op Ubuntu kan de BRLTTY-service de CH340 wegnemen, zodat je het apparaatbestand niet kunt zien - in dit geval helpt het om BRLTTY te verwijderen: <code>sudo apt remove --purge brltty</code>. Je gebruiker moet ook in de <code>dialout</code> groep zitten: <code>sudo usermod -aG dialout $USER</code>. Beide stappen worden in detail beschreven in <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
-			</ul>
-		</details>
-
-		<h2 data-tx="t0149:ccccec4c" id="schritt-3">Stap 3 - De dongle voorbereiden</h2>
+		<h2 data-tx="t0149:69477c42" id="schritt-3">Stap 2 - De dongle voorbereiden</h2>
 
 		<p data-tx="t0150:a212e6cf">U moet de PhoneBlock software eenmalig op uw dongle laden. Sluit hiervoor de dongle aan op een vrije USB-poort van uw computer.</p>
 
@@ -140,7 +115,17 @@
 			<div data-tx="t0160:177a19e2" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Plaatshouder: Screenshot van de esp-web-tools voortgangsbalk tijdens het flashen].</div>
 		</figure>
 
-		<h2 data-tx="t0161:657638e7" id="schritt-5">Stap 4 - Sluit de dongle aan op de router</h2>
+		<details class="mt-4">
+			<summary><strong data-tx="t0193:c14d73a">Computer herkent de dongle niet? Tips voor stuurprogramma's</strong></summary>
+			<p data-tx="t0194:1c40e13a">De dongle gebruikt de <strong>CH340</strong> USB seriële chip. De huidige Windows, macOS en Linux versies bevatten meestal al het stuurprogramma - in dit geval hoef je niets te doen. Als je computer de dongle echter niet laat zien in de apparaatselectie, helpen de volgende tips:</p>
+			<ul>
+				<li data-tx="t0195:758aaf4d"><strong>Windows</strong>: Download het <a href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">CH340-stuurprogramma van wch-ic.com</a>, voer <code>CH341SER.EXE</code> uit en klik op <strong>"INSTALL"</strong>. Opnieuw opstarten is niet nodig.</li>
+				<li data-tx="t0147:901b0f79"><strong>macOS</strong>: Vanaf macOS Big Sur is het stuurprogramma inbegrepen in het systeem - geen installatiestap nodig.</li>
+				<li data-tx="t0148:35f91b38"><strong>Linux</strong>: Het kerneldriver is geïnstalleerd. Op Ubuntu kan de BRLTTY-service de CH340 wegnemen, zodat je het apparaatbestand niet kunt zien - in dit geval helpt het om BRLTTY te verwijderen: <code>sudo apt remove --purge brltty</code>. Je gebruiker moet ook in de <code>dialout</code> groep zitten: <code>sudo usermod -aG dialout $USER</code>. Beide stappen worden in detail beschreven in <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
+			</ul>
+		</details>
+
+		<h2 data-tx="t0161:51445138" id="schritt-5">Stap 3 - Sluit de dongle aan op de router</h2>
 
 		<p data-tx="t0162:cbcaee11">Wanneer de browser meldt "Installatie voltooid!", haal je de dongle uit de computer en sluit je deze aan op een vrije USB-poort van je router (of een willekeurige 5 V USB-voeding binnen WLAN-bereik).</p>
 
@@ -148,7 +133,7 @@
 			<div data-tx="t0163:a5796f78" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Placeholder: Photo "Dongle geplaatst in de USB-poort van de Fritz!Box"].</div>
 		</figure>
 
-		<h2 data-tx="t0164:fc6ca575" id="schritt-6">Stap 5 - De dongle toevoegen aan het WLAN (WPS)</h2>
+		<h2 data-tx="t0164:71e45897" id="schritt-6">Stap 4 - De dongle toevoegen aan het WLAN (WPS)</h2>
 
 		<p data-tx="t0165:b5b221d5">De pas geflashte dongle heeft nog geen Wi-Fi-toegangsgegevens en wacht tot je hem met je Wi-Fi verbindt. De LED <strong>knippert snel</strong> (ongeveer vijf keer per seconde) en geeft "Koppelingsmodus actief" aan.</p>
 
@@ -162,7 +147,7 @@
 
 		<p data-tx="t0169:f91aa6d5"><strong>Werkt niet</strong> Controleer in de routerinstellingen of WPS is geactiveerd (op de Fritz!Box: <em>WLAN → Beveiliging → WPS</em>). Als het WPS-venster te kort was, begint de dongle automatisch opnieuw met koppelen - druk dan gewoon opnieuw op de WPS-knop.</p>
 
-		<h2 data-tx="t0170:82df9e2a" id="schritt-7">Stap 6 - Registreren als telefoon en PhoneBlock-toegang instellen</h2>
+		<h2 data-tx="t0170:6da0bfa" id="schritt-7">Stap 5 - Registreren als telefoon en PhoneBlock-toegang instellen</h2>
 
 		<p data-tx="t0171:4e4b9d0f">Om de dongle gesprekken te laten onderscheppen, heeft hij nog twee dingen nodig: uw SIP-toegangsgegevens (zodat hij zich kan aanmelden als een extra telefoon) en een PhoneBlock-token (zodat hij de spamdatabase kan raadplegen). U voert beide in de webinterface van de dongle in.</p>
 

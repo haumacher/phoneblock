@@ -76,32 +76,7 @@
 
 		<p data-tx="t0140:41c85d87"><strong>Sam majsterkujesz i masz już ESP32 w szufladzie? </strong> PhoneBlock prawie na pewno będzie działał na twojej płytce, jeśli ma co najmniej 4 MB pamięci flash. Być może będziesz potrzebował innego sterownika szeregowego USB lub będziesz musiał ponownie skonfigurować przypisanie kodu PIN, aby dioda LED stanu migała - najlepiej zajrzeć na stronę <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/" rel="noopener" target="_blank">projektu</a>.</p>
 
-		<h2 data-tx="t0141:fe30aa8a" id="schritt-2">Krok 2 - Zainstaluj sterownik USB (tylko Windows)</h2>
-
-		<p data-tx="t0142:155cb329">Klucz sprzętowy wykorzystuje układ szeregowy USB <strong>CH340</strong>. Aby system Windows mógł go rozpoznać, potrzebny jest odpowiedni sterownik, który umożliwi załadowanie ("flashowanie") programu do klucza sprzętowego.</p>
-
-		<p>
-			<a class="button is-link" href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">
-				<span class="icon"><i class="fas fa-download"></i></span>
-				<span data-tx="t0143:88df56ee">Pobierz sterownik CH340 (wch-ic.com)</span>
-			</a>
-		</p>
-
-		<p data-tx="t0144:864e1d6">Uruchom pobrany plik <code>CH341SER.EXE</code> → kliknij <strong>"INSTALL"</strong> w oknie → gotowe. Ponowne uruchomienie nie jest konieczne.</p>
-
-		<figure>
-			<div data-tx="t0145:42f1fe49" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Symbol zastępczy: Zrzut ekranu instalatora sterownika CH340 z podświetlonym przyciskiem INSTALUJ].</div>
-		</figure>
-
-		<details class="mt-4">
-			<summary><strong data-tx="t0146:ded51310">Używasz systemu macOS czy Linux?</strong></summary>
-			<ul>
-				<li data-tx="t0147:901b0f79"><strong>macOS</strong>: Od wersji macOS Big Sur sterownik jest dołączony do systemu - nie jest wymagana instalacja.</li>
-				<li data-tx="t0148:35f91b38"><strong>Linux</strong>: Sterownik jądra jest zainstalowany. Na Ubuntu, usługa BRLTTY może wyrwać CH340 tak, że nie można zobaczyć pliku urządzenia - w tym przypadku, odinstalowanie BRLTTY pomoże: <code>sudo apt remove --purge brltty</code>. Użytkownik musi również należeć do grupy <code>dialout</code>: <code>sudo usermod -aG dialout $USER</code>. Oba kroki zostały szczegółowo opisane w <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
-			</ul>
-		</details>
-
-		<h2 data-tx="t0149:ccccec4c" id="schritt-3">Krok 3 - Przygotowanie klucza sprzętowego</h2>
+		<h2 data-tx="t0149:69477c42" id="schritt-3">Krok 2 - Przygotowanie klucza sprzętowego</h2>
 
 		<p data-tx="t0150:a212e6cf">Należy jednorazowo załadować oprogramowanie PhoneBlock do klucza sprzętowego. Aby to zrobić, podłącz klucz sprzętowy do wolnego portu USB w komputerze.</p>
 
@@ -140,7 +115,17 @@
 			<div data-tx="t0160:177a19e2" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Symbol zastępczy: Zrzut ekranu paska postępu esp-web-tools podczas flashowania].</div>
 		</figure>
 
-		<h2 data-tx="t0161:657638e7" id="schritt-5">Krok 4 - Podłącz klucz sprzętowy do routera</h2>
+		<details class="mt-4">
+			<summary><strong data-tx="t0193:c14d73a">Komputer nie rozpoznaje klucza sprzętowego? Wskazówki dotyczące sterowników</strong></summary>
+			<p data-tx="t0194:1c40e13a">Klucz sprzętowy wykorzystuje układ szeregowy USB <strong>CH340</strong>. Obecne wersje systemów Windows, macOS i Linux zwykle zawierają już sterownik - w takim przypadku nie trzeba nic robić. Jeśli jednak komputer nie pokazuje klucza sprzętowego w wyborze urządzenia, pomocne będą poniższe wskazówki:</p>
+			<ul>
+				<li data-tx="t0195:758aaf4d"><strong>Windows</strong>: Pobierz sterownik <a href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">CH340 z wch-ic.com</a>, uruchom <code>CH341SER.EXE</code> i kliknij <strong>"INSTALL"</strong>. Ponowne uruchomienie nie jest konieczne.</li>
+				<li data-tx="t0147:901b0f79"><strong>macOS</strong>: Od wersji macOS Big Sur sterownik jest dołączony do systemu - nie jest wymagana instalacja.</li>
+				<li data-tx="t0148:35f91b38"><strong>Linux</strong>: Sterownik jądra jest zainstalowany. Na Ubuntu, usługa BRLTTY może wyrwać CH340 tak, że nie można zobaczyć pliku urządzenia - w tym przypadku, odinstalowanie BRLTTY pomoże: <code>sudo apt remove --purge brltty</code>. Użytkownik musi również należeć do grupy <code>dialout</code>: <code>sudo usermod -aG dialout $USER</code>. Oba kroki zostały szczegółowo opisane w <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
+			</ul>
+		</details>
+
+		<h2 data-tx="t0161:51445138" id="schritt-5">Krok 3 - Podłącz klucz sprzętowy do routera</h2>
 
 		<p data-tx="t0162:cbcaee11">Gdy przeglądarka wyświetli komunikat "Instalacja zakończona!", odłącz klucz sprzętowy od komputera i podłącz go do wolnego portu USB routera (lub dowolnego zasilacza USB 5 V w zasięgu sieci WLAN).</p>
 
@@ -148,7 +133,7 @@
 			<div data-tx="t0163:a5796f78" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Symbol zastępczy: zdjęcie "Klucz sprzętowy włożony do portu USB urządzenia Fritz!Box"].</div>
 		</figure>
 
-		<h2 data-tx="t0164:fc6ca575" id="schritt-6">Krok 5 - Dodanie klucza sprzętowego do sieci WLAN (WPS)</h2>
+		<h2 data-tx="t0164:71e45897" id="schritt-6">Krok 4 - Dodanie klucza sprzętowego do sieci WLAN (WPS)</h2>
 
 		<p data-tx="t0165:b5b221d5">Świeżo sflashowany klucz sprzętowy nie ma jeszcze żadnych danych dostępu do sieci Wi-Fi i czeka na połączenie z siecią Wi-Fi. Dioda LED <strong>miga szybko</strong> (około pięć razy na sekundę) i sygnalizuje "Aktywny tryb parowania".</p>
 
@@ -162,7 +147,7 @@
 
 		<p data-tx="t0169:f91aa6d5"><strong>Nie działa</strong> Sprawdź w ustawieniach routera, czy WPS jest włączony (na Fritz!Box: <em>WLAN → Security → WPS</em>). Jeśli okno WPS było zbyt krótkie, klucz sprzętowy automatycznie wznowi parowanie - wystarczy ponownie nacisnąć przycisk WPS.</p>
 
-		<h2 data-tx="t0170:82df9e2a" id="schritt-7">Krok 6 - Zarejestrowanie się jako telefon i skonfigurowanie dostępu PhoneBlock</h2>
+		<h2 data-tx="t0170:6da0bfa" id="schritt-7">Krok 5 - Zarejestrowanie się jako telefon i skonfigurowanie dostępu PhoneBlock</h2>
 
 		<p data-tx="t0171:4e4b9d0f">Aby klucz sprzętowy mógł przechwytywać połączenia, nadal potrzebuje dwóch rzeczy: danych dostępu SIP (aby mógł zalogować się jako dodatkowy telefon) i tokena PhoneBlock (aby mógł przeszukiwać bazę danych spamu). Obie te informacje wprowadza się w interfejsie internetowym klucza sprzętowego.</p>
 

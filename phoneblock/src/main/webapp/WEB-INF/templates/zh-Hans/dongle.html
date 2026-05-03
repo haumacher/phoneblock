@@ -76,32 +76,7 @@
 
 		<p data-tx="t0140:41c85d87"><strong>你正在自己捣鼓，而且抽屉里已经有了一个ESP32？</strong>如果你的电路板至少有4MB闪存，那么PhoneBlock几乎肯定可以在你的电路板上工作。您可能需要不同的 USB 串口驱动程序，或者需要重新配置 PIN 分配，以便 LED 状态指示灯闪烁 - 最好查看一下 <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/" rel="noopener" target="_blank"> 项目页面</a>。</p>
 
-		<h2 data-tx="t0141:fe30aa8a" id="schritt-2">第 2 步 - 安装 USB 驱动程序（仅限 Windows）</h2>
-
-		<p data-tx="t0142:155cb329">加密狗使用 <strong>CH340</strong> USB 串行芯片。为了让 Windows 能识别它，您需要安装相应的驱动程序，以便将程序加载（"闪存"）到加密狗上。</p>
-
-		<p>
-			<a class="button is-link" href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">
-				<span class="icon"><i class="fas fa-download"></i></span>
-				<span data-tx="t0143:88df56ee">下载 CH340 驱动程序 (wch-ic.com)</span>
-			</a>
-		</p>
-
-		<p data-tx="t0144:864e1d6">执行下载的文件 <code>CH341SER.EXE</code> → 点击窗口中的 <strong>"INSTALL"</strong>→完成。无需重新启动。</p>
-
-		<figure>
-			<div data-tx="t0145:42f1fe49" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[占位符：CH340 驱动程序安装程序的屏幕截图，其中 INSTALL 按钮突出显示]</div>
-		</figure>
-
-		<details class="mt-4">
-			<summary><strong data-tx="t0146:ded51310">您使用 macOS 还是 Linux？</strong></summary>
-			<ul>
-				<li data-tx="t0147:901b0f79"><strong>macOS</strong>：从 macOS Big Sur 开始，驱动程序已包含在系统中，无需任何安装步骤。</li>
-				<li data-tx="t0148:35f91b38"><strong>Linux</strong>：已安装内核驱动程序。在 Ubuntu 上，BRLTTY 服务可能会抢走 CH340，使你无法看到设备文件 - 在这种情况下，卸载 BRLTTY 会有帮助：<code>sudo apt remove --purge brltty</code>。你的用户还必须在 <code>dialout</code> 组中：<code>sudo usermod -aG dialout $USER</code>。这两个步骤在 <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a> 中都有详细说明。</li>
-			</ul>
-		</details>
-
-		<h2 data-tx="t0149:ccccec4c" id="schritt-3">步骤 3 - 准备加密狗</h2>
+		<h2 data-tx="t0149:69477c42" id="schritt-3">步骤 2 - 准备加密狗</h2>
 
 		<p data-tx="t0150:a212e6cf">您需要将 PhoneBlock 软件加载到加密狗上。为此，请将加密狗插入电脑的空闲 USB 端口。</p>
 
@@ -140,7 +115,17 @@
 			<div data-tx="t0160:177a19e2" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[占位符：闪烁过程中 esp-web-tools 进度条的截图］</div>
 		</figure>
 
-		<h2 data-tx="t0161:657638e7" id="schritt-5">步骤 4 - 将加密狗插入路由器</h2>
+		<details class="mt-4">
+			<summary><strong data-tx="t0193:c14d73a">电脑无法识别加密狗？驱动程序提示</strong></summary>
+			<p data-tx="t0194:1c40e13a">加密狗使用 <strong>CH340</strong> USB 串行芯片。当前的 Windows、macOS 和 Linux 版本通常已包含驱动程序，在这种情况下，你不需要做任何事情。不过，如果你的电脑在设备选择中没有显示加密狗，下面的提示会有所帮助：</p>
+			<ul>
+				<li data-tx="t0195:758aaf4d"><strong>Windows</strong>：从 wch-ic.com 下载 <a href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">CH340 驱动程序</a>，执行 <code>CH341SER.EXE</code> 并单击 <strong>"安装"</strong>。无需重新启动。</li>
+				<li data-tx="t0147:901b0f79"><strong>macOS</strong>：从 macOS Big Sur 开始，驱动程序已包含在系统中，无需任何安装步骤。</li>
+				<li data-tx="t0148:35f91b38"><strong>Linux</strong>：已安装内核驱动程序。在 Ubuntu 上，BRLTTY 服务可能会抢走 CH340，使你无法看到设备文件 - 在这种情况下，卸载 BRLTTY 会有帮助：<code>sudo apt remove --purge brltty</code>。你的用户还必须在 <code>dialout</code> 组中：<code>sudo usermod -aG dialout $USER</code>。这两个步骤在 <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a> 中都有详细说明。</li>
+			</ul>
+		</details>
+
+		<h2 data-tx="t0161:51445138" id="schritt-5">步骤 3 - 将加密狗插入路由器</h2>
 
 		<p data-tx="t0162:cbcaee11">当浏览器报告 "安装完成！"时，从电脑上取下加密狗，并将其插入路由器上的空闲 USB 端口（或 WLAN 范围内的任何 5 V USB 电源）。</p>
 
@@ -148,7 +133,7 @@
 			<div data-tx="t0163:a5796f78" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[占位符：图片 "插入 Fritz!Box USB 端口的加密狗"]</div>
 		</figure>
 
-		<h2 data-tx="t0164:fc6ca575" id="schritt-6">步骤 5 - 将加密狗添加到无线局域网（WPS）</h2>
+		<h2 data-tx="t0164:71e45897" id="schritt-6">步骤 4 - 将加密狗添加到无线局域网（WPS）</h2>
 
 		<p data-tx="t0165:b5b221d5">刚刷新的加密狗还没有任何 Wi-Fi 访问数据，正在等待您将其连接到 Wi-Fi 上。LED 指示灯<strong>快速闪烁</strong>（每秒约闪烁五次），发出 "配对模式激活 "的信号。</p>
 
@@ -162,7 +147,7 @@
 
 		<p data-tx="t0169:f91aa6d5"><strong>不起作用</strong>请在路由器设置中检查是否激活了 WPS（在 Fritz!Box 上：<em>WLAN → Security → WPS</em>）。如果 WPS 窗口太短，加密狗会自动重新启动配对 - 然后只需再次按下 WPS 按钮即可。</p>
 
-		<h2 data-tx="t0170:82df9e2a" id="schritt-7">第 6 步 - 注册手机并设置 PhoneBlock 访问权限</h2>
+		<h2 data-tx="t0170:6da0bfa" id="schritt-7">第 5 步 - 注册手机并设置 PhoneBlock 访问权限</h2>
 
 		<p data-tx="t0171:4e4b9d0f">为了让加密狗拦截通话，它还需要两样东西：您的 SIP 访问数据（以便它能作为附加电话登录）和 PhoneBlock 令牌（以便它能查询垃圾邮件数据库）。您可以在加密狗的网页界面上输入这两样东西。</p>
 

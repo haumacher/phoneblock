@@ -76,32 +76,7 @@
 
 		<p data-tx="t0140:41c85d87"><strong>Tu bricoles toi-même et tu as déjà un ESP32 dans ton tiroir?</strong> PhoneBlock fonctionne presque certainement aussi sur ta carte, si elle a au moins 4MB de mémoire flash. Il est possible que tu aies besoin d'un autre pilote sériel USB ou que tu doives reconfigurer l'affectation des PIN pour que la LED d'état clignote - pour cela, le mieux est de consulter la page <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/" rel="noopener" target="_blank">Projet</a>.</p>
 
-		<h2 data-tx="t0141:fe30aa8a" id="schritt-2">Étape 2 - Installer le pilote USB (Windows uniquement)</h2>
-
-		<p data-tx="t0142:155cb329">Le dongle utilise la puce sérielle USB <strong>CH340</strong>. Pour que Windows le reconnaisse, tu as besoin une fois du pilote approprié, afin de pouvoir charger ("flasher") le programme sur le dongle.</p>
-
-		<p>
-			<a class="button is-link" href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">
-				<span class="icon"><i class="fas fa-download"></i></span>
-				<span data-tx="t0143:88df56ee">Télécharger le pilote du CH340 (wch-ic.com)</span>
-			</a>
-		</p>
-
-		<p data-tx="t0144:864e1d6">Exécuter le fichier téléchargé <code>CH341SER.EXE</code> → cliquer dans la fenêtre sur <strong>"INSTALL"</strong> → terminé. Pas de redémarrage nécessaire.</p>
-
-		<figure>
-			<div data-tx="t0145:42f1fe49" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Caractère générique : Capture d'écran de l'installateur du pilote CH340 avec bouton INSTALL en surbrillance]</div>
-		</figure>
-
-		<details class="mt-4">
-			<summary><strong data-tx="t0146:ded51310">Tu utilises macOS ou Linux ?</strong></summary>
-			<ul>
-				<li data-tx="t0147:901b0f79"><strong>macOS</strong> : à partir de macOS Big Sur, le pilote est inclus dans le système - aucune étape d'installation n'est nécessaire.</li>
-				<li data-tx="t0148:35f91b38"><strong>Linux</strong> : le pilote du noyau est intégré. Sur Ubuntu, le service BRLTTY peut s'emparer du CH340, de sorte que tu ne vois pas le fichier du périphérique - dans ce cas, la désinstallation de BRLTTY aide : <code>sudo apt remove --purge brltty</code>. Ton utilisateur doit également être dans le groupe <code>dialout</code> : <code>sudo usermod -aG dialout $USER</code>. Les deux étapes sont détaillées dans <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
-			</ul>
-		</details>
-
-		<h2 data-tx="t0149:ccccec4c" id="schritt-3">Étape 3 - Préparer le dongle</h2>
+		<h2 data-tx="t0149:69477c42" id="schritt-3">Étape 2 - Préparer le dongle</h2>
 
 		<p data-tx="t0150:a212e6cf">Tu dois télécharger une seule fois le logiciel PhoneBlock sur ton dongle. Pour ce faire, insère le dongle dans un port USB libre de ton ordinateur.</p>
 
@@ -140,7 +115,17 @@
 			<div data-tx="t0160:177a19e2" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Caractère générique : capture d'écran de la barre de progression esp-web-tools lors du flashage]</div>
 		</figure>
 
-		<h2 data-tx="t0161:657638e7" id="schritt-5">Étape 4 - Replacer la clé électronique dans le routeur</h2>
+		<details class="mt-4">
+			<summary><strong data-tx="t0193:c14d73a">L'ordinateur ne reconnaît pas la clé électronique ? Remarques sur les pilotes</strong></summary>
+			<p data-tx="t0194:1c40e13a">Le dongle utilise la puce sérielle USB <strong>CH340</strong>. Les versions actuelles de Windows, macOS et Linux incluent généralement déjà le pilote - dans ce cas, tu n'as rien à faire. Mais si ton ordinateur n'affiche pas le dongle dans la sélection des périphériques, les indications suivantes peuvent t'aider :</p>
+			<ul>
+				<li data-tx="t0195:758aaf4d"><strong>Windows</strong> : télécharge le pilote <a href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">CH340 sur wch-ic.com</a>, exécute <code>CH341SER.EXE</code> et clique sur <strong>"INSTALL"</strong>. Pas de redémarrage nécessaire.</li>
+				<li data-tx="t0147:901b0f79"><strong>macOS</strong> : à partir de macOS Big Sur, le pilote est inclus dans le système - aucune étape d'installation n'est nécessaire.</li>
+				<li data-tx="t0148:35f91b38"><strong>Linux</strong> : le pilote du noyau est intégré. Sur Ubuntu, le service BRLTTY peut s'emparer du CH340, de sorte que tu ne vois pas le fichier du périphérique - dans ce cas, la désinstallation de BRLTTY aide : <code>sudo apt remove --purge brltty</code>. Ton utilisateur doit également être dans le groupe <code>dialout</code> : <code>sudo usermod -aG dialout $USER</code>. Les deux étapes sont détaillées dans <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
+			</ul>
+		</details>
+
+		<h2 data-tx="t0161:51445138" id="schritt-5">Étape 3 - Replacer la clé électronique dans le routeur</h2>
 
 		<p data-tx="t0162:cbcaee11">Lorsque le navigateur indique "Installation complete !", retire le dongle de l'ordinateur et branche-le sur un port USB libre de ton routeur (ou sur n'importe quel bloc d'alimentation USB 5 V à portée de WLAN).</p>
 
@@ -148,7 +133,7 @@
 			<div data-tx="t0163:a5796f78" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Caractère générique : photo "Le dongle est branché sur le port USB de la Fritz!Box]</div>
 		</figure>
 
-		<h2 data-tx="t0164:fc6ca575" id="schritt-6">Étape 5 - Ajouter la clé électronique au réseau sans fil (WPS)</h2>
+		<h2 data-tx="t0164:71e45897" id="schritt-6">Étape 4 - Ajouter la clé électronique au réseau sans fil (WPS)</h2>
 
 		<p data-tx="t0165:b5b221d5">Le dongle fraîchement flashé n'a pas encore de données d'accès WLAN et attend que tu le connectes à ton WLAN. La LED <strong> clignote rapidement</strong> (environ cinq fois par seconde) et signale "mode d'appairage actif".</p>
 
@@ -162,7 +147,7 @@
 
 		<p data-tx="t0169:f91aa6d5"><strong>Ça n'a pas marché?</strong> Vérifie dans les paramètres du routeur si le WPS est activé (sur la Fritz!Box : <em>WLAN → Sécurité → WPS</em>). Si la fenêtre WPS a été trop courte, le dongle redémarre automatiquement l'appairage - il suffit alors d'appuyer à nouveau sur le bouton WPS.</p>
 
-		<h2 data-tx="t0170:82df9e2a" id="schritt-7">Étape 6 - Se connecter en tant que téléphone et configurer l'accès PhoneBlock</h2>
+		<h2 data-tx="t0170:6da0bfa" id="schritt-7">Étape 5 - Se connecter en tant que téléphone et configurer l'accès PhoneBlock</h2>
 
 		<p data-tx="t0171:4e4b9d0f">Pour que le dongle puisse intercepter des appels, il lui manque encore deux choses : tes données d'accès SIP (pour qu'il puisse se connecter comme téléphone supplémentaire) et un jeton PhoneBlock (pour qu'il puisse interroger la base de données des spams). Tu inscris ces deux éléments dans l'interface web du dongle.</p>
 

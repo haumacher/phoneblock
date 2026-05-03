@@ -76,32 +76,7 @@
 
 		<p data-tx="t0140:41c85d87"><strong> هل تقوم بالترقيع بنفسك ولديك بالفعل ESP32 في الدرج؟ </strong> سيعمل PhoneBlock بالتأكيد على لوحتك إذا كانت تحتوي على ذاكرة فلاش 4 ميجابايت على الأقل. قد تحتاج إلى برنامج تشغيل USB تسلسلي USB مختلف أو قد تحتاج إلى إعادة تكوين تعيين رقم التعريف الشخصي بحيث يومض مؤشر LED للحالة - من الأفضل إلقاء نظرة على صفحة <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/" rel="noopener" target="_blank"> صفحة المشروع.</a></p>
 
-		<h2 data-tx="t0141:fe30aa8a" id="schritt-2">الخطوة 2 - تثبيت برنامج تشغيل USB (ويندوز فقط)</h2>
-
-		<p data-tx="t0142:155cb329">يستخدم الدونجل شريحة USB التسلسلية <strong>CH340</strong>. ولكي يتعرف عليه Windows، تحتاج إلى برنامج التشغيل المناسب مرة واحدة حتى تتمكن من تحميل ("فلاش") البرنامج على الدونجل.</p>
-
-		<p>
-			<a class="button is-link" href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">
-				<span class="icon"><i class="fas fa-download"></i></span>
-				<span data-tx="t0143:88df56ee">تنزيل برنامج التشغيل CH340 (wch-ic.com)</span>
-			</a>
-		</p>
-
-		<p data-tx="t0144:864e1d6">قم بتشغيل الملف الذي تم تنزيله <code>CH341SER.EXE</code> → انقر فوق <strong>"INSTALL"</strong> في النافذة → تم. لا حاجة لإعادة التشغيل.</p>
-
-		<figure>
-			<div data-tx="t0145:42f1fe49" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[العنصر النائب: لقطة شاشة لمثبت برنامج التشغيل CH340 مع تمييز زر INSTALL]</div>
-		</figure>
-
-		<details class="mt-4">
-			<summary><strong data-tx="t0146:ded51310">هل تستخدم نظام التشغيل macOS أو Linux؟</strong></summary>
-			<ul>
-				<li data-tx="t0147:901b0f79"><strong>macOS: اعتبارًا من macOS Big Sur، يتم تضمين برنامج التشغيل في النظام - لا حاجة لخطوة التثبيت.</strong></li>
-				<li data-tx="t0148:35f91b38"><strong>لينكس</strong>: تم تثبيت برنامج تشغيل النواة. في Ubuntu، يمكن لخدمة BRLTTY انتزاع CH340 بحيث لا يمكنك رؤية ملف الجهاز - في هذه الحالة، سيساعدك إلغاء تثبيت BRLTTY: <code>sudo apt apt remove --purge brltty</code>. يجب أن يكون المستخدم الخاص بك أيضًا في مجموعة <code>dialout</code>: <code>sudo usermod -aG dialout $USER</code>. كلتا الخطوتين موصوفتان بالتفصيل في <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md.</a></li>
-			</ul>
-		</details>
-
-		<h2 data-tx="t0149:ccccec4c" id="schritt-3">الخطوة 3 - إعداد الدونجل</h2>
+		<h2 data-tx="t0149:69477c42" id="schritt-3">الخطوة 2 - إعداد الدونجل</h2>
 
 		<p data-tx="t0150:a212e6cf">تحتاج إلى تحميل برنامج PhoneBlock على الدونجل مرة واحدة. للقيام بذلك، قم بتوصيل الدونجل بمنفذ USB مجاني على حاسوبك.</p>
 
@@ -140,7 +115,17 @@
 			<div data-tx="t0160:177a19e2" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[العنصر النائب: لقطة شاشة لشريط تقدم أدوات الويب esp-web-tools أثناء الوميض]</div>
 		</figure>
 
-		<h2 data-tx="t0161:657638e7" id="schritt-5">الخطوة 4 - قم بتوصيل الدونجل بجهاز التوجيه</h2>
+		<details class="mt-4">
+			<summary><strong data-tx="t0193:c14d73a">الكمبيوتر لا يتعرف على الدونجل؟ تلميحات السائق</strong></summary>
+			<p data-tx="t0194:1c40e13a">يستخدم الدونجل شريحة USB التسلسلية <strong>CH340</strong>. عادةً ما تتضمن إصدارات ويندوز وماك ولينكس الحالية برنامج التشغيل بالفعل - في هذه الحالة، لا تحتاج إلى القيام بأي شيء. ومع ذلك، إذا كان جهاز الكمبيوتر الخاص بك لا يُظهر الدونجل في اختيار الجهاز، فستساعدك النصائح التالية:</p>
+			<ul>
+				<li data-tx="t0195:758aaf4d"><strong>Windows</strong>: قم بتنزيل برنامج التشغيل <a href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">CH340 من wch-ic.com</a>، ثم قم بتنفيذ <code>CH341SER.EXE</code> وانقر على <strong>"INSTALL"</strong>. لا يلزم إعادة التشغيل.</li>
+				<li data-tx="t0147:901b0f79"><strong>macOS: اعتبارًا من macOS Big Sur، يتم تضمين برنامج التشغيل في النظام - لا حاجة لخطوة التثبيت.</strong></li>
+				<li data-tx="t0148:35f91b38"><strong>لينكس</strong>: تم تثبيت برنامج تشغيل النواة. في Ubuntu، يمكن لخدمة BRLTTY انتزاع CH340 بحيث لا يمكنك رؤية ملف الجهاز - في هذه الحالة، سيساعدك إلغاء تثبيت BRLTTY: <code>sudo apt apt remove --purge brltty</code>. يجب أن يكون المستخدم الخاص بك أيضًا في مجموعة <code>dialout</code>: <code>sudo usermod -aG dialout $USER</code>. كلتا الخطوتين موصوفتان بالتفصيل في <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md.</a></li>
+			</ul>
+		</details>
+
+		<h2 data-tx="t0161:51445138" id="schritt-5">الخطوة 3 - قم بتوصيل الدونجل بجهاز التوجيه</h2>
 
 		<p data-tx="t0162:cbcaee11">عندما يُبلغ المتصفح عن "اكتمل التثبيت!"، قم بإزالة الدونجل من الكمبيوتر وقم بتوصيله بمنفذ USB مجاني على جهاز التوجيه (أو أي مصدر طاقة USB 5 فولت ضمن نطاق شبكة WLAN).</p>
 
@@ -148,7 +133,7 @@
 			<div data-tx="t0163:a5796f78" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[العنصر النائب: صورة "دونجل مُدخَل في منفذ USB في Fritz!Box"]</div>
 		</figure>
 
-		<h2 data-tx="t0164:fc6ca575" id="schritt-6">الخطوة 5 - إضافة الدونجل إلى شبكة WLAN (WPS)</h2>
+		<h2 data-tx="t0164:71e45897" id="schritt-6">الخطوة 4 - إضافة الدونجل إلى شبكة WLAN (WPS)</h2>
 
 		<p data-tx="t0165:b5b221d5">لا يحتوي الدونجل الذي تم وميضه حديثًا على أي بيانات وصول إلى شبكة Wi-Fi حتى الآن وينتظر منك توصيله بشبكة Wi-Fi. يومض مؤشر LED <strong> بسرعة (حوالي خمس مرات في الثانية) ويشير إلى "وضع الاقتران نشط".</strong></p>
 
@@ -162,7 +147,7 @@
 
 		<p data-tx="t0169:f91aa6d5"><strong> لم يعمل</strong> تحقق في إعدادات جهاز التوجيه مما إذا كان WPS مفعلًا (على Fritz!Box: <em>WLAN → الأمان → WPS</em>). إذا كانت نافذة WPS قصيرة جدًا، يقوم الدونجل تلقائيًا بإعادة تشغيل الاقتران - ثم اضغط ببساطة على زر WPS مرة أخرى.</p>
 
-		<h2 data-tx="t0170:82df9e2a" id="schritt-7">الخطوة 6 - التسجيل كهاتف وإعداد الوصول إلى PhoneBlock</h2>
+		<h2 data-tx="t0170:6da0bfa" id="schritt-7">الخطوة 5 - التسجيل كهاتف وإعداد الوصول إلى PhoneBlock</h2>
 
 		<p data-tx="t0171:4e4b9d0f">لكي يتمكن الدونجل من اعتراض المكالمات، لا يزال يحتاج إلى شيئين: بيانات الوصول إلى SIP الخاصة بك (حتى يتمكن من تسجيل الدخول كهاتف إضافي) ورمز PhoneBlock (حتى يتمكن من الاستعلام عن قاعدة بيانات الرسائل غير المرغوب فيها). يمكنك إدخال كليهما في واجهة الويب الخاصة بالدونجل.</p>
 

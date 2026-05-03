@@ -110,41 +110,7 @@
 		- dafür schaust Du Dir am besten die 
 		<a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/" rel="noopener" target="_blank">Projekt-Seite</a> an.</p>
 
-		<h2 data-tx="t0141:fe30aa8a" id="schritt-2">Schritt 2 — USB-Treiber installieren (nur Windows)</h2>
-
-		<p data-tx="t0142:155cb329">Der Dongle nutzt den <strong>CH340</strong>-USB-Serial-Chip. Damit Windows ihn 
-		erkennt, brauchst du einmalig den passenden Treiber, damit Du das Programm auf den Dongle laden ("flashen") kannst.</p>
-
-		<p>
-			<a class="button is-link" href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">
-				<span class="icon"><i class="fas fa-download"></i></span>
-				<span data-tx="t0143:88df56ee">CH340-Treiber herunterladen (wch-ic.com)</span>
-			</a>
-		</p>
-
-		<p data-tx="t0144:864e1d6">Heruntergeladene Datei <code>CH341SER.EXE</code> ausführen → im Fenster auf
-		<strong>„INSTALL"</strong> klicken → fertig. Kein Neustart nötig.</p>
-
-		<figure>
-			<div data-tx="t0145:42f1fe49" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">
-				[Platzhalter: Screenshot des CH340-Treiber-Installers mit hervorgehobenem INSTALL-Knopf]
-			</div>
-		</figure>
-
-		<details class="mt-4">
-			<summary><strong data-tx="t0146:ded51310">Du nutzt macOS oder Linux?</strong></summary>
-			<ul>
-				<li data-tx="t0147:901b0f79"><strong>macOS</strong>: Ab macOS Big Sur ist der Treiber im System enthalten —
-				kein Installationsschritt nötig.</li>
-				<li data-tx="t0148:35f91b38"><strong>Linux</strong>: Der Kernel-Treiber ist eingebaut. Auf Ubuntu kann der
-				BRLTTY-Dienst den CH340 wegschnappen, so dass Du die Geräte-Datei nicht siehst — dann hilft das Deinstallieren
-				von BRLTTY: <code>sudo apt remove --purge brltty</code>. Dein Benutzer muss
-				außerdem in der Gruppe <code>dialout</code> sein: <code>sudo usermod -aG dialout $USER</code>. Beide Schritte stehen ausführlich in
-				<a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
-			</ul>
-		</details>
-
-		<h2 data-tx="t0149:ccccec4c" id="schritt-3">Schritt 3 — Dongle vorbereiten</h2>
+		<h2 data-tx="t0149:69477c42" id="schritt-3">Schritt 2 — Dongle vorbereiten</h2>
 
 		<p data-tx="t0150:a212e6cf">Du musst einmalig die PhoneBlock-Software auf Deinen Dongle laden. 
 		Steck dazu den Dongle in einen freien USB-Port deines Computers.</p>
@@ -199,7 +165,28 @@
 			</div>
 		</figure>
 
-		<h2 data-tx="t0161:657638e7" id="schritt-5">Schritt 4 — Dongle in den Router umstecken</h2>
+		<details class="mt-4">
+			<summary><strong data-tx="t0193:c14d73a">Computer erkennt den Dongle nicht? Treiber-Hinweise</strong></summary>
+			<p data-tx="t0194:1c40e13a">Der Dongle nutzt den <strong>CH340</strong>-USB-Serial-Chip. Aktuelle Windows-,
+			macOS- und Linux-Versionen bringen den Treiber meistens schon mit — in dem Fall
+			musst Du nichts tun. Falls Dein Computer den Dongle aber nicht in der
+			Geräteauswahl anzeigt, helfen die folgenden Hinweise:</p>
+			<ul>
+				<li data-tx="t0195:758aaf4d"><strong>Windows</strong>: Lade den
+				<a href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">CH340-Treiber von wch-ic.com</a>
+				herunter, führe <code>CH341SER.EXE</code> aus und klicke auf
+				<strong>„INSTALL"</strong>. Kein Neustart nötig.</li>
+				<li data-tx="t0147:901b0f79"><strong>macOS</strong>: Ab macOS Big Sur ist der Treiber im System enthalten —
+				kein Installationsschritt nötig.</li>
+				<li data-tx="t0148:35f91b38"><strong>Linux</strong>: Der Kernel-Treiber ist eingebaut. Auf Ubuntu kann der
+				BRLTTY-Dienst den CH340 wegschnappen, so dass Du die Geräte-Datei nicht siehst — dann hilft das Deinstallieren
+				von BRLTTY: <code>sudo apt remove --purge brltty</code>. Dein Benutzer muss
+				außerdem in der Gruppe <code>dialout</code> sein: <code>sudo usermod -aG dialout $USER</code>. Beide Schritte stehen ausführlich in
+				<a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
+			</ul>
+		</details>
+
+		<h2 data-tx="t0161:51445138" id="schritt-5">Schritt 3 — Dongle in den Router umstecken</h2>
 
 		<p data-tx="t0162:cbcaee11">Wenn der Browser „Installation complete!" meldet, zieh den Dongle aus dem Computer und
 		steck ihn in einen freien USB-Port deines Routers (oder ein beliebiges 5-V-USB-Netzteil in
@@ -211,7 +198,7 @@
 			</div>
 		</figure>
 
-		<h2 data-tx="t0164:fc6ca575" id="schritt-6">Schritt 5 — Dongle ins WLAN aufnehmen (WPS)</h2>
+		<h2 data-tx="t0164:71e45897" id="schritt-6">Schritt 4 — Dongle ins WLAN aufnehmen (WPS)</h2>
 
 		<p data-tx="t0165:b5b221d5">Der frisch geflashte Dongle hat noch keine WLAN-Zugangsdaten und wartet darauf, dass Du 
 		ihn in Dein WLAN einbindest. Die LED <strong>blinkt schnell</strong> (etwa fünfmal pro
@@ -237,7 +224,7 @@
 		zu kurz war, startet der Dongle das Pairing automatisch neu — dann einfach noch einmal den
 		WPS-Knopf drücken.</p>
 
-		<h2 data-tx="t0170:82df9e2a" id="schritt-7">Schritt 6 — Als Telefon anmelden und PhoneBlock-Zugang einrichten</h2>
+		<h2 data-tx="t0170:6da0bfa" id="schritt-7">Schritt 5 — Als Telefon anmelden und PhoneBlock-Zugang einrichten</h2>
 
 		<p data-tx="t0171:4e4b9d0f">Damit der Dongle Anrufe abfangen kann, fehlen ihm noch zwei Dinge: deine SIP-Zugangsdaten
 		(damit er sich als zusätzliches Telefon anmelden kann) und ein PhoneBlock-Token

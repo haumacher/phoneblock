@@ -76,32 +76,7 @@
 
 		<p data-tx="t0140:41c85d87"><strong>You are tinkering yourself and already have an ESP32 in the drawer?</strong> PhoneBlock will almost certainly work on your board if it has at least 4MB of flash memory. You may need a different USB serial driver or have to reconfigure the PIN assignment so that the status LED flashes - it's best to take a look at the <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/" rel="noopener" target="_blank">project page</a>.</p>
 
-		<h2 data-tx="t0141:fe30aa8a" id="schritt-2">Step 2 - Install USB driver (Windows only)</h2>
-
-		<p data-tx="t0142:155cb329">The dongle uses the <strong>CH340</strong> USB serial chip. In order for Windows to recognize it, you need the appropriate driver once so that you can load ("flash") the program onto the dongle.</p>
-
-		<p>
-			<a class="button is-link" href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">
-				<span class="icon"><i class="fas fa-download"></i></span>
-				<span data-tx="t0143:88df56ee">Download CH340 driver (wch-ic.com)</span>
-			</a>
-		</p>
-
-		<p data-tx="t0144:864e1d6">Execute the downloaded file <code>CH341SER.EXE</code> → click on <strong>"INSTALL"</strong> in the window → done. No restart necessary.</p>
-
-		<figure>
-			<div data-tx="t0145:42f1fe49" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Placeholder: Screenshot of the CH340 driver installer with highlighted INSTALL button]</div>
-		</figure>
-
-		<details class="mt-4">
-			<summary><strong data-tx="t0146:ded51310">Do you use macOS or Linux?</strong></summary>
-			<ul>
-				<li data-tx="t0147:901b0f79"><strong>macOS</strong>: As of macOS Big Sur, the driver is included in the system - no installation step necessary.</li>
-				<li data-tx="t0148:35f91b38"><strong>Linux</strong>: The kernel driver is installed. On Ubuntu, the BRLTTY service can snatch away the CH340 so that you cannot see the device file - then uninstalling BRLTTY will help: <code>sudo apt remove --purge brltty</code>. Your user must also be in the <code>dialout</code> group: <code>sudo usermod -aG dialout $USER</code>. Both steps are described in detail in <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
-			</ul>
-		</details>
-
-		<h2 data-tx="t0149:ccccec4c" id="schritt-3">Step 3 - Prepare the dongle</h2>
+		<h2 data-tx="t0149:69477c42" id="schritt-3">Step 2 - Prepare the dongle</h2>
 
 		<p data-tx="t0150:a212e6cf">You need to load the PhoneBlock software onto your dongle once. To do this, plug the dongle into a free USB port on your computer.</p>
 
@@ -140,7 +115,17 @@
 			<div data-tx="t0160:177a19e2" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Placeholder: Screenshot of the esp-web-tools progress bar during flashing]</div>
 		</figure>
 
-		<h2 data-tx="t0161:657638e7" id="schritt-5">Step 4 - Plug the dongle into the router</h2>
+		<details class="mt-4">
+			<summary><strong data-tx="t0193:c14d73a">Computer does not recognize the dongle? Driver hints</strong></summary>
+			<p data-tx="t0194:1c40e13a">The dongle uses the <strong>CH340</strong> USB serial chip. Current Windows, macOS and Linux versions usually already include the driver - in this case, you don't need to do anything. However, if your computer does not display the dongle in the device selection, the following instructions will help:</p>
+			<ul>
+				<li data-tx="t0195:758aaf4d"><strong>Windows</strong>: Download the <a href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">CH340 driver from wch-ic.com</a>, execute <code>CH341SER.EXE</code> and click on <strong>"INSTALL"</strong>. No restart necessary.</li>
+				<li data-tx="t0147:901b0f79"><strong>macOS</strong>: As of macOS Big Sur, the driver is included in the system - no installation step necessary.</li>
+				<li data-tx="t0148:35f91b38"><strong>Linux</strong>: The kernel driver is installed. On Ubuntu, the BRLTTY service can snatch away the CH340 so that you cannot see the device file - then uninstalling BRLTTY will help: <code>sudo apt remove --purge brltty</code>. Your user must also be in the <code>dialout</code> group: <code>sudo usermod -aG dialout $USER</code>. Both steps are described in detail in <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
+			</ul>
+		</details>
+
+		<h2 data-tx="t0161:51445138" id="schritt-5">Step 3 - Plug the dongle into the router</h2>
 
 		<p data-tx="t0162:cbcaee11">When the browser reports "Installation complete!", remove the dongle from the computer and plug it into a free USB port on your router (or any 5 V USB power supply within WLAN range).</p>
 
@@ -148,7 +133,7 @@
 			<div data-tx="t0163:a5796f78" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Placeholder: Photo "Dongle inserted in the USB port of the Fritz!Box"]</div>
 		</figure>
 
-		<h2 data-tx="t0164:fc6ca575" id="schritt-6">Step 5 - Add the dongle to the WLAN (WPS)</h2>
+		<h2 data-tx="t0164:71e45897" id="schritt-6">Step 4 - Add the dongle to the WLAN (WPS)</h2>
 
 		<p data-tx="t0165:b5b221d5">The freshly flashed dongle does not yet have any Wi-Fi access data and is waiting for you to connect it to your Wi-Fi. The LED <strong>flashes quickly</strong> (about five times per second) and signals "Pairing mode active".</p>
 
@@ -162,7 +147,7 @@
 
 		<p data-tx="t0169:f91aa6d5"><strong>Did not work</strong> Check in the router settings whether WPS is activated (on the Fritz!Box: <em>WLAN → Security → WPS</em>). If the WPS window was too short, the dongle automatically restarts the pairing - then simply press the WPS button again.</p>
 
-		<h2 data-tx="t0170:82df9e2a" id="schritt-7">Step 6 - Register as a phone and set up PhoneBlock access</h2>
+		<h2 data-tx="t0170:6da0bfa" id="schritt-7">Step 5 - Register as a phone and set up PhoneBlock access</h2>
 
 		<p data-tx="t0171:4e4b9d0f">In order for the dongle to intercept calls, it still needs two things: your SIP access data (so that it can log in as an additional phone) and a PhoneBlock token (so that it can query the spam database). You enter both in the dongle's web interface.</p>
 

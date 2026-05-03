@@ -76,32 +76,7 @@
 
 		<p data-tx="t0140:41c85d87"><strong>Du pysslar själv och har redan en ESP32 i byrålådan? </strong> PhoneBlock kommer nästan säkert att fungera på ditt kort om det har minst 4 MB flashminne. Du kan behöva en annan USB-seriell drivrutin eller behöva konfigurera om PIN-kodstilldelningen så att statuslampan blinkar - det är bäst att ta en titt på <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/" rel="noopener" target="_blank">projektsidan</a>.</p>
 
-		<h2 data-tx="t0141:fe30aa8a" id="schritt-2">Steg 2 - Installera USB-drivrutin (endast Windows)</h2>
-
-		<p data-tx="t0142:155cb329">Dongeln använder det seriella USB-chipet <strong>CH340</strong>. För att Windows ska känna igen den behöver du en gång en lämplig drivrutin så att du kan ladda ("flasha") programmet på dongeln.</p>
-
-		<p>
-			<a class="button is-link" href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">
-				<span class="icon"><i class="fas fa-download"></i></span>
-				<span data-tx="t0143:88df56ee">Ladda ner CH340 drivrutin (wch-ic.com)</span>
-			</a>
-		</p>
-
-		<p data-tx="t0144:864e1d6">Kör den nedladdade filen <code>CH341SER.EXE</code> → klicka på <strong>"INSTALL"</strong> i fönstret → klart. Ingen omstart är nödvändig.</p>
-
-		<figure>
-			<div data-tx="t0145:42f1fe49" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Platshållare: Skärmdump av installationsprogrammet för CH340-drivrutiner med markerad INSTALL-knapp].</div>
-		</figure>
-
-		<details class="mt-4">
-			<summary><strong data-tx="t0146:ded51310">Använder du macOS eller Linux?</strong></summary>
-			<ul>
-				<li data-tx="t0147:901b0f79"><strong>macOS</strong>: Från och med macOS Big Sur ingår drivrutinen i systemet - inget installationssteg krävs.</li>
-				<li data-tx="t0148:35f91b38"><strong>Linux</strong>: Kärndrivrutinen är installerad. På Ubuntu kan tjänsten BRLTTY sno åt sig CH340 så att du inte kan se enhetsfilen - i det här fallet hjälper det att avinstallera BRLTTY: <code>sudo apt remove --purge brltty</code>. Din användare måste också vara med i gruppen <code>dialout</code>: <code>sudo usermod -aG dialout $USER</code>. Båda stegen beskrivs i detalj i <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
-			</ul>
-		</details>
-
-		<h2 data-tx="t0149:ccccec4c" id="schritt-3">Steg 3 - Förbered dongeln</h2>
+		<h2 data-tx="t0149:69477c42" id="schritt-3">Steg 2 - Förbered dongeln</h2>
 
 		<p data-tx="t0150:a212e6cf">Du måste ladda PhoneBlock-programvaran på din dongel en gång. Detta gör du genom att ansluta dongeln till en ledig USB-port på din dator.</p>
 
@@ -140,7 +115,17 @@
 			<div data-tx="t0160:177a19e2" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Platshållare: Skärmdump av förloppsindikatorn för esp-web-tools under blinkning].</div>
 		</figure>
 
-		<h2 data-tx="t0161:657638e7" id="schritt-5">Steg 4 - Anslut dongeln till routern</h2>
+		<details class="mt-4">
+			<summary><strong data-tx="t0193:c14d73a">Datorn känner inte igen dongeln? Tips om drivrutiner</strong></summary>
+			<p data-tx="t0194:1c40e13a">Dongeln använder det seriella USB-chipet <strong>CH340</strong>. Aktuella Windows-, macOS- och Linux-versioner innehåller vanligtvis redan drivrutinen - i det här fallet behöver du inte göra någonting. Men om din dator inte visar dongeln i enhetsvalet kan följande instruktioner hjälpa dig:</p>
+			<ul>
+				<li data-tx="t0195:758aaf4d"><strong>Windows</strong>: Ladda ner <a href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">CH340-drivrutinen från wch-ic.com</a>, kör <code>CH341SER.EXE</code> och klicka på <strong>"INSTALL"</strong>. Ingen omstart är nödvändig.</li>
+				<li data-tx="t0147:901b0f79"><strong>macOS</strong>: Från och med macOS Big Sur ingår drivrutinen i systemet - inget installationssteg krävs.</li>
+				<li data-tx="t0148:35f91b38"><strong>Linux</strong>: Kärndrivrutinen är installerad. På Ubuntu kan tjänsten BRLTTY sno åt sig CH340 så att du inte kan se enhetsfilen - i det här fallet hjälper det att avinstallera BRLTTY: <code>sudo apt remove --purge brltty</code>. Din användare måste också vara med i gruppen <code>dialout</code>: <code>sudo usermod -aG dialout $USER</code>. Båda stegen beskrivs i detalj i <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
+			</ul>
+		</details>
+
+		<h2 data-tx="t0161:51445138" id="schritt-5">Steg 3 - Anslut dongeln till routern</h2>
 
 		<p data-tx="t0162:cbcaee11">När webbläsaren rapporterar "Installation slutförd!" tar du bort dongeln från datorn och ansluter den till en ledig USB-port på routern (eller till en 5 V USB-strömkälla inom WLAN-räckvidd).</p>
 
@@ -148,7 +133,7 @@
 			<div data-tx="t0163:a5796f78" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Platshållare: Foto "Dongle inkopplad i USB-porten på Fritz!Box"]</div>
 		</figure>
 
-		<h2 data-tx="t0164:fc6ca575" id="schritt-6">Steg 5 - Lägg till dongeln i WLAN (WPS)</h2>
+		<h2 data-tx="t0164:71e45897" id="schritt-6">Steg 4 - Anslut dongeln till WLAN (WPS)</h2>
 
 		<p data-tx="t0165:b5b221d5">Den nyuppladdade dongeln har ännu inga Wi-Fi-åtkomstdata och väntar på att du ska ansluta den till ditt Wi-Fi. LED-lampan <strong>blinkar snabbt</strong> (ca fem gånger per sekund) och signalerar "Pairing mode active".</p>
 
@@ -162,7 +147,7 @@
 
 		<p data-tx="t0169:f91aa6d5"><strong>Fungerade inte</strong> Kontrollera i routerns inställningar om WPS är aktiverat (på Fritz!Box: <em>WLAN → Säkerhet → WPS</em>). Om WPS-fönstret var för kort startar dongeln automatiskt om parkopplingen - tryck sedan helt enkelt på WPS-knappen igen.</p>
 
-		<h2 data-tx="t0170:82df9e2a" id="schritt-7">Steg 6 - Registrera dig som telefon och konfigurera PhoneBlock-åtkomst</h2>
+		<h2 data-tx="t0170:6da0bfa" id="schritt-7">Steg 5 - Registrera dig som telefon och konfigurera PhoneBlock-åtkomst</h2>
 
 		<p data-tx="t0171:4e4b9d0f">För att dongeln ska kunna avlyssna samtal behöver den fortfarande två saker: dina SIP-åtkomstdata (så att den kan logga in som en extra telefon) och en PhoneBlock-token (så att den kan fråga spamdatabasen). Du anger båda i dongelns webbgränssnitt.</p>
 

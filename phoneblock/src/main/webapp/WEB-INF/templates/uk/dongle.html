@@ -76,32 +76,7 @@
 
 		<p data-tx="t0140:41c85d87"><strong>Ви майструєте самі і вже маєте ESP32 у шухляді? </strong> PhoneBlock майже напевно працюватиме на вашій платі, якщо вона має щонайменше 4 МБ флеш-пам'яті. Можливо, вам знадобиться інший послідовний драйвер USB або доведеться переналаштувати призначення PIN-коду так, щоб індикатор стану блимав - найкраще зазирнути на <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/" rel="noopener" target="_blank">сторінку проекту</a>.</p>
 
-		<h2 data-tx="t0141:fe30aa8a" id="schritt-2">Крок 2 - Встановіть драйвер USB (лише для Windows)</h2>
-
-		<p data-tx="t0142:155cb329">У ключі використовується послідовний USB-чіп <strong>CH340</strong>. Для того, щоб Windows розпізнала його, вам потрібен відповідний драйвер, щоб ви могли завантажити ("прошити") програму на ключ.</p>
-
-		<p>
-			<a class="button is-link" href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">
-				<span class="icon"><i class="fas fa-download"></i></span>
-				<span data-tx="t0143:88df56ee">Завантажити драйвер CH340 (wch-ic.com)</span>
-			</a>
-		</p>
-
-		<p data-tx="t0144:864e1d6">Запустіть завантажений файл <code>CH341SER.EXE</code> → натисніть на <strong>"ВСТАНОВИТИ"</strong> у вікні → готово. Перезапуск не потрібен.</p>
-
-		<figure>
-			<div data-tx="t0145:42f1fe49" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Заповнювач: Скріншот інсталятора драйверів CH340 з виділеною кнопкою ВСТАНОВИТИ]</div>
-		</figure>
-
-		<details class="mt-4">
-			<summary><strong data-tx="t0146:ded51310">Ви використовуєте macOS або Linux?</strong></summary>
-			<ul>
-				<li data-tx="t0147:901b0f79"><strong>macOS</strong>: Починаючи з macOS Big Sur, драйвер включено до системи - встановлення не потрібне.</li>
-				<li data-tx="t0148:35f91b38"><strong>Linux</strong>: Драйвер ядра встановлено. В Ubuntu служба BRLTTY може викрасти CH340 так, що ви не зможете побачити файл пристрою - у цьому випадку допоможе видалення BRLTTY: <code>sudo apt remove --purge brltty</code>. Ваш користувач також має бути у групі <code>dialout</code>: <code>sudo usermod -aG dialout $USER</code>. Обидва кроки детально описано у <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
-			</ul>
-		</details>
-
-		<h2 data-tx="t0149:ccccec4c" id="schritt-3">Крок 3 - Підготуйте ключ</h2>
+		<h2 data-tx="t0149:69477c42" id="schritt-3">Крок 2 - Підготуйте ключ</h2>
 
 		<p data-tx="t0150:a212e6cf">Вам потрібно один раз завантажити програмне забезпечення PhoneBlock на ваш ключ. Для цього під'єднайте брелок до вільного USB-порту комп'ютера.</p>
 
@@ -140,7 +115,17 @@
 			<div data-tx="t0160:177a19e2" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Заповнювач: Скріншот індикатора прогресу esp-web-tools під час перепрошивки]</div>
 		</figure>
 
-		<h2 data-tx="t0161:657638e7" id="schritt-5">Крок 4 - Підключіть ключ до роутера</h2>
+		<details class="mt-4">
+			<summary><strong data-tx="t0193:c14d73a">Комп'ютер не розпізнає ключ? Підказки драйвера</strong></summary>
+			<p data-tx="t0194:1c40e13a">У ключі використовується послідовний USB-чіп <strong>CH340</strong>. Поточні версії Windows, macOS та Linux зазвичай вже містять драйвер - у цьому випадку вам не потрібно нічого робити. Однак, якщо ваш комп'ютер не показує донгл у списку пристроїв, вам допоможуть наступні поради:</p>
+			<ul>
+				<li data-tx="t0195:758aaf4d"><strong>Windows</strong>: Завантажте <a href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">CH340 драйвер з wch-ic.com</a>, запустіть <code>CH341SER.EXE</code> і натисніть на <strong>"ВСТАНОВИТИ"</strong>. Перезапуск не потрібен.</li>
+				<li data-tx="t0147:901b0f79"><strong>macOS</strong>: Починаючи з macOS Big Sur, драйвер включено до системи - встановлення не потрібне.</li>
+				<li data-tx="t0148:35f91b38"><strong>Linux</strong>: Драйвер ядра встановлено. В Ubuntu служба BRLTTY може викрасти CH340 так, що ви не зможете побачити файл пристрою - у цьому випадку допоможе видалення BRLTTY: <code>sudo apt remove --purge brltty</code>. Ваш користувач також має бути у групі <code>dialout</code>: <code>sudo usermod -aG dialout $USER</code>. Обидва кроки детально описано у <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
+			</ul>
+		</details>
+
+		<h2 data-tx="t0161:51445138" id="schritt-5">Крок 3 - Підключіть ключ до роутера</h2>
 
 		<p data-tx="t0162:cbcaee11">Коли браузер повідомить "Встановлення завершено!", вийміть ключ з комп'ютера і підключіть його до вільного USB-порту роутера (або до будь-якого USB-джерела живлення 5 В у зоні дії бездротової локальної мережі).</p>
 
@@ -148,7 +133,7 @@
 			<div data-tx="t0163:a5796f78" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Заміщення: фото "Донгл, вставлений в USB-порт Fritz!Box"].</div>
 		</figure>
 
-		<h2 data-tx="t0164:fc6ca575" id="schritt-6">Крок 5 - Додайте ключ до бездротової локальної мережі (WPS)</h2>
+		<h2 data-tx="t0164:71e45897" id="schritt-6">Крок 4 - Додайте ключ до бездротової локальної мережі (WPS)</h2>
 
 		<p data-tx="t0165:b5b221d5">Щойно прошитий ключ ще не має даних доступу до Wi-Fi і чекає, поки ви під'єднаєте його до вашої мережі Wi-Fi. Світлодіод <strong>швидко блимає</strong> (приблизно п'ять разів на секунду) і сигналізує "Режим сполучення активний".</p>
 
@@ -162,7 +147,7 @@
 
 		<p data-tx="t0169:f91aa6d5"><strong>Не працює</strong> Перевірте в налаштуваннях роутера, чи увімкнено WPS (на Fritz!Box: <em>Бездротова мережа → Безпека → WPS</em>). Якщо вікно WPS було надто коротким, донгл автоматично перезапустить сполучення - просто натисніть кнопку WPS ще раз.</p>
 
-		<h2 data-tx="t0170:82df9e2a" id="schritt-7">Крок 6 - Зареєструйтеся як телефон і налаштуйте доступ до PhoneBlock</h2>
+		<h2 data-tx="t0170:6da0bfa" id="schritt-7">Крок 5 - Зареєструйтеся як телефон і налаштуйте доступ до PhoneBlock</h2>
 
 		<p data-tx="t0171:4e4b9d0f">Для того, щоб донгл міг перехоплювати дзвінки, йому все ще потрібні дві речі: ваші дані доступу до SIP (щоб він міг увійти як додатковий телефон) і токен PhoneBlock (щоб він міг запитувати базу даних спаму). Ви вводите обидві дані у веб-інтерфейсі ключа.</p>
 
