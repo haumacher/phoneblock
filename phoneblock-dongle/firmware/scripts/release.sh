@@ -17,6 +17,19 @@ SCRIPT_DIR="${FIRMWARE_DIR}/scripts"
 BUILD_DIR="${FIRMWARE_DIR}/build"
 RELEASE_ROOT="${FIRMWARE_DIR}/release"
 
+# Local settings (gitignored): KEEPASS_DB and friends so the user
+# doesn't have to remember to `export` them before each release. The
+# template lives at release.settings.template; copy and fill in.
+# Sourced with `set -a` so plain KEY=VALUE lines are exported to
+# subprocesses (sign-manifest.sh).
+SETTINGS_FILE="${SCRIPT_DIR}/release.settings"
+if [[ -f "$SETTINGS_FILE" ]]; then
+    set -a
+    # shellcheck disable=SC1090
+    source "$SETTINGS_FILE"
+    set +a
+fi
+
 CDN_HOST="haumac@cdn.phoneblock.net"
 CDN_BASE="/public_html/cdn/dongle"
 CDN_FIRMWARE="${CDN_BASE}/firmware"

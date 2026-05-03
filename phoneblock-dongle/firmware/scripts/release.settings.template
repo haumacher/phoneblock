@@ -1,0 +1,22 @@
+# Local release settings sourced by firmware/scripts/release.sh.
+#
+# Copy to release.settings (gitignored) and fill in the values:
+#
+#     cp release.settings.template release.settings
+#     $EDITOR release.settings
+#
+# release.sh sources the file with `set -a`, so plain KEY=VALUE lines
+# are exported to subprocesses (sign-manifest.sh in particular).
+# Anything you'd otherwise `export FOO=…` before each release lives
+# here instead.
+
+# Path to your KeePassXC database that holds the OTA signing key.
+# Required by sign-manifest.sh. $HOME / ~ expansion works because
+# release.sh sources the file from bash; quote the value as shown.
+KEEPASS_DB="$HOME/path/to/secrets.kdbx"
+
+# Optional: override the entry title and attachment filename inside
+# the .kdbx. Defaults match what RELEASE.md → "OTA-Signing-Key" walks
+# you through. Uncomment only when your KeePass entry deviates.
+#KEEPASS_ENTRY="PhoneBlock-Dongle Signing Key"
+#KEEPASS_ATTACHMENT="private.pem"

@@ -4,7 +4,6 @@
 
 ```
 . $IDF_PATH/export.sh
-export KEEPASS_DB=~/path/to/secrets.kdbx
 git tag dongle-vX.Y.Z
 firmware/scripts/release.sh
 git push --tags
@@ -12,6 +11,13 @@ git push --tags
 
 Voraussetzung: sauberer Tree, HEAD genau auf einem `dongle-v*`-Tag,
 KeePassXC-Master-Passwort zur Hand (siehe „OTA-Signing-Key").
+
+Pfad zur `.kdbx` einmalig in `firmware/scripts/release.settings`
+eintragen — `release.sh` sourcet die Datei automatisch.
+`firmware/scripts/release.settings.template` zeigt die erwarteten
+Variablen (`KEEPASS_DB`, optional `KEEPASS_ENTRY` /
+`KEEPASS_ATTACHMENT`). Datei ist gitignored, Credentials bleiben
+lokal.
 
 Der Schlüssel wird beim Signieren in `${TMPDIR:-/tmp}` materialisiert
 und nach dem Signieren `shred`et. Wer einen Host-`keepassxc-cli` (≥ 2.7.5)
