@@ -78,7 +78,7 @@
 
 		<h2 data-tx="t0149:69477c42" id="schritt-3">Stap 2 - De dongle voorbereiden</h2>
 
-		<p data-tx="t0150:a212e6cf">U moet de PhoneBlock software eenmalig op uw dongle laden. Sluit hiervoor de dongle aan op een vrije USB-poort van uw computer.</p>
+		<p data-tx="t0150:6972bbca">U moet de PhoneBlock software eenmalig op uw dongle laden. Sluit hiervoor de dongle eenmalig aan op een vrije USB-poort van je computer. Heb je geen computer? Vraag een vriend of hij de dongle voor je klaar kan zetten. Je kunt hem ook later in je netwerk installeren vanaf een mobiele telefoon. Je hebt geen andere apparaten nodig voor de werking.</p>
 		
 		<figure class="image" style="max-width:500px;">
 			<img alt="Dongle welkomstscherm" data-tx="t0198:4f273df1" th:src="@{/assets/img/dongle/plugged-into-computer.jpg}"/>
@@ -110,15 +110,39 @@
 
 		<p data-tx="t0157:8a955c74">In het selectiedialoogvenster verschijnt een lijst met alle seriële apparaten op de computer. Als er meerdere CH340-apparaten worden weergegeven omdat er toevallig een ander apparaat met deze chip is aangesloten, verwijder dan de andere apparaten voor dit moment.</p>
 
-		<figure>
-			<div data-tx="t0158:b5c3a2f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Plaatshouder: Screenshot van het browserdialoogvenster voor apparaatselectie met gemarkeerde CH340-invoer].</div>
+		<figure class="image" style="max-width:600px;">
+			<img alt="Seriële poort selecteren" data-tx="t0214:5134180d" th:src="@{/assets/img/dongle/flash-01-select-serial.png}"/>
+			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0215:f3700f31">Selecteer seriële poort.</figcaption>
 		</figure>
 
 		<p data-tx="t0159:d037e970">Bevestig de beveiligingsprompt "Install PhoneBlock Dongle?" met <strong>"Install"</strong>. De PhoneBlock-software wordt nu op de dongle geladen - dit duurt ongeveer een minuut. Koppel de dongle gedurende deze tijd niet los.</p>
 
-		<figure>
-			<div data-tx="t0160:177a19e2" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Plaatshouder: Screenshot van de esp-web-tools voortgangsbalk tijdens het flashen].</div>
-		</figure>
+		<div class="columns is-multiline is-mobile is-variable is-2">
+			<div class="column is-3-desktop is-6-tablet is-12-mobile">
+				<figure class="image">
+					<img alt="Installatie starten" data-tx="t0216:665c866e" th:src="@{/assets/img/dongle/flash-02-start-install.png}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0217:c5e58044">1. Start de installatie.</figcaption>
+				</figure>
+			</div>
+			<div class="column is-3-desktop is-6-tablet is-12-mobile">
+				<figure class="image">
+					<img alt="Verwijderen niet nodig voor eerste installatie" data-tx="t0218:724602c6" th:src="@{/assets/img/dongle/flash-03-erase-device.png}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0219:8647e67f">2. Verwijderen is niet nodig voor de eerste installatie.</figcaption>
+				</figure>
+			</div>
+			<div class="column is-3-desktop is-6-tablet is-12-mobile">
+				<figure class="image">
+					<img alt="Nogmaals bevestigen" data-tx="t0220:99ac8359" th:src="@{/assets/img/dongle/flash-04-confirm.png}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0221:2a486c2">3. Bevestig opnieuw.</figcaption>
+				</figure>
+			</div>
+			<div class="column is-3-desktop is-6-tablet is-12-mobile">
+				<figure class="image">
+					<img alt="Succes" data-tx="t0222:2ccb7d09" th:src="@{/assets/img/dongle/flash-05-success.png}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0223:e2168672">4. installatie geslaagd.</figcaption>
+				</figure>
+			</div>
+		</div>
 
 		<details class="mt-4">
 			<summary><strong data-tx="t0193:c14d73a">Computer herkent de dongle niet? Tips voor stuurprogramma's</strong></summary>
@@ -156,7 +180,7 @@
 
 		<h2 data-tx="t0170:6da0bfa" id="schritt-7">Stap 5 - Registreren als telefoon en PhoneBlock-toegang instellen</h2>
 
-		<p data-tx="t0171:4e4b9d0f">Om de dongle gesprekken te laten onderscheppen, heeft hij nog twee dingen nodig: uw SIP-toegangsgegevens (zodat hij zich kan aanmelden als een extra telefoon) en een PhoneBlock-token (zodat hij de spamdatabase kan raadplegen). U voert beide in de webinterface van de dongle in.</p>
+		<p data-tx="t0171:d7c2d3df">Om de dongle gesprekken te laten onderscheppen, heeft hij nog twee dingen nodig: uw SIP-toegangsgegevens (zodat hij zich kan aanmelden als een extra telefoon) en een PhoneBlock-token (zodat hij de spamdatabase kan raadplegen). U voert beide in de webinterface van de dongle in. U kunt de rest van de instellingen ook vanaf een mobiele telefoon uitvoeren.</p>
 
 		<p data-tx="t0172:f4d3bf5f">Open in de browser:</p>
 
@@ -166,7 +190,7 @@
 			<p data-tx="t0174:c20257a1"><strong>Dongle herkend:</strong> <a href="" id="dongle-located-link" target="_blank">http://192.168.178.xxx/</a> - de knop bovenaan opent deze direct.</p>
 		</div>
 
-		<p data-tx="t0175:fda77eed">Als deze link niet werkt (Windows zonder Bonjour, sommige mesh WLAN's), zoek dan in de apparatenlijst van je router naar een apparaat met de naam <code>answerbot</code>, noteer het IP-adres en roep het op in de browser - bijvoorbeeld <code>http://192.168.178.xxx/</code>.</p>
+		<p data-tx="t0175:4a5ab444">Als deze link niet werkt, zoek dan in de apparatenlijst van je router naar een apparaat met de naam <code>answerbot</code>, noteer het IP-adres en roep het op in de browser - bijvoorbeeld <code>http://192.168.178.xxx/</code>.</p>
 
 		<div class="columns is-multiline is-mobile is-variable is-2">
 			<div class="column is-2-desktop is-4-tablet is-6-mobile">

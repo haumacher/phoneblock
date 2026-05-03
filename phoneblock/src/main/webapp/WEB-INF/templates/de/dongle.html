@@ -112,8 +112,10 @@
 
 		<h2 data-tx="t0149:69477c42" id="schritt-3">Schritt 2 — Dongle vorbereiten</h2>
 
-		<p data-tx="t0150:a212e6cf">Du musst einmalig die PhoneBlock-Software auf Deinen Dongle laden. 
-		Steck dazu den Dongle in einen freien USB-Port deines Computers.</p>
+		<p data-tx="t0150:6972bbca">Du musst einmalig die PhoneBlock-Software auf Deinen Dongle laden. 
+		Steck dazu den Dongle einmalig in einen freien USB-Port deines Computers. Du hast keinen Computer? Frag einfach einen 
+		Bekannten, ob er den Dongle für Dich vorbereiten kann. Die spätere Einrichtung in deinem Netzwerk kannst Du auch von einem 
+		Mobiltelefon aus machen. Für den Betrieb benötigst du dann gar keine weiteren Geräte mehr.</p>
 		
 		<figure class="image" style="max-width:500px;">
 			<img alt="Dongle Welcome-Screen" data-tx="t0198:4f273df1" th:src="@{/assets/img/dongle/plugged-into-computer.jpg}"/>
@@ -154,21 +156,41 @@
 		Falls mehrere CH340-Geräte angezeigt werden, weil zufällig noch
 		ein anderes Gerät mit diesem Chip angeschlossen ist, zieh die anderen für den Moment ab.</p>
 
-		<figure>
-			<div data-tx="t0158:b5c3a2f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">
-				[Platzhalter: Screenshot des Browser-Geräteauswahl-Dialogs mit markiertem CH340-Eintrag]
-			</div>
+		<figure class="image" style="max-width:600px;">
+			<img alt="Seriellen Port auswählen" data-tx="t0214:5134180d" th:src="@{/assets/img/dongle/flash-01-select-serial.png}"/>
+			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0215:f3700f31">Seriellen Port auswählen.</figcaption>
 		</figure>
 
 		<p data-tx="t0159:d037e970">Bestätige die Sicherheitsabfrage „Install PhoneBlock Dongle?" mit
 		<strong>„Install"</strong>. Jetzt wird die
 		PhoneBlock-Software auf den Dongle geladen — das dauert etwa eine Minute. Steck den Dongle in dieser Zeit nicht aus.</p>
 
-		<figure>
-			<div data-tx="t0160:177a19e2" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">
-				[Platzhalter: Screenshot des esp-web-tools Fortschrittsbalkens beim Flashen]
+		<div class="columns is-multiline is-mobile is-variable is-2">
+			<div class="column is-3-desktop is-6-tablet is-12-mobile">
+				<figure class="image">
+					<img alt="Installation starten" data-tx="t0216:665c866e" th:src="@{/assets/img/dongle/flash-02-start-install.png}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0217:c5e58044">1. Installation starten.</figcaption>
+				</figure>
 			</div>
-		</figure>
+			<div class="column is-3-desktop is-6-tablet is-12-mobile">
+				<figure class="image">
+					<img alt="Löschen bei Erstinstallation nicht notwendig" data-tx="t0218:724602c6" th:src="@{/assets/img/dongle/flash-03-erase-device.png}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0219:8647e67f">2. Löschen bei Erstinstallation nicht notwendig.</figcaption>
+				</figure>
+			</div>
+			<div class="column is-3-desktop is-6-tablet is-12-mobile">
+				<figure class="image">
+					<img alt="Nochmal bestätigen" data-tx="t0220:99ac8359" th:src="@{/assets/img/dongle/flash-04-confirm.png}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0221:2a486c2">3. Nochmal bestätigen.</figcaption>
+				</figure>
+			</div>
+			<div class="column is-3-desktop is-6-tablet is-12-mobile">
+				<figure class="image">
+					<img alt="Erfolg" data-tx="t0222:2ccb7d09" th:src="@{/assets/img/dongle/flash-05-success.png}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0223:e2168672">4. Installation erfolgreich.</figcaption>
+				</figure>
+			</div>
+		</div>
 
 		<details class="mt-4">
 			<summary><strong data-tx="t0193:c14d73a">Computer erkennt den Dongle nicht? Treiber-Hinweise</strong></summary>
@@ -229,10 +251,10 @@
 
 		<h2 data-tx="t0170:6da0bfa" id="schritt-7">Schritt 5 — Als Telefon anmelden und PhoneBlock-Zugang einrichten</h2>
 
-		<p data-tx="t0171:4e4b9d0f">Damit der Dongle Anrufe abfangen kann, fehlen ihm noch zwei Dinge: deine SIP-Zugangsdaten
+		<p data-tx="t0171:d7c2d3df">Damit der Dongle Anrufe abfangen kann, fehlen ihm noch zwei Dinge: deine SIP-Zugangsdaten
 		(damit er sich als zusätzliches Telefon anmelden kann) und ein PhoneBlock-Token
 		(damit er die Spam-Datenbank abfragen darf). Beides trägst du in der Web-Oberfläche des
-		Dongles ein.</p>
+		Dongles ein. Den Rest der Einrichtung kannst Du auch von einem Mobiltelefon aus machen.</p>
 
 		<p data-tx="t0172:f4d3bf5f">Öffne im Browser:</p>
 
@@ -245,7 +267,7 @@
 			</p>
 		</div>
 
-		<p data-tx="t0175:fda77eed">Funktioniert dieser Link nicht (Windows ohne Bonjour, manche Mesh-WLANs), schau in der
+		<p data-tx="t0175:4a5ab444">Funktioniert dieser Link nicht, schau in der
 		Geräteliste deines Routers nach einem Gerät mit dem Namen <code>answerbot</code>, notiere
 		dessen IP-Adresse und ruf diese im Browser auf — z. B. <code>http://192.168.178.xxx/</code>.</p>
 

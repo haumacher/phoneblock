@@ -78,7 +78,7 @@
 
 		<h2 data-tx="t0149:69477c42" id="schritt-3">Trin 2 - Forbered donglen</h2>
 
-		<p data-tx="t0150:a212e6cf">Du skal indlæse PhoneBlock-softwaren på din dongle én gang. Det gør du ved at sætte donglen i en ledig USB-port på din computer.</p>
+		<p data-tx="t0150:6972bbca">Du skal indlæse PhoneBlock-softwaren på din dongle én gang. Det gør du ved at sætte donglen i en ledig USB-port på din computer. Har du ikke en computer? Så spørg en ven, om han eller hun kan klargøre donglen for dig. Du kan også sætte den op senere i dit netværk fra en mobiltelefon. Du har ikke brug for andre enheder til at betjene den.</p>
 		
 		<figure class="image" style="max-width:500px;">
 			<img alt="Donglens velkomstskærm" data-tx="t0198:4f273df1" th:src="@{/assets/img/dongle/plugged-into-computer.jpg}"/>
@@ -110,15 +110,39 @@
 
 		<p data-tx="t0157:8a955c74">En liste over alle serielle enheder på computeren vises i valgdialogen. Hvis der vises flere CH340-enheder, fordi der tilfældigvis er tilsluttet en anden enhed med denne chip, skal du fjerne de andre indtil videre.</p>
 
-		<figure>
-			<div data-tx="t0158:b5c3a2f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Pladsholder: Skærmbillede af browserens dialog om valg af enhed med fremhævet CH340-post].</div>
+		<figure class="image" style="max-width:600px;">
+			<img alt="Vælg seriel port" data-tx="t0214:5134180d" th:src="@{/assets/img/dongle/flash-01-select-serial.png}"/>
+			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0215:f3700f31">Vælg seriel port.</figcaption>
 		</figure>
 
 		<p data-tx="t0159:d037e970">Bekræft sikkerhedsprompten "Install PhoneBlock Dongle?" med <strong>"Install"</strong>. PhoneBlock-softwaren indlæses nu på donglen - det tager cirka et minut. Tag ikke stikket ud af donglen i dette tidsrum.</p>
 
-		<figure>
-			<div data-tx="t0160:177a19e2" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Pladsholder: Skærmbillede af esp-web-tools' statuslinje under flashing].</div>
-		</figure>
+		<div class="columns is-multiline is-mobile is-variable is-2">
+			<div class="column is-3-desktop is-6-tablet is-12-mobile">
+				<figure class="image">
+					<img alt="Start installationen" data-tx="t0216:665c866e" th:src="@{/assets/img/dongle/flash-02-start-install.png}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0217:c5e58044">1. Start installationen.</figcaption>
+				</figure>
+			</div>
+			<div class="column is-3-desktop is-6-tablet is-12-mobile">
+				<figure class="image">
+					<img alt="Sletning ikke nødvendig for første installation" data-tx="t0218:724602c6" th:src="@{/assets/img/dongle/flash-03-erase-device.png}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0219:8647e67f">2. Sletning ikke nødvendig ved første installation.</figcaption>
+				</figure>
+			</div>
+			<div class="column is-3-desktop is-6-tablet is-12-mobile">
+				<figure class="image">
+					<img alt="Bekræft igen" data-tx="t0220:99ac8359" th:src="@{/assets/img/dongle/flash-04-confirm.png}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0221:2a486c2">3. Bekræft igen.</figcaption>
+				</figure>
+			</div>
+			<div class="column is-3-desktop is-6-tablet is-12-mobile">
+				<figure class="image">
+					<img alt="Succes" data-tx="t0222:2ccb7d09" th:src="@{/assets/img/dongle/flash-05-success.png}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0223:e2168672">4. Installationen er vellykket.</figcaption>
+				</figure>
+			</div>
+		</div>
 
 		<details class="mt-4">
 			<summary><strong data-tx="t0193:c14d73a">Computeren genkender ikke donglen? Tips til drivere</strong></summary>
@@ -156,7 +180,7 @@
 
 		<h2 data-tx="t0170:6da0bfa" id="schritt-7">Trin 5 - Registrer dig som telefon og opsæt PhoneBlock-adgang</h2>
 
-		<p data-tx="t0171:4e4b9d0f">For at donglen kan aflytte opkald, skal den stadig bruge to ting: dine SIP-adgangsdata (så den kan logge ind som en ekstra telefon) og et PhoneBlock-token (så den kan forespørge i spamdatabasen). Du indtaster begge dele i donglens webinterface.</p>
+		<p data-tx="t0171:d7c2d3df">For at donglen kan aflytte opkald, skal den stadig bruge to ting: dine SIP-adgangsdata (så den kan logge ind som en ekstra telefon) og et PhoneBlock-token (så den kan forespørge i spamdatabasen). Du indtaster begge dele i donglens webinterface. Du kan også gøre resten af opsætningen fra en mobiltelefon.</p>
 
 		<p data-tx="t0172:f4d3bf5f">Åbn i browseren:</p>
 
@@ -166,7 +190,7 @@
 			<p data-tx="t0174:c20257a1"><strong>Dongle genkendt:</strong> <a href="" id="dongle-located-link" target="_blank">http://192.168.178.xxx/</a> - knappen øverst åbner den direkte.</p>
 		</div>
 
-		<p data-tx="t0175:fda77eed">Hvis dette link ikke virker (Windows uden Bonjour, nogle mesh-WLAN'er), skal du kigge i enhedslisten på din router efter en enhed med navnet <code>answerbot</code>, notere dens IP-adresse og kalde den op i browseren - f.eks. <code>http://192.168.178.xxx/</code>.</p>
+		<p data-tx="t0175:4a5ab444">Hvis dette link ikke virker, skal du kigge i enhedslisten på din router efter en enhed med navnet <code>answerbot</code>, notere dens IP-adresse og kalde den op i browseren - f.eks. <code>http://192.168.178.xxx/</code>.</p>
 
 		<div class="columns is-multiline is-mobile is-variable is-2">
 			<div class="column is-2-desktop is-4-tablet is-6-mobile">

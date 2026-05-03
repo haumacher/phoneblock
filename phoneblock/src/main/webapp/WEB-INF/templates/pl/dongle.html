@@ -78,7 +78,7 @@
 
 		<h2 data-tx="t0149:69477c42" id="schritt-3">Krok 2 - Przygotowanie klucza sprzętowego</h2>
 
-		<p data-tx="t0150:a212e6cf">Należy jednorazowo załadować oprogramowanie PhoneBlock do klucza sprzętowego. Aby to zrobić, podłącz klucz sprzętowy do wolnego portu USB w komputerze.</p>
+		<p data-tx="t0150:6972bbca">Należy jednorazowo załadować oprogramowanie PhoneBlock do klucza sprzętowego. Aby to zrobić, podłącz klucz sprzętowy do wolnego portu USB w komputerze. Nie masz komputera? Poproś znajomego, aby przygotował dla Ciebie klucz sprzętowy. Możesz również skonfigurować go później w swojej sieci z telefonu komórkowego. Do działania nie będą potrzebne żadne inne urządzenia.</p>
 		
 		<figure class="image" style="max-width:500px;">
 			<img alt="Ekran powitalny klucza sprzętowego" data-tx="t0198:4f273df1" th:src="@{/assets/img/dongle/plugged-into-computer.jpg}"/>
@@ -110,15 +110,39 @@
 
 		<p data-tx="t0157:8a955c74">Lista wszystkich urządzeń szeregowych na komputerze pojawi się w oknie dialogowym wyboru. Jeśli wyświetlanych jest kilka urządzeń CH340, ponieważ podłączone jest inne urządzenie z tym chipem, należy na razie usunąć pozostałe.</p>
 
-		<figure>
-			<div data-tx="t0158:b5c3a2f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Symbol zastępczy: Zrzut ekranu okna dialogowego wyboru urządzenia przeglądarki z podświetlonym wpisem CH340].</div>
+		<figure class="image" style="max-width:600px;">
+			<img alt="Wybór portu szeregowego" data-tx="t0214:5134180d" th:src="@{/assets/img/dongle/flash-01-select-serial.png}"/>
+			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0215:f3700f31">Wybierz port szeregowy.</figcaption>
 		</figure>
 
 		<p data-tx="t0159:d037e970">Potwierdź monit bezpieczeństwa "Zainstalować klucz PhoneBlock?" za pomocą <strong>"Zainstaluj"</strong>. Oprogramowanie PhoneBlock jest teraz ładowane do klucza sprzętowego - trwa to około minuty. Nie odłączaj klucza sprzętowego w tym czasie.</p>
 
-		<figure>
-			<div data-tx="t0160:177a19e2" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Symbol zastępczy: Zrzut ekranu paska postępu esp-web-tools podczas flashowania].</div>
-		</figure>
+		<div class="columns is-multiline is-mobile is-variable is-2">
+			<div class="column is-3-desktop is-6-tablet is-12-mobile">
+				<figure class="image">
+					<img alt="Rozpoczęcie instalacji" data-tx="t0216:665c866e" th:src="@{/assets/img/dongle/flash-02-start-install.png}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0217:c5e58044">1. rozpocząć instalację.</figcaption>
+				</figure>
+			</div>
+			<div class="column is-3-desktop is-6-tablet is-12-mobile">
+				<figure class="image">
+					<img alt="Usunięcie nie jest konieczne do początkowej instalacji" data-tx="t0218:724602c6" th:src="@{/assets/img/dongle/flash-03-erase-device.png}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0219:8647e67f">2. usunięcie nie jest konieczne do początkowej instalacji.</figcaption>
+				</figure>
+			</div>
+			<div class="column is-3-desktop is-6-tablet is-12-mobile">
+				<figure class="image">
+					<img alt="Potwierdź ponownie" data-tx="t0220:99ac8359" th:src="@{/assets/img/dongle/flash-04-confirm.png}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0221:2a486c2">3. potwierdź ponownie.</figcaption>
+				</figure>
+			</div>
+			<div class="column is-3-desktop is-6-tablet is-12-mobile">
+				<figure class="image">
+					<img alt="Sukces" data-tx="t0222:2ccb7d09" th:src="@{/assets/img/dongle/flash-05-success.png}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0223:e2168672">4. Instalacja powiodła się.</figcaption>
+				</figure>
+			</div>
+		</div>
 
 		<details class="mt-4">
 			<summary><strong data-tx="t0193:c14d73a">Komputer nie rozpoznaje klucza sprzętowego? Wskazówki dotyczące sterowników</strong></summary>
@@ -156,7 +180,7 @@
 
 		<h2 data-tx="t0170:6da0bfa" id="schritt-7">Krok 5 - Zarejestrowanie się jako telefon i skonfigurowanie dostępu PhoneBlock</h2>
 
-		<p data-tx="t0171:4e4b9d0f">Aby klucz sprzętowy mógł przechwytywać połączenia, nadal potrzebuje dwóch rzeczy: danych dostępu SIP (aby mógł zalogować się jako dodatkowy telefon) i tokena PhoneBlock (aby mógł przeszukiwać bazę danych spamu). Obie te informacje wprowadza się w interfejsie internetowym klucza sprzętowego.</p>
+		<p data-tx="t0171:d7c2d3df">Aby klucz sprzętowy mógł przechwytywać połączenia, nadal potrzebuje dwóch rzeczy: danych dostępu SIP (aby mógł zalogować się jako dodatkowy telefon) i tokena PhoneBlock (aby mógł przeszukiwać bazę danych spamu). Obie te informacje wprowadza się w interfejsie internetowym klucza sprzętowego. Resztę konfiguracji można również przeprowadzić z telefonu komórkowego.</p>
 
 		<p data-tx="t0172:f4d3bf5f">Otwórz w przeglądarce:</p>
 
@@ -166,7 +190,7 @@
 			<p data-tx="t0174:c20257a1"><strong>Klucz sprzętowy rozpoznany:</strong> <a href="" id="dongle-located-link" target="_blank">http://192.168.178.xxx/</a> - przycisk na górze otwiera go bezpośrednio.</p>
 		</div>
 
-		<p data-tx="t0175:fda77eed">Jeśli ten link nie działa (Windows bez Bonjour, niektóre sieci WLAN typu mesh), poszukaj na liście urządzeń routera urządzenia o nazwie <code>answerbot</code>, zanotuj jego adres IP i wywołaj go w przeglądarce - np. <code>http://192.168.178.xxx/</code>.</p>
+		<p data-tx="t0175:4a5ab444">Jeśli ten link nie działa, poszukaj na liście urządzeń routera urządzenia o nazwie <code>answerbot</code>, zanotuj jego adres IP i wywołaj go w przeglądarce - np. <code>http://192.168.178.xxx/</code>.</p>
 
 		<div class="columns is-multiline is-mobile is-variable is-2">
 			<div class="column is-2-desktop is-4-tablet is-6-mobile">

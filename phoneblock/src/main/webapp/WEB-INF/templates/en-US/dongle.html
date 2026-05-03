@@ -78,7 +78,7 @@
 
 		<h2 data-tx="t0149:69477c42" id="schritt-3">Step 2 - Prepare the dongle</h2>
 
-		<p data-tx="t0150:a212e6cf">You need to load the PhoneBlock software onto your dongle once. To do this, plug the dongle into a free USB port on your computer.</p>
+		<p data-tx="t0150:6972bbca">You need to load the PhoneBlock software onto your dongle once. To do this, plug the dongle once into a free USB port on your computer. Don't have a computer? Just ask a friend if they can prepare the dongle for you. You can also set it up later in your network from a cell phone. You won't need any other devices for operation.</p>
 		
 		<figure class="image" style="max-width:500px;">
 			<img alt="Dongle welcome screen" data-tx="t0198:4f273df1" th:src="@{/assets/img/dongle/plugged-into-computer.jpg}"/>
@@ -110,15 +110,39 @@
 
 		<p data-tx="t0157:8a955c74">A list of all serial devices on the computer appears in the selection dialog. If several CH340 devices are displayed because another device with this chip happens to be connected, remove the others for the moment.</p>
 
-		<figure>
-			<div data-tx="t0158:b5c3a2f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Placeholder: Screenshot of the browser device selection dialog with highlighted CH340 entry]</div>
+		<figure class="image" style="max-width:600px;">
+			<img alt="Select serial port" data-tx="t0214:5134180d" th:src="@{/assets/img/dongle/flash-01-select-serial.png}"/>
+			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0215:f3700f31">Select serial port.</figcaption>
 		</figure>
 
 		<p data-tx="t0159:d037e970">Confirm the security prompt "Install PhoneBlock Dongle?" with <strong>"Install"</strong>. The PhoneBlock software will now be loaded onto the dongle - this will take about a minute. Do not unplug the dongle during this time.</p>
 
-		<figure>
-			<div data-tx="t0160:177a19e2" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Placeholder: Screenshot of the esp-web-tools progress bar during flashing]</div>
-		</figure>
+		<div class="columns is-multiline is-mobile is-variable is-2">
+			<div class="column is-3-desktop is-6-tablet is-12-mobile">
+				<figure class="image">
+					<img alt="Start installation" data-tx="t0216:665c866e" th:src="@{/assets/img/dongle/flash-02-start-install.png}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0217:c5e58044">1. start the installation.</figcaption>
+				</figure>
+			</div>
+			<div class="column is-3-desktop is-6-tablet is-12-mobile">
+				<figure class="image">
+					<img alt="Deletion not necessary for initial installation" data-tx="t0218:724602c6" th:src="@{/assets/img/dongle/flash-03-erase-device.png}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0219:8647e67f">2. deletion not necessary for initial installation.</figcaption>
+				</figure>
+			</div>
+			<div class="column is-3-desktop is-6-tablet is-12-mobile">
+				<figure class="image">
+					<img alt="Confirm again" data-tx="t0220:99ac8359" th:src="@{/assets/img/dongle/flash-04-confirm.png}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0221:2a486c2">3. confirm again.</figcaption>
+				</figure>
+			</div>
+			<div class="column is-3-desktop is-6-tablet is-12-mobile">
+				<figure class="image">
+					<img alt="Success" data-tx="t0222:2ccb7d09" th:src="@{/assets/img/dongle/flash-05-success.png}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0223:e2168672">4. installation successful.</figcaption>
+				</figure>
+			</div>
+		</div>
 
 		<details class="mt-4">
 			<summary><strong data-tx="t0193:c14d73a">Computer does not recognize the dongle? Driver hints</strong></summary>
@@ -156,7 +180,7 @@
 
 		<h2 data-tx="t0170:6da0bfa" id="schritt-7">Step 5 - Register as a phone and set up PhoneBlock access</h2>
 
-		<p data-tx="t0171:4e4b9d0f">In order for the dongle to intercept calls, it still needs two things: your SIP access data (so that it can log in as an additional phone) and a PhoneBlock token (so that it can query the spam database). You enter both in the dongle's web interface.</p>
+		<p data-tx="t0171:d7c2d3df">In order for the dongle to intercept calls, it still needs two things: your SIP access data (so that it can log in as an additional phone) and a PhoneBlock token (so that it can query the spam database). You enter both in the dongle's web interface. You can also do the rest of the setup from a cell phone.</p>
 
 		<p data-tx="t0172:f4d3bf5f">Open in the browser:</p>
 
@@ -166,7 +190,7 @@
 			<p data-tx="t0174:c20257a1"><strong>Dongle recognized:</strong> <a href="" id="dongle-located-link" target="_blank">http://192.168.178.xxx/</a> - the button above opens it directly.</p>
 		</div>
 
-		<p data-tx="t0175:fda77eed">If this link does not work (Windows without Bonjour, some mesh WLANs), look in the device list of your router for a device with the name <code>answerbot</code>, make a note of its IP address and call it up in the browser - e.g. <code>http://192.168.178.xxx/</code>.</p>
+		<p data-tx="t0175:4a5ab444">If this link does not work, look in the device list of your router for a device with the name <code>answerbot</code>, make a note of its IP address and call it up in the browser - e.g. <code>http://192.168.178.xxx/</code>.</p>
 
 		<div class="columns is-multiline is-mobile is-variable is-2">
 			<div class="column is-2-desktop is-4-tablet is-6-mobile">

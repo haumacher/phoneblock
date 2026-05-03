@@ -78,7 +78,7 @@
 
 		<h2 data-tx="t0149:69477c42" id="schritt-3">Paso 2 - Preparar el dongle</h2>
 
-		<p data-tx="t0150:a212e6cf">Debe cargar el software PhoneBlock en su dongle una vez. Para ello, conecte el dongle a un puerto USB libre de su ordenador.</p>
+		<p data-tx="t0150:6972bbca">Debe cargar el software PhoneBlock en su dongle una vez. Para ello, conecte el dongle una vez en un puerto USB libre de su ordenador. ¿No tiene ordenador? Pídele a un amigo que te prepare el dongle. También puedes configurarlo después en tu red desde un teléfono móvil. No necesitarás ningún otro dispositivo para su funcionamiento.</p>
 		
 		<figure class="image" style="max-width:500px;">
 			<img alt="Pantalla de bienvenida del dongle" data-tx="t0198:4f273df1" th:src="@{/assets/img/dongle/plugged-into-computer.jpg}"/>
@@ -110,15 +110,39 @@
 
 		<p data-tx="t0157:8a955c74">En el cuadro de diálogo de selección aparece una lista de todos los dispositivos serie del ordenador. Si aparecen varios dispositivos CH340 porque casualmente hay conectado otro dispositivo con este chip, elimine los demás por el momento.</p>
 
-		<figure>
-			<div data-tx="t0158:b5c3a2f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Marcador de posición: captura de pantalla del cuadro de diálogo de selección de dispositivos del navegador con la entrada CH340 resaltada].</div>
+		<figure class="image" style="max-width:600px;">
+			<img alt="Seleccionar puerto serie" data-tx="t0214:5134180d" th:src="@{/assets/img/dongle/flash-01-select-serial.png}"/>
+			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0215:f3700f31">Selecciona el puerto serie.</figcaption>
 		</figure>
 
 		<p data-tx="t0159:d037e970">Confirme la pregunta de seguridad "¿Instalar PhoneBlock Dongle?" con <strong>"Instalar"</strong>. El software PhoneBlock se carga ahora en el dongle - esto tarda aproximadamente un minuto. No desenchufe el dongle durante este tiempo.</p>
 
-		<figure>
-			<div data-tx="t0160:177a19e2" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Marcador de posición: Captura de pantalla de la barra de progreso de esp-web-tools durante el flasheo].</div>
-		</figure>
+		<div class="columns is-multiline is-mobile is-variable is-2">
+			<div class="column is-3-desktop is-6-tablet is-12-mobile">
+				<figure class="image">
+					<img alt="Iniciar la instalación" data-tx="t0216:665c866e" th:src="@{/assets/img/dongle/flash-02-start-install.png}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0217:c5e58044">1. Inicie la instalación.</figcaption>
+				</figure>
+			</div>
+			<div class="column is-3-desktop is-6-tablet is-12-mobile">
+				<figure class="image">
+					<img alt="Eliminación no necesaria para la instalación inicial" data-tx="t0218:724602c6" th:src="@{/assets/img/dongle/flash-03-erase-device.png}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0219:8647e67f">2. eliminación no necesaria para la instalación inicial.</figcaption>
+				</figure>
+			</div>
+			<div class="column is-3-desktop is-6-tablet is-12-mobile">
+				<figure class="image">
+					<img alt="Confirmar de nuevo" data-tx="t0220:99ac8359" th:src="@{/assets/img/dongle/flash-04-confirm.png}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0221:2a486c2">3. Confirme de nuevo.</figcaption>
+				</figure>
+			</div>
+			<div class="column is-3-desktop is-6-tablet is-12-mobile">
+				<figure class="image">
+					<img alt="Éxito" data-tx="t0222:2ccb7d09" th:src="@{/assets/img/dongle/flash-05-success.png}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0223:e2168672">4. instalación correcta.</figcaption>
+				</figure>
+			</div>
+		</div>
 
 		<details class="mt-4">
 			<summary><strong data-tx="t0193:c14d73a">¿El ordenador no reconoce el dongle? Sugerencias sobre el controlador</strong></summary>
@@ -156,7 +180,7 @@
 
 		<h2 data-tx="t0170:6da0bfa" id="schritt-7">Paso 5 - Registrarse como teléfono y configurar el acceso a PhoneBlock</h2>
 
-		<p data-tx="t0171:4e4b9d0f">Para que el dongle pueda interceptar llamadas, aún necesita dos cosas: tus datos de acceso SIP (para poder iniciar sesión como un teléfono adicional) y un token PhoneBlock (para poder consultar la base de datos de spam). Ambos datos se introducen en la interfaz web del dongle.</p>
+		<p data-tx="t0171:d7c2d3df">Para que el dongle pueda interceptar llamadas, aún necesita dos cosas: tus datos de acceso SIP (para poder iniciar sesión como un teléfono adicional) y un token PhoneBlock (para poder consultar la base de datos de spam). Ambos datos se introducen en la interfaz web del dongle. También puedes hacer el resto de la configuración desde un teléfono móvil.</p>
 
 		<p data-tx="t0172:f4d3bf5f">Abrir en el navegador:</p>
 
@@ -166,7 +190,7 @@
 			<p data-tx="t0174:c20257a1"><strong>Dongle reconocido:</strong> <a href="" id="dongle-located-link" target="_blank">http://192.168.178.xxx/</a> - el botón de arriba lo abre directamente.</p>
 		</div>
 
-		<p data-tx="t0175:fda77eed">Si este enlace no funciona (Windows sin Bonjour, algunas WLAN en malla), busque en la lista de dispositivos de su router un dispositivo con el nombre <code>answerbot</code>, anote su dirección IP y llámelo en el navegador - por ejemplo <code>http://192.168.178.xxx/</code>.</p>
+		<p data-tx="t0175:4a5ab444">Si este enlace no funciona, busque en la lista de dispositivos de su router un dispositivo con el nombre <code>answerbot</code>, anote su dirección IP y llámelo en el navegador - por ejemplo <code>http://192.168.178.xxx/</code>.</p>
 
 		<div class="columns is-multiline is-mobile is-variable is-2">
 			<div class="column is-2-desktop is-4-tablet is-6-mobile">

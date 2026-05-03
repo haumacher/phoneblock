@@ -78,7 +78,7 @@
 
 		<h2 data-tx="t0149:69477c42" id="schritt-3">步骤 2 - 准备加密狗</h2>
 
-		<p data-tx="t0150:a212e6cf">您需要将 PhoneBlock 软件加载到加密狗上。为此，请将加密狗插入电脑的空闲 USB 端口。</p>
+		<p data-tx="t0150:6972bbca">您需要将 PhoneBlock 软件加载到加密狗上。为此，请将加密狗插入电脑上的空闲 USB 端口。没有电脑？问问朋友是否能帮你准备好加密狗。您也可以稍后通过手机在网络中进行设置。操作时不需要任何其他设备。</p>
 		
 		<figure class="image" style="max-width:500px;">
 			<img alt="加密狗欢迎屏幕" data-tx="t0198:4f273df1" th:src="@{/assets/img/dongle/plugged-into-computer.jpg}"/>
@@ -110,15 +110,39 @@
 
 		<p data-tx="t0157:8a955c74">选择对话框中将显示计算机上所有串行设备的列表。如果显示了多个 CH340 设备，是因为恰好连接了另一个带有该芯片的设备，请暂时移除其他设备。</p>
 
-		<figure>
-			<div data-tx="t0158:b5c3a2f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[占位符：浏览器设备选择对话框截图，CH340 条目突出显示］</div>
+		<figure class="image" style="max-width:600px;">
+			<img alt="选择串行端口" data-tx="t0214:5134180d" th:src="@{/assets/img/dongle/flash-01-select-serial.png}"/>
+			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0215:f3700f31">选择串行端口。</figcaption>
 		</figure>
 
 		<p data-tx="t0159:d037e970">使用 <strong>"安装"</strong>确认安全提示 "安装 PhoneBlock 加密狗？现在，PhoneBlock 软件已加载到加密狗上，这需要大约一分钟的时间。在此期间不要拔下加密狗。</p>
 
-		<figure>
-			<div data-tx="t0160:177a19e2" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[占位符：闪烁过程中 esp-web-tools 进度条的截图］</div>
-		</figure>
+		<div class="columns is-multiline is-mobile is-variable is-2">
+			<div class="column is-3-desktop is-6-tablet is-12-mobile">
+				<figure class="image">
+					<img alt="开始安装" data-tx="t0216:665c866e" th:src="@{/assets/img/dongle/flash-02-start-install.png}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0217:c5e58044">1. 开始安装。</figcaption>
+				</figure>
+			</div>
+			<div class="column is-3-desktop is-6-tablet is-12-mobile">
+				<figure class="image">
+					<img alt="初始安装时无需删除" data-tx="t0218:724602c6" th:src="@{/assets/img/dongle/flash-03-erase-device.png}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0219:8647e67f">2. 初次安装时无需删除。</figcaption>
+				</figure>
+			</div>
+			<div class="column is-3-desktop is-6-tablet is-12-mobile">
+				<figure class="image">
+					<img alt="再次确认" data-tx="t0220:99ac8359" th:src="@{/assets/img/dongle/flash-04-confirm.png}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0221:2a486c2">3. 再次确认。</figcaption>
+				</figure>
+			</div>
+			<div class="column is-3-desktop is-6-tablet is-12-mobile">
+				<figure class="image">
+					<img alt="成功" data-tx="t0222:2ccb7d09" th:src="@{/assets/img/dongle/flash-05-success.png}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0223:e2168672">4. 安装成功。</figcaption>
+				</figure>
+			</div>
+		</div>
 
 		<details class="mt-4">
 			<summary><strong data-tx="t0193:c14d73a">电脑无法识别加密狗？驱动程序提示</strong></summary>
@@ -156,7 +180,7 @@
 
 		<h2 data-tx="t0170:6da0bfa" id="schritt-7">第 5 步 - 注册手机并设置 PhoneBlock 访问权限</h2>
 
-		<p data-tx="t0171:4e4b9d0f">为了让加密狗拦截通话，它还需要两样东西：您的 SIP 访问数据（以便它能作为附加电话登录）和 PhoneBlock 令牌（以便它能查询垃圾邮件数据库）。您可以在加密狗的网页界面上输入这两样东西。</p>
+		<p data-tx="t0171:d7c2d3df">为了让加密狗拦截通话，它还需要两样东西：您的 SIP 访问数据（以便它能作为附加电话登录）和 PhoneBlock 令牌（以便它能查询垃圾邮件数据库）。您可以在加密狗的网页界面上输入这两样东西。您也可以通过手机进行其余设置。</p>
 
 		<p data-tx="t0172:f4d3bf5f">在浏览器中打开：</p>
 
@@ -166,7 +190,7 @@
 			<p data-tx="t0174:c20257a1"><strong>已识别加密狗：</strong> <a href="" id="dongle-located-link" target="_blank">http://192.168.178.xxx/</a> - 顶部的按钮可直接打开。</p>
 		</div>
 
-		<p data-tx="t0175:fda77eed">如果此链接不起作用（没有 Bonjour 的 Windows 系统、某些网状 WLAN），请在路由器的设备列表中查找名称为 <code>answerbot</code> 的设备，记下其 IP 地址并在浏览器中调用，例如 <code>http://192.168.178.xxx/</code>。</p>
+		<p data-tx="t0175:4a5ab444">如果该链接不起作用，请在路由器的设备列表中查找名称为 <code>answerbot</code> 的设备，记下其 IP 地址并在浏览器中调用，例如 <code>http://192.168.178.xxx/</code> 。</p>
 
 		<div class="columns is-multiline is-mobile is-variable is-2">
 			<div class="column is-2-desktop is-4-tablet is-6-mobile">

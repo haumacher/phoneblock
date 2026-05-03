@@ -78,7 +78,7 @@
 
 		<h2 data-tx="t0149:69477c42" id="schritt-3">Étape 2 - Préparer le dongle</h2>
 
-		<p data-tx="t0150:a212e6cf">Tu dois télécharger une seule fois le logiciel PhoneBlock sur ton dongle. Pour ce faire, insère le dongle dans un port USB libre de ton ordinateur.</p>
+		<p data-tx="t0150:6972bbca">Tu dois télécharger une seule fois le logiciel PhoneBlock sur ta clé. Pour ce faire, insère une seule fois le dongle dans un port USB libre de ton ordinateur. Tu n'as pas d'ordinateur ? Demande simplement à une connaissance de préparer le dongle pour toi. L'installation ultérieure dans ton réseau peut également se faire à partir d'un téléphone portable. Tu n'auras alors plus besoin d'aucun autre appareil pour le fonctionnement.</p>
 		
 		<figure class="image" style="max-width:500px;">
 			<img alt="Écran d'accueil de la clé électronique" data-tx="t0198:4f273df1" th:src="@{/assets/img/dongle/plugged-into-computer.jpg}"/>
@@ -110,15 +110,39 @@
 
 		<p data-tx="t0157:8a955c74">La boîte de dialogue de sélection affiche une liste de tous les appareils série de l'ordinateur. Si plusieurs appareils CH340 s'affichent parce qu'il se trouve qu'un autre appareil équipé de cette puce est connecté, retire les autres pour le moment.</p>
 
-		<figure>
-			<div data-tx="t0158:b5c3a2f0" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Caractère générique : Capture d'écran de la boîte de dialogue de sélection des appareils du navigateur avec l'entrée CH340 sélectionnée]</div>
+		<figure class="image" style="max-width:600px;">
+			<img alt="Sélectionner le port série" data-tx="t0214:5134180d" th:src="@{/assets/img/dongle/flash-01-select-serial.png}"/>
+			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0215:f3700f31">Sélectionner le port série.</figcaption>
 		</figure>
 
 		<p data-tx="t0159:d037e970">Confirme la question de sécurité "Install PhoneBlock Dongle ?" en cliquant sur <strong>"Install"</strong>. Le logiciel PhoneBlock est maintenant chargé sur le dongle - cela prend environ une minute. Ne débranchez pas le dongle pendant ce temps.</p>
 
-		<figure>
-			<div data-tx="t0160:177a19e2" style="border:2px dashed #aaa; padding:2rem; text-align:center; color:#888; background:#f5f5f5;">[Caractère générique : capture d'écran de la barre de progression esp-web-tools lors du flashage]</div>
-		</figure>
+		<div class="columns is-multiline is-mobile is-variable is-2">
+			<div class="column is-3-desktop is-6-tablet is-12-mobile">
+				<figure class="image">
+					<img alt="Démarrer l'installation" data-tx="t0216:665c866e" th:src="@{/assets/img/dongle/flash-02-start-install.png}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0217:c5e58044">1. démarrer l'installation.</figcaption>
+				</figure>
+			</div>
+			<div class="column is-3-desktop is-6-tablet is-12-mobile">
+				<figure class="image">
+					<img alt="Suppression non nécessaire lors de la première installation" data-tx="t0218:724602c6" th:src="@{/assets/img/dongle/flash-03-erase-device.png}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0219:8647e67f">2. suppression inutile lors de la première installation</figcaption>
+				</figure>
+			</div>
+			<div class="column is-3-desktop is-6-tablet is-12-mobile">
+				<figure class="image">
+					<img alt="Confirmer à nouveau" data-tx="t0220:99ac8359" th:src="@{/assets/img/dongle/flash-04-confirm.png}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0221:2a486c2">3. confirmer à nouveau</figcaption>
+				</figure>
+			</div>
+			<div class="column is-3-desktop is-6-tablet is-12-mobile">
+				<figure class="image">
+					<img alt="Succès" data-tx="t0222:2ccb7d09" th:src="@{/assets/img/dongle/flash-05-success.png}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0223:e2168672">4. installation réussie.</figcaption>
+				</figure>
+			</div>
+		</div>
 
 		<details class="mt-4">
 			<summary><strong data-tx="t0193:c14d73a">L'ordinateur ne reconnaît pas la clé électronique ? Remarques sur les pilotes</strong></summary>
@@ -156,7 +180,7 @@
 
 		<h2 data-tx="t0170:6da0bfa" id="schritt-7">Étape 5 - Se connecter en tant que téléphone et configurer l'accès PhoneBlock</h2>
 
-		<p data-tx="t0171:4e4b9d0f">Pour que le dongle puisse intercepter des appels, il lui manque encore deux choses : tes données d'accès SIP (pour qu'il puisse se connecter comme téléphone supplémentaire) et un jeton PhoneBlock (pour qu'il puisse interroger la base de données des spams). Tu inscris ces deux éléments dans l'interface web du dongle.</p>
+		<p data-tx="t0171:d7c2d3df">Pour que le dongle puisse intercepter des appels, il lui manque encore deux choses : tes données d'accès SIP (pour qu'il puisse se connecter comme téléphone supplémentaire) et un jeton PhoneBlock (pour qu'il puisse interroger la base de données des spams). Tu inscris ces deux éléments dans l'interface web du dongle. Tu peux aussi faire le reste de la configuration à partir d'un téléphone portable.</p>
 
 		<p data-tx="t0172:f4d3bf5f">Ouvre dans le navigateur :</p>
 
@@ -166,7 +190,7 @@
 			<p data-tx="t0174:c20257a1"><strong>Dongle détecté:</strong> <a href="" id="dongle-located-link" target="_blank">http://192.168.178.xxx/</a> - le bouton ci-dessus l'ouvre directement.</p>
 		</div>
 
-		<p data-tx="t0175:fda77eed">Si ce lien ne fonctionne pas (Windows sans Bonjour, certains réseaux locaux sans fil maillés), consulte la liste des périphériques de ton routeur pour trouver un périphérique nommé <code>answerbot</code>, note son adresse IP et accède à celle-ci dans ton navigateur - par exemple <code>http://192.168.178.xxx/</code>.</p>
+		<p data-tx="t0175:4a5ab444">Si ce lien ne fonctionne pas, consulte la liste des appareils de ton routeur pour trouver un appareil nommé <code>answerbot</code>, note son adresse IP et appelle-la dans ton navigateur - par exemple <code>http://192.168.178.xxx/</code>.</p>
 
 		<div class="columns is-multiline is-mobile is-variable is-2">
 			<div class="column is-2-desktop is-4-tablet is-6-mobile">
