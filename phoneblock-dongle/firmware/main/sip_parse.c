@@ -59,6 +59,51 @@ int parse_status_code(const char *resp, int len)
     return status;
 }
 
+// Parse a non-negative integer at *pp up to end. Advances *pp past the
+// digits. Returns -1 if no digits, otherwise the parsed value clamped
+// to 30 days.
+static int parse_uint_clamped(const char **pp, const char *end)
+{
+    const char *p = *pp;
+    if (p >= end || *p < '0' || *p > '9') return -1;
+    const int max_seconds = 86400 * 30;
+    int n = 0;
+    while (p < end && *p >= '0' && *p <= '9') {
+        n = n * 10 + (*p - '0');
+        if (n > max_seconds) n = max_seconds;
+        p++;
+    }
+    *pp = p;
+    return n;
+}
+
+int parse_register_expires(const char *resp, int resp_len)
+{
+    const char *end = resp + resp_len;
+
+    // Contact-level ";expires=<n>" wins over the top-level header.
+    const char *c = find_header(resp, resp_len, "Contact");
+    if (c) {
+        const char *eol = c;
+        while (eol < end && *eol != '\r' && *eol != '\n') eol++;
+        for (const char *q = c; q + 9 <= eol; q++) {
+            if (q[0] == ';' && strncasecmp(q + 1, "expires=", 8) == 0) {
+                const char *p = q + 9;
+                int n = parse_uint_clamped(&p, eol);
+                if (n >= 0) return n;
+            }
+        }
+    }
+
+    const char *e = find_header(resp, resp_len, "Expires");
+    if (e) {
+        int n = parse_uint_clamped(&e, end);
+        if (n >= 0) return n;
+    }
+
+    return -1;
+}
+
 uint32_t parse_cseq(const char *req, int req_len)
 {
     const char *p = find_header(req, req_len, "CSeq");

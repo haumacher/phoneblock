@@ -31,6 +31,18 @@ int parse_method(const char *pkt, int len, char *method, int cap);
 // Returns -1 if the first line doesn't look like a status line.
 int parse_status_code(const char *resp, int len);
 
+// Parse the granted REGISTER expiry (in seconds) from a 200 OK
+// response. Per RFC 3261 §10.2.4 a contact-level ";expires=<n>"
+// parameter takes precedence over the top-level Expires header; this
+// function checks the first Contact line for the parameter and falls
+// back to Expires. Returns -1 when neither is present, in which case
+// the caller should retain whatever value it requested.
+//
+// Multi-binding responses (rare for a single AOR REGISTER) are not
+// disambiguated — the first Contact wins. Values are clamped to
+// 30 days as a sanity bound on parser overflow.
+int parse_register_expires(const char *resp, int resp_len);
+
 // Extract the numeric part of the CSeq header. 0 if absent or malformed.
 uint32_t parse_cseq(const char *req, int req_len);
 

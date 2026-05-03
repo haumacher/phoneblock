@@ -82,11 +82,13 @@ CONFIG_PHONEBLOCK_BASE_URL="https://phoneblock.net/phoneblock"
 CONFIG_PHONEBLOCK_OTA_MANIFEST_URL="https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json"
 
 # SIP. Registrar/username/password are written to NVS by the web
-# setup wizard. Expiry of 300 s is half the Fritz!Box IP-phone
-# binding lifetime (600 s), giving us one retry budget before the
-# box drops the registration.
+# setup wizard. SIP_EXPIRES is the *requested* upper bound for the
+# REGISTER binding lifetime; the registrar caps it (Fritz!Box: 600 s)
+# and the dongle refreshes at granted/2 read from the 200 OK, so the
+# precise value here only matters when the registrar's cap is
+# higher than what we're willing to ask for.
 CONFIG_SIP_REGISTRAR_PORT=5060
-CONFIG_SIP_EXPIRES=300
+CONFIG_SIP_EXPIRES=3600
 
 # SIP NAT overrides. Empty / 0 on real hardware — the dongle then
 # advertises its actual interface IP and bound UDP port in Via /

@@ -417,8 +417,14 @@ static int sip_send_recv(sip_ctx_t *c, const char *tx, int tx_len,
 // REGISTER exchange: send initial, parse challenge, send with auth
 // ---------------------------------------------------------------------------
 
-static bool do_register(sip_ctx_t *c)
+// Run a REGISTER transaction, including a digest-auth retry on 401/407.
+// On success returns true and writes the registrar-granted expiry (in
+// seconds) into *granted_expires; if the response carries no Expires
+// information, *granted_expires is set to the requested value, so the
+// caller never has to deal with a sentinel.
+static bool do_register(sip_ctx_t *c, int *granted_expires)
 {
+    *granted_expires = config_sip_expires();
     // Heap-allocate the 6 KB of message buffers — on the 8 KB task stack
     // they overflow once lwip's sendto/recvfrom add their own overhead.
     char *tx = malloc(SIP_TX_BUF_SIZE);
@@ -446,6 +452,8 @@ static bool do_register(sip_ctx_t *c)
     ESP_LOGI(TAG, "← %d (%d bytes)", status, rx_len);
 
     if (status == 200) {
+        int granted = parse_register_expires(rx, rx_len);
+        if (granted >= 0) *granted_expires = granted;
         result = true;
         goto cleanup;
     }
@@ -500,6 +508,10 @@ static bool do_register(sip_ctx_t *c)
         ESP_LOGE(TAG, "%s", msg);
         stats_record_error("sip", msg);
         goto cleanup;
+    }
+    {
+        int granted = parse_register_expires(rx, rx_len);
+        if (granted >= 0) *granted_expires = granted;
     }
     result = true;
 
@@ -1181,14 +1193,15 @@ static void sip_task(void *arg)
     }
 
     // Initial registration.
-    bool ok = do_register(&ctx);
+    int granted_expires = 0;
+    bool ok = do_register(&ctx, &granted_expires);
     s_registered = ok;
     stats_record_sip_state(ok);
     if (ok) {
-        ESP_LOGI(TAG, "REGISTERED as %s@%s (expires %d s)",
+        ESP_LOGI(TAG, "REGISTERED as %s@%s (granted %d s, requested %d s)",
                  config_sip_user(), config_sip_host(),
-                 config_sip_expires());
-        refresh_at_us = esp_timer_get_time() + (int64_t)(config_sip_expires() / 2) * 1000000LL;
+                 granted_expires, config_sip_expires());
+        refresh_at_us = esp_timer_get_time() + (int64_t)(granted_expires / 2) * 1000000LL;
     } else {
         // Specific reason already recorded inside do_register
         // (timeout, auth rejected, …) — no generic follow-up here so
@@ -1230,12 +1243,13 @@ static void sip_task(void *arg)
                 s_settle_pending = false;
                 vTaskDelay(pdMS_TO_TICKS(1500));
             }
-            ok = do_register(&ctx);
+            ok = do_register(&ctx, &granted_expires);
             s_registered = ok;
             stats_record_sip_state(ok);
             if (ok) {
-                ESP_LOGI(TAG, "re-REGISTERED after config change");
-                refresh_at_us = esp_timer_get_time() + (int64_t)(config_sip_expires() / 2) * 1000000LL;
+                ESP_LOGI(TAG, "re-REGISTERED after config change (granted %d s)",
+                         granted_expires);
+                refresh_at_us = esp_timer_get_time() + (int64_t)(granted_expires / 2) * 1000000LL;
             } else {
                 ESP_LOGE(TAG, "REGISTER with new config failed, retry in %d s", retry_delay_s);
                 refresh_at_us = esp_timer_get_time() + (int64_t)retry_delay_s * 1000000LL;
@@ -1250,11 +1264,11 @@ static void sip_task(void *arg)
         if (sip_transport_consume_reconnect(ctx.transport)) {
             ESP_LOGI(TAG, "transport reconnected → re-REGISTER");
             stats_record_error("sip", "TCP reconnect → re-REGISTER");
-            ok = do_register(&ctx);
+            ok = do_register(&ctx, &granted_expires);
             s_registered = ok;
             stats_record_sip_state(ok);
             if (ok) {
-                refresh_at_us = esp_timer_get_time() + (int64_t)(config_sip_expires() / 2) * 1000000LL;
+                refresh_at_us = esp_timer_get_time() + (int64_t)(granted_expires / 2) * 1000000LL;
             } else {
                 refresh_at_us = esp_timer_get_time() + (int64_t)retry_delay_s * 1000000LL;
             }
@@ -1298,12 +1312,12 @@ static void sip_task(void *arg)
             // cap firing; only refresh when the real deadline is due.
             if (now < refresh_at_us) continue;
             // REGISTER refresh.
-            ok = do_register(&ctx);
+            ok = do_register(&ctx, &granted_expires);
             s_registered = ok;
             stats_record_sip_state(ok);
             if (ok) {
-                ESP_LOGI(TAG, "re-REGISTERED (expires %d s)", config_sip_expires());
-                refresh_at_us = esp_timer_get_time() + (int64_t)(config_sip_expires() / 2) * 1000000LL;
+                ESP_LOGI(TAG, "re-REGISTERED (granted %d s)", granted_expires);
+                refresh_at_us = esp_timer_get_time() + (int64_t)(granted_expires / 2) * 1000000LL;
             } else {
                 ESP_LOGE(TAG, "re-REGISTER failed, retry in %d s", retry_delay_s);
                 refresh_at_us = esp_timer_get_time() + (int64_t)retry_delay_s * 1000000LL;

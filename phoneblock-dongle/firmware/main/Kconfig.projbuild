@@ -58,12 +58,18 @@ menu "PhoneBlock Dongle"
             through the setup wizard.
 
     config SIP_EXPIRES
-        int "Registration expiry (seconds)"
-        default 600
+        int "Requested registration lifetime (seconds)"
+        default 3600
         range 60 86400
         help
-            Requested lifetime of the REGISTER binding. The dongle
-            refreshes halfway through this interval.
+            Maximum lifetime requested in the REGISTER's "Expires:"
+            header. The registrar caps this to its own limit
+            (Fritz!Box: 600 s) and returns the granted value in the
+            200 OK; the dongle then refreshes at granted/2 — so this
+            setting is a *desired upper bound*, not the actual refresh
+            interval. Bumping it above the registrar's cap has no
+            effect; setting it below caps us further than the
+            registrar would.
 
     config SIP_CONTACT_HOST_OVERRIDE
         string "Override local host in Via/Contact (for NAT debugging)"

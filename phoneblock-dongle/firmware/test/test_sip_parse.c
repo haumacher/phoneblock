@@ -79,6 +79,12 @@ static void expect_status(int expected, const char *resp)
     report_int("parse_status_code", resp, expected, got);
 }
 
+static void expect_register_expires(int expected, const char *resp)
+{
+    int got = parse_register_expires(resp, (int)strlen(resp));
+    report_int("parse_register_expires", resp, expected, got);
+}
+
 static void expect_cseq(uint32_t expected, const char *req)
 {
     uint32_t got = parse_cseq(req, (int)strlen(req));
@@ -223,6 +229,54 @@ static void test_parse_status_code(void)
     expect_status(-1,  SAMPLE_INVITE);             // not a response
     expect_status(-1,  "");                         // too short
     expect_status(-1,  "HTTP/1.1 200 OK\r\n\r\n"); // wrong protocol
+}
+
+static void test_parse_register_expires(void)
+{
+    // Top-level Expires header.
+    expect_register_expires(300,
+        "SIP/2.0 200 OK\r\n"
+        "Via: SIP/2.0/UDP 1.2.3.4\r\n"
+        "Contact: <sip:alice@host>\r\n"
+        "Expires: 300\r\n"
+        "Content-Length: 0\r\n\r\n");
+
+    // Contact-level expires= wins over top-level (RFC 3261 §10.2.4).
+    expect_register_expires(120,
+        "SIP/2.0 200 OK\r\n"
+        "Contact: <sip:alice@host>;expires=120\r\n"
+        "Expires: 999\r\n\r\n");
+
+    // Contact only.
+    expect_register_expires(60,
+        "SIP/2.0 200 OK\r\n"
+        "Contact: <sip:alice@host:5060>;q=0.5;expires=60\r\n\r\n");
+
+    // Whitespace tolerance on the top-level header.
+    expect_register_expires(600,
+        "SIP/2.0 200 OK\r\n"
+        "Expires:  600\r\n\r\n");
+
+    // expires=0 (deregister grant) is a real value, not "absent".
+    expect_register_expires(0,
+        "SIP/2.0 200 OK\r\n"
+        "Contact: <sip:alice@host>;expires=0\r\n\r\n");
+
+    // Sanity clamp at 30 days for absurd values.
+    expect_register_expires(86400 * 30,
+        "SIP/2.0 200 OK\r\n"
+        "Expires: 99999999999\r\n\r\n");
+
+    // Neither header → -1, caller falls back to its requested value.
+    expect_register_expires(-1,
+        "SIP/2.0 200 OK\r\n"
+        "Contact: <sip:alice@host>\r\n"
+        "Content-Length: 0\r\n\r\n");
+
+    // Missing Expires value (just the header keyword) → -1.
+    expect_register_expires(-1,
+        "SIP/2.0 200 OK\r\n"
+        "Expires: \r\n\r\n");
 }
 
 static void test_parse_cseq(void)
@@ -446,6 +500,7 @@ int main(void)
 {
     test_parse_method();
     test_parse_status_code();
+    test_parse_register_expires();
     test_parse_cseq();
     test_parse_call_id();
     test_find_header();
