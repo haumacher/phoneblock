@@ -6,7 +6,6 @@
 . $IDF_PATH/export.sh
 git tag dongle-vX.Y.Z
 firmware/scripts/release.sh
-git push --tags
 ```
 
 Voraussetzung: sauberer Tree, HEAD genau auf einem `dongle-v*`-Tag,
@@ -18,6 +17,11 @@ eintragen — `release.sh` sourcet die Datei automatisch.
 Variablen (`KEEPASS_DB`, optional `KEEPASS_ENTRY` /
 `KEEPASS_ATTACHMENT`). Datei ist gitignored, Credentials bleiben
 lokal.
+
+`release.sh` pusht den Tag erst, *nachdem* der CDN-Upload geklappt
+hat — bricht der Lauf vorher ab (Build-Fehler, falsches KeePass-PW,
+Netzwerk-Hänger), bleibt der Tag lokal. Aufräumen mit
+`git tag -d dongle-vX.Y.Z` und neu taggen, kein Force-Push nötig.
 
 Der Schlüssel wird beim Signieren in `${TMPDIR:-/tmp}` materialisiert
 und nach dem Signieren `shred`et. Wer einen Host-`keepassxc-cli` (≥ 2.7.5)

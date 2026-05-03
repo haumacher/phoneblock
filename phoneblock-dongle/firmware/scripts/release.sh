@@ -227,3 +227,10 @@ echo
 echo "Released ${VERSION}."
 echo "  Pinned: https://cdn.phoneblock.net/dongle/firmware/${VERSION}/manifest.json"
 echo "  Stable: https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json"
+
+# Push the tag now that the CDN has accepted the upload. Pushing
+# only after a successful release means a failed run (build error,
+# signing failure, network drop during upload) leaves the tag local,
+# so the user can `git tag -d ${DESCRIBE}` and re-tag the same
+# version without a force-push to the remote.
+run git push origin "$DESCRIBE"
