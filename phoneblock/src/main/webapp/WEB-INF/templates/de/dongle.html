@@ -115,8 +115,9 @@
 		<p data-tx="t0150:a212e6cf">Du musst einmalig die PhoneBlock-Software auf Deinen Dongle laden. 
 		Steck dazu den Dongle in einen freien USB-Port deines Computers.</p>
 		
-		<figure>
+		<figure class="image" style="max-width:500px;">
 			<img alt="Dongle Welcome-Screen" data-tx="t0198:4f273df1" th:src="@{/assets/img/dongle/plugged-into-computer.jpg}"/>
+			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0205:24785f50">Dongle im USB-Port des Computers</figcaption>
 		</figure>
 
 		<div class="notification is-warning" id="dongle-install-unsupported" style="display:none;">
@@ -196,8 +197,9 @@
 		steck ihn in einen freien USB-Port deines Routers (oder ein beliebiges 5-V-USB-Netzteil in
 		WLAN-Reichweite).</p>
 
-		<figure>
+		<figure class="image" style="max-width:500px;">
 			<img alt="ESP32-Dongle in der Fritz!Box" data-tx="t0196:d0a4fea7" th:src="@{/assets/img/dongle/plugged-into-router.jpg}"/>
+			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0206:bf34dbb5">Dongle im USB-Port der Fritz!Box</figcaption>
 		</figure>
 
 		<h2 data-tx="t0164:71e45897" id="schritt-6">Schritt 4 — Dongle ins WLAN aufnehmen (WPS)</h2>
@@ -212,8 +214,9 @@
 		„Pair". Innerhalb weniger Sekunden überträgt der Router deine WLAN-Zugangsdaten an den
 		Dongle, der sie speichert und sich verbindet.</p>
 
-		<figure>
+		<figure class="image" style="max-width:500px;">
 			<img alt="WPS-Knopf an der Fritz!Box" data-tx="t0197:fe3e8d05" th:src="@{/assets/img/dongle/wps-button.jpg}"/>
+			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0207:b0912da4">WPS-Knopf an der Fritz!Box</figcaption>
 		</figure>
 
 		<p data-tx="t0168:32d2921"><strong>Hat geklappt:</strong> Die LED blinkt jetzt langsam (etwa einmal pro Sekunde) —
@@ -246,24 +249,44 @@
 		Geräteliste deines Routers nach einem Gerät mit dem Namen <code>answerbot</code>, notiere
 		dessen IP-Adresse und ruf diese im Browser auf — z. B. <code>http://192.168.178.xxx/</code>.</p>
 
-		<figure>
-			<img alt="Dongle Welcome-Screen" data-tx="t0204:4f273df1" th:src="@{/assets/img/dongle/01-welcome-screen.jpg}"/>
-		</figure>
-		<figure>
-			<img alt="Wahl des Telefonanbieters" data-tx="t0199:d59036f6" th:src="@{/assets/img/dongle/02-select-telephony-provider.jpg}"/>
-		</figure>
-		<figure>
-			<img alt="Einrichtung Telfonie über Fritz!Box Assistent" data-tx="t0200:3d467669" th:src="@{/assets/img/dongle/03-fritzbox-password.jpg}"/>
-		</figure>
-		<figure>
-			<img alt="Bestätigung der Einrichtung an einem Mobilgerät" data-tx="t0201:be2f6fb4" th:src="@{/assets/img/dongle/04-confirm-with-phone.jpg}"/>
-		</figure>
-		<figure>
-			<img alt="Telefonie eingerichtet" data-tx="t0202:ca12a560" th:src="@{/assets/img/dongle/05-telephony-set-up.jpg}"/>
-		</figure>
-		<figure>
-			<img alt="Dongle-Setup abgeschlossen" data-tx="t0203:ecb8f314" th:src="@{/assets/img/dongle/06-setup-completed.jpg}"/>
-		</figure>
+		<div class="columns is-multiline is-mobile is-variable is-2">
+			<div class="column is-2-desktop is-4-tablet is-6-mobile">
+				<figure class="image">
+					<img alt="Dongle Welcome-Screen" data-tx="t0204:4f273df1" th:src="@{/assets/img/dongle/01-welcome-screen.jpg}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0208:13b1cd01">1. Willkommensbildschirm</figcaption>
+				</figure>
+			</div>
+			<div class="column is-2-desktop is-4-tablet is-6-mobile">
+				<figure class="image">
+					<img alt="Wahl des Telefonanbieters" data-tx="t0199:d59036f6" th:src="@{/assets/img/dongle/02-select-telephony-provider.jpg}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0209:a1359314">2. Telefonanbieter wählen</figcaption>
+				</figure>
+			</div>
+			<div class="column is-2-desktop is-4-tablet is-6-mobile">
+				<figure class="image">
+					<img alt="Einrichtung Telfonie über Fritz!Box Assistent" data-tx="t0200:3d467669" th:src="@{/assets/img/dongle/03-fritzbox-password.jpg}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0210:6f851112">3. Fritz!Box-Passwort eingeben</figcaption>
+				</figure>
+			</div>
+			<div class="column is-2-desktop is-4-tablet is-6-mobile">
+				<figure class="image">
+					<img alt="Bestätigung der Einrichtung an einem Mobilgerät" data-tx="t0201:be2f6fb4" th:src="@{/assets/img/dongle/04-confirm-with-phone.jpg}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0211:ee583806">4. Mit Telefon bestätigen</figcaption>
+				</figure>
+			</div>
+			<div class="column is-2-desktop is-4-tablet is-6-mobile">
+				<figure class="image">
+					<img alt="Telefonie eingerichtet" data-tx="t0202:ca12a560" th:src="@{/assets/img/dongle/05-telephony-set-up.jpg}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0212:3827ae13">5. Telefonie eingerichtet</figcaption>
+				</figure>
+			</div>
+			<div class="column is-2-desktop is-4-tablet is-6-mobile">
+				<figure class="image">
+					<img alt="Dongle-Setup abgeschlossen" data-tx="t0203:ecb8f314" th:src="@{/assets/img/dongle/06-setup-completed.jpg}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0213:b2188a52">6. Setup abgeschlossen</figcaption>
+				</figure>
+			</div>
+		</div>
 
 		<p data-tx="t0177:a09627c1">Trage in der Web-Oberfläche ein:</p>
 		<ul>

@@ -80,8 +80,9 @@
 
 		<p data-tx="t0150:a212e6cf">Du må laste inn PhoneBlock-programvaren på donglen én gang. Dette gjør du ved å koble dongelen til en ledig USB-port på datamaskinen.</p>
 		
-		<figure>
+		<figure class="image" style="max-width:500px;">
 			<img alt="Velkomstskjerm for dongle" data-tx="t0198:4f273df1" th:src="@{/assets/img/dongle/plugged-into-computer.jpg}"/>
+			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0205:24785f50">Dongle i USB-porten på datamaskinen</figcaption>
 		</figure>
 
 		<div class="notification is-warning" id="dongle-install-unsupported" style="display:none;">
@@ -133,8 +134,9 @@
 
 		<p data-tx="t0162:cbcaee11">Når nettleseren melder "Installasjon fullført!", tar du ut donglen fra datamaskinen og kobler den til en ledig USB-port på ruteren (eller en hvilken som helst 5 V USB-strømforsyning innenfor WLAN-rekkevidde).</p>
 
-		<figure>
+		<figure class="image" style="max-width:500px;">
 			<img alt="ESP32-dongle i Fritz!Box" data-tx="t0196:d0a4fea7" th:src="@{/assets/img/dongle/plugged-into-router.jpg}"/>
+			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0206:bf34dbb5">Dongle i USB-porten på Fritz!</figcaption>
 		</figure>
 
 		<h2 data-tx="t0164:71e45897" id="schritt-6">Trinn 4 - Legg til dongelen i WLAN (WPS)</h2>
@@ -143,8 +145,9 @@
 
 		<p data-tx="t0166:83cbb4c2">Trykk nå på <strong>WPS-knappen</strong> på ruteren. På Fritz!Box er dette <strong>"Connect / WPS"</strong>-knappen på toppen av enheten - trykk kort til Wi-Fi-LED-en på selve ruteren begynner å blinke. Andre rutere merker knappen "WPS" eller "Pair". I løpet av få sekunder overfører ruteren Wi-Fi-tilgangsdataene dine til dongelen, som lagrer dem og kobler seg til.</p>
 
-		<figure>
+		<figure class="image" style="max-width:500px;">
 			<img alt="WPS-knappen på Fritz!Box" data-tx="t0197:fe3e8d05" th:src="@{/assets/img/dongle/wps-button.jpg}"/>
+			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0207:b0912da4">WPS-knappen på Fritz!Box</figcaption>
 		</figure>
 
 		<p data-tx="t0168:32d2921"><strong>Har fungert:</strong> LED-lampen blinker nå sakte (ca. én gang i sekundet) - donglen er i WLAN, har mottatt en adresse og venter på konfigurasjon (neste trinn).</p>
@@ -165,24 +168,44 @@
 
 		<p data-tx="t0175:fda77eed">Hvis denne koblingen ikke fungerer (Windows uten Bonjour, noen mesh-WLAN), kan du se etter en enhet med navnet <code>answerbot</code> i enhetslisten til ruteren din, notere IP-adressen og hente den opp i nettleseren - f.eks. <code>http://192.168.178.xxx/</code>.</p>
 
-		<figure>
-			<img alt="Velkomstskjerm for dongle" data-tx="t0204:4f273df1" th:src="@{/assets/img/dongle/01-welcome-screen.jpg}"/>
-		</figure>
-		<figure>
-			<img alt="Valg av telefonleverandør" data-tx="t0199:d59036f6" th:src="@{/assets/img/dongle/02-select-telephony-provider.jpg}"/>
-		</figure>
-		<figure>
-			<img alt="Oppsett av telefoni via Fritz!Box Assistant" data-tx="t0200:3d467669" th:src="@{/assets/img/dongle/03-fritzbox-password.jpg}"/>
-		</figure>
-		<figure>
-			<img alt="Bekreftelse av oppsettet på en mobil enhet" data-tx="t0201:be2f6fb4" th:src="@{/assets/img/dongle/04-confirm-with-phone.jpg}"/>
-		</figure>
-		<figure>
-			<img alt="Oppsett av telefoni" data-tx="t0202:ca12a560" th:src="@{/assets/img/dongle/05-telephony-set-up.jpg}"/>
-		</figure>
-		<figure>
-			<img alt="Dongle-oppsett fullført" data-tx="t0203:ecb8f314" th:src="@{/assets/img/dongle/06-setup-completed.jpg}"/>
-		</figure>
+		<div class="columns is-multiline is-mobile is-variable is-2">
+			<div class="column is-2-desktop is-4-tablet is-6-mobile">
+				<figure class="image">
+					<img alt="Velkomstskjerm for dongle" data-tx="t0204:4f273df1" th:src="@{/assets/img/dongle/01-welcome-screen.jpg}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0208:13b1cd01">1. Velkomstskjerm</figcaption>
+				</figure>
+			</div>
+			<div class="column is-2-desktop is-4-tablet is-6-mobile">
+				<figure class="image">
+					<img alt="Valg av telefonleverandør" data-tx="t0199:d59036f6" th:src="@{/assets/img/dongle/02-select-telephony-provider.jpg}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0209:a1359314">2. Velg telefonleverandør</figcaption>
+				</figure>
+			</div>
+			<div class="column is-2-desktop is-4-tablet is-6-mobile">
+				<figure class="image">
+					<img alt="Oppsett av telefoni via Fritz!Box Assistant" data-tx="t0200:3d467669" th:src="@{/assets/img/dongle/03-fritzbox-password.jpg}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0210:6f851112">3. Skriv inn Fritz!Box-passordet</figcaption>
+				</figure>
+			</div>
+			<div class="column is-2-desktop is-4-tablet is-6-mobile">
+				<figure class="image">
+					<img alt="Bekreftelse av oppsettet på en mobil enhet" data-tx="t0201:be2f6fb4" th:src="@{/assets/img/dongle/04-confirm-with-phone.jpg}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0211:ee583806">4. Bekreft med telefon</figcaption>
+				</figure>
+			</div>
+			<div class="column is-2-desktop is-4-tablet is-6-mobile">
+				<figure class="image">
+					<img alt="Oppsett av telefoni" data-tx="t0202:ca12a560" th:src="@{/assets/img/dongle/05-telephony-set-up.jpg}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0212:3827ae13">5. Oppsett av telefoni</figcaption>
+				</figure>
+			</div>
+			<div class="column is-2-desktop is-4-tablet is-6-mobile">
+				<figure class="image">
+					<img alt="Dongle-oppsett fullført" data-tx="t0203:ecb8f314" th:src="@{/assets/img/dongle/06-setup-completed.jpg}"/>
+					<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0213:b2188a52">6. Oppsett fullført</figcaption>
+				</figure>
+			</div>
+		</div>
 
 		<p data-tx="t0177:a09627c1">Gå inn i webgrensesnittet:</p>
 		<ul>
