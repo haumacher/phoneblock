@@ -22,8 +22,8 @@ CONFIG_EXAMPLE_WIFI_PASSWORD="YOUR_PASSWORD"
 # 200 OK + tone + BYE path runs without blacklisting a real number.
 CONFIG_SIP_TEST_FORCE_SPAM_STAR_NUMBERS=y
 
-# Status LED GPIO. Default 2 = WROOM-32 dev-board on-board LED.
-# EGBO PICO-D4 dongle: set to 10. -1 disables the LED task.
+# EGBO PICO-D4 dongle: status LED on GPIO 10 (overrides the default 2
+# from sdkconfig.defaults, which targets WROOM-32 dev boards).
 #CONFIG_STATUS_LED_GPIO=10
 
 # QEMU only: host-visible address + forwarded port so the Fritz!Box

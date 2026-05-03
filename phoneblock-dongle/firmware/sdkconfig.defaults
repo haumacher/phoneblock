@@ -64,3 +64,11 @@ CONFIG_PHONEBLOCK_BASE_URL="https://phoneblock.net/phoneblock"
 # setup wizard. Only port and expiry have Kconfig defaults.
 CONFIG_SIP_REGISTRAR_PORT=5060
 CONFIG_SIP_EXPIRES=600
+
+# Status LED: GPIO 2 is the on-board blue LED of ESP32-WROOM-32 dev
+# boards, so the default works for bench testing out of the box.
+# The EGBO PICO-D4 production dongle wires the LED to GPIO 10 — set
+# CONFIG_STATUS_LED_GPIO=10 in sdkconfig.defaults.local for that
+# target. Set to -1 to disable the LED task entirely.
+CONFIG_STATUS_LED_GPIO=2
+CONFIG_STATUS_LED_ACTIVE_LOW=n
