@@ -75,7 +75,9 @@ CONFIG_SPIFFS_PAGE_SIZE=1024
 # OAuth setup wizard and persisted in NVS — no Kconfig knob for it.
 # Site root URL, *without* "/api" suffix; api.c and web.c append
 # /api/... and /mobile/... themselves.
-CONFIG_PHONEBLOCK_BASE_URL="https://phoneblock.net/phoneblock"
+#CONFIG_PHONEBLOCK_BASE_URL="https://phoneblock.net/phoneblock"
+# Not yet in production, use test URL even for release.
+CONFIG_PHONEBLOCK_BASE_URL="https://phoneblock.net/pb-test"
 
 # OTA manifest: same esp-web-tools manifest the browser-based
 # installer reads, so there is exactly one source of truth per
