@@ -264,7 +264,17 @@ bool        config_accept_test_calls(void)
     // come up with the hook on out of the box. Once the user has
     // touched the toggle in the web UI, the persisted "0" / "1"
     // wins regardless of the build-time default.
-    if (s_config.accept_test[0] == '\0') return CONFIG_SIP_TEST_FORCE_SPAM_STAR_NUMBERS;
+    //
+    // Kconfig bool options expand to `#define CONFIG_FOO 1` when
+    // y and stay undefined when n — so the default has to come
+    // through #ifdef, not a direct read of the symbol.
+    if (s_config.accept_test[0] == '\0') {
+#ifdef CONFIG_SIP_TEST_FORCE_SPAM_STAR_NUMBERS
+        return true;
+#else
+        return false;
+#endif
+    }
     return s_config.accept_test[0] == '1';
 }
 const char *config_contact_host_override(void) { return s_config.contact_host; }
