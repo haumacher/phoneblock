@@ -990,6 +990,14 @@ const PROVIDERS = {
 
 const app = $('app');
 let pollTimer = null;
+// True between the click on "Auf Aktualisierung prüfen" and the
+// response from /api/firmware/check. firmware_try_update writes the
+// pessimistic last_failed_ota marker *before* the download starts, so
+// any /api/status poll that lands during the install would otherwise
+// flash up the rollback banner for the version we are actively
+// installing — which is the opposite of what the marker is meant to
+// signal. The flag suppresses that banner while a check is in flight.
+let fwUpdateInFlight = false;
 
 function stopPolling(){
   if (pollTimer){ clearInterval(pollTimer); pollTimer = null; }
@@ -1940,9 +1948,12 @@ async function refreshAll(){
   // Surface a previously rolled-back update so the user knows why
   // auto-update isn't progressing. The "Check for update" button
   // below resends with force=true and clears the marker on its own.
+  // Suppress while a manual check is in flight: the marker is
+  // pessimistically set for the version we're currently installing,
+  // not yet a confirmed failure.
   const fwFailed = $('fwFailed');
   if (fwFailed){
-    if (s.firmware_failed && s.firmware_failed !== ''){
+    if (!fwUpdateInFlight && s.firmware_failed && s.firmware_failed !== ''){
       fwFailed.textContent = t('status.fw.failed', {version: s.firmware_failed});
       fwFailed.style.display = '';
     } else {
@@ -2033,6 +2044,12 @@ async function refreshAll(){
       fwCheck.disabled  = true;
       fwUpload.disabled = true;
       fwPick.disabled   = true;
+      fwUpdateInFlight  = true;
+      // Hide any leftover rollback banner from a *previous* failed
+      // attempt — the click forces a retry, so the old "boot did
+      // not survive" line is no longer applicable from this moment.
+      const fwFailedEl = $('fwFailed');
+      if (fwFailedEl) fwFailedEl.style.display = 'none';
       fwMsg.textContent = t('status.fw.checking');
       fwMsg.style.color = '#1a73e8';
       try {
@@ -2044,6 +2061,11 @@ async function refreshAll(){
               {version: d.new_version});
             fwMsg.style.color = '#e8710a';
             stopPolling();
+            // The browser is now stuck on the pre-reboot HTML and
+            // would never see the marker get cleared from the next
+            // boot's /api/status. Hide the banner ourselves so the
+            // page does not have to be reloaded just to look right.
+            if (fwFailedEl) fwFailedEl.style.display = 'none';
             return;
           }
           if (d.available){
@@ -2064,6 +2086,7 @@ async function refreshAll(){
         fwMsg.textContent = t('status.fw.check.error', {msg: 'Network error'});
         fwMsg.style.color = '#d93025';
       } finally {
+        fwUpdateInFlight  = false;
         fwCheck.disabled  = false;
         fwPick.disabled   = false;
         fwUpload.disabled = !fwFile.files[0];
