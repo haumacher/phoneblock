@@ -1,18 +1,20 @@
-# Network: Ethernet via OpenCores is the QEMU emulation default so a
-# bare clone builds and runs in `idf.py qemu` out of the box. Real
-# ESP32 hardware overrides these in sdkconfig.defaults.local — flipping
-# WIFI=y / ETHERNET=n / USE_OPENETH=n — together with the WiFi
-# credentials below. Do NOT change the values here for hardware
-# builds; keep environment-specific tweaks in the .local file.
-CONFIG_EXAMPLE_CONNECT_WIFI=n
-CONFIG_EXAMPLE_CONNECT_ETHERNET=y
-CONFIG_EXAMPLE_USE_OPENETH=y
+# Defaults target the **EGBO PICO-D4 production dongle**: WiFi via
+# the on-chip ESP32, status LED on GPIO 10, SIP expiry tuned for
+# Fritz!Box bindings. Other environments (WROOM-32 dev boards, QEMU
+# emulator) override the relevant subset in sdkconfig.defaults.local.
+# See sdkconfig.defaults.local.template for the worked overrides.
+
+# Network: WiFi for real hardware (production + WROOM-32 dev). The
+# QEMU emulator overrides this in .local to OpenCores Ethernet.
+CONFIG_EXAMPLE_CONNECT_WIFI=y
+CONFIG_EXAMPLE_CONNECT_ETHERNET=n
+CONFIG_EXAMPLE_USE_OPENETH=n
 CONFIG_EXAMPLE_CONNECT_IPV4=y
 CONFIG_EXAMPLE_CONNECT_IPV6=y
 
-# WiFi credentials. Empty by default — the QEMU build uses Ethernet
-# and ignores them. Real hardware fills these in via
-# sdkconfig.defaults.local (gitignored, so credentials don't leak).
+# WiFi credentials. Must be supplied in sdkconfig.defaults.local for
+# every real-hardware build (gitignored, so credentials don't leak).
+# QEMU builds switch to Ethernet and ignore these.
 CONFIG_EXAMPLE_WIFI_SSID=""
 CONFIG_EXAMPLE_WIFI_PASSWORD=""
 
@@ -37,9 +39,10 @@ CONFIG_HTTPD_MAX_URI_LEN=1024
 # then fails with "Failed to create socket" / ESP_ERR_HTTP_CONNECT.
 CONFIG_LWIP_MAX_SOCKETS=16
 
-# 4 MB of SPI flash: the ESP32-WROOM-32 modules we ship with have
-# 4 MB onboard. The IDF default is 2 MB, which cuts our partition
-# table (two 1280 KB OTA slots + 1408 KB SPIFFS) in half.
+# 4 MB of SPI flash: the ESP32 modules we ship with have 4 MB onboard
+# (the EGBO PICO-D4 packages flash in the SoC; WROOM-32 dev boards
+# use an external 4 MB chip). The IDF default is 2 MB, which cuts our
+# partition table (two 1280 KB OTA slots + 1408 KB SPIFFS) in half.
 CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
 CONFIG_ESPTOOLPY_FLASHSIZE="4MB"
 
@@ -64,11 +67,13 @@ CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE=y
 # next boot after flashing.
 CONFIG_SPIFFS_PAGE_SIZE=1024
 
-# PhoneBlock defaults. Token is set via the setup wizard (OAuth) and
-# persisted in NVS — no Kconfig knob for it. Site root URL, *without*
-# "/api" suffix; api.c and web.c append /api/... and /mobile/...
-# themselves. Test deployment "https://phoneblock.net/pb-test" goes in
-# .local; tokens are bound to one instance.
+# PhoneBlock backend. Production by default; the test instance
+# "https://phoneblock.net/pb-test" goes in .local for dev builds.
+# Tokens are bound to one instance — a token generated on the test
+# site only works there, and vice versa. Token itself is set via the
+# OAuth setup wizard and persisted in NVS — no Kconfig knob for it.
+# Site root URL, *without* "/api" suffix; api.c and web.c append
+# /api/... and /mobile/... themselves.
 CONFIG_PHONEBLOCK_BASE_URL="https://phoneblock.net/phoneblock"
 
 # OTA manifest: same esp-web-tools manifest the browser-based
@@ -76,10 +81,12 @@ CONFIG_PHONEBLOCK_BASE_URL="https://phoneblock.net/phoneblock"
 # release. Override in .local to point at a staging CDN bucket.
 CONFIG_PHONEBLOCK_OTA_MANIFEST_URL="https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json"
 
-# SIP: registrar/username/password are written to NVS by the web
-# setup wizard. Only port and expiry have Kconfig defaults.
+# SIP. Registrar/username/password are written to NVS by the web
+# setup wizard. Expiry of 300 s is half the Fritz!Box IP-phone
+# binding lifetime (600 s), giving us one retry budget before the
+# box drops the registration.
 CONFIG_SIP_REGISTRAR_PORT=5060
-CONFIG_SIP_EXPIRES=600
+CONFIG_SIP_EXPIRES=300
 
 # SIP NAT overrides. Empty / 0 on real hardware — the dongle then
 # advertises its actual interface IP and bound UDP port in Via /
@@ -91,15 +98,16 @@ CONFIG_SIP_CONTACT_PORT_OVERRIDE=0
 
 # SIP test hook: when y, callers whose number starts with '*' (Fritz!Box
 # internal codes like **622) are answered as SPAM, bypassing the
-# PhoneBlock API and the phone-book-name skip. Off by default — dev
-# .local files enable it to exercise the answer/audio/BYE path without
-# blacklisting a real number.
+# PhoneBlock API and the phone-book-name skip. Off in production —
+# dev .local files enable it to exercise the answer/audio/BYE path
+# without blacklisting a real number.
 CONFIG_SIP_TEST_FORCE_SPAM_STAR_NUMBERS=n
 
-# Status LED: GPIO 2 is the on-board blue LED of ESP32-WROOM-32 dev
-# boards, so the default works for bench testing out of the box.
-# The EGBO PICO-D4 production dongle wires the LED to GPIO 10 — set
-# CONFIG_STATUS_LED_GPIO=10 in sdkconfig.defaults.local for that
-# target. Set to -1 to disable the LED task entirely.
-CONFIG_STATUS_LED_GPIO=2
+# Status LED: GPIO 10 is the EGBO PICO-D4 dongle's LED pin. The
+# PICO-D4 packages flash inside the SoC, so GPIO 10 is free as a
+# regular output. WROOM-32 dev boards must override this in .local
+# (GPIO 10 is wired to the external SPI flash on WROOM-32 modules
+# and is not safe to drive — see the dev-board section in
+# sdkconfig.defaults.local.template).
+CONFIG_STATUS_LED_GPIO=10
 CONFIG_STATUS_LED_ACTIVE_LOW=n
