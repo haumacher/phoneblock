@@ -22,6 +22,10 @@ CONFIG_EXAMPLE_WIFI_PASSWORD="YOUR_PASSWORD"
 # 200 OK + tone + BYE path runs without blacklisting a real number.
 CONFIG_SIP_TEST_FORCE_SPAM_STAR_NUMBERS=y
 
+# Status LED GPIO. Default 2 = WROOM-32 dev-board on-board LED.
+# EGBO PICO-D4 dongle: set to 10. -1 disables the LED task.
+#CONFIG_STATUS_LED_GPIO=10
+
 # QEMU only: host-visible address + forwarded port so the Fritz!Box
 # can deliver INVITEs through QEMU's user-mode NAT. Leave commented
 # on real hardware.
