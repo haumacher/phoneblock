@@ -1,10 +1,20 @@
-# Network: Ethernet via OpenCores for QEMU emulation. For real ESP32
-# hardware, switch to WiFi via `idf.py menuconfig`.
+# Network: Ethernet via OpenCores is the QEMU emulation default so a
+# bare clone builds and runs in `idf.py qemu` out of the box. Real
+# ESP32 hardware overrides these in sdkconfig.defaults.local — flipping
+# WIFI=y / ETHERNET=n / USE_OPENETH=n — together with the WiFi
+# credentials below. Do NOT change the values here for hardware
+# builds; keep environment-specific tweaks in the .local file.
 CONFIG_EXAMPLE_CONNECT_WIFI=n
 CONFIG_EXAMPLE_CONNECT_ETHERNET=y
 CONFIG_EXAMPLE_USE_OPENETH=y
 CONFIG_EXAMPLE_CONNECT_IPV4=y
 CONFIG_EXAMPLE_CONNECT_IPV6=y
+
+# WiFi credentials. Empty by default — the QEMU build uses Ethernet
+# and ignores them. Real hardware fills these in via
+# sdkconfig.defaults.local (gitignored, so credentials don't leak).
+CONFIG_EXAMPLE_WIFI_SSID=""
+CONFIG_EXAMPLE_WIFI_PASSWORD=""
 
 # TLS: use the bundled Mozilla root CA store so HTTPS to phoneblock.net
 # validates out of the box.
@@ -57,13 +67,34 @@ CONFIG_SPIFFS_PAGE_SIZE=1024
 # PhoneBlock defaults. Token is set via the setup wizard (OAuth) and
 # persisted in NVS — no Kconfig knob for it. Site root URL, *without*
 # "/api" suffix; api.c and web.c append /api/... and /mobile/...
-# themselves.
+# themselves. Test deployment "https://phoneblock.net/pb-test" goes in
+# .local; tokens are bound to one instance.
 CONFIG_PHONEBLOCK_BASE_URL="https://phoneblock.net/phoneblock"
+
+# OTA manifest: same esp-web-tools manifest the browser-based
+# installer reads, so there is exactly one source of truth per
+# release. Override in .local to point at a staging CDN bucket.
+CONFIG_PHONEBLOCK_OTA_MANIFEST_URL="https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json"
 
 # SIP: registrar/username/password are written to NVS by the web
 # setup wizard. Only port and expiry have Kconfig defaults.
 CONFIG_SIP_REGISTRAR_PORT=5060
 CONFIG_SIP_EXPIRES=600
+
+# SIP NAT overrides. Empty / 0 on real hardware — the dongle then
+# advertises its actual interface IP and bound UDP port in Via /
+# Contact. QEMU user-mode networking puts the guest behind 10.0.2.x,
+# unreachable from the Fritz!Box; emulator builds set both in .local
+# (host LAN IP + the host port mapped via -hostfwd udp::5061-:5061).
+CONFIG_SIP_CONTACT_HOST_OVERRIDE=""
+CONFIG_SIP_CONTACT_PORT_OVERRIDE=0
+
+# SIP test hook: when y, callers whose number starts with '*' (Fritz!Box
+# internal codes like **622) are answered as SPAM, bypassing the
+# PhoneBlock API and the phone-book-name skip. Off by default — dev
+# .local files enable it to exercise the answer/audio/BYE path without
+# blacklisting a real number.
+CONFIG_SIP_TEST_FORCE_SPAM_STAR_NUMBERS=n
 
 # Status LED: GPIO 2 is the on-board blue LED of ESP32-WROOM-32 dev
 # boards, so the default works for bench testing out of the box.

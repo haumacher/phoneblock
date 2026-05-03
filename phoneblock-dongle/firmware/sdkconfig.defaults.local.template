@@ -6,17 +6,23 @@
 #
 # Only values that need to differ from sdkconfig.defaults belong here.
 # sdkconfig.defaults.local is gitignored — real credentials stay local.
+# See sdkconfig.defaults for the documented list of available knobs.
 
-# Dev backend. Switch to https://phoneblock.net/phoneblock for prod.
+# Backend. Default in sdkconfig.defaults is production
+# (https://phoneblock.net/phoneblock); the test instance lives at
+# /pb-test. Tokens are bound to one instance.
 CONFIG_PHONEBLOCK_BASE_URL="https://phoneblock.net/pb-test"
 
-# Real hardware → WiFi (sdkconfig.defaults ships Ethernet/OpenCores
-# for QEMU). Leave commented on QEMU.
+# --- Real ESP32 hardware: WiFi instead of QEMU's OpenCores Ethernet. ---
+# Leave the whole block commented on QEMU builds.
 CONFIG_EXAMPLE_CONNECT_ETHERNET=n
 CONFIG_EXAMPLE_USE_OPENETH=n
 CONFIG_EXAMPLE_CONNECT_WIFI=y
-CONFIG_EXAMPLE_WIFI_SSID="YOUR_SSID"
-CONFIG_EXAMPLE_WIFI_PASSWORD="YOUR_PASSWORD"
+# Fill in your WiFi credentials before building. Leaving the
+# placeholder values active produces a build that silently fails to
+# associate, so the lines stay commented out in the template.
+#CONFIG_EXAMPLE_WIFI_SSID=""
+#CONFIG_EXAMPLE_WIFI_PASSWORD=""
 
 # Dev-only: answer **/* internal Fritz!Box codes as spam so the
 # 200 OK + tone + BYE path runs without blacklisting a real number.
@@ -26,8 +32,8 @@ CONFIG_SIP_TEST_FORCE_SPAM_STAR_NUMBERS=y
 # from sdkconfig.defaults, which targets WROOM-32 dev boards).
 #CONFIG_STATUS_LED_GPIO=10
 
-# QEMU only: host-visible address + forwarded port so the Fritz!Box
-# can deliver INVITEs through QEMU's user-mode NAT. Leave commented
-# on real hardware.
+# --- QEMU only: host-visible address + forwarded port so the ----------
+# Fritz!Box can deliver INVITEs through QEMU's user-mode NAT.
+# Leave commented on real hardware.
 #CONFIG_SIP_CONTACT_HOST_OVERRIDE="192.168.178.22"
 #CONFIG_SIP_CONTACT_PORT_OVERRIDE=5061
