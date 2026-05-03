@@ -312,6 +312,7 @@ static esp_err_t handle_status(httpd_req_t *req)
     cJSON *au = cJSON_AddObjectToObject(root, "auth");
     cJSON_AddBoolToObject  (au,   "enabled",     config_auth_enabled());
     cJSON_AddBoolToObject  (au,   "logged_in",   web_auth_is_logged_in(req));
+    cJSON_AddStringToObject(au,   "user",        config_auth_user());
 
     cJSON *fw = cJSON_AddObjectToObject(root, "firmware");
     cJSON_AddBoolToObject  (fw,   "auto_update", config_auto_update_enabled());

@@ -161,6 +161,7 @@ const I18N = {
     'status.auth.intro': 'Schützt die Konfigurationsoberfläche im laufenden Betrieb. Aktivierst Du den Schutz, fragt diese Seite ab dann nach einer Anmeldung über Deinen PhoneBlock-Account, bevor sie Anrufdaten zeigt oder Einstellungen entgegennimmt.',
     'status.auth.disabled': 'Zugangsschutz aus — jeder im LAN erreicht das Dashboard ohne Anmeldung.',
     'status.auth.enabled': 'Zugangsschutz aktiv — angemeldet als PhoneBlock-Nutzer.',
+    'status.auth.enabled.user': 'Zugangsschutz aktiv — angemeldet als {user}.',
     'status.auth.no_token': 'Zugangsschutz benötigt einen konfigurierten PhoneBlock-Token (siehe Schritt 2 oben). Erst dann kann der Dongle Deine Identität gegen den Server prüfen.',
     'status.auth.enable': 'Zugangsschutz einschalten',
     'status.auth.disable': 'Zugangsschutz ausschalten',
@@ -362,6 +363,7 @@ const I18N = {
     'status.auth.intro': 'Protects the configuration UI in everyday operation. When you turn this on, the page asks for a "Login with PhoneBlock" before it shows call data or accepts setting changes.',
     'status.auth.disabled': 'Access protection off — anyone on the LAN can reach the dashboard without logging in.',
     'status.auth.enabled': 'Access protection on — signed in as your PhoneBlock user.',
+    'status.auth.enabled.user': 'Access protection on — signed in as {user}.',
     'status.auth.no_token': 'Access protection needs a configured PhoneBlock token (see step 2 above). Only then can the dongle verify your identity against the server.',
     'status.auth.enable': 'Enable access protection',
     'status.auth.disable': 'Disable access protection',
@@ -551,6 +553,7 @@ const I18N = {
     'status.auth.intro': 'Protège l’interface de configuration en exploitation. Une fois activée, la page demande une « Connexion avec PhoneBlock » avant d’afficher les appels ou d’accepter des modifications.',
     'status.auth.disabled': 'Protection d’accès désactivée — n’importe qui sur le LAN peut atteindre le tableau de bord sans se connecter.',
     'status.auth.enabled': 'Protection d’accès active — connecté en tant qu’utilisateur PhoneBlock.',
+    'status.auth.enabled.user': 'Protection d’accès active — connecté en tant que {user}.',
     'status.auth.no_token': 'La protection d’accès nécessite un jeton PhoneBlock configuré (voir l’étape 2 ci-dessus). Le dongle ne peut vérifier ton identité auprès du serveur qu’ensuite.',
     'status.auth.enable': 'Activer la protection d’accès',
     'status.auth.disable': 'Désactiver la protection d’accès',
@@ -740,6 +743,7 @@ const I18N = {
     'status.auth.intro': 'Protege la interfaz de configuración durante el uso diario. Si la activas, la página pedirá un «Inicio de sesión con PhoneBlock» antes de mostrar llamadas o aceptar cambios.',
     'status.auth.disabled': 'Protección de acceso desactivada — cualquiera en la LAN puede llegar al panel sin iniciar sesión.',
     'status.auth.enabled': 'Protección de acceso activa — sesión iniciada como usuario de PhoneBlock.',
+    'status.auth.enabled.user': 'Protección de acceso activa — sesión iniciada como {user}.',
     'status.auth.no_token': 'La protección de acceso necesita un token PhoneBlock configurado (paso 2 arriba). Solo entonces el dongle puede verificar tu identidad frente al servidor.',
     'status.auth.enable': 'Activar protección de acceso',
     'status.auth.disable': 'Desactivar protección de acceso',
@@ -1844,7 +1848,15 @@ async function refreshAll(){
   const authLogoutBtn = $('authLogout');
   const authDisableBtn= $('authDisable');
   if (auth.enabled){
-    authState.textContent = t('status.auth.enabled');
+    // auth.user is pinned at the first successful SSO round-trip
+    // (config_auth_user) and should always be set while auth.enabled
+    // is true. Fall back to the generic "PhoneBlock user" wording if
+    // the field is somehow empty — older firmware on the device, a
+    // backend that didn't yet return a JWT subject, etc.
+    const u = (auth.user || '').trim();
+    authState.textContent = u
+        ? t('status.auth.enabled.user', {user: u})
+        : t('status.auth.enabled');
     authState.style.color = '#188038';
     authHint.style.display = 'none';
     authEnableBtn.style.display = 'none';
