@@ -85,7 +85,46 @@ echo "Releasing version: $VERSION"
 #    which lands in esp_app_desc_t.version and the /api/status payload.
 # ---------------------------------------------------------------------------
 echo "$VERSION" > "${FIRMWARE_DIR}/version.txt"
-trap 'rm -f "${FIRMWARE_DIR}/version.txt"' EXIT
+
+# Move local build state out of the way so the release is built from
+# sdkconfig.defaults alone — gitignored sticky config has no business
+# in a CDN artifact:
+#   * sdkconfig                  — frozen from the last dev build,
+#                                  may keep CONFIG_SIP_TEST_FORCE_… or
+#                                  similar dev knobs after the .local
+#                                  was already cleaned up.
+#   * sdkconfig.defaults.local   — typically points at the test
+#                                  PhoneBlock backend, ships WiFi
+#                                  credentials, enables test hooks.
+# Files are restored on EXIT regardless of how the script ends, so a
+# dev workspace is undisturbed even if the build fails or the user
+# Ctrl-C's. Trap is installed *before* the stash so a Ctrl-C between
+# the two mv's still restores cleanly.
+STASHED=()
+cleanup() {
+    rm -f "${FIRMWARE_DIR}/version.txt"
+    for f in "${STASHED[@]}"; do
+        if [[ -e "${f}.release-stash" ]]; then
+            mv "${f}.release-stash" "$f"
+        fi
+    done
+}
+trap cleanup EXIT
+
+for f in "${FIRMWARE_DIR}/sdkconfig" "${FIRMWARE_DIR}/sdkconfig.defaults.local"; do
+    # Refuse to run if a previous release.sh died before its trap got
+    # to restore — otherwise the mv below would clobber the original.
+    if [[ -e "${f}.release-stash" ]]; then
+        echo "ERROR: leftover ${f}.release-stash from a previous run." >&2
+        echo "       Inspect it, then either 'mv ${f}.release-stash ${f}'" >&2
+        echo "       or 'rm ${f}.release-stash' before retrying." >&2
+        exit 1
+    fi
+    if [[ -e "$f" ]]; then
+        mv "$f" "${f}.release-stash"
+        STASHED+=("$f")
+    fi
+done
 
 if [[ -z "${IDF_PATH:-}" ]]; then
     echo "ERROR: IDF_PATH not set. Source ESP-IDF's export.sh first." >&2
