@@ -108,11 +108,12 @@ CONFIG_SIP_CONTACT_PORT_OVERRIDE=0
 # to click through the UI first.
 CONFIG_SIP_TEST_FORCE_SPAM_STAR_NUMBERS=n
 
-# Status LED: the Kconfig default of -2 means "auto-detect" — the
-# task picks GPIO 10 on chips with embedded flash (EGBO PICO-D4
-# dongle) and GPIO 2 on WROOM-32 dev boards (whose GPIO 10 carries
-# the external SPI flash WP signal and is not safe to drive). Same
-# firmware boots correctly on both variants without an .local
-# override; pin this to a concrete value here only for non-standard
-# hardware. -1 disables the LED task entirely.
+# Status LED. -2 means "auto-detect": the task picks GPIO 10 on
+# chips with embedded flash (EGBO PICO-D4 dongle) and GPIO 2 on
+# WROOM-32 dev boards (whose GPIO 10 carries the external SPI flash
+# WP signal and is not safe to drive). Same firmware boots correctly
+# on both variants without an .local override; pin this to a
+# concrete value (0..48) only for non-standard hardware, or set -1
+# to disable the LED task entirely.
+CONFIG_STATUS_LED_GPIO=-2
 CONFIG_STATUS_LED_ACTIVE_LOW=n
