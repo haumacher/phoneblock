@@ -114,15 +114,24 @@ menu "PhoneBlock Dongle"
             without blacklisting a real number.
 
     config STATUS_LED_GPIO
-        int "Status LED GPIO (-1 to disable)"
-        default 2
-        range -1 48
+        int "Status LED GPIO (-2 = auto-detect, -1 = disable)"
+        default -2
+        range -2 48
         help
             GPIO driven by the status LED task with blink patterns
-            for PAIRING / CONNECTING / SETUP / READY. Default 2 is
-            the on-board blue LED of the ESP32-WROOM-32 dev boards.
-            For the EGBO PICO-D4 dongle target set this to 10.
-            Set to -1 to disable the LED task entirely.
+            for PAIRING / CONNECTING / SETUP / READY.
+
+              -2 (default) = auto-detect: GPIO 10 on chips with
+                             embedded flash (EGBO PICO-D4 dongle —
+                             flash inside the SoC, GPIO 10 free as
+                             a regular pin), GPIO 2 otherwise (the
+                             on-board blue LED of ESP32-WROOM-32
+                             dev boards, where GPIO 10 carries the
+                             external flash WP signal and is unsafe
+                             to drive).
+              -1           = disable the LED task entirely.
+              0..48        = explicit pin override for non-standard
+                             hardware.
 
     config STATUS_LED_ACTIVE_LOW
         bool "Status LED is active-low"

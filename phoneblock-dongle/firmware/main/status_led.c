@@ -3,6 +3,8 @@
 #include <string.h>
 
 #include "driver/gpio.h"
+#include "esp_chip_info.h"
+#include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "sdkconfig.h"
@@ -12,7 +14,35 @@
 #include "sip_register.h"
 #include "wifi.h"
 
+static const char *TAG = "status_led";
+
 #define TICK_MS 50
+
+// Resolve CONFIG_STATUS_LED_GPIO into a concrete pin (or a sentinel
+// telling the caller to disable the task):
+//   -1            → caller-side "disable" sentinel kept verbatim.
+//   -2 (default)  → auto-detect: chips with flash-in-package
+//                   (PICO-D4) drive GPIO 10, which is the dongle
+//                   target board's LED; everything else falls back
+//                   to GPIO 2, the on-board LED of ESP32-WROOM-32
+//                   dev boards. WROOM-32 routes the external SPI
+//                   flash WP signal through GPIO 10, so we must
+//                   not drive it there.
+//   0..48         → explicit override, returned as-is.
+static int resolve_status_led_gpio(void)
+{
+    const int kcfg = CONFIG_STATUS_LED_GPIO;
+    if (kcfg >= 0) return kcfg;
+    if (kcfg == -1) return -1;
+
+    esp_chip_info_t info;
+    esp_chip_info(&info);
+    int pin = (info.features & CHIP_FEATURE_EMB_FLASH) ? 10 : 2;
+    ESP_LOGI(TAG, "auto-detect → GPIO %d (%s flash)",
+             pin,
+             (info.features & CHIP_FEATURE_EMB_FLASH) ? "embedded" : "external");
+    return pin;
+}
 
 typedef enum {
     ST_PAIRING,
@@ -84,7 +114,7 @@ static pattern_t pattern_for(led_state_t s)
 
 static void led_task(void *arg)
 {
-    const int  gpio       = CONFIG_STATUS_LED_GPIO;
+    const int  gpio       = (int)(intptr_t)arg;
 #ifdef CONFIG_STATUS_LED_ACTIVE_LOW
     const bool active_low = true;
 #else
@@ -122,6 +152,10 @@ static void led_task(void *arg)
 
 void status_led_start(void)
 {
-    if (CONFIG_STATUS_LED_GPIO < 0) return;
-    xTaskCreate(led_task, "status_led", 2048, NULL, 1, NULL);
+    int gpio = resolve_status_led_gpio();
+    if (gpio < 0) {
+        ESP_LOGI(TAG, "LED task disabled (CONFIG_STATUS_LED_GPIO=-1)");
+        return;
+    }
+    xTaskCreate(led_task, "status_led", 2048, (void *)(intptr_t)gpio, 1, NULL);
 }

@@ -1,8 +1,9 @@
-# Defaults target the **EGBO PICO-D4 production dongle**: WiFi via
-# the on-chip ESP32, status LED on GPIO 10, SIP expiry tuned for
-# Fritz!Box bindings. Other environments (WROOM-32 dev boards, QEMU
-# emulator) override the relevant subset in sdkconfig.defaults.local.
-# See sdkconfig.defaults.local.template for the worked overrides.
+# Defaults target real ESP32 hardware: WiFi, SIP expiry tuned for
+# Fritz!Box bindings, and a status LED that auto-detects the right
+# GPIO between PICO-D4 (production dongle) and WROOM-32 (dev board)
+# at runtime. The QEMU emulator overrides the network/LED/NAT bits
+# in sdkconfig.defaults.local — see sdkconfig.defaults.local.template
+# for the worked overrides.
 
 # Network: WiFi for real hardware (production + WROOM-32 dev). The
 # QEMU emulator overrides this in .local to OpenCores Ethernet.
@@ -107,11 +108,11 @@ CONFIG_SIP_CONTACT_PORT_OVERRIDE=0
 # to click through the UI first.
 CONFIG_SIP_TEST_FORCE_SPAM_STAR_NUMBERS=n
 
-# Status LED: GPIO 10 is the EGBO PICO-D4 dongle's LED pin. The
-# PICO-D4 packages flash inside the SoC, so GPIO 10 is free as a
-# regular output. WROOM-32 dev boards must override this in .local
-# (GPIO 10 is wired to the external SPI flash on WROOM-32 modules
-# and is not safe to drive — see the dev-board section in
-# sdkconfig.defaults.local.template).
-CONFIG_STATUS_LED_GPIO=10
+# Status LED: the Kconfig default of -2 means "auto-detect" — the
+# task picks GPIO 10 on chips with embedded flash (EGBO PICO-D4
+# dongle) and GPIO 2 on WROOM-32 dev boards (whose GPIO 10 carries
+# the external SPI flash WP signal and is not safe to drive). Same
+# firmware boots correctly on both variants without an .local
+# override; pin this to a concrete value here only for non-standard
+# hardware. -1 disables the LED task entirely.
 CONFIG_STATUS_LED_ACTIVE_LOW=n

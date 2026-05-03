@@ -8,11 +8,12 @@
 # Only values that need to differ from sdkconfig.defaults belong here;
 # see sdkconfig.defaults for the documented list of available knobs.
 #
-# The defaults target the EGBO PICO-D4 production dongle. Override
-# below for one of these other environments:
-#   1. EGBO PICO-D4 production  — only WiFi credentials, nothing else
-#   2. WROOM-32 dev board       — same as 1 plus a different LED pin
-#   3. QEMU emulator            — Ethernet + NAT pass-through, no WiFi
+# The defaults target the EGBO PICO-D4 production dongle. The status
+# LED auto-detects between PICO-D4 (GPIO 10) and WROOM-32 dev boards
+# (GPIO 2), so the same firmware runs on both. Override below for
+# one of these other environments:
+#   1. Real hardware (PICO-D4 or WROOM-32) — only WiFi credentials
+#   2. QEMU emulator                       — Ethernet + NAT, no WiFi
 
 # --- Backend (optional): switch to the test instance for dev work --
 # Tokens are bound to one instance; a pbt_… token from /pb-test only
@@ -25,14 +26,6 @@
 # a build that silently fails to associate, so fill these in here.
 #CONFIG_EXAMPLE_WIFI_SSID="my-ssid"
 #CONFIG_EXAMPLE_WIFI_PASSWORD="my-passphrase"
-
-# --- WROOM-32 dev board: redirect the status LED -------------------
-# WROOM-32 modules carry external SPI flash on GPIO 6-11; driving
-# GPIO 10 (the production dongle's LED pin, in sdkconfig.defaults)
-# clashes with flash I/O and prevents the firmware from running.
-# Use the on-board blue LED on GPIO 2, or -1 to disable the task.
-# The PICO-D4 has flash inside the SoC and does not need this.
-#CONFIG_STATUS_LED_GPIO=2
 
 # --- QEMU emulator -------------------------------------------------
 # Use OpenCores Ethernet instead of WiFi, disable the LED task (no

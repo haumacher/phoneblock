@@ -1,8 +1,11 @@
 #pragma once
 
 // Start the status-LED task. Polls the system state (WiFi, SIP,
-// token) every 50 ms and drives CONFIG_STATUS_LED_GPIO with one of
-// five blink patterns:
+// token) every 50 ms and drives the resolved status-LED GPIO with
+// one of five blink patterns. The pin is taken from CONFIG_STATUS_LED_GPIO
+// when explicitly set; the default value (-2) auto-selects between
+// GPIO 10 (chips with embedded flash, e.g. EGBO PICO-D4 dongle)
+// and GPIO 2 (WROOM-32 dev boards).
 //
 //   PAIRING    — fast blink (100 ms on / 100 ms off):
 //                WPS-PBC active, press the router's pairing button
@@ -21,5 +24,5 @@
 //   READY      — solid on:
 //                WiFi up + SIP registered + token set + token accepted
 //
-// No-op when CONFIG_STATUS_LED_GPIO is < 0.
+// No-op when CONFIG_STATUS_LED_GPIO is set to -1 (LED task disabled).
 void status_led_start(void);
