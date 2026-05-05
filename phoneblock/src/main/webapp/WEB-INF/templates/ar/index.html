@@ -76,7 +76,7 @@
 						<i class="fas fa-cogs fa-3x"></i>
 					</span>
 					<h3 class="title is-5" data-tx="t0027:754345bd">مرنة</h3>
-					<p data-tx="t0053:91c8788c">يعمل في <a th:href="@{/festnetz}"> الخط الأرضي ، على <a th:href="@{/setup-android}"> أندرويد ، <a th:href="@{/setup-iphone}"> آي فون و <a th:href="@{/setup-switchboard}"> أنظمة الهاتف - أنت من يقرر كيف.</a></a></a></a></p>
+					<p data-tx="t0028:d6e69698">يعمل على <a th:href="@{/anrufbeantworter}">FFRITZ!Box و<a th:href="@{/setup-android}">Android و<a th:href="@{/setup-iphone}">iPhone و<a th:href="@{/setup-switchboard}"> أنظمة الهاتف - أنت من يقرر كيف.</a></a></a></a></p>
 				</div>
 			</div>
 		</div>
@@ -119,82 +119,60 @@
 
 		<div class="columns is-multiline">
 			<div class="column is-half">
-				<div class="card is-fullheight">
-					<div class="card-content">
-						<p class="title is-5">
-							<span class="icon-text">
-								<span class="icon"><i class="fa-solid fa-phone"></i></span>
-								<span data-tx="t0054:374baf20">الخط الأرضي</span>
+				<div class="box">
+					<h3 class="title is-5">
+						<span class="icon-text">
+							<span class="icon">
+								<i class="fa-solid fa-network-wired"></i>
 							</span>
-						</p>
-						<p data-tx="t0055:414d6689">ثلاثة متغيرات للاختيار من بينها: <strong> دونجل فون بلوك</strong> كشريحة USB صغيرة في جهاز التوجيه، أو <strong> جهاز الرد على المكالمات السحابية</strong> عبر Fritz!Box، أو <strong> دليل الهاتف </strong> كدليل هاتف بلوك كمزامنة CardDAV. يعتمد أيهما يناسبك بشكل أفضل على جهاز التوجيه ومزود الخدمة ومتطلبات حماية البيانات - تقارن صفحة النظرة العامة بين الثلاثة جنبًا إلى جنب.</p>
-					</div>
-					<footer class="card-footer">
-						<a th:class="|card-footer-item button ${fritzbox ? 'is-primary' : 'is-info'} is-medium|" th:href="@{/festnetz}">
-							<span class="icon"><i class="fas fa-arrow-right"></i></span>
-							<span data-tx="t0056:f69b313">حدد متغير الشبكة الثابتة</span>
-						</a>
-					</footer>
+							<span data-tx="t0037:7852d066">صندوق فريتز!</span>
+						</span>
+					</h3>
+					<p data-tx="t0038:160340"><strong> موصى به:</strong> قم بتثبيت <a th:href="@{/anrufbeantworter}"> جهاز الرد على المكالمات الهاتفية </a> كجهاز للرد الصوتي عبر بروتوكول الإنترنت. يقبل جهاز الرد الآلي تلقائيًا المكالمات غير المرغوب فيها ويشرك المتصلين في محادثات لا طائل منها - لن يرن هاتفك حتى.</p>
+					<p class="mt-3" data-tx="t0039:9a3c1d09"><strong>البديل:استيراد القائمة المحظورة كـ <a th:href="@{/setup}"> دفتر هاتف</a> إلى <a th:href="@{/link/fritzbox}"> صندوق فريتز من AVM</a>. يتم رفض المتصلين مباشرة (ملاحظة: حجم دفتر الهاتف محدود، وبالتالي لا يتم تسجيل جميع الأرقام).</strong></p>
 				</div>
 			</div>
 
 			<div class="column is-half">
-				<div class="card is-fullheight">
-					<div class="card-content">
-						<p class="title is-5">
-							<span class="icon-text">
-								<span class="icon"><i class="fa-brands fa-android"></i></span>
-								<span data-tx="t0057:aecec7cb">أندرويد</span>
+				<div class="box">
+					<h3 class="title is-5">
+						<span class="icon-text">
+							<span class="icon">
+								<i class="fa-brands fa-android"></i>
 							</span>
-						</p>
-						<p data-tx="t0058:cee8e47c">احظر المكالمات غير المرغوب فيها مباشرةً على هاتفك المحمول الذي يعمل بنظام Android باستخدام تطبيق <a th:href="@{/setup-android}">PhoneBlock</a>. يتحقق التطبيق من المكالمات الواردة في الوقت الفعلي ويحظر تلقائياً الأرقام المعروفة غير المرغوب فيها. يمكنك أن تحدد بنفسك عدد الرسائل السلبية التي يجب حظر رقم ما.</p>
-					</div>
-					<footer class="card-footer">
-						<a th:class="|card-footer-item button ${android ? 'is-primary' : 'is-info'} is-medium|" th:href="@{/setup-android}">
-							<span class="icon"><i class="fas fa-arrow-right"></i></span>
-							<span data-tx="t0059:b0eb119f">إعداد أندرويد</span>
-						</a>
-					</footer>
+							<span data-tx="t0040:aecec7cb">أندرويد</span>
+						</span>
+					</h3>
+					<p data-tx="t0041:cee8e47c">قم بحظر المكالمات غير المرغوب فيها مباشرةً على هاتفك المحمول الذي يعمل بنظام Android باستخدام تطبيق <a th:href="@{/setup-android}">PhoneBlock</a>. يتحقق التطبيق من المكالمات الواردة في الوقت الفعلي ويحظر تلقائياً الأرقام المعروفة غير المرغوب فيها. يمكنك أن تحدد بنفسك عدد الرسائل السلبية التي يجب حظر رقم ما.</p>
+					<p class="mt-3" data-tx="t0042:56561506"><strong>الميزات:</strong> سجل المكالمات والإبلاغ عن الأرقام وتقييمها، وقائمة الحظر الخاصة، ولا يلزم الحصول على إذن لقراءة جهات الاتصال الخاصة بك.</p>
 				</div>
 			</div>
 
 			<div class="column is-half">
-				<div class="card is-fullheight">
-					<div class="card-content">
-						<p class="title is-5">
-							<span class="icon-text">
-								<span class="icon"><i class="fa-brands fa-apple"></i></span>
-								<span data-tx="t0060:b21bebc5">آيفون</span>
+				<div class="box">
+					<h3 class="title is-5">
+						<span class="icon-text">
+							<span class="icon">
+								<i class="fa-brands fa-apple"></i>
 							</span>
-						</p>
-						<p data-tx="t0061:b45f7cac">قم بتضمين قائمة حظر الهاتف في قائمة جهات اتصالك على iPhone. ثم يظهر لك نظام iOS تلقائيًا عندما يكون المتصل مدرجًا في قائمة الحظر. يتم الإعداد عبر CardDAV - حيث يقوم جهاز iPhone الخاص بك تلقائيًا بتحديث القائمة.<a th:href="@{/setup-iphone}"></a></p>
-					</div>
-					<footer class="card-footer">
-						<a th:class="|card-footer-item button ${iphone ? 'is-primary' : 'is-info'} is-medium|" th:href="@{/setup-iphone}">
-							<span class="icon"><i class="fas fa-arrow-right"></i></span>
-							<span data-tx="t0062:c278f9d5">إعداد iPhone</span>
-						</a>
-					</footer>
+							<span data-tx="t0043:b21bebc5">آيفون</span>
+						</span>
+					</h3>
+					<p data-tx="t0044:b45f7cac">قم بتضمين قائمة حظر الهاتف في قائمة جهات اتصالك على iPhone. ثم يظهر لك نظام iOS تلقائيًا عندما يكون المتصل مدرجًا في قائمة الحظر. يتم الإعداد عبر CardDAV - حيث يقوم جهاز iPhone الخاص بك تلقائيًا بتحديث القائمة.<a th:href="@{/setup-iphone}"></a></p>
 				</div>
 			</div>
 
 			<div class="column is-half">
-				<div class="card is-fullheight">
-					<div class="card-content">
-						<p class="title is-5">
-							<span class="icon-text">
-								<span class="icon"><i class="fa-solid fa-asterisk"></i></span>
-								<span data-tx="t0063:9faa419a">نظام الهاتف</span>
+				<div class="box">
+					<h3 class="title is-5">
+						<span class="icon-text">
+							<span class="icon">
+								<i class="fa-solid fa-asterisk"></i>
 							</span>
-						</p>
-						<p data-tx="t0064:99335f28">دمج PhoneBlock في نظام الهاتف الخاص بك <a th:href="@{/setup-switchboard}"> أو PBX. يمكن تنزيل قائمة الحظر بتنسيقات مختلفة أو الاستعلام عنها عبر واجهة برمجة التطبيقات. مثالي للشركات وأنظمة الهاتف الاحترافية.</a></p>
-					</div>
-					<footer class="card-footer">
-						<a class="card-footer-item button is-info is-medium" th:href="@{/setup-switchboard}">
-							<span class="icon"><i class="fas fa-arrow-right"></i></span>
-							<span data-tx="t0065:aa28e976">إعداد نظام الهاتف</span>
-						</a>
-					</footer>
+							<span data-tx="t0045:9faa419a">نظام الهاتف</span>
+						</span>
+					</h3>
+					<p data-tx="t0046:99335f28">دمج PhoneBlock في نظام الهاتف الخاص بك <a th:href="@{/setup-switchboard}"> أو PBX. يمكن تنزيل قائمة الحظر بتنسيقات مختلفة أو الاستعلام عنها عبر واجهة برمجة التطبيقات. مثالي للشركات وأنظمة الهاتف الاحترافية.</a></p>
 				</div>
 			</div>
 		</div>
