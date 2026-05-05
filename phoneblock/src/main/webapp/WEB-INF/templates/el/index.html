@@ -76,7 +76,7 @@
 						<i class="fas fa-cogs fa-3x"></i>
 					</span>
 					<h3 class="title is-5" data-tx="t0027:754345bd">Ευέλικτο</h3>
-					<p data-tx="t0028:d6e69698">Λειτουργεί σε <a th:href="@{/anrufbeantworter}">FRITZ!Box</a>, <a th:href="@{/setup-android}">Android</a>, <a th:href="@{/setup-iphone}">iPhone</a> και <a th:href="@{/setup-switchboard}">τηλεφωνικά συστήματα</a> - εσείς αποφασίζετε πώς.</p>
+					<p data-tx="t0053:91c8788c">Λειτουργεί στο <a th:href="@{/festnetz}">landline</a>, σε <a th:href="@{/setup-android}">Android</a>, <a th:href="@{/setup-iphone}">iPhone</a> και <a th:href="@{/setup-switchboard}">τηλεφωνικά συστήματα</a> - εσείς αποφασίζετε πώς.</p>
 				</div>
 			</div>
 		</div>
@@ -119,60 +119,82 @@
 
 		<div class="columns is-multiline">
 			<div class="column is-half">
-				<div class="box">
-					<h3 class="title is-5">
-						<span class="icon-text">
-							<span class="icon">
-								<i class="fa-solid fa-network-wired"></i>
+				<div class="card is-fullheight">
+					<div class="card-content">
+						<p class="title is-5">
+							<span class="icon-text">
+								<span class="icon"><i class="fa-solid fa-phone"></i></span>
+								<span data-tx="t0054:374baf20">Σταθερό τηλέφωνο</span>
 							</span>
-							<span data-tx="t0037:7852d066">FRITZ!Box</span>
-						</span>
-					</h3>
-					<p data-tx="t0038:160340"><strong>Συνιστάται:</strong> Εγκαταστήστε τον <a th:href="@{/anrufbeantworter}">Αντιφωνητή του PhoneBlock</a> ως συσκευή VoIP. Ο αυτόματος τηλεφωνητής δέχεται αυτόματα κλήσεις spam και εμπλέκει τους καλούντες σε άσκοπες συνομιλίες - το τηλέφωνό σας δεν θα χτυπάει καν.</p>
-					<p class="mt-3" data-tx="t0039:9a3c1d09"><strong>Αλλιώς:</strong> Εισάγετε τη λίστα αποκλεισμένων ως <a th:href="@{/setup}">τηλεφωνικό κατάλογο</a> στο <a th:href="@{/link/fritzbox}">FRITZ!Box από το AVM</a>. Οι καλούντες απορρίπτονται απευθείας (σημείωση: το μέγεθος του τηλεφωνικού καταλόγου είναι περιορισμένο, επομένως δεν καταγράφονται όλοι οι αριθμοί).</p>
+						</p>
+						<p data-tx="t0055:414d6689">Τρεις παραλλαγές για να διαλέξετε: &lt;Box, ή <strong>Φωνητικός κατάλογος με λίστα μπλοκ</strong> ως συγχρονισμός CardDAV. Το ποιο σας ταιριάζει καλύτερα εξαρτάται από το δρομολογητή, τον πάροχο και τις απαιτήσεις προστασίας δεδομένων - στη σελίδα επισκόπησης συγκρίνονται και τα τρία δίπλα-δίπλα.<strong></strong><strong></strong></p>
+					</div>
+					<footer class="card-footer">
+						<a th:class="|card-footer-item button ${fritzbox ? 'is-primary' : 'is-info'} is-medium|" th:href="@{/festnetz}">
+							<span class="icon"><i class="fas fa-arrow-right"></i></span>
+							<span data-tx="t0056:f69b313">Επιλέξτε παραλλαγή σταθερού δικτύου</span>
+						</a>
+					</footer>
 				</div>
 			</div>
 
 			<div class="column is-half">
-				<div class="box">
-					<h3 class="title is-5">
-						<span class="icon-text">
-							<span class="icon">
-								<i class="fa-brands fa-android"></i>
+				<div class="card is-fullheight">
+					<div class="card-content">
+						<p class="title is-5">
+							<span class="icon-text">
+								<span class="icon"><i class="fa-brands fa-android"></i></span>
+								<span data-tx="t0057:aecec7cb">Android</span>
 							</span>
-							<span data-tx="t0040:aecec7cb">Android</span>
-						</span>
-					</h3>
-					<p data-tx="t0041:cee8e47c">Αποκλείστε τις ανεπιθύμητες κλήσεις απευθείας στο κινητό σας τηλέφωνο Android με την εφαρμογή <a th:href="@{/setup-android}">PhoneBlock</a>. Η εφαρμογή ελέγχει τις εισερχόμενες κλήσεις σε πραγματικό χρόνο και μπλοκάρει αυτόματα γνωστούς αριθμούς spam. Μπορείτε να ορίσετε μόνοι σας πόσα αρνητικά μηνύματα θα πρέπει να μπλοκάρονται για έναν αριθμό.</p>
-					<p class="mt-3" data-tx="t0042:56561506"><strong>Χαρακτηριστικά:</strong> Ιστορικό κλήσεων, αναφορά και βαθμολόγηση αριθμών, δική σας λίστα αποκλεισμού, δεν απαιτείται εξουσιοδότηση για την ανάγνωση των επαφών σας.</p>
+						</p>
+						<p data-tx="t0058:cee8e47c">Αποκλείστε τις ανεπιθύμητες κλήσεις απευθείας στο κινητό σας τηλέφωνο Android με την εφαρμογή <a th:href="@{/setup-android}">PhoneBlock</a>. Η εφαρμογή ελέγχει τις εισερχόμενες κλήσεις σε πραγματικό χρόνο και μπλοκάρει αυτόματα γνωστούς αριθμούς spam. Μπορείτε να ορίσετε μόνοι σας πόσα αρνητικά μηνύματα θα πρέπει να μπλοκάρονται για έναν αριθμό.</p>
+					</div>
+					<footer class="card-footer">
+						<a th:class="|card-footer-item button ${android ? 'is-primary' : 'is-info'} is-medium|" th:href="@{/setup-android}">
+							<span class="icon"><i class="fas fa-arrow-right"></i></span>
+							<span data-tx="t0059:b0eb119f">Ρύθμιση του Android</span>
+						</a>
+					</footer>
 				</div>
 			</div>
 
 			<div class="column is-half">
-				<div class="box">
-					<h3 class="title is-5">
-						<span class="icon-text">
-							<span class="icon">
-								<i class="fa-brands fa-apple"></i>
+				<div class="card is-fullheight">
+					<div class="card-content">
+						<p class="title is-5">
+							<span class="icon-text">
+								<span class="icon"><i class="fa-brands fa-apple"></i></span>
+								<span data-tx="t0060:b21bebc5">iPhone</span>
 							</span>
-							<span data-tx="t0043:b21bebc5">iPhone</span>
-						</span>
-					</h3>
-					<p data-tx="t0044:b45f7cac">Συμπεριλάβετε τη λίστα αποκλεισμού PhoneBlock στις επαφές του iPhone σας. Το iOS σας εμφανίζει αυτόματα όταν ένας καλών βρίσκεται στη λίστα αποκλεισμού. Η <a th:href="@{/setup-iphone}">ρύθμιση</a> γίνεται μέσω CardDAV - το iPhone σας ενημερώνει αυτόματα τη λίστα.</p>
+						</p>
+						<p data-tx="t0061:b45f7cac">Συμπεριλάβετε τη λίστα αποκλεισμού PhoneBlock στις επαφές του iPhone σας. Το iOS σας εμφανίζει αυτόματα όταν ένας καλών βρίσκεται στη λίστα αποκλεισμού. Η <a th:href="@{/setup-iphone}">ρύθμιση</a> γίνεται μέσω CardDAV - το iPhone σας ενημερώνει αυτόματα τη λίστα.</p>
+					</div>
+					<footer class="card-footer">
+						<a th:class="|card-footer-item button ${iphone ? 'is-primary' : 'is-info'} is-medium|" th:href="@{/setup-iphone}">
+							<span class="icon"><i class="fas fa-arrow-right"></i></span>
+							<span data-tx="t0062:c278f9d5">Ρύθμιση iPhone</span>
+						</a>
+					</footer>
 				</div>
 			</div>
 
 			<div class="column is-half">
-				<div class="box">
-					<h3 class="title is-5">
-						<span class="icon-text">
-							<span class="icon">
-								<i class="fa-solid fa-asterisk"></i>
+				<div class="card is-fullheight">
+					<div class="card-content">
+						<p class="title is-5">
+							<span class="icon-text">
+								<span class="icon"><i class="fa-solid fa-asterisk"></i></span>
+								<span data-tx="t0063:9faa419a">Τηλεφωνικό σύστημα</span>
 							</span>
-							<span data-tx="t0045:9faa419a">Τηλεφωνικό σύστημα</span>
-						</span>
-					</h3>
-					<p data-tx="t0046:99335f28">Ενσωματώστε το PhoneBlock στο <a th:href="@{/setup-switchboard}">τηλεφωνικό σας σύστημα</a> ή στο PBX σας. Η λίστα μπλοκ μπορεί να μεταφορτωθεί σε διάφορες μορφές ή να αναζητηθεί μέσω API. Ιδανικό για εταιρείες και επαγγελματικά τηλεφωνικά συστήματα.</p>
+						</p>
+						<p data-tx="t0064:99335f28">Ενσωματώστε το PhoneBlock στο <a th:href="@{/setup-switchboard}">τηλεφωνικό σας σύστημα</a> ή στο PBX σας. Η λίστα αποκλεισμού μπορεί να μεταφορτωθεί σε διάφορες μορφές ή να αναζητηθεί μέσω API. Ιδανικό για εταιρείες και επαγγελματικά τηλεφωνικά συστήματα.</p>
+					</div>
+					<footer class="card-footer">
+						<a class="card-footer-item button is-info is-medium" th:href="@{/setup-switchboard}">
+							<span class="icon"><i class="fas fa-arrow-right"></i></span>
+							<span data-tx="t0065:aa28e976">Ρύθμιση τηλεφωνικού συστήματος</span>
+						</a>
+					</footer>
 				</div>
 			</div>
 		</div>

@@ -100,8 +100,7 @@
 				<a class="navbar-link prevent-default" data-tx="t0003:bba1983" href="#">التركيب</a>
 
 				<div class="navbar-dropdown">
-					<a class="navbar-item" data-tx="t0004:b64ed532" th:href="@{/anrufbeantworter}">جهاز الرد الآلي</a>
-					<a class="navbar-item" data-tx="t0005:b7a22f37" th:href="@{/setup}">دليل هاتف بلوك ليست</a>
+					<a class="navbar-item" data-tx="t9007:374baf20" th:href="@{/festnetz}">الخط الأرضي</a>
 					<a class="navbar-item" data-tx="t0006:aecec7cb" th:href="@{/setup-android}">أندرويد</a>
 					<a class="navbar-item" data-tx="t0007:b21bebc5" th:href="@{/setup-iphone}">آيفون</a>
 					<a class="navbar-item" data-tx="t0060:2303782b" th:href="@{/setup-switchboard}">أنظمة الهاتف</a>
@@ -171,40 +170,32 @@
 </section>
 
 <div class="columns" th:fragment="buttons">
-  <div class="column is-one-fifth">
-	<a th:class="|button is-medium ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/anrufbeantworter}">
-	    <span class="icon">
-			<img th:src="@{/assets/img/ab/logo/ab-logo-white.svg}"/>
-	    </span>
-		<span data-tx="t0061:b64ed532">جهاز الرد الآلي</span>			
-	</a>
-  </div>
-  <div class="column is-one-fifth">
-	<a th:class="|button is-medium is-info is-fullwidth|" th:href="@{/setup}">
+  <div class="column is-one-quarter">
+	<a th:class="|button is-large ${fritzbox ? 'is-primary' : 'is-info'} is-fullwidth has-text-weight-bold|" th:href="@{/festnetz}">
 	    <span class="icon">
 			<i class="fa-solid fa-phone"></i>
 	    </span>
-		<span data-tx="t0062:d40d3f00">قائمة الكتل</span>			
+		<span data-tx="t9008:374baf20">الخط الأرضي</span>
 	</a>
   </div>
-  <div class="column is-one-fifth">
-	<a th:class="|button is-medium ${android ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-android}">
+  <div class="column is-one-quarter">
+	<a th:class="|button is-large ${android ? 'is-primary' : 'is-info'} is-fullwidth has-text-weight-bold|" th:href="@{/setup-android}">
 	    <span class="icon">
 			<i class="fa-solid fa-mobile-screen"></i>
 	    </span>
 		<span data-tx="t0063:aecec7cb">أندرويد</span>
 	</a>
   </div>
-  <div class="column is-one-fifth">
-	<a th:class="|button is-medium ${iphone ? 'is-primary' : 'is-info'} is-fullwidth|" th:href="@{/setup-iphone}">
+  <div class="column is-one-quarter">
+	<a th:class="|button is-large ${iphone ? 'is-primary' : 'is-info'} is-fullwidth has-text-weight-bold|" th:href="@{/setup-iphone}">
 	    <span class="icon">
 			<i class="fa-brands fa-apple"></i>
 	    </span>
 		<span data-tx="t0064:b21bebc5">آيفون</span>
 	</a>
   </div>
-  <div class="column is-one-fifth">
-	<a class="button is-medium is-info is-fullwidth" th:href="@{/setup-switchboard}">
+  <div class="column is-one-quarter">
+	<a class="button is-large is-info is-fullwidth has-text-weight-bold" th:href="@{/setup-switchboard}">
 	    <span class="icon">
 			<i class="fa-solid fa-asterisk"></i>
 	    </span>
@@ -225,9 +216,9 @@
 		</div>
 	
 		<div class="cell">
-			<a class="card" th:href="@{/anrufbeantworter}">
+			<a class="card" th:href="@{/festnetz}">
 			  <div class="card-content has-background-info">
-				<p class="title" data-tx="t0036:c341be06">فون بلوك لفريتز! بوكس</p>
+				<p class="title" data-tx="t9009:e038dc77">PhoneBlock للشبكة الثابتة</p>
 				<p class="subtitle" data-tx="t0037:1287f042">أوقف المكالمات الإعلانية على الخط الأرضي</p>
 			  </div>
 			</a>
@@ -236,7 +227,7 @@
 
 	<div class="grid is-col-min-15" th:if="${iphone}">
 		<div class="cell">
-			<a class="card" th:href="@{/setup-ipone/}">
+			<a class="card" th:href="@{/setup-iphone}">
 			  <div class="card-content has-background-primary">
 				<p class="title" data-tx="t0038:ac5e5c2e">فون بلوك للآيفون</p>
 				<p class="subtitle" data-tx="t0039:94e91b90">لم يتم تثبيته بعد؟ إذاً قم بذلك!</p>
@@ -245,9 +236,9 @@
 		</div>
 	
 		<div class="cell">
-			<a class="card" th:href="@{/anrufbeantworter}">
+			<a class="card" th:href="@{/festnetz}">
 			  <div class="card-content has-background-info">
-				<p class="title" data-tx="t0040:c341be06">فون بلوك لفريتز! بوكس</p>
+				<p class="title" data-tx="t9010:e038dc77">PhoneBlock للشبكة الثابتة</p>
 				<p class="subtitle" data-tx="t0041:1287f042">أوقف المكالمات الإعلانية على الخط الأرضي</p>
 			  </div>
 			</a>
@@ -256,9 +247,9 @@
 
 	<div class="grid is-col-min-15" th:if="${fritzbox}">
 		<div class="cell">
-			<a class="card" th:href="@{/anrufbeantworter}">
+			<a class="card" th:href="@{/festnetz}">
 			  <div class="card-content has-background-primary">
-				<p class="title" data-tx="t0050:c341be06">فون بلوك لفريتز! بوكس</p>
+				<p class="title" data-tx="t9011:e038dc77">PhoneBlock للشبكة الثابتة</p>
 				<p class="subtitle" data-tx="t0051:1287f042">أوقف المكالمات الإعلانية على الخط الأرضي!</p>
 			  </div>
 			</a>
