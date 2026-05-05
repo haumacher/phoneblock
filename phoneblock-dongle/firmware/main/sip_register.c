@@ -1009,6 +1009,9 @@ static void handle_bye(sip_ctx_t *c, const char *req, int req_len,
 
     if (same_call_id(d->call_id, cid)) {
         ESP_LOGI(TAG, "BYE from remote → dialog closed");
+        // If we were still streaming the announcement, stop it now —
+        // the remote is gone, every further RTP packet is wasted.
+        rtp_request_abort();
         memset(d, 0, sizeof(*d));
     }
 }
