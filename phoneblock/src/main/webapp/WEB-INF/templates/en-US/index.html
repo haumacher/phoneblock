@@ -76,7 +76,7 @@
 						<i class="fas fa-cogs fa-3x"></i>
 					</span>
 					<h3 class="title is-5" data-tx="t0027:754345bd">Flexible</h3>
-					<p data-tx="t0028:d6e69698">Works on <a th:href="@{/anrufbeantworter}">FRITZ!Box</a>, <a th:href="@{/setup-android}">Android</a>, <a th:href="@{/setup-iphone}">iPhone</a> and <a th:href="@{/setup-switchboard}">telephone systems</a> - you decide how.</p>
+					<p data-tx="t0053:91c8788c">Works in the <a th:href="@{/festnetz}">landline</a>, on <a th:href="@{/setup-android}">Android</a>, <a th:href="@{/setup-iphone}">iPhone</a> and <a th:href="@{/setup-switchboard}">telephone systems</a> - you decide how.</p>
 				</div>
 			</div>
 		</div>
@@ -119,60 +119,82 @@
 
 		<div class="columns is-multiline">
 			<div class="column is-half">
-				<div class="box">
-					<h3 class="title is-5">
-						<span class="icon-text">
-							<span class="icon">
-								<i class="fa-solid fa-network-wired"></i>
+				<div class="card is-fullheight">
+					<div class="card-content">
+						<p class="title is-5">
+							<span class="icon-text">
+								<span class="icon"><i class="fa-solid fa-phone"></i></span>
+								<span data-tx="t0054:374baf20">Landline</span>
 							</span>
-							<span data-tx="t0037:7852d066">FRITZ!Box</span>
-						</span>
-					</h3>
-					<p data-tx="t0038:160340"><strong>Recommended:</strong> Install the <a th:href="@{/anrufbeantworter}">PhoneBlock answering machine</a> as a VoIP device. The answering machine automatically accepts spam calls and engages callers in pointless conversations - your phone won't even ring.</p>
-					<p class="mt-3" data-tx="t0039:9a3c1d09"><strong>Alternative:</strong> Import the blacklist as <a th:href="@{/setup}">Phonebook</a> in your <a th:href="@{/link/fritzbox}">FRITZ!Box from AVM</a>. Callers are rejected directly (note: phone book size is limited, therefore not all numbers are recorded).</p>
+						</p>
+						<p data-tx="t0055:414d6689">Three variants to choose from: <strong>PhoneBlock dongle</strong> as a small USB stick in the router, <strong>Cloud answering machine</strong> via the Fritz!Box, or <strong>Blocklist phonebook</strong> as CardDAV sync. Which one suits you best depends on your router, provider and data protection requirements - the overview page compares all three side by side.</p>
+					</div>
+					<footer class="card-footer">
+						<a th:class="|card-footer-item button ${fritzbox ? 'is-primary' : 'is-info'} is-medium|" th:href="@{/festnetz}">
+							<span class="icon"><i class="fas fa-arrow-right"></i></span>
+							<span data-tx="t0056:f69b313">Select fixed network variant</span>
+						</a>
+					</footer>
 				</div>
 			</div>
 
 			<div class="column is-half">
-				<div class="box">
-					<h3 class="title is-5">
-						<span class="icon-text">
-							<span class="icon">
-								<i class="fa-brands fa-android"></i>
+				<div class="card is-fullheight">
+					<div class="card-content">
+						<p class="title is-5">
+							<span class="icon-text">
+								<span class="icon"><i class="fa-brands fa-android"></i></span>
+								<span data-tx="t0057:aecec7cb">Android</span>
 							</span>
-							<span data-tx="t0040:aecec7cb">Android</span>
-						</span>
-					</h3>
-					<p data-tx="t0041:cee8e47c">Block spam calls directly on your Android cell phone with the <a th:href="@{/setup-android}">PhoneBlock app</a>. The app checks incoming calls in real time and automatically blocks known spam numbers. You can set yourself how many negative messages a number should be blocked for.</p>
-					<p class="mt-3" data-tx="t0042:56561506"><strong>Features:</strong> Call history, report and rate numbers, own block list, no authorization required to read your contacts.</p>
+						</p>
+						<p data-tx="t0058:cee8e47c">Block spam calls directly on your Android cell phone with the <a th:href="@{/setup-android}">PhoneBlock app</a>. The app checks incoming calls in real time and automatically blocks known spam numbers. You can set yourself how many negative messages a number should be blocked for.</p>
+					</div>
+					<footer class="card-footer">
+						<a th:class="|card-footer-item button ${android ? 'is-primary' : 'is-info'} is-medium|" th:href="@{/setup-android}">
+							<span class="icon"><i class="fas fa-arrow-right"></i></span>
+							<span data-tx="t0059:b0eb119f">Set up Android</span>
+						</a>
+					</footer>
 				</div>
 			</div>
 
 			<div class="column is-half">
-				<div class="box">
-					<h3 class="title is-5">
-						<span class="icon-text">
-							<span class="icon">
-								<i class="fa-brands fa-apple"></i>
+				<div class="card is-fullheight">
+					<div class="card-content">
+						<p class="title is-5">
+							<span class="icon-text">
+								<span class="icon"><i class="fa-brands fa-apple"></i></span>
+								<span data-tx="t0060:b21bebc5">iPhone</span>
 							</span>
-							<span data-tx="t0043:b21bebc5">iPhone</span>
-						</span>
-					</h3>
-					<p data-tx="t0044:b45f7cac">Include the PhoneBlock blocklist in your iPhone contacts. iOS then automatically shows you when a caller is on the blocklist. The <a th:href="@{/setup-iphone}">setup</a> is done via CardDAV - your iPhone automatically keeps the list up to date.</p>
+						</p>
+						<p data-tx="t0061:b45f7cac">Include the PhoneBlock blocklist in your iPhone contacts. iOS then automatically shows you when a caller is on the blocklist. The <a th:href="@{/setup-iphone}">setup</a> is done via CardDAV - your iPhone automatically keeps the list up to date.</p>
+					</div>
+					<footer class="card-footer">
+						<a th:class="|card-footer-item button ${iphone ? 'is-primary' : 'is-info'} is-medium|" th:href="@{/setup-iphone}">
+							<span class="icon"><i class="fas fa-arrow-right"></i></span>
+							<span data-tx="t0062:c278f9d5">Set up iPhone</span>
+						</a>
+					</footer>
 				</div>
 			</div>
 
 			<div class="column is-half">
-				<div class="box">
-					<h3 class="title is-5">
-						<span class="icon-text">
-							<span class="icon">
-								<i class="fa-solid fa-asterisk"></i>
+				<div class="card is-fullheight">
+					<div class="card-content">
+						<p class="title is-5">
+							<span class="icon-text">
+								<span class="icon"><i class="fa-solid fa-asterisk"></i></span>
+								<span data-tx="t0063:9faa419a">Telephone system</span>
 							</span>
-							<span data-tx="t0045:9faa419a">Telephone system</span>
-						</span>
-					</h3>
-					<p data-tx="t0046:99335f28">Integrate PhoneBlock into your <a th:href="@{/setup-switchboard}">phone system</a> or PBX. The blocklist can be downloaded in various formats or queried via API. Ideal for companies and professional telephone systems.</p>
+						</p>
+						<p data-tx="t0064:99335f28">Integrate PhoneBlock into your <a th:href="@{/setup-switchboard}">phone system</a> or PBX. The blocklist can be downloaded in various formats or queried via API. Ideal for companies and professional telephone systems.</p>
+					</div>
+					<footer class="card-footer">
+						<a class="card-footer-item button is-info is-medium" th:href="@{/setup-switchboard}">
+							<span class="icon"><i class="fas fa-arrow-right"></i></span>
+							<span data-tx="t0065:aa28e976">Set up telephone system</span>
+						</a>
+					</footer>
 				</div>
 			</div>
 		</div>
