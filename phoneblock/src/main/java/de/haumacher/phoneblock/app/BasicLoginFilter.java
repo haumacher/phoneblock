@@ -26,6 +26,7 @@ import de.haumacher.phoneblock.app.api.SpamCheckServlet;
 import de.haumacher.phoneblock.app.api.TestConnectServlet;
 import de.haumacher.phoneblock.callreport.CallReportServlet;
 import de.haumacher.phoneblock.carddav.CardDavServlet;
+import de.haumacher.phoneblock.dongle.coredump.CoredumpServlet;
 import de.haumacher.phoneblock.db.settings.AuthToken;
 import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.FilterChain;
@@ -53,6 +54,7 @@ import jakarta.servlet.http.HttpServletResponse;
 	RateServlet.PATH,
 	LoginTicketServlet.PATH,
 	CallReportServlet.URL_PATTERN,
+	CoredumpServlet.URL_PATTERN,
 	SearchApiServlet.PATTERN,
 	CardDavServlet.URL_PATTERN,
 	NumServlet.PREFIX + "/*",

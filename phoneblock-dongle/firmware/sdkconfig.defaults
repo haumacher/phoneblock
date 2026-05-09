@@ -53,6 +53,18 @@ CONFIG_ESPTOOLPY_FLASHSIZE="4MB"
 CONFIG_PARTITION_TABLE_CUSTOM=y
 CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
 
+# Core dump: write a full ELF core dump to the dedicated "coredump"
+# partition (see partitions.csv, 52 KB) when the panic handler fires.
+# On the next boot, crashreport.c reads the dump, POSTs it to the
+# PhoneBlock backend, and erases the slot. ELF format keeps the dump
+# loadable with espcoredump.py and a matching firmware.elf — the
+# release script ships the ELF alongside the .bin on the CDN. The
+# CHECK_BOOT flag has the bootloader sanity-check the stored dump on
+# every boot; corrupted dumps are wiped instead of poisoning the slot.
+CONFIG_ESP_COREDUMP_ENABLE_TO_FLASH=y
+CONFIG_ESP_COREDUMP_DATA_FORMAT_ELF=y
+CONFIG_ESP_COREDUMP_CHECK_BOOT=y
+
 # OTA rollback: the bootloader marks a freshly flashed image as
 # "pending verify". The app must call
 # esp_ota_mark_app_valid_cancel_rollback() after a successful

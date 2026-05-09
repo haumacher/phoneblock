@@ -146,6 +146,14 @@ cp "${BUILD_DIR}/partition_table/partition-table.bin" "${STAGE_VERSION}/"
 cp "${BUILD_DIR}/ota_data_initial.bin"                "${STAGE_VERSION}/"
 cp "${BUILD_DIR}/phoneblock_dongle.bin"               "${STAGE_VERSION}/"
 
+# Ship the unstripped ELF alongside the .bin. Not used by devices —
+# it is the symbolication input for crash dumps that the dongle
+# uploads to /api/dongle/coredump. Resolve a backtrace later with:
+#   espcoredump.py info_corefile -c <dump.elf> phoneblock_dongle.elf
+# No signing, no manifest entry: this is a debug artefact, not part
+# of the OTA payload.
+cp "${BUILD_DIR}/phoneblock_dongle.elf"               "${STAGE_VERSION}/"
+
 # Sign the app binary. sign-manifest.sh pulls the Ed25519 private key from
 # KeePassXC (master password prompt on tty), signs a deterministic payload
 # of (domain-tag, version, app-sha256), and emits two KEY=VALUE lines. The

@@ -22,6 +22,7 @@
 #include "announcement.h"
 #include "api.h"
 #include "config.h"
+#include "crashreport.h"
 #include "firmware_update.h"
 #include "pairing.h"
 #include "report_queue.h"
@@ -230,6 +231,13 @@ void app_main(void)
 
     bool token_set = strlen(config_phoneblock_token()) > 0;
     bool sip_set   = strlen(config_sip_host()) > 0;
+
+    // If the previous boot panicked, a core dump is sitting in the
+    // dedicated partition. Kick off a one-shot task that uploads it
+    // to the PhoneBlock backend and then erases the slot. Best-effort:
+    // failures (no token yet, no network, server has no storage)
+    // leave the dump in place for a later boot to retry.
+    crashreport_upload_async();
 
     // Background self-test task — repeats the token check once a
     // day so a revoked or rotated token shows up on the dashboard

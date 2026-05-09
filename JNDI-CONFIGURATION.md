@@ -569,6 +569,51 @@ Configuration for the FTC (Federal Trade Commission) Do Not Call complaint data 
 
 ---
 
+## Dongle Coredump Storage
+
+**JNDI Prefix:** `coredump/`
+**System Property Prefix:** `coredump.`
+**Source:** `CoredumpServlet.java`
+
+Storage location for ELF core dumps that PhoneBlock dongles upload to `/api/dongle/coredump` after a panic-and-reboot. Dumps are written as `<dir>/<firmware-version>/<user>-<yyyyMMdd-HHmmss>.elf` and are at most 52 KB each (matches the dongle's `coredump` flash partition).
+
+### Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `coredump/dir` | String | *unset* | Filesystem path that receives uploaded dumps. **When unset, the endpoint replies with HTTP 503** and the dongle keeps the dump for the next boot — flipping storage on later reclaims dumps already in the field. |
+
+### Example Configuration
+
+**Tomcat context.xml:**
+```xml
+<Context>
+  <Environment name="coredump/dir" value="/var/lib/phoneblock/coredumps" type="java.lang.String"/>
+</Context>
+```
+
+**System Properties:**
+```bash
+-Dcoredump.dir=/var/lib/phoneblock/coredumps
+```
+
+**Symbolicating a stored dump:**
+
+```bash
+# 1. Pull the matching firmware ELF from the CDN release directory:
+wget https://cdn.phoneblock.net/dongle/firmware/<version>/phoneblock_dongle.elf
+
+# 2. Resolve the backtrace (espcoredump.py ships with ESP-IDF):
+espcoredump.py info_corefile -c <user>-<timestamp>.elf phoneblock_dongle.elf
+```
+
+**Notes:**
+- The directory is **not auto-created** as a parent — only the per-version subdirectory beneath it. Create the base path and grant the Tomcat user write access before enabling.
+- No automatic retention; rotate or archive manually. Real-world dumps are rare and small (tens of KB each).
+- Authentication is the same Bearer-token flow as `/api/rate` — the username on the filename is the PhoneBlock account that the dongle was paired with.
+
+---
+
 ## Complete Example Configuration
 
 Here's a complete example Tomcat `context.xml` file with common production settings:
