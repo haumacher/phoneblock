@@ -1219,22 +1219,11 @@ function renderStatus(){
     +   esc(t('status.reset.button')) + '</button>'
     + '<span id="resetMsg" class="muted" style="margin-left:.6rem"></span>'
     + '</p></section>'
-    // Dev-only: crash-test section. Hidden unless the firmware was
-    // built with CONFIG_CRASH_TEST_ENABLE=y, in which case /api/status
-    // reports crash_test_enabled=true and the JS below unhides it.
-    // Strings are German-only on purpose — this is a dev knob, not
-    // user-facing.
-    + '<section id="crashTestSection" style="display:none">'
-    + '<h2>Coredump-Test (Dev)</h2>'
-    + '<p class="muted">Löst absichtlich einen Panic aus. Der Dongle '
-    +   'schreibt einen Coredump in die dafür reservierte Partition '
-    +   'und startet neu — beim nächsten Boot lädt er den Dump zum '
-    +   'PhoneBlock-Backend hoch.</p>'
-    + '<p style="margin-top:.6rem">'
+    // Dev-only crash trigger. Hidden in production by JS below
+    // (s.crash_test_enabled=false leaves display:none in place).
+    + '<p id="crashTestRow" style="display:none;margin-top:1rem">'
     + '<button id="crashTestBtn" class="btn-ghost" style="border-color:#d93025;color:#d93025;padding:.3rem .7rem;font-size:.85rem">'
-    +   'Coredump-Test auslösen</button>'
-    + '<span id="crashTestMsg" class="muted" style="margin-left:.6rem"></span>'
-    + '</p></section>';
+    +   'Panic auslösen (Dev)</button></p>';
   refreshAll();
   pollTimer = setInterval(refreshAll, 3000);
 }
@@ -1979,50 +1968,23 @@ async function refreshAll(){
     };
   }
 
-  // Dev-only crash-test section: visibility tracks the firmware-side
-  // CONFIG_CRASH_TEST_ENABLE flag, surfaced as s.crash_test_enabled.
-  // Production firmware leaves this off and the section stays hidden.
-  const crashTestSec = $('crashTestSection');
+  // Dev-only crash button. Visible iff firmware was built with
+  // CONFIG_CRASH_TEST_ENABLE=y (s.crash_test_enabled=true). On
+  // click: fire POST and let the dongle panic — no result handling,
+  // because the next thing the page sees is either a reboot or
+  // nothing, and either way the user already knows.
+  const crashTestRow = $('crashTestRow');
+  if (crashTestRow) crashTestRow.style.display = s.crash_test_enabled ? '' : 'none';
   const crashTestBtn = $('crashTestBtn');
-  const crashTestMsg = $('crashTestMsg');
-  if (crashTestSec){
-    crashTestSec.style.display = s.crash_test_enabled ? '' : 'none';
-  }
   if (crashTestBtn && !crashTestBtn.onclick){
-    crashTestBtn.onclick = async () => {
-      if (!confirm('Wirklich einen absichtlichen Panic auslösen? '
-                 + 'Der Dongle startet danach neu.')) return;
+    crashTestBtn.onclick = () => {
+      if (!confirm('Panic auslösen?')) return;
       crashTestBtn.disabled = true;
-      crashTestMsg.textContent = '';
-      try {
-        if (!resetNonce){
-          crashTestMsg.textContent = 'Fehler: kein Nonce';
-          crashTestMsg.style.color = '#d93025';
-          crashTestBtn.disabled = false;
-          return;
-        }
-        const r = await fetch('/api/dev/crash', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: 'confirm=' + encodeURIComponent(resetNonce),
-        });
-        const d = await r.json().catch(() => ({}));
-        if (r.ok && d.ok){
-          crashTestMsg.textContent = 'Panic ausgelöst — der Dongle '
-            + 'startet gleich neu. Der Coredump wird beim nächsten '
-            + 'Boot hochgeladen.';
-          crashTestMsg.style.color = '#e8710a';
-          stopPolling();
-        } else {
-          crashTestMsg.textContent = 'Fehler: ' + (d.message || r.statusText);
-          crashTestMsg.style.color = '#d93025';
-          crashTestBtn.disabled = false;
-        }
-      } catch (_){
-        crashTestMsg.textContent = 'Netzwerkfehler';
-        crashTestMsg.style.color = '#d93025';
-        crashTestBtn.disabled = false;
-      }
+      fetch('/api/dev/crash', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: 'confirm=' + encodeURIComponent(resetNonce || ''),
+      });
     };
   }
 
