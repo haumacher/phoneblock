@@ -129,3 +129,15 @@ CONFIG_SIP_TEST_FORCE_SPAM_STAR_NUMBERS=n
 # to disable the LED task entirely.
 CONFIG_STATUS_LED_GPIO=-2
 CONFIG_STATUS_LED_ACTIVE_LOW=n
+
+# Embedded voice announcement on answered spam calls. Off would skip
+# audio playback and BYE the call right after ACK. Default y; only
+# disable for silent-pickup experiments.
+CONFIG_RTP_PLAY_ANNOUNCEMENT=y
+
+# Dev-only crash trigger. When y, the web UI shows a "Panic auslösen
+# (Dev)" button and the firmware compiles in POST /api/dev/crash to
+# exercise the coredump-and-upload pipeline end-to-end. MUST stay n
+# for production; flipped to y in sdkconfig.defaults.local for
+# bench builds.
+CONFIG_CRASH_TEST_ENABLE=n
