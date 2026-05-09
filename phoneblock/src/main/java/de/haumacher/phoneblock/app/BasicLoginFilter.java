@@ -125,6 +125,7 @@ public class BasicLoginFilter extends LoginFilter {
 			return authorization.isAccessDownload();
 		case RateServlet.PATH:
 		case CallReportServlet.URL_PATTERN:
+		case CoredumpServlet.URL_PATTERN:
 		case ReportCallServlet.PATH:
 		case PersonalizationServlet.BLACKLIST_PATH:
 		case PersonalizationServlet.WHITELIST_PATH:
