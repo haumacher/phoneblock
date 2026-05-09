@@ -99,7 +99,21 @@ static void crashreport_task(void *arg)
         return;
     }
 
-    err = esp_partition_read(part, offset, buf, size);
+    // esp_core_dump_image_get returns a *flash-absolute* address in
+    // `offset` (despite the parameter name), but esp_partition_read
+    // wants a partition-relative one. Subtracting part->address gives
+    // the right value; passing the absolute address verbatim trips
+    // ESP_ERR_INVALID_ARG because it lies past the partition end.
+    if (offset < part->address || offset + size > part->address + part->size) {
+        ESP_LOGE(TAG, "core dump (addr=0x%zx size=%zu) outside coredump "
+                      "partition (0x%lx..0x%lx)", offset, size,
+                 (unsigned long)part->address,
+                 (unsigned long)(part->address + part->size));
+        free(buf);
+        vTaskDelete(NULL);
+        return;
+    }
+    err = esp_partition_read(part, offset - part->address, buf, size);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "partition_read: %s", esp_err_to_name(err));
         free(buf);
