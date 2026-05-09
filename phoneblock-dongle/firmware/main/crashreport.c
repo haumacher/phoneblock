@@ -11,6 +11,7 @@
 #include "esp_core_dump.h"
 #include "esp_crt_bundle.h"
 #include "esp_err.h"
+#include "esp_heap_caps.h"
 #include "esp_http_client.h"
 #include "esp_log.h"
 #include "esp_partition.h"
@@ -30,6 +31,21 @@ static const char *TAG = "crashrep";
 // hotspot) plus the TLS handshake can creep past 10 s. 30 s is well
 // within what users tolerate at boot for a one-shot best-effort task.
 #define CRASHREPORT_HTTP_TIMEOUT_MS 30000
+
+// Body chunk for streaming flash → socket. Small on purpose: every
+// extra byte we hold is a byte mbedTLS doesn't have for its bignum
+// scratch during the cert-chain verification. ECDSA / RSA verify on
+// a real-world Let's Encrypt chain wants ~30 KB of heap; if we keep
+// our footprint to ~1 KB we leave ~80 KB clear at this point in boot.
+#define CRASHREPORT_CHUNK_BYTES 1024
+
+// Heap-free guard: if we don't have at least this much when we get
+// to the upload, defer to the next boot rather than fail the TLS
+// handshake with MBEDTLS_ERR_MPI_ALLOC_FAILED (which leaves the
+// dump intact but adds noise to the dashboard). 64 KB is comfortable
+// headroom for the cert-chain verify plus the streaming chunk plus
+// esp_http_client / mbedTLS session state.
+#define CRASHREPORT_MIN_FREE_HEAP (64 * 1024)
 
 static void crashreport_task(void *arg)
 {
@@ -91,14 +107,6 @@ static void crashreport_task(void *arg)
         return;
     }
 
-    uint8_t *buf = malloc(size);
-    if (!buf) {
-        ESP_LOGW(TAG, "out of heap for %zu-byte dump — keeping for next boot",
-                 size);
-        vTaskDelete(NULL);
-        return;
-    }
-
     // esp_core_dump_image_get returns a *flash-absolute* address in
     // `offset` (despite the parameter name), but esp_partition_read
     // wants a partition-relative one. Subtracting part->address gives
@@ -109,14 +117,22 @@ static void crashreport_task(void *arg)
                       "partition (0x%lx..0x%lx)", offset, size,
                  (unsigned long)part->address,
                  (unsigned long)(part->address + part->size));
-        free(buf);
         vTaskDelete(NULL);
         return;
     }
-    err = esp_partition_read(part, offset - part->address, buf, size);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "partition_read: %s", esp_err_to_name(err));
-        free(buf);
+
+    // Heap pressure check. The TLS handshake to phoneblock.net wants
+    // ~30 KB of bignum scratch for ECDSA / RSA cert-chain verification;
+    // failing that allocation surfaces as MBEDTLS_ERR_MPI_ALLOC_FAILED
+    // (-0x10) deep inside the cert bundle code, after the request URL
+    // is logged but before any bytes go on the wire. Defer rather than
+    // fail noisily — the next boot, with whatever transient demand has
+    // settled, will retry. 64 KB threshold leaves comfortable margin
+    // above the observed handshake peak.
+    size_t free_heap = esp_get_free_heap_size();
+    if (free_heap < CRASHREPORT_MIN_FREE_HEAP) {
+        ESP_LOGI(TAG, "heap %zu B below %d B — deferring upload to next boot",
+                 free_heap, CRASHREPORT_MIN_FREE_HEAP);
         vTaskDelete(NULL);
         return;
     }
@@ -141,7 +157,6 @@ static void crashreport_task(void *arg)
     esp_http_client_handle_t client = esp_http_client_init(&cfg);
     if (!client) {
         ESP_LOGE(TAG, "http client init failed");
-        free(buf);
         vTaskDelete(NULL);
         return;
     }
@@ -149,17 +164,62 @@ static void crashreport_task(void *arg)
     esp_http_client_set_header(client, "Authorization", auth);
     esp_http_client_set_header(client, "Content-Type",
                                "application/octet-stream");
-    esp_http_client_set_post_field(client, (const char *)buf, (int)size);
 
-    ESP_LOGI(TAG, "POST %s (%zu bytes)", url, size);
-    err = esp_http_client_perform(client);
-    int status = (err == ESP_OK) ? esp_http_client_get_status_code(client) : 0;
-    esp_http_client_cleanup(client);
-    free(buf);
+    ESP_LOGI(TAG, "POST %s (%zu bytes, heap %zu B)", url, size, free_heap);
 
+    // Open opens the TCP/TLS connection and emits the request line +
+    // headers (Content-Length: size). The TLS handshake — and thus the
+    // cert-chain verify that wants the heap — happens here.
+    err = esp_http_client_open(client, (int)size);
     if (err != ESP_OK) {
-        ESP_LOGW(TAG, "upload transport: %s — keeping dump for next boot",
+        ESP_LOGW(TAG, "upload open: %s — keeping dump for next boot",
                  esp_err_to_name(err));
+        esp_http_client_cleanup(client);
+        vTaskDelete(NULL);
+        return;
+    }
+
+    // Stream body: read CRASHREPORT_CHUNK_BYTES from flash, write to
+    // socket, repeat. Total RAM held at any moment is one chunk —
+    // never the whole dump.
+    uint8_t chunk[CRASHREPORT_CHUNK_BYTES];
+    size_t in_offset = offset - part->address;
+    size_t remaining = size;
+    bool ok = true;
+    while (remaining > 0) {
+        size_t n = remaining > sizeof(chunk) ? sizeof(chunk) : remaining;
+        err = esp_partition_read(part, in_offset, chunk, n);
+        if (err != ESP_OK) {
+            ESP_LOGE(TAG, "partition_read at %zu: %s",
+                     in_offset, esp_err_to_name(err));
+            ok = false;
+            break;
+        }
+        int written = esp_http_client_write(client, (const char *)chunk, n);
+        if (written != (int)n) {
+            ESP_LOGW(TAG, "write %d/%zu — aborting upload",
+                     written, n);
+            ok = false;
+            break;
+        }
+        in_offset += n;
+        remaining -= n;
+    }
+
+    int status = 0;
+    if (ok) {
+        int rcl = esp_http_client_fetch_headers(client);
+        if (rcl < 0) {
+            ESP_LOGW(TAG, "fetch_headers: %d — keeping dump for next boot", rcl);
+            ok = false;
+        } else {
+            status = esp_http_client_get_status_code(client);
+        }
+    }
+    esp_http_client_close(client);
+    esp_http_client_cleanup(client);
+
+    if (!ok) {
         vTaskDelete(NULL);
         return;
     }
