@@ -31,6 +31,7 @@ static const char *NS   = "phoneblock";
 #define K_AUTH_USER     "auth_user"
 #define K_AUTH_PERSIST  "auth_persist"
 #define K_AUTO_UPDATE   "auto_update"
+#define K_CRASH_REPORT  "crash_report"
 #define K_ACCEPT_TEST   "accept_test"
 #define K_CONTACT_HOST  "contact_host"
 #define K_CONTACT_PORT  "contact_port"
@@ -76,6 +77,7 @@ typedef struct {
     char auth_user[64];      // pinned PhoneBlock user-name; empty = no pin
     char auth_persist[33];   // 32 hex chars + NUL; empty = nobody is "remembered"
     char auto_update[4];     // "1" | "0" (or empty = default on)
+    char crash_report[4];    // "1" | "0" (or empty = default on)
     char accept_test[4];     // "1" | "0" (empty = use Kconfig default)
     char contact_host[64];
     int  contact_port;
@@ -143,6 +145,7 @@ void config_load(void)
         s_config.auth_user[0]     = '\0';
         s_config.auth_persist[0]  = '\0';
         s_config.auto_update[0]   = '\0';
+        s_config.crash_report[0]  = '\0';
         s_config.accept_test[0]   = '\0';
         copy_default(s_config.contact_host, sizeof(s_config.contact_host), CONFIG_SIP_CONTACT_HOST_OVERRIDE);
         s_config.contact_port = CONFIG_SIP_CONTACT_PORT_OVERRIDE;
@@ -194,6 +197,8 @@ void config_load(void)
              s_config.auth_persist, sizeof(s_config.auth_persist));
     load_str(h, K_AUTO_UPDATE, "",
              s_config.auto_update, sizeof(s_config.auto_update));
+    load_str(h, K_CRASH_REPORT, "",
+             s_config.crash_report, sizeof(s_config.crash_report));
     load_str(h, K_ACCEPT_TEST, "",
              s_config.accept_test, sizeof(s_config.accept_test));
     load_str(h, K_CONTACT_HOST, CONFIG_SIP_CONTACT_HOST_OVERRIDE,
@@ -256,6 +261,13 @@ bool        config_auto_update_enabled(void)
     // tracks the released stream. Only an explicit "0" freezes it,
     // typically after a manual firmware upload from the web UI.
     return s_config.auto_update[0] != '0';
+}
+bool        config_crash_report_enabled(void)
+{
+    // Default on (empty / unrecognised → enabled) — a stored core
+    // dump is otherwise dead weight in flash, and we'd never see it.
+    // Only an explicit "0" suppresses uploads.
+    return s_config.crash_report[0] != '0';
 }
 bool        config_accept_test_calls(void)
 {
@@ -402,6 +414,8 @@ esp_err_t config_update(const config_update_t *u)
                                         s_config.auth_persist, sizeof(s_config.auth_persist));
     if (err == ESP_OK) err = set_str_if(h, K_AUTO_UPDATE, u->auto_update,
                                         s_config.auto_update, sizeof(s_config.auto_update));
+    if (err == ESP_OK) err = set_str_if(h, K_CRASH_REPORT, u->crash_report,
+                                        s_config.crash_report, sizeof(s_config.crash_report));
     if (err == ESP_OK) err = set_str_if(h, K_ACCEPT_TEST, u->accept_test_calls,
                                         s_config.accept_test, sizeof(s_config.accept_test));
     if (err == ESP_OK) err = set_str_if(h, K_PB_URL, u->phoneblock_base_url,

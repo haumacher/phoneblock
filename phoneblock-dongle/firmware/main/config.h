@@ -103,6 +103,15 @@ const char *config_auth_persist(void);
 // when ready to follow the released stream again.
 bool        config_auto_update_enabled(void);
 
+// Whether crashreport.c is allowed to upload a stored core dump to
+// the PhoneBlock backend on the boot following a panic. Default on
+// — the dump is otherwise dead weight in flash and the operator's
+// only signal of field crashes. Set to false from the web UI to
+// opt out; crashreport.c then erases pending dumps without sending
+// them, so flipping the toggle later doesn't ship historical state
+// the user no longer wants out the door.
+bool        config_crash_report_enabled(void);
+
 // Whether '*'-prefixed callers (Fritz!Box internal dial codes like
 // **622 or *21#) are answered as SPAM, bypassing the API and the
 // phone-book skip. Lets the user exercise the full
@@ -184,6 +193,10 @@ typedef struct {
     // "0" = freeze on the current build. NULL = leave unchanged.
     // Default when unset is "1" (auto-update on).
     const char *auto_update;
+    // "1" = upload core dumps to the PhoneBlock backend after a
+    // panic-and-reboot, "0" = erase them locally without sending.
+    // NULL = leave unchanged. Default when unset is "1".
+    const char *crash_report;
     // "1" = answer Fritz!Box internal *-codes as SPAM (test hook),
     // "0" = treat them like any other caller. NULL = leave unchanged.
     // Default when unset comes from CONFIG_SIP_TEST_FORCE_SPAM_STAR_NUMBERS.

@@ -62,6 +62,18 @@ static void crashreport_task(void *arg)
         return;
     }
 
+    if (!config_crash_report_enabled()) {
+        // User opted out from the web UI. Erase the dump locally so
+        // it doesn't sit in flash forever — and so a later re-enable
+        // doesn't ship historical state out the door that the user
+        // had explicitly asked us not to send.
+        ESP_LOGI(TAG, "core dump pending (%zu bytes) but crash reports "
+                 "are disabled — erasing", size);
+        esp_core_dump_image_erase();
+        vTaskDelete(NULL);
+        return;
+    }
+
     if (strlen(config_phoneblock_token()) == 0) {
         // Dump exists but the dongle isn't paired yet — keep it; the
         // next boot after the user runs the OAuth wizard can ship it.
