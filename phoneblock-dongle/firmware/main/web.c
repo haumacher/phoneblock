@@ -258,6 +258,11 @@ static esp_err_t handle_status(httpd_req_t *req)
     cJSON_AddNumberToObject(root, "uptime_s",         (double)uptime_s);
     cJSON_AddStringToObject(root, "ip_address",       ip);
     cJSON_AddStringToObject(root, "reset_nonce",      s_reset_nonce);
+#ifdef CONFIG_CRASH_TEST_ENABLE
+    cJSON_AddBoolToObject  (root, "crash_test_enabled", true);
+#else
+    cJSON_AddBoolToObject  (root, "crash_test_enabled", false);
+#endif
 
     cJSON *sip = cJSON_AddObjectToObject(root, "sip");
     cJSON_AddBoolToObject  (sip,  "registered",        c.sip_registered);
@@ -1435,6 +1440,80 @@ static esp_err_t handle_factory_reset(httpd_req_t *req)
     return ESP_OK;
 }
 
+#ifdef CONFIG_CRASH_TEST_ENABLE
+// Background task: short grace period to flush the HTTP response, then
+// abort() — panics through the standard ESP32 path so the panic
+// handler writes a core dump to the dedicated partition. On the next
+// boot, crashreport.c uploads it. Used to exercise the full pipeline
+// end-to-end without waiting for a real bug.
+static void crash_test_task(void *arg)
+{
+    (void)arg;
+    vTaskDelay(pdMS_TO_TICKS(500));
+    esp_system_abort("crash-test requested via /api/dev/crash");
+}
+
+// POST /api/dev/crash — deliberately panic the dongle so the next
+// boot ships a real core dump to the backend. Only compiled in when
+// CONFIG_CRASH_TEST_ENABLE=y; production firmware has no handler at
+// this URI and replies 404. Auth + per-boot nonce are mandatory: a
+// stale Firefox replay after the post-panic reboot must not retrigger
+// the panic, which would otherwise lock the device into a crash loop.
+static esp_err_t handle_crash_test(httpd_req_t *req)
+{
+    REQUIRE_AUTH_API(req);
+
+    char peer_ip[INET6_ADDRSTRLEN] = "?";
+    int fd = httpd_req_to_sockfd(req);
+    if (fd >= 0) {
+        struct sockaddr_in6 sa;
+        socklen_t sa_len = sizeof(sa);
+        if (getpeername(fd, (struct sockaddr *)&sa, &sa_len) == 0
+                && sa.sin6_family == AF_INET6) {
+            inet_ntop(AF_INET6, &sa.sin6_addr, peer_ip, sizeof(peer_ip));
+        }
+    }
+    ESP_LOGW(TAG, "crash-test request from %s", peer_ip);
+
+    char body[32] = "";
+    int want = req->content_len;
+    if (want > 0 && want < (int)sizeof(body)) {
+        int have = 0;
+        while (have < want) {
+            int r = httpd_req_recv(req, body + have, want - have);
+            if (r <= 0) break;
+            have += r;
+        }
+        body[have] = '\0';
+    }
+    char expected[48];
+    snprintf(expected, sizeof(expected), "confirm=%s", s_reset_nonce);
+    if (s_reset_nonce[0] == '\0' || strcmp(body, expected) != 0) {
+        ESP_LOGW(TAG, "crash-test: stale/missing nonce — rejected");
+        httpd_resp_set_status(req, "400 Bad Request");
+        cJSON *err_root = cJSON_CreateObject();
+        cJSON_AddBoolToObject  (err_root, "ok", false);
+        cJSON_AddStringToObject(err_root, "message",
+            "Stale or missing confirmation nonce.");
+        send_json(req, err_root);
+        return ESP_OK;
+    }
+
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddBoolToObject  (root, "ok", true);
+    cJSON_AddStringToObject(root, "message",
+        "Coredump test triggered — the dongle will panic and reboot.");
+    send_json(req, root);
+
+    // Same belt-and-braces as factory-reset: invalidate the in-memory
+    // nonce now so an in-flight Firefox replay during the half-second
+    // grace window before abort() cannot fire a second crash.
+    s_reset_nonce[0] = '\0';
+    xTaskCreate(crash_test_task, "crash_test", 2048, NULL, 5, NULL);
+    return ESP_OK;
+}
+#endif // CONFIG_CRASH_TEST_ENABLE
+
 // POST /api/sync/run — trigger an immediate blocklist sync.
 static esp_err_t handle_sync_run(httpd_req_t *req)
 {
@@ -1511,6 +1590,9 @@ static const httpd_uri_t URIS[] = {
     { .uri = "/api/errors/clear",    .method = HTTP_POST, .handler = handle_errors_clear,   .user_ctx = NULL },
     { .uri = "/api/calls/clear",     .method = HTTP_POST, .handler = handle_calls_clear,    .user_ctx = NULL },
     { .uri = "/api/factory-reset",   .method = HTTP_POST, .handler = handle_factory_reset,  .user_ctx = NULL },
+#ifdef CONFIG_CRASH_TEST_ENABLE
+    { .uri = "/api/dev/crash",       .method = HTTP_POST, .handler = handle_crash_test,     .user_ctx = NULL },
+#endif
     { .uri = "/api/firmware",         .method = HTTP_POST, .handler = handle_firmware_upload,  .user_ctx = NULL },
     { .uri = "/api/firmware/check",   .method = HTTP_POST, .handler = handle_firmware_check,   .user_ctx = NULL },
     { .uri = "/api/firmware/install", .method = HTTP_POST, .handler = handle_firmware_install, .user_ctx = NULL },

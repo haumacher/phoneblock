@@ -161,4 +161,22 @@ menu "PhoneBlock Dongle"
             (G.711 A-law, 8 kHz, 20 ms frames) before BYE. Disable to
             send BYE immediately after ACK (silent pickup, old behavior).
 
+    config CRASH_TEST_ENABLE
+        bool "Expose a deliberate-crash button in the web UI (dev only)"
+        default n
+        help
+            When enabled, the web UI gains a "Coredump-Test" section
+            with a button that triggers an intentional panic via
+            esp_system_abort(). The panic handler writes a core dump
+            to the dedicated flash partition; on the next boot,
+            crashreport.c uploads it to the PhoneBlock backend.
+            Together this exercises the whole capture-and-upload
+            pipeline without having to wait for a real bug.
+
+            Production builds MUST leave this off — the URI handler
+            is compiled out entirely with the flag disabled, so an
+            attacker cannot brick a device by guessing /api/dev/crash.
+            The HTML section is also hidden by JS unless the status
+            JSON reports the feature as on.
+
 endmenu
