@@ -1,9 +1,14 @@
 # Name,     Type, SubType, Offset,    Size
 # OTA-capable layout on 4 MB flash. Two equal app slots (ota_0/ota_1)
-# of 1472 KB each — sized to fit the WiFi-enabled build (~1.3 MB)
-# with ~10 % headroom. Previously 1280 KB which overflowed as soon
-# as the Ethernet default flipped to WiFi. Storage partition keeps
-# the "storage" label so announcement.c continues to mount it.
+# of 1664 KB each — sized to fit the WiFi-enabled build (~1.4 MB)
+# with ~15 % headroom. Earlier: 1472 KB (4 % headroom, getting tight),
+# 1280 KB (overflowed when the Ethernet default flipped to WiFi).
+# Storage partition keeps the "storage" label so announcement.c
+# continues to mount it; size dropped from 1024 KB to 640 KB after
+# realising the user-recorded announcement is capped at 240 KB
+# (see ANNOUNCEMENT_MAX_BYTES in announcement.h) — 640 KB still
+# leaves ~2.7× headroom over the cap, plenty for SPIFFS overhead
+# and any future small assets.
 #
 # The "pairing" partition (4 KB, custom data subtype 0x40) is written
 # only by the browser-side flasher: it carries a per-install random
@@ -28,6 +33,6 @@ otadata,    data, ota,      0xf000,    0x2000
 phy_init,   data, phy,      0x11000,   0x1000
 pairing,    data, 0x40,     0x12000,   0x1000
 coredump,   data, coredump, 0x13000,   0xD000
-ota_0,      app,  ota_0,    0x20000,   0x170000
-ota_1,      app,  ota_1,    0x190000,  0x170000
-storage,    data, spiffs,   0x300000,  0x100000
+ota_0,      app,  ota_0,    0x20000,   0x1A0000
+ota_1,      app,  ota_1,    0x1C0000,  0x1A0000
+storage,    data, spiffs,   0x360000,  0xA0000

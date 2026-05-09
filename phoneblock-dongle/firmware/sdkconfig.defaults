@@ -42,8 +42,8 @@ CONFIG_LWIP_MAX_SOCKETS=16
 
 # 4 MB of SPI flash: the ESP32 modules we ship with have 4 MB onboard
 # (the EGBO PICO-D4 packages flash in the SoC; WROOM-32 dev boards
-# use an external 4 MB chip). The IDF default is 2 MB, which cuts our
-# partition table (two 1280 KB OTA slots + 1408 KB SPIFFS) in half.
+# use an external 4 MB chip). The IDF default is 2 MB, which cuts
+# our partition table (two 1664 KB OTA slots + 640 KB SPIFFS) in half.
 CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
 CONFIG_ESPTOOLPY_FLASHSIZE="4MB"
 
