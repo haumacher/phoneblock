@@ -80,6 +80,21 @@ static volatile bool s_reload_requested = false;
 static volatile bool s_settle_pending  = false;
 static TaskHandle_t s_sip_task = NULL;
 
+// Absolute deadline at which the registrar's binding for the last
+// successful REGISTER actually expires (us, esp_timer clock). Lets
+// the periodic-refresh path debounce transient failures: the Fritz!Box
+// gives us a granted-expiry of typically 600 s and we refresh at
+// granted/2, so a single missed refresh leaves ~granted/2 of valid
+// binding before the FB drops us. Within that window, transient
+// failures retry silently — only when the binding actually lapses
+// without recovery is a stats_record_error emitted. 0 = no valid
+// binding (boot, after factory reset, after a definitive failure).
+static int64_t s_binding_expires_at_us = 0;
+// Most recent transient-failure reason, stashed so that if the binding
+// does eventually expire without a successful refresh we can surface
+// the actual cause instead of a generic "binding expired".
+static char    s_pending_error[STATS_ERROR_MSG_LEN] = "";
+
 bool sip_register_is_registered(void)
 {
     return s_registered;
@@ -417,13 +432,36 @@ static int sip_send_recv(sip_ctx_t *c, const char *tx, int tx_len,
 // REGISTER exchange: send initial, parse challenge, send with auth
 // ---------------------------------------------------------------------------
 
+// Outcome of a single REGISTER exchange. Splitting "transient" vs.
+// "definitive" lets the periodic-refresh caller debounce the noisy
+// transient class (Fritz!Box not answering on this attempt, transport
+// hiccup) while still surfacing the definitive class (auth rejected,
+// 4xx other than 401/407, broken challenge) right away — those will
+// not get better with retries.
+typedef enum {
+    REGISTER_OK = 0,
+    REGISTER_TRANSIENT,
+    REGISTER_DEFINITIVE,
+} register_outcome_t;
+
 // Run a REGISTER transaction, including a digest-auth retry on 401/407.
-// On success returns true and writes the registrar-granted expiry (in
-// seconds) into *granted_expires; if the response carries no Expires
-// information, *granted_expires is set to the requested value, so the
-// caller never has to deal with a sentinel.
-static bool do_register(sip_ctx_t *c, int *granted_expires)
+// On success returns REGISTER_OK and writes the registrar-granted
+// expiry (in seconds) into *granted_expires; if the response carries
+// no Expires information, *granted_expires is set to the requested
+// value so the caller never has to deal with a sentinel.
+//
+// On failure writes a diagnostic into err[err_cap] and returns either
+// REGISTER_TRANSIENT (network/timeout — caller may want to retry
+// silently while a still-valid binding gives us cover) or
+// REGISTER_DEFINITIVE (registrar said "no" or the protocol is broken
+// in a way that retries can't fix). Does NOT call stats_record_error
+// itself — the policy of when to surface a failure to the dashboard
+// belongs at the caller, which knows whether it's an initial register,
+// a periodic refresh, or a defensive re-register after a TCP reconnect.
+static register_outcome_t do_register(sip_ctx_t *c, int *granted_expires,
+                                      char *err, size_t err_cap)
 {
+    if (err && err_cap > 0) err[0] = '\0';
     *granted_expires = config_sip_expires();
     // Heap-allocate the 6 KB of message buffers — on the 8 KB task stack
     // they overflow once lwip's sendto/recvfrom add their own overhead.
@@ -431,19 +469,22 @@ static bool do_register(sip_ctx_t *c, int *granted_expires)
     char *rx = malloc(SIP_RX_BUF_SIZE);
     if (!tx || !rx) {
         ESP_LOGE(TAG, "malloc failed for SIP buffers");
-        stats_record_error("sip", "REGISTER aborted: out of memory for SIP buffers");
+        if (err) snprintf(err, err_cap,
+            "REGISTER aborted: out of memory for SIP buffers");
         free(tx); free(rx);
-        return false;
+        return REGISTER_DEFINITIVE;
     }
 
-    bool result = false;
+    register_outcome_t result = REGISTER_DEFINITIVE;
     c->cseq++;
     int tx_len = build_register(c, tx, SIP_TX_BUF_SIZE, false);
     ESP_LOGI(TAG, "→ REGISTER (%d bytes):\n%.*s", tx_len, tx_len, tx);
     int rx_len = sip_send_recv(c, tx, tx_len, rx, SIP_RX_BUF_SIZE);
     if (rx_len < 0) {
         ESP_LOGE(TAG, "sip_send_recv failed");
-        stats_record_error("sip", "REGISTER: no response from registrar (timeout/transport)");
+        if (err) snprintf(err, err_cap,
+            "REGISTER: no response from registrar (timeout/transport)");
+        result = REGISTER_TRANSIENT;
         goto cleanup;
     }
     ESP_LOGI(TAG, "← %d bytes:\n%.*s", rx_len, rx_len, rx);
@@ -454,15 +495,14 @@ static bool do_register(sip_ctx_t *c, int *granted_expires)
     if (status == 200) {
         int granted = parse_register_expires(rx, rx_len);
         if (granted >= 0) *granted_expires = granted;
-        result = true;
+        result = REGISTER_OK;
         goto cleanup;
     }
     if (status != 401 && status != 407) {
-        char msg[STATS_ERROR_MSG_LEN];
-        snprintf(msg, sizeof(msg),
-                 "REGISTER rejected: %d (check user / extension / Fritz!Box log)", status);
-        ESP_LOGE(TAG, "%s", msg);
-        stats_record_error("sip", msg);
+        if (err) snprintf(err, err_cap,
+            "REGISTER rejected: %d (check user / extension / Fritz!Box log)", status);
+        ESP_LOGE(TAG, "REGISTER rejected: %d", status);
+        result = REGISTER_DEFINITIVE;
         goto cleanup;
     }
 
@@ -470,11 +510,10 @@ static bool do_register(sip_ctx_t *c, int *granted_expires)
     const char *hdr = find_header(rx, rx_len, "WWW-Authenticate");
     if (!hdr) hdr = find_header(rx, rx_len, "Proxy-Authenticate");
     if (!hdr) {
-        char msg[STATS_ERROR_MSG_LEN];
-        snprintf(msg, sizeof(msg),
-                 "REGISTER %d without WWW-Authenticate header — bad registrar", status);
-        ESP_LOGE(TAG, "%s", msg);
-        stats_record_error("sip", msg);
+        if (err) snprintf(err, err_cap,
+            "REGISTER %d without WWW-Authenticate header — bad registrar", status);
+        ESP_LOGE(TAG, "REGISTER %d without WWW-Authenticate header", status);
+        result = REGISTER_DEFINITIVE;
         goto cleanup;
     }
     char val[SIP_MAX_CHALLENGE + 64];
@@ -482,7 +521,9 @@ static bool do_register(sip_ctx_t *c, int *granted_expires)
     sip_auth_parse_challenge(val, &c->challenge);
     if (!c->challenge.valid) {
         ESP_LOGE(TAG, "auth challenge missing realm/nonce");
-        stats_record_error("sip", "REGISTER: auth challenge missing realm/nonce");
+        if (err) snprintf(err, err_cap,
+            "REGISTER: auth challenge missing realm/nonce");
+        result = REGISTER_DEFINITIVE;
         goto cleanup;
     }
     ESP_LOGI(TAG, "challenge: realm=\"%s\" qop=\"%s\"",
@@ -494,7 +535,9 @@ static bool do_register(sip_ctx_t *c, int *granted_expires)
     ESP_LOGI(TAG, "→ REGISTER with auth (%d bytes):\n%.*s", tx_len, tx_len, tx);
     rx_len = sip_send_recv(c, tx, tx_len, rx, SIP_RX_BUF_SIZE);
     if (rx_len < 0) {
-        stats_record_error("sip", "REGISTER (with auth): no response from registrar");
+        if (err) snprintf(err, err_cap,
+            "REGISTER (with auth): no response from registrar");
+        result = REGISTER_TRANSIENT;
         goto cleanup;
     }
     ESP_LOGI(TAG, "← %d bytes:\n%.*s", rx_len, rx_len, rx);
@@ -502,18 +545,17 @@ static bool do_register(sip_ctx_t *c, int *granted_expires)
     status = parse_status_code(rx, rx_len);
     ESP_LOGI(TAG, "← %d (authenticated)", status);
     if (status != 200) {
-        char msg[STATS_ERROR_MSG_LEN];
-        snprintf(msg, sizeof(msg),
-                 "authentication rejected: %d — check SIP user/password/realm", status);
-        ESP_LOGE(TAG, "%s", msg);
-        stats_record_error("sip", msg);
+        if (err) snprintf(err, err_cap,
+            "authentication rejected: %d — check SIP user/password/realm", status);
+        ESP_LOGE(TAG, "authentication rejected: %d", status);
+        result = REGISTER_DEFINITIVE;
         goto cleanup;
     }
     {
         int granted = parse_register_expires(rx, rx_len);
         if (granted >= 0) *granted_expires = granted;
     }
-    result = true;
+    result = REGISTER_OK;
 
 cleanup:
     free(tx);
@@ -1196,21 +1238,29 @@ static void sip_task(void *arg)
         vTaskDelay(pdMS_TO_TICKS(1500));
     }
 
-    // Initial registration.
+    // Initial registration. Any failure here is surfaced immediately —
+    // there's no prior binding to give us cover, and the user wants
+    // to know right away whether their freshly-entered SIP creds work.
     int granted_expires = 0;
-    bool ok = do_register(&ctx, &granted_expires);
+    char err[STATS_ERROR_MSG_LEN] = "";
+    register_outcome_t r = do_register(&ctx, &granted_expires, err, sizeof(err));
+    bool ok = (r == REGISTER_OK);
     s_registered = ok;
     stats_record_sip_state(ok);
     if (ok) {
         ESP_LOGI(TAG, "REGISTERED as %s@%s (granted %d s, requested %d s)",
                  config_sip_user(), config_sip_host(),
                  granted_expires, config_sip_expires());
+        s_binding_expires_at_us = esp_timer_get_time()
+                                + (int64_t)granted_expires * 1000000LL;
+        s_pending_error[0] = '\0';
         refresh_at_us = esp_timer_get_time() + (int64_t)(granted_expires / 2) * 1000000LL;
     } else {
-        // Specific reason already recorded inside do_register
-        // (timeout, auth rejected, …) — no generic follow-up here so
-        // the dashboard doesn't show two entries per failure.
-        ESP_LOGE(TAG, "initial registration failed, retry in %d s", retry_delay_s);
+        if (err[0]) stats_record_error("sip", err);
+        ESP_LOGE(TAG, "initial registration failed (%s), retry in %d s",
+                 err[0] ? err : "no detail", retry_delay_s);
+        s_binding_expires_at_us = 0;
+        s_pending_error[0] = '\0';
         refresh_at_us = esp_timer_get_time() + (int64_t)retry_delay_s * 1000000LL;
     }
 
@@ -1247,15 +1297,27 @@ static void sip_task(void *arg)
                 s_settle_pending = false;
                 vTaskDelay(pdMS_TO_TICKS(1500));
             }
-            ok = do_register(&ctx, &granted_expires);
+            // Config-reload register: like the initial one, surface any
+            // failure directly — the user just hit Save and is waiting
+            // to see whether the new creds work.
+            err[0] = '\0';
+            r = do_register(&ctx, &granted_expires, err, sizeof(err));
+            ok = (r == REGISTER_OK);
             s_registered = ok;
             stats_record_sip_state(ok);
             if (ok) {
                 ESP_LOGI(TAG, "re-REGISTERED after config change (granted %d s)",
                          granted_expires);
+                s_binding_expires_at_us = esp_timer_get_time()
+                                        + (int64_t)granted_expires * 1000000LL;
+                s_pending_error[0] = '\0';
                 refresh_at_us = esp_timer_get_time() + (int64_t)(granted_expires / 2) * 1000000LL;
             } else {
-                ESP_LOGE(TAG, "REGISTER with new config failed, retry in %d s", retry_delay_s);
+                if (err[0]) stats_record_error("sip", err);
+                ESP_LOGE(TAG, "REGISTER with new config failed (%s), retry in %d s",
+                         err[0] ? err : "no detail", retry_delay_s);
+                s_binding_expires_at_us = 0;
+                s_pending_error[0] = '\0';
                 refresh_at_us = esp_timer_get_time() + (int64_t)retry_delay_s * 1000000LL;
             }
         }
@@ -1267,13 +1329,25 @@ static void sip_task(void *arg)
         // window during which incoming INVITEs would be lost.
         if (sip_transport_consume_reconnect(ctx.transport)) {
             ESP_LOGI(TAG, "transport reconnected → re-REGISTER");
+            // Informational marker so the operator can correlate a
+            // transport flap with whatever else they are seeing in
+            // the dashboard. Kept regardless of the do_register
+            // outcome below.
             stats_record_error("sip", "TCP reconnect → re-REGISTER");
-            ok = do_register(&ctx, &granted_expires);
+            err[0] = '\0';
+            r = do_register(&ctx, &granted_expires, err, sizeof(err));
+            ok = (r == REGISTER_OK);
             s_registered = ok;
             stats_record_sip_state(ok);
             if (ok) {
+                s_binding_expires_at_us = esp_timer_get_time()
+                                        + (int64_t)granted_expires * 1000000LL;
+                s_pending_error[0] = '\0';
                 refresh_at_us = esp_timer_get_time() + (int64_t)(granted_expires / 2) * 1000000LL;
             } else {
+                if (err[0]) stats_record_error("sip", err);
+                s_binding_expires_at_us = 0;
+                s_pending_error[0] = '\0';
                 refresh_at_us = esp_timer_get_time() + (int64_t)retry_delay_s * 1000000LL;
             }
         }
@@ -1315,16 +1389,60 @@ static void sip_task(void *arg)
             // Most select() returns now are just the 500ms reload-poll
             // cap firing; only refresh when the real deadline is due.
             if (now < refresh_at_us) continue;
-            // REGISTER refresh.
-            ok = do_register(&ctx, &granted_expires);
-            s_registered = ok;
-            stats_record_sip_state(ok);
-            if (ok) {
+            // REGISTER refresh — the debounced path. While the FB still
+            // has a valid binding for us (now < s_binding_expires_at_us)
+            // a transient failure is silently retried. Definitive
+            // failures (auth rejected, broken challenge, 4xx other than
+            // 401/407) and transient failures past the binding deadline
+            // surface as a single dashboard entry.
+            err[0] = '\0';
+            r = do_register(&ctx, &granted_expires, err, sizeof(err));
+            now = esp_timer_get_time();
+            if (r == REGISTER_OK) {
                 ESP_LOGI(TAG, "re-REGISTERED (granted %d s)", granted_expires);
-                refresh_at_us = esp_timer_get_time() + (int64_t)(granted_expires / 2) * 1000000LL;
+                if (!s_registered) stats_record_sip_state(true);
+                s_registered = true;
+                s_binding_expires_at_us = now + (int64_t)granted_expires * 1000000LL;
+                s_pending_error[0] = '\0';
+                refresh_at_us = now + (int64_t)(granted_expires / 2) * 1000000LL;
+            } else if (r == REGISTER_TRANSIENT && now < s_binding_expires_at_us) {
+                // Transient failure with the FB-side binding still
+                // valid for a while — keep s_registered true (the FB
+                // does still consider us bound), stash the reason so
+                // it becomes the surfaced cause if the binding does
+                // eventually lapse, and try again at the standard
+                // retry interval.
+                int64_t left_s = (s_binding_expires_at_us - now) / 1000000LL;
+                ESP_LOGW(TAG, "re-REGISTER transient (%s) — binding valid "
+                              "for %lld s more, retry in %d s",
+                         err, (long long)left_s, retry_delay_s);
+                if (err[0]) {
+                    strncpy(s_pending_error, err, sizeof(s_pending_error) - 1);
+                    s_pending_error[sizeof(s_pending_error) - 1] = '\0';
+                }
+                refresh_at_us = now + (int64_t)retry_delay_s * 1000000LL;
             } else {
-                ESP_LOGE(TAG, "re-REGISTER failed, retry in %d s", retry_delay_s);
-                refresh_at_us = esp_timer_get_time() + (int64_t)retry_delay_s * 1000000LL;
+                // Either definitive (won't recover with retries) or
+                // transient that has finally outlived the binding.
+                if (s_registered) stats_record_sip_state(false);
+                s_registered = false;
+                char msg[STATS_ERROR_MSG_LEN];
+                if (r == REGISTER_TRANSIENT) {
+                    // "binding expired: " is 17 chars, leaving 110 for
+                    // the reason. Explicit precision keeps GCC happy
+                    // about the worst-case pending_error/err of 128.
+                    snprintf(msg, sizeof(msg), "binding expired: %.110s",
+                             s_pending_error[0] ? s_pending_error : err);
+                } else {
+                    snprintf(msg, sizeof(msg), "%.127s",
+                             err[0] ? err : "REGISTER failed");
+                }
+                stats_record_error("sip", msg);
+                ESP_LOGE(TAG, "re-REGISTER failed: %s — retry in %d s",
+                         msg, retry_delay_s);
+                s_binding_expires_at_us = 0;
+                s_pending_error[0] = '\0';
+                refresh_at_us = now + (int64_t)retry_delay_s * 1000000LL;
             }
             continue;
         }
