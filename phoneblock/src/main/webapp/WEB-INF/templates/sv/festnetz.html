@@ -16,7 +16,7 @@
 			<p data-tx="t0054:44e93c3">Tre snabba frågor och du vet vilka alternativ som är rätt för din anslutning.</p>
 
 			<div class="wizard-step" data-step="router">
-				<p class="title is-5 mt-4" data-tx="t0055:86a286b">1. Vilken router har du?</p>
+				<p class="title is-5 mt-4" data-tx="t0055:e9de74b1">1. Vilken routermodell har du?</p>
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="fritzbox" type="button">
 						<span class="icon"><i class="fa-solid fa-network-wired"></i></span>
@@ -61,7 +61,7 @@
 
 			<div class="wizard-step" data-step="provider" hidden="hidden">
 				<p class="title is-5 mt-4" data-tx="t0066:59312a9">2 Vilken telefonileverantör?</p>
-				<p class="help" data-tx="t0067:eaceffb">Vissa leverantörer tillåter direkt registrering av VoIP-enheter på sin infrastruktur - dongeln fungerar då även om routern inte stöder VOIP-telefoner.</p>
+				<p class="help" data-tx="t0067:2d02529f">Vissa leverantörer tillåter direkt registrering av VoIP-enheter på sin infrastruktur - i det här fallet fungerar Phoneblock-dongeln även om routern inte stöder VOIP-telefoner.</p>
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="telekom" type="button">
 						<span data-tx="t0068:fc2c352d">Telekom</span>
@@ -80,41 +80,53 @@
 					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0071:aeb1936">Alla tre varianterna fungerar för dig.</span></p>
 					<p data-tx="t0072:3617ea57">Rekommenderas: <strong>PhoneBlock-dongle</strong> - bästa försvar, bästa dataskydd, oberoende av routeruppdateringar. <strong>Cloud telefonsvarare</strong> eller <strong>blocklista telefonbok</strong> är också möjliga.</p>
 				</div>
+
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="dongle-cloudab" hidden="hidden">
 				<div class="notification is-success">
-					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0073:74c70212">Dongle och molnbaserad telefonsvarare passar.</span></p>
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0073:cf37f033">Phoneblock-dongle och molnbaserad telefonsvarare passar.</span></p>
 					<p data-tx="t0074:416ac031">Rekommenderas: <strong>PhoneBlock-dongle</strong>. Alternativt: <strong>Cloud telefonsvarare</strong>. Telefonboken <strong>Blocklist</strong> kräver en Fritz!Box från 2018 och är inte tillgänglig för din box.</p>
 				</div>
+
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="dongle-blockliste" hidden="hidden">
 				<div class="notification is-success">
-					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0075:34eeca5e">Dongle och blocklista telefonbok passar.</span></p>
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0075:783c2af2">Telefonlås-dongle och blocklist-telefonbok passar.</span></p>
 					<p data-tx="t0076:43e00ed6">Rekommenderas: <strong>PhoneBlock-dongel</strong>. Alternativt: <strong>Blocklist telefonbok</strong>. Du kan inte ställa in <strong>Cloud-svarare</strong> på en Fritz!Box som hyrs ut - du behöver tillgång till VoIP-telefonikonfigurationen.</p>
 				</div>
+				
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="dongle-only" hidden="hidden">
 				<div class="notification is-success">
-					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0077:a9f972a2">Donglen är din variant.</span></p>
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0077:6552580a">Phoneblock-donglen är din variant.</span></p>
 					<p data-tx="t0078:cbd60954"><strong>PhoneBlock-dongeln</strong> fungerar med din konfiguration - de andra två varianterna misslyckas: Molnbaserad telefonsvarare behöver Fritz!Box med inloggning från Internet, blocklistans telefonbok behöver en Fritz!Box från 2018 och framåt.</p>
 				</div>
+				
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="dongle-telekom" hidden="hidden">
 				<div class="notification is-success">
-					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0079:40d1c735">Donglen fungerar för dig.</span></p>
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0079:fdb4f4a9">Phoneblock-donglen fungerar för dig.</span></p>
 					<p data-tx="t0080:1938636f">Telekom tillåter direkt VoIP-enhetsregistrering på sin infrastruktur - <strong>PhoneBlock-dongeln</strong> registreras där, routern spelar ingen roll. Molnbaserad telefonsvarare och blocklistans telefonbok kräver en Fritz!Box och är inte tillgängliga.</p>
 				</div>
+				
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="dongle-other-isp" hidden="hidden">
 				<div class="notification is-info">
-					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-info"></i></span> <span data-tx="t0081:5aa4a799">Förmodligen är det dongeln - kontrollera med din leverantör.</span></p>
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-info"></i></span> <span data-tx="t0081:3acafd67">Förmodligen Phoneblock-donglen - kontrollera med din leverantör.</span></p>
 					<p data-tx="t0082:b2d14a7b">Utan en Fritz!Box är endast <strong>PhoneBlock-dongle</strong> ett alternativ, och din leverantör måste tillåta direkt SIP-enhetsregistrering för detta. Om du är osäker kan du fråga din leverantör eller sätta på din egen Fritz!Box - då är valet fritt igen.</p>
 				</div>
+				
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="vodafone-deadend" hidden="hidden">
@@ -122,6 +134,8 @@
 					<p class="title is-5"><span class="icon"><i class="fa-solid fa-triangle-exclamation"></i></span> <span data-tx="t0083:9edc79ef">Tyvärr har PhoneBlock ingen chans i den här konstellationen.</span></p>
 					<p data-tx="t0084:70dc4cbf">Vodafone blockerar direkt SIP-enhetsregistrering, och utan en Fritz!Box finns det ingen slutpunkt för telefoni för de andra varianterna. <strong>Recommendation:</strong> Häng din egen Fritz!Box bakom Vodafone-boxen (bryggläge / kabelmodemläge) - då fungerar alla tre varianterna. Du kan sedan köra guiden igen.</p>
 				</div>
+
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<p class="wizard-restart mt-4" hidden="hidden">
@@ -141,7 +155,7 @@
 				<thead>
 					<tr>
 						<th></th>
-						<th data-tx="t0004:365a40ae">TelefonBlock Dongle</th>
+						<th data-tx="t0004:ad5f557f">TelefonBlock-dongel</th>
 						<th data-tx="t0005:1cdaad3">Molnbaserad telefonsvarare</th>
 						<th data-tx="t0006:b7a22f37">Blocklist telefonbok</th>
 					</tr>
@@ -196,7 +210,7 @@
 		<div class="notification is-info mt-4">
 			<p><strong data-tx="t0035:8125e3d9">Vilken lösning passar dig bäst?</strong></p>
 			<ul>
-				<li data-tx="t0036:e982c3b9"><strong>Dongle</strong> - om du vill ha ett optimalt SPAM-försvar med bästa möjliga dataskydd, oavsett routermodell och leverantör.</li>
+				<li data-tx="t0036:7f445021"><strong>Phoneblock-dongle</strong> - om du vill ha ett optimalt SPAM-försvar med bästa möjliga dataskydd, oavsett routermodell och leverantör.</li>
 				<li data-tx="t0037:263869ed"><strong>Cloud-svarare</strong> - om du har en egen Fritz!Box (inte en hyrbox) och accepterar att alla dina samtal kontrolleras av PhoneBlock-servern för optimalt SPAM-försvar.</li>
 				<li data-tx="t0038:d89599d7"><strong>Blocklisttelefonbok</strong> - om du har en Fritz!Box (även en uthyrningsbox) och inte har något emot att en spammare som faktiskt finns på blocklistan slinker igenom då och då.</li>
 			</ul>
@@ -204,14 +218,14 @@
 
 		<h2 class="mt-6" data-tx="t0039:aeafcde8">Jag har bestämt mig - nu kör vi</h2>
 
-		<div class="columns is-multiline mt-4">
-			<div class="column is-one-third">
+		<div class="columns is-multiline is-desktop">
+			<div class="column">
 				<div class="card is-fullheight">
 					<div class="card-content">
 						<p class="title is-4">
 							<span class="icon-text">
-								<span class="icon has-text-primary"><i class="fas fa-bolt"></i></span>
-								<span data-tx="t0040:365a40ae">TelefonBlock Dongle</span>
+								<span class="icon has-text-primary"><i class="fa-brands fa-usb"></i></span>
+								<span data-tx="t0040:1e211e8a">Dongle för telefonlås</span>
 							</span>
 						</p>
 						<p class="subtitle is-6 has-text-grey" data-tx="t0041:3a1686ef">Rekommenderas - bästa försvar, bästa dataskydd</p>
@@ -220,18 +234,18 @@
 					<footer class="card-footer">
 						<a class="card-footer-item button is-primary is-medium" th:href="@{/dongle}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
-							<span data-tx="t0043:526888ef">Till dongeln</span>
+							<span data-tx="t0043:26d7229c">Till Phoneblock-dongle</span>
 						</a>
 					</footer>
 				</div>
 			</div>
 
-			<div class="column is-one-third">
+			<div class="column">
 				<div class="card is-fullheight">
 					<div class="card-content">
 						<p class="title is-4">
 							<span class="icon-text">
-								<span class="icon has-text-info"><img alt="" data-tx="t0044" th:src="@{/assets/img/ab/logo/ab-logo.svg}"/></span>
+								<span class="icon has-text-info"><i class="fa-solid fa-voicemail"></i></span>
 								<span data-tx="t0045:1cdaad3">Molnbaserad telefonsvarare</span>
 							</span>
 						</p>
@@ -241,18 +255,18 @@
 					<footer class="card-footer">
 						<a class="card-footer-item button is-info is-medium" th:href="@{/anrufbeantworter}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
-							<span data-tx="t0048:98b00790">Till telefonsvararen</span>
+							<span data-tx="t0048:f2463c71">Till molnets telefonsvarare</span>
 						</a>
 					</footer>
 				</div>
 			</div>
 
-			<div class="column is-one-third">
+			<div class="column">
 				<div class="card is-fullheight">
 					<div class="card-content">
 						<p class="title is-4">
 							<span class="icon-text">
-								<span class="icon has-text-info"><i class="fas fa-address-book"></i></span>
+								<span class="icon has-text-info"><i class="fa-solid fa-filter-circle-xmark"></i></span>
 								<span data-tx="t0049:b7a22f37">Blocklist telefonbok</span>
 							</span>
 						</p>

@@ -16,7 +16,7 @@
 			<p data-tx="t0054:44e93c3">Drie snelle vragen en je weet welke opties geschikt zijn voor jouw verbinding.</p>
 
 			<div class="wizard-step" data-step="router">
-				<p class="title is-5 mt-4" data-tx="t0055:86a286b">1. Welke router heb je?</p>
+				<p class="title is-5 mt-4" data-tx="t0055:e9de74b1">1. Welk model router heb je?</p>
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="fritzbox" type="button">
 						<span class="icon"><i class="fa-solid fa-network-wired"></i></span>
@@ -61,7 +61,7 @@
 
 			<div class="wizard-step" data-step="provider" hidden="hidden">
 				<p class="title is-5 mt-4" data-tx="t0066:59312a9">2 Welke telefonieprovider?</p>
-				<p class="help" data-tx="t0067:eaceffb">Sommige providers staan directe VoIP-toestelregistratie op hun infrastructuur toe - de dongle werkt dan zelfs als de router geen VOIP-telefoons ondersteunt.</p>
+				<p class="help" data-tx="t0067:2d02529f">Sommige providers staan directe VoIP-toestelregistratie op hun infrastructuur toe - in dit geval werkt de Phoneblock dongle zelfs als de router geen VOIP-telefoons ondersteunt.</p>
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="telekom" type="button">
 						<span data-tx="t0068:fc2c352d">Telecom</span>
@@ -80,41 +80,53 @@
 					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0071:aeb1936">Alle drie de varianten werken voor jou.</span></p>
 					<p data-tx="t0072:3617ea57">Aanbevolen: <strong>PhoneBlock dongle</strong> - beste verdediging, beste gegevensbescherming, onafhankelijk van routerupdates. <strong>Cloud antwoordapparaat</strong> of <strong>blocklist telefoonboek</strong> zijn ook mogelijk.</p>
 				</div>
+
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="dongle-cloudab" hidden="hidden">
 				<div class="notification is-success">
-					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0073:74c70212">Geschikt voor dongle en cloud-beantwoorder.</span></p>
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0073:cf37f033">Phoneblock dongle en cloud antwoordapparaat passen.</span></p>
 					<p data-tx="t0074:416ac031">Aanbevolen: <strong>PhoneBlock dongle</strong>. Alternatief: <strong>Cloud antwoordapparaat</strong>. De <strong>Blocklist telefoonlijst</strong> vereist een Fritz!Box uit 2018 en is niet beschikbaar voor jouw box.</p>
 				</div>
+
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="dongle-blockliste" hidden="hidden">
 				<div class="notification is-success">
-					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0075:34eeca5e">Telefoonboek van dongle en bloklijst passen.</span></p>
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0075:783c2af2">Phoneblock dongle en blocklist telefoonboek passen.</span></p>
 					<p data-tx="t0076:43e00ed6">Aanbevolen: <strong>PhoneBlock dongle</strong>. Alternatief: <strong>Blocklist telefoonboek</strong>. Je kunt het <strong>Cloud antwoordapparaat</strong> niet instellen op een gehuurde Fritz!Box - je hebt toegang nodig tot de VoIP-telefonieconfiguratie.</p>
 				</div>
+				
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="dongle-only" hidden="hidden">
 				<div class="notification is-success">
-					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0077:a9f972a2">De dongle is jouw variant.</span></p>
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0077:6552580a">De Phoneblock dongle is jouw variant.</span></p>
 					<p data-tx="t0078:cbd60954">De <strong>PhoneBlock dongle</strong> werkt met jouw configuratie - de andere twee varianten werken niet: Cloud antwoordapparaat heeft Fritz!Box nodig met login vanaf internet, het blocklist telefoonboek heeft vanaf 2018 een Fritz!Box nodig.</p>
 				</div>
+				
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="dongle-telekom" hidden="hidden">
 				<div class="notification is-success">
-					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0079:40d1c735">De dongle werkt voor jou.</span></p>
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0079:fdb4f4a9">De Phoneblock dongle werkt voor jou.</span></p>
 					<p data-tx="t0080:1938636f">Telekom staat directe VoIP-toestelregistratie op haar infrastructuur toe - de <strong>PhoneBlock dongle</strong> registreert daar, de router maakt niet uit. Voor het antwoordapparaat in de cloud en het telefoonboek in de blocklist is een Fritz!Box nodig en deze zijn niet beschikbaar.</p>
 				</div>
+				
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="dongle-other-isp" hidden="hidden">
 				<div class="notification is-info">
-					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-info"></i></span> <span data-tx="t0081:5aa4a799">Waarschijnlijk de dongle - neem contact op met je provider.</span></p>
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-info"></i></span> <span data-tx="t0081:3acafd67">Waarschijnlijk de Phoneblock dongle - neem contact op met je provider.</span></p>
 					<p data-tx="t0082:b2d14a7b">Zonder Fritz!Box is alleen de <strong>PhoneBlock dongle</strong> een optie, en je provider moet hiervoor directe SIP-registratie toestaan. Vraag bij twijfel de support van uw provider of schakel uw eigen Fritz!Box in - dan is de keuze weer vrij.</p>
 				</div>
+				
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="vodafone-deadend" hidden="hidden">
@@ -122,6 +134,8 @@
 					<p class="title is-5"><span class="icon"><i class="fa-solid fa-triangle-exclamation"></i></span> <span data-tx="t0083:9edc79ef">PhoneBlock maakt helaas geen kans bij deze constellatie.</span></p>
 					<p data-tx="t0084:70dc4cbf">Vodafone blokkeert directe SIP-registratie en zonder Fritz!Box is er geen telefonie-eindpunt voor de andere varianten. <strong>Aanbeveling:</strong> Hang je eigen Fritz!Box achter de Vodafone box (bridge-modus / kabelmodem-modus) - dan werken alle drie de varianten. Daarna kun je de wizard opnieuw uitvoeren.</p>
 				</div>
+
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<p class="wizard-restart mt-4" hidden="hidden">
@@ -141,7 +155,7 @@
 				<thead>
 					<tr>
 						<th></th>
-						<th data-tx="t0004:365a40ae">PhoneBlock Dongle</th>
+						<th data-tx="t0004:ad5f557f">PhoneBlock dongle</th>
 						<th data-tx="t0005:1cdaad3">Cloud antwoordapparaat</th>
 						<th data-tx="t0006:b7a22f37">Blocklist telefoonboek</th>
 					</tr>
@@ -196,7 +210,7 @@
 		<div class="notification is-info mt-4">
 			<p><strong data-tx="t0035:8125e3d9">Welke oplossing past bij jou?</strong></p>
 			<ul>
-				<li data-tx="t0036:e982c3b9"><strong>Dongle</strong> - als je optimale SPAM-verdediging wilt met de beste gegevensbescherming, ongeacht het model router en de provider.</li>
+				<li data-tx="t0036:7f445021"><strong>Phoneblock dongle</strong> - als je optimale SPAM-verdediging wilt met de beste gegevensbescherming, ongeacht het model router en de provider.</li>
 				<li data-tx="t0037:263869ed"><strong>Cloud antwoordapparaat</strong> - als u uw eigen Fritz!Box hebt (geen huurbox) en accepteert dat al uw oproepen door de PhoneBlock server worden gecontroleerd op optimale SPAM-afweer.</li>
 				<li data-tx="t0038:d89599d7"><strong>Blocklist telefoonboek</strong> - als je een Fritz!Box hebt (ook een huurbox) en het niet erg vindt als er af en toe een spammer doorheen glipt die echt op de blocklist staat.</li>
 			</ul>
@@ -204,14 +218,14 @@
 
 		<h2 class="mt-6" data-tx="t0039:aeafcde8">Ik heb besloten - hier gaan we</h2>
 
-		<div class="columns is-multiline mt-4">
-			<div class="column is-one-third">
+		<div class="columns is-multiline is-desktop">
+			<div class="column">
 				<div class="card is-fullheight">
 					<div class="card-content">
 						<p class="title is-4">
 							<span class="icon-text">
-								<span class="icon has-text-primary"><i class="fas fa-bolt"></i></span>
-								<span data-tx="t0040:365a40ae">PhoneBlock Dongle</span>
+								<span class="icon has-text-primary"><i class="fa-brands fa-usb"></i></span>
+								<span data-tx="t0040:1e211e8a">Telefoonblok dongle</span>
 							</span>
 						</p>
 						<p class="subtitle is-6 has-text-grey" data-tx="t0041:3a1686ef">Aanbevolen - beste verdediging, beste gegevensbescherming</p>
@@ -220,18 +234,18 @@
 					<footer class="card-footer">
 						<a class="card-footer-item button is-primary is-medium" th:href="@{/dongle}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
-							<span data-tx="t0043:526888ef">Naar de dongle</span>
+							<span data-tx="t0043:26d7229c">Naar de Phoneblock-dongle</span>
 						</a>
 					</footer>
 				</div>
 			</div>
 
-			<div class="column is-one-third">
+			<div class="column">
 				<div class="card is-fullheight">
 					<div class="card-content">
 						<p class="title is-4">
 							<span class="icon-text">
-								<span class="icon has-text-info"><img alt="" data-tx="t0044" th:src="@{/assets/img/ab/logo/ab-logo.svg}"/></span>
+								<span class="icon has-text-info"><i class="fa-solid fa-voicemail"></i></span>
 								<span data-tx="t0045:1cdaad3">Cloud antwoordapparaat</span>
 							</span>
 						</p>
@@ -241,18 +255,18 @@
 					<footer class="card-footer">
 						<a class="card-footer-item button is-info is-medium" th:href="@{/anrufbeantworter}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
-							<span data-tx="t0048:98b00790">Naar het antwoordapparaat</span>
+							<span data-tx="t0048:f2463c71">Naar het antwoordapparaat in de cloud</span>
 						</a>
 					</footer>
 				</div>
 			</div>
 
-			<div class="column is-one-third">
+			<div class="column">
 				<div class="card is-fullheight">
 					<div class="card-content">
 						<p class="title is-4">
 							<span class="icon-text">
-								<span class="icon has-text-info"><i class="fas fa-address-book"></i></span>
+								<span class="icon has-text-info"><i class="fa-solid fa-filter-circle-xmark"></i></span>
 								<span data-tx="t0049:b7a22f37">Blocklist telefoonboek</span>
 							</span>
 						</p>

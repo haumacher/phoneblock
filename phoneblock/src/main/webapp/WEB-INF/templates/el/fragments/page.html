@@ -204,6 +204,33 @@
   </div>
 </div>
 
+<div class="columns" th:fragment="festnetz_options">
+  <div class="column is-one-third">
+	<a th:class="|button is-large is-primary is-fullwidth has-text-weight-bold|" th:href="@{/dongle}">
+	    <span class="icon">
+			<i class="fa-brands fa-usb"></i>
+	    </span>
+		<span data-tx="t9012:ad5f557f">PhoneBlock dongle</span>
+	</a>
+  </div>
+  <div class="column is-one-third">
+	<a th:class="|button is-large is-info is-fullwidth has-text-weight-bold|" th:href="@{/anrufbeantworter}">
+	    <span class="icon">
+			<i class="fa-solid fa-voicemail"></i>
+	    </span>
+		<span data-tx="t9013:1cdaad3">Τηλεφωνητής Cloud</span>
+	</a>
+  </div>
+  <div class="column is-one-third">
+	<a th:class="|button is-large is-info is-fullwidth has-text-weight-bold|" th:href="@{/setup}">
+	    <span class="icon">
+			<i class="fa-solid fa-filter-circle-xmark"></i>
+	    </span>
+		<span data-tx="t9014:d40d3f00">Λίστα μπλοκ</span>
+	</a>
+  </div>
+</div>
+
 <section class="section" th:fragment="actions">
 	<div class="grid is-col-min-15" th:if="${android}">
 		<div class="cell">

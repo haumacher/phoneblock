@@ -16,7 +16,7 @@
 			<p data-tx="t0054:44e93c3">只需简单问三个问题，您就能知道哪些选项适合您的连接。</p>
 
 			<div class="wizard-step" data-step="router">
-				<p class="title is-5 mt-4" data-tx="t0055:86a286b">1. 您使用的是哪种路由器？</p>
+				<p class="title is-5 mt-4" data-tx="t0055:e9de74b1">1. 您的路由器型号是什么？</p>
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="fritzbox" type="button">
 						<span class="icon"><i class="fa-solid fa-network-wired"></i></span>
@@ -61,7 +61,7 @@
 
 			<div class="wizard-step" data-step="provider" hidden="hidden">
 				<p class="title is-5 mt-4" data-tx="t0066:59312a9">2 选择哪家电话服务提供商？</p>
-				<p class="help" data-tx="t0067:eaceffb">有些提供商允许在其基础设施上直接注册网络电话设备，这样即使路由器不支持网络电话，加密狗也能正常工作。</p>
+				<p class="help" data-tx="t0067:2d02529f">有些供应商允许在其基础设施上直接注册 VoIP 设备，在这种情况下，即使路由器不支持 VOIP 电话，Phoneblock 加密狗也能正常工作。</p>
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="telekom" type="button">
 						<span data-tx="t0068:fc2c352d">电信</span>
@@ -80,41 +80,53 @@
 					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0071:aeb1936">这三种变体都适合你。</span></p>
 					<p data-tx="t0072:3617ea57">推荐：<strong>PhoneBlock 加密狗</strong> - 最佳防御、最佳数据保护，不受路由器更新的影响。<strong>云答录机</strong>或<strong>阻止列表电话簿</strong>也是可行的。</p>
 				</div>
+
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="dongle-cloudab" hidden="hidden">
 				<div class="notification is-success">
-					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0073:74c70212">适配加密狗和云答录机。</span></p>
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0073:cf37f033">电话锁加密狗和云答录机适用。</span></p>
 					<p data-tx="t0074:416ac031">建议使用：<strong>PhoneBlock 加密狗</strong>。或者：<strong>云答录机</strong>。<strong>Blocklist电话簿</strong>需要2018年以后的Fritz！Box，您的盒子无法使用。</p>
 				</div>
+
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="dongle-blockliste" hidden="hidden">
 				<div class="notification is-success">
-					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0075:34eeca5e">适配加密狗和 blocklist 电话簿。</span></p>
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0075:783c2af2">电话锁加密狗和 blocklist 电话簿适用。</span></p>
 					<p data-tx="t0076:43e00ed6">建议使用：<strong>PhoneBlock 加密狗</strong>。或者：<strong>Blocklist 电话簿</strong>。您不能在租用的 Fritz!Box 上设置 <strong>Cloud 应答机</strong> - 您需要访问 VoIP 电话配置。</p>
 				</div>
+				
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="dongle-only" hidden="hidden">
 				<div class="notification is-success">
-					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0077:a9f972a2">加密狗是你的变体。</span></p>
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0077:6552580a">Phoneblock 加密狗就是你的变体。</span></p>
 					<p data-tx="t0078:cbd60954"><strong>PhoneBlock 加密狗</strong>可与您的配置一起使用，而其他两种变体则无法使用：云应答机需要从互联网登录 Fritz！Box，从 2018 年起，拦截列表电话簿需要 Fritz！Box。</p>
 				</div>
+				
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="dongle-telekom" hidden="hidden">
 				<div class="notification is-success">
-					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0079:40d1c735">加密狗为你工作。</span></p>
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0079:fdb4f4a9">Phoneblock 加密狗很适合你。</span></p>
 					<p data-tx="t0080:1938636f">Telekom 允许在其基础设施上直接注册 VoIP 设备 - <strong>PhoneBlock 加密狗</strong>可在此注册，路由器并不重要。云应答机和块列表电话簿需要 Fritz!Box 才能使用，因此不可用。</p>
 				</div>
+				
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="dongle-other-isp" hidden="hidden">
 				<div class="notification is-info">
-					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-info"></i></span> <span data-tx="t0081:5aa4a799">可能是加密狗的问题，请向供应商咨询。</span></p>
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-info"></i></span> <span data-tx="t0081:3acafd67">可能是 Phoneblock 加密狗--请向供应商咨询。</span></p>
 					<p data-tx="t0082:b2d14a7b">如果没有 Fritz！Box，则只能选择 <strong>PhoneBlock 加密狗</strong>，而且您的服务提供商必须允许直接注册 SIP 设备。如果有疑问，请咨询您的服务提供商支持人员或打开您自己的 Fritz！Box - 然后就可以重新自由选择了。</p>
 				</div>
+				
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="vodafone-deadend" hidden="hidden">
@@ -122,6 +134,8 @@
 					<p class="title is-5"><span class="icon"><i class="fa-solid fa-triangle-exclamation"></i></span> <span data-tx="t0083:9edc79ef">不幸的是，PhoneBlock 与这个星座无缘。</span></p>
 					<p data-tx="t0084:70dc4cbf">沃达丰阻止直接 SIP 设备注册，如果没有 Fritz！Box，其他变体就无法使用电话终端。<strong>建议：</strong>将您自己的 Fritz!Box 挂在 Vodafone 盒子后面（桥接模式/电缆调制解调器模式），这样所有三种变体都可以工作。然后您可以再次运行向导。</p>
 				</div>
+
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<p class="wizard-restart mt-4" hidden="hidden">
@@ -141,7 +155,7 @@
 				<thead>
 					<tr>
 						<th></th>
-						<th data-tx="t0004:365a40ae">PhoneBlock 加密狗</th>
+						<th data-tx="t0004:ad5f557f">PhoneBlock 加密狗</th>
 						<th data-tx="t0005:1cdaad3">云答录机</th>
 						<th data-tx="t0006:b7a22f37">Blocklist 电话簿</th>
 					</tr>
@@ -196,7 +210,7 @@
 		<div class="notification is-info mt-4">
 			<p><strong data-tx="t0035:8125e3d9">哪种解决方案适合您？</strong></p>
 			<ul>
-				<li data-tx="t0036:e982c3b9"><strong>Dongle</strong> - 如果您希望获得最佳的垃圾邮件防御和最佳的数据保护，无论路由器型号和提供商如何。</li>
+				<li data-tx="t0036:7f445021"><strong>Phoneblock 加密狗</strong> - 如果您希望获得最佳垃圾邮件防御和最佳数据保护，无论路由器型号和提供商如何。</li>
 				<li data-tx="t0037:263869ed"><strong>云答录机</strong> - 如果您拥有自己的 Fritz！Box（不是租用的盒子），并接受 PhoneBlock 服务器对您的所有呼叫进行检查，以实现最佳的垃圾邮件防御。</li>
 				<li data-tx="t0038:d89599d7"><strong>Blocklist 电话簿</strong> - 如果您有一个 Fritz！Box（也是一个租赁箱），并且不介意偶尔有一个真正在拦截名单上的垃圾邮件发送者溜进来。</li>
 			</ul>
@@ -204,14 +218,14 @@
 
 		<h2 class="mt-6" data-tx="t0039:aeafcde8">我已经决定--我们开始吧</h2>
 
-		<div class="columns is-multiline mt-4">
-			<div class="column is-one-third">
+		<div class="columns is-multiline is-desktop">
+			<div class="column">
 				<div class="card is-fullheight">
 					<div class="card-content">
 						<p class="title is-4">
 							<span class="icon-text">
-								<span class="icon has-text-primary"><i class="fas fa-bolt"></i></span>
-								<span data-tx="t0040:365a40ae">PhoneBlock 加密狗</span>
+								<span class="icon has-text-primary"><i class="fa-brands fa-usb"></i></span>
+								<span data-tx="t0040:1e211e8a">电话锁加密狗</span>
 							</span>
 						</p>
 						<p class="subtitle is-6 has-text-grey" data-tx="t0041:3a1686ef">推荐--最佳防御，最佳数据保护</p>
@@ -220,18 +234,18 @@
 					<footer class="card-footer">
 						<a class="card-footer-item button is-primary is-medium" th:href="@{/dongle}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
-							<span data-tx="t0043:526888ef">到加密狗</span>
+							<span data-tx="t0043:26d7229c">连接电话锁加密狗</span>
 						</a>
 					</footer>
 				</div>
 			</div>
 
-			<div class="column is-one-third">
+			<div class="column">
 				<div class="card is-fullheight">
 					<div class="card-content">
 						<p class="title is-4">
 							<span class="icon-text">
-								<span class="icon has-text-info"><img alt="" data-tx="t0044" th:src="@{/assets/img/ab/logo/ab-logo.svg}"/></span>
+								<span class="icon has-text-info"><i class="fa-solid fa-voicemail"></i></span>
 								<span data-tx="t0045:1cdaad3">云答录机</span>
 							</span>
 						</p>
@@ -241,18 +255,18 @@
 					<footer class="card-footer">
 						<a class="card-footer-item button is-info is-medium" th:href="@{/anrufbeantworter}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
-							<span data-tx="t0048:98b00790">致答录机</span>
+							<span data-tx="t0048:f2463c71">呼叫云答录机</span>
 						</a>
 					</footer>
 				</div>
 			</div>
 
-			<div class="column is-one-third">
+			<div class="column">
 				<div class="card is-fullheight">
 					<div class="card-content">
 						<p class="title is-4">
 							<span class="icon-text">
-								<span class="icon has-text-info"><i class="fas fa-address-book"></i></span>
+								<span class="icon has-text-info"><i class="fa-solid fa-filter-circle-xmark"></i></span>
 								<span data-tx="t0049:b7a22f37">Blocklist 电话簿</span>
 							</span>
 						</p>

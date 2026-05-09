@@ -16,7 +16,7 @@
 			<p data-tx="t0054:44e93c3">Τρεις γρήγορες ερωτήσεις και θα ξέρετε ποιες επιλογές είναι κατάλληλες για τη σύνδεσή σας.</p>
 
 			<div class="wizard-step" data-step="router">
-				<p class="title is-5 mt-4" data-tx="t0055:86a286b">1. Ποιο δρομολογητή έχετε;</p>
+				<p class="title is-5 mt-4" data-tx="t0055:e9de74b1">1. Ποιο μοντέλο δρομολογητή έχετε;</p>
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="fritzbox" type="button">
 						<span class="icon"><i class="fa-solid fa-network-wired"></i></span>
@@ -61,7 +61,7 @@
 
 			<div class="wizard-step" data-step="provider" hidden="hidden">
 				<p class="title is-5 mt-4" data-tx="t0066:59312a9">2 Ποιος πάροχος τηλεφωνίας;</p>
-				<p class="help" data-tx="t0067:eaceffb">Ορισμένοι πάροχοι επιτρέπουν την άμεση εγγραφή συσκευής VoIP στην υποδομή τους - το dongle λειτουργεί ακόμη και αν ο δρομολογητής δεν υποστηρίζει τηλέφωνα VOIP.</p>
+				<p class="help" data-tx="t0067:2d02529f">Ορισμένοι πάροχοι επιτρέπουν την απευθείας εγγραφή συσκευών VoIP στην υποδομή τους - σε αυτή την περίπτωση το Phoneblock dongle λειτουργεί ακόμη και αν ο δρομολογητής δεν υποστηρίζει τηλέφωνα VOIP.</p>
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="telekom" type="button">
 						<span data-tx="t0068:fc2c352d">Τηλεπικοινωνίες</span>
@@ -80,41 +80,53 @@
 					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0071:aeb1936">Και οι τρεις παραλλαγές λειτουργούν για εσάς.</span></p>
 					<p data-tx="t0072:3617ea57">Συνιστάται: <strong>PhoneBlock dongle</strong> - η καλύτερη άμυνα, η καλύτερη προστασία δεδομένων, ανεξάρτητα από τις ενημερώσεις του δρομολογητή. <strong>Αυτόματος τηλεφωνητής στο σύννεφο</strong> ή <strong>τηλεφωνικός κατάλογος με μπλοκάρισμα</strong> είναι επίσης δυνατά.</p>
 				</div>
+
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="dongle-cloudab" hidden="hidden">
 				<div class="notification is-success">
-					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0073:74c70212">Το Dongle και ο τηλεφωνητής cloud ταιριάζουν.</span></p>
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0073:cf37f033">Το Phoneblock dongle και ο τηλεφωνητής cloud ταιριάζουν.</span></p>
 					<p data-tx="t0074:416ac031">Συνιστάται: <strong>PhoneBlock dongle</strong>. Εναλλακτικά: <strong>Αντιφωνητής νέφους</strong>. Ο τηλεφωνικός κατάλογος <strong>Blocklist</strong> απαιτεί ένα Fritz!Box από το 2018 και δεν είναι διαθέσιμο για το κουτί σας.</p>
 				</div>
+
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="dongle-blockliste" hidden="hidden">
 				<div class="notification is-success">
-					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0075:34eeca5e">Τοποθέτηση τηλεφωνικού καταλόγου Dongle και blocklist.</span></p>
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0075:783c2af2">Φωνητικό μπλοκ και μπλοκάρει τον τηλεφωνικό κατάλογο.</span></p>
 					<p data-tx="t0076:43e00ed6">Συνιστάται: <strong>PhoneBlock dongle</strong>. Εναλλακτικά: <strong>Λίστα αποκλεισμού του τηλεφωνικού καταλόγου</strong>. Δεν μπορείτε να ρυθμίσετε τον <strong>αυτόματο τηλεφωνητή cloud</strong> σε ένα ενοικιαζόμενο Fritz!Box - χρειάζεστε πρόσβαση στη ρύθμιση της τηλεφωνίας VoIP.</p>
 				</div>
+				
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="dongle-only" hidden="hidden">
 				<div class="notification is-success">
-					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0077:a9f972a2">Το dongle είναι η παραλλαγή σας.</span></p>
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0077:6552580a">Το Phoneblock dongle είναι η παραλλαγή σας.</span></p>
 					<p data-tx="t0078:cbd60954">Το <strong>PhoneBlock dongle</strong> λειτουργεί με τη διαμόρφωσή σας - οι άλλες δύο παραλλαγές αποτυγχάνουν: Box με σύνδεση από το Διαδίκτυο, ο τηλεφωνικός κατάλογος με λίστα μπλοκαρίσματος χρειάζεται ένα Fritz!Box από το 2018 και μετά.</p>
 				</div>
+				
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="dongle-telekom" hidden="hidden">
 				<div class="notification is-success">
-					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0079:40d1c735">Το dongle λειτουργεί για εσάς.</span></p>
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0079:fdb4f4a9">Το Phoneblock dongle λειτουργεί για εσάς.</span></p>
 					<p data-tx="t0080:1938636f">Η Telekom επιτρέπει την άμεση εγγραφή συσκευής VoIP στην υποδομή της - το <strong>PhoneBlock dongle</strong> εγγράφεται εκεί, ο δρομολογητής δεν έχει σημασία. Ο τηλεφωνητής cloud και ο τηλεφωνικός κατάλογος blocklist απαιτούν ένα Fritz!Box και δεν είναι διαθέσιμα.</p>
 				</div>
+				
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="dongle-other-isp" hidden="hidden">
 				<div class="notification is-info">
-					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-info"></i></span> <span data-tx="t0081:5aa4a799">Πιθανώς το dongle - παρακαλούμε επικοινωνήστε με τον πάροχό σας.</span></p>
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-info"></i></span> <span data-tx="t0081:3acafd67">Πιθανώς το Phoneblock dongle - παρακαλούμε επικοινωνήστε με τον πάροχό σας.</span></p>
 					<p data-tx="t0082:b2d14a7b">Χωρίς Fritz!Box, μόνο το <strong>PhoneBlock dongle</strong> είναι μια επιλογή, και ο πάροχός σας πρέπει να επιτρέπει την απευθείας εγγραφή συσκευής SIP για αυτό. Αν έχετε αμφιβολίες, ρωτήστε την υποστήριξη του παρόχου σας ή ενεργοποιήστε το δικό σας Fritz!Box - τότε η επιλογή είναι και πάλι ελεύθερη.</p>
 				</div>
+				
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="vodafone-deadend" hidden="hidden">
@@ -122,6 +134,8 @@
 					<p class="title is-5"><span class="icon"><i class="fa-solid fa-triangle-exclamation"></i></span> <span data-tx="t0083:9edc79ef">Δυστυχώς, το PhoneBlock δεν έχει καμία πιθανότητα με αυτόν τον αστερισμό.</span></p>
 					<p data-tx="t0084:70dc4cbf">Η Vodafone μπλοκάρει την απευθείας εγγραφή συσκευής SIP και χωρίς Fritz!Box δεν υπάρχει τελικό σημείο τηλεφωνίας για τις άλλες παραλλαγές. <strong>Σύσταση:</strong> Κρεμάστε το δικό σας Fritz!Box πίσω από το κουτί της Vodafone (λειτουργία γέφυρας / λειτουργία καλωδιακού μόντεμ) - τότε θα λειτουργούν και οι τρεις παραλλαγές. Στη συνέχεια, μπορείτε να εκτελέσετε ξανά τον οδηγό.</p>
 				</div>
+
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<p class="wizard-restart mt-4" hidden="hidden">
@@ -141,7 +155,7 @@
 				<thead>
 					<tr>
 						<th></th>
-						<th data-tx="t0004:365a40ae">Dongle PhoneBlock</th>
+						<th data-tx="t0004:ad5f557f">PhoneBlock dongle</th>
 						<th data-tx="t0005:1cdaad3">Τηλεφωνητής Cloud</th>
 						<th data-tx="t0006:b7a22f37">Τηλεφωνικός κατάλογος Blocklist</th>
 					</tr>
@@ -196,7 +210,7 @@
 		<div class="notification is-info mt-4">
 			<p><strong data-tx="t0035:8125e3d9">Ποια λύση σας ταιριάζει;</strong></p>
 			<ul>
-				<li data-tx="t0036:e982c3b9"><strong>Dongle</strong> - αν θέλετε βέλτιστη προστασία από SPAM με την καλύτερη προστασία δεδομένων, ανεξάρτητα από το μοντέλο δρομολογητή και τον πάροχο.</li>
+				<li data-tx="t0036:7f445021"><strong>Phoneblock dongle</strong> - αν θέλετε βέλτιστη προστασία από SPAM με την καλύτερη προστασία δεδομένων, ανεξάρτητα από το μοντέλο δρομολογητή και τον πάροχο.</li>
 				<li data-tx="t0037:263869ed"><strong>Αυτόματος τηλεφωνητής νέφους</strong> - εάν έχετε το δικό σας Fritz!Box (όχι ενοικιαζόμενο) και αποδέχεστε ότι όλες οι κλήσεις σας ελέγχονται από τον διακομιστή PhoneBlock για βέλτιστη προστασία από SPAM.</li>
 				<li data-tx="t0038:d89599d7"><strong>Φωνητικός κατάλογος της λίστας αποκλεισμού</strong> - αν έχετε ένα Fritz!Box (επίσης ένα κουτί ενοικίασης) και δεν σας πειράζει αν ένας spammer που είναι πραγματικά στη λίστα αποκλεισμού ξεγλιστράει κάθε τόσο.</li>
 			</ul>
@@ -204,14 +218,14 @@
 
 		<h2 class="mt-6" data-tx="t0039:aeafcde8">Αποφάσισα - πάμε</h2>
 
-		<div class="columns is-multiline mt-4">
-			<div class="column is-one-third">
+		<div class="columns is-multiline is-desktop">
+			<div class="column">
 				<div class="card is-fullheight">
 					<div class="card-content">
 						<p class="title is-4">
 							<span class="icon-text">
-								<span class="icon has-text-primary"><i class="fas fa-bolt"></i></span>
-								<span data-tx="t0040:365a40ae">Dongle PhoneBlock</span>
+								<span class="icon has-text-primary"><i class="fa-brands fa-usb"></i></span>
+								<span data-tx="t0040:1e211e8a">Phoneblock dongle</span>
 							</span>
 						</p>
 						<p class="subtitle is-6 has-text-grey" data-tx="t0041:3a1686ef">Συνιστάται - καλύτερη άμυνα, καλύτερη προστασία δεδομένων</p>
@@ -220,18 +234,18 @@
 					<footer class="card-footer">
 						<a class="card-footer-item button is-primary is-medium" th:href="@{/dongle}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
-							<span data-tx="t0043:526888ef">Στο dongle</span>
+							<span data-tx="t0043:26d7229c">Στο Phoneblock dongle</span>
 						</a>
 					</footer>
 				</div>
 			</div>
 
-			<div class="column is-one-third">
+			<div class="column">
 				<div class="card is-fullheight">
 					<div class="card-content">
 						<p class="title is-4">
 							<span class="icon-text">
-								<span class="icon has-text-info"><img alt="" data-tx="t0044" th:src="@{/assets/img/ab/logo/ab-logo.svg}"/></span>
+								<span class="icon has-text-info"><i class="fa-solid fa-voicemail"></i></span>
 								<span data-tx="t0045:1cdaad3">Τηλεφωνητής Cloud</span>
 							</span>
 						</p>
@@ -241,18 +255,18 @@
 					<footer class="card-footer">
 						<a class="card-footer-item button is-info is-medium" th:href="@{/anrufbeantworter}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
-							<span data-tx="t0048:98b00790">Στον τηλεφωνητή</span>
+							<span data-tx="t0048:f2463c71">Στον τηλεφωνητή του cloud</span>
 						</a>
 					</footer>
 				</div>
 			</div>
 
-			<div class="column is-one-third">
+			<div class="column">
 				<div class="card is-fullheight">
 					<div class="card-content">
 						<p class="title is-4">
 							<span class="icon-text">
-								<span class="icon has-text-info"><i class="fas fa-address-book"></i></span>
+								<span class="icon has-text-info"><i class="fa-solid fa-filter-circle-xmark"></i></span>
 								<span data-tx="t0049:b7a22f37">Τηλεφωνικός κατάλογος Blocklist</span>
 							</span>
 						</p>

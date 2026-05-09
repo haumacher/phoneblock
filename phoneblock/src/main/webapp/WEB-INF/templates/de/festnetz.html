@@ -20,7 +20,7 @@
 			<p data-tx="t0054:44e93c3">Drei kurze Fragen, dann kennst Du die für Deinen Anschluss passenden Optionen.</p>
 
 			<div class="wizard-step" data-step="router">
-				<p class="title is-5 mt-4" data-tx="t0055:86a286b">1. Welcher Router steht bei Dir?</p>
+				<p class="title is-5 mt-4" data-tx="t0055:e9de74b1">1. Welches Router-Modell hast Du?</p>
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="fritzbox" type="button">
 						<span class="icon"><i class="fa-solid fa-network-wired"></i></span>
@@ -65,7 +65,7 @@
 
 			<div class="wizard-step" data-step="provider" hidden="hidden">
 				<p class="title is-5 mt-4" data-tx="t0066:59312a9">2. Welcher Telefonie-Provider?</p>
-				<p class="help" data-tx="t0067:eaceffb">Manche Provider lassen eine direkte VoIP-Geräte-Anmeldung an ihrer Infrastruktur zu — dann funktioniert der Dongle auch wenn der Router keine VOIP-Telefone unterstützt.</p>
+				<p class="help" data-tx="t0067:2d02529f">Manche Provider lassen eine direkte VoIP-Geräte-Anmeldung an ihrer Infrastruktur zu — dann funktioniert der Phoneblock-Dongle auch wenn der Router keine VOIP-Telefone unterstützt.</p>
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="telekom" type="button">
 						<span data-tx="t0068:fc2c352d">Telekom</span>
@@ -84,41 +84,53 @@
 					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0071:aeb1936">Alle drei Varianten funktionieren bei Dir.</span></p>
 					<p data-tx="t0072:3617ea57">Empfohlen: <strong>PhoneBlock-Dongle</strong> — beste Abwehr, bester Datenschutz, unabhängig von Router-Updates. <strong>Cloud-Anrufbeantworter</strong> oder <strong>Blocklisten-Telefonbuch</strong> sind ebenfalls möglich.</p>
 				</div>
+
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="dongle-cloudab" hidden="hidden">
 				<div class="notification is-success">
-					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0073:74c70212">Dongle und Cloud-Anrufbeantworter passen.</span></p>
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0073:cf37f033">Phoneblock-Dongle und Cloud-Anrufbeantworter passen.</span></p>
 					<p data-tx="t0074:416ac031">Empfohlen: <strong>PhoneBlock-Dongle</strong>. Alternativ: <strong>Cloud-Anrufbeantworter</strong>. Das <strong>Blocklisten-Telefonbuch</strong> setzt eine Fritz!Box ab Bj. 2018 voraus und entfällt für Deine Box.</p>
 				</div>
+
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="dongle-blockliste" hidden="hidden">
 				<div class="notification is-success">
-					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0075:34eeca5e">Dongle und Blocklisten-Telefonbuch passen.</span></p>
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0075:783c2af2">Phoneblock-Dongle und Blocklisten-Telefonbuch passen.</span></p>
 					<p data-tx="t0076:43e00ed6">Empfohlen: <strong>PhoneBlock-Dongle</strong>. Alternativ: <strong>Blocklisten-Telefonbuch</strong>. Den <strong>Cloud-Anrufbeantworter</strong> kannst Du an einer Miet-Fritz!Box nicht einrichten — Du brauchst Zugriff auf die VoIP-Telefonie-Konfiguration.</p>
 				</div>
+				
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="dongle-only" hidden="hidden">
 				<div class="notification is-success">
-					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0077:a9f972a2">Der Dongle ist Deine Variante.</span></p>
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0077:6552580a">Der Phoneblock-Dongle ist Deine Variante.</span></p>
 					<p data-tx="t0078:cbd60954">Mit Deiner Konstellation funktioniert der <strong>PhoneBlock-Dongle</strong> — die anderen beiden Varianten fallen aus: Cloud-Anrufbeantworter braucht Fritz!Box mit Anmeldung aus dem Internet, das Blocklisten-Telefonbuch eine Fritz!Box ab Bj. 2018.</p>
 				</div>
+				
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="dongle-telekom" hidden="hidden">
 				<div class="notification is-success">
-					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0079:40d1c735">Der Dongle funktioniert bei Dir.</span></p>
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0079:fdb4f4a9">Der Phoneblock-Dongle funktioniert bei Dir.</span></p>
 					<p data-tx="t0080:1938636f">Telekom erlaubt eine direkte VoIP-Geräte-Anmeldung an ihrer Infrastruktur — der <strong>PhoneBlock-Dongle</strong> meldet sich dort an, der Router ist dafür egal. Cloud-Anrufbeantworter und Blocklisten-Telefonbuch setzen eine Fritz!Box voraus und fallen aus.</p>
 				</div>
+				
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="dongle-other-isp" hidden="hidden">
 				<div class="notification is-info">
-					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-info"></i></span> <span data-tx="t0081:5aa4a799">Voraussichtlich der Dongle — bitte beim Provider prüfen.</span></p>
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-info"></i></span> <span data-tx="t0081:3acafd67">Voraussichtlich der Phoneblock-Dongle — bitte beim Provider prüfen.</span></p>
 					<p data-tx="t0082:b2d14a7b">Ohne Fritz!Box ist nur der <strong>PhoneBlock-Dongle</strong> eine Option, und dafür muss Dein Provider eine direkte SIP-Geräte-Anmeldung erlauben. Erfrage das im Zweifelsfall beim Provider-Support oder schalte eine eigene Fritz!Box vor — dann ist die Auswahl wieder frei.</p>
 				</div>
+				
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="vodafone-deadend" hidden="hidden">
@@ -126,6 +138,8 @@
 					<p class="title is-5"><span class="icon"><i class="fa-solid fa-triangle-exclamation"></i></span> <span data-tx="t0083:9edc79ef">Mit dieser Konstellation hat PhoneBlock leider keine Chance.</span></p>
 					<p data-tx="t0084:70dc4cbf">Vodafone blockiert die direkte SIP-Geräte-Anmeldung, und ohne Fritz!Box gibt es keinen Telefonie-Endpunkt für die anderen Varianten. <strong>Empfehlung:</strong> Eine eigene Fritz!Box hinter die Vodafone-Box hängen (Bridge-Modus / Kabel-Modem-Modus) — danach funktionieren alle drei Varianten. Den Wizard kannst Du anschließend neu durchlaufen.</p>
 				</div>
+
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<p class="wizard-restart mt-4" hidden="hidden">
@@ -145,7 +159,7 @@
 				<thead>
 					<tr>
 						<th></th>
-						<th data-tx="t0004:365a40ae">PhoneBlock Dongle</th>
+						<th data-tx="t0004:ad5f557f">PhoneBlock-Dongle</th>
 						<th data-tx="t0005:1cdaad3">Cloud-Anrufbeantworter</th>
 						<th data-tx="t0006:b7a22f37">Blocklisten-Telefonbuch</th>
 					</tr>
@@ -200,7 +214,7 @@
 		<div class="notification is-info mt-4">
 			<p><strong data-tx="t0035:8125e3d9">Welche Lösung passt zu dir?</strong></p>
 			<ul>
-				<li data-tx="t0036:e982c3b9"><strong>Dongle</strong> — wenn du optimale SPAM-Abwehr bei bestem Datenschutz haben möchtest, unabhängig von Router-Modell und Provider.</li>
+				<li data-tx="t0036:7f445021"><strong>Phoneblock-Dongle</strong> — wenn du optimale SPAM-Abwehr bei bestem Datenschutz haben möchtest, unabhängig von Router-Modell und Provider.</li>
 				<li data-tx="t0037:263869ed"><strong>Cloud-Anrufbeantworter</strong> — wenn du eine eigene Fritz!Box hast (keine Miet-Box) und für optimale SPAM-Abwehr akzeptierst, dass alle deine Anrufe durch den PhoneBlock-Server geprüft werden.</li>
 				<li data-tx="t0038:d89599d7"><strong>Blocklisten-Telefonbuch</strong> — wenn du eine Fritz!Box hast (auch eine Miet-Box) und es dich nicht stört, wenn immer wieder mal ein Spammer durchrutscht, der eigentlich auf der Blockliste steht.</li>
 			</ul>
@@ -208,14 +222,14 @@
 
 		<h2 class="mt-6" data-tx="t0039:aeafcde8">Ich habe mich entschieden — los geht's</h2>
 
-		<div class="columns is-multiline mt-4">
-			<div class="column is-one-third">
+		<div class="columns is-multiline is-desktop">
+			<div class="column">
 				<div class="card is-fullheight">
 					<div class="card-content">
 						<p class="title is-4">
 							<span class="icon-text">
-								<span class="icon has-text-primary"><i class="fas fa-bolt"></i></span>
-								<span data-tx="t0040:365a40ae">PhoneBlock Dongle</span>
+								<span class="icon has-text-primary"><i class="fa-brands fa-usb"></i></span>
+								<span data-tx="t0040:1e211e8a">Phoneblock-Dongle</span>
 							</span>
 						</p>
 						<p class="subtitle is-6 has-text-grey" data-tx="t0041:3a1686ef">Empfohlen — beste Abwehr, bester Datenschutz</p>
@@ -224,18 +238,18 @@
 					<footer class="card-footer">
 						<a class="card-footer-item button is-primary is-medium" th:href="@{/dongle}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
-							<span data-tx="t0043:526888ef">Zum Dongle</span>
+							<span data-tx="t0043:26d7229c">Zum Phoneblock-Dongle</span>
 						</a>
 					</footer>
 				</div>
 			</div>
 
-			<div class="column is-one-third">
+			<div class="column">
 				<div class="card is-fullheight">
 					<div class="card-content">
 						<p class="title is-4">
 							<span class="icon-text">
-								<span class="icon has-text-info"><img alt="" data-tx="t0044" th:src="@{/assets/img/ab/logo/ab-logo.svg}"/></span>
+								<span class="icon has-text-info"><i class="fa-solid fa-voicemail"></i></span>
 								<span data-tx="t0045:1cdaad3">Cloud-Anrufbeantworter</span>
 							</span>
 						</p>
@@ -245,18 +259,18 @@
 					<footer class="card-footer">
 						<a class="card-footer-item button is-info is-medium" th:href="@{/anrufbeantworter}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
-							<span data-tx="t0048:98b00790">Zum Anrufbeantworter</span>
+							<span data-tx="t0048:f2463c71">Zum Cloud-Anrufbeantworter</span>
 						</a>
 					</footer>
 				</div>
 			</div>
 
-			<div class="column is-one-third">
+			<div class="column">
 				<div class="card is-fullheight">
 					<div class="card-content">
 						<p class="title is-4">
 							<span class="icon-text">
-								<span class="icon has-text-info"><i class="fas fa-address-book"></i></span>
+								<span class="icon has-text-info"><i class="fa-solid fa-filter-circle-xmark"></i></span>
 								<span data-tx="t0049:b7a22f37">Blocklisten-Telefonbuch</span>
 							</span>
 						</p>

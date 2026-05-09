@@ -7,7 +7,7 @@
 
 <section class="section">
 	<div class="content">
-		<h1 data-tx="t0192:f91bfd8">PhoneBlock Dongle <sup><span class="tag is-info is-medium ml-2">Ny</span></sup>.</h1>
+		<h1 data-tx="t0192:fa04cef1">PhoneBlock-dongle <sup><span class="tag is-info is-medium ml-2">Ny</span></sup>.</h1>
 
 		<p class="subtitle" data-tx="t0095:dab19814">En intelligent telefonsvarer i skikkelse af en IP-telefon. Den er på størrelse med en tommelfinger, tilsluttes routerens USB-port, registreres som en ekstra SIP-telefon - og opfanger kommercielle opkald, før din rigtige telefon ringer. Fungerer uanset routermodel, selv uden en Fritz!</p>
 		
@@ -16,33 +16,33 @@
 		</p>		
 
 		<div class="notification is-warning">
-			<p data-tx="t0123:cedc07e4"><strong>Status: Beta.</strong> Den første version kører allerede pålideligt. Jeg er på udkig efter flere testere, der kan afprøve donglen i så mange forskellige miljøer som muligt - <a href="#tester">erfaringsrapporter er velkomne</a>.</p>
+			<p data-tx="t0123:3a266dbc"><strong>Status: Beta.</strong> Den første version kører allerede pålideligt. Jeg er på udkig efter flere testere, der kan afprøve PhoneBlock-donglen i så mange forskellige miljøer som muligt - <a href="#tester">erfaringsrapporter er velkomne</a>.</p>
 		</div>
 
 		<h2 data-tx="t0004:6b104c7a">Ideen i én sætning</h2>
 
-		<p data-tx="t0081:567e2d4a">Donglen logger på din router som en ekstra IP-telefon. Hver gang der kommer et opkald, spørger den lynhurtigt PhoneBlock-databasen: <em>"Er dette spam?"</em> Hvis det er tilfældet, besvarer den selv opkaldet, afspiller en kort meddelelse, hvis det ønskes, og lægger på igen. Din rigtige telefon har ikke engang ringet i det øjeblik. I modsætning til <a th:href="@{/anrufbeantworter}">sky-telefonsvareren</a> foregår al opkaldsbehandling lokalt i dit hjem.</p>
+		<p data-tx="t0081:4d04d687">PhoneBlock-donglen logger på din router som en ekstra IP-telefon. Hver gang der kommer et opkald, spørger den lynhurtigt PhoneBlock-databasen: <em>"Er dette spam?"</em> Hvis det er tilfældet, besvarer den selv opkaldet, afspiller en kort meddelelse, hvis det ønskes, og lægger på igen. Din rigtige telefon har ikke engang ringet i det øjeblik. I modsætning til <a th:href="@{/anrufbeantworter}">sky-telefonsvareren</a> foregår al opkaldsbehandling lokalt i dit hjem.</p>
 
 		<div class="columns is-centered mt-5">
 			<div class="column is-one-quarter has-text-centered">
 				<p><span class="icon is-large has-text-info"><i class="fas fa-phone-volume fa-3x"></i></span></p>
 				<h4 data-tx="t0006:fbca4eec">Første opkald kommer ind</h4>
-				<p data-tx="t0097:e81f88f3">Routeren signalerer opkaldet til alle registrerede telefoner - inklusive donglen. De "rigtige" telefoner kan konfigureres med en ringetidsforsinkelse på 3-5 sekunder.</p>
+				<p data-tx="t0097:2787a701">Routeren signalerer opkaldet til alle registrerede telefoner - inklusive PhoneBlock-donglen. De "rigtige" telefoner kan konfigureres med en ringetidsforsinkelse på 3-5 sekunder.</p>
 			</div>
 			<div class="column is-one-quarter has-text-centered">
 				<p><span class="icon is-large has-text-warning"><i class="fas fa-bolt fa-3x"></i></span></p>
 				<h4 data-tx="t0008:acac085a">2. Flash-kontrol</h4>
-				<p data-tx="t0098:b7f3abe5">Donglen spørger lynhurtigt PhoneBlock, om nummeret er kendt for at være spam. Forespørgslen kører via krypteret HTTPS og overfører kun et hash af nummeret. Opkald fra kontakter i din telefonbog bliver ikke engang kontrolleret - de forlader aldrig dit hjemmenetværk.</p>
+				<p data-tx="t0098:1dec8705">PhoneBlock-donglen forespørger lynhurtigt PhoneBlock for at se, om nummeret er kendt for at være spam. Forespørgslen kører via krypteret HTTPS og overfører kun et hash af nummeret. Opkald fra kontakter i din telefonbog bliver ikke engang kontrolleret - de forlader aldrig dit hjemmenetværk.</p>
 			</div>
 			<div class="column is-one-quarter has-text-centered">
 				<p><span class="icon is-large has-text-danger"><i class="fas fa-ban fa-3x"></i></span></p>
 				<h4 data-tx="t0010:be667d0f">3. Skil dig af med det</h4>
-				<p data-tx="t0099:5eb763c7">Hvis nummeret er spam, tager donglen telefonen, afspiller en meddelelse og lægger på. Telefonen i stuen forbliver tavs. Hvis nummeret ikke er kendt spam, gør donglen simpelthen ingenting - opkaldet går normalt igennem.</p>
+				<p data-tx="t0099:2a38220a">Hvis nummeret er spam, tager PhoneBlock-donglen telefonen, afspiller en meddelelse og lægger på. Telefonen i stuen forbliver tavs. Hvis nummeret ikke er kendt spam, gør PhoneBlock-donglen simpelthen ingenting - opkaldet går normalt igennem.</p>
 			</div>
 		</div>
 
 		<div class="notification is-info">
-			<p data-tx="t0100:86bdb13f"><strong>Hvorfor det er så charmerende:</strong> Donglen har kun brug for minimal strøm og Wi-Fi. Ingen ekstra server, ingen Fritz!Box, ingen kontrakt. ESP32-mikrocontrolleren indeni trækker mindre end en halv watt - du kan bare sætte den i USB-porten på din router og glemme alt om den.</p>
+			<p data-tx="t0100:5bd0fd66"><strong>Hvorfor det er så charmerende:</strong> PhoneBlock-donglen kræver kun minimal strøm og Wi-Fi. Ingen ekstra server, ingen Fritz!Box, ingen kontrakt. ESP32-mikrocontrolleren indeni trækker mindre end en halv watt - du kan bare sætte den i USB-porten på din router og glemme alt om den.</p>
 		</div>
 
 		<p class="subtitle mt-6" data-tx="t0124:bd004e4f">Det er her, det bliver praktisk: Instruktionerne guider dig trin for trin gennem bestilling og opsætning - omkring €10 hardware, en engangsindsats på et par minutter.</p>
@@ -119,7 +119,7 @@
 			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0215:f3700f31">Vælg seriel port.</figcaption>
 		</figure>
 
-		<p data-tx="t0159:d037e970">Bekræft sikkerhedsprompten "Install PhoneBlock Dongle?" med <strong>"Install"</strong>. PhoneBlock-softwaren indlæses nu på donglen - det tager cirka et minut. Tag ikke stikket ud af donglen i dette tidsrum.</p>
+		<p data-tx="t0159:e29e2c1b">Bekræft sikkerhedsprompten "Install PhoneBlock dongle?" med <strong>"Install"</strong>. PhoneBlock-softwaren indlæses nu på donglen - det tager cirka et minut. Tag ikke stikket ud af donglen i dette tidsrum.</p>
 
 		<div class="columns is-multiline is-mobile is-variable is-2">
 			<div class="column is-3-desktop is-6-tablet is-12-mobile">
@@ -158,41 +158,37 @@
 			</ul>
 		</details>
 
-		<h2 data-tx="t0161:51445138" id="schritt-5">Trin 3 - Sæt donglen i routeren</h2>
+		<h2 data-tx="t0161:ff9673d3" id="schritt-5">Trin 3 - Sæt PhoneBlock-donglen i routeren</h2>
 
-		<p data-tx="t0162:cbcaee11">Når browseren melder "Installation completed!", skal du tage donglen ud af computeren og sætte den i en ledig USB-port på din router (eller en hvilken som helst 5 V USB-strømforsyning inden for WLAN-rækkevidde).</p>
+		<p data-tx="t0162:d933bd4d">Når browseren melder "Installation completed!", skal du fjerne PhoneBlock-donglen fra computeren og sætte den i en ledig USB-port på din router (eller en hvilken som helst 5 V USB-strømforsyning inden for WLAN-rækkevidde).</p>
 
 		<figure class="image" style="max-width:500px;">
 			<img alt="ESP32-dongle i Fritz!Box" data-tx="t0196:d0a4fea7" th:src="@{/assets/img/dongle/plugged-into-router.jpg}"/>
-			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0206:bf34dbb5">Dongle i USB-porten på Fritz!</figcaption>
+			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0206:ff071800">PhoneBlock-dongle i USB-porten på Fritz!</figcaption>
 		</figure>
 
-		<h2 data-tx="t0164:71e45897" id="schritt-6">Trin 4 - Føj donglen til WLAN (WPS)</h2>
+		<h2 data-tx="t0164:4aa08d92" id="schritt-6">Trin 4 - Føj PhoneBlock-donglen til WLAN (WPS)</h2>
 
-		<p data-tx="t0165:b5b221d5">Den nyligt flashede dongle har endnu ikke nogen Wi-Fi-adgangsdata og venter på, at du forbinder den til dit Wi-Fi. LED'en <strong>blinker hurtigt</strong> (ca. fem gange i sekundet) og signalerer "Parringstilstand aktiv".</p>
+		<p data-tx="t0165:faed557d">PhoneBlock-donglen har endnu ikke nogen Wi-Fi-adgangsdata og venter på, at du forbinder den til dit Wi-Fi. LED'en <strong>blinker hurtigt</strong> (ca. fem gange i sekundet) og signalerer "Parringstilstand aktiv".</p>
 
-		<p data-tx="t0166:83cbb4c2">Tryk nu på <strong>WPS-knappen</strong> på routeren. På Fritz!Box er det <strong>"Connect / WPS"</strong>-knappen på toppen af enheden - tryk kort, indtil Wi-Fi-LED'en på selve routeren begynder at blinke. Andre routere kalder knappen "WPS" eller "Pair". I løbet af få sekunder overfører routeren dine wifi-adgangsdata til donglen, som gemmer dem og opretter forbindelse.</p>
+		<p data-tx="t0166:e6ac9e1a">Tryk nu på <strong>WPS-knappen</strong> på routeren. På Fritz!Box er det <strong>"Connect / WPS"</strong>-knappen på toppen af enheden - tryk kort, indtil Wi-Fi-LED'en på selve routeren begynder at blinke. Andre routere kalder knappen "WPS" eller "Pair". I løbet af få sekunder sender routeren dine Wi-Fi-adgangsdata til PhoneBlock-donglen, som gemmer dem og opretter forbindelse.</p>
 
 		<figure class="image" style="max-width:500px;">
 			<img alt="WPS-knap på Fritz!Box" data-tx="t0197:fe3e8d05" th:src="@{/assets/img/dongle/wps-button.jpg}"/>
 			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0207:b0912da4">WPS-knap på Fritz!Box</figcaption>
 		</figure>
 
-		<p data-tx="t0168:32d2921"><strong>Har virket:</strong> LED'en blinker nu langsomt (ca. en gang i sekundet) - donglen er i WLAN, har modtaget en adresse og venter på konfiguration (næste trin).</p>
+		<p data-tx="t0168:54d5a6"><strong>Godt klaret:</strong> LED'en blinker nu langsomt (ca. en gang i sekundet) - PhoneBlock-donglen er i WLAN, har fået en adresse og venter på konfiguration (næste trin).</p>
 
-		<p data-tx="t0169:f91aa6d5"><strong>Virkede ikke</strong> Tjek i routerindstillingerne, om WPS er aktiveret (på Fritz!Box: <em>WLAN → Sikkerhed → WPS</em>). Hvis WPS-vinduet var for kort, genstarter donglen automatisk parringen - så er det bare at trykke på WPS-knappen igen.</p>
+		<p data-tx="t0169:cddfc489"><strong>Virkede ikke</strong> Tjek i routerindstillingerne, om WPS er aktiveret (på Fritz!Box: <em>WLAN → Sikkerhed → WPS</em>). Hvis WPS-vinduet var for kort, genstarter PhoneBlock-donglen automatisk parringen - så er det bare at trykke på WPS-knappen igen.</p>
 
 		<h2 data-tx="t0170:6da0bfa" id="schritt-7">Trin 5 - Registrer dig som telefon og opsæt PhoneBlock-adgang</h2>
 
-		<p data-tx="t0171:d7c2d3df">For at donglen kan aflytte opkald, skal den stadig bruge to ting: dine SIP-adgangsdata (så den kan logge ind som en ekstra telefon) og et PhoneBlock-token (så den kan forespørge i spamdatabasen). Du indtaster begge dele i donglens webinterface. Du kan også gøre resten af opsætningen fra en mobiltelefon.</p>
+		<p data-tx="t0171:1da1ccdb">For at PhoneBlock-donglen kan opfange opkald, skal den stadig bruge to ting: dine SIP-adgangsdata (så den kan logge ind som en ekstra telefon) og et PhoneBlock-token (så den kan forespørge i spamdatabasen). Du indtaster begge dele i PhoneBlock-donglens webinterface. Du kan også gøre resten af opsætningen fra en mobiltelefon.</p>
 
 		<p data-tx="t0172:f4d3bf5f">Åbn i browseren:</p>
 
 		<p><a class="button is-link is-large" data-tx="t0173:9be1c030" href="http://answerbot/" id="dongle-step7-link" target="_blank">http://answerbot/</a></p>
-
-		<div class="notification is-success" id="dongle-located-banner" style="display:none;">
-			<p data-tx="t0174:c20257a1"><strong>Dongle genkendt:</strong> <a href="" id="dongle-located-link" target="_blank">http://192.168.178.xxx/</a> - knappen øverst åbner den direkte.</p>
-		</div>
 
 		<p data-tx="t0175:4a5ab444">Hvis dette link ikke virker, skal du kigge i enhedslisten på din router efter en enhed med navnet <code>answerbot</code>, notere dens IP-adresse og kalde den op i browseren - f.eks. <code>http://192.168.178.xxx/</code>.</p>
 
@@ -241,7 +237,7 @@
 			<li data-tx="t0179:9fd0fd46"><strong>PhoneBlock-token</strong> - opret et API-token i dine <a th:href="@{/settings}">PhoneBlock-indstillinger</a>, og kopier det ind i det tilsvarende felt.</li>
 		</ul>
 
-		<p data-tx="t0180:2f4a93c2">Gem → LED'en lyser nu permanent → donglen er klar til brug. Spamopkald bliver nu lydløst opfanget, før din telefon ringer.</p>
+		<p data-tx="t0180:9741140b">Gem → LED'en lyser nu permanent → PhoneBlock-donglen er klar til brug. Spamopkald bliver nu lydløst opfanget, før din telefon ringer.</p>
 
 		<hr class="my-5"/>
 
@@ -249,7 +245,7 @@
 
 		<h2 data-tx="t0182:c258f25f" id="tester">Bidrag med erfaringsrapport</h2>
 
-		<p data-tx="t0183:351d7eb2">De første dongles kører allerede pålideligt - men routermodeller, udbydere og forbindelsestyper er en farverig blanding, og hver kombination har sine egne særegenheder. For at forbedre installationsguiden er <strong>strukturerede erfaringsrapporter</strong> guld værd - uanset om alt fungerede for dig, eller om der var problemer.</p>
+		<p data-tx="t0183:aef4c36">De første PhoneBlock-dongler fungerer pålideligt - men routermodeller, udbydere og forbindelsestyper er en farverig blanding, og hver kombination har sine egne særegenheder. For at forbedre installationsguiden er <strong>strukturerede erfaringsrapporter</strong> guld værd - uanset om alt fungerede for dig, eller om der var problemer.</p>
 
 		<p data-tx="t0184:49f94506">Særligt interessante er opsætninger, der stadig er dårligt dækket:</p>
 

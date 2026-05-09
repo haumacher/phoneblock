@@ -16,7 +16,7 @@
 			<p data-tx="t0054:44e93c3">Trois petites questions et tu connaîtras les options adaptées à ta connexion.</p>
 
 			<div class="wizard-step" data-step="router">
-				<p class="title is-5 mt-4" data-tx="t0055:86a286b">1. quel est ton routeur ?</p>
+				<p class="title is-5 mt-4" data-tx="t0055:e9de74b1">1. quel est le modèle de routeur que tu as ?</p>
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="fritzbox" type="button">
 						<span class="icon"><i class="fa-solid fa-network-wired"></i></span>
@@ -61,7 +61,7 @@
 
 			<div class="wizard-step" data-step="provider" hidden="hidden">
 				<p class="title is-5 mt-4" data-tx="t0066:59312a9">2. quel fournisseur de téléphonie ?</p>
-				<p class="help" data-tx="t0067:eaceffb">Certains fournisseurs autorisent une inscription directe des appareils VoIP sur leur infrastructure - dans ce cas, le dongle fonctionne même si le routeur ne supporte pas les téléphones VOIP.</p>
+				<p class="help" data-tx="t0067:2d02529f">Certains fournisseurs autorisent une inscription directe des appareils VoIP sur leur infrastructure - dans ce cas, le dongle Phoneblock fonctionne même si le routeur ne supporte pas les téléphones VOIP.</p>
 				<div class="buttons">
 					<button class="button is-info wizard-btn" data-route="telekom" type="button">
 						<span data-tx="t0068:fc2c352d">Télécoms</span>
@@ -80,41 +80,53 @@
 					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0071:aeb1936">Les trois variantes fonctionnent pour toi.</span></p>
 					<p data-tx="t0072:3617ea57">Recommandé : <strong>Dongle PhoneBlock</strong> - meilleure défense, meilleure protection des données, indépendant des mises à jour du routeur. <strong>Répondeur cloud</strong> ou <strong>Répertoire de listes de blocage</strong> sont également possibles.</p>
 				</div>
+
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="dongle-cloudab" hidden="hidden">
 				<div class="notification is-success">
-					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0073:74c70212">Le dongle et le répondeur cloud correspondent.</span></p>
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0073:cf37f033">Le dongle phoneblock et le répondeur cloud correspondent.</span></p>
 					<p data-tx="t0074:416ac031">Recommandé : <strong>Dongle PhoneBlock</strong>. Alternative : <strong>Répondeur cloud</strong>. Le <strong>répertoire téléphonique des listes de blocage</strong> requiert une Fritz!Box à partir de l'année 2018 et n'est pas nécessaire pour ta box.</p>
 				</div>
+
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="dongle-blockliste" hidden="hidden">
 				<div class="notification is-success">
-					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0075:34eeca5e">Le dongle et le répertoire de la liste de blocage correspondent.</span></p>
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0075:783c2af2">Le dongle Phoneblock et le répertoire téléphonique Blocklisten correspondent.</span></p>
 					<p data-tx="t0076:43e00ed6">Recommandé : <strong>Dongle PhoneBlock</strong>. Alternative : <strong>Répertoire de listes de blocage</strong>. Tu ne peux pas configurer la <strong>réponse cloud</strong> sur une Fritz!Box de location - tu dois avoir accès à la configuration de la téléphonie VoIP.</p>
 				</div>
+				
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="dongle-only" hidden="hidden">
 				<div class="notification is-success">
-					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0077:a9f972a2">Le dongle est ta variante.</span></p>
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0077:6552580a">Le dongle Phoneblock est ta variante.</span></p>
 					<p data-tx="t0078:cbd60954">Avec ta constellation, le dongle <strong>PhoneBlock</strong> fonctionne - les deux autres variantes ne fonctionnent pas : La messagerie vocale dans le nuage nécessite une Fritz!Box avec connexion depuis Internet, le répertoire téléphonique des listes de blocage nécessite une Fritz!Box à partir de l'année 2018.</p>
 				</div>
+				
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="dongle-telekom" hidden="hidden">
 				<div class="notification is-success">
-					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0079:40d1c735">Le dongle fonctionne chez toi.</span></p>
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-check"></i></span> <span data-tx="t0079:fdb4f4a9">Le dongle Phoneblock fonctionne chez toi.</span></p>
 					<p data-tx="t0080:1938636f">Telekom permet une inscription directe des appareils VoIP à son infrastructure - le dongle <strong>PhoneBlock</strong> s'y inscrit, le routeur n'a pas d'importance pour cela. Le répondeur dans le nuage et l'annuaire téléphonique à liste bloquée nécessitent une Fritz!Box et ne sont pas disponibles.</p>
 				</div>
+				
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="dongle-other-isp" hidden="hidden">
 				<div class="notification is-info">
-					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-info"></i></span> <span data-tx="t0081:5aa4a799">Probablement le dongle - à vérifier auprès de l'opérateur.</span></p>
+					<p class="title is-5"><span class="icon"><i class="fa-solid fa-circle-info"></i></span> <span data-tx="t0081:3acafd67">Probablement le dongle Phoneblock - veuillez vérifier auprès de votre fournisseur d'accès.</span></p>
 					<p data-tx="t0082:b2d14a7b">Sans Fritz!Box, seul le dongle <strong>PhoneBlock</strong> est une option, et pour cela, ton fournisseur d'accès doit autoriser une inscription directe des appareils SIP. En cas de doute, demande-le au support de ton fournisseur d'accès ou active ta propre Fritz!Box en amont - le choix est alors à nouveau libre.</p>
 				</div>
+				
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<div class="wizard-result" data-result="vodafone-deadend" hidden="hidden">
@@ -122,6 +134,8 @@
 					<p class="title is-5"><span class="icon"><i class="fa-solid fa-triangle-exclamation"></i></span> <span data-tx="t0083:9edc79ef">Avec cette constellation, PhoneBlock n'a malheureusement aucune chance.</span></p>
 					<p data-tx="t0084:70dc4cbf">Vodafone bloque la connexion directe des appareils SIP, et sans Fritz!Box, il n'y a pas de point final de téléphonie pour les autres variantes. <strong>Recommandation:</strong> Accrocher une propre Fritz!Box derrière la Vodafone-Box (mode pont / mode modem-câble) - ensuite, les trois variantes fonctionnent. Tu peux ensuite relancer le Wizard.</p>
 				</div>
+
+				<div th:replace="~{fragments/page :: festnetz_options}"></div>
 			</div>
 
 			<p class="wizard-restart mt-4" hidden="hidden">
@@ -141,7 +155,7 @@
 				<thead>
 					<tr>
 						<th></th>
-						<th data-tx="t0004:365a40ae">Dongle PhoneBlock</th>
+						<th data-tx="t0004:ad5f557f">Clé électronique PhoneBlock</th>
 						<th data-tx="t0005:1cdaad3">Répondeur dans le nuage</th>
 						<th data-tx="t0006:b7a22f37">Répertoire téléphonique des listes de blocage</th>
 					</tr>
@@ -196,7 +210,7 @@
 		<div class="notification is-info mt-4">
 			<p><strong data-tx="t0035:8125e3d9">Quelle est la solution qui te convient le mieux ?</strong></p>
 			<ul>
-				<li data-tx="t0036:e982c3b9"><strong>Dongle</strong> - si tu veux une défense optimale contre le SPAM avec la meilleure protection des données, indépendamment du modèle de routeur et du fournisseur d'accès.</li>
+				<li data-tx="t0036:7f445021"><strong>Dongle de blocage du phone</strong> - si tu veux une protection optimale contre le SPAM avec la meilleure protection des données, indépendamment du modèle de routeur et du fournisseur d'accès.</li>
 				<li data-tx="t0037:263869ed"><strong>Réponse cloud</strong> - si tu as ta propre Fritz!Box (pas de boîte de location) et que tu acceptes, pour une défense optimale contre le SPAM, que tous tes appels soient vérifiés par le serveur PhoneBlock.</li>
 				<li data-tx="t0038:d89599d7"><strong>Blocklisten-Telefonbuch</strong> - si tu as une Fritz!Box (même une box de location) et que cela ne te dérange pas si un spammeur passe de temps en temps alors qu'il est en fait sur la liste de blocage.</li>
 			</ul>
@@ -204,14 +218,14 @@
 
 		<h2 class="mt-6" data-tx="t0039:aeafcde8">J'ai pris ma décision - c'est parti</h2>
 
-		<div class="columns is-multiline mt-4">
-			<div class="column is-one-third">
+		<div class="columns is-multiline is-desktop">
+			<div class="column">
 				<div class="card is-fullheight">
 					<div class="card-content">
 						<p class="title is-4">
 							<span class="icon-text">
-								<span class="icon has-text-primary"><i class="fas fa-bolt"></i></span>
-								<span data-tx="t0040:365a40ae">Dongle PhoneBlock</span>
+								<span class="icon has-text-primary"><i class="fa-brands fa-usb"></i></span>
+								<span data-tx="t0040:1e211e8a">Dongle Phoneblock</span>
 							</span>
 						</p>
 						<p class="subtitle is-6 has-text-grey" data-tx="t0041:3a1686ef">Recommandé - meilleure défense, meilleure protection des données</p>
@@ -220,18 +234,18 @@
 					<footer class="card-footer">
 						<a class="card-footer-item button is-primary is-medium" th:href="@{/dongle}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
-							<span data-tx="t0043:526888ef">Vers le dongle</span>
+							<span data-tx="t0043:26d7229c">Vers le dongle Phoneblock</span>
 						</a>
 					</footer>
 				</div>
 			</div>
 
-			<div class="column is-one-third">
+			<div class="column">
 				<div class="card is-fullheight">
 					<div class="card-content">
 						<p class="title is-4">
 							<span class="icon-text">
-								<span class="icon has-text-info"><img alt="" data-tx="t0044" th:src="@{/assets/img/ab/logo/ab-logo.svg}"/></span>
+								<span class="icon has-text-info"><i class="fa-solid fa-voicemail"></i></span>
 								<span data-tx="t0045:1cdaad3">Répondeur dans le nuage</span>
 							</span>
 						</p>
@@ -241,18 +255,18 @@
 					<footer class="card-footer">
 						<a class="card-footer-item button is-info is-medium" th:href="@{/anrufbeantworter}">
 							<span class="icon"><i class="fas fa-arrow-right"></i></span>
-							<span data-tx="t0048:98b00790">Vers le répondeur</span>
+							<span data-tx="t0048:f2463c71">Vers la messagerie vocale dans le cloud</span>
 						</a>
 					</footer>
 				</div>
 			</div>
 
-			<div class="column is-one-third">
+			<div class="column">
 				<div class="card is-fullheight">
 					<div class="card-content">
 						<p class="title is-4">
 							<span class="icon-text">
-								<span class="icon has-text-info"><i class="fas fa-address-book"></i></span>
+								<span class="icon has-text-info"><i class="fa-solid fa-filter-circle-xmark"></i></span>
 								<span data-tx="t0049:b7a22f37">Répertoire téléphonique des listes de blocage</span>
 							</span>
 						</p>

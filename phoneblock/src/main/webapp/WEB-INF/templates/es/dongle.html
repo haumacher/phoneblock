@@ -7,7 +7,7 @@
 
 <section class="section">
 	<div class="content">
-		<h1 data-tx="t0192:f91bfd8">PhoneBlock Dongle <sup><span class="tag is-info is-medium ml-2">Nuevo</span></sup></h1>
+		<h1 data-tx="t0192:fa04cef1">PhoneBlock dongle <sup><span class="tag is-info is-medium ml-2">Nuevo</span></sup></h1>
 
 		<p class="subtitle" data-tx="t0095:dab19814">Un contestador automático inteligente con apariencia de teléfono IP. Del tamaño de un pulgar, se conecta al puerto USB del router, se registra como un teléfono SIP adicional e intercepta las llamadas comerciales antes de que suene su teléfono real. Funciona independientemente del modelo de router, ¡incluso sin Fritz!</p>
 		
@@ -16,33 +16,33 @@
 		</p>		
 
 		<div class="notification is-warning">
-			<p data-tx="t0123:cedc07e4"><strong>Estado: Beta.</strong> La primera versión ya funciona de forma fiable. Estoy buscando más testers para probar el dongle en tantos entornos diferentes como sea posible - <a href="#tester">informes de experiencia bienvenidos</a>.</p>
+			<p data-tx="t0123:3a266dbc"><strong>Estado: Beta.</strong> La primera versión ya funciona de forma fiable. Estoy buscando más probadores para probar el dongle PhoneBlock en tantos entornos diferentes como sea posible - <a href="#tester">informes de experiencia bienvenidos</a>.</p>
 		</div>
 
 		<h2 data-tx="t0004:6b104c7a">La idea en una frase</h2>
 
-		<p data-tx="t0081:567e2d4a">El dongle se conecta a su router como un teléfono IP adicional. Cada vez que entra una llamada, pregunta a la base de datos PhoneBlock a la velocidad del rayo: <em>"¿Es esto spam?"</em> Si es así, contesta él mismo a la llamada, reproduce un breve anuncio si lo desea y vuelve a colgar. Su teléfono real ni siquiera ha sonado en ese momento. A diferencia del <a th:href="@{/anrufbeantworter}">contestador automático en la nube</a>, todo el procesamiento de llamadas tiene lugar localmente en su casa.</p>
+		<p data-tx="t0081:4d04d687">El dongle PhoneBlock se conecta a su router como un teléfono IP adicional. Cada vez que entra una llamada, pregunta a la base de datos PhoneBlock a la velocidad del rayo: <em>"¿Es esto spam?"</em> Si es así, contesta él mismo a la llamada, reproduce un breve anuncio si lo desea y vuelve a colgar. Su teléfono real ni siquiera ha sonado en ese momento. A diferencia del <a th:href="@{/anrufbeantworter}">contestador automático en la nube</a>, todo el procesamiento de llamadas tiene lugar localmente en su casa.</p>
 
 		<div class="columns is-centered mt-5">
 			<div class="column is-one-quarter has-text-centered">
 				<p><span class="icon is-large has-text-info"><i class="fas fa-phone-volume fa-3x"></i></span></p>
 				<h4 data-tx="t0006:fbca4eec">Entra la primera llamada</h4>
-				<p data-tx="t0097:e81f88f3">El router señala la llamada a todos los teléfonos registrados, incluido el dongle. Los teléfonos "reales" pueden configurarse con un retardo de llamada de 3-5 segundos.</p>
+				<p data-tx="t0097:2787a701">El router señaliza la llamada a todos los teléfonos registrados, incluido el dongle PhoneBlock. Los teléfonos "reales" pueden configurarse con un retardo de llamada de 3-5 segundos.</p>
 			</div>
 			<div class="column is-one-quarter has-text-centered">
 				<p><span class="icon is-large has-text-warning"><i class="fas fa-bolt fa-3x"></i></span></p>
 				<h4 data-tx="t0008:acac085a">2. comprobación del flash</h4>
-				<p data-tx="t0098:b7f3abe5">El dongle pregunta a PhoneBlock a la velocidad del rayo si se sabe que el número es spam. La consulta se ejecuta a través de HTTPS cifrado y sólo transmite un hash del número. Las llamadas de los contactos de la agenda ni siquiera se comprueban: nunca salen de la red doméstica.</p>
+				<p data-tx="t0098:1dec8705">El dongle PhoneBlock consulta PhoneBlock a la velocidad del rayo para ver si se sabe que el número es spam. La consulta se ejecuta a través de HTTPS cifrado y sólo transmite un hash del número. Las llamadas de los contactos de su agenda telefónica ni siquiera se comprueban: nunca salen de su red doméstica.</p>
 			</div>
 			<div class="column is-one-quarter has-text-centered">
 				<p><span class="icon is-large has-text-danger"><i class="fas fa-ban fa-3x"></i></span></p>
 				<h4 data-tx="t0010:be667d0f">3. deshacerse de él</h4>
-				<p data-tx="t0099:5eb763c7">Si el número es spam, el dongle descuelga, reproduce un anuncio y cuelga. El teléfono del salón permanece en silencio. Si el número no es spam conocido, el dongle simplemente no hace nada: la llamada pasa con normalidad.</p>
+				<p data-tx="t0099:2a38220a">Si el número es spam, el dongle PhoneBlock descuelga, reproduce un anuncio y cuelga. El teléfono del salón permanece en silencio. Si el número no es spam conocido, la mochila PhoneBlock simplemente no hace nada - la llamada pasa normalmente.</p>
 			</div>
 		</div>
 
 		<div class="notification is-info">
-			<p data-tx="t0100:86bdb13f"><strong>Por qué es tan encantador:</strong> El dongle sólo necesita un mínimo de energía y Wi-Fi. Sin servidor adicional, sin Fritz!Box, sin contrato. El microcontrolador ESP32 que lleva en su interior consume menos de medio vatio: basta con conectarlo al puerto USB del router y olvidarse de él.</p>
+			<p data-tx="t0100:5bd0fd66"><strong>Por qué esto es tan encantador:</strong> El dongle PhoneBlock sólo requiere un mínimo de energía y Wi-Fi. Sin servidor adicional, sin Fritz!Box, sin contrato. El microcontrolador ESP32 que lleva en su interior consume menos de medio vatio: basta con conectarlo al puerto USB del router y olvidarse de él.</p>
 		</div>
 
 		<p class="subtitle mt-6" data-tx="t0124:bd004e4f">Aquí es donde la cosa se pone práctica: las instrucciones le guían paso a paso en el pedido y la configuración: unos 10 euros de hardware, un esfuerzo único de unos pocos minutos.</p>
@@ -119,7 +119,7 @@
 			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0215:f3700f31">Selecciona el puerto serie.</figcaption>
 		</figure>
 
-		<p data-tx="t0159:d037e970">Confirme la pregunta de seguridad "¿Instalar PhoneBlock Dongle?" con <strong>"Instalar"</strong>. El software PhoneBlock se carga ahora en el dongle - esto tarda aproximadamente un minuto. No desenchufe el dongle durante este tiempo.</p>
+		<p data-tx="t0159:e29e2c1b">Confirme la pregunta de seguridad "¿Instalar PhoneBlock dongle?" con <strong>"Instalar"</strong>. El software PhoneBlock se carga ahora en el dongle - esto tarda aproximadamente un minuto. No desenchufe el dongle durante este tiempo.</p>
 
 		<div class="columns is-multiline is-mobile is-variable is-2">
 			<div class="column is-3-desktop is-6-tablet is-12-mobile">
@@ -158,41 +158,37 @@
 			</ul>
 		</details>
 
-		<h2 data-tx="t0161:51445138" id="schritt-5">Paso 3 - Conecte el dongle al router</h2>
+		<h2 data-tx="t0161:ff9673d3" id="schritt-5">Paso 3 - Conecte el dongle PhoneBlock al router</h2>
 
-		<p data-tx="t0162:cbcaee11">Cuando el navegador indique "¡Instalación finalizada!", retire el dongle del ordenador y conéctelo a un puerto USB libre del router (o a cualquier fuente de alimentación USB de 5 V dentro del alcance de la WLAN).</p>
+		<p data-tx="t0162:d933bd4d">Cuando el navegador indique "¡Instalación completada!", retire el dongle PhoneBlock del ordenador y conéctelo a un puerto USB libre de su router (o a cualquier fuente de alimentación USB de 5 V dentro del alcance de la WLAN).</p>
 
 		<figure class="image" style="max-width:500px;">
 			<img alt="ESP32 dongle en el Fritz!Box" data-tx="t0196:d0a4fea7" th:src="@{/assets/img/dongle/plugged-into-router.jpg}"/>
-			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0206:bf34dbb5">¡Dongle en el puerto USB del Fritz!</figcaption>
+			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0206:ff071800">¡PhoneBlock en el puerto USB del Fritz!</figcaption>
 		</figure>
 
-		<h2 data-tx="t0164:71e45897" id="schritt-6">Paso 4 - Añadir el dongle a la WLAN (WPS)</h2>
+		<h2 data-tx="t0164:4aa08d92" id="schritt-6">Paso 4 - Añadir el dongle PhoneBlock a la WLAN (WPS)</h2>
 
-		<p data-tx="t0165:b5b221d5">El dongle recién flasheado aún no tiene datos de acceso Wi-Fi y está esperando a que lo conecte a su Wi-Fi. El LED <strong>parpadea rápidamente</strong> (unas cinco veces por segundo) y señala "Modo de emparejamiento activo".</p>
+		<p data-tx="t0165:faed557d">El dongle PhoneBlock aún no tiene datos de acceso Wi-Fi y está esperando a que lo conecte a su Wi-Fi. El LED <strong>parpadea rápidamente</strong> (unas cinco veces por segundo) y señala "Modo de emparejamiento activo".</p>
 
-		<p data-tx="t0166:83cbb4c2">Ahora pulse el botón <strong>WPS</strong> del router. En el Fritz!Box, es el botón <strong>"Conectar / WPS"</strong> en la parte superior del dispositivo - púlselo brevemente hasta que el LED Wi-Fi del propio router empiece a parpadear. Otros routers etiquetan el botón como "WPS" o "Pair". En unos segundos, el router transmite tus datos de acceso Wi-Fi al dongle, que los guarda y se conecta.</p>
+		<p data-tx="t0166:e6ac9e1a">Ahora pulse el botón <strong>WPS</strong> del router. En el Fritz!Box, es el botón <strong>"Conectar / WPS"</strong> en la parte superior del dispositivo - púlselo brevemente hasta que el LED Wi-Fi del propio router empiece a parpadear. Otros routers etiquetan el botón como "WPS" o "Pair". En unos segundos, el router transmite sus datos de acceso Wi-Fi al dongle PhoneBlock, que los guarda y se conecta.</p>
 
 		<figure class="image" style="max-width:500px;">
 			<img alt="Botón WPS del Fritz Box" data-tx="t0197:fe3e8d05" th:src="@{/assets/img/dongle/wps-button.jpg}"/>
 			<figcaption class="has-text-centered is-size-7 mt-2" data-tx="t0207:b0912da4">Botón WPS del Fritz Box</figcaption>
 		</figure>
 
-		<p data-tx="t0168:32d2921"><strong>Ha funcionado:</strong> El LED ahora parpadea lentamente (aproximadamente una vez por segundo) - el dongle está en la WLAN, ha recibido una dirección y está esperando la configuración (siguiente paso).</p>
+		<p data-tx="t0168:54d5a6"><strong>Bien hecho:</strong> El LED parpadea ahora lentamente (aproximadamente una vez por segundo) - el dongle PhoneBlock está en la WLAN, ha recibido una dirección y está esperando la configuración (siguiente paso).</p>
 
-		<p data-tx="t0169:f91aa6d5"><strong>No funcionó</strong> Compruebe en la configuración del router si WPS está activado (en el Fritz!Box: <em>WLAN → Seguridad → WPS</em>). Si la ventana WPS fue demasiado corta, el dongle reinicia automáticamente el emparejamiento - entonces simplemente pulse el botón WPS de nuevo.</p>
+		<p data-tx="t0169:cddfc489"><strong>No funcionó</strong> Compruebe en la configuración del router si WPS está activado (en el Fritz!Box: <em>WLAN → Seguridad → WPS</em>). Si la ventana WPS fue demasiado corta, la mochila PhoneBlock reinicia automáticamente el emparejamiento - entonces simplemente pulse el botón WPS de nuevo.</p>
 
 		<h2 data-tx="t0170:6da0bfa" id="schritt-7">Paso 5 - Registrarse como teléfono y configurar el acceso a PhoneBlock</h2>
 
-		<p data-tx="t0171:d7c2d3df">Para que el dongle pueda interceptar llamadas, aún necesita dos cosas: tus datos de acceso SIP (para poder iniciar sesión como un teléfono adicional) y un token PhoneBlock (para poder consultar la base de datos de spam). Ambos datos se introducen en la interfaz web del dongle. También puedes hacer el resto de la configuración desde un teléfono móvil.</p>
+		<p data-tx="t0171:1da1ccdb">Para que el dongle PhoneBlock pueda interceptar llamadas, todavía necesita dos cosas: sus datos de acceso SIP (para que pueda iniciar sesión como un teléfono adicional) y un token PhoneBlock (para que pueda consultar la base de datos de spam). Ambos datos se introducen en la interfaz web del dongle PhoneBlock. También puede realizar el resto de la configuración desde un teléfono móvil.</p>
 
 		<p data-tx="t0172:f4d3bf5f">Abrir en el navegador:</p>
 
 		<p><a class="button is-link is-large" data-tx="t0173:9be1c030" href="http://answerbot/" id="dongle-step7-link" target="_blank">http://answerbot/</a></p>
-
-		<div class="notification is-success" id="dongle-located-banner" style="display:none;">
-			<p data-tx="t0174:c20257a1"><strong>Dongle reconocido:</strong> <a href="" id="dongle-located-link" target="_blank">http://192.168.178.xxx/</a> - el botón de arriba lo abre directamente.</p>
-		</div>
 
 		<p data-tx="t0175:4a5ab444">Si este enlace no funciona, busque en la lista de dispositivos de su router un dispositivo con el nombre <code>answerbot</code>, anote su dirección IP y llámelo en el navegador - por ejemplo <code>http://192.168.178.xxx/</code>.</p>
 
@@ -241,7 +237,7 @@
 			<li data-tx="t0179:9fd0fd46"><strong>Token de Bloqueo Telefónico</strong> - crea un token de API en tus <a th:href="@{/settings}">configuraciones de Bloqueo Telefónico</a> y cópialo en el campo correspondiente.</li>
 		</ul>
 
-		<p data-tx="t0180:2f4a93c2">Guardar → el LED está ahora permanentemente encendido → el dongle está listo para su uso. Ahora las llamadas de spam se interceptarán silenciosamente antes de que suene el teléfono.</p>
+		<p data-tx="t0180:9741140b">Guardar → el LED está ahora permanentemente encendido → el dongle PhoneBlock está listo para su uso. Las llamadas de spam ahora serán interceptadas silenciosamente antes de que suene su teléfono.</p>
 
 		<hr class="my-5"/>
 
@@ -249,7 +245,7 @@
 
 		<h2 data-tx="t0182:c258f25f" id="tester">Contribuir con un informe de experiencia</h2>
 
-		<p data-tx="t0183:351d7eb2">Los primeros dongles ya funcionan de forma fiable, pero los modelos de router, los proveedores y los tipos de conexión son una mezcla de colores y cada combinación tiene sus peculiaridades. Para mejorar el asistente de configuración, los <strong>informes de experiencia estructurados</strong> valen su peso en oro, tanto si todo ha funcionado como si ha habido algún problema.</p>
+		<p data-tx="t0183:aef4c36">Los primeros dongles PhoneBlock funcionan de forma fiable - pero los modelos de router, proveedores y tipos de conexión son una mezcla de colores y cada combinación tiene sus propias peculiaridades. Con el fin de mejorar el asistente de configuración, los <strong>informes de experiencia estructurados</strong> valen su peso en oro - independientemente de si todo funcionó para usted o si hubo algún contratiempo.</p>
 
 		<p data-tx="t0184:49f94506">Especialmente interesantes son los montajes que aún están poco cubiertos:</p>
 
