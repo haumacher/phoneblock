@@ -76,7 +76,7 @@
 						<i class="fas fa-cogs fa-3x"></i>
 					</span>
 					<h3 class="title is-5" data-tx="t0027:754345bd">Flexibel</h3>
-					<p data-tx="t0053:91c8788c">Werkt in de <a th:href="@{/festnetz}">landline</a>, op <a th:href="@{/setup-android}">Android</a>, <a th:href="@{/setup-iphone}">iPhone</a> en <a th:href="@{/setup-switchboard}">telefoonsystemen</a> - jij bepaalt hoe.</p>
+					<p data-tx="t0028:d6e69698">Werkt op <a th:href="@{/anrufbeantworter}">FRITZ!Box</a>, <a th:href="@{/setup-android}">Android</a>, <a th:href="@{/setup-iphone}">iPhone</a> en <a th:href="@{/setup-switchboard}">telefoonsystemen</a> - jij bepaalt hoe.</p>
 				</div>
 			</div>
 		</div>
@@ -119,82 +119,60 @@
 
 		<div class="columns is-multiline">
 			<div class="column is-half">
-				<div class="card is-fullheight">
-					<div class="card-content">
-						<p class="title is-5">
-							<span class="icon-text">
-								<span class="icon"><i class="fa-solid fa-phone"></i></span>
-								<span data-tx="t0054:374baf20">Vaste lijn</span>
+				<div class="box">
+					<h3 class="title is-5">
+						<span class="icon-text">
+							<span class="icon">
+								<i class="fa-solid fa-network-wired"></i>
 							</span>
-						</p>
-						<p data-tx="t0055:414d6689">U kunt kiezen uit drie varianten: <strong>PhoneBlock dongle</strong> als kleine USB-stick in de router, <strong>Cloud antwoordapparaat</strong> via de Fritz!Box, of <strong>Blocklist telefoonboek</strong> als CardDAV sync. Welke het beste bij je past, hangt af van je router, provider en vereisten voor gegevensbescherming - op de overzichtspagina worden alle drie naast elkaar gezet.</p>
-					</div>
-					<footer class="card-footer">
-						<a th:class="|card-footer-item button ${fritzbox ? 'is-primary' : 'is-info'} is-medium|" th:href="@{/festnetz}">
-							<span class="icon"><i class="fas fa-arrow-right"></i></span>
-							<span data-tx="t0056:f69b313">Selecteer vaste netwerkvariant</span>
-						</a>
-					</footer>
+							<span data-tx="t0037:7852d066">FRITZ!Box</span>
+						</span>
+					</h3>
+					<p data-tx="t0038:160340"><strong>Aanbevolen:</strong> Installeer het <a th:href="@{/anrufbeantworter}">PhoneBlock antwoordapparaat</a> als een VoIP-apparaat. Het antwoordapparaat accepteert automatisch spamoproepen en neemt bellers op in zinloze gesprekken - je telefoon gaat niet eens over.</p>
+					<p class="mt-3" data-tx="t0039:9a3c1d09"><strong>Alternatief:</strong> Importeer de geblokkeerde lijst als een <a th:href="@{/setup}">telefoonboek</a> in je <a th:href="@{/link/fritzbox}">FRITZ!Box van AVM</a>. Bellers worden direct geweigerd (let op: de grootte van het telefoonboek is beperkt, daarom worden niet alle nummers opgenomen).</p>
 				</div>
 			</div>
 
 			<div class="column is-half">
-				<div class="card is-fullheight">
-					<div class="card-content">
-						<p class="title is-5">
-							<span class="icon-text">
-								<span class="icon"><i class="fa-brands fa-android"></i></span>
-								<span data-tx="t0057:aecec7cb">Android</span>
+				<div class="box">
+					<h3 class="title is-5">
+						<span class="icon-text">
+							<span class="icon">
+								<i class="fa-brands fa-android"></i>
 							</span>
-						</p>
-						<p data-tx="t0058:cee8e47c">Blokkeer spamoproepen direct op je Android mobiele telefoon met de <a th:href="@{/setup-android}">PhoneBlock app</a>. De app controleert inkomende gesprekken in realtime en blokkeert automatisch bekende spornummers. Je kunt zelf instellen voor hoeveel negatieve berichten een nummer moet worden geblokkeerd.</p>
-					</div>
-					<footer class="card-footer">
-						<a th:class="|card-footer-item button ${android ? 'is-primary' : 'is-info'} is-medium|" th:href="@{/setup-android}">
-							<span class="icon"><i class="fas fa-arrow-right"></i></span>
-							<span data-tx="t0059:b0eb119f">Android instellen</span>
-						</a>
-					</footer>
+							<span data-tx="t0040:aecec7cb">Android</span>
+						</span>
+					</h3>
+					<p data-tx="t0041:cee8e47c">Blokkeer spamoproepen direct op je Android mobiele telefoon met de <a th:href="@{/setup-android}">PhoneBlock app</a>. De app controleert inkomende gesprekken in realtime en blokkeert automatisch bekende spornummers. Je kunt zelf instellen voor hoeveel negatieve berichten een nummer moet worden geblokkeerd.</p>
+					<p class="mt-3" data-tx="t0042:56561506"><strong>Functies:</strong> Oproepgeschiedenis, nummers rapporteren en beoordelen, eigen blokkadelijst, geen autorisatie nodig om je contacten te lezen.</p>
 				</div>
 			</div>
 
 			<div class="column is-half">
-				<div class="card is-fullheight">
-					<div class="card-content">
-						<p class="title is-5">
-							<span class="icon-text">
-								<span class="icon"><i class="fa-brands fa-apple"></i></span>
-								<span data-tx="t0060:b21bebc5">iPhone</span>
+				<div class="box">
+					<h3 class="title is-5">
+						<span class="icon-text">
+							<span class="icon">
+								<i class="fa-brands fa-apple"></i>
 							</span>
-						</p>
-						<p data-tx="t0061:b45f7cac">Neem de PhoneBlock-blokkeringslijst op in je iPhone-contactpersonen. iOS laat je dan automatisch zien wanneer een beller op de blokkeringslijst staat. De <a th:href="@{/setup-iphone}">instelling</a> gebeurt via CardDAV - je iPhone houdt de lijst automatisch bij.</p>
-					</div>
-					<footer class="card-footer">
-						<a th:class="|card-footer-item button ${iphone ? 'is-primary' : 'is-info'} is-medium|" th:href="@{/setup-iphone}">
-							<span class="icon"><i class="fas fa-arrow-right"></i></span>
-							<span data-tx="t0062:c278f9d5">iPhone instellen</span>
-						</a>
-					</footer>
+							<span data-tx="t0043:b21bebc5">iPhone</span>
+						</span>
+					</h3>
+					<p data-tx="t0044:b45f7cac">Neem de PhoneBlock-blokkeringslijst op in je iPhone-contactpersonen. iOS laat je dan automatisch zien wanneer een beller op de blokkeringslijst staat. De <a th:href="@{/setup-iphone}">instelling</a> gebeurt via CardDAV - je iPhone houdt de lijst automatisch bij.</p>
 				</div>
 			</div>
 
 			<div class="column is-half">
-				<div class="card is-fullheight">
-					<div class="card-content">
-						<p class="title is-5">
-							<span class="icon-text">
-								<span class="icon"><i class="fa-solid fa-asterisk"></i></span>
-								<span data-tx="t0063:9faa419a">Telefoonsysteem</span>
+				<div class="box">
+					<h3 class="title is-5">
+						<span class="icon-text">
+							<span class="icon">
+								<i class="fa-solid fa-asterisk"></i>
 							</span>
-						</p>
-						<p data-tx="t0064:99335f28">Integreer PhoneBlock in je <a th:href="@{/setup-switchboard}">telefoonsysteem</a> of PBX. De blokkadelijst kan worden gedownload in verschillende formaten of worden opgevraagd via API. Ideaal voor bedrijven en professionele telefoonsystemen.</p>
-					</div>
-					<footer class="card-footer">
-						<a class="card-footer-item button is-info is-medium" th:href="@{/setup-switchboard}">
-							<span class="icon"><i class="fas fa-arrow-right"></i></span>
-							<span data-tx="t0065:aa28e976">Telefoonsysteem instellen</span>
-						</a>
-					</footer>
+							<span data-tx="t0045:9faa419a">Telefoonsysteem</span>
+						</span>
+					</h3>
+					<p data-tx="t0046:99335f28">Integreer PhoneBlock in je <a th:href="@{/setup-switchboard}">telefoonsysteem</a> of PBX. De blokkadelijst kan worden gedownload in verschillende formaten of worden opgevraagd via API. Ideaal voor bedrijven en professionele telefoonsystemen.</p>
 				</div>
 			</div>
 		</div>

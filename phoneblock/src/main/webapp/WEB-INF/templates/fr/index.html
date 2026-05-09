@@ -76,7 +76,7 @@
 						<i class="fas fa-cogs fa-3x"></i>
 					</span>
 					<h3 class="title is-5" data-tx="t0027:754345bd">Flexible</h3>
-					<p data-tx="t0053:91c8788c">Fonctionne sur <a th:href="@{/festnetz}">réseau fixe</a>, sur <a th:href="@{/setup-android}">Android</a>, <a th:href="@{/setup-iphone}">iPhone</a> et <a th:href="@{/setup-switchboard}">systèmes téléphoniques</a> - tu décides comment.</p>
+					<p data-tx="t0028:d6e69698">Fonctionne sur <a th:href="@{/anrufbeantworter}">FRITZ!Box</a>, <a th:href="@{/setup-android}">Android</a>, <a th:href="@{/setup-iphone}">iPhone</a> et <a th:href="@{/setup-switchboard}">Systèmes téléphoniques</a> - Tu décides comment.</p>
 				</div>
 			</div>
 		</div>
@@ -119,82 +119,60 @@
 
 		<div class="columns is-multiline">
 			<div class="column is-half">
-				<div class="card is-fullheight">
-					<div class="card-content">
-						<p class="title is-5">
-							<span class="icon-text">
-								<span class="icon"><i class="fa-solid fa-phone"></i></span>
-								<span data-tx="t0054:374baf20">Ligne fixe</span>
+				<div class="box">
+					<h3 class="title is-5">
+						<span class="icon-text">
+							<span class="icon">
+								<i class="fa-solid fa-network-wired"></i>
 							</span>
-						</p>
-						<p data-tx="t0055:414d6689">Trois variantes au choix : <strong>PhoneBlock-Dongle</strong> comme petite clé USB dans le routeur, <strong>Cloud-répondeur</strong> via la Fritz!Box, ou <strong>Blocklisten-Telefonbuch</strong> comme CardDAV-Sync. Le choix dépend du routeur, du fournisseur d'accès et des exigences en matière de protection des données - la page d'aperçu compare les trois solutions directement côte à côte.</p>
-					</div>
-					<footer class="card-footer">
-						<a th:class="|card-footer-item button ${fritzbox ? 'is-primary' : 'is-info'} is-medium|" th:href="@{/festnetz}">
-							<span class="icon"><i class="fas fa-arrow-right"></i></span>
-							<span data-tx="t0056:f69b313">Choisir la variante de réseau fixe</span>
-						</a>
-					</footer>
+							<span data-tx="t0037:7852d066">FRITZ!Box</span>
+						</span>
+					</h3>
+					<p data-tx="t0038:160340"><strong>Recommandé:</strong> Installe le répondeur téléphonique <a th:href="@{/anrufbeantworter}">PhoneBlock</a> comme appareil VoIP. Le répondeur accepte automatiquement les appels de spam et intègre les appelants dans des conversations inutiles - ton téléphone ne sonne même pas.</p>
+					<p class="mt-3" data-tx="t0039:9a3c1d09"><strong>Alternative:</strong> Importe la liste de blocage comme <a th:href="@{/setup}">répertoire téléphonique</a> dans ta <a th:href="@{/link/fritzbox}">FRITZ!Box d'AVM</a>. Les appelants sont directement rejetés (remarque : la taille de l'annuaire est limitée, tous les numéros ne sont donc pas saisis).</p>
 				</div>
 			</div>
 
 			<div class="column is-half">
-				<div class="card is-fullheight">
-					<div class="card-content">
-						<p class="title is-5">
-							<span class="icon-text">
-								<span class="icon"><i class="fa-brands fa-android"></i></span>
-								<span data-tx="t0057:aecec7cb">Android</span>
+				<div class="box">
+					<h3 class="title is-5">
+						<span class="icon-text">
+							<span class="icon">
+								<i class="fa-brands fa-android"></i>
 							</span>
-						</p>
-						<p data-tx="t0058:cee8e47c">Bloque les appels spam directement sur ton téléphone portable Android avec l'application <a th:href="@{/setup-android}">PhoneBlock</a>. L'application vérifie les appels entrants en temps réel et bloque automatiquement les numéros de spam connus. Tu peux définir toi-même à partir de combien de messages négatifs un numéro doit être bloqué.</p>
-					</div>
-					<footer class="card-footer">
-						<a th:class="|card-footer-item button ${android ? 'is-primary' : 'is-info'} is-medium|" th:href="@{/setup-android}">
-							<span class="icon"><i class="fas fa-arrow-right"></i></span>
-							<span data-tx="t0059:b0eb119f">Configurer Android</span>
-						</a>
-					</footer>
+							<span data-tx="t0040:aecec7cb">Android</span>
+						</span>
+					</h3>
+					<p data-tx="t0041:cee8e47c">Bloque les appels spam directement sur ton téléphone portable Android avec l'application <a th:href="@{/setup-android}">PhoneBlock</a>. L'application vérifie les appels entrants en temps réel et bloque automatiquement les numéros de spam connus. Tu peux définir toi-même à partir de combien de messages négatifs un numéro doit être bloqué.</p>
+					<p class="mt-3" data-tx="t0042:56561506"><strong>Features:</strong> Historique des appels, signale et évalue les numéros, liste de blocage personnelle, aucune autorisation nécessaire pour lire tes contacts.</p>
 				</div>
 			</div>
 
 			<div class="column is-half">
-				<div class="card is-fullheight">
-					<div class="card-content">
-						<p class="title is-5">
-							<span class="icon-text">
-								<span class="icon"><i class="fa-brands fa-apple"></i></span>
-								<span data-tx="t0060:b21bebc5">iPhone</span>
+				<div class="box">
+					<h3 class="title is-5">
+						<span class="icon-text">
+							<span class="icon">
+								<i class="fa-brands fa-apple"></i>
 							</span>
-						</p>
-						<p data-tx="t0061:b45f7cac">Intégrer la liste de blocage PhoneBlock dans les contacts de ton iPhone. iOS t'indique alors automatiquement si un appelant se trouve sur la liste de blocage. La <a th:href="@{/setup-iphone}">configuration</a> se fait via CardDAV - ton iPhone tient automatiquement la liste à jour.</p>
-					</div>
-					<footer class="card-footer">
-						<a th:class="|card-footer-item button ${iphone ? 'is-primary' : 'is-info'} is-medium|" th:href="@{/setup-iphone}">
-							<span class="icon"><i class="fas fa-arrow-right"></i></span>
-							<span data-tx="t0062:c278f9d5">Configurer l'iPhone</span>
-						</a>
-					</footer>
+							<span data-tx="t0043:b21bebc5">iPhone</span>
+						</span>
+					</h3>
+					<p data-tx="t0044:b45f7cac">Intégrer la liste de blocage PhoneBlock dans les contacts de ton iPhone. iOS t'indique alors automatiquement si un appelant se trouve sur la liste de blocage. La <a th:href="@{/setup-iphone}">configuration</a> se fait via CardDAV - ton iPhone tient automatiquement la liste à jour.</p>
 				</div>
 			</div>
 
 			<div class="column is-half">
-				<div class="card is-fullheight">
-					<div class="card-content">
-						<p class="title is-5">
-							<span class="icon-text">
-								<span class="icon"><i class="fa-solid fa-asterisk"></i></span>
-								<span data-tx="t0063:9faa419a">Système téléphonique</span>
+				<div class="box">
+					<h3 class="title is-5">
+						<span class="icon-text">
+							<span class="icon">
+								<i class="fa-solid fa-asterisk"></i>
 							</span>
-						</p>
-						<p data-tx="t0064:99335f28">Intégrer PhoneBlock dans ton <a th:href="@{/setup-switchboard}">système téléphonique</a> ou PBX. La liste de blocage peut être téléchargée dans différents formats ou interrogée via l'API. Idéal pour les entreprises et les systèmes téléphoniques professionnels.</p>
-					</div>
-					<footer class="card-footer">
-						<a class="card-footer-item button is-info is-medium" th:href="@{/setup-switchboard}">
-							<span class="icon"><i class="fas fa-arrow-right"></i></span>
-							<span data-tx="t0065:aa28e976">Configurer le système téléphonique</span>
-						</a>
-					</footer>
+							<span data-tx="t0045:9faa419a">Système téléphonique</span>
+						</span>
+					</h3>
+					<p data-tx="t0046:99335f28">Intégrer PhoneBlock dans ton <a th:href="@{/setup-switchboard}">système téléphonique</a> ou PBX. La liste de blocage peut être téléchargée dans différents formats ou interrogée via l'API. Idéal pour les entreprises et les systèmes téléphoniques professionnels.</p>
 				</div>
 			</div>
 		</div>
