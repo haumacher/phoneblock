@@ -26,10 +26,12 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * Receives an ELF core dump that the PhoneBlock dongle uploads on the
- * boot following a panic. Stores the raw ELF on disk so it can later be
- * symbolicated against the matching {@code phoneblock_dongle.elf} from
- * the CDN release directory.
+ * Receives a raw ESP-IDF core dump that the PhoneBlock dongle uploads on
+ * the boot following a panic. The payload is the verbatim flash region
+ * written by {@code esp_core_dump_to_flash}, not an ELF — decode with
+ * {@code esp-coredump info_corefile -t raw -c <file.coredump>
+ * phoneblock_dongle.elf}, where the matching {@code phoneblock_dongle.elf}
+ * lives in the CDN release directory.
  *
  * <p>Storage location is configured via JNDI {@code coredump/dir}. If the
  * key is unset the servlet returns 503 — the dongle treats that as
@@ -92,7 +94,7 @@ public class CoredumpServlet extends HttpServlet {
 			return;
 		}
 
-		File finalFile = new File(versionDir, user + "-" + timestamp + ".elf");
+		File finalFile = new File(versionDir, user + "-" + timestamp + ".coredump");
 		File tmpFile = new File(versionDir, finalFile.getName() + ".tmp");
 
 		try (InputStream in = req.getInputStream();
