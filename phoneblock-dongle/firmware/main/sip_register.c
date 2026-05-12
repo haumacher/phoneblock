@@ -1467,5 +1467,10 @@ void sip_register_start(void)
     }
     ESP_LOGI(TAG, "starting SIP registrar task (host=%s user=%s)",
              config_sip_host(), config_sip_user());
-    xTaskCreate(sip_task, "sip_register", 8192, NULL, 5, &s_sip_task);
+    // Stack sized for the synchronous HTTPS check in handle_invite(): mbedtls
+    // pk_verify spikes 6–8 KB during the TLS handshake to phoneblock.net,
+    // stacked on top of the SIP parser. 8 KB was within ~1 KB of the limit
+    // and overflowed in the field (crash-reports/1.0.9). If the API call ever
+    // moves into a dedicated worker, this can come back down.
+    xTaskCreate(sip_task, "sip_register", 12288, NULL, 5, &s_sip_task);
 }
