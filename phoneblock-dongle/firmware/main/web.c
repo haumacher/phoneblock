@@ -1114,6 +1114,10 @@ static esp_err_t handle_announcement_post(httpd_req_t *req)
         }
         write_us += esp_timer_get_time() - ws;
         got += n;
+        // Up to 240 KB audio blob; SPIFFS write latency plus the
+        // browser upload can push this past CONFIG_ESP_TASK_WDT_TIMEOUT_S
+        // on a slow link. Same rationale as the firmware upload handler.
+        esp_task_wdt_reset();
     }
     free(chunk);
 
@@ -1223,6 +1227,12 @@ static esp_err_t handle_firmware_upload(httpd_req_t *req)
             return ESP_OK;
         }
         got += n;
+        // Feed the watchdog ourselves: a ~1.4 MB upload in 4 KB
+        // chunks easily takes 10–30 s on the HTTPD task, far past
+        // CONFIG_ESP_TASK_WDT_TIMEOUT_S. The periodic feeder posted
+        // from web_start() runs as a work item between handler
+        // invocations, not while we're still inside one.
+        esp_task_wdt_reset();
     }
     free(buf);
 
