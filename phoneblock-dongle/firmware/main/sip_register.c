@@ -11,6 +11,7 @@
 
 #include "esp_log.h"
 #include "esp_random.h"
+#include "esp_task_wdt.h"
 #include "esp_timer.h"
 #include "mbedtls/md5.h"
 
@@ -1273,7 +1274,17 @@ static void sip_task(void *arg)
         return;
     }
 
+    // Subscribe to the task watchdog. Any iteration that doesn't loop
+    // back to esp_task_wdt_reset() within CONFIG_ESP_TASK_WDT_TIMEOUT_S
+    // triggers a panic + coredump (see sdkconfig.defaults). The
+    // synchronous phoneblock_check() and do_register() inside this
+    // loop can wedge on a half-closed TLS connection past their own
+    // 10 s timeouts; without this the task hangs silently and the
+    // web UI gets starved of any "still alive" signal.
+    esp_task_wdt_add(NULL);
+
     while (1) {
+        esp_task_wdt_reset();
         // Config changed? Re-register with the new credentials before
         // going back to sleep in select(). The web-UI POST handler sets
         // the flag via sip_register_request_reload().

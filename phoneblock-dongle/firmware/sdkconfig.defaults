@@ -65,6 +65,29 @@ CONFIG_ESP_COREDUMP_ENABLE_TO_FLASH=y
 CONFIG_ESP_COREDUMP_DATA_FORMAT_ELF=y
 CONFIG_ESP_COREDUMP_CHECK_BOOT=y
 
+# Task watchdog. Catches infinite hangs in tasks that talk to the
+# network synchronously (sip_task → phoneblock_check → mbedtls TLS
+# read can wedge below esp_http_client's timeout when the peer half-
+# closes the connection). Without this the device just freezes and
+# we get no coredump. PANIC=y turns a missed reset into the regular
+# panic path, which then writes a coredump to flash (see above) and
+# reboots — exactly what we want for diagnostics.
+#
+# Timeout 20 s: the worst single-iteration cost in sip_task is one
+# phoneblock_check (10 s budget) plus one do_register (10 s TLS
+# budget) back-to-back on a reload path. 20 s leaves headroom
+# without sitting on a freeze for ages.
+#
+# IDLE_TASK_CPU0/CPU1 keep the default IDF behaviour of watching
+# the idle tasks too, so a runaway high-priority task that starves
+# the scheduler still trips the watchdog.
+CONFIG_ESP_TASK_WDT_EN=y
+CONFIG_ESP_TASK_WDT_INIT=y
+CONFIG_ESP_TASK_WDT_PANIC=y
+CONFIG_ESP_TASK_WDT_TIMEOUT_S=20
+CONFIG_ESP_TASK_WDT_CHECK_IDLE_TASK_CPU0=y
+CONFIG_ESP_TASK_WDT_CHECK_IDLE_TASK_CPU1=y
+
 # OTA rollback: the bootloader marks a freshly flashed image as
 # "pending verify". The app must call
 # esp_ota_mark_app_valid_cancel_rollback() after a successful

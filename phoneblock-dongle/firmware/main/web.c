@@ -5,6 +5,7 @@
 
 #include "esp_log.h"
 #include "esp_random.h"
+#include "esp_task_wdt.h"
 #include "esp_timer.h"
 #include "esp_app_desc.h"
 #include "esp_netif.h"
@@ -1622,6 +1623,45 @@ static const httpd_uri_t URIS[] = {
     { .uri = "/*",                   .method = HTTP_OPTIONS, .handler = handle_pna_preflight, .user_ctx = NULL },
 };
 
+// Task-watchdog feeder for the HTTPD worker. ESP-IDF's esp_http_server
+// hides its internal task handle, so we can't call esp_task_wdt_add()
+// on it directly from outside. Instead we inject a work item through
+// httpd_queue_work() — those callbacks run on the HTTPD task itself,
+// which is exactly where we need the subscribe and the periodic reset
+// to happen. A handler that wedges (long TR-064 call, blocked TLS
+// read, infinite loop) stalls the work queue → reset stops happening
+// → CONFIG_ESP_TASK_WDT_TIMEOUT_S elapses → panic + coredump,
+// instead of a silently dead web UI.
+
+static esp_timer_handle_t s_httpd_wdt_feeder;
+
+static void httpd_wdt_subscribe_work(void *arg)
+{
+    (void)arg;
+    if (esp_task_wdt_add(NULL) == ESP_OK) {
+        ESP_LOGI(TAG, "HTTPD worker subscribed to task watchdog");
+    } else {
+        ESP_LOGW(TAG, "HTTPD worker task-watchdog subscribe failed");
+    }
+}
+
+static void httpd_wdt_reset_work(void *arg)
+{
+    (void)arg;
+    esp_task_wdt_reset();
+}
+
+static void httpd_wdt_feeder_cb(void *arg)
+{
+    (void)arg;
+    if (s_server) {
+        // Best effort. If the queue is full because a handler is
+        // already wedged, that's exactly the case where we *want*
+        // the watchdog to fire — so a failed enqueue is harmless.
+        httpd_queue_work(s_server, httpd_wdt_reset_work, NULL);
+    }
+}
+
 void web_start(void)
 {
     if (s_server) {
@@ -1649,4 +1689,21 @@ void web_start(void)
         httpd_register_uri_handler(s_server, &URIS[i]);
     }
     ESP_LOGI(TAG, "HTTP server listening on :80");
+
+    // Subscribe the HTTPD worker to the watchdog (runs on its task)
+    // and start the periodic reset feeder. Period = TIMEOUT/4 so a
+    // single missed feed still leaves three quarters of the budget
+    // before the panic fires.
+    httpd_queue_work(s_server, httpd_wdt_subscribe_work, NULL);
+    const esp_timer_create_args_t timer_args = {
+        .callback = httpd_wdt_feeder_cb,
+        .name     = "httpd_wdt",
+    };
+    if (esp_timer_create(&timer_args, &s_httpd_wdt_feeder) == ESP_OK) {
+        uint64_t period_us =
+            (uint64_t)CONFIG_ESP_TASK_WDT_TIMEOUT_S * 1000000ULL / 4ULL;
+        esp_timer_start_periodic(s_httpd_wdt_feeder, period_us);
+    } else {
+        ESP_LOGW(TAG, "HTTPD WDT feeder timer create failed");
+    }
 }
