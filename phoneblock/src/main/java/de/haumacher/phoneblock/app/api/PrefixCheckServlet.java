@@ -115,18 +115,13 @@ public class PrefixCheckServlet extends HttpServlet {
 			for (DBPersonalization p : personalMatches) {
 				PhoneInfo pi = byPhone.get(p.getPhone());
 				if (pi == null) {
-					// Personal entry with no active community match. Rating is fixed by the
-					// personal state (blocked → B_MISSED, whitelisted → A_LEGITIMATE), the
-					// archived community row only contributes vote counts and timestamps.
+					// Personal entry with no active community match. By construction the
+					// community row is either missing or archived (the community query
+					// already filters VOTES > 0 AND ACTIVE), so report archived=true and
+					// leave the vote counts at zero — they are not relevant either way.
 					pi = NumberAnalyzer.phoneInfoFromId(p.getPhone())
-						.setRating(p.isBlocked() ? Rating.B_MISSED : Rating.A_LEGITIMATE);
-					DBNumberInfo archivedRow = reports.getPhoneInfo(p.getPhone());
-					if (archivedRow != null) {
-						pi.setVotes(archivedRow.getVotes())
-							.setArchived(!archivedRow.isActive())
-							.setDateAdded(archivedRow.getAdded())
-							.setLastUpdate(archivedRow.getUpdated());
-					}
+						.setRating(p.isBlocked() ? Rating.B_MISSED : Rating.A_LEGITIMATE)
+						.setArchived(true);
 					byPhone.put(p.getPhone(), pi);
 				}
 				if (p.isBlocked()) {
