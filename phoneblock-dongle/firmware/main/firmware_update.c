@@ -15,6 +15,7 @@
 #include "esp_partition.h"
 #include "esp_random.h"
 #include "esp_system.h"
+#include "esp_task_wdt.h"
 #include "cJSON.h"
 
 #include "mbedtls/base64.h"
@@ -499,6 +500,14 @@ static void install_resolved(const manifest_decision_t *d,
     while ((err = esp_https_ota_perform(ota_h)) == ESP_ERR_HTTPS_OTA_IN_PROGRESS) {
         // perform() yields after each chunk; let lower-priority tasks run.
         vTaskDelay(1);
+        // Feed the task watchdog explicitly: this loop typically runs
+        // 15–40 s on the HTTPD task (manual install via the web UI),
+        // well past CONFIG_ESP_TASK_WDT_TIMEOUT_S. The per-handler
+        // feeder posted by web.c only fires between handler calls,
+        // not during this loop. esp_task_wdt_reset() is a safe no-op
+        // when called from update_task (the background path), which
+        // isn't subscribed.
+        esp_task_wdt_reset();
     }
     if (err != ESP_OK || !esp_https_ota_is_complete_data_received(ota_h)) {
         ESP_LOGE(TAG, "esp_https_ota_perform: %s", esp_err_to_name(err));
@@ -549,6 +558,12 @@ static void install_resolved(const manifest_decision_t *d,
             }
             mbedtls_sha256_update(&sha, chunk, take);
             off += take;
+            // ~1400 iterations across a 1.4 MB image. Flash read +
+            // SHA update is fast (<1 s total) but the loop runs on
+            // the HTTPD task right after the OTA download, so we're
+            // still inside the window where the periodic feeder
+            // can't reach us.
+            esp_task_wdt_reset();
         }
         mbedtls_sha256_finish(&sha, computed_hash);
         mbedtls_sha256_free(&sha);

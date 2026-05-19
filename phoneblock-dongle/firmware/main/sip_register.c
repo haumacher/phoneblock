@@ -11,6 +11,7 @@
 
 #include "esp_log.h"
 #include "esp_random.h"
+#include "esp_task_wdt.h"
 #include "esp_timer.h"
 #include "mbedtls/md5.h"
 
@@ -1273,7 +1274,17 @@ static void sip_task(void *arg)
         return;
     }
 
+    // Subscribe to the task watchdog. Any iteration that doesn't loop
+    // back to esp_task_wdt_reset() within CONFIG_ESP_TASK_WDT_TIMEOUT_S
+    // triggers a panic + coredump (see sdkconfig.defaults). The
+    // synchronous phoneblock_check() and do_register() inside this
+    // loop can wedge on a half-closed TLS connection past their own
+    // 10 s timeouts; without this the task hangs silently and the
+    // web UI gets starved of any "still alive" signal.
+    esp_task_wdt_add(NULL);
+
     while (1) {
+        esp_task_wdt_reset();
         // Config changed? Re-register with the new credentials before
         // going back to sleep in select(). The web-UI POST handler sets
         // the flag via sip_register_request_reload().
@@ -1467,5 +1478,10 @@ void sip_register_start(void)
     }
     ESP_LOGI(TAG, "starting SIP registrar task (host=%s user=%s)",
              config_sip_host(), config_sip_user());
-    xTaskCreate(sip_task, "sip_register", 8192, NULL, 5, &s_sip_task);
+    // Stack sized for the synchronous HTTPS check in handle_invite(): mbedtls
+    // pk_verify spikes 6–8 KB during the TLS handshake to phoneblock.net,
+    // stacked on top of the SIP parser. 8 KB was within ~1 KB of the limit
+    // and overflowed in the field (crash-reports/1.0.9). If the API call ever
+    // moves into a dedicated worker, this can come back down.
+    xTaskCreate(sip_task, "sip_register", 12288, NULL, 5, &s_sip_task);
 }

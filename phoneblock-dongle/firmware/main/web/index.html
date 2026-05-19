@@ -192,13 +192,13 @@ const I18N = {
     'status.fw.submit': 'Hochladen & neu starten',
     'status.fw.confirm': 'Neue Firmware installieren und Dongle neu starten?',
     'status.fw.uploading': 'Übertrage… {pct} %',
-    'status.fw.done': 'Firmware übertragen — Dongle startet neu.',
+    'status.fw.done': 'Firmware übertragen — Dongle startet neu. Bitte einen Moment warten und dann die Seite neu laden.',
     'status.fw.error': 'Fehler: {msg}',
     'status.fw.check': 'Auf Aktualisierung prüfen',
     'status.fw.checking': 'Prüfe auf Aktualisierung…',
     'status.fw.check.none': 'Keine neue Version verfügbar (aktuell {version}).',
     'status.fw.check.found': 'Neue Version {version} wird installiert…',
-    'status.fw.check.installed': 'Version {version} installiert — Dongle startet neu.',
+    'status.fw.check.installed': 'Version {version} installiert — Dongle startet neu. Bitte einen Moment warten und dann die Seite neu laden.',
     'status.fw.check.error': 'Prüfung fehlgeschlagen: {msg}',
     'status.fw.failed': 'Letztes Update auf Version {version} hat den Boot nicht überstanden — automatisch zurückgerollt. Auto-Update überspringt diese Version. Klick auf „Auf Aktualisierung prüfen", um es erneut zu versuchen.',
     'status.fw.auto_update': 'Tägliche Auto-Aktualisierung',
@@ -396,13 +396,13 @@ const I18N = {
     'status.fw.submit': 'Upload & reboot',
     'status.fw.confirm': 'Install the new firmware and reboot the dongle?',
     'status.fw.uploading': 'Uploading… {pct}%',
-    'status.fw.done': 'Firmware uploaded — dongle is rebooting.',
+    'status.fw.done': 'Firmware uploaded — dongle is rebooting. Please wait a moment, then reload this page.',
     'status.fw.error': 'Error: {msg}',
     'status.fw.check': 'Check for update',
     'status.fw.checking': 'Checking for update…',
     'status.fw.check.none': 'No newer version available (currently {version}).',
     'status.fw.check.found': 'New version {version} is being installed…',
-    'status.fw.check.installed': 'Version {version} installed — dongle is rebooting.',
+    'status.fw.check.installed': 'Version {version} installed — dongle is rebooting. Please wait a moment, then reload this page.',
     'status.fw.check.error': 'Check failed: {msg}',
     'status.fw.failed': 'Last update to version {version} did not survive the boot — automatically rolled back. Auto-update will skip this version. Click "Check for update" to retry.',
     'status.fw.auto_update': 'Daily auto-update',
@@ -588,13 +588,13 @@ const I18N = {
     'status.fw.submit': 'Téléverser et redémarrer',
     'status.fw.confirm': 'Installer le nouveau firmware et redémarrer le dongle ?',
     'status.fw.uploading': 'Téléversement… {pct} %',
-    'status.fw.done': 'Firmware téléversé — le dongle redémarre.',
+    'status.fw.done': 'Firmware téléversé — le dongle redémarre. Veuillez patienter un instant, puis recharger la page.',
     'status.fw.error': 'Erreur : {msg}',
     'status.fw.check': 'Vérifier les mises à jour',
     'status.fw.checking': 'Vérification en cours…',
     'status.fw.check.none': 'Aucune nouvelle version disponible (actuellement {version}).',
     'status.fw.check.found': 'Nouvelle version {version} en cours d’installation…',
-    'status.fw.check.installed': 'Version {version} installée — le dongle redémarre.',
+    'status.fw.check.installed': 'Version {version} installée — le dongle redémarre. Veuillez patienter un instant, puis recharger la page.',
     'status.fw.check.error': 'Échec de la vérification : {msg}',
     'status.fw.failed': 'La dernière mise à jour vers la version {version} n’a pas survécu au démarrage — restauration automatique. La mise à jour automatique ignore cette version. Cliquez sur « Vérifier les mises à jour » pour réessayer.',
     'status.fw.auto_update': 'Mise à jour automatique quotidienne',
@@ -780,13 +780,13 @@ const I18N = {
     'status.fw.submit': 'Subir y reiniciar',
     'status.fw.confirm': '¿Instalar el nuevo firmware y reiniciar el dongle?',
     'status.fw.uploading': 'Subiendo… {pct} %',
-    'status.fw.done': 'Firmware subido — el dongle se reinicia.',
+    'status.fw.done': 'Firmware subido — el dongle se reinicia. Espera un momento y luego recarga la página.',
     'status.fw.error': 'Error: {msg}',
     'status.fw.check': 'Buscar actualizaciones',
     'status.fw.checking': 'Buscando actualizaciones…',
     'status.fw.check.none': 'No hay versión más reciente (actualmente {version}).',
     'status.fw.check.found': 'Instalando la nueva versión {version}…',
-    'status.fw.check.installed': 'Versión {version} instalada — el dongle se reinicia.',
+    'status.fw.check.installed': 'Versión {version} instalada — el dongle se reinicia. Espera un momento y luego recarga la página.',
     'status.fw.check.error': 'La comprobación falló: {msg}',
     'status.fw.failed': 'La última actualización a la versión {version} no superó el arranque — se revirtió automáticamente. La actualización automática omitirá esta versión. Pulsa «Buscar actualizaciones» para volver a intentarlo.',
     'status.fw.auto_update': 'Actualización automática diaria',
@@ -2127,6 +2127,12 @@ async function refreshAll(){
       if (fwFailedEl) fwFailedEl.style.display = 'none';
       fwMsg.textContent = t('status.fw.checking');
       fwMsg.style.color = '#1a73e8';
+      // Tracks whether install reached the reboot-imminent state.
+      // When set, finally{} keeps fwUpdateInFlight true so a late
+      // /api/status reply (still showing last_failed_ota = the
+      // version we just installed) cannot re-light the rollback
+      // banner between stopPolling() and the user's reload.
+      let rebooting = false;
       try {
         // Phase 1: read-only manifest check (~1-2 s). The user gets
         // immediate feedback ("none" / "version X gefunden") before
@@ -2158,6 +2164,7 @@ async function refreshAll(){
           fwMsg.textContent = t('status.fw.check.installed',
             {version: di.new_version});
           fwMsg.style.color = '#e8710a';
+          rebooting = true;
           stopPolling();
           // The browser is now stuck on the pre-reboot HTML and
           // would never see the marker get cleared from the next
@@ -2173,10 +2180,12 @@ async function refreshAll(){
         fwMsg.textContent = t('status.fw.check.error', {msg: 'Network error'});
         fwMsg.style.color = '#d93025';
       } finally {
-        fwUpdateInFlight  = false;
-        fwCheck.disabled  = false;
-        fwPick.disabled   = false;
-        fwUpload.disabled = !fwFile.files[0];
+        if (!rebooting){
+          fwUpdateInFlight  = false;
+          fwCheck.disabled  = false;
+          fwPick.disabled   = false;
+          fwUpload.disabled = !fwFile.files[0];
+        }
       }
     };
   }
