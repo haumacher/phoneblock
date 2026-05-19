@@ -40,6 +40,14 @@
 						<input form="bulkDelete" th:name="|bl-${entry.phone}|" type="checkbox"/>
 						<strong th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></strong>
 						<span class="tag" th:classappend="${entry.rating.cssClass}" th:if="${entry.rating != null and entry.rating.name != 'B_MISSED' and entry.rating.name != 'A_LEGITIMATE'}" th:text="${#messages.msg(entry.rating.labelKey)}"></span>
+						<span class="tag is-light" data-tx="t0028:2fa4fef4" th:if="${entry.votes &gt; 0}" title="Votaciones comunitarias directas">
+							<span class="icon"><i class="fa-solid fa-thumbs-down"></i></span>
+							<span th:text="${entry.votes}"></span>
+						</span>
+						<span class="tag is-light is-warning" data-tx="t0029:61c4c8e6" th:if="${entry.votesWildcard &gt; entry.votes}" title="Votos, incluido el bloque comodín">
+							<span class="icon"><i class="fa-solid fa-asterisk"></i></span>
+							<span th:text="${entry.votesWildcard}"></span>
+						</span>
 					</label>
 					<button class="button is-small is-ghost edit-toggle" data-tx="t0026:cd459696" title="Editar comentario" type="button">
 						<span class="icon is-small"><i class="fa-solid fa-pen-to-square"></i></span>

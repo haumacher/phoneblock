@@ -13,6 +13,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.thymeleaf.context.WebContext;
 
 import de.haumacher.phoneblock.app.LoginFilter;
+import de.haumacher.phoneblock.app.api.model.PhoneInfo;
 import de.haumacher.phoneblock.app.render.RatingDisplay;
 import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
@@ -69,13 +70,13 @@ public abstract class PersonalListController extends RequireLoginController {
 				long userId = userIdOpt.longValue();
 				BlockList blocklist = session.getMapper(BlockList.class);
 				List<String> phones = loadEntries(blocklist, userId);
-				entries = enrich(session, userId, phones);
+				entries = enrich(db, session, userId, phones);
 			}
 			request.setAttribute(attributeName(), entries);
 		}
 	}
 
-	private List<PersonalListEntry> enrich(SqlSession session, long userId, List<String> phones) {
+	private List<PersonalListEntry> enrich(DB db, SqlSession session, long userId, List<String> phones) {
 		if (phones.isEmpty()) {
 			return Collections.emptyList();
 		}
@@ -93,7 +94,8 @@ public abstract class PersonalListController extends RequireLoginController {
 			DBPhoneComment c = commentsByPhone.get(phone);
 			String comment = c != null ? c.getComment() : null;
 			RatingDisplay rating = c != null && c.getRating() != null ? new RatingDisplay(c.getRating()) : null;
-			result.add(new PersonalListEntry(phone, comment, rating));
+			PhoneInfo info = db.getPhoneApiInfo(spamReports, phone);
+			result.add(new PersonalListEntry(phone, comment, rating, info.getVotes(), info.getVotesWildcard()));
 		}
 		return result;
 	}
