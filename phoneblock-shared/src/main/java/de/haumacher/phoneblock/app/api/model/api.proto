@@ -164,6 +164,16 @@ message PhoneInfo {
 	/** The city or region from where the call originated (e.g., "Berlin"). */
 	@Nullable
 	string location;
+
+	/**
+	 * The comment that the requesting user has previously stored for this number, or <code>null</code>.
+	 *
+	 * <p>
+	 * Only populated when the request is authenticated and a comment was previously submitted by the same user (e.g., via the {@code /rate} endpoint). This is the user's own note about the number, not a community comment.
+	 * </p>
+	 */
+	@Nullable
+	string userComment;
 }
 
 /** A single aggregated SPAM range matching a hash prefix in a {@link PrefixCheckResult}. */

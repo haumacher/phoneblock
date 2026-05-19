@@ -17,7 +17,7 @@
 		"/num/{num}": {
 			"get": {
 				"summary": "Checks whether the given phone number in on the blocklist.",
-				"description": "The calling phone number is sent in plaintext — the server learns which number the authenticated user is asking about. For a privacy-preserving alternative that hides the queried number from the server, use the k-anonymity prefix lookup at /check-prefix.",
+				"description": "The calling phone number is sent in plaintext — the server learns which number the authenticated user is asking about. For a privacy-preserving alternative that hides the queried number from the server, use the k-anonymity prefix lookup at /check-prefix.\n\nAuthentication is optional on this endpoint. When the request carries a valid bearer token, the response additionally honors the user's personal blocklist/whitelist for that number and the `userComment` field is populated from the user's own previously-submitted comment (if any).",
 				"responses": {
 					"200": {
 						"description": "Checks whether the given phone number is in the PhoneBlock database.",
@@ -1361,6 +1361,11 @@
 					"location": {
 						"type": "string",
 						"description": "The city or region from where the call originated (e.g., 'Berlin').",
+						"nullable": true
+					},
+					"userComment": {
+						"type": "string",
+						"description": "The comment that the requesting user previously stored for this number, or null. Only populated when the request is authenticated and a comment was previously submitted by the same user (e.g., via the /rate endpoint). This is the user's own note about the number, not a community comment.",
 						"nullable": true
 					}
 				}

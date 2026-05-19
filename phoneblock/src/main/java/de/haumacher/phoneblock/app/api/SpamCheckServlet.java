@@ -69,20 +69,22 @@ public class SpamCheckServlet extends HttpServlet {
 		if (auth != null) {
 			try (SqlSession session = db.openSession()) {
 				BlockList blocklist = session.getMapper(BlockList.class);
+				SpamReports reports = session.getMapper(SpamReports.class);
 				DBPersonalization personalized = blocklist.resolvePersonalizationByHash(auth.getUserId(), hash);
 				if (personalized != null) {
+					PhoneInfo info;
 					if (personalized.isBlocked()) {
 						// User has personally blocked this number — return real community data
 						// with blackListed flag. The client uses the flag to force-block.
-						PhoneInfo info = db.getPhoneApiInfo(personalized.getPhone());
+						info = db.getPhoneApiInfo(reports, personalized.getPhone());
 						info.setBlackListed(true);
-						ServletUtil.sendResult(req, resp, info);
 					} else {
 						// User has personally whitelisted this number.
-						PhoneInfo info = NumberAnalyzer.phoneInfoFromId(personalized.getPhone())
+						info = NumberAnalyzer.phoneInfoFromId(personalized.getPhone())
 							.setRating(Rating.A_LEGITIMATE);
-						ServletUtil.sendResult(req, resp, info);
 					}
+					NumServlet.applyUserComment(reports, auth, info, personalized.getPhone());
+					ServletUtil.sendResult(req, resp, info);
 					return;
 				}
 			}
@@ -107,8 +109,11 @@ public class SpamCheckServlet extends HttpServlet {
 			if (info.getVotes() <= 0 && info.getVotesWildcard() <= 0) {
 				// Provide no additional information for non-SPAM numbers that have an
 				// accidental match in the DB (because they were recorded by a non-hashed
-				// lookup).
+				// lookup). Preserve the user's own comment though — it is their own note
+				// and not community data we are protecting.
+				String preservedUserComment = info.getUserComment();
 				info = createUnknownResult();
+				info.setUserComment(preservedUserComment);
 			}
 		}
 
@@ -116,6 +121,9 @@ public class SpamCheckServlet extends HttpServlet {
 		if (info.getVotes() <= 0 && info.getVotesWildcard() <= 0) {
 			PhoneInfo prefixInfo = lookupPrefixHashes(req, db);
 			if (prefixInfo != null) {
+				// Carry over the user's own comment (if any) so the prefix-only result
+				// still surfaces the user's note for the originally-requested number.
+				prefixInfo.setUserComment(info.getUserComment());
 				info = prefixInfo;
 			}
 		}

@@ -48,6 +48,9 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	/** @see #getLocation() */
 	private static final String LOCATION__PROP = "location";
 
+	/** @see #getUserComment() */
+	private static final String USER_COMMENT__PROP = "userComment";
+
 	private String _phone = "";
 
 	private int _votes = 0;
@@ -69,6 +72,8 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	private String _label = null;
 
 	private String _location = null;
+
+	private String _userComment = null;
 
 	/**
 	 * Creates a {@link PhoneInfo} instance.
@@ -318,6 +323,37 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 		return _location != null;
 	}
 
+	/**
+	 * The comment that the requesting user has previously stored for this number, or <code>null</code>.
+	 *
+	 * <p>
+	 * Only populated when the request is authenticated and a comment was previously submitted by the same user (e.g., via the {@code /rate} endpoint). This is the user's own note about the number, not a community comment.
+	 * </p>
+	 */
+	public final String getUserComment() {
+		return _userComment;
+	}
+
+	/**
+	 * @see #getUserComment()
+	 */
+	public de.haumacher.phoneblock.app.api.model.PhoneInfo setUserComment(String value) {
+		internalSetUserComment(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getUserComment()} without chain call utility. */
+	protected final void internalSetUserComment(String value) {
+		_userComment = value;
+	}
+
+	/**
+	 * Checks, whether {@link #getUserComment()} has a value.
+	 */
+	public final boolean hasUserComment() {
+		return _userComment != null;
+	}
+
 	/** Reads a new instance from the given reader. */
 	public static de.haumacher.phoneblock.app.api.model.PhoneInfo readPhoneInfo(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
 		de.haumacher.phoneblock.app.api.model.PhoneInfo result = new de.haumacher.phoneblock.app.api.model.PhoneInfo();
@@ -359,6 +395,10 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 			out.name(LOCATION__PROP);
 			out.value(getLocation());
 		}
+		if (hasUserComment()) {
+			out.name(USER_COMMENT__PROP);
+			out.value(getUserComment());
+		}
 	}
 
 	@Override
@@ -375,6 +415,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 			case LAST_UPDATE__PROP: setLastUpdate(in.nextLong()); break;
 			case LABEL__PROP: setLabel(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case LOCATION__PROP: setLocation(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case USER_COMMENT__PROP: setUserComment(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			default: super.readField(in, field);
 		}
 	}
@@ -415,6 +456,9 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	/** XML attribute or element name of a {@link #getLocation} property. */
 	private static final String LOCATION__XML_ATTR = "location";
 
+	/** XML attribute or element name of a {@link #getUserComment} property. */
+	private static final String USER_COMMENT__XML_ATTR = "user-comment";
+
 	@Override
 	public String getXmlTagName() {
 		return PHONE_INFO__XML_ELEMENT;
@@ -439,6 +483,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 		out.writeAttribute(LAST_UPDATE__XML_ATTR, Long.toString(getLastUpdate()));
 		out.writeAttribute(LABEL__XML_ATTR, getLabel());
 		out.writeAttribute(LOCATION__XML_ATTR, getLocation());
+		out.writeAttribute(USER_COMMENT__XML_ATTR, getUserComment());
 	}
 
 	/** Serializes all fields that are written as XML elements. */
@@ -520,6 +565,10 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 				setLocation(value);
 				break;
 			}
+			case USER_COMMENT__XML_ATTR: {
+				setUserComment(value);
+				break;
+			}
 			default: {
 				// Skip unknown attribute.
 			}
@@ -571,6 +620,10 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 			}
 			case LOCATION__XML_ATTR: {
 				setLocation(in.getElementText());
+				break;
+			}
+			case USER_COMMENT__XML_ATTR: {
+				setUserComment(in.getElementText());
 				break;
 			}
 			default: {
