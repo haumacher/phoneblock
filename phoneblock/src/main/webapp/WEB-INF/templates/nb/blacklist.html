@@ -38,7 +38,7 @@
 				<label class="checkbox">
 					<input form="bulkDelete" th:name="|bl-${entry.phone}|" type="checkbox"/>
 					<strong th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></strong>
-					<span class="tag" th:classappend="${entry.rating.cssClass}" th:if="${entry.rating != null}" th:text="${#messages.msg(entry.rating.labelKey)}"></span>
+					<span class="tag" th:classappend="${entry.rating.cssClass}" th:if="${entry.rating != null and entry.rating.name != 'B_MISSED' and entry.rating.name != 'A_LEGITIMATE'}" th:text="${#messages.msg(entry.rating.labelKey)}"></span>
 				</label>
 				<p class="help" th:if="${entry.comment != null and !entry.comment.empty}" th:text="${entry.comment}"></p>
 
@@ -89,13 +89,17 @@
 			</div>
 
 			<div class="field">
-				<label class="label" data-tx="t0014:b2ec7c34">Type samtale</label>
-				<div class="control">
-					<div class="select">
-						<select name="add-bl-rating">
-							<option th:each="r : ${blacklistRatings}" th:text="${#messages.msg(r.labelKey)}" th:value="${r.name}"></option>
-						</select>
-					</div>
+				<label class="label" data-tx="t0019:b2ec7c34">Type samtale</label>
+				<div class="buttons">
+					<th:block th:each="rating : ${ratings}" th:if="${rating.name != 'A_LEGITIMATE'}">
+						<label th:class="|button is-rounded ${rating.cssClass}|">
+							<input name="add-bl-rating" th:checked="${rating.name == 'B_MISSED'}" th:value="${rating.name}" type="radio"/>
+							<span class="icon">
+								<i th:class="${rating.iconClass}"></i>
+							</span>
+							<span th:text="${#messages.msg(rating.labelKey)}"></span>
+						</label>
+					</th:block>
 				</div>
 			</div>
 

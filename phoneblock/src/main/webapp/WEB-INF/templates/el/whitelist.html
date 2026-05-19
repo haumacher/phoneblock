@@ -38,7 +38,7 @@
 				<label class="checkbox">
 					<input form="bulkDelete" th:name="|wl-${entry.phone}|" type="checkbox"/>
 					<strong th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></strong>
-					<span class="tag" th:classappend="${entry.rating.cssClass}" th:if="${entry.rating != null}" th:text="${#messages.msg(entry.rating.labelKey)}"></span>
+					<span class="tag" th:classappend="${entry.rating.cssClass}" th:if="${entry.rating != null and entry.rating.name != 'B_MISSED' and entry.rating.name != 'A_LEGITIMATE'}" th:text="${#messages.msg(entry.rating.labelKey)}"></span>
 				</label>
 				<p class="help" th:if="${entry.comment != null and !entry.comment.empty}" th:text="${entry.comment}"></p>
 
