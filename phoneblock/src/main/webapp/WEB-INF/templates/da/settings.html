@@ -250,111 +250,61 @@
 
 <section class="section">
 	<div class="content">
-	<h2 data-tx="t0046:9bb283fa" id="blacklist">Din sorte liste</h2>
-	
-	<form method="post" th:action="@{/update-settings(action='lists')}">
+	<h2 data-tx="t0126:ab5bb2af">Dine personlige lister</h2>
 
-	<p data-tx="t0047:4dc69521" th:if="${blacklist.empty}">Du har ikke eksplicit blokeret nogen numre. For at blokere et nummer skal du søge efter nummeret ved hjælp af søgefeltet ovenfor og skrive en negativ kommentar, eller lave en telefonbogspost for nummeret i blokeringslisten i din FRITZ!</p>
+	<p data-tx="t0127:b9b3bc88">Din personlige sortliste og hvidliste gemmes på serveren og har altid forrang for fællesskabsdatabasen, når du tjekker SPAM.</p>
 
-	<th:block th:unless="${blacklist.empty}">
-	<p data-tx="t0048:7a2801d3">Du har udtrykkeligt blokeret disse numre. Du kan ophæve en utilsigtet blokering her:</p>
-	<div class="field" th:each="number : ${blacklist}">
-		<label class="checkbox" th:with="phoneInfo=${#converters.analyze(number)}">
-			<input th:name="|bl-${number}|" type="checkbox"/> <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span>
-		</label>
+	<div class="columns">
+		<div class="column is-half">
+			<div class="card" id="blacklist">
+				<div class="card-content">
+					<p class="title is-5">
+						<span class="icon-text">
+							<span class="icon has-text-danger"><i class="fa-solid fa-ban"></i></span>
+							<span data-tx="t0128:71e2fcb4">Sortliste</span>
+						</span>
+					</p>
+					<p class="subtitle is-6">
+						<th:block data-tx="t0129:60459b64" th:if="${blacklist.empty}">Du har endnu ikke eksplicit blokeret nogen numre.</th:block>
+						<th:block data-tx="t0130:41d56bc1" th:unless="${blacklist.empty}">Du har eksplicit blokeret <strong th:text="${blacklist.size()}">0</strong> numre.</th:block>
+					</p>
+				</div>
+				<footer class="card-footer">
+					<a class="card-footer-item" th:href="@{/blacklist}">
+						<span class="icon-text">
+							<span data-tx="t0131:ff15c393">Administrer sortliste</span>
+							<span class="icon"><i class="fa-solid fa-arrow-right"></i></span>
+						</span>
+					</a>
+				</footer>
+			</div>
+		</div>
+
+		<div class="column is-half">
+			<div class="card" id="whitelist">
+				<div class="card-content">
+					<p class="title is-5">
+						<span class="icon-text">
+							<span class="icon has-text-success"><i class="fa-solid fa-check"></i></span>
+							<span data-tx="t0132:a61f3f91">Hvidliste</span>
+						</span>
+					</p>
+					<p class="subtitle is-6">
+						<th:block data-tx="t0133:cf551a9" th:if="${whitelist.empty}">Du har endnu ikke udelukket nogen numre fra blokering.</th:block>
+						<th:block data-tx="t0134:63daebcc" th:unless="${whitelist.empty}">Du har udelukket <strong th:text="${whitelist.size()}">0</strong> numre fra blokering.</th:block>
+					</p>
+				</div>
+				<footer class="card-footer">
+					<a class="card-footer-item" th:href="@{/whitelist}">
+						<span class="icon-text">
+							<span data-tx="t0135:dd2108da">Administrer hvidliste</span>
+							<span class="icon"><i class="fa-solid fa-arrow-right"></i></span>
+						</span>
+					</a>
+				</footer>
+			</div>
+		</div>
 	</div>
-
-	<div class="field is-grouped">
-	  <p class="control">
-	    <button class="button is-danger" type="submit">
-	      <span class="icon"><i class="fa-solid fa-trash"></i></span>
-	      <span data-tx="t0117:74d7495f">Sletning</span>
-	    </button>
-	  </p>
-	</div>
-	</th:block>
-		
-	</form>
-	</div>
-	
-	<div class="content">
-	<form method="post" th:action="@{/update-settings(action='lists')}">
-
-	<div class="field">
-	  <label class="label" data-tx="t0095:7309300c">Bloknummer</label>
-	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0096:4e762f67" name="add-bl" placeholder="Nyt SPAM-nummer" type="tel"/>
-	    <span class="icon is-small is-left">☎</span>
-	  </p>
-	  <p class="help" data-tx="t0098:7b65bad4">Du kan indtaste et eller flere SPAM-telefonnumre her, adskilt af kommaer, i et hvilket som helst format: 07041-123456789, +49171123456789, 0034 123456789. Numrene vil derefter blive føjet til din personlige blokeringsliste.</p>
-	</div>
-	
-	<div class="field is-grouped">
-	  <p class="control">
-	    <button class="button is-primary" type="submit">
-	      <span class="icon"><i class="fa-solid fa-ban"></i></span>
-	      <span data-tx="t0118:6464e726">Tilføj lås</span>
-	    </button>
-	  </p>
-	</div>
-
-	</form>
-	</div>
-
-</section>
-
-<section class="section">
-	<div class="content">
-	<h2 data-tx="t0050:4c4f40df" id="whitelist">Din hvidliste</h2>
-	
-	<form method="post" th:action="@{/update-settings(action='lists')}">
-
-	<p data-tx="t0051:624d5748" th:if="${whitelist.empty}">Du har ikke udelukket nogen numre fra blokeringen.</p>
-
-	<th:block th:unless="${whitelist.empty}">
-	<p data-tx="t0052:98b17ee4">Du har udtrykkeligt udelukket disse numre fra blokeringen:</p>
-
-	<div class="field" th:each="number : ${whitelist}">
-		<label class="checkbox" th:with="phoneInfo=${#converters.analyze(number)}">
-			<input th:name="|wl-${number}|" type="checkbox"/> <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span>
-		</label>
-	</div>
-	
-	<div class="field is-grouped">
-	  <p class="control">
-	    <button class="button is-danger" type="submit">
-	      <span class="icon"><i class="fa-solid fa-trash"></i></span>
-	      <span data-tx="t0119:74d7495f">Sletning</span>
-	    </button>
-	  </p>
-	</div>
-	</th:block>
-	
-	</form>
-	</div>
-	
-	<div class="content">
-	<form method="post" th:action="@{/update-settings(action='lists')}">
-
-	<div class="field">
-	  <label class="label" data-tx="t0054:ce0c23fb">Tilføj undtagelse</label>
-	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0088:45853883" name="add-wl" placeholder="Ny undtagelse" type="tel"/>
-	    <span class="icon is-small is-left">☎</span>
-	  </p>
-	  <p class="help" data-tx="t0056:edaaa5f7">Du kan indtaste et eller flere telefonnumre adskilt af kommaer i et hvilket som helst format: 07041-123456789, +49171123456789, 0034 123456789. Disse numre vil så ikke længere blive blokeret.</p>
-	</div>
-	
-	<div class="field is-grouped">
-	  <p class="control">
-	    <button class="button is-primary" type="submit">
-	      <span class="icon"><i class="fa-solid fa-circle-check"></i></span>
-	      <span data-tx="t0120:d63df803">Tilføj undtagelse</span>
-	    </button>
-	  </p>
-	</div>
-
-	</form>
 	</div>
 </section>
 

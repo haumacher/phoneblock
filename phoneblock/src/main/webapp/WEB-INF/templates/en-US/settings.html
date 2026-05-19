@@ -250,111 +250,61 @@
 
 <section class="section">
 	<div class="content">
-	<h2 data-tx="t0046:9bb283fa" id="blacklist">Your blacklist</h2>
-	
-	<form method="post" th:action="@{/update-settings(action='lists')}">
+	<h2 data-tx="t0126:ab5bb2af">Your personal lists</h2>
 
-	<p data-tx="t0047:4dc69521" th:if="${blacklist.empty}">You have not explicitly blocked any numbers. To block a number, search for the number using the search field above and write a negative comment, or make a phone book entry for the number in the blocklist in your FRITZ!</p>
+	<p data-tx="t0127:b9b3bc88">Your personal blacklist and whitelist are stored on the server and always have priority over the community database when checking SPAM.</p>
 
-	<th:block th:unless="${blacklist.empty}">
-	<p data-tx="t0048:7a2801d3">You have explicitly blocked these numbers. You can remove an accidental block here:</p>
-	<div class="field" th:each="number : ${blacklist}">
-		<label class="checkbox" th:with="phoneInfo=${#converters.analyze(number)}">
-			<input th:name="|bl-${number}|" type="checkbox"/> <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span>
-		</label>
+	<div class="columns">
+		<div class="column is-half">
+			<div class="card" id="blacklist">
+				<div class="card-content">
+					<p class="title is-5">
+						<span class="icon-text">
+							<span class="icon has-text-danger"><i class="fa-solid fa-ban"></i></span>
+							<span data-tx="t0128:71e2fcb4">Blacklist</span>
+						</span>
+					</p>
+					<p class="subtitle is-6">
+						<th:block data-tx="t0129:60459b64" th:if="${blacklist.empty}">You have not yet explicitly blocked any numbers.</th:block>
+						<th:block data-tx="t0130:41d56bc1" th:unless="${blacklist.empty}">You have explicitly blocked <strong th:text="${blacklist.size()}">0</strong> numbers.</th:block>
+					</p>
+				</div>
+				<footer class="card-footer">
+					<a class="card-footer-item" th:href="@{/blacklist}">
+						<span class="icon-text">
+							<span data-tx="t0131:ff15c393">Manage blacklist</span>
+							<span class="icon"><i class="fa-solid fa-arrow-right"></i></span>
+						</span>
+					</a>
+				</footer>
+			</div>
+		</div>
+
+		<div class="column is-half">
+			<div class="card" id="whitelist">
+				<div class="card-content">
+					<p class="title is-5">
+						<span class="icon-text">
+							<span class="icon has-text-success"><i class="fa-solid fa-check"></i></span>
+							<span data-tx="t0132:a61f3f91">Whitelist</span>
+						</span>
+					</p>
+					<p class="subtitle is-6">
+						<th:block data-tx="t0133:cf551a9" th:if="${whitelist.empty}">You have not yet excluded any numbers from blocking.</th:block>
+						<th:block data-tx="t0134:63daebcc" th:unless="${whitelist.empty}">You have excluded <strong th:text="${whitelist.size()}">0</strong> numbers from blocking.</th:block>
+					</p>
+				</div>
+				<footer class="card-footer">
+					<a class="card-footer-item" th:href="@{/whitelist}">
+						<span class="icon-text">
+							<span data-tx="t0135:dd2108da">Manage whitelist</span>
+							<span class="icon"><i class="fa-solid fa-arrow-right"></i></span>
+						</span>
+					</a>
+				</footer>
+			</div>
+		</div>
 	</div>
-
-	<div class="field is-grouped">
-	  <p class="control">
-	    <button class="button is-danger" type="submit">
-	      <span class="icon"><i class="fa-solid fa-trash"></i></span>
-	      <span data-tx="t0117:74d7495f">Delete</span>
-	    </button>
-	  </p>
-	</div>
-	</th:block>
-		
-	</form>
-	</div>
-	
-	<div class="content">
-	<form method="post" th:action="@{/update-settings(action='lists')}">
-
-	<div class="field">
-	  <label class="label" data-tx="t0095:7309300c">Block number</label>
-	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0096:4e762f67" name="add-bl" placeholder="New SPAM number" type="tel"/>
-	    <span class="icon is-small is-left">☎</span>
-	  </p>
-	  <p class="help" data-tx="t0098:7b65bad4">You can enter one or more SPAM telephone numbers separated by commas in any format: 07041-123456789, +49171123456789, 0034 123456789. The numbers will then be added to your personal blocklist.</p>
-	</div>
-	
-	<div class="field is-grouped">
-	  <p class="control">
-	    <button class="button is-primary" type="submit">
-	      <span class="icon"><i class="fa-solid fa-ban"></i></span>
-	      <span data-tx="t0118:6464e726">Add lock</span>
-	    </button>
-	  </p>
-	</div>
-
-	</form>
-	</div>
-
-</section>
-
-<section class="section">
-	<div class="content">
-	<h2 data-tx="t0050:4c4f40df" id="whitelist">Your whitelist</h2>
-	
-	<form method="post" th:action="@{/update-settings(action='lists')}">
-
-	<p data-tx="t0051:624d5748" th:if="${whitelist.empty}">You have not excluded any numbers from the blocking.</p>
-
-	<th:block th:unless="${whitelist.empty}">
-	<p data-tx="t0052:98b17ee4">You have explicitly excluded these numbers from the blocking:</p>
-
-	<div class="field" th:each="number : ${whitelist}">
-		<label class="checkbox" th:with="phoneInfo=${#converters.analyze(number)}">
-			<input th:name="|wl-${number}|" type="checkbox"/> <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span>
-		</label>
-	</div>
-	
-	<div class="field is-grouped">
-	  <p class="control">
-	    <button class="button is-danger" type="submit">
-	      <span class="icon"><i class="fa-solid fa-trash"></i></span>
-	      <span data-tx="t0119:74d7495f">Delete</span>
-	    </button>
-	  </p>
-	</div>
-	</th:block>
-	
-	</form>
-	</div>
-	
-	<div class="content">
-	<form method="post" th:action="@{/update-settings(action='lists')}">
-
-	<div class="field">
-	  <label class="label" data-tx="t0054:ce0c23fb">Add exception</label>
-	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0088:45853883" name="add-wl" placeholder="New exception" type="tel"/>
-	    <span class="icon is-small is-left">☎</span>
-	  </p>
-	  <p class="help" data-tx="t0056:edaaa5f7">You can enter one or more telephone numbers separated by commas in any format: 07041-123456789, +49171123456789, 0034 123456789. These numbers will then no longer be blocked.</p>
-	</div>
-	
-	<div class="field is-grouped">
-	  <p class="control">
-	    <button class="button is-primary" type="submit">
-	      <span class="icon"><i class="fa-solid fa-circle-check"></i></span>
-	      <span data-tx="t0120:d63df803">Add exception</span>
-	    </button>
-	  </p>
-	</div>
-
-	</form>
 	</div>
 </section>
 

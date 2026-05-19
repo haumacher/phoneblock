@@ -10,11 +10,13 @@ import org.thymeleaf.web.servlet.JakartaServletWebApplication;
 
 import de.haumacher.phoneblock.app.CreateAuthTokenServlet;
 import de.haumacher.phoneblock.app.SettingsServlet;
+import de.haumacher.phoneblock.app.render.controller.BlacklistController;
 import de.haumacher.phoneblock.app.render.controller.LoginController;
 import de.haumacher.phoneblock.app.render.controller.MobileLoginController;
 import de.haumacher.phoneblock.app.render.controller.PhoneInfoController;
 import de.haumacher.phoneblock.app.render.controller.RequireLoginController;
 import de.haumacher.phoneblock.app.render.controller.SettingsController;
+import de.haumacher.phoneblock.app.render.controller.WhitelistController;
 import de.haumacher.phoneblock.app.render.controller.ShowApiKeyController;
 import de.haumacher.phoneblock.app.render.controller.ShowCredentialsController;
 import de.haumacher.phoneblock.app.render.controller.StatsController;
@@ -41,6 +43,8 @@ public class TemplateRenderer {
         controllersByURL.put(StatusController.STATUS_PAGE, new StatusController());
         controllersByURL.put(StatsController.STATS_PAGE, new StatsController());
         controllersByURL.put(SettingsServlet.PATH, new SettingsController());
+        controllersByURL.put(BlacklistController.PATH, new BlacklistController());
+        controllersByURL.put(WhitelistController.PATH, new WhitelistController());
         controllersByURL.put(PhoneInfoController.PHONE_INFO_PAGE, new PhoneInfoController());
         controllersByURL.put(SUPPORT_BANKTRANSFER_PAGE, new RequireLoginController());
         controllersByURL.put(ShowCredentialsController.SHOW_CREDENTIALS_PAGE, new ShowCredentialsController());

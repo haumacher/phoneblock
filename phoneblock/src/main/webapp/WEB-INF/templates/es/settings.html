@@ -250,111 +250,61 @@
 
 <section class="section">
 	<div class="content">
-	<h2 data-tx="t0046:9bb283fa" id="blacklist">Su lista negra</h2>
-	
-	<form method="post" th:action="@{/update-settings(action='lists')}">
+	<h2 data-tx="t0126:ab5bb2af">Sus listas personales</h2>
 
-	<p data-tx="t0047:4dc69521" th:if="${blacklist.empty}">No ha bloqueado explícitamente ningún número. ¡Para bloquear un número, búsquelo utilizando el campo de búsqueda de arriba y escriba un comentario negativo, o haga una entrada para el número en la lista de bloqueados de su FRITZ!</p>
+	<p data-tx="t0127:b9b3bc88">Su lista negra y su lista blanca personales se almacenan en el servidor y siempre tienen prioridad sobre la base de datos de la comunidad a la hora de comprobar el SPAM.</p>
 
-	<th:block th:unless="${blacklist.empty}">
-	<p data-tx="t0048:7a2801d3">Ha bloqueado explícitamente estos números. Puedes cancelar un bloqueo accidental aquí:</p>
-	<div class="field" th:each="number : ${blacklist}">
-		<label class="checkbox" th:with="phoneInfo=${#converters.analyze(number)}">
-			<input th:name="|bl-${number}|" type="checkbox"/> <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span>
-		</label>
+	<div class="columns">
+		<div class="column is-half">
+			<div class="card" id="blacklist">
+				<div class="card-content">
+					<p class="title is-5">
+						<span class="icon-text">
+							<span class="icon has-text-danger"><i class="fa-solid fa-ban"></i></span>
+							<span data-tx="t0128:71e2fcb4">Lista negra</span>
+						</span>
+					</p>
+					<p class="subtitle is-6">
+						<th:block data-tx="t0129:60459b64" th:if="${blacklist.empty}">Aún no ha bloqueado explícitamente ningún número.</th:block>
+						<th:block data-tx="t0130:41d56bc1" th:unless="${blacklist.empty}">Ha bloqueado explícitamente <strong th:text="${blacklist.size()}">0</strong> números.</th:block>
+					</p>
+				</div>
+				<footer class="card-footer">
+					<a class="card-footer-item" th:href="@{/blacklist}">
+						<span class="icon-text">
+							<span data-tx="t0131:ff15c393">Gestionar la lista negra</span>
+							<span class="icon"><i class="fa-solid fa-arrow-right"></i></span>
+						</span>
+					</a>
+				</footer>
+			</div>
+		</div>
+
+		<div class="column is-half">
+			<div class="card" id="whitelist">
+				<div class="card-content">
+					<p class="title is-5">
+						<span class="icon-text">
+							<span class="icon has-text-success"><i class="fa-solid fa-check"></i></span>
+							<span data-tx="t0132:a61f3f91">Lista blanca</span>
+						</span>
+					</p>
+					<p class="subtitle is-6">
+						<th:block data-tx="t0133:cf551a9" th:if="${whitelist.empty}">Aún no ha excluido ningún número del bloqueo.</th:block>
+						<th:block data-tx="t0134:63daebcc" th:unless="${whitelist.empty}">Ha excluido <strong th:text="${whitelist.size()}">0</strong> números del bloqueo.</th:block>
+					</p>
+				</div>
+				<footer class="card-footer">
+					<a class="card-footer-item" th:href="@{/whitelist}">
+						<span class="icon-text">
+							<span data-tx="t0135:dd2108da">Gestionar la lista blanca</span>
+							<span class="icon"><i class="fa-solid fa-arrow-right"></i></span>
+						</span>
+					</a>
+				</footer>
+			</div>
+		</div>
 	</div>
-
-	<div class="field is-grouped">
-	  <p class="control">
-	    <button class="button is-danger" type="submit">
-	      <span class="icon"><i class="fa-solid fa-trash"></i></span>
-	      <span data-tx="t0117:74d7495f">Borrar</span>
-	    </button>
-	  </p>
-	</div>
-	</th:block>
-		
-	</form>
-	</div>
-	
-	<div class="content">
-	<form method="post" th:action="@{/update-settings(action='lists')}">
-
-	<div class="field">
-	  <label class="label" data-tx="t0095:7309300c">Número de bloque</label>
-	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0096:4e762f67" name="add-bl" placeholder="Nuevo número SPAM" type="tel"/>
-	    <span class="icon is-small is-left">☎</span>
-	  </p>
-	  <p class="help" data-tx="t0098:7b65bad4">Aquí puede introducir uno o varios números de teléfono de SPAM, separados por comas, en cualquier formato: 07041-123456789, +49171123456789, 0034 123456789. A continuación, los números se añadirán a su lista de bloqueo personal.</p>
-	</div>
-	
-	<div class="field is-grouped">
-	  <p class="control">
-	    <button class="button is-primary" type="submit">
-	      <span class="icon"><i class="fa-solid fa-ban"></i></span>
-	      <span data-tx="t0118:6464e726">Añadir cerradura</span>
-	    </button>
-	  </p>
-	</div>
-
-	</form>
-	</div>
-
-</section>
-
-<section class="section">
-	<div class="content">
-	<h2 data-tx="t0050:4c4f40df" id="whitelist">Su lista blanca</h2>
-	
-	<form method="post" th:action="@{/update-settings(action='lists')}">
-
-	<p data-tx="t0051:624d5748" th:if="${whitelist.empty}">No ha excluido ningún número del bloqueo.</p>
-
-	<th:block th:unless="${whitelist.empty}">
-	<p data-tx="t0052:98b17ee4">Ha excluido explícitamente estos números del bloqueo:</p>
-
-	<div class="field" th:each="number : ${whitelist}">
-		<label class="checkbox" th:with="phoneInfo=${#converters.analyze(number)}">
-			<input th:name="|wl-${number}|" type="checkbox"/> <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span>
-		</label>
-	</div>
-	
-	<div class="field is-grouped">
-	  <p class="control">
-	    <button class="button is-danger" type="submit">
-	      <span class="icon"><i class="fa-solid fa-trash"></i></span>
-	      <span data-tx="t0119:74d7495f">Borrar</span>
-	    </button>
-	  </p>
-	</div>
-	</th:block>
-	
-	</form>
-	</div>
-	
-	<div class="content">
-	<form method="post" th:action="@{/update-settings(action='lists')}">
-
-	<div class="field">
-	  <label class="label" data-tx="t0054:ce0c23fb">Añadir excepción</label>
-	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0088:45853883" name="add-wl" placeholder="Nueva excepción" type="tel"/>
-	    <span class="icon is-small is-left">☎</span>
-	  </p>
-	  <p class="help" data-tx="t0056:edaaa5f7">Puede introducir uno o varios números de teléfono separados por comas en cualquier formato: 07041-123456789, +49171123456789, 0034 123456789. Estos números dejarán de estar bloqueados.</p>
-	</div>
-	
-	<div class="field is-grouped">
-	  <p class="control">
-	    <button class="button is-primary" type="submit">
-	      <span class="icon"><i class="fa-solid fa-circle-check"></i></span>
-	      <span data-tx="t0120:d63df803">Añadir excepción</span>
-	    </button>
-	  </p>
-	</div>
-
-	</form>
 	</div>
 </section>
 

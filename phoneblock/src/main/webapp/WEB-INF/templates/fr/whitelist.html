@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(titleKey='page.whitelist.title', descriptionKey=null, titleText=null, descriptionText=null)}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<nav aria-label="fil d'Ariane" class="breadcrumb" data-tx="t0001:50f55d23">
+			<ul>
+				<li><a data-tx="t0002:1798fbdb" th:href="@{/settings}">Réglages</a></li>
+				<li class="is-active"><a aria-current="page" data-tx="t0003:a61f3f91" href="#">Liste blanche</a></li>
+			</ul>
+		</nav>
+
+		<h1 data-tx="t0004:4c4f40df">Ta liste blanche</h1>
+
+		<p data-tx="t0005:1f03ef52">Sur cette page, tu peux voir tous les numéros que tu as exclus du blocage. Un numéro figurant sur ta liste blanche ne sera jamais bloqué, même s'il est signalé comme SPAM dans la base de données de la communauté.</p>
+
+		<div class="notification is-success" th:if="${settingsMessage}">
+			<button class="delete" onclick="this.parentElement.style.display='none';"></button>
+			<span th:text="${settingsMessage}"></span>
+		</div>
+	</div>
+
+	<div class="content">
+		<form method="post" th:action="@{/update-settings(action='lists')}">
+			<input name="redirect" type="hidden" value="/whitelist"/>
+
+			<p data-tx="t0006:624d5748" th:if="${whitelist.empty}">Tu n'as exclu aucun numéro du blocage.</p>
+
+			<th:block th:unless="${whitelist.empty}">
+				<p data-tx="t0007:98b17ee4">Tu as explicitement exclu ces numéros du blocage :</p>
+
+				<div class="field" th:each="number : ${whitelist}">
+					<label class="checkbox" th:with="phoneInfo=${#converters.analyze(number)}">
+						<input th:name="|wl-${number}|" type="checkbox"/> <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span>
+					</label>
+				</div>
+
+				<div class="field is-grouped">
+					<p class="control">
+						<button class="button is-danger" type="submit">
+							<span class="icon"><i class="fa-solid fa-trash"></i></span>
+							<span data-tx="t0008:74d7495f">Supprimer</span>
+						</button>
+					</p>
+				</div>
+			</th:block>
+		</form>
+	</div>
+
+	<div class="content">
+		<form method="post" th:action="@{/update-settings(action='lists')}">
+			<input name="redirect" type="hidden" value="/whitelist"/>
+
+			<div class="field">
+				<label class="label" data-tx="t0009:ce0c23fb">Ajouter une exception</label>
+				<p class="control has-icons-left">
+					<input class="input" data-tx="t0010:45853883" name="add-wl" placeholder="Nouvelle exception" type="tel"/>
+					<span class="icon is-small is-left">☎</span>
+				</p>
+				<p class="help" data-tx="t0011:edaaa5f7">Tu peux entrer ici un ou plusieurs numéros de téléphone séparés par une virgule dans le format de ton choix : 07041-123456789, +49171123456789, 0034 123456789. Ces numéros ne seront alors certainement plus bloqués chez toi.</p>
+			</div>
+
+			<div class="field is-grouped">
+				<p class="control">
+					<button class="button is-primary" type="submit">
+						<span class="icon"><i class="fa-solid fa-check"></i></span>
+						<span data-tx="t0012:d63df803">Exception Ajouter</span>
+					</button>
+				</p>
+				<p class="control">
+					<a class="button" th:href="@{/settings}">
+						<span class="icon"><i class="fa-solid fa-arrow-left"></i></span>
+						<span data-tx="t0013:aafd5700">Retour aux paramètres</span>
+					</a>
+				</p>
+			</div>
+		</form>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

@@ -275,7 +275,13 @@ public class SettingsServlet extends HttpServlet {
 		}
 		
 		AddressBookCache.getInstance().flushUserCache(userName);
-		
+
+		String redirect = req.getParameter("redirect");
+		if ("/blacklist".equals(redirect) || "/whitelist".equals(redirect)) {
+			resp.sendRedirect(req.getContextPath() + redirect);
+			return;
+		}
+
 		forwardToSettings(req, resp, "blacklist");
 	}
 

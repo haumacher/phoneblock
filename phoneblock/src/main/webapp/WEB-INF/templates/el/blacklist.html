@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(titleKey='page.blacklist.title', descriptionKey=null, titleText=null, descriptionText=null)}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<nav aria-label="breadcrumb" class="breadcrumb" data-tx="t0001:50f55d23">
+			<ul>
+				<li><a data-tx="t0002:1798fbdb" th:href="@{/settings}">Ρυθμίσεις</a></li>
+				<li class="is-active"><a aria-current="page" data-tx="t0003:71e2fcb4" href="#">Μαύρη λίστα</a></li>
+			</ul>
+		</nav>
+
+		<h1 data-tx="t0004:9bb283fa">Η μαύρη λίστα σας</h1>
+
+		<p data-tx="t0005:7a770612">Σε αυτή τη σελίδα μπορείτε να δείτε όλους τους αριθμούς που έχετε προσωπικά μπλοκάρει. Ένας αριθμός στη δική σας μαύρη λίστα θα είναι πάντα αποκλεισμένος στις συσκευές σας, ακόμη και αν δεν έχει ακόμη υψηλή βαθμολογία στη βάση δεδομένων της κοινότητας.</p>
+
+		<div class="notification is-success" th:if="${settingsMessage}">
+			<button class="delete" onclick="this.parentElement.style.display='none';"></button>
+			<span th:text="${settingsMessage}"></span>
+		</div>
+	</div>
+
+	<div class="content">
+		<form method="post" th:action="@{/update-settings(action='lists')}">
+			<input name="redirect" type="hidden" value="/blacklist"/>
+
+			<p data-tx="t0006:4dc69521" th:if="${blacklist.empty}">Δεν έχετε αποκλείσει ρητά κανέναν αριθμό. Για να μπλοκάρετε έναν αριθμό, αναζητήστε τον αριθμό χρησιμοποιώντας το παραπάνω πεδίο αναζήτησης και γράψτε ένα αρνητικό σχόλιο ή κάντε μια καταχώρηση στον τηλεφωνικό κατάλογο για τον αριθμό στη λίστα μπλοκαρίσματος στο FRITZ!</p>
+
+			<th:block th:unless="${blacklist.empty}">
+				<p data-tx="t0007:7a2801d3">Έχετε αποκλείσει ρητά αυτούς τους αριθμούς. Μπορείτε να ακυρώσετε έναν τυχαίο αποκλεισμό εδώ:</p>
+				<div class="field" th:each="number : ${blacklist}">
+					<label class="checkbox" th:with="phoneInfo=${#converters.analyze(number)}">
+						<input th:name="|bl-${number}|" type="checkbox"/> <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span>
+					</label>
+				</div>
+
+				<div class="field is-grouped">
+					<p class="control">
+						<button class="button is-danger" type="submit">
+							<span class="icon"><i class="fa-solid fa-trash"></i></span>
+							<span data-tx="t0008:74d7495f">Διαγραφή</span>
+						</button>
+					</p>
+				</div>
+			</th:block>
+		</form>
+	</div>
+
+	<div class="content">
+		<form method="post" th:action="@{/update-settings(action='lists')}">
+			<input name="redirect" type="hidden" value="/blacklist"/>
+
+			<div class="field">
+				<label class="label" data-tx="t0009:7309300c">Αριθμός μπλοκ</label>
+				<p class="control has-icons-left">
+					<input class="input" data-tx="t0010:4e762f67" name="add-bl" placeholder="Νέος αριθμός SPAM" type="tel"/>
+					<span class="icon is-small is-left">☎</span>
+				</p>
+				<p class="help" data-tx="t0011:7b65bad4">Μπορείτε να εισάγετε εδώ έναν ή περισσότερους τηλεφωνικούς αριθμούς SPAM, χωρισμένους με κόμμα, σε οποιαδήποτε μορφή: 07041-123456789, +49171123456789, 0034 123456789. Οι αριθμοί θα προστεθούν στη συνέχεια στην προσωπική σας λίστα αποκλεισμού.</p>
+			</div>
+
+			<div class="field is-grouped">
+				<p class="control">
+					<button class="button is-primary" type="submit">
+						<span class="icon"><i class="fa-solid fa-ban"></i></span>
+						<span data-tx="t0012:6464e726">Προσθήκη κλειδαριάς</span>
+					</button>
+				</p>
+				<p class="control">
+					<a class="button" th:href="@{/settings}">
+						<span class="icon"><i class="fa-solid fa-arrow-left"></i></span>
+						<span data-tx="t0013:aafd5700">Επιστροφή στις ρυθμίσεις</span>
+					</a>
+				</p>
+			</div>
+		</form>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

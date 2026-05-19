@@ -147,7 +147,9 @@ public class ContentFilter extends LoginFilter {
 		}
 		
 		switch (path) {
-		case "/settings": 
+		case "/settings":
+		case "/blacklist":
+		case "/whitelist":
 			return authorization.isAccessLogin();
 		default:
 			return authorization.isAccessRate();

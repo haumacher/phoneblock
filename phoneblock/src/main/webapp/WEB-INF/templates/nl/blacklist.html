@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(titleKey='page.blacklist.title', descriptionKey=null, titleText=null, descriptionText=null)}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<div class="content">
+		<nav aria-label="broodkruimel" class="breadcrumb" data-tx="t0001:50f55d23">
+			<ul>
+				<li><a data-tx="t0002:1798fbdb" th:href="@{/settings}">Instellingen</a></li>
+				<li class="is-active"><a aria-current="page" data-tx="t0003:71e2fcb4" href="#">Zwarte lijst</a></li>
+			</ul>
+		</nav>
+
+		<h1 data-tx="t0004:9bb283fa">Je zwarte lijst</h1>
+
+		<p data-tx="t0005:7a770612">Op deze pagina kun je alle nummers zien die je persoonlijk hebt geblokkeerd. Een nummer op je zwarte lijst wordt altijd geblokkeerd op je apparaten, zelfs als het nog geen hoge beoordeling heeft in de database van de community.</p>
+
+		<div class="notification is-success" th:if="${settingsMessage}">
+			<button class="delete" onclick="this.parentElement.style.display='none';"></button>
+			<span th:text="${settingsMessage}"></span>
+		</div>
+	</div>
+
+	<div class="content">
+		<form method="post" th:action="@{/update-settings(action='lists')}">
+			<input name="redirect" type="hidden" value="/blacklist"/>
+
+			<p data-tx="t0006:4dc69521" th:if="${blacklist.empty}">Je hebt geen nummers expliciet geblokkeerd. Om een nummer te blokkeren, zoekt u naar het nummer met behulp van het zoekveld hierboven en schrijft u een negatieve opmerking, of maakt u een telefoonboekvermelding voor het nummer in de blokkadelijst in uw FRITZ!</p>
+
+			<th:block th:unless="${blacklist.empty}">
+				<p data-tx="t0007:7a2801d3">Je hebt deze nummers expliciet geblokkeerd. Je kunt een per ongeluk geblokkeerde nummer hier annuleren:</p>
+				<div class="field" th:each="number : ${blacklist}">
+					<label class="checkbox" th:with="phoneInfo=${#converters.analyze(number)}">
+						<input th:name="|bl-${number}|" type="checkbox"/> <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span>
+					</label>
+				</div>
+
+				<div class="field is-grouped">
+					<p class="control">
+						<button class="button is-danger" type="submit">
+							<span class="icon"><i class="fa-solid fa-trash"></i></span>
+							<span data-tx="t0008:74d7495f">Verwijder</span>
+						</button>
+					</p>
+				</div>
+			</th:block>
+		</form>
+	</div>
+
+	<div class="content">
+		<form method="post" th:action="@{/update-settings(action='lists')}">
+			<input name="redirect" type="hidden" value="/blacklist"/>
+
+			<div class="field">
+				<label class="label" data-tx="t0009:7309300c">Bloknummer</label>
+				<p class="control has-icons-left">
+					<input class="input" data-tx="t0010:4e762f67" name="add-bl" placeholder="Nieuw SPAM-nummer" type="tel"/>
+					<span class="icon is-small is-left">☎</span>
+				</p>
+				<p class="help" data-tx="t0011:7b65bad4">Je kunt hier een of meer SPAM-telefoonnummers invoeren, gescheiden door komma's, in elk formaat: 07041-123456789, +49171123456789, 0034 123456789. De nummers worden dan toegevoegd aan je persoonlijke blokkadelijst.</p>
+			</div>
+
+			<div class="field is-grouped">
+				<p class="control">
+					<button class="button is-primary" type="submit">
+						<span class="icon"><i class="fa-solid fa-ban"></i></span>
+						<span data-tx="t0012:6464e726">Slot toevoegen</span>
+					</button>
+				</p>
+				<p class="control">
+					<a class="button" th:href="@{/settings}">
+						<span class="icon"><i class="fa-solid fa-arrow-left"></i></span>
+						<span data-tx="t0013:aafd5700">Terug naar de instellingen</span>
+					</a>
+				</p>
+			</div>
+		</form>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+</body>
+</html>

@@ -250,111 +250,61 @@
 
 <section class="section">
 	<div class="content">
-	<h2 data-tx="t0046:9bb283fa" id="blacklist">Η μαύρη λίστα σας</h2>
-	
-	<form method="post" th:action="@{/update-settings(action='lists')}">
+	<h2 data-tx="t0126:ab5bb2af">Οι προσωπικές σας λίστες</h2>
 
-	<p data-tx="t0047:4dc69521" th:if="${blacklist.empty}">Δεν έχετε αποκλείσει ρητά κανέναν αριθμό. Για να μπλοκάρετε έναν αριθμό, αναζητήστε τον αριθμό χρησιμοποιώντας το παραπάνω πεδίο αναζήτησης και γράψτε ένα αρνητικό σχόλιο ή κάντε μια καταχώρηση στον τηλεφωνικό κατάλογο για τον αριθμό στη λίστα μπλοκαρίσματος στο FRITZ!</p>
+	<p data-tx="t0127:b9b3bc88">Η προσωπική σας μαύρη και λευκή λίστα αποθηκεύονται στον διακομιστή και έχουν πάντα προτεραιότητα έναντι της βάσης δεδομένων της κοινότητας κατά τον έλεγχο του SPAM.</p>
 
-	<th:block th:unless="${blacklist.empty}">
-	<p data-tx="t0048:7a2801d3">Έχετε αποκλείσει ρητά αυτούς τους αριθμούς. Μπορείτε να ακυρώσετε έναν τυχαίο αποκλεισμό εδώ:</p>
-	<div class="field" th:each="number : ${blacklist}">
-		<label class="checkbox" th:with="phoneInfo=${#converters.analyze(number)}">
-			<input th:name="|bl-${number}|" type="checkbox"/> <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span>
-		</label>
+	<div class="columns">
+		<div class="column is-half">
+			<div class="card" id="blacklist">
+				<div class="card-content">
+					<p class="title is-5">
+						<span class="icon-text">
+							<span class="icon has-text-danger"><i class="fa-solid fa-ban"></i></span>
+							<span data-tx="t0128:71e2fcb4">Μαύρη λίστα</span>
+						</span>
+					</p>
+					<p class="subtitle is-6">
+						<th:block data-tx="t0129:60459b64" th:if="${blacklist.empty}">Δεν έχετε ακόμη αποκλείσει ρητά κανέναν αριθμό.</th:block>
+						<th:block data-tx="t0130:41d56bc1" th:unless="${blacklist.empty}">Έχετε αποκλείσει ρητά <strong th:text="${blacklist.size()}">0</strong> αριθμούς.</th:block>
+					</p>
+				</div>
+				<footer class="card-footer">
+					<a class="card-footer-item" th:href="@{/blacklist}">
+						<span class="icon-text">
+							<span data-tx="t0131:ff15c393">Διαχείριση μαύρης λίστας</span>
+							<span class="icon"><i class="fa-solid fa-arrow-right"></i></span>
+						</span>
+					</a>
+				</footer>
+			</div>
+		</div>
+
+		<div class="column is-half">
+			<div class="card" id="whitelist">
+				<div class="card-content">
+					<p class="title is-5">
+						<span class="icon-text">
+							<span class="icon has-text-success"><i class="fa-solid fa-check"></i></span>
+							<span data-tx="t0132:a61f3f91">Λευκή λίστα</span>
+						</span>
+					</p>
+					<p class="subtitle is-6">
+						<th:block data-tx="t0133:cf551a9" th:if="${whitelist.empty}">Δεν έχετε ακόμη αποκλείσει κανέναν αριθμό από τον αποκλεισμό.</th:block>
+						<th:block data-tx="t0134:63daebcc" th:unless="${whitelist.empty}">Έχετε αποκλείσει τους αριθμούς <strong th:text="${whitelist.size()}">0</strong> από το μπλοκάρισμα.</th:block>
+					</p>
+				</div>
+				<footer class="card-footer">
+					<a class="card-footer-item" th:href="@{/whitelist}">
+						<span class="icon-text">
+							<span data-tx="t0135:dd2108da">Διαχείριση λευκής λίστας</span>
+							<span class="icon"><i class="fa-solid fa-arrow-right"></i></span>
+						</span>
+					</a>
+				</footer>
+			</div>
+		</div>
 	</div>
-
-	<div class="field is-grouped">
-	  <p class="control">
-	    <button class="button is-danger" type="submit">
-	      <span class="icon"><i class="fa-solid fa-trash"></i></span>
-	      <span data-tx="t0117:74d7495f">Διαγραφή</span>
-	    </button>
-	  </p>
-	</div>
-	</th:block>
-		
-	</form>
-	</div>
-	
-	<div class="content">
-	<form method="post" th:action="@{/update-settings(action='lists')}">
-
-	<div class="field">
-	  <label class="label" data-tx="t0095:7309300c">Αριθμός μπλοκ</label>
-	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0096:4e762f67" name="add-bl" placeholder="Νέος αριθμός SPAM" type="tel"/>
-	    <span class="icon is-small is-left">☎</span>
-	  </p>
-	  <p class="help" data-tx="t0098:7b65bad4">Μπορείτε να εισάγετε εδώ έναν ή περισσότερους τηλεφωνικούς αριθμούς SPAM, χωρισμένους με κόμμα, σε οποιαδήποτε μορφή: 07041-123456789, +49171123456789, 0034 123456789. Οι αριθμοί θα προστεθούν στη συνέχεια στην προσωπική σας λίστα αποκλεισμού.</p>
-	</div>
-	
-	<div class="field is-grouped">
-	  <p class="control">
-	    <button class="button is-primary" type="submit">
-	      <span class="icon"><i class="fa-solid fa-ban"></i></span>
-	      <span data-tx="t0118:6464e726">Προσθήκη κλειδαριάς</span>
-	    </button>
-	  </p>
-	</div>
-
-	</form>
-	</div>
-
-</section>
-
-<section class="section">
-	<div class="content">
-	<h2 data-tx="t0050:4c4f40df" id="whitelist">Η λευκή σας λίστα</h2>
-	
-	<form method="post" th:action="@{/update-settings(action='lists')}">
-
-	<p data-tx="t0051:624d5748" th:if="${whitelist.empty}">Δεν έχετε αποκλείσει κανέναν αριθμό από τον αποκλεισμό.</p>
-
-	<th:block th:unless="${whitelist.empty}">
-	<p data-tx="t0052:98b17ee4">Έχετε αποκλείσει ρητά αυτούς τους αριθμούς από τον αποκλεισμό:</p>
-
-	<div class="field" th:each="number : ${whitelist}">
-		<label class="checkbox" th:with="phoneInfo=${#converters.analyze(number)}">
-			<input th:name="|wl-${number}|" type="checkbox"/> <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span>
-		</label>
-	</div>
-	
-	<div class="field is-grouped">
-	  <p class="control">
-	    <button class="button is-danger" type="submit">
-	      <span class="icon"><i class="fa-solid fa-trash"></i></span>
-	      <span data-tx="t0119:74d7495f">Διαγραφή</span>
-	    </button>
-	  </p>
-	</div>
-	</th:block>
-	
-	</form>
-	</div>
-	
-	<div class="content">
-	<form method="post" th:action="@{/update-settings(action='lists')}">
-
-	<div class="field">
-	  <label class="label" data-tx="t0054:ce0c23fb">Προσθήκη εξαίρεσης</label>
-	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0088:45853883" name="add-wl" placeholder="Νέα εξαίρεση" type="tel"/>
-	    <span class="icon is-small is-left">☎</span>
-	  </p>
-	  <p class="help" data-tx="t0056:edaaa5f7">Μπορείτε να εισαγάγετε έναν ή περισσότερους τηλεφωνικούς αριθμούς χωρισμένους με κόμμα σε οποιαδήποτε μορφή: 07041-123456789, +49171123456789, 0034 123456789. Οι αριθμοί αυτοί δεν θα μπλοκάρονται πλέον.</p>
-	</div>
-	
-	<div class="field is-grouped">
-	  <p class="control">
-	    <button class="button is-primary" type="submit">
-	      <span class="icon"><i class="fa-solid fa-circle-check"></i></span>
-	      <span data-tx="t0120:d63df803">Προσθήκη εξαίρεσης</span>
-	    </button>
-	  </p>
-	</div>
-
-	</form>
 	</div>
 </section>
 
