@@ -115,7 +115,14 @@ public class PrefixCheckServlet extends HttpServlet {
 			for (DBPersonalization p : personalMatches) {
 				PhoneInfo pi = byPhone.get(p.getPhone());
 				if (pi == null) {
-					// Personal-only entry: synthesize a minimal PhoneInfo.
+					// No active community match. Skip personal overlay when the underlying
+					// NUMBERS row exists but is archived — archived numbers must not be
+					// returned at all by /check-prefix.
+					DBNumberInfo communityRow = reports.getPhoneInfo(p.getPhone());
+					if (communityRow != null && !communityRow.isActive()) {
+						continue;
+					}
+					// Truly never-seen number: synthesise a minimal entry.
 					pi = NumberAnalyzer.phoneInfoFromId(p.getPhone())
 						.setRating(p.isBlocked() ? Rating.B_MISSED : Rating.A_LEGITIMATE);
 					byPhone.put(p.getPhone(), pi);
