@@ -35,17 +35,15 @@
 			</form>
 
 			<div class="field list-entry" th:each="entry : ${whitelist}" th:with="phoneInfo=${#converters.analyze(entry.phone)}">
-				<div class="entry-view">
-					<label class="checkbox">
-						<input form="bulkDelete" th:name="|wl-${entry.phone}|" type="checkbox"/>
-						<strong th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></strong>
-						<span class="tag" th:classappend="${entry.rating.cssClass}" th:if="${entry.rating != null and entry.rating.name != 'B_MISSED' and entry.rating.name != 'A_LEGITIMATE'}" th:text="${#messages.msg(entry.rating.labelKey)}"></span>
-					</label>
-					<button class="button is-small is-ghost edit-toggle" data-tx="t0024:cd459696" title="Redigera kommentar" type="button">
-						<span class="icon is-small"><i class="fa-solid fa-pen-to-square"></i></span>
-					</button>
-					<p class="help" th:if="${entry.comment != null and !entry.comment.empty}" th:text="${entry.comment}"></p>
-				</div>
+				<label class="checkbox">
+					<input form="bulkDelete" th:name="|wl-${entry.phone}|" type="checkbox"/>
+					<strong th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></strong>
+					<span class="tag" th:classappend="${entry.rating.cssClass}" th:if="${entry.rating != null and entry.rating.name != 'B_MISSED' and entry.rating.name != 'A_LEGITIMATE'}" th:text="${#messages.msg(entry.rating.labelKey)}"></span>
+				</label>
+				<button class="button is-small is-ghost edit-toggle" data-tx="t0026:cd459696" title="Redigera kommentar" type="button">
+					<span class="icon is-small"><i class="fa-solid fa-pen-to-square"></i></span>
+				</button>
+				<p class="help entry-comment" th:if="${entry.comment != null and !entry.comment.empty}" th:text="${entry.comment}"></p>
 
 				<form class="entry-edit" method="post" style="display:none;" th:action="@{/update-settings(action='lists')}">
 					<input name="redirect" type="hidden" value="/whitelist"/>
