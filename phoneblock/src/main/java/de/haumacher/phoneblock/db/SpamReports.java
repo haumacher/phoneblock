@@ -98,15 +98,15 @@ public interface SpamReports {
 
 	@Select("""
 			select PREFIX, CNT, VOTES from NUMBERS_AGGREGATION_10
-			where SHA1 >= #{low} and SHA1 < #{high}
+			where SHA1 >= #{low} and SHA1 < #{high} and CNT >= #{minCnt}
 			""")
-	List<AggregationInfo> getAggregation10ByHashPrefix(byte[] low, byte[] high);
+	List<AggregationInfo> getAggregation10ByHashPrefix(byte[] low, byte[] high, int minCnt);
 
 	@Select("""
 			select PREFIX, CNT, VOTES from NUMBERS_AGGREGATION_100
-			where SHA1 >= #{low} and SHA1 < #{high}
+			where SHA1 >= #{low} and SHA1 < #{high} and CNT >= #{minCnt}
 			""")
-	List<AggregationInfo> getAggregation100ByHashPrefix(byte[] low, byte[] high);
+	List<AggregationInfo> getAggregation100ByHashPrefix(byte[] low, byte[] high, int minCnt);
 
 	@Update("update NUMBERS_AGGREGATION_10 set SHA1 = #{hash} where PREFIX = #{prefix}")
 	int updateAggregation10Hash(String prefix, byte[] hash);

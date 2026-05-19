@@ -1288,14 +1288,14 @@
 					},
 					"range10": {
 						"type": "array",
-						"description": "10-digit range aggregations whose SHA1 hash starts with the 'prefix10' prefix from the request. Empty if no 'prefix10' was supplied or no match was found.",
+						"description": "10-digit range aggregations whose SHA1 hash starts with the 'prefix10' prefix from the request. Only blocks that have crossed the server-side wildcard-vote threshold are returned, matching the behavior of /check; sparsely-populated ranges are filtered out. Empty if no 'prefix10' was supplied or no qualifying match was found.",
 						"items": {
 							"$ref": "#/components/schemas/RangeMatch"
 						}
 					},
 					"range100": {
 						"type": "array",
-						"description": "100-digit range aggregations whose SHA1 hash starts with the 'prefix100' prefix from the request. Empty if no 'prefix100' was supplied or no match was found.",
+						"description": "100-digit range aggregations whose SHA1 hash starts with the 'prefix100' prefix from the request. Only blocks that have crossed the server-side wildcard-vote threshold are returned, matching the behavior of /check; sparsely-populated ranges are filtered out. Empty if no 'prefix100' was supplied or no qualifying match was found.",
 						"items": {
 							"$ref": "#/components/schemas/RangeMatch"
 						}
