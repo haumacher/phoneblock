@@ -1,5 +1,58 @@
 # PhoneBlock Release Notes
 
+## Version 3.0.0 (2026-05-19)
+
+**Key Features:**
+- **PhoneBlock Dongle** — ESP32-based standalone SIP spam blocker that registers with the Fritz!Box, blocks community-rated spam calls, supports OTA firmware/announcement updates, task watchdog with panic-on-timeout, and automatic coredump upload after panic
+- **"Login with PhoneBlock" SSO** — OAuth-style flow with one-shot login tickets, `/auth/gate` for browser auto-login, trust-on-first-use, and registered redirect targets for SpamBlocker and PhoneBlock Dongle apps
+- **Personal blacklist/whitelist redesign** — split onto dedicated `/blacklist` and `/whitelist` pages with community vote counts, inline rate/comment/edit, and filtering of archived numbers
+- **Disposable e-mail detection** — extracted `fake-mail-check` module with MX-based heuristic, daily import of public blocklists, active scrapers for MailTicking, SmailPro, Emailnator, temp-mail.org, emailfake.com, Mohmal, and a Chrome harvester extension; providers loaded dynamically from JNDI
+- **AI comment classifier and summarizer** — replaces ChatGPT summary service with the Anthropic Java SDK using structured outputs; adds `COMMENTS.CLASSIFICATION` and hides BAD comments
+
+**API:**
+- Privacy-preserving k-anonymity prefix lookup `/api/check-prefix` (#280); bearer-token only, prefixes restricted to even length
+- `/api/report-call` endpoint for blocklist-tailoring activity stats; quota tightened to 20/day
+- `/check`, `/num`, `/check-prefix` return the user's own comment (#301)
+- Wildcard ranges in `/check-prefix` filtered by aggregation threshold (#315)
+- Personal blacklist/whitelist applied in `/api/num/` and prefix overlays
+- `PhoneInfo.archived` reflects ACTIVE state correctly; range10/100 prefixes returned in E.164
+
+**Web App:**
+- New `/festnetz` decision-tree wizard consolidating landline setup options; user-agent-aware homepage platform card highlight
+- CardDAV performance: two-layer assembly with personal dedup, content-based ETags, `If-None-Match` in PROPFIND/REPORT, StAX render pipeline, Depth-0 lightweight PROPFIND on the address-book URL, serving from the published snapshot
+- Stats page: daily growth in tooltips and current-day totals, viewport-scaled chart height, default-hidden non-primary datasets, friendly user-agent labels
+- 301-redirects strip `;jsessionid=` path parameters
+- Per-page SEO titles and descriptions
+- Canonical URLs and sitemap entries use internationalized phone numbers
+- Comments section moved above the rating form on the number-info page
+
+**Auth:**
+- Wrong-account login loop broken via `user_hint` on `/auth/gate` and one logout-retry
+- `/auth/*` exempt from proof-of-work; loopback callbacks accept any single-label hostname
+
+**Mobile App (1.3.1):**
+- Diagnostic log viewer with share + clear, native + Dart crash handler, hashed-number sanitization (#282)
+- Background-isolate log bridge as a local Flutter plugin; Logback rolling appender, SLF4J logging
+- Single-digit country code support in wildcard blocking
+- Refresh cached settings after display-name / e-mail change (#279)
+- Fix blocklist background sync via Flutter `SharedPreferences`
+- Fix null `Uri` in `CallChecker.onScreenCall`
+
+**Answer Bot:**
+- Respect personal blacklist and whitelist in the call filter
+
+**Tools:**
+- `phonebook-sync` CLI to compare a Fritz!Box phonebook against the blocklist
+- `fake-mail-check` standalone CLI with MX resolution, versioned schema migrations, and import/scrape/resolve-mx commands
+
+**Database:** Schema version 24. Migrations 21–24 cover `SOURCE_SYSTEM` string IDs, `DOMAIN_CHECK.STATUS` enum, `MX_HOST_STATUS`, and `COMMENTS.CLASSIFICATION`.
+
+**Build:**
+- Maven dependency versions consolidated in the parent POM
+- `mjSIP` resolved from JitPack instead of GitHub Packages
+- `Messages_*.properties` translation wired into the POM via `tl-maven-plugin`
+- `.phoneblock` configuration is now validated rather than silently skipped
+
 ## Version 2.0.0 (2026-03-14)
 
 **Key Features:**
