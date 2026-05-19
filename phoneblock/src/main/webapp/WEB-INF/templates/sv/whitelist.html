@@ -25,33 +25,54 @@
 	</div>
 
 	<div class="content">
-		<form method="post" th:action="@{/update-settings(action='lists')}">
-			<input name="redirect" type="hidden" value="/whitelist"/>
+		<p data-tx="t0006:624d5748" th:if="${whitelist.empty}">Du har inte uteslutit några nummer från blockeringen.</p>
 
-			<p data-tx="t0006:624d5748" th:if="${whitelist.empty}">Du har inte uteslutit några nummer från blockeringen.</p>
+		<th:block th:unless="${whitelist.empty}">
+			<p data-tx="t0007:98b17ee4">Du har uttryckligen uteslutit dessa nummer från blockeringen:</p>
 
-			<th:block th:unless="${whitelist.empty}">
-				<p data-tx="t0014:98b17ee4">Du har uttryckligen uteslutit dessa nummer från blockeringen:</p>
+			<form id="bulkDelete" method="post" th:action="@{/update-settings(action='lists')}">
+				<input name="redirect" type="hidden" value="/whitelist"/>
+			</form>
 
-				<div class="field" th:each="entry : ${whitelist}" th:with="phoneInfo=${#converters.analyze(entry.phone)}">
-					<label class="checkbox">
-						<input th:name="|wl-${entry.phone}|" type="checkbox"/>
-						<strong th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></strong>
-						<span class="tag" th:classappend="${entry.rating.cssClass}" th:if="${entry.rating != null}" th:text="${#messages.msg(entry.rating.labelKey)}"></span>
-					</label>
-					<p class="help" th:if="${entry.comment != null and !entry.comment.empty}" th:text="${entry.comment}"></p>
-				</div>
+			<div class="field" th:each="entry : ${whitelist}" th:with="phoneInfo=${#converters.analyze(entry.phone)}">
+				<label class="checkbox">
+					<input form="bulkDelete" th:name="|wl-${entry.phone}|" type="checkbox"/>
+					<strong th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></strong>
+					<span class="tag" th:classappend="${entry.rating.cssClass}" th:if="${entry.rating != null}" th:text="${#messages.msg(entry.rating.labelKey)}"></span>
+				</label>
+				<p class="help" th:if="${entry.comment != null and !entry.comment.empty}" th:text="${entry.comment}"></p>
 
-				<div class="field is-grouped">
-					<p class="control">
-						<button class="button is-danger" type="submit">
-							<span class="icon"><i class="fa-solid fa-trash"></i></span>
-							<span data-tx="t0008:74d7495f">Radera</span>
-						</button>
-					</p>
-				</div>
-			</th:block>
-		</form>
+				<details class="mt-1">
+					<summary class="is-size-7" data-tx="t0008:46eead8f" style="cursor: pointer;">Redigera kommentar</summary>
+					<form class="mt-2" method="post" th:action="@{/update-settings(action='lists')}">
+						<input name="redirect" type="hidden" value="/whitelist"/>
+						<input name="edit-comment-phone" th:value="${entry.phone}" type="hidden"/>
+						<div class="field">
+							<div class="control">
+								<textarea class="textarea" name="edit-comment-text" rows="2" th:text="${entry.comment}"></textarea>
+							</div>
+						</div>
+						<div class="field">
+							<p class="control">
+								<button class="button is-small is-primary" type="submit">
+									<span class="icon"><i class="fa-solid fa-floppy-disk"></i></span>
+									<span data-tx="t0009:31aafd4a">Spara</span>
+								</button>
+							</p>
+						</div>
+					</form>
+				</details>
+			</div>
+
+			<div class="field is-grouped">
+				<p class="control">
+					<button class="button is-danger" form="bulkDelete" type="submit">
+						<span class="icon"><i class="fa-solid fa-trash"></i></span>
+						<span data-tx="t0010:74d7495f">Radera</span>
+					</button>
+				</p>
+			</div>
+		</th:block>
 	</div>
 
 	<div class="content">
@@ -59,25 +80,32 @@
 			<input name="redirect" type="hidden" value="/whitelist"/>
 
 			<div class="field">
-				<label class="label" data-tx="t0009:ce0c23fb">Lägg till undantag</label>
+				<label class="label" data-tx="t0011:ce0c23fb">Lägg till undantag</label>
 				<p class="control has-icons-left">
-					<input class="input" data-tx="t0010:45853883" name="add-wl" placeholder="Nytt undantag" type="tel"/>
+					<input class="input" data-tx="t0012:45853883" name="add-wl" placeholder="Nytt undantag" type="tel"/>
 					<span class="icon is-small is-left">☎</span>
 				</p>
-				<p class="help" data-tx="t0011:edaaa5f7">Du kan ange ett eller flera telefonnummer åtskilda med kommatecken i valfritt format: 07041-123456789, +49171123456789, 0034 123456789. Dessa nummer kommer då inte längre att blockeras.</p>
+				<p class="help" data-tx="t0013:edaaa5f7">Du kan ange ett eller flera telefonnummer åtskilda med kommatecken i valfritt format: 07041-123456789, +49171123456789, 0034 123456789. Dessa nummer kommer då inte längre att blockeras.</p>
+			</div>
+
+			<div class="field">
+				<label class="label" data-tx="t0014:de6dcdf4">Kommentar (valfritt)</label>
+				<div class="control">
+					<textarea class="textarea" data-tx="t0015:c2b769ec" name="add-wl-comment" placeholder="Varför är det här numret legitimt för dig?" rows="2"></textarea>
+				</div>
 			</div>
 
 			<div class="field is-grouped">
 				<p class="control">
 					<button class="button is-primary" type="submit">
 						<span class="icon"><i class="fa-solid fa-check"></i></span>
-						<span data-tx="t0012:d63df803">Lägg till undantag</span>
+						<span data-tx="t0016:d63df803">Lägg till undantag</span>
 					</button>
 				</p>
 				<p class="control">
 					<a class="button" th:href="@{/settings}">
 						<span class="icon"><i class="fa-solid fa-arrow-left"></i></span>
-						<span data-tx="t0013:aafd5700">Tillbaka till inställningarna</span>
+						<span data-tx="t0017:aafd5700">Tillbaka till inställningarna</span>
 					</a>
 				</p>
 			</div>

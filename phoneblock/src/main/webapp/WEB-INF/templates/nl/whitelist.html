@@ -16,7 +16,7 @@
 
 		<h1 data-tx="t0004:4c4f40df">Uw witte lijst</h1>
 
-		<p data-tx="t0005:1f03ef52">Op deze pagina kun je alle nummers zien die je hebt uitgesloten van blokkering. Een nummer op je witte lijst zal nooit worden geblokkeerd, zelfs niet als het als SPAM wordt gerapporteerd in de gemeenschapsdatabase.</p>
+		<p data-tx="t0005:1f03ef52">Op deze pagina kun je alle nummers zien die je hebt uitgesloten van de blokkering. Een nummer op je witte lijst zal nooit worden geblokkeerd, zelfs niet als het als SPAM wordt gerapporteerd in de gemeenschapsdatabase.</p>
 
 		<div class="notification is-success" th:if="${settingsMessage}">
 			<button class="delete" onclick="this.parentElement.style.display='none';"></button>
@@ -25,33 +25,54 @@
 	</div>
 
 	<div class="content">
-		<form method="post" th:action="@{/update-settings(action='lists')}">
-			<input name="redirect" type="hidden" value="/whitelist"/>
+		<p data-tx="t0006:624d5748" th:if="${whitelist.empty}">Je hebt geen nummers uitgesloten van de blokkering.</p>
 
-			<p data-tx="t0006:624d5748" th:if="${whitelist.empty}">Je hebt geen nummers uitgesloten van de blokkering.</p>
+		<th:block th:unless="${whitelist.empty}">
+			<p data-tx="t0007:98b17ee4">Je hebt deze nummers expliciet uitgesloten van de blokkering:</p>
 
-			<th:block th:unless="${whitelist.empty}">
-				<p data-tx="t0014:98b17ee4">Je hebt deze nummers expliciet uitgesloten van de blokkering:</p>
+			<form id="bulkDelete" method="post" th:action="@{/update-settings(action='lists')}">
+				<input name="redirect" type="hidden" value="/whitelist"/>
+			</form>
 
-				<div class="field" th:each="entry : ${whitelist}" th:with="phoneInfo=${#converters.analyze(entry.phone)}">
-					<label class="checkbox">
-						<input th:name="|wl-${entry.phone}|" type="checkbox"/>
-						<strong th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></strong>
-						<span class="tag" th:classappend="${entry.rating.cssClass}" th:if="${entry.rating != null}" th:text="${#messages.msg(entry.rating.labelKey)}"></span>
-					</label>
-					<p class="help" th:if="${entry.comment != null and !entry.comment.empty}" th:text="${entry.comment}"></p>
-				</div>
+			<div class="field" th:each="entry : ${whitelist}" th:with="phoneInfo=${#converters.analyze(entry.phone)}">
+				<label class="checkbox">
+					<input form="bulkDelete" th:name="|wl-${entry.phone}|" type="checkbox"/>
+					<strong th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></strong>
+					<span class="tag" th:classappend="${entry.rating.cssClass}" th:if="${entry.rating != null}" th:text="${#messages.msg(entry.rating.labelKey)}"></span>
+				</label>
+				<p class="help" th:if="${entry.comment != null and !entry.comment.empty}" th:text="${entry.comment}"></p>
 
-				<div class="field is-grouped">
-					<p class="control">
-						<button class="button is-danger" type="submit">
-							<span class="icon"><i class="fa-solid fa-trash"></i></span>
-							<span data-tx="t0008:74d7495f">Verwijder</span>
-						</button>
-					</p>
-				</div>
-			</th:block>
-		</form>
+				<details class="mt-1">
+					<summary class="is-size-7" data-tx="t0008:46eead8f" style="cursor: pointer;">Opmerking bewerken</summary>
+					<form class="mt-2" method="post" th:action="@{/update-settings(action='lists')}">
+						<input name="redirect" type="hidden" value="/whitelist"/>
+						<input name="edit-comment-phone" th:value="${entry.phone}" type="hidden"/>
+						<div class="field">
+							<div class="control">
+								<textarea class="textarea" name="edit-comment-text" rows="2" th:text="${entry.comment}"></textarea>
+							</div>
+						</div>
+						<div class="field">
+							<p class="control">
+								<button class="button is-small is-primary" type="submit">
+									<span class="icon"><i class="fa-solid fa-floppy-disk"></i></span>
+									<span data-tx="t0009:31aafd4a">Sla</span>
+								</button>
+							</p>
+						</div>
+					</form>
+				</details>
+			</div>
+
+			<div class="field is-grouped">
+				<p class="control">
+					<button class="button is-danger" form="bulkDelete" type="submit">
+						<span class="icon"><i class="fa-solid fa-trash"></i></span>
+						<span data-tx="t0010:74d7495f">Verwijder</span>
+					</button>
+				</p>
+			</div>
+		</th:block>
 	</div>
 
 	<div class="content">
@@ -59,25 +80,32 @@
 			<input name="redirect" type="hidden" value="/whitelist"/>
 
 			<div class="field">
-				<label class="label" data-tx="t0009:ce0c23fb">Uitzondering toevoegen</label>
+				<label class="label" data-tx="t0011:ce0c23fb">Uitzondering toevoegen</label>
 				<p class="control has-icons-left">
-					<input class="input" data-tx="t0010:45853883" name="add-wl" placeholder="Nieuwe uitzondering" type="tel"/>
+					<input class="input" data-tx="t0012:45853883" name="add-wl" placeholder="Nieuwe uitzondering" type="tel"/>
 					<span class="icon is-small is-left">☎</span>
 				</p>
-				<p class="help" data-tx="t0011:edaaa5f7">Je kunt een of meer telefoonnummers gescheiden door komma's invoeren in een willekeurig formaat: 07041-123456789, +49171123456789, 0034 123456789. Deze nummers worden dan niet langer geblokkeerd.</p>
+				<p class="help" data-tx="t0013:edaaa5f7">Je kunt een of meer telefoonnummers gescheiden door komma's invoeren in een willekeurig formaat: 07041-123456789, +49171123456789, 0034 123456789. Deze nummers worden dan niet langer geblokkeerd.</p>
+			</div>
+
+			<div class="field">
+				<label class="label" data-tx="t0014:de6dcdf4">Opmerking (optioneel)</label>
+				<div class="control">
+					<textarea class="textarea" data-tx="t0015:c2b769ec" name="add-wl-comment" placeholder="Waarom is dit nummer legitiem voor jou?" rows="2"></textarea>
+				</div>
 			</div>
 
 			<div class="field is-grouped">
 				<p class="control">
 					<button class="button is-primary" type="submit">
 						<span class="icon"><i class="fa-solid fa-check"></i></span>
-						<span data-tx="t0012:d63df803">Uitzondering toevoegen</span>
+						<span data-tx="t0016:d63df803">Uitzondering toevoegen</span>
 					</button>
 				</p>
 				<p class="control">
 					<a class="button" th:href="@{/settings}">
 						<span class="icon"><i class="fa-solid fa-arrow-left"></i></span>
-						<span data-tx="t0013:aafd5700">Terug naar de instellingen</span>
+						<span data-tx="t0017:aafd5700">Terug naar de instellingen</span>
 					</a>
 				</p>
 			</div>

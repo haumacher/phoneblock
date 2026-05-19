@@ -25,32 +25,54 @@
 	</div>
 
 	<div class="content">
-		<form method="post" th:action="@{/update-settings(action='lists')}">
-			<input name="redirect" type="hidden" value="/blacklist"/>
+		<p data-tx="t0006:4dc69521" th:if="${blacklist.empty}">Je hebt geen nummers expliciet geblokkeerd. Om een nummer te blokkeren, zoekt u naar het nummer met behulp van het zoekveld hierboven en schrijft u een negatieve opmerking, of maakt u een telefoonboekvermelding voor het nummer in de blokkadelijst in uw FRITZ!</p>
 
-			<p data-tx="t0006:4dc69521" th:if="${blacklist.empty}">Je hebt geen nummers expliciet geblokkeerd. Om een nummer te blokkeren, zoekt u naar het nummer met behulp van het zoekveld hierboven en schrijft u een negatieve opmerking, of maakt u een telefoonboekvermelding voor het nummer in de blokkadelijst in uw FRITZ!</p>
+		<th:block th:unless="${blacklist.empty}">
+			<p data-tx="t0007:7a2801d3">Je hebt deze nummers expliciet geblokkeerd. Je kunt een per ongeluk geblokkeerde nummer hier annuleren:</p>
 
-			<th:block th:unless="${blacklist.empty}">
-				<p data-tx="t0014:7a2801d3">Je hebt deze nummers expliciet geblokkeerd. Je kunt een per ongeluk geblokkeerde nummer hier annuleren:</p>
-				<div class="field" th:each="entry : ${blacklist}" th:with="phoneInfo=${#converters.analyze(entry.phone)}">
-					<label class="checkbox">
-						<input th:name="|bl-${entry.phone}|" type="checkbox"/>
-						<strong th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></strong>
-						<span class="tag" th:classappend="${entry.rating.cssClass}" th:if="${entry.rating != null}" th:text="${#messages.msg(entry.rating.labelKey)}"></span>
-					</label>
-					<p class="help" th:if="${entry.comment != null and !entry.comment.empty}" th:text="${entry.comment}"></p>
-				</div>
+			<form id="bulkDelete" method="post" th:action="@{/update-settings(action='lists')}">
+				<input name="redirect" type="hidden" value="/blacklist"/>
+			</form>
 
-				<div class="field is-grouped">
-					<p class="control">
-						<button class="button is-danger" type="submit">
-							<span class="icon"><i class="fa-solid fa-trash"></i></span>
-							<span data-tx="t0008:74d7495f">Verwijder</span>
-						</button>
-					</p>
-				</div>
-			</th:block>
-		</form>
+			<div class="field" th:each="entry : ${blacklist}" th:with="phoneInfo=${#converters.analyze(entry.phone)}">
+				<label class="checkbox">
+					<input form="bulkDelete" th:name="|bl-${entry.phone}|" type="checkbox"/>
+					<strong th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></strong>
+					<span class="tag" th:classappend="${entry.rating.cssClass}" th:if="${entry.rating != null}" th:text="${#messages.msg(entry.rating.labelKey)}"></span>
+				</label>
+				<p class="help" th:if="${entry.comment != null and !entry.comment.empty}" th:text="${entry.comment}"></p>
+
+				<details class="mt-1">
+					<summary class="is-size-7" data-tx="t0008:46eead8f" style="cursor: pointer;">Opmerking bewerken</summary>
+					<form class="mt-2" method="post" th:action="@{/update-settings(action='lists')}">
+						<input name="redirect" type="hidden" value="/blacklist"/>
+						<input name="edit-comment-phone" th:value="${entry.phone}" type="hidden"/>
+						<div class="field">
+							<div class="control">
+								<textarea class="textarea" name="edit-comment-text" rows="2" th:text="${entry.comment}"></textarea>
+							</div>
+						</div>
+						<div class="field">
+							<p class="control">
+								<button class="button is-small is-primary" type="submit">
+									<span class="icon"><i class="fa-solid fa-floppy-disk"></i></span>
+									<span data-tx="t0009:31aafd4a">Sla</span>
+								</button>
+							</p>
+						</div>
+					</form>
+				</details>
+			</div>
+
+			<div class="field is-grouped">
+				<p class="control">
+					<button class="button is-danger" form="bulkDelete" type="submit">
+						<span class="icon"><i class="fa-solid fa-trash"></i></span>
+						<span data-tx="t0010:74d7495f">Verwijder</span>
+					</button>
+				</p>
+			</div>
+		</th:block>
 	</div>
 
 	<div class="content">
@@ -58,25 +80,43 @@
 			<input name="redirect" type="hidden" value="/blacklist"/>
 
 			<div class="field">
-				<label class="label" data-tx="t0009:7309300c">Bloknummer</label>
+				<label class="label" data-tx="t0011:7309300c">Bloknummer</label>
 				<p class="control has-icons-left">
-					<input class="input" data-tx="t0010:4e762f67" name="add-bl" placeholder="Nieuw SPAM-nummer" type="tel"/>
+					<input class="input" data-tx="t0012:4e762f67" name="add-bl" placeholder="Nieuw SPAM-nummer" type="tel"/>
 					<span class="icon is-small is-left">☎</span>
 				</p>
-				<p class="help" data-tx="t0011:7b65bad4">Je kunt hier een of meer SPAM-telefoonnummers invoeren, gescheiden door komma's, in elk formaat: 07041-123456789, +49171123456789, 0034 123456789. De nummers worden dan toegevoegd aan je persoonlijke blokkadelijst.</p>
+				<p class="help" data-tx="t0013:7b65bad4">Je kunt hier een of meer SPAM-telefoonnummers invoeren, gescheiden door komma's, in een willekeurig formaat: 07041-123456789, +49171123456789, 0034 123456789. De nummers worden dan toegevoegd aan je persoonlijke blokkadelijst.</p>
+			</div>
+
+			<div class="field">
+				<label class="label" data-tx="t0014:b2ec7c34">Type oproep</label>
+				<div class="control">
+					<div class="select">
+						<select name="add-bl-rating">
+							<option th:each="r : ${blacklistRatings}" th:text="${#messages.msg(r.labelKey)}" th:value="${r.name}"></option>
+						</select>
+					</div>
+				</div>
+			</div>
+
+			<div class="field">
+				<label class="label" data-tx="t0015:de6dcdf4">Opmerking (optioneel)</label>
+				<div class="control">
+					<textarea class="textarea" data-tx="t0016:f556d28e" name="add-bl-comment" placeholder="Waar ging het gesprek over?" rows="2"></textarea>
+				</div>
 			</div>
 
 			<div class="field is-grouped">
 				<p class="control">
 					<button class="button is-primary" type="submit">
 						<span class="icon"><i class="fa-solid fa-ban"></i></span>
-						<span data-tx="t0012:6464e726">Slot toevoegen</span>
+						<span data-tx="t0017:6464e726">Slot toevoegen</span>
 					</button>
 				</p>
 				<p class="control">
 					<a class="button" th:href="@{/settings}">
 						<span class="icon"><i class="fa-solid fa-arrow-left"></i></span>
-						<span data-tx="t0013:aafd5700">Terug naar de instellingen</span>
+						<span data-tx="t0018:aafd5700">Terug naar de instellingen</span>
 					</a>
 				</p>
 			</div>

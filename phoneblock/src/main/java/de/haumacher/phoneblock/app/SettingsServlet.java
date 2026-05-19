@@ -21,6 +21,7 @@ import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.DBUserSettings;
+import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.AuthToken;
 import de.haumacher.phoneblock.db.settings.UserSettings;
@@ -205,17 +206,35 @@ public class SettingsServlet extends HttpServlet {
 	}
 
 	private void updateLists(HttpServletRequest req, HttpServletResponse resp, String userName) throws IOException {
+		String redirect = req.getParameter("redirect");
+		String addBlComment = nullIfBlank(req.getParameter("add-bl-comment"));
+		Rating addBlRating = parseBlacklistRating(req.getParameter("add-bl-rating"));
+		String addWlComment = nullIfBlank(req.getParameter("add-wl-comment"));
+
 		DB db = DBService.getInstance();
 		try (SqlSession session = db.openSession()) {
 			Users users = session.getMapper(Users.class);
 			Long userId = users.getUserId(userName);
 			if (userId != null) {
 				long owner = userId.longValue();
-				
+
 				DBUserSettings settings = users.getSettingsById(owner);
 				String dialPrefix = settings.getDialPrefix();
-				
+
 				BlockList blocklist = session.getMapper(BlockList.class);
+				SpamReports spamReports = session.getMapper(SpamReports.class);
+
+				// Inline comment edit on an existing entry.
+				String editPhone = req.getParameter("edit-comment-phone");
+				if (editPhone != null && !editPhone.isEmpty()) {
+					String editText = nullIfBlank(req.getParameter("edit-comment-text"));
+					String phoneId = NumberAnalyzer.toId(editPhone, dialPrefix);
+					if (phoneId != null) {
+						updateOrCreateComment(spamReports, users, owner, phoneId, editText,
+							"/whitelist".equals(redirect) ? Rating.A_LEGITIMATE : Rating.B_MISSED);
+					}
+				}
+
 				for (Entry<String, String[]> entry : req.getParameterMap().entrySet()) {
 					String key = entry.getKey();
 					if (key.equals("add-wl")) {
@@ -225,11 +244,11 @@ public class SettingsServlet extends HttpServlet {
 							if (phoneId == null) {
 								continue;
 							}
-							
+
 							long now = System.currentTimeMillis();
 							PhoneNumer number = NumberAnalyzer.analyzePhoneID(phoneId);
 							if (number != null) {
-								db.addRating(userName, number, dialPrefix, Rating.A_LEGITIMATE, null, settings.getLang(), now);
+								db.addRating(userName, number, dialPrefix, Rating.A_LEGITIMATE, addWlComment, settings.getLang(), now);
 							}
 						}
 					}
@@ -240,11 +259,11 @@ public class SettingsServlet extends HttpServlet {
 							if (phone == null) {
 								continue;
 							}
-							
+
 							long now = System.currentTimeMillis();
 							PhoneNumer number = NumberAnalyzer.analyzePhoneID(phone);
 							if (number != null) {
-								db.addRating(userName, number, dialPrefix, Rating.B_MISSED, null, settings.getLang(), now);
+								db.addRating(userName, number, dialPrefix, addBlRating, addBlComment, settings.getLang(), now);
 							}
 						}
 					}
@@ -258,7 +277,7 @@ public class SettingsServlet extends HttpServlet {
 							blocklist.removePersonalization(owner, phone);
 						}
 					}
-					
+
 					else if (key.startsWith("wl-")) {
 						String rawPhone = key.substring("wl-".length());
 						String phone = NumberAnalyzer.toId(rawPhone);
@@ -270,19 +289,54 @@ public class SettingsServlet extends HttpServlet {
 					}
 				}
 			}
-			
+
 			session.commit();
 		}
-		
+
 		AddressBookCache.getInstance().flushUserCache(userName);
 
-		String redirect = req.getParameter("redirect");
 		if ("/blacklist".equals(redirect) || "/whitelist".equals(redirect)) {
 			resp.sendRedirect(req.getContextPath() + redirect);
 			return;
 		}
 
 		forwardToSettings(req, resp, "blacklist");
+	}
+
+	/**
+	 * Mirrors the upsert logic of {@code PersonalizationServlet#doPut}: edit the COMMENT column on an
+	 * existing row, or insert a new comment with the list-default rating when the user had not rated
+	 * the number yet.
+	 */
+	private static void updateOrCreateComment(SpamReports spamReports, Users users, long userId, String phoneId,
+			String comment, Rating defaultRating) {
+		int updated = spamReports.updateUserComment(userId, phoneId, comment);
+		if (updated == 0) {
+			DBUserSettings settings = users.getSettingsById(userId);
+			spamReports.addComment(java.util.UUID.randomUUID().toString(), phoneId, defaultRating, comment,
+				settings.getLang(), null, System.currentTimeMillis(), userId);
+		}
+	}
+
+	private static Rating parseBlacklistRating(String name) {
+		if (name == null || name.isEmpty()) {
+			return Rating.B_MISSED;
+		}
+		try {
+			Rating rating = Rating.valueOf(name);
+			// A_LEGITIMATE would turn the entry into a whitelist exclusion, so coerce back to default.
+			return rating == Rating.A_LEGITIMATE ? Rating.B_MISSED : rating;
+		} catch (IllegalArgumentException ex) {
+			return Rating.B_MISSED;
+		}
+	}
+
+	private static String nullIfBlank(String s) {
+		if (s == null) {
+			return null;
+		}
+		String trimmed = s.trim();
+		return trimmed.isEmpty() ? null : trimmed;
 	}
 
 	private void updateSettings(HttpServletRequest req, HttpServletResponse resp, String userName) throws IOException {
