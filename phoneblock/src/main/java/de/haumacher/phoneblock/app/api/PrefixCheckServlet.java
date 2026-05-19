@@ -22,6 +22,7 @@ import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBNumberInfo;
 import de.haumacher.phoneblock.db.DBPersonalization;
+import de.haumacher.phoneblock.db.DBPhoneComment;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.settings.AuthToken;
@@ -141,6 +142,16 @@ public class PrefixCheckServlet extends HttpServlet {
 					// path already relies on.
 					pi.setWhiteListed(true);
 					pi.setRating(Rating.A_LEGITIMATE);
+				}
+			}
+			// Annotate each matching number with the user's own previously-submitted comment, if any.
+			if (!byPhone.isEmpty()) {
+				List<DBPhoneComment> ownComments = reports.getUserComments(auth.getUserId(), byPhone.keySet());
+				for (DBPhoneComment c : ownComments) {
+					PhoneInfo pi = byPhone.get(c.getPhone());
+					if (pi != null) {
+						pi.setUserComment(c.getComment());
+					}
 				}
 			}
 			result.setNumbers(new ArrayList<>(byPhone.values()));
