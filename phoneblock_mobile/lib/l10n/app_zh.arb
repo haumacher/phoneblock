@@ -306,5 +306,7 @@
   "blocklistSyncing": "同步...",
   "blocklistSyncSuccess": "拦截列表同步成功",
   "blocklistSyncFailed": "拦截列表同步失败",
-  "personalizedAddedDate": "已添加：<x1>日期</x1"
+  "personalizedAddedDate": "已添加：<x1>日期</x1",
+  "copyNumber": "副本编号",
+  "numberCopied": "复制到剪贴板的数字"
 }

@@ -306,5 +306,7 @@
   "blocklistSyncing": "Synchronize...",
   "blocklistSyncSuccess": "Blocklist synchronization successful",
   "blocklistSyncFailed": "Blocklist synchronization failed",
-  "personalizedAddedDate": "Added: {date}"
+  "personalizedAddedDate": "Added: {date}",
+  "copyNumber": "Copy number",
+  "numberCopied": "Number copied to clipboard"
 }

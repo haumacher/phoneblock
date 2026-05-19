@@ -206,6 +206,12 @@ class AppLocalizationsEl extends AppLocalizations {
   String get viewOnPhoneBlockMenu => 'Προβολή στο PhoneBlock';
 
   @override
+  String get copyNumber => 'Αριθμός αντιγράφου';
+
+  @override
+  String get numberCopied => 'Αριθμός που αντιγράφεται στο πρόχειρο';
+
+  @override
   String get deleteCall => 'Διαγραφή';
 
   @override

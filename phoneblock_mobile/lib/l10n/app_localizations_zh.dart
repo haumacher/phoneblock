@@ -194,6 +194,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get viewOnPhoneBlockMenu => '在 PhoneBlock 上查看';
 
   @override
+  String get copyNumber => '副本编号';
+
+  @override
+  String get numberCopied => '复制到剪贴板的数字';
+
+  @override
   String get deleteCall => '删除';
 
   @override

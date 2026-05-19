@@ -306,5 +306,7 @@
   "blocklistSyncing": "Synchronizacja...",
   "blocklistSyncSuccess": "Synchronizacja listy bloków powiodła się",
   "blocklistSyncFailed": "Synchronizacja listy bloków nie powiodła się",
-  "personalizedAddedDate": "Dodano: {date}"
+  "personalizedAddedDate": "Dodano: {date}",
+  "copyNumber": "Numer kopii",
+  "numberCopied": "Liczba skopiowana do schowka"
 }

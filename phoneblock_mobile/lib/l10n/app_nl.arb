@@ -306,5 +306,7 @@
   "blocklistSyncing": "Synchroniseren...",
   "blocklistSyncSuccess": "Synchronisatie van bloklijst geslaagd",
   "blocklistSyncFailed": "Synchronisatie blokkadelijst mislukt",
-  "personalizedAddedDate": "Toegevoegd: {date}"
+  "personalizedAddedDate": "Toegevoegd: {date}",
+  "copyNumber": "Kopieernummer",
+  "numberCopied": "Nummer gekopieerd naar klembord"
 }
