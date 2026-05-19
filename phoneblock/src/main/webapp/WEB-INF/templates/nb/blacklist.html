@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(titleKey='page.blacklist.title', descriptionKey=null, titleText=null, descriptionText=null)}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<nav aria-label="brødsmule" class="breadcrumb" data-tx="t0020:50f55d23">
+		<ul>
+			<li><a data-tx="t0021:1798fbdb" th:href="@{/settings}">Innstillinger</a></li>
+			<li class="is-active"><a aria-current="page" data-tx="t0022:71e2fcb4" href="#">Svarteliste</a></li>
+		</ul>
+	</nav>
+
+	<div class="content">
+		<h1 data-tx="t0023:9bb283fa">Din svarteliste</h1>
+
+		<p data-tx="t0005:7a770612">På denne siden kan du se alle numrene du personlig har blokkert. Et nummer på svartelisten din vil alltid være blokkert på enhetene dine, selv om det ennå ikke har en høy rangering i fellesskapsdatabasen.</p>
+
+		<div class="notification is-success" th:if="${settingsMessage}">
+			<button class="delete" onclick="this.parentElement.style.display='none';"></button>
+			<span th:text="${settingsMessage}"></span>
+		</div>
+	</div>
+
+	<div class="content">
+		<p data-tx="t0006:4dc69521" th:if="${blacklist.empty}">Du har ikke eksplisitt blokkert noen numre. Hvis du vil blokkere et nummer, kan du søke etter nummeret i søkefeltet ovenfor og skrive en negativ kommentar, eller legge inn nummeret i telefonboken i blokkeringslisten i FRITZ!</p>
+
+		<th:block th:unless="${blacklist.empty}">
+			<p data-tx="t0007:7a2801d3">Du har eksplisitt blokkert disse numrene. Du kan oppheve en utilsiktet blokkering her:</p>
+
+			<form id="bulkDelete" method="post" th:action="@{/update-settings(action='lists')}">
+				<input name="redirect" type="hidden" value="/blacklist"/>
+			</form>
+
+			<div class="field list-entry" th:each="entry : ${blacklist}" th:with="phoneInfo=${#converters.analyze(entry.phone)}">
+				<label class="checkbox">
+					<input form="bulkDelete" th:name="|bl-${entry.phone}|" type="checkbox"/>
+					<strong th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></strong>
+					<span class="tag" th:classappend="${entry.rating.cssClass}" th:if="${entry.rating != null and entry.rating.name != 'B_MISSED' and entry.rating.name != 'A_LEGITIMATE'}" th:text="${#messages.msg(entry.rating.labelKey)}"></span>
+					<span class="tag is-light" data-tx="t0031:2fa4fef4" th:if="${not entry.archived and entry.votes &gt; 0}" title="Direkte avstemninger i lokalsamfunnet">
+						<span class="icon"><i class="fa-solid fa-thumbs-down"></i></span>
+						<span th:text="${entry.votes}"></span>
+					</span>
+					<span class="tag is-light is-warning" data-tx="t0032:61c4c8e6" th:if="${not entry.archived and entry.votesWildcard &gt; entry.votes}" title="Stemmer inkludert jokertegnblokk">
+						<span class="icon"><i class="fa-solid fa-asterisk"></i></span>
+						<span th:text="${entry.votesWildcard}"></span>
+					</span>
+					<span class="tag is-light has-text-grey" data-tx="t0033:e27cd337" th:if="${entry.archived}" title="Fellesskapsinnlegg arkivert (ingen aktuelle stemmer)">
+						<span class="icon"><i class="fa-solid fa-box-archive"></i></span>
+						<span data-tx="t0034:5ebeeffa">arkivert</span>
+					</span>
+				</label>
+				<button class="button is-small is-ghost edit-toggle" data-tx="t0030:cd459696" title="Rediger kommentar" type="button">
+					<span class="icon is-small"><i class="fa-solid fa-pen-to-square"></i></span>
+				</button>
+				<p class="help entry-comment" th:if="${entry.comment != null and !entry.comment.empty}" th:text="${entry.comment}"></p>
+
+				<form class="entry-edit" method="post" style="display:none;" th:action="@{/update-settings(action='lists')}">
+					<input name="redirect" type="hidden" value="/blacklist"/>
+					<input name="edit-comment-phone" th:value="${entry.phone}" type="hidden"/>
+					<div class="field">
+						<div class="control">
+							<textarea class="textarea" name="edit-comment-text" rows="2" th:text="${entry.comment}"></textarea>
+						</div>
+					</div>
+					<div class="field is-grouped">
+						<p class="control">
+							<button class="button is-small is-primary" type="submit">
+								<span class="icon"><i class="fa-solid fa-floppy-disk"></i></span>
+								<span data-tx="t0025:31aafd4a">Spar</span>
+							</button>
+						</p>
+						<p class="control">
+							<button class="button is-small edit-cancel" type="button">
+								<span data-tx="t0027:b551b861">Avbryt</span>
+							</button>
+						</p>
+					</div>
+				</form>
+			</div>
+
+			<div class="field is-grouped">
+				<p class="control">
+					<button class="button is-danger" form="bulkDelete" type="submit">
+						<span class="icon"><i class="fa-solid fa-trash"></i></span>
+						<span data-tx="t0010:74d7495f">Slett</span>
+					</button>
+				</p>
+			</div>
+		</th:block>
+	</div>
+
+	<div class="content">
+		<form method="post" th:action="@{/update-settings(action='lists')}">
+			<input name="redirect" type="hidden" value="/blacklist"/>
+
+			<div class="field">
+				<label class="label" data-tx="t0011:7309300c">Blokk nummer</label>
+				<p class="control has-icons-left">
+					<input class="input" data-tx="t0012:4e762f67" name="add-bl" placeholder="Nytt SPAM-nummer" type="tel"/>
+					<span class="icon is-small is-left">☎</span>
+				</p>
+				<p class="help" data-tx="t0013:7b65bad4">Her kan du skrive inn ett eller flere SPAM-telefonnumre, atskilt med komma, i hvilket som helst format: 07041-123456789, +49171123456789, 0034 123456789. Numrene vil deretter bli lagt til i din personlige blokkeringsliste.</p>
+			</div>
+
+			<div class="field">
+				<label class="label" data-tx="t0019:b2ec7c34">Type samtale</label>
+				<div th:replace="~{fragments/page :: ratingButtons(name='add-bl-rating', selected='B_MISSED', excludeLegitimate=true)}"></div>
+			</div>
+
+			<div class="field">
+				<label class="label" data-tx="t0015:de6dcdf4">Kommentar (valgfritt)</label>
+				<div class="control">
+					<textarea class="textarea" data-tx="t0016:f556d28e" name="add-bl-comment" placeholder="Hva handlet samtalen om?" rows="2"></textarea>
+				</div>
+			</div>
+
+			<div class="field is-grouped">
+				<p class="control">
+					<button class="button is-primary" type="submit">
+						<span class="icon"><i class="fa-solid fa-ban"></i></span>
+						<span data-tx="t0017:6464e726">Legg til lås</span>
+					</button>
+				</p>
+				<p class="control">
+					<a class="button" th:href="@{/settings}">
+						<span class="icon"><i class="fa-solid fa-arrow-left"></i></span>
+						<span data-tx="t0018:aafd5700">Tilbake til innstillingene</span>
+					</a>
+				</p>
+			</div>
+		</form>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+
+<script th:src="@{/assets/js/personal-list.js}" type="text/javascript"></script>
+</body>
+</html>

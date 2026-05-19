@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(titleKey='page.whitelist.title', descriptionKey=null, titleText=null, descriptionText=null)}"></head>
+
+<body th:dir="${currentLang.direction}">
+<div th:replace="~{fragments/page :: header}"></div>
+
+<section class="section">
+	<nav aria-label="briciola di pane" class="breadcrumb" data-tx="t0018:50f55d23">
+		<ul>
+			<li><a data-tx="t0019:1798fbdb" th:href="@{/settings}">Impostazioni</a></li>
+			<li class="is-active"><a aria-current="page" data-tx="t0020:a61f3f91" href="#">Lista bianca</a></li>
+		</ul>
+	</nav>
+
+	<div class="content">
+		<h1 data-tx="t0021:4c4f40df">La vostra whitelist</h1>
+
+		<p data-tx="t0005:1f03ef52">In questa pagina è possibile vedere tutti i numeri che sono stati esclusi dal blocco. Un numero presente nella vostra whitelist non verrà mai bloccato, anche se viene segnalato come SPAM nel database della community.</p>
+
+		<div class="notification is-success" th:if="${settingsMessage}">
+			<button class="delete" onclick="this.parentElement.style.display='none';"></button>
+			<span th:text="${settingsMessage}"></span>
+		</div>
+	</div>
+
+	<div class="content">
+		<p data-tx="t0006:624d5748" th:if="${whitelist.empty}">Non avete escluso alcun numero dal blocco.</p>
+
+		<th:block th:unless="${whitelist.empty}">
+			<p data-tx="t0007:98b17ee4">Avete esplicitamente escluso questi numeri dal blocco:</p>
+
+			<form id="bulkDelete" method="post" th:action="@{/update-settings(action='lists')}">
+				<input name="redirect" type="hidden" value="/whitelist"/>
+			</form>
+
+			<div class="field list-entry" th:each="entry : ${whitelist}" th:with="phoneInfo=${#converters.analyze(entry.phone)}">
+				<label class="checkbox">
+					<input form="bulkDelete" th:name="|wl-${entry.phone}|" type="checkbox"/>
+					<strong th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></strong>
+					<span class="tag" th:classappend="${entry.rating.cssClass}" th:if="${entry.rating != null and entry.rating.name != 'B_MISSED' and entry.rating.name != 'A_LEGITIMATE'}" th:text="${#messages.msg(entry.rating.labelKey)}"></span>
+				</label>
+				<button class="button is-small is-ghost edit-toggle" data-tx="t0026:cd459696" title="Modifica commento" type="button">
+					<span class="icon is-small"><i class="fa-solid fa-pen-to-square"></i></span>
+				</button>
+				<p class="help entry-comment" th:if="${entry.comment != null and !entry.comment.empty}" th:text="${entry.comment}"></p>
+
+				<form class="entry-edit" method="post" style="display:none;" th:action="@{/update-settings(action='lists')}">
+					<input name="redirect" type="hidden" value="/whitelist"/>
+					<input name="edit-comment-phone" th:value="${entry.phone}" type="hidden"/>
+					<div class="field">
+						<div class="control">
+							<textarea class="textarea" name="edit-comment-text" rows="2" th:text="${entry.comment}"></textarea>
+						</div>
+					</div>
+					<div class="field is-grouped">
+						<p class="control">
+							<button class="button is-small is-primary" type="submit">
+								<span class="icon"><i class="fa-solid fa-floppy-disk"></i></span>
+								<span data-tx="t0023:31aafd4a">Risparmiare</span>
+							</button>
+						</p>
+						<p class="control">
+							<button class="button is-small edit-cancel" type="button">
+								<span data-tx="t0025:b551b861">Annullamento</span>
+							</button>
+						</p>
+					</div>
+				</form>
+			</div>
+
+			<div class="field is-grouped">
+				<p class="control">
+					<button class="button is-danger" form="bulkDelete" type="submit">
+						<span class="icon"><i class="fa-solid fa-trash"></i></span>
+						<span data-tx="t0010:74d7495f">Cancellare</span>
+					</button>
+				</p>
+			</div>
+		</th:block>
+	</div>
+
+	<div class="content">
+		<form method="post" th:action="@{/update-settings(action='lists')}">
+			<input name="redirect" type="hidden" value="/whitelist"/>
+
+			<div class="field">
+				<label class="label" data-tx="t0011:ce0c23fb">Aggiungi eccezione</label>
+				<p class="control has-icons-left">
+					<input class="input" data-tx="t0012:45853883" name="add-wl" placeholder="Nuova eccezione" type="tel"/>
+					<span class="icon is-small is-left">☎</span>
+				</p>
+				<p class="help" data-tx="t0013:edaaa5f7">È possibile inserire uno o più numeri di telefono separati da virgole in qualsiasi formato: 07041-123456789, +49171123456789, 0034 123456789. Questi numeri non saranno più bloccati.</p>
+			</div>
+
+			<div class="field">
+				<label class="label" data-tx="t0014:de6dcdf4">Commento (facoltativo)</label>
+				<div class="control">
+					<textarea class="textarea" data-tx="t0015:c2b769ec" name="add-wl-comment" placeholder="Perché questo numero è legittimo per voi?" rows="2"></textarea>
+				</div>
+			</div>
+
+			<div class="field is-grouped">
+				<p class="control">
+					<button class="button is-primary" type="submit">
+						<span class="icon"><i class="fa-solid fa-check"></i></span>
+						<span data-tx="t0016:d63df803">Aggiungi eccezione</span>
+					</button>
+				</p>
+				<p class="control">
+					<a class="button" th:href="@{/settings}">
+						<span class="icon"><i class="fa-solid fa-arrow-left"></i></span>
+						<span data-tx="t0017:aafd5700">Torna alle impostazioni</span>
+					</a>
+				</p>
+			</div>
+		</form>
+	</div>
+</section>
+
+<div th:replace="~{fragments/page :: footer}"></div>
+
+<script th:src="@{/assets/js/personal-list.js}" type="text/javascript"></script>
+</body>
+</html>

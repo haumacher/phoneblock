@@ -116,9 +116,13 @@ public class PrefixCheckServlet extends HttpServlet {
 			for (DBPersonalization p : personalMatches) {
 				PhoneInfo pi = byPhone.get(p.getPhone());
 				if (pi == null) {
-					// Personal-only entry: synthesize a minimal PhoneInfo.
+					// Personal entry with no active community match. By construction the
+					// community row is either missing or archived (the community query
+					// already filters VOTES > 0 AND ACTIVE), so report archived=true and
+					// leave the vote counts at zero — they are not relevant either way.
 					pi = NumberAnalyzer.phoneInfoFromId(p.getPhone())
-						.setRating(p.isBlocked() ? Rating.B_MISSED : Rating.A_LEGITIMATE);
+						.setRating(p.isBlocked() ? Rating.B_MISSED : Rating.A_LEGITIMATE)
+						.setArchived(true);
 					byPhone.put(p.getPhone(), pi);
 				}
 				if (p.isBlocked()) {

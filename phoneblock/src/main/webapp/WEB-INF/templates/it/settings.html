@@ -250,111 +250,39 @@
 
 <section class="section">
 	<div class="content">
-	<h2 data-tx="t0046:9bb283fa" id="blacklist">La vostra lista nera</h2>
-	
-	<form method="post" th:action="@{/update-settings(action='lists')}">
+	<h2 data-tx="t0126:ab5bb2af">I vostri elenchi personali</h2>
 
-	<p data-tx="t0047:4dc69521" th:if="${blacklist.empty}">Non avete bloccato esplicitamente alcun numero. Per bloccare un numero, cercatelo utilizzando il campo di ricerca in alto e scrivete un commento negativo, oppure inserite il numero nella lista di blocco del vostro FRITZ!</p>
+	<p data-tx="t0127:b9b3bc88">Le vostre blacklist e whitelist personali sono memorizzate sul server e hanno sempre la precedenza sul database della comunità quando si controlla lo SPAM.</p>
 
-	<th:block th:unless="${blacklist.empty}">
-	<p data-tx="t0048:7a2801d3">Avete bloccato esplicitamente questi numeri. È possibile annullare un blocco accidentale qui:</p>
-	<div class="field" th:each="number : ${blacklist}">
-		<label class="checkbox" th:with="phoneInfo=${#converters.analyze(number)}">
-			<input th:name="|bl-${number}|" type="checkbox"/> <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span>
-		</label>
+	<div class="columns">
+		<div class="column is-half">
+			<div class="box" id="blacklist">
+				<p class="title is-5" data-tx="t0128:9a0c4d13"><span class="icon has-text-danger"><i class="fa-solid fa-ban"></i></span> Lista nera</p>
+				<p>
+					<th:block data-tx="t0129:60459b64" th:if="${blacklist.empty}">Non avete ancora bloccato esplicitamente alcun numero.</th:block>
+					<th:block data-tx="t0130:41d56bc1" th:unless="${blacklist.empty}">Sono stati bloccati esplicitamente <strong th:text="${blacklist.size()}">0</strong> numeri.</th:block>
+				</p>
+				<a class="button is-link is-outlined is-small mt-3" th:href="@{/blacklist}">
+					<span data-tx="t0131:ff15c393">Gestione della lista nera</span>
+					<span class="icon"><i class="fa-solid fa-arrow-right"></i></span>
+				</a>
+			</div>
+		</div>
+
+		<div class="column is-half">
+			<div class="box" id="whitelist">
+				<p class="title is-5" data-tx="t0132:4df18e36"><span class="icon has-text-success"><i class="fa-solid fa-check"></i></span> Lista bianca</p>
+				<p>
+					<th:block data-tx="t0133:cf551a9" th:if="${whitelist.empty}">Non avete ancora escluso nessun numero dal blocco.</th:block>
+					<th:block data-tx="t0134:63daebcc" th:unless="${whitelist.empty}">Sono stati esclusi <strong th:text="${whitelist.size()}">0</strong> numeri dal blocco.</th:block>
+				</p>
+				<a class="button is-link is-outlined is-small mt-3" th:href="@{/whitelist}">
+					<span data-tx="t0135:dd2108da">Gestione della whitelist</span>
+					<span class="icon"><i class="fa-solid fa-arrow-right"></i></span>
+				</a>
+			</div>
+		</div>
 	</div>
-
-	<div class="field is-grouped">
-	  <p class="control">
-	    <button class="button is-danger" type="submit">
-	      <span class="icon"><i class="fa-solid fa-trash"></i></span>
-	      <span data-tx="t0117:74d7495f">Cancellare</span>
-	    </button>
-	  </p>
-	</div>
-	</th:block>
-		
-	</form>
-	</div>
-	
-	<div class="content">
-	<form method="post" th:action="@{/update-settings(action='lists')}">
-
-	<div class="field">
-	  <label class="label" data-tx="t0095:7309300c">Numero di blocco</label>
-	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0096:4e762f67" name="add-bl" placeholder="Nuovo numero SPAM" type="tel"/>
-	    <span class="icon is-small is-left">☎</span>
-	  </p>
-	  <p class="help" data-tx="t0098:7b65bad4">È possibile inserire qui uno o più numeri di telefono SPAM, separati da virgole, in qualsiasi formato: 07041-123456789, +49171123456789, 0034 123456789. I numeri verranno quindi aggiunti alla propria blocklist personale.</p>
-	</div>
-	
-	<div class="field is-grouped">
-	  <p class="control">
-	    <button class="button is-primary" type="submit">
-	      <span class="icon"><i class="fa-solid fa-ban"></i></span>
-	      <span data-tx="t0118:6464e726">Aggiungi blocco</span>
-	    </button>
-	  </p>
-	</div>
-
-	</form>
-	</div>
-
-</section>
-
-<section class="section">
-	<div class="content">
-	<h2 data-tx="t0050:4c4f40df" id="whitelist">La vostra whitelist</h2>
-	
-	<form method="post" th:action="@{/update-settings(action='lists')}">
-
-	<p data-tx="t0051:624d5748" th:if="${whitelist.empty}">Non avete escluso alcun numero dal blocco.</p>
-
-	<th:block th:unless="${whitelist.empty}">
-	<p data-tx="t0052:98b17ee4">Avete esplicitamente escluso questi numeri dal blocco:</p>
-
-	<div class="field" th:each="number : ${whitelist}">
-		<label class="checkbox" th:with="phoneInfo=${#converters.analyze(number)}">
-			<input th:name="|wl-${number}|" type="checkbox"/> <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span>
-		</label>
-	</div>
-	
-	<div class="field is-grouped">
-	  <p class="control">
-	    <button class="button is-danger" type="submit">
-	      <span class="icon"><i class="fa-solid fa-trash"></i></span>
-	      <span data-tx="t0119:74d7495f">Cancellare</span>
-	    </button>
-	  </p>
-	</div>
-	</th:block>
-	
-	</form>
-	</div>
-	
-	<div class="content">
-	<form method="post" th:action="@{/update-settings(action='lists')}">
-
-	<div class="field">
-	  <label class="label" data-tx="t0054:ce0c23fb">Aggiungi eccezione</label>
-	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0088:45853883" name="add-wl" placeholder="Nuova eccezione" type="tel"/>
-	    <span class="icon is-small is-left">☎</span>
-	  </p>
-	  <p class="help" data-tx="t0056:edaaa5f7">È possibile inserire uno o più numeri di telefono separati da virgole in qualsiasi formato: 07041-123456789, +49171123456789, 0034 123456789. Questi numeri non saranno più bloccati.</p>
-	</div>
-	
-	<div class="field is-grouped">
-	  <p class="control">
-	    <button class="button is-primary" type="submit">
-	      <span class="icon"><i class="fa-solid fa-circle-check"></i></span>
-	      <span data-tx="t0120:d63df803">Aggiungi eccezione</span>
-	    </button>
-	  </p>
-	</div>
-
-	</form>
 	</div>
 </section>
 

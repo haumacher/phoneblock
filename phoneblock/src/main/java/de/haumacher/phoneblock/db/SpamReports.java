@@ -464,6 +464,9 @@ public interface SpamReports {
 	@Update("update COMMENTS set COMMENT = #{comment} where USERID = #{userId} and PHONE = #{phone}")
 	int updateUserComment(long userId, String phone, String comment);
 
+	@Update("update COMMENTS set RATING = #{rating} where USERID = #{userId} and PHONE = #{phone}")
+	int updateUserRating(long userId, String phone, Rating rating);
+
 	@Select("""
 			<script>
 			select s.PHONE, s.COMMENT, s.RATING

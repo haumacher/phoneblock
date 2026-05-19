@@ -250,111 +250,39 @@
 
 <section class="section">
 	<div class="content">
-	<h2 data-tx="t0046:9bb283fa" id="blacklist">您的黑名单</h2>
-	
-	<form method="post" th:action="@{/update-settings(action='lists')}">
+	<h2 data-tx="t0126:ab5bb2af">您的个人清单</h2>
 
-	<p data-tx="t0047:4dc69521" th:if="${blacklist.empty}">您尚未明确阻止任何号码。要阻止一个号码，请使用上面的搜索栏搜索该号码并写下负面评论，或者在 FRITZ 的阻止列表中为该号码建立一个电话簿条目！</p>
+	<p data-tx="t0127:b9b3bc88">您的个人黑名单和白名单存储在服务器上，在检查垃圾邮件时始终优先于社区数据库。</p>
 
-	<th:block th:unless="${blacklist.empty}">
-	<p data-tx="t0048:7a2801d3">您已明确阻止了这些号码。您可以在此取消意外阻止：</p>
-	<div class="field" th:each="number : ${blacklist}">
-		<label class="checkbox" th:with="phoneInfo=${#converters.analyze(number)}">
-			<input th:name="|bl-${number}|" type="checkbox"/> <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span>
-		</label>
+	<div class="columns">
+		<div class="column is-half">
+			<div class="box" id="blacklist">
+				<p class="title is-5" data-tx="t0128:9a0c4d13"><span class="icon has-text-danger"><i class="fa-solid fa-ban"></i></span> 黑名单</p>
+				<p>
+					<th:block data-tx="t0129:60459b64" th:if="${blacklist.empty}">您尚未明确阻止任何号码。</th:block>
+					<th:block data-tx="t0130:41d56bc1" th:unless="${blacklist.empty}">您已明确阻止 <strong th:text="${blacklist.size()}">0</strong> 个号码。</th:block>
+				</p>
+				<a class="button is-link is-outlined is-small mt-3" th:href="@{/blacklist}">
+					<span data-tx="t0131:ff15c393">管理黑名单</span>
+					<span class="icon"><i class="fa-solid fa-arrow-right"></i></span>
+				</a>
+			</div>
+		</div>
+
+		<div class="column is-half">
+			<div class="box" id="whitelist">
+				<p class="title is-5" data-tx="t0132:4df18e36"><span class="icon has-text-success"><i class="fa-solid fa-check"></i></span> 白名单</p>
+				<p>
+					<th:block data-tx="t0133:cf551a9" th:if="${whitelist.empty}">您尚未将任何号码排除在阻止范围之外。</th:block>
+					<th:block data-tx="t0134:63daebcc" th:unless="${whitelist.empty}">您已将<strong th:text="${whitelist.size()}">0</strong>号码排除在阻止范围之外。</th:block>
+				</p>
+				<a class="button is-link is-outlined is-small mt-3" th:href="@{/whitelist}">
+					<span data-tx="t0135:dd2108da">管理白名单</span>
+					<span class="icon"><i class="fa-solid fa-arrow-right"></i></span>
+				</a>
+			</div>
+		</div>
 	</div>
-
-	<div class="field is-grouped">
-	  <p class="control">
-	    <button class="button is-danger" type="submit">
-	      <span class="icon"><i class="fa-solid fa-trash"></i></span>
-	      <span data-tx="t0117:74d7495f">删除</span>
-	    </button>
-	  </p>
-	</div>
-	</th:block>
-		
-	</form>
-	</div>
-	
-	<div class="content">
-	<form method="post" th:action="@{/update-settings(action='lists')}">
-
-	<div class="field">
-	  <label class="label" data-tx="t0095:7309300c">区块编号</label>
-	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0096:4e762f67" name="add-bl" placeholder="新的垃圾邮件编号" type="tel"/>
-	    <span class="icon is-small is-left">☎</span>
-	  </p>
-	  <p class="help" data-tx="t0098:7b65bad4">您可以在此输入一个或多个垃圾邮件电话号码，中间用逗号隔开，格式不限：07041-123456789、+49171123456789、0034 123456789。 这些号码将被添加到您的个人拦截列表中。</p>
-	</div>
-	
-	<div class="field is-grouped">
-	  <p class="control">
-	    <button class="button is-primary" type="submit">
-	      <span class="icon"><i class="fa-solid fa-ban"></i></span>
-	      <span data-tx="t0118:6464e726">加锁</span>
-	    </button>
-	  </p>
-	</div>
-
-	</form>
-	</div>
-
-</section>
-
-<section class="section">
-	<div class="content">
-	<h2 data-tx="t0050:4c4f40df" id="whitelist">您的白名单</h2>
-	
-	<form method="post" th:action="@{/update-settings(action='lists')}">
-
-	<p data-tx="t0051:624d5748" th:if="${whitelist.empty}">您没有将任何数字排除在屏蔽范围之外。</p>
-
-	<th:block th:unless="${whitelist.empty}">
-	<p data-tx="t0052:98b17ee4">您已明确将这些数字排除在拦截范围之外：</p>
-
-	<div class="field" th:each="number : ${whitelist}">
-		<label class="checkbox" th:with="phoneInfo=${#converters.analyze(number)}">
-			<input th:name="|wl-${number}|" type="checkbox"/> <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span>
-		</label>
-	</div>
-	
-	<div class="field is-grouped">
-	  <p class="control">
-	    <button class="button is-danger" type="submit">
-	      <span class="icon"><i class="fa-solid fa-trash"></i></span>
-	      <span data-tx="t0119:74d7495f">删除</span>
-	    </button>
-	  </p>
-	</div>
-	</th:block>
-	
-	</form>
-	</div>
-	
-	<div class="content">
-	<form method="post" th:action="@{/update-settings(action='lists')}">
-
-	<div class="field">
-	  <label class="label" data-tx="t0054:ce0c23fb">添加例外情况</label>
-	  <p class="control has-icons-left">
-	    <input class="input" data-tx="t0088:45853883" name="add-wl" placeholder="新例外" type="tel"/>
-	    <span class="icon is-small is-left">☎</span>
-	  </p>
-	  <p class="help" data-tx="t0056:edaaa5f7">您可以输入一个或多个以逗号分隔的电话号码，格式不限：07041-123456789、+49171123456789、0034 123456789。 这些号码将不再被屏蔽。</p>
-	</div>
-	
-	<div class="field is-grouped">
-	  <p class="control">
-	    <button class="button is-primary" type="submit">
-	      <span class="icon"><i class="fa-solid fa-circle-check"></i></span>
-	      <span data-tx="t0120:d63df803">添加例外情况</span>
-	    </button>
-	  </p>
-	</div>
-
-	</form>
 	</div>
 </section>
 

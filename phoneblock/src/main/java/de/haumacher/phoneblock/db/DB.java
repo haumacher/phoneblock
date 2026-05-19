@@ -1125,22 +1125,34 @@ public class DB {
 		Rating rating = comment.getRating();
 		String commentText = comment.getComment();
 		long created = comment.getCreated();
-		if (commentText != null && !commentText.isBlank()) {
-			if (commentText.length() > MAX_COMMENT_LENGTH) {
-				// Limit to DB constraint.
-				commentText = commentText.substring(0, MAX_COMMENT_LENGTH);
-			}
+		Long userId = comment.getUserId();
+		boolean hasCommentText = commentText != null && !commentText.isBlank();
+		if (hasCommentText && commentText.length() > MAX_COMMENT_LENGTH) {
+			// Limit to DB constraint.
+			commentText = commentText.substring(0, MAX_COMMENT_LENGTH);
+		}
 
-			// Delete existing comment by this user for this phone number (ensure only one comment per user per number)
-			Long userId = comment.getUserId();
-			if (userId != null) {
+		if (userId != null) {
+			if (hasCommentText) {
+				// Replace any existing comment row by this user for this phone (ensure one comment per user per number).
 				int deleted = reports.deleteUserComments(userId, phone);
 				if (deleted > 0) {
 					LOG.info("Replaced existing comment for phone {} by user ID {}.", phone, userId);
-					updateRequired = true;
 				}
+				reports.addComment(comment.getId(), phone, rating, commentText, comment.getLang(), comment.getService(), created, userId);
+				updateRequired = true;
+			} else {
+				// No comment text — still record the user's rating choice so it is visible on
+				// the personal blacklist/whitelist view. Update the existing row's rating in
+				// place (keeping any comment), or insert a rating-only row.
+				int updated = reports.updateUserRating(userId, phone, rating);
+				if (updated == 0) {
+					reports.addComment(comment.getId(), phone, rating, null, comment.getLang(), comment.getService(), created, userId);
+				}
+				updateRequired = true;
 			}
-
+		} else if (hasCommentText) {
+			// Anonymous comment (e.g. captcha-protected web rating without login).
 			reports.addComment(comment.getId(), phone, rating, commentText, comment.getLang(), comment.getService(), created, userId);
 			updateRequired = true;
 		}

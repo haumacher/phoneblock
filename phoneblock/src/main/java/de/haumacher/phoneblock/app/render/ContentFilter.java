@@ -93,6 +93,7 @@ public class ContentFilter extends LoginFilter {
 	static {
 		LEGACY_PAGES = new HashMap<>();
 		LEGACY_PAGES.put("/signup.jsp", "/login.jsp");
+		LEGACY_PAGES.put("/block", "/blacklist");
 		LEGACY_PAGES.put("/setup-android/03-people-sync-install", "/setup-android");
 		LEGACY_PAGES.put("/setup-android/05-people-sync-accept", "/setup-android");
 		LEGACY_PAGES.put("/setup-android/07-people-sync-add", "/setup-android");
@@ -147,7 +148,9 @@ public class ContentFilter extends LoginFilter {
 		}
 		
 		switch (path) {
-		case "/settings": 
+		case "/settings":
+		case "/blacklist":
+		case "/whitelist":
 			return authorization.isAccessLogin();
 		default:
 			return authorization.isAccessRate();
