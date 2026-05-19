@@ -31,12 +31,15 @@
 			<p data-tx="t0006:624d5748" th:if="${whitelist.empty}">Δεν έχετε αποκλείσει κανέναν αριθμό από τον αποκλεισμό.</p>
 
 			<th:block th:unless="${whitelist.empty}">
-				<p data-tx="t0007:98b17ee4">Έχετε αποκλείσει ρητά αυτούς τους αριθμούς από τον αποκλεισμό:</p>
+				<p data-tx="t0014:98b17ee4">Έχετε αποκλείσει ρητά αυτούς τους αριθμούς από τον αποκλεισμό:</p>
 
-				<div class="field" th:each="number : ${whitelist}">
-					<label class="checkbox" th:with="phoneInfo=${#converters.analyze(number)}">
-						<input th:name="|wl-${number}|" type="checkbox"/> <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span>
+				<div class="field" th:each="entry : ${whitelist}" th:with="phoneInfo=${#converters.analyze(entry.phone)}">
+					<label class="checkbox">
+						<input th:name="|wl-${entry.phone}|" type="checkbox"/>
+						<strong th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></strong>
+						<span class="tag" th:classappend="${entry.rating.cssClass}" th:if="${entry.rating != null}" th:text="${#messages.msg(entry.rating.labelKey)}"></span>
 					</label>
+					<p class="help" th:if="${entry.comment != null and !entry.comment.empty}" th:text="${entry.comment}"></p>
 				</div>
 
 				<div class="field is-grouped">

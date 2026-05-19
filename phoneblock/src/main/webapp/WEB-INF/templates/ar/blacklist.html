@@ -31,11 +31,14 @@
 			<p data-tx="t0006:4dc69521" th:if="${blacklist.empty}">لم تقم بحظر أي أرقام بشكل صريح. لحظر رقم ما، ابحث عن الرقم باستخدام حقل البحث أعلاه واكتب تعليقًا سلبيًا، أو قم بإدخال دليل الهاتف للرقم في قائمة الحظر في قائمة الحظر في FRITZ!</p>
 
 			<th:block th:unless="${blacklist.empty}">
-				<p data-tx="t0007:7a2801d3">لقد قمت بحظر هذه الأرقام بشكل صريح. يمكنك إلغاء الحظر العرضي هنا:</p>
-				<div class="field" th:each="number : ${blacklist}">
-					<label class="checkbox" th:with="phoneInfo=${#converters.analyze(number)}">
-						<input th:name="|bl-${number}|" type="checkbox"/> <th:span th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></th:span>
+				<p data-tx="t0014:7a2801d3">لقد قمت بحظر هذه الأرقام بشكل صريح. يمكنك إلغاء الحظر العرضي هنا:</p>
+				<div class="field" th:each="entry : ${blacklist}" th:with="phoneInfo=${#converters.analyze(entry.phone)}">
+					<label class="checkbox">
+						<input th:name="|bl-${entry.phone}|" type="checkbox"/>
+						<strong th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></strong>
+						<span class="tag" th:classappend="${entry.rating.cssClass}" th:if="${entry.rating != null}" th:text="${#messages.msg(entry.rating.labelKey)}"></span>
 					</label>
+					<p class="help" th:if="${entry.comment != null and !entry.comment.empty}" th:text="${entry.comment}"></p>
 				</div>
 
 				<div class="field is-grouped">

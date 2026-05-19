@@ -3,16 +3,22 @@
  */
 package de.haumacher.phoneblock.app.render.controller;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
 import org.thymeleaf.context.WebContext;
 
 import de.haumacher.phoneblock.app.LoginFilter;
+import de.haumacher.phoneblock.app.render.RatingDisplay;
 import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
+import de.haumacher.phoneblock.db.DBPhoneComment;
 import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.AuthToken;
 import de.haumacher.phoneblock.db.settings.UserSettings;
@@ -24,7 +30,8 @@ import jakarta.servlet.http.HttpSession;
  *
  * <p>The two lists were originally rendered inline on the settings page; pulling
  * them onto their own routes keeps the settings page short once a user has
- * accumulated many entries.</p>
+ * accumulated many entries. Each entry is enriched with the user's own rating
+ * and comment so the web UI is consistent with what the mobile app shows.</p>
  */
 public abstract class PersonalListController extends RequireLoginController {
 
@@ -55,15 +62,40 @@ public abstract class PersonalListController extends RequireLoginController {
 		try (SqlSession session = db.openSession()) {
 			Users users = session.getMapper(Users.class);
 			Long userIdOpt = users.getUserId(userName);
-			List<String> entries;
+			List<PersonalListEntry> entries;
 			if (userIdOpt == null) {
 				entries = Collections.emptyList();
 			} else {
+				long userId = userIdOpt.longValue();
 				BlockList blocklist = session.getMapper(BlockList.class);
-				entries = loadEntries(blocklist, userIdOpt.longValue());
+				List<String> phones = loadEntries(blocklist, userId);
+				entries = enrich(session, userId, phones);
 			}
 			request.setAttribute(attributeName(), entries);
 		}
+	}
+
+	private List<PersonalListEntry> enrich(SqlSession session, long userId, List<String> phones) {
+		if (phones.isEmpty()) {
+			return Collections.emptyList();
+		}
+
+		SpamReports spamReports = session.getMapper(SpamReports.class);
+		List<DBPhoneComment> comments = spamReports.getUserComments(userId, phones);
+
+		Map<String, DBPhoneComment> commentsByPhone = new HashMap<>();
+		for (DBPhoneComment c : comments) {
+			commentsByPhone.put(c.getPhone(), c);
+		}
+
+		List<PersonalListEntry> result = new ArrayList<>(phones.size());
+		for (String phone : phones) {
+			DBPhoneComment c = commentsByPhone.get(phone);
+			String comment = c != null ? c.getComment() : null;
+			RatingDisplay rating = c != null && c.getRating() != null ? new RatingDisplay(c.getRating()) : null;
+			result.add(new PersonalListEntry(phone, comment, rating));
+		}
+		return result;
 	}
 
 	/**
