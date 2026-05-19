@@ -481,7 +481,72 @@ public class TestDB {
 
 		checkPhone("040299962999", 0, 0, 0, 0, 0);
 	}
-	
+
+	/**
+	 * The hash-prefix mappers used by {@code /check-prefix} must skip aggregation rows whose
+	 * {@code CNT} is below the wildcard-vote thresholds. Otherwise the API would leak ranges
+	 * that don't contribute to a wildcard vote — inconsistent with {@code /check} and with
+	 * {@link DB#computeWildcardVotes(AggregationInfo, AggregationInfo)}.
+	 */
+	@Test
+	void testAggregationByHashPrefixFiltersThreshold() {
+		long now = 0;
+
+		// Block-of-10 "0402999629_0": 4 distinct numbers → qualifies (cnt10 = MIN_AGGREGATE_10).
+		processVotes("040299962900", 1, now);
+		processVotes("040299962901", 1, now);
+		processVotes("040299962902", 1, now);
+		processVotes("040299962903", 1, now);
+
+		// Block-of-10 "0402999628_0": 1 number only → has a hash row but cnt10 = 1 < 4.
+		processVotes("040299962800", 1, now);
+
+		byte[] low = new byte[20];
+		byte[] high = new byte[20];
+		Arrays.fill(high, (byte) 0xff);
+
+		try (SqlSession tx = _db.openSession()) {
+			SpamReports reports = tx.getMapper(SpamReports.class);
+
+			// Aggregation rows are keyed on the block prefix (last digit stripped).
+			// Unfiltered (minCnt = 0) sees both 10-blocks.
+			List<AggregationInfo> all10 = reports.getAggregation10ByHashPrefix(low, high, 0);
+			Set<String> all10Prefixes = all10.stream().map(AggregationInfo::getPrefix).collect(Collectors.toSet());
+			assertTrue(all10Prefixes.contains("04029996290"));
+			assertTrue(all10Prefixes.contains("04029996280"));
+
+			// Threshold filter drops the under-populated 10-block.
+			List<AggregationInfo> filtered10 = reports.getAggregation10ByHashPrefix(low, high, DB.MIN_AGGREGATE_10);
+			Set<String> filtered10Prefixes = filtered10.stream().map(AggregationInfo::getPrefix).collect(Collectors.toSet());
+			assertTrue(filtered10Prefixes.contains("04029996290"));
+			assertFalse(filtered10Prefixes.contains("04029996280"));
+		}
+
+		// Promote two more 10-sub-blocks so the 100-block "040299962" qualifies (cnt100 = 3).
+		processVotes("040299962910", 1, now);
+		processVotes("040299962911", 1, now);
+		processVotes("040299962912", 1, now);
+		processVotes("040299962913", 1, now);
+
+		processVotes("040299962920", 1, now);
+		processVotes("040299962921", 1, now);
+		processVotes("040299962922", 1, now);
+		processVotes("040299962923", 1, now);
+
+		try (SqlSession tx = _db.openSession()) {
+			SpamReports reports = tx.getMapper(SpamReports.class);
+
+			List<AggregationInfo> filtered100 = reports.getAggregation100ByHashPrefix(low, high, DB.MIN_AGGREGATE_100);
+			Set<String> filtered100Prefixes = filtered100.stream().map(AggregationInfo::getPrefix).collect(Collectors.toSet());
+			assertTrue(filtered100Prefixes.contains("0402999629"));
+
+			// Raise the threshold one above what this 100-block delivers → it must drop out.
+			List<AggregationInfo> tooStrict = reports.getAggregation100ByHashPrefix(low, high, DB.MIN_AGGREGATE_100 + 1);
+			Set<String> tooStrictPrefixes = tooStrict.stream().map(AggregationInfo::getPrefix).collect(Collectors.toSet());
+			assertFalse(tooStrictPrefixes.contains("0402999629"));
+		}
+	}
+
 	private void processVotes(String phone, int votes, long time) {
 		_db.processVotes(NumberAnalyzer.analyze(phone, "+49"), "+49", votes, time);
 	}

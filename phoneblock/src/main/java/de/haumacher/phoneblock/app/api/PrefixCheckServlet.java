@@ -163,12 +163,14 @@ public class PrefixCheckServlet extends HttpServlet {
 			if (prefix10Hex != null) {
 				byte[] low = prefixLow(prefix10Hex);
 				byte[] high = prefixHigh(prefix10Hex);
-				result.setRange10(toRangeMatches(reports.getAggregation10ByHashPrefix(low, high)));
+				result.setRange10(toRangeMatches(
+					reports.getAggregation10ByHashPrefix(low, high, DB.MIN_AGGREGATE_10)));
 			}
 			if (prefix100Hex != null) {
 				byte[] low = prefixLow(prefix100Hex);
 				byte[] high = prefixHigh(prefix100Hex);
-				result.setRange100(toRangeMatches(reports.getAggregation100ByHashPrefix(low, high)));
+				result.setRange100(toRangeMatches(
+					reports.getAggregation100ByHashPrefix(low, high, DB.MIN_AGGREGATE_100)));
 			}
 		}
 
