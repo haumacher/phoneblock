@@ -256,52 +256,30 @@
 
 	<div class="columns">
 		<div class="column is-half">
-			<div class="card" id="blacklist">
-				<div class="card-content">
-					<p class="title is-5">
-						<span class="icon-text">
-							<span class="icon has-text-danger"><i class="fa-solid fa-ban"></i></span>
-							<span data-tx="t0128:71e2fcb4">Lista negra</span>
-						</span>
-					</p>
-					<p class="subtitle is-6">
-						<th:block data-tx="t0129:60459b64" th:if="${blacklist.empty}">Aún no ha bloqueado explícitamente ningún número.</th:block>
-						<th:block data-tx="t0130:41d56bc1" th:unless="${blacklist.empty}">Ha bloqueado explícitamente <strong th:text="${blacklist.size()}">0</strong> números.</th:block>
-					</p>
-				</div>
-				<footer class="card-footer">
-					<a class="card-footer-item" th:href="@{/blacklist}">
-						<span class="icon-text">
-							<span data-tx="t0131:ff15c393">Gestionar la lista negra</span>
-							<span class="icon"><i class="fa-solid fa-arrow-right"></i></span>
-						</span>
-					</a>
-				</footer>
+			<div class="box" id="blacklist">
+				<p class="title is-5" data-tx="t0128:9a0c4d13"><span class="icon has-text-danger"><i class="fa-solid fa-ban"></i></span> Lista negra</p>
+				<p>
+					<th:block data-tx="t0129:60459b64" th:if="${blacklist.empty}">Aún no ha bloqueado explícitamente ningún número.</th:block>
+					<th:block data-tx="t0130:41d56bc1" th:unless="${blacklist.empty}">Ha bloqueado explícitamente <strong th:text="${blacklist.size()}">0</strong> números.</th:block>
+				</p>
+				<a class="button is-link is-outlined is-small mt-3" th:href="@{/blacklist}">
+					<span data-tx="t0131:ff15c393">Gestionar la lista negra</span>
+					<span class="icon"><i class="fa-solid fa-arrow-right"></i></span>
+				</a>
 			</div>
 		</div>
 
 		<div class="column is-half">
-			<div class="card" id="whitelist">
-				<div class="card-content">
-					<p class="title is-5">
-						<span class="icon-text">
-							<span class="icon has-text-success"><i class="fa-solid fa-check"></i></span>
-							<span data-tx="t0132:a61f3f91">Lista blanca</span>
-						</span>
-					</p>
-					<p class="subtitle is-6">
-						<th:block data-tx="t0133:cf551a9" th:if="${whitelist.empty}">Aún no ha excluido ningún número del bloqueo.</th:block>
-						<th:block data-tx="t0134:63daebcc" th:unless="${whitelist.empty}">Ha excluido <strong th:text="${whitelist.size()}">0</strong> números del bloqueo.</th:block>
-					</p>
-				</div>
-				<footer class="card-footer">
-					<a class="card-footer-item" th:href="@{/whitelist}">
-						<span class="icon-text">
-							<span data-tx="t0135:dd2108da">Gestionar la lista blanca</span>
-							<span class="icon"><i class="fa-solid fa-arrow-right"></i></span>
-						</span>
-					</a>
-				</footer>
+			<div class="box" id="whitelist">
+				<p class="title is-5" data-tx="t0132:4df18e36"><span class="icon has-text-success"><i class="fa-solid fa-check"></i></span> Lista blanca</p>
+				<p>
+					<th:block data-tx="t0133:cf551a9" th:if="${whitelist.empty}">Aún no ha excluido ningún número del bloqueo.</th:block>
+					<th:block data-tx="t0134:63daebcc" th:unless="${whitelist.empty}">Ha excluido <strong th:text="${whitelist.size()}">0</strong> números del bloqueo.</th:block>
+				</p>
+				<a class="button is-link is-outlined is-small mt-3" th:href="@{/whitelist}">
+					<span data-tx="t0135:dd2108da">Gestionar la lista blanca</span>
+					<span class="icon"><i class="fa-solid fa-arrow-right"></i></span>
+				</a>
 			</div>
 		</div>
 	</div>
