@@ -115,16 +115,21 @@ public class PrefixCheckServlet extends HttpServlet {
 			for (DBPersonalization p : personalMatches) {
 				PhoneInfo pi = byPhone.get(p.getPhone());
 				if (pi == null) {
-					// No active community match. Skip personal overlay when the underlying
-					// NUMBERS row exists but is archived — archived numbers must not be
-					// returned at all by /check-prefix.
-					DBNumberInfo communityRow = reports.getPhoneInfo(p.getPhone());
-					if (communityRow != null && !communityRow.isActive()) {
-						continue;
+					// Personal entry with no active community match: surface the archived
+					// NUMBERS row (if any) with its real votes and the archived flag set,
+					// instead of synthesising a hollow {votes:0, archived:false} row.
+					DBNumberInfo archivedRow = reports.getPhoneInfo(p.getPhone());
+					if (archivedRow != null) {
+						pi = NumberAnalyzer.phoneInfoFromId(archivedRow.getPhone())
+							.setVotes(archivedRow.getVotes())
+							.setRating(DB.rating(archivedRow))
+							.setArchived(!archivedRow.isActive())
+							.setDateAdded(archivedRow.getAdded())
+							.setLastUpdate(archivedRow.getUpdated());
+					} else {
+						pi = NumberAnalyzer.phoneInfoFromId(p.getPhone())
+							.setRating(p.isBlocked() ? Rating.B_MISSED : Rating.A_LEGITIMATE);
 					}
-					// Truly never-seen number: synthesise a minimal entry.
-					pi = NumberAnalyzer.phoneInfoFromId(p.getPhone())
-						.setRating(p.isBlocked() ? Rating.B_MISSED : Rating.A_LEGITIMATE);
 					byPhone.put(p.getPhone(), pi);
 				}
 				if (p.isBlocked()) {
