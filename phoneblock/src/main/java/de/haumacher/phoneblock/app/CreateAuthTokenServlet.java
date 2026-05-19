@@ -113,6 +113,12 @@ public class CreateAuthTokenServlet extends HttpServlet {
 				redirectUrl = ServletUtil.withParam("PhoneSpamBlocker://auth",
 					TOKEN_PARAM, loginToken.getToken());
 				break;
+			case "SpamBlocker":
+				redirectUrl = ServletUtil.withParam("spamblocker://auth",
+					TOKEN_PARAM, loginToken.getToken());
+				redirectUrl = ServletUtil.withParam(redirectUrl,
+					STATE, req.getParameter(STATE));
+				break;
 			case APP_ID_DONGLE:
 				redirectUrl = ServletUtil.withParam(callback,
 					TOKEN_PARAM, loginToken.getToken());
