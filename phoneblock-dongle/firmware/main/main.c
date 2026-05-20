@@ -256,6 +256,11 @@ void app_main(void)
     // pace; SPAM verdicts enqueue here instead of POSTing inline.
     report_queue_start();
 
+    // Create the shared state for the session-resuming spam-lookup HTTP
+    // client before any task that calls phoneblock_check() (the SIP
+    // server and the LAN debug-query server) is started.
+    phoneblock_api_init();
+
     if (token_set) {
         ESP_LOGI(TAG, "initial self-test");
         phoneblock_selftest();

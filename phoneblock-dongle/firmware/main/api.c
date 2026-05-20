@@ -5,6 +5,9 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
+
 #include "esp_log.h"
 #include "esp_http_client.h"
 #include "esp_crt_bundle.h"
@@ -121,6 +124,36 @@ static esp_err_t http_event_check(esp_http_client_event_t *evt)
     return ESP_OK;
 }
 
+// --- Persistent HTTPS client for the spam-lookup path ----------------
+//
+// The dongle makes only 1-2 /api/check-prefix calls per day. A fresh
+// TLS handshake costs ~1-2 s on the ESP32 - long enough for the
+// Fritz!Box to start ringing the real phones before the verdict is in.
+// To cut that, phoneblock_check() reuses one long-lived esp_http_client
+// handle with save_client_session enabled: the TCP connection is closed
+// after every call (no socket and no server state held while idle), but
+// the TLS session ticket is cached in the handle and replayed on the
+// next call, which then skips the certificate exchange and the
+// asymmetric crypto. esp_http_client frees the saved ticket only on
+// cleanup()/destroy, not on close(), so closing between calls is safe.
+//
+// The handle is created lazily on the first call. s_check_mutex
+// serialises access - phoneblock_check() runs both from the SIP task
+// and from the LAN debug-query server, and a single esp_http_client
+// handle must not be driven from two tasks at once.
+static esp_http_client_handle_t s_check_client = NULL;
+static SemaphoreHandle_t        s_check_mutex  = NULL;
+
+void phoneblock_api_init(void)
+{
+    if (s_check_mutex == NULL) {
+        s_check_mutex = xSemaphoreCreateMutex();
+        if (s_check_mutex == NULL) {
+            ESP_LOGE(TAG, "failed to create API mutex");
+        }
+    }
+}
+
 verdict_t phoneblock_check(const char *phone_number, pb_check_result_t *out)
 {
     if (out) memset(out, 0, sizeof(*out));
@@ -172,16 +205,40 @@ verdict_t phoneblock_check(const char *phone_number, pb_check_result_t *out)
     api_scan_t scan;
     api_scan_init(&scan, phone_number);
 
-    esp_http_client_config_t config = {
-        .url = url,
-        .event_handler = http_event_check,
-        .user_data = &scan,
-        .crt_bundle_attach = esp_crt_bundle_attach,
-        .timeout_ms = 10000,
-        .auth_type = HTTP_AUTH_TYPE_NONE,
-    };
+    if (s_check_mutex == NULL) {
+        // phoneblock_api_init() was never called - refuse rather than
+        // race two tasks into esp_http_client_init().
+        ESP_LOGE(TAG, "phoneblock_check before phoneblock_api_init()");
+        return VERDICT_ERROR;
+    }
+    xSemaphoreTake(s_check_mutex, portMAX_DELAY);
 
-    esp_http_client_handle_t client = esp_http_client_init(&config);
+    // Lazily create the reused client on the first call. save_client_session
+    // makes esp_http_client cache the TLS session ticket in the handle and
+    // replay it on later calls - see the comment above s_check_client.
+    if (s_check_client == NULL) {
+        esp_http_client_config_t config = {
+            .url = config_phoneblock_base_url(),  // overwritten per call
+            .event_handler = http_event_check,
+            .crt_bundle_attach = esp_crt_bundle_attach,
+            .timeout_ms = 10000,
+            .auth_type = HTTP_AUTH_TYPE_NONE,
+#if CONFIG_ESP_TLS_CLIENT_SESSION_TICKETS
+            .save_client_session = true,
+#endif
+        };
+        s_check_client = esp_http_client_init(&config);
+        if (s_check_client == NULL) {
+            ESP_LOGE(TAG, "failed to create HTTP client");
+            stats_record_error("api", "HTTP client init failed");
+            xSemaphoreGive(s_check_mutex);
+            return VERDICT_ERROR;
+        }
+    }
+
+    esp_http_client_handle_t client = s_check_client;
+    esp_http_client_set_url(client, url);
+    esp_http_client_set_user_data(client, &scan);
     http_util_set_user_agent(client);
     esp_http_client_set_header(client, "Authorization", auth_header);
     esp_http_client_set_header(client, "Accept", "application/json");
@@ -283,7 +340,13 @@ verdict_t phoneblock_check(const char *phone_number, pb_check_result_t *out)
     }
 
 cleanup:
-    esp_http_client_cleanup(client);
+    // Close the TCP/TLS connection but keep the handle: esp_http_client
+    // retains the saved TLS session ticket across close() (only
+    // cleanup()/destroy frees it), so the next call resumes the session
+    // instead of doing a full handshake. No connection and no socket
+    // are held while the dongle is idle.
+    esp_http_client_close(client);
+    xSemaphoreGive(s_check_mutex);
     return verdict;
 }
 

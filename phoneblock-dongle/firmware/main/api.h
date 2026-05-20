@@ -51,6 +51,12 @@ typedef struct {
     char      location[80];
 } pb_check_result_t;
 
+// Initialise the API layer. Must be called exactly once from app_main,
+// before any task that can call phoneblock_check() is started: it
+// creates the mutex that serialises the shared, session-resuming HTTP
+// client used for spam lookups. Cheap; does no network I/O.
+void phoneblock_api_init(void);
+
 // Query the PhoneBlock API for the given phone number.
 // The number is passed through unmodified — the server normalizes.
 // Returns VERDICT_SPAM, VERDICT_LEGITIMATE, or VERDICT_ERROR on
