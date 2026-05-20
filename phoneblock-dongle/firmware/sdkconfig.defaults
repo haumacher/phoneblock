@@ -24,6 +24,34 @@ CONFIG_EXAMPLE_WIFI_PASSWORD=""
 CONFIG_MBEDTLS_CERTIFICATE_BUNDLE=y
 CONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL=y
 
+# TLS session resumption for the spam-lookup path. The dongle does
+# only 1-2 /api/check-prefix calls per day; a full TLS handshake costs
+# ~1-2 s on the ESP32 - long enough for the Fritz!Box to start ringing
+# the real phones before the verdict is in. That cost is almost all
+# asymmetric crypto on the 240 MHz CPU (a full handshake measures
+# ~140 ms from a fast x86 but ~1.7 s on the dongle - the gap is
+# certificate-chain verify + signature + ECDHE, not the network).
+# With this enabled, api.c keeps a persistent esp_http_client handle
+# whose RFC 5077 session ticket survives between calls (see
+# save_client_session), so the second and later lookups skip exactly
+# that crypto. No connection is held open - only the ticket blob is
+# cached in RAM, and the server keeps no per-client state. Default is
+# n; MBEDTLS_CLIENT_SSL_SESSION_TICKETS (the underlying mbedTLS
+# support) is already default y.
+CONFIG_ESP_TLS_CLIENT_SESSION_TICKETS=y
+
+# TLS 1.3 is deliberately left disabled (also the IDF default).
+# esp_http_client saves the session for resumption right after the
+# handshake completes - but a TLS 1.3 server sends its session ticket
+# as a post-handshake message that has not arrived at that point, so
+# the saved session carries no usable ticket and every lookup falls
+# back to a full handshake. TLS 1.2 delivers the ticket in-handshake,
+# so resumption works there. TLS 1.3 would only save ~1 round-trip
+# (~30 ms measured) on a *full* handshake - negligible next to the
+# ~1.5 s of crypto that resumption removes. The lookup client also
+# pins TLS 1.2 explicitly - see check_client() in api.c.
+CONFIG_MBEDTLS_SSL_PROTO_TLS1_3=n
+
 # Main task stack: 8 KB is enough for cJSON + TLS + example helpers.
 CONFIG_ESP_MAIN_TASK_STACK_SIZE=8192
 
