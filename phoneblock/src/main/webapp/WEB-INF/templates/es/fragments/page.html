@@ -15,13 +15,13 @@
 	<meta content="summary" name="twitter:card"/>
 	<meta content="@bhaumacher" name="twitter:site"/>
 	<meta content="@bhaumacher" name="twitter:creator"/>
-	<meta name="twitter:image" th:content="@{/assets/img/app-preview.png}"/>
+	<meta name="twitter:image" th:content="${previewImage != null} ? @{${previewImage}} : @{/assets/img/app-preview.png}"/>
 
 	<meta name="og:title" th:content="${titleText != null ? titleText : #messages.msg(titleKey != null ? titleKey : 'app.defaultTitle')}"/>
 	<meta name="og:url" th:content="${canonical}"/>
 	<link rel="canonical" th:href="${canonical}"/>
 	<meta name="og:description" th:content="${descriptionText != null ? descriptionText : #messages.msg(descriptionKey != null ? descriptionKey : 'app.defaultDescription')}"/>
-	<meta name="og:image" th:content="@{/assets/img/app-preview.png}"/>
+	<meta name="og:image" th:content="${previewImage != null} ? @{${previewImage}} : @{/assets/img/app-preview.png}"/>
 	<meta content="website" name="og:type"/>
 	<meta content="de_DE" name="og:locale"/>
 	<meta content="PhoneBlock" name="og:site_name"/>
