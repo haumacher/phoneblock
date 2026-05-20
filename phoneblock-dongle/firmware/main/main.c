@@ -24,7 +24,6 @@
 #include "config.h"
 #include "crashreport.h"
 #include "firmware_update.h"
-#include "pairing.h"
 #include "report_queue.h"
 #include "selftest.h"
 #include "sip_register.h"
@@ -214,18 +213,6 @@ void app_main(void)
             ESP_LOGI(TAG, "running version %s matches last_failed_ota — "
                           "marker cleared (boot survived)", current);
             config_set_last_failed_ota(NULL);
-        }
-    }
-
-    // If the browser flasher injected a pairing secret, hand it back to
-    // phoneblock.net so the install page can locate this dongle on the
-    // LAN without depending on mDNS / Fritz!Box host-name resolution.
-    // Best-effort and fully async — never blocks subsequent boot steps.
-    {
-        uint8_t secret[PAIRING_SECRET_LEN];
-        if (pairing_load(secret)) {
-            pairing_register_async(secret);
-            memset(secret, 0, sizeof(secret));
         }
     }
 
