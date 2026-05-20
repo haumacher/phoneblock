@@ -1,0 +1,71 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git log:*)",
+      "Bash(gh issue view:*)",
+      "Bash(ls:*)",
+      "Bash(flutter analyze:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(mvn clean install:*)",
+      "Bash(mvn clean compile:*)",
+      "Bash(mvn install:*)",
+      "Bash(mvn compile:*)",
+      "Bash(flutter gen-l10n:*)",
+      "Bash(flutter test:*)",
+      "Bash(grep:*)",
+      "Bash(wc:*)",
+      "Bash(find:*)",
+      "Bash(git clone:*)",
+      "mcp__plugin_playwright_playwright__browser_navigate",
+      "mcp__plugin_playwright_playwright__browser_click",
+      "mcp__plugin_playwright_playwright__browser_take_screenshot",
+      "Bash(git push:*)",
+      "Bash(gh issue comment:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:avm.de)",
+      "WebFetch(domain:fritz.com)",
+      "WebFetch(domain:fritz.support)",
+      "Bash(flutter build:*)",
+      "WebFetch(domain:www.ftc.gov)",
+      "Bash(mvn test:*)",
+      "Bash(mvn test-compile:*)",
+      "Bash(gh issue create:*)",
+      "Bash(mvn -pl phoneblock-shared generate-sources)",
+      "Bash(mvn -pl phoneblock-shared compile)",
+      "Bash(python3 -c \"import json; json.load\\(open\\('phoneblock/src/main/webapp/api/phoneblock.json'\\)\\)\")",
+      "Bash(make test_sip_frame)",
+      "Bash(./test_sip_frame)",
+      "Bash(make clean *)",
+      "Bash(make test *)",
+      "Bash(git symbolic-ref *)",
+      "Bash(./gradlew translateArb)",
+      "Bash(mvn -pl phoneblock -am compile -q -DskipTests)",
+      "Bash(mvn -pl phoneblock -am compile -DskipTests)",
+      "Bash(mvn -f phoneblock/pom.xml -Pwith-deepl com.top-logic:tl-maven-plugin:translate@translate-messages -N)",
+      "WebFetch(domain:api.github.com)",
+      "Bash(gh auth *)",
+      "Bash(echo \"=== EXIT: $? ===\")",
+      "Bash(mvn -B -pl phoneblock -DskipTests process-classes)",
+      "Bash(echo \"BUILD ENDED \\(exit $?\\)\")"
+    ]
+  },
+  "sandbox": {
+    "enabled": true,
+    "autoAllowBashIfSandboxed": true,
+    "network": {
+      "allowedDomains": [
+        "api.github.com",
+        "github.com"
+      ],
+      "allowAllUnixSockets": true
+    },
+    "filesystem": {
+      "allowWrite": [
+        "~/.m2",
+        "/tmp"
+      ]
+    }
+  }
+}
