@@ -50,7 +50,8 @@ import de.haumacher.phoneblock.app.ResetPasswordServlet;
 import de.haumacher.phoneblock.app.SearchServlet;
 import de.haumacher.phoneblock.app.SettingsServlet;
 import de.haumacher.phoneblock.app.oauth.OAuthLoginServlet;
-import de.haumacher.phoneblock.app.render.controller.LoginController;
+import de.haumacher.phoneblock.app.render.controller.StatsController;
+import de.haumacher.phoneblock.app.render.controller.StatusController;
 import de.haumacher.phoneblock.carddav.CardDavServlet;
 import de.haumacher.phoneblock.db.settings.AuthToken;
 import de.haumacher.phoneblock.random.SecureRandomService;
@@ -87,9 +88,21 @@ public class ContentFilter extends LoginFilter {
 	private TemplateRenderer _renderer;
 	
 	private static final Map<String, String> LEGACY_PAGES;
-	
-	private static final Set<String> NO_POW;
-	
+
+	/**
+	 * Pages that may be the target of problematic bulk queries and are therefore
+	 * protected by a proof-of-work challenge for non-authenticated requests that do
+	 * not originate from a well-known bot.
+	 *
+	 * <p>
+	 * In addition to the pages listed here, all number information pages below
+	 * {@link SearchServlet#NUMS_PREFIX} require a proof of work. All other
+	 * (essentially static) pages are delivered directly, so that link previews keep
+	 * working for crawlers that are not on the bot whitelist.
+	 * </p>
+	 */
+	private static final Set<String> POW_PAGES;
+
 	static {
 		LEGACY_PAGES = new HashMap<>();
 		LEGACY_PAGES.put("/signup.jsp", "/login.jsp");
@@ -99,22 +112,10 @@ public class ContentFilter extends LoginFilter {
 		LEGACY_PAGES.put("/setup-android/07-people-sync-add", "/setup-android");
 		LEGACY_PAGES.put("/setup-android/09-people-sync-account-finished", "/setup-android");
 		LEGACY_PAGES.put("/setup-android/11-spam-contacts", "/setup-android");
-		
-		NO_POW = new HashSet<>();
-		NO_POW.add("/");
-		NO_POW.add("/support");
-		NO_POW.add(LoginController.LOGIN_PAGE);
-		NO_POW.add(EMailVerificationServlet.LOGIN_WEB);
-		NO_POW.add(LoginServlet.PATH);
-		// /auth/gate, /auth/login-ticket and /auth/verify-code are
-		// exempted via the "/auth/" prefix below.
-		NO_POW.add(RegistrationServlet.REGISTER_WEB);
-		NO_POW.add(RegistrationServlet.REGISTER_MOBILE);
-		NO_POW.add(RatingServlet.PATH);
-		NO_POW.add(CreateAuthTokenServlet.CREATE_TOKEN);
-		NO_POW.add(ErrorServlet.NOT_ALLOWED_PATH);
-		NO_POW.add(ErrorServlet.NOT_AUTHENTICATED_PATH);
-		NO_POW.add(ErrorServlet.NOT_FOUND_PATH);
+
+		POW_PAGES = new HashSet<>();
+		POW_PAGES.add(StatusController.STATUS_PAGE);
+		POW_PAGES.add(StatsController.STATS_PAGE);
 	}
 
 	public void init(final FilterConfig filterConfig) throws ServletException {
@@ -161,28 +162,15 @@ public class ContentFilter extends LoginFilter {
 	protected void requestLogin(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
 		String uri = request.getRequestURI().substring(request.getContextPath().length());
-		if (NO_POW.contains(uri) 
-				|| !request.getMethod().equals("GET")
-				|| uri.startsWith(CardDavServlet.DIR_NAME)
-				|| uri.startsWith("/assets") 
-				|| uri.startsWith("/webjars")
-				|| uri.startsWith("/oauth")
-				|| uri.startsWith("/auth/")  // login-ticket, verify-code, future auth callbacks
-				|| uri.startsWith("/api")
-				|| uri.startsWith("/mobile") 
-				|| uri.startsWith("/ab") // Many resources being requested from the web UI. 
-				|| uri.startsWith("/resource-not-found") 
-				|| uri.endsWith(".png") 
-				|| uri.endsWith(".svg") 
-				|| uri.endsWith(".css") 
-				|| uri.endsWith(".js") 
-				) {
-			// Resources for which prove of work is not possible/required.
-			render(request, response, chain);
-			return;
-		};
 
-		if (!SearchServlet.isGoodBot(request)) {
+		// Only the number information pages and a few selected pages may be the
+		// target of problematic bulk queries. All other (essentially static) pages
+		// are delivered directly, so that link previews keep working for crawlers
+		// that are not on the bot whitelist.
+		boolean powRequired = request.getMethod().equals("GET")
+				&& (uri.startsWith(SearchServlet.NUMS_PREFIX) || POW_PAGES.contains(uri));
+
+		if (powRequired && !SearchServlet.isGoodBot(request)) {
 			// Not a well-known bot and no authenticated user. This might be a problematic bulk query, request a proof of work.
 			HttpSession session = request.getSession();
 			Integer counter = (Integer) session.getAttribute(POW_COUNTER_ATTR);
