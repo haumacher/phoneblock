@@ -1316,7 +1316,7 @@
 					},
 					"votesWildcard": {
 						"type": "integer",
-						"description": "Combined votes from the phone number's spam range. This value includes range-based aggregation and can be non-zero even when 'votes' is 0, indicating the number belongs to a known spam range."
+						"description": "Combined votes from the phone number's spam range, whereas 'votes' counts only the exact number. 'votesWildcard' exceeds 'votes' when neighboring numbers have been reported too (a spammer rotating through a range) and can be non-zero even when 'votes' is 0.\n\nHow a range is recognized: PhoneBlock groups reported numbers into a 10-block (all numbers sharing every digit except the last) and a 100-block (all numbers sharing every digit except the last two). A number counts toward its block only once it has a positive net vote balance (at least one more spam than legitimate vote). A block becomes a recognized spam range when a 10-block holds at least 4 such numbers, or a 100-block holds at least 3 qualifying 10-blocks. 'votesWildcard' then sums the votes of the whole matching block.\n\nExample - one report each on 20 consecutive numbers: '...000' to '...019' fills two 10-blocks with 10 numbers each; both cross the 4-number threshold, so every number gets a 10-block wildcard rating, but the 100-block has only 2 qualifying sub-blocks (< 3) and is not rated. '...005' to '...024' instead spreads across three 10-blocks (5/10/5 numbers); all three qualify, so the 100-block becomes a spam range too. Consecutive numbers alone therefore do not trigger a 100-block rating - the reports must reach 4 or more numbers in each of 3 different 10-blocks (minimum 12 numbers)."
 					},
 					"rating": {
 						"type": "string",
