@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html th:with="previewImage='/assets/img/dongle/phoneblock-dongle-preview.png'">
 <head th:replace="~{fragments/page :: head(titleKey='page.dongle.title', descriptionKey='page.dongle.description', titleText=null, descriptionText=null)}"></head>
 
 <body th:dir="${currentLang.direction}">
@@ -12,7 +12,7 @@
 		<p class="subtitle" data-tx="t0095:dab19814">Een intelligent antwoordapparaat in de vorm van een IP-telefoon. Het apparaat is zo groot als een duim, kan worden aangesloten op de USB-poort van de router, wordt geregistreerd als een extra SIP-telefoon en onderschept commerciële gesprekken voordat je eigenlijke telefoon overgaat. Werkt ongeacht het model router, zelfs zonder Fritz!</p>
 		
 		<p class="container">
-			<img class="image is-5by3" th:src="@{/assets/img/dongle/phoneblock-dongle-800.png}"/>
+			<img th:src="@{/assets/img/dongle/phoneblock-dongle-800.png}"/>
 		</p>		
 
 		<div class="notification is-warning">

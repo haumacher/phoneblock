@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html th:with="previewImage='/assets/img/dongle/phoneblock-dongle-preview.png'">
 <head th:replace="~{fragments/page :: head(titleKey='page.dongle.title', descriptionKey='page.dongle.description', titleText=null, descriptionText=null)}"></head>
 
 <body th:dir="${currentLang.direction}">
@@ -12,7 +12,7 @@
 		<p class="subtitle" data-tx="t0095:dab19814">En intelligent telefonsvarare i skepnad av en IP-telefon. Den är lika stor som en tumme, ansluts till routerns USB-port, registreras som en extra SIP-telefon - och avlyssnar kommersiella samtal innan din riktiga telefon ringer. Fungerar oavsett routermodell, till och med utan Fritz!</p>
 		
 		<p class="container">
-			<img class="image is-5by3" th:src="@{/assets/img/dongle/phoneblock-dongle-800.png}"/>
+			<img th:src="@{/assets/img/dongle/phoneblock-dongle-800.png}"/>
 		</p>		
 
 		<div class="notification is-warning">

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html th:with="previewImage='/assets/img/dongle/phoneblock-dongle-preview.png'">
 <head th:replace="~{fragments/page :: head(titleKey='page.dongle.title', descriptionKey='page.dongle.description', titleText=null, descriptionText=null)}"></head>
 
 <body th:dir="${currentLang.direction}">
@@ -12,7 +12,7 @@
 		<p class="subtitle" data-tx="t0095:dab19814">Ένας έξυπνος τηλεφωνητής με τη μορφή τηλεφώνου IP. Στο μέγεθος ενός αντίχειρα, συνδέεται στη θύρα USB του δρομολογητή, εγγράφεται ως πρόσθετο τηλέφωνο SIP και αναχαιτίζει εμπορικές κλήσεις πριν χτυπήσει το πραγματικό σας τηλέφωνο. Λειτουργεί ανεξάρτητα από το μοντέλο του δρομολογητή, ακόμη και χωρίς Fritz!</p>
 		
 		<p class="container">
-			<img class="image is-5by3" th:src="@{/assets/img/dongle/phoneblock-dongle-800.png}"/>
+			<img th:src="@{/assets/img/dongle/phoneblock-dongle-800.png}"/>
 		</p>		
 
 		<div class="notification is-warning">

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html th:with="previewImage='/assets/img/dongle/phoneblock-dongle-preview.png'">
 <head th:replace="~{fragments/page :: head(titleKey='page.dongle.title', descriptionKey='page.dongle.description', titleText=null, descriptionText=null)}"></head>
 
 <body th:dir="${currentLang.direction}">
@@ -12,7 +12,7 @@
 		<p class="subtitle" data-tx="t0095:dab19814">جهاز رد آلي ذكي في شكل هاتف IP. بحجم الإبهام، يتم توصيله بمنفذ USB في جهاز التوجيه، ويسجل كهاتف SIP إضافي - ويعترض المكالمات التجارية قبل أن يرن هاتفك الفعلي. يعمل بغض النظر عن طراز جهاز التوجيه، حتى من دون فريتز!</p>
 		
 		<p class="container">
-			<img class="image is-5by3" th:src="@{/assets/img/dongle/phoneblock-dongle-800.png}"/>
+			<img th:src="@{/assets/img/dongle/phoneblock-dongle-800.png}"/>
 		</p>		
 
 		<div class="notification is-warning">
