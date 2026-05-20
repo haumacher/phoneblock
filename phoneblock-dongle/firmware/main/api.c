@@ -205,6 +205,15 @@ static esp_http_client_handle_t check_client(void)
             .crt_bundle_attach = esp_crt_bundle_attach,
             .timeout_ms = 10000,
             .auth_type = HTTP_AUTH_TYPE_NONE,
+            // Pin TLS 1.2. esp_http_client saves the session for
+            // resumption right after the handshake - but a TLS 1.3
+            // server delivers its session ticket as a post-handshake
+            // message, too late for that save, so TLS 1.3 would
+            // capture an unusable session and resume nothing. TLS 1.2
+            // sends the ticket in-handshake, so save_client_session
+            // below actually captures a resumable session. (TLS 1.3
+            // is also disabled project-wide - see sdkconfig.defaults.)
+            .tls_version = ESP_HTTP_CLIENT_TLS_VER_TLS_1_2,
 #if CONFIG_ESP_TLS_CLIENT_SESSION_TICKETS
             .save_client_session = true,
 #endif
