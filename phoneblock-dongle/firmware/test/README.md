@@ -1,7 +1,7 @@
 # Firmware-Tests
 
 Host-basierte Unit-Tests für die pure-C-Parser unter `../main/`
-(`sip_parse`, `tr064_parse`, `pairing_parse`, `api_scan`). Keine
+(`sip_parse`, `tr064_parse`, `api_scan`). Keine
 ESP-IDF-Toolchain, keine QEMU-Emulation — direkt mit `gcc` ausführbar,
 einmal Suite-Durchlauf dauert ≪ 100 ms.
 

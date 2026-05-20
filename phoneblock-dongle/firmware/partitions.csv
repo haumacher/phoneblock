@@ -10,20 +10,21 @@
 # leaves ~2.7× headroom over the cap, plenty for SPIFFS overhead
 # and any future small assets.
 #
-# The "pairing" partition (4 KB, custom data subtype 0x40) is written
-# only by the browser-side flasher: it carries a per-install random
-# secret that lets the install page locate the freshly-flashed dongle
-# on the LAN without relying on mDNS / DHCP host-name. OTA-only dongles
-# leave it 0xFF-erased and the firmware silently skips the pairing
-# handshake.
+# The 4 KB at 0x12000 (right after phy_init) is left as an unused gap.
+# It formerly held a per-install "pairing" partition (custom data
+# subtype 0x40) that the browser flasher wrote with a random secret so
+# the install page could locate a freshly-flashed dongle on the LAN.
+# That handshake was dropped in favour of plain mDNS host-name lookup
+# (issue #318); dongles flashed with the old layout keep the now-unused
+# partition until they are reflashed over USB.
 #
-# The "coredump" partition (52 KB) sits in the alignment gap between
-# pairing (ends at 0x13000) and ota_0 (must start at the next 64 KB
-# boundary, 0x20000). The ESP32 panic handler writes an ELF-formatted
-# core dump there on crash; on the next boot, crashreport.c uploads it
-# to the PhoneBlock backend and erases the slot. Dongles flashed with
-# the older layout don't have this partition — esp_core_dump_image_check
-# returns ESP_ERR_NOT_FOUND there and the upload path is skipped.
+# The "coredump" partition (52 KB) sits in the alignment gap before
+# ota_0 (which must start at the next 64 KB boundary, 0x20000). The
+# ESP32 panic handler writes an ELF-formatted core dump there on crash;
+# on the next boot, crashreport.c uploads it to the PhoneBlock backend
+# and erases the slot. Dongles flashed with the older layout don't have
+# this partition — esp_core_dump_image_check returns ESP_ERR_NOT_FOUND
+# there and the upload path is skipped.
 #
 # One-way migration: existing dongles running the old factory-only
 # layout must be reflashed over USB once. From there on, OTA updates
@@ -31,7 +32,6 @@
 nvs,        data, nvs,      0x9000,    0x6000
 otadata,    data, ota,      0xf000,    0x2000
 phy_init,   data, phy,      0x11000,   0x1000
-pairing,    data, 0x40,     0x12000,   0x1000
 coredump,   data, coredump, 0x13000,   0xD000
 ota_0,      app,  ota_0,    0x20000,   0x1A0000
 ota_1,      app,  ota_1,    0x1C0000,  0x1A0000
