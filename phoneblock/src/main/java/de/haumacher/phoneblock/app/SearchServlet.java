@@ -59,8 +59,6 @@ import jakarta.servlet.http.HttpSession;
 @WebServlet(urlPatterns = {SearchServlet.NUMS_PREFIX, SearchServlet.NUMS_PREFIX + "/*"})
 public class SearchServlet extends HttpServlet {
 	
-	public static final String KEYWORDS_ATTR = "keywords";
-
 	public static final String THANKS_ATTR = "thanks";
 
 	public static final String TITLE_ATTR = "title";
@@ -516,34 +514,6 @@ public class SearchServlet extends HttpServlet {
 		req.setAttribute(TITLE_ATTR, status + ": Rufnummer ☎ " + searchResult.getPhoneId() + " - PhoneBlock");
 		
         Language lang = DefaultController.selectLanguage(req);
-
-		StringBuilder keywords = new StringBuilder();
-		keywords.append("Anrufe, Bewertung");
-		if (searchResult.getNumber().getShortcut() != null) {
-			keywords.append(", ");
-			keywords.append(searchResult.getNumber().getShortcut());
-		}
-		keywords.append(", ");
-		keywords.append(searchResult.getNumber().getZeroZero());
-
-		keywords.append(", ");
-		keywords.append(searchResult.getNumber().getPlus());
-		
-		if (searchResult.getTopRating() != Rating.B_MISSED) {
-			keywords.append(", ");
-			keywords.append(I18N.getMessage(lang.locale, Ratings.getLabelKey(searchResult.getTopRating())));
-		}
-		
-		keywords.append(", ");
-		keywords.append(status);
-
-		if (searchResult.getNumber().getCity() != null) {
-			keywords.append(", ");
-			keywords.append(searchResult.getNumber().getCity());
-		}
-		
-		req.setAttribute(KEYWORDS_ATTR, keywords.toString());
-		
 		req.setAttribute("ratingCssClass", Ratings.getCssClass(searchResult.getTopRating()));
 		req.setAttribute("ratingLabelKey", Ratings.getLabelKey(searchResult.getTopRating()));
 		

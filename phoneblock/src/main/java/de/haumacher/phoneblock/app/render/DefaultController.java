@@ -327,7 +327,6 @@ public class DefaultController implements WebController {
         
         ctx.setVariable("titleKey", "app.defaultTitle");
         ctx.setVariable("descriptionKey", "app.defaultDescription");
-        ctx.setVariable("keywords", "");
         
 		Object explicitCanonical = request.getAttribute(CANONICAL_ATTR);
 		if (explicitCanonical instanceof String) {
