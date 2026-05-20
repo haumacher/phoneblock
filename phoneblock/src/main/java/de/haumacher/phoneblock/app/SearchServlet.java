@@ -189,7 +189,7 @@ public class SearchServlet extends HttpServlet {
 		}
 
 		private int length(UserComment c1) {
-			int length = c1.getComment().length();
+			int length = c1.getComment() == null ? 0 : c1.getComment().length();
 			if (length < 20) {
 				return 0;
 			}
@@ -415,6 +415,11 @@ public class SearchServlet extends HttpServlet {
 			searches = Collections.emptyList();
 		}
 
+		// Drop rating-only rows: a personal rating recorded on the black-/whitelist without
+		// comment text is stored as a COMMENTS row with an empty COMMENT and must not be shown
+		// as a comment.
+		comments = comments.stream().filter(c -> c.getComment() != null && !c.getComment().isBlank()).toList();
+
 		// Ensure that equal number of positive and negative comments are shown (white-listed numbers are an exception).
 		List<UserComment> positive = comments.stream().filter(c -> c.getRating() == Rating.A_LEGITIMATE).sorted(COMMENT_ORDER).collect(Collectors.toList());
 		List<UserComment> negative = comments.stream().filter(c -> c.getRating() != Rating.A_LEGITIMATE).sorted(COMMENT_ORDER).collect(Collectors.toList());
@@ -479,7 +484,8 @@ public class SearchServlet extends HttpServlet {
 		
 		// Shorten comments from meta search.
 		for (UserComment comment : searchResult.getComments()) {
-			if (comment.getService() != null && comment.getComment().length() > 280) {
+			if (comment.getService() != null && !comment.getService().isEmpty()
+					&& comment.getComment() != null && comment.getComment().length() > 280) {
 				comment.setComment(comment.getComment().substring(0, 277) + "...");
 			}
 

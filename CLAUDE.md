@@ -22,11 +22,11 @@ The system uses a community-maintained database where users report spam numbers,
 mvn clean install
 ```
 
-**Build specific module:**
+**Build a single module:**
 ```bash
-cd phoneblock  # or phoneblock-ab, phoneblock-shared
-mvn clean package
+mvn -B -pl phoneblock -DskipTests install >/tmp/pb-build.log 2>&1 && echo OK || { echo FAILED; grep -E '\[ERROR\]' /tmp/pb-build.log; }
 ```
+Output goes to a log file; only `OK`/`FAILED` (and `[ERROR]` lines on failure) reach the terminal. `-B` (batch mode) disables ANSI colors so `grep` matches plain `[ERROR]` text. `install` (not `compile`) so dependent modules pick up the result. Add `-am` the first time, or after a sibling module changed, to also build/install dependencies.
 
 **Run web application locally (Jetty):**
 ```bash
