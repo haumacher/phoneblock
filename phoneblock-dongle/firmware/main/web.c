@@ -283,6 +283,15 @@ static esp_err_t handle_status(httpd_req_t *req)
     cJSON_AddBoolToObject  (pb,   "token_set",          strlen(config_phoneblock_token()) > 0);
     cJSON_AddBoolToObject  (pb,   "token_ok",           api_token_is_valid());
     cJSON_AddNumberToObject(pb,   "last_api_ms",        (double)(c.last_api_duration_us / 1000));
+    // Phase breakdown of the last API call — investigation aid for
+    // issue #329 (connect/request/wait/download split).
+    cJSON *ph = cJSON_AddObjectToObject(pb, "last_api_phases");
+    cJSON_AddBoolToObject  (ph, "valid",       c.last_api_phases.valid);
+    cJSON_AddNumberToObject(ph, "total_ms",    (double)(c.last_api_phases.total_us    / 1000));
+    cJSON_AddNumberToObject(ph, "connect_ms",  (double)(c.last_api_phases.connect_us  / 1000));
+    cJSON_AddNumberToObject(ph, "request_ms",  (double)(c.last_api_phases.request_us  / 1000));
+    cJSON_AddNumberToObject(ph, "wait_ms",     (double)(c.last_api_phases.wait_us     / 1000));
+    cJSON_AddNumberToObject(ph, "download_ms", (double)(c.last_api_phases.download_us / 1000));
     cJSON_AddNumberToObject(pb,   "min_direct_votes",   config_min_direct_votes());
     cJSON_AddNumberToObject(pb,   "min_range_votes",    config_min_range_votes());
 
@@ -882,7 +891,7 @@ static esp_err_t handle_token_callback(httpd_req_t *req)
 
     // Immediately exercise the new token so the dashboard has an API
     // latency to show on the first poll, instead of an empty "–".
-    phoneblock_selftest();
+    phoneblock_selftest(NULL);
 
     // Hand the user straight back to the status landing — the pill
     // there flips to green on the next 3s poll.
@@ -1583,7 +1592,7 @@ static esp_err_t handle_token_test(httpd_req_t *req)
         send_json(req, root);
         return ESP_OK;
     }
-    bool ok = phoneblock_selftest();
+    bool ok = phoneblock_selftest(NULL);
     cJSON_AddBoolToObject  (root, "ok", ok);
     cJSON_AddStringToObject(root, "code", ok ? "ok" : "fail");
     cJSON_AddStringToObject(root, "message",

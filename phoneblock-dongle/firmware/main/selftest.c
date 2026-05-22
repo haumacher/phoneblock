@@ -32,7 +32,7 @@ static void selftest_task(void *arg)
         vTaskDelay(pdMS_TO_TICKS(delay));
         if (strlen(config_phoneblock_token()) == 0) continue;
         ESP_LOGI(TAG, "scheduled token self-test");
-        phoneblock_selftest();
+        phoneblock_selftest(NULL);
     }
 }
 

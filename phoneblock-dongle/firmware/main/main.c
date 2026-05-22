@@ -87,7 +87,25 @@ static void handle_client(int client_sock)
     }
 
     ESP_LOGI(TAG, "client query: \"%s\"", number);
-    verdict_t v = phoneblock_check(number, NULL);
+
+    // Diagnostic latency probe (issue #329): "PROBE" or "PROBE <rounds>"
+    // measures /api/test vs /api/check-prefix instead of querying a
+    // number, and replies with the per-phase breakdown.
+    if (strncmp(number, "PROBE", 5) == 0 &&
+        (number[5] == '\0' || number[5] == ' ')) {
+        int rounds = (number[5] == ' ') ? atoi(number + 6) : 3;
+        char *report = malloc(API_PROBE_REPORT_CAP);
+        if (report) {
+            api_run_probe(rounds, report, API_PROBE_REPORT_CAP);
+            send(client_sock, report, strlen(report), 0);
+            free(report);
+        } else {
+            send(client_sock, "ERROR\n", 6, 0);
+        }
+        return;
+    }
+
+    verdict_t v = phoneblock_check(number, NULL, NULL);
     const char *line = verdict_to_line(v);
     send(client_sock, line, strlen(line), 0);
 }
@@ -250,7 +268,7 @@ void app_main(void)
 
     if (token_set) {
         ESP_LOGI(TAG, "initial self-test");
-        phoneblock_selftest();
+        phoneblock_selftest(NULL);
         xTaskCreate(sip_server_task, "sip_server", 8192, NULL, 5, NULL);
     } else {
         ESP_LOGI(TAG, "PhoneBlock token not configured yet — set via web UI");

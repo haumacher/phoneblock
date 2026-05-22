@@ -3,11 +3,45 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include <stdint.h>
+
 typedef enum {
     VERDICT_LEGITIMATE,
     VERDICT_SPAM,
     VERDICT_ERROR,
 } verdict_t;
+
+// Per-call latency breakdown of one HTTPS API request, derived from the
+// esp_http_client event timeline (see http_event_shared in api.c).
+// Investigation aid for issue #329 — splits the single round-trip time
+// into the four phases that can each be a latency culprit:
+//
+//   connect_us  perform start -> TCP+TLS connected. DNS lookup, TCP
+//               3-way handshake, and the (resumed or full) TLS
+//               handshake. This is the phase TLS session resumption
+//               shrinks.
+//   request_us  connected -> request headers sent.
+//   wait_us     request sent -> first response header (time to first
+//               byte). Server-side processing plus one network RTT;
+//               comparing wait_us of /api/check-prefix against
+//               /api/test isolates the server-side processing delta.
+//   download_us first response header -> transfer finished. Response
+//               streaming and transfer time.
+//
+// total_us is the full esp_http_client_perform() wall time. A phase
+// whose boundary event never fired is left at 0. `valid` is true once
+// a measurement has completed.
+typedef struct {
+    int64_t connect_us;
+    int64_t request_us;
+    int64_t wait_us;
+    int64_t download_us;
+    int64_t total_us;
+    bool    valid;
+} api_phases_t;
+
+// Buffer size the LAN debug-query server must provide for api_run_probe().
+#define API_PROBE_REPORT_CAP 1536
 
 // Display + count info lifted from the /api/check-prefix response.
 // Populated by phoneblock_check() when called with a non-NULL `out`.
@@ -65,12 +99,32 @@ void phoneblock_api_init(void);
 // If `out` is non-NULL it is populated with display fields and vote
 // counts (see pb_check_result_t). Pass NULL when the caller only
 // needs the verdict.
-verdict_t phoneblock_check(const char *phone_number, pb_check_result_t *out);
+//
+// If `phases_opt` is non-NULL it receives the latency breakdown of the
+// underlying /api/check-prefix call (see api_phases_t). Pass NULL when
+// the caller does not measure latency.
+verdict_t phoneblock_check(const char *phone_number, pb_check_result_t *out,
+                           api_phases_t *phases_opt);
 
 // Verify API reachability + token validity via GET /test (expects
 // HTTP 200 body "ok"). Returns true on success, false on any failure.
 // Logs the outcome and records a stats error on failure.
-bool phoneblock_selftest(void);
+//
+// If `phases_opt` is non-NULL it receives the latency breakdown of the
+// /api/test call (see api_phases_t). Pass NULL when latency is not
+// measured.
+bool phoneblock_selftest(api_phases_t *phases_opt);
+
+// Diagnostic latency probe for issue #329. Runs `rounds` (clamped to
+// 1..5) back-to-back iterations; each iteration measures one /api/test
+// and one /api/check-prefix call. The check call uses a fixed synthetic
+// number, so it exercises the real spam-lookup code path without
+// touching a real subscriber's privacy and without creating a report.
+// Formats a per-call phase breakdown plus a per-endpoint average into
+// `report` (NUL-terminated, truncated to `cap`; use API_PROBE_REPORT_CAP).
+// Returns the number of calls measured. Triggered via the LAN debug-
+// query server's PROBE command.
+int api_run_probe(int rounds, char *report, size_t cap);
 
 // Submit a spam rating for `phone` with the given rating code (e.g.
 // "B_MISSED", "E_ADVERTISING"). Optional short comment (NULL for
