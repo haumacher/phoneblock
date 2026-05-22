@@ -1691,6 +1691,18 @@ void web_start(void)
     // nests through call_action → post_soap → esp_http_client. 8 KB
     // gives us headroom for the deep call chain without overflows.
     cfg.stack_size = 8192;
+    // Reclaim the least-recently-used connection when every socket slot
+    // is taken, instead of refusing the new one. Browsers keep HTTP/1.1
+    // keep-alive sockets open, and a device that simply went away (laptop
+    // lid closed, phone left the WLAN) never sends a FIN — its socket
+    // lingers. Once max_open_sockets (7) is exhausted by such stale
+    // connections the server stops accepting new ones: the UI becomes
+    // unreachable from fresh devices while a device that already holds a
+    // keep-alive socket keeps polling fine. With LRU purge the oldest
+    // idle socket is closed to admit each new client, so the UI stays
+    // reachable; an evicted browser transparently reconnects on its next
+    // 3 s poll. See issue #328.
+    cfg.lru_purge_enable = true;
     if (httpd_start(&s_server, &cfg) != ESP_OK) {
         ESP_LOGE(TAG, "httpd_start failed");
         return;
