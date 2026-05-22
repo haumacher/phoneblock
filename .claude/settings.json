@@ -57,7 +57,8 @@
     "network": {
       "allowedDomains": [
         "api.github.com",
-        "github.com"
+        "github.com",
+        "components-file.espressif.com"
       ],
       "allowAllUnixSockets": true
     },
