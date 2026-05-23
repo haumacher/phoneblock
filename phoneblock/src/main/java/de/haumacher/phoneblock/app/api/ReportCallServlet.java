@@ -14,6 +14,8 @@ import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.db.Ema;
+import de.haumacher.phoneblock.db.Signals;
 import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.AuthToken;
@@ -107,8 +109,12 @@ public class ReportCallServlet extends HttpServlet {
 
 			if (users.tryConsumeCallReportQuota(userId, today, DAILY_QUOTA) == 1) {
 				// recordCall is a no-op for phones that are not in NUMBERS, which is
-				// exactly the "only count known SPAM numbers" semantic we want.
-				reports.recordCall(phoneId, now);
+				// exactly the "only count known SPAM numbers" semantic we want. The
+				// confidence model (#332) treats this as a Heat-only signal — the
+				// classification side for wildcard-blocked unknown numbers is the
+				// subject of #333.
+				double heatInc = Ema.increment(Signals.REPORT_CALL_HEAT_WEIGHT, now, Ema.HEAT_HALF_LIFE_DAYS);
+				reports.recordCall(phoneId, now, heatInc, 0.0);
 			}
 
 			// Maintain the per-user call log regardless of global-counter outcome.

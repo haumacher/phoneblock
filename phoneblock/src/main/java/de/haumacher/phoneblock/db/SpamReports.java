@@ -24,10 +24,11 @@ public interface SpamReports {
 	Long getLastUpdate();
 	
 	@Insert("""
-			insert into NUMBERS (PHONE, SHA1, VOTES, DOWN_VOTES, UP_VOTES, UPDATED, ADDED, LASTPING)
-			values (#{phone}, #{hash}, #{votes}, CASEWHEN (#{votes} > 0, #{votes}, 0), CASEWHEN (#{votes} < 0, 0 - #{votes}, 0), #{now}, #{now}, #{now})
+			insert into NUMBERS (PHONE, SHA1, VOTES, DOWN_VOTES, UP_VOTES, UPDATED, ADDED, LASTPING, HEAT, SPAM_EVIDENCE, LEGIT_EVIDENCE)
+			values (#{phone}, #{hash}, #{votes}, CASEWHEN (#{votes} > 0, #{votes}, 0), CASEWHEN (#{votes} < 0, 0 - #{votes}, 0), #{now}, #{now}, #{now}, #{heatInc}, #{spamEvidenceInc}, #{legitEvidenceInc})
 			""")
-	void addReport(String phone, byte[] hash, int votes, long now);
+	void addReport(String phone, byte[] hash, int votes, long now,
+		double heatInc, double spamEvidenceInc, double legitEvidenceInc);
 	
 	@Select("""
 			select PHONE from NUMBERS where SHA1=#{hash}
@@ -41,10 +42,14 @@ public interface SpamReports {
 				UP_VOTES = UP_VOTES + CASEWHEN(#{delta} < 0, 0 - #{delta}, 0),
 				UPDATED = GREATEST(UPDATED, #{now}),
 				LASTPING = GREATEST(LASTPING, #{now}),
-				ACTIVE = CASEWHEN(#{delta} > 0, true, ACTIVE)
+				ACTIVE = CASEWHEN(#{delta} > 0, true, ACTIVE),
+				HEAT = HEAT + #{heatInc},
+				SPAM_EVIDENCE = SPAM_EVIDENCE + #{spamEvidenceInc},
+				LEGIT_EVIDENCE = LEGIT_EVIDENCE + #{legitEvidenceInc}
 			where PHONE = #{phone}
 			""")
-	int addVote(String phone, int delta, long now);
+	int addVote(String phone, int delta, long now,
+		double heatInc, double spamEvidenceInc, double legitEvidenceInc);
 
 	/**
 	 * Clears the SHA1 hash of a phone number to protect privacy for legitimate numbers.
@@ -201,11 +206,13 @@ public interface SpamReports {
 			set
 				CALLS = CALLS + 1,
 				s.UPDATED = greatest(s.UPDATED, #{now}),
-				s.LASTPING = greatest(s.LASTPING, #{now})
+				s.LASTPING = greatest(s.LASTPING, #{now}),
+				s.HEAT = s.HEAT + #{heatInc},
+				s.SPAM_EVIDENCE = s.SPAM_EVIDENCE + #{spamEvidenceInc}
 			where
 				PHONE = #{phone}
 			""")
-	int recordCall(String phone, long now);
+	int recordCall(String phone, long now, double heatInc, double spamEvidenceInc);
 	
 	@Select("""
 			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.VOTES as PUBLISHED_VOTES from NUMBERS s
@@ -411,13 +418,14 @@ public interface SpamReports {
 	@Update("""
 			update NUMBERS s
 			set
-				s.SEARCHES = s.SEARCHES + 1, 
-				s.SEARCHES_CURRENT = s.SEARCHES_CURRENT + 1, 
-				s.LASTSEARCH = GREATEST(s.LASTSEARCH, #{now}), 
-				s.LASTPING = GREATEST(s.LASTPING, #{now})
+				s.SEARCHES = s.SEARCHES + 1,
+				s.SEARCHES_CURRENT = s.SEARCHES_CURRENT + 1,
+				s.LASTSEARCH = GREATEST(s.LASTSEARCH, #{now}),
+				s.LASTPING = GREATEST(s.LASTPING, #{now}),
+				s.HEAT = s.HEAT + #{heatInc}
 			where s.PHONE=#{phone}
 			""")
-	int incSearchCount(String phone, long now);
+	int incSearchCount(String phone, long now, double heatInc);
 
 	@Select("""
 			<script>

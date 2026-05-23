@@ -887,19 +887,33 @@ public class DB {
 
 	/**
 	 * Updates the votes for a certain number.
+	 *
+	 * <p>Issue #332: also feeds the confidence model. Every vote produces an
+	 * EMA increment on {@code HEAT}, plus on either {@code SPAM_EVIDENCE} or
+	 * {@code LEGIT_EVIDENCE} depending on the sign of {@code votes}. The
+	 * weight scales with {@code |votes|} so a Fritz!Box-blocked call worth
+	 * 2 votes contributes twice as much evidence as a single user rating.</p>
 	 */
 	public boolean processVotes(SpamReports reports, PhoneNumer number, String dialPrefix, int votes, long time) {
 		String phone = NumberAnalyzer.getPhoneId(number);
 		final int oldVotes = nonNull(reports.getVotes(phone));
 		final int newVotes = oldVotes + votes;
-		
-		int rows = reports.addVote(phone, votes, time);
+
+		int absVotes = Math.abs(votes);
+		double heatInc = Ema.increment(absVotes * Signals.DIRECT_VOTE_HEAT_WEIGHT,
+			time, Ema.HEAT_HALF_LIFE_DAYS);
+		double evidenceInc = Ema.increment(absVotes * Signals.DIRECT_VOTE_EVIDENCE_WEIGHT,
+			time, Ema.CLASSIFICATION_HALF_LIFE_DAYS);
+		double spamEvidenceInc = votes > 0 ? evidenceInc : 0.0;
+		double legitEvidenceInc = votes < 0 ? evidenceInc : 0.0;
+
+		int rows = reports.addVote(phone, votes, time, heatInc, spamEvidenceInc, legitEvidenceInc);
 		if (rows == 0) {
 			byte[] hash = NumberAnalyzer.getPhoneHash(number);
-			
+
 			// Number was not yet present, must be added.
-			reports.addReport(phone, hash, votes, time);
-			
+			reports.addReport(phone, hash, votes, time, heatInc, spamEvidenceInc, legitEvidenceInc);
+
 			if (votes > 0) {
 				updateAggregation10(reports, phone, 1, votes);
 			}
@@ -1771,19 +1785,28 @@ public class DB {
 
 	/**
 	 * Records a search hit for the given phone number.
+	 *
+	 * <p>Issue #332: a search is a weak Heat signal (no classification impact).
+	 * The increment is applied exactly once — either by {@code incSearchCount}
+	 * on the existing row, or by the follow-up {@code incSearchCount} after
+	 * {@code addReport} created a fresh row (which itself stores no Heat to
+	 * avoid double-counting).</p>
 	 */
 	public void addSearchHit(SpamReports reports, PhoneNumer number, String dialPrefix, long now) {
 		String phone = NumberAnalyzer.getPhoneId(number);
-		
-		int rows = reports.incSearchCount(phone, now);
+
+		double heatInc = Ema.increment(Signals.SEARCH_HEAT_WEIGHT, now, Ema.HEAT_HALF_LIFE_DAYS);
+		int rows = reports.incSearchCount(phone, now, heatInc);
 		if (rows == 0) {
 			byte[] hash = NumberAnalyzer.getPhoneHash(number);
-			reports.addReport(phone, hash, 0, now);
-			reports.incSearchCount(phone, now);
+			// addReport does not set SEARCHES; the second incSearchCount below
+			// applies both the SEARCHES bump and the Heat increment exactly once.
+			reports.addReport(phone, hash, 0, now, 0.0, 0.0, 0.0);
+			reports.incSearchCount(phone, now, heatInc);
 		}
-		
+
 		pingRelatedNumbers(reports, phone, now);
-		
+
 		updateLocalization(reports, phone, dialPrefix, 1, 0, 0, now);
 	}
 	

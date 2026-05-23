@@ -59,6 +59,8 @@ import de.haumacher.phoneblock.db.DBAnswerBotDynDns;
 import de.haumacher.phoneblock.db.DBAnswerBotSip;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.DBUserSettings;
+import de.haumacher.phoneblock.db.Ema;
+import de.haumacher.phoneblock.db.Signals;
 import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.AnswerBotSip;
@@ -229,7 +231,15 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 					try {
 						if (info.getVotes() > 0) {
 							long now = System.currentTimeMillis();
-							reports.recordCall(info.getPhone(), now);
+							// Issue #332: an answer-bot pickup is a strong, machine-verified
+							// signal — the caller passed the local block decision and engaged
+							// the bot at the SIP level. Drive Heat hard, plus feed
+							// SPAM_EVIDENCE on the (long-memory) classification axis.
+							double heatInc = Ema.increment(Signals.ANSWERBOT_CALL_HEAT_WEIGHT,
+								now, Ema.HEAT_HALF_LIFE_DAYS);
+							double spamEvidenceInc = Ema.increment(Signals.ANSWERBOT_CALL_EVIDENCE_WEIGHT,
+								now, Ema.CLASSIFICATION_HALF_LIFE_DAYS);
+							reports.recordCall(info.getPhone(), now, heatInc, spamEvidenceInc);
 							db.updateLocalization(reports, info.getPhone(), settings.getDialPrefix(), 0, 0, 1, now);
 							session.commit();
 						}

@@ -14,6 +14,9 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -549,6 +552,56 @@ public class TestDB {
 
 	private void processVotes(String phone, int votes, long time) {
 		_db.processVotes(NumberAnalyzer.analyze(phone, "+49"), "+49", votes, time);
+	}
+
+	/** Raw EMA columns straight from NUMBERS — for confidence-model assertions (#332). */
+	private double[] rawEmas(String phone) {
+		try (Connection conn = _dataSource.getConnection();
+				PreparedStatement stmt = conn.prepareStatement(
+					"select HEAT, SPAM_EVIDENCE, LEGIT_EVIDENCE from NUMBERS where PHONE = ?")) {
+			stmt.setString(1, phone);
+			try (ResultSet rs = stmt.executeQuery()) {
+				assertTrue(rs.next(), "No row for " + phone);
+				return new double[] { rs.getDouble(1), rs.getDouble(2), rs.getDouble(3) };
+			}
+		} catch (SQLException ex) {
+			throw new RuntimeException(ex);
+		}
+	}
+
+	@Test
+	void testConfidenceModelEmaPopulation() {
+		// A positive vote populates HEAT and SPAM_EVIDENCE; LEGIT_EVIDENCE stays at 0.
+		// Use a time near t0 to keep the projected values within close range of the weight.
+		long t = Ema.T0_MILLIS;
+		processVotes("030111111", 1, t);
+
+		double[] after1 = rawEmas("030111111");
+		assertTrue(after1[0] > 0, "HEAT must be > 0 after a SPAM vote");
+		assertTrue(after1[1] > 0, "SPAM_EVIDENCE must be > 0 after a SPAM vote");
+		assertEquals(0.0, after1[2], 0.0, "LEGIT_EVIDENCE must stay 0 after a SPAM vote");
+
+		// A negative vote populates LEGIT_EVIDENCE on a different number.
+		processVotes("030222222", -1, t);
+		double[] legit = rawEmas("030222222");
+		assertTrue(legit[0] > 0, "HEAT must be > 0 after a LEGITIMATE vote too");
+		assertEquals(0.0, legit[1], 0.0, "SPAM_EVIDENCE must stay 0 after a LEGITIMATE vote");
+		assertTrue(legit[2] > 0, "LEGIT_EVIDENCE must be > 0 after a LEGITIMATE vote");
+
+		// A second positive vote on the first number must monotonically grow HEAT and SPAM_EVIDENCE.
+		processVotes("030111111", 1, t + 86_400_000L);
+		double[] after2 = rawEmas("030111111");
+		assertTrue(after2[0] > after1[0], "HEAT must monotonically grow on a second positive vote");
+		assertTrue(after2[1] > after1[1], "SPAM_EVIDENCE must monotonically grow on a second positive vote");
+
+		// Weight scales with |votes|: a 2-vote increment must be ≈ 2× a single-vote increment
+		// at the same moment in time.
+		processVotes("030333333", 2, t);
+		double[] doubled = rawEmas("030333333");
+		processVotes("030444444", 1, t);
+		double[] single = rawEmas("030444444");
+		assertEquals(2.0 * single[0], doubled[0], 1e-9);
+		assertEquals(2.0 * single[1], doubled[1], 1e-9);
 	}
 
 	protected void checkPhone(String phone, int votes, int cnt10, int votes10, int cnt100, int votes100) {
