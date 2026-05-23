@@ -1405,6 +1405,52 @@ public class DB {
 		}
 	}
 	
+	/** A user's personal black and white phone-ID lists, in raw DB format. */
+	public static final class PersonalLists {
+
+		private final List<String> _blacklist;
+
+		private final List<String> _whitelist;
+
+		PersonalLists(List<String> blacklist, List<String> whitelist) {
+			_blacklist = blacklist;
+			_whitelist = whitelist;
+		}
+
+		/** Phone IDs the user has explicitly blocked (BLOCKED = true). */
+		public List<String> blacklist() {
+			return _blacklist;
+		}
+
+		/** Phone IDs the user has explicitly allowed (BLOCKED = false). */
+		public List<String> whitelist() {
+			return _whitelist;
+		}
+
+	}
+
+	/**
+	 * Loads the user's personal black/white lists in raw DB phone-ID format.
+	 *
+	 * <p>
+	 * Entries may end in {@code *} to mark a wildcard prefix; otherwise they
+	 * are exact phone IDs in national or {@code 00}-international notation.
+	 * </p>
+	 */
+	public PersonalLists getPersonalLists(String login) {
+		try (SqlSession session = openSession()) {
+			Users users = session.getMapper(Users.class);
+			Long userId = users.getUserId(login);
+			if (userId == null) {
+				return new PersonalLists(List.of(), List.of());
+			}
+			BlockList blocklist = session.getMapper(BlockList.class);
+			List<String> black = blocklist.getPersonalizations(userId.longValue());
+			List<String> white = blocklist.getWhiteList(userId.longValue());
+			return new PersonalLists(black, white);
+		}
+	}
+
 	private static BlockListEntry toBlocklistEntry(DBNumberInfo n) {
 		PhoneNumer number = NumberAnalyzer.analyzePhoneID(n.getPhone());
 		if (number == null) {

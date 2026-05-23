@@ -8,12 +8,15 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+
 import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.app.api.model.Blocklist;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.sync.binary.BlocklistBinaryAdapter;
+import de.haumacher.phoneblock.sync.binary.BlocklistBinaryEncoder.Entry;
 import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -114,8 +117,10 @@ public class BlocklistServlet extends HttpServlet {
 			// The binary file does not carry per-entry vote counts, so the
 			// user's minVotes preference must be applied server-side here.
 			int userMinVotes = Math.max(cachedSettings.getMinVotes(), db.getMinVisibleVotes());
+			DB.PersonalLists personal = db.getPersonalLists(userName);
+			List<Entry> personalEntries = PersonalEntries.from(personal.blacklist(), personal.whitelist());
 			resp.setContentType(BINARY_CONTENT_TYPE);
-			BlocklistBinaryAdapter.write(resp.getOutputStream(), result, userMinVotes);
+			BlocklistBinaryAdapter.write(resp.getOutputStream(), result, personalEntries, userMinVotes);
 		} else {
 			ServletUtil.sendResult(req, resp, result);
 		}
