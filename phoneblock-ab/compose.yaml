@@ -22,6 +22,12 @@ services:
       - PORT_COUNT=10
       - RECORDINGS=none
       - CONVERSATION=/opt/phoneblock/conversation
+      # Whether to accept calls from local phones (numbers starting with '*').
+      - ACCEPT_LOCAL=yes
+      # Phone number prefix that forces the answer bot to respond, even if the
+      # caller is not on the blocklist. Useful to test the bot from an external
+      # number that is not flagged as spam. Leave empty in production.
+      - TEST_PREFIX=
     volumes:
       # Default conversation files are built-in. Only map them if you want to use a custom conversation.
       # - ./conversation:/opt/phoneblock/conversation

@@ -32,7 +32,8 @@ public interface AnswerbotOptions extends DialogOptions, StaticOptions {
 	 * Whether a {@link #getTestPrefix()} has been configured.
 	 */
 	default boolean hasTestPrefix() {
-		return getTestPrefix() != null;
+		String testPrefix = getTestPrefix();
+		return testPrefix != null && !testPrefix.isBlank();
 	}
 
 	/** 
