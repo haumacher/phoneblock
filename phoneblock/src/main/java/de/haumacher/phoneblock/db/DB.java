@@ -921,6 +921,13 @@ public class DB {
 			// Add new votes to aggregation.
 			updateAggregation10(reports, phone, delta(oldVotes, newVotes), votes);
 		}
+
+		// Issue #337: feed the block-level EMAs flat on both /10 and /100, regardless
+		// of whether the cnt/votes-promotion path applied. This catches the case where
+		// a spammer spreads votes thinly across a whole block (each individual number
+		// decays out, but the block as a whole stays hot) and lets the block decay out
+		// of wildcard-blocking once the spammer moves on.
+		addAggregationEmas(reports, phone, heatInc, spamEvidenceInc, legitEvidenceInc);
 		
 		pingRelatedNumbers(reports, phone, time);
 		
@@ -1042,6 +1049,43 @@ public class DB {
 				if (hash != null) {
 					reports.insertAggregation100WithHash(prefix, deltaCnt, deltaVotes, hash);
 				}
+			}
+		}
+	}
+
+	/**
+	 * Block-level EMA increments (#337). Adds the same projected-EMA increments
+	 * to the {@code /10} and {@code /100} aggregation rows for the given phone
+	 * — flat, on both levels, regardless of the cnt/votes-promotion path.
+	 *
+	 * <p>This is deliberately NOT folded into {@link #updateAggregation10} /
+	 * {@link #updateAggregation100}: the promotion machinery only runs for
+	 * events that move the cnt/votes counters (and skips, e.g., legitimate
+	 * votes on brand-new numbers), but the EMAs are meant to track <em>every</em>
+	 * event at every level. A separate path keeps the two concerns
+	 * independent — see issue #337.</p>
+	 *
+	 * <p>If the aggregation row does not yet exist, a fresh one is inserted
+	 * with {@code cnt = 0, votes = 0} and the EMAs set to the increment. Such
+	 * a row carries no cnt/votes contribution and therefore does not affect
+	 * the existing wildcard-vote computation built on those columns — it only
+	 * makes the block visible to future EMA reads.</p>
+	 */
+	private void addAggregationEmas(SpamReports reports, String phone,
+			double heatInc, double spamEvidenceInc, double legitEvidenceInc) {
+		String p10 = prefix10(phone);
+		if (reports.addAggregation10Emas(p10, heatInc, spamEvidenceInc, legitEvidenceInc) == 0) {
+			byte[] hash = computePrefixHash(p10);
+			if (hash != null) {
+				reports.insertAggregation10EmasOnly(p10, hash, heatInc, spamEvidenceInc, legitEvidenceInc);
+			}
+		}
+
+		String p100 = prefix100(phone);
+		if (reports.addAggregation100Emas(p100, heatInc, spamEvidenceInc, legitEvidenceInc) == 0) {
+			byte[] hash = computePrefixHash(p100);
+			if (hash != null) {
+				reports.insertAggregation100EmasOnly(p100, hash, heatInc, spamEvidenceInc, legitEvidenceInc);
 			}
 		}
 	}
@@ -1815,7 +1859,12 @@ public class DB {
 			String phoneId, long now, boolean firstFromUser) {
 		double heatInc = Ema.increment(Signals.REPORT_CALL_HEAT_WEIGHT, now, Ema.HEAT_HALF_LIFE_DAYS);
 		int updated = reports.recordCall(phoneId, now, heatInc, 0.0);
-		if (updated != 0 || !firstFromUser) {
+		if (updated != 0) {
+			// Existing number — also feed the block-level Heat EMAs (#337).
+			addAggregationEmas(reports, phoneId, heatInc, 0.0, 0.0);
+			return false;
+		}
+		if (!firstFromUser) {
 			return false;
 		}
 
@@ -1832,6 +1881,9 @@ public class DB {
 		reports.addReport(phoneId, hash, 0, now, heatInc, implicitEvidence, 0.0);
 		// Now that the row exists, bump CALLS once for the call we are reporting.
 		reports.recordCall(phoneId, now, 0.0, 0.0);
+		// Block-level EMAs (#337): the implicit evidence we just credited at the
+		// number level also feeds the /10 and /100 blocks.
+		addAggregationEmas(reports, phoneId, heatInc, implicitEvidence, 0.0);
 		return true;
 	}
 

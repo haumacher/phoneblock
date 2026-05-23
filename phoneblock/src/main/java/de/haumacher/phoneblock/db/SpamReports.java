@@ -76,9 +76,58 @@ public interface SpamReports {
 	
 	@Update("update NUMBERS_AGGREGATION_10 set CNT = CNT + #{deltaCnt}, VOTES = VOTES + #{deltaVotes} where PREFIX = #{prefix}")
 	int updateAggregation10(String prefix, int deltaCnt, int deltaVotes);
-	
+
 	@Update("update NUMBERS_AGGREGATION_100 set CNT = CNT + #{deltaCnt}, VOTES = VOTES + #{deltaVotes} where PREFIX = #{prefix}")
 	int updateAggregation100(String prefix, int deltaCnt, int deltaVotes);
+
+	/**
+	 * Add block-level EMA increments to a {@code /10} aggregation row (#337).
+	 *
+	 * <p>Deliberately separate from {@link #updateAggregation10}: the EMAs are
+	 * fed flat at every level (number + /10 + /100) regardless of the
+	 * cnt/votes-promotion logic, so an unknown number's report can still drive
+	 * the block-level signals even when no cnt/votes update applies to its
+	 * /10 row (e.g. legitimate votes on brand-new numbers).</p>
+	 */
+	@Update("""
+			update NUMBERS_AGGREGATION_10 set
+				HEAT = HEAT + #{heatInc},
+				SPAM_EVIDENCE = SPAM_EVIDENCE + #{spamEvidenceInc},
+				LEGIT_EVIDENCE = LEGIT_EVIDENCE + #{legitEvidenceInc}
+			where PREFIX = #{prefix}
+			""")
+	int addAggregation10Emas(String prefix, double heatInc, double spamEvidenceInc, double legitEvidenceInc);
+
+	@Update("""
+			update NUMBERS_AGGREGATION_100 set
+				HEAT = HEAT + #{heatInc},
+				SPAM_EVIDENCE = SPAM_EVIDENCE + #{spamEvidenceInc},
+				LEGIT_EVIDENCE = LEGIT_EVIDENCE + #{legitEvidenceInc}
+			where PREFIX = #{prefix}
+			""")
+	int addAggregation100Emas(String prefix, double heatInc, double spamEvidenceInc, double legitEvidenceInc);
+
+	/**
+	 * Fresh-row insert that carries only EMA values (no cnt/votes contribution).
+	 * Used when an event reaches an aggregation block whose row does not yet
+	 * exist — typically a legitimate vote, where the cnt/votes-promotion path
+	 * would not create a row at all. The hash column is set so the row is
+	 * reachable by the prefix-check range scan, just like rows created via
+	 * {@code insertAggregation10WithHash}.
+	 */
+	@Insert("""
+			insert into NUMBERS_AGGREGATION_10 (PREFIX, CNT, VOTES, SHA1, HEAT, SPAM_EVIDENCE, LEGIT_EVIDENCE)
+			values (#{prefix}, 0, 0, #{hash}, #{heatInc}, #{spamEvidenceInc}, #{legitEvidenceInc})
+			""")
+	int insertAggregation10EmasOnly(String prefix, byte[] hash,
+		double heatInc, double spamEvidenceInc, double legitEvidenceInc);
+
+	@Insert("""
+			insert into NUMBERS_AGGREGATION_100 (PREFIX, CNT, VOTES, SHA1, HEAT, SPAM_EVIDENCE, LEGIT_EVIDENCE)
+			values (#{prefix}, 0, 0, #{hash}, #{heatInc}, #{spamEvidenceInc}, #{legitEvidenceInc})
+			""")
+	int insertAggregation100EmasOnly(String prefix, byte[] hash,
+		double heatInc, double spamEvidenceInc, double legitEvidenceInc);
 	
 	@Insert("insert into NUMBERS_AGGREGATION_10 (PREFIX, CNT, VOTES) values (#{prefix}, #{cnt}, #{votes})")
 	int insertAggregation10(String prefix, int cnt, int votes);

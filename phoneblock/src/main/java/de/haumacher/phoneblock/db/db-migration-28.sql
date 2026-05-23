@@ -1,0 +1,14 @@
+-- Confidence model (issue #337 / epic #300): EMAs at the /10 and /100
+-- aggregation levels. A spammer working a whole block spreads votes thinly
+-- across ~100 numbers; per-number EMAs decay too fast to catch this, but
+-- block-level EMAs see the cumulative pressure. Stored in the same projected
+-- representation as NUMBERS (see migration 27).
+ALTER TABLE NUMBERS_AGGREGATION_10
+	ADD COLUMN HEAT DOUBLE PRECISION DEFAULT 0 NOT NULL,
+	ADD COLUMN SPAM_EVIDENCE DOUBLE PRECISION DEFAULT 0 NOT NULL,
+	ADD COLUMN LEGIT_EVIDENCE DOUBLE PRECISION DEFAULT 0 NOT NULL;
+
+ALTER TABLE NUMBERS_AGGREGATION_100
+	ADD COLUMN HEAT DOUBLE PRECISION DEFAULT 0 NOT NULL,
+	ADD COLUMN SPAM_EVIDENCE DOUBLE PRECISION DEFAULT 0 NOT NULL,
+	ADD COLUMN LEGIT_EVIDENCE DOUBLE PRECISION DEFAULT 0 NOT NULL;

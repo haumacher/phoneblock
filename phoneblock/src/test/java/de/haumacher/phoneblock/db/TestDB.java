@@ -569,6 +569,74 @@ public class TestDB {
 		}
 	}
 
+	/** Raw EMA columns from NUMBERS_AGGREGATION_10 / _100 — for #337 assertions. */
+	private double[] rawAggEmas(String prefix, int blockSize) {
+		String table = blockSize == 10 ? "NUMBERS_AGGREGATION_10" : "NUMBERS_AGGREGATION_100";
+		try (Connection conn = _dataSource.getConnection();
+				PreparedStatement stmt = conn.prepareStatement(
+					"select HEAT, SPAM_EVIDENCE, LEGIT_EVIDENCE from " + table + " where PREFIX = ?")) {
+			stmt.setString(1, prefix);
+			try (ResultSet rs = stmt.executeQuery()) {
+				if (!rs.next()) {
+					return null; // row absent
+				}
+				return new double[] { rs.getDouble(1), rs.getDouble(2), rs.getDouble(3) };
+			}
+		} catch (SQLException ex) {
+			throw new RuntimeException(ex);
+		}
+	}
+
+	@Test
+	void testAggregationEmasPopulatedFlat() {
+		// Issue #337: every vote feeds the EMAs at all three levels (number,
+		// /10, /100) flat — independent of the cnt/votes-promotion path.
+
+		long t = Ema.T0_MILLIS;
+
+		// Positive vote on a brand-new number.
+		processVotes("030555000010", 1, t);
+
+		// Number-level EMAs are populated (covered by #332 — sanity assertion).
+		double[] numberEmas = rawEmas("030555000010");
+		assertTrue(numberEmas[0] > 0, "number HEAT > 0");
+		assertTrue(numberEmas[1] > 0, "number SPAM_EVIDENCE > 0");
+
+		// /10 block (prefix '03055500001'): the row must exist and carry the same
+		// EMA increment (same weight, same time → same projected value).
+		double[] ema10 = rawAggEmas("03055500001", 10);
+		assertNotNull(ema10, "/10 aggregation row must exist after a positive vote");
+		assertEquals(numberEmas[0], ema10[0], 1e-12, "/10 HEAT must equal number HEAT");
+		assertEquals(numberEmas[1], ema10[1], 1e-12, "/10 SPAM_EVIDENCE must equal number SPAM_EVIDENCE");
+		assertEquals(0.0, ema10[2], 0.0);
+
+		// /100 block (prefix '0305550000'): same projection.
+		double[] ema100 = rawAggEmas("0305550000", 100);
+		assertNotNull(ema100, "/100 aggregation row must exist after a positive vote");
+		assertEquals(numberEmas[0], ema100[0], 1e-12, "/100 HEAT must equal number HEAT");
+		assertEquals(numberEmas[1], ema100[1], 1e-12);
+
+		// LEGITIMATE vote on a brand-new number — the existing cnt/votes-promotion
+		// path would not have created an aggregation row at all (votes < 0, rows == 0).
+		// With #337, the EMA path creates rows with cnt=0/votes=0 and carries
+		// LEGIT_EVIDENCE so the block-level decay can later balance it.
+		processVotes("030666000010", -1, t);
+		double[] legitNum = rawEmas("030666000010");
+		assertTrue(legitNum[2] > 0, "LEGIT_EVIDENCE on number");
+
+		double[] legit10 = rawAggEmas("03066600001", 10);
+		assertNotNull(legit10, "/10 row must exist even for a legitimate-only vote (#337)");
+		assertEquals(legitNum[2], legit10[2], 1e-12, "/10 LEGIT_EVIDENCE matches number");
+		assertEquals(0.0, legit10[1], 0.0, "/10 SPAM_EVIDENCE stays 0");
+
+		// Second positive vote in the SAME /10 block — block EMAs grow, cnt-promotion
+		// also moves, but the EMA path is independent and additive.
+		processVotes("030555000011", 1, t + 86_400_000L);
+		double[] ema10After = rawAggEmas("03055500001", 10);
+		assertTrue(ema10After[0] > ema10[0], "/10 HEAT must monotonically grow on a second vote in the block");
+		assertTrue(ema10After[1] > ema10[1], "/10 SPAM_EVIDENCE must monotonically grow");
+	}
+
 	@Test
 	void testWildcardImplicitVoteFlow() {
 		// Issue #333: a report-call on an unknown number must materialise a NUMBERS
