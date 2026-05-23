@@ -65,7 +65,11 @@ public class TestIncrementalBlocklist {
 		// Set minVisibleVotes to 10 (default)
 		_db.setMinVisibleVotes(10);
 
-		long time = 1000;
+		// Anchor near "now" so the confidence-model values (#338) read fresh —
+		// votes here become decoded SPAM_EVIDENCE projected to the request
+		// moment; the synthetic time = 1000 the original tests used would
+		// decay completely by the time the API reads them back.
+		long time = System.currentTimeMillis() - 10_000L;
 
 		// Add votes to a number, crossing the threshold of 10
 		// Each call to processVotes adds the specified votes
@@ -108,7 +112,11 @@ public class TestIncrementalBlocklist {
 		// Set minVisibleVotes to 10
 		_db.setMinVisibleVotes(10);
 
-		long time = 1000;
+		// Anchor near "now" so the confidence-model values (#338) read fresh —
+		// votes here become decoded SPAM_EVIDENCE projected to the request
+		// moment; the synthetic time = 1000 the original tests used would
+		// decay completely by the time the API reads them back.
+		long time = System.currentTimeMillis() - 10_000L;
 
 		// Get initial version
 		long initialVersion = getCurrentVersion();
@@ -138,7 +146,11 @@ public class TestIncrementalBlocklist {
 	void testIncrementalSyncMultipleNumbers() {
 		_db.setMinVisibleVotes(10);
 
-		long time = 1000;
+		// Anchor near "now" so the confidence-model values (#338) read fresh —
+		// votes here become decoded SPAM_EVIDENCE projected to the request
+		// moment; the synthetic time = 1000 the original tests used would
+		// decay completely by the time the API reads them back.
+		long time = System.currentTimeMillis() - 10_000L;
 
 		// Number A: will cross threshold 10
 		for (int i = 0; i < 5; i++) {
@@ -188,7 +200,11 @@ public class TestIncrementalBlocklist {
 	void testDeletionWhenDroppingBelowThreshold() {
 		_db.setMinVisibleVotes(10);
 
-		long time = 1000;
+		// Anchor near "now" so the confidence-model values (#338) read fresh —
+		// votes here become decoded SPAM_EVIDENCE projected to the request
+		// moment; the synthetic time = 1000 the original tests used would
+		// decay completely by the time the API reads them back.
+		long time = System.currentTimeMillis() - 10_000L;
 
 		// Add a number with 10 votes
 		for (int i = 0; i < 5; i++) {
@@ -227,7 +243,11 @@ public class TestIncrementalBlocklist {
 		// Set a lower threshold
 		_db.setMinVisibleVotes(4);
 
-		long time = 1000;
+		// Anchor near "now" so the confidence-model values (#338) read fresh —
+		// votes here become decoded SPAM_EVIDENCE projected to the request
+		// moment; the synthetic time = 1000 the original tests used would
+		// decay completely by the time the API reads them back.
+		long time = System.currentTimeMillis() - 10_000L;
 
 		// Add 4 votes - should cross threshold 4
 		processVotes("0999888777", 2, time++);
@@ -249,7 +269,11 @@ public class TestIncrementalBlocklist {
 	void testEmptyIncrementalUpdate() {
 		_db.setMinVisibleVotes(10);
 
-		long time = 1000;
+		// Anchor near "now" so the confidence-model values (#338) read fresh —
+		// votes here become decoded SPAM_EVIDENCE projected to the request
+		// moment; the synthetic time = 1000 the original tests used would
+		// decay completely by the time the API reads them back.
+		long time = System.currentTimeMillis() - 10_000L;
 
 		// Add a number
 		for (int i = 0; i < 5; i++) {
@@ -271,7 +295,11 @@ public class TestIncrementalBlocklist {
 	void testArchivedNumbersAppearInIncrementalSync() {
 		_db.setMinVisibleVotes(10);
 
-		long time = 1000;
+		// Anchor near "now" so the confidence-model values (#338) read fresh —
+		// votes here become decoded SPAM_EVIDENCE projected to the request
+		// moment; the synthetic time = 1000 the original tests used would
+		// decay completely by the time the API reads them back.
+		long time = System.currentTimeMillis() - 10_000L;
 
 		// Add a number with 10 votes (above minVisibleVotes)
 		for (int i = 0; i < 5; i++) {
@@ -320,7 +348,11 @@ public class TestIncrementalBlocklist {
 	void testRecentActivityTriggersIncrementalUpdate() {
 		_db.setMinVisibleVotes(10);
 
-		long time = 1000;
+		// Anchor near "now" so the confidence-model values (#338) read fresh —
+		// votes here become decoded SPAM_EVIDENCE projected to the request
+		// moment; the synthetic time = 1000 the original tests used would
+		// decay completely by the time the API reads them back.
+		long time = System.currentTimeMillis() - 10_000L;
 
 		// Create a number with 10 votes (crosses threshold 10)
 		for (int i = 0; i < 5; i++) {
@@ -357,7 +389,11 @@ public class TestIncrementalBlocklist {
 	void testLastActivityInFullAndIncrementalSync() {
 		_db.setMinVisibleVotes(10);
 
-		long time = 1000;
+		// Anchor near "now" so the confidence-model values (#338) read fresh —
+		// votes here become decoded SPAM_EVIDENCE projected to the request
+		// moment; the synthetic time = 1000 the original tests used would
+		// decay completely by the time the API reads them back.
+		long time = System.currentTimeMillis() - 10_000L;
 
 		// Create a number with 10 votes
 		for (int i = 0; i < 5; i++) {

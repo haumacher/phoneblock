@@ -457,8 +457,12 @@ public interface SpamReports {
 	 * via {@code NUMBERS_HEAT_IDX} — no {@code EXP()} per row, because every
 	 * row shares the same decay factor at the query moment (see {@link Ema}).</p>
 	 */
+	// Trailing HEAT/SPAM_EVIDENCE/LEGIT_EVIDENCE engage the 19-argument
+	// DBNumberInfo constructor (#338) — toBlocklistEntry derives the displayed
+	// `votes` from the decoded SPAM_EVIDENCE so blocklist consumers see the
+	// same decay-aware semantic as the /api/check responses.
 	@Select("""
-			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.PUBLISHED_LASTPING as LASTPING, s.PUBLISHED_VOTES from NUMBERS s
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.PUBLISHED_LASTPING as LASTPING, s.PUBLISHED_VOTES, s.HEAT, s.SPAM_EVIDENCE, s.LEGIT_EVIDENCE from NUMBERS s
 			where s.ACTIVE and s.VOTES >= #{minVotes}
 			order by s.HEAT desc
 			limit #{limit}
@@ -466,7 +470,7 @@ public interface SpamReports {
 	List<DBNumberInfo> getBlocklistByHeat(int minVotes, int limit);
 
 	@Select("""
-			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.PUBLISHED_LASTPING as LASTPING, s.PUBLISHED_VOTES from NUMBERS s
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.PUBLISHED_LASTPING as LASTPING, s.PUBLISHED_VOTES, s.HEAT, s.SPAM_EVIDENCE, s.LEGIT_EVIDENCE from NUMBERS s
 			where s.ACTIVE and s.VOTES > 0
 			order by s.PHONE
 			""")
@@ -780,13 +784,25 @@ public interface SpamReports {
 
 	/**
 	 * Gets all blocklist changes since the given version.
-	 * Returns entries with VERSION > sinceVersion, including those with votes=0 (deletions).
+	 *
+	 * <p>Returns entries with VERSION > sinceVersion, including those with
+	 * SPAM_EVIDENCE forced to zero for archived rows (deletions).</p>
+	 *
+	 * <p>The trailing HEAT/SPAM_EVIDENCE/LEGIT_EVIDENCE columns feed the
+	 * 19-arg DBNumberInfo constructor (#338) so toBlocklistEntry can derive
+	 * `votes` from the decoded evidence — same semantic as /api/check. For
+	 * archived rows the spam evidence is forced to zero so the resulting
+	 * `votes` is 0 and the client treats the entry as a removal, matching
+	 * the existing incremental-sync contract.</p>
 	 */
 	@Select("""
 		select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS,
 		       CASE WHEN s.ACTIVE THEN s.VOTES ELSE 0 END as VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES,
 		       s.PUBLISHED_LASTPING as LASTPING,
-		       CASE WHEN s.ACTIVE THEN s.PUBLISHED_VOTES ELSE 0 END as PUBLISHED_VOTES
+		       CASE WHEN s.ACTIVE THEN s.PUBLISHED_VOTES ELSE 0 END as PUBLISHED_VOTES,
+		       s.HEAT,
+		       CASE WHEN s.ACTIVE THEN s.SPAM_EVIDENCE ELSE 0 END as SPAM_EVIDENCE,
+		       s.LEGIT_EVIDENCE
 		from NUMBERS s
 		where s.VERSION > #{sinceVersion}
 		order by s.VERSION, s.PHONE

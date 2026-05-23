@@ -1566,9 +1566,21 @@ public class DB {
 			// Invalid number in DB, filter out.
 			return null;
 		}
+		// #338: `votes` is the decay-aware net vote equivalent
+		// (decoded SPAM_EVIDENCE minus decoded LEGIT_EVIDENCE, floored at 0),
+		// not the cumulative DB column. Same semantic as /api/check, so
+		// clients filtering `votes >= minVotes AND !archived` see a smooth
+		// decay through their threshold instead of a binary archive flip.
+		// For archived rows the incremental-sync query forces SPAM_EVIDENCE
+		// to zero, so this naturally yields the legacy `votes=0` removal
+		// signal — the contract for /api/blocklist?since=N is preserved.
+		long now = System.currentTimeMillis();
+		double decodedSpam = Ema.decode(n.getSpamEvidence(), now, Ema.CLASSIFICATION_HALF_LIFE_DAYS);
+		double decodedLegit = Ema.decode(n.getLegitEvidence(), now, Ema.CLASSIFICATION_HALF_LIFE_DAYS);
+		int votes = (int) Math.round(Math.max(0.0, decodedSpam - decodedLegit));
 		return BlockListEntry.create()
 				.setPhone(number.getPlus())
-				.setVotes(n.getPublishedVotes())
+				.setVotes(votes)
 				.setRating(rating(n))
 				.setLastActivity(n.getLastPing());
 	}
@@ -1745,38 +1757,15 @@ public class DB {
 			.setArchived(!info.isActive());
 
 		Rating rating = rating(info);
-		int votesWildcard;
-		if (aggregation100.getCnt() >= MIN_AGGREGATE_100) {
-			votesWildcard = aggregation100.getVotes();
-			if (!info.isActive()) {
-				// Direct votes did not count yet.
-				votesWildcard += info.getVotes();
-			}
 
-			if (aggregation10.getCnt() < MIN_AGGREGATE_10) {
-				// The votes of this number did not yet count to the aggregation of the block.
-				votesWildcard += aggregation10.getVotes();
-			}
-		} else if (aggregation10.getCnt() >= MIN_AGGREGATE_10) {
-			votesWildcard = aggregation10.getVotes();
-			if (!info.isActive()) {
-				// Direct votes did not count yet.
-				votesWildcard += info.getVotes();
-			}
-		} else {
-			votesWildcard = info.getVotes();
-		}
-
-		result.setVotes(info.getVotes());
-		result.setVotesWildcard(votesWildcard);
-		result.setRating(rating);
-
-		// Issue #334: expose the confidence-model surface — decayed Heat and a
-		// Wilson-bound spam confidence. The number-level EMAs come from the
-		// DBNumberInfo specialisation when available; an empty NumberInfo
-		// (unknown number) reads zeros. The aggregation-level evidence is
-		// folded in so freshly-tracked wildcard numbers also show a confidence
-		// reading right away.
+		// Issue #338 (semantic shift for existing clients):
+		// `votes` and `votesWildcard` no longer carry the cumulative-counter
+		// values. They are now `round(decoded SPAM_EVIDENCE)` — the same
+		// vote-equivalent, but decayed to the moment of the API call. A 10-vote
+		// spam number from last week still reads `votes=10`; from four months
+		// ago reads `votes=5`; from a year ago reads `votes=1`. Clients filtering
+		// `votes >= minVotes AND !archived` therefore get a smooth decay through
+		// the threshold instead of a binary archived-flip.
 		long now = System.currentTimeMillis();
 		double rawHeat = 0.0;
 		double rawSpam = 0.0;
@@ -1786,17 +1775,37 @@ public class DB {
 			rawSpam = dbInfo.getSpamEvidence();
 			rawLegit = dbInfo.getLegitEvidence();
 		}
-		// Combine number-level evidence with the larger block view; do not
-		// double-count — the aggregation EMAs already contain the number's
-		// own contribution from #337. Use just the block-level evidence for
-		// the confidence computation; the number-level Heat stands on its own
-		// as the per-number activity reading.
-		double rawBlockSpam = Math.max(aggregation10.getSpamEvidence(), aggregation100.getSpamEvidence());
-		double rawBlockLegit = Math.max(aggregation10.getLegitEvidence(), aggregation100.getLegitEvidence());
-		double decodedSpam = Ema.decode(Math.max(rawSpam, rawBlockSpam), now, Ema.CLASSIFICATION_HALF_LIFE_DAYS);
-		double decodedLegit = Ema.decode(Math.max(rawLegit, rawBlockLegit), now, Ema.CLASSIFICATION_HALF_LIFE_DAYS);
+		double decodedNumberSpam = Ema.decode(rawSpam, now, Ema.CLASSIFICATION_HALF_LIFE_DAYS);
+		double decodedNumberLegit = Ema.decode(rawLegit, now, Ema.CLASSIFICATION_HALF_LIFE_DAYS);
+
+		// votesWildcard reflects the block view: take the larger of /10 and
+		// /100 decoded evidence — concentrated spam dominates via /10,
+		// spread-thin spam via /100. Do not double-count with the number-level
+		// evidence; the aggregation EMAs already contain that contribution
+		// (see #337). Net out the legitimate-evidence as we did historically.
+		double decodedBlockSpam = Math.max(
+			Ema.decode(aggregation10.getSpamEvidence(), now, Ema.CLASSIFICATION_HALF_LIFE_DAYS),
+			Ema.decode(aggregation100.getSpamEvidence(), now, Ema.CLASSIFICATION_HALF_LIFE_DAYS));
+		double decodedBlockLegit = Math.max(
+			Ema.decode(aggregation10.getLegitEvidence(), now, Ema.CLASSIFICATION_HALF_LIFE_DAYS),
+			Ema.decode(aggregation100.getLegitEvidence(), now, Ema.CLASSIFICATION_HALF_LIFE_DAYS));
+
+		// Net evidence — legitimate votes cancel out spam votes on the displayed
+		// counter. Floor at 0 so a contested number cannot read negative.
+		int votes = (int) Math.round(Math.max(0.0, decodedNumberSpam - decodedNumberLegit));
+		int votesWildcard = (int) Math.round(Math.max(0.0, decodedBlockSpam - decodedBlockLegit));
+
+		result.setVotes(votes);
+		result.setVotesWildcard(votesWildcard);
+		result.setRating(rating);
+
+		// Confidence model surface (#334). spamConfidence is the Wilson lower
+		// bound on the block-level evidence — the same view callers see for
+		// the wildcard decision.
 		result.setHeat(Ema.decode(rawHeat, now, Ema.HEAT_HALF_LIFE_DAYS));
-		result.setSpamConfidence(Confidence.spamConfidence(decodedSpam, decodedLegit));
+		result.setSpamConfidence(Confidence.spamConfidence(
+			Math.max(decodedNumberSpam, decodedBlockSpam),
+			Math.max(decodedNumberLegit, decodedBlockLegit)));
 
 		return result;
 	}

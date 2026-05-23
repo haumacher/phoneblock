@@ -918,6 +918,54 @@ public class TestDB {
 	}
 
 	@Test
+	void testApiVotesAreDecayAware() {
+		// Issue #338: PhoneInfo.votes is no longer the raw cumulative counter
+		// but `round(decoded SPAM_EVIDENCE - decoded LEGIT_EVIDENCE)`. Clients
+		// that filter `votes >= minVotes AND !archived` therefore see a
+		// smooth decay through the threshold instead of a binary archive
+		// flip. The raw NUMBERS.VOTES column is unchanged and still drives
+		// the rating; only the API-output `votes` is decay-aware now.
+
+		long fresh = System.currentTimeMillis() - 60_000L;
+		// Two years before t0 — easily six classification half-lives by "now",
+		// so a 10-vote burst decays to ≈ 10 · 2^-6 = 0.16, well below rounding.
+		long ancient = Ema.T0_MILLIS - 2L * 365L * 86_400_000L;
+
+		// Number A: ten fresh SPAM votes — decoded SPAM_EVIDENCE ≈ 10.
+		for (int i = 0; i < 10; i++) {
+			processVotes("030993300010", 1, fresh - i * 1000L);
+		}
+		// Number B: ten ancient SPAM votes — decoded is decayed almost to zero.
+		for (int i = 0; i < 10; i++) {
+			processVotes("030993300020", 1, ancient - i * 1000L);
+		}
+
+		// Cumulative counter assertions remain valid via the DB-level helper.
+		assertEquals(10, _db.getVotesFor("030993300010"));
+		assertEquals(10, _db.getVotesFor("030993300020"));
+
+		PhoneInfo freshApi = _db.getPhoneApiInfo("030993300010");
+		PhoneInfo ancientApi = _db.getPhoneApiInfo("030993300020");
+
+		// API-side votes: fresh number reads ~10, ancient reads near 0.
+		assertTrue(freshApi.getVotes() >= 9 && freshApi.getVotes() <= 11,
+			"Fresh 10-vote number must read votes ≈ 10 (was " + freshApi.getVotes() + ")");
+		assertEquals(0, ancientApi.getVotes(),
+			"Heavily decayed number must read votes = 0 (was " + ancientApi.getVotes() + ")");
+
+		// Number C: ten SPAM votes plus three LEGIT — net spam evidence ≈ 7.
+		for (int i = 0; i < 10; i++) {
+			processVotes("030993300030", 1, fresh - i * 1000L);
+		}
+		for (int i = 0; i < 3; i++) {
+			processVotes("030993300030", -1, fresh - i * 500L);
+		}
+		PhoneInfo netApi = _db.getPhoneApiInfo("030993300030");
+		assertTrue(netApi.getVotes() >= 6 && netApi.getVotes() <= 8,
+			"Mixed SPAM/LEGIT must net out (~10 − 3), was " + netApi.getVotes());
+	}
+
+	@Test
 	void testPhoneApiInfoExposesHeatAndSpamConfidence() {
 		// Issue #334: the /api/check response (PhoneInfo) carries the
 		// decoded heat and a Wilson-bound spamConfidence.
