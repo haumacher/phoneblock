@@ -1444,6 +1444,42 @@ public class DB {
 	}
 
 	/**
+	 * Heat-ranked blocklist for space-constrained clients (#336).
+	 *
+	 * <p>Returns at most {@code limit} entries — the currently-loudest spam
+	 * numbers above the minimum-votes threshold. Designed for Fritz!Box
+	 * phonebooks and dongle-local blocklists where storage is capped: a
+	 * once-loud-now-silent number drops out so a currently-active one takes
+	 * its slot.</p>
+	 *
+	 * <p>This view is <em>not</em> compatible with incremental sync
+	 * ({@code ?since=}): the set of included numbers changes whenever Heat
+	 * shifts, and there is no per-entry version stamp for "evicted from the
+	 * top-N". Clients should refetch the whole list on a schedule (e.g.
+	 * daily) — the same fair-use ceiling that already caps full-blocklist
+	 * fetches applies.</p>
+	 */
+	public Blocklist getBlockListByHeatAPI(int limit) {
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			Users users = session.getMapper(Users.class);
+
+			List<BlockListEntry> numbers = reports.getBlocklistByHeat(_minVisibleVotes, limit)
+					.stream()
+					.map(DB::toBlocklistEntry)
+					.filter(Objects::nonNull)
+					.collect(Collectors.toList());
+
+			String versionStr = users.getProperty("blocklist.version");
+			long version = (versionStr != null) ? Long.parseLong(versionStr) : INITIAL_BLOCKLIST_VERSION;
+
+			return Blocklist.create()
+					.setNumbers(numbers)
+					.setVersion(version);
+		}
+	}
+
+	/**
 	 * Gets blocklist changes since the given version (incremental sync).
 	 * Returns entries with VERSION > sinceVersion.
 	 *

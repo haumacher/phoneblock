@@ -45,6 +45,17 @@ public class BlocklistServlet extends HttpServlet {
 
 	public static final String PATH = "/api/blocklist";
 
+	/**
+	 * Hard cap on the {@code ?limit=N} request parameter (#336).
+	 *
+	 * <p>Caps the Heat-ranked blocklist response at a sensible upper bound so
+	 * a client cannot ask for more than is reasonable. Calibrated for
+	 * Fritz!Box phonebook (~300 entries) and dongle local blocklists (varies
+	 * by hardware). A client that genuinely needs the full list omits the
+	 * parameter and gets the regular blocklist.</p>
+	 */
+	public static final int MAX_HEAT_LIMIT = 5000;
+
 	private static final Logger LOG = LoggerFactory.getLogger(BlocklistServlet.class);
 
 	@Override
@@ -59,8 +70,45 @@ public class BlocklistServlet extends HttpServlet {
 		Blocklist result;
 		String userAgent = req.getHeader("User-Agent");
 
-		// Check if incremental sync is requested via "since" parameter
+		// Heat-ranked variant (#336) for space-constrained clients. The two
+		// modes are mutually exclusive: ?limit= asks for the top-N by current
+		// Heat (no diff semantics — list changes when Heat shifts), ?since=
+		// asks for an incremental diff against a previous version. We reject
+		// the combination rather than picking one silently.
+		String limitParam = req.getParameter("limit");
 		String sinceParam = req.getParameter("since");
+		if (limitParam != null && !limitParam.isEmpty()) {
+			if (sinceParam != null && !sinceParam.isEmpty()) {
+				ServletUtil.sendError(resp,
+					"Parameters 'limit' and 'since' are mutually exclusive: "
+						+ "the Heat-ranked blocklist (?limit=N) is a snapshot, not a diff.");
+				return;
+			}
+			int limit;
+			try {
+				limit = Integer.parseInt(limitParam);
+			} catch (NumberFormatException ex) {
+				ServletUtil.sendError(resp, "Invalid 'limit' parameter: must be a positive integer.");
+				return;
+			}
+			if (limit <= 0) {
+				ServletUtil.sendError(resp, "Parameter 'limit' must be positive.");
+				return;
+			}
+			if (limit > MAX_HEAT_LIMIT) {
+				limit = MAX_HEAT_LIMIT;
+			}
+			result = db.getBlockListByHeatAPI(limit);
+			LOG.info("Sending Heat-ranked blocklist (limit={}, minVotes {}) to user '{}' (agent '{}')",
+				limit, db.getMinVisibleVotes(), userName, userAgent);
+
+			UserSettings cachedSettings = LoginFilter.getUserSettings(req);
+			db.updateLastAccess(userName, System.currentTimeMillis(), userAgent, cachedSettings);
+			ServletUtil.sendResult(req, resp, result);
+			return;
+		}
+
+		// Check if incremental sync is requested via "since" parameter
 		if (sinceParam != null && !sinceParam.isEmpty()) {
 			// Incremental sync: return only changes since the specified version
 			long sinceVersion;

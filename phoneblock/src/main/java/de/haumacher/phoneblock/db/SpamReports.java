@@ -362,6 +362,25 @@ public interface SpamReports {
 			""")
 	List<DBNumberInfo> getLatestBlocklistEntries(int minVotes);
 
+	/**
+	 * Heat-ranked blocklist (#336) — the top {@code limit} active spam numbers
+	 * by current activity, for space-constrained clients (Fritz!Box phonebook,
+	 * dongle local blocklist).
+	 *
+	 * <p>The {@code minVotes} filter still applies — we only return numbers
+	 * that are on the regular blocklist; Heat just decides which fit when the
+	 * client has limited capacity. {@code ORDER BY HEAT DESC} is index-backed
+	 * via {@code NUMBERS_HEAT_IDX} — no {@code EXP()} per row, because every
+	 * row shares the same decay factor at the query moment (see {@link Ema}).</p>
+	 */
+	@Select("""
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.PUBLISHED_LASTPING as LASTPING, s.PUBLISHED_VOTES from NUMBERS s
+			where s.ACTIVE and s.VOTES >= #{minVotes}
+			order by s.HEAT desc
+			limit #{limit}
+			""")
+	List<DBNumberInfo> getBlocklistByHeat(int minVotes, int limit);
+
 	@Select("""
 			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.PUBLISHED_LASTPING as LASTPING, s.PUBLISHED_VOTES from NUMBERS s
 			where s.ACTIVE and s.VOTES > 0

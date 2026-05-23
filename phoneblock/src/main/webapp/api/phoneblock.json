@@ -440,6 +440,17 @@
 					}
 				},
 				{
+					"name": "limit",
+					"in": "query",
+					"description": "Heat-ranked variant for space-constrained clients (Fritz!Box phonebook, dongle local blocklist). When provided, returns at most this many entries — the currently-loudest spam numbers above the minimum-votes threshold, ordered by current activity. A once-loud-now-silent number drops out so a currently-active one takes its slot. This view is NOT compatible with incremental sync: passing both 'limit' and 'since' returns HTTP 400. The set of included numbers changes whenever Heat shifts, and there is no per-entry version stamp for 'evicted from the top-N' — clients should refetch the whole list on a schedule (e.g. daily). The server caps the requested limit at 5000.",
+					"required": false,
+					"schema": {
+						"type": "integer",
+						"minimum": 1,
+						"maximum": 5000
+					}
+				},
+				{
 					"name": "format",
 					"in": "query",
 					"description": "The format to return.",

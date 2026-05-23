@@ -44,6 +44,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
+import de.haumacher.phoneblock.app.api.model.BlockListEntry;
+import de.haumacher.phoneblock.app.api.model.Blocklist;
 import de.haumacher.phoneblock.app.api.model.NumberInfo;
 import de.haumacher.phoneblock.app.api.model.PhoneInfo;
 import de.haumacher.phoneblock.app.api.model.PhoneNumer;
@@ -636,6 +638,50 @@ public class TestDB {
 		double[] ema10After = rawAggEmas("03055500001", 10);
 		assertTrue(ema10After[0] > ema10[0], "/10 HEAT must monotonically grow on a second vote in the block");
 		assertTrue(ema10After[1] > ema10[1], "/10 SPAM_EVIDENCE must monotonically grow");
+	}
+
+	@Test
+	void testHeatRankedBlocklist() {
+		// Issue #336: ?limit=N returns the top-N currently-loudest spam numbers,
+		// ordered by Heat — quiet old numbers drop out so currently-active ones
+		// take their slot.
+		//
+		// All test numbers carry enough votes to clear DEFAULT_MIN_VISIBLE_VOTES.
+
+		long now = System.currentTimeMillis();
+		long oldT = now - 180L * 86_400_000L;  // half a year ago — ≈ 13 Heat half-lives
+
+		int votes = DB.DEFAULT_MIN_VISIBLE_VOTES + 2;
+
+		// Three loud "old" numbers — votes long ago. Heat has decayed strongly.
+		for (int i = 0; i < votes; i++) {
+			processVotes("030992200010", 1, oldT - i * 60_000L);
+			processVotes("030992200020", 1, oldT - i * 60_000L);
+			processVotes("030992200030", 1, oldT - i * 60_000L);
+		}
+
+		// Two "fresh" numbers — same number of votes, but they happened just now.
+		for (int i = 0; i < votes; i++) {
+			processVotes("030992200040", 1, now - i * 60_000L);
+			processVotes("030992200041", 1, now - i * 60_000L);
+		}
+
+		Blocklist top2 = _db.getBlockListByHeatAPI(2);
+		assertNotNull(top2);
+		assertEquals(2, top2.getNumbers().size(), "limit must clip to exactly 2");
+
+		Set<String> topPhones = top2.getNumbers().stream()
+			.map(BlockListEntry::getPhone)
+			.collect(Collectors.toSet());
+
+		// Both fresh numbers must beat the long-dormant ones on Heat ranking.
+		assertTrue(topPhones.contains("+4930992200040"), "fresh number 1 must be in top-2");
+		assertTrue(topPhones.contains("+4930992200041"), "fresh number 2 must be in top-2");
+
+		// Asking for more entries pulls the old ones in too.
+		Blocklist all = _db.getBlockListByHeatAPI(100);
+		assertTrue(all.getNumbers().size() >= 5,
+			"larger limit must include the old numbers as well, was " + all.getNumbers().size());
 	}
 
 	@Test
