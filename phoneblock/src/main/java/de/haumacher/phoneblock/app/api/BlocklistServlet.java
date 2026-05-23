@@ -15,6 +15,7 @@ import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.sync.binary.BlocklistBinaryAdapter;
+import de.haumacher.phoneblock.sync.binary.BlocklistBinaryEncoder;
 import de.haumacher.phoneblock.sync.binary.BlocklistBinaryEncoder.Entry;
 import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.ServletException;
@@ -137,20 +138,23 @@ public class BlocklistServlet extends HttpServlet {
 
 		if (TYPE_COMMUNITY.equals(type)) {
 			// The binary file does not carry per-entry vote counts, so the
-			// user's minVotes preference must be applied server-side here.
+			// user's minVotes preference must be applied server-side here —
+			// for both exact entries and aggregation-driven wildcards.
 			int userMinVotes = Math.max(cachedSettings.getMinVotes(), db.getMinVisibleVotes());
 			Blocklist blocklist = db.getBlockListAPI();
-			LOG.info("Sending binary community blocklist (minVotes {}) to user '{}' (agent '{}')",
-				userMinVotes, userName, userAgent);
+			DB.CommunityBinarySources sources = db.getCommunityBinarySources(userMinVotes);
+			List<Entry> entries = CommunityEntries.from(blocklist, sources, userMinVotes);
+			LOG.info("Sending binary community blocklist ({} entries, minVotes {}) to user '{}' (agent '{}')",
+				entries.size(), userMinVotes, userName, userAgent);
 			resp.setContentType(BINARY_CONTENT_TYPE);
-			BlocklistBinaryAdapter.writeCommunity(resp.getOutputStream(), blocklist, userMinVotes);
+			BlocklistBinaryEncoder.write(resp.getOutputStream(), entries);
 		} else if (TYPE_PERSONAL.equals(type)) {
 			DB.PersonalLists personal = db.getPersonalLists(userName);
 			List<Entry> entries = PersonalEntries.from(personal.blacklist(), personal.whitelist());
 			LOG.info("Sending binary personal blocklist ({} entries) to user '{}' (agent '{}')",
 				entries.size(), userName, userAgent);
 			resp.setContentType(BINARY_CONTENT_TYPE);
-			BlocklistBinaryAdapter.writePersonal(resp.getOutputStream(), entries);
+			BlocklistBinaryEncoder.write(resp.getOutputStream(), entries);
 		} else {
 			ServletUtil.sendError(resp,
 				"Unknown 'type' value '" + type + "': expected '" + TYPE_COMMUNITY + "' or '" + TYPE_PERSONAL + "'.");

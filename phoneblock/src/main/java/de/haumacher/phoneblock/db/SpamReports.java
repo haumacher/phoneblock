@@ -116,12 +116,31 @@ public interface SpamReports {
 	
 	@Select("select PREFIX, CNT, VOTES from NUMBERS_AGGREGATION_10")
 	List<AggregationInfo> getAllAggregation10();
-	
+
+	/**
+	 * 10-block aggregations that meet both thresholds: structural
+	 * ({@code CNT >= minCnt}) and per-user vote ({@code VOTES >= minVotes}).
+	 * Used by the binary blocklist download to materialise wildcard entries
+	 * for a given user.
+	 */
+	@Select("""
+			select PREFIX, CNT, VOTES from NUMBERS_AGGREGATION_10
+			where CNT >= #{minCnt} and VOTES >= #{minVotes}
+			""")
+	List<AggregationInfo> getAggregation10AboveThresholds(int minCnt, int minVotes);
+
 	@Select("select PREFIX, CNT, VOTES from NUMBERS_AGGREGATION_100 where PREFIX = #{prefix}")
 	AggregationInfo getAggregation100(String prefix);
-	
+
 	@Select("select PREFIX, CNT, VOTES from NUMBERS_AGGREGATION_100")
 	List<AggregationInfo> getAllAggregation100();
+
+	/** Counterpart of {@link #getAggregation10AboveThresholds} for 100-blocks. */
+	@Select("""
+			select PREFIX, CNT, VOTES from NUMBERS_AGGREGATION_100
+			where CNT >= #{minCnt} and VOTES >= #{minVotes}
+			""")
+	List<AggregationInfo> getAggregation100AboveThresholds(int minCnt, int minVotes);
 	
 	@Select("""
 			SELECT max(s.LASTPING) 

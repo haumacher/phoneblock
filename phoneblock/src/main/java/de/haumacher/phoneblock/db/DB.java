@@ -1405,6 +1405,71 @@ public class DB {
 		}
 	}
 	
+	/**
+	 * Server-wide inputs that feed the binary community blocklist beyond the
+	 * exact-entry list returned by {@link #getBlockListAPI()}: structural
+	 * wildcard candidates from the aggregation tables, and the explicit
+	 * legitimate-number whitelist.
+	 *
+	 * <p>
+	 * Wildcards are filtered by the server-wide {@link #MIN_AGGREGATE_10} /
+	 * {@link #MIN_AGGREGATE_100} thresholds (a block must hold enough reported
+	 * numbers before it qualifies as a wildcard at all). The user's
+	 * personal {@code minVotes} threshold is applied later by the caller; it
+	 * needs the per-row vote count, which is preserved on
+	 * {@link AggregationInfo}.
+	 * </p>
+	 */
+	public static final class CommunityBinarySources {
+
+		private final List<AggregationInfo> _aggregation10;
+
+		private final List<AggregationInfo> _aggregation100;
+
+		private final Set<String> _whitelist;
+
+		public CommunityBinarySources(List<AggregationInfo> aggregation10, List<AggregationInfo> aggregation100,
+				Set<String> whitelist) {
+			_aggregation10 = aggregation10;
+			_aggregation100 = aggregation100;
+			_whitelist = whitelist;
+		}
+
+		/** 10-blocks with at least {@link DB#MIN_AGGREGATE_10} reported numbers. */
+		public List<AggregationInfo> aggregation10() {
+			return _aggregation10;
+		}
+
+		/** 100-blocks with at least {@link DB#MIN_AGGREGATE_100} qualifying 10-blocks. */
+		public List<AggregationInfo> aggregation100() {
+			return _aggregation100;
+		}
+
+		/** Phone IDs on the global legitimate-number whitelist. */
+		public Set<String> whitelist() {
+			return _whitelist;
+		}
+
+	}
+
+	/**
+	 * Loads the aggregation-driven wildcard candidates and the global
+	 * whitelist in one DB session. Both thresholds are pushed into SQL: the
+	 * server-wide structural threshold ({@link #MIN_AGGREGATE_10} /
+	 * {@link #MIN_AGGREGATE_100}) and the per-user vote threshold
+	 * {@code minVotes} (clamped to a minimum of {@code 1}).
+	 */
+	public CommunityBinarySources getCommunityBinarySources(int minVotes) {
+		int votesThreshold = Math.max(minVotes, 1);
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			List<AggregationInfo> agg10 = reports.getAggregation10AboveThresholds(MIN_AGGREGATE_10, votesThreshold);
+			List<AggregationInfo> agg100 = reports.getAggregation100AboveThresholds(MIN_AGGREGATE_100, votesThreshold);
+			Set<String> whitelist = reports.getWhiteList();
+			return new CommunityBinarySources(agg10, agg100, whitelist);
+		}
+	}
+
 	/** A user's personal black and white phone-ID lists, in raw DB format. */
 	public static final class PersonalLists {
 
