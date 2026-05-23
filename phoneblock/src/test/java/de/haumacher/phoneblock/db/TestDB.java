@@ -909,6 +909,51 @@ public class TestDB {
 	}
 
 	@Test
+	void testReportsAlwaysFeedBlockHeat() {
+		// Issue #337 / follow-up: every call report feeds block-level Heat,
+		// regardless of whether the number is known, whether it is the user's
+		// first report, or whether the block is hot enough for implicit
+		// evidence. The block-level signal is what keeps a wildcard
+		// neighbourhood "current" even before any specific number qualifies
+		// for individual tracking.
+
+		long t = Ema.T0_MILLIS;
+
+		// Cold /10 block: no prior votes anywhere. Report an unknown number.
+		PhoneNumer cold = NumberAnalyzer.analyze("020998877010", "+49");
+		String coldId = NumberAnalyzer.getPhoneId(cold);
+
+		try (SqlSession tx = _db.openSession()) {
+			SpamReports reports = tx.getMapper(SpamReports.class);
+			_db.recordCallOrTrackWildcard(reports, cold, coldId, t, true);
+			tx.commit();
+		}
+
+		// Block-level Heat must be set even though no NUMBERS row exists and
+		// the block was cold.
+		double[] coldBlock = rawAggEmas("02099887701", 10);
+		assertNotNull(coldBlock, "/10 row must exist after report");
+		assertTrue(coldBlock[0] > 0, "block HEAT must rise on a report into a cold block");
+		assertEquals(0.0, coldBlock[1], 0.0, "no SPAM_EVIDENCE for cold-block report");
+
+		// Second report from the same user on the same unknown number — was
+		// previously a no-op, must now still bump block Heat (this fixes the
+		// "block stays current while spammer rotates" requirement).
+		long later = t + 60_000L;
+		try (SqlSession tx = _db.openSession()) {
+			SpamReports reports = tx.getMapper(SpamReports.class);
+			_db.recordCallOrTrackWildcard(reports, cold, coldId, later, false);
+			tx.commit();
+		}
+		double[] coldBlockAfter = rawAggEmas("02099887701", 10);
+		assertTrue(coldBlockAfter[0] > coldBlock[0],
+			"second report from same user on unknown number must still feed block Heat, "
+				+ "was " + coldBlockAfter[0] + " (before " + coldBlock[0] + ")");
+		assertEquals(0.0, coldBlockAfter[1], 0.0,
+			"second report must NOT add SPAM_EVIDENCE (idempotency)");
+	}
+
+	@Test
 	void testBlockSpamEvidenceDecaysOutOfBlocking() {
 		// Issue #337: a block stays wildcard-blocked while its decayed
 		// SPAM_EVIDENCE is above MIN_BLOCK_SPAM_EVIDENCE, and decays out of

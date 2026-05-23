@@ -2005,12 +2005,16 @@ public class DB {
 			String phoneId, long now, boolean firstFromUser) {
 		double heatInc = Ema.increment(Signals.REPORT_CALL_HEAT_WEIGHT, now, Ema.HEAT_HALF_LIFE_DAYS);
 		int updated = reports.recordCall(phoneId, now, heatInc, 0.0);
-		if (updated != 0) {
-			// Existing number — also feed the block-level Heat EMAs (#337).
-			addAggregationEmas(reports, phoneId, heatInc, 0.0, 0.0);
-			return false;
-		}
-		if (!firstFromUser) {
+
+		// Block-level Heat (#337) is fed unconditionally: any report from any
+		// user is activity in the neighbourhood, even if the specific number
+		// stays out of NUMBERS or the user has reported it before. Only the
+		// implicit SPAM_EVIDENCE promotion below is gated on first-from-user
+		// (to avoid the same user piling on) and on the block already being
+		// hot (server-verified — clients cannot fake the range match).
+		addAggregationEmas(reports, phoneId, heatInc, 0.0, 0.0);
+
+		if (updated != 0 || !firstFromUser) {
 			return false;
 		}
 
@@ -2031,9 +2035,10 @@ public class DB {
 		reports.addReport(phoneId, hash, 0, now, heatInc, implicitEvidence, 0.0);
 		// Now that the row exists, bump CALLS once for the call we are reporting.
 		reports.recordCall(phoneId, now, 0.0, 0.0);
-		// Block-level EMAs (#337): the implicit evidence we just credited at the
-		// number level also feeds the /10 and /100 blocks.
-		addAggregationEmas(reports, phoneId, heatInc, implicitEvidence, 0.0);
+		// Block-level EMAs (#337): heatInc already went to the block in the
+		// unconditional path above; only the new implicit-evidence signal
+		// still needs to be promoted.
+		addAggregationEmas(reports, phoneId, 0.0, implicitEvidence, 0.0);
 		return true;
 	}
 
