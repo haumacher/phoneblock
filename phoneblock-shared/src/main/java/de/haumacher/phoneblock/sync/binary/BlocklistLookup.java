@@ -84,8 +84,9 @@ public final class BlocklistLookup {
 	public Verdict lookup(CharSequence digits) {
 		long queryKey = BlocklistRecord.key(digits);
 
-		long exactRecord = (queryKey << BlocklistRecord.KEY_SHIFT);
-		int idx = find(_exact, exactRecord);
+		// Search target: key in bits 63..8, flags zero. find() masks bit 0.
+		long exactTarget = queryKey << BlocklistRecord.KEY_SHIFT;
+		int idx = find(_exact, exactTarget);
 		if (idx >= 0) {
 			return BlocklistRecord.isBlack(_exact[idx]) ? Verdict.SPAM : Verdict.LEGIT;
 		}
@@ -95,8 +96,8 @@ public final class BlocklistLookup {
 				continue;
 			}
 			long truncatedKey = BlocklistRecord.truncate(queryKey, L);
-			long target = truncatedKey << BlocklistRecord.KEY_SHIFT;
-			idx = find(_prefix, target);
+			long prefixTarget = truncatedKey << BlocklistRecord.KEY_SHIFT;
+			idx = find(_prefix, prefixTarget);
 			if (idx >= 0) {
 				return BlocklistRecord.isBlack(_prefix[idx]) ? Verdict.SPAM : Verdict.LEGIT;
 			}
