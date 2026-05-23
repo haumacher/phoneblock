@@ -638,6 +638,51 @@ public class TestDB {
 	}
 
 	@Test
+	void testBlockSpamEvidenceDecaysOutOfBlocking() {
+		// Issue #337: a block stays wildcard-blocked while its decayed
+		// SPAM_EVIDENCE is above MIN_BLOCK_SPAM_EVIDENCE, and decays out of
+		// blocking once the spammer moves on.
+
+		long t0 = Ema.T0_MILLIS;
+
+		// Build a hot /10 block at t0 — four direct votes hit the threshold exactly.
+		processVotes("030777000010", 1, t0);
+		processVotes("030777000011", 1, t0);
+		processVotes("030777000012", 1, t0);
+		processVotes("030777000013", 1, t0);
+
+		PhoneNumer fresh = NumberAnalyzer.analyze("030777000014", "+49");
+		String freshId = NumberAnalyzer.getPhoneId(fresh);
+
+		// Just after the burst the block is hot → implicit tracking fires.
+		try (SqlSession tx = _db.openSession()) {
+			SpamReports reports = tx.getMapper(SpamReports.class);
+			assertTrue(_db.recordCallOrTrackWildcard(reports, fresh, freshId, t0, true),
+				"Hot block at t0 must materialise the row");
+			tx.commit();
+		}
+
+		// A different unknown number in the same /10 — but report it far in the
+		// future. By that point the block's SPAM_EVIDENCE has decayed below the
+		// threshold (4 direct-vote units, classification half-life 125 days).
+		// Three classification half-lives → decoded evidence drops to 4 × 2^-3 = 0.5 < threshold.
+		PhoneNumer later = NumberAnalyzer.analyze("030777000015", "+49");
+		String laterId = NumberAnalyzer.getPhoneId(later);
+		long farFuture = t0 + 3L * Ema.CLASSIFICATION_HALF_LIFE_DAYS * 86_400_000L;
+		try (SqlSession tx = _db.openSession()) {
+			SpamReports reports = tx.getMapper(SpamReports.class);
+			assertFalse(_db.recordCallOrTrackWildcard(reports, later, laterId, farFuture, true),
+				"Block must have decayed out of wildcard-blocking after several half-lives");
+			tx.commit();
+		}
+		try (SqlSession tx = _db.openSession()) {
+			SpamReports reports = tx.getMapper(SpamReports.class);
+			assertNull(reports.getVotes(laterId),
+				"Decayed-out block must not materialise a NUMBERS row for the new number");
+		}
+	}
+
+	@Test
 	void testWildcardImplicitVoteFlow() {
 		// Issue #333: a report-call on an unknown number must materialise a NUMBERS
 		// row only when the number falls into a hot wildcard-blocked /10 (or /100)

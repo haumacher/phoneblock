@@ -141,23 +141,23 @@ public interface SpamReports {
 	@Insert("insert into NUMBERS_AGGREGATION_100 (PREFIX, CNT, VOTES, SHA1) values (#{prefix}, #{cnt}, #{votes}, #{hash})")
 	int insertAggregation100WithHash(String prefix, int cnt, int votes, byte[] hash);
 
-	@Select("select PREFIX, CNT, VOTES from NUMBERS_AGGREGATION_10 where PREFIX = #{prefix}")
+	@Select("select PREFIX, CNT, VOTES, HEAT as heat, SPAM_EVIDENCE as spamEvidence, LEGIT_EVIDENCE as legitEvidence from NUMBERS_AGGREGATION_10 where PREFIX = #{prefix}")
 	AggregationInfo getAggregation10(String prefix);
 
-	@Select("select PREFIX, CNT, VOTES from NUMBERS_AGGREGATION_10 where SHA1 = #{hash}")
+	@Select("select PREFIX, CNT, VOTES, HEAT as heat, SPAM_EVIDENCE as spamEvidence, LEGIT_EVIDENCE as legitEvidence from NUMBERS_AGGREGATION_10 where SHA1 = #{hash}")
 	AggregationInfo getAggregation10ByHash(byte[] hash);
 
-	@Select("select PREFIX, CNT, VOTES from NUMBERS_AGGREGATION_100 where SHA1 = #{hash}")
+	@Select("select PREFIX, CNT, VOTES, HEAT as heat, SPAM_EVIDENCE as spamEvidence, LEGIT_EVIDENCE as legitEvidence from NUMBERS_AGGREGATION_100 where SHA1 = #{hash}")
 	AggregationInfo getAggregation100ByHash(byte[] hash);
 
 	@Select("""
-			select PREFIX, CNT, VOTES from NUMBERS_AGGREGATION_10
+			select PREFIX, CNT, VOTES, HEAT as heat, SPAM_EVIDENCE as spamEvidence, LEGIT_EVIDENCE as legitEvidence from NUMBERS_AGGREGATION_10
 			where SHA1 >= #{low} and SHA1 < #{high} and CNT >= #{minCnt}
 			""")
 	List<AggregationInfo> getAggregation10ByHashPrefix(byte[] low, byte[] high, int minCnt);
 
 	@Select("""
-			select PREFIX, CNT, VOTES from NUMBERS_AGGREGATION_100
+			select PREFIX, CNT, VOTES, HEAT as heat, SPAM_EVIDENCE as spamEvidence, LEGIT_EVIDENCE as legitEvidence from NUMBERS_AGGREGATION_100
 			where SHA1 >= #{low} and SHA1 < #{high} and CNT >= #{minCnt}
 			""")
 	List<AggregationInfo> getAggregation100ByHashPrefix(byte[] low, byte[] high, int minCnt);
@@ -168,13 +168,13 @@ public interface SpamReports {
 	@Update("update NUMBERS_AGGREGATION_100 set SHA1 = #{hash} where PREFIX = #{prefix}")
 	int updateAggregation100Hash(String prefix, byte[] hash);
 	
-	@Select("select PREFIX, CNT, VOTES from NUMBERS_AGGREGATION_10")
+	@Select("select PREFIX, CNT, VOTES, HEAT as heat, SPAM_EVIDENCE as spamEvidence, LEGIT_EVIDENCE as legitEvidence from NUMBERS_AGGREGATION_10")
 	List<AggregationInfo> getAllAggregation10();
-	
-	@Select("select PREFIX, CNT, VOTES from NUMBERS_AGGREGATION_100 where PREFIX = #{prefix}")
+
+	@Select("select PREFIX, CNT, VOTES, HEAT as heat, SPAM_EVIDENCE as spamEvidence, LEGIT_EVIDENCE as legitEvidence from NUMBERS_AGGREGATION_100 where PREFIX = #{prefix}")
 	AggregationInfo getAggregation100(String prefix);
-	
-	@Select("select PREFIX, CNT, VOTES from NUMBERS_AGGREGATION_100")
+
+	@Select("select PREFIX, CNT, VOTES, HEAT as heat, SPAM_EVIDENCE as spamEvidence, LEGIT_EVIDENCE as legitEvidence from NUMBERS_AGGREGATION_100")
 	List<AggregationInfo> getAllAggregation100();
 	
 	@Select("""

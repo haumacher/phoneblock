@@ -128,8 +128,17 @@ public class DB {
 	private static final String BASIC_AUTH_PREFIX = "Basic ";
 
 	public static final int MIN_AGGREGATE_10 = 4;
-	
+
 	public static final int MIN_AGGREGATE_100 = 3;
+
+	/**
+	 * Threshold above which a block's decayed {@code SPAM_EVIDENCE} is treated as
+	 * an active wildcard block (#337). Calibrated against {@link #MIN_AGGREGATE_10}:
+	 * at the reference direct-vote weight of 1.0, four direct votes in the block
+	 * produce 4.0 evidence — the same neighbourhood-pressure the old cnt-based
+	 * threshold demanded, but now decaying with time.
+	 */
+	public static final double MIN_BLOCK_SPAM_EVIDENCE = MIN_AGGREGATE_10;
 
 	/**
 	 * Initial version number for the blocklist.
@@ -1733,6 +1742,28 @@ public class DB {
 	 * cnt10 < 4, cnt100 < 3: nothing qualifies → 0.
 	 * </pre>
 	 */
+	/**
+	 * Decoded block-level {@code SPAM_EVIDENCE} for the given moment (#337).
+	 *
+	 * <p>The /10 and /100 aggregation EMAs are populated flat — every event
+	 * contributes once to each level — so a /100's evidence is the sum across
+	 * its 10-fold-larger neighbourhood, and a /10's is the sum within just its
+	 * 10-block. For a wildcard-block decision we use whichever is larger:
+	 * concentrated spam reaches the threshold via /10, spread-thin spam via
+	 * /100.</p>
+	 *
+	 * <p>This is the decay-aware successor to {@link #computeWildcardVotes} —
+	 * compare against {@link #MIN_BLOCK_SPAM_EVIDENCE} to decide whether a
+	 * block is wildcard-blocked right now. Currently consumed only by
+	 * {@link #recordCallOrTrackWildcard} (#333); the API surface continues to
+	 * use the cumulative-votes path until #334 switches the read side too.</p>
+	 */
+	public double computeBlockSpamEvidence(AggregationInfo agg10, AggregationInfo agg100, long now) {
+		double e10 = Ema.decode(agg10.getSpamEvidence(), now, Ema.CLASSIFICATION_HALF_LIFE_DAYS);
+		double e100 = Ema.decode(agg100.getSpamEvidence(), now, Ema.CLASSIFICATION_HALF_LIFE_DAYS);
+		return Math.max(e10, e100);
+	}
+
 	public int computeWildcardVotes(AggregationInfo aggregation10, AggregationInfo aggregation100) {
 		if (aggregation100.getCnt() >= MIN_AGGREGATE_100) {
 			int votes = aggregation100.getVotes();
@@ -1870,7 +1901,11 @@ public class DB {
 
 		AggregationInfo agg10 = getAggregation10(reports, phoneId);
 		AggregationInfo agg100 = getAggregation100(reports, phoneId);
-		if (computeWildcardVotes(agg10, agg100) <= 0) {
+		// #337: decide on decayed evidence so a once-abused range stops blocking
+		// its future legitimate occupants once the spammer moves on. The
+		// threshold mirrors MIN_AGGREGATE_10 — four direct votes' worth of
+		// spam evidence still in the block.
+		if (computeBlockSpamEvidence(agg10, agg100, now) < MIN_BLOCK_SPAM_EVIDENCE) {
 			return false;
 		}
 
