@@ -3,7 +3,9 @@
  */
 package de.haumacher.phoneblock.app.api;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -139,15 +141,17 @@ public class BlocklistServlet extends HttpServlet {
 		if (TYPE_COMMUNITY.equals(type)) {
 			// The binary file does not carry per-entry vote counts, so the
 			// user's minVotes preference must be applied server-side here —
-			// for both exact entries and aggregation-driven wildcards.
+			// for both exact entries and aggregation-driven wildcards. The
+			// resulting bytes are shared across all users with the same
+			// minVotes via BinaryBlocklistCache.
 			int userMinVotes = Math.max(cachedSettings.getMinVotes(), db.getMinVisibleVotes());
-			Blocklist blocklist = db.getBlockListAPI();
-			DB.CommunityBinarySources sources = db.getCommunityBinarySources(userMinVotes);
-			List<Entry> entries = CommunityEntries.from(blocklist, sources, userMinVotes);
-			LOG.info("Sending binary community blocklist ({} entries, minVotes {}) to user '{}' (agent '{}')",
-				entries.size(), userMinVotes, userName, userAgent);
+			byte[] bytes = BinaryBlocklistCache.getInstance().getOrCompute(userMinVotes,
+					mv -> encodeCommunity(db, mv));
+			LOG.info("Sending binary community blocklist ({} bytes, minVotes {}) to user '{}' (agent '{}')",
+				bytes.length, userMinVotes, userName, userAgent);
 			resp.setContentType(BINARY_CONTENT_TYPE);
-			BlocklistBinaryEncoder.write(resp.getOutputStream(), entries);
+			resp.setContentLength(bytes.length);
+			resp.getOutputStream().write(bytes);
 		} else if (TYPE_PERSONAL.equals(type)) {
 			DB.PersonalLists personal = db.getPersonalLists(userName);
 			List<Entry> entries = PersonalEntries.from(personal.blacklist(), personal.whitelist());
@@ -159,6 +163,19 @@ public class BlocklistServlet extends HttpServlet {
 			ServletUtil.sendError(resp,
 				"Unknown 'type' value '" + type + "': expected '" + TYPE_COMMUNITY + "' or '" + TYPE_PERSONAL + "'.");
 		}
+	}
+
+	private static byte[] encodeCommunity(DB db, int minVotes) {
+		Blocklist blocklist = db.getBlockListAPI();
+		DB.CommunityBinarySources sources = db.getCommunityBinarySources(minVotes);
+		List<Entry> entries = CommunityEntries.from(blocklist, sources, minVotes);
+		ByteArrayOutputStream buf = new ByteArrayOutputStream();
+		try {
+			BlocklistBinaryEncoder.write(buf, entries);
+		} catch (IOException ex) {
+			throw new UncheckedIOException(ex);
+		}
+		return buf.toByteArray();
 	}
 
 }
