@@ -56,10 +56,27 @@ public final class BlocklistLookup {
 		UNKNOWN
 	}
 
+	/**
+	 * Records of the exact section, sorted unsigned-ascending. Each entry is
+	 * a full 15-digit-or-shorter E.164 number encoded per {@link
+	 * BlocklistRecord}. Searched with one binary-search per lookup.
+	 */
 	private final long[] _exact;
 
+	/**
+	 * Records of the prefix section, sorted unsigned-ascending. Each entry
+	 * encodes a wildcard prefix {@code <digits>*}. Searched once per length
+	 * bit set in {@link #_prefixLengths}, from longest to shortest, so the
+	 * longest matching prefix wins.
+	 */
 	private final long[] _prefix;
 
+	/**
+	 * Bitmap of prefix lengths actually present in {@link #_prefix}: bit
+	 * {@code L} (1..15) is set iff the prefix section contains at least one
+	 * entry of exactly {@code L} digits. Drives the wildcard-search loop &mdash;
+	 * unset bits skip a binary search entirely.
+	 */
 	private final int _prefixLengths;
 
 	/**
@@ -72,6 +89,11 @@ public final class BlocklistLookup {
 			decoded.header().prefixLengths());
 	}
 
+	/**
+	 * @param exact          See {@link #_exact}.
+	 * @param prefix         See {@link #_prefix}.
+	 * @param prefixLengths  See {@link #_prefixLengths}.
+	 */
 	BlocklistLookup(long[] exact, long[] prefix, int prefixLengths) {
 		_exact = exact;
 		_prefix = prefix;
