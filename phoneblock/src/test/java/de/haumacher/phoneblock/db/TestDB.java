@@ -954,6 +954,53 @@ public class TestDB {
 	}
 
 	@Test
+	void testWildcardThresholdMatches4MonthMemoryWindow() {
+		// MIN_BLOCK_SPAM_EVIDENCE = 2.0 with CLASSIFICATION_HALF_LIFE_DAYS = 125
+		// means four direct votes hold a block at the threshold after one half-
+		// life (~4 months). Sustained spam keeps it well above; a block that
+		// has gone quiet falls below within a half-life after the last burst.
+
+		long t0 = Ema.T0_MILLIS;
+
+		// Build a hot /10 block at t0 with four positive votes (decoded
+		// evidence at t0 = 4.0, comfortably above the 2.0 threshold).
+		processVotes("030881100010", 1, t0);
+		processVotes("030881100011", 1, t0);
+		processVotes("030881100012", 1, t0);
+		processVotes("030881100013", 1, t0);
+
+		// Just inside the four-month window — half a half-life out, decoded
+		// evidence ≈ 4 · 2^-0.5 ≈ 2.83. Comfortably above 2.0, block still fires.
+		long innerWindow = t0 + (Ema.CLASSIFICATION_HALF_LIFE_DAYS / 2) * 86_400_000L;
+		PhoneNumer insideUnknown = NumberAnalyzer.analyze("030881100020", "+49");
+		String insideUnknownId = NumberAnalyzer.getPhoneId(insideUnknown);
+		try (SqlSession tx = _db.openSession()) {
+			SpamReports reports = tx.getMapper(SpamReports.class);
+			assertTrue(_db.recordCallOrTrackWildcard(reports, insideUnknown, insideUnknownId, innerWindow, true),
+				"Block must still fire inside the four-month memory window");
+			tx.commit();
+		}
+
+		// Use a fresh /10 block so the previous implicit-evidence write does
+		// not contaminate the next assertion.
+		processVotes("030882200010", 1, t0);
+		processVotes("030882200011", 1, t0);
+		processVotes("030882200012", 1, t0);
+		processVotes("030882200013", 1, t0);
+
+		// Two half-lives out — decoded evidence ≈ 4 · 2^-2 = 1.0, below 2.0.
+		long outsideWindow = t0 + 2L * Ema.CLASSIFICATION_HALF_LIFE_DAYS * 86_400_000L;
+		PhoneNumer outsideUnknown = NumberAnalyzer.analyze("030882200020", "+49");
+		String outsideUnknownId = NumberAnalyzer.getPhoneId(outsideUnknown);
+		try (SqlSession tx = _db.openSession()) {
+			SpamReports reports = tx.getMapper(SpamReports.class);
+			assertFalse(_db.recordCallOrTrackWildcard(reports, outsideUnknown, outsideUnknownId, outsideWindow, true),
+				"Block must no longer fire two half-lives out — evidence has decayed below 2.0");
+			tx.commit();
+		}
+	}
+
+	@Test
 	void testBlockSpamEvidenceDecaysOutOfBlocking() {
 		// Issue #337: a block stays wildcard-blocked while its decayed
 		// SPAM_EVIDENCE is above MIN_BLOCK_SPAM_EVIDENCE, and decays out of

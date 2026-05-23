@@ -128,12 +128,32 @@ public class DB {
 
 	/**
 	 * Threshold above which a block's decayed {@code SPAM_EVIDENCE} is treated as
-	 * an active wildcard block (#337). Calibrated against {@link #MIN_AGGREGATE_10}:
-	 * at the reference direct-vote weight of 1.0, four direct votes in the block
-	 * produce 4.0 evidence — the same neighbourhood-pressure the old cnt-based
-	 * threshold demanded, but now decaying with time.
+	 * an active wildcard block (#337).
+	 *
+	 * <p>Calibration notes:</p>
+	 * <ul>
+	 * <li>The old cnt-based system ({@link #MIN_AGGREGATE_10}) required four
+	 *     distinct rated numbers, and {@code archiveReportsWithLowVotes} never
+	 *     adjusted the aggregation {@code CNT} — so once any /10 block reached
+	 *     four it stayed wildcard-blocked forever. That is the
+	 *     "loud-last-year-still-ranked-high" pathology epic #300 is built to
+	 *     fix.</li>
+	 * <li>The new system replaces the eternal cnt with a decaying evidence
+	 *     EMA. Picking the threshold equal to {@code MIN_AGGREGATE_10 = 4}
+	 *     would be much stricter than the old behaviour — four votes a week
+	 *     old already decay to ≈ 3.85 and the block would no longer be
+	 *     wildcard-blocked, even though the old system still considered it
+	 *     hot.</li>
+	 * <li>We therefore set the threshold to <strong>2.0</strong>: four
+	 *     positive votes still hold the block at the threshold after about
+	 *     four months (one classification half-life), giving the
+	 *     neighbourhood the same recency window epic #300 uses for the
+	 *     individual-number classification axis. Sustained spam keeps the
+	 *     value above 2.0; a block that has gone quiet for several
+	 *     half-lives falls below it and the wildcard rule releases it.</li>
+	 * </ul>
 	 */
-	public static final double MIN_BLOCK_SPAM_EVIDENCE = MIN_AGGREGATE_10;
+	public static final double MIN_BLOCK_SPAM_EVIDENCE = 2.0;
 
 	/**
 	 * Minimum decoded {@code HEAT} required to keep a number {@code ACTIVE} (#335).
