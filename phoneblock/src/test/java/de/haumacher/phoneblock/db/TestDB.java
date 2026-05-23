@@ -849,6 +849,43 @@ public class TestDB {
 	}
 
 	@Test
+	void testArchivingNeedsBothHeatAndEvidenceUnderFloor() {
+		// Issue #335 (revised): a number is archived only when BOTH decoded
+		// Heat AND decoded SPAM_EVIDENCE have fallen below their floors.
+		// This protects medium-vote spam numbers from being dropped just
+		// because their Heat has faded — the long-memory classification axis
+		// keeps them on the list until the spam reputation itself has eroded.
+
+		long now = System.currentTimeMillis();
+
+		// Number A: many positive votes a few months ago. Heat has decayed,
+		// but SPAM_EVIDENCE still well above 2.0 — must remain ACTIVE.
+		long fewMonthsAgo = now - 90L * 86_400_000L;
+		for (int i = 0; i < 10; i++) {
+			processVotes("030771100010", 1, fewMonthsAgo);
+		}
+
+		// Number B: same recency but only a single vote — both axes already
+		// fallen below their floors, must be archived.
+		processVotes("030771100020", 1, fewMonthsAgo);
+
+		// Number C: very recent single vote — Heat well above 0.5, must stay.
+		processVotes("030771100030", 1, now - 60_000L);
+
+		_db.archiveOldReports();
+
+		try (SqlSession tx = _db.openSession()) {
+			SpamReports reports = tx.getMapper(SpamReports.class);
+			assertTrue(reports.getPhoneInfo("030771100010").isActive(),
+				"10-vote number at 3 months must remain ACTIVE — SPAM_EVIDENCE still above floor");
+			assertFalse(reports.getPhoneInfo("030771100020").isActive(),
+				"1-vote number at 3 months must be archived — both axes below floor");
+			assertTrue(reports.getPhoneInfo("030771100030").isActive(),
+				"Fresh single-vote number must remain ACTIVE");
+		}
+	}
+
+	@Test
 	void testHeatBasedArchiving() {
 		// Issue #335: a number with Heat below the floor at request time is
 		// archived; a recently-active one stays active.

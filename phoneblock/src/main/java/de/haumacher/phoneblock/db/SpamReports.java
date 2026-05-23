@@ -327,22 +327,30 @@ public interface SpamReports {
 	int archiveReportsWithLowVotes(long before, int minVotes, int weekPerVote);
 
 	/**
-	 * Archive numbers whose decoded Heat has fallen below the floor (#335).
+	 * Archive numbers whose decoded Heat and decoded SPAM_EVIDENCE have both
+	 * fallen below their respective floors (#335).
 	 *
-	 * <p>The {@code maxRawHeat} parameter is computed in Java as the projected
-	 * threshold {@code floor · exp((now − t0)/τ_heat)}, so this WHERE clause
-	 * stays a pure {@code HEAT &lt; ?} comparison — index-backed via
-	 * {@code NUMBERS_HEAT_IDX}, no {@code EXP()} per row.</p>
+	 * <p>The thresholds are pre-projected in Java
+	 * ({@code floor · exp((now − t0)/τ)}), so the WHERE clause stays a pure
+	 * column comparison — the {@code HEAT &lt; ?} part can use
+	 * {@code NUMBERS_HEAT_IDX}, the {@code SPAM_EVIDENCE &lt; ?} filter is a
+	 * row-level predicate on the already-shortlisted rows.</p>
 	 *
-	 * <p>Sets {@code PENDING_UPDATE = true} so {@code BlocklistVersionService}
-	 * picks the {@code ACTIVE} transition up in the next blocklist release.</p>
+	 * <p>Requiring <em>both</em> floors to be crossed before archiving
+	 * matches the long memory of the classification axis: a number that
+	 * still has meaningful spam evidence stays active even if its Heat has
+	 * faded. Sets {@code PENDING_UPDATE = true} so
+	 * {@code BlocklistVersionService} picks the transition up in the next
+	 * blocklist release.</p>
 	 */
 	@Update("""
 			update NUMBERS s
 			set ACTIVE = false, PENDING_UPDATE = true
-			where ACTIVE and s.HEAT < #{maxRawHeat}
+			where ACTIVE
+			  and s.HEAT < #{maxRawHeat}
+			  and s.SPAM_EVIDENCE < #{maxRawSpamEvidence}
 			""")
-	int archiveByHeatBelow(double maxRawHeat);
+	int archiveByHeatAndEvidenceBelow(double maxRawHeat, double maxRawSpamEvidence);
 	
 	@Update("""
 			update NUMBERS s

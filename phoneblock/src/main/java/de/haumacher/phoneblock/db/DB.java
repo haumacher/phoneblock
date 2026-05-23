@@ -161,16 +161,32 @@ public class DB {
 	 * <p>The Heat half-life is two weeks, so a single vote decays to {@code 0.5}
 	 * after that period. A floor of {@code 0.5} therefore says: a number must
 	 * carry at least the residual of one direct vote within the last Heat
-	 * half-life to count as currently active. Anything quieter than that is
-	 * archived on the next sweep — replacing the linear
-	 * {@code archiveReportsWithLowVotes} heuristic.</p>
+	 * half-life to count as currently "active" on the recency axis.</p>
 	 *
-	 * <p>The constant interacts with reports that exclusively carry classification
-	 * evidence (e.g. legitimate-only votes on brand-new numbers): those also feed
-	 * Heat, so a recent report — spam or legitimate — keeps the row active for
-	 * about a Heat half-life.</p>
+	 * <p>Heat alone is not enough to archive though: a 10-vote spam number
+	 * would otherwise fall off the list after just two months, whereas the
+	 * old vote-with-age heuristic kept it ~5 months. See
+	 * {@link #MIN_SPAM_EVIDENCE_FOR_ACTIVE} — both floors must be crossed
+	 * before a number is archived.</p>
 	 */
 	public static final double HEAT_FLOOR_FOR_ACTIVE = 0.5;
+
+	/**
+	 * Minimum decoded {@code SPAM_EVIDENCE} required to keep a number
+	 * {@code ACTIVE} (#335). The classification half-life is four months, so
+	 * a {@code 2.0} floor means a number stays active until its accumulated
+	 * spam evidence — projected forward — would no longer represent two
+	 * direct-vote-equivalents within the last classification half-life.
+	 *
+	 * <p>Together with {@link #HEAT_FLOOR_FOR_ACTIVE} this produces an
+	 * archiving curve that tracks the old vote-with-age heuristic at the low
+	 * end (a single-vote number is archived after ~14 d, just as before),
+	 * matches it for medium counts (a 10-vote number stays ~10 months, the
+	 * old system kept it ~5 months), and tames the original
+	 * "loud-last-year-still-ranked-high" pathology at the top (a 100-vote
+	 * number is archived after ~23 months instead of 5.5 years).</p>
+	 */
+	public static final double MIN_SPAM_EVIDENCE_FOR_ACTIVE = 2.0;
 
 	/**
 	 * Initial version number for the blocklist.
@@ -2364,18 +2380,24 @@ public class DB {
 		LOG.info("Starting DB cleanup.");
 
 		long now = System.currentTimeMillis();
-		// Issue #335: archive on decayed Heat instead of the old linear
-		// vote-with-age heuristic. Push the floor comparison into projected
-		// space so the WHERE clause is a plain HEAT < ? on the index.
+		// Issue #335: archive on the two decay axes simultaneously. Heat alone
+		// would fall off in ~2 months at moderate vote counts; SPAM_EVIDENCE
+		// alone would hold legitimate-only-with-old-spam rows. Both floors
+		// must be crossed. The thresholds are pre-projected here so the SQL
+		// WHERE clause is a plain column comparison.
 		double maxRawHeat = Ema.projectedThreshold(HEAT_FLOOR_FOR_ACTIVE, now, Ema.HEAT_HALF_LIFE_DAYS);
+		double maxRawSpamEvidence = Ema.projectedThreshold(MIN_SPAM_EVIDENCE_FOR_ACTIVE,
+			now, Ema.CLASSIFICATION_HALF_LIFE_DAYS);
 
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 
-			int archived = reports.archiveByHeatBelow(maxRawHeat);
+			int archived = reports.archiveByHeatAndEvidenceBelow(maxRawHeat, maxRawSpamEvidence);
 
-			LOG.info("Archived {} reports by Heat (floor={}, projected threshold={}).",
-				archived, HEAT_FLOOR_FOR_ACTIVE, maxRawHeat);
+			LOG.info("Archived {} reports (heatFloor={}, spamEvidenceFloor={}, " +
+				"projected heat={}, projected spamEvidence={}).",
+				archived, HEAT_FLOOR_FOR_ACTIVE, MIN_SPAM_EVIDENCE_FOR_ACTIVE,
+				maxRawHeat, maxRawSpamEvidence);
 
 			session.commit();
 		} catch (Exception ex) {
