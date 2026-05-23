@@ -13,6 +13,7 @@ import de.haumacher.phoneblock.app.api.model.Blocklist;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.settings.UserSettings;
+import de.haumacher.phoneblock.sync.binary.BlocklistBinaryAdapter;
 import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -45,6 +46,12 @@ public class BlocklistServlet extends HttpServlet {
 
 	public static final String PATH = "/api/blocklist";
 
+	/** Value of the {@code format} query parameter requesting the on-device binary format. */
+	public static final String FORMAT_BINARY = "binary";
+
+	/** Content type emitted for {@link #FORMAT_BINARY}. */
+	public static final String BINARY_CONTENT_TYPE = "application/octet-stream";
+
 	private static final Logger LOG = LoggerFactory.getLogger(BlocklistServlet.class);
 
 	@Override
@@ -59,8 +66,15 @@ public class BlocklistServlet extends HttpServlet {
 		Blocklist result;
 		String userAgent = req.getHeader("User-Agent");
 
+		boolean binary = FORMAT_BINARY.equals(req.getParameter("format"));
+
 		// Check if incremental sync is requested via "since" parameter
 		String sinceParam = req.getParameter("since");
+		if (binary && sinceParam != null && !sinceParam.isEmpty()) {
+			ServletUtil.sendError(resp,
+				"Incremental sync is not supported with format=binary; omit the 'since' parameter.");
+			return;
+		}
 		if (sinceParam != null && !sinceParam.isEmpty()) {
 			// Incremental sync: return only changes since the specified version
 			long sinceVersion;
@@ -92,7 +106,13 @@ public class BlocklistServlet extends HttpServlet {
 
 		UserSettings cachedSettings = LoginFilter.getUserSettings(req);
 		db.updateLastAccess(userName, System.currentTimeMillis(), userAgent, cachedSettings);
-		ServletUtil.sendResult(req, resp, result);
+
+		if (binary) {
+			resp.setContentType(BINARY_CONTENT_TYPE);
+			BlocklistBinaryAdapter.write(resp.getOutputStream(), result);
+		} else {
+			ServletUtil.sendResult(req, resp, result);
+		}
 	}
 
 }
