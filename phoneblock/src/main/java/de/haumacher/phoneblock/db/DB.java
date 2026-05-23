@@ -1784,6 +1784,58 @@ public class DB {
 	}
 
 	/**
+	 * Records an incoming spam-call report (Heat signal).
+	 *
+	 * <p>For an existing {@code NUMBERS} row this is exactly what
+	 * {@link SpamReports#recordCall} already does — bump {@code CALLS},
+	 * refresh {@code LASTPING}, add a Heat EMA increment.</p>
+	 *
+	 * <p>For an unknown number the call is normally ignored to keep clients
+	 * from polluting the database. Issue #333 adds a single exception: if
+	 * the server itself confirms that the number falls into a hot wildcard
+	 * block (its {@code /10} or {@code /100} aggregation crosses the block
+	 * threshold), a {@code NUMBERS} row is created with no direct votes but
+	 * with implicit {@code SPAM_EVIDENCE} weighted at half a direct vote
+	 * ({@link Signals#IMPLICIT_VOTE_EVIDENCE_WEIGHT}). The wildcard match is
+	 * derived server-side from the aggregation tables, so clients cannot
+	 * fake it — this is not a pollution vector.</p>
+	 *
+	 * <p>Implicit evidence is gated on {@code firstFromUser}: each user
+	 * contributes evidence at most once per number. Later reports from the
+	 * same user (the {@code CALLERS} row already exists, so
+	 * {@code firstFromUser == false}) still contribute Heat via the regular
+	 * {@code recordCall} path, but they do not pile up evidence.</p>
+	 *
+	 * @param firstFromUser whether this is the user's first report for this
+	 *                      number, as observed via {@code users.addCall(...) == 0}.
+	 * @return {@code true} if this call materialised a new {@code NUMBERS}
+	 *         row via the wildcard-implicit-evidence path.
+	 */
+	public boolean recordCallOrTrackWildcard(SpamReports reports, PhoneNumer number,
+			String phoneId, long now, boolean firstFromUser) {
+		double heatInc = Ema.increment(Signals.REPORT_CALL_HEAT_WEIGHT, now, Ema.HEAT_HALF_LIFE_DAYS);
+		int updated = reports.recordCall(phoneId, now, heatInc, 0.0);
+		if (updated != 0 || !firstFromUser) {
+			return false;
+		}
+
+		AggregationInfo agg10 = getAggregation10(reports, phoneId);
+		AggregationInfo agg100 = getAggregation100(reports, phoneId);
+		if (computeWildcardVotes(agg10, agg100) <= 0) {
+			return false;
+		}
+
+		double implicitEvidence = Ema.increment(Signals.IMPLICIT_VOTE_EVIDENCE_WEIGHT,
+			now, Ema.CLASSIFICATION_HALF_LIFE_DAYS);
+		byte[] hash = NumberAnalyzer.getPhoneHash(number);
+		// Create the row with no direct votes — only implicit evidence and Heat.
+		reports.addReport(phoneId, hash, 0, now, heatInc, implicitEvidence, 0.0);
+		// Now that the row exists, bump CALLS once for the call we are reporting.
+		reports.recordCall(phoneId, now, 0.0, 0.0);
+		return true;
+	}
+
+	/**
 	 * Records a search hit for the given phone number.
 	 *
 	 * <p>Issue #332: a search is a weak Heat signal (no classification impact).

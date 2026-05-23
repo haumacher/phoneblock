@@ -55,6 +55,15 @@ public final class Signals {
 	/** Comment submission: Heat only — the comment's rating already drives classification via the vote path. */
 	public static final double COMMENT_HEAT_WEIGHT = 0.5;
 
+	/**
+	 * Implicit spam evidence weight for an unknown number that was blocked by
+	 * a wildcard rule (#333). The server confirms the wildcard match itself
+	 * — the client cannot fake it — so the report counts towards classification,
+	 * but at half the weight of a direct user vote. Tunable knob, deliberate
+	 * starting point per issue #300 / #333.
+	 */
+	public static final double IMPLICIT_VOTE_EVIDENCE_WEIGHT = 0.5;
+
 	private Signals() {
 		// no instances
 	}

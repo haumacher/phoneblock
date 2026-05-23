@@ -570,6 +570,72 @@ public class TestDB {
 	}
 
 	@Test
+	void testWildcardImplicitVoteFlow() {
+		// Issue #333: a report-call on an unknown number must materialise a NUMBERS
+		// row only when the number falls into a hot wildcard-blocked /10 (or /100)
+		// block. Idempotency uses the "first report from this user" flag.
+
+		long now = Ema.T0_MILLIS;
+
+		// Build a hot /10 block "0301234567_": four neighbours cross MIN_AGGREGATE_10.
+		processVotes("030123456700", 1, now);
+		processVotes("030123456701", 1, now);
+		processVotes("030123456702", 1, now);
+		processVotes("030123456703", 1, now);
+
+		PhoneNumer hotUnknown = NumberAnalyzer.analyze("030123456704", "+49");
+		String hotUnknownId = NumberAnalyzer.getPhoneId(hotUnknown);
+
+		// Sanity: the number is not yet in NUMBERS.
+		try (SqlSession tx = _db.openSession()) {
+			SpamReports reports = tx.getMapper(SpamReports.class);
+			assertNull(reports.getVotes(hotUnknownId));
+		}
+
+		// First report from this user for the hot-unknown number — must create the row.
+		try (SqlSession tx = _db.openSession()) {
+			SpamReports reports = tx.getMapper(SpamReports.class);
+			boolean materialized = _db.recordCallOrTrackWildcard(reports, hotUnknown, hotUnknownId, now, true);
+			assertTrue(materialized, "Hot wildcard block must materialise the row");
+			tx.commit();
+		}
+		double[] firstReport = rawEmas(hotUnknownId);
+		assertEquals(0, _db.getVotesFor(hotUnknownId), "Direct VOTES must stay 0 — implicit only");
+		assertTrue(firstReport[0] > 0, "HEAT must be set by the implicit report");
+		assertTrue(firstReport[1] > 0, "SPAM_EVIDENCE must be set by the implicit report");
+		assertEquals(0.0, firstReport[2], 0.0, "LEGIT_EVIDENCE must stay 0");
+
+		// Second report from the SAME user — row exists now, only Heat grows;
+		// SPAM_EVIDENCE must not be inflated a second time.
+		long later = now + 60_000L;
+		try (SqlSession tx = _db.openSession()) {
+			SpamReports reports = tx.getMapper(SpamReports.class);
+			boolean materialized = _db.recordCallOrTrackWildcard(reports, hotUnknown, hotUnknownId, later, false);
+			assertFalse(materialized, "Second report must not create a new row");
+			tx.commit();
+		}
+		double[] secondReport = rawEmas(hotUnknownId);
+		assertTrue(secondReport[0] > firstReport[0], "HEAT must grow on the second report");
+		assertEquals(firstReport[1], secondReport[1], 1e-12,
+			"SPAM_EVIDENCE must NOT grow on a second report from the same user");
+
+		// Unknown number in a *cold* range (no wildcard block) — must stay unknown.
+		PhoneNumer coldUnknown = NumberAnalyzer.analyze("020987654321", "+49");
+		String coldUnknownId = NumberAnalyzer.getPhoneId(coldUnknown);
+		try (SqlSession tx = _db.openSession()) {
+			SpamReports reports = tx.getMapper(SpamReports.class);
+			boolean materialized = _db.recordCallOrTrackWildcard(reports, coldUnknown, coldUnknownId, now, true);
+			assertFalse(materialized, "Cold range must not materialise the row");
+			tx.commit();
+		}
+		try (SqlSession tx = _db.openSession()) {
+			SpamReports reports = tx.getMapper(SpamReports.class);
+			assertNull(reports.getVotes(coldUnknownId),
+				"Cold-range report must not create a NUMBERS row");
+		}
+	}
+
+	@Test
 	void testConfidenceModelEmaPopulation() {
 		// A positive vote populates HEAT and SPAM_EVIDENCE; LEGIT_EVIDENCE stays at 0.
 		// Use a time near t0 to keep the projected values within close range of the weight.
