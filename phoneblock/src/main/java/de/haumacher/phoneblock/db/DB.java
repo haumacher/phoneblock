@@ -1454,20 +1454,55 @@ public class DB {
 
 	/**
 	 * Loads the aggregation-driven wildcard candidates and the global
-	 * whitelist in one DB session. Both thresholds are pushed into SQL: the
-	 * server-wide structural threshold ({@link #MIN_AGGREGATE_10} /
-	 * {@link #MIN_AGGREGATE_100}) and the per-user vote threshold
-	 * {@code minVotes} (clamped to a minimum of {@code 1}).
+	 * whitelist in one DB session. Two thresholds are pushed into SQL per
+	 * aggregation level: the server-wide structural threshold
+	 * ({@link #MIN_AGGREGATE_10} / {@link #MIN_AGGREGATE_100}) on
+	 * {@code CNT}, and a per-user vote threshold on {@code VOTES} scaled by
+	 * the structural minimum — see {@link #wildcardVotesThreshold10} and
+	 * {@link #wildcardVotesThreshold100} for the math.
 	 */
 	public CommunityBinarySources getCommunityBinarySources(int minVotes) {
-		int votesThreshold = Math.max(minVotes, 1);
+		int clamped = Math.max(minVotes, 1);
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			List<AggregationInfo> agg10 = reports.getAggregation10AboveThresholds(MIN_AGGREGATE_10, votesThreshold);
-			List<AggregationInfo> agg100 = reports.getAggregation100AboveThresholds(MIN_AGGREGATE_100, votesThreshold);
+			List<AggregationInfo> agg10 = reports.getAggregation10AboveThresholds(
+					MIN_AGGREGATE_10, wildcardVotesThreshold10(clamped));
+			List<AggregationInfo> agg100 = reports.getAggregation100AboveThresholds(
+					MIN_AGGREGATE_100, wildcardVotesThreshold100(clamped));
 			Set<String> whitelist = reports.getWhiteList();
 			return new CommunityBinarySources(agg10, agg100, whitelist);
 		}
+	}
+
+	/**
+	 * Votes threshold for a 10-block wildcard given the user's per-number
+	 * {@code minVotes}. A 10-block becomes a wildcard candidate at
+	 * {@link #MIN_AGGREGATE_10} distinct reported numbers; we require that
+	 * at the structural floor each contributing number could have cleared
+	 * the user's per-number bar, i.e. {@code MIN_AGGREGATE_10 * minVotes}.
+	 *
+	 * <p>
+	 * Caller must clamp {@code minVotes} to {@code >= 1} beforehand.
+	 * </p>
+	 */
+	public static int wildcardVotesThreshold10(int minVotes) {
+		return MIN_AGGREGATE_10 * minVotes;
+	}
+
+	/**
+	 * Votes threshold for a 100-block wildcard. A 100-block needs
+	 * {@link #MIN_AGGREGATE_100} qualifying 10-sub-blocks, each of which
+	 * itself implies {@link #MIN_AGGREGATE_10} contributing numbers — so
+	 * scaling the user's per-number {@code minVotes} by both structural
+	 * minimums yields the threshold {@code MIN_AGGREGATE_100 *
+	 * MIN_AGGREGATE_10 * minVotes}.
+	 *
+	 * <p>
+	 * Caller must clamp {@code minVotes} to {@code >= 1} beforehand.
+	 * </p>
+	 */
+	public static int wildcardVotesThreshold100(int minVotes) {
+		return MIN_AGGREGATE_100 * MIN_AGGREGATE_10 * minVotes;
 	}
 
 	/** A user's personal black and white phone-ID lists, in raw DB format. */

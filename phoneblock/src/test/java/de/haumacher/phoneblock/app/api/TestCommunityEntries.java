@@ -114,6 +114,26 @@ class TestCommunityEntries {
 	}
 
 	@Test
+	void wildcardVotesThresholdScalesByAggregationFloor() {
+		// 10-block floor: MIN_AGGREGATE_10 (= 4) distinct numbers, each at minVotes.
+		assertEquals(4 * 1, DB.wildcardVotesThreshold10(1));
+		assertEquals(4 * 4, DB.wildcardVotesThreshold10(4));
+		assertEquals(4 * 10, DB.wildcardVotesThreshold10(10));
+
+		// 100-block floor: MIN_AGGREGATE_100 * MIN_AGGREGATE_10 (= 3 * 4 = 12)
+		// implied numbers, each at minVotes.
+		assertEquals(12 * 1, DB.wildcardVotesThreshold100(1));
+		assertEquals(12 * 4, DB.wildcardVotesThreshold100(4));
+		assertEquals(12 * 10, DB.wildcardVotesThreshold100(10));
+
+		// 100-block threshold is always 3x the 10-block threshold.
+		for (int mv : new int[] { 1, 4, 10, 25 }) {
+			assertEquals(3 * DB.wildcardVotesThreshold10(mv), DB.wildcardVotesThreshold100(mv),
+				"100-block threshold = 3x 10-block at minVotes=" + mv);
+		}
+	}
+
+	@Test
 	void phoneIdToE164DigitsHandlesNationalAndInternational() {
 		// National 030123456 has the trunk-prefix 0; toInternationalFormat
 		// drops it and prepends +49 → +4930123456 → 4930123456.
