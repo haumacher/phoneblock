@@ -16,11 +16,13 @@ import org.junit.jupiter.api.Test;
 import de.haumacher.phoneblock.app.api.model.BlockListEntry;
 import de.haumacher.phoneblock.app.api.model.Blocklist;
 import de.haumacher.phoneblock.app.api.model.Rating;
+import de.haumacher.phoneblock.sync.binary.BlocklistBinaryDecoder.DecodedBlocklist;
+import de.haumacher.phoneblock.sync.binary.BlocklistBinaryEncoder.Entry;
 import de.haumacher.phoneblock.sync.binary.BlocklistLookup.Verdict;
 
 /**
- * Tests {@link BlocklistBinaryAdapter}: phone-string normalisation and
- * end-to-end Blocklist-to-binary-to-lookup round trip.
+ * Tests {@link BlocklistBinaryAdapter}: phone-string normalisation, vote
+ * filtering and the end-to-end Blocklist-to-binary-to-lookup round trip.
  */
 class TestBlocklistBinaryAdapter {
 
@@ -60,63 +62,100 @@ class TestBlocklistBinaryAdapter {
 
 	@Test
 	void endToEndDownloadDecodesToSpamLookup() throws IOException {
-		Blocklist blocklist = Blocklist.create()
-			.setVersion(1234L)
-			.setNumbers(List.of(
-				entry("+4930123456", 5),
-				entry("+18886749072", 7),
-				entry("+4915112345678", 3)));
+		Blocklist blocklist = community(
+			entry("+4930123456", 5),
+			entry("+18886749072", 7),
+			entry("+4915112345678", 3));
 
-		ByteArrayOutputStream buf = new ByteArrayOutputStream();
-		BlocklistBinaryAdapter.write(buf, blocklist);
+		BlocklistLookup community = communityLookup(write(blocklist, List.of(), 1));
 
-		BlocklistLookup lookup = BlocklistLookup.of(
-			BlocklistBinaryDecoder.read(new ByteArrayInputStream(buf.toByteArray())));
-
-		assertEquals(Verdict.SPAM, lookup.lookup("4930123456"));
-		assertEquals(Verdict.SPAM, lookup.lookup("18886749072"));
-		assertEquals(Verdict.SPAM, lookup.lookup("4915112345678"));
-		assertEquals(Verdict.UNKNOWN, lookup.lookup("4930999999"));
+		assertEquals(Verdict.SPAM, community.lookup("4930123456"));
+		assertEquals(Verdict.SPAM, community.lookup("18886749072"));
+		assertEquals(Verdict.SPAM, community.lookup("4915112345678"));
+		assertEquals(Verdict.UNKNOWN, community.lookup("4930999999"));
 	}
 
 	@Test
-	void deletionMarkersAreFiltered() throws IOException {
-		Blocklist blocklist = Blocklist.create()
-			.setVersion(2L)
-			.setNumbers(List.of(
-				entry("+4930123456", 5),
-				entry("+4930999999", 0)));
+	void minVotesDropsLowConfidenceEntries() throws IOException {
+		Blocklist blocklist = community(
+			entry("+4930111", 10),
+			entry("+4930222", 5),
+			entry("+4930333", 2));
 
-		ByteArrayOutputStream buf = new ByteArrayOutputStream();
-		BlocklistBinaryAdapter.write(buf, blocklist);
+		BlocklistLookup community = communityLookup(write(blocklist, List.of(), 5));
 
-		BlocklistLookup lookup = BlocklistLookup.of(
-			BlocklistBinaryDecoder.read(new ByteArrayInputStream(buf.toByteArray())));
+		assertEquals(Verdict.SPAM, community.lookup("4930111"), "10 votes >= threshold 5");
+		assertEquals(Verdict.SPAM, community.lookup("4930222"), "5 votes >= threshold 5");
+		assertEquals(Verdict.UNKNOWN, community.lookup("4930333"), "2 votes < threshold 5");
+	}
 
-		assertEquals(Verdict.SPAM, lookup.lookup("4930123456"));
-		assertEquals(Verdict.UNKNOWN, lookup.lookup("4930999999"));
+	@Test
+	void minVotesBelowOneIsClampedToOne() throws IOException {
+		Blocklist blocklist = community(
+			entry("+4930111", 1),
+			entry("+4930222", 0));
+
+		BlocklistLookup community = communityLookup(write(blocklist, List.of(), 0));
+
+		assertEquals(Verdict.SPAM, community.lookup("4930111"),
+			"votes=1 survives clamp threshold 1");
+		assertEquals(Verdict.UNKNOWN, community.lookup("4930222"),
+			"deletion-marker votes=0 always dropped");
+	}
+
+	@Test
+	void personalEntriesGoIntoPersonalSection() throws IOException {
+		Blocklist blocklist = community(entry("+4930123", 5));
+		List<Entry> personal = List.of(
+			new Entry("4930123", false, false),
+			new Entry("999", true, true));
+
+		DecodedBlocklist decoded = decode(write(blocklist, personal, 1));
+
+		BlocklistLookup community = BlocklistLookup.of(decoded.community());
+		BlocklistLookup personalLookup = BlocklistLookup.of(decoded.personal());
+
+		assertEquals(Verdict.SPAM, community.lookup("4930123"));
+		assertEquals(Verdict.LEGIT, personalLookup.lookup("4930123"),
+			"personal white overrides community black");
+		assertEquals(Verdict.SPAM, personalLookup.lookup("9991234"),
+			"personal wildcard black hits");
 	}
 
 	@Test
 	void malformedEntriesAreSkippedNotFatal() throws IOException {
-		Blocklist blocklist = Blocklist.create()
-			.setVersion(1L)
-			.setNumbers(List.of(
-				entry("4930123456", 5),
-				entry("+4930111", 4),
-				entry("garbage", 3),
-				entry("+", 2)));
+		Blocklist blocklist = community(
+			entry("4930123456", 5),
+			entry("+4930111", 4),
+			entry("garbage", 3),
+			entry("+", 2));
 
-		ByteArrayOutputStream buf = new ByteArrayOutputStream();
-		BlocklistBinaryAdapter.write(buf, blocklist);
+		BlocklistLookup community = communityLookup(write(blocklist, List.of(), 1));
 
-		BlocklistLookup lookup = BlocklistLookup.of(
-			BlocklistBinaryDecoder.read(new ByteArrayInputStream(buf.toByteArray())));
-
-		assertEquals(Verdict.SPAM, lookup.lookup("4930111"),
+		assertEquals(Verdict.SPAM, community.lookup("4930111"),
 			"the one valid +-prefixed entry survives");
-		assertEquals(Verdict.UNKNOWN, lookup.lookup("4930123456"),
+		assertEquals(Verdict.UNKNOWN, community.lookup("4930123456"),
 			"bare national input is rejected");
+	}
+
+	private static byte[] write(Blocklist community, List<Entry> personal, int minVotes) throws IOException {
+		ByteArrayOutputStream buf = new ByteArrayOutputStream();
+		BlocklistBinaryAdapter.write(buf, community, personal, minVotes);
+		return buf.toByteArray();
+	}
+
+	private static DecodedBlocklist decode(byte[] bytes) throws IOException {
+		return BlocklistBinaryDecoder.read(new ByteArrayInputStream(bytes));
+	}
+
+	private static BlocklistLookup communityLookup(byte[] bytes) throws IOException {
+		return BlocklistLookup.of(decode(bytes).community());
+	}
+
+	private static Blocklist community(BlockListEntry... rows) {
+		return Blocklist.create()
+			.setVersion(1L)
+			.setNumbers(List.of(rows));
 	}
 
 	private static BlockListEntry entry(String phone, int votes) {

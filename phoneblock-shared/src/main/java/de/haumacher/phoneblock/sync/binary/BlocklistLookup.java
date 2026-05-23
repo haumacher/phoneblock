@@ -3,7 +3,7 @@
  */
 package de.haumacher.phoneblock.sync.binary;
 
-import de.haumacher.phoneblock.sync.binary.BlocklistBinaryDecoder.DecodedBlocklist;
+import de.haumacher.phoneblock.sync.binary.BlocklistBinaryDecoder.DecodedList;
 
 /**
  * Reference implementation of the on-device blocklist lookup, used for testing
@@ -80,13 +80,15 @@ public final class BlocklistLookup {
 	private final int _prefixLengths;
 
 	/**
-	 * Builds a lookup over a decoded blocklist.
+	 * Builds a lookup over one decoded list (community or personal). Lookups
+	 * over the community and personal sections of a file each get their own
+	 * instance; the caller composes them (see the class-level javadoc).
 	 */
-	public static BlocklistLookup of(DecodedBlocklist decoded) {
+	public static BlocklistLookup of(DecodedList list) {
 		return new BlocklistLookup(
-			decoded.exactRecords(),
-			decoded.prefixRecords(),
-			decoded.header().prefixLengths());
+			list.exactRecords(),
+			list.prefixRecords(),
+			list.header().prefixLengths());
 	}
 
 	/**

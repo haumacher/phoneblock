@@ -194,7 +194,8 @@ class TestBlocklistLookup {
 	private static BlocklistLookup build(Entry... entries) throws IOException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		BlocklistBinaryEncoder.write(out, List.of(entries));
-		return BlocklistLookup.of(BlocklistBinaryDecoder.read(new ByteArrayInputStream(out.toByteArray())));
+		return BlocklistLookup.of(
+			BlocklistBinaryDecoder.read(new ByteArrayInputStream(out.toByteArray())).community());
 	}
 
 }

@@ -12,6 +12,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -19,8 +20,8 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 import de.haumacher.phoneblock.sync.binary.BlocklistBinaryDecoder.DecodedBlocklist;
+import de.haumacher.phoneblock.sync.binary.BlocklistBinaryDecoder.DecodedList;
 import de.haumacher.phoneblock.sync.binary.BlocklistBinaryEncoder.Entry;
-import de.haumacher.phoneblock.sync.binary.BlocklistBinaryFormat.Header;
 
 /**
  * Tests the on-disk encoding produced by {@link BlocklistBinaryEncoder} and the
@@ -35,7 +36,7 @@ class TestBlocklistBinaryCodec {
 		assertEquals('B', bytes[1]);
 		assertEquals('B', bytes[2]);
 		assertEquals('L', bytes[3]);
-		assertEquals(1, bytes[4] & 0xFF);
+		assertEquals(BlocklistBinaryFormat.VERSION, bytes[4] & 0xFF);
 		assertEquals(0, bytes[5] & 0xFF);
 	}
 
@@ -45,37 +46,83 @@ class TestBlocklistBinaryCodec {
 		assertEquals(BlocklistBinaryFormat.HEADER_SIZE, bytes.length);
 
 		DecodedBlocklist decoded = decode(bytes);
-		assertEquals(0, decoded.header().exactCount());
-		assertEquals(0, decoded.header().prefixCount());
-		assertEquals(0, decoded.header().prefixLengths());
-		assertEquals(0, decoded.exactRecords().length);
-		assertEquals(0, decoded.prefixRecords().length);
+		assertEquals(0, decoded.community().header().exactCount());
+		assertEquals(0, decoded.community().header().prefixCount());
+		assertEquals(0, decoded.community().header().prefixLengths());
+		assertEquals(0, decoded.personal().header().exactCount());
+		assertEquals(0, decoded.personal().header().prefixCount());
+		assertEquals(0, decoded.personal().header().prefixLengths());
 	}
 
 	@Test
-	void roundTripSet() throws IOException {
+	void communityRoundTripSet() throws IOException {
 		List<Entry> input = List.of(
 			new Entry("4930123456", false, true),
 			new Entry("4915112345678", false, true),
 			new Entry("00188867490", false, true),
 			new Entry("12345", true, true),
-			new Entry("4930999", true, true),
-			new Entry("12345", false, false),
-			new Entry("99", true, false)
-		);
+			new Entry("4930999", true, true));
 
 		byte[] bytes = encode(input);
 		DecodedBlocklist decoded = decode(bytes);
 
-		assertEquals(4, decoded.header().exactCount());
-		assertEquals(3, decoded.header().prefixCount());
+		assertEquals(3, decoded.community().header().exactCount());
+		assertEquals(2, decoded.community().header().prefixCount());
+		assertEquals(0, decoded.personal().header().exactCount());
+		assertEquals(0, decoded.personal().header().prefixCount());
 
 		Set<String> expected = toIdentitySet(input);
-		Set<String> actual = toIdentitySet(BlocklistBinaryDecoder.toEntries(decoded));
+		Set<String> actual = toIdentitySet(BlocklistBinaryDecoder.toEntries(decoded.community()));
 		assertEquals(expected, actual);
 
-		assertSortedUnsignedAscending(decoded.exactRecords());
-		assertSortedUnsignedAscending(decoded.prefixRecords());
+		assertSortedUnsignedAscending(decoded.community().exactRecords());
+		assertSortedUnsignedAscending(decoded.community().prefixRecords());
+	}
+
+	@Test
+	void personalListRoundTrip() throws IOException {
+		List<Entry> personal = List.of(
+			new Entry("4930", true, false),
+			new Entry("4930999", true, true),
+			new Entry("4930123", false, true),
+			new Entry("18886749072", false, false));
+
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		BlocklistBinaryEncoder.write(out, Collections.emptyList(), personal);
+		DecodedBlocklist decoded = decode(out.toByteArray());
+
+		assertEquals(0, decoded.community().header().exactCount());
+		assertEquals(2, decoded.personal().header().exactCount());
+		assertEquals(2, decoded.personal().header().prefixCount());
+
+		Set<String> expected = toIdentitySet(personal);
+		Set<String> actual = toIdentitySet(BlocklistBinaryDecoder.toEntries(decoded.personal()));
+		assertEquals(expected, actual);
+	}
+
+	@Test
+	void communityAndPersonalKeepSeparate() throws IOException {
+		List<Entry> community = List.of(
+			new Entry("4930123", false, true),
+			new Entry("4930", true, true));
+		List<Entry> personal = List.of(
+			new Entry("4930", true, false),
+			new Entry("100", false, false));
+
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		BlocklistBinaryEncoder.write(out, community, personal);
+		DecodedBlocklist decoded = decode(out.toByteArray());
+
+		// Same 4930*-key sits in both lists with opposing colors.
+		assertEquals(1, decoded.community().exactRecords().length);
+		assertEquals(1, decoded.community().prefixRecords().length);
+		assertEquals(1, decoded.personal().exactRecords().length);
+		assertEquals(1, decoded.personal().prefixRecords().length);
+
+		assertTrue(BlocklistRecord.isBlack(decoded.community().prefixRecords()[0]),
+			"community 4930* is black");
+		assertTrue(!BlocklistRecord.isBlack(decoded.personal().prefixRecords()[0]),
+			"personal 4930* is white");
 	}
 
 	@Test
@@ -84,12 +131,11 @@ class TestBlocklistBinaryCodec {
 			new Entry("4930123", false, true),
 			new Entry("4930123", false, true),
 			new Entry("4930", true, true),
-			new Entry("4930", true, true)
-		);
+			new Entry("4930", true, true));
 
 		DecodedBlocklist decoded = decode(encode(input));
-		assertEquals(1, decoded.exactRecords().length);
-		assertEquals(1, decoded.prefixRecords().length);
+		assertEquals(1, decoded.community().exactRecords().length);
+		assertEquals(1, decoded.community().prefixRecords().length);
 	}
 
 	@Test
@@ -98,16 +144,17 @@ class TestBlocklistBinaryCodec {
 			new Entry("49", true, true),
 			new Entry("4930", true, true),
 			new Entry("12345", true, true),
-			new Entry("987654", false, true)
-		);
+			new Entry("987654", false, true));
 
 		DecodedBlocklist decoded = decode(encode(input));
-		int bitmap = decoded.header().prefixLengths();
+		int bitmap = decoded.community().header().prefixLengths();
 		assertTrue((bitmap & (1 << 2)) != 0, "length 2 present");
 		assertTrue((bitmap & (1 << 4)) != 0, "length 4 present");
 		assertTrue((bitmap & (1 << 5)) != 0, "length 5 present");
 		assertEquals(0, bitmap & ~((1 << 2) | (1 << 4) | (1 << 5)),
 			"no other bits set");
+		assertEquals(0, decoded.personal().header().prefixLengths(),
+			"personal list is empty -> no prefix lengths");
 	}
 
 	@Test
@@ -148,9 +195,9 @@ class TestBlocklistBinaryCodec {
 		assertThrows(IOException.class, () -> decode(truncated));
 	}
 
-	private static byte[] encode(List<Entry> entries) throws IOException {
+	private static byte[] encode(List<Entry> communityEntries) throws IOException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		BlocklistBinaryEncoder.write(out, entries);
+		BlocklistBinaryEncoder.write(out, communityEntries);
 		return out.toByteArray();
 	}
 
@@ -171,11 +218,6 @@ class TestBlocklistBinaryCodec {
 			assertTrue(Long.compareUnsigned(records[i - 1], records[i]) < 0,
 				"records not strictly unsigned-ascending at index " + i);
 		}
-	}
-
-	@SuppressWarnings("unused")
-	private static Header readHeader(byte[] bytes) throws IOException {
-		return BlocklistBinaryFormat.readHeader(new ByteArrayInputStream(bytes));
 	}
 
 }

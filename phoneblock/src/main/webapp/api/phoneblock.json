@@ -365,7 +365,7 @@
 								"schema": {
 									"type": "string",
 									"format": "binary",
-									"description": "Binary blocklist file (magic `PBBL`, version 1). 16-byte little-endian header (magic, version, prefix-length bitmap, exact and prefix record counts) followed by two sections of 8-byte little-endian records. Each record packs a 56-bit base-11 key plus a black/white payload bit; whether an entry is exact or a wildcard prefix is implied by which section holds it. Records are sorted unsigned-ascending within each section."
+									"description": "Binary blocklist file (magic `PBBL`, version 2). 32-byte little-endian header (magic, version, plus a 12-byte list-header per list) followed by four record sections back-to-back: community exact, community prefix, personal exact, personal prefix. Each record is an 8-byte little-endian uint64 packing a 56-bit base-11 key plus a black/white payload bit; exact-vs-wildcard is implied by which section holds the record. Records are sorted unsigned-ascending within each section. The community list is filtered server-side by the authenticated user's minVotes preference; the personal list carries that user's overrides."
 								}
 							},
 							"application/json": {

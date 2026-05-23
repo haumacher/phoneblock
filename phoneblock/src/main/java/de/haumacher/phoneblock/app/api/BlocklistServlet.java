@@ -37,8 +37,11 @@ import jakarta.servlet.http.HttpServletResponse;
  * </p>
  *
  * <p>
- * <b>Caching:</b> The response contains no user-specific data and can be cached efficiently.
- * All authenticated users receive identical responses for the same version.
+ * <b>Caching:</b> JSON and XML responses contain no user-specific data and
+ * can be cached efficiently across users for a given version. The binary
+ * response is user-specific (it applies the user's {@code minVotes}
+ * preference and embeds the personal black/white list) and must not be
+ * shared across users.
  * </p>
  */
 @WebServlet(urlPatterns = BlocklistServlet.PATH)
@@ -108,8 +111,11 @@ public class BlocklistServlet extends HttpServlet {
 		db.updateLastAccess(userName, System.currentTimeMillis(), userAgent, cachedSettings);
 
 		if (binary) {
+			// The binary file does not carry per-entry vote counts, so the
+			// user's minVotes preference must be applied server-side here.
+			int userMinVotes = Math.max(cachedSettings.getMinVotes(), db.getMinVisibleVotes());
 			resp.setContentType(BINARY_CONTENT_TYPE);
-			BlocklistBinaryAdapter.write(resp.getOutputStream(), result);
+			BlocklistBinaryAdapter.write(resp.getOutputStream(), result, userMinVotes);
 		} else {
 			ServletUtil.sendResult(req, resp, result);
 		}

@@ -54,11 +54,13 @@
  *
  * <h2>Personalisation</h2>
  *
- * A second file with identical structure carries the user's personal
- * black/white list. Lookup composition (&ldquo;personal first, then
- * community&rdquo;) and the longest-match tie-break inside the personal list
- * are implemented by the caller of {@link
- * de.haumacher.phoneblock.sync.binary.BlocklistLookup}; see that class's
- * javadoc for the canonical pattern.
+ * One file carries both the community list and the user's personal
+ * black/white list, in two labelled list sections (see
+ * {@link de.haumacher.phoneblock.sync.binary.BlocklistBinaryFormat}). The
+ * dongle does a single download and a single flash write per sync. Lookup
+ * composition (&ldquo;personal first, then community&rdquo;) and the
+ * longest-match tie-break inside the personal list are implemented by the
+ * caller of {@link de.haumacher.phoneblock.sync.binary.BlocklistLookup}; see
+ * that class's javadoc for the canonical pattern.
  */
 package de.haumacher.phoneblock.sync.binary;
