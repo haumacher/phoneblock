@@ -218,12 +218,17 @@ const I18N = {
     'status.sync.busy': 'Sync läuft bereits.',
     'status.sync.enable': 'Sperrlisten-Sync aktivieren',
     'status.sync.disabled': 'Automatischer Sync deaktiviert — manuell weiterhin möglich.',
-    'status.localcache.title': 'Lokaler Spam-Cache',
+    'status.localcache.title': 'Blocklist-Cache',
     'status.localcache.intro': 'Einmal pro Tag lädt der Dongle die aktuelle Sperrliste und Deine persönliche Black-/White-List herunter und legt sie auf dem internen Flash ab. Eingehende Anrufe werden so überwiegend ohne Server-Anfrage entschieden — schneller und auch bei Netzproblemen verlässlich.',
     'status.localcache.never': 'Noch nicht heruntergeladen.',
     'status.localcache.have': '{community} Einträge in der Gemeinschaftsliste, {personal} persönlich. Aktualisiert vor {ago}.',
     'status.localcache.last_fail': 'Letzter Download vor {ago} fehlgeschlagen: {err}',
     'status.localcache.running': 'Download läuft gerade…',
+    'status.localcache.wildcards': 'Wildcard-Sperren auswerten',
+    'status.localcache.wildcards.help': 'Sperrt nicht nur exakte Nummern, sondern auch Rufnummern-Bereiche (z.B. „030 12 34 56*"), wenn die Gemeinschaft sie als Spam meldet. Aus, wenn Du nur exakte Treffer sperren willst.',
+    'status.localcache.run_now': 'Jetzt herunterladen',
+    'status.localcache.triggered': 'Download gestartet.',
+    'status.localcache.busy': 'Download läuft bereits.',
     'status.ann.title': 'Spam-Ansage',
     'status.ann.default': 'Eingebaute Standard-Ansage ({kb} KB).',
     'status.ann.custom': 'Eigene Ansage ({kb} KB).',
@@ -428,12 +433,17 @@ const I18N = {
     'status.sync.busy': 'Sync already running.',
     'status.sync.enable': 'Enable blocklist sync',
     'status.sync.disabled': 'Automatic sync disabled — manual run still available.',
-    'status.localcache.title': 'Local spam cache',
+    'status.localcache.title': 'Blocklist cache',
     'status.localcache.intro': 'Once a day the dongle downloads the current community blocklist plus your personal black/white list and stores them on internal flash. Incoming calls are then decided without an API round-trip — faster, and resilient to network glitches.',
     'status.localcache.never': 'Not downloaded yet.',
     'status.localcache.have': '{community} community entries, {personal} personal. Refreshed {ago} ago.',
     'status.localcache.last_fail': 'Last download {ago} ago failed: {err}',
     'status.localcache.running': 'Download in progress…',
+    'status.localcache.wildcards': 'Honour wildcard ranges',
+    'status.localcache.wildcards.help': 'Block whole number ranges (e.g. "030 12 34 56*") when the community has flagged them as spam, in addition to exact matches. Turn off to block only exact matches.',
+    'status.localcache.run_now': 'Download now',
+    'status.localcache.triggered': 'Download started.',
+    'status.localcache.busy': 'Download already running.',
     'status.ann.title': 'Spam announcement',
     'status.ann.default': 'Built-in default announcement ({kb} KB).',
     'status.ann.custom': 'Custom announcement ({kb} KB).',
@@ -626,12 +636,17 @@ const I18N = {
     'status.sync.busy': 'Synchro déjà en cours.',
     'status.sync.enable': 'Activer la synchronisation',
     'status.sync.disabled': 'Synchro auto désactivée — exécution manuelle toujours possible.',
-    'status.localcache.title': 'Cache anti-spam local',
+    'status.localcache.title': 'Cache de la liste de blocage',
     'status.localcache.intro': 'Une fois par jour, le dongle télécharge la liste de blocage commune et votre liste noire/blanche personnelle, puis les stocke en mémoire flash interne. Les appels entrants sont alors décidés sans appel API — plus rapide, et résistant aux problèmes réseau.',
     'status.localcache.never': 'Pas encore téléchargé.',
     'status.localcache.have': '{community} entrées communes, {personal} personnelles. Rafraîchi il y a {ago}.',
     'status.localcache.last_fail': 'Dernier téléchargement il y a {ago} en échec : {err}',
     'status.localcache.running': 'Téléchargement en cours…',
+    'status.localcache.wildcards': 'Appliquer les caractères génériques',
+    'status.localcache.wildcards.help': 'Bloque aussi des plages de numéros (p. ex. "030 12 34 56*") signalées comme spam par la communauté, en plus des correspondances exactes. Désactivez pour ne bloquer que les correspondances exactes.',
+    'status.localcache.run_now': 'Télécharger maintenant',
+    'status.localcache.triggered': 'Téléchargement démarré.',
+    'status.localcache.busy': 'Téléchargement déjà en cours.',
     'status.ann.title': 'Message anti-spam',
     'status.ann.default': 'Message par défaut intégré ({kb} Ko).',
     'status.ann.custom': 'Message personnalisé ({kb} Ko).',
@@ -824,12 +839,17 @@ const I18N = {
     'status.sync.busy': 'Sincronización ya en curso.',
     'status.sync.enable': 'Activar sincronización',
     'status.sync.disabled': 'Sincronización auto desactivada — ejecución manual aún posible.',
-    'status.localcache.title': 'Caché antispam local',
+    'status.localcache.title': 'Caché de lista de bloqueo',
     'status.localcache.intro': 'Una vez al día, el dongle descarga la lista de bloqueo común y tu lista negra/blanca personal, y las guarda en la memoria flash interna. Las llamadas entrantes se deciden entonces sin llamadas a la API — más rápido y resistente a problemas de red.',
     'status.localcache.never': 'Aún no descargado.',
     'status.localcache.have': '{community} entradas comunes, {personal} personales. Actualizado hace {ago}.',
     'status.localcache.last_fail': 'Última descarga hace {ago} falló: {err}',
     'status.localcache.running': 'Descarga en curso…',
+    'status.localcache.wildcards': 'Aplicar comodines',
+    'status.localcache.wildcards.help': 'Bloquea también rangos de números (p. ej. "030 12 34 56*") que la comunidad haya marcado como spam, además de coincidencias exactas. Desactiva para bloquear solo coincidencias exactas.',
+    'status.localcache.run_now': 'Descargar ahora',
+    'status.localcache.triggered': 'Descarga iniciada.',
+    'status.localcache.busy': 'Descarga ya en curso.',
     'status.ann.title': 'Mensaje anti-spam',
     'status.ann.default': 'Mensaje predeterminado integrado ({kb} KB).',
     'status.ann.custom': 'Mensaje personalizado ({kb} KB).',
@@ -1179,7 +1199,17 @@ function renderStatus(){
     + '<section id="localCacheSection" style="display:none">'
     + '<h2>' + esc(t('status.localcache.title')) + '</h2>'
     + '<p class="muted">' + esc(t('status.localcache.intro')) + '</p>'
+    + '<label title="' + esc(t('status.localcache.wildcards.help')) + '" '
+    +   'style="display:flex;align-items:center;gap:.5rem;margin:.4rem 0;font-size:.9rem;color:#222">'
+    + '  <input type="checkbox" id="blWildcards" style="width:auto;margin:0">'
+    + '  <span>' + esc(t('status.localcache.wildcards')) + '</span>'
+    + '</label>'
     + '<p id="localCacheStatus" class="muted" style="margin-top:.4rem"></p>'
+    + '<p style="margin:.4rem 0 0">'
+    + '  <button id="blRun" class="btn-ghost" style="padding:.3rem .7rem;font-size:.85rem">'
+    +   esc(t('status.localcache.run_now')) + '</button>'
+    + '  <span id="blMsg" class="muted" style="margin-left:.6rem"></span>'
+    + '</p>'
     + '</section>'
     + '<section id="syncSection" style="display:none">'
     + '<h2>' + esc(t('status.sync.title')) + '</h2>'
@@ -1430,9 +1460,10 @@ async function refreshAll(){
   fwSec.style.display = '';
   authSec.style.display = '';
 
-  // Local spam-cache section: small read-only status line showing the
-  // sizes of the two synced files plus when the last sync ran. No
-  // per-state UI here — the task does its thing daily on its own.
+  // Local blocklist-cache section: status line + wildcards toggle +
+  // manual "download now" button. The task runs daily on its own; the
+  // button is for fresh setups where the user does not want to wait
+  // for the next scheduled tick.
   const bl = s.blocklist || {};
   const blStatus = $('localCacheStatus');
   const blAgo = bl.last_ago_s >= 0 ? fmtSec(bl.last_ago_s) : '–';
@@ -1452,6 +1483,45 @@ async function refreshAll(){
        personal:  bl.personal_size  || 0,
        ago:       blAgo});
     blStatus.style.color = '#188038';
+  }
+  const blWildcards = $('blWildcards');
+  const blRun       = $('blRun');
+  blWildcards.checked = !!bl.wildcards;
+  blRun.disabled = !!bl.running;
+  if (!blWildcards.onchange){
+    blWildcards.onchange = async () => {
+      const want = blWildcards.checked;
+      blWildcards.disabled = true;
+      const body = new URLSearchParams();
+      body.append('blocklist_wildcards', want ? '1' : '0');
+      try {
+        await fetch('/api/config', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: body.toString(),
+        });
+      } catch (_){ /* next poll reconciles */ }
+      blWildcards.disabled = false;
+      refreshAll();
+    };
+  }
+  if (!blRun.onclick){
+    blRun.onclick = async () => {
+      const m = $('blMsg');
+      blRun.disabled = true;
+      m.textContent = '';
+      try {
+        const r = await fetch('/api/blocklist-sync/run', {method: 'POST'});
+        const d = await r.json().catch(() => ({}));
+        m.textContent = d.ok ? t('status.localcache.triggered')
+                              : t('status.localcache.busy');
+        m.style.color = d.ok ? '#188038' : '#e8710a';
+      } catch (_){
+        m.textContent = 'Network error';
+        m.style.color = '#d93025';
+      }
+      refreshAll();
+    };
   }
 
   // Blocklist sync section: show either "unavailable" (no FB app

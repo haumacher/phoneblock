@@ -887,7 +887,7 @@ static verdict_t check_invite_caller(const char *req, int req_len)
     pb_check_result_t result;
     verdict_t v;
     const char *digits = (number[0] == '+') ? number + 1 : number;
-    blocklist_verdict_t local = blocklist_sync_check(digits, /*consult_wildcards=*/ true);
+    blocklist_verdict_t local = blocklist_sync_check(digits, config_blocklist_wildcards());
     if (local == BLOCKLIST_SPAM) {
         memset(&result, 0, sizeof(result));
         result.verdict = VERDICT_SPAM;
