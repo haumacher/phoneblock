@@ -28,6 +28,15 @@ echo "01749999999" | nc -N localhost 5060
 # → LEGITIMATE
 ```
 
+Statt einer Nummer kann `PROBE` (optional `PROBE <runden>`, 1–5, Standard 3)
+gesendet werden: Der Server misst dann pro Runde je einen `/api/test`- und
+`/api/check-prefix`-Aufruf und antwortet mit der Latenz-Phasenaufschlüsselung
+(connect/request/wait/download). Diagnose-Hilfe für die API-Latenz (Issue #329).
+
+```bash
+echo "PROBE 3" | nc -N localhost 5060
+```
+
 ## Voraussetzungen
 
 - ESP-IDF v5.3 installiert (siehe

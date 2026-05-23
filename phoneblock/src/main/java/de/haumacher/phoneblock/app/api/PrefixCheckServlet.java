@@ -7,9 +7,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.ibatis.session.SqlSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.app.LoginFilter;
@@ -46,6 +49,8 @@ import jakarta.servlet.http.HttpServletResponse;
 @WebServlet(urlPatterns = PrefixCheckServlet.PATH)
 public class PrefixCheckServlet extends HttpServlet {
 
+	private static final Logger LOG = LoggerFactory.getLogger(PrefixCheckServlet.class);
+
 	public static final String PATH = "/api/check-prefix";
 
 	/** Minimum prefix length in hex characters (16 bit → ~3 000 German candidates per bucket). */
@@ -54,12 +59,21 @@ public class PrefixCheckServlet extends HttpServlet {
 	/** Maximum prefix length = full SHA-1. */
 	public static final int MAX_PREFIX_HEX = 40;
 
+	/**
+	 * A lookup slower than this (wall-clock, ms) is logged at INFO with its
+	 * full phase breakdown; faster ones go to DEBUG. Keeps production logs
+	 * focused on the latency outliers worth investigating (issue #329).
+	 */
+	private static final long SLOW_LOOKUP_MS = 250;
+
 	// The prefix is interpreted as whole bytes — the length must be even. This keeps the
 	// range-bound arithmetic to pure byte[] decoding with a ripple-carry increment and
 	// avoids any BigInteger / bit-shift shenanigans on the request path.
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		long tStart = System.nanoTime();
+
 		AuthToken auth = LoginFilter.getAuthorization(req);
 		if (auth == null) {
 			ServletUtil.sendAuthenticationRequest(resp);
@@ -95,13 +109,19 @@ public class PrefixCheckServlet extends HttpServlet {
 		PrefixCheckResult result = PrefixCheckResult.create();
 		DB db = DBService.getInstance();
 
+		// Phase checkpoints for issue #329 — consumed by serverTiming()/logTiming().
+		long tSession, tCommunity, tPersonal, tComments, tRange10, tRange100;
+
 		try (SqlSession session = db.openSession()) {
+			tSession = System.nanoTime();
 			SpamReports reports = session.getMapper(SpamReports.class);
 			BlockList blocklist = session.getMapper(BlockList.class);
 
 			List<DBNumberInfo> communityMatches = reports.getPhoneInfosByHashPrefix(sha1Low, sha1High);
+			tCommunity = System.nanoTime();
 			List<DBPersonalization> personalMatches = blocklist.getPersonalizationsByHashPrefix(
 				auth.getUserId(), sha1Low, sha1High);
+			tPersonal = System.nanoTime();
 
 			Map<String, PhoneInfo> byPhone = new LinkedHashMap<>();
 			for (DBNumberInfo n : communityMatches) {
@@ -158,6 +178,7 @@ public class PrefixCheckServlet extends HttpServlet {
 					}
 				}
 			}
+			tComments = System.nanoTime();
 			result.setNumbers(new ArrayList<>(byPhone.values()));
 
 			if (prefix10Hex != null) {
@@ -166,15 +187,73 @@ public class PrefixCheckServlet extends HttpServlet {
 				result.setRange10(toRangeMatches(
 					reports.getAggregation10ByHashPrefix(low, high, DB.MIN_AGGREGATE_10)));
 			}
+			tRange10 = System.nanoTime();
 			if (prefix100Hex != null) {
 				byte[] low = prefixLow(prefix100Hex);
 				byte[] high = prefixHigh(prefix100Hex);
 				result.setRange100(toRangeMatches(
 					reports.getAggregation100ByHashPrefix(low, high, DB.MIN_AGGREGATE_100)));
 			}
+			tRange100 = System.nanoTime();
 		}
 
+		// Diagnostic for issue #329: surface the server-side phase breakdown
+		// as a Server-Timing response header (visible per-call to any client)
+		// and in the log. The header must be set before the body is written.
+		resp.setHeader("Server-Timing",
+			serverTiming(tStart, tSession, tCommunity, tPersonal, tComments, tRange10, tRange100));
+
 		ServletUtil.sendResult(req, resp, result);
+
+		logTiming(tStart, tSession, tCommunity, tPersonal, tComments, tRange10, tRange100,
+			System.nanoTime());
+	}
+
+	/** Elapsed milliseconds between two {@link System#nanoTime()} readings. */
+	private static double ms(long fromNanos, long toNanos) {
+		return (toNanos - fromNanos) / 1_000_000.0;
+	}
+
+	/**
+	 * Builds the {@code Server-Timing} header value from the request phase
+	 * checkpoints. {@code session} also covers the (trivial) parameter
+	 * validation; {@code db-total} spans everything up to — but excluding —
+	 * the JSON serialization, which happens while the response body is
+	 * written and so cannot be reflected in a header.
+	 */
+	private static String serverTiming(long tStart, long tSession, long tCommunity,
+			long tPersonal, long tComments, long tRange10, long tRange100) {
+		return String.format(Locale.ROOT,
+			"session;dur=%.1f, community;dur=%.1f, personal;dur=%.1f, comments;dur=%.1f, "
+				+ "range10;dur=%.1f, range100;dur=%.1f, db-total;dur=%.1f",
+			ms(tStart, tSession), ms(tSession, tCommunity), ms(tCommunity, tPersonal),
+			ms(tPersonal, tComments), ms(tComments, tRange10), ms(tRange10, tRange100),
+			ms(tStart, tRange100));
+	}
+
+	/**
+	 * Logs the full phase breakdown of one lookup, including the JSON
+	 * serialization. Outliers (slower than {@link #SLOW_LOOKUP_MS}) go to
+	 * INFO so they surface in production logs without enabling DEBUG; the
+	 * rest stay at DEBUG.
+	 */
+	private static void logTiming(long tStart, long tSession, long tCommunity, long tPersonal,
+			long tComments, long tRange10, long tRange100, long tDone) {
+		boolean slow = ms(tStart, tDone) >= SLOW_LOOKUP_MS;
+		if (slow ? !LOG.isInfoEnabled() : !LOG.isDebugEnabled()) {
+			return;
+		}
+		String breakdown = String.format(Locale.ROOT,
+			"check-prefix timing [ms]: total=%.0f session=%.0f community=%.0f personal=%.0f "
+				+ "comments=%.0f range10=%.0f range100=%.0f serialize=%.0f",
+			ms(tStart, tDone), ms(tStart, tSession), ms(tSession, tCommunity),
+			ms(tCommunity, tPersonal), ms(tPersonal, tComments), ms(tComments, tRange10),
+			ms(tRange10, tRange100), ms(tRange100, tDone));
+		if (slow) {
+			LOG.info(breakdown);
+		} else {
+			LOG.debug(breakdown);
+		}
 	}
 
 	static List<RangeMatch> toRangeMatches(List<AggregationInfo> aggs) {

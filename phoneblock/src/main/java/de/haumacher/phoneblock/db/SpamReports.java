@@ -228,8 +228,14 @@ public interface SpamReports {
 			""")
 	DBNumberInfo getPhoneInfo(String phone);
 
+	// USE INDEX (NUMBERS_SHA1_IDX) is essential: H2 has no column histograms,
+	// so it estimates the SHA1 range scan pessimistically (~25-50 % of the
+	// table) and otherwise picks NUMBERS_ACTIVE_IDX instead, scanning every
+	// active row to filter SHA1 in memory (~60-150 ms per call, 15 k page
+	// reads). Forced to NUMBERS_SHA1_IDX the same query touches ~10 rows
+	// and 4 page reads. See issue #329.
 	@Select("""
-			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.VOTES as PUBLISHED_VOTES from NUMBERS s
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.VOTES as PUBLISHED_VOTES from NUMBERS s USE INDEX (NUMBERS_SHA1_IDX)
 			where s.SHA1 >= #{low} and s.SHA1 < #{high} and s.VOTES > 0 and s.ACTIVE
 			""")
 	List<DBNumberInfo> getPhoneInfosByHashPrefix(byte[] low, byte[] high);

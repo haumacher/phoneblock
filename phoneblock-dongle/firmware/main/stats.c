@@ -136,10 +136,11 @@ void stats_record_sip_state(bool registered)
     unlock();
 }
 
-void stats_record_api_duration(int64_t duration_us)
+void stats_record_api_phases(const api_phases_t *p)
 {
     lock();
-    s_counters.last_api_duration_us = duration_us;
+    s_counters.last_api_phases     = *p;
+    s_counters.last_api_duration_us = p->total_us;
     unlock();
 }
 

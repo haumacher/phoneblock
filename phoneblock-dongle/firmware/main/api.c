@@ -112,6 +112,19 @@ static int compute_wildcard_votes(int votes10, int cnt10, int votes100, int cnt1
     return 0;
 }
 
+// Raw event timestamps captured during one esp_http_client_perform()
+// on the shared client. Filled by http_event_shared(); turned into an
+// api_phases_t breakdown by derive_phases(). All values are
+// esp_timer_get_time() readings (microseconds); 0 means the event did
+// not fire. See api_phases_t in api.h for the phase semantics.
+typedef struct {
+    int64_t t_start;         // set by run_and_time() before perform()
+    int64_t t_connected;     // HTTP_EVENT_ON_CONNECTED
+    int64_t t_headers_sent;  // HTTP_EVENT_HEADERS_SENT
+    int64_t t_first_header;  // first HTTP_EVENT_ON_HEADER
+    int64_t t_finish;        // HTTP_EVENT_ON_FINISH
+} pb_timing_t;
+
 // Per-request sink for the shared client (see s_check_client). The one
 // esp_http_client handle serves two response shapes - the streaming
 // /api/check-prefix JSON and the plain /api/test body - so its single
@@ -120,38 +133,105 @@ typedef enum { PB_SINK_SCAN, PB_SINK_BUFFER } pb_sink_kind_t;
 
 typedef struct {
     pb_sink_kind_t kind;
+    pb_timing_t    timing;    // event timeline of the in-flight request
     union {
         api_scan_t        *scan;  // PB_SINK_SCAN: streaming JSON parser
         response_buffer_t *buf;   // PB_SINK_BUFFER: fixed-size body buffer
     };
 } pb_sink_t;
 
-// HTTP_EVENT_ON_DATA dispatcher for the shared client. The check path
-// streams into the api_scan parser (logic in api_scan.{c,h}, unit-
-// tested host-side without ESP-IDF deps); the selftest path appends
-// into a fixed buffer.
+// Event dispatcher for the shared client. Beyond routing response body
+// data (the check path streams into the api_scan parser, the selftest
+// path appends into a fixed buffer), it timestamps the connection
+// lifecycle into sink->timing so derive_phases() can split the call
+// latency into phases — the core measurement for issue #329.
 static esp_err_t http_event_shared(esp_http_client_event_t *evt)
 {
-    if (evt->event_id != HTTP_EVENT_ON_DATA) {
-        return ESP_OK;
-    }
     pb_sink_t *sink = (pb_sink_t *)evt->user_data;
     if (sink == NULL) {
         return ESP_OK;
     }
-    if (sink->kind == PB_SINK_SCAN) {
-        api_scan_feed(sink->scan, (const char *)evt->data, evt->data_len);
-    } else if (!esp_http_client_is_chunked_response(evt->client)) {
-        response_buffer_t *resp = sink->buf;
-        int remaining = resp->cap - resp->len - 1;
-        int copy = evt->data_len < remaining ? evt->data_len : remaining;
-        if (copy > 0) {
-            memcpy(resp->data + resp->len, evt->data, copy);
-            resp->len += copy;
-            resp->data[resp->len] = '\0';
+    switch (evt->event_id) {
+    case HTTP_EVENT_ON_CONNECTED:
+        sink->timing.t_connected = esp_timer_get_time();
+        break;
+    case HTTP_EVENT_HEADERS_SENT:
+        sink->timing.t_headers_sent = esp_timer_get_time();
+        break;
+    case HTTP_EVENT_ON_HEADER:
+        // Fires once per response header; the first one marks time to
+        // first byte. Later headers must not overwrite it.
+        if (sink->timing.t_first_header == 0) {
+            sink->timing.t_first_header = esp_timer_get_time();
         }
+        break;
+    case HTTP_EVENT_ON_FINISH:
+        sink->timing.t_finish = esp_timer_get_time();
+        break;
+    case HTTP_EVENT_ON_DATA:
+        if (sink->kind == PB_SINK_SCAN) {
+            api_scan_feed(sink->scan, (const char *)evt->data, evt->data_len);
+        } else if (!esp_http_client_is_chunked_response(evt->client)) {
+            response_buffer_t *resp = sink->buf;
+            int remaining = resp->cap - resp->len - 1;
+            int copy = evt->data_len < remaining ? evt->data_len : remaining;
+            if (copy > 0) {
+                memcpy(resp->data + resp->len, evt->data, copy);
+                resp->len += copy;
+                resp->data[resp->len] = '\0';
+            }
+        }
+        break;
+    default:
+        break;
     }
     return ESP_OK;
+}
+
+// Turns the raw event timeline of one request into a phase breakdown.
+// A phase whose bounding event never fired stays 0.
+static api_phases_t derive_phases(const pb_timing_t *t, int64_t total_us)
+{
+    api_phases_t p = {0};
+    p.total_us = total_us;
+    p.valid = true;
+    if (t->t_connected > t->t_start) {
+        p.connect_us = t->t_connected - t->t_start;
+    }
+    if (t->t_headers_sent > t->t_connected && t->t_connected > 0) {
+        p.request_us = t->t_headers_sent - t->t_connected;
+    }
+    if (t->t_first_header > t->t_headers_sent && t->t_headers_sent > 0) {
+        p.wait_us = t->t_first_header - t->t_headers_sent;
+    }
+    if (t->t_finish > t->t_first_header && t->t_first_header > 0) {
+        p.download_us = t->t_finish - t->t_first_header;
+    }
+    return p;
+}
+
+// Runs the request on `client` (its sink already wired via
+// set_user_data) and times it: stamps the start, performs, derives the
+// phase breakdown, logs it, records it to stats for the dashboard, and
+// — if phases_out is non-NULL — copies it out. `what` tags the log
+// line. Returns the esp_http_client_perform() result.
+static esp_err_t run_and_time(esp_http_client_handle_t client, pb_sink_t *sink,
+                              const char *what, api_phases_t *phases_out)
+{
+    sink->timing.t_start = esp_timer_get_time();
+    esp_err_t err = esp_http_client_perform(client);
+    int64_t total = esp_timer_get_time() - sink->timing.t_start;
+
+    api_phases_t p = derive_phases(&sink->timing, total);
+    ESP_LOGI(TAG, "%s latency: total=%lldms connect=%lldms request=%lldms wait=%lldms download=%lldms",
+             what, (long long)(p.total_us / 1000), (long long)(p.connect_us / 1000),
+             (long long)(p.request_us / 1000), (long long)(p.wait_us / 1000),
+             (long long)(p.download_us / 1000));
+    stats_record_api_phases(&p);
+    if (phases_out) {
+        *phases_out = p;
+    }
+    return err;
 }
 
 // --- Shared, session-resuming HTTPS client ---------------------------
@@ -227,7 +307,8 @@ static esp_http_client_handle_t check_client(void)
     return s_check_client;
 }
 
-verdict_t phoneblock_check(const char *phone_number, pb_check_result_t *out)
+verdict_t phoneblock_check(const char *phone_number, pb_check_result_t *out,
+                           api_phases_t *phases_opt)
 {
     if (out) memset(out, 0, sizeof(*out));
     verdict_t verdict = VERDICT_ERROR;
@@ -300,9 +381,7 @@ verdict_t phoneblock_check(const char *phone_number, pb_check_result_t *out)
     esp_http_client_set_header(client, "Accept", "application/json");
 
     ESP_LOGI(TAG, "GET %s", url);
-    int64_t started = esp_timer_get_time();
-    esp_err_t err = esp_http_client_perform(client);
-    stats_record_api_duration(esp_timer_get_time() - started);
+    esp_err_t err = run_and_time(client, &sink, "check-prefix", phases_opt);
 
     int status = (err == ESP_OK) ? esp_http_client_get_status_code(client) : 0;
     note_api_response(err, status);
@@ -522,7 +601,7 @@ bool phoneblock_rate(const char *phone, const char *rating, const char *comment)
     return true;
 }
 
-bool phoneblock_selftest(void)
+bool phoneblock_selftest(api_phases_t *phases_opt)
 {
     char url[160];
     snprintf(url, sizeof(url), "%s/api/test", config_phoneblock_base_url());
@@ -575,9 +654,7 @@ bool phoneblock_selftest(void)
     ESP_LOGI(TAG, "GET %s (token %zu chars, prefix \"%.6s…\")",
              url, tlen, tlen > 0 ? token : "");
 
-    int64_t started = esp_timer_get_time();
-    esp_err_t err = esp_http_client_perform(client);
-    stats_record_api_duration(esp_timer_get_time() - started);
+    esp_err_t err = run_and_time(client, &sink, "test", phases_opt);
 
     int status = (err == ESP_OK) ? esp_http_client_get_status_code(client) : 0;
     note_api_response(err, status);
@@ -608,6 +685,85 @@ bool phoneblock_selftest(void)
     xSemaphoreGive(s_check_mutex);
     free(resp.data);
     return ok;
+}
+
+// --- Diagnostic latency probe (issue #329) --------------------------
+
+// Synthetic number for the probe's /api/check-prefix call. Exercises
+// the real spam-lookup path (hashing, three k-anonymity buckets,
+// streaming JSON parse) without querying a real subscriber. Never
+// reported: phoneblock_check() does not POST /api/report-call.
+#define PROBE_SYNTHETIC_NUMBER "+490000000000"
+
+static void phases_add(api_phases_t *acc, const api_phases_t *p)
+{
+    acc->connect_us  += p->connect_us;
+    acc->request_us  += p->request_us;
+    acc->wait_us     += p->wait_us;
+    acc->download_us += p->download_us;
+    acc->total_us    += p->total_us;
+}
+
+// Appends one formatted phase line to report[pos..cap). Returns the new
+// position, clamped to cap-1 so the buffer stays NUL-terminable.
+static size_t probe_append(char *report, size_t pos, size_t cap,
+                           const char *tag, const api_phases_t *p)
+{
+    if (pos >= cap) return cap - 1;
+    int n = snprintf(report + pos, cap - pos,
+        "%-6s total=%4lld connect=%4lld request=%3lld wait=%4lld download=%4lld (ms)\n",
+        tag,
+        (long long)(p->total_us    / 1000), (long long)(p->connect_us  / 1000),
+        (long long)(p->request_us  / 1000), (long long)(p->wait_us     / 1000),
+        (long long)(p->download_us / 1000));
+    if (n < 0) return pos;
+    pos += (size_t)n;
+    return pos < cap ? pos : cap - 1;
+}
+
+int api_run_probe(int rounds, char *report, size_t cap)
+{
+    if (!report || cap == 0) return 0;
+    if (rounds < 1) rounds = 1;
+    if (rounds > 5) rounds = 5;
+
+    report[0] = '\0';
+    size_t pos = 0;
+    int n = snprintf(report, cap, "PROBE issue#329 rounds=%d\n", rounds);
+    if (n > 0) pos = (size_t)n < cap ? (size_t)n : cap - 1;
+
+    api_phases_t test_sum = {0}, check_sum = {0};
+    int measured = 0;
+    char tag[8];
+
+    for (int r = 1; r <= rounds; r++) {
+        api_phases_t pt = {0};
+        phoneblock_selftest(&pt);
+        phases_add(&test_sum, &pt);
+        snprintf(tag, sizeof(tag), "test%d", r);
+        pos = probe_append(report, pos, cap, tag, &pt);
+        measured++;
+
+        api_phases_t pc = {0};
+        phoneblock_check(PROBE_SYNTHETIC_NUMBER, NULL, &pc);
+        phases_add(&check_sum, &pc);
+        snprintf(tag, sizeof(tag), "chk%d", r);
+        pos = probe_append(report, pos, cap, tag, &pc);
+        measured++;
+    }
+
+    if (rounds > 1) {
+        api_phases_t ta = test_sum, ca = check_sum;
+        ta.connect_us /= rounds; ta.request_us /= rounds; ta.wait_us /= rounds;
+        ta.download_us /= rounds; ta.total_us /= rounds;
+        ca.connect_us /= rounds; ca.request_us /= rounds; ca.wait_us /= rounds;
+        ca.download_us /= rounds; ca.total_us /= rounds;
+        pos = probe_append(report, pos, cap, "AVGtst", &ta);
+        pos = probe_append(report, pos, cap, "AVGchk", &ca);
+    }
+
+    report[pos < cap ? pos : cap - 1] = '\0';
+    return measured;
 }
 
 bool phoneblock_verify_auth_code(const char *code, const char *state,

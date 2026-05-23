@@ -49,7 +49,8 @@ typedef struct {
     uint32_t spam_blocked;
     uint32_t legitimate;
     uint32_t errors;                           // internal/API errors
-    int64_t  last_api_duration_us;             // latency of last API call
+    int64_t  last_api_duration_us;             // total latency of last API call
+    api_phases_t last_api_phases;              // phase breakdown of last API call
 } stats_counters_t;
 
 // Renamed from `stats_init` to avoid colliding with lwip's
@@ -76,7 +77,10 @@ void stats_record_call_checked(const char *number, const char *display,
 void stats_record_call_counters_only(verdict_t verdict);
 void stats_record_error(const char *tag, const char *message);
 void stats_record_sip_state(bool registered);
-void stats_record_api_duration(int64_t duration_us);
+
+// Records the latency breakdown of the last API call (total + phases).
+// Feeds the dashboard's API-latency display; see api_phases_t.
+void stats_record_api_phases(const api_phases_t *p);
 
 // --- Snapshots (for the web UI) -------------------------------------
 
