@@ -249,6 +249,24 @@ public interface SpamReports {
 			and s.VOTES - (#{before} - s.LASTPING)/1000/60/60/24/7/#{weekPerVote} < #{minVotes}
 			""")
 	int archiveReportsWithLowVotes(long before, int minVotes, int weekPerVote);
+
+	/**
+	 * Archive numbers whose decoded Heat has fallen below the floor (#335).
+	 *
+	 * <p>The {@code maxRawHeat} parameter is computed in Java as the projected
+	 * threshold {@code floor · exp((now − t0)/τ_heat)}, so this WHERE clause
+	 * stays a pure {@code HEAT &lt; ?} comparison — index-backed via
+	 * {@code NUMBERS_HEAT_IDX}, no {@code EXP()} per row.</p>
+	 *
+	 * <p>Sets {@code PENDING_UPDATE = true} so {@code BlocklistVersionService}
+	 * picks the {@code ACTIVE} transition up in the next blocklist release.</p>
+	 */
+	@Update("""
+			update NUMBERS s
+			set ACTIVE = false, PENDING_UPDATE = true
+			where ACTIVE and s.HEAT < #{maxRawHeat}
+			""")
+	int archiveByHeatBelow(double maxRawHeat);
 	
 	@Update("""
 			update NUMBERS s

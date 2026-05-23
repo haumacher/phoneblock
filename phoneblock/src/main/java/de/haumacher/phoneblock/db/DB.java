@@ -105,16 +105,11 @@ public class DB {
 	 */
 	public static final int MIN_LEGITIMATE = 4;
 
-	/**
-	 * Number of days a number stays on the blocklist when {@link #MIN_VOTES} are received. After that time limit,
-	 * {@link #WEEK_PER_VOTE} are substracted per week.
-	 */
-	private static final int OLD_VOTE_DAYS = 14;
-
-	/**
-	 * Number of weeks to pass to substract a vote (after a number has not been reported active for {@link #OLD_VOTE_DAYS}). 
-	 */
-	private static final int WEEK_PER_VOTE = 3;
+	// Removed (#335): OLD_VOTE_DAYS / WEEK_PER_VOTE — the linear vote-with-age
+	// archiving heuristic ("100 votes still active after 5.5 years") was
+	// replaced by Heat-based archiving with the floor HEAT_FLOOR_FOR_ACTIVE
+	// (see archiveOldReports). The legacy archiveReportsWithLowVotes mapper
+	// is kept as dead code for one release in case a rollback is required.
 
 	private static final String SAVE_CHARS = "23456789qwertzuiopasdfghjkyxcvbnmQWERTZUPASDFGHJKLYXCVBNM";
 
@@ -139,6 +134,23 @@ public class DB {
 	 * threshold demanded, but now decaying with time.
 	 */
 	public static final double MIN_BLOCK_SPAM_EVIDENCE = MIN_AGGREGATE_10;
+
+	/**
+	 * Minimum decoded {@code HEAT} required to keep a number {@code ACTIVE} (#335).
+	 *
+	 * <p>The Heat half-life is two weeks, so a single vote decays to {@code 0.5}
+	 * after that period. A floor of {@code 0.5} therefore says: a number must
+	 * carry at least the residual of one direct vote within the last Heat
+	 * half-life to count as currently active. Anything quieter than that is
+	 * archived on the next sweep — replacing the linear
+	 * {@code archiveReportsWithLowVotes} heuristic.</p>
+	 *
+	 * <p>The constant interacts with reports that exclusively carry classification
+	 * evidence (e.g. legitimate-only votes on brand-new numbers): those also feed
+	 * Heat, so a recent report — spam or legitimate — keeps the row active for
+	 * about a Heat half-life.</p>
+	 */
+	public static final double HEAT_FLOOR_FOR_ACTIVE = 0.5;
 
 	/**
 	 * Initial version number for the blocklist.
@@ -2250,19 +2262,19 @@ public class DB {
 	public void archiveOldReports() {
 		LOG.info("Starting DB cleanup.");
 
-		Calendar cal = GregorianCalendar.getInstance();
-		cal.add(Calendar.DAY_OF_MONTH, -OLD_VOTE_DAYS);
-		cal.set(Calendar.HOUR_OF_DAY, 0);
-		cal.set(Calendar.MINUTE, 0);
-		cal.set(Calendar.MILLISECOND, 0);
-		long before = cal.getTimeInMillis();
+		long now = System.currentTimeMillis();
+		// Issue #335: archive on decayed Heat instead of the old linear
+		// vote-with-age heuristic. Push the floor comparison into projected
+		// space so the WHERE clause is a plain HEAT < ? on the index.
+		double maxRawHeat = Ema.projectedThreshold(HEAT_FLOOR_FOR_ACTIVE, now, Ema.HEAT_HALF_LIFE_DAYS);
 
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 
-			int archived = reports.archiveReportsWithLowVotes(before, MIN_VOTES, WEEK_PER_VOTE);
+			int archived = reports.archiveByHeatBelow(maxRawHeat);
 
-			LOG.info("Archived " + archived + " reports.");
+			LOG.info("Archived {} reports by Heat (floor={}, projected threshold={}).",
+				archived, HEAT_FLOOR_FOR_ACTIVE, maxRawHeat);
 
 			session.commit();
 		} catch (Exception ex) {

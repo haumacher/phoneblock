@@ -639,6 +639,38 @@ public class TestDB {
 	}
 
 	@Test
+	void testHeatBasedArchiving() {
+		// Issue #335: a number with Heat below the floor at request time is
+		// archived; a recently-active one stays active.
+
+		long oldT = Ema.T0_MILLIS - 365L * 86_400_000L;  // a year before t0
+		// Old number: single vote in the distant past — its decoded Heat at
+		// "now" (a year after the event, ≈ 26 Heat half-lives) is effectively zero.
+		processVotes("030991110010", 1, oldT);
+
+		// Fresh number: vote moments ago.
+		long now = System.currentTimeMillis();
+		processVotes("030991110011", 1, now - 60_000L);
+
+		try (SqlSession tx = _db.openSession()) {
+			SpamReports reports = tx.getMapper(SpamReports.class);
+			// Sanity: both rows are ACTIVE before the sweep.
+			assertTrue(reports.getPhoneInfo("030991110010").isActive());
+			assertTrue(reports.getPhoneInfo("030991110011").isActive());
+		}
+
+		_db.archiveOldReports();
+
+		try (SqlSession tx = _db.openSession()) {
+			SpamReports reports = tx.getMapper(SpamReports.class);
+			assertFalse(reports.getPhoneInfo("030991110010").isActive(),
+				"Number with year-old single vote must be archived by Heat-based sweep");
+			assertTrue(reports.getPhoneInfo("030991110011").isActive(),
+				"Recently-voted number must stay active");
+		}
+	}
+
+	@Test
 	void testPhoneApiInfoExposesHeatAndSpamConfidence() {
 		// Issue #334: the /api/check response (PhoneInfo) carries the
 		// decoded heat and a Wilson-bound spamConfidence.
