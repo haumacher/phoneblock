@@ -66,9 +66,14 @@ min-votes = 4
 # separate answering machine in you router to gracefully handle anonymous calls.
 accept-anonymous=no
 
-# Prefix of a number that triggers PhoneBlock to respond to the call (for testing). A local number typically starts
-# with a '*' character. Using this prefix allows to call PhoneBlock locally to verify it is working. 
-test-prefix=*
+# Whether to accept calls from local phones (numbers starting with '*'). Enabled by default,
+# which already allows calling the answerbot locally for verification.
+accept-local=yes
+
+# Prefix of a number that forces the answerbot to respond, even if the calling number is
+# not on the blocklist. Useful to test the bot from an external number that is not flagged
+# as spam. Do not set this to '*': local calls are handled by 'accept-local' above.
+#test-prefix=
 
 # Enables the report of spam calls to the PhoneBlock  project. You need a PhoneBlock  account
 # https://phoneblock.net/phoneblock/signup.jsp for this.

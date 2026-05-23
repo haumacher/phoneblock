@@ -28,9 +28,8 @@ public class AnswerbotConfig implements AnswerbotOptions {
 	@Option(name = "--recordings", aliases = "--recodings", usage = "Directory where to store recordings to, 'none' to disable recording.")
 	private String _recordingDir = "none";
 	
-	@Option(name = "--test-prefix", usage = "Phone number prefix that triggers the answer bot to respond (for testing). " + 
-			"A local number typically starts with '*', therefore this prefix can be used to allow calling the answer bot locally.")
-	private String _testPrefix = "*";
+	@Option(name = "--test-prefix", usage = "Phone number prefix that triggers the answer bot to respond (for testing). ")
+	private String _testPrefix = null;
 	
 	@Option(name = "--buffer-time", usage = "Time in milliseconds to buffer the audio stream for silence detection.")
 	private int _bufferTime = 20;
