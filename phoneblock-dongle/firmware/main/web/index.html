@@ -218,6 +218,12 @@ const I18N = {
     'status.sync.busy': 'Sync läuft bereits.',
     'status.sync.enable': 'Sperrlisten-Sync aktivieren',
     'status.sync.disabled': 'Automatischer Sync deaktiviert — manuell weiterhin möglich.',
+    'status.localcache.title': 'Lokaler Spam-Cache',
+    'status.localcache.intro': 'Einmal pro Tag lädt der Dongle die aktuelle Sperrliste und Deine persönliche Black-/White-List herunter und legt sie auf dem internen Flash ab. Eingehende Anrufe werden so überwiegend ohne Server-Anfrage entschieden — schneller und auch bei Netzproblemen verlässlich.',
+    'status.localcache.never': 'Noch nicht heruntergeladen.',
+    'status.localcache.have': '{community} Einträge in der Gemeinschaftsliste, {personal} persönlich. Aktualisiert vor {ago}.',
+    'status.localcache.last_fail': 'Letzter Download vor {ago} fehlgeschlagen: {err}',
+    'status.localcache.running': 'Download läuft gerade…',
     'status.ann.title': 'Spam-Ansage',
     'status.ann.default': 'Eingebaute Standard-Ansage ({kb} KB).',
     'status.ann.custom': 'Eigene Ansage ({kb} KB).',
@@ -422,6 +428,12 @@ const I18N = {
     'status.sync.busy': 'Sync already running.',
     'status.sync.enable': 'Enable blocklist sync',
     'status.sync.disabled': 'Automatic sync disabled — manual run still available.',
+    'status.localcache.title': 'Local spam cache',
+    'status.localcache.intro': 'Once a day the dongle downloads the current community blocklist plus your personal black/white list and stores them on internal flash. Incoming calls are then decided without an API round-trip — faster, and resilient to network glitches.',
+    'status.localcache.never': 'Not downloaded yet.',
+    'status.localcache.have': '{community} community entries, {personal} personal. Refreshed {ago} ago.',
+    'status.localcache.last_fail': 'Last download {ago} ago failed: {err}',
+    'status.localcache.running': 'Download in progress…',
     'status.ann.title': 'Spam announcement',
     'status.ann.default': 'Built-in default announcement ({kb} KB).',
     'status.ann.custom': 'Custom announcement ({kb} KB).',
@@ -614,6 +626,12 @@ const I18N = {
     'status.sync.busy': 'Synchro déjà en cours.',
     'status.sync.enable': 'Activer la synchronisation',
     'status.sync.disabled': 'Synchro auto désactivée — exécution manuelle toujours possible.',
+    'status.localcache.title': 'Cache anti-spam local',
+    'status.localcache.intro': 'Une fois par jour, le dongle télécharge la liste de blocage commune et votre liste noire/blanche personnelle, puis les stocke en mémoire flash interne. Les appels entrants sont alors décidés sans appel API — plus rapide, et résistant aux problèmes réseau.',
+    'status.localcache.never': 'Pas encore téléchargé.',
+    'status.localcache.have': '{community} entrées communes, {personal} personnelles. Rafraîchi il y a {ago}.',
+    'status.localcache.last_fail': 'Dernier téléchargement il y a {ago} en échec : {err}',
+    'status.localcache.running': 'Téléchargement en cours…',
     'status.ann.title': 'Message anti-spam',
     'status.ann.default': 'Message par défaut intégré ({kb} Ko).',
     'status.ann.custom': 'Message personnalisé ({kb} Ko).',
@@ -806,6 +824,12 @@ const I18N = {
     'status.sync.busy': 'Sincronización ya en curso.',
     'status.sync.enable': 'Activar sincronización',
     'status.sync.disabled': 'Sincronización auto desactivada — ejecución manual aún posible.',
+    'status.localcache.title': 'Caché antispam local',
+    'status.localcache.intro': 'Una vez al día, el dongle descarga la lista de bloqueo común y tu lista negra/blanca personal, y las guarda en la memoria flash interna. Las llamadas entrantes se deciden entonces sin llamadas a la API — más rápido y resistente a problemas de red.',
+    'status.localcache.never': 'Aún no descargado.',
+    'status.localcache.have': '{community} entradas comunes, {personal} personales. Actualizado hace {ago}.',
+    'status.localcache.last_fail': 'Última descarga hace {ago} falló: {err}',
+    'status.localcache.running': 'Descarga en curso…',
     'status.ann.title': 'Mensaje anti-spam',
     'status.ann.default': 'Mensaje predeterminado integrado ({kb} KB).',
     'status.ann.custom': 'Mensaje personalizado ({kb} KB).',
@@ -1152,6 +1176,11 @@ function renderStatus(){
     + '    <span>' + esc(t('status.ann.accept_test')) + '</span>'
     + '  </label>'
     + '</p></section>'
+    + '<section id="localCacheSection" style="display:none">'
+    + '<h2>' + esc(t('status.localcache.title')) + '</h2>'
+    + '<p class="muted">' + esc(t('status.localcache.intro')) + '</p>'
+    + '<p id="localCacheStatus" class="muted" style="margin-top:.4rem"></p>'
+    + '</section>'
     + '<section id="syncSection" style="display:none">'
     + '<h2>' + esc(t('status.sync.title')) + '</h2>'
     + '<p class="muted">' + esc(t('status.sync.intro')) + '</p>'
@@ -1261,7 +1290,7 @@ let resetNonce = '';
 // gate kicks us out (401 from /api/status).
 const DASHBOARD_SECTIONS = ['heroSlot', 'statusSection', 'callsSection',
   'thresholdsSection', 'errorsSection', 'resetSection', 'annSection',
-  'syncSection', 'fwSection', 'authSection'];
+  'localCacheSection', 'syncSection', 'fwSection', 'authSection'];
 
 // Maps `?login_error=<code>` query values that web_auth_handle_callback
 // emits to localized text shown in the login section's red banner.
@@ -1368,6 +1397,7 @@ async function refreshAll(){
   const resetSec      = $('resetSection');
   const annSec        = $('annSection');
   const syncSec       = $('syncSection');
+  const localCacheSec = $('localCacheSection');
   const fwSec         = $('fwSection');
   const authSec       = $('authSection');
   if (!sipConfigured || !tokenSet){
@@ -1382,6 +1412,7 @@ async function refreshAll(){
     errorsSec.style.display = 'none';
     annSec.style.display = 'none';
     syncSec.style.display = 'none';
+    localCacheSec.style.display = 'none';
     resetSec.style.display = 'none';
     fwSec.style.display = 'none';
     authSec.style.display = 'none';
@@ -1394,9 +1425,34 @@ async function refreshAll(){
   errorsSec.style.display = '';
   annSec.style.display = '';
   syncSec.style.display = '';
+  localCacheSec.style.display = '';
   resetSec.style.display = '';
   fwSec.style.display = '';
   authSec.style.display = '';
+
+  // Local spam-cache section: small read-only status line showing the
+  // sizes of the two synced files plus when the last sync ran. No
+  // per-state UI here — the task does its thing daily on its own.
+  const bl = s.blocklist || {};
+  const blStatus = $('localCacheStatus');
+  const blAgo = bl.last_ago_s >= 0 ? fmtSec(bl.last_ago_s) : '–';
+  if (bl.running){
+    blStatus.textContent = t('status.localcache.running');
+    blStatus.style.color = '#e8710a';
+  } else if (!bl.ever_ran && !bl.have_community && !bl.have_personal){
+    blStatus.textContent = t('status.localcache.never');
+    blStatus.style.color = '#888';
+  } else if (bl.ever_ran && !bl.last_ok){
+    blStatus.textContent = t('status.localcache.last_fail',
+      {ago: blAgo, err: bl.last_error || '–'});
+    blStatus.style.color = '#d93025';
+  } else {
+    blStatus.textContent = t('status.localcache.have',
+      {community: bl.community_size || 0,
+       personal:  bl.personal_size  || 0,
+       ago:       blAgo});
+    blStatus.style.color = '#188038';
+  }
 
   // Blocklist sync section: show either "unavailable" (no FB app
   // creds in NVS), "never run", "running", "last ok", "last partial"

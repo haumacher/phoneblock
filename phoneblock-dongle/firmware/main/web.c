@@ -21,6 +21,7 @@
 
 #include "announcement.h"
 #include "api.h"
+#include "blocklist_sync.h"
 #include "config.h"
 #include "firmware_update.h"
 #include "sip_register.h"
@@ -308,6 +309,20 @@ static esp_err_t handle_status(httpd_req_t *req)
     cJSON_AddNumberToObject(syn, "last_pushed", ss.last_pushed);
     cJSON_AddNumberToObject(syn, "last_failed", ss.last_failed);
     cJSON_AddStringToObject(syn, "last_error", ss.last_error);
+
+    cJSON *bl = cJSON_AddObjectToObject(root, "blocklist");
+    blocklist_sync_status_t bs;
+    blocklist_sync_snapshot(&bs);
+    int64_t bl_ago_s = bs.ever_ran ? (now_us - bs.last_at_us) / 1000000 : -1;
+    cJSON_AddBoolToObject  (bl, "have_community",  bs.have_community);
+    cJSON_AddBoolToObject  (bl, "have_personal",   bs.have_personal);
+    cJSON_AddNumberToObject(bl, "community_size",  bs.community_size);
+    cJSON_AddNumberToObject(bl, "personal_size",   bs.personal_size);
+    cJSON_AddBoolToObject  (bl, "ever_ran",        bs.ever_ran);
+    cJSON_AddBoolToObject  (bl, "last_ok",         bs.last_ok);
+    cJSON_AddBoolToObject  (bl, "running",         bs.running);
+    cJSON_AddNumberToObject(bl, "last_ago_s",      (double)bl_ago_s);
+    cJSON_AddStringToObject(bl, "last_error",      bs.last_error);
 
     cJSON *ann = cJSON_AddObjectToObject(root, "announcement");
     cJSON_AddBoolToObject  (ann,  "custom",  announcement_is_custom());
