@@ -174,6 +174,24 @@ message PhoneInfo {
 	 */
 	@Nullable
 	string userComment;
+
+	/**
+	 * Recent-activity score derived from the confidence model (issue #300).
+	 *
+	 * <p>
+	 * The decayed <code>HEAT</code> EMA at request time — how loud this number is <em>right now</em>, with a half-life of about two weeks. At a steady rate of <i>r</i> reports per day it converges to ≈ <i>r</i> · τ_heat, so the value is directly interpretable. Drives ranking on space-limited lists (Fritz!Box phonebook, dongle) and Heat-based archiving — it is <em>not</em> the spam-or-not signal; that is {@link #spamConfidence}.
+	 * </p>
+	 */
+	double heat;
+
+	/**
+	 * Confidence (0–100) that this number is spam, derived from the confidence model (issue #300).
+	 *
+	 * <p>
+	 * Computed as a Wilson lower bound on <code>SPAM_EVIDENCE / (SPAM_EVIDENCE + LEGIT_EVIDENCE)</code>, decayed to the request time on a ~4-month half-life. The evidence mass <code>SPAM + LEGIT</code> is the denominator, so a number with two spam reports and nothing else reads low confidence ("maybe accidental"), and a hotly-contested number with 1000 reports each side also reads low ("disputed"). High values require both directional evidence <em>and</em> mass.
+	 * </p>
+	 */
+	int spamConfidence;
 }
 
 /** A single aggregated SPAM range matching a hash prefix in a {@link PrefixCheckResult}. */

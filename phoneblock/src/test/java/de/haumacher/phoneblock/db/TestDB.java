@@ -45,6 +45,7 @@ import org.junit.jupiter.api.Test;
 
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.app.api.model.NumberInfo;
+import de.haumacher.phoneblock.app.api.model.PhoneInfo;
 import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.app.api.model.SearchInfo;
@@ -635,6 +636,34 @@ public class TestDB {
 		double[] ema10After = rawAggEmas("03055500001", 10);
 		assertTrue(ema10After[0] > ema10[0], "/10 HEAT must monotonically grow on a second vote in the block");
 		assertTrue(ema10After[1] > ema10[1], "/10 SPAM_EVIDENCE must monotonically grow");
+	}
+
+	@Test
+	void testPhoneApiInfoExposesHeatAndSpamConfidence() {
+		// Issue #334: the /api/check response (PhoneInfo) carries the
+		// decoded heat and a Wilson-bound spamConfidence.
+
+		long now = System.currentTimeMillis();
+		// Make the number look like steady spam activity in the recent past.
+		for (int i = 0; i < 10; i++) {
+			processVotes("030888000010", 1, now - i * 60_000L);
+		}
+
+		PhoneInfo info = _db.getPhoneApiInfo("030888000010");
+		assertTrue(info.getHeat() > 0, "decoded heat must be > 0 after recent activity");
+		assertTrue(info.getSpamConfidence() > 50,
+			"10 SPAM votes with no LEGIT must read high confidence, was " + info.getSpamConfidence());
+
+		// Adding plenty of legit evidence drives confidence down.
+		for (int i = 0; i < 10; i++) {
+			processVotes("030888000011", 1, now - i * 60_000L);
+		}
+		for (int i = 0; i < 10; i++) {
+			processVotes("030888000011", -1, now - i * 60_000L);
+		}
+		PhoneInfo disputed = _db.getPhoneApiInfo("030888000011");
+		assertTrue(disputed.getSpamConfidence() < info.getSpamConfidence(),
+			"Disputed number must read lower confidence than pure spam");
 	}
 
 	@Test

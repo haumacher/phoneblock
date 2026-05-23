@@ -1683,6 +1683,33 @@ public class DB {
 		result.setVotesWildcard(votesWildcard);
 		result.setRating(rating);
 
+		// Issue #334: expose the confidence-model surface — decayed Heat and a
+		// Wilson-bound spam confidence. The number-level EMAs come from the
+		// DBNumberInfo specialisation when available; an empty NumberInfo
+		// (unknown number) reads zeros. The aggregation-level evidence is
+		// folded in so freshly-tracked wildcard numbers also show a confidence
+		// reading right away.
+		long now = System.currentTimeMillis();
+		double rawHeat = 0.0;
+		double rawSpam = 0.0;
+		double rawLegit = 0.0;
+		if (info instanceof DBNumberInfo dbInfo) {
+			rawHeat = dbInfo.getHeat();
+			rawSpam = dbInfo.getSpamEvidence();
+			rawLegit = dbInfo.getLegitEvidence();
+		}
+		// Combine number-level evidence with the larger block view; do not
+		// double-count — the aggregation EMAs already contain the number's
+		// own contribution from #337. Use just the block-level evidence for
+		// the confidence computation; the number-level Heat stands on its own
+		// as the per-number activity reading.
+		double rawBlockSpam = Math.max(aggregation10.getSpamEvidence(), aggregation100.getSpamEvidence());
+		double rawBlockLegit = Math.max(aggregation10.getLegitEvidence(), aggregation100.getLegitEvidence());
+		double decodedSpam = Ema.decode(Math.max(rawSpam, rawBlockSpam), now, Ema.CLASSIFICATION_HALF_LIFE_DAYS);
+		double decodedLegit = Ema.decode(Math.max(rawLegit, rawBlockLegit), now, Ema.CLASSIFICATION_HALF_LIFE_DAYS);
+		result.setHeat(Ema.decode(rawHeat, now, Ema.HEAT_HALF_LIFE_DAYS));
+		result.setSpamConfidence(Confidence.spamConfidence(decodedSpam, decodedLegit));
+
 		return result;
 	}
 

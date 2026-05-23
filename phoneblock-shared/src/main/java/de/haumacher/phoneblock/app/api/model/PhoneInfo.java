@@ -51,6 +51,12 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	/** @see #getUserComment() */
 	private static final String USER_COMMENT__PROP = "userComment";
 
+	/** @see #getHeat() */
+	private static final String HEAT__PROP = "heat";
+
+	/** @see #getSpamConfidence() */
+	private static final String SPAM_CONFIDENCE__PROP = "spamConfidence";
+
 	private String _phone = "";
 
 	private int _votes = 0;
@@ -74,6 +80,10 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	private String _location = null;
 
 	private String _userComment = null;
+
+	private double _heat = 0.0d;
+
+	private int _spamConfidence = 0;
 
 	/**
 	 * Creates a {@link PhoneInfo} instance.
@@ -354,6 +364,54 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 		return _userComment != null;
 	}
 
+	/**
+	 * Recent-activity score derived from the confidence model (issue #300).
+	 *
+	 * <p>
+	 * The decayed <code>HEAT</code> EMA at request time — how loud this number is <em>right now</em>, with a half-life of about two weeks. At a steady rate of <i>r</i> reports per day it converges to ≈ <i>r</i> · τ_heat, so the value is directly interpretable. Drives ranking on space-limited lists (Fritz!Box phonebook, dongle) and Heat-based archiving — it is <em>not</em> the spam-or-not signal; that is {@link #getSpamConfidence()}.
+	 * </p>
+	 */
+	public final double getHeat() {
+		return _heat;
+	}
+
+	/**
+	 * @see #getHeat()
+	 */
+	public de.haumacher.phoneblock.app.api.model.PhoneInfo setHeat(double value) {
+		internalSetHeat(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getHeat()} without chain call utility. */
+	protected final void internalSetHeat(double value) {
+		_heat = value;
+	}
+
+	/**
+	 * Confidence (0–100) that this number is spam, derived from the confidence model (issue #300).
+	 *
+	 * <p>
+	 * Computed as a Wilson lower bound on <code>SPAM_EVIDENCE / (SPAM_EVIDENCE + LEGIT_EVIDENCE)</code>, decayed to the request time on a ~4-month half-life. The evidence mass <code>SPAM + LEGIT</code> is the denominator, so a number with two spam reports and nothing else reads low confidence ("maybe accidental"), and a hotly-contested number with 1000 reports each side also reads low ("disputed"). High values require both directional evidence <em>and</em> mass.
+	 * </p>
+	 */
+	public final int getSpamConfidence() {
+		return _spamConfidence;
+	}
+
+	/**
+	 * @see #getSpamConfidence()
+	 */
+	public de.haumacher.phoneblock.app.api.model.PhoneInfo setSpamConfidence(int value) {
+		internalSetSpamConfidence(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getSpamConfidence()} without chain call utility. */
+	protected final void internalSetSpamConfidence(int value) {
+		_spamConfidence = value;
+	}
+
 	/** Reads a new instance from the given reader. */
 	public static de.haumacher.phoneblock.app.api.model.PhoneInfo readPhoneInfo(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
 		de.haumacher.phoneblock.app.api.model.PhoneInfo result = new de.haumacher.phoneblock.app.api.model.PhoneInfo();
@@ -399,6 +457,10 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 			out.name(USER_COMMENT__PROP);
 			out.value(getUserComment());
 		}
+		out.name(HEAT__PROP);
+		out.value(getHeat());
+		out.name(SPAM_CONFIDENCE__PROP);
+		out.value(getSpamConfidence());
 	}
 
 	@Override
@@ -416,6 +478,8 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 			case LABEL__PROP: setLabel(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case LOCATION__PROP: setLocation(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case USER_COMMENT__PROP: setUserComment(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case HEAT__PROP: setHeat(in.nextDouble()); break;
+			case SPAM_CONFIDENCE__PROP: setSpamConfidence(in.nextInt()); break;
 			default: super.readField(in, field);
 		}
 	}
@@ -459,6 +523,12 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	/** XML attribute or element name of a {@link #getUserComment} property. */
 	private static final String USER_COMMENT__XML_ATTR = "user-comment";
 
+	/** XML attribute or element name of a {@link #getHeat} property. */
+	private static final String HEAT__XML_ATTR = "heat";
+
+	/** XML attribute or element name of a {@link #getSpamConfidence} property. */
+	private static final String SPAM_CONFIDENCE__XML_ATTR = "spam-confidence";
+
 	@Override
 	public String getXmlTagName() {
 		return PHONE_INFO__XML_ELEMENT;
@@ -484,6 +554,8 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 		out.writeAttribute(LABEL__XML_ATTR, getLabel());
 		out.writeAttribute(LOCATION__XML_ATTR, getLocation());
 		out.writeAttribute(USER_COMMENT__XML_ATTR, getUserComment());
+		out.writeAttribute(HEAT__XML_ATTR, Double.toString(getHeat()));
+		out.writeAttribute(SPAM_CONFIDENCE__XML_ATTR, Integer.toString(getSpamConfidence()));
 	}
 
 	/** Serializes all fields that are written as XML elements. */
@@ -569,6 +641,14 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 				setUserComment(value);
 				break;
 			}
+			case HEAT__XML_ATTR: {
+				setHeat(Double.parseDouble(value));
+				break;
+			}
+			case SPAM_CONFIDENCE__XML_ATTR: {
+				setSpamConfidence(Integer.parseInt(value));
+				break;
+			}
 			default: {
 				// Skip unknown attribute.
 			}
@@ -624,6 +704,14 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 			}
 			case USER_COMMENT__XML_ATTR: {
 				setUserComment(in.getElementText());
+				break;
+			}
+			case HEAT__XML_ATTR: {
+				setHeat(Double.parseDouble(in.getElementText()));
+				break;
+			}
+			case SPAM_CONFIDENCE__XML_ATTR: {
+				setSpamConfidence(Integer.parseInt(in.getElementText()));
 				break;
 			}
 			default: {

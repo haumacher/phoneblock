@@ -1367,6 +1367,15 @@
 						"type": "string",
 						"description": "The comment that the requesting user previously stored for this number, or null. Only populated when the request is authenticated and a comment was previously submitted by the same user (e.g., via the /rate endpoint). This is the user's own note about the number, not a community comment.",
 						"nullable": true
+					},
+					"heat": {
+						"type": "number",
+						"format": "double",
+						"description": "Recent-activity score from the confidence model. The decayed HEAT exponentially-weighted moving average at request time — how loud this number is right now, with a half-life of about two weeks. At a steady rate of r reports per day it converges to about r times tau_heat, so the value is directly interpretable. Drives ranking on space-limited lists (Fritz!Box phonebook, dongle) and Heat-based archiving — it is NOT the spam-or-not signal; that is 'spamConfidence'."
+					},
+					"spamConfidence": {
+						"type": "integer",
+						"description": "Confidence (0-100) that this number is spam. Wilson lower bound on SPAM_EVIDENCE / (SPAM_EVIDENCE + LEGIT_EVIDENCE), with both inputs decayed to the request time on a ~4-month half-life. The evidence mass acts as the denominator, so two spam reports with no opposition read low ('maybe accidental'), a hotly-contested 1000-vs-998 number also reads low ('disputed'), and a 1000-with-no-opposition number reads high. High values therefore require both direction AND mass — independent of the cumulative 'votes' field, which has no mass component."
 					}
 				}
 			},
