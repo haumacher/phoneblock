@@ -9,7 +9,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 /**
- * On-disk layout of the binary blocklist file.
+ * On-disk layout of the binary blocklist file. See the package overview for the
+ * rationale behind the two-section split.
  *
  * <h2>File layout</h2>
  *
@@ -26,7 +27,8 @@ import java.io.OutputStream;
  * </pre>
  *
  * All multi-byte fields are little-endian to match the ESP32, so the dongle can
- * memory-map a section and read 8-byte records directly.
+ * memory-map a section and read 8-byte records directly. Exact/wildcard is
+ * implied by section membership; the record bits do not carry that distinction.
  */
 public final class BlocklistBinaryFormat {
 

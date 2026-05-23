@@ -70,26 +70,23 @@ class TestBlocklistRecord {
 	}
 
 	@Test
-	void recordCombinesKeyAndFlags() {
+	void recordCombinesKeyAndBlackFlag() {
 		long key = BlocklistRecord.key("12345");
-		long whiteExact = BlocklistRecord.record(key, false, false);
-		long blackExact = BlocklistRecord.record(key, false, true);
-		long whitePrefix = BlocklistRecord.record(key, true, false);
-		long blackPrefix = BlocklistRecord.record(key, true, true);
+		long white = BlocklistRecord.record(key, false);
+		long black = BlocklistRecord.record(key, true);
 
-		assertEquals(key, BlocklistRecord.keyOf(whiteExact));
-		assertEquals(key, BlocklistRecord.keyOf(blackPrefix));
+		assertEquals(key, BlocklistRecord.keyOf(white));
+		assertEquals(key, BlocklistRecord.keyOf(black));
 
-		assertFalse(BlocklistRecord.isBlack(whiteExact));
-		assertTrue(BlocklistRecord.isBlack(blackExact));
-		assertFalse(BlocklistRecord.isWildcard(blackExact));
-		assertTrue(BlocklistRecord.isWildcard(whitePrefix));
+		assertFalse(BlocklistRecord.isBlack(white));
+		assertTrue(BlocklistRecord.isBlack(black));
 
-		assertTrue(whiteExact < blackExact,
+		assertTrue(white < black,
 			"black/white differ in bit 0; black sorts after white for same key");
-		assertTrue(blackExact < whitePrefix,
-			"wildcard bit is more significant than black/white");
-		assertTrue(whitePrefix < blackPrefix);
+
+		long reservedMask = 0b1111_1110L;
+		assertEquals(0L, white & reservedMask, "bits 7..1 reserved (zero)");
+		assertEquals(0L, black & reservedMask, "bits 7..1 reserved (zero)");
 	}
 
 	@Test
@@ -125,7 +122,7 @@ class TestBlocklistRecord {
 	@Test
 	void recordCanHaveBit63Set() {
 		String highDigits = "999999999999999";
-		long record = BlocklistRecord.record(BlocklistRecord.key(highDigits), false, true);
+		long record = BlocklistRecord.record(BlocklistRecord.key(highDigits), true);
 		assertTrue(record < 0L, "shifted record fills bit 63 for high keys");
 	}
 

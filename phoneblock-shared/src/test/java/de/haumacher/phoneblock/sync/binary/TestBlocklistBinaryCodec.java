@@ -127,8 +127,7 @@ class TestBlocklistBinaryCodec {
 	@Test
 	void recordsAreLittleEndian() throws IOException {
 		Entry entry = new Entry("12345", false, true);
-		long expectedRecord = BlocklistRecord.record(
-			BlocklistRecord.key("12345"), false, true);
+		long expectedRecord = BlocklistRecord.record(BlocklistRecord.key("12345"), true);
 
 		byte[] bytes = encode(List.of(entry));
 		byte[] recordBytes = Arrays.copyOfRange(

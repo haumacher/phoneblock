@@ -91,8 +91,7 @@ public final class BlocklistBinaryEncoder {
 		TreeSet<Long> prefix = new TreeSet<>(Long::compareUnsigned);
 
 		for (Entry e : entries) {
-			long key = BlocklistRecord.key(e.digits());
-			long record = BlocklistRecord.record(key, e.wildcard(), e.black());
+			long record = BlocklistRecord.record(BlocklistRecord.key(e.digits()), e.black());
 			if (e.wildcard()) {
 				prefix.add(record);
 			} else {

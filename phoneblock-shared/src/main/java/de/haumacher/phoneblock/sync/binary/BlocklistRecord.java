@@ -9,10 +9,14 @@ package de.haumacher.phoneblock.sync.binary;
  * <h2>Record layout (MSB to LSB)</h2>
  * <pre>
  *   Bit 63..8 : 56-bit base-11 key (16 symbol slots, left-aligned)
- *   Bit  7..2 : reserved
- *   Bit  1    : 0 = exact, 1 = wildcard prefix
+ *   Bit  7..1 : reserved (always zero)
  *   Bit  0    : 0 = white (legit), 1 = black (spam)
  * </pre>
+ *
+ * <p>
+ * Whether the entry is exact or a wildcard prefix is encoded by section
+ * membership in the file (see the package overview), not in the record bits.
+ * </p>
  *
  * <h2>Key encoding</h2>
  *
@@ -58,15 +62,12 @@ public final class BlocklistRecord {
 	/** Bitmask covering the key portion of a record. */
 	public static final long KEY_MASK = ~0xFFL;
 
-	/** Bit 1: set if the entry is a wildcard prefix entry, clear for exact entries. */
-	public static final long FLAG_WILDCARD = 1L << 1;
-
 	/** Bit 0: set if the entry is a spam (black) entry, clear for legit (white) entries. */
 	public static final long FLAG_BLACK = 1L;
 
 	/**
-	 * Mask covering the bits relevant for the binary-search comparison: key plus
-	 * exact/wildcard flag (everything except bit 0).
+	 * Mask covering the bits relevant for the binary-search comparison: key
+	 * plus reserved bits, i.e. everything except the black/white payload bit.
 	 */
 	public static final long SEARCH_MASK = ~FLAG_BLACK;
 
@@ -124,19 +125,22 @@ public final class BlocklistRecord {
 	}
 
 	/**
-	 * Assembles a complete record from a key and the two flag bits.
+	 * Assembles a complete record from a key and the black/white flag.
 	 *
-	 * @param key      The 56-bit base-11 key, as returned by {@link #key}.
-	 * @param wildcard {@code true} for a prefix-wildcard entry, {@code false} for
-	 *                 an exact entry.
-	 * @param black    {@code true} for a spam entry, {@code false} for a legit
-	 *                 entry.
+	 * <p>
+	 * The exact-vs-wildcard distinction is not encoded in the record &mdash;
+	 * the encoder places the record into either the exact or the prefix
+	 * section depending on the source entry, and the lookup recovers that
+	 * information from which section it searched.
+	 * </p>
+	 *
+	 * @param key   The 56-bit base-11 key, as returned by {@link #key}.
+	 * @param black {@code true} for a spam entry, {@code false} for a legit
+	 *              entry.
 	 * @return The complete {@code uint64} record.
 	 */
-	public static long record(long key, boolean wildcard, boolean black) {
-		return (key << KEY_SHIFT)
-			| (wildcard ? FLAG_WILDCARD : 0L)
-			| (black ? FLAG_BLACK : 0L);
+	public static long record(long key, boolean black) {
+		return (key << KEY_SHIFT) | (black ? FLAG_BLACK : 0L);
 	}
 
 	/**
@@ -166,11 +170,6 @@ public final class BlocklistRecord {
 	/** Returns the key portion (bits 63..8) of a record, shifted down. */
 	public static long keyOf(long record) {
 		return (record >>> KEY_SHIFT) & 0x00FF_FFFF_FFFF_FFFFL;
-	}
-
-	/** Returns {@code true} if the record's wildcard flag is set. */
-	public static boolean isWildcard(long record) {
-		return (record & FLAG_WILDCARD) != 0L;
 	}
 
 	/** Returns {@code true} if the record's black/spam flag is set. */

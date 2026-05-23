@@ -95,7 +95,7 @@ public final class BlocklistLookup {
 				continue;
 			}
 			long truncatedKey = BlocklistRecord.truncate(queryKey, L);
-			long target = (truncatedKey << BlocklistRecord.KEY_SHIFT) | BlocklistRecord.FLAG_WILDCARD;
+			long target = truncatedKey << BlocklistRecord.KEY_SHIFT;
 			idx = find(_prefix, target);
 			if (idx >= 0) {
 				return BlocklistRecord.isBlack(_prefix[idx]) ? Verdict.SPAM : Verdict.LEGIT;

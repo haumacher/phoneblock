@@ -74,22 +74,23 @@ public final class BlocklistBinaryDecoder {
 
 	/**
 	 * Reconstructs the original {@link Entry entries} from a decoded blocklist.
-	 * Useful for round-trip testing.
+	 * Useful for round-trip testing. The exact/wildcard distinction is
+	 * recovered from which section a record came out of.
 	 */
 	public static List<Entry> toEntries(DecodedBlocklist decoded) {
 		List<Entry> result = new ArrayList<>(decoded.exactRecords().length + decoded.prefixRecords().length);
 		for (long r : decoded.exactRecords()) {
-			result.add(toEntry(r));
+			result.add(toEntry(r, false));
 		}
 		for (long r : decoded.prefixRecords()) {
-			result.add(toEntry(r));
+			result.add(toEntry(r, true));
 		}
 		return result;
 	}
 
-	private static Entry toEntry(long record) {
+	private static Entry toEntry(long record, boolean wildcard) {
 		String digits = BlocklistRecord.digits(BlocklistRecord.keyOf(record));
-		return new Entry(digits, BlocklistRecord.isWildcard(record), BlocklistRecord.isBlack(record));
+		return new Entry(digits, wildcard, BlocklistRecord.isBlack(record));
 	}
 
 }

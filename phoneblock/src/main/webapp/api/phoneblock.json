@@ -365,7 +365,7 @@
 								"schema": {
 									"type": "string",
 									"format": "binary",
-									"description": "Binary blocklist file (magic `PBBL`, version 1). 16-byte little-endian header (magic, version, prefix-length bitmap, exact and prefix record counts) followed by two sections of 8-byte little-endian records. Each record packs a 56-bit base-11 key plus exact/wildcard and black/white flag bits and is sorted unsigned-ascending within its section."
+									"description": "Binary blocklist file (magic `PBBL`, version 1). 16-byte little-endian header (magic, version, prefix-length bitmap, exact and prefix record counts) followed by two sections of 8-byte little-endian records. Each record packs a 56-bit base-11 key plus a black/white payload bit; whether an entry is exact or a wildcard prefix is implied by which section holds it. Records are sorted unsigned-ascending within each section."
 								}
 							},
 							"application/json": {
