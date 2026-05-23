@@ -10,31 +10,25 @@ import java.io.OutputStream;
 
 /**
  * On-disk layout of the binary blocklist file. See the package overview for the
- * rationale behind the exact/prefix split per list.
+ * rationale behind the exact/prefix split inside a list and the
+ * community/personal split across separate files.
  *
- * <h2>File layout (version 2)</h2>
+ * <h2>File layout</h2>
  *
- * Two lists in one file: the shared community list and the user's personal
- * black/white list. Either list may be empty (all counts zero); the
- * personal list typically is for a brand-new user.
+ * One file carries one list (either the community list or the user's
+ * personal list). Two downloads per dongle sync; the dongle writes them to
+ * SPIFFS as independent files and runs one {@link BlocklistLookup} over each.
  *
  * <pre>
  *   Offset Size  Field
  *   ------ ----  ----------------------------------------------------------------
  *        0   4   magic = 'P','B','B','L'   (little-endian uint32, {@link #MAGIC})
  *        4   2   version                  (little-endian uint16, {@link #VERSION})
- *        6   2   reserved                 (must be zero)
- *        8  12   community ListHeader
- *       20  12   personal  ListHeader
- *       32  8 * communityExactCount   community exact records
- *      ...  8 * communityPrefixCount  community prefix records
- *      ...  8 * personalExactCount    personal exact records
- *      ...  8 * personalPrefixCount   personal prefix records
- *
- *   ListHeader (12 bytes):
- *        0   4   prefixLengths           (16-bit bitmap in the low half, high zero)
- *        4   4   exactCount              (little-endian uint32)
- *        8   4   prefixCount             (little-endian uint32)
+ *        6   2   prefixLengths bitmap     (bit L set = prefix length L present)
+ *        8   4   exactCount               (little-endian uint32)
+ *       12   4   prefixCount              (little-endian uint32)
+ *       16   8 * exactCount   exact records, LE uint64, sorted unsigned-ascending
+ *      ...   8 * prefixCount  prefix records, LE uint64, sorted unsigned-ascending
  * </pre>
  *
  * All multi-byte fields are little-endian to match the ESP32, so the dongle
@@ -55,19 +49,41 @@ public final class BlocklistBinaryFormat {
 	public static final int MAGIC = 0x4C424250;
 
 	/** Current format version. */
-	public static final int VERSION = 2;
+	public static final int VERSION = 1;
 
-	/** Size of one list header (community or personal) in bytes. */
-	public static final int LIST_HEADER_SIZE = 12;
-
-	/** Fixed file header size in bytes: magic + version + two list headers. */
-	public static final int HEADER_SIZE = 8 + 2 * LIST_HEADER_SIZE;
+	/** Fixed header size in bytes. */
+	public static final int HEADER_SIZE = 16;
 
 	/** Size of one record in bytes. */
 	public static final int RECORD_SIZE = 8;
 
-	/** Per-list section sizes and prefix-length bitmap. */
-	public static final class ListHeader {
+	/**
+	 * Writes the file header.
+	 *
+	 * @param out            Sink to write to.
+	 * @param prefixLengths  16-bit bitmap of prefix lengths that occur in the
+	 *                       prefix section. Bit {@code L} (1..15) is set iff
+	 *                       there is at least one prefix entry with length
+	 *                       {@code L}.
+	 * @param exactCount     Number of records in the exact section.
+	 * @param prefixCount    Number of records in the prefix section.
+	 * @throws IOException On write failure.
+	 */
+	public static void writeHeader(OutputStream out, int prefixLengths, int exactCount, int prefixCount)
+			throws IOException {
+		byte[] hdr = new byte[HEADER_SIZE];
+		writeU32(hdr, 0, MAGIC);
+		writeU16(hdr, 4, VERSION);
+		writeU16(hdr, 6, prefixLengths);
+		writeU32(hdr, 8, exactCount);
+		writeU32(hdr, 12, prefixCount);
+		out.write(hdr);
+	}
+
+	/** Parsed file header. */
+	public static final class Header {
+
+		private final int _version;
 
 		private final int _prefixLengths;
 
@@ -75,20 +91,16 @@ public final class BlocklistBinaryFormat {
 
 		private final int _prefixCount;
 
-		/**
-		 * Creates a list header.
-		 *
-		 * @param prefixLengths 16-bit bitmap of prefix lengths present in the
-		 *                      prefix section; bit {@code L} (1..15) set iff at
-		 *                      least one entry has exactly {@code L} digits.
-		 *                      Bits 16..31 must be zero.
-		 * @param exactCount    Number of records in the exact section.
-		 * @param prefixCount   Number of records in the prefix section.
-		 */
-		public ListHeader(int prefixLengths, int exactCount, int prefixCount) {
+		Header(int version, int prefixLengths, int exactCount, int prefixCount) {
+			_version = version;
 			_prefixLengths = prefixLengths;
 			_exactCount = exactCount;
 			_prefixCount = prefixCount;
+		}
+
+		/** File format version, currently {@link BlocklistBinaryFormat#VERSION}. */
+		public int version() {
+			return _version;
 		}
 
 		/**
@@ -101,69 +113,16 @@ public final class BlocklistBinaryFormat {
 			return _prefixLengths;
 		}
 
-		/** Number of 8-byte records in this list's exact section. */
+		/** Number of 8-byte records in the exact section. */
 		public int exactCount() {
 			return _exactCount;
 		}
 
-		/** Number of 8-byte records in this list's prefix section. */
+		/** Number of 8-byte records in the prefix section. */
 		public int prefixCount() {
 			return _prefixCount;
 		}
 
-	}
-
-	/** Parsed file header. */
-	public static final class Header {
-
-		private final int _version;
-
-		private final ListHeader _community;
-
-		private final ListHeader _personal;
-
-		Header(int version, ListHeader community, ListHeader personal) {
-			_version = version;
-			_community = community;
-			_personal = personal;
-		}
-
-		/** File format version, currently {@link BlocklistBinaryFormat#VERSION}. */
-		public int version() {
-			return _version;
-		}
-
-		/** Sizes of the community list's exact and prefix sections. */
-		public ListHeader community() {
-			return _community;
-		}
-
-		/** Sizes of the user's personal black/white list. May be all-zero. */
-		public ListHeader personal() {
-			return _personal;
-		}
-
-	}
-
-	/**
-	 * Writes the file header (magic, version, both list descriptors).
-	 *
-	 * @throws IOException On write failure.
-	 */
-	public static void writeHeader(OutputStream out, ListHeader community, ListHeader personal) throws IOException {
-		byte[] hdr = new byte[HEADER_SIZE];
-		writeU32(hdr, 0, MAGIC);
-		writeU16(hdr, 4, VERSION);
-		writeU16(hdr, 6, 0);
-		writeListHeader(hdr, 8, community);
-		writeListHeader(hdr, 8 + LIST_HEADER_SIZE, personal);
-		out.write(hdr);
-	}
-
-	private static void writeListHeader(byte[] dst, int off, ListHeader h) {
-		writeU32(dst, off, h.prefixLengths() & 0xFFFF);
-		writeU32(dst, off + 4, h.exactCount());
-		writeU32(dst, off + 8, h.prefixCount());
 	}
 
 	/**
@@ -184,21 +143,15 @@ public final class BlocklistBinaryFormat {
 			throw new IllegalArgumentException(
 				"Unsupported binary blocklist version: " + version + " (expected " + VERSION + ")");
 		}
-		ListHeader community = readListHeader(hdr, 8);
-		ListHeader personal = readListHeader(hdr, 8 + LIST_HEADER_SIZE);
-		return new Header(version, community, personal);
-	}
-
-	private static ListHeader readListHeader(byte[] src, int off) {
-		int prefixLengths = readU32(src, off);
-		int exactCount = readU32(src, off + 4);
-		int prefixCount = readU32(src, off + 8);
+		int prefixLengths = readU16(hdr, 6);
+		int exactCount = readU32(hdr, 8);
+		int prefixCount = readU32(hdr, 12);
 		if (exactCount < 0 || prefixCount < 0) {
 			throw new IllegalArgumentException(
 				"Section count too large for 31-bit signed int: exact=" + (exactCount & 0xFFFFFFFFL)
 					+ ", prefix=" + (prefixCount & 0xFFFFFFFFL));
 		}
-		return new ListHeader(prefixLengths & 0xFFFF, exactCount, prefixCount);
+		return new Header(version, prefixLengths, exactCount, prefixCount);
 	}
 
 	/** Reads {@code count} little-endian {@code uint64} records into a fresh array. */

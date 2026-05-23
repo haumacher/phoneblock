@@ -4,11 +4,10 @@
 package de.haumacher.phoneblock.app.api;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.app.api.model.Blocklist;
@@ -40,11 +39,13 @@ import jakarta.servlet.http.HttpServletResponse;
  * </p>
  *
  * <p>
- * <b>Caching:</b> JSON and XML responses contain no user-specific data and
- * can be cached efficiently across users for a given version. The binary
- * response is user-specific (it applies the user's {@code minVotes}
- * preference and embeds the personal black/white list) and must not be
- * shared across users.
+ * <b>Binary format:</b> {@code ?format=binary&type=community} streams the
+ * community list filtered by the user's {@code minVotes} preference;
+ * {@code ?format=binary&type=personal} streams the user's personal
+ * black/white list. The split lets the community variant be pre-generated
+ * once per {@code (minVotes, dialPrefix)} combination (the personal variant
+ * is per-user and small). Both binary variants are authenticated; the
+ * {@code since} parameter is not supported in this format.
  * </p>
  */
 @WebServlet(urlPatterns = BlocklistServlet.PATH)
@@ -54,6 +55,12 @@ public class BlocklistServlet extends HttpServlet {
 
 	/** Value of the {@code format} query parameter requesting the on-device binary format. */
 	public static final String FORMAT_BINARY = "binary";
+
+	/** Value of the {@code type} query parameter selecting the community list. */
+	public static final String TYPE_COMMUNITY = "community";
+
+	/** Value of the {@code type} query parameter selecting the user's personal list. */
+	public static final String TYPE_PERSONAL = "personal";
 
 	/** Content type emitted for {@link #FORMAT_BINARY}. */
 	public static final String BINARY_CONTENT_TYPE = "application/octet-stream";
@@ -69,18 +76,23 @@ public class BlocklistServlet extends HttpServlet {
 		}
 
 		DB db = DBService.getInstance();
-		Blocklist result;
 		String userAgent = req.getHeader("User-Agent");
+		UserSettings cachedSettings = LoginFilter.getUserSettings(req);
 
 		boolean binary = FORMAT_BINARY.equals(req.getParameter("format"));
-
-		// Check if incremental sync is requested via "since" parameter
 		String sinceParam = req.getParameter("since");
-		if (binary && sinceParam != null && !sinceParam.isEmpty()) {
-			ServletUtil.sendError(resp,
-				"Incremental sync is not supported with format=binary; omit the 'since' parameter.");
+
+		if (binary) {
+			if (sinceParam != null && !sinceParam.isEmpty()) {
+				ServletUtil.sendError(resp,
+					"Incremental sync is not supported with format=binary; omit the 'since' parameter.");
+				return;
+			}
+			serveBinary(req, resp, db, userName, userAgent, cachedSettings);
 			return;
 		}
+
+		Blocklist result;
 		if (sinceParam != null && !sinceParam.isEmpty()) {
 			// Incremental sync: return only changes since the specified version
 			long sinceVersion;
@@ -110,19 +122,38 @@ public class BlocklistServlet extends HttpServlet {
 			LOG.info("Sending blocklist (minVotes {}) to user '{}' (agent '{}')", db.getMinVisibleVotes(), userName, userAgent);
 		}
 
-		UserSettings cachedSettings = LoginFilter.getUserSettings(req);
+		db.updateLastAccess(userName, System.currentTimeMillis(), userAgent, cachedSettings);
+		ServletUtil.sendResult(req, resp, result);
+	}
+
+	private void serveBinary(HttpServletRequest req, HttpServletResponse resp, DB db, String userName,
+			String userAgent, UserSettings cachedSettings) throws IOException {
+		String type = req.getParameter("type");
+		if (type == null || type.isEmpty()) {
+			type = TYPE_COMMUNITY;
+		}
+
 		db.updateLastAccess(userName, System.currentTimeMillis(), userAgent, cachedSettings);
 
-		if (binary) {
+		if (TYPE_COMMUNITY.equals(type)) {
 			// The binary file does not carry per-entry vote counts, so the
 			// user's minVotes preference must be applied server-side here.
 			int userMinVotes = Math.max(cachedSettings.getMinVotes(), db.getMinVisibleVotes());
-			DB.PersonalLists personal = db.getPersonalLists(userName);
-			List<Entry> personalEntries = PersonalEntries.from(personal.blacklist(), personal.whitelist());
+			Blocklist blocklist = db.getBlockListAPI();
+			LOG.info("Sending binary community blocklist (minVotes {}) to user '{}' (agent '{}')",
+				userMinVotes, userName, userAgent);
 			resp.setContentType(BINARY_CONTENT_TYPE);
-			BlocklistBinaryAdapter.write(resp.getOutputStream(), result, personalEntries, userMinVotes);
+			BlocklistBinaryAdapter.writeCommunity(resp.getOutputStream(), blocklist, userMinVotes);
+		} else if (TYPE_PERSONAL.equals(type)) {
+			DB.PersonalLists personal = db.getPersonalLists(userName);
+			List<Entry> entries = PersonalEntries.from(personal.blacklist(), personal.whitelist());
+			LOG.info("Sending binary personal blocklist ({} entries) to user '{}' (agent '{}')",
+				entries.size(), userName, userAgent);
+			resp.setContentType(BINARY_CONTENT_TYPE);
+			BlocklistBinaryAdapter.writePersonal(resp.getOutputStream(), entries);
 		} else {
-			ServletUtil.sendResult(req, resp, result);
+			ServletUtil.sendError(resp,
+				"Unknown 'type' value '" + type + "': expected '" + TYPE_COMMUNITY + "' or '" + TYPE_PERSONAL + "'.");
 		}
 	}
 

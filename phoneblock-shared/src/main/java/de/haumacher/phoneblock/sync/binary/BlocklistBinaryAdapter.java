@@ -6,7 +6,6 @@ package de.haumacher.phoneblock.sync.binary;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import de.haumacher.phoneblock.app.api.model.BlockListEntry;
@@ -18,24 +17,21 @@ import de.haumacher.phoneblock.sync.binary.BlocklistBinaryEncoder.Entry;
  * on-device file produced by {@link BlocklistBinaryEncoder}.
  *
  * <p>
- * The adapter is the single point that knows the on-the-wire data:
+ * Two server-side flows feed the binary format:
  * </p>
  * <ul>
- *   <li>Each {@link BlockListEntry} carries the phone number in
- *       international format with a leading {@code +} (or, for legacy
- *       clients, a leading {@code 00}). The leading prefix is stripped so
- *       the encoder sees bare E.164 digits.</li>
- *   <li>The user's personal {@code minVotes} threshold is applied here
- *       &mdash; in the binary format the per-entry vote count is gone, so
- *       the client has no way to filter after the fact.</li>
- *   <li>Personal black/white entries are emitted into the personal section,
- *       independent of any vote threshold.</li>
+ *   <li>{@link #writeCommunity}: the community blocklist filtered by the
+ *       user's {@code minVotes} threshold &mdash; in the binary format the
+ *       per-entry vote count is gone, so the client has no way to filter
+ *       after the fact.</li>
+ *   <li>{@link #writePersonal}: the user's personal black/white entries,
+ *       already normalised to {@link Entry} form by the caller.</li>
  * </ul>
  *
  * <p>
  * Wildcard / prefix entries on the community side (from the server's
- * aggregation tables) are not yet produced here &mdash; that lives in a
- * follow-up step.
+ * aggregation tables and from the global whitelist) are not yet produced
+ * here &mdash; that lives in a follow-up step.
  * </p>
  */
 public final class BlocklistBinaryAdapter {
@@ -45,24 +41,21 @@ public final class BlocklistBinaryAdapter {
 	}
 
 	/**
-	 * Writes the combined community + personal blocklist file to {@code out}.
+	 * Writes the community blocklist file to {@code out}.
 	 *
-	 * @param out             Sink to write to. Not closed by this method.
-	 * @param community       Community-list data, as returned by
-	 *                        {@code DB.getBlockListAPI()}.
-	 * @param personalEntries Personal-list entries (black and/or white). May
-	 *                        be empty for users without overrides.
-	 * @param minVotes        Per-user minimum vote threshold. Community
-	 *                        entries with fewer votes are dropped, since the
-	 *                        binary format does not carry vote counts and
-	 *                        the dongle cannot filter them itself. Values
-	 *                        below {@code 1} are treated as {@code 1}.
+	 * @param out       Sink to write to. Not closed by this method.
+	 * @param community Community-list data, as returned by
+	 *                  {@code DB.getBlockListAPI()}.
+	 * @param minVotes  Per-user minimum vote threshold. Entries with fewer
+	 *                  votes are dropped, since the binary format does not
+	 *                  carry vote counts and the dongle cannot filter them
+	 *                  itself. Values below {@code 1} are treated as
+	 *                  {@code 1}.
 	 */
-	public static void write(OutputStream out, Blocklist community, Iterable<Entry> personalEntries, int minVotes)
-			throws IOException {
+	public static void writeCommunity(OutputStream out, Blocklist community, int minVotes) throws IOException {
 		int threshold = Math.max(minVotes, 1);
 
-		List<Entry> communityEntries = new ArrayList<>(community.getNumbers().size());
+		List<Entry> entries = new ArrayList<>(community.getNumbers().size());
 		for (BlockListEntry row : community.getNumbers()) {
 			if (row.getVotes() < threshold) {
 				continue;
@@ -71,18 +64,18 @@ public final class BlocklistBinaryAdapter {
 			if (digits == null) {
 				continue;
 			}
-			communityEntries.add(new Entry(digits, false, true));
+			entries.add(new Entry(digits, false, true));
 		}
 
-		BlocklistBinaryEncoder.write(out, communityEntries, personalEntries);
+		BlocklistBinaryEncoder.write(out, entries);
 	}
 
 	/**
-	 * Convenience overload that writes a community-only file (empty personal
-	 * section) and applies the given vote threshold.
+	 * Writes the user's personal list file to {@code out}. The caller has
+	 * already converted phone IDs into bare-E.164 {@link Entry} form.
 	 */
-	public static void write(OutputStream out, Blocklist community, int minVotes) throws IOException {
-		write(out, community, Collections.emptyList(), minVotes);
+	public static void writePersonal(OutputStream out, Iterable<Entry> personalEntries) throws IOException {
+		BlocklistBinaryEncoder.write(out, personalEntries);
 	}
 
 	/**

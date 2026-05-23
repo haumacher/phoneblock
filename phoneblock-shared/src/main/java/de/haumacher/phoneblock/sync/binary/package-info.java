@@ -54,13 +54,19 @@
  *
  * <h2>Personalisation</h2>
  *
- * One file carries both the community list and the user's personal
- * black/white list, in two labelled list sections (see
- * {@link de.haumacher.phoneblock.sync.binary.BlocklistBinaryFormat}). The
- * dongle does a single download and a single flash write per sync. Lookup
- * composition (&ldquo;personal first, then community&rdquo;) and the
+ * The community list and the user's personal black/white list travel as two
+ * separate files (one list per file), fetched from two server endpoints. The
+ * dongle writes them as independent SPIFFS files and runs one
+ * {@link de.haumacher.phoneblock.sync.binary.BlocklistLookup} over each.
+ * Splitting at the wire level lets the community variant be cache- and
+ * CDN-shareable across all users that share a {@code minVotes} threshold,
+ * while the personal variant stays per-user and dynamic.
+ *
+ * <p>
+ * Lookup composition (&ldquo;personal first, then community&rdquo;) and the
  * longest-match tie-break inside the personal list are implemented by the
  * caller of {@link de.haumacher.phoneblock.sync.binary.BlocklistLookup}; see
  * that class's javadoc for the canonical pattern.
+ * </p>
  */
 package de.haumacher.phoneblock.sync.binary;

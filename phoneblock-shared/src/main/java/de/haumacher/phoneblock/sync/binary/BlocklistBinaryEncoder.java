@@ -5,20 +5,18 @@ package de.haumacher.phoneblock.sync.binary;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Collections;
 import java.util.TreeSet;
 
-import de.haumacher.phoneblock.sync.binary.BlocklistBinaryFormat.ListHeader;
-
 /**
- * Serializes the community and personal {@link Entry blocklist entries} into
- * the on-device binary file format described by {@link BlocklistBinaryFormat}.
+ * Serializes a list of {@link Entry blocklist entries} into the on-device
+ * binary file format described by {@link BlocklistBinaryFormat}. One list
+ * (community or personal) per call.
  *
  * <p>
- * Records of each list are split into exact / prefix sections, sorted
- * unsigned-ascending, and written little-endian so that the ESP32 dongle can
- * read them without byte-swapping. Within a list, duplicate entries (same key
- * + same wildcard flag + same black flag) are silently deduplicated.
+ * Records are split into exact / prefix sections, sorted unsigned-ascending,
+ * and written little-endian so that the ESP32 dongle can read them without
+ * byte-swapping. Duplicate entries (same key + same wildcard flag + same
+ * black flag) are silently deduplicated.
  * </p>
  */
 public final class BlocklistBinaryEncoder {
@@ -72,49 +70,38 @@ public final class BlocklistBinaryEncoder {
 	}
 
 	/**
-	 * Writes a community-only file (personal section empty). Convenience
-	 * wrapper around {@link #write(OutputStream, Iterable, Iterable)}.
-	 */
-	public static void write(OutputStream out, Iterable<Entry> communityEntries) throws IOException {
-		write(out, communityEntries, Collections.emptyList());
-	}
-
-	/**
-	 * Writes the combined community + personal blocklist file.
+	 * Writes the given entries to {@code out} in binary blocklist format.
 	 *
-	 * @param out                Sink to write to. The encoder writes a
-	 *                           self-contained file and does <em>not</em>
-	 *                           close the stream.
-	 * @param communityEntries   Community-list entries. Order is irrelevant.
-	 * @param personalEntries    Personal-list entries (typically a handful).
-	 *                           May be empty.
+	 * @param out     Sink to write to. The encoder writes a self-contained
+	 *                file and does <em>not</em> close the stream.
+	 * @param entries Entries to encode. Order is irrelevant.
 	 * @throws IOException              On write failure.
 	 * @throws IllegalArgumentException If an entry's digits are invalid.
 	 */
-	public static void write(OutputStream out, Iterable<Entry> communityEntries, Iterable<Entry> personalEntries)
-			throws IOException {
-		List community = collect(communityEntries);
-		List personal = collect(personalEntries);
+	public static void write(OutputStream out, Iterable<Entry> entries) throws IOException {
+		TreeSet<Long> exact = new TreeSet<>(Long::compareUnsigned);
+		TreeSet<Long> prefix = new TreeSet<>(Long::compareUnsigned);
 
-		BlocklistBinaryFormat.writeHeader(out, community.header(), personal.header());
-
-		writeRecords(out, community.exact);
-		writeRecords(out, community.prefix);
-		writeRecords(out, personal.exact);
-		writeRecords(out, personal.prefix);
-	}
-
-	private static List collect(Iterable<Entry> entries) {
-		List result = new List();
 		for (Entry e : entries) {
 			long record = BlocklistRecord.record(BlocklistRecord.key(e.digits()), e.black());
 			if (e.wildcard()) {
-				result.prefix.add(record);
+				prefix.add(record);
 			} else {
-				result.exact.add(record);
+				exact.add(record);
 			}
 		}
-		return result;
+
+		int prefixLengths = 0;
+		for (Long r : prefix) {
+			int len = BlocklistRecord.length(BlocklistRecord.keyOf(r));
+			if (len >= 1 && len <= BlocklistRecord.MAX_DIGITS) {
+				prefixLengths |= (1 << len);
+			}
+		}
+
+		BlocklistBinaryFormat.writeHeader(out, prefixLengths, exact.size(), prefix.size());
+		writeRecords(out, exact);
+		writeRecords(out, prefix);
 	}
 
 	private static void writeRecords(OutputStream out, TreeSet<Long> records) throws IOException {
@@ -125,23 +112,6 @@ public final class BlocklistBinaryEncoder {
 				buf[i] = (byte) (v >>> (8 * i));
 			}
 			out.write(buf);
-		}
-	}
-
-	/** One list's deduplicated, sorted records, ready to emit. */
-	private static final class List {
-		final TreeSet<Long> exact = new TreeSet<>(Long::compareUnsigned);
-		final TreeSet<Long> prefix = new TreeSet<>(Long::compareUnsigned);
-
-		ListHeader header() {
-			int prefixLengths = 0;
-			for (Long r : prefix) {
-				int len = BlocklistRecord.length(BlocklistRecord.keyOf(r));
-				if (len >= 1 && len <= BlocklistRecord.MAX_DIGITS) {
-					prefixLengths |= (1 << len);
-				}
-			}
-			return new ListHeader(prefixLengths, exact.size(), prefix.size());
 		}
 	}
 
