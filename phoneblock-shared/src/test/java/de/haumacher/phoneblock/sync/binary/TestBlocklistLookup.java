@@ -104,6 +104,40 @@ class TestBlocklistLookup {
 	}
 
 	@Test
+	void manyPrefixLengthsAcrossOneQuery() throws IOException {
+		// Cover every prefix length 1..15 with a known-spam pattern, plus a
+		// few unrelated prefixes for sort-order bulk. Exercises the shrinking
+		// hi-bound across many iterations.
+		Entry[] entries = new Entry[] {
+			new Entry("9", true, true),
+			new Entry("98", true, true),
+			new Entry("987", true, true),
+			new Entry("9876", true, true),
+			new Entry("98765", true, true),
+			new Entry("987654", true, true),
+			new Entry("9876543", true, true),
+			new Entry("98765432", true, true),
+			new Entry("987654321", true, true),
+			new Entry("9876543210", true, true),
+			new Entry("98765432109", true, true),
+			new Entry("987654321098", true, true),
+			new Entry("9876543210987", true, true),
+			new Entry("98765432109876", true, true),
+			new Entry("987654321098765", true, true),
+			new Entry("4930", true, false),
+			new Entry("12345", true, false),
+		};
+		BlocklistLookup lookup = build(entries);
+
+		assertEquals(Verdict.SPAM, lookup.lookup("987654321098765"),
+			"longest match wins, even after a 15-step walk");
+		assertEquals(Verdict.SPAM, lookup.lookup("9876543210987XX".replace('X', '0')),
+			"shorter prefix still hits when longer doesn't");
+		assertEquals(Verdict.UNKNOWN, lookup.lookup("8888888888"),
+			"unrelated number traverses every length and bails out cleanly");
+	}
+
+	@Test
 	void communityListReturnsSpamOnlyOnHit() throws IOException {
 		BlocklistLookup community = build(
 			new Entry("4930111", false, true),

@@ -121,40 +121,49 @@ public final class BlocklistLookup {
 
 		// Search target: key in bits 63..8, flags zero. find() masks bit 0.
 		long exactTarget = queryKey << BlocklistRecord.KEY_SHIFT;
-		int idx = find(_exact, exactTarget);
+		int idx = find(_exact, _exact.length - 1, exactTarget);
 		if (idx >= 0) {
 			return BlocklistRecord.isBlack(_exact[idx]) ? Verdict.SPAM : Verdict.LEGIT;
 		}
 
-		for (int L = BlocklistRecord.MAX_DIGITS; L >= 1; L--) {
+		// As L shrinks, truncate(queryKey, L) is monotonically non-increasing
+		// (slots get cleared, never set), so the previous miss's insertion
+		// point is a valid upper bound for every subsequent search: any record
+		// matching the next, smaller target must live strictly to its left.
+		int hi = _prefix.length - 1;
+		for (int L = BlocklistRecord.MAX_DIGITS; L >= 1 && hi >= 0; L--) {
 			if ((_prefixLengths & (1 << L)) == 0) {
 				continue;
 			}
-			long truncatedKey = BlocklistRecord.truncate(queryKey, L);
-			long prefixTarget = truncatedKey << BlocklistRecord.KEY_SHIFT;
-			idx = find(_prefix, prefixTarget);
+			long prefixTarget = BlocklistRecord.truncate(queryKey, L) << BlocklistRecord.KEY_SHIFT;
+			idx = find(_prefix, hi, prefixTarget);
 			if (idx >= 0) {
 				return BlocklistRecord.isBlack(_prefix[idx]) ? Verdict.SPAM : Verdict.LEGIT;
 			}
+			hi = -idx - 2;
 		}
 
 		return Verdict.UNKNOWN;
 	}
 
 	/**
-	 * Binary search masking bit 0. Returns the index of a matching record, or
-	 * {@code -1} if none matches.
+	 * Binary search over {@code sorted[0..hi]} masking bit 0. Returns the
+	 * matching index, or {@code -(insertion point) - 1} if no entry matches
+	 * (same convention as {@link java.util.Arrays#binarySearch(long[], long)}).
 	 *
 	 * <p>
-	 * Both sides are compared with {@link Long#compareUnsigned}, so records with
-	 * the most-significant key bit set (which puts bit 63 of the record at 1)
-	 * sort correctly above records with that bit clear.
+	 * Both sides are compared with {@link Long#compareUnsigned}, so records
+	 * with the most-significant key bit set (which puts bit 63 of the record
+	 * at 1) sort correctly above records with that bit clear.
 	 * </p>
+	 *
+	 * @param hi Upper bound (inclusive). Pass {@code sorted.length - 1} to
+	 *           search the whole array; the prefix loop uses the previous
+	 *           search's insertion point to keep the range shrinking.
 	 */
-	private static int find(long[] sorted, long target) {
+	private static int find(long[] sorted, int hi, long target) {
 		long needle = target & BlocklistRecord.SEARCH_MASK;
 		int lo = 0;
-		int hi = sorted.length - 1;
 		while (lo <= hi) {
 			int mid = (lo + hi) >>> 1;
 			long midMasked = sorted[mid] & BlocklistRecord.SEARCH_MASK;
@@ -167,7 +176,7 @@ public final class BlocklistLookup {
 				return mid;
 			}
 		}
-		return -1;
+		return -(lo + 1);
 	}
 
 }
