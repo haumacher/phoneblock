@@ -14,6 +14,7 @@ module de.haumacher.phoneblock.shared {
 	exports de.haumacher.phoneblock.sync.config;
 	exports de.haumacher.phoneblock.sync.filter;
 	exports de.haumacher.phoneblock.sync.cli;
+	exports de.haumacher.phoneblock.sync.binary;
 
 	opens de.haumacher.phoneblock.app.api.model to org.mybatis;
 

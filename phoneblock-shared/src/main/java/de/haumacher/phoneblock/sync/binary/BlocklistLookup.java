@@ -1,0 +1,137 @@
+/*
+ * Copyright (c) 2026 Bernhard Haumacher et al. All Rights Reserved.
+ */
+package de.haumacher.phoneblock.sync.binary;
+
+import de.haumacher.phoneblock.sync.binary.BlocklistBinaryDecoder.DecodedBlocklist;
+
+/**
+ * Reference implementation of the on-device blocklist lookup, used for testing
+ * and as the spec for the C port on the dongle.
+ *
+ * <h2>Algorithm</h2>
+ *
+ * For an incoming query {@code q}:
+ * <ol>
+ *   <li>Encode {@code key(q)} once.</li>
+ *   <li>Binary-search the exact section for any record whose key matches the
+ *       full query.</li>
+ *   <li>For each prefix length {@code L} present in
+ *       {@link BlocklistBinaryFormat.Header#prefixLengths()}, truncate the query
+ *       key to {@code L} digits and binary-search the prefix section.</li>
+ *   <li>Returns the verdict of the longest matching record (exact &gt;
+ *       longer-prefix &gt; shorter-prefix).</li>
+ * </ol>
+ *
+ * <p>
+ * The binary search compares records masked with
+ * {@link BlocklistRecord#SEARCH_MASK} (i.e. ignoring the black/white payload
+ * bit), so a single match is found regardless of the entry's color.
+ * </p>
+ *
+ * <h2>Single vs. combined lookup</h2>
+ *
+ * A single instance corresponds to <em>one</em> list (the community list or the
+ * user's personal list). The longest-match rule applies <em>within</em> that
+ * list. Composition of community and personal lists (personal-first
+ * override) lives in the caller:
+ *
+ * <pre>
+ *   Verdict v = personal.lookup(digits);
+ *   if (v != UNKNOWN) return v;
+ *   return community.lookup(digits) == SPAM ? SPAM : LEGIT;
+ * </pre>
+ */
+public final class BlocklistLookup {
+
+	/** Verdict for a single blocklist lookup. */
+	public enum Verdict {
+		/** The number is on the spam (black) list. */
+		SPAM,
+
+		/** The number is on the legit (white) list. */
+		LEGIT,
+
+		/** No matching entry. */
+		UNKNOWN
+	}
+
+	private final long[] _exact;
+
+	private final long[] _prefix;
+
+	private final int _prefixLengths;
+
+	/**
+	 * Builds a lookup over a decoded blocklist.
+	 */
+	public static BlocklistLookup of(DecodedBlocklist decoded) {
+		return new BlocklistLookup(
+			decoded.exactRecords(),
+			decoded.prefixRecords(),
+			decoded.header().prefixLengths());
+	}
+
+	BlocklistLookup(long[] exact, long[] prefix, int prefixLengths) {
+		_exact = exact;
+		_prefix = prefix;
+		_prefixLengths = prefixLengths;
+	}
+
+	/**
+	 * Looks up the verdict for a fully-normalised E.164 digit string.
+	 */
+	public Verdict lookup(CharSequence digits) {
+		long queryKey = BlocklistRecord.key(digits);
+
+		long exactRecord = (queryKey << BlocklistRecord.KEY_SHIFT);
+		int idx = find(_exact, exactRecord);
+		if (idx >= 0) {
+			return BlocklistRecord.isBlack(_exact[idx]) ? Verdict.SPAM : Verdict.LEGIT;
+		}
+
+		for (int L = BlocklistRecord.MAX_DIGITS; L >= 1; L--) {
+			if ((_prefixLengths & (1 << L)) == 0) {
+				continue;
+			}
+			long truncatedKey = BlocklistRecord.truncate(queryKey, L);
+			long target = (truncatedKey << BlocklistRecord.KEY_SHIFT) | BlocklistRecord.FLAG_WILDCARD;
+			idx = find(_prefix, target);
+			if (idx >= 0) {
+				return BlocklistRecord.isBlack(_prefix[idx]) ? Verdict.SPAM : Verdict.LEGIT;
+			}
+		}
+
+		return Verdict.UNKNOWN;
+	}
+
+	/**
+	 * Binary search masking bit 0. Returns the index of a matching record, or
+	 * {@code -1} if none matches.
+	 *
+	 * <p>
+	 * Both sides are compared with {@link Long#compareUnsigned}, so records with
+	 * the most-significant key bit set (which puts bit 63 of the record at 1)
+	 * sort correctly above records with that bit clear.
+	 * </p>
+	 */
+	private static int find(long[] sorted, long target) {
+		long needle = target & BlocklistRecord.SEARCH_MASK;
+		int lo = 0;
+		int hi = sorted.length - 1;
+		while (lo <= hi) {
+			int mid = (lo + hi) >>> 1;
+			long midMasked = sorted[mid] & BlocklistRecord.SEARCH_MASK;
+			int c = Long.compareUnsigned(midMasked, needle);
+			if (c < 0) {
+				lo = mid + 1;
+			} else if (c > 0) {
+				hi = mid - 1;
+			} else {
+				return mid;
+			}
+		}
+		return -1;
+	}
+
+}
