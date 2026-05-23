@@ -42,16 +42,23 @@ public final class BlocklistBinaryDecoder {
 			_prefixRecords = prefixRecords;
 		}
 
+		/** Parsed file header, including the prefix-length bitmap. */
 		public Header header() {
 			return _header;
 		}
 
-		/** Exact records, sorted by unsigned 64-bit value. */
+		/**
+		 * Exact records, sorted unsigned-ascending. Length equals
+		 * {@link Header#exactCount()}.
+		 */
 		public long[] exactRecords() {
 			return _exactRecords;
 		}
 
-		/** Prefix records, sorted by unsigned 64-bit value. */
+		/**
+		 * Prefix records, sorted unsigned-ascending. Length equals
+		 * {@link Header#prefixCount()}.
+		 */
 		public long[] prefixRecords() {
 			return _prefixRecords;
 		}

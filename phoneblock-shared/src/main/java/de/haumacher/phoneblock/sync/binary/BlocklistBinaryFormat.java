@@ -92,18 +92,27 @@ public final class BlocklistBinaryFormat {
 			_prefixCount = prefixCount;
 		}
 
+		/** File format version, currently {@link BlocklistBinaryFormat#VERSION}. */
 		public int version() {
 			return _version;
 		}
 
+		/**
+		 * Bitmap of prefix lengths present in the prefix section: bit {@code L}
+		 * (1..15) is set iff at least one prefix entry has exactly {@code L}
+		 * digits. The dongle's wildcard lookup uses this to skip lengths that
+		 * have no entries.
+		 */
 		public int prefixLengths() {
 			return _prefixLengths;
 		}
 
+		/** Number of 8-byte records in the exact section. */
 		public int exactCount() {
 			return _exactCount;
 		}
 
+		/** Number of 8-byte records in the prefix section. */
 		public int prefixCount() {
 			return _prefixCount;
 		}
