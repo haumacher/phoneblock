@@ -84,6 +84,26 @@ class TestBlocklistLookup {
 	}
 
 	@Test
+	void overlyLongQueryStillMatchesWildcard() throws IOException {
+		BlocklistLookup lookup = build(new Entry("4930", true, true));
+		assertEquals(Verdict.SPAM, lookup.lookup("493012345678901234567"),
+			"21-digit dial (spammer with 6-digit extension) still falls under the 4930* wildcard");
+	}
+
+	@Test
+	void overlyLongQueryDoesNotForgeExactHit() throws IOException {
+		BlocklistLookup lookup = build(new Entry("493012345", false, true));
+		assertEquals(Verdict.UNKNOWN, lookup.lookup("493012345999"),
+			"exact-9-digit entry must not match a longer dial as exact");
+	}
+
+	@Test
+	void exactlyFifteenDigitsIsNotTruncated() throws IOException {
+		BlocklistLookup lookup = build(new Entry("123456789012345", false, true));
+		assertEquals(Verdict.SPAM, lookup.lookup("123456789012345"));
+	}
+
+	@Test
 	void communityListReturnsSpamOnlyOnHit() throws IOException {
 		BlocklistLookup community = build(
 			new Entry("4930111", false, true),

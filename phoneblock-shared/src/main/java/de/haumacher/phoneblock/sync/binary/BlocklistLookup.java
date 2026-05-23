@@ -80,8 +80,21 @@ public final class BlocklistLookup {
 
 	/**
 	 * Looks up the verdict for a fully-normalised E.164 digit string.
+	 *
+	 * <p>
+	 * Inputs longer than {@link BlocklistRecord#MAX_DIGITS} are silently
+	 * truncated to that length: anything past digit 15 is sub-addressing /
+	 * extension inside the destination, not part of the E.164 number, so the
+	 * matchable identity of the call is its 15-digit prefix. An over-long
+	 * input therefore can never hit an exact entry that is not itself a
+	 * 15-digit number, but it can still be caught by a wildcard prefix &mdash;
+	 * which is exactly the spammer-dials-with-extension case.
+	 * </p>
 	 */
 	public Verdict lookup(CharSequence digits) {
+		if (digits.length() > BlocklistRecord.MAX_DIGITS) {
+			digits = digits.subSequence(0, BlocklistRecord.MAX_DIGITS);
+		}
 		long queryKey = BlocklistRecord.key(digits);
 
 		// Search target: key in bits 63..8, flags zero. find() masks bit 0.
