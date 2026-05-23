@@ -128,6 +128,82 @@ public interface SpamReports {
 			""")
 	int insertAggregation100EmasOnly(String prefix, byte[] hash,
 		double heatInc, double spamEvidenceInc, double legitEvidenceInc);
+
+	/**
+	 * Backfill the confidence-model EMA columns from the cumulative counters
+	 * (epic #300 / migration 29). Runs once at migration time.
+	 *
+	 * <p>Treats all existing events as if they happened at
+	 * {@code max(LASTPING, UPDATED)} for the row, then projects to the EMA
+	 * reference epoch {@code t0}. This is intentionally on the recent end of
+	 * the plausible range: earlier would over-decay, later is impossible.
+	 * A row that went silent a year ago therefore decays the whole history
+	 * by a year — exactly what the Heat-based archiver (#335) wants to see.</p>
+	 *
+	 * <p>Bind parameters carry the constants from {@link Ema} and
+	 * {@link Signals} so changes there stay in one place rather than being
+	 * scattered through SQL literals.</p>
+	 */
+	@Update("""
+			update NUMBERS set
+				HEAT = ((DOWN_VOTES + UP_VOTES) * #{voteHeatW}
+				        + CALLS * #{reportCallHeatW}
+				        + SEARCHES * #{searchHeatW})
+				     * EXP((GREATEST(LASTPING, UPDATED) - #{t0Millis}) / #{tauHeatMillis}),
+				SPAM_EVIDENCE = DOWN_VOTES * #{voteEvidenceW}
+				              * EXP((GREATEST(LASTPING, UPDATED) - #{t0Millis}) / #{tauClassMillis}),
+				LEGIT_EVIDENCE = UP_VOTES * #{voteEvidenceW}
+				               * EXP((GREATEST(LASTPING, UPDATED) - #{t0Millis}) / #{tauClassMillis})
+			where GREATEST(LASTPING, UPDATED) > 0
+			  and (DOWN_VOTES > 0 or UP_VOTES > 0 or CALLS > 0 or SEARCHES > 0)
+			""")
+	int backfillNumbersEmas(double t0Millis, double tauHeatMillis, double tauClassMillis,
+		double voteHeatW, double voteEvidenceW, double reportCallHeatW, double searchHeatW);
+
+	/**
+	 * Backfill the /10 aggregation EMAs as the sum of the per-number EMAs in
+	 * the block (#337). Matches the forward path semantic: every event adds
+	 * the same projected value to the number, /10 and /100 rows.
+	 *
+	 * <p>Must run <em>after</em> {@link #backfillNumbersEmas}.</p>
+	 */
+	@Update("""
+			update NUMBERS_AGGREGATION_10 a set
+				HEAT = COALESCE((select sum(n.HEAT) from NUMBERS n
+				                 where n.PHONE > a.PREFIX
+				                   and n.PHONE < concat(a.PREFIX, 'Z')
+				                   and length(n.PHONE) = length(a.PREFIX) + 1), 0),
+				SPAM_EVIDENCE = COALESCE((select sum(n.SPAM_EVIDENCE) from NUMBERS n
+				                          where n.PHONE > a.PREFIX
+				                            and n.PHONE < concat(a.PREFIX, 'Z')
+				                            and length(n.PHONE) = length(a.PREFIX) + 1), 0),
+				LEGIT_EVIDENCE = COALESCE((select sum(n.LEGIT_EVIDENCE) from NUMBERS n
+				                           where n.PHONE > a.PREFIX
+				                             and n.PHONE < concat(a.PREFIX, 'Z')
+				                             and length(n.PHONE) = length(a.PREFIX) + 1), 0)
+			""")
+	int backfillAggregation10Emas();
+
+	/**
+	 * Backfill the /100 aggregation EMAs as the sum of the per-number EMAs in
+	 * the block (#337). Must run after {@link #backfillNumbersEmas}.
+	 */
+	@Update("""
+			update NUMBERS_AGGREGATION_100 a set
+				HEAT = COALESCE((select sum(n.HEAT) from NUMBERS n
+				                 where n.PHONE > a.PREFIX
+				                   and n.PHONE < concat(a.PREFIX, 'Z')
+				                   and length(n.PHONE) = length(a.PREFIX) + 2), 0),
+				SPAM_EVIDENCE = COALESCE((select sum(n.SPAM_EVIDENCE) from NUMBERS n
+				                          where n.PHONE > a.PREFIX
+				                            and n.PHONE < concat(a.PREFIX, 'Z')
+				                            and length(n.PHONE) = length(a.PREFIX) + 2), 0),
+				LEGIT_EVIDENCE = COALESCE((select sum(n.LEGIT_EVIDENCE) from NUMBERS n
+				                           where n.PHONE > a.PREFIX
+				                             and n.PHONE < concat(a.PREFIX, 'Z')
+				                             and length(n.PHONE) = length(a.PREFIX) + 2), 0)
+			""")
+	int backfillAggregation100Emas();
 	
 	@Insert("insert into NUMBERS_AGGREGATION_10 (PREFIX, CNT, VOTES) values (#{prefix}, #{cnt}, #{votes})")
 	int insertAggregation10(String prefix, int cnt, int votes);

@@ -641,6 +641,170 @@ public class TestDB {
 	}
 
 	@Test
+	void testConfidenceEmaBackfillFromExistingCounters() {
+		// Simulate the migration-29 starting state: pre-existing rows whose
+		// cumulative counters are filled but whose EMA columns are still zero.
+		// processVotes via the post-#332 path would already write the EMAs, so
+		// we have to zero them out after seeding to mimic the upgrade.
+
+		// Use t = T0_MILLIS so exp((t − t0)/τ) = 1 and the raw EMA value equals
+		// the unprojected weight — keeps the arithmetic trivially auditable.
+		long t = Ema.T0_MILLIS;
+
+		// Three SPAM votes and one LEGIT vote, all on the same number. Net
+		// VOTES = 2, DOWN_VOTES = 3, UP_VOTES = 1.
+		processVotes("030555000010", 1, t);
+		processVotes("030555000010", 1, t);
+		processVotes("030555000010", 1, t);
+		processVotes("030555000010", -1, t);
+		// Sibling so the /10 aggregation row has cnt > 0:
+		processVotes("030555000011", 1, t);
+		processVotes("030555000012", 1, t);
+		processVotes("030555000013", 1, t);
+
+		// Sanity: confirm DOWN_VOTES/UP_VOTES match expectation before zero-out.
+		int[] counters = rawVoteCounters("030555000010");
+		assertEquals(3, counters[0], "DOWN_VOTES");
+		assertEquals(1, counters[1], "UP_VOTES");
+
+		zeroOutEmas();
+
+		// Sanity: EMAs are now zero.
+		double[] before = rawEmas("030555000010");
+		assertEquals(0.0, before[0]);
+		assertEquals(0.0, before[1]);
+		assertEquals(0.0, before[2]);
+		double[] aggBefore = rawAggEmas("03055500001", 10);
+		assertNotNull(aggBefore);
+		assertEquals(0.0, aggBefore[0]);
+		assertEquals(0.0, aggBefore[1]);
+
+		// Run the backfill the same way migration 29 would.
+		try (SqlSession session = _db.openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			double ln2 = Math.log(2.0);
+			double tauHeat = Ema.HEAT_HALF_LIFE_DAYS * 86_400_000.0 / ln2;
+			double tauClass = Ema.CLASSIFICATION_HALF_LIFE_DAYS * 86_400_000.0 / ln2;
+
+			int n = reports.backfillNumbersEmas((double) Ema.T0_MILLIS, tauHeat, tauClass,
+				Signals.DIRECT_VOTE_HEAT_WEIGHT,
+				Signals.DIRECT_VOTE_EVIDENCE_WEIGHT,
+				Signals.REPORT_CALL_HEAT_WEIGHT,
+				Signals.SEARCH_HEAT_WEIGHT);
+			assertTrue(n >= 4, "Backfill must touch all four seeded numbers, was " + n);
+
+			int agg10n = reports.backfillAggregation10Emas();
+			assertTrue(agg10n >= 1, "Backfill must touch the /10 aggregation row, was " + agg10n);
+
+			int agg100n = reports.backfillAggregation100Emas();
+			assertTrue(agg100n >= 1, "Backfill must touch the /100 aggregation row, was " + agg100n);
+
+			session.commit();
+		}
+
+		// After backfill: number EMAs reflect the pre-existing counters.
+		double[] after = rawEmas("030555000010");
+		assertTrue(after[0] > 0, "HEAT must be > 0 after backfill, was " + after[0]);
+		assertTrue(after[1] > 0, "SPAM_EVIDENCE must be > 0 after backfill, was " + after[1]);
+		assertTrue(after[2] > 0, "LEGIT_EVIDENCE must be > 0 after backfill, was " + after[2]);
+
+		// With t = t0 the projection factor is exactly 1, so raw HEAT equals
+		// the unprojected weight: (DOWN_VOTES + UP_VOTES) × DIRECT_VOTE_HEAT_WEIGHT = 4 × 1.0.
+		assertEquals(4.0, after[0], 1e-9, "raw HEAT must equal lumped weight at t = t0");
+		assertEquals(3.0, after[1], 1e-9, "raw SPAM_EVIDENCE must equal DOWN_VOTES × weight");
+		assertEquals(1.0, after[2], 1e-9, "raw LEGIT_EVIDENCE must equal UP_VOTES × weight");
+
+		// At now (well after t0) the decoded value reflects natural decay — a
+		// number with all its activity at t0 has decayed strongly already.
+		double decodedNow = Ema.decode(after[0], System.currentTimeMillis(), Ema.HEAT_HALF_LIFE_DAYS);
+		assertTrue(decodedNow > 0 && decodedNow < 4.0,
+			"Decoded HEAT at now must be > 0 and below the raw value (decay applied), was " + decodedNow);
+
+		// Aggregation rows: must be the sum of the per-number EMAs in the block.
+		double[] agg10After = rawAggEmas("03055500001", 10);
+		assertNotNull(agg10After);
+		assertTrue(agg10After[0] > 0, "/10 HEAT must be > 0 after backfill, was " + agg10After[0]);
+		// /10 block carries 030555000010..030555000013 — 4 numbers — so its
+		// EMA should be at least as large as the single-number value.
+		assertTrue(agg10After[0] >= after[0],
+			"/10 HEAT must be >= number's HEAT (sum over block), was " + agg10After[0] + " vs " + after[0]);
+
+		// /100 block (prefix '0305550000') sums the same four /10 numbers.
+		double[] agg100After = rawAggEmas("0305550000", 100);
+		assertNotNull(agg100After);
+		assertTrue(agg100After[0] >= after[0]);
+	}
+
+	@Test
+	void testEmaBackfillProtectsRecentNumbersFromArchiving() {
+		// The motivating regression: without backfill, every existing row has
+		// HEAT = 0 after migration 27, so the first Heat-based archive sweep
+		// (#335) deactivates the entire blocklist. Backfill plus the gating
+		// in archiveByHeatBelow (HEAT > 0 not required there — backfill makes
+		// it > 0 for any number with prior activity) keeps that from happening.
+
+		long recent = System.currentTimeMillis() - 60_000L;  // a minute ago
+		long ancient = Ema.T0_MILLIS;  // months ago
+
+		processVotes("030666000010", 1, recent);
+		processVotes("030666000010", 1, recent);
+		processVotes("030666000010", 1, recent);
+		processVotes("030666000020", 1, ancient);  // long-dormant — should be archived
+
+		zeroOutEmas();
+
+		try (SqlSession session = _db.openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			double ln2 = Math.log(2.0);
+			reports.backfillNumbersEmas((double) Ema.T0_MILLIS,
+				Ema.HEAT_HALF_LIFE_DAYS * 86_400_000.0 / ln2,
+				Ema.CLASSIFICATION_HALF_LIFE_DAYS * 86_400_000.0 / ln2,
+				Signals.DIRECT_VOTE_HEAT_WEIGHT,
+				Signals.DIRECT_VOTE_EVIDENCE_WEIGHT,
+				Signals.REPORT_CALL_HEAT_WEIGHT,
+				Signals.SEARCH_HEAT_WEIGHT);
+			session.commit();
+		}
+
+		_db.archiveOldReports();
+
+		try (SqlSession tx = _db.openSession()) {
+			SpamReports reports = tx.getMapper(SpamReports.class);
+			assertTrue(reports.getPhoneInfo("030666000010").isActive(),
+				"Recent number must stay ACTIVE after backfill + Heat sweep");
+			assertFalse(reports.getPhoneInfo("030666000020").isActive(),
+				"Long-dormant number must be archived (decayed below floor)");
+		}
+	}
+
+	/** Raw DOWN_VOTES, UP_VOTES, CALLS, SEARCHES from NUMBERS — for backfill assertions. */
+	private int[] rawVoteCounters(String phone) {
+		try (Connection conn = _dataSource.getConnection();
+				PreparedStatement stmt = conn.prepareStatement(
+					"select DOWN_VOTES, UP_VOTES, CALLS, SEARCHES from NUMBERS where PHONE = ?")) {
+			stmt.setString(1, phone);
+			try (ResultSet rs = stmt.executeQuery()) {
+				assertTrue(rs.next(), "No row for " + phone);
+				return new int[] { rs.getInt(1), rs.getInt(2), rs.getInt(3), rs.getInt(4) };
+			}
+		} catch (SQLException ex) {
+			throw new RuntimeException(ex);
+		}
+	}
+
+	/** Zero out every EMA column in NUMBERS and the aggregation tables. */
+	private void zeroOutEmas() {
+		try (Connection conn = _dataSource.getConnection();
+				Statement stmt = conn.createStatement()) {
+			stmt.execute("update NUMBERS set HEAT = 0, SPAM_EVIDENCE = 0, LEGIT_EVIDENCE = 0");
+			stmt.execute("update NUMBERS_AGGREGATION_10 set HEAT = 0, SPAM_EVIDENCE = 0, LEGIT_EVIDENCE = 0");
+			stmt.execute("update NUMBERS_AGGREGATION_100 set HEAT = 0, SPAM_EVIDENCE = 0, LEGIT_EVIDENCE = 0");
+		} catch (SQLException ex) {
+			throw new RuntimeException(ex);
+		}
+	}
+
+	@Test
 	void testHeatRankedBlocklist() {
 		// Issue #336: ?limit=N returns the top-N currently-loudest spam numbers,
 		// ordered by Heat — quiet old numbers drop out so currently-active ones

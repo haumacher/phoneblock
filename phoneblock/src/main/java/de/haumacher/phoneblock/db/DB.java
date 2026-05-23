@@ -539,6 +539,10 @@ public class DB {
 						populatePersonalizationHashes(session);
 					}
 
+					if (version == 29) {
+						backfillConfidenceEmas(reports);
+					}
+
 					users.updateProperty("db.version", Integer.toString(version));
 					session.commit();
 				}
@@ -1876,6 +1880,42 @@ public class DB {
 		}
 		LOG.info("Backfilled SHA1 hashes for {} personalization entries, skipped {}.", updated, skipped);
 		session.commit();
+	}
+
+	/**
+	 * Backfill the confidence-model EMA columns from existing cumulative
+	 * counters during migration to version 29 (epic #300).
+	 *
+	 * <p>Without this step the new API surface ({@code heat},
+	 * {@code spamConfidence}, Heat-based archiving, Heat-ranked blocklist,
+	 * decay-aware wildcard tracking) would start out empty on every
+	 * pre-existing row — the first Heat-based archive sweep would deactivate
+	 * the entire blocklist. The backfill assumes every past event happened
+	 * at {@code max(LASTPING, UPDATED)} for the row, then projects to the
+	 * EMA reference epoch — see {@link SpamReports#backfillNumbersEmas} for
+	 * the rationale.</p>
+	 */
+	private void backfillConfidenceEmas(SpamReports reports) {
+		LOG.info("Confidence model (#300): backfilling EMA columns from existing counters.");
+
+		double t0Millis = (double) Ema.T0_MILLIS;
+		double ln2 = Math.log(2.0);
+		double tauHeatMillis = Ema.HEAT_HALF_LIFE_DAYS * 86_400_000.0 / ln2;
+		double tauClassMillis = Ema.CLASSIFICATION_HALF_LIFE_DAYS * 86_400_000.0 / ln2;
+
+		int numbersUpdated = reports.backfillNumbersEmas(
+			t0Millis, tauHeatMillis, tauClassMillis,
+			Signals.DIRECT_VOTE_HEAT_WEIGHT,
+			Signals.DIRECT_VOTE_EVIDENCE_WEIGHT,
+			Signals.REPORT_CALL_HEAT_WEIGHT,
+			Signals.SEARCH_HEAT_WEIGHT);
+		LOG.info("Backfilled EMAs on {} NUMBERS rows.", numbersUpdated);
+
+		int agg10Updated = reports.backfillAggregation10Emas();
+		LOG.info("Backfilled EMAs on {} NUMBERS_AGGREGATION_10 rows.", agg10Updated);
+
+		int agg100Updated = reports.backfillAggregation100Emas();
+		LOG.info("Backfilled EMAs on {} NUMBERS_AGGREGATION_100 rows.", agg100Updated);
 	}
 
 	/**
