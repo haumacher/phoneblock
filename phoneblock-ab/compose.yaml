@@ -5,10 +5,14 @@ services:
     container_name: phoneblock
     network_mode: host
     environment:
-      # PUID/PGID override the in-container user (default 999) so it matches the
-      # host owner of the bind-mounted ./recordings directory. Set these to the
-      # numeric UID/GID that owns ./recordings on the host (e.g. `id -u` / `id -g`
-      # of the user running docker). Omit both to keep the image default.
+      # The container chowns the bind-mounted ./recordings directory to its
+      # internal user on startup, so recording works out of the box without
+      # any host-side chown. By default that user is UID/GID 999.
+      #
+      # Only set PUID/PGID if you want the recordings to be owned by a
+      # specific host user instead — e.g. so you can browse them via SMB/NFS
+      # under your normal account. Use the numeric UID/GID of that user
+      # (`id -u <name>` / `id -g <name>`).
       #- PUID=1000
       #- PGID=1000
       - PHONEBLOCK_API_KEY=<your API key, create one at https://phoneblock.net/phoneblock/settings>   <==== ADJUST HERE!
