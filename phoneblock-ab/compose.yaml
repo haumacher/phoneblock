@@ -5,6 +5,12 @@ services:
     container_name: phoneblock
     network_mode: host
     environment:
+      # PUID/PGID override the in-container user (default 999) so it matches the
+      # host owner of the bind-mounted ./recordings directory. Set these to the
+      # numeric UID/GID that owns ./recordings on the host (e.g. `id -u` / `id -g`
+      # of the user running docker). Omit both to keep the image default.
+      #- PUID=1000
+      #- PGID=1000
       - PHONEBLOCK_API_KEY=<your API key, create one at https://phoneblock.net/phoneblock/settings>   <==== ADJUST HERE!
       - SIP_USER=<your VOIP-Phone-User as configured in FRITZ!Box>         <==== ADJUST HERE!
       - SIP_PASSWD=<your VOIP-phone-password as configured in FRITZ!Box>   <==== ADJUST HERE!
