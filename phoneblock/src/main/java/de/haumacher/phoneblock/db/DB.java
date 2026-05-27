@@ -962,9 +962,9 @@ public class DB {
 
 		int absVotes = Math.abs(votes);
 		double heatInc = Ema.increment(absVotes * Signals.DIRECT_VOTE_HEAT_WEIGHT,
-			time, Ema.HEAT_HALF_LIFE_DAYS);
+			time, Ema.HEAT_TAU_MILLIS);
 		double evidenceInc = Ema.increment(absVotes * Signals.DIRECT_VOTE_EVIDENCE_WEIGHT,
-			time, Ema.CLASSIFICATION_HALF_LIFE_DAYS);
+			time, Ema.CLASSIFICATION_TAU_MILLIS);
 		double spamEvidenceInc = votes > 0 ? evidenceInc : 0.0;
 		double legitEvidenceInc = votes < 0 ? evidenceInc : 0.0;
 
@@ -1575,8 +1575,8 @@ public class DB {
 		// to zero, so this naturally yields the legacy `votes=0` removal
 		// signal — the contract for /api/blocklist?since=N is preserved.
 		long now = System.currentTimeMillis();
-		double decodedSpam = Ema.decode(n.getSpamEvidence(), now, Ema.CLASSIFICATION_HALF_LIFE_DAYS);
-		double decodedLegit = Ema.decode(n.getLegitEvidence(), now, Ema.CLASSIFICATION_HALF_LIFE_DAYS);
+		double decodedSpam = Ema.decode(n.getSpamEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
+		double decodedLegit = Ema.decode(n.getLegitEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
 		int votes = (int) Math.round(Math.max(0.0, decodedSpam - decodedLegit));
 		return BlockListEntry.create()
 				.setPhone(number.getPlus())
@@ -1775,8 +1775,8 @@ public class DB {
 			rawSpam = dbInfo.getSpamEvidence();
 			rawLegit = dbInfo.getLegitEvidence();
 		}
-		double decodedNumberSpam = Ema.decode(rawSpam, now, Ema.CLASSIFICATION_HALF_LIFE_DAYS);
-		double decodedNumberLegit = Ema.decode(rawLegit, now, Ema.CLASSIFICATION_HALF_LIFE_DAYS);
+		double decodedNumberSpam = Ema.decode(rawSpam, now, Ema.CLASSIFICATION_TAU_MILLIS);
+		double decodedNumberLegit = Ema.decode(rawLegit, now, Ema.CLASSIFICATION_TAU_MILLIS);
 
 		// votesWildcard reflects the block view: take the larger of /10 and
 		// /100 decoded evidence — concentrated spam dominates via /10,
@@ -1784,11 +1784,11 @@ public class DB {
 		// evidence; the aggregation EMAs already contain that contribution
 		// (see #337). Net out the legitimate-evidence as we did historically.
 		double decodedBlockSpam = Math.max(
-			Ema.decode(aggregation10.getSpamEvidence(), now, Ema.CLASSIFICATION_HALF_LIFE_DAYS),
-			Ema.decode(aggregation100.getSpamEvidence(), now, Ema.CLASSIFICATION_HALF_LIFE_DAYS));
+			Ema.decode(aggregation10.getSpamEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS),
+			Ema.decode(aggregation100.getSpamEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS));
 		double decodedBlockLegit = Math.max(
-			Ema.decode(aggregation10.getLegitEvidence(), now, Ema.CLASSIFICATION_HALF_LIFE_DAYS),
-			Ema.decode(aggregation100.getLegitEvidence(), now, Ema.CLASSIFICATION_HALF_LIFE_DAYS));
+			Ema.decode(aggregation10.getLegitEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS),
+			Ema.decode(aggregation100.getLegitEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS));
 
 		// Net evidence — legitimate votes cancel out spam votes on the displayed
 		// counter. Floor at 0 so a contested number cannot read negative.
@@ -1802,7 +1802,7 @@ public class DB {
 		// Confidence model surface (#334). spamConfidence is the Wilson lower
 		// bound on the block-level evidence — the same view callers see for
 		// the wildcard decision.
-		result.setHeat(Ema.decode(rawHeat, now, Ema.HEAT_HALF_LIFE_DAYS));
+		result.setHeat(Ema.decode(rawHeat, now, Ema.HEAT_TAU_MILLIS));
 		result.setSpamConfidence(Confidence.spamConfidence(
 			Math.max(decodedNumberSpam, decodedBlockSpam),
 			Math.max(decodedNumberLegit, decodedBlockLegit)));
@@ -1883,8 +1883,8 @@ public class DB {
 	 * use the cumulative-votes path until #334 switches the read side too.</p>
 	 */
 	public double computeBlockSpamEvidence(AggregationInfo agg10, AggregationInfo agg100, long now) {
-		double e10 = Ema.decode(agg10.getSpamEvidence(), now, Ema.CLASSIFICATION_HALF_LIFE_DAYS);
-		double e100 = Ema.decode(agg100.getSpamEvidence(), now, Ema.CLASSIFICATION_HALF_LIFE_DAYS);
+		double e10 = Ema.decode(agg10.getSpamEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
+		double e100 = Ema.decode(agg100.getSpamEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
 		return Math.max(e10, e100);
 	}
 
@@ -1943,13 +1943,8 @@ public class DB {
 	private void backfillConfidenceEmas(SpamReports reports) {
 		LOG.info("Confidence model (#300): backfilling EMA columns from existing counters.");
 
-		double t0Millis = (double) Ema.T0_MILLIS;
-		double ln2 = Math.log(2.0);
-		double tauHeatMillis = Ema.HEAT_HALF_LIFE_DAYS * 86_400_000.0 / ln2;
-		double tauClassMillis = Ema.CLASSIFICATION_HALF_LIFE_DAYS * 86_400_000.0 / ln2;
-
 		int numbersUpdated = reports.backfillNumbersEmas(
-			t0Millis, tauHeatMillis, tauClassMillis,
+			(double) Ema.T0_MILLIS, Ema.HEAT_TAU_MILLIS, Ema.CLASSIFICATION_TAU_MILLIS,
 			Signals.DIRECT_VOTE_HEAT_WEIGHT,
 			Signals.DIRECT_VOTE_EVIDENCE_WEIGHT,
 			Signals.REPORT_CALL_HEAT_WEIGHT,
@@ -2048,7 +2043,7 @@ public class DB {
 	 */
 	public boolean recordCallOrTrackWildcard(SpamReports reports, PhoneNumer number,
 			String phoneId, long now, boolean firstFromUser) {
-		double heatInc = Ema.increment(Signals.REPORT_CALL_HEAT_WEIGHT, now, Ema.HEAT_HALF_LIFE_DAYS);
+		double heatInc = Ema.increment(Signals.REPORT_CALL_HEAT_WEIGHT, now, Ema.HEAT_TAU_MILLIS);
 		int updated = reports.recordCall(phoneId, now, heatInc, 0.0);
 
 		// Block-level Heat (#337) is fed unconditionally: any report from any
@@ -2074,7 +2069,7 @@ public class DB {
 		}
 
 		double implicitEvidence = Ema.increment(Signals.IMPLICIT_VOTE_EVIDENCE_WEIGHT,
-			now, Ema.CLASSIFICATION_HALF_LIFE_DAYS);
+			now, Ema.CLASSIFICATION_TAU_MILLIS);
 		byte[] hash = NumberAnalyzer.getPhoneHash(number);
 		// Create the row with no direct votes — only implicit evidence and Heat.
 		reports.addReport(phoneId, hash, 0, now, heatInc, implicitEvidence, 0.0);
@@ -2099,7 +2094,7 @@ public class DB {
 	public void addSearchHit(SpamReports reports, PhoneNumer number, String dialPrefix, long now) {
 		String phone = NumberAnalyzer.getPhoneId(number);
 
-		double heatInc = Ema.increment(Signals.SEARCH_HEAT_WEIGHT, now, Ema.HEAT_HALF_LIFE_DAYS);
+		double heatInc = Ema.increment(Signals.SEARCH_HEAT_WEIGHT, now, Ema.HEAT_TAU_MILLIS);
 		int rows = reports.incSearchCount(phone, now, heatInc);
 		if (rows == 0) {
 			byte[] hash = NumberAnalyzer.getPhoneHash(number);
@@ -2394,9 +2389,9 @@ public class DB {
 		// alone would hold legitimate-only-with-old-spam rows. Both floors
 		// must be crossed. The thresholds are pre-projected here so the SQL
 		// WHERE clause is a plain column comparison.
-		double maxRawHeat = Ema.projectedThreshold(HEAT_FLOOR_FOR_ACTIVE, now, Ema.HEAT_HALF_LIFE_DAYS);
+		double maxRawHeat = Ema.projectedThreshold(HEAT_FLOOR_FOR_ACTIVE, now, Ema.HEAT_TAU_MILLIS);
 		double maxRawSpamEvidence = Ema.projectedThreshold(MIN_SPAM_EVIDENCE_FOR_ACTIVE,
-			now, Ema.CLASSIFICATION_HALF_LIFE_DAYS);
+			now, Ema.CLASSIFICATION_TAU_MILLIS);
 
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);

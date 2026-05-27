@@ -71,6 +71,20 @@ public final class Ema {
 
 	private static final long MILLIS_PER_DAY = 86_400_000L;
 
+	/**
+	 * Heat time constant τ in milliseconds, derived from
+	 * {@link #HEAT_HALF_LIFE_DAYS}. Pre-computed so the per-event hot path
+	 * does no division.
+	 */
+	public static final double HEAT_TAU_MILLIS = tauMillis(HEAT_HALF_LIFE_DAYS);
+
+	/**
+	 * Classification time constant τ in milliseconds, derived from
+	 * {@link #CLASSIFICATION_HALF_LIFE_DAYS}. Pre-computed so the per-event
+	 * hot path does no division.
+	 */
+	public static final double CLASSIFICATION_TAU_MILLIS = tauMillis(CLASSIFICATION_HALF_LIFE_DAYS);
+
 	private Ema() {
 		// no instances
 	}
@@ -79,18 +93,17 @@ public final class Ema {
 	 * Increment to add to a projected-EMA column for an event of given weight
 	 * at the given time.
 	 *
-	 * <p>Result: {@code weight · exp((now − t0) / τ)} with
-	 * {@code τ = halfLifeDays / ln 2}. Computed in Java; pass as a bind
-	 * parameter to the {@code UPDATE} statement.</p>
+	 * <p>Result: {@code weight · exp((now − t0) / τ)}. Computed in Java; pass
+	 * as a bind parameter to the {@code UPDATE} statement.</p>
 	 *
-	 * @param weight        per-signal weight {@code wᵢ} (e.g. 1.0 for a direct
-	 *                      vote, less for weaker signals).
-	 * @param now           event time in epoch milliseconds.
-	 * @param halfLifeDays  half-life of the EMA being incremented (e.g.
-	 *                      {@link #HEAT_HALF_LIFE_DAYS}).
+	 * @param weight     per-signal weight {@code wᵢ} (e.g. 1.0 for a direct
+	 *                   vote, less for weaker signals).
+	 * @param now        event time in epoch milliseconds.
+	 * @param tauMillis  time constant τ of the EMA being incremented (e.g.
+	 *                   {@link #HEAT_TAU_MILLIS}).
 	 */
-	public static double increment(double weight, long now, long halfLifeDays) {
-		return weight * Math.exp((double) (now - T0_MILLIS) / tauMillis(halfLifeDays));
+	public static double increment(double weight, long now, double tauMillis) {
+		return weight * Math.exp((double) (now - T0_MILLIS) / tauMillis);
 	}
 
 	/**
@@ -101,22 +114,30 @@ public final class Ema {
 	 * because every row shares the same decay factor at a given {@code now},
 	 * {@code ORDER BY raw DESC} matches {@code ORDER BY decoded DESC}.</p>
 	 */
-	public static double decode(double raw, long now, long halfLifeDays) {
-		return raw * Math.exp(-(double) (now - T0_MILLIS) / tauMillis(halfLifeDays));
+	public static double decode(double raw, long now, double tauMillis) {
+		return raw * Math.exp(-(double) (now - T0_MILLIS) / tauMillis);
 	}
 
 	/**
 	 * Threshold value to compare a raw projected-EMA column against, so that
 	 * the comparison matches a decoded-value threshold at {@code now}.
 	 *
-	 * <p>{@code raw ≥ projectedThreshold(t, now, halfLife) ⇔ decoded ≥ t} —
-	 * useful for SQL predicates that must avoid {@code EXP()} per row (e.g.
+	 * <p>{@code raw ≥ projectedThreshold(t, now, τ) ⇔ decoded ≥ t} — useful
+	 * for SQL predicates that must avoid {@code EXP()} per row (e.g.
 	 * Heat-based archiving in #335).</p>
 	 */
-	public static double projectedThreshold(double decodedThreshold, long now, long halfLifeDays) {
-		return decodedThreshold * Math.exp((double) (now - T0_MILLIS) / tauMillis(halfLifeDays));
+	public static double projectedThreshold(double decodedThreshold, long now, double tauMillis) {
+		return decodedThreshold * Math.exp((double) (now - T0_MILLIS) / tauMillis);
 	}
 
+	/**
+	 * Convert a half-life in days to a time constant τ in milliseconds.
+	 *
+	 * <p>Only intended for static-initializer use — every EMA τ in operation
+	 * is materialised as a constant ({@link #HEAT_TAU_MILLIS},
+	 * {@link #CLASSIFICATION_TAU_MILLIS}); on the hot path callers must use
+	 * those constants, never re-compute τ from days.</p>
+	 */
 	private static double tauMillis(long halfLifeDays) {
 		return halfLifeDays * (double) MILLIS_PER_DAY / LN2;
 	}

@@ -236,9 +236,9 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 							// the bot at the SIP level. Drive Heat hard, plus feed
 							// SPAM_EVIDENCE on the (long-memory) classification axis.
 							double heatInc = Ema.increment(Signals.ANSWERBOT_CALL_HEAT_WEIGHT,
-								now, Ema.HEAT_HALF_LIFE_DAYS);
+								now, Ema.HEAT_TAU_MILLIS);
 							double spamEvidenceInc = Ema.increment(Signals.ANSWERBOT_CALL_EVIDENCE_WEIGHT,
-								now, Ema.CLASSIFICATION_HALF_LIFE_DAYS);
+								now, Ema.CLASSIFICATION_TAU_MILLIS);
 							reports.recordCall(info.getPhone(), now, heatInc, spamEvidenceInc);
 							db.updateLocalization(reports, info.getPhone(), settings.getDialPrefix(), 0, 0, 1, now);
 							session.commit();

@@ -682,11 +682,9 @@ public class TestDB {
 		// Run the backfill the same way migration 29 would.
 		try (SqlSession session = _db.openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			double ln2 = Math.log(2.0);
-			double tauHeat = Ema.HEAT_HALF_LIFE_DAYS * 86_400_000.0 / ln2;
-			double tauClass = Ema.CLASSIFICATION_HALF_LIFE_DAYS * 86_400_000.0 / ln2;
 
-			int n = reports.backfillNumbersEmas((double) Ema.T0_MILLIS, tauHeat, tauClass,
+			int n = reports.backfillNumbersEmas((double) Ema.T0_MILLIS,
+				Ema.HEAT_TAU_MILLIS, Ema.CLASSIFICATION_TAU_MILLIS,
 				Signals.DIRECT_VOTE_HEAT_WEIGHT,
 				Signals.DIRECT_VOTE_EVIDENCE_WEIGHT,
 				Signals.REPORT_CALL_HEAT_WEIGHT,
@@ -716,7 +714,7 @@ public class TestDB {
 
 		// At now (well after t0) the decoded value reflects natural decay — a
 		// number with all its activity at t0 has decayed strongly already.
-		double decodedNow = Ema.decode(after[0], System.currentTimeMillis(), Ema.HEAT_HALF_LIFE_DAYS);
+		double decodedNow = Ema.decode(after[0], System.currentTimeMillis(), Ema.HEAT_TAU_MILLIS);
 		assertTrue(decodedNow > 0 && decodedNow < 4.0,
 			"Decoded HEAT at now must be > 0 and below the raw value (decay applied), was " + decodedNow);
 
@@ -755,10 +753,8 @@ public class TestDB {
 
 		try (SqlSession session = _db.openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			double ln2 = Math.log(2.0);
 			reports.backfillNumbersEmas((double) Ema.T0_MILLIS,
-				Ema.HEAT_HALF_LIFE_DAYS * 86_400_000.0 / ln2,
-				Ema.CLASSIFICATION_HALF_LIFE_DAYS * 86_400_000.0 / ln2,
+				Ema.HEAT_TAU_MILLIS, Ema.CLASSIFICATION_TAU_MILLIS,
 				Signals.DIRECT_VOTE_HEAT_WEIGHT,
 				Signals.DIRECT_VOTE_EVIDENCE_WEIGHT,
 				Signals.REPORT_CALL_HEAT_WEIGHT,
