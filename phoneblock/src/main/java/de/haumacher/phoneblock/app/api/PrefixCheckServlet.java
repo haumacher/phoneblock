@@ -23,6 +23,7 @@ import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.db.AggregationInfo;
 import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
+import de.haumacher.phoneblock.db.Ema;
 import de.haumacher.phoneblock.db.DBNumberInfo;
 import de.haumacher.phoneblock.db.DBPersonalization;
 import de.haumacher.phoneblock.db.DBPhoneComment;
@@ -124,11 +125,17 @@ public class PrefixCheckServlet extends HttpServlet {
 			tPersonal = System.nanoTime();
 
 			Map<String, PhoneInfo> byPhone = new LinkedHashMap<>();
+			long now = System.currentTimeMillis();
 			for (DBNumberInfo n : communityMatches) {
+				// #342: same decay-aware vote-equivalent as /api/check and
+				// the blocklist API — decoded SPAM_EVIDENCE minus decoded
+				// LEGIT_EVIDENCE, floored at 0, rounded to int. Clients
+				// filtering `votes >= minVotes` see the same view here.
+				double decodedSpam = Ema.decode(n.getSpamEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
+				double decodedLegit = Ema.decode(n.getLegitEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
+				int votes = (int) Math.round(Math.max(0.0, decodedSpam - decodedLegit));
 				PhoneInfo pi = NumberAnalyzer.phoneInfoFromId(n.getPhone())
-					// TODO #342 step 3: setVotes here should reflect the
-					// decay-aware vote-equivalent, not the raw counter.
-					.setVotes(n.getRawVotes())
+					.setVotes(votes)
 					.setRating(DB.rating(n))
 					.setArchived(!n.isActive())
 					.setDateAdded(n.getAdded())

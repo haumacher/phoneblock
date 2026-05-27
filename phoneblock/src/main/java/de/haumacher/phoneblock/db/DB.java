@@ -1614,12 +1614,13 @@ public class DB {
 	}
 
 	public static Rating rating(NumberInfo n) {
-		// TODO #342 step 3: this should consult the decay-aware decoded
-		// SPAM_EVIDENCE / LEGIT_EVIDENCE on n, not the raw counter — every
-		// other API field is decay-aware since #338. Until that fix lands,
-		// `rating()` is the lone decay-blind read-path consumer; kept on
-		// getRawVotes() for now so the rename in step 2 is mechanical.
-		if (n.getRawVotes() <= 0) {
+		// #342: the visibility gate consults the decay-aware net evidence,
+		// matching the votes that PhoneInfo / BlockListEntry expose. A number
+		// whose spam history has decayed below its legit history reads as
+		// legitimate again — same view as /api/check, no separate flip.
+		// Per-category rating counts remain raw cumulative; they only decide
+		// which spam category dominates *once* the gate has fired.
+		if (!hasNetSpamEvidence(n)) {
 			return Rating.A_LEGITIMATE;
 		}
 		
@@ -1663,6 +1664,25 @@ public class DB {
 		}
 	
 		return result;
+	}
+
+	/**
+	 * Decay-aware "is this number still spam?" gate (#342). Returns true when
+	 * the decoded SPAM_EVIDENCE exceeds the decoded LEGIT_EVIDENCE at the
+	 * current moment — same semantic as the {@code votes > 0} surface in
+	 * {@code PhoneInfo} / {@code BlockListEntry}. Falls back to the raw
+	 * counter when called on a plain {@link NumberInfo} that carries no EMA
+	 * data (in practice rare — every read-path producer is a
+	 * {@link DBNumberInfo}).
+	 */
+	private static boolean hasNetSpamEvidence(NumberInfo n) {
+		if (n instanceof DBNumberInfo dbInfo) {
+			long now = System.currentTimeMillis();
+			double decodedSpam = Ema.decode(dbInfo.getSpamEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
+			double decodedLegit = Ema.decode(dbInfo.getLegitEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
+			return decodedSpam - decodedLegit > 0;
+		}
+		return n.getRawVotes() > 0;
 	}
 
 	private DBUserSettings getUserSettings(Users users, String login) {
@@ -1876,30 +1896,6 @@ public class DB {
 	}
 
 	/**
-	 * Computes wildcard votes from aggregation data alone (for numbers not in the DB).
-	 *
-	 * <p>The aggregation tables have asymmetric semantics:
-	 * <ul>
-	 * <li>{@code AGGREGATION_10}: {@code cnt} = number of distinct numbers reported in this
-	 *     10-block; {@code votes} = sum of their votes.</li>
-	 * <li>{@code AGGREGATION_100}: {@code cnt} = number of <em>10-sub-blocks</em> within this
-	 *     100-block that have crossed {@link #MIN_AGGREGATE_10}; {@code votes} = sum of votes
-	 *     across just those qualified sub-blocks. Promotion happens incrementally in
-	 *     {@link #updateAggregation10(SpamReports, String, int, int)}.</li>
-	 * </ul>
-	 *
-	 * <p>The four branches below are disjoint and exhaustive in {@code (cnt10, cnt100)}:
-	 * <pre>
-	 * cnt10 ≥ 4, cnt100 ≥ 3: my 10-block is promoted, neighborhood qualifies →
-	 *                        votes100 already contains my votes10. Return votes100.
-	 * cnt10 ≥ 4, cnt100 < 3: my 10-block alone qualifies → return votes10.
-	 * cnt10 < 4, cnt100 ≥ 3: my 10-block not promoted → votes100 does NOT contain
-	 *                        my votes10; the two sums are disjoint and we return
-	 *                        votes100 + votes10 (no double-count).
-	 * cnt10 < 4, cnt100 < 3: nothing qualifies → 0.
-	 * </pre>
-	 */
-	/**
 	 * Decoded block-level {@code SPAM_EVIDENCE} for the given moment (#337).
 	 *
 	 * <p>The /10 and /100 aggregation EMAs are populated flat — every event
@@ -1909,30 +1905,16 @@ public class DB {
 	 * concentrated spam reaches the threshold via /10, spread-thin spam via
 	 * /100.</p>
 	 *
-	 * <p>This is the decay-aware successor to {@link #computeWildcardVotes} —
-	 * compare against {@link #MIN_BLOCK_SPAM_EVIDENCE} to decide whether a
-	 * block is wildcard-blocked right now. Currently consumed only by
-	 * {@link #recordCallOrTrackWildcard} (#333); the API surface continues to
-	 * use the cumulative-votes path until #334 switches the read side too.</p>
+	 * <p>Compare against {@link #MIN_BLOCK_SPAM_EVIDENCE} to decide whether a
+	 * block is wildcard-blocked right now. Consumed both server-side (the
+	 * wildcard-promotion path in {@link #recordCallOrTrackWildcard}) and on
+	 * the API surface (#342) for the {@code votesWildcard} returned to
+	 * unknown numbers via prefix-hash lookup.</p>
 	 */
 	public double computeBlockSpamEvidence(AggregationInfo agg10, AggregationInfo agg100, long now) {
 		double e10 = Ema.decode(agg10.getSpamEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
 		double e100 = Ema.decode(agg100.getSpamEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
 		return Math.max(e10, e100);
-	}
-
-	public int computeWildcardVotes(AggregationInfo aggregation10, AggregationInfo aggregation100) {
-		if (aggregation100.getCnt() >= MIN_AGGREGATE_100) {
-			int votes = aggregation100.getVotes();
-			if (aggregation10.getCnt() < MIN_AGGREGATE_10) {
-				// Disjoint because votes10 has not yet been promoted to AGGREGATION_100.
-				votes += aggregation10.getVotes();
-			}
-			return votes;
-		} else if (aggregation10.getCnt() >= MIN_AGGREGATE_10) {
-			return aggregation10.getVotes();
-		}
-		return 0;
 	}
 
 	/**
