@@ -1983,6 +1983,7 @@ public class DB {
 			Signals.DIRECT_VOTE_HEAT_WEIGHT,
 			Signals.DIRECT_VOTE_EVIDENCE_WEIGHT,
 			Signals.CALL_HEAT_WEIGHT,
+			Signals.CALL_EVIDENCE_WEIGHT,
 			Signals.SEARCH_HEAT_WEIGHT);
 		LOG.info("Backfilled EMAs on {} NUMBERS rows.", numbersUpdated);
 
@@ -2025,7 +2026,8 @@ public class DB {
 
 		int localeUpdated = reports.backfillNumbersLocaleSpamEvidence(
 			(double) Ema.T0_MILLIS, Ema.CLASSIFICATION_TAU_MILLIS,
-			Signals.DIRECT_VOTE_EVIDENCE_WEIGHT);
+			Signals.DIRECT_VOTE_EVIDENCE_WEIGHT,
+			Signals.CALL_EVIDENCE_WEIGHT);
 		LOG.info("Backfilled NUMBERS_LOCALE.SPAM_EVIDENCE on {} rows.", localeUpdated);
 
 		int publishedUpdated = reports.backfillPublishedSpamEvidence();

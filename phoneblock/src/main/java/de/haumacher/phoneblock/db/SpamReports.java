@@ -150,10 +150,10 @@ public interface SpamReports {
 	@Update("""
 			update NUMBERS set
 				HEAT = ((DOWN_VOTES + UP_VOTES) * #{voteHeatW}
-				        + CALLS * #{reportCallHeatW}
+				        + CALLS * #{callHeatW}
 				        + SEARCHES * #{searchHeatW})
 				     * EXP((GREATEST(LASTPING, UPDATED) - #{t0Millis}) / #{tauHeatMillis}),
-				SPAM_EVIDENCE = DOWN_VOTES * #{voteEvidenceW}
+				SPAM_EVIDENCE = (DOWN_VOTES * #{voteEvidenceW} + CALLS * #{callEvidenceW})
 				              * EXP((GREATEST(LASTPING, UPDATED) - #{t0Millis}) / #{tauClassMillis}),
 				LEGIT_EVIDENCE = UP_VOTES * #{voteEvidenceW}
 				               * EXP((GREATEST(LASTPING, UPDATED) - #{t0Millis}) / #{tauClassMillis})
@@ -161,7 +161,7 @@ public interface SpamReports {
 			  and (DOWN_VOTES > 0 or UP_VOTES > 0 or CALLS > 0 or SEARCHES > 0)
 			""")
 	int backfillNumbersEmas(double t0Millis, double tauHeatMillis, double tauClassMillis,
-		double voteHeatW, double voteEvidenceW, double reportCallHeatW, double searchHeatW);
+		double voteHeatW, double voteEvidenceW, double callHeatW, double callEvidenceW, double searchHeatW);
 
 	/**
 	 * Backfill the /10 aggregation EMAs as the sum of the per-number EMAs in
@@ -222,14 +222,14 @@ public interface SpamReports {
 	@Update("""
 			update NUMBERS_LOCALE set
 				HEAT = (VOTES * #{voteHeatW}
-				        + CALLS * #{reportCallHeatW}
+				        + CALLS * #{callHeatW}
 				        + SEARCHES * #{searchHeatW})
 				     * EXP((LASTACCESS - #{t0Millis}) / #{tauHeatMillis})
 			where LASTACCESS > 0
 			  and (VOTES > 0 or CALLS > 0 or SEARCHES > 0)
 			""")
 	int backfillNumbersLocaleHeat(double t0Millis, double tauHeatMillis,
-		double voteHeatW, double reportCallHeatW, double searchHeatW);
+		double voteHeatW, double callHeatW, double searchHeatW);
 
 	/**
 	 * Backfill {@code NUMBERS_LOCALE.SPAM_EVIDENCE} from the per-region
@@ -242,12 +242,12 @@ public interface SpamReports {
 	 */
 	@Update("""
 			update NUMBERS_LOCALE set
-				SPAM_EVIDENCE = VOTES * #{voteEvidenceW}
+				SPAM_EVIDENCE = (VOTES * #{voteEvidenceW} + CALLS * #{callEvidenceW})
 				              * EXP((LASTACCESS - #{t0Millis}) / #{tauClassMillis})
-			where LASTACCESS > 0 and VOTES > 0
+			where LASTACCESS > 0 and (VOTES > 0 or CALLS > 0)
 			""")
 	int backfillNumbersLocaleSpamEvidence(double t0Millis, double tauClassMillis,
-		double voteEvidenceW);
+		double voteEvidenceW, double callEvidenceW);
 
 	/**
 	 * Backfill {@code NUMBERS.PUBLISHED_SPAM_EVIDENCE} (#342 / migration 31).

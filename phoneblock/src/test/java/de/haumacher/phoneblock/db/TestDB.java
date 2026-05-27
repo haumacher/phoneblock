@@ -688,6 +688,7 @@ public class TestDB {
 				Signals.DIRECT_VOTE_HEAT_WEIGHT,
 				Signals.DIRECT_VOTE_EVIDENCE_WEIGHT,
 				Signals.CALL_HEAT_WEIGHT,
+				Signals.CALL_EVIDENCE_WEIGHT,
 				Signals.SEARCH_HEAT_WEIGHT);
 			assertTrue(n >= 4, "Backfill must touch all four seeded numbers, was " + n);
 
@@ -758,6 +759,7 @@ public class TestDB {
 				Signals.DIRECT_VOTE_HEAT_WEIGHT,
 				Signals.DIRECT_VOTE_EVIDENCE_WEIGHT,
 				Signals.CALL_HEAT_WEIGHT,
+				Signals.CALL_EVIDENCE_WEIGHT,
 				Signals.SEARCH_HEAT_WEIGHT);
 			session.commit();
 		}
