@@ -119,16 +119,12 @@ public class ReportCallServlet extends HttpServlet {
 
 			long userId = auth.getUserId();
 
-			// First-seen marker for this (user, phone) — drives both the per-user call
-			// log (CALLERS) and the wildcard-implicit-evidence path inside
-			// DB.recordCallOrTrackWildcard.
-			boolean firstFromUser = users.addCall(userId, phoneId, now) == 0;
-			if (firstFromUser) {
-				users.insertCaller(userId, phoneId, now);
-			}
-
+			// Per-day quota is the only abuse guard on this endpoint — each
+			// reported call counts equally, no per-(user, phone) dedup
+			// (that was the old CALLERS / firstFromUser concept, removed in
+			// #342). The shared DB.recordCall path handles the rest.
 			if (users.tryConsumeCallReportQuota(userId, today, DAILY_QUOTA) == 1) {
-				db.recordCallOrTrackWildcard(reports, number, phoneId, dialPrefix, now, firstFromUser);
+				db.recordCall(reports, number, phoneId, dialPrefix, now);
 			}
 
 			session.commit();

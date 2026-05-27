@@ -687,7 +687,7 @@ public class TestDB {
 				Ema.HEAT_TAU_MILLIS, Ema.CLASSIFICATION_TAU_MILLIS,
 				Signals.DIRECT_VOTE_HEAT_WEIGHT,
 				Signals.DIRECT_VOTE_EVIDENCE_WEIGHT,
-				Signals.REPORT_CALL_HEAT_WEIGHT,
+				Signals.CALL_HEAT_WEIGHT,
 				Signals.SEARCH_HEAT_WEIGHT);
 			assertTrue(n >= 4, "Backfill must touch all four seeded numbers, was " + n);
 
@@ -757,7 +757,7 @@ public class TestDB {
 				Ema.HEAT_TAU_MILLIS, Ema.CLASSIFICATION_TAU_MILLIS,
 				Signals.DIRECT_VOTE_HEAT_WEIGHT,
 				Signals.DIRECT_VOTE_EVIDENCE_WEIGHT,
-				Signals.REPORT_CALL_HEAT_WEIGHT,
+				Signals.CALL_HEAT_WEIGHT,
 				Signals.SEARCH_HEAT_WEIGHT);
 			session.commit();
 		}
@@ -1048,206 +1048,60 @@ public class TestDB {
 	}
 
 	@Test
-	void testReportsAlwaysFeedBlockHeat() {
-		// Issue #337 / follow-up: every call report feeds block-level Heat,
-		// regardless of whether the number is known, whether it is the user's
-		// first report, or whether the block is hot enough for implicit
-		// evidence. The block-level signal is what keeps a wildcard
-		// neighbourhood "current" even before any specific number qualifies
-		// for individual tracking.
+	void testRecordCallUnifiedPath() {
+		// #342 consolidation: every reported call — Fritz!Box, dongle, app,
+		// answer-bot, all the same path — adds +1 Heat and +1 evidence to
+		// NUMBERS (materialising the row if it doesn't exist yet), to the
+		// /10 and /100 aggregations, and to the per-region NUMBERS_LOCALE
+		// row. No wildcard-match gate, no firstFromUser dedup — one call,
+		// one signal.
 
 		long t = Ema.T0_MILLIS;
 
-		// Cold /10 block: no prior votes anywhere. Report an unknown number.
-		PhoneNumer cold = NumberAnalyzer.analyze("020998877010", "+49");
-		String coldId = NumberAnalyzer.getPhoneId(cold);
-
+		// First report for an unknown number — materialises the row.
+		PhoneNumer fresh = NumberAnalyzer.analyze("030555111222", "+49");
+		String freshId = NumberAnalyzer.getPhoneId(fresh);
 		try (SqlSession tx = _db.openSession()) {
 			SpamReports reports = tx.getMapper(SpamReports.class);
-			_db.recordCallOrTrackWildcard(reports, cold, coldId, "+49", t, true);
+			assertNull(reports.getVotes(freshId), "Number must not exist before the report");
+			_db.recordCall(reports, fresh, freshId, "+49", t);
 			tx.commit();
 		}
 
-		// Block-level Heat must be set even though no NUMBERS row exists and
-		// the block was cold.
-		double[] coldBlock = rawAggEmas("02099887701", 10);
-		assertNotNull(coldBlock, "/10 row must exist after report");
-		assertTrue(coldBlock[0] > 0, "block HEAT must rise on a report into a cold block");
-		assertEquals(0.0, coldBlock[1], 0.0, "no SPAM_EVIDENCE for cold-block report");
+		double[] after = rawEmas(freshId);
+		assertTrue(after[0] > 0, "HEAT must be set on the freshly materialised row");
+		assertTrue(after[1] > 0, "SPAM_EVIDENCE must be set on the freshly materialised row");
+		assertEquals(0.0, after[2], 0.0, "LEGIT_EVIDENCE must stay 0 (calls are not legit votes)");
+		assertEquals(0, _db.getVotesFor(freshId), "Direct VOTES counter stays 0 — calls are not direct votes");
 
-		// Second report from the same user on the same unknown number — was
-		// previously a no-op, must now still bump block Heat (this fixes the
-		// "block stays current while spammer rotates" requirement).
+		double[] block10After = rawAggEmas("03055511122", 10);
+		assertNotNull(block10After, "/10 aggregation row must exist after the report");
+		assertTrue(block10After[0] > 0, "block HEAT must rise on the report");
+		assertTrue(block10After[1] > 0, "block SPAM_EVIDENCE must rise on the report");
+
+		// Second report on the same number — accumulates, no firstFromUser cap.
 		long later = t + 60_000L;
 		try (SqlSession tx = _db.openSession()) {
 			SpamReports reports = tx.getMapper(SpamReports.class);
-			_db.recordCallOrTrackWildcard(reports, cold, coldId, "+49", later, false);
+			_db.recordCall(reports, fresh, freshId, "+49", later);
 			tx.commit();
 		}
-		double[] coldBlockAfter = rawAggEmas("02099887701", 10);
-		assertTrue(coldBlockAfter[0] > coldBlock[0],
-			"second report from same user on unknown number must still feed block Heat, "
-				+ "was " + coldBlockAfter[0] + " (before " + coldBlock[0] + ")");
-		assertEquals(0.0, coldBlockAfter[1], 0.0,
-			"second report must NOT add SPAM_EVIDENCE (idempotency)");
-	}
+		double[] doubled = rawEmas(freshId);
+		assertTrue(doubled[0] > after[0], "HEAT must grow on the second report");
+		assertTrue(doubled[1] > after[1], "SPAM_EVIDENCE must also grow — no per-user cap");
 
-	@Test
-	void testWildcardThresholdMatches4MonthMemoryWindow() {
-		// MIN_BLOCK_SPAM_EVIDENCE = 2.0 with CLASSIFICATION_HALF_LIFE_DAYS = 125
-		// means four direct votes hold a block at the threshold after one half-
-		// life (~4 months). Sustained spam keeps it well above; a block that
-		// has gone quiet falls below within a half-life after the last burst.
-
-		long t0 = Ema.T0_MILLIS;
-
-		// Build a hot /10 block at t0 with four positive votes (decoded
-		// evidence at t0 = 4.0, comfortably above the 2.0 threshold).
-		processVotes("030881100010", 1, t0);
-		processVotes("030881100011", 1, t0);
-		processVotes("030881100012", 1, t0);
-		processVotes("030881100013", 1, t0);
-
-		// Just inside the four-month window — half a half-life out, decoded
-		// evidence ≈ 4 · 2^-0.5 ≈ 2.83. Comfortably above 2.0, block still fires.
-		long innerWindow = t0 + (Ema.CLASSIFICATION_HALF_LIFE_DAYS / 2) * 86_400_000L;
-		PhoneNumer insideUnknown = NumberAnalyzer.analyze("030881100020", "+49");
-		String insideUnknownId = NumberAnalyzer.getPhoneId(insideUnknown);
+		// Report into a cold range — same path, same effect: row materialises,
+		// gets heat and evidence. No "range-must-be-hot" gate any more.
+		PhoneNumer cold = NumberAnalyzer.analyze("020999888777", "+49");
+		String coldId = NumberAnalyzer.getPhoneId(cold);
 		try (SqlSession tx = _db.openSession()) {
 			SpamReports reports = tx.getMapper(SpamReports.class);
-			assertTrue(_db.recordCallOrTrackWildcard(reports, insideUnknown, insideUnknownId, "+49", innerWindow, true),
-				"Block must still fire inside the four-month memory window");
+			_db.recordCall(reports, cold, coldId, "+49", t);
 			tx.commit();
 		}
-
-		// Use a fresh /10 block so the previous implicit-evidence write does
-		// not contaminate the next assertion.
-		processVotes("030882200010", 1, t0);
-		processVotes("030882200011", 1, t0);
-		processVotes("030882200012", 1, t0);
-		processVotes("030882200013", 1, t0);
-
-		// Two half-lives out — decoded evidence ≈ 4 · 2^-2 = 1.0, below 2.0.
-		long outsideWindow = t0 + 2L * Ema.CLASSIFICATION_HALF_LIFE_DAYS * 86_400_000L;
-		PhoneNumer outsideUnknown = NumberAnalyzer.analyze("030882200020", "+49");
-		String outsideUnknownId = NumberAnalyzer.getPhoneId(outsideUnknown);
-		try (SqlSession tx = _db.openSession()) {
-			SpamReports reports = tx.getMapper(SpamReports.class);
-			assertFalse(_db.recordCallOrTrackWildcard(reports, outsideUnknown, outsideUnknownId, "+49", outsideWindow, true),
-				"Block must no longer fire two half-lives out — evidence has decayed below 2.0");
-			tx.commit();
-		}
-	}
-
-	@Test
-	void testBlockSpamEvidenceDecaysOutOfBlocking() {
-		// Issue #337: a block stays wildcard-blocked while its decayed
-		// SPAM_EVIDENCE is above MIN_BLOCK_SPAM_EVIDENCE, and decays out of
-		// blocking once the spammer moves on.
-
-		long t0 = Ema.T0_MILLIS;
-
-		// Build a hot /10 block at t0 — four direct votes hit the threshold exactly.
-		processVotes("030777000010", 1, t0);
-		processVotes("030777000011", 1, t0);
-		processVotes("030777000012", 1, t0);
-		processVotes("030777000013", 1, t0);
-
-		PhoneNumer fresh = NumberAnalyzer.analyze("030777000014", "+49");
-		String freshId = NumberAnalyzer.getPhoneId(fresh);
-
-		// Just after the burst the block is hot → implicit tracking fires.
-		try (SqlSession tx = _db.openSession()) {
-			SpamReports reports = tx.getMapper(SpamReports.class);
-			assertTrue(_db.recordCallOrTrackWildcard(reports, fresh, freshId, "+49", t0, true),
-				"Hot block at t0 must materialise the row");
-			tx.commit();
-		}
-
-		// A different unknown number in the same /10 — but report it far in the
-		// future. By that point the block's SPAM_EVIDENCE has decayed below the
-		// threshold (4 direct-vote units, classification half-life 125 days).
-		// Three classification half-lives → decoded evidence drops to 4 × 2^-3 = 0.5 < threshold.
-		PhoneNumer later = NumberAnalyzer.analyze("030777000015", "+49");
-		String laterId = NumberAnalyzer.getPhoneId(later);
-		long farFuture = t0 + 3L * Ema.CLASSIFICATION_HALF_LIFE_DAYS * 86_400_000L;
-		try (SqlSession tx = _db.openSession()) {
-			SpamReports reports = tx.getMapper(SpamReports.class);
-			assertFalse(_db.recordCallOrTrackWildcard(reports, later, laterId, "+49", farFuture, true),
-				"Block must have decayed out of wildcard-blocking after several half-lives");
-			tx.commit();
-		}
-		try (SqlSession tx = _db.openSession()) {
-			SpamReports reports = tx.getMapper(SpamReports.class);
-			assertNull(reports.getVotes(laterId),
-				"Decayed-out block must not materialise a NUMBERS row for the new number");
-		}
-	}
-
-	@Test
-	void testWildcardImplicitVoteFlow() {
-		// Issue #333: a report-call on an unknown number must materialise a NUMBERS
-		// row only when the number falls into a hot wildcard-blocked /10 (or /100)
-		// block. Idempotency uses the "first report from this user" flag.
-
-		long now = Ema.T0_MILLIS;
-
-		// Build a hot /10 block "0301234567_": four neighbours cross MIN_AGGREGATE_10.
-		processVotes("030123456700", 1, now);
-		processVotes("030123456701", 1, now);
-		processVotes("030123456702", 1, now);
-		processVotes("030123456703", 1, now);
-
-		PhoneNumer hotUnknown = NumberAnalyzer.analyze("030123456704", "+49");
-		String hotUnknownId = NumberAnalyzer.getPhoneId(hotUnknown);
-
-		// Sanity: the number is not yet in NUMBERS.
-		try (SqlSession tx = _db.openSession()) {
-			SpamReports reports = tx.getMapper(SpamReports.class);
-			assertNull(reports.getVotes(hotUnknownId));
-		}
-
-		// First report from this user for the hot-unknown number — must create the row.
-		try (SqlSession tx = _db.openSession()) {
-			SpamReports reports = tx.getMapper(SpamReports.class);
-			boolean materialized = _db.recordCallOrTrackWildcard(reports, hotUnknown, hotUnknownId, "+49", now, true);
-			assertTrue(materialized, "Hot wildcard block must materialise the row");
-			tx.commit();
-		}
-		double[] firstReport = rawEmas(hotUnknownId);
-		assertEquals(0, _db.getVotesFor(hotUnknownId), "Direct VOTES must stay 0 — implicit only");
-		assertTrue(firstReport[0] > 0, "HEAT must be set by the implicit report");
-		assertTrue(firstReport[1] > 0, "SPAM_EVIDENCE must be set by the implicit report");
-		assertEquals(0.0, firstReport[2], 0.0, "LEGIT_EVIDENCE must stay 0");
-
-		// Second report from the SAME user — row exists now, only Heat grows;
-		// SPAM_EVIDENCE must not be inflated a second time.
-		long later = now + 60_000L;
-		try (SqlSession tx = _db.openSession()) {
-			SpamReports reports = tx.getMapper(SpamReports.class);
-			boolean materialized = _db.recordCallOrTrackWildcard(reports, hotUnknown, hotUnknownId, "+49", later, false);
-			assertFalse(materialized, "Second report must not create a new row");
-			tx.commit();
-		}
-		double[] secondReport = rawEmas(hotUnknownId);
-		assertTrue(secondReport[0] > firstReport[0], "HEAT must grow on the second report");
-		assertEquals(firstReport[1], secondReport[1], 1e-12,
-			"SPAM_EVIDENCE must NOT grow on a second report from the same user");
-
-		// Unknown number in a *cold* range (no wildcard block) — must stay unknown.
-		PhoneNumer coldUnknown = NumberAnalyzer.analyze("020987654321", "+49");
-		String coldUnknownId = NumberAnalyzer.getPhoneId(coldUnknown);
-		try (SqlSession tx = _db.openSession()) {
-			SpamReports reports = tx.getMapper(SpamReports.class);
-			boolean materialized = _db.recordCallOrTrackWildcard(reports, coldUnknown, coldUnknownId, "+49", now, true);
-			assertFalse(materialized, "Cold range must not materialise the row");
-			tx.commit();
-		}
-		try (SqlSession tx = _db.openSession()) {
-			SpamReports reports = tx.getMapper(SpamReports.class);
-			assertNull(reports.getVotes(coldUnknownId),
-				"Cold-range report must not create a NUMBERS row");
-		}
+		double[] coldRow = rawEmas(coldId);
+		assertTrue(coldRow[0] > 0, "cold-range report still materialises the row with HEAT");
+		assertTrue(coldRow[1] > 0, "cold-range report still gives the new row SPAM_EVIDENCE");
 	}
 
 	@Test

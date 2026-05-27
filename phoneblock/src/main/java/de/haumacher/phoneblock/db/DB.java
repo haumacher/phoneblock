@@ -64,8 +64,6 @@ import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.app.api.model.SearchInfo;
 import de.haumacher.phoneblock.app.api.model.UserComment;
-import de.haumacher.phoneblock.callreport.model.CallReport;
-import de.haumacher.phoneblock.callreport.model.ReportInfo;
 import de.haumacher.phoneblock.credits.MessageDetails;
 import de.haumacher.phoneblock.db.config.DBConfig;
 import de.haumacher.phoneblock.db.settings.AuthToken;
@@ -114,7 +112,7 @@ public class DB {
 	private static final String SAVE_CHARS = "23456789qwertzuiopasdfghjkyxcvbnmQWERTZUPASDFGHJKLYXCVBNM";
 
 	private static final Collection<String> TABLE_NAMES = Arrays.asList(
-		"BLOCKLIST", "EXCLUDES", "SPAMREPORTS", "OLDREPORTS", "USERS", "CALLREPORT", "CALLERS", "RATINGS", "SEARCHES"
+		"BLOCKLIST", "EXCLUDES", "SPAMREPORTS", "OLDREPORTS", "USERS", "RATINGS", "SEARCHES"
 	);
 	
 	private SqlSessionFactory _sessionFactory;
@@ -590,6 +588,9 @@ public class DB {
 					if (version == 32) {
 						backfillSnapshotLegitEvidence(reports);
 					}
+
+					// migration 33 drops legacy tables CALLREPORT / CALLERS via the
+					// script; no Java hook needed.
 
 					users.updateProperty("db.version", Integer.toString(version));
 					session.commit();
@@ -1926,7 +1927,7 @@ public class DB {
 	 *
 	 * <p>Compare against {@link #MIN_BLOCK_SPAM_EVIDENCE} to decide whether a
 	 * block is wildcard-blocked right now. Consumed both server-side (the
-	 * wildcard-promotion path in {@link #recordCallOrTrackWildcard}) and on
+	 * wildcard-promotion path in {@link #recordCall}) and on
 	 * the API surface (#342) for the {@code votesWildcard} returned to
 	 * unknown numbers via prefix-hash lookup.</p>
 	 */
@@ -1981,7 +1982,7 @@ public class DB {
 			(double) Ema.T0_MILLIS, Ema.HEAT_TAU_MILLIS, Ema.CLASSIFICATION_TAU_MILLIS,
 			Signals.DIRECT_VOTE_HEAT_WEIGHT,
 			Signals.DIRECT_VOTE_EVIDENCE_WEIGHT,
-			Signals.REPORT_CALL_HEAT_WEIGHT,
+			Signals.CALL_HEAT_WEIGHT,
 			Signals.SEARCH_HEAT_WEIGHT);
 		LOG.info("Backfilled EMAs on {} NUMBERS rows.", numbersUpdated);
 
@@ -2007,7 +2008,7 @@ public class DB {
 		int updated = reports.backfillNumbersLocaleHeat(
 			(double) Ema.T0_MILLIS, Ema.HEAT_TAU_MILLIS,
 			Signals.DIRECT_VOTE_HEAT_WEIGHT,
-			Signals.REPORT_CALL_HEAT_WEIGHT,
+			Signals.CALL_HEAT_WEIGHT,
 			Signals.SEARCH_HEAT_WEIGHT);
 		LOG.info("Backfilled NUMBERS_LOCALE.HEAT on {} rows.", updated);
 	}
@@ -2108,89 +2109,44 @@ public class DB {
 	}
 
 	/**
-	 * Records an incoming spam-call report (Heat signal).
+	 * Records a reported call from any client (Fritz!Box, dongle, mobile app,
+	 * answer-bot). One call, one signal: +1 Heat and +1 evidence on the
+	 * {@code NUMBERS} row, on the {@code /10} and {@code /100} aggregations
+	 * and on the per-region {@code NUMBERS_LOCALE} row. The row is
+	 * materialised if it doesn't exist yet — the caller already decided to
+	 * report this number (either after a user-mediated spam report or
+	 * because the client auto-blocked it on range/specific evidence), so
+	 * there is no separate wildcard-match check on the server side. Per-day
+	 * abuse protection lives at the API gate (see
+	 * {@code Users.tryConsumeCallReportQuota} in {@code ReportCallServlet}).
 	 *
-	 * <p>For an existing {@code NUMBERS} row this is exactly what
-	 * {@link SpamReports#recordCall} already does — bump {@code CALLS},
-	 * refresh {@code LASTPING}, add a Heat EMA increment.</p>
-	 *
-	 * <p>For an unknown number the call is normally ignored to keep clients
-	 * from polluting the database. Issue #333 adds a single exception: if
-	 * the server itself confirms that the number falls into a hot wildcard
-	 * block (its {@code /10} or {@code /100} aggregation crosses the block
-	 * threshold), a {@code NUMBERS} row is created with no direct votes but
-	 * with implicit {@code SPAM_EVIDENCE} weighted at half a direct vote
-	 * ({@link Signals#IMPLICIT_VOTE_EVIDENCE_WEIGHT}). The wildcard match is
-	 * derived server-side from the aggregation tables, so clients cannot
-	 * fake it — this is not a pollution vector.</p>
-	 *
-	 * <p>Implicit evidence is gated on {@code firstFromUser}: each user
-	 * contributes evidence at most once per number. Later reports from the
-	 * same user (the {@code CALLERS} row already exists, so
-	 * {@code firstFromUser == false}) still contribute Heat via the regular
-	 * {@code recordCall} path, but they do not pile up evidence.</p>
-	 *
-	 * @param firstFromUser whether this is the user's first report for this
-	 *                      number, as observed via {@code users.addCall(...) == 0}.
-	 * @return {@code true} if this call materialised a new {@code NUMBERS}
-	 *         row via the wildcard-implicit-evidence path.
+	 * <p>{@code recordCall} is the single entry point for any call-driven
+	 * signal: same path, same weights, regardless of whether the call came
+	 * from a Fritz!Box, the dongle, the mobile app, or the cloud answer
+	 * bot.</p>
 	 */
-	public boolean recordCallOrTrackWildcard(SpamReports reports, PhoneNumer number,
-			String phoneId, String dialPrefix, long now, boolean firstFromUser) {
-		double heatInc = Ema.increment(Signals.REPORT_CALL_HEAT_WEIGHT, now, Ema.HEAT_TAU_MILLIS);
-		int updated = reports.recordCall(phoneId, now, heatInc, 0.0);
+	public void recordCall(SpamReports reports, PhoneNumer number,
+			String phoneId, String dialPrefix, long now) {
+		double heatInc = Ema.increment(Signals.CALL_HEAT_WEIGHT, now, Ema.HEAT_TAU_MILLIS);
+		double evidenceInc = Ema.increment(Signals.CALL_EVIDENCE_WEIGHT, now, Ema.CLASSIFICATION_TAU_MILLIS);
 
-		// Block-level Heat (#337) is fed unconditionally: any report from any
-		// user is activity in the neighbourhood, even if the specific number
-		// stays out of NUMBERS or the user has reported it before. Only the
-		// implicit SPAM_EVIDENCE promotion below is gated on first-from-user
-		// (to avoid the same user piling on) and on the block already being
-		// hot (server-verified — clients cannot fake the range match).
-		addAggregationEmas(reports, phoneId, heatInc, 0.0, 0.0);
-
-		if (updated != 0) {
-			// Regional Heat (#340): call reports are the dominant Heat source —
-			// each one means a real call event happened in this dial. Feed the
-			// per-(PHONE, DIAL) row so the dial-aware top-N reflects that.
-			// No SPAM_EVIDENCE on the unconditional call-report path — the
-			// classification signal only fires via wildcard-implicit-evidence
-			// below or via explicit votes.
-			updateLocalization(reports, phoneId, dialPrefix, 0, 1, heatInc, 0.0, now);
-			return false;
+		int updated = reports.recordCall(phoneId, now, heatInc, evidenceInc);
+		if (updated == 0) {
+			// First report of this number — materialise the NUMBERS row with
+			// the same Heat / evidence increments the existing path would
+			// have applied. Initial VOTES counter is zero; rating-category
+			// counters only move via explicit user ratings (addRating).
+			byte[] hash = NumberAnalyzer.getPhoneHash(number);
+			reports.addReport(phoneId, hash, 0, now, heatInc, evidenceInc, 0.0);
+			// addReport doesn't bump CALLS; do it via the same recordCall the
+			// existing branch used (zero EMA delta to avoid double-counting).
+			reports.recordCall(phoneId, now, 0.0, 0.0);
 		}
 
-		if (!firstFromUser) {
-			return false;
-		}
-
-		AggregationInfo agg10 = getAggregation10(reports, phoneId);
-		AggregationInfo agg100 = getAggregation100(reports, phoneId);
-		// #337: decide on decayed evidence so a once-abused range stops blocking
-		// its future legitimate occupants once the spammer moves on. The
-		// threshold mirrors MIN_AGGREGATE_10 — four direct votes' worth of
-		// spam evidence still in the block.
-		if (computeBlockSpamEvidence(agg10, agg100, now) < MIN_BLOCK_SPAM_EVIDENCE) {
-			return false;
-		}
-
-		double implicitEvidence = Ema.increment(Signals.IMPLICIT_VOTE_EVIDENCE_WEIGHT,
-			now, Ema.CLASSIFICATION_TAU_MILLIS);
-		byte[] hash = NumberAnalyzer.getPhoneHash(number);
-		// Create the row with no direct votes — only implicit evidence and Heat.
-		reports.addReport(phoneId, hash, 0, now, heatInc, implicitEvidence, 0.0);
-		// Now that the row exists, bump CALLS once for the call we are reporting.
-		reports.recordCall(phoneId, now, 0.0, 0.0);
-		// Block-level EMAs (#337): heatInc already went to the block in the
-		// unconditional path above; only the new implicit-evidence signal
-		// still needs to be promoted.
-		addAggregationEmas(reports, phoneId, 0.0, implicitEvidence, 0.0);
-		// Regional Heat (#340) + regional implicit evidence (#342): now that the
-		// NUMBERS row exists, attach both the per-dial Heat and the
-		// implicit-evidence signal — the same combination the global NUMBERS
-		// row just received, so the dial-aware visibility filter sees the
-		// freshly materialised wildcard hit too.
-		updateLocalization(reports, phoneId, dialPrefix, 0, 1, heatInc, implicitEvidence, now);
-		return true;
+		// Block-level signal (#337) and per-region signal (#340) — both
+		// always, regardless of whether the number was new or known.
+		addAggregationEmas(reports, phoneId, heatInc, evidenceInc, 0.0);
+		updateLocalization(reports, phoneId, dialPrefix, 0, 1, heatInc, evidenceInc, now);
 	}
 
 	/**
@@ -2724,58 +2680,6 @@ public class DB {
 		
 		// Drop first, because this entry contains no delta information.
 		return result.subList(1, result.size());
-	}
-
-	/** 
-	 * The call report context for the given user.
-	 */
-	public ReportInfo getCallReportInfo(String login) {
-		try (SqlSession session = openSession()) {
-			Users users = session.getMapper(Users.class);
-
-			long userId = users.getUserId(login);
-			DBReportInfo info = users.getReportInfo(userId);
-			if (info == null) {
-				return ReportInfo.create();
-			}
-			return info;
-		}
-	}
-
-	/** 
-	 * Update the call report for the given user.
-	 */
-	public void storeCallReport(String login, CallReport callReport) {
-		try (SqlSession session = openSession()) {
-			Users users = session.getMapper(Users.class);
-			SpamReports reports = session.getMapper(SpamReports.class);
-			long now = System.currentTimeMillis();
-		
-			long userId = users.getUserId(login);
-			String dialPrefix = users.getDialPrefix(login);
-			int cnt = users.updateReportInfo(userId, callReport.getTimestamp(), callReport.getLastid(), now);
-			if (cnt == 0) {
-				users.createReportInfo(userId, callReport.getTimestamp(), callReport.getLastid(), now);
-			}
-			
-			for (String phoneText : callReport.getCallers()) {
-				PhoneNumer number = NumberAnalyzer.parsePhoneNumber(phoneText, dialPrefix);
-				if (number == null) {
-					continue;
-				}
-				
-				String phoneId = NumberAnalyzer.getPhoneId(number);
-				
-				int ok = users.addCall(userId, phoneId, now);
-				if (ok == 0) {
-					users.insertCaller(userId, phoneId, now);
-				}
-				
-				processVotesAndPublish(reports, number, dialPrefix, 2, now);
-			}
-			
-			session.commit();
-		}
 	}
 
 	public int getUsers() {

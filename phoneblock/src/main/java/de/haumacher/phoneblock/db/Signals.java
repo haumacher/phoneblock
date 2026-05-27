@@ -14,17 +14,13 @@ package de.haumacher.phoneblock.db;
  * <li>A direct vote (via {@code RateServlet}) is the reference: weight 1.0
  *     for Heat and 1.0 for the matching evidence column. Every other signal
  *     is calibrated against that baseline.</li>
- * <li>{@code /api/report-call} from a client device is also worth one Heat
- *     unit — a real incoming call observed on a user's line is at least as
- *     much "activity" as someone visiting the web form. Classification is
- *     <em>not</em> touched here; the wildcard-blocked-number case is the
- *     subject of issue #333.</li>
+ * <li>A reported call — whether from a user-mediated spam report after a
+ *     call came through or from an automatic block (Fritz!Box, dongle, app,
+ *     answer-bot) — is one call, one signal. Each report adds one Heat and
+ *     one evidence unit. No per-source variants. Materialises a
+ *     {@code NUMBERS} row for unknown callers; see {@code DB.recordCall}.</li>
  * <li>Plain searches via {@code SearchServlet} are weak Heat — they reflect
  *     curiosity, not necessarily real call traffic.</li>
- * <li>An answer-bot call is a strong, machine-verified signal: the bot only
- *     picks up when the caller is already classified as spam, and the line
- *     observes the engagement at the SIP level. Both Heat and
- *     {@code SPAM_EVIDENCE} get healthy increments.</li>
  * <li>A submitted comment feeds Heat only — the user's classification stance
  *     is already captured by the rating the comment carries.</li>
  * </ul>
@@ -40,29 +36,17 @@ public final class Signals {
 	/** Reference weight: a direct user vote drives the matching evidence column by one unit. */
 	public static final double DIRECT_VOTE_EVIDENCE_WEIGHT = 1.0;
 
-	/** Client-side {@code /api/report-call}: real activity, weighted like a direct vote on the Heat axis. */
-	public static final double REPORT_CALL_HEAT_WEIGHT = 1.0;
+	/** Reported call (any source): one Heat unit per call. */
+	public static final double CALL_HEAT_WEIGHT = 1.0;
+
+	/** Reported call (any source): one evidence unit per call — same axis as a direct vote. */
+	public static final double CALL_EVIDENCE_WEIGHT = 1.0;
 
 	/** Plain text search lookup: a weak Heat signal, no classification impact. */
 	public static final double SEARCH_HEAT_WEIGHT = 0.2;
 
-	/** Answer-bot picked up the call: a strong Heat signal. */
-	public static final double ANSWERBOT_CALL_HEAT_WEIGHT = 2.0;
-
-	/** Answer-bot picked up the call: machine-verified spam evidence. */
-	public static final double ANSWERBOT_CALL_EVIDENCE_WEIGHT = 1.0;
-
 	/** Comment submission: Heat only — the comment's rating already drives classification via the vote path. */
 	public static final double COMMENT_HEAT_WEIGHT = 0.5;
-
-	/**
-	 * Implicit spam evidence weight for an unknown number that was blocked by
-	 * a wildcard rule (#333). The server confirms the wildcard match itself
-	 * — the client cannot fake it — so the report counts towards classification,
-	 * but at half the weight of a direct user vote. Tunable knob, deliberate
-	 * starting point per issue #300 / #333.
-	 */
-	public static final double IMPLICIT_VOTE_EVIDENCE_WEIGHT = 0.5;
 
 	private Signals() {
 		// no instances

@@ -47,6 +47,7 @@ import org.zoolu.net.AddressType;
 import org.zoolu.util.ConfigFile;
 
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
+import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 import de.haumacher.phoneblock.answerbot.AnswerBot;
 import de.haumacher.phoneblock.answerbot.AnswerbotConfig;
 import de.haumacher.phoneblock.answerbot.CustomerConfig;
@@ -206,7 +207,7 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 					}
 					
 					Boolean state = blocklist.getPersonalizationState(userId, phoneId);
-					
+
 					PhoneInfo info;
 					if (state != null) {
 						// There is a personalization for the calling number.
@@ -227,27 +228,13 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 					} else {
 						info = db.getPhoneApiInfo(reports, phoneId);
 					}
-					
-					try {
-						if (info.getVotes() > 0) {
-							long now = System.currentTimeMillis();
-							// Issue #332: an answer-bot pickup is a strong, machine-verified
-							// signal — the caller passed the local block decision and engaged
-							// the bot at the SIP level. Drive Heat hard, plus feed
-							// SPAM_EVIDENCE on the (long-memory) classification axis.
-							double heatInc = Ema.increment(Signals.ANSWERBOT_CALL_HEAT_WEIGHT,
-								now, Ema.HEAT_TAU_MILLIS);
-							double spamEvidenceInc = Ema.increment(Signals.ANSWERBOT_CALL_EVIDENCE_WEIGHT,
-								now, Ema.CLASSIFICATION_TAU_MILLIS);
-							reports.recordCall(info.getPhone(), now, heatInc, spamEvidenceInc);
-							db.updateLocalization(reports, info.getPhone(), settings.getDialPrefix(),
-								0, 1, heatInc, spamEvidenceInc, now);
-							session.commit();
-						}
-					} catch (Exception ex) {
-						LOG.error("Failed to record call from " + info.getPhone() + ".", ex);
-					}
-					
+
+					// Reporting is *not* done here. fetchPhoneInfo runs for every
+					// incoming call regardless of whether the bot engages — the
+					// engagement decision is the bot framework's, based on user
+					// settings. The actual call gets reported once per pickup
+					// via processCallData (#342: every engaged call → one call
+					// signal, same as Fritz!Box / dongle / app).
 					return info;
 				}
 			}
@@ -255,15 +242,27 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 			@Override
 			protected void processCallData(String userName, String from, long startTime, long duration) {
 				super.processCallData(userName, from, startTime, duration);
-				
+
 				DB db = _dbService.db();
 				try (SqlSession session = db.openSession()) {
 					Users users = session.getMapper(Users.class);
-					
+					SpamReports reports = session.getMapper(SpamReports.class);
+
 					long id = users.getAnswerBotId(userName);
 					users.recordCall(id, from, startTime, duration);
 					users.recordCallSummary(id, duration);
-					
+
+					// #342: every engaged call is reported through the same
+					// path Fritz!Box / dongle / app use — one call, one signal.
+					long ownerUserId = users.getAnswerBotUserId(userName);
+					DBUserSettings settings = users.getSettingsById(ownerUserId);
+					String dialPrefix = settings != null ? settings.getDialPrefix() : null;
+					PhoneNumer number = NumberAnalyzer.parsePhoneNumber(from, dialPrefix);
+					if (number != null) {
+						String phoneId = NumberAnalyzer.getPhoneId(number);
+						db.recordCall(reports, number, phoneId, dialPrefix, startTime);
+					}
+
 					session.commit();
 				}
 			}
