@@ -399,13 +399,15 @@ public interface SpamReports {
 	 * <p>Requiring <em>both</em> floors to be crossed before archiving
 	 * matches the long memory of the classification axis: a number that
 	 * still has meaningful spam evidence stays active even if its Heat has
-	 * faded. Sets {@code PENDING_UPDATE = true} so
-	 * {@code BlocklistVersionService} picks the transition up in the next
-	 * blocklist release.</p>
+	 * faded. The {@code ACTIVE = false} transition is picked up by the next
+	 * {@code BlocklistVersionService} sweep (#342): the visibility-class
+	 * flip from "active and visible" to "archived" surfaces in
+	 * {@code ?since=N} as a removal automatically — no separate
+	 * {@code PENDING_UPDATE} flag.</p>
 	 */
 	@Update("""
 			update NUMBERS s
-			set ACTIVE = false, PENDING_UPDATE = true
+			set ACTIVE = false
 			where ACTIVE
 			  and s.HEAT < #{maxRawHeat}
 			  and s.SPAM_EVIDENCE < #{maxRawSpamEvidence}
@@ -426,14 +428,14 @@ public interface SpamReports {
 	int recordCall(String phone, long now, double heatInc, double spamEvidenceInc);
 	
 	@Select("""
-			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.SPAM_EVIDENCE as PUBLISHED_SPAM_EVIDENCE from NUMBERS s
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.SPAM_EVIDENCE as PUBLISHED_SPAM_EVIDENCE, s.LEGIT_EVIDENCE as PUBLISHED_LEGIT_EVIDENCE from NUMBERS s
 			where UPDATED >= #{after} and SPAM_EVIDENCE > LEGIT_EVIDENCE and ACTIVE
 			order by UPDATED desc
 			""")
 	List<DBNumberInfo> getLatestReports(long after);
 	
 	@Select("""
-			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.SPAM_EVIDENCE as PUBLISHED_SPAM_EVIDENCE from NUMBERS s
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.SPAM_EVIDENCE as PUBLISHED_SPAM_EVIDENCE, s.LEGIT_EVIDENCE as PUBLISHED_LEGIT_EVIDENCE from NUMBERS s
 			where SPAM_EVIDENCE > LEGIT_EVIDENCE and ACTIVE
 			order by UPDATED desc
 			limit #{limit}
@@ -444,7 +446,7 @@ public interface SpamReports {
 	// constructor of DBNumberInfo (confidence model, #334). Selects without those
 	// columns continue to bind to the 16-arg constructor with EMAs defaulting to 0.
 	@Select("""
-			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.SPAM_EVIDENCE as PUBLISHED_SPAM_EVIDENCE, s.HEAT, s.SPAM_EVIDENCE, s.LEGIT_EVIDENCE from NUMBERS s
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.SPAM_EVIDENCE as PUBLISHED_SPAM_EVIDENCE, s.LEGIT_EVIDENCE as PUBLISHED_LEGIT_EVIDENCE, s.HEAT, s.SPAM_EVIDENCE, s.LEGIT_EVIDENCE from NUMBERS s
 			where s.PHONE = #{phone}
 			""")
 	DBNumberInfo getPhoneInfo(String phone);
@@ -456,13 +458,13 @@ public interface SpamReports {
 	// reads). Forced to NUMBERS_SHA1_IDX the same query touches ~10 rows
 	// and 4 page reads. See issue #329.
 	@Select("""
-			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.SPAM_EVIDENCE as PUBLISHED_SPAM_EVIDENCE, s.HEAT, s.SPAM_EVIDENCE, s.LEGIT_EVIDENCE from NUMBERS s USE INDEX (NUMBERS_SHA1_IDX)
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.SPAM_EVIDENCE as PUBLISHED_SPAM_EVIDENCE, s.LEGIT_EVIDENCE as PUBLISHED_LEGIT_EVIDENCE, s.HEAT, s.SPAM_EVIDENCE, s.LEGIT_EVIDENCE from NUMBERS s USE INDEX (NUMBERS_SHA1_IDX)
 			where s.SHA1 >= #{low} and s.SHA1 < #{high} and s.SPAM_EVIDENCE > s.LEGIT_EVIDENCE and s.ACTIVE
 			""")
 	List<DBNumberInfo> getPhoneInfosByHashPrefix(byte[] low, byte[] high);
 	
 	@Select("""
-			select #{prefix}, max(s.ADDED), max(s.UPDATED), max(s.LASTSEARCH), true, sum(s.CALLS), sum(s.VOTES), sum(s.LEGITIMATE), sum(s.PING), sum(s.POLL), sum(s.ADVERTISING), sum(s.GAMBLE), sum(s.FRAUD), sum(s.SEARCHES), max(s.LASTPING), sum(s.SPAM_EVIDENCE) as PUBLISHED_SPAM_EVIDENCE
+			select #{prefix}, max(s.ADDED), max(s.UPDATED), max(s.LASTSEARCH), true, sum(s.CALLS), sum(s.VOTES), sum(s.LEGITIMATE), sum(s.PING), sum(s.POLL), sum(s.ADVERTISING), sum(s.GAMBLE), sum(s.FRAUD), sum(s.SEARCHES), max(s.LASTPING), sum(s.SPAM_EVIDENCE) as PUBLISHED_SPAM_EVIDENCE, sum(s.LEGIT_EVIDENCE) as PUBLISHED_LEGIT_EVIDENCE
 			from NUMBERS s
 			where
 				s.PHONE > #{prefix}
@@ -488,20 +490,20 @@ public interface SpamReports {
 	String getPrevPhone(String phone);
 	
 	@Select("""
-			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.SPAM_EVIDENCE as PUBLISHED_SPAM_EVIDENCE from NUMBERS s
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.SPAM_EVIDENCE as PUBLISHED_SPAM_EVIDENCE, s.LEGIT_EVIDENCE as PUBLISHED_LEGIT_EVIDENCE from NUMBERS s
 			WHERE ACTIVE
 			ORDER BY s.VOTES DESC LIMIT #{cnt}
 			""")
 	List<DBNumberInfo> getTopSpammers(int cnt);
 	
 	@Select("""
-			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.SPAM_EVIDENCE as PUBLISHED_SPAM_EVIDENCE from NUMBERS s
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.SPAM_EVIDENCE as PUBLISHED_SPAM_EVIDENCE, s.LEGIT_EVIDENCE as PUBLISHED_LEGIT_EVIDENCE from NUMBERS s
 			ORDER BY s.SEARCHES DESC LIMIT #{cnt}
 			""")
 	List<DBNumberInfo> getTopSearchesOverall(int cnt);
 	
 	@Select("""
-			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.SPAM_EVIDENCE as PUBLISHED_SPAM_EVIDENCE from NUMBERS s
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.SPAM_EVIDENCE as PUBLISHED_SPAM_EVIDENCE, s.LEGIT_EVIDENCE as PUBLISHED_LEGIT_EVIDENCE from NUMBERS s
 			WHERE ACTIVE and (SPAM_EVIDENCE - LEGIT_EVIDENCE) >= #{maxRawSpam} AND ADDED > 0 ORDER BY ADDED DESC LIMIT 10
 			""")
 	List<DBNumberInfo> getLatestBlocklistEntries(double maxRawSpam);
@@ -523,7 +525,7 @@ public interface SpamReports {
 	// `votes` from the decoded SPAM_EVIDENCE so blocklist consumers see the
 	// same decay-aware semantic as the /api/check responses.
 	@Select("""
-			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.PUBLISHED_LASTPING as LASTPING, s.PUBLISHED_SPAM_EVIDENCE, s.HEAT, s.SPAM_EVIDENCE, s.LEGIT_EVIDENCE from NUMBERS s
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.PUBLISHED_LASTPING as LASTPING, s.PUBLISHED_SPAM_EVIDENCE, s.PUBLISHED_LEGIT_EVIDENCE, s.HEAT, s.SPAM_EVIDENCE, s.LEGIT_EVIDENCE from NUMBERS s
 			where s.ACTIVE and (s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE) >= #{maxRawSpam}
 			order by s.HEAT desc
 			limit #{limit}
@@ -543,7 +545,7 @@ public interface SpamReports {
 	 * row, because every row in a given dial shares the same decay factor.</p>
 	 */
 	@Select("""
-			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.PUBLISHED_LASTPING as LASTPING, s.PUBLISHED_SPAM_EVIDENCE, s.HEAT, s.SPAM_EVIDENCE, s.LEGIT_EVIDENCE
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.PUBLISHED_LASTPING as LASTPING, s.PUBLISHED_SPAM_EVIDENCE, s.PUBLISHED_LEGIT_EVIDENCE, s.HEAT, s.SPAM_EVIDENCE, s.LEGIT_EVIDENCE
 			from NUMBERS_LOCALE l
 			join NUMBERS s on s.PHONE = l.PHONE
 			where l.DIAL = #{dial} and s.ACTIVE and (s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE) >= #{maxRawSpam}
@@ -559,7 +561,7 @@ public interface SpamReports {
 	 * predicate.
 	 */
 	@Select("""
-			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.PUBLISHED_LASTPING as LASTPING, s.PUBLISHED_SPAM_EVIDENCE, s.HEAT, s.SPAM_EVIDENCE, s.LEGIT_EVIDENCE from NUMBERS s
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.PUBLISHED_LASTPING as LASTPING, s.PUBLISHED_SPAM_EVIDENCE, s.PUBLISHED_LEGIT_EVIDENCE, s.HEAT, s.SPAM_EVIDENCE, s.LEGIT_EVIDENCE from NUMBERS s
 			where s.ACTIVE and (s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE) >= #{maxRawSpam}
 			order by s.PHONE
 			""")
@@ -604,7 +606,7 @@ public interface SpamReports {
 	@Select(
 		"""
 		<script>
-		select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.SPAM_EVIDENCE as PUBLISHED_SPAM_EVIDENCE from NUMBERS s
+		select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.SPAM_EVIDENCE as PUBLISHED_SPAM_EVIDENCE, s.LEGIT_EVIDENCE as PUBLISHED_LEGIT_EVIDENCE from NUMBERS s
 		where s.PHONE in
 		    <foreach item="item" index="index" collection="numbers" open="(" separator="," close=")">
 		        #{item}
@@ -614,7 +616,7 @@ public interface SpamReports {
 	List<DBNumberInfo> getNumbers(Collection<String> numbers);
 
 	@Select("""
-			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.SPAM_EVIDENCE as PUBLISHED_SPAM_EVIDENCE from NUMBERS s
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.SPAM_EVIDENCE as PUBLISHED_SPAM_EVIDENCE, s.LEGIT_EVIDENCE as PUBLISHED_LEGIT_EVIDENCE from NUMBERS s
 			where ACTIVE
 			""")
 	List<DBNumberInfo> getReports();
@@ -633,9 +635,11 @@ public interface SpamReports {
 			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS,
 			       s.VOTES, s.LEGITIMATE, s.PING, s.POLL,
 			       s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES,
-			       s.PUBLISHED_LASTPING as LASTPING, s.PUBLISHED_SPAM_EVIDENCE
+			       s.PUBLISHED_LASTPING as LASTPING,
+			       s.PUBLISHED_SPAM_EVIDENCE, s.PUBLISHED_LEGIT_EVIDENCE
 			from NUMBERS s
-			where s.ACTIVE AND s.VERSION > 0 AND s.PUBLISHED_SPAM_EVIDENCE > 0
+			where s.ACTIVE AND s.VERSION > 0
+			  AND (s.PUBLISHED_SPAM_EVIDENCE - s.PUBLISHED_LEGIT_EVIDENCE) > 0
 			""")
 	List<DBNumberInfo> getPublishedReports();
 	
@@ -844,34 +848,67 @@ public interface SpamReports {
 	void removeRevision(int id);
 
 	/**
-	 * Marks a phone number as pending update for incremental blocklist synchronization.
-	 * Called when a number crosses a vote threshold.
-	 */
-	@Update("update NUMBERS set PENDING_UPDATE = true where PHONE = #{phone}")
-	void markPendingUpdate(String phone);
-
-	/**
-	 * Gets all phone numbers that are pending version assignment.
-	 */
-	@Select("select PHONE from NUMBERS where PENDING_UPDATE = true order by PHONE")
-	List<String> getPendingUpdates();
-
-	/**
-	 * Assigns the given version to all pending updates (and recently-active numbers) and clears the PENDING_UPDATE flag.
-	 * Also snapshots LASTPING into PUBLISHED_LASTPING and SPAM_EVIDENCE into
-	 * PUBLISHED_SPAM_EVIDENCE (#342) for consistent blocklist delivery.
-	 * @param version The version to assign.
-	 * @param since Timestamp; numbers with LASTPING > since are also included (recent activity trigger).
-	 * @param minVotes Minimum votes threshold; only recently-active numbers at or above this threshold are included.
-	 * @return The number of entries updated.
+	 * Snapshot-driven blocklist version assignment (#342). The
+	 * {@link de.haumacher.phoneblock.scheduler.BlocklistVersionService} sweep
+	 * is the single source of {@code VERSION} bumps; the obsolete event-driven
+	 * {@code crossesThreshold} → {@code PENDING_UPDATE} path was removed.
+	 *
+	 * <p>A row gets the new version when either:
+	 * <ul>
+	 * <li>its visibility class flipped between the last snapshot and now —
+	 *     {@code (current_net &gt;= currentMaxRawSpam)} XOR
+	 *     {@code (published_net &gt;= lastMaxRawSpam)}. Decay-induced flips
+	 *     (a number that decays below the floor over time, with no new votes)
+	 *     are detected this way too, in the same sweep as event-driven flips.
+	 *     Archive transitions (ACTIVE = false) count as "not visible now",
+	 *     so a row that was visible and is now archived gets bumped and
+	 *     surfaces in {@code ?since=N} as a removal (votes=0).</li>
+	 * <li>or the row had activity since the last sweep — refreshes
+	 *     {@code PUBLISHED_LASTPING} / {@code PUBLISHED_SPAM_EVIDENCE} /
+	 *     {@code PUBLISHED_LEGIT_EVIDENCE} for already-published rows so the
+	 *     snapshot tracks recent changes without flipping visibility.</li>
+	 * </ul>
+	 *
+	 * @param version           the new global blocklist version.
+	 * @param lastAssignTime    timestamp of the previous sweep. Rows with
+	 *                          {@code LASTPING > lastAssignTime} are picked up
+	 *                          as recently active.
+	 * @param currentMaxRawSpam projected visibility threshold at this sweep
+	 *                          (= {@code Ema.projectedThreshold(minVotes - 0.5, now, tau)}).
+	 * @param lastMaxRawSpam    same projection at the previous sweep's
+	 *                          timestamp — applied against
+	 *                          {@code PUBLISHED_SPAM_EVIDENCE -
+	 *                          PUBLISHED_LEGIT_EVIDENCE} to reconstruct the
+	 *                          visibility class as it was at the last release.
+	 * @return number of rows touched.
 	 */
 	@Update("""
-		update NUMBERS set VERSION = #{version}, PENDING_UPDATE = false,
-		       PUBLISHED_LASTPING = LASTPING, PUBLISHED_SPAM_EVIDENCE = SPAM_EVIDENCE
-		where PENDING_UPDATE = true
-		   OR (ACTIVE AND VERSION > 0 AND VOTES >= #{minVotes} AND LASTPING > #{since})
+		update NUMBERS set
+			VERSION = #{version},
+			PUBLISHED_LASTPING = LASTPING,
+			PUBLISHED_SPAM_EVIDENCE = SPAM_EVIDENCE,
+			PUBLISHED_LEGIT_EVIDENCE = LEGIT_EVIDENCE
+		where
+			((ACTIVE AND (SPAM_EVIDENCE - LEGIT_EVIDENCE) >= #{currentMaxRawSpam})
+			 <> ((PUBLISHED_SPAM_EVIDENCE - PUBLISHED_LEGIT_EVIDENCE) >= #{lastMaxRawSpam}))
+		   OR (ACTIVE AND VERSION > 0 AND LASTPING > #{lastAssignTime})
 		""")
-	int assignVersionToPendingUpdates(long version, long since, int minVotes);
+	int assignBlocklistVersion(long version, long lastAssignTime,
+		double currentMaxRawSpam, double lastMaxRawSpam);
+
+	/**
+	 * Backfill {@code NUMBERS.PUBLISHED_LEGIT_EVIDENCE} (#342 / migration 32).
+	 * No snapshot history exists at migration time; seed with the current
+	 * {@code LEGIT_EVIDENCE} so the row's "as-published" view starts equal to
+	 * the live view, same as the {@code PUBLISHED_SPAM_EVIDENCE} backfill in
+	 * migration 31. The next scheduled sweep moves both forward together.
+	 */
+	@Update("update NUMBERS set PUBLISHED_LEGIT_EVIDENCE = LEGIT_EVIDENCE where LEGIT_EVIDENCE > 0")
+	int backfillPublishedLegitEvidence();
+
+	/** Drops the obsolete PENDING_UPDATE column (#342 / migration 32). */
+	@Update("ALTER TABLE NUMBERS DROP COLUMN PENDING_UPDATE")
+	void dropNumbersPendingUpdate();
 
 	/**
 	 * Gets all blocklist changes since the given version.
@@ -891,6 +928,7 @@ public interface SpamReports {
 		       CASE WHEN s.ACTIVE THEN s.VOTES ELSE 0 END as VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES,
 		       s.PUBLISHED_LASTPING as LASTPING,
 		       CASE WHEN s.ACTIVE THEN s.PUBLISHED_SPAM_EVIDENCE ELSE 0 END as PUBLISHED_SPAM_EVIDENCE,
+		       CASE WHEN s.ACTIVE THEN s.PUBLISHED_LEGIT_EVIDENCE ELSE 0 END as PUBLISHED_LEGIT_EVIDENCE,
 		       s.HEAT,
 		       CASE WHEN s.ACTIVE THEN s.SPAM_EVIDENCE ELSE 0 END as SPAM_EVIDENCE,
 		       s.LEGIT_EVIDENCE

@@ -328,7 +328,9 @@ public class TestIncrementalBlocklist {
 			session.commit();
 		}
 
-		// Assign new version — the archive query now sets PENDING_UPDATE=true
+		// Assign new version — the snapshot-driven sweep (#342) detects the
+		// ACTIVE = false flip as a visibility-class change against the
+		// previously-published snapshot, no separate PENDING_UPDATE flag.
 		long version2 = assignVersions();
 		assertTrue(version2 > version1, "Version should increment after archiving");
 
@@ -423,14 +425,14 @@ public class TestIncrementalBlocklist {
 	}
 
 	/**
-	 * Assigns version numbers to pending updates (simulates BlocklistVersionService).
-	 * Uses Long.MAX_VALUE as "now" so that the since-based activity detection does not
-	 * interfere with tests that don't explicitly test it (their fake timestamps are always
-	 * less than MAX_VALUE, so all activity is caught on first call but none on subsequent
-	 * calls after lastAssignTime is set to MAX_VALUE).
+	 * Assigns version numbers (simulates BlocklistVersionService). Uses
+	 * {@code System.currentTimeMillis()} as the sweep moment so the projected
+	 * thresholds in {@link DB#maxRawSpamAt} stay finite — passing
+	 * {@code Long.MAX_VALUE} (the old hack to defeat the since-based activity
+	 * trigger) overflows the EMA projection.
 	 */
 	private long assignVersions() {
-		return assignVersions(Long.MAX_VALUE);
+		return assignVersions(System.currentTimeMillis());
 	}
 
 	/**
@@ -447,7 +449,12 @@ public class TestIncrementalBlocklist {
 			String lastAssignTimeStr = users.getProperty("blocklist.lastAssignTime");
 			long lastAssignTime = (lastAssignTimeStr != null) ? Long.parseLong(lastAssignTimeStr) : 0;
 
-			int updated = reports.assignVersionToPendingUpdates(currentVersion + 1, lastAssignTime, _db.getMinVisibleVotes());
+			int minVotes = _db.getMinVisibleVotes();
+			double currentMaxRawSpam = DB.maxRawSpamAt(now, minVotes);
+			double lastMaxRawSpam = (lastAssignTime > 0)
+				? DB.maxRawSpamAt(lastAssignTime, minVotes)
+				: Double.POSITIVE_INFINITY;
+			int updated = reports.assignBlocklistVersion(currentVersion + 1, lastAssignTime, currentMaxRawSpam, lastMaxRawSpam);
 
 			if (updated > 0) {
 				long newVersion = currentVersion + 1;

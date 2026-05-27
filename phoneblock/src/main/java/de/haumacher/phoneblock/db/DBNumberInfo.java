@@ -14,13 +14,16 @@ public class DBNumberInfo extends NumberInfo {
 
 	private final double _publishedSpamEvidence;
 
+	private final double _publishedLegitEvidence;
+
 	private final double _heat;
 
 	private final double _spamEvidence;
 
 	private final double _legitEvidence;
 
-	public DBNumberInfo(String phone, long added, long updated, long lastSearch, boolean active, int calls, int rawVotes, int legitimate, int ping, int poll, int advertising, int gamble, int fraud, int searches, long lastPing, double publishedSpamEvidence,
+	public DBNumberInfo(String phone, long added, long updated, long lastSearch, boolean active, int calls, int rawVotes, int legitimate, int ping, int poll, int advertising, int gamble, int fraud, int searches, long lastPing,
+			double publishedSpamEvidence, double publishedLegitEvidence,
 			double heat, double spamEvidence, double legitEvidence) {
 		setPhone(phone)
 		.setAdded(added)
@@ -38,17 +41,19 @@ public class DBNumberInfo extends NumberInfo {
 		.setSearches(searches);
 		_lastPing = lastPing;
 		_publishedSpamEvidence = publishedSpamEvidence;
+		_publishedLegitEvidence = publishedLegitEvidence;
 		_heat = heat;
 		_spamEvidence = spamEvidence;
 		_legitEvidence = legitEvidence;
 	}
 
 	/**
-	 * Backwards-compatible 16-arg constructor used by legacy debug/stats
-	 * queries that have no snapshot context — leaves the EMA columns at zero.
+	 * Backwards-compatible constructor used by legacy debug/stats queries
+	 * that have no snapshot context — leaves the EMA columns at zero.
 	 */
-	public DBNumberInfo(String phone, long added, long updated, long lastSearch, boolean active, int calls, int rawVotes, int legitimate, int ping, int poll, int advertising, int gamble, int fraud, int searches, long lastPing, double publishedSpamEvidence) {
-		this(phone, added, updated, lastSearch, active, calls, rawVotes, legitimate, ping, poll, advertising, gamble, fraud, searches, lastPing, publishedSpamEvidence, 0.0, 0.0, 0.0);
+	public DBNumberInfo(String phone, long added, long updated, long lastSearch, boolean active, int calls, int rawVotes, int legitimate, int ping, int poll, int advertising, int gamble, int fraud, int searches, long lastPing,
+			double publishedSpamEvidence, double publishedLegitEvidence) {
+		this(phone, added, updated, lastSearch, active, calls, rawVotes, legitimate, ping, poll, advertising, gamble, fraud, searches, lastPing, publishedSpamEvidence, publishedLegitEvidence, 0.0, 0.0, 0.0);
 	}
 
 	/**
@@ -65,6 +70,17 @@ public class DBNumberInfo extends NumberInfo {
 	 */
 	public double getPublishedSpamEvidence() {
 		return _publishedSpamEvidence;
+	}
+
+	/**
+	 * Snapshot of the projected LEGIT_EVIDENCE EMA at the time of the last
+	 * blocklist version assignment (#342). Paired with
+	 * {@link #getPublishedSpamEvidence} so callers can compute the published
+	 * net evidence (spam minus legit) and compare it to the visibility
+	 * threshold the way the live filter does.
+	 */
+	public double getPublishedLegitEvidence() {
+		return _publishedLegitEvidence;
 	}
 
 	/** Raw projected-EMA {@code HEAT} value (confidence model, #300). Decode with {@link Ema#decode}. */

@@ -587,6 +587,10 @@ public class DB {
 						backfillVisibilityColumns(reports);
 					}
 
+					if (version == 32) {
+						backfillSnapshotLegitEvidence(reports);
+					}
+
 					users.updateProperty("db.version", Integer.toString(version));
 					session.commit();
 				}
@@ -1005,11 +1009,11 @@ public class DB {
 		}
 
 		boolean classifyChanged = classify(oldVotes) != classify(newVotes);
-		boolean thresholdCrossed = crossesThreshold(oldVotes, newVotes);
-
-		if (thresholdCrossed) {
-			reports.markPendingUpdate(phone);
-		}
+		// #342: no event-driven version bump. The periodic
+		// BlocklistVersionService sweep is the single source of VERSION
+		// changes — it detects visibility-class flips between snapshots
+		// (including the one this vote may have just triggered) and bumps
+		// VERSION in the next release window.
 
 		// Clear SHA1 hash when votes fall below 1 to protect privacy for legitimate numbers.
 		// This prevents identifying legitimate callers in privacy-aware lookups.
@@ -1350,16 +1354,6 @@ public class DB {
 	}
 
 	/**
-	 * Checks if the vote count crosses the minimum visible votes threshold.
-	 * Returns true if the number should be marked for version update.
-	 */
-	private boolean crossesThreshold(int oldVotes, int newVotes) {
-		boolean wasBelowThreshold = oldVotes < _minVisibleVotes;
-		boolean isNowBelowThreshold = newVotes < _minVisibleVotes;
-		return wasBelowThreshold != isNowBelowThreshold;
-	}
-
-	/**
 	 * The time in milliseconds since epoch when the last update to the spam report table was done.
 	 */
 	public Long getLastSpamReport() {
@@ -1463,24 +1457,25 @@ public class DB {
 	}
 
 	/**
-	 * Project the integer-vote visibility threshold {@code minVotes} into the
-	 * raw projected-EMA threshold (#342). The blocklist filters in SQL use
-	 * the raw column; the caller computes the projection once with the
-	 * current timestamp so the comparison is index-backed.
+	 * Raw projected-EMA cutoff that matches "displayed votes ≥ minVotes" at
+	 * the given moment (#342). Single source for every read path that
+	 * filters against the visibility threshold (blocklist queries, snapshot
+	 * version sweep, tests) so the cutoff stays consistent.
 	 *
-	 * <p>The {@code minVotes - 0.5} offset aligns SQL inclusion with the
-	 * rounded display semantic in {@link #toBlocklistEntry}: a row whose
-	 * decoded value rounds to {@code minVotes} (i.e. is at least
-	 * {@code minVotes - 0.5}) is included, so what clients see as
-	 * {@code votes >= minVotes} matches what the SQL returns. Without the
-	 * offset, a row with cumulative votes exactly equal to the threshold
-	 * decays imperceptibly below it between the event and the read, and
-	 * disappears from the blocklist even though its displayed {@code votes}
-	 * still rounds to {@code minVotes}.</p>
+	 * @param at        the moment at which the threshold should hold.
+	 * @param minVotes  integer visibility floor (typically
+	 *                  {@link #getMinVisibleVotes()}).
 	 */
-	private double maxRawSpam(int minVotes) {
-		return Ema.projectedThreshold(minVotes - 0.5, System.currentTimeMillis(),
-			Ema.CLASSIFICATION_TAU_MILLIS);
+	public static double maxRawSpamAt(long at, int minVotes) {
+		// minVotes - 0.5 is the real-valued threshold whose Math.round result
+		// equals minVotes — keeps SQL inclusion in lock-step with the
+		// displayed votes in toBlocklistEntry.
+		return Ema.projectedThreshold(minVotes - 0.5, at, Ema.CLASSIFICATION_TAU_MILLIS);
+	}
+
+	/** {@link #maxRawSpamAt} at the current moment. */
+	public double maxRawSpam(int minVotes) {
+		return maxRawSpamAt(System.currentTimeMillis(), minVotes);
 	}
 
 	/**
@@ -2041,6 +2036,23 @@ public class DB {
 	}
 
 	/**
+	 * Backfill {@code NUMBERS.PUBLISHED_LEGIT_EVIDENCE} from the live
+	 * {@code LEGIT_EVIDENCE} (#342 / migration 32) and drop the obsolete
+	 * {@code PENDING_UPDATE} column. The snapshot-driven sweep needs the
+	 * legit half of the published snapshot so it can compute
+	 * {@code published_net = PUBLISHED_SPAM_EVIDENCE - PUBLISHED_LEGIT_EVIDENCE}
+	 * against the projected threshold the same way the live filter does.
+	 */
+	private void backfillSnapshotLegitEvidence(SpamReports reports) {
+		LOG.info("Snapshot-driven versioning (#342): seeding NUMBERS.PUBLISHED_LEGIT_EVIDENCE.");
+		int seeded = reports.backfillPublishedLegitEvidence();
+		LOG.info("Seeded PUBLISHED_LEGIT_EVIDENCE on {} rows.", seeded);
+
+		reports.dropNumbersPendingUpdate();
+		LOG.info("Dropped legacy PENDING_UPDATE column.");
+	}
+
+	/**
 	 * Populates SHA1 hashes for all existing aggregation rows during migration to version 13.
 	 */
 	private void populateAggregationHashes(SpamReports reports) {
@@ -2476,10 +2488,12 @@ public class DB {
 	}
 
 	/**
-	 * Deactivates report rows whose vote-decay has carried them below the visibility
-	 * threshold. Sets {@code ACTIVE=false} and {@code PENDING_UPDATE=true} so the next
-	 * blocklist release picks the change up. Called from {@code BlocklistVersionService}
-	 * as the first step of the scheduled release, and once at startup to prime the table.
+	 * Deactivates report rows whose vote-decay has carried them below the
+	 * visibility threshold. Sets {@code ACTIVE=false}; the snapshot-driven
+	 * version sweep (#342) picks the {@code ACTIVE} flip up as a
+	 * visibility-class change in the next release. Called from
+	 * {@code BlocklistVersionService} as the first step of the scheduled
+	 * release, and once at startup to prime the table.
 	 */
 	public void archiveOldReports() {
 		LOG.info("Starting DB cleanup.");

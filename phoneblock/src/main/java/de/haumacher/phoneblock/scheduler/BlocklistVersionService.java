@@ -223,8 +223,19 @@ public class BlocklistVersionService implements ServletContextListener {
 			// Increment version
 			long newVersion = currentVersion + 1;
 
-			// Assign new version to all pending updates and recently-active numbers
-			int updated = reports.assignVersionToPendingUpdates(newVersion, lastAssignTime, db.getMinVisibleVotes());
+			// #342: snapshot-driven version assignment. Project the visibility
+			// threshold at the current sweep moment and at the previous sweep
+			// moment so the mapper can XOR the two visibility classes. When
+			// no prior snapshot exists yet (first sweep on this DB),
+			// lastMaxRawSpam = +Infinity makes "was visible" uniformly false
+			// — exactly what defaults of PUBLISHED_* = 0 should mean.
+			int minVotes = db.getMinVisibleVotes();
+			double currentMaxRawSpam = DB.maxRawSpamAt(now, minVotes);
+			double lastMaxRawSpam = (lastAssignTime > 0)
+				? DB.maxRawSpamAt(lastAssignTime, minVotes)
+				: Double.POSITIVE_INFINITY;
+
+			int updated = reports.assignBlocklistVersion(newVersion, lastAssignTime, currentMaxRawSpam, lastMaxRawSpam);
 
 			if (updated > 0) {
 				// Update global version counter
