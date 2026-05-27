@@ -111,12 +111,6 @@ public class NumberInfo extends AbstractNumberInfo {
 	}
 
 	@Override
-	public de.haumacher.phoneblock.app.api.model.NumberInfo setActive(boolean value) {
-		internalSetActive(value);
-		return this;
-	}
-
-	@Override
 	public de.haumacher.phoneblock.app.api.model.NumberInfo setCalls(int value) {
 		internalSetCalls(value);
 		return this;

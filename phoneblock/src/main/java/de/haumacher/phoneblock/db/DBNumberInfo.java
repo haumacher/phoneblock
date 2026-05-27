@@ -22,14 +22,13 @@ public class DBNumberInfo extends NumberInfo {
 
 	private final double _legitEvidence;
 
-	public DBNumberInfo(String phone, long added, long updated, long lastSearch, boolean active, int calls, int rawVotes, int legitimate, int ping, int poll, int advertising, int gamble, int fraud, int searches, long lastPing,
+	public DBNumberInfo(String phone, long added, long updated, long lastSearch, int calls, int rawVotes, int legitimate, int ping, int poll, int advertising, int gamble, int fraud, int searches, long lastPing,
 			double publishedSpamEvidence, double publishedLegitEvidence,
 			double heat, double spamEvidence, double legitEvidence) {
 		setPhone(phone)
 		.setAdded(added)
 		.setUpdated(updated)
 		.setLastSearch(lastSearch)
-		.setActive(active)
 		.setCalls(calls)
 		.setRawVotes(rawVotes)
 		.setRatingLegitimate(legitimate)
@@ -51,9 +50,9 @@ public class DBNumberInfo extends NumberInfo {
 	 * Backwards-compatible constructor used by legacy debug/stats queries
 	 * that have no snapshot context — leaves the EMA columns at zero.
 	 */
-	public DBNumberInfo(String phone, long added, long updated, long lastSearch, boolean active, int calls, int rawVotes, int legitimate, int ping, int poll, int advertising, int gamble, int fraud, int searches, long lastPing,
+	public DBNumberInfo(String phone, long added, long updated, long lastSearch, int calls, int rawVotes, int legitimate, int ping, int poll, int advertising, int gamble, int fraud, int searches, long lastPing,
 			double publishedSpamEvidence, double publishedLegitEvidence) {
-		this(phone, added, updated, lastSearch, active, calls, rawVotes, legitimate, ping, poll, advertising, gamble, fraud, searches, lastPing, publishedSpamEvidence, publishedLegitEvidence, 0.0, 0.0, 0.0);
+		this(phone, added, updated, lastSearch, calls, rawVotes, legitimate, ping, poll, advertising, gamble, fraud, searches, lastPing, publishedSpamEvidence, publishedLegitEvidence, 0.0, 0.0, 0.0);
 	}
 
 	/**

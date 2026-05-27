@@ -95,8 +95,7 @@ public abstract class PersonalListController extends RequireLoginController {
 			String comment = c != null ? c.getComment() : null;
 			RatingDisplay rating = c != null && c.getRating() != null ? new RatingDisplay(c.getRating()) : null;
 			PhoneInfo info = db.getPhoneApiInfo(spamReports, phone);
-			result.add(new PersonalListEntry(phone, comment, rating, info.getVotes(), info.getVotesWildcard(),
-				info.isArchived()));
+			result.add(new PersonalListEntry(phone, comment, rating, info.getVotes(), info.getVotesWildcard()));
 		}
 		return result;
 	}

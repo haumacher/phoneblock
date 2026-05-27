@@ -56,16 +56,6 @@ public class AppState implements AppStateMBean {
 	}
 	
 	@Override
-	public int getActiveNumbers() {
-		return _db.getActiveReportCount();
-	}
-	
-	@Override
-	public int getArchivedNumbers() {
-		return _db.getArchivedReportCount();
-	}
-	
-	@Override
 	public void triggerIndexUpdate(String path) {
 		_updater.publishPathUpdate(path);
 	}

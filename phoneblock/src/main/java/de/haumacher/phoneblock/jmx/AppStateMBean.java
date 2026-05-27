@@ -34,16 +34,6 @@ public interface AppStateMBean {
 	int getSearches();
 	
 	/**
-	 * The total numbers with active spam reports.
-	 */
-	int getActiveNumbers();
-	
-	/**
-	 * The total numbers with archived spam reports.
-	 */
-	int getArchivedNumbers();
-
-	/**
 	 * Triggers an update of the page with the given path in the indexing services.
 	 *
 	 * @param path

@@ -148,9 +148,6 @@ message PhoneInfo {
 	/** Whether this number is on the requesting user's personal block list. */
 	boolean blackListed;
 
-	/** Whether this number no longer is on the blocklist, because no votes have been received for a long time. */
-	boolean archived;
-
 	/** Date when this number was added to the SPAM database (in milliseconds since epoch). */
 	long dateAdded;
 
@@ -268,10 +265,7 @@ abstract message AbstractNumberInfo {
 
 	/** The number being requested. */
 	string phone;
-	
-	/** Whether the number is considered active. Only active numbers are inserted into a blocklist. */
-	boolean active;
-	
+
 	int calls;
 
 	/**
@@ -392,7 +386,6 @@ message SpamReport {
 	int votes;
 	long lastUpdate;
 	long dateAdded;
-	boolean archived;
 	boolean whiteListed;
 	
 	/** The number of phone numbers with the the same prefix but a different end digit that are also reported as SPAM. */

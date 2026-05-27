@@ -517,24 +517,13 @@ public class SearchServlet extends HttpServlet {
 		req.setAttribute("ratingCssClass", Ratings.getCssClass(searchResult.getTopRating()));
 		req.setAttribute("ratingLabelKey", Ratings.getLabelKey(searchResult.getTopRating()));
 		
-  		String state = info.isWhiteListed() ? 
-  			"whitelisted" : 
-  			(
-  				info.getVotes() <= 0 ? 
-  				(
-  					info.getVotesWildcard() <= 0 ? 
-  						"legitimate" : 
-  						"wildcard"
-  				) : (
-  					info.getVotes() < minVotes ? 
-  						"suspicious" : 
-  						(
-  							info.isArchived() ? 
-  								"archived" : 
-  								"blocked"
-  						)
-  				)
-  			);
+  		String state = info.isWhiteListed()
+  			? "whitelisted"
+  			: info.getVotes() <= 0
+  				? (info.getVotesWildcard() <= 0 ? "legitimate" : "wildcard")
+  				: info.getVotes() < minVotes
+  					? "suspicious"
+  					: "blocked";
 		
 		req.setAttribute("state", state);
 
@@ -554,10 +543,6 @@ public class SearchServlet extends HttpServlet {
 			case "wildcard":
 				descKey = "page.phone-info.description.wildcard";
 				descParams = new Object[] { displayNumber, Integer.valueOf(info.getVotesWildcard()) };
-				break;
-			case "archived":
-				descKey = "page.phone-info.description.archived";
-				descParams = new Object[] { displayNumber };
 				break;
 			case "whitelisted":
 				descKey = "page.phone-info.description.whitelisted";

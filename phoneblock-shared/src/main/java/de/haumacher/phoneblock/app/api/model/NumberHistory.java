@@ -86,12 +86,6 @@ public class NumberHistory extends AbstractNumberInfo {
 	}
 
 	@Override
-	public de.haumacher.phoneblock.app.api.model.NumberHistory setActive(boolean value) {
-		internalSetActive(value);
-		return this;
-	}
-
-	@Override
 	public de.haumacher.phoneblock.app.api.model.NumberHistory setCalls(int value) {
 		internalSetCalls(value);
 		return this;

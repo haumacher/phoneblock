@@ -24,9 +24,6 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/** @see #getDateAdded() */
 	private static final String DATE_ADDED__PROP = "dateAdded";
 
-	/** @see #isArchived() */
-	private static final String ARCHIVED__PROP = "archived";
-
 	/** @see #isWhiteListed() */
 	private static final String WHITE_LISTED__PROP = "whiteListed";
 
@@ -49,8 +46,6 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	private long _lastUpdate = 0L;
 
 	private long _dateAdded = 0L;
-
-	private boolean _archived = false;
 
 	private boolean _whiteListed = false;
 
@@ -137,23 +132,6 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 	/** Internal setter for {@link #getDateAdded()} without chain call utility. */
 	protected final void internalSetDateAdded(long value) {
 		_dateAdded = value;
-	}
-
-	public final boolean isArchived() {
-		return _archived;
-	}
-
-	/**
-	 * @see #isArchived()
-	 */
-	public de.haumacher.phoneblock.app.api.model.SpamReport setArchived(boolean value) {
-		internalSetArchived(value);
-		return this;
-	}
-
-	/** Internal setter for {@link #isArchived()} without chain call utility. */
-	protected final void internalSetArchived(boolean value) {
-		_archived = value;
 	}
 
 	public final boolean isWhiteListed() {
@@ -284,8 +262,6 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		out.value(getLastUpdate());
 		out.name(DATE_ADDED__PROP);
 		out.value(getDateAdded());
-		out.name(ARCHIVED__PROP);
-		out.value(isArchived());
 		out.name(WHITE_LISTED__PROP);
 		out.value(isWhiteListed());
 		out.name(CNT_10__PROP);
@@ -305,7 +281,6 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 			case VOTES__PROP: setVotes(in.nextInt()); break;
 			case LAST_UPDATE__PROP: setLastUpdate(in.nextLong()); break;
 			case DATE_ADDED__PROP: setDateAdded(in.nextLong()); break;
-			case ARCHIVED__PROP: setArchived(in.nextBoolean()); break;
 			case WHITE_LISTED__PROP: setWhiteListed(in.nextBoolean()); break;
 			case CNT_10__PROP: setCnt10(in.nextInt()); break;
 			case VOTES_10__PROP: setVotes10(in.nextInt()); break;
@@ -329,9 +304,6 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 
 	/** XML attribute or element name of a {@link #getDateAdded} property. */
 	private static final String DATE_ADDED__XML_ATTR = "date-added";
-
-	/** XML attribute or element name of a {@link #isArchived} property. */
-	private static final String ARCHIVED__XML_ATTR = "archived";
 
 	/** XML attribute or element name of a {@link #isWhiteListed} property. */
 	private static final String WHITE_LISTED__XML_ATTR = "white-listed";
@@ -365,7 +337,6 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 		out.writeAttribute(VOTES__XML_ATTR, Integer.toString(getVotes()));
 		out.writeAttribute(LAST_UPDATE__XML_ATTR, Long.toString(getLastUpdate()));
 		out.writeAttribute(DATE_ADDED__XML_ATTR, Long.toString(getDateAdded()));
-		out.writeAttribute(ARCHIVED__XML_ATTR, Boolean.toString(isArchived()));
 		out.writeAttribute(WHITE_LISTED__XML_ATTR, Boolean.toString(isWhiteListed()));
 		out.writeAttribute(CNT_10__XML_ATTR, Integer.toString(getCnt10()));
 		out.writeAttribute(VOTES_10__XML_ATTR, Integer.toString(getVotes10()));
@@ -424,10 +395,6 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 				setDateAdded(Long.parseLong(value));
 				break;
 			}
-			case ARCHIVED__XML_ATTR: {
-				setArchived(Boolean.parseBoolean(value));
-				break;
-			}
 			case WHITE_LISTED__XML_ATTR: {
 				setWhiteListed(Boolean.parseBoolean(value));
 				break;
@@ -471,10 +438,6 @@ public class SpamReport extends de.haumacher.msgbuf.data.AbstractDataObject impl
 			}
 			case DATE_ADDED__XML_ATTR: {
 				setDateAdded(Long.parseLong(in.getElementText()));
-				break;
-			}
-			case ARCHIVED__XML_ATTR: {
-				setArchived(Boolean.parseBoolean(in.getElementText()));
 				break;
 			}
 			case WHITE_LISTED__XML_ATTR: {

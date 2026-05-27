@@ -202,11 +202,11 @@ public class BlocklistVersionService implements ServletContextListener {
 
 		DB db = _dbService.db();
 
-		// Archive vote-decayed rows first so their ACTIVE=false transition is part of
-		// this release; otherwise CardDAV's published view would shed those numbers
-		// on its own schedule and the address-book ETag would change between releases.
-		db.archiveOldReports();
-
+		// No explicit archive sweep: decay-aware visibility means a row that
+		// has faded below the threshold simply drops out of the snapshot at
+		// the next publication (the visibility-class XOR in
+		// assignBlocklistVersion notices and bumps VERSION). Hard delete of
+		// long-faded rows is the subject of #341.
 		long now = System.currentTimeMillis();
 		try (SqlSession session = db.openSession()) {
 			Users users = session.getMapper(Users.class);

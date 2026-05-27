@@ -28,9 +28,6 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	/** @see #getPhone() */
 	private static final String PHONE__PROP = "phone";
 
-	/** @see #isActive() */
-	private static final String ACTIVE__PROP = "active";
-
 	/** @see #getCalls() */
 	private static final String CALLS__PROP = "calls";
 
@@ -59,8 +56,6 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	private static final String SEARCHES__PROP = "searches";
 
 	private String _phone = "";
-
-	private boolean _active = false;
 
 	private int _calls = 0;
 
@@ -108,26 +103,6 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	/** Internal setter for {@link #getPhone()} without chain call utility. */
 	protected final void internalSetPhone(String value) {
 		_phone = value;
-	}
-
-	/**
-	 * Whether the number is considered active. Only active numbers are inserted into a blocklist.
-	 */
-	public final boolean isActive() {
-		return _active;
-	}
-
-	/**
-	 * @see #isActive()
-	 */
-	public de.haumacher.phoneblock.app.api.model.AbstractNumberInfo setActive(boolean value) {
-		internalSetActive(value);
-		return this;
-	}
-
-	/** Internal setter for {@link #isActive()} without chain call utility. */
-	protected final void internalSetActive(boolean value) {
-		_active = value;
 	}
 
 	public final int getCalls() {
@@ -346,8 +321,6 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 		super.writeFields(out);
 		out.name(PHONE__PROP);
 		out.value(getPhone());
-		out.name(ACTIVE__PROP);
-		out.value(isActive());
 		out.name(CALLS__PROP);
 		out.value(getCalls());
 		out.name(RAW_VOTES__PROP);
@@ -372,7 +345,6 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	protected void readField(de.haumacher.msgbuf.json.JsonReader in, String field) throws java.io.IOException {
 		switch (field) {
 			case PHONE__PROP: setPhone(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
-			case ACTIVE__PROP: setActive(in.nextBoolean()); break;
 			case CALLS__PROP: setCalls(in.nextInt()); break;
 			case RAW_VOTES__PROP: setRawVotes(in.nextInt()); break;
 			case RATING_LEGITIMATE__PROP: setRatingLegitimate(in.nextInt()); break;
@@ -391,9 +363,6 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 
 	/** XML attribute or element name of a {@link #getPhone} property. */
 	private static final String PHONE__XML_ATTR = "phone";
-
-	/** XML attribute or element name of a {@link #isActive} property. */
-	private static final String ACTIVE__XML_ATTR = "active";
 
 	/** XML attribute or element name of a {@link #getCalls} property. */
 	private static final String CALLS__XML_ATTR = "calls";
@@ -431,7 +400,6 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	/** Serializes all fields that are written as XML attributes. */
 	protected void writeAttributes(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
 		out.writeAttribute(PHONE__XML_ATTR, getPhone());
-		out.writeAttribute(ACTIVE__XML_ATTR, Boolean.toString(isActive()));
 		out.writeAttribute(CALLS__XML_ATTR, Integer.toString(getCalls()));
 		out.writeAttribute(RAW_VOTES__XML_ATTR, Integer.toString(getRawVotes()));
 		out.writeAttribute(RATING_LEGITIMATE__XML_ATTR, Integer.toString(getRatingLegitimate()));
@@ -493,10 +461,6 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 				setPhone(value);
 				break;
 			}
-			case ACTIVE__XML_ATTR: {
-				setActive(Boolean.parseBoolean(value));
-				break;
-			}
 			case CALLS__XML_ATTR: {
 				setCalls(Integer.parseInt(value));
 				break;
@@ -544,10 +508,6 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 		switch (localName) {
 			case PHONE__XML_ATTR: {
 				setPhone(in.getElementText());
-				break;
-			}
-			case ACTIVE__XML_ATTR: {
-				setActive(Boolean.parseBoolean(in.getElementText()));
 				break;
 			}
 			case CALLS__XML_ATTR: {

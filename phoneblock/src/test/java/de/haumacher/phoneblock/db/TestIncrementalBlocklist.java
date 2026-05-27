@@ -6,6 +6,7 @@ package de.haumacher.phoneblock.db;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Set;
@@ -289,60 +290,53 @@ public class TestIncrementalBlocklist {
 	}
 
 	/**
-	 * Test that archived numbers appear in incremental sync with votes=0.
+	 * Test that numbers falling below the visibility threshold appear in
+	 * incremental sync with votes=0 (the removal signal). With the
+	 * decay-aware model after #342 there is no separate ACTIVE flag —
+	 * raising {@code minVisibleVotes} simulates the natural decay-below-
+	 * threshold transition without waiting for time to pass.
 	 */
 	@Test
-	void testArchivedNumbersAppearInIncrementalSync() {
+	void testArchivedNumbersAppearInIncrementalSync() throws Exception {
 		_db.setMinVisibleVotes(10);
 
-		// Anchor near "now" so the confidence-model values (#338) read fresh —
-		// votes here become decoded SPAM_EVIDENCE projected to the request
-		// moment; the synthetic time = 1000 the original tests used would
-		// decay completely by the time the API reads them back.
 		long time = System.currentTimeMillis() - 10_000L;
 
-		// Add a number with 10 votes (above minVisibleVotes)
+		// Add a number with 10 votes (above minVisibleVotes = 10)
 		for (int i = 0; i < 5; i++) {
 			processVotes("0333444555", 2, time++);
 		}
 
-		// Assign initial version
 		long version1 = assignVersions();
 
-		// Verify number is in full blocklist
 		Blocklist list1 = _db.getBlockListAPI();
 		assertEquals(1, list1.getNumbers().size());
 		assertEquals("+49333444555", list1.getNumbers().get(0).getPhone());
 		assertEquals(10, list1.getNumbers().get(0).getVotes());
 
-		// Archive the number by calling archiveByHeatAndEvidenceBelow with
-		// projected thresholds well above any value this row could carry —
-		// the equivalent of "everything below this threshold gets archived",
-		// which after #342 is the only archive path (the legacy
-		// archiveReportsWithLowVotes mapper was deleted with the raw-VOTES
-		// filter consolidation).
-		try (SqlSession session = _db.openSession()) {
-			SpamReports reports = session.getMapper(SpamReports.class);
-			int archived = reports.archiveByHeatAndEvidenceBelow(Double.MAX_VALUE, Double.MAX_VALUE);
-			assertTrue(archived > 0, "Number should have been archived");
-			session.commit();
+		// Simulate full decay: zero out SPAM_EVIDENCE directly so the row's
+		// visibility class flips from "above threshold" at the last snapshot
+		// to "below threshold" now. The next sweep notices the flip and bumps
+		// VERSION; clients on ?since=N see the row with votes=0.
+		try (Connection conn = _dataSource.getConnection();
+				PreparedStatement stmt = conn.prepareStatement(
+					"update NUMBERS set SPAM_EVIDENCE = 0 where PHONE = ?")) {
+			stmt.setString(1, "0333444555");
+			assertEquals(1, stmt.executeUpdate());
 		}
 
-		// Assign new version — the snapshot-driven sweep (#342) detects the
-		// ACTIVE = false flip as a visibility-class change against the
-		// previously-published snapshot, no separate PENDING_UPDATE flag.
 		long version2 = assignVersions();
-		assertTrue(version2 > version1, "Version should increment after archiving");
+		assertTrue(version2 > version1, "Version should increment after visibility-class flip");
 
-		// Incremental update since version1 should return the archived number with votes=0
 		Blocklist update = _db.getBlocklistUpdateAPI(version1);
 		assertEquals(1, update.getNumbers().size());
 		assertEquals("+49333444555", update.getNumbers().get(0).getPhone());
-		assertEquals(0, update.getNumbers().get(0).getVotes(), "Archived number should have votes=0 in incremental sync");
+		assertEquals(0, update.getNumbers().get(0).getVotes(),
+			"Row that fell below the new threshold appears as a removal (votes=0)");
 
-		// Full blocklist should no longer contain the archived number
 		Blocklist list2 = _db.getBlockListAPI();
-		assertTrue(list2.getNumbers().isEmpty(), "Archived number should not appear in full blocklist");
+		assertTrue(list2.getNumbers().isEmpty(),
+			"Row below current visibility threshold must not appear in full blocklist");
 	}
 
 	/**

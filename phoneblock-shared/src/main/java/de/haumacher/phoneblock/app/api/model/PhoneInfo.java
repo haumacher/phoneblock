@@ -33,9 +33,6 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	/** @see #isBlackListed() */
 	private static final String BLACK_LISTED__PROP = "blackListed";
 
-	/** @see #isArchived() */
-	private static final String ARCHIVED__PROP = "archived";
-
 	/** @see #getDateAdded() */
 	private static final String DATE_ADDED__PROP = "dateAdded";
 
@@ -68,8 +65,6 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	private boolean _whiteListed = false;
 
 	private boolean _blackListed = false;
-
-	private boolean _archived = false;
 
 	private long _dateAdded = 0L;
 
@@ -217,26 +212,6 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	/** Internal setter for {@link #isBlackListed()} without chain call utility. */
 	protected final void internalSetBlackListed(boolean value) {
 		_blackListed = value;
-	}
-
-	/**
-	 * Whether this number no longer is on the blocklist, because no votes have been received for a long time.
-	 */
-	public final boolean isArchived() {
-		return _archived;
-	}
-
-	/**
-	 * @see #isArchived()
-	 */
-	public de.haumacher.phoneblock.app.api.model.PhoneInfo setArchived(boolean value) {
-		internalSetArchived(value);
-		return this;
-	}
-
-	/** Internal setter for {@link #isArchived()} without chain call utility. */
-	protected final void internalSetArchived(boolean value) {
-		_archived = value;
 	}
 
 	/**
@@ -439,8 +414,6 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 		out.value(isWhiteListed());
 		out.name(BLACK_LISTED__PROP);
 		out.value(isBlackListed());
-		out.name(ARCHIVED__PROP);
-		out.value(isArchived());
 		out.name(DATE_ADDED__PROP);
 		out.value(getDateAdded());
 		out.name(LAST_UPDATE__PROP);
@@ -472,7 +445,6 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 			case VOTES_WILDCARD__PROP: setVotesWildcard(in.nextInt()); break;
 			case WHITE_LISTED__PROP: setWhiteListed(in.nextBoolean()); break;
 			case BLACK_LISTED__PROP: setBlackListed(in.nextBoolean()); break;
-			case ARCHIVED__PROP: setArchived(in.nextBoolean()); break;
 			case DATE_ADDED__PROP: setDateAdded(in.nextLong()); break;
 			case LAST_UPDATE__PROP: setLastUpdate(in.nextLong()); break;
 			case LABEL__PROP: setLabel(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
@@ -504,9 +476,6 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 
 	/** XML attribute or element name of a {@link #isBlackListed} property. */
 	private static final String BLACK_LISTED__XML_ATTR = "black-listed";
-
-	/** XML attribute or element name of a {@link #isArchived} property. */
-	private static final String ARCHIVED__XML_ATTR = "archived";
 
 	/** XML attribute or element name of a {@link #getDateAdded} property. */
 	private static final String DATE_ADDED__XML_ATTR = "date-added";
@@ -548,7 +517,6 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 		out.writeAttribute(VOTES_WILDCARD__XML_ATTR, Integer.toString(getVotesWildcard()));
 		out.writeAttribute(WHITE_LISTED__XML_ATTR, Boolean.toString(isWhiteListed()));
 		out.writeAttribute(BLACK_LISTED__XML_ATTR, Boolean.toString(isBlackListed()));
-		out.writeAttribute(ARCHIVED__XML_ATTR, Boolean.toString(isArchived()));
 		out.writeAttribute(DATE_ADDED__XML_ATTR, Long.toString(getDateAdded()));
 		out.writeAttribute(LAST_UPDATE__XML_ATTR, Long.toString(getLastUpdate()));
 		out.writeAttribute(LABEL__XML_ATTR, getLabel());
@@ -617,10 +585,6 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 				setBlackListed(Boolean.parseBoolean(value));
 				break;
 			}
-			case ARCHIVED__XML_ATTR: {
-				setArchived(Boolean.parseBoolean(value));
-				break;
-			}
 			case DATE_ADDED__XML_ATTR: {
 				setDateAdded(Long.parseLong(value));
 				break;
@@ -680,10 +644,6 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 			}
 			case BLACK_LISTED__XML_ATTR: {
 				setBlackListed(Boolean.parseBoolean(in.getElementText()));
-				break;
-			}
-			case ARCHIVED__XML_ATTR: {
-				setArchived(Boolean.parseBoolean(in.getElementText()));
 				break;
 			}
 			case DATE_ADDED__XML_ATTR: {

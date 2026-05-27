@@ -103,11 +103,11 @@ public class DB {
 	 */
 	public static final int MIN_LEGITIMATE = 4;
 
-	// Removed (#335): OLD_VOTE_DAYS / WEEK_PER_VOTE — the linear vote-with-age
-	// archiving heuristic ("100 votes still active after 5.5 years") was
-	// replaced by Heat-based archiving with the floor HEAT_FLOOR_FOR_ACTIVE
-	// (see archiveOldReports). The legacy archiveReportsWithLowVotes mapper
-	// was removed in #342.
+	// Removed in #342: the soft-delete ACTIVE flag and the Heat-based archive
+	// sweep that maintained it. Decay-aware visibility
+	// (`(SPAM_EVIDENCE - LEGIT_EVIDENCE) >= maxRawSpam`) handles every
+	// read-path decision; long-faded rows accumulate until #341 introduces
+	// hard delete.
 
 	private static final String SAVE_CHARS = "23456789qwertzuiopasdfghjkyxcvbnmQWERTZUPASDFGHJKLYXCVBNM";
 
@@ -254,12 +254,6 @@ public class DB {
 		_sessionFactory = new SqlSessionFactoryBuilder().build(configuration);
 		
 		setupSchema();
-
-		 archiveOldReports();
-
-		 // Periodic archive runs are handled by BlocklistVersionService so that
-		 // ACTIVE=false transitions land in the same release as the snapshot of
-		 // PUBLISHED_VOTES. The init-time call above primes the table on startup.
 
 		 Date timeHistory = schedule(0, this::runUpdateHistory);
 		 LOG.info("Scheduled search history cleanup: " + timeHistory);
@@ -591,6 +585,9 @@ public class DB {
 
 					// migration 33 drops legacy tables CALLREPORT / CALLERS via the
 					// script; no Java hook needed.
+
+					// migration 34 drops the obsolete ACTIVE column and its indexes
+					// via the script; no Java hook needed.
 
 					users.updateProperty("db.version", Integer.toString(version));
 					session.commit();
@@ -1763,28 +1760,7 @@ public class DB {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			return new Status(
 					reports.getStatistics(maxRawSpam(minVotes)),
-					nonNull(reports.getTotalVotes()),
-					nonNull(reports.getArchivedReportCount()));
-		}
-	}
-
-	/**
-	 * The total number of archived reports.
-	 */
-	public int getArchivedReportCount() {
-		try (SqlSession session = openSession()) {
-			SpamReports reports = session.getMapper(SpamReports.class);
-			return nonNull(reports.getArchivedReportCount());
-		}
-	}
-	
-	/**
-	 * The total number of active reports.
-	 */
-	public int getActiveReportCount() {
-		try (SqlSession session = openSession()) {
-			SpamReports reports = session.getMapper(SpamReports.class);
-			return nonNull(reports.getActiveReportCount());
+					nonNull(reports.getTotalVotes()));
 		}
 	}
 	
@@ -1826,19 +1802,18 @@ public class DB {
 	public PhoneInfo getPhoneInfo(NumberInfo info, AggregationInfo aggregation10, AggregationInfo aggregation100) {
 		PhoneInfo result = NumberAnalyzer.phoneInfoFromId(info.getPhone())
 			.setDateAdded(info.getAdded())
-			.setLastUpdate(info.getUpdated())
-			.setArchived(!info.isActive());
+			.setLastUpdate(info.getUpdated());
 
 		Rating rating = rating(info);
 
 		// Issue #338 (semantic shift for existing clients):
-		// `votes` and `votesWildcard` no longer carry the cumulative-counter
-		// values. They are now `round(decoded SPAM_EVIDENCE)` — the same
-		// vote-equivalent, but decayed to the moment of the API call. A 10-vote
-		// spam number from last week still reads `votes=10`; from four months
-		// ago reads `votes=5`; from a year ago reads `votes=1`. Clients filtering
-		// `votes >= minVotes AND !archived` therefore get a smooth decay through
-		// the threshold instead of a binary archived-flip.
+		// `votes` and `votesWildcard` are decay-aware: `round(decoded
+		// SPAM_EVIDENCE - decoded LEGIT_EVIDENCE)`, decayed to the moment
+		// of the API call. A 10-vote spam number from last week still reads
+		// `votes=10`; from four months ago reads `votes=5`; from a year ago
+		// reads `votes=1`; once below `minVotes` the client treats it as
+		// not-on-blocklist — same effect the old `archived` flag had, only
+		// smooth instead of binary.
 		long now = System.currentTimeMillis();
 		double rawHeat = 0.0;
 		double rawSpam = 0.0;
@@ -2443,45 +2418,6 @@ public class DB {
 
 	private byte[] pwhash(String passwd) {
 		return sha256().digest(passwd.getBytes(StandardCharsets.UTF_8));
-	}
-
-	/**
-	 * Deactivates report rows whose vote-decay has carried them below the
-	 * visibility threshold. Sets {@code ACTIVE=false}; the snapshot-driven
-	 * version sweep (#342) picks the {@code ACTIVE} flip up as a
-	 * visibility-class change in the next release. Called from
-	 * {@code BlocklistVersionService} as the first step of the scheduled
-	 * release, and once at startup to prime the table.
-	 */
-	public void archiveOldReports() {
-		LOG.info("Starting DB cleanup.");
-
-		long now = System.currentTimeMillis();
-		// Issue #335: archive on the two decay axes simultaneously. Heat alone
-		// would fall off in ~2 months at moderate vote counts; SPAM_EVIDENCE
-		// alone would hold legitimate-only-with-old-spam rows. Both floors
-		// must be crossed. The thresholds are pre-projected here so the SQL
-		// WHERE clause is a plain column comparison.
-		double maxRawHeat = Ema.projectedThreshold(HEAT_FLOOR_FOR_ACTIVE, now, Ema.HEAT_TAU_MILLIS);
-		double maxRawSpamEvidence = Ema.projectedThreshold(MIN_SPAM_EVIDENCE_FOR_ACTIVE,
-			now, Ema.CLASSIFICATION_TAU_MILLIS);
-
-		try (SqlSession session = openSession()) {
-			SpamReports reports = session.getMapper(SpamReports.class);
-
-			int archived = reports.archiveByHeatAndEvidenceBelow(maxRawHeat, maxRawSpamEvidence);
-
-			LOG.info("Archived {} reports (heatFloor={}, spamEvidenceFloor={}, " +
-				"projected heat={}, projected spamEvidence={}).",
-				archived, HEAT_FLOOR_FOR_ACTIVE, MIN_SPAM_EVIDENCE_FOR_ACTIVE,
-				maxRawHeat, maxRawSpamEvidence);
-
-			session.commit();
-		} catch (Exception ex) {
-			LOG.error("Failed to cleanup DB.", ex);
-		}
-
-		LOG.info("Finished DB cleanup.");
 	}
 
 	/**

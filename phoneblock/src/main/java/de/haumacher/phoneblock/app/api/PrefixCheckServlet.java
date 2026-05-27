@@ -137,7 +137,6 @@ public class PrefixCheckServlet extends HttpServlet {
 				PhoneInfo pi = NumberAnalyzer.phoneInfoFromId(n.getPhone())
 					.setVotes(votes)
 					.setRating(DB.rating(n))
-					.setArchived(!n.isActive())
 					.setDateAdded(n.getAdded())
 					.setLastUpdate(n.getUpdated());
 				byPhone.put(n.getPhone(), pi);
@@ -145,13 +144,12 @@ public class PrefixCheckServlet extends HttpServlet {
 			for (DBPersonalization p : personalMatches) {
 				PhoneInfo pi = byPhone.get(p.getPhone());
 				if (pi == null) {
-					// Personal entry with no active community match. By construction the
-					// community row is either missing or archived (the community query
-					// already filters VOTES > 0 AND ACTIVE), so report archived=true and
-					// leave the vote counts at zero — they are not relevant either way.
+					// Personal entry with no community match. By construction the
+					// community row is either missing or below the visibility
+					// threshold (the community query filters net evidence ≥ floor),
+					// so leave the vote counts at zero — they are not relevant either way.
 					pi = NumberAnalyzer.phoneInfoFromId(p.getPhone())
-						.setRating(p.isBlocked() ? Rating.B_MISSED : Rating.A_LEGITIMATE)
-						.setArchived(true);
+						.setRating(p.isBlocked() ? Rating.B_MISSED : Rating.A_LEGITIMATE);
 					byPhone.put(p.getPhone(), pi);
 				}
 				if (p.isBlocked()) {
