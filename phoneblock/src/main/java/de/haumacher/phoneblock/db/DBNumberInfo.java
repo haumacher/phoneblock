@@ -98,4 +98,20 @@ public class DBNumberInfo extends NumberInfo {
 		return _legitEvidence;
 	}
 
+	/**
+	 * Decoded vote-equivalent at the current moment (#342). Same shape as
+	 * {@code toBlocklistEntry} and {@code PhoneInfo.votes}: rounded net
+	 * decoded evidence, floored at 0. The Thymeleaf templates that iterate
+	 * over raw {@link DBNumberInfo} rows (status page) read this so the
+	 * displayed vote count matches what {@code /api/check} returns —
+	 * {@link #getRawVotes()} remains the explicit opt-in to the cumulative
+	 * counter for the few callers that need it.
+	 */
+	public int getVotes() {
+		long now = System.currentTimeMillis();
+		double decodedSpam = Ema.decode(_spamEvidence, now, Ema.CLASSIFICATION_TAU_MILLIS);
+		double decodedLegit = Ema.decode(_legitEvidence, now, Ema.CLASSIFICATION_TAU_MILLIS);
+		return (int) Math.round(Math.max(0.0, decodedSpam - decodedLegit));
+	}
+
 }
