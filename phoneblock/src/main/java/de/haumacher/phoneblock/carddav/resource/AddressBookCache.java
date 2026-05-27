@@ -263,10 +263,9 @@ public class AddressBookCache implements ServletContextListener {
 
 		// Use the snapshot from the last released blocklist version so the
 		// address-book content (and its ETag) only changes once per release,
-		// not on every individual vote (#342): votes are derived from
-		// PUBLISHED_SPAM_EVIDENCE decoded at `now` — same projected-EMA the
-		// live blocklist uses, frozen at the last BlocklistVersionService
-		// sweep. PUBLISHED_LASTPING is still the snapshot field on the row.
+		// not on every individual vote (#342). Votes are derived from the
+		// decoded net of the snapshot — same shape as toBlocklistEntry, just
+		// against the PUBLISHED_* columns frozen at the last sweep.
 		List<DBNumberInfo> result = reports.getPublishedReports();
 		NumberTree numberTree = new NumberTree();
 		for (DBNumberInfo report : result) {
@@ -278,8 +277,9 @@ public class AddressBookCache implements ServletContextListener {
 				continue;
 			}
 
-			int votes = (int) Math.round(Math.max(0.0,
-				Ema.decode(report.getPublishedSpamEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS)));
+			double decodedSpam = Ema.decode(report.getPublishedSpamEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
+			double decodedLegit = Ema.decode(report.getPublishedLegitEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
+			int votes = (int) Math.round(Math.max(0.0, decodedSpam - decodedLegit));
 			int ageInDays = (int) ((now - report.getLastPing()) / 1000 / 60 / 60 / 24);
 
 			numberTree.insert(phone, votes, ageInDays);
