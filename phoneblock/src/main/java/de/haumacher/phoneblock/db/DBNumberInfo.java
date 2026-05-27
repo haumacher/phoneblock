@@ -12,7 +12,7 @@ public class DBNumberInfo extends NumberInfo {
 
 	private final long _lastPing;
 
-	private final int _publishedVotes;
+	private final double _publishedSpamEvidence;
 
 	private final double _heat;
 
@@ -20,16 +20,7 @@ public class DBNumberInfo extends NumberInfo {
 
 	private final double _legitEvidence;
 
-	/**
-	 * Creates a {@link DBBlockListEntry}.
-	 *
-	 * <p>The trailing {@code heat}, {@code spamEvidence}, {@code legitEvidence}
-	 * parameters are the raw projected EMA values from the confidence-model
-	 * columns (#300). Existing call sites that pre-date #334 use the
-	 * 16-argument constructor and get zero defaults — fine for callers that
-	 * only need cnt/votes.</p>
-	 */
-	public DBNumberInfo(String phone, long added, long updated, long lastSearch, boolean active, int calls, int votes, int legitimate, int ping, int poll, int advertising, int gamble, int fraud, int searches, long lastPing, int publishedVotes,
+	public DBNumberInfo(String phone, long added, long updated, long lastSearch, boolean active, int calls, int votes, int legitimate, int ping, int poll, int advertising, int gamble, int fraud, int searches, long lastPing, double publishedSpamEvidence,
 			double heat, double spamEvidence, double legitEvidence) {
 		setPhone(phone)
 		.setAdded(added)
@@ -46,15 +37,18 @@ public class DBNumberInfo extends NumberInfo {
 		.setRatingFraud(fraud)
 		.setSearches(searches);
 		_lastPing = lastPing;
-		_publishedVotes = publishedVotes;
+		_publishedSpamEvidence = publishedSpamEvidence;
 		_heat = heat;
 		_spamEvidence = spamEvidence;
 		_legitEvidence = legitEvidence;
 	}
 
-	/** Backwards-compatible constructor (pre-#334) — leaves EMAs at zero. */
-	public DBNumberInfo(String phone, long added, long updated, long lastSearch, boolean active, int calls, int votes, int legitimate, int ping, int poll, int advertising, int gamble, int fraud, int searches, long lastPing, int publishedVotes) {
-		this(phone, added, updated, lastSearch, active, calls, votes, legitimate, ping, poll, advertising, gamble, fraud, searches, lastPing, publishedVotes, 0.0, 0.0, 0.0);
+	/**
+	 * Backwards-compatible 16-arg constructor used by legacy debug/stats
+	 * queries that have no snapshot context — leaves the EMA columns at zero.
+	 */
+	public DBNumberInfo(String phone, long added, long updated, long lastSearch, boolean active, int calls, int votes, int legitimate, int ping, int poll, int advertising, int gamble, int fraud, int searches, long lastPing, double publishedSpamEvidence) {
+		this(phone, added, updated, lastSearch, active, calls, votes, legitimate, ping, poll, advertising, gamble, fraud, searches, lastPing, publishedSpamEvidence, 0.0, 0.0, 0.0);
 	}
 
 	/**
@@ -65,10 +59,12 @@ public class DBNumberInfo extends NumberInfo {
 	}
 
 	/**
-	 * The snapshot of votes at the time of version assignment (from PUBLISHED_VOTES).
+	 * Snapshot of the projected SPAM_EVIDENCE EMA at the time of the last
+	 * blocklist version assignment (#342). Decode with {@link Ema#decode} to
+	 * compare against the visibility threshold.
 	 */
-	public int getPublishedVotes() {
-		return _publishedVotes;
+	public double getPublishedSpamEvidence() {
+		return _publishedSpamEvidence;
 	}
 
 	/** Raw projected-EMA {@code HEAT} value (confidence model, #300). Decode with {@link Ema#decode}. */

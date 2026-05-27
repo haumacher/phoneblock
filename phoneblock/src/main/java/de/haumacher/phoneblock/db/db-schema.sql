@@ -4,7 +4,7 @@ CREATE TABLE PROPERTIES (
 	CONSTRAINT PROPERTIES_PK PRIMARY KEY (NAME)
 );
 
-INSERT INTO PROPERTIES (NAME, VAL) VALUES('db.version', '30');
+INSERT INTO PROPERTIES (NAME, VAL) VALUES('db.version', '31');
 INSERT INTO PROPERTIES (NAME, VAL) VALUES('blocklist.version', '1');
 
 
@@ -56,7 +56,6 @@ CREATE TABLE NUMBERS (
 	VERSION BIGINT DEFAULT 0 NOT NULL,
 	PENDING_UPDATE BOOLEAN DEFAULT FALSE NOT NULL,
 	PUBLISHED_LASTPING BIGINT DEFAULT 0 NOT NULL,
-	PUBLISHED_VOTES INTEGER DEFAULT 0 NOT NULL,
 	-- Confidence model (#300): projected-EMA columns. Each cell holds
 	-- Σ wᵢ·exp((tᵢ − t0)/τ); read-time decay applies exp(−(now − t0)/τ).
 	-- HEAT measures activity (~2-week half-life), the two EVIDENCE columns
@@ -64,6 +63,11 @@ CREATE TABLE NUMBERS (
 	HEAT DOUBLE PRECISION DEFAULT 0 NOT NULL,
 	SPAM_EVIDENCE DOUBLE PRECISION DEFAULT 0 NOT NULL,
 	LEGIT_EVIDENCE DOUBLE PRECISION DEFAULT 0 NOT NULL,
+	-- Snapshot of SPAM_EVIDENCE at the time of the last blocklist version
+	-- assignment (#342). Replaces the old PUBLISHED_VOTES counter so the
+	-- snapshot lives on the same decay-aware axis as the live filter; clients
+	-- on ?since=N see what was visible at the last release.
+	PUBLISHED_SPAM_EVIDENCE DOUBLE PRECISION DEFAULT 0 NOT NULL,
 	CONSTRAINT NUMBERS_PK PRIMARY KEY (PHONE)
 );
 
@@ -76,13 +80,16 @@ CREATE INDEX NUMBERS_PENDING_UPDATE_IDX ON NUMBERS (PENDING_UPDATE, PHONE);
 CREATE INDEX NUMBERS_SEARCHES_CURRENT_IDX ON NUMBERS (SEARCHES_CURRENT DESC);
 -- Heat-ordered scan for the space-limited blocklist (#336).
 CREATE INDEX NUMBERS_HEAT_IDX ON NUMBERS (HEAT DESC);
+-- Visibility filter on decay-aware evidence (#342). Lets the blocklist
+-- queries do `WHERE ACTIVE AND SPAM_EVIDENCE >= ?` as an index seek
+-- instead of a full-table scan + Java post-filter.
+CREATE INDEX NUMBERS_SPAM_EVIDENCE_IDX ON NUMBERS (ACTIVE, SPAM_EVIDENCE DESC);
 
 CREATE TABLE NUMBERS_LOCALE (
 	PHONE CHARACTER VARYING(100) NOT NULL,
 	DIAL CHARACTER VARYING(8) NOT NULL,
 	LASTACCESS BIGINT NOT NULL,
 	SEARCHES INTEGER DEFAULT 0 NOT NULL,
-	VOTES INTEGER DEFAULT 0 NOT NULL,
 	CALLS INTEGER DEFAULT 0 NOT NULL,
 	-- Projected Heat EMA scoped to one DIAL — same encoding as NUMBERS.HEAT
 	-- (see Ema). Drives the dial-aware space-limited blocklist (#340): a
@@ -90,6 +97,11 @@ CREATE TABLE NUMBERS_LOCALE (
 	-- region's top-N. Decoding/ranking uses the same constant decay factor
 	-- across rows for a given DIAL.
 	HEAT DOUBLE PRECISION DEFAULT 0 NOT NULL,
+	-- Projected SPAM_EVIDENCE EMA scoped to one DIAL (#342). The decay-aware
+	-- analogue of the old per-region VOTES counter — drives the per-region
+	-- visibility filter so the dial-aware blocklist composition uses the same
+	-- semantic as the global view.
+	SPAM_EVIDENCE DOUBLE PRECISION DEFAULT 0 NOT NULL,
 	CONSTRAINT NUMBERS_LOCALE_PK PRIMARY KEY (PHONE,DIAL)
 );
 -- (DIAL, HEAT DESC): equality column first so the top-N scan is a single

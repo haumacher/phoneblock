@@ -583,6 +583,10 @@ public class DB {
 						backfillNumbersLocaleHeat(reports);
 					}
 
+					if (version == 31) {
+						backfillVisibilityColumns(reports);
+					}
+
 					users.updateProperty("db.version", Integer.toString(version));
 					session.commit();
 				}
@@ -997,7 +1001,7 @@ public class DB {
 		pingRelatedNumbers(reports, phone, time);
 		
 		if (votes > 0) {
-			updateLocalization(reports, phone, dialPrefix, 0, votes, 0, heatInc, time);
+			updateLocalization(reports, phone, dialPrefix, 0, 0, heatInc, spamEvidenceInc, time);
 		}
 
 		boolean classifyChanged = classify(oldVotes) != classify(newVotes);
@@ -1019,20 +1023,23 @@ public class DB {
 	/**
 	 * Add a per-region (dial-prefix) signal to {@code NUMBERS_LOCALE}.
 	 *
-	 * <p>{@code heatInc} must already be the projected Heat increment computed
-	 * via {@link Ema#increment} with the correct signal weight for the event
-	 * type — callers compute it once and feed both {@code NUMBERS.HEAT} (global
-	 * Heat / archive gate) and this regional row with the same value.</p>
+	 * <p>{@code heatInc} and {@code spamEvidenceInc} must already be the
+	 * projected EMA increments computed via {@link Ema#increment} with the
+	 * correct signal weight for the event type — callers compute them once
+	 * and feed both the global {@code NUMBERS} columns (archive gate /
+	 * confidence model) and this regional row with the same values, so the
+	 * dial-aware blocklist (#340) and the dial-aware visibility filter (#342)
+	 * see the same decay behaviour as the global view.</p>
 	 */
 	public void updateLocalization(SpamReports reports, String phone, String dialPrefix,
-			int searches, int votes, int calls, double heatInc, long time) {
+			int searches, int calls, double heatInc, double spamEvidenceInc, long time) {
 		if (dialPrefix == null) {
 			return;
 		}
 
-		int cnt = reports.updateNumberLocalization(phone, dialPrefix, searches, votes, calls, heatInc, time);
+		int cnt = reports.updateNumberLocalization(phone, dialPrefix, searches, calls, heatInc, spamEvidenceInc, time);
 		if (cnt == 0) {
-			reports.insertNumberLocalization(phone, dialPrefix, searches, votes, calls, heatInc, time);
+			reports.insertNumberLocalization(phone, dialPrefix, searches, calls, heatInc, spamEvidenceInc, time);
 		}
 	}
 
@@ -2000,6 +2007,29 @@ public class DB {
 	}
 
 	/**
+	 * Backfill the visibility/snapshot columns introduced in migration 31
+	 * (#342) and drop the now-obsolete VOTES counters. The order matters:
+	 * the backfill runs first while the source columns still exist, then the
+	 * old columns are dropped so the table state ends up matching
+	 * {@code db-schema.sql}.
+	 */
+	private void backfillVisibilityColumns(SpamReports reports) {
+		LOG.info("Decay-aware visibility (#342): backfilling NUMBERS_LOCALE.SPAM_EVIDENCE and NUMBERS.PUBLISHED_SPAM_EVIDENCE.");
+
+		int localeUpdated = reports.backfillNumbersLocaleSpamEvidence(
+			(double) Ema.T0_MILLIS, Ema.CLASSIFICATION_TAU_MILLIS,
+			Signals.DIRECT_VOTE_EVIDENCE_WEIGHT);
+		LOG.info("Backfilled NUMBERS_LOCALE.SPAM_EVIDENCE on {} rows.", localeUpdated);
+
+		int publishedUpdated = reports.backfillPublishedSpamEvidence();
+		LOG.info("Seeded NUMBERS.PUBLISHED_SPAM_EVIDENCE on {} rows.", publishedUpdated);
+
+		reports.dropNumbersLocaleVotes();
+		reports.dropNumbersPublishedVotes();
+		LOG.info("Dropped legacy VOTES / PUBLISHED_VOTES counters.");
+	}
+
+	/**
 	 * Populates SHA1 hashes for all existing aggregation rows during migration to version 13.
 	 */
 	private void populateAggregationHashes(SpamReports reports) {
@@ -2099,7 +2129,10 @@ public class DB {
 			// Regional Heat (#340): call reports are the dominant Heat source —
 			// each one means a real call event happened in this dial. Feed the
 			// per-(PHONE, DIAL) row so the dial-aware top-N reflects that.
-			updateLocalization(reports, phoneId, dialPrefix, 0, 0, 1, heatInc, now);
+			// No SPAM_EVIDENCE on the unconditional call-report path — the
+			// classification signal only fires via wildcard-implicit-evidence
+			// below or via explicit votes.
+			updateLocalization(reports, phoneId, dialPrefix, 0, 1, heatInc, 0.0, now);
 			return false;
 		}
 
@@ -2128,10 +2161,12 @@ public class DB {
 		// unconditional path above; only the new implicit-evidence signal
 		// still needs to be promoted.
 		addAggregationEmas(reports, phoneId, 0.0, implicitEvidence, 0.0);
-		// Regional Heat (#340): now that the NUMBERS row exists, attach the
-		// per-dial signal so this freshly materialised wildcard hit is
-		// represented in the regional blocklist as well.
-		updateLocalization(reports, phoneId, dialPrefix, 0, 0, 1, heatInc, now);
+		// Regional Heat (#340) + regional implicit evidence (#342): now that the
+		// NUMBERS row exists, attach both the per-dial Heat and the
+		// implicit-evidence signal — the same combination the global NUMBERS
+		// row just received, so the dial-aware visibility filter sees the
+		// freshly materialised wildcard hit too.
+		updateLocalization(reports, phoneId, dialPrefix, 0, 1, heatInc, implicitEvidence, now);
 		return true;
 	}
 
@@ -2159,7 +2194,9 @@ public class DB {
 
 		pingRelatedNumbers(reports, phone, now);
 
-		updateLocalization(reports, phone, dialPrefix, 1, 0, 0, heatInc, now);
+		// A search is a pure Heat signal — no classification impact, so no
+		// SPAM_EVIDENCE contribution to the locale row either.
+		updateLocalization(reports, phone, dialPrefix, 1, 0, heatInc, 0.0, now);
 	}
 	
 	/**
@@ -2987,7 +3024,9 @@ public class DB {
 	public List<DailyCount> getBlockedNumbersByCountry() {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			return reports.getBlockedNumbersByCountry(MIN_VOTES);
+			double maxRawSpam = Ema.projectedThreshold(MIN_VOTES,
+				System.currentTimeMillis(), Ema.CLASSIFICATION_TAU_MILLIS);
+			return reports.getBlockedNumbersByCountry(maxRawSpam);
 		}
 	}
 

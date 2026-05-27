@@ -241,7 +241,7 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 								now, Ema.CLASSIFICATION_TAU_MILLIS);
 							reports.recordCall(info.getPhone(), now, heatInc, spamEvidenceInc);
 							db.updateLocalization(reports, info.getPhone(), settings.getDialPrefix(),
-								0, 0, 1, heatInc, now);
+								0, 1, heatInc, spamEvidenceInc, now);
 							session.commit();
 						}
 					} catch (Exception ex) {
