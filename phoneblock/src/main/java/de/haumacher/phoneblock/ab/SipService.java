@@ -240,7 +240,8 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 							double spamEvidenceInc = Ema.increment(Signals.ANSWERBOT_CALL_EVIDENCE_WEIGHT,
 								now, Ema.CLASSIFICATION_TAU_MILLIS);
 							reports.recordCall(info.getPhone(), now, heatInc, spamEvidenceInc);
-							db.updateLocalization(reports, info.getPhone(), settings.getDialPrefix(), 0, 0, 1, now);
+							db.updateLocalization(reports, info.getPhone(), settings.getDialPrefix(),
+								0, 0, 1, heatInc, now);
 							session.commit();
 						}
 					} catch (Exception ex) {

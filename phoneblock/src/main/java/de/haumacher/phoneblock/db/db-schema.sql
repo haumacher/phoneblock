@@ -84,8 +84,18 @@ CREATE TABLE NUMBERS_LOCALE (
 	SEARCHES INTEGER DEFAULT 0 NOT NULL,
 	VOTES INTEGER DEFAULT 0 NOT NULL,
 	CALLS INTEGER DEFAULT 0 NOT NULL,
+	-- Projected Heat EMA scoped to one DIAL — same encoding as NUMBERS.HEAT
+	-- (see Ema). Drives the dial-aware space-limited blocklist (#340): a
+	-- number heating up in one region must not push numbers off another
+	-- region's top-N. Decoding/ranking uses the same constant decay factor
+	-- across rows for a given DIAL.
+	HEAT DOUBLE PRECISION DEFAULT 0 NOT NULL,
 	CONSTRAINT NUMBERS_LOCALE_PK PRIMARY KEY (PHONE,DIAL)
 );
+-- (DIAL, HEAT DESC): equality column first so the top-N scan is a single
+-- index seek per dial, then ordered range scan within that slice. The
+-- reverse order would force a full-index scan in a sparse DIAL.
+CREATE INDEX NUMBERS_LOCALE_HEAT_IDX ON NUMBERS_LOCALE (DIAL, HEAT DESC);
 
 CREATE TABLE REVISION (
 	ID INTEGER GENERATED ALWAYS AS IDENTITY,

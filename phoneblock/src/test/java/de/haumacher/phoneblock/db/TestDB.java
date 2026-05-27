@@ -826,7 +826,7 @@ public class TestDB {
 			processVotes("030992200041", 1, now - i * 60_000L);
 		}
 
-		Blocklist top2 = _db.getBlockListByHeatAPI(2);
+		Blocklist top2 = _db.getBlockListByHeatAPI(null, 2);
 		assertNotNull(top2);
 		assertEquals(2, top2.getNumbers().size(), "limit must clip to exactly 2");
 
@@ -839,9 +839,59 @@ public class TestDB {
 		assertTrue(topPhones.contains("+4930992200041"), "fresh number 2 must be in top-2");
 
 		// Asking for more entries pulls the old ones in too.
-		Blocklist all = _db.getBlockListByHeatAPI(100);
+		Blocklist all = _db.getBlockListByHeatAPI(null, 100);
 		assertTrue(all.getNumbers().size() >= 5,
 			"larger limit must include the old numbers as well, was " + all.getNumbers().size());
+	}
+
+	@Test
+	void testHeatRankedBlocklistPartitionsByDial() {
+		// Issue #340: the space-limited blocklist must be composed from the
+		// region the reports originate from. A number reported only by US
+		// users must not push numbers off a German client's top-N (and vice
+		// versa). The dial argument selects the per-region Heat from
+		// NUMBERS_LOCALE; null falls back to the global ranking.
+
+		long now = System.currentTimeMillis();
+		int votes = DB.DEFAULT_MIN_VISIBLE_VOTES + 2;
+
+		// German users vote down a German number.
+		PhoneNumer dePhone = NumberAnalyzer.analyze("030330000001", "+49");
+		for (int i = 0; i < votes; i++) {
+			_db.processVotes(dePhone, "+49", 1, now - i * 60_000L);
+		}
+
+		// US users vote down a different German number — same number-space, but
+		// the reports come from a different region. Picking a German number
+		// keeps the test independent of the international-number id format and
+		// proves the partitioning is by *reporter* dial, not by phone-country.
+		PhoneNumer otherPhone = NumberAnalyzer.analyze("030330000002", "+49");
+		for (int i = 0; i < votes; i++) {
+			_db.processVotes(otherPhone, "+1", 1, now - i * 60_000L);
+		}
+
+		Blocklist de = _db.getBlockListByHeatAPI("+49", 10);
+		Set<String> dePhones = de.getNumbers().stream()
+			.map(BlockListEntry::getPhone).collect(Collectors.toSet());
+		assertTrue(dePhones.contains("+4930330000001"),
+			"German top-N must contain the German-reported number");
+		assertFalse(dePhones.contains("+4930330000002"),
+			"German top-N must not contain the US-reported number");
+
+		Blocklist us = _db.getBlockListByHeatAPI("+1", 10);
+		Set<String> usPhones = us.getNumbers().stream()
+			.map(BlockListEntry::getPhone).collect(Collectors.toSet());
+		assertTrue(usPhones.contains("+4930330000002"),
+			"US top-N must contain the US-reported number");
+		assertFalse(usPhones.contains("+4930330000001"),
+			"US top-N must not contain the German-reported number");
+
+		// The global view (dial=null) carries both — same as before #340.
+		Blocklist global = _db.getBlockListByHeatAPI(null, 10);
+		Set<String> globalPhones = global.getNumbers().stream()
+			.map(BlockListEntry::getPhone).collect(Collectors.toSet());
+		assertTrue(globalPhones.contains("+4930330000001"));
+		assertTrue(globalPhones.contains("+4930330000002"));
 	}
 
 	@Test
@@ -1006,7 +1056,7 @@ public class TestDB {
 
 		try (SqlSession tx = _db.openSession()) {
 			SpamReports reports = tx.getMapper(SpamReports.class);
-			_db.recordCallOrTrackWildcard(reports, cold, coldId, t, true);
+			_db.recordCallOrTrackWildcard(reports, cold, coldId, "+49", t, true);
 			tx.commit();
 		}
 
@@ -1023,7 +1073,7 @@ public class TestDB {
 		long later = t + 60_000L;
 		try (SqlSession tx = _db.openSession()) {
 			SpamReports reports = tx.getMapper(SpamReports.class);
-			_db.recordCallOrTrackWildcard(reports, cold, coldId, later, false);
+			_db.recordCallOrTrackWildcard(reports, cold, coldId, "+49", later, false);
 			tx.commit();
 		}
 		double[] coldBlockAfter = rawAggEmas("02099887701", 10);
@@ -1057,7 +1107,7 @@ public class TestDB {
 		String insideUnknownId = NumberAnalyzer.getPhoneId(insideUnknown);
 		try (SqlSession tx = _db.openSession()) {
 			SpamReports reports = tx.getMapper(SpamReports.class);
-			assertTrue(_db.recordCallOrTrackWildcard(reports, insideUnknown, insideUnknownId, innerWindow, true),
+			assertTrue(_db.recordCallOrTrackWildcard(reports, insideUnknown, insideUnknownId, "+49", innerWindow, true),
 				"Block must still fire inside the four-month memory window");
 			tx.commit();
 		}
@@ -1075,7 +1125,7 @@ public class TestDB {
 		String outsideUnknownId = NumberAnalyzer.getPhoneId(outsideUnknown);
 		try (SqlSession tx = _db.openSession()) {
 			SpamReports reports = tx.getMapper(SpamReports.class);
-			assertFalse(_db.recordCallOrTrackWildcard(reports, outsideUnknown, outsideUnknownId, outsideWindow, true),
+			assertFalse(_db.recordCallOrTrackWildcard(reports, outsideUnknown, outsideUnknownId, "+49", outsideWindow, true),
 				"Block must no longer fire two half-lives out — evidence has decayed below 2.0");
 			tx.commit();
 		}
@@ -1101,7 +1151,7 @@ public class TestDB {
 		// Just after the burst the block is hot → implicit tracking fires.
 		try (SqlSession tx = _db.openSession()) {
 			SpamReports reports = tx.getMapper(SpamReports.class);
-			assertTrue(_db.recordCallOrTrackWildcard(reports, fresh, freshId, t0, true),
+			assertTrue(_db.recordCallOrTrackWildcard(reports, fresh, freshId, "+49", t0, true),
 				"Hot block at t0 must materialise the row");
 			tx.commit();
 		}
@@ -1115,7 +1165,7 @@ public class TestDB {
 		long farFuture = t0 + 3L * Ema.CLASSIFICATION_HALF_LIFE_DAYS * 86_400_000L;
 		try (SqlSession tx = _db.openSession()) {
 			SpamReports reports = tx.getMapper(SpamReports.class);
-			assertFalse(_db.recordCallOrTrackWildcard(reports, later, laterId, farFuture, true),
+			assertFalse(_db.recordCallOrTrackWildcard(reports, later, laterId, "+49", farFuture, true),
 				"Block must have decayed out of wildcard-blocking after several half-lives");
 			tx.commit();
 		}
@@ -1152,7 +1202,7 @@ public class TestDB {
 		// First report from this user for the hot-unknown number — must create the row.
 		try (SqlSession tx = _db.openSession()) {
 			SpamReports reports = tx.getMapper(SpamReports.class);
-			boolean materialized = _db.recordCallOrTrackWildcard(reports, hotUnknown, hotUnknownId, now, true);
+			boolean materialized = _db.recordCallOrTrackWildcard(reports, hotUnknown, hotUnknownId, "+49", now, true);
 			assertTrue(materialized, "Hot wildcard block must materialise the row");
 			tx.commit();
 		}
@@ -1167,7 +1217,7 @@ public class TestDB {
 		long later = now + 60_000L;
 		try (SqlSession tx = _db.openSession()) {
 			SpamReports reports = tx.getMapper(SpamReports.class);
-			boolean materialized = _db.recordCallOrTrackWildcard(reports, hotUnknown, hotUnknownId, later, false);
+			boolean materialized = _db.recordCallOrTrackWildcard(reports, hotUnknown, hotUnknownId, "+49", later, false);
 			assertFalse(materialized, "Second report must not create a new row");
 			tx.commit();
 		}
@@ -1181,7 +1231,7 @@ public class TestDB {
 		String coldUnknownId = NumberAnalyzer.getPhoneId(coldUnknown);
 		try (SqlSession tx = _db.openSession()) {
 			SpamReports reports = tx.getMapper(SpamReports.class);
-			boolean materialized = _db.recordCallOrTrackWildcard(reports, coldUnknown, coldUnknownId, now, true);
+			boolean materialized = _db.recordCallOrTrackWildcard(reports, coldUnknown, coldUnknownId, "+49", now, true);
 			assertFalse(materialized, "Cold range must not materialise the row");
 			tx.commit();
 		}

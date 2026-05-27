@@ -98,11 +98,19 @@ public class BlocklistServlet extends HttpServlet {
 			if (limit > MAX_HEAT_LIMIT) {
 				limit = MAX_HEAT_LIMIT;
 			}
-			result = db.getBlockListByHeatAPI(limit);
-			LOG.info("Sending Heat-ranked blocklist (limit={}, minVotes {}) to user '{}' (agent '{}')",
-				limit, db.getMinVisibleVotes(), userName, userAgent);
-
 			UserSettings cachedSettings = LoginFilter.getUserSettings(req);
+			// Region-aware Heat ranking (#340): a user's dial prefix scopes the
+			// top-N to numbers active in their region. Falls back to the global
+			// ranking when no dial is configured (legacy clients, unmapped
+			// regions).
+			String dialPrefix = (cachedSettings != null) ? cachedSettings.getDialPrefix() : null;
+			if (dialPrefix != null && dialPrefix.isEmpty()) {
+				dialPrefix = null;
+			}
+			result = db.getBlockListByHeatAPI(dialPrefix, limit);
+			LOG.info("Sending Heat-ranked blocklist (dial={}, limit={}, minVotes {}) to user '{}' (agent '{}')",
+				dialPrefix, limit, db.getMinVisibleVotes(), userName, userAgent);
+
 			db.updateLastAccess(userName, System.currentTimeMillis(), userAgent, cachedSettings);
 			ServletUtil.sendResult(req, resp, result);
 			return;

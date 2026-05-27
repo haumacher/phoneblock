@@ -128,7 +128,7 @@ public class ReportCallServlet extends HttpServlet {
 			}
 
 			if (users.tryConsumeCallReportQuota(userId, today, DAILY_QUOTA) == 1) {
-				db.recordCallOrTrackWildcard(reports, number, phoneId, now, firstFromUser);
+				db.recordCallOrTrackWildcard(reports, number, phoneId, dialPrefix, now, firstFromUser);
 			}
 
 			session.commit();

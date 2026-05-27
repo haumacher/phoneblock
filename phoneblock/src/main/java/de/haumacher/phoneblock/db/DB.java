@@ -579,6 +579,10 @@ public class DB {
 						backfillConfidenceEmas(reports);
 					}
 
+					if (version == 30) {
+						backfillNumbersLocaleHeat(reports);
+					}
+
 					users.updateProperty("db.version", Integer.toString(version));
 					session.commit();
 				}
@@ -993,7 +997,7 @@ public class DB {
 		pingRelatedNumbers(reports, phone, time);
 		
 		if (votes > 0) {
-			updateLocalization(reports, phone, dialPrefix, 0, votes, 0, time);
+			updateLocalization(reports, phone, dialPrefix, 0, votes, 0, heatInc, time);
 		}
 
 		boolean classifyChanged = classify(oldVotes) != classify(newVotes);
@@ -1012,14 +1016,23 @@ public class DB {
 		return classifyChanged;
 	}
 
-	public void updateLocalization(SpamReports reports, String phone, String dialPrefix, int searches, int votes, int calls, long time) {
+	/**
+	 * Add a per-region (dial-prefix) signal to {@code NUMBERS_LOCALE}.
+	 *
+	 * <p>{@code heatInc} must already be the projected Heat increment computed
+	 * via {@link Ema#increment} with the correct signal weight for the event
+	 * type — callers compute it once and feed both {@code NUMBERS.HEAT} (global
+	 * Heat / archive gate) and this regional row with the same value.</p>
+	 */
+	public void updateLocalization(SpamReports reports, String phone, String dialPrefix,
+			int searches, int votes, int calls, double heatInc, long time) {
 		if (dialPrefix == null) {
 			return;
 		}
 
-		int cnt = reports.updateNumberLocalization(phone, dialPrefix, searches, votes, calls, time);
+		int cnt = reports.updateNumberLocalization(phone, dialPrefix, searches, votes, calls, heatInc, time);
 		if (cnt == 0) {
-			reports.insertNumberLocalization(phone, dialPrefix, searches, votes, calls, time);
+			reports.insertNumberLocalization(phone, dialPrefix, searches, votes, calls, heatInc, time);
 		}
 	}
 
@@ -1484,13 +1497,19 @@ public class DB {
 	}
 
 	/**
-	 * Heat-ranked blocklist for space-constrained clients (#336).
+	 * Heat-ranked blocklist for space-constrained clients (#336, #340).
 	 *
 	 * <p>Returns at most {@code limit} entries — the currently-loudest spam
 	 * numbers above the minimum-votes threshold. Designed for Fritz!Box
 	 * phonebooks and dongle-local blocklists where storage is capped: a
 	 * once-loud-now-silent number drops out so a currently-active one takes
 	 * its slot.</p>
+	 *
+	 * <p>When {@code dialPrefix} is non-null, the ranking uses the per-region
+	 * Heat from {@code NUMBERS_LOCALE} (#340): a number heating up among US
+	 * victims won't push numbers off a German client's top-N. With a
+	 * {@code null} dial we fall back to the global {@code NUMBERS.HEAT} —
+	 * preserves the old behaviour for clients that don't carry a region.</p>
 	 *
 	 * <p>This view is <em>not</em> compatible with incremental sync
 	 * ({@code ?since=}): the set of included numbers changes whenever Heat
@@ -1499,13 +1518,15 @@ public class DB {
 	 * daily) — the same fair-use ceiling that already caps full-blocklist
 	 * fetches applies.</p>
 	 */
-	public Blocklist getBlockListByHeatAPI(int limit) {
+	public Blocklist getBlockListByHeatAPI(String dialPrefix, int limit) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			Users users = session.getMapper(Users.class);
 
-			List<BlockListEntry> numbers = reports.getBlocklistByHeat(_minVisibleVotes, limit)
-					.stream()
+			List<DBNumberInfo> raw = (dialPrefix != null)
+				? reports.getBlocklistByDialHeat(dialPrefix, _minVisibleVotes, limit)
+				: reports.getBlocklistByHeat(_minVisibleVotes, limit);
+			List<BlockListEntry> numbers = raw.stream()
 					.map(DB::toBlocklistEntry)
 					.filter(Objects::nonNull)
 					.collect(Collectors.toList());
@@ -1959,6 +1980,26 @@ public class DB {
 	}
 
 	/**
+	 * Backfill {@code NUMBERS_LOCALE.HEAT} from the cumulative per-dial counters
+	 * during migration to version 30 (epic #300 / #340).
+	 *
+	 * <p>The dial-aware Heat-ranked blocklist would otherwise see an empty
+	 * column on every pre-existing row and return nothing for any region
+	 * until enough new activity arrived. The forward path (each new event
+	 * writes the EMA increment via {@code updateLocalization}) only catches
+	 * post-migration activity; this step seeds the column from history.</p>
+	 */
+	private void backfillNumbersLocaleHeat(SpamReports reports) {
+		LOG.info("Region-aware Heat (#340): backfilling NUMBERS_LOCALE.HEAT from existing counters.");
+		int updated = reports.backfillNumbersLocaleHeat(
+			(double) Ema.T0_MILLIS, Ema.HEAT_TAU_MILLIS,
+			Signals.DIRECT_VOTE_HEAT_WEIGHT,
+			Signals.REPORT_CALL_HEAT_WEIGHT,
+			Signals.SEARCH_HEAT_WEIGHT);
+		LOG.info("Backfilled NUMBERS_LOCALE.HEAT on {} rows.", updated);
+	}
+
+	/**
 	 * Populates SHA1 hashes for all existing aggregation rows during migration to version 13.
 	 */
 	private void populateAggregationHashes(SpamReports reports) {
@@ -2042,7 +2083,7 @@ public class DB {
 	 *         row via the wildcard-implicit-evidence path.
 	 */
 	public boolean recordCallOrTrackWildcard(SpamReports reports, PhoneNumer number,
-			String phoneId, long now, boolean firstFromUser) {
+			String phoneId, String dialPrefix, long now, boolean firstFromUser) {
 		double heatInc = Ema.increment(Signals.REPORT_CALL_HEAT_WEIGHT, now, Ema.HEAT_TAU_MILLIS);
 		int updated = reports.recordCall(phoneId, now, heatInc, 0.0);
 
@@ -2054,7 +2095,15 @@ public class DB {
 		// hot (server-verified — clients cannot fake the range match).
 		addAggregationEmas(reports, phoneId, heatInc, 0.0, 0.0);
 
-		if (updated != 0 || !firstFromUser) {
+		if (updated != 0) {
+			// Regional Heat (#340): call reports are the dominant Heat source —
+			// each one means a real call event happened in this dial. Feed the
+			// per-(PHONE, DIAL) row so the dial-aware top-N reflects that.
+			updateLocalization(reports, phoneId, dialPrefix, 0, 0, 1, heatInc, now);
+			return false;
+		}
+
+		if (!firstFromUser) {
 			return false;
 		}
 
@@ -2079,6 +2128,10 @@ public class DB {
 		// unconditional path above; only the new implicit-evidence signal
 		// still needs to be promoted.
 		addAggregationEmas(reports, phoneId, 0.0, implicitEvidence, 0.0);
+		// Regional Heat (#340): now that the NUMBERS row exists, attach the
+		// per-dial signal so this freshly materialised wildcard hit is
+		// represented in the regional blocklist as well.
+		updateLocalization(reports, phoneId, dialPrefix, 0, 0, 1, heatInc, now);
 		return true;
 	}
 
@@ -2106,7 +2159,7 @@ public class DB {
 
 		pingRelatedNumbers(reports, phone, now);
 
-		updateLocalization(reports, phone, dialPrefix, 1, 0, 0, now);
+		updateLocalization(reports, phone, dialPrefix, 1, 0, 0, heatInc, now);
 	}
 	
 	/**

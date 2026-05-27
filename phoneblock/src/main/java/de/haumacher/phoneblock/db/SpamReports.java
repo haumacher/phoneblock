@@ -59,20 +59,23 @@ public interface SpamReports {
 	void clearPhoneHash(String phone);
 	
 	@Insert("""
-			insert into NUMBERS_LOCALE (PHONE, DIAL, SEARCHES, VOTES, CALLS, LASTACCESS) 
-			values (#{phone}, #{dialPrefix}, #{searches}, #{votes}, #{calls}, #{now})
+			insert into NUMBERS_LOCALE (PHONE, DIAL, SEARCHES, VOTES, CALLS, HEAT, LASTACCESS)
+			values (#{phone}, #{dialPrefix}, #{searches}, #{votes}, #{calls}, #{heatInc}, #{now})
 			""")
-	int insertNumberLocalization(String phone, String dialPrefix, int searches, int votes, int calls, long now);
-	
+	int insertNumberLocalization(String phone, String dialPrefix, int searches, int votes, int calls,
+		double heatInc, long now);
+
 	@Update("""
-			update NUMBERS_LOCALE set 
+			update NUMBERS_LOCALE set
 				SEARCHES = SEARCHES + #{searches},
 				VOTES = VOTES + #{votes},
 				CALLS = CALLS + #{calls},
+				HEAT = HEAT + #{heatInc},
 				LASTACCESS = #{now}
 			where PHONE = #{phone} and DIAL = #{dialPrefix}
 			""")
-	int updateNumberLocalization(String phone, String dialPrefix, int searches, int votes, int calls, long now);
+	int updateNumberLocalization(String phone, String dialPrefix, int searches, int votes, int calls,
+		double heatInc, long now);
 	
 	@Update("update NUMBERS_AGGREGATION_10 set CNT = CNT + #{deltaCnt}, VOTES = VOTES + #{deltaVotes} where PREFIX = #{prefix}")
 	int updateAggregation10(String prefix, int deltaCnt, int deltaVotes);
@@ -204,7 +207,30 @@ public interface SpamReports {
 				                             and length(n.PHONE) = length(a.PREFIX) + 2), 0)
 			""")
 	int backfillAggregation100Emas();
-	
+
+	/**
+	 * Backfill {@code NUMBERS_LOCALE.HEAT} from the cumulative per-dial counters
+	 * (epic #300 / migration 30). Each row's events are projected to the EMA
+	 * reference epoch as if they all happened at {@code LASTACCESS}.
+	 *
+	 * <p>Note: pre-existing rows only carry CALLS from the answerbot path;
+	 * the dominant call-report signal was not feeding {@code NUMBERS_LOCALE}
+	 * until #340 wired it in. The backfill therefore mostly reflects votes
+	 * and searches — fresh call-report activity is what populates the Heat
+	 * column going forward.</p>
+	 */
+	@Update("""
+			update NUMBERS_LOCALE set
+				HEAT = (VOTES * #{voteHeatW}
+				        + CALLS * #{reportCallHeatW}
+				        + SEARCHES * #{searchHeatW})
+				     * EXP((LASTACCESS - #{t0Millis}) / #{tauHeatMillis})
+			where LASTACCESS > 0
+			  and (VOTES > 0 or CALLS > 0 or SEARCHES > 0)
+			""")
+	int backfillNumbersLocaleHeat(double t0Millis, double tauHeatMillis,
+		double voteHeatW, double reportCallHeatW, double searchHeatW);
+
 	@Insert("insert into NUMBERS_AGGREGATION_10 (PREFIX, CNT, VOTES) values (#{prefix}, #{cnt}, #{votes})")
 	int insertAggregation10(String prefix, int cnt, int votes);
 
@@ -468,6 +494,28 @@ public interface SpamReports {
 			limit #{limit}
 			""")
 	List<DBNumberInfo> getBlocklistByHeat(int minVotes, int limit);
+
+	/**
+	 * Dial-aware Heat-ranked blocklist (#340). Same shape as
+	 * {@link #getBlocklistByHeat}, but ordered by the region-scoped Heat in
+	 * {@link de.haumacher.phoneblock.db.NUMBERS_LOCALE} so the top-N reflects
+	 * activity reported from the caller's region rather than a global mix.
+	 *
+	 * <p>{@code INNER JOIN} on {@code NUMBERS_LOCALE} drops numbers that have
+	 * no signal in this dial at all — exactly the intended behaviour for a
+	 * regional blocklist. The index {@code NUMBERS_LOCALE_HEAT_IDX} on
+	 * {@code (DIAL, HEAT DESC)} backs the order-by; no {@code EXP()} per
+	 * row, because every row in a given dial shares the same decay factor.</p>
+	 */
+	@Select("""
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.PUBLISHED_LASTPING as LASTPING, s.PUBLISHED_VOTES, s.HEAT, s.SPAM_EVIDENCE, s.LEGIT_EVIDENCE
+			from NUMBERS_LOCALE l
+			join NUMBERS s on s.PHONE = l.PHONE
+			where l.DIAL = #{dial} and s.ACTIVE and s.VOTES >= #{minVotes}
+			order by l.HEAT desc
+			limit #{limit}
+			""")
+	List<DBNumberInfo> getBlocklistByDialHeat(String dial, int minVotes, int limit);
 
 	@Select("""
 			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.PUBLISHED_LASTPING as LASTPING, s.PUBLISHED_VOTES, s.HEAT, s.SPAM_EVIDENCE, s.LEGIT_EVIDENCE from NUMBERS s
