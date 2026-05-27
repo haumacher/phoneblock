@@ -20,7 +20,7 @@ public class DBNumberInfo extends NumberInfo {
 
 	private final double _legitEvidence;
 
-	public DBNumberInfo(String phone, long added, long updated, long lastSearch, boolean active, int calls, int votes, int legitimate, int ping, int poll, int advertising, int gamble, int fraud, int searches, long lastPing, double publishedSpamEvidence,
+	public DBNumberInfo(String phone, long added, long updated, long lastSearch, boolean active, int calls, int rawVotes, int legitimate, int ping, int poll, int advertising, int gamble, int fraud, int searches, long lastPing, double publishedSpamEvidence,
 			double heat, double spamEvidence, double legitEvidence) {
 		setPhone(phone)
 		.setAdded(added)
@@ -28,7 +28,7 @@ public class DBNumberInfo extends NumberInfo {
 		.setLastSearch(lastSearch)
 		.setActive(active)
 		.setCalls(calls)
-		.setVotes(votes)
+		.setRawVotes(rawVotes)
 		.setRatingLegitimate(legitimate)
 		.setRatingPing(ping)
 		.setRatingPoll(poll)
@@ -47,8 +47,8 @@ public class DBNumberInfo extends NumberInfo {
 	 * Backwards-compatible 16-arg constructor used by legacy debug/stats
 	 * queries that have no snapshot context — leaves the EMA columns at zero.
 	 */
-	public DBNumberInfo(String phone, long added, long updated, long lastSearch, boolean active, int calls, int votes, int legitimate, int ping, int poll, int advertising, int gamble, int fraud, int searches, long lastPing, double publishedSpamEvidence) {
-		this(phone, added, updated, lastSearch, active, calls, votes, legitimate, ping, poll, advertising, gamble, fraud, searches, lastPing, publishedSpamEvidence, 0.0, 0.0, 0.0);
+	public DBNumberInfo(String phone, long added, long updated, long lastSearch, boolean active, int calls, int rawVotes, int legitimate, int ping, int poll, int advertising, int gamble, int fraud, int searches, long lastPing, double publishedSpamEvidence) {
+		this(phone, added, updated, lastSearch, active, calls, rawVotes, legitimate, ping, poll, advertising, gamble, fraud, searches, lastPing, publishedSpamEvidence, 0.0, 0.0, 0.0);
 	}
 
 	/**

@@ -98,8 +98,8 @@ public class NumberHistory extends AbstractNumberInfo {
 	}
 
 	@Override
-	public de.haumacher.phoneblock.app.api.model.NumberHistory setVotes(int value) {
-		internalSetVotes(value);
+	public de.haumacher.phoneblock.app.api.model.NumberHistory setRawVotes(int value) {
+		internalSetRawVotes(value);
 		return this;
 	}
 

@@ -273,10 +273,21 @@ abstract message AbstractNumberInfo {
 	boolean active;
 	
 	int calls;
-	
-	/** The number of votes that support blocking the requested number. */
-	int votes;
-	
+
+	/**
+	 * Raw cumulative net spam-vote counter from the DB row (#342).
+	 *
+	 * <p>This is the on-disk write-path counter, <em>not</em> the decay-aware
+	 * vote-equivalent that {@code /api/check} or {@code BlockListEntry.votes}
+	 * expose to clients. Use {@code Ema.decode} on the matching
+	 * {@code SPAM_EVIDENCE} / {@code LEGIT_EVIDENCE} columns whenever you
+	 * need a value to compare against a visibility threshold; this field is
+	 * only the right answer for write-side bookkeeping (rating-category
+	 * resolver, {@code NUMBERS_HISTORY} snapshots, internal aggregation
+	 * promotion, migration hooks).</p>
+	 */
+	int rawVotes;
+
 	/** The number ratings of kind "legitimate". */
 	int ratingLegitimate;
 

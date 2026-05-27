@@ -1282,7 +1282,7 @@ public class TestDB {
 			SpamReports reports = tx.getMapper(SpamReports.class);
 			
 			NumberInfo info = _db.getPhoneInfo(reports, phone);
-			assertEquals(votes, info.getVotes());
+			assertEquals(votes, info.getRawVotes());
 			
 			AggregationInfo aggregation10 = _db.getAggregation10(reports, phone);
 			assertEquals(cnt10, aggregation10.getCnt());

@@ -21,6 +21,7 @@ import de.haumacher.phoneblock.analysis.NumberBlock;
 import de.haumacher.phoneblock.analysis.NumberTree;
 import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DBNumberInfo;
+import de.haumacher.phoneblock.db.Ema;
 import de.haumacher.phoneblock.db.IDBService;
 import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.Users;
@@ -260,9 +261,12 @@ public class AddressBookCache implements ServletContextListener {
 		boolean nationalOnly = listType.isNationalOnly();
 		String dialPrefix = listType.getDialPrefix();
 
-		// Use the snapshot from the last released blocklist version so the address-book
-		// content (and its ETag) only changes once per release, not on every individual
-		// vote. PUBLISHED_VOTES is aliased into VOTES, PUBLISHED_LASTPING into LASTPING.
+		// Use the snapshot from the last released blocklist version so the
+		// address-book content (and its ETag) only changes once per release,
+		// not on every individual vote (#342): votes are derived from
+		// PUBLISHED_SPAM_EVIDENCE decoded at `now` — same projected-EMA the
+		// live blocklist uses, frozen at the last BlocklistVersionService
+		// sweep. PUBLISHED_LASTPING is still the snapshot field on the row.
 		List<DBNumberInfo> result = reports.getPublishedReports();
 		NumberTree numberTree = new NumberTree();
 		for (DBNumberInfo report : result) {
@@ -274,9 +278,10 @@ public class AddressBookCache implements ServletContextListener {
 				continue;
 			}
 
-			int votes = report.getVotes();
+			int votes = (int) Math.round(Math.max(0.0,
+				Ema.decode(report.getPublishedSpamEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS)));
 			int ageInDays = (int) ((now - report.getLastPing()) / 1000 / 60 / 60 / 24);
-			
+
 			numberTree.insert(phone, votes, ageInDays);
 		}
 

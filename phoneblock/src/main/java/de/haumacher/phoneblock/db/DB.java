@@ -410,7 +410,7 @@ public class DB {
 		        			if (!lastPhone.equals(phone)) {
 		        				NumberInfo info = getPhoneInfo(reports, phone);
 		        				calls = info.getCalls();
-		        				votes = info.getVotes();
+		        				votes = info.getRawVotes();
 		        				legitimate = info.getRatingLegitimate();
 		        				ping = info.getRatingPing();
 		        				poll = info.getRatingPoll();
@@ -1614,7 +1614,12 @@ public class DB {
 	}
 
 	public static Rating rating(NumberInfo n) {
-		if (n.getVotes() <= 0) {
+		// TODO #342 step 3: this should consult the decay-aware decoded
+		// SPAM_EVIDENCE / LEGIT_EVIDENCE on n, not the raw counter — every
+		// other API field is decay-aware since #338. Until that fix lands,
+		// `rating()` is the lone decay-blind read-path consumer; kept on
+		// getRawVotes() for now so the rename in step 2 is mechanical.
+		if (n.getRawVotes() <= 0) {
 			return Rating.A_LEGITIMATE;
 		}
 		

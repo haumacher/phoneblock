@@ -126,7 +126,9 @@ public class PrefixCheckServlet extends HttpServlet {
 			Map<String, PhoneInfo> byPhone = new LinkedHashMap<>();
 			for (DBNumberInfo n : communityMatches) {
 				PhoneInfo pi = NumberAnalyzer.phoneInfoFromId(n.getPhone())
-					.setVotes(n.getVotes())
+					// TODO #342 step 3: setVotes here should reflect the
+					// decay-aware vote-equivalent, not the raw counter.
+					.setVotes(n.getRawVotes())
 					.setRating(DB.rating(n))
 					.setArchived(!n.isActive())
 					.setDateAdded(n.getAdded())

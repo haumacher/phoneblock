@@ -350,7 +350,7 @@ public class SearchServlet extends HttpServlet {
 				.setRating(Rating.A_LEGITIMATE);
 			
 			numberInfo.setCalls(0);
-			numberInfo.setVotes(0);
+			numberInfo.setRawVotes(0);
 			numberInfo.setRatingPing(0);
 			numberInfo.setRatingPoll(0);
 			numberInfo.setRatingAdvertising(0);
