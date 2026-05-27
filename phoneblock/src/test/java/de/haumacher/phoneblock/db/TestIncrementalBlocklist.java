@@ -315,13 +315,15 @@ public class TestIncrementalBlocklist {
 		assertEquals("+49333444555", list1.getNumbers().get(0).getPhone());
 		assertEquals(10, list1.getNumbers().get(0).getVotes());
 
-		// Archive the number by calling archiveReportsWithLowVotes with a far-future timestamp.
-		// The formula: VOTES - (before - LASTPING)/1000/60/60/24/7/weekPerVote < minVotes
-		// With a far-future 'before', the subtracted amount will exceed votes, making it < minVotes.
-		long farFuture = time + 365L * 24 * 60 * 60 * 1000; // ~1 year in the future
+		// Archive the number by calling archiveByHeatAndEvidenceBelow with
+		// projected thresholds well above any value this row could carry —
+		// the equivalent of "everything below this threshold gets archived",
+		// which after #342 is the only archive path (the legacy
+		// archiveReportsWithLowVotes mapper was deleted with the raw-VOTES
+		// filter consolidation).
 		try (SqlSession session = _db.openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			int archived = reports.archiveReportsWithLowVotes(farFuture, DB.MIN_VOTES, 3);
+			int archived = reports.archiveByHeatAndEvidenceBelow(Double.MAX_VALUE, Double.MAX_VALUE);
 			assertTrue(archived > 0, "Number should have been archived");
 			session.commit();
 		}

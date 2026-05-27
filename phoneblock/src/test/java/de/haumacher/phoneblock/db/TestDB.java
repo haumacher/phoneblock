@@ -811,17 +811,25 @@ public class TestDB {
 		long now = System.currentTimeMillis();
 		long oldT = now - 180L * 86_400_000L;  // half a year ago — ≈ 13 Heat half-lives
 
-		int votes = DB.DEFAULT_MIN_VISIBLE_VOTES + 2;
+		int freshVotes = DB.DEFAULT_MIN_VISIBLE_VOTES + 2;
+		// #342: old numbers must carry enough cumulative votes that their
+		// decoded SPAM_EVIDENCE 180 d later still clears the visibility floor.
+		// 180 d is ~1.44 classification half-lives ⇒ decay factor ≈ 0.37;
+		// freshVotes × 3 keeps them comfortably above the cut so we can still
+		// test the Heat-ranking behaviour (fresh wins) without the visibility
+		// filter masking the test.
+		int oldVotes = freshVotes * 3;
 
-		// Three loud "old" numbers — votes long ago. Heat has decayed strongly.
-		for (int i = 0; i < votes; i++) {
+		// Three loud "old" numbers — votes long ago. Heat has decayed strongly
+		// but SPAM_EVIDENCE is still above the visibility threshold.
+		for (int i = 0; i < oldVotes; i++) {
 			processVotes("030992200010", 1, oldT - i * 60_000L);
 			processVotes("030992200020", 1, oldT - i * 60_000L);
 			processVotes("030992200030", 1, oldT - i * 60_000L);
 		}
 
-		// Two "fresh" numbers — same number of votes, but they happened just now.
-		for (int i = 0; i < votes; i++) {
+		// Two "fresh" numbers — fewer votes, but they happened just now.
+		for (int i = 0; i < freshVotes; i++) {
 			processVotes("030992200040", 1, now - i * 60_000L);
 			processVotes("030992200041", 1, now - i * 60_000L);
 		}

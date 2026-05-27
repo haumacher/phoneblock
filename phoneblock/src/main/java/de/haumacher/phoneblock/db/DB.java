@@ -109,7 +109,7 @@ public class DB {
 	// archiving heuristic ("100 votes still active after 5.5 years") was
 	// replaced by Heat-based archiving with the floor HEAT_FLOOR_FOR_ACTIVE
 	// (see archiveOldReports). The legacy archiveReportsWithLowVotes mapper
-	// is kept as dead code for one release in case a rollback is required.
+	// was removed in #342.
 
 	private static final String SAVE_CHARS = "23456789qwertzuiopasdfghjkyxcvbnmQWERTZUPASDFGHJKLYXCVBNM";
 
@@ -1458,8 +1458,29 @@ public class DB {
 	public List<DBNumberInfo> getLatestBlocklistEntries(int minVotes) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			return reports.getLatestBlocklistEntries(minVotes);
+			return reports.getLatestBlocklistEntries(maxRawSpam(minVotes));
 		}
+	}
+
+	/**
+	 * Project the integer-vote visibility threshold {@code minVotes} into the
+	 * raw projected-EMA threshold (#342). The blocklist filters in SQL use
+	 * the raw column; the caller computes the projection once with the
+	 * current timestamp so the comparison is index-backed.
+	 *
+	 * <p>The {@code minVotes - 0.5} offset aligns SQL inclusion with the
+	 * rounded display semantic in {@link #toBlocklistEntry}: a row whose
+	 * decoded value rounds to {@code minVotes} (i.e. is at least
+	 * {@code minVotes - 0.5}) is included, so what clients see as
+	 * {@code votes >= minVotes} matches what the SQL returns. Without the
+	 * offset, a row with cumulative votes exactly equal to the threshold
+	 * decays imperceptibly below it between the event and the read, and
+	 * disappears from the blocklist even though its displayed {@code votes}
+	 * still rounds to {@code minVotes}.</p>
+	 */
+	private double maxRawSpam(int minVotes) {
+		return Ema.projectedThreshold(minVotes - 0.5, System.currentTimeMillis(),
+			Ema.CLASSIFICATION_TAU_MILLIS);
 	}
 
 	/**
@@ -1487,11 +1508,13 @@ public class DB {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			Users users = session.getMapper(Users.class);
 
-			List<BlockListEntry> numbers = reports.getBlocklist()
+			// #342: visibility threshold lives in SQL on s.SPAM_EVIDENCE — no
+			// post-filter step. SQL and the response now agree on a single
+			// definition of "visible", index-backed via NUMBERS_SPAM_EVIDENCE_IDX.
+			List<BlockListEntry> numbers = reports.getBlocklist(maxRawSpam(_minVisibleVotes))
 					.stream()
 					.map(DB::toBlocklistEntry)
 					.filter(Objects::nonNull)
-					.filter(entry -> entry.getVotes() >= _minVisibleVotes)
 					.collect(Collectors.toList());
 
 			String versionStr = users.getProperty("blocklist.version");
@@ -1530,9 +1553,10 @@ public class DB {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			Users users = session.getMapper(Users.class);
 
+			double maxRawSpam = maxRawSpam(_minVisibleVotes);
 			List<DBNumberInfo> raw = (dialPrefix != null)
-				? reports.getBlocklistByDialHeat(dialPrefix, _minVisibleVotes, limit)
-				: reports.getBlocklistByHeat(_minVisibleVotes, limit);
+				? reports.getBlocklistByDialHeat(dialPrefix, maxRawSpam, limit)
+				: reports.getBlocklistByHeat(maxRawSpam, limit);
 			List<BlockListEntry> numbers = raw.stream()
 					.map(DB::toBlocklistEntry)
 					.filter(Objects::nonNull)
@@ -1742,7 +1766,7 @@ public class DB {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			return new Status(
-					reports.getStatistics(minVotes),
+					reports.getStatistics(maxRawSpam(minVotes)),
 					nonNull(reports.getTotalVotes()),
 					nonNull(reports.getArchivedReportCount()));
 		}

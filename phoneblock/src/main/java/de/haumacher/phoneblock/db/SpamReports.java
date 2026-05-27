@@ -328,20 +328,20 @@ public interface SpamReports {
 			WHERE s.PHONE > #{prefix}
 			AND s.PHONE < concat(#{prefix}, 'Z')
 			AND LENGTH(s.PHONE) = #{expectedLength}
-			AND s.VOTES > 0
+			AND s.SPAM_EVIDENCE > s.LEGIT_EVIDENCE
 			""")
 	Long getLastPingPrefix(String prefix, int expectedLength);
-	
+
 	@Select("""
 			SELECT s.PHONE FROM NUMBERS s
 			WHERE s.PHONE > #{prefix}
 			AND s.PHONE < concat(#{prefix}, 'Z')
 			AND LENGTH(s.PHONE) = #{expectedLength}
-			AND s.VOTES > 0
+			AND s.SPAM_EVIDENCE > s.LEGIT_EVIDENCE
 			order by s.PHONE
 			""")
 	List<String> getRelatedNumbers(String prefix, int expectedLength);
-	
+
 	@Update("""
 			update NUMBERS s
 			set
@@ -349,7 +349,7 @@ public interface SpamReports {
 			where s.PHONE > #{prefix}
 			and s.PHONE < concat(#{prefix}, 'Z')
 			and LENGTH(s.PHONE) = #{expectedLength}
-			and s.VOTES > 0
+			and s.SPAM_EVIDENCE > s.LEGIT_EVIDENCE
 			""")
 	void sendPing(String prefix, int expectedLength, long now);
 	
@@ -386,15 +386,6 @@ public interface SpamReports {
 			""")
 	Integer getActiveReportCount();
 	
-	@Update("""
-			update NUMBERS s
-			set ACTIVE=false, PENDING_UPDATE=true
-			where ACTIVE
-			and s.LASTPING < #{before}
-			and s.VOTES - (#{before} - s.LASTPING)/1000/60/60/24/7/#{weekPerVote} < #{minVotes}
-			""")
-	int archiveReportsWithLowVotes(long before, int minVotes, int weekPerVote);
-
 	/**
 	 * Archive numbers whose decoded Heat and decoded SPAM_EVIDENCE have both
 	 * fallen below their respective floors (#335).
@@ -436,14 +427,14 @@ public interface SpamReports {
 	
 	@Select("""
 			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.SPAM_EVIDENCE as PUBLISHED_SPAM_EVIDENCE from NUMBERS s
-			where UPDATED >= #{after} and VOTES > 0 and ACTIVE
+			where UPDATED >= #{after} and SPAM_EVIDENCE > LEGIT_EVIDENCE and ACTIVE
 			order by UPDATED desc
 			""")
 	List<DBNumberInfo> getLatestReports(long after);
 	
 	@Select("""
 			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.SPAM_EVIDENCE as PUBLISHED_SPAM_EVIDENCE from NUMBERS s
-			where VOTES > 0 and ACTIVE
+			where SPAM_EVIDENCE > LEGIT_EVIDENCE and ACTIVE
 			order by UPDATED desc
 			limit #{limit}
 			""")
@@ -466,7 +457,7 @@ public interface SpamReports {
 	// and 4 page reads. See issue #329.
 	@Select("""
 			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.SPAM_EVIDENCE as PUBLISHED_SPAM_EVIDENCE, s.HEAT, s.SPAM_EVIDENCE, s.LEGIT_EVIDENCE from NUMBERS s USE INDEX (NUMBERS_SHA1_IDX)
-			where s.SHA1 >= #{low} and s.SHA1 < #{high} and s.VOTES > 0 and s.ACTIVE
+			where s.SHA1 >= #{low} and s.SHA1 < #{high} and s.SPAM_EVIDENCE > s.LEGIT_EVIDENCE and s.ACTIVE
 			""")
 	List<DBNumberInfo> getPhoneInfosByHashPrefix(byte[] low, byte[] high);
 	
@@ -511,20 +502,21 @@ public interface SpamReports {
 	
 	@Select("""
 			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.SPAM_EVIDENCE as PUBLISHED_SPAM_EVIDENCE from NUMBERS s
-			WHERE ACTIVE and VOTES >= #{minVotes} AND ADDED > 0 ORDER BY ADDED DESC LIMIT 10
+			WHERE ACTIVE and (SPAM_EVIDENCE - LEGIT_EVIDENCE) >= #{maxRawSpam} AND ADDED > 0 ORDER BY ADDED DESC LIMIT 10
 			""")
-	List<DBNumberInfo> getLatestBlocklistEntries(int minVotes);
+	List<DBNumberInfo> getLatestBlocklistEntries(double maxRawSpam);
 
 	/**
 	 * Heat-ranked blocklist (#336) — the top {@code limit} active spam numbers
 	 * by current activity, for space-constrained clients (Fritz!Box phonebook,
 	 * dongle local blocklist).
 	 *
-	 * <p>The {@code minVotes} filter still applies — we only return numbers
-	 * that are on the regular blocklist; Heat just decides which fit when the
-	 * client has limited capacity. {@code ORDER BY HEAT DESC} is index-backed
-	 * via {@code NUMBERS_HEAT_IDX} — no {@code EXP()} per row, because every
-	 * row shares the same decay factor at the query moment (see {@link Ema}).</p>
+	 * <p>The visibility filter {@code SPAM_EVIDENCE >= maxRawSpam} (#342) is
+	 * the decay-aware analogue of the old {@code VOTES >= minVotes} cut: the
+	 * caller projects the configured {@code minVotes} threshold through
+	 * {@link Ema#projectedThreshold} and the comparison happens against the
+	 * raw EMA column, so the filter is index-backed and never calls
+	 * {@code EXP()} per row. Heat decides the ordering within that set.</p>
 	 */
 	// Trailing HEAT/SPAM_EVIDENCE/LEGIT_EVIDENCE engage the 19-argument
 	// DBNumberInfo constructor (#338) — toBlocklistEntry derives the displayed
@@ -532,11 +524,11 @@ public interface SpamReports {
 	// same decay-aware semantic as the /api/check responses.
 	@Select("""
 			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.PUBLISHED_LASTPING as LASTPING, s.PUBLISHED_SPAM_EVIDENCE, s.HEAT, s.SPAM_EVIDENCE, s.LEGIT_EVIDENCE from NUMBERS s
-			where s.ACTIVE and s.VOTES >= #{minVotes}
+			where s.ACTIVE and (s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE) >= #{maxRawSpam}
 			order by s.HEAT desc
 			limit #{limit}
 			""")
-	List<DBNumberInfo> getBlocklistByHeat(int minVotes, int limit);
+	List<DBNumberInfo> getBlocklistByHeat(double maxRawSpam, int limit);
 
 	/**
 	 * Dial-aware Heat-ranked blocklist (#340). Same shape as
@@ -554,22 +546,28 @@ public interface SpamReports {
 			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.PUBLISHED_LASTPING as LASTPING, s.PUBLISHED_SPAM_EVIDENCE, s.HEAT, s.SPAM_EVIDENCE, s.LEGIT_EVIDENCE
 			from NUMBERS_LOCALE l
 			join NUMBERS s on s.PHONE = l.PHONE
-			where l.DIAL = #{dial} and s.ACTIVE and s.VOTES >= #{minVotes}
+			where l.DIAL = #{dial} and s.ACTIVE and (s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE) >= #{maxRawSpam}
 			order by l.HEAT desc
 			limit #{limit}
 			""")
-	List<DBNumberInfo> getBlocklistByDialHeat(String dial, int minVotes, int limit);
+	List<DBNumberInfo> getBlocklistByDialHeat(String dial, double maxRawSpam, int limit);
 
+	/**
+	 * Full blocklist for {@code /api/blocklist} (#342): one row per visible
+	 * number above the projected visibility threshold. SQL-side filter only —
+	 * no Java post-step, the index {@code NUMBERS_SPAM_EVIDENCE_IDX} backs the
+	 * predicate.
+	 */
 	@Select("""
 			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.ACTIVE, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.PUBLISHED_LASTPING as LASTPING, s.PUBLISHED_SPAM_EVIDENCE, s.HEAT, s.SPAM_EVIDENCE, s.LEGIT_EVIDENCE from NUMBERS s
-			where s.ACTIVE and s.VOTES > 0
+			where s.ACTIVE and (s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE) >= #{maxRawSpam}
 			order by s.PHONE
 			""")
-	List<DBNumberInfo> getBlocklist();
+	List<DBNumberInfo> getBlocklist(double maxRawSpam);
 	
 	@Select("""
 			select s.PHONE, s.SEARCHES_CURRENT, s.SEARCHES, s.LASTSEARCH from NUMBERS s
-			where s.VOTES > 0
+			where s.SPAM_EVIDENCE > s.LEGIT_EVIDENCE
 			order by s.SEARCHES_CURRENT desc
 			limit #{limit}
 			""")
@@ -654,17 +652,17 @@ public interface SpamReports {
 	
 	@Select("""
 			select PHONE from NUMBERS
-			where ACTIVE and VOTES >= #{minVotes}
+			where ACTIVE and (SPAM_EVIDENCE - LEGIT_EVIDENCE) >= #{maxRawSpam}
 			""")
-	List<String> getBlockList(int minVotes);
-	
+	List<String> getBlockList(double maxRawSpam);
+
 	@Select("""
-			SELECT CASE WHEN s.VOTES < #{minVotes} THEN 'reported' ELSE 'blocked' END state, COUNT(1) cnt FROM NUMBERS s
-			where s.ACTIVE and s.VOTES > 0
+			SELECT CASE WHEN (s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE) < #{maxRawSpam} THEN 'reported' ELSE 'blocked' END state, COUNT(1) cnt FROM NUMBERS s
+			where s.ACTIVE and s.SPAM_EVIDENCE > s.LEGIT_EVIDENCE
 			GROUP BY state
 			ORDER BY state
 			""")
-	List<Statistics> getStatistics(int minVotes);
+	List<Statistics> getStatistics(double maxRawSpam);
 
 	@Select("SELECT DIAL AS dial, COUNT(1) AS cnt FROM NUMBERS_LOCALE WHERE SPAM_EVIDENCE >= #{maxRawSpam} GROUP BY DIAL ORDER BY cnt DESC")
 	List<DailyCount> getBlockedNumbersByCountry(double maxRawSpam);
