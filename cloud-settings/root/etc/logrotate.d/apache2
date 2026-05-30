@@ -1,0 +1,16 @@
+/var/log/apache2/*.log {
+	daily
+	missingok
+	rotate 14
+	compress
+	delaycompress
+	notifempty
+	# copytruncate instead of the default create + "reload" postrotate:
+	# a graceful reload spawns a new single worker process (see
+	# mods-available/mpm_event.conf) with a fresh TLS session-ticket key,
+	# which would break the dongle's session resumption once a day.
+	# copytruncate rotates the logs without signalling Apache, so the
+	# running process keeps its key. Tiny race: log lines written during
+	# the copy+truncate window may be lost (access logs only).
+	copytruncate
+}
