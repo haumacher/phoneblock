@@ -23,7 +23,7 @@
 static const char *TAG = "sync";
 
 // 24 h between scheduled runs, as per design.
-#define SYNC_INTERVAL_US    (24LL * 3600LL * 1000000LL)
+#define SYNC_INTERVAL_S     (24 * 3600)
 
 static TaskHandle_t     s_task       = NULL;
 static SemaphoreHandle_t s_trigger   = NULL;    // binary semaphore
@@ -248,7 +248,10 @@ static void run_once(void)
 static void sync_task(void *arg)
 {
     (void)arg;
-    TickType_t timeout = pdMS_TO_TICKS(SYNC_INTERVAL_US / 1000);
+    // pdMS_TO_TICKS multiplies in 32-bit TickType_t, so a 24 h value in
+    // ms overflows at 100 Hz tick rate (86_400_000 * 100 wraps). Compute
+    // ticks directly from seconds in 64-bit instead.
+    TickType_t timeout = (TickType_t)((uint64_t)SYNC_INTERVAL_S * configTICK_RATE_HZ);
     // On first boot don't fire immediately — the user may still be
     // in the middle of setup. Wait one interval before the first
     // scheduled run; a manual trigger can fire sooner.
