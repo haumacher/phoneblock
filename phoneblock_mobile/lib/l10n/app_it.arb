@@ -306,5 +306,7 @@
   "blocklistSyncing": "Sincronizzare...",
   "blocklistSyncSuccess": "Sincronizzazione della lista di blocco riuscita",
   "blocklistSyncFailed": "Sincronizzazione della lista di blocco fallita",
-  "personalizedAddedDate": "Aggiunto: {date}"
+  "personalizedAddedDate": "Aggiunto: {date}",
+  "copyNumber": "Numero di copia",
+  "numberCopied": "Numero copiato negli appunti"
 }

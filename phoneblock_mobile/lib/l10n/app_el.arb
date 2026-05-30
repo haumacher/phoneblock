@@ -306,5 +306,7 @@
   "blocklistSyncing": "Συγχρονισμός...",
   "blocklistSyncSuccess": "Επιτυχής συγχρονισμός λίστας αποκλεισμού",
   "blocklistSyncFailed": "Αποτυχία συγχρονισμού λίστας αποκλεισμού",
-  "personalizedAddedDate": "Προστέθηκε: {date}"
+  "personalizedAddedDate": "Προστέθηκε: {date}",
+  "copyNumber": "Αριθμός αντιγράφου",
+  "numberCopied": "Αριθμός που αντιγράφεται στο πρόχειρο"
 }

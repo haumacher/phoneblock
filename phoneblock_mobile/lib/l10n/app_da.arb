@@ -306,5 +306,7 @@
   "blocklistSyncing": "Synkroniser...",
   "blocklistSyncSuccess": "Bloklistesynkronisering vellykket",
   "blocklistSyncFailed": "Bloklistesynkronisering mislykkedes",
-  "personalizedAddedDate": "Tilføjet: {date}."
+  "personalizedAddedDate": "Tilføjet: {date}.",
+  "copyNumber": "Kopienummer",
+  "numberCopied": "Nummer kopieret til udklipsholder"
 }

@@ -207,6 +207,12 @@ class AppLocalizationsSv extends AppLocalizations {
   String get viewOnPhoneBlockMenu => 'Visa på PhoneBlock';
 
   @override
+  String get copyNumber => 'Kopia nummer';
+
+  @override
+  String get numberCopied => 'Nummer kopierat till urklipp';
+
+  @override
   String get deleteCall => 'Radera';
 
   @override
