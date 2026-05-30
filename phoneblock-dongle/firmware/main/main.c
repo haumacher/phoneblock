@@ -30,6 +30,7 @@
 #include "stats.h"
 #include "status_led.h"
 #include "sync.h"
+#include "blocklist_sync.h"
 #include "web.h"
 #include "wifi.h"
 
@@ -284,4 +285,9 @@ void app_main(void)
     // credentials are configured yet; the task itself will skip its
     // runs until a later setup fills those in.
     sync_start();
+
+    // Daily download of community.bin / personal.bin from the server.
+    // Safe to start without a token; the task skips runs until one is
+    // configured.
+    blocklist_sync_start();
 }

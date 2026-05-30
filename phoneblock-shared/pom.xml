@@ -39,6 +39,11 @@
 			<groupId>de.haumacher.msgbuf</groupId>
 			<artifactId>msgbuf-api</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>

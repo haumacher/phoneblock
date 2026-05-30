@@ -1405,6 +1405,152 @@ public class DB {
 		}
 	}
 	
+	/**
+	 * Server-wide inputs that feed the binary community blocklist beyond the
+	 * exact-entry list returned by {@link #getBlockListAPI()}: structural
+	 * wildcard candidates from the aggregation tables, and the explicit
+	 * legitimate-number whitelist.
+	 *
+	 * <p>
+	 * Wildcards are filtered by the server-wide {@link #MIN_AGGREGATE_10} /
+	 * {@link #MIN_AGGREGATE_100} thresholds (a block must hold enough reported
+	 * numbers before it qualifies as a wildcard at all). The user's
+	 * personal {@code minVotes} threshold is applied later by the caller; it
+	 * needs the per-row vote count, which is preserved on
+	 * {@link AggregationInfo}.
+	 * </p>
+	 */
+	public static final class CommunityBinarySources {
+
+		private final List<AggregationInfo> _aggregation10;
+
+		private final List<AggregationInfo> _aggregation100;
+
+		private final Set<String> _whitelist;
+
+		public CommunityBinarySources(List<AggregationInfo> aggregation10, List<AggregationInfo> aggregation100,
+				Set<String> whitelist) {
+			_aggregation10 = aggregation10;
+			_aggregation100 = aggregation100;
+			_whitelist = whitelist;
+		}
+
+		/** 10-blocks with at least {@link DB#MIN_AGGREGATE_10} reported numbers. */
+		public List<AggregationInfo> aggregation10() {
+			return _aggregation10;
+		}
+
+		/** 100-blocks with at least {@link DB#MIN_AGGREGATE_100} qualifying 10-blocks. */
+		public List<AggregationInfo> aggregation100() {
+			return _aggregation100;
+		}
+
+		/** Phone IDs on the global legitimate-number whitelist. */
+		public Set<String> whitelist() {
+			return _whitelist;
+		}
+
+	}
+
+	/**
+	 * Loads the aggregation-driven wildcard candidates and the global
+	 * whitelist in one DB session. Two thresholds are pushed into SQL per
+	 * aggregation level: the server-wide structural threshold
+	 * ({@link #MIN_AGGREGATE_10} / {@link #MIN_AGGREGATE_100}) on
+	 * {@code CNT}, and a per-user vote threshold on {@code VOTES} scaled by
+	 * the structural minimum — see {@link #wildcardVotesThreshold10} and
+	 * {@link #wildcardVotesThreshold100} for the math.
+	 */
+	public CommunityBinarySources getCommunityBinarySources(int minVotes) {
+		int clamped = Math.max(minVotes, 1);
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			List<AggregationInfo> agg10 = reports.getAggregation10AboveThresholds(
+					MIN_AGGREGATE_10, wildcardVotesThreshold10(clamped));
+			List<AggregationInfo> agg100 = reports.getAggregation100AboveThresholds(
+					MIN_AGGREGATE_100, wildcardVotesThreshold100(clamped));
+			Set<String> whitelist = reports.getWhiteList();
+			return new CommunityBinarySources(agg10, agg100, whitelist);
+		}
+	}
+
+	/**
+	 * Votes threshold for a 10-block wildcard given the user's per-number
+	 * {@code minVotes}. A 10-block becomes a wildcard candidate at
+	 * {@link #MIN_AGGREGATE_10} distinct reported numbers; we require that
+	 * at the structural floor each contributing number could have cleared
+	 * the user's per-number bar, i.e. {@code MIN_AGGREGATE_10 * minVotes}.
+	 *
+	 * <p>
+	 * Caller must clamp {@code minVotes} to {@code >= 1} beforehand.
+	 * </p>
+	 */
+	public static int wildcardVotesThreshold10(int minVotes) {
+		return MIN_AGGREGATE_10 * minVotes;
+	}
+
+	/**
+	 * Votes threshold for a 100-block wildcard. A 100-block needs
+	 * {@link #MIN_AGGREGATE_100} qualifying 10-sub-blocks, each of which
+	 * itself implies {@link #MIN_AGGREGATE_10} contributing numbers — so
+	 * scaling the user's per-number {@code minVotes} by both structural
+	 * minimums yields the threshold {@code MIN_AGGREGATE_100 *
+	 * MIN_AGGREGATE_10 * minVotes}.
+	 *
+	 * <p>
+	 * Caller must clamp {@code minVotes} to {@code >= 1} beforehand.
+	 * </p>
+	 */
+	public static int wildcardVotesThreshold100(int minVotes) {
+		return MIN_AGGREGATE_100 * MIN_AGGREGATE_10 * minVotes;
+	}
+
+	/** A user's personal black and white phone-ID lists, in raw DB format. */
+	public static final class PersonalLists {
+
+		private final List<String> _blacklist;
+
+		private final List<String> _whitelist;
+
+		PersonalLists(List<String> blacklist, List<String> whitelist) {
+			_blacklist = blacklist;
+			_whitelist = whitelist;
+		}
+
+		/** Phone IDs the user has explicitly blocked (BLOCKED = true). */
+		public List<String> blacklist() {
+			return _blacklist;
+		}
+
+		/** Phone IDs the user has explicitly allowed (BLOCKED = false). */
+		public List<String> whitelist() {
+			return _whitelist;
+		}
+
+	}
+
+	/**
+	 * Loads the user's personal black/white lists in raw DB phone-ID format.
+	 *
+	 * <p>
+	 * Entries may end in {@code *} to mark a wildcard prefix; otherwise they
+	 * are exact phone IDs in national or {@code 00}-international notation.
+	 * </p>
+	 */
+	public PersonalLists getPersonalLists(String login) {
+		try (SqlSession session = openSession()) {
+			Users users = session.getMapper(Users.class);
+			Long userId = users.getUserId(login);
+			if (userId == null) {
+				return new PersonalLists(List.of(), List.of());
+			}
+			BlockList blocklist = session.getMapper(BlockList.class);
+			List<String> black = blocklist.getPersonalizations(userId.longValue());
+			List<String> white = blocklist.getWhiteList(userId.longValue());
+			return new PersonalLists(black, white);
+		}
+	}
+
 	private static BlockListEntry toBlocklistEntry(DBNumberInfo n) {
 		PhoneNumer number = NumberAnalyzer.analyzePhoneID(n.getPhone());
 		if (number == null) {

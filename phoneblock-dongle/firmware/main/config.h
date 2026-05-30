@@ -122,6 +122,14 @@ bool        config_crash_report_enabled(void);
 // the runtime setting in the web UI.
 bool        config_accept_test_calls(void);
 
+// Whether the local-blocklist lookup honours wildcard prefix entries
+// from the community list (e.g. block the whole "030 12 34*" range
+// when it has been flagged as spam). Default on; users who want strict
+// exact-match-only blocking can turn it off without the server having
+// to know — the binary file always carries the prefix section, the
+// flag is evaluated locally at lookup time.
+bool        config_blocklist_wildcards(void);
+
 // PhoneBlock
 // Site root URL, without "/api" suffix — api.c appends "/api/…",
 // web.c appends "/mobile/…" directly.
@@ -201,6 +209,10 @@ typedef struct {
     // "0" = treat them like any other caller. NULL = leave unchanged.
     // Default when unset comes from CONFIG_SIP_TEST_FORCE_SPAM_STAR_NUMBERS.
     const char *accept_test_calls;
+    // "1" = consult wildcard prefixes in the local blocklist,
+    // "0" = exact matches only. NULL = leave unchanged. Default when
+    // unset is "1".
+    const char *blocklist_wildcards;
     const char *phoneblock_base_url;
     const char *phoneblock_token;
     // Direct-hit SPAM threshold. 0 = leave current value untouched

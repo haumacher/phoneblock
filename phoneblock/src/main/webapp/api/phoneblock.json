@@ -359,8 +359,15 @@
 				"description": "Returns all active phone numbers from the blocklist with their actual vote counts. Numbers below the server's minimum vote threshold are excluded from the full blocklist and returned with votes=0 in incremental updates (indicating removal). When 'since' is omitted, returns the complete blocklist. When 'since' is provided, returns only changes since that version (incremental sync). Entries with votes=0 indicate the number should be removed from the client's local blocklist.\n\n**Important:** This endpoint returns only the community-maintained blocklist data. It does NOT include user-specific personalizations (personal blacklist/whitelist). For call filtering, clients must check BOTH the community blocklist AND the user's personal black/whitelist entries (retrieved via /api/blacklist and /api/whitelist). Personal whitelist entries should override community blocklist entries, and personal blacklist entries should block calls regardless of community ratings.\n\n**Rate Limits:** To avoid excessive server load, clients should limit full synchronization (without 'since' parameter) to a maximum of once per month. Incremental synchronization (with 'since' parameter) should be performed at most once per day. Clients exceeding these limits may be subject to rate limiting.\n\n**Implementation:** Perform an initial full sync to retrieve the complete blocklist and its version number. Store this data locally and save the version number. For subsequent updates, use the saved version number in the 'since' parameter to retrieve only changes. Apply the incremental updates to your local copy: add/update entries with votes > 0, remove entries with votes = 0. After each sync, update your saved version number to the one returned in the response.",
 				"responses": {
 					"200": {
-						"description": "Returns all active phone numbers from the PhoneBlock database with their actual vote counts. Numbers with votes=0 indicate removal.",
+						"description": "Returns all active phone numbers from the PhoneBlock database with their actual vote counts. Numbers with votes=0 indicate removal. When `format=binary` is requested the response is a compact on-device binary file (see the `application/octet-stream` entry below) intended for memory-constrained clients such as the PhoneBlock dongle. The binary form carries one list per request, selected by the `type` parameter: `community` returns the shared blocklist (filtered server-side by the authenticated user's `minVotes`), `personal` returns the user's black/white overrides. The dongle fetches both per sync and writes them as separate files. `since` is not supported with `format=binary`.",
 						"content": {
+							"application/octet-stream": {
+								"schema": {
+									"type": "string",
+									"format": "binary",
+									"description": "Binary blocklist file (magic `PBBL`, version 1). 16-byte little-endian header (magic, version, prefix-length bitmap, exact-record count, prefix-record count) followed by two record sections: exact entries, then prefix wildcards. Each record is an 8-byte little-endian uint64 packing a 56-bit base-11 key plus a black/white payload bit; exact-vs-wildcard is implied by which section holds the record. Records are sorted unsigned-ascending within each section."
+								}
+							},
 							"application/json": {
 								"schema": {
 									"type": "object",
@@ -442,14 +449,28 @@
 				{
 					"name": "format",
 					"in": "query",
-					"description": "The format to return.",
+					"description": "The format to return. `binary` selects the compact on-device file format; it is only supported for full snapshots (no `since` parameter).",
 					"required": false,
 					"default": "json",
 					"schema": {
 						"type": "string",
 						"enum": [
 							"json",
-							"xml"
+							"xml",
+							"binary"
+						]
+					}
+				},
+				{
+					"name": "type",
+					"in": "query",
+					"description": "Selects which list to return when `format=binary`. `community` (default) returns the shared blocklist; `personal` returns the authenticated user's black/white list. Ignored for `json`/`xml`.",
+					"required": false,
+					"schema": {
+						"type": "string",
+						"enum": [
+							"community",
+							"personal"
 						]
 					}
 				}
