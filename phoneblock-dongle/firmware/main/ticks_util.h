@@ -12,3 +12,16 @@ static inline TickType_t seconds_to_ticks(uint32_t seconds)
 {
     return (TickType_t)((uint64_t)seconds * configTICK_RATE_HZ);
 }
+
+// Drop-in replacement for pdMS_TO_TICKS that refuses to compile when a
+// constant millisecond value would overflow TickType_t at the current
+// tick rate. Catches the most common form of the gotcha — a literal
+// like `pb_ms_to_ticks(24 * 3600 * 1000)` — at build time. For runtime
+// values where the upper bound is unknown, use seconds_to_ticks
+// instead.
+#define pb_ms_to_ticks(ms) __extension__ ({ \
+    _Static_assert((uint64_t)(ms) * configTICK_RATE_HZ <= UINT32_MAX, \
+        "pb_ms_to_ticks: value overflows TickType_t at this tick rate " \
+        "— use seconds_to_ticks for long intervals"); \
+    pdMS_TO_TICKS(ms); \
+})
