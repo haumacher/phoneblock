@@ -26,15 +26,13 @@
 #include "sdkconfig.h"
 
 #include "config.h"
+#include "ticks_util.h"
 
 static const char *TAG = "fwup";
 
 // 24 h between scheduled checks — same cadence as the daily token
 // self-test, with the same ±30 min skew so a fleet-wide power blip
 // doesn't line every dongle up onto the same minute on the CDN.
-// In seconds, not ms: pdMS_TO_TICKS would overflow 32-bit TickType_t
-// at 100 Hz for a 24 h delay. We multiply by configTICK_RATE_HZ in
-// 64-bit at the call site.
 #define FWUP_INTERVAL_S     (24 * 3600)
 #define FWUP_JITTER_S       (30 * 60)
 
@@ -661,7 +659,7 @@ static void update_task(void *arg)
     while (1) {
         uint32_t jitter  = esp_random() % (2u * FWUP_JITTER_S);
         uint32_t delay_s = FWUP_INTERVAL_S - FWUP_JITTER_S + jitter;
-        vTaskDelay((TickType_t)((uint64_t)delay_s * configTICK_RATE_HZ));
+        vTaskDelay(seconds_to_ticks(delay_s));
         // Skip until the device is provisioned. Using the PhoneBlock
         // token as the "is configured" proxy mirrors the self-test
         // task — an unconfigured dongle has nothing to lose by
