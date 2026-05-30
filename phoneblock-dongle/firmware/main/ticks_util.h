@@ -6,11 +6,14 @@
 
 // pdMS_TO_TICKS multiplies its argument by configTICK_RATE_HZ in 32-bit
 // TickType_t and overflows for daily intervals (86_400_000 ms * 100 Hz
-// wraps to ~8.3 min). Express long delays in seconds and convert with
-// this helper, which does the multiplication in 64-bit.
+// wraps to ~8.3 min). The fix is the unit, not wider arithmetic: in
+// seconds, even a 24 h delay stays comfortably inside uint32_t
+// (86_400 * 100 = 8_640_000). At 100 Hz, TickType_t itself caps out
+// around 497 days, so any input that would overflow this multiplication
+// is unrepresentable as a tick count anyway.
 static inline TickType_t seconds_to_ticks(uint32_t seconds)
 {
-    return (TickType_t)((uint64_t)seconds * configTICK_RATE_HZ);
+    return (TickType_t)(seconds * configTICK_RATE_HZ);
 }
 
 // Drop-in replacement for pdMS_TO_TICKS that refuses to compile when a
