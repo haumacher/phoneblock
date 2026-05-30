@@ -11,6 +11,13 @@
 // (86_400 * 100 = 8_640_000). At 100 Hz, TickType_t itself caps out
 // around 497 days, so any input that would overflow this multiplication
 // is unrepresentable as a tick count anyway.
+//
+// Background: FreeRTOS-Kernel PR #866 widened pdMS_TO_TICKS to uint64_t
+// upstream and shipped in kernel V11.0.0 (Dec 2023). ESP-IDF v5.3 still
+// bundles V10.5.1 with the 32-bit macro, which is why this helper is
+// needed today. When we eventually move to ESP-IDF >= v5.4 (kernel V11+),
+// plain pdMS_TO_TICKS becomes safe again and the helpers in this header
+// can be retired in favour of it.
 static inline TickType_t seconds_to_ticks(uint32_t seconds)
 {
     return (TickType_t)(seconds * configTICK_RATE_HZ);

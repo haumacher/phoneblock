@@ -28,3 +28,10 @@ stays comfortably inside `uint32_t`. Use the helpers in
 
 Plain `pdMS_TO_TICKS` is fine for short, obviously-safe intervals
 (seconds to a few minutes).
+
+This is a temporary workaround: FreeRTOS-Kernel PR #866 widened
+`pdMS_TO_TICKS` to `uint64_t` upstream and shipped in kernel V11.0.0
+(Dec 2023). ESP-IDF v5.3 still bundles V10.5.1 with the 32-bit
+multiplication. When we upgrade to ESP-IDF >= v5.4 (kernel V11+),
+plain `pdMS_TO_TICKS` becomes safe again and `ticks_util.h` (plus the
+`seconds_to_ticks` / `pb_ms_to_ticks` call sites) can be retired.
