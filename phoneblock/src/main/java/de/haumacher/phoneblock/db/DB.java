@@ -112,7 +112,7 @@ public class DB {
 	private static final String SAVE_CHARS = "23456789qwertzuiopasdfghjkyxcvbnmQWERTZUPASDFGHJKLYXCVBNM";
 
 	private static final Collection<String> TABLE_NAMES = Arrays.asList(
-		"BLOCKLIST", "EXCLUDES", "SPAMREPORTS", "OLDREPORTS", "USERS", "RATINGS", "SEARCHES"
+		"BLOCKLIST", "EXCLUDES", "OLDREPORTS", "USERS", "RATINGS"
 	);
 	
 	private SqlSessionFactory _sessionFactory;
@@ -587,6 +587,9 @@ public class DB {
 					// script; no Java hook needed.
 
 					// migration 34 drops the obsolete ACTIVE column and its indexes
+					// via the script; no Java hook needed.
+
+					// migration 35 drops the legacy SEARCHES / SPAMREPORTS tables
 					// via the script; no Java hook needed.
 
 					users.updateProperty("db.version", Integer.toString(version));
