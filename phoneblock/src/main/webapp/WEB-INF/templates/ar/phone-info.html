@@ -61,9 +61,9 @@
 		
 		<li data-tx="t0012:7fff511b" th:if="${info.votesWildcard} &gt; ${info.votes}">الأصوات الخاصة بقفل لوحة المفاتيح الرقمية: <th:block th:text="${info.votesWildcard}"></th:block></li>
 
-		<li data-tx="t0051:5f6036e4" th:if="${info.spamConfidence} &gt; 0">الثقة في تصنيف الرسائل غير المرغوب فيها: <th:block th:text="${info.spamConfidence}"></th:block> %</li>
+		<li data-tx="t0051:5f6036e4" th:if="${state != 'legitimate' and state != 'whitelisted' and info.spamConfidence &gt; 0}">الثقة في تصنيف الرسائل غير المرغوب فيها: <th:block th:text="${info.spamConfidence}"></th:block> %</li>
 
-		<li data-tx="t0052:ae3458db" th:if="${info.heat} &gt; 0">النشاط الحالي: <th:block th:text="${#numbers.formatDecimal(info.heat, 1, 1)}"></th:block> رسائل/يوميًا</li>
+		<li data-tx="t0052:ae3458db" th:if="${state != 'legitimate' and state != 'whitelisted' and info.heat &gt; 0}">النشاط الحالي: <th:block th:text="${#numbers.formatDecimal(info.heat, 1, 1)}"></th:block> رسائل/يوميًا</li>
 
 		<li data-tx="t0013:b2e85cd7" th:if="${info.votes} &gt; 0 or ${info.votesWildcard} &gt; 0">آخر شكوى من: <th:block th:text="${#dates.format(#converters.fromEpoch(info.lastUpdate))}"></th:block></li>
 

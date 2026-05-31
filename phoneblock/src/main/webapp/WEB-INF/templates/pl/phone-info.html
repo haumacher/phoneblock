@@ -61,9 +61,9 @@
 		
 		<li data-tx="t0012:7fff511b" th:if="${info.votesWildcard} &gt; ${info.votes}">Głosy za zablokowaniem klawiatury numerycznej: <th:block th:text="${info.votesWildcard}"></th:block></li>
 
-		<li data-tx="t0051:5f6036e4" th:if="${info.spamConfidence} &gt; 0">Zaufanie do klasyfikacji spamu: <th:block th:text="${info.spamConfidence}"></th:block> %</li>
+		<li data-tx="t0051:5f6036e4" th:if="${state != 'legitimate' and state != 'whitelisted' and info.spamConfidence &gt; 0}">Zaufanie do klasyfikacji spamu: <th:block th:text="${info.spamConfidence}"></th:block> %</li>
 
-		<li data-tx="t0052:ae3458db" th:if="${info.heat} &gt; 0">Bieżąca aktywność: <th:block th:text="${#numbers.formatDecimal(info.heat, 1, 1)}"></th:block> wiadomości/dzień</li>
+		<li data-tx="t0052:ae3458db" th:if="${state != 'legitimate' and state != 'whitelisted' and info.heat &gt; 0}">Bieżąca aktywność: <th:block th:text="${#numbers.formatDecimal(info.heat, 1, 1)}"></th:block> wiadomości/dzień</li>
 
 		<li data-tx="t0013:b2e85cd7" th:if="${info.votes} &gt; 0 or ${info.votesWildcard} &gt; 0">Ostatnia skarga od: <th:block th:text="${#dates.format(#converters.fromEpoch(info.lastUpdate))}"></th:block></li>
 
