@@ -15,9 +15,12 @@
 --     category columns (LEGITIMATE / PING / POLL / ADVERTISING / GAMBLE /
 --     FRAUD). The only remaining reader was the JMX getRatings() metric,
 --     dropped together with this table.
+--   * RATINGHISTORY: per-revision rating counters, superseded by the
+--     NUMBERS_HISTORY category columns.
 DROP TABLE SEARCHES;
 DROP TABLE SPAMREPORTS;
 DROP TABLE OLDREPORTS;
 DROP TABLE BLOCKLIST;
 DROP TABLE EXCLUDES;
 DROP TABLE RATINGS;
+DROP TABLE RATINGHISTORY;
