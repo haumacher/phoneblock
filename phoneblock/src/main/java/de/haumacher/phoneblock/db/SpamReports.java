@@ -355,8 +355,7 @@ public interface SpamReports {
 
 	/**
 	 * Dial-aware Heat-ranked blocklist (#340). Same shape as
-	 * {@link #getBlocklistByHeat}, but ordered by the region-scoped Heat in
-	 * {@link de.haumacher.phoneblock.db.NUMBERS_LOCALE} so the top-N reflects
+	 * {@link #getBlocklistByHeat}, but ordered by the region-scoped Heat so the top-N reflects
 	 * activity reported from the caller's region rather than a global mix.
 	 *
 	 * <p>{@code INNER JOIN} on {@code NUMBERS_LOCALE} drops numbers that have

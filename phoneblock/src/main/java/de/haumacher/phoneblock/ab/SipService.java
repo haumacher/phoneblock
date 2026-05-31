@@ -577,9 +577,6 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 
 	/**
 	 * Dynamically registers a new answer bot.
-	 * 
-	 * @param temporary Whether the bot is first activated and should only be
-	 *                  permanently activated, if the first registration succeeds.
 	 */
 	public void register(AnswerBotSip bot) throws UnknownHostException {
 		register(bot, toCustomerConfig(bot));

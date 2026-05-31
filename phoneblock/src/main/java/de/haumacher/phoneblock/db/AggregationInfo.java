@@ -5,7 +5,7 @@ package de.haumacher.phoneblock.db;
  * {@code NUMBERS_AGGREGATION_100}). The same shape is reused for both, but the
  * meaning of {@link #getCnt()} / {@link #getVotes()} is asymmetric — see those
  * accessors for the per-table interpretation, and
- * {@link DB#computeWildcardVotes(AggregationInfo, AggregationInfo)} for how the
+ * {@link DB#computeBlockSpamEvidence(AggregationInfo, AggregationInfo, long)} for how the
  * two are combined.
  */
 public class AggregationInfo {
@@ -76,7 +76,7 @@ public class AggregationInfo {
 	 * <li>{@code NUMBERS_AGGREGATION_100}: sum of votes across only those 10-sub-blocks
 	 *     that have crossed {@link DB#MIN_AGGREGATE_10}. An unqualified sub-block's votes
 	 *     are <em>not</em> contained here — they are added separately by
-	 *     {@link DB#computeWildcardVotes} when it consults both aggregation levels.</li>
+	 *     {@link DB#computeBlockSpamEvidence(AggregationInfo, AggregationInfo, long)} when it consults both aggregation levels.</li>
 	 * </ul>
 	 */
 	public int getVotes() {

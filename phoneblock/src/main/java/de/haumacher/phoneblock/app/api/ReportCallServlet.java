@@ -14,6 +14,7 @@ import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.db.Signals;
 import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.AuthToken;
@@ -44,25 +45,6 @@ import jakarta.servlet.http.HttpServletResponse;
  * reset job, no aggregate query. Reports beyond the quota are still written
  * to the per-user call log ({@code CALLERS}) for the user's own activity
  * history, but do not move the global counter.</p>
- *
- * <p>Reports for numbers that are not in the {@code NUMBERS} table fall into
- * two cases (#333):</p>
- * <ul>
- * <li><b>Unknown and unverified.</b> Silently accepted but have no effect —
- *     we do not create new rows, since that would let clients pollute the
- *     database with numbers that have never received a proper SPAM rating.</li>
- * <li><b>Unknown but wildcard-blocked.</b> If the server itself confirms that
- *     the number is covered by a hot {@code /10} or {@code /100} spam block
- *     ({@link DB#computeWildcardVotes}), a {@code NUMBERS} row is created
- *     with no direct votes but with <em>implicit</em> {@code SPAM_EVIDENCE}
- *     (half the weight of a direct user vote, see
- *     {@link Signals#IMPLICIT_VOTE_EVIDENCE_WEIGHT}). The wildcard match is
- *     re-derived server-side from aggregation tables, so clients cannot fake
- *     it — this is not a pollution vector. Idempotency uses the existing
- *     {@code CALLERS} first-seen marker: only the first report from each
- *     user contributes the implicit evidence; later reports from the same
- *     user contribute only Heat (via the regular {@code recordCall} path).</li>
- * </ul>
  */
 @WebServlet(urlPatterns = ReportCallServlet.PATTERN)
 public class ReportCallServlet extends HttpServlet {

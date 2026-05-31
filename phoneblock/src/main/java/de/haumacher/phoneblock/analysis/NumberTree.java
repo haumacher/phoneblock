@@ -97,7 +97,6 @@ public class NumberTree {
 
 			/** 
 			 * Fills info.
-			 * @param weight 
 			 */
 			public void set(int depth, int count, boolean allowWildcard) {
 				setDepth(depth);
@@ -332,13 +331,10 @@ public class NumberTree {
 	static final int INITIAL_BUCKET_PREFIX_DEPTH = 4;
 
 	/**
-	 * Variant of {@link #createNumberBlocks(int, int, String)} that builds buckets using a
-	 * deterministic prefix-bucketing algorithm.
+	 * Build buckets using a deterministic prefix-bucketing algorithm.
 	 *
 	 * <p>
-	 * Top-K-selection (weight calculation, age decay, dial-prefix boost, max-entries cap) is
-	 * identical to {@link #createNumberBlocks(int, int, String)}; only the assignment of
-	 * numbers to buckets differs. Each number is placed in the shallowest prefix bucket
+	 * Each number is placed in the shallowest prefix bucket
 	 * (starting at {@value #INITIAL_BUCKET_PREFIX_DEPTH} characters) whose population is
 	 * &le; 9. Buckets with more members are split deterministically by extending the prefix
 	 * by one character.

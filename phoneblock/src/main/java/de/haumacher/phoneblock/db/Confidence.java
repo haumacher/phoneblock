@@ -30,8 +30,8 @@ package de.haumacher.phoneblock.db;
  *
  * @see <a href=
  *      "https://en.wikipedia.org/wiki/Binomial_proportion_confidence_interval">Binomial
- *      proportion confidence interval</a> — the underlying statistics; this
- *      class uses the Wilson score interval (lower bound).
+ *      proportion confidence interval — the underlying statistics; this
+ *      class uses the Wilson score interval (lower bound).</a>
  */
 public final class Confidence {
 

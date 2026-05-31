@@ -125,68 +125,6 @@ public class DB {
 	public static final int MIN_AGGREGATE_100 = 3;
 
 	/**
-	 * Threshold above which a block's decayed {@code SPAM_EVIDENCE} is treated as
-	 * an active wildcard block (#337).
-	 *
-	 * <p>Calibration notes:</p>
-	 * <ul>
-	 * <li>The old cnt-based system ({@link #MIN_AGGREGATE_10}) required four
-	 *     distinct rated numbers, and {@code archiveReportsWithLowVotes} never
-	 *     adjusted the aggregation {@code CNT} — so once any /10 block reached
-	 *     four it stayed wildcard-blocked forever. That is the
-	 *     "loud-last-year-still-ranked-high" pathology epic #300 is built to
-	 *     fix.</li>
-	 * <li>The new system replaces the eternal cnt with a decaying evidence
-	 *     EMA. Picking the threshold equal to {@code MIN_AGGREGATE_10 = 4}
-	 *     would be much stricter than the old behaviour — four votes a week
-	 *     old already decay to ≈ 3.85 and the block would no longer be
-	 *     wildcard-blocked, even though the old system still considered it
-	 *     hot.</li>
-	 * <li>We therefore set the threshold to <strong>2.0</strong>: four
-	 *     positive votes still hold the block at the threshold after about
-	 *     four months (one classification half-life), giving the
-	 *     neighbourhood the same recency window epic #300 uses for the
-	 *     individual-number classification axis. Sustained spam keeps the
-	 *     value above 2.0; a block that has gone quiet for several
-	 *     half-lives falls below it and the wildcard rule releases it.</li>
-	 * </ul>
-	 */
-	public static final double MIN_BLOCK_SPAM_EVIDENCE = 2.0;
-
-	/**
-	 * Minimum decoded {@code HEAT} required to keep a number {@code ACTIVE} (#335).
-	 *
-	 * <p>The Heat half-life is two weeks, so a single vote decays to {@code 0.5}
-	 * after that period. A floor of {@code 0.5} therefore says: a number must
-	 * carry at least the residual of one direct vote within the last Heat
-	 * half-life to count as currently "active" on the recency axis.</p>
-	 *
-	 * <p>Heat alone is not enough to archive though: a 10-vote spam number
-	 * would otherwise fall off the list after just two months, whereas the
-	 * old vote-with-age heuristic kept it ~5 months. See
-	 * {@link #MIN_SPAM_EVIDENCE_FOR_ACTIVE} — both floors must be crossed
-	 * before a number is archived.</p>
-	 */
-	public static final double HEAT_FLOOR_FOR_ACTIVE = 0.5;
-
-	/**
-	 * Minimum decoded {@code SPAM_EVIDENCE} required to keep a number
-	 * {@code ACTIVE} (#335). The classification half-life is four months, so
-	 * a {@code 2.0} floor means a number stays active until its accumulated
-	 * spam evidence — projected forward — would no longer represent two
-	 * direct-vote-equivalents within the last classification half-life.
-	 *
-	 * <p>Together with {@link #HEAT_FLOOR_FOR_ACTIVE} this produces an
-	 * archiving curve that tracks the old vote-with-age heuristic at the low
-	 * end (a single-vote number is archived after ~14 d, just as before),
-	 * matches it for medium counts (a 10-vote number stays ~10 months, the
-	 * old system kept it ~5 months), and tames the original
-	 * "loud-last-year-still-ranked-high" pathology at the top (a 100-vote
-	 * number is archived after ~23 months instead of 5.5 years).</p>
-	 */
-	public static final double MIN_SPAM_EVIDENCE_FOR_ACTIVE = 2.0;
-
-	/**
 	 * Initial version number for the blocklist.
 	 *
 	 * <p>
@@ -231,9 +169,6 @@ public class DB {
 	
 	/** 
 	 * Creates a {@link DB}.
-	 * @param sendHelpMails 
-	 *
-	 * @param dataSource
 	 */
 	public DB(SecureRandom rnd, DBConfig config, DataSource dataSource, IndexUpdateService indexer, SchedulerService scheduler, MailService mailService) throws SQLException {
 		_rnd = rnd;
@@ -961,7 +896,7 @@ public class DB {
 	}
 
 	/**
-	 * Implementation of {@link #processVotes(String, int, long)} when there is already a database session.
+	 * Implementation of {@link #processVotes(PhoneNumer, String, int, long)} when there is already a database session.
 	 * 
 	 * @return Whether an index update should be performed.
 	 */
@@ -1194,7 +1129,7 @@ public class DB {
 	 * Adds a rating for a phone number.
 	 *
 	 * @param userName The login name of the user creating the rating, or <code>null</code> if the rating is anonymous.
-	 * @param phone The phone number to rate.
+	 * @param number The phone number to rate.
 	 * @param rating The user rating.
 	 * @param comment A user comment for this number.
 	 * @param now The current time in milliseconds since epoch.
@@ -1929,12 +1864,6 @@ public class DB {
 	 * 10-block. For a wildcard-block decision we use whichever is larger:
 	 * concentrated spam reaches the threshold via /10, spread-thin spam via
 	 * /100.</p>
-	 *
-	 * <p>Compare against {@link #MIN_BLOCK_SPAM_EVIDENCE} to decide whether a
-	 * block is wildcard-blocked right now. Consumed both server-side (the
-	 * wildcard-promotion path in {@link #recordCall}) and on
-	 * the API surface (#342) for the {@code votesWildcard} returned to
-	 * unknown numbers via prefix-hash lookup.</p>
 	 */
 	public double computeBlockSpamEvidence(AggregationInfo agg10, AggregationInfo agg100, long now) {
 		double e10 = Ema.decode(agg10.getSpamEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
