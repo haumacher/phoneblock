@@ -1779,6 +1779,19 @@ public class DB {
 					nonNull(reports.getTotalVotes()));
 		}
 	}
+
+	/**
+	 * Number of currently visible (blocked) numbers — the size of the active
+	 * blocklist. Backed by {@code NUMBERS_SPAM_EVIDENCE_IDX} so it counts only
+	 * the visible set, unlike {@link #getStatus} which full-scans NUMBERS for
+	 * its reported/total aggregates.
+	 */
+	public int getActiveBlocklistCount(int minVotes) {
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			return reports.getActiveBlocklistCount(maxRawSpam(minVotes));
+		}
+	}
 	
 	private static int nonNull(Integer n) {
 		return n == null ? 0 : n.intValue();

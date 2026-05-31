@@ -637,6 +637,17 @@ public interface SpamReports {
 			""")
 	List<Statistics> getStatistics(double maxRawSpam);
 
+	// Count of currently visible (blocked) numbers. The leading
+	// SPAM_EVIDENCE >= #{maxRawSpam} is redundant with the net-evidence filter
+	// (LEGIT_EVIDENCE is never negative) but lets H2 count through
+	// NUMBERS_SPAM_EVIDENCE_IDX over just the visible set instead of
+	// full-scanning NUMBERS — see getLatestBlocklistEntries for the same trick.
+	@Select("""
+			SELECT COUNT(1) FROM NUMBERS s
+			WHERE s.SPAM_EVIDENCE >= #{maxRawSpam} AND (s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE) >= #{maxRawSpam}
+			""")
+	int getActiveBlocklistCount(double maxRawSpam);
+
 	@Select("SELECT DIAL AS dial, COUNT(1) AS cnt FROM NUMBERS_LOCALE WHERE SPAM_EVIDENCE >= #{maxRawSpam} GROUP BY DIAL ORDER BY cnt DESC")
 	List<DailyCount> getBlockedNumbersByCountry(double maxRawSpam);
 
