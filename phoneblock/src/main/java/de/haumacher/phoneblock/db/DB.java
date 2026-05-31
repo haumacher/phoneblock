@@ -534,6 +534,11 @@ public class DB {
 					// migration 36 adds NUMBERS_VOTES_IDX for the status page's
 					// top-spammers list via the script; no Java hook needed.
 
+					// migration 37 clears the SHA1 hash of numbers that are not
+					// spam-visible (SPAM_EVIDENCE <= LEGIT_EVIDENCE), retiring the
+					// stale rainbow-table entries left by the old search/meta insert
+					// paths (#300); no Java hook needed.
+
 					users.updateProperty("db.version", Integer.toString(version));
 					session.commit();
 				}

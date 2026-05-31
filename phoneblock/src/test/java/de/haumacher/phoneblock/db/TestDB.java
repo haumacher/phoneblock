@@ -609,6 +609,47 @@ public class TestDB {
 		assertNull(rawSha1(phone), "A number voted to legitimate must not keep the SHA1 hash");
 	}
 
+	/**
+	 * Migration 37 must clear the SHA1 hash of numbers that are not spam-visible
+	 * (the rainbow-table garbage left by the old search/meta insert paths), while
+	 * keeping it for genuine spam. Runs the real {@code db-migration-37.sql}.
+	 */
+	@Test
+	void testMigration37ClearsLegitHashes() throws Exception {
+		long now = Ema.T0_MILLIS + 10L * 86_400_000L;
+
+		// Genuine spam: SPAM_EVIDENCE > LEGIT_EVIDENCE → hash must survive.
+		String spam = "036000000";
+		processVotes(spam, 2, now);
+		assertNotNull(rawSha1(spam), "precondition: spam number has a hash");
+
+		// Legitimate, never-voted number with a stale hash (as the old buggy
+		// search/meta path would have left behind): evidence 0/0, hash forced.
+		String legit = "036100000";
+		_db.addSearchHit(NumberAnalyzer.analyze(legit, "+49"), "+49", now);
+		try (Connection conn = _dataSource.getConnection();
+				PreparedStatement stmt = conn.prepareStatement("update NUMBERS set SHA1 = ? where PHONE = ?")) {
+			stmt.setBytes(1, new byte[] {1, 2, 3, 4, 5});
+			stmt.setString(2, legit);
+			assertEquals(1, stmt.executeUpdate());
+		}
+		assertNotNull(rawSha1(legit), "precondition: stale hash is present");
+
+		// Run the actual migration script.
+		try (Connection conn = _dataSource.getConnection();
+				java.io.InputStream in = SpamReports.class.getResourceAsStream("db-migration-37.sql")) {
+			assertNotNull(in, "db-migration-37.sql must be on the classpath");
+			org.apache.ibatis.jdbc.ScriptRunner sr = new org.apache.ibatis.jdbc.ScriptRunner(conn);
+			sr.setAutoCommit(true);
+			sr.setStopOnError(true);
+			sr.setLogWriter(null);
+			sr.runScript(new java.io.InputStreamReader(in, StandardCharsets.UTF_8));
+		}
+
+		assertNull(rawSha1(legit), "Migration must clear the hash of a non-spam number");
+		assertNotNull(rawSha1(spam), "Migration must keep the hash of a spam number");
+	}
+
 	private void processVotes(String phone, int votes, long time) {
 		_db.processVotes(NumberAnalyzer.analyze(phone, "+49"), "+49", votes, time);
 	}
