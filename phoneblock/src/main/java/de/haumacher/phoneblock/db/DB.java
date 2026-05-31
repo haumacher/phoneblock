@@ -1879,7 +1879,7 @@ public class DB {
 		// Confidence model surface (#334). spamConfidence is the Wilson lower
 		// bound on the block-level evidence — the same view callers see for
 		// the wildcard decision.
-		result.setHeat(Ema.decode(rawHeat, now, Ema.HEAT_TAU_MILLIS));
+		result.setHeat(Ema.decodeRate(rawHeat, now, Ema.HEAT_TAU_MILLIS));
 		result.setSpamConfidence(Confidence.spamConfidence(
 			Math.max(decodedNumberSpam, decodedBlockSpam),
 			Math.max(decodedNumberLegit, decodedBlockLegit)));

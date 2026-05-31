@@ -119,6 +119,26 @@ public final class Ema {
 	}
 
 	/**
+	 * Decode a projected-EMA column to a per-day rate at {@code now}.
+	 *
+	 * <p>Where {@link #decode} returns the accumulated evidence mass — which,
+	 * at a steady input of {@code r} events per day (weight 1), converges to
+	 * {@code r · τ_days} — this divides out the time constant, so the result
+	 * converges to {@code r} itself. That makes the value directly readable as
+	 * "events per day right now", independent of the half-life in use; a
+	 * client need not know {@code τ} to interpret it.</p>
+	 *
+	 * <p>A pure positive rescaling of {@link #decode}, so it preserves
+	 * ordering — ranking may use either.</p>
+	 *
+	 * @param tauMillis time constant τ of the EMA being decoded (e.g.
+	 *                  {@link #HEAT_TAU_MILLIS}).
+	 */
+	public static double decodeRate(double raw, long now, double tauMillis) {
+		return decode(raw, now, tauMillis) * MILLIS_PER_DAY / tauMillis;
+	}
+
+	/**
 	 * Threshold value to compare a raw projected-EMA column against, so that
 	 * the comparison matches a decoded-value threshold at {@code now}.
 	 *
