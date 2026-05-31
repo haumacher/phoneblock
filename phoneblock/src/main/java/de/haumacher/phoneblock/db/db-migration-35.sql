@@ -33,3 +33,13 @@ DROP TABLE RATINGHISTORY;
 -- never had them.
 DROP TABLE IF EXISTS SEARCHCLUSTER;
 DROP TABLE IF EXISTS SEARCHHISTORY;
+
+-- SPAMREPORTS_10 / SPAMREPORTS_100 are the former names of the
+-- NUMBERS_AGGREGATION_10 / NUMBERS_AGGREGATION_100 tables. The rename
+-- (Issue #91, "Clarified table names") was applied in place to db-schema.sql
+-- and migration 02 without an ALTER TABLE RENAME, so databases that ran the
+-- pre-rename migration 02 may still carry the old names as orphans. The live
+-- code only ever touches NUMBERS_AGGREGATION_*, so wherever these still
+-- exist they are dead. IF EXISTS, since renamed/fresh databases lack them.
+DROP TABLE IF EXISTS SPAMREPORTS_10;
+DROP TABLE IF EXISTS SPAMREPORTS_100;

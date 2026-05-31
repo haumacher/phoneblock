@@ -592,7 +592,8 @@ public class DB {
 					// migration 35 drops the legacy SEARCHES / SPAMREPORTS /
 					// BLOCKLIST / EXCLUDES / OLDREPORTS / RATINGS / RATINGHISTORY
 					// tables (plus the pre-baseline SEARCHCLUSTER /
-					// SEARCHHISTORY) via the script; no Java hook needed.
+					// SEARCHHISTORY and the renamed-away SPAMREPORTS_10 /
+					// SPAMREPORTS_100) via the script; no Java hook needed.
 
 					users.updateProperty("db.version", Integer.toString(version));
 					session.commit();
