@@ -930,10 +930,9 @@ public class DB {
 		double spamEvidenceInc = votes > 0 ? evidenceInc : 0.0;
 		double legitEvidenceInc = votes < 0 ? evidenceInc : 0.0;
 
+		byte[] hash = NumberAnalyzer.getPhoneHash(number);
 		int rows = reports.addVote(phone, votes, time, heatInc, spamEvidenceInc, legitEvidenceInc);
 		if (rows == 0) {
-			byte[] hash = NumberAnalyzer.getPhoneHash(number);
-
 			// Number was not yet present, must be added.
 			reports.addReport(phone, hash, votes, time, heatInc, spamEvidenceInc, legitEvidenceInc);
 
@@ -965,13 +964,23 @@ public class DB {
 		// (including the one this vote may have just triggered) and bumps
 		// VERSION in the next release window.
 
-		// Clear SHA1 hash when votes fall below 1 to protect privacy for legitimate numbers.
-		// This prevents identifying legitimate callers in privacy-aware lookups.
-		if (newVotes < 1) {
-			reports.clearPhoneHash(phone);
-		}
+		// Keep the SHA1 reverse-lookup entry in lock-step with spam visibility (#300):
+		// the hash is present while SPAM_EVIDENCE > LEGIT_EVIDENCE and cleared once the
+		// classification has decayed to legitimate, so only actual spam is identifiable
+		// in privacy-aware lookups.
+		updatePhoneHashVisibility(reports, phone, hash);
 
 		return classifyChanged;
+	}
+
+	/**
+	 * Keeps the SHA1 reverse-lookup hash in lock-step with spam visibility (#300):
+	 * present while {@code SPAM_EVIDENCE > LEGIT_EVIDENCE}, cleared otherwise. Call after
+	 * any event that changed the evidence columns of the {@code NUMBERS} row.
+	 */
+	private static void updatePhoneHashVisibility(SpamReports reports, String phone, byte[] hash) {
+		reports.setPhoneHashIfSpam(phone, hash);
+		reports.clearPhoneHashIfLegit(phone);
 	}
 
 	/**
@@ -2070,18 +2079,23 @@ public class DB {
 		double heatInc = Ema.increment(Signals.CALL_HEAT_WEIGHT, now, Ema.HEAT_TAU_MILLIS);
 		double evidenceInc = Ema.increment(Signals.CALL_EVIDENCE_WEIGHT, now, Ema.CLASSIFICATION_TAU_MILLIS);
 
+		byte[] hash = NumberAnalyzer.getPhoneHash(number);
 		int updated = reports.recordCall(phoneId, now, heatInc, evidenceInc);
 		if (updated == 0) {
 			// First report of this number — materialise the NUMBERS row with
 			// the same Heat / evidence increments the existing path would
 			// have applied. Initial VOTES counter is zero; rating-category
 			// counters only move via explicit user ratings (addRating).
-			byte[] hash = NumberAnalyzer.getPhoneHash(number);
 			reports.addReport(phoneId, hash, 0, now, heatInc, evidenceInc, 0.0);
 			// addReport doesn't bump CALLS; do it via the same recordCall the
 			// existing branch used (zero EMA delta to avoid double-counting).
 			reports.recordCall(phoneId, now, 0.0, 0.0);
 		}
+
+		// Call evidence pushes the number toward spam: keep the SHA1 reverse-lookup entry
+		// consistent with spam visibility (#300). Needed because a number first seen via a
+		// pure search carries no hash, and recordCall's UPDATE branch would not set it.
+		updatePhoneHashVisibility(reports, phoneId, hash);
 
 		// Block-level signal (#337) and per-region signal (#340) — both
 		// always, regardless of whether the number was new or known.
@@ -2104,10 +2118,12 @@ public class DB {
 		double heatInc = Ema.increment(Signals.SEARCH_HEAT_WEIGHT, now, Ema.HEAT_TAU_MILLIS);
 		int rows = reports.incSearchCount(phone, now, heatInc);
 		if (rows == 0) {
-			byte[] hash = NumberAnalyzer.getPhoneHash(number);
+			// No SHA1: a search is a pure Heat signal with no classification impact, so the
+			// number must not enter the reverse-lookup table (#300 privacy guard). The hash
+			// is populated by updatePhoneHashVisibility once a real spam signal arrives.
 			// addReport does not set SEARCHES; the second incSearchCount below
 			// applies both the SEARCHES bump and the Heat increment exactly once.
-			reports.addReport(phone, hash, 0, now, 0.0, 0.0, 0.0);
+			reports.addReport(phone, null, 0, now, 0.0, 0.0, 0.0);
 			reports.incSearchCount(phone, now, heatInc);
 		}
 

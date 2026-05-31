@@ -51,11 +51,26 @@ public interface SpamReports {
 		double heatInc, double spamEvidenceInc, double legitEvidenceInc);
 
 	/**
-	 * Clears the SHA1 hash of a phone number to protect privacy for legitimate numbers.
-	 * Called when votes fall below 1, indicating the number is likely not spam.
+	 * Stores the SHA1 hash, but only while the number is spam-visible (#300 privacy guard).
+	 *
+	 * <p>The SHA1 column is effectively a reverse-lookup (rainbow) table, so it must
+	 * only exist for numbers that are actually spam — exactly the rows the privacy-aware
+	 * hash-prefix lookup ({@code getPhoneInfosByHashPrefix}) returns, which filter on
+	 * {@code SPAM_EVIDENCE > LEGIT_EVIDENCE}. The guard is in the {@code WHERE} clause (not
+	 * a {@code CASEWHEN} over a NULL branch, which confuses H2's type inference for the
+	 * {@code byte[]} parameter). Pair with {@link #clearPhoneHashIfLegit} after every event
+	 * that changed the evidence columns.</p>
 	 */
-	@Update("update NUMBERS set SHA1 = null where PHONE = #{phone}")
-	void clearPhoneHash(String phone);
+	@Update("update NUMBERS set SHA1 = #{hash} where PHONE = #{phone} and SPAM_EVIDENCE > LEGIT_EVIDENCE")
+	void setPhoneHashIfSpam(String phone, byte[] hash);
+
+	/**
+	 * Clears the SHA1 hash once the classification has decayed below legitimate (#300).
+	 * Counterpart to {@link #setPhoneHashIfSpam}; together they keep the hash in lock-step
+	 * with spam visibility regardless of which side the latest evidence fell on.
+	 */
+	@Update("update NUMBERS set SHA1 = null where PHONE = #{phone} and SPAM_EVIDENCE <= LEGIT_EVIDENCE")
+	void clearPhoneHashIfLegit(String phone);
 	
 	@Insert("""
 			insert into NUMBERS_LOCALE (PHONE, DIAL, SEARCHES, CALLS, VOTES, HEAT, SPAM_EVIDENCE, LASTACCESS)
@@ -622,8 +637,11 @@ public interface SpamReports {
 	 * <p>Note: In a race condition, ADDED may be overwritten by the second request,
 	 * but since both requests happen at nearly the same time, this is acceptable.</p>
 	 */
-	@Insert("MERGE INTO NUMBERS (PHONE, SHA1, ADDED, LASTMETA) KEY (PHONE) VALUES (#{phone}, #{hash}, #{now}, #{now})")
-	void mergeLastMetaSearch(String phone, byte[] hash, long now);
+	// No SHA1 here: a meta-search placeholder row carries no spam evidence yet, so it must
+	// not enter the reverse-lookup table (#300). The hash is populated later by
+	// updatePhoneHashVisibility once an actual spam signal arrives.
+	@Insert("MERGE INTO NUMBERS (PHONE, ADDED, LASTMETA) KEY (PHONE) VALUES (#{phone}, #{now}, #{now})")
+	void mergeLastMetaSearch(String phone, long now);
 	
 	@Select("select COMMENT from SUMMARY s where s.PHONE = #{phone}")
 	String getSummary(String phone);

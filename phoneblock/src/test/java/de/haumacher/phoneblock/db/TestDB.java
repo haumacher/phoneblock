@@ -584,6 +584,31 @@ public class TestDB {
 		}
 	}
 
+	/**
+	 * The SHA1 reverse-lookup hash must exist exactly for spam-visible numbers (#300
+	 * privacy guard): a pure search must not store it, a spam signal populates it, and a
+	 * number voted/decayed back to legitimate must not keep it.
+	 */
+	@Test
+	void testHashTracksSpamVisibility() {
+		long now = Ema.T0_MILLIS + 10L * 86_400_000L;
+		String phone = "035000000";
+		PhoneNumer number = NumberAnalyzer.analyze(phone, "+49");
+		byte[] expectedHash = NumberAnalyzer.getPhoneHash(number);
+
+		// A pure search adds Heat only — no spam evidence, so no rainbow-table entry.
+		_db.addSearchHit(number, "+49", now);
+		assertNull(rawSha1(phone), "Search must not store the SHA1 hash");
+
+		// A spam vote makes the number spam-visible — the hash is populated.
+		processVotes(phone, 2, now);
+		Assertions.assertArrayEquals(expectedHash, rawSha1(phone), "Spam vote must populate the SHA1 hash");
+
+		// Enough 'legitimate' votes push LEGIT_EVIDENCE above SPAM_EVIDENCE — hash cleared again.
+		processVotes(phone, -5, now);
+		assertNull(rawSha1(phone), "A number voted to legitimate must not keep the SHA1 hash");
+	}
+
 	private void processVotes(String phone, int votes, long time) {
 		_db.processVotes(NumberAnalyzer.analyze(phone, "+49"), "+49", votes, time);
 	}
@@ -597,6 +622,23 @@ public class TestDB {
 			try (ResultSet rs = stmt.executeQuery()) {
 				assertTrue(rs.next(), "No row for " + phone);
 				return new double[] { rs.getDouble(1), rs.getDouble(2), rs.getDouble(3) };
+			}
+		} catch (SQLException ex) {
+			throw new RuntimeException(ex);
+		}
+	}
+
+	/** Raw SHA1 column straight from NUMBERS — {@code null} if the number is absent or its hash was cleared (#300 privacy guard). */
+	private byte[] rawSha1(String phone) {
+		try (Connection conn = _dataSource.getConnection();
+				PreparedStatement stmt = conn.prepareStatement(
+					"select SHA1 from NUMBERS where PHONE = ?")) {
+			stmt.setString(1, phone);
+			try (ResultSet rs = stmt.executeQuery()) {
+				if (!rs.next()) {
+					return null; // row absent
+				}
+				return rs.getBytes(1);
 			}
 		} catch (SQLException ex) {
 			throw new RuntimeException(ex);
@@ -1276,12 +1318,11 @@ public class TestDB {
 	/**
 	 * Test that mergeLastMetaSearch correctly inserts new rows and updates existing ones.
 	 *
-	 * @see SpamReports#mergeLastMetaSearch(String, byte[], long)
+	 * @see SpamReports#mergeLastMetaSearch(String, long)
 	 */
 	@Test
 	public void testMergeLastMetaSearch() {
 		String phone = "012345678";
-		byte[] hash = new byte[] {1, 2, 3, 4, 5};
 
 		try (SqlSession session = _db.openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
@@ -1291,13 +1332,17 @@ public class TestDB {
 
 			// First merge should insert
 			long insertTime = 1000;
-			reports.mergeLastMetaSearch(phone, hash, insertTime);
+			reports.mergeLastMetaSearch(phone, insertTime);
 			session.commit();
 
 			// Verify the record was created with correct LASTMETA
 			Long lastMeta1 = reports.getLastMetaSearch(phone);
 			assertNotNull(lastMeta1);
 			assertEquals(insertTime, lastMeta1.longValue());
+
+			// Privacy guard (#300): a meta-search placeholder carries no spam evidence,
+			// so it must not enter the SHA1 reverse-lookup table.
+			assertNull(rawSha1(phone));
 
 			// Verify ADDED was set
 			DBNumberInfo info1 = reports.getPhoneInfo(phone);
@@ -1306,7 +1351,7 @@ public class TestDB {
 
 			// Second merge should update LASTMETA (and ADDED due to H2 MERGE KEY semantics)
 			long updateTime = 2000;
-			reports.mergeLastMetaSearch(phone, hash, updateTime);
+			reports.mergeLastMetaSearch(phone, updateTime);
 			session.commit();
 
 			// Verify LASTMETA was updated
@@ -1330,7 +1375,6 @@ public class TestDB {
 	@Test
 	public void testMergeLastMetaSearchConcurrent() throws Exception {
 		String phone = "098765432";
-		byte[] hash = new byte[] {9, 8, 7, 6, 5};
 		int threadCount = 10;
 
 		ExecutorService executor = Executors.newFixedThreadPool(threadCount);
@@ -1348,7 +1392,7 @@ public class TestDB {
 
 					try (SqlSession session = _db.openSession()) {
 						SpamReports reports = session.getMapper(SpamReports.class);
-						reports.mergeLastMetaSearch(phone, hash, time);
+						reports.mergeLastMetaSearch(phone, time);
 						session.commit();
 					}
 					return null;
