@@ -367,9 +367,6 @@ public interface SpamReports {
 	@Select("SELECT SUM(s.DOWN_VOTES) + SUM(s.UP_VOTES) FROM NUMBERS s")
 	Integer getTotalVotes();
 	
-	@Select("SELECT SUM(s.COUNT) FROM RATINGS s")
-	Integer getTotalRatings();
-	
 	@Select("SELECT SUM(s.SEARCHES) FROM NUMBERS s")
 	Integer getTotalSearches();
 	

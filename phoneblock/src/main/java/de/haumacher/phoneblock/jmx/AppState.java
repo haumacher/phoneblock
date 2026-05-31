@@ -46,11 +46,6 @@ public class AppState implements AppStateMBean {
 	}
 
 	@Override
-	public int getRatings() {
-		return _db.getRatings();
-	}
-
-	@Override
 	public int getSearches() {
 		return _db.getSearches();
 	}

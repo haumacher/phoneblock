@@ -11,8 +11,13 @@
 --     migration 02.
 --   * BLOCKLIST / EXCLUDES: per-user blocked / allowed numbers, superseded by
 --     PERSONALIZATION (BLOCKED flag); see the BlockList mapper.
+--   * RATINGS: per-category rating counters, superseded by the NUMBERS
+--     category columns (LEGITIMATE / PING / POLL / ADVERTISING / GAMBLE /
+--     FRAUD). The only remaining reader was the JMX getRatings() metric,
+--     dropped together with this table.
 DROP TABLE SEARCHES;
 DROP TABLE SPAMREPORTS;
 DROP TABLE OLDREPORTS;
 DROP TABLE BLOCKLIST;
 DROP TABLE EXCLUDES;
+DROP TABLE RATINGS;

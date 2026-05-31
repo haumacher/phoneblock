@@ -112,7 +112,7 @@ public class DB {
 	private static final String SAVE_CHARS = "23456789qwertzuiopasdfghjkyxcvbnmQWERTZUPASDFGHJKLYXCVBNM";
 
 	private static final Collection<String> TABLE_NAMES = Arrays.asList(
-		"USERS", "RATINGS"
+		"USERS"
 	);
 	
 	private SqlSessionFactory _sessionFactory;
@@ -590,8 +590,8 @@ public class DB {
 					// via the script; no Java hook needed.
 
 					// migration 35 drops the legacy SEARCHES / SPAMREPORTS /
-					// BLOCKLIST / EXCLUDES / OLDREPORTS tables via the script;
-					// no Java hook needed.
+					// BLOCKLIST / EXCLUDES / OLDREPORTS / RATINGS tables via the
+					// script; no Java hook needed.
 
 					users.updateProperty("db.version", Integer.toString(version));
 					session.commit();
@@ -2905,13 +2905,6 @@ public class DB {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			return nonNull(reports.getTotalVotes());
-		}
-	}
-
-	public int getRatings() {
-		try (SqlSession session = openSession()) {
-			SpamReports reports = session.getMapper(SpamReports.class);
-			return nonNull(reports.getTotalRatings());
 		}
 	}
 

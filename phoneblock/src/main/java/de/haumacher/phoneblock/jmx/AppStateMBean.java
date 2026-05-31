@@ -24,11 +24,6 @@ public interface AppStateMBean {
 	int getVotes();
 
 	/**
-	 * The total number of ratings received so far.
-	 */
-	int getRatings();
-
-	/**
 	 * The total number of web search requests answered so far.
 	 */
 	int getSearches();
