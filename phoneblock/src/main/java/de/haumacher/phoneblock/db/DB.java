@@ -595,6 +595,9 @@ public class DB {
 					// SEARCHHISTORY and the renamed-away SPAMREPORTS_10 /
 					// SPAMREPORTS_100) via the script; no Java hook needed.
 
+					// migration 36 adds NUMBERS_ADDED_IDX for the status page's
+					// "newly blocked" list via the script; no Java hook needed.
+
 					users.updateProperty("db.version", Integer.toString(version));
 					session.commit();
 				}

@@ -4,7 +4,7 @@ CREATE TABLE PROPERTIES (
 	CONSTRAINT PROPERTIES_PK PRIMARY KEY (NAME)
 );
 
-INSERT INTO PROPERTIES (NAME, VAL) VALUES('db.version', '35');
+INSERT INTO PROPERTIES (NAME, VAL) VALUES('db.version', '36');
 INSERT INTO PROPERTIES (NAME, VAL) VALUES('blocklist.version', '1');
 
 
@@ -60,6 +60,12 @@ CREATE INDEX NUMBERS_HEAT_IDX ON NUMBERS (HEAT DESC);
 -- queries do `WHERE SPAM_EVIDENCE >= ?` as an index seek instead of a
 -- full-table scan.
 CREATE INDEX NUMBERS_SPAM_EVIDENCE_IDX ON NUMBERS (SPAM_EVIDENCE DESC);
+-- Newest-first scan for the status page's "newly blocked" list (#300). Lets
+-- `ORDER BY ADDED DESC LIMIT 10` walk the index and stop after the first ten
+-- rows that pass the visibility filter instead of scanning and sorting the
+-- whole table (the cheap ACTIVE-index pre-filter the query used before the
+-- ACTIVE flag was dropped no longer exists).
+CREATE INDEX NUMBERS_ADDED_IDX ON NUMBERS (ADDED DESC);
 
 CREATE TABLE NUMBERS_LOCALE (
 	PHONE CHARACTER VARYING(100) NOT NULL,
