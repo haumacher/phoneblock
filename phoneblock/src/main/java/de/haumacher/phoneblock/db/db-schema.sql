@@ -4,7 +4,7 @@ CREATE TABLE PROPERTIES (
 	CONSTRAINT PROPERTIES_PK PRIMARY KEY (NAME)
 );
 
-INSERT INTO PROPERTIES (NAME, VAL) VALUES('db.version', '35');
+INSERT INTO PROPERTIES (NAME, VAL) VALUES('db.version', '36');
 INSERT INTO PROPERTIES (NAME, VAL) VALUES('blocklist.version', '1');
 
 
@@ -60,6 +60,10 @@ CREATE INDEX NUMBERS_HEAT_IDX ON NUMBERS (HEAT DESC);
 -- queries do `WHERE SPAM_EVIDENCE >= ?` as an index seek instead of a
 -- full-table scan.
 CREATE INDEX NUMBERS_SPAM_EVIDENCE_IDX ON NUMBERS (SPAM_EVIDENCE DESC);
+-- Top-spammers list on the status page (getTopSpammers): ORDER BY VOTES DESC
+-- LIMIT n. Without this index H2 full-scans NUMBERS and sorts every row; the
+-- DESC index lets it read just the top n ("index sorted").
+CREATE INDEX NUMBERS_VOTES_IDX ON NUMBERS (VOTES DESC);
 
 CREATE TABLE NUMBERS_LOCALE (
 	PHONE CHARACTER VARYING(100) NOT NULL,
