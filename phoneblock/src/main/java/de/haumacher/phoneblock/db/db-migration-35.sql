@@ -24,3 +24,12 @@ DROP TABLE BLOCKLIST;
 DROP TABLE EXCLUDES;
 DROP TABLE RATINGS;
 DROP TABLE RATINGHISTORY;
+
+-- SEARCHCLUSTER and SEARCHHISTORY predate even the db-schema.sql baseline:
+-- they were never part of a fresh install and are read only by the
+-- pre-NUMBERS path (SEARCHCLUSTER -> REVISION, SEARCHHISTORY ->
+-- NUMBERS_HISTORY in migration 02). They linger only in databases old enough
+-- to have been migrated through that path, so use IF EXISTS — every other DB
+-- never had them.
+DROP TABLE IF EXISTS SEARCHCLUSTER;
+DROP TABLE IF EXISTS SEARCHHISTORY;
