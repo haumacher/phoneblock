@@ -609,6 +609,13 @@ public class DB {
 			ScriptRunner sr = new ScriptRunner(connection);
 			sr.setAutoCommit(true);
 			sr.setDelimiter(";");
+			// Abort on the first failed statement instead of logging and
+			// continuing. Otherwise a broken migration leaves columns/tables
+			// unapplied while the surrounding version loop still bumps and
+			// commits db.version — silently corrupting the schema (a chained
+			// ADD COLUMN rejected by H2 2.4 did exactly this). A thrown error
+			// propagates out of the loop before the version is advanced.
+			sr.setStopOnError(true);
 			sr.runScript(new InputStreamReader(in, StandardCharsets.UTF_8));
 			
 			LOG.info("Finished DB script: {}", scriptName);
