@@ -183,17 +183,21 @@ public class SpamCheckServlet extends HttpServlet {
 			double decodedBlock = db.computeBlockSpamEvidence(a10, a100, now);
 			int votesWildcard = (int) Math.round(Math.max(0.0, decodedBlock));
 			if (votesWildcard > 0) {
-				// Confidence-model surface (#334): a wildcard-only match must still report a
-				// non-zero spamConfidence (the block's Wilson bound) instead of the default 0.
+				// Confidence-model surface (#334): a wildcard-only match has no number-level
+				// row, so derive both metrics from the block — its Wilson confidence and its
+				// activity — instead of leaving them at the default 0.
 				double decodedBlockLegit = Math.max(
 					Ema.decode(a10.getLegitEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS),
 					Ema.decode(a100.getLegitEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS));
+				double blockHeat = Ema.decodeRate(
+					Math.max(a10.getRawHeat(), a100.getRawHeat()), now, Ema.HEAT_TAU_MILLIS);
 				return PhoneInfo.create()
 					.setPhone("unknown")
 					.setRating(Rating.B_MISSED)
 					.setVotes(0)
 					.setVotesWildcard(votesWildcard)
-					.setSpamConfidence(Confidence.spamConfidence(decodedBlock, decodedBlockLegit));
+					.setSpamConfidence(Confidence.spamConfidence(decodedBlock, decodedBlockLegit))
+					.setHeat(blockHeat);
 			}
 		}
 
