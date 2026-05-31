@@ -420,7 +420,7 @@ public interface SpamReports {
 	List<DBNumberInfo> getPhoneInfosByHashPrefix(byte[] low, byte[] high);
 	
 	@Select("""
-			select #{prefix}, max(s.ADDED), max(s.UPDATED), max(s.LASTSEARCH), true, sum(s.CALLS), sum(s.VOTES), sum(s.LEGITIMATE), sum(s.PING), sum(s.POLL), sum(s.ADVERTISING), sum(s.GAMBLE), sum(s.FRAUD), sum(s.SEARCHES), max(s.LASTPING), sum(s.SPAM_EVIDENCE) as PUBLISHED_SPAM_EVIDENCE, sum(s.LEGIT_EVIDENCE) as PUBLISHED_LEGIT_EVIDENCE
+			select #{prefix}, max(s.ADDED), max(s.UPDATED), max(s.LASTSEARCH), sum(s.CALLS), sum(s.VOTES), sum(s.LEGITIMATE), sum(s.PING), sum(s.POLL), sum(s.ADVERTISING), sum(s.GAMBLE), sum(s.FRAUD), sum(s.SEARCHES), max(s.LASTPING), sum(s.SPAM_EVIDENCE) as PUBLISHED_SPAM_EVIDENCE, sum(s.LEGIT_EVIDENCE) as PUBLISHED_LEGIT_EVIDENCE
 			from NUMBERS s
 			where
 				s.PHONE > #{prefix}
