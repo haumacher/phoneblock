@@ -207,15 +207,17 @@ public interface SpamReports {
 			""")
 	Long getLastPingPrefix(String prefix, int expectedLength);
 
+	// #{minRawSpam} = maxRawSpam(1): only list related numbers that still show at least
+	// one vote, not every row with a sliver of net evidence that rounds to 0 (#300).
 	@Select("""
 			SELECT s.PHONE FROM NUMBERS s
 			WHERE s.PHONE > #{prefix}
 			AND s.PHONE < concat(#{prefix}, 'Z')
 			AND LENGTH(s.PHONE) = #{expectedLength}
-			AND s.SPAM_EVIDENCE > s.LEGIT_EVIDENCE
+			AND (s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE) >= #{minRawSpam}
 			order by s.PHONE
 			""")
-	List<String> getRelatedNumbers(String prefix, int expectedLength);
+	List<String> getRelatedNumbers(String prefix, int expectedLength, double minRawSpam);
 
 	@Update("""
 			update NUMBERS s
@@ -261,10 +263,10 @@ public interface SpamReports {
 	
 	@Select("""
 			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.SPAM_EVIDENCE as PUBLISHED_SPAM_EVIDENCE, s.LEGIT_EVIDENCE as PUBLISHED_LEGIT_EVIDENCE, s.HEAT, s.SPAM_EVIDENCE, s.LEGIT_EVIDENCE from NUMBERS s
-			where UPDATED >= #{after} and SPAM_EVIDENCE > LEGIT_EVIDENCE
+			where UPDATED >= #{after} and (SPAM_EVIDENCE - LEGIT_EVIDENCE) >= #{minRawSpam}
 			order by UPDATED desc
 			""")
-	List<DBNumberInfo> getLatestReports(long after);
+	List<DBNumberInfo> getLatestReports(long after, double minRawSpam);
 	
 	@Select("""
 			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.SPAM_EVIDENCE as PUBLISHED_SPAM_EVIDENCE, s.LEGIT_EVIDENCE as PUBLISHED_LEGIT_EVIDENCE from NUMBERS s
@@ -419,11 +421,11 @@ public interface SpamReports {
 	
 	@Select("""
 			select s.PHONE, s.SEARCHES_CURRENT, s.SEARCHES, s.LASTSEARCH from NUMBERS s
-			where s.SPAM_EVIDENCE > s.LEGIT_EVIDENCE
+			where (s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE) >= #{minRawSpam}
 			order by s.SEARCHES_CURRENT desc
 			limit #{limit}
 			""")
-	List<DBSearchInfo> getTopSearchesCurrent(int limit);
+	List<DBSearchInfo> getTopSearchesCurrent(int limit, double minRawSpam);
 	
 	/**
 	 * Retrieves all historic versions for the given number not older than the given revision.
@@ -509,13 +511,17 @@ public interface SpamReports {
 			""")
 	List<String> getBlockList(double maxRawSpam);
 
+	// 'reported' = shows at least one vote but below the block threshold; 'blocked' = at or
+	// above it. The lower bound is #{reportedFloor} = maxRawSpam(1), not a bare
+	// SPAM_EVIDENCE > LEGIT_EVIDENCE, so numbers whose net evidence rounds to 0 votes are
+	// counted as neither (#300).
 	@Select("""
 			SELECT CASE WHEN (s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE) < #{maxRawSpam} THEN 'reported' ELSE 'blocked' END state, COUNT(1) cnt FROM NUMBERS s
-			where s.SPAM_EVIDENCE > s.LEGIT_EVIDENCE
+			where (s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE) >= #{reportedFloor}
 			GROUP BY state
 			ORDER BY state
 			""")
-	List<Statistics> getStatistics(double maxRawSpam);
+	List<Statistics> getStatistics(double maxRawSpam, double reportedFloor);
 
 	// Count of currently visible (blocked) numbers. The leading
 	// SPAM_EVIDENCE >= #{maxRawSpam} is redundant with the net-evidence filter

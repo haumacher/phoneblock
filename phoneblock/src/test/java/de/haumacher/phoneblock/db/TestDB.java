@@ -221,44 +221,49 @@ public class TestDB {
 	
 	@Test
 	void testSpamReports() {
+		// Timestamps must be close to "now": getLatestSpamReports filters on the decay-aware
+		// visibility threshold (#300), so a vote placed at e.g. the epoch reference t0 would
+		// have decayed below one displayed vote by the time the test runs and would be filtered.
+		long base = System.currentTimeMillis();
+
 		assertFalse(_db.hasSpamReportFor("012300000"));
 
-		processVotes("012300000", 2, 1000);
-		
+		processVotes("012300000", 2, base);
+
 		assertTrue(_db.hasSpamReportFor("012300000"));
-		
-		processVotes("045600000", 1, 1001);
-		
+
+		processVotes("045600000", 1, base + 1);
+
 		assertEquals(2, _db.getVotesFor("012300000"));
-		
+
 		assertFalse(_db.hasSpamReportFor("099900000"));
 		assertEquals(0, _db.getVotesFor("099900000"));
-		
-		processVotes("099900000", -1, 1002);
+
+		processVotes("099900000", -1, base + 2);
 		assertEquals(-1, _db.getVotesFor("099900000"));
-		
-		processVotes("099900000", 0, 1003);
+
+		processVotes("099900000", 0, base + 3);
 		assertEquals(-1, _db.getVotesFor("099900000"));
-		
-		processVotes("012300000", 1, 1004);
+
+		processVotes("012300000", 1, base + 4);
 		assertEquals(3, _db.getVotesFor("012300000"));
-		
+
 		{
-			List<? extends NumberInfo> reports = _db.getLatestSpamReports(1001);
+			List<? extends NumberInfo> reports = _db.getLatestSpamReports(base + 1);
 			assertEquals(2, reports.size());
 			assertEquals("012300000", reports.get(0).getPhone());
 			assertEquals("045600000", reports.get(1).getPhone());
 		}
-		
-		processVotes("012300000", -1, 1005);
+
+		processVotes("012300000", -1, base + 5);
 		assertEquals(2, _db.getVotesFor("012300000"));
-		
-		processVotes("012300000", -2, 1006);
+
+		processVotes("012300000", -2, base + 6);
 		assertEquals(0, _db.getVotesFor("012300000"));
-		
-		assertEquals(1006, _db.getLastSpamReport().longValue());
-		
-		List<? extends NumberInfo> reports = _db.getLatestSpamReports(1001);
+
+		assertEquals(base + 6, _db.getLastSpamReport().longValue());
+
+		List<? extends NumberInfo> reports = _db.getLatestSpamReports(base + 1);
 		assertEquals(1, reports.size());
 		assertEquals("045600000", reports.get(0).getPhone());
 	}

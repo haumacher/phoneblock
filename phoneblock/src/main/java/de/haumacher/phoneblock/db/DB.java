@@ -1347,7 +1347,7 @@ public class DB {
 	public List<? extends NumberInfo> getLatestSpamReports(long notBefore) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			return reports.getLatestReports(notBefore);
+			return reports.getLatestReports(notBefore, maxRawSpam(1));
 		}
 	}
 
@@ -1373,7 +1373,7 @@ public class DB {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 		
-			List<DBSearchInfo> searches = reports.getTopSearchesCurrent(limit);
+			List<DBSearchInfo> searches = reports.getTopSearchesCurrent(limit, maxRawSpam(1));
 			
 			searches.sort(Comparator.<DBSearchInfo>comparingLong(s -> s.getLastSearch()).reversed());
 			return searches;
@@ -1725,7 +1725,7 @@ public class DB {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			return new Status(
-					reports.getStatistics(maxRawSpam(minVotes)),
+					reports.getStatistics(maxRawSpam(minVotes), maxRawSpam(1)),
 					nonNull(reports.getTotalVotes()));
 		}
 	}

@@ -365,7 +365,7 @@ public class SearchServlet extends HttpServlet {
 			info = db.getPhoneInfo(numberInfo, aggregation10, aggregation100);
 			
 			if (aggregation100.getCnt() >= DB.MIN_AGGREGATE_100) {
-				relatedNumbers = reports.getRelatedNumbers(aggregation100.getPrefix(), phoneId.length());
+				relatedNumbers = reports.getRelatedNumbers(aggregation100.getPrefix(), phoneId.length(), db.maxRawSpam(1));
 				
 				if (comments.isEmpty()) {
 					comments = reports.getAllComments(aggregation100.getPrefix(), phoneId.length(), langs);
@@ -377,7 +377,7 @@ public class SearchServlet extends HttpServlet {
 				}
 			} else {
 				if (aggregation10.getCnt() >= DB.MIN_AGGREGATE_10) {
-					relatedNumbers = reports.getRelatedNumbers(aggregation10.getPrefix(), phoneId.length());
+					relatedNumbers = reports.getRelatedNumbers(aggregation10.getPrefix(), phoneId.length(), db.maxRawSpam(1));
 
 					if (comments.isEmpty()) {
 						comments = reports.getAllComments(aggregation10.getPrefix(), phoneId.length(), langs);
