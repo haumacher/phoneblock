@@ -10,14 +10,15 @@
 
 #include "api.h"
 #include "config.h"
+#include "ticks_util.h"
 
 static const char *TAG = "selftest";
 
 // 24 h between scheduled runs — same cadence as the sync task.
-#define SELFTEST_INTERVAL_MS    (24 * 3600 * 1000)
+#define SELFTEST_INTERVAL_S     (24 * 3600)
 // ±30 min skew so a fleet-wide power blip doesn't line every dongle
 // up to the same minute on /api/test forever after.
-#define SELFTEST_JITTER_MS      (30 * 60 * 1000)
+#define SELFTEST_JITTER_S       (30 * 60)
 
 static TaskHandle_t s_task = NULL;
 
@@ -27,9 +28,9 @@ static void selftest_task(void *arg)
     // The boot-time check runs synchronously from app_main, so the
     // first scheduled iteration happens one full interval later.
     while (1) {
-        uint32_t jitter = esp_random() % (2u * SELFTEST_JITTER_MS);
-        uint32_t delay  = SELFTEST_INTERVAL_MS - SELFTEST_JITTER_MS + jitter;
-        vTaskDelay(pdMS_TO_TICKS(delay));
+        uint32_t jitter  = esp_random() % (2u * SELFTEST_JITTER_S);
+        uint32_t delay_s = SELFTEST_INTERVAL_S - SELFTEST_JITTER_S + jitter;
+        vTaskDelay(seconds_to_ticks(delay_s));
         if (strlen(config_phoneblock_token()) == 0) continue;
         ESP_LOGI(TAG, "scheduled token self-test");
         phoneblock_selftest(NULL);

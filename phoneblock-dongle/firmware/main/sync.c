@@ -17,13 +17,14 @@
 #include "config.h"
 #include "http_util.h"
 #include "stats.h"
+#include "ticks_util.h"
 #include "tr064.h"
 #include "tr064_parse.h"
 
 static const char *TAG = "sync";
 
 // 24 h between scheduled runs, as per design.
-#define SYNC_INTERVAL_US    (24LL * 3600LL * 1000000LL)
+#define SYNC_INTERVAL_S     (24 * 3600)
 
 static TaskHandle_t     s_task       = NULL;
 static SemaphoreHandle_t s_trigger   = NULL;    // binary semaphore
@@ -248,7 +249,7 @@ static void run_once(void)
 static void sync_task(void *arg)
 {
     (void)arg;
-    TickType_t timeout = pdMS_TO_TICKS(SYNC_INTERVAL_US / 1000);
+    TickType_t timeout = seconds_to_ticks(SYNC_INTERVAL_S);
     // On first boot don't fire immediately — the user may still be
     // in the middle of setup. Wait one interval before the first
     // scheduled run; a manual trigger can fire sooner.

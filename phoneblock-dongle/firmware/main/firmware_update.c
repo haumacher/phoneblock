@@ -26,14 +26,15 @@
 #include "sdkconfig.h"
 
 #include "config.h"
+#include "ticks_util.h"
 
 static const char *TAG = "fwup";
 
 // 24 h between scheduled checks — same cadence as the daily token
 // self-test, with the same ±30 min skew so a fleet-wide power blip
 // doesn't line every dongle up onto the same minute on the CDN.
-#define FWUP_INTERVAL_MS    (24 * 3600 * 1000)
-#define FWUP_JITTER_MS      (30 * 60 * 1000)
+#define FWUP_INTERVAL_S     (24 * 3600)
+#define FWUP_JITTER_S       (30 * 60)
 
 static TaskHandle_t s_task = NULL;
 
@@ -656,9 +657,9 @@ static void update_task(void *arg)
     // path already validated the running image; no point overwriting
     // it the moment we come up.
     while (1) {
-        uint32_t jitter = esp_random() % (2u * FWUP_JITTER_MS);
-        uint32_t delay  = FWUP_INTERVAL_MS - FWUP_JITTER_MS + jitter;
-        vTaskDelay(pdMS_TO_TICKS(delay));
+        uint32_t jitter  = esp_random() % (2u * FWUP_JITTER_S);
+        uint32_t delay_s = FWUP_INTERVAL_S - FWUP_JITTER_S + jitter;
+        vTaskDelay(seconds_to_ticks(delay_s));
         // Skip until the device is provisioned. Using the PhoneBlock
         // token as the "is configured" proxy mirrors the self-test
         // task — an unconfigured dongle has nothing to lose by
