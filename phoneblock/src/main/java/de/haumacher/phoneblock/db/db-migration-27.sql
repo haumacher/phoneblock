@@ -5,10 +5,9 @@
 -- are pure additions and ranking by the raw column matches ranking by the
 -- decoded value. No behaviour change yet — columns start at 0 and become
 -- meaningful once signals are wired in (#332).
-ALTER TABLE NUMBERS
-	ADD COLUMN HEAT DOUBLE PRECISION DEFAULT 0 NOT NULL,
-	ADD COLUMN SPAM_EVIDENCE DOUBLE PRECISION DEFAULT 0 NOT NULL,
-	ADD COLUMN LEGIT_EVIDENCE DOUBLE PRECISION DEFAULT 0 NOT NULL;
+ALTER TABLE NUMBERS ADD COLUMN HEAT DOUBLE PRECISION DEFAULT 0 NOT NULL;
+ALTER TABLE NUMBERS ADD COLUMN SPAM_EVIDENCE DOUBLE PRECISION DEFAULT 0 NOT NULL;
+ALTER TABLE NUMBERS ADD COLUMN LEGIT_EVIDENCE DOUBLE PRECISION DEFAULT 0 NOT NULL;
 
 -- Index-backed ranking for the space-limited Heat-ordered blocklist (#336).
 -- DESC matches the read pattern (hottest first); no EXP() needed in queries
