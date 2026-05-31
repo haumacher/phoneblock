@@ -2596,9 +2596,13 @@ public class DB {
 			rev++;
 		}
 		
-		// Add searches today (not yet contained in the history)
+		// Add searches today (not yet contained in the history). Clamp at 0: when the
+		// number has no live NUMBERS row (e.g. it is only shown via the wildcard/aggregate
+		// path, #300), getPhoneInfo returns an empty info with searches=0 while the history
+		// still carries a positive cumulative count, which would otherwise render a negative
+		// "searches today" bar (-lastCnt).
 		NumberInfo info = getPhoneInfo(reports, phone);
-		result.add(info.getSearches() - lastCnt);
+		result.add(Math.max(0, info.getSearches() - lastCnt));
 		
 		// Drop first, because this entry contains no delta information.
 		return result.subList(1, result.size());
