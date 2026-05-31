@@ -20,7 +20,7 @@ public class Statistics {
 	}
 
 	/**
-	 * The amount of spam numbers with given {@link #getConfidence()}.
+	 * The amount of spam numbers.
 	 */
 	public int getCnt() {
 		return _cnt;

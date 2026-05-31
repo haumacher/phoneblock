@@ -37,8 +37,10 @@ public class TestAddressBookCache {
 		_scheduler.contextInitialized(null);
 		
 		_db = new DB(TestDB.createTestDataSource(), _scheduler);
-		// Drop the visibility threshold so even small-vote test numbers get marked
-		// PENDING_UPDATE and end up in the published snapshot below.
+		// Drop the visibility threshold so even small-vote test numbers cross
+		// it and end up in the published snapshot below. (#342: visibility is
+		// decided in the BlocklistVersionService sweep against the decoded
+		// net evidence — no separate PENDING_UPDATE flag.)
 		_db.setMinVisibleVotes(1);
 
 		_db.processVotes(NumberAnalyzer.analyze("+39011111111", "+49"), "+39", 20, _now);
@@ -56,7 +58,11 @@ public class TestAddressBookCache {
 	private void publishSnapshot() {
 		try (SqlSession session = _db.openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			reports.assignVersionToPendingUpdates(1L, 0L, 1);
+			// #342: snapshot-driven assignment uses projected-EMA thresholds.
+			// With minVotes = 1 and lastAssignTime = 0, every row whose
+			// current net evidence clears the threshold gets the new VERSION.
+			double currentMaxRawSpam = de.haumacher.phoneblock.db.DB.maxRawSpamAt(_now, 1);
+			reports.assignBlocklistVersion(1L, 0L, currentMaxRawSpam, Double.POSITIVE_INFINITY);
 			session.commit();
 		}
 	}

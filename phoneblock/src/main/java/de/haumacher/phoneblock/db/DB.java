@@ -64,8 +64,6 @@ import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.app.api.model.SearchInfo;
 import de.haumacher.phoneblock.app.api.model.UserComment;
-import de.haumacher.phoneblock.callreport.model.CallReport;
-import de.haumacher.phoneblock.callreport.model.ReportInfo;
 import de.haumacher.phoneblock.credits.MessageDetails;
 import de.haumacher.phoneblock.db.config.DBConfig;
 import de.haumacher.phoneblock.db.settings.AuthToken;
@@ -105,21 +103,16 @@ public class DB {
 	 */
 	public static final int MIN_LEGITIMATE = 4;
 
-	/**
-	 * Number of days a number stays on the blocklist when {@link #MIN_VOTES} are received. After that time limit,
-	 * {@link #WEEK_PER_VOTE} are substracted per week.
-	 */
-	private static final int OLD_VOTE_DAYS = 14;
-
-	/**
-	 * Number of weeks to pass to substract a vote (after a number has not been reported active for {@link #OLD_VOTE_DAYS}). 
-	 */
-	private static final int WEEK_PER_VOTE = 3;
+	// Removed in #342: the soft-delete ACTIVE flag and the Heat-based archive
+	// sweep that maintained it. Decay-aware visibility
+	// (`(SPAM_EVIDENCE - LEGIT_EVIDENCE) >= maxRawSpam`) handles every
+	// read-path decision; long-faded rows accumulate until #341 introduces
+	// hard delete.
 
 	private static final String SAVE_CHARS = "23456789qwertzuiopasdfghjkyxcvbnmQWERTZUPASDFGHJKLYXCVBNM";
 
 	private static final Collection<String> TABLE_NAMES = Arrays.asList(
-		"BLOCKLIST", "EXCLUDES", "SPAMREPORTS", "OLDREPORTS", "USERS", "CALLREPORT", "CALLERS", "RATINGS", "SEARCHES"
+		"USERS"
 	);
 	
 	private SqlSessionFactory _sessionFactory;
@@ -128,7 +121,7 @@ public class DB {
 	private static final String BASIC_AUTH_PREFIX = "Basic ";
 
 	public static final int MIN_AGGREGATE_10 = 4;
-	
+
 	public static final int MIN_AGGREGATE_100 = 3;
 
 	/**
@@ -176,9 +169,6 @@ public class DB {
 	
 	/** 
 	 * Creates a {@link DB}.
-	 * @param sendHelpMails 
-	 *
-	 * @param dataSource
 	 */
 	public DB(SecureRandom rnd, DBConfig config, DataSource dataSource, IndexUpdateService indexer, SchedulerService scheduler, MailService mailService) throws SQLException {
 		_rnd = rnd;
@@ -193,18 +183,13 @@ public class DB {
 		Configuration configuration = new Configuration(environment);
 		configuration.setUseActualParamName(true);
 		configuration.addMapper(SpamReports.class);
+		configuration.addMapper(MigrationStatements.class);
 		configuration.addMapper(BlockList.class);
 		configuration.addMapper(Users.class);
 		configuration.addMapper(FtcReports.class);
 		_sessionFactory = new SqlSessionFactoryBuilder().build(configuration);
 		
 		setupSchema();
-
-		 archiveOldReports();
-
-		 // Periodic archive runs are handled by BlocklistVersionService so that
-		 // ACTIVE=false transitions land in the same release as the snapshot of
-		 // PUBLISHED_VOTES. The init-time call above primes the table on startup.
 
 		 Date timeHistory = schedule(0, this::runUpdateHistory);
 		 LOG.info("Scheduled search history cleanup: " + timeHistory);
@@ -353,7 +338,7 @@ public class DB {
 		        			if (!lastPhone.equals(phone)) {
 		        				NumberInfo info = getPhoneInfo(reports, phone);
 		        				calls = info.getCalls();
-		        				votes = info.getVotes();
+		        				votes = info.getRawVotes();
 		        				legitimate = info.getRatingLegitimate();
 		        				ping = info.getRatingPing();
 		        				poll = info.getRatingPoll();
@@ -518,6 +503,42 @@ public class DB {
 						populatePersonalizationHashes(session);
 					}
 
+					if (version == 29) {
+						backfillConfidenceEmas(session.getMapper(MigrationStatements.class));
+					}
+
+					if (version == 30) {
+						backfillNumbersLocaleHeat(session.getMapper(MigrationStatements.class));
+					}
+
+					if (version == 31) {
+						backfillVisibilityColumns(session.getMapper(MigrationStatements.class));
+					}
+
+					if (version == 32) {
+						backfillSnapshotLegitEvidence(session.getMapper(MigrationStatements.class));
+					}
+
+					// migration 33 drops legacy tables CALLREPORT / CALLERS via the
+					// script; no Java hook needed.
+
+					// migration 34 drops the obsolete ACTIVE column and its indexes
+					// via the script; no Java hook needed.
+
+					// migration 35 drops the legacy SEARCHES / SPAMREPORTS /
+					// BLOCKLIST / EXCLUDES / OLDREPORTS / RATINGS / RATINGHISTORY
+					// tables (plus the pre-baseline SEARCHCLUSTER /
+					// SEARCHHISTORY and the renamed-away SPAMREPORTS_10 /
+					// SPAMREPORTS_100) via the script; no Java hook needed.
+
+					// migration 36 adds NUMBERS_VOTES_IDX for the status page's
+					// top-spammers list via the script; no Java hook needed.
+
+					// migration 37 clears the SHA1 hash of numbers that are not
+					// spam-visible (SPAM_EVIDENCE <= LEGIT_EVIDENCE), retiring the
+					// stale rainbow-table entries left by the old search/meta insert
+					// paths (#300); no Java hook needed.
+
 					users.updateProperty("db.version", Integer.toString(version));
 					session.commit();
 				}
@@ -532,6 +553,13 @@ public class DB {
 			ScriptRunner sr = new ScriptRunner(connection);
 			sr.setAutoCommit(true);
 			sr.setDelimiter(";");
+			// Abort on the first failed statement instead of logging and
+			// continuing. Otherwise a broken migration leaves columns/tables
+			// unapplied while the surrounding version loop still bumps and
+			// commits db.version — silently corrupting the schema (a chained
+			// ADD COLUMN rejected by H2 2.4 did exactly this). A thrown error
+			// propagates out of the loop before the version is advanced.
+			sr.setStopOnError(true);
 			sr.runScript(new InputStreamReader(in, StandardCharsets.UTF_8));
 			
 			LOG.info("Finished DB script: {}", scriptName);
@@ -873,7 +901,7 @@ public class DB {
 	}
 
 	/**
-	 * Implementation of {@link #processVotes(String, int, long)} when there is already a database session.
+	 * Implementation of {@link #processVotes(PhoneNumer, String, int, long)} when there is already a database session.
 	 * 
 	 * @return Whether an index update should be performed.
 	 */
@@ -887,19 +915,32 @@ public class DB {
 
 	/**
 	 * Updates the votes for a certain number.
+	 *
+	 * <p>Issue #332: also feeds the confidence model. Every vote produces an
+	 * EMA increment on {@code HEAT}, plus on either {@code SPAM_EVIDENCE} or
+	 * {@code LEGIT_EVIDENCE} depending on the sign of {@code votes}. The
+	 * weight scales with {@code |votes|} so a Fritz!Box-blocked call worth
+	 * 2 votes contributes twice as much evidence as a single user rating.</p>
 	 */
 	public boolean processVotes(SpamReports reports, PhoneNumer number, String dialPrefix, int votes, long time) {
 		String phone = NumberAnalyzer.getPhoneId(number);
 		final int oldVotes = nonNull(reports.getVotes(phone));
 		final int newVotes = oldVotes + votes;
-		
-		int rows = reports.addVote(phone, votes, time);
+
+		int absVotes = Math.abs(votes);
+		double heatInc = Ema.increment(absVotes * Signals.DIRECT_VOTE_HEAT_WEIGHT,
+			time, Ema.HEAT_TAU_MILLIS);
+		double evidenceInc = Ema.increment(absVotes * Signals.DIRECT_VOTE_EVIDENCE_WEIGHT,
+			time, Ema.CLASSIFICATION_TAU_MILLIS);
+		double spamEvidenceInc = votes > 0 ? evidenceInc : 0.0;
+		double legitEvidenceInc = votes < 0 ? evidenceInc : 0.0;
+
+		byte[] hash = NumberAnalyzer.getPhoneHash(number);
+		int rows = reports.addVote(phone, votes, time, heatInc, spamEvidenceInc, legitEvidenceInc);
 		if (rows == 0) {
-			byte[] hash = NumberAnalyzer.getPhoneHash(number);
-			
 			// Number was not yet present, must be added.
-			reports.addReport(phone, hash, votes, time);
-			
+			reports.addReport(phone, hash, votes, time, heatInc, spamEvidenceInc, legitEvidenceInc);
+
 			if (votes > 0) {
 				updateAggregation10(reports, phone, 1, votes);
 			}
@@ -907,37 +948,66 @@ public class DB {
 			// Add new votes to aggregation.
 			updateAggregation10(reports, phone, delta(oldVotes, newVotes), votes);
 		}
+
+		// Issue #337: feed the block-level EMAs flat on both /10 and /100, regardless
+		// of whether the cnt/votes-promotion path applied. This catches the case where
+		// a spammer spreads votes thinly across a whole block (each individual number
+		// decays out, but the block as a whole stays hot) and lets the block decay out
+		// of wildcard-blocking once the spammer moves on.
+		addAggregationEmas(reports, phone, heatInc, spamEvidenceInc, legitEvidenceInc);
 		
 		pingRelatedNumbers(reports, phone, time);
 		
 		if (votes > 0) {
-			updateLocalization(reports, phone, dialPrefix, 0, votes, 0, time);
+			updateLocalization(reports, phone, dialPrefix, 0, 0, votes, heatInc, spamEvidenceInc, time);
 		}
 
 		boolean classifyChanged = classify(oldVotes) != classify(newVotes);
-		boolean thresholdCrossed = crossesThreshold(oldVotes, newVotes);
+		// #342: no event-driven version bump. The periodic
+		// BlocklistVersionService sweep is the single source of VERSION
+		// changes — it detects visibility-class flips between snapshots
+		// (including the one this vote may have just triggered) and bumps
+		// VERSION in the next release window.
 
-		if (thresholdCrossed) {
-			reports.markPendingUpdate(phone);
-		}
-
-		// Clear SHA1 hash when votes fall below 1 to protect privacy for legitimate numbers.
-		// This prevents identifying legitimate callers in privacy-aware lookups.
-		if (newVotes < 1) {
-			reports.clearPhoneHash(phone);
-		}
+		// Keep the SHA1 reverse-lookup entry in lock-step with spam visibility (#300):
+		// the hash is present while SPAM_EVIDENCE > LEGIT_EVIDENCE and cleared once the
+		// classification has decayed to legitimate, so only actual spam is identifiable
+		// in privacy-aware lookups.
+		updatePhoneHashVisibility(reports, phone, hash);
 
 		return classifyChanged;
 	}
 
-	public void updateLocalization(SpamReports reports, String phone, String dialPrefix, int searches, int votes, int calls, long time) {
+	/**
+	 * Keeps the SHA1 reverse-lookup hash in lock-step with spam visibility (#300):
+	 * present while {@code SPAM_EVIDENCE > LEGIT_EVIDENCE}, cleared otherwise. Call after
+	 * any event that changed the evidence columns of the {@code NUMBERS} row.
+	 */
+	private static void updatePhoneHashVisibility(SpamReports reports, String phone, byte[] hash) {
+		reports.setPhoneHashIfSpam(phone, hash);
+		reports.clearPhoneHashIfLegit(phone);
+	}
+
+	/**
+	 * Add a per-region (dial-prefix) signal to {@code NUMBERS_LOCALE}.
+	 *
+	 * <p>{@code heatInc} and {@code spamEvidenceInc} must already be the
+	 * projected EMA increments computed via {@link Ema#increment} with the
+	 * correct signal weight for the event type — callers compute them once
+	 * and feed both the global {@code NUMBERS} columns (archive gate /
+	 * confidence model) and this regional row with the same values, so the
+	 * dial-aware blocklist (#340) and the dial-aware visibility filter (#342)
+	 * see the same decay behaviour as the global view.</p>
+	 */
+	public void updateLocalization(SpamReports reports, String phone, String dialPrefix,
+			int searches, int calls, int votes, double heatInc, double spamEvidenceInc, long time) {
 		if (dialPrefix == null) {
 			return;
 		}
 
-		int cnt = reports.updateNumberLocalization(phone, dialPrefix, searches, votes, calls, time);
+		int cnt = reports.updateNumberLocalization(phone, dialPrefix, searches, calls, votes, heatInc, spamEvidenceInc, time);
 		if (cnt == 0) {
-			reports.insertNumberLocalization(phone, dialPrefix, searches, votes, calls, time);
+			reports.insertNumberLocalization(phone, dialPrefix, searches, calls, votes, heatInc, spamEvidenceInc, time);
 		}
 	}
 
@@ -1032,11 +1102,48 @@ public class DB {
 		}
 	}
 
+	/**
+	 * Block-level EMA increments (#337). Adds the same projected-EMA increments
+	 * to the {@code /10} and {@code /100} aggregation rows for the given phone
+	 * — flat, on both levels, regardless of the cnt/votes-promotion path.
+	 *
+	 * <p>This is deliberately NOT folded into {@link #updateAggregation10} /
+	 * {@link #updateAggregation100}: the promotion machinery only runs for
+	 * events that move the cnt/votes counters (and skips, e.g., legitimate
+	 * votes on brand-new numbers), but the EMAs are meant to track <em>every</em>
+	 * event at every level. A separate path keeps the two concerns
+	 * independent — see issue #337.</p>
+	 *
+	 * <p>If the aggregation row does not yet exist, a fresh one is inserted
+	 * with {@code cnt = 0, votes = 0} and the EMAs set to the increment. Such
+	 * a row carries no cnt/votes contribution and therefore does not affect
+	 * the existing wildcard-vote computation built on those columns — it only
+	 * makes the block visible to future EMA reads.</p>
+	 */
+	private void addAggregationEmas(SpamReports reports, String phone,
+			double heatInc, double spamEvidenceInc, double legitEvidenceInc) {
+		String p10 = prefix10(phone);
+		if (reports.addAggregation10Emas(p10, heatInc, spamEvidenceInc, legitEvidenceInc) == 0) {
+			byte[] hash = computePrefixHash(p10);
+			if (hash != null) {
+				reports.insertAggregation10EmasOnly(p10, hash, heatInc, spamEvidenceInc, legitEvidenceInc);
+			}
+		}
+
+		String p100 = prefix100(phone);
+		if (reports.addAggregation100Emas(p100, heatInc, spamEvidenceInc, legitEvidenceInc) == 0) {
+			byte[] hash = computePrefixHash(p100);
+			if (hash != null) {
+				reports.insertAggregation100EmasOnly(p100, hash, heatInc, spamEvidenceInc, legitEvidenceInc);
+			}
+		}
+	}
+
 	/** 
 	 * Adds a rating for a phone number.
 	 *
 	 * @param userName The login name of the user creating the rating, or <code>null</code> if the rating is anonymous.
-	 * @param phone The phone number to rate.
+	 * @param number The phone number to rate.
 	 * @param rating The user rating.
 	 * @param comment A user comment for this number.
 	 * @param now The current time in milliseconds since epoch.
@@ -1211,16 +1318,6 @@ public class DB {
 	}
 
 	/**
-	 * Checks if the vote count crosses the minimum visible votes threshold.
-	 * Returns true if the number should be marked for version update.
-	 */
-	private boolean crossesThreshold(int oldVotes, int newVotes) {
-		boolean wasBelowThreshold = oldVotes < _minVisibleVotes;
-		boolean isNowBelowThreshold = newVotes < _minVisibleVotes;
-		return wasBelowThreshold != isNowBelowThreshold;
-	}
-
-	/**
 	 * The time in milliseconds since epoch when the last update to the spam report table was done.
 	 */
 	public Long getLastSpamReport() {
@@ -1319,8 +1416,30 @@ public class DB {
 	public List<DBNumberInfo> getLatestBlocklistEntries(int minVotes) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			return reports.getLatestBlocklistEntries(minVotes);
+			return reports.getLatestBlocklistEntries(maxRawSpam(minVotes));
 		}
+	}
+
+	/**
+	 * Raw projected-EMA cutoff that matches "displayed votes ≥ minVotes" at
+	 * the given moment (#342). Single source for every read path that
+	 * filters against the visibility threshold (blocklist queries, snapshot
+	 * version sweep, tests) so the cutoff stays consistent.
+	 *
+	 * @param at        the moment at which the threshold should hold.
+	 * @param minVotes  integer visibility floor (typically
+	 *                  {@link #getMinVisibleVotes()}).
+	 */
+	public static double maxRawSpamAt(long at, int minVotes) {
+		// minVotes - 0.5 is the real-valued threshold whose Math.round result
+		// equals minVotes — keeps SQL inclusion in lock-step with the
+		// displayed votes in toBlocklistEntry.
+		return Ema.projectedThreshold(minVotes - 0.5, at, Ema.CLASSIFICATION_TAU_MILLIS);
+	}
+
+	/** {@link #maxRawSpamAt} at the current moment. */
+	public double maxRawSpam(int minVotes) {
+		return maxRawSpamAt(System.currentTimeMillis(), minVotes);
 	}
 
 	/**
@@ -1348,11 +1467,58 @@ public class DB {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			Users users = session.getMapper(Users.class);
 
-			List<BlockListEntry> numbers = reports.getBlocklist()
+			// #342: visibility threshold lives in SQL on s.SPAM_EVIDENCE — no
+			// post-filter step. SQL and the response now agree on a single
+			// definition of "visible", index-backed via NUMBERS_SPAM_EVIDENCE_IDX.
+			List<BlockListEntry> numbers = reports.getBlocklist(maxRawSpam(_minVisibleVotes))
 					.stream()
 					.map(DB::toBlocklistEntry)
 					.filter(Objects::nonNull)
-					.filter(entry -> entry.getVotes() >= _minVisibleVotes)
+					.collect(Collectors.toList());
+
+			String versionStr = users.getProperty("blocklist.version");
+			long version = (versionStr != null) ? Long.parseLong(versionStr) : INITIAL_BLOCKLIST_VERSION;
+
+			return Blocklist.create()
+					.setNumbers(numbers)
+					.setVersion(version);
+		}
+	}
+
+	/**
+	 * Heat-ranked blocklist for space-constrained clients (#336, #340).
+	 *
+	 * <p>Returns at most {@code limit} entries — the currently-loudest spam
+	 * numbers above the minimum-votes threshold. Designed for Fritz!Box
+	 * phonebooks and dongle-local blocklists where storage is capped: a
+	 * once-loud-now-silent number drops out so a currently-active one takes
+	 * its slot.</p>
+	 *
+	 * <p>When {@code dialPrefix} is non-null, the ranking uses the per-region
+	 * Heat from {@code NUMBERS_LOCALE} (#340): a number heating up among US
+	 * victims won't push numbers off a German client's top-N. With a
+	 * {@code null} dial we fall back to the global {@code NUMBERS.HEAT} —
+	 * preserves the old behaviour for clients that don't carry a region.</p>
+	 *
+	 * <p>This view is <em>not</em> compatible with incremental sync
+	 * ({@code ?since=}): the set of included numbers changes whenever Heat
+	 * shifts, and there is no per-entry version stamp for "evicted from the
+	 * top-N". Clients should refetch the whole list on a schedule (e.g.
+	 * daily) — the same fair-use ceiling that already caps full-blocklist
+	 * fetches applies.</p>
+	 */
+	public Blocklist getBlockListByHeatAPI(String dialPrefix, int limit) {
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			Users users = session.getMapper(Users.class);
+
+			double maxRawSpam = maxRawSpam(_minVisibleVotes);
+			List<DBNumberInfo> raw = (dialPrefix != null)
+				? reports.getBlocklistByDialHeat(dialPrefix, maxRawSpam, limit)
+				: reports.getBlocklistByHeat(maxRawSpam, limit);
+			List<BlockListEntry> numbers = raw.stream()
+					.map(DB::toBlocklistEntry)
+					.filter(Objects::nonNull)
 					.collect(Collectors.toList());
 
 			String versionStr = users.getProperty("blocklist.version");
@@ -1411,15 +1577,33 @@ public class DB {
 			// Invalid number in DB, filter out.
 			return null;
 		}
+		// #338: `votes` is the decay-aware net vote equivalent
+		// (decoded SPAM_EVIDENCE minus decoded LEGIT_EVIDENCE, floored at 0),
+		// not the cumulative DB column. Same semantic as /api/check, so
+		// clients filtering `votes >= minVotes AND !archived` see a smooth
+		// decay through their threshold instead of a binary archive flip.
+		// For archived rows the incremental-sync query forces SPAM_EVIDENCE
+		// to zero, so this naturally yields the legacy `votes=0` removal
+		// signal — the contract for /api/blocklist?since=N is preserved.
+		long now = System.currentTimeMillis();
+		double decodedSpam = Ema.decode(n.getSpamEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
+		double decodedLegit = Ema.decode(n.getLegitEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
+		int votes = (int) Math.round(Math.max(0.0, decodedSpam - decodedLegit));
 		return BlockListEntry.create()
 				.setPhone(number.getPlus())
-				.setVotes(n.getPublishedVotes())
+				.setVotes(votes)
 				.setRating(rating(n))
 				.setLastActivity(n.getLastPing());
 	}
 
 	public static Rating rating(NumberInfo n) {
-		if (n.getVotes() <= 0) {
+		// #342: the visibility gate consults the decay-aware net evidence,
+		// matching the votes that PhoneInfo / BlockListEntry expose. A number
+		// whose spam history has decayed below its legit history reads as
+		// legitimate again — same view as /api/check, no separate flip.
+		// Per-category rating counts remain raw cumulative; they only decide
+		// which spam category dominates *once* the gate has fired.
+		if (!hasNetSpamEvidence(n)) {
 			return Rating.A_LEGITIMATE;
 		}
 		
@@ -1463,6 +1647,25 @@ public class DB {
 		}
 	
 		return result;
+	}
+
+	/**
+	 * Decay-aware "is this number still spam?" gate (#342). Returns true when
+	 * the decoded SPAM_EVIDENCE exceeds the decoded LEGIT_EVIDENCE at the
+	 * current moment — same semantic as the {@code votes > 0} surface in
+	 * {@code PhoneInfo} / {@code BlockListEntry}. Falls back to the raw
+	 * counter when called on a plain {@link NumberInfo} that carries no EMA
+	 * data (in practice rare — every read-path producer is a
+	 * {@link DBNumberInfo}).
+	 */
+	private static boolean hasNetSpamEvidence(NumberInfo n) {
+		if (n instanceof DBNumberInfo dbInfo) {
+			long now = System.currentTimeMillis();
+			double decodedSpam = Ema.decode(dbInfo.getSpamEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
+			double decodedLegit = Ema.decode(dbInfo.getLegitEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
+			return decodedSpam - decodedLegit > 0;
+		}
+		return n.getRawVotes() > 0;
 	}
 
 	private DBUserSettings getUserSettings(Users users, String login) {
@@ -1522,29 +1725,21 @@ public class DB {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			return new Status(
-					reports.getStatistics(minVotes),
-					nonNull(reports.getTotalVotes()),
-					nonNull(reports.getArchivedReportCount()));
+					reports.getStatistics(maxRawSpam(minVotes)),
+					nonNull(reports.getTotalVotes()));
 		}
 	}
 
 	/**
-	 * The total number of archived reports.
+	 * Number of currently visible (blocked) numbers — the size of the active
+	 * blocklist. Backed by {@code NUMBERS_SPAM_EVIDENCE_IDX} so it counts only
+	 * the visible set, unlike {@link #getStatus} which full-scans NUMBERS for
+	 * its reported/total aggregates.
 	 */
-	public int getArchivedReportCount() {
+	public int getActiveBlocklistCount(int minVotes) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			return nonNull(reports.getArchivedReportCount());
-		}
-	}
-	
-	/**
-	 * The total number of active reports.
-	 */
-	public int getActiveReportCount() {
-		try (SqlSession session = openSession()) {
-			SpamReports reports = session.getMapper(SpamReports.class);
-			return nonNull(reports.getActiveReportCount());
+			return reports.getActiveBlocklistCount(maxRawSpam(minVotes));
 		}
 	}
 	
@@ -1586,35 +1781,58 @@ public class DB {
 	public PhoneInfo getPhoneInfo(NumberInfo info, AggregationInfo aggregation10, AggregationInfo aggregation100) {
 		PhoneInfo result = NumberAnalyzer.phoneInfoFromId(info.getPhone())
 			.setDateAdded(info.getAdded())
-			.setLastUpdate(info.getUpdated())
-			.setArchived(!info.isActive());
+			.setLastUpdate(info.getUpdated());
 
 		Rating rating = rating(info);
-		int votesWildcard;
-		if (aggregation100.getCnt() >= MIN_AGGREGATE_100) {
-			votesWildcard = aggregation100.getVotes();
-			if (!info.isActive()) {
-				// Direct votes did not count yet.
-				votesWildcard += info.getVotes();
-			}
 
-			if (aggregation10.getCnt() < MIN_AGGREGATE_10) {
-				// The votes of this number did not yet count to the aggregation of the block.
-				votesWildcard += aggregation10.getVotes();
-			}
-		} else if (aggregation10.getCnt() >= MIN_AGGREGATE_10) {
-			votesWildcard = aggregation10.getVotes();
-			if (!info.isActive()) {
-				// Direct votes did not count yet.
-				votesWildcard += info.getVotes();
-			}
-		} else {
-			votesWildcard = info.getVotes();
+		// Issue #338 (semantic shift for existing clients):
+		// `votes` and `votesWildcard` are decay-aware: `round(decoded
+		// SPAM_EVIDENCE - decoded LEGIT_EVIDENCE)`, decayed to the moment
+		// of the API call. A 10-vote spam number from last week still reads
+		// `votes=10`; from four months ago reads `votes=5`; from a year ago
+		// reads `votes=1`; once below `minVotes` the client treats it as
+		// not-on-blocklist — same effect the old `archived` flag had, only
+		// smooth instead of binary.
+		long now = System.currentTimeMillis();
+		double rawHeat = 0.0;
+		double rawSpam = 0.0;
+		double rawLegit = 0.0;
+		if (info instanceof DBNumberInfo dbInfo) {
+			rawHeat = dbInfo.getRawHeat();
+			rawSpam = dbInfo.getSpamEvidence();
+			rawLegit = dbInfo.getLegitEvidence();
 		}
+		double decodedNumberSpam = Ema.decode(rawSpam, now, Ema.CLASSIFICATION_TAU_MILLIS);
+		double decodedNumberLegit = Ema.decode(rawLegit, now, Ema.CLASSIFICATION_TAU_MILLIS);
 
-		result.setVotes(info.getVotes());
+		// votesWildcard reflects the block view: take the larger of /10 and
+		// /100 decoded evidence — concentrated spam dominates via /10,
+		// spread-thin spam via /100. Do not double-count with the number-level
+		// evidence; the aggregation EMAs already contain that contribution
+		// (see #337). Net out the legitimate-evidence as we did historically.
+		double decodedBlockSpam = Math.max(
+			Ema.decode(aggregation10.getSpamEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS),
+			Ema.decode(aggregation100.getSpamEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS));
+		double decodedBlockLegit = Math.max(
+			Ema.decode(aggregation10.getLegitEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS),
+			Ema.decode(aggregation100.getLegitEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS));
+
+		// Net evidence — legitimate votes cancel out spam votes on the displayed
+		// counter. Floor at 0 so a contested number cannot read negative.
+		int votes = (int) Math.round(Math.max(0.0, decodedNumberSpam - decodedNumberLegit));
+		int votesWildcard = (int) Math.round(Math.max(0.0, decodedBlockSpam - decodedBlockLegit));
+
+		result.setVotes(votes);
 		result.setVotesWildcard(votesWildcard);
 		result.setRating(rating);
+
+		// Confidence model surface (#334). spamConfidence is the Wilson lower
+		// bound on the block-level evidence — the same view callers see for
+		// the wildcard decision.
+		result.setHeat(Ema.decodeRate(rawHeat, now, Ema.HEAT_TAU_MILLIS));
+		result.setSpamConfidence(Confidence.spamConfidence(
+			Math.max(decodedNumberSpam, decodedBlockSpam),
+			Math.max(decodedNumberLegit, decodedBlockLegit)));
 
 		return result;
 	}
@@ -1652,41 +1870,19 @@ public class DB {
 	}
 
 	/**
-	 * Computes wildcard votes from aggregation data alone (for numbers not in the DB).
+	 * Decoded block-level {@code SPAM_EVIDENCE} for the given moment (#337).
 	 *
-	 * <p>The aggregation tables have asymmetric semantics:
-	 * <ul>
-	 * <li>{@code AGGREGATION_10}: {@code cnt} = number of distinct numbers reported in this
-	 *     10-block; {@code votes} = sum of their votes.</li>
-	 * <li>{@code AGGREGATION_100}: {@code cnt} = number of <em>10-sub-blocks</em> within this
-	 *     100-block that have crossed {@link #MIN_AGGREGATE_10}; {@code votes} = sum of votes
-	 *     across just those qualified sub-blocks. Promotion happens incrementally in
-	 *     {@link #updateAggregation10(SpamReports, String, int, int)}.</li>
-	 * </ul>
-	 *
-	 * <p>The four branches below are disjoint and exhaustive in {@code (cnt10, cnt100)}:
-	 * <pre>
-	 * cnt10 ≥ 4, cnt100 ≥ 3: my 10-block is promoted, neighborhood qualifies →
-	 *                        votes100 already contains my votes10. Return votes100.
-	 * cnt10 ≥ 4, cnt100 < 3: my 10-block alone qualifies → return votes10.
-	 * cnt10 < 4, cnt100 ≥ 3: my 10-block not promoted → votes100 does NOT contain
-	 *                        my votes10; the two sums are disjoint and we return
-	 *                        votes100 + votes10 (no double-count).
-	 * cnt10 < 4, cnt100 < 3: nothing qualifies → 0.
-	 * </pre>
+	 * <p>The /10 and /100 aggregation EMAs are populated flat — every event
+	 * contributes once to each level — so a /100's evidence is the sum across
+	 * its 10-fold-larger neighbourhood, and a /10's is the sum within just its
+	 * 10-block. For a wildcard-block decision we use whichever is larger:
+	 * concentrated spam reaches the threshold via /10, spread-thin spam via
+	 * /100.</p>
 	 */
-	public int computeWildcardVotes(AggregationInfo aggregation10, AggregationInfo aggregation100) {
-		if (aggregation100.getCnt() >= MIN_AGGREGATE_100) {
-			int votes = aggregation100.getVotes();
-			if (aggregation10.getCnt() < MIN_AGGREGATE_10) {
-				// Disjoint because votes10 has not yet been promoted to AGGREGATION_100.
-				votes += aggregation10.getVotes();
-			}
-			return votes;
-		} else if (aggregation10.getCnt() >= MIN_AGGREGATE_10) {
-			return aggregation10.getVotes();
-		}
-		return 0;
+	public double computeBlockSpamEvidence(AggregationInfo agg10, AggregationInfo agg100, long now) {
+		double e10 = Ema.decode(agg10.getSpamEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
+		double e100 = Ema.decode(agg100.getSpamEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
+		return Math.max(e10, e100);
 	}
 
 	/**
@@ -1712,6 +1908,103 @@ public class DB {
 		}
 		LOG.info("Backfilled SHA1 hashes for {} personalization entries, skipped {}.", updated, skipped);
 		session.commit();
+	}
+
+	/**
+	 * Backfill the confidence-model EMA columns from existing cumulative
+	 * counters during migration to version 29 (epic #300).
+	 *
+	 * <p>Without this step the new API surface ({@code heat},
+	 * {@code spamConfidence}, Heat-based archiving, Heat-ranked blocklist,
+	 * decay-aware wildcard tracking) would start out empty on every
+	 * pre-existing row — the first Heat-based archive sweep would deactivate
+	 * the entire blocklist. The backfill assumes every past event happened
+	 * at {@code max(LASTPING, UPDATED)} for the row, then projects to the
+	 * EMA reference epoch — see {@link SpamReports#backfillNumbersEmas} for
+	 * the rationale.</p>
+	 */
+	private void backfillConfidenceEmas(MigrationStatements migrations) {
+		LOG.info("Confidence model (#300): backfilling EMA columns from existing counters.");
+
+		int numbersUpdated = migrations.backfillNumbersEmas(
+			(double) Ema.T0_MILLIS, Ema.HEAT_TAU_MILLIS, Ema.CLASSIFICATION_TAU_MILLIS,
+			Signals.DIRECT_VOTE_HEAT_WEIGHT,
+			Signals.DIRECT_VOTE_EVIDENCE_WEIGHT,
+			Signals.CALL_HEAT_WEIGHT,
+			Signals.CALL_EVIDENCE_WEIGHT,
+			Signals.SEARCH_HEAT_WEIGHT);
+		LOG.info("Backfilled EMAs on {} NUMBERS rows.", numbersUpdated);
+
+		int agg10Updated = migrations.backfillAggregation10Emas();
+		LOG.info("Backfilled EMAs on {} NUMBERS_AGGREGATION_10 rows.", agg10Updated);
+
+		int agg100Updated = migrations.backfillAggregation100Emas();
+		LOG.info("Backfilled EMAs on {} NUMBERS_AGGREGATION_100 rows.", agg100Updated);
+	}
+
+	/**
+	 * Backfill {@code NUMBERS_LOCALE.HEAT} from the cumulative per-dial counters
+	 * during migration to version 30 (epic #300 / #340).
+	 *
+	 * <p>The dial-aware Heat-ranked blocklist would otherwise see an empty
+	 * column on every pre-existing row and return nothing for any region
+	 * until enough new activity arrived. The forward path (each new event
+	 * writes the EMA increment via {@code updateLocalization}) only catches
+	 * post-migration activity; this step seeds the column from history.</p>
+	 */
+	private void backfillNumbersLocaleHeat(MigrationStatements migrations) {
+		LOG.info("Region-aware Heat (#340): backfilling NUMBERS_LOCALE.HEAT from existing counters.");
+		int updated = migrations.backfillNumbersLocaleHeat(
+			(double) Ema.T0_MILLIS, Ema.HEAT_TAU_MILLIS,
+			Signals.DIRECT_VOTE_HEAT_WEIGHT,
+			Signals.CALL_HEAT_WEIGHT,
+			Signals.SEARCH_HEAT_WEIGHT);
+		LOG.info("Backfilled NUMBERS_LOCALE.HEAT on {} rows.", updated);
+	}
+
+	/**
+	 * Backfill the visibility/snapshot columns introduced in migration 31
+	 * (#342) and drop the obsolete NUMBERS.PUBLISHED_VOTES snapshot column.
+	 * The order matters: the backfill runs first while the source columns
+	 * still exist, then the snapshot column is dropped. NUMBERS_LOCALE.VOTES
+	 * is retained (kept in {@code db-schema.sql}) and updated additively
+	 * alongside the projected SPAM_EVIDENCE going forward.
+	 */
+	private void backfillVisibilityColumns(MigrationStatements migrations) {
+		LOG.info("Decay-aware visibility (#342): backfilling NUMBERS_LOCALE.SPAM_EVIDENCE and NUMBERS.PUBLISHED_SPAM_EVIDENCE.");
+
+		int localeUpdated = migrations.backfillNumbersLocaleSpamEvidence(
+			(double) Ema.T0_MILLIS, Ema.CLASSIFICATION_TAU_MILLIS,
+			Signals.DIRECT_VOTE_EVIDENCE_WEIGHT,
+			Signals.CALL_EVIDENCE_WEIGHT);
+		LOG.info("Backfilled NUMBERS_LOCALE.SPAM_EVIDENCE on {} rows.", localeUpdated);
+
+		int publishedUpdated = migrations.backfillPublishedSpamEvidence();
+		LOG.info("Seeded NUMBERS.PUBLISHED_SPAM_EVIDENCE on {} rows.", publishedUpdated);
+
+		// NUMBERS_LOCALE.VOTES is intentionally retained (epic #300): it is now
+		// updated additively alongside SPAM_EVIDENCE, mirroring NUMBERS.VOTES, so
+		// the raw per-region counter is never dropped. Only the unused
+		// NUMBERS.PUBLISHED_VOTES snapshot column goes.
+		migrations.dropNumbersPublishedVotes();
+		LOG.info("Dropped legacy NUMBERS.PUBLISHED_VOTES counter.");
+	}
+
+	/**
+	 * Backfill {@code NUMBERS.PUBLISHED_LEGIT_EVIDENCE} from the live
+	 * {@code LEGIT_EVIDENCE} (#342 / migration 32) and drop the obsolete
+	 * {@code PENDING_UPDATE} column. The snapshot-driven sweep needs the
+	 * legit half of the published snapshot so it can compute
+	 * {@code published_net = PUBLISHED_SPAM_EVIDENCE - PUBLISHED_LEGIT_EVIDENCE}
+	 * against the projected threshold the same way the live filter does.
+	 */
+	private void backfillSnapshotLegitEvidence(MigrationStatements migrations) {
+		LOG.info("Snapshot-driven versioning (#342): seeding NUMBERS.PUBLISHED_LEGIT_EVIDENCE.");
+		int seeded = migrations.backfillPublishedLegitEvidence();
+		LOG.info("Seeded PUBLISHED_LEGIT_EVIDENCE on {} rows.", seeded);
+
+		migrations.dropNumbersPendingUpdate();
+		LOG.info("Dropped legacy PENDING_UPDATE column.");
 	}
 
 	/**
@@ -1770,21 +2063,80 @@ public class DB {
 	}
 
 	/**
+	 * Records a reported call from any client (Fritz!Box, dongle, mobile app,
+	 * answer-bot). One call, one signal: +1 Heat and +1 evidence on the
+	 * {@code NUMBERS} row, on the {@code /10} and {@code /100} aggregations
+	 * and on the per-region {@code NUMBERS_LOCALE} row. The row is
+	 * materialised if it doesn't exist yet — the caller already decided to
+	 * report this number (either after a user-mediated spam report or
+	 * because the client auto-blocked it on range/specific evidence), so
+	 * there is no separate wildcard-match check on the server side. Per-day
+	 * abuse protection lives at the API gate (see
+	 * {@code Users.tryConsumeCallReportQuota} in {@code ReportCallServlet}).
+	 *
+	 * <p>{@code recordCall} is the single entry point for any call-driven
+	 * signal: same path, same weights, regardless of whether the call came
+	 * from a Fritz!Box, the dongle, the mobile app, or the cloud answer
+	 * bot.</p>
+	 */
+	public void recordCall(SpamReports reports, PhoneNumer number,
+			String phoneId, String dialPrefix, long now) {
+		double heatInc = Ema.increment(Signals.CALL_HEAT_WEIGHT, now, Ema.HEAT_TAU_MILLIS);
+		double evidenceInc = Ema.increment(Signals.CALL_EVIDENCE_WEIGHT, now, Ema.CLASSIFICATION_TAU_MILLIS);
+
+		byte[] hash = NumberAnalyzer.getPhoneHash(number);
+		int updated = reports.recordCall(phoneId, now, heatInc, evidenceInc);
+		if (updated == 0) {
+			// First report of this number — materialise the NUMBERS row with
+			// the same Heat / evidence increments the existing path would
+			// have applied. Initial VOTES counter is zero; rating-category
+			// counters only move via explicit user ratings (addRating).
+			reports.addReport(phoneId, hash, 0, now, heatInc, evidenceInc, 0.0);
+			// addReport doesn't bump CALLS; do it via the same recordCall the
+			// existing branch used (zero EMA delta to avoid double-counting).
+			reports.recordCall(phoneId, now, 0.0, 0.0);
+		}
+
+		// Call evidence pushes the number toward spam: keep the SHA1 reverse-lookup entry
+		// consistent with spam visibility (#300). Needed because a number first seen via a
+		// pure search carries no hash, and recordCall's UPDATE branch would not set it.
+		updatePhoneHashVisibility(reports, phoneId, hash);
+
+		// Block-level signal (#337) and per-region signal (#340) — both
+		// always, regardless of whether the number was new or known.
+		addAggregationEmas(reports, phoneId, heatInc, evidenceInc, 0.0);
+		updateLocalization(reports, phoneId, dialPrefix, 0, 1, 0, heatInc, evidenceInc, now);
+	}
+
+	/**
 	 * Records a search hit for the given phone number.
+	 *
+	 * <p>Issue #332: a search is a weak Heat signal (no classification impact).
+	 * The increment is applied exactly once — either by {@code incSearchCount}
+	 * on the existing row, or by the follow-up {@code incSearchCount} after
+	 * {@code addReport} created a fresh row (which itself stores no Heat to
+	 * avoid double-counting).</p>
 	 */
 	public void addSearchHit(SpamReports reports, PhoneNumer number, String dialPrefix, long now) {
 		String phone = NumberAnalyzer.getPhoneId(number);
-		
-		int rows = reports.incSearchCount(phone, now);
+
+		double heatInc = Ema.increment(Signals.SEARCH_HEAT_WEIGHT, now, Ema.HEAT_TAU_MILLIS);
+		int rows = reports.incSearchCount(phone, now, heatInc);
 		if (rows == 0) {
-			byte[] hash = NumberAnalyzer.getPhoneHash(number);
-			reports.addReport(phone, hash, 0, now);
-			reports.incSearchCount(phone, now);
+			// No SHA1: a search is a pure Heat signal with no classification impact, so the
+			// number must not enter the reverse-lookup table (#300 privacy guard). The hash
+			// is populated by updatePhoneHashVisibility once a real spam signal arrives.
+			// addReport does not set SEARCHES; the second incSearchCount below
+			// applies both the SEARCHES bump and the Heat increment exactly once.
+			reports.addReport(phone, null, 0, now, 0.0, 0.0, 0.0);
+			reports.incSearchCount(phone, now, heatInc);
 		}
-		
+
 		pingRelatedNumbers(reports, phone, now);
-		
-		updateLocalization(reports, phone, dialPrefix, 1, 0, 0, now);
+
+		// A search is a pure Heat signal — no classification impact, so no
+		// SPAM_EVIDENCE contribution to the locale row either.
+		updateLocalization(reports, phone, dialPrefix, 1, 0, 0, heatInc, 0.0, now);
 	}
 	
 	/**
@@ -2053,37 +2405,6 @@ public class DB {
 	}
 
 	/**
-	 * Deactivates report rows whose vote-decay has carried them below the visibility
-	 * threshold. Sets {@code ACTIVE=false} and {@code PENDING_UPDATE=true} so the next
-	 * blocklist release picks the change up. Called from {@code BlocklistVersionService}
-	 * as the first step of the scheduled release, and once at startup to prime the table.
-	 */
-	public void archiveOldReports() {
-		LOG.info("Starting DB cleanup.");
-
-		Calendar cal = GregorianCalendar.getInstance();
-		cal.add(Calendar.DAY_OF_MONTH, -OLD_VOTE_DAYS);
-		cal.set(Calendar.HOUR_OF_DAY, 0);
-		cal.set(Calendar.MINUTE, 0);
-		cal.set(Calendar.MILLISECOND, 0);
-		long before = cal.getTimeInMillis();
-
-		try (SqlSession session = openSession()) {
-			SpamReports reports = session.getMapper(SpamReports.class);
-
-			int archived = reports.archiveReportsWithLowVotes(before, MIN_VOTES, WEEK_PER_VOTE);
-
-			LOG.info("Archived " + archived + " reports.");
-
-			session.commit();
-		} catch (Exception ex) {
-			LOG.error("Failed to cleanup DB.", ex);
-		}
-
-		LOG.info("Finished DB cleanup.");
-	}
-
-	/**
 	 * Checks for inactive users and sends support mail to them.
 	 */
 	public void sendWelcomeMails() {
@@ -2281,58 +2602,6 @@ public class DB {
 		
 		// Drop first, because this entry contains no delta information.
 		return result.subList(1, result.size());
-	}
-
-	/** 
-	 * The call report context for the given user.
-	 */
-	public ReportInfo getCallReportInfo(String login) {
-		try (SqlSession session = openSession()) {
-			Users users = session.getMapper(Users.class);
-
-			long userId = users.getUserId(login);
-			DBReportInfo info = users.getReportInfo(userId);
-			if (info == null) {
-				return ReportInfo.create();
-			}
-			return info;
-		}
-	}
-
-	/** 
-	 * Update the call report for the given user.
-	 */
-	public void storeCallReport(String login, CallReport callReport) {
-		try (SqlSession session = openSession()) {
-			Users users = session.getMapper(Users.class);
-			SpamReports reports = session.getMapper(SpamReports.class);
-			long now = System.currentTimeMillis();
-		
-			long userId = users.getUserId(login);
-			String dialPrefix = users.getDialPrefix(login);
-			int cnt = users.updateReportInfo(userId, callReport.getTimestamp(), callReport.getLastid(), now);
-			if (cnt == 0) {
-				users.createReportInfo(userId, callReport.getTimestamp(), callReport.getLastid(), now);
-			}
-			
-			for (String phoneText : callReport.getCallers()) {
-				PhoneNumer number = NumberAnalyzer.parsePhoneNumber(phoneText, dialPrefix);
-				if (number == null) {
-					continue;
-				}
-				
-				String phoneId = NumberAnalyzer.getPhoneId(number);
-				
-				int ok = users.addCall(userId, phoneId, now);
-				if (ok == 0) {
-					users.insertCaller(userId, phoneId, now);
-				}
-				
-				processVotesAndPublish(reports, number, dialPrefix, 2, now);
-			}
-			
-			session.commit();
-		}
 	}
 
 	public int getUsers() {
@@ -2606,7 +2875,9 @@ public class DB {
 	public List<DailyCount> getBlockedNumbersByCountry() {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			return reports.getBlockedNumbersByCountry(MIN_VOTES);
+			double maxRawSpam = Ema.projectedThreshold(MIN_VOTES,
+				System.currentTimeMillis(), Ema.CLASSIFICATION_TAU_MILLIS);
+			return reports.getBlockedNumbersByCountry(maxRawSpam);
 		}
 	}
 
@@ -2614,13 +2885,6 @@ public class DB {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			return nonNull(reports.getTotalVotes());
-		}
-	}
-
-	public int getRatings() {
-		try (SqlSession session = openSession()) {
-			SpamReports reports = session.getMapper(SpamReports.class);
-			return nonNull(reports.getTotalRatings());
 		}
 	}
 

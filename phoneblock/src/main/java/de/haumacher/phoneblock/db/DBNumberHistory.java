@@ -4,13 +4,12 @@ import de.haumacher.phoneblock.app.api.model.NumberHistory;
 
 public class DBNumberHistory extends NumberHistory {
 
-	public DBNumberHistory(int rmin, int rmax, String phone, boolean active, int calls, int votes, int legitimate, int ping, int poll, int advertising, int gamble, int fraud, int searches) {
+	public DBNumberHistory(int rmin, int rmax, String phone, int calls, int rawVotes, int legitimate, int ping, int poll, int advertising, int gamble, int fraud, int searches) {
 		setRMin(rmin)
 		.setRMax(rmax)
 		.setPhone(phone)
-		.setActive(active)
 		.setCalls(calls)
-		.setVotes(votes)
+		.setRawVotes(rawVotes)
 		.setRatingLegitimate(legitimate)
 		.setRatingPing(ping)
 		.setRatingPoll(poll)

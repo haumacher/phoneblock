@@ -45,7 +45,7 @@ public class DefaultController implements WebController {
 	/**
 	 * Session attribute specifying the user's dial prefix ("+49" for Germany).
 	 *
-	 * @see Country#getDialPrefix()
+	 * @see Country#getDialPrefixes()
 	 */
 	public static final String DIAL_PREFIX_ATTR = "dialPrefix";
 

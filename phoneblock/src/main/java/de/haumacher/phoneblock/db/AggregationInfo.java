@@ -5,19 +5,32 @@ package de.haumacher.phoneblock.db;
  * {@code NUMBERS_AGGREGATION_100}). The same shape is reused for both, but the
  * meaning of {@link #getCnt()} / {@link #getVotes()} is asymmetric — see those
  * accessors for the per-table interpretation, and
- * {@link DB#computeWildcardVotes(AggregationInfo, AggregationInfo)} for how the
+ * {@link DB#computeBlockSpamEvidence(AggregationInfo, AggregationInfo, long)} for how the
  * two are combined.
  */
 public class AggregationInfo {
-	
+
 	private String prefix;
 	private int cnt;
 	private int votes;
-	
+	private double rawHeat;
+	private double spamEvidence;
+	private double legitEvidence;
+
 	public AggregationInfo(String prefix, int cnt, int votes) {
 		this.prefix = prefix;
 		this.cnt = cnt;
 		this.votes = votes;
+	}
+
+	public AggregationInfo(String prefix, int cnt, int votes,
+			double heat, double spamEvidence, double legitEvidence) {
+		this.prefix = prefix;
+		this.cnt = cnt;
+		this.votes = votes;
+		this.rawHeat = heat;
+		this.spamEvidence = spamEvidence;
+		this.legitEvidence = legitEvidence;
 	}
 
 	/**
@@ -63,7 +76,7 @@ public class AggregationInfo {
 	 * <li>{@code NUMBERS_AGGREGATION_100}: sum of votes across only those 10-sub-blocks
 	 *     that have crossed {@link DB#MIN_AGGREGATE_10}. An unqualified sub-block's votes
 	 *     are <em>not</em> contained here — they are added separately by
-	 *     {@link DB#computeWildcardVotes} when it consults both aggregation levels.</li>
+	 *     {@link DB#computeBlockSpamEvidence(AggregationInfo, AggregationInfo, long)} when it consults both aggregation levels.</li>
 	 * </ul>
 	 */
 	public int getVotes() {
@@ -76,5 +89,32 @@ public class AggregationInfo {
 	public void setVotes(int votes) {
 		this.votes = votes;
 	}
-	
+
+	/** Raw projected-EMA {@code HEAT} (block-level activity, #337). Decay with {@link Ema#decode}. */
+	public double getRawHeat() {
+		return rawHeat;
+	}
+
+	public void setRawHeat(double rawHeat) {
+		this.rawHeat = rawHeat;
+	}
+
+	/** Raw projected-EMA {@code SPAM_EVIDENCE} (block-level classification, #337). */
+	public double getSpamEvidence() {
+		return spamEvidence;
+	}
+
+	public void setSpamEvidence(double spamEvidence) {
+		this.spamEvidence = spamEvidence;
+	}
+
+	/** Raw projected-EMA {@code LEGIT_EVIDENCE} (block-level classification, #337). */
+	public double getLegitEvidence() {
+		return legitEvidence;
+	}
+
+	public void setLegitEvidence(double legitEvidence) {
+		this.legitEvidence = legitEvidence;
+	}
+
 }

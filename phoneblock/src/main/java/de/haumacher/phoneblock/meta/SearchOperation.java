@@ -151,7 +151,7 @@ public class SearchOperation {
 		if (lastMetaSearch == null) {
 			// Use MERGE to atomically insert or update, avoiding race conditions
 			// when multiple requests search for the same number simultaneously.
-			db.mergeLastMetaSearch(phoneId, NumberAnalyzer.getPhoneHash(number), now);
+			db.mergeLastMetaSearch(phoneId, now);
 			doSearch = true;
 		} else if (lastMetaSearch.longValue() < now - SearchServlet.ONE_MONTH) {
 			db.setLastMetaSearch(phoneId, now);

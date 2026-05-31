@@ -24,9 +24,13 @@ mvn clean install
 
 **Build a single module:**
 ```bash
-mvn -B -pl phoneblock -DskipTests install >/tmp/pb-build.log 2>&1 && echo OK || { echo FAILED; grep -E '\[ERROR\]' /tmp/pb-build.log; }
+mvn -B -pl phoneblock -DskipTests install >/tmp/pb-build.log 2>&1
+tail -3 /tmp/pb-build.log
+grep -E '\[ERROR\]' /tmp/pb-build.log | head -20
 ```
-Output goes to a log file; only `OK`/`FAILED` (and `[ERROR]` lines on failure) reach the terminal. `-B` (batch mode) disables ANSI colors so `grep` matches plain `[ERROR]` text. `install` (not `compile`) so dependent modules pick up the result. Add `-am` the first time, or after a sibling module changed, to also build/install dependencies.
+Output goes to a log file; the terminal sees only the final `BUILD SUCCESS`/`BUILD FAILURE` line plus any `[ERROR]` lines. `-B` (batch mode) disables ANSI colors so `grep` matches plain `[ERROR]` text. `install` (not `compile`) so dependent modules pick up the result. Add `-am` the first time, or after a sibling module changed, to also build/install dependencies.
+
+**Do not wrap the build in `&& ... || { ... }`.** The Bash allowlist in `.claude/settings.json` matches command prefixes — a brace-wrapped fallback group is treated as a separate command and trips the permission check, even when the mvn invocation itself is allowed. Three sequential commands (run, `tail`, `grep`) carry the same information without the prompt.
 
 **Run web application locally (Jetty):**
 ```bash

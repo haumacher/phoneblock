@@ -14,6 +14,9 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,7 +44,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
+import de.haumacher.phoneblock.app.api.model.BlockListEntry;
+import de.haumacher.phoneblock.app.api.model.Blocklist;
 import de.haumacher.phoneblock.app.api.model.NumberInfo;
+import de.haumacher.phoneblock.app.api.model.PhoneInfo;
 import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.app.api.model.SearchInfo;
@@ -547,8 +553,650 @@ public class TestDB {
 		}
 	}
 
+	/**
+	 * The prev/next navigation on the number page must skip numbers whose
+	 * classification has decayed so far that the displayed vote count rounds to
+	 * 0 — landing on such a faded number would show an empty page (#300).
+	 */
+	@Test
+	void testNavigationSkipsDecayedNumbers() {
+		long now = Ema.T0_MILLIS + 365L * 86_400_000L;
+		// A single vote older than the classification half-life (125 d) decays to a
+		// decoded value below 0.5, i.e. a displayed vote count of 0.
+		long longAgo = now - 200L * 86_400_000L;
+
+		processVotes("030100000", 4, now);      // active — fresh votes
+		processVotes("030200000", 1, longAgo);  // decayed — displays 0 votes
+		processVotes("030300000", 4, now);      // active — fresh votes
+
+		double minRawSpam = DB.maxRawSpamAt(now, 1);
+		try (SqlSession tx = _db.openSession()) {
+			SpamReports reports = tx.getMapper(SpamReports.class);
+
+			// Sanity: without the visibility filter the decayed number is the
+			// immediate neighbour in both directions.
+			assertEquals("030200000", reports.getNextPhone("030150000", 0.0));
+			assertEquals("030200000", reports.getPrevPhone("030250000", 0.0));
+
+			// With the filter the decayed neighbour is skipped.
+			assertEquals("030300000", reports.getNextPhone("030150000", minRawSpam));
+			assertEquals("030100000", reports.getPrevPhone("030250000", minRawSpam));
+		}
+	}
+
+	/**
+	 * The SHA1 reverse-lookup hash must exist exactly for spam-visible numbers (#300
+	 * privacy guard): a pure search must not store it, a spam signal populates it, and a
+	 * number voted/decayed back to legitimate must not keep it.
+	 */
+	@Test
+	void testHashTracksSpamVisibility() {
+		long now = Ema.T0_MILLIS + 10L * 86_400_000L;
+		String phone = "035000000";
+		PhoneNumer number = NumberAnalyzer.analyze(phone, "+49");
+		byte[] expectedHash = NumberAnalyzer.getPhoneHash(number);
+
+		// A pure search adds Heat only — no spam evidence, so no rainbow-table entry.
+		_db.addSearchHit(number, "+49", now);
+		assertNull(rawSha1(phone), "Search must not store the SHA1 hash");
+
+		// A spam vote makes the number spam-visible — the hash is populated.
+		processVotes(phone, 2, now);
+		Assertions.assertArrayEquals(expectedHash, rawSha1(phone), "Spam vote must populate the SHA1 hash");
+
+		// Enough 'legitimate' votes push LEGIT_EVIDENCE above SPAM_EVIDENCE — hash cleared again.
+		processVotes(phone, -5, now);
+		assertNull(rawSha1(phone), "A number voted to legitimate must not keep the SHA1 hash");
+	}
+
+	/**
+	 * Migration 37 must clear the SHA1 hash of numbers that are not spam-visible
+	 * (the rainbow-table garbage left by the old search/meta insert paths), while
+	 * keeping it for genuine spam. Runs the real {@code db-migration-37.sql}.
+	 */
+	@Test
+	void testMigration37ClearsLegitHashes() throws Exception {
+		long now = Ema.T0_MILLIS + 10L * 86_400_000L;
+
+		// Genuine spam: SPAM_EVIDENCE > LEGIT_EVIDENCE → hash must survive.
+		String spam = "036000000";
+		processVotes(spam, 2, now);
+		assertNotNull(rawSha1(spam), "precondition: spam number has a hash");
+
+		// Legitimate, never-voted number with a stale hash (as the old buggy
+		// search/meta path would have left behind): evidence 0/0, hash forced.
+		String legit = "036100000";
+		_db.addSearchHit(NumberAnalyzer.analyze(legit, "+49"), "+49", now);
+		try (Connection conn = _dataSource.getConnection();
+				PreparedStatement stmt = conn.prepareStatement("update NUMBERS set SHA1 = ? where PHONE = ?")) {
+			stmt.setBytes(1, new byte[] {1, 2, 3, 4, 5});
+			stmt.setString(2, legit);
+			assertEquals(1, stmt.executeUpdate());
+		}
+		assertNotNull(rawSha1(legit), "precondition: stale hash is present");
+
+		// Run the actual migration script.
+		try (Connection conn = _dataSource.getConnection();
+				java.io.InputStream in = SpamReports.class.getResourceAsStream("db-migration-37.sql")) {
+			assertNotNull(in, "db-migration-37.sql must be on the classpath");
+			org.apache.ibatis.jdbc.ScriptRunner sr = new org.apache.ibatis.jdbc.ScriptRunner(conn);
+			sr.setAutoCommit(true);
+			sr.setStopOnError(true);
+			sr.setLogWriter(null);
+			sr.runScript(new java.io.InputStreamReader(in, StandardCharsets.UTF_8));
+		}
+
+		assertNull(rawSha1(legit), "Migration must clear the hash of a non-spam number");
+		assertNotNull(rawSha1(spam), "Migration must keep the hash of a spam number");
+	}
+
 	private void processVotes(String phone, int votes, long time) {
 		_db.processVotes(NumberAnalyzer.analyze(phone, "+49"), "+49", votes, time);
+	}
+
+	/** Raw EMA columns straight from NUMBERS — for confidence-model assertions (#332). */
+	private double[] rawEmas(String phone) {
+		try (Connection conn = _dataSource.getConnection();
+				PreparedStatement stmt = conn.prepareStatement(
+					"select HEAT, SPAM_EVIDENCE, LEGIT_EVIDENCE from NUMBERS where PHONE = ?")) {
+			stmt.setString(1, phone);
+			try (ResultSet rs = stmt.executeQuery()) {
+				assertTrue(rs.next(), "No row for " + phone);
+				return new double[] { rs.getDouble(1), rs.getDouble(2), rs.getDouble(3) };
+			}
+		} catch (SQLException ex) {
+			throw new RuntimeException(ex);
+		}
+	}
+
+	/** Raw SHA1 column straight from NUMBERS — {@code null} if the number is absent or its hash was cleared (#300 privacy guard). */
+	private byte[] rawSha1(String phone) {
+		try (Connection conn = _dataSource.getConnection();
+				PreparedStatement stmt = conn.prepareStatement(
+					"select SHA1 from NUMBERS where PHONE = ?")) {
+			stmt.setString(1, phone);
+			try (ResultSet rs = stmt.executeQuery()) {
+				if (!rs.next()) {
+					return null; // row absent
+				}
+				return rs.getBytes(1);
+			}
+		} catch (SQLException ex) {
+			throw new RuntimeException(ex);
+		}
+	}
+
+	/** Raw EMA columns from NUMBERS_AGGREGATION_10 / _100 — for #337 assertions. */
+	private double[] rawAggEmas(String prefix, int blockSize) {
+		String table = blockSize == 10 ? "NUMBERS_AGGREGATION_10" : "NUMBERS_AGGREGATION_100";
+		try (Connection conn = _dataSource.getConnection();
+				PreparedStatement stmt = conn.prepareStatement(
+					"select HEAT, SPAM_EVIDENCE, LEGIT_EVIDENCE from " + table + " where PREFIX = ?")) {
+			stmt.setString(1, prefix);
+			try (ResultSet rs = stmt.executeQuery()) {
+				if (!rs.next()) {
+					return null; // row absent
+				}
+				return new double[] { rs.getDouble(1), rs.getDouble(2), rs.getDouble(3) };
+			}
+		} catch (SQLException ex) {
+			throw new RuntimeException(ex);
+		}
+	}
+
+	@Test
+	void testAggregationEmasPopulatedFlat() {
+		// Issue #337: every vote feeds the EMAs at all three levels (number,
+		// /10, /100) flat — independent of the cnt/votes-promotion path.
+
+		long t = Ema.T0_MILLIS;
+
+		// Positive vote on a brand-new number.
+		processVotes("030555000010", 1, t);
+
+		// Number-level EMAs are populated (covered by #332 — sanity assertion).
+		double[] numberEmas = rawEmas("030555000010");
+		assertTrue(numberEmas[0] > 0, "number HEAT > 0");
+		assertTrue(numberEmas[1] > 0, "number SPAM_EVIDENCE > 0");
+
+		// /10 block (prefix '03055500001'): the row must exist and carry the same
+		// EMA increment (same weight, same time → same projected value).
+		double[] ema10 = rawAggEmas("03055500001", 10);
+		assertNotNull(ema10, "/10 aggregation row must exist after a positive vote");
+		assertEquals(numberEmas[0], ema10[0], 1e-12, "/10 HEAT must equal number HEAT");
+		assertEquals(numberEmas[1], ema10[1], 1e-12, "/10 SPAM_EVIDENCE must equal number SPAM_EVIDENCE");
+		assertEquals(0.0, ema10[2], 0.0);
+
+		// /100 block (prefix '0305550000'): same projection.
+		double[] ema100 = rawAggEmas("0305550000", 100);
+		assertNotNull(ema100, "/100 aggregation row must exist after a positive vote");
+		assertEquals(numberEmas[0], ema100[0], 1e-12, "/100 HEAT must equal number HEAT");
+		assertEquals(numberEmas[1], ema100[1], 1e-12);
+
+		// LEGITIMATE vote on a brand-new number — the existing cnt/votes-promotion
+		// path would not have created an aggregation row at all (votes < 0, rows == 0).
+		// With #337, the EMA path creates rows with cnt=0/votes=0 and carries
+		// LEGIT_EVIDENCE so the block-level decay can later balance it.
+		processVotes("030666000010", -1, t);
+		double[] legitNum = rawEmas("030666000010");
+		assertTrue(legitNum[2] > 0, "LEGIT_EVIDENCE on number");
+
+		double[] legit10 = rawAggEmas("03066600001", 10);
+		assertNotNull(legit10, "/10 row must exist even for a legitimate-only vote (#337)");
+		assertEquals(legitNum[2], legit10[2], 1e-12, "/10 LEGIT_EVIDENCE matches number");
+		assertEquals(0.0, legit10[1], 0.0, "/10 SPAM_EVIDENCE stays 0");
+
+		// Second positive vote in the SAME /10 block — block EMAs grow, cnt-promotion
+		// also moves, but the EMA path is independent and additive.
+		processVotes("030555000011", 1, t + 86_400_000L);
+		double[] ema10After = rawAggEmas("03055500001", 10);
+		assertTrue(ema10After[0] > ema10[0], "/10 HEAT must monotonically grow on a second vote in the block");
+		assertTrue(ema10After[1] > ema10[1], "/10 SPAM_EVIDENCE must monotonically grow");
+	}
+
+	@Test
+	void testConfidenceEmaBackfillAppliesTimeProjection() {
+		// Regression for the integer-division bug in backfillNumbersEmas: H2
+		// inferred the EXP() bind parameters as BIGINT, so (eventTime - t0) / tau
+		// truncated to 0 and the projection collapsed to EXP(0) = 1, leaving the
+		// raw EMA columns equal to the bare vote counts regardless of time.
+		//
+		// Seed all activity 90 days AFTER t0 — far enough that the correct
+		// projection factor differs sharply from 1, so the bug is unmissable.
+		long ninetyDaysMillis = 90L * 86_400_000L;
+		long t = Ema.T0_MILLIS + ninetyDaysMillis;
+
+		processVotes("030555000020", -1, t); // one LEGIT vote
+		processVotes("030555000020", 1, t);  // one SPAM vote on the same number
+
+		int[] counters = rawVoteCounters("030555000020");
+		assertEquals(1, counters[0], "DOWN_VOTES");
+		assertEquals(1, counters[1], "UP_VOTES");
+
+		// Mimic the migration-29 starting state: counters set, EMAs still zero.
+		zeroOutEmas();
+
+		try (SqlSession session = _db.openSession()) {
+			MigrationStatements migrations = session.getMapper(MigrationStatements.class);
+			migrations.backfillNumbersEmas((double) Ema.T0_MILLIS,
+				Ema.HEAT_TAU_MILLIS, Ema.CLASSIFICATION_TAU_MILLIS,
+				Signals.DIRECT_VOTE_HEAT_WEIGHT,
+				Signals.DIRECT_VOTE_EVIDENCE_WEIGHT,
+				Signals.CALL_HEAT_WEIGHT,
+				Signals.CALL_EVIDENCE_WEIGHT,
+				Signals.SEARCH_HEAT_WEIGHT);
+			session.commit();
+		}
+
+		double classFactor = Math.exp((double) ninetyDaysMillis / Ema.CLASSIFICATION_TAU_MILLIS);
+		double heatFactor = Math.exp((double) ninetyDaysMillis / Ema.HEAT_TAU_MILLIS);
+
+		double[] after = rawEmas("030555000020");
+		// SPAM_EVIDENCE = DOWN_VOTES × weight × classFactor; LEGIT likewise from
+		// UP_VOTES; HEAT = (DOWN_VOTES + UP_VOTES) × weight × heatFactor.
+		assertEquals(Signals.DIRECT_VOTE_EVIDENCE_WEIGHT * classFactor, after[1], 1e-6,
+			"raw SPAM_EVIDENCE must carry the time projection, not the bare vote count");
+		assertEquals(Signals.DIRECT_VOTE_EVIDENCE_WEIGHT * classFactor, after[2], 1e-6,
+			"raw LEGIT_EVIDENCE must carry the time projection, not the bare vote count");
+		assertEquals(2 * Signals.DIRECT_VOTE_HEAT_WEIGHT * heatFactor, after[0], 1e-6,
+			"raw HEAT must carry the time projection");
+
+		// Explicit guard against the regression: the projected value is clearly
+		// above the bare count of 1 (classFactor ≈ 1.65), so a collapsed
+		// projection (== 1.0) would fail here.
+		assertTrue(after[2] > 1.5,
+			"LEGIT_EVIDENCE must be the projected ~1.65, not the integer-division 1.0, was " + after[2]);
+	}
+
+	@Test
+	void testConfidenceEmaBackfillFromExistingCounters() {
+		// Simulate the migration-29 starting state: pre-existing rows whose
+		// cumulative counters are filled but whose EMA columns are still zero.
+		// processVotes via the post-#332 path would already write the EMAs, so
+		// we have to zero them out after seeding to mimic the upgrade.
+
+		// Use t = T0_MILLIS so exp((t − t0)/τ) = 1 and the raw EMA value equals
+		// the unprojected weight — keeps the arithmetic trivially auditable.
+		long t = Ema.T0_MILLIS;
+
+		// Three SPAM votes and one LEGIT vote, all on the same number. Net
+		// VOTES = 2, DOWN_VOTES = 3, UP_VOTES = 1.
+		processVotes("030555000010", 1, t);
+		processVotes("030555000010", 1, t);
+		processVotes("030555000010", 1, t);
+		processVotes("030555000010", -1, t);
+		// Sibling so the /10 aggregation row has cnt > 0:
+		processVotes("030555000011", 1, t);
+		processVotes("030555000012", 1, t);
+		processVotes("030555000013", 1, t);
+
+		// Sanity: confirm DOWN_VOTES/UP_VOTES match expectation before zero-out.
+		int[] counters = rawVoteCounters("030555000010");
+		assertEquals(3, counters[0], "DOWN_VOTES");
+		assertEquals(1, counters[1], "UP_VOTES");
+
+		zeroOutEmas();
+
+		// Sanity: EMAs are now zero.
+		double[] before = rawEmas("030555000010");
+		assertEquals(0.0, before[0]);
+		assertEquals(0.0, before[1]);
+		assertEquals(0.0, before[2]);
+		double[] aggBefore = rawAggEmas("03055500001", 10);
+		assertNotNull(aggBefore);
+		assertEquals(0.0, aggBefore[0]);
+		assertEquals(0.0, aggBefore[1]);
+
+		// Run the backfill the same way migration 29 would.
+		try (SqlSession session = _db.openSession()) {
+			MigrationStatements migrations = session.getMapper(MigrationStatements.class);
+
+			int n = migrations.backfillNumbersEmas((double) Ema.T0_MILLIS,
+				Ema.HEAT_TAU_MILLIS, Ema.CLASSIFICATION_TAU_MILLIS,
+				Signals.DIRECT_VOTE_HEAT_WEIGHT,
+				Signals.DIRECT_VOTE_EVIDENCE_WEIGHT,
+				Signals.CALL_HEAT_WEIGHT,
+				Signals.CALL_EVIDENCE_WEIGHT,
+				Signals.SEARCH_HEAT_WEIGHT);
+			assertTrue(n >= 4, "Backfill must touch all four seeded numbers, was " + n);
+
+			int agg10n = migrations.backfillAggregation10Emas();
+			assertTrue(agg10n >= 1, "Backfill must touch the /10 aggregation row, was " + agg10n);
+
+			int agg100n = migrations.backfillAggregation100Emas();
+			assertTrue(agg100n >= 1, "Backfill must touch the /100 aggregation row, was " + agg100n);
+
+			session.commit();
+		}
+
+		// After backfill: number EMAs reflect the pre-existing counters.
+		double[] after = rawEmas("030555000010");
+		assertTrue(after[0] > 0, "HEAT must be > 0 after backfill, was " + after[0]);
+		assertTrue(after[1] > 0, "SPAM_EVIDENCE must be > 0 after backfill, was " + after[1]);
+		assertTrue(after[2] > 0, "LEGIT_EVIDENCE must be > 0 after backfill, was " + after[2]);
+
+		// With t = t0 the projection factor is exactly 1, so raw HEAT equals
+		// the unprojected weight: (DOWN_VOTES + UP_VOTES) × DIRECT_VOTE_HEAT_WEIGHT = 4 × 1.0.
+		assertEquals(4.0, after[0], 1e-9, "raw HEAT must equal lumped weight at t = t0");
+		assertEquals(3.0, after[1], 1e-9, "raw SPAM_EVIDENCE must equal DOWN_VOTES × weight");
+		assertEquals(1.0, after[2], 1e-9, "raw LEGIT_EVIDENCE must equal UP_VOTES × weight");
+
+		// At now (well after t0) the decoded value reflects natural decay — a
+		// number with all its activity at t0 has decayed strongly already.
+		double decodedNow = Ema.decode(after[0], System.currentTimeMillis(), Ema.HEAT_TAU_MILLIS);
+		assertTrue(decodedNow > 0 && decodedNow < 4.0,
+			"Decoded HEAT at now must be > 0 and below the raw value (decay applied), was " + decodedNow);
+
+		// Aggregation rows: must be the sum of the per-number EMAs in the block.
+		double[] agg10After = rawAggEmas("03055500001", 10);
+		assertNotNull(agg10After);
+		assertTrue(agg10After[0] > 0, "/10 HEAT must be > 0 after backfill, was " + agg10After[0]);
+		// /10 block carries 030555000010..030555000013 — 4 numbers — so its
+		// EMA should be at least as large as the single-number value.
+		assertTrue(agg10After[0] >= after[0],
+			"/10 HEAT must be >= number's HEAT (sum over block), was " + agg10After[0] + " vs " + after[0]);
+
+		// /100 block (prefix '0305550000') sums the same four /10 numbers.
+		double[] agg100After = rawAggEmas("0305550000", 100);
+		assertNotNull(agg100After);
+		assertTrue(agg100After[0] >= after[0]);
+	}
+
+	/** Raw DOWN_VOTES, UP_VOTES, CALLS, SEARCHES from NUMBERS — for backfill assertions. */
+	private int[] rawVoteCounters(String phone) {
+		try (Connection conn = _dataSource.getConnection();
+				PreparedStatement stmt = conn.prepareStatement(
+					"select DOWN_VOTES, UP_VOTES, CALLS, SEARCHES from NUMBERS where PHONE = ?")) {
+			stmt.setString(1, phone);
+			try (ResultSet rs = stmt.executeQuery()) {
+				assertTrue(rs.next(), "No row for " + phone);
+				return new int[] { rs.getInt(1), rs.getInt(2), rs.getInt(3), rs.getInt(4) };
+			}
+		} catch (SQLException ex) {
+			throw new RuntimeException(ex);
+		}
+	}
+
+	/** Zero out every EMA column in NUMBERS and the aggregation tables. */
+	private void zeroOutEmas() {
+		try (Connection conn = _dataSource.getConnection();
+				Statement stmt = conn.createStatement()) {
+			stmt.execute("update NUMBERS set HEAT = 0, SPAM_EVIDENCE = 0, LEGIT_EVIDENCE = 0");
+			stmt.execute("update NUMBERS_AGGREGATION_10 set HEAT = 0, SPAM_EVIDENCE = 0, LEGIT_EVIDENCE = 0");
+			stmt.execute("update NUMBERS_AGGREGATION_100 set HEAT = 0, SPAM_EVIDENCE = 0, LEGIT_EVIDENCE = 0");
+		} catch (SQLException ex) {
+			throw new RuntimeException(ex);
+		}
+	}
+
+	@Test
+	void testHeatRankedBlocklist() {
+		// Issue #336: ?limit=N returns the top-N currently-loudest spam numbers,
+		// ordered by Heat — quiet old numbers drop out so currently-active ones
+		// take their slot.
+		//
+		// All test numbers carry enough votes to clear DEFAULT_MIN_VISIBLE_VOTES.
+
+		long now = System.currentTimeMillis();
+		long oldT = now - 180L * 86_400_000L;  // half a year ago — ≈ 13 Heat half-lives
+
+		int freshVotes = DB.DEFAULT_MIN_VISIBLE_VOTES + 2;
+		// #342: old numbers must carry enough cumulative votes that their
+		// decoded SPAM_EVIDENCE 180 d later still clears the visibility floor.
+		// 180 d is ~1.44 classification half-lives ⇒ decay factor ≈ 0.37;
+		// freshVotes × 3 keeps them comfortably above the cut so we can still
+		// test the Heat-ranking behaviour (fresh wins) without the visibility
+		// filter masking the test.
+		int oldVotes = freshVotes * 3;
+
+		// Three loud "old" numbers — votes long ago. Heat has decayed strongly
+		// but SPAM_EVIDENCE is still above the visibility threshold.
+		for (int i = 0; i < oldVotes; i++) {
+			processVotes("030992200010", 1, oldT - i * 60_000L);
+			processVotes("030992200020", 1, oldT - i * 60_000L);
+			processVotes("030992200030", 1, oldT - i * 60_000L);
+		}
+
+		// Two "fresh" numbers — fewer votes, but they happened just now.
+		for (int i = 0; i < freshVotes; i++) {
+			processVotes("030992200040", 1, now - i * 60_000L);
+			processVotes("030992200041", 1, now - i * 60_000L);
+		}
+
+		Blocklist top2 = _db.getBlockListByHeatAPI(null, 2);
+		assertNotNull(top2);
+		assertEquals(2, top2.getNumbers().size(), "limit must clip to exactly 2");
+
+		Set<String> topPhones = top2.getNumbers().stream()
+			.map(BlockListEntry::getPhone)
+			.collect(Collectors.toSet());
+
+		// Both fresh numbers must beat the long-dormant ones on Heat ranking.
+		assertTrue(topPhones.contains("+4930992200040"), "fresh number 1 must be in top-2");
+		assertTrue(topPhones.contains("+4930992200041"), "fresh number 2 must be in top-2");
+
+		// Asking for more entries pulls the old ones in too.
+		Blocklist all = _db.getBlockListByHeatAPI(null, 100);
+		assertTrue(all.getNumbers().size() >= 5,
+			"larger limit must include the old numbers as well, was " + all.getNumbers().size());
+	}
+
+	@Test
+	void testHeatRankedBlocklistPartitionsByDial() {
+		// Issue #340: the space-limited blocklist must be composed from the
+		// region the reports originate from. A number reported only by US
+		// users must not push numbers off a German client's top-N (and vice
+		// versa). The dial argument selects the per-region Heat from
+		// NUMBERS_LOCALE; null falls back to the global ranking.
+
+		long now = System.currentTimeMillis();
+		int votes = DB.DEFAULT_MIN_VISIBLE_VOTES + 2;
+
+		// German users vote down a German number.
+		PhoneNumer dePhone = NumberAnalyzer.analyze("030330000001", "+49");
+		for (int i = 0; i < votes; i++) {
+			_db.processVotes(dePhone, "+49", 1, now - i * 60_000L);
+		}
+
+		// US users vote down a different German number — same number-space, but
+		// the reports come from a different region. Picking a German number
+		// keeps the test independent of the international-number id format and
+		// proves the partitioning is by *reporter* dial, not by phone-country.
+		PhoneNumer otherPhone = NumberAnalyzer.analyze("030330000002", "+49");
+		for (int i = 0; i < votes; i++) {
+			_db.processVotes(otherPhone, "+1", 1, now - i * 60_000L);
+		}
+
+		Blocklist de = _db.getBlockListByHeatAPI("+49", 10);
+		Set<String> dePhones = de.getNumbers().stream()
+			.map(BlockListEntry::getPhone).collect(Collectors.toSet());
+		assertTrue(dePhones.contains("+4930330000001"),
+			"German top-N must contain the German-reported number");
+		assertFalse(dePhones.contains("+4930330000002"),
+			"German top-N must not contain the US-reported number");
+
+		Blocklist us = _db.getBlockListByHeatAPI("+1", 10);
+		Set<String> usPhones = us.getNumbers().stream()
+			.map(BlockListEntry::getPhone).collect(Collectors.toSet());
+		assertTrue(usPhones.contains("+4930330000002"),
+			"US top-N must contain the US-reported number");
+		assertFalse(usPhones.contains("+4930330000001"),
+			"US top-N must not contain the German-reported number");
+
+		// The global view (dial=null) carries both — same as before #340.
+		Blocklist global = _db.getBlockListByHeatAPI(null, 10);
+		Set<String> globalPhones = global.getNumbers().stream()
+			.map(BlockListEntry::getPhone).collect(Collectors.toSet());
+		assertTrue(globalPhones.contains("+4930330000001"));
+		assertTrue(globalPhones.contains("+4930330000002"));
+	}
+
+	@Test
+	void testApiVotesAreDecayAware() {
+		// Issue #338: PhoneInfo.votes is no longer the raw cumulative counter
+		// but `round(decoded SPAM_EVIDENCE - decoded LEGIT_EVIDENCE)`. Clients
+		// that filter `votes >= minVotes AND !archived` therefore see a
+		// smooth decay through the threshold instead of a binary archive
+		// flip. The raw NUMBERS.VOTES column is unchanged and still drives
+		// the rating; only the API-output `votes` is decay-aware now.
+
+		long fresh = System.currentTimeMillis() - 60_000L;
+		// Two years before t0 — easily six classification half-lives by "now",
+		// so a 10-vote burst decays to ≈ 10 · 2^-6 = 0.16, well below rounding.
+		long ancient = Ema.T0_MILLIS - 2L * 365L * 86_400_000L;
+
+		// Number A: ten fresh SPAM votes — decoded SPAM_EVIDENCE ≈ 10.
+		for (int i = 0; i < 10; i++) {
+			processVotes("030993300010", 1, fresh - i * 1000L);
+		}
+		// Number B: ten ancient SPAM votes — decoded is decayed almost to zero.
+		for (int i = 0; i < 10; i++) {
+			processVotes("030993300020", 1, ancient - i * 1000L);
+		}
+
+		// Cumulative counter assertions remain valid via the DB-level helper.
+		assertEquals(10, _db.getVotesFor("030993300010"));
+		assertEquals(10, _db.getVotesFor("030993300020"));
+
+		PhoneInfo freshApi = _db.getPhoneApiInfo("030993300010");
+		PhoneInfo ancientApi = _db.getPhoneApiInfo("030993300020");
+
+		// API-side votes: fresh number reads ~10, ancient reads near 0.
+		assertTrue(freshApi.getVotes() >= 9 && freshApi.getVotes() <= 11,
+			"Fresh 10-vote number must read votes ≈ 10 (was " + freshApi.getVotes() + ")");
+		assertEquals(0, ancientApi.getVotes(),
+			"Heavily decayed number must read votes = 0 (was " + ancientApi.getVotes() + ")");
+
+		// Number C: ten SPAM votes plus three LEGIT — net spam evidence ≈ 7.
+		for (int i = 0; i < 10; i++) {
+			processVotes("030993300030", 1, fresh - i * 1000L);
+		}
+		for (int i = 0; i < 3; i++) {
+			processVotes("030993300030", -1, fresh - i * 500L);
+		}
+		PhoneInfo netApi = _db.getPhoneApiInfo("030993300030");
+		assertTrue(netApi.getVotes() >= 6 && netApi.getVotes() <= 8,
+			"Mixed SPAM/LEGIT must net out (~10 − 3), was " + netApi.getVotes());
+	}
+
+	@Test
+	void testPhoneApiInfoExposesHeatAndSpamConfidence() {
+		// Issue #334: the /api/check response (PhoneInfo) carries the
+		// decoded heat and a Wilson-bound spamConfidence.
+
+		long now = System.currentTimeMillis();
+		// Make the number look like steady spam activity in the recent past.
+		for (int i = 0; i < 10; i++) {
+			processVotes("030888000010", 1, now - i * 60_000L);
+		}
+
+		PhoneInfo info = _db.getPhoneApiInfo("030888000010");
+		assertTrue(info.getHeat() > 0, "decoded heat must be > 0 after recent activity");
+		assertTrue(info.getSpamConfidence() > 50,
+			"10 SPAM votes with no LEGIT must read high confidence, was " + info.getSpamConfidence());
+
+		// Adding plenty of legit evidence drives confidence down.
+		for (int i = 0; i < 10; i++) {
+			processVotes("030888000011", 1, now - i * 60_000L);
+		}
+		for (int i = 0; i < 10; i++) {
+			processVotes("030888000011", -1, now - i * 60_000L);
+		}
+		PhoneInfo disputed = _db.getPhoneApiInfo("030888000011");
+		assertTrue(disputed.getSpamConfidence() < info.getSpamConfidence(),
+			"Disputed number must read lower confidence than pure spam");
+	}
+
+	@Test
+	void testRecordCallUnifiedPath() {
+		// #342 consolidation: every reported call — Fritz!Box, dongle, app,
+		// answer-bot, all the same path — adds +1 Heat and +1 evidence to
+		// NUMBERS (materialising the row if it doesn't exist yet), to the
+		// /10 and /100 aggregations, and to the per-region NUMBERS_LOCALE
+		// row. No wildcard-match gate, no firstFromUser dedup — one call,
+		// one signal.
+
+		long t = Ema.T0_MILLIS;
+
+		// First report for an unknown number — materialises the row.
+		PhoneNumer fresh = NumberAnalyzer.analyze("030555111222", "+49");
+		String freshId = NumberAnalyzer.getPhoneId(fresh);
+		try (SqlSession tx = _db.openSession()) {
+			SpamReports reports = tx.getMapper(SpamReports.class);
+			assertNull(reports.getVotes(freshId), "Number must not exist before the report");
+			_db.recordCall(reports, fresh, freshId, "+49", t);
+			tx.commit();
+		}
+
+		double[] after = rawEmas(freshId);
+		assertTrue(after[0] > 0, "HEAT must be set on the freshly materialised row");
+		assertTrue(after[1] > 0, "SPAM_EVIDENCE must be set on the freshly materialised row");
+		assertEquals(0.0, after[2], 0.0, "LEGIT_EVIDENCE must stay 0 (calls are not legit votes)");
+		assertEquals(0, _db.getVotesFor(freshId), "Direct VOTES counter stays 0 — calls are not direct votes");
+
+		double[] block10After = rawAggEmas("03055511122", 10);
+		assertNotNull(block10After, "/10 aggregation row must exist after the report");
+		assertTrue(block10After[0] > 0, "block HEAT must rise on the report");
+		assertTrue(block10After[1] > 0, "block SPAM_EVIDENCE must rise on the report");
+
+		// Second report on the same number — accumulates, no firstFromUser cap.
+		long later = t + 60_000L;
+		try (SqlSession tx = _db.openSession()) {
+			SpamReports reports = tx.getMapper(SpamReports.class);
+			_db.recordCall(reports, fresh, freshId, "+49", later);
+			tx.commit();
+		}
+		double[] doubled = rawEmas(freshId);
+		assertTrue(doubled[0] > after[0], "HEAT must grow on the second report");
+		assertTrue(doubled[1] > after[1], "SPAM_EVIDENCE must also grow — no per-user cap");
+
+		// Report into a cold range — same path, same effect: row materialises,
+		// gets heat and evidence. No "range-must-be-hot" gate any more.
+		PhoneNumer cold = NumberAnalyzer.analyze("020999888777", "+49");
+		String coldId = NumberAnalyzer.getPhoneId(cold);
+		try (SqlSession tx = _db.openSession()) {
+			SpamReports reports = tx.getMapper(SpamReports.class);
+			_db.recordCall(reports, cold, coldId, "+49", t);
+			tx.commit();
+		}
+		double[] coldRow = rawEmas(coldId);
+		assertTrue(coldRow[0] > 0, "cold-range report still materialises the row with HEAT");
+		assertTrue(coldRow[1] > 0, "cold-range report still gives the new row SPAM_EVIDENCE");
+	}
+
+	@Test
+	void testConfidenceModelEmaPopulation() {
+		// A positive vote populates HEAT and SPAM_EVIDENCE; LEGIT_EVIDENCE stays at 0.
+		// Use a time near t0 to keep the projected values within close range of the weight.
+		long t = Ema.T0_MILLIS;
+		processVotes("030111111", 1, t);
+
+		double[] after1 = rawEmas("030111111");
+		assertTrue(after1[0] > 0, "HEAT must be > 0 after a SPAM vote");
+		assertTrue(after1[1] > 0, "SPAM_EVIDENCE must be > 0 after a SPAM vote");
+		assertEquals(0.0, after1[2], 0.0, "LEGIT_EVIDENCE must stay 0 after a SPAM vote");
+
+		// A negative vote populates LEGIT_EVIDENCE on a different number.
+		processVotes("030222222", -1, t);
+		double[] legit = rawEmas("030222222");
+		assertTrue(legit[0] > 0, "HEAT must be > 0 after a LEGITIMATE vote too");
+		assertEquals(0.0, legit[1], 0.0, "SPAM_EVIDENCE must stay 0 after a LEGITIMATE vote");
+		assertTrue(legit[2] > 0, "LEGIT_EVIDENCE must be > 0 after a LEGITIMATE vote");
+
+		// A second positive vote on the first number must monotonically grow HEAT and SPAM_EVIDENCE.
+		processVotes("030111111", 1, t + 86_400_000L);
+		double[] after2 = rawEmas("030111111");
+		assertTrue(after2[0] > after1[0], "HEAT must monotonically grow on a second positive vote");
+		assertTrue(after2[1] > after1[1], "SPAM_EVIDENCE must monotonically grow on a second positive vote");
+
+		// Weight scales with |votes|: a 2-vote increment must be ≈ 2× a single-vote increment
+		// at the same moment in time.
+		processVotes("030333333", 2, t);
+		double[] doubled = rawEmas("030333333");
+		processVotes("030444444", 1, t);
+		double[] single = rawEmas("030444444");
+		assertEquals(2.0 * single[0], doubled[0], 1e-9);
+		assertEquals(2.0 * single[1], doubled[1], 1e-9);
 	}
 
 	protected void checkPhone(String phone, int votes, int cnt10, int votes10, int cnt100, int votes100) {
@@ -556,7 +1204,7 @@ public class TestDB {
 			SpamReports reports = tx.getMapper(SpamReports.class);
 			
 			NumberInfo info = _db.getPhoneInfo(reports, phone);
-			assertEquals(votes, info.getVotes());
+			assertEquals(votes, info.getRawVotes());
 			
 			AggregationInfo aggregation10 = _db.getAggregation10(reports, phone);
 			assertEquals(cnt10, aggregation10.getCnt());
@@ -711,12 +1359,11 @@ public class TestDB {
 	/**
 	 * Test that mergeLastMetaSearch correctly inserts new rows and updates existing ones.
 	 *
-	 * @see SpamReports#mergeLastMetaSearch(String, byte[], long)
+	 * @see SpamReports#mergeLastMetaSearch(String, long)
 	 */
 	@Test
 	public void testMergeLastMetaSearch() {
 		String phone = "012345678";
-		byte[] hash = new byte[] {1, 2, 3, 4, 5};
 
 		try (SqlSession session = _db.openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
@@ -726,13 +1373,17 @@ public class TestDB {
 
 			// First merge should insert
 			long insertTime = 1000;
-			reports.mergeLastMetaSearch(phone, hash, insertTime);
+			reports.mergeLastMetaSearch(phone, insertTime);
 			session.commit();
 
 			// Verify the record was created with correct LASTMETA
 			Long lastMeta1 = reports.getLastMetaSearch(phone);
 			assertNotNull(lastMeta1);
 			assertEquals(insertTime, lastMeta1.longValue());
+
+			// Privacy guard (#300): a meta-search placeholder carries no spam evidence,
+			// so it must not enter the SHA1 reverse-lookup table.
+			assertNull(rawSha1(phone));
 
 			// Verify ADDED was set
 			DBNumberInfo info1 = reports.getPhoneInfo(phone);
@@ -741,7 +1392,7 @@ public class TestDB {
 
 			// Second merge should update LASTMETA (and ADDED due to H2 MERGE KEY semantics)
 			long updateTime = 2000;
-			reports.mergeLastMetaSearch(phone, hash, updateTime);
+			reports.mergeLastMetaSearch(phone, updateTime);
 			session.commit();
 
 			// Verify LASTMETA was updated
@@ -765,7 +1416,6 @@ public class TestDB {
 	@Test
 	public void testMergeLastMetaSearchConcurrent() throws Exception {
 		String phone = "098765432";
-		byte[] hash = new byte[] {9, 8, 7, 6, 5};
 		int threadCount = 10;
 
 		ExecutorService executor = Executors.newFixedThreadPool(threadCount);
@@ -783,7 +1433,7 @@ public class TestDB {
 
 					try (SqlSession session = _db.openSession()) {
 						SpamReports reports = session.getMapper(SpamReports.class);
-						reports.mergeLastMetaSearch(phone, hash, time);
+						reports.mergeLastMetaSearch(phone, time);
 						session.commit();
 					}
 					return null;

@@ -39,17 +39,13 @@
 					<input form="bulkDelete" th:name="|bl-${entry.phone}|" type="checkbox"/>
 					<strong th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></strong>
 					<span class="tag" th:classappend="${entry.rating.cssClass}" th:if="${entry.rating != null and entry.rating.name != 'B_MISSED' and entry.rating.name != 'A_LEGITIMATE'}" th:text="${#messages.msg(entry.rating.labelKey)}"></span>
-					<span class="tag is-light" data-tx="t0031:2fa4fef4" th:if="${not entry.archived and entry.votes &gt; 0}" title="تصويت المجتمع المباشر">
+					<span class="tag is-light" data-tx="t0031:2fa4fef4" th:if="${entry.votes &gt; 0}" title="تصويت المجتمع المباشر">
 						<span class="icon"><i class="fa-solid fa-thumbs-down"></i></span>
 						<span th:text="${entry.votes}"></span>
 					</span>
-					<span class="tag is-light is-warning" data-tx="t0032:61c4c8e6" th:if="${not entry.archived and entry.votesWildcard &gt; entry.votes}" title="الأصوات بما في ذلك كتلة أحرف البدل">
+					<span class="tag is-light is-warning" data-tx="t0032:61c4c8e6" th:if="${entry.votesWildcard &gt; entry.votes}" title="الأصوات بما في ذلك كتلة أحرف البدل">
 						<span class="icon"><i class="fa-solid fa-asterisk"></i></span>
 						<span th:text="${entry.votesWildcard}"></span>
-					</span>
-					<span class="tag is-light has-text-grey" data-tx="t0033:e27cd337" th:if="${entry.archived}" title="تم أرشفة مشاركة المجتمع (لا توجد تصويتات حالية)">
-						<span class="icon"><i class="fa-solid fa-box-archive"></i></span>
-						<span data-tx="t0034:5ebeeffa">مؤرشف</span>
 					</span>
 				</label>
 				<button class="button is-small is-ghost edit-toggle" data-tx="t0030:cd459696" title="تعديل التعليق" type="button">

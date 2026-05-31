@@ -174,7 +174,11 @@ public class SpamCheckServlet extends HttpServlet {
 				? db.notNull("", reports.getAggregation100ByHash(prefix100Hash))
 				: new AggregationInfo("", 0, 0);
 
-			int votesWildcard = db.computeWildcardVotes(a10, a100);
+			// #342: align with /api/check semantics — votesWildcard is the
+			// decoded block-level SPAM_EVIDENCE rounded to an int, same axis
+			// the live blocklist filter and the wildcard-promotion path use.
+			double decodedBlock = db.computeBlockSpamEvidence(a10, a100, System.currentTimeMillis());
+			int votesWildcard = (int) Math.round(Math.max(0.0, decodedBlock));
 			if (votesWildcard > 0) {
 				return PhoneInfo.create()
 					.setPhone("unknown")

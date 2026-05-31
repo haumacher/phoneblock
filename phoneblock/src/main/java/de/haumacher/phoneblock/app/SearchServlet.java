@@ -350,7 +350,7 @@ public class SearchServlet extends HttpServlet {
 				.setRating(Rating.A_LEGITIMATE);
 			
 			numberInfo.setCalls(0);
-			numberInfo.setVotes(0);
+			numberInfo.setRawVotes(0);
 			numberInfo.setRatingPing(0);
 			numberInfo.setRatingPoll(0);
 			numberInfo.setRatingAdvertising(0);
@@ -396,8 +396,11 @@ public class SearchServlet extends HttpServlet {
 		searches = db.getSearchHistory(reports, phoneId, 7);
 		aiSummary = reports.getSummary(phoneId);
 
-		prev = reports.getPrevPhone(phoneId);
-		next = reports.getNextPhone(phoneId);
+		// Navigate only between numbers that still display at least one vote;
+		// decayed numbers whose evidence has faded to a rounded 0 are skipped (#300).
+		double minRawSpam = db.maxRawSpam(1);
+		prev = reports.getPrevPhone(phoneId, minRawSpam);
+		next = reports.getNextPhone(phoneId, minRawSpam);
 
 		if (commit) {
 			session.commit();
@@ -517,24 +520,13 @@ public class SearchServlet extends HttpServlet {
 		req.setAttribute("ratingCssClass", Ratings.getCssClass(searchResult.getTopRating()));
 		req.setAttribute("ratingLabelKey", Ratings.getLabelKey(searchResult.getTopRating()));
 		
-  		String state = info.isWhiteListed() ? 
-  			"whitelisted" : 
-  			(
-  				info.getVotes() <= 0 ? 
-  				(
-  					info.getVotesWildcard() <= 0 ? 
-  						"legitimate" : 
-  						"wildcard"
-  				) : (
-  					info.getVotes() < minVotes ? 
-  						"suspicious" : 
-  						(
-  							info.isArchived() ? 
-  								"archived" : 
-  								"blocked"
-  						)
-  				)
-  			);
+  		String state = info.isWhiteListed()
+  			? "whitelisted"
+  			: info.getVotes() <= 0
+  				? (info.getVotesWildcard() <= 0 ? "legitimate" : "wildcard")
+  				: info.getVotes() < minVotes
+  					? "suspicious"
+  					: "blocked";
 		
 		req.setAttribute("state", state);
 
@@ -554,10 +546,6 @@ public class SearchServlet extends HttpServlet {
 			case "wildcard":
 				descKey = "page.phone-info.description.wildcard";
 				descParams = new Object[] { displayNumber, Integer.valueOf(info.getVotesWildcard()) };
-				break;
-			case "archived":
-				descKey = "page.phone-info.description.archived";
-				descParams = new Object[] { displayNumber };
 				break;
 			case "whitelisted":
 				descKey = "page.phone-info.description.whitelisted";

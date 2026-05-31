@@ -137,9 +137,6 @@ public class MetaSearchService implements ServletContextListener {
 
 	/**
 	 * Look up user comments for the given phone number.
-	 * 
-	 * @param bot
-	 *        Whether a bot requested the info.
 	 */
 	public List<UserComment> fetchComments(PhoneNumer phoneId, String dialPrefix) {
 		return createSearch(phoneId, dialPrefix).search().getComments();

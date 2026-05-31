@@ -115,7 +115,10 @@ class TestSearchPrivacy {
 	 */
 	@Test
 	void testSpamNumberAlwaysShowsDetails() {
-		long time = 1000;
+		// Use a recent timestamp so the decoded votes (#338, decay-aware) stay
+		// well above the suppress-details floor. Epoch-zero timestamps decay to
+		// ~0 votes and trip the "wenig Daten → Details unterdrücken" branch.
+		long time = System.currentTimeMillis() - 60_000L;
 
 		// Add spam ratings to make votes positive.
 		_db.createUser("spam-reporter-1", "Reporter 1", "de", DIAL_PREFIX);

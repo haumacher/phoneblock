@@ -148,9 +148,6 @@ message PhoneInfo {
 	/** Whether this number is on the requesting user's personal block list. */
 	boolean blackListed;
 
-	/** Whether this number no longer is on the blocklist, because no votes have been received for a long time. */
-	boolean archived;
-
 	/** Date when this number was added to the SPAM database (in milliseconds since epoch). */
 	long dateAdded;
 
@@ -174,6 +171,24 @@ message PhoneInfo {
 	 */
 	@Nullable
 	string userComment;
+
+	/**
+	 * Recent-activity rate in reports per day, derived from the confidence model (issue #300).
+	 *
+	 * <p>
+	 * The current reports-per-day rate, derived from the decayed <code>HEAT</code> EMA at request time — how loud this number is <em>right now</em>, with a half-life of about two weeks. At a steady rate of <i>r</i> reports per day it converges to ≈ <i>r</i>, so the value reads directly as that rate without needing to know the decay constant. Drives ranking on space-limited lists (Fritz!Box phonebook, dongle) and Heat-based archiving — it is <em>not</em> the spam-or-not signal; that is {@link #spamConfidence}.
+	 * </p>
+	 */
+	double heat;
+
+	/**
+	 * Confidence (0–100) that this number is spam, derived from the confidence model (issue #300).
+	 *
+	 * <p>
+	 * Computed as a Wilson lower bound on <code>SPAM_EVIDENCE / (SPAM_EVIDENCE + LEGIT_EVIDENCE)</code>, decayed to the request time on a ~4-month half-life. The evidence mass <code>SPAM + LEGIT</code> is the denominator, so a number with two spam reports and nothing else reads low confidence ("maybe accidental"), and a hotly-contested number with 1000 reports each side also reads low ("disputed"). High values require both directional evidence <em>and</em> mass.
+	 * </p>
+	 */
+	int spamConfidence;
 }
 
 /** A single aggregated SPAM range matching a hash prefix in a {@link PrefixCheckResult}. */
@@ -250,15 +265,23 @@ abstract message AbstractNumberInfo {
 
 	/** The number being requested. */
 	string phone;
-	
-	/** Whether the number is considered active. Only active numbers are inserted into a blocklist. */
-	boolean active;
-	
+
 	int calls;
-	
-	/** The number of votes that support blocking the requested number. */
-	int votes;
-	
+
+	/**
+	 * Raw cumulative net spam-vote counter from the DB row (#342).
+	 *
+	 * <p>This is the on-disk write-path counter, <em>not</em> the decay-aware
+	 * vote-equivalent that {@code /api/check} or {@code BlockListEntry.votes}
+	 * expose to clients. Use {@code Ema.decode} on the matching
+	 * {@code SPAM_EVIDENCE} / {@code LEGIT_EVIDENCE} columns whenever you
+	 * need a value to compare against a visibility threshold; this field is
+	 * only the right answer for write-side bookkeeping (rating-category
+	 * resolver, {@code NUMBERS_HISTORY} snapshots, internal aggregation
+	 * promotion, migration hooks).</p>
+	 */
+	int rawVotes;
+
 	/** The number ratings of kind "legitimate". */
 	int ratingLegitimate;
 
@@ -363,7 +386,6 @@ message SpamReport {
 	int votes;
 	long lastUpdate;
 	long dateAdded;
-	boolean archived;
 	boolean whiteListed;
 	
 	/** The number of phone numbers with the the same prefix but a different end digit that are also reported as SPAM. */

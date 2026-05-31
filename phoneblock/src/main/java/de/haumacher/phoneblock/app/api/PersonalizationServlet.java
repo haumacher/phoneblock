@@ -302,8 +302,11 @@ public class PersonalizationServlet extends HttpServlet {
 						int voteDelta = -Ratings.getVotes(rating);
 						long now = System.currentTimeMillis();
 						
-						// Update vote counts in NUMBERS table
-						spamReports.addVote(phoneId, voteDelta, now);
+						// Update vote counts in NUMBERS table. The confidence-model EMAs
+						// (#332) are left untouched on rollback: a correct inversion would
+						// need the original event time, which we did not preserve, and the
+						// decay term will fade the original increment on its own.
+						spamReports.addVote(phoneId, voteDelta, now, 0.0, 0.0, 0.0);
 						
 						// Decrement the specific rating counter (LEGITIMATE, PING, etc.) by -1
 						spamReports.updateRating(phoneId, rating, -1, now);
