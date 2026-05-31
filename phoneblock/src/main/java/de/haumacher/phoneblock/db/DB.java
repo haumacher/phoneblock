@@ -248,6 +248,7 @@ public class DB {
 		Configuration configuration = new Configuration(environment);
 		configuration.setUseActualParamName(true);
 		configuration.addMapper(SpamReports.class);
+		configuration.addMapper(MigrationStatements.class);
 		configuration.addMapper(BlockList.class);
 		configuration.addMapper(Users.class);
 		configuration.addMapper(FtcReports.class);
@@ -568,19 +569,19 @@ public class DB {
 					}
 
 					if (version == 29) {
-						backfillConfidenceEmas(reports);
+						backfillConfidenceEmas(session.getMapper(MigrationStatements.class));
 					}
 
 					if (version == 30) {
-						backfillNumbersLocaleHeat(reports);
+						backfillNumbersLocaleHeat(session.getMapper(MigrationStatements.class));
 					}
 
 					if (version == 31) {
-						backfillVisibilityColumns(reports);
+						backfillVisibilityColumns(session.getMapper(MigrationStatements.class));
 					}
 
 					if (version == 32) {
-						backfillSnapshotLegitEvidence(reports);
+						backfillSnapshotLegitEvidence(session.getMapper(MigrationStatements.class));
 					}
 
 					// migration 33 drops legacy tables CALLREPORT / CALLERS via the
@@ -1979,10 +1980,10 @@ public class DB {
 	 * EMA reference epoch — see {@link SpamReports#backfillNumbersEmas} for
 	 * the rationale.</p>
 	 */
-	private void backfillConfidenceEmas(SpamReports reports) {
+	private void backfillConfidenceEmas(MigrationStatements migrations) {
 		LOG.info("Confidence model (#300): backfilling EMA columns from existing counters.");
 
-		int numbersUpdated = reports.backfillNumbersEmas(
+		int numbersUpdated = migrations.backfillNumbersEmas(
 			(double) Ema.T0_MILLIS, Ema.HEAT_TAU_MILLIS, Ema.CLASSIFICATION_TAU_MILLIS,
 			Signals.DIRECT_VOTE_HEAT_WEIGHT,
 			Signals.DIRECT_VOTE_EVIDENCE_WEIGHT,
@@ -1991,10 +1992,10 @@ public class DB {
 			Signals.SEARCH_HEAT_WEIGHT);
 		LOG.info("Backfilled EMAs on {} NUMBERS rows.", numbersUpdated);
 
-		int agg10Updated = reports.backfillAggregation10Emas();
+		int agg10Updated = migrations.backfillAggregation10Emas();
 		LOG.info("Backfilled EMAs on {} NUMBERS_AGGREGATION_10 rows.", agg10Updated);
 
-		int agg100Updated = reports.backfillAggregation100Emas();
+		int agg100Updated = migrations.backfillAggregation100Emas();
 		LOG.info("Backfilled EMAs on {} NUMBERS_AGGREGATION_100 rows.", agg100Updated);
 	}
 
@@ -2008,9 +2009,9 @@ public class DB {
 	 * writes the EMA increment via {@code updateLocalization}) only catches
 	 * post-migration activity; this step seeds the column from history.</p>
 	 */
-	private void backfillNumbersLocaleHeat(SpamReports reports) {
+	private void backfillNumbersLocaleHeat(MigrationStatements migrations) {
 		LOG.info("Region-aware Heat (#340): backfilling NUMBERS_LOCALE.HEAT from existing counters.");
-		int updated = reports.backfillNumbersLocaleHeat(
+		int updated = migrations.backfillNumbersLocaleHeat(
 			(double) Ema.T0_MILLIS, Ema.HEAT_TAU_MILLIS,
 			Signals.DIRECT_VOTE_HEAT_WEIGHT,
 			Signals.CALL_HEAT_WEIGHT,
@@ -2026,23 +2027,23 @@ public class DB {
 	 * is retained (kept in {@code db-schema.sql}) and updated additively
 	 * alongside the projected SPAM_EVIDENCE going forward.
 	 */
-	private void backfillVisibilityColumns(SpamReports reports) {
+	private void backfillVisibilityColumns(MigrationStatements migrations) {
 		LOG.info("Decay-aware visibility (#342): backfilling NUMBERS_LOCALE.SPAM_EVIDENCE and NUMBERS.PUBLISHED_SPAM_EVIDENCE.");
 
-		int localeUpdated = reports.backfillNumbersLocaleSpamEvidence(
+		int localeUpdated = migrations.backfillNumbersLocaleSpamEvidence(
 			(double) Ema.T0_MILLIS, Ema.CLASSIFICATION_TAU_MILLIS,
 			Signals.DIRECT_VOTE_EVIDENCE_WEIGHT,
 			Signals.CALL_EVIDENCE_WEIGHT);
 		LOG.info("Backfilled NUMBERS_LOCALE.SPAM_EVIDENCE on {} rows.", localeUpdated);
 
-		int publishedUpdated = reports.backfillPublishedSpamEvidence();
+		int publishedUpdated = migrations.backfillPublishedSpamEvidence();
 		LOG.info("Seeded NUMBERS.PUBLISHED_SPAM_EVIDENCE on {} rows.", publishedUpdated);
 
 		// NUMBERS_LOCALE.VOTES is intentionally retained (epic #300): it is now
 		// updated additively alongside SPAM_EVIDENCE, mirroring NUMBERS.VOTES, so
 		// the raw per-region counter is never dropped. Only the unused
 		// NUMBERS.PUBLISHED_VOTES snapshot column goes.
-		reports.dropNumbersPublishedVotes();
+		migrations.dropNumbersPublishedVotes();
 		LOG.info("Dropped legacy NUMBERS.PUBLISHED_VOTES counter.");
 	}
 
@@ -2054,12 +2055,12 @@ public class DB {
 	 * {@code published_net = PUBLISHED_SPAM_EVIDENCE - PUBLISHED_LEGIT_EVIDENCE}
 	 * against the projected threshold the same way the live filter does.
 	 */
-	private void backfillSnapshotLegitEvidence(SpamReports reports) {
+	private void backfillSnapshotLegitEvidence(MigrationStatements migrations) {
 		LOG.info("Snapshot-driven versioning (#342): seeding NUMBERS.PUBLISHED_LEGIT_EVIDENCE.");
-		int seeded = reports.backfillPublishedLegitEvidence();
+		int seeded = migrations.backfillPublishedLegitEvidence();
 		LOG.info("Seeded PUBLISHED_LEGIT_EVIDENCE on {} rows.", seeded);
 
-		reports.dropNumbersPendingUpdate();
+		migrations.dropNumbersPendingUpdate();
 		LOG.info("Dropped legacy PENDING_UPDATE column.");
 	}
 

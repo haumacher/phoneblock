@@ -663,8 +663,8 @@ public class TestDB {
 		zeroOutEmas();
 
 		try (SqlSession session = _db.openSession()) {
-			SpamReports reports = session.getMapper(SpamReports.class);
-			reports.backfillNumbersEmas((double) Ema.T0_MILLIS,
+			MigrationStatements migrations = session.getMapper(MigrationStatements.class);
+			migrations.backfillNumbersEmas((double) Ema.T0_MILLIS,
 				Ema.HEAT_TAU_MILLIS, Ema.CLASSIFICATION_TAU_MILLIS,
 				Signals.DIRECT_VOTE_HEAT_WEIGHT,
 				Signals.DIRECT_VOTE_EVIDENCE_WEIGHT,
@@ -735,9 +735,9 @@ public class TestDB {
 
 		// Run the backfill the same way migration 29 would.
 		try (SqlSession session = _db.openSession()) {
-			SpamReports reports = session.getMapper(SpamReports.class);
+			MigrationStatements migrations = session.getMapper(MigrationStatements.class);
 
-			int n = reports.backfillNumbersEmas((double) Ema.T0_MILLIS,
+			int n = migrations.backfillNumbersEmas((double) Ema.T0_MILLIS,
 				Ema.HEAT_TAU_MILLIS, Ema.CLASSIFICATION_TAU_MILLIS,
 				Signals.DIRECT_VOTE_HEAT_WEIGHT,
 				Signals.DIRECT_VOTE_EVIDENCE_WEIGHT,
@@ -746,10 +746,10 @@ public class TestDB {
 				Signals.SEARCH_HEAT_WEIGHT);
 			assertTrue(n >= 4, "Backfill must touch all four seeded numbers, was " + n);
 
-			int agg10n = reports.backfillAggregation10Emas();
+			int agg10n = migrations.backfillAggregation10Emas();
 			assertTrue(agg10n >= 1, "Backfill must touch the /10 aggregation row, was " + agg10n);
 
-			int agg100n = reports.backfillAggregation100Emas();
+			int agg100n = migrations.backfillAggregation100Emas();
 			assertTrue(agg100n >= 1, "Backfill must touch the /100 aggregation row, was " + agg100n);
 
 			session.commit();
