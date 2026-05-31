@@ -16,7 +16,7 @@ public class DBNumberInfo extends NumberInfo {
 
 	private final double _publishedLegitEvidence;
 
-	private final double _heat;
+	private final double _rawHeat;
 
 	private final double _spamEvidence;
 
@@ -41,7 +41,7 @@ public class DBNumberInfo extends NumberInfo {
 		_lastPing = lastPing;
 		_publishedSpamEvidence = publishedSpamEvidence;
 		_publishedLegitEvidence = publishedLegitEvidence;
-		_heat = heat;
+		_rawHeat = heat;
 		_spamEvidence = spamEvidence;
 		_legitEvidence = legitEvidence;
 	}
@@ -82,9 +82,15 @@ public class DBNumberInfo extends NumberInfo {
 		return _publishedLegitEvidence;
 	}
 
-	/** Raw projected-EMA {@code HEAT} value (confidence model, #300). Decode with {@link Ema#decode}. */
-	public double getHeat() {
-		return _heat;
+	/**
+	 * Raw projected-EMA {@code HEAT} value (confidence model, #300). Decode
+	 * with {@link Ema#decode} for the accumulated mass, or
+	 * {@link Ema#decodeRate} for the per-day rate exposed as
+	 * {@code PhoneInfo.heat}. Named {@code raw} (cf. {@link #getRawVotes()})
+	 * to keep it distinct from the rate-valued API field.
+	 */
+	public double getRawHeat() {
+		return _rawHeat;
 	}
 
 	/** Raw projected-EMA {@code SPAM_EVIDENCE} value. */

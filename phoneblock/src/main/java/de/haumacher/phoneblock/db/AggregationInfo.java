@@ -13,7 +13,7 @@ public class AggregationInfo {
 	private String prefix;
 	private int cnt;
 	private int votes;
-	private double heat;
+	private double rawHeat;
 	private double spamEvidence;
 	private double legitEvidence;
 
@@ -28,7 +28,7 @@ public class AggregationInfo {
 		this.prefix = prefix;
 		this.cnt = cnt;
 		this.votes = votes;
-		this.heat = heat;
+		this.rawHeat = heat;
 		this.spamEvidence = spamEvidence;
 		this.legitEvidence = legitEvidence;
 	}
@@ -91,12 +91,12 @@ public class AggregationInfo {
 	}
 
 	/** Raw projected-EMA {@code HEAT} (block-level activity, #337). Decay with {@link Ema#decode}. */
-	public double getHeat() {
-		return heat;
+	public double getRawHeat() {
+		return rawHeat;
 	}
 
-	public void setHeat(double heat) {
-		this.heat = heat;
+	public void setRawHeat(double rawHeat) {
+		this.rawHeat = rawHeat;
 	}
 
 	/** Raw projected-EMA {@code SPAM_EVIDENCE} (block-level classification, #337). */

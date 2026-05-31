@@ -1848,7 +1848,7 @@ public class DB {
 		double rawSpam = 0.0;
 		double rawLegit = 0.0;
 		if (info instanceof DBNumberInfo dbInfo) {
-			rawHeat = dbInfo.getHeat();
+			rawHeat = dbInfo.getRawHeat();
 			rawSpam = dbInfo.getSpamEvidence();
 			rawLegit = dbInfo.getLegitEvidence();
 		}
