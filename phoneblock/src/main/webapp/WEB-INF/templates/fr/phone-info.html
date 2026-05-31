@@ -60,7 +60,11 @@
 		<li data-tx="t0011:886a84aa" th:if="${info.votes} &gt; 0">Votes pour le blocage : <th:block th:text="${info.votes}"></th:block></li>
 		
 		<li data-tx="t0012:7fff511b" th:if="${info.votesWildcard} &gt; ${info.votes}">Voix pour le blocage du pavé numérique : <th:block th:text="${info.votesWildcard}"></th:block></li>
-		
+
+		<li data-tx="t0051:5f6036e4" th:if="${info.spamConfidence} &gt; 0">Confiance dans le classement des spams : <th:block th:text="${info.spamConfidence}"></th:block> %.</li>
+
+		<li data-tx="t0052:ae3458db" th:if="${info.heat} &gt; 0">Activité actuelle : <th:block th:text="${#numbers.formatDecimal(info.heat, 1, 1)}"></th:block> messages/jour</li>
+
 		<li data-tx="t0013:b2e85cd7" th:if="${info.votes} &gt; 0 or ${info.votesWildcard} &gt; 0">Dernière plainte du : <th:block th:text="${#dates.format(#converters.fromEpoch(info.lastUpdate))}"></th:block></li>
 
 		<li data-tx="t0014:578dd8de" th:if="${info.votes} &gt; 0 and ${info.dateAdded} &gt; 0">Numéro actif depuis : <th:block th:text="${#dates.format(#converters.fromEpoch(info.dateAdded))}"></th:block></li>
