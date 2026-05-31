@@ -71,6 +71,11 @@ CREATE TABLE NUMBERS_LOCALE (
 	LASTACCESS BIGINT NOT NULL,
 	SEARCHES INTEGER DEFAULT 0 NOT NULL,
 	CALLS INTEGER DEFAULT 0 NOT NULL,
+	-- Cumulative per-region spam-vote counter, retained alongside the
+	-- projected SPAM_EVIDENCE EMA below (epic #300): the EMA drives the live
+	-- decay-aware per-region visibility filter, while this raw counter is
+	-- additively kept so the non-decayed per-region signal is never lost.
+	VOTES INTEGER DEFAULT 0 NOT NULL,
 	-- Projected Heat EMA scoped to one DIAL — same encoding as NUMBERS.HEAT
 	-- (see Ema). Drives the dial-aware space-limited blocklist (#340): a
 	-- number heating up in one region must not push numbers off another

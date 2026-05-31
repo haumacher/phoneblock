@@ -1019,7 +1019,7 @@ public class DB {
 		pingRelatedNumbers(reports, phone, time);
 		
 		if (votes > 0) {
-			updateLocalization(reports, phone, dialPrefix, 0, 0, heatInc, spamEvidenceInc, time);
+			updateLocalization(reports, phone, dialPrefix, 0, 0, votes, heatInc, spamEvidenceInc, time);
 		}
 
 		boolean classifyChanged = classify(oldVotes) != classify(newVotes);
@@ -1050,14 +1050,14 @@ public class DB {
 	 * see the same decay behaviour as the global view.</p>
 	 */
 	public void updateLocalization(SpamReports reports, String phone, String dialPrefix,
-			int searches, int calls, double heatInc, double spamEvidenceInc, long time) {
+			int searches, int calls, int votes, double heatInc, double spamEvidenceInc, long time) {
 		if (dialPrefix == null) {
 			return;
 		}
 
-		int cnt = reports.updateNumberLocalization(phone, dialPrefix, searches, calls, heatInc, spamEvidenceInc, time);
+		int cnt = reports.updateNumberLocalization(phone, dialPrefix, searches, calls, votes, heatInc, spamEvidenceInc, time);
 		if (cnt == 0) {
-			reports.insertNumberLocalization(phone, dialPrefix, searches, calls, heatInc, spamEvidenceInc, time);
+			reports.insertNumberLocalization(phone, dialPrefix, searches, calls, votes, heatInc, spamEvidenceInc, time);
 		}
 	}
 
@@ -2020,10 +2020,11 @@ public class DB {
 
 	/**
 	 * Backfill the visibility/snapshot columns introduced in migration 31
-	 * (#342) and drop the now-obsolete VOTES counters. The order matters:
-	 * the backfill runs first while the source columns still exist, then the
-	 * old columns are dropped so the table state ends up matching
-	 * {@code db-schema.sql}.
+	 * (#342) and drop the obsolete NUMBERS.PUBLISHED_VOTES snapshot column.
+	 * The order matters: the backfill runs first while the source columns
+	 * still exist, then the snapshot column is dropped. NUMBERS_LOCALE.VOTES
+	 * is retained (kept in {@code db-schema.sql}) and updated additively
+	 * alongside the projected SPAM_EVIDENCE going forward.
 	 */
 	private void backfillVisibilityColumns(SpamReports reports) {
 		LOG.info("Decay-aware visibility (#342): backfilling NUMBERS_LOCALE.SPAM_EVIDENCE and NUMBERS.PUBLISHED_SPAM_EVIDENCE.");
@@ -2037,9 +2038,12 @@ public class DB {
 		int publishedUpdated = reports.backfillPublishedSpamEvidence();
 		LOG.info("Seeded NUMBERS.PUBLISHED_SPAM_EVIDENCE on {} rows.", publishedUpdated);
 
-		reports.dropNumbersLocaleVotes();
+		// NUMBERS_LOCALE.VOTES is intentionally retained (epic #300): it is now
+		// updated additively alongside SPAM_EVIDENCE, mirroring NUMBERS.VOTES, so
+		// the raw per-region counter is never dropped. Only the unused
+		// NUMBERS.PUBLISHED_VOTES snapshot column goes.
 		reports.dropNumbersPublishedVotes();
-		LOG.info("Dropped legacy VOTES / PUBLISHED_VOTES counters.");
+		LOG.info("Dropped legacy NUMBERS.PUBLISHED_VOTES counter.");
 	}
 
 	/**
@@ -2152,7 +2156,7 @@ public class DB {
 		// Block-level signal (#337) and per-region signal (#340) — both
 		// always, regardless of whether the number was new or known.
 		addAggregationEmas(reports, phoneId, heatInc, evidenceInc, 0.0);
-		updateLocalization(reports, phoneId, dialPrefix, 0, 1, heatInc, evidenceInc, now);
+		updateLocalization(reports, phoneId, dialPrefix, 0, 1, 0, heatInc, evidenceInc, now);
 	}
 
 	/**
@@ -2181,7 +2185,7 @@ public class DB {
 
 		// A search is a pure Heat signal — no classification impact, so no
 		// SPAM_EVIDENCE contribution to the locale row either.
-		updateLocalization(reports, phone, dialPrefix, 1, 0, heatInc, 0.0, now);
+		updateLocalization(reports, phone, dialPrefix, 1, 0, 0, heatInc, 0.0, now);
 	}
 	
 	/**

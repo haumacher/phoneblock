@@ -58,22 +58,23 @@ public interface SpamReports {
 	void clearPhoneHash(String phone);
 	
 	@Insert("""
-			insert into NUMBERS_LOCALE (PHONE, DIAL, SEARCHES, CALLS, HEAT, SPAM_EVIDENCE, LASTACCESS)
-			values (#{phone}, #{dialPrefix}, #{searches}, #{calls}, #{heatInc}, #{spamEvidenceInc}, #{now})
+			insert into NUMBERS_LOCALE (PHONE, DIAL, SEARCHES, CALLS, VOTES, HEAT, SPAM_EVIDENCE, LASTACCESS)
+			values (#{phone}, #{dialPrefix}, #{searches}, #{calls}, #{votes}, #{heatInc}, #{spamEvidenceInc}, #{now})
 			""")
-	int insertNumberLocalization(String phone, String dialPrefix, int searches, int calls,
+	int insertNumberLocalization(String phone, String dialPrefix, int searches, int calls, int votes,
 		double heatInc, double spamEvidenceInc, long now);
 
 	@Update("""
 			update NUMBERS_LOCALE set
 				SEARCHES = SEARCHES + #{searches},
 				CALLS = CALLS + #{calls},
+				VOTES = VOTES + #{votes},
 				HEAT = HEAT + #{heatInc},
 				SPAM_EVIDENCE = SPAM_EVIDENCE + #{spamEvidenceInc},
 				LASTACCESS = #{now}
 			where PHONE = #{phone} and DIAL = #{dialPrefix}
 			""")
-	int updateNumberLocalization(String phone, String dialPrefix, int searches, int calls,
+	int updateNumberLocalization(String phone, String dialPrefix, int searches, int calls, int votes,
 		double heatInc, double spamEvidenceInc, long now);
 	
 	@Update("update NUMBERS_AGGREGATION_10 set CNT = CNT + #{deltaCnt}, VOTES = VOTES + #{deltaVotes} where PREFIX = #{prefix}")
@@ -265,14 +266,6 @@ public interface SpamReports {
 	 */
 	@Update("update NUMBERS set PUBLISHED_SPAM_EVIDENCE = SPAM_EVIDENCE where SPAM_EVIDENCE > 0")
 	int backfillPublishedSpamEvidence();
-
-	/**
-	 * Drops {@code NUMBERS_LOCALE.VOTES} after its data has been projected
-	 * into {@code SPAM_EVIDENCE} (#342). Runs from the Java migration hook so
-	 * the backfill above sees the source column.
-	 */
-	@Update("ALTER TABLE NUMBERS_LOCALE DROP COLUMN VOTES")
-	void dropNumbersLocaleVotes();
 
 	/**
 	 * Drops {@code NUMBERS.PUBLISHED_VOTES} after the snapshot has been
