@@ -27,6 +27,11 @@ package de.haumacher.phoneblock.db;
  * <p>This is exactly the "accidental vote" / "disputed vote" handling
  * called for in epic #300 — the decay alone does not solve it, the evidence
  * mass does. See {@link #spamConfidence(double, double)}.</p>
+ *
+ * @see <a href=
+ *      "https://en.wikipedia.org/wiki/Binomial_proportion_confidence_interval">Binomial
+ *      proportion confidence interval</a> — the underlying statistics; this
+ *      class uses the Wilson score interval (lower bound).
  */
 public final class Confidence {
 
