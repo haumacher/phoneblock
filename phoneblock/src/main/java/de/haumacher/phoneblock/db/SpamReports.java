@@ -457,9 +457,16 @@ public interface SpamReports {
 			""")
 	List<DBNumberInfo> getTopSearchesOverall(int cnt);
 	
+	// The net-evidence visibility filter (SPAM_EVIDENCE - LEGIT_EVIDENCE) is a
+	// computed expression, so on its own it forces a full-table scan plus a
+	// top-N ADDED sort over every (mostly faded) row. The leading
+	// SPAM_EVIDENCE >= #{maxRawSpam} term is redundant for the result —
+	// LEGIT_EVIDENCE is never negative, so the net filter already implies it —
+	// but it is a plain column range that lets H2 seek the small set of visible
+	// candidates through NUMBERS_SPAM_EVIDENCE_IDX and sort only those by ADDED.
 	@Select("""
 			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.SPAM_EVIDENCE as PUBLISHED_SPAM_EVIDENCE, s.LEGIT_EVIDENCE as PUBLISHED_LEGIT_EVIDENCE, s.HEAT, s.SPAM_EVIDENCE, s.LEGIT_EVIDENCE from NUMBERS s
-			WHERE (SPAM_EVIDENCE - LEGIT_EVIDENCE) >= #{maxRawSpam} AND ADDED > 0 ORDER BY ADDED DESC LIMIT 10
+			WHERE SPAM_EVIDENCE >= #{maxRawSpam} AND (SPAM_EVIDENCE - LEGIT_EVIDENCE) >= #{maxRawSpam} AND ADDED > 0 ORDER BY ADDED DESC LIMIT 10
 			""")
 	List<DBNumberInfo> getLatestBlocklistEntries(double maxRawSpam);
 
