@@ -641,6 +641,60 @@ public class TestDB {
 	}
 
 	@Test
+	void testConfidenceEmaBackfillAppliesTimeProjection() {
+		// Regression for the integer-division bug in backfillNumbersEmas: H2
+		// inferred the EXP() bind parameters as BIGINT, so (eventTime - t0) / tau
+		// truncated to 0 and the projection collapsed to EXP(0) = 1, leaving the
+		// raw EMA columns equal to the bare vote counts regardless of time.
+		//
+		// Seed all activity 90 days AFTER t0 — far enough that the correct
+		// projection factor differs sharply from 1, so the bug is unmissable.
+		long ninetyDaysMillis = 90L * 86_400_000L;
+		long t = Ema.T0_MILLIS + ninetyDaysMillis;
+
+		processVotes("030555000020", -1, t); // one LEGIT vote
+		processVotes("030555000020", 1, t);  // one SPAM vote on the same number
+
+		int[] counters = rawVoteCounters("030555000020");
+		assertEquals(1, counters[0], "DOWN_VOTES");
+		assertEquals(1, counters[1], "UP_VOTES");
+
+		// Mimic the migration-29 starting state: counters set, EMAs still zero.
+		zeroOutEmas();
+
+		try (SqlSession session = _db.openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			reports.backfillNumbersEmas((double) Ema.T0_MILLIS,
+				Ema.HEAT_TAU_MILLIS, Ema.CLASSIFICATION_TAU_MILLIS,
+				Signals.DIRECT_VOTE_HEAT_WEIGHT,
+				Signals.DIRECT_VOTE_EVIDENCE_WEIGHT,
+				Signals.CALL_HEAT_WEIGHT,
+				Signals.CALL_EVIDENCE_WEIGHT,
+				Signals.SEARCH_HEAT_WEIGHT);
+			session.commit();
+		}
+
+		double classFactor = Math.exp((double) ninetyDaysMillis / Ema.CLASSIFICATION_TAU_MILLIS);
+		double heatFactor = Math.exp((double) ninetyDaysMillis / Ema.HEAT_TAU_MILLIS);
+
+		double[] after = rawEmas("030555000020");
+		// SPAM_EVIDENCE = DOWN_VOTES × weight × classFactor; LEGIT likewise from
+		// UP_VOTES; HEAT = (DOWN_VOTES + UP_VOTES) × weight × heatFactor.
+		assertEquals(Signals.DIRECT_VOTE_EVIDENCE_WEIGHT * classFactor, after[1], 1e-6,
+			"raw SPAM_EVIDENCE must carry the time projection, not the bare vote count");
+		assertEquals(Signals.DIRECT_VOTE_EVIDENCE_WEIGHT * classFactor, after[2], 1e-6,
+			"raw LEGIT_EVIDENCE must carry the time projection, not the bare vote count");
+		assertEquals(2 * Signals.DIRECT_VOTE_HEAT_WEIGHT * heatFactor, after[0], 1e-6,
+			"raw HEAT must carry the time projection");
+
+		// Explicit guard against the regression: the projected value is clearly
+		// above the bare count of 1 (classFactor ≈ 1.65), so a collapsed
+		// projection (== 1.0) would fail here.
+		assertTrue(after[2] > 1.5,
+			"LEGIT_EVIDENCE must be the projected ~1.65, not the integer-division 1.0, was " + after[2]);
+	}
+
+	@Test
 	void testConfidenceEmaBackfillFromExistingCounters() {
 		// Simulate the migration-29 starting state: pre-existing rows whose
 		// cumulative counters are filled but whose EMA columns are still zero.

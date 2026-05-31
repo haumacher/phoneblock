@@ -146,16 +146,24 @@ public interface SpamReports {
 	 * {@link Signals} so changes there stay in one place rather than being
 	 * scattered through SQL literals.</p>
 	 */
+	// The CAST(... AS DOUBLE PRECISION) around each EXP() numerator is essential:
+	// without it H2 infers the bind parameters as BIGINT (the type of the
+	// LASTPING/UPDATED columns they are combined with) and computes
+	// (eventTime - t0) / tau as integer division. For the classification axis
+	// tau (~125 d in millis) dwarfs the numerator of any recently active row,
+	// so the quotient truncates to 0 and EXP(0) = 1 — the projection silently
+	// vanishes and the column ends up equal to the bare vote count. The forward
+	// path is unaffected because it computes EXP in Java (Ema.increment).
 	@Update("""
 			update NUMBERS set
 				HEAT = ((DOWN_VOTES + UP_VOTES) * #{voteHeatW}
 				        + CALLS * #{callHeatW}
 				        + SEARCHES * #{searchHeatW})
-				     * EXP((GREATEST(LASTPING, UPDATED) - #{t0Millis}) / #{tauHeatMillis}),
+				     * EXP(CAST(GREATEST(LASTPING, UPDATED) - #{t0Millis} AS DOUBLE PRECISION) / #{tauHeatMillis}),
 				SPAM_EVIDENCE = (DOWN_VOTES * #{voteEvidenceW} + CALLS * #{callEvidenceW})
-				              * EXP((GREATEST(LASTPING, UPDATED) - #{t0Millis}) / #{tauClassMillis}),
+				              * EXP(CAST(GREATEST(LASTPING, UPDATED) - #{t0Millis} AS DOUBLE PRECISION) / #{tauClassMillis}),
 				LEGIT_EVIDENCE = UP_VOTES * #{voteEvidenceW}
-				               * EXP((GREATEST(LASTPING, UPDATED) - #{t0Millis}) / #{tauClassMillis})
+				               * EXP(CAST(GREATEST(LASTPING, UPDATED) - #{t0Millis} AS DOUBLE PRECISION) / #{tauClassMillis})
 			where GREATEST(LASTPING, UPDATED) > 0
 			  and (DOWN_VOTES > 0 or UP_VOTES > 0 or CALLS > 0 or SEARCHES > 0)
 			""")
@@ -223,7 +231,7 @@ public interface SpamReports {
 				HEAT = (VOTES * #{voteHeatW}
 				        + CALLS * #{callHeatW}
 				        + SEARCHES * #{searchHeatW})
-				     * EXP((LASTACCESS - #{t0Millis}) / #{tauHeatMillis})
+				     * EXP(CAST(LASTACCESS - #{t0Millis} AS DOUBLE PRECISION) / #{tauHeatMillis})
 			where LASTACCESS > 0
 			  and (VOTES > 0 or CALLS > 0 or SEARCHES > 0)
 			""")
@@ -242,7 +250,7 @@ public interface SpamReports {
 	@Update("""
 			update NUMBERS_LOCALE set
 				SPAM_EVIDENCE = (VOTES * #{voteEvidenceW} + CALLS * #{callEvidenceW})
-				              * EXP((LASTACCESS - #{t0Millis}) / #{tauClassMillis})
+				              * EXP(CAST(LASTACCESS - #{t0Millis} AS DOUBLE PRECISION) / #{tauClassMillis})
 			where LASTACCESS > 0 and (VOTES > 0 or CALLS > 0)
 			""")
 	int backfillNumbersLocaleSpamEvidence(double t0Millis, double tauClassMillis,
