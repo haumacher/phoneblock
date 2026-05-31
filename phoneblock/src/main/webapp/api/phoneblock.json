@@ -1382,7 +1382,7 @@
 					"heat": {
 						"type": "number",
 						"format": "double",
-						"description": "Recent-activity score from the confidence model. The decayed HEAT exponentially-weighted moving average at request time — how loud this number is right now, with a half-life of about two weeks. At a steady rate of r reports per day it converges to about r times tau_heat, so the value is directly interpretable. Drives ranking on space-limited lists (Fritz!Box phonebook, dongle) and Heat-based archiving — it is NOT the spam-or-not signal; that is 'spamConfidence'."
+						"description": "Recent-activity rate in reports per day, from the confidence model. The current reports-per-day rate, derived from the decayed HEAT exponentially-weighted moving average at request time — how loud this number is right now, with a half-life of about two weeks. At a steady rate of r reports per day it converges to about r, so the value reads directly as that rate without needing to know the decay constant. Drives ranking on space-limited lists (Fritz!Box phonebook, dongle) and Heat-based archiving — it is NOT the spam-or-not signal; that is 'spamConfidence'."
 					},
 					"spamConfidence": {
 						"type": "integer",

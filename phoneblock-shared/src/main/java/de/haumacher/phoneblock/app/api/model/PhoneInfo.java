@@ -340,10 +340,10 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	}
 
 	/**
-	 * Recent-activity score derived from the confidence model (issue #300).
+	 * Recent-activity rate in reports per day, derived from the confidence model (issue #300).
 	 *
 	 * <p>
-	 * The decayed <code>HEAT</code> EMA at request time — how loud this number is <em>right now</em>, with a half-life of about two weeks. At a steady rate of <i>r</i> reports per day it converges to ≈ <i>r</i> · τ_heat, so the value is directly interpretable. Drives ranking on space-limited lists (Fritz!Box phonebook, dongle) and Heat-based archiving — it is <em>not</em> the spam-or-not signal; that is {@link #getSpamConfidence()}.
+	 * The current reports-per-day rate, derived from the decayed <code>HEAT</code> EMA at request time — how loud this number is <em>right now</em>, with a half-life of about two weeks. At a steady rate of <i>r</i> reports per day it converges to ≈ <i>r</i>, so the value reads directly as that rate without needing to know the decay constant. Drives ranking on space-limited lists (Fritz!Box phonebook, dongle) and Heat-based archiving — it is <em>not</em> the spam-or-not signal; that is {@link #getSpamConfidence()}.
 	 * </p>
 	 */
 	public final double getHeat() {
