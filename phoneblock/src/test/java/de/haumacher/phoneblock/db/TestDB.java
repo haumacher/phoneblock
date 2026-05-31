@@ -650,6 +650,41 @@ public class TestDB {
 		assertNotNull(rawSha1(spam), "Migration must keep the hash of a spam number");
 	}
 
+	/**
+	 * The /check-prefix hash lookup must not return numbers whose decoded net evidence
+	 * rounds to 0 displayed votes, even though they still carry a SHA1 hash (#300).
+	 */
+	@Test
+	void testHashPrefixExcludesRoundedZeroVotes() {
+		long now = Ema.T0_MILLIS + 365L * 86_400_000L;
+		long longAgo = now - 200L * 86_400_000L; // > classification half-life ago → decodes below 0.5
+
+		processVotes("037000000", 4, now);      // active spam
+		processVotes("037100000", 1, longAgo);  // decayed → rounds to 0 votes
+
+		// Both carry a hash (both had net-positive spam evidence when voted).
+		assertNotNull(rawSha1("037000000"));
+		assertNotNull(rawSha1("037100000"));
+
+		byte[] low = new byte[20];
+		byte[] high = new byte[20];
+		Arrays.fill(high, (byte) 0xFF);
+		try (SqlSession tx = _db.openSession()) {
+			SpamReports reports = tx.getMapper(SpamReports.class);
+
+			// Bare net-positive filter (threshold 0) still returns the decayed number...
+			Set<String> loose = reports.getPhoneInfosByHashPrefix(low, high, 0.0)
+				.stream().map(DBNumberInfo::getPhone).collect(Collectors.toSet());
+			assertTrue(loose.contains("037100000"));
+
+			// ...the displayed-votes>=1 threshold drops it, keeping only the active number.
+			Set<String> strict = reports.getPhoneInfosByHashPrefix(low, high, DB.maxRawSpamAt(now, 1))
+				.stream().map(DBNumberInfo::getPhone).collect(Collectors.toSet());
+			assertTrue(strict.contains("037000000"));
+			assertFalse(strict.contains("037100000"), "decayed 0-vote number must not be returned");
+		}
+	}
+
 	private void processVotes(String phone, int votes, long time) {
 		_db.processVotes(NumberAnalyzer.analyze(phone, "+49"), "+49", votes, time);
 	}

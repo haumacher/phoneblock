@@ -54,10 +54,12 @@ public interface SpamReports {
 	 * Stores the SHA1 hash, but only while the number is spam-visible (#300 privacy guard).
 	 *
 	 * <p>The SHA1 column is effectively a reverse-lookup (rainbow) table, so it must
-	 * only exist for numbers that are actually spam — exactly the rows the privacy-aware
-	 * hash-prefix lookup ({@code getPhoneInfosByHashPrefix}) returns, which filter on
-	 * {@code SPAM_EVIDENCE > LEGIT_EVIDENCE}. The guard is in the {@code WHERE} clause (not
-	 * a {@code CASEWHEN} over a NULL branch, which confuses H2's type inference for the
+	 * only exist for numbers that are classified as spam — i.e. while
+	 * {@code SPAM_EVIDENCE > LEGIT_EVIDENCE}. (The privacy-aware hash-prefix lookup
+	 * {@code getPhoneInfosByHashPrefix} applies a stricter "displayed votes ≥ 1" cut on
+	 * top, so a handful of barely-spam numbers may retain a hash without being returned —
+	 * harmless, they are still spam.) The guard is in the {@code WHERE} clause (not a
+	 * {@code CASEWHEN} over a NULL branch, which confuses H2's type inference for the
 	 * {@code byte[]} parameter). Pair with {@link #clearPhoneHashIfLegit} after every event
 	 * that changed the evidence columns.</p>
 	 */
@@ -287,11 +289,16 @@ public interface SpamReports {
 	// active row to filter SHA1 in memory (~60-150 ms per call, 15 k page
 	// reads). Forced to NUMBERS_SHA1_IDX the same query touches ~10 rows
 	// and 4 page reads. See issue #329.
+	// The net-evidence filter uses the projected visibility threshold #{minRawSpam}
+	// (= maxRawSpam(1)), not a bare SPAM_EVIDENCE > LEGIT_EVIDENCE: the latter lets
+	// through numbers whose decoded net evidence rounds to 0 displayed votes, which
+	// would surface as votes=0 entries in /check-prefix (#300). Keeps the result in
+	// lock-step with DBNumberInfo.getVotes rounding.
 	@Select("""
 			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.SPAM_EVIDENCE as PUBLISHED_SPAM_EVIDENCE, s.LEGIT_EVIDENCE as PUBLISHED_LEGIT_EVIDENCE, s.HEAT, s.SPAM_EVIDENCE, s.LEGIT_EVIDENCE from NUMBERS s USE INDEX (NUMBERS_SHA1_IDX)
-			where s.SHA1 >= #{low} and s.SHA1 < #{high} and s.SPAM_EVIDENCE > s.LEGIT_EVIDENCE
+			where s.SHA1 >= #{low} and s.SHA1 < #{high} and (s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE) >= #{minRawSpam}
 			""")
-	List<DBNumberInfo> getPhoneInfosByHashPrefix(byte[] low, byte[] high);
+	List<DBNumberInfo> getPhoneInfosByHashPrefix(byte[] low, byte[] high, double minRawSpam);
 	
 	@Select("""
 			select #{prefix}, max(s.ADDED), max(s.UPDATED), max(s.LASTSEARCH), sum(s.CALLS), sum(s.VOTES), sum(s.LEGITIMATE), sum(s.PING), sum(s.POLL), sum(s.ADVERTISING), sum(s.GAMBLE), sum(s.FRAUD), sum(s.SEARCHES), max(s.LASTPING), sum(s.SPAM_EVIDENCE) as PUBLISHED_SPAM_EVIDENCE, sum(s.LEGIT_EVIDENCE) as PUBLISHED_LEGIT_EVIDENCE

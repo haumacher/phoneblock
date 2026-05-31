@@ -23,6 +23,7 @@ import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.db.AggregationInfo;
 import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
+import de.haumacher.phoneblock.db.Confidence;
 import de.haumacher.phoneblock.db.Ema;
 import de.haumacher.phoneblock.db.DBNumberInfo;
 import de.haumacher.phoneblock.db.DBPersonalization;
@@ -118,7 +119,10 @@ public class PrefixCheckServlet extends HttpServlet {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			BlockList blocklist = session.getMapper(BlockList.class);
 
-			List<DBNumberInfo> communityMatches = reports.getPhoneInfosByHashPrefix(sha1Low, sha1High);
+			// Exclude numbers whose decoded net evidence rounds to 0 displayed votes
+			// (#300) — only return numbers that show at least one vote, matching the
+			// per-row votes computed below.
+			List<DBNumberInfo> communityMatches = reports.getPhoneInfosByHashPrefix(sha1Low, sha1High, db.maxRawSpam(1));
 			tCommunity = System.nanoTime();
 			List<DBPersonalization> personalMatches = blocklist.getPersonalizationsByHashPrefix(
 				auth.getUserId(), sha1Low, sha1High);
@@ -137,6 +141,11 @@ public class PrefixCheckServlet extends HttpServlet {
 				PhoneInfo pi = NumberAnalyzer.phoneInfoFromId(n.getPhone())
 					.setVotes(votes)
 					.setRating(DB.rating(n))
+					// Confidence-model surface (#334): populate spamConfidence and heat here
+					// too — this servlet builds PhoneInfo by hand and would otherwise leave
+					// them at the default 0, unlike the getPhoneApiInfo path.
+					.setSpamConfidence(Confidence.spamConfidence(decodedSpam, decodedLegit))
+					.setHeat(Ema.decodeRate(n.getRawHeat(), now, Ema.HEAT_TAU_MILLIS))
 					.setDateAdded(n.getAdded())
 					.setLastUpdate(n.getUpdated());
 				byPhone.put(n.getPhone(), pi);
