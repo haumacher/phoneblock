@@ -396,8 +396,11 @@ public class SearchServlet extends HttpServlet {
 		searches = db.getSearchHistory(reports, phoneId, 7);
 		aiSummary = reports.getSummary(phoneId);
 
-		prev = reports.getPrevPhone(phoneId);
-		next = reports.getNextPhone(phoneId);
+		// Navigate only between numbers that still display at least one vote;
+		// decayed numbers whose evidence has faded to a rounded 0 are skipped (#300).
+		double minRawSpam = db.maxRawSpam(1);
+		prev = reports.getPrevPhone(phoneId, minRawSpam);
+		next = reports.getNextPhone(phoneId, minRawSpam);
 
 		if (commit) {
 			session.commit();

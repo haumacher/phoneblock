@@ -553,6 +553,37 @@ public class TestDB {
 		}
 	}
 
+	/**
+	 * The prev/next navigation on the number page must skip numbers whose
+	 * classification has decayed so far that the displayed vote count rounds to
+	 * 0 — landing on such a faded number would show an empty page (#300).
+	 */
+	@Test
+	void testNavigationSkipsDecayedNumbers() {
+		long now = Ema.T0_MILLIS + 365L * 86_400_000L;
+		// A single vote older than the classification half-life (125 d) decays to a
+		// decoded value below 0.5, i.e. a displayed vote count of 0.
+		long longAgo = now - 200L * 86_400_000L;
+
+		processVotes("030100000", 4, now);      // active — fresh votes
+		processVotes("030200000", 1, longAgo);  // decayed — displays 0 votes
+		processVotes("030300000", 4, now);      // active — fresh votes
+
+		double minRawSpam = DB.maxRawSpamAt(now, 1);
+		try (SqlSession tx = _db.openSession()) {
+			SpamReports reports = tx.getMapper(SpamReports.class);
+
+			// Sanity: without the visibility filter the decayed number is the
+			// immediate neighbour in both directions.
+			assertEquals("030200000", reports.getNextPhone("030150000", 0.0));
+			assertEquals("030200000", reports.getPrevPhone("030250000", 0.0));
+
+			// With the filter the decayed neighbour is skipped.
+			assertEquals("030300000", reports.getNextPhone("030150000", minRawSpam));
+			assertEquals("030100000", reports.getPrevPhone("030250000", minRawSpam));
+		}
+	}
+
 	private void processVotes(String phone, int votes, long time) {
 		_db.processVotes(NumberAnalyzer.analyze(phone, "+49"), "+49", votes, time);
 	}

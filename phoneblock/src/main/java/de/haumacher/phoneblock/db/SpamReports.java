@@ -288,21 +288,29 @@ public interface SpamReports {
 			""")
 	DBNumberInfo getPhoneInfoAggregate(String prefix, int expectedLength);
 	
+	// Skip decayed numbers whose displayed votes have faded to 0: the net
+	// decoded evidence rounds to 0 once (SPAM_EVIDENCE - LEGIT_EVIDENCE) drops
+	// below #{minRawSpam} = maxRawSpam(1) (the projected "displayed votes >= 1"
+	// cutoff, in lock-step with DBNumberInfo.getVotes rounding). Plain
+	// SPAM_EVIDENCE > LEGIT_EVIDENCE would still navigate to a number that shows
+	// no votes. See #300.
 	@Select("""
 			select s.PHONE from NUMBERS s
 			WHERE s.PHONE > #{phone}
+			AND (s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE) >= #{minRawSpam}
 			ORDER BY s.PHONE
 			LIMIT 1
 			""")
-	String getNextPhone(String phone);
+	String getNextPhone(String phone, double minRawSpam);
 
 	@Select("""
 			select s.PHONE from NUMBERS s
 			WHERE s.PHONE < #{phone}
+			AND (s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE) >= #{minRawSpam}
 			ORDER BY s.PHONE DESC
 			LIMIT 1
 			""")
-	String getPrevPhone(String phone);
+	String getPrevPhone(String phone, double minRawSpam);
 	
 	@Select("""
 			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.SPAM_EVIDENCE as PUBLISHED_SPAM_EVIDENCE, s.LEGIT_EVIDENCE as PUBLISHED_LEGIT_EVIDENCE, s.HEAT, s.SPAM_EVIDENCE, s.LEGIT_EVIDENCE from NUMBERS s
