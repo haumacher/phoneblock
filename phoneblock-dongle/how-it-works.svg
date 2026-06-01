@@ -1,0 +1,166 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="780" viewBox="0 0 1100 780" font-family="'Segoe UI', 'Helvetica Neue', Arial, sans-serif">
+  <defs>
+    <!-- Pfeilspitzen -->
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#37474f"/>
+    </marker>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1565c0"/>
+    </marker>
+    <marker id="arrowOrange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#e65100"/>
+    </marker>
+    <marker id="arrowRed" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#c62828"/>
+    </marker>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000000" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+
+  <!-- Hintergrund -->
+  <rect x="0" y="0" width="1100" height="780" fill="#f4f6f8"/>
+
+  <!-- Titel -->
+  <text x="550" y="46" text-anchor="middle" font-size="28" font-weight="700" fill="#1b2a38">So wehrt der PhoneBlock-Dongle einen Spam-Anruf ab</text>
+  <text x="550" y="76" text-anchor="middle" font-size="16" fill="#5b6b78">Der Dongle prüft jeden Anruf, bevor Ihr Telefon klingelt – bekannte Spammer werden abgefangen.</text>
+
+  <!-- ============ KOMPONENTEN ============ -->
+
+  <!-- Spam-Anrufer -->
+  <g filter="url(#shadow)">
+    <rect x="30" y="350" width="155" height="120" rx="14" fill="#ffffff" stroke="#c62828" stroke-width="2"/>
+  </g>
+  <text x="107" y="392" text-anchor="middle" font-size="34">📞</text>
+  <text x="107" y="428" text-anchor="middle" font-size="15.5" font-weight="700" fill="#c62828">Spam-Anrufer</text>
+  <text x="107" y="450" text-anchor="middle" font-size="12.5" fill="#78848d">Werbung, Betrug …</text>
+
+  <!-- Telefon-Provider (als Server dargestellt) -->
+  <g filter="url(#shadow)">
+    <rect x="225" y="350" width="155" height="120" rx="14" fill="#ffffff" stroke="#90a4ae" stroke-width="2"/>
+  </g>
+  <g transform="translate(280, 366)">
+    <rect width="44" height="52" rx="4" fill="#eceff1" stroke="#607d8b" stroke-width="2"/>
+    <rect x="6" y="7" width="32" height="10" rx="2" fill="#ffffff" stroke="#90a4ae" stroke-width="1.2"/>
+    <circle cx="11.5" cy="12" r="1.7" fill="#43a047"/>
+    <rect x="6" y="21" width="32" height="10" rx="2" fill="#ffffff" stroke="#90a4ae" stroke-width="1.2"/>
+    <circle cx="11.5" cy="26" r="1.7" fill="#43a047"/>
+    <rect x="6" y="35" width="32" height="10" rx="2" fill="#ffffff" stroke="#90a4ae" stroke-width="1.2"/>
+    <circle cx="11.5" cy="40" r="1.7" fill="#fb8c00"/>
+  </g>
+  <text x="302" y="438" text-anchor="middle" font-size="15.5" font-weight="700" fill="#37474f">Telefon-Provider</text>
+  <text x="302" y="459" text-anchor="middle" font-size="12.5" fill="#78848d">Telefonnetz</text>
+
+  <!-- Router (Fritz!Box) -->
+  <g filter="url(#shadow)">
+    <rect x="420" y="350" width="145" height="120" rx="14" fill="#ffffff" stroke="#546e7a" stroke-width="2"/>
+  </g>
+  <text x="492" y="396" text-anchor="middle" font-size="32">📡</text>
+  <text x="492" y="432" text-anchor="middle" font-size="15.5" font-weight="700" fill="#37474f">Router</text>
+  <text x="492" y="453" text-anchor="middle" font-size="12.5" fill="#78848d">(Fritz!Box)</text>
+
+  <!-- PhoneBlock-Dongle: eigene Box, gleichberechtigt -->
+  <g filter="url(#shadow)">
+    <rect x="610" y="350" width="180" height="120" rx="14" fill="#e8f0fe" stroke="#1565c0" stroke-width="2.5"/>
+  </g>
+  <text x="700" y="394" text-anchor="middle" font-size="30">🔌</text>
+  <text x="700" y="430" text-anchor="middle" font-size="15.5" font-weight="700" fill="#1565c0">PhoneBlock-Dongle</text>
+  <text x="700" y="451" text-anchor="middle" font-size="12.5" fill="#5b6b78">steckt im USB-Port des Routers</text>
+
+  <!-- PhoneBlock-Server (Cloud) -->
+  <g filter="url(#shadow)">
+    <path d="M855 130
+             a40 40 0 0 1 78 -10
+             a34 34 0 0 1 52 30
+             a30 30 0 0 1 -6 60
+             l-150 0
+             a36 36 0 0 1 -10 -70
+             a34 34 0 0 1 36 -10 z"
+          fill="#ffffff" stroke="#2e7d32" stroke-width="2"/>
+  </g>
+  <text x="922" y="170" text-anchor="middle" font-size="30">☁️</text>
+  <text x="922" y="204" text-anchor="middle" font-size="16" font-weight="700" fill="#2e7d32">PhoneBlock-Server</text>
+  <text x="922" y="224" text-anchor="middle" font-size="12" fill="#5b6b78">Spam-Datenbank der Gemeinschaft</text>
+
+  <!-- Ihr Telefon zu Hause -->
+  <g filter="url(#shadow)">
+    <rect x="720" y="560" width="180" height="130" rx="14" fill="#ffffff" stroke="#90a4ae" stroke-width="2"/>
+  </g>
+  <text x="810" y="612" text-anchor="middle" font-size="38">☎️</text>
+  <text x="810" y="648" text-anchor="middle" font-size="16" font-weight="700" fill="#37474f">Ihr Telefon</text>
+  <text x="810" y="670" text-anchor="middle" font-size="13" fill="#2e7d32" font-weight="600">bleibt bei Spam still 🔕</text>
+
+  <!-- ============ ABLAUF-PFEILE ============ -->
+
+  <!-- 1: Spammer -> Provider -->
+  <line x1="185" y1="410" x2="223" y2="410" stroke="#37474f" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <circle cx="204" cy="388" r="13" fill="#37474f"/>
+  <text x="204" y="393" text-anchor="middle" font-size="14" font-weight="700" fill="#ffffff">1</text>
+  <text x="204" y="343" text-anchor="middle" font-size="12.5" fill="#37474f">wählt Ihre</text>
+  <text x="204" y="359" text-anchor="middle" font-size="12.5" fill="#37474f">Nummer</text>
+
+  <!-- 2: Provider -> Router -->
+  <line x1="380" y1="410" x2="418" y2="410" stroke="#37474f" stroke-width="2.5" marker-end="url(#arrow)"/>
+  <circle cx="399" cy="388" r="13" fill="#37474f"/>
+  <text x="399" y="393" text-anchor="middle" font-size="14" font-weight="700" fill="#ffffff">2</text>
+  <text x="399" y="351" text-anchor="middle" font-size="12.5" fill="#37474f">Anruf</text>
+
+  <!-- 3: Router -> Dongle -->
+  <line x1="565" y1="410" x2="608" y2="410" stroke="#1565c0" stroke-width="2.5" marker-end="url(#arrowBlue)"/>
+  <circle cx="586" cy="388" r="13" fill="#1565c0"/>
+  <text x="586" y="393" text-anchor="middle" font-size="14" font-weight="700" fill="#ffffff">3</text>
+  <text x="586" y="343" text-anchor="middle" font-size="12.5" fill="#1565c0" font-weight="600">Dongle</text>
+  <text x="586" y="359" text-anchor="middle" font-size="12.5" fill="#1565c0" font-weight="600">prüft</text>
+
+  <!-- 4: Dongle -> Server (Frage) -->
+  <path d="M745 350 C 800 295, 850 245, 902 205" fill="none" stroke="#1565c0" stroke-width="2.5" marker-end="url(#arrowBlue)"/>
+  <circle cx="812" cy="282" r="13" fill="#1565c0"/>
+  <text x="812" y="287" text-anchor="middle" font-size="14" font-weight="700" fill="#ffffff">4</text>
+  <text x="690" y="262" text-anchor="start" font-size="12.5" fill="#1565c0" font-weight="600">„Ist diese Nummer Spam?"</text>
+
+  <!-- 5: Server -> Dongle (Antwort) - dunkelorange + Warnsymbol -->
+  <path d="M952 222 C 985 300, 905 350, 783 354" fill="none" stroke="#e65100" stroke-width="2.5" marker-end="url(#arrowOrange)" stroke-dasharray="6 5"/>
+  <circle cx="935" cy="300" r="13" fill="#e65100"/>
+  <text x="935" y="305" text-anchor="middle" font-size="14" font-weight="700" fill="#ffffff">5</text>
+  <!-- Warndreieck -->
+  <g transform="translate(895, 268)">
+    <path d="M0,-15 L16,13 L-16,13 Z" fill="#fff3e0" stroke="#e65100" stroke-width="2.5" stroke-linejoin="round"/>
+    <line x1="0" y1="-5" x2="0" y2="5" stroke="#e65100" stroke-width="2.5"/>
+    <circle cx="0" cy="9" r="1.7" fill="#e65100"/>
+  </g>
+  <text x="958" y="345" text-anchor="start" font-size="12.5" fill="#e65100" font-weight="700">„Ja – als Spam</text>
+  <text x="958" y="362" text-anchor="start" font-size="12.5" fill="#e65100" font-weight="700">gemeldet!"</text>
+
+  <!-- 6: Dongle -> Telefon (blockiert) -->
+  <path d="M735 470 C 770 515, 790 535, 805 556" fill="none" stroke="#c62828" stroke-width="2.5" marker-end="url(#arrowRed)" stroke-dasharray="2 6"/>
+  <circle cx="757" cy="512" r="13" fill="#c62828"/>
+  <text x="757" y="517" text-anchor="middle" font-size="14" font-weight="700" fill="#ffffff">6</text>
+  <!-- Blockier-Symbol -->
+  <g transform="translate(700, 530)">
+    <circle cx="0" cy="0" r="17" fill="#ffffff" stroke="#c62828" stroke-width="3"/>
+    <line x1="-12" y1="12" x2="12" y2="-12" stroke="#c62828" stroke-width="3"/>
+  </g>
+  <text x="640" y="560" text-anchor="middle" font-size="12.5" fill="#c62828" font-weight="600">klingelt nicht durch</text>
+
+  <!-- Dongle fängt Anruf ab (Ansage) -->
+  <g transform="translate(40, 560)">
+    <rect x="0" y="0" width="430" height="110" rx="12" fill="#fff4e5" stroke="#ef6c00" stroke-width="1.5"/>
+    <text x="24" y="44" font-size="26">🔊</text>
+    <text x="62" y="36" font-size="14.5" font-weight="700" fill="#e65100">Stattdessen: Der Dongle nimmt den Anruf selbst an</text>
+    <text x="62" y="62" font-size="13" fill="#7a5230">und spielt dem Spammer eine Ansage vor –</text>
+    <text x="62" y="84" font-size="13" fill="#7a5230">so wird er hingehalten und Sie bleiben ungestört.</text>
+  </g>
+
+  <!-- ============ LEGENDE ============ -->
+  <g transform="translate(40, 730)">
+    <text x="0" y="0" font-size="13" font-weight="700" fill="#37474f">Legende:</text>
+    <line x1="68" y1="-4" x2="108" y2="-4" stroke="#1565c0" stroke-width="2.5"/>
+    <text x="116" y="0" font-size="12.5" fill="#5b6b78">Anfrage / Anruf-Prüfung</text>
+    <line x1="290" y1="-4" x2="330" y2="-4" stroke="#e65100" stroke-width="2.5" stroke-dasharray="6 5"/>
+    <text x="338" y="0" font-size="12.5" fill="#5b6b78">Spam-Warnung vom Server</text>
+    <line x1="540" y1="-4" x2="580" y2="-4" stroke="#c62828" stroke-width="2.5" stroke-dasharray="2 6"/>
+    <text x="588" y="0" font-size="12.5" fill="#5b6b78">abgefangen (Telefon bleibt still)</text>
+  </g>
+
+  <text x="1060" y="762" text-anchor="end" font-size="11" fill="#9aa7b0">PhoneBlock · phoneblock.net</text>
+</svg>
