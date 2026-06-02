@@ -48,6 +48,9 @@
 						<span th:text="${entry.votesWildcard}"></span>
 					</span>
 				</label>
+				<a class="button is-small is-ghost" data-onclick="showNumber" data-tx="t0033:4c6d59d6" th:href="@{/nums/{num}(num=${phoneInfo.zeroZero})}" title="عرض معلومات حول الرقم">
+					<span class="icon is-small"><i class="fa-solid fa-circle-info"></i></span>
+				</a>
 				<button class="button is-small is-ghost edit-toggle" data-tx="t0030:cd459696" title="تعديل التعليق" type="button">
 					<span class="icon is-small"><i class="fa-solid fa-pen-to-square"></i></span>
 				</button>
