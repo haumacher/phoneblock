@@ -435,6 +435,57 @@ public class TestDB {
 	}
 
 	@Test
+	void testActivityHistory() {
+		String a = "012300000";
+		String b = "045600000";
+		String c = "078900000";
+		// Two distinct days: the snapshot only captures numbers whose LASTPING is
+		// newer than the previous revision, so each day needs its own timestamp.
+		long t1 = System.currentTimeMillis();
+		long t2 = t1 + 24 * 60 * 60 * 1000;
+
+		// Day 1: 2 searches (a), 3 votes (b), 1 call (a).
+		addSearchHit(a, t1);
+		addSearchHit(a, t1);
+		processVotes(b, 3, t1);
+		recordCall(a, t1);
+		_db.updateHistory(30, t1);
+
+		// Day 2: 1 search (c), 2 votes (b), 2 calls (a, c).
+		addSearchHit(c, t2);
+		processVotes(b, 2, t2);
+		recordCall(a, t2);
+		recordCall(c, t2);
+		_db.updateHistory(30, t2);
+
+		Object[] history = _db.getCallsVotesSearchesHistory(30);
+		@SuppressWarnings("unchecked")
+		List<String> labels = (List<String>) history[0];
+		@SuppressWarnings("unchecked")
+		List<Integer> calls = (List<Integer>) history[1];
+		@SuppressWarnings("unchecked")
+		List<Integer> votes = (List<Integer>) history[2];
+		@SuppressWarnings("unchecked")
+		List<Integer> searches = (List<Integer>) history[3];
+
+		// One data point per snapshotted day; the deltas are summed across all numbers.
+		assertEquals(2, labels.size());
+		assertEquals(List.of(1, 2), calls);
+		assertEquals(List.of(3, 2), votes);
+		assertEquals(List.of(2, 1), searches);
+	}
+
+	private void recordCall(String phone, long now) {
+		PhoneNumer number = NumberAnalyzer.analyze(phone, "+49");
+		String id = NumberAnalyzer.getPhoneId(number);
+		try (SqlSession tx = _db.openSession()) {
+			SpamReports reports = tx.getMapper(SpamReports.class);
+			_db.recordCall(reports, number, id, "+49", now);
+			tx.commit();
+		}
+	}
+
+	@Test
 	void testQuote() {
 		assertEquals("\"\" 0x0 \"33a0a838-7b11-427a-\" 0x9 \"\" 0xD \"\" 0xA \"\" 0xC \"9c84-59b6ab6d3b0e\" 0x20 \"\"", DB.saveChars("\00033a0a838-7b11-427a-\t\r\n\f9c84-59b6ab6d3b0e "));
 	}

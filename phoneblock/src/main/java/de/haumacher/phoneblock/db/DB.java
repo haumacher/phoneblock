@@ -2612,6 +2612,49 @@ public class DB {
 		return result.subList(1, result.size());
 	}
 
+	/**
+	 * Daily number of intercepted calls, votes and searches for (at most) the
+	 * last <code>days</code> closed days, derived from {@code NUMBERS_HISTORY}.
+	 *
+	 * <p>
+	 * One data point per revision that recorded any change; the current day is
+	 * not yet snapshotted and therefore excluded.
+	 * </p>
+	 *
+	 * @return Four-element array: index 0 is a list of date labels (dd.MM., UTC),
+	 *         indices 1, 2 and 3 are the per-day calls, votes and searches counts.
+	 */
+	public Object[] getCallsVotesSearchesHistory(int days) {
+		List<DailyActivity> activity;
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+
+			Integer lastRevision = reports.getLastRevision();
+			if (lastRevision == null) {
+				activity = Collections.emptyList();
+			} else {
+				int minRev = lastRevision.intValue() - (days - 1);
+				activity = reports.getActivityHistory(minRev);
+			}
+		}
+
+		java.text.SimpleDateFormat fmt = new java.text.SimpleDateFormat("dd.MM.");
+		fmt.setTimeZone(TimeZone.getTimeZone("UTC"));
+
+		List<String> labels = new ArrayList<>();
+		List<Integer> callsData = new ArrayList<>();
+		List<Integer> votesData = new ArrayList<>();
+		List<Integer> searchesData = new ArrayList<>();
+		for (DailyActivity a : activity) {
+			labels.add(fmt.format(new Date(a.getCreated())));
+			callsData.add(Integer.valueOf(a.getCalls()));
+			votesData.add(Integer.valueOf(a.getVotes()));
+			searchesData.add(Integer.valueOf(a.getSearches()));
+		}
+
+		return new Object[] { labels, callsData, votesData, searchesData };
+	}
+
 	public int getUsers() {
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);

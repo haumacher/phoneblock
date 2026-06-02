@@ -454,6 +454,32 @@ public interface SpamReports {
 			where h.RMIN = #{rev}
 			""")
 	List<DBNumberHistory> getHistoryEntries(int rev);
+
+	/**
+	 * Per-revision (≈ per-day) increments of the cumulative {@code CALLS},
+	 * {@code VOTES} and {@code SEARCHES} counters since the given revision.
+	 *
+	 * <p>
+	 * For every number that changed in revision {@code h.RMIN} the increment is
+	 * its snapshot value minus the value of the immediately preceding snapshot
+	 * ({@code p.RMAX = h.RMIN - 1}, NULL for the first appearance). Summing over
+	 * all numbers of a revision yields the global daily activity. Revisions in
+	 * which no number changed do not appear (effectively never in production).
+	 * </p>
+	 */
+	@Select("""
+			select r.CREATED as created,
+			       sum(h.CALLS - coalesce(p.CALLS, 0)) as calls,
+			       sum(h.VOTES - coalesce(p.VOTES, 0)) as votes,
+			       sum(h.SEARCHES - coalesce(p.SEARCHES, 0)) as searches
+			from NUMBERS_HISTORY h
+			join REVISION r on r.ID = h.RMIN
+			left join NUMBERS_HISTORY p on p.PHONE = h.PHONE and p.RMAX = h.RMIN - 1
+			where h.RMIN >= #{minRev}
+			group by h.RMIN, r.CREATED
+			order by h.RMIN
+			""")
+	List<DailyActivity> getActivityHistory(int minRev);
 	
 	@Select(
 		"""
