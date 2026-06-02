@@ -189,6 +189,15 @@ message PhoneInfo {
 	 * </p>
 	 */
 	int spamConfidence;
+
+	/**
+	 * Total number of calls from this number that PhoneBlock has intercepted.
+	 *
+	 * <p>
+	 * A monotonic lifetime counter (<code>NUMBERS.CALLS</code>) incremented once per intercepted call: a call answered by the cloud answer bot, or a call reported as blocked by the mobile app or dongle via <code>/api/report-call</code>. Unlike {@link #getVotes()} and {@link #getHeat()} this value does not decay; it reflects the cumulative protection PhoneBlock provided for this number.
+	 * </p>
+	 */
+	int calls;
 }
 
 /** A single aggregated SPAM range matching a hash prefix in a {@link PrefixCheckResult}. */

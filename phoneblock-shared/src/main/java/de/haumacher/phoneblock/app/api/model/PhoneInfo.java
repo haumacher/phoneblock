@@ -54,6 +54,9 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	/** @see #getSpamConfidence() */
 	private static final String SPAM_CONFIDENCE__PROP = "spamConfidence";
 
+	/** @see #getCalls() */
+	private static final String CALLS__PROP = "calls";
+
 	private String _phone = "";
 
 	private int _votes = 0;
@@ -79,6 +82,8 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	private double _heat = 0.0d;
 
 	private int _spamConfidence = 0;
+
+	private int _calls = 0;
 
 	/**
 	 * Creates a {@link PhoneInfo} instance.
@@ -387,6 +392,30 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 		_spamConfidence = value;
 	}
 
+	/**
+	 * Total number of calls from this number that PhoneBlock has intercepted.
+	 *
+	 * <p>
+	 * A monotonic lifetime counter (<code>NUMBERS.CALLS</code>) incremented once per intercepted call: a call answered by the cloud answer bot, or a call reported as blocked by the mobile app or dongle via <code>/api/report-call</code>. Unlike {@link #getVotes()} and {@link #getHeat()} this value does not decay; it reflects the cumulative protection PhoneBlock provided for this number.
+	 * </p>
+	 */
+	public final int getCalls() {
+		return _calls;
+	}
+
+	/**
+	 * @see #getCalls()
+	 */
+	public de.haumacher.phoneblock.app.api.model.PhoneInfo setCalls(int value) {
+		internalSetCalls(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getCalls()} without chain call utility. */
+	protected final void internalSetCalls(int value) {
+		_calls = value;
+	}
+
 	/** Reads a new instance from the given reader. */
 	public static de.haumacher.phoneblock.app.api.model.PhoneInfo readPhoneInfo(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
 		de.haumacher.phoneblock.app.api.model.PhoneInfo result = new de.haumacher.phoneblock.app.api.model.PhoneInfo();
@@ -434,6 +463,8 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 		out.value(getHeat());
 		out.name(SPAM_CONFIDENCE__PROP);
 		out.value(getSpamConfidence());
+		out.name(CALLS__PROP);
+		out.value(getCalls());
 	}
 
 	@Override
@@ -452,6 +483,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 			case USER_COMMENT__PROP: setUserComment(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case HEAT__PROP: setHeat(in.nextDouble()); break;
 			case SPAM_CONFIDENCE__PROP: setSpamConfidence(in.nextInt()); break;
+			case CALLS__PROP: setCalls(in.nextInt()); break;
 			default: super.readField(in, field);
 		}
 	}
@@ -498,6 +530,9 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	/** XML attribute or element name of a {@link #getSpamConfidence} property. */
 	private static final String SPAM_CONFIDENCE__XML_ATTR = "spam-confidence";
 
+	/** XML attribute or element name of a {@link #getCalls} property. */
+	private static final String CALLS__XML_ATTR = "calls";
+
 	@Override
 	public String getXmlTagName() {
 		return PHONE_INFO__XML_ELEMENT;
@@ -524,6 +559,7 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 		out.writeAttribute(USER_COMMENT__XML_ATTR, getUserComment());
 		out.writeAttribute(HEAT__XML_ATTR, Double.toString(getHeat()));
 		out.writeAttribute(SPAM_CONFIDENCE__XML_ATTR, Integer.toString(getSpamConfidence()));
+		out.writeAttribute(CALLS__XML_ATTR, Integer.toString(getCalls()));
 	}
 
 	/** Serializes all fields that are written as XML elements. */
@@ -613,6 +649,10 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 				setSpamConfidence(Integer.parseInt(value));
 				break;
 			}
+			case CALLS__XML_ATTR: {
+				setCalls(Integer.parseInt(value));
+				break;
+			}
 			default: {
 				// Skip unknown attribute.
 			}
@@ -672,6 +712,10 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 			}
 			case SPAM_CONFIDENCE__XML_ATTR: {
 				setSpamConfidence(Integer.parseInt(in.getElementText()));
+				break;
+			}
+			case CALLS__XML_ATTR: {
+				setCalls(Integer.parseInt(in.getElementText()));
 				break;
 			}
 			default: {

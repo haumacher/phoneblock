@@ -65,6 +65,8 @@
 
 		<li data-tx="t0052:ae3458db" th:if="${state != 'legitimate' and state != 'whitelisted' and info.heat &gt; 0}">Nåværende aktivitet: <th:block th:text="${#numbers.formatDecimal(info.heat, 1, 1)}"></th:block> meldinger/dag</li>
 
+		<li data-tx="t0053:f02b202" th:if="${state != 'legitimate' and state != 'whitelisted' and info.calls &gt; 0}">Oppfangede anrop: <th:block th:text="${info.calls}"></th:block></li>
+
 		<li data-tx="t0013:b2e85cd7" th:if="${info.votes} &gt; 0 or ${info.votesWildcard} &gt; 0">Siste klage fra: <th:block th:text="${#dates.format(#converters.fromEpoch(info.lastUpdate))}"> </th:block></li>
 
 		<li data-tx="t0014:578dd8de" th:if="${info.votes} &gt; 0 and ${info.dateAdded} &gt; 0">Antall aktive siden: <th:block th:text="${#dates.format(#converters.fromEpoch(info.dateAdded))}"></th:block></li>

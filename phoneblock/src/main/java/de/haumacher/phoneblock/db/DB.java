@@ -1834,6 +1834,10 @@ public class DB {
 			Math.max(decodedNumberSpam, decodedBlockSpam),
 			Math.max(decodedNumberLegit, decodedBlockLegit)));
 
+		// Lifetime counter of calls PhoneBlock has intercepted for this number
+		// (answer bot pickups plus blocked-call reports from app/dongle, #300).
+		result.setCalls(info.getCalls());
+
 		return result;
 	}
 

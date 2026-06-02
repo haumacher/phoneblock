@@ -1387,6 +1387,10 @@
 					"spamConfidence": {
 						"type": "integer",
 						"description": "Confidence (0-100) that this number is spam. Wilson lower bound on SPAM_EVIDENCE / (SPAM_EVIDENCE + LEGIT_EVIDENCE), with both inputs decayed to the request time on a ~4-month half-life. The evidence mass acts as the denominator, so two spam reports with no opposition read low ('maybe accidental'), a hotly-contested 1000-vs-998 number also reads low ('disputed'), and a 1000-with-no-opposition number reads high. High values therefore require both direction AND mass — independent of the cumulative 'votes' field, which has no mass component."
+					},
+					"calls": {
+						"type": "integer",
+						"description": "Total number of calls from this number that PhoneBlock has intercepted. A monotonic lifetime counter incremented once per intercepted call: a call answered by the cloud answer bot, or a call reported as blocked by the mobile app or dongle via /api/report-call. Unlike 'votes' and 'heat' this value does not decay; it reflects the cumulative protection PhoneBlock provided for this number."
 					}
 				}
 			},
