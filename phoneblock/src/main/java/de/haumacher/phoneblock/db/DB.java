@@ -539,6 +539,10 @@ public class DB {
 					// stale rainbow-table entries left by the old search/meta insert
 					// paths (#300); no Java hook needed.
 
+					// migration 38 adds NUMBERS_HISTORY_PHONE_IDX (PHONE, RMIN) and
+					// NUMBERS_HISTORY_RMIN_IDX (RMIN) so per-number history reads and
+					// revision scans stop full-scanning the table; no Java hook needed.
+
 					users.updateProperty("db.version", Integer.toString(version));
 					session.commit();
 				}
