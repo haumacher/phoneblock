@@ -1036,6 +1036,7 @@ static esp_err_t handle_errors(httpd_req_t *req)
     for (int i = 0; i < n; i++) {
         cJSON *o = cJSON_CreateObject();
         cJSON_AddNumberToObject(o, "age_s",   (double)((now_us - errs[i].at_us) / 1000000));
+        cJSON_AddStringToObject(o, "level",   errs[i].level == ESP_LOG_ERROR ? "E" : "W");
         cJSON_AddStringToObject(o, "tag",     errs[i].tag);
         cJSON_AddStringToObject(o, "message", errs[i].message);
         cJSON_AddItemToArray(arr, o);

@@ -153,10 +153,10 @@ const I18N = {
     'status.thresholds.range.help': 'Stimmen gegen Nachbarn im selben 10er- oder 100er-Block. Default 10. Wert 0 schaltet Range-Block ab — dann zählen nur Direkt-Treffer.',
     'status.thresholds.saved': 'Gespeichert.',
     'status.thresholds.invalid': 'Ungültiger Wert.',
-    'status.errors.title': 'Fehler',
-    'status.errors.empty': 'keine Fehler',
+    'status.errors.title': 'Protokoll',
+    'status.errors.empty': 'keine Einträge',
     'status.errors.ago': 'vor {age}',
-    'status.errors.clear': 'Log leeren',
+    'status.errors.clear': 'Protokoll leeren',
     'status.auth.title': 'Zugangsschutz',
     'status.auth.intro': 'Schützt die Konfigurationsoberfläche im laufenden Betrieb. Aktivierst Du den Schutz, fragt diese Seite ab dann nach einer Anmeldung über Deinen PhoneBlock-Account, bevor sie Anrufdaten zeigt oder Einstellungen entgegennimmt.',
     'status.auth.disabled': 'Zugangsschutz aus — jeder im LAN erreicht das Dashboard ohne Anmeldung.',
@@ -360,8 +360,8 @@ const I18N = {
     'status.thresholds.range.help': 'Votes against neighbors in the same 10/100-block. Default 10. Set to 0 to disable range-based blocking — only direct hits count then.',
     'status.thresholds.saved': 'Saved.',
     'status.thresholds.invalid': 'Invalid value.',
-    'status.errors.title': 'Errors',
-    'status.errors.empty': 'no errors',
+    'status.errors.title': 'Log',
+    'status.errors.empty': 'no entries',
     'status.errors.ago': '{age} ago',
     'status.errors.clear': 'Clear log',
     'status.auth.title': 'Access protection',
@@ -555,8 +555,8 @@ const I18N = {
     'status.calls.clear': 'Vider la liste',
     'status.calls.log_known': 'Journaliser les appels connus',
     'status.calls.log_known.help': 'Si désactivé, les appels provenant de numéros du carnet d’adresses et les codes internes (**, *…) n’apparaissent pas dans la liste — les compteurs ci-dessus restent mis à jour.',
-    'status.errors.title': 'Erreurs',
-    'status.errors.empty': 'aucune erreur',
+    'status.errors.title': 'Journal',
+    'status.errors.empty': 'aucune entrée',
     'status.errors.ago': 'il y a {age}',
     'status.errors.clear': 'Vider le journal',
     'status.auth.title': 'Protection d’accès',
@@ -750,8 +750,8 @@ const I18N = {
     'status.calls.clear': 'Vaciar lista',
     'status.calls.log_known': 'Registrar llamadas conocidas',
     'status.calls.log_known.help': 'Si está desactivado, las llamadas de números de la agenda y los códigos internos (**, *…) no aparecen en la lista — los contadores de arriba se siguen actualizando.',
-    'status.errors.title': 'Errores',
-    'status.errors.empty': 'sin errores',
+    'status.errors.title': 'Registro',
+    'status.errors.empty': 'sin entradas',
     'status.errors.ago': 'hace {age}',
     'status.errors.clear': 'Vaciar registro',
     'status.auth.title': 'Protección de acceso',
@@ -1857,11 +1857,14 @@ async function refreshAll(){
   const clearBtn = $('errorsClear');
   const hasErrs = errs && errs.errors.length;
   if (hasErrs){
-    list.innerHTML = errs.errors.map(e =>
-      '<div class="error-row"><strong>[' + esc(e.tag) + ']</strong> '
-      + esc(e.message) + ' <span class="muted">'
-      + esc(t('status.errors.ago', {age: fmtSec(e.age_s)})) + '</span></div>'
-    ).join('');
+    list.innerHTML = errs.errors.map(e => {
+      // Severity colour on the tag: errors red, warnings amber.
+      const sev = e.level === 'E' ? 'color:#d93025' : 'color:#e8830c';
+      return '<div class="error-row"><strong style="' + sev + '">['
+        + esc(e.tag) + ']</strong> ' + esc(e.message)
+        + ' <span class="muted">'
+        + esc(t('status.errors.ago', {age: fmtSec(e.age_s)})) + '</span></div>';
+    }).join('');
   } else {
     list.innerHTML = '<p class="muted">' + esc(t('status.errors.empty')) + '</p>';
   }

@@ -88,8 +88,9 @@ static TaskHandle_t s_sip_task = NULL;
 // granted/2, so a single missed refresh leaves ~granted/2 of valid
 // binding before the FB drops us. Within that window, transient
 // failures retry silently — only when the binding actually lapses
-// without recovery is a stats_record_error emitted. 0 = no valid
-// binding (boot, after factory reset, after a definitive failure).
+// without recovery is an ERROR logged (and thereby surfaced on the web
+// UI via the log hook). 0 = no valid binding (boot, after factory
+// reset, after a definitive failure).
 static int64_t s_binding_expires_at_us = 0;
 // Most recent transient-failure reason, stashed so that if the binding
 // does eventually expire without a successful refresh we can surface
@@ -455,10 +456,11 @@ typedef enum {
 // REGISTER_TRANSIENT (network/timeout — caller may want to retry
 // silently while a still-valid binding gives us cover) or
 // REGISTER_DEFINITIVE (registrar said "no" or the protocol is broken
-// in a way that retries can't fix). Does NOT call stats_record_error
-// itself — the policy of when to surface a failure to the dashboard
-// belongs at the caller, which knows whether it's an initial register,
-// a periodic refresh, or a defensive re-register after a TCP reconnect.
+// in a way that retries can't fix). Does NOT log the failure itself —
+// the policy of when to surface it (and thus mirror it to the web UI via
+// the log hook) belongs at the caller, which knows whether it's an
+// initial register, a periodic refresh, or a defensive re-register
+// after a TCP reconnect.
 static register_outcome_t do_register(sip_ctx_t *c, int *granted_expires,
                                       char *err, size_t err_cap)
 {
@@ -1181,7 +1183,6 @@ static void sip_task(void *arg)
                  "transport open failed (%s %.40s:%d) — check host/port",
                  config_sip_transport(), dial_host, dial_port);
         ESP_LOGE(TAG, "%s — aborting SIP task", msg);
-        stats_record_error("sip", msg);
         s_sip_task = NULL;
         vTaskDelete(NULL);
         return;
@@ -1206,7 +1207,6 @@ static void sip_task(void *arg)
                  "transport %.8s ignored — firmware implements UDP/TCP/TLS only",
                  tr);
         ESP_LOGW(TAG, "%s", msg);
-        stats_record_error("sip", msg);
     }
     // TLS protects only the signaling. Without SRTP (Phase 5) the audio
     // path is still RTP/AVP cleartext on UDP/RTP. Surface that visibly
@@ -1215,7 +1215,6 @@ static void sip_task(void *arg)
         const char *msg =
             "TLS active but RTP is still plaintext (SRTP arrives in Phase 5)";
         ESP_LOGW(TAG, "%s", msg);
-        stats_record_error("sip", msg);
     }
     if (strcmp(config_sip_srtp(), "off") != 0
         && strcmp(config_sip_srtp(), "") != 0) {
@@ -1224,7 +1223,6 @@ static void sip_task(void *arg)
                  "SRTP %.12s ignored — firmware only does plain RTP",
                  config_sip_srtp());
         ESP_LOGW(TAG, "%s", msg);
-        stats_record_error("sip", msg);
     }
     const int retry_delay_s = 30;
     char *rx = NULL;
@@ -1257,7 +1255,6 @@ static void sip_task(void *arg)
         s_pending_error[0] = '\0';
         refresh_at_us = esp_timer_get_time() + (int64_t)(granted_expires / 2) * 1000000LL;
     } else {
-        if (err[0]) stats_record_error("sip", err);
         ESP_LOGE(TAG, "initial registration failed (%s), retry in %d s",
                  err[0] ? err : "no detail", retry_delay_s);
         s_binding_expires_at_us = 0;
@@ -1268,7 +1265,6 @@ static void sip_task(void *arg)
     rx = malloc(SIP_RX_BUF_SIZE);
     if (!rx) {
         ESP_LOGE(TAG, "malloc rx buffer failed — aborting SIP task");
-        stats_record_error("sip", "out of memory in SIP task");
         s_sip_task = NULL;
         vTaskDelete(NULL);
         return;
@@ -1324,7 +1320,6 @@ static void sip_task(void *arg)
                 s_pending_error[0] = '\0';
                 refresh_at_us = esp_timer_get_time() + (int64_t)(granted_expires / 2) * 1000000LL;
             } else {
-                if (err[0]) stats_record_error("sip", err);
                 ESP_LOGE(TAG, "REGISTER with new config failed (%s), retry in %d s",
                          err[0] ? err : "no detail", retry_delay_s);
                 s_binding_expires_at_us = 0;
@@ -1339,12 +1334,10 @@ static void sip_task(void *arg)
         // extension, rather than waiting out the (expires/2) refresh
         // window during which incoming INVITEs would be lost.
         if (sip_transport_consume_reconnect(ctx.transport)) {
-            ESP_LOGI(TAG, "transport reconnected → re-REGISTER");
-            // Informational marker so the operator can correlate a
-            // transport flap with whatever else they are seeing in
-            // the dashboard. Kept regardless of the do_register
-            // outcome below.
-            stats_record_error("sip", "TCP reconnect → re-REGISTER");
+            // A dropped TCP/TLS connection is worth surfacing: WARN so the
+            // log hook records it, letting the operator correlate a
+            // transport flap with whatever else they see in the log.
+            ESP_LOGW(TAG, "transport reconnected → re-REGISTER");
             err[0] = '\0';
             r = do_register(&ctx, &granted_expires, err, sizeof(err));
             ok = (r == REGISTER_OK);
@@ -1356,7 +1349,8 @@ static void sip_task(void *arg)
                 s_pending_error[0] = '\0';
                 refresh_at_us = esp_timer_get_time() + (int64_t)(granted_expires / 2) * 1000000LL;
             } else {
-                if (err[0]) stats_record_error("sip", err);
+                ESP_LOGE(TAG, "re-REGISTER after reconnect failed (%s), retry in %d s",
+                         err[0] ? err : "no detail", retry_delay_s);
                 s_binding_expires_at_us = 0;
                 s_pending_error[0] = '\0';
                 refresh_at_us = esp_timer_get_time() + (int64_t)retry_delay_s * 1000000LL;
@@ -1448,7 +1442,6 @@ static void sip_task(void *arg)
                     snprintf(msg, sizeof(msg), "%.127s",
                              err[0] ? err : "REGISTER failed");
                 }
-                stats_record_error("sip", msg);
                 ESP_LOGE(TAG, "re-REGISTER failed: %s — retry in %d s",
                          msg, retry_delay_s);
                 s_binding_expires_at_us = 0;

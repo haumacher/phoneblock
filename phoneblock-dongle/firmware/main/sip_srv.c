@@ -202,7 +202,7 @@ bool sip_srv_lookup(const char *service, const char *proto,
     // Resolver must be configured (DHCP usually fills this in).
     const ip_addr_t *dns_ip = dns_getserver(0);
     if (!dns_ip || ip_addr_isany(dns_ip)) {
-        ESP_LOGD(TAG, "no DNS server configured; skipping SRV");
+        ESP_LOGW(TAG, "no DNS server configured; skipping SRV");
         return false;
     }
 

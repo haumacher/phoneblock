@@ -209,7 +209,6 @@ static void run_once(void)
         snprintf(msg, sizeof(msg), "list: %.60s",
                  detail[0] ? detail : "network");
         set_status_result(false, 0, 0, msg);
-        stats_record_error("sync", msg);
         return;
     }
 

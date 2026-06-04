@@ -24,6 +24,7 @@
 #include "config.h"
 #include "crashreport.h"
 #include "firmware_update.h"
+#include "log_capture.h"
 #include "report_queue.h"
 #include "selftest.h"
 #include "sip_register.h"
@@ -182,6 +183,11 @@ void app_main(void)
     ESP_ERROR_CHECK(esp_event_loop_create_default());
 
     stats_setup();
+    // Install the log hook right after the stats ring exists: from here
+    // on, every WARN/ERROR line (ours and the libraries') is mirrored to
+    // the web UI's log panel. Earlier boot lines (nvs/netif init) predate
+    // it, which is fine — those are pre-config and visible on serial.
+    log_capture_start();
     config_load();
     announcement_init();
     // Start the LED early so the user sees "CONNECTING" (or
