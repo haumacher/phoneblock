@@ -495,10 +495,13 @@ static esp_err_t handle_config_post(httpd_req_t *req)
 
     config_update_t u = {
         .sip_host   = new_host,
-        // Port present in the form (even "0" = auto) writes through;
-        // absent leaves the stored value alone. 0 must be storable so a
-        // provider switch can clear a stale pinned port back to auto/SRV.
-        .has_sip_port = have_sip_port && sip_port_s[0],
+        // Port present in the form writes through; absent (a partial
+        // update such as a settings toggle) leaves the stored value
+        // alone. An empty *or* "0" field both mean "auto" (0 → DNS-SRV /
+        // transport default): this matches the prefill, which renders a
+        // stored 0 as an empty field, and lets a provider switch clear a
+        // stale pinned port back to auto.
+        .has_sip_port = have_sip_port,
         .sip_port     = have_sip_port && sip_port_s[0] ? atoi(sip_port_s) : 0,
         .sip_user   = have_sip_user && sip_user[0]  ? sip_user  : NULL,
         // Password resolution, in order:
