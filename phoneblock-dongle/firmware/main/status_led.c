@@ -149,6 +149,14 @@ static void led_task(void *arg)
     };
     gpio_config(&cfg);
 
+    // Diagnostic: report the smallest free stack seen so far — i.e. right
+    // after gpio_config(), this task's deepest logging call. This is the
+    // hard number behind the stack sizing (was a 2 KB stack overflowing
+    // here once the log hook was added); keep an eye on it staying well
+    // clear of 0.
+    ESP_LOGI(TAG, "stack high-water mark: %u bytes free",
+             (unsigned)uxTaskGetStackHighWaterMark(NULL));
+
     led_state_t last_state = (led_state_t)-1;
     pattern_t   pat        = pattern_for(ST_CONNECTING);
     uint8_t     tick       = 0;
@@ -177,6 +185,11 @@ void status_led_start(void)
         ESP_LOGI(TAG, "LED task disabled (CONFIG_STATUS_LED_GPIO=-1)");
         return;
     }
-    xTaskCreate(led_task, "status_led", 2048,
+    // 2.5 KB, not 2 KB: the global log hook (log_capture.c) adds a ~64 B
+    // frame to *every* log call — including the deep multi-arg INFO line
+    // gpio_config() emits — and this task's old 2 KB left less than that
+    // in reserve. The headroom covers the hook plus margin for future log
+    // formats; see the note on stack sizing in log_capture.c.
+    xTaskCreate(led_task, "status_led", 2560,
                 (void *)LED_ARG_PACK(gpio, active_low), 1, NULL);
 }

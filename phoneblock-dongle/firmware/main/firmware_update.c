@@ -209,7 +209,10 @@ static void reboot_task(void *arg)
 
 void firmware_schedule_reboot(void)
 {
-    xTaskCreate(reboot_task, "fw_reboot", 2048, NULL, 5, NULL);
+    // 2.5 KB: this task logs a WARN line (→ capture path + the log hook's
+    // frame) right before esp_restart(); 2 KB left too little headroom for
+    // the hook. See the stack-sizing note in log_capture.c.
+    xTaskCreate(reboot_task, "fw_reboot", 2560, NULL, 5, NULL);
 }
 
 // Fetch the JSON manifest into the caller-provided buffer. Returns

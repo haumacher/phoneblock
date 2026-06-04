@@ -122,35 +122,48 @@ static void capture_line(int level, const char *fmt, va_list ap)
     xSemaphoreGive(s_lock);
 }
 
+// STACK SIZING — important. This hook runs on the stack of whatever task
+// emits the log line, and a global esp_log_set_vprintf hook unavoidably
+// adds a frame there: on Xtensa GCC does NOT tail-call the console
+// hand-off below (windowed ABI — verified in the disassembly: callx8 +
+// retw.n), so log_hook keeps a ~64 B frame on EVERY log call, INFO
+// included; WARN/ERROR adds capture_line's small frame on top (the ~340 B
+// of format scratch is file-static above, not on the stack, so it is not
+// doubled with the console's vprintf). Consequence: every task that logs
+// must carry that headroom. Most do; the few deliberately small ones that
+// log are sized up explicitly (status_led, fw_reboot). The esp_event task
+// (CONFIG_ESP_SYSTEM_EVENT_TASK_STACK_SIZE, 2304 B) warns from wifi.c and
+// is the next candidate if a wifi warning ever overflows it.
 static int log_hook(const char *fmt, va_list ap)
 {
-    va_list copy;
-    va_copy(copy, ap);
+    // Level detection inlined (no call) to keep this frame minimal. The
+    // level letter is a literal in the format string; skip an optional
+    // leading ANSI colour escape first.
+    const char *p = fmt;
+    if (*p == '\033') { while (*p && *p != 'm') p++; if (*p) p++; }
+    char lvl = *p;
 
-    // Console first, unchanged — diagnosis on the web UI must never come
-    // at the cost of the serial log.
-    int ret = s_console ? s_console(fmt, ap) : vprintf(fmt, ap);
-
-    // The level letter is a literal in the format string, so we decide
-    // here, with no buffers on the stack: INFO/DEBUG lines (the vast
-    // majority) skip capture entirely.
-    char lvl = log_capture_level(fmt);
+    // Only WARN/ERROR pays for capture (a va_copy + the formatting in
+    // capture_line). INFO/DEBUG — the overwhelming majority, including
+    // deep driver lines like the GPIO dump — fall straight through.
     if (lvl == 'E' || lvl == 'W') {
+        va_list copy;
+        va_copy(copy, ap);
         capture_line(lvl == 'E' ? ESP_LOG_ERROR : ESP_LOG_WARN, fmt, copy);
+        va_end(copy);
     }
 
-    va_end(copy);
-    return ret;
+    return s_console(fmt, ap);
 }
 
 void log_capture_start(void)
 {
     s_lock = xSemaphoreCreateMutex();
     // esp_log_set_vprintf returns the previous sink; chain to it so the
-    // console keeps working. No recursion guard is needed beyond the
-    // try-lock: nothing in the capture path (vsnprintf, the parser,
-    // stats_record_error) logs.
+    // console keeps working. Guarantee it is non-NULL so log_hook can
+    // call it unconditionally (an `?:` there would block the tail-call).
     s_console = esp_log_set_vprintf(&log_hook);
+    if (!s_console) s_console = &vprintf;
 }
 
 #endif // ESP_PLATFORM
