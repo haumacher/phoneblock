@@ -140,10 +140,12 @@ CONFIG_SPIFFS_PAGE_SIZE=1024
 # /api/... and /mobile/... themselves.
 CONFIG_PHONEBLOCK_BASE_URL="https://phoneblock.net/phoneblock"
 
-# OTA manifest: same esp-web-tools manifest the browser-based
-# installer reads, so there is exactly one source of truth per
-# release. Override in .local to point at a staging CDN bucket.
-CONFIG_PHONEBLOCK_OTA_MANIFEST_URL="https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json"
+# OTA base URL: the firmware appends "/<channel>/manifest.json" (the
+# channel is a runtime web-UI toggle, "stable" by default). The polled
+# file is the same esp-web-tools manifest the browser-based installer
+# reads, so there is one source of truth per release. Override in
+# .local to point at a staging CDN bucket.
+CONFIG_PHONEBLOCK_OTA_BASE_URL="https://cdn.phoneblock.net/dongle/firmware"
 
 # SIP. Registrar/username/password are written to NVS by the web
 # setup wizard. SIP_EXPIRES is the *requested* upper bound for the

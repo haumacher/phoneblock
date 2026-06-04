@@ -31,6 +31,7 @@ static const char *NS   = "phoneblock";
 #define K_AUTH_USER     "auth_user"
 #define K_AUTH_PERSIST  "auth_persist"
 #define K_AUTO_UPDATE   "auto_update"
+#define K_OTA_CHANNEL   "ota_channel"
 #define K_CRASH_REPORT  "crash_report"
 #define K_ACCEPT_TEST   "accept_test"
 #define K_CONTACT_HOST  "contact_host"
@@ -77,6 +78,7 @@ typedef struct {
     char auth_user[64];      // pinned PhoneBlock user-name; empty = no pin
     char auth_persist[33];   // 32 hex chars + NUL; empty = nobody is "remembered"
     char auto_update[4];     // "1" | "0" (or empty = default on)
+    char ota_channel[8];     // "stable" | "beta" (empty = default stable)
     char crash_report[4];    // "1" | "0" (or empty = default on)
     char accept_test[4];     // "1" | "0" (empty = use Kconfig default)
     char contact_host[64];
@@ -145,6 +147,7 @@ void config_load(void)
         s_config.auth_user[0]     = '\0';
         s_config.auth_persist[0]  = '\0';
         s_config.auto_update[0]   = '\0';
+        s_config.ota_channel[0]   = '\0';
         s_config.crash_report[0]  = '\0';
         s_config.accept_test[0]   = '\0';
         copy_default(s_config.contact_host, sizeof(s_config.contact_host), CONFIG_SIP_CONTACT_HOST_OVERRIDE);
@@ -197,6 +200,8 @@ void config_load(void)
              s_config.auth_persist, sizeof(s_config.auth_persist));
     load_str(h, K_AUTO_UPDATE, "",
              s_config.auto_update, sizeof(s_config.auto_update));
+    load_str(h, K_OTA_CHANNEL, "",
+             s_config.ota_channel, sizeof(s_config.ota_channel));
     load_str(h, K_CRASH_REPORT, "",
              s_config.crash_report, sizeof(s_config.crash_report));
     load_str(h, K_ACCEPT_TEST, "",
@@ -261,6 +266,14 @@ bool        config_auto_update_enabled(void)
     // tracks the released stream. Only an explicit "0" freezes it,
     // typically after a manual firmware upload from the web UI.
     return s_config.auto_update[0] != '0';
+}
+const char *config_ota_channel(void)
+{
+    // Allowlist: anything that isn't exactly "beta" maps to the
+    // default "stable". The result is spliced straight into the OTA
+    // poll URL path, so clamping here means a corrupt or unexpected
+    // NVS value can never redirect the dongle to an arbitrary host.
+    return strcmp(s_config.ota_channel, "beta") == 0 ? "beta" : "stable";
 }
 bool        config_crash_report_enabled(void)
 {
@@ -414,6 +427,8 @@ esp_err_t config_update(const config_update_t *u)
                                         s_config.auth_persist, sizeof(s_config.auth_persist));
     if (err == ESP_OK) err = set_str_if(h, K_AUTO_UPDATE, u->auto_update,
                                         s_config.auto_update, sizeof(s_config.auto_update));
+    if (err == ESP_OK) err = set_str_if(h, K_OTA_CHANNEL, u->ota_channel,
+                                        s_config.ota_channel, sizeof(s_config.ota_channel));
     if (err == ESP_OK) err = set_str_if(h, K_CRASH_REPORT, u->crash_report,
                                         s_config.crash_report, sizeof(s_config.crash_report));
     if (err == ESP_OK) err = set_str_if(h, K_ACCEPT_TEST, u->accept_test_calls,

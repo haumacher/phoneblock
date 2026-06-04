@@ -203,6 +203,10 @@ const I18N = {
     'status.fw.failed': 'Letztes Update auf Version {version} hat den Boot nicht überstanden — automatisch zurückgerollt. Auto-Update überspringt diese Version. Klick auf „Auf Aktualisierung prüfen", um es erneut zu versuchen.',
     'status.fw.auto_update': 'Tägliche Auto-Aktualisierung',
     'status.fw.auto_update.help': 'Wenn aktiv, prüft der Dongle einmal pro Tag, ob auf der PhoneBlock-CDN eine neuere Version liegt, und installiert sie automatisch. Beim manuellen Hochladen einer Firmware wird diese Option automatisch ausgeschaltet, damit der Daily-Check Deinen handgewählten Build nicht überschreibt — schalte sie hier wieder ein, wenn Du dem Release-Strom folgen willst.',
+    'status.fw.channel': 'Update-Kanal',
+    'status.fw.channel.help': 'Wähle „Beta", wenn Du Testversionen vorab erhalten möchtest — etwa um einen gemeldeten Fehler gegenzuprüfen. „Stabil" liefert nur freigegebene Versionen. Sobald eine getestete Version final freigegeben wird, wechselst Du automatisch wieder auf diese.',
+    'status.fw.channel.stable': 'Stabil',
+    'status.fw.channel.beta': 'Beta (Testversionen)',
     'status.fw.crash_report': 'Fehlerberichte an phoneblock.net senden',
     'status.fw.crash_report.help': 'Wenn der Dongle wegen eines Programmfehlers neu startet, wird ein Speicherauszug auf einer dafür reservierten Flash-Partition abgelegt. Ist diese Option aktiv, lädt der Dongle den Auszug beim nächsten Start an phoneblock.net hoch — das hilft uns, Felddefekte zu finden und zu fixen. Schalte die Option aus, wenn der Dongle solche Berichte nicht senden soll; gespeicherte Auszüge werden dann lokal gelöscht statt verschickt.',
     'status.sync.title': 'Sperrlisten-Sync',
@@ -407,6 +411,10 @@ const I18N = {
     'status.fw.failed': 'Last update to version {version} did not survive the boot — automatically rolled back. Auto-update will skip this version. Click "Check for update" to retry.',
     'status.fw.auto_update': 'Daily auto-update',
     'status.fw.auto_update.help': 'When on, the dongle checks the PhoneBlock CDN once a day for a newer version and installs it automatically. Manually uploading a firmware turns this off so the daily check does not overwrite your hand-picked build — turn it back on here once you want to follow the released stream again.',
+    'status.fw.channel': 'Update channel',
+    'status.fw.channel.help': 'Choose "Beta" to receive test builds early — for example to verify a bug you reported. "Stable" only delivers released versions. Once a tested version is finally released, you switch back to it automatically.',
+    'status.fw.channel.stable': 'Stable',
+    'status.fw.channel.beta': 'Beta (test builds)',
     'status.fw.crash_report': 'Send crash reports to phoneblock.net',
     'status.fw.crash_report.help': 'When the dongle reboots after a software panic, a memory snapshot is written to a reserved flash partition. With this option on, the dongle uploads the snapshot to phoneblock.net on the next boot — that helps us find and fix field bugs. Switch it off to suppress reports; stored snapshots are then erased locally instead of sent.',
     'status.sync.title': 'Blocklist sync',
@@ -599,6 +607,10 @@ const I18N = {
     'status.fw.failed': 'La dernière mise à jour vers la version {version} n’a pas survécu au démarrage — restauration automatique. La mise à jour automatique ignore cette version. Cliquez sur « Vérifier les mises à jour » pour réessayer.',
     'status.fw.auto_update': 'Mise à jour automatique quotidienne',
     'status.fw.auto_update.help': 'Si activée, le dongle vérifie une fois par jour la présence d’une version plus récente sur le CDN PhoneBlock et l’installe automatiquement. Téléverser un firmware manuellement désactive cette option pour que la vérification quotidienne n’écrase pas ta version choisie — réactive-la ici quand tu veux suivre le flux des versions publiées.',
+    'status.fw.channel': 'Canal de mise à jour',
+    'status.fw.channel.help': 'Choisis « Bêta » pour recevoir les versions de test en avance — par exemple pour vérifier un bug que tu as signalé. « Stable » ne fournit que les versions publiées. Dès qu’une version testée est publiée définitivement, tu y reviens automatiquement.',
+    'status.fw.channel.stable': 'Stable',
+    'status.fw.channel.beta': 'Bêta (versions de test)',
     'status.fw.crash_report': 'Envoyer les rapports d’erreur à phoneblock.net',
     'status.fw.crash_report.help': 'Si le dongle redémarre après une erreur logicielle, un instantané mémoire est écrit dans une partition flash réservée. Si cette option est activée, le dongle envoie l’instantané à phoneblock.net au prochain démarrage — cela nous aide à identifier et corriger les bugs en production. Désactive-la pour empêcher l’envoi ; les instantanés stockés sont alors effacés localement au lieu d’être transmis.',
     'status.sync.title': 'Synchro liste de blocage',
@@ -791,6 +803,10 @@ const I18N = {
     'status.fw.failed': 'La última actualización a la versión {version} no superó el arranque — se revirtió automáticamente. La actualización automática omitirá esta versión. Pulsa «Buscar actualizaciones» para volver a intentarlo.',
     'status.fw.auto_update': 'Actualización automática diaria',
     'status.fw.auto_update.help': 'Si está activada, el dongle comprueba una vez al día si hay una versión más nueva en la CDN de PhoneBlock y la instala automáticamente. Subir un firmware manualmente desactiva esta opción para que la comprobación diaria no sobrescriba tu compilación elegida — vuelve a activarla aquí cuando quieras seguir el flujo de versiones publicadas.',
+    'status.fw.channel': 'Canal de actualización',
+    'status.fw.channel.help': 'Elige «Beta» para recibir versiones de prueba con antelación — por ejemplo para verificar un error que has reportado. «Estable» solo entrega versiones publicadas. En cuanto una versión probada se publica definitivamente, vuelves a ella automáticamente.',
+    'status.fw.channel.stable': 'Estable',
+    'status.fw.channel.beta': 'Beta (versiones de prueba)',
     'status.fw.crash_report': 'Enviar informes de error a phoneblock.net',
     'status.fw.crash_report.help': 'Cuando el dongle reinicia tras un fallo de software, se escribe una instantánea de memoria en una partición flash reservada. Con esta opción activada, el dongle sube la instantánea a phoneblock.net en el próximo arranque — esto nos ayuda a localizar y corregir errores en campo. Desactívala para suprimir los envíos; las instantáneas guardadas se borran localmente en lugar de enviarse.',
     'status.sync.title': 'Sincronización de lista de bloqueo',
@@ -1188,6 +1204,16 @@ function renderStatus(){
     +    'style="display:flex;align-items:center;gap:.4rem;font-weight:400;color:#444;margin:0">'
     + '    <input id="fwAutoUpdate" type="checkbox" style="width:auto;margin:0">'
     + '    <span>' + esc(t('status.fw.auto_update')) + '</span>'
+    + '  </label>'
+    + '</p>'
+    + '<p style="margin-top:.4rem;font-size:.85rem">'
+    + '  <label title="' + esc(t('status.fw.channel.help')) + '" '
+    +    'style="display:flex;align-items:center;gap:.4rem;font-weight:400;color:#444;margin:0">'
+    + '    <span>' + esc(t('status.fw.channel')) + '</span>'
+    + '    <select id="fwChannel" style="width:auto;margin:0">'
+    + '      <option value="stable">' + esc(t('status.fw.channel.stable')) + '</option>'
+    + '      <option value="beta">' + esc(t('status.fw.channel.beta')) + '</option>'
+    + '    </select>'
     + '  </label>'
     + '</p>'
     + '<p style="margin-top:.4rem;font-size:.85rem">'
@@ -2038,6 +2064,32 @@ async function refreshAll(){
           });
         } catch (_){ /* next poll will reconcile */ }
         fwAutoUpdate.disabled = false;
+        refreshAll();
+      };
+    }
+  }
+
+  const fwChannel = $('fwChannel');
+  // s.firmware.channel is the persisted device channel ("stable" |
+  // "beta"). Default "stable" when missing (older firmware that didn't
+  // expose the field).
+  if (fwChannel){
+    fwChannel.value = (s && s.firmware && s.firmware.channel === 'beta')
+      ? 'beta' : 'stable';
+    if (!fwChannel.onchange){
+      fwChannel.onchange = async () => {
+        const want = fwChannel.value;
+        fwChannel.disabled = true;
+        const body = new URLSearchParams();
+        body.append('channel', want);
+        try {
+          await fetch('/api/config', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: body.toString(),
+          });
+        } catch (_){ /* next poll will reconcile */ }
+        fwChannel.disabled = false;
         refreshAll();
       };
     }
