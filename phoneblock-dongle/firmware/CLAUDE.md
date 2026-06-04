@@ -6,6 +6,20 @@ ESP-IDF firmware for the PhoneBlock dongle (ESP32). Build with
 
 ## Conventions
 
+### Warnings/errors are mirrored to the web UI
+
+`main/log_capture.c` installs a global `esp_log_set_vprintf` hook that
+copies every `ESP_LOGW`/`ESP_LOGE` line — ours and the ESP-IDF
+libraries' — into the stats error ring, shown as the "Protokoll" panel on
+the dongle's web page. This is the field-diagnosis path: customers read
+problems off the web UI instead of needing a serial console.
+
+Consequence for new code: **log an unusual condition at WARN or ERROR and
+it shows up on the UI automatically** — no per-call-site plumbing. Keep
+`ESP_LOGI` for normal progress; don't `ESP_LOGW` things that recur every
+few seconds (they'd flush the 32-entry ring). The parsing of the formatted
+log line is host-tested in `test/test_log_capture.c`.
+
 ### Long-running timer intervals
 
 `pdMS_TO_TICKS(ms)` multiplies its argument by `configTICK_RATE_HZ` in

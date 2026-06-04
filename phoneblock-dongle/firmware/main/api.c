@@ -301,7 +301,6 @@ static esp_http_client_handle_t check_client(void)
         s_check_client = esp_http_client_init(&config);
         if (s_check_client == NULL) {
             ESP_LOGE(TAG, "failed to create shared HTTP client");
-            stats_record_error("api", "HTTP client init failed");
         }
     }
     return s_check_client;
@@ -388,20 +387,15 @@ verdict_t phoneblock_check(const char *phone_number, pb_check_result_t *out,
 
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "HTTP request failed: %s", esp_err_to_name(err));
-        char msg[96];
-        snprintf(msg, sizeof(msg), "HTTP transport: %s", esp_err_to_name(err));
-        stats_record_error("api", msg);
+        goto cleanup;
+    }
+
+    if (status != 200) {
+        ESP_LOGE(TAG, "check-prefix HTTP %d for hash %s", status, hash_full);
         goto cleanup;
     }
 
     ESP_LOGI(TAG, "HTTP %d", status);
-
-    if (status != 200) {
-        char msg[96];
-        snprintf(msg, sizeof(msg), "HTTP %d for hash %s", status, hash_full);
-        stats_record_error("api", msg);
-        goto cleanup;
-    }
 
     if (scan.error) {
         // Per-entry buffer overflow or per-entry parse failure — verdict
@@ -410,9 +404,6 @@ verdict_t phoneblock_check(const char *phone_number, pb_check_result_t *out,
         // and the device dashboard.
         const char *reason = scan.error_reason ? scan.error_reason : "unknown";
         ESP_LOGE(TAG, "check-prefix scanner: %s", reason);
-        char msg[96];
-        snprintf(msg, sizeof(msg), "check-prefix scanner: %s", reason);
-        stats_record_error("api", msg);
         goto cleanup;
     }
 
@@ -532,16 +523,10 @@ bool phoneblock_report_call(const char *phone)
 
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "report-call transport: %s", esp_err_to_name(err));
-        char msg[96];
-        snprintf(msg, sizeof(msg), "report-call transport: %s", esp_err_to_name(err));
-        stats_record_error("api", msg);
         return false;
     }
     if (status != 204 && status != 200) {
         ESP_LOGE(TAG, "report-call: HTTP %d for %s", status, phone);
-        char msg[96];
-        snprintf(msg, sizeof(msg), "report-call: HTTP %d", status);
-        stats_record_error("api", msg);
         return false;
     }
     return true;
@@ -662,22 +647,12 @@ bool phoneblock_selftest(api_phases_t *phases_opt)
     bool ok = false;
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "self-test transport: %s", esp_err_to_name(err));
-        char msg[96];
-        snprintf(msg, sizeof(msg), "self-test transport: %s", esp_err_to_name(err));
-        stats_record_error("api", msg);
+    } else if (status == 200) {
+        ESP_LOGI(TAG, "self-test: HTTP 200, token accepted");
+        ok = true;
     } else {
-        if (status == 200) {
-            ESP_LOGI(TAG, "self-test: HTTP 200, token accepted");
-            ok = true;
-        } else {
-            ESP_LOGE(TAG, "self-test: HTTP %d, body: %.*s",
-                     status, resp.len, resp.data);
-            char msg[96];
-            int body_len = resp.len < 48 ? resp.len : 48;
-            snprintf(msg, sizeof(msg), "self-test: HTTP %d: %.*s",
-                     status, body_len, resp.data);
-            stats_record_error("api", msg);
-        }
+        ESP_LOGE(TAG, "self-test: HTTP %d, body: %.*s",
+                 status, resp.len, resp.data);
     }
     // Close but keep the handle so the freshly issued TLS session
     // ticket survives for the next spam-lookup call.

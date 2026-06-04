@@ -153,10 +153,12 @@ const I18N = {
     'status.thresholds.range.help': 'Stimmen gegen Nachbarn im selben 10er- oder 100er-Block. Default 10. Wert 0 schaltet Range-Block ab — dann zählen nur Direkt-Treffer.',
     'status.thresholds.saved': 'Gespeichert.',
     'status.thresholds.invalid': 'Ungültiger Wert.',
-    'status.errors.title': 'Fehler',
-    'status.errors.empty': 'keine Fehler',
+    'status.errors.title': 'Protokoll',
+    'status.errors.empty': 'keine Einträge',
     'status.errors.ago': 'vor {age}',
-    'status.errors.clear': 'Log leeren',
+    'status.errors.clear': 'Protokoll leeren',
+    'status.errors.capture_info': 'Auch Infos protokollieren',
+    'status.errors.capture_info.hint': 'Für die Fehlersuche: zeigt zusätzlich Info-Meldungen (z. B. versuchter Server:Port). Füllt das Protokoll schnell — danach wieder ausschalten.',
     'status.auth.title': 'Zugangsschutz',
     'status.auth.intro': 'Schützt die Konfigurationsoberfläche im laufenden Betrieb. Aktivierst Du den Schutz, fragt diese Seite ab dann nach einer Anmeldung über Deinen PhoneBlock-Account, bevor sie Anrufdaten zeigt oder Einstellungen entgegennimmt.',
     'status.auth.disabled': 'Zugangsschutz aus — jeder im LAN erreicht das Dashboard ohne Anmeldung.',
@@ -289,6 +291,9 @@ const I18N = {
     'sip.manual.port.hint': 'Leer lassen = automatisch via DNS-SRV bzw. Transport-Default (5060 UDP/TCP, 5061 TLS).',
     'sip.manual.user': 'SIP-Benutzer',
     'sip.manual.pass': 'SIP-Passwort',
+    'sip.manual.pass.hint': 'Leer lassen = gespeichertes Passwort behalten.',
+    'sip.manual.anon': 'Ohne Passwort anmelden (anonym)',
+    'sip.manual.anon.hint': 'Entfernt ein gespeichertes Passwort und meldet sich ohne an — z. B. anonymous@t-online.de bei der Telekom.',
     'sip.manual.submit': 'Speichern',
     'sip.manual.done': 'Gespeichert.',
     'sip.manual.error': 'Fehler: {msg}',
@@ -361,10 +366,12 @@ const I18N = {
     'status.thresholds.range.help': 'Votes against neighbors in the same 10/100-block. Default 10. Set to 0 to disable range-based blocking — only direct hits count then.',
     'status.thresholds.saved': 'Saved.',
     'status.thresholds.invalid': 'Invalid value.',
-    'status.errors.title': 'Errors',
-    'status.errors.empty': 'no errors',
+    'status.errors.title': 'Log',
+    'status.errors.empty': 'no entries',
     'status.errors.ago': '{age} ago',
     'status.errors.clear': 'Clear log',
+    'status.errors.capture_info': 'Also log info messages',
+    'status.errors.capture_info.hint': 'For troubleshooting: also shows info messages (e.g. the server:port tried). Fills the log quickly — switch off again afterwards.',
     'status.auth.title': 'Access protection',
     'status.auth.intro': 'Protects the configuration UI in everyday operation. When you turn this on, the page asks for a "Login with PhoneBlock" before it shows call data or accepts setting changes.',
     'status.auth.disabled': 'Access protection off — anyone on the LAN can reach the dashboard without logging in.',
@@ -497,6 +504,9 @@ const I18N = {
     'sip.manual.port.hint': 'Leave empty for auto via DNS-SRV or the transport default (5060 UDP/TCP, 5061 TLS).',
     'sip.manual.user': 'SIP user',
     'sip.manual.pass': 'SIP password',
+    'sip.manual.pass.hint': 'Leave empty = keep the stored password.',
+    'sip.manual.anon': 'Register without a password (anonymous)',
+    'sip.manual.anon.hint': 'Clears any stored password and registers without one — e.g. anonymous@t-online.de on Telekom.',
     'sip.manual.submit': 'Save',
     'sip.manual.done': 'Saved.',
     'sip.manual.error': 'Error: {msg}',
@@ -557,10 +567,12 @@ const I18N = {
     'status.calls.clear': 'Vider la liste',
     'status.calls.log_known': 'Journaliser les appels connus',
     'status.calls.log_known.help': 'Si désactivé, les appels provenant de numéros du carnet d’adresses et les codes internes (**, *…) n’apparaissent pas dans la liste — les compteurs ci-dessus restent mis à jour.',
-    'status.errors.title': 'Erreurs',
-    'status.errors.empty': 'aucune erreur',
+    'status.errors.title': 'Journal',
+    'status.errors.empty': 'aucune entrée',
     'status.errors.ago': 'il y a {age}',
     'status.errors.clear': 'Vider le journal',
+    'status.errors.capture_info': 'Journaliser aussi les infos',
+    'status.errors.capture_info.hint': "Pour le dépannage : affiche aussi les messages d'info (par ex. le serveur:port essayé). Remplit vite le journal — à désactiver ensuite.",
     'status.auth.title': 'Protection d’accès',
     'status.auth.intro': 'Protège l’interface de configuration en exploitation. Une fois activée, la page demande une « Connexion avec PhoneBlock » avant d’afficher les appels ou d’accepter des modifications.',
     'status.auth.disabled': 'Protection d’accès désactivée — n’importe qui sur le LAN peut atteindre le tableau de bord sans se connecter.',
@@ -693,6 +705,9 @@ const I18N = {
     'sip.manual.port.hint': 'Vide = automatique via DNS-SRV ou la valeur par défaut du transport (5060 UDP/TCP, 5061 TLS).',
     'sip.manual.user': 'Utilisateur SIP',
     'sip.manual.pass': 'Mot de passe SIP',
+    'sip.manual.pass.hint': 'Laisser vide = conserver le mot de passe enregistré.',
+    'sip.manual.anon': "S'enregistrer sans mot de passe (anonyme)",
+    'sip.manual.anon.hint': "Supprime un mot de passe enregistré et s'enregistre sans — par ex. anonymous@t-online.de chez Telekom.",
     'sip.manual.submit': 'Enregistrer',
     'sip.manual.done': 'Enregistré.',
     'sip.manual.error': 'Erreur : {msg}',
@@ -753,10 +768,12 @@ const I18N = {
     'status.calls.clear': 'Vaciar lista',
     'status.calls.log_known': 'Registrar llamadas conocidas',
     'status.calls.log_known.help': 'Si está desactivado, las llamadas de números de la agenda y los códigos internos (**, *…) no aparecen en la lista — los contadores de arriba se siguen actualizando.',
-    'status.errors.title': 'Errores',
-    'status.errors.empty': 'sin errores',
+    'status.errors.title': 'Registro',
+    'status.errors.empty': 'sin entradas',
     'status.errors.ago': 'hace {age}',
     'status.errors.clear': 'Vaciar registro',
+    'status.errors.capture_info': 'Registrar también los mensajes info',
+    'status.errors.capture_info.hint': 'Para diagnóstico: muestra también mensajes info (p. ej. el servidor:puerto intentado). Llena el registro rápido; desactívalo después.',
     'status.auth.title': 'Protección de acceso',
     'status.auth.intro': 'Protege la interfaz de configuración durante el uso diario. Si la activas, la página pedirá un «Inicio de sesión con PhoneBlock» antes de mostrar llamadas o aceptar cambios.',
     'status.auth.disabled': 'Protección de acceso desactivada — cualquiera en la LAN puede llegar al panel sin iniciar sesión.',
@@ -889,6 +906,9 @@ const I18N = {
     'sip.manual.port.hint': 'Déjelo en blanco para usar DNS-SRV o el valor predeterminado del transporte (5060 UDP/TCP, 5061 TLS).',
     'sip.manual.user': 'Usuario SIP',
     'sip.manual.pass': 'Contraseña SIP',
+    'sip.manual.pass.hint': 'Dejar en blanco = conservar la contraseña guardada.',
+    'sip.manual.anon': 'Registrarse sin contraseña (anónimo)',
+    'sip.manual.anon.hint': 'Elimina cualquier contraseña guardada y se registra sin ella, p. ej. anonymous@t-online.de en Telekom.',
     'sip.manual.submit': 'Guardar',
     'sip.manual.done': 'Guardado.',
     'sip.manual.error': 'Error: {msg}',
@@ -980,17 +1000,24 @@ async function postForm(url, form){
 
 // --- provider presets (top 5, PROVIDERS.md) -------------------------
 
+// `port: 0` means "auto" — the firmware resolves the endpoint via
+// DNS-SRV and uses the port the SRV record advertises. Telekom only
+// publishes an SRV record (_sips._tcp.tel.t-online.de) and no A record
+// on the bare domain, so a hard-coded port would skip SRV and the
+// direct A lookup would fail (#363); it also requires TLS transport.
 const PROVIDERS = {
   telekom: {
     name: 'Telekom MagentaZuhause',
     host: 'tel.t-online.de',
-    port: 5060,
+    port: 0,
+    transport: 'tls',
     userHint: 'Format: +49… (E.164). Benutzer = E-Mail des T-Online-Kontos, Passwort = T-Online-Webpasswort.',
   },
   vodafone: {
     name: 'Vodafone (DSL/Kabel)',
     hostTemplate: '{vorwahl}.sip.arcor.de',
     port: 5060,
+    transport: 'udp',
     needsVorwahl: true,
     userHint: 'Rufnummer ohne führende 0. Passwort aus „MeinVodafone" → separates SIP-Passwort.',
   },
@@ -998,18 +1025,21 @@ const PROVIDERS = {
     name: '1&1',
     host: 'sip.1und1.de',
     port: 5060,
+    transport: 'udp',
     userHint: 'Format: 49…, ohne „+" und ohne führende 0. Passwort = „Telefoniepasswort" aus dem 1&1-Control-Center.',
   },
   sipgate: {
     name: 'sipgate',
     host: 'sipgate.de',
     port: 5060,
+    transport: 'udp',
     userHint: 'SIP-ID aus dem sipgate-Webportal. Passwort = separates SIP-Passwort.',
   },
   easybell: {
     name: 'easybell',
     host: 'voip.easybell.de',
     port: 5060,
+    transport: 'udp',
     userHint: 'SIP-Benutzer und -Passwort aus dem easybell-Kundenportal.',
   },
 };
@@ -1140,6 +1170,11 @@ function renderStatus(){
     +    esc(t('status.errors.clear')) + '</button>'
     + '</h2>'
     + '<div id="errorsList"></div>'
+    + '<label style="display:flex;align-items:center;gap:.4rem;font-weight:normal;margin-top:.7rem;font-size:.85rem">'
+    +   '<input type="checkbox" id="logInfoChk" style="width:auto">'
+    +   '<span>' + esc(t('status.errors.capture_info')) + '</span></label>'
+    + '<p class="muted" style="font-size:.72rem;margin:.2rem 0 0">'
+    +   esc(t('status.errors.capture_info.hint')) + '</p>'
     + '</section>'
     + '<section id="annSection" style="display:none">'
     + '<h2>' + esc(t('status.ann.title')) + '</h2>'
@@ -1861,11 +1896,15 @@ async function refreshAll(){
   const clearBtn = $('errorsClear');
   const hasErrs = errs && errs.errors.length;
   if (hasErrs){
-    list.innerHTML = errs.errors.map(e =>
-      '<div class="error-row"><strong>[' + esc(e.tag) + ']</strong> '
-      + esc(e.message) + ' <span class="muted">'
-      + esc(t('status.errors.ago', {age: fmtSec(e.age_s)})) + '</span></div>'
-    ).join('');
+    list.innerHTML = errs.errors.map(e => {
+      // Severity colour on the tag: errors red, warnings amber, info grey.
+      const sev = e.level === 'E' ? 'color:#d93025'
+                : e.level === 'W' ? 'color:#e8830c' : 'color:#888';
+      return '<div class="error-row"><strong style="' + sev + '">['
+        + esc(e.tag) + ']</strong> ' + esc(e.message)
+        + ' <span class="muted">'
+        + esc(t('status.errors.ago', {age: fmtSec(e.age_s)})) + '</span></div>';
+    }).join('');
   } else {
     list.innerHTML = '<p class="muted">' + esc(t('status.errors.empty')) + '</p>';
   }
@@ -1877,6 +1916,25 @@ async function refreshAll(){
       catch (_){ /* next poll will reflect whatever state we end up in */ }
       await refreshAll();
       clearBtn.disabled = false;
+    };
+  }
+
+  // "Also log INFO" troubleshooting toggle. Reflect the stored state on
+  // every poll; persist via /api/config on change.
+  const logChk = $('logInfoChk');
+  if (logChk){
+    logChk.checked = !!(s.log && s.log.capture_info);
+    logChk.onchange = async () => {
+      const body = new URLSearchParams();
+      body.append('log_info', logChk.checked ? '1' : '0');
+      try {
+        await fetch('/api/config', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: body.toString(),
+        });
+      } catch (_){ /* next poll reconciles */ }
+      refreshAll();
     };
   }
 
@@ -2410,11 +2468,20 @@ async function onProviderSubmit(e){
   btn.disabled = true;
   msg.textContent = t('sip.fb.working');
   msg.style.color = '#888';
+  // A preset defines a *complete* SIP profile. Send every expert field
+  // — including explicit resets for the ones the preset doesn't use —
+  // so a prior manual/other-provider setup can't leave stale values
+  // behind that survive the merge and break the new registration (#363).
   const body = new URLSearchParams();
   body.append('sip_host', host);
   body.append('sip_port', String(p.port));
   body.append('sip_user', e.target.sip_user.value);
   body.append('sip_pass', e.target.sip_pass.value);
+  body.append('sip_transport', p.transport || 'udp');
+  body.append('sip_auth_user', '');
+  body.append('sip_outbound', '');
+  body.append('sip_realm', '');
+  body.append('sip_srtp', 'off');
   try {
     const r = await fetch('/api/config', {
       method: 'POST',
@@ -2470,7 +2537,14 @@ async function renderSipManual(){
     + '<label>' + esc(t('sip.manual.user'))
     + '<input type="text"   name="sip_user" value="' + esc(user) + '"></label>'
     + '<label>' + esc(t('sip.manual.pass'))
-    + '<input type="password" name="sip_pass" autocomplete="off"></label>'
+    + '<input type="password" name="sip_pass" id="sipPass" autocomplete="off"></label>'
+    + '<p class="muted" style="font-size:.75rem;margin:.2rem 0 .6rem">'
+    +   esc(t('sip.manual.pass.hint')) + '</p>'
+    + '<label style="display:flex;align-items:center;gap:.4rem;font-weight:normal">'
+    +   '<input type="checkbox" name="sip_anon" id="sipAnon" style="width:auto">'
+    +   '<span>' + esc(t('sip.manual.anon')) + '</span></label>'
+    + '<p class="muted" style="font-size:.75rem;margin:.2rem 0 .6rem">'
+    +   esc(t('sip.manual.anon.hint')) + '</p>'
     + '<details style="margin:1rem 0">'
     +   '<summary style="cursor:pointer;color:#008f7a;font-size:.9rem">'
     +     esc(t('sip.manual.advanced')) + '</summary>'
@@ -2505,6 +2579,14 @@ async function renderSipManual(){
     + '<button type="submit" class="btn-primary">' + esc(t('sip.manual.submit')) + '</button>'
     + '<span id="manMsg" class="muted" style="margin-left:.6rem"></span>'
     + '</p></form></section>';
+  // "Anonymous" disables the password field: a disabled field is left
+  // out of the form body, so the backend sees the explicit sip_anon
+  // marker (clear password) rather than an empty sip_pass (keep current).
+  const anon = $('sipAnon'), pass = $('sipPass');
+  anon.addEventListener('change', () => {
+    pass.disabled = anon.checked;
+    if (anon.checked) pass.value = '';
+  });
   $('manForm').addEventListener('submit', onManualSubmit);
 }
 

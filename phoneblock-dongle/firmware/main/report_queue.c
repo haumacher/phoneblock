@@ -38,8 +38,8 @@ static void report_worker_task(void *arg)
         report_entry_t e;
         if (xQueueReceive(s_queue, &e, portMAX_DELAY) != pdTRUE) continue;
         ESP_LOGI(TAG, "report-call %s", e.phone);
-        // Errors get recorded by phoneblock_report_call itself via
-        // stats_record_error — nothing to do here on failure.
+        // phoneblock_report_call logs its own failures (ERROR), which the
+        // log hook mirrors to the web UI — nothing to do here on failure.
         phoneblock_report_call(e.phone);
     }
 }

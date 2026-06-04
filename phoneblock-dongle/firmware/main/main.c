@@ -24,6 +24,7 @@
 #include "config.h"
 #include "crashreport.h"
 #include "firmware_update.h"
+#include "log_capture.h"
 #include "report_queue.h"
 #include "selftest.h"
 #include "sip_register.h"
@@ -182,6 +183,11 @@ void app_main(void)
     ESP_ERROR_CHECK(esp_event_loop_create_default());
 
     stats_setup();
+    // Install the log hook right after the stats ring exists: from here
+    // on, every WARN/ERROR line (ours and the libraries') is mirrored to
+    // the web UI's log panel. Earlier boot lines (nvs/netif init) predate
+    // it, which is fine — those are pre-config and visible on serial.
+    log_capture_start();
     config_load();
     announcement_init();
     // Start the LED early so the user sees "CONNECTING" (or
@@ -227,10 +233,23 @@ void app_main(void)
         const char *failed = config_last_failed_ota();
         const esp_app_desc_t *app = esp_app_get_description();
         const char *current = app ? app->version : "";
-        if (failed[0] != '\0' && strcmp(failed, current) == 0) {
-            ESP_LOGI(TAG, "running version %s matches last_failed_ota — "
-                          "marker cleared (boot survived)", current);
-            config_set_last_failed_ota(NULL);
+        if (failed[0] != '\0') {
+            if (strcmp(failed, current) == 0) {
+                ESP_LOGI(TAG, "running version %s matches last_failed_ota — "
+                              "marker cleared (boot survived)", current);
+                config_set_last_failed_ota(NULL);
+            } else {
+                // The marker names a version we are NOT running: the OTA
+                // to it installed, booted badly, and the bootloader
+                // rolled us back. The marker is set only after a complete
+                // install (every download/verify failure clears it), so
+                // this reliably means "a firmware update failed to boot".
+                // Surface it as a WARNING (→ web UI log) and leave the
+                // marker so the updater skips the same broken bits.
+                // Recurs once per boot until a newer build supersedes it.
+                ESP_LOGW(TAG, "firmware update to %s failed to boot — "
+                              "rolled back to %s", failed, current);
+            }
         }
     }
 

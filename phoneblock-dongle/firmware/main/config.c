@@ -27,6 +27,7 @@ static const char *NS   = "phoneblock";
 #define K_FB_APP_PASS   "fb_app_pass"
 #define K_SYNC_ENABLED  "sync_enabled"
 #define K_LOG_KNOWN     "log_known_calls"
+#define K_LOG_INFO      "log_info"
 #define K_AUTH_ENABLED  "auth_enabled"
 #define K_AUTH_USER     "auth_user"
 #define K_AUTH_PERSIST  "auth_persist"
@@ -74,6 +75,7 @@ typedef struct {
     char fb_app_pass[40];    // spec cap is 32; 40 for NUL + padding
     char sync_enabled[4];    // "1" | "0" (or empty = default off)
     char log_known[4];       // "1" | "0" (or empty = default on)
+    char log_info[4];        // "1" = also mirror INFO lines to the log panel (default off)
     char auth_enabled[4];    // "1" | "0" (or empty = default off)
     char auth_user[64];      // pinned PhoneBlock user-name; empty = no pin
     char auth_persist[33];   // 32 hex chars + NUL; empty = nobody is "remembered"
@@ -143,6 +145,7 @@ void config_load(void)
         s_config.fb_app_pass[0]   = '\0';
         s_config.sync_enabled[0]  = '\0';
         s_config.log_known[0]     = '\0';
+        s_config.log_info[0]      = '\0';
         s_config.auth_enabled[0]  = '\0';
         s_config.auth_user[0]     = '\0';
         s_config.auth_persist[0]  = '\0';
@@ -192,6 +195,8 @@ void config_load(void)
              s_config.sync_enabled, sizeof(s_config.sync_enabled));
     load_str(h, K_LOG_KNOWN, "",
              s_config.log_known, sizeof(s_config.log_known));
+    load_str(h, K_LOG_INFO, "",
+             s_config.log_info, sizeof(s_config.log_info));
     load_str(h, K_AUTH_ENABLED, "",
              s_config.auth_enabled, sizeof(s_config.auth_enabled));
     load_str(h, K_AUTH_USER, "",
@@ -251,6 +256,13 @@ bool        config_log_known_calls(void)
     // Default on (empty / unrecognised → log) so new users see every
     // call the dongle handled. Only an explicit "0" disables listing.
     return s_config.log_known[0] != '0';
+}
+bool        config_log_info(void)
+{
+    // Default off: the log panel shows only WARN/ERROR. Switched on from
+    // the UI for troubleshooting, when the context that only INFO lines
+    // carry (e.g. "registrar host:port") is needed. Only "1" enables it.
+    return s_config.log_info[0] == '1';
 }
 bool        config_auth_enabled(void)
 {
@@ -393,7 +405,8 @@ esp_err_t config_update(const config_update_t *u)
 
     err = set_str_if(h, K_SIP_HOST, u->sip_host,
                      s_config.sip_host, sizeof(s_config.sip_host));
-    if (err == ESP_OK) err = set_int_if(h, K_SIP_PORT, u->sip_port, &s_config.sip_port);
+    if (err == ESP_OK) err = set_int_explicit(h, K_SIP_PORT, u->has_sip_port,
+                                              u->sip_port, &s_config.sip_port);
     if (err == ESP_OK) err = set_str_if(h, K_SIP_USER, u->sip_user,
                                         s_config.sip_user, sizeof(s_config.sip_user));
     if (err == ESP_OK) err = set_str_if(h, K_SIP_PASS, u->sip_pass,
@@ -419,6 +432,8 @@ esp_err_t config_update(const config_update_t *u)
                                         s_config.sync_enabled, sizeof(s_config.sync_enabled));
     if (err == ESP_OK) err = set_str_if(h, K_LOG_KNOWN, u->log_known_calls,
                                         s_config.log_known, sizeof(s_config.log_known));
+    if (err == ESP_OK) err = set_str_if(h, K_LOG_INFO, u->log_info,
+                                        s_config.log_info, sizeof(s_config.log_info));
     if (err == ESP_OK) err = set_str_if(h, K_AUTH_ENABLED, u->auth_enabled,
                                         s_config.auth_enabled, sizeof(s_config.auth_enabled));
     if (err == ESP_OK) err = set_str_if(h, K_AUTH_USER, u->auth_user,
