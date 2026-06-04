@@ -55,6 +55,14 @@ CONFIG_MBEDTLS_SSL_PROTO_TLS1_3=n
 # Main task stack: 8 KB is enough for cJSON + TLS + example helpers.
 CONFIG_ESP_MAIN_TASK_STACK_SIZE=8192
 
+# esp_event task stack: 2.75 KB, up from the 2304 B default. wifi.c runs
+# its event handlers here and logs WARN lines from them (failsafe / WPS),
+# which since the log-capture hook (log_capture.c) cost an extra ~110 B of
+# frame. The default left too little headroom for that on a deep handler
+# (schedule_failsafe even spawns a task inline). 2.75 KB clears it with
+# margin. The only IDF-owned task into which our own code logs warnings.
+CONFIG_ESP_SYSTEM_EVENT_TASK_STACK_SIZE=2816
+
 # HTTP server: browsers return from the phoneblock.net OAuth flow with
 # sizeable referrer + cookie + security headers (Chrome easily hits 1.5 kB
 # on a single request). The default 512-byte buffer rejects those with
