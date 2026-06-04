@@ -1897,10 +1897,15 @@ async function refreshAll(){
   const hasErrs = errs && errs.errors.length;
   if (hasErrs){
     list.innerHTML = errs.errors.map(e => {
-      // Severity colour on the tag: errors red, warnings amber, info grey.
-      const sev = e.level === 'E' ? 'color:#d93025'
-                : e.level === 'W' ? 'color:#e8830c' : 'color:#888';
-      return '<div class="error-row"><strong style="' + sev + '">['
+      // Severity colours the left border + tag: error red, warning amber,
+      // info grey. The .error-row class hard-codes a red border/tint, so
+      // override both inline (otherwise info lines look alarming).
+      const col = e.level === 'E' ? '#d93025'
+                : e.level === 'W' ? '#e8830c' : '#888';
+      const bg  = e.level === 'E' ? '#fffafa'
+                : e.level === 'W' ? '#fffdf6' : '#fafafa';
+      return '<div class="error-row" style="border-left-color:' + col
+        + ';background:' + bg + '"><strong style="color:' + col + '">['
         + esc(e.tag) + ']</strong> ' + esc(e.message)
         + ' <span class="muted">'
         + esc(t('status.errors.ago', {age: fmtSec(e.age_s)})) + '</span></div>';
