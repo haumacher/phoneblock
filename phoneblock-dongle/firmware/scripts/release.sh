@@ -2,13 +2,19 @@
 #
 # Build, package, and upload a PhoneBlock-Dongle firmware release.
 #
-#   ./scripts/release.sh             # full flow: build, stage, upload, flip stable
+#   ./scripts/release.sh             # full flow: build, stage, upload, flip channel(s)
 #   ./scripts/release.sh --stage     # build + stage to release/<version>/, no upload
 #   ./scripts/release.sh --dry-run   # all of the above + print scp/ssh commands
 #
 # Version comes from `git describe --tags --match "dongle-v*"`. The working tree
 # must be clean and HEAD must sit exactly on a tag — between-tag builds (e.g.
 # 1.4.2-3-gabcdef) are rejected to keep the CDN to released versions only.
+#
+# The target channel is derived from the tag: a pre-release suffix
+# (dongle-v1.6.0-rc1) publishes to the "beta" channel only; a clean
+# release (dongle-v1.6.0) publishes to "stable" *and* "beta". That
+# keeps beta always >= stable, so a beta tester lands on the final
+# build once it ships and never sees a downgrade.
 
 set -euo pipefail
 
@@ -80,6 +86,19 @@ fi
 VERSION="${DESCRIBE#dongle-v}"
 echo "Releasing version: $VERSION"
 
+# Derive the target channel(s) from the tag. A pre-release suffix
+# (anything after a '-', e.g. 1.6.0-rc1) ships to beta only; a clean
+# release ships to stable *and* beta so beta never lags behind stable.
+# The dongle's semver compare treats "1.6.0-rc2" < "1.6.0", so a beta
+# device upgrades onto the final build automatically once it lands.
+if [[ "$VERSION" == *-* ]]; then
+    CHANNELS=(beta)
+    echo "Pre-release tag → channel: beta"
+else
+    CHANNELS=(stable beta)
+    echo "Release tag → channels: stable + beta"
+fi
+
 # ---------------------------------------------------------------------------
 # 2. Build firmware. ESP-IDF reads version from version.txt next to CMakeLists,
 #    which lands in esp_app_desc_t.version and the /api/status payload.
@@ -137,9 +156,12 @@ idf.py -C "$FIRMWARE_DIR" build
 # 3. Stage release artifacts into release/<version>/.
 # ---------------------------------------------------------------------------
 STAGE_VERSION="${RELEASE_ROOT}/${VERSION}"
-STAGE_STABLE="${RELEASE_ROOT}/stable"
-rm -rf "$STAGE_VERSION" "$STAGE_STABLE"
-mkdir -p "$STAGE_VERSION" "$STAGE_STABLE"
+# Channel manifest: absolute URLs into the version dir. Identical for
+# every channel (stable/beta), so it's built once and uploaded to each
+# target channel in step 4.
+STAGE_CHAN="${RELEASE_ROOT}/channel"
+rm -rf "$STAGE_VERSION" "$STAGE_CHAN"
+mkdir -p "$STAGE_VERSION" "$STAGE_CHAN"
 
 cp "${BUILD_DIR}/bootloader/bootloader.bin"           "${STAGE_VERSION}/"
 cp "${BUILD_DIR}/partition_table/partition-table.bin" "${STAGE_VERSION}/"
@@ -176,32 +198,32 @@ sed -e "s/@VERSION@/${VERSION}/g" \
     "${SCRIPT_DIR}/manifest.json.tmpl" \
     > "${STAGE_VERSION}/manifest.json"
 
-# Stable manifest: absolute URLs into the version directory. The install page
-# pins to https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json so
-# the URL never changes; only this single file flips at release time.
+# Channel manifest: absolute URLs into the version directory. The install
+# page and the dongle pin to .../dongle/firmware/<channel>/manifest.json so
+# the URL never changes; only this single file flips per channel at release
+# time.
 BASE_URL="https://cdn.phoneblock.net/dongle/firmware/${VERSION}"
 sed -e "s/@VERSION@/${VERSION}/g" \
     -e "s/@APP_SHA256@/${APP_SHA256}/g" \
     -e "s|@SIGNATURE@|${APP_SIG}|g" \
     -e "s|\"path\": \"|\"path\": \"${BASE_URL}/|g" \
     "${SCRIPT_DIR}/manifest.json.tmpl" \
-    > "${STAGE_STABLE}/manifest.json"
+    > "${STAGE_CHAN}/manifest.json"
 
 # Plain pointer file for tooling that wants just the version string.
-printf '{ "version": "%s" }\n' "$VERSION" > "${STAGE_STABLE}/version.json"
+printf '{ "version": "%s" }\n' "$VERSION" > "${STAGE_CHAN}/version.json"
 
 echo "Staged: $STAGE_VERSION"
-echo "Staged: $STAGE_STABLE"
+echo "Staged: $STAGE_CHAN → channels: ${CHANNELS[*]}"
 
 if [[ "$MODE" == "stage" ]]; then
     exit 0
 fi
 
 # ---------------------------------------------------------------------------
-# 4. Upload version directory, then atomically flip stable/.
+# 4. Upload version directory, then atomically flip each target channel.
 # ---------------------------------------------------------------------------
 REMOTE_VERSION="${CDN_FIRMWARE}/${VERSION}"
-REMOTE_STABLE="${CDN_FIRMWARE}/stable"
 
 # The CDN host accepts sftp/scp only — no shell access. Parent dirs are
 # created via sftp (-mkdir ignores "already exists"). The version dir is
@@ -213,28 +235,34 @@ sftp_batch <<SFTP
 -mkdir ${CDN_BASE}
 -mkdir ${CDN_FIRMWARE}
 -mkdir ${REMOTE_VERSION}
--mkdir ${REMOTE_STABLE}
 SFTP
 
 # Local shell expands the glob; scp ships each file into REMOTE_VERSION
 # directly — no subdirectory wrapping.
 run scp "${STAGE_VERSION}"/* "${CDN_HOST}:${REMOTE_VERSION}/"
 
-# Atomic flip: upload to *.tmp, then rename over the live file. OpenSSH's sftp
-# uses posix-rename, which atomically replaces the target. The window in which
-# stable/manifest.json doesn't exist is zero (after the first release) or one
-# upload (on the very first release, where there's nothing to overwrite yet).
-sftp_batch <<SFTP
-put ${STAGE_STABLE}/manifest.json ${REMOTE_STABLE}/manifest.json.tmp
-put ${STAGE_STABLE}/version.json  ${REMOTE_STABLE}/version.json.tmp
-rename ${REMOTE_STABLE}/manifest.json.tmp ${REMOTE_STABLE}/manifest.json
-rename ${REMOTE_STABLE}/version.json.tmp  ${REMOTE_STABLE}/version.json
+# Atomic flip per channel: upload to *.tmp, then rename over the live file.
+# OpenSSH's sftp uses posix-rename, which atomically replaces the target. The
+# window in which <channel>/manifest.json doesn't exist is zero (after the
+# first release) or one upload (the very first release of that channel, where
+# there's nothing to overwrite yet).
+for CH in "${CHANNELS[@]}"; do
+    REMOTE_CH="${CDN_FIRMWARE}/${CH}"
+    sftp_batch <<SFTP
+-mkdir ${REMOTE_CH}
+put ${STAGE_CHAN}/manifest.json ${REMOTE_CH}/manifest.json.tmp
+put ${STAGE_CHAN}/version.json  ${REMOTE_CH}/version.json.tmp
+rename ${REMOTE_CH}/manifest.json.tmp ${REMOTE_CH}/manifest.json
+rename ${REMOTE_CH}/version.json.tmp  ${REMOTE_CH}/version.json
 SFTP
+done
 
 echo
 echo "Released ${VERSION}."
 echo "  Pinned: https://cdn.phoneblock.net/dongle/firmware/${VERSION}/manifest.json"
-echo "  Stable: https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json"
+for CH in "${CHANNELS[@]}"; do
+    echo "  ${CH}: https://cdn.phoneblock.net/dongle/firmware/${CH}/manifest.json"
+done
 
 # Push the tag now that the CDN has accepted the upload. Pushing
 # only after a successful release means a failed run (build error,

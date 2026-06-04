@@ -103,6 +103,17 @@ const char *config_auth_persist(void);
 // when ready to follow the released stream again.
 bool        config_auto_update_enabled(void);
 
+// OTA update channel the daily self-update and the manual "check"
+// button poll. The manifest URL is built as
+// <CONFIG_PHONEBLOCK_OTA_BASE_URL>/<channel>/manifest.json, so the
+// channel is the path segment that selects the released stream.
+// Always returns one of the two known-safe literals "stable" (default)
+// or "beta": any other / corrupt NVS value maps to "stable", which
+// keeps the result safe to splice straight into the poll URL. "beta"
+// is opt-in for users testing pre-release builds; releases publish to
+// both channels so beta is always >= stable (see scripts/release.sh).
+const char *config_ota_channel(void);
+
 // Whether crashreport.c is allowed to upload a stored core dump to
 // the PhoneBlock backend on the boot following a panic. Default on
 // — the dump is otherwise dead weight in flash and the operator's
@@ -193,6 +204,11 @@ typedef struct {
     // "0" = freeze on the current build. NULL = leave unchanged.
     // Default when unset is "1" (auto-update on).
     const char *auto_update;
+    // OTA update channel: "stable" | "beta". NULL = leave unchanged.
+    // The caller is expected to pass only these two literals; any
+    // other value is persisted verbatim but read back as "stable" by
+    // config_ota_channel().
+    const char *ota_channel;
     // "1" = upload core dumps to the PhoneBlock backend after a
     // panic-and-reboot, "0" = erase them locally without sending.
     // NULL = leave unchanged. Default when unset is "1".

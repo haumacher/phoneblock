@@ -219,7 +219,13 @@ void firmware_schedule_reboot(void)
 static esp_err_t fetch_manifest(char *body, size_t cap,
                                 char *err, size_t err_cap)
 {
-    const char *url = CONFIG_PHONEBLOCK_OTA_MANIFEST_URL;
+    // Manifest URL = <base>/<channel>/manifest.json. The channel is a
+    // client-side opt-in (NVS, web UI toggle); config_ota_channel()
+    // clamps it to the known-safe literals "stable"/"beta" so it is
+    // safe to splice into the path here.
+    char url[256];
+    snprintf(url, sizeof(url), "%s/%s/manifest.json",
+             CONFIG_PHONEBLOCK_OTA_BASE_URL, config_ota_channel());
     esp_http_client_config_t cfg = {
         .url = url,
         .crt_bundle_attach = esp_crt_bundle_attach,
