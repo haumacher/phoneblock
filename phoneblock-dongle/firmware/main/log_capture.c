@@ -86,6 +86,9 @@ char log_capture_parse(const char *line,
 #include <stdio.h>
 #include <stdarg.h>
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
+
 #include "esp_log.h"
 
 #include "stats.h"
@@ -93,23 +96,30 @@ char log_capture_parse(const char *line,
 // Previous (console) sink, so the serial log stays fully intact.
 static vprintf_like_t s_console;
 
-// Format the captured line and push it to the stats ring. Kept in a
-// SEPARATE, never-inlined function on purpose: its ~350 B of line/tag/
-// msg buffers then land on the stack only while a WARN/ERROR line is
-// actually being captured, not on every log call. Folded into log_hook
-// (inlined), those buffers would inflate the frame of *every* logging
-// task — a 2 KB task such as status_led overflowed on a plain INFO line
-// because the hook reserved them unconditionally.
-static void __attribute__((noinline))
-capture_line(int level, const char *fmt, va_list ap)
+// The hook runs on the stack of whatever task logs the line, and the
+// formatting scratch dominates that cost. Keeping line/tag/msg here as
+// file-static (rather than on capture_line's stack) is what makes a
+// WARN/ERROR cost essentially the same stack as the vprintf the console
+// does anyway: ~340 B of buffers off the stack instead of in the frame.
+// That matters because some warnings are logged from small-stack tasks
+// — wifi.c warns from the 2304-byte esp_event task — where an extra
+// ~380 B frame would overflow. A FreeRTOS mutex guards the shared
+// scratch; a non-blocking take means a concurrent or re-entrant capture
+// simply skips the ring entry (the line is already on the console)
+// rather than blocking the logging task.
+static SemaphoreHandle_t s_lock;
+static char s_line[192];
+static char s_tag[STATS_ERROR_TAG_LEN];
+static char s_msg[STATS_ERROR_MSG_LEN];
+
+static void capture_line(int level, const char *fmt, va_list ap)
 {
-    char line[192];
-    vsnprintf(line, sizeof(line), fmt, ap);
-    char tag[STATS_ERROR_TAG_LEN];
-    char msg[STATS_ERROR_MSG_LEN];
-    if (log_capture_parse(line, tag, sizeof(tag), msg, sizeof(msg))) {
-        stats_record_error(level, tag, msg);
+    if (!s_lock || xSemaphoreTake(s_lock, 0) != pdTRUE) return;
+    vsnprintf(s_line, sizeof(s_line), fmt, ap);
+    if (log_capture_parse(s_line, s_tag, sizeof(s_tag), s_msg, sizeof(s_msg))) {
+        stats_record_error(level, s_tag, s_msg);
     }
+    xSemaphoreGive(s_lock);
 }
 
 static int log_hook(const char *fmt, va_list ap)
@@ -123,8 +133,7 @@ static int log_hook(const char *fmt, va_list ap)
 
     // The level letter is a literal in the format string, so we decide
     // here, with no buffers on the stack: INFO/DEBUG lines (the vast
-    // majority) leave log_hook's frame tiny. Only WARN/ERROR descends
-    // into capture_line(), which owns the buffers.
+    // majority) skip capture entirely.
     char lvl = log_capture_level(fmt);
     if (lvl == 'E' || lvl == 'W') {
         capture_line(lvl == 'E' ? ESP_LOG_ERROR : ESP_LOG_WARN, fmt, copy);
@@ -136,9 +145,11 @@ static int log_hook(const char *fmt, va_list ap)
 
 void log_capture_start(void)
 {
+    s_lock = xSemaphoreCreateMutex();
     // esp_log_set_vprintf returns the previous sink; chain to it so the
-    // console keeps working. No recursion guard is needed: nothing in
-    // the capture path (vsnprintf, the parser, stats_record_error) logs.
+    // console keeps working. No recursion guard is needed beyond the
+    // try-lock: nothing in the capture path (vsnprintf, the parser,
+    // stats_record_error) logs.
     s_console = esp_log_set_vprintf(&log_hook);
 }
 
