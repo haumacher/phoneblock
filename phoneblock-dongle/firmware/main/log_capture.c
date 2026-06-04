@@ -93,6 +93,25 @@ char log_capture_parse(const char *line,
 // Previous (console) sink, so the serial log stays fully intact.
 static vprintf_like_t s_console;
 
+// Format the captured line and push it to the stats ring. Kept in a
+// SEPARATE, never-inlined function on purpose: its ~350 B of line/tag/
+// msg buffers then land on the stack only while a WARN/ERROR line is
+// actually being captured, not on every log call. Folded into log_hook
+// (inlined), those buffers would inflate the frame of *every* logging
+// task — a 2 KB task such as status_led overflowed on a plain INFO line
+// because the hook reserved them unconditionally.
+static void __attribute__((noinline))
+capture_line(int level, const char *fmt, va_list ap)
+{
+    char line[192];
+    vsnprintf(line, sizeof(line), fmt, ap);
+    char tag[STATS_ERROR_TAG_LEN];
+    char msg[STATS_ERROR_MSG_LEN];
+    if (log_capture_parse(line, tag, sizeof(tag), msg, sizeof(msg))) {
+        stats_record_error(level, tag, msg);
+    }
+}
+
 static int log_hook(const char *fmt, va_list ap)
 {
     va_list copy;
@@ -102,19 +121,13 @@ static int log_hook(const char *fmt, va_list ap)
     // at the cost of the serial log.
     int ret = s_console ? s_console(fmt, ap) : vprintf(fmt, ap);
 
-    // The level letter is a literal in the format string, so we can
-    // skip the expensive vsnprintf for the common INFO/DEBUG lines.
+    // The level letter is a literal in the format string, so we decide
+    // here, with no buffers on the stack: INFO/DEBUG lines (the vast
+    // majority) leave log_hook's frame tiny. Only WARN/ERROR descends
+    // into capture_line(), which owns the buffers.
     char lvl = log_capture_level(fmt);
     if (lvl == 'E' || lvl == 'W') {
-        char line[192];
-        vsnprintf(line, sizeof(line), fmt, copy);
-        char tag[STATS_ERROR_TAG_LEN];
-        char msg[STATS_ERROR_MSG_LEN];
-        char got = log_capture_parse(line, tag, sizeof(tag), msg, sizeof(msg));
-        if (got == 'E' || got == 'W') {
-            stats_record_error(got == 'E' ? ESP_LOG_ERROR : ESP_LOG_WARN,
-                               tag, msg);
-        }
+        capture_line(lvl == 'E' ? ESP_LOG_ERROR : ESP_LOG_WARN, fmt, copy);
     }
 
     va_end(copy);
