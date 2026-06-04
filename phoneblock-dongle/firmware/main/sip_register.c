@@ -1466,9 +1466,13 @@ static void sip_task(void *arg)
 
 void sip_register_start(void)
 {
+    // Host + user are mandatory; an empty password is a valid credential
+    // (digest HA1 = MD5(user:realm:"")) — some providers register an
+    // anonymous account (e.g. Telekom's anonymous@t-online.de) with no
+    // password. Don't refuse locally: attempt the REGISTER and let the
+    // registrar's response surface in the status UI.
     if (strlen(config_sip_host()) == 0 ||
-        strlen(config_sip_user()) == 0 ||
-        strlen(config_sip_pass()) == 0) {
+        strlen(config_sip_user()) == 0) {
         ESP_LOGW(TAG, "SIP config incomplete, skipping registration");
         return;
     }

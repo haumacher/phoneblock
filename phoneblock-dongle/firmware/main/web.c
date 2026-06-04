@@ -491,7 +491,11 @@ static esp_err_t handle_config_post(httpd_req_t *req)
 
     config_update_t u = {
         .sip_host   = new_host,
-        .sip_port   = have_sip_port && sip_port_s[0] ? atoi(sip_port_s) : 0,
+        // Port present in the form (even "0" = auto) writes through;
+        // absent leaves the stored value alone. 0 must be storable so a
+        // provider switch can clear a stale pinned port back to auto/SRV.
+        .has_sip_port = have_sip_port && sip_port_s[0],
+        .sip_port     = have_sip_port && sip_port_s[0] ? atoi(sip_port_s) : 0,
         .sip_user   = have_sip_user && sip_user[0]  ? sip_user  : NULL,
         // Empty password submitted = keep existing (so user doesn't have to
         // re-type it when editing other fields).
@@ -724,13 +728,23 @@ static esp_err_t handle_fritzbox_setup(httpd_req_t *req)
     }
 
     // Commit generated SIP credentials + registrar + (optional) app
-    // credentials to NVS.
+    // credentials to NVS. This establishes a *complete* new SIP profile,
+    // so the expert parameters from any earlier manual/provider setup
+    // (e.g. transport=tls + port 5061 for Telekom) must be reset to the
+    // Fritz!Box happy-path defaults — otherwise they survive the merge in
+    // config_update() and sabotage the new UDP/5060 registration (#363).
     config_update_t u = {
         .sip_host = fritz_host,
+        .has_sip_port = true,
         .sip_port = 5060,
         .sip_user = res.sip_user,
         .sip_pass = res.sip_pass,
         .sip_internal_number = res.internal_number,
+        .sip_transport = "udp",
+        .sip_auth_user = "",
+        .sip_outbound  = "",
+        .sip_realm     = "",
+        .sip_srtp      = "off",
         .fritzbox_app_user = app_user,
         .fritzbox_app_pass = app_pass,
     };
@@ -996,13 +1010,22 @@ static esp_err_t handle_fritzbox_2fa_status(httpd_req_t *req)
         return ESP_OK;
     }
 
-    // Commit SIP credentials, re-register.
+    // Commit SIP credentials, re-register. Reset the expert SIP
+    // parameters to the Fritz!Box defaults for the same reason as the
+    // non-2FA path above: a complete new profile must not inherit stale
+    // transport/realm/srtp values from an earlier manual setup (#363).
     config_update_t u = {
         .sip_host = s_2fa.fritz_host,
+        .has_sip_port = true,
         .sip_port = 5060,
         .sip_user = res.sip_user,
         .sip_pass = res.sip_pass,
         .sip_internal_number = res.internal_number,
+        .sip_transport = "udp",
+        .sip_auth_user = "",
+        .sip_outbound  = "",
+        .sip_realm     = "",
+        .sip_srtp      = "off",
         .fritzbox_app_user = app_user,
         .fritzbox_app_pass = app_pass,
     };

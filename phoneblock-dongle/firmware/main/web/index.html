@@ -964,17 +964,24 @@ async function postForm(url, form){
 
 // --- provider presets (top 5, PROVIDERS.md) -------------------------
 
+// `port: 0` means "auto" — the firmware resolves the endpoint via
+// DNS-SRV and uses the port the SRV record advertises. Telekom only
+// publishes an SRV record (_sips._tcp.tel.t-online.de) and no A record
+// on the bare domain, so a hard-coded port would skip SRV and the
+// direct A lookup would fail (#363); it also requires TLS transport.
 const PROVIDERS = {
   telekom: {
     name: 'Telekom MagentaZuhause',
     host: 'tel.t-online.de',
-    port: 5060,
+    port: 0,
+    transport: 'tls',
     userHint: 'Format: +49… (E.164). Benutzer = E-Mail des T-Online-Kontos, Passwort = T-Online-Webpasswort.',
   },
   vodafone: {
     name: 'Vodafone (DSL/Kabel)',
     hostTemplate: '{vorwahl}.sip.arcor.de',
     port: 5060,
+    transport: 'udp',
     needsVorwahl: true,
     userHint: 'Rufnummer ohne führende 0. Passwort aus „MeinVodafone" → separates SIP-Passwort.',
   },
@@ -982,18 +989,21 @@ const PROVIDERS = {
     name: '1&1',
     host: 'sip.1und1.de',
     port: 5060,
+    transport: 'udp',
     userHint: 'Format: 49…, ohne „+" und ohne führende 0. Passwort = „Telefoniepasswort" aus dem 1&1-Control-Center.',
   },
   sipgate: {
     name: 'sipgate',
     host: 'sipgate.de',
     port: 5060,
+    transport: 'udp',
     userHint: 'SIP-ID aus dem sipgate-Webportal. Passwort = separates SIP-Passwort.',
   },
   easybell: {
     name: 'easybell',
     host: 'voip.easybell.de',
     port: 5060,
+    transport: 'udp',
     userHint: 'SIP-Benutzer und -Passwort aus dem easybell-Kundenportal.',
   },
 };
@@ -2358,11 +2368,20 @@ async function onProviderSubmit(e){
   btn.disabled = true;
   msg.textContent = t('sip.fb.working');
   msg.style.color = '#888';
+  // A preset defines a *complete* SIP profile. Send every expert field
+  // — including explicit resets for the ones the preset doesn't use —
+  // so a prior manual/other-provider setup can't leave stale values
+  // behind that survive the merge and break the new registration (#363).
   const body = new URLSearchParams();
   body.append('sip_host', host);
   body.append('sip_port', String(p.port));
   body.append('sip_user', e.target.sip_user.value);
   body.append('sip_pass', e.target.sip_pass.value);
+  body.append('sip_transport', p.transport || 'udp');
+  body.append('sip_auth_user', '');
+  body.append('sip_outbound', '');
+  body.append('sip_realm', '');
+  body.append('sip_srtp', 'off');
   try {
     const r = await fetch('/api/config', {
       method: 'POST',

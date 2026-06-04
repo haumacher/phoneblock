@@ -380,7 +380,8 @@ esp_err_t config_update(const config_update_t *u)
 
     err = set_str_if(h, K_SIP_HOST, u->sip_host,
                      s_config.sip_host, sizeof(s_config.sip_host));
-    if (err == ESP_OK) err = set_int_if(h, K_SIP_PORT, u->sip_port, &s_config.sip_port);
+    if (err == ESP_OK) err = set_int_explicit(h, K_SIP_PORT, u->has_sip_port,
+                                              u->sip_port, &s_config.sip_port);
     if (err == ESP_OK) err = set_str_if(h, K_SIP_USER, u->sip_user,
                                         s_config.sip_user, sizeof(s_config.sip_user));
     if (err == ESP_OK) err = set_str_if(h, K_SIP_PASS, u->sip_pass,
