@@ -68,6 +68,13 @@ bool        config_sync_enabled(void);
 // Default on so new users see every call the dongle handled.
 bool        config_log_known_calls(void);
 
+// Whether the global log hook also mirrors INFO lines (not just
+// WARN/ERROR) into the log panel. Default off; a troubleshooting toggle
+// — INFO carries the context (tried host:port, request URLs, …) that a
+// bare WARN/ERROR omits. Floods the 32-entry ring, so meant to be turned
+// on, reproduced, read, and turned off again.
+bool        config_log_info(void);
+
 // Whether the web UI requires "Login with PhoneBlock" before
 // showing call data or accepting setting changes. Default off —
 // during initial provisioning the LAN-local UI must be reachable
@@ -183,6 +190,9 @@ typedef struct {
     // "1" = log known/internal calls, "0" = skip them, NULL = leave
     // unchanged. Default when the key is unset is "log them".
     const char *log_known_calls;
+    // "1" = also capture INFO log lines, "0" = only WARN/ERROR. NULL =
+    // leave unchanged. Default when unset is "off".
+    const char *log_info;
     // "1" = require "Login with PhoneBlock" before serving the UI,
     // "0" = open access. NULL = leave unchanged. Default when the
     // key is unset is "open access" (setup phase).

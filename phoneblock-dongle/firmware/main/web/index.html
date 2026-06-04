@@ -157,6 +157,8 @@ const I18N = {
     'status.errors.empty': 'keine Einträge',
     'status.errors.ago': 'vor {age}',
     'status.errors.clear': 'Protokoll leeren',
+    'status.errors.capture_info': 'Auch Infos protokollieren',
+    'status.errors.capture_info.hint': 'Für die Fehlersuche: zeigt zusätzlich Info-Meldungen (z. B. versuchter Server:Port). Füllt das Protokoll schnell — danach wieder ausschalten.',
     'status.auth.title': 'Zugangsschutz',
     'status.auth.intro': 'Schützt die Konfigurationsoberfläche im laufenden Betrieb. Aktivierst Du den Schutz, fragt diese Seite ab dann nach einer Anmeldung über Deinen PhoneBlock-Account, bevor sie Anrufdaten zeigt oder Einstellungen entgegennimmt.',
     'status.auth.disabled': 'Zugangsschutz aus — jeder im LAN erreicht das Dashboard ohne Anmeldung.',
@@ -364,6 +366,8 @@ const I18N = {
     'status.errors.empty': 'no entries',
     'status.errors.ago': '{age} ago',
     'status.errors.clear': 'Clear log',
+    'status.errors.capture_info': 'Also log info messages',
+    'status.errors.capture_info.hint': 'For troubleshooting: also shows info messages (e.g. the server:port tried). Fills the log quickly — switch off again afterwards.',
     'status.auth.title': 'Access protection',
     'status.auth.intro': 'Protects the configuration UI in everyday operation. When you turn this on, the page asks for a "Login with PhoneBlock" before it shows call data or accepts setting changes.',
     'status.auth.disabled': 'Access protection off — anyone on the LAN can reach the dashboard without logging in.',
@@ -559,6 +563,8 @@ const I18N = {
     'status.errors.empty': 'aucune entrée',
     'status.errors.ago': 'il y a {age}',
     'status.errors.clear': 'Vider le journal',
+    'status.errors.capture_info': 'Journaliser aussi les infos',
+    'status.errors.capture_info.hint': "Pour le dépannage : affiche aussi les messages d'info (par ex. le serveur:port essayé). Remplit vite le journal — à désactiver ensuite.",
     'status.auth.title': 'Protection d’accès',
     'status.auth.intro': 'Protège l’interface de configuration en exploitation. Une fois activée, la page demande une « Connexion avec PhoneBlock » avant d’afficher les appels ou d’accepter des modifications.',
     'status.auth.disabled': 'Protection d’accès désactivée — n’importe qui sur le LAN peut atteindre le tableau de bord sans se connecter.',
@@ -754,6 +760,8 @@ const I18N = {
     'status.errors.empty': 'sin entradas',
     'status.errors.ago': 'hace {age}',
     'status.errors.clear': 'Vaciar registro',
+    'status.errors.capture_info': 'Registrar también los mensajes info',
+    'status.errors.capture_info.hint': 'Para diagnóstico: muestra también mensajes info (p. ej. el servidor:puerto intentado). Llena el registro rápido; desactívalo después.',
     'status.auth.title': 'Protección de acceso',
     'status.auth.intro': 'Protege la interfaz de configuración durante el uso diario. Si la activas, la página pedirá un «Inicio de sesión con PhoneBlock» antes de mostrar llamadas o aceptar cambios.',
     'status.auth.disabled': 'Protección de acceso desactivada — cualquiera en la LAN puede llegar al panel sin iniciar sesión.',
@@ -1146,6 +1154,11 @@ function renderStatus(){
     +    esc(t('status.errors.clear')) + '</button>'
     + '</h2>'
     + '<div id="errorsList"></div>'
+    + '<label style="display:flex;align-items:center;gap:.4rem;font-weight:normal;margin-top:.7rem;font-size:.85rem">'
+    +   '<input type="checkbox" id="logInfoChk" style="width:auto">'
+    +   '<span>' + esc(t('status.errors.capture_info')) + '</span></label>'
+    + '<p class="muted" style="font-size:.72rem;margin:.2rem 0 0">'
+    +   esc(t('status.errors.capture_info.hint')) + '</p>'
     + '</section>'
     + '<section id="annSection" style="display:none">'
     + '<h2>' + esc(t('status.ann.title')) + '</h2>'
@@ -1858,8 +1871,9 @@ async function refreshAll(){
   const hasErrs = errs && errs.errors.length;
   if (hasErrs){
     list.innerHTML = errs.errors.map(e => {
-      // Severity colour on the tag: errors red, warnings amber.
-      const sev = e.level === 'E' ? 'color:#d93025' : 'color:#e8830c';
+      // Severity colour on the tag: errors red, warnings amber, info grey.
+      const sev = e.level === 'E' ? 'color:#d93025'
+                : e.level === 'W' ? 'color:#e8830c' : 'color:#888';
       return '<div class="error-row"><strong style="' + sev + '">['
         + esc(e.tag) + ']</strong> ' + esc(e.message)
         + ' <span class="muted">'
@@ -1876,6 +1890,25 @@ async function refreshAll(){
       catch (_){ /* next poll will reflect whatever state we end up in */ }
       await refreshAll();
       clearBtn.disabled = false;
+    };
+  }
+
+  // "Also log INFO" troubleshooting toggle. Reflect the stored state on
+  // every poll; persist via /api/config on change.
+  const logChk = $('logInfoChk');
+  if (logChk){
+    logChk.checked = !!(s.log && s.log.capture_info);
+    logChk.onchange = async () => {
+      const body = new URLSearchParams();
+      body.append('log_info', logChk.checked ? '1' : '0');
+      try {
+        await fetch('/api/config', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: body.toString(),
+        });
+      } catch (_){ /* next poll reconciles */ }
+      refreshAll();
     };
   }
 

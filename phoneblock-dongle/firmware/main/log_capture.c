@@ -91,6 +91,7 @@ char log_capture_parse(const char *line,
 
 #include "esp_log.h"
 
+#include "config.h"
 #include "stats.h"
 
 // Previous (console) sink, so the serial log stays fully intact.
@@ -143,13 +144,19 @@ static int log_hook(const char *fmt, va_list ap)
     if (*p == '\033') { while (*p && *p != 'm') p++; if (*p) p++; }
     char lvl = *p;
 
-    // Only WARN/ERROR pays for capture (a va_copy + the formatting in
-    // capture_line). INFO/DEBUG — the overwhelming majority, including
-    // deep driver lines like the GPIO dump — fall straight through.
-    if (lvl == 'E' || lvl == 'W') {
+    // WARN/ERROR are always captured. INFO only when the user enabled it
+    // for troubleshooting (config_log_info) — checked after the W/E test
+    // so the common path pays nothing extra. Either way capture_line's
+    // ~48 B frame is the only added stack (the format scratch is static),
+    // which the small-stack tasks have margin for.
+    int level = 0;
+    if      (lvl == 'E') level = ESP_LOG_ERROR;
+    else if (lvl == 'W') level = ESP_LOG_WARN;
+    else if (lvl == 'I' && config_log_info()) level = ESP_LOG_INFO;
+    if (level) {
         va_list copy;
         va_copy(copy, ap);
-        capture_line(lvl == 'E' ? ESP_LOG_ERROR : ESP_LOG_WARN, fmt, copy);
+        capture_line(level, fmt, copy);
         va_end(copy);
     }
 

@@ -324,6 +324,9 @@ static esp_err_t handle_status(httpd_req_t *req)
     cJSON *cl = cJSON_AddObjectToObject(root, "calls");
     cJSON_AddBoolToObject  (cl,   "log_known",   config_log_known_calls());
 
+    cJSON *lg = cJSON_AddObjectToObject(root, "log");
+    cJSON_AddBoolToObject  (lg,   "capture_info", config_log_info());
+
     cJSON *au = cJSON_AddObjectToObject(root, "auth");
     cJSON_AddBoolToObject  (au,   "enabled",     config_auth_enabled());
     cJSON_AddBoolToObject  (au,   "logged_in",   web_auth_is_logged_in(req));
@@ -456,6 +459,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     char sip_anon_s[4]    = "";
     char sync_en_s[4]     = "";
     char log_known_s[4]   = "";
+    char log_info_s[4]    = "";
     char auto_update_s[4] = "";
     char crash_rep_s[4]   = "";
     char test_calls_s[4]  = "";
@@ -475,6 +479,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     bool have_sip_anon  = form_get(body, "sip_anon",      sip_anon_s,   sizeof(sip_anon_s));
     bool have_sync_en   = form_get(body, "sync_enabled",  sync_en_s,    sizeof(sync_en_s));
     bool have_log_known = form_get(body, "log_known_calls", log_known_s, sizeof(log_known_s));
+    bool have_log_info  = form_get(body, "log_info", log_info_s, sizeof(log_info_s));
     bool have_auto_upd  = form_get(body, "auto_update",   auto_update_s, sizeof(auto_update_s));
     bool have_crash_rep = form_get(body, "crash_report",  crash_rep_s,   sizeof(crash_rep_s));
     bool have_test_call = form_get(body, "accept_test_calls", test_calls_s, sizeof(test_calls_s));
@@ -526,6 +531,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
         .sip_srtp      = have_sip_srtp  ? sip_srtp     : NULL,
         .sync_enabled    = have_sync_en   ? sync_en_s    : NULL,
         .log_known_calls = have_log_known ? log_known_s  : NULL,
+        .log_info        = have_log_info  ? log_info_s   : NULL,
         .auto_update     = have_auto_upd  ? auto_update_s : NULL,
         .crash_report    = have_crash_rep ? crash_rep_s   : NULL,
         .accept_test_calls = have_test_call ? test_calls_s : NULL,
@@ -1036,7 +1042,9 @@ static esp_err_t handle_errors(httpd_req_t *req)
     for (int i = 0; i < n; i++) {
         cJSON *o = cJSON_CreateObject();
         cJSON_AddNumberToObject(o, "age_s",   (double)((now_us - errs[i].at_us) / 1000000));
-        cJSON_AddStringToObject(o, "level",   errs[i].level == ESP_LOG_ERROR ? "E" : "W");
+        cJSON_AddStringToObject(o, "level",
+            errs[i].level == ESP_LOG_ERROR ? "E" :
+            errs[i].level == ESP_LOG_WARN  ? "W" : "I");
         cJSON_AddStringToObject(o, "tag",     errs[i].tag);
         cJSON_AddStringToObject(o, "message", errs[i].message);
         cJSON_AddItemToArray(arr, o);
