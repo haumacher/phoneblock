@@ -236,11 +236,18 @@ static int parse_host_port(const char *spec, char *host_out, int cap)
 //      bare domain, so SRV is the only working path.
 //   3. Direct A-record lookup on config_sip_host() with the configured
 //      (or transport-default) port.
+// Transport's default SIP port when none is configured/discovered.
+static int default_sip_port(void)
+{
+    return (strcmp(config_sip_transport(), "tls") == 0) ? 5061 : 5060;
+}
+
 static void dial_destination(char *host_out, int cap, int *port_out)
 {
     const char *outbound = config_sip_outbound();
     if (outbound && outbound[0]) {
-        *port_out = parse_host_port(outbound, host_out, cap);
+        int p = parse_host_port(outbound, host_out, cap);
+        *port_out = p > 0 ? p : default_sip_port();
         return;
     }
 
@@ -265,7 +272,13 @@ static void dial_destination(char *host_out, int cap, int *port_out)
 
     strncpy(host_out, config_sip_host(), cap - 1);
     host_out[cap - 1] = '\0';
-    *port_out = config_sip_port();
+    // No explicit port and no SRV record (e.g. fritz.box): substitute the
+    // transport default HERE, not only in sip_transport_open(). The reload
+    // path (config change → sip_transport_resolve()) does not default a 0
+    // port; it would resolve host:0 and send UDP to port 0 — the cause of
+    // "Fritz!Box + empty port stops registering after a settings save".
+    int port = config_sip_port();
+    *port_out = port > 0 ? port : default_sip_port();
 }
 
 // ---------------------------------------------------------------------------
