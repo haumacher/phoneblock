@@ -567,6 +567,80 @@ static void send_fail(httpd_req_t *req, const char *message)
     send_json(req, root);
 }
 
+// Common tail for both Fritz!Box provisioning paths (direct setup and
+// the post-2FA retry): register the dongle's TR-064 app instance (best
+// effort, see below), persist the freshly provisioned SIP profile, kick
+// off a re-register, and emit the success JSON. `res` must come from a
+// successful tr064_provision_sip_client(); `auth_token` is the 2FA token
+// when one is in play, NULL otherwise.
+static esp_err_t finish_fritzbox_setup(httpd_req_t *req,
+        const char *fritz_host, const char *fritz_user,
+        const char *fritz_pass, const char *auth_token,
+        const tr064_sip_result_t *res)
+{
+    // Best-effort dedicated app instance on the box: gives the sync task
+    // its own Phone-rights-only credentials so we don't have to persist
+    // the admin password. Failure (older Fritz!OS without AppSetup, a
+    // rate-limit, …) is logged but non-fatal — SIP still works, only the
+    // sync feature stays disabled.
+    char app_user[32] = "";
+    char app_pass[40] = "";
+    int  app_err_code = 0;
+    char app_err_msg[128] = "";
+    esp_err_t app_err = tr064_register_dongle_app(
+        fritz_host, 49000, fritz_user, fritz_pass, auth_token,
+        app_user, sizeof(app_user),
+        app_pass, sizeof(app_pass),
+        &app_err_code, app_err_msg, sizeof(app_err_msg));
+    if (app_err != ESP_OK) {
+        ESP_LOGW(TAG,
+            "RegisterApp failed (code %d, %s) — sync feature disabled",
+            app_err_code, app_err_msg);
+        app_user[0] = '\0';
+        app_pass[0] = '\0';
+    }
+
+    // Persist as a *complete* new SIP profile: reset the expert
+    // parameters to the Fritz!Box happy-path defaults so stale
+    // transport/realm/srtp/port from an earlier manual or provider setup
+    // can't survive config_update()'s merge and break the new UDP/5060
+    // registration (#363).
+    config_update_t u = {
+        .sip_host = fritz_host,
+        .has_sip_port = true,
+        .sip_port = 5060,
+        .sip_user = res->sip_user,
+        .sip_pass = res->sip_pass,
+        .sip_internal_number = res->internal_number,
+        .sip_transport = "udp",
+        .sip_auth_user = "",
+        .sip_outbound  = "",
+        .sip_realm     = "",
+        .sip_srtp      = "off",
+        .fritzbox_app_user = app_user,
+        .fritzbox_app_pass = app_pass,
+    };
+    if (config_update(&u) != ESP_OK) {
+        send_fail(req, "NVS write failed.");
+        return ESP_OK;
+    }
+    // TR-064 just provisioned a new extension on the Fritz!Box — give the
+    // box 1.5 s to make it live before the first REGISTER, otherwise it
+    // hits a not-yet-active slot and falls into 30 s retry.
+    sip_register_request_reload(true);
+
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddBoolToObject  (root, "ok", true);
+    cJSON_AddStringToObject(root, "message",
+        "Extension created. The dongle is registering now — "
+        "see the status bar above for the current state.");
+    cJSON_AddStringToObject(root, "sip_user", res->sip_user);
+    cJSON_AddStringToObject(root, "internal_number", res->internal_number);
+    cJSON_AddBoolToObject  (root, "app_registered", app_user[0] != '\0');
+    send_json(req, root);
+    return ESP_OK;
+}
+
 // POST /api/fritzbox-setup
 // Body (URL-encoded): fritz_host=…&fritz_user=…&fritz_pass=…&phone_name=…
 // Runs tr064_provision_sip_client; on success, stores the generated
@@ -704,69 +778,10 @@ static esp_err_t handle_fritzbox_setup(httpd_req_t *req)
         return ESP_OK;
     }
 
-    // Best-effort register a dedicated app instance on the box. Gives
-    // the sync task its own Phone-rights-only credentials so we don't
-    // have to persist the admin password. Failure (e.g. older Fritz!OS
-    // without AppSetup, or rate-limit) is logged but does not fail the
-    // whole setup — SIP still works without it, the sync feature just
-    // stays disabled.
-    char app_user[32] = "";
-    char app_pass[40] = "";
-    int  app_err_code = 0;
-    char app_err_msg[128] = "";
-    esp_err_t app_err = tr064_register_dongle_app(
-        fritz_host, 49000, fritz_user, fritz_pass, NULL,
-        app_user, sizeof(app_user),
-        app_pass, sizeof(app_pass),
-        &app_err_code, app_err_msg, sizeof(app_err_msg));
-    if (app_err != ESP_OK) {
-        ESP_LOGW(TAG,
-            "RegisterApp failed (code %d, %s) — sync feature disabled",
-            app_err_code, app_err_msg);
-        app_user[0] = '\0';
-        app_pass[0] = '\0';
-    }
-
-    // Commit generated SIP credentials + registrar + (optional) app
-    // credentials to NVS. This establishes a *complete* new SIP profile,
-    // so the expert parameters from any earlier manual/provider setup
-    // (e.g. transport=tls + port 5061 for Telekom) must be reset to the
-    // Fritz!Box happy-path defaults — otherwise they survive the merge in
-    // config_update() and sabotage the new UDP/5060 registration (#363).
-    config_update_t u = {
-        .sip_host = fritz_host,
-        .has_sip_port = true,
-        .sip_port = 5060,
-        .sip_user = res.sip_user,
-        .sip_pass = res.sip_pass,
-        .sip_internal_number = res.internal_number,
-        .sip_transport = "udp",
-        .sip_auth_user = "",
-        .sip_outbound  = "",
-        .sip_realm     = "",
-        .sip_srtp      = "off",
-        .fritzbox_app_user = app_user,
-        .fritzbox_app_pass = app_pass,
-    };
-    if (config_update(&u) != ESP_OK) {
-        send_fail(req, "NVS write failed.");
-        return ESP_OK;
-    }
-    // TR-064 just provisioned a new extension on the Fritz!Box — give
-    // the box 1.5 s to make it live before the first REGISTER, otherwise
-    // the REGISTER hits a not-yet-active slot and falls into 30 s retry.
-    sip_register_request_reload(true);
-
-    cJSON *root = cJSON_CreateObject();
-    cJSON_AddBoolToObject(root, "ok", true);
-    cJSON_AddStringToObject(root, "message",
-        "Extension created. The dongle is registering now — "
-        "see the status bar above for the current state.");
-    cJSON_AddStringToObject(root, "sip_user", res.sip_user);
-    cJSON_AddStringToObject(root, "internal_number", res.internal_number);
-    cJSON_AddBoolToObject  (root, "app_registered", app_user[0] != '\0');
-    send_json(req, root);
-    return ESP_OK;
+    // Provisioning succeeded — register the app instance, persist the
+    // profile, re-register and answer (token=NULL: no 2FA was needed).
+    return finish_fritzbox_setup(req, fritz_host, fritz_user, fritz_pass,
+                                 NULL, &res);
 }
 
 // Percent-encode the unsafe characters in `in` into `out`. RFC 3986
@@ -971,36 +986,11 @@ static esp_err_t handle_fritzbox_2fa_status(httpd_req_t *req)
         s_2fa.fritz_user, s_2fa.fritz_pass, s_2fa.phone_name,
         s_2fa.token, &res);
 
-    // Register the dongle app instance using the same 2FA token (still
-    // valid for the whole auth session). Best effort — see the direct
-    // setup path for why a failure here is non-fatal.
-    char app_user[32] = "";
-    char app_pass[40] = "";
-    if (err == ESP_OK) {
-        int  app_err_code = 0;
-        char app_err_msg[128] = "";
-        esp_err_t app_err = tr064_register_dongle_app(
-            s_2fa.fritz_host, 49000,
-            s_2fa.fritz_user, s_2fa.fritz_pass, s_2fa.token,
-            app_user, sizeof(app_user),
-            app_pass, sizeof(app_pass),
-            &app_err_code, app_err_msg, sizeof(app_err_msg));
-        if (app_err != ESP_OK) {
-            ESP_LOGW(TAG,
-                "RegisterApp after 2FA failed (code %d, %s) — "
-                "sync feature disabled",
-                app_err_code, app_err_msg);
-            app_user[0] = '\0';
-            app_pass[0] = '\0';
-        }
-    }
-
-    // Whatever the outcome, the 2FA round-trip is over; wipe the
-    // cached admin password ASAP.
-    memset(s_2fa.fritz_pass, 0, sizeof(s_2fa.fritz_pass));
-    s_2fa.active = false;
-
     if (err != ESP_OK) {
+        // Wipe the cached admin password before bailing — the round-trip
+        // is over either way.
+        memset(s_2fa.fritz_pass, 0, sizeof(s_2fa.fritz_pass));
+        s_2fa.active = false;
         char msg[200];
         snprintf(msg, sizeof(msg),
             "Still failing after 2FA — error %d: %s",
@@ -1010,43 +1000,14 @@ static esp_err_t handle_fritzbox_2fa_status(httpd_req_t *req)
         return ESP_OK;
     }
 
-    // Commit SIP credentials, re-register. Reset the expert SIP
-    // parameters to the Fritz!Box defaults for the same reason as the
-    // non-2FA path above: a complete new profile must not inherit stale
-    // transport/realm/srtp values from an earlier manual setup (#363).
-    config_update_t u = {
-        .sip_host = s_2fa.fritz_host,
-        .has_sip_port = true,
-        .sip_port = 5060,
-        .sip_user = res.sip_user,
-        .sip_pass = res.sip_pass,
-        .sip_internal_number = res.internal_number,
-        .sip_transport = "udp",
-        .sip_auth_user = "",
-        .sip_outbound  = "",
-        .sip_realm     = "",
-        .sip_srtp      = "off",
-        .fritzbox_app_user = app_user,
-        .fritzbox_app_pass = app_pass,
-    };
-    if (config_update(&u) != ESP_OK) {
-        send_fail(req, "NVS write failed.");
-        return ESP_OK;
-    }
-    // TR-064 just provisioned a new extension on the Fritz!Box — give
-    // the box 1.5 s to make it live before the first REGISTER, otherwise
-    // the REGISTER hits a not-yet-active slot and falls into 30 s retry.
-    sip_register_request_reload(true);
-
-    cJSON *root = cJSON_CreateObject();
-    cJSON_AddBoolToObject  (root, "ok",              true);
-    cJSON_AddStringToObject(root, "message",
-        "Extension created. The dongle is registering now — "
-        "see the status bar above for the current state.");
-    cJSON_AddStringToObject(root, "sip_user",        res.sip_user);
-    cJSON_AddStringToObject(root, "internal_number", res.internal_number);
-    send_json(req, root);
-    return ESP_OK;
+    // Provisioning succeeded — same tail as the direct path, passing the
+    // 2FA token so the app instance registers within the auth session.
+    esp_err_t rc = finish_fritzbox_setup(req, s_2fa.fritz_host,
+        s_2fa.fritz_user, s_2fa.fritz_pass, s_2fa.token, &res);
+    // The 2FA round-trip is over; wipe the cached admin password.
+    memset(s_2fa.fritz_pass, 0, sizeof(s_2fa.fritz_pass));
+    s_2fa.active = false;
+    return rc;
 }
 
 static esp_err_t handle_errors(httpd_req_t *req)
