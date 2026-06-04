@@ -38,10 +38,15 @@ esp_err_t   announcement_get(const uint8_t **buf, size_t *len);
 // Streaming write API — lets the web handler spool the upload
 // directly from HTTP into SPIFFS without a 240 KB heap buffer.
 //
-//   announcement_write_begin(total) → writes to a temp file
+//   announcement_write_begin(total) → truncates the live file in place
 //   announcement_write_append(...)  → append a received chunk
-//   announcement_write_commit()     → atomic rename to live file
-//   announcement_write_abort()      → clean up on error
+//   announcement_write_commit()     → verify the byte count
+//   announcement_write_abort()      → drop the partial file on error
+//
+// The write goes straight into the live file (no temp + rename), so the
+// partition never needs room for two copies. The trade-off is that an
+// interrupted write leaves no custom announcement and the embedded
+// default takes over until the user re-uploads (see write_begin).
 //
 // Only one write session at a time. Not thread-safe — call from a
 // single request handler.

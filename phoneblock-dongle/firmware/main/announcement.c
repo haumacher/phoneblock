@@ -64,8 +64,9 @@ esp_err_t announcement_init(void)
         ESP_LOGI(TAG, "SPIFFS mounted: %u B used of %u B",
                  (unsigned)used, (unsigned)total);
     }
-    // Clear any orphan temp left over by an upload that crashed
-    // mid-flight on the previous boot.
+    // Legacy cleanup: older firmware uploaded via a temp file plus a
+    // rename(). Drop any leftover temp so it doesn't waste a slot —
+    // the current code writes the live file in place (see write_begin).
     unlink(SPIFFS_TEMP);
     return ESP_OK;
 }
@@ -136,19 +137,20 @@ esp_err_t announcement_write_begin(size_t total_bytes)
     if (total_bytes == 0 || total_bytes > ANNOUNCEMENT_MAX_BYTES) {
         return ESP_ERR_INVALID_ARG;
     }
-    // Free both the previous live file and any stale temp before we
-    // start writing. Without this, SPIFFS has to garbage-collect the
-    // old pages while the new data streams in — observed as 4 KB/s
-    // throughput on a ~66 KB upload. With the slot empty up front,
-    // write speed drops back to the ~30–40 KB/s SPIFFS can sustain
-    // on free pages.
-    unlink(SPIFFS_TEMP);
-    unlink(SPIFFS_FILE);
+    // Write straight into the live file: fopen("wb") truncates it in
+    // place, so the partition only ever holds one announcement-sized
+    // blob. The old temp+rename approach needed room for both the temp
+    // and the live file at once and then a rename(), which SPIFFS fails
+    // once the slot is near-full — that left every re-upload of a large
+    // (near-240 KB) announcement permanently stuck on the embedded
+    // default (issue #359). Losing the announcement if a write is
+    // interrupted is acceptable here: the default takes over until the
+    // user re-uploads.
     invalidate_cache();
 
-    s_write_file = fopen(SPIFFS_TEMP, "wb");
+    s_write_file = fopen(SPIFFS_FILE, "wb");
     if (!s_write_file) {
-        ESP_LOGE(TAG, "fopen(%s): %s", SPIFFS_TEMP, strerror(errno));
+        ESP_LOGE(TAG, "fopen(%s): %s", SPIFFS_FILE, strerror(errno));
         return ESP_FAIL;
     }
     // Crank the stdio buffer up: SPIFFS pays per flush, not per byte,
@@ -183,19 +185,11 @@ esp_err_t announcement_write_commit(void)
     if (s_write_got != s_write_total) {
         ESP_LOGE(TAG, "commit: got %u of expected %u",
                  (unsigned)s_write_got, (unsigned)s_write_total);
-        unlink(SPIFFS_TEMP);
+        // Drop the partially written live file → fall back to default.
+        unlink(SPIFFS_FILE);
+        invalidate_cache();
         s_write_got = s_write_total = 0;
         return ESP_ERR_INVALID_SIZE;
-    }
-    // Live file was already unlinked in write_begin (so SPIFFS had
-    // free pages during the body write). Just rename the temp into
-    // place.
-    if (rename(SPIFFS_TEMP, SPIFFS_FILE) != 0) {
-        ESP_LOGE(TAG, "rename(%s → %s): %s",
-                 SPIFFS_TEMP, SPIFFS_FILE, strerror(errno));
-        unlink(SPIFFS_TEMP);
-        s_write_got = s_write_total = 0;
-        return ESP_FAIL;
     }
     size_t stored = s_write_got;
     s_write_got = s_write_total = 0;
@@ -210,7 +204,10 @@ void announcement_write_abort(void)
         fclose(s_write_file);
         s_write_file = NULL;
     }
-    unlink(SPIFFS_TEMP);
+    // The aborted write was going straight into the live file, so it is
+    // now partial — discard it and fall back to the embedded default.
+    unlink(SPIFFS_FILE);
+    invalidate_cache();
     s_write_got = s_write_total = 0;
 }
 
