@@ -285,6 +285,9 @@ const I18N = {
     'sip.manual.port.hint': 'Leer lassen = automatisch via DNS-SRV bzw. Transport-Default (5060 UDP/TCP, 5061 TLS).',
     'sip.manual.user': 'SIP-Benutzer',
     'sip.manual.pass': 'SIP-Passwort',
+    'sip.manual.pass.hint': 'Leer lassen = gespeichertes Passwort behalten.',
+    'sip.manual.anon': 'Ohne Passwort anmelden (anonym)',
+    'sip.manual.anon.hint': 'Entfernt ein gespeichertes Passwort und meldet sich ohne an — z. B. anonymous@t-online.de bei der Telekom.',
     'sip.manual.submit': 'Speichern',
     'sip.manual.done': 'Gespeichert.',
     'sip.manual.error': 'Fehler: {msg}',
@@ -489,6 +492,9 @@ const I18N = {
     'sip.manual.port.hint': 'Leave empty for auto via DNS-SRV or the transport default (5060 UDP/TCP, 5061 TLS).',
     'sip.manual.user': 'SIP user',
     'sip.manual.pass': 'SIP password',
+    'sip.manual.pass.hint': 'Leave empty = keep the stored password.',
+    'sip.manual.anon': 'Register without a password (anonymous)',
+    'sip.manual.anon.hint': 'Clears any stored password and registers without one — e.g. anonymous@t-online.de on Telekom.',
     'sip.manual.submit': 'Save',
     'sip.manual.done': 'Saved.',
     'sip.manual.error': 'Error: {msg}',
@@ -681,6 +687,9 @@ const I18N = {
     'sip.manual.port.hint': 'Vide = automatique via DNS-SRV ou la valeur par défaut du transport (5060 UDP/TCP, 5061 TLS).',
     'sip.manual.user': 'Utilisateur SIP',
     'sip.manual.pass': 'Mot de passe SIP',
+    'sip.manual.pass.hint': 'Laisser vide = conserver le mot de passe enregistré.',
+    'sip.manual.anon': "S'enregistrer sans mot de passe (anonyme)",
+    'sip.manual.anon.hint': "Supprime un mot de passe enregistré et s'enregistre sans — par ex. anonymous@t-online.de chez Telekom.",
     'sip.manual.submit': 'Enregistrer',
     'sip.manual.done': 'Enregistré.',
     'sip.manual.error': 'Erreur : {msg}',
@@ -873,6 +882,9 @@ const I18N = {
     'sip.manual.port.hint': 'Déjelo en blanco para usar DNS-SRV o el valor predeterminado del transporte (5060 UDP/TCP, 5061 TLS).',
     'sip.manual.user': 'Usuario SIP',
     'sip.manual.pass': 'Contraseña SIP',
+    'sip.manual.pass.hint': 'Dejar en blanco = conservar la contraseña guardada.',
+    'sip.manual.anon': 'Registrarse sin contraseña (anónimo)',
+    'sip.manual.anon.hint': 'Elimina cualquier contraseña guardada y se registra sin ella, p. ej. anonymous@t-online.de en Telekom.',
     'sip.manual.submit': 'Guardar',
     'sip.manual.done': 'Guardado.',
     'sip.manual.error': 'Error: {msg}',
@@ -2437,7 +2449,14 @@ async function renderSipManual(){
     + '<label>' + esc(t('sip.manual.user'))
     + '<input type="text"   name="sip_user" value="' + esc(user) + '"></label>'
     + '<label>' + esc(t('sip.manual.pass'))
-    + '<input type="password" name="sip_pass" autocomplete="off"></label>'
+    + '<input type="password" name="sip_pass" id="sipPass" autocomplete="off"></label>'
+    + '<p class="muted" style="font-size:.75rem;margin:.2rem 0 .6rem">'
+    +   esc(t('sip.manual.pass.hint')) + '</p>'
+    + '<label style="display:flex;align-items:center;gap:.4rem;font-weight:normal">'
+    +   '<input type="checkbox" name="sip_anon" id="sipAnon" style="width:auto">'
+    +   '<span>' + esc(t('sip.manual.anon')) + '</span></label>'
+    + '<p class="muted" style="font-size:.75rem;margin:.2rem 0 .6rem">'
+    +   esc(t('sip.manual.anon.hint')) + '</p>'
     + '<details style="margin:1rem 0">'
     +   '<summary style="cursor:pointer;color:#008f7a;font-size:.9rem">'
     +     esc(t('sip.manual.advanced')) + '</summary>'
@@ -2472,6 +2491,14 @@ async function renderSipManual(){
     + '<button type="submit" class="btn-primary">' + esc(t('sip.manual.submit')) + '</button>'
     + '<span id="manMsg" class="muted" style="margin-left:.6rem"></span>'
     + '</p></form></section>';
+  // "Anonymous" disables the password field: a disabled field is left
+  // out of the form body, so the backend sees the explicit sip_anon
+  // marker (clear password) rather than an empty sip_pass (keep current).
+  const anon = $('sipAnon'), pass = $('sipPass');
+  anon.addEventListener('change', () => {
+    pass.disabled = anon.checked;
+    if (anon.checked) pass.value = '';
+  });
   $('manForm').addEventListener('submit', onManualSubmit);
 }
 

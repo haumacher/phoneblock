@@ -453,6 +453,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     char sip_outbound[80] = "";
     char sip_realm[64]    = "";
     char sip_srtp[16]     = "";
+    char sip_anon_s[4]    = "";
     char sync_en_s[4]     = "";
     char log_known_s[4]   = "";
     char auto_update_s[4] = "";
@@ -469,6 +470,9 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     bool have_sip_out   = form_get(body, "sip_outbound",  sip_outbound, sizeof(sip_outbound));
     bool have_sip_realm = form_get(body, "sip_realm",     sip_realm,    sizeof(sip_realm));
     bool have_sip_srtp  = form_get(body, "sip_srtp",      sip_srtp,     sizeof(sip_srtp));
+    // Present only when the manual form's "anonymous" box is ticked. Its
+    // presence (not its value) is the signal to clear a stored password.
+    bool have_sip_anon  = form_get(body, "sip_anon",      sip_anon_s,   sizeof(sip_anon_s));
     bool have_sync_en   = form_get(body, "sync_enabled",  sync_en_s,    sizeof(sync_en_s));
     bool have_log_known = form_get(body, "log_known_calls", log_known_s, sizeof(log_known_s));
     bool have_auto_upd  = form_get(body, "auto_update",   auto_update_s, sizeof(auto_update_s));
@@ -497,9 +501,16 @@ static esp_err_t handle_config_post(httpd_req_t *req)
         .has_sip_port = have_sip_port && sip_port_s[0],
         .sip_port     = have_sip_port && sip_port_s[0] ? atoi(sip_port_s) : 0,
         .sip_user   = have_sip_user && sip_user[0]  ? sip_user  : NULL,
-        // Empty password submitted = keep existing (so user doesn't have to
-        // re-type it when editing other fields).
-        .sip_pass   = have_sip_pass && sip_pass[0]  ? sip_pass  : NULL,
+        // Password resolution, in order:
+        //   - "anonymous" box ticked → "" : explicitly clear the stored
+        //     password (the only way to reach a passwordless account like
+        //     anonymous@t-online.de once a password was ever saved).
+        //   - non-empty field         → use it.
+        //   - empty field, no box     → NULL : keep existing, so the user
+        //     need not retype it when editing other fields.
+        .sip_pass   = have_sip_anon                 ? ""
+                    : have_sip_pass && sip_pass[0]  ? sip_pass
+                    : NULL,
         .sip_expires = have_sip_exp && sip_exp_s[0] ? atoi(sip_exp_s) : 0,
         .sip_internal_number = clear_int_num,
         // Extended SIP parameters: explicit empty string clears, missing
