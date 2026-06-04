@@ -1074,15 +1074,29 @@ static esp_err_t handle_errors(httpd_req_t *req)
 static esp_err_t handle_announcement_get(httpd_req_t *req)
 {
     REQUIRE_AUTH_API(req);
-    const uint8_t *buf = NULL;
-    size_t len = 0;
-    if (announcement_get(&buf, &len) != ESP_OK || len == 0) {
+    announcement_src_t src;
+    announcement_open(&src);
+    if (src.len == 0) {
+        announcement_close(&src);
         httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "no announcement");
         return ESP_OK;
     }
     httpd_resp_set_type(req, "audio/basic");
     httpd_resp_set_hdr(req, "Cache-Control", "no-store");
-    httpd_resp_send(req, (const char *)buf, len);
+
+    // Stream the announcement in chunks straight from its source (flash
+    // RODATA for the default, SPIFFS for a custom one) so we never hold
+    // the whole ~240 KB blob in a heap buffer.
+    uint8_t buf[1024];
+    size_t n;
+    while ((n = announcement_read(&src, buf, sizeof(buf))) > 0) {
+        if (httpd_resp_send_chunk(req, (const char *)buf, n) != ESP_OK) {
+            announcement_close(&src);
+            return ESP_FAIL;   // socket gone — abort the response
+        }
+    }
+    announcement_close(&src);
+    httpd_resp_send_chunk(req, NULL, 0);   // terminate the chunked response
     return ESP_OK;
 }
 

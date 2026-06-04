@@ -25,8 +25,7 @@ static volatile bool s_abort = false;
 
 typedef struct {
     struct sockaddr_in dest;
-    const uint8_t *alaw;
-    size_t alaw_bytes;
+    announcement_src_t src;
 } rtp_args_t;
 
 void rtp_request_abort(void)
@@ -61,28 +60,28 @@ static void rtp_audio_task(void *arg)
     uint32_t timestamp = esp_random();
     uint32_t ssrc      = esp_random();
 
-    size_t total_frames = (a->alaw_bytes + FRAME_SAMPLES - 1) / FRAME_SAMPLES;
+    size_t total_frames = (a->src.len + FRAME_SAMPLES - 1) / FRAME_SAMPLES;
     char ip[INET_ADDRSTRLEN];
     inet_ntoa_r(a->dest.sin_addr, ip, sizeof(ip));
     ESP_LOGI(TAG, "stream %u bytes (%u frames ≈ %u ms) → %s:%d, ssrc=%08lx",
-             (unsigned)a->alaw_bytes, (unsigned)total_frames,
+             (unsigned)a->src.len, (unsigned)total_frames,
              (unsigned)(total_frames * 20),
              ip, ntohs(a->dest.sin_port), (unsigned long)ssrc);
 
     uint8_t pkt[RTP_HEADER_BYTES + FRAME_BYTES];
 
     TickType_t next = xTaskGetTickCount();
-    for (size_t off = 0; off < a->alaw_bytes; off += FRAME_SAMPLES) {
+    for (size_t frame = 0; frame < total_frames; frame++) {
         if (s_abort) {
             ESP_LOGI(TAG, "stream aborted at frame %u/%u",
-                     (unsigned)(off / FRAME_SAMPLES),
-                     (unsigned)total_frames);
+                     (unsigned)frame, (unsigned)total_frames);
             break;
         }
-        size_t remaining = a->alaw_bytes - off;
-        size_t payload   = remaining < FRAME_SAMPLES ? remaining : FRAME_SAMPLES;
-
-        memcpy(pkt + RTP_HEADER_BYTES, a->alaw + off, payload);
+        // Pull the next 20 ms straight from the announcement source
+        // (flash RODATA for the default, SPIFFS file for a custom one).
+        size_t payload = announcement_read(&a->src, pkt + RTP_HEADER_BYTES,
+                                           FRAME_SAMPLES);
+        if (payload == 0) break;   // end of stream or read error
         // Pad short final frame with A-law silence (0xD5 = 16-bit PCM 0).
         if (payload < FRAME_SAMPLES) {
             memset(pkt + RTP_HEADER_BYTES + payload, 0xD5,
@@ -117,24 +116,26 @@ static void rtp_audio_task(void *arg)
     close(sock);
 
 done:
+    announcement_close(&a->src);
     free(a);
     vTaskDelete(NULL);
 }
 
 void rtp_play_audio(const struct sockaddr_in *dest,
-                    const uint8_t *alaw, size_t alaw_bytes)
+                    announcement_src_t *src)
 {
     rtp_args_t *args = malloc(sizeof(*args));
     if (!args) {
         ESP_LOGE(TAG, "malloc rtp args failed");
+        announcement_close(src);
         return;
     }
-    args->dest       = *dest;
-    args->alaw       = alaw;
-    args->alaw_bytes = alaw_bytes;
+    args->dest = *dest;
+    args->src  = *src;   // ownership (incl. open file handle) moves to the task
     s_abort = false;
     if (xTaskCreate(rtp_audio_task, "rtp_audio", 4096, args, 6, NULL) != pdPASS) {
         ESP_LOGE(TAG, "xTaskCreate failed");
+        announcement_close(&args->src);
         free(args);
     }
 }

@@ -1025,19 +1025,19 @@ static void handle_ack(sip_ctx_t *c, const char *req, int req_len,
     if (d->state == DIALOG_ANSWERED) {
         // Spam call: we answered with 200 OK, ACK confirms.
 #if CONFIG_RTP_PLAY_ANNOUNCEMENT
-        const uint8_t *audio = NULL;
-        size_t bytes = 0;
-        announcement_get(&audio, &bytes);
-        if (bytes > 0 && d->rtp_dest_valid) {
+        announcement_src_t src;
+        announcement_open(&src);
+        if (src.len > 0 && d->rtp_dest_valid) {
             // PCMA at 8 kHz → 8000 bytes == 1 s, so duration_us = bytes * 125.
             // Add a short tail margin so the last frame is delivered before BYE.
-            int64_t duration_us = (int64_t)bytes * 125LL;
+            int64_t duration_us = (int64_t)src.len * 125LL;
             ESP_LOGI(TAG, "ACK received → streaming announcement (%u bytes ≈ %lld ms), then BYE",
-                     (unsigned)bytes, (long long)(duration_us / 1000));
-            rtp_play_audio(&d->rtp_dest, audio, bytes);
+                     (unsigned)src.len, (long long)(duration_us / 1000));
+            rtp_play_audio(&d->rtp_dest, &src);   // task owns src now, closes it
             d->bye_at_us = esp_timer_get_time() + duration_us + 200000LL;
             d->state = DIALOG_STREAMING;
         } else {
+            announcement_close(&src);   // nothing to stream — release the handle
             ESP_LOGI(TAG, "ACK received → no audio (no rtp_dest or empty) → BYE");
             send_bye(c);
         }
