@@ -77,6 +77,18 @@ static void set_host(char *dst, size_t cap, const char *src)
     }
 }
 
+// Stash a stream transport's peer host/port + TLS SNI so it can
+// transparently reconnect later (esp-tls re-sends the SNI on every retry).
+// UDP keeps its peer in t->registrar (a resolved sockaddr) and needs none
+// of this — only call this for stream transports.
+static void save_stream_peer(sip_transport_t *t, const char *host,
+                             int port, const char *tls_sni)
+{
+    set_host(t->registrar_host, sizeof(t->registrar_host), host);
+    t->registrar_port = port;
+    set_host(t->tls_sni, sizeof(t->tls_sni), tls_sni);
+}
+
 static bool discover_local_ip(struct sip_transport *t)
 {
     esp_netif_t *netif = esp_netif_get_default_netif();
@@ -125,9 +137,7 @@ bool sip_transport_resolve(sip_transport_t *t,
     // Stream transports keep host/port for transparent reconnects;
     // esp-tls in particular needs the hostname for SNI on every retry.
     if (is_stream(t->kind)) {
-        set_host(t->registrar_host, sizeof(t->registrar_host), host);
-        t->registrar_port = port;
-        set_host(t->tls_sni, sizeof(t->tls_sni), tls_sni);
+        save_stream_peer(t, host, port, tls_sni);
     }
 
     if (t->kind == TR_TCP) {
@@ -358,12 +368,10 @@ sip_transport_t *sip_transport_open(const char *transport,
     t->sock = -1;
     t->kind = kind;
     t->local_port = local_port;
-    t->registrar_port = registrar_port;
     strcpy(t->via_token, via);
     strcpy(t->uri_param, uri);
     if (is_stream(kind)) {
-        set_host(t->registrar_host, sizeof(t->registrar_host), registrar_host);
-        set_host(t->tls_sni, sizeof(t->tls_sni), tls_sni);
+        save_stream_peer(t, registrar_host, registrar_port, tls_sni);
     }
 
     if (!discover_local_ip(t)) goto fail;
