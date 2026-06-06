@@ -1004,14 +1004,21 @@ async function postForm(url, form){
 // DNS-SRV and uses the port the SRV record advertises. Telekom only
 // publishes an SRV record (_sips._tcp.tel.t-online.de) and no A record
 // on the bare domain, so a hard-coded port would skip SRV and the
-// direct A lookup would fail (#363); it also requires TLS transport.
+// direct A lookup would fail (#363); it also requires TLS transport so
+// the registrar can push incoming INVITEs back through NAT over the
+// existing connection (UDP registers but cannot receive calls behind a
+// router). `anonymous: true` registers via anonymous@t-online.de with no
+// password — the simplest path for the user, who then only types the
+// phone number.
 const PROVIDERS = {
   telekom: {
     name: 'Telekom MagentaZuhause',
     host: 'tel.t-online.de',
     port: 0,
     transport: 'tls',
-    userHint: 'Format: +49… (E.164). Benutzer = E-Mail des T-Online-Kontos, Passwort = T-Online-Webpasswort.',
+    authUser: 'anonymous@t-online.de',
+    anonymous: true,
+    userHint: 'Rufnummer im Format +49… (E.164). Kein Passwort nötig — die Anmeldung erfolgt anonym (anonymous@t-online.de).',
   },
   vodafone: {
     name: 'Vodafone (DSL/Kabel)',
@@ -2435,8 +2442,8 @@ function renderSipProvider(){
     + '</div>'
     + '<label>' + esc(t('sip.prov.user'))
     + '<input type="text" name="sip_user" required></label>'
-    + '<label>' + esc(t('sip.prov.pass'))
-    + '<input type="password" name="sip_pass" required autocomplete="off"></label>'
+    + '<div id="provPassBlock"><label>' + esc(t('sip.prov.pass'))
+    + '<input type="password" name="sip_pass" id="provPass" required autocomplete="off"></label></div>'
     + '<p style="margin-top:.8rem">'
     + '<button type="submit" class="btn-primary">' + esc(t('sip.prov.submit')) + '</button>'
     + '<span id="provMsg" class="muted" style="margin-left:.6rem"></span>'
@@ -2450,6 +2457,13 @@ function onProviderChange(e){
   const p = PROVIDERS[key];
   $('provHint').textContent = p ? p.userHint : '';
   $('provVorwahlBlock').style.display = p && p.needsVorwahl ? '' : 'none';
+  // Anonymous providers (Telekom) need no password — hide the field and
+  // drop its "required" so the form submits with just the phone number.
+  const anon = !!(p && p.anonymous);
+  $('provPassBlock').style.display = anon ? 'none' : '';
+  const pass = $('provPass');
+  pass.required = !anon;
+  if (anon) pass.value = '';
 }
 
 async function onProviderSubmit(e){
@@ -2481,9 +2495,16 @@ async function onProviderSubmit(e){
   body.append('sip_host', host);
   body.append('sip_port', String(p.port));
   body.append('sip_user', e.target.sip_user.value);
-  body.append('sip_pass', e.target.sip_pass.value);
+  // Anonymous presets clear the stored password (sip_anon marker) instead
+  // of sending one; others send the typed password. sip_auth_user comes
+  // from the preset (e.g. anonymous@t-online.de), empty = use SIP user.
+  if (p.anonymous){
+    body.append('sip_anon', '1');
+  } else {
+    body.append('sip_pass', e.target.sip_pass.value);
+  }
   body.append('sip_transport', p.transport || 'udp');
-  body.append('sip_auth_user', '');
+  body.append('sip_auth_user', p.authUser || '');
   body.append('sip_outbound', '');
   body.append('sip_realm', '');
   body.append('sip_srtp', 'off');

@@ -1179,9 +1179,17 @@ static void sip_task(void *arg)
     int  dial_port;
     dial_destination(dial_host, sizeof(dial_host), &dial_port);
 
+    // TLS SNI / cert name: the service domain the user configured, not the
+    // SRV-resolved edge host (#363). With an explicit outbound proxy the
+    // TLS peer *is* the dial host, so use that.
+    const char *outbound = config_sip_outbound();
+    const char *tls_sni  = (outbound && outbound[0]) ? dial_host
+                                                     : config_sip_host();
+
     ctx.transport = sip_transport_open(config_sip_transport(),
                                        dial_host,
                                        dial_port,
+                                       tls_sni,
                                        SIP_LOCAL_PORT);
     if (!ctx.transport) {
         // Surface the failure on the dashboard — without this the SIP
@@ -1201,7 +1209,6 @@ static void sip_task(void *arg)
         return;
     }
     if (strcmp(dial_host, config_sip_host()) != 0) {
-        const char *outbound = config_sip_outbound();
         const char *via = (outbound && outbound[0]) ? "outbound proxy" : "SRV";
         ESP_LOGI(TAG, "%s %s:%d active (SIP host: %s)",
                  via, dial_host, dial_port, config_sip_host());
@@ -1305,7 +1312,11 @@ static void sip_task(void *arg)
             char new_dial_host[64];
             int  new_dial_port;
             dial_destination(new_dial_host, sizeof(new_dial_host), &new_dial_port);
-            sip_transport_resolve(ctx.transport, new_dial_host, new_dial_port);
+            const char *new_outbound = config_sip_outbound();
+            const char *new_tls_sni  = (new_outbound && new_outbound[0])
+                                           ? new_dial_host : config_sip_host();
+            sip_transport_resolve(ctx.transport, new_dial_host, new_dial_port,
+                                  new_tls_sni);
             // Settle pause only when the caller asked for it
             // (TR-064 provisioning). FB needs a beat for a newly
             // created extension to go live on its own SIP stack;
