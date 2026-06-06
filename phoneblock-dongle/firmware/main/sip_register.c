@@ -31,7 +31,12 @@
 
 static const char *TAG = "sip";
 
-#define SIP_LOCAL_PORT       5061  // local UDP/TCP port advertised in Via/Contact
+// Local UDP/TCP port, also advertised in Via/Contact. A high port (not
+// 5060/5061) is deliberate: it dodges router SIP-ALGs (which only mangle
+// 5060) and is not reserved by a FritzBox's own SIP stack, so it can be
+// port-forwarded 1:1 for incoming UDP calls without a separate external
+// port. 15060 is mnemonic ("1"+5060); RTP sits next to it on 16000.
+#define SIP_LOCAL_PORT       15060
 #define SIP_RX_BUF_SIZE      4096
 #define SIP_TX_BUF_SIZE      2048
 // REGISTER round-trip wait: how long to block on the 401/200 response

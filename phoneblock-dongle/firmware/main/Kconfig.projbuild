@@ -87,7 +87,7 @@ menu "PhoneBlock Dongle"
             emulator. The Fritz!Box cannot deliver an INVITE to that
             address. Set this to the host-visible address (typically the
             workstation's LAN IP, e.g. 192.168.178.22) and combine with
-            `-nic user,model=open_eth,hostfwd=udp::5061-:5061` in QEMU.
+            `-nic user,model=open_eth,hostfwd=udp::15060-:15060` in QEMU.
             Leave empty to advertise the actual local interface IP,
             which is the correct behavior on real hardware.
 
