@@ -19,6 +19,7 @@ gegenchecken — Registrar-Namen und Port-/Transport-Zwang können sich
 | Vodafone (DSL/Kabel) | ❌ | — | nur eigene Router, Fremdgeräte-Anmeldung gesperrt |
 | NetCologne / NetAachen | ✅ | `einstellungen.netcologne.de` | „immer über Internet" in FB **aus** |
 | M-net | ✅ | M-net-Kundenportal | Premium-Trunks TLS |
+| Deutsche Glasfaser | ⚠️ | Anschreiben (SIP_Username + SIP_Password) | UDP-only → kein Dongle-Preset (NAT); Fremdgerät-Freischaltung nötig |
 | Telekom MagentaZuhause | ✅ | Kundencenter (E-Mail + Webpasswort) | nur aus Telekom-Netz — für stationären Dongle unkritisch |
 | Telekom CompanyFlex / DeutschlandLAN | ✅ | Geschäftskunden-Portal | **TLS+SRTP Pflicht** |
 | Congstar | ⚠️ | Kundencenter | toleriert, kein Support |
@@ -132,6 +133,25 @@ gegenchecken — Registrar-Namen und Port-/Transport-Zwang können sich
 | Transport | 5060 UDP, TLS bei Premium-Trunks |
 | Codec | PCMA, G.722 |
 
+### Deutsche Glasfaser (inexio-Backbone)
+
+> UDP-only: TCP wird nicht beantwortet, kein TLS dokumentiert. Registriert
+> zwar, aber eingehende Anrufe kommen hinter NAT nicht an → **kein
+> Dongle-Preset** (siehe Transport-Hinweis bei den UI-Feldern). Werte nur
+> als Referenz.
+
+| Feld | Wert |
+|---|---|
+| Registrar | `dg.voip.dg-w.de` (nur IPv4) |
+| Port / Transport | 5060 UDP (TCP scheitert, kein TLS) |
+| Outbound-Proxy | leer (automatisch) |
+| SIP-User | Rufnummer mit Vorwahl, ohne Leerzeichen (z.B. `02151788888`) |
+| Auth-User / Authname | `SIP_Username` aus dem Anschreiben (**nicht** die Rufnummer) |
+| Passwort | `SIP_Password` aus dem Anschreiben |
+| DTMF | RTP oder Inband (nicht „Automatisch") |
+| Reg-Timer | ~60 s |
+| Stolperfalle | Fremdgerät muss von DG freigeschaltet werden; RFC 6140 (Bulk-Reg) **aus** |
+
 ### Reseller (Tele2 etc.)
 
 Meist Wiederverkäufer auf Telekom-/Vodafone-Backbone → gleiche Codec-
@@ -219,3 +239,6 @@ einzig zuverlässige Weg.
 - [LANCOM KB — SIP-Leitung NetCologne/NetAachen](https://knowledgebase.lancom-systems.de/pages/viewpage.action?pageId=32983537)
 - [M-net Hilfe — Zugangsdaten Endgerät](https://www.m-net.de/hilfe-service/fragen-und-antworten/frage/show/wofuer-sind-die-zugangsdaten-was-mache-ich-damit/1/endgeraet)
 - [IPTAM PBX — M-net SIP Trunk Einstellungen](https://www.iptam.com/Einstellungen%253A%2BM-net%2BSIP%2BTrunk%2B%2528M-net%2BTelekommunikations%2BGmbH%2529)
+- [Ralf's Blog — Deutsche Glasfaser SIP-Account manuell konfigurieren](https://bergs.biz/blog/2017/02/18/deutsche-glasfaser-sip-account-manuell-konfigurieren/)
+- [Auerswald FAQ — Angaben im Account für Deutsche Glasfaser](https://www.auerswald.de/de/support/faq/welche-angaben-sind-im-account-fuer-deutsche-glasfaser-erforderlich)
+- [LANCOM-Forum — VoIP mit LANCOM Routern und Deutsche Glasfaser (UDP/TCP-Trace)](https://www.lancom-forum.de/fragen-zu-lancom-systems-voip-router-f42/voip-mit-lancom-routern-und-dem-provider-deutsche--t15710.html)
