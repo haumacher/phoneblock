@@ -56,6 +56,14 @@ static void tls_drop(sip_transport_t *t);
 // Common helpers
 // ---------------------------------------------------------------------------
 
+// Connection-oriented transports (TCP/TLS), as opposed to UDP. They share
+// the stream framer, the transparent-reconnect logic and the persistent-
+// connection send/recv path.
+static inline bool is_stream(transport_kind_t kind)
+{
+    return kind == TR_TCP || kind == TR_TLS;
+}
+
 // Copy a hostname into a fixed-size buffer, always NUL-terminated. A NULL
 // or empty src clears the buffer. Used for both registrar_host and tls_sni
 // so the truncate-and-terminate dance lives in one place.
@@ -116,7 +124,7 @@ bool sip_transport_resolve(sip_transport_t *t,
 
     // Stream transports keep host/port for transparent reconnects;
     // esp-tls in particular needs the hostname for SNI on every retry.
-    if (t->kind == TR_TCP || t->kind == TR_TLS) {
+    if (is_stream(t->kind)) {
         set_host(t->registrar_host, sizeof(t->registrar_host), host);
         t->registrar_port = port;
         set_host(t->tls_sni, sizeof(t->tls_sni), tls_sni);
@@ -353,7 +361,7 @@ sip_transport_t *sip_transport_open(const char *transport,
     t->registrar_port = registrar_port;
     strcpy(t->via_token, via);
     strcpy(t->uri_param, uri);
-    if (kind == TR_TCP || kind == TR_TLS) {
+    if (is_stream(kind)) {
         set_host(t->registrar_host, sizeof(t->registrar_host), registrar_host);
         set_host(t->tls_sni, sizeof(t->tls_sni), tls_sni);
     }
@@ -368,7 +376,7 @@ sip_transport_t *sip_transport_open(const char *transport,
     inet_ntoa_r(t->registrar.sin_addr, ip, sizeof(ip));
     ESP_LOGI(TAG, "registrar %s:%d → %s", registrar_host, registrar_port, ip);
 
-    if (kind == TR_TCP || kind == TR_TLS) {
+    if (is_stream(kind)) {
         t->frame_buf = malloc(SIP_TCP_FRAME_BUF);
         if (!t->frame_buf) {
             ESP_LOGE(TAG, "frame buffer malloc failed");
@@ -465,7 +473,7 @@ int sip_transport_send(sip_transport_t *t, const void *buf, int len)
 int sip_transport_send_to(sip_transport_t *t, const struct sockaddr_in *peer,
                           const void *buf, int len)
 {
-    if (t->kind == TR_TCP || t->kind == TR_TLS) {
+    if (is_stream(t->kind)) {
         // Per RFC 3261 §18.2.1 the registrar reuses the existing
         // connection for in-dialog messages; the peer arg is
         // informational only. Cheap sanity-log when it disagrees.
