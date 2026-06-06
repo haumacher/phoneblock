@@ -22,6 +22,13 @@ const char *find_header(const char *msg, int msg_len, const char *name);
 // the number of bytes written (excluding NUL).
 int header_value(const char *p, const char *end, char *out, int cap);
 
+// Extract the "received=" parameter from the first Via header of a
+// response. A registrar adds it (RFC 3261 §18.2.1) with the public source
+// IP it actually saw when that differs from our sent-by host — i.e. the
+// dongle's address as seen from outside the NAT. Writes the IP into out
+// and returns 1; returns 0 (out cleared) when no received= is present.
+int parse_via_received(const char *resp, int resp_len, char *out, int cap);
+
 // Extract the request method (first whitespace-delimited token on the
 // request line). Writes at most cap-1 bytes + NUL. Returns the number of
 // bytes written.

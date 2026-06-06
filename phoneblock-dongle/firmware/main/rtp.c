@@ -11,6 +11,8 @@
 #include "esp_random.h"
 #include "lwip/sockets.h"
 
+#include "config.h"
+
 static const char *TAG = "rtp";
 
 #define FRAME_SAMPLES    160          // 20 ms at 8 kHz
@@ -45,13 +47,14 @@ static void rtp_audio_task(void *arg)
     int reuse = 1;
     setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &reuse, sizeof(reuse));
 
+    int rtp_port = config_rtp_port();
     struct sockaddr_in local = {
         .sin_family      = AF_INET,
         .sin_addr.s_addr = htonl(INADDR_ANY),
-        .sin_port        = htons(SIP_RTP_PORT),
+        .sin_port        = htons(rtp_port),
     };
     if (bind(sock, (struct sockaddr *)&local, sizeof(local)) < 0) {
-        ESP_LOGE(TAG, "bind RTP :%d: %s", SIP_RTP_PORT, strerror(errno));
+        ESP_LOGE(TAG, "bind RTP :%d: %s", rtp_port, strerror(errno));
         close(sock);
         goto done;
     }

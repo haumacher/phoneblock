@@ -168,7 +168,7 @@ CONFIG_SIP_EXPIRES=3600
 # advertises its actual interface IP and bound UDP port in Via /
 # Contact. QEMU user-mode networking puts the guest behind 10.0.2.x,
 # unreachable from the Fritz!Box; emulator builds set both in .local
-# (host LAN IP + the host port mapped via -hostfwd udp::5061-:5061).
+# (host LAN IP + the host port mapped via -hostfwd udp::15060-:15060).
 CONFIG_SIP_CONTACT_HOST_OVERRIDE=""
 CONFIG_SIP_CONTACT_PORT_OVERRIDE=0
 

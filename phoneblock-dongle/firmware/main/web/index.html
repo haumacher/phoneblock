@@ -114,6 +114,7 @@ const I18N = {
     'status.sip.since': 'seit {duration}',
     'status.sip.at': 'bei {host} als {user}',
     'status.sip.ext': 'Interne Nummer {n}',
+    'status.sip.public_ip': 'öffentliche IP {ip}',
     'status.sip.setup_cta': 'Telefonie einrichten',
     'status.sip.redo_cta': 'Telefonie neu einrichten',
     'status.token.set': 'PhoneBlock-Token gesetzt',
@@ -276,9 +277,8 @@ const I18N = {
     'sip.fb.2fa.cancelled': '2FA abgebrochen.',
     'sip.fb.2fa.timeout': 'Zeitüberschreitung. Bitte erneut versuchen.',
     'sip.prov.title': 'Anbieter wählen',
-    'sip.prov.intro': 'Wähle deinen Anbieter; die Zugangsdaten bekommst du aus dem jeweiligen Kundenportal.',
+    'sip.prov.intro': 'Wähle deinen Anbieter; die Zugangsdaten bekommst du aus dem jeweiligen Kundenportal. Ist dein Anbieter nicht gelistet, nutze die manuelle Konfiguration.',
     'sip.prov.provider': 'Anbieter',
-    'sip.prov.vorwahl': 'Vorwahl (ohne führende 0)',
     'sip.prov.user': 'SIP-Benutzer / Rufnummer',
     'sip.prov.pass': 'Passwort',
     'sip.prov.submit': 'Zugangsdaten speichern',
@@ -299,7 +299,7 @@ const I18N = {
     'sip.manual.error': 'Fehler: {msg}',
     'sip.manual.advanced': 'Erweiterte Parameter',
     'sip.manual.transport': 'Transport',
-    'sip.manual.transport.hint': 'UDP, TCP und TLS sind alle nutzbar. TLS prüft das Server-Zertifikat gegen das ESP-IDF-Root-Bundle (kein Pinning). Audio läuft weiter unverschlüsselt — SRTP folgt.',
+    'sip.manual.transport.hint': 'UDP, TCP und TLS sind wählbar. TLS verschlüsselt die Verbindung und wird empfohlen, sofern der Anbieter es unterstützt. Die Sprachübertragung selbst ist derzeit noch unverschlüsselt.',
     'sip.manual.auth_user': 'Auth-Benutzer',
     'sip.manual.auth_user.hint': 'Leer lassen = SIP-Benutzer auch als Auth. Bei Telekom: E-Mail.',
     'sip.manual.outbound': 'Outbound-Proxy',
@@ -308,6 +308,12 @@ const I18N = {
     'sip.manual.realm.hint': 'Leer = aus Challenge übernehmen.',
     'sip.manual.srtp': 'SRTP',
     'sip.manual.srtp.hint': 'Derzeit deaktiviert, Feld wird persistiert für spätere Nutzung.',
+    'sip.manual.local_port': 'Lokaler SIP-Port',
+    'sip.manual.local_port.hint': 'Port, auf dem der Dongle SIP empfängt (Standard 15060). Leer = Standard.',
+    'sip.manual.rtp_port': 'RTP-Port (Audio)',
+    'sip.manual.rtp_port.hint': 'Port für den Sprachkanal (Standard 16000). Leer = Standard.',
+    'sip.manual.fwd.title': 'Port-Weiterleitung bei direkter Provider-Anmeldung',
+    'sip.manual.fwd.body': 'Meldet sich der Dongle direkt beim Provider an (statt über einen VoIP-Router) und der Anbieter unterstützt nur UDP, richte im Router je eine UDP-Weiterleitung auf den Dongle ein — portgleich (externer Port = interner Port): {sip} (SIP) und {rtp} (RTP). Die öffentliche IP ermittelt der Dongle automatisch (oben im Status sichtbar); sie muss nicht eingetragen werden. Das funktioniert nur mit einer echten (eigenen) öffentlichen IPv4 — nicht bei DS-Lite/CGNAT (geteilte IPv4), wo keine Weiterleitung möglich ist; dann hilft nur TCP/TLS, falls der Anbieter es unterstützt.',
     'sip.manual.srtp.off': 'aus',
     'sip.manual.srtp.optional': 'optional',
     'sip.manual.srtp.mandatory': 'Pflicht',
@@ -329,6 +335,7 @@ const I18N = {
     'status.sip.since': 'since {duration}',
     'status.sip.at': 'at {host} as {user}',
     'status.sip.ext': 'Internal number {n}',
+    'status.sip.public_ip': 'Public IP {ip}',
     'status.sip.setup_cta': 'Set up telephony',
     'status.sip.redo_cta': 'Reconfigure telephony',
     'status.token.set': 'PhoneBlock token set',
@@ -489,9 +496,8 @@ const I18N = {
     'sip.fb.2fa.cancelled': '2FA cancelled.',
     'sip.fb.2fa.timeout': 'Timed out. Please try again.',
     'sip.prov.title': 'Choose provider',
-    'sip.prov.intro': 'Pick your provider; get the credentials from their customer portal.',
+    'sip.prov.intro': 'Pick your provider; get the credentials from their customer portal. If your provider is not listed, use the manual configuration.',
     'sip.prov.provider': 'Provider',
-    'sip.prov.vorwahl': 'Area code (without leading 0)',
     'sip.prov.user': 'SIP user / phone number',
     'sip.prov.pass': 'Password',
     'sip.prov.submit': 'Save credentials',
@@ -512,7 +518,7 @@ const I18N = {
     'sip.manual.error': 'Error: {msg}',
     'sip.manual.advanced': 'Advanced parameters',
     'sip.manual.transport': 'Transport',
-    'sip.manual.transport.hint': 'UDP, TCP and TLS are all available. TLS verifies the server certificate against the ESP-IDF root bundle (no pinning). Audio is still sent in the clear — SRTP comes later.',
+    'sip.manual.transport.hint': 'UDP, TCP and TLS can be selected. TLS encrypts the connection and is recommended where the provider supports it. The voice audio itself is not yet encrypted.',
     'sip.manual.auth_user': 'Auth user',
     'sip.manual.auth_user.hint': 'Empty = use SIP user for auth. Telekom: e-mail address.',
     'sip.manual.outbound': 'Outbound proxy',
@@ -521,6 +527,12 @@ const I18N = {
     'sip.manual.realm.hint': 'Empty = take from the server challenge.',
     'sip.manual.srtp': 'SRTP',
     'sip.manual.srtp.hint': 'Currently disabled; the field is persisted for later use.',
+    'sip.manual.local_port': 'Local SIP port',
+    'sip.manual.local_port.hint': 'Port the dongle receives SIP on (default 15060). Empty = default.',
+    'sip.manual.rtp_port': 'RTP port (audio)',
+    'sip.manual.rtp_port.hint': 'Port for the voice channel (default 16000). Empty = default.',
+    'sip.manual.fwd.title': 'Port forwarding for direct provider registration',
+    'sip.manual.fwd.body': 'If the dongle registers directly with the provider (instead of via a VoIP-capable router) and the provider only supports UDP, add one UDP forwarding each to the dongle in your router — port-identical (external port = internal port): {sip} (SIP) and {rtp} (RTP). The dongle detects its public IP automatically (shown in the status above); you do not need to enter it. This only works with a real (dedicated) public IPv4 — not behind DS-Lite/CGNAT (shared IPv4), where no port forwarding is possible; there only TCP/TLS helps, if the provider supports it.',
     'sip.manual.srtp.off': 'off',
     'sip.manual.srtp.optional': 'optional',
     'sip.manual.srtp.mandatory': 'mandatory',
@@ -542,6 +554,7 @@ const I18N = {
     'status.sip.since': 'depuis {duration}',
     'status.sip.at': 'sur {host} en tant que {user}',
     'status.sip.ext': 'Numéro interne {n}',
+    'status.sip.public_ip': 'IP publique {ip}',
     'status.sip.setup_cta': 'Configurer la téléphonie',
     'status.sip.redo_cta': 'Reconfigurer la téléphonie',
     'status.token.set': 'Jeton PhoneBlock enregistré',
@@ -690,9 +703,8 @@ const I18N = {
     'sip.fb.2fa.cancelled': '2FA annulée.',
     'sip.fb.2fa.timeout': 'Délai dépassé. Veuillez réessayer.',
     'sip.prov.title': 'Choisir un opérateur',
-    'sip.prov.intro': 'Choisissez votre opérateur ; les identifiants sont disponibles dans son portail client.',
+    'sip.prov.intro': 'Choisissez votre opérateur ; les identifiants sont disponibles dans son portail client. Si votre opérateur n’est pas listé, utilisez la configuration manuelle.',
     'sip.prov.provider': 'Opérateur',
-    'sip.prov.vorwahl': 'Indicatif (sans le 0 initial)',
     'sip.prov.user': 'Utilisateur SIP / numéro',
     'sip.prov.pass': 'Mot de passe',
     'sip.prov.submit': 'Enregistrer les identifiants',
@@ -713,7 +725,7 @@ const I18N = {
     'sip.manual.error': 'Erreur : {msg}',
     'sip.manual.advanced': 'Paramètres avancés',
     'sip.manual.transport': 'Transport',
-    'sip.manual.transport.hint': 'UDP, TCP et TLS sont disponibles. TLS vérifie le certificat serveur contre le bundle racine d’ESP-IDF (pas d’épinglage). L’audio reste en clair — SRTP arrive plus tard.',
+    'sip.manual.transport.hint': 'UDP, TCP et TLS sont disponibles. TLS chiffre la connexion et est recommandé si l’opérateur le prend en charge. La voix elle-même n’est pas encore chiffrée.',
     'sip.manual.auth_user': 'Utilisateur d’auth',
     'sip.manual.auth_user.hint': 'Vide = utiliser l’utilisateur SIP pour l’auth. Telekom : adresse e-mail.',
     'sip.manual.outbound': 'Proxy sortant',
@@ -722,6 +734,12 @@ const I18N = {
     'sip.manual.realm.hint': 'Vide = reprendre la valeur du challenge du serveur.',
     'sip.manual.srtp': 'SRTP',
     'sip.manual.srtp.hint': 'Actuellement désactivé ; le champ est persisté pour un usage ultérieur.',
+    'sip.manual.local_port': 'Port SIP local',
+    'sip.manual.local_port.hint': 'Port sur lequel le dongle reçoit le SIP (défaut 15060). Vide = défaut.',
+    'sip.manual.rtp_port': 'Port RTP (audio)',
+    'sip.manual.rtp_port.hint': 'Port du canal vocal (défaut 16000). Vide = défaut.',
+    'sip.manual.fwd.title': 'Redirection de ports pour une inscription directe chez l’opérateur',
+    'sip.manual.fwd.body': 'Si le dongle s’enregistre directement chez l’opérateur (au lieu de passer par un routeur VoIP) et que celui-ci ne prend en charge que l’UDP, ajoutez dans votre routeur une redirection UDP vers le dongle pour chacun — à port identique (port externe = port interne) : {sip} (SIP) et {rtp} (RTP). Le dongle détecte automatiquement son IP publique (affichée dans l’état ci-dessus) ; inutile de la saisir. Cela ne fonctionne qu’avec une vraie IPv4 publique (dédiée) — pas en DS-Lite/CGNAT (IPv4 partagée), où aucune redirection n’est possible ; seul TCP/TLS aide alors, si l’opérateur le prend en charge.',
     'sip.manual.srtp.off': 'désactivé',
     'sip.manual.srtp.optional': 'optionnel',
     'sip.manual.srtp.mandatory': 'obligatoire',
@@ -743,6 +761,7 @@ const I18N = {
     'status.sip.since': 'desde hace {duration}',
     'status.sip.at': 'en {host} como {user}',
     'status.sip.ext': 'Número interno {n}',
+    'status.sip.public_ip': 'IP pública {ip}',
     'status.sip.setup_cta': 'Configurar la telefonía',
     'status.sip.redo_cta': 'Reconfigurar la telefonía',
     'status.token.set': 'Token PhoneBlock configurado',
@@ -891,9 +910,8 @@ const I18N = {
     'sip.fb.2fa.cancelled': '2FA cancelada.',
     'sip.fb.2fa.timeout': 'Tiempo agotado. Inténtalo de nuevo.',
     'sip.prov.title': 'Elegir proveedor',
-    'sip.prov.intro': 'Elige tu proveedor; las credenciales están en su portal de cliente.',
+    'sip.prov.intro': 'Elige tu proveedor; las credenciales están en su portal de cliente. Si tu proveedor no aparece, usa la configuración manual.',
     'sip.prov.provider': 'Proveedor',
-    'sip.prov.vorwahl': 'Prefijo (sin el 0 inicial)',
     'sip.prov.user': 'Usuario SIP / número',
     'sip.prov.pass': 'Contraseña',
     'sip.prov.submit': 'Guardar credenciales',
@@ -914,7 +932,7 @@ const I18N = {
     'sip.manual.error': 'Error: {msg}',
     'sip.manual.advanced': 'Parámetros avanzados',
     'sip.manual.transport': 'Transporte',
-    'sip.manual.transport.hint': 'UDP, TCP y TLS están disponibles. TLS verifica el certificado del servidor con el paquete raíz de ESP-IDF (sin pinning). El audio sigue en claro — SRTP llegará más tarde.',
+    'sip.manual.transport.hint': 'Puede elegir UDP, TCP o TLS. TLS cifra la conexión y se recomienda si el proveedor lo admite. El audio de voz todavía no está cifrado.',
     'sip.manual.auth_user': 'Usuario de auth',
     'sip.manual.auth_user.hint': 'Vacío = usar el usuario SIP para auth. Telekom: correo electrónico.',
     'sip.manual.outbound': 'Proxy saliente',
@@ -923,6 +941,12 @@ const I18N = {
     'sip.manual.realm.hint': 'Vacío = tomarlo del challenge del servidor.',
     'sip.manual.srtp': 'SRTP',
     'sip.manual.srtp.hint': 'Actualmente desactivado; el campo se guarda para uso futuro.',
+    'sip.manual.local_port': 'Puerto SIP local',
+    'sip.manual.local_port.hint': 'Puerto en el que el dongle recibe SIP (predeterminado 15060). Vacío = predeterminado.',
+    'sip.manual.rtp_port': 'Puerto RTP (audio)',
+    'sip.manual.rtp_port.hint': 'Puerto del canal de voz (predeterminado 16000). Vacío = predeterminado.',
+    'sip.manual.fwd.title': 'Reenvío de puertos para registro directo con el proveedor',
+    'sip.manual.fwd.body': 'Si el dongle se registra directamente con el proveedor (en lugar de a través de un router VoIP) y este solo admite UDP, añade en tu router un reenvío UDP al dongle para cada uno, con el mismo puerto (puerto externo = puerto interno): {sip} (SIP) y {rtp} (RTP). El dongle detecta su IP pública automáticamente (se muestra en el estado de arriba); no es necesario introducirla. Esto solo funciona con una IPv4 pública real (dedicada) — no con DS-Lite/CGNAT (IPv4 compartida), donde no es posible ningún reenvío; entonces solo ayuda TCP/TLS, si el proveedor lo admite.',
     'sip.manual.srtp.off': 'desactivado',
     'sip.manual.srtp.optional': 'opcional',
     'sip.manual.srtp.mandatory': 'obligatorio',
@@ -998,48 +1022,49 @@ async function postForm(url, form){
   }
 }
 
-// --- provider presets (top 5, PROVIDERS.md) -------------------------
+// --- provider presets (PROVIDERS.md) --------------------------------
 
-// `port: 0` means "auto" — the firmware resolves the endpoint via
-// DNS-SRV and uses the port the SRV record advertises. Telekom only
-// publishes an SRV record (_sips._tcp.tel.t-online.de) and no A record
-// on the bare domain, so a hard-coded port would skip SRV and the
-// direct A lookup would fail (#363); it also requires TLS transport.
+// Transport is always connection-oriented (TLS or TCP), never UDP: only a
+// persistent connection lets the registrar push an incoming INVITE back
+// through the NAT of a home router. UDP registers fine but cannot receive
+// calls behind a router, so it is useless for the dongle's purpose.
+//
+// `port: 0` means "auto" — the firmware resolves the endpoint via DNS-SRV
+// and uses the port the SRV record advertises. Telekom only publishes an
+// SRV record (_sips._tcp.tel.t-online.de) and no A record on the bare
+// domain, so a hard-coded port would skip SRV and the direct A lookup
+// would fail (#363). `anonymous: true` registers via anonymous@t-online.de
+// with no password — the simplest path for the user, who then only types
+// the phone number.
 const PROVIDERS = {
   telekom: {
     name: 'Telekom MagentaZuhause',
     host: 'tel.t-online.de',
     port: 0,
     transport: 'tls',
-    userHint: 'Format: +49… (E.164). Benutzer = E-Mail des T-Online-Kontos, Passwort = T-Online-Webpasswort.',
-  },
-  vodafone: {
-    name: 'Vodafone (DSL/Kabel)',
-    hostTemplate: '{vorwahl}.sip.arcor.de',
-    port: 5060,
-    transport: 'udp',
-    needsVorwahl: true,
-    userHint: 'Rufnummer ohne führende 0. Passwort aus „MeinVodafone" → separates SIP-Passwort.',
+    authUser: 'anonymous@t-online.de',
+    anonymous: true,
+    userHint: 'Rufnummer im Format +49… (E.164). Kein Passwort nötig — die Anmeldung erfolgt anonym (anonymous@t-online.de).',
   },
   einsundeins: {
     name: '1&1',
     host: 'sip.1und1.de',
     port: 5060,
-    transport: 'udp',
+    transport: 'tcp',
     userHint: 'Format: 49…, ohne „+" und ohne führende 0. Passwort = „Telefoniepasswort" aus dem 1&1-Control-Center.',
   },
   sipgate: {
     name: 'sipgate',
     host: 'sipgate.de',
     port: 5060,
-    transport: 'udp',
+    transport: 'tcp',
     userHint: 'SIP-ID aus dem sipgate-Webportal. Passwort = separates SIP-Passwort.',
   },
   easybell: {
     name: 'easybell',
     host: 'voip.easybell.de',
     port: 5060,
-    transport: 'udp',
+    transport: 'tcp',
     userHint: 'SIP-Benutzer und -Passwort aus dem easybell-Kundenportal.',
   },
 };
@@ -1590,6 +1615,9 @@ async function refreshAll(){
     ];
     if (s.sip.internal_number){
       parts.push(t('status.sip.ext', {n: s.sip.internal_number}));
+    }
+    if (s.sip.public_ip){
+      parts.push(t('status.sip.public_ip', {ip: s.sip.public_ip}));
     }
     $('sipDetail').textContent = parts.join(' · ');
     sipCta.textContent = t('status.sip.redo_cta');
@@ -2429,14 +2457,10 @@ function renderSipProvider(){
     + '<label>' + esc(t('sip.prov.provider'))
     + '<select name="provider" id="provSelect" required>' + opts + '</select></label>'
     + '<div id="provHint" class="muted" style="margin:.5rem 0"></div>'
-    + '<div id="provVorwahlBlock" style="display:none">'
-    + '<label>' + esc(t('sip.prov.vorwahl'))
-    + '<input type="text" id="provVorwahl" pattern="[0-9]{2,5}" placeholder="211"></label>'
-    + '</div>'
     + '<label>' + esc(t('sip.prov.user'))
     + '<input type="text" name="sip_user" required></label>'
-    + '<label>' + esc(t('sip.prov.pass'))
-    + '<input type="password" name="sip_pass" required autocomplete="off"></label>'
+    + '<div id="provPassBlock"><label>' + esc(t('sip.prov.pass'))
+    + '<input type="password" name="sip_pass" id="provPass" required autocomplete="off"></label></div>'
     + '<p style="margin-top:.8rem">'
     + '<button type="submit" class="btn-primary">' + esc(t('sip.prov.submit')) + '</button>'
     + '<span id="provMsg" class="muted" style="margin-left:.6rem"></span>'
@@ -2449,7 +2473,13 @@ function onProviderChange(e){
   const key = e.target.value;
   const p = PROVIDERS[key];
   $('provHint').textContent = p ? p.userHint : '';
-  $('provVorwahlBlock').style.display = p && p.needsVorwahl ? '' : 'none';
+  // Anonymous providers (Telekom) need no password — hide the field and
+  // drop its "required" so the form submits with just the phone number.
+  const anon = !!(p && p.anonymous);
+  $('provPassBlock').style.display = anon ? 'none' : '';
+  const pass = $('provPass');
+  pass.required = !anon;
+  if (anon) pass.value = '';
 }
 
 async function onProviderSubmit(e){
@@ -2463,12 +2493,7 @@ async function onProviderSubmit(e){
     msg.style.color = '#d93025';
     return;
   }
-  let host = p.host;
-  if (p.needsVorwahl){
-    const v = ($('provVorwahl').value || '').replace(/^0+/, '');
-    if (!v){ msg.textContent = t('sip.prov.error', {msg: 'Vorwahl fehlt'}); msg.style.color = '#d93025'; return; }
-    host = p.hostTemplate.replaceAll('{vorwahl}', v);
-  }
+  const host = p.host;
   // Build the POST body ourselves since the preset supplies host/port.
   btn.disabled = true;
   msg.textContent = t('sip.fb.working');
@@ -2481,9 +2506,16 @@ async function onProviderSubmit(e){
   body.append('sip_host', host);
   body.append('sip_port', String(p.port));
   body.append('sip_user', e.target.sip_user.value);
-  body.append('sip_pass', e.target.sip_pass.value);
+  // Anonymous presets clear the stored password (sip_anon marker) instead
+  // of sending one; others send the typed password. sip_auth_user comes
+  // from the preset (e.g. anonymous@t-online.de), empty = use SIP user.
+  if (p.anonymous){
+    body.append('sip_anon', '1');
+  } else {
+    body.append('sip_pass', e.target.sip_pass.value);
+  }
   body.append('sip_transport', p.transport || 'udp');
-  body.append('sip_auth_user', '');
+  body.append('sip_auth_user', p.authUser || '');
   body.append('sip_outbound', '');
   body.append('sip_realm', '');
   body.append('sip_srtp', 'off');
@@ -2524,6 +2556,14 @@ async function renderSipManual(){
   const outb  = sip.outbound  || '';
   const realm = sip.realm     || '';
   const srtp  = sip.srtp      || 'off';
+  // No stored password ⇒ pre-tick "anonymous", so the saved state stays
+  // visible on reload (the password itself is never sent to the client).
+  const passSet = !!sip.pass_set;
+  // Local bind ports (status always returns the effective value, never 0).
+  const lport = sip.local_port ? String(sip.local_port) : '';
+  const rport = sip.rtp_port   ? String(sip.rtp_port)   : '';
+  const lportShown = sip.local_port || 15060;
+  const rportShown = sip.rtp_port   || 16000;
   const opt = (value, cur, label) =>
     '<option value="' + esc(value) + '"' + (value === cur ? ' selected' : '') + '>'
     + esc(label) + '</option>';
@@ -2546,7 +2586,8 @@ async function renderSipManual(){
     + '<p class="muted" style="font-size:.75rem;margin:.2rem 0 .6rem">'
     +   esc(t('sip.manual.pass.hint')) + '</p>'
     + '<label style="display:flex;align-items:center;gap:.4rem;font-weight:normal">'
-    +   '<input type="checkbox" name="sip_anon" id="sipAnon" style="width:auto">'
+    +   '<input type="checkbox" name="sip_anon" id="sipAnon" style="width:auto"'
+    +     (passSet ? '' : ' checked') + '>'
     +   '<span>' + esc(t('sip.manual.anon')) + '</span></label>'
     + '<p class="muted" style="font-size:.75rem;margin:.2rem 0 .6rem">'
     +   esc(t('sip.manual.anon.hint')) + '</p>'
@@ -2579,6 +2620,18 @@ async function renderSipManual(){
     +     '</select></label>'
     +   '<p class="muted" style="font-size:.75rem;margin:.2rem 0 .6rem">'
     +     esc(t('sip.manual.srtp.hint')) + '</p>'
+    +   '<label>' + esc(t('sip.manual.local_port'))
+    +     '<input type="number" name="sip_local_port" min="1" max="65535" value="' + esc(lport) + '"></label>'
+    +   '<p class="muted" style="font-size:.75rem;margin:.2rem 0 .6rem">'
+    +     esc(t('sip.manual.local_port.hint')) + '</p>'
+    +   '<label>' + esc(t('sip.manual.rtp_port'))
+    +     '<input type="number" name="rtp_port" min="1" max="65535" value="' + esc(rport) + '"></label>'
+    +   '<p class="muted" style="font-size:.75rem;margin:.2rem 0 .6rem">'
+    +     esc(t('sip.manual.rtp_port.hint')) + '</p>'
+    +   '<div class="muted" style="font-size:.75rem;margin:.6rem 0;border-left:3px solid #ccc;padding-left:.6rem">'
+    +     '<strong>' + esc(t('sip.manual.fwd.title')) + '</strong><br>'
+    +     esc(t('sip.manual.fwd.body', {sip: lportShown, rtp: rportShown}))
+    +   '</div>'
     + '</details>'
     + '<p style="margin-top:.8rem">'
     + '<button type="submit" class="btn-primary">' + esc(t('sip.manual.submit')) + '</button>'
@@ -2588,6 +2641,9 @@ async function renderSipManual(){
   // out of the form body, so the backend sees the explicit sip_anon
   // marker (clear password) rather than an empty sip_pass (keep current).
   const anon = $('sipAnon'), pass = $('sipPass');
+  // Mirror the pre-ticked state: a passwordless account renders with the
+  // password field already disabled.
+  pass.disabled = anon.checked;
   anon.addEventListener('change', () => {
     pass.disabled = anon.checked;
     if (anon.checked) pass.value = '';

@@ -13,6 +13,12 @@ void sip_register_start(void);
 // True if the last REGISTER exchange completed with a 200 OK.
 bool sip_register_is_registered(void);
 
+// The dongle's public IP as the registrar reported it via the Via
+// "received=" parameter, or "" until the first REGISTER response has
+// been seen. Shown in the web UI so the user can confirm what the
+// dongle advertises for incoming UDP calls behind NAT.
+const char *sip_register_public_ip(void);
+
 // Signal the SIP task to tear down its current binding and re-register
 // with whatever credentials are currently in config.c's cache. The
 // request is latched; the task picks it up the next time its select()

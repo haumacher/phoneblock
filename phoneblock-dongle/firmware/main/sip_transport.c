@@ -35,6 +35,7 @@ struct sip_transport {
     struct sockaddr_in registrar;    // peer addr for UDP/TCP; informational for TLS
     char registrar_host[64];         // saved for TCP/TLS reconnect (esp-tls needs hostname for SNI)
     int  registrar_port;
+    char tls_sni[64];                // SNI + cert name for TLS; service domain, may differ from registrar_host (#363)
     char local_ip[INET_ADDRSTRLEN];
     int  local_port;
     char via_token[8];
@@ -54,6 +55,39 @@ static void tls_drop(sip_transport_t *t);
 // ---------------------------------------------------------------------------
 // Common helpers
 // ---------------------------------------------------------------------------
+
+// Connection-oriented transports (TCP/TLS), as opposed to UDP. They share
+// the stream framer, the transparent-reconnect logic and the persistent-
+// connection send/recv path.
+static inline bool is_stream(transport_kind_t kind)
+{
+    return kind == TR_TCP || kind == TR_TLS;
+}
+
+// Copy a hostname into a fixed-size buffer, always NUL-terminated. A NULL
+// or empty src clears the buffer. Used for both registrar_host and tls_sni
+// so the truncate-and-terminate dance lives in one place.
+static void set_host(char *dst, size_t cap, const char *src)
+{
+    if (src && src[0]) {
+        strncpy(dst, src, cap - 1);
+        dst[cap - 1] = '\0';
+    } else {
+        dst[0] = '\0';
+    }
+}
+
+// Stash a stream transport's peer host/port + TLS SNI so it can
+// transparently reconnect later (esp-tls re-sends the SNI on every retry).
+// UDP keeps its peer in t->registrar (a resolved sockaddr) and needs none
+// of this — only call this for stream transports.
+static void save_stream_peer(sip_transport_t *t, const char *host,
+                             int port, const char *tls_sni)
+{
+    set_host(t->registrar_host, sizeof(t->registrar_host), host);
+    t->registrar_port = port;
+    set_host(t->tls_sni, sizeof(t->tls_sni), tls_sni);
+}
 
 static bool discover_local_ip(struct sip_transport *t)
 {
@@ -91,7 +125,7 @@ static bool dns_resolve(const char *host, int port, int socktype,
 }
 
 bool sip_transport_resolve(sip_transport_t *t,
-                           const char *host, int port)
+                           const char *host, int port, const char *tls_sni)
 {
     int socktype = (t->kind == TR_UDP) ? SOCK_DGRAM : SOCK_STREAM;
     if (!dns_resolve(host, port, socktype, &t->registrar)) return false;
@@ -102,10 +136,8 @@ bool sip_transport_resolve(sip_transport_t *t,
 
     // Stream transports keep host/port for transparent reconnects;
     // esp-tls in particular needs the hostname for SNI on every retry.
-    if (t->kind == TR_TCP || t->kind == TR_TLS) {
-        strncpy(t->registrar_host, host, sizeof(t->registrar_host) - 1);
-        t->registrar_host[sizeof(t->registrar_host) - 1] = '\0';
-        t->registrar_port = port;
+    if (is_stream(t->kind)) {
+        save_stream_peer(t, host, port, tls_sni);
     }
 
     if (t->kind == TR_TCP) {
@@ -227,11 +259,20 @@ static bool tls_connect(sip_transport_t *t)
     // would otherwise require a firmware update before the dongle could
     // re-register. The bundle's update cycle is governed by IDF.
     //
-    // SNI is implicit — esp_tls_conn_new_sync() sends the hostname
-    // argument as SNI extension by default.
+    // SNI + cert name: esp_tls_conn_new_sync() uses the hostname argument
+    // for DNS/TCP connect *and* (via mbedtls_ssl_set_hostname) for SNI and
+    // certificate verification. When the registrar was resolved via
+    // DNS-SRV, that hostname is the per-PoP edge (e.g. dtm010-…edns.t-
+    // ipnet.de) — but Telekom's edge routes the SIP session by SNI and
+    // silently drops a REGISTER whose SNI is the edge name rather than the
+    // service domain (#363). cfg.common_name overrides BOTH the SNI and
+    // the cert-verify name to the service domain (tel.t-online.de) while
+    // the connect still targets the resolvable edge host. Telekom then
+    // serves the service-domain cert for that SNI, so verification holds.
     esp_tls_cfg_t cfg = {
         .crt_bundle_attach = esp_crt_bundle_attach,
         .timeout_ms        = SIP_TLS_HANDSHAKE_TIMEOUT_MS,
+        .common_name       = t->tls_sni[0] ? t->tls_sni : NULL,
     };
 
     esp_tls_t *tls = esp_tls_init();
@@ -262,8 +303,9 @@ static bool tls_connect(sip_transport_t *t)
 
     t->tls = tls;
     sip_framer_reset(&t->framer);
-    ESP_LOGI(TAG, "TLS connected to %s:%d, local port %d",
-             t->registrar_host, t->registrar_port, t->local_port);
+    ESP_LOGI(TAG, "TLS connected to %s:%d (SNI %s), local port %d",
+             t->registrar_host, t->registrar_port,
+             t->tls_sni[0] ? t->tls_sni : t->registrar_host, t->local_port);
     return true;
 }
 
@@ -291,6 +333,7 @@ static void tls_reconnect(sip_transport_t *t)
 sip_transport_t *sip_transport_open(const char *transport,
                                     const char *registrar_host,
                                     int registrar_port,
+                                    const char *tls_sni,
                                     int local_port)
 {
     transport_kind_t kind = TR_UDP;
@@ -325,11 +368,10 @@ sip_transport_t *sip_transport_open(const char *transport,
     t->sock = -1;
     t->kind = kind;
     t->local_port = local_port;
-    t->registrar_port = registrar_port;
     strcpy(t->via_token, via);
     strcpy(t->uri_param, uri);
-    if (kind == TR_TCP || kind == TR_TLS) {
-        strncpy(t->registrar_host, registrar_host, sizeof(t->registrar_host) - 1);
+    if (is_stream(kind)) {
+        save_stream_peer(t, registrar_host, registrar_port, tls_sni);
     }
 
     if (!discover_local_ip(t)) goto fail;
@@ -342,7 +384,7 @@ sip_transport_t *sip_transport_open(const char *transport,
     inet_ntoa_r(t->registrar.sin_addr, ip, sizeof(ip));
     ESP_LOGI(TAG, "registrar %s:%d → %s", registrar_host, registrar_port, ip);
 
-    if (kind == TR_TCP || kind == TR_TLS) {
+    if (is_stream(kind)) {
         t->frame_buf = malloc(SIP_TCP_FRAME_BUF);
         if (!t->frame_buf) {
             ESP_LOGE(TAG, "frame buffer malloc failed");
@@ -439,7 +481,7 @@ int sip_transport_send(sip_transport_t *t, const void *buf, int len)
 int sip_transport_send_to(sip_transport_t *t, const struct sockaddr_in *peer,
                           const void *buf, int len)
 {
-    if (t->kind == TR_TCP || t->kind == TR_TLS) {
+    if (is_stream(t->kind)) {
         // Per RFC 3261 §18.2.1 the registrar reuses the existing
         // connection for in-dialog messages; the peer arg is
         // informational only. Cheap sanity-log when it disagrees.

@@ -146,31 +146,31 @@ I (xxxx) sip: REGISTERED as phoneblock-ab@192.168.178.1 (expires 300 s)
 ### 4) Eingehende SIP-Anrufe (INVITE) — mit NAT-Workaround
 
 Hier hat die Fritz!Box das Problem, den Dongle **aktiv** zu erreichen.
-Unsere REGISTER-Pakete tragen standardmäßig `Via: …/UDP 10.0.2.15:5061`
-und `Contact: <sip:phoneblock-ab@10.0.2.15:5061>` — das ist eine Adresse,
+Unsere REGISTER-Pakete tragen standardmäßig `Via: …/UDP 10.0.2.15:15060`
+und `Contact: <sip:phoneblock-ab@10.0.2.15:15060>` — das ist eine Adresse,
 die nur innerhalb des QEMU-Userspaces existiert. Die Fritz!Box wählt sie
 zwar aus der Registration-Tabelle, das Paket versandet aber im NAT.
 
 Damit INVITEs durchkommen, sind zwei Schritte nötig:
 
-**a) QEMU: UDP-Hostfwd auf Port 5061.** So leitet der Host eingehende
+**a) QEMU: UDP-Hostfwd auf Port 15060.** So leitet der Host eingehende
 SIP-Pakete an den emulierten Guest weiter:
 
 ```bash
-idf.py qemu --qemu-extra-args="-nic user,model=open_eth,hostfwd=udp::5061-:5061"
+idf.py qemu --qemu-extra-args="-nic user,model=open_eth,hostfwd=udp::15060-:15060"
 ```
 
 **b) Firmware: Via/Contact auf die Host-IP umstellen.** Sonst weiß die
-Fritz!Box nicht, dass sie `Host-IP:5061` verwenden soll. In
+Fritz!Box nicht, dass sie `Host-IP:15060` verwenden soll. In
 `sdkconfig.defaults.local` (gitignored):
 
 ```
 CONFIG_SIP_CONTACT_HOST_OVERRIDE="192.168.178.22"   # IP des Host-PCs im LAN
-CONFIG_SIP_CONTACT_PORT_OVERRIDE=5061
+CONFIG_SIP_CONTACT_PORT_OVERRIDE=15060
 ```
 
 Nach dem Rebuild (`idf.py build`) enthält die REGISTER-Nachricht dann
-`Via: …/UDP 192.168.178.22:5061` und `Contact: <sip:…@192.168.178.22:5061>`.
+`Via: …/UDP 192.168.178.22:15060` und `Contact: <sip:…@192.168.178.22:15060>`.
 Die Fritz!Box sendet INVITEs an die Host-IP → `hostfwd` leitet an den
 Guest → `recvfrom` liefert sie an den SIP-Task.
 
@@ -193,10 +193,10 @@ Der Dongle sollte im Log einen eingehenden INVITE zeigen:
 
 ```
 I (xxxx) sip: ← from 192.168.178.1:5060  723 bytes:
-INVITE sip:phoneblock-ab@192.168.178.22:5061 SIP/2.0
+INVITE sip:phoneblock-ab@192.168.178.22:15060 SIP/2.0
 Via: SIP/2.0/UDP 192.168.178.1:5060;branch=z9hG4bK...
 From: <sip:**600**@fritz.box>;tag=...
-To: <sip:phoneblock-ab@192.168.178.22:5061>
+To: <sip:phoneblock-ab@192.168.178.22:15060>
 Call-ID: ...
 CSeq: 1 INVITE
 Contact: <sip:fritz.box>
@@ -217,7 +217,7 @@ TCP-Hostfwd kommt man vom Host-Browser dran:
 
 ```bash
 idf.py qemu --qemu-extra-args="-nic user,model=open_eth,\
-  hostfwd=udp::5061-:5061,\
+  hostfwd=udp::15060-:15060,\
   hostfwd=udp::16000-:16000,\
   hostfwd=tcp::8080-:80"
 ```

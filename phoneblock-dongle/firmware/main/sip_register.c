@@ -31,7 +31,9 @@
 
 static const char *TAG = "sip";
 
-#define SIP_LOCAL_PORT       5061  // local UDP/TCP port advertised in Via/Contact
+// The local SIP port (bound + advertised) is configurable via
+// config_sip_local_port(); its default (15060) and rationale live in
+// config.c. RTP likewise via config_rtp_port() (default 16000).
 #define SIP_RX_BUF_SIZE      4096
 #define SIP_TX_BUF_SIZE      2048
 // REGISTER round-trip wait: how long to block on the 401/200 response
@@ -97,9 +99,23 @@ static int64_t s_binding_expires_at_us = 0;
 // the actual cause instead of a generic "binding expired".
 static char    s_pending_error[STATS_ERROR_MSG_LEN] = "";
 
+// Public IP as the registrar sees us, learned from the "received="
+// parameter the registrar adds to our Via in the REGISTER response.
+// Empty until the first response arrives. Used as the advertised host in
+// Via/Contact/SDP so a port-forwarded UDP setup behind NAT is reachable,
+// and surfaced in the web UI for the user to verify. The public IP is the
+// router's WAN address and identical for all transports, so this is also
+// correct (if unused) for TCP/TLS.
+static char    s_public_ip[INET_ADDRSTRLEN] = "";
+
 bool sip_register_is_registered(void)
 {
     return s_registered;
+}
+
+const char *sip_register_public_ip(void)
+{
+    return s_public_ip;
 }
 
 void sip_register_request_reload(bool needs_settle)
@@ -335,15 +351,17 @@ static void digest_response(
 // exists inside the emulator.
 static const char *advertised_host(const sip_ctx_t *c)
 {
-    return strlen(config_contact_host_override()) > 0
-               ? config_contact_host_override()
-               : sip_transport_local_ip(c->transport);
+    if (strlen(config_contact_host_override()) > 0)
+        return config_contact_host_override();   // explicit manual/QEMU override wins
+    if (s_public_ip[0])
+        return s_public_ip;                      // learned public IP (UDP NAT)
+    return sip_transport_local_ip(c->transport); // direct / not yet learned
 }
 
 static int advertised_port(void)
 {
     return config_contact_port_override() != 0
-               ? config_contact_port_override() : SIP_LOCAL_PORT;
+               ? config_contact_port_override() : config_sip_local_port();
 }
 
 static int build_register(sip_ctx_t *c, char *buf, int cap, bool with_auth)
@@ -440,6 +458,15 @@ static int sip_send_recv(sip_ctx_t *c, const char *tx, int tx_len,
         return -1;
     }
     rx[r] = '\0';
+    // Learn our public IP from the registrar's view (Via "received="), so
+    // Via/Contact/SDP can advertise it for UDP NAT traversal.
+    char rcv[INET_ADDRSTRLEN];
+    if (parse_via_received(rx, r, rcv, sizeof(rcv)) && rcv[0]
+            && strcmp(rcv, s_public_ip) != 0) {
+        strncpy(s_public_ip, rcv, sizeof(s_public_ip) - 1);
+        s_public_ip[sizeof(s_public_ip) - 1] = '\0';
+        ESP_LOGI(TAG, "public IP (via received=): %s", s_public_ip);
+    }
     return r;
 }
 
@@ -700,7 +727,7 @@ static int build_sdp_body(const char *our_ip, char *out, int cap)
         "m=audio %d RTP/AVP 8\r\n"
         "a=rtpmap:8 PCMA/8000\r\n"
         "a=sendrecv\r\n",
-        our_ip, our_ip, SIP_RTP_PORT);
+        our_ip, our_ip, config_rtp_port());
 }
 
 // ---------------------------------------------------------------------------
@@ -1179,10 +1206,18 @@ static void sip_task(void *arg)
     int  dial_port;
     dial_destination(dial_host, sizeof(dial_host), &dial_port);
 
+    // TLS SNI / cert name: the service domain the user configured, not the
+    // SRV-resolved edge host (#363). With an explicit outbound proxy the
+    // TLS peer *is* the dial host, so use that.
+    const char *outbound = config_sip_outbound();
+    const char *tls_sni  = (outbound && outbound[0]) ? dial_host
+                                                     : config_sip_host();
+
     ctx.transport = sip_transport_open(config_sip_transport(),
                                        dial_host,
                                        dial_port,
-                                       SIP_LOCAL_PORT);
+                                       tls_sni,
+                                       config_sip_local_port());
     if (!ctx.transport) {
         // Surface the failure on the dashboard — without this the SIP
         // section just hangs on "Verbinde…" forever and the user has
@@ -1201,7 +1236,6 @@ static void sip_task(void *arg)
         return;
     }
     if (strcmp(dial_host, config_sip_host()) != 0) {
-        const char *outbound = config_sip_outbound();
         const char *via = (outbound && outbound[0]) ? "outbound proxy" : "SRV";
         ESP_LOGI(TAG, "%s %s:%d active (SIP host: %s)",
                  via, dial_host, dial_port, config_sip_host());
@@ -1305,7 +1339,11 @@ static void sip_task(void *arg)
             char new_dial_host[64];
             int  new_dial_port;
             dial_destination(new_dial_host, sizeof(new_dial_host), &new_dial_port);
-            sip_transport_resolve(ctx.transport, new_dial_host, new_dial_port);
+            const char *new_outbound = config_sip_outbound();
+            const char *new_tls_sni  = (new_outbound && new_outbound[0])
+                                           ? new_dial_host : config_sip_host();
+            sip_transport_resolve(ctx.transport, new_dial_host, new_dial_port,
+                                  new_tls_sni);
             // Settle pause only when the caller asked for it
             // (TR-064 provisioning). FB needs a beat for a newly
             // created extension to go live on its own SIP stack;
