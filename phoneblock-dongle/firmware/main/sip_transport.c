@@ -56,6 +56,19 @@ static void tls_drop(sip_transport_t *t);
 // Common helpers
 // ---------------------------------------------------------------------------
 
+// Copy a hostname into a fixed-size buffer, always NUL-terminated. A NULL
+// or empty src clears the buffer. Used for both registrar_host and tls_sni
+// so the truncate-and-terminate dance lives in one place.
+static void set_host(char *dst, size_t cap, const char *src)
+{
+    if (src && src[0]) {
+        strncpy(dst, src, cap - 1);
+        dst[cap - 1] = '\0';
+    } else {
+        dst[0] = '\0';
+    }
+}
+
 static bool discover_local_ip(struct sip_transport *t)
 {
     esp_netif_t *netif = esp_netif_get_default_netif();
@@ -104,14 +117,9 @@ bool sip_transport_resolve(sip_transport_t *t,
     // Stream transports keep host/port for transparent reconnects;
     // esp-tls in particular needs the hostname for SNI on every retry.
     if (t->kind == TR_TCP || t->kind == TR_TLS) {
-        strncpy(t->registrar_host, host, sizeof(t->registrar_host) - 1);
-        t->registrar_host[sizeof(t->registrar_host) - 1] = '\0';
+        set_host(t->registrar_host, sizeof(t->registrar_host), host);
         t->registrar_port = port;
-        t->tls_sni[0] = '\0';
-        if (tls_sni && tls_sni[0]) {
-            strncpy(t->tls_sni, tls_sni, sizeof(t->tls_sni) - 1);
-            t->tls_sni[sizeof(t->tls_sni) - 1] = '\0';
-        }
+        set_host(t->tls_sni, sizeof(t->tls_sni), tls_sni);
     }
 
     if (t->kind == TR_TCP) {
@@ -346,10 +354,8 @@ sip_transport_t *sip_transport_open(const char *transport,
     strcpy(t->via_token, via);
     strcpy(t->uri_param, uri);
     if (kind == TR_TCP || kind == TR_TLS) {
-        strncpy(t->registrar_host, registrar_host, sizeof(t->registrar_host) - 1);
-        if (tls_sni && tls_sni[0]) {
-            strncpy(t->tls_sni, tls_sni, sizeof(t->tls_sni) - 1);
-        }
+        set_host(t->registrar_host, sizeof(t->registrar_host), registrar_host);
+        set_host(t->tls_sni, sizeof(t->tls_sni), tls_sni);
     }
 
     if (!discover_local_ip(t)) goto fail;
