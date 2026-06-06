@@ -271,6 +271,9 @@ static esp_err_t handle_status(httpd_req_t *req)
     cJSON_AddStringToObject(sip,  "host",              config_sip_host());
     cJSON_AddNumberToObject(sip,  "port",              config_sip_port());
     cJSON_AddStringToObject(sip,  "user",              config_sip_user());
+    // Never expose the password itself; surface only whether one is stored
+    // so the manual form can pre-tick the "anonymous" (no-password) box.
+    cJSON_AddBoolToObject  (sip,  "pass_set",          strlen(config_sip_pass()) > 0);
     cJSON_AddStringToObject(sip,  "internal_number",   config_sip_internal_number());
     cJSON_AddStringToObject(sip,  "transport",         config_sip_transport());
     cJSON_AddStringToObject(sip,  "auth_user",         config_sip_auth_user());

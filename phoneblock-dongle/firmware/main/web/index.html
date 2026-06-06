@@ -2545,6 +2545,9 @@ async function renderSipManual(){
   const outb  = sip.outbound  || '';
   const realm = sip.realm     || '';
   const srtp  = sip.srtp      || 'off';
+  // No stored password ⇒ pre-tick "anonymous", so the saved state stays
+  // visible on reload (the password itself is never sent to the client).
+  const passSet = !!sip.pass_set;
   const opt = (value, cur, label) =>
     '<option value="' + esc(value) + '"' + (value === cur ? ' selected' : '') + '>'
     + esc(label) + '</option>';
@@ -2567,7 +2570,8 @@ async function renderSipManual(){
     + '<p class="muted" style="font-size:.75rem;margin:.2rem 0 .6rem">'
     +   esc(t('sip.manual.pass.hint')) + '</p>'
     + '<label style="display:flex;align-items:center;gap:.4rem;font-weight:normal">'
-    +   '<input type="checkbox" name="sip_anon" id="sipAnon" style="width:auto">'
+    +   '<input type="checkbox" name="sip_anon" id="sipAnon" style="width:auto"'
+    +     (passSet ? '' : ' checked') + '>'
     +   '<span>' + esc(t('sip.manual.anon')) + '</span></label>'
     + '<p class="muted" style="font-size:.75rem;margin:.2rem 0 .6rem">'
     +   esc(t('sip.manual.anon.hint')) + '</p>'
@@ -2609,6 +2613,9 @@ async function renderSipManual(){
   // out of the form body, so the backend sees the explicit sip_anon
   // marker (clear password) rather than an empty sip_pass (keep current).
   const anon = $('sipAnon'), pass = $('sipPass');
+  // Mirror the pre-ticked state: a passwordless account renders with the
+  // password field already disabled.
+  pass.disabled = anon.checked;
   anon.addEventListener('change', () => {
     pass.disabled = anon.checked;
     if (anon.checked) pass.value = '';
