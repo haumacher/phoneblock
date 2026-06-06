@@ -280,6 +280,11 @@ static esp_err_t handle_status(httpd_req_t *req)
     cJSON_AddStringToObject(sip,  "outbound",          config_sip_outbound());
     cJSON_AddStringToObject(sip,  "realm",             config_sip_realm());
     cJSON_AddStringToObject(sip,  "srtp",              config_sip_srtp());
+    // Local bind ports (to forward) + the public IP the registrar sees
+    // us at — together these are what a UDP-behind-NAT setup needs.
+    cJSON_AddNumberToObject(sip,  "local_port",        config_sip_local_port());
+    cJSON_AddNumberToObject(sip,  "rtp_port",          config_rtp_port());
+    cJSON_AddStringToObject(sip,  "public_ip",         sip_register_public_ip());
 
     cJSON *pb = cJSON_AddObjectToObject(root, "phoneblock");
     cJSON_AddStringToObject(pb,   "base_url",           config_phoneblock_base_url());
@@ -454,6 +459,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     char sip_host[64], sip_user[32], sip_pass[64];
     char pb_url[128],  pb_token[64];
     char sip_port_s[8] = "", sip_exp_s[8] = "";
+    char sip_lport_s[8] = "", rtp_port_s[8] = "";
     char min_direct_s[8] = "", min_range_s[8] = "";
     char sip_transp[8]    = "";
     char sip_authuser[32] = "";
@@ -473,6 +479,8 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     bool have_sip_user  = form_get(body, "sip_user",  sip_user,  sizeof(sip_user));
     bool have_sip_pass  = form_get(body, "sip_pass",  sip_pass,  sizeof(sip_pass));
     bool have_sip_port  = form_get(body, "sip_port",  sip_port_s, sizeof(sip_port_s));
+    bool have_sip_lport = form_get(body, "sip_local_port", sip_lport_s, sizeof(sip_lport_s));
+    bool have_rtp_port  = form_get(body, "rtp_port",  rtp_port_s, sizeof(rtp_port_s));
     bool have_sip_exp   = form_get(body, "sip_expires", sip_exp_s, sizeof(sip_exp_s));
     bool have_sip_trans = form_get(body, "sip_transport", sip_transp, sizeof(sip_transp));
     bool have_sip_auth  = form_get(body, "sip_auth_user", sip_authuser, sizeof(sip_authuser));
@@ -524,6 +532,12 @@ static esp_err_t handle_config_post(httpd_req_t *req)
         // stale pinned port back to auto.
         .has_sip_port = have_sip_port,
         .sip_port     = have_sip_port && sip_port_s[0] ? atoi(sip_port_s) : 0,
+        // Local bind ports. Present-but-empty field → 0 → reset to the
+        // built-in default (15060 / 16000); absent → leave unchanged.
+        .has_sip_local_port = have_sip_lport,
+        .sip_local_port     = have_sip_lport && sip_lport_s[0] ? atoi(sip_lport_s) : 0,
+        .has_rtp_port       = have_rtp_port,
+        .rtp_port           = have_rtp_port && rtp_port_s[0] ? atoi(rtp_port_s) : 0,
         .sip_user   = have_sip_user && sip_user[0]  ? sip_user  : NULL,
         // Password resolution, in order:
         //   - "anonymous" box ticked → "" : explicitly clear the stored

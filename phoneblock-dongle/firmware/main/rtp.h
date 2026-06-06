@@ -6,9 +6,8 @@
 
 #include "announcement.h"
 
-// UDP port the dongle advertises for receiving/sending RTP audio.
-// Fixed for v1; any inbound RTP is silently dropped.
-#define SIP_RTP_PORT 16000
+// The UDP port the dongle binds for RTP audio is configurable via
+// config_rtp_port() (default 16000); the SDP advertises the same value.
 
 // Spawn a FreeRTOS task that streams the opened announcement `src` to
 // `dest` as G.711 A-law (PCMA) RTP, 20 ms / 160-byte frames at 50

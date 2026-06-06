@@ -31,12 +31,9 @@
 
 static const char *TAG = "sip";
 
-// Local UDP/TCP port, also advertised in Via/Contact. A high port (not
-// 5060/5061) is deliberate: it dodges router SIP-ALGs (which only mangle
-// 5060) and is not reserved by a FritzBox's own SIP stack, so it can be
-// port-forwarded 1:1 for incoming UDP calls without a separate external
-// port. 15060 is mnemonic ("1"+5060); RTP sits next to it on 16000.
-#define SIP_LOCAL_PORT       15060
+// The local SIP port (bound + advertised) is configurable via
+// config_sip_local_port(); its default (15060) and rationale live in
+// config.c. RTP likewise via config_rtp_port() (default 16000).
 #define SIP_RX_BUF_SIZE      4096
 #define SIP_TX_BUF_SIZE      2048
 // REGISTER round-trip wait: how long to block on the 401/200 response
@@ -102,9 +99,23 @@ static int64_t s_binding_expires_at_us = 0;
 // the actual cause instead of a generic "binding expired".
 static char    s_pending_error[STATS_ERROR_MSG_LEN] = "";
 
+// Public IP as the registrar sees us, learned from the "received="
+// parameter the registrar adds to our Via in the REGISTER response.
+// Empty until the first response arrives. Used as the advertised host in
+// Via/Contact/SDP so a port-forwarded UDP setup behind NAT is reachable,
+// and surfaced in the web UI for the user to verify. The public IP is the
+// router's WAN address and identical for all transports, so this is also
+// correct (if unused) for TCP/TLS.
+static char    s_public_ip[INET_ADDRSTRLEN] = "";
+
 bool sip_register_is_registered(void)
 {
     return s_registered;
+}
+
+const char *sip_register_public_ip(void)
+{
+    return s_public_ip;
 }
 
 void sip_register_request_reload(bool needs_settle)
@@ -340,15 +351,17 @@ static void digest_response(
 // exists inside the emulator.
 static const char *advertised_host(const sip_ctx_t *c)
 {
-    return strlen(config_contact_host_override()) > 0
-               ? config_contact_host_override()
-               : sip_transport_local_ip(c->transport);
+    if (strlen(config_contact_host_override()) > 0)
+        return config_contact_host_override();   // explicit manual/QEMU override wins
+    if (s_public_ip[0])
+        return s_public_ip;                      // learned public IP (UDP NAT)
+    return sip_transport_local_ip(c->transport); // direct / not yet learned
 }
 
 static int advertised_port(void)
 {
     return config_contact_port_override() != 0
-               ? config_contact_port_override() : SIP_LOCAL_PORT;
+               ? config_contact_port_override() : config_sip_local_port();
 }
 
 static int build_register(sip_ctx_t *c, char *buf, int cap, bool with_auth)
@@ -445,6 +458,15 @@ static int sip_send_recv(sip_ctx_t *c, const char *tx, int tx_len,
         return -1;
     }
     rx[r] = '\0';
+    // Learn our public IP from the registrar's view (Via "received="), so
+    // Via/Contact/SDP can advertise it for UDP NAT traversal.
+    char rcv[INET_ADDRSTRLEN];
+    if (parse_via_received(rx, r, rcv, sizeof(rcv)) && rcv[0]
+            && strcmp(rcv, s_public_ip) != 0) {
+        strncpy(s_public_ip, rcv, sizeof(s_public_ip) - 1);
+        s_public_ip[sizeof(s_public_ip) - 1] = '\0';
+        ESP_LOGI(TAG, "public IP (via received=): %s", s_public_ip);
+    }
     return r;
 }
 
@@ -705,7 +727,7 @@ static int build_sdp_body(const char *our_ip, char *out, int cap)
         "m=audio %d RTP/AVP 8\r\n"
         "a=rtpmap:8 PCMA/8000\r\n"
         "a=sendrecv\r\n",
-        our_ip, our_ip, SIP_RTP_PORT);
+        our_ip, our_ip, config_rtp_port());
 }
 
 // ---------------------------------------------------------------------------
@@ -1195,7 +1217,7 @@ static void sip_task(void *arg)
                                        dial_host,
                                        dial_port,
                                        tls_sni,
-                                       SIP_LOCAL_PORT);
+                                       config_sip_local_port());
     if (!ctx.transport) {
         // Surface the failure on the dashboard — without this the SIP
         // section just hangs on "Verbinde…" forever and the user has

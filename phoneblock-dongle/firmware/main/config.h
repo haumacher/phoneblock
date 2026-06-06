@@ -47,6 +47,14 @@ const char *config_sip_srtp(void);
 const char *config_contact_host_override(void);
 int         config_contact_port_override(void);
 
+// Local UDP/TCP port the dongle binds and advertises for SIP, and the
+// UDP port it binds for RTP audio. Both default to a high, "unsuspicious"
+// value (15060 / 16000) that dodges router SIP-ALGs and is forwardable
+// 1:1 behind NAT. Always return a usable port (never 0). Configurable so
+// a user with a restrictive router can move them.
+int         config_sip_local_port(void);
+int         config_rtp_port(void);
+
 // Fritz!Box "app" credentials created by
 // X_AVM-DE_AppSetup:RegisterApp during the setup wizard. Only
 // Phone rights, no internet access — used by the later sync task
@@ -185,6 +193,12 @@ typedef struct {
     // able to clear a previously pinned port back to auto.
     bool        has_sip_port;
     int         sip_port;
+    // Local SIP / RTP bind ports. Explicit has_ flags: 0 is a meaningful
+    // value here (= reset to the built-in default).
+    bool        has_sip_local_port;
+    int         sip_local_port;
+    bool        has_rtp_port;
+    int         rtp_port;
     const char *sip_user;
     const char *sip_pass;
     int         sip_expires;        // 0 = keep current

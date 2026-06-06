@@ -129,6 +129,32 @@ void parse_call_id(const char *req, int req_len, char *out, int cap)
     while (n > 0 && (out[n - 1] == ' ' || out[n - 1] == '\t')) out[--n] = '\0';
 }
 
+int parse_via_received(const char *resp, int resp_len, char *out, int cap)
+{
+    out[0] = '\0';
+    const char *via = find_header(resp, resp_len, "Via");
+    if (!via) return 0;
+    // Bound the scan to this single Via line.
+    const char *end = resp + resp_len;
+    const char *eol = via;
+    while (eol < end && *eol != '\r' && *eol != '\n') eol++;
+    const char *p = via;
+    while (p + 10 < eol) {   // strlen(";received=") == 10
+        if (strncasecmp(p, ";received=", 10) == 0) {
+            p += 10;
+            int n = 0;
+            while (p < eol && *p != ';' && *p != ' ' && *p != '\t'
+                   && *p != '\r' && *p != '\n' && n < cap - 1) {
+                out[n++] = *p++;
+            }
+            out[n] = '\0';
+            return n > 0 ? 1 : 0;
+        }
+        p++;
+    }
+    return 0;
+}
+
 void parse_tag(const char *hdr_val, int val_len, char *out, int cap)
 {
     const char *end = hdr_val + val_len;

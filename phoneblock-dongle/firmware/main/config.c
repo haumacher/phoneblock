@@ -37,6 +37,8 @@ static const char *NS   = "phoneblock";
 #define K_ACCEPT_TEST   "accept_test"
 #define K_CONTACT_HOST  "contact_host"
 #define K_CONTACT_PORT  "contact_port"
+#define K_SIP_LPORT     "sip_lport"
+#define K_RTP_PORT      "rtp_port"
 #define K_PB_URL        "pb_url"
 #define K_PB_TOKEN      "pb_token"
 #define K_MIN_DIRECT    "min_direct"
@@ -51,6 +53,13 @@ static const char *NS   = "phoneblock";
 // aggressive range-blocking can lower it, users who want to disable
 // range entirely can set it to 0.
 #define DEFAULT_MIN_RANGE_VOTES 10
+// Local SIP / RTP bind ports. High "unsuspicious" ports on purpose: not
+// 5060/5061, so they dodge router SIP-ALGs (which only mangle 5060) and
+// are not reserved by a FritzBox's own SIP stack — forwardable 1:1 behind
+// NAT. 15060 is mnemonic ("1"+5060); RTP sits next to it on 16000. Stored
+// 0 means "use this default".
+#define DEFAULT_SIP_LOCAL_PORT 15060
+#define DEFAULT_RTP_PORT       16000
 // Version string of the most recent OTA download that did NOT survive
 // to the next successful boot. Set pessimistically before
 // esp_https_ota() runs and only cleared once main.c sees the running
@@ -85,6 +94,8 @@ typedef struct {
     char accept_test[4];     // "1" | "0" (empty = use Kconfig default)
     char contact_host[64];
     int  contact_port;
+    int  sip_local_port;     // 0 = use DEFAULT_SIP_LOCAL_PORT
+    int  rtp_port;           // 0 = use DEFAULT_RTP_PORT
     char pb_base_url[128];
     char pb_token[64];
     int  min_direct_votes;   // SPAM threshold for direct hits
@@ -155,6 +166,8 @@ void config_load(void)
         s_config.accept_test[0]   = '\0';
         copy_default(s_config.contact_host, sizeof(s_config.contact_host), CONFIG_SIP_CONTACT_HOST_OVERRIDE);
         s_config.contact_port = CONFIG_SIP_CONTACT_PORT_OVERRIDE;
+        s_config.sip_local_port = 0;   // → DEFAULT_SIP_LOCAL_PORT
+        s_config.rtp_port       = 0;   // → DEFAULT_RTP_PORT
         copy_default(s_config.pb_base_url,  sizeof(s_config.pb_base_url),  CONFIG_PHONEBLOCK_BASE_URL);
         s_config.pb_token[0]  = '\0';
         s_config.min_direct_votes = DEFAULT_MIN_DIRECT_VOTES;
@@ -214,6 +227,8 @@ void config_load(void)
     load_str(h, K_CONTACT_HOST, CONFIG_SIP_CONTACT_HOST_OVERRIDE,
              s_config.contact_host, sizeof(s_config.contact_host));
     s_config.contact_port = load_int(h, K_CONTACT_PORT, CONFIG_SIP_CONTACT_PORT_OVERRIDE);
+    s_config.sip_local_port = load_int(h, K_SIP_LPORT, 0);
+    s_config.rtp_port       = load_int(h, K_RTP_PORT,  0);
     load_str(h, K_PB_URL,       CONFIG_PHONEBLOCK_BASE_URL,
              s_config.pb_base_url,  sizeof(s_config.pb_base_url));
     load_str(h, K_PB_TOKEN,     "",
@@ -316,6 +331,15 @@ bool        config_accept_test_calls(void)
 }
 const char *config_contact_host_override(void) { return s_config.contact_host; }
 int         config_contact_port_override(void) { return s_config.contact_port; }
+int         config_sip_local_port(void)
+{
+    return s_config.sip_local_port > 0 ? s_config.sip_local_port
+                                       : DEFAULT_SIP_LOCAL_PORT;
+}
+int         config_rtp_port(void)
+{
+    return s_config.rtp_port > 0 ? s_config.rtp_port : DEFAULT_RTP_PORT;
+}
 const char *config_phoneblock_base_url(void) { return s_config.pb_base_url; }
 const char *config_phoneblock_token(void)    { return s_config.pb_token; }
 int         config_min_direct_votes(void)     { return s_config.min_direct_votes; }
@@ -407,6 +431,10 @@ esp_err_t config_update(const config_update_t *u)
                      s_config.sip_host, sizeof(s_config.sip_host));
     if (err == ESP_OK) err = set_int_explicit(h, K_SIP_PORT, u->has_sip_port,
                                               u->sip_port, &s_config.sip_port);
+    if (err == ESP_OK) err = set_int_explicit(h, K_SIP_LPORT, u->has_sip_local_port,
+                                              u->sip_local_port, &s_config.sip_local_port);
+    if (err == ESP_OK) err = set_int_explicit(h, K_RTP_PORT, u->has_rtp_port,
+                                              u->rtp_port, &s_config.rtp_port);
     if (err == ESP_OK) err = set_str_if(h, K_SIP_USER, u->sip_user,
                                         s_config.sip_user, sizeof(s_config.sip_user));
     if (err == ESP_OK) err = set_str_if(h, K_SIP_PASS, u->sip_pass,

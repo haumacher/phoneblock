@@ -309,6 +309,37 @@ static void test_find_header(void)
     expect_find_header(NULL, SAMPLE_INVITE, "X-Does-Not-Exist");
 }
 
+static void expect_via_received(const char *expected, const char *resp)
+{
+    char out[64] = {0};
+    parse_via_received(resp, (int)strlen(resp), out, sizeof(out));
+    report_str("via_received", resp, expected, out);
+}
+
+static void test_parse_via_received(void)
+{
+    // Registrar adds received= (and rport) with the public source IP.
+    expect_via_received("84.130.1.2",
+        "SIP/2.0 401 Unauthorized\r\n"
+        "Via: SIP/2.0/UDP 192.168.1.9:15060;branch=z9hG4bKabc;rport=40012;received=84.130.1.2\r\n"
+        "\r\n");
+    // received= not last on the line — stop at the next ';'.
+    expect_via_received("1.2.3.4",
+        "SIP/2.0 200 OK\r\n"
+        "Via: SIP/2.0/UDP 10.0.0.5:15060;received=1.2.3.4;rport=5060\r\n"
+        "\r\n");
+    // No received parameter → empty.
+    expect_via_received("",
+        "SIP/2.0 200 OK\r\n"
+        "Via: SIP/2.0/UDP 10.0.0.5:15060;rport\r\n"
+        "\r\n");
+    // No Via header at all → empty.
+    expect_via_received("",
+        "SIP/2.0 200 OK\r\n"
+        "Content-Length: 0\r\n"
+        "\r\n");
+}
+
 static void test_parse_tag(void)
 {
     expect_tag("abc",              "<sip:a@b>;tag=abc");
@@ -504,6 +535,7 @@ int main(void)
     test_parse_cseq();
     test_parse_call_id();
     test_find_header();
+    test_parse_via_received();
     test_parse_tag();
     test_parse_uri();
     test_user_from_uri();
