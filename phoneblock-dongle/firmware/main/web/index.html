@@ -278,7 +278,6 @@ const I18N = {
     'sip.prov.title': 'Anbieter wählen',
     'sip.prov.intro': 'Wähle deinen Anbieter; die Zugangsdaten bekommst du aus dem jeweiligen Kundenportal.',
     'sip.prov.provider': 'Anbieter',
-    'sip.prov.vorwahl': 'Vorwahl (ohne führende 0)',
     'sip.prov.user': 'SIP-Benutzer / Rufnummer',
     'sip.prov.pass': 'Passwort',
     'sip.prov.submit': 'Zugangsdaten speichern',
@@ -491,7 +490,6 @@ const I18N = {
     'sip.prov.title': 'Choose provider',
     'sip.prov.intro': 'Pick your provider; get the credentials from their customer portal.',
     'sip.prov.provider': 'Provider',
-    'sip.prov.vorwahl': 'Area code (without leading 0)',
     'sip.prov.user': 'SIP user / phone number',
     'sip.prov.pass': 'Password',
     'sip.prov.submit': 'Save credentials',
@@ -692,7 +690,6 @@ const I18N = {
     'sip.prov.title': 'Choisir un opérateur',
     'sip.prov.intro': 'Choisissez votre opérateur ; les identifiants sont disponibles dans son portail client.',
     'sip.prov.provider': 'Opérateur',
-    'sip.prov.vorwahl': 'Indicatif (sans le 0 initial)',
     'sip.prov.user': 'Utilisateur SIP / numéro',
     'sip.prov.pass': 'Mot de passe',
     'sip.prov.submit': 'Enregistrer les identifiants',
@@ -893,7 +890,6 @@ const I18N = {
     'sip.prov.title': 'Elegir proveedor',
     'sip.prov.intro': 'Elige tu proveedor; las credenciales están en su portal de cliente.',
     'sip.prov.provider': 'Proveedor',
-    'sip.prov.vorwahl': 'Prefijo (sin el 0 inicial)',
     'sip.prov.user': 'Usuario SIP / número',
     'sip.prov.pass': 'Contraseña',
     'sip.prov.submit': 'Guardar credenciales',
@@ -998,18 +994,20 @@ async function postForm(url, form){
   }
 }
 
-// --- provider presets (top 5, PROVIDERS.md) -------------------------
+// --- provider presets (PROVIDERS.md) --------------------------------
 
-// `port: 0` means "auto" — the firmware resolves the endpoint via
-// DNS-SRV and uses the port the SRV record advertises. Telekom only
-// publishes an SRV record (_sips._tcp.tel.t-online.de) and no A record
-// on the bare domain, so a hard-coded port would skip SRV and the
-// direct A lookup would fail (#363); it also requires TLS transport so
-// the registrar can push incoming INVITEs back through NAT over the
-// existing connection (UDP registers but cannot receive calls behind a
-// router). `anonymous: true` registers via anonymous@t-online.de with no
-// password — the simplest path for the user, who then only types the
-// phone number.
+// Transport is always connection-oriented (TLS or TCP), never UDP: only a
+// persistent connection lets the registrar push an incoming INVITE back
+// through the NAT of a home router. UDP registers fine but cannot receive
+// calls behind a router, so it is useless for the dongle's purpose.
+//
+// `port: 0` means "auto" — the firmware resolves the endpoint via DNS-SRV
+// and uses the port the SRV record advertises. Telekom only publishes an
+// SRV record (_sips._tcp.tel.t-online.de) and no A record on the bare
+// domain, so a hard-coded port would skip SRV and the direct A lookup
+// would fail (#363). `anonymous: true` registers via anonymous@t-online.de
+// with no password — the simplest path for the user, who then only types
+// the phone number.
 const PROVIDERS = {
   telekom: {
     name: 'Telekom MagentaZuhause',
@@ -1020,33 +1018,25 @@ const PROVIDERS = {
     anonymous: true,
     userHint: 'Rufnummer im Format +49… (E.164). Kein Passwort nötig — die Anmeldung erfolgt anonym (anonymous@t-online.de).',
   },
-  vodafone: {
-    name: 'Vodafone (DSL/Kabel)',
-    hostTemplate: '{vorwahl}.sip.arcor.de',
-    port: 5060,
-    transport: 'udp',
-    needsVorwahl: true,
-    userHint: 'Rufnummer ohne führende 0. Passwort aus „MeinVodafone" → separates SIP-Passwort.',
-  },
   einsundeins: {
     name: '1&1',
     host: 'sip.1und1.de',
     port: 5060,
-    transport: 'udp',
+    transport: 'tcp',
     userHint: 'Format: 49…, ohne „+" und ohne führende 0. Passwort = „Telefoniepasswort" aus dem 1&1-Control-Center.',
   },
   sipgate: {
     name: 'sipgate',
     host: 'sipgate.de',
     port: 5060,
-    transport: 'udp',
+    transport: 'tcp',
     userHint: 'SIP-ID aus dem sipgate-Webportal. Passwort = separates SIP-Passwort.',
   },
   easybell: {
     name: 'easybell',
     host: 'voip.easybell.de',
     port: 5060,
-    transport: 'udp',
+    transport: 'tcp',
     userHint: 'SIP-Benutzer und -Passwort aus dem easybell-Kundenportal.',
   },
 };
@@ -2436,10 +2426,6 @@ function renderSipProvider(){
     + '<label>' + esc(t('sip.prov.provider'))
     + '<select name="provider" id="provSelect" required>' + opts + '</select></label>'
     + '<div id="provHint" class="muted" style="margin:.5rem 0"></div>'
-    + '<div id="provVorwahlBlock" style="display:none">'
-    + '<label>' + esc(t('sip.prov.vorwahl'))
-    + '<input type="text" id="provVorwahl" pattern="[0-9]{2,5}" placeholder="211"></label>'
-    + '</div>'
     + '<label>' + esc(t('sip.prov.user'))
     + '<input type="text" name="sip_user" required></label>'
     + '<div id="provPassBlock"><label>' + esc(t('sip.prov.pass'))
@@ -2456,7 +2442,6 @@ function onProviderChange(e){
   const key = e.target.value;
   const p = PROVIDERS[key];
   $('provHint').textContent = p ? p.userHint : '';
-  $('provVorwahlBlock').style.display = p && p.needsVorwahl ? '' : 'none';
   // Anonymous providers (Telekom) need no password — hide the field and
   // drop its "required" so the form submits with just the phone number.
   const anon = !!(p && p.anonymous);
@@ -2477,12 +2462,7 @@ async function onProviderSubmit(e){
     msg.style.color = '#d93025';
     return;
   }
-  let host = p.host;
-  if (p.needsVorwahl){
-    const v = ($('provVorwahl').value || '').replace(/^0+/, '');
-    if (!v){ msg.textContent = t('sip.prov.error', {msg: 'Vorwahl fehlt'}); msg.style.color = '#d93025'; return; }
-    host = p.hostTemplate.replaceAll('{vorwahl}', v);
-  }
+  const host = p.host;
   // Build the POST body ourselves since the preset supplies host/port.
   btn.disabled = true;
   msg.textContent = t('sip.fb.working');

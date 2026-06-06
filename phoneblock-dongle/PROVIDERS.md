@@ -16,7 +16,7 @@ gegenchecken — Registrar-Namen und Port-/Transport-Zwang können sich
 | sipgate (basic/Comfort) | ✅ | Webportal | nomadisch nutzbar |
 | easybell | ✅ | Kundenportal | TLS+SRTP voll supported |
 | 1&1 | ✅ | Control-Center, separates „Telefoniepasswort" | Realm `1und1.de` |
-| Vodafone (DSL/Kabel) | ✅ | MeinVodafone, separates SIP-PW | regionsabhängiger Registrar |
+| Vodafone (DSL/Kabel) | ❌ | — | nur eigene Router, Fremdgeräte-Anmeldung gesperrt |
 | NetCologne / NetAachen | ✅ | `einstellungen.netcologne.de` | „immer über Internet" in FB **aus** |
 | M-net | ✅ | M-net-Kundenportal | Premium-Trunks TLS |
 | Telekom MagentaZuhause | ✅ | Kundencenter (E-Mail + Webpasswort) | nur aus Telekom-Netz — für stationären Dongle unkritisch |
@@ -39,6 +39,10 @@ gegenchecken — Registrar-Namen und Port-/Transport-Zwang können sich
 | Stolperfalle | Reg nur aus Telekom-Netz, fremde ISPs werden abgelehnt |
 
 ### Vodafone (DSL / Kabel, ehem. Arcor/KDG)
+
+> Nicht als generischer SIP-Client nutzbar: Vodafone lässt nur die eigenen
+> Router anmelden, keine Fremdgeräte/Telefone. Die folgenden Werte dienen
+> nur als Referenz, kein Dongle-Preset.
 
 | Feld | Wert |
 |---|---|
@@ -156,9 +160,14 @@ Deckt die Top-5 ohne Provider-Preset komplett ab.
 - STUN-Server (für O2/sipgate-Spezialfälle)
 
 **Usability-Gewinn:**
-- **Provider-Preset-Dropdown** (Fritz!Box-Auto / Telekom / Vodafone /
-  1&1 / sipgate / easybell / „Eigener Registrar") — füllt alle Felder
-  vor und versteckt den Rest hinter „Experteneinstellungen".
+- **Provider-Preset-Dropdown** (Telekom / 1&1 / sipgate / easybell /
+  „Eigener Registrar") — füllt alle Felder vor und versteckt den Rest
+  hinter „Experteneinstellungen". Presets erzwingen einen
+  verbindungsorientierten Transport (TLS bzw. TCP), nie UDP: nur eine
+  dauerhafte Verbindung lässt eingehende INVITEs durch das NAT eines
+  Heim-Routers zurück (UDP registriert zwar, kann aber keine Anrufe
+  empfangen). Vodafone (Kabel/Arcor) entfällt als Preset: lässt nur die
+  eigenen Router anmelden, keine Fremdgeräte/Telefone.
 
 ## Anbieter mit Einschränkungen
 
