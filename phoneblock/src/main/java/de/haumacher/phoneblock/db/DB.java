@@ -543,6 +543,10 @@ public class DB {
 					// NUMBERS_HISTORY_RMIN_IDX (RMIN) so per-number history reads and
 					// revision scans stop full-scanning the table; no Java hook needed.
 
+					if (version == 39) {
+						migrateToBlocklistTable(session.getMapper(MigrationStatements.class));
+					}
+
 					users.updateProperty("db.version", Integer.toString(version));
 					session.commit();
 				}
@@ -1478,10 +1482,11 @@ public class DB {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			Users users = session.getMapper(Users.class);
 
-			// #342: visibility threshold lives in SQL on s.SPAM_EVIDENCE — no
-			// post-filter step. SQL and the response now agree on a single
-			// definition of "visible", index-backed via NUMBERS_SPAM_EVIDENCE_IDX.
-			List<BlockListEntry> numbers = reports.getBlocklist(maxRawSpam(_minVisibleVotes))
+			// #342: serves the published state (BLOCKLIST table) — bucket votes
+			// frozen at publication, consistent with the version counter that
+			// the same sweep transaction maintains. minVisibleVotes is a pure
+			// read-time filter; publication itself always starts at bucket 2.
+			List<BlockListEntry> numbers = reports.getBlocklist(_minVisibleVotes)
 					.stream()
 					.map(DB::toBlocklistEntry)
 					.filter(Objects::nonNull)
@@ -1493,6 +1498,74 @@ public class DB {
 			return Blocklist.create()
 					.setNumbers(numbers)
 					.setVersion(version);
+		}
+	}
+
+	/**
+	 * Tombstones ({@code votes = 0} rows in BLOCKLIST) are kept long enough
+	 * that every incremental-sync client sees the removal — full sync is
+	 * forced at least monthly, so 90 days is a comfortable margin.
+	 */
+	private static final long TOMBSTONE_RETENTION_MILLIS = 90L * 24 * 60 * 60 * 1000;
+
+	/**
+	 * The current blocklist version — incremented by {@link #publishBlocklist}
+	 * whenever the published state changed.
+	 */
+	public long getBlocklistVersion() {
+		try (SqlSession session = openSession()) {
+			Users users = session.getMapper(Users.class);
+			String versionStr = users.getProperty("blocklist.version");
+			return (versionStr != null) ? Long.parseLong(versionStr) : INITIAL_BLOCKLIST_VERSION;
+		}
+	}
+
+	/**
+	 * Publication sweep (#342): synchronizes the BLOCKLIST table with the
+	 * live visibility state, quantized to vote buckets (2, 4, 10, 20, 50,
+	 * 100 — the allowed {@code minVisibleVotes} steps, so the quantization
+	 * never changes a client's block decision).
+	 *
+	 * <p>A number is written only when it crosses a bucket boundary — by new
+	 * votes or by decay. Drifting inside a bucket causes no write, no version
+	 * bump and no client traffic. The global version increments only when at
+	 * least one bucket flip happened.</p>
+	 *
+	 * @param now the sweep moment; determines the projected bucket thresholds.
+	 * @return the blocklist version after the sweep — incremented when
+	 *         anything changed, unchanged otherwise.
+	 */
+	public long publishBlocklist(long now) {
+		try (SqlSession session = openSession()) {
+			Users users = session.getMapper(Users.class);
+			SpamReports reports = session.getMapper(SpamReports.class);
+
+			String versionStr = users.getProperty("blocklist.version");
+			long currentVersion = (versionStr != null) ? Long.parseLong(versionStr) : INITIAL_BLOCKLIST_VERSION;
+			long newVersion = currentVersion + 1;
+
+			int changed = reports.publishBlocklistUpdates(newVersion, now,
+				maxRawSpamAt(now, 2), maxRawSpamAt(now, 4), maxRawSpamAt(now, 10),
+				maxRawSpamAt(now, 20), maxRawSpamAt(now, 50), maxRawSpamAt(now, 100));
+			changed += reports.publishBlocklistRemovals(newVersion, now, maxRawSpamAt(now, 2));
+			int pruned = reports.pruneBlocklistTombstones(now - TOMBSTONE_RETENTION_MILLIS);
+
+			if (changed > 0) {
+				if (versionStr != null) {
+					users.updateProperty("blocklist.version", Long.toString(newVersion));
+				} else {
+					users.addProperty("blocklist.version", Long.toString(newVersion));
+				}
+				session.commit();
+				LOG.info("Published blocklist version {}: {} bucket flips, {} tombstones pruned.",
+					newVersion, changed, pruned);
+				return newVersion;
+			}
+
+			if (pruned > 0) {
+				session.commit();
+			}
+			return currentVersion;
 		}
 	}
 
@@ -1565,7 +1638,8 @@ public class DB {
 					.map(DB::toBlocklistEntry)
 					.filter(Objects::nonNull)
 					.map(entry -> {
-						// Entries below the visible threshold are returned as deletions (votes=0)
+						// Entries below the visible threshold (including tombstones)
+						// are returned as deletions (votes=0)
 						if (entry.getVotes() < _minVisibleVotes) {
 							return entry.setVotes(0);
 						}
@@ -1582,6 +1656,28 @@ public class DB {
 		}
 	}
 	
+	/**
+	 * Converts a published BLOCKLIST row to the API shape (#342). Votes are
+	 * the frozen bucket floor — no decoding, no decay; the same value every
+	 * client sees for this blocklist version. The rating colors the entry
+	 * from the live category counters.
+	 */
+	private static BlockListEntry toBlocklistEntry(DBBlocklistEntry e) {
+		PhoneNumer number = NumberAnalyzer.analyzePhoneID(e.getPhone());
+		if (number == null) {
+			// Invalid number in DB, filter out.
+			return null;
+		}
+		Rating rating = e.getVotes() <= 0
+			? Rating.A_LEGITIMATE
+			: dominantCategory(e.getFraud(), e.getGamble(), e.getAdvertising(), e.getPoll(), e.getPing());
+		return BlockListEntry.create()
+				.setPhone(number.getPlus())
+				.setVotes(e.getVotes())
+				.setRating(rating)
+				.setLastActivity(e.getLastPing());
+	}
+
 	private static BlockListEntry toBlocklistEntry(DBNumberInfo n) {
 		PhoneNumer number = NumberAnalyzer.analyzePhoneID(n.getPhone());
 		if (number == null) {
@@ -1617,46 +1713,41 @@ public class DB {
 		if (!hasNetSpamEvidence(n)) {
 			return Rating.A_LEGITIMATE;
 		}
-		
+
+		return dominantCategory(n.getRatingFraud(), n.getRatingGamble(), n.getRatingAdvertising(),
+			n.getRatingPoll(), n.getRatingPing());
+	}
+
+	/**
+	 * The spam category with the highest rating count, {@link Rating#B_MISSED}
+	 * when no category has any. Ties resolve to the more severe category
+	 * (fraud first).
+	 */
+	private static Rating dominantCategory(int fraud, int gamble, int advertising, int poll, int ping) {
 		Rating result = Rating.B_MISSED;
 		int max = 0;
 
-		{
-			int votes = n.getRatingFraud();
-			if (votes > max) {
-				result = Rating.G_FRAUD;
-				max = votes;
-			}
+		if (fraud > max) {
+			result = Rating.G_FRAUD;
+			max = fraud;
 		}
-		{
-			int votes = n.getRatingGamble();
-			if (votes > max) {
-				result = Rating.F_GAMBLE;
-				max = votes;
-			}
+		if (gamble > max) {
+			result = Rating.F_GAMBLE;
+			max = gamble;
 		}
-		{
-			int votes = n.getRatingAdvertising();
-			if (votes > max) {
-				result = Rating.E_ADVERTISING;
-				max = votes;
-			}
+		if (advertising > max) {
+			result = Rating.E_ADVERTISING;
+			max = advertising;
 		}
-		{
-			int votes = n.getRatingPoll();
-			if (votes > max) {
-				result = Rating.D_POLL;
-				max = votes;
-			}
+		if (poll > max) {
+			result = Rating.D_POLL;
+			max = poll;
 		}
-		{
-			int votes = n.getRatingPing();
-			if (votes > max) {
-				result = Rating.C_PING;
-				max = votes;
-			}
+		if (ping > max) {
+			result = Rating.C_PING;
+			max = ping;
 		}
-	
+
 		return result;
 	}
 
@@ -2020,6 +2111,30 @@ public class DB {
 
 		migrations.dropNumbersPendingUpdate();
 		LOG.info("Dropped legacy PENDING_UPDATE column.");
+	}
+
+	/**
+	 * Moves the published blocklist state from NUMBERS columns into the
+	 * narrow BLOCKLIST table (#342 / migration 39). Seeds one BLOCKLIST row
+	 * per ever-published number — the bucket floor of its published net
+	 * evidence, or a tombstone when it already faded below the lowest bucket
+	 * — then drops the obsolete NUMBERS columns and the publication index.
+	 */
+	private void migrateToBlocklistTable(MigrationStatements migrations) {
+		LOG.info("Bucket-based publication (#342): seeding BLOCKLIST from published NUMBERS state.");
+
+		long now = System.currentTimeMillis();
+		int seeded = migrations.seedBlocklist(now,
+			maxRawSpamAt(now, 2), maxRawSpamAt(now, 4), maxRawSpamAt(now, 10),
+			maxRawSpamAt(now, 20), maxRawSpamAt(now, 50), maxRawSpamAt(now, 100));
+		LOG.info("Seeded {} BLOCKLIST rows.", seeded);
+
+		migrations.dropNumbersVersionIndex();
+		migrations.dropNumbersVersion();
+		migrations.dropNumbersPublishedLastPing();
+		migrations.dropNumbersPublishedSpamEvidence();
+		migrations.dropNumbersPublishedLegitEvidence();
+		LOG.info("Dropped NUMBERS publication columns (VERSION, PUBLISHED_*) and NUMBERS_VERSION_IDX.");
 	}
 
 	/**

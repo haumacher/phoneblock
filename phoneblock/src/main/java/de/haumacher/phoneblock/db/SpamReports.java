@@ -378,7 +378,7 @@ public interface SpamReports {
 	// `votes` from the decoded SPAM_EVIDENCE so blocklist consumers see the
 	// same decay-aware semantic as the /api/check responses.
 	@Select("""
-			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.PUBLISHED_LASTPING as LASTPING, s.PUBLISHED_SPAM_EVIDENCE, s.PUBLISHED_LEGIT_EVIDENCE, s.HEAT, s.SPAM_EVIDENCE, s.LEGIT_EVIDENCE from NUMBERS s
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.SPAM_EVIDENCE as PUBLISHED_SPAM_EVIDENCE, s.LEGIT_EVIDENCE as PUBLISHED_LEGIT_EVIDENCE, s.HEAT, s.SPAM_EVIDENCE, s.LEGIT_EVIDENCE from NUMBERS s
 			where (s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE) >= #{maxRawSpam}
 			order by s.HEAT desc
 			limit #{limit}
@@ -397,7 +397,7 @@ public interface SpamReports {
 	 * row, because every row in a given dial shares the same decay factor.</p>
 	 */
 	@Select("""
-			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.PUBLISHED_LASTPING as LASTPING, s.PUBLISHED_SPAM_EVIDENCE, s.PUBLISHED_LEGIT_EVIDENCE, s.HEAT, s.SPAM_EVIDENCE, s.LEGIT_EVIDENCE
+			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.LASTPING, s.SPAM_EVIDENCE as PUBLISHED_SPAM_EVIDENCE, s.LEGIT_EVIDENCE as PUBLISHED_LEGIT_EVIDENCE, s.HEAT, s.SPAM_EVIDENCE, s.LEGIT_EVIDENCE
 			from NUMBERS_LOCALE l
 			join NUMBERS s on s.PHONE = l.PHONE
 			where l.DIAL = #{dial} and (s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE) >= #{maxRawSpam}
@@ -407,17 +407,25 @@ public interface SpamReports {
 	List<DBNumberInfo> getBlocklistByDialHeat(String dial, double maxRawSpam, int limit);
 
 	/**
-	 * Full blocklist for {@code /api/blocklist} (#342): one row per visible
-	 * number above the projected visibility threshold. SQL-side filter only —
-	 * no Java post-step, the index {@code NUMBERS_SPAM_EVIDENCE_IDX} backs the
-	 * predicate.
+	 * Full blocklist for {@code /api/blocklist} (#342): the published state
+	 * — bucket votes frozen at publication — filtered by the server-side
+	 * visibility threshold. The response is identical for every client and
+	 * stable between sweeps; live evidence never leaks into it.
 	 */
 	@Select("""
-			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.CALLS, s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES, s.PUBLISHED_LASTPING as LASTPING, s.PUBLISHED_SPAM_EVIDENCE, s.PUBLISHED_LEGIT_EVIDENCE, s.HEAT, s.SPAM_EVIDENCE, s.LEGIT_EVIDENCE from NUMBERS s
-			where (s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE) >= #{maxRawSpam}
-			order by s.PHONE
+			select b.PHONE, b.VOTES, b.LASTPING,
+			       coalesce(s.LEGITIMATE, 0) as LEGITIMATE,
+			       coalesce(s.PING, 0) as PING,
+			       coalesce(s.POLL, 0) as POLL,
+			       coalesce(s.ADVERTISING, 0) as ADVERTISING,
+			       coalesce(s.GAMBLE, 0) as GAMBLE,
+			       coalesce(s.FRAUD, 0) as FRAUD
+			from BLOCKLIST b
+			left join NUMBERS s on s.PHONE = b.PHONE
+			where b.VOTES >= #{minVotes}
+			order by b.PHONE
 			""")
-	List<DBNumberInfo> getBlocklist(double maxRawSpam);
+	List<DBBlocklistEntry> getBlocklist(int minVotes);
 	
 	@Select("""
 			select s.PHONE, s.SEARCHES_CURRENT, s.SEARCHES, s.LASTSEARCH from NUMBERS s
@@ -499,26 +507,16 @@ public interface SpamReports {
 	List<DBNumberInfo> getReports();
 
 	/**
-	 * Reports as of the last released blocklist version: snapshot taken from
-	 * {@code PUBLISHED_SPAM_EVIDENCE} (#342), last activity from
-	 * PUBLISHED_LASTPING, restricted to entries that have been included in
-	 * at least one release ({@code VERSION > 0}) and whose published net
-	 * evidence is still positive (otherwise they are effectively a deletion
-	 * in the released list). The result is stable between releases — used by
-	 * the CardDAV pipeline so the address-book ETag does not flap on every
-	 * individual vote.
+	 * The published blocklist state (#342): bucket votes and activity
+	 * timestamp frozen at publication, tombstones excluded. Stable between
+	 * sweeps — used by the CardDAV pipeline so the address-book ETag does not
+	 * flap on every individual vote.
 	 */
 	@Select("""
-			select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.CALLS,
-			       s.VOTES, s.LEGITIMATE, s.PING, s.POLL,
-			       s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES,
-			       s.PUBLISHED_LASTPING as LASTPING,
-			       s.PUBLISHED_SPAM_EVIDENCE, s.PUBLISHED_LEGIT_EVIDENCE
-			from NUMBERS s
-			where s.VERSION > 0
-			  AND (s.PUBLISHED_SPAM_EVIDENCE - s.PUBLISHED_LEGIT_EVIDENCE) > 0
+			select b.PHONE, b.VOTES, b.LASTPING from BLOCKLIST b
+			where b.VOTES > 0
 			""")
-	List<DBNumberInfo> getPublishedReports();
+	List<DBBlocklistEntry> getPublishedReports();
 	
 	@Select("""
 			select PHONE from WHITELIST
@@ -743,75 +741,91 @@ public interface SpamReports {
 	void removeRevision(int id);
 
 	/**
-	 * Snapshot-driven blocklist version assignment (#342). The
-	 * {@link de.haumacher.phoneblock.scheduler.BlocklistVersionService} sweep
-	 * is the single source of {@code VERSION} bumps; the obsolete event-driven
-	 * {@code crossesThreshold} → {@code PENDING_UPDATE} path was removed.
+	 * Publication sweep, addition/upgrade half (#342): merges the live
+	 * visibility state into the BLOCKLIST table, quantized to vote buckets.
 	 *
-	 * <p>A row gets the new version when either:
-	 * <ul>
-	 * <li>its visibility class flipped between the last snapshot and now —
-	 *     {@code (current_net &gt;= currentMaxRawSpam)} XOR
-	 *     {@code (published_net &gt;= lastMaxRawSpam)}. Decay-induced flips
-	 *     (a number that decays below the floor over time, with no new votes)
-	 *     are detected this way too, in the same sweep as event-driven flips.</li>
-	 * <li>or the row had activity since the last sweep — refreshes
-	 *     {@code PUBLISHED_LASTPING} / {@code PUBLISHED_SPAM_EVIDENCE} /
-	 *     {@code PUBLISHED_LEGIT_EVIDENCE} for already-published rows so the
-	 *     snapshot tracks recent changes without flipping visibility.</li>
-	 * </ul>
+	 * <p>The source select picks every number whose live net evidence reaches
+	 * the lowest bucket and computes its current bucket floor (2, 4, 10, 20,
+	 * 50, 100). A BLOCKLIST row is written only when the bucket <em>changed</em>
+	 * — numbers drifting inside their bucket cause no write at all, which is
+	 * what keeps the H2 page churn of a sweep proportional to actual bucket
+	 * flips. The redundant {@code SPAM_EVIDENCE >= t2} predicate makes the
+	 * candidate scan an index range on {@code NUMBERS_SPAM_EVIDENCE_IDX}
+	 * (legit evidence is non-negative, so it is a true superset).</p>
 	 *
-	 * @param version           the new global blocklist version.
-	 * @param lastAssignTime    timestamp of the previous sweep. Rows with
-	 *                          {@code LASTPING > lastAssignTime} are picked up
-	 *                          as recently active.
-	 * @param currentMaxRawSpam projected visibility threshold at this sweep
-	 *                          (= {@code Ema.projectedThreshold(minVotes - 0.5, now, tau)}).
-	 * @param lastMaxRawSpam    same projection at the previous sweep's
-	 *                          timestamp — applied against
-	 *                          {@code PUBLISHED_SPAM_EVIDENCE -
-	 *                          PUBLISHED_LEGIT_EVIDENCE} to reconstruct the
-	 *                          visibility class as it was at the last release.
-	 * @return number of rows touched.
+	 * <p>The bucket thresholds are per-sweep constants:
+	 * {@code tN = DB.maxRawSpamAt(now, N)}.</p>
+	 *
+	 * @return number of rows inserted or updated — bucket flips only.
 	 */
 	@Update("""
-		update NUMBERS set
-			VERSION = #{version},
-			PUBLISHED_LASTPING = LASTPING,
-			PUBLISHED_SPAM_EVIDENCE = SPAM_EVIDENCE,
-			PUBLISHED_LEGIT_EVIDENCE = LEGIT_EVIDENCE
-		where
-			(((SPAM_EVIDENCE - LEGIT_EVIDENCE) >= #{currentMaxRawSpam})
-			 <> ((PUBLISHED_SPAM_EVIDENCE - PUBLISHED_LEGIT_EVIDENCE) >= #{lastMaxRawSpam}))
-		   OR (VERSION > 0 AND LASTPING > #{lastAssignTime})
+		merge into BLOCKLIST b
+		using (
+			select s.PHONE,
+				CASE WHEN s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE >= #{t100} THEN 100
+				     WHEN s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE >= #{t50} THEN 50
+				     WHEN s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE >= #{t20} THEN 20
+				     WHEN s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE >= #{t10} THEN 10
+				     WHEN s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE >= #{t4} THEN 4
+				     ELSE 2 END as VOTES,
+				s.LASTPING
+			from NUMBERS s
+			where s.SPAM_EVIDENCE >= #{t2} and s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE >= #{t2}
+		) n on b.PHONE = n.PHONE
+		when matched and b.VOTES <> n.VOTES then update set
+			VOTES = n.VOTES, LASTPING = n.LASTPING, UPDATED = #{now}, VERSION = #{version}
+		when not matched then insert (PHONE, VOTES, LASTPING, UPDATED, VERSION)
+			values (n.PHONE, n.VOTES, n.LASTPING, #{now}, #{version})
 		""")
-	int assignBlocklistVersion(long version, long lastAssignTime,
-		double currentMaxRawSpam, double lastMaxRawSpam);
+	int publishBlocklistUpdates(long version, long now,
+		double t2, double t4, double t10, double t20, double t50, double t100);
 
 	/**
-	 * Gets all blocklist changes since the given version.
+	 * Publication sweep, removal half (#342): tombstones every published
+	 * number whose live net evidence dropped below the lowest bucket —
+	 * whether by decay or by legitimate votes. The scan runs over the small
+	 * BLOCKLIST table with a primary-key probe into NUMBERS per row.
 	 *
-	 * <p>Returns entries with {@code VERSION > sinceVersion}. The
-	 * snapshot-driven sweep (#342) writes whatever
-	 * {@code PUBLISHED_SPAM_EVIDENCE} / {@code PUBLISHED_LEGIT_EVIDENCE} are
-	 * at the moment of publication — rows that decayed below the visibility
-	 * threshold get the new (low) snapshot values written, so
-	 * {@code toBlocklistEntry} decodes them to {@code votes = 0} and clients
-	 * treat the entry as a removal. No CASE-when gating needed.</p>
+	 * @return number of rows tombstoned.
+	 */
+	@Update("""
+		update BLOCKLIST b set VOTES = 0, UPDATED = #{now}, VERSION = #{version}
+		where b.VOTES > 0
+		  and not exists (select 1 from NUMBERS s
+		      where s.PHONE = b.PHONE and s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE >= #{t2})
+		""")
+	int publishBlocklistRemovals(long version, long now, double t2);
+
+	/**
+	 * Removes tombstones that every client has had ample time to pick up.
+	 * Incremental sync is forced to a full sync at least monthly, so a
+	 * tombstone older than the retention window only occupies space.
+	 */
+	@Delete("delete from BLOCKLIST where VOTES = 0 and UPDATED < #{olderThan}")
+	int pruneBlocklistTombstones(long olderThan);
+
+	/**
+	 * Gets all blocklist changes since the given version (#342).
+	 *
+	 * <p>Returns the frozen published state: bucket votes and the activity
+	 * timestamp as of publication. Tombstones ({@code votes = 0}) signal
+	 * removals. Category counters are joined live from NUMBERS — they only
+	 * color the entry's rating; the left join keeps tombstones alive after a
+	 * hard delete of the NUMBERS row (#341).</p>
 	 */
 	@Select("""
-		select s.PHONE, s.ADDED, s.UPDATED, s.LASTSEARCH, s.CALLS,
-		       s.VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES,
-		       s.PUBLISHED_LASTPING as LASTPING,
-		       s.PUBLISHED_SPAM_EVIDENCE,
-		       s.PUBLISHED_LEGIT_EVIDENCE,
-		       s.HEAT,
-		       s.SPAM_EVIDENCE,
-		       s.LEGIT_EVIDENCE
-		from NUMBERS s
-		where s.VERSION > #{sinceVersion}
-		order by s.VERSION, s.PHONE
+		select b.PHONE, b.VOTES, b.LASTPING,
+		       coalesce(s.LEGITIMATE, 0) as LEGITIMATE,
+		       coalesce(s.PING, 0) as PING,
+		       coalesce(s.POLL, 0) as POLL,
+		       coalesce(s.ADVERTISING, 0) as ADVERTISING,
+		       coalesce(s.GAMBLE, 0) as GAMBLE,
+		       coalesce(s.FRAUD, 0) as FRAUD
+		from BLOCKLIST b
+		left join NUMBERS s on s.PHONE = b.PHONE
+		where b.VERSION > #{sinceVersion}
+		order by b.VERSION, b.PHONE
 		""")
-	List<DBNumberInfo> getBlocklistChangesSince(long sinceVersion);
+	List<DBBlocklistEntry> getBlocklistChangesSince(long sinceVersion);
 
 }

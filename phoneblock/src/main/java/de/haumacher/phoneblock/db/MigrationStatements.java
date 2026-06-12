@@ -176,4 +176,52 @@ public interface MigrationStatements {
 	@Update("ALTER TABLE NUMBERS DROP COLUMN PENDING_UPDATE")
 	void dropNumbersPendingUpdate();
 
+	/**
+	 * Seeds {@link SpamReports BLOCKLIST} from the published state stored on
+	 * NUMBERS (#342 / migration 39). Every row that has been part of a release
+	 * ({@code VERSION > 0}) gets one BLOCKLIST row: the bucket floor of its
+	 * published net evidence, or a {@code VOTES = 0} tombstone when the
+	 * published net is already below the lowest bucket — preserving the
+	 * removal signal for clients that sync across the migration boundary.
+	 *
+	 * <p>The bucket thresholds are the EMA projections of the migration
+	 * moment ({@code DB.maxRawSpamAt(now, bucket)}), passed as bind
+	 * parameters because they cannot be SQL constants.</p>
+	 */
+	@Update("""
+			insert into BLOCKLIST (PHONE, VOTES, LASTPING, UPDATED, VERSION)
+			select PHONE,
+				CASE WHEN PUBLISHED_SPAM_EVIDENCE - PUBLISHED_LEGIT_EVIDENCE >= #{t100} THEN 100
+				     WHEN PUBLISHED_SPAM_EVIDENCE - PUBLISHED_LEGIT_EVIDENCE >= #{t50} THEN 50
+				     WHEN PUBLISHED_SPAM_EVIDENCE - PUBLISHED_LEGIT_EVIDENCE >= #{t20} THEN 20
+				     WHEN PUBLISHED_SPAM_EVIDENCE - PUBLISHED_LEGIT_EVIDENCE >= #{t10} THEN 10
+				     WHEN PUBLISHED_SPAM_EVIDENCE - PUBLISHED_LEGIT_EVIDENCE >= #{t4} THEN 4
+				     WHEN PUBLISHED_SPAM_EVIDENCE - PUBLISHED_LEGIT_EVIDENCE >= #{t2} THEN 2
+				     ELSE 0 END,
+				PUBLISHED_LASTPING, #{now}, VERSION
+			from NUMBERS
+			where VERSION > 0
+			""")
+	int seedBlocklist(long now, double t2, double t4, double t10, double t20, double t50, double t100);
+
+	/** Drops the publication index after the BLOCKLIST seed (#342 / migration 39). */
+	@Update("DROP INDEX NUMBERS_VERSION_IDX")
+	void dropNumbersVersionIndex();
+
+	/** Drops {@code NUMBERS.VERSION} after the BLOCKLIST seed (#342 / migration 39). */
+	@Update("ALTER TABLE NUMBERS DROP COLUMN VERSION")
+	void dropNumbersVersion();
+
+	/** Drops {@code NUMBERS.PUBLISHED_LASTPING} after the BLOCKLIST seed (#342 / migration 39). */
+	@Update("ALTER TABLE NUMBERS DROP COLUMN PUBLISHED_LASTPING")
+	void dropNumbersPublishedLastPing();
+
+	/** Drops {@code NUMBERS.PUBLISHED_SPAM_EVIDENCE} after the BLOCKLIST seed (#342 / migration 39). */
+	@Update("ALTER TABLE NUMBERS DROP COLUMN PUBLISHED_SPAM_EVIDENCE")
+	void dropNumbersPublishedSpamEvidence();
+
+	/** Drops {@code NUMBERS.PUBLISHED_LEGIT_EVIDENCE} after the BLOCKLIST seed (#342 / migration 39). */
+	@Update("ALTER TABLE NUMBERS DROP COLUMN PUBLISHED_LEGIT_EVIDENCE")
+	void dropNumbersPublishedLegitEvidence();
+
 }

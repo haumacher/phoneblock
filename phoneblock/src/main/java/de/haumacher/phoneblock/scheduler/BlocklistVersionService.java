@@ -11,14 +11,11 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
-import de.haumacher.phoneblock.db.SpamReports;
-import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.carddav.resource.AddressBookCache;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
@@ -198,74 +195,33 @@ public class BlocklistVersionService implements ServletContextListener {
 	 * This is called automatically at the configured schedule, or can be manually triggered for testing.
 	 */
 	public void assignVersions() {
-		LOG.info("Starting scheduled blocklist version assignment");
+		LOG.info("Starting scheduled blocklist publication");
 
 		DB db = _dbService.db();
 
-		// No explicit archive sweep: decay-aware visibility means a row that
-		// has faded below the threshold simply drops out of the snapshot at
-		// the next publication (the visibility-class XOR in
-		// assignBlocklistVersion notices and bumps VERSION). Hard delete of
-		// long-faded rows is the subject of #341.
-		long now = System.currentTimeMillis();
-		try (SqlSession session = db.openSession()) {
-			Users users = session.getMapper(Users.class);
-			SpamReports reports = session.getMapper(SpamReports.class);
+		// #342: bucket-based publication. The sweep compares the live bucket
+		// of every candidate number with the published bucket in the
+		// BLOCKLIST table and writes only actual flips — including
+		// decay-induced removals, which become tombstones. Hard delete of
+		// long-faded NUMBERS rows is the subject of #341.
+		try {
+			long before = db.getBlocklistVersion();
+			long version = db.publishBlocklist(System.currentTimeMillis());
 
-			// Get current version
-			String versionStr = users.getProperty("blocklist.version");
-			long currentVersion = (versionStr != null) ? Long.parseLong(versionStr) : DB.INITIAL_BLOCKLIST_VERSION;
+			if (version != before) {
+				LOG.info("Completed blocklist publication, new version is {}.", version);
 
-			// Get the last assignment time to detect recent activity
-			String lastAssignTimeStr = users.getProperty("blocklist.lastAssignTime");
-			long lastAssignTime = (lastAssignTimeStr != null) ? Long.parseLong(lastAssignTimeStr) : 0;
-
-			// Increment version
-			long newVersion = currentVersion + 1;
-
-			// #342: snapshot-driven version assignment. Project the visibility
-			// threshold at the current sweep moment and at the previous sweep
-			// moment so the mapper can XOR the two visibility classes. When
-			// no prior snapshot exists yet (first sweep on this DB),
-			// lastMaxRawSpam = +Infinity makes "was visible" uniformly false
-			// — exactly what defaults of PUBLISHED_* = 0 should mean.
-			int minVotes = db.getMinVisibleVotes();
-			double currentMaxRawSpam = DB.maxRawSpamAt(now, minVotes);
-			double lastMaxRawSpam = (lastAssignTime > 0)
-				? DB.maxRawSpamAt(lastAssignTime, minVotes)
-				: Double.POSITIVE_INFINITY;
-
-			int updated = reports.assignBlocklistVersion(newVersion, lastAssignTime, currentMaxRawSpam, lastMaxRawSpam);
-
-			if (updated > 0) {
-				// Update global version counter
-				if (versionStr != null) {
-					users.updateProperty("blocklist.version", String.valueOf(newVersion));
-				} else {
-					users.addProperty("blocklist.version", String.valueOf(newVersion));
-				}
-
-				// Store the current time as the last assignment time
-				if (lastAssignTimeStr != null) {
-					users.updateProperty("blocklist.lastAssignTime", String.valueOf(now));
-				} else {
-					users.addProperty("blocklist.lastAssignTime", String.valueOf(now));
-				}
-
-				session.commit();
-				LOG.info("Completed blocklist version assignment: version {} assigned to {} entries", newVersion, updated);
-
-				// CardDAV serves the published snapshot — invalidate its caches so users
+				// CardDAV serves the published state — invalidate its caches so users
 				// see the fresh release on the next sync without waiting for TTL expiry.
 				AddressBookCache cache = AddressBookCache.getInstance();
 				if (cache != null) {
 					cache.flushAllCaches();
 				}
 			} else {
-				LOG.debug("No pending blocklist updates to process.");
+				LOG.debug("No blocklist changes to publish.");
 			}
 		} catch (Exception ex) {
-			LOG.error("Blocklist version assignment failed", ex);
+			LOG.error("Blocklist publication failed", ex);
 		}
 	}
 

@@ -8,13 +8,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import org.apache.ibatis.session.SqlSession;
-
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.analysis.NumberBlock;
 import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.db.DB;
-import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.TestDB;
 import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
@@ -37,34 +34,18 @@ public class TestAddressBookCache {
 		_scheduler.contextInitialized(null);
 		
 		_db = new DB(TestDB.createTestDataSource(), _scheduler);
-		// Drop the visibility threshold so even small-vote test numbers cross
-		// it and end up in the published snapshot below. (#342: visibility is
-		// decided in the BlocklistVersionService sweep against the decoded
-		// net evidence — no separate PENDING_UPDATE flag.)
-		_db.setMinVisibleVotes(1);
 
 		_db.processVotes(NumberAnalyzer.analyze("+39011111111", "+49"), "+39", 20, _now);
 		_db.processVotes(NumberAnalyzer.analyze("+39022222222", "+49"), "+39", 2, _now);
 		_db.processVotes(NumberAnalyzer.analyze("+49333333333", "+49"), "+39", 20, _now);
 		_db.processVotes(NumberAnalyzer.analyze("+49444444444", "+49"), "+39", 2, _now);
 
-		// CardDAV reads the published snapshot — assign version 1 so the rows show up.
-		publishSnapshot();
+		// CardDAV reads the published BLOCKLIST state (#342) — run a
+		// publication sweep so the rows show up. Publication always starts at
+		// bucket 2; the per-user minVotes settings filter at render time.
+		_db.publishBlocklist(_now);
 
 		_cache = new AddressBookCache(() -> _db);
-	}
-
-	/** Promotes pending NUMBERS rows into the published snapshot the CardDAV pipeline reads from. */
-	private void publishSnapshot() {
-		try (SqlSession session = _db.openSession()) {
-			SpamReports reports = session.getMapper(SpamReports.class);
-			// #342: snapshot-driven assignment uses projected-EMA thresholds.
-			// With minVotes = 1 and lastAssignTime = 0, every row whose
-			// current net evidence clears the threshold gets the new VERSION.
-			double currentMaxRawSpam = de.haumacher.phoneblock.db.DB.maxRawSpamAt(_now, 1);
-			reports.assignBlocklistVersion(1L, 0L, currentMaxRawSpam, Double.POSITIVE_INFINITY);
-			session.commit();
-		}
 	}
 	
 	@AfterEach

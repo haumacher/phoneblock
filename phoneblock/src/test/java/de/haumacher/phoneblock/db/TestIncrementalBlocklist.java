@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
-import org.apache.ibatis.session.SqlSession;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -106,7 +105,9 @@ public class TestIncrementalBlocklist {
 	}
 
 	/**
-	 * Test that changes below minVisibleVotes do NOT trigger version updates.
+	 * Numbers below minVisibleVotes are published (bucket 4 — low-threshold
+	 * CardDAV lists need them) but never appear in the API blocklist, whose
+	 * server-side filter is minVisibleVotes.
 	 */
 	@Test
 	void testNoVersionUpdateBelowThreshold() {
@@ -123,21 +124,23 @@ public class TestIncrementalBlocklist {
 		long initialVersion = getCurrentVersion();
 
 		// Add votes that stay below the minVisibleVotes threshold
-		// This crosses thresholds 2 and 4, but not 10
-		processVotes("0111222333", 2, time++); // 2 votes - crosses threshold 2
-		processVotes("0111222333", 2, time++); // 4 votes - crosses threshold 4
-		processVotes("0111222333", 2, time++); // 6 votes - no threshold crossing
-		processVotes("0111222333", 2, time++); // 8 votes - no threshold crossing
+		processVotes("0111222333", 2, time++); // 2 votes - bucket 2
+		processVotes("0111222333", 2, time++); // 4 votes - bucket 4
+		processVotes("0111222333", 2, time++); // 6 votes - still bucket 4
+		processVotes("0111222333", 2, time++); // 8 votes - still bucket 4
 
-		// Assign versions - should NOT assign any since all crossings are below minVisibleVotes=10
+		// Publication happens from bucket 2 upward — the version moves even
+		// though the number stays below the API visibility filter.
 		long newVersion = assignVersions();
+		assertTrue(newVersion > initialVersion, "Bucket flips below minVisibleVotes are published, too");
 
-		// Version should not have changed
-		assertEquals(initialVersion, newVersion, "Version should not change for crossings below minVisibleVotes");
-
-		// The number should NOT appear in the blocklist (below minVisibleVotes)
+		// The number must NOT appear in the API blocklist (below minVisibleVotes)
 		Blocklist fullList = _db.getBlockListAPI();
 		assertTrue(fullList.getNumbers().isEmpty(), "Numbers below minVisibleVotes should not appear in blocklist");
+
+		// Another sweep without bucket movement leaves the version untouched —
+		// 8 votes stay in bucket 4.
+		assertEquals(newVersion, assignVersions(), "No bucket flip, no version bump");
 	}
 
 	/**
@@ -340,10 +343,12 @@ public class TestIncrementalBlocklist {
 	}
 
 	/**
-	 * Test that recent activity (votes added without threshold crossing) triggers an incremental update.
+	 * Votes that stay inside the published bucket cause no re-publication:
+	 * no version bump, no incremental-sync traffic. Only crossing a bucket
+	 * boundary republishes the number (#342).
 	 */
 	@Test
-	void testRecentActivityTriggersIncrementalUpdate() {
+	void testNoUpdateWithinBucket() {
 		_db.setMinVisibleVotes(10);
 
 		// Anchor near "now" so the confidence-model values (#338) read fresh —
@@ -352,32 +357,40 @@ public class TestIncrementalBlocklist {
 		// decay completely by the time the API reads them back.
 		long time = System.currentTimeMillis() - 10_000L;
 
-		// Create a number with 10 votes (crosses threshold 10)
+		// Create a number with 10 votes (bucket 10)
 		for (int i = 0; i < 5; i++) {
 			processVotes("0200300400", 2, time++);
 		}
-		// time is now 1005, LASTPING is 1004
 
-		// Record lastAssignTime as time-1 (1004) so that lastAssignTime < LASTPING of next vote
-		long assignTime1 = time - 1;
-		long version1 = assignVersions(assignTime1);
+		long version1 = assignVersions(time);
 		assertTrue(version1 > DB.INITIAL_BLOCKLIST_VERSION);
 
-		// Add 2 more votes (12 total, no threshold crossing — next is at 20)
-		// This sets LASTPING to max(1004, 1005) = 1005
+		// Add 2 more votes (12 total — still bucket 10, next boundary is 20)
 		processVotes("0200300400", 2, time++);
-		// time is now 1006, LASTPING is 1005
 
-		// Assign version — lastAssignTime=1004 means LASTPING(1005) > 1004 triggers inclusion
 		long version2 = assignVersions(time);
-		assertTrue(version2 > version1, "Version should increment for recently-active number");
+		assertEquals(version1, version2, "Votes inside the bucket must not republish");
 
-		// Incremental update since version1 should return the number
 		Blocklist update = _db.getBlocklistUpdateAPI(version1);
-		assertEquals(1, update.getNumbers().size());
-		assertEquals("+49200300400", update.getNumbers().get(0).getPhone());
-		assertEquals(12, update.getNumbers().get(0).getVotes(), "Votes should be the actual count");
-		assertTrue(update.getNumbers().get(0).getLastActivity() > 0, "lastActivity should be non-zero");
+		assertTrue(update.getNumbers().isEmpty(), "No bucket flip, no incremental entry");
+
+		// Published votes stay at the frozen bucket floor.
+		Blocklist fullList = _db.getBlockListAPI();
+		assertEquals(1, fullList.getNumbers().size());
+		assertEquals(10, fullList.getNumbers().get(0).getVotes(), "Published votes are the bucket floor");
+
+		// Crossing the next boundary (20) republishes.
+		for (int i = 0; i < 4; i++) {
+			processVotes("0200300400", 2, time++);
+		}
+		long version3 = assignVersions(time);
+		assertTrue(version3 > version2, "Bucket flip must republish");
+
+		Blocklist update2 = _db.getBlocklistUpdateAPI(version2);
+		assertEquals(1, update2.getNumbers().size());
+		assertEquals("+49200300400", update2.getNumbers().get(0).getPhone());
+		assertEquals(20, update2.getNumbers().get(0).getVotes(), "Votes are the new bucket floor");
+		assertTrue(update2.getNumbers().get(0).getLastActivity() > 0, "lastActivity should be non-zero");
 	}
 
 	/**
@@ -419,62 +432,22 @@ public class TestIncrementalBlocklist {
 	}
 
 	/**
-	 * Assigns version numbers (simulates BlocklistVersionService). Uses
+	 * Runs a publication sweep (simulates BlocklistVersionService). Uses
 	 * {@code System.currentTimeMillis()} as the sweep moment so the projected
-	 * thresholds in {@link DB#maxRawSpamAt} stay finite — passing
-	 * {@code Long.MAX_VALUE} (the old hack to defeat the since-based activity
-	 * trigger) overflows the EMA projection.
+	 * bucket thresholds in {@link DB#maxRawSpamAt} stay finite.
 	 */
 	private long assignVersions() {
 		return assignVersions(System.currentTimeMillis());
 	}
 
 	/**
-	 * Assigns version numbers to pending updates using the given timestamp as "now".
+	 * Runs a publication sweep using the given timestamp as "now".
 	 */
 	private long assignVersions(long now) {
-		try (SqlSession session = _db.openSession()) {
-			Users users = session.getMapper(Users.class);
-			SpamReports reports = session.getMapper(SpamReports.class);
-
-			String versionStr = users.getProperty("blocklist.version");
-			long currentVersion = (versionStr != null) ? Long.parseLong(versionStr) : DB.INITIAL_BLOCKLIST_VERSION;
-
-			String lastAssignTimeStr = users.getProperty("blocklist.lastAssignTime");
-			long lastAssignTime = (lastAssignTimeStr != null) ? Long.parseLong(lastAssignTimeStr) : 0;
-
-			int minVotes = _db.getMinVisibleVotes();
-			double currentMaxRawSpam = DB.maxRawSpamAt(now, minVotes);
-			double lastMaxRawSpam = (lastAssignTime > 0)
-				? DB.maxRawSpamAt(lastAssignTime, minVotes)
-				: Double.POSITIVE_INFINITY;
-			int updated = reports.assignBlocklistVersion(currentVersion + 1, lastAssignTime, currentMaxRawSpam, lastMaxRawSpam);
-
-			if (updated > 0) {
-				long newVersion = currentVersion + 1;
-				if (versionStr != null) {
-					users.updateProperty("blocklist.version", String.valueOf(newVersion));
-				} else {
-					users.addProperty("blocklist.version", String.valueOf(newVersion));
-				}
-				if (lastAssignTimeStr != null) {
-					users.updateProperty("blocklist.lastAssignTime", String.valueOf(now));
-				} else {
-					users.addProperty("blocklist.lastAssignTime", String.valueOf(now));
-				}
-				session.commit();
-				return newVersion;
-			}
-
-			return currentVersion;
-		}
+		return _db.publishBlocklist(now);
 	}
 
 	private long getCurrentVersion() {
-		try (SqlSession session = _db.openSession()) {
-			Users users = session.getMapper(Users.class);
-			String versionStr = users.getProperty("blocklist.version");
-			return (versionStr != null) ? Long.parseLong(versionStr) : DB.INITIAL_BLOCKLIST_VERSION;
-		}
+		return _db.getBlocklistVersion();
 	}
 }

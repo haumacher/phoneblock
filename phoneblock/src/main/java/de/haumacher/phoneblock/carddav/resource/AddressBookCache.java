@@ -20,8 +20,7 @@ import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.analysis.NumberBlock;
 import de.haumacher.phoneblock.analysis.NumberTree;
 import de.haumacher.phoneblock.db.BlockList;
-import de.haumacher.phoneblock.db.DBNumberInfo;
-import de.haumacher.phoneblock.db.Ema;
+import de.haumacher.phoneblock.db.DBBlocklistEntry;
 import de.haumacher.phoneblock.db.IDBService;
 import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.Users;
@@ -261,14 +260,13 @@ public class AddressBookCache implements ServletContextListener {
 		boolean nationalOnly = listType.isNationalOnly();
 		String dialPrefix = listType.getDialPrefix();
 
-		// Use the snapshot from the last released blocklist version so the
-		// address-book content (and its ETag) only changes once per release,
-		// not on every individual vote (#342). Votes are derived from the
-		// decoded net of the snapshot — same shape as toBlocklistEntry, just
-		// against the PUBLISHED_* columns frozen at the last sweep.
-		List<DBNumberInfo> result = reports.getPublishedReports();
+		// Use the published blocklist state so the address-book content (and
+		// its ETag) only changes once per release, not on every individual
+		// vote (#342). Votes are the bucket floors frozen at publication —
+		// no decoding, no decay; the view is independent of the read moment.
+		List<DBBlocklistEntry> result = reports.getPublishedReports();
 		NumberTree numberTree = new NumberTree();
-		for (DBNumberInfo report : result) {
+		for (DBBlocklistEntry report : result) {
 			String phoneId = report.getPhone();
 			String phone = NumberAnalyzer.toInternationalFormat(phoneId);
 
@@ -277,12 +275,9 @@ public class AddressBookCache implements ServletContextListener {
 				continue;
 			}
 
-			double decodedSpam = Ema.decode(report.getPublishedSpamEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
-			double decodedLegit = Ema.decode(report.getPublishedLegitEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
-			int votes = (int) Math.round(Math.max(0.0, decodedSpam - decodedLegit));
 			int ageInDays = (int) ((now - report.getLastPing()) / 1000 / 60 / 60 / 24);
 
-			numberTree.insert(phone, votes, ageInDays);
+			numberTree.insert(phone, report.getVotes(), ageInDays);
 		}
 
 		// Enter white-listed numbers with with negative weight to prevent adding those numbers to wildcard blocks. 

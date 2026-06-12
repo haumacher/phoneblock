@@ -4,7 +4,7 @@ CREATE TABLE PROPERTIES (
 	CONSTRAINT PROPERTIES_PK PRIMARY KEY (NAME)
 );
 
-INSERT INTO PROPERTIES (NAME, VAL) VALUES('db.version', '38');
+INSERT INTO PROPERTIES (NAME, VAL) VALUES('db.version', '39');
 INSERT INTO PROPERTIES (NAME, VAL) VALUES('blocklist.version', '1');
 
 
@@ -29,8 +29,6 @@ CREATE TABLE NUMBERS (
 	SEARCHES INTEGER DEFAULT 0 NOT NULL,
 	SEARCHES_CURRENT INTEGER DEFAULT 0 NOT NULL,
 	SEARCHES_BACKUP INTEGER DEFAULT 0 NOT NULL,
-	VERSION BIGINT DEFAULT 0 NOT NULL,
-	PUBLISHED_LASTPING BIGINT DEFAULT 0 NOT NULL,
 	-- Confidence model (#300): projected-EMA columns. Each cell holds
 	-- Σ wᵢ·exp((tᵢ − t0)/τ); read-time decay applies exp(−(now − t0)/τ).
 	-- HEAT measures activity (~2-week half-life), the two EVIDENCE columns
@@ -38,21 +36,12 @@ CREATE TABLE NUMBERS (
 	HEAT DOUBLE PRECISION DEFAULT 0 NOT NULL,
 	SPAM_EVIDENCE DOUBLE PRECISION DEFAULT 0 NOT NULL,
 	LEGIT_EVIDENCE DOUBLE PRECISION DEFAULT 0 NOT NULL,
-	-- Snapshot of SPAM_EVIDENCE / LEGIT_EVIDENCE at the time of the last
-	-- blocklist version assignment (#342). Both axes are needed so the
-	-- snapshot-driven sweep can check `published_net >= last_threshold` —
-	-- same net-evidence semantic the live filter uses. The snapshot replaces
-	-- the obsolete PENDING_UPDATE event-driven mechanism: clients on
-	-- ?since=N see whatever the last sweep declared visible.
-	PUBLISHED_SPAM_EVIDENCE DOUBLE PRECISION DEFAULT 0 NOT NULL,
-	PUBLISHED_LEGIT_EVIDENCE DOUBLE PRECISION DEFAULT 0 NOT NULL,
 	CONSTRAINT NUMBERS_PK PRIMARY KEY (PHONE)
 );
 
 CREATE INDEX NUMBERS_SHA1_IDX ON NUMBERS (SHA1, PHONE);
 CREATE INDEX NUMBERS_UPDATED_IDX ON NUMBERS (UPDATED DESC);
 CREATE INDEX NUMBERS_SEARCHES_IDX ON NUMBERS (SEARCHES DESC);
-CREATE INDEX NUMBERS_VERSION_IDX ON NUMBERS (VERSION DESC, PHONE);
 CREATE INDEX NUMBERS_SEARCHES_CURRENT_IDX ON NUMBERS (SEARCHES_CURRENT DESC);
 -- Heat-ordered scan for the space-limited blocklist (#336).
 CREATE INDEX NUMBERS_HEAT_IDX ON NUMBERS (HEAT DESC);
@@ -64,6 +53,25 @@ CREATE INDEX NUMBERS_SPAM_EVIDENCE_IDX ON NUMBERS (SPAM_EVIDENCE DESC);
 -- LIMIT n. Without this index H2 full-scans NUMBERS and sorts every row; the
 -- DESC index lets it read just the top n ("index sorted").
 CREATE INDEX NUMBERS_VOTES_IDX ON NUMBERS (VOTES DESC);
+
+-- Published blocklist state (#342): one narrow row per number that is (or
+-- recently was) on the public blocklist. VOTES is the bucket floor of the
+-- net evidence at publication time — one of 2, 4, 10, 20, 50, 100 — frozen
+-- until the number crosses into another bucket; 0 marks a tombstone (the
+-- removal signal for incremental sync). Keeping the published state out of
+-- NUMBERS means the publication sweep never rewrites rows of the big table,
+-- so the H2 store does not accumulate dead pages from scattered updates.
+CREATE TABLE BLOCKLIST (
+	PHONE CHARACTER VARYING(100) NOT NULL,
+	VOTES INTEGER NOT NULL,
+	LASTPING BIGINT DEFAULT 0 NOT NULL,
+	UPDATED BIGINT DEFAULT 0 NOT NULL,
+	VERSION BIGINT NOT NULL,
+	CONSTRAINT BLOCKLIST_PK PRIMARY KEY (PHONE)
+);
+
+-- Incremental sync `?since=N` reads `WHERE VERSION > N`.
+CREATE INDEX BLOCKLIST_VERSION_IDX ON BLOCKLIST (VERSION, PHONE);
 
 CREATE TABLE NUMBERS_LOCALE (
 	PHONE CHARACTER VARYING(100) NOT NULL,
