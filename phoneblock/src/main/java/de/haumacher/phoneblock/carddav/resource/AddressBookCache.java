@@ -262,8 +262,10 @@ public class AddressBookCache implements ServletContextListener {
 
 		// Use the published blocklist state so the address-book content (and
 		// its ETag) only changes once per release, not on every individual
-		// vote (#342). Votes are the bucket floors frozen at publication —
-		// no decoding, no decay; the view is independent of the read moment.
+		// vote (#342). Votes are the bucket floors and Heat the log4 class,
+		// both frozen at publication — no decoding, no decay; the view is
+		// independent of the read moment, so a TTL-expired cache regenerates
+		// byte-identical content between two releases.
 		List<DBBlocklistEntry> result = reports.getPublishedReports();
 		NumberTree numberTree = new NumberTree();
 		for (DBBlocklistEntry report : result) {
@@ -275,9 +277,7 @@ public class AddressBookCache implements ServletContextListener {
 				continue;
 			}
 
-			int ageInDays = (int) ((now - report.getLastPing()) / 1000 / 60 / 60 / 24);
-
-			numberTree.insert(phone, report.getVotes(), ageInDays);
+			numberTree.insert(phone, report.getVotes(), report.getHeat());
 		}
 
 		// Enter white-listed numbers with with negative weight to prevent adding those numbers to wildcard blocks. 

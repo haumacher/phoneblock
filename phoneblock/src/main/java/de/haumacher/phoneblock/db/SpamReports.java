@@ -420,11 +420,13 @@ public interface SpamReports {
 	/**
 	 * Full blocklist for {@code /api/blocklist} (#342): the published state
 	 * — bucket votes frozen at publication — filtered by the server-side
-	 * visibility threshold. The response is identical for every client and
-	 * stable between sweeps; live evidence never leaks into it.
+	 * visibility threshold. The block decision data is stable between
+	 * sweeps; only the informational lastActivity and rating columns are
+	 * joined live (the API makes no caching promise).
 	 */
 	@Select("""
-			select b.PHONE, b.VOTES, b.LASTPING,
+			select b.PHONE, b.VOTES,
+			       coalesce(s.LASTPING, 0) as LASTPING,
 			       coalesce(s.LEGITIMATE, 0) as LEGITIMATE,
 			       coalesce(s.PING, 0) as PING,
 			       coalesce(s.POLL, 0) as POLL,
@@ -518,13 +520,13 @@ public interface SpamReports {
 	List<DBNumberInfo> getReports();
 
 	/**
-	 * The published blocklist state (#342): bucket votes and activity
-	 * timestamp frozen at publication, tombstones excluded. Stable between
+	 * The published blocklist state (#342): bucket votes and Heat class
+	 * frozen at publication, tombstones excluded. Deterministic between
 	 * sweeps — used by the CardDAV pipeline so the address-book ETag does not
-	 * flap on every individual vote.
+	 * flap when the TTL-expired cache regenerates between two releases.
 	 */
 	@Select("""
-			select b.PHONE, b.VOTES, b.LASTPING from BLOCKLIST b
+			select b.PHONE, b.VOTES, b.HEAT from BLOCKLIST b
 			where b.VOTES > 0
 			""")
 	List<DBBlocklistEntry> getPublishedReports();
@@ -753,21 +755,26 @@ public interface SpamReports {
 
 	/**
 	 * Publication sweep, addition/upgrade half (#342): merges the live
-	 * visibility state into the BLOCKLIST table, quantized to vote buckets.
+	 * visibility state into the BLOCKLIST table, quantized to vote buckets
+	 * and Heat classes.
 	 *
 	 * <p>The source select picks every number whose live net evidence reaches
-	 * the lowest bucket and computes its current bucket floor (2, 4, 10, 20,
-	 * 50, 100). A BLOCKLIST row is written only when the bucket <em>changed</em>
-	 * — numbers drifting inside their bucket cause no write at all, which is
-	 * what keeps the H2 page churn of a sweep proportional to actual bucket
-	 * flips. The redundant {@code SPAM_EVIDENCE >= t2} predicate makes the
-	 * candidate scan an index range on {@code NUMBERS_SPAM_EVIDENCE_IDX}
-	 * (legit evidence is non-negative, so it is a true superset).</p>
+	 * the lowest bucket and computes its current vote bucket floor (2, 4, 10,
+	 * 20, 50, 100) and the log4 class of its decoded Heat. A BLOCKLIST row is
+	 * written only when one of the two <em>changed</em> — numbers drifting
+	 * inside their classes cause no write at all, which is what keeps the H2
+	 * page churn of a sweep proportional to actual class flips (Heat decays
+	 * one log4 class per ~4 weeks, so the steady-state republish volume is
+	 * about 1/28 of the published set per day). The redundant
+	 * {@code SPAM_EVIDENCE >= t2} predicate makes the candidate scan an index
+	 * range on {@code NUMBERS_SPAM_EVIDENCE_IDX} (legit evidence is
+	 * non-negative, so it is a true superset).</p>
 	 *
 	 * <p>The bucket thresholds are per-sweep constants:
-	 * {@code tN = DB.maxRawSpamAt(now, N)}.</p>
+	 * {@code tN = DB.maxRawSpamAt(now, N)}; {@code heatDecode} is the decode
+	 * factor {@code Ema.decode(1, now, HEAT_TAU)}.</p>
 	 *
-	 * @return number of rows inserted or updated — bucket flips only.
+	 * @return number of rows inserted or updated — class flips only.
 	 */
 	@Update("""
 		merge into BLOCKLIST b
@@ -779,17 +786,19 @@ public interface SpamReports {
 				     WHEN s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE >= #{t10} THEN 10
 				     WHEN s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE >= #{t4} THEN 4
 				     ELSE 2 END as VOTES,
-				s.LASTPING
+				CASE WHEN s.HEAT * #{heatDecode} < 1 THEN 0
+				     ELSE CAST(FLOOR(LN(s.HEAT * #{heatDecode}) / LN(4)) AS INTEGER) END as HEAT
 			from NUMBERS s
 			where s.SPAM_EVIDENCE >= #{t2} and s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE >= #{t2}
 		) n on b.PHONE = n.PHONE
-		when matched and b.VOTES <> n.VOTES then update set
-			VOTES = n.VOTES, LASTPING = n.LASTPING, UPDATED = #{now}, VERSION = #{version}
-		when not matched then insert (PHONE, VOTES, LASTPING, UPDATED, VERSION)
-			values (n.PHONE, n.VOTES, n.LASTPING, #{now}, #{version})
+		when matched and (b.VOTES <> n.VOTES or b.HEAT <> n.HEAT) then update set
+			VOTES = n.VOTES, HEAT = n.HEAT, VERSION = #{version}
+		when not matched then insert (PHONE, VOTES, HEAT, VERSION)
+			values (n.PHONE, n.VOTES, n.HEAT, #{version})
 		""")
-	int publishBlocklistUpdates(long version, long now,
-		double t2, double t4, double t10, double t20, double t50, double t100);
+	int publishBlocklistUpdates(long version,
+		double t2, double t4, double t10, double t20, double t50, double t100,
+		double heatDecode);
 
 	/**
 	 * Publication sweep, removal half (#342): tombstones every published
@@ -800,20 +809,25 @@ public interface SpamReports {
 	 * @return number of rows tombstoned.
 	 */
 	@Update("""
-		update BLOCKLIST b set VOTES = 0, UPDATED = #{now}, VERSION = #{version}
+		update BLOCKLIST b set VOTES = 0, HEAT = 0, VERSION = #{version}
 		where b.VOTES > 0
 		  and not exists (select 1 from NUMBERS s
 		      where s.PHONE = b.PHONE and s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE >= #{t2})
 		""")
-	int publishBlocklistRemovals(long version, long now, double t2);
+	int publishBlocklistRemovals(long version, double t2);
 
 	/**
 	 * Removes tombstones that every client has had ample time to pick up.
-	 * Incremental sync is forced to a full sync at least monthly, so a
-	 * tombstone older than the retention window only occupies space.
+	 *
+	 * <p>The caller derives {@code maxVersion} from the pruning watermark
+	 * (see {@code DB.publishBlocklist}): a property pair recording "version V
+	 * existed at time T" proves every tombstone with {@code VERSION <= V} to
+	 * be at least as old as T — no per-row timestamp needed. Incremental sync
+	 * is forced to a full sync at least monthly, so an old tombstone only
+	 * occupies space.</p>
 	 */
-	@Delete("delete from BLOCKLIST where VOTES = 0 and UPDATED < #{olderThan}")
-	int pruneBlocklistTombstones(long olderThan);
+	@Delete("delete from BLOCKLIST where VOTES = 0 and VERSION <= #{maxVersion}")
+	int pruneBlocklistTombstones(long maxVersion);
 
 	/**
 	 * Gets all blocklist changes since the given version (#342).
@@ -825,7 +839,8 @@ public interface SpamReports {
 	 * hard delete of the NUMBERS row (#341).</p>
 	 */
 	@Select("""
-		select b.PHONE, b.VOTES, b.LASTPING,
+		select b.PHONE, b.VOTES,
+		       coalesce(s.LASTPING, 0) as LASTPING,
 		       coalesce(s.LEGITIMATE, 0) as LEGITIMATE,
 		       coalesce(s.PING, 0) as PING,
 		       coalesce(s.POLL, 0) as POLL,

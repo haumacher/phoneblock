@@ -3,8 +3,9 @@
 -- sweep rewrite scattered rows (plus NUMBERS_VERSION_IDX entries) of the
 -- big table — the H2 MVStore could never reclaim the dead pages fast
 -- enough. VOTES is the bucket floor (2, 4, 10, 20, 50, 100) of the net
--- evidence, frozen at publication; 0 marks a tombstone (removal signal for
--- incremental sync).
+-- evidence and HEAT the log4 class of the activity EMA, both frozen at
+-- publication; VOTES = 0 marks a tombstone (removal signal for incremental
+-- sync).
 --
 -- A Java hook seeds BLOCKLIST from the current published state (the bucket
 -- thresholds are EMA projections of the migration moment and cannot be
@@ -15,8 +16,7 @@
 CREATE TABLE BLOCKLIST (
 	PHONE CHARACTER VARYING(100) NOT NULL,
 	VOTES INTEGER NOT NULL,
-	LASTPING BIGINT DEFAULT 0 NOT NULL,
-	UPDATED BIGINT DEFAULT 0 NOT NULL,
+	HEAT INTEGER DEFAULT 0 NOT NULL,
 	VERSION BIGINT NOT NULL,
 	CONSTRAINT BLOCKLIST_PK PRIMARY KEY (PHONE)
 );

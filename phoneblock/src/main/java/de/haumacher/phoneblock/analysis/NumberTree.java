@@ -39,33 +39,33 @@ public class NumberTree {
 		private Node[] _next;
 		private boolean _wildcard;
 		private int _weight;
-		private int _age = Integer.MAX_VALUE;
+		private int _heat;
 
-		/** 
+		/**
 		 * Appends a next digit to the number represented by this node.
-		 * @param weight 
+		 * @param weight
 		 */
-		public Node append(String phone, int index, int weight, int age) {
+		public Node append(String phone, int index, int weight, int heat) {
 			if (index == phone.length()) {
 				_weight += weight;
-				_age = Math.min(_age, age);
+				_heat = Math.max(_heat, heat);
 				return this;
 			}
-			
+
 			char ch = phone.charAt(index);
-			
+
 			if (_next == null) {
 				_next = new Node[width()];
 			}
-			
+
 			int digit = index(ch);
 			Node next = _next[digit];
 			if (next == null) {
 				next = new DigitNode(ch);
 				_next[digit] = next;
 			}
-			
-			return next.append(phone, index + 1, weight, age);
+
+			return next.append(phone, index + 1, weight, heat);
 		}
 
 		protected int width() {
@@ -206,12 +206,12 @@ public class NumberTree {
 			int length = prefix.length();
 			if (_wildcard) {
 				prefix.append('*');
-				numbers.accept(prefix.toString(), sumWeight(), minAge());
+				numbers.accept(prefix.toString(), sumWeight(), maxHeat());
 				prefix.setLength(length);
 				return;
 			}
 			if (_next == null) {
-				numbers.accept(prefix.toString(), _weight, _age);
+				numbers.accept(prefix.toString(), _weight, _heat);
 				return;
 			}
 			for (Node child : _next) {
@@ -229,26 +229,26 @@ public class NumberTree {
 				return Arrays.stream(_next).filter(Objects::nonNull).collect(Collectors.summingInt(Node::sumWeight));
 			}
 		}
-		
-		private int minAge() {
+
+		private int maxHeat() {
 			if (_next == null || _next.length == 0) {
-				return _age;
+				return _heat;
 			} else {
-				int age = Integer.MAX_VALUE;
+				int heat = 0;
 				for (Node child : _next) {
 					if (child == null) {
 						continue;
 					}
-					
-					age = Math.min(age, child.minAge());
+
+					heat = Math.max(heat, child.maxHeat());
 				}
-				return age;
+				return heat;
 			}
 		}
 	}
-	
+
 	interface NumberIterator {
-		void accept(String number, int weight, int age);
+		void accept(String number, int weight, int heat);
 	}
 	
 	private static class DigitNode extends Node {
@@ -275,17 +275,17 @@ public class NumberTree {
 		insert(phone, 1, 0);
 	}
 
-	public void insert(String phone, int weight, int age) {
-		_root.append(phone, 0, weight, age);
+	public void insert(String phone, int weight, int heat) {
+		_root.append(phone, 0, weight, heat);
 	}
-	
+
 	public void markWildcards() {
 		_root.markWildcards(new Node.Info());
 	}
-	
+
 	public List<String> createBlockEntries() {
 		ArrayList<String> result = new ArrayList<>();
-		NumberIterator sink = (x, weight, age) -> {
+		NumberIterator sink = (x, weight, heat) -> {
 			if (weight > 0) result.add(x);
 		};
 		createBlockEntries(sink);
@@ -348,13 +348,18 @@ public class NumberTree {
 	 */
 	public List<NumberBlock> createNumberBlocksByPrefix(int minVotes, int maxEntries, String dialPrefix) {
 		List<WeightedNumber> weighted = new ArrayList<>();
-		createBlockEntries((number, votes, age) -> {
-			int weight = votes - ageDecay(age);
-			if (weight < minVotes) {
+		createBlockEntries((number, votes, heat) -> {
+			if (votes < minVotes) {
 				return;
 			}
+			// Top-K ranking for the capped list: numbers from the caller's
+			// region first, then by published Heat class (currently-active
+			// spammers claim the slots), votes only as tiebreaker. Personal
+			// blacklist entries arrive with a votes weight far above any
+			// heat/votes combination and stay on top unconditionally.
+			int weight = heat * 10_000 + votes;
 			if (number.startsWith(dialPrefix)) {
-				weight += 100;
+				weight += 1_000_000;
 			}
 			weighted.add(new WeightedNumber(number, weight));
 		});
@@ -388,16 +393,6 @@ public class NumberTree {
 				bucketize(members, depth + 1, out);
 			}
 		}
-	}
-
-	private static int ageDecay(int age) {
-		if (age < 14) {
-			return 0;
-		}
-		if (age < 30) {
-			return 2;
-		}
-		return (age / 7) * 2;
 	}
 
 }

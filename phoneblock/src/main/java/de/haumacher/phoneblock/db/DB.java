@@ -1490,7 +1490,9 @@ public class DB {
 	/**
 	 * Tombstones ({@code votes = 0} rows in BLOCKLIST) are kept long enough
 	 * that every incremental-sync client sees the removal — full sync is
-	 * forced at least monthly, so 90 days is a comfortable margin.
+	 * forced at least monthly, so 90 days is a comfortable margin. The
+	 * watermark mechanism (see {@link #publishBlocklist}) stretches the
+	 * actual lifetime to between one and two retention windows.
 	 */
 	private static final long TOMBSTONE_RETENTION_MILLIS = 90L * 24 * 60 * 60 * 1000;
 
@@ -1530,28 +1532,52 @@ public class DB {
 			long currentVersion = (versionStr != null) ? Long.parseLong(versionStr) : INITIAL_BLOCKLIST_VERSION;
 			long newVersion = currentVersion + 1;
 
-			int changed = reports.publishBlocklistUpdates(newVersion, now,
+			int changed = reports.publishBlocklistUpdates(newVersion,
 				maxRawSpamAt(now, 2), maxRawSpamAt(now, 4), maxRawSpamAt(now, 10),
-				maxRawSpamAt(now, 20), maxRawSpamAt(now, 50), maxRawSpamAt(now, 100));
-			changed += reports.publishBlocklistRemovals(newVersion, now, maxRawSpamAt(now, 2));
-			int pruned = reports.pruneBlocklistTombstones(now - TOMBSTONE_RETENTION_MILLIS);
+				maxRawSpamAt(now, 20), maxRawSpamAt(now, 50), maxRawSpamAt(now, 100),
+				Ema.decode(1.0, now, Ema.HEAT_TAU_MILLIS));
+			changed += reports.publishBlocklistRemovals(newVersion, maxRawSpamAt(now, 2));
+
+			// Tombstone pruning via watermark: the property pair states
+			// "version V existed at time T". Once T is a full retention window
+			// in the past, every tombstone with VERSION <= V is provably old
+			// enough to delete — no per-row timestamp needed. Tombstones live
+			// between one and two retention windows.
+			boolean watermarkMoved = false;
+			int pruned = 0;
+			String pruneVersionStr = users.getProperty("blocklist.pruneVersion");
+			String pruneTimeStr = users.getProperty("blocklist.pruneTime");
+			if (pruneVersionStr == null || pruneTimeStr == null) {
+				setProperty(users, "blocklist.pruneVersion", Long.toString(currentVersion));
+				setProperty(users, "blocklist.pruneTime", Long.toString(now));
+				watermarkMoved = true;
+			} else if (now - Long.parseLong(pruneTimeStr) >= TOMBSTONE_RETENTION_MILLIS) {
+				pruned = reports.pruneBlocklistTombstones(Long.parseLong(pruneVersionStr));
+				setProperty(users, "blocklist.pruneVersion", Long.toString(currentVersion));
+				setProperty(users, "blocklist.pruneTime", Long.toString(now));
+				watermarkMoved = true;
+			}
 
 			if (changed > 0) {
-				if (versionStr != null) {
-					users.updateProperty("blocklist.version", Long.toString(newVersion));
-				} else {
-					users.addProperty("blocklist.version", Long.toString(newVersion));
-				}
+				setProperty(users, "blocklist.version", Long.toString(newVersion));
 				session.commit();
-				LOG.info("Published blocklist version {}: {} bucket flips, {} tombstones pruned.",
+				LOG.info("Published blocklist version {}: {} class flips, {} tombstones pruned.",
 					newVersion, changed, pruned);
 				return newVersion;
 			}
 
-			if (pruned > 0) {
+			if (watermarkMoved) {
 				session.commit();
 			}
 			return currentVersion;
+		}
+	}
+
+	private static void setProperty(Users users, String name, String value) {
+		if (users.getProperty(name) == null) {
+			users.addProperty(name, value);
+		} else {
+			users.updateProperty(name, value);
 		}
 	}
 
@@ -2110,9 +2136,10 @@ public class DB {
 		LOG.info("Bucket-based publication (#342): seeding BLOCKLIST from published NUMBERS state.");
 
 		long now = System.currentTimeMillis();
-		int seeded = migrations.seedBlocklist(now,
+		int seeded = migrations.seedBlocklist(
 			maxRawSpamAt(now, 2), maxRawSpamAt(now, 4), maxRawSpamAt(now, 10),
-			maxRawSpamAt(now, 20), maxRawSpamAt(now, 50), maxRawSpamAt(now, 100));
+			maxRawSpamAt(now, 20), maxRawSpamAt(now, 50), maxRawSpamAt(now, 100),
+			Ema.decode(1.0, now, Ema.HEAT_TAU_MILLIS));
 		LOG.info("Seeded {} BLOCKLIST rows.", seeded);
 
 		migrations.dropNumbersVersionIndex();

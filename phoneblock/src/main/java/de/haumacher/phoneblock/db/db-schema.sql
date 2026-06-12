@@ -56,16 +56,17 @@ CREATE INDEX NUMBERS_VOTES_IDX ON NUMBERS (VOTES DESC);
 
 -- Published blocklist state (#342): one narrow row per number that is (or
 -- recently was) on the public blocklist. VOTES is the bucket floor of the
--- net evidence at publication time — one of 2, 4, 10, 20, 50, 100 — frozen
--- until the number crosses into another bucket; 0 marks a tombstone (the
--- removal signal for incremental sync). Keeping the published state out of
--- NUMBERS means the publication sweep never rewrites rows of the big table,
--- so the H2 store does not accumulate dead pages from scattered updates.
+-- net evidence at publication time — one of 2, 4, 10, 20, 50, 100 — and
+-- HEAT is the log4 class of the decoded activity EMA; both are frozen
+-- until the number crosses into another class (by events or by decay);
+-- VOTES = 0 marks a tombstone (the removal signal for incremental sync).
+-- Keeping the published state out of NUMBERS means the publication sweep
+-- never rewrites rows of the big table, so the H2 store does not
+-- accumulate dead pages from scattered updates.
 CREATE TABLE BLOCKLIST (
 	PHONE CHARACTER VARYING(100) NOT NULL,
 	VOTES INTEGER NOT NULL,
-	LASTPING BIGINT DEFAULT 0 NOT NULL,
-	UPDATED BIGINT DEFAULT 0 NOT NULL,
+	HEAT INTEGER DEFAULT 0 NOT NULL,
 	VERSION BIGINT NOT NULL,
 	CONSTRAINT BLOCKLIST_PK PRIMARY KEY (PHONE)
 );

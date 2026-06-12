@@ -7,12 +7,14 @@ package de.haumacher.phoneblock.db;
  * One row of the published BLOCKLIST table (#342).
  *
  * <p>
- * {@link #getVotes()} is the bucket floor (2, 4, 10, 20, 50, 100) frozen at
+ * {@link #getVotes()} is the bucket floor (2, 4, 10, 20, 50, 100) and
+ * {@link #getHeat()} the log4 class of the activity EMA, both frozen at
  * publication time — independent of the read moment, unlike the decay-exposed
  * EMA columns on NUMBERS. {@code votes = 0} marks a tombstone: the removal
- * signal served to incremental-sync clients. The category counters are joined
- * live from NUMBERS (zero for tombstones whose NUMBERS row is gone) and only
- * decide which spam category dominates in the entry's rating.
+ * signal served to incremental-sync clients. The last activity and the
+ * category counters are joined live from NUMBERS (zero for tombstones whose
+ * NUMBERS row is gone); they are informational only — lastActivity for
+ * display, the counters for the entry's rating.
  * </p>
  */
 public class DBBlocklistEntry {
@@ -20,6 +22,8 @@ public class DBBlocklistEntry {
 	private final String _phone;
 
 	private final int _votes;
+
+	private final int _heat;
 
 	private final long _lastPing;
 
@@ -35,13 +39,11 @@ public class DBBlocklistEntry {
 
 	private final int _fraud;
 
-	/**
-	 * Creates a {@link DBBlocklistEntry} including the live category counters.
-	 */
-	public DBBlocklistEntry(String phone, int votes, long lastPing,
+	private DBBlocklistEntry(String phone, int votes, int heat, long lastPing,
 			int legitimate, int ping, int poll, int advertising, int gamble, int fraud) {
 		_phone = phone;
 		_votes = votes;
+		_heat = heat;
 		_lastPing = lastPing;
 		_legitimate = legitimate;
 		_ping = ping;
@@ -52,11 +54,20 @@ public class DBBlocklistEntry {
 	}
 
 	/**
-	 * Creates a {@link DBBlocklistEntry} without category counters (CardDAV
-	 * pipeline — only phone, votes and last activity are rendered).
+	 * Creates a {@link DBBlocklistEntry} for the API download: live last
+	 * activity and category counters, no Heat class.
 	 */
-	public DBBlocklistEntry(String phone, int votes, long lastPing) {
-		this(phone, votes, lastPing, 0, 0, 0, 0, 0, 0);
+	public DBBlocklistEntry(String phone, int votes, long lastPing,
+			int legitimate, int ping, int poll, int advertising, int gamble, int fraud) {
+		this(phone, votes, 0, lastPing, legitimate, ping, poll, advertising, gamble, fraud);
+	}
+
+	/**
+	 * Creates a {@link DBBlocklistEntry} for the CardDAV pipeline: phone,
+	 * votes bucket and Heat class — nothing else is rendered.
+	 */
+	public DBBlocklistEntry(String phone, int votes, int heat) {
+		this(phone, votes, heat, 0, 0, 0, 0, 0, 0, 0);
 	}
 
 	/** The number in PhoneBlock ID format (see NumberAnalyzer). */
@@ -69,7 +80,12 @@ public class DBBlocklistEntry {
 		return _votes;
 	}
 
-	/** Last activity timestamp, frozen at publication time. */
+	/** The published Heat class (log4 of the decoded activity EMA). */
+	public int getHeat() {
+		return _heat;
+	}
+
+	/** Live last activity timestamp of the number. */
 	public long getLastPing() {
 		return _lastPing;
 	}
