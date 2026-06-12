@@ -963,9 +963,7 @@ public class DB {
 		// decays out, but the block as a whole stays hot) and lets the block decay out
 		// of wildcard-blocking once the spammer moves on.
 		addAggregationEmas(reports, phone, heatInc, spamEvidenceInc, legitEvidenceInc);
-		
-		pingRelatedNumbers(reports, phone, time);
-		
+
 		if (votes > 0) {
 			updateLocalization(reports, phone, dialPrefix, 0, 0, votes, heatInc, spamEvidenceInc, time);
 		}
@@ -1019,25 +1017,15 @@ public class DB {
 		}
 	}
 
-	/**
-	 * Updates the "last-ping" of all related numbers in the same block.
-	 * 
-	 * <p>
-	 * This ensures that numbers of mass spammers are only archived, if none of their numbers is active anymore.
-	 * </p>
-	 */
-	private void pingRelatedNumbers(SpamReports reports, String phone, long now) {
-		AggregationInfo aggregation10 = getAggregation10(reports, phone);
-		if (aggregation10.getCnt() >= MIN_AGGREGATE_10) {
-			String prefix = aggregation10.getPrefix();
-			
-			AggregationInfo aggregation100 = getAggregation100(reports, phone);
-			if (aggregation100.getCnt() >= MIN_AGGREGATE_100) {
-				prefix = aggregation100.getPrefix();
-			}
-			reports.sendPing(prefix, phone.length(), now);
-		}
-	}
+	// Removed: pingRelatedNumbers (#91). Bumping LASTPING on all spam
+	// siblings of a block kept mass-spammer numbers from the old
+	// inactivity-timeout archiving — the confidence model retired that
+	// mechanism (a number's blocklist life is its evidence decay, which
+	// LASTPING does not influence), and the mass-spammer case is covered by
+	// the block-level aggregation EMAs feeding wildcard blocking (#337). The
+	// ping only amplified writes: up to ~100 scattered NUMBERS row updates
+	// per search/vote, plus a daily NUMBERS_HISTORY row for every pinged
+	// sibling via the LASTPING-based change detection of updateHistory.
 
 	private static int delta(int oldVotes, int newVotes) {
 		boolean wasSpam = oldVotes > 0;
@@ -1283,10 +1271,8 @@ public class DB {
 				Rating newRating = rating(reports, phone);
 				updateRequired |= oldRating != newRating;
 			}
-
-			pingRelatedNumbers(reports, phone, created);
 		}
-		
+
 		return updateRequired;
 	}
 
@@ -2261,8 +2247,6 @@ public class DB {
 			reports.addReport(phone, null, 0, now, 0.0, 0.0, 0.0);
 			reports.incSearchCount(phone, now, heatInc);
 		}
-
-		pingRelatedNumbers(reports, phone, now);
 
 		// A search is a pure Heat signal — no classification impact, so no
 		// SPAM_EVIDENCE contribution to the locale row either.

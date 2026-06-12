@@ -219,6 +219,17 @@ public interface SpamReports {
 			""")
 	List<String> getRelatedNumbers(String prefix, int expectedLength, double minRawSpam);
 
+	/**
+	 * Stamps LASTPING on all spam-positive numbers of a block.
+	 *
+	 * <p>Only used by the one-time bootstrap of pre-PROPERTIES legacy
+	 * databases in {@code DB.setupSchema} (computing the initial aggregate
+	 * last-ping per block). The former hot-path caller
+	 * {@code pingRelatedNumbers} (#91) was removed: with the confidence
+	 * model, a number's blocklist life is its evidence decay — which
+	 * LASTPING does not influence — and the mass-spammer-block case is
+	 * covered by the aggregation EMAs feeding wildcard blocking (#337).</p>
+	 */
 	@Update("""
 			update NUMBERS s
 			set
