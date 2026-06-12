@@ -24,6 +24,7 @@
 #include "config.h"
 #include "crashreport.h"
 #include "firmware_update.h"
+#include "improv.h"
 #include "log_capture.h"
 #include "report_queue.h"
 #include "selftest.h"
@@ -198,6 +199,10 @@ void app_main(void)
     // via WPS-PBC works without baked credentials. example_connect
     // is kept for the QEMU/Ethernet path, where WPS does not apply.
 #if CONFIG_EXAMPLE_CONNECT_WIFI
+    // Improv serial provisioning must listen *before* wifi_connect()
+    // blocks: Wi-Fi setup without WPS (issue #372) happens exactly
+    // while the device is still waiting in pairing mode.
+    improv_start();
     ESP_ERROR_CHECK(wifi_connect());
 #else
     ESP_ERROR_CHECK(example_connect());
