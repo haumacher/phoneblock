@@ -28,6 +28,7 @@ import de.haumacher.phoneblock.carddav.resource.AddressBookCache;
 import de.haumacher.phoneblock.crawl.CrawlerService;
 import de.haumacher.phoneblock.crawl.FetchService;
 import de.haumacher.phoneblock.credits.ImapService;
+import de.haumacher.phoneblock.db.DBHealthMonitor;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.dns.DnsService;
 import de.haumacher.phoneblock.ftc.FtcImportService;
@@ -112,6 +113,7 @@ public class Application implements ServletContextListener {
 				new GoogleUpdateService())),
 			mail = new MailServiceStarter(),
 			db = new DBService(rnd, indexer, scheduler, mail),
+			new DBHealthMonitor(scheduler, db),
 			new DnsService(scheduler, db),
 			new EMailCheckService(db.getSessionFactory()),
 			new DisposableListService(scheduler::scheduler, db.getSessionFactory(), new MailCheckPropertyStore(db.getSessionFactory())),

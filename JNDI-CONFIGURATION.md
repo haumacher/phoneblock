@@ -36,6 +36,7 @@ Configuration for the embedded H2 database used by PhoneBlock.
 | `db/port` | Integer | `9095` | TCP port for external database access. Set to `0` to disable DB server |
 | `db/sendHelpMails` | Boolean | `false` | Automatically send help emails when user inactivity is detected |
 | `db/sendWelcomeMails` | Boolean | `false` | Send welcome emails after first blocklist synchronization |
+| `db/monitorIntervalMinutes` | Integer | `5` | Interval for logging H2 store health metrics (file size, fill rate, pinning sessions). Set to `0` to disable |
 
 ### Example Configuration
 

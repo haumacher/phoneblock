@@ -1344,6 +1344,13 @@ public class DB {
 	public SqlSession openSession() {
 		return _sessionFactory.openSession();
 	}
+
+	/**
+	 * The underlying {@link DataSource} for raw JDBC access outside of MyBatis transactions.
+	 */
+	public DataSource dataSource() {
+		return _dataSource;
+	}
 	
 	/**
 	 * Looks up all spam reports that were done after the given time in milliseconds since epoch.
