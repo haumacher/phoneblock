@@ -326,7 +326,7 @@ public class NumberTree {
 	static final int MAX_BUCKET_PREFIX_DEPTH = 15;
 
 	/**
-	 * Initial prefix depth used by {@link #createNumberBlocksByPrefix(int, int, String)}.
+	 * Initial prefix depth used by {@link #createNumberBlocksByPrefix(int, int)}.
 	 */
 	static final int INITIAL_BUCKET_PREFIX_DEPTH = 4;
 
@@ -346,21 +346,19 @@ public class NumberTree {
 	 * activity.
 	 * </p>
 	 */
-	public List<NumberBlock> createNumberBlocksByPrefix(int minVotes, int maxEntries, String dialPrefix) {
+	public List<NumberBlock> createNumberBlocksByPrefix(int minVotes, int maxEntries) {
 		List<WeightedNumber> weighted = new ArrayList<>();
 		createBlockEntries((number, votes, heat) -> {
 			if (votes < minVotes) {
 				return;
 			}
-			// Top-K ranking for the capped list: numbers from the caller's
-			// region first, then by published Heat class (currently-active
-			// spammers claim the slots), votes only as tiebreaker. Personal
-			// blacklist entries arrive with a votes weight far above any
-			// heat/votes combination and stay on top unconditionally.
+			// Top-K ranking for the capped list: by published per-region Heat
+			// class (numbers currently active in the *reporting* region claim
+			// the slots — where the number originates is irrelevant), votes
+			// only as tiebreaker. Personal blacklist entries arrive with a
+			// votes weight far above any heat/votes combination and stay on
+			// top unconditionally.
 			int weight = heat * 10_000 + votes;
-			if (number.startsWith(dialPrefix)) {
-				weight += 1_000_000;
-			}
 			weighted.add(new WeightedNumber(number, weight));
 		});
 

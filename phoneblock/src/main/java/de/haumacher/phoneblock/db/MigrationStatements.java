@@ -180,18 +180,16 @@ public interface MigrationStatements {
 	 * Seeds {@link SpamReports BLOCKLIST} from the published state stored on
 	 * NUMBERS (#342 / migration 39). Every row that has been part of a release
 	 * ({@code VERSION > 0}) gets one BLOCKLIST row: the bucket floor of its
-	 * published net evidence plus the log4 class of its decoded Heat, or a
-	 * {@code VOTES = 0} tombstone when the published net is already below the
-	 * lowest bucket — preserving the removal signal for clients that sync
-	 * across the migration boundary.
+	 * published net evidence, or a {@code VOTES = 0} tombstone when the
+	 * published net is already below the lowest bucket — preserving the
+	 * removal signal for clients that sync across the migration boundary.
 	 *
 	 * <p>The bucket thresholds are the EMA projections of the migration
-	 * moment ({@code DB.maxRawSpamAt(now, bucket)}); {@code heatDecode} is
-	 * the decode factor {@code Ema.decode(1, now, HEAT_TAU)}. All passed as
-	 * bind parameters because they cannot be SQL constants.</p>
+	 * moment ({@code DB.maxRawSpamAt(now, bucket)}), passed as bind
+	 * parameters because they cannot be SQL constants.</p>
 	 */
 	@Update("""
-			insert into BLOCKLIST (PHONE, VOTES, HEAT, VERSION)
+			insert into BLOCKLIST (PHONE, VOTES, VERSION)
 			select PHONE,
 				CASE WHEN PUBLISHED_SPAM_EVIDENCE - PUBLISHED_LEGIT_EVIDENCE >= #{t100} THEN 100
 				     WHEN PUBLISHED_SPAM_EVIDENCE - PUBLISHED_LEGIT_EVIDENCE >= #{t50} THEN 50
@@ -200,14 +198,28 @@ public interface MigrationStatements {
 				     WHEN PUBLISHED_SPAM_EVIDENCE - PUBLISHED_LEGIT_EVIDENCE >= #{t4} THEN 4
 				     WHEN PUBLISHED_SPAM_EVIDENCE - PUBLISHED_LEGIT_EVIDENCE >= #{t2} THEN 2
 				     ELSE 0 END,
-				CASE WHEN HEAT * #{heatDecode} < 1 THEN 0
-				     ELSE CAST(FLOOR(LN(HEAT * #{heatDecode}) / LN(4)) AS INTEGER) END,
 				VERSION
 			from NUMBERS
 			where VERSION > 0
 			""")
-	int seedBlocklist(double t2, double t4, double t10, double t20, double t50, double t100,
-		double heatDecode);
+	int seedBlocklist(double t2, double t4, double t10, double t20, double t50, double t100);
+
+	/**
+	 * Seeds {@code BLOCKLIST_LOCALE} from the live per-region activity EMAs
+	 * (#342 / migration 39). Must run after {@link #seedBlocklist} — only
+	 * currently visible BLOCKLIST entries get region rows. {@code heatDecode}
+	 * is the decode factor {@code Ema.decode(1, now, HEAT_TAU)}; classes that
+	 * decode below 1 stay absent.
+	 */
+	@Update("""
+			insert into BLOCKLIST_LOCALE (PHONE, DIAL, HEAT)
+			select l.PHONE, l.DIAL,
+				CAST(FLOOR(LN(l.HEAT * #{heatDecode}) / LN(4)) AS INTEGER)
+			from NUMBERS_LOCALE l
+			join BLOCKLIST b on b.PHONE = l.PHONE
+			where b.VOTES > 0 and l.HEAT * #{heatDecode} >= 1
+			""")
+	int seedBlocklistLocale(double heatDecode);
 
 	/** Drops the publication index after the BLOCKLIST seed (#342 / migration 39). */
 	@Update("DROP INDEX NUMBERS_VERSION_IDX")

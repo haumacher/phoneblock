@@ -520,16 +520,19 @@ public interface SpamReports {
 	List<DBNumberInfo> getReports();
 
 	/**
-	 * The published blocklist state (#342): bucket votes and Heat class
-	 * frozen at publication, tombstones excluded. Deterministic between
+	 * The published blocklist state (#342): bucket votes plus the activity
+	 * class of the given region (where the spam reports come from, #340),
+	 * both frozen at publication; tombstones excluded. Deterministic between
 	 * sweeps — used by the CardDAV pipeline so the address-book ETag does not
 	 * flap when the TTL-expired cache regenerates between two releases.
 	 */
 	@Select("""
-			select b.PHONE, b.VOTES, b.HEAT from BLOCKLIST b
+			select b.PHONE, b.VOTES, coalesce(bl.HEAT, 0) as HEAT
+			from BLOCKLIST b
+			left join BLOCKLIST_LOCALE bl on bl.PHONE = b.PHONE and bl.DIAL = #{dial}
 			where b.VOTES > 0
 			""")
-	List<DBBlocklistEntry> getPublishedReports();
+	List<DBBlocklistEntry> getPublishedReports(String dial);
 	
 	@Select("""
 			select PHONE from WHITELIST
@@ -755,26 +758,21 @@ public interface SpamReports {
 
 	/**
 	 * Publication sweep, addition/upgrade half (#342): merges the live
-	 * visibility state into the BLOCKLIST table, quantized to vote buckets
-	 * and Heat classes.
+	 * visibility state into the BLOCKLIST table, quantized to vote buckets.
 	 *
 	 * <p>The source select picks every number whose live net evidence reaches
-	 * the lowest bucket and computes its current vote bucket floor (2, 4, 10,
-	 * 20, 50, 100) and the log4 class of its decoded Heat. A BLOCKLIST row is
-	 * written only when one of the two <em>changed</em> — numbers drifting
-	 * inside their classes cause no write at all, which is what keeps the H2
-	 * page churn of a sweep proportional to actual class flips (Heat decays
-	 * one log4 class per ~4 weeks, so the steady-state republish volume is
-	 * about 1/28 of the published set per day). The redundant
-	 * {@code SPAM_EVIDENCE >= t2} predicate makes the candidate scan an index
-	 * range on {@code NUMBERS_SPAM_EVIDENCE_IDX} (legit evidence is
-	 * non-negative, so it is a true superset).</p>
+	 * the lowest bucket and computes its current bucket floor (2, 4, 10, 20,
+	 * 50, 100). A BLOCKLIST row is written only when the bucket <em>changed</em>
+	 * — numbers drifting inside their bucket cause no write at all, which is
+	 * what keeps the H2 page churn of a sweep proportional to actual bucket
+	 * flips. The redundant {@code SPAM_EVIDENCE >= t2} predicate makes the
+	 * candidate scan an index range on {@code NUMBERS_SPAM_EVIDENCE_IDX}
+	 * (legit evidence is non-negative, so it is a true superset).</p>
 	 *
 	 * <p>The bucket thresholds are per-sweep constants:
-	 * {@code tN = DB.maxRawSpamAt(now, N)}; {@code heatDecode} is the decode
-	 * factor {@code Ema.decode(1, now, HEAT_TAU)}.</p>
+	 * {@code tN = DB.maxRawSpamAt(now, N)}.</p>
 	 *
-	 * @return number of rows inserted or updated — class flips only.
+	 * @return number of rows inserted or updated — bucket flips only.
 	 */
 	@Update("""
 		merge into BLOCKLIST b
@@ -785,20 +783,17 @@ public interface SpamReports {
 				     WHEN s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE >= #{t20} THEN 20
 				     WHEN s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE >= #{t10} THEN 10
 				     WHEN s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE >= #{t4} THEN 4
-				     ELSE 2 END as VOTES,
-				CASE WHEN s.HEAT * #{heatDecode} < 1 THEN 0
-				     ELSE CAST(FLOOR(LN(s.HEAT * #{heatDecode}) / LN(4)) AS INTEGER) END as HEAT
+				     ELSE 2 END as VOTES
 			from NUMBERS s
 			where s.SPAM_EVIDENCE >= #{t2} and s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE >= #{t2}
 		) n on b.PHONE = n.PHONE
-		when matched and (b.VOTES <> n.VOTES or b.HEAT <> n.HEAT) then update set
-			VOTES = n.VOTES, HEAT = n.HEAT, VERSION = #{version}
-		when not matched then insert (PHONE, VOTES, HEAT, VERSION)
-			values (n.PHONE, n.VOTES, n.HEAT, #{version})
+		when matched and b.VOTES <> n.VOTES then update set
+			VOTES = n.VOTES, VERSION = #{version}
+		when not matched then insert (PHONE, VOTES, VERSION)
+			values (n.PHONE, n.VOTES, #{version})
 		""")
 	int publishBlocklistUpdates(long version,
-		double t2, double t4, double t10, double t20, double t50, double t100,
-		double heatDecode);
+		double t2, double t4, double t10, double t20, double t50, double t100);
 
 	/**
 	 * Publication sweep, removal half (#342): tombstones every published
@@ -809,12 +804,53 @@ public interface SpamReports {
 	 * @return number of rows tombstoned.
 	 */
 	@Update("""
-		update BLOCKLIST b set VOTES = 0, HEAT = 0, VERSION = #{version}
+		update BLOCKLIST b set VOTES = 0, VERSION = #{version}
 		where b.VOTES > 0
 		  and not exists (select 1 from NUMBERS s
 		      where s.PHONE = b.PHONE and s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE >= #{t2})
 		""")
 	int publishBlocklistRemovals(long version, double t2);
+
+	/**
+	 * Publication sweep, per-region activity half (#340/#342): merges the
+	 * log4 class of the decoded {@code NUMBERS_LOCALE.HEAT} into
+	 * BLOCKLIST_LOCALE for every currently visible BLOCKLIST entry. The
+	 * region is where the spam <em>reports</em> come from, not where the
+	 * number originates — CardDAV ranks its capped per-region lists by this
+	 * class. Writes only class flips; pure decay costs one class per two
+	 * Heat half-lives (~4 weeks). Classes below 1 stay absent (rank 0);
+	 * published rows decaying there are updated to 0 and swept by
+	 * {@link #cleanupBlocklistLocale} once the number itself drops off.
+	 *
+	 * @return number of rows inserted or updated — class flips only.
+	 */
+	@Update("""
+		merge into BLOCKLIST_LOCALE bl
+		using (
+			select l.PHONE, l.DIAL,
+				CASE WHEN l.HEAT * #{heatDecode} < 1 THEN 0
+				     ELSE CAST(FLOOR(LN(l.HEAT * #{heatDecode}) / LN(4)) AS INTEGER) END as HEAT
+			from NUMBERS_LOCALE l
+			join BLOCKLIST b on b.PHONE = l.PHONE
+			where b.VOTES > 0
+		) n on bl.PHONE = n.PHONE and bl.DIAL = n.DIAL
+		when matched and bl.HEAT <> n.HEAT then update set HEAT = n.HEAT
+		when not matched and n.HEAT > 0 then insert (PHONE, DIAL, HEAT)
+			values (n.PHONE, n.DIAL, n.HEAT)
+		""")
+	int publishBlocklistLocale(double heatDecode);
+
+	/**
+	 * Removes the per-region rows of numbers that are no longer visible
+	 * (tombstoned or pruned). Pure housekeeping — invisible numbers are
+	 * filtered before ranking, so this never changes published content.
+	 */
+	@Delete("""
+		delete from BLOCKLIST_LOCALE bl
+		where not exists (select 1 from BLOCKLIST b
+		    where b.PHONE = bl.PHONE and b.VOTES > 0)
+		""")
+	int cleanupBlocklistLocale();
 
 	/**
 	 * Removes tombstones that every client has had ample time to pick up.

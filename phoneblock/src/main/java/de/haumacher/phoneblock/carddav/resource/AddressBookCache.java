@@ -262,11 +262,13 @@ public class AddressBookCache implements ServletContextListener {
 
 		// Use the published blocklist state so the address-book content (and
 		// its ETag) only changes once per release, not on every individual
-		// vote (#342). Votes are the bucket floors and Heat the log4 class,
-		// both frozen at publication — no decoding, no decay; the view is
-		// independent of the read moment, so a TTL-expired cache regenerates
-		// byte-identical content between two releases.
-		List<DBBlocklistEntry> result = reports.getPublishedReports();
+		// vote (#342). Votes are the bucket floors and Heat the log4 class of
+		// the *region* the list is built for — where the spam reports come
+		// from, not where the number originates (#340): a GB number flooding
+		// German users tops German lists. Both frozen at publication, so a
+		// TTL-expired cache regenerates byte-identical content between two
+		// releases.
+		List<DBBlocklistEntry> result = reports.getPublishedReports(dialPrefix);
 		NumberTree numberTree = new NumberTree();
 		for (DBBlocklistEntry report : result) {
 			String phoneId = report.getPhone();
@@ -304,7 +306,7 @@ public class AddressBookCache implements ServletContextListener {
 			numberTree.markWildcards();
 		}
 		
-		return numberTree.createNumberBlocksByPrefix(listType.getMinVotes(), listType.getMaxLength(), listType.getDialPrefix());
+		return numberTree.createNumberBlocksByPrefix(listType.getMinVotes(), listType.getMaxLength());
 	}
 
 	/**

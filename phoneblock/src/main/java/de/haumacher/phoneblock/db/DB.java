@@ -1534,9 +1534,15 @@ public class DB {
 
 			int changed = reports.publishBlocklistUpdates(newVersion,
 				maxRawSpamAt(now, 2), maxRawSpamAt(now, 4), maxRawSpamAt(now, 10),
-				maxRawSpamAt(now, 20), maxRawSpamAt(now, 50), maxRawSpamAt(now, 100),
-				Ema.decode(1.0, now, Ema.HEAT_TAU_MILLIS));
+				maxRawSpamAt(now, 20), maxRawSpamAt(now, 50), maxRawSpamAt(now, 100));
 			changed += reports.publishBlocklistRemovals(newVersion, maxRawSpamAt(now, 2));
+
+			// Per-region activity classes flip independently of the vote
+			// buckets and change CardDAV content — they count towards the
+			// version bump so the caches get flushed. The cleanup of rows for
+			// numbers that dropped off is invisible housekeeping.
+			changed += reports.publishBlocklistLocale(Ema.decode(1.0, now, Ema.HEAT_TAU_MILLIS));
+			reports.cleanupBlocklistLocale();
 
 			// Tombstone pruning via watermark: the property pair states
 			// "version V existed at time T". Once T is a full retention window
@@ -2138,9 +2144,11 @@ public class DB {
 		long now = System.currentTimeMillis();
 		int seeded = migrations.seedBlocklist(
 			maxRawSpamAt(now, 2), maxRawSpamAt(now, 4), maxRawSpamAt(now, 10),
-			maxRawSpamAt(now, 20), maxRawSpamAt(now, 50), maxRawSpamAt(now, 100),
-			Ema.decode(1.0, now, Ema.HEAT_TAU_MILLIS));
+			maxRawSpamAt(now, 20), maxRawSpamAt(now, 50), maxRawSpamAt(now, 100));
 		LOG.info("Seeded {} BLOCKLIST rows.", seeded);
+
+		int seededLocale = migrations.seedBlocklistLocale(Ema.decode(1.0, now, Ema.HEAT_TAU_MILLIS));
+		LOG.info("Seeded {} BLOCKLIST_LOCALE rows.", seededLocale);
 
 		migrations.dropNumbersVersionIndex();
 		migrations.dropNumbersVersion();
