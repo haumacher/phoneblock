@@ -278,6 +278,9 @@ LAN, hat eine echte DHCP-IP und braucht keine NAT-Akrobatik mehr.
 
 - `main/main.c` — Boot-Sequenz, Netzverbindung, HTTPS-Selbsttest,
   TCP-Dummy-Server, Start des SIP-Tasks
+- `main/improv.{c,h}`, `main/improv_proto.{c,h}` — WLAN-Einrichtung ohne
+  WPS über den Browser-Installer (Improv-Serial-Protokoll auf UART0,
+  Issue #372)
 - `main/sip_register.{c,h}` — SIP-REGISTER mit Digest-Auth, select-basierter
   Empfangs-Loop für eingehende SIP-Pakete
 - `main/Kconfig.projbuild` — Konfigurationsmenü (Token, URL, Testnummer,
