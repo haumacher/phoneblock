@@ -403,7 +403,10 @@ static int build_register(sip_ctx_t *c, char *buf, int cap, bool with_auth)
     // old binding instead of piling up a fresh one per reboot/connection
     // — Telekom otherwise accumulates a contact per boot until each
     // expires. Omitted only if no device id is available (NVS failure).
-    char instance[64];
+    // ";+sip.instance=\"<urn:uuid:" + 36-char UUID + ">\"" is exactly 64
+    // chars; size generously so the closing quote can never be truncated
+    // (a clipped Contact param earns a 400 Bad Request from the registrar).
+    char instance[80];
     const char *device_id = config_device_id();
     if (device_id && device_id[0]) {
         snprintf(instance, sizeof(instance),
