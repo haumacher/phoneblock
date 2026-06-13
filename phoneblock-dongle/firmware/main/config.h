@@ -277,3 +277,11 @@ esp_err_t config_erase(void);
 // we'd add an explicit "device name" UI field before trying to
 // derive one automatically again.
 void config_dongle_username(char *out, size_t cap);
+
+// Stable per-device id (UUIDv4 string, 36 chars), minted on first boot
+// and persisted in NVS. Survives OTA updates; cleared only by a factory
+// reset. Returns a pointer to a static buffer valid for the process
+// lifetime (set once in config_load(), never mutated afterwards). Empty
+// string only if NVS was unavailable at boot. Used as the SIP
+// +sip.instance and embedded in the HTTP User-Agent.
+const char *config_device_id(void);

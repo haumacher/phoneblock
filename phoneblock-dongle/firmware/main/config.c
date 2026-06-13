@@ -3,6 +3,8 @@
 #include <string.h>
 
 #include "esp_log.h"
+#include "esp_random.h"
+#include "esp_mac.h"
 #include "nvs_flash.h"
 #include "nvs.h"
 
@@ -43,6 +45,7 @@ static const char *NS   = "phoneblock";
 #define K_PB_TOKEN      "pb_token"
 #define K_MIN_DIRECT    "min_direct"
 #define K_MIN_RANGE     "min_range"
+#define K_DEVICE_ID     "device_id"
 
 // Direct-vote default mirrors DB.MIN_VOTES on the server (the
 // confidence floor the public blocklist export already enforces).
@@ -129,10 +132,78 @@ static int load_int(nvs_handle_t h, const char *key, int def)
     return nvs_get_i32(h, key, &v) == ESP_OK ? (int)v : def;
 }
 
+// Stable per-device id, a UUIDv4 string ("xxxxxxxx-…-xxxxxxxxxxxx", 36
+// chars). Minted once on first boot and persisted; it survives OTA
+// updates and is only cleared by a factory reset (config_erase wipes the
+// whole namespace). Used as the SIP +sip.instance and in the HTTP
+// User-Agent so the registrar and the PhoneBlock service can recognise
+// the same physical device across reboots and token renewals.
+static char s_device_id[37] = "";
+
+static void format_uuid(const uint8_t b[16], char *out /* >= 37 */)
+{
+    snprintf(out, 37,
+        "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+        b[0], b[1], b[2],  b[3],  b[4],  b[5],  b[6],  b[7],
+        b[8], b[9], b[10], b[11], b[12], b[13], b[14], b[15]);
+}
+
+// Read the device id from NVS, or mint and persist one on first boot.
+// Runs single-threaded from config_load(), before any task that consumes
+// the id starts — so no locking is needed. Creating the namespace here on
+// a fresh device is harmless: the not-found and normal load paths below
+// resolve to identical defaults.
+static void ensure_device_id(void)
+{
+    nvs_handle_t h;
+    esp_err_t err = nvs_open(NS, NVS_READWRITE, &h);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "device-id nvs_open: %s", esp_err_to_name(err));
+        return;
+    }
+
+    size_t len = sizeof(s_device_id);
+    if (nvs_get_str(h, K_DEVICE_ID, s_device_id, &len) == ESP_OK
+            && s_device_id[0]) {
+        nvs_close(h);
+        ESP_LOGI(TAG, "device id %s", s_device_id);
+        return;
+    }
+
+    // First boot with this firmware: mint a v4 UUID. esp_fill_random
+    // provides the entropy; XOR the factory MAC into the node field so the
+    // id stays globally unique even if the RNG is weakly seeded this early.
+    uint8_t b[16];
+    esp_fill_random(b, sizeof(b));
+    uint8_t mac[6];
+    if (esp_efuse_mac_get_default(mac) == ESP_OK) {
+        for (int i = 0; i < 6; i++) b[10 + i] ^= mac[i];
+    }
+    b[6] = (uint8_t)((b[6] & 0x0F) | 0x40);  // version 4
+    b[8] = (uint8_t)((b[8] & 0x3F) | 0x80);  // variant 1 (RFC 4122)
+    format_uuid(b, s_device_id);
+
+    err = nvs_set_str(h, K_DEVICE_ID, s_device_id);
+    if (err == ESP_OK) err = nvs_commit(h);
+    nvs_close(h);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "device id persist failed: %s", esp_err_to_name(err));
+    } else {
+        ESP_LOGI(TAG, "minted device id %s", s_device_id);
+    }
+}
+
+const char *config_device_id(void)
+{
+    return s_device_id;
+}
+
 // --- Public API -----------------------------------------------------
 
 void config_load(void)
 {
+    ensure_device_id();
+
     nvs_handle_t h;
     esp_err_t err = nvs_open(NS, NVS_READONLY, &h);
     if (err == ESP_ERR_NVS_NOT_FOUND) {

@@ -398,6 +398,20 @@ static int build_register(sip_ctx_t *c, char *buf, int cap, bool with_auth)
 
     const char *identity = current_identity_user();
 
+    // Advertise a stable instance id (RFC 5626 / GRUU) so the registrar
+    // recognises a re-registration as the same device and REPLACES the
+    // old binding instead of piling up a fresh one per reboot/connection
+    // — Telekom otherwise accumulates a contact per boot until each
+    // expires. Omitted only if no device id is available (NVS failure).
+    char instance[64];
+    const char *device_id = config_device_id();
+    if (device_id && device_id[0]) {
+        snprintf(instance, sizeof(instance),
+                 ";+sip.instance=\"<urn:uuid:%s>\"", device_id);
+    } else {
+        instance[0] = '\0';
+    }
+
     int n = snprintf(buf, cap,
         "REGISTER %s SIP/2.0\r\n"
         "Via: SIP/2.0/%s %s:%d;branch=z9hG4bK%s;rport\r\n"
@@ -406,7 +420,7 @@ static int build_register(sip_ctx_t *c, char *buf, int cap, bool with_auth)
         "To: <sip:%s@%s>\r\n"
         "Call-ID: %s\r\n"
         "CSeq: %lu REGISTER\r\n"
-        "Contact: <sip:%s@%s:%d>\r\n"
+        "Contact: <sip:%s@%s:%d>%s\r\n"
         "Expires: %d\r\n"
         "User-Agent: phoneblock-dongle/0.1\r\n",
         request_uri,
@@ -416,7 +430,7 @@ static int build_register(sip_ctx_t *c, char *buf, int cap, bool with_auth)
         identity, config_sip_host(),
         c->call_id,
         (unsigned long)c->cseq,
-        identity, our_host, our_port,
+        identity, our_host, our_port, instance,
         config_sip_expires());
 
     if (with_auth && c->challenge.valid) {
