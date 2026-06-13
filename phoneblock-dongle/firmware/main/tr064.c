@@ -774,7 +774,7 @@ esp_err_t tr064_provision_sip_client(const char *host, int port,
     char pass_esc[96];
     xml_escape(user_buf,  user_esc,       sizeof(user_esc));
     xml_escape(pass_buf,  pass_esc,       sizeof(pass_esc));
-    xml_escape(phone_name ? phone_name : "Answerbot",
+    xml_escape(phone_name ? phone_name : "PhoneBlock",
                phone_name_esc, sizeof(phone_name_esc));
 
     char *args = malloc(768);

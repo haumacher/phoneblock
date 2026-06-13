@@ -105,7 +105,7 @@ Beide Schritte sind idempotent wiederholbar — ein zweiter Setup-Durchlauf
 ### Fritz!Box-seitig
 
 Nach der Auto-Provisionierung erscheint der Dongle unter
-**Telefonie → Telefoniegeräte** als IP-Telefon „Answerbot". In der
+**Telefonie → Telefoniegeräte** als IP-Telefon „PhoneBlock". In der
 **Rufbehandlung** sollte er auf alle eingehenden Rufnummern reagieren,
 und die echten Telefone bekommen eine **Klingelverzögerung von 3–5 s** —
 damit der Dongle Zeit für den PhoneBlock-API-Check hat und Spammer

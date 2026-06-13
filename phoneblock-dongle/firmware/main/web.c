@@ -717,7 +717,7 @@ static esp_err_t handle_fritzbox_setup(httpd_req_t *req)
     form_get(body, "phone_name", phone_name, sizeof(phone_name));
 
     if (!fritz_host[0]) strncpy(fritz_host, "fritz.box", sizeof(fritz_host) - 1);
-    if (!phone_name[0]) strncpy(phone_name, "Answerbot", sizeof(phone_name) - 1);
+    if (!phone_name[0]) strncpy(phone_name, "PhoneBlock", sizeof(phone_name) - 1);
 
     // Username is optional — mirror the Fritz!Box web UI that only
     // asks for a password and falls back to the default (last-used)
