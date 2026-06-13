@@ -126,6 +126,28 @@ static void test_parse_missing_fields(void)
     CHECK_BOOL("empty: invalid", false, ch.valid);
 }
 
+// stale=true means the nonce expired but the credentials are fine — the
+// register loop must retry with the fresh nonce instead of treating the
+// 401 as a rejection. Default (absent) and stale=false must read false.
+static void test_parse_stale(void)
+{
+    auth_challenge_t ch;
+
+    sip_auth_parse_challenge(
+        "Digest realm=\"tel.t-online.de\", nonce=\"n2\", "
+        "qop=\"auth\", stale=true",
+        &ch);
+    CHECK_BOOL("stale=true: parsed", true, ch.stale);
+    CHECK_BOOL("stale=true: still valid", true, ch.valid);
+
+    sip_auth_parse_challenge(
+        "Digest realm=\"r\", nonce=\"n\", stale=false", &ch);
+    CHECK_BOOL("stale=false: not stale", false, ch.stale);
+
+    sip_auth_parse_challenge("Digest realm=\"r\", nonce=\"n\"", &ch);
+    CHECK_BOOL("stale absent: not stale", false, ch.stale);
+}
+
 // ---------------------------------------------------------------------------
 // Effective-realm — the new Phase-3 behaviour
 // ---------------------------------------------------------------------------
@@ -200,6 +222,7 @@ int main(void)
     test_parse_unquoted_algorithm();
     test_parse_qop_list();
     test_parse_missing_fields();
+    test_parse_stale();
 
     test_effective_realm_default();
     test_effective_realm_override();

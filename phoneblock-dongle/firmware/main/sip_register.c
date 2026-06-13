@@ -462,13 +462,30 @@ static int sip_send_recv(sip_ctx_t *c, const char *tx, int tx_len,
     if (sip_transport_send(c->transport, tx, tx_len) < 0) {
         return -1;
     }
-    struct sockaddr_in from;
-    int r = sip_transport_recv(c->transport, SIP_REGISTER_RECV_TIMEOUT_MS,
+    // Wait for a complete SIP response until the budget runs out. A single
+    // recv returning 0 does NOT mean "no answer": on a stream transport
+    // (TLS/TCP) a TLS record boundary that doesn't line up with a SIP
+    // message boundary, a post-handshake record, or a partial read all
+    // surface as 0 here. The old one-shot code treated that as failure,
+    // which made TLS spuriously report "no response" a few hundred ms
+    // after sending even though the registrar answered. Keep looping on 0
+    // and only give up once the deadline is actually reached.
+    int64_t deadline = esp_timer_get_time()
+                     + (int64_t)SIP_REGISTER_RECV_TIMEOUT_MS * 1000;
+    int r = 0;
+    for (;;) {
+        int64_t remaining_us = deadline - esp_timer_get_time();
+        if (remaining_us <= 0) {
+            ESP_LOGW(TAG, "no response from registrar within %d ms",
+                     SIP_REGISTER_RECV_TIMEOUT_MS);
+            return -1;
+        }
+        struct sockaddr_in from;
+        r = sip_transport_recv(c->transport, (int)(remaining_us / 1000),
                                rx, rx_cap - 1, &from);
-    if (r <= 0) {
-        if (r == 0) ESP_LOGW(TAG, "no response from registrar within %d ms",
-                             SIP_REGISTER_RECV_TIMEOUT_MS);
-        return -1;
+        if (r < 0) return -1;   // transport error (already logged/reconnected)
+        if (r > 0) break;       // complete message
+        // r == 0: timeout slice or partial frame — keep waiting.
     }
     rx[r] = '\0';
     // Learn our public IP from the registrar's view (Via "received="), so
@@ -585,24 +602,60 @@ static register_outcome_t do_register(sip_ctx_t *c, int *granted_expires,
     ESP_LOGI(TAG, "challenge: realm=\"%s\" qop=\"%s\"",
              c->challenge.realm, c->challenge.qop);
 
-    // Resend with Authorization header.
-    c->cseq++;
-    tx_len = build_register(c, tx, SIP_TX_BUF_SIZE, true);
-    ESP_LOGI(TAG, "→ REGISTER with auth (%d bytes):\n%.*s", tx_len, tx_len, tx);
-    rx_len = sip_send_recv(c, tx, tx_len, rx, SIP_RX_BUF_SIZE);
-    if (rx_len < 0) {
-        if (err) snprintf(err, err_cap,
-            "REGISTER (with auth): no response from registrar");
-        result = REGISTER_TRANSIENT;
-        goto cleanup;
-    }
-    ESP_LOGI(TAG, "← %d bytes:\n%.*s", rx_len, rx_len, rx);
+    // Resend with Authorization header. A server may answer the first
+    // authenticated REGISTER with another 401/407 carrying stale=true and
+    // a fresh nonce — the credentials are fine, the nonce just needs
+    // refreshing. Telekom does this regularly because Via/Contact switch
+    // from the LAN IP to the learned public IP between the two requests,
+    // and the nonce is bound to that. Re-auth with the new nonce instead
+    // of declaring the auth rejected; a genuine wrong password yields a
+    // plain 401 (no stale) and still fails fast. Bounded so a misbehaving
+    // registrar that always says stale can't spin us forever.
+    const int max_stale_retries = 2;
+    for (int stale_retry = 0; ; stale_retry++) {
+        c->cseq++;
+        tx_len = build_register(c, tx, SIP_TX_BUF_SIZE, true);
+        ESP_LOGI(TAG, "→ REGISTER with auth (%d bytes):\n%.*s",
+                 tx_len, tx_len, tx);
+        rx_len = sip_send_recv(c, tx, tx_len, rx, SIP_RX_BUF_SIZE);
+        if (rx_len < 0) {
+            if (err) snprintf(err, err_cap,
+                "REGISTER (with auth): no response from registrar");
+            result = REGISTER_TRANSIENT;
+            goto cleanup;
+        }
+        ESP_LOGI(TAG, "← %d bytes:\n%.*s", rx_len, rx_len, rx);
 
-    status = parse_status_code(rx, rx_len);
-    ESP_LOGI(TAG, "← %d (authenticated)", status);
-    if (status != 200) {
+        status = parse_status_code(rx, rx_len);
+        if (status == 200) {
+            ESP_LOGI(TAG, "← %d (authenticated)", status);
+            break;
+        }
+
+        // Refresh the challenge and retry only when the server explicitly
+        // marked the nonce stale; otherwise this is a real rejection.
+        if ((status == 401 || status == 407)
+                && stale_retry < max_stale_retries) {
+            const char *h = find_header(rx, rx_len, "WWW-Authenticate");
+            if (!h) h = find_header(rx, rx_len, "Proxy-Authenticate");
+            if (h) {
+                char v[SIP_MAX_CHALLENGE + 64];
+                header_value(h, rx + rx_len, v, sizeof(v));
+                auth_challenge_t fresh;
+                sip_auth_parse_challenge(v, &fresh);
+                if (fresh.valid && fresh.stale) {
+                    c->challenge = fresh;
+                    ESP_LOGI(TAG, "← %d stale nonce → re-auth with fresh nonce",
+                             status);
+                    continue;
+                }
+            }
+        }
+
+        ESP_LOGI(TAG, "← %d (authenticated)", status);
         if (err) snprintf(err, err_cap,
-            "authentication rejected: %d — check SIP user/password/realm", status);
+            "authentication rejected: %d — check SIP user/password/realm",
+            status);
         ESP_LOGE(TAG, "authentication rejected: %d", status);
         result = REGISTER_DEFINITIVE;
         goto cleanup;

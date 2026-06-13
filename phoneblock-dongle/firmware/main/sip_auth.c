@@ -69,6 +69,11 @@ void sip_auth_parse_challenge(const char *header_value, auth_challenge_t *out)
             }
         } else if (key_len == 9 && strncasecmp(key, "algorithm", 9) == 0) {
             copy_value(val, val_len, out->algorithm, sizeof(out->algorithm));
+        } else if (key_len == 5 && strncasecmp(key, "stale", 5) == 0) {
+            // stale=true (case-insensitive, quoted or bare) means the
+            // nonce expired but the credentials are fine — retry with the
+            // fresh nonce rather than treating the 401 as a rejection.
+            out->stale = (val_len == 4 && strncasecmp(val, "true", 4) == 0);
         }
     }
 
