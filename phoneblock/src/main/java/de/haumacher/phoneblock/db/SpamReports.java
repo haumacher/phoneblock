@@ -714,28 +714,67 @@ public interface SpamReports {
 	
 	@Select("select CREATED from REVISION where id=#{rev}")
 	Long getRevisionDate(int rev);
-	
+
+	/**
+	 * Creation time of the most recent committed revision, or <code>null</code> if no revision
+	 * exists yet.
+	 *
+	 * <p>
+	 * This is the watermark for the next history snapshot. Reading the maximum committed timestamp
+	 * (instead of the timestamp of "current revision id minus one") keeps the watermark correct even
+	 * when a previous snapshot attempt failed and rolled back: the {@code IDENTITY} sequence behind
+	 * {@link #storeRevision(Rev)} advances even on a rolled-back insert, so the preceding id may
+	 * point to a revision that was never committed. Deriving the watermark from it would collapse
+	 * {@code lastSnapshot} to that gap's date (or to <code>0</code>), turning every following run
+	 * into a full-corpus snapshot.
+	 * </p>
+	 */
+	@Select("select max(CREATED) from REVISION")
+	Long getLastSnapshotTime();
+
 	@Select("select min(ID) from REVISION")
 	int getOldestRevision();
 
+	/**
+	 * Upper {@code PHONE} bound (inclusive) of the next batch of active numbers above
+	 * {@code fromPhone}, or <code>null</code> if no active number remains. "Active" means
+	 * {@code LASTPING > lastSnapshot}.
+	 *
+	 * <p>
+	 * Drives the {@code PHONE}-range batching of the history snapshot so that no single transaction
+	 * rewrites the whole table. The {@code PHONE} primary key makes the range scan cheap.
+	 * </p>
+	 */
+	@Select("""
+			select max(PHONE) from (
+				select s.PHONE from NUMBERS s
+				where s.LASTPING > #{lastSnapshot} and s.PHONE > #{fromPhone}
+				order by s.PHONE
+				limit #{batchSize}
+			)
+			""")
+	String nextHistoryBatchBound(long lastSnapshot, String fromPhone, int batchSize);
+
 	@Update("""
-			update NUMBERS_HISTORY 
-			set 
+			update NUMBERS_HISTORY
+			set
 				RMAX = #{rev} - 1
 			where
-				PHONE in (select s.PHONE from NUMBERS s where s.LASTPING > #{lastSnapshot}) and
-				RMAX = 0x7fffffff
+				RMAX = 0x7fffffff and
+				PHONE > #{fromPhone} and PHONE <= #{toPhone} and
+				PHONE in (select s.PHONE from NUMBERS s
+					where s.LASTPING > #{lastSnapshot} and s.PHONE > #{fromPhone} and s.PHONE <= #{toPhone})
 			""")
-	int outdateHistorySnapshot(int rev, long lastSnapshot);
-	
+	int outdateHistorySnapshot(int rev, long lastSnapshot, String fromPhone, String toPhone);
+
 	@Insert("""
 			insert into NUMBERS_HISTORY (RMIN, RMAX, PHONE, CALLS, VOTES, DOWN_VOTES, UP_VOTES, LEGITIMATE, PING, POLL, ADVERTISING, GAMBLE, FRAUD, SEARCHES) (
 				select #{rev}, 0x7fffffff, s.PHONE, s.CALLS, s.VOTES, s.DOWN_VOTES, s.UP_VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
-				where s.LASTPING > #{lastSnapshot}
+				where s.LASTPING > #{lastSnapshot} and s.PHONE > #{fromPhone} and s.PHONE <= #{toPhone}
 			)
 			""")
-	int createHistorySnapshot(int rev, long lastSnapshot);
-	
+	int createHistorySnapshot(int rev, long lastSnapshot, String fromPhone, String toPhone);
+
 	/**
 	 * Remove the backup (searches yesterday) from the current searches. Store the searches from the currently completed day into the backup.
 	 * @param lastSnapshot Time when the last revision was created.
@@ -746,12 +785,17 @@ public interface SpamReports {
 			set
 				s.SEARCHES_BACKUP = s.SEARCHES_CURRENT - s.SEARCHES_BACKUP,
 				s.SEARCHES_CURRENT = s.SEARCHES_CURRENT - s.SEARCHES_BACKUP
-			where s.LASTPING > #{lastSnapshot}
+			where s.LASTPING > #{lastSnapshot} and s.PHONE > #{fromPhone} and s.PHONE <= #{toPhone}
 			""")
-	int updateSearches(long lastSnapshot);
-	
-	@Delete("delete from NUMBERS_HISTORY where RMIN=#{id}")
-	int cleanRevision(int id);
+	int updateSearches(long lastSnapshot, String fromPhone, String toPhone);
+
+	/**
+	 * Deletes up to {@code batchSize} history rows of the given revision. Called repeatedly until it
+	 * returns fewer than {@code batchSize} rows, so dropping a large revision never happens in a
+	 * single oversized transaction.
+	 */
+	@Delete("delete from NUMBERS_HISTORY where RMIN=#{id} limit #{batchSize}")
+	int cleanRevision(int id, int batchSize);
 	
 	@Delete("delete from REVISION where ID=#{id}")
 	void removeRevision(int id);

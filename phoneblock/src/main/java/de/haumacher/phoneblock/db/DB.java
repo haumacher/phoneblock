@@ -2649,16 +2649,24 @@ public class DB {
 		}
 	}
 	
+	/**
+	 * Number of phone numbers processed per committed transaction while snapshotting or pruning
+	 * search history. Bounds the transient H2 MVStore growth of a single transaction: old page
+	 * versions can only be reclaimed once a transaction commits, so the whole history sweep used to
+	 * run as one transaction that inflated the database file far beyond its committed size.
+	 */
+	private static final int HISTORY_BATCH_SIZE = 10_000;
+
 	private void runUpdateHistory() {
 		LOG.info("Processing history.");
 		try {
-			updateHistory(365);
+			updateHistory(30);
 		} catch (Exception ex) {
 			LOG.error("Failed to process history.", ex);
 		}
 		LOG.info("Finished procssing history.");	}
 
-	/** 
+	/**
 	 * Creates a new snapshot of search history.
 	 */
 	public void updateHistory(int maxHistory) {
@@ -2667,31 +2675,90 @@ public class DB {
 	}
 
 	public void updateHistory(int maxHistory, long now) {
+		long lastSnapshot;
+		int newRevId;
+
+		// Advance the watermark in its own committed transaction. A failure during the (much larger)
+		// snapshot below then cannot roll back the new revision and leave the watermark frozen, which
+		// would otherwise turn every following run into a full-corpus snapshot.
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			
+
+			Long lastSnapshotDate = reports.getLastSnapshotTime();
+			lastSnapshot = lastSnapshotDate == null ? 0 : lastSnapshotDate.longValue();
+
 			Rev newRev = new Rev(now);
 			reports.storeRevision(newRev);
-			
-			int newRevId = newRev.getId();
-			
-			Long lastRevDate = reports.getRevisionDate(newRevId - 1);
-			long lastSnapshot = lastRevDate == null ? 0 : lastRevDate.longValue();
-			int updateCnt = reports.outdateHistorySnapshot(newRevId, lastSnapshot);
-			int insertCnt = reports.createHistorySnapshot(newRevId, lastSnapshot);
-			reports.updateSearches(lastSnapshot);
-			
-			LOG.info("Created revision {} with {} new and {} updated search entries.", newRevId, insertCnt - updateCnt, updateCnt);
-			
-			int oldestRev = reports.getOldestRevision();
-			if (newRevId - oldestRev >= maxHistory) {
-				int removedCnt = reports.cleanRevision(oldestRev);
-				reports.removeRevision(oldestRev);
-				
-				LOG.info("Dropped revision {} with {} search entries.", oldestRev, removedCnt);
-			}
-			
+			newRevId = newRev.getId();
+
 			session.commit();
+		}
+
+		// Snapshot the active numbers in PHONE-ordered batches, committing each batch separately so
+		// the H2 MVStore can reclaim old page versions between batches instead of growing the file
+		// until the whole snapshot commits.
+		int insertCnt = 0;
+		int updateCnt = 0;
+		String fromPhone = "";
+		while (true) {
+			try (SqlSession session = openSession()) {
+				SpamReports reports = session.getMapper(SpamReports.class);
+
+				String toPhone = reports.nextHistoryBatchBound(lastSnapshot, fromPhone, HISTORY_BATCH_SIZE);
+				if (toPhone == null) {
+					break;
+				}
+
+				updateCnt += reports.outdateHistorySnapshot(newRevId, lastSnapshot, fromPhone, toPhone);
+				insertCnt += reports.createHistorySnapshot(newRevId, lastSnapshot, fromPhone, toPhone);
+				reports.updateSearches(lastSnapshot, fromPhone, toPhone);
+
+				session.commit();
+				fromPhone = toPhone;
+			}
+		}
+
+		LOG.info("Created revision {} with {} new and {} updated search entries.", newRevId, insertCnt - updateCnt, updateCnt);
+
+		dropOldRevisions(newRevId, maxHistory);
+	}
+
+	/**
+	 * Drops all revisions older than the retention window {@code maxHistory}, each in its own batched
+	 * transaction. Unlike a "drop one per run" approach this also clears a backlog (e.g. after a data
+	 * migration that left many revisions behind) in a single run, without ever building one oversized
+	 * delete.
+	 */
+	private void dropOldRevisions(int newRevId, int maxHistory) {
+		while (true) {
+			int oldestRev;
+			try (SqlSession session = openSession()) {
+				oldestRev = session.getMapper(SpamReports.class).getOldestRevision();
+			}
+			if (newRevId - oldestRev < maxHistory) {
+				break;
+			}
+
+			int removedCnt = 0;
+			while (true) {
+				int removed;
+				try (SqlSession session = openSession()) {
+					SpamReports reports = session.getMapper(SpamReports.class);
+					removed = reports.cleanRevision(oldestRev, HISTORY_BATCH_SIZE);
+					session.commit();
+				}
+				removedCnt += removed;
+				if (removed < HISTORY_BATCH_SIZE) {
+					break;
+				}
+			}
+
+			try (SqlSession session = openSession()) {
+				session.getMapper(SpamReports.class).removeRevision(oldestRev);
+				session.commit();
+			}
+
+			LOG.info("Dropped revision {} with {} search entries.", oldestRev, removedCnt);
 		}
 	}
 	
