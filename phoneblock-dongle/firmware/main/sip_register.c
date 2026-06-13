@@ -37,8 +37,16 @@ static const char *TAG = "sip";
 #define SIP_RX_BUF_SIZE      4096
 #define SIP_TX_BUF_SIZE      2048
 // REGISTER round-trip wait: how long to block on the 401/200 response
-// before giving up. Old value, preserved for the same SIP retry timing.
-#define SIP_REGISTER_RECV_TIMEOUT_MS 3000
+// before giving up. Telekom takes several seconds to emit the final 200
+// of the *first* successful registration (the binding is provisioned in
+// their backend); 3 s missed it and wasted a full 30 s retry cycle. 10 s
+// catches it while staying well under the 20 s task watchdog. The wait is
+// sliced (SIP_REGISTER_RECV_SLICE_MS) so the watchdog is fed even when a
+// dead registrar makes us wait the whole budget.
+#define SIP_REGISTER_RECV_TIMEOUT_MS 10000
+// Per-select slice of the round-trip wait. Bounds how long a single
+// blocking recv runs before we loop back to feed the task watchdog.
+#define SIP_REGISTER_RECV_SLICE_MS    2000
 
 typedef enum {
     DIALOG_IDLE,        // no active call
@@ -474,18 +482,26 @@ static int sip_send_recv(sip_ctx_t *c, const char *tx, int tx_len,
                      + (int64_t)SIP_REGISTER_RECV_TIMEOUT_MS * 1000;
     int r = 0;
     for (;;) {
+        // Feed the task watchdog between slices so a long total wait (slow
+        // or dead registrar) can't trip the 20 s WDT mid-registration.
+        // Harmless no-op when this task isn't subscribed (initial register
+        // runs before esp_task_wdt_add()).
+        if (esp_task_wdt_status(NULL) == ESP_OK) esp_task_wdt_reset();
+
         int64_t remaining_us = deadline - esp_timer_get_time();
         if (remaining_us <= 0) {
             ESP_LOGW(TAG, "no response from registrar within %d ms",
                      SIP_REGISTER_RECV_TIMEOUT_MS);
             return -1;
         }
+        int slice_ms = (int)(remaining_us / 1000);
+        if (slice_ms > SIP_REGISTER_RECV_SLICE_MS)
+            slice_ms = SIP_REGISTER_RECV_SLICE_MS;
         struct sockaddr_in from;
-        r = sip_transport_recv(c->transport, (int)(remaining_us / 1000),
-                               rx, rx_cap - 1, &from);
+        r = sip_transport_recv(c->transport, slice_ms, rx, rx_cap - 1, &from);
         if (r < 0) return -1;   // transport error (already logged/reconnected)
         if (r > 0) break;       // complete message
-        // r == 0: timeout slice or partial frame — keep waiting.
+        // r == 0: slice expired or partial frame — keep waiting.
     }
     rx[r] = '\0';
     // Learn our public IP from the registrar's view (Via "received="), so
