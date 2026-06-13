@@ -106,10 +106,7 @@ Beide Schritte sind idempotent wiederholbar — ein zweiter Setup-Durchlauf
 
 Nach der Auto-Provisionierung erscheint der Dongle unter
 **Telefonie → Telefoniegeräte** als IP-Telefon „PhoneBlock". In der
-**Rufbehandlung** sollte er auf alle eingehenden Rufnummern reagieren,
-und die echten Telefone bekommen eine **Klingelverzögerung von 3–5 s** —
-damit der Dongle Zeit für den PhoneBlock-API-Check hat und Spammer
-wegschnappen kann, bevor ein Familienmitglied abnimmt.
+**Rufbehandlung** sollte er auf alle eingehenden Rufnummern reagieren.
 
 ## Spam-Ansage
 
