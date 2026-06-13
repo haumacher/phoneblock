@@ -23,6 +23,8 @@ import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.db.AggregationInfo;
 import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
+import de.haumacher.phoneblock.db.Confidence;
+import de.haumacher.phoneblock.db.Ema;
 import de.haumacher.phoneblock.db.DBNumberInfo;
 import de.haumacher.phoneblock.db.DBPersonalization;
 import de.haumacher.phoneblock.db.DBPhoneComment;
@@ -117,18 +119,33 @@ public class PrefixCheckServlet extends HttpServlet {
 			SpamReports reports = session.getMapper(SpamReports.class);
 			BlockList blocklist = session.getMapper(BlockList.class);
 
-			List<DBNumberInfo> communityMatches = reports.getPhoneInfosByHashPrefix(sha1Low, sha1High);
+			// Exclude numbers whose decoded net evidence rounds to 0 displayed votes
+			// (#300) — only return numbers that show at least one vote, matching the
+			// per-row votes computed below.
+			List<DBNumberInfo> communityMatches = reports.getPhoneInfosByHashPrefix(sha1Low, sha1High, db.maxRawSpam(1));
 			tCommunity = System.nanoTime();
 			List<DBPersonalization> personalMatches = blocklist.getPersonalizationsByHashPrefix(
 				auth.getUserId(), sha1Low, sha1High);
 			tPersonal = System.nanoTime();
 
 			Map<String, PhoneInfo> byPhone = new LinkedHashMap<>();
+			long now = System.currentTimeMillis();
 			for (DBNumberInfo n : communityMatches) {
+				// #342: same decay-aware vote-equivalent as /api/check and
+				// the blocklist API — decoded SPAM_EVIDENCE minus decoded
+				// LEGIT_EVIDENCE, floored at 0, rounded to int. Clients
+				// filtering `votes >= minVotes` see the same view here.
+				double decodedSpam = Ema.decode(n.getSpamEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
+				double decodedLegit = Ema.decode(n.getLegitEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
+				int votes = (int) Math.round(Math.max(0.0, decodedSpam - decodedLegit));
 				PhoneInfo pi = NumberAnalyzer.phoneInfoFromId(n.getPhone())
-					.setVotes(n.getVotes())
+					.setVotes(votes)
 					.setRating(DB.rating(n))
-					.setArchived(!n.isActive())
+					// Confidence-model surface (#334): populate spamConfidence and heat here
+					// too — this servlet builds PhoneInfo by hand and would otherwise leave
+					// them at the default 0, unlike the getPhoneApiInfo path.
+					.setSpamConfidence(Confidence.spamConfidence(decodedSpam, decodedLegit))
+					.setHeat(Ema.decodeRate(n.getRawHeat(), now, Ema.HEAT_TAU_MILLIS))
 					.setDateAdded(n.getAdded())
 					.setLastUpdate(n.getUpdated());
 				byPhone.put(n.getPhone(), pi);
@@ -136,13 +153,12 @@ public class PrefixCheckServlet extends HttpServlet {
 			for (DBPersonalization p : personalMatches) {
 				PhoneInfo pi = byPhone.get(p.getPhone());
 				if (pi == null) {
-					// Personal entry with no active community match. By construction the
-					// community row is either missing or archived (the community query
-					// already filters VOTES > 0 AND ACTIVE), so report archived=true and
-					// leave the vote counts at zero — they are not relevant either way.
+					// Personal entry with no community match. By construction the
+					// community row is either missing or below the visibility
+					// threshold (the community query filters net evidence ≥ floor),
+					// so leave the vote counts at zero — they are not relevant either way.
 					pi = NumberAnalyzer.phoneInfoFromId(p.getPhone())
-						.setRating(p.isBlocked() ? Rating.B_MISSED : Rating.A_LEGITIMATE)
-						.setArchived(true);
+						.setRating(p.isBlocked() ? Rating.B_MISSED : Rating.A_LEGITIMATE);
 					byPhone.put(p.getPhone(), pi);
 				}
 				if (p.isBlocked()) {

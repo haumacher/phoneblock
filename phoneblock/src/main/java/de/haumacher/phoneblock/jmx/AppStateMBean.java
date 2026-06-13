@@ -24,25 +24,10 @@ public interface AppStateMBean {
 	int getVotes();
 
 	/**
-	 * The total number of ratings received so far.
-	 */
-	int getRatings();
-
-	/**
 	 * The total number of web search requests answered so far.
 	 */
 	int getSearches();
 	
-	/**
-	 * The total numbers with active spam reports.
-	 */
-	int getActiveNumbers();
-	
-	/**
-	 * The total numbers with archived spam reports.
-	 */
-	int getArchivedNumbers();
-
 	/**
 	 * Triggers an update of the page with the given path in the indexing services.
 	 *

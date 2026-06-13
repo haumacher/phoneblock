@@ -1,17 +1,11 @@
 package de.haumacher.phoneblock.app.render.controller;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.thymeleaf.context.WebContext;
 
 import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.app.render.DefaultController;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
-import de.haumacher.phoneblock.db.Statistics;
-import de.haumacher.phoneblock.db.Status;
 import de.haumacher.phoneblock.db.settings.UserSettings;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -37,16 +31,10 @@ public class StatusController extends DefaultController {
 		request.setAttribute("topSpammers", DBService.getInstance().getTopSpamReports(15));
 		request.setAttribute("topSearches", DBService.getInstance().getTopSearchesOverall(15));
 
-		Status status = DBService.getInstance().getStatus(minVotes);
-		List<Statistics> statistic = status.getStatistics();
-		int cnt = 0;
-		Map<String, Integer> statistics = new HashMap<>();
-		for (Statistics s : statistic) {
-			statistics.put(s.getState(), s.getCnt());
-			cnt += s.getCnt();
-		}
-		statistics.put("total", cnt);
-		request.setAttribute("status", status);
-		request.setAttribute("statistics", statistics);
+		// Only the active blocklist size is shown — it counts through
+		// NUMBERS_SPAM_EVIDENCE_IDX. The former reported / total-votes /
+		// inactive figures each required a full-table scan and were dropped
+		// from the status page.
+		request.setAttribute("blocklistCount", DBService.getInstance().getActiveBlocklistCount(minVotes));
 	}
 }

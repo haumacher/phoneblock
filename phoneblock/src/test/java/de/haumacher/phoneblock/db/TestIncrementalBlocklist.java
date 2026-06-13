@@ -6,6 +6,7 @@ package de.haumacher.phoneblock.db;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Set;
@@ -13,7 +14,6 @@ import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
-import org.apache.ibatis.session.SqlSession;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,7 +65,11 @@ public class TestIncrementalBlocklist {
 		// Set minVisibleVotes to 10 (default)
 		_db.setMinVisibleVotes(10);
 
-		long time = 1000;
+		// Anchor near "now" so the confidence-model values (#338) read fresh —
+		// votes here become decoded SPAM_EVIDENCE projected to the request
+		// moment; the synthetic time = 1000 the original tests used would
+		// decay completely by the time the API reads them back.
+		long time = System.currentTimeMillis() - 10_000L;
 
 		// Add votes to a number, crossing the threshold of 10
 		// Each call to processVotes adds the specified votes
@@ -101,34 +105,42 @@ public class TestIncrementalBlocklist {
 	}
 
 	/**
-	 * Test that changes below minVisibleVotes do NOT trigger version updates.
+	 * Numbers below minVisibleVotes are published (bucket 4 — low-threshold
+	 * CardDAV lists need them) but never appear in the API blocklist, whose
+	 * server-side filter is minVisibleVotes.
 	 */
 	@Test
 	void testNoVersionUpdateBelowThreshold() {
 		// Set minVisibleVotes to 10
 		_db.setMinVisibleVotes(10);
 
-		long time = 1000;
+		// Anchor near "now" so the confidence-model values (#338) read fresh —
+		// votes here become decoded SPAM_EVIDENCE projected to the request
+		// moment; the synthetic time = 1000 the original tests used would
+		// decay completely by the time the API reads them back.
+		long time = System.currentTimeMillis() - 10_000L;
 
 		// Get initial version
 		long initialVersion = getCurrentVersion();
 
 		// Add votes that stay below the minVisibleVotes threshold
-		// This crosses thresholds 2 and 4, but not 10
-		processVotes("0111222333", 2, time++); // 2 votes - crosses threshold 2
-		processVotes("0111222333", 2, time++); // 4 votes - crosses threshold 4
-		processVotes("0111222333", 2, time++); // 6 votes - no threshold crossing
-		processVotes("0111222333", 2, time++); // 8 votes - no threshold crossing
+		processVotes("0111222333", 2, time++); // 2 votes - bucket 2
+		processVotes("0111222333", 2, time++); // 4 votes - bucket 4
+		processVotes("0111222333", 2, time++); // 6 votes - still bucket 4
+		processVotes("0111222333", 2, time++); // 8 votes - still bucket 4
 
-		// Assign versions - should NOT assign any since all crossings are below minVisibleVotes=10
+		// Publication happens from bucket 2 upward — the version moves even
+		// though the number stays below the API visibility filter.
 		long newVersion = assignVersions();
+		assertTrue(newVersion > initialVersion, "Bucket flips below minVisibleVotes are published, too");
 
-		// Version should not have changed
-		assertEquals(initialVersion, newVersion, "Version should not change for crossings below minVisibleVotes");
-
-		// The number should NOT appear in the blocklist (below minVisibleVotes)
+		// The number must NOT appear in the API blocklist (below minVisibleVotes)
 		Blocklist fullList = _db.getBlockListAPI();
 		assertTrue(fullList.getNumbers().isEmpty(), "Numbers below minVisibleVotes should not appear in blocklist");
+
+		// Another sweep without bucket movement leaves the version untouched —
+		// 8 votes stay in bucket 4.
+		assertEquals(newVersion, assignVersions(), "No bucket flip, no version bump");
 	}
 
 	/**
@@ -138,7 +150,11 @@ public class TestIncrementalBlocklist {
 	void testIncrementalSyncMultipleNumbers() {
 		_db.setMinVisibleVotes(10);
 
-		long time = 1000;
+		// Anchor near "now" so the confidence-model values (#338) read fresh —
+		// votes here become decoded SPAM_EVIDENCE projected to the request
+		// moment; the synthetic time = 1000 the original tests used would
+		// decay completely by the time the API reads them back.
+		long time = System.currentTimeMillis() - 10_000L;
 
 		// Number A: will cross threshold 10
 		for (int i = 0; i < 5; i++) {
@@ -188,7 +204,11 @@ public class TestIncrementalBlocklist {
 	void testDeletionWhenDroppingBelowThreshold() {
 		_db.setMinVisibleVotes(10);
 
-		long time = 1000;
+		// Anchor near "now" so the confidence-model values (#338) read fresh —
+		// votes here become decoded SPAM_EVIDENCE projected to the request
+		// moment; the synthetic time = 1000 the original tests used would
+		// decay completely by the time the API reads them back.
+		long time = System.currentTimeMillis() - 10_000L;
 
 		// Add a number with 10 votes
 		for (int i = 0; i < 5; i++) {
@@ -227,7 +247,11 @@ public class TestIncrementalBlocklist {
 		// Set a lower threshold
 		_db.setMinVisibleVotes(4);
 
-		long time = 1000;
+		// Anchor near "now" so the confidence-model values (#338) read fresh —
+		// votes here become decoded SPAM_EVIDENCE projected to the request
+		// moment; the synthetic time = 1000 the original tests used would
+		// decay completely by the time the API reads them back.
+		long time = System.currentTimeMillis() - 10_000L;
 
 		// Add 4 votes - should cross threshold 4
 		processVotes("0999888777", 2, time++);
@@ -249,7 +273,11 @@ public class TestIncrementalBlocklist {
 	void testEmptyIncrementalUpdate() {
 		_db.setMinVisibleVotes(10);
 
-		long time = 1000;
+		// Anchor near "now" so the confidence-model values (#338) read fresh —
+		// votes here become decoded SPAM_EVIDENCE projected to the request
+		// moment; the synthetic time = 1000 the original tests used would
+		// decay completely by the time the API reads them back.
+		long time = System.currentTimeMillis() - 10_000L;
 
 		// Add a number
 		for (int i = 0; i < 5; i++) {
@@ -265,89 +293,104 @@ public class TestIncrementalBlocklist {
 	}
 
 	/**
-	 * Test that archived numbers appear in incremental sync with votes=0.
+	 * Test that numbers falling below the visibility threshold appear in
+	 * incremental sync with votes=0 (the removal signal). With the
+	 * decay-aware model after #342 there is no separate ACTIVE flag —
+	 * raising {@code minVisibleVotes} simulates the natural decay-below-
+	 * threshold transition without waiting for time to pass.
 	 */
 	@Test
-	void testArchivedNumbersAppearInIncrementalSync() {
+	void testArchivedNumbersAppearInIncrementalSync() throws Exception {
 		_db.setMinVisibleVotes(10);
 
-		long time = 1000;
+		long time = System.currentTimeMillis() - 10_000L;
 
-		// Add a number with 10 votes (above minVisibleVotes)
+		// Add a number with 10 votes (above minVisibleVotes = 10)
 		for (int i = 0; i < 5; i++) {
 			processVotes("0333444555", 2, time++);
 		}
 
-		// Assign initial version
 		long version1 = assignVersions();
 
-		// Verify number is in full blocklist
 		Blocklist list1 = _db.getBlockListAPI();
 		assertEquals(1, list1.getNumbers().size());
 		assertEquals("+49333444555", list1.getNumbers().get(0).getPhone());
 		assertEquals(10, list1.getNumbers().get(0).getVotes());
 
-		// Archive the number by calling archiveReportsWithLowVotes with a far-future timestamp.
-		// The formula: VOTES - (before - LASTPING)/1000/60/60/24/7/weekPerVote < minVotes
-		// With a far-future 'before', the subtracted amount will exceed votes, making it < minVotes.
-		long farFuture = time + 365L * 24 * 60 * 60 * 1000; // ~1 year in the future
-		try (SqlSession session = _db.openSession()) {
-			SpamReports reports = session.getMapper(SpamReports.class);
-			int archived = reports.archiveReportsWithLowVotes(farFuture, DB.MIN_VOTES, 3);
-			assertTrue(archived > 0, "Number should have been archived");
-			session.commit();
+		// Simulate full decay: zero out SPAM_EVIDENCE directly so the row's
+		// visibility class flips from "above threshold" at the last snapshot
+		// to "below threshold" now. The next sweep notices the flip and bumps
+		// VERSION; clients on ?since=N see the row with votes=0.
+		try (Connection conn = _dataSource.getConnection();
+				PreparedStatement stmt = conn.prepareStatement(
+					"update NUMBERS set SPAM_EVIDENCE = 0 where PHONE = ?")) {
+			stmt.setString(1, "0333444555");
+			assertEquals(1, stmt.executeUpdate());
 		}
 
-		// Assign new version — the archive query now sets PENDING_UPDATE=true
 		long version2 = assignVersions();
-		assertTrue(version2 > version1, "Version should increment after archiving");
+		assertTrue(version2 > version1, "Version should increment after visibility-class flip");
 
-		// Incremental update since version1 should return the archived number with votes=0
 		Blocklist update = _db.getBlocklistUpdateAPI(version1);
 		assertEquals(1, update.getNumbers().size());
 		assertEquals("+49333444555", update.getNumbers().get(0).getPhone());
-		assertEquals(0, update.getNumbers().get(0).getVotes(), "Archived number should have votes=0 in incremental sync");
+		assertEquals(0, update.getNumbers().get(0).getVotes(),
+			"Row that fell below the new threshold appears as a removal (votes=0)");
 
-		// Full blocklist should no longer contain the archived number
 		Blocklist list2 = _db.getBlockListAPI();
-		assertTrue(list2.getNumbers().isEmpty(), "Archived number should not appear in full blocklist");
+		assertTrue(list2.getNumbers().isEmpty(),
+			"Row below current visibility threshold must not appear in full blocklist");
 	}
 
 	/**
-	 * Test that recent activity (votes added without threshold crossing) triggers an incremental update.
+	 * Votes that stay inside the published bucket cause no re-publication:
+	 * no version bump, no incremental-sync traffic. Only crossing a bucket
+	 * boundary republishes the number (#342).
 	 */
 	@Test
-	void testRecentActivityTriggersIncrementalUpdate() {
+	void testNoUpdateWithinBucket() {
 		_db.setMinVisibleVotes(10);
 
-		long time = 1000;
+		// Anchor near "now" so the confidence-model values (#338) read fresh —
+		// votes here become decoded SPAM_EVIDENCE projected to the request
+		// moment; the synthetic time = 1000 the original tests used would
+		// decay completely by the time the API reads them back.
+		long time = System.currentTimeMillis() - 10_000L;
 
-		// Create a number with 10 votes (crosses threshold 10)
+		// Create a number with 10 votes (bucket 10)
 		for (int i = 0; i < 5; i++) {
 			processVotes("0200300400", 2, time++);
 		}
-		// time is now 1005, LASTPING is 1004
 
-		// Record lastAssignTime as time-1 (1004) so that lastAssignTime < LASTPING of next vote
-		long assignTime1 = time - 1;
-		long version1 = assignVersions(assignTime1);
+		long version1 = assignVersions(time);
 		assertTrue(version1 > DB.INITIAL_BLOCKLIST_VERSION);
 
-		// Add 2 more votes (12 total, no threshold crossing — next is at 20)
-		// This sets LASTPING to max(1004, 1005) = 1005
+		// Add 2 more votes (12 total — still bucket 10, next boundary is 20)
 		processVotes("0200300400", 2, time++);
-		// time is now 1006, LASTPING is 1005
 
-		// Assign version — lastAssignTime=1004 means LASTPING(1005) > 1004 triggers inclusion
 		long version2 = assignVersions(time);
-		assertTrue(version2 > version1, "Version should increment for recently-active number");
+		assertEquals(version1, version2, "Votes inside the bucket must not republish");
 
-		// Incremental update since version1 should return the number
 		Blocklist update = _db.getBlocklistUpdateAPI(version1);
-		assertEquals(1, update.getNumbers().size());
-		assertEquals("+49200300400", update.getNumbers().get(0).getPhone());
-		assertEquals(12, update.getNumbers().get(0).getVotes(), "Votes should be the actual count");
-		assertTrue(update.getNumbers().get(0).getLastActivity() > 0, "lastActivity should be non-zero");
+		assertTrue(update.getNumbers().isEmpty(), "No bucket flip, no incremental entry");
+
+		// Published votes stay at the frozen bucket floor.
+		Blocklist fullList = _db.getBlockListAPI();
+		assertEquals(1, fullList.getNumbers().size());
+		assertEquals(10, fullList.getNumbers().get(0).getVotes(), "Published votes are the bucket floor");
+
+		// Crossing the next boundary (20) republishes.
+		for (int i = 0; i < 4; i++) {
+			processVotes("0200300400", 2, time++);
+		}
+		long version3 = assignVersions(time);
+		assertTrue(version3 > version2, "Bucket flip must republish");
+
+		Blocklist update2 = _db.getBlocklistUpdateAPI(version2);
+		assertEquals(1, update2.getNumbers().size());
+		assertEquals("+49200300400", update2.getNumbers().get(0).getPhone());
+		assertEquals(20, update2.getNumbers().get(0).getVotes(), "Votes are the new bucket floor");
+		assertTrue(update2.getNumbers().get(0).getLastActivity() > 0, "lastActivity should be non-zero");
 	}
 
 	/**
@@ -357,7 +400,11 @@ public class TestIncrementalBlocklist {
 	void testLastActivityInFullAndIncrementalSync() {
 		_db.setMinVisibleVotes(10);
 
-		long time = 1000;
+		// Anchor near "now" so the confidence-model values (#338) read fresh —
+		// votes here become decoded SPAM_EVIDENCE projected to the request
+		// moment; the synthetic time = 1000 the original tests used would
+		// decay completely by the time the API reads them back.
+		long time = System.currentTimeMillis() - 10_000L;
 
 		// Create a number with 10 votes
 		for (int i = 0; i < 5; i++) {
@@ -385,57 +432,22 @@ public class TestIncrementalBlocklist {
 	}
 
 	/**
-	 * Assigns version numbers to pending updates (simulates BlocklistVersionService).
-	 * Uses Long.MAX_VALUE as "now" so that the since-based activity detection does not
-	 * interfere with tests that don't explicitly test it (their fake timestamps are always
-	 * less than MAX_VALUE, so all activity is caught on first call but none on subsequent
-	 * calls after lastAssignTime is set to MAX_VALUE).
+	 * Runs a publication sweep (simulates BlocklistVersionService). Uses
+	 * {@code System.currentTimeMillis()} as the sweep moment so the projected
+	 * bucket thresholds in {@link DB#maxRawSpamAt} stay finite.
 	 */
 	private long assignVersions() {
-		return assignVersions(Long.MAX_VALUE);
+		return assignVersions(System.currentTimeMillis());
 	}
 
 	/**
-	 * Assigns version numbers to pending updates using the given timestamp as "now".
+	 * Runs a publication sweep using the given timestamp as "now".
 	 */
 	private long assignVersions(long now) {
-		try (SqlSession session = _db.openSession()) {
-			Users users = session.getMapper(Users.class);
-			SpamReports reports = session.getMapper(SpamReports.class);
-
-			String versionStr = users.getProperty("blocklist.version");
-			long currentVersion = (versionStr != null) ? Long.parseLong(versionStr) : DB.INITIAL_BLOCKLIST_VERSION;
-
-			String lastAssignTimeStr = users.getProperty("blocklist.lastAssignTime");
-			long lastAssignTime = (lastAssignTimeStr != null) ? Long.parseLong(lastAssignTimeStr) : 0;
-
-			int updated = reports.assignVersionToPendingUpdates(currentVersion + 1, lastAssignTime, _db.getMinVisibleVotes());
-
-			if (updated > 0) {
-				long newVersion = currentVersion + 1;
-				if (versionStr != null) {
-					users.updateProperty("blocklist.version", String.valueOf(newVersion));
-				} else {
-					users.addProperty("blocklist.version", String.valueOf(newVersion));
-				}
-				if (lastAssignTimeStr != null) {
-					users.updateProperty("blocklist.lastAssignTime", String.valueOf(now));
-				} else {
-					users.addProperty("blocklist.lastAssignTime", String.valueOf(now));
-				}
-				session.commit();
-				return newVersion;
-			}
-
-			return currentVersion;
-		}
+		return _db.publishBlocklist(now);
 	}
 
 	private long getCurrentVersion() {
-		try (SqlSession session = _db.openSession()) {
-			Users users = session.getMapper(Users.class);
-			String versionStr = users.getProperty("blocklist.version");
-			return (versionStr != null) ? Long.parseLong(versionStr) : DB.INITIAL_BLOCKLIST_VERSION;
-		}
+		return _db.getBlocklistVersion();
 	}
 }

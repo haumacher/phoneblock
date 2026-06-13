@@ -192,6 +192,15 @@ public class DBService implements IDBService, ServletContextListener {
 	}
 
 	/**
+	 * The number of connections currently checked out of the connection pool, or <code>-1</code>
+	 * if no pool is active. A steadily climbing value indicates a connection leak.
+	 */
+	public int getActiveConnections() {
+		JdbcConnectionPool pool = _pool;
+		return pool == null ? -1 : pool.getActiveConnections();
+	}
+
+	/**
 	 * A {@link SqlSessionFactory} that lazily delegates to the underlying database.
 	 *
 	 * <p>

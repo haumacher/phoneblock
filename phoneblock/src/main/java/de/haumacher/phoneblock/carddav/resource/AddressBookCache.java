@@ -20,7 +20,7 @@ import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.analysis.NumberBlock;
 import de.haumacher.phoneblock.analysis.NumberTree;
 import de.haumacher.phoneblock.db.BlockList;
-import de.haumacher.phoneblock.db.DBNumberInfo;
+import de.haumacher.phoneblock.db.DBBlocklistEntry;
 import de.haumacher.phoneblock.db.IDBService;
 import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.Users;
@@ -260,12 +260,17 @@ public class AddressBookCache implements ServletContextListener {
 		boolean nationalOnly = listType.isNationalOnly();
 		String dialPrefix = listType.getDialPrefix();
 
-		// Use the snapshot from the last released blocklist version so the address-book
-		// content (and its ETag) only changes once per release, not on every individual
-		// vote. PUBLISHED_VOTES is aliased into VOTES, PUBLISHED_LASTPING into LASTPING.
-		List<DBNumberInfo> result = reports.getPublishedReports();
+		// Use the published blocklist state so the address-book content (and
+		// its ETag) only changes once per release, not on every individual
+		// vote (#342). Votes are the bucket floors and Heat the log4 class of
+		// the *region* the list is built for — where the spam reports come
+		// from, not where the number originates (#340): a GB number flooding
+		// German users tops German lists. Both frozen at publication, so a
+		// TTL-expired cache regenerates byte-identical content between two
+		// releases.
+		List<DBBlocklistEntry> result = reports.getPublishedReports(dialPrefix);
 		NumberTree numberTree = new NumberTree();
-		for (DBNumberInfo report : result) {
+		for (DBBlocklistEntry report : result) {
 			String phoneId = report.getPhone();
 			String phone = NumberAnalyzer.toInternationalFormat(phoneId);
 
@@ -274,10 +279,7 @@ public class AddressBookCache implements ServletContextListener {
 				continue;
 			}
 
-			int votes = report.getVotes();
-			int ageInDays = (int) ((now - report.getLastPing()) / 1000 / 60 / 60 / 24);
-			
-			numberTree.insert(phone, votes, ageInDays);
+			numberTree.insert(phone, report.getVotes(), report.getHeat());
 		}
 
 		// Enter white-listed numbers with with negative weight to prevent adding those numbers to wildcard blocks. 
@@ -304,7 +306,7 @@ public class AddressBookCache implements ServletContextListener {
 			numberTree.markWildcards();
 		}
 		
-		return numberTree.createNumberBlocksByPrefix(listType.getMinVotes(), listType.getMaxLength(), listType.getDialPrefix());
+		return numberTree.createNumberBlocksByPrefix(listType.getMinVotes(), listType.getMaxLength());
 	}
 
 	/**

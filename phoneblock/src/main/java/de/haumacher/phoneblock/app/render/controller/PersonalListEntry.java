@@ -17,16 +17,13 @@ public class PersonalListEntry {
 	private final RatingDisplay rating;
 	private final int votes;
 	private final int votesWildcard;
-	private final boolean archived;
 
-	public PersonalListEntry(String phone, String comment, RatingDisplay rating, int votes, int votesWildcard,
-			boolean archived) {
+	public PersonalListEntry(String phone, String comment, RatingDisplay rating, int votes, int votesWildcard) {
 		this.phone = phone;
 		this.comment = comment;
 		this.rating = rating;
 		this.votes = votes;
 		this.votesWildcard = votesWildcard;
-		this.archived = archived;
 	}
 
 	/** Phone number ID as stored in the database (used to identify the row in form posts). */
@@ -52,16 +49,6 @@ public class PersonalListEntry {
 	/** Combined community votes including matching wildcard/aggregation blocks. */
 	public int getVotesWildcard() {
 		return votesWildcard;
-	}
-
-	/**
-	 * Whether the community {@code NUMBERS} row backing the displayed votes is archived
-	 * (inactive). Consumers should suppress the vote tags in that case to stay consistent
-	 * with the {@code /api/check-prefix} response, which filters archived rows out at SQL
-	 * level.
-	 */
-	public boolean isArchived() {
-		return archived;
 	}
 
 }

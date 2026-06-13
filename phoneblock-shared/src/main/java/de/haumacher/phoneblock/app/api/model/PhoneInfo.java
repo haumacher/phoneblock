@@ -33,9 +33,6 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	/** @see #isBlackListed() */
 	private static final String BLACK_LISTED__PROP = "blackListed";
 
-	/** @see #isArchived() */
-	private static final String ARCHIVED__PROP = "archived";
-
 	/** @see #getDateAdded() */
 	private static final String DATE_ADDED__PROP = "dateAdded";
 
@@ -51,6 +48,15 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	/** @see #getUserComment() */
 	private static final String USER_COMMENT__PROP = "userComment";
 
+	/** @see #getHeat() */
+	private static final String HEAT__PROP = "heat";
+
+	/** @see #getSpamConfidence() */
+	private static final String SPAM_CONFIDENCE__PROP = "spamConfidence";
+
+	/** @see #getCalls() */
+	private static final String CALLS__PROP = "calls";
+
 	private String _phone = "";
 
 	private int _votes = 0;
@@ -63,8 +69,6 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 
 	private boolean _blackListed = false;
 
-	private boolean _archived = false;
-
 	private long _dateAdded = 0L;
 
 	private long _lastUpdate = 0L;
@@ -74,6 +78,12 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	private String _location = null;
 
 	private String _userComment = null;
+
+	private double _heat = 0.0d;
+
+	private int _spamConfidence = 0;
+
+	private int _calls = 0;
 
 	/**
 	 * Creates a {@link PhoneInfo} instance.
@@ -210,26 +220,6 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	}
 
 	/**
-	 * Whether this number no longer is on the blocklist, because no votes have been received for a long time.
-	 */
-	public final boolean isArchived() {
-		return _archived;
-	}
-
-	/**
-	 * @see #isArchived()
-	 */
-	public de.haumacher.phoneblock.app.api.model.PhoneInfo setArchived(boolean value) {
-		internalSetArchived(value);
-		return this;
-	}
-
-	/** Internal setter for {@link #isArchived()} without chain call utility. */
-	protected final void internalSetArchived(boolean value) {
-		_archived = value;
-	}
-
-	/**
 	 * Date when this number was added to the SPAM database (in milliseconds since epoch).
 	 */
 	public final long getDateAdded() {
@@ -354,6 +344,78 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 		return _userComment != null;
 	}
 
+	/**
+	 * Recent-activity rate in reports per day, derived from the confidence model (issue #300).
+	 *
+	 * <p>
+	 * The current reports-per-day rate, derived from the decayed <code>HEAT</code> EMA at request time — how loud this number is <em>right now</em>, with a half-life of about two weeks. At a steady rate of <i>r</i> reports per day it converges to ≈ <i>r</i>, so the value reads directly as that rate without needing to know the decay constant. Drives ranking on space-limited lists (Fritz!Box phonebook, dongle) and Heat-based archiving — it is <em>not</em> the spam-or-not signal; that is {@link #getSpamConfidence()}.
+	 * </p>
+	 */
+	public final double getHeat() {
+		return _heat;
+	}
+
+	/**
+	 * @see #getHeat()
+	 */
+	public de.haumacher.phoneblock.app.api.model.PhoneInfo setHeat(double value) {
+		internalSetHeat(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getHeat()} without chain call utility. */
+	protected final void internalSetHeat(double value) {
+		_heat = value;
+	}
+
+	/**
+	 * Confidence (0–100) that this number is spam, derived from the confidence model (issue #300).
+	 *
+	 * <p>
+	 * Computed as a Wilson lower bound on <code>SPAM_EVIDENCE / (SPAM_EVIDENCE + LEGIT_EVIDENCE)</code>, decayed to the request time on a ~4-month half-life. The evidence mass <code>SPAM + LEGIT</code> is the denominator, so a number with two spam reports and nothing else reads low confidence ("maybe accidental"), and a hotly-contested number with 1000 reports each side also reads low ("disputed"). High values require both directional evidence <em>and</em> mass.
+	 * </p>
+	 */
+	public final int getSpamConfidence() {
+		return _spamConfidence;
+	}
+
+	/**
+	 * @see #getSpamConfidence()
+	 */
+	public de.haumacher.phoneblock.app.api.model.PhoneInfo setSpamConfidence(int value) {
+		internalSetSpamConfidence(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getSpamConfidence()} without chain call utility. */
+	protected final void internalSetSpamConfidence(int value) {
+		_spamConfidence = value;
+	}
+
+	/**
+	 * Total number of calls from this number that PhoneBlock has intercepted.
+	 *
+	 * <p>
+	 * A monotonic lifetime counter (<code>NUMBERS.CALLS</code>) incremented once per intercepted call: a call answered by the cloud answer bot, or a call reported as blocked by the mobile app or dongle via <code>/api/report-call</code>. Unlike {@link #getVotes()} and {@link #getHeat()} this value does not decay; it reflects the cumulative protection PhoneBlock provided for this number.
+	 * </p>
+	 */
+	public final int getCalls() {
+		return _calls;
+	}
+
+	/**
+	 * @see #getCalls()
+	 */
+	public de.haumacher.phoneblock.app.api.model.PhoneInfo setCalls(int value) {
+		internalSetCalls(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getCalls()} without chain call utility. */
+	protected final void internalSetCalls(int value) {
+		_calls = value;
+	}
+
 	/** Reads a new instance from the given reader. */
 	public static de.haumacher.phoneblock.app.api.model.PhoneInfo readPhoneInfo(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
 		de.haumacher.phoneblock.app.api.model.PhoneInfo result = new de.haumacher.phoneblock.app.api.model.PhoneInfo();
@@ -381,8 +443,6 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 		out.value(isWhiteListed());
 		out.name(BLACK_LISTED__PROP);
 		out.value(isBlackListed());
-		out.name(ARCHIVED__PROP);
-		out.value(isArchived());
 		out.name(DATE_ADDED__PROP);
 		out.value(getDateAdded());
 		out.name(LAST_UPDATE__PROP);
@@ -399,6 +459,12 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 			out.name(USER_COMMENT__PROP);
 			out.value(getUserComment());
 		}
+		out.name(HEAT__PROP);
+		out.value(getHeat());
+		out.name(SPAM_CONFIDENCE__PROP);
+		out.value(getSpamConfidence());
+		out.name(CALLS__PROP);
+		out.value(getCalls());
 	}
 
 	@Override
@@ -410,12 +476,14 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 			case VOTES_WILDCARD__PROP: setVotesWildcard(in.nextInt()); break;
 			case WHITE_LISTED__PROP: setWhiteListed(in.nextBoolean()); break;
 			case BLACK_LISTED__PROP: setBlackListed(in.nextBoolean()); break;
-			case ARCHIVED__PROP: setArchived(in.nextBoolean()); break;
 			case DATE_ADDED__PROP: setDateAdded(in.nextLong()); break;
 			case LAST_UPDATE__PROP: setLastUpdate(in.nextLong()); break;
 			case LABEL__PROP: setLabel(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case LOCATION__PROP: setLocation(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case USER_COMMENT__PROP: setUserComment(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case HEAT__PROP: setHeat(in.nextDouble()); break;
+			case SPAM_CONFIDENCE__PROP: setSpamConfidence(in.nextInt()); break;
+			case CALLS__PROP: setCalls(in.nextInt()); break;
 			default: super.readField(in, field);
 		}
 	}
@@ -441,9 +509,6 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 	/** XML attribute or element name of a {@link #isBlackListed} property. */
 	private static final String BLACK_LISTED__XML_ATTR = "black-listed";
 
-	/** XML attribute or element name of a {@link #isArchived} property. */
-	private static final String ARCHIVED__XML_ATTR = "archived";
-
 	/** XML attribute or element name of a {@link #getDateAdded} property. */
 	private static final String DATE_ADDED__XML_ATTR = "date-added";
 
@@ -458,6 +523,15 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 
 	/** XML attribute or element name of a {@link #getUserComment} property. */
 	private static final String USER_COMMENT__XML_ATTR = "user-comment";
+
+	/** XML attribute or element name of a {@link #getHeat} property. */
+	private static final String HEAT__XML_ATTR = "heat";
+
+	/** XML attribute or element name of a {@link #getSpamConfidence} property. */
+	private static final String SPAM_CONFIDENCE__XML_ATTR = "spam-confidence";
+
+	/** XML attribute or element name of a {@link #getCalls} property. */
+	private static final String CALLS__XML_ATTR = "calls";
 
 	@Override
 	public String getXmlTagName() {
@@ -478,12 +552,14 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 		out.writeAttribute(VOTES_WILDCARD__XML_ATTR, Integer.toString(getVotesWildcard()));
 		out.writeAttribute(WHITE_LISTED__XML_ATTR, Boolean.toString(isWhiteListed()));
 		out.writeAttribute(BLACK_LISTED__XML_ATTR, Boolean.toString(isBlackListed()));
-		out.writeAttribute(ARCHIVED__XML_ATTR, Boolean.toString(isArchived()));
 		out.writeAttribute(DATE_ADDED__XML_ATTR, Long.toString(getDateAdded()));
 		out.writeAttribute(LAST_UPDATE__XML_ATTR, Long.toString(getLastUpdate()));
 		out.writeAttribute(LABEL__XML_ATTR, getLabel());
 		out.writeAttribute(LOCATION__XML_ATTR, getLocation());
 		out.writeAttribute(USER_COMMENT__XML_ATTR, getUserComment());
+		out.writeAttribute(HEAT__XML_ATTR, Double.toString(getHeat()));
+		out.writeAttribute(SPAM_CONFIDENCE__XML_ATTR, Integer.toString(getSpamConfidence()));
+		out.writeAttribute(CALLS__XML_ATTR, Integer.toString(getCalls()));
 	}
 
 	/** Serializes all fields that are written as XML elements. */
@@ -545,10 +621,6 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 				setBlackListed(Boolean.parseBoolean(value));
 				break;
 			}
-			case ARCHIVED__XML_ATTR: {
-				setArchived(Boolean.parseBoolean(value));
-				break;
-			}
 			case DATE_ADDED__XML_ATTR: {
 				setDateAdded(Long.parseLong(value));
 				break;
@@ -567,6 +639,18 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 			}
 			case USER_COMMENT__XML_ATTR: {
 				setUserComment(value);
+				break;
+			}
+			case HEAT__XML_ATTR: {
+				setHeat(Double.parseDouble(value));
+				break;
+			}
+			case SPAM_CONFIDENCE__XML_ATTR: {
+				setSpamConfidence(Integer.parseInt(value));
+				break;
+			}
+			case CALLS__XML_ATTR: {
+				setCalls(Integer.parseInt(value));
 				break;
 			}
 			default: {
@@ -602,10 +686,6 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 				setBlackListed(Boolean.parseBoolean(in.getElementText()));
 				break;
 			}
-			case ARCHIVED__XML_ATTR: {
-				setArchived(Boolean.parseBoolean(in.getElementText()));
-				break;
-			}
 			case DATE_ADDED__XML_ATTR: {
 				setDateAdded(Long.parseLong(in.getElementText()));
 				break;
@@ -624,6 +704,18 @@ public class PhoneInfo extends de.haumacher.msgbuf.data.AbstractDataObject imple
 			}
 			case USER_COMMENT__XML_ATTR: {
 				setUserComment(in.getElementText());
+				break;
+			}
+			case HEAT__XML_ATTR: {
+				setHeat(Double.parseDouble(in.getElementText()));
+				break;
+			}
+			case SPAM_CONFIDENCE__XML_ATTR: {
+				setSpamConfidence(Integer.parseInt(in.getElementText()));
+				break;
+			}
+			case CALLS__XML_ATTR: {
+				setCalls(Integer.parseInt(in.getElementText()));
 				break;
 			}
 			default: {

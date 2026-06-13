@@ -94,7 +94,19 @@
 		<li data-tx="t0012:7fff511b" th:if="${info.votesWildcard} &gt; ${info.votes}">
 			Stimmen für Sperrung des Nummernblocks: <th:block th:text="${info.votesWildcard}"></th:block>
 		</li>
-		
+
+		<li data-tx="t0051:5f6036e4" th:if="${state != 'legitimate' and state != 'whitelisted' and info.spamConfidence &gt; 0}">
+			Vertrauen in die Spam-Einstufung: <th:block th:text="${info.spamConfidence}"></th:block> %
+		</li>
+
+		<li data-tx="t0052:ae3458db" th:if="${state != 'legitimate' and state != 'whitelisted' and info.heat &gt; 0}">
+			Aktuelle Aktivität: <th:block th:text="${#numbers.formatDecimal(info.heat, 1, 1)}"></th:block> Meldungen/Tag
+		</li>
+
+		<li data-tx="t0053:f02b202" th:if="${state != 'legitimate' and state != 'whitelisted' and info.calls &gt; 0}">
+			Abgefangene Anrufe: <th:block th:text="${info.calls}"></th:block>
+		</li>
+
 		<li data-tx="t0013:b2e85cd7" th:if="${info.votes} &gt; 0 or ${info.votesWildcard} &gt; 0">
 			Letzte Beschwerde vom: <th:block th:text="${#dates.format(#converters.fromEpoch(info.lastUpdate))}"></th:block>
 		</li>

@@ -10,6 +10,8 @@ import org.apache.ibatis.session.SqlSession;
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.app.api.model.PhoneInfo;
+import de.haumacher.phoneblock.db.Confidence;
+import de.haumacher.phoneblock.db.Ema;
 import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.db.AggregationInfo;
@@ -174,13 +176,28 @@ public class SpamCheckServlet extends HttpServlet {
 				? db.notNull("", reports.getAggregation100ByHash(prefix100Hash))
 				: new AggregationInfo("", 0, 0);
 
-			int votesWildcard = db.computeWildcardVotes(a10, a100);
+			// #342: align with /api/check semantics — votesWildcard is the
+			// decoded block-level SPAM_EVIDENCE rounded to an int, same axis
+			// the live blocklist filter and the wildcard-promotion path use.
+			long now = System.currentTimeMillis();
+			double decodedBlock = db.computeBlockSpamEvidence(a10, a100, now);
+			int votesWildcard = (int) Math.round(Math.max(0.0, decodedBlock));
 			if (votesWildcard > 0) {
+				// Confidence-model surface (#334): a wildcard-only match has no number-level
+				// row, so derive both metrics from the block — its Wilson confidence and its
+				// activity — instead of leaving them at the default 0.
+				double decodedBlockLegit = Math.max(
+					Ema.decode(a10.getLegitEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS),
+					Ema.decode(a100.getLegitEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS));
+				double blockHeat = Ema.decodeRate(
+					Math.max(a10.getRawHeat(), a100.getRawHeat()), now, Ema.HEAT_TAU_MILLIS);
 				return PhoneInfo.create()
 					.setPhone("unknown")
 					.setRating(Rating.B_MISSED)
 					.setVotes(0)
-					.setVotesWildcard(votesWildcard);
+					.setVotesWildcard(votesWildcard)
+					.setSpamConfidence(Confidence.spamConfidence(decodedBlock, decodedBlockLegit))
+					.setHeat(blockHeat);
 			}
 		}
 

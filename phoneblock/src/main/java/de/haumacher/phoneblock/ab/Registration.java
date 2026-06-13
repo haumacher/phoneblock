@@ -23,8 +23,6 @@ public class Registration extends RegistrationClient {
 
 	/** 
 	 * Creates a {@link Registration}.
-	 * @param temporary 
-	 * @param updated 
 	 */
 	public Registration(SipProvider sipProvider, AnswerBotSip bot, CustomerOptions customer, RegistrationClientListener sipService) {
 		super(sipProvider, customer, sipService);

@@ -14,6 +14,7 @@ import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.db.Signals;
 import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.AuthToken;
@@ -44,11 +45,6 @@ import jakarta.servlet.http.HttpServletResponse;
  * reset job, no aggregate query. Reports beyond the quota are still written
  * to the per-user call log ({@code CALLERS}) for the user's own activity
  * history, but do not move the global counter.</p>
- *
- * <p>Reports for numbers that are not in the {@code NUMBERS} table are
- * silently accepted but have no effect — we do not create new rows, since
- * that would let clients pollute the database with numbers that have never
- * received a proper SPAM rating.</p>
  */
 @WebServlet(urlPatterns = ReportCallServlet.PATTERN)
 public class ReportCallServlet extends HttpServlet {
@@ -105,15 +101,12 @@ public class ReportCallServlet extends HttpServlet {
 
 			long userId = auth.getUserId();
 
+			// Per-day quota is the only abuse guard on this endpoint — each
+			// reported call counts equally, no per-(user, phone) dedup
+			// (that was the old CALLERS / firstFromUser concept, removed in
+			// #342). The shared DB.recordCall path handles the rest.
 			if (users.tryConsumeCallReportQuota(userId, today, DAILY_QUOTA) == 1) {
-				// recordCall is a no-op for phones that are not in NUMBERS, which is
-				// exactly the "only count known SPAM numbers" semantic we want.
-				reports.recordCall(phoneId, now);
-			}
-
-			// Maintain the per-user call log regardless of global-counter outcome.
-			if (users.addCall(userId, phoneId, now) == 0) {
-				users.insertCaller(userId, phoneId, now);
+				db.recordCall(reports, number, phoneId, dialPrefix, now);
 			}
 
 			session.commit();

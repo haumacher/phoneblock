@@ -1,0 +1,31 @@
+-- Confidence model (epic #300): backfill EMA columns from existing counters.
+--
+-- Before this migration the EMA columns introduced by #331/#337 are zero for
+-- every pre-existing row. That would make:
+--   * #335 archive every active number on the first Heat-based sweep,
+--   * #337b lose every existing wildcard block, and
+--   * #336 produce an effectively-unordered top-N list.
+--
+-- The forward path (each new event writes the EMA increment) only fills in
+-- numbers that see further activity after the migration — clearly not enough
+-- for a live system. We therefore reconstruct the EMA values once from the
+-- cumulative counters.
+--
+-- Treatment of pre-existing events: we assume they all happened at the most
+-- recent timestamp the row carries — max(LASTPING, UPDATED). This is
+-- deliberately on the recent end of the plausible range:
+--   * placing them at an earlier moment would over-decay,
+--   * placing them later is impossible (we never have future timestamps).
+-- A row that went silent a year ago therefore decays the entire history by a
+-- year, which is exactly the Heat-based archiving criterion #335 wants.
+--
+-- The whole computation is one UPDATE per table, in pure SQL, using EXP().
+-- It runs once at migration time so the slight per-row cost is fine.
+
+-- The actual computation runs from the Java migration hook in DB.java
+-- (backfillConfidenceEmas). It uses bind parameters for the constants from
+-- Ema and Signals, so a later tuning of the half-lives or signal weights
+-- can be coordinated with a fresh migration rather than scattered through
+-- SQL literals here. This file exists so the migration loop sees a script
+-- for version 29.
+SELECT 1;
