@@ -229,6 +229,8 @@ static bool tcp_connect(sip_transport_t *t)
 static void tcp_drop(sip_transport_t *t)
 {
     if (t->sock >= 0) {
+        ESP_LOGI(TAG, "TCP connection to %s:%d closed",
+                 t->registrar_host, t->registrar_port);
         close(t->sock);
         t->sock = -1;
     }
@@ -312,6 +314,8 @@ static bool tls_connect(sip_transport_t *t)
 static void tls_drop(sip_transport_t *t)
 {
     if (t->tls) {
+        ESP_LOGI(TAG, "TLS connection to %s:%d closed",
+                 t->registrar_host, t->registrar_port);
         esp_tls_conn_destroy(t->tls);
         t->tls = NULL;
     }
@@ -412,8 +416,12 @@ fail:
 void sip_transport_close(sip_transport_t *t)
 {
     if (!t) return;
-    if (t->sock >= 0) close(t->sock);
-    if (t->tls) esp_tls_conn_destroy(t->tls);
+    // Route stream teardown through the drop helpers so the "connection
+    // closed" log fires here too (transport switch, task shutdown), not
+    // only on reconnect.
+    if (t->kind == TR_TLS)      tls_drop(t);
+    else if (t->kind == TR_TCP) tcp_drop(t);
+    else if (t->sock >= 0)      close(t->sock);
     if (t->frame_buf) free(t->frame_buf);
     free(t);
 }

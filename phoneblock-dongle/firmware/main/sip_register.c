@@ -258,6 +258,19 @@ static int default_sip_port(void)
     return (strcmp(config_sip_transport(), "tls") == 0) ? 5061 : 5060;
 }
 
+// Canonical transport token ("udp"/"tcp"/"tls") — exactly the kind
+// sip_transport_open() ends up creating: an empty or unimplemented value
+// collapses to UDP, mirroring the fallback inside sip_transport_open().
+// Used by the reload handler to detect a live transport-kind change so it
+// can reopen the transport instead of re-resolving the old socket kind.
+static const char *canonical_transport(void)
+{
+    const char *tr = config_sip_transport();
+    if (strcasecmp(tr, "tcp") == 0) return "tcp";
+    if (strcasecmp(tr, "tls") == 0) return "tls";
+    return "udp";
+}
+
 static void dial_destination(char *host_out, int cap, int *port_out)
 {
     const char *outbound = config_sip_outbound();
@@ -1342,8 +1355,41 @@ static void sip_task(void *arg)
             const char *new_outbound = config_sip_outbound();
             const char *new_tls_sni  = (new_outbound && new_outbound[0])
                                            ? new_dial_host : config_sip_host();
-            sip_transport_resolve(ctx.transport, new_dial_host, new_dial_port,
-                                  new_tls_sni);
+
+            // A live transport-kind change (e.g. switching a running
+            // Fritz!Box/UDP binding to a Telekom TLS preset) cannot be
+            // honored by re-resolving the existing transport: it keeps its
+            // original socket kind and would, say, send a UDP datagram to
+            // the TLS-only port 5061 — which the registrar silently drops
+            // (no response). It also explains why switching to TCP "works"
+            // by accident: the leftover UDP socket hits port 5060, which
+            // Telekom answers over UDP too. Reopen the transport whenever
+            // the kind differs; a plain host/port re-resolve still suffices
+            // for credential- or registrar-only changes.
+            const char *want = canonical_transport();
+            if (strcasecmp(want, sip_transport_via_token(ctx.transport)) != 0) {
+                ESP_LOGI(TAG, "transport changed %s → %s, reopening",
+                         sip_transport_via_token(ctx.transport), want);
+                sip_transport_t *nt =
+                    sip_transport_open(config_sip_transport(), new_dial_host,
+                                       new_dial_port, new_tls_sni,
+                                       config_sip_local_port());
+                if (nt) {
+                    sip_transport_close(ctx.transport);
+                    ctx.transport = nt;
+                } else {
+                    // Reopen failed (e.g. TLS handshake rejected). Keep the
+                    // old handle so we don't crash on NULL; the register
+                    // below fails and schedules the usual 30 s retry.
+                    ESP_LOGE(TAG, "reopen as %s failed — keeping %s transport",
+                             want, sip_transport_via_token(ctx.transport));
+                    sip_transport_resolve(ctx.transport, new_dial_host,
+                                          new_dial_port, new_tls_sni);
+                }
+            } else {
+                sip_transport_resolve(ctx.transport, new_dial_host,
+                                      new_dial_port, new_tls_sni);
+            }
             // Settle pause only when the caller asked for it
             // (TR-064 provisioning). FB needs a beat for a newly
             // created extension to go live on its own SIP stack;
