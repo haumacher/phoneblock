@@ -4,7 +4,7 @@ CREATE TABLE PROPERTIES (
 	CONSTRAINT PROPERTIES_PK PRIMARY KEY (NAME)
 );
 
-INSERT INTO PROPERTIES (NAME, VAL) VALUES('db.version', '39');
+INSERT INTO PROPERTIES (NAME, VAL) VALUES('db.version', '40');
 INSERT INTO PROPERTIES (NAME, VAL) VALUES('blocklist.version', '1');
 
 
@@ -114,8 +114,11 @@ CREATE TABLE NUMBERS_LOCALE (
 -- reverse order would force a full-index scan in a sparse DIAL.
 CREATE INDEX NUMBERS_LOCALE_HEAT_IDX ON NUMBERS_LOCALE (DIAL, HEAT DESC);
 
+-- ID is assigned by the application (max(ID) + 1), not by an H2 IDENTITY
+-- sequence: the sequence advances even on a rolled-back insert, which used to
+-- leave gaps that corrupted the history snapshot watermark.
 CREATE TABLE REVISION (
-	ID INTEGER GENERATED ALWAYS AS IDENTITY,
+	ID INTEGER NOT NULL,
 	CREATED BIGINT NOT NULL,
 	CONSTRAINT REVISION_PK PRIMARY KEY (ID)
 );

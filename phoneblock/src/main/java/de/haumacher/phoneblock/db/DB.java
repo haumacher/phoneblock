@@ -547,6 +547,11 @@ public class DB {
 						migrateToBlocklistTable(session.getMapper(MigrationStatements.class));
 					}
 
+					// migration 40 drops the IDENTITY from REVISION.ID (the sequence
+					// advanced on rolled-back inserts and corrupted the history
+					// watermark); ids are now assigned by the application as
+					// max(ID) + 1 via the script; no Java hook needed.
+
 					users.updateProperty("db.version", Integer.toString(version));
 					session.commit();
 				}
@@ -2687,9 +2692,14 @@ public class DB {
 			Long lastSnapshotDate = reports.getLastSnapshotTime();
 			lastSnapshot = lastSnapshotDate == null ? 0 : lastSnapshotDate.longValue();
 
+			// Assign the revision id ourselves instead of relying on an H2 IDENTITY sequence, which
+			// advances even on a rolled-back insert and would leave gaps in the id space.
+			Integer lastRev = reports.getLastRevision();
+			newRevId = (lastRev == null ? 0 : lastRev.intValue()) + 1;
+
 			Rev newRev = new Rev(now);
+			newRev.setId(newRevId);
 			reports.storeRevision(newRev);
-			newRevId = newRev.getId();
 
 			session.commit();
 		}

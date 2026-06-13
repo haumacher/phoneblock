@@ -9,7 +9,6 @@ import java.util.Set;
 
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Options;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
@@ -705,8 +704,12 @@ public interface SpamReports {
 	@Update("UPDATE SUMMARY SET COMMENT = #{comment}, CREATED = #{created} WHERE PHONE = #{phone}")
 	int updateSummary(String phone, String comment, Long created);
 	
-	@Insert("insert into REVISION (CREATED) values (#{date})")
-	@Options(useGeneratedKeys = true, keyColumn = "ID", keyProperty = "id")
+	/**
+	 * Inserts a revision with an application-assigned {@link Rev#getId() id}. The id is not left to
+	 * an H2 {@code IDENTITY} sequence, which advances even on a rolled-back insert and would leave
+	 * gaps in the id space (see {@link #getLastSnapshotTime()}).
+	 */
+	@Insert("insert into REVISION (ID, CREATED) values (#{id}, #{date})")
 	void storeRevision(Rev newRev);
 	
 	@Select("select max(ID) from REVISION")
@@ -720,13 +723,11 @@ public interface SpamReports {
 	 * exists yet.
 	 *
 	 * <p>
-	 * This is the watermark for the next history snapshot. Reading the maximum committed timestamp
-	 * (instead of the timestamp of "current revision id minus one") keeps the watermark correct even
-	 * when a previous snapshot attempt failed and rolled back: the {@code IDENTITY} sequence behind
-	 * {@link #storeRevision(Rev)} advances even on a rolled-back insert, so the preceding id may
-	 * point to a revision that was never committed. Deriving the watermark from it would collapse
-	 * {@code lastSnapshot} to that gap's date (or to <code>0</code>), turning every following run
-	 * into a full-corpus snapshot.
+	 * This is the watermark for the next history snapshot. Deriving it from the newest committed
+	 * revision (rather than from "current revision id minus one") keeps it correct even when a
+	 * previous snapshot attempt failed: a rolled-back attempt simply leaves the newest committed
+	 * revision unchanged. Revision ids are assigned by the application as {@code max(ID) + 1} and
+	 * therefore have no gaps, but reading the timestamp directly stays robust regardless.
 	 * </p>
 	 */
 	@Select("select max(CREATED) from REVISION")
