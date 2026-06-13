@@ -636,16 +636,26 @@ static int tls_recv(sip_transport_t *t, int timeout_ms,
         t->reconnected_flag = true;
     }
 
-    // 3. Wait for data on the underlying socket. esp-tls in sync mode
-    //    has no built-in select; reading the fd back lets us share the
-    //    same timeout-driven loop with UDP/TCP.
+    // 3. Wait for data on the underlying socket — but ONLY when mbedTLS
+    //    has nothing decrypted and buffered already. A single TLS record
+    //    can decrypt to more plaintext than the 1 KiB chunk in step 4
+    //    consumes; the remainder then sits in mbedTLS's internal buffer
+    //    while the raw socket goes empty. select() watches only the
+    //    socket fd, so it would block here until timeout even though a
+    //    complete SIP response is waiting inside the TLS layer — which is
+    //    exactly how a 1590-byte Telekom 200 OK got stranded for a full
+    //    cycle (read one chunk, miss the rest, time out, pick it up only
+    //    after the *next* REGISTER nudged the socket). Draining the TLS
+    //    buffer first closes that gap. esp-tls in sync mode has no
+    //    built-in select; reading the fd back lets us share the same
+    //    timeout-driven loop with UDP/TCP.
     int fd = -1;
     if (esp_tls_get_conn_sockfd(t->tls, &fd) != ESP_OK || fd < 0) {
         ESP_LOGW(TAG, "esp_tls_get_conn_sockfd failed → reconnect");
         tls_reconnect(t);
         return -1;
     }
-    if (timeout_ms >= 0) {
+    if (timeout_ms >= 0 && esp_tls_get_bytes_avail(t->tls) <= 0) {
         struct timeval tv = {
             .tv_sec  = timeout_ms / 1000,
             .tv_usec = (timeout_ms % 1000) * 1000,
