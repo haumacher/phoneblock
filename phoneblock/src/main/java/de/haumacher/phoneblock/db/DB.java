@@ -2292,20 +2292,35 @@ public class DB {
 	 * and on the per-region {@code NUMBERS_LOCALE} row. The row is
 	 * materialised if it doesn't exist yet — the caller already decided to
 	 * report this number (either after a user-mediated spam report or
-	 * because the client auto-blocked it on range/specific evidence), so
-	 * there is no separate wildcard-match check on the server side. Per-day
+	 * because the client auto-blocked it on range/specific evidence). Per-day
 	 * abuse protection lives at the API gate (see
 	 * {@code Users.tryConsumeCallReportQuota} in {@code ReportCallServlet}).
 	 *
 	 * <p>{@code recordCall} is the single entry point for any call-driven
-	 * signal: same path, same weights, regardless of whether the call came
-	 * from a Fritz!Box, the dongle, the mobile app, or the cloud answer
-	 * bot.</p>
+	 * signal: same path regardless of whether the call came from a Fritz!Box,
+	 * the dongle, the mobile app, or the cloud answer bot. A catch by a
+	 * personal prefix wildcard reports through the same path but with a
+	 * breadth-dependent weight (see {@link #recordCall(SpamReports, PhoneNumer,
+	 * String, String, long, double)} and {@link #wildcardReportWeight}).</p>
 	 */
 	public void recordCall(SpamReports reports, PhoneNumer number,
 			String phoneId, String dialPrefix, long now) {
-		double heatInc = Ema.increment(Signals.CALL_HEAT_WEIGHT, now, Ema.HEAT_TAU_MILLIS);
-		double evidenceInc = Ema.increment(Signals.CALL_EVIDENCE_WEIGHT, now, Ema.CLASSIFICATION_TAU_MILLIS);
+		recordCall(reports, number, phoneId, dialPrefix, now, 1.0);
+	}
+
+	/**
+	 * Records a call with a weight factor scaling its spam-evidence and Heat contribution (#377).
+	 *
+	 * <p>A normal call report uses weight {@code 1.0}. A catch by a personal prefix wildcard is
+	 * weighted down by the breadth of the matched prefix (see {@link #wildcardReportWeight}): the
+	 * broader the wildcard, the less a single catch moves the global counters. The {@code CALLS}
+	 * counter still increments by one — a call did happen — only the decay-aware evidence/Heat
+	 * increments scale.</p>
+	 */
+	public void recordCall(SpamReports reports, PhoneNumer number,
+			String phoneId, String dialPrefix, long now, double weight) {
+		double heatInc = weight * Ema.increment(Signals.CALL_HEAT_WEIGHT, now, Ema.HEAT_TAU_MILLIS);
+		double evidenceInc = weight * Ema.increment(Signals.CALL_EVIDENCE_WEIGHT, now, Ema.CLASSIFICATION_TAU_MILLIS);
 
 		byte[] hash = NumberAnalyzer.getPhoneHash(number);
 		int updated = reports.recordCall(phoneId, now, heatInc, evidenceInc);
@@ -2329,6 +2344,39 @@ public class DB {
 		// always, regardless of whether the number was new or known.
 		addAggregationEmas(reports, phoneId, heatInc, evidenceInc, 0.0);
 		updateLocalization(reports, phoneId, dialPrefix, 0, 1, 0, heatInc, evidenceInc, now);
+	}
+
+	/**
+	 * Report weight for a catch by a personal prefix wildcard (#377), as a function of how many
+	 * trailing digits the wildcard omits from the full number.
+	 *
+	 * <p>The weight is computed at catch time, where the real number length is known — no length
+	 * estimation needed. Cutting two digits (the {@code /100} aggregation level) counts fully;
+	 * every further omitted digit halves the contribution, so an over-broad rule de-values itself.</p>
+	 *
+	 * @param prefixLength length of the matched wildcard prefix.
+	 * @param numberLength length of the caught number (same phone-ID representation as the prefix).
+	 */
+	static double wildcardReportWeight(int prefixLength, int numberLength) {
+		int cut = numberLength - prefixLength;
+		return cut <= 2 ? 1.0 : Math.pow(0.5, cut - 2);
+	}
+
+	/**
+	 * Report weight for a wildcard-triggered catch (#377): the longest of the user's blocked
+	 * wildcards that is a prefix of the reported number decides the weight.
+	 *
+	 * @return the weight in {@code (0, 1]}, or {@code 0.0} if the user has no blocked wildcard
+	 *         matching the number (e.g. a stale client claim).
+	 */
+	public double wildcardReportWeight(BlockList blocklist, long userId, String phoneId) {
+		int bestPrefixLength = -1;
+		for (String prefix : blocklist.getBlockedWildcards(userId)) {
+			if (phoneId.startsWith(prefix) && prefix.length() > bestPrefixLength) {
+				bestPrefixLength = prefix.length();
+			}
+		}
+		return bestPrefixLength < 0 ? 0.0 : wildcardReportWeight(bestPrefixLength, phoneId.length());
 	}
 
 	/**

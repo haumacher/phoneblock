@@ -539,6 +539,32 @@ public class TestDB {
 	}
 
 	@Test
+	void testWildcardReportWeightFormula() {
+		// Cutting up to two trailing digits counts fully; each further digit halves the weight.
+		assertEquals(1.0, DB.wildcardReportWeight(10, 10));
+		assertEquals(1.0, DB.wildcardReportWeight(8, 10));
+		assertEquals(0.5, DB.wildcardReportWeight(7, 10));
+		assertEquals(0.25, DB.wildcardReportWeight(6, 10));
+		assertEquals(0.125, DB.wildcardReportWeight(5, 10));
+	}
+
+	@Test
+	void testWildcardReportWeightLookup() {
+		_db.createUser("wc-user", "WC", "de", "+49");
+		assertEquals("030123", _db.addWildcard("wc-user", "+4930123", true, 0));
+
+		try (SqlSession tx = _db.openSession()) {
+			BlockList blocklist = tx.getMapper(BlockList.class);
+			long userId = tx.getMapper(Users.class).getUserId("wc-user").longValue();
+
+			// 0301234567 (len 10) under 030123 (len 6) -> cut 4 -> 0.25.
+			assertEquals(0.25, _db.wildcardReportWeight(blocklist, userId, "0301234567"));
+			// A number outside the wildcard yields no weight.
+			assertEquals(0.0, _db.wildcardReportWeight(blocklist, userId, "0401234567"));
+		}
+	}
+
+	@Test
 	void testQuote() {
 		assertEquals("\"\" 0x0 \"33a0a838-7b11-427a-\" 0x9 \"\" 0xD \"\" 0xA \"\" 0xC \"9c84-59b6ab6d3b0e\" 0x20 \"\"", DB.saveChars("\00033a0a838-7b11-427a-\t\r\n\f9c84-59b6ab6d3b0e "));
 	}

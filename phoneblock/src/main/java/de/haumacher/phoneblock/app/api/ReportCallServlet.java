@@ -12,6 +12,7 @@ import org.apache.ibatis.session.SqlSession;
 
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.app.LoginFilter;
+import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.Signals;
@@ -91,6 +92,10 @@ public class ReportCallServlet extends HttpServlet {
 		}
 		String phoneId = NumberAnalyzer.getPhoneId(number);
 
+		// A catch by one of the user's personal prefix wildcards (#377) is reported
+		// with wildcard=true so the server weights it down by the rule's breadth.
+		boolean wildcardTriggered = Boolean.parseBoolean(req.getParameter("wildcard"));
+
 		long now = System.currentTimeMillis();
 		int today = (int) LocalDate.ofInstant(Instant.ofEpochMilli(now), ZoneOffset.UTC).toEpochDay();
 
@@ -106,7 +111,16 @@ public class ReportCallServlet extends HttpServlet {
 			// (that was the old CALLERS / firstFromUser concept, removed in
 			// #342). The shared DB.recordCall path handles the rest.
 			if (users.tryConsumeCallReportQuota(userId, today, DAILY_QUOTA) == 1) {
-				db.recordCall(reports, number, phoneId, dialPrefix, now);
+				double weight = 1.0;
+				if (wildcardTriggered) {
+					// Server recomputes the weight from the user's own wildcard list; a
+					// claim without a matching wildcard (stale client state) yields 0.0
+					// and is dropped rather than counted at full weight.
+					weight = db.wildcardReportWeight(session.getMapper(BlockList.class), userId, phoneId);
+				}
+				if (weight > 0.0) {
+					db.recordCall(reports, number, phoneId, dialPrefix, now, weight);
+				}
 			}
 
 			session.commit();
