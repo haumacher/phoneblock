@@ -99,6 +99,59 @@ public class NumberAnalyzer {
 		return phoneId;
 	}
 
+	/**
+	 * Shortest phone-ID prefix accepted as a wildcard block (#377).
+	 *
+	 * <p>
+	 * Breadth is self-limiting through the report weight, but a near-empty prefix
+	 * (a bare country code or shorter) would block almost everything on the user's
+	 * own devices, which is virtually always a mistake. This floor rejects those;
+	 * it mirrors the historical {@code length() < 5} "too short" heuristic.
+	 * </p>
+	 */
+	public static final int MIN_WILDCARD_PREFIX_LENGTH = 5;
+
+	/**
+	 * Converts a phone number prefix (international {@code +}, {@code 00}-international or
+	 * national form) to the database phone-ID prefix used as a wildcard-block key (#377).
+	 *
+	 * <p>
+	 * Unlike {@link #toId}, this does not run country analysis, so it also works for a
+	 * partial number (a prefix). It is the inverse of {@link #toInternationalFormat}.
+	 * </p>
+	 *
+	 * @return the digits-only phone-ID prefix, or {@code null} if the input is not a
+	 *         usable prefix (empty, contains a wildcard char, or shorter than
+	 *         {@link #MIN_WILDCARD_PREFIX_LENGTH}).
+	 */
+	public static String toWildcardId(String prefixText, String dialPrefix) {
+		String normalized = normalizeNumber(prefixText);
+		if (normalized.isEmpty() || normalized.contains("*")) {
+			return null;
+		}
+
+		String international;
+		if (normalized.startsWith("+")) {
+			international = normalized;
+		} else if (normalized.startsWith("00")) {
+			international = "+" + normalized.substring(2);
+		} else if (normalized.startsWith("0")) {
+			// National number in the user's country.
+			international = dialPrefix + normalized.substring(1);
+		} else {
+			return null;
+		}
+
+		String phoneId;
+		if (international.startsWith(GERMAN_DIAL_PREFIX)) {
+			phoneId = "0" + international.substring(GERMAN_DIAL_PREFIX.length());
+		} else {
+			phoneId = "00" + international.substring(1);
+		}
+
+		return phoneId.length() < MIN_WILDCARD_PREFIX_LENGTH ? null : phoneId;
+	}
+
 	public static PhoneNumer analyzePhoneID(String phone) {
 		return analyze(phone, GERMAN_DIAL_PREFIX);
 	}

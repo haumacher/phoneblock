@@ -1223,11 +1223,74 @@ public class DB {
 			_indexer.publishUpdate(number);
 		}
 	}
-	
-	/** 
+
+	/**
+	 * Adds (or updates) a personal wildcard-prefix block/allow entry for the given user (#377).
+	 *
+	 * <p>
+	 * The prefix is normalized to phone-ID form via {@link NumberAnalyzer#toWildcardId}. Unlike an
+	 * exact personalization, a wildcard casts no community vote — there is no single number to vote
+	 * on; community impact comes only from the weighted call reports its catches produce.
+	 * </p>
+	 *
+	 * @return the normalized prefix that was stored, or {@code null} if the input is not a usable
+	 *         prefix.
+	 */
+	public String addWildcard(String userName, String prefixText, boolean blocked, long now) {
+		try (SqlSession session = openSession()) {
+			Users users = session.getMapper(Users.class);
+			Long userId = users.getUserId(userName);
+			if (userId == null) {
+				LOG.error("User ID not found for: {}", userName);
+				return null;
+			}
+
+			String dialPrefix = users.getDialPrefix(userName);
+			String prefix = NumberAnalyzer.toWildcardId(prefixText, dialPrefix);
+			if (prefix == null) {
+				return null;
+			}
+
+			BlockList blocklist = session.getMapper(BlockList.class);
+			// A digit string is either exact or a prefix for a given user: replace any existing
+			// entry under this key (PK is USERID, PHONE) before inserting the wildcard.
+			blocklist.removePersonalization(userId, prefix);
+			blocklist.addWildcard(userId, prefix, blocked, now);
+			session.commit();
+			return prefix;
+		}
+	}
+
+	/**
+	 * Removes a personal wildcard-prefix entry for the given user (#377).
+	 *
+	 * @return {@code true} if an entry was removed.
+	 */
+	public boolean removeWildcard(String userName, String prefixText) {
+		try (SqlSession session = openSession()) {
+			Users users = session.getMapper(Users.class);
+			Long userId = users.getUserId(userName);
+			if (userId == null) {
+				return false;
+			}
+
+			String dialPrefix = users.getDialPrefix(userName);
+			String prefix = NumberAnalyzer.toWildcardId(prefixText, dialPrefix);
+			if (prefix == null) {
+				return false;
+			}
+
+			BlockList blocklist = session.getMapper(BlockList.class);
+			boolean deleted = blocklist.removeWildcard(userId, prefix);
+			session.commit();
+			return deleted;
+		}
+	}
+
+	/**
 	 * Adds a rating for a phone number without DB commit.
-	 * @param recordVote 
-	 * 
+	 * @param recordVote
+	 *
 	 * @return Whether an index update is required.
 	 */
 	public boolean addRating(SpamReports reports, PhoneNumer number, String dialPrefix, UserComment comment, boolean recordVote) {
