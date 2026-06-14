@@ -222,9 +222,15 @@ public class PersonalizationServlet extends HttpServlet {
 					ServletUtil.sendError(resp, "Invalid wildcard prefix");
 					return;
 				}
+				boolean blocked = req.getServletPath().equals(BLACKLIST_PATH);
 				BlockList blockList = session.getMapper(BlockList.class);
 				blockList.removePersonalization(userId, prefix);
-				blockList.addWildcard(userId, prefix, req.getServletPath().equals(BLACKLIST_PATH), System.currentTimeMillis());
+				if (blocked) {
+					// A blocking wildcard subsumes all of the user's exact blocks under that
+					// prefix (#377); allowed exact entries are kept as deliberate overrides.
+					blockList.removeExactBlocksWithPrefix(userId, prefix);
+				}
+				blockList.addWildcard(userId, prefix, blocked, System.currentTimeMillis());
 				session.commit();
 				resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
 				return;

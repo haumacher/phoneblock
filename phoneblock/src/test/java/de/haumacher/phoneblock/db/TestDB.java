@@ -571,6 +571,59 @@ public class TestDB {
 	}
 
 	@Test
+	void testWildcardBlockSubsumesExactBlocks() {
+		_db.createUser("wc-subsume", "WC", "de", "+49");
+
+		try (SqlSession tx = _db.openSession()) {
+			BlockList bl = tx.getMapper(BlockList.class);
+			long userId = tx.getMapper(Users.class).getUserId("wc-subsume").longValue();
+
+			// Two exact blocks under the prefix, one outside, and one allowed (white-listed) entry
+			// under the prefix.
+			bl.addPersonalization(userId, "0301230000", null, 1);
+			bl.addPersonalization(userId, "0301239999", null, 1);
+			bl.addPersonalization(userId, "0401234567", null, 1);
+			bl.addExclude(userId, "0301235555", null, 1);
+			tx.commit();
+		}
+
+		// Adding the blocking wildcard removes the exact blocks under the prefix.
+		assertEquals("030123", _db.addWildcard("wc-subsume", "+4930123", true, 100));
+
+		try (SqlSession tx = _db.openSession()) {
+			BlockList bl = tx.getMapper(BlockList.class);
+			long userId = tx.getMapper(Users.class).getUserId("wc-subsume").longValue();
+
+			// Only the block outside the prefix remains as an exact block.
+			assertEquals(List.of("0401234567"), bl.getPersonalizations(userId));
+
+			// The allowed entry under the prefix is kept — it overrides the wildcard.
+			assertEquals(List.of("0301235555"), bl.getWhiteList(userId));
+		}
+	}
+
+	@Test
+	void testWildcardAllowKeepsExactBlocks() {
+		_db.createUser("wc-allow", "WC", "de", "+49");
+
+		try (SqlSession tx = _db.openSession()) {
+			BlockList bl = tx.getMapper(BlockList.class);
+			long userId = tx.getMapper(Users.class).getUserId("wc-allow").longValue();
+			bl.addPersonalization(userId, "0301230000", null, 1);
+			tx.commit();
+		}
+
+		// An allowing wildcard does not touch exact blocks.
+		assertEquals("030123", _db.addWildcard("wc-allow", "+4930123", false, 100));
+
+		try (SqlSession tx = _db.openSession()) {
+			BlockList bl = tx.getMapper(BlockList.class);
+			long userId = tx.getMapper(Users.class).getUserId("wc-allow").longValue();
+			assertEquals(List.of("0301230000"), bl.getPersonalizations(userId));
+		}
+	}
+
+	@Test
 	void testWildcardReportWeightLookup() {
 		_db.createUser("wc-user", "WC", "de", "+49");
 		assertEquals("030123", _db.addWildcard("wc-user", "+4930123", true, 0));

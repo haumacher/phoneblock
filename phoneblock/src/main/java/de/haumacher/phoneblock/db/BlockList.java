@@ -188,4 +188,22 @@ public interface BlockList {
 			""")
 	boolean removeWildcard(long userId, String phone);
 
+	/**
+	 * Removes all exact blocklist entries of the user that are subsumed by the given wildcard
+	 * prefix (#377).
+	 *
+	 * <p>
+	 * Only blocked exact entries ({@code BLOCKED and not WILDCARD}) whose phone ID starts with the
+	 * prefix are deleted; white-listed (allowed) exact entries are kept so that they can keep
+	 * overriding the wildcard.
+	 * </p>
+	 *
+	 * @return the number of deleted entries.
+	 */
+	@Delete("""
+			delete from PERSONALIZATION
+			where USERID = #{userId} and BLOCKED and not WILDCARD and PHONE like #{prefix} || '%'
+			""")
+	int removeExactBlocksWithPrefix(long userId, String prefix);
+
 }

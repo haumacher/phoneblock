@@ -1255,6 +1255,15 @@ public class DB {
 			// A digit string is either exact or a prefix for a given user: replace any existing
 			// entry under this key (PK is USERID, PHONE) before inserting the wildcard.
 			blocklist.removePersonalization(userId, prefix);
+			if (blocked) {
+				// A blocking wildcard subsumes all of the user's exact blocks under that prefix
+				// (#377): drop them so the wildcard becomes the single source of truth. Allowed
+				// exact entries are kept — they intentionally override the wildcard.
+				int removed = blocklist.removeExactBlocksWithPrefix(userId, prefix);
+				if (removed > 0) {
+					LOG.info("Wildcard block '{}' subsumed {} exact block(s) of user {}.", prefix, removed, userName);
+				}
+			}
 			blocklist.addWildcard(userId, prefix, blocked, now);
 			session.commit();
 			return prefix;
