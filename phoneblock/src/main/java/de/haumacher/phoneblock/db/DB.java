@@ -552,6 +552,10 @@ public class DB {
 					// watermark); ids are now assigned by the application as
 					// max(ID) + 1 via the script; no Java hook needed.
 
+					// migration 41 adds the WILDCARD column (+ PERSONALIZATION_WILDCARD_IDX)
+					// distinguishing prefix-wildcard personalizations (#377) from exact
+					// entries via the script; no Java hook needed.
+
 					users.updateProperty("db.version", Integer.toString(version));
 					session.commit();
 				}
