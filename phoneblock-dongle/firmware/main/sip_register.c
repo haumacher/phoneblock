@@ -1303,36 +1303,59 @@ static void sip_task(void *arg)
 
     char dial_host[64];
     int  dial_port;
-    dial_destination(dial_host, sizeof(dial_host), &dial_port);
+    const char *outbound;
+    const char *tls_sni;
 
-    // TLS SNI / cert name: the service domain the user configured, not the
-    // SRV-resolved edge host (#363). With an explicit outbound proxy the
-    // TLS peer *is* the dial host, so use that.
-    const char *outbound = config_sip_outbound();
-    const char *tls_sni  = (outbound && outbound[0]) ? dial_host
-                                                     : config_sip_host();
+    // Open the SIP transport, retrying until it succeeds. A failure here
+    // is almost always transient: the common case is a WiFi outage
+    // (reason 6 deauth from the AP) that races the task (re)start, so for
+    // a few seconds there's no default netif and DNS can't resolve.
+    // Earlier code treated any open failure as fatal ("check host/port")
+    // and self-deleted the task — but a WiFi reconnect does NOT respawn
+    // it (on_got_ip only sets an event bit), so a momentary blip turned
+    // into permanently-lost SIP registration until the next reboot or
+    // config Save. Keep the task alive and re-read the config on every
+    // attempt, so a genuine host/port fix is also picked up here without
+    // a restart.
+    const int open_retry_s = 15;
+    for (int attempt = 0; ; attempt++) {
+        // Re-read every attempt: a config change made while we were
+        // failing (user fixes host/port and hits Save) takes effect on
+        // the next try. Clear the reload flag so the main loop doesn't
+        // immediately do a redundant re-REGISTER once we get going.
+        s_reload_requested = false;
+        dial_destination(dial_host, sizeof(dial_host), &dial_port);
 
-    ctx.transport = sip_transport_open(config_sip_transport(),
-                                       dial_host,
-                                       dial_port,
-                                       tls_sni,
-                                       config_sip_local_port());
-    if (!ctx.transport) {
-        // Surface the failure on the dashboard — without this the SIP
-        // section just hangs on "Verbinde…" forever and the user has
-        // no clue why. Also clear s_sip_task so the next config Save
-        // gets a fresh task (sip_register_request_reload() sees NULL
-        // → spawns one), instead of latching onto the dead handle.
-        // dial_host is up to 64 chars; cap to keep the formatted
+        // TLS SNI / cert name: the service domain the user configured,
+        // not the SRV-resolved edge host (#363). With an explicit
+        // outbound proxy the TLS peer *is* the dial host, so use that.
+        outbound = config_sip_outbound();
+        tls_sni  = (outbound && outbound[0]) ? dial_host : config_sip_host();
+
+        ctx.transport = sip_transport_open(config_sip_transport(),
+                                           dial_host, dial_port, tls_sni,
+                                           config_sip_local_port());
+        if (ctx.transport) {
+            break;
+        }
+
+        // Surface the failure on the dashboard, but only on the first try
+        // and then roughly every 5 min (every 20th attempt at the 15 s
+        // cadence). Logging an ERROR on every retry would flush the
+        // 32-entry log ring and bury whatever else the operator needs to
+        // see. dial_host is up to 64 chars; cap to keep the formatted
         // line within the stats error-message buffer.
-        char msg[STATS_ERROR_MSG_LEN];
-        snprintf(msg, sizeof(msg),
-                 "transport open failed (%s %.40s:%d) — check host/port",
-                 config_sip_transport(), dial_host, dial_port);
-        ESP_LOGE(TAG, "%s — aborting SIP task", msg);
-        s_sip_task = NULL;
-        vTaskDelete(NULL);
-        return;
+        if (attempt == 0 || (attempt % 20) == 0) {
+            char msg[STATS_ERROR_MSG_LEN];
+            snprintf(msg, sizeof(msg),
+                     "transport open failed (%s %.40s:%d) — retrying, "
+                     "check host/port if persistent",
+                     config_sip_transport(), dial_host, dial_port);
+            ESP_LOGE(TAG, "%s", msg);
+        }
+        s_registered = false;
+        stats_record_sip_state(false);
+        vTaskDelay(pdMS_TO_TICKS(open_retry_s * 1000));
     }
     if (strcmp(dial_host, config_sip_host()) != 0) {
         const char *via = (outbound && outbound[0]) ? "outbound proxy" : "SRV";
