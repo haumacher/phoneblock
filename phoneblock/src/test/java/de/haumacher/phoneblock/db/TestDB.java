@@ -584,10 +584,16 @@ public class TestDB {
 			bl.addPersonalization(userId, "0301239999", null, 1);
 			bl.addPersonalization(userId, "0401234567", null, 1);
 			bl.addExclude(userId, "0301235555", null, 1);
+
+			// A narrower blocked wildcard under the prefix (subsumed) and a blocked wildcard
+			// outside the prefix (kept).
+			bl.addWildcard(userId, "0301234", true, 1);
+			bl.addWildcard(userId, "040123", true, 1);
 			tx.commit();
 		}
 
-		// Adding the blocking wildcard removes the exact blocks under the prefix.
+		// Adding the blocking wildcard removes the exact blocks and narrower wildcards under the
+		// prefix.
 		assertEquals("030123", _db.addWildcard("wc-subsume", "+4930123", true, 100));
 
 		try (SqlSession tx = _db.openSession()) {
@@ -599,6 +605,10 @@ public class TestDB {
 
 			// The allowed entry under the prefix is kept — it overrides the wildcard.
 			assertEquals(List.of("0301235555"), bl.getWhiteList(userId));
+
+			// The narrower wildcard under the prefix is gone; the new wildcard and the unrelated
+			// one outside the prefix remain.
+			assertEquals(List.of("030123", "040123"), bl.getBlockedWildcards(userId));
 		}
 	}
 
