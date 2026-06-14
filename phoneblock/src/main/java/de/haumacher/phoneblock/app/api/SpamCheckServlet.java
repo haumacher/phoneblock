@@ -170,11 +170,11 @@ public class SpamCheckServlet extends HttpServlet {
 
 			AggregationInfo a10 = prefix10Hash != null
 				? db.notNull("", reports.getAggregation10ByHash(prefix10Hash))
-				: new AggregationInfo("", 0, 0);
+				: new AggregationInfo("", 0);
 
 			AggregationInfo a100 = prefix100Hash != null
 				? db.notNull("", reports.getAggregation100ByHash(prefix100Hash))
-				: new AggregationInfo("", 0, 0);
+				: new AggregationInfo("", 0);
 
 			// #300 follow-up: votesWildcard is the decoded net evidence of the block, but only for
 			// a block that qualifies as spam by the periodically-recomputed gate (a row exists only

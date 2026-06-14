@@ -108,9 +108,9 @@ public class TestPrefixCheckServlet {
 		// so decoded votes == the raw evidence passed in.
 		long now = Ema.T0_MILLIS;
 		List<RangeMatch> result = PrefixCheckServlet.toRangeMatches(List.of(
-			new AggregationInfo("016378657599", 5, 0, 0, 32, 0),    // German block-of-10
-			new AggregationInfo("01637865759", 7, 0, 0, 384, 0),    // German block-of-100
-			new AggregationInfo("001833378903", 1, 0, 0, 1, 0)), now); // US toll-free in DB form
+			new AggregationInfo("016378657599", 5, 0, 32, 0),    // German block-of-10
+			new AggregationInfo("01637865759", 7, 0, 384, 0),    // German block-of-100
+			new AggregationInfo("001833378903", 1, 0, 1, 0)), now); // US toll-free in DB form
 
 		assertEquals("+4916378657599", result.get(0).getPrefix());
 		assertEquals(5, result.get(0).getCnt());

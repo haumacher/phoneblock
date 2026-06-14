@@ -93,73 +93,6 @@ public interface SpamReports {
 	int updateNumberLocalization(String phone, String dialPrefix, int searches, int calls, int votes,
 		double heatInc, double spamEvidenceInc, long now);
 	
-	@Update("update NUMBERS_AGGREGATION_10 set CNT = CNT + #{deltaCnt}, VOTES = VOTES + #{deltaVotes} where PREFIX = #{prefix}")
-	int updateAggregation10(String prefix, int deltaCnt, int deltaVotes);
-
-	@Update("update NUMBERS_AGGREGATION_100 set CNT = CNT + #{deltaCnt}, VOTES = VOTES + #{deltaVotes} where PREFIX = #{prefix}")
-	int updateAggregation100(String prefix, int deltaCnt, int deltaVotes);
-
-	/**
-	 * Add block-level EMA increments to a {@code /10} aggregation row (#337).
-	 *
-	 * <p>Deliberately separate from {@link #updateAggregation10}: the EMAs are
-	 * fed flat at every level (number + /10 + /100) regardless of the
-	 * cnt/votes-promotion logic, so an unknown number's report can still drive
-	 * the block-level signals even when no cnt/votes update applies to its
-	 * /10 row (e.g. legitimate votes on brand-new numbers).</p>
-	 */
-	@Update("""
-			update NUMBERS_AGGREGATION_10 set
-				HEAT = HEAT + #{heatInc},
-				SPAM_EVIDENCE = SPAM_EVIDENCE + #{spamEvidenceInc},
-				LEGIT_EVIDENCE = LEGIT_EVIDENCE + #{legitEvidenceInc}
-			where PREFIX = #{prefix}
-			""")
-	int addAggregation10Emas(String prefix, double heatInc, double spamEvidenceInc, double legitEvidenceInc);
-
-	@Update("""
-			update NUMBERS_AGGREGATION_100 set
-				HEAT = HEAT + #{heatInc},
-				SPAM_EVIDENCE = SPAM_EVIDENCE + #{spamEvidenceInc},
-				LEGIT_EVIDENCE = LEGIT_EVIDENCE + #{legitEvidenceInc}
-			where PREFIX = #{prefix}
-			""")
-	int addAggregation100Emas(String prefix, double heatInc, double spamEvidenceInc, double legitEvidenceInc);
-
-	/**
-	 * Fresh-row insert that carries only EMA values (no cnt/votes contribution).
-	 * Used when an event reaches an aggregation block whose row does not yet
-	 * exist — typically a legitimate vote, where the cnt/votes-promotion path
-	 * would not create a row at all. The hash column is set so the row is
-	 * reachable by the prefix-check range scan, just like rows created via
-	 * {@code insertAggregation10WithHash}.
-	 */
-	@Insert("""
-			insert into NUMBERS_AGGREGATION_10 (PREFIX, CNT, VOTES, SHA1, HEAT, SPAM_EVIDENCE, LEGIT_EVIDENCE)
-			values (#{prefix}, 0, 0, #{hash}, #{heatInc}, #{spamEvidenceInc}, #{legitEvidenceInc})
-			""")
-	int insertAggregation10EmasOnly(String prefix, byte[] hash,
-		double heatInc, double spamEvidenceInc, double legitEvidenceInc);
-
-	@Insert("""
-			insert into NUMBERS_AGGREGATION_100 (PREFIX, CNT, VOTES, SHA1, HEAT, SPAM_EVIDENCE, LEGIT_EVIDENCE)
-			values (#{prefix}, 0, 0, #{hash}, #{heatInc}, #{spamEvidenceInc}, #{legitEvidenceInc})
-			""")
-	int insertAggregation100EmasOnly(String prefix, byte[] hash,
-		double heatInc, double spamEvidenceInc, double legitEvidenceInc);
-
-	@Insert("insert into NUMBERS_AGGREGATION_10 (PREFIX, CNT, VOTES) values (#{prefix}, #{cnt}, #{votes})")
-	int insertAggregation10(String prefix, int cnt, int votes);
-
-	@Insert("insert into NUMBERS_AGGREGATION_10 (PREFIX, CNT, VOTES, SHA1) values (#{prefix}, #{cnt}, #{votes}, #{hash})")
-	int insertAggregation10WithHash(String prefix, int cnt, int votes, byte[] hash);
-
-	@Insert("insert into NUMBERS_AGGREGATION_100 (PREFIX, CNT, VOTES) values (#{prefix}, #{cnt}, #{votes})")
-	int insertAggregation100(String prefix, int cnt, int votes);
-
-	@Insert("insert into NUMBERS_AGGREGATION_100 (PREFIX, CNT, VOTES, SHA1) values (#{prefix}, #{cnt}, #{votes}, #{hash})")
-	int insertAggregation100WithHash(String prefix, int cnt, int votes, byte[] hash);
-
 	// ---- Periodic block-aggregation recompute (#300 follow-up) ----
 	// The aggregation tables are no longer maintained incrementally; they are rebuilt from the
 	// current NUMBERS evidence by DB.recomputeBlockAggregation. CNT means "currently spam members"
@@ -169,12 +102,10 @@ public interface SpamReports {
 	 * Groups all currently-spam numbers ({@code decode(SPAM−LEGIT) >= threshold}) by their /10
 	 * prefix, returning per /10 the member count ({@code cnt}) and the summed projected evidence.
 	 * {@code minNetRaw} is the projected raw threshold for the membership cut (computed in Java).
-	 * {@code votes} is unused here and selected as 0.
 	 */
 	@Select("""
 			select SUBSTRING(PHONE, 1, LENGTH(PHONE) - 1) as prefix,
 				CAST(COUNT(*) AS INTEGER) as cnt,
-				0 as votes,
 				SUM(HEAT) as heat,
 				SUM(SPAM_EVIDENCE) as spamEvidence,
 				SUM(LEGIT_EVIDENCE) as legitEvidence
@@ -191,7 +122,6 @@ public interface SpamReports {
 	@Select("""
 			select SUBSTRING(PHONE, 1, LENGTH(PHONE) - 1) as prefix,
 				CAST(COUNT(*) AS INTEGER) as cnt,
-				0 as votes,
 				SUM(HEAT) as heat,
 				SUM(SPAM_EVIDENCE) as spamEvidence,
 				SUM(LEGIT_EVIDENCE) as legitEvidence
@@ -217,36 +147,36 @@ public interface SpamReports {
 	void clearAggregation100ForHundred(String p100);
 
 	@Insert("""
-			insert into NUMBERS_AGGREGATION_10 (PREFIX, CNT, VOTES, SHA1, HEAT, SPAM_EVIDENCE, LEGIT_EVIDENCE)
-			values (#{prefix}, #{cnt}, 0, #{hash}, #{heat}, #{spamEvidence}, #{legitEvidence})
+			insert into NUMBERS_AGGREGATION_10 (PREFIX, CNT, SHA1, HEAT, SPAM_EVIDENCE, LEGIT_EVIDENCE)
+			values (#{prefix}, #{cnt}, #{hash}, #{heat}, #{spamEvidence}, #{legitEvidence})
 			""")
 	int insertAggregation10Full(String prefix, int cnt, byte[] hash, double heat, double spamEvidence, double legitEvidence);
 
 	// CNT mirrors MEMBERS so presence (CNT > 0) and the RangeMatch payload stay meaningful; the
 	// explicit MEMBERS/TENS carry the spread×mass gate inputs (#300 follow-up).
 	@Insert("""
-			insert into NUMBERS_AGGREGATION_100 (PREFIX, CNT, VOTES, SHA1, HEAT, SPAM_EVIDENCE, LEGIT_EVIDENCE, MEMBERS, TENS)
-			values (#{prefix}, #{members}, 0, #{hash}, #{heat}, #{spamEvidence}, #{legitEvidence}, #{members}, #{tens})
+			insert into NUMBERS_AGGREGATION_100 (PREFIX, CNT, SHA1, HEAT, SPAM_EVIDENCE, LEGIT_EVIDENCE, MEMBERS, TENS)
+			values (#{prefix}, #{members}, #{hash}, #{heat}, #{spamEvidence}, #{legitEvidence}, #{members}, #{tens})
 			""")
 	int insertAggregation100Full(String prefix, int members, int tens, byte[] hash, double heat, double spamEvidence, double legitEvidence);
 
-	@Select("select PREFIX, CNT, VOTES, HEAT as heat, SPAM_EVIDENCE as spamEvidence, LEGIT_EVIDENCE as legitEvidence from NUMBERS_AGGREGATION_10 where PREFIX = #{prefix}")
+	@Select("select PREFIX, CNT, HEAT as heat, SPAM_EVIDENCE as spamEvidence, LEGIT_EVIDENCE as legitEvidence from NUMBERS_AGGREGATION_10 where PREFIX = #{prefix}")
 	AggregationInfo getAggregation10(String prefix);
 
-	@Select("select PREFIX, CNT, VOTES, HEAT as heat, SPAM_EVIDENCE as spamEvidence, LEGIT_EVIDENCE as legitEvidence from NUMBERS_AGGREGATION_10 where SHA1 = #{hash}")
+	@Select("select PREFIX, CNT, HEAT as heat, SPAM_EVIDENCE as spamEvidence, LEGIT_EVIDENCE as legitEvidence from NUMBERS_AGGREGATION_10 where SHA1 = #{hash}")
 	AggregationInfo getAggregation10ByHash(byte[] hash);
 
-	@Select("select PREFIX, CNT, VOTES, HEAT as heat, SPAM_EVIDENCE as spamEvidence, LEGIT_EVIDENCE as legitEvidence from NUMBERS_AGGREGATION_100 where SHA1 = #{hash}")
+	@Select("select PREFIX, CNT, HEAT as heat, SPAM_EVIDENCE as spamEvidence, LEGIT_EVIDENCE as legitEvidence from NUMBERS_AGGREGATION_100 where SHA1 = #{hash}")
 	AggregationInfo getAggregation100ByHash(byte[] hash);
 
 	@Select("""
-			select PREFIX, CNT, VOTES, HEAT as heat, SPAM_EVIDENCE as spamEvidence, LEGIT_EVIDENCE as legitEvidence from NUMBERS_AGGREGATION_10
+			select PREFIX, CNT, HEAT as heat, SPAM_EVIDENCE as spamEvidence, LEGIT_EVIDENCE as legitEvidence from NUMBERS_AGGREGATION_10
 			where SHA1 >= #{low} and SHA1 < #{high} and CNT >= #{minCnt}
 			""")
 	List<AggregationInfo> getAggregation10ByHashPrefix(byte[] low, byte[] high, int minCnt);
 
 	@Select("""
-			select PREFIX, CNT, VOTES, HEAT as heat, SPAM_EVIDENCE as spamEvidence, LEGIT_EVIDENCE as legitEvidence from NUMBERS_AGGREGATION_100
+			select PREFIX, CNT, HEAT as heat, SPAM_EVIDENCE as spamEvidence, LEGIT_EVIDENCE as legitEvidence from NUMBERS_AGGREGATION_100
 			where SHA1 >= #{low} and SHA1 < #{high} and CNT >= #{minCnt}
 			""")
 	List<AggregationInfo> getAggregation100ByHashPrefix(byte[] low, byte[] high, int minCnt);
@@ -257,13 +187,13 @@ public interface SpamReports {
 	@Update("update NUMBERS_AGGREGATION_100 set SHA1 = #{hash} where PREFIX = #{prefix}")
 	int updateAggregation100Hash(String prefix, byte[] hash);
 	
-	@Select("select PREFIX, CNT, VOTES, HEAT as heat, SPAM_EVIDENCE as spamEvidence, LEGIT_EVIDENCE as legitEvidence from NUMBERS_AGGREGATION_10")
+	@Select("select PREFIX, CNT, HEAT as heat, SPAM_EVIDENCE as spamEvidence, LEGIT_EVIDENCE as legitEvidence from NUMBERS_AGGREGATION_10")
 	List<AggregationInfo> getAllAggregation10();
 
-	@Select("select PREFIX, CNT, VOTES, HEAT as heat, SPAM_EVIDENCE as spamEvidence, LEGIT_EVIDENCE as legitEvidence from NUMBERS_AGGREGATION_100 where PREFIX = #{prefix}")
+	@Select("select PREFIX, CNT, HEAT as heat, SPAM_EVIDENCE as spamEvidence, LEGIT_EVIDENCE as legitEvidence from NUMBERS_AGGREGATION_100 where PREFIX = #{prefix}")
 	AggregationInfo getAggregation100(String prefix);
 
-	@Select("select PREFIX, CNT, VOTES, HEAT as heat, SPAM_EVIDENCE as spamEvidence, LEGIT_EVIDENCE as legitEvidence from NUMBERS_AGGREGATION_100")
+	@Select("select PREFIX, CNT, HEAT as heat, SPAM_EVIDENCE as spamEvidence, LEGIT_EVIDENCE as legitEvidence from NUMBERS_AGGREGATION_100")
 	List<AggregationInfo> getAllAggregation100();
 	
 	// #{minRawSpam} = maxRawSpam(1): only list related numbers that still show at least

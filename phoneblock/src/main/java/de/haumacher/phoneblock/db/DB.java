@@ -2037,7 +2037,7 @@ public class DB {
 	}
 
 	public AggregationInfo notNull(String prefix, AggregationInfo result) {
-		return result == null ? new AggregationInfo(prefix, 0, 0) : result;
+		return result == null ? new AggregationInfo(prefix, 0) : result;
 	}
 
 	/**
