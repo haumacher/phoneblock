@@ -277,6 +277,10 @@ public class SettingsServlet extends HttpServlet {
 								continue;
 							}
 							blocklist.removePersonalization(owner, prefix);
+							// The new blocking wildcard subsumes the user's exact single-number
+							// blocks and any narrower wildcard blocks under this prefix (#377);
+							// allowed entries are kept as deliberate overrides.
+							blocklist.removeBlocksWithPrefix(owner, prefix);
 							blocklist.addWildcard(owner, prefix, true, System.currentTimeMillis());
 						}
 					}

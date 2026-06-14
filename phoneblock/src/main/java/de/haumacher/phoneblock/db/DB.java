@@ -1237,12 +1237,13 @@ public class DB {
 			// entry under this key (PK is USERID, PHONE) before inserting the wildcard.
 			blocklist.removePersonalization(userId, prefix);
 			if (blocked) {
-				// A blocking wildcard subsumes all of the user's exact blocks under that prefix
-				// (#377): drop them so the wildcard becomes the single source of truth. Allowed
-				// exact entries are kept — they intentionally override the wildcard.
-				int removed = blocklist.removeExactBlocksWithPrefix(userId, prefix);
+				// A blocking wildcard subsumes all of the user's blocks under that prefix (#377):
+				// drop both exact single-number blocks and narrower wildcard blocks so the new
+				// wildcard becomes the single source of truth. Allowed entries are kept — they
+				// intentionally override the wildcard.
+				int removed = blocklist.removeBlocksWithPrefix(userId, prefix);
 				if (removed > 0) {
-					LOG.info("Wildcard block '{}' subsumed {} exact block(s) of user {}.", prefix, removed, userName);
+					LOG.info("Wildcard block '{}' subsumed {} block(s) of user {}.", prefix, removed, userName);
 				}
 			}
 			blocklist.addWildcard(userId, prefix, blocked, now);
