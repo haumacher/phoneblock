@@ -482,16 +482,28 @@ public interface SpamReports {
 	 * <p>
 	 * For every number that changed in revision {@code h.RMIN} the increment is
 	 * its snapshot value minus the value of the immediately preceding snapshot
-	 * ({@code p.RMAX = h.RMIN - 1}, NULL for the first appearance). Summing over
-	 * all numbers of a revision yields the global daily activity. Revisions in
-	 * which no number changed do not appear (effectively never in production).
+	 * ({@code p.RMAX = h.RMIN - 1}). Summing over all numbers of a revision
+	 * yields the global daily activity. Revisions in which no number changed do
+	 * not appear (effectively never in production).
+	 * </p>
+	 *
+	 * <p>
+	 * A row without a predecessor contributes {@code 0}, not its full counter:
+	 * the cumulative counters span the whole lifetime of a number, so treating a
+	 * missing predecessor as {@code 0} (i.e. {@code h.VOTES - 0}) would dump the
+	 * entire backlog onto a single day. Predecessors legitimately disappear when
+	 * the retention window drops old revisions ({@link DB#updateHistory}); the
+	 * day's true increment is then unknowable and excluded rather than inflated.
+	 * The cost is a one-day undercount for a number's very first appearance,
+	 * which is negligible against the corpus total. Hence {@code coalesce} wraps
+	 * the whole difference, not just {@code p}.
 	 * </p>
 	 */
 	@Select("""
 			select r.CREATED as created,
-			       sum(h.CALLS - coalesce(p.CALLS, 0)) as calls,
-			       sum(h.VOTES - coalesce(p.VOTES, 0)) as votes,
-			       sum(h.SEARCHES - coalesce(p.SEARCHES, 0)) as searches
+			       sum(coalesce(h.CALLS - p.CALLS, 0)) as calls,
+			       sum(coalesce(h.VOTES - p.VOTES, 0)) as votes,
+			       sum(coalesce(h.SEARCHES - p.SEARCHES, 0)) as searches
 			from NUMBERS_HISTORY h
 			join REVISION r on r.ID = h.RMIN
 			left join NUMBERS_HISTORY p on p.PHONE = h.PHONE and p.RMAX = h.RMIN - 1
