@@ -549,6 +549,28 @@ public class TestDB {
 	}
 
 	@Test
+	void testWildcardListSeparation() {
+		_db.createUser("wc-sep", "WC", "de", "+49");
+		assertEquals("030123", _db.addWildcard("wc-sep", "+4930123", true, 100));
+
+		try (SqlSession tx = _db.openSession()) {
+			BlockList bl = tx.getMapper(BlockList.class);
+			long userId = tx.getMapper(Users.class).getUserId("wc-sep").longValue();
+
+			// Exact-only queries must not surface the wildcard.
+			assertTrue(bl.getPersonalizations(userId).isEmpty());
+
+			List<DBPersonalization> blocked = bl.getWildcardsWithCreated(userId, true);
+			assertEquals(1, blocked.size());
+			assertEquals("030123", blocked.get(0).getPhone());
+			assertEquals(100, blocked.get(0).getCreated());
+
+			// It is a blocked wildcard, not an allowed one.
+			assertTrue(bl.getWildcardsWithCreated(userId, false).isEmpty());
+		}
+	}
+
+	@Test
 	void testWildcardReportWeightLookup() {
 		_db.createUser("wc-user", "WC", "de", "+49");
 		assertEquals("030123", _db.addWildcard("wc-user", "+4930123", true, 0));

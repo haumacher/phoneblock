@@ -30,6 +30,9 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 	/** @see #getCreated() */
 	private static final String CREATED__PROP = "created";
 
+	/** @see #isWildcard() */
+	private static final String WILDCARD__PROP = "wildcard";
+
 	private String _phone = "";
 
 	private String _label = null;
@@ -39,6 +42,8 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 	private de.haumacher.phoneblock.app.api.model.Rating _rating = null;
 
 	private long _created = 0L;
+
+	private boolean _wildcard = false;
 
 	/**
 	 * Creates a {@link PersonalizedNumber} instance.
@@ -170,6 +175,27 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 		_created = value;
 	}
 
+	/**
+	 * Whether {@link #getPhone()} is a prefix wildcard (#377) rather than an exact number: every
+	 * number starting with the prefix is blocked, but only on the user's own devices.
+	 */
+	public final boolean isWildcard() {
+		return _wildcard;
+	}
+
+	/**
+	 * @see #isWildcard()
+	 */
+	public de.haumacher.phoneblock.app.api.model.PersonalizedNumber setWildcard(boolean value) {
+		internalSetWildcard(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #isWildcard()} without chain call utility. */
+	protected final void internalSetWildcard(boolean value) {
+		_wildcard = value;
+	}
+
 	/** Reads a new instance from the given reader. */
 	public static de.haumacher.phoneblock.app.api.model.PersonalizedNumber readPersonalizedNumber(de.haumacher.msgbuf.json.JsonReader in) throws java.io.IOException {
 		de.haumacher.phoneblock.app.api.model.PersonalizedNumber result = new de.haumacher.phoneblock.app.api.model.PersonalizedNumber();
@@ -201,6 +227,8 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 		}
 		out.name(CREATED__PROP);
 		out.value(getCreated());
+		out.name(WILDCARD__PROP);
+		out.value(isWildcard());
 	}
 
 	@Override
@@ -211,6 +239,7 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 			case COMMENT__PROP: setComment(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case RATING__PROP: setRating(de.haumacher.phoneblock.app.api.model.Rating.readRating(in)); break;
 			case CREATED__PROP: setCreated(in.nextLong()); break;
+			case WILDCARD__PROP: setWildcard(in.nextBoolean()); break;
 			default: super.readField(in, field);
 		}
 	}
@@ -233,6 +262,9 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 	/** XML attribute or element name of a {@link #getCreated} property. */
 	private static final String CREATED__XML_ATTR = "created";
 
+	/** XML attribute or element name of a {@link #isWildcard} property. */
+	private static final String WILDCARD__XML_ATTR = "wildcard";
+
 	@Override
 	public String getXmlTagName() {
 		return PERSONALIZED_NUMBER__XML_ELEMENT;
@@ -251,6 +283,7 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 		out.writeAttribute(COMMENT__XML_ATTR, getComment());
 		out.writeAttribute(RATING__XML_ATTR, getRating().protocolName());
 		out.writeAttribute(CREATED__XML_ATTR, Long.toString(getCreated()));
+		out.writeAttribute(WILDCARD__XML_ATTR, Boolean.toString(isWildcard()));
 	}
 
 	/** Serializes all fields that are written as XML elements. */
@@ -308,6 +341,10 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 				setCreated(Long.parseLong(value));
 				break;
 			}
+			case WILDCARD__XML_ATTR: {
+				setWildcard(Boolean.parseBoolean(value));
+				break;
+			}
 			default: {
 				// Skip unknown attribute.
 			}
@@ -335,6 +372,10 @@ public class PersonalizedNumber extends de.haumacher.msgbuf.data.AbstractDataObj
 			}
 			case CREATED__XML_ATTR: {
 				setCreated(Long.parseLong(in.getElementText()));
+				break;
+			}
+			case WILDCARD__XML_ATTR: {
+				setWildcard(Boolean.parseBoolean(in.getElementText()));
 				break;
 			}
 			default: {

@@ -529,6 +529,12 @@ message PersonalizedNumber {
 
 	/** Timestamp when this entry was added to the personalization list (milliseconds since epoch). */
 	long created;
+
+	/**
+	 * Whether {@link #phone} is a prefix wildcard (#377) rather than an exact number: every
+	 * number starting with the prefix is blocked, but only on the user's own devices.
+	 */
+	boolean wildcard;
 }
 
 /** A list of phone numbers (used for blacklist/whitelist responses). */
