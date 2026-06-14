@@ -92,6 +92,42 @@
 	</div>
 
 	<div class="content">
+		<form method="post" th:action="@{/update-settings(action='lists')}">
+			<input name="redirect" type="hidden" value="/blacklist"/>
+
+			<div class="field">
+				<label class="label" data-tx="t0011:7309300c">Bloknummer</label>
+				<p class="control has-icons-left">
+					<input class="input" data-tx="t0012:4e762f67" name="add-bl" placeholder="Nyt SPAM-nummer" type="tel"/>
+					<span class="icon is-small is-left">☎</span>
+				</p>
+				<p class="help" data-tx="t0013:7b65bad4">Du kan indtaste et eller flere SPAM-telefonnumre her, adskilt af kommaer, i et hvilket som helst format: 07041-123456789, +49171123456789, 0034 123456789. Numrene vil derefter blive føjet til din personlige blokeringsliste.</p>
+			</div>
+
+			<div class="field">
+				<label class="label" data-tx="t0019:b2ec7c34">Type opkald</label>
+				<div th:replace="~{fragments/page :: ratingButtons(name='add-bl-rating', selected='B_MISSED', excludeLegitimate=true)}"></div>
+			</div>
+
+			<div class="field">
+				<label class="label" data-tx="t0015:de6dcdf4">Kommentar (valgfri)</label>
+				<div class="control">
+					<textarea class="textarea" data-tx="t0016:f556d28e" name="add-bl-comment" placeholder="Hvad drejede opkaldet sig om?" rows="2"></textarea>
+				</div>
+			</div>
+
+			<div class="field is-grouped">
+				<p class="control">
+					<button class="button is-primary" type="submit">
+						<span class="icon"><i class="fa-solid fa-ban"></i></span>
+						<span data-tx="t0017:6464e726">Tilføj lås</span>
+					</button>
+				</p>
+			</div>
+		</form>
+	</div>
+
+	<div class="content">
 		<h2 data-tx="t0034:11a76919">Forbud mod wildcard</h2>
 
 		<p data-tx="t0035:99432cc1">Med en wildcard-blokering blokerer du alle numre, der begynder med et bestemt præfiks - og kun på dine egne enheder, uden at ændre fællesskabets vurdering. Hvis et wildcard fanger et opkald, rapporterer din enhed nummeret til fællesskabet; jo bredere præfikset er, jo mindre vægt får denne besked.</p>
@@ -144,45 +180,12 @@
 	</div>
 
 	<div class="content">
-		<form method="post" th:action="@{/update-settings(action='lists')}">
-			<input name="redirect" type="hidden" value="/blacklist"/>
-
-			<div class="field">
-				<label class="label" data-tx="t0011:7309300c">Bloknummer</label>
-				<p class="control has-icons-left">
-					<input class="input" data-tx="t0012:4e762f67" name="add-bl" placeholder="Nyt SPAM-nummer" type="tel"/>
-					<span class="icon is-small is-left">☎</span>
-				</p>
-				<p class="help" data-tx="t0013:7b65bad4">Du kan indtaste et eller flere SPAM-telefonnumre her, adskilt af kommaer, i et hvilket som helst format: 07041-123456789, +49171123456789, 0034 123456789. Numrene vil derefter blive føjet til din personlige blokeringsliste.</p>
-			</div>
-
-			<div class="field">
-				<label class="label" data-tx="t0019:b2ec7c34">Type opkald</label>
-				<div th:replace="~{fragments/page :: ratingButtons(name='add-bl-rating', selected='B_MISSED', excludeLegitimate=true)}"></div>
-			</div>
-
-			<div class="field">
-				<label class="label" data-tx="t0015:de6dcdf4">Kommentar (valgfri)</label>
-				<div class="control">
-					<textarea class="textarea" data-tx="t0016:f556d28e" name="add-bl-comment" placeholder="Hvad drejede opkaldet sig om?" rows="2"></textarea>
-				</div>
-			</div>
-
-			<div class="field is-grouped">
-				<p class="control">
-					<button class="button is-primary" type="submit">
-						<span class="icon"><i class="fa-solid fa-ban"></i></span>
-						<span data-tx="t0017:6464e726">Tilføj lås</span>
-					</button>
-				</p>
-				<p class="control">
-					<a class="button" th:href="@{/settings}">
-						<span class="icon"><i class="fa-solid fa-arrow-left"></i></span>
-						<span data-tx="t0018:aafd5700">Tilbage til indstillingerne</span>
-					</a>
-				</p>
-			</div>
-		</form>
+		<p class="control">
+			<a class="button" th:href="@{/settings}">
+				<span class="icon"><i class="fa-solid fa-arrow-left"></i></span>
+				<span data-tx="t0018:aafd5700">Tilbage til indstillingerne</span>
+			</a>
+		</p>
 	</div>
 </section>
 

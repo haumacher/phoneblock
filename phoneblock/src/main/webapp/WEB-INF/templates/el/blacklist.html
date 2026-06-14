@@ -92,6 +92,42 @@
 	</div>
 
 	<div class="content">
+		<form method="post" th:action="@{/update-settings(action='lists')}">
+			<input name="redirect" type="hidden" value="/blacklist"/>
+
+			<div class="field">
+				<label class="label" data-tx="t0011:7309300c">Αριθμός μπλοκ</label>
+				<p class="control has-icons-left">
+					<input class="input" data-tx="t0012:4e762f67" name="add-bl" placeholder="Νέος αριθμός SPAM" type="tel"/>
+					<span class="icon is-small is-left">☎</span>
+				</p>
+				<p class="help" data-tx="t0013:7b65bad4">Μπορείτε να εισάγετε εδώ έναν ή περισσότερους τηλεφωνικούς αριθμούς SPAM, χωρισμένους με κόμμα, σε οποιαδήποτε μορφή: 07041-123456789, +49171123456789, 0034 123456789. Οι αριθμοί θα προστεθούν στη συνέχεια στην προσωπική σας λίστα αποκλεισμού.</p>
+			</div>
+
+			<div class="field">
+				<label class="label" data-tx="t0019:b2ec7c34">Τύπος κλήσης</label>
+				<div th:replace="~{fragments/page :: ratingButtons(name='add-bl-rating', selected='B_MISSED', excludeLegitimate=true)}"></div>
+			</div>
+
+			<div class="field">
+				<label class="label" data-tx="t0015:de6dcdf4">Σχόλιο (προαιρετικό)</label>
+				<div class="control">
+					<textarea class="textarea" data-tx="t0016:f556d28e" name="add-bl-comment" placeholder="Για ποιο λόγο έγινε το τηλεφώνημα;" rows="2"></textarea>
+				</div>
+			</div>
+
+			<div class="field is-grouped">
+				<p class="control">
+					<button class="button is-primary" type="submit">
+						<span class="icon"><i class="fa-solid fa-ban"></i></span>
+						<span data-tx="t0017:6464e726">Προσθήκη κλειδαριάς</span>
+					</button>
+				</p>
+			</div>
+		</form>
+	</div>
+
+	<div class="content">
 		<h2 data-tx="t0034:11a76919">Απαγορεύσεις Wildcard</h2>
 
 		<p data-tx="t0035:99432cc1">Με ένα μπλοκάρισμα μπαλαντέρ, μπλοκάρετε όλους τους αριθμούς που αρχίζουν με ένα συγκεκριμένο πρόθεμα - και μόνο στις δικές σας συσκευές, χωρίς να αλλάξετε τη βαθμολογία της κοινότητας. Εάν ένα wildcard πιάσει μια κλήση, η συσκευή σας αναφέρει τον αριθμό στην κοινότητα- όσο ευρύτερο είναι το πρόθεμα, τόσο μικρότερη είναι η βαρύτητα αυτού του μηνύματος.</p>
@@ -144,45 +180,12 @@
 	</div>
 
 	<div class="content">
-		<form method="post" th:action="@{/update-settings(action='lists')}">
-			<input name="redirect" type="hidden" value="/blacklist"/>
-
-			<div class="field">
-				<label class="label" data-tx="t0011:7309300c">Αριθμός μπλοκ</label>
-				<p class="control has-icons-left">
-					<input class="input" data-tx="t0012:4e762f67" name="add-bl" placeholder="Νέος αριθμός SPAM" type="tel"/>
-					<span class="icon is-small is-left">☎</span>
-				</p>
-				<p class="help" data-tx="t0013:7b65bad4">Μπορείτε να εισάγετε εδώ έναν ή περισσότερους τηλεφωνικούς αριθμούς SPAM, χωρισμένους με κόμμα, σε οποιαδήποτε μορφή: 07041-123456789, +49171123456789, 0034 123456789. Οι αριθμοί θα προστεθούν στη συνέχεια στην προσωπική σας λίστα αποκλεισμού.</p>
-			</div>
-
-			<div class="field">
-				<label class="label" data-tx="t0019:b2ec7c34">Τύπος κλήσης</label>
-				<div th:replace="~{fragments/page :: ratingButtons(name='add-bl-rating', selected='B_MISSED', excludeLegitimate=true)}"></div>
-			</div>
-
-			<div class="field">
-				<label class="label" data-tx="t0015:de6dcdf4">Σχόλιο (προαιρετικό)</label>
-				<div class="control">
-					<textarea class="textarea" data-tx="t0016:f556d28e" name="add-bl-comment" placeholder="Για ποιο λόγο έγινε το τηλεφώνημα;" rows="2"></textarea>
-				</div>
-			</div>
-
-			<div class="field is-grouped">
-				<p class="control">
-					<button class="button is-primary" type="submit">
-						<span class="icon"><i class="fa-solid fa-ban"></i></span>
-						<span data-tx="t0017:6464e726">Προσθήκη κλειδαριάς</span>
-					</button>
-				</p>
-				<p class="control">
-					<a class="button" th:href="@{/settings}">
-						<span class="icon"><i class="fa-solid fa-arrow-left"></i></span>
-						<span data-tx="t0018:aafd5700">Επιστροφή στις ρυθμίσεις</span>
-					</a>
-				</p>
-			</div>
-		</form>
+		<p class="control">
+			<a class="button" th:href="@{/settings}">
+				<span class="icon"><i class="fa-solid fa-arrow-left"></i></span>
+				<span data-tx="t0018:aafd5700">Επιστροφή στις ρυθμίσεις</span>
+			</a>
+		</p>
 	</div>
 </section>
 
