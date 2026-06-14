@@ -491,6 +491,43 @@ public class TestDB {
 		assertEquals(List.of(0, 1), searches);
 	}
 
+	@Test
+	void testActivityHistoryClampsNegative() throws SQLException {
+		String raw = "061100000";
+		String id = NumberAnalyzer.getPhoneId(NumberAnalyzer.analyze(raw, "+49"));
+		long t1 = System.currentTimeMillis();
+		long t2 = t1 + 24 * 60 * 60 * 1000;
+		long t3 = t2 + 24 * 60 * 60 * 1000;
+
+		// Day 1: establish the number, day 2: a real +1 increment.
+		processVotes(raw, 5, t1);
+		_db.updateHistory(30, t1);
+		processVotes(raw, 1, t2);
+		_db.updateHistory(30, t2);
+
+		// Simulate the observed data artifact: the raw vote counter drops below
+		// the previous snapshot (no public API does this, hence the direct SQL).
+		// Bump LASTPING so day 3 re-snapshots the number with the lower value.
+		execSql("update NUMBERS set DOWN_VOTES = DOWN_VOTES - 3, LASTPING = " + t3
+			+ " where PHONE = '" + id + "'");
+		_db.updateHistory(30, t3);
+
+		Object[] history = _db.getCallsVotesSearchesHistory(30);
+		@SuppressWarnings("unchecked")
+		List<Integer> votes = (List<Integer>) history[2];
+
+		// Day 2 is the real +1, day 3 would be -3 but is clamped to 0; no bar
+		// ever goes negative.
+		assertEquals(List.of(0, 1, 0), votes);
+	}
+
+	private void execSql(String sql) throws SQLException {
+		try (Connection conn = _dataSource.getConnection();
+				PreparedStatement stmt = conn.prepareStatement(sql)) {
+			stmt.executeUpdate();
+		}
+	}
+
 	private void recordCall(String phone, long now) {
 		PhoneNumer number = NumberAnalyzer.analyze(phone, "+49");
 		String id = NumberAnalyzer.getPhoneId(number);

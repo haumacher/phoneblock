@@ -497,22 +497,31 @@ public interface SpamReports {
 	 * </p>
 	 *
 	 * <p>
-	 * A row without a predecessor contributes {@code 0}, not its full counter:
-	 * the cumulative counters span the whole lifetime of a number, so treating a
-	 * missing predecessor as {@code 0} (i.e. {@code h.CALLS - 0}) would dump the
-	 * entire backlog onto a single day. Predecessors legitimately disappear when
-	 * the retention window drops old revisions ({@link DB#updateHistory}); the
-	 * day's true increment is then unknowable and excluded rather than inflated.
-	 * The cost is a one-day undercount for a number's very first appearance,
-	 * which is negligible against the corpus total. Hence {@code coalesce} wraps
-	 * the whole difference, not just {@code p}.
+	 * Each number's per-revision contribution is clamped to a non-negative
+	 * activity count via {@code greatest(..., 0)}:
 	 * </p>
+	 * <ul>
+	 * <li>A row without a predecessor contributes {@code 0}, not its full
+	 * counter: the cumulative counters span the whole lifetime of a number, so
+	 * treating a missing predecessor as {@code 0} (i.e. {@code h.CALLS - 0})
+	 * would dump the entire backlog onto a single day. Predecessors legitimately
+	 * disappear when the retention window drops old revisions
+	 * ({@link DB#updateHistory}); the day's increment is then unknowable and
+	 * excluded rather than inflated. The cost is a one-day undercount for a
+	 * number's very first appearance, negligible against the corpus total. Hence
+	 * {@code coalesce} wraps the whole difference, not just {@code p}.</li>
+	 * <li>A <em>negative</em> per-number difference is clamped to {@code 0}. The
+	 * counters only ever grow on {@code NUMBERS}, so a snapshot value that drops
+	 * below its predecessor is a data artifact, never negative activity — and an
+	 * activity bar must not go negative. The outer {@code greatest} guards
+	 * against it regardless of the artifact's origin.</li>
+	 * </ul>
 	 */
 	@Select("""
 			select r.CREATED as created,
-			       sum(coalesce(h.CALLS - p.CALLS, 0)) as calls,
-			       sum(coalesce((h.DOWN_VOTES + h.UP_VOTES) - (p.DOWN_VOTES + p.UP_VOTES), 0)) as votes,
-			       sum(coalesce(h.SEARCHES - p.SEARCHES, 0)) as searches
+			       sum(greatest(coalesce(h.CALLS - p.CALLS, 0), 0)) as calls,
+			       sum(greatest(coalesce((h.DOWN_VOTES + h.UP_VOTES) - (p.DOWN_VOTES + p.UP_VOTES), 0), 0)) as votes,
+			       sum(greatest(coalesce(h.SEARCHES - p.SEARCHES, 0), 0)) as searches
 			from NUMBERS_HISTORY h
 			join REVISION r on r.ID = h.RMIN
 			left join NUMBERS_HISTORY p on p.PHONE = h.PHONE and p.RMAX = h.RMIN - 1
