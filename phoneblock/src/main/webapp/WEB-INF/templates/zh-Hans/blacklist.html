@@ -92,6 +92,58 @@
 	</div>
 
 	<div class="content">
+		<h2 data-tx="t0034:11a76919">通配符禁令</h2>
+
+		<p data-tx="t0035:99432cc1">通过通配符拦截，您可以拦截所有以特定前缀开头的号码，而且只能在您自己的设备上使用，不会改变社区评级。如果通配符拦截了呼叫，您的设备就会向社区报告该号码；前缀越宽，该信息的权重就越低。</p>
+
+		<th:block th:unless="${wildcards.empty}">
+			<p data-tx="t0036:363f6171">您可以使用通配符阻止这些前缀。您可以在此处删除屏蔽：</p>
+
+			<form id="wildcardDelete" method="post" th:action="@{/update-settings(action='lists')}">
+				<input name="redirect" type="hidden" value="/blacklist"/>
+			</form>
+
+			<div class="field list-entry" th:each="wildcard : ${wildcards}">
+				<label class="checkbox">
+					<input form="wildcardDelete" th:name="|wc-${wildcard.phone}|" type="checkbox"/>
+					<strong th:text="|${wildcard.display}*|"></strong>
+				</label>
+			</div>
+
+			<div class="field is-grouped">
+				<p class="control">
+					<button class="button is-danger" form="wildcardDelete" type="submit">
+						<span class="icon"><i class="fa-solid fa-trash"></i></span>
+						<span data-tx="t0037:74d7495f">删除</span>
+					</button>
+				</p>
+			</div>
+		</th:block>
+
+		<form method="post" th:action="@{/update-settings(action='lists')}">
+			<input name="redirect" type="hidden" value="/blacklist"/>
+
+			<div class="field">
+				<label class="label" data-tx="t0038:1cf90653">添加通配符锁</label>
+				<p class="control has-icons-left">
+					<input class="input" data-tx="t0039:90bb03f9" name="add-wc" placeholder="z.B. +49301234" type="tel"/>
+					<span class="icon is-small is-left"><i class="fa-solid fa-asterisk"></i></span>
+				</p>
+				<p class="help" data-tx="t0040:32e878da">输入号码前缀（例如，带有号码屏蔽的区号）。所有以该前缀开头的号码都将在您的设备上被阻止。</p>
+			</div>
+
+			<div class="field is-grouped">
+				<p class="control">
+					<button class="button is-primary" type="submit">
+						<span class="icon"><i class="fa-solid fa-asterisk"></i></span>
+						<span data-tx="t0041:86dfe9e9">添加通配符</span>
+					</button>
+				</p>
+			</div>
+		</form>
+	</div>
+
+	<div class="content">
 		<form method="post" th:action="@{/update-settings(action='lists')}">
 			<input name="redirect" type="hidden" value="/blacklist"/>
 

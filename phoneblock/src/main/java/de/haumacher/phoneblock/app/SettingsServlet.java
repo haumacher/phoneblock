@@ -267,6 +267,19 @@ public class SettingsServlet extends HttpServlet {
 							}
 						}
 					}
+					else if (key.equals("add-wc")) {
+						// Personal wildcard-prefix block (#377): no community vote, honored only by
+						// the user's own devices.
+						String addValues = entry.getValue()[0];
+						for (String value : addValues.split("[,;]")) {
+							String prefix = NumberAnalyzer.toWildcardId(value, dialPrefix);
+							if (prefix == null) {
+								continue;
+							}
+							blocklist.removePersonalization(owner, prefix);
+							blocklist.addWildcard(owner, prefix, true, System.currentTimeMillis());
+						}
+					}
 					else if (key.startsWith("bl-")) {
 						String rawPhone = key.substring("bl-".length());
 						String phone = NumberAnalyzer.toId(rawPhone);
@@ -286,6 +299,10 @@ public class SettingsServlet extends HttpServlet {
 						} else {
 							blocklist.removePersonalization(owner, phone);
 						}
+					}
+					else if (key.startsWith("wc-")) {
+						// Remove a wildcard-prefix block (#377); the form key carries the stored phone-ID prefix.
+						blocklist.removeWildcard(owner, key.substring("wc-".length()));
 					}
 				}
 			}

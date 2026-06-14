@@ -64,15 +64,19 @@ public abstract class PersonalListController extends RequireLoginController {
 			Users users = session.getMapper(Users.class);
 			Long userIdOpt = users.getUserId(userName);
 			List<PersonalListEntry> entries;
+			List<WildcardEntry> wildcards;
 			if (userIdOpt == null) {
 				entries = Collections.emptyList();
+				wildcards = Collections.emptyList();
 			} else {
 				long userId = userIdOpt.longValue();
 				BlockList blocklist = session.getMapper(BlockList.class);
 				List<String> phones = loadEntries(blocklist, userId);
 				entries = enrich(db, session, userId, phones);
+				wildcards = loadWildcards(blocklist, userId);
 			}
 			request.setAttribute(attributeName(), entries);
+			request.setAttribute("wildcards", wildcards);
 		}
 	}
 
@@ -104,6 +108,14 @@ public abstract class PersonalListController extends RequireLoginController {
 	 * Loads the entries of this controller's personal list (black- or whitelist).
 	 */
 	protected abstract List<String> loadEntries(BlockList blocklist, long userId);
+
+	/**
+	 * Loads the personal wildcard-prefix blocks shown on this page (#377). Empty by default;
+	 * only the blacklist page manages wildcards.
+	 */
+	protected List<WildcardEntry> loadWildcards(BlockList blocklist, long userId) {
+		return Collections.emptyList();
+	}
 
 	/**
 	 * Name of the request attribute under which the entries are exposed to the template.
