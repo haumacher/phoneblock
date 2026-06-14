@@ -15,18 +15,6 @@
 			<img th:src="@{/assets/img/dongle/phoneblock-dongle-800.png}"/>
 		</p>		
 
-		<div class="notification is-success">
-			<p data-tx="t0123:318064ff">Klucz sprzętowy działa <b>stabilnie ze wszystkimi routerami Fritz!Box</b> od wszystkich operatorów telefonicznych (powinien również działać z naprawdę starymi modelami Fritz!Box - ale oczywiście bez gwarancji).</p>
-		</div>
-			
-		<p data-tx="t0224:158c9a29">Klucz sprzętowy <b>działa również bez routera Fritz!Box</b>, ale przynajmniej jeden z dwóch punktów musi być spełniony:</p>
-		<ul>
-		<li data-tx="t0225:b43acc79">Router umożliwia zarejestrowanie telefonu VOIP (większość nowoczesnych routerów może to zrobić - ale na przykład "EasyBox" firmy Vodafone nie). Najlepiej jest wcześniej sprawdzić instrukcję obsługi routera.</li>
-		<li data-tx="t0226:98a33bc2">Twój operator telefoniczny umożliwia bezpośrednią rejestrację telefonu VOIP bezpośrednio w swojej infrastrukturze - wtedy model routera nie ma znaczenia. (Na przykład Deutsche Telekom na to pozwala, a Vodafone nie. Najlepiej zapytać swojego operatora).</li>
-		</ul> 
-		
-		<p data-tx="t0227:9c63c692">Jeśli udało Ci się skonfigurować klucz sprzętowy - zwłaszcza w połączeniu z routerem innym niż Fritz!Box lub "historycznym" modelem Fritz!Box - napisz <a href="#tester">raport z doświadczeń</a>, aby ta pomoc mogła zostać ulepszona.</p>
-
 		<h2 data-tx="t0004:6b104c7a">Pomysł w jednym zdaniu</h2>
 
 		<p data-tx="t0081:4d04d687">Klucz PhoneBlock loguje się do routera jak dodatkowy telefon IP. Za każdym razem, gdy przychodzi połączenie, błyskawicznie pyta bazę danych PhoneBlock: <em>"Czy to spam?"</em> Jeśli tak, sam odbiera połączenie, odtwarza krótką zapowiedź i rozłącza się ponownie. Twój prawdziwy telefon nawet nie zadzwonił w tym momencie. W przeciwieństwie do <a th:href="@{/anrufbeantworter}">automatycznej sekretarki w chmurze</a>, całe przetwarzanie połączeń odbywa się lokalnie w domu użytkownika.</p>
@@ -49,9 +37,27 @@
 			</div>
 		</div>
 
-		<div class="notification is-info">
-			<p data-tx="t0100:5bd0fd66"><strong>Dlaczego to takie urocze:</strong> Klucz PhoneBlock wymaga jedynie minimalnej mocy i Wi-Fi. Bez dodatkowego serwera, bez Fritz!Box, bez umowy. Znajdujący się wewnątrz mikrokontroler ESP32 pobiera mniej niż pół wata - można go po prostu podłączyć do portu USB routera i zapomnieć o nim.</p>
+		<h2 data-tx="t0231:7efc6f3c">Uniwersalne zastosowanie</h2>
+
+		<div class="notification is-success">
+			<p data-tx="t0123:3f292a9e">Klucz sprzętowy działa <b>stabilnie ze wszystkimi routerami Fritz!Box</b> niezależnie od operatora telefonicznego (powinien również działać z naprawdę starymi modelami Fritz!Box - ale oczywiście bez gwarancji).</p>
 		</div>
+
+		<div class="notification is-success">
+			<p data-tx="t0229:8390c45a">Klucz sprzętowy działa <b>stabilnie na wszystkich połączeniach Deutsche Telekom</b> niezależnie od używanego routera.</p>
+		</div>
+
+		<p data-tx="t0224:158c9a29">Klucz sprzętowy <b>działa również bez routera Fritz!Box</b>, ale przynajmniej jeden z dwóch punktów musi być spełniony:</p>
+		<ul>
+		<li data-tx="t0225:b43acc79">Router umożliwia zarejestrowanie telefonu VOIP (większość nowoczesnych routerów może to zrobić - ale na przykład "EasyBox" firmy Vodafone nie). Najlepiej jest wcześniej sprawdzić instrukcję obsługi routera.</li>
+		<li data-tx="t0226:98a33bc2">Twój operator telefoniczny umożliwia bezpośrednią rejestrację telefonu VOIP bezpośrednio w swojej infrastrukturze - wtedy model routera nie ma znaczenia. (Na przykład Deutsche Telekom na to pozwala, a Vodafone nie. Najlepiej zapytać swojego operatora).</li>
+		</ul> 
+
+		<div class="notification is-info">
+			<p data-tx="t0230:12c794d9">Klucz sprzętowy <b>nie działa na połączeniach Vodafone</b> w połączeniu z EasyBox od Vodafone.</p>
+		</div>
+		
+		<p data-tx="t0227:9c63c692">Jeśli udało Ci się skonfigurować klucz sprzętowy - zwłaszcza w połączeniu z routerem innym niż Fritz!Box lub "historycznym" modelem Fritz!Box - napisz <a href="#tester">raport z doświadczeń</a>, aby ta pomoc mogła zostać ulepszona.</p>
 
 		<p class="subtitle mt-6" data-tx="t0124:bd004e4f">W tym miejscu staje się to praktyczne: instrukcje prowadzą krok po kroku przez proces zamawiania i konfiguracji - około 10 euro za sprzęt, jednorazowy wysiłek trwający kilka minut.</p>
 

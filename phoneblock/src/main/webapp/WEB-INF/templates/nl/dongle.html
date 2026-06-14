@@ -15,18 +15,6 @@
 			<img th:src="@{/assets/img/dongle/phoneblock-dongle-800.png}"/>
 		</p>		
 
-		<div class="notification is-success">
-			<p data-tx="t0123:318064ff">De dongle werkt <b>stabiel met alle Fritz!Box-routers</b> van alle telefoonproviders (hij zou ook moeten werken met echt oude Fritz!Box-modellen - maar natuurlijk zonder garantie).</p>
-		</div>
-			
-		<p data-tx="t0224:158c9a29">De dongle <b>werkt ook zonder Fritz!Box router</b>, maar er moet aan ten minste een van de twee punten worden voldaan:</p>
-		<ul>
-		<li data-tx="t0225:b43acc79">Met je router kun je een VOIP-telefoon registreren (de meeste moderne routers kunnen dit, maar de "EasyBox" van Vodafone bijvoorbeeld niet). Je kunt het beste eerst de gebruiksaanwijzing van je router raadplegen.</li>
-		<li data-tx="t0226:98a33bc2">Je telefoonprovider staat de directe registratie van een VOIP-telefoon op zijn infrastructuur toe - dan maakt het model van je router niet uit. (Deutsche Telekom staat dit bijvoorbeeld toe, Vodafone niet. Je kunt dit het beste navragen bij je provider).</li>
-		</ul> 
-		
-		<p data-tx="t0227:9c63c692">Als je de dongle met succes hebt ingesteld - vooral in combinatie met een niet-Fritz!Box-router of een "historisch" Fritz!Box-model - schrijf dan een <a href="#tester">ervaringsverslag</a> zodat deze hulp kan worden verbeterd.</p>
-
 		<h2 data-tx="t0004:6b104c7a">Het idee in één zin</h2>
 
 		<p data-tx="t0081:4d04d687">De PhoneBlock dongle logt in op je router als een extra IP-telefoon. Telkens als er een gesprek binnenkomt, vraagt hij razendsnel aan de PhoneBlock database: <em>"Is dit spam?"</em> Zo ja, dan beantwoordt hij het gesprek zelf, speelt desgewenst een korte mededeling af en hangt weer op. Je echte telefoon is op dat moment nog niet eens overgegaan. In tegenstelling tot de <a th:href="@{/anrufbeantworter}">cloudbeantwoorder</a> vindt alle gespreksafhandeling plaats bij jou thuis.</p>
@@ -49,9 +37,27 @@
 			</div>
 		</div>
 
-		<div class="notification is-info">
-			<p data-tx="t0100:5bd0fd66"><strong>Waarom dit zo charmant is:</strong> De PhoneBlock dongle heeft slechts minimale stroom en Wi-Fi nodig. Geen extra server, geen Fritz!Box, geen contract. De ESP32 microcontroller in de dongle verbruikt minder dan een halve watt - je kunt hem gewoon op de USB-poort van je router aansluiten en het verder vergeten.</p>
+		<h2 data-tx="t0231:7efc6f3c">Universeel toepasbaar</h2>
+
+		<div class="notification is-success">
+			<p data-tx="t0123:3f292a9e">De dongle werkt <b>stabiel met alle Fritz!Box-routers</b>, ongeacht de telefoonprovider (hij zou ook moeten werken met echt oude Fritz!Box-modellen - maar natuurlijk zonder garantie).</p>
 		</div>
+
+		<div class="notification is-success">
+			<p data-tx="t0229:8390c45a">De dongle werkt <b>stabiel op alle verbindingen van Deutsche Telekom</b>, ongeacht welke router je gebruikt.</p>
+		</div>
+
+		<p data-tx="t0224:158c9a29">De dongle <b>werkt ook zonder Fritz!Box router</b>, maar er moet aan ten minste een van de twee punten worden voldaan:</p>
+		<ul>
+		<li data-tx="t0225:b43acc79">Met je router kun je een VOIP-telefoon registreren (de meeste moderne routers kunnen dit, maar de "EasyBox" van Vodafone bijvoorbeeld niet). Je kunt het beste eerst de gebruiksaanwijzing van je router raadplegen.</li>
+		<li data-tx="t0226:98a33bc2">Je telefoonprovider staat de directe registratie van een VOIP-telefoon op zijn infrastructuur toe - dan maakt het model van je router niet uit. (Deutsche Telekom staat dit bijvoorbeeld toe, Vodafone niet. Je kunt dit het beste navragen bij je provider).</li>
+		</ul> 
+
+		<div class="notification is-info">
+			<p data-tx="t0230:12c794d9">De dongle werkt <b>niet op Vodafone-verbindingen</b> in combinatie met een EasyBox van Vodafone.</p>
+		</div>
+		
+		<p data-tx="t0227:9c63c692">Als je de dongle met succes hebt ingesteld - vooral in combinatie met een niet-Fritz!Box-router of een "historisch" Fritz!Box-model - schrijf dan een <a href="#tester">ervaringsverslag</a> zodat deze hulp kan worden verbeterd.</p>
 
 		<p class="subtitle mt-6" data-tx="t0124:bd004e4f">Dit is waar het praktisch wordt: de instructies leiden je stap voor stap door het bestellen en instellen - ongeveer €10 hardware, een eenmalige inspanning van een paar minuten.</p>
 

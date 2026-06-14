@@ -15,18 +15,6 @@
 			<img th:src="@{/assets/img/dongle/phoneblock-dongle-800.png}"/>
 		</p>		
 
-		<div class="notification is-success">
-			<p data-tx="t0123:318064ff">The dongle runs <b>stable with all Fritz!Box routers</b> from all telephone providers (it should also work with really old Fritz!Box models - but of course without guarantee).</p>
-		</div>
-			
-		<p data-tx="t0224:158c9a29">The dongle <b>also works without a Fritz!Box router</b>, but at least one of the two points must be fulfilled:</p>
-		<ul>
-		<li data-tx="t0225:b43acc79">Your router allows you to register a VOIP phone (most modern routers can do this - but the "EasyBox" from Vodafone, for example, cannot). It is best to check the operating instructions for your router beforehand.</li>
-		<li data-tx="t0226:98a33bc2">Your telephone provider allows the direct registration of a VOIP telephone directly to its infrastructure - then your router model does not matter. (Deutsche Telekom allows this, Vodafone does not, for example. It is best to ask your provider).</li>
-		</ul> 
-		
-		<p data-tx="t0227:9c63c692">If you have successfully set up the dongle - especially in combination with a non-Fritz!Box router, or a "historical" Fritz!Box model then please write an <a href="#tester">experience report</a> so that this help can improve.</p>
-
 		<h2 data-tx="t0004:6b104c7a">The idea in one sentence</h2>
 
 		<p data-tx="t0081:4d04d687">The PhoneBlock dongle logs on to your router like an additional IP phone. Every time a call comes in, it asks the PhoneBlock database at lightning speed: <em>"Is this spam?"</em> If so, it answers the call itself, plays a short announcement if desired and hangs up again. Your real phone has not even rung at that moment. In contrast to the <a th:href="@{/anrufbeantworter}">cloud answering machine</a>, all call processing takes place locally at your home.</p>
@@ -49,9 +37,27 @@
 			</div>
 		</div>
 
-		<div class="notification is-info">
-			<p data-tx="t0100:5bd0fd66"><strong>Why this is so charming:</strong> The PhoneBlock dongle requires only minimal power and WLAN. No additional server, no Fritz!Box, no contract. The ESP32 microcontroller inside draws less than half a watt - you can simply plug it into the USB port of your router and forget about it.</p>
+		<h2 data-tx="t0231:7efc6f3c">Universally applicable</h2>
+
+		<div class="notification is-success">
+			<p data-tx="t0123:3f292a9e">The dongle runs <b>stable with all Fritz!Box routers</b> regardless of the telephone provider (it should also work with really old Fritz!Box models - but of course without guarantee).</p>
 		</div>
+
+		<div class="notification is-success">
+			<p data-tx="t0229:8390c45a">The dongle runs <b>stable on all Deutsche Telekom connections</b> regardless of which router you use.</p>
+		</div>
+
+		<p data-tx="t0224:158c9a29">The dongle <b>also works without a Fritz!Box router</b>, but at least one of the two points must be fulfilled:</p>
+		<ul>
+		<li data-tx="t0225:b43acc79">Your router allows you to register a VOIP phone (most modern routers can do this - but the "EasyBox" from Vodafone, for example, cannot). It is best to check the operating instructions for your router beforehand.</li>
+		<li data-tx="t0226:98a33bc2">Your telephone provider allows the direct registration of a VOIP telephone directly to its infrastructure - then your router model does not matter. (Deutsche Telekom allows this, Vodafone does not, for example. It is best to ask your provider).</li>
+		</ul> 
+
+		<div class="notification is-info">
+			<p data-tx="t0230:12c794d9">The dongle does <b>not work on Vodafone connections</b> in combination with an EasyBox from Vodafone.</p>
+		</div>
+		
+		<p data-tx="t0227:9c63c692">If you have successfully set up the dongle - especially in combination with a non-Fritz!Box router, or a "historical" Fritz!Box model then please write an <a href="#tester">experience report</a> so that this help can improve.</p>
 
 		<p class="subtitle mt-6" data-tx="t0124:bd004e4f">This is where it gets practical: the instructions guide you step-by-step through ordering and setup - around €10 hardware, just a few minutes' work.</p>
 

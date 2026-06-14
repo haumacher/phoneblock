@@ -15,18 +15,6 @@
 			<img th:src="@{/assets/img/dongle/phoneblock-dongle-800.png}"/>
 		</p>		
 
-		<div class="notification is-success">
-			<p data-tx="t0123:318064ff">Dongeln fungerar <b>stabilt med alla Fritz!Box-routrar</b> från alla telefonoperatörer (den bör också fungera med riktigt gamla Fritz!Box-modeller - men naturligtvis utan garanti).</p>
-		</div>
-			
-		<p data-tx="t0224:158c9a29">Dongeln <b>fungerar även utan en Fritz!Box-router</b>, men minst en av de två punkterna måste uppfyllas:</p>
-		<ul>
-		<li data-tx="t0225:b43acc79">Din router ger dig möjlighet att registrera en VOIP-telefon (de flesta moderna routrar kan göra detta - men "EasyBox" från Vodafone, till exempel, kan inte). Det är bäst att kontrollera bruksanvisningen för din router i förväg.</li>
-		<li data-tx="t0226:98a33bc2">Om din telefonoperatör tillåter direktregistrering av en VOIP-telefon direkt till sin infrastruktur - då spelar din routermodell ingen roll. (Deutsche Telekom tillåter detta, Vodafone gör det inte, till exempel. Det är bäst att fråga din leverantör).</li>
-		</ul> 
-		
-		<p data-tx="t0227:9c63c692">Om du har lyckats installera dongeln - särskilt i kombination med en router som inte är Fritz!Box, eller en "historisk" Fritz!Box-modell - skriv då en <a href="#tester">erfarenhetsrapport</a> så att den här hjälpen kan förbättras.</p>
-
 		<h2 data-tx="t0004:6b104c7a">Idén i en mening</h2>
 
 		<p data-tx="t0081:4d04d687">PhoneBlock-dongeln loggar in på din router som en extra IP-telefon. Varje gång ett samtal kommer in ställer den blixtsnabbt frågan till PhoneBlock-databasen: <em>"Är det här spam?"</em> Om så är fallet svarar den själv, spelar upp ett kort meddelande om så önskas och lägger på igen. Din riktiga telefon har inte ens ringt i det ögonblicket. Till skillnad från en <a th:href="@{/anrufbeantworter}">molnbaserad telefonsvarare</a> sker all samtalsbehandling lokalt i ditt hem.</p>
@@ -49,9 +37,27 @@
 			</div>
 		</div>
 
-		<div class="notification is-info">
-			<p data-tx="t0100:5bd0fd66"><strong>Varför detta är så charmigt:</strong> PhoneBlock-dongeln kräver endast minimal ström och Wi-Fi. Ingen extra server, ingen Fritz!Box, inget kontrakt. ESP32-mikrokontrollern inuti drar mindre än en halv watt - du kan helt enkelt ansluta den till USB-porten på din router och glömma bort den.</p>
+		<h2 data-tx="t0231:7efc6f3c">Universellt tillämplig</h2>
+
+		<div class="notification is-success">
+			<p data-tx="t0123:3f292a9e">Dongeln fungerar <b>stabilt med alla Fritz!Box-routrar</b> oavsett telefonoperatör (den bör även fungera med riktigt gamla Fritz!Box-modeller - men naturligtvis utan garanti).</p>
 		</div>
+
+		<div class="notification is-success">
+			<p data-tx="t0229:8390c45a">Dongeln körs <b>stabilt på alla Deutsche Telekom-anslutningar</b> oavsett vilken router du använder.</p>
+		</div>
+
+		<p data-tx="t0224:158c9a29">Dongeln <b>fungerar även utan en Fritz!Box-router</b>, men minst en av de två punkterna måste uppfyllas:</p>
+		<ul>
+		<li data-tx="t0225:b43acc79">Din router ger dig möjlighet att registrera en VOIP-telefon (de flesta moderna routrar kan göra detta - men "EasyBox" från Vodafone, till exempel, kan inte). Det är bäst att kontrollera bruksanvisningen för din router i förväg.</li>
+		<li data-tx="t0226:98a33bc2">Om din telefonoperatör tillåter direktregistrering av en VOIP-telefon direkt till sin infrastruktur - då spelar din routermodell ingen roll. (Deutsche Telekom tillåter detta, Vodafone gör det inte, till exempel. Det är bäst att fråga din leverantör).</li>
+		</ul> 
+
+		<div class="notification is-info">
+			<p data-tx="t0230:12c794d9">Dongeln fungerar <b>inte på Vodafone-anslutningar</b> i kombination med en EasyBox från Vodafone.</p>
+		</div>
+		
+		<p data-tx="t0227:9c63c692">Om du har lyckats installera dongeln - särskilt i kombination med en router som inte är Fritz!Box, eller en "historisk" Fritz!Box-modell - skriv då en <a href="#tester">erfarenhetsrapport</a> så att den här hjälpen kan förbättras.</p>
 
 		<p class="subtitle mt-6" data-tx="t0124:bd004e4f">Det är här det blir praktiskt: instruktionerna guidar dig steg för steg genom beställning och installation - cirka 10 euro i hårdvara, en engångsinsats på några minuter.</p>
 

@@ -15,18 +15,6 @@
 			<img th:src="@{/assets/img/dongle/phoneblock-dongle-800.png}"/>
 		</p>		
 
-		<div class="notification is-success">
-			<p data-tx="t0123:318064ff">Donglen kører <b>stabilt med alle Fritz!Box-routere</b> fra alle telefonudbydere (den skulle også fungere med rigtig gamle Fritz!Box-modeller - men selvfølgelig uden garanti).</p>
-		</div>
-			
-		<p data-tx="t0224:158c9a29">Donglen <b>fungerer også uden en Fritz!Box-router</b>, men mindst et af de to punkter skal være opfyldt:</p>
-		<ul>
-		<li data-tx="t0225:b43acc79">Din router giver dig mulighed for at registrere en VOIP-telefon (de fleste moderne routere kan gøre dette - men "EasyBox" fra Vodafone kan f.eks. ikke). Det er bedst at tjekke brugsanvisningen til din router på forhånd.</li>
-		<li data-tx="t0226:98a33bc2">Din telefonudbyder tillader direkte registrering af en VOIP-telefon direkte til sin infrastruktur - så er din routermodel ligegyldig. (Deutsche Telekom tillader dette, Vodafone gør det f.eks. ikke. Det er bedst at spørge din udbyder).</li>
-		</ul> 
-		
-		<p data-tx="t0227:9c63c692">Hvis du har haft held med at sætte donglen op - især i kombination med en ikke-Fritz!Box-router eller en "historisk" Fritz!Box-model - så skriv venligst en <a href="#tester">erfaringsrapport</a>, så denne hjælp kan blive forbedret.</p>
-
 		<h2 data-tx="t0004:6b104c7a">Ideen i én sætning</h2>
 
 		<p data-tx="t0081:4d04d687">PhoneBlock-donglen logger på din router som en ekstra IP-telefon. Hver gang der kommer et opkald, spørger den lynhurtigt PhoneBlock-databasen: <em>"Er dette spam?"</em> Hvis det er tilfældet, besvarer den selv opkaldet, afspiller en kort meddelelse, hvis det ønskes, og lægger på igen. Din rigtige telefon har ikke engang ringet i det øjeblik. I modsætning til <a th:href="@{/anrufbeantworter}">sky-telefonsvareren</a> foregår al opkaldsbehandling lokalt i dit hjem.</p>
@@ -49,9 +37,27 @@
 			</div>
 		</div>
 
-		<div class="notification is-info">
-			<p data-tx="t0100:5bd0fd66"><strong>Hvorfor det er så charmerende:</strong> PhoneBlock-donglen kræver kun minimal strøm og Wi-Fi. Ingen ekstra server, ingen Fritz!Box, ingen kontrakt. ESP32-mikrocontrolleren indeni trækker mindre end en halv watt - du kan bare sætte den i USB-porten på din router og glemme alt om den.</p>
+		<h2 data-tx="t0231:7efc6f3c">Universelt anvendelig</h2>
+
+		<div class="notification is-success">
+			<p data-tx="t0123:3f292a9e">Donglen kører <b>stabilt med alle Fritz!Box-routere</b> uanset telefonudbyder (den skulle også fungere med rigtig gamle Fritz!Box-modeller - men selvfølgelig uden garanti).</p>
 		</div>
+
+		<div class="notification is-success">
+			<p data-tx="t0229:8390c45a">Donglen kører <b>stabilt på alle Deutsche Telekom-forbindelser</b>, uanset hvilken router du bruger.</p>
+		</div>
+
+		<p data-tx="t0224:158c9a29">Donglen <b>fungerer også uden en Fritz!Box-router</b>, men mindst et af de to punkter skal være opfyldt:</p>
+		<ul>
+		<li data-tx="t0225:b43acc79">Din router giver dig mulighed for at registrere en VOIP-telefon (de fleste moderne routere kan gøre dette - men "EasyBox" fra Vodafone kan f.eks. ikke). Det er bedst at tjekke brugsanvisningen til din router på forhånd.</li>
+		<li data-tx="t0226:98a33bc2">Din telefonudbyder tillader direkte registrering af en VOIP-telefon direkte til sin infrastruktur - så er din routermodel ligegyldig. (Deutsche Telekom tillader dette, Vodafone gør det f.eks. ikke. Det er bedst at spørge din udbyder).</li>
+		</ul> 
+
+		<div class="notification is-info">
+			<p data-tx="t0230:12c794d9">Donglen fungerer <b>ikke på Vodafone-forbindelser</b> i kombination med en EasyBox fra Vodafone.</p>
+		</div>
+		
+		<p data-tx="t0227:9c63c692">Hvis du har haft held med at sætte donglen op - især i kombination med en ikke-Fritz!Box-router eller en "historisk" Fritz!Box-model - så skriv venligst en <a href="#tester">erfaringsrapport</a>, så denne hjælp kan blive forbedret.</p>
 
 		<p class="subtitle mt-6" data-tx="t0124:bd004e4f">Det er her, det bliver praktisk: Instruktionerne guider dig trin for trin gennem bestilling og opsætning - omkring €10 hardware, en engangsindsats på et par minutter.</p>
 
