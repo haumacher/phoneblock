@@ -249,10 +249,12 @@ void app_main(void)
                 // rolled us back. The marker is set only after a complete
                 // install (every download/verify failure clears it), so
                 // this reliably means "a firmware update failed to boot".
-                // Surface it as a WARNING (→ web UI log) and leave the
-                // marker so the updater skips the same broken bits.
+                // ERROR (→ web UI log, and shipped by the log-report
+                // beacon): a bricked-and-rolled-back update is a real
+                // failure an operator should see, not routine noise. Leave
+                // the marker so the updater skips the same broken bits.
                 // Recurs once per boot until a newer build supersedes it.
-                ESP_LOGW(TAG, "firmware update to %s failed to boot — "
+                ESP_LOGE(TAG, "firmware update to %s failed to boot — "
                               "rolled back to %s", failed, current);
             }
         }

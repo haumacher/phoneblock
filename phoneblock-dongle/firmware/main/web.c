@@ -644,7 +644,11 @@ static esp_err_t finish_fritzbox_setup(httpd_req_t *req,
         app_pass, sizeof(app_pass),
         &app_err_code, app_err_msg, sizeof(app_err_msg));
     if (app_err != ESP_OK) {
-        ESP_LOGW(TAG,
+        // ERROR, not WARN: failing to register the TR-064 app leaves the
+        // blocklist sync to the Fritz!Box disabled — a real loss of
+        // function worth surfacing (and shipping via the log beacon),
+        // not transient noise.
+        ESP_LOGE(TAG,
             "RegisterApp failed (code %d, %s) — sync feature disabled",
             app_err_code, app_err_msg);
         app_user[0] = '\0';

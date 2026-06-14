@@ -78,11 +78,13 @@ static void crashreport_task(void *arg)
         return;
     }
 
-    // A stored dump means the previous run panicked. Surface that as a
-    // WARNING regardless of what happens to the dump next (erase / keep /
+    // A stored dump means the previous run panicked. Surface that as an
+    // ERROR regardless of what happens to the dump next (erase / keep /
     // upload) so a field crash is visible on the web UI's log panel even
-    // when reporting is off or the dongle isn't paired yet.
-    ESP_LOGW(TAG, "core dump from a previous crash detected (%zu bytes)", size);
+    // when reporting is off or the dongle isn't paired yet — and so the
+    // log-report beacon ships it as a backstop should the coredump upload
+    // itself be disabled or failing.
+    ESP_LOGE(TAG, "core dump from a previous crash detected (%zu bytes)", size);
 
     if (!config_crash_report_enabled()) {
         // User opted out from the web UI. Erase the dump locally so

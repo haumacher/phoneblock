@@ -188,7 +188,13 @@ static void schedule_failsafe(void)
     if (s_failsafe_active) return;
     s_failsafe_active = true;
     s_consecutive_disconnects = 0;
-    ESP_LOGW(TAG, "stored credentials not associating — entering failsafe "
+    // ERROR, not WARN: the dongle is effectively offline (it cannot
+    // associate with stored credentials) and needs operator attention.
+    // Logging at ERROR also makes the log-report beacon ship it — a lone
+    // transient disconnect (WARN) would not warrant that, but persistent
+    // failure that drove us into failsafe does. Fires once per entry
+    // (guarded by s_failsafe_active above).
+    ESP_LOGE(TAG, "stored credentials not associating — entering failsafe "
                   "(alternating WPS-listening and stored-credentials "
                   "retry every %d s; credentials remain in NVS)",
              FAILSAFE_PHASE_MS / 1000);
