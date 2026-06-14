@@ -130,6 +130,29 @@ class TestNumberTree {
 	}
 	
 	@Test
+	void testExplicitWildcardAbsorbsNumbers() {
+		NumberTree tree = new NumberTree();
+		// Only two numbers under the prefix - below the automatic folding threshold.
+		tree.insert("+4930123010");
+		tree.insert("+4930123011");
+		// A personal wildcard (#377) over a broader prefix must still emit and absorb them.
+		tree.insertWildcard("+49301", 10_000_000, 0);
+		tree.markWildcards();
+
+		assertEquals(List.of("+49301*"), tree.createBlockEntries());
+	}
+
+	@Test
+	void testExplicitWildcardLeaf() {
+		NumberTree tree = new NumberTree();
+		// A personal wildcard with no common numbers under it (leaf node).
+		tree.insertWildcard("+495551234", 10_000_000, 0);
+		tree.markWildcards();
+
+		assertEquals(List.of("+495551234*"), tree.createBlockEntries());
+	}
+
+	@Test
 	void testRealData() throws IOException {
 		NumberTree tree = new NumberTree();
 

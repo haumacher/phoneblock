@@ -4,12 +4,9 @@
 package de.haumacher.phoneblock.analysis;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * Utility to remove prefixes from a list of phone numbers and group multiple numbers with the same
@@ -192,11 +189,19 @@ public class NumberTree {
 			info.set(depth, count, allowWildcard);
 		}
 
-		/** 
+		/**
 		 * Whether this is a wildcard node.
 		 */
 		private boolean isWildcard() {
 			return _wildcard;
+		}
+
+		/**
+		 * Explicitly marks this node as a wildcard node (#377), independent of the
+		 * {@link #markWildcards(Info)} threshold.
+		 */
+		void markWildcard() {
+			_wildcard = true;
 		}
 
 		/** 
@@ -223,27 +228,29 @@ public class NumberTree {
 		}
 
 		private int sumWeight() {
-			if (_next == null || _next.length == 0) {
-				return _weight;
-			} else {
-				return Arrays.stream(_next).filter(Objects::nonNull).collect(Collectors.summingInt(Node::sumWeight));
+			// Includes this node's own weight: a node may be both a complete number (or an
+			// explicit wildcard prefix, #377) and the prefix of deeper numbers.
+			int sum = _weight;
+			if (_next != null) {
+				for (Node child : _next) {
+					if (child != null) {
+						sum += child.sumWeight();
+					}
+				}
 			}
+			return sum;
 		}
 
 		private int maxHeat() {
-			if (_next == null || _next.length == 0) {
-				return _heat;
-			} else {
-				int heat = 0;
+			int heat = _heat;
+			if (_next != null) {
 				for (Node child : _next) {
-					if (child == null) {
-						continue;
+					if (child != null) {
+						heat = Math.max(heat, child.maxHeat());
 					}
-
-					heat = Math.max(heat, child.maxHeat());
 				}
-				return heat;
 			}
+			return heat;
 		}
 	}
 
@@ -277,6 +284,15 @@ public class NumberTree {
 
 	public void insert(String phone, int weight, int heat) {
 		_root.append(phone, 0, weight, heat);
+	}
+
+	/**
+	 * Inserts an explicit prefix wildcard (#377): {@code prefix} is emitted as a
+	 * '{@code <prefix>*}' block regardless of the {@link #markWildcards()} threshold, so a
+	 * user's personal wildcard applies even when automatic wildcard folding is off.
+	 */
+	public void insertWildcard(String prefix, int weight, int heat) {
+		_root.append(prefix, 0, weight, heat).markWildcard();
 	}
 
 	public void markWildcards() {
