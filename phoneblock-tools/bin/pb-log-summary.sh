@@ -61,7 +61,18 @@ shopt -s nullglob
 matches=( $FILES )
 shopt -u nullglob
 if [ ${#matches[@]} -eq 0 ]; then
-	echo "pb-log-summary: no log files match: $FILES" >&2
+	# Distinguish "directory not accessible" (needs sudo / wrong host) from a
+	# genuinely empty match -- an empty glob looks the same in both cases.
+	dir=$(dirname -- "$FILES")
+	if [ ! -d "$dir" ]; then
+		echo "pb-log-summary: directory does not exist: $dir" >&2
+		echo "  Running locally? Point -f at the log copy, e.g. -f 'tmp/pb-logs/phoneblock.log*'." >&2
+	elif [ ! -r "$dir" ] || [ ! -x "$dir" ]; then
+		echo "pb-log-summary: cannot read directory (permission denied): $dir" >&2
+		echo "  Tomcat logs are usually not world-readable -- retry with: sudo $0 $*" >&2
+	else
+		echo "pb-log-summary: no log files match: $FILES" >&2
+	fi
 	exit 1
 fi
 
