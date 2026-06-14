@@ -201,14 +201,14 @@ public class PrefixCheckServlet extends HttpServlet {
 				byte[] low = prefixLow(prefix10Hex);
 				byte[] high = prefixHigh(prefix10Hex);
 				result.setRange10(toRangeMatches(
-					reports.getAggregation10ByHashPrefix(low, high, DB.MIN_AGGREGATE_10)));
+					reports.getAggregation10ByHashPrefix(low, high, DB.MIN_AGGREGATE_10), now));
 			}
 			tRange10 = System.nanoTime();
 			if (prefix100Hex != null) {
 				byte[] low = prefixLow(prefix100Hex);
 				byte[] high = prefixHigh(prefix100Hex);
 				result.setRange100(toRangeMatches(
-					reports.getAggregation100ByHashPrefix(low, high, DB.MIN_AGGREGATE_100)));
+					reports.getAggregation100ByHashPrefix(low, high, DB.MIN_AGGREGATE_100), now));
 			}
 			tRange100 = System.nanoTime();
 		}
@@ -272,7 +272,7 @@ public class PrefixCheckServlet extends HttpServlet {
 		}
 	}
 
-	static List<RangeMatch> toRangeMatches(List<AggregationInfo> aggs) {
+	static List<RangeMatch> toRangeMatches(List<AggregationInfo> aggs, long now) {
 		List<RangeMatch> result = new ArrayList<>(aggs.size());
 		for (AggregationInfo a : aggs) {
 			// Return the prefix in international (E.164) format so it lines up with
@@ -280,9 +280,15 @@ public class PrefixCheckServlet extends HttpServlet {
 			// Aggregation rows are stored as national keys ("0163…", "0018…") but
 			// the SHA-1 columns are computed over the international form, so the
 			// client's prefix-length comparison must also see the +-form here.
+			//
+			// #300 follow-up: VOTES is no longer maintained; the row carries the summed projected
+			// member evidence. votes = its decoded net magnitude (the wildcard-vote value), cnt =
+			// the current member count.
+			double spam = Ema.decode(a.getSpamEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
+			double legit = Ema.decode(a.getLegitEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
 			result.add(RangeMatch.create()
 				.setPrefix(NumberAnalyzer.toInternationalFormat(a.getPrefix()))
-				.setVotes(a.getVotes())
+				.setVotes((int) Math.round(Math.max(0.0, spam - legit)))
 				.setCnt(a.getCnt()));
 		}
 		return result;
