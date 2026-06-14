@@ -26,6 +26,7 @@ import de.haumacher.phoneblock.app.api.SpamCheckServlet;
 import de.haumacher.phoneblock.app.api.TestConnectServlet;
 import de.haumacher.phoneblock.carddav.CardDavServlet;
 import de.haumacher.phoneblock.dongle.coredump.CoredumpServlet;
+import de.haumacher.phoneblock.dongle.logreport.LogReportServlet;
 import de.haumacher.phoneblock.db.settings.AuthToken;
 import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.FilterChain;
@@ -53,6 +54,7 @@ import jakarta.servlet.http.HttpServletResponse;
 	RateServlet.PATH,
 	LoginTicketServlet.PATH,
 	CoredumpServlet.URL_PATTERN,
+	LogReportServlet.URL_PATTERN,
 	SearchApiServlet.PATTERN,
 	CardDavServlet.URL_PATTERN,
 	NumServlet.PREFIX + "/*",
@@ -123,6 +125,7 @@ public class BasicLoginFilter extends LoginFilter {
 			return authorization.isAccessDownload();
 		case RateServlet.PATH:
 		case CoredumpServlet.URL_PATTERN:
+		case LogReportServlet.URL_PATTERN:
 		case ReportCallServlet.PATH:
 		case PersonalizationServlet.BLACKLIST_PATH:
 		case PersonalizationServlet.WHITELIST_PATH:

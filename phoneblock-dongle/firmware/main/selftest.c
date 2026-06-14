@@ -10,6 +10,7 @@
 
 #include "api.h"
 #include "config.h"
+#include "logreport.h"
 #include "ticks_util.h"
 
 static const char *TAG = "selftest";
@@ -34,6 +35,12 @@ static void selftest_task(void *arg)
         if (strlen(config_phoneblock_token()) == 0) continue;
         ESP_LOGI(TAG, "scheduled token self-test");
         phoneblock_selftest(NULL);
+        // Piggyback the daily wakeup: ship any new WARN/ERROR log lines
+        // so a running-but-misbehaving dongle (e.g. one that lost SIP
+        // registration without crashing) becomes visible server-side
+        // instead of only on the local web UI. No-op when there's
+        // nothing new or the user opted out.
+        logreport_flush();
     }
 }
 
