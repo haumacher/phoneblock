@@ -1970,6 +1970,10 @@ class PersonalizedNumber extends _JsonObject {
 	/// Timestamp when this entry was added to the personalization list (milliseconds since epoch).
 	int created;
 
+	/// Whether [phone] is a prefix wildcard (#377) rather than an exact number: every number
+	/// starting with the prefix is blocked, but only on the user's own devices.
+	bool wildcard;
+
 	/// Creates a PersonalizedNumber.
 	PersonalizedNumber({
 			this.phone = "",
@@ -1977,6 +1981,7 @@ class PersonalizedNumber extends _JsonObject {
 			this.comment,
 			this.rating,
 			this.created = 0,
+			this.wildcard = false,
 	});
 
 	/// Parses a PersonalizedNumber from a string source.
@@ -2017,6 +2022,10 @@ class PersonalizedNumber extends _JsonObject {
 				created = json.expectInt();
 				break;
 			}
+			case "wildcard": {
+				wildcard = json.expectBool();
+				break;
+			}
 			default: super._readProperty(key, json);
 		}
 	}
@@ -2048,6 +2057,9 @@ class PersonalizedNumber extends _JsonObject {
 
 		json.addKey("created");
 		json.addNumber(created);
+
+		json.addKey("wildcard");
+		json.addBool(wildcard);
 	}
 
 }
