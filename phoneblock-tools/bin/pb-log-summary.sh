@@ -80,6 +80,23 @@ fi
 # a "[date] LEVEL:" prefix), optionally restricted to a date prefix.
 record_re="^\[${DATE}[^]]*\] (${LEVELS}):"
 
+# Normalization for message grouping: replace the variable parts of a message
+# with stable placeholders so that records differing only in ids/numbers/dates
+# collapse into a single counted group. Rules are ordered -- earlier ones see
+# the raw digits the later ones would consume. perl (not sed) is required for
+# the <TOKEN> rule, whose lookaheads express "contains lower AND upper AND
+# digit" -- the signature of a random credential token that has no other tell.
+normalize='
+	s/^\[[^]]*\] //;                                                                                    # drop "[date] " prefix
+	s/\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun) (?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) +\d+ \d+:\d+:\d+ \w+ \d{4}\b/<DATE>/g;  # java Date.toString()
+	s/\[(?:[0-9a-fA-F]{0,4}:){2,}[0-9a-fA-F]{0,4}\]/[<IP6>]/g;                                           # bracketed IPv6
+	s/\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/<IP>/g;                                                     # IPv4
+	s/\b[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\b/<UUID>/g;          # UUID (user id)
+	s/\b(?=[A-Za-z0-9]{12,}\b)(?=[A-Za-z0-9]*[a-z])(?=[A-Za-z0-9]*[A-Z])(?=[A-Za-z0-9]*\d)[A-Za-z0-9]+\b/<TOKEN>/g;  # random credential token
+	s/\b(?=[0-9a-fA-F]{8,}\b)[0-9a-fA-F]*[a-fA-F][0-9a-fA-F]*\b/<HEX>/g;                                 # sha1 hash / device token (hex WITH a letter; pure digits stay numbers)
+	s/\d+/<N>/g;                                                                                         # any remaining number (phone, count, port)
+'
+
 # Tail of the pipeline: keep only the first TOP groups (0 = no limit). Uses awk
 # rather than head so the whole input is consumed -- head would close the pipe
 # early and make the upstream sort die with SIGPIPE (exit 141 under pipefail).
@@ -94,13 +111,9 @@ if [ "$BY_CLASS" -eq 1 ]; then
 		| sed -E 's/^\[[^]]*\] [A-Z]+: \[([^]]*)\]:.*/\1/' \
 		| sort | uniq -c | sort -rn | limit
 else
-	# Group by message: drop the timestamp, then normalize variable tokens so
-	# that messages differing only in ids/numbers collapse together.
-	#   UUIDs (user ids)             -> <UUID>   (must run before the hex rule)
-	#   long hex runs (sha1/hashes)  -> <HEX>
-	#   any digit run (phone no, id) -> <N>
+	# Group by message: normalize the variable parts (see $normalize above) so
+	# that records differing only in ids/numbers/dates collapse together.
 	grep -hE "$record_re" "${matches[@]}" \
-		| sed -E 's/^\[[^]]*\] //' \
-		| sed -E 's/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/<UUID>/g; s/[0-9a-fA-F]{8,}/<HEX>/g; s/[0-9]+/<N>/g' \
+		| perl -pe "$normalize" \
 		| sort | uniq -c | sort -rn | limit
 fi
