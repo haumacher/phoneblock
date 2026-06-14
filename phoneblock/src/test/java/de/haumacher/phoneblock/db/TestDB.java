@@ -453,12 +453,16 @@ public class TestDB {
 		recordCall(a, t1);
 		_db.updateHistory(30, t1);
 
-		// Day 2: 1 search (a) and 1 search (c), 2 votes (b), 2 calls (a, c).
-		// a and b already have a day-1 snapshot, so their increments are real
-		// deltas; c is a first appearance.
+		// Day 2: 1 search (a) and 1 search (c), 2 spam votes plus 1 legit vote
+		// (b), 2 calls (a, c). a and b already have a day-1 snapshot, so their
+		// increments are real deltas; c is a first appearance. b's net VOTES rise
+		// by only 1 (2 down - 1 up), but three votes were cast, so the activity
+		// series must report 3 - differencing the net counter would lose the
+		// legit vote (and elsewhere even go negative).
 		addSearchHit(a, t2);
 		addSearchHit(c, t2);
 		processVotes(b, 2, t2);
+		processVotes(b, -1, t2);
 		recordCall(a, t2);
 		recordCall(c, t2);
 		_db.updateHistory(30, t2);
@@ -478,10 +482,12 @@ public class TestDB {
 		// its full lifetime counter, so day 1 (all first appearances) and the
 		// first-appearance number c on day 2 add nothing. Day 2 therefore only
 		// reflects the real increments of the already-known numbers: a's extra
-		// call and search, and b's two extra votes.
+		// call and search, and b's three cast votes (2 spam + 1 legit) - the vote
+		// series counts votes cast, not the net spam balance, so it stays
+		// non-negative.
 		assertEquals(2, labels.size());
 		assertEquals(List.of(0, 1), calls);
-		assertEquals(List.of(0, 2), votes);
+		assertEquals(List.of(0, 3), votes);
 		assertEquals(List.of(0, 1), searches);
 	}
 

@@ -488,9 +488,18 @@ public interface SpamReports {
 	 * </p>
 	 *
 	 * <p>
+	 * The vote series counts votes <em>cast</em> per day, using the monotonic
+	 * {@code DOWN_VOTES + UP_VOTES} rather than the net {@code VOTES} counter.
+	 * {@code VOTES} is spam minus legit and can fall when legit votes arrive, so
+	 * differencing it would produce negative daily bars; {@code DOWN_VOTES} and
+	 * {@code UP_VOTES} only ever grow, matching the activity semantics of the
+	 * calls and searches series (both also monotonic counters).
+	 * </p>
+	 *
+	 * <p>
 	 * A row without a predecessor contributes {@code 0}, not its full counter:
 	 * the cumulative counters span the whole lifetime of a number, so treating a
-	 * missing predecessor as {@code 0} (i.e. {@code h.VOTES - 0}) would dump the
+	 * missing predecessor as {@code 0} (i.e. {@code h.CALLS - 0}) would dump the
 	 * entire backlog onto a single day. Predecessors legitimately disappear when
 	 * the retention window drops old revisions ({@link DB#updateHistory}); the
 	 * day's true increment is then unknowable and excluded rather than inflated.
@@ -502,7 +511,7 @@ public interface SpamReports {
 	@Select("""
 			select r.CREATED as created,
 			       sum(coalesce(h.CALLS - p.CALLS, 0)) as calls,
-			       sum(coalesce(h.VOTES - p.VOTES, 0)) as votes,
+			       sum(coalesce((h.DOWN_VOTES + h.UP_VOTES) - (p.DOWN_VOTES + p.UP_VOTES), 0)) as votes,
 			       sum(coalesce(h.SEARCHES - p.SEARCHES, 0)) as searches
 			from NUMBERS_HISTORY h
 			join REVISION r on r.ID = h.RMIN
