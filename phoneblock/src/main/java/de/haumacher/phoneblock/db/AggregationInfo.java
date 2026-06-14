@@ -16,6 +16,8 @@ public class AggregationInfo {
 	private double rawHeat;
 	private double spamEvidence;
 	private double legitEvidence;
+	private int members;
+	private int tens;
 
 	public AggregationInfo(String prefix, int cnt, int votes) {
 		this.prefix = prefix;
@@ -31,6 +33,14 @@ public class AggregationInfo {
 		this.rawHeat = heat;
 		this.spamEvidence = spamEvidence;
 		this.legitEvidence = legitEvidence;
+	}
+
+	/** Constructor for the {@code /100} aggregation selects, which also carry MEMBERS and TENS. */
+	public AggregationInfo(String prefix, int cnt, int votes,
+			double heat, double spamEvidence, double legitEvidence, int members, int tens) {
+		this(prefix, cnt, votes, heat, spamEvidence, legitEvidence);
+		this.members = members;
+		this.tens = tens;
 	}
 
 	/**
@@ -115,6 +125,24 @@ public class AggregationInfo {
 
 	public void setLegitEvidence(double legitEvidence) {
 		this.legitEvidence = legitEvidence;
+	}
+
+	/** {@code /100} only: total currently-spam numbers in the block (#300 follow-up). */
+	public int getMembers() {
+		return members;
+	}
+
+	public void setMembers(int members) {
+		this.members = members;
+	}
+
+	/** {@code /100} only: number of /10 sub-blocks with at least {@code SPREAD_TEN_CONTRIB} members. */
+	public int getTens() {
+		return tens;
+	}
+
+	public void setTens(int tens) {
+		this.tens = tens;
 	}
 
 }

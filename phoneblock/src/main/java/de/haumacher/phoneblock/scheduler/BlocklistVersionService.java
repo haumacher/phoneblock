@@ -69,6 +69,15 @@ public class BlocklistVersionService implements ServletContextListener {
 	public void contextInitialized(ServletContextEvent sce) {
 		loadConfig();
 
+		// #300 follow-up: rebuild the block aggregation once at startup so the wildcard-block
+		// gate is correct immediately (the on-disk tables hold stale counts from before this
+		// version). The daily assignVersions sweep keeps it fresh afterwards.
+		try {
+			_dbService.db().recomputeBlockAggregation(System.currentTimeMillis());
+		} catch (Exception ex) {
+			LOG.error("Initial block aggregation recompute failed", ex);
+		}
+
 		LOG.info("Starting blocklist version service: schedule={}:{:02d}, interval={} minutes",
 			_scheduleHour, _scheduleMinute, _intervalMinutes);
 
@@ -198,6 +207,15 @@ public class BlocklistVersionService implements ServletContextListener {
 		LOG.info("Starting scheduled blocklist publication");
 
 		DB db = _dbService.db();
+
+		// #300 follow-up: rebuild the block aggregation (wildcard-block detection) from the
+		// current NUMBERS evidence — counts how many numbers per block are *currently* spam, so
+		// stale-but-listed blocks stay detected and faded blocks drop out.
+		try {
+			db.recomputeBlockAggregation(System.currentTimeMillis());
+		} catch (Exception ex) {
+			LOG.error("Block aggregation recompute failed", ex);
+		}
 
 		// #342: bucket-based publication. The sweep compares the live bucket
 		// of every candidate number with the published bucket in the

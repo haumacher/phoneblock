@@ -120,9 +120,28 @@ public class DB {
 
 	private static final String BASIC_AUTH_PREFIX = "Basic ";
 
+	/** Distinct currently-spam numbers a /10 block needs to be a spam block on its own (#300). */
 	public static final int MIN_AGGREGATE_10 = 4;
 
+	/** Kept for the legacy {@code /check-prefix} CNT filter; the /100 gate is spread×mass below. */
 	public static final int MIN_AGGREGATE_100 = 3;
+
+	/**
+	 * Minimum displayed net votes for a single number to count as a block "member" (#300
+	 * follow-up). {@code decode(SPAM−LEGIT)} rounded must be {@code >= 2}.
+	 */
+	public static final int MIN_MEMBER_VOTES = 2;
+
+	/**
+	 * /100 spread×mass gate (#300 follow-up): a /100 is a spam block when it has at least
+	 * {@link #SPREAD_MIN_NUMBERS} currently-spam members spread over at least
+	 * {@link #SPREAD_MIN_TENS} distinct /10 sub-blocks (each contributing /10 having at least
+	 * {@link #SPREAD_TEN_CONTRIB} members). Catches the thinly-spread spammer that a single dense
+	 * /10 would miss, while one dense /10 alone (one sub-block) never lifts its /100.
+	 */
+	public static final int SPREAD_MIN_NUMBERS = 8;
+	public static final int SPREAD_MIN_TENS = 4;
+	public static final int SPREAD_TEN_CONTRIB = 2;
 
 	/**
 	 * Initial version number for the blocklist.
@@ -411,35 +430,9 @@ public class DB {
 		        
 		        connection.commit();
 
-		        LOG.info("Computing aggregate lastPing for blocks of 10.");
-		        
-		        for (AggregationInfo a : reports.getAllAggregation10().stream().filter(a -> a.getCnt() >= DB.MIN_AGGREGATE_10).toList()) {
-		        	String prefix = a.getPrefix();
-					int prefixLength = prefix.length();
-					Long lastPing = reports.getLastPingPrefix(prefix, prefixLength + 1);
-		        	if (lastPing != null) {
-		        		reports.sendPing(prefix, prefixLength + 1, lastPing.longValue());
-		        	} else {
-		        		LOG.warn("Did not find a last ping value for prefix 10: " + prefix);
-		        	}
-		        }
-
-		        connection.commit();
-
-		        LOG.info("Computing aggregate lastPing for blocks of 100.");
-
-		        for (AggregationInfo a : reports.getAllAggregation100().stream().filter(a -> a.getCnt() >= DB.MIN_AGGREGATE_100).toList()) {
-		        	String prefix = a.getPrefix();
-					int prefixLength = prefix.length();
-					Long lastPing = reports.getLastPingPrefix(prefix, prefixLength + 2);
-		        	if (lastPing != null) {
-		        		reports.sendPing(prefix, prefixLength + 2, lastPing.longValue());
-		        	} else {
-		        		LOG.warn("Did not find a last ping value for prefix 100: " + prefix);
-		        	}
-		        }
-		        
-		        connection.commit();
+		        // #300 follow-up: the former "aggregate lastPing per block" computation was
+		        // removed — LASTPING-based inactivity archiving is gone (a number's blocklist
+		        // life is its evidence decay), so propagating a block last-ping is dead work.
 			} else if (!tableNames.contains("PROPERTIES")) {
 				runScript(connection, "db-migration-04.sql");
 				
@@ -957,21 +950,12 @@ public class DB {
 		if (rows == 0) {
 			// Number was not yet present, must be added.
 			reports.addReport(phone, hash, votes, time, heatInc, spamEvidenceInc, legitEvidenceInc);
-
-			if (votes > 0) {
-				updateAggregation10(reports, phone, 1, votes);
-			}
-		} else {
-			// Add new votes to aggregation.
-			updateAggregation10(reports, phone, delta(oldVotes, newVotes), votes);
 		}
 
-		// Issue #337: feed the block-level EMAs flat on both /10 and /100, regardless
-		// of whether the cnt/votes-promotion path applied. This catches the case where
-		// a spammer spreads votes thinly across a whole block (each individual number
-		// decays out, but the block as a whole stays hot) and lets the block decay out
-		// of wildcard-blocking once the spammer moves on.
-		addAggregationEmas(reports, phone, heatInc, spamEvidenceInc, legitEvidenceInc);
+		// #300 follow-up: rebuild this number's /100 block aggregation now (real-time, scoped to the
+		// touched /100), counting how many of its numbers are *currently* spam. The daily sweep
+		// (recomputeBlockAggregation) handles only the silent decay of blocks that get no votes.
+		recomputeBlockForNumber(reports, phone, time);
 
 		if (votes > 0) {
 			updateLocalization(reports, phone, dialPrefix, 0, 0, votes, heatInc, spamEvidenceInc, time);
@@ -1036,112 +1020,109 @@ public class DB {
 	// per search/vote, plus a daily NUMBERS_HISTORY row for every pinged
 	// sibling via the LASTPING-based change detection of updateHistory.
 
-	private static int delta(int oldVotes, int newVotes) {
-		boolean wasSpam = oldVotes > 0;
-		boolean isSpam = newVotes > 0;
-		return wasSpam ? (isSpam ? 0 : -1) : (isSpam ? 1 : 0);
-	}
-
 	/**
-	 * Apply a delta to {@code AGGREGATION_10}, and — when the 10-block crosses
-	 * {@link #MIN_AGGREGATE_10} in either direction — promote (or unpromote) the corresponding
-	 * contribution into {@code AGGREGATION_100}.
+	 * Rebuilds the block-aggregation tables from the current {@code NUMBERS} evidence (#300
+	 * follow-up). Replaces the former incremental, independently-decaying maintenance, which
+	 * collapsed the member count of old-but-still-listed blocks below the gate.
 	 *
-	 * <p>Promotion semantics: {@code AGGREGATION_100.cnt} is <em>not</em> a count of phone
-	 * numbers in the 100-block — it is the count of 10-sub-blocks within that 100-block whose
-	 * own {@code cnt} has reached {@code MIN_AGGREGATE_10}. {@code AGGREGATION_100.votes}
-	 * sums votes only across those qualified sub-blocks. {@link #computeWildcardVotes} relies
-	 * on this invariant to avoid double-counting when both aggregations are consulted.
+	 * <p>Counts how many numbers in each block are <em>currently</em> spam (displayed net votes
+	 * {@code >= MIN_MEMBER_VOTES}) and writes a row only for blocks that qualify:</p>
+	 * <ul>
+	 * <li>a /10 with {@code >= MIN_AGGREGATE_10} members (concentration), and</li>
+	 * <li>a /100 with {@code >= SPREAD_MIN_NUMBERS} members spread over {@code >= SPREAD_MIN_TENS}
+	 *     /10 sub-blocks of {@code >= SPREAD_TEN_CONTRIB} members each (spread×mass).</li>
+	 * </ul>
+	 *
+	 * <p>The stored {@code SPAM_EVIDENCE}/{@code LEGIT_EVIDENCE} are the summed projected evidence
+	 * of the members, so the read path's magnitude {@code decode(...)} stays decay-correct between
+	 * sweeps. A row's mere presence (CNT &gt; 0) means the block qualifies.</p>
 	 */
-	private void updateAggregation10(SpamReports reports, String phone, int deltaCnt, int deltaVotes) {
-		String prefix = prefix10(phone);
+	public void recomputeBlockAggregation(long now) {
+		double minNetRaw = Ema.projectedThreshold(MIN_MEMBER_VOTES - 0.5, now, Ema.CLASSIFICATION_TAU_MILLIS);
 
-		int rows = reports.updateAggregation10(prefix, deltaCnt, deltaVotes);
-		if (rows == 0) {
-			if (deltaCnt > 0) {
-				byte[] hash = computePrefixHash(prefix);
-				if (hash != null) {
-					reports.insertAggregation10WithHash(prefix, deltaCnt, deltaVotes, hash);
-				}
-			}
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
 
-			// The newly inserted count is at most 1, therefore there is no update to the next aggregation level necessary.
-		} else {
-			if (deltaCnt != 0) {
-				// Check, whether an update to the next aggregation level is necessary.
-				AggregationInfo info = reports.getAggregation10(prefix);
-				if (info != null) {
-					int cnt = info.getCnt();
-					int votes = info.getVotes();
+			List<AggregationInfo> tens = reports.aggregateMembersByTen(minNetRaw);
 
-					int cntBefore = cnt - deltaCnt;
-					if (cntBefore < MIN_AGGREGATE_10 && cnt >= MIN_AGGREGATE_10) {
-						// Crossed up: this 10-block now qualifies. Promote its full
-						// vote count to AGGREGATION_100 (cnt100 += 1, votes100 += votes).
-						updateAggregation100(reports, phone, 1, votes);
-					}
-					else if (cntBefore >= MIN_AGGREGATE_10 && cnt < MIN_AGGREGATE_10) {
-						// Crossed down: this 10-block no longer qualifies. Subtract the
-						// votes it contributed *before* the current delta — that is the
-						// amount that was previously promoted to AGGREGATION_100.
-						int votesBefore = votes - deltaVotes;
+			reports.clearAggregation10();
+			reports.clearAggregation100();
 
-						updateAggregation100(reports, phone, -1, -votesBefore);
-					}
-				}
-			}
-		}
-	}
+			int[] blocks = writeBlocksFromTens(reports, tens);
 
-	private void updateAggregation100(SpamReports reports, String phone, int deltaCnt, int deltaVotes) {
-		String prefix = prefix100(phone);
-
-		int rows = reports.updateAggregation100(prefix, deltaCnt, deltaVotes);
-		if (rows == 0) {
-			if (deltaCnt > 0) {
-				byte[] hash = computePrefixHash(prefix);
-				if (hash != null) {
-					reports.insertAggregation100WithHash(prefix, deltaCnt, deltaVotes, hash);
-				}
-			}
+			session.commit();
+			LOG.info("Recomputed block aggregation: {} /10 blocks, {} /100 blocks (from {} populated /10).",
+				blocks[0], blocks[1], tens.size());
 		}
 	}
 
 	/**
-	 * Block-level EMA increments (#337). Adds the same projected-EMA increments
-	 * to the {@code /10} and {@code /100} aggregation rows for the given phone
-	 * — flat, on both levels, regardless of the cnt/votes-promotion path.
-	 *
-	 * <p>This is deliberately NOT folded into {@link #updateAggregation10} /
-	 * {@link #updateAggregation100}: the promotion machinery only runs for
-	 * events that move the cnt/votes counters (and skips, e.g., legitimate
-	 * votes on brand-new numbers), but the EMAs are meant to track <em>every</em>
-	 * event at every level. A separate path keeps the two concerns
-	 * independent — see issue #337.</p>
-	 *
-	 * <p>If the aggregation row does not yet exist, a fresh one is inserted
-	 * with {@code cnt = 0, votes = 0} and the EMAs set to the increment. Such
-	 * a row carries no cnt/votes contribution and therefore does not affect
-	 * the existing wildcard-vote computation built on those columns — it only
-	 * makes the block visible to future EMA reads.</p>
+	 * Incremental, real-time rebuild of the single /100 block touching the given number (#300
+	 * follow-up). Same computation as {@link #recomputeBlockAggregation} but scoped to one /100, so
+	 * a newly forming spam block is detected at vote time without waiting for the daily sweep. The
+	 * sweep stays responsible only for the silent decay of blocks that get no further votes.
 	 */
-	private void addAggregationEmas(SpamReports reports, String phone,
-			double heatInc, double spamEvidenceInc, double legitEvidenceInc) {
-		String p10 = prefix10(phone);
-		if (reports.addAggregation10Emas(p10, heatInc, spamEvidenceInc, legitEvidenceInc) == 0) {
-			byte[] hash = computePrefixHash(p10);
-			if (hash != null) {
-				reports.insertAggregation10EmasOnly(p10, hash, heatInc, spamEvidenceInc, legitEvidenceInc);
-			}
-		}
-
+	void recomputeBlockForNumber(SpamReports reports, String phone, long now) {
 		String p100 = prefix100(phone);
-		if (reports.addAggregation100Emas(p100, heatInc, spamEvidenceInc, legitEvidenceInc) == 0) {
-			byte[] hash = computePrefixHash(p100);
-			if (hash != null) {
-				reports.insertAggregation100EmasOnly(p100, hash, heatInc, spamEvidenceInc, legitEvidenceInc);
+		double minNetRaw = Ema.projectedThreshold(MIN_MEMBER_VOTES - 0.5, now, Ema.CLASSIFICATION_TAU_MILLIS);
+
+		List<AggregationInfo> tens = reports.aggregateMembersByTenForHundred(p100, minNetRaw);
+		reports.clearAggregation10ForHundred(p100);
+		reports.clearAggregation100ForHundred(p100);
+		writeBlocksFromTens(reports, tens);
+	}
+
+	/**
+	 * Writes the qualifying /10 (concentration, {@code >= MIN_AGGREGATE_10} members) and /100
+	 * (spread×mass) rows for the given per-/10 member aggregates. The aggregation rows must already
+	 * have been cleared for the covered range. Returns {@code [tenBlocks, hundredBlocks]} written.
+	 */
+	private int[] writeBlocksFromTens(SpamReports reports, List<AggregationInfo> tens) {
+		Map<String, int[]> hundredCounts = new HashMap<>();      // p100 -> [members, contributing /10s]
+		Map<String, double[]> hundredEvidence = new HashMap<>(); // p100 -> [heat, spam, legit]
+
+		int tenBlocks = 0;
+		for (AggregationInfo ten : tens) {
+			String p10 = ten.getPrefix();
+			int members = ten.getCnt();
+
+			// /10 concentration block.
+			if (members >= MIN_AGGREGATE_10) {
+				byte[] hash = computePrefixHash(p10);
+				if (hash != null) {
+					reports.insertAggregation10Full(p10, members, hash,
+						ten.getRawHeat(), ten.getSpamEvidence(), ten.getLegitEvidence());
+					tenBlocks++;
+				}
+			}
+
+			String p100 = p10.length() <= 1 ? "" : p10.substring(0, p10.length() - 1);
+			int[] counts = hundredCounts.computeIfAbsent(p100, k -> new int[2]);
+			counts[0] += members;
+			if (members >= SPREAD_TEN_CONTRIB) {
+				counts[1]++;
+			}
+			double[] ev = hundredEvidence.computeIfAbsent(p100, k -> new double[3]);
+			ev[0] += ten.getRawHeat();
+			ev[1] += ten.getSpamEvidence();
+			ev[2] += ten.getLegitEvidence();
+		}
+
+		int hundredBlocks = 0;
+		for (Map.Entry<String, int[]> e : hundredCounts.entrySet()) {
+			int members = e.getValue()[0];
+			int contributingTens = e.getValue()[1];
+			if (members >= SPREAD_MIN_NUMBERS && contributingTens >= SPREAD_MIN_TENS) {
+				String p100 = e.getKey();
+				byte[] hash = computePrefixHash(p100);
+				if (hash != null) {
+					double[] ev = hundredEvidence.get(p100);
+					reports.insertAggregation100Full(p100, members, contributingTens, hash, ev[0], ev[1], ev[2]);
+					hundredBlocks++;
+				}
 			}
 		}
+		return new int[] { tenBlocks, hundredBlocks };
 	}
 
 	/** 
@@ -2006,17 +1987,17 @@ public class DB {
 		double decodedNumberSpam = Ema.decode(rawSpam, now, Ema.CLASSIFICATION_TAU_MILLIS);
 		double decodedNumberLegit = Ema.decode(rawLegit, now, Ema.CLASSIFICATION_TAU_MILLIS);
 
-		// votesWildcard reflects the block view: take the larger of /10 and
-		// /100 decoded evidence — concentrated spam dominates via /10,
-		// spread-thin spam via /100. Do not double-count with the number-level
-		// evidence; the aggregation EMAs already contain that contribution
-		// (see #337). Net out the legitimate-evidence as we did historically.
-		double decodedBlockSpam = Math.max(
-			Ema.decode(aggregation10.getSpamEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS),
-			Ema.decode(aggregation100.getSpamEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS));
-		double decodedBlockLegit = Math.max(
-			Ema.decode(aggregation10.getLegitEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS),
-			Ema.decode(aggregation100.getLegitEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS));
+		// votesWildcard reflects the block view, but only for a block that actually qualifies as
+		// spam by the periodically-recomputed gate (#300 follow-up): the aggregation tables hold a
+		// row only for a qualifying /10 (concentration) or /100 (spread×mass). A single
+		// heavily-voted number is one member and so never produces a block row — it cannot lift
+		// its neighbours (the #337 flat-evidence regression). The magnitude is the qualifying
+		// block's decoded net evidence; 0 when no block qualifies.
+		AggregationInfo block = qualifyingSpamBlock(aggregation10, aggregation100);
+		double decodedBlockSpam = block == null ? 0.0
+			: Ema.decode(block.getSpamEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
+		double decodedBlockLegit = block == null ? 0.0
+			: Ema.decode(block.getLegitEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
 
 		// Net evidence — legitimate votes cancel out spam votes on the displayed
 		// counter. Floor at 0 so a contested number cannot read negative.
@@ -2075,19 +2056,36 @@ public class DB {
 	}
 
 	/**
-	 * Decoded block-level {@code SPAM_EVIDENCE} for the given moment (#337).
+	 * The aggregation row of the block that qualifies the given number as a wildcard-block spam
+	 * member, or {@code null} if neither its /100 nor its /10 qualifies (#300 follow-up).
 	 *
-	 * <p>The /10 and /100 aggregation EMAs are populated flat — every event
-	 * contributes once to each level — so a /100's evidence is the sum across
-	 * its 10-fold-larger neighbourhood, and a /10's is the sum within just its
-	 * 10-block. For a wildcard-block decision we use whichever is larger:
-	 * concentrated spam reaches the threshold via /10, spread-thin spam via
-	 * /100.</p>
+	 * <p>{@link #recomputeBlockAggregation} writes a row only for qualifying blocks, so a present
+	 * row (CNT &gt; 0) means the block qualifies. The /100 is preferred when present — its summed
+	 * evidence already covers the /10. The fallback {@link #notNull} rows (CNT 0) never match.</p>
 	 */
-	public double computeBlockSpamEvidence(AggregationInfo agg10, AggregationInfo agg100, long now) {
-		double e10 = Ema.decode(agg10.getSpamEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
-		double e100 = Ema.decode(agg100.getSpamEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
-		return Math.max(e10, e100);
+	public AggregationInfo qualifyingSpamBlock(AggregationInfo agg10, AggregationInfo agg100) {
+		if (agg100 != null && agg100.getCnt() > 0) {
+			return agg100;
+		}
+		if (agg10 != null && agg10.getCnt() > 0) {
+			return agg10;
+		}
+		return null;
+	}
+
+	/**
+	 * The wildcard-block vote magnitude for the given moment (#300 follow-up): the decoded net
+	 * evidence of the {@link #qualifyingSpamBlock qualifying block}, or 0 if none qualifies. Used
+	 * identically for display ({@code votesWildcard}) and the spam decision so they cannot diverge.
+	 */
+	public int computeWildcardVotes(AggregationInfo agg10, AggregationInfo agg100, long now) {
+		AggregationInfo block = qualifyingSpamBlock(agg10, agg100);
+		if (block == null) {
+			return 0;
+		}
+		double spam = Ema.decode(block.getSpamEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
+		double legit = Ema.decode(block.getLegitEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
+		return (int) Math.round(Math.max(0.0, spam - legit));
 	}
 
 	/**
@@ -2349,9 +2347,9 @@ public class DB {
 		// pure search carries no hash, and recordCall's UPDATE branch would not set it.
 		updatePhoneHashVisibility(reports, phoneId, hash);
 
-		// Block-level signal (#337) and per-region signal (#340) — both
-		// always, regardless of whether the number was new or known.
-		addAggregationEmas(reports, phoneId, heatInc, evidenceInc, 0.0);
+		// Per-region signal (#340) and real-time block rebuild for the touched /100 (#300
+		// follow-up) — a call report can push a block over the spam gate just like a vote.
+		recomputeBlockForNumber(reports, phoneId, now);
 		updateLocalization(reports, phoneId, dialPrefix, 0, 1, 0, heatInc, evidenceInc, now);
 	}
 

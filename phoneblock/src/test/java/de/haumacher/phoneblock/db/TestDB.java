@@ -644,78 +644,92 @@ public class TestDB {
 		assertEquals("\"\" 0x0 \"33a0a838-7b11-427a-\" 0x9 \"\" 0xD \"\" 0xA \"\" 0xC \"9c84-59b6ab6d3b0e\" 0x20 \"\"", DB.saveChars("\00033a0a838-7b11-427a-\t\r\n\f9c84-59b6ab6d3b0e "));
 	}
 	
-	@Test
-	void testAggregation() {
-		long now = 0;
-		
-		processVotes("040299962900", 1, now);
-		processVotes("040299962900", 1, now);
-		processVotes("040299962901", 1, now);
-		
-		checkPhone("040299962900", 2, 2, 3, 0, 0);
-		checkPhone("040299962909", 0, 2, 3, 0, 0);
-		checkPhone("040299962999", 0, 0, 0, 0, 0);
-		
-		processVotes("040299962902", 1, now);
-		processVotes("040299962903", 1, now);
-		
-		checkPhone("040299962900", 2, 4, 5, 1, 5);
-		checkPhone("040299962909", 0, 4, 5, 1, 5);
-		checkPhone("040299962999", 0, 0, 0, 1, 5);
-		
-		processVotes("040299962903", -1, now);
-		
-		checkPhone("040299962900", 2, 3, 4, 0, 0);
-		checkPhone("040299962909", 0, 3, 4, 0, 0);
-		checkPhone("040299962999", 0, 0, 0, 0, 0);
+	/** The gated block "wildcard" votes a caller would see for the given number (#300 follow-up). */
+	private int wildcardVotes(String phone) {
+		try (SqlSession tx = _db.openSession()) {
+			SpamReports reports = tx.getMapper(SpamReports.class);
+			NumberInfo info = _db.getPhoneInfo(reports, phone);
+			AggregationInfo a10 = _db.getAggregation10(reports, phone);
+			AggregationInfo a100 = _db.getAggregation100(reports, phone);
+			return _db.getPhoneInfo(info, a10, a100).getVotesWildcard();
+		}
 	}
 
+	/** A single heavily-voted number is one member — it must not turn its /10 into a spam block (#300). */
 	@Test
-	void testAggregation100() {
-		long now = 0;
-		
-		processVotes("040299962900", 1, now);
-		processVotes("040299962901", 1, now);
-		processVotes("040299962902", 1, now);
-		processVotes("040299962903", 1, now);
-		
-		processVotes("040299962910", 1, now);
-		processVotes("040299962911", 1, now);
-		processVotes("040299962912", 1, now);
-		processVotes("040299962913", 1, now);
-		
-		processVotes("040299962920", 1, now);
-		processVotes("040299962921", 1, now);
-		processVotes("040299962922", 1, now);
-		processVotes("040299962923", 1, now);
-		
-		checkPhone("040299962999", 0, 0, 0, 3, 12);
-		
-		processVotes("040299962903", -1, now);
-		processVotes("040299962913", -1, now);
-		processVotes("040299962923", -1, now);
+	void testSingleNumberDoesNotPoisonBlock() {
+		long now = System.currentTimeMillis();
+		processVotes("0305200529031", 100, now);
 
-		checkPhone("040299962999", 0, 0, 0, 0, 0);
+		assertEquals(100, _db.getVotesFor("0305200529031"));
+		assertEquals(0, wildcardVotes("0305200529031"), "one member -> /10 not a block");
+		assertEquals(0, wildcardVotes("0305200529030"), "neighbour not poisoned");
+	}
+
+	/** Four distinct members (>= 2 votes) in a /10 make it a concentration spam block (#300). */
+	@Test
+	void testFourMembersMakeTenBlock() {
+		long now = System.currentTimeMillis();
+		processVotes("0305200529030", 2, now);
+		processVotes("0305200529031", 2, now);
+		processVotes("0305200529032", 2, now);
+		assertEquals(0, wildcardVotes("0305200529039"), "three members: below the /10 gate");
+
+		processVotes("0305200529033", 2, now);
+		// Fourth member: /10 qualifies, an unvoted neighbour sees the block's net votes (4 x 2).
+		assertEquals(8, wildcardVotes("0305200529039"));
+	}
+
+	/** A number must reach {@link DB#MIN_MEMBER_VOTES} displayed votes to count toward a block (#300). */
+	@Test
+	void testMemberThresholdIsTwo() {
+		long now = System.currentTimeMillis();
+		// Four distinct numbers, one vote each — none is a member, so no block forms.
+		processVotes("0305200529030", 1, now);
+		processVotes("0305200529031", 1, now);
+		processVotes("0305200529032", 1, now);
+		processVotes("0305200529033", 1, now);
+		assertEquals(0, wildcardVotes("0305200529039"));
 	}
 
 	/**
-	 * The hash-prefix mappers used by {@code /check-prefix} must skip aggregation rows whose
-	 * {@code CNT} is below the wildcard-vote thresholds. Otherwise the API would leak ranges
-	 * that don't contribute to a wildcard vote — inconsistent with {@code /check} and with
-	 * {@link DB#computeWildcardVotes(AggregationInfo, AggregationInfo)}.
+	 * A spammer spreading 2 numbers across each of 4 /10 sub-blocks (none reaching the /10 gate of
+	 * 4) still makes the /100 a spam block via spread×mass (#300 follow-up).
 	 */
 	@Test
-	void testAggregationByHashPrefixFiltersThreshold() {
-		long now = 0;
+	void testSpreadMassMakesHundredBlock() {
+		long now = System.currentTimeMillis();
+		// /100 "03052005290": numbers are "03052005290" + <ten-digit> + <unit>. Two members in each
+		// of three /10 sub-blocks (6 numbers over 3 tens, none reaching the /10 gate): below /100 gate.
+		for (int ten = 0; ten <= 2; ten++) {
+			processVotes("03052005290" + ten + "0", 2, now);
+			processVotes("03052005290" + ten + "1", 2, now);
+		}
+		assertEquals(0, wildcardVotes("0305200529099"), "3 tens / 6 members: below spread gate");
 
-		// Block-of-10 "0402999629_0": 4 distinct numbers → qualifies (cnt10 = MIN_AGGREGATE_10).
-		processVotes("040299962900", 1, now);
-		processVotes("040299962901", 1, now);
-		processVotes("040299962902", 1, now);
-		processVotes("040299962903", 1, now);
+		// Fourth /10 sub-block with 2 members -> 8 members over 4 tens -> /100 qualifies.
+		processVotes("0305200529030", 2, now);
+		processVotes("0305200529031", 2, now);
+		assertTrue(wildcardVotes("0305200529099") > 0, "8 members over 4 tens -> /100 spam block");
+	}
 
-		// Block-of-10 "0402999628_0": 1 number only → has a hash row but cnt10 = 1 < 4.
-		processVotes("040299962800", 1, now);
+	/**
+	 * The hash-prefix mappers used by {@code /check-prefix} return only the aggregation rows of
+	 * qualifying spam blocks (#300 follow-up): a /10 with at least {@link DB#MIN_AGGREGATE_10}
+	 * current members, a /100 by spread×mass. Under-populated blocks have no row.
+	 */
+	@Test
+	void testAggregationByHashPrefixOnlyQualifyingBlocks() {
+		long now = System.currentTimeMillis();
+
+		// /10 "04029996290": 4 members (>= 2 votes each) -> qualifies as a concentration block.
+		processVotes("040299962900", 2, now);
+		processVotes("040299962901", 2, now);
+		processVotes("040299962902", 2, now);
+		processVotes("040299962903", 2, now);
+
+		// /10 "04029996280": one member -> below the /10 gate, no aggregation row.
+		processVotes("040299962800", 2, now);
 
 		byte[] low = new byte[20];
 		byte[] high = new byte[20];
@@ -723,43 +737,26 @@ public class TestDB {
 
 		try (SqlSession tx = _db.openSession()) {
 			SpamReports reports = tx.getMapper(SpamReports.class);
-
-			// Aggregation rows are keyed on the block prefix (last digit stripped).
-			// Unfiltered (minCnt = 0) sees both 10-blocks.
-			List<AggregationInfo> all10 = reports.getAggregation10ByHashPrefix(low, high, 0);
-			Set<String> all10Prefixes = all10.stream().map(AggregationInfo::getPrefix).collect(Collectors.toSet());
-			assertTrue(all10Prefixes.contains("04029996290"));
-			assertTrue(all10Prefixes.contains("04029996280"));
-
-			// Threshold filter drops the under-populated 10-block.
-			List<AggregationInfo> filtered10 = reports.getAggregation10ByHashPrefix(low, high, DB.MIN_AGGREGATE_10);
-			Set<String> filtered10Prefixes = filtered10.stream().map(AggregationInfo::getPrefix).collect(Collectors.toSet());
-			assertTrue(filtered10Prefixes.contains("04029996290"));
-			assertFalse(filtered10Prefixes.contains("04029996280"));
+			Set<String> tens = reports.getAggregation10ByHashPrefix(low, high, DB.MIN_AGGREGATE_10)
+				.stream().map(AggregationInfo::getPrefix).collect(Collectors.toSet());
+			assertTrue(tens.contains("04029996290"), "dense /10 must qualify");
+			assertFalse(tens.contains("04029996280"), "single-member /10 must not have a row");
 		}
 
-		// Promote two more 10-sub-blocks so the 100-block "040299962" qualifies (cnt100 = 3).
-		processVotes("040299962910", 1, now);
-		processVotes("040299962911", 1, now);
-		processVotes("040299962912", 1, now);
-		processVotes("040299962913", 1, now);
-
-		processVotes("040299962920", 1, now);
-		processVotes("040299962921", 1, now);
-		processVotes("040299962922", 1, now);
-		processVotes("040299962923", 1, now);
+		// /100 "0402999629" by spread×mass: 2 members in each of three further /10 sub-blocks
+		// (with …90 that is four contributing /10 and 10 members in total).
+		processVotes("040299962910", 2, now);
+		processVotes("040299962911", 2, now);
+		processVotes("040299962930", 2, now);
+		processVotes("040299962931", 2, now);
+		processVotes("040299962940", 2, now);
+		processVotes("040299962941", 2, now);
 
 		try (SqlSession tx = _db.openSession()) {
 			SpamReports reports = tx.getMapper(SpamReports.class);
-
-			List<AggregationInfo> filtered100 = reports.getAggregation100ByHashPrefix(low, high, DB.MIN_AGGREGATE_100);
-			Set<String> filtered100Prefixes = filtered100.stream().map(AggregationInfo::getPrefix).collect(Collectors.toSet());
-			assertTrue(filtered100Prefixes.contains("0402999629"));
-
-			// Raise the threshold one above what this 100-block delivers → it must drop out.
-			List<AggregationInfo> tooStrict = reports.getAggregation100ByHashPrefix(low, high, DB.MIN_AGGREGATE_100 + 1);
-			Set<String> tooStrictPrefixes = tooStrict.stream().map(AggregationInfo::getPrefix).collect(Collectors.toSet());
-			assertFalse(tooStrictPrefixes.contains("0402999629"));
+			Set<String> hundreds = reports.getAggregation100ByHashPrefix(low, high, DB.MIN_AGGREGATE_100)
+				.stream().map(AggregationInfo::getPrefix).collect(Collectors.toSet());
+			assertTrue(hundreds.contains("0402999629"), "spread×mass /100 must qualify");
 		}
 	}
 
@@ -931,74 +928,6 @@ public class TestDB {
 		}
 	}
 
-	/** Raw EMA columns from NUMBERS_AGGREGATION_10 / _100 — for #337 assertions. */
-	private double[] rawAggEmas(String prefix, int blockSize) {
-		String table = blockSize == 10 ? "NUMBERS_AGGREGATION_10" : "NUMBERS_AGGREGATION_100";
-		try (Connection conn = _dataSource.getConnection();
-				PreparedStatement stmt = conn.prepareStatement(
-					"select HEAT, SPAM_EVIDENCE, LEGIT_EVIDENCE from " + table + " where PREFIX = ?")) {
-			stmt.setString(1, prefix);
-			try (ResultSet rs = stmt.executeQuery()) {
-				if (!rs.next()) {
-					return null; // row absent
-				}
-				return new double[] { rs.getDouble(1), rs.getDouble(2), rs.getDouble(3) };
-			}
-		} catch (SQLException ex) {
-			throw new RuntimeException(ex);
-		}
-	}
-
-	@Test
-	void testAggregationEmasPopulatedFlat() {
-		// Issue #337: every vote feeds the EMAs at all three levels (number,
-		// /10, /100) flat — independent of the cnt/votes-promotion path.
-
-		long t = Ema.T0_MILLIS;
-
-		// Positive vote on a brand-new number.
-		processVotes("030555000010", 1, t);
-
-		// Number-level EMAs are populated (covered by #332 — sanity assertion).
-		double[] numberEmas = rawEmas("030555000010");
-		assertTrue(numberEmas[0] > 0, "number HEAT > 0");
-		assertTrue(numberEmas[1] > 0, "number SPAM_EVIDENCE > 0");
-
-		// /10 block (prefix '03055500001'): the row must exist and carry the same
-		// EMA increment (same weight, same time → same projected value).
-		double[] ema10 = rawAggEmas("03055500001", 10);
-		assertNotNull(ema10, "/10 aggregation row must exist after a positive vote");
-		assertEquals(numberEmas[0], ema10[0], 1e-12, "/10 HEAT must equal number HEAT");
-		assertEquals(numberEmas[1], ema10[1], 1e-12, "/10 SPAM_EVIDENCE must equal number SPAM_EVIDENCE");
-		assertEquals(0.0, ema10[2], 0.0);
-
-		// /100 block (prefix '0305550000'): same projection.
-		double[] ema100 = rawAggEmas("0305550000", 100);
-		assertNotNull(ema100, "/100 aggregation row must exist after a positive vote");
-		assertEquals(numberEmas[0], ema100[0], 1e-12, "/100 HEAT must equal number HEAT");
-		assertEquals(numberEmas[1], ema100[1], 1e-12);
-
-		// LEGITIMATE vote on a brand-new number — the existing cnt/votes-promotion
-		// path would not have created an aggregation row at all (votes < 0, rows == 0).
-		// With #337, the EMA path creates rows with cnt=0/votes=0 and carries
-		// LEGIT_EVIDENCE so the block-level decay can later balance it.
-		processVotes("030666000010", -1, t);
-		double[] legitNum = rawEmas("030666000010");
-		assertTrue(legitNum[2] > 0, "LEGIT_EVIDENCE on number");
-
-		double[] legit10 = rawAggEmas("03066600001", 10);
-		assertNotNull(legit10, "/10 row must exist even for a legitimate-only vote (#337)");
-		assertEquals(legitNum[2], legit10[2], 1e-12, "/10 LEGIT_EVIDENCE matches number");
-		assertEquals(0.0, legit10[1], 0.0, "/10 SPAM_EVIDENCE stays 0");
-
-		// Second positive vote in the SAME /10 block — block EMAs grow, cnt-promotion
-		// also moves, but the EMA path is independent and additive.
-		processVotes("030555000011", 1, t + 86_400_000L);
-		double[] ema10After = rawAggEmas("03055500001", 10);
-		assertTrue(ema10After[0] > ema10[0], "/10 HEAT must monotonically grow on a second vote in the block");
-		assertTrue(ema10After[1] > ema10[1], "/10 SPAM_EVIDENCE must monotonically grow");
-	}
-
 	@Test
 	void testConfidenceEmaBackfillAppliesTimeProjection() {
 		// Regression for the integer-division bug in backfillNumbersEmas: H2
@@ -1087,12 +1016,9 @@ public class TestDB {
 		assertEquals(0.0, before[0]);
 		assertEquals(0.0, before[1]);
 		assertEquals(0.0, before[2]);
-		double[] aggBefore = rawAggEmas("03055500001", 10);
-		assertNotNull(aggBefore);
-		assertEquals(0.0, aggBefore[0]);
-		assertEquals(0.0, aggBefore[1]);
 
-		// Run the backfill the same way migration 29 would.
+		// Run the NUMBERS EMA backfill the same way migration 29 would (the block aggregation is
+		// no longer backfilled here — it is rebuilt by recomputeBlockAggregation, #300 follow-up).
 		try (SqlSession session = _db.openSession()) {
 			MigrationStatements migrations = session.getMapper(MigrationStatements.class);
 
@@ -1104,12 +1030,6 @@ public class TestDB {
 				Signals.CALL_EVIDENCE_WEIGHT,
 				Signals.SEARCH_HEAT_WEIGHT);
 			assertTrue(n >= 4, "Backfill must touch all four seeded numbers, was " + n);
-
-			int agg10n = migrations.backfillAggregation10Emas();
-			assertTrue(agg10n >= 1, "Backfill must touch the /10 aggregation row, was " + agg10n);
-
-			int agg100n = migrations.backfillAggregation100Emas();
-			assertTrue(agg100n >= 1, "Backfill must touch the /100 aggregation row, was " + agg100n);
 
 			session.commit();
 		}
@@ -1131,20 +1051,6 @@ public class TestDB {
 		double decodedNow = Ema.decode(after[0], System.currentTimeMillis(), Ema.HEAT_TAU_MILLIS);
 		assertTrue(decodedNow > 0 && decodedNow < 4.0,
 			"Decoded HEAT at now must be > 0 and below the raw value (decay applied), was " + decodedNow);
-
-		// Aggregation rows: must be the sum of the per-number EMAs in the block.
-		double[] agg10After = rawAggEmas("03055500001", 10);
-		assertNotNull(agg10After);
-		assertTrue(agg10After[0] > 0, "/10 HEAT must be > 0 after backfill, was " + agg10After[0]);
-		// /10 block carries 030555000010..030555000013 — 4 numbers — so its
-		// EMA should be at least as large as the single-number value.
-		assertTrue(agg10After[0] >= after[0],
-			"/10 HEAT must be >= number's HEAT (sum over block), was " + agg10After[0] + " vs " + after[0]);
-
-		// /100 block (prefix '0305550000') sums the same four /10 numbers.
-		double[] agg100After = rawAggEmas("0305550000", 100);
-		assertNotNull(agg100After);
-		assertTrue(agg100After[0] >= after[0]);
 	}
 
 	/** Raw DOWN_VOTES, UP_VOTES, CALLS, SEARCHES from NUMBERS — for backfill assertions. */
@@ -1379,10 +1285,8 @@ public class TestDB {
 		assertEquals(0.0, after[2], 0.0, "LEGIT_EVIDENCE must stay 0 (calls are not legit votes)");
 		assertEquals(0, _db.getVotesFor(freshId), "Direct VOTES counter stays 0 — calls are not direct votes");
 
-		double[] block10After = rawAggEmas("03055511122", 10);
-		assertNotNull(block10After, "/10 aggregation row must exist after the report");
-		assertTrue(block10After[0] > 0, "block HEAT must rise on the report");
-		assertTrue(block10After[1] > 0, "block SPAM_EVIDENCE must rise on the report");
+		// (Block aggregation is no longer maintained per-event here; it is rebuilt by
+		// recomputeBlockAggregation, #300 follow-up. A single call forms no qualifying block.)
 
 		// Second report on the same number — accumulates, no firstFromUser cap.
 		long later = t + 60_000L;
@@ -1444,24 +1348,6 @@ public class TestDB {
 		assertEquals(2.0 * single[1], doubled[1], 1e-9);
 	}
 
-	protected void checkPhone(String phone, int votes, int cnt10, int votes10, int cnt100, int votes100) {
-		try (SqlSession tx = _db.openSession()) {
-			SpamReports reports = tx.getMapper(SpamReports.class);
-			
-			NumberInfo info = _db.getPhoneInfo(reports, phone);
-			assertEquals(votes, info.getRawVotes());
-			
-			AggregationInfo aggregation10 = _db.getAggregation10(reports, phone);
-			assertEquals(cnt10, aggregation10.getCnt());
-			assertEquals(votes10, aggregation10.getVotes());
-			
-			AggregationInfo aggregation100 = _db.getAggregation100(reports, phone);
-			assertEquals(cnt100, aggregation100.getCnt());
-			assertEquals(votes100, aggregation100.getVotes());
-			
-		}
-	}
-	
 	@Test
 	void testRating() {
 		_db.createUser("user-1", "User 1", "de", "+49");

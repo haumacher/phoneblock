@@ -160,6 +160,76 @@ public interface SpamReports {
 	@Insert("insert into NUMBERS_AGGREGATION_100 (PREFIX, CNT, VOTES, SHA1) values (#{prefix}, #{cnt}, #{votes}, #{hash})")
 	int insertAggregation100WithHash(String prefix, int cnt, int votes, byte[] hash);
 
+	// ---- Periodic block-aggregation recompute (#300 follow-up) ----
+	// The aggregation tables are no longer maintained incrementally; they are rebuilt from the
+	// current NUMBERS evidence by DB.recomputeBlockAggregation. CNT means "currently spam members"
+	// (for /10) resp. "total spam members" (for /100); a row exists only for a qualifying block.
+
+	/**
+	 * Groups all currently-spam numbers ({@code decode(SPAM−LEGIT) >= threshold}) by their /10
+	 * prefix, returning per /10 the member count ({@code cnt}) and the summed projected evidence.
+	 * {@code minNetRaw} is the projected raw threshold for the membership cut (computed in Java).
+	 * {@code votes} is unused here and selected as 0.
+	 */
+	@Select("""
+			select SUBSTRING(PHONE, 1, LENGTH(PHONE) - 1) as prefix,
+				CAST(COUNT(*) AS INTEGER) as cnt,
+				0 as votes,
+				SUM(HEAT) as heat,
+				SUM(SPAM_EVIDENCE) as spamEvidence,
+				SUM(LEGIT_EVIDENCE) as legitEvidence
+			from NUMBERS
+			where (SPAM_EVIDENCE - LEGIT_EVIDENCE) >= #{minNetRaw}
+			group by SUBSTRING(PHONE, 1, LENGTH(PHONE) - 1)
+			""")
+	List<AggregationInfo> aggregateMembersByTen(double minNetRaw);
+
+	/**
+	 * Scoped variant of {@link #aggregateMembersByTen} for a single /100 block (its members grouped
+	 * by /10), used by the per-vote incremental rebuild. The prefix range scan uses the PHONE index.
+	 */
+	@Select("""
+			select SUBSTRING(PHONE, 1, LENGTH(PHONE) - 1) as prefix,
+				CAST(COUNT(*) AS INTEGER) as cnt,
+				0 as votes,
+				SUM(HEAT) as heat,
+				SUM(SPAM_EVIDENCE) as spamEvidence,
+				SUM(LEGIT_EVIDENCE) as legitEvidence
+			from NUMBERS
+			where PHONE > #{p100} and PHONE < concat(#{p100}, 'Z')
+				and (SPAM_EVIDENCE - LEGIT_EVIDENCE) >= #{minNetRaw}
+			group by SUBSTRING(PHONE, 1, LENGTH(PHONE) - 1)
+			""")
+	List<AggregationInfo> aggregateMembersByTenForHundred(String p100, double minNetRaw);
+
+	@Delete("delete from NUMBERS_AGGREGATION_10")
+	void clearAggregation10();
+
+	@Delete("delete from NUMBERS_AGGREGATION_100")
+	void clearAggregation100();
+
+	/** Clears the /10 rows of a single /100 block (its /10 prefixes are {@code p100 + digit…}). */
+	@Delete("delete from NUMBERS_AGGREGATION_10 where PREFIX > #{p100} and PREFIX < concat(#{p100}, 'Z')")
+	void clearAggregation10ForHundred(String p100);
+
+	/** Clears the /100 row(s) within a /100 block's prefix range (covers over-long-number buckets). */
+	@Delete("delete from NUMBERS_AGGREGATION_100 where PREFIX >= #{p100} and PREFIX < concat(#{p100}, 'Z')")
+	void clearAggregation100ForHundred(String p100);
+
+	@Insert("""
+			insert into NUMBERS_AGGREGATION_10 (PREFIX, CNT, VOTES, SHA1, HEAT, SPAM_EVIDENCE, LEGIT_EVIDENCE)
+			values (#{prefix}, #{cnt}, 0, #{hash}, #{heat}, #{spamEvidence}, #{legitEvidence})
+			""")
+	int insertAggregation10Full(String prefix, int cnt, byte[] hash, double heat, double spamEvidence, double legitEvidence);
+
+	// CNT mirrors MEMBERS so presence (CNT > 0) and the RangeMatch payload stay meaningful; the
+	// explicit MEMBERS/TENS carry the spread×mass gate inputs (#300 follow-up).
+	@Insert("""
+			insert into NUMBERS_AGGREGATION_100 (PREFIX, CNT, VOTES, SHA1, HEAT, SPAM_EVIDENCE, LEGIT_EVIDENCE, MEMBERS, TENS)
+			values (#{prefix}, #{members}, 0, #{hash}, #{heat}, #{spamEvidence}, #{legitEvidence}, #{members}, #{tens})
+			""")
+	int insertAggregation100Full(String prefix, int members, int tens, byte[] hash, double heat, double spamEvidence, double legitEvidence);
+
 	@Select("select PREFIX, CNT, VOTES, HEAT as heat, SPAM_EVIDENCE as spamEvidence, LEGIT_EVIDENCE as legitEvidence from NUMBERS_AGGREGATION_10 where PREFIX = #{prefix}")
 	AggregationInfo getAggregation10(String prefix);
 
@@ -196,16 +266,6 @@ public interface SpamReports {
 	@Select("select PREFIX, CNT, VOTES, HEAT as heat, SPAM_EVIDENCE as spamEvidence, LEGIT_EVIDENCE as legitEvidence from NUMBERS_AGGREGATION_100")
 	List<AggregationInfo> getAllAggregation100();
 	
-	@Select("""
-			SELECT max(s.LASTPING) 
-			FROM NUMBERS s
-			WHERE s.PHONE > #{prefix}
-			AND s.PHONE < concat(#{prefix}, 'Z')
-			AND LENGTH(s.PHONE) = #{expectedLength}
-			AND s.SPAM_EVIDENCE > s.LEGIT_EVIDENCE
-			""")
-	Long getLastPingPrefix(String prefix, int expectedLength);
-
 	// #{minRawSpam} = maxRawSpam(1): only list related numbers that still show at least
 	// one vote, not every row with a sliver of net evidence that rounds to 0 (#300).
 	@Select("""
@@ -218,27 +278,6 @@ public interface SpamReports {
 			""")
 	List<String> getRelatedNumbers(String prefix, int expectedLength, double minRawSpam);
 
-	/**
-	 * Stamps LASTPING on all spam-positive numbers of a block.
-	 *
-	 * <p>Only used by the one-time bootstrap of pre-PROPERTIES legacy
-	 * databases in {@code DB.setupSchema} (computing the initial aggregate
-	 * last-ping per block). The former hot-path caller
-	 * {@code pingRelatedNumbers} (#91) was removed: with the confidence
-	 * model, a number's blocklist life is its evidence decay — which
-	 * LASTPING does not influence — and the mass-spammer-block case is
-	 * covered by the aggregation EMAs feeding wildcard blocking (#337).</p>
-	 */
-	@Update("""
-			update NUMBERS s
-			set
-				s.LASTPING = GREATEST(s.LASTPING, #{now})
-			where s.PHONE > #{prefix}
-			and s.PHONE < concat(#{prefix}, 'Z')
-			and LENGTH(s.PHONE) = #{expectedLength}
-			and s.SPAM_EVIDENCE > s.LEGIT_EVIDENCE
-			""")
-	void sendPing(String prefix, int expectedLength, long now);
 	
 	@Select("""
 			select count(1) from NUMBERS

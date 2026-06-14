@@ -176,27 +176,23 @@ public class SpamCheckServlet extends HttpServlet {
 				? db.notNull("", reports.getAggregation100ByHash(prefix100Hash))
 				: new AggregationInfo("", 0, 0);
 
-			// #342: align with /api/check semantics — votesWildcard is the
-			// decoded block-level SPAM_EVIDENCE rounded to an int, same axis
-			// the live blocklist filter and the wildcard-promotion path use.
+			// #300 follow-up: votesWildcard is the decoded net evidence of the block, but only for
+			// a block that qualifies as spam by the periodically-recomputed gate (a row exists only
+			// then). Same gated value the web view and the live decision use.
 			long now = System.currentTimeMillis();
-			double decodedBlock = db.computeBlockSpamEvidence(a10, a100, now);
-			int votesWildcard = (int) Math.round(Math.max(0.0, decodedBlock));
+			int votesWildcard = db.computeWildcardVotes(a10, a100, now);
 			if (votesWildcard > 0) {
-				// Confidence-model surface (#334): a wildcard-only match has no number-level
-				// row, so derive both metrics from the block — its Wilson confidence and its
-				// activity — instead of leaving them at the default 0.
-				double decodedBlockLegit = Math.max(
-					Ema.decode(a10.getLegitEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS),
-					Ema.decode(a100.getLegitEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS));
-				double blockHeat = Ema.decodeRate(
-					Math.max(a10.getRawHeat(), a100.getRawHeat()), now, Ema.HEAT_TAU_MILLIS);
+				// votesWildcard > 0 implies a qualifying block exists.
+				AggregationInfo block = db.qualifyingSpamBlock(a10, a100);
+				double decodedBlockSpam = Ema.decode(block.getSpamEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
+				double decodedBlockLegit = Ema.decode(block.getLegitEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
+				double blockHeat = Ema.decodeRate(block.getRawHeat(), now, Ema.HEAT_TAU_MILLIS);
 				return PhoneInfo.create()
 					.setPhone("unknown")
 					.setRating(Rating.B_MISSED)
 					.setVotes(0)
 					.setVotesWildcard(votesWildcard)
-					.setSpamConfidence(Confidence.spamConfidence(decodedBlock, decodedBlockLegit))
+					.setSpamConfidence(Confidence.spamConfidence(decodedBlockSpam, decodedBlockLegit))
 					.setHeat(blockHeat);
 			}
 		}
