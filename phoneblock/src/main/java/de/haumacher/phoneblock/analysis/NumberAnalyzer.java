@@ -103,13 +103,24 @@ public class NumberAnalyzer {
 	 * Shortest phone-ID prefix accepted as a wildcard block (#377).
 	 *
 	 * <p>
-	 * Breadth is self-limiting through the report weight, but a near-empty prefix
-	 * (a bare country code or shorter) would block almost everything on the user's
-	 * own devices, which is virtually always a mistake. This floor rejects those;
-	 * it mirrors the historical {@code length() < 5} "too short" heuristic.
+	 * Breadth is self-limiting through the report weight, so we only guard against a
+	 * prefix so short it blocks almost everything on the user's own devices. At length 3
+	 * a user can block a non-German country code ({@code +1} &rarr; {@code 001}) or a German
+	 * city ({@code +49 30} &rarr; {@code 030}), while a bare {@code 0} (all national) or
+	 * {@code 00} (all international) is still rejected.
+	 * </p>
+	 *
+	 * <p>
+	 * <b>Known limitation (#377):</b> wildcards are stored and matched in this German-centric
+	 * phone-ID form. German numbers shed their country code ({@code +49 30} &rarr; {@code 030}),
+	 * everyone else keeps {@code 00<cc>} ({@code +1} &rarr; {@code 001}). A clean prefix exists
+	 * for foreign country codes, but <em>not</em> for "all of Germany": {@code +49} &rarr;
+	 * {@code 0} matches every phone-ID (German {@code 0…} and international {@code 00…} alike).
+	 * Blocking a whole country symmetrically requires storing/matching wildcards in international
+	 * ({@code +CC}) form; until then this floor caps the damage at city level for Germany.
 	 * </p>
 	 */
-	public static final int MIN_WILDCARD_PREFIX_LENGTH = 5;
+	public static final int MIN_WILDCARD_PREFIX_LENGTH = 3;
 
 	/**
 	 * Converts a phone number prefix (international {@code +}, {@code 00}-international or
