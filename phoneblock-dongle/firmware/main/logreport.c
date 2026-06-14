@@ -53,6 +53,26 @@ void logreport_flush(void)
     int n = stats_snapshot_errors(errs, STATS_MAX_ERRORS);
     if (n <= 0) return;
 
+    // De-noising rule: a lone WARN is almost always transient or benign —
+    // ESP-IDF's httpd logs every client socket reset (errno 104/113) at
+    // WARN, a single self-healed retry warns once, a brief WiFi flap warns
+    // and reconnects. Shipping that drip is pure noise. Only report when a
+    // *new* ERROR is present (a failure the firmware itself flagged), and
+    // then ship the whole new WARN/ERROR window so the surrounding context
+    // rides along. When there's no new error we deliberately leave the
+    // high-water mark untouched, so the benign WARNs accumulate (bounded
+    // by the 32-entry ring) and are still there as context the moment an
+    // error eventually does fire.
+    bool have_new_error = false;
+    for (int i = 0; i < n; i++) {
+        if (errs[i].at_us > s_reported_through_us
+                && errs[i].level == ESP_LOG_ERROR) {
+            have_new_error = true;
+            break;
+        }
+    }
+    if (!have_new_error) return;
+
     char *body = malloc(LOGREPORT_BODY_CAP);
     if (!body) return;
 
