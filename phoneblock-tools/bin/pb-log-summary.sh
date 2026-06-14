@@ -88,6 +88,8 @@ record_re="^\[${DATE}[^]]*\] (${LEVELS}):"
 # digit" -- the signature of a random credential token that has no other tell.
 normalize='
 	s/^\[[^]]*\] //;                                                                                    # drop "[date] " prefix
+	s/\x27[^\x27]*\x27/\x27<ARG>\x27/g;                                                                  # single-quoted value -> one slot (a quoted log arg is almost always one source-template argument)
+	s/"[^"]*"/"<ARG>"/g;                                                                                 # double-quoted value -> one slot
 	s/\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun) (?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) +\d+ \d+:\d+:\d+ \w+ \d{4}\b/<DATE>/g;  # java Date.toString()
 	s/\[(?:[0-9a-fA-F]{0,4}:){2,}[0-9a-fA-F]{0,4}\]/[<IP6>]/g;                                           # bracketed IPv6
 	s/\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b/<IP>/g;                                                     # IPv4
