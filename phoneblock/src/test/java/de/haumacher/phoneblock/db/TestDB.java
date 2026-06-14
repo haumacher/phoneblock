@@ -444,14 +444,19 @@ public class TestDB {
 		long t1 = System.currentTimeMillis();
 		long t2 = t1 + 24 * 60 * 60 * 1000;
 
-		// Day 1: 2 searches (a), 3 votes (b), 1 call (a).
+		// Day 1: 2 searches (a), 3 votes (b), 1 call (a). All three numbers
+		// appear for the first time here, so this revision has no predecessor
+		// snapshot to diff against.
 		addSearchHit(a, t1);
 		addSearchHit(a, t1);
 		processVotes(b, 3, t1);
 		recordCall(a, t1);
 		_db.updateHistory(30, t1);
 
-		// Day 2: 1 search (c), 2 votes (b), 2 calls (a, c).
+		// Day 2: 1 search (a) and 1 search (c), 2 votes (b), 2 calls (a, c).
+		// a and b already have a day-1 snapshot, so their increments are real
+		// deltas; c is a first appearance.
+		addSearchHit(a, t2);
 		addSearchHit(c, t2);
 		processVotes(b, 2, t2);
 		recordCall(a, t2);
@@ -468,11 +473,16 @@ public class TestDB {
 		@SuppressWarnings("unchecked")
 		List<Integer> searches = (List<Integer>) history[3];
 
-		// One data point per snapshotted day; the deltas are summed across all numbers.
+		// One data point per snapshotted day; the deltas are summed across all
+		// numbers. A row without a predecessor snapshot contributes 0 rather than
+		// its full lifetime counter, so day 1 (all first appearances) and the
+		// first-appearance number c on day 2 add nothing. Day 2 therefore only
+		// reflects the real increments of the already-known numbers: a's extra
+		// call and search, and b's two extra votes.
 		assertEquals(2, labels.size());
-		assertEquals(List.of(1, 2), calls);
-		assertEquals(List.of(3, 2), votes);
-		assertEquals(List.of(2, 1), searches);
+		assertEquals(List.of(0, 1), calls);
+		assertEquals(List.of(0, 2), votes);
+		assertEquals(List.of(0, 1), searches);
 	}
 
 	private void recordCall(String phone, long now) {
