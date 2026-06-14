@@ -148,6 +148,17 @@ message PhoneInfo {
 	/** Whether this number is on the requesting user's personal block list. */
 	boolean blackListed;
 
+	/**
+	 * @deprecated Always <code>false</code>. Kept only for backwards compatibility with API clients
+	 *             written against v1.6.0 and earlier that read this field. The binary archive flag
+	 *             was replaced by the decay-aware {@link #getVotes()} value (issue #342): a number
+	 *             that stops being active now fades smoothly through the visibility threshold instead
+	 *             of flipping a separate <code>archived</code> bit. New clients must rely on
+	 *             {@link #getVotes()} / {@link #getHeat()} and ignore this field; it will be removed
+	 *             in a future API version.
+	 */
+	boolean archived;
+
 	/** Date when this number was added to the SPAM database (in milliseconds since epoch). */
 	long dateAdded;
 

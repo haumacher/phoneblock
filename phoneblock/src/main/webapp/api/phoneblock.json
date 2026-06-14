@@ -1352,7 +1352,8 @@
 					},
 					"archived": {
 						"type": "boolean",
-						"description": "Whether this number no longer is on the blocklist, because no votes have been received for a long time."
+						"deprecated": true,
+						"description": "Deprecated and always false. Kept only for backwards compatibility with clients written against API v1.6.0 and earlier. The binary archive flag was replaced by the decay-aware 'votes' value: a number that stops being active now fades smoothly through the visibility threshold instead of flipping a separate 'archived' bit. New clients must rely on 'votes'/'heat' and ignore this field; it will be removed in a future API version."
 					},
 					"dateAdded": {
 						"type": "integer",
