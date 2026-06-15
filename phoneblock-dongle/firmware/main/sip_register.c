@@ -51,10 +51,13 @@ static const char *TAG = "sip";
 // Issue #380: after we decide a call is not spam we must NOT reply with a
 // fast final response (486/480) — that makes the Fritz!Box drop the
 // Fritz!Fon app from the call (it suppresses the app while DECT keeps
-// ringing). Instead we keep "ringing" (180) for this long so the box has
-// time to start ringing the other phones (incl. waking the app by push),
-// then send the decline. Currently an experiment: we want to observe
-// whether the other phones keep ringing or drop once our branch declines.
+// ringing). It is not enough to merely precede the decline with a 180:
+// field testing showed a 180 immediately followed by 480 still leaves the
+// app silent. The box only keeps escalating the call to the app if our
+// branch stays "ringing" (180) for a while first. So we hold the 180 for
+// this long before sending the decline; the other phones keep ringing the
+// whole time and are NOT cut off when we drop out. 3 s is a tested-good
+// value; the true minimum is unknown.
 #define SIP_DECLINE_DELAY_US          (3LL * 1000000LL)
 
 // How much of an incoming INVITE we keep so the main loop can build the
@@ -1168,18 +1171,18 @@ static void handle_invite(sip_ctx_t *c, const char *req, int req_len,
         d->bye_at_us = 0;   // not a decline-delay; BYE deadline is set after ACK
         ESP_LOGI(TAG, "SPAM → 200 OK sent, waiting for ACK to hang up");
     } else {
-        // VERDICT_LEGITIMATE or VERDICT_ERROR → decline now. We already sent
-        // 180 Ringing above (before the API check) — experiment #380 showed
-        // that a 180 ahead of the final response is what keeps the Fritz!Box
-        // ringing the other phones / waking the app, and the app survives the
-        // 480 that follows. So no artificial hold is needed; the only gap
-        // between 180 and 480 is the API-check time.
-        send_response(c, from, req, req_len, 480, "Temporarily Unavailable",
-                      d->our_tag, NULL);
-        d->state = DIALOG_REJECTED;
-        d->bye_at_us = 0;
-        ESP_LOGI(TAG, "%s → 180 Ringing then 480 Temporarily Unavailable",
-                 d->verdict == VERDICT_LEGITIMATE ? "LEGITIMATE" : "ERROR");
+        // VERDICT_LEGITIMATE or VERDICT_ERROR → don't take the call, but don't
+        // decline immediately either. Experiment #380 showed the Fritz!Box only
+        // keeps ringing the Fritz!Fon app if our branch stays "ringing" for a
+        // short while before declining: a 180 *immediately* followed by 480
+        // (verified with a known contact, where the verdict short-circuits with
+        // no API call, so 180/480 go out back-to-back) leaves the app silent;
+        // a 180 held for ~3 s before the 480 lets the app ring. So we keep the
+        // 180 (sent above) and let the main loop send the 480 only after
+        // SIP_DECLINE_DELAY_US has elapsed.
+        ESP_LOGI(TAG, "%s → 180 Ringing, declining in %lld ms",
+                 d->verdict == VERDICT_LEGITIMATE ? "LEGITIMATE" : "ERROR",
+                 (long long)(SIP_DECLINE_DELAY_US / 1000));
     }
 }
 
