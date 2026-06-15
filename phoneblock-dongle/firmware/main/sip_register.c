@@ -1118,32 +1118,44 @@ static void handle_invite(sip_ctx_t *c, const char *req, int req_len,
         return;
     }
 
-    // Second call arriving while we're busy with another.
+    // Second call arriving while we're busy with another. The new caller may
+    // be a spammer we must take right away, so the two long-lived states are
+    // preempted; the rest clear within ~a second.
     if (d->state != DIALOG_IDLE) {
-        // The only state worth preempting is DIALOG_STREAMING — there
-        // we'd otherwise hold the new caller off for 5–15 s of audio
-        // playback against an already-classified spammer. All other
-        // states (TRYING/PROCEEDING/ANSWERED/REJECTED/BYE_SENT) clear
-        // within seconds; making the new caller wait that out is fine.
-        if (d->state != DIALOG_STREAMING) {
-            // Reply 180 Ringing, not 486 Busy Here: a "busy" from us would
-            // make the Fritz!Box drop the Fritz!Fon app for this second call
-            // too (issue #380). We don't track this dialog — the real phones
-            // ring it and the box cancels our branch.
+        if (d->state == DIALOG_STREAMING) {
+            // Playing a tone at an already-classified spammer — abort it and
+            // BYE so the new caller isn't held off 5–15 s.
+            ESP_LOGI(TAG, "second INVITE during STREAMING → preempt: "
+                          "abort announcement, BYE old dialog, take new call");
+            rtp_request_abort();
+            send_bye(c);
+            // BYE is fire-and-forget UDP. Any straggler 200/ACK/BYE for the
+            // old Call-ID will Call-ID-mismatch in handle_incoming and be
+            // discarded — wipe and fall through to the IDLE path.
+            memset(d, 0, sizeof(*d));
+        } else if (d->state == DIALOG_PROCEEDING) {
+            // We already decided the first call is legitimate and are only
+            // holding its 180 to keep the Fritz!Box ringing the real phones
+            // (#380). The dongle isn't needed for that — so don't waste the
+            // slot: leave the first branch ringing (no final response, so its
+            // app keeps ringing) and take the slot to spam-check the new
+            // caller now. When the first call ends, the box CANCELs its branch;
+            // handle_cancel still 200-OKs that (it echoes the CANCEL's own
+            // To-tag), we just no longer send its 480.
+            ESP_LOGI(TAG, "second INVITE during PROCEEDING → leave first call "
+                          "ringing, handle new (possibly spam) caller");
+            memset(d, 0, sizeof(*d));
+        } else {
+            // TRYING/ANSWERED/REJECTED/BYE_SENT all clear within ~a second.
+            // Reply 180 Ringing (not 486 Busy Here: a "busy" from us would make
+            // the box drop the Fritz!Fon app for this call too, #380). We don't
+            // track it — the real phones ring it and the box cancels our branch.
             ESP_LOGW(TAG, "second INVITE in state %d → 180 Ringing (untracked)",
                      d->state);
             send_response(c, from, req, req_len, 180, "Ringing",
                           NULL, NULL);
             return;
         }
-        ESP_LOGI(TAG, "second INVITE during STREAMING → preempt: "
-                      "abort announcement, BYE old dialog, take new call");
-        rtp_request_abort();
-        send_bye(c);
-        // BYE is fire-and-forget UDP. Any straggler 200/ACK/BYE for
-        // the old Call-ID will Call-ID-mismatch in handle_incoming
-        // and be discarded — wipe and fall through to the IDLE path.
-        memset(d, 0, sizeof(*d));
     }
 
     capture_dialog(c, req, req_len, from);
