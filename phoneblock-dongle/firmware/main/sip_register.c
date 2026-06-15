@@ -48,9 +48,25 @@ static const char *TAG = "sip";
 // blocking recv runs before we loop back to feed the task watchdog.
 #define SIP_REGISTER_RECV_SLICE_MS    2000
 
+// Issue #380: after we decide a call is not spam we must NOT reply with a
+// fast final response (486/480) — that makes the Fritz!Box drop the
+// Fritz!Fon app from the call (it suppresses the app while DECT keeps
+// ringing). Instead we keep "ringing" (180) for this long so the box has
+// time to start ringing the other phones (incl. waking the app by push),
+// then send the decline. Currently an experiment: we want to observe
+// whether the other phones keep ringing or drop once our branch declines.
+#define SIP_DECLINE_DELAY_US          (3LL * 1000000LL)
+
+// How much of an incoming INVITE we keep so the main loop can build the
+// delayed decline response (it echoes Via/From/To/Call-ID/CSeq, all near
+// the top — a truncated SDP tail is irrelevant).
+#define SIP_INVITE_STORE_CAP          1500
+
 typedef enum {
     DIALOG_IDLE,        // no active call
     DIALOG_TRYING,      // received INVITE, 100 Trying sent, deciding
+    DIALOG_PROCEEDING,  // non-spam: sent 180 Ringing, letting the other phones
+                        // ring; declines after SIP_DECLINE_DELAY_US (#380)
     DIALOG_ANSWERED,    // sent 200 OK with SDP, waiting for ACK → then stream
     DIALOG_STREAMING,   // playing tone to spam caller, BYE scheduled
     DIALOG_REJECTED,    // declined (480), waiting for ACK
@@ -68,8 +84,12 @@ typedef struct {
     struct sockaddr_in peer;      // where to send in-dialog responses/requests
     struct sockaddr_in rtp_dest;  // remote RTP endpoint (from INVITE SDP)
     bool     rtp_dest_valid;      // true if we successfully parsed c= / m=
-    int64_t  bye_at_us;           // abs. deadline to send BYE (0 = no deadline)
+    int64_t  bye_at_us;           // abs. deadline for the next timed dialog
+                                  // action (send BYE after a tone, or send the
+                                  // delayed 480 while PROCEEDING); 0 = none
     verdict_t verdict;            // cached API result for this call
+    char     invite_msg[SIP_INVITE_STORE_CAP];  // stored INVITE so the main
+    int      invite_len;          // loop can send the delayed decline (#380)
 } dialog_t;
 
 typedef struct {
@@ -845,6 +865,11 @@ static void capture_dialog(sip_ctx_t *c, const char *req, int req_len,
     d->out_cseq = 1;
     d->peer = *from;
 
+    // Keep a copy of the INVITE so the main loop can build a delayed decline
+    // response (480) after the PROCEEDING ring window (#380).
+    d->invite_len = req_len < SIP_INVITE_STORE_CAP ? req_len : SIP_INVITE_STORE_CAP;
+    memcpy(d->invite_msg, req, d->invite_len);
+
     const char *hdr = find_header(req, req_len, "From");
     if (hdr) {
         const char *end = req + req_len;
@@ -953,8 +978,8 @@ static void send_bye(sip_ctx_t *c)
 //  2. The dialed number isn't a real external number (internal **NN
 //     codes, *21# feature dials, etc.). The API would reject them with
 //     HTTP 400 anyway, but the TLS handshake still costs ~1–2 s.
-// Both cases return VERDICT_LEGITIMATE so the dongle declines with 480
-// Temporarily Unavailable and the Fritz!Box continues its normal ring routing.
+// Both cases return VERDICT_LEGITIMATE so the dongle keeps ringing (180) and
+// then declines, letting the Fritz!Box continue its normal ring routing (#380).
 static verdict_t check_invite_caller(const char *req, int req_len)
 {
     const char *hdr = find_header(req, req_len, "From");
@@ -1030,7 +1055,7 @@ static verdict_t check_invite_caller(const char *req, int req_len)
     //
     // Enqueued for an async worker rather than POSTed synchronously:
     // the second TLS handshake (300–600 ms cert-verify + RTT) sat on
-    // the critical path between verdict and 200 OK / 480, exactly
+    // the critical path between verdict and the 200 OK, exactly
     // the window where the Fritz!Box decides whether to escalate to
     // ringing the real phones.
     if (v == VERDICT_SPAM) {
@@ -1060,8 +1085,12 @@ static void resend_last_response(sip_ctx_t *c, const char *req, int req_len,
                           d->our_tag, sdp);
             break;
         }
+        case DIALOG_PROCEEDING:
+            send_response(c, from, req, req_len, 180, "Ringing",
+                          d->our_tag, NULL);
+            break;
         case DIALOG_REJECTED:
-            // Must match the original decline in handle_invite() (480), so a
+            // Must match the decline sent from the main loop (480), so a
             // retransmitted INVITE doesn't see two different final responses.
             send_response(c, from, req, req_len, 480, "Temporarily Unavailable",
                           d->our_tag, NULL);
@@ -1091,14 +1120,16 @@ static void handle_invite(sip_ctx_t *c, const char *req, int req_len,
         // The only state worth preempting is DIALOG_STREAMING — there
         // we'd otherwise hold the new caller off for 5–15 s of audio
         // playback against an already-classified spammer. All other
-        // states (TRYING/ANSWERED/REJECTED/BYE_SENT) clear within
-        // milliseconds; making the new caller wait that out is fine,
-        // and bailing during TRYING would just be caller-roulette
-        // since we don't even have a verdict yet.
+        // states (TRYING/PROCEEDING/ANSWERED/REJECTED/BYE_SENT) clear
+        // within seconds; making the new caller wait that out is fine.
         if (d->state != DIALOG_STREAMING) {
-            ESP_LOGW(TAG, "second INVITE in state %d → 486 Busy Here",
+            // Reply 180 Ringing, not 486 Busy Here: a "busy" from us would
+            // make the Fritz!Box drop the Fritz!Fon app for this second call
+            // too (issue #380). We don't track this dialog — the real phones
+            // ring it and the box cancels our branch.
+            ESP_LOGW(TAG, "second INVITE in state %d → 180 Ringing (untracked)",
                      d->state);
-            send_response(c, from, req, req_len, 486, "Busy Here",
+            send_response(c, from, req, req_len, 180, "Ringing",
                           NULL, NULL);
             return;
         }
@@ -1116,8 +1147,14 @@ static void handle_invite(sip_ctx_t *c, const char *req, int req_len,
     d->state = DIALOG_TRYING;
     ESP_LOGI(TAG, "INVITE accepted, Call-ID=%s, checking caller…", d->call_id);
 
-    // Stop Fritz!Box retransmits immediately.
+    // Stop Fritz!Box retransmits immediately, and signal "ringing" so the
+    // Fritz!Box starts ringing the other phones (incl. waking the Fritz!Fon
+    // app by push) while we check the caller. A fast final response here
+    // would make the box drop the app from the call — issue #380.
     send_response(c, from, req, req_len, 100, "Trying", d->our_tag, NULL);
+    send_response(c, from, req, req_len, 180, "Ringing", d->our_tag, NULL);
+    d->state = DIALOG_PROCEEDING;
+    d->bye_at_us = esp_timer_get_time() + SIP_DECLINE_DELAY_US;
 
     // Synchronous API check. Budget is ~500 ms–1 s; Fritz!Box waits longer
     // than that. Later this can move to a worker task if needed.
@@ -1128,22 +1165,16 @@ static void handle_invite(sip_ctx_t *c, const char *req, int req_len,
         build_sdp_body(advertised_host(c), sdp, sizeof(sdp));
         send_response(c, from, req, req_len, 200, "OK", d->our_tag, sdp);
         d->state = DIALOG_ANSWERED;
+        d->bye_at_us = 0;   // not a decline-delay; BYE deadline is set after ACK
         ESP_LOGI(TAG, "SPAM → 200 OK sent, waiting for ACK to hang up");
     } else {
-        // VERDICT_LEGITIMATE or VERDICT_ERROR → don't take the call. We must
-        // decline in a way that lets the Fritz!Box keep ringing the *other*
-        // devices. 486 "Busy Here" looks like the obvious choice but is wrong:
-        // on the Fritz!Box a "busy" from one internal IP-telephony device
-        // suppresses the Fritz!Fon app (another IP device), while DECT keeps
-        // ringing — that is exactly issue #380. 480 "Temporarily Unavailable"
-        // is a plain per-branch failure (not "busy", not a 6xx global failure
-        // that would also kill DECT), so the forking proxy moves on and the
-        // real phones — including the app — ring.
-        send_response(c, from, req, req_len, 480, "Temporarily Unavailable",
-                      d->our_tag, NULL);
-        d->state = DIALOG_REJECTED;
-        ESP_LOGI(TAG, "%s → 480 Temporarily Unavailable sent",
-                 d->verdict == VERDICT_LEGITIMATE ? "LEGITIMATE" : "ERROR");
+        // VERDICT_LEGITIMATE or VERDICT_ERROR → don't take the call, but don't
+        // decline yet either. We keep "ringing" (the 180 above) and let the
+        // main loop send the actual 480 decline after SIP_DECLINE_DELAY_US, so
+        // the other phones have time to start ringing first (#380).
+        ESP_LOGI(TAG, "%s → 180 Ringing, declining in %lld ms",
+                 d->verdict == VERDICT_LEGITIMATE ? "LEGITIMATE" : "ERROR",
+                 (long long)(SIP_DECLINE_DELAY_US / 1000));
     }
 }
 
@@ -1223,7 +1254,8 @@ static void handle_cancel(sip_ctx_t *c, const char *req, int req_len,
     // If we still had a pending INVITE for this Call-ID, answer it with
     // 487 Request Terminated so the remote knows the original INVITE is
     // fully resolved.
-    if (d->state == DIALOG_TRYING && same_call_id(d->call_id, cid)) {
+    if ((d->state == DIALOG_TRYING || d->state == DIALOG_PROCEEDING)
+        && same_call_id(d->call_id, cid)) {
         ESP_LOGI(TAG, "CANCEL → 487 Request Terminated on original INVITE");
         // Synthesize a 487 response. We cannot easily reconstruct the
         // original INVITE's headers here, but the CANCEL's Via/From/To/
@@ -1604,6 +1636,16 @@ static void sip_task(void *arg)
                 if (ctx.dialog.state == DIALOG_STREAMING) {
                     ESP_LOGI(TAG, "tone finished → sending BYE");
                     send_bye(&ctx);
+                } else if (ctx.dialog.state == DIALOG_PROCEEDING) {
+                    // #380: the other phones have had SIP_DECLINE_DELAY_US to
+                    // start ringing; now decline with 480 (built from the
+                    // stored INVITE) and observe whether they keep ringing.
+                    ESP_LOGI(TAG, "decline delay elapsed → 480 Temporarily Unavailable");
+                    send_response(&ctx, &ctx.dialog.peer,
+                                  ctx.dialog.invite_msg, ctx.dialog.invite_len,
+                                  480, "Temporarily Unavailable",
+                                  ctx.dialog.our_tag, NULL);
+                    ctx.dialog.state = DIALOG_REJECTED;
                 }
                 continue;
             }
