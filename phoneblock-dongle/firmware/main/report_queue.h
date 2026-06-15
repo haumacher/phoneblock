@@ -7,7 +7,7 @@
 // constraint at all: the verdict has already been delivered, the
 // SIP dialog is already running. Doing it on the SIP task would add
 // a second TLS handshake (300–600 ms cert-verify + RTT) onto the
-// critical path between SPAM verdict and 200 OK / 486, where the
+// critical path between SPAM verdict and 200 OK / 480, where the
 // Fritz!Box is timing us against its own ringing-escalation window.
 //
 // This module owns a small worker task that drains queued numbers

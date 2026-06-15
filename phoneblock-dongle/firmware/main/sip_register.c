@@ -53,7 +53,7 @@ typedef enum {
     DIALOG_TRYING,      // received INVITE, 100 Trying sent, deciding
     DIALOG_ANSWERED,    // sent 200 OK with SDP, waiting for ACK → then stream
     DIALOG_STREAMING,   // playing tone to spam caller, BYE scheduled
-    DIALOG_REJECTED,    // sent 486/480, waiting for ACK
+    DIALOG_REJECTED,    // declined (480), waiting for ACK
     DIALOG_BYE_SENT,    // sent BYE, waiting for 200 OK
 } dialog_state_t;
 
@@ -953,8 +953,8 @@ static void send_bye(sip_ctx_t *c)
 //  2. The dialed number isn't a real external number (internal **NN
 //     codes, *21# feature dials, etc.). The API would reject them with
 //     HTTP 400 anyway, but the TLS handshake still costs ~1–2 s.
-// Both cases return VERDICT_LEGITIMATE so the dongle sends 486 Busy and
-// the Fritz!Box continues its normal ring routing.
+// Both cases return VERDICT_LEGITIMATE so the dongle declines with 480
+// Temporarily Unavailable and the Fritz!Box continues its normal ring routing.
 static verdict_t check_invite_caller(const char *req, int req_len)
 {
     const char *hdr = find_header(req, req_len, "From");
@@ -1030,7 +1030,7 @@ static verdict_t check_invite_caller(const char *req, int req_len)
     //
     // Enqueued for an async worker rather than POSTed synchronously:
     // the second TLS handshake (300–600 ms cert-verify + RTT) sat on
-    // the critical path between verdict and 200 OK / 486, exactly
+    // the critical path between verdict and 200 OK / 480, exactly
     // the window where the Fritz!Box decides whether to escalate to
     // ringing the real phones.
     if (v == VERDICT_SPAM) {
@@ -1061,7 +1061,9 @@ static void resend_last_response(sip_ctx_t *c, const char *req, int req_len,
             break;
         }
         case DIALOG_REJECTED:
-            send_response(c, from, req, req_len, 486, "Busy Here",
+            // Must match the original decline in handle_invite() (480), so a
+            // retransmitted INVITE doesn't see two different final responses.
+            send_response(c, from, req, req_len, 480, "Temporarily Unavailable",
                           d->our_tag, NULL);
             break;
         default:
@@ -1128,11 +1130,19 @@ static void handle_invite(sip_ctx_t *c, const char *req, int req_len,
         d->state = DIALOG_ANSWERED;
         ESP_LOGI(TAG, "SPAM → 200 OK sent, waiting for ACK to hang up");
     } else {
-        // VERDICT_LEGITIMATE or VERDICT_ERROR → don't take the call. 486
-        // Busy Here lets the Fritz!Box continue ringing the real phones.
-        send_response(c, from, req, req_len, 486, "Busy Here", d->our_tag, NULL);
+        // VERDICT_LEGITIMATE or VERDICT_ERROR → don't take the call. We must
+        // decline in a way that lets the Fritz!Box keep ringing the *other*
+        // devices. 486 "Busy Here" looks like the obvious choice but is wrong:
+        // on the Fritz!Box a "busy" from one internal IP-telephony device
+        // suppresses the Fritz!Fon app (another IP device), while DECT keeps
+        // ringing — that is exactly issue #380. 480 "Temporarily Unavailable"
+        // is a plain per-branch failure (not "busy", not a 6xx global failure
+        // that would also kill DECT), so the forking proxy moves on and the
+        // real phones — including the app — ring.
+        send_response(c, from, req, req_len, 480, "Temporarily Unavailable",
+                      d->our_tag, NULL);
         d->state = DIALOG_REJECTED;
-        ESP_LOGI(TAG, "%s → 486 Busy sent",
+        ESP_LOGI(TAG, "%s → 480 Temporarily Unavailable sent",
                  d->verdict == VERDICT_LEGITIMATE ? "LEGITIMATE" : "ERROR");
     }
 }
@@ -1172,8 +1182,8 @@ static void handle_ack(sip_ctx_t *c, const char *req, int req_len,
         send_bye(c);
 #endif
     } else if (d->state == DIALOG_REJECTED) {
-        // Non-spam: we rejected with 486, ACK confirms, dialog done.
-        ESP_LOGI(TAG, "ACK received after 486 → dialog closed");
+        // Non-spam: we declined with 480, ACK confirms, dialog done.
+        ESP_LOGI(TAG, "ACK received after 480 → dialog closed");
         memset(d, 0, sizeof(*d));
     } else {
         ESP_LOGW(TAG, "ACK in unexpected state %d", d->state);
