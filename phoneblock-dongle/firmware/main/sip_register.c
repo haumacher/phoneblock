@@ -1168,13 +1168,18 @@ static void handle_invite(sip_ctx_t *c, const char *req, int req_len,
         d->bye_at_us = 0;   // not a decline-delay; BYE deadline is set after ACK
         ESP_LOGI(TAG, "SPAM → 200 OK sent, waiting for ACK to hang up");
     } else {
-        // VERDICT_LEGITIMATE or VERDICT_ERROR → don't take the call, but don't
-        // decline yet either. We keep "ringing" (the 180 above) and let the
-        // main loop send the actual 480 decline after SIP_DECLINE_DELAY_US, so
-        // the other phones have time to start ringing first (#380).
-        ESP_LOGI(TAG, "%s → 180 Ringing, declining in %lld ms",
-                 d->verdict == VERDICT_LEGITIMATE ? "LEGITIMATE" : "ERROR",
-                 (long long)(SIP_DECLINE_DELAY_US / 1000));
+        // VERDICT_LEGITIMATE or VERDICT_ERROR → decline now. We already sent
+        // 180 Ringing above (before the API check) — experiment #380 showed
+        // that a 180 ahead of the final response is what keeps the Fritz!Box
+        // ringing the other phones / waking the app, and the app survives the
+        // 480 that follows. So no artificial hold is needed; the only gap
+        // between 180 and 480 is the API-check time.
+        send_response(c, from, req, req_len, 480, "Temporarily Unavailable",
+                      d->our_tag, NULL);
+        d->state = DIALOG_REJECTED;
+        d->bye_at_us = 0;
+        ESP_LOGI(TAG, "%s → 180 Ringing then 480 Temporarily Unavailable",
+                 d->verdict == VERDICT_LEGITIMATE ? "LEGITIMATE" : "ERROR");
     }
 }
 
