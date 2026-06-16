@@ -1823,6 +1823,26 @@ class _MainScreenState extends State<MainScreen> {
       ),
     );
 
+    // Copy number to clipboard option
+    items.add(
+      PopupMenuItem(
+        child: Row(
+          children: [
+            Icon(Icons.copy, color: Colors.blueGrey),
+            SizedBox(width: 12),
+            Text(context.l10n.copyNumber),
+          ],
+        ),
+        onTap: () {
+          Future.delayed(Duration.zero, () {
+            if (context.mounted) {
+              _copyNumber(context, call);
+            }
+          });
+        },
+      ),
+    );
+
     // Always show delete option
     items.add(
       PopupMenuItem(
@@ -2462,6 +2482,18 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   /// Opens the phone number on PhoneBlock website in a WebView.
+  /// Copies the call's phone number to the system clipboard.
+  Future<void> _copyNumber(BuildContext context, ScreenedCall call) async {
+    await Clipboard.setData(ClipboardData(text: call.phoneNumber));
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(context.l10n.numberCopied),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   Future<void> _viewOnPhoneBlock(ScreenedCall call) async {
     String? token = await getAuthToken();
     if (token == null) {

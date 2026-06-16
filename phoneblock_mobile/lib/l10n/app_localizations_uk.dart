@@ -204,6 +204,12 @@ class AppLocalizationsUk extends AppLocalizations {
   String get viewOnPhoneBlockMenu => 'Переглянути на PhoneBlock';
 
   @override
+  String get copyNumber => 'Номер копії';
+
+  @override
+  String get numberCopied => 'Номер скопійовано в буфер обміну';
+
+  @override
   String get deleteCall => 'Видалити';
 
   @override

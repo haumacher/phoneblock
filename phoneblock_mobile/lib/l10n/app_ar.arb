@@ -306,5 +306,7 @@
   "blocklistSyncing": "مزامنة...",
   "blocklistSyncSuccess": "تمت مزامنة قائمة الحظر بنجاح",
   "blocklistSyncFailed": "فشل مزامنة قائمة الحظر",
-  "personalizedAddedDate": "تمت الإضافة: {date}"
+  "personalizedAddedDate": "تمت الإضافة: {date}",
+  "copyNumber": "رقم النسخة",
+  "numberCopied": "الرقم المنسوخ إلى الحافظة"
 }

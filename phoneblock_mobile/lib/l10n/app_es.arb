@@ -306,5 +306,7 @@
   "blocklistSyncing": "Sincroniza...",
   "blocklistSyncSuccess": "Sincronización correcta de la lista de bloqueo",
   "blocklistSyncFailed": "Error de sincronización de la lista de bloqueo",
-  "personalizedAddedDate": "Añadido: {date}"
+  "personalizedAddedDate": "Añadido: {date}",
+  "copyNumber": "Número de copia",
+  "numberCopied": "Número copiado en el portapapeles"
 }

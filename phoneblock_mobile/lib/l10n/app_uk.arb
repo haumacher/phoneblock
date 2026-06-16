@@ -306,5 +306,7 @@
   "blocklistSyncing": "Синхронізувати...",
   "blocklistSyncSuccess": "Синхронізація блокчейну успішна",
   "blocklistSyncFailed": "Не вдалося синхронізувати блокчейн",
-  "personalizedAddedDate": "Додано: {date}"
+  "personalizedAddedDate": "Додано: {date}",
+  "copyNumber": "Номер копії",
+  "numberCopied": "Номер скопійовано в буфер обміну"
 }
