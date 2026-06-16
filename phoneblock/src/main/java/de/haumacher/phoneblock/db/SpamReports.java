@@ -387,22 +387,14 @@ public interface SpamReports {
 
 	/**
 	 * Full blocklist for {@code /api/blocklist} (#342): the published state
-	 * — bucket votes frozen at publication — filtered by the server-side
-	 * visibility threshold. The block decision data is stable between
-	 * sweeps; only the informational lastActivity and rating columns are
-	 * joined live (the API makes no caching promise).
+	 * — bucket votes, dominant category and last activity all frozen at
+	 * publication — filtered by the server-side visibility threshold. Reads
+	 * only BLOCKLIST; the category/activity snapshot is denormalized (migration
+	 * 43) so no per-row NUMBERS join is needed.
 	 */
 	@Select("""
-			select b.PHONE, b.VOTES,
-			       coalesce(s.LASTPING, 0) as LASTPING,
-			       coalesce(s.LEGITIMATE, 0) as LEGITIMATE,
-			       coalesce(s.PING, 0) as PING,
-			       coalesce(s.POLL, 0) as POLL,
-			       coalesce(s.ADVERTISING, 0) as ADVERTISING,
-			       coalesce(s.GAMBLE, 0) as GAMBLE,
-			       coalesce(s.FRAUD, 0) as FRAUD
+			select b.PHONE, b.VOTES, b.LASTPING, b.CATEGORY
 			from BLOCKLIST b
-			left join NUMBERS s on s.PHONE = b.PHONE
 			where b.VOTES >= #{minVotes}
 			order by b.PHONE
 			""")
@@ -827,14 +819,25 @@ public interface SpamReports {
 				     WHEN s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE >= #{t20} THEN 20
 				     WHEN s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE >= #{t10} THEN 10
 				     WHEN s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE >= #{t4} THEN 4
-				     ELSE 2 END as VOTES
+				     ELSE 2 END as VOTES,
+				-- Dominant category, frozen here so the sync reads need no live
+				-- NUMBERS join. Mirrors DB.dominantCategory: argmax with tie
+				-- priority FRAUD > GAMBLE > ADVERTISING > POLL > PING, B_MISSED
+				-- when all counters are zero (the all-zero guard must be first).
+				CASE WHEN s.FRAUD = 0 AND s.GAMBLE = 0 AND s.ADVERTISING = 0 AND s.POLL = 0 AND s.PING = 0 THEN 'B_MISSED'
+				     WHEN s.FRAUD       >= s.GAMBLE AND s.FRAUD >= s.ADVERTISING AND s.FRAUD >= s.POLL AND s.FRAUD >= s.PING THEN 'G_FRAUD'
+				     WHEN s.GAMBLE      >= s.ADVERTISING AND s.GAMBLE >= s.POLL AND s.GAMBLE >= s.PING THEN 'F_GAMBLE'
+				     WHEN s.ADVERTISING >= s.POLL AND s.ADVERTISING >= s.PING THEN 'E_ADVERTISING'
+				     WHEN s.POLL        >= s.PING THEN 'D_POLL'
+				     ELSE 'C_PING' END as CATEGORY,
+				s.LASTPING as LASTPING
 			from NUMBERS s
 			where s.SPAM_EVIDENCE >= #{t2} and s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE >= #{t2}
 		) n on b.PHONE = n.PHONE
 		when matched and b.VOTES <> n.VOTES then update set
-			VOTES = n.VOTES, VERSION = #{version}
-		when not matched then insert (PHONE, VOTES, VERSION)
-			values (n.PHONE, n.VOTES, #{version})
+			VOTES = n.VOTES, VERSION = #{version}, CATEGORY = n.CATEGORY, LASTPING = n.LASTPING
+		when not matched then insert (PHONE, VOTES, VERSION, CATEGORY, LASTPING)
+			values (n.PHONE, n.VOTES, #{version}, n.CATEGORY, n.LASTPING)
 		""")
 	int publishBlocklistUpdates(long version,
 		double t2, double t4, double t10, double t20, double t50, double t100);
@@ -912,23 +915,17 @@ public interface SpamReports {
 	/**
 	 * Gets all blocklist changes since the given version (#342).
 	 *
-	 * <p>Returns the frozen published state: bucket votes and the activity
-	 * timestamp as of publication. Tombstones ({@code votes = 0}) signal
-	 * removals. Category counters are joined live from NUMBERS — they only
-	 * color the entry's rating; the left join keeps tombstones alive after a
-	 * hard delete of the NUMBERS row (#341).</p>
+	 * <p>Returns the frozen published state: bucket votes, dominant category and
+	 * the activity timestamp as of publication. Tombstones ({@code votes = 0})
+	 * signal removals. Reads only BLOCKLIST — the category and activity are
+	 * denormalized columns (migration 43), so this hot incremental-sync path no
+	 * longer joins the wide NUMBERS table once per row. The category is frozen
+	 * at publication (refreshed on the next vote-bucket flip), consistent with
+	 * the already-frozen votes; it only colors the entry's rating.</p>
 	 */
 	@Select("""
-		select b.PHONE, b.VOTES,
-		       coalesce(s.LASTPING, 0) as LASTPING,
-		       coalesce(s.LEGITIMATE, 0) as LEGITIMATE,
-		       coalesce(s.PING, 0) as PING,
-		       coalesce(s.POLL, 0) as POLL,
-		       coalesce(s.ADVERTISING, 0) as ADVERTISING,
-		       coalesce(s.GAMBLE, 0) as GAMBLE,
-		       coalesce(s.FRAUD, 0) as FRAUD
+		select b.PHONE, b.VOTES, b.LASTPING, b.CATEGORY
 		from BLOCKLIST b
-		left join NUMBERS s on s.PHONE = b.PHONE
 		where b.VERSION > #{sinceVersion}
 		order by b.VERSION, b.PHONE
 		""")

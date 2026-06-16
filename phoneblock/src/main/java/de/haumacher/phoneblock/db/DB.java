@@ -1749,9 +1749,10 @@ public class DB {
 			// Invalid number in DB, filter out.
 			return null;
 		}
-		Rating rating = e.getVotes() <= 0
-			? Rating.A_LEGITIMATE
-			: dominantCategory(e.getFraud(), e.getGamble(), e.getAdvertising(), e.getPoll(), e.getPing());
+		// Category is the dominant rating, frozen at publication and read
+		// straight from BLOCKLIST (migration 43). Tombstones (votes <= 0) carry
+		// no meaningful category and are reported as A_LEGITIMATE.
+		Rating rating = e.getVotes() <= 0 ? Rating.A_LEGITIMATE : e.getCategory();
 		return BlockListEntry.create()
 				.setPhone(number.getPlus())
 				.setVotes(e.getVotes())

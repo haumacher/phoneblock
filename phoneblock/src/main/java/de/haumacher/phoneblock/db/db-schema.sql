@@ -4,7 +4,7 @@ CREATE TABLE PROPERTIES (
 	CONSTRAINT PROPERTIES_PK PRIMARY KEY (NAME)
 );
 
-INSERT INTO PROPERTIES (NAME, VAL) VALUES('db.version', '42');
+INSERT INTO PROPERTIES (NAME, VAL) VALUES('db.version', '43');
 INSERT INTO PROPERTIES (NAME, VAL) VALUES('blocklist.version', '1');
 
 
@@ -66,6 +66,12 @@ CREATE TABLE BLOCKLIST (
 	PHONE CHARACTER VARYING(100) NOT NULL,
 	VOTES INTEGER NOT NULL,
 	VERSION BIGINT NOT NULL,
+	-- Published rating snapshot (frozen at publication, like VOTES): the
+	-- dominant category as a Rating enum name (e.g. 'G_FRAUD'), and the last
+	-- activity timestamp. Denormalized so the sync reads need no live NUMBERS
+	-- join per row; a blocklist API entry exposes only this single rating.
+	CATEGORY CHARACTER VARYING(15) DEFAULT 'B_MISSED' NOT NULL,
+	LASTPING BIGINT DEFAULT 0 NOT NULL,
 	CONSTRAINT BLOCKLIST_PK PRIMARY KEY (PHONE)
 );
 
