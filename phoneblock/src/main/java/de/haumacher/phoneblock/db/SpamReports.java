@@ -755,6 +755,24 @@ public interface SpamReports {
 			""")
 	String nextHistoryBatchBound(long lastSnapshot, String fromPhone, int batchSize);
 
+	/**
+	 * Closes the currently open history generation ({@code RMAX = 0x7fffffff}) of every active number
+	 * in the batch, so {@link #createHistorySnapshot} can open a fresh generation for them.
+	 *
+	 * <p>
+	 * The "is active" criterion lives in {@code NUMBERS}, so the update on {@code NUMBERS_HISTORY}
+	 * must correlate to that table. This is expressed as a correlated {@code EXISTS} rather than
+	 * {@code PHONE IN (subquery)} on purpose: the {@code IN} form let H2's cost-based optimizer flip
+	 * to a full {@code NUMBERS_HISTORY} scan once the table had grown large enough, turning a
+	 * batch-sized update into a multi-hour, CPU-bound statement that pinned old MVStore page versions.
+	 * The {@code EXISTS} correlation pins {@code s.PHONE} to the row at hand, so H2 probes the
+	 * {@code NUMBERS} primary key per matched history row instead of materializing the whole active
+	 * set. The outer {@code PHONE} range still bounds the scan to the batch; no inner range is needed
+	 * because the correlation already points at a single number. The outer {@code PHONE} must be
+	 * fully qualified — an unqualified reference would bind to {@code NUMBERS.PHONE} inside the
+	 * subquery and make the predicate trivially true.
+	 * </p>
+	 */
 	@Update("""
 			update NUMBERS_HISTORY
 			set
@@ -762,8 +780,8 @@ public interface SpamReports {
 			where
 				RMAX = 0x7fffffff and
 				PHONE > #{fromPhone} and PHONE <= #{toPhone} and
-				PHONE in (select s.PHONE from NUMBERS s
-					where s.LASTPING > #{lastSnapshot} and s.PHONE > #{fromPhone} and s.PHONE <= #{toPhone})
+				exists (select 1 from NUMBERS s
+					where s.PHONE = NUMBERS_HISTORY.PHONE and s.LASTPING > #{lastSnapshot})
 			""")
 	int outdateHistorySnapshot(int rev, long lastSnapshot, String fromPhone, String toPhone);
 
