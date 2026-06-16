@@ -47,5 +47,10 @@ static void selftest_task(void *arg)
 void selftest_start(void)
 {
     if (s_task) return;
-    xTaskCreate(selftest_task, "selftest", 4096, NULL, 3, &s_task);
+    // TLS handshake + getaddrinfo in phoneblock_selftest() blow past
+    // 4 KB and smash the adjacent heap block, corrupting the TLSF
+    // free-list (crashes show up as heap asserts in random other tasks:
+    // tiT, wifi, mdns, ...). The same selftest runs fine synchronously
+    // on the 8 KB main task at boot, so match that proven size here.
+    xTaskCreate(selftest_task, "selftest", 8192, NULL, 3, &s_task);
 }
