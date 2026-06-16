@@ -526,6 +526,57 @@ Configuration for the blocklist download API endpoint (`/api/blocklist`).
 
 ---
 
+## API Rate Limits
+
+**JNDI Prefix:** `api/ratelimit/`
+**System Property Prefix:** `api.ratelimit.`
+**Source:** `ApiRateLimits.java`
+
+Per-subject rate limits for expensive API calls. Each limit is a fixed window:
+at most `count` requests per `intervalMs` milliseconds and subject. The subject
+is the API token used for the request (each API key has its own budget), or — for
+CardDAV access authenticated by account password, which carries no persistent
+token — the user account. Requests over the limit are rejected with HTTP 429 and
+a `Retry-After` header. Unauthenticated requests (e.g. the public number lookup)
+are not limited here.
+
+### Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `api/ratelimit/blocklist/full/count` | Integer | `14` | Full blocklist downloads (no `since`, and the Heat-ranked `limit` variant) per window. |
+| `api/ratelimit/blocklist/full/intervalMs` | Long | `604800000` | Window length for full downloads (default: 7 days). |
+| `api/ratelimit/blocklist/incremental/count` | Integer | `4` | Incremental blocklist syncs (`?since=`) per window. |
+| `api/ratelimit/blocklist/incremental/intervalMs` | Long | `86400000` | Window length for incremental syncs (default: 1 day). |
+| `api/ratelimit/carddav/count` | Integer | `6` | CardDAV synchronizations transferring data per window (cheap polling and 304 responses are not counted). |
+| `api/ratelimit/carddav/intervalMs` | Long | `86400000` | Window length for CardDAV (default: 1 day). |
+| `api/ratelimit/number/count` | Integer | `200` | Number-test lookups (`/api/num`, `/api/check`, `/api/check-prefix` share one budget) per window. |
+| `api/ratelimit/number/intervalMs` | Long | `86400000` | Window length for number-test lookups (default: 1 day). |
+
+### Example Configuration
+
+**Tomcat context.xml:**
+```xml
+<Context>
+  <Environment name="api/ratelimit/blocklist/full/count" value="14" type="java.lang.Integer"/>
+  <Environment name="api/ratelimit/blocklist/full/intervalMs" value="604800000" type="java.lang.Long"/>
+  <Environment name="api/ratelimit/number/count" value="200" type="java.lang.Integer"/>
+</Context>
+```
+
+**System Properties:**
+```bash
+-Dapi.ratelimit.blocklist.full.count=14 \
+-Dapi.ratelimit.blocklist.full.intervalMs=604800000 \
+-Dapi.ratelimit.number.count=200
+```
+
+**Note:**
+- Limits are loaded once on first use; change them by restarting the application.
+- Counters are stored per subject in the `API_QUOTA` table and removed when the token or account is deleted.
+
+---
+
 ## FTC Do Not Call Import Configuration
 
 **JNDI Prefix:** `ftc/`

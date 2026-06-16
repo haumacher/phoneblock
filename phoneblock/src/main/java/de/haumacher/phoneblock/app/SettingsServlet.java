@@ -20,6 +20,7 @@ import de.haumacher.phoneblock.carddav.resource.AddressBookCache;
 import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.db.Quota;
 import de.haumacher.phoneblock.db.DBUserSettings;
 import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.Users;
@@ -149,7 +150,9 @@ public class SettingsServlet extends HttpServlet {
 					if (key.startsWith(KEY_ID_PREFIX)) {
 						String id = key.substring(KEY_ID_PREFIX.length());
 
-						users.deleteAuthToken(userId.longValue(), Long.parseLong(id));
+						long tokenId = Long.parseLong(id);
+						users.deleteAuthToken(userId.longValue(), tokenId);
+						session.getMapper(Quota.class).deleteTokenQuota(tokenId);
 					}
 				}
 

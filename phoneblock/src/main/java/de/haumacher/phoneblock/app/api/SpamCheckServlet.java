@@ -64,6 +64,12 @@ public class SpamCheckServlet extends HttpServlet {
 			return;
 		}
 
+		ApiRateLimits limits = ApiRateLimits.getInstance();
+		if (!ServletUtil.enforceQuota(req, resp, DB.QUOTA_BUCKET_NUMBER_QUERY,
+				limits.numberQueryIntervalMs, limits.numberQueryCount)) {
+			return;
+		}
+
 		DB db = DBService.getInstance();
 
 		// Check user's personal block/whitelist by hash before global lookup.
