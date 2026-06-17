@@ -10,6 +10,7 @@
 #include "esp_mac.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "esp_task_wdt.h"
 #include "mbedtls/md5.h"
 
 #include "config.h"
@@ -107,6 +108,17 @@ static esp_err_t post_soap(const char *url, const char *soap_action,
 {
     esp_err_t err    = ESP_FAIL;
     int       status = 0;
+
+    // Provisioning issues one SOAP call per existing telephony client
+    // (find_client_slot loops X_AVM-DE_GetClient3), all synchronously on
+    // the httpd worker. A slow Fritz!Box can stretch that chain past the
+    // task-watchdog window, and the httpd WDT feeder (web.c) can't run
+    // while the worker is busy here — so the worker would trip the
+    // watchdog. Feed it once per SOAP call: each post_soap is bounded by
+    // the 5 s HTTP timeout, so a genuinely wedged single call is still
+    // caught, while a legitimately long multi-call sequence completes.
+    // No-op (guarded) on tasks that aren't watchdog-subscribed.
+    if (esp_task_wdt_status(NULL) == ESP_OK) esp_task_wdt_reset();
 
     // ESP_ERR_HTTP_CONNECT here often means lwip's socket pool is
     // momentarily exhausted (browser polling /api/status in parallel

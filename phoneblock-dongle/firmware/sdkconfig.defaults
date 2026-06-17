@@ -109,10 +109,14 @@ CONFIG_ESP_COREDUMP_CHECK_BOOT=y
 # panic path, which then writes a coredump to flash (see above) and
 # reboots — exactly what we want for diagnostics.
 #
-# Timeout 20 s: the worst single-iteration cost in sip_task is one
-# phoneblock_check (10 s budget) plus one do_register (10 s TLS
-# budget) back-to-back on a reload path. 20 s leaves headroom
-# without sitting on a freeze for ages.
+# Timeout 120 s: the watchdog is a last-resort catch for a genuinely
+# wedged task, not a tight per-iteration budget. The worst legitimate
+# single-iteration cost in sip_task (one phoneblock_check + one
+# do_register, ~10 s each) and the TR-064 provisioning chain that
+# fans one SOAP call per Fritz!Box telephony client (each bounded by
+# the 5 s HTTP timeout) both sum well under this. A generous ceiling
+# keeps a slow-but-progressing operation from tripping a false panic;
+# the individual operations carry their own tighter timeouts.
 #
 # IDLE_TASK_CPU0/CPU1 keep the default IDF behaviour of watching
 # the idle tasks too, so a runaway high-priority task that starves
@@ -120,7 +124,7 @@ CONFIG_ESP_COREDUMP_CHECK_BOOT=y
 CONFIG_ESP_TASK_WDT_EN=y
 CONFIG_ESP_TASK_WDT_INIT=y
 CONFIG_ESP_TASK_WDT_PANIC=y
-CONFIG_ESP_TASK_WDT_TIMEOUT_S=20
+CONFIG_ESP_TASK_WDT_TIMEOUT_S=120
 CONFIG_ESP_TASK_WDT_CHECK_IDLE_TASK_CPU0=y
 CONFIG_ESP_TASK_WDT_CHECK_IDLE_TASK_CPU1=y
 
