@@ -9,7 +9,9 @@ Maintenance:
 
 - Add a new `<version>.md` per release (this is the source of truth,
   reviewed in the pull request). Older files stay untouched.
-- `scripts/release.sh` aborts if a clean version (`X.Y.Z`) has no
-  `release-notes/<version>.md`.
-- Pre-releases (`X.Y.Z-rc1`) are not linkified in the UI and therefore
-  need no file of their own.
+- `scripts/release.sh` aborts if a version has no notes file. The check
+  uses the suffix-stripped base, so it covers both `X.Y.Z` and
+  `X.Y.Z-rc1`.
+- A pre-release (`X.Y.Z-rc1`) is a preview of the upcoming `X.Y.Z`: the
+  UI links it to `X.Y.Z.md`, so that file must already exist when the rc
+  is cut. There is no separate notes file per rc.

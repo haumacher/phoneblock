@@ -86,18 +86,17 @@ fi
 VERSION="${DESCRIBE#dongle-v}"
 echo "Releasing version: $VERSION"
 
-# Every clean release must ship a release-notes file: the dongle web UI
-# links the installed version to
-#   .../phoneblock-dongle/firmware/release-notes/<version>.md
-# so a missing file would 404 the user. Pre-releases (1.3.0-rc1) aren't
-# linkified in the UI, so they're exempt.
-if [[ "$VERSION" != *-* ]]; then
-    NOTES="${FIRMWARE_DIR}/release-notes/${VERSION}.md"
-    if [[ ! -f "$NOTES" ]]; then
-        echo "ERROR: missing release notes: release-notes/${VERSION}.md" >&2
-        echo "       The web UI links the version there; create it before releasing." >&2
-        exit 1
-    fi
+# Every release must ship a release-notes file. The web UI links the
+# installed version to the suffix-stripped base
+#   .../phoneblock-dongle/firmware/release-notes/<X.Y.Z>.md
+# so a pre-release (1.3.4-rc1) points at the upcoming release's notes —
+# which therefore must already exist when the rc is cut.
+BASE_VERSION="${VERSION%%-*}"
+NOTES="${FIRMWARE_DIR}/release-notes/${BASE_VERSION}.md"
+if [[ ! -f "$NOTES" ]]; then
+    echo "ERROR: missing release notes: release-notes/${BASE_VERSION}.md" >&2
+    echo "       The web UI links the version there; create it before releasing." >&2
+    exit 1
 fi
 
 # Derive the target channel(s) from the tag. A pre-release suffix

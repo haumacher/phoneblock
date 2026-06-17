@@ -994,15 +994,18 @@ function esc(s){
 }
 
 // Render the firmware version as a link to its release notes on GitHub.
-// Only clean X.Y.Z releases carry a matching release-notes/<v>.md file
-// (release.sh enforces this); dev builds ("1.3.3-5-gabcdef") and the
-// "–" placeholder stay plain text. Returns an HTML fragment, so the
-// caller must assign it via innerHTML (with the other fields escaped).
+// A clean release (1.3.4) or a pre-release (1.3.4-rc1) links to the
+// suffix-stripped base — so an rc points at the upcoming X.Y.Z notes
+// (which release.sh requires to exist). A git-describe dev build
+// ("1.3.4-5-gabcdef", note the second hyphen) and the "–" placeholder
+// stay plain text. Returns an HTML fragment, so the caller must assign
+// it via innerHTML (with the other fields escaped).
 function fwLink(v){
   v = v || '–';
-  if (!/^\d+\.\d+\.\d+$/.test(v)) return esc(v);
+  const m = v.match(/^(\d+\.\d+\.\d+)(?:-[0-9A-Za-z.]+)?$/);
+  if (!m) return esc(v);
   const url = 'https://github.com/haumacher/phoneblock/blob/master/'
-            + 'phoneblock-dongle/firmware/release-notes/' + v + '.md';
+            + 'phoneblock-dongle/firmware/release-notes/' + m[1] + '.md';
   return '<a href="' + esc(url) + '" target="_blank" rel="noopener">'
        + esc(v) + '</a>';
 }
