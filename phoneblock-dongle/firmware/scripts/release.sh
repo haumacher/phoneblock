@@ -86,6 +86,20 @@ fi
 VERSION="${DESCRIBE#dongle-v}"
 echo "Releasing version: $VERSION"
 
+# Every clean release must ship a release-notes file: the dongle web UI
+# links the installed version to
+#   .../phoneblock-dongle/firmware/release-notes/<version>.md
+# so a missing file would 404 the user. Pre-releases (1.3.0-rc1) aren't
+# linkified in the UI, so they're exempt.
+if [[ "$VERSION" != *-* ]]; then
+    NOTES="${FIRMWARE_DIR}/release-notes/${VERSION}.md"
+    if [[ ! -f "$NOTES" ]]; then
+        echo "ERROR: missing release notes: release-notes/${VERSION}.md" >&2
+        echo "       The web UI links the version there; create it before releasing." >&2
+        exit 1
+    fi
+fi
+
 # Derive the target channel(s) from the tag. A pre-release suffix
 # (anything after a '-', e.g. 1.6.0-rc1) ships to beta only; a clean
 # release ships to stable *and* beta so beta never lags behind stable.
