@@ -993,6 +993,23 @@ function esc(s){
           .replace(/"/g,'&quot;');
 }
 
+// Render the firmware version as a link to its release notes on GitHub.
+// A clean release (1.3.4) or a pre-release (1.3.4-rc1) links to the
+// suffix-stripped base — so an rc points at the upcoming X.Y.Z notes
+// (which release.sh requires to exist). A git-describe dev build
+// ("1.3.4-5-gabcdef", note the second hyphen) and the "–" placeholder
+// stay plain text. Returns an HTML fragment, so the caller must assign
+// it via innerHTML (with the other fields escaped).
+function fwLink(v){
+  v = v || '–';
+  const m = v.match(/^(\d+\.\d+\.\d+)(?:-[0-9A-Za-z.]+)?$/);
+  if (!m) return esc(v);
+  const url = 'https://github.com/haumacher/phoneblock/blob/master/'
+            + 'phoneblock-dongle/firmware/release-notes/' + m[1] + '.md';
+  return '<a href="' + esc(url) + '" target="_blank" rel="noopener">'
+       + esc(v) + '</a>';
+}
+
 function fmtSec(s){
   s = Math.max(0, Math.round(s));
   if (s < 60) return s + ' s';
@@ -1705,11 +1722,13 @@ async function refreshAll(){
   $('cSpam').textContent  = s.counters.spam_blocked;
   $('cLegit').textContent = s.counters.legitimate;
   $('cErr').textContent   = s.counters.errors;
-  $('statusInfo').textContent = t('status.info', {
-    fw: s.firmware_version || '–',
-    ip: s.ip_address || '–',
-    uptime: fmtSec(s.uptime_s),
-    api: s.phoneblock.last_api_ms > 0 ? s.phoneblock.last_api_ms + ' ms' : '–',
+  // innerHTML so the version can be a link; all other interpolated
+  // values are escaped, and the template itself is a trusted constant.
+  $('statusInfo').innerHTML = t('status.info', {
+    fw: fwLink(s.firmware_version),
+    ip: esc(s.ip_address || '–'),
+    uptime: esc(fmtSec(s.uptime_s)),
+    api: esc(s.phoneblock.last_api_ms > 0 ? s.phoneblock.last_api_ms + ' ms' : '–'),
   });
 
   // Calls

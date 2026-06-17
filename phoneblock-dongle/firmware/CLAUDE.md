@@ -49,3 +49,44 @@ This is a temporary workaround: FreeRTOS-Kernel PR #866 widened
 multiplication. When we upgrade to ESP-IDF >= v5.4 (kernel V11+),
 plain `pdMS_TO_TICKS` becomes safe again and `ticks_util.h` (plus the
 `seconds_to_ticks` / `pb_ms_to_ticks` call sites) can be retired.
+
+## Analysing a field crash dump
+
+Devices upload core dumps to the server after a panic (see
+`firmware_update.c` / the coredump upload path). To turn one into a
+backtrace:
+
+1. **Get the matching ELF from the CDN over HTTPS — not sftp.** The
+   unstripped ELF ships next to the `.bin` for every release and is
+   served publicly:
+
+   ```bash
+   curl -O https://cdn.phoneblock.net/dongle/firmware/<version>/phoneblock_dongle.elf
+   ```
+
+   (The sftp host has no shell and is only for *uploading* releases; for
+   a read, plain `curl` is simpler and works inside the sandbox.)
+
+2. **The dump is the raw binary coredump format, not ELF.** Its first
+   four bytes are the little-endian length, which equals the file size
+   (e.g. `0x000071A4` = 29092 bytes). So pass `--core-format raw`; with
+   `elf` (or `auto`) the tool tries to parse a `\x7fELF` magic and dies
+   with a `ConstError`:
+
+   ```bash
+   source ~/tools/esp/esp-idf/export.sh
+   esp-coredump info_corefile -c <dump> --core-format raw phoneblock_dongle.elf
+   ```
+
+3. **A SHA256 mismatch is expected for field-built firmware — bypass it.**
+   `esp-coredump` guards on the ELF's `app_elf_sha256` matching the one
+   recorded in the dump. That hash covers the *whole* ELF, including the
+   build timestamp embedded in `esp_app_desc` — so a rebuild from
+   identical source (or a user's own build of the same tag) gets a
+   different hash while the *code addresses* line up. If you trust the
+   ELF is the same source, comment out the
+   `if core_sha_trimmed != app_sha_trimmed:` raise in the installed
+   `esp_coredump/corefile/loader.py`, run the decode, then restore it.
+   Our own frames (`tr064.c`, `web.c`, …) then resolve correctly; only
+   the ESP-IDF library frames may be slightly misattributed by the
+   address offset.
