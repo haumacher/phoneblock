@@ -124,7 +124,13 @@ CONFIG_ESP_COREDUMP_CHECK_BOOT=y
 CONFIG_ESP_TASK_WDT_EN=y
 CONFIG_ESP_TASK_WDT_INIT=y
 CONFIG_ESP_TASK_WDT_PANIC=y
-CONFIG_ESP_TASK_WDT_TIMEOUT_S=120
+# 60 s is the Kconfig maximum (range 1..60). 120 was silently rejected as
+# out-of-range and fell back to the default of 5 s, which rebooted the
+# dongle whenever an httpd handler briefly blocked (token-test TLS
+# round-trip, large page send). 60 s covers any legitimate operation (the
+# API HTTP timeout is 10 s) while still catching a real hang within a
+# minute. A longer window would require reconfiguring the TWDT at runtime.
+CONFIG_ESP_TASK_WDT_TIMEOUT_S=60
 CONFIG_ESP_TASK_WDT_CHECK_IDLE_TASK_CPU0=y
 CONFIG_ESP_TASK_WDT_CHECK_IDLE_TASK_CPU1=y
 
