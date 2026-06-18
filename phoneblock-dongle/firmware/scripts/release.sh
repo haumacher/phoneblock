@@ -163,6 +163,18 @@ if [[ -z "${IDF_PATH:-}" ]]; then
     exit 1
 fi
 
+# Wipe the build directory so the release is configured from
+# sdkconfig.defaults from scratch. Stashing the gitignored `sdkconfig`
+# above is NOT enough on its own: `idf.py build` against an existing
+# build/ reuses the cached build/config/sdkconfig.h and does not re-run
+# Kconfig just because `sdkconfig` vanished. That is how 1.3.4 shipped
+# with CONFIG_ESP_TASK_WDT_TIMEOUT_S=5 even though sdkconfig.defaults
+# had already raised it to 120 — the cached 5 s config from the last dev
+# build was baked into the CDN artifact. A full wipe forces regeneration
+# from defaults, so every config value in sdkconfig.defaults actually
+# reaches the released binary.
+rm -rf "$BUILD_DIR"
+
 idf.py -C "$FIRMWARE_DIR" build
 
 # ---------------------------------------------------------------------------
