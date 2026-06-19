@@ -18,11 +18,12 @@
 // sees the manifest still points at that same version, it skips —
 // unless `force` is set, which both ignores and clears the marker.
 //
-// `firmware_update_start` spawns a background task that runs
-// `firmware_try_update(false, ...)` every ~24 h with ±30 min jitter,
-// modelled on selftest.c. The task starts unconditionally; it skips
-// runs while no PhoneBlock token is configured (which also acts as a
-// proxy for "device is provisioned and the user wants automation").
+// `firmware_update_run` performs one scheduled `firmware_try_update(
+// false, ...)` pass and is invoked once every ~24 h by the shared
+// scheduler task (see scheduler.c). It skips while no PhoneBlock token
+// is configured (a proxy for "device is provisioned and the user wants
+// automation") or while the user has frozen the build via the
+// auto-update toggle.
 
 typedef enum {
     FW_UPDATE_NO_NEW,           // manifest version matches running image
@@ -60,8 +61,9 @@ void firmware_check_manifest(bool force, fw_update_outcome_t *out);
 // callers do not have to keep state between check and install.
 void firmware_try_update(bool force, fw_update_outcome_t *out);
 
-// Spawns the background auto-update task (idempotent).
-void firmware_update_start(void);
+// One scheduled auto-update pass: token + auto-update gates, then a
+// non-forced firmware_try_update(). Called by the scheduler.
+void firmware_update_run(void);
 
 // Schedules an esp_restart() ~500 ms in the future on a small task
 // so an in-flight HTTP response can drain first. Exposed so the

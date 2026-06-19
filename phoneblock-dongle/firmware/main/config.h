@@ -169,6 +169,31 @@ const char *config_phoneblock_token(void);
 int         config_min_direct_votes(void);
 int         config_min_range_votes(void);
 
+// Status email (SMTP). The dongle sends status mails directly through
+// the user's own mail account (authenticated submission), so the
+// provider relays them — no central mail budget, and SPF/DKIM pass via
+// the provider's relay rather than the dongle's IP. Credentials live in
+// NVS in plaintext, consistent with the SIP / Fritz!Box passwords.
+const char *config_smtp_host(void);
+// Raw stored submission port; 0 = "auto" (caller derives 465 for implicit
+// TLS / 587 for STARTTLS from config_smtp_security()).
+int         config_smtp_port(void);
+// "tls" (implicit TLS on connect, default) | "starttls". Clamped: any
+// other stored value reads back as "tls".
+const char *config_smtp_security(void);
+const char *config_smtp_user(void);
+const char *config_smtp_pass(void);
+// Sender address; falls back to config_smtp_user() when unset.
+const char *config_smtp_from(void);
+// Recipient of the status mails.
+const char *config_smtp_to(void);
+// Trigger toggles (both default off — status mail is opt-in):
+//   on_error: a daily mail when an ERROR was logged since the last one;
+//             also drives the immediate crash mail at boot.
+//   on_spam:  a daily mail when spam calls were caught since the last one.
+bool        config_mail_on_error(void);
+bool        config_mail_on_spam(void);
+
 // Version string of the most recent OTA download that did NOT survive
 // to the next successful boot, or "" if no such record exists. Set by
 // the auto-update task before invoking esp_https_ota; cleared in
@@ -257,6 +282,23 @@ typedef struct {
     // value here (= disable range-blocking).
     bool        has_min_range_votes;
     int         min_range_votes;
+    // Status email (SMTP). String fields follow the usual "NULL = leave
+    // unchanged" rule — in particular the web UI passes smtp_pass = NULL
+    // when the user did not re-enter the password, so a settings save
+    // never clears it.
+    const char *smtp_host;
+    // Explicit has_smtp_port flag: 0 is meaningful here (= "auto", derive
+    // the port from the security mode), distinct from "leave unchanged".
+    bool        has_smtp_port;
+    int         smtp_port;
+    const char *smtp_security;   // "tls" | "starttls"
+    const char *smtp_user;
+    const char *smtp_pass;
+    const char *smtp_from;
+    const char *smtp_to;
+    // "1" = enable, "0" = disable, NULL = leave unchanged. Default off.
+    const char *mail_on_error;
+    const char *mail_on_spam;
 } config_update_t;
 
 esp_err_t config_update(const config_update_t *u);

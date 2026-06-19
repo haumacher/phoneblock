@@ -45,6 +45,15 @@ static const char *NS   = "phoneblock";
 #define K_PB_TOKEN      "pb_token"
 #define K_MIN_DIRECT    "min_direct"
 #define K_MIN_RANGE     "min_range"
+#define K_SMTP_HOST     "smtp_host"
+#define K_SMTP_PORT     "smtp_port"
+#define K_SMTP_SECURITY "smtp_security"
+#define K_SMTP_USER     "smtp_user"
+#define K_SMTP_PASS     "smtp_pass"
+#define K_SMTP_FROM     "smtp_from"
+#define K_SMTP_TO       "smtp_to"
+#define K_MAIL_ON_ERROR "mail_on_error"
+#define K_MAIL_ON_SPAM  "mail_on_spam"
 #define K_DEVICE_ID     "device_id"
 
 // Direct-vote default mirrors DB.MIN_VOTES on the server (the
@@ -103,6 +112,16 @@ typedef struct {
     char pb_token[64];
     int  min_direct_votes;   // SPAM threshold for direct hits
     int  min_range_votes;    // SPAM threshold for wildcard/range hits; 0 = off
+    // Status email (SMTP submission via the user's own mail account).
+    char smtp_host[64];
+    int  smtp_port;          // 0 = derive from smtp_security (465 tls / 587 starttls)
+    char smtp_security[10];  // "tls" (implicit, default) | "starttls"
+    char smtp_user[64];
+    char smtp_pass[64];
+    char smtp_from[64];      // sender; empty = use smtp_user
+    char smtp_to[64];        // recipient of the status mails
+    char mail_on_error[4];   // "1" = mail on ERROR/crash (default off)
+    char mail_on_spam[4];    // "1" = mail when spam calls were caught (default off)
     char last_failed_ota[32];   // semver, plus headroom for "-rcN" suffixes
 } config_cache_t;
 
@@ -243,6 +262,15 @@ void config_load(void)
         s_config.pb_token[0]  = '\0';
         s_config.min_direct_votes = DEFAULT_MIN_DIRECT_VOTES;
         s_config.min_range_votes  = DEFAULT_MIN_RANGE_VOTES;
+        s_config.smtp_host[0]     = '\0';
+        s_config.smtp_port        = 0;   // → derive from security
+        copy_default(s_config.smtp_security, sizeof(s_config.smtp_security), "tls");
+        s_config.smtp_user[0]     = '\0';
+        s_config.smtp_pass[0]     = '\0';
+        s_config.smtp_from[0]     = '\0';
+        s_config.smtp_to[0]       = '\0';
+        s_config.mail_on_error[0] = '\0';
+        s_config.mail_on_spam[0]  = '\0';
         s_config.last_failed_ota[0] = '\0';
         return;
     }
@@ -306,6 +334,23 @@ void config_load(void)
              s_config.pb_token,     sizeof(s_config.pb_token));
     s_config.min_direct_votes = load_int(h, K_MIN_DIRECT, DEFAULT_MIN_DIRECT_VOTES);
     s_config.min_range_votes  = load_int(h, K_MIN_RANGE,  DEFAULT_MIN_RANGE_VOTES);
+    load_str(h, K_SMTP_HOST, "",
+             s_config.smtp_host, sizeof(s_config.smtp_host));
+    s_config.smtp_port = load_int(h, K_SMTP_PORT, 0);
+    load_str(h, K_SMTP_SECURITY, "tls",
+             s_config.smtp_security, sizeof(s_config.smtp_security));
+    load_str(h, K_SMTP_USER, "",
+             s_config.smtp_user, sizeof(s_config.smtp_user));
+    load_str(h, K_SMTP_PASS, "",
+             s_config.smtp_pass, sizeof(s_config.smtp_pass));
+    load_str(h, K_SMTP_FROM, "",
+             s_config.smtp_from, sizeof(s_config.smtp_from));
+    load_str(h, K_SMTP_TO, "",
+             s_config.smtp_to, sizeof(s_config.smtp_to));
+    load_str(h, K_MAIL_ON_ERROR, "",
+             s_config.mail_on_error, sizeof(s_config.mail_on_error));
+    load_str(h, K_MAIL_ON_SPAM, "",
+             s_config.mail_on_spam, sizeof(s_config.mail_on_spam));
     load_str(h, K_LAST_FAIL_OTA, "",
              s_config.last_failed_ota, sizeof(s_config.last_failed_ota));
     nvs_close(h);
@@ -415,6 +460,41 @@ const char *config_phoneblock_base_url(void) { return s_config.pb_base_url; }
 const char *config_phoneblock_token(void)    { return s_config.pb_token; }
 int         config_min_direct_votes(void)     { return s_config.min_direct_votes; }
 int         config_min_range_votes(void)      { return s_config.min_range_votes; }
+const char *config_smtp_host(void)           { return s_config.smtp_host; }
+const char *config_smtp_security(void)
+{
+    // Allowlist: anything that isn't exactly "starttls" maps to the
+    // default "tls" (implicit TLS on connect). Keeps a corrupt NVS value
+    // from selecting an unintended transport.
+    return strcmp(s_config.smtp_security, "starttls") == 0 ? "starttls" : "tls";
+}
+int         config_smtp_port(void)
+{
+    // Raw stored value; 0 = "auto" (let the caller derive the
+    // conventional submission port from the security mode). Returning
+    // the raw value lets the web UI round-trip "auto" as an empty field
+    // instead of pinning a derived port that a later security change
+    // would leave stale.
+    return s_config.smtp_port;
+}
+const char *config_smtp_user(void)           { return s_config.smtp_user; }
+const char *config_smtp_pass(void)           { return s_config.smtp_pass; }
+const char *config_smtp_from(void)
+{
+    // Empty From defaults to the login user — the common case where the
+    // account address is also the sender.
+    return s_config.smtp_from[0] ? s_config.smtp_from : s_config.smtp_user;
+}
+const char *config_smtp_to(void)             { return s_config.smtp_to; }
+bool        config_mail_on_error(void)
+{
+    // Default off: status mail is opt-in. Only "1" enables it.
+    return s_config.mail_on_error[0] == '1';
+}
+bool        config_mail_on_spam(void)
+{
+    return s_config.mail_on_spam[0] == '1';
+}
 const char *config_last_failed_ota(void)     { return s_config.last_failed_ota; }
 
 esp_err_t config_set_last_failed_ota(const char *version)
@@ -557,6 +637,24 @@ esp_err_t config_update(const config_update_t *u)
                                               u->has_min_range_votes,
                                               u->min_range_votes,
                                               &s_config.min_range_votes);
+    if (err == ESP_OK) err = set_str_if(h, K_SMTP_HOST, u->smtp_host,
+                                        s_config.smtp_host, sizeof(s_config.smtp_host));
+    if (err == ESP_OK) err = set_int_explicit(h, K_SMTP_PORT, u->has_smtp_port,
+                                              u->smtp_port, &s_config.smtp_port);
+    if (err == ESP_OK) err = set_str_if(h, K_SMTP_SECURITY, u->smtp_security,
+                                        s_config.smtp_security, sizeof(s_config.smtp_security));
+    if (err == ESP_OK) err = set_str_if(h, K_SMTP_USER, u->smtp_user,
+                                        s_config.smtp_user, sizeof(s_config.smtp_user));
+    if (err == ESP_OK) err = set_str_if(h, K_SMTP_PASS, u->smtp_pass,
+                                        s_config.smtp_pass, sizeof(s_config.smtp_pass));
+    if (err == ESP_OK) err = set_str_if(h, K_SMTP_FROM, u->smtp_from,
+                                        s_config.smtp_from, sizeof(s_config.smtp_from));
+    if (err == ESP_OK) err = set_str_if(h, K_SMTP_TO, u->smtp_to,
+                                        s_config.smtp_to, sizeof(s_config.smtp_to));
+    if (err == ESP_OK) err = set_str_if(h, K_MAIL_ON_ERROR, u->mail_on_error,
+                                        s_config.mail_on_error, sizeof(s_config.mail_on_error));
+    if (err == ESP_OK) err = set_str_if(h, K_MAIL_ON_SPAM, u->mail_on_spam,
+                                        s_config.mail_on_spam, sizeof(s_config.mail_on_spam));
 
     if (err == ESP_OK) err = nvs_commit(h);
     nvs_close(h);
