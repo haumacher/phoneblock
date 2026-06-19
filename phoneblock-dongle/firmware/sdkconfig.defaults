@@ -134,6 +134,16 @@ CONFIG_ESP_TASK_WDT_TIMEOUT_S=60
 CONFIG_ESP_TASK_WDT_CHECK_IDLE_TASK_CPU0=y
 CONFIG_ESP_TASK_WDT_CHECK_IDLE_TASK_CPU1=y
 
+# Per-task run-time statistics, surfaced on /api/status ("system.tasks")
+# and the web Protokoll/System card. This is the field-diagnosis path for
+# "the dongle is hot / unstable" — it makes a runaway task visible as a
+# high CPU% instead of having to guess. USE_TRACE_FACILITY adds the task
+# list + stack-high-water; GENERATE_RUN_TIME_STATS adds the per-task CPU
+# counter (clocked off esp_timer, the IDF default source, so the cost is
+# a cheap timer read per context switch).
+CONFIG_FREERTOS_USE_TRACE_FACILITY=y
+CONFIG_FREERTOS_GENERATE_RUN_TIME_STATS=y
+
 # OTA rollback: the bootloader marks a freshly flashed image as
 # "pending verify". The app must call
 # esp_ota_mark_app_valid_cancel_rollback() after a successful
