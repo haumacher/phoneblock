@@ -11,6 +11,7 @@
 #include "esp_timer.h"
 
 #include "firmware_update.h"
+#include "mail.h"
 #include "selftest.h"
 #include "sync.h"
 #include "ticks_util.h"
@@ -31,6 +32,12 @@ typedef struct {
     const char *name;
     uint32_t    interval_s;
     uint32_t    jitter_s;
+    // First run delay in seconds: 0 = a full (jittered) interval out
+    // (the default — don't act at boot). A small value makes the first
+    // run happen soon after boot, used by the mail job so a post-crash
+    // status mail goes out promptly once the network is up rather than
+    // up to a day later.
+    uint32_t    first_delay_s;
     int64_t     next_due_us;   // esp_timer time of the next scheduled run
     void      (*run)(void);
 } sched_job_t;
@@ -38,11 +45,17 @@ typedef struct {
 static void run_selftest(void)  { selftest_run(); }
 static void run_fw_update(void) { firmware_update_run(); }
 static void run_sync(void)      { sync_run(false); }   // scheduled: honour toggle
+static void run_mail(void)      { mail_daily_flush(); }
+
+// First mail evaluation 5 min after boot: long enough for Wi-Fi/DHCP to
+// settle, short enough that a crash-reboot's ERROR is mailed promptly.
+#define MAIL_FIRST_DELAY_S  (5 * 60)
 
 static sched_job_t s_jobs[] = {
-    { "selftest",  DAY_S, JITTER_S, 0, run_selftest },
-    { "fw_update", DAY_S, JITTER_S, 0, run_fw_update },
-    { "sync",      DAY_S, JITTER_S, 0, run_sync },
+    { "selftest",  DAY_S, JITTER_S, 0,                  0, run_selftest },
+    { "fw_update", DAY_S, JITTER_S, 0,                  0, run_fw_update },
+    { "sync",      DAY_S, JITTER_S, 0,                  0, run_sync },
+    { "mail",      DAY_S, JITTER_S, MAIL_FIRST_DELAY_S, 0, run_mail },
 };
 #define JOB_COUNT (sizeof(s_jobs) / sizeof(s_jobs[0]))
 
@@ -60,10 +73,13 @@ static void scheduler_task(void *arg)
     // First scheduled run of each job is one full (jittered) interval
     // out — never at boot. Matches the old per-task behaviour: the user
     // may still be in the middle of setup, and the boot path already ran
-    // the synchronous self-test / validated the running image.
+    // the synchronous self-test / validated the running image. A job with
+    // first_delay_s set instead fires soon after boot (see the mail job).
     int64_t now = esp_timer_get_time();
     for (size_t i = 0; i < JOB_COUNT; i++)
-        s_jobs[i].next_due_us = next_due(&s_jobs[i], now);
+        s_jobs[i].next_due_us = s_jobs[i].first_delay_s
+            ? now + (int64_t)s_jobs[i].first_delay_s * 1000000
+            : next_due(&s_jobs[i], now);
 
     while (1) {
         now = esp_timer_get_time();
