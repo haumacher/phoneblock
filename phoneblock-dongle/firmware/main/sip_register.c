@@ -91,6 +91,8 @@ typedef struct {
     bool     srtp_tx;             // true → answer/stream as SRTP (RTP/SAVP)
     int      srtp_tag;            // crypto tag to echo in the SDP answer
     uint8_t  srtp_tx_key[RTP_SRTP_KEY_LEN];  // our SDES master key+salt
+    char     contact_uri[200];    // INVITE Contact = remote target (BYE R-URI)
+    char     route[200];          // INVITE Record-Route, echoed as BYE Route
     int64_t  bye_at_us;           // abs. deadline for the next timed dialog
                                   // action (send BYE after a tone, or send the
                                   // delayed 480 while PROCEEDING); 0 = none
@@ -897,14 +899,38 @@ static void capture_dialog(sip_ctx_t *c, const char *req, int req_len,
     d->invite_len = req_len < SIP_INVITE_STORE_CAP ? req_len : SIP_INVITE_STORE_CAP;
     memcpy(d->invite_msg, req, d->invite_len);
 
+    const char *end = req + req_len;
+
     const char *hdr = find_header(req, req_len, "From");
     if (hdr) {
-        const char *end = req + req_len;
         const char *eol = hdr;
         while (eol < end && *eol != '\r' && *eol != '\n') eol++;
         int val_len = (int)(eol - hdr);
         parse_uri(hdr, val_len, d->remote_uri, sizeof(d->remote_uri));
         parse_tag(hdr, val_len, d->from_tag, sizeof(d->from_tag));
+    }
+
+    // Remote target + route set for in-dialog requests (our BYE). Telekom's
+    // IMS routes in-dialog requests by the INVITE Contact (which carries an
+    // opaque "mavodi-…" routing token) and the Record-Route; addressing the
+    // BYE to the From AOR instead returns 481 Call Leg Does Not Exist and a
+    // ~10 s delayed teardown. Falls back to the From URI when absent (e.g.
+    // the Fritz!Box, where Contact == AOR works either way).
+    d->contact_uri[0] = '\0';
+    const char *ct = find_header(req, req_len, "Contact");
+    if (ct) {
+        const char *eol = ct;
+        while (eol < end && *eol != '\r' && *eol != '\n') eol++;
+        parse_uri(ct, (int)(eol - ct), d->contact_uri, sizeof(d->contact_uri));
+    }
+    // Record-Route (single hop for Telekom). Stored verbatim and echoed as a
+    // Route header on our BYE for loose routing (the entry carries ;lr).
+    d->route[0] = '\0';
+    const char *rr = find_header(req, req_len, "Record-Route");
+    if (rr) {
+        const char *eol = rr;
+        while (eol < end && *eol != '\r' && *eol != '\n') eol++;
+        header_value(rr, eol, d->route, sizeof(d->route));
     }
 
     random_hex(d->our_tag, 16);
@@ -965,21 +991,33 @@ static int build_bye(sip_ctx_t *c, char *buf, int cap)
     const char *our_host = advertised_host(c);
     int our_port = advertised_port();
 
-    // For non-UDP transports, the in-dialog R-URI carries an explicit
-    // ";transport=<tcp|tls>" so the registrar/UA on the other side
-    // doesn't fall back to UDP for our BYE.
+    // In-dialog R-URI = the remote target, i.e. the INVITE's Contact URI
+    // (carries the IMS routing token). Fall back to the From AOR when the
+    // INVITE had no Contact. For the AOR fallback on non-UDP transports we
+    // append ";transport=…" so the peer doesn't drop to UDP; the Contact
+    // path is loose-routed via the Route header below, so it's used as-is.
     const char *uri_param = sip_transport_uri_param(c->transport);
-    char ruri[160];
-    if (strcmp(uri_param, "udp") == 0) {
+    char ruri[200];
+    if (d->contact_uri[0]) {
+        snprintf(ruri, sizeof(ruri), "%s", d->contact_uri);
+    } else if (strcmp(uri_param, "udp") == 0) {
         snprintf(ruri, sizeof(ruri), "%s", d->remote_uri);
     } else {
         snprintf(ruri, sizeof(ruri), "%s;transport=%s",
                  d->remote_uri, uri_param);
     }
 
+    char route_hdr[224];
+    if (d->route[0]) {
+        snprintf(route_hdr, sizeof(route_hdr), "Route: %s\r\n", d->route);
+    } else {
+        route_hdr[0] = '\0';
+    }
+
     return snprintf(buf, cap,
         "BYE %s SIP/2.0\r\n"
         "Via: SIP/2.0/%s %s:%d;branch=z9hG4bK%s;rport\r\n"
+        "%s"
         "Max-Forwards: 70\r\n"
         "From: <sip:%s@%s:%d>;tag=%s\r\n"
         "To: <%s>;tag=%s\r\n"
@@ -991,6 +1029,7 @@ static int build_bye(sip_ctx_t *c, char *buf, int cap)
         ruri,
         sip_transport_via_token(c->transport),
         our_host, our_port, branch,
+        route_hdr,
         current_identity_user(), advertised_host(c), our_port, d->our_tag,
         d->remote_uri, d->from_tag,
         d->call_id,
