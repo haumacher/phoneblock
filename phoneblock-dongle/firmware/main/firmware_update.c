@@ -13,7 +13,6 @@
 #include "esp_log.h"
 #include "esp_ota_ops.h"
 #include "esp_partition.h"
-#include "esp_random.h"
 #include "esp_system.h"
 #include "esp_task_wdt.h"
 #include "cJSON.h"
@@ -26,17 +25,8 @@
 #include "sdkconfig.h"
 
 #include "config.h"
-#include "ticks_util.h"
 
 static const char *TAG = "fwup";
-
-// 24 h between scheduled checks — same cadence as the daily token
-// self-test, with the same ±30 min skew so a fleet-wide power blip
-// doesn't line every dongle up onto the same minute on the CDN.
-#define FWUP_INTERVAL_S     (24 * 3600)
-#define FWUP_JITTER_S       (30 * 60)
-
-static TaskHandle_t s_task = NULL;
 
 // ---------------------------------------------------------------------------
 // OTA signing keys.
@@ -657,39 +647,22 @@ void firmware_try_update(bool force, fw_update_outcome_t *out)
     install_resolved(&d, out);
 }
 
-// --- background task ------------------------------------------------
+// --- scheduled entry point ------------------------------------------
 
-static void update_task(void *arg)
+void firmware_update_run(void)
 {
-    (void)arg;
-    // First iteration runs after a full (jittered) interval. The boot
-    // path already validated the running image; no point overwriting
-    // it the moment we come up.
-    while (1) {
-        uint32_t jitter  = esp_random() % (2u * FWUP_JITTER_S);
-        uint32_t delay_s = FWUP_INTERVAL_S - FWUP_JITTER_S + jitter;
-        vTaskDelay(seconds_to_ticks(delay_s));
-        // Skip until the device is provisioned. Using the PhoneBlock
-        // token as the "is configured" proxy mirrors the self-test
-        // task — an unconfigured dongle has nothing to lose by
-        // staying on its current build.
-        if (strlen(config_phoneblock_token()) == 0) continue;
-        // Honour the user's "freeze on this build" choice (set
-        // automatically by the manual firmware-upload path, or
-        // explicitly via the web UI toggle). The "Auf Aktualisierung
-        // prüfen" button bypasses this — that's a manual call and
-        // signals intent.
-        if (!config_auto_update_enabled()) {
-            ESP_LOGI(TAG, "scheduled update check skipped (auto-update off)");
-            continue;
-        }
-        ESP_LOGI(TAG, "scheduled firmware update check");
-        firmware_try_update(false, NULL);
+    // Skip until the device is provisioned. Using the PhoneBlock token as
+    // the "is configured" proxy mirrors the self-test — an unconfigured
+    // dongle has nothing to lose by staying on its current build.
+    if (strlen(config_phoneblock_token()) == 0) return;
+    // Honour the user's "freeze on this build" choice (set automatically
+    // by the manual firmware-upload path, or explicitly via the web UI
+    // toggle). The "Auf Aktualisierung prüfen" button bypasses this —
+    // that's a manual call and signals intent.
+    if (!config_auto_update_enabled()) {
+        ESP_LOGI(TAG, "scheduled update check skipped (auto-update off)");
+        return;
     }
-}
-
-void firmware_update_start(void)
-{
-    if (s_task) return;
-    xTaskCreate(update_task, "fw_update", 8192, NULL, 3, &s_task);
+    ESP_LOGI(TAG, "scheduled firmware update check");
+    firmware_try_update(false, NULL);
 }

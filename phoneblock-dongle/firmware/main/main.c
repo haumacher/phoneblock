@@ -23,15 +23,13 @@
 #include "api.h"
 #include "config.h"
 #include "crashreport.h"
-#include "firmware_update.h"
 #include "improv.h"
 #include "log_capture.h"
 #include "report_queue.h"
-#include "selftest.h"
+#include "scheduler.h"
 #include "sip_register.h"
 #include "stats.h"
 #include "status_led.h"
-#include "sync.h"
 #include "web.h"
 #include "wifi.h"
 
@@ -270,18 +268,6 @@ void app_main(void)
     // leave the dump in place for a later boot to retry.
     crashreport_upload_async();
 
-    // Background self-test task — repeats the token check once a
-    // day so a revoked or rotated token shows up on the dashboard
-    // before the next real call. Spawned even without a token; the
-    // task itself skips runs until one is configured.
-    selftest_start();
-
-    // Background auto-update task — checks the CDN manifest once a
-    // day, with the same skip-without-token guard as the self-test.
-    // The last_failed_ota marker (cleared above on a healthy boot)
-    // keeps a brick-and-rollback build from being re-tried in a loop.
-    firmware_update_start();
-
     // Async /api/report-call worker — keeps the second TLS handshake
     // off the SIP critical path. Drains a small queue at its own
     // pace; SPAM verdicts enqueue here instead of POSTing inline.
@@ -306,8 +292,13 @@ void app_main(void)
         ESP_LOGI(TAG, "SIP not configured yet — set via web UI");
     }
 
-    // Blocklist sync task — safe to start even when no Fritz!Box
-    // credentials are configured yet; the task itself will skip its
-    // runs until a later setup fills those in.
-    sync_start();
+    // Shared scheduler task — owns all recurring ~24 h housekeeping:
+    // the token self-test (+ log-report flush), the firmware
+    // auto-update check, and the Fritz!Box blocklist sync. Replaces
+    // three separate per-feature tasks (~14 KB stack reclaimed). Safe
+    // to start before the device is provisioned; each job applies its
+    // own skip-until-configured / user-toggle gates, and the daily
+    // last_failed_ota guard (cleared above on a healthy boot) still
+    // keeps a brick-and-rollback build from being re-tried in a loop.
+    scheduler_start();
 }

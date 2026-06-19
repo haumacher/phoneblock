@@ -9,16 +9,21 @@
 // user's phonebook stays as a simple submission form and the answer
 // bot picks up every future caller.
 //
-// Runs once per day from a background task and can be triggered on
-// demand from the web UI via sync_trigger_now().
+// Runs once per day from the shared scheduler task (see scheduler.c) and
+// can be triggered on demand from the web UI via sync_trigger_now().
 
-// Spawn the sync task. Safe to call from app_main; no-op on duplicate
-// calls. The task blocks on a semaphore most of the time, waking
-// for the daily timer or sync_trigger_now().
-void sync_start(void);
+// Initialise the sync status mutex. Called once by scheduler_start()
+// before the scheduler task (or any web-UI snapshot) can run; no-op on
+// duplicate calls.
+void sync_init(void);
 
-// Ask the sync task to run immediately. Returns false if the task is
-// not running or a run is already in progress.
+// Perform one sync run. `manual` bypasses the config_sync_enabled()
+// toggle (a manual trigger always runs); a scheduled run honours it.
+// Invoked by the scheduler task, never inline on a caller's thread.
+void sync_run(bool manual);
+
+// Ask the scheduler to run a sync as soon as possible. Returns false if
+// the scheduler is not running or a run is already in progress.
 bool sync_trigger_now(void);
 
 // Snapshot of the most recent sync attempt, for the dashboard.
