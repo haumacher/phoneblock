@@ -234,6 +234,51 @@ static esp_err_t handle_root(httpd_req_t *req)
     return ESP_OK;
 }
 
+// Add heap figures and, where the run-time stats are compiled in, a
+// per-task CPU breakdown under "system". This is the live field-diagnosis
+// readout for "the dongle is hot / unstable": a runaway task shows up as a
+// high cpu_pct instead of having to guess. The CPU figures are sampled
+// over a short window (so they reflect *current* load, not a boot
+// average), which briefly delays this one request — fine for a diagnostic
+// poll. Percentages are of total CPU across both cores, so a task pegging
+// a single core reads ~50%.
+static void add_system_load(cJSON *root)
+{
+    cJSON *sys = cJSON_AddObjectToObject(root, "system");
+    cJSON_AddNumberToObject(sys, "free_heap",     (double)esp_get_free_heap_size());
+    cJSON_AddNumberToObject(sys, "min_free_heap", (double)esp_get_minimum_free_heap_size());
+
+#if CONFIG_FREERTOS_GENERATE_RUN_TIME_STATS
+    UBaseType_t cap = uxTaskGetNumberOfTasks() + 4;   // headroom for mid-sample spawns
+    TaskStatus_t *a = malloc(cap * sizeof(TaskStatus_t));
+    TaskStatus_t *b = malloc(cap * sizeof(TaskStatus_t));
+    if (!a || !b) { free(a); free(b); return; }
+
+    uint32_t t0 = 0, t1 = 0;
+    UBaseType_t na = uxTaskGetSystemState(a, cap, &t0);
+    vTaskDelay(pdMS_TO_TICKS(250));
+    UBaseType_t nb = uxTaskGetSystemState(b, cap, &t1);
+    uint32_t dtotal = t1 - t0;
+
+    cJSON *tasks = cJSON_AddArrayToObject(sys, "tasks");
+    for (UBaseType_t i = 0; i < nb; i++) {
+        uint32_t prev = 0;
+        for (UBaseType_t j = 0; j < na; j++) {
+            if (a[j].xHandle == b[i].xHandle) { prev = a[j].ulRunTimeCounter; break; }
+        }
+        uint32_t d   = b[i].ulRunTimeCounter - prev;   // wraps cleanly (unsigned)
+        uint32_t pct = dtotal ? (uint32_t)(((uint64_t)d * 100) / dtotal) : 0;
+        cJSON *t = cJSON_CreateObject();
+        cJSON_AddStringToObject(t, "name",       b[i].pcTaskName);
+        cJSON_AddNumberToObject(t, "cpu_pct",    pct);
+        cJSON_AddNumberToObject(t, "stack_free", b[i].usStackHighWaterMark);
+        cJSON_AddItemToArray(tasks, t);
+    }
+    free(a);
+    free(b);
+#endif
+}
+
 static esp_err_t handle_status(httpd_req_t *req)
 {
     REQUIRE_AUTH_API(req);
@@ -358,6 +403,8 @@ static esp_err_t handle_status(httpd_req_t *req)
     cJSON_AddBoolToObject  (ml,   "pass_set", config_smtp_pass()[0] != '\0');
     cJSON_AddBoolToObject  (ml,   "on_error", config_mail_on_error());
     cJSON_AddBoolToObject  (ml,   "on_spam",  config_mail_on_spam());
+
+    add_system_load(root);
 
     send_json(req, root);
     return ESP_OK;
