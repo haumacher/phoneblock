@@ -348,7 +348,7 @@ const I18N = {
     'sip.manual.realm': 'Realm',
     'sip.manual.realm.hint': 'Leer = aus Challenge übernehmen.',
     'sip.manual.srtp': 'SRTP',
-    'sip.manual.srtp.hint': 'Derzeit deaktiviert, Feld wird persistiert für spätere Nutzung.',
+    'sip.manual.srtp.hint': 'Wird automatisch ausgehandelt. „optional“ verschlüsselt die Sprache, wenn der Anbieter es anbietet (z. B. Telekom); „aus“ erzwingt unverschlüsseltes RTP.',
     'sip.manual.local_port': 'Lokaler SIP-Port',
     'sip.manual.local_port.hint': 'Port, auf dem der Dongle SIP empfängt (Standard 15060). Leer = Standard.',
     'sip.manual.rtp_port': 'RTP-Port (Audio)',
@@ -595,7 +595,7 @@ const I18N = {
     'sip.manual.realm': 'Realm',
     'sip.manual.realm.hint': 'Empty = take from the server challenge.',
     'sip.manual.srtp': 'SRTP',
-    'sip.manual.srtp.hint': 'Currently disabled; the field is persisted for later use.',
+    'sip.manual.srtp.hint': 'Negotiated automatically. “optional” encrypts the media when the provider offers it (e.g. Telekom); “off” forces plain RTP.',
     'sip.manual.local_port': 'Local SIP port',
     'sip.manual.local_port.hint': 'Port the dongle receives SIP on (default 15060). Empty = default.',
     'sip.manual.rtp_port': 'RTP port (audio)',
@@ -830,7 +830,7 @@ const I18N = {
     'sip.manual.realm': 'Realm',
     'sip.manual.realm.hint': 'Vide = reprendre la valeur du challenge du serveur.',
     'sip.manual.srtp': 'SRTP',
-    'sip.manual.srtp.hint': 'Actuellement désactivé ; le champ est persisté pour un usage ultérieur.',
+    'sip.manual.srtp.hint': 'Négocié automatiquement. « optionnel » chiffre le média si le fournisseur le propose (p. ex. Telekom) ; « désactivé » force le RTP en clair.',
     'sip.manual.local_port': 'Port SIP local',
     'sip.manual.local_port.hint': 'Port sur lequel le dongle reçoit le SIP (défaut 15060). Vide = défaut.',
     'sip.manual.rtp_port': 'Port RTP (audio)',
@@ -1065,7 +1065,7 @@ const I18N = {
     'sip.manual.realm': 'Realm',
     'sip.manual.realm.hint': 'Vacío = tomarlo del challenge del servidor.',
     'sip.manual.srtp': 'SRTP',
-    'sip.manual.srtp.hint': 'Actualmente desactivado; el campo se guarda para uso futuro.',
+    'sip.manual.srtp.hint': 'Se negocia automáticamente. «opcional» cifra el audio cuando el proveedor lo ofrece (p. ej. Telekom); «desactivado» fuerza RTP sin cifrar.',
     'sip.manual.local_port': 'Puerto SIP local',
     'sip.manual.local_port.hint': 'Puerto en el que el dongle recibe SIP (predeterminado 15060). Vacío = predeterminado.',
     'sip.manual.rtp_port': 'Puerto RTP (audio)',
@@ -2862,7 +2862,7 @@ async function renderSipManual(){
   const au    = sip.auth_user || '';
   const outb  = sip.outbound  || '';
   const realm = sip.realm     || '';
-  const srtp  = sip.srtp      || 'off';
+  const srtp  = sip.srtp      || 'optional';
   // No stored password ⇒ pre-tick "anonymous", so the saved state stays
   // visible on reload (the password itself is never sent to the client).
   const passSet = !!sip.pass_set;

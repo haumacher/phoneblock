@@ -14,6 +14,7 @@
 #include "esp_task_wdt.h"
 #include "esp_timer.h"
 #include "mbedtls/md5.h"
+#include "mbedtls/base64.h"
 
 #include "lwip/sockets.h"
 
@@ -87,6 +88,9 @@ typedef struct {
     struct sockaddr_in peer;      // where to send in-dialog responses/requests
     struct sockaddr_in rtp_dest;  // remote RTP endpoint (from INVITE SDP)
     bool     rtp_dest_valid;      // true if we successfully parsed c= / m=
+    bool     srtp_tx;             // true → answer/stream as SRTP (RTP/SAVP)
+    int      srtp_tag;            // crypto tag to echo in the SDP answer
+    uint8_t  srtp_tx_key[RTP_SRTP_KEY_LEN];  // our SDES master key+salt
     int64_t  bye_at_us;           // abs. deadline for the next timed dialog
                                   // action (send BYE after a tone, or send the
                                   // delayed 480 while PROCEEDING); 0 = none
@@ -838,18 +842,38 @@ static void send_response(sip_ctx_t *c, const struct sockaddr_in *peer,
 
 // Write a minimal SDP body announcing PCMA audio on our local RTP port.
 // The RTP task binds that port just-in-time and streams a tone there.
-static int build_sdp_body(const char *our_ip, char *out, int cap)
+// When the dialog negotiated SRTP (d->srtp_tx), the media line uses the
+// secure RTP/SAVP profile and carries our SDES key in an a=crypto line
+// echoing the offer's crypto tag; otherwise it stays plain RTP/AVP.
+static int build_sdp_body(const char *our_ip, const dialog_t *d,
+                          char *out, int cap)
 {
-    return snprintf(out, cap,
+    int n = snprintf(out, cap,
         "v=0\r\n"
         "o=phoneblock-dongle 0 0 IN IP4 %s\r\n"
         "s=-\r\n"
         "c=IN IP4 %s\r\n"
         "t=0 0\r\n"
-        "m=audio %d RTP/AVP 8\r\n"
-        "a=rtpmap:8 PCMA/8000\r\n"
-        "a=sendrecv\r\n",
-        our_ip, our_ip, config_rtp_port());
+        "m=audio %d RTP/%s 8\r\n"
+        "a=rtpmap:8 PCMA/8000\r\n",
+        our_ip, our_ip, config_rtp_port(),
+        (d && d->srtp_tx) ? "SAVP" : "AVP");
+
+    if (d && d->srtp_tx) {
+        // base64 of 30 bytes is 40 chars + NUL.
+        char key_b64[48];
+        size_t b64_len = 0;
+        if (mbedtls_base64_encode((unsigned char *)key_b64, sizeof(key_b64),
+                                  &b64_len, d->srtp_tx_key,
+                                  RTP_SRTP_KEY_LEN) == 0) {
+            n += snprintf(out + n, cap - n,
+                "a=crypto:%d AES_CM_128_HMAC_SHA1_80 inline:%.*s\r\n",
+                d->srtp_tag, (int)b64_len, key_b64);
+        }
+    }
+
+    n += snprintf(out + n, cap - n, "a=sendrecv\r\n");
+    return n;
 }
 
 // ---------------------------------------------------------------------------
@@ -904,6 +928,31 @@ static void capture_dialog(sip_ctx_t *c, const char *req, int req_len,
     }
     if (!d->rtp_dest_valid) {
         ESP_LOGW(TAG, "could not parse remote RTP endpoint — no tone will play");
+    }
+
+    // SRTP negotiation. Telekom (and other IMS networks) offer RTP/SAVP
+    // with SDES a=crypto keys and reject a plain RTP/AVP answer. If the
+    // INVITE offers a crypto suite we support, mirror it: answer SAVP and
+    // generate our own master key/salt to encrypt the announcement. The
+    // sip_srtp config knob is an escape hatch: "off" forces plain RTP.
+    d->srtp_tx  = false;
+    d->srtp_tag = 0;
+    char remote_key_b64[64];
+    int crypto_tag = parse_sdp_crypto(req, req_len,
+                                      remote_key_b64, sizeof(remote_key_b64));
+    bool srtp_off = strcmp(config_sip_srtp(), "off") == 0;
+    if (crypto_tag > 0 && !srtp_off) {
+        // Generate a fresh 30-byte SDES master key + salt.
+        esp_fill_random(d->srtp_tx_key, sizeof(d->srtp_tx_key));
+        d->srtp_tx  = true;
+        d->srtp_tag = crypto_tag;
+        ESP_LOGI(TAG, "SRTP offered (crypto tag %d) → answering RTP/SAVP", crypto_tag);
+    } else if (crypto_tag > 0) {
+        ESP_LOGW(TAG, "SRTP offered but sip_srtp=off — answering plain RTP "
+                      "(call media will likely be rejected)");
+    } else if (parse_sdp_audio_savp(req, req_len)) {
+        ESP_LOGW(TAG, "remote offers RTP/SAVP but no supported crypto suite "
+                      "— answering plain RTP (media will likely be rejected)");
     }
 }
 
@@ -1082,8 +1131,8 @@ static void resend_last_response(sip_ctx_t *c, const char *req, int req_len,
             break;
         case DIALOG_ANSWERED:
         case DIALOG_STREAMING: {
-            char sdp[256];
-            build_sdp_body(advertised_host(c), sdp, sizeof(sdp));
+            char sdp[384];
+            build_sdp_body(advertised_host(c), d, sdp, sizeof(sdp));
             send_response(c, from, req, req_len, 200, "OK",
                           d->our_tag, sdp);
             break;
@@ -1176,8 +1225,8 @@ static void handle_invite(sip_ctx_t *c, const char *req, int req_len,
     d->verdict = check_invite_caller(req, req_len);
 
     if (d->verdict == VERDICT_SPAM) {
-        char sdp[256];
-        build_sdp_body(advertised_host(c), sdp, sizeof(sdp));
+        char sdp[384];
+        build_sdp_body(advertised_host(c), d, sdp, sizeof(sdp));
         send_response(c, from, req, req_len, 200, "OK", d->our_tag, sdp);
         d->state = DIALOG_ANSWERED;
         d->bye_at_us = 0;   // not a decline-delay; BYE deadline is set after ACK
@@ -1220,7 +1269,11 @@ static void handle_ack(sip_ctx_t *c, const char *req, int req_len,
             int64_t duration_us = (int64_t)src.len * 125LL;
             ESP_LOGI(TAG, "ACK received → streaming announcement (%u bytes ≈ %lld ms), then BYE",
                      (unsigned)src.len, (long long)(duration_us / 1000));
-            rtp_play_audio(&d->rtp_dest, &src);   // task owns src now, closes it
+            rtp_srtp_tx_t srtp = { .enabled = d->srtp_tx };
+            if (d->srtp_tx) {
+                memcpy(srtp.key, d->srtp_tx_key, sizeof(srtp.key));
+            }
+            rtp_play_audio(&d->rtp_dest, &src, &srtp);   // task owns src now, closes it
             d->bye_at_us = esp_timer_get_time() + duration_us + 200000LL;
             d->state = DIALOG_STREAMING;
         } else {
@@ -1439,22 +1492,11 @@ static void sip_task(void *arg)
                  tr);
         ESP_LOGW(TAG, "%s", msg);
     }
-    // TLS protects only the signaling. Without SRTP (Phase 5) the audio
-    // path is still RTP/AVP cleartext on UDP/RTP. Surface that visibly
-    // so users do not have a false sense of end-to-end encryption.
-    if (strcmp(tr, "tls") == 0) {
-        const char *msg =
-            "TLS active but RTP is still plaintext (SRTP arrives in Phase 5)";
-        ESP_LOGW(TAG, "%s", msg);
-    }
-    if (strcmp(config_sip_srtp(), "off") != 0
-        && strcmp(config_sip_srtp(), "") != 0) {
-        char msg[80];
-        snprintf(msg, sizeof(msg),
-                 "SRTP %.12s ignored — firmware only does plain RTP",
-                 config_sip_srtp());
-        ESP_LOGW(TAG, "%s", msg);
-    }
+    // SRTP is negotiated per call from the INVITE's a=crypto offer (see
+    // capture_dialog): the dongle answers RTP/SAVP and encrypts the
+    // announcement whenever the caller offers a supported suite, unless
+    // sip_srtp is explicitly "off". There is nothing to warn about at
+    // registration time — the media profile depends on each offer.
     const int retry_delay_s = 30;
     char *rx = NULL;
     int64_t refresh_at_us = 0;  // absolute deadline for next REGISTER (microseconds)
