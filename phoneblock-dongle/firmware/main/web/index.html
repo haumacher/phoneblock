@@ -348,7 +348,7 @@ const I18N = {
     'sip.manual.realm': 'Realm',
     'sip.manual.realm.hint': 'Leer = aus Challenge übernehmen.',
     'sip.manual.srtp': 'SRTP',
-    'sip.manual.srtp.hint': 'Derzeit deaktiviert, Feld wird persistiert für spätere Nutzung.',
+    'sip.manual.srtp.hint': 'SRTP wird automatisch ausgehandelt: Sprache wird verschlüsselt, sobald der Anbieter es anbietet (z. B. Telekom), sonst unverschlüsseltes RTP (z. B. Fritz!Box im LAN).',
     'sip.manual.local_port': 'Lokaler SIP-Port',
     'sip.manual.local_port.hint': 'Port, auf dem der Dongle SIP empfängt (Standard 15060). Leer = Standard.',
     'sip.manual.rtp_port': 'RTP-Port (Audio)',
@@ -595,7 +595,7 @@ const I18N = {
     'sip.manual.realm': 'Realm',
     'sip.manual.realm.hint': 'Empty = take from the server challenge.',
     'sip.manual.srtp': 'SRTP',
-    'sip.manual.srtp.hint': 'Currently disabled; the field is persisted for later use.',
+    'sip.manual.srtp.hint': 'SRTP is negotiated automatically: media is encrypted whenever the provider offers it (e.g. Telekom), otherwise plain RTP (e.g. the Fritz!Box on the LAN).',
     'sip.manual.local_port': 'Local SIP port',
     'sip.manual.local_port.hint': 'Port the dongle receives SIP on (default 15060). Empty = default.',
     'sip.manual.rtp_port': 'RTP port (audio)',
@@ -830,7 +830,7 @@ const I18N = {
     'sip.manual.realm': 'Realm',
     'sip.manual.realm.hint': 'Vide = reprendre la valeur du challenge du serveur.',
     'sip.manual.srtp': 'SRTP',
-    'sip.manual.srtp.hint': 'Actuellement désactivé ; le champ est persisté pour un usage ultérieur.',
+    'sip.manual.srtp.hint': 'Le SRTP est négocié automatiquement : le média est chiffré dès que le fournisseur le propose (p. ex. Telekom), sinon RTP en clair (p. ex. la Fritz!Box sur le LAN).',
     'sip.manual.local_port': 'Port SIP local',
     'sip.manual.local_port.hint': 'Port sur lequel le dongle reçoit le SIP (défaut 15060). Vide = défaut.',
     'sip.manual.rtp_port': 'Port RTP (audio)',
@@ -1065,7 +1065,7 @@ const I18N = {
     'sip.manual.realm': 'Realm',
     'sip.manual.realm.hint': 'Vacío = tomarlo del challenge del servidor.',
     'sip.manual.srtp': 'SRTP',
-    'sip.manual.srtp.hint': 'Actualmente desactivado; el campo se guarda para uso futuro.',
+    'sip.manual.srtp.hint': 'El SRTP se negocia automáticamente: el audio se cifra cuando el proveedor lo ofrece (p. ej. Telekom); de lo contrario, RTP sin cifrar (p. ej. la Fritz!Box en la LAN).',
     'sip.manual.local_port': 'Puerto SIP local',
     'sip.manual.local_port.hint': 'Puerto en el que el dongle recibe SIP (predeterminado 15060). Vacío = predeterminado.',
     'sip.manual.rtp_port': 'Puerto RTP (audio)',
@@ -2825,7 +2825,6 @@ async function onProviderSubmit(e){
   body.append('sip_auth_user', p.authUser || '');
   body.append('sip_outbound', '');
   body.append('sip_realm', '');
-  body.append('sip_srtp', 'off');
   try {
     const r = await fetch('/api/config', {
       method: 'POST',
@@ -2862,7 +2861,6 @@ async function renderSipManual(){
   const au    = sip.auth_user || '';
   const outb  = sip.outbound  || '';
   const realm = sip.realm     || '';
-  const srtp  = sip.srtp      || 'off';
   // No stored password ⇒ pre-tick "anonymous", so the saved state stays
   // visible on reload (the password itself is never sent to the client).
   const passSet = !!sip.pass_set;
@@ -2919,12 +2917,6 @@ async function renderSipManual(){
     +     '<input type="text" name="sip_realm" value="' + esc(realm) + '"></label>'
     +   '<p class="muted" style="font-size:.75rem;margin:.2rem 0 .6rem">'
     +     esc(t('sip.manual.realm.hint')) + '</p>'
-    +   '<label>' + esc(t('sip.manual.srtp'))
-    +     '<select name="sip_srtp">'
-    +       opt('off',       srtp, t('sip.manual.srtp.off'))
-    +     + opt('optional',  srtp, t('sip.manual.srtp.optional'))
-    +     + opt('mandatory', srtp, t('sip.manual.srtp.mandatory'))
-    +     '</select></label>'
     +   '<p class="muted" style="font-size:.75rem;margin:.2rem 0 .6rem">'
     +     esc(t('sip.manual.srtp.hint')) + '</p>'
     +   '<label>' + esc(t('sip.manual.local_port'))

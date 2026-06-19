@@ -36,6 +36,30 @@ char log_capture_level(const char *line)
     return is_level(c) ? c : '\0';
 }
 
+// Largest length <= len whose prefix ends on a UTF-8 character boundary.
+// A hard byte-truncation at msg_cap can cut a multibyte sequence — an
+// arrow in our own messages, or an umlaut in an external string like a
+// SIP display name — leaving a dangling continuation byte. That byte is
+// invalid UTF-8, which makes the /api/errors JSON unparseable and breaks
+// the web "Protokoll" panel. Drop any incomplete trailing character.
+static size_t utf8_trim(const char *s, size_t len)
+{
+    if (len == 0) return 0;
+    // Walk back over trailing continuation bytes (10xxxxxx) to the lead.
+    size_t i = len, cont = 0;
+    while (i > 0 && ((unsigned char)s[i - 1] & 0xC0) == 0x80) { i--; cont++; }
+    if (i == 0) return len;            // no lead byte in range — leave as-is
+    unsigned char lead = (unsigned char)s[i - 1];
+    size_t need;
+    if      (lead < 0x80)           need = 1;   // ASCII
+    else if ((lead & 0xE0) == 0xC0) need = 2;
+    else if ((lead & 0xF0) == 0xE0) need = 3;
+    else if ((lead & 0xF8) == 0xF0) need = 4;
+    else                            need = 1;   // invalid lead byte
+    if (cont + 1 == need) return len;  // trailing character is complete
+    return i - 1;                       // drop the incomplete trailing char
+}
+
 char log_capture_parse(const char *line,
                        char *tag, size_t tag_cap,
                        char *msg, size_t msg_cap)
@@ -71,6 +95,7 @@ char log_capture_parse(const char *line,
         while (*end && *end != '\n' && *end != '\033') end++;
         size_t mlen = (size_t)(end - m);
         if (mlen >= msg_cap) mlen = msg_cap - 1;
+        mlen = utf8_trim(m, mlen);
         memcpy(msg, m, mlen);
         msg[mlen] = '\0';
     }

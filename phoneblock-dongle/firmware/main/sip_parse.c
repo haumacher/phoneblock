@@ -385,3 +385,73 @@ int parse_sdp_audio_port(const char *msg, int msg_len)
     }
     return port;
 }
+
+int parse_sdp_audio_savp(const char *msg, int msg_len)
+{
+    const char *p = find_sdp_line(msg, msg_len, "m=audio ");
+    if (!p) return 0;
+    const char *end = msg + msg_len;
+    // Skip the port number and the single space after it.
+    while (p < end && *p >= '0' && *p <= '9') p++;
+    while (p < end && *p == ' ') p++;
+    // The transport is the next whitespace-delimited token.
+    return (size_t)(end - p) >= 8 && strncmp(p, "RTP/SAVP", 8) == 0;
+}
+
+int parse_sdp_crypto(const char *msg, int msg_len, char *key_b64, int cap)
+{
+    if (key_b64 && cap > 0) key_b64[0] = '\0';
+
+    const char *p = msg;
+    const char *end = msg + msg_len;
+    bool at_line_start = true;
+    while (p < end) {
+        if (at_line_start && (size_t)(end - p) >= 9
+            && strncmp(p, "a=crypto:", 9) == 0) {
+            const char *q = p + 9;
+            // Bound the scan to this single line.
+            const char *eol = q;
+            while (eol < end && *eol != '\r' && *eol != '\n') eol++;
+
+            // Parse the crypto tag (decimal).
+            int tag = 0;
+            bool saw_digit = false;
+            while (q < eol && *q >= '0' && *q <= '9') {
+                tag = tag * 10 + (*q - '0');
+                saw_digit = true;
+                q++;
+            }
+            // One space, then the crypto-suite token.
+            if (saw_digit && tag > 0 && q < eol && *q == ' ') {
+                q++;
+                const char suite[] = "AES_CM_128_HMAC_SHA1_80";
+                size_t slen = sizeof(suite) - 1;
+                if ((size_t)(eol - q) >= slen
+                    && strncmp(q, suite, slen) == 0
+                    && (q[slen] == ' ' || q + slen == eol)) {
+                    // Supported suite. Extract the inline: key parameter.
+                    for (const char *r = q; r + 7 <= eol; r++) {
+                        if (strncmp(r, "inline:", 7) == 0) {
+                            r += 7;
+                            int n = 0;
+                            // The inline value ends at '|' (lifetime/MKI),
+                            // whitespace, or end of line.
+                            while (r < eol && *r != '|' && *r != ' '
+                                   && *r != '\t' && key_b64 && n < cap - 1) {
+                                key_b64[n++] = *r++;
+                            }
+                            if (key_b64 && cap > 0) key_b64[n] = '\0';
+                            break;
+                        }
+                    }
+                    return tag;
+                }
+            }
+            p = eol;
+            continue;
+        }
+        at_line_start = (*p == '\n');
+        p++;
+    }
+    return 0;
+}

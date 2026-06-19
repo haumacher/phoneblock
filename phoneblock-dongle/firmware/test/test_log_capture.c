@@ -111,6 +111,22 @@ int main(void)
         CHECK_STR ("trunc/msg", "long", msg);
     }
 
+    // --- truncation must not split a multibyte UTF-8 character ----------
+    // A byte-cut through "→" (E2 86 92) would leave a dangling continuation
+    // byte — invalid UTF-8 that makes the /api/errors JSON unparseable.
+    // The incomplete trailing character must be dropped.
+    {
+        char tag[8], msg[5];   // 4 usable bytes: the cut lands inside "→"
+        log_capture_parse("I (1) t: ab→cd", tag, sizeof(tag), msg, sizeof(msg));
+        CHECK_STR("utf8-trunc/msg", "ab", msg);
+    }
+    // A complete multibyte character that still fits is kept intact.
+    {
+        char tag[8], msg[6];   // 5 usable bytes: "ab" + the 3-byte "→"
+        log_capture_parse("I (1) t: ab→cd", tag, sizeof(tag), msg, sizeof(msg));
+        CHECK_STR("utf8-keep/msg", "ab→", msg);
+    }
+
     printf("log_capture: %d tests, %d failures\n", g_tests, g_failures);
     return g_failures ? 1 : 0;
 }

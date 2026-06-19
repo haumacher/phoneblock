@@ -509,6 +509,61 @@ static void test_parse_sdp(void)
     expect_sdp_ip("", "Subject: note c=IN IP4 1.2.3.4 inline\r\n\r\n");
 }
 
+// Real Telekom IMS INVITE SDP (from the field log): RTP/SAVP with two
+// SDES crypto suites, _80 first, _32 second.
+static const char *TELEKOM_SDP =
+    "v=0\r\n"
+    "o=ccs-0-615-3 06123797321659 409780904 IN IP4 217.0.167.35\r\n"
+    "s=-\r\n"
+    "c=IN IP4 217.0.167.35\r\n"
+    "t=0 0\r\n"
+    "m=audio 11262 RTP/SAVP 112 116 8 0 110\r\n"
+    "a=sendrecv\r\n"
+    "a=crypto:1 AES_CM_128_HMAC_SHA1_80 inline:qdLu16UGSfeXENoHNrgwDG7onl1nuMyV6fSi+b/J\r\n"
+    "a=crypto:2 AES_CM_128_HMAC_SHA1_32 inline:lWibhEBAiok3IZoRKNDJWN03QHuVqDNhPRxV3xUU\r\n"
+    "a=rtpmap:8 PCMA/8000\r\n";
+
+static void expect_savp(int expected, const char *msg)
+{
+    int got = parse_sdp_audio_savp(msg, (int)strlen(msg));
+    report_int("parse_sdp_audio_savp", msg, expected, got);
+}
+
+static void expect_crypto(int expected_tag, const char *expected_key,
+                          const char *msg)
+{
+    char key[64] = {0};
+    int tag = parse_sdp_crypto(msg, (int)strlen(msg), key, sizeof(key));
+    report_int("parse_sdp_crypto tag", msg, expected_tag, tag);
+    report_str("parse_sdp_crypto key", msg, expected_key, key);
+}
+
+static void test_parse_sdp_crypto(void)
+{
+    // Telekom offer: SAVP transport, picks the _80 suite (tag 1) and its
+    // inline key, ignoring the _32 suite on tag 2.
+    expect_savp(1, TELEKOM_SDP);
+    expect_crypto(1, "qdLu16UGSfeXENoHNrgwDG7onl1nuMyV6fSi+b/J", TELEKOM_SDP);
+
+    // Plain Fritz!Box offer: AVP, no crypto.
+    expect_savp(0, SAMPLE_SDP);
+    expect_crypto(0, "", SAMPLE_SDP);
+
+    // Only the unsupported _32 suite offered → no match.
+    expect_crypto(0, "",
+        "m=audio 5000 RTP/SAVP 8\r\n"
+        "a=crypto:7 AES_CM_128_HMAC_SHA1_32 inline:abc\r\n");
+
+    // inline key with trailing |lifetime|MKI parameters must be trimmed.
+    expect_crypto(3, "Zm9vYmFy",
+        "m=audio 5000 RTP/SAVP 8\r\n"
+        "a=crypto:3 AES_CM_128_HMAC_SHA1_80 inline:Zm9vYmFy|2^20|1:4\r\n");
+
+    // Empty / absent.
+    expect_savp(0, "");
+    expect_crypto(0, "", "");
+}
+
 static void test_pcm_to_alaw(void)
 {
     // Reference values for the classic G.711 A-law encoding.
@@ -546,6 +601,7 @@ int main(void)
     test_normalize_de();
     test_same_call_id();
     test_parse_sdp();
+    test_parse_sdp_crypto();
     test_pcm_to_alaw();
 
     printf("%d tests, %d failures\n", g_tests, g_failures);

@@ -14,6 +14,7 @@
 #include "esp_task_wdt.h"
 #include "esp_timer.h"
 #include "mbedtls/md5.h"
+#include "mbedtls/base64.h"
 
 #include "lwip/sockets.h"
 
@@ -87,6 +88,13 @@ typedef struct {
     struct sockaddr_in peer;      // where to send in-dialog responses/requests
     struct sockaddr_in rtp_dest;  // remote RTP endpoint (from INVITE SDP)
     bool     rtp_dest_valid;      // true if we successfully parsed c= / m=
+    bool     srtp_tx;             // true → answer/stream as SRTP (RTP/SAVP)
+    int      srtp_tag;            // crypto tag to echo in the SDP answer
+    uint8_t  srtp_tx_key[RTP_SRTP_KEY_LEN];  // our SDES master key+salt
+    char     contact_uri[200];    // INVITE Contact = remote target (BYE R-URI)
+    char     route[320];          // INVITE Record-Route, echoed as BYE Route
+                                  // (Telekom's IMS token URI is ~211 chars;
+                                  // truncation produced a malformed Route → 400)
     int64_t  bye_at_us;           // abs. deadline for the next timed dialog
                                   // action (send BYE after a tone, or send the
                                   // delayed 480 while PROCEEDING); 0 = none
@@ -838,18 +846,38 @@ static void send_response(sip_ctx_t *c, const struct sockaddr_in *peer,
 
 // Write a minimal SDP body announcing PCMA audio on our local RTP port.
 // The RTP task binds that port just-in-time and streams a tone there.
-static int build_sdp_body(const char *our_ip, char *out, int cap)
+// When the dialog negotiated SRTP (d->srtp_tx), the media line uses the
+// secure RTP/SAVP profile and carries our SDES key in an a=crypto line
+// echoing the offer's crypto tag; otherwise it stays plain RTP/AVP.
+static int build_sdp_body(const char *our_ip, const dialog_t *d,
+                          char *out, int cap)
 {
-    return snprintf(out, cap,
+    int n = snprintf(out, cap,
         "v=0\r\n"
         "o=phoneblock-dongle 0 0 IN IP4 %s\r\n"
         "s=-\r\n"
         "c=IN IP4 %s\r\n"
         "t=0 0\r\n"
-        "m=audio %d RTP/AVP 8\r\n"
-        "a=rtpmap:8 PCMA/8000\r\n"
-        "a=sendrecv\r\n",
-        our_ip, our_ip, config_rtp_port());
+        "m=audio %d RTP/%s 8\r\n"
+        "a=rtpmap:8 PCMA/8000\r\n",
+        our_ip, our_ip, config_rtp_port(),
+        (d && d->srtp_tx) ? "SAVP" : "AVP");
+
+    if (d && d->srtp_tx) {
+        // base64 of 30 bytes is 40 chars + NUL.
+        char key_b64[48];
+        size_t b64_len = 0;
+        if (mbedtls_base64_encode((unsigned char *)key_b64, sizeof(key_b64),
+                                  &b64_len, d->srtp_tx_key,
+                                  RTP_SRTP_KEY_LEN) == 0) {
+            n += snprintf(out + n, cap - n,
+                "a=crypto:%d AES_CM_128_HMAC_SHA1_80 inline:%.*s\r\n",
+                d->srtp_tag, (int)b64_len, key_b64);
+        }
+    }
+
+    n += snprintf(out + n, cap - n, "a=sendrecv\r\n");
+    return n;
 }
 
 // ---------------------------------------------------------------------------
@@ -873,14 +901,46 @@ static void capture_dialog(sip_ctx_t *c, const char *req, int req_len,
     d->invite_len = req_len < SIP_INVITE_STORE_CAP ? req_len : SIP_INVITE_STORE_CAP;
     memcpy(d->invite_msg, req, d->invite_len);
 
+    const char *end = req + req_len;
+
     const char *hdr = find_header(req, req_len, "From");
     if (hdr) {
-        const char *end = req + req_len;
         const char *eol = hdr;
         while (eol < end && *eol != '\r' && *eol != '\n') eol++;
         int val_len = (int)(eol - hdr);
         parse_uri(hdr, val_len, d->remote_uri, sizeof(d->remote_uri));
         parse_tag(hdr, val_len, d->from_tag, sizeof(d->from_tag));
+    }
+
+    // Remote target + route set for in-dialog requests (our BYE). Telekom's
+    // IMS routes in-dialog requests by the INVITE Contact (which carries an
+    // opaque "mavodi-…" routing token) and the Record-Route; addressing the
+    // BYE to the From AOR instead returns 481 Call Leg Does Not Exist and a
+    // ~10 s delayed teardown. Falls back to the From URI when absent (e.g.
+    // the Fritz!Box, where Contact == AOR works either way).
+    d->contact_uri[0] = '\0';
+    const char *ct = find_header(req, req_len, "Contact");
+    if (ct) {
+        const char *eol = ct;
+        while (eol < end && *eol != '\r' && *eol != '\n') eol++;
+        parse_uri(ct, (int)(eol - ct), d->contact_uri, sizeof(d->contact_uri));
+    }
+    // Record-Route (single hop for Telekom). Stored verbatim and echoed as a
+    // Route header on our BYE for loose routing (the entry carries ;lr).
+    // A value too long for the buffer must NOT be stored truncated — a
+    // half a URI is a malformed Route header and gets the BYE rejected
+    // with 400; better to send no Route (481, delayed teardown) than that.
+    d->route[0] = '\0';
+    const char *rr = find_header(req, req_len, "Record-Route");
+    if (rr) {
+        const char *eol = rr;
+        while (eol < end && *eol != '\r' && *eol != '\n') eol++;
+        if ((size_t)(eol - rr) < sizeof(d->route)) {
+            header_value(rr, eol, d->route, sizeof(d->route));
+        } else {
+            ESP_LOGW(TAG, "Record-Route too long (%d) — BYE sent without Route",
+                     (int)(eol - rr));
+        }
     }
 
     random_hex(d->our_tag, 16);
@@ -905,6 +965,30 @@ static void capture_dialog(sip_ctx_t *c, const char *req, int req_len,
     if (!d->rtp_dest_valid) {
         ESP_LOGW(TAG, "could not parse remote RTP endpoint — no tone will play");
     }
+
+    // SRTP negotiation. Telekom (and other IMS networks) offer RTP/SAVP
+    // with SDES a=crypto keys and reject a plain RTP/AVP answer. Whenever
+    // the INVITE offers a crypto suite we support we mirror it: answer
+    // RTP/SAVP and generate our own master key/salt to encrypt the
+    // announcement. There is no good reason to answer plaintext to a
+    // crypto offer (it just gets the dialog torn down), so this is not
+    // gated on a config knob — a plain RTP/AVP offer (e.g. the Fritz!Box
+    // on the LAN) simply carries no crypto and is answered RTP/AVP.
+    d->srtp_tx  = false;
+    d->srtp_tag = 0;
+    char remote_key_b64[64];
+    int crypto_tag = parse_sdp_crypto(req, req_len,
+                                      remote_key_b64, sizeof(remote_key_b64));
+    if (crypto_tag > 0) {
+        // Generate a fresh 30-byte SDES master key + salt.
+        esp_fill_random(d->srtp_tx_key, sizeof(d->srtp_tx_key));
+        d->srtp_tx  = true;
+        d->srtp_tag = crypto_tag;
+        ESP_LOGI(TAG, "SRTP offered (crypto tag %d) → answering RTP/SAVP", crypto_tag);
+    } else if (parse_sdp_audio_savp(req, req_len)) {
+        ESP_LOGW(TAG, "remote offers RTP/SAVP but no supported crypto suite "
+                      "— answering plain RTP (media will likely be rejected)");
+    }
 }
 
 // Build a BYE for the active answered dialog.
@@ -917,21 +1001,33 @@ static int build_bye(sip_ctx_t *c, char *buf, int cap)
     const char *our_host = advertised_host(c);
     int our_port = advertised_port();
 
-    // For non-UDP transports, the in-dialog R-URI carries an explicit
-    // ";transport=<tcp|tls>" so the registrar/UA on the other side
-    // doesn't fall back to UDP for our BYE.
+    // In-dialog R-URI = the remote target, i.e. the INVITE's Contact URI
+    // (carries the IMS routing token). Fall back to the From AOR when the
+    // INVITE had no Contact. For the AOR fallback on non-UDP transports we
+    // append ";transport=…" so the peer doesn't drop to UDP; the Contact
+    // path is loose-routed via the Route header below, so it's used as-is.
     const char *uri_param = sip_transport_uri_param(c->transport);
-    char ruri[160];
-    if (strcmp(uri_param, "udp") == 0) {
+    char ruri[200];
+    if (d->contact_uri[0]) {
+        snprintf(ruri, sizeof(ruri), "%s", d->contact_uri);
+    } else if (strcmp(uri_param, "udp") == 0) {
         snprintf(ruri, sizeof(ruri), "%s", d->remote_uri);
     } else {
         snprintf(ruri, sizeof(ruri), "%s;transport=%s",
                  d->remote_uri, uri_param);
     }
 
+    char route_hdr[sizeof(d->route) + 16];
+    if (d->route[0]) {
+        snprintf(route_hdr, sizeof(route_hdr), "Route: %s\r\n", d->route);
+    } else {
+        route_hdr[0] = '\0';
+    }
+
     return snprintf(buf, cap,
         "BYE %s SIP/2.0\r\n"
         "Via: SIP/2.0/%s %s:%d;branch=z9hG4bK%s;rport\r\n"
+        "%s"
         "Max-Forwards: 70\r\n"
         "From: <sip:%s@%s:%d>;tag=%s\r\n"
         "To: <%s>;tag=%s\r\n"
@@ -943,6 +1039,7 @@ static int build_bye(sip_ctx_t *c, char *buf, int cap)
         ruri,
         sip_transport_via_token(c->transport),
         our_host, our_port, branch,
+        route_hdr,
         current_identity_user(), advertised_host(c), our_port, d->our_tag,
         d->remote_uri, d->from_tag,
         d->call_id,
@@ -1082,8 +1179,8 @@ static void resend_last_response(sip_ctx_t *c, const char *req, int req_len,
             break;
         case DIALOG_ANSWERED:
         case DIALOG_STREAMING: {
-            char sdp[256];
-            build_sdp_body(advertised_host(c), sdp, sizeof(sdp));
+            char sdp[384];
+            build_sdp_body(advertised_host(c), d, sdp, sizeof(sdp));
             send_response(c, from, req, req_len, 200, "OK",
                           d->our_tag, sdp);
             break;
@@ -1176,8 +1273,8 @@ static void handle_invite(sip_ctx_t *c, const char *req, int req_len,
     d->verdict = check_invite_caller(req, req_len);
 
     if (d->verdict == VERDICT_SPAM) {
-        char sdp[256];
-        build_sdp_body(advertised_host(c), sdp, sizeof(sdp));
+        char sdp[384];
+        build_sdp_body(advertised_host(c), d, sdp, sizeof(sdp));
         send_response(c, from, req, req_len, 200, "OK", d->our_tag, sdp);
         d->state = DIALOG_ANSWERED;
         d->bye_at_us = 0;   // not a decline-delay; BYE deadline is set after ACK
@@ -1220,7 +1317,11 @@ static void handle_ack(sip_ctx_t *c, const char *req, int req_len,
             int64_t duration_us = (int64_t)src.len * 125LL;
             ESP_LOGI(TAG, "ACK received → streaming announcement (%u bytes ≈ %lld ms), then BYE",
                      (unsigned)src.len, (long long)(duration_us / 1000));
-            rtp_play_audio(&d->rtp_dest, &src);   // task owns src now, closes it
+            rtp_srtp_tx_t srtp = { .enabled = d->srtp_tx };
+            if (d->srtp_tx) {
+                memcpy(srtp.key, d->srtp_tx_key, sizeof(srtp.key));
+            }
+            rtp_play_audio(&d->rtp_dest, &src, &srtp);   // task owns src now, closes it
             d->bye_at_us = esp_timer_get_time() + duration_us + 200000LL;
             d->state = DIALOG_STREAMING;
         } else {
@@ -1439,22 +1540,11 @@ static void sip_task(void *arg)
                  tr);
         ESP_LOGW(TAG, "%s", msg);
     }
-    // TLS protects only the signaling. Without SRTP (Phase 5) the audio
-    // path is still RTP/AVP cleartext on UDP/RTP. Surface that visibly
-    // so users do not have a false sense of end-to-end encryption.
-    if (strcmp(tr, "tls") == 0) {
-        const char *msg =
-            "TLS active but RTP is still plaintext (SRTP arrives in Phase 5)";
-        ESP_LOGW(TAG, "%s", msg);
-    }
-    if (strcmp(config_sip_srtp(), "off") != 0
-        && strcmp(config_sip_srtp(), "") != 0) {
-        char msg[80];
-        snprintf(msg, sizeof(msg),
-                 "SRTP %.12s ignored — firmware only does plain RTP",
-                 config_sip_srtp());
-        ESP_LOGW(TAG, "%s", msg);
-    }
+    // SRTP is negotiated per call from the INVITE's a=crypto offer (see
+    // capture_dialog): the dongle answers RTP/SAVP and encrypts the
+    // announcement whenever the caller offers a supported suite, unless
+    // sip_srtp is explicitly "off". There is nothing to warn about at
+    // registration time — the media profile depends on each offer.
     const int retry_delay_s = 30;
     char *rx = NULL;
     int64_t refresh_at_us = 0;  // absolute deadline for next REGISTER (microseconds)

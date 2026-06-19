@@ -241,7 +241,7 @@ void config_load(void)
         s_config.sip_authuser[0]  = '\0';
         s_config.sip_outbound[0]  = '\0';
         s_config.sip_realm[0]     = '\0';
-        copy_default(s_config.sip_srtp,   sizeof(s_config.sip_srtp),   "off");
+        copy_default(s_config.sip_srtp,   sizeof(s_config.sip_srtp),   "optional");
         s_config.fb_app_user[0]   = '\0';
         s_config.fb_app_pass[0]   = '\0';
         s_config.sync_enabled[0]  = '\0';
@@ -297,7 +297,7 @@ void config_load(void)
              s_config.sip_outbound, sizeof(s_config.sip_outbound));
     load_str(h, K_SIP_REALM,    "",
              s_config.sip_realm,    sizeof(s_config.sip_realm));
-    load_str(h, K_SIP_SRTP,     "off",
+    load_str(h, K_SIP_SRTP,     "optional",
              s_config.sip_srtp,     sizeof(s_config.sip_srtp));
     load_str(h, K_FB_APP_USER,  "",
              s_config.fb_app_user,  sizeof(s_config.fb_app_user));
@@ -370,7 +370,7 @@ const char *config_sip_transport(void)       { return s_config.sip_transp[0] ? s
 const char *config_sip_auth_user(void)       { return s_config.sip_authuser; }
 const char *config_sip_outbound(void)        { return s_config.sip_outbound; }
 const char *config_sip_realm(void)           { return s_config.sip_realm; }
-const char *config_sip_srtp(void)            { return s_config.sip_srtp[0] ? s_config.sip_srtp : "off"; }
+const char *config_sip_srtp(void)            { return s_config.sip_srtp[0] ? s_config.sip_srtp : "optional"; }
 const char *config_fritzbox_app_user(void)   { return s_config.fb_app_user; }
 const char *config_fritzbox_app_pass(void)   { return s_config.fb_app_pass; }
 bool        config_sync_enabled(void)
