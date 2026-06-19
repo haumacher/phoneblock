@@ -92,7 +92,9 @@ typedef struct {
     int      srtp_tag;            // crypto tag to echo in the SDP answer
     uint8_t  srtp_tx_key[RTP_SRTP_KEY_LEN];  // our SDES master key+salt
     char     contact_uri[200];    // INVITE Contact = remote target (BYE R-URI)
-    char     route[200];          // INVITE Record-Route, echoed as BYE Route
+    char     route[320];          // INVITE Record-Route, echoed as BYE Route
+                                  // (Telekom's IMS token URI is ~211 chars;
+                                  // truncation produced a malformed Route → 400)
     int64_t  bye_at_us;           // abs. deadline for the next timed dialog
                                   // action (send BYE after a tone, or send the
                                   // delayed 480 while PROCEEDING); 0 = none
@@ -925,12 +927,20 @@ static void capture_dialog(sip_ctx_t *c, const char *req, int req_len,
     }
     // Record-Route (single hop for Telekom). Stored verbatim and echoed as a
     // Route header on our BYE for loose routing (the entry carries ;lr).
+    // A value too long for the buffer must NOT be stored truncated — a
+    // half a URI is a malformed Route header and gets the BYE rejected
+    // with 400; better to send no Route (481, delayed teardown) than that.
     d->route[0] = '\0';
     const char *rr = find_header(req, req_len, "Record-Route");
     if (rr) {
         const char *eol = rr;
         while (eol < end && *eol != '\r' && *eol != '\n') eol++;
-        header_value(rr, eol, d->route, sizeof(d->route));
+        if ((size_t)(eol - rr) < sizeof(d->route)) {
+            header_value(rr, eol, d->route, sizeof(d->route));
+        } else {
+            ESP_LOGW(TAG, "Record-Route too long (%d) — BYE sent without Route",
+                     (int)(eol - rr));
+        }
     }
 
     random_hex(d->our_tag, 16);
@@ -1007,7 +1017,7 @@ static int build_bye(sip_ctx_t *c, char *buf, int cap)
                  d->remote_uri, uri_param);
     }
 
-    char route_hdr[224];
+    char route_hdr[sizeof(d->route) + 16];
     if (d->route[0]) {
         snprintf(route_hdr, sizeof(route_hdr), "Route: %s\r\n", d->route);
     } else {
