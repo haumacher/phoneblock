@@ -4,25 +4,22 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "esp_crt_bundle.h"
-#include "esp_err.h"
-#include "esp_http_client.h"
 #include "esp_log.h"
 #include "esp_system.h"
 
+#include "api.h"
 #include "config.h"
-#include "http_util.h"
 #include "stats.h"
 #include "wifi.h"
 
 static const char *TAG = "logreport";
 
-#define LOGREPORT_HTTP_TIMEOUT_MS   30000
-
-// Same heap headroom rationale as crashreport.c: the TLS handshake to
+// Same heap headroom rationale as crashreport.c: a full TLS handshake to
 // phoneblock.net wants ~30 KB of bignum scratch for the cert-chain
-// verify. Below this, defer to the next cycle rather than fail the
-// handshake noisily.
+// verify. The upload normally resumes the selftest's session ticket and
+// skips that, but the per-worker ticket can miss and force a full
+// handshake — so keep the guard. Below this, defer to the next cycle
+// rather than fail the handshake noisily.
 #define LOGREPORT_MIN_FREE_HEAP     (64 * 1024)
 
 // Upper bound for the assembled text body. The ring holds at most
@@ -39,19 +36,23 @@ static const char *TAG = "logreport";
 // it across boots.
 static int64_t s_reported_through_us = 0;
 
-void logreport_flush(void)
+// Snapshots the WARN/ERROR ring and assembles the upload body on the
+// heap. The 32-entry stats_error_t snapshot (~5 KB) lives only in this
+// frame and is gone the moment it returns — so it is not sitting on the
+// stack underneath the subsequent TLS handshake. That matters: the
+// upload runs on the 8 KB selftest task, and a full handshake's P-384
+// cert-chain verify already comes close to that limit on its own. The
+// 1.3.5 field crashes were exactly this — the ~5 KB array plus the
+// handshake tipped the task over its stack guard.
+//
+// Returns the malloc'd body (caller frees) and fills *out_len /
+// *out_through / *out_shipped, or NULL when there is nothing new to ship.
+static char *logreport_build_body(size_t *out_len, int64_t *out_through,
+                                  int *out_shipped)
 {
-    // Opt-in: the same toggle that governs crash reports ("send errors to
-    // PhoneBlock"). Off → never ship anything.
-    if (!config_crash_report_enabled()) return;
-    if (strlen(config_phoneblock_token()) == 0) return;
-    // No network → try again next cycle instead of failing a pointless
-    // TLS handshake.
-    if (!wifi_has_ip()) return;
-
     stats_error_t errs[STATS_MAX_ERRORS];
     int n = stats_snapshot_errors(errs, STATS_MAX_ERRORS);
-    if (n <= 0) return;
+    if (n <= 0) return NULL;
 
     // De-noising rule: a lone WARN is almost always transient or benign —
     // ESP-IDF's httpd logs every client socket reset (errno 104/113) at
@@ -71,10 +72,10 @@ void logreport_flush(void)
             break;
         }
     }
-    if (!have_new_error) return;
+    if (!have_new_error) return NULL;
 
     char *body = malloc(LOGREPORT_BODY_CAP);
-    if (!body) return;
+    if (!body) return NULL;
 
     // stats_snapshot_errors returns newest-first; walk it back to front so
     // the body reads oldest-first. Advance the high-water mark only to the
@@ -114,8 +115,30 @@ void logreport_flush(void)
         // Nothing new at WARN/ERROR — the healthy path. No POST, no heap
         // pressure, no server load.
         free(body);
-        return;
+        return NULL;
     }
+
+    *out_len     = len;
+    *out_through = shipped_through;
+    *out_shipped = shipped;
+    return body;
+}
+
+void logreport_flush(void)
+{
+    // Opt-in: the same toggle that governs crash reports ("send errors to
+    // PhoneBlock"). Off → never ship anything.
+    if (!config_crash_report_enabled()) return;
+    if (strlen(config_phoneblock_token()) == 0) return;
+    // No network → try again next cycle instead of failing a pointless
+    // TLS handshake.
+    if (!wifi_has_ip()) return;
+
+    size_t  len;
+    int64_t shipped_through;
+    int     shipped;
+    char *body = logreport_build_body(&len, &shipped_through, &shipped);
+    if (!body) return;   // nothing new to ship; errs[] already off the stack
 
     size_t free_heap = esp_get_free_heap_size();
     if (free_heap < LOGREPORT_MIN_FREE_HEAP) {
@@ -124,36 +147,10 @@ void logreport_flush(void)
         return;
     }
 
-    char auth[160];
-    snprintf(auth, sizeof(auth), "Bearer %s", config_phoneblock_token());
-
-    char url[200];
-    snprintf(url, sizeof(url), "%s/api/dongle/log",
-             config_phoneblock_base_url());
-
-    esp_http_client_config_t cfg = {
-        .url               = url,
-        .method            = HTTP_METHOD_POST,
-        .crt_bundle_attach = esp_crt_bundle_attach,
-        .timeout_ms        = LOGREPORT_HTTP_TIMEOUT_MS,
-        .auth_type         = HTTP_AUTH_TYPE_NONE,
-    };
-    esp_http_client_handle_t client = esp_http_client_init(&cfg);
-    if (!client) {
-        free(body);
-        return;
-    }
-    // The User-Agent carries the firmware version and the stable per-device
-    // id, so the server can attribute each line to a specific dongle (the
-    // Bearer token already attributes it to the account/user).
-    http_util_set_user_agent(client);
-    esp_http_client_set_header(client, "Authorization", auth);
-    esp_http_client_set_header(client, "Content-Type", "text/plain");
-    esp_http_client_set_post_field(client, body, (int)len);
-
-    esp_err_t err = esp_http_client_perform(client);
-    int status = (err == ESP_OK) ? esp_http_client_get_status_code(client) : -1;
-    esp_http_client_cleanup(client);
+    // Hands off to the shared session-resuming client (POST
+    // /api/dongle/log). The selftest just primed the TLS ticket, so this
+    // normally resumes it and skips the cert-chain verify entirely.
+    int status = phoneblock_post_log(body, len);
     free(body);
 
     if (status >= 200 && status < 300) {
@@ -165,7 +162,6 @@ void logreport_flush(void)
                  shipped, shipped == 1 ? "y" : "ies");
     } else {
         // Keep the high-water mark unchanged → retry next cycle.
-        ESP_LOGI(TAG, "log upload failed (err=%s status=%d) — retry next cycle",
-                 esp_err_to_name(err), status);
+        ESP_LOGI(TAG, "log upload failed (status=%d) — retry next cycle", status);
     }
 }

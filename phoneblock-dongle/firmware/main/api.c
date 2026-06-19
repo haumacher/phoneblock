@@ -374,6 +374,10 @@ verdict_t phoneblock_check(const char *phone_number, pb_check_result_t *out,
 
     pb_sink_t sink = { .kind = PB_SINK_SCAN, .scan = &scan };
     esp_http_client_set_url(client, url);
+    // Every user of the shared handle sets its own method: the handle is
+    // reused across GET (check, selftest) and POST (log upload) requests,
+    // so none may rely on a leftover default. See phoneblock_post_log().
+    esp_http_client_set_method(client, HTTP_METHOD_GET);
     esp_http_client_set_user_data(client, &sink);
     http_util_set_user_agent(client);
     esp_http_client_set_header(client, "Authorization", auth_header);
@@ -628,6 +632,7 @@ bool phoneblock_selftest(api_phases_t *phases_opt)
 
     pb_sink_t sink = { .kind = PB_SINK_BUFFER, .buf = &resp };
     esp_http_client_set_url(client, url);
+    esp_http_client_set_method(client, HTTP_METHOD_GET);
     esp_http_client_set_user_data(client, &sink);
     http_util_set_user_agent(client);
     esp_http_client_set_header(client, "Authorization", auth_header);
@@ -660,6 +665,72 @@ bool phoneblock_selftest(api_phases_t *phases_opt)
     xSemaphoreGive(s_check_mutex);
     free(resp.data);
     return ok;
+}
+
+int phoneblock_post_log(const char *body, size_t len)
+{
+    if (s_check_mutex == NULL) {
+        ESP_LOGE(TAG, "phoneblock_post_log before phoneblock_api_init()");
+        return -1;
+    }
+
+    char url[160];
+    snprintf(url, sizeof(url), "%s/api/dongle/log", config_phoneblock_base_url());
+
+    const char *token = config_phoneblock_token();
+    char auth_header[128];
+    snprintf(auth_header, sizeof(auth_header), "Bearer %s", token);
+
+    // Discard the response body; only the status matters. A small buffer
+    // is enough to capture a short error body for the failure log.
+    response_buffer_t resp = { .data = calloc(1, 128), .len = 0, .cap = 128 };
+    if (!resp.data) {
+        ESP_LOGE(TAG, "log upload: out of memory");
+        return -1;
+    }
+
+    xSemaphoreTake(s_check_mutex, portMAX_DELAY);
+
+    // Runs on the shared session-resuming client on purpose: the daily
+    // selftest primes the TLS ticket moments before this call, so the
+    // upload resumes it (abbreviated handshake, no certificate chain
+    // verify) instead of paying a second full handshake. The full-
+    // handshake fallback (when the per-worker ticket misses) is the
+    // stack-hungry P-384 path - the caller keeps its big snapshot off
+    // the stack so even that case fits. See the comment above
+    // s_check_client.
+    esp_http_client_handle_t client = check_client();
+    if (client == NULL) {
+        xSemaphoreGive(s_check_mutex);
+        free(resp.data);
+        return -1;
+    }
+
+    pb_sink_t sink = { .kind = PB_SINK_BUFFER, .buf = &resp };
+    esp_http_client_set_url(client, url);
+    esp_http_client_set_method(client, HTTP_METHOD_POST);
+    esp_http_client_set_user_data(client, &sink);
+    http_util_set_user_agent(client);
+    esp_http_client_set_header(client, "Authorization", auth_header);
+    esp_http_client_set_header(client, "Content-Type", "text/plain");
+    esp_http_client_set_post_field(client, body, (int)len);
+
+    ESP_LOGI(TAG, "POST %s (%u bytes)", url, (unsigned)len);
+    esp_err_t err = esp_http_client_perform(client);
+    int status = (err == ESP_OK) ? esp_http_client_get_status_code(client) : -1;
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "log upload transport: %s", esp_err_to_name(err));
+    }
+
+    // Clear the POST body so a later GET on this shared handle (check,
+    // selftest) carries no stale payload - those callers set only their
+    // method, not the body. Close (not destroy) to keep the refreshed
+    // TLS ticket for the next request.
+    esp_http_client_set_post_field(client, NULL, 0);
+    esp_http_client_close(client);
+    xSemaphoreGive(s_check_mutex);
+    free(resp.data);
+    return status;
 }
 
 // --- Diagnostic latency probe (issue #329) --------------------------
