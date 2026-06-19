@@ -45,3 +45,9 @@ void rtp_play_audio(const struct sockaddr_in *dest,
 // streaming — no point making the new caller wait through 5–15 s of
 // our own audio. Safe to call when no streaming task is active.
 void rtp_request_abort(void);
+
+// True from just before an announcement stream starts until the
+// streaming task exits. The report-call worker waits on this so its TLS
+// handshake never overlaps the SRTP media stream (combined heap use
+// crashes the ESP32). Safe to call from any task.
+bool rtp_streaming_active(void);

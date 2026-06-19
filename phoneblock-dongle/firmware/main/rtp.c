@@ -27,6 +27,20 @@ static const char *TAG = "rtp";
 // sip_register.c — set by SIP task, polled by RTP task per frame.
 static volatile bool s_abort = false;
 
+// True while an announcement is being streamed. The report-call worker
+// polls this so its TLS handshake doesn't run concurrently with the SRTP
+// stream — two TLS sessions plus the libsrtp session exhaust the ESP32
+// heap (lwIP "Not enough space" on RTP sendto + mbedTLS PK-parse OOM,
+// then an httpd-task watchdog reboot). Set in rtp_play_audio before the
+// task starts (so there's no enqueue/stream-start race) and cleared when
+// the task exits.
+static volatile bool s_streaming = false;
+
+bool rtp_streaming_active(void)
+{
+    return s_streaming;
+}
+
 typedef struct {
     struct sockaddr_in dest;
     announcement_src_t src;
@@ -197,6 +211,7 @@ static void rtp_audio_task(void *arg)
 done:
     announcement_close(&a->src);
     free(a);
+    s_streaming = false;
     vTaskDelete(NULL);
 }
 
@@ -218,10 +233,13 @@ void rtp_play_audio(const struct sockaddr_in *dest,
         args->srtp.enabled = false;
     }
     s_abort = false;
+    s_streaming = true;   // set before task start so the report worker can't
+                          // race in between enqueue and stream start
     // 6 KB stack: SRTP AES key-expansion + per-packet protect needs more
     // headroom than the old plain-RTP 4 KB.
     if (xTaskCreate(rtp_audio_task, "rtp_audio", 6144, args, 6, NULL) != pdPASS) {
         ESP_LOGE(TAG, "xTaskCreate failed");
+        s_streaming = false;
         announcement_close(&args->src);
         free(args);
     }
