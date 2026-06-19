@@ -931,25 +931,24 @@ static void capture_dialog(sip_ctx_t *c, const char *req, int req_len,
     }
 
     // SRTP negotiation. Telekom (and other IMS networks) offer RTP/SAVP
-    // with SDES a=crypto keys and reject a plain RTP/AVP answer. If the
-    // INVITE offers a crypto suite we support, mirror it: answer SAVP and
-    // generate our own master key/salt to encrypt the announcement. The
-    // sip_srtp config knob is an escape hatch: "off" forces plain RTP.
+    // with SDES a=crypto keys and reject a plain RTP/AVP answer. Whenever
+    // the INVITE offers a crypto suite we support we mirror it: answer
+    // RTP/SAVP and generate our own master key/salt to encrypt the
+    // announcement. There is no good reason to answer plaintext to a
+    // crypto offer (it just gets the dialog torn down), so this is not
+    // gated on a config knob — a plain RTP/AVP offer (e.g. the Fritz!Box
+    // on the LAN) simply carries no crypto and is answered RTP/AVP.
     d->srtp_tx  = false;
     d->srtp_tag = 0;
     char remote_key_b64[64];
     int crypto_tag = parse_sdp_crypto(req, req_len,
                                       remote_key_b64, sizeof(remote_key_b64));
-    bool srtp_off = strcmp(config_sip_srtp(), "off") == 0;
-    if (crypto_tag > 0 && !srtp_off) {
+    if (crypto_tag > 0) {
         // Generate a fresh 30-byte SDES master key + salt.
         esp_fill_random(d->srtp_tx_key, sizeof(d->srtp_tx_key));
         d->srtp_tx  = true;
         d->srtp_tag = crypto_tag;
         ESP_LOGI(TAG, "SRTP offered (crypto tag %d) → answering RTP/SAVP", crypto_tag);
-    } else if (crypto_tag > 0) {
-        ESP_LOGW(TAG, "SRTP offered but sip_srtp=off — answering plain RTP "
-                      "(call media will likely be rejected)");
     } else if (parse_sdp_audio_savp(req, req_len)) {
         ESP_LOGW(TAG, "remote offers RTP/SAVP but no supported crypto suite "
                       "— answering plain RTP (media will likely be rejected)");
