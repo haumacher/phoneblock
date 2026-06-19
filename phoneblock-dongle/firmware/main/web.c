@@ -23,6 +23,7 @@
 #include "api.h"
 #include "config.h"
 #include "firmware_update.h"
+#include "mail.h"
 #include "sip_register.h"
 #include "stats.h"
 #include "sync.h"
@@ -345,6 +346,19 @@ static esp_err_t handle_status(httpd_req_t *req)
     cJSON_AddStringToObject(fw,   "channel",      config_ota_channel());
     cJSON_AddBoolToObject  (fw,   "crash_report", config_crash_report_enabled());
 
+    cJSON *ml = cJSON_AddObjectToObject(root, "mail");
+    cJSON_AddStringToObject(ml,   "host",     config_smtp_host());
+    cJSON_AddNumberToObject(ml,   "port",     config_smtp_port());
+    cJSON_AddStringToObject(ml,   "security", config_smtp_security());
+    cJSON_AddStringToObject(ml,   "user",     config_smtp_user());
+    cJSON_AddStringToObject(ml,   "from",     config_smtp_from());
+    cJSON_AddStringToObject(ml,   "to",       config_smtp_to());
+    // Never echo the password; the UI only needs to know whether one is
+    // stored (to render a "leave blank to keep" placeholder).
+    cJSON_AddBoolToObject  (ml,   "pass_set", config_smtp_pass()[0] != '\0');
+    cJSON_AddBoolToObject  (ml,   "on_error", config_mail_on_error());
+    cJSON_AddBoolToObject  (ml,   "on_spam",  config_mail_on_spam());
+
     send_json(req, root);
     return ESP_OK;
 }
@@ -435,7 +449,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
 {
     REQUIRE_AUTH_API(req);
     int total = req->content_len;
-    if (total <= 0 || total > 1024) {
+    if (total <= 0 || total > 2048) {
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "body missing or too large");
         return ESP_OK;
     }
@@ -474,6 +488,15 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     char channel_s[8]     = "";
     char crash_rep_s[4]   = "";
     char test_calls_s[4]  = "";
+    char smtp_host[64]    = "";
+    char smtp_port_s[8]   = "";
+    char smtp_sec[10]     = "";
+    char smtp_user[64]    = "";
+    char smtp_pass[64]    = "";
+    char smtp_from[64]    = "";
+    char smtp_to[64]      = "";
+    char mail_err_s[4]    = "";
+    char mail_spam_s[4]   = "";
 
     bool have_sip_host  = form_get(body, "sip_host",  sip_host,  sizeof(sip_host));
     bool have_sip_user  = form_get(body, "sip_user",  sip_user,  sizeof(sip_user));
@@ -501,6 +524,15 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     bool have_pb_token   = form_get(body, "pb_token",  pb_token,  sizeof(pb_token));
     bool have_min_direct = form_get(body, "min_direct_votes", min_direct_s, sizeof(min_direct_s));
     bool have_min_range  = form_get(body, "min_range_votes",  min_range_s,  sizeof(min_range_s));
+    bool have_smtp_host  = form_get(body, "smtp_host",     smtp_host,   sizeof(smtp_host));
+    bool have_smtp_port  = form_get(body, "smtp_port",     smtp_port_s, sizeof(smtp_port_s));
+    bool have_smtp_sec   = form_get(body, "smtp_security", smtp_sec,    sizeof(smtp_sec));
+    bool have_smtp_user  = form_get(body, "smtp_user",     smtp_user,   sizeof(smtp_user));
+    bool have_smtp_pass  = form_get(body, "smtp_pass",     smtp_pass,   sizeof(smtp_pass));
+    bool have_smtp_from  = form_get(body, "smtp_from",     smtp_from,   sizeof(smtp_from));
+    bool have_smtp_to    = form_get(body, "smtp_to",       smtp_to,     sizeof(smtp_to));
+    bool have_mail_err   = form_get(body, "mail_on_error", mail_err_s,  sizeof(mail_err_s));
+    bool have_mail_spam  = form_get(body, "mail_on_spam",  mail_spam_s, sizeof(mail_spam_s));
     free(body);
 
     const char *new_host = have_sip_host && sip_host[0] ? sip_host : NULL;
@@ -520,6 +552,15 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     if (have_channel && (strcmp(channel_s, "stable") == 0 ||
                          strcmp(channel_s, "beta")   == 0)) {
         channel = channel_s;
+    }
+
+    // SMTP security: accept only the two known modes; anything else is
+    // ignored (left unchanged) rather than persisted, mirroring the OTA
+    // channel guard. config_smtp_security() clamps on read too.
+    const char *smtp_security = NULL;
+    if (have_smtp_sec && (strcmp(smtp_sec, "tls") == 0 ||
+                          strcmp(smtp_sec, "starttls") == 0)) {
+        smtp_security = smtp_sec;
     }
 
     config_update_t u = {
@@ -573,6 +614,22 @@ static esp_err_t handle_config_post(httpd_req_t *req)
         // explicit-flag setter pattern. Empty form field = leave alone.
         .has_min_range_votes = have_min_range && min_range_s[0],
         .min_range_votes     = have_min_range && min_range_s[0] ? atoi(min_range_s) : 0,
+        // SMTP. Text fields write through when present (a present-but-empty
+        // field clears the value — how the user disables mail by emptying
+        // the recipient/host). Port: present-but-empty → 0 = "auto" (derive
+        // 465/587 from the security mode). Password follows the SIP rule:
+        // empty keeps the stored one, so editing other fields doesn't force
+        // a re-type.
+        .smtp_host     = have_smtp_host ? smtp_host : NULL,
+        .has_smtp_port = have_smtp_port,
+        .smtp_port     = have_smtp_port && smtp_port_s[0] ? atoi(smtp_port_s) : 0,
+        .smtp_security = smtp_security,
+        .smtp_user     = have_smtp_user ? smtp_user : NULL,
+        .smtp_pass     = have_smtp_pass && smtp_pass[0] ? smtp_pass : NULL,
+        .smtp_from     = have_smtp_from ? smtp_from : NULL,
+        .smtp_to       = have_smtp_to   ? smtp_to   : NULL,
+        .mail_on_error = have_mail_err  ? mail_err_s  : NULL,
+        .mail_on_spam  = have_mail_spam ? mail_spam_s : NULL,
     };
 
     esp_err_t err = config_update(&u);
@@ -1607,6 +1664,33 @@ static esp_err_t handle_sync_run(httpd_req_t *req)
     return ESP_OK;
 }
 
+// POST /api/mail/test — send a test status mail using the saved SMTP
+// settings, so the user can verify credentials right after entering them.
+// Runs mail_send() synchronously: the TLS handshake fits the httpd task's
+// 8 KB stack (the OTA install path runs here too). Not destructive, so it
+// needs no replay nonce — a repeated POST just sends another test mail.
+static esp_err_t handle_mail_test(httpd_req_t *req)
+{
+    REQUIRE_AUTH_API(req);
+    if (!mail_configured()) {
+        send_fail(req, "Bitte zuerst Server, Benutzer, Passwort und "
+                       "Empfänger speichern.");
+        return ESP_OK;
+    }
+    bool ok = mail_send("PhoneBlock-Dongle: Test",
+                        "Dies ist eine Test-Statusmeldung deines "
+                        "PhoneBlock-Dongles.\n\n"
+                        "Wenn du diese E-Mail erhältst, ist der "
+                        "E-Mail-Versand korrekt eingerichtet.\n");
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddBoolToObject  (root, "ok", ok);
+    cJSON_AddStringToObject(root, "message",
+        ok ? "Test-E-Mail gesendet."
+           : "Versand fehlgeschlagen — bitte Einstellungen und Protokoll prüfen.");
+    send_json(req, root);
+    return ESP_OK;
+}
+
 // POST /api/errors/clear — drops all buffered error entries.
 static esp_err_t handle_errors_clear(httpd_req_t *req)
 {
@@ -1680,6 +1764,7 @@ static const httpd_uri_t URIS[] = {
     { .uri = "/api/announcement",    .method = HTTP_POST, .handler = handle_announcement_post,  .user_ctx = NULL },
     { .uri = "/api/announcement/reset", .method = HTTP_POST, .handler = handle_announcement_reset, .user_ctx = NULL },
     { .uri = "/api/sync/run",        .method = HTTP_POST, .handler = handle_sync_run,       .user_ctx = NULL },
+    { .uri = "/api/mail/test",       .method = HTTP_POST, .handler = handle_mail_test,      .user_ctx = NULL },
     { .uri = "/api/config",          .method = HTTP_POST, .handler = handle_config_post,    .user_ctx = NULL },
     { .uri = "/api/fritzbox-setup",      .method = HTTP_POST, .handler = handle_fritzbox_setup,      .user_ctx = NULL },
     { .uri = "/api/fritzbox-2fa-status", .method = HTTP_GET,  .handler = handle_fritzbox_2fa_status, .user_ctx = NULL },

@@ -212,6 +212,29 @@ const I18N = {
     'status.fw.channel.beta': 'Beta (Testversionen)',
     'status.fw.crash_report': 'Fehlerberichte an phoneblock.net senden',
     'status.fw.crash_report.help': 'Wenn der Dongle wegen eines Programmfehlers neu startet, wird ein Speicherauszug auf einer dafür reservierten Flash-Partition abgelegt. Ist diese Option aktiv, lädt der Dongle den Auszug beim nächsten Start an phoneblock.net hoch — das hilft uns, Felddefekte zu finden und zu fixen. Schalte die Option aus, wenn der Dongle solche Berichte nicht senden soll; gespeicherte Auszüge werden dann lokal gelöscht statt verschickt.',
+    'status.mail.title': 'Status-E-Mails',
+    'status.mail.intro': 'Der Dongle kann dir Statusmeldungen direkt per E-Mail schicken — über dein eigenes E-Mail-Konto. Trage die Zugangsdaten deines Mail-Anbieters ein; der Dongle versendet darüber höchstens eine Meldung pro Tag.',
+    'status.mail.host': 'SMTP-Server',
+    'status.mail.port': 'Port (leer = automatisch)',
+    'status.mail.security': 'Verschlüsselung',
+    'status.mail.security.tls': 'TLS (Port 465)',
+    'status.mail.security.starttls': 'STARTTLS (Port 587)',
+    'status.mail.user': 'Benutzername',
+    'status.mail.pass': 'Passwort',
+    'status.mail.pass.keep': 'gespeichert — leer lassen, um es zu behalten',
+    'status.mail.from': 'Absender (leer = Benutzername)',
+    'status.mail.to': 'Empfänger',
+    'status.mail.help': 'Tipp: Bei Gmail oder Outlook brauchst du meist ein „App-Passwort" (bei aktivierter Zwei-Faktor-Anmeldung), nicht dein normales Kontopasswort. Klassische Anbieter wie GMX, web.de oder mailbox.org funktionieren mit Benutzername und Passwort.',
+    'status.mail.on_error': 'E-Mail bei Fehlern und Abstürzen',
+    'status.mail.on_error.help': 'Sendet einmal täglich eine E-Mail, wenn seit der letzten Meldung ein Fehler im Protokoll aufgetreten ist — dazu zählt auch ein Neustart nach einem Absturz.',
+    'status.mail.on_spam': 'E-Mail bei abgefangenen SPAM-Anrufen',
+    'status.mail.on_spam.help': 'Sendet einmal täglich eine E-Mail, wenn seit der letzten Meldung SPAM-Anrufe blockiert wurden.',
+    'status.mail.save': 'Speichern',
+    'status.mail.saved': 'Gespeichert.',
+    'status.mail.test': 'Test-E-Mail senden',
+    'status.mail.testing': 'Sende Test-E-Mail…',
+    'status.mail.test.sent': 'Test-E-Mail gesendet.',
+    'status.mail.test.fail': 'Versand fehlgeschlagen — bitte Einstellungen und Protokoll prüfen.',
     'status.sync.title': 'Sperrlisten-Sync',
     'status.sync.intro': 'Am Mobilteil gesperrte Nummern („Nummer sperren") werden einmal pro Tag zur PhoneBlock-Datenbank übertragen und danach aus der Fritz!Box entfernt. Der Answerbot fängt die Anrufer dann für alle PhoneBlock-Nutzer ab.',
     'status.sync.unavailable': 'Nicht verfügbar — nur mit Fritz!Box-Einrichtung nutzbar.',
@@ -431,6 +454,29 @@ const I18N = {
     'status.fw.channel.beta': 'Beta (test builds)',
     'status.fw.crash_report': 'Send crash reports to phoneblock.net',
     'status.fw.crash_report.help': 'When the dongle reboots after a software panic, a memory snapshot is written to a reserved flash partition. With this option on, the dongle uploads the snapshot to phoneblock.net on the next boot — that helps us find and fix field bugs. Switch it off to suppress reports; stored snapshots are then erased locally instead of sent.',
+    'status.mail.title': 'Status emails',
+    'status.mail.intro': 'The dongle can email you status notifications directly — through your own email account. Enter the credentials of your mail provider; the dongle sends at most one notification per day.',
+    'status.mail.host': 'SMTP server',
+    'status.mail.port': 'Port (blank = automatic)',
+    'status.mail.security': 'Encryption',
+    'status.mail.security.tls': 'TLS (port 465)',
+    'status.mail.security.starttls': 'STARTTLS (port 587)',
+    'status.mail.user': 'User name',
+    'status.mail.pass': 'Password',
+    'status.mail.pass.keep': 'stored — leave blank to keep it',
+    'status.mail.from': 'Sender (blank = user name)',
+    'status.mail.to': 'Recipient',
+    'status.mail.help': 'Tip: Gmail and Outlook usually need an "app password" (when two-factor sign-in is on), not your normal account password. Classic providers such as GMX, web.de or mailbox.org work with user name and password.',
+    'status.mail.on_error': 'Email on errors and crashes',
+    'status.mail.on_error.help': 'Sends one email a day when an error has appeared in the log since the last notification — this includes a reboot after a crash.',
+    'status.mail.on_spam': 'Email on blocked spam calls',
+    'status.mail.on_spam.help': 'Sends one email a day when spam calls have been blocked since the last notification.',
+    'status.mail.save': 'Save',
+    'status.mail.saved': 'Saved.',
+    'status.mail.test': 'Send test email',
+    'status.mail.testing': 'Sending test email…',
+    'status.mail.test.sent': 'Test email sent.',
+    'status.mail.test.fail': 'Sending failed — please check the settings and the log.',
     'status.sync.title': 'Blocklist sync',
     'status.sync.intro': 'Numbers blocked at the handset ("Block number") are uploaded to the PhoneBlock database once a day and then removed from the Fritz!Box. The answer bot afterwards catches those callers for every PhoneBlock user.',
     'status.sync.unavailable': 'Unavailable — requires a Fritz!Box setup.',
@@ -638,6 +684,29 @@ const I18N = {
     'status.fw.channel.beta': 'Bêta (versions de test)',
     'status.fw.crash_report': 'Envoyer les rapports d’erreur à phoneblock.net',
     'status.fw.crash_report.help': 'Si le dongle redémarre après une erreur logicielle, un instantané mémoire est écrit dans une partition flash réservée. Si cette option est activée, le dongle envoie l’instantané à phoneblock.net au prochain démarrage — cela nous aide à identifier et corriger les bugs en production. Désactive-la pour empêcher l’envoi ; les instantanés stockés sont alors effacés localement au lieu d’être transmis.',
+    'status.mail.title': 'E-mails d’état',
+    'status.mail.intro': 'Le dongle peut t’envoyer des notifications d’état directement par e-mail — via ton propre compte de messagerie. Saisis les identifiants de ton fournisseur ; le dongle envoie au maximum une notification par jour.',
+    'status.mail.host': 'Serveur SMTP',
+    'status.mail.port': 'Port (vide = automatique)',
+    'status.mail.security': 'Chiffrement',
+    'status.mail.security.tls': 'TLS (port 465)',
+    'status.mail.security.starttls': 'STARTTLS (port 587)',
+    'status.mail.user': 'Nom d’utilisateur',
+    'status.mail.pass': 'Mot de passe',
+    'status.mail.pass.keep': 'enregistré — laisser vide pour le conserver',
+    'status.mail.from': 'Expéditeur (vide = nom d’utilisateur)',
+    'status.mail.to': 'Destinataire',
+    'status.mail.help': 'Astuce : pour Gmail ou Outlook, il faut généralement un « mot de passe d’application » (si la connexion à deux facteurs est activée), pas ton mot de passe habituel. Les fournisseurs classiques comme GMX, web.de ou mailbox.org fonctionnent avec le nom d’utilisateur et le mot de passe.',
+    'status.mail.on_error': 'E-mail en cas d’erreurs et de plantages',
+    'status.mail.on_error.help': 'Envoie un e-mail par jour si une erreur est apparue dans le journal depuis la dernière notification — y compris un redémarrage après un plantage.',
+    'status.mail.on_spam': 'E-mail en cas d’appels spam bloqués',
+    'status.mail.on_spam.help': 'Envoie un e-mail par jour si des appels spam ont été bloqués depuis la dernière notification.',
+    'status.mail.save': 'Enregistrer',
+    'status.mail.saved': 'Enregistré.',
+    'status.mail.test': 'Envoyer un e-mail de test',
+    'status.mail.testing': 'Envoi de l’e-mail de test…',
+    'status.mail.test.sent': 'E-mail de test envoyé.',
+    'status.mail.test.fail': 'Échec de l’envoi — vérifie les réglages et le journal.',
     'status.sync.title': 'Synchro liste de blocage',
     'status.sync.intro': 'Les numéros bloqués depuis le combiné (« Bloquer le numéro ») sont envoyés à la base PhoneBlock une fois par jour, puis retirés de la Fritz!Box. Le bot répondeur intercepte ensuite ces appelants pour tous les utilisateurs PhoneBlock.',
     'status.sync.unavailable': 'Indisponible — nécessite une configuration Fritz!Box.',
@@ -845,6 +914,29 @@ const I18N = {
     'status.fw.channel.beta': 'Beta (versiones de prueba)',
     'status.fw.crash_report': 'Enviar informes de error a phoneblock.net',
     'status.fw.crash_report.help': 'Cuando el dongle reinicia tras un fallo de software, se escribe una instantánea de memoria en una partición flash reservada. Con esta opción activada, el dongle sube la instantánea a phoneblock.net en el próximo arranque — esto nos ayuda a localizar y corregir errores en campo. Desactívala para suprimir los envíos; las instantáneas guardadas se borran localmente en lugar de enviarse.',
+    'status.mail.title': 'Correos de estado',
+    'status.mail.intro': 'El dongle puede enviarte notificaciones de estado directamente por correo — a través de tu propia cuenta de correo. Introduce las credenciales de tu proveedor; el dongle envía como máximo una notificación al día.',
+    'status.mail.host': 'Servidor SMTP',
+    'status.mail.port': 'Puerto (vacío = automático)',
+    'status.mail.security': 'Cifrado',
+    'status.mail.security.tls': 'TLS (puerto 465)',
+    'status.mail.security.starttls': 'STARTTLS (puerto 587)',
+    'status.mail.user': 'Nombre de usuario',
+    'status.mail.pass': 'Contraseña',
+    'status.mail.pass.keep': 'guardada — déjala en blanco para conservarla',
+    'status.mail.from': 'Remitente (vacío = nombre de usuario)',
+    'status.mail.to': 'Destinatario',
+    'status.mail.help': 'Consejo: en Gmail u Outlook normalmente necesitas una «contraseña de aplicación» (si tienes activada la verificación en dos pasos), no tu contraseña habitual. Proveedores clásicos como GMX, web.de o mailbox.org funcionan con nombre de usuario y contraseña.',
+    'status.mail.on_error': 'Correo en caso de errores y fallos',
+    'status.mail.on_error.help': 'Envía un correo al día si ha aparecido un error en el registro desde la última notificación — esto incluye un reinicio tras un fallo.',
+    'status.mail.on_spam': 'Correo cuando se bloquean llamadas spam',
+    'status.mail.on_spam.help': 'Envía un correo al día si se han bloqueado llamadas spam desde la última notificación.',
+    'status.mail.save': 'Guardar',
+    'status.mail.saved': 'Guardado.',
+    'status.mail.test': 'Enviar correo de prueba',
+    'status.mail.testing': 'Enviando correo de prueba…',
+    'status.mail.test.sent': 'Correo de prueba enviado.',
+    'status.mail.test.fail': 'Envío fallido — comprueba los ajustes y el registro.',
     'status.sync.title': 'Sincronización de lista de bloqueo',
     'status.sync.intro': 'Los números bloqueados desde el terminal («Bloquear número») se envían a la base de PhoneBlock una vez al día y luego se eliminan de la Fritz!Box. El bot luego intercepta esas llamadas para todos los usuarios de PhoneBlock.',
     'status.sync.unavailable': 'No disponible — requiere configuración Fritz!Box.',
@@ -1300,6 +1392,49 @@ function renderStatus(){
     + '    <span>' + esc(t('status.fw.crash_report')) + '</span>'
     + '  </label>'
     + '</p></section>'
+    + '<section id="mailSection" style="display:none">'
+    + '<h2>' + esc(t('status.mail.title')) + '</h2>'
+    + '<p class="muted">' + esc(t('status.mail.intro')) + '</p>'
+    + '<div style="margin-top:.6rem;display:flex;flex-direction:column;gap:.5rem;max-width:24rem">'
+    + '  <label style="font-size:.85rem">' + esc(t('status.mail.host'))
+    +     '<input id="mailHost" type="text" autocomplete="off" style="width:100%"></label>'
+    + '  <label style="font-size:.85rem">' + esc(t('status.mail.security'))
+    +     '<select id="mailSec" style="width:100%">'
+    +       '<option value="tls">' + esc(t('status.mail.security.tls')) + '</option>'
+    +       '<option value="starttls">' + esc(t('status.mail.security.starttls')) + '</option>'
+    +     '</select></label>'
+    + '  <label style="font-size:.85rem">' + esc(t('status.mail.port'))
+    +     '<input id="mailPort" type="number" min="1" max="65535" style="width:100%"></label>'
+    + '  <label style="font-size:.85rem">' + esc(t('status.mail.user'))
+    +     '<input id="mailUser" type="text" autocomplete="off" style="width:100%"></label>'
+    + '  <label style="font-size:.85rem">' + esc(t('status.mail.pass'))
+    +     '<input id="mailPass" type="password" autocomplete="off" style="width:100%">'
+    +     '<span id="mailPassKeep" class="muted" style="font-size:.75rem"></span></label>'
+    + '  <label style="font-size:.85rem">' + esc(t('status.mail.from'))
+    +     '<input id="mailFrom" type="text" autocomplete="off" style="width:100%"></label>'
+    + '  <label style="font-size:.85rem">' + esc(t('status.mail.to'))
+    +     '<input id="mailTo" type="text" autocomplete="off" style="width:100%"></label>'
+    + '</div>'
+    + '<p class="muted" style="margin-top:.5rem;font-size:.8rem">' + esc(t('status.mail.help')) + '</p>'
+    + '<p style="margin-top:.5rem;font-size:.85rem">'
+    + '  <label title="' + esc(t('status.mail.on_error.help')) + '" '
+    +    'style="display:flex;align-items:center;gap:.4rem;font-weight:400;color:#444;margin:0">'
+    + '    <input id="mailOnError" type="checkbox" style="width:auto;margin:0">'
+    + '    <span>' + esc(t('status.mail.on_error')) + '</span></label>'
+    + '</p>'
+    + '<p style="margin-top:.4rem;font-size:.85rem">'
+    + '  <label title="' + esc(t('status.mail.on_spam.help')) + '" '
+    +    'style="display:flex;align-items:center;gap:.4rem;font-weight:400;color:#444;margin:0">'
+    + '    <input id="mailOnSpam" type="checkbox" style="width:auto;margin:0">'
+    + '    <span>' + esc(t('status.mail.on_spam')) + '</span></label>'
+    + '</p>'
+    + '<p style="margin-top:.6rem">'
+    + '  <button id="mailSave" class="btn-primary" style="padding:.4rem .9rem;font-size:.9rem">'
+    +   esc(t('status.mail.save')) + '</button>'
+    + '  <button id="mailTest" class="btn-ghost" style="padding:.3rem .7rem;font-size:.85rem;margin-left:.4rem">'
+    +   esc(t('status.mail.test')) + '</button>'
+    + '  <span id="mailMsg" class="muted" style="margin-left:.6rem"></span>'
+    + '</p></section>'
     + '<section id="authSection" style="display:none">'
     + '<h2>' + esc(t('status.auth.title')) + '</h2>'
     + '<p class="muted">' + esc(t('status.auth.intro')) + '</p>'
@@ -1327,6 +1462,8 @@ function renderStatus(){
     + '<p id="crashTestRow" style="display:none;margin-top:1rem">'
     + '<button id="crashTestBtn" class="btn-ghost" style="border-color:#d93025;color:#d93025;padding:.3rem .7rem;font-size:.85rem">'
     +   'Panic auslösen (Dev)</button></p>';
+  // Freshly (re)built DOM — let the next poll prefill the mail form once.
+  mailPrefilled = false;
   refreshAll();
   pollTimer = setInterval(refreshAll, 3000);
 }
@@ -1359,12 +1496,17 @@ function renderHero(sipDone, tokenDone){
 // by the browser across a reboot carries a now-stale value.
 let resetNonce = '';
 
+// The status-email form is prefilled from /api/status exactly once per
+// dashboard build (reset in the build function above), so the 3s poll
+// does not overwrite what the user is typing.
+let mailPrefilled = false;
+
 // IDs of sections that the dashboard shows or hides on each poll, so
 // we can toggle the entire dashboard visibility in one go when the
 // gate kicks us out (401 from /api/status).
 const DASHBOARD_SECTIONS = ['heroSlot', 'statusSection', 'callsSection',
   'thresholdsSection', 'errorsSection', 'resetSection', 'annSection',
-  'syncSection', 'fwSection', 'authSection'];
+  'syncSection', 'fwSection', 'mailSection', 'authSection'];
 
 // Maps `?login_error=<code>` query values that web_auth_handle_callback
 // emits to localized text shown in the login section's red banner.
@@ -1472,6 +1614,7 @@ async function refreshAll(){
   const annSec        = $('annSection');
   const syncSec       = $('syncSection');
   const fwSec         = $('fwSection');
+  const mailSec       = $('mailSection');
   const authSec       = $('authSection');
   if (!sipConfigured || !tokenSet){
     // Setup incomplete — show the hero with per-step progress until
@@ -1487,6 +1630,7 @@ async function refreshAll(){
     syncSec.style.display = 'none';
     resetSec.style.display = 'none';
     fwSec.style.display = 'none';
+    mailSec.style.display = 'none';
     authSec.style.display = 'none';
     return;
   }
@@ -1499,6 +1643,7 @@ async function refreshAll(){
   syncSec.style.display = '';
   resetSec.style.display = '';
   fwSec.style.display = '';
+  mailSec.style.display = '';
   authSec.style.display = '';
 
   // Blocklist sync section: show either "unavailable" (no FB app
@@ -2226,6 +2371,81 @@ async function refreshAll(){
         refreshAll();
       };
     }
+  }
+
+  // --- status email ---
+  const mail = s.mail || {};
+  if (!mailPrefilled){
+    const mh = $('mailHost');
+    if (mh){
+      mh.value          = mail.host || '';
+      $('mailPort').value = mail.port ? String(mail.port) : '';
+      $('mailSec').value  = mail.security === 'starttls' ? 'starttls' : 'tls';
+      $('mailUser').value = mail.user || '';
+      $('mailFrom').value = mail.from || '';
+      $('mailTo').value   = mail.to   || '';
+      $('mailPassKeep').textContent = mail.pass_set ? t('status.mail.pass.keep') : '';
+      $('mailOnError').checked = !!mail.on_error;
+      $('mailOnSpam').checked  = !!mail.on_spam;
+      mailPrefilled = true;
+    }
+  }
+  const mailSave = $('mailSave'), mailTest = $('mailTest');
+  if (mailSave && !mailSave.onclick){
+    const collect = () => {
+      const body = new URLSearchParams();
+      body.append('smtp_host',     $('mailHost').value.trim());
+      body.append('smtp_port',     $('mailPort').value.trim());
+      body.append('smtp_security', $('mailSec').value);
+      body.append('smtp_user',     $('mailUser').value.trim());
+      body.append('smtp_from',     $('mailFrom').value.trim());
+      body.append('smtp_to',       $('mailTo').value.trim());
+      body.append('mail_on_error', $('mailOnError').checked ? '1' : '0');
+      body.append('mail_on_spam',  $('mailOnSpam').checked ? '1' : '0');
+      // Only send the password when the user typed one; an absent field
+      // tells the server to keep the stored value.
+      const pw = $('mailPass').value;
+      if (pw) body.append('smtp_pass', pw);
+      return body;
+    };
+    const save = async () => {
+      const r = await fetch('/api/config', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: collect().toString(),
+      });
+      return r.ok;
+    };
+    mailSave.onclick = async () => {
+      const m = $('mailMsg');
+      mailSave.disabled = true;
+      m.textContent = '';
+      let ok = false;
+      try { ok = await save(); } catch (_){}
+      mailSave.disabled = false;
+      $('mailPass').value = '';   // typed password is now stored
+      m.textContent = ok ? t('status.mail.saved') : t('status.mail.test.fail');
+      m.style.color = ok ? '#188038' : '#d93025';
+    };
+    mailTest.onclick = async () => {
+      const m = $('mailMsg');
+      mailTest.disabled = true; mailSave.disabled = true;
+      m.textContent = t('status.mail.testing');
+      m.style.color = '#1a73e8';
+      let ok = false;
+      try {
+        // Save first so the test uses exactly what is on screen, then
+        // ask the dongle to send through the stored settings.
+        await save();
+        $('mailPass').value = '';
+        const r = await fetch('/api/mail/test', {method: 'POST'});
+        const d = await r.json().catch(() => ({}));
+        ok = !!d.ok;
+      } catch (_){}
+      mailTest.disabled = false; mailSave.disabled = false;
+      m.textContent = ok ? t('status.mail.test.sent') : t('status.mail.test.fail');
+      m.style.color = ok ? '#188038' : '#d93025';
+    };
   }
   if (fwPick && !fwPick.onclick){
     fwPick.onclick = () => fwFile.click();
