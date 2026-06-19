@@ -470,10 +470,12 @@ const char *config_smtp_security(void)
 }
 int         config_smtp_port(void)
 {
-    // Stored 0 = "auto": pick the conventional submission port for the
-    // selected security mode — 465 for implicit TLS, 587 for STARTTLS.
-    if (s_config.smtp_port > 0) return s_config.smtp_port;
-    return strcmp(config_smtp_security(), "starttls") == 0 ? 587 : 465;
+    // Raw stored value; 0 = "auto" (let the caller derive the
+    // conventional submission port from the security mode). Returning
+    // the raw value lets the web UI round-trip "auto" as an empty field
+    // instead of pinning a derived port that a later security change
+    // would leave stale.
+    return s_config.smtp_port;
 }
 const char *config_smtp_user(void)           { return s_config.smtp_user; }
 const char *config_smtp_pass(void)           { return s_config.smtp_pass; }

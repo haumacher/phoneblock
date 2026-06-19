@@ -173,8 +173,10 @@ bool mail_send(const char *subject, const char *body)
     const char *pass     = config_smtp_pass();
     const char *from     = config_smtp_from();
     const char *to       = config_smtp_to();
-    const int   port     = config_smtp_port();
     const bool  starttls = strcmp(config_smtp_security(), "starttls") == 0;
+    // Stored 0 = "auto": the conventional submission port for the mode.
+    int         port     = config_smtp_port();
+    if (port <= 0) port = starttls ? 587 : 465;
 
     int64_t deadline = esp_timer_get_time() + (int64_t)MAIL_DEADLINE_S * 1000000;
 
@@ -185,7 +187,7 @@ bool mail_send(const char *subject, const char *body)
     bool ok = false;
     int  ret;
     size_t b64len = 0;
-    char   port_s[8];
+    char   port_s[12];   // room for any int ("%d") — appeases -Wformat-truncation
     struct timeval tv = { .tv_sec = MAIL_SOCK_TIMEO_S, .tv_usec = 0 };
 
     mbedtls_entropy_context  entropy;

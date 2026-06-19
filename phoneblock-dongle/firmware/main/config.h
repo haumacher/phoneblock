@@ -175,8 +175,8 @@ int         config_min_range_votes(void);
 // the provider's relay rather than the dongle's IP. Credentials live in
 // NVS in plaintext, consistent with the SIP / Fritz!Box passwords.
 const char *config_smtp_host(void);
-// Effective submission port: the stored value, or — when 0 ("auto") —
-// 465 for implicit TLS / 587 for STARTTLS, per config_smtp_security().
+// Raw stored submission port; 0 = "auto" (caller derives 465 for implicit
+// TLS / 587 for STARTTLS from config_smtp_security()).
 int         config_smtp_port(void);
 // "tls" (implicit TLS on connect, default) | "starttls". Clamped: any
 // other stored value reads back as "tls".
