@@ -105,6 +105,12 @@ public class PrefixCheckServlet extends HttpServlet {
 			return;
 		}
 
+		ApiRateLimits limits = ApiRateLimits.getInstance();
+		if (!ServletUtil.enforceQuota(req, resp, DB.QUOTA_BUCKET_NUMBER_QUERY,
+				limits.numberQueryIntervalMs, limits.numberQueryCount)) {
+			return;
+		}
+
 		byte[] sha1Low = prefixLow(sha1Hex);
 		byte[] sha1High = prefixHigh(sha1Hex);
 

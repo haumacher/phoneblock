@@ -27,10 +27,13 @@ import de.haumacher.phoneblock.carddav.resource.PrincipalResource;
 import de.haumacher.phoneblock.carddav.resource.RenderContext;
 import de.haumacher.phoneblock.carddav.resource.Resource;
 import de.haumacher.phoneblock.carddav.resource.RootResource;
+import de.haumacher.phoneblock.app.api.ApiRateLimits;
+import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.util.DebugUtil;
 import de.haumacher.phoneblock.util.EtagUtil;
+import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -187,6 +190,15 @@ public class CardDavServlet extends HttpServlet {
 			return;
 		}
 
+		// A Depth: 1 PROPFIND lists the whole address book — book it against the
+		// sync budget. Depth: 0 polling and any 304 above are not counted.
+		if (depth != Depth.EMPTY) {
+			ApiRateLimits limits = ApiRateLimits.getInstance();
+			if (!ServletUtil.enforceQuota(req, resp, DB.QUOTA_BUCKET_CARDDAV, limits.carddavIntervalMs, limits.carddavCount)) {
+				return;
+			}
+		}
+
 		List<QName> properties = CardDavRequestParser.parsePropfindBody(req.getInputStream());
 
 		if (LOG.isDebugEnabled()) {
@@ -263,6 +275,13 @@ public class CardDavServlet extends HttpServlet {
 		if (!(resource instanceof AddressBookResource addressBook)) {
 			LOG.warn("addressbook-multiget on non-address-book resource: " + req.getPathInfo());
 			resp.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+			return;
+		}
+
+		// Heavy data transfer — book it against the sync budget. The cheap 304
+		// path above already returned, so only real responses are counted.
+		ApiRateLimits limits = ApiRateLimits.getInstance();
+		if (!ServletUtil.enforceQuota(req, resp, DB.QUOTA_BUCKET_CARDDAV, limits.carddavIntervalMs, limits.carddavCount)) {
 			return;
 		}
 

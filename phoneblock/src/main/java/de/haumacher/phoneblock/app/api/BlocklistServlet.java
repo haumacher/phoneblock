@@ -98,6 +98,11 @@ public class BlocklistServlet extends HttpServlet {
 			if (limit > MAX_HEAT_LIMIT) {
 				limit = MAX_HEAT_LIMIT;
 			}
+			// Heat snapshot is a full-list variant — share the full-sync budget.
+			ApiRateLimits limits = ApiRateLimits.getInstance();
+			if (!ServletUtil.enforceQuota(req, resp, DB.QUOTA_BUCKET_BLOCKLIST_FULL, limits.blocklistFullIntervalMs, limits.blocklistFullCount)) {
+				return;
+			}
 			UserSettings cachedSettings = LoginFilter.getUserSettings(req);
 			// Region-aware Heat ranking (#340): a user's dial prefix scopes the
 			// top-N to numbers active in their region. Falls back to the global
@@ -132,16 +137,27 @@ public class BlocklistServlet extends HttpServlet {
 				return;
 			}
 
+			ApiRateLimits limits = ApiRateLimits.getInstance();
 			if (sinceVersion == 0) {
 				// Treat since=0 as a full sync request - client has nothing, so no deletions needed
+				if (!ServletUtil.enforceQuota(req, resp, DB.QUOTA_BUCKET_BLOCKLIST_FULL, limits.blocklistFullIntervalMs, limits.blocklistFullCount)) {
+					return;
+				}
 				result = db.getBlockListAPI();
 				LOG.info("Sending blocklist (since=0 treated as full sync, minVotes {}) to user '{}' (agent '{}')", db.getMinVisibleVotes(), userName, userAgent);
 			} else {
+				if (!ServletUtil.enforceQuota(req, resp, DB.QUOTA_BUCKET_BLOCKLIST_INCREMENTAL, limits.blocklistIncrementalIntervalMs, limits.blocklistIncrementalCount)) {
+					return;
+				}
 				result = db.getBlocklistUpdateAPI(sinceVersion);
 				LOG.info("Sending blocklist update (since {}, minVotes {}) to user '{}' (agent '{}')", sinceVersion, db.getMinVisibleVotes(), userName, userAgent);
 			}
 		} else {
 			// Full blocklist
+			ApiRateLimits limits = ApiRateLimits.getInstance();
+			if (!ServletUtil.enforceQuota(req, resp, DB.QUOTA_BUCKET_BLOCKLIST_FULL, limits.blocklistFullIntervalMs, limits.blocklistFullCount)) {
+				return;
+			}
 			result = db.getBlockListAPI();
 			LOG.info("Sending blocklist (minVotes {}) to user '{}' (agent '{}')", db.getMinVisibleVotes(), userName, userAgent);
 		}

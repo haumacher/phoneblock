@@ -41,6 +41,17 @@
 								}
 							}
 						}
+					},
+					"429": {
+						"description": "Rate limit exceeded for this API key. Number-test lookups (/num, /check, /check-prefix) share one per-subject budget; the 'Retry-After' header gives the number of seconds to wait before retrying.",
+						"headers": {
+							"Retry-After": {
+								"description": "Number of seconds to wait before retrying.",
+								"schema": {
+									"type": "integer"
+								}
+							}
+						}
 					}
 				},
 				"security": [
@@ -100,6 +111,17 @@
 									"lastUpdate": 1710000000000,
 									"label": "(DE) 0123 456789",
 									"location": "Berlin"
+								}
+							}
+						}
+					},
+					"429": {
+						"description": "Rate limit exceeded for this API key. Number-test lookups (/num, /check, /check-prefix) share one per-subject budget; the 'Retry-After' header gives the number of seconds to wait before retrying.",
+						"headers": {
+							"Retry-After": {
+								"description": "Number of seconds to wait before retrying.",
+								"schema": {
+									"type": "integer"
 								}
 							}
 						}
@@ -195,6 +217,17 @@
 					},
 					"401": {
 						"description": "Authentication required — unlike the cache-friendly HIBP-style endpoints this API requires a bearer token. The server must know the user to apply personal block/whitelist entries, and authenticating individual queries does not weaken privacy because the hash prefix alone covers thousands of candidate numbers. Only API keys are accepted: session cookies and Basic auth (username/password) are rejected for this endpoint so that only machine clients holding a dedicated token can reach it."
+					},
+					"429": {
+						"description": "Rate limit exceeded for this API key. Number-test lookups (/num, /check, /check-prefix) share one per-subject budget; the 'Retry-After' header gives the number of seconds to wait before retrying.",
+						"headers": {
+							"Retry-After": {
+								"description": "Number of seconds to wait before retrying.",
+								"schema": {
+									"type": "integer"
+								}
+							}
+						}
 					}
 				},
 				"security": [
@@ -356,7 +389,7 @@
 		"/blocklist": {
 			"get": {
 				"summary": "Retrieves the blocklist with optional incremental synchronization",
-				"description": "Returns all active phone numbers from the blocklist with their published vote buckets (2, 4, 10, 20, 50, 100). Vote values are frozen per blocklist version; a number is re-published only when it crosses a bucket boundary, so the same version always serves identical data. Numbers below the server's minimum vote threshold are excluded from the full blocklist and returned with votes=0 in incremental updates (indicating removal). When 'since' is omitted, returns the complete blocklist. When 'since' is provided, returns only changes since that version (incremental sync). Entries with votes=0 indicate the number should be removed from the client's local blocklist.\n\n**Important:** This endpoint returns only the community-maintained blocklist data. It does NOT include user-specific personalizations (personal blacklist/whitelist). For call filtering, clients must check BOTH the community blocklist AND the user's personal black/whitelist entries (retrieved via /api/blacklist and /api/whitelist). Personal whitelist entries should override community blocklist entries, and personal blacklist entries should block calls regardless of community ratings.\n\n**Rate Limits:** To avoid excessive server load, clients should limit full synchronization (without 'since' parameter) to a maximum of once per month. Incremental synchronization (with 'since' parameter) should be performed at most once per day. Clients exceeding these limits may be subject to rate limiting.\n\n**Implementation:** Perform an initial full sync to retrieve the complete blocklist and its version number. Store this data locally and save the version number. For subsequent updates, use the saved version number in the 'since' parameter to retrieve only changes. Apply the incremental updates to your local copy: add/update entries with votes > 0, remove entries with votes = 0. After each sync, update your saved version number to the one returned in the response.",
+				"description": "Returns all active phone numbers from the blocklist with their published vote buckets (2, 4, 10, 20, 50, 100). Vote values are frozen per blocklist version; a number is re-published only when it crosses a bucket boundary, so the same version always serves identical data. Numbers below the server's minimum vote threshold are excluded from the full blocklist and returned with votes=0 in incremental updates (indicating removal). When 'since' is omitted, returns the complete blocklist. When 'since' is provided, returns only changes since that version (incremental sync). Entries with votes=0 indicate the number should be removed from the client's local blocklist.\n\n**Important:** This endpoint returns only the community-maintained blocklist data. It does NOT include user-specific personalizations (personal blacklist/whitelist). For call filtering, clients must check BOTH the community blocklist AND the user's personal black/whitelist entries (retrieved via /api/blacklist and /api/whitelist). Personal whitelist entries should override community blocklist entries, and personal blacklist entries should block calls regardless of community ratings.\n\n**Rate Limits:** This endpoint is rate limited per API key (or, when authenticated by account password, per account). Full synchronization (without 'since', including the Heat-ranked 'limit' variant) and incremental synchronization (with 'since') have separate budgets; full sync is intended to be infrequent (on the order of monthly) and incremental sync occasional (on the order of daily). Exceeding a limit returns HTTP 429 with a 'Retry-After' header giving the number of seconds to wait. Clients must honor 'Retry-After' and back off rather than retry immediately.\n\n**Implementation:** Perform an initial full sync to retrieve the complete blocklist and its version number. Store this data locally and save the version number. For subsequent updates, use the saved version number in the 'since' parameter to retrieve only changes. Apply the incremental updates to your local copy: add/update entries with votes > 0, remove entries with votes = 0. After each sync, update your saved version number to the one returned in the response.",
 				"responses": {
 					"200": {
 						"description": "Returns all active phone numbers from the PhoneBlock database with their published vote buckets. Numbers with votes=0 indicate removal.",
@@ -417,6 +450,17 @@
 										}
 									],
 									"version": 42
+								}
+							}
+						}
+					},
+					"429": {
+						"description": "Rate limit exceeded for this API key (or account, for password-authenticated access). The 'Retry-After' response header gives the number of seconds to wait before retrying.",
+						"headers": {
+							"Retry-After": {
+								"description": "Number of seconds to wait before retrying.",
+								"schema": {
+									"type": "integer"
 								}
 							}
 						}

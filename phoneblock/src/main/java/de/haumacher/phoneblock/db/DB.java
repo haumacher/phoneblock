@@ -43,6 +43,7 @@ import javax.sql.DataSource;
 
 import org.apache.ibatis.mapping.Environment;
 import org.apache.ibatis.session.Configuration;
+import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
@@ -158,6 +159,31 @@ public class DB {
 	 */
 	public static final long RATE_LIMIT_MS = 1000*60*60;
 
+	/**
+	 * {@code API_QUOTA.SUBJECT_KIND} for a counter keyed on the user account
+	 * ({@code SUBJECT_ID = USERS.ID}). Used when a request is authenticated by
+	 * account password and therefore carries no persistent token.
+	 */
+	public static final int QUOTA_SUBJECT_ACCOUNT = 0;
+
+	/**
+	 * {@code API_QUOTA.SUBJECT_KIND} for a counter keyed on an API token
+	 * ({@code SUBJECT_ID = TOKENS.ID}). Each API key gets its own budget.
+	 */
+	public static final int QUOTA_SUBJECT_TOKEN = 1;
+
+	/** {@code API_QUOTA.BUCKET} for a full blocklist download (also the Heat-ranked snapshot). */
+	public static final int QUOTA_BUCKET_BLOCKLIST_FULL = 0;
+
+	/** {@code API_QUOTA.BUCKET} for an incremental blocklist sync ({@code ?since=}). */
+	public static final int QUOTA_BUCKET_BLOCKLIST_INCREMENTAL = 1;
+
+	/** {@code API_QUOTA.BUCKET} for a CardDAV address-book synchronization. */
+	public static final int QUOTA_BUCKET_CARDDAV = 2;
+
+	/** {@code API_QUOTA.BUCKET} shared by all number-test lookups ({@code /api/num}, {@code /api/check}, {@code /api/check-prefix}). */
+	public static final int QUOTA_BUCKET_NUMBER_QUERY = 3;
+
 	private final SecureRandom _rnd;
 	
 	private SchedulerService _scheduler;
@@ -206,6 +232,7 @@ public class DB {
 		configuration.addMapper(BlockList.class);
 		configuration.addMapper(Users.class);
 		configuration.addMapper(FtcReports.class);
+		configuration.addMapper(Quota.class);
 		_sessionFactory = new SqlSessionFactoryBuilder().build(configuration);
 		
 		setupSchema();
@@ -630,6 +657,17 @@ public class DB {
 	public void deleteUser(String login) {
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
+
+			// API_QUOTA has no foreign key (its subject references either USERS or
+			// TOKENS), so deleting the user does not cascade. Remove the account
+			// and token counters before the TOKENS rows vanish with the user.
+			Long userId = users.getUserId(login);
+			if (userId != null) {
+				Quota quota = session.getMapper(Quota.class);
+				quota.deleteTokenQuotaForUser(userId.longValue());
+				quota.deleteAccountQuota(userId.longValue());
+			}
+
 			users.deleteUser(login);
 			session.commit();
 		}
@@ -668,8 +706,9 @@ public class DB {
 			
 			List<Long> outdatedIds = users.getOutdatedLoginTokens(userId);
 			if (outdatedIds != null && !outdatedIds.isEmpty()) {
+				session.getMapper(Quota.class).deleteTokenQuotas(outdatedIds);
 				int tokens = users.deleteTokens(outdatedIds);
-				
+
 				LOG.info("Deleted {} outdated login tokens for user {}.", tokens, userId);
 			}
 			
@@ -827,19 +866,76 @@ public class DB {
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
 			users.invalidateAuthToken(id);
+			session.getMapper(Quota.class).deleteTokenQuota(id);
 			session.commit();
 		}
 	}
-	
+
 	public void logoutAll(String login) {
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
-			
+
 			Long userId = users.getUserId(login);
 			if (userId != null) {
+				session.getMapper(Quota.class).deleteTokenQuotaForUser(userId.longValue());
 				users.invalidateAllTokens(userId.longValue());
 				session.commit();
 			}
+		}
+	}
+
+	/**
+	 * Books one request of the given user against the per-subject rate limit for
+	 * an expensive API call (see the {@code QUOTA_BUCKET_*} constants).
+	 *
+	 * <p>The subject is the API token when one is present ({@link AuthToken#getId()}
+	 * {@code > 0} — each key has its own budget), or the user account otherwise
+	 * ({@link AuthToken#getUserId()}), which covers CardDAV access authenticated by
+	 * account password.</p>
+	 *
+	 * @param auth     the authenticated caller.
+	 * @param bucket   one of the {@code QUOTA_BUCKET_*} constants.
+	 * @param now      current time (epoch millis).
+	 * @param interval window length in milliseconds.
+	 * @param limit    maximum number of requests per window.
+	 * @return {@code -1} if the call is within quota and may proceed; otherwise
+	 *         the number of seconds to wait before retrying (for a
+	 *         {@code Retry-After} header).
+	 */
+	public long tryConsumeQuota(AuthToken auth, int bucket, long now, long interval, int limit) {
+		int kind;
+		long subjectId;
+		if (auth.getId() > 0) {
+			kind = QUOTA_SUBJECT_TOKEN;
+			subjectId = auth.getId();
+		} else {
+			kind = QUOTA_SUBJECT_ACCOUNT;
+			subjectId = auth.getUserId();
+		}
+
+		try (SqlSession session = openSession()) {
+			Quota quota = session.getMapper(Quota.class);
+
+			if (quota.tryConsumeQuota(kind, subjectId, bucket, now, interval, limit) > 0) {
+				session.commit();
+				return -1;
+			}
+
+			// The UPDATE matched no row: either this is the subject's first request
+			// in this bucket (no row yet), or the window is exhausted. Distinguish
+			// by trying to create the row — a duplicate key means it already existed
+			// and the window is therefore exhausted.
+			try {
+				quota.insertQuota(kind, subjectId, bucket, now);
+				session.commit();
+				return -1;
+			} catch (PersistenceException dup) {
+				session.rollback();
+			}
+
+			Long windowStart = quota.getQuotaTime(kind, subjectId, bucket);
+			long retryMs = windowStart == null ? interval : interval - (now - windowStart.longValue());
+			return Math.max(1, retryMs / 1000);
 		}
 	}
 	

@@ -58,6 +58,11 @@ public class NumServlet extends HttpServlet {
 			return;
 		}
 
+		ApiRateLimits limits = ApiRateLimits.getInstance();
+		if (!ServletUtil.enforceQuota(req, resp, DB.QUOTA_BUCKET_NUMBER_QUERY, limits.numberQueryIntervalMs, limits.numberQueryCount)) {
+			return;
+		}
+
 		// For authenticated requests, honor the user's personal blacklist/whitelist
 		// (same semantics as SpamCheckServlet, but by plain phone number instead of
 		// SHA1 hash). Anonymous requests fall through to the public lookup.
