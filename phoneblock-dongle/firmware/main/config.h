@@ -156,6 +156,12 @@ bool        config_accept_test_calls(void);
 // flag is evaluated locally at lookup time.
 bool        config_blocklist_wildcards(void);
 
+// Whether the local blocklist cache is active. Default on. When off, the
+// daily download is skipped and call-time lookups bypass the local
+// community/personal files and query the server API directly — the user
+// trades the offline-resilient fast path for always-live server results.
+bool        config_blocklist_enabled(void);
+
 // PhoneBlock
 // Site root URL, without "/api" suffix — api.c appends "/api/…",
 // web.c appends "/mobile/…" directly.
@@ -283,6 +289,10 @@ typedef struct {
     // "0" = exact matches only. NULL = leave unchanged. Default when
     // unset is "1".
     const char *blocklist_wildcards;
+    // "1" = keep the local blocklist cache active (daily download + call-
+    // time fast path), "0" = disable it. NULL = leave unchanged. Default
+    // when unset is "1".
+    const char *blocklist_enabled;
     const char *phoneblock_base_url;
     const char *phoneblock_token;
     // Direct-hit SPAM threshold. 0 = leave current value untouched
