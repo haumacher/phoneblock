@@ -13,23 +13,28 @@ import org.junit.jupiter.api.Test;
 
 /**
  * Tests {@link BinaryBlocklistCache}: hit/miss behaviour keyed by the
- * {@code (minDirect, minRange)} pair, TTL expiry, manual flush.
+ * {@code (dialPrefix, minDirect, minRange, maxBytes)} tuple, TTL expiry,
+ * manual flush.
  */
 class TestBinaryBlocklistCache {
 
 	/** 16 minutes — past the 15-minute TTL. */
 	private static final long PAST_TTL_NANOS = 1_000_000_000L * 60 * 16;
 
+	/** Default region / budget for tests not exercising those dimensions. */
+	private static final String DIAL = "+49";
+	private static final int BYTES = 262144;
+
 	@Test
 	void firstLookupComputesAndStores() {
 		AtomicInteger calls = new AtomicInteger();
 		BinaryBlocklistCache cache = new BinaryBlocklistCache();
 
-		byte[] first = cache.getOrCompute(4, 4, (d, r) -> {
+		byte[] first = cache.getOrCompute(DIAL, 4, 4, BYTES, (dp, d, r, mb) -> {
 			calls.incrementAndGet();
 			return new byte[] { (byte) d, (byte) r };
 		});
-		byte[] second = cache.getOrCompute(4, 4, (d, r) -> {
+		byte[] second = cache.getOrCompute(DIAL, 4, 4, BYTES, (dp, d, r, mb) -> {
 			calls.incrementAndGet();
 			return new byte[] { 99 };
 		});
@@ -46,11 +51,11 @@ class TestBinaryBlocklistCache {
 		AtomicInteger calls = new AtomicInteger();
 		BinaryBlocklistCache cache = new BinaryBlocklistCache();
 
-		byte[] a = cache.getOrCompute(4, 4, (d, r) -> {
+		byte[] a = cache.getOrCompute(DIAL, 4, 4, BYTES, (dp, d, r, mb) -> {
 			calls.incrementAndGet();
 			return new byte[] { (byte) r };
 		});
-		byte[] b = cache.getOrCompute(4, 8, (d, r) -> {
+		byte[] b = cache.getOrCompute(DIAL, 4, 8, BYTES, (dp, d, r, mb) -> {
 			calls.incrementAndGet();
 			return new byte[] { (byte) r };
 		});
@@ -67,11 +72,11 @@ class TestBinaryBlocklistCache {
 		AtomicInteger calls = new AtomicInteger();
 		BinaryBlocklistCache cache = new BinaryBlocklistCache();
 
-		byte[] a = cache.getOrCompute(4, 10, (d, r) -> {
+		byte[] a = cache.getOrCompute(DIAL, 4, 10, BYTES, (dp, d, r, mb) -> {
 			calls.incrementAndGet();
 			return new byte[] { (byte) d };
 		});
-		byte[] b = cache.getOrCompute(8, 10, (d, r) -> {
+		byte[] b = cache.getOrCompute(DIAL, 8, 10, BYTES, (dp, d, r, mb) -> {
 			calls.incrementAndGet();
 			return new byte[] { (byte) d };
 		});
@@ -84,17 +89,83 @@ class TestBinaryBlocklistCache {
 	}
 
 	@Test
+	void dialPrefixIsPartOfTheKey() {
+		// Region-scoped lists differ (#340), so two dial prefixes must not share
+		// a cache entry — otherwise a German dongle could get the French list.
+		AtomicInteger calls = new AtomicInteger();
+		BinaryBlocklistCache cache = new BinaryBlocklistCache();
+
+		byte[] de = cache.getOrCompute("+49", 4, 10, BYTES, (dp, d, r, mb) -> {
+			calls.incrementAndGet();
+			return new byte[] { (byte) dp.charAt(dp.length() - 1) };
+		});
+		byte[] fr = cache.getOrCompute("+33", 4, 10, BYTES, (dp, d, r, mb) -> {
+			calls.incrementAndGet();
+			return new byte[] { (byte) dp.charAt(dp.length() - 1) };
+		});
+
+		assertEquals(2, calls.get());
+		assertNotSame(de, fr);
+		assertEquals(2, cache.size());
+	}
+
+	@Test
+	void nullDialPrefixIsItsOwnKey() {
+		// The global (unscoped) list must not collide with any region's list.
+		AtomicInteger calls = new AtomicInteger();
+		BinaryBlocklistCache cache = new BinaryBlocklistCache();
+
+		cache.getOrCompute(null, 4, 10, BYTES, (dp, d, r, mb) -> {
+			calls.incrementAndGet();
+			return new byte[] { 0 };
+		});
+		cache.getOrCompute("+49", 4, 10, BYTES, (dp, d, r, mb) -> {
+			calls.incrementAndGet();
+			return new byte[] { 1 };
+		});
+		// Repeat the global lookup: must hit the cache, not recompute.
+		cache.getOrCompute(null, 4, 10, BYTES, (dp, d, r, mb) -> {
+			calls.incrementAndGet();
+			return new byte[] { 2 };
+		});
+
+		assertEquals(2, calls.get());
+		assertEquals(2, cache.size());
+	}
+
+	@Test
+	void maxBytesIsPartOfTheKey() {
+		// A larger budget yields a longer direct section, so two budgets must
+		// cache separately — a small dongle must not be served the big file.
+		AtomicInteger calls = new AtomicInteger();
+		BinaryBlocklistCache cache = new BinaryBlocklistCache();
+
+		byte[] small = cache.getOrCompute(DIAL, 4, 10, 65536, (dp, d, r, mb) -> {
+			calls.incrementAndGet();
+			return new byte[] { (byte) (mb >> 16) };
+		});
+		byte[] big = cache.getOrCompute(DIAL, 4, 10, 524288, (dp, d, r, mb) -> {
+			calls.incrementAndGet();
+			return new byte[] { (byte) (mb >> 16) };
+		});
+
+		assertEquals(2, calls.get());
+		assertNotSame(small, big);
+		assertEquals(2, cache.size());
+	}
+
+	@Test
 	void expiredEntryIsRecomputed() {
 		AtomicInteger calls = new AtomicInteger();
 		long[] clock = { 0L };
 		BinaryBlocklistCache cache = new BinaryBlocklistCache(() -> clock[0]);
 
-		byte[] first = cache.getOrCompute(4, 4, (d, r) -> {
+		byte[] first = cache.getOrCompute(DIAL, 4, 4, BYTES, (dp, d, r, mb) -> {
 			calls.incrementAndGet();
 			return new byte[] { 1 };
 		});
 		clock[0] += PAST_TTL_NANOS;
-		byte[] refreshed = cache.getOrCompute(4, 4, (d, r) -> {
+		byte[] refreshed = cache.getOrCompute(DIAL, 4, 4, BYTES, (dp, d, r, mb) -> {
 			calls.incrementAndGet();
 			return new byte[] { 2 };
 		});
@@ -107,15 +178,15 @@ class TestBinaryBlocklistCache {
 	@Test
 	void flushAllDropsEverything() {
 		BinaryBlocklistCache cache = new BinaryBlocklistCache();
-		cache.getOrCompute(4, 4, (d, r) -> new byte[] { 1 });
-		cache.getOrCompute(8, 8, (d, r) -> new byte[] { 2 });
+		cache.getOrCompute(DIAL, 4, 4, BYTES, (dp, d, r, mb) -> new byte[] { 1 });
+		cache.getOrCompute(DIAL, 8, 8, BYTES, (dp, d, r, mb) -> new byte[] { 2 });
 		assertEquals(2, cache.size());
 
 		cache.flushAll();
 		assertEquals(0, cache.size());
 
 		AtomicInteger calls = new AtomicInteger();
-		cache.getOrCompute(4, 4, (d, r) -> {
+		cache.getOrCompute(DIAL, 4, 4, BYTES, (dp, d, r, mb) -> {
 			calls.incrementAndGet();
 			return new byte[] { 9 };
 		});

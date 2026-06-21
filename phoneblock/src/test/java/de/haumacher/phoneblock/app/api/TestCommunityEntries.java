@@ -178,6 +178,53 @@ class TestCommunityEntries {
 		assertNull(CommunityEntries.phoneIdToE164Digits(null));
 	}
 
+	@Test
+	void exactEntriesHelperFiltersByMinDirect() {
+		// The capped binary path feeds exactEntries a pre-truncated row list;
+		// the minDirect filter is the redundant safety net.
+		List<Entry> entries = CommunityEntries.exactEntries(
+			List.of(row("+4930111", 10), row("+4930222", 3)), 5);
+
+		assertEquals(1, entries.size());
+		assertTrue(containsBlackExact(entries, "4930111"));
+		assertFalse(containsBlackExact(entries, "4930222"), "3 votes < minDirect 5 dropped");
+	}
+
+	@Test
+	void wildcardsAndWhitelistExcludesExactEntries() {
+		// The "take all" sections must contain only wildcards + whitelist, never
+		// the exact black numbers — those are budgeted separately.
+		DB.CommunityBinarySources sources = new DB.CommunityBinarySources(
+			List.of(agg("030", 5, 9.0, 0.0)),
+			List.of(),
+			Set.of("030999"));
+
+		List<Entry> entries = CommunityEntries.wildcardsAndWhitelist(sources, 1, NOW);
+
+		assertEquals(2, entries.size());
+		assertTrue(containsBlackWildcard(entries, "4930"), "wildcard prefix present");
+		assertTrue(entries.stream().anyMatch(e -> !e.black() && "4930999".equals(e.digits())),
+			"whitelist entry present as a white record");
+	}
+
+	@Test
+	void fromEqualsSplitHelpersCombined() {
+		// from() must stay a faithful combiner of the two helpers, so the
+		// existing callers/tests keep their meaning after the refactor.
+		Blocklist blocklist = community(row("+4930111", 10));
+		DB.CommunityBinarySources sources = new DB.CommunityBinarySources(
+			List.of(agg("030", 5, 9.0, 0.0)), List.of(), Set.of("030999"));
+
+		List<Entry> combined = CommunityEntries.from(blocklist, sources, 1, 1, NOW);
+
+		List<Entry> manual = CommunityEntries.exactEntries(blocklist.getNumbers(), 1);
+		manual.addAll(CommunityEntries.wildcardsAndWhitelist(sources, 1, NOW));
+
+		assertEquals(manual.size(), combined.size());
+		assertTrue(containsBlackExact(combined, "4930111"));
+		assertTrue(containsBlackWildcard(combined, "4930"));
+	}
+
 	private static boolean containsBlackExact(List<Entry> entries, String digits) {
 		return entries.stream().anyMatch(e -> !e.wildcard() && e.black() && digits.equals(e.digits()));
 	}

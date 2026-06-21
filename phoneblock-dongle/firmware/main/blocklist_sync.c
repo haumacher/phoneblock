@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include "freertos/FreeRTOS.h"
@@ -16,6 +17,7 @@
 #include "esp_timer.h"
 #include "esp_http_client.h"
 #include "esp_crt_bundle.h"
+#include "esp_spiffs.h"
 
 #include "config.h"
 #include "http_util.h"
@@ -29,6 +31,19 @@ static const char *TAG = "blsync";
 
 #define COMMUNITY_TMP      BLOCKLIST_COMMUNITY_PATH ".tmp"
 #define PERSONAL_TMP       BLOCKLIST_PERSONAL_PATH ".tmp"
+
+// SPIFFS partition label shared with announcement.c — the community,
+// personal and announcement files all live on this one mount.
+#define SPIFFS_LABEL       "storage"
+
+// Headroom kept free on the storage partition: SPIFFS block/metadata
+// overhead the raw free-byte count overstates, plus room for the small
+// personal list. Used both to size the budget advertised to the server
+// (&maxBytes) and to guard each download against a mid-write ENOSPC.
+#define BLOCKLIST_FS_MARGIN      (48 * 1024)
+
+// Community budget advertised when the filesystem size cannot be read.
+#define DEFAULT_COMMUNITY_BUDGET (256 * 1024)
 
 static SemaphoreHandle_t s_lock    = NULL;
 static blocklist_sync_status_t s_status;
@@ -69,11 +84,46 @@ static void refresh_sizes_locked(void)
 // Streaming HTTPS download into a temp file.
 // ---------------------------------------------------------------------------
 
-// Downloads `url` into `tmp_path`. On any error returns false and writes a
-// short diagnostic into `err`. Caller is responsible for removing the
-// temp file on failure.
+// Size of a file in bytes, or 0 if it does not exist / cannot be stat'd.
+static int64_t file_size_bytes(const char *path)
+{
+    struct stat st;
+    if (stat(path, &st) != 0) {
+        return 0;
+    }
+    return (int64_t) st.st_size;
+}
+
+// Free bytes on the storage SPIFFS partition, or -1 if it cannot be read.
+static int64_t spiffs_free_bytes(void)
+{
+    size_t total = 0, used = 0;
+    if (esp_spiffs_info(SPIFFS_LABEL, &total, &used) != ESP_OK) {
+        return -1;
+    }
+    return (int64_t) total - (int64_t) used;
+}
+
+// Storage budget the dongle offers the community file: current free space
+// plus the bytes the existing community file frees when replaced, minus a
+// margin for SPIFFS overhead and the small personal list. Sent to the server
+// as &maxBytes so it caps the encoded file to what actually fits here.
+static int64_t community_budget_bytes(void)
+{
+    int64_t freeb = spiffs_free_bytes();
+    if (freeb < 0) {
+        return DEFAULT_COMMUNITY_BUDGET;
+    }
+    int64_t budget = freeb + file_size_bytes(BLOCKLIST_COMMUNITY_PATH) - BLOCKLIST_FS_MARGIN;
+    return budget > 0 ? budget : 0;
+}
+
+// Downloads `url` into `tmp_path`. `final_path` is the file `tmp_path` will be
+// renamed onto by the caller; its current bytes are reclaimable, so they count
+// toward the space available for this download. On any error returns false and
+// writes a message to `err`.
 static bool download_to_tmp(const char *url, const char *tmp_path,
-                            char *err, size_t err_cap)
+                            const char *final_path, char *err, size_t err_cap)
 {
     FILE *out = fopen(tmp_path, "wb");
     if (out == NULL) {
@@ -119,6 +169,32 @@ static bool download_to_tmp(const char *url, const char *tmp_path,
         esp_http_client_cleanup(client);
         fclose(out);
         return false;
+    }
+
+    // Storage pre-check. Turn a mid-write ENOSPC (which leaves a half-written
+    // .tmp) into a clean, actionable error before any bytes land. The file we
+    // are about to replace is reclaimable: if the body fits beside it, keep it
+    // until the atomic rename; if not but it fits once the old one is freed,
+    // reclaim it now (losing the old-file fallback for this download window);
+    // if it does not fit even then, refuse and leave the old file intact.
+    if (content_length > 0) {
+        int64_t freeb = spiffs_free_bytes();
+        if (freeb >= 0) {
+            int64_t need = content_length + BLOCKLIST_FS_MARGIN;
+            if (need > freeb) {
+                int64_t reclaim = file_size_bytes(final_path);
+                if (need > freeb + reclaim) {
+                    snprintf(err, err_cap, "too large: %lld B needs > %lld B free",
+                             (long long) content_length, (long long) (freeb + reclaim));
+                    esp_http_client_close(client);
+                    esp_http_client_cleanup(client);
+                    fclose(out);
+                    unlink(tmp_path);
+                    return false;
+                }
+                unlink(final_path);
+            }
+        }
     }
 
     char buf[DOWNLOAD_CHUNK];
@@ -195,13 +271,18 @@ static bool sync_one(const char *type, const char *path, const char *tmp_path,
     // The personal list is the user's explicit black/white set — no
     // thresholding, so no parameters.
     if (strcmp(type, "community") == 0 && n > 0 && (size_t) n < sizeof(url)) {
-        snprintf(url + n, sizeof(url) - n, "&minDirect=%d&minRange=%d",
-                 config_min_direct_votes(), config_min_range_votes());
+        // maxBytes lets the server cap the (size-unbounded) community list to
+        // our free flash: it keeps all wildcards + whitelist and truncates the
+        // Heat-ranked direct numbers to fit. minDirect/minRange keep the
+        // encoded verdict identical to the API-fallback path.
+        snprintf(url + n, sizeof(url) - n, "&minDirect=%d&minRange=%d&maxBytes=%lld",
+                 config_min_direct_votes(), config_min_range_votes(),
+                 (long long) community_budget_bytes());
     }
 
     unlink(tmp_path);
 
-    if (!download_to_tmp(url, tmp_path, err, err_cap)) {
+    if (!download_to_tmp(url, tmp_path, path, err, err_cap)) {
         unlink(tmp_path);
         return false;
     }

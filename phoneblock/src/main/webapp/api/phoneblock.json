@@ -504,6 +504,16 @@
 						"type": "integer",
 						"minimum": 0
 					}
+				},
+				{
+					"name": "maxBytes",
+					"in": "query",
+					"description": "Only for `format=binary&type=community`. Storage budget for the encoded file, in bytes — typically the on-device client's free flash. The server keeps every qualifying wildcard block and the whole whitelist (small), then truncates the exact spam numbers, keeping the highest-ranked by region-aware Heat (most currently-active spam in the account's dial region), so the file fits the budget. Numbers dropped by the cap still resolve correctly on the device, which falls back to the live `/num` API on a local miss. The value is snapped down to a fixed grid (64/128/256/384/512 KB) so it never exceeds the budget and stays cacheable; a value below the smallest bucket still receives it. Defaults to 256 KB when omitted.",
+					"required": false,
+					"schema": {
+						"type": "integer",
+						"minimum": 1
+					}
 				}
 			]
 		},
