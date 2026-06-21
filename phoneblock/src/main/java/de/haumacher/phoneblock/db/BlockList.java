@@ -23,20 +23,36 @@ public interface BlockList {
 	
 	/**
 	 * All numbers that the user with the given user ID has explicitly blocked.
+	 *
+	 * <p>Numbers covered by one of the user's blocking wildcards are omitted: the wildcard is the
+	 * compact representation of the block, so the concrete row stays in the table only to carry the
+	 * user's vote/evidence contribution and must not be exported (CardDAV) or displayed separately.</p>
 	 */
 	@Select("""
-			select PHONE from PERSONALIZATION
+			select PHONE from PERSONALIZATION p
 			where USERID = #{userId} and BLOCKED and not WILDCARD
+			and not exists (
+				select 1 from PERSONALIZATION w
+				where w.USERID = p.USERID and w.BLOCKED and w.WILDCARD
+				and p.PHONE like w.PHONE || '%'
+			)
 			order by PHONE
 			""")
 	List<String> getPersonalizations(long userId);
 
 	/**
-	 * All numbers that the user with the given user ID has explicitly blocked, with creation timestamp.
+	 * All numbers that the user with the given user ID has explicitly blocked, with creation
+	 * timestamp. Numbers covered by one of the user's blocking wildcards are omitted (see
+	 * {@link #getPersonalizations(long)}).
 	 */
 	@Select("""
-			select PHONE, CREATED from PERSONALIZATION
+			select PHONE, CREATED from PERSONALIZATION p
 			where USERID = #{userId} and BLOCKED and not WILDCARD
+			and not exists (
+				select 1 from PERSONALIZATION w
+				where w.USERID = p.USERID and w.BLOCKED and w.WILDCARD
+				and p.PHONE like w.PHONE || '%'
+			)
 			order by PHONE
 			""")
 	List<DBPersonalization> getPersonalizationsWithCreated(long userId);
@@ -72,13 +88,36 @@ public interface BlockList {
 	List<DBPersonalization> getWhiteListWithCreated(long userId);
 
 	/**
-	 * Adds a blocklist entry for the user with the given user ID.
+	 * Adds a blocklist entry for the user with the given user ID. {@code LAST_ACTIVITY} is seeded to
+	 * the creation time — the moment of the first spam signal — so the initial capped contribution
+	 * {@code Ema.increment(1, created)} can be reconstructed (and later topped up) from the row.
 	 */
 	@Insert("""
-			insert into PERSONALIZATION (USERID, PHONE, SHA1, BLOCKED, CREATED)
-			values (#{userId}, #{phone}, #{sha1}, true, #{created})
+			insert into PERSONALIZATION (USERID, PHONE, SHA1, BLOCKED, CREATED, LAST_ACTIVITY)
+			values (#{userId}, #{phone}, #{sha1}, true, #{created}, #{created})
 			""")
 	void addPersonalization(long userId, String phone, byte[] sha1, long created);
+
+	/**
+	 * Records new spam/legit activity (a topped-up call or re-rating) for an existing
+	 * personalization entry by advancing its {@code LAST_ACTIVITY}.
+	 */
+	@Update("""
+			update PERSONALIZATION set LAST_ACTIVITY = #{lastActivity}
+			where USERID = #{userId} and PHONE = #{phone}
+			""")
+	void updateLastActivity(long userId, String phone, long lastActivity);
+
+	/**
+	 * Resolves the block state and last-activity time of a user's personalization entry, or
+	 * {@code null} if the number is not personalized. Used to compute the per-user evidence cap.
+	 */
+	@Select("""
+			select PHONE, BLOCKED, LAST_ACTIVITY as lastActivity
+			from PERSONALIZATION
+			where USERID = #{userId} and PHONE = #{phone}
+			""")
+	DBPersonalization getPersonalizationActivity(long userId, String phone);
 	
 	/**
 	 * Removes a blocklist entry for the user with the given user ID.
@@ -102,11 +141,12 @@ public interface BlockList {
 	Boolean getPersonalizationState(long userId, String phone);
 	
 	/**
-	 * Adds an exclusion from the blocklist for the user with the given user ID.
+	 * Adds an exclusion from the blocklist for the user with the given user ID. {@code LAST_ACTIVITY}
+	 * is seeded to the creation time (see {@link #addPersonalization}).
 	 */
 	@Insert("""
-			insert into PERSONALIZATION (USERID, PHONE, SHA1, BLOCKED, CREATED)
-			values (#{userId}, #{phone}, #{sha1}, false, #{created})
+			insert into PERSONALIZATION (USERID, PHONE, SHA1, BLOCKED, CREATED, LAST_ACTIVITY)
+			values (#{userId}, #{phone}, #{sha1}, false, #{created}, #{created})
 			""")
 	void addExclude(long userId, String phone, byte[] sha1, long created);
 
@@ -187,24 +227,5 @@ public interface BlockList {
 			where USERID = #{userId} and PHONE = #{phone} and WILDCARD
 			""")
 	boolean removeWildcard(long userId, String phone);
-
-	/**
-	 * Removes all blocklist entries of the user that are subsumed by the given wildcard prefix
-	 * (#377).
-	 *
-	 * <p>
-	 * Every blocked entry ({@code BLOCKED}) whose phone ID starts with the prefix is deleted —
-	 * both exact single-number blocks and narrower (more specific) wildcard blocks that the new,
-	 * broader wildcard now covers. White-listed (allowed) entries are kept so that they can keep
-	 * overriding the wildcard.
-	 * </p>
-	 *
-	 * @return the number of deleted entries.
-	 */
-	@Delete("""
-			delete from PERSONALIZATION
-			where USERID = #{userId} and BLOCKED and PHONE like #{prefix} || '%'
-			""")
-	int removeBlocksWithPrefix(long userId, String prefix);
 
 }

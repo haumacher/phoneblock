@@ -549,6 +549,9 @@ public class DB {
 					// distinguishing prefix-wildcard personalizations (#377) from exact
 					// entries via the script; no Java hook needed.
 
+					// migration 44 adds PERSONALIZATION.LAST_ACTIVITY (seeded from CREATED)
+					// for the per-user spam-evidence cap via the script; no Java hook needed.
+
 					users.updateProperty("db.version", Integer.toString(version));
 					session.commit();
 				}
@@ -1010,6 +1013,63 @@ public class DB {
 		}
 	}
 
+	/**
+	 * Per-user cap on the spam evidence an intercepted call may add to a number.
+	 *
+	 * <p>Each user contributes at most one decoded unit of {@code SPAM_EVIDENCE} to any single
+	 * number, no matter how many calls they intercept from it. The contribution lives on the user's
+	 * {@code PERSONALIZATION} row and is fully described by its {@code LAST_ACTIVITY}: the stored
+	 * contribution is {@code Ema.increment(1, LAST_ACTIVITY)}, decoding to ≤ 1. This method ensures
+	 * the user has a blocked entry for the number (auto-adding one on first contact — a wildcard
+	 * catch lands here too, since it has no exact row yet), advances {@code LAST_ACTIVITY} to
+	 * {@code now}, and returns the projected {@code SPAM_EVIDENCE} delta that tops the decoded
+	 * contribution back up to 1 (only the part decayed since the last activity).</p>
+	 *
+	 * @return the projected {@code SPAM_EVIDENCE} increment to apply (0.0 if the user has explicitly
+	 *         allowed the number — a call must not add spam evidence on their behalf).
+	 */
+	private double cappedCallSpamContribution(BlockList blocklist, long userId, String phoneId, byte[] hash, long now) {
+		DBPersonalization entry = blocklist.getPersonalizationActivity(userId, phoneId);
+		if (entry == null) {
+			// First contact via a call: auto-add the concrete number to the user's blacklist so the
+			// contribution is tracked (hidden from display when a wildcard already covers it).
+			blocklist.addPersonalization(userId, phoneId, hash, now);
+			return Ema.increment(1.0, now, Ema.CLASSIFICATION_TAU_MILLIS);
+		}
+		if (!entry.isBlocked()) {
+			// The user explicitly allowed this number — do not push spam evidence for them.
+			return 0.0;
+		}
+		double delta = Ema.increment(1.0, now, Ema.CLASSIFICATION_TAU_MILLIS)
+			- Ema.increment(1.0, entry.getLastActivity(), Ema.CLASSIFICATION_TAU_MILLIS);
+		blocklist.updateLastActivity(userId, phoneId, now);
+		return delta;
+	}
+
+	/**
+	 * Reverses a user's capped evidence contribution when their personalization entry is removed or
+	 * flipped to the opposite list.
+	 *
+	 * <p>Subtracts the residual (not-yet-decayed) contribution {@code Ema.increment(1, lastActivity)}
+	 * from the matching axis ({@code SPAM_EVIDENCE} for a former block, {@code LEGIT_EVIDENCE} for a
+	 * former allow), adjusts the legacy {@code VOTES} counter by {@code voteDelta}, keeps the
+	 * per-region row and SHA1 visibility in lock-step, and rebuilds the touched block. For a former
+	 * block the per-region {@code NUMBERS_LOCALE.SPAM_EVIDENCE} is decremented too; the per-region
+	 * table has no legit axis, so a former allow touches the global row only.</p>
+	 */
+	public void revertPersonalContribution(SpamReports reports, String phone, byte[] hash,
+			String dialPrefix, boolean wasBlocked, long lastActivity, int voteDelta, long now) {
+		double residual = Ema.increment(1.0, lastActivity, Ema.CLASSIFICATION_TAU_MILLIS);
+		double spamNeg = wasBlocked ? -residual : 0.0;
+		double legitNeg = wasBlocked ? 0.0 : -residual;
+		reports.addVote(phone, voteDelta, now, 0.0, spamNeg, legitNeg);
+		if (wasBlocked) {
+			updateLocalization(reports, phone, dialPrefix, 0, 0, 0, 0.0, spamNeg, now);
+		}
+		updatePhoneHashVisibility(reports, phone, hash);
+		recomputeBlockForNumber(reports, phone, now);
+	}
+
 	// Removed: pingRelatedNumbers (#91). Bumping LASTPING on all spam
 	// siblings of a block kept mass-spammer numbers from the old
 	// inactivity-timeout archiving — the confidence model retired that
@@ -1153,27 +1213,31 @@ public class DB {
 				
 				BlockList blocklist = session.getMapper(BlockList.class);
 				long userId = userIdOptional.longValue();
-				
-				Boolean state = blocklist.getPersonalizationState(userId, phone);
+
+				DBPersonalization existing = blocklist.getPersonalizationActivity(userId, phone);
 
 				boolean block = rating != Rating.A_LEGITIMATE;
 
-				if (state != null && block == state.booleanValue()) {
+				DBPersonalization flipFrom = null;
+				if (existing != null && block == existing.isBlocked()) {
 					LOG.info("Ignored repeated rating for number {} ({}) by {}.", phone, rating, userName);
 					recordVote = false;
 				} else {
 					byte[] sha1 = NumberAnalyzer.getPhoneHash(number);
 
-					if (state != null) {
+					if (existing != null) {
+						// Flip to the opposite list: remember the entry so its residual capped
+						// contribution can be reversed once the dial prefix is resolved below.
+						flipFrom = existing;
 						blocklist.removePersonalization(userId, phone);
 					}
 					if (block) {
-						blocklist.addPersonalization(userId, phone, sha1, System.currentTimeMillis());
+						blocklist.addPersonalization(userId, phone, sha1, now);
 					} else {
-						blocklist.addExclude(userId, phone, sha1, System.currentTimeMillis());
+						blocklist.addExclude(userId, phone, sha1, now);
 					}
 				}
-				
+
 				// Never record community votes for globally whitelisted numbers.
 				if (reports.isWhiteListed(phone)) {
 					recordVote = false;
@@ -1184,6 +1248,15 @@ public class DB {
 					lang = settings.getLang();
 				}
 				dialPrefix = settings.getDialPrefix();
+
+				if (flipFrom != null) {
+					// Reverse the residual evidence the user contributed under the previous
+					// classification; the processVotes below adds the new axis's increment(1, now).
+					// voteDelta = 0 because processVotes also moves the legacy VOTES counter for the
+					// new rating, so reversing the old counter here would double-count.
+					revertPersonalContribution(reports, phone, NumberAnalyzer.getPhoneHash(number),
+						dialPrefix, flipFrom.isBlocked(), flipFrom.getLastActivity(), 0, now);
+				}
 			}
 			
 			UserComment userComment = UserComment.create()
@@ -1236,16 +1309,11 @@ public class DB {
 			// A digit string is either exact or a prefix for a given user: replace any existing
 			// entry under this key (PK is USERID, PHONE) before inserting the wildcard.
 			blocklist.removePersonalization(userId, prefix);
-			if (blocked) {
-				// A blocking wildcard subsumes all of the user's blocks under that prefix (#377):
-				// drop both exact single-number blocks and narrower wildcard blocks so the new
-				// wildcard becomes the single source of truth. Allowed entries are kept — they
-				// intentionally override the wildcard.
-				int removed = blocklist.removeBlocksWithPrefix(userId, prefix);
-				if (removed > 0) {
-					LOG.info("Wildcard block '{}' subsumed {} block(s) of user {}.", prefix, removed, userName);
-				}
-			}
+			// A blocking wildcard subsumes the user's concrete blocks under that prefix only for
+			// display/export (the wildcard is the compact representation): the covered concrete
+			// rows are kept so the per-user evidence they carry (#per-user-cap) is preserved, and
+			// hidden via the wildcard-cover filter in BlockList.getPersonalizations*. Removing the
+			// wildcard makes them visible again unchanged.
 			blocklist.addWildcard(userId, prefix, blocked, now);
 			session.commit();
 			return prefix;
@@ -2476,26 +2544,33 @@ public class DB {
 	 * breadth-dependent weight (see {@link #recordCall(SpamReports, PhoneNumer,
 	 * String, String, long, double)} and {@link #wildcardReportWeight}).</p>
 	 */
-	public void recordCall(SpamReports reports, PhoneNumer number,
+	public void recordCall(SpamReports reports, BlockList blocklist, long userId, PhoneNumer number,
 			String phoneId, String dialPrefix, long now) {
-		recordCall(reports, number, phoneId, dialPrefix, now, 1.0);
+		recordCall(reports, blocklist, userId, number, phoneId, dialPrefix, now, 1.0);
 	}
 
 	/**
-	 * Records a call with a weight factor scaling its spam-evidence and Heat contribution (#377).
+	 * Records a call with a weight factor scaling its Heat contribution (#377).
 	 *
 	 * <p>A normal call report uses weight {@code 1.0}. A catch by a personal prefix wildcard is
 	 * weighted down by the breadth of the matched prefix (see {@link #wildcardReportWeight}): the
-	 * broader the wildcard, the less a single catch moves the global counters. The {@code CALLS}
-	 * counter still increments by one — a call did happen — only the decay-aware evidence/Heat
-	 * increments scale.</p>
+	 * broader the wildcard, the less a single catch moves the Heat ranking. The {@code CALLS}
+	 * counter still increments by one — a call did happen.</p>
+	 *
+	 * <p>Spam evidence is <em>not</em> weighted here: it is capped per user at one decoded unit per
+	 * number via {@link #cappedCallSpamContribution} regardless of how many times the user
+	 * intercepts the number, so a single user can never run a number's spam evidence away. Heat and
+	 * the {@code CALLS} counter stay uncapped — they measure genuine call activity and drive
+	 * space-constrained blocklist selection.</p>
 	 */
-	public void recordCall(SpamReports reports, PhoneNumer number,
+	public void recordCall(SpamReports reports, BlockList blocklist, long userId, PhoneNumer number,
 			String phoneId, String dialPrefix, long now, double weight) {
 		double heatInc = weight * Ema.increment(Signals.CALL_HEAT_WEIGHT, now, Ema.HEAT_TAU_MILLIS);
-		double evidenceInc = weight * Ema.increment(Signals.CALL_EVIDENCE_WEIGHT, now, Ema.CLASSIFICATION_TAU_MILLIS);
 
 		byte[] hash = NumberAnalyzer.getPhoneHash(number);
+		// Per-user capped spam contribution (auto-adds/updates the user's blacklist entry).
+		double evidenceInc = cappedCallSpamContribution(blocklist, userId, phoneId, hash, now);
+
 		int updated = reports.recordCall(phoneId, now, heatInc, evidenceInc);
 		if (updated == 0) {
 			// First report of this number — materialise the NUMBERS row with

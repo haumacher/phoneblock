@@ -111,15 +111,17 @@ public class ReportCallServlet extends HttpServlet {
 			// (that was the old CALLERS / firstFromUser concept, removed in
 			// #342). The shared DB.recordCall path handles the rest.
 			if (users.tryConsumeCallReportQuota(userId, today, DAILY_QUOTA) == 1) {
+				BlockList blockList = session.getMapper(BlockList.class);
 				double weight = 1.0;
 				if (wildcardTriggered) {
 					// Server recomputes the weight from the user's own wildcard list; a
 					// claim without a matching wildcard (stale client state) yields 0.0
 					// and is dropped rather than counted at full weight.
-					weight = db.wildcardReportWeight(session.getMapper(BlockList.class), userId, phoneId);
+					weight = db.wildcardReportWeight(blockList, userId, phoneId);
 				}
 				if (weight > 0.0) {
-					db.recordCall(reports, number, phoneId, dialPrefix, now, weight);
+					// Spam evidence is capped per user inside recordCall; weight scales Heat only.
+					db.recordCall(reports, blockList, userId, number, phoneId, dialPrefix, now, weight);
 				}
 			}
 

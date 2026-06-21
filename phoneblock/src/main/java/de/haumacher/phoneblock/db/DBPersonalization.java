@@ -11,6 +11,7 @@ public class DBPersonalization {
 	private String phone;
 	private boolean blocked;
 	private long created;
+	private long lastActivity;
 
 	public String getPhone() {
 		return phone;
@@ -34,6 +35,19 @@ public class DBPersonalization {
 
 	public void setCreated(long created) {
 		this.created = created;
+	}
+
+	/**
+	 * Time of the user's last spam/legit activity on this number (epoch millis). The user's
+	 * capped contribution to the number's evidence is {@code Ema.increment(1, lastActivity)};
+	 * see the per-user evidence cap.
+	 */
+	public long getLastActivity() {
+		return lastActivity;
+	}
+
+	public void setLastActivity(long lastActivity) {
+		this.lastActivity = lastActivity;
 	}
 
 }

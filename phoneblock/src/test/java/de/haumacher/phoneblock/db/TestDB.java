@@ -529,12 +529,32 @@ public class TestDB {
 	}
 
 	private void recordCall(String phone, long now) {
+		recordCall("call-reporter", phone, now);
+	}
+
+	private void recordCall(String userName, String phone, long now) {
+		long userId = ensureUser(userName);
 		PhoneNumer number = NumberAnalyzer.analyze(phone, "+49");
 		String id = NumberAnalyzer.getPhoneId(number);
 		try (SqlSession tx = _db.openSession()) {
 			SpamReports reports = tx.getMapper(SpamReports.class);
-			_db.recordCall(reports, number, id, "+49", now);
+			BlockList blocklist = tx.getMapper(BlockList.class);
+			_db.recordCall(reports, blocklist, userId, number, id, "+49", now);
 			tx.commit();
+		}
+	}
+
+	/** Looks up the test user by login, creating it on first use. */
+	private long ensureUser(String userName) {
+		try (SqlSession tx = _db.openSession()) {
+			Long id = tx.getMapper(Users.class).getUserId(userName);
+			if (id != null) {
+				return id.longValue();
+			}
+		}
+		_db.createUser(userName, userName, "de", "+49");
+		try (SqlSession tx = _db.openSession()) {
+			return tx.getMapper(Users.class).getUserId(userName).longValue();
 		}
 	}
 
@@ -571,44 +591,41 @@ public class TestDB {
 	}
 
 	@Test
-	void testWildcardBlockSubsumesExactBlocks() {
+	void testWildcardBlockHidesButKeepsCoveredExactBlocks() {
 		_db.createUser("wc-subsume", "WC", "de", "+49");
 
 		try (SqlSession tx = _db.openSession()) {
 			BlockList bl = tx.getMapper(BlockList.class);
 			long userId = tx.getMapper(Users.class).getUserId("wc-subsume").longValue();
 
-			// Two exact blocks under the prefix, one outside, and one allowed (white-listed) entry
-			// under the prefix.
+			// Two exact blocks under the prefix, one outside (not covered), and one allowed
+			// (white-listed) entry under the prefix.
 			bl.addPersonalization(userId, "0301230000", null, 1);
 			bl.addPersonalization(userId, "0301239999", null, 1);
-			bl.addPersonalization(userId, "0401234567", null, 1);
+			bl.addPersonalization(userId, "0501234567", null, 1);
 			bl.addExclude(userId, "0301235555", null, 1);
-
-			// A narrower blocked wildcard under the prefix (subsumed) and a blocked wildcard
-			// outside the prefix (kept).
-			bl.addWildcard(userId, "0301234", true, 1);
-			bl.addWildcard(userId, "040123", true, 1);
 			tx.commit();
 		}
 
-		// Adding the blocking wildcard removes the exact blocks and narrower wildcards under the
-		// prefix.
+		// Adding the blocking wildcard hides the covered exact blocks from display/export but keeps
+		// the rows (and the per-user evidence they carry) intact — it does not delete them.
 		assertEquals("030123", _db.addWildcard("wc-subsume", "+4930123", true, 100));
 
 		try (SqlSession tx = _db.openSession()) {
 			BlockList bl = tx.getMapper(BlockList.class);
 			long userId = tx.getMapper(Users.class).getUserId("wc-subsume").longValue();
 
-			// Only the block outside the prefix remains as an exact block.
-			assertEquals(List.of("0401234567"), bl.getPersonalizations(userId));
+			// Covered exact blocks are hidden; only the block outside the prefix is displayed.
+			assertEquals(List.of("0501234567"), bl.getPersonalizations(userId));
 
-			// The allowed entry under the prefix is kept — it overrides the wildcard.
+			// But the covered rows still exist (non-destructive) so their votes are preserved.
+			assertNotNull(bl.getPersonalizationActivity(userId, "0301230000"),
+				"covered exact block must be kept, only hidden from display");
+			assertNotNull(bl.getPersonalizationActivity(userId, "0301239999"),
+				"covered exact block must be kept, only hidden from display");
+
+			// The allowed entry under the prefix is unaffected.
 			assertEquals(List.of("0301235555"), bl.getWhiteList(userId));
-
-			// The narrower wildcard under the prefix is gone; the new wildcard and the unrelated
-			// one outside the prefix remain.
-			assertEquals(List.of("030123", "040123"), bl.getBlockedWildcards(userId));
 		}
 	}
 
@@ -1269,58 +1286,118 @@ public class TestDB {
 	}
 
 	@Test
-	void testRecordCallUnifiedPath() {
-		// #342 consolidation: every reported call — Fritz!Box, dongle, app,
-		// answer-bot, all the same path — adds +1 Heat and +1 evidence to
-		// NUMBERS (materialising the row if it doesn't exist yet), to the
-		// /10 and /100 aggregations, and to the per-region NUMBERS_LOCALE
-		// row. No wildcard-match gate, no firstFromUser dedup — one call,
-		// one signal.
+	void testRecordCallPerUserCap() {
+		// Per-user spam-evidence cap: each user contributes at most one decoded unit of
+		// SPAM_EVIDENCE to a number, however many calls they intercept from it; distinct users add
+		// independently. HEAT and the CALLS counter stay uncapped (genuine activity that drives
+		// space-constrained blocklist selection). The reporting user gets the number auto-added to
+		// their personal blacklist so the contribution is tracked.
 
 		long t = Ema.T0_MILLIS;
-
-		// First report for an unknown number — materialises the row.
-		PhoneNumer fresh = NumberAnalyzer.analyze("030555111222", "+49");
+		double tau = Ema.CLASSIFICATION_TAU_MILLIS;
+		String raw = "030555111222";
+		PhoneNumer fresh = NumberAnalyzer.analyze(raw, "+49");
 		String freshId = NumberAnalyzer.getPhoneId(fresh);
-		try (SqlSession tx = _db.openSession()) {
-			SpamReports reports = tx.getMapper(SpamReports.class);
-			assertNull(reports.getVotes(freshId), "Number must not exist before the report");
-			_db.recordCall(reports, fresh, freshId, "+49", t);
-			tx.commit();
-		}
 
+		// First report by user A — materialises the row with one decoded spam unit.
+		recordCall("caller-A", raw, t);
 		double[] after = rawEmas(freshId);
 		assertTrue(after[0] > 0, "HEAT must be set on the freshly materialised row");
-		assertTrue(after[1] > 0, "SPAM_EVIDENCE must be set on the freshly materialised row");
+		assertEquals(1.0, Ema.decode(after[1], t, tau), 1e-9, "first call contributes one decoded spam unit");
 		assertEquals(0.0, after[2], 0.0, "LEGIT_EVIDENCE must stay 0 (calls are not legit votes)");
 		assertEquals(0, _db.getVotesFor(freshId), "Direct VOTES counter stays 0 — calls are not direct votes");
 
-		// (Block aggregation is no longer maintained per-event here; it is rebuilt by
-		// recomputeBlockAggregation, #300 follow-up. A single call forms no qualifying block.)
+		// The intercepted number is auto-added to the reporter's personal blacklist.
+		try (SqlSession tx = _db.openSession()) {
+			BlockList bl = tx.getMapper(BlockList.class);
+			long a = tx.getMapper(Users.class).getUserId("caller-A").longValue();
+			assertEquals(Boolean.TRUE, bl.getPersonalizationState(a, freshId),
+				"an intercepted call auto-adds the number to the reporter's blacklist");
+		}
 
-		// Second report on the same number — accumulates, no firstFromUser cap.
+		// Second report by the SAME user — HEAT grows, decoded spam stays capped at 1.
 		long later = t + 60_000L;
-		try (SqlSession tx = _db.openSession()) {
-			SpamReports reports = tx.getMapper(SpamReports.class);
-			_db.recordCall(reports, fresh, freshId, "+49", later);
-			tx.commit();
-		}
-		double[] doubled = rawEmas(freshId);
-		assertTrue(doubled[0] > after[0], "HEAT must grow on the second report");
-		assertTrue(doubled[1] > after[1], "SPAM_EVIDENCE must also grow — no per-user cap");
+		recordCall("caller-A", raw, later);
+		double[] capped = rawEmas(freshId);
+		assertTrue(capped[0] > after[0], "HEAT must grow on the second report (uncapped)");
+		assertEquals(1.0, Ema.decode(capped[1], later, tau), 1e-9,
+			"a second call from the same user must not push decoded spam beyond 1");
 
-		// Report into a cold range — same path, same effect: row materialises,
-		// gets heat and evidence. No "range-must-be-hot" gate any more.
-		PhoneNumer cold = NumberAnalyzer.analyze("020999888777", "+49");
-		String coldId = NumberAnalyzer.getPhoneId(cold);
-		try (SqlSession tx = _db.openSession()) {
-			SpamReports reports = tx.getMapper(SpamReports.class);
-			_db.recordCall(reports, cold, coldId, "+49", t);
-			tx.commit();
-		}
+		// A different user reporting the same number adds an independent unit (~2 total decoded).
+		recordCall("caller-B", raw, later);
+		double[] twoUsers = rawEmas(freshId);
+		assertEquals(2.0, Ema.decode(twoUsers[1], later, tau), 1e-9,
+			"a second distinct user adds another decoded spam unit");
+
+		// Cold range — same path, same effect: row materialises with heat and one capped unit.
+		String coldRaw = "020999888777";
+		String coldId = NumberAnalyzer.getPhoneId(NumberAnalyzer.analyze(coldRaw, "+49"));
+		recordCall("caller-A", coldRaw, t);
 		double[] coldRow = rawEmas(coldId);
 		assertTrue(coldRow[0] > 0, "cold-range report still materialises the row with HEAT");
-		assertTrue(coldRow[1] > 0, "cold-range report still gives the new row SPAM_EVIDENCE");
+		assertEquals(1.0, Ema.decode(coldRow[1], t, tau), 1e-9, "cold-range report gives one decoded spam unit");
+	}
+
+	@Test
+	void testBlacklistRemovalSubtractsResidual() {
+		// A user's spam contribution (rating + topped-up calls, capped at one decoded unit) is fully
+		// reversed when they remove the number from their blacklist.
+		_db.createUser("rm-user", "RM", "de", "+49");
+		long t = Ema.T0_MILLIS;
+		double tau = Ema.CLASSIFICATION_TAU_MILLIS;
+		String raw = "030777000111";
+		PhoneNumer number = NumberAnalyzer.analyze(raw, "+49");
+		String id = NumberAnalyzer.getPhoneId(number);
+
+		// Rating the number as spam adds one decoded unit.
+		addRating("rm-user", raw, Rating.B_MISSED, null, t);
+		assertEquals(1.0, Ema.decode(rawEmas(id)[1], t, tau), 1e-9, "rating adds one decoded spam unit");
+
+		// Intercepted calls top up but stay capped at one unit.
+		recordCall("rm-user", raw, t + 1000);
+		recordCall("rm-user", raw, t + 2000);
+		assertEquals(1.0, Ema.decode(rawEmas(id)[1], t + 2000, tau), 1e-9, "calls keep the contribution capped at 1");
+
+		// Removing the number reverses the residual back to (near) zero.
+		long now = t + 3000;
+		removePersonalization("rm-user", id, number, now);
+		assertEquals(0.0, Ema.decode(rawEmas(id)[1], now, tau), 1e-9, "removal subtracts the residual spam contribution");
+	}
+
+	@Test
+	void testWhitelistRemovalSubtractsLegitResidual() {
+		// Symmetric to the blacklist: whitelisting adds one decoded legit unit and removal reverses it.
+		_db.createUser("wl-user", "WL", "de", "+49");
+		long t = Ema.T0_MILLIS;
+		double tau = Ema.CLASSIFICATION_TAU_MILLIS;
+		String raw = "030888000222";
+		PhoneNumer number = NumberAnalyzer.analyze(raw, "+49");
+		String id = NumberAnalyzer.getPhoneId(number);
+
+		addRating("wl-user", raw, Rating.A_LEGITIMATE, null, t);
+		double[] e = rawEmas(id);
+		assertEquals(1.0, Ema.decode(e[2], t, tau), 1e-9, "whitelisting adds one decoded legit unit");
+		assertEquals(0.0, e[1], 0.0, "whitelisting adds no spam evidence");
+
+		long now = t + 1000;
+		removePersonalization("wl-user", id, number, now);
+		assertEquals(0.0, Ema.decode(rawEmas(id)[2], now, tau), 1e-9, "removal subtracts the residual legit contribution");
+	}
+
+	/** Mirrors the servlet delete path: drop the entry and reverse the user's residual contribution. */
+	private void removePersonalization(String userName, String phoneId, PhoneNumer number, long now) {
+		try (SqlSession tx = _db.openSession()) {
+			BlockList bl = tx.getMapper(BlockList.class);
+			SpamReports reports = tx.getMapper(SpamReports.class);
+			long userId = tx.getMapper(Users.class).getUserId(userName).longValue();
+			DBPersonalization entry = bl.getPersonalizationActivity(userId, phoneId);
+			bl.removePersonalization(userId, phoneId);
+			if (entry != null) {
+				_db.revertPersonalContribution(reports, phoneId, NumberAnalyzer.getPhoneHash(number),
+					"+49", entry.isBlocked(), entry.getLastActivity(), 0, now);
+			}
+			tx.commit();
+		}
 	}
 
 	@Test
