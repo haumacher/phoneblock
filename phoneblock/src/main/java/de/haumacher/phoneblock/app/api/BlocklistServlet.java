@@ -81,6 +81,22 @@ public class BlocklistServlet extends HttpServlet {
 	public static final String PARAM_MIN_RANGE = "minRange";
 
 	/**
+	 * Allowed {@code minDirect} values, ascending. Must mirror the client
+	 * pickers (mobile app + dongle UI). A requested value is snapped up to the
+	 * smallest of these that is {@code >=} it (capped at the largest), so the
+	 * {@code (minDirect, minRange)} cache key only ever takes a handful of
+	 * distinct values across the whole fleet — see {@link #clampToAllowed}.
+	 */
+	static final int[] MIN_DIRECT_OPTIONS = { 2, 4, 10, 20, 50, 100 };
+
+	/**
+	 * Allowed {@code minRange} values, ascending. {@code 0} disables wildcard
+	 * blocking entirely. Must mirror the client pickers. See
+	 * {@link #MIN_DIRECT_OPTIONS} and {@link #clampToAllowed}.
+	 */
+	static final int[] MIN_RANGE_OPTIONS = { 0, 10, 20, 50, 100, 500 };
+
+	/**
 	 * Hard cap on the {@code ?limit=N} request parameter (#336).
 	 *
 	 * <p>Caps the Heat-ranked blocklist response at a sensible upper bound so
@@ -214,13 +230,14 @@ public class BlocklistServlet extends HttpServlet {
 			// encoded list is exactly the set its API-fallback path would
 			// decide SPAM; they fall back to the account minVotes when a
 			// caller omits them. minDirect is floored at the server's
-			// published minVisibleVotes. The resulting bytes are shared
-			// across all users with the same (minDirect, minRange) pair via
-			// BinaryBlocklistCache.
-			int minDirect = Math.max(
-				intParam(req, PARAM_MIN_DIRECT, cachedSettings.getMinVotes()),
-				db.getMinVisibleVotes());
-			int minRange = intParam(req, PARAM_MIN_RANGE, minDirect);
+			// published minVisibleVotes. Both are then snapped to the allowed
+			// option sets so the (minDirect, minRange) cache key stays shared
+			// across the fleet regardless of what a client sends.
+			int minDirect = clampToAllowed(
+				Math.max(intParam(req, PARAM_MIN_DIRECT, cachedSettings.getMinVotes()),
+					db.getMinVisibleVotes()),
+				MIN_DIRECT_OPTIONS);
+			int minRange = clampToAllowed(intParam(req, PARAM_MIN_RANGE, minDirect), MIN_RANGE_OPTIONS);
 			byte[] bytes = BinaryBlocklistCache.getInstance().getOrCompute(minDirect, minRange,
 					(d, r) -> encodeCommunity(db, d, r));
 			LOG.info("Sending binary community blocklist ({} bytes, minDirect {}, minRange {}) to user '{}' (agent '{}')",
@@ -253,6 +270,22 @@ public class BlocklistServlet extends HttpServlet {
 			throw new UncheckedIOException(ex);
 		}
 		return buf.toByteArray();
+	}
+
+	/**
+	 * Snaps {@code v} up to the smallest entry of {@code allowed} that is
+	 * {@code >= v}, or the largest entry when {@code v} exceeds all of them
+	 * (ceil-clamp). {@code allowed} must be sorted ascending and non-empty.
+	 * Keeps the community cache key constrained to a small shared set even if
+	 * a client requests an off-grid threshold.
+	 */
+	static int clampToAllowed(int v, int[] allowed) {
+		for (int a : allowed) {
+			if (v <= a) {
+				return a;
+			}
+		}
+		return allowed[allowed.length - 1];
 	}
 
 	/**

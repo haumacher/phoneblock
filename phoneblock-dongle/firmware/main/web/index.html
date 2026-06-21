@@ -2237,22 +2237,20 @@ async function refreshAll(){
   const thrMsg    = $('thrMsg');
   const pb = (s && s.phoneblock) || {};
   // Reflect the stored value. A value that predates the fixed option set
-  // (e.g. a custom number from an older firmware) is injected as an extra
-  // option so the control still shows the true setting rather than
-  // silently snapping to a different one.
-  const ensureThr = (sel, val) => {
+  // (e.g. a custom number from an older firmware) is rounded UP to the
+  // nearest option (ceil), capped at the largest — the same ceil-clamp the
+  // server applies — so the control shows the value actually in effect.
+  const snapThr = (sel, val) => {
     if (val == null || document.activeElement === sel) return;
-    const str = String(val);
-    if (![...sel.options].some(o => o.value === str)) {
-      const opt = document.createElement('option');
-      opt.value = str;
-      opt.textContent = str;
-      sel.appendChild(opt);
-    }
-    sel.value = str;
+    const v = parseInt(val, 10);
+    if (isNaN(v)) return;
+    const opts = [...sel.options].map(o => parseInt(o.value, 10)).sort((a, b) => a - b);
+    let chosen = opts[opts.length - 1];
+    for (const o of opts) { if (v <= o) { chosen = o; break; } }
+    sel.value = String(chosen);
   };
-  ensureThr(thrDirect, pb.min_direct_votes);
-  ensureThr(thrRange, pb.min_range_votes);
+  snapThr(thrDirect, pb.min_direct_votes);
+  snapThr(thrRange, pb.min_range_votes);
   const flashMsg = (text, color) => {
     thrMsg.textContent = text;
     thrMsg.style.color = color;
