@@ -2,7 +2,7 @@
 <!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "https://jetty.org/configure_10_0.dtd">
 
 <!-- Copy this file to `/phoneblock/src/test/jetty/jetty-env.xml` and fill out accordingly to allow local startup/debugging. -->
-<Configure class="org.eclipse.jetty.ee10.webapp.WebAppContext">
+<Configure class="org.eclipse.jetty.ee11.webapp.WebAppContext">
 
 	<!-- Syntax: EnvEntry (String jndiName, Object objToBind, boolean overrideWebXml) -->
 
