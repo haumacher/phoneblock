@@ -231,6 +231,18 @@
 					"fill": false,
 					"borderColor": "rgb(75, 192, 192)",
 					"tension": 0.1
+				}, {
+					"label": "<th:block th:text="#{page.phone-info.blockedCalls}"></th:block>",
+					"data": <th:block th:text="${callsData}"></th:block>,
+					"fill": false,
+					"borderColor": "rgb(255, 99, 132)",
+					"tension": 0.1
+				}, {
+					"label": "<th:block th:text="#{page.phone-info.votes}"></th:block>",
+					"data": <th:block th:text="${votesData}"></th:block>,
+					"fill": false,
+					"borderColor": "rgb(255, 159, 64)",
+					"tension": 0.1
 				}]
 			},
 			"options": {

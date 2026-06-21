@@ -176,47 +176,45 @@ public class TestDB {
 
 	@Test
 	void testTopSearches() {
-		long now = 1000000000000000000L;
+		long day = DB.MILLIS_PER_DAY;
+		long today = System.currentTimeMillis();
+		long yesterday = today - day;
+		long twoDaysAgo = today - 2 * day;
 
-		addSearchHit("091000000", now++);
-		addSearchHit("051000000", now++);
+		// The list only shows spam-visible numbers, so give the two we assert on
+		// some spam votes (does not affect the search counts).
+		processVotes("091000000", 2, yesterday);
+		processVotes("051000000", 2, yesterday);
 
-		_db.updateHistory(30, now++);
-		
-		// Yesterday
-		addRating(null, "091000000", Rating.C_PING, null, now++);
-		addRating(null, "011000000", Rating.C_PING, null, now++);
-		addRating(null, "021000000", Rating.C_PING, null, now++);
-		addRating(null, "033000000", Rating.C_PING, null, now++);
-		addRating(null, "041000000", Rating.C_PING, null, now++);
-		addRating(null, "051000000", Rating.C_PING, null, now++);
-		
-		addSearchHit("051000000", now++);
-		addSearchHit("091000000", now++);
-		addSearchHit("091000000", now++);
-		addSearchHit("091000000", now++);
-		
-		addSearchHit("011000000", now++);
-		addSearchHit("021000000", now++);
-		addSearchHit("033000000", now++);
-		_db.updateHistory(30, now++);
-		
-		// Today
-		addSearchHit("091000000", now++);
-		addSearchHit("041000000", now++);
-		addSearchHit("051000000", now++);
-		
-		List<? extends SearchInfo> topSearches = _db.getTopSearches(2);
+		// Searches two days ago count toward the lifetime total but fall outside
+		// the "today and yesterday" window.
+		addSearchHit("091000000", twoDaysAgo);
+		addSearchHit("051000000", twoDaysAgo);
+
+		// Yesterday: 091 x3, 051 x1.
+		addSearchHit("091000000", yesterday);
+		addSearchHit("091000000", yesterday);
+		addSearchHit("091000000", yesterday);
+		addSearchHit("051000000", yesterday);
+
+		// Today: 091 x1, 051 x1.
+		addSearchHit("091000000", today);
+		addSearchHit("051000000", today);
+
+		List<? extends SearchInfo> topSearches = _db.getTopSearches(2, today);
 
 		assertEquals(2, topSearches.size());
-		
-		assertEquals("051000000", topSearches.get(0).getPhone());
-		assertEquals(2, topSearches.get(0).getCount());
-		assertEquals(3, topSearches.get(0).getTotal());
-		
-		assertEquals("091000000", topSearches.get(1).getPhone());
-		assertEquals(4, topSearches.get(1).getCount());
-		assertEquals(5, topSearches.get(1).getTotal());
+
+		// Ranked by the today+yesterday search count, descending (no longer
+		// re-sorted by last-search time). A number quiet for two days has no recent
+		// activity rows and cannot appear, so the old SEARCHES_CURRENT freeze is gone.
+		assertEquals("091000000", topSearches.get(0).getPhone());
+		assertEquals(4, topSearches.get(0).getCount());
+		assertEquals(5, topSearches.get(0).getTotal());
+
+		assertEquals("051000000", topSearches.get(1).getPhone());
+		assertEquals(2, topSearches.get(1).getCount());
+		assertEquals(3, topSearches.get(1).getTotal());
 	}
 	
 	@Test
@@ -357,11 +355,7 @@ public class TestDB {
 		addRating(null, "012300000", Rating.F_GAMBLE, null, now++);
 
 		assertEquals(Rating.G_FRAUD, _db.getRating("012300000"));
-		
-		_db.updateHistory(10);
-		
-		assertEquals(Rating.G_FRAUD, _db.getRating("012300000"));
-		
+
 		addRating(null, "012300000", Rating.E_ADVERTISING, null, now++);
 		
 		assertEquals(Rating.E_ADVERTISING, _db.getRating("012300000"));
@@ -372,64 +366,72 @@ public class TestDB {
 		String _123 = "012300000";
 		String _456 = "045600000";
 		String _789 = "078900000";
-		
-		// A search far in the history.
-		addSearchHit(_123);
-		
-		// No more searches for three periods.
-		_db.updateHistory(30);
-		_db.updateHistory(30);
-		_db.updateHistory(30);
-		
-		// The first day of the four day history.
-		addSearchHit(_123);
-		addSearchHit(_123);
-		addSearchHit(_456);
-		
-		_db.updateHistory(30);
-		
-		addSearchHit(_456);
-		addSearchHit(_789);
-		
-		_db.updateHistory(30);
-		
-		addSearchHit(_123);
-		
-		_db.updateHistory(30);
-		
-		addSearchHit(_456);
-		addSearchHit(_456);
-		addSearchHit(_789);
-		
-		assertEquals(List.of(2, 0, 1, 0), _db.getSearchHistory(_123, 4));
-		assertEquals(List.of(1, 1, 0, 2), _db.getSearchHistory(_456, 4));
-		assertEquals(List.of(0, 1, 0, 1), _db.getSearchHistory(_789, 4));
+
+		long day = DB.MILLIS_PER_DAY;
+		long today = System.currentTimeMillis();
+		long d0 = today - 3 * day; // oldest day of the 4-day window
+		long d1 = today - 2 * day;
+		long d2 = today - 1 * day;
+		long d3 = today;
+
+		// d0: _123 x2, _456 x1.
+		addSearchHit(_123, d0);
+		addSearchHit(_123, d0);
+		addSearchHit(_456, d0);
+
+		// d1: _456 x1, _789 x1.
+		addSearchHit(_456, d1);
+		addSearchHit(_789, d1);
+
+		// d2: _123 x1.
+		addSearchHit(_123, d2);
+
+		// d3 (today): _456 x2, _789 x1.
+		addSearchHit(_456, d3);
+		addSearchHit(_456, d3);
+		addSearchHit(_789, d3);
+
+		// Per-day search series, oldest day first, inactive days zero-filled. Each
+		// day's value is that day's own searches — no baseline differencing.
+		assertEquals(List.of(2, 0, 1, 0), searchSeries(_123, 4, today));
+		assertEquals(List.of(1, 1, 0, 2), searchSeries(_456, 4, today));
+		assertEquals(List.of(0, 1, 0, 1), searchSeries(_789, 4, today));
 	}
-	
+
+	private List<Integer> searchSeries(String phone, int days, long now) {
+		return _db.getNumberActivity(phone, days, now).stream()
+			.map(DBDayActivity::getSearches).collect(Collectors.toList());
+	}
+
 	private void addSearchHit(String phone) {
 		_db.addSearchHit(NumberAnalyzer.analyze(phone, "+49"), "+49");
 	}
 
 	@Test
-	void testSearchHistoryCleanup() {
-		long time = 1000;
-		for (int n = 0; n < 49; n++) {
-			addSearchHit("012300000", time);
-			_db.updateHistory(30, time);
-			
-			time++;
-		}
-		addSearchHit("012300000", time);
-		
-		List<Integer> all = _db.getSearchHistory("012300000", 31);
-		assertEquals(31, all.size());
-		assertEquals(1, all.get(31 - 1));
-		assertEquals(1, all.get(1));
-		assertEquals(50 - 30, all.get(0));
-		
-		assertEquals(7, _db.getSearchHistory("012300000", 7).size());
+	void testActivityRetention() {
+		String phone = "012300000";
+		long day = DB.MILLIS_PER_DAY;
+		long today = System.currentTimeMillis();
+
+		// One search 40 days ago (outside the 30-day retention) and one 5 days ago.
+		addSearchHit(phone, today - 40 * day);
+		addSearchHit(phone, today - 5 * day);
+
+		// Both present before pruning (45-day window: index = days - 1 - age).
+		List<Integer> before = searchSeries(phone, 45, today);
+		assertEquals(45, before.size());
+		assertEquals(1, before.get(45 - 1 - 40).intValue());
+		assertEquals(1, before.get(45 - 1 - 5).intValue());
+
+		int removed = _db.pruneActivity(today);
+		assertEquals(1, removed);
+
+		// The 40-day-old row is gone; the 5-day-old row (within retention) survives.
+		List<Integer> after = searchSeries(phone, 45, today);
+		assertEquals(0, after.get(45 - 1 - 40).intValue());
+		assertEquals(1, after.get(45 - 1 - 5).intValue());
 	}
-	
+
 	private void addSearchHit(String phone, long now) {
 		_db.addSearchHit(NumberAnalyzer.analyze(phone, "+49"), "+49", now);
 	}
@@ -439,35 +441,33 @@ public class TestDB {
 		String a = "012300000";
 		String b = "045600000";
 		String c = "078900000";
-		// Two distinct days: the snapshot only captures numbers whose LASTPING is
-		// newer than the previous revision, so each day needs its own timestamp.
-		long t1 = System.currentTimeMillis();
-		long t2 = t1 + 24 * 60 * 60 * 1000;
 
-		// Day 1: 2 searches (a), 3 votes (b), 1 call (a). All three numbers
-		// appear for the first time here, so this revision has no predecessor
-		// snapshot to diff against.
+		long day = DB.MILLIS_PER_DAY;
+		// Two activity days; query as of the day after, so both are closed days
+		// (the global chart shows closed days only, today excluded).
+		long t1 = System.currentTimeMillis() - 2 * day;
+		long t2 = t1 + day;
+		long queryNow = t2 + day;
+
+		// Day t1: 2 searches (a), 3 votes (b), 1 call (a). Every number appears for
+		// the first time here — with the ledger there is no baseline to diff, so
+		// this first day is counted in full (the old snapshot model dropped it).
 		addSearchHit(a, t1);
 		addSearchHit(a, t1);
 		processVotes(b, 3, t1);
 		recordCall(a, t1);
-		_db.updateHistory(30, t1);
 
-		// Day 2: 1 search (a) and 1 search (c), 2 spam votes plus 1 legit vote
-		// (b), 2 calls (a, c). a and b already have a day-1 snapshot, so their
-		// increments are real deltas; c is a first appearance. b's net VOTES rise
-		// by only 1 (2 down - 1 up), but three votes were cast, so the activity
-		// series must report 3 - differencing the net counter would lose the
-		// legit vote (and elsewhere even go negative).
+		// Day t2: 1 search (a) + 1 search (c), 2 spam votes plus 1 legit vote (b),
+		// 2 calls (a, c). The vote series counts votes cast by magnitude (2 + 1 = 3),
+		// not the net spam balance, so a legit vote still registers as activity.
 		addSearchHit(a, t2);
 		addSearchHit(c, t2);
 		processVotes(b, 2, t2);
 		processVotes(b, -1, t2);
 		recordCall(a, t2);
 		recordCall(c, t2);
-		_db.updateHistory(30, t2);
 
-		Object[] history = _db.getCallsVotesSearchesHistory(30);
+		Object[] history = _db.getCallsVotesSearchesHistory(30, queryNow);
 		@SuppressWarnings("unchecked")
 		List<String> labels = (List<String>) history[0];
 		@SuppressWarnings("unchecked")
@@ -477,55 +477,20 @@ public class TestDB {
 		@SuppressWarnings("unchecked")
 		List<Integer> searches = (List<Integer>) history[3];
 
-		// One data point per snapshotted day; the deltas are summed across all
-		// numbers. A row without a predecessor snapshot contributes 0 rather than
-		// its full lifetime counter, so day 1 (all first appearances) and the
-		// first-appearance number c on day 2 add nothing. Day 2 therefore only
-		// reflects the real increments of the already-known numbers: a's extra
-		// call and search, and b's three cast votes (2 spam + 1 legit) - the vote
-		// series counts votes cast, not the net spam balance, so it stays
-		// non-negative.
-		assertEquals(2, labels.size());
-		assertEquals(List.of(0, 1), calls);
-		assertEquals(List.of(0, 3), votes);
-		assertEquals(List.of(0, 1), searches);
-	}
+		// 30 continuous closed days [queryNow-30 .. queryNow-1]. t1 lands at index
+		// 28 (two days before queryNow), t2 at index 29 (the day before).
+		assertEquals(30, labels.size());
+		assertEquals(1, calls.get(28).intValue());
+		assertEquals(2, calls.get(29).intValue());
+		assertEquals(3, votes.get(28).intValue());
+		assertEquals(3, votes.get(29).intValue());
+		assertEquals(2, searches.get(28).intValue());
+		assertEquals(2, searches.get(29).intValue());
 
-	@Test
-	void testActivityHistoryClampsNegative() throws SQLException {
-		String raw = "061100000";
-		String id = NumberAnalyzer.getPhoneId(NumberAnalyzer.analyze(raw, "+49"));
-		long t1 = System.currentTimeMillis();
-		long t2 = t1 + 24 * 60 * 60 * 1000;
-		long t3 = t2 + 24 * 60 * 60 * 1000;
-
-		// Day 1: establish the number, day 2: a real +1 increment.
-		processVotes(raw, 5, t1);
-		_db.updateHistory(30, t1);
-		processVotes(raw, 1, t2);
-		_db.updateHistory(30, t2);
-
-		// Simulate the observed data artifact: the raw vote counter drops below
-		// the previous snapshot (no public API does this, hence the direct SQL).
-		// Bump LASTPING so day 3 re-snapshots the number with the lower value.
-		execSql("update NUMBERS set DOWN_VOTES = DOWN_VOTES - 3, LASTPING = " + t3
-			+ " where PHONE = '" + id + "'");
-		_db.updateHistory(30, t3);
-
-		Object[] history = _db.getCallsVotesSearchesHistory(30);
-		@SuppressWarnings("unchecked")
-		List<Integer> votes = (List<Integer>) history[2];
-
-		// Day 2 is the real +1, day 3 would be -3 but is clamped to 0; no bar
-		// ever goes negative.
-		assertEquals(List.of(0, 1, 0), votes);
-	}
-
-	private void execSql(String sql) throws SQLException {
-		try (Connection conn = _dataSource.getConnection();
-				PreparedStatement stmt = conn.prepareStatement(sql)) {
-			stmt.executeUpdate();
-		}
+		// Nothing else is reported on any other day.
+		assertEquals(3, calls.stream().mapToInt(Integer::intValue).sum());
+		assertEquals(6, votes.stream().mapToInt(Integer::intValue).sum());
+		assertEquals(4, searches.stream().mapToInt(Integer::intValue).sum());
 	}
 
 	private void recordCall(String phone, long now) {

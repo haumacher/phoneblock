@@ -4,7 +4,7 @@ CREATE TABLE PROPERTIES (
 	CONSTRAINT PROPERTIES_PK PRIMARY KEY (NAME)
 );
 
-INSERT INTO PROPERTIES (NAME, VAL) VALUES('db.version', '44');
+INSERT INTO PROPERTIES (NAME, VAL) VALUES('db.version', '45');
 INSERT INTO PROPERTIES (NAME, VAL) VALUES('blocklist.version', '1');
 
 
@@ -27,8 +27,6 @@ CREATE TABLE NUMBERS (
 	GAMBLE INTEGER DEFAULT 0 NOT NULL,
 	FRAUD INTEGER DEFAULT 0 NOT NULL,
 	SEARCHES INTEGER DEFAULT 0 NOT NULL,
-	SEARCHES_CURRENT INTEGER DEFAULT 0 NOT NULL,
-	SEARCHES_BACKUP INTEGER DEFAULT 0 NOT NULL,
 	-- Confidence model (#300): projected-EMA columns. Each cell holds
 	-- Σ wᵢ·exp((tᵢ − t0)/τ); read-time decay applies exp(−(now − t0)/τ).
 	-- HEAT measures activity (~2-week half-life), the two EVIDENCE columns
@@ -42,7 +40,6 @@ CREATE TABLE NUMBERS (
 CREATE INDEX NUMBERS_SHA1_IDX ON NUMBERS (SHA1, PHONE);
 CREATE INDEX NUMBERS_UPDATED_IDX ON NUMBERS (UPDATED DESC);
 CREATE INDEX NUMBERS_SEARCHES_IDX ON NUMBERS (SEARCHES DESC);
-CREATE INDEX NUMBERS_SEARCHES_CURRENT_IDX ON NUMBERS (SEARCHES_CURRENT DESC);
 -- Heat-ordered scan for the space-limited blocklist (#336).
 CREATE INDEX NUMBERS_HEAT_IDX ON NUMBERS (HEAT DESC);
 -- Visibility filter on decay-aware evidence (#342). Lets the blocklist
@@ -120,38 +117,27 @@ CREATE TABLE NUMBERS_LOCALE (
 -- reverse order would force a full-index scan in a sparse DIAL.
 CREATE INDEX NUMBERS_LOCALE_HEAT_IDX ON NUMBERS_LOCALE (DIAL, HEAT DESC);
 
--- ID is assigned by the application (max(ID) + 1), not by an H2 IDENTITY
--- sequence: the sequence advances even on a rolled-back insert, which used to
--- leave gaps that corrupted the history snapshot watermark.
-CREATE TABLE REVISION (
-	ID INTEGER NOT NULL,
-	CREATED BIGINT NOT NULL,
-	CONSTRAINT REVISION_PK PRIMARY KEY (ID)
-);
-
-CREATE TABLE NUMBERS_HISTORY (
-	RMIN INTEGER NOT NULL,
-	RMAX INTEGER NOT NULL,
+-- Per-(number, day) activity ledger. One row per number per UTC day holding that
+-- day's search / call / vote increments, written directly on each event
+-- (DB.mergeActivity). DAY is the UTC epoch-day (floor(epochMillis / 86400000)).
+-- Replaces the snapshot-and-diff NUMBERS_HISTORY/REVISION model and the rotated
+-- SEARCHES_CURRENT/SEARCHES_BACKUP counters: per-day activity is stored, never
+-- reconstructed by differencing cumulative snapshots, so there is no baseline to
+-- preserve and retention is a single date-bound delete.
+-- EPOCH_DAY, not DAY: DAY is a reserved keyword in H2 2.4.
+CREATE TABLE NUMBER_ACTIVITY (
 	PHONE CHARACTER VARYING(100) NOT NULL,
+	EPOCH_DAY INTEGER NOT NULL,
+	SEARCHES INTEGER DEFAULT 0 NOT NULL,
 	CALLS INTEGER DEFAULT 0 NOT NULL,
 	VOTES INTEGER DEFAULT 0 NOT NULL,
-	DOWN_VOTES INTEGER DEFAULT 0 NOT NULL,
-	UP_VOTES INTEGER DEFAULT 0 NOT NULL,
-	LEGITIMATE INTEGER DEFAULT 0 NOT NULL,
-	PING INTEGER DEFAULT 0 NOT NULL,
-	POLL INTEGER DEFAULT 0 NOT NULL,
-	ADVERTISING INTEGER DEFAULT 0 NOT NULL,
-	GAMBLE INTEGER DEFAULT 0 NOT NULL,
-	FRAUD INTEGER DEFAULT 0 NOT NULL,
-	SEARCHES INTEGER DEFAULT 0 NOT NULL,
-	CONSTRAINT NUMBERS_HISTORY_PK PRIMARY KEY (RMAX,PHONE)
+	CONSTRAINT NUMBER_ACTIVITY_PK PRIMARY KEY (PHONE, EPOCH_DAY)
 );
 
--- Per-number history reads (getSearchHistory / getHistoryEntry): PHONE leading
--- for a real seek, RMIN second to serve the ORDER BY / RMIN-range filter.
-CREATE INDEX NUMBERS_HISTORY_PHONE_IDX ON NUMBERS_HISTORY (PHONE, RMIN);
--- Revision scans (cleanRevision, getHistoryEntries, getActivityHistory).
-CREATE INDEX NUMBERS_HISTORY_RMIN_IDX ON NUMBERS_HISTORY (RMIN);
+-- (EPOCH_DAY, PHONE): the global activity chart and the top-searches list aggregate
+-- by day over a recent window — the day-leading index makes those an ordered range
+-- scan. The PHONE primary key serves the per-number history read.
+CREATE INDEX NUMBER_ACTIVITY_DAY_IDX ON NUMBER_ACTIVITY (EPOCH_DAY, PHONE);
 
 CREATE TABLE NUMBERS_AGGREGATION_10 (
 	PREFIX CHARACTER VARYING(100) NOT NULL,
