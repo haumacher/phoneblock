@@ -123,12 +123,16 @@ public class AddressResource extends Resource {
 						LOG.info("Adding to block list: " + phoneId);
 
 						byte[] sha1 = NumberAnalyzer.getPhoneHash(number);
+						long now = System.currentTimeMillis();
 
 						// Safety, prevent duplicate key constraint violation.
 						blockList.removePersonalization(currentUser, phoneId);
-						blockList.addPersonalization(currentUser, phoneId, sha1, System.currentTimeMillis());
+						blockList.addPersonalization(currentUser, phoneId, sha1, now);
 
-						db.processVotesAndPublish(spamreport, number, dialPrefix, 2, System.currentTimeMillis());
+						// One capped unit per user (the per-user evidence cap): a Fritz!Box-side
+						// block is one user's vote, like a web rating, and LAST_ACTIVITY (set to
+						// now by addPersonalization) lets later call top-ups stay consistent.
+						db.processVotesAndPublish(spamreport, number, dialPrefix, 1, now);
 					}
 				}
 

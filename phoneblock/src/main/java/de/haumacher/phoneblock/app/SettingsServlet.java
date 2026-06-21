@@ -19,6 +19,7 @@ import de.haumacher.phoneblock.app.render.controller.LoginController;
 import de.haumacher.phoneblock.carddav.resource.AddressBookCache;
 import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
+import de.haumacher.phoneblock.db.DBPersonalization;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.DBUserSettings;
 import de.haumacher.phoneblock.db.SpamReports;
@@ -277,10 +278,9 @@ public class SettingsServlet extends HttpServlet {
 								continue;
 							}
 							blocklist.removePersonalization(owner, prefix);
-							// The new blocking wildcard subsumes the user's exact single-number
-							// blocks and any narrower wildcard blocks under this prefix (#377);
-							// allowed entries are kept as deliberate overrides.
-							blocklist.removeBlocksWithPrefix(owner, prefix);
+							// Covered concrete blocks are kept (they carry the user's per-user
+							// evidence) and only hidden from display/export by the wildcard-cover
+							// filter — not deleted.
 							blocklist.addWildcard(owner, prefix, true, System.currentTimeMillis());
 						}
 					}
@@ -291,7 +291,7 @@ public class SettingsServlet extends HttpServlet {
 							// Safety: DB content may be inconsistent.
 							blocklist.removePersonalization(owner, rawPhone);
 						} else {
-							blocklist.removePersonalization(owner, phone);
+							removeWithEvidence(db, blocklist, spamReports, owner, phone, dialPrefix);
 						}
 					}
 
@@ -301,7 +301,7 @@ public class SettingsServlet extends HttpServlet {
 						if (phone == null) {
 							blocklist.removePersonalization(owner, rawPhone);
 						} else {
-							blocklist.removePersonalization(owner, phone);
+							removeWithEvidence(db, blocklist, spamReports, owner, phone, dialPrefix);
 						}
 					}
 					else if (key.startsWith("wc-")) {
@@ -322,6 +322,24 @@ public class SettingsServlet extends HttpServlet {
 		}
 
 		forwardToSettings(req, resp, "blacklist");
+	}
+
+	/**
+	 * Removes a concrete personalization entry and reverses the user's residual capped evidence
+	 * contribution (increment(1, lastActivity)) from the matching axis — so un-listing a number
+	 * lowers its spam/legit evidence by exactly what the user still contributed.
+	 */
+	private static void removeWithEvidence(DB db, BlockList blocklist, SpamReports spamReports,
+			long owner, String phone, String dialPrefix) {
+		DBPersonalization existing = blocklist.getPersonalizationActivity(owner, phone);
+		boolean removed = blocklist.removePersonalization(owner, phone);
+		if (removed && existing != null) {
+			long now = System.currentTimeMillis();
+			PhoneNumer number = NumberAnalyzer.parsePhoneId(phone);
+			byte[] hash = number != null ? NumberAnalyzer.getPhoneHash(number) : null;
+			db.revertPersonalContribution(spamReports, phone, hash, dialPrefix,
+				existing.isBlocked(), existing.getLastActivity(), 0, now);
+		}
 	}
 
 	/**

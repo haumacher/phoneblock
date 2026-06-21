@@ -260,7 +260,9 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 					PhoneNumer number = NumberAnalyzer.parsePhoneNumber(from, dialPrefix);
 					if (number != null) {
 						String phoneId = NumberAnalyzer.getPhoneId(number);
-						db.recordCall(reports, number, phoneId, dialPrefix, startTime);
+						// Spam evidence is capped per user (the answer-bot owner) inside recordCall.
+						BlockList blocklist = session.getMapper(BlockList.class);
+						db.recordCall(reports, blocklist, ownerUserId, number, phoneId, dialPrefix, startTime);
 					}
 
 					session.commit();

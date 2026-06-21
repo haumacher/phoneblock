@@ -225,12 +225,8 @@ public class PersonalizationServlet extends HttpServlet {
 				boolean blocked = req.getServletPath().equals(BLACKLIST_PATH);
 				BlockList blockList = session.getMapper(BlockList.class);
 				blockList.removePersonalization(userId, prefix);
-				if (blocked) {
-					// A blocking wildcard subsumes all of the user's blocks under that prefix
-					// (#377) — exact single-number blocks and narrower wildcard blocks alike;
-					// allowed entries are kept as deliberate overrides.
-					blockList.removeBlocksWithPrefix(userId, prefix);
-				}
+				// Covered concrete blocks are kept (they carry the user's per-user evidence) and only
+				// hidden from display/export by the wildcard-cover filter — not deleted.
 				blockList.addWildcard(userId, prefix, blocked, System.currentTimeMillis());
 				session.commit();
 				resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
@@ -331,6 +327,10 @@ public class PersonalizationServlet extends HttpServlet {
 
 			BlockList blockList = session.getMapper(BlockList.class);
 
+			// Capture the user's tracked activity before removal so the residual capped evidence
+			// contribution (increment(1, lastActivity)) can be reversed.
+			DBPersonalization existing = phoneId == null ? null : blockList.getPersonalizationActivity(userId, phoneId);
+
 			// Safety: DB content may be inconsistent: Try also deletion of invalid phone numbers.
 			boolean deleted = blockList.removePersonalization(userId, phoneId == null ? phoneText : phoneId);
 			String listType = req.getServletPath().equals(BLACKLIST_PATH) ? "blacklist" : "whitelist";
@@ -338,29 +338,33 @@ public class PersonalizationServlet extends HttpServlet {
 			if (deleted) {
 				// Also delete the user's comment and decrement vote counts
 				SpamReports spamReports = session.getMapper(SpamReports.class);
-				DBUserComment userComment = spamReports.getUserComment(userId, phoneId);
+				long now = System.currentTimeMillis();
 
+				int voteDelta = 0;
+				DBUserComment userComment = spamReports.getUserComment(userId, phoneId);
 				if (userComment != null) {
 					// Delete the comment
 					spamReports.deleteUserComments(userId, phoneId);
 
 					if (phoneId != null) {
-						// Decrement the vote counts and rating counters based on the rating
+						// Roll back the legacy VOTES/rating counters for the user's rating.
 						Rating rating = userComment.getRating();
-						int voteDelta = -Ratings.getVotes(rating);
-						long now = System.currentTimeMillis();
-						
-						// Update vote counts in NUMBERS table. The confidence-model EMAs
-						// (#332) are left untouched on rollback: a correct inversion would
-						// need the original event time, which we did not preserve, and the
-						// decay term will fade the original increment on its own.
-						spamReports.addVote(phoneId, voteDelta, now, 0.0, 0.0, 0.0);
-						
-						// Decrement the specific rating counter (LEGITIMATE, PING, etc.) by -1
+						voteDelta = -Ratings.getVotes(rating);
 						spamReports.updateRating(phoneId, rating, -1, now);
-						
 						LOG.debug("Decremented rating {} for {} (vote delta: {})", rating, phoneId, voteDelta);
 					}
+				}
+
+				if (phoneId != null && existing != null) {
+					// Reverse the user's residual capped evidence contribution from the matching
+					// axis (and the per-region row), folding the VOTES rollback into the same update.
+					de.haumacher.phoneblock.app.api.model.PhoneNumer number = NumberAnalyzer.parsePhoneId(phoneId);
+					byte[] hash = number != null ? NumberAnalyzer.getPhoneHash(number) : null;
+					db.revertPersonalContribution(spamReports, phoneId, hash, dialPrefix,
+						existing.isBlocked(), existing.getLastActivity(), voteDelta, now);
+				} else if (voteDelta != 0) {
+					// No tracked entry (legacy/inconsistent data) — keep the plain VOTES rollback.
+					spamReports.addVote(phoneId, voteDelta, now, 0.0, 0.0, 0.0);
 				}
 
 				session.commit();
