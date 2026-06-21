@@ -12,6 +12,7 @@ import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.app.api.model.BlockListEntry;
 import de.haumacher.phoneblock.app.api.model.Blocklist;
 import de.haumacher.phoneblock.db.AggregationInfo;
+import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DB.CommunityBinarySources;
 import de.haumacher.phoneblock.sync.binary.BlocklistBinaryAdapter;
 import de.haumacher.phoneblock.sync.binary.BlocklistBinaryEncoder.Entry;
@@ -30,11 +31,14 @@ import de.haumacher.phoneblock.sync.binary.BlocklistRecord;
  * </p>
  *
  * <p>
- * The per-user {@code minVotes} threshold gates both exact entries (vote
- * count from the blocklist row, applied here) and wildcards (mapped to a
- * projected {@code SPAM_EVIDENCE} floor, already applied in SQL by
- * {@code DB.getCommunityBinarySources}). The whitelist is emitted unfiltered
- * &mdash; an explicit allow does not care about vote counts.
+ * Two thresholds gate the spam entries, matching the dongle's own settings:
+ * {@code minDirect} ({@code min_direct_votes}) on exact entries' net votes,
+ * and {@code minRange} ({@code min_range_votes}) on each wildcard block's
+ * net evidence ({@link DB#blockNetVotes}, the same value the live
+ * {@code /num} API uses for the wildcard decision). Encoding the dongle's own
+ * thresholds is what keeps this download and the dongle's API-fallback
+ * verdict identical. The whitelist is emitted unfiltered &mdash; an explicit
+ * allow does not care about vote counts.
  * </p>
  */
 public final class CommunityEntries {
@@ -47,25 +51,34 @@ public final class CommunityEntries {
 	 * Assembles the community-list entries to encode.
 	 *
 	 * @param exactCommunity   The exact-entry blocklist, as returned by
-	 *                         {@code DB.getBlockListAPI()}; entries with
-	 *                         votes below {@code minVotes} are dropped.
-	 * @param sources          Aggregation candidates and the global whitelist
-	 *                         from
-	 *                         {@code DB.getCommunityBinarySources(minVotes)};
-	 *                         the DB call has already applied the
-	 *                         structural and vote thresholds, so the
-	 *                         aggregations are taken as-is here.
-	 * @param minVotes         Per-user minimum vote threshold. Applied to
-	 *                         exact entries (the JSON {@code Blocklist}
-	 *                         carries the per-row vote count); values below
-	 *                         {@code 1} are clamped.
+	 *                         {@code DB.getBlockListAPI()} (net, decay-aware
+	 *                         votes per #338); entries below {@code minDirect}
+	 *                         are dropped.
+	 * @param sources          Candidate aggregation blocks and the global
+	 *                         whitelist from
+	 *                         {@code DB.getCommunityBinarySources(minRange, now)}.
+	 *                         The DB call applied the structural gate and a
+	 *                         {@code SPAM_EVIDENCE} lower bound; the exact
+	 *                         net-evidence test happens here.
+	 * @param minDirect        Exact-entry threshold — the dongle's
+	 *                         {@code min_direct_votes}. A number is included
+	 *                         iff its net votes {@code >= minDirect}. Values
+	 *                         below {@code 1} are clamped.
+	 * @param minRange         Wildcard threshold — the dongle's
+	 *                         {@code min_range_votes}. A block is included iff
+	 *                         {@code minRange >= 1} and its
+	 *                         {@link DB#blockNetVotes net votes >= minRange},
+	 *                         matching the dongle's API-path {@code range_hit}.
+	 * @param now              Reference time for decaying the block EMAs, so
+	 *                         the net-evidence test matches the live API view.
 	 */
-	public static List<Entry> from(Blocklist exactCommunity, CommunityBinarySources sources, int minVotes) {
-		int threshold = Math.max(minVotes, 1);
+	public static List<Entry> from(Blocklist exactCommunity, CommunityBinarySources sources,
+			int minDirect, int minRange, long now) {
+		int directThreshold = Math.max(minDirect, 1);
 		List<Entry> result = new ArrayList<>();
 
 		for (BlockListEntry row : exactCommunity.getNumbers()) {
-			if (row.getVotes() < threshold) {
+			if (row.getVotes() < directThreshold) {
 				continue;
 			}
 			String digits = BlocklistBinaryAdapter.toE164Digits(row.getPhone());
@@ -75,15 +88,26 @@ public final class CommunityEntries {
 			result.add(new Entry(digits, false, true));
 		}
 
-		addAggregations(result, sources.aggregation10());
-		addAggregations(result, sources.aggregation100());
+		// Wildcards only when range-blocking is on (minRange >= 1), mirroring
+		// the dongle API path's `range_hit = (min_range >= 1) && ...` guard.
+		if (minRange >= 1) {
+			addAggregations(result, sources.aggregation10(), minRange, now);
+			addAggregations(result, sources.aggregation100(), minRange, now);
+		}
 		addWhitelist(result, sources.whitelist());
 
 		return result;
 	}
 
-	private static void addAggregations(List<Entry> sink, Collection<AggregationInfo> aggregations) {
+	private static void addAggregations(List<Entry> sink, Collection<AggregationInfo> aggregations,
+			int minRange, long now) {
 		for (AggregationInfo a : aggregations) {
+			// Net-evidence gate (spam − legit), identical to the live
+			// /num wildcard decision (DB.computeWildcardVotes), so the
+			// download and the API fallback agree.
+			if (DB.blockNetVotes(a, now) < minRange) {
+				continue;
+			}
 			String digits = phoneIdToE164Digits(a.getPrefix());
 			if (digits == null) {
 				continue;

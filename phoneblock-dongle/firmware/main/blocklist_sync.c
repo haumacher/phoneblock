@@ -185,8 +185,19 @@ static bool sync_one(const char *type, const char *path, const char *tmp_path,
                      char *err, size_t err_cap)
 {
     char url[256];
-    snprintf(url, sizeof(url), "%s/api/blocklist?format=binary&type=%s",
-             config_phoneblock_base_url(), type);
+    int n = snprintf(url, sizeof(url), "%s/api/blocklist?format=binary&type=%s",
+                     config_phoneblock_base_url(), type);
+
+    // The community list carries no per-entry vote counts, so the server
+    // applies our two thresholds at encode time. Send them so the
+    // downloaded list matches exactly what the API-fallback path
+    // (api.c: direct >= min_direct, wildcard >= min_range) would decide.
+    // The personal list is the user's explicit black/white set — no
+    // thresholding, so no parameters.
+    if (strcmp(type, "community") == 0 && n > 0 && (size_t) n < sizeof(url)) {
+        snprintf(url + n, sizeof(url) - n, "&minDirect=%d&minRange=%d",
+                 config_min_direct_votes(), config_min_range_votes());
+    }
 
     unlink(tmp_path);
 

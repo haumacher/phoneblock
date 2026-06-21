@@ -484,6 +484,26 @@
 							"personal"
 						]
 					}
+				},
+				{
+					"name": "minDirect",
+					"in": "query",
+					"description": "Only for `format=binary&type=community`. Exact-entry threshold: a number is included when its net (decay-aware, spam minus legit) vote count is at least this value — the on-device client's `min_direct_votes` setting. Defaults to the account's minVotes when omitted, and is floored at the server's published minimum-visible-votes. Encoding the client's own threshold makes the downloaded list match what the live `/num` API decision would yield.",
+					"required": false,
+					"schema": {
+						"type": "integer",
+						"minimum": 1
+					}
+				},
+				{
+					"name": "minRange",
+					"in": "query",
+					"description": "Only for `format=binary&type=community`. Wildcard threshold: an aggregation block (10-/100-range) is included when its net block evidence (spam minus legit, the same magnitude the `/num` API reports as `votesWildcard`) is at least this value — the on-device client's `min_range_votes` setting. A value below 1 disables range/wildcard blocking entirely (no prefix entries emitted). Defaults to `minDirect` when omitted.",
+					"required": false,
+					"schema": {
+						"type": "integer",
+						"minimum": 0
+					}
 				}
 			]
 		},

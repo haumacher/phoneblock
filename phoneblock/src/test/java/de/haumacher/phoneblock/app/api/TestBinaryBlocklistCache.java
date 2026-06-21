@@ -12,8 +12,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 
 /**
- * Tests {@link BinaryBlocklistCache}: hit/miss behaviour, TTL expiry, manual
- * flush.
+ * Tests {@link BinaryBlocklistCache}: hit/miss behaviour keyed by the
+ * {@code (minDirect, minRange)} pair, TTL expiry, manual flush.
  */
 class TestBinaryBlocklistCache {
 
@@ -25,11 +25,11 @@ class TestBinaryBlocklistCache {
 		AtomicInteger calls = new AtomicInteger();
 		BinaryBlocklistCache cache = new BinaryBlocklistCache();
 
-		byte[] first = cache.getOrCompute(4, mv -> {
+		byte[] first = cache.getOrCompute(4, 4, (d, r) -> {
 			calls.incrementAndGet();
-			return new byte[] { (byte) mv };
+			return new byte[] { (byte) d, (byte) r };
 		});
-		byte[] second = cache.getOrCompute(4, mv -> {
+		byte[] second = cache.getOrCompute(4, 4, (d, r) -> {
 			calls.incrementAndGet();
 			return new byte[] { 99 };
 		});
@@ -40,17 +40,40 @@ class TestBinaryBlocklistCache {
 	}
 
 	@Test
-	void differentKeysCacheSeparately() {
+	void minRangeIsPartOfTheKey() {
+		// Same minDirect, different minRange must cache separately — otherwise a
+		// user's wildcard threshold would leak across cache entries.
 		AtomicInteger calls = new AtomicInteger();
 		BinaryBlocklistCache cache = new BinaryBlocklistCache();
 
-		byte[] a = cache.getOrCompute(4, mv -> {
+		byte[] a = cache.getOrCompute(4, 4, (d, r) -> {
 			calls.incrementAndGet();
-			return new byte[] { (byte) mv };
+			return new byte[] { (byte) r };
 		});
-		byte[] b = cache.getOrCompute(8, mv -> {
+		byte[] b = cache.getOrCompute(4, 8, (d, r) -> {
 			calls.incrementAndGet();
-			return new byte[] { (byte) mv };
+			return new byte[] { (byte) r };
+		});
+
+		assertEquals(2, calls.get());
+		assertNotSame(a, b);
+		assertEquals(4, a[0]);
+		assertEquals(8, b[0]);
+		assertEquals(2, cache.size());
+	}
+
+	@Test
+	void minDirectIsPartOfTheKey() {
+		AtomicInteger calls = new AtomicInteger();
+		BinaryBlocklistCache cache = new BinaryBlocklistCache();
+
+		byte[] a = cache.getOrCompute(4, 10, (d, r) -> {
+			calls.incrementAndGet();
+			return new byte[] { (byte) d };
+		});
+		byte[] b = cache.getOrCompute(8, 10, (d, r) -> {
+			calls.incrementAndGet();
+			return new byte[] { (byte) d };
 		});
 
 		assertEquals(2, calls.get());
@@ -66,12 +89,12 @@ class TestBinaryBlocklistCache {
 		long[] clock = { 0L };
 		BinaryBlocklistCache cache = new BinaryBlocklistCache(() -> clock[0]);
 
-		byte[] first = cache.getOrCompute(4, mv -> {
+		byte[] first = cache.getOrCompute(4, 4, (d, r) -> {
 			calls.incrementAndGet();
 			return new byte[] { 1 };
 		});
 		clock[0] += PAST_TTL_NANOS;
-		byte[] refreshed = cache.getOrCompute(4, mv -> {
+		byte[] refreshed = cache.getOrCompute(4, 4, (d, r) -> {
 			calls.incrementAndGet();
 			return new byte[] { 2 };
 		});
@@ -84,15 +107,15 @@ class TestBinaryBlocklistCache {
 	@Test
 	void flushAllDropsEverything() {
 		BinaryBlocklistCache cache = new BinaryBlocklistCache();
-		cache.getOrCompute(4, mv -> new byte[] { 1 });
-		cache.getOrCompute(8, mv -> new byte[] { 2 });
+		cache.getOrCompute(4, 4, (d, r) -> new byte[] { 1 });
+		cache.getOrCompute(8, 8, (d, r) -> new byte[] { 2 });
 		assertEquals(2, cache.size());
 
 		cache.flushAll();
 		assertEquals(0, cache.size());
 
 		AtomicInteger calls = new AtomicInteger();
-		cache.getOrCompute(4, mv -> {
+		cache.getOrCompute(4, 4, (d, r) -> {
 			calls.incrementAndGet();
 			return new byte[] { 9 };
 		});

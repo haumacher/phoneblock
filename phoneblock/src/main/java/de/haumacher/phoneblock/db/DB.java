@@ -1739,18 +1739,21 @@ public class DB {
 	
 	/**
 	 * Server-wide inputs that feed the binary community blocklist beyond the
-	 * exact-entry list returned by {@link #getBlockListAPI()}: structural
-	 * wildcard candidates from the aggregation tables, and the explicit
+	 * exact-entry list returned by {@link #getBlockListAPI()}: the qualifying
+	 * wildcard blocks from the aggregation tables, and the explicit
 	 * legitimate-number whitelist.
 	 *
 	 * <p>
-	 * Both gates are pushed into SQL by
-	 * {@link DB#getCommunityBinarySources(int)}: the server-wide structural
-	 * threshold ({@link #MIN_AGGREGATE_10} / {@link #MIN_AGGREGATE_100}) on
-	 * {@code CNT}, and the user's per-number {@code minVotes} preference mapped
-	 * onto a projected {@code SPAM_EVIDENCE} floor (epic #300 dropped the
-	 * per-row vote count from the aggregation tables). The lists handed back
-	 * are therefore ready to encode as-is.
+	 * The aggregation rows here are a cheap superset: SQL has applied the
+	 * structural gate ({@code CNT >= MIN_AGGREGATE_*}, already guaranteed by a
+	 * row's presence) and a {@code SPAM_EVIDENCE} lower bound derived from the
+	 * caller's {@code minRange}. The exact net-evidence test
+	 * ({@link #blockNetVotes} {@code >= minRange}) runs in
+	 * {@code CommunityEntries}, because net votes (spam &minus; legit) is not a
+	 * clean indexed predicate. {@link #blockNetVotes} is the same net-evidence
+	 * magnitude {@link #computeWildcardVotes} produces for the live
+	 * {@code /num} API, so the downloaded wildcards match the dongle's
+	 * API-fallback verdict.
 	 * </p>
 	 */
 	public static final class CommunityBinarySources {
@@ -1768,12 +1771,12 @@ public class DB {
 			_whitelist = whitelist;
 		}
 
-		/** 10-blocks with at least {@link DB#MIN_AGGREGATE_10} reported numbers. */
+		/** Candidate 10-blocks (structural gate + {@code SPAM_EVIDENCE} lower bound applied). */
 		public List<AggregationInfo> aggregation10() {
 			return _aggregation10;
 		}
 
-		/** 100-blocks with at least {@link DB#MIN_AGGREGATE_100} qualifying 10-blocks. */
+		/** Candidate 100-blocks (structural gate + {@code SPAM_EVIDENCE} lower bound applied). */
 		public List<AggregationInfo> aggregation100() {
 			return _aggregation100;
 		}
@@ -1786,75 +1789,57 @@ public class DB {
 	}
 
 	/**
-	 * Loads the aggregation-driven wildcard candidates and the global
-	 * whitelist in one DB session. Two thresholds are pushed into SQL per
-	 * aggregation level: the server-wide structural threshold
-	 * ({@link #MIN_AGGREGATE_10} / {@link #MIN_AGGREGATE_100}) on
-	 * {@code CNT}, and a per-user spam-evidence floor on {@code SPAM_EVIDENCE}.
+	 * Loads the candidate wildcard blocks and the global whitelist in one DB
+	 * session for the binary community download.
 	 *
 	 * <p>
-	 * Epic #300 dropped the per-row vote count from the aggregation tables, so
-	 * the user's per-number {@code minVotes} preference is mapped to a
-	 * vote-equivalent evidence mass — scaled by the structural minimum (see
-	 * {@link #wildcardVotesThreshold10} / {@link #wildcardVotesThreshold100})
-	 * — and then projected with {@link Ema#projectedThreshold} so the SQL
-	 * comparison against the raw projected {@code SPAM_EVIDENCE} column matches
-	 * a decoded-evidence threshold at {@code now}.
+	 * {@code minRange} is the dongle's {@code min_range_votes} setting — the
+	 * net-evidence threshold the dongle's API path applies to a wildcard block
+	 * ({@code range_hit = wildcard_votes >= min_range}). A {@code minRange < 1}
+	 * means range-blocking is off, so no wildcards are loaded at all (matching
+	 * the API path's {@code min_range >= 1} guard).
+	 * </p>
+	 *
+	 * <p>
+	 * Because net votes (spam &minus; legit) cannot be a clean indexed SQL
+	 * comparison, the SQL only applies a safe lower bound — a block's net
+	 * votes can never exceed its spam votes, so any block with
+	 * {@code SPAM_EVIDENCE < projectedThreshold(minRange)} is guaranteed below
+	 * threshold and dropped early, keeping the index seek. The exact
+	 * {@link #blockNetVotes} {@code >= minRange} test runs in
+	 * {@code CommunityEntries} on the survivors.
 	 * </p>
 	 */
-	public CommunityBinarySources getCommunityBinarySources(int minVotes) {
-		int clamped = Math.max(minVotes, 1);
-		long now = System.currentTimeMillis();
-		double minSpam10 = Ema.projectedThreshold(
-				wildcardVotesThreshold10(clamped), now, Ema.CLASSIFICATION_TAU_MILLIS);
-		double minSpam100 = Ema.projectedThreshold(
-				wildcardVotesThreshold100(clamped), now, Ema.CLASSIFICATION_TAU_MILLIS);
+	public CommunityBinarySources getCommunityBinarySources(int minRange, long now) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-			List<AggregationInfo> agg10 = reports.getAggregation10AboveThresholds(
-					MIN_AGGREGATE_10, minSpam10);
-			List<AggregationInfo> agg100 = reports.getAggregation100AboveThresholds(
-					MIN_AGGREGATE_100, minSpam100);
+			List<AggregationInfo> agg10;
+			List<AggregationInfo> agg100;
+			if (minRange >= 1) {
+				double minSpam = Ema.projectedThreshold(minRange, now, Ema.CLASSIFICATION_TAU_MILLIS);
+				agg10 = reports.getAggregation10AboveThresholds(MIN_AGGREGATE_10, minSpam);
+				agg100 = reports.getAggregation100AboveThresholds(MIN_AGGREGATE_100, minSpam);
+			} else {
+				agg10 = List.of();
+				agg100 = List.of();
+			}
 			Set<String> whitelist = reports.getWhiteList();
 			return new CommunityBinarySources(agg10, agg100, whitelist);
 		}
 	}
 
 	/**
-	 * Vote-equivalent spam-evidence floor for a 10-block wildcard given the
-	 * user's per-number {@code minVotes}. A 10-block becomes a wildcard
-	 * candidate at {@link #MIN_AGGREGATE_10} distinct reported numbers; we
-	 * require that at the structural floor each contributing number could have
-	 * cleared the user's per-number bar, i.e. {@code MIN_AGGREGATE_10 *
-	 * minVotes}. The result is a decoded-evidence mass (vote-equivalent),
-	 * projected via {@link Ema#projectedThreshold} before comparison against
-	 * the stored {@code SPAM_EVIDENCE} column.
-	 *
-	 * <p>
-	 * Caller must clamp {@code minVotes} to {@code >= 1} beforehand.
-	 * </p>
+	 * Net-evidence vote magnitude of a single aggregation block at
+	 * {@code now}: {@code round(max(0, decode(SPAM_EVIDENCE) -
+	 * decode(LEGIT_EVIDENCE)))}. Legitimate votes cancel spam votes, so a
+	 * contested block reads low. Shared by {@link #computeWildcardVotes} (the
+	 * live {@code /num} wildcard decision) and the binary community download,
+	 * so both gate wildcards on exactly the same number.
 	 */
-	public static int wildcardVotesThreshold10(int minVotes) {
-		return MIN_AGGREGATE_10 * minVotes;
-	}
-
-	/**
-	 * Vote-equivalent spam-evidence floor for a 100-block wildcard. A
-	 * 100-block needs {@link #MIN_AGGREGATE_100} qualifying 10-sub-blocks, each
-	 * of which itself implies {@link #MIN_AGGREGATE_10} contributing numbers —
-	 * so scaling the user's per-number {@code minVotes} by both structural
-	 * minimums yields the threshold {@code MIN_AGGREGATE_100 *
-	 * MIN_AGGREGATE_10 * minVotes}. As with {@link #wildcardVotesThreshold10}
-	 * the result is a decoded-evidence mass (vote-equivalent), projected via
-	 * {@link Ema#projectedThreshold} before comparison against the stored
-	 * {@code SPAM_EVIDENCE} column.
-	 *
-	 * <p>
-	 * Caller must clamp {@code minVotes} to {@code >= 1} beforehand.
-	 * </p>
-	 */
-	public static int wildcardVotesThreshold100(int minVotes) {
-		return MIN_AGGREGATE_100 * MIN_AGGREGATE_10 * minVotes;
+	public static int blockNetVotes(AggregationInfo block, long now) {
+		double spam = Ema.decode(block.getSpamEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
+		double legit = Ema.decode(block.getLegitEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
+		return (int) Math.round(Math.max(0.0, spam - legit));
 	}
 
 	/** A user's personal black and white phone-ID lists, in raw DB format. */
@@ -2244,15 +2229,28 @@ public class DB {
 	 * The wildcard-block vote magnitude for the given moment (#300 follow-up): the decoded net
 	 * evidence of the {@link #qualifyingSpamBlock qualifying block}, or 0 if none qualifies. Used
 	 * identically for display ({@code votesWildcard}) and the spam decision so they cannot diverge.
+	 *
+	 * <p>
+	 * NOTE (#326 — binary blocklist consistency): three places must agree on what a wildcard block
+	 * "is worth", or the dongle's local-cache verdict drifts from its API-fallback verdict:
+	 * </p>
+	 * <ol>
+	 * <li>this method — the live {@code /num} wildcard decision (and {@code votesWildcard} display);</li>
+	 * <li>{@code compute_wildcard_votes} in the dongle's {@code api.c} — its replica for the API path;</li>
+	 * <li>the binary community download — {@code CommunityEntries} gates each wildcard on
+	 *     {@link #blockNetVotes} {@code >= minRange}, the dongle's {@code min_range_votes}.</li>
+	 * </ol>
+	 * <p>
+	 * All three share the <em>net-evidence</em> magnitude ({@link #blockNetVotes}): spam minus legit,
+	 * which is why {@code LEGIT_EVIDENCE} matters for wildcards. Do not switch any one of them to a
+	 * different gate (e.g. the display-only Wilson {@code spamConfidence}) without switching all three.
 	 */
 	public int computeWildcardVotes(AggregationInfo agg10, AggregationInfo agg100, long now) {
 		AggregationInfo block = qualifyingSpamBlock(agg10, agg100);
 		if (block == null) {
 			return 0;
 		}
-		double spam = Ema.decode(block.getSpamEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
-		double legit = Ema.decode(block.getLegitEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
-		return (int) Math.round(Math.max(0.0, spam - legit));
+		return blockNetVotes(block, now);
 	}
 
 	/**

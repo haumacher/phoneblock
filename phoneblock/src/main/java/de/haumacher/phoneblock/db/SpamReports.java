@@ -191,18 +191,19 @@ public interface SpamReports {
 	List<AggregationInfo> getAllAggregation10();
 
 	/**
-	 * 10-block aggregations that meet both thresholds: structural
-	 * ({@code CNT >= minCnt}) and a spam-evidence floor
-	 * ({@code SPAM_EVIDENCE >= minSpamEvidence}).
+	 * Candidate 10-block aggregations: structural gate ({@code CNT >= minCnt})
+	 * plus a spam-evidence lower bound ({@code SPAM_EVIDENCE >= minSpamEvidence}).
 	 *
 	 * <p>
-	 * Since epic #300 the aggregation tables no longer carry a per-row vote
-	 * count; spam strength is the projected EMA in {@code SPAM_EVIDENCE}. The
-	 * binary blocklist download maps the user's per-number {@code minVotes}
-	 * preference onto a projected spam-evidence threshold (see
-	 * {@link de.haumacher.phoneblock.db.DB#getCommunityBinarySources(int)})
-	 * and passes it here as {@code minSpamEvidence} so the comparison runs in
-	 * SQL against the raw projected column.
+	 * Since epic #300 the aggregation tables carry no per-row vote count; spam
+	 * strength is the projected EMA in {@code SPAM_EVIDENCE}. The binary
+	 * blocklist download wants wildcards whose <em>net</em> evidence (spam minus
+	 * legit) clears the dongle's {@code min_range_votes}, but net evidence is
+	 * not a clean indexed comparison. Net votes can never exceed spam votes, so
+	 * {@code minSpamEvidence = projectedThreshold(minRange)} is a safe lower
+	 * bound here (no false negatives); the exact net test runs in Java on the
+	 * survivors. See
+	 * {@link de.haumacher.phoneblock.db.DB#getCommunityBinarySources(int, long)}.
 	 * </p>
 	 */
 	@Select("""

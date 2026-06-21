@@ -43,12 +43,18 @@ import jakarta.servlet.http.HttpServletResponse;
  *
  * <p>
  * <b>Binary format:</b> {@code ?format=binary&type=community} streams the
- * community list filtered by the user's {@code minVotes} preference;
- * {@code ?format=binary&type=personal} streams the user's personal
- * black/white list. The split lets the community variant be pre-generated
- * once per {@code (minVotes, dialPrefix)} combination (the personal variant
- * is per-user and small). Both binary variants are authenticated; the
- * {@code since} parameter is not supported in this format.
+ * community list; {@code ?format=binary&type=personal} streams the user's
+ * personal black/white list. The community variant is filtered by two
+ * thresholds the dongle passes as {@code &minDirect=}/{@code &minRange=}
+ * (its {@code min_direct_votes} / {@code min_range_votes} settings): exact
+ * entries need net votes {@code >= minDirect}, wildcard blocks need net
+ * evidence {@code >= minRange} — the same gates the live {@code /num} API
+ * applies, so the download and the dongle's API-fallback verdict agree. They
+ * default to the account {@code minVotes} when omitted. The split + the
+ * threshold-pair cache key let the community variant be shared across all
+ * users requesting the same {@code (minDirect, minRange)} (the personal
+ * variant is per-user and small). Both binary variants are authenticated;
+ * the {@code since} parameter is not supported in this format.
  * </p>
  */
 @WebServlet(urlPatterns = BlocklistServlet.PATH)
@@ -67,6 +73,12 @@ public class BlocklistServlet extends HttpServlet {
 
 	/** Content type emitted for {@link #FORMAT_BINARY}. */
 	public static final String BINARY_CONTENT_TYPE = "application/octet-stream";
+
+	/** Query parameter: the dongle's exact-entry vote threshold ({@code min_direct_votes}). */
+	public static final String PARAM_MIN_DIRECT = "minDirect";
+
+	/** Query parameter: the dongle's wildcard net-vote threshold ({@code min_range_votes}). */
+	public static final String PARAM_MIN_RANGE = "minRange";
 
 	/**
 	 * Hard cap on the {@code ?limit=N} request parameter (#336).
@@ -196,16 +208,23 @@ public class BlocklistServlet extends HttpServlet {
 		db.updateLastAccess(userName, System.currentTimeMillis(), userAgent, cachedSettings);
 
 		if (TYPE_COMMUNITY.equals(type)) {
-			// The binary file does not carry per-entry vote counts, so the
-			// user's minVotes preference must be applied server-side here —
-			// for both exact entries and aggregation-driven wildcards. The
-			// resulting bytes are shared across all users with the same
-			// minVotes via BinaryBlocklistCache.
-			int userMinVotes = Math.max(cachedSettings.getMinVotes(), db.getMinVisibleVotes());
-			byte[] bytes = BinaryBlocklistCache.getInstance().getOrCompute(userMinVotes,
-					mv -> encodeCommunity(db, mv));
-			LOG.info("Sending binary community blocklist ({} bytes, minVotes {}) to user '{}' (agent '{}')",
-				bytes.length, userMinVotes, userName, userAgent);
+			// The binary file does not carry per-entry vote counts, so both
+			// thresholds must be applied server-side. They are the dongle's
+			// own min_direct_votes / min_range_votes (query params), so the
+			// encoded list is exactly the set its API-fallback path would
+			// decide SPAM; they fall back to the account minVotes when a
+			// caller omits them. minDirect is floored at the server's
+			// published minVisibleVotes. The resulting bytes are shared
+			// across all users with the same (minDirect, minRange) pair via
+			// BinaryBlocklistCache.
+			int minDirect = Math.max(
+				intParam(req, PARAM_MIN_DIRECT, cachedSettings.getMinVotes()),
+				db.getMinVisibleVotes());
+			int minRange = intParam(req, PARAM_MIN_RANGE, minDirect);
+			byte[] bytes = BinaryBlocklistCache.getInstance().getOrCompute(minDirect, minRange,
+					(d, r) -> encodeCommunity(db, d, r));
+			LOG.info("Sending binary community blocklist ({} bytes, minDirect {}, minRange {}) to user '{}' (agent '{}')",
+				bytes.length, minDirect, minRange, userName, userAgent);
 			resp.setContentType(BINARY_CONTENT_TYPE);
 			resp.setContentLength(bytes.length);
 			resp.getOutputStream().write(bytes);
@@ -222,10 +241,11 @@ public class BlocklistServlet extends HttpServlet {
 		}
 	}
 
-	private static byte[] encodeCommunity(DB db, int minVotes) {
+	private static byte[] encodeCommunity(DB db, int minDirect, int minRange) {
+		long now = System.currentTimeMillis();
 		Blocklist blocklist = db.getBlockListAPI();
-		DB.CommunityBinarySources sources = db.getCommunityBinarySources(minVotes);
-		List<Entry> entries = CommunityEntries.from(blocklist, sources, minVotes);
+		DB.CommunityBinarySources sources = db.getCommunityBinarySources(minRange, now);
+		List<Entry> entries = CommunityEntries.from(blocklist, sources, minDirect, minRange, now);
 		ByteArrayOutputStream buf = new ByteArrayOutputStream();
 		try {
 			BlocklistBinaryEncoder.write(buf, entries);
@@ -233,6 +253,24 @@ public class BlocklistServlet extends HttpServlet {
 			throw new UncheckedIOException(ex);
 		}
 		return buf.toByteArray();
+	}
+
+	/**
+	 * Parses an optional non-negative integer query parameter, returning
+	 * {@code fallback} when the parameter is absent, empty or malformed. The
+	 * binary path is consumed by the dongle's daily sync, so a stray value
+	 * falls back rather than failing the download.
+	 */
+	private static int intParam(HttpServletRequest req, String name, int fallback) {
+		String value = req.getParameter(name);
+		if (value == null || value.isEmpty()) {
+			return fallback;
+		}
+		try {
+			return Integer.parseInt(value.trim());
+		} catch (NumberFormatException ex) {
+			return fallback;
+		}
 	}
 
 }

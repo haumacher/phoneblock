@@ -5,15 +5,24 @@ package de.haumacher.phoneblock.app.api;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.function.IntFunction;
 import java.util.function.LongSupplier;
 
 /**
- * Process-wide cache for the binary community blocklist, keyed by
- * {@code minVotes}. The dongle's daily sync rhythm and the encoding cost of
- * the ~20k-entry community list make per-request regeneration measurable at
- * scale; the cache shares one pre-encoded byte array across all users with
- * the same {@code minVotes}.
+ * Process-wide cache for the binary community blocklist, keyed by the
+ * {@code (minDirect, minRange)} threshold pair. The dongle's daily sync
+ * rhythm and the encoding cost of the ~20k-entry community list make
+ * per-request regeneration measurable at scale; the cache shares one
+ * pre-encoded byte array across all users requesting the same threshold
+ * pair.
+ *
+ * <p>
+ * The pair is the dongle's own {@code min_direct_votes} /
+ * {@code min_range_votes} settings: {@code minDirect} gates exact entries,
+ * {@code minRange} gates the net-evidence wildcard blocks. Encoding the same
+ * pair the dongle's live API path applies (see
+ * {@code DB#computeWildcardVotes}) is what keeps the downloaded list and the
+ * API-fallback verdict identical.
+ * </p>
  *
  * <h2>What lives outside the cache key</h2>
  *
@@ -46,7 +55,18 @@ public final class BinaryBlocklistCache {
 		return INSTANCE;
 	}
 
-	private final ConcurrentMap<Integer, Entry> _entries = new ConcurrentHashMap<>();
+	/** Cache key: the dongle's two SPAM-vote thresholds. */
+	public record Key(int minDirect, int minRange) {
+		// Value-based key; record gives equals/hashCode over both fields.
+	}
+
+	/** Producer of community bytes for a given threshold pair. */
+	@FunctionalInterface
+	public interface Encoder {
+		byte[] encode(int minDirect, int minRange);
+	}
+
+	private final ConcurrentMap<Key, Entry> _entries = new ConcurrentHashMap<>();
 
 	private final LongSupplier _clock;
 
@@ -60,23 +80,24 @@ public final class BinaryBlocklistCache {
 	}
 
 	/**
-	 * Returns the cached bytes for {@code minVotes}, computing and caching
-	 * them on a miss or after the entry has expired.
+	 * Returns the cached bytes for the {@code (minDirect, minRange)} pair,
+	 * computing and caching them on a miss or after the entry has expired.
 	 *
-	 * @param minVotes Cache key.
-	 * @param compute  Producer called on a cache miss. Must be deterministic
-	 *                 modulo data freshness: the same {@code minVotes} value
-	 *                 must always yield bytes that are interchangeable
-	 *                 between users.
+	 * @param minDirect Exact-entry vote threshold (part of the cache key).
+	 * @param minRange  Wildcard net-vote threshold (part of the cache key).
+	 * @param compute   Producer called on a cache miss. Must be deterministic
+	 *                  modulo data freshness: the same pair must always yield
+	 *                  bytes that are interchangeable between users.
 	 */
-	public byte[] getOrCompute(int minVotes, IntFunction<byte[]> compute) {
+	public byte[] getOrCompute(int minDirect, int minRange, Encoder compute) {
+		Key key = new Key(minDirect, minRange);
 		long now = _clock.getAsLong();
-		Entry existing = _entries.get(minVotes);
+		Entry existing = _entries.get(key);
 		if (existing != null && !existing.isStale(now)) {
 			return existing.bytes();
 		}
-		byte[] fresh = compute.apply(minVotes);
-		_entries.put(minVotes, new Entry(now, fresh));
+		byte[] fresh = compute.encode(minDirect, minRange);
+		_entries.put(key, new Entry(now, fresh));
 		return fresh;
 	}
 
