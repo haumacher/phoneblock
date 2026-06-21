@@ -20,6 +20,7 @@
 
 #include "sdkconfig.h"
 #include "api.h"
+#include "blocklist_sync.h"
 #include "config.h"
 #include "announcement.h"
 #include "report_queue.h"
@@ -1143,8 +1144,29 @@ static verdict_t check_invite_caller(const char *req, int req_len)
         return VERDICT_LEGITIMATE;
     }
 
+    // Local-blocklist fast path: the daily-synced binary files cover the
+    // common case (number on the community list, or on the user's own
+    // overrides) without an HTTPS round-trip. The API call only runs when
+    // the local lookup is UNKNOWN — either no file synced yet, or the
+    // number is genuinely in no list (in which case the API will also
+    // refresh server-side LASTPING counters, so we keep that path live).
     pb_check_result_t result;
-    verdict_t v = phoneblock_check(number, &result, NULL);
+    verdict_t v;
+    const char *digits = (number[0] == '+') ? number + 1 : number;
+    blocklist_verdict_t local = blocklist_sync_check(digits, config_blocklist_wildcards());
+    if (local == BLOCKLIST_SPAM) {
+        memset(&result, 0, sizeof(result));
+        result.verdict = VERDICT_SPAM;
+        v = VERDICT_SPAM;
+        ESP_LOGI(TAG, "local blocklist → SPAM for %s", number);
+    } else if (local == BLOCKLIST_LEGIT) {
+        memset(&result, 0, sizeof(result));
+        result.verdict = VERDICT_LEGITIMATE;
+        v = VERDICT_LEGITIMATE;
+        ESP_LOGI(TAG, "local blocklist → LEGIT for %s", number);
+    } else {
+        v = phoneblock_check(number, &result, NULL);
+    }
     stats_record_call_checked(number, display, &result);
 
     // Fair-use contribution required by /api/check-prefix: when our

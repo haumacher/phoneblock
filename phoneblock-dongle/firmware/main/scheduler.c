@@ -10,6 +10,7 @@
 #include "esp_random.h"
 #include "esp_timer.h"
 
+#include "blocklist_sync.h"
 #include "firmware_update.h"
 #include "mail.h"
 #include "selftest.h"
@@ -24,7 +25,9 @@ static const char *TAG = "scheduler";
 #define JITTER_S    (30 * 60)
 
 // Task-notification bit for an on-demand sync triggered from the web UI.
-#define NOTIFY_SYNC (1u << 0)
+#define NOTIFY_SYNC      (1u << 0)
+// Task-notification bit for an on-demand binary-blocklist download.
+#define NOTIFY_BLOCKLIST (1u << 1)
 
 static TaskHandle_t s_task = NULL;
 
@@ -46,16 +49,23 @@ static void run_selftest(void)  { selftest_run(); }
 static void run_fw_update(void) { firmware_update_run(); }
 static void run_sync(void)      { sync_run(false); }   // scheduled: honour toggle
 static void run_mail(void)      { mail_daily_flush(); }
+static void run_blocklist(void) { blocklist_sync_run(); }
 
 // First mail evaluation 5 min after boot: long enough for Wi-Fi/DHCP to
 // settle, short enough that a crash-reboot's ERROR is mailed promptly.
-#define MAIL_FIRST_DELAY_S  (5 * 60)
+#define MAIL_FIRST_DELAY_S       (5 * 60)
+
+// First blocklist download 2 min after boot so a provisioned dongle
+// repopulates its local cache without waiting a full day; long enough for
+// Wi-Fi/DHCP/TLS to settle. The job short-circuits without a token.
+#define BLOCKLIST_FIRST_DELAY_S  (2 * 60)
 
 static sched_job_t s_jobs[] = {
-    { "selftest",  DAY_S, JITTER_S, 0,                  0, run_selftest },
-    { "fw_update", DAY_S, JITTER_S, 0,                  0, run_fw_update },
-    { "sync",      DAY_S, JITTER_S, 0,                  0, run_sync },
-    { "mail",      DAY_S, JITTER_S, MAIL_FIRST_DELAY_S, 0, run_mail },
+    { "selftest",  DAY_S, JITTER_S, 0,                       0, run_selftest },
+    { "fw_update", DAY_S, JITTER_S, 0,                       0, run_fw_update },
+    { "sync",      DAY_S, JITTER_S, 0,                       0, run_sync },
+    { "mail",      DAY_S, JITTER_S, MAIL_FIRST_DELAY_S,      0, run_mail },
+    { "blocklist", DAY_S, JITTER_S, BLOCKLIST_FIRST_DELAY_S, 0, run_blocklist },
 };
 #define JOB_COUNT (sizeof(s_jobs) / sizeof(s_jobs[0]))
 
@@ -116,6 +126,18 @@ static void scheduler_task(void *arg)
                                                      esp_timer_get_time());
         }
 
+        // On-demand blocklist download from the web UI / token-set
+        // handler, then reset its scheduled slot so the daily run doesn't
+        // fire again right behind it.
+        if (notify & NOTIFY_BLOCKLIST) {
+            ESP_LOGI(TAG, "manual blocklist trigger");
+            blocklist_sync_run();
+            for (size_t i = 0; i < JOB_COUNT; i++)
+                if (s_jobs[i].run == run_blocklist)
+                    s_jobs[i].next_due_us = next_due(&s_jobs[i],
+                                                     esp_timer_get_time());
+        }
+
         // Fire every job whose scheduled time has come, then reschedule
         // it. esp_timer_get_time() is re-read after each run so a job's
         // own duration counts against its next interval.
@@ -136,12 +158,20 @@ bool scheduler_request_sync(void)
     return true;
 }
 
+bool scheduler_request_blocklist_sync(void)
+{
+    if (!s_task) return false;
+    xTaskNotify(s_task, NOTIFY_BLOCKLIST, eSetBits);
+    return true;
+}
+
 void scheduler_start(void)
 {
     if (s_task) return;
-    // Create the sync status mutex before the task (or any web-UI
-    // snapshot) can touch it.
+    // Create the sync / blocklist status mutexes before the task (or any
+    // web-UI snapshot) can touch them.
     sync_init();
+    blocklist_sync_init();
     // 8 KB: sized for the heaviest job, the OTA install path
     // (esp_https_ota + cert-chain verify + SHA-256 over the 1.4 MB
     // image), which the standalone fw_update task also ran at 8 KB. The

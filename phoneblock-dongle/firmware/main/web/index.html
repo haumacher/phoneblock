@@ -164,7 +164,8 @@ const I18N = {
     'status.thresholds.direct': 'Direkt-Stimmen',
     'status.thresholds.direct.help': 'Stimmen direkt gegen die anrufende Nummer. Default 4 — gleicher Wert wie die öffentliche PhoneBlock-Sperrliste.',
     'status.thresholds.range': 'Range-Stimmen',
-    'status.thresholds.range.help': 'Stimmen gegen Nachbarn im selben 10er- oder 100er-Block. Default 10. Wert 0 schaltet Range-Block ab — dann zählen nur Direkt-Treffer.',
+    'status.thresholds.range.help': 'Stimmen gegen Nachbarn im selben 10er- oder 100er-Block. Default 10. „Aus" schaltet Range-Block ab — dann zählen nur Direkt-Treffer.',
+    'status.thresholds.range.off': 'Aus',
     'status.thresholds.saved': 'Gespeichert.',
     'status.thresholds.invalid': 'Ungültiger Wert.',
     'status.system.title': 'System',
@@ -266,6 +267,17 @@ const I18N = {
     'status.sync.busy': 'Sync läuft bereits.',
     'status.sync.enable': 'Sperrlisten-Sync aktivieren',
     'status.sync.disabled': 'Automatischer Sync deaktiviert — manuell weiterhin möglich.',
+    'status.localcache.title': 'Blocklist-Cache',
+    'status.localcache.intro': 'Einmal pro Tag lädt der Dongle die aktuelle Sperrliste und Deine persönliche Black-/White-List herunter und legt sie auf dem internen Flash ab. Eingehende Anrufe werden so überwiegend ohne Server-Anfrage entschieden — schneller und auch bei Netzproblemen verlässlich.',
+    'status.localcache.never': 'Noch nicht heruntergeladen.',
+    'status.localcache.have': '{community} Einträge in der Gemeinschaftsliste, {personal} persönlich. Aktualisiert vor {ago}.',
+    'status.localcache.last_fail': 'Letzter Download vor {ago} fehlgeschlagen: {err}',
+    'status.localcache.running': 'Download läuft gerade…',
+    'status.localcache.wildcards': 'Wildcard-Sperren auswerten',
+    'status.localcache.wildcards.help': 'Sperrt nicht nur exakte Nummern, sondern auch Rufnummern-Bereiche (z.B. „030 12 34 56*"), wenn die Gemeinschaft sie als Spam meldet. Aus, wenn Du nur exakte Treffer sperren willst.',
+    'status.localcache.run_now': 'Jetzt herunterladen',
+    'status.localcache.triggered': 'Download gestartet.',
+    'status.localcache.busy': 'Download läuft bereits.',
     'status.ann.title': 'Spam-Ansage',
     'status.ann.default': 'Eingebaute Standard-Ansage ({kb} KB).',
     'status.ann.custom': 'Eigene Ansage ({kb} KB).',
@@ -411,7 +423,8 @@ const I18N = {
     'status.thresholds.direct': 'Direct votes',
     'status.thresholds.direct.help': 'Votes against the calling number itself. Default 4 — same value as the public PhoneBlock blocklist.',
     'status.thresholds.range': 'Range votes',
-    'status.thresholds.range.help': 'Votes against neighbors in the same 10/100-block. Default 10. Set to 0 to disable range-based blocking — only direct hits count then.',
+    'status.thresholds.range.help': 'Votes against neighbors in the same 10/100-block. Default 10. "Off" disables range-based blocking — only direct hits count then.',
+    'status.thresholds.range.off': 'Off',
     'status.thresholds.saved': 'Saved.',
     'status.thresholds.invalid': 'Invalid value.',
     'status.system.title': 'System',
@@ -513,6 +526,17 @@ const I18N = {
     'status.sync.busy': 'Sync already running.',
     'status.sync.enable': 'Enable blocklist sync',
     'status.sync.disabled': 'Automatic sync disabled — manual run still available.',
+    'status.localcache.title': 'Blocklist cache',
+    'status.localcache.intro': 'Once a day the dongle downloads the current community blocklist plus your personal black/white list and stores them on internal flash. Incoming calls are then decided without an API round-trip — faster, and resilient to network glitches.',
+    'status.localcache.never': 'Not downloaded yet.',
+    'status.localcache.have': '{community} community entries, {personal} personal. Refreshed {ago} ago.',
+    'status.localcache.last_fail': 'Last download {ago} ago failed: {err}',
+    'status.localcache.running': 'Download in progress…',
+    'status.localcache.wildcards': 'Honour wildcard ranges',
+    'status.localcache.wildcards.help': 'Block whole number ranges (e.g. "030 12 34 56*") when the community has flagged them as spam, in addition to exact matches. Turn off to block only exact matches.',
+    'status.localcache.run_now': 'Download now',
+    'status.localcache.triggered': 'Download started.',
+    'status.localcache.busy': 'Download already running.',
     'status.ann.title': 'Spam announcement',
     'status.ann.default': 'Built-in default announcement ({kb} KB).',
     'status.ann.custom': 'Custom announcement ({kb} KB).',
@@ -748,6 +772,17 @@ const I18N = {
     'status.sync.busy': 'Synchro déjà en cours.',
     'status.sync.enable': 'Activer la synchronisation',
     'status.sync.disabled': 'Synchro auto désactivée — exécution manuelle toujours possible.',
+    'status.localcache.title': 'Cache de la liste de blocage',
+    'status.localcache.intro': 'Une fois par jour, le dongle télécharge la liste de blocage commune et votre liste noire/blanche personnelle, puis les stocke en mémoire flash interne. Les appels entrants sont alors décidés sans appel API — plus rapide, et résistant aux problèmes réseau.',
+    'status.localcache.never': 'Pas encore téléchargé.',
+    'status.localcache.have': '{community} entrées communes, {personal} personnelles. Rafraîchi il y a {ago}.',
+    'status.localcache.last_fail': 'Dernier téléchargement il y a {ago} en échec : {err}',
+    'status.localcache.running': 'Téléchargement en cours…',
+    'status.localcache.wildcards': 'Appliquer les caractères génériques',
+    'status.localcache.wildcards.help': 'Bloque aussi des plages de numéros (p. ex. "030 12 34 56*") signalées comme spam par la communauté, en plus des correspondances exactes. Désactivez pour ne bloquer que les correspondances exactes.',
+    'status.localcache.run_now': 'Télécharger maintenant',
+    'status.localcache.triggered': 'Téléchargement démarré.',
+    'status.localcache.busy': 'Téléchargement déjà en cours.',
     'status.ann.title': 'Message anti-spam',
     'status.ann.default': 'Message par défaut intégré ({kb} Ko).',
     'status.ann.custom': 'Message personnalisé ({kb} Ko).',
@@ -983,6 +1018,17 @@ const I18N = {
     'status.sync.busy': 'Sincronización ya en curso.',
     'status.sync.enable': 'Activar sincronización',
     'status.sync.disabled': 'Sincronización auto desactivada — ejecución manual aún posible.',
+    'status.localcache.title': 'Caché de lista de bloqueo',
+    'status.localcache.intro': 'Una vez al día, el dongle descarga la lista de bloqueo común y tu lista negra/blanca personal, y las guarda en la memoria flash interna. Las llamadas entrantes se deciden entonces sin llamadas a la API — más rápido y resistente a problemas de red.',
+    'status.localcache.never': 'Aún no descargado.',
+    'status.localcache.have': '{community} entradas comunes, {personal} personales. Actualizado hace {ago}.',
+    'status.localcache.last_fail': 'Última descarga hace {ago} falló: {err}',
+    'status.localcache.running': 'Descarga en curso…',
+    'status.localcache.wildcards': 'Aplicar comodines',
+    'status.localcache.wildcards.help': 'Bloquea también rangos de números (p. ej. "030 12 34 56*") que la comunidad haya marcado como spam, además de coincidencias exactas. Desactiva para bloquear solo coincidencias exactas.',
+    'status.localcache.run_now': 'Descargar ahora',
+    'status.localcache.triggered': 'Descarga iniciada.',
+    'status.localcache.busy': 'Descarga ya en curso.',
     'status.ann.title': 'Mensaje anti-spam',
     'status.ann.default': 'Mensaje predeterminado integrado ({kb} KB).',
     'status.ann.custom': 'Mensaje personalizado ({kb} KB).',
@@ -1343,13 +1389,27 @@ function renderStatus(){
     + '<div style="display:flex;gap:1.5rem;flex-wrap:wrap;align-items:flex-start">'
     + '<label style="display:flex;flex-direction:column;gap:.2rem">'
     + '  <span style="font-size:.85rem">' + esc(t('status.thresholds.direct')) + '</span>'
-    + '  <input id="thrDirect" type="number" min="1" max="99" style="width:5rem">'
+    + '  <select id="thrDirect" style="width:7rem">'
+    + '    <option value="2">2</option>'
+    + '    <option value="4">4</option>'
+    + '    <option value="10">10</option>'
+    + '    <option value="20">20</option>'
+    + '    <option value="50">50</option>'
+    + '    <option value="100">100</option>'
+    + '  </select>'
     + '  <span class="muted" style="font-size:.7rem;max-width:18rem">'
     +     esc(t('status.thresholds.direct.help')) + '</span>'
     + '</label>'
     + '<label style="display:flex;flex-direction:column;gap:.2rem">'
     + '  <span style="font-size:.85rem">' + esc(t('status.thresholds.range')) + '</span>'
-    + '  <input id="thrRange" type="number" min="0" max="999" style="width:5rem">'
+    + '  <select id="thrRange" style="width:7rem">'
+    + '    <option value="0">' + esc(t('status.thresholds.range.off')) + '</option>'
+    + '    <option value="10">10</option>'
+    + '    <option value="20">20</option>'
+    + '    <option value="50">50</option>'
+    + '    <option value="100">100</option>'
+    + '    <option value="500">500</option>'
+    + '  </select>'
     + '  <span class="muted" style="font-size:.7rem;max-width:18rem">'
     +     esc(t('status.thresholds.range.help')) + '</span>'
     + '</label>'
@@ -1368,6 +1428,20 @@ function renderStatus(){
     + '  <button id="syncRun" class="btn-ghost" style="padding:.3rem .7rem;font-size:.85rem">'
     +   esc(t('status.sync.run_now')) + '</button>'
     + '  <span id="syncMsg" class="muted" style="margin-left:.6rem"></span>'
+    + '</p></details>'
+    + '<details id="localCacheSection" class="adminsec" style="display:none">'
+    + '<summary>' + esc(t('status.localcache.title')) + '</summary>'
+    + '<p class="muted">' + esc(t('status.localcache.intro')) + '</p>'
+    + '<label title="' + esc(t('status.localcache.wildcards.help')) + '" '
+    +   'style="display:flex;align-items:center;gap:.5rem;margin:.4rem 0;font-size:.9rem;color:#222">'
+    + '  <input type="checkbox" id="blWildcards" style="width:auto;margin:0">'
+    + '  <span>' + esc(t('status.localcache.wildcards')) + '</span>'
+    + '</label>'
+    + '<p id="localCacheStatus" class="muted" style="margin-top:.4rem"></p>'
+    + '<p style="margin:.4rem 0 0">'
+    + '  <button id="blRun" class="btn-ghost" style="padding:.3rem .7rem;font-size:.85rem">'
+    +   esc(t('status.localcache.run_now')) + '</button>'
+    + '  <span id="blMsg" class="muted" style="margin-left:.6rem"></span>'
     + '</p></details>'
     + '<details id="mailSection" class="adminsec" style="display:none">'
     + '<summary>' + esc(t('status.mail.title')) + '</summary>'
@@ -1552,7 +1626,7 @@ let mailPrefilled = false;
 // gate kicks us out (401 from /api/status).
 const DASHBOARD_SECTIONS = ['heroSlot', 'statusSection', 'callsSection',
   'thresholdsSection', 'errorsSection', 'resetSection', 'annSection',
-  'syncSection', 'fwSection', 'mailSection', 'authSection'];
+  'localCacheSection', 'syncSection', 'fwSection', 'mailSection', 'authSection'];
 
 // Maps `?login_error=<code>` query values that web_auth_handle_callback
 // emits to localized text shown in the login section's red banner.
@@ -1659,6 +1733,7 @@ async function refreshAll(){
   const resetSec      = $('resetSection');
   const annSec        = $('annSection');
   const syncSec       = $('syncSection');
+  const localCacheSec = $('localCacheSection');
   const fwSec         = $('fwSection');
   const mailSec       = $('mailSection');
   const authSec       = $('authSection');
@@ -1674,6 +1749,7 @@ async function refreshAll(){
     errorsSec.style.display = 'none';
     annSec.style.display = 'none';
     syncSec.style.display = 'none';
+    localCacheSec.style.display = 'none';
     resetSec.style.display = 'none';
     fwSec.style.display = 'none';
     mailSec.style.display = 'none';
@@ -1687,10 +1763,75 @@ async function refreshAll(){
   errorsSec.style.display = '';
   annSec.style.display = '';
   syncSec.style.display = '';
+  localCacheSec.style.display = '';
   resetSec.style.display = '';
   fwSec.style.display = '';
   mailSec.style.display = '';
   authSec.style.display = '';
+
+  // Local blocklist-cache section: status line + wildcards toggle +
+  // manual "download now" button. The task runs daily on its own; the
+  // button is for fresh setups where the user does not want to wait
+  // for the next scheduled tick.
+  const bl = s.blocklist || {};
+  const blStatus = $('localCacheStatus');
+  const blAgo = bl.last_ago_s >= 0 ? fmtSec(bl.last_ago_s) : '–';
+  if (bl.running){
+    blStatus.textContent = t('status.localcache.running');
+    blStatus.style.color = '#e8710a';
+  } else if (!bl.ever_ran && !bl.have_community && !bl.have_personal){
+    blStatus.textContent = t('status.localcache.never');
+    blStatus.style.color = '#888';
+  } else if (bl.ever_ran && !bl.last_ok){
+    blStatus.textContent = t('status.localcache.last_fail',
+      {ago: blAgo, err: bl.last_error || '–'});
+    blStatus.style.color = '#d93025';
+  } else {
+    blStatus.textContent = t('status.localcache.have',
+      {community: bl.community_size || 0,
+       personal:  bl.personal_size  || 0,
+       ago:       blAgo});
+    blStatus.style.color = '#188038';
+  }
+  const blWildcards = $('blWildcards');
+  const blRun       = $('blRun');
+  blWildcards.checked = !!bl.wildcards;
+  blRun.disabled = !!bl.running;
+  if (!blWildcards.onchange){
+    blWildcards.onchange = async () => {
+      const want = blWildcards.checked;
+      blWildcards.disabled = true;
+      const body = new URLSearchParams();
+      body.append('blocklist_wildcards', want ? '1' : '0');
+      try {
+        await fetch('/api/config', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: body.toString(),
+        });
+      } catch (_){ /* next poll reconciles */ }
+      blWildcards.disabled = false;
+      refreshAll();
+    };
+  }
+  if (!blRun.onclick){
+    blRun.onclick = async () => {
+      const m = $('blMsg');
+      blRun.disabled = true;
+      m.textContent = '';
+      try {
+        const r = await fetch('/api/blocklist-sync/run', {method: 'POST'});
+        const d = await r.json().catch(() => ({}));
+        m.textContent = d.ok ? t('status.localcache.triggered')
+                              : t('status.localcache.busy');
+        m.style.color = d.ok ? '#188038' : '#e8710a';
+      } catch (_){
+        m.textContent = 'Network error';
+        m.style.color = '#d93025';
+      }
+      refreshAll();
+    };
+  }
 
   // Blocklist sync section: show either "unavailable" (no FB app
   // creds in NVS), "never run", "running", "last ok", "last partial"
@@ -2084,71 +2225,59 @@ async function refreshAll(){
       refreshAll();
     };
   }
-  // Block thresholds. Both inputs save on blur/change. The server
-  // always returns positive defaults on first boot, so there is no
-  // need for a client-side fallback. We only refresh the visible
-  // value when the user is not currently editing the field — avoids
-  // the polling loop snatching a value out from under their cursor.
+  // Block thresholds. Both are dropdowns with the same fixed option set
+  // the mobile app offers (direct 2/4/10/20/50/100, range Off/10/20/50/
+  // 100/500). Limiting the choices keeps the server's community-binary
+  // cache, keyed on the (minDirect, minRange) pair, shared across many
+  // dongles. The selection saves on change. We only refresh the visible
+  // value when the user is not currently editing the field — avoids the
+  // polling loop snatching the value out from under them.
   const thrDirect = $('thrDirect');
   const thrRange  = $('thrRange');
   const thrMsg    = $('thrMsg');
   const pb = (s && s.phoneblock) || {};
-  if (document.activeElement !== thrDirect && pb.min_direct_votes != null) {
-    thrDirect.value = pb.min_direct_votes;
-  }
-  if (document.activeElement !== thrRange && pb.min_range_votes != null) {
-    thrRange.value = pb.min_range_votes;
-  }
+  // Reflect the stored value. A value that predates the fixed option set
+  // (e.g. a custom number from an older firmware) is rounded UP to the
+  // nearest option (ceil), capped at the largest — the same ceil-clamp the
+  // server applies — so the control shows the value actually in effect.
+  const snapThr = (sel, val) => {
+    if (val == null || document.activeElement === sel) return;
+    const v = parseInt(val, 10);
+    if (isNaN(v)) return;
+    const opts = [...sel.options].map(o => parseInt(o.value, 10)).sort((a, b) => a - b);
+    let chosen = opts[opts.length - 1];
+    for (const o of opts) { if (v <= o) { chosen = o; break; } }
+    sel.value = String(chosen);
+  };
+  snapThr(thrDirect, pb.min_direct_votes);
+  snapThr(thrRange, pb.min_range_votes);
   const flashMsg = (text, color) => {
     thrMsg.textContent = text;
     thrMsg.style.color = color;
     setTimeout(() => { if (thrMsg.textContent === text) thrMsg.textContent = ''; }, 2000);
   };
+  const saveThreshold = async (sel, field) => {
+    const v = parseInt(sel.value, 10);
+    if (isNaN(v)) return;
+    sel.disabled = true;
+    const body = new URLSearchParams();
+    body.append(field, String(v));
+    try {
+      const r = await fetch('/api/config', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: body.toString(),
+      });
+      if (r.ok) flashMsg(t('status.thresholds.saved'), '#188038');
+    } catch (_){ /* next poll reconciles */ }
+    sel.disabled = false;
+    refreshAll();
+  };
   if (!thrDirect.onchange){
-    thrDirect.onchange = async () => {
-      const v = parseInt(thrDirect.value, 10);
-      if (!(v >= 1 && v <= 99)) {
-        thrDirect.value = pb.min_direct_votes || '';
-        flashMsg(t('status.thresholds.invalid'), '#d93025');
-        return;
-      }
-      thrDirect.disabled = true;
-      const body = new URLSearchParams();
-      body.append('min_direct_votes', String(v));
-      try {
-        const r = await fetch('/api/config', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-          body: body.toString(),
-        });
-        if (r.ok) flashMsg(t('status.thresholds.saved'), '#188038');
-      } catch (_){ /* next poll reconciles */ }
-      thrDirect.disabled = false;
-      refreshAll();
-    };
+    thrDirect.onchange = () => saveThreshold(thrDirect, 'min_direct_votes');
   }
   if (!thrRange.onchange){
-    thrRange.onchange = async () => {
-      const v = parseInt(thrRange.value, 10);
-      if (!(v >= 0 && v <= 999)) {
-        thrRange.value = pb.min_range_votes != null ? pb.min_range_votes : '';
-        flashMsg(t('status.thresholds.invalid'), '#d93025');
-        return;
-      }
-      thrRange.disabled = true;
-      const body = new URLSearchParams();
-      body.append('min_range_votes', String(v));
-      try {
-        const r = await fetch('/api/config', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-          body: body.toString(),
-        });
-        if (r.ok) flashMsg(t('status.thresholds.saved'), '#188038');
-      } catch (_){ /* next poll reconciles */ }
-      thrRange.disabled = false;
-      refreshAll();
-    };
+    thrRange.onchange = () => saveThreshold(thrRange, 'min_range_votes');
   }
 
   // Errors

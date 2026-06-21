@@ -4,10 +4,11 @@
 
 // Single background task that owns every recurring ~24 h housekeeping
 // job: the token self-test (+ log-report flush), the firmware
-// auto-update check, and the Fritz!Box blocklist sync. It replaces the
-// three separate per-feature tasks that each idled in a vTaskDelay loop
-// — consolidating them reclaims ~14 KB of task stack and keeps the
-// daily cadence (interval + ±30 min jitter) in one place.
+// auto-update check, the Fritz!Box blocklist sync, the status mail, and
+// the local binary-blocklist download. It replaces the separate
+// per-feature tasks that each idled in a vTaskDelay loop — consolidating
+// them reclaims task stack and keeps the daily cadence (interval + ±30
+// min jitter) in one place.
 //
 // Each job carries its own next-due time and is fired independently when
 // that time passes; the jobs run sequentially on this one task, so a
@@ -27,3 +28,12 @@ void scheduler_start(void);
 // The "is a sync already in progress" guard lives in sync_trigger_now(),
 // which is the public entry point the web UI calls.
 bool scheduler_request_sync(void);
+
+// Ask the scheduler to run the local binary-blocklist download as soon as
+// possible (manual intent from the web UI / token-set handler). Wakes the
+// task via a notification; the request coalesces if one is already
+// pending. Returns false if the scheduler task is not running.
+//
+// The "is a download already in progress" guard lives in
+// blocklist_sync_trigger_now(), the public entry point the web UI calls.
+bool scheduler_request_blocklist_sync(void);

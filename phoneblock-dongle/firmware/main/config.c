@@ -37,6 +37,7 @@ static const char *NS   = "phoneblock";
 #define K_OTA_CHANNEL   "ota_channel"
 #define K_CRASH_REPORT  "crash_report"
 #define K_ACCEPT_TEST   "accept_test"
+#define K_BL_WILDCARDS  "bl_wildcards"
 #define K_CONTACT_HOST  "contact_host"
 #define K_CONTACT_PORT  "contact_port"
 #define K_SIP_LPORT     "sip_lport"
@@ -104,6 +105,7 @@ typedef struct {
     char ota_channel[8];     // "stable" | "beta" (empty = default stable)
     char crash_report[4];    // "1" | "0" (or empty = default on)
     char accept_test[4];     // "1" | "0" (empty = use Kconfig default)
+    char bl_wildcards[4];    // "1" | "0" (empty = default on)
     char contact_host[64];
     int  contact_port;
     int  sip_local_port;     // 0 = use DEFAULT_SIP_LOCAL_PORT
@@ -254,6 +256,7 @@ void config_load(void)
         s_config.ota_channel[0]   = '\0';
         s_config.crash_report[0]  = '\0';
         s_config.accept_test[0]   = '\0';
+        s_config.bl_wildcards[0]  = '\0';
         copy_default(s_config.contact_host, sizeof(s_config.contact_host), CONFIG_SIP_CONTACT_HOST_OVERRIDE);
         s_config.contact_port = CONFIG_SIP_CONTACT_PORT_OVERRIDE;
         s_config.sip_local_port = 0;   // → DEFAULT_SIP_LOCAL_PORT
@@ -323,6 +326,8 @@ void config_load(void)
              s_config.crash_report, sizeof(s_config.crash_report));
     load_str(h, K_ACCEPT_TEST, "",
              s_config.accept_test, sizeof(s_config.accept_test));
+    load_str(h, K_BL_WILDCARDS, "",
+             s_config.bl_wildcards, sizeof(s_config.bl_wildcards));
     load_str(h, K_CONTACT_HOST, CONFIG_SIP_CONTACT_HOST_OVERRIDE,
              s_config.contact_host, sizeof(s_config.contact_host));
     s_config.contact_port = load_int(h, K_CONTACT_PORT, CONFIG_SIP_CONTACT_PORT_OVERRIDE);
@@ -424,6 +429,14 @@ bool        config_crash_report_enabled(void)
     // dump is otherwise dead weight in flash, and we'd never see it.
     // Only an explicit "0" suppresses uploads.
     return s_config.crash_report[0] != '0';
+}
+bool        config_blocklist_wildcards(void)
+{
+    // Default on (empty / unrecognised → enabled) so new dongles
+    // benefit from community-aggregated wildcard ranges out of the box.
+    // Only an explicit "0" turns it off; the file format always carries
+    // the prefix section, the flag is read locally at lookup time.
+    return s_config.bl_wildcards[0] != '0';
 }
 bool        config_accept_test_calls(void)
 {
@@ -627,6 +640,8 @@ esp_err_t config_update(const config_update_t *u)
                                         s_config.crash_report, sizeof(s_config.crash_report));
     if (err == ESP_OK) err = set_str_if(h, K_ACCEPT_TEST, u->accept_test_calls,
                                         s_config.accept_test, sizeof(s_config.accept_test));
+    if (err == ESP_OK) err = set_str_if(h, K_BL_WILDCARDS, u->blocklist_wildcards,
+                                        s_config.bl_wildcards, sizeof(s_config.bl_wildcards));
     if (err == ESP_OK) err = set_str_if(h, K_PB_URL, u->phoneblock_base_url,
                                         s_config.pb_base_url, sizeof(s_config.pb_base_url));
     if (err == ESP_OK) err = set_str_if(h, K_PB_TOKEN, u->phoneblock_token,

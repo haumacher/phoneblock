@@ -190,11 +190,40 @@ public interface SpamReports {
 	@Select("select PREFIX, CNT, HEAT as heat, SPAM_EVIDENCE as spamEvidence, LEGIT_EVIDENCE as legitEvidence from NUMBERS_AGGREGATION_10")
 	List<AggregationInfo> getAllAggregation10();
 
+	/**
+	 * Candidate 10-block aggregations: structural gate ({@code CNT >= minCnt})
+	 * plus a spam-evidence lower bound ({@code SPAM_EVIDENCE >= minSpamEvidence}).
+	 *
+	 * <p>
+	 * Since epic #300 the aggregation tables carry no per-row vote count; spam
+	 * strength is the projected EMA in {@code SPAM_EVIDENCE}. The binary
+	 * blocklist download wants wildcards whose <em>net</em> evidence (spam minus
+	 * legit) clears the dongle's {@code min_range_votes}, but net evidence is
+	 * not a clean indexed comparison. Net votes can never exceed spam votes, so
+	 * {@code minSpamEvidence = projectedThreshold(minRange)} is a safe lower
+	 * bound here (no false negatives); the exact net test runs in Java on the
+	 * survivors. See
+	 * {@link de.haumacher.phoneblock.db.DB#getCommunityBinarySources(int, long)}.
+	 * </p>
+	 */
+	@Select("""
+			select PREFIX, CNT, HEAT as heat, SPAM_EVIDENCE as spamEvidence, LEGIT_EVIDENCE as legitEvidence from NUMBERS_AGGREGATION_10
+			where CNT >= #{minCnt} and SPAM_EVIDENCE >= #{minSpamEvidence}
+			""")
+	List<AggregationInfo> getAggregation10AboveThresholds(int minCnt, double minSpamEvidence);
+
 	@Select("select PREFIX, CNT, HEAT as heat, SPAM_EVIDENCE as spamEvidence, LEGIT_EVIDENCE as legitEvidence from NUMBERS_AGGREGATION_100 where PREFIX = #{prefix}")
 	AggregationInfo getAggregation100(String prefix);
 
 	@Select("select PREFIX, CNT, HEAT as heat, SPAM_EVIDENCE as spamEvidence, LEGIT_EVIDENCE as legitEvidence from NUMBERS_AGGREGATION_100")
 	List<AggregationInfo> getAllAggregation100();
+
+	/** Counterpart of {@link #getAggregation10AboveThresholds} for 100-blocks. */
+	@Select("""
+			select PREFIX, CNT, HEAT as heat, SPAM_EVIDENCE as spamEvidence, LEGIT_EVIDENCE as legitEvidence from NUMBERS_AGGREGATION_100
+			where CNT >= #{minCnt} and SPAM_EVIDENCE >= #{minSpamEvidence}
+			""")
+	List<AggregationInfo> getAggregation100AboveThresholds(int minCnt, double minSpamEvidence);
 	
 	// #{minRawSpam} = maxRawSpam(1): only list related numbers that still show at least
 	// one vote, not every row with a sliver of net evidence that rounds to 0 (#300).

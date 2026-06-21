@@ -294,10 +294,11 @@ void app_main(void)
 
     // Shared scheduler task — owns all recurring ~24 h housekeeping:
     // the token self-test (+ log-report flush), the firmware
-    // auto-update check, and the Fritz!Box blocklist sync. Replaces
-    // three separate per-feature tasks (~14 KB stack reclaimed). Safe
-    // to start before the device is provisioned; each job applies its
-    // own skip-until-configured / user-toggle gates, and the daily
+    // auto-update check, the Fritz!Box blocklist sync, the status mail,
+    // and the local binary-blocklist download. Replaces the separate
+    // per-feature tasks (task stack reclaimed). Safe to start before the
+    // device is provisioned; each job applies its own
+    // skip-until-configured / user-toggle gates, and the daily
     // last_failed_ota guard (cleared above on a healthy boot) still
     // keeps a brick-and-rollback build from being re-tried in a loop.
     scheduler_start();

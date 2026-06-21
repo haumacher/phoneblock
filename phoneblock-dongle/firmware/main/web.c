@@ -21,6 +21,7 @@
 
 #include "announcement.h"
 #include "api.h"
+#include "blocklist_sync.h"
 #include "config.h"
 #include "firmware_update.h"
 #include "mail.h"
@@ -363,6 +364,21 @@ static esp_err_t handle_status(httpd_req_t *req)
     cJSON_AddNumberToObject(syn, "last_failed", ss.last_failed);
     cJSON_AddStringToObject(syn, "last_error", ss.last_error);
 
+    cJSON *bl = cJSON_AddObjectToObject(root, "blocklist");
+    blocklist_sync_status_t bs;
+    blocklist_sync_snapshot(&bs);
+    int64_t bl_ago_s = bs.ever_ran ? (now_us - bs.last_at_us) / 1000000 : -1;
+    cJSON_AddBoolToObject  (bl, "have_community",  bs.have_community);
+    cJSON_AddBoolToObject  (bl, "have_personal",   bs.have_personal);
+    cJSON_AddNumberToObject(bl, "community_size",  bs.community_size);
+    cJSON_AddNumberToObject(bl, "personal_size",   bs.personal_size);
+    cJSON_AddBoolToObject  (bl, "ever_ran",        bs.ever_ran);
+    cJSON_AddBoolToObject  (bl, "last_ok",         bs.last_ok);
+    cJSON_AddBoolToObject  (bl, "running",         bs.running);
+    cJSON_AddNumberToObject(bl, "last_ago_s",      (double)bl_ago_s);
+    cJSON_AddStringToObject(bl, "last_error",      bs.last_error);
+    cJSON_AddBoolToObject  (bl, "wildcards",       config_blocklist_wildcards());
+
     cJSON *ann = cJSON_AddObjectToObject(root, "announcement");
     cJSON_AddBoolToObject  (ann,  "custom",  announcement_is_custom());
     cJSON_AddNumberToObject(ann,  "bytes",   (double)announcement_length());
@@ -535,6 +551,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     char channel_s[8]     = "";
     char crash_rep_s[4]   = "";
     char test_calls_s[4]  = "";
+    char bl_wild_s[4]     = "";
     char smtp_host[64]    = "";
     char smtp_port_s[8]   = "";
     char smtp_sec[10]     = "";
@@ -567,6 +584,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     bool have_channel   = form_get(body, "channel",       channel_s,     sizeof(channel_s));
     bool have_crash_rep = form_get(body, "crash_report",  crash_rep_s,   sizeof(crash_rep_s));
     bool have_test_call = form_get(body, "accept_test_calls", test_calls_s, sizeof(test_calls_s));
+    bool have_bl_wild   = form_get(body, "blocklist_wildcards", bl_wild_s, sizeof(bl_wild_s));
     bool have_pb_url     = form_get(body, "pb_url",    pb_url,    sizeof(pb_url));
     bool have_pb_token   = form_get(body, "pb_token",  pb_token,  sizeof(pb_token));
     bool have_min_direct = form_get(body, "min_direct_votes", min_direct_s, sizeof(min_direct_s));
@@ -654,6 +672,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
         .ota_channel     = channel,
         .crash_report    = have_crash_rep ? crash_rep_s   : NULL,
         .accept_test_calls = have_test_call ? test_calls_s : NULL,
+        .blocklist_wildcards = have_bl_wild ? bl_wild_s : NULL,
         .phoneblock_base_url = have_pb_url   && pb_url[0]   ? pb_url   : NULL,
         .phoneblock_token    = have_pb_token && pb_token[0] ? pb_token : NULL,
         .min_direct_votes = have_min_direct && min_direct_s[0] ? atoi(min_direct_s) : 0,
@@ -679,10 +698,25 @@ static esp_err_t handle_config_post(httpd_req_t *req)
         .mail_on_spam  = have_mail_spam ? mail_spam_s : NULL,
     };
 
+    // Snapshot the PhoneBlock token before the update so we can detect
+    // a fresh activation and kick off the blocklist sync immediately —
+    // otherwise the user would wait up to 24 h for the local cache.
+    char old_token[64];
+    strncpy(old_token, config_phoneblock_token(), sizeof(old_token) - 1);
+    old_token[sizeof(old_token) - 1] = '\0';
+
     esp_err_t err = config_update(&u);
     if (err != ESP_OK) {
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "nvs write failed");
         return ESP_OK;
+    }
+
+    if (strcmp(old_token, config_phoneblock_token()) != 0
+            && config_phoneblock_token()[0] != '\0') {
+        // Token just arrived (or was rotated). Fire a sync; the trigger
+        // is a no-op when one is already in flight, so this never
+        // disrupts an ongoing run.
+        blocklist_sync_trigger_now();
     }
 
     // Signal the SIP task to re-register with the new credentials.
@@ -1711,6 +1745,20 @@ static esp_err_t handle_sync_run(httpd_req_t *req)
     return ESP_OK;
 }
 
+// POST /api/blocklist-sync/run — trigger an immediate download of the
+// community + personal binary blocklist files.
+static esp_err_t handle_blocklist_sync_run(httpd_req_t *req)
+{
+    REQUIRE_AUTH_API(req);
+    bool triggered = blocklist_sync_trigger_now();
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddBoolToObject  (root, "ok", triggered);
+    cJSON_AddStringToObject(root, "message",
+        triggered ? "Download triggered." : "Download already running.");
+    send_json(req, root);
+    return ESP_OK;
+}
+
 // POST /api/mail/test — send a test status mail using the saved SMTP
 // settings, so the user can verify credentials right after entering them.
 // Runs mail_send() synchronously: the TLS handshake fits the httpd task's
@@ -1811,6 +1859,7 @@ static const httpd_uri_t URIS[] = {
     { .uri = "/api/announcement",    .method = HTTP_POST, .handler = handle_announcement_post,  .user_ctx = NULL },
     { .uri = "/api/announcement/reset", .method = HTTP_POST, .handler = handle_announcement_reset, .user_ctx = NULL },
     { .uri = "/api/sync/run",        .method = HTTP_POST, .handler = handle_sync_run,       .user_ctx = NULL },
+    { .uri = "/api/blocklist-sync/run", .method = HTTP_POST, .handler = handle_blocklist_sync_run, .user_ctx = NULL },
     { .uri = "/api/mail/test",       .method = HTTP_POST, .handler = handle_mail_test,      .user_ctx = NULL },
     { .uri = "/api/config",          .method = HTTP_POST, .handler = handle_config_post,    .user_ctx = NULL },
     { .uri = "/api/fritzbox-setup",      .method = HTTP_POST, .handler = handle_fritzbox_setup,      .user_ctx = NULL },
