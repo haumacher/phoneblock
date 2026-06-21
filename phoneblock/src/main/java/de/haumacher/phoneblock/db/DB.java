@@ -23,7 +23,6 @@ import java.util.Base64;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -210,8 +209,8 @@ public class DB {
 		
 		setupSchema();
 
-		 Date timeHistory = schedule(0, this::runUpdateHistory);
-		 LOG.info("Scheduled search history cleanup: " + timeHistory);
+		 Date timeHistory = schedule(0, this::runActivityRetention);
+		 LOG.info("Scheduled activity-ledger retention: " + timeHistory);
 		 
 		 if (_config.isSendHelpMails() && _mailService != null) {
 			 Date supportMails = schedule(18, this::sendSupportMails);
@@ -955,6 +954,13 @@ public class DB {
 			reports.addReport(phone, hash, votes, time, heatInc, spamEvidenceInc, legitEvidenceInc);
 		}
 
+		if (absVotes != 0) {
+			// Per-day activity ledger: votes cast that day, counted by magnitude
+			// (matching the old DOWN_VOTES + UP_VOTES activity semantics — a legit
+			// vote is still a vote cast).
+			reports.mergeActivity(phone, epochDay(time), 0, 0, absVotes);
+		}
+
 		// #300 follow-up: rebuild this number's /100 block aggregation now (real-time, scoped to the
 		// touched /100), counting how many of its numbers are *currently* spam. The daily sweep
 		// (recomputeBlockAggregation) handles only the silent decay of blocks that get no votes.
@@ -1502,13 +1508,20 @@ public class DB {
 	}
 	
 	public List<? extends SearchInfo> getTopSearches(int limit) {
+		return getTopSearches(limit, System.currentTimeMillis());
+	}
+
+	public List<? extends SearchInfo> getTopSearches(int limit, long now) {
 		try (SqlSession session = openSession()) {
 			SpamReports reports = session.getMapper(SpamReports.class);
-		
-			List<DBSearchInfo> searches = reports.getTopSearchesCurrent(limit, maxRawSpam(1));
-			
-			searches.sort(Comparator.<DBSearchInfo>comparingLong(s -> s.getLastSearch()).reversed());
-			return searches;
+
+			// "Today and yesterday": sum the per-day search counts over the last two
+			// UTC days. A number that has gone quiet has no recent activity rows and
+			// drops out of the ranking — unlike the old rotated SEARCHES_CURRENT
+			// counter, which froze at its last busy day's value and kept stale numbers
+			// pinned to the top.
+			int minDay = epochDay(now) - 1;
+			return reports.getTopSearches(minDay, maxRawSpam(1), limit);
 		}
 	}
 	
@@ -2583,6 +2596,9 @@ public class DB {
 			reports.recordCall(phoneId, now, 0.0, 0.0);
 		}
 
+		// Per-day activity ledger: one call recorded today.
+		reports.mergeActivity(phoneId, epochDay(now), 0, 1, 0);
+
 		// Call evidence pushes the number toward spam: keep the SHA1 reverse-lookup entry
 		// consistent with spam visibility (#300). Needed because a number first seen via a
 		// pure search carries no hash, and recordCall's UPDATE branch would not set it.
@@ -2650,6 +2666,9 @@ public class DB {
 			reports.addReport(phone, null, 0, now, 0.0, 0.0, 0.0);
 			reports.incSearchCount(phone, now, heatInc);
 		}
+
+		// Per-day activity ledger: one search recorded today.
+		reports.mergeActivity(phone, epochDay(now), 1, 0, 0);
 
 		// A search is a pure Heat signal — no classification impact, so no
 		// SPAM_EVIDENCE contribution to the locale row either.
@@ -3017,210 +3036,118 @@ public class DB {
 		}
 	}
 	
-	/**
-	 * Number of phone numbers processed per committed transaction while snapshotting or pruning
-	 * search history. Bounds the transient H2 MVStore growth of a single transaction: old page
-	 * versions can only be reclaimed once a transaction commits, so the whole history sweep used to
-	 * run as one transaction that inflated the database file far beyond its committed size.
-	 */
-	private static final int HISTORY_BATCH_SIZE = 10_000;
+	/** Days of per-day activity kept in {@code NUMBER_ACTIVITY} before retention prunes them. */
+	private static final int ACTIVITY_RETENTION_DAYS = 30;
 
-	private void runUpdateHistory() {
-		LOG.info("Processing history.");
+	/** Milliseconds per day; for converting timestamps to UTC epoch-days. */
+	public static final long MILLIS_PER_DAY = 24L * 60 * 60 * 1000;
+
+	/** The UTC epoch-day (days since 1970-01-01) of the given timestamp. */
+	static int epochDay(long millis) {
+		return (int) Math.floorDiv(millis, MILLIS_PER_DAY);
+	}
+
+	/**
+	 * Daily retention sweep of the activity ledger: drops rows older than
+	 * {@link #ACTIVITY_RETENTION_DAYS}. The retention window bounds the table to a
+	 * small number of rows, so this is a single delete with no batching needed —
+	 * and because each day's activity is stored as a self-contained delta, dropping
+	 * old rows never destroys a baseline some chart still depends on (the failure
+	 * mode of the old snapshot-and-diff history).
+	 */
+	private void runActivityRetention() {
+		LOG.info("Pruning activity ledger.");
 		try {
-			updateHistory(30);
+			int removed = pruneActivity(System.currentTimeMillis());
+			LOG.info("Pruned {} activity rows from the ledger.", removed);
 		} catch (Exception ex) {
-			LOG.error("Failed to process history.", ex);
+			LOG.error("Failed to prune activity ledger.", ex);
 		}
-		LOG.info("Finished procssing history.");	}
-
-	/**
-	 * Creates a new snapshot of search history.
-	 */
-	public void updateHistory(int maxHistory) {
-		long now = System.currentTimeMillis();
-		updateHistory(maxHistory, now);
-	}
-
-	public void updateHistory(int maxHistory, long now) {
-		long lastSnapshot;
-		int newRevId;
-
-		// Advance the watermark in its own committed transaction. A failure during the (much larger)
-		// snapshot below then cannot roll back the new revision and leave the watermark frozen, which
-		// would otherwise turn every following run into a full-corpus snapshot.
-		try (SqlSession session = openSession()) {
-			SpamReports reports = session.getMapper(SpamReports.class);
-
-			Long lastSnapshotDate = reports.getLastSnapshotTime();
-			lastSnapshot = lastSnapshotDate == null ? 0 : lastSnapshotDate.longValue();
-
-			// Assign the revision id ourselves instead of relying on an H2 IDENTITY sequence, which
-			// advances even on a rolled-back insert and would leave gaps in the id space.
-			Integer lastRev = reports.getLastRevision();
-			newRevId = (lastRev == null ? 0 : lastRev.intValue()) + 1;
-
-			Rev newRev = new Rev(now);
-			newRev.setId(newRevId);
-			reports.storeRevision(newRev);
-
-			session.commit();
-		}
-
-		// Snapshot the active numbers in PHONE-ordered batches, committing each batch separately so
-		// the H2 MVStore can reclaim old page versions between batches instead of growing the file
-		// until the whole snapshot commits.
-		int insertCnt = 0;
-		int updateCnt = 0;
-		String fromPhone = "";
-		while (true) {
-			try (SqlSession session = openSession()) {
-				SpamReports reports = session.getMapper(SpamReports.class);
-
-				String toPhone = reports.nextHistoryBatchBound(lastSnapshot, fromPhone, HISTORY_BATCH_SIZE);
-				if (toPhone == null) {
-					break;
-				}
-
-				updateCnt += reports.outdateHistorySnapshot(newRevId, lastSnapshot, fromPhone, toPhone);
-				insertCnt += reports.createHistorySnapshot(newRevId, lastSnapshot, fromPhone, toPhone);
-				reports.updateSearches(lastSnapshot, fromPhone, toPhone);
-
-				session.commit();
-				fromPhone = toPhone;
-			}
-		}
-
-		LOG.info("Created revision {} with {} new and {} updated search entries.", newRevId, insertCnt - updateCnt, updateCnt);
-
-		dropOldRevisions(newRevId, maxHistory);
 	}
 
 	/**
-	 * Drops all revisions older than the retention window {@code maxHistory}, each in its own batched
-	 * transaction. Unlike a "drop one per run" approach this also clears a backlog (e.g. after a data
-	 * migration that left many revisions behind) in a single run, without ever building one oversized
-	 * delete.
-	 */
-	private void dropOldRevisions(int newRevId, int maxHistory) {
-		while (true) {
-			int oldestRev;
-			try (SqlSession session = openSession()) {
-				oldestRev = session.getMapper(SpamReports.class).getOldestRevision();
-			}
-			if (newRevId - oldestRev < maxHistory) {
-				break;
-			}
-
-			int removedCnt = 0;
-			while (true) {
-				int removed;
-				try (SqlSession session = openSession()) {
-					SpamReports reports = session.getMapper(SpamReports.class);
-					removed = reports.cleanRevision(oldestRev, HISTORY_BATCH_SIZE);
-					session.commit();
-				}
-				removedCnt += removed;
-				if (removed < HISTORY_BATCH_SIZE) {
-					break;
-				}
-			}
-
-			try (SqlSession session = openSession()) {
-				session.getMapper(SpamReports.class).removeRevision(oldestRev);
-				session.commit();
-			}
-
-			LOG.info("Dropped revision {} with {} search entries.", oldestRev, removedCnt);
-		}
-	}
-	
-	/** 
-	 * Retrieves the number of search hits for the given number in the past days.
-	 * 
-	 * <p>
-	 * The entry last in the list represents the searches recorded today.
-	 * </p>
-	 */
-	public List<Integer> getSearchHistory(String phone, int size) {
-		try (SqlSession session = openSession()) {
-			SpamReports reports = session.getMapper(SpamReports.class);
-			
-			return getSearchHistory(reports, phone, size);
-		}
-	}
-
-	public List<Integer> getSearchHistory(SpamReports reports, String phone, int size) {
-		List<Integer> result = new ArrayList<>();
-
-		int latestRev;
-		int rev;
-		List<DBNumberHistory> entries;
-		
-		Integer lastRevision = reports.getLastRevision();
-		if (lastRevision != null) {
-			latestRev = lastRevision.intValue();
-			rev = latestRev  - (size - 1);
-			entries = reports.getSearchHistory(rev, phone);
-		} else {
-			latestRev = (size - 1);
-			rev = 0;
-			entries = Collections.emptyList();
-		}
-		
-		int lastCnt = 0;
-		for (DBNumberHistory entry : entries) {
-			while (entry.getRMin() > rev) {
-				result.add(Integer.valueOf(0));
-				rev++;
-			}
-			int current = entry.getSearches();
-			result.add(Integer.valueOf(current - lastCnt));
-			lastCnt = current;
-			rev++;
-		}
-		
-		while (rev <= latestRev) {
-			result.add(Integer.valueOf(0));
-			rev++;
-		}
-		
-		// Add searches today (not yet contained in the history). Clamp at 0: when the
-		// number has no live NUMBERS row (e.g. it is only shown via the wildcard/aggregate
-		// path, #300), getPhoneInfo returns an empty info with searches=0 while the history
-		// still carries a positive cumulative count, which would otherwise render a negative
-		// "searches today" bar (-lastCnt).
-		NumberInfo info = getPhoneInfo(reports, phone);
-		result.add(Math.max(0, info.getSearches() - lastCnt));
-		
-		// Drop first, because this entry contains no delta information.
-		return result.subList(1, result.size());
-	}
-
-	/**
-	 * Daily number of intercepted calls, votes and searches for (at most) the
-	 * last <code>days</code> closed days, derived from {@code NUMBERS_HISTORY}.
+	 * Drops activity rows older than {@link #ACTIVITY_RETENTION_DAYS} relative to
+	 * {@code now}. Separated from the scheduled task so it can be driven with an
+	 * explicit clock in tests.
 	 *
-	 * <p>
-	 * One data point per revision that recorded any change; the current day is
-	 * not yet snapshotted and therefore excluded.
-	 * </p>
+	 * @return the number of pruned rows.
+	 */
+	public int pruneActivity(long now) {
+		int minDay = epochDay(now) - ACTIVITY_RETENTION_DAYS;
+		try (SqlSession session = openSession()) {
+			int removed = session.getMapper(SpamReports.class).deleteActivityBefore(minDay);
+			session.commit();
+			return removed;
+		}
+	}
+
+	/**
+	 * Per-day activity (searches, calls, votes) for the given number over the last
+	 * {@code days} UTC days, oldest first. The returned list always has exactly
+	 * {@code days} entries: days with no activity are filled with zero. Today is
+	 * included and reflects the activity recorded so far today, since the ledger is
+	 * written live on every event.
+	 */
+	public List<DBDayActivity> getNumberActivity(String phone, int days) {
+		return getNumberActivity(phone, days, System.currentTimeMillis());
+	}
+
+	public List<DBDayActivity> getNumberActivity(String phone, int days, long now) {
+		try (SqlSession session = openSession()) {
+			return getNumberActivity(session.getMapper(SpamReports.class), phone, days, now);
+		}
+	}
+
+	public List<DBDayActivity> getNumberActivity(SpamReports reports, String phone, int days) {
+		return getNumberActivity(reports, phone, days, System.currentTimeMillis());
+	}
+
+	public List<DBDayActivity> getNumberActivity(SpamReports reports, String phone, int days, long now) {
+		int today = epochDay(now);
+		int minDay = today - (days - 1);
+
+		// Ascending by day; gaps for inactive days are filled below.
+		List<DBDayActivity> rows = reports.getNumberActivity(phone, minDay);
+
+		List<DBDayActivity> result = new ArrayList<>(days);
+		int idx = 0;
+		for (int day = minDay; day <= today; day++) {
+			if (idx < rows.size() && rows.get(idx).getEpochDay() == day) {
+				result.add(rows.get(idx));
+				idx++;
+			} else {
+				result.add(new DBDayActivity(day, 0, 0, 0));
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Daily intercepted calls, votes and searches for the last {@code days} closed
+	 * UTC days (today excluded), read directly from the per-day activity ledger.
+	 * Each day's value is that day's activity — no baseline, no differencing — so
+	 * first-appearance and sparse-number activity is counted in full. Inactive days
+	 * are present with zero counts, giving a continuous series.
 	 *
 	 * @return Four-element array: index 0 is a list of date labels (dd.MM., UTC),
 	 *         indices 1, 2 and 3 are the per-day calls, votes and searches counts.
 	 */
 	public Object[] getCallsVotesSearchesHistory(int days) {
-		List<DailyActivity> activity;
-		try (SqlSession session = openSession()) {
-			SpamReports reports = session.getMapper(SpamReports.class);
+		return getCallsVotesSearchesHistory(days, System.currentTimeMillis());
+	}
 
-			Integer lastRevision = reports.getLastRevision();
-			if (lastRevision == null) {
-				activity = Collections.emptyList();
-			} else {
-				int minRev = lastRevision.intValue() - (days - 1);
-				activity = reports.getActivityHistory(minRev);
-			}
+	public Object[] getCallsVotesSearchesHistory(int days, long now) {
+		int today = epochDay(now);
+		// Closed days only: [today - days, today - 1].
+		int minDay = today - days;
+
+		List<DBDayActivity> activity;
+		try (SqlSession session = openSession()) {
+			activity = session.getMapper(SpamReports.class).getGlobalActivity(minDay);
+		}
+		Map<Integer, DBDayActivity> byDay = new HashMap<>();
+		for (DBDayActivity a : activity) {
+			byDay.put(Integer.valueOf(a.getEpochDay()), a);
 		}
 
 		java.text.SimpleDateFormat fmt = new java.text.SimpleDateFormat("dd.MM.");
@@ -3230,11 +3157,12 @@ public class DB {
 		List<Integer> callsData = new ArrayList<>();
 		List<Integer> votesData = new ArrayList<>();
 		List<Integer> searchesData = new ArrayList<>();
-		for (DailyActivity a : activity) {
-			labels.add(fmt.format(new Date(a.getCreated())));
-			callsData.add(Integer.valueOf(a.getCalls()));
-			votesData.add(Integer.valueOf(a.getVotes()));
-			searchesData.add(Integer.valueOf(a.getSearches()));
+		for (int day = minDay; day < today; day++) {
+			labels.add(fmt.format(new Date(day * MILLIS_PER_DAY)));
+			DBDayActivity a = byDay.get(Integer.valueOf(day));
+			callsData.add(Integer.valueOf(a == null ? 0 : a.getCalls()));
+			votesData.add(Integer.valueOf(a == null ? 0 : a.getVotes()));
+			searchesData.add(Integer.valueOf(a == null ? 0 : a.getSearches()));
 		}
 
 		return new Object[] { labels, callsData, votesData, searchesData };

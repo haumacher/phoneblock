@@ -7,6 +7,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.ibatis.annotations.Arg;
+import org.apache.ibatis.annotations.ConstructorArgs;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Select;
@@ -429,98 +431,95 @@ public interface SpamReports {
 			""")
 	List<DBBlocklistEntry> getBlocklist(int minVotes);
 	
+	/**
+	 * Top searched spam numbers over a recent day window, ranked by their summed
+	 * per-day search count (the status page's "today and yesterday" list). The
+	 * count comes from {@code NUMBER_ACTIVITY}; the live {@code NUMBERS} row
+	 * supplies the cumulative total, the last-search timestamp and the
+	 * spam-visibility filter. A number that has gone quiet simply has no recent
+	 * rows and drops out — there is no rotated counter left to freeze. Mapped by
+	 * constructor position ({@link DBSearchInfo}): PHONE, window count, total,
+	 * last-search.
+	 *
+	 * @param minDay lowest UTC epoch-day to include (inclusive).
+	 */
 	@Select("""
-			select s.PHONE, s.SEARCHES_CURRENT, s.SEARCHES, s.LASTSEARCH from NUMBERS s
-			where (s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE) >= #{minRawSpam}
-			order by s.SEARCHES_CURRENT desc
+			select a.PHONE, cast(sum(a.SEARCHES) as int), s.SEARCHES, s.LASTSEARCH
+			from NUMBER_ACTIVITY a join NUMBERS s on s.PHONE = a.PHONE
+			where a.EPOCH_DAY >= #{minDay} and (s.SPAM_EVIDENCE - s.LEGIT_EVIDENCE) >= #{minRawSpam}
+			group by a.PHONE, s.SEARCHES, s.LASTSEARCH
+			order by 2 desc
 			limit #{limit}
 			""")
-	List<DBSearchInfo> getTopSearchesCurrent(int limit, double minRawSpam);
+	List<DBSearchInfo> getTopSearches(int minDay, double minRawSpam, int limit);
 	
 	/**
-	 * Retrieves all historic versions for the given number not older than the given revision.
-	 * 
-	 * <p>
-	 * Note: There is no entry for revisions in which the number has not changed from it's previous version.
-	 * </p>
+	 * Adds the given per-day increments to the {@code (number, day)} activity row,
+	 * inserting it when absent. The single {@code MERGE} is atomic, so concurrent
+	 * events for the same number and day accumulate without colliding.
+	 *
+	 * @param day UTC epoch-day (floor(epochMillis / 86400000)).
 	 */
-	@Select("""
-			select h.RMIN, h.RMAX, h.PHONE, h.CALLS, h.VOTES, h.LEGITIMATE, h.PING, h.POLL, h.ADVERTISING, h.GAMBLE, h.FRAUD, h.SEARCHES from NUMBERS_HISTORY h
-			where h.RMAX >= #{revision} and h.PHONE = #{phone} order by h.RMIN
+	@Update("""
+			merge into NUMBER_ACTIVITY as t
+			using (values (#{phone}, #{day}, #{searches}, #{calls}, #{votes})) as v(PHONE, EPOCH_DAY, SEARCHES, CALLS, VOTES)
+				on t.PHONE = v.PHONE and t.EPOCH_DAY = v.EPOCH_DAY
+			when matched then update set t.SEARCHES = t.SEARCHES + v.SEARCHES, t.CALLS = t.CALLS + v.CALLS, t.VOTES = t.VOTES + v.VOTES
+			when not matched then insert (PHONE, EPOCH_DAY, SEARCHES, CALLS, VOTES) values (v.PHONE, v.EPOCH_DAY, v.SEARCHES, v.CALLS, v.VOTES)
 			""")
-	List<DBNumberHistory> getSearchHistory(int revision, String phone);
+	void mergeActivity(String phone, int day, int searches, int calls, int votes);
 
 	/**
-	 * The newest history entry for the given number that is not newer than the requested revision.
+	 * Per-day activity rows for one number from {@code minDay} (inclusive, UTC
+	 * epoch-day) onwards, ascending. Days without activity have no row; the caller
+	 * fills the gaps with zero. Constructor-mapped ({@link DBDayActivity}):
+	 * EPOCH_DAY, SEARCHES, CALLS, VOTES. The explicit {@code @ConstructorArgs} is
+	 * required because the column names coincide with bean properties; without it
+	 * MyBatis would auto-map by field reflection, which the Java module system
+	 * blocks (the {@code db} package is not opened).
 	 */
+	@ConstructorArgs({
+		@Arg(column = "EPOCH_DAY", javaType = int.class),
+		@Arg(column = "SEARCHES", javaType = int.class),
+		@Arg(column = "CALLS", javaType = int.class),
+		@Arg(column = "VOTES", javaType = int.class),
+	})
 	@Select("""
-			select h.RMIN, h.RMAX, h.PHONE, h.CALLS, h.VOTES, h.LEGITIMATE, h.PING, h.POLL, h.ADVERTISING, h.GAMBLE, h.FRAUD, h.SEARCHES from NUMBERS_HISTORY h
-			where h.RMIN <= #{rev} and h.RMAX >= #{rev} and h.PHONE = #{phone}
+			select a.EPOCH_DAY, a.SEARCHES, a.CALLS, a.VOTES from NUMBER_ACTIVITY a
+			where a.PHONE = #{phone} and a.EPOCH_DAY >= #{minDay}
+			order by a.EPOCH_DAY
 			""")
-	DBNumberHistory getHistoryEntry(String phone, int rev);
-
-	@Select("""
-			select h.RMIN, h.RMAX, h.PHONE, h.CALLS, h.VOTES, h.LEGITIMATE, h.PING, h.POLL, h.ADVERTISING, h.GAMBLE, h.FRAUD, h.SEARCHES from NUMBERS_HISTORY h
-			where h.RMIN = #{rev}
-			""")
-	List<DBNumberHistory> getHistoryEntries(int rev);
+	List<DBDayActivity> getNumberActivity(String phone, int minDay);
 
 	/**
-	 * Per-revision (≈ per-day) increments of the cumulative {@code CALLS},
-	 * {@code VOTES} and {@code SEARCHES} counters since the given revision.
-	 *
-	 * <p>
-	 * For every number that changed in revision {@code h.RMIN} the increment is
-	 * its snapshot value minus the value of the immediately preceding snapshot
-	 * ({@code p.RMAX = h.RMIN - 1}). Summing over all numbers of a revision
-	 * yields the global daily activity. Revisions in which no number changed do
-	 * not appear (effectively never in production).
-	 * </p>
-	 *
-	 * <p>
-	 * The vote series counts votes <em>cast</em> per day, using the monotonic
-	 * {@code DOWN_VOTES + UP_VOTES} rather than the net {@code VOTES} counter.
-	 * {@code VOTES} is spam minus legit and can fall when legit votes arrive, so
-	 * differencing it would produce negative daily bars; {@code DOWN_VOTES} and
-	 * {@code UP_VOTES} only ever grow, matching the activity semantics of the
-	 * calls and searches series (both also monotonic counters).
-	 * </p>
-	 *
-	 * <p>
-	 * Each number's per-revision contribution is clamped to a non-negative
-	 * activity count via {@code greatest(..., 0)}:
-	 * </p>
-	 * <ul>
-	 * <li>A row without a predecessor contributes {@code 0}, not its full
-	 * counter: the cumulative counters span the whole lifetime of a number, so
-	 * treating a missing predecessor as {@code 0} (i.e. {@code h.CALLS - 0})
-	 * would dump the entire backlog onto a single day. Predecessors legitimately
-	 * disappear when the retention window drops old revisions
-	 * ({@link DB#updateHistory}); the day's increment is then unknowable and
-	 * excluded rather than inflated. The cost is a one-day undercount for a
-	 * number's very first appearance, negligible against the corpus total. Hence
-	 * {@code coalesce} wraps the whole difference, not just {@code p}.</li>
-	 * <li>A <em>negative</em> per-number difference is clamped to {@code 0}. The
-	 * counters only ever grow on {@code NUMBERS}, so a snapshot value that drops
-	 * below its predecessor is a data artifact, never negative activity — and an
-	 * activity bar must not go negative. The outer {@code greatest} guards
-	 * against it regardless of the artifact's origin.</li>
-	 * </ul>
+	 * Global per-day activity (search/call/vote increments summed across all
+	 * numbers) from {@code minDay} (inclusive, UTC epoch-day) onwards, ascending.
+	 * Each row is that day's activity directly — no baseline, no differencing — so
+	 * first-appearance and sparse-number activity is counted in full.
+	 * Constructor-mapped ({@link DBDayActivity}): EPOCH_DAY, SEARCHES, CALLS, VOTES.
 	 */
+	@ConstructorArgs({
+		@Arg(column = "EPOCH_DAY", javaType = int.class),
+		@Arg(column = "SEARCHES", javaType = int.class),
+		@Arg(column = "CALLS", javaType = int.class),
+		@Arg(column = "VOTES", javaType = int.class),
+	})
 	@Select("""
-			select r.CREATED as created,
-			       sum(greatest(coalesce(h.CALLS - p.CALLS, 0), 0)) as calls,
-			       sum(greatest(coalesce((h.DOWN_VOTES + h.UP_VOTES) - (p.DOWN_VOTES + p.UP_VOTES), 0), 0)) as votes,
-			       sum(greatest(coalesce(h.SEARCHES - p.SEARCHES, 0), 0)) as searches
-			from NUMBERS_HISTORY h
-			join REVISION r on r.ID = h.RMIN
-			left join NUMBERS_HISTORY p on p.PHONE = h.PHONE and p.RMAX = h.RMIN - 1
-			where h.RMIN >= #{minRev}
-			group by h.RMIN, r.CREATED
-			order by h.RMIN
+			select a.EPOCH_DAY, cast(sum(a.SEARCHES) as int) as SEARCHES, cast(sum(a.CALLS) as int) as CALLS, cast(sum(a.VOTES) as int) as VOTES from NUMBER_ACTIVITY a
+			where a.EPOCH_DAY >= #{minDay}
+			group by a.EPOCH_DAY
+			order by a.EPOCH_DAY
 			""")
-	List<DailyActivity> getActivityHistory(int minRev);
-	
+	List<DBDayActivity> getGlobalActivity(int minDay);
+
+	/**
+	 * Retention prune: drops activity rows older than {@code minDay} (UTC
+	 * epoch-day). Deltas are self-contained, so nothing has to survive as a
+	 * baseline.
+	 */
+	@Delete("delete from NUMBER_ACTIVITY where EPOCH_DAY < #{minDay}")
+	int deleteActivityBefore(int minDay);
+
 	@Select(
 		"""
 		<script>
@@ -615,7 +614,6 @@ public interface SpamReports {
 			update NUMBERS s
 			set
 				s.SEARCHES = s.SEARCHES + 1,
-				s.SEARCHES_CURRENT = s.SEARCHES_CURRENT + 1,
 				s.LASTSEARCH = GREATEST(s.LASTSEARCH, #{now}),
 				s.LASTPING = GREATEST(s.LASTPING, #{now}),
 				s.HEAT = s.HEAT + #{heatInc}
@@ -723,121 +721,6 @@ public interface SpamReports {
 	
 	@Update("UPDATE SUMMARY SET COMMENT = #{comment}, CREATED = #{created} WHERE PHONE = #{phone}")
 	int updateSummary(String phone, String comment, Long created);
-	
-	/**
-	 * Inserts a revision with an application-assigned {@link Rev#getId() id}. The id is not left to
-	 * an H2 {@code IDENTITY} sequence, which advances even on a rolled-back insert and would leave
-	 * gaps in the id space (see {@link #getLastSnapshotTime()}).
-	 */
-	@Insert("insert into REVISION (ID, CREATED) values (#{id}, #{date})")
-	void storeRevision(Rev newRev);
-	
-	@Select("select max(ID) from REVISION")
-	Integer getLastRevision();
-	
-	@Select("select CREATED from REVISION where id=#{rev}")
-	Long getRevisionDate(int rev);
-
-	/**
-	 * Creation time of the most recent committed revision, or <code>null</code> if no revision
-	 * exists yet.
-	 *
-	 * <p>
-	 * This is the watermark for the next history snapshot. Deriving it from the newest committed
-	 * revision (rather than from "current revision id minus one") keeps it correct even when a
-	 * previous snapshot attempt failed: a rolled-back attempt simply leaves the newest committed
-	 * revision unchanged. Revision ids are assigned by the application as {@code max(ID) + 1} and
-	 * therefore have no gaps, but reading the timestamp directly stays robust regardless.
-	 * </p>
-	 */
-	@Select("select max(CREATED) from REVISION")
-	Long getLastSnapshotTime();
-
-	@Select("select min(ID) from REVISION")
-	int getOldestRevision();
-
-	/**
-	 * Upper {@code PHONE} bound (inclusive) of the next batch of active numbers above
-	 * {@code fromPhone}, or <code>null</code> if no active number remains. "Active" means
-	 * {@code LASTPING > lastSnapshot}.
-	 *
-	 * <p>
-	 * Drives the {@code PHONE}-range batching of the history snapshot so that no single transaction
-	 * rewrites the whole table. The {@code PHONE} primary key makes the range scan cheap.
-	 * </p>
-	 */
-	@Select("""
-			select max(PHONE) from (
-				select s.PHONE from NUMBERS s
-				where s.LASTPING > #{lastSnapshot} and s.PHONE > #{fromPhone}
-				order by s.PHONE
-				limit #{batchSize}
-			)
-			""")
-	String nextHistoryBatchBound(long lastSnapshot, String fromPhone, int batchSize);
-
-	/**
-	 * Closes the currently open history generation ({@code RMAX = 0x7fffffff}) of every active number
-	 * in the batch, so {@link #createHistorySnapshot} can open a fresh generation for them.
-	 *
-	 * <p>
-	 * The "is active" criterion lives in {@code NUMBERS}, so the update on {@code NUMBERS_HISTORY}
-	 * must correlate to that table. This is expressed as a correlated {@code EXISTS} rather than
-	 * {@code PHONE IN (subquery)} on purpose: the {@code IN} form let H2's cost-based optimizer flip
-	 * to a full {@code NUMBERS_HISTORY} scan once the table had grown large enough, turning a
-	 * batch-sized update into a multi-hour, CPU-bound statement that pinned old MVStore page versions.
-	 * The {@code EXISTS} correlation pins {@code s.PHONE} to the row at hand, so H2 probes the
-	 * {@code NUMBERS} primary key per matched history row instead of materializing the whole active
-	 * set. The outer {@code PHONE} range still bounds the scan to the batch; no inner range is needed
-	 * because the correlation already points at a single number. The outer {@code PHONE} must be
-	 * fully qualified — an unqualified reference would bind to {@code NUMBERS.PHONE} inside the
-	 * subquery and make the predicate trivially true.
-	 * </p>
-	 */
-	@Update("""
-			update NUMBERS_HISTORY
-			set
-				RMAX = #{rev} - 1
-			where
-				RMAX = 0x7fffffff and
-				PHONE > #{fromPhone} and PHONE <= #{toPhone} and
-				exists (select 1 from NUMBERS s
-					where s.PHONE = NUMBERS_HISTORY.PHONE and s.LASTPING > #{lastSnapshot})
-			""")
-	int outdateHistorySnapshot(int rev, long lastSnapshot, String fromPhone, String toPhone);
-
-	@Insert("""
-			insert into NUMBERS_HISTORY (RMIN, RMAX, PHONE, CALLS, VOTES, DOWN_VOTES, UP_VOTES, LEGITIMATE, PING, POLL, ADVERTISING, GAMBLE, FRAUD, SEARCHES) (
-				select #{rev}, 0x7fffffff, s.PHONE, s.CALLS, s.VOTES, s.DOWN_VOTES, s.UP_VOTES, s.LEGITIMATE, s.PING, s.POLL, s.ADVERTISING, s.GAMBLE, s.FRAUD, s.SEARCHES from NUMBERS s
-				where s.LASTPING > #{lastSnapshot} and s.PHONE > #{fromPhone} and s.PHONE <= #{toPhone}
-			)
-			""")
-	int createHistorySnapshot(int rev, long lastSnapshot, String fromPhone, String toPhone);
-
-	/**
-	 * Remove the backup (searches yesterday) from the current searches. Store the searches from the currently completed day into the backup.
-	 * @param lastSnapshot Time when the last revision was created.
-	 * @return The number of updated lines.
-	 */
-	@Update("""
-			update NUMBERS s
-			set
-				s.SEARCHES_BACKUP = s.SEARCHES_CURRENT - s.SEARCHES_BACKUP,
-				s.SEARCHES_CURRENT = s.SEARCHES_CURRENT - s.SEARCHES_BACKUP
-			where s.LASTPING > #{lastSnapshot} and s.PHONE > #{fromPhone} and s.PHONE <= #{toPhone}
-			""")
-	int updateSearches(long lastSnapshot, String fromPhone, String toPhone);
-
-	/**
-	 * Deletes up to {@code batchSize} history rows of the given revision. Called repeatedly until it
-	 * returns fewer than {@code batchSize} rows, so dropping a large revision never happens in a
-	 * single oversized transaction.
-	 */
-	@Delete("delete from NUMBERS_HISTORY where RMIN=#{id} limit #{batchSize}")
-	int cleanRevision(int id, int batchSize);
-	
-	@Delete("delete from REVISION where ID=#{id}")
-	void removeRevision(int id);
 
 	/**
 	 * Publication sweep, addition/upgrade half (#342): merges the live

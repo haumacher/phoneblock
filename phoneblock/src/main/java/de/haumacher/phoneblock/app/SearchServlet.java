@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -35,6 +37,7 @@ import de.haumacher.phoneblock.app.render.TemplateRenderer;
 import de.haumacher.phoneblock.app.render.controller.PhoneInfoController;
 import de.haumacher.phoneblock.db.AggregationInfo;
 import de.haumacher.phoneblock.db.DB;
+import de.haumacher.phoneblock.db.DBDayActivity;
 import de.haumacher.phoneblock.db.DBNumberInfo;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.DBUserSettings;
@@ -393,7 +396,7 @@ public class SearchServlet extends HttpServlet {
 			}
 		}
 		
-		searches = db.getSearchHistory(reports, phoneId, 7);
+		searches = db.getNumberActivity(reports, phoneId, 7).stream().map(DBDayActivity::getSearches).collect(Collectors.toList());
 		aiSummary = reports.getSummary(phoneId);
 
 		// Navigate only between numbers that still display at least one vote;
@@ -601,36 +604,46 @@ public class SearchServlet extends HttpServlet {
 		req.setAttribute("ratingBackground", ratingBackground.toString());
 		req.setAttribute("ratingBorder", ratingBorder.toString());
 		
-		// Create search chart
-		SimpleDateFormat fmt = new SimpleDateFormat("dd.MM.");
-		Calendar date = new GregorianCalendar();
-		date.add(Calendar.DAY_OF_MONTH, -(searches.size() - 1));
+		// Per-number activity chart: searches, blocked calls and votes per day.
+		// Skipped when details are suppressed (then SEARCHES_ATTR is empty and the
+		// template hides the chart anyway).
+		if (!searches.isEmpty()) {
+			List<DBDayActivity> activity = DBService.getInstance().getNumberActivity(searchResult.getPhoneId(), 7);
 
-		StringBuilder searchLabels = new StringBuilder();
-		StringBuilder searchData = new StringBuilder();
+			SimpleDateFormat fmt = new SimpleDateFormat("dd.MM.");
+			fmt.setTimeZone(TimeZone.getTimeZone("UTC"));
 
-		boolean first = true;
+			StringBuilder searchLabels = new StringBuilder("[");
+			StringBuilder searchData = new StringBuilder("[");
+			StringBuilder callsData = new StringBuilder("[");
+			StringBuilder votesData = new StringBuilder("[");
 
-		searchLabels.append('[');
-		searchData.append('[');
-		for (Integer cnt : searches) {
-			if (first) {
-				first = false;
-			} else {
-				searchLabels.append(',');
-				searchData.append(',');
+			boolean first = true;
+			for (DBDayActivity a : activity) {
+				if (first) {
+					first = false;
+				} else {
+					searchLabels.append(',');
+					searchData.append(',');
+					callsData.append(',');
+					votesData.append(',');
+				}
+				jsString(searchLabels, fmt.format(new Date(a.getEpochDay() * DB.MILLIS_PER_DAY)));
+				searchData.append(a.getSearches());
+				callsData.append(a.getCalls());
+				votesData.append(a.getVotes());
 			}
-			jsString(searchLabels, fmt.format(date.getTime()));
-			date.add(Calendar.DAY_OF_MONTH, 1);
-			
-			searchData.append(cnt);
-		}
-		searchLabels.append(']');
-		searchData.append(']');
+			searchLabels.append(']');
+			searchData.append(']');
+			callsData.append(']');
+			votesData.append(']');
 
-		req.setAttribute("searchLabels", searchLabels.toString());
-		req.setAttribute("searchData", searchData.toString());
-		
+			req.setAttribute("searchLabels", searchLabels.toString());
+			req.setAttribute("searchData", searchData.toString());
+			req.setAttribute("callsData", callsData.toString());
+			req.setAttribute("votesData", votesData.toString());
+		}
+
 		TemplateRenderer.getInstance(req).process(PhoneInfoController.PHONE_INFO_PAGE, req, resp);
 	}
 
