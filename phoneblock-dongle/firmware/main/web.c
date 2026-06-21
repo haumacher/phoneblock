@@ -378,6 +378,7 @@ static esp_err_t handle_status(httpd_req_t *req)
     cJSON_AddNumberToObject(bl, "last_ago_s",      (double)bl_ago_s);
     cJSON_AddStringToObject(bl, "last_error",      bs.last_error);
     cJSON_AddBoolToObject  (bl, "wildcards",       config_blocklist_wildcards());
+    cJSON_AddBoolToObject  (bl, "enabled",         config_blocklist_enabled());
 
     cJSON *ann = cJSON_AddObjectToObject(root, "announcement");
     cJSON_AddBoolToObject  (ann,  "custom",  announcement_is_custom());
@@ -552,6 +553,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     char crash_rep_s[4]   = "";
     char test_calls_s[4]  = "";
     char bl_wild_s[4]     = "";
+    char bl_enabled_s[4]  = "";
     char smtp_host[64]    = "";
     char smtp_port_s[8]   = "";
     char smtp_sec[10]     = "";
@@ -585,6 +587,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     bool have_crash_rep = form_get(body, "crash_report",  crash_rep_s,   sizeof(crash_rep_s));
     bool have_test_call = form_get(body, "accept_test_calls", test_calls_s, sizeof(test_calls_s));
     bool have_bl_wild   = form_get(body, "blocklist_wildcards", bl_wild_s, sizeof(bl_wild_s));
+    bool have_bl_en     = form_get(body, "blocklist_enabled", bl_enabled_s, sizeof(bl_enabled_s));
     bool have_pb_url     = form_get(body, "pb_url",    pb_url,    sizeof(pb_url));
     bool have_pb_token   = form_get(body, "pb_token",  pb_token,  sizeof(pb_token));
     bool have_min_direct = form_get(body, "min_direct_votes", min_direct_s, sizeof(min_direct_s));
@@ -673,6 +676,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
         .crash_report    = have_crash_rep ? crash_rep_s   : NULL,
         .accept_test_calls = have_test_call ? test_calls_s : NULL,
         .blocklist_wildcards = have_bl_wild ? bl_wild_s : NULL,
+        .blocklist_enabled   = have_bl_en   ? bl_enabled_s : NULL,
         .phoneblock_base_url = have_pb_url   && pb_url[0]   ? pb_url   : NULL,
         .phoneblock_token    = have_pb_token && pb_token[0] ? pb_token : NULL,
         .min_direct_votes = have_min_direct && min_direct_s[0] ? atoi(min_direct_s) : 0,

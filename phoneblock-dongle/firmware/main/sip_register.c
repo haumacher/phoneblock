@@ -1153,7 +1153,11 @@ static verdict_t check_invite_caller(const char *req, int req_len)
     pb_check_result_t result;
     verdict_t v;
     const char *digits = (number[0] == '+') ? number + 1 : number;
-    blocklist_verdict_t local = blocklist_sync_check(digits, config_blocklist_wildcards());
+    // Skip the local files entirely when the cache is disabled — every
+    // call then resolves against the live server API.
+    blocklist_verdict_t local = config_blocklist_enabled()
+        ? blocklist_sync_check(digits, config_blocklist_wildcards())
+        : BLOCKLIST_UNKNOWN;
     if (local == BLOCKLIST_SPAM) {
         memset(&result, 0, sizeof(result));
         result.verdict = VERDICT_SPAM;

@@ -295,6 +295,13 @@ void blocklist_sync_run(void)
     if (s_lock == NULL) {
         return;
     }
+    if (!config_blocklist_enabled()) {
+        // Feature switched off in the web UI: don't refresh the on-flash
+        // files. The existing files stay put but are never consulted (the
+        // call-time path skips them too), so they simply age out.
+        ESP_LOGI(TAG, "skipped — local blocklist cache disabled");
+        return;
+    }
 
     xSemaphoreTake(s_lock, portMAX_DELAY);
     s_status.running = true;
@@ -309,7 +316,7 @@ void blocklist_sync_run(void)
 
 bool blocklist_sync_trigger_now(void)
 {
-    if (s_lock == NULL) {
+    if (s_lock == NULL || !config_blocklist_enabled()) {
         return false;
     }
     xSemaphoreTake(s_lock, portMAX_DELAY);

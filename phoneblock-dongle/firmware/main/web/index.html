@@ -269,6 +269,9 @@ const I18N = {
     'status.sync.disabled': 'Automatischer Sync deaktiviert — manuell weiterhin möglich.',
     'status.localcache.title': 'Blocklist-Cache',
     'status.localcache.intro': 'Einmal pro Tag lädt der Dongle die aktuelle Sperrliste und Deine persönliche Black-/White-List herunter und legt sie auf dem internen Flash ab. Eingehende Anrufe werden so überwiegend ohne Server-Anfrage entschieden — schneller und auch bei Netzproblemen verlässlich.',
+    'status.localcache.enable': 'Blocklist-Cache verwenden',
+    'status.localcache.enable.help': 'Lädt die Sperrliste auf den Dongle und entscheidet Anrufe lokal. Aus: Jeder Anruf wird direkt beim Server geprüft — langsamer und nur bei funktionierender Internetverbindung möglich.',
+    'status.localcache.disabled': 'Deaktiviert — Anrufe werden direkt beim Server geprüft.',
     'status.localcache.never': 'Noch nicht heruntergeladen.',
     'status.localcache.have': '{community} Einträge in der Gemeinschaftsliste, {personal} persönlich. Aktualisiert vor {ago}.',
     'status.localcache.last_fail': 'Letzter Download vor {ago} fehlgeschlagen: {err}',
@@ -528,6 +531,9 @@ const I18N = {
     'status.sync.disabled': 'Automatic sync disabled — manual run still available.',
     'status.localcache.title': 'Blocklist cache',
     'status.localcache.intro': 'Once a day the dongle downloads the current community blocklist plus your personal black/white list and stores them on internal flash. Incoming calls are then decided without an API round-trip — faster, and resilient to network glitches.',
+    'status.localcache.enable': 'Use blocklist cache',
+    'status.localcache.enable.help': 'Downloads the blocklist onto the dongle and decides calls locally. Off: every call is checked against the server directly — slower, and only possible with a working internet connection.',
+    'status.localcache.disabled': 'Disabled — calls are checked against the server directly.',
     'status.localcache.never': 'Not downloaded yet.',
     'status.localcache.have': '{community} community entries, {personal} personal. Refreshed {ago} ago.',
     'status.localcache.last_fail': 'Last download {ago} ago failed: {err}',
@@ -774,6 +780,9 @@ const I18N = {
     'status.sync.disabled': 'Synchro auto désactivée — exécution manuelle toujours possible.',
     'status.localcache.title': 'Cache de la liste de blocage',
     'status.localcache.intro': 'Une fois par jour, le dongle télécharge la liste de blocage commune et votre liste noire/blanche personnelle, puis les stocke en mémoire flash interne. Les appels entrants sont alors décidés sans appel API — plus rapide, et résistant aux problèmes réseau.',
+    'status.localcache.enable': 'Utiliser le cache de liste de blocage',
+    'status.localcache.enable.help': 'Télécharge la liste de blocage sur le dongle et décide des appels localement. Désactivé : chaque appel est vérifié directement auprès du serveur — plus lent, et possible uniquement avec une connexion Internet active.',
+    'status.localcache.disabled': 'Désactivé — les appels sont vérifiés directement auprès du serveur.',
     'status.localcache.never': 'Pas encore téléchargé.',
     'status.localcache.have': '{community} entrées communes, {personal} personnelles. Rafraîchi il y a {ago}.',
     'status.localcache.last_fail': 'Dernier téléchargement il y a {ago} en échec : {err}',
@@ -1020,6 +1029,9 @@ const I18N = {
     'status.sync.disabled': 'Sincronización auto desactivada — ejecución manual aún posible.',
     'status.localcache.title': 'Caché de lista de bloqueo',
     'status.localcache.intro': 'Una vez al día, el dongle descarga la lista de bloqueo común y tu lista negra/blanca personal, y las guarda en la memoria flash interna. Las llamadas entrantes se deciden entonces sin llamadas a la API — más rápido y resistente a problemas de red.',
+    'status.localcache.enable': 'Usar caché de lista de bloqueo',
+    'status.localcache.enable.help': 'Descarga la lista de bloqueo en el dongle y decide las llamadas localmente. Desactivado: cada llamada se comprueba directamente con el servidor — más lento y solo posible con una conexión a Internet activa.',
+    'status.localcache.disabled': 'Desactivado — las llamadas se comprueban directamente con el servidor.',
     'status.localcache.never': 'Aún no descargado.',
     'status.localcache.have': '{community} entradas comunes, {personal} personales. Actualizado hace {ago}.',
     'status.localcache.last_fail': 'Última descarga hace {ago} falló: {err}',
@@ -1432,6 +1444,11 @@ function renderStatus(){
     + '<details id="localCacheSection" class="adminsec" style="display:none">'
     + '<summary>' + esc(t('status.localcache.title')) + '</summary>'
     + '<p class="muted">' + esc(t('status.localcache.intro')) + '</p>'
+    + '<label title="' + esc(t('status.localcache.enable.help')) + '" '
+    +   'style="display:flex;align-items:center;gap:.5rem;margin:.4rem 0;font-size:.9rem;color:#222">'
+    + '  <input type="checkbox" id="blEnabled" style="width:auto;margin:0">'
+    + '  <span>' + esc(t('status.localcache.enable')) + '</span>'
+    + '</label>'
     + '<label title="' + esc(t('status.localcache.wildcards.help')) + '" '
     +   'style="display:flex;align-items:center;gap:.5rem;margin:.4rem 0;font-size:.9rem;color:#222">'
     + '  <input type="checkbox" id="blWildcards" style="width:auto;margin:0">'
@@ -1774,9 +1791,17 @@ async function refreshAll(){
   // button is for fresh setups where the user does not want to wait
   // for the next scheduled tick.
   const bl = s.blocklist || {};
+  const blEnabled  = $('blEnabled');
+  // Default to enabled when the field is absent (older firmware) so the
+  // UI never mis-reports an active cache as off.
+  const blOn = bl.enabled !== false;
+  blEnabled.checked = blOn;
   const blStatus = $('localCacheStatus');
   const blAgo = bl.last_ago_s >= 0 ? fmtSec(bl.last_ago_s) : '–';
-  if (bl.running){
+  if (!blOn){
+    blStatus.textContent = t('status.localcache.disabled');
+    blStatus.style.color = '#888';
+  } else if (bl.running){
     blStatus.textContent = t('status.localcache.running');
     blStatus.style.color = '#e8710a';
   } else if (!bl.ever_ran && !bl.have_community && !bl.have_personal){
@@ -1796,7 +1821,27 @@ async function refreshAll(){
   const blWildcards = $('blWildcards');
   const blRun       = $('blRun');
   blWildcards.checked = !!bl.wildcards;
-  blRun.disabled = !!bl.running;
+  // The wildcards toggle and the manual download only make sense while
+  // the cache is on; grey them out when it is disabled.
+  blWildcards.disabled = !blOn;
+  blRun.disabled = !blOn || !!bl.running;
+  if (!blEnabled.onchange){
+    blEnabled.onchange = async () => {
+      const want = blEnabled.checked;
+      blEnabled.disabled = true;
+      const body = new URLSearchParams();
+      body.append('blocklist_enabled', want ? '1' : '0');
+      try {
+        await fetch('/api/config', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: body.toString(),
+        });
+      } catch (_){ /* next poll reconciles */ }
+      blEnabled.disabled = false;
+      refreshAll();
+    };
+  }
   if (!blWildcards.onchange){
     blWildcards.onchange = async () => {
       const want = blWildcards.checked;
