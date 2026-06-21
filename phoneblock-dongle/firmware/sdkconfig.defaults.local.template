@@ -32,14 +32,14 @@
 # physical LED), and advertise the host's LAN IP + forwarded UDP
 # port in Via/Contact so the Fritz!Box can deliver INVITEs back
 # through QEMU's user-mode NAT. Pair this with
-#   -nic user,model=open_eth,hostfwd=udp::5061-:5061
+#   -nic user,model=open_eth,hostfwd=udp::15060-:15060
 # on the QEMU command line.
 #CONFIG_EXAMPLE_CONNECT_WIFI=n
 #CONFIG_EXAMPLE_CONNECT_ETHERNET=y
 #CONFIG_EXAMPLE_USE_OPENETH=y
 #CONFIG_STATUS_LED_GPIO=-1
 #CONFIG_SIP_CONTACT_HOST_OVERRIDE="192.168.178.22"
-#CONFIG_SIP_CONTACT_PORT_OVERRIDE=5061
+#CONFIG_SIP_CONTACT_PORT_OVERRIDE=15060
 
 # --- Dev test hook: pre-tick the runtime toggle --------------------
 # This Kconfig only sets the default state of the "Accept local test

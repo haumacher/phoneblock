@@ -24,6 +24,7 @@
 #include "blocklist_sync.h"
 #include "config.h"
 #include "firmware_update.h"
+#include "mail.h"
 #include "sip_register.h"
 #include "stats.h"
 #include "sync.h"
@@ -234,6 +235,51 @@ static esp_err_t handle_root(httpd_req_t *req)
     return ESP_OK;
 }
 
+// Add heap figures and, where the run-time stats are compiled in, a
+// per-task CPU breakdown under "system". This is the live field-diagnosis
+// readout for "the dongle is hot / unstable": a runaway task shows up as a
+// high cpu_pct instead of having to guess. The CPU figures are sampled
+// over a short window (so they reflect *current* load, not a boot
+// average), which briefly delays this one request — fine for a diagnostic
+// poll. Percentages are of total CPU across both cores, so a task pegging
+// a single core reads ~50%.
+static void add_system_load(cJSON *root)
+{
+    cJSON *sys = cJSON_AddObjectToObject(root, "system");
+    cJSON_AddNumberToObject(sys, "free_heap",     (double)esp_get_free_heap_size());
+    cJSON_AddNumberToObject(sys, "min_free_heap", (double)esp_get_minimum_free_heap_size());
+
+#if CONFIG_FREERTOS_GENERATE_RUN_TIME_STATS
+    UBaseType_t cap = uxTaskGetNumberOfTasks() + 4;   // headroom for mid-sample spawns
+    TaskStatus_t *a = malloc(cap * sizeof(TaskStatus_t));
+    TaskStatus_t *b = malloc(cap * sizeof(TaskStatus_t));
+    if (!a || !b) { free(a); free(b); return; }
+
+    uint32_t t0 = 0, t1 = 0;
+    UBaseType_t na = uxTaskGetSystemState(a, cap, &t0);
+    vTaskDelay(pdMS_TO_TICKS(250));
+    UBaseType_t nb = uxTaskGetSystemState(b, cap, &t1);
+    uint32_t dtotal = t1 - t0;
+
+    cJSON *tasks = cJSON_AddArrayToObject(sys, "tasks");
+    for (UBaseType_t i = 0; i < nb; i++) {
+        uint32_t prev = 0;
+        for (UBaseType_t j = 0; j < na; j++) {
+            if (a[j].xHandle == b[i].xHandle) { prev = a[j].ulRunTimeCounter; break; }
+        }
+        uint32_t d   = b[i].ulRunTimeCounter - prev;   // wraps cleanly (unsigned)
+        uint32_t pct = dtotal ? (uint32_t)(((uint64_t)d * 100) / dtotal) : 0;
+        cJSON *t = cJSON_CreateObject();
+        cJSON_AddStringToObject(t, "name",       b[i].pcTaskName);
+        cJSON_AddNumberToObject(t, "cpu_pct",    pct);
+        cJSON_AddNumberToObject(t, "stack_free", b[i].usStackHighWaterMark);
+        cJSON_AddItemToArray(tasks, t);
+    }
+    free(a);
+    free(b);
+#endif
+}
+
 static esp_err_t handle_status(httpd_req_t *req)
 {
     REQUIRE_AUTH_API(req);
@@ -272,12 +318,20 @@ static esp_err_t handle_status(httpd_req_t *req)
     cJSON_AddStringToObject(sip,  "host",              config_sip_host());
     cJSON_AddNumberToObject(sip,  "port",              config_sip_port());
     cJSON_AddStringToObject(sip,  "user",              config_sip_user());
+    // Never expose the password itself; surface only whether one is stored
+    // so the manual form can pre-tick the "anonymous" (no-password) box.
+    cJSON_AddBoolToObject  (sip,  "pass_set",          strlen(config_sip_pass()) > 0);
     cJSON_AddStringToObject(sip,  "internal_number",   config_sip_internal_number());
     cJSON_AddStringToObject(sip,  "transport",         config_sip_transport());
     cJSON_AddStringToObject(sip,  "auth_user",         config_sip_auth_user());
     cJSON_AddStringToObject(sip,  "outbound",          config_sip_outbound());
     cJSON_AddStringToObject(sip,  "realm",             config_sip_realm());
     cJSON_AddStringToObject(sip,  "srtp",              config_sip_srtp());
+    // Local bind ports (to forward) + the public IP the registrar sees
+    // us at — together these are what a UDP-behind-NAT setup needs.
+    cJSON_AddNumberToObject(sip,  "local_port",        config_sip_local_port());
+    cJSON_AddNumberToObject(sip,  "rtp_port",          config_rtp_port());
+    cJSON_AddStringToObject(sip,  "public_ip",         sip_register_public_ip());
 
     cJSON *pb = cJSON_AddObjectToObject(root, "phoneblock");
     cJSON_AddStringToObject(pb,   "base_url",           config_phoneblock_base_url());
@@ -340,6 +394,9 @@ static esp_err_t handle_status(httpd_req_t *req)
     cJSON *cl = cJSON_AddObjectToObject(root, "calls");
     cJSON_AddBoolToObject  (cl,   "log_known",   config_log_known_calls());
 
+    cJSON *lg = cJSON_AddObjectToObject(root, "log");
+    cJSON_AddBoolToObject  (lg,   "capture_info", config_log_info());
+
     cJSON *au = cJSON_AddObjectToObject(root, "auth");
     cJSON_AddBoolToObject  (au,   "enabled",     config_auth_enabled());
     cJSON_AddBoolToObject  (au,   "logged_in",   web_auth_is_logged_in(req));
@@ -347,7 +404,23 @@ static esp_err_t handle_status(httpd_req_t *req)
 
     cJSON *fw = cJSON_AddObjectToObject(root, "firmware");
     cJSON_AddBoolToObject  (fw,   "auto_update",  config_auto_update_enabled());
+    cJSON_AddStringToObject(fw,   "channel",      config_ota_channel());
     cJSON_AddBoolToObject  (fw,   "crash_report", config_crash_report_enabled());
+
+    cJSON *ml = cJSON_AddObjectToObject(root, "mail");
+    cJSON_AddStringToObject(ml,   "host",     config_smtp_host());
+    cJSON_AddNumberToObject(ml,   "port",     config_smtp_port());
+    cJSON_AddStringToObject(ml,   "security", config_smtp_security());
+    cJSON_AddStringToObject(ml,   "user",     config_smtp_user());
+    cJSON_AddStringToObject(ml,   "from",     config_smtp_from());
+    cJSON_AddStringToObject(ml,   "to",       config_smtp_to());
+    // Never echo the password; the UI only needs to know whether one is
+    // stored (to render a "leave blank to keep" placeholder).
+    cJSON_AddBoolToObject  (ml,   "pass_set", config_smtp_pass()[0] != '\0');
+    cJSON_AddBoolToObject  (ml,   "on_error", config_mail_on_error());
+    cJSON_AddBoolToObject  (ml,   "on_spam",  config_mail_on_spam());
+
+    add_system_load(root);
 
     send_json(req, root);
     return ESP_OK;
@@ -439,7 +512,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
 {
     REQUIRE_AUTH_API(req);
     int total = req->content_len;
-    if (total <= 0 || total > 1024) {
+    if (total <= 0 || total > 2048) {
         httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "body missing or too large");
         return ESP_OK;
     }
@@ -463,32 +536,52 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     char sip_host[64], sip_user[32], sip_pass[64];
     char pb_url[128],  pb_token[64];
     char sip_port_s[8] = "", sip_exp_s[8] = "";
+    char sip_lport_s[8] = "", rtp_port_s[8] = "";
     char min_direct_s[8] = "", min_range_s[8] = "";
     char sip_transp[8]    = "";
     char sip_authuser[32] = "";
     char sip_outbound[80] = "";
     char sip_realm[64]    = "";
     char sip_srtp[16]     = "";
+    char sip_anon_s[4]    = "";
     char sync_en_s[4]     = "";
     char log_known_s[4]   = "";
+    char log_info_s[4]    = "";
     char auto_update_s[4] = "";
+    char channel_s[8]     = "";
     char crash_rep_s[4]   = "";
     char test_calls_s[4]  = "";
     char bl_wild_s[4]     = "";
+    char smtp_host[64]    = "";
+    char smtp_port_s[8]   = "";
+    char smtp_sec[10]     = "";
+    char smtp_user[64]    = "";
+    char smtp_pass[64]    = "";
+    char smtp_from[64]    = "";
+    char smtp_to[64]      = "";
+    char mail_err_s[4]    = "";
+    char mail_spam_s[4]   = "";
 
     bool have_sip_host  = form_get(body, "sip_host",  sip_host,  sizeof(sip_host));
     bool have_sip_user  = form_get(body, "sip_user",  sip_user,  sizeof(sip_user));
     bool have_sip_pass  = form_get(body, "sip_pass",  sip_pass,  sizeof(sip_pass));
     bool have_sip_port  = form_get(body, "sip_port",  sip_port_s, sizeof(sip_port_s));
+    bool have_sip_lport = form_get(body, "sip_local_port", sip_lport_s, sizeof(sip_lport_s));
+    bool have_rtp_port  = form_get(body, "rtp_port",  rtp_port_s, sizeof(rtp_port_s));
     bool have_sip_exp   = form_get(body, "sip_expires", sip_exp_s, sizeof(sip_exp_s));
     bool have_sip_trans = form_get(body, "sip_transport", sip_transp, sizeof(sip_transp));
     bool have_sip_auth  = form_get(body, "sip_auth_user", sip_authuser, sizeof(sip_authuser));
     bool have_sip_out   = form_get(body, "sip_outbound",  sip_outbound, sizeof(sip_outbound));
     bool have_sip_realm = form_get(body, "sip_realm",     sip_realm,    sizeof(sip_realm));
     bool have_sip_srtp  = form_get(body, "sip_srtp",      sip_srtp,     sizeof(sip_srtp));
+    // Present only when the manual form's "anonymous" box is ticked. Its
+    // presence (not its value) is the signal to clear a stored password.
+    bool have_sip_anon  = form_get(body, "sip_anon",      sip_anon_s,   sizeof(sip_anon_s));
     bool have_sync_en   = form_get(body, "sync_enabled",  sync_en_s,    sizeof(sync_en_s));
     bool have_log_known = form_get(body, "log_known_calls", log_known_s, sizeof(log_known_s));
+    bool have_log_info  = form_get(body, "log_info", log_info_s, sizeof(log_info_s));
     bool have_auto_upd  = form_get(body, "auto_update",   auto_update_s, sizeof(auto_update_s));
+    bool have_channel   = form_get(body, "channel",       channel_s,     sizeof(channel_s));
     bool have_crash_rep = form_get(body, "crash_report",  crash_rep_s,   sizeof(crash_rep_s));
     bool have_test_call = form_get(body, "accept_test_calls", test_calls_s, sizeof(test_calls_s));
     bool have_bl_wild   = form_get(body, "blocklist_wildcards", bl_wild_s, sizeof(bl_wild_s));
@@ -496,6 +589,15 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     bool have_pb_token   = form_get(body, "pb_token",  pb_token,  sizeof(pb_token));
     bool have_min_direct = form_get(body, "min_direct_votes", min_direct_s, sizeof(min_direct_s));
     bool have_min_range  = form_get(body, "min_range_votes",  min_range_s,  sizeof(min_range_s));
+    bool have_smtp_host  = form_get(body, "smtp_host",     smtp_host,   sizeof(smtp_host));
+    bool have_smtp_port  = form_get(body, "smtp_port",     smtp_port_s, sizeof(smtp_port_s));
+    bool have_smtp_sec   = form_get(body, "smtp_security", smtp_sec,    sizeof(smtp_sec));
+    bool have_smtp_user  = form_get(body, "smtp_user",     smtp_user,   sizeof(smtp_user));
+    bool have_smtp_pass  = form_get(body, "smtp_pass",     smtp_pass,   sizeof(smtp_pass));
+    bool have_smtp_from  = form_get(body, "smtp_from",     smtp_from,   sizeof(smtp_from));
+    bool have_smtp_to    = form_get(body, "smtp_to",       smtp_to,     sizeof(smtp_to));
+    bool have_mail_err   = form_get(body, "mail_on_error", mail_err_s,  sizeof(mail_err_s));
+    bool have_mail_spam  = form_get(body, "mail_on_spam",  mail_spam_s, sizeof(mail_spam_s));
     free(body);
 
     const char *new_host = have_sip_host && sip_host[0] ? sip_host : NULL;
@@ -507,13 +609,52 @@ static esp_err_t handle_config_post(httpd_req_t *req)
         clear_int_num = "";
     }
 
+    // OTA channel: only the two known channels are accepted. An
+    // unrecognised value is ignored (left unchanged) rather than
+    // persisted, so a malformed POST can never write a string the
+    // manifest-URL builder would have to defend against.
+    const char *channel = NULL;
+    if (have_channel && (strcmp(channel_s, "stable") == 0 ||
+                         strcmp(channel_s, "beta")   == 0)) {
+        channel = channel_s;
+    }
+
+    // SMTP security: accept only the two known modes; anything else is
+    // ignored (left unchanged) rather than persisted, mirroring the OTA
+    // channel guard. config_smtp_security() clamps on read too.
+    const char *smtp_security = NULL;
+    if (have_smtp_sec && (strcmp(smtp_sec, "tls") == 0 ||
+                          strcmp(smtp_sec, "starttls") == 0)) {
+        smtp_security = smtp_sec;
+    }
+
     config_update_t u = {
         .sip_host   = new_host,
-        .sip_port   = have_sip_port && sip_port_s[0] ? atoi(sip_port_s) : 0,
+        // Port present in the form writes through; absent (a partial
+        // update such as a settings toggle) leaves the stored value
+        // alone. An empty *or* "0" field both mean "auto" (0 → DNS-SRV /
+        // transport default): this matches the prefill, which renders a
+        // stored 0 as an empty field, and lets a provider switch clear a
+        // stale pinned port back to auto.
+        .has_sip_port = have_sip_port,
+        .sip_port     = have_sip_port && sip_port_s[0] ? atoi(sip_port_s) : 0,
+        // Local bind ports. Present-but-empty field → 0 → reset to the
+        // built-in default (15060 / 16000); absent → leave unchanged.
+        .has_sip_local_port = have_sip_lport,
+        .sip_local_port     = have_sip_lport && sip_lport_s[0] ? atoi(sip_lport_s) : 0,
+        .has_rtp_port       = have_rtp_port,
+        .rtp_port           = have_rtp_port && rtp_port_s[0] ? atoi(rtp_port_s) : 0,
         .sip_user   = have_sip_user && sip_user[0]  ? sip_user  : NULL,
-        // Empty password submitted = keep existing (so user doesn't have to
-        // re-type it when editing other fields).
-        .sip_pass   = have_sip_pass && sip_pass[0]  ? sip_pass  : NULL,
+        // Password resolution, in order:
+        //   - "anonymous" box ticked → "" : explicitly clear the stored
+        //     password (the only way to reach a passwordless account like
+        //     anonymous@t-online.de once a password was ever saved).
+        //   - non-empty field         → use it.
+        //   - empty field, no box     → NULL : keep existing, so the user
+        //     need not retype it when editing other fields.
+        .sip_pass   = have_sip_anon                 ? ""
+                    : have_sip_pass && sip_pass[0]  ? sip_pass
+                    : NULL,
         .sip_expires = have_sip_exp && sip_exp_s[0] ? atoi(sip_exp_s) : 0,
         .sip_internal_number = clear_int_num,
         // Extended SIP parameters: explicit empty string clears, missing
@@ -526,7 +667,9 @@ static esp_err_t handle_config_post(httpd_req_t *req)
         .sip_srtp      = have_sip_srtp  ? sip_srtp     : NULL,
         .sync_enabled    = have_sync_en   ? sync_en_s    : NULL,
         .log_known_calls = have_log_known ? log_known_s  : NULL,
+        .log_info        = have_log_info  ? log_info_s   : NULL,
         .auto_update     = have_auto_upd  ? auto_update_s : NULL,
+        .ota_channel     = channel,
         .crash_report    = have_crash_rep ? crash_rep_s   : NULL,
         .accept_test_calls = have_test_call ? test_calls_s : NULL,
         .blocklist_wildcards = have_bl_wild ? bl_wild_s : NULL,
@@ -537,6 +680,22 @@ static esp_err_t handle_config_post(httpd_req_t *req)
         // explicit-flag setter pattern. Empty form field = leave alone.
         .has_min_range_votes = have_min_range && min_range_s[0],
         .min_range_votes     = have_min_range && min_range_s[0] ? atoi(min_range_s) : 0,
+        // SMTP. Text fields write through when present (a present-but-empty
+        // field clears the value — how the user disables mail by emptying
+        // the recipient/host). Port: present-but-empty → 0 = "auto" (derive
+        // 465/587 from the security mode). Password follows the SIP rule:
+        // empty keeps the stored one, so editing other fields doesn't force
+        // a re-type.
+        .smtp_host     = have_smtp_host ? smtp_host : NULL,
+        .has_smtp_port = have_smtp_port,
+        .smtp_port     = have_smtp_port && smtp_port_s[0] ? atoi(smtp_port_s) : 0,
+        .smtp_security = smtp_security,
+        .smtp_user     = have_smtp_user ? smtp_user : NULL,
+        .smtp_pass     = have_smtp_pass && smtp_pass[0] ? smtp_pass : NULL,
+        .smtp_from     = have_smtp_from ? smtp_from : NULL,
+        .smtp_to       = have_smtp_to   ? smtp_to   : NULL,
+        .mail_on_error = have_mail_err  ? mail_err_s  : NULL,
+        .mail_on_spam  = have_mail_spam ? mail_spam_s : NULL,
     };
 
     // Snapshot the PhoneBlock token before the update so we can detect
@@ -597,6 +756,84 @@ static void send_fail(httpd_req_t *req, const char *message)
     send_json(req, root);
 }
 
+// Common tail for both Fritz!Box provisioning paths (direct setup and
+// the post-2FA retry): register the dongle's TR-064 app instance (best
+// effort, see below), persist the freshly provisioned SIP profile, kick
+// off a re-register, and emit the success JSON. `res` must come from a
+// successful tr064_provision_sip_client(); `auth_token` is the 2FA token
+// when one is in play, NULL otherwise.
+static esp_err_t finish_fritzbox_setup(httpd_req_t *req,
+        const char *fritz_host, const char *fritz_user,
+        const char *fritz_pass, const char *auth_token,
+        const tr064_sip_result_t *res)
+{
+    // Best-effort dedicated app instance on the box: gives the sync task
+    // its own Phone-rights-only credentials so we don't have to persist
+    // the admin password. Failure (older Fritz!OS without AppSetup, a
+    // rate-limit, …) is logged but non-fatal — SIP still works, only the
+    // sync feature stays disabled.
+    char app_user[32] = "";
+    char app_pass[40] = "";
+    int  app_err_code = 0;
+    char app_err_msg[128] = "";
+    esp_err_t app_err = tr064_register_dongle_app(
+        fritz_host, 49000, fritz_user, fritz_pass, auth_token,
+        app_user, sizeof(app_user),
+        app_pass, sizeof(app_pass),
+        &app_err_code, app_err_msg, sizeof(app_err_msg));
+    if (app_err != ESP_OK) {
+        // ERROR, not WARN: failing to register the TR-064 app leaves the
+        // blocklist sync to the Fritz!Box disabled — a real loss of
+        // function worth surfacing (and shipping via the log beacon),
+        // not transient noise.
+        ESP_LOGE(TAG,
+            "RegisterApp failed (code %d, %s) — sync feature disabled",
+            app_err_code, app_err_msg);
+        app_user[0] = '\0';
+        app_pass[0] = '\0';
+    }
+
+    // Persist as a *complete* new SIP profile: reset the expert
+    // parameters to the Fritz!Box happy-path defaults so stale
+    // transport/realm/srtp/port from an earlier manual or provider setup
+    // can't survive config_update()'s merge and break the new UDP/5060
+    // registration (#363).
+    config_update_t u = {
+        .sip_host = fritz_host,
+        .has_sip_port = true,
+        .sip_port = 5060,
+        .sip_user = res->sip_user,
+        .sip_pass = res->sip_pass,
+        .sip_internal_number = res->internal_number,
+        .sip_transport = "udp",
+        .sip_auth_user = "",
+        .sip_outbound  = "",
+        .sip_realm     = "",
+        .sip_srtp      = "off",
+        .fritzbox_app_user = app_user,
+        .fritzbox_app_pass = app_pass,
+    };
+    if (config_update(&u) != ESP_OK) {
+        send_fail(req, "NVS write failed.");
+        return ESP_OK;
+    }
+    // TR-064 just provisioned a new extension on the Fritz!Box — give the
+    // box 1.5 s to make it live before the first REGISTER, otherwise it
+    // hits a not-yet-active slot and falls into 30 s retry.
+    sip_register_request_reload(true);
+
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddBoolToObject  (root, "ok", true);
+    cJSON_AddStringToObject(root, "message",
+        "Extension created. The dongle is registering now — "
+        "see the status bar above for the current state.");
+    cJSON_AddStringToObject(root, "sip_user", res->sip_user);
+    cJSON_AddStringToObject(root, "internal_number", res->internal_number);
+    cJSON_AddBoolToObject  (root, "app_registered", app_user[0] != '\0');
+    send_json(req, root);
+    return ESP_OK;
+}
+
 // POST /api/fritzbox-setup
 // Body (URL-encoded): fritz_host=…&fritz_user=…&fritz_pass=…&phone_name=…
 // Runs tr064_provision_sip_client; on success, stores the generated
@@ -622,7 +859,7 @@ static esp_err_t handle_fritzbox_setup(httpd_req_t *req)
     form_get(body, "phone_name", phone_name, sizeof(phone_name));
 
     if (!fritz_host[0]) strncpy(fritz_host, "fritz.box", sizeof(fritz_host) - 1);
-    if (!phone_name[0]) strncpy(phone_name, "Answerbot", sizeof(phone_name) - 1);
+    if (!phone_name[0]) strncpy(phone_name, "PhoneBlock", sizeof(phone_name) - 1);
 
     // Username is optional — mirror the Fritz!Box web UI that only
     // asks for a password and falls back to the default (last-used)
@@ -734,59 +971,10 @@ static esp_err_t handle_fritzbox_setup(httpd_req_t *req)
         return ESP_OK;
     }
 
-    // Best-effort register a dedicated app instance on the box. Gives
-    // the sync task its own Phone-rights-only credentials so we don't
-    // have to persist the admin password. Failure (e.g. older Fritz!OS
-    // without AppSetup, or rate-limit) is logged but does not fail the
-    // whole setup — SIP still works without it, the sync feature just
-    // stays disabled.
-    char app_user[32] = "";
-    char app_pass[40] = "";
-    int  app_err_code = 0;
-    char app_err_msg[128] = "";
-    esp_err_t app_err = tr064_register_dongle_app(
-        fritz_host, 49000, fritz_user, fritz_pass, NULL,
-        app_user, sizeof(app_user),
-        app_pass, sizeof(app_pass),
-        &app_err_code, app_err_msg, sizeof(app_err_msg));
-    if (app_err != ESP_OK) {
-        ESP_LOGW(TAG,
-            "RegisterApp failed (code %d, %s) — sync feature disabled",
-            app_err_code, app_err_msg);
-        app_user[0] = '\0';
-        app_pass[0] = '\0';
-    }
-
-    // Commit generated SIP credentials + registrar + (optional) app
-    // credentials to NVS.
-    config_update_t u = {
-        .sip_host = fritz_host,
-        .sip_port = 5060,
-        .sip_user = res.sip_user,
-        .sip_pass = res.sip_pass,
-        .sip_internal_number = res.internal_number,
-        .fritzbox_app_user = app_user,
-        .fritzbox_app_pass = app_pass,
-    };
-    if (config_update(&u) != ESP_OK) {
-        send_fail(req, "NVS write failed.");
-        return ESP_OK;
-    }
-    // TR-064 just provisioned a new extension on the Fritz!Box — give
-    // the box 1.5 s to make it live before the first REGISTER, otherwise
-    // the REGISTER hits a not-yet-active slot and falls into 30 s retry.
-    sip_register_request_reload(true);
-
-    cJSON *root = cJSON_CreateObject();
-    cJSON_AddBoolToObject(root, "ok", true);
-    cJSON_AddStringToObject(root, "message",
-        "Extension created. The dongle is registering now — "
-        "see the status bar above for the current state.");
-    cJSON_AddStringToObject(root, "sip_user", res.sip_user);
-    cJSON_AddStringToObject(root, "internal_number", res.internal_number);
-    cJSON_AddBoolToObject  (root, "app_registered", app_user[0] != '\0');
-    send_json(req, root);
-    return ESP_OK;
+    // Provisioning succeeded — register the app instance, persist the
+    // profile, re-register and answer (token=NULL: no 2FA was needed).
+    return finish_fritzbox_setup(req, fritz_host, fritz_user, fritz_pass,
+                                 NULL, &res);
 }
 
 // Percent-encode the unsafe characters in `in` into `out`. RFC 3986
@@ -991,36 +1179,11 @@ static esp_err_t handle_fritzbox_2fa_status(httpd_req_t *req)
         s_2fa.fritz_user, s_2fa.fritz_pass, s_2fa.phone_name,
         s_2fa.token, &res);
 
-    // Register the dongle app instance using the same 2FA token (still
-    // valid for the whole auth session). Best effort — see the direct
-    // setup path for why a failure here is non-fatal.
-    char app_user[32] = "";
-    char app_pass[40] = "";
-    if (err == ESP_OK) {
-        int  app_err_code = 0;
-        char app_err_msg[128] = "";
-        esp_err_t app_err = tr064_register_dongle_app(
-            s_2fa.fritz_host, 49000,
-            s_2fa.fritz_user, s_2fa.fritz_pass, s_2fa.token,
-            app_user, sizeof(app_user),
-            app_pass, sizeof(app_pass),
-            &app_err_code, app_err_msg, sizeof(app_err_msg));
-        if (app_err != ESP_OK) {
-            ESP_LOGW(TAG,
-                "RegisterApp after 2FA failed (code %d, %s) — "
-                "sync feature disabled",
-                app_err_code, app_err_msg);
-            app_user[0] = '\0';
-            app_pass[0] = '\0';
-        }
-    }
-
-    // Whatever the outcome, the 2FA round-trip is over; wipe the
-    // cached admin password ASAP.
-    memset(s_2fa.fritz_pass, 0, sizeof(s_2fa.fritz_pass));
-    s_2fa.active = false;
-
     if (err != ESP_OK) {
+        // Wipe the cached admin password before bailing — the round-trip
+        // is over either way.
+        memset(s_2fa.fritz_pass, 0, sizeof(s_2fa.fritz_pass));
+        s_2fa.active = false;
         char msg[200];
         snprintf(msg, sizeof(msg),
             "Still failing after 2FA — error %d: %s",
@@ -1030,34 +1193,14 @@ static esp_err_t handle_fritzbox_2fa_status(httpd_req_t *req)
         return ESP_OK;
     }
 
-    // Commit SIP credentials, re-register.
-    config_update_t u = {
-        .sip_host = s_2fa.fritz_host,
-        .sip_port = 5060,
-        .sip_user = res.sip_user,
-        .sip_pass = res.sip_pass,
-        .sip_internal_number = res.internal_number,
-        .fritzbox_app_user = app_user,
-        .fritzbox_app_pass = app_pass,
-    };
-    if (config_update(&u) != ESP_OK) {
-        send_fail(req, "NVS write failed.");
-        return ESP_OK;
-    }
-    // TR-064 just provisioned a new extension on the Fritz!Box — give
-    // the box 1.5 s to make it live before the first REGISTER, otherwise
-    // the REGISTER hits a not-yet-active slot and falls into 30 s retry.
-    sip_register_request_reload(true);
-
-    cJSON *root = cJSON_CreateObject();
-    cJSON_AddBoolToObject  (root, "ok",              true);
-    cJSON_AddStringToObject(root, "message",
-        "Extension created. The dongle is registering now — "
-        "see the status bar above for the current state.");
-    cJSON_AddStringToObject(root, "sip_user",        res.sip_user);
-    cJSON_AddStringToObject(root, "internal_number", res.internal_number);
-    send_json(req, root);
-    return ESP_OK;
+    // Provisioning succeeded — same tail as the direct path, passing the
+    // 2FA token so the app instance registers within the auth session.
+    esp_err_t rc = finish_fritzbox_setup(req, s_2fa.fritz_host,
+        s_2fa.fritz_user, s_2fa.fritz_pass, s_2fa.token, &res);
+    // The 2FA round-trip is over; wipe the cached admin password.
+    memset(s_2fa.fritz_pass, 0, sizeof(s_2fa.fritz_pass));
+    s_2fa.active = false;
+    return rc;
 }
 
 static esp_err_t handle_errors(httpd_req_t *req)
@@ -1072,6 +1215,9 @@ static esp_err_t handle_errors(httpd_req_t *req)
     for (int i = 0; i < n; i++) {
         cJSON *o = cJSON_CreateObject();
         cJSON_AddNumberToObject(o, "age_s",   (double)((now_us - errs[i].at_us) / 1000000));
+        cJSON_AddStringToObject(o, "level",
+            errs[i].level == ESP_LOG_ERROR ? "E" :
+            errs[i].level == ESP_LOG_WARN  ? "W" : "I");
         cJSON_AddStringToObject(o, "tag",     errs[i].tag);
         cJSON_AddStringToObject(o, "message", errs[i].message);
         cJSON_AddItemToArray(arr, o);
@@ -1087,15 +1233,29 @@ static esp_err_t handle_errors(httpd_req_t *req)
 static esp_err_t handle_announcement_get(httpd_req_t *req)
 {
     REQUIRE_AUTH_API(req);
-    const uint8_t *buf = NULL;
-    size_t len = 0;
-    if (announcement_get(&buf, &len) != ESP_OK || len == 0) {
+    announcement_src_t src;
+    announcement_open(&src);
+    if (src.len == 0) {
+        announcement_close(&src);
         httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "no announcement");
         return ESP_OK;
     }
     httpd_resp_set_type(req, "audio/basic");
     httpd_resp_set_hdr(req, "Cache-Control", "no-store");
-    httpd_resp_send(req, (const char *)buf, len);
+
+    // Stream the announcement in chunks straight from its source (flash
+    // RODATA for the default, SPIFFS for a custom one) so we never hold
+    // the whole ~240 KB blob in a heap buffer.
+    uint8_t buf[1024];
+    size_t n;
+    while ((n = announcement_read(&src, buf, sizeof(buf))) > 0) {
+        if (httpd_resp_send_chunk(req, (const char *)buf, n) != ESP_OK) {
+            announcement_close(&src);
+            return ESP_FAIL;   // socket gone — abort the response
+        }
+    }
+    announcement_close(&src);
+    httpd_resp_send_chunk(req, NULL, 0);   // terminate the chunked response
     return ESP_OK;
 }
 
@@ -1599,6 +1759,33 @@ static esp_err_t handle_blocklist_sync_run(httpd_req_t *req)
     return ESP_OK;
 }
 
+// POST /api/mail/test — send a test status mail using the saved SMTP
+// settings, so the user can verify credentials right after entering them.
+// Runs mail_send() synchronously: the TLS handshake fits the httpd task's
+// 8 KB stack (the OTA install path runs here too). Not destructive, so it
+// needs no replay nonce — a repeated POST just sends another test mail.
+static esp_err_t handle_mail_test(httpd_req_t *req)
+{
+    REQUIRE_AUTH_API(req);
+    if (!mail_configured()) {
+        send_fail(req, "Bitte zuerst Server, Benutzer, Passwort und "
+                       "Empfänger speichern.");
+        return ESP_OK;
+    }
+    bool ok = mail_send("PhoneBlock-Dongle: Test",
+                        "Dies ist eine Test-Statusmeldung deines "
+                        "PhoneBlock-Dongles.\n\n"
+                        "Wenn du diese E-Mail erhältst, ist der "
+                        "E-Mail-Versand korrekt eingerichtet.\n");
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddBoolToObject  (root, "ok", ok);
+    cJSON_AddStringToObject(root, "message",
+        ok ? "Test-E-Mail gesendet."
+           : "Versand fehlgeschlagen — bitte Einstellungen und Protokoll prüfen.");
+    send_json(req, root);
+    return ESP_OK;
+}
+
 // POST /api/errors/clear — drops all buffered error entries.
 static esp_err_t handle_errors_clear(httpd_req_t *req)
 {
@@ -1673,6 +1860,7 @@ static const httpd_uri_t URIS[] = {
     { .uri = "/api/announcement/reset", .method = HTTP_POST, .handler = handle_announcement_reset, .user_ctx = NULL },
     { .uri = "/api/sync/run",        .method = HTTP_POST, .handler = handle_sync_run,       .user_ctx = NULL },
     { .uri = "/api/blocklist-sync/run", .method = HTTP_POST, .handler = handle_blocklist_sync_run, .user_ctx = NULL },
+    { .uri = "/api/mail/test",       .method = HTTP_POST, .handler = handle_mail_test,      .user_ctx = NULL },
     { .uri = "/api/config",          .method = HTTP_POST, .handler = handle_config_post,    .user_ctx = NULL },
     { .uri = "/api/fritzbox-setup",      .method = HTTP_POST, .handler = handle_fritzbox_setup,      .user_ctx = NULL },
     { .uri = "/api/fritzbox-2fa-status", .method = HTTP_GET,  .handler = handle_fritzbox_2fa_status, .user_ctx = NULL },

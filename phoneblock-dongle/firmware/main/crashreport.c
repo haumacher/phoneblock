@@ -78,6 +78,14 @@ static void crashreport_task(void *arg)
         return;
     }
 
+    // A stored dump means the previous run panicked. Surface that as an
+    // ERROR regardless of what happens to the dump next (erase / keep /
+    // upload) so a field crash is visible on the web UI's log panel even
+    // when reporting is off or the dongle isn't paired yet — and so the
+    // log-report beacon ships it as a backstop should the coredump upload
+    // itself be disabled or failing.
+    ESP_LOGE(TAG, "core dump from a previous crash detected (%zu bytes)", size);
+
     if (!config_crash_report_enabled()) {
         // User opted out from the web UI. Erase the dump locally so
         // it doesn't sit in flash forever — and so a later re-enable
@@ -131,7 +139,7 @@ static void crashreport_task(void *arg)
     // above the observed handshake peak.
     size_t free_heap = esp_get_free_heap_size();
     if (free_heap < CRASHREPORT_MIN_FREE_HEAP) {
-        ESP_LOGI(TAG, "heap %zu B below %d B — deferring upload to next boot",
+        ESP_LOGW(TAG, "heap %zu B below %d B — deferring upload to next boot",
                  free_heap, CRASHREPORT_MIN_FREE_HEAP);
         vTaskDelete(NULL);
         return;

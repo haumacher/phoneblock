@@ -47,6 +47,14 @@ const char *config_sip_srtp(void);
 const char *config_contact_host_override(void);
 int         config_contact_port_override(void);
 
+// Local UDP/TCP port the dongle binds and advertises for SIP, and the
+// UDP port it binds for RTP audio. Both default to a high, "unsuspicious"
+// value (15060 / 16000) that dodges router SIP-ALGs and is forwardable
+// 1:1 behind NAT. Always return a usable port (never 0). Configurable so
+// a user with a restrictive router can move them.
+int         config_sip_local_port(void);
+int         config_rtp_port(void);
+
 // Fritz!Box "app" credentials created by
 // X_AVM-DE_AppSetup:RegisterApp during the setup wizard. Only
 // Phone rights, no internet access — used by the later sync task
@@ -67,6 +75,13 @@ bool        config_sync_enabled(void);
 // flag only controls whether the list itself records the call.
 // Default on so new users see every call the dongle handled.
 bool        config_log_known_calls(void);
+
+// Whether the global log hook also mirrors INFO lines (not just
+// WARN/ERROR) into the log panel. Default off; a troubleshooting toggle
+// — INFO carries the context (tried host:port, request URLs, …) that a
+// bare WARN/ERROR omits. Floods the 32-entry ring, so meant to be turned
+// on, reproduced, read, and turned off again.
+bool        config_log_info(void);
 
 // Whether the web UI requires "Login with PhoneBlock" before
 // showing call data or accepting setting changes. Default off —
@@ -102,6 +117,17 @@ const char *config_auth_persist(void);
 // build on the next nightly poll. Re-enable explicitly from the UI
 // when ready to follow the released stream again.
 bool        config_auto_update_enabled(void);
+
+// OTA update channel the daily self-update and the manual "check"
+// button poll. The manifest URL is built as
+// <CONFIG_PHONEBLOCK_OTA_BASE_URL>/<channel>/manifest.json, so the
+// channel is the path segment that selects the released stream.
+// Always returns one of the two known-safe literals "stable" (default)
+// or "beta": any other / corrupt NVS value maps to "stable", which
+// keeps the result safe to splice straight into the poll URL. "beta"
+// is opt-in for users testing pre-release builds; releases publish to
+// both channels so beta is always >= stable (see scripts/release.sh).
+const char *config_ota_channel(void);
 
 // Whether crashreport.c is allowed to upload a stored core dump to
 // the PhoneBlock backend on the boot following a panic. Default on
@@ -151,6 +177,31 @@ const char *config_phoneblock_token(void);
 int         config_min_direct_votes(void);
 int         config_min_range_votes(void);
 
+// Status email (SMTP). The dongle sends status mails directly through
+// the user's own mail account (authenticated submission), so the
+// provider relays them — no central mail budget, and SPF/DKIM pass via
+// the provider's relay rather than the dongle's IP. Credentials live in
+// NVS in plaintext, consistent with the SIP / Fritz!Box passwords.
+const char *config_smtp_host(void);
+// Raw stored submission port; 0 = "auto" (caller derives 465 for implicit
+// TLS / 587 for STARTTLS from config_smtp_security()).
+int         config_smtp_port(void);
+// "tls" (implicit TLS on connect, default) | "starttls". Clamped: any
+// other stored value reads back as "tls".
+const char *config_smtp_security(void);
+const char *config_smtp_user(void);
+const char *config_smtp_pass(void);
+// Sender address; falls back to config_smtp_user() when unset.
+const char *config_smtp_from(void);
+// Recipient of the status mails.
+const char *config_smtp_to(void);
+// Trigger toggles (both default off — status mail is opt-in):
+//   on_error: a daily mail when an ERROR was logged since the last one;
+//             also drives the immediate crash mail at boot.
+//   on_spam:  a daily mail when spam calls were caught since the last one.
+bool        config_mail_on_error(void);
+bool        config_mail_on_spam(void);
+
 // Version string of the most recent OTA download that did NOT survive
 // to the next successful boot, or "" if no such record exists. Set by
 // the auto-update task before invoking esp_https_ota; cleared in
@@ -169,7 +220,18 @@ esp_err_t   config_set_last_failed_ota(const char *version);
 // commit succeeds; on failure the cache is unchanged.
 typedef struct {
     const char *sip_host;
-    int         sip_port;           // 0 = keep current
+    // Uses an explicit has_sip_port flag rather than the 0-sentinel
+    // pattern because 0 is a real value here (= "auto": let DNS-SRV /
+    // the transport default pick the port). A provider switch must be
+    // able to clear a previously pinned port back to auto.
+    bool        has_sip_port;
+    int         sip_port;
+    // Local SIP / RTP bind ports. Explicit has_ flags: 0 is a meaningful
+    // value here (= reset to the built-in default).
+    bool        has_sip_local_port;
+    int         sip_local_port;
+    bool        has_rtp_port;
+    int         rtp_port;
     const char *sip_user;
     const char *sip_pass;
     int         sip_expires;        // 0 = keep current
@@ -186,6 +248,9 @@ typedef struct {
     // "1" = log known/internal calls, "0" = skip them, NULL = leave
     // unchanged. Default when the key is unset is "log them".
     const char *log_known_calls;
+    // "1" = also capture INFO log lines, "0" = only WARN/ERROR. NULL =
+    // leave unchanged. Default when unset is "off".
+    const char *log_info;
     // "1" = require "Login with PhoneBlock" before serving the UI,
     // "0" = open access. NULL = leave unchanged. Default when the
     // key is unset is "open access" (setup phase).
@@ -201,6 +266,11 @@ typedef struct {
     // "0" = freeze on the current build. NULL = leave unchanged.
     // Default when unset is "1" (auto-update on).
     const char *auto_update;
+    // OTA update channel: "stable" | "beta". NULL = leave unchanged.
+    // The caller is expected to pass only these two literals; any
+    // other value is persisted verbatim but read back as "stable" by
+    // config_ota_channel().
+    const char *ota_channel;
     // "1" = upload core dumps to the PhoneBlock backend after a
     // panic-and-reboot, "0" = erase them locally without sending.
     // NULL = leave unchanged. Default when unset is "1".
@@ -224,6 +294,23 @@ typedef struct {
     // value here (= disable range-blocking).
     bool        has_min_range_votes;
     int         min_range_votes;
+    // Status email (SMTP). String fields follow the usual "NULL = leave
+    // unchanged" rule — in particular the web UI passes smtp_pass = NULL
+    // when the user did not re-enter the password, so a settings save
+    // never clears it.
+    const char *smtp_host;
+    // Explicit has_smtp_port flag: 0 is meaningful here (= "auto", derive
+    // the port from the security mode), distinct from "leave unchanged".
+    bool        has_smtp_port;
+    int         smtp_port;
+    const char *smtp_security;   // "tls" | "starttls"
+    const char *smtp_user;
+    const char *smtp_pass;
+    const char *smtp_from;
+    const char *smtp_to;
+    // "1" = enable, "0" = disable, NULL = leave unchanged. Default off.
+    const char *mail_on_error;
+    const char *mail_on_spam;
 } config_update_t;
 
 esp_err_t config_update(const config_update_t *u);
@@ -244,3 +331,11 @@ esp_err_t config_erase(void);
 // we'd add an explicit "device name" UI field before trying to
 // derive one automatically again.
 void config_dongle_username(char *out, size_t cap);
+
+// Stable per-device id (UUIDv4 string, 36 chars), minted on first boot
+// and persisted in NVS. Survives OTA updates; cleared only by a factory
+// reset. Returns a pointer to a static buffer valid for the process
+// lifetime (set once in config_load(), never mutated afterwards). Empty
+// string only if NVS was unavailable at boot. Used as the SIP
+// +sip.instance and embedded in the HTTP User-Agent.
+const char *config_device_id(void);

@@ -39,19 +39,18 @@
 					<input form="bulkDelete" th:name="|bl-${entry.phone}|" type="checkbox"/>
 					<strong th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></strong>
 					<span class="tag" th:classappend="${entry.rating.cssClass}" th:if="${entry.rating != null and entry.rating.name != 'B_MISSED' and entry.rating.name != 'A_LEGITIMATE'}" th:text="${#messages.msg(entry.rating.labelKey)}"></span>
-					<span class="tag is-light" data-tx="t0031:2fa4fef4" th:if="${not entry.archived and entry.votes &gt; 0}" title="Direkte avstemninger i lokalsamfunnet">
+					<span class="tag is-light" data-tx="t0031:2fa4fef4" th:if="${entry.votes &gt; 0}" title="Direkte avstemninger i lokalsamfunnet">
 						<span class="icon"><i class="fa-solid fa-thumbs-down"></i></span>
 						<span th:text="${entry.votes}"></span>
 					</span>
-					<span class="tag is-light is-warning" data-tx="t0032:61c4c8e6" th:if="${not entry.archived and entry.votesWildcard &gt; entry.votes}" title="Stemmer inkludert jokertegnblokk">
+					<span class="tag is-light is-warning" data-tx="t0032:61c4c8e6" th:if="${entry.votesWildcard &gt; entry.votes}" title="Stemmer inkludert jokertegnblokk">
 						<span class="icon"><i class="fa-solid fa-asterisk"></i></span>
 						<span th:text="${entry.votesWildcard}"></span>
 					</span>
-					<span class="tag is-light has-text-grey" data-tx="t0033:e27cd337" th:if="${entry.archived}" title="Fellesskapsinnlegg arkivert (ingen aktuelle stemmer)">
-						<span class="icon"><i class="fa-solid fa-box-archive"></i></span>
-						<span data-tx="t0034:5ebeeffa">arkivert</span>
-					</span>
 				</label>
+				<a class="button is-small is-ghost" data-onclick="showNumber" data-tx="t0033:4c6d59d6" th:href="@{/nums/{num}(num=${phoneInfo.zeroZero})}" title="Vis informasjon om nummeret">
+					<span class="icon is-small"><i class="fa-solid fa-circle-info"></i></span>
+				</a>
 				<button class="button is-small is-ghost edit-toggle" data-tx="t0030:cd459696" title="Rediger kommentar" type="button">
 					<span class="icon is-small"><i class="fa-solid fa-pen-to-square"></i></span>
 				</button>
@@ -124,14 +123,69 @@
 						<span data-tx="t0017:6464e726">Legg til lås</span>
 					</button>
 				</p>
+			</div>
+		</form>
+	</div>
+
+	<div class="content">
+		<h2 data-tx="t0034:11a76919">Forbud mot jokertegn</h2>
+
+		<p data-tx="t0035:99432cc1">Med en jokertegnblokkering blokkerer du alle numre som begynner med et bestemt prefiks - og bare på dine egne enheter, uten å endre fellesskapets vurdering. Hvis et jokertegn fanger opp et anrop, rapporterer enheten din nummeret til fellesskapet; jo bredere prefikset er, desto lavere vekt får denne meldingen.</p>
+
+		<th:block th:unless="${wildcards.empty}">
+			<p data-tx="t0036:363f6171">Du blokkerer disse prefiksene ved hjelp av et jokertegn. Du kan fjerne en blokkering her:</p>
+
+			<form id="wildcardDelete" method="post" th:action="@{/update-settings(action='lists')}">
+				<input name="redirect" type="hidden" value="/blacklist"/>
+			</form>
+
+			<div class="field list-entry" th:each="wildcard : ${wildcards}">
+				<label class="checkbox">
+					<input form="wildcardDelete" th:name="|wc-${wildcard.phone}|" type="checkbox"/>
+					<strong th:text="|${wildcard.display}*|"></strong>
+				</label>
+			</div>
+
+			<div class="field is-grouped">
 				<p class="control">
-					<a class="button" th:href="@{/settings}">
-						<span class="icon"><i class="fa-solid fa-arrow-left"></i></span>
-						<span data-tx="t0018:aafd5700">Tilbake til innstillingene</span>
-					</a>
+					<button class="button is-danger" form="wildcardDelete" type="submit">
+						<span class="icon"><i class="fa-solid fa-trash"></i></span>
+						<span data-tx="t0037:74d7495f">Slett</span>
+					</button>
+				</p>
+			</div>
+		</th:block>
+
+		<form method="post" th:action="@{/update-settings(action='lists')}">
+			<input name="redirect" type="hidden" value="/blacklist"/>
+
+			<div class="field">
+				<label class="label" data-tx="t0038:1cf90653">Legg til jokertegnlås</label>
+				<p class="control has-icons-left">
+					<input class="input" data-tx="t0039:90bb03f9" name="add-wc" placeholder="z. B. +49301234" type="tel"/>
+					<span class="icon is-small is-left"><i class="fa-solid fa-asterisk"></i></span>
+				</p>
+				<p class="help" data-tx="t0040:32e878da">Angi et nummerprefiks (f.eks. et retningsnummer med en nummerblokkering). Alle numre som begynner med dette prefikset, vil bli blokkert på enhetene dine.</p>
+			</div>
+
+			<div class="field is-grouped">
+				<p class="control">
+					<button class="button is-primary" type="submit">
+						<span class="icon"><i class="fa-solid fa-asterisk"></i></span>
+						<span data-tx="t0041:86dfe9e9">Legg til jokertegn</span>
+					</button>
 				</p>
 			</div>
 		</form>
+	</div>
+
+	<div class="content">
+		<p class="control">
+			<a class="button" th:href="@{/settings}">
+				<span class="icon"><i class="fa-solid fa-arrow-left"></i></span>
+				<span data-tx="t0018:aafd5700">Tilbake til innstillingene</span>
+			</a>
+		</p>
 	</div>
 </section>
 

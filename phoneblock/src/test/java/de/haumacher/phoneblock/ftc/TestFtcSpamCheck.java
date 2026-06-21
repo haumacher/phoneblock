@@ -113,13 +113,20 @@ class TestFtcSpamCheck {
 	/**
 	 * Test that getPhoneApiInfo returns correct votes and rating for a number
 	 * with FTC complaints (two complaints for "Vacation & timeshares").
+	 *
+	 * <p>Note: {@code votes} is decay-aware since #338 — the fixture's static
+	 * complaint dates decay relative to {@code now}, so the decoded count
+	 * cannot be a fixed integer. The assertion only verifies that the FTC
+	 * import path produced visible votes; the exact decoded value depends on
+	 * the test fixture's age.</p>
 	 */
 	@Test
 	void testLookupReturnsVotesAndRating() {
 		PhoneInfo info = _db.getPhoneApiInfo(toPhoneId("8886749072"));
 
 		assertNotNull(info, "Phone info should exist");
-		assertEquals(2, info.getVotes(), "Two FTC complaints for this number");
+		assertTrue(info.getVotes() > 0,
+			"FTC complaints must produce visible decoded votes, was " + info.getVotes());
 		assertEquals(Rating.E_ADVERTISING, info.getRating(),
 			"'Vacation  & timeshares' maps to E_ADVERTISING");
 	}
@@ -133,7 +140,7 @@ class TestFtcSpamCheck {
 		PhoneInfo info = _db.getPhoneApiInfo(toPhoneId("8335883781"));
 
 		assertNotNull(info, "Phone info should exist");
-		assertEquals(1, info.getVotes());
+		assertTrue(info.getVotes() > 0, "FTC complaint must produce visible decoded votes");
 		assertEquals(Rating.G_FRAUD, info.getRating(),
 			"'Reducing your debt...' maps to G_FRAUD");
 	}
@@ -147,7 +154,7 @@ class TestFtcSpamCheck {
 		PhoneInfo info = _db.getPhoneApiInfo(toPhoneId("3023092191"));
 
 		assertNotNull(info, "Phone info should exist");
-		assertEquals(1, info.getVotes());
+		assertTrue(info.getVotes() > 0, "FTC complaint must produce visible decoded votes");
 		assertEquals(Rating.C_PING, info.getRating(),
 			"'Dropped call or no message' maps to C_PING");
 	}
@@ -174,7 +181,7 @@ class TestFtcSpamCheck {
 		PhoneInfo info = _db.getPhoneApiInfo(toPhoneId("6266631604"));
 
 		assertNotNull(info, "Phone info should exist");
-		assertEquals(1, info.getVotes(), "One FTC complaint for this number");
+		assertTrue(info.getVotes() > 0, "FTC complaint must produce visible decoded votes");
 		// With votes > 0 but no rating category, the dominant rating is B_MISSED.
 		assertEquals(Rating.B_MISSED, info.getRating());
 	}

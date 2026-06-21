@@ -19,6 +19,7 @@ typedef struct {
     char opaque[64];
     char qop[16];        // "auth" or empty
     char algorithm[16];  // "MD5" by default
+    bool stale;          // server sent stale=true: nonce expired, creds OK
     bool valid;
 } auth_challenge_t;
 

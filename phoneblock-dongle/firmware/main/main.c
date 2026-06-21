@@ -23,14 +23,13 @@
 #include "api.h"
 #include "config.h"
 #include "crashreport.h"
-#include "firmware_update.h"
+#include "improv.h"
+#include "log_capture.h"
 #include "report_queue.h"
-#include "selftest.h"
+#include "scheduler.h"
 #include "sip_register.h"
 #include "stats.h"
 #include "status_led.h"
-#include "sync.h"
-#include "blocklist_sync.h"
 #include "web.h"
 #include "wifi.h"
 
@@ -183,6 +182,11 @@ void app_main(void)
     ESP_ERROR_CHECK(esp_event_loop_create_default());
 
     stats_setup();
+    // Install the log hook right after the stats ring exists: from here
+    // on, every WARN/ERROR line (ours and the libraries') is mirrored to
+    // the web UI's log panel. Earlier boot lines (nvs/netif init) predate
+    // it, which is fine — those are pre-config and visible on serial.
+    log_capture_start();
     config_load();
     announcement_init();
     // Start the LED early so the user sees "CONNECTING" (or
@@ -193,6 +197,10 @@ void app_main(void)
     // via WPS-PBC works without baked credentials. example_connect
     // is kept for the QEMU/Ethernet path, where WPS does not apply.
 #if CONFIG_EXAMPLE_CONNECT_WIFI
+    // Improv serial provisioning must listen *before* wifi_connect()
+    // blocks: Wi-Fi setup without WPS (issue #372) happens exactly
+    // while the device is still waiting in pairing mode.
+    improv_start();
     ESP_ERROR_CHECK(wifi_connect());
 #else
     ESP_ERROR_CHECK(example_connect());
@@ -228,10 +236,25 @@ void app_main(void)
         const char *failed = config_last_failed_ota();
         const esp_app_desc_t *app = esp_app_get_description();
         const char *current = app ? app->version : "";
-        if (failed[0] != '\0' && strcmp(failed, current) == 0) {
-            ESP_LOGI(TAG, "running version %s matches last_failed_ota — "
-                          "marker cleared (boot survived)", current);
-            config_set_last_failed_ota(NULL);
+        if (failed[0] != '\0') {
+            if (strcmp(failed, current) == 0) {
+                ESP_LOGI(TAG, "running version %s matches last_failed_ota — "
+                              "marker cleared (boot survived)", current);
+                config_set_last_failed_ota(NULL);
+            } else {
+                // The marker names a version we are NOT running: the OTA
+                // to it installed, booted badly, and the bootloader
+                // rolled us back. The marker is set only after a complete
+                // install (every download/verify failure clears it), so
+                // this reliably means "a firmware update failed to boot".
+                // ERROR (→ web UI log, and shipped by the log-report
+                // beacon): a bricked-and-rolled-back update is a real
+                // failure an operator should see, not routine noise. Leave
+                // the marker so the updater skips the same broken bits.
+                // Recurs once per boot until a newer build supersedes it.
+                ESP_LOGE(TAG, "firmware update to %s failed to boot — "
+                              "rolled back to %s", failed, current);
+            }
         }
     }
 
@@ -244,18 +267,6 @@ void app_main(void)
     // failures (no token yet, no network, server has no storage)
     // leave the dump in place for a later boot to retry.
     crashreport_upload_async();
-
-    // Background self-test task — repeats the token check once a
-    // day so a revoked or rotated token shows up on the dashboard
-    // before the next real call. Spawned even without a token; the
-    // task itself skips runs until one is configured.
-    selftest_start();
-
-    // Background auto-update task — checks the CDN manifest once a
-    // day, with the same skip-without-token guard as the self-test.
-    // The last_failed_ota marker (cleared above on a healthy boot)
-    // keeps a brick-and-rollback build from being re-tried in a loop.
-    firmware_update_start();
 
     // Async /api/report-call worker — keeps the second TLS handshake
     // off the SIP critical path. Drains a small queue at its own
@@ -281,13 +292,14 @@ void app_main(void)
         ESP_LOGI(TAG, "SIP not configured yet — set via web UI");
     }
 
-    // Blocklist sync task — safe to start even when no Fritz!Box
-    // credentials are configured yet; the task itself will skip its
-    // runs until a later setup fills those in.
-    sync_start();
-
-    // Daily download of community.bin / personal.bin from the server.
-    // Safe to start without a token; the task skips runs until one is
-    // configured.
-    blocklist_sync_start();
+    // Shared scheduler task — owns all recurring ~24 h housekeeping:
+    // the token self-test (+ log-report flush), the firmware
+    // auto-update check, the Fritz!Box blocklist sync, the status mail,
+    // and the local binary-blocklist download. Replaces the separate
+    // per-feature tasks (task stack reclaimed). Safe to start before the
+    // device is provisioned; each job applies its own
+    // skip-until-configured / user-toggle gates, and the daily
+    // last_failed_ota guard (cleared above on a healthy boot) still
+    // keeps a brick-and-rollback build from being re-tried in a loop.
+    scheduler_start();
 }

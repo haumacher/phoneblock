@@ -202,7 +202,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get reportAsSpam => 'Als SPAM melden';
 
   @override
-  String get viewOnPhoneBlockMenu => 'Auf PhoneBlock ansehen';
+  String get viewOnPhoneBlockMenu => 'Im Browser öffnen';
+
+  @override
+  String get copyNumber => 'Nummer kopieren';
+
+  @override
+  String get numberCopied => 'Nummer in Zwischenablage kopiert';
 
   @override
   String get deleteCall => 'Löschen';

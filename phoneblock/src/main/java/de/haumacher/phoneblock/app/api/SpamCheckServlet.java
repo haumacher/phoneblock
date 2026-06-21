@@ -10,6 +10,8 @@ import org.apache.ibatis.session.SqlSession;
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.app.LoginFilter;
 import de.haumacher.phoneblock.app.api.model.PhoneInfo;
+import de.haumacher.phoneblock.db.Confidence;
+import de.haumacher.phoneblock.db.Ema;
 import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 import de.haumacher.phoneblock.app.api.model.Rating;
 import de.haumacher.phoneblock.db.AggregationInfo;
@@ -168,19 +170,30 @@ public class SpamCheckServlet extends HttpServlet {
 
 			AggregationInfo a10 = prefix10Hash != null
 				? db.notNull("", reports.getAggregation10ByHash(prefix10Hash))
-				: new AggregationInfo("", 0, 0);
+				: new AggregationInfo("", 0);
 
 			AggregationInfo a100 = prefix100Hash != null
 				? db.notNull("", reports.getAggregation100ByHash(prefix100Hash))
-				: new AggregationInfo("", 0, 0);
+				: new AggregationInfo("", 0);
 
-			int votesWildcard = db.computeWildcardVotes(a10, a100);
+			// #300 follow-up: votesWildcard is the decoded net evidence of the block, but only for
+			// a block that qualifies as spam by the periodically-recomputed gate (a row exists only
+			// then). Same gated value the web view and the live decision use.
+			long now = System.currentTimeMillis();
+			int votesWildcard = db.computeWildcardVotes(a10, a100, now);
 			if (votesWildcard > 0) {
+				// votesWildcard > 0 implies a qualifying block exists.
+				AggregationInfo block = db.qualifyingSpamBlock(a10, a100);
+				double decodedBlockSpam = Ema.decode(block.getSpamEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
+				double decodedBlockLegit = Ema.decode(block.getLegitEvidence(), now, Ema.CLASSIFICATION_TAU_MILLIS);
+				double blockHeat = Ema.decodeRate(block.getRawHeat(), now, Ema.HEAT_TAU_MILLIS);
 				return PhoneInfo.create()
 					.setPhone("unknown")
 					.setRating(Rating.B_MISSED)
 					.setVotes(0)
-					.setVotesWildcard(votesWildcard);
+					.setVotesWildcard(votesWildcard)
+					.setSpamConfidence(Confidence.spamConfidence(decodedBlockSpam, decodedBlockLegit))
+					.setHeat(blockHeat);
 			}
 		}
 

@@ -9,6 +9,7 @@
 #include "esp_log.h"
 
 #include "api.h"
+#include "rtp.h"
 
 static const char *TAG = "report_q";
 
@@ -37,9 +38,25 @@ static void report_worker_task(void *arg)
     while (1) {
         report_entry_t e;
         if (xQueueReceive(s_queue, &e, portMAX_DELAY) != pdTRUE) continue;
+
+        // Defer the report's TLS handshake until any in-progress
+        // announcement has finished. Running a second TLS session next to
+        // the SRTP media stream exhausts the ESP32 heap (RTP sendto fails
+        // with ENOMEM, mbedTLS cert parse OOMs, httpd-task watchdog
+        // reboot). The report is enqueued at SPAM detection, before the
+        // ACK that starts streaming, so first give the stream up to ~2 s
+        // to start (a quick no-announcement call falls through), then wait
+        // it out — capped so a stuck flag can't wedge the worker forever.
+        for (int i = 0; i < 40 && !rtp_streaming_active(); i++) {
+            vTaskDelay(pdMS_TO_TICKS(50));
+        }
+        for (int i = 0; i < 300 && rtp_streaming_active(); i++) {
+            vTaskDelay(pdMS_TO_TICKS(100));
+        }
+
         ESP_LOGI(TAG, "report-call %s", e.phone);
-        // Errors get recorded by phoneblock_report_call itself via
-        // stats_record_error — nothing to do here on failure.
+        // phoneblock_report_call logs its own failures (ERROR), which the
+        // log hook mirrors to the web UI — nothing to do here on failure.
         phoneblock_report_call(e.phone);
     }
 }

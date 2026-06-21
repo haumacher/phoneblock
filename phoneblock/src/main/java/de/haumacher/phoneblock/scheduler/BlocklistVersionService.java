@@ -11,14 +11,11 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
-import de.haumacher.phoneblock.db.SpamReports;
-import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.carddav.resource.AddressBookCache;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
@@ -71,6 +68,15 @@ public class BlocklistVersionService implements ServletContextListener {
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
 		loadConfig();
+
+		// #300 follow-up: rebuild the block aggregation once at startup so the wildcard-block
+		// gate is correct immediately (the on-disk tables hold stale counts from before this
+		// version). The daily assignVersions sweep keeps it fresh afterwards.
+		try {
+			_dbService.db().recomputeBlockAggregation(System.currentTimeMillis());
+		} catch (Exception ex) {
+			LOG.error("Initial block aggregation recompute failed", ex);
+		}
 
 		LOG.info("Starting blocklist version service: schedule={}:{:02d}, interval={} minutes",
 			_scheduleHour, _scheduleMinute, _intervalMinutes);
@@ -198,63 +204,42 @@ public class BlocklistVersionService implements ServletContextListener {
 	 * This is called automatically at the configured schedule, or can be manually triggered for testing.
 	 */
 	public void assignVersions() {
-		LOG.info("Starting scheduled blocklist version assignment");
+		LOG.info("Starting scheduled blocklist publication");
 
 		DB db = _dbService.db();
 
-		// Archive vote-decayed rows first so their ACTIVE=false transition is part of
-		// this release; otherwise CardDAV's published view would shed those numbers
-		// on its own schedule and the address-book ETag would change between releases.
-		db.archiveOldReports();
+		// #300 follow-up: rebuild the block aggregation (wildcard-block detection) from the
+		// current NUMBERS evidence — counts how many numbers per block are *currently* spam, so
+		// stale-but-listed blocks stay detected and faded blocks drop out.
+		try {
+			db.recomputeBlockAggregation(System.currentTimeMillis());
+		} catch (Exception ex) {
+			LOG.error("Block aggregation recompute failed", ex);
+		}
 
-		long now = System.currentTimeMillis();
-		try (SqlSession session = db.openSession()) {
-			Users users = session.getMapper(Users.class);
-			SpamReports reports = session.getMapper(SpamReports.class);
+		// #342: bucket-based publication. The sweep compares the live bucket
+		// of every candidate number with the published bucket in the
+		// BLOCKLIST table and writes only actual flips — including
+		// decay-induced removals, which become tombstones. Hard delete of
+		// long-faded NUMBERS rows is the subject of #341.
+		try {
+			long before = db.getBlocklistVersion();
+			long version = db.publishBlocklist(System.currentTimeMillis());
 
-			// Get current version
-			String versionStr = users.getProperty("blocklist.version");
-			long currentVersion = (versionStr != null) ? Long.parseLong(versionStr) : DB.INITIAL_BLOCKLIST_VERSION;
+			if (version != before) {
+				LOG.info("Completed blocklist publication, new version is {}.", version);
 
-			// Get the last assignment time to detect recent activity
-			String lastAssignTimeStr = users.getProperty("blocklist.lastAssignTime");
-			long lastAssignTime = (lastAssignTimeStr != null) ? Long.parseLong(lastAssignTimeStr) : 0;
-
-			// Increment version
-			long newVersion = currentVersion + 1;
-
-			// Assign new version to all pending updates and recently-active numbers
-			int updated = reports.assignVersionToPendingUpdates(newVersion, lastAssignTime, db.getMinVisibleVotes());
-
-			if (updated > 0) {
-				// Update global version counter
-				if (versionStr != null) {
-					users.updateProperty("blocklist.version", String.valueOf(newVersion));
-				} else {
-					users.addProperty("blocklist.version", String.valueOf(newVersion));
-				}
-
-				// Store the current time as the last assignment time
-				if (lastAssignTimeStr != null) {
-					users.updateProperty("blocklist.lastAssignTime", String.valueOf(now));
-				} else {
-					users.addProperty("blocklist.lastAssignTime", String.valueOf(now));
-				}
-
-				session.commit();
-				LOG.info("Completed blocklist version assignment: version {} assigned to {} entries", newVersion, updated);
-
-				// CardDAV serves the published snapshot — invalidate its caches so users
+				// CardDAV serves the published state — invalidate its caches so users
 				// see the fresh release on the next sync without waiting for TTL expiry.
 				AddressBookCache cache = AddressBookCache.getInstance();
 				if (cache != null) {
 					cache.flushAllCaches();
 				}
 			} else {
-				LOG.debug("No pending blocklist updates to process.");
+				LOG.debug("No blocklist changes to publish.");
 			}
 		} catch (Exception ex) {
-			LOG.error("Blocklist version assignment failed", ex);
+			LOG.error("Blocklist publication failed", ex);
 		}
 	}
 

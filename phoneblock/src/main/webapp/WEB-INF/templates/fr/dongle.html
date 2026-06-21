@@ -15,10 +15,6 @@
 			<img th:src="@{/assets/img/dongle/phoneblock-dongle-800.png}"/>
 		</p>		
 
-		<div class="notification is-warning">
-			<p data-tx="t0123:3a266dbc"><strong>Status : Beta.</strong> La première version fonctionne déjà de manière fiable. Je cherche d'autres testeurs pour essayer le dongle PhoneBlock dans des environnements aussi différents que possible - <a href="#tester">Rapports d'expérience bienvenus</a>.</p>
-		</div>
-
 		<h2 data-tx="t0004:6b104c7a">L'idée en une phrase</h2>
 
 		<p data-tx="t0081:4d04d687">Le dongle PhoneBlock se connecte à ton routeur comme un téléphone IP supplémentaire. Chaque fois qu'un appel arrive, il interroge en un clin d'œil la base de données PhoneBlock : <em>"Est-ce un spam ?"</em> Si c'est le cas, il répond lui-même à l'appel, diffuse un bref message d'accueil si tu le souhaites et raccroche. Ton vrai téléphone n'a pas encore sonné à ce moment-là. Contrairement au <a th:href="@{/anrufbeantworter}">répondeur cloud</a>, le traitement complet des appels se fait localement, chez toi.</p>
@@ -41,9 +37,27 @@
 			</div>
 		</div>
 
-		<div class="notification is-info">
-			<p data-tx="t0100:5bd0fd66"><strong>Pourquoi c'est si charmant:</strong> Le dongle PhoneBlock ne nécessite qu'un minimum d'électricité et de WLAN. Pas de serveur supplémentaire, pas de Fritz!Box, pas de contrat. Le microcontrôleur ESP32 à l'intérieur consomme moins d'un demi-watt - tu peux simplement le brancher sur le port USB de ton routeur et l'oublier.</p>
+		<h2 data-tx="t0231:7efc6f3c">Utilisation universelle</h2>
+
+		<div class="notification is-success">
+			<p data-tx="t0123:3f292a9e">Le dongle fonctionne <b>de manière stable avec tous les routeurs Fritz!Box</b>, indépendamment de l'opérateur téléphonique (il devrait également fonctionner avec des modèles Fritz!Box vraiment anciens - mais bien sûr sans garantie).</p>
 		</div>
+
+		<div class="notification is-success">
+			<p data-tx="t0229:8390c45a">Le dongle fonctionne <b>de manière stable sur tous les raccordements de Deutsche Telekom</b>, indépendamment du routeur que tu utilises.</p>
+		</div>
+
+		<p data-tx="t0224:158c9a29">Le dongle <b> fonctionne également sans routeur Fritz!Box</b>, mais pour cela il faut qu'au moins un des deux points soit rempli :</p>
+		<ul>
+		<li data-tx="t0225:b43acc79">Ton routeur permet d'enregistrer un téléphone VOIP (la plupart des routeurs modernes le permettent - mais pas la "EasyBox" de Vodafone, par exemple). Le mieux est de consulter au préalable le mode d'emploi de ton routeur.</li>
+		<li data-tx="t0226:98a33bc2">Ton opérateur téléphonique autorise l'inscription directe d'un téléphone VOIP directement sur son infrastructure - alors ton modèle de routeur n'a pas d'importance. (Deutsche Telekom le permet, Vodafone ne le permet pas par exemple. Le mieux est de te renseigner auprès de ton fournisseur d'accès).</li>
+		</ul> 
+
+		<div class="notification is-info">
+			<p data-tx="t0230:12c794d9">Le dongle ne fonctionne <b>pas sur les raccordements de Vodafone</b> en combinaison avec une EasyBox de Vodafone.</p>
+		</div>
+		
+		<p data-tx="t0227:9c63c692">Si tu as réussi à configurer le dongle - en particulier en combinaison avec un routeur non-Fritz!Box, ou un modèle "historique" de Fritz!Box alors s'il te plaît, écris un <a href="#tester">rapport d'expérience</a> afin que cette aide puisse être améliorée.</p>
 
 		<p class="subtitle mt-6" data-tx="t0124:bd004e4f">À partir d'ici, les choses deviennent pratiques : les instructions vous guident pas à pas dans la commande et l'installation - environ 10 € de matériel, quelques minutes d'effort unique.</p>
 
@@ -181,6 +195,8 @@
 		<p data-tx="t0168:54d5a6"><strong>Ça a marché:</strong> La LED clignote maintenant lentement (environ une fois par seconde) - le dongle PhoneBlock est sur le WLAN, a reçu une adresse et attend d'être configuré (étape suivante).</p>
 
 		<p data-tx="t0169:cddfc489"><strong>Ça n'a pas marché?</strong> Vérifie dans les paramètres du routeur si le WPS est activé (sur la Fritz!Box : <em>WLAN → Sécurité → WPS</em>). Si la fenêtre WPS a été trop courte, le dongle PhoneBlock redémarre automatiquement l'appairage - il suffit alors d'appuyer une nouvelle fois sur le bouton WPS.</p>
+
+		<p data-tx="t0228:6f5d0796"><strong>Ton WLAN n'a pas de WPS?</strong> Certains points d'accès (par ex. UniFi) n'ont pas de bouton WPS. Dans ce cas, entre les données d'accès au WLAN directement dans la boîte de dialogue Flash : Laisse pour cela le dongle PhoneBlock sur l'ordinateur (ou rebranche-le), clique en haut à l'étape 2 sur <strong>"Flasher maintenant"</strong> et connecte-toi au dongle - au lieu d'une nouvelle installation, le dialogue propose maintenant <strong>"Configurer Wi-Fi"</strong>. Choisis ton réseau dans la liste et entre le mot de passe Wi-Fi ; juste après la première installation, le dialogue le demande de lui-même. Ensuite, tu insères le dongle PhoneBlock dans le routeur comme à l'étape 3.</p>
 
 		<h2 data-tx="t0170:6da0bfa" id="schritt-7">Étape 5 - Se connecter en tant que téléphone et configurer l'accès PhoneBlock</h2>
 

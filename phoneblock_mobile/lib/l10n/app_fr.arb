@@ -306,5 +306,7 @@
   "blocklistSyncing": "Synchroniser...",
   "blocklistSyncSuccess": "Synchronisation des listes de blocage réussie",
   "blocklistSyncFailed": "Échec de la synchronisation de la liste de blocage",
-  "personalizedAddedDate": "Ajouté à la liste : {date}"
+  "personalizedAddedDate": "Ajouté à la liste : {date}",
+  "copyNumber": "Copier le numéro",
+  "numberCopied": "Numéro copié dans le presse-papiers"
 }

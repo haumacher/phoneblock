@@ -111,12 +111,13 @@ void stats_record_call_counters_only(verdict_t verdict)
     unlock();
 }
 
-void stats_record_error(const char *tag, const char *message)
+void stats_record_error(int level, const char *tag, const char *message)
 {
     lock();
 
     stats_error_t *slot = &s_errors[s_errors_head];
     slot->at_us = esp_timer_get_time();
+    slot->level = level;
     copy_trim(slot->tag,     sizeof(slot->tag),     tag);
     copy_trim(slot->message, sizeof(slot->message), message);
 

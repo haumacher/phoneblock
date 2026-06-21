@@ -310,10 +310,20 @@
     "description": "Menu item to report as spam",
     "x-translated": "9866ae0e"
   },
-  "viewOnPhoneBlockMenu": "Auf PhoneBlock ansehen",
+  "viewOnPhoneBlockMenu": "Im Browser öffnen",
   "@viewOnPhoneBlockMenu": {
-    "description": "Menu item to view on PhoneBlock",
-    "x-translated": "3b852ae7"
+    "description": "Menu item to open the number's PhoneBlock page in the in-app browser",
+    "x-translated": "fd61eaad"
+  },
+  "copyNumber": "Nummer kopieren",
+  "@copyNumber": {
+    "description": "Menu item to copy the phone number to the clipboard",
+    "x-translated": "b60977d3"
+  },
+  "numberCopied": "Nummer in Zwischenablage kopiert",
+  "@numberCopied": {
+    "description": "Snackbar message after copying the phone number to the clipboard",
+    "x-translated": "4edacb15"
   },
   "deleteCall": "Löschen",
   "@deleteCall": {

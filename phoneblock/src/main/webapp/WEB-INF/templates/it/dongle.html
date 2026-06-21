@@ -15,10 +15,6 @@
 			<img th:src="@{/assets/img/dongle/phoneblock-dongle-800.png}"/>
 		</p>		
 
-		<div class="notification is-warning">
-			<p data-tx="t0123:3a266dbc"><strong>Stato: Beta.</strong> La prima versione funziona già in modo affidabile. Sto cercando altri tester per provare il dongle PhoneBlock nel maggior numero possibile di ambienti diversi - <a href="#tester">segnalazioni di esperienze benvenute</a>.</p>
-		</div>
-
 		<h2 data-tx="t0004:6b104c7a">L'idea in una frase</h2>
 
 		<p data-tx="t0081:4d04d687">Il dongle PhoneBlock si collega al router come un telefono IP aggiuntivo. Ogni volta che arriva una chiamata, chiede al database di PhoneBlock alla velocità della luce: <em>"Questo è spam?"</em> In caso affermativo, risponde alla chiamata stessa, riproduce un breve annuncio se desiderato e riaggancia. In quel momento il vostro telefono reale non ha nemmeno squillato. A differenza della <a th:href="@{/anrufbeantworter}">segreteria telefonica cloud</a>, tutta l'elaborazione delle chiamate avviene localmente a casa vostra.</p>
@@ -41,9 +37,27 @@
 			</div>
 		</div>
 
-		<div class="notification is-info">
-			<p data-tx="t0100:5bd0fd66"><strong>Perché è così affascinante:</strong> Il dongle PhoneBlock richiede solo una minima alimentazione e Wi-Fi. Nessun server aggiuntivo, nessuna Fritz!Box, nessun contratto. Il microcontrollore ESP32 al suo interno assorbe meno di mezzo watt: basta collegarlo alla porta USB del router e dimenticarsene.</p>
+		<h2 data-tx="t0231:7efc6f3c">Applicabile a livello universale</h2>
+
+		<div class="notification is-success">
+			<p data-tx="t0123:3f292a9e">Il dongle funziona <b>stabilmente con tutti i router Fritz!Box</b>, indipendentemente dal gestore telefonico (dovrebbe funzionare anche con i modelli Fritz!Box più vecchi, ma ovviamente senza garanzia).</p>
 		</div>
+
+		<div class="notification is-success">
+			<p data-tx="t0229:8390c45a">Il dongle funziona <b>stabilmente su tutte le connessioni Deutsche Telekom</b> indipendentemente dal router utilizzato.</p>
+		</div>
+
+		<p data-tx="t0224:158c9a29">Il dongle <b>funziona anche senza un router Fritz!Box</b>, ma almeno uno dei due punti deve essere soddisfatto:</p>
+		<ul>
+		<li data-tx="t0225:b43acc79">Il router consente di registrare un telefono VOIP (la maggior parte dei router moderni è in grado di farlo, ma l'"EasyBox" di Vodafone, ad esempio, non può farlo). È meglio controllare prima le istruzioni per l'uso del router.</li>
+		<li data-tx="t0226:98a33bc2">Il vostro operatore telefonico consente la registrazione diretta di un telefono VOIP direttamente alla sua infrastruttura - allora il modello di router non ha importanza. (Deutsche Telekom lo consente, Vodafone no, ad esempio. È meglio chiedere al proprio provider).</li>
+		</ul> 
+
+		<div class="notification is-info">
+			<p data-tx="t0230:12c794d9">Il dongle non <b>funziona sulle connessioni Vodafone</b> in combinazione con un EasyBox di Vodafone.</p>
+		</div>
+		
+		<p data-tx="t0227:9c63c692">Se avete configurato con successo il dongle, soprattutto in combinazione con un router non Fritz!Box o con un modello Fritz!Box "storico", scrivete un <a href="#tester">rapporto di esperienza</a> in modo da migliorare questa guida.</p>
 
 		<p class="subtitle mt-6" data-tx="t0124:bd004e4f">Le istruzioni guidano l'utente passo dopo passo nell'ordinazione e nell'installazione - circa 10 euro di hardware, uno sforzo una tantum di pochi minuti.</p>
 
@@ -181,6 +195,8 @@
 		<p data-tx="t0168:54d5a6"><strong>Ben fatto:</strong> Il LED ora lampeggia lentamente (circa una volta al secondo) - il dongle PhoneBlock è nella WLAN, ha ricevuto un indirizzo ed è in attesa della configurazione (passo successivo).</p>
 
 		<p data-tx="t0169:cddfc489"><strong>Non funziona</strong> Controllare nelle impostazioni del router se il WPS è attivato (sul Fritz!Box: <em>WLAN → Sicurezza → WPS</em>). Se la finestra WPS è stata troppo breve, il dongle PhoneBlock riavvia automaticamente l'accoppiamento - quindi è sufficiente premere nuovamente il pulsante WPS.</p>
+
+		<p data-tx="t0228:6f5d0796"><strong>La vostra WLAN non dispone di WPS? </strong> Alcuni punti di accesso (ad es. UniFi) non dispongono di un pulsante WPS. Inserire quindi i dati di accesso alla WLAN direttamente nella finestra di dialogo Flash: Lasciare il dongle PhoneBlock sul computer (o ricollegarlo), cliccare su <strong>"Flash now"</strong> in cima al passo 2 e collegarsi al dongle - invece di una nuova installazione, la finestra di dialogo offre ora <strong>"Configure Wi-Fi"</strong>. Selezionare la propria rete dall'elenco e inserire la password Wi-Fi; la finestra di dialogo la richiederà direttamente dopo l'installazione iniziale. Collegare quindi il dongle PhoneBlock al router come al punto 3.</p>
 
 		<h2 data-tx="t0170:6da0bfa" id="schritt-7">Passo 5 - Registrazione come telefono e impostazione dell'accesso PhoneBlock</h2>
 

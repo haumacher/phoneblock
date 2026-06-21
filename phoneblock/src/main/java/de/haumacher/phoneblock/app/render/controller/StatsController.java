@@ -207,6 +207,51 @@ public class StatsController extends DefaultController {
 		request.setAttribute("pieLabels", pieLabels.toString());
 		request.setAttribute("pieData", pieData.toString());
 		request.setAttribute("pieColors", pieColors.toString());
+
+		// Calls / votes / searches per day chart.
+		Object[] activity = DBService.getInstance().getCallsVotesSearchesHistory(30);
+
+		@SuppressWarnings("unchecked")
+		List<String> activityLabels = (List<String>) activity[0];
+		@SuppressWarnings("unchecked")
+		List<Integer> callsData = (List<Integer>) activity[1];
+		@SuppressWarnings("unchecked")
+		List<Integer> votesData = (List<Integer>) activity[2];
+		@SuppressWarnings("unchecked")
+		List<Integer> searchesData = (List<Integer>) activity[3];
+
+		StringBuilder activityLabelsJson = new StringBuilder();
+		activityLabelsJson.append('[');
+		first = true;
+		for (String label : activityLabels) {
+			if (first) {
+				first = false;
+			} else {
+				activityLabelsJson.append(',');
+			}
+			jsString(activityLabelsJson, label);
+		}
+		activityLabelsJson.append(']');
+
+		StringBuilder activityDatasets = new StringBuilder();
+		activityDatasets.append('[');
+		appendBarDataset(activityDatasets, I18N.getMessage(request, "page.stats.calls"), callsData, "rgb(255, 99, 132)");
+		activityDatasets.append(',');
+		appendBarDataset(activityDatasets, I18N.getMessage(request, "page.stats.votes"), votesData, "rgb(54, 162, 235)");
+		activityDatasets.append(',');
+		appendBarDataset(activityDatasets, I18N.getMessage(request, "page.stats.searches"), searchesData, "rgb(255, 206, 86)");
+		activityDatasets.append(']');
+
+		request.setAttribute("activityLabels", activityLabelsJson.toString());
+		request.setAttribute("activityDatasets", activityDatasets.toString());
+	}
+
+	private static void appendBarDataset(StringBuilder sb, String label, List<Integer> values, String color) {
+		sb.append("{\"label\":");
+		jsString(sb, label);
+		sb.append(",\"data\":");
+		appendIntList(sb, values);
+		sb.append(",\"backgroundColor\":\"").append(color).append("\"}");
 	}
 
 	private static void appendIntList(StringBuilder sb, List<Integer> values) {

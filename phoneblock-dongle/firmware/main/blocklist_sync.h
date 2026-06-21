@@ -5,8 +5,10 @@
 //                             same minVotes; depends only on that setting)
 //   /spiffs/personal.bin    — user's personal black/white overrides
 //
-// The sync task downloads each file via HTTPS, streams it to a `.tmp`
-// sibling, then atomic-renames into place — same pattern announcement.c
+// The download runs once per day from the shared scheduler task (see
+// scheduler.c) and can be triggered on demand from the web UI via
+// blocklist_sync_trigger_now(). Each file is streamed to a `.tmp`
+// sibling, then atomic-renamed into place — same pattern announcement.c
 // uses. A lookup that races with the rename either still sees the old
 // file (open during rename) or the new file (open after rename); it
 // never sees a half-written one.
@@ -24,13 +26,18 @@
 #define BLOCKLIST_COMMUNITY_PATH "/spiffs/community.bin"
 #define BLOCKLIST_PERSONAL_PATH  "/spiffs/personal.bin"
 
-// Spawn the daily sync task. No-op on duplicate calls. Safe to call
-// before the user has configured a PhoneBlock token; the task itself
-// skips runs until a token is present.
-void blocklist_sync_start(void);
+// Initialise the sync status mutex and prime the cached file sizes.
+// Called once by scheduler_start() before the scheduler task (or any
+// web-UI snapshot) can run; no-op on duplicate calls.
+void blocklist_sync_init(void);
 
-// Ask the sync task to run immediately. Returns false if the task is
-// not running or a run is already in progress.
+// Perform one download run (community + personal). Invoked by the shared
+// scheduler task, never inline on a caller's thread. Skips silently when
+// no PhoneBlock token is configured yet.
+void blocklist_sync_run(void);
+
+// Ask the scheduler to run a download as soon as possible. Returns false
+// if the scheduler is not running or a run is already in progress.
 bool blocklist_sync_trigger_now(void);
 
 // Combined verdict using the user's personal list first, then the

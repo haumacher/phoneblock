@@ -55,6 +55,14 @@ CONFIG_MBEDTLS_SSL_PROTO_TLS1_3=n
 # Main task stack: 8 KB is enough for cJSON + TLS + example helpers.
 CONFIG_ESP_MAIN_TASK_STACK_SIZE=8192
 
+# esp_event task stack: 2.75 KB, up from the 2304 B default. wifi.c runs
+# its event handlers here and logs WARN lines from them (failsafe / WPS),
+# which since the log-capture hook (log_capture.c) cost an extra ~110 B of
+# frame. The default left too little headroom for that on a deep handler
+# (schedule_failsafe even spawns a task inline). 2.75 KB clears it with
+# margin. The only IDF-owned task into which our own code logs warnings.
+CONFIG_ESP_SYSTEM_EVENT_TASK_STACK_SIZE=2816
+
 # HTTP server: browsers return from the phoneblock.net OAuth flow with
 # sizeable referrer + cookie + security headers (Chrome easily hits 1.5 kB
 # on a single request). The default 512-byte buffer rejects those with
@@ -101,10 +109,14 @@ CONFIG_ESP_COREDUMP_CHECK_BOOT=y
 # panic path, which then writes a coredump to flash (see above) and
 # reboots — exactly what we want for diagnostics.
 #
-# Timeout 20 s: the worst single-iteration cost in sip_task is one
-# phoneblock_check (10 s budget) plus one do_register (10 s TLS
-# budget) back-to-back on a reload path. 20 s leaves headroom
-# without sitting on a freeze for ages.
+# Timeout 120 s: the watchdog is a last-resort catch for a genuinely
+# wedged task, not a tight per-iteration budget. The worst legitimate
+# single-iteration cost in sip_task (one phoneblock_check + one
+# do_register, ~10 s each) and the TR-064 provisioning chain that
+# fans one SOAP call per Fritz!Box telephony client (each bounded by
+# the 5 s HTTP timeout) both sum well under this. A generous ceiling
+# keeps a slow-but-progressing operation from tripping a false panic;
+# the individual operations carry their own tighter timeouts.
 #
 # IDLE_TASK_CPU0/CPU1 keep the default IDF behaviour of watching
 # the idle tasks too, so a runaway high-priority task that starves
@@ -112,9 +124,25 @@ CONFIG_ESP_COREDUMP_CHECK_BOOT=y
 CONFIG_ESP_TASK_WDT_EN=y
 CONFIG_ESP_TASK_WDT_INIT=y
 CONFIG_ESP_TASK_WDT_PANIC=y
-CONFIG_ESP_TASK_WDT_TIMEOUT_S=20
+# 60 s is the Kconfig maximum (range 1..60). 120 was silently rejected as
+# out-of-range and fell back to the default of 5 s, which rebooted the
+# dongle whenever an httpd handler briefly blocked (token-test TLS
+# round-trip, large page send). 60 s covers any legitimate operation (the
+# API HTTP timeout is 10 s) while still catching a real hang within a
+# minute. A longer window would require reconfiguring the TWDT at runtime.
+CONFIG_ESP_TASK_WDT_TIMEOUT_S=60
 CONFIG_ESP_TASK_WDT_CHECK_IDLE_TASK_CPU0=y
 CONFIG_ESP_TASK_WDT_CHECK_IDLE_TASK_CPU1=y
+
+# Per-task run-time statistics, surfaced on /api/status ("system.tasks")
+# and the web Protokoll/System card. This is the field-diagnosis path for
+# "the dongle is hot / unstable" — it makes a runaway task visible as a
+# high CPU% instead of having to guess. USE_TRACE_FACILITY adds the task
+# list + stack-high-water; GENERATE_RUN_TIME_STATS adds the per-task CPU
+# counter (clocked off esp_timer, the IDF default source, so the cost is
+# a cheap timer read per context switch).
+CONFIG_FREERTOS_USE_TRACE_FACILITY=y
+CONFIG_FREERTOS_GENERATE_RUN_TIME_STATS=y
 
 # OTA rollback: the bootloader marks a freshly flashed image as
 # "pending verify". The app must call
@@ -140,10 +168,12 @@ CONFIG_SPIFFS_PAGE_SIZE=1024
 # /api/... and /mobile/... themselves.
 CONFIG_PHONEBLOCK_BASE_URL="https://phoneblock.net/phoneblock"
 
-# OTA manifest: same esp-web-tools manifest the browser-based
-# installer reads, so there is exactly one source of truth per
-# release. Override in .local to point at a staging CDN bucket.
-CONFIG_PHONEBLOCK_OTA_MANIFEST_URL="https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json"
+# OTA base URL: the firmware appends "/<channel>/manifest.json" (the
+# channel is a runtime web-UI toggle, "stable" by default). The polled
+# file is the same esp-web-tools manifest the browser-based installer
+# reads, so there is one source of truth per release. Override in
+# .local to point at a staging CDN bucket.
+CONFIG_PHONEBLOCK_OTA_BASE_URL="https://cdn.phoneblock.net/dongle/firmware"
 
 # SIP. Registrar/username/password are written to NVS by the web
 # setup wizard. SIP_EXPIRES is the *requested* upper bound for the
@@ -158,7 +188,7 @@ CONFIG_SIP_EXPIRES=3600
 # advertises its actual interface IP and bound UDP port in Via /
 # Contact. QEMU user-mode networking puts the guest behind 10.0.2.x,
 # unreachable from the Fritz!Box; emulator builds set both in .local
-# (host LAN IP + the host port mapped via -hostfwd udp::5061-:5061).
+# (host LAN IP + the host port mapped via -hostfwd udp::15060-:15060).
 CONFIG_SIP_CONTACT_HOST_OVERRIDE=""
 CONFIG_SIP_CONTACT_PORT_OVERRIDE=0
 

@@ -16,14 +16,21 @@ menu "PhoneBlock Dongle"
             the test instance only work there, and vice versa. The token
             prefix (pbt_) is the same in both cases.
 
-    config PHONEBLOCK_OTA_MANIFEST_URL
-        string "OTA update manifest URL"
-        default "https://cdn.phoneblock.net/dongle/firmware/stable/manifest.json"
+    config PHONEBLOCK_OTA_BASE_URL
+        string "OTA update base URL"
+        default "https://cdn.phoneblock.net/dongle/firmware"
         help
-            HTTPS URL the dongle polls for OTA updates. This is the
-            same esp-web-tools manifest that the browser-based
-            installer uses, so there is exactly one source of truth
-            per release. Expected shape (as written by release.sh):
+            HTTPS base URL the dongle polls for OTA updates. The
+            firmware appends "/<channel>/manifest.json", where the
+            channel ("stable" by default, "beta" for opt-in testers)
+            is selected at runtime in the web UI and persisted in NVS.
+            Releases publish to both channels so beta is always at
+            least as new as stable (see scripts/release.sh).
+
+            The polled file is the same esp-web-tools manifest that the
+            browser-based installer uses, so there is exactly one
+            source of truth per release. Expected shape (as written by
+            release.sh):
 
               {"name": "PhoneBlock Dongle",
                "version": "1.0.3",
@@ -80,7 +87,7 @@ menu "PhoneBlock Dongle"
             emulator. The Fritz!Box cannot deliver an INVITE to that
             address. Set this to the host-visible address (typically the
             workstation's LAN IP, e.g. 192.168.178.22) and combine with
-            `-nic user,model=open_eth,hostfwd=udp::5061-:5061` in QEMU.
+            `-nic user,model=open_eth,hostfwd=udp::15060-:15060` in QEMU.
             Leave empty to advertise the actual local interface IP,
             which is the correct behavior on real hardware.
 

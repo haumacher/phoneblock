@@ -206,6 +206,12 @@ class AppLocalizationsNl extends AppLocalizations {
   String get viewOnPhoneBlockMenu => 'Bekijk op PhoneBlock';
 
   @override
+  String get copyNumber => 'Kopieernummer';
+
+  @override
+  String get numberCopied => 'Nummer gekopieerd naar klembord';
+
+  @override
   String get deleteCall => 'Verwijder';
 
   @override

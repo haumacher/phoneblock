@@ -21,11 +21,9 @@ extern const uint8_t announcement_default_end[]   asm("_binary_announcement_alaw
 #define SPIFFS_TEMP       "/spiffs/announcement.alaw.tmp"
 
 static bool     s_spiffs_mounted = false;
-static uint8_t *s_cache           = NULL;    // NULL = use embedded default
-static size_t   s_cache_len       = 0;
-// Latch for "there is no custom file" so we don't keep stat()-ing
-// SPIFFS on every /api/status poll. Cleared whenever a new file is
-// written or the current one is reset.
+// Latch for "there is no usable custom file" so we don't keep stat()-ing
+// SPIFFS (and re-warning about a bad size) on every /api/status poll.
+// Cleared whenever a new file is written or the current one is reset.
 static bool     s_no_custom       = false;
 
 // Streaming-write session state (see announcement_write_begin).
@@ -33,14 +31,39 @@ static FILE    *s_write_file     = NULL;
 static size_t   s_write_total    = 0;
 static size_t   s_write_got      = 0;
 
-static void invalidate_cache(void)
+// Drop the "no custom file" latch so the next open()/stat() re-checks
+// SPIFFS. Called after a write or reset changes what's on flash.
+static void forget_custom_state(void)
 {
-    if (s_cache) {
-        free(s_cache);
-        s_cache = NULL;
-    }
-    s_cache_len = 0;
     s_no_custom = false;
+}
+
+// Size of a valid custom SPIFFS announcement, or -1 if there is none
+// (not mounted, missing, empty, or over the cap). stat()-only — never
+// touches the heap — so the dashboard can poll it freely. Latches the
+// "no custom" result so repeated polls don't re-stat or re-warn.
+static long custom_size(void)
+{
+    if (!s_spiffs_mounted) return -1;
+    if (s_no_custom)       return -1;
+
+    struct stat st;
+    if (stat(SPIFFS_FILE, &st) != 0) {
+        s_no_custom = true;
+        return -1;
+    }
+    if (st.st_size <= 0 || (size_t)st.st_size > ANNOUNCEMENT_MAX_BYTES) {
+        ESP_LOGW(TAG, "SPIFFS file has invalid size %ld, ignoring",
+                 (long)st.st_size);
+        s_no_custom = true;
+        return -1;
+    }
+    return (long)st.st_size;
+}
+
+static size_t default_len(void)
+{
+    return (size_t)(announcement_default_end - announcement_default_start);
 }
 
 esp_err_t announcement_init(void)
@@ -64,69 +87,61 @@ esp_err_t announcement_init(void)
         ESP_LOGI(TAG, "SPIFFS mounted: %u B used of %u B",
                  (unsigned)used, (unsigned)total);
     }
-    // Clear any orphan temp left over by an upload that crashed
-    // mid-flight on the previous boot.
+    // Legacy cleanup: older firmware uploaded via a temp file plus a
+    // rename(). Drop any leftover temp so it doesn't waste a slot —
+    // the current code writes the live file in place (see write_begin).
     unlink(SPIFFS_TEMP);
     return ESP_OK;
 }
 
-// Try to load the SPIFFS file into s_cache. Returns true on success.
-static bool try_load_spiffs(void)
+esp_err_t announcement_open(announcement_src_t *src)
 {
-    if (!s_spiffs_mounted) return false;
-    if (s_no_custom) return false;
+    if (!src) return ESP_ERR_INVALID_ARG;
+    src->file = NULL;
+    src->mem  = NULL;
+    src->pos  = 0;
+    src->len  = 0;
 
-    struct stat st;
-    if (stat(SPIFFS_FILE, &st) != 0) {
-        s_no_custom = true;
-        return false;
+    long sz = custom_size();
+    if (sz > 0) {
+        FILE *f = fopen(SPIFFS_FILE, "rb");
+        if (f) {
+            src->file = f;
+            src->len  = (size_t)sz;
+            return ESP_OK;
+        }
+        // Lost the race with a delete, or SPIFFS hiccup: fall through
+        // to the embedded default rather than serving nothing.
+        ESP_LOGW(TAG, "fopen(%s): %s — using embedded default",
+                 SPIFFS_FILE, strerror(errno));
     }
-    if (st.st_size <= 0 || (size_t)st.st_size > ANNOUNCEMENT_MAX_BYTES) {
-        ESP_LOGW(TAG, "SPIFFS file has invalid size %ld, ignoring",
-                 (long)st.st_size);
-        return false;
-    }
-
-    FILE *f = fopen(SPIFFS_FILE, "rb");
-    if (!f) {
-        ESP_LOGW(TAG, "fopen(%s): %s", SPIFFS_FILE, strerror(errno));
-        return false;
-    }
-
-    uint8_t *buf = malloc(st.st_size);
-    if (!buf) {
-        ESP_LOGE(TAG, "OOM loading announcement (%ld bytes)", (long)st.st_size);
-        fclose(f);
-        return false;
-    }
-
-    size_t got = fread(buf, 1, st.st_size, f);
-    fclose(f);
-    if (got != (size_t)st.st_size) {
-        ESP_LOGE(TAG, "short read: %u of %ld bytes", (unsigned)got, (long)st.st_size);
-        free(buf);
-        return false;
-    }
-
-    s_cache     = buf;
-    s_cache_len = got;
-    ESP_LOGI(TAG, "loaded custom announcement: %u bytes", (unsigned)got);
-    return true;
+    src->mem = announcement_default_start;
+    src->len = default_len();
+    return ESP_OK;
 }
 
-esp_err_t announcement_get(const uint8_t **buf, size_t *len)
+size_t announcement_read(announcement_src_t *src, uint8_t *out, size_t max)
 {
-    if (!buf || !len) return ESP_ERR_INVALID_ARG;
-
-    if (!s_cache) try_load_spiffs();
-    if (s_cache) {
-        *buf = s_cache;
-        *len = s_cache_len;
-        return ESP_OK;
+    if (!src || !out || max == 0) return 0;
+    if (src->file) {
+        return fread(out, 1, max, src->file);
     }
-    *buf = announcement_default_start;
-    *len = announcement_default_end - announcement_default_start;
-    return ESP_OK;
+    if (src->mem) {
+        size_t remaining = src->len - src->pos;
+        size_t n = remaining < max ? remaining : max;
+        memcpy(out, src->mem + src->pos, n);
+        src->pos += n;
+        return n;
+    }
+    return 0;
+}
+
+void announcement_close(announcement_src_t *src)
+{
+    if (src && src->file) {
+        fclose(src->file);
+        src->file = NULL;
+    }
 }
 
 esp_err_t announcement_write_begin(size_t total_bytes)
@@ -136,19 +151,20 @@ esp_err_t announcement_write_begin(size_t total_bytes)
     if (total_bytes == 0 || total_bytes > ANNOUNCEMENT_MAX_BYTES) {
         return ESP_ERR_INVALID_ARG;
     }
-    // Free both the previous live file and any stale temp before we
-    // start writing. Without this, SPIFFS has to garbage-collect the
-    // old pages while the new data streams in — observed as 4 KB/s
-    // throughput on a ~66 KB upload. With the slot empty up front,
-    // write speed drops back to the ~30–40 KB/s SPIFFS can sustain
-    // on free pages.
-    unlink(SPIFFS_TEMP);
-    unlink(SPIFFS_FILE);
-    invalidate_cache();
+    // Write straight into the live file: fopen("wb") truncates it in
+    // place, so the partition only ever holds one announcement-sized
+    // blob. The old temp+rename approach needed room for both the temp
+    // and the live file at once and then a rename(), which SPIFFS fails
+    // once the slot is near-full — that left every re-upload of a large
+    // (near-240 KB) announcement permanently stuck on the embedded
+    // default (issue #359). Losing the announcement if a write is
+    // interrupted is acceptable here: the default takes over until the
+    // user re-uploads.
+    forget_custom_state();
 
-    s_write_file = fopen(SPIFFS_TEMP, "wb");
+    s_write_file = fopen(SPIFFS_FILE, "wb");
     if (!s_write_file) {
-        ESP_LOGE(TAG, "fopen(%s): %s", SPIFFS_TEMP, strerror(errno));
+        ESP_LOGE(TAG, "fopen(%s): %s", SPIFFS_FILE, strerror(errno));
         return ESP_FAIL;
     }
     // Crank the stdio buffer up: SPIFFS pays per flush, not per byte,
@@ -183,23 +199,15 @@ esp_err_t announcement_write_commit(void)
     if (s_write_got != s_write_total) {
         ESP_LOGE(TAG, "commit: got %u of expected %u",
                  (unsigned)s_write_got, (unsigned)s_write_total);
-        unlink(SPIFFS_TEMP);
+        // Drop the partially written live file → fall back to default.
+        unlink(SPIFFS_FILE);
+        forget_custom_state();
         s_write_got = s_write_total = 0;
         return ESP_ERR_INVALID_SIZE;
     }
-    // Live file was already unlinked in write_begin (so SPIFFS had
-    // free pages during the body write). Just rename the temp into
-    // place.
-    if (rename(SPIFFS_TEMP, SPIFFS_FILE) != 0) {
-        ESP_LOGE(TAG, "rename(%s → %s): %s",
-                 SPIFFS_TEMP, SPIFFS_FILE, strerror(errno));
-        unlink(SPIFFS_TEMP);
-        s_write_got = s_write_total = 0;
-        return ESP_FAIL;
-    }
     size_t stored = s_write_got;
     s_write_got = s_write_total = 0;
-    invalidate_cache();
+    forget_custom_state();
     ESP_LOGI(TAG, "stored custom announcement: %u bytes", (unsigned)stored);
     return ESP_OK;
 }
@@ -210,7 +218,10 @@ void announcement_write_abort(void)
         fclose(s_write_file);
         s_write_file = NULL;
     }
-    unlink(SPIFFS_TEMP);
+    // The aborted write was going straight into the live file, so it is
+    // now partial — discard it and fall back to the embedded default.
+    unlink(SPIFFS_FILE);
+    forget_custom_state();
     s_write_got = s_write_total = 0;
 }
 
@@ -221,21 +232,18 @@ esp_err_t announcement_reset(void)
         ESP_LOGW(TAG, "unlink(%s): %s", SPIFFS_FILE, strerror(errno));
     }
     unlink(SPIFFS_TEMP);  // best-effort cleanup of any stale temp
-    invalidate_cache();
+    forget_custom_state();
     ESP_LOGI(TAG, "announcement reset to embedded default");
     return ESP_OK;
 }
 
 bool announcement_is_custom(void)
 {
-    if (!s_cache) try_load_spiffs();
-    return s_cache != NULL;
+    return custom_size() > 0;
 }
 
 size_t announcement_length(void)
 {
-    const uint8_t *buf;
-    size_t len;
-    if (announcement_get(&buf, &len) != ESP_OK) return 0;
-    return len;
+    long sz = custom_size();
+    return sz > 0 ? (size_t)sz : default_len();
 }

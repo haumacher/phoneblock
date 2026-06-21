@@ -3,6 +3,8 @@
 #include <string.h>
 
 #include "esp_log.h"
+#include "esp_random.h"
+#include "esp_mac.h"
 #include "nvs_flash.h"
 #include "nvs.h"
 
@@ -27,19 +29,33 @@ static const char *NS   = "phoneblock";
 #define K_FB_APP_PASS   "fb_app_pass"
 #define K_SYNC_ENABLED  "sync_enabled"
 #define K_LOG_KNOWN     "log_known_calls"
+#define K_LOG_INFO      "log_info"
 #define K_AUTH_ENABLED  "auth_enabled"
 #define K_AUTH_USER     "auth_user"
 #define K_AUTH_PERSIST  "auth_persist"
 #define K_AUTO_UPDATE   "auto_update"
+#define K_OTA_CHANNEL   "ota_channel"
 #define K_CRASH_REPORT  "crash_report"
 #define K_ACCEPT_TEST   "accept_test"
 #define K_BL_WILDCARDS  "bl_wildcards"
 #define K_CONTACT_HOST  "contact_host"
 #define K_CONTACT_PORT  "contact_port"
+#define K_SIP_LPORT     "sip_lport"
+#define K_RTP_PORT      "rtp_port"
 #define K_PB_URL        "pb_url"
 #define K_PB_TOKEN      "pb_token"
 #define K_MIN_DIRECT    "min_direct"
 #define K_MIN_RANGE     "min_range"
+#define K_SMTP_HOST     "smtp_host"
+#define K_SMTP_PORT     "smtp_port"
+#define K_SMTP_SECURITY "smtp_security"
+#define K_SMTP_USER     "smtp_user"
+#define K_SMTP_PASS     "smtp_pass"
+#define K_SMTP_FROM     "smtp_from"
+#define K_SMTP_TO       "smtp_to"
+#define K_MAIL_ON_ERROR "mail_on_error"
+#define K_MAIL_ON_SPAM  "mail_on_spam"
+#define K_DEVICE_ID     "device_id"
 
 // Direct-vote default mirrors DB.MIN_VOTES on the server (the
 // confidence floor the public blocklist export already enforces).
@@ -50,6 +66,13 @@ static const char *NS   = "phoneblock";
 // aggressive range-blocking can lower it, users who want to disable
 // range entirely can set it to 0.
 #define DEFAULT_MIN_RANGE_VOTES 10
+// Local SIP / RTP bind ports. High "unsuspicious" ports on purpose: not
+// 5060/5061, so they dodge router SIP-ALGs (which only mangle 5060) and
+// are not reserved by a FritzBox's own SIP stack — forwardable 1:1 behind
+// NAT. 15060 is mnemonic ("1"+5060); RTP sits next to it on 16000. Stored
+// 0 means "use this default".
+#define DEFAULT_SIP_LOCAL_PORT 15060
+#define DEFAULT_RTP_PORT       16000
 // Version string of the most recent OTA download that did NOT survive
 // to the next successful boot. Set pessimistically before
 // esp_https_ota() runs and only cleared once main.c sees the running
@@ -74,19 +97,33 @@ typedef struct {
     char fb_app_pass[40];    // spec cap is 32; 40 for NUL + padding
     char sync_enabled[4];    // "1" | "0" (or empty = default off)
     char log_known[4];       // "1" | "0" (or empty = default on)
+    char log_info[4];        // "1" = also mirror INFO lines to the log panel (default off)
     char auth_enabled[4];    // "1" | "0" (or empty = default off)
     char auth_user[64];      // pinned PhoneBlock user-name; empty = no pin
     char auth_persist[33];   // 32 hex chars + NUL; empty = nobody is "remembered"
     char auto_update[4];     // "1" | "0" (or empty = default on)
+    char ota_channel[8];     // "stable" | "beta" (empty = default stable)
     char crash_report[4];    // "1" | "0" (or empty = default on)
     char accept_test[4];     // "1" | "0" (empty = use Kconfig default)
     char bl_wildcards[4];    // "1" | "0" (empty = default on)
     char contact_host[64];
     int  contact_port;
+    int  sip_local_port;     // 0 = use DEFAULT_SIP_LOCAL_PORT
+    int  rtp_port;           // 0 = use DEFAULT_RTP_PORT
     char pb_base_url[128];
     char pb_token[64];
     int  min_direct_votes;   // SPAM threshold for direct hits
     int  min_range_votes;    // SPAM threshold for wildcard/range hits; 0 = off
+    // Status email (SMTP submission via the user's own mail account).
+    char smtp_host[64];
+    int  smtp_port;          // 0 = derive from smtp_security (465 tls / 587 starttls)
+    char smtp_security[10];  // "tls" (implicit, default) | "starttls"
+    char smtp_user[64];
+    char smtp_pass[64];
+    char smtp_from[64];      // sender; empty = use smtp_user
+    char smtp_to[64];        // recipient of the status mails
+    char mail_on_error[4];   // "1" = mail on ERROR/crash (default off)
+    char mail_on_spam[4];    // "1" = mail when spam calls were caught (default off)
     char last_failed_ota[32];   // semver, plus headroom for "-rcN" suffixes
 } config_cache_t;
 
@@ -116,10 +153,78 @@ static int load_int(nvs_handle_t h, const char *key, int def)
     return nvs_get_i32(h, key, &v) == ESP_OK ? (int)v : def;
 }
 
+// Stable per-device id, a UUIDv4 string ("xxxxxxxx-…-xxxxxxxxxxxx", 36
+// chars). Minted once on first boot and persisted; it survives OTA
+// updates and is only cleared by a factory reset (config_erase wipes the
+// whole namespace). Used as the SIP +sip.instance and in the HTTP
+// User-Agent so the registrar and the PhoneBlock service can recognise
+// the same physical device across reboots and token renewals.
+static char s_device_id[37] = "";
+
+static void format_uuid(const uint8_t b[16], char *out /* >= 37 */)
+{
+    snprintf(out, 37,
+        "%02x%02x%02x%02x-%02x%02x-%02x%02x-%02x%02x-%02x%02x%02x%02x%02x%02x",
+        b[0], b[1], b[2],  b[3],  b[4],  b[5],  b[6],  b[7],
+        b[8], b[9], b[10], b[11], b[12], b[13], b[14], b[15]);
+}
+
+// Read the device id from NVS, or mint and persist one on first boot.
+// Runs single-threaded from config_load(), before any task that consumes
+// the id starts — so no locking is needed. Creating the namespace here on
+// a fresh device is harmless: the not-found and normal load paths below
+// resolve to identical defaults.
+static void ensure_device_id(void)
+{
+    nvs_handle_t h;
+    esp_err_t err = nvs_open(NS, NVS_READWRITE, &h);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "device-id nvs_open: %s", esp_err_to_name(err));
+        return;
+    }
+
+    size_t len = sizeof(s_device_id);
+    if (nvs_get_str(h, K_DEVICE_ID, s_device_id, &len) == ESP_OK
+            && s_device_id[0]) {
+        nvs_close(h);
+        ESP_LOGI(TAG, "device id %s", s_device_id);
+        return;
+    }
+
+    // First boot with this firmware: mint a v4 UUID. esp_fill_random
+    // provides the entropy; XOR the factory MAC into the node field so the
+    // id stays globally unique even if the RNG is weakly seeded this early.
+    uint8_t b[16];
+    esp_fill_random(b, sizeof(b));
+    uint8_t mac[6];
+    if (esp_efuse_mac_get_default(mac) == ESP_OK) {
+        for (int i = 0; i < 6; i++) b[10 + i] ^= mac[i];
+    }
+    b[6] = (uint8_t)((b[6] & 0x0F) | 0x40);  // version 4
+    b[8] = (uint8_t)((b[8] & 0x3F) | 0x80);  // variant 1 (RFC 4122)
+    format_uuid(b, s_device_id);
+
+    err = nvs_set_str(h, K_DEVICE_ID, s_device_id);
+    if (err == ESP_OK) err = nvs_commit(h);
+    nvs_close(h);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "device id persist failed: %s", esp_err_to_name(err));
+    } else {
+        ESP_LOGI(TAG, "minted device id %s", s_device_id);
+    }
+}
+
+const char *config_device_id(void)
+{
+    return s_device_id;
+}
+
 // --- Public API -----------------------------------------------------
 
 void config_load(void)
 {
+    ensure_device_id();
+
     nvs_handle_t h;
     esp_err_t err = nvs_open(NS, NVS_READONLY, &h);
     if (err == ESP_ERR_NVS_NOT_FOUND) {
@@ -138,24 +243,37 @@ void config_load(void)
         s_config.sip_authuser[0]  = '\0';
         s_config.sip_outbound[0]  = '\0';
         s_config.sip_realm[0]     = '\0';
-        copy_default(s_config.sip_srtp,   sizeof(s_config.sip_srtp),   "off");
+        copy_default(s_config.sip_srtp,   sizeof(s_config.sip_srtp),   "optional");
         s_config.fb_app_user[0]   = '\0';
         s_config.fb_app_pass[0]   = '\0';
         s_config.sync_enabled[0]  = '\0';
         s_config.log_known[0]     = '\0';
+        s_config.log_info[0]      = '\0';
         s_config.auth_enabled[0]  = '\0';
         s_config.auth_user[0]     = '\0';
         s_config.auth_persist[0]  = '\0';
         s_config.auto_update[0]   = '\0';
+        s_config.ota_channel[0]   = '\0';
         s_config.crash_report[0]  = '\0';
         s_config.accept_test[0]   = '\0';
         s_config.bl_wildcards[0]  = '\0';
         copy_default(s_config.contact_host, sizeof(s_config.contact_host), CONFIG_SIP_CONTACT_HOST_OVERRIDE);
         s_config.contact_port = CONFIG_SIP_CONTACT_PORT_OVERRIDE;
+        s_config.sip_local_port = 0;   // → DEFAULT_SIP_LOCAL_PORT
+        s_config.rtp_port       = 0;   // → DEFAULT_RTP_PORT
         copy_default(s_config.pb_base_url,  sizeof(s_config.pb_base_url),  CONFIG_PHONEBLOCK_BASE_URL);
         s_config.pb_token[0]  = '\0';
         s_config.min_direct_votes = DEFAULT_MIN_DIRECT_VOTES;
         s_config.min_range_votes  = DEFAULT_MIN_RANGE_VOTES;
+        s_config.smtp_host[0]     = '\0';
+        s_config.smtp_port        = 0;   // → derive from security
+        copy_default(s_config.smtp_security, sizeof(s_config.smtp_security), "tls");
+        s_config.smtp_user[0]     = '\0';
+        s_config.smtp_pass[0]     = '\0';
+        s_config.smtp_from[0]     = '\0';
+        s_config.smtp_to[0]       = '\0';
+        s_config.mail_on_error[0] = '\0';
+        s_config.mail_on_spam[0]  = '\0';
         s_config.last_failed_ota[0] = '\0';
         return;
     }
@@ -182,7 +300,7 @@ void config_load(void)
              s_config.sip_outbound, sizeof(s_config.sip_outbound));
     load_str(h, K_SIP_REALM,    "",
              s_config.sip_realm,    sizeof(s_config.sip_realm));
-    load_str(h, K_SIP_SRTP,     "off",
+    load_str(h, K_SIP_SRTP,     "optional",
              s_config.sip_srtp,     sizeof(s_config.sip_srtp));
     load_str(h, K_FB_APP_USER,  "",
              s_config.fb_app_user,  sizeof(s_config.fb_app_user));
@@ -192,6 +310,8 @@ void config_load(void)
              s_config.sync_enabled, sizeof(s_config.sync_enabled));
     load_str(h, K_LOG_KNOWN, "",
              s_config.log_known, sizeof(s_config.log_known));
+    load_str(h, K_LOG_INFO, "",
+             s_config.log_info, sizeof(s_config.log_info));
     load_str(h, K_AUTH_ENABLED, "",
              s_config.auth_enabled, sizeof(s_config.auth_enabled));
     load_str(h, K_AUTH_USER, "",
@@ -200,6 +320,8 @@ void config_load(void)
              s_config.auth_persist, sizeof(s_config.auth_persist));
     load_str(h, K_AUTO_UPDATE, "",
              s_config.auto_update, sizeof(s_config.auto_update));
+    load_str(h, K_OTA_CHANNEL, "",
+             s_config.ota_channel, sizeof(s_config.ota_channel));
     load_str(h, K_CRASH_REPORT, "",
              s_config.crash_report, sizeof(s_config.crash_report));
     load_str(h, K_ACCEPT_TEST, "",
@@ -209,12 +331,31 @@ void config_load(void)
     load_str(h, K_CONTACT_HOST, CONFIG_SIP_CONTACT_HOST_OVERRIDE,
              s_config.contact_host, sizeof(s_config.contact_host));
     s_config.contact_port = load_int(h, K_CONTACT_PORT, CONFIG_SIP_CONTACT_PORT_OVERRIDE);
+    s_config.sip_local_port = load_int(h, K_SIP_LPORT, 0);
+    s_config.rtp_port       = load_int(h, K_RTP_PORT,  0);
     load_str(h, K_PB_URL,       CONFIG_PHONEBLOCK_BASE_URL,
              s_config.pb_base_url,  sizeof(s_config.pb_base_url));
     load_str(h, K_PB_TOKEN,     "",
              s_config.pb_token,     sizeof(s_config.pb_token));
     s_config.min_direct_votes = load_int(h, K_MIN_DIRECT, DEFAULT_MIN_DIRECT_VOTES);
     s_config.min_range_votes  = load_int(h, K_MIN_RANGE,  DEFAULT_MIN_RANGE_VOTES);
+    load_str(h, K_SMTP_HOST, "",
+             s_config.smtp_host, sizeof(s_config.smtp_host));
+    s_config.smtp_port = load_int(h, K_SMTP_PORT, 0);
+    load_str(h, K_SMTP_SECURITY, "tls",
+             s_config.smtp_security, sizeof(s_config.smtp_security));
+    load_str(h, K_SMTP_USER, "",
+             s_config.smtp_user, sizeof(s_config.smtp_user));
+    load_str(h, K_SMTP_PASS, "",
+             s_config.smtp_pass, sizeof(s_config.smtp_pass));
+    load_str(h, K_SMTP_FROM, "",
+             s_config.smtp_from, sizeof(s_config.smtp_from));
+    load_str(h, K_SMTP_TO, "",
+             s_config.smtp_to, sizeof(s_config.smtp_to));
+    load_str(h, K_MAIL_ON_ERROR, "",
+             s_config.mail_on_error, sizeof(s_config.mail_on_error));
+    load_str(h, K_MAIL_ON_SPAM, "",
+             s_config.mail_on_spam, sizeof(s_config.mail_on_spam));
     load_str(h, K_LAST_FAIL_OTA, "",
              s_config.last_failed_ota, sizeof(s_config.last_failed_ota));
     nvs_close(h);
@@ -234,7 +375,7 @@ const char *config_sip_transport(void)       { return s_config.sip_transp[0] ? s
 const char *config_sip_auth_user(void)       { return s_config.sip_authuser; }
 const char *config_sip_outbound(void)        { return s_config.sip_outbound; }
 const char *config_sip_realm(void)           { return s_config.sip_realm; }
-const char *config_sip_srtp(void)            { return s_config.sip_srtp[0] ? s_config.sip_srtp : "off"; }
+const char *config_sip_srtp(void)            { return s_config.sip_srtp[0] ? s_config.sip_srtp : "optional"; }
 const char *config_fritzbox_app_user(void)   { return s_config.fb_app_user; }
 const char *config_fritzbox_app_pass(void)   { return s_config.fb_app_pass; }
 bool        config_sync_enabled(void)
@@ -252,6 +393,13 @@ bool        config_log_known_calls(void)
     // call the dongle handled. Only an explicit "0" disables listing.
     return s_config.log_known[0] != '0';
 }
+bool        config_log_info(void)
+{
+    // Default off: the log panel shows only WARN/ERROR. Switched on from
+    // the UI for troubleshooting, when the context that only INFO lines
+    // carry (e.g. "registrar host:port") is needed. Only "1" enables it.
+    return s_config.log_info[0] == '1';
+}
 bool        config_auth_enabled(void)
 {
     // Default off (empty / unrecognised → open) so the LAN-local UI
@@ -266,6 +414,14 @@ bool        config_auto_update_enabled(void)
     // tracks the released stream. Only an explicit "0" freezes it,
     // typically after a manual firmware upload from the web UI.
     return s_config.auto_update[0] != '0';
+}
+const char *config_ota_channel(void)
+{
+    // Allowlist: anything that isn't exactly "beta" maps to the
+    // default "stable". The result is spliced straight into the OTA
+    // poll URL path, so clamping here means a corrupt or unexpected
+    // NVS value can never redirect the dongle to an arbitrary host.
+    return strcmp(s_config.ota_channel, "beta") == 0 ? "beta" : "stable";
 }
 bool        config_crash_report_enabled(void)
 {
@@ -304,10 +460,54 @@ bool        config_accept_test_calls(void)
 }
 const char *config_contact_host_override(void) { return s_config.contact_host; }
 int         config_contact_port_override(void) { return s_config.contact_port; }
+int         config_sip_local_port(void)
+{
+    return s_config.sip_local_port > 0 ? s_config.sip_local_port
+                                       : DEFAULT_SIP_LOCAL_PORT;
+}
+int         config_rtp_port(void)
+{
+    return s_config.rtp_port > 0 ? s_config.rtp_port : DEFAULT_RTP_PORT;
+}
 const char *config_phoneblock_base_url(void) { return s_config.pb_base_url; }
 const char *config_phoneblock_token(void)    { return s_config.pb_token; }
 int         config_min_direct_votes(void)     { return s_config.min_direct_votes; }
 int         config_min_range_votes(void)      { return s_config.min_range_votes; }
+const char *config_smtp_host(void)           { return s_config.smtp_host; }
+const char *config_smtp_security(void)
+{
+    // Allowlist: anything that isn't exactly "starttls" maps to the
+    // default "tls" (implicit TLS on connect). Keeps a corrupt NVS value
+    // from selecting an unintended transport.
+    return strcmp(s_config.smtp_security, "starttls") == 0 ? "starttls" : "tls";
+}
+int         config_smtp_port(void)
+{
+    // Raw stored value; 0 = "auto" (let the caller derive the
+    // conventional submission port from the security mode). Returning
+    // the raw value lets the web UI round-trip "auto" as an empty field
+    // instead of pinning a derived port that a later security change
+    // would leave stale.
+    return s_config.smtp_port;
+}
+const char *config_smtp_user(void)           { return s_config.smtp_user; }
+const char *config_smtp_pass(void)           { return s_config.smtp_pass; }
+const char *config_smtp_from(void)
+{
+    // Empty From defaults to the login user — the common case where the
+    // account address is also the sender.
+    return s_config.smtp_from[0] ? s_config.smtp_from : s_config.smtp_user;
+}
+const char *config_smtp_to(void)             { return s_config.smtp_to; }
+bool        config_mail_on_error(void)
+{
+    // Default off: status mail is opt-in. Only "1" enables it.
+    return s_config.mail_on_error[0] == '1';
+}
+bool        config_mail_on_spam(void)
+{
+    return s_config.mail_on_spam[0] == '1';
+}
 const char *config_last_failed_ota(void)     { return s_config.last_failed_ota; }
 
 esp_err_t config_set_last_failed_ota(const char *version)
@@ -393,7 +593,12 @@ esp_err_t config_update(const config_update_t *u)
 
     err = set_str_if(h, K_SIP_HOST, u->sip_host,
                      s_config.sip_host, sizeof(s_config.sip_host));
-    if (err == ESP_OK) err = set_int_if(h, K_SIP_PORT, u->sip_port, &s_config.sip_port);
+    if (err == ESP_OK) err = set_int_explicit(h, K_SIP_PORT, u->has_sip_port,
+                                              u->sip_port, &s_config.sip_port);
+    if (err == ESP_OK) err = set_int_explicit(h, K_SIP_LPORT, u->has_sip_local_port,
+                                              u->sip_local_port, &s_config.sip_local_port);
+    if (err == ESP_OK) err = set_int_explicit(h, K_RTP_PORT, u->has_rtp_port,
+                                              u->rtp_port, &s_config.rtp_port);
     if (err == ESP_OK) err = set_str_if(h, K_SIP_USER, u->sip_user,
                                         s_config.sip_user, sizeof(s_config.sip_user));
     if (err == ESP_OK) err = set_str_if(h, K_SIP_PASS, u->sip_pass,
@@ -419,6 +624,8 @@ esp_err_t config_update(const config_update_t *u)
                                         s_config.sync_enabled, sizeof(s_config.sync_enabled));
     if (err == ESP_OK) err = set_str_if(h, K_LOG_KNOWN, u->log_known_calls,
                                         s_config.log_known, sizeof(s_config.log_known));
+    if (err == ESP_OK) err = set_str_if(h, K_LOG_INFO, u->log_info,
+                                        s_config.log_info, sizeof(s_config.log_info));
     if (err == ESP_OK) err = set_str_if(h, K_AUTH_ENABLED, u->auth_enabled,
                                         s_config.auth_enabled, sizeof(s_config.auth_enabled));
     if (err == ESP_OK) err = set_str_if(h, K_AUTH_USER, u->auth_user,
@@ -427,6 +634,8 @@ esp_err_t config_update(const config_update_t *u)
                                         s_config.auth_persist, sizeof(s_config.auth_persist));
     if (err == ESP_OK) err = set_str_if(h, K_AUTO_UPDATE, u->auto_update,
                                         s_config.auto_update, sizeof(s_config.auto_update));
+    if (err == ESP_OK) err = set_str_if(h, K_OTA_CHANNEL, u->ota_channel,
+                                        s_config.ota_channel, sizeof(s_config.ota_channel));
     if (err == ESP_OK) err = set_str_if(h, K_CRASH_REPORT, u->crash_report,
                                         s_config.crash_report, sizeof(s_config.crash_report));
     if (err == ESP_OK) err = set_str_if(h, K_ACCEPT_TEST, u->accept_test_calls,
@@ -443,6 +652,24 @@ esp_err_t config_update(const config_update_t *u)
                                               u->has_min_range_votes,
                                               u->min_range_votes,
                                               &s_config.min_range_votes);
+    if (err == ESP_OK) err = set_str_if(h, K_SMTP_HOST, u->smtp_host,
+                                        s_config.smtp_host, sizeof(s_config.smtp_host));
+    if (err == ESP_OK) err = set_int_explicit(h, K_SMTP_PORT, u->has_smtp_port,
+                                              u->smtp_port, &s_config.smtp_port);
+    if (err == ESP_OK) err = set_str_if(h, K_SMTP_SECURITY, u->smtp_security,
+                                        s_config.smtp_security, sizeof(s_config.smtp_security));
+    if (err == ESP_OK) err = set_str_if(h, K_SMTP_USER, u->smtp_user,
+                                        s_config.smtp_user, sizeof(s_config.smtp_user));
+    if (err == ESP_OK) err = set_str_if(h, K_SMTP_PASS, u->smtp_pass,
+                                        s_config.smtp_pass, sizeof(s_config.smtp_pass));
+    if (err == ESP_OK) err = set_str_if(h, K_SMTP_FROM, u->smtp_from,
+                                        s_config.smtp_from, sizeof(s_config.smtp_from));
+    if (err == ESP_OK) err = set_str_if(h, K_SMTP_TO, u->smtp_to,
+                                        s_config.smtp_to, sizeof(s_config.smtp_to));
+    if (err == ESP_OK) err = set_str_if(h, K_MAIL_ON_ERROR, u->mail_on_error,
+                                        s_config.mail_on_error, sizeof(s_config.mail_on_error));
+    if (err == ESP_OK) err = set_str_if(h, K_MAIL_ON_SPAM, u->mail_on_spam,
+                                        s_config.mail_on_spam, sizeof(s_config.mail_on_spam));
 
     if (err == ESP_OK) err = nvs_commit(h);
     nvs_close(h);

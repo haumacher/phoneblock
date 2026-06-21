@@ -205,6 +205,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get viewOnPhoneBlockMenu => 'عرض على PhoneBlock';
 
   @override
+  String get copyNumber => 'رقم النسخة';
+
+  @override
+  String get numberCopied => 'الرقم المنسوخ إلى الحافظة';
+
+  @override
   String get deleteCall => 'حذف';
 
   @override

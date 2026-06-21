@@ -10,7 +10,6 @@
 #include <unistd.h>
 
 #include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
 #include "freertos/semphr.h"
 
 #include "esp_log.h"
@@ -20,11 +19,9 @@
 
 #include "config.h"
 #include "http_util.h"
+#include "scheduler.h"
 
 static const char *TAG = "blsync";
-
-// 24 hours between scheduled runs.
-#define SYNC_INTERVAL_US   (24LL * 3600LL * 1000000LL)
 
 // Stream-read chunk for the HTTPS download. Small to stay friendly with
 // the stack-allocated buffer; SPIFFS writes batch internally anyway.
@@ -33,8 +30,6 @@ static const char *TAG = "blsync";
 #define COMMUNITY_TMP      BLOCKLIST_COMMUNITY_PATH ".tmp"
 #define PERSONAL_TMP       BLOCKLIST_PERSONAL_PATH ".tmp"
 
-static TaskHandle_t      s_task    = NULL;
-static SemaphoreHandle_t s_trigger = NULL;
 static SemaphoreHandle_t s_lock    = NULL;
 static blocklist_sync_status_t s_status;
 
@@ -267,53 +262,43 @@ static void run_once(void)
     }
 }
 
-static void task_loop(void *arg)
-{
-    (void)arg;
-    TickType_t timeout = pdMS_TO_TICKS(SYNC_INTERVAL_US / 1000);
-    while (1) {
-        xSemaphoreTake(s_trigger, timeout);
-
-        xSemaphoreTake(s_lock, portMAX_DELAY);
-        s_status.running = true;
-        xSemaphoreGive(s_lock);
-
-        run_once();
-
-        xSemaphoreTake(s_lock, portMAX_DELAY);
-        s_status.running = false;
-        xSemaphoreGive(s_lock);
-    }
-}
-
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 
-void blocklist_sync_start(void)
+void blocklist_sync_init(void)
 {
-    if (s_task != NULL) {
+    if (s_lock != NULL) {
         return;
     }
     memset(&s_status, 0, sizeof(s_status));
-    s_lock    = xSemaphoreCreateMutex();
-    s_trigger = xSemaphoreCreateBinary();
+    s_lock = xSemaphoreCreateMutex();
 
     xSemaphoreTake(s_lock, portMAX_DELAY);
     refresh_sizes_locked();
     xSemaphoreGive(s_lock);
+}
 
-    xTaskCreate(task_loop, "blsync", 6144, NULL, 3, &s_task);
+void blocklist_sync_run(void)
+{
+    if (s_lock == NULL) {
+        return;
+    }
 
-    // Fire an initial sync at boot so a freshly powered dongle picks up
-    // the current blocklist on the way out of WiFi/TLS init, rather than
-    // waiting 24 h. The task itself short-circuits if no token is set.
-    xSemaphoreGive(s_trigger);
+    xSemaphoreTake(s_lock, portMAX_DELAY);
+    s_status.running = true;
+    xSemaphoreGive(s_lock);
+
+    run_once();
+
+    xSemaphoreTake(s_lock, portMAX_DELAY);
+    s_status.running = false;
+    xSemaphoreGive(s_lock);
 }
 
 bool blocklist_sync_trigger_now(void)
 {
-    if (s_task == NULL || s_trigger == NULL) {
+    if (s_lock == NULL) {
         return false;
     }
     xSemaphoreTake(s_lock, portMAX_DELAY);
@@ -322,8 +307,10 @@ bool blocklist_sync_trigger_now(void)
     if (running) {
         return false;
     }
-    xSemaphoreGive(s_trigger);
-    return true;
+    // Hand off to the scheduler task, which runs blocklist_sync_run() on
+    // its own stack — the download must not run on the caller's httpd
+    // thread.
+    return scheduler_request_blocklist_sync();
 }
 
 blocklist_verdict_t blocklist_sync_check(const char *digits,

@@ -12,7 +12,12 @@
 // held only briefly.
 
 #define STATS_MAX_CALLS      10
-#define STATS_MAX_ERRORS     10
+// Sized generously: the ring is now fed by a global log hook
+// (log_capture.c) that mirrors every WARN/ERROR line — our own and the
+// ESP-IDF libraries' — so a single failing operation can emit several
+// related entries. A deeper ring keeps the root cause from scrolling
+// off before the user looks.
+#define STATS_MAX_ERRORS     32
 #define STATS_NUMBER_LEN     48
 #define STATS_DISPLAY_LEN    32
 #define STATS_LABEL_LEN      32
@@ -38,6 +43,7 @@ typedef struct {
 
 typedef struct {
     int64_t at_us;
+    int     level;                             // ESP_LOG_WARN | ESP_LOG_ERROR
     char    tag[STATS_ERROR_TAG_LEN];          // e.g. "sip", "api", "tr064"
     char    message[STATS_ERROR_MSG_LEN];
 } stats_error_t;
@@ -75,7 +81,11 @@ void stats_record_call_checked(const char *number, const char *display,
 // codes) but still wants the dashboard counters (total/legitimate)
 // to reflect that a call happened.
 void stats_record_call_counters_only(verdict_t verdict);
-void stats_record_error(const char *tag, const char *message);
+// Append a WARN/ERROR entry to the displayed log ring. `level` is an
+// esp_log_level_t (ESP_LOG_WARN / ESP_LOG_ERROR). Normally called only
+// by the global log hook in log_capture.c, which mirrors every WARN /
+// ERROR line into this ring.
+void stats_record_error(int level, const char *tag, const char *message);
 void stats_record_sip_state(bool registered);
 
 // Records the latency breakdown of the last API call (total + phases).

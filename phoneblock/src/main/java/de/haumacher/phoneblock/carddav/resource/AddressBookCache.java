@@ -20,7 +20,7 @@ import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.analysis.NumberBlock;
 import de.haumacher.phoneblock.analysis.NumberTree;
 import de.haumacher.phoneblock.db.BlockList;
-import de.haumacher.phoneblock.db.DBNumberInfo;
+import de.haumacher.phoneblock.db.DBBlocklistEntry;
 import de.haumacher.phoneblock.db.IDBService;
 import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.Users;
@@ -145,8 +145,9 @@ public class AddressBookCache implements ServletContextListener {
 			long userId = users.getUserId(principal);
 			List<String> personalizations = blocklist.getPersonalizations(userId);
 			Set<String> exclusions = blocklist.getExcluded(userId);
+			List<String> wildcards = blocklist.getBlockedWildcards(userId);
 
-			if (personalizations.isEmpty() && exclusions.isEmpty()) {
+			if (personalizations.isEmpty() && exclusions.isEmpty() && wildcards.isEmpty()) {
 				CommonList common = getCommonList(reports, listType, now);
 				int settingsHash = listType.hashCode();
 				String etag = CollectionEtag.compose(common.blocksHash(),
@@ -155,13 +156,13 @@ public class AddressBookCache implements ServletContextListener {
 			}
 
 			CommonList common = getCommonList(reports, listType, now);
-			int settingsHash = listType.hashCode() ^ personalSettingsHash(personalizations, exclusions);
+			int settingsHash = listType.hashCode() ^ personalSettingsHash(personalizations, exclusions, wildcards);
 
 			if (hasEffectiveExclusion(exclusions, common)) {
 				// Rare path (~0.3% of users): a personal exclusion intersects the
 				// common list and would change wildcard structure. Run the full
 				// per-user pipeline.
-				List<NumberBlock> blocks = loadNumbersFull(reports, personalizations, exclusions, listType, now);
+				List<NumberBlock> blocks = loadNumbersFull(reports, personalizations, exclusions, wildcards, listType, now);
 				String etag = CollectionEtag.forFullPipeline(blocks, settingsHash);
 				return new LoadResult(blocks, settingsHash, etag, "full pipeline");
 			}
@@ -176,6 +177,14 @@ public class AddressBookCache implements ServletContextListener {
 				}
 				blocks.add(new NumberBlock(phone, List.of(phone)));
 				personalSingletons.add(phone);
+			}
+			// Personal wildcards (#377): emitted as their own '<prefix>*' blocks. A passive
+			// list cannot carve a more-specific personal exclusion out of a wildcard, so the
+			// fine-grained longest-match override stays a device-side capability.
+			for (String wildcardId : wildcards) {
+				String wildcard = NumberAnalyzer.toInternationalFormat(wildcardId) + "*";
+				blocks.add(new NumberBlock(wildcard, List.of(wildcard)));
+				personalSingletons.add(wildcard);
 			}
 			String etag = CollectionEtag.compose(common.blocksHash(),
 				CollectionEtag.hashPersonalSingletons(personalSingletons), settingsHash);
@@ -214,7 +223,7 @@ public class AddressBookCache implements ServletContextListener {
 			return cached;
 		}
 		List<NumberBlock> blocks = loadNumbersFull(reports, Collections.emptyList(), Collections.emptySet(),
-				listType, now);
+				Collections.emptyList(), listType, now);
 		return _numberCache.put(listType, new CommonList(blocks));
 	}
 
@@ -239,11 +248,13 @@ public class AddressBookCache implements ServletContextListener {
 	 * two users with the same common list but different personal lists see distinct
 	 * ETags.
 	 */
-	private static int personalSettingsHash(List<String> personalizations, Set<String> exclusions) {
+	private static int personalSettingsHash(List<String> personalizations, Set<String> exclusions, List<String> wildcards) {
 		List<String> sortedP = new ArrayList<>(personalizations);
 		Collections.sort(sortedP);
 		List<String> sortedE = new ArrayList<>(exclusions);
 		Collections.sort(sortedE);
+		List<String> sortedW = new ArrayList<>(wildcards);
+		Collections.sort(sortedW);
 		int hash = 1;
 		for (String s : sortedP) {
 			hash = 31 * hash + s.hashCode();
@@ -252,20 +263,29 @@ public class AddressBookCache implements ServletContextListener {
 		for (String s : sortedE) {
 			hash = 31 * hash + s.hashCode();
 		}
+		hash = 31 * hash + 0x33333333;
+		for (String s : sortedW) {
+			hash = 31 * hash + s.hashCode();
+		}
 		return hash;
 	}
 
 	private List<NumberBlock> loadNumbersFull(SpamReports reports, List<String> personalizations, Set<String> exclusions,
-			ListType listType, long now) {
+			List<String> wildcards, ListType listType, long now) {
 		boolean nationalOnly = listType.isNationalOnly();
 		String dialPrefix = listType.getDialPrefix();
 
-		// Use the snapshot from the last released blocklist version so the address-book
-		// content (and its ETag) only changes once per release, not on every individual
-		// vote. PUBLISHED_VOTES is aliased into VOTES, PUBLISHED_LASTPING into LASTPING.
-		List<DBNumberInfo> result = reports.getPublishedReports();
+		// Use the published blocklist state so the address-book content (and
+		// its ETag) only changes once per release, not on every individual
+		// vote (#342). Votes are the bucket floors and Heat the log4 class of
+		// the *region* the list is built for — where the spam reports come
+		// from, not where the number originates (#340): a GB number flooding
+		// German users tops German lists. Both frozen at publication, so a
+		// TTL-expired cache regenerates byte-identical content between two
+		// releases.
+		List<DBBlocklistEntry> result = reports.getPublishedReports(dialPrefix);
 		NumberTree numberTree = new NumberTree();
-		for (DBNumberInfo report : result) {
+		for (DBBlocklistEntry report : result) {
 			String phoneId = report.getPhone();
 			String phone = NumberAnalyzer.toInternationalFormat(phoneId);
 
@@ -274,10 +294,7 @@ public class AddressBookCache implements ServletContextListener {
 				continue;
 			}
 
-			int votes = report.getVotes();
-			int ageInDays = (int) ((now - report.getLastPing()) / 1000 / 60 / 60 / 24);
-			
-			numberTree.insert(phone, votes, ageInDays);
+			numberTree.insert(phone, report.getVotes(), report.getHeat());
 		}
 
 		// Enter white-listed numbers with with negative weight to prevent adding those numbers to wildcard blocks. 
@@ -303,8 +320,14 @@ public class AddressBookCache implements ServletContextListener {
 		if (listType.useWildcards()) {
 			numberTree.markWildcards();
 		}
-		
-		return numberTree.createNumberBlocksByPrefix(listType.getMinVotes(), listType.getMaxLength(), listType.getDialPrefix());
+
+		// Personal wildcards (#377) are inserted after markWildcards so they apply even when
+		// automatic wildcard folding is off and never tip a common ancestor into a wildcard.
+		for (String wildcardId : wildcards) {
+			numberTree.insertWildcard(NumberAnalyzer.toInternationalFormat(wildcardId), 10_000_000, 0);
+		}
+
+		return numberTree.createNumberBlocksByPrefix(listType.getMinVotes(), listType.getMaxLength());
 	}
 
 	/**

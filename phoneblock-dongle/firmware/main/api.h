@@ -115,6 +115,16 @@ verdict_t phoneblock_check(const char *phone_number, pb_check_result_t *out,
 // measured.
 bool phoneblock_selftest(api_phases_t *phases_opt);
 
+// Ships a diagnostic log body (newline-separated WARN/ERROR lines) via
+// POST /api/dongle/log. Runs on the shared session-resuming client so
+// the daily upload resumes the TLS ticket the selftest just primed
+// instead of paying a second full handshake (and its stack-hungry P-384
+// certificate-chain verification). Serialised with phoneblock_check()/
+// phoneblock_selftest() via the internal mutex; safe to call right after
+// phoneblock_selftest() on the same task. Returns the HTTP status code,
+// or -1 on a transport/setup failure.
+int phoneblock_post_log(const char *body, size_t len);
+
 // Diagnostic latency probe for issue #329. Runs `rounds` (clamped to
 // 1..5) back-to-back iterations; each iteration measures one /api/test
 // and one /api/check-prefix call. The check call uses a fixed synthetic

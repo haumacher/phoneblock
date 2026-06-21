@@ -22,6 +22,13 @@ const char *find_header(const char *msg, int msg_len, const char *name);
 // the number of bytes written (excluding NUL).
 int header_value(const char *p, const char *end, char *out, int cap);
 
+// Extract the "received=" parameter from the first Via header of a
+// response. A registrar adds it (RFC 3261 §18.2.1) with the public source
+// IP it actually saw when that differs from our sent-by host — i.e. the
+// dongle's address as seen from outside the NAT. Writes the IP into out
+// and returns 1; returns 0 (out cleared) when no received= is present.
+int parse_via_received(const char *resp, int resp_len, char *out, int cap);
+
 // Extract the request method (first whitespace-delimited token on the
 // request line). Writes at most cap-1 bytes + NUL. Returns the number of
 // bytes written.
@@ -116,3 +123,16 @@ void parse_sdp_connection_ip(const char *msg, int msg_len, char *out, int cap);
 // Extract the RTP port from the SDP "m=audio <port> …" line. Returns 0
 // if the line is absent or malformed.
 int parse_sdp_audio_port(const char *msg, int msg_len);
+
+// True if the SDP "m=audio" line advertises the secure RTP/SAVP transport
+// profile (as opposed to plain RTP/AVP). Telekom's IMS offers RTP/SAVP and
+// rejects a plain RTP/AVP answer.
+int parse_sdp_audio_savp(const char *msg, int msg_len);
+
+// Scan the SDP for the first "a=crypto:" line offering the
+// AES_CM_128_HMAC_SHA1_80 SDES suite with an inline: key. On success
+// returns the crypto tag (a positive integer that the SRTP answer must
+// echo) and copies the base64 inline key (without any trailing
+// "|lifetime|MKI" parameters) into key_b64. Returns 0 — and clears
+// key_b64 — when no supported crypto suite is offered.
+int parse_sdp_crypto(const char *msg, int msg_len, char *key_b64, int cap);

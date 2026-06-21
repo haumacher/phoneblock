@@ -3,7 +3,7 @@
 	"info": {
 		"title": "PhoneBlock API",
 		"description": "Access to the PhoneBlock database for third-party tools. Please use the test installation at https://phoneblock.net/pb-test/api/ for testing purpose!",
-		"version": "v1.6.0"
+		"version": "v1.7.0"
 	},
 	"servers": [
 		{
@@ -356,10 +356,10 @@
 		"/blocklist": {
 			"get": {
 				"summary": "Retrieves the blocklist with optional incremental synchronization",
-				"description": "Returns all active phone numbers from the blocklist with their actual vote counts. Numbers below the server's minimum vote threshold are excluded from the full blocklist and returned with votes=0 in incremental updates (indicating removal). When 'since' is omitted, returns the complete blocklist. When 'since' is provided, returns only changes since that version (incremental sync). Entries with votes=0 indicate the number should be removed from the client's local blocklist.\n\n**Important:** This endpoint returns only the community-maintained blocklist data. It does NOT include user-specific personalizations (personal blacklist/whitelist). For call filtering, clients must check BOTH the community blocklist AND the user's personal black/whitelist entries (retrieved via /api/blacklist and /api/whitelist). Personal whitelist entries should override community blocklist entries, and personal blacklist entries should block calls regardless of community ratings.\n\n**Rate Limits:** To avoid excessive server load, clients should limit full synchronization (without 'since' parameter) to a maximum of once per month. Incremental synchronization (with 'since' parameter) should be performed at most once per day. Clients exceeding these limits may be subject to rate limiting.\n\n**Implementation:** Perform an initial full sync to retrieve the complete blocklist and its version number. Store this data locally and save the version number. For subsequent updates, use the saved version number in the 'since' parameter to retrieve only changes. Apply the incremental updates to your local copy: add/update entries with votes > 0, remove entries with votes = 0. After each sync, update your saved version number to the one returned in the response.",
+				"description": "Returns all active phone numbers from the blocklist with their published vote buckets (2, 4, 10, 20, 50, 100). Vote values are frozen per blocklist version; a number is re-published only when it crosses a bucket boundary, so the same version always serves identical data. Numbers below the server's minimum vote threshold are excluded from the full blocklist and returned with votes=0 in incremental updates (indicating removal). When 'since' is omitted, returns the complete blocklist. When 'since' is provided, returns only changes since that version (incremental sync). Entries with votes=0 indicate the number should be removed from the client's local blocklist.\n\n**Important:** This endpoint returns only the community-maintained blocklist data. It does NOT include user-specific personalizations (personal blacklist/whitelist). For call filtering, clients must check BOTH the community blocklist AND the user's personal black/whitelist entries (retrieved via /api/blacklist and /api/whitelist). Personal whitelist entries should override community blocklist entries, and personal blacklist entries should block calls regardless of community ratings.\n\n**Rate Limits:** To avoid excessive server load, clients should limit full synchronization (without 'since' parameter) to a maximum of once per month. Incremental synchronization (with 'since' parameter) should be performed at most once per day. Clients exceeding these limits may be subject to rate limiting.\n\n**Implementation:** Perform an initial full sync to retrieve the complete blocklist and its version number. Store this data locally and save the version number. For subsequent updates, use the saved version number in the 'since' parameter to retrieve only changes. Apply the incremental updates to your local copy: add/update entries with votes > 0, remove entries with votes = 0. After each sync, update your saved version number to the one returned in the response.",
 				"responses": {
 					"200": {
-						"description": "Returns all active phone numbers from the PhoneBlock database with their actual vote counts. Numbers with votes=0 indicate removal. When `format=binary` is requested the response is a compact on-device binary file (see the `application/octet-stream` entry below) intended for memory-constrained clients such as the PhoneBlock dongle. The binary form carries one list per request, selected by the `type` parameter: `community` returns the shared blocklist (filtered server-side by the authenticated user's `minVotes`), `personal` returns the user's black/white overrides. The dongle fetches both per sync and writes them as separate files. `since` is not supported with `format=binary`.",
+						"description": "Returns all active phone numbers from the PhoneBlock database with their published vote buckets. Numbers with votes=0 indicate removal. When `format=binary` is requested the response is a compact on-device binary file (see the `application/octet-stream` entry below) intended for memory-constrained clients such as the PhoneBlock dongle. The binary form carries one list per request, selected by the `type` parameter: `community` returns the shared blocklist (filtered server-side by the authenticated user's `minVotes`), `personal` returns the user's black/white overrides. The dongle fetches both per sync and writes them as separate files. `since` is not supported with `format=binary`.",
 						"content": {
 							"application/octet-stream": {
 								"schema": {
@@ -394,7 +394,7 @@
 													},
 													"votes": {
 														"type": "integer",
-														"description": "Actual vote count. A value of 0 indicates the number should be removed from the client's local blocklist."
+														"description": "Published vote bucket floor (one of 2, 4, 10, 20, 50, 100). Votes are quantized to these buckets at publication time and stay constant between blocklist versions; a number is re-published only when it crosses a bucket boundary. A value of 0 indicates the number should be removed from the client's local blocklist."
 													},
 													"lastActivity": {
 														"type": "integer",
@@ -444,6 +444,17 @@
 					"required": false,
 					"schema": {
 						"type": "integer"
+					}
+				},
+				{
+					"name": "limit",
+					"in": "query",
+					"description": "Heat-ranked variant for space-constrained clients (Fritz!Box phonebook, dongle local blocklist). When provided, returns at most this many entries — the currently-loudest spam numbers above the minimum-votes threshold, ordered by current activity. A once-loud-now-silent number drops out so a currently-active one takes its slot. This view is NOT compatible with incremental sync: passing both 'limit' and 'since' returns HTTP 400. The set of included numbers changes whenever Heat shifts, and there is no per-entry version stamp for 'evicted from the top-N' — clients should refetch the whole list on a schedule (e.g. daily). The server caps the requested limit at 5000.",
+					"required": false,
+					"schema": {
+						"type": "integer",
+						"minimum": 1,
+						"maximum": 5000
 					}
 				},
 				{
@@ -1333,11 +1344,11 @@
 					},
 					"votes": {
 						"type": "integer",
-						"description": "The number of votes that support blocking the requested number."
+						"description": "Decay-aware spam-vote equivalent for this number. Internally derived from an exponentially-weighted moving average of the spam-vote evidence, with a ~4-month half-life, minus the corresponding 'legitimate' evidence. A 10-vote spam number from this week therefore reads votes ≈ 10; the same number after four months reads votes ≈ 5; after a year reads votes ≈ 1. Clients filtering 'votes >= minVotes AND !archived' therefore see a smooth decay through the threshold instead of a binary archive-flip when the number stops being active."
 					},
 					"votesWildcard": {
 						"type": "integer",
-						"description": "Combined votes from the phone number's spam range, whereas 'votes' counts only the exact number. 'votesWildcard' exceeds 'votes' when neighboring numbers have been reported too (a spammer rotating through a range) and can be non-zero even when 'votes' is 0.\n\nHow a range is recognized: PhoneBlock groups reported numbers into a 10-block (all numbers sharing every digit except the last) and a 100-block (all numbers sharing every digit except the last two). A number counts toward its block only once it has a positive net vote balance (at least one more spam than legitimate vote). A block becomes a recognized spam range when a 10-block holds at least 4 such numbers, or a 100-block holds at least 3 qualifying 10-blocks. 'votesWildcard' then sums the votes of the whole matching block.\n\nExample - one report each on 20 consecutive numbers: '...000' to '...019' fills two 10-blocks with 10 numbers each; both cross the 4-number threshold, so every number gets a 10-block wildcard rating, but the 100-block has only 2 qualifying sub-blocks (< 3) and is not rated. '...005' to '...024' instead spreads across three 10-blocks (5/10/5 numbers); all three qualify, so the 100-block becomes a spam range too. Consecutive numbers alone therefore do not trigger a 100-block rating - the reports must reach 4 or more numbers in each of 3 different 10-blocks (minimum 12 numbers)."
+						"description": "Decay-aware spam-vote equivalent for the phone number's range. Derived from the per-block spam evidence at the /10 and /100 aggregation levels — whichever value is larger after decay — so a spam range that is still being abused keeps a high 'votesWildcard', a range the spammer has moved on from fades within a few months. 'votesWildcard' exceeds 'votes' when neighbouring numbers carry spam evidence too (the typical spammer-rotating-through-a-range case); it can be non-zero even when 'votes' is 0 for the specific number being asked about.\n\nHow ranges work: PhoneBlock groups reported numbers into 10-blocks (all numbers sharing every digit except the last) and 100-blocks (all numbers sharing every digit except the last two). Every spam vote feeds the per-number, per-10-block and per-100-block spam evidence flat. The wildcard view picks the larger of the two block-level decoded values."
 					},
 					"rating": {
 						"type": "string",
@@ -1362,7 +1373,8 @@
 					},
 					"archived": {
 						"type": "boolean",
-						"description": "Whether this number no longer is on the blocklist, because no votes have been received for a long time."
+						"deprecated": true,
+						"description": "Deprecated and always false. Kept only for backwards compatibility with clients written against API v1.6.0 and earlier. The binary archive flag was replaced by the decay-aware 'votes' value: a number that stops being active now fades smoothly through the visibility threshold instead of flipping a separate 'archived' bit. New clients must rely on 'votes'/'heat' and ignore this field; it will be removed in a future API version."
 					},
 					"dateAdded": {
 						"type": "integer",
@@ -1388,6 +1400,19 @@
 						"type": "string",
 						"description": "The comment that the requesting user previously stored for this number, or null. Only populated when the request is authenticated and a comment was previously submitted by the same user (e.g., via the /rate endpoint). This is the user's own note about the number, not a community comment.",
 						"nullable": true
+					},
+					"heat": {
+						"type": "number",
+						"format": "double",
+						"description": "Recent-activity rate in reports per day, from the confidence model. The current reports-per-day rate, derived from the decayed HEAT exponentially-weighted moving average at request time — how loud this number is right now, with a half-life of about two weeks. At a steady rate of r reports per day it converges to about r, so the value reads directly as that rate without needing to know the decay constant. Drives ranking on space-limited lists (Fritz!Box phonebook, dongle) and Heat-based archiving — it is NOT the spam-or-not signal; that is 'spamConfidence'."
+					},
+					"spamConfidence": {
+						"type": "integer",
+						"description": "Confidence (0-100) that this number is spam. Wilson lower bound on SPAM_EVIDENCE / (SPAM_EVIDENCE + LEGIT_EVIDENCE), with both inputs decayed to the request time on a ~4-month half-life. The evidence mass acts as the denominator, so two spam reports with no opposition read low ('maybe accidental'), a hotly-contested 1000-vs-998 number also reads low ('disputed'), and a 1000-with-no-opposition number reads high. High values therefore require both direction AND mass — independent of the cumulative 'votes' field, which has no mass component."
+					},
+					"calls": {
+						"type": "integer",
+						"description": "Total number of calls from this number that PhoneBlock has intercepted. A monotonic lifetime counter incremented once per intercepted call: a call answered by the cloud answer bot, or a call reported as blocked by the mobile app or dongle via /api/report-call. Unlike 'votes' and 'heat' this value does not decay; it reflects the cumulative protection PhoneBlock provided for this number."
 					}
 				}
 			},

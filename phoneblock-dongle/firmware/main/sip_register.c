@@ -14,6 +14,7 @@
 #include "esp_task_wdt.h"
 #include "esp_timer.h"
 #include "mbedtls/md5.h"
+#include "mbedtls/base64.h"
 
 #include "lwip/sockets.h"
 
@@ -32,19 +33,48 @@
 
 static const char *TAG = "sip";
 
-#define SIP_LOCAL_PORT       5061  // local UDP/TCP port advertised in Via/Contact
+// The local SIP port (bound + advertised) is configurable via
+// config_sip_local_port(); its default (15060) and rationale live in
+// config.c. RTP likewise via config_rtp_port() (default 16000).
 #define SIP_RX_BUF_SIZE      4096
 #define SIP_TX_BUF_SIZE      2048
 // REGISTER round-trip wait: how long to block on the 401/200 response
-// before giving up. Old value, preserved for the same SIP retry timing.
-#define SIP_REGISTER_RECV_TIMEOUT_MS 3000
+// before giving up. Telekom takes several seconds to emit the final 200
+// of the *first* successful registration (the binding is provisioned in
+// their backend); 3 s missed it and wasted a full 30 s retry cycle. 10 s
+// catches it while staying well under the 20 s task watchdog. The wait is
+// sliced (SIP_REGISTER_RECV_SLICE_MS) so the watchdog is fed even when a
+// dead registrar makes us wait the whole budget.
+#define SIP_REGISTER_RECV_TIMEOUT_MS 10000
+// Per-select slice of the round-trip wait. Bounds how long a single
+// blocking recv runs before we loop back to feed the task watchdog.
+#define SIP_REGISTER_RECV_SLICE_MS    2000
+
+// Issue #380: after we decide a call is not spam we must NOT reply with a
+// fast final response (486/480) — that makes the Fritz!Box drop the
+// Fritz!Fon app from the call (it suppresses the app while DECT keeps
+// ringing). It is not enough to merely precede the decline with a 180:
+// field testing showed a 180 immediately followed by 480 still leaves the
+// app silent. The box only keeps escalating the call to the app if our
+// branch stays "ringing" (180) for a while first. So we hold the 180 for
+// this long before sending the decline; the other phones keep ringing the
+// whole time and are NOT cut off when we drop out. 3 s is a tested-good
+// value; the true minimum is unknown.
+#define SIP_DECLINE_DELAY_US          (3LL * 1000000LL)
+
+// How much of an incoming INVITE we keep so the main loop can build the
+// delayed decline response (it echoes Via/From/To/Call-ID/CSeq, all near
+// the top — a truncated SDP tail is irrelevant).
+#define SIP_INVITE_STORE_CAP          1500
 
 typedef enum {
     DIALOG_IDLE,        // no active call
     DIALOG_TRYING,      // received INVITE, 100 Trying sent, deciding
+    DIALOG_PROCEEDING,  // non-spam: sent 180 Ringing, letting the other phones
+                        // ring; declines after SIP_DECLINE_DELAY_US (#380)
     DIALOG_ANSWERED,    // sent 200 OK with SDP, waiting for ACK → then stream
     DIALOG_STREAMING,   // playing tone to spam caller, BYE scheduled
-    DIALOG_REJECTED,    // sent 486/480, waiting for ACK
+    DIALOG_REJECTED,    // declined (480), waiting for ACK
     DIALOG_BYE_SENT,    // sent BYE, waiting for 200 OK
 } dialog_state_t;
 
@@ -59,8 +89,19 @@ typedef struct {
     struct sockaddr_in peer;      // where to send in-dialog responses/requests
     struct sockaddr_in rtp_dest;  // remote RTP endpoint (from INVITE SDP)
     bool     rtp_dest_valid;      // true if we successfully parsed c= / m=
-    int64_t  bye_at_us;           // abs. deadline to send BYE (0 = no deadline)
+    bool     srtp_tx;             // true → answer/stream as SRTP (RTP/SAVP)
+    int      srtp_tag;            // crypto tag to echo in the SDP answer
+    uint8_t  srtp_tx_key[RTP_SRTP_KEY_LEN];  // our SDES master key+salt
+    char     contact_uri[200];    // INVITE Contact = remote target (BYE R-URI)
+    char     route[320];          // INVITE Record-Route, echoed as BYE Route
+                                  // (Telekom's IMS token URI is ~211 chars;
+                                  // truncation produced a malformed Route → 400)
+    int64_t  bye_at_us;           // abs. deadline for the next timed dialog
+                                  // action (send BYE after a tone, or send the
+                                  // delayed 480 while PROCEEDING); 0 = none
     verdict_t verdict;            // cached API result for this call
+    char     invite_msg[SIP_INVITE_STORE_CAP];  // stored INVITE so the main
+    int      invite_len;          // loop can send the delayed decline (#380)
 } dialog_t;
 
 typedef struct {
@@ -89,17 +130,32 @@ static TaskHandle_t s_sip_task = NULL;
 // granted/2, so a single missed refresh leaves ~granted/2 of valid
 // binding before the FB drops us. Within that window, transient
 // failures retry silently — only when the binding actually lapses
-// without recovery is a stats_record_error emitted. 0 = no valid
-// binding (boot, after factory reset, after a definitive failure).
+// without recovery is an ERROR logged (and thereby surfaced on the web
+// UI via the log hook). 0 = no valid binding (boot, after factory
+// reset, after a definitive failure).
 static int64_t s_binding_expires_at_us = 0;
 // Most recent transient-failure reason, stashed so that if the binding
 // does eventually expire without a successful refresh we can surface
 // the actual cause instead of a generic "binding expired".
 static char    s_pending_error[STATS_ERROR_MSG_LEN] = "";
 
+// Public IP as the registrar sees us, learned from the "received="
+// parameter the registrar adds to our Via in the REGISTER response.
+// Empty until the first response arrives. Used as the advertised host in
+// Via/Contact/SDP so a port-forwarded UDP setup behind NAT is reachable,
+// and surfaced in the web UI for the user to verify. The public IP is the
+// router's WAN address and identical for all transports, so this is also
+// correct (if unused) for TCP/TLS.
+static char    s_public_ip[INET_ADDRSTRLEN] = "";
+
 bool sip_register_is_registered(void)
 {
     return s_registered;
+}
+
+const char *sip_register_public_ip(void)
+{
+    return s_public_ip;
 }
 
 void sip_register_request_reload(bool needs_settle)
@@ -236,11 +292,31 @@ static int parse_host_port(const char *spec, char *host_out, int cap)
 //      bare domain, so SRV is the only working path.
 //   3. Direct A-record lookup on config_sip_host() with the configured
 //      (or transport-default) port.
+// Transport's default SIP port when none is configured/discovered.
+static int default_sip_port(void)
+{
+    return (strcmp(config_sip_transport(), "tls") == 0) ? 5061 : 5060;
+}
+
+// Canonical transport token ("udp"/"tcp"/"tls") — exactly the kind
+// sip_transport_open() ends up creating: an empty or unimplemented value
+// collapses to UDP, mirroring the fallback inside sip_transport_open().
+// Used by the reload handler to detect a live transport-kind change so it
+// can reopen the transport instead of re-resolving the old socket kind.
+static const char *canonical_transport(void)
+{
+    const char *tr = config_sip_transport();
+    if (strcasecmp(tr, "tcp") == 0) return "tcp";
+    if (strcasecmp(tr, "tls") == 0) return "tls";
+    return "udp";
+}
+
 static void dial_destination(char *host_out, int cap, int *port_out)
 {
     const char *outbound = config_sip_outbound();
     if (outbound && outbound[0]) {
-        *port_out = parse_host_port(outbound, host_out, cap);
+        int p = parse_host_port(outbound, host_out, cap);
+        *port_out = p > 0 ? p : default_sip_port();
         return;
     }
 
@@ -265,7 +341,13 @@ static void dial_destination(char *host_out, int cap, int *port_out)
 
     strncpy(host_out, config_sip_host(), cap - 1);
     host_out[cap - 1] = '\0';
-    *port_out = config_sip_port();
+    // No explicit port and no SRV record (e.g. fritz.box): substitute the
+    // transport default HERE, not only in sip_transport_open(). The reload
+    // path (config change → sip_transport_resolve()) does not default a 0
+    // port; it would resolve host:0 and send UDP to port 0 — the cause of
+    // "Fritz!Box + empty port stops registering after a settings save".
+    int port = config_sip_port();
+    *port_out = port > 0 ? port : default_sip_port();
 }
 
 // ---------------------------------------------------------------------------
@@ -322,15 +404,17 @@ static void digest_response(
 // exists inside the emulator.
 static const char *advertised_host(const sip_ctx_t *c)
 {
-    return strlen(config_contact_host_override()) > 0
-               ? config_contact_host_override()
-               : sip_transport_local_ip(c->transport);
+    if (strlen(config_contact_host_override()) > 0)
+        return config_contact_host_override();   // explicit manual/QEMU override wins
+    if (s_public_ip[0])
+        return s_public_ip;                      // learned public IP (UDP NAT)
+    return sip_transport_local_ip(c->transport); // direct / not yet learned
 }
 
 static int advertised_port(void)
 {
     return config_contact_port_override() != 0
-               ? config_contact_port_override() : SIP_LOCAL_PORT;
+               ? config_contact_port_override() : config_sip_local_port();
 }
 
 static int build_register(sip_ctx_t *c, char *buf, int cap, bool with_auth)
@@ -346,6 +430,23 @@ static int build_register(sip_ctx_t *c, char *buf, int cap, bool with_auth)
 
     const char *identity = current_identity_user();
 
+    // Advertise a stable instance id (RFC 5626 / GRUU) so the registrar
+    // recognises a re-registration as the same device and REPLACES the
+    // old binding instead of piling up a fresh one per reboot/connection
+    // — Telekom otherwise accumulates a contact per boot until each
+    // expires. Omitted only if no device id is available (NVS failure).
+    // ";+sip.instance=\"<urn:uuid:" + 36-char UUID + ">\"" is exactly 64
+    // chars; size generously so the closing quote can never be truncated
+    // (a clipped Contact param earns a 400 Bad Request from the registrar).
+    char instance[80];
+    const char *device_id = config_device_id();
+    if (device_id && device_id[0]) {
+        snprintf(instance, sizeof(instance),
+                 ";+sip.instance=\"<urn:uuid:%s>\"", device_id);
+    } else {
+        instance[0] = '\0';
+    }
+
     int n = snprintf(buf, cap,
         "REGISTER %s SIP/2.0\r\n"
         "Via: SIP/2.0/%s %s:%d;branch=z9hG4bK%s;rport\r\n"
@@ -354,7 +455,7 @@ static int build_register(sip_ctx_t *c, char *buf, int cap, bool with_auth)
         "To: <sip:%s@%s>\r\n"
         "Call-ID: %s\r\n"
         "CSeq: %lu REGISTER\r\n"
-        "Contact: <sip:%s@%s:%d>\r\n"
+        "Contact: <sip:%s@%s:%d>%s\r\n"
         "Expires: %d\r\n"
         "User-Agent: phoneblock-dongle/0.1\r\n",
         request_uri,
@@ -364,7 +465,7 @@ static int build_register(sip_ctx_t *c, char *buf, int cap, bool with_auth)
         identity, config_sip_host(),
         c->call_id,
         (unsigned long)c->cseq,
-        identity, our_host, our_port,
+        identity, our_host, our_port, instance,
         config_sip_expires());
 
     if (with_auth && c->challenge.valid) {
@@ -418,15 +519,49 @@ static int sip_send_recv(sip_ctx_t *c, const char *tx, int tx_len,
     if (sip_transport_send(c->transport, tx, tx_len) < 0) {
         return -1;
     }
-    struct sockaddr_in from;
-    int r = sip_transport_recv(c->transport, SIP_REGISTER_RECV_TIMEOUT_MS,
-                               rx, rx_cap - 1, &from);
-    if (r <= 0) {
-        if (r == 0) ESP_LOGW(TAG, "no response from registrar within %d ms",
-                             SIP_REGISTER_RECV_TIMEOUT_MS);
-        return -1;
+    // Wait for a complete SIP response until the budget runs out. A single
+    // recv returning 0 does NOT mean "no answer": on a stream transport
+    // (TLS/TCP) a TLS record boundary that doesn't line up with a SIP
+    // message boundary, a post-handshake record, or a partial read all
+    // surface as 0 here. The old one-shot code treated that as failure,
+    // which made TLS spuriously report "no response" a few hundred ms
+    // after sending even though the registrar answered. Keep looping on 0
+    // and only give up once the deadline is actually reached.
+    int64_t deadline = esp_timer_get_time()
+                     + (int64_t)SIP_REGISTER_RECV_TIMEOUT_MS * 1000;
+    int r = 0;
+    for (;;) {
+        // Feed the task watchdog between slices so a long total wait (slow
+        // or dead registrar) can't trip the 20 s WDT mid-registration.
+        // Harmless no-op when this task isn't subscribed (initial register
+        // runs before esp_task_wdt_add()).
+        if (esp_task_wdt_status(NULL) == ESP_OK) esp_task_wdt_reset();
+
+        int64_t remaining_us = deadline - esp_timer_get_time();
+        if (remaining_us <= 0) {
+            ESP_LOGW(TAG, "no response from registrar within %d ms",
+                     SIP_REGISTER_RECV_TIMEOUT_MS);
+            return -1;
+        }
+        int slice_ms = (int)(remaining_us / 1000);
+        if (slice_ms > SIP_REGISTER_RECV_SLICE_MS)
+            slice_ms = SIP_REGISTER_RECV_SLICE_MS;
+        struct sockaddr_in from;
+        r = sip_transport_recv(c->transport, slice_ms, rx, rx_cap - 1, &from);
+        if (r < 0) return -1;   // transport error (already logged/reconnected)
+        if (r > 0) break;       // complete message
+        // r == 0: slice expired or partial frame — keep waiting.
     }
     rx[r] = '\0';
+    // Learn our public IP from the registrar's view (Via "received="), so
+    // Via/Contact/SDP can advertise it for UDP NAT traversal.
+    char rcv[INET_ADDRSTRLEN];
+    if (parse_via_received(rx, r, rcv, sizeof(rcv)) && rcv[0]
+            && strcmp(rcv, s_public_ip) != 0) {
+        strncpy(s_public_ip, rcv, sizeof(s_public_ip) - 1);
+        s_public_ip[sizeof(s_public_ip) - 1] = '\0';
+        ESP_LOGI(TAG, "public IP (via received=): %s", s_public_ip);
+    }
     return r;
 }
 
@@ -456,10 +591,11 @@ typedef enum {
 // REGISTER_TRANSIENT (network/timeout — caller may want to retry
 // silently while a still-valid binding gives us cover) or
 // REGISTER_DEFINITIVE (registrar said "no" or the protocol is broken
-// in a way that retries can't fix). Does NOT call stats_record_error
-// itself — the policy of when to surface a failure to the dashboard
-// belongs at the caller, which knows whether it's an initial register,
-// a periodic refresh, or a defensive re-register after a TCP reconnect.
+// in a way that retries can't fix). Does NOT log the failure itself —
+// the policy of when to surface it (and thus mirror it to the web UI via
+// the log hook) belongs at the caller, which knows whether it's an
+// initial register, a periodic refresh, or a defensive re-register
+// after a TCP reconnect.
 static register_outcome_t do_register(sip_ctx_t *c, int *granted_expires,
                                       char *err, size_t err_cap)
 {
@@ -531,24 +667,60 @@ static register_outcome_t do_register(sip_ctx_t *c, int *granted_expires,
     ESP_LOGI(TAG, "challenge: realm=\"%s\" qop=\"%s\"",
              c->challenge.realm, c->challenge.qop);
 
-    // Resend with Authorization header.
-    c->cseq++;
-    tx_len = build_register(c, tx, SIP_TX_BUF_SIZE, true);
-    ESP_LOGI(TAG, "→ REGISTER with auth (%d bytes):\n%.*s", tx_len, tx_len, tx);
-    rx_len = sip_send_recv(c, tx, tx_len, rx, SIP_RX_BUF_SIZE);
-    if (rx_len < 0) {
-        if (err) snprintf(err, err_cap,
-            "REGISTER (with auth): no response from registrar");
-        result = REGISTER_TRANSIENT;
-        goto cleanup;
-    }
-    ESP_LOGI(TAG, "← %d bytes:\n%.*s", rx_len, rx_len, rx);
+    // Resend with Authorization header. A server may answer the first
+    // authenticated REGISTER with another 401/407 carrying stale=true and
+    // a fresh nonce — the credentials are fine, the nonce just needs
+    // refreshing. Telekom does this regularly because Via/Contact switch
+    // from the LAN IP to the learned public IP between the two requests,
+    // and the nonce is bound to that. Re-auth with the new nonce instead
+    // of declaring the auth rejected; a genuine wrong password yields a
+    // plain 401 (no stale) and still fails fast. Bounded so a misbehaving
+    // registrar that always says stale can't spin us forever.
+    const int max_stale_retries = 2;
+    for (int stale_retry = 0; ; stale_retry++) {
+        c->cseq++;
+        tx_len = build_register(c, tx, SIP_TX_BUF_SIZE, true);
+        ESP_LOGI(TAG, "→ REGISTER with auth (%d bytes):\n%.*s",
+                 tx_len, tx_len, tx);
+        rx_len = sip_send_recv(c, tx, tx_len, rx, SIP_RX_BUF_SIZE);
+        if (rx_len < 0) {
+            if (err) snprintf(err, err_cap,
+                "REGISTER (with auth): no response from registrar");
+            result = REGISTER_TRANSIENT;
+            goto cleanup;
+        }
+        ESP_LOGI(TAG, "← %d bytes:\n%.*s", rx_len, rx_len, rx);
 
-    status = parse_status_code(rx, rx_len);
-    ESP_LOGI(TAG, "← %d (authenticated)", status);
-    if (status != 200) {
+        status = parse_status_code(rx, rx_len);
+        if (status == 200) {
+            ESP_LOGI(TAG, "← %d (authenticated)", status);
+            break;
+        }
+
+        // Refresh the challenge and retry only when the server explicitly
+        // marked the nonce stale; otherwise this is a real rejection.
+        if ((status == 401 || status == 407)
+                && stale_retry < max_stale_retries) {
+            const char *h = find_header(rx, rx_len, "WWW-Authenticate");
+            if (!h) h = find_header(rx, rx_len, "Proxy-Authenticate");
+            if (h) {
+                char v[SIP_MAX_CHALLENGE + 64];
+                header_value(h, rx + rx_len, v, sizeof(v));
+                auth_challenge_t fresh;
+                sip_auth_parse_challenge(v, &fresh);
+                if (fresh.valid && fresh.stale) {
+                    c->challenge = fresh;
+                    ESP_LOGI(TAG, "← %d stale nonce → re-auth with fresh nonce",
+                             status);
+                    continue;
+                }
+            }
+        }
+
+        ESP_LOGI(TAG, "← %d (authenticated)", status);
         if (err) snprintf(err, err_cap,
-            "authentication rejected: %d — check SIP user/password/realm", status);
+            "authentication rejected: %d — check SIP user/password/realm",
+            status);
         ESP_LOGE(TAG, "authentication rejected: %d", status);
         result = REGISTER_DEFINITIVE;
         goto cleanup;
@@ -675,18 +847,38 @@ static void send_response(sip_ctx_t *c, const struct sockaddr_in *peer,
 
 // Write a minimal SDP body announcing PCMA audio on our local RTP port.
 // The RTP task binds that port just-in-time and streams a tone there.
-static int build_sdp_body(const char *our_ip, char *out, int cap)
+// When the dialog negotiated SRTP (d->srtp_tx), the media line uses the
+// secure RTP/SAVP profile and carries our SDES key in an a=crypto line
+// echoing the offer's crypto tag; otherwise it stays plain RTP/AVP.
+static int build_sdp_body(const char *our_ip, const dialog_t *d,
+                          char *out, int cap)
 {
-    return snprintf(out, cap,
+    int n = snprintf(out, cap,
         "v=0\r\n"
         "o=phoneblock-dongle 0 0 IN IP4 %s\r\n"
         "s=-\r\n"
         "c=IN IP4 %s\r\n"
         "t=0 0\r\n"
-        "m=audio %d RTP/AVP 8\r\n"
-        "a=rtpmap:8 PCMA/8000\r\n"
-        "a=sendrecv\r\n",
-        our_ip, our_ip, SIP_RTP_PORT);
+        "m=audio %d RTP/%s 8\r\n"
+        "a=rtpmap:8 PCMA/8000\r\n",
+        our_ip, our_ip, config_rtp_port(),
+        (d && d->srtp_tx) ? "SAVP" : "AVP");
+
+    if (d && d->srtp_tx) {
+        // base64 of 30 bytes is 40 chars + NUL.
+        char key_b64[48];
+        size_t b64_len = 0;
+        if (mbedtls_base64_encode((unsigned char *)key_b64, sizeof(key_b64),
+                                  &b64_len, d->srtp_tx_key,
+                                  RTP_SRTP_KEY_LEN) == 0) {
+            n += snprintf(out + n, cap - n,
+                "a=crypto:%d AES_CM_128_HMAC_SHA1_80 inline:%.*s\r\n",
+                d->srtp_tag, (int)b64_len, key_b64);
+        }
+    }
+
+    n += snprintf(out + n, cap - n, "a=sendrecv\r\n");
+    return n;
 }
 
 // ---------------------------------------------------------------------------
@@ -705,14 +897,51 @@ static void capture_dialog(sip_ctx_t *c, const char *req, int req_len,
     d->out_cseq = 1;
     d->peer = *from;
 
+    // Keep a copy of the INVITE so the main loop can build a delayed decline
+    // response (480) after the PROCEEDING ring window (#380).
+    d->invite_len = req_len < SIP_INVITE_STORE_CAP ? req_len : SIP_INVITE_STORE_CAP;
+    memcpy(d->invite_msg, req, d->invite_len);
+
+    const char *end = req + req_len;
+
     const char *hdr = find_header(req, req_len, "From");
     if (hdr) {
-        const char *end = req + req_len;
         const char *eol = hdr;
         while (eol < end && *eol != '\r' && *eol != '\n') eol++;
         int val_len = (int)(eol - hdr);
         parse_uri(hdr, val_len, d->remote_uri, sizeof(d->remote_uri));
         parse_tag(hdr, val_len, d->from_tag, sizeof(d->from_tag));
+    }
+
+    // Remote target + route set for in-dialog requests (our BYE). Telekom's
+    // IMS routes in-dialog requests by the INVITE Contact (which carries an
+    // opaque "mavodi-…" routing token) and the Record-Route; addressing the
+    // BYE to the From AOR instead returns 481 Call Leg Does Not Exist and a
+    // ~10 s delayed teardown. Falls back to the From URI when absent (e.g.
+    // the Fritz!Box, where Contact == AOR works either way).
+    d->contact_uri[0] = '\0';
+    const char *ct = find_header(req, req_len, "Contact");
+    if (ct) {
+        const char *eol = ct;
+        while (eol < end && *eol != '\r' && *eol != '\n') eol++;
+        parse_uri(ct, (int)(eol - ct), d->contact_uri, sizeof(d->contact_uri));
+    }
+    // Record-Route (single hop for Telekom). Stored verbatim and echoed as a
+    // Route header on our BYE for loose routing (the entry carries ;lr).
+    // A value too long for the buffer must NOT be stored truncated — a
+    // half a URI is a malformed Route header and gets the BYE rejected
+    // with 400; better to send no Route (481, delayed teardown) than that.
+    d->route[0] = '\0';
+    const char *rr = find_header(req, req_len, "Record-Route");
+    if (rr) {
+        const char *eol = rr;
+        while (eol < end && *eol != '\r' && *eol != '\n') eol++;
+        if ((size_t)(eol - rr) < sizeof(d->route)) {
+            header_value(rr, eol, d->route, sizeof(d->route));
+        } else {
+            ESP_LOGW(TAG, "Record-Route too long (%d) — BYE sent without Route",
+                     (int)(eol - rr));
+        }
     }
 
     random_hex(d->our_tag, 16);
@@ -737,6 +966,30 @@ static void capture_dialog(sip_ctx_t *c, const char *req, int req_len,
     if (!d->rtp_dest_valid) {
         ESP_LOGW(TAG, "could not parse remote RTP endpoint — no tone will play");
     }
+
+    // SRTP negotiation. Telekom (and other IMS networks) offer RTP/SAVP
+    // with SDES a=crypto keys and reject a plain RTP/AVP answer. Whenever
+    // the INVITE offers a crypto suite we support we mirror it: answer
+    // RTP/SAVP and generate our own master key/salt to encrypt the
+    // announcement. There is no good reason to answer plaintext to a
+    // crypto offer (it just gets the dialog torn down), so this is not
+    // gated on a config knob — a plain RTP/AVP offer (e.g. the Fritz!Box
+    // on the LAN) simply carries no crypto and is answered RTP/AVP.
+    d->srtp_tx  = false;
+    d->srtp_tag = 0;
+    char remote_key_b64[64];
+    int crypto_tag = parse_sdp_crypto(req, req_len,
+                                      remote_key_b64, sizeof(remote_key_b64));
+    if (crypto_tag > 0) {
+        // Generate a fresh 30-byte SDES master key + salt.
+        esp_fill_random(d->srtp_tx_key, sizeof(d->srtp_tx_key));
+        d->srtp_tx  = true;
+        d->srtp_tag = crypto_tag;
+        ESP_LOGI(TAG, "SRTP offered (crypto tag %d) → answering RTP/SAVP", crypto_tag);
+    } else if (parse_sdp_audio_savp(req, req_len)) {
+        ESP_LOGW(TAG, "remote offers RTP/SAVP but no supported crypto suite "
+                      "— answering plain RTP (media will likely be rejected)");
+    }
 }
 
 // Build a BYE for the active answered dialog.
@@ -749,21 +1002,33 @@ static int build_bye(sip_ctx_t *c, char *buf, int cap)
     const char *our_host = advertised_host(c);
     int our_port = advertised_port();
 
-    // For non-UDP transports, the in-dialog R-URI carries an explicit
-    // ";transport=<tcp|tls>" so the registrar/UA on the other side
-    // doesn't fall back to UDP for our BYE.
+    // In-dialog R-URI = the remote target, i.e. the INVITE's Contact URI
+    // (carries the IMS routing token). Fall back to the From AOR when the
+    // INVITE had no Contact. For the AOR fallback on non-UDP transports we
+    // append ";transport=…" so the peer doesn't drop to UDP; the Contact
+    // path is loose-routed via the Route header below, so it's used as-is.
     const char *uri_param = sip_transport_uri_param(c->transport);
-    char ruri[160];
-    if (strcmp(uri_param, "udp") == 0) {
+    char ruri[200];
+    if (d->contact_uri[0]) {
+        snprintf(ruri, sizeof(ruri), "%s", d->contact_uri);
+    } else if (strcmp(uri_param, "udp") == 0) {
         snprintf(ruri, sizeof(ruri), "%s", d->remote_uri);
     } else {
         snprintf(ruri, sizeof(ruri), "%s;transport=%s",
                  d->remote_uri, uri_param);
     }
 
+    char route_hdr[sizeof(d->route) + 16];
+    if (d->route[0]) {
+        snprintf(route_hdr, sizeof(route_hdr), "Route: %s\r\n", d->route);
+    } else {
+        route_hdr[0] = '\0';
+    }
+
     return snprintf(buf, cap,
         "BYE %s SIP/2.0\r\n"
         "Via: SIP/2.0/%s %s:%d;branch=z9hG4bK%s;rport\r\n"
+        "%s"
         "Max-Forwards: 70\r\n"
         "From: <sip:%s@%s:%d>;tag=%s\r\n"
         "To: <%s>;tag=%s\r\n"
@@ -775,6 +1040,7 @@ static int build_bye(sip_ctx_t *c, char *buf, int cap)
         ruri,
         sip_transport_via_token(c->transport),
         our_host, our_port, branch,
+        route_hdr,
         current_identity_user(), advertised_host(c), our_port, d->our_tag,
         d->remote_uri, d->from_tag,
         d->call_id,
@@ -813,8 +1079,8 @@ static void send_bye(sip_ctx_t *c)
 //  2. The dialed number isn't a real external number (internal **NN
 //     codes, *21# feature dials, etc.). The API would reject them with
 //     HTTP 400 anyway, but the TLS handshake still costs ~1–2 s.
-// Both cases return VERDICT_LEGITIMATE so the dongle sends 486 Busy and
-// the Fritz!Box continues its normal ring routing.
+// Both cases return VERDICT_LEGITIMATE so the dongle keeps ringing (180) and
+// then declines, letting the Fritz!Box continue its normal ring routing (#380).
 static verdict_t check_invite_caller(const char *req, int req_len)
 {
     const char *hdr = find_header(req, req_len, "From");
@@ -911,7 +1177,7 @@ static verdict_t check_invite_caller(const char *req, int req_len)
     //
     // Enqueued for an async worker rather than POSTed synchronously:
     // the second TLS handshake (300–600 ms cert-verify + RTT) sat on
-    // the critical path between verdict and 200 OK / 486, exactly
+    // the critical path between verdict and the 200 OK, exactly
     // the window where the Fritz!Box decides whether to escalate to
     // ringing the real phones.
     if (v == VERDICT_SPAM) {
@@ -935,14 +1201,20 @@ static void resend_last_response(sip_ctx_t *c, const char *req, int req_len,
             break;
         case DIALOG_ANSWERED:
         case DIALOG_STREAMING: {
-            char sdp[256];
-            build_sdp_body(advertised_host(c), sdp, sizeof(sdp));
+            char sdp[384];
+            build_sdp_body(advertised_host(c), d, sdp, sizeof(sdp));
             send_response(c, from, req, req_len, 200, "OK",
                           d->our_tag, sdp);
             break;
         }
+        case DIALOG_PROCEEDING:
+            send_response(c, from, req, req_len, 180, "Ringing",
+                          d->our_tag, NULL);
+            break;
         case DIALOG_REJECTED:
-            send_response(c, from, req, req_len, 486, "Busy Here",
+            // Must match the decline sent from the main loop (480), so a
+            // retransmitted INVITE doesn't see two different final responses.
+            send_response(c, from, req, req_len, 480, "Temporarily Unavailable",
                           d->our_tag, NULL);
             break;
         default:
@@ -965,56 +1237,83 @@ static void handle_invite(sip_ctx_t *c, const char *req, int req_len,
         return;
     }
 
-    // Second call arriving while we're busy with another.
+    // Second call arriving while we're busy with another. The new caller may
+    // be a spammer we must take right away, so the two long-lived states are
+    // preempted; the rest clear within ~a second.
     if (d->state != DIALOG_IDLE) {
-        // The only state worth preempting is DIALOG_STREAMING — there
-        // we'd otherwise hold the new caller off for 5–15 s of audio
-        // playback against an already-classified spammer. All other
-        // states (TRYING/ANSWERED/REJECTED/BYE_SENT) clear within
-        // milliseconds; making the new caller wait that out is fine,
-        // and bailing during TRYING would just be caller-roulette
-        // since we don't even have a verdict yet.
-        if (d->state != DIALOG_STREAMING) {
-            ESP_LOGW(TAG, "second INVITE in state %d → 486 Busy Here",
+        if (d->state == DIALOG_STREAMING) {
+            // Playing a tone at an already-classified spammer — abort it and
+            // BYE so the new caller isn't held off 5–15 s.
+            ESP_LOGI(TAG, "second INVITE during STREAMING → preempt: "
+                          "abort announcement, BYE old dialog, take new call");
+            rtp_request_abort();
+            send_bye(c);
+            // BYE is fire-and-forget UDP. Any straggler 200/ACK/BYE for the
+            // old Call-ID will Call-ID-mismatch in handle_incoming and be
+            // discarded — wipe and fall through to the IDLE path.
+            memset(d, 0, sizeof(*d));
+        } else if (d->state == DIALOG_PROCEEDING) {
+            // We already decided the first call is legitimate and are only
+            // holding its 180 to keep the Fritz!Box ringing the real phones
+            // (#380). The dongle isn't needed for that — so don't waste the
+            // slot: leave the first branch ringing (no final response, so its
+            // app keeps ringing) and take the slot to spam-check the new
+            // caller now. When the first call ends, the box CANCELs its branch;
+            // handle_cancel still 200-OKs that (it echoes the CANCEL's own
+            // To-tag), we just no longer send its 480.
+            ESP_LOGI(TAG, "second INVITE during PROCEEDING → leave first call "
+                          "ringing, handle new (possibly spam) caller");
+            memset(d, 0, sizeof(*d));
+        } else {
+            // TRYING/ANSWERED/REJECTED/BYE_SENT all clear within ~a second.
+            // Reply 180 Ringing (not 486 Busy Here: a "busy" from us would make
+            // the box drop the Fritz!Fon app for this call too, #380). We don't
+            // track it — the real phones ring it and the box cancels our branch.
+            ESP_LOGW(TAG, "second INVITE in state %d → 180 Ringing (untracked)",
                      d->state);
-            send_response(c, from, req, req_len, 486, "Busy Here",
+            send_response(c, from, req, req_len, 180, "Ringing",
                           NULL, NULL);
             return;
         }
-        ESP_LOGI(TAG, "second INVITE during STREAMING → preempt: "
-                      "abort announcement, BYE old dialog, take new call");
-        rtp_request_abort();
-        send_bye(c);
-        // BYE is fire-and-forget UDP. Any straggler 200/ACK/BYE for
-        // the old Call-ID will Call-ID-mismatch in handle_incoming
-        // and be discarded — wipe and fall through to the IDLE path.
-        memset(d, 0, sizeof(*d));
     }
 
     capture_dialog(c, req, req_len, from);
     d->state = DIALOG_TRYING;
     ESP_LOGI(TAG, "INVITE accepted, Call-ID=%s, checking caller…", d->call_id);
 
-    // Stop Fritz!Box retransmits immediately.
+    // Stop Fritz!Box retransmits immediately, and signal "ringing" so the
+    // Fritz!Box starts ringing the other phones (incl. waking the Fritz!Fon
+    // app by push) while we check the caller. A fast final response here
+    // would make the box drop the app from the call — issue #380.
     send_response(c, from, req, req_len, 100, "Trying", d->our_tag, NULL);
+    send_response(c, from, req, req_len, 180, "Ringing", d->our_tag, NULL);
+    d->state = DIALOG_PROCEEDING;
+    d->bye_at_us = esp_timer_get_time() + SIP_DECLINE_DELAY_US;
 
     // Synchronous API check. Budget is ~500 ms–1 s; Fritz!Box waits longer
     // than that. Later this can move to a worker task if needed.
     d->verdict = check_invite_caller(req, req_len);
 
     if (d->verdict == VERDICT_SPAM) {
-        char sdp[256];
-        build_sdp_body(advertised_host(c), sdp, sizeof(sdp));
+        char sdp[384];
+        build_sdp_body(advertised_host(c), d, sdp, sizeof(sdp));
         send_response(c, from, req, req_len, 200, "OK", d->our_tag, sdp);
         d->state = DIALOG_ANSWERED;
+        d->bye_at_us = 0;   // not a decline-delay; BYE deadline is set after ACK
         ESP_LOGI(TAG, "SPAM → 200 OK sent, waiting for ACK to hang up");
     } else {
-        // VERDICT_LEGITIMATE or VERDICT_ERROR → don't take the call. 486
-        // Busy Here lets the Fritz!Box continue ringing the real phones.
-        send_response(c, from, req, req_len, 486, "Busy Here", d->our_tag, NULL);
-        d->state = DIALOG_REJECTED;
-        ESP_LOGI(TAG, "%s → 486 Busy sent",
-                 d->verdict == VERDICT_LEGITIMATE ? "LEGITIMATE" : "ERROR");
+        // VERDICT_LEGITIMATE or VERDICT_ERROR → don't take the call, but don't
+        // decline immediately either. Experiment #380 showed the Fritz!Box only
+        // keeps ringing the Fritz!Fon app if our branch stays "ringing" for a
+        // short while before declining: a 180 *immediately* followed by 480
+        // (verified with a known contact, where the verdict short-circuits with
+        // no API call, so 180/480 go out back-to-back) leaves the app silent;
+        // a 180 held for ~3 s before the 480 lets the app ring. So we keep the
+        // 180 (sent above) and let the main loop send the 480 only after
+        // SIP_DECLINE_DELAY_US has elapsed.
+        ESP_LOGI(TAG, "%s → 180 Ringing, declining in %lld ms",
+                 d->verdict == VERDICT_LEGITIMATE ? "LEGITIMATE" : "ERROR",
+                 (long long)(SIP_DECLINE_DELAY_US / 1000));
     }
 }
 
@@ -1032,19 +1331,23 @@ static void handle_ack(sip_ctx_t *c, const char *req, int req_len,
     if (d->state == DIALOG_ANSWERED) {
         // Spam call: we answered with 200 OK, ACK confirms.
 #if CONFIG_RTP_PLAY_ANNOUNCEMENT
-        const uint8_t *audio = NULL;
-        size_t bytes = 0;
-        announcement_get(&audio, &bytes);
-        if (bytes > 0 && d->rtp_dest_valid) {
+        announcement_src_t src;
+        announcement_open(&src);
+        if (src.len > 0 && d->rtp_dest_valid) {
             // PCMA at 8 kHz → 8000 bytes == 1 s, so duration_us = bytes * 125.
             // Add a short tail margin so the last frame is delivered before BYE.
-            int64_t duration_us = (int64_t)bytes * 125LL;
+            int64_t duration_us = (int64_t)src.len * 125LL;
             ESP_LOGI(TAG, "ACK received → streaming announcement (%u bytes ≈ %lld ms), then BYE",
-                     (unsigned)bytes, (long long)(duration_us / 1000));
-            rtp_play_audio(&d->rtp_dest, audio, bytes);
+                     (unsigned)src.len, (long long)(duration_us / 1000));
+            rtp_srtp_tx_t srtp = { .enabled = d->srtp_tx };
+            if (d->srtp_tx) {
+                memcpy(srtp.key, d->srtp_tx_key, sizeof(srtp.key));
+            }
+            rtp_play_audio(&d->rtp_dest, &src, &srtp);   // task owns src now, closes it
             d->bye_at_us = esp_timer_get_time() + duration_us + 200000LL;
             d->state = DIALOG_STREAMING;
         } else {
+            announcement_close(&src);   // nothing to stream — release the handle
             ESP_LOGI(TAG, "ACK received → no audio (no rtp_dest or empty) → BYE");
             send_bye(c);
         }
@@ -1053,8 +1356,8 @@ static void handle_ack(sip_ctx_t *c, const char *req, int req_len,
         send_bye(c);
 #endif
     } else if (d->state == DIALOG_REJECTED) {
-        // Non-spam: we rejected with 486, ACK confirms, dialog done.
-        ESP_LOGI(TAG, "ACK received after 486 → dialog closed");
+        // Non-spam: we declined with 480, ACK confirms, dialog done.
+        ESP_LOGI(TAG, "ACK received after 480 → dialog closed");
         memset(d, 0, sizeof(*d));
     } else {
         ESP_LOGW(TAG, "ACK in unexpected state %d", d->state);
@@ -1094,7 +1397,8 @@ static void handle_cancel(sip_ctx_t *c, const char *req, int req_len,
     // If we still had a pending INVITE for this Call-ID, answer it with
     // 487 Request Terminated so the remote knows the original INVITE is
     // fully resolved.
-    if (d->state == DIALOG_TRYING && same_call_id(d->call_id, cid)) {
+    if ((d->state == DIALOG_TRYING || d->state == DIALOG_PROCEEDING)
+        && same_call_id(d->call_id, cid)) {
         ESP_LOGI(TAG, "CANCEL → 487 Request Terminated on original INVITE");
         // Synthesize a 487 response. We cannot easily reconstruct the
         // original INVITE's headers here, but the CANCEL's Via/From/To/
@@ -1184,32 +1488,61 @@ static void sip_task(void *arg)
 
     char dial_host[64];
     int  dial_port;
-    dial_destination(dial_host, sizeof(dial_host), &dial_port);
+    const char *outbound;
+    const char *tls_sni;
 
-    ctx.transport = sip_transport_open(config_sip_transport(),
-                                       dial_host,
-                                       dial_port,
-                                       SIP_LOCAL_PORT);
-    if (!ctx.transport) {
-        // Surface the failure on the dashboard — without this the SIP
-        // section just hangs on "Verbinde…" forever and the user has
-        // no clue why. Also clear s_sip_task so the next config Save
-        // gets a fresh task (sip_register_request_reload() sees NULL
-        // → spawns one), instead of latching onto the dead handle.
-        // dial_host is up to 64 chars; cap to keep the formatted
+    // Open the SIP transport, retrying until it succeeds. A failure here
+    // is almost always transient: the common case is a WiFi outage
+    // (reason 6 deauth from the AP) that races the task (re)start, so for
+    // a few seconds there's no default netif and DNS can't resolve.
+    // Earlier code treated any open failure as fatal ("check host/port")
+    // and self-deleted the task — but a WiFi reconnect does NOT respawn
+    // it (on_got_ip only sets an event bit), so a momentary blip turned
+    // into permanently-lost SIP registration until the next reboot or
+    // config Save. Keep the task alive and re-read the config on every
+    // attempt, so a genuine host/port fix is also picked up here without
+    // a restart.
+    const int open_retry_s = 15;
+    for (int attempt = 0; ; attempt++) {
+        // Re-read every attempt: a config change made while we were
+        // failing (user fixes host/port and hits Save) takes effect on
+        // the next try. Clear the reload flag so the main loop doesn't
+        // immediately do a redundant re-REGISTER once we get going.
+        s_reload_requested = false;
+        dial_destination(dial_host, sizeof(dial_host), &dial_port);
+
+        // TLS SNI / cert name: the service domain the user configured,
+        // not the SRV-resolved edge host (#363). With an explicit
+        // outbound proxy the TLS peer *is* the dial host, so use that.
+        outbound = config_sip_outbound();
+        tls_sni  = (outbound && outbound[0]) ? dial_host : config_sip_host();
+
+        ctx.transport = sip_transport_open(config_sip_transport(),
+                                           dial_host, dial_port, tls_sni,
+                                           config_sip_local_port());
+        if (ctx.transport) {
+            break;
+        }
+
+        // Surface the failure on the dashboard, but only on the first try
+        // and then roughly every 5 min (every 20th attempt at the 15 s
+        // cadence). Logging an ERROR on every retry would flush the
+        // 32-entry log ring and bury whatever else the operator needs to
+        // see. dial_host is up to 64 chars; cap to keep the formatted
         // line within the stats error-message buffer.
-        char msg[STATS_ERROR_MSG_LEN];
-        snprintf(msg, sizeof(msg),
-                 "transport open failed (%s %.40s:%d) — check host/port",
-                 config_sip_transport(), dial_host, dial_port);
-        ESP_LOGE(TAG, "%s — aborting SIP task", msg);
-        stats_record_error("sip", msg);
-        s_sip_task = NULL;
-        vTaskDelete(NULL);
-        return;
+        if (attempt == 0 || (attempt % 20) == 0) {
+            char msg[STATS_ERROR_MSG_LEN];
+            snprintf(msg, sizeof(msg),
+                     "transport open failed (%s %.40s:%d) — retrying, "
+                     "check host/port if persistent",
+                     config_sip_transport(), dial_host, dial_port);
+            ESP_LOGE(TAG, "%s", msg);
+        }
+        s_registered = false;
+        stats_record_sip_state(false);
+        vTaskDelay(pdMS_TO_TICKS(open_retry_s * 1000));
     }
     if (strcmp(dial_host, config_sip_host()) != 0) {
-        const char *outbound = config_sip_outbound();
         const char *via = (outbound && outbound[0]) ? "outbound proxy" : "SRV";
         ESP_LOGI(TAG, "%s %s:%d active (SIP host: %s)",
                  via, dial_host, dial_port, config_sip_host());
@@ -1228,26 +1561,12 @@ static void sip_task(void *arg)
                  "transport %.8s ignored — firmware implements UDP/TCP/TLS only",
                  tr);
         ESP_LOGW(TAG, "%s", msg);
-        stats_record_error("sip", msg);
     }
-    // TLS protects only the signaling. Without SRTP (Phase 5) the audio
-    // path is still RTP/AVP cleartext on UDP/RTP. Surface that visibly
-    // so users do not have a false sense of end-to-end encryption.
-    if (strcmp(tr, "tls") == 0) {
-        const char *msg =
-            "TLS active but RTP is still plaintext (SRTP arrives in Phase 5)";
-        ESP_LOGW(TAG, "%s", msg);
-        stats_record_error("sip", msg);
-    }
-    if (strcmp(config_sip_srtp(), "off") != 0
-        && strcmp(config_sip_srtp(), "") != 0) {
-        char msg[80];
-        snprintf(msg, sizeof(msg),
-                 "SRTP %.12s ignored — firmware only does plain RTP",
-                 config_sip_srtp());
-        ESP_LOGW(TAG, "%s", msg);
-        stats_record_error("sip", msg);
-    }
+    // SRTP is negotiated per call from the INVITE's a=crypto offer (see
+    // capture_dialog): the dongle answers RTP/SAVP and encrypts the
+    // announcement whenever the caller offers a supported suite, unless
+    // sip_srtp is explicitly "off". There is nothing to warn about at
+    // registration time — the media profile depends on each offer.
     const int retry_delay_s = 30;
     char *rx = NULL;
     int64_t refresh_at_us = 0;  // absolute deadline for next REGISTER (microseconds)
@@ -1279,7 +1598,6 @@ static void sip_task(void *arg)
         s_pending_error[0] = '\0';
         refresh_at_us = esp_timer_get_time() + (int64_t)(granted_expires / 2) * 1000000LL;
     } else {
-        if (err[0]) stats_record_error("sip", err);
         ESP_LOGE(TAG, "initial registration failed (%s), retry in %d s",
                  err[0] ? err : "no detail", retry_delay_s);
         s_binding_expires_at_us = 0;
@@ -1290,7 +1608,6 @@ static void sip_task(void *arg)
     rx = malloc(SIP_RX_BUF_SIZE);
     if (!rx) {
         ESP_LOGE(TAG, "malloc rx buffer failed — aborting SIP task");
-        stats_record_error("sip", "out of memory in SIP task");
         s_sip_task = NULL;
         vTaskDelete(NULL);
         return;
@@ -1318,7 +1635,44 @@ static void sip_task(void *arg)
             char new_dial_host[64];
             int  new_dial_port;
             dial_destination(new_dial_host, sizeof(new_dial_host), &new_dial_port);
-            sip_transport_resolve(ctx.transport, new_dial_host, new_dial_port);
+            const char *new_outbound = config_sip_outbound();
+            const char *new_tls_sni  = (new_outbound && new_outbound[0])
+                                           ? new_dial_host : config_sip_host();
+
+            // A live transport-kind change (e.g. switching a running
+            // Fritz!Box/UDP binding to a Telekom TLS preset) cannot be
+            // honored by re-resolving the existing transport: it keeps its
+            // original socket kind and would, say, send a UDP datagram to
+            // the TLS-only port 5061 — which the registrar silently drops
+            // (no response). It also explains why switching to TCP "works"
+            // by accident: the leftover UDP socket hits port 5060, which
+            // Telekom answers over UDP too. Reopen the transport whenever
+            // the kind differs; a plain host/port re-resolve still suffices
+            // for credential- or registrar-only changes.
+            const char *want = canonical_transport();
+            if (strcasecmp(want, sip_transport_via_token(ctx.transport)) != 0) {
+                ESP_LOGI(TAG, "transport changed %s → %s, reopening",
+                         sip_transport_via_token(ctx.transport), want);
+                sip_transport_t *nt =
+                    sip_transport_open(config_sip_transport(), new_dial_host,
+                                       new_dial_port, new_tls_sni,
+                                       config_sip_local_port());
+                if (nt) {
+                    sip_transport_close(ctx.transport);
+                    ctx.transport = nt;
+                } else {
+                    // Reopen failed (e.g. TLS handshake rejected). Keep the
+                    // old handle so we don't crash on NULL; the register
+                    // below fails and schedules the usual 30 s retry.
+                    ESP_LOGE(TAG, "reopen as %s failed — keeping %s transport",
+                             want, sip_transport_via_token(ctx.transport));
+                    sip_transport_resolve(ctx.transport, new_dial_host,
+                                          new_dial_port, new_tls_sni);
+                }
+            } else {
+                sip_transport_resolve(ctx.transport, new_dial_host,
+                                      new_dial_port, new_tls_sni);
+            }
             // Settle pause only when the caller asked for it
             // (TR-064 provisioning). FB needs a beat for a newly
             // created extension to go live on its own SIP stack;
@@ -1346,7 +1700,6 @@ static void sip_task(void *arg)
                 s_pending_error[0] = '\0';
                 refresh_at_us = esp_timer_get_time() + (int64_t)(granted_expires / 2) * 1000000LL;
             } else {
-                if (err[0]) stats_record_error("sip", err);
                 ESP_LOGE(TAG, "REGISTER with new config failed (%s), retry in %d s",
                          err[0] ? err : "no detail", retry_delay_s);
                 s_binding_expires_at_us = 0;
@@ -1361,12 +1714,10 @@ static void sip_task(void *arg)
         // extension, rather than waiting out the (expires/2) refresh
         // window during which incoming INVITEs would be lost.
         if (sip_transport_consume_reconnect(ctx.transport)) {
-            ESP_LOGI(TAG, "transport reconnected → re-REGISTER");
-            // Informational marker so the operator can correlate a
-            // transport flap with whatever else they are seeing in
-            // the dashboard. Kept regardless of the do_register
-            // outcome below.
-            stats_record_error("sip", "TCP reconnect → re-REGISTER");
+            // A dropped TCP/TLS connection is worth surfacing: WARN so the
+            // log hook records it, letting the operator correlate a
+            // transport flap with whatever else they see in the log.
+            ESP_LOGW(TAG, "transport reconnected → re-REGISTER");
             err[0] = '\0';
             r = do_register(&ctx, &granted_expires, err, sizeof(err));
             ok = (r == REGISTER_OK);
@@ -1378,7 +1729,8 @@ static void sip_task(void *arg)
                 s_pending_error[0] = '\0';
                 refresh_at_us = esp_timer_get_time() + (int64_t)(granted_expires / 2) * 1000000LL;
             } else {
-                if (err[0]) stats_record_error("sip", err);
+                ESP_LOGE(TAG, "re-REGISTER after reconnect failed (%s), retry in %d s",
+                         err[0] ? err : "no detail", retry_delay_s);
                 s_binding_expires_at_us = 0;
                 s_pending_error[0] = '\0';
                 refresh_at_us = esp_timer_get_time() + (int64_t)retry_delay_s * 1000000LL;
@@ -1416,6 +1768,16 @@ static void sip_task(void *arg)
                 if (ctx.dialog.state == DIALOG_STREAMING) {
                     ESP_LOGI(TAG, "tone finished → sending BYE");
                     send_bye(&ctx);
+                } else if (ctx.dialog.state == DIALOG_PROCEEDING) {
+                    // #380: the other phones have had SIP_DECLINE_DELAY_US to
+                    // start ringing; now decline with 480 (built from the
+                    // stored INVITE) and observe whether they keep ringing.
+                    ESP_LOGI(TAG, "decline delay elapsed → 480 Temporarily Unavailable");
+                    send_response(&ctx, &ctx.dialog.peer,
+                                  ctx.dialog.invite_msg, ctx.dialog.invite_len,
+                                  480, "Temporarily Unavailable",
+                                  ctx.dialog.our_tag, NULL);
+                    ctx.dialog.state = DIALOG_REJECTED;
                 }
                 continue;
             }
@@ -1470,7 +1832,6 @@ static void sip_task(void *arg)
                     snprintf(msg, sizeof(msg), "%.127s",
                              err[0] ? err : "REGISTER failed");
                 }
-                stats_record_error("sip", msg);
                 ESP_LOGE(TAG, "re-REGISTER failed: %s — retry in %d s",
                          msg, retry_delay_s);
                 s_binding_expires_at_us = 0;
@@ -1488,9 +1849,13 @@ static void sip_task(void *arg)
 
 void sip_register_start(void)
 {
+    // Host + user are mandatory; an empty password is a valid credential
+    // (digest HA1 = MD5(user:realm:"")) — some providers register an
+    // anonymous account (e.g. Telekom's anonymous@t-online.de) with no
+    // password. Don't refuse locally: attempt the REGISTER and let the
+    // registrar's response surface in the status UI.
     if (strlen(config_sip_host()) == 0 ||
-        strlen(config_sip_user()) == 0 ||
-        strlen(config_sip_pass()) == 0) {
+        strlen(config_sip_user()) == 0) {
         ESP_LOGW(TAG, "SIP config incomplete, skipping registration");
         return;
     }

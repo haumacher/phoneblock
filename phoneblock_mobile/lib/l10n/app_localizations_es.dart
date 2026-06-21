@@ -205,6 +205,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get viewOnPhoneBlockMenu => 'Ver en PhoneBlock';
 
   @override
+  String get copyNumber => 'Número de copia';
+
+  @override
+  String get numberCopied => 'Número copiado en el portapapeles';
+
+  @override
   String get deleteCall => 'Borrar';
 
   @override

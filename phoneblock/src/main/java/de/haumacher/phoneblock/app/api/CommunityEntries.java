@@ -30,10 +30,11 @@ import de.haumacher.phoneblock.sync.binary.BlocklistRecord;
  * </p>
  *
  * <p>
- * The per-user {@code minVotes} threshold is applied here for both exact
- * entries (vote count from the blocklist row) and wildcards (sum of votes
- * across the block, from the aggregation row). The whitelist is emitted
- * unfiltered &mdash; an explicit allow does not care about vote counts.
+ * The per-user {@code minVotes} threshold gates both exact entries (vote
+ * count from the blocklist row, applied here) and wildcards (mapped to a
+ * projected {@code SPAM_EVIDENCE} floor, already applied in SQL by
+ * {@code DB.getCommunityBinarySources}). The whitelist is emitted unfiltered
+ * &mdash; an explicit allow does not care about vote counts.
  * </p>
  */
 public final class CommunityEntries {

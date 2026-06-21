@@ -15,10 +15,6 @@
 			<img th:src="@{/assets/img/dongle/phoneblock-dongle-800.png}"/>
 		</p>		
 
-		<div class="notification is-warning">
-			<p data-tx="t0123:3a266dbc"><strong>Status: Beta.</strong> Den første versjonen kjører allerede pålitelig. Jeg er på utkikk etter flere testere for å prøve ut PhoneBlock-donglen i så mange forskjellige miljøer som mulig - <a href="#tester">erfaringsrapporter er velkomne</a>.</p>
-		</div>
-
 		<h2 data-tx="t0004:6b104c7a">Ideen i én setning</h2>
 
 		<p data-tx="t0081:4d04d687">PhoneBlock-dongelen logger seg på ruteren din som en ekstra IP-telefon. Hver gang en samtale kommer inn, spør den lynraskt PhoneBlock-databasen: <em>"Er dette spam?"</em> Hvis ja, besvarer den selv samtalen, spiller av en kort kunngjøring om ønskelig og legger på igjen. Den virkelige telefonen din har ikke engang ringt i det øyeblikket. I motsetning til <a th:href="@{/anrufbeantworter}">sky-telefonsvareren</a> foregår all samtalebehandling lokalt hjemme hos deg.</p>
@@ -41,9 +37,27 @@
 			</div>
 		</div>
 
-		<div class="notification is-info">
-			<p data-tx="t0100:5bd0fd66"><strong>Hvorfor dette er så sjarmerende:</strong> PhoneBlock-dongelen krever bare minimalt med strøm og Wi-Fi. Ingen ekstra server, ingen Fritz!Box, ingen kontrakt. ESP32-mikrokontrolleren på innsiden trekker mindre enn en halv watt - du kan bare koble den til USB-porten på ruteren og glemme alt om den.</p>
+		<h2 data-tx="t0231:7efc6f3c">Universelt anvendelig</h2>
+
+		<div class="notification is-success">
+			<p data-tx="t0123:3f292a9e">Dongelen kjører <b>stabilt med alle Fritz!Box-rutere</b> uavhengig av telefonleverandør (den skal også fungere med virkelig gamle Fritz!Box-modeller - men selvfølgelig uten garanti).</p>
 		</div>
+
+		<div class="notification is-success">
+			<p data-tx="t0229:8390c45a">Dongelen kjører <b>stabilt på alle Deutsche Telekom-tilkoblinger</b> uavhengig av hvilken ruter du bruker.</p>
+		</div>
+
+		<p data-tx="t0224:158c9a29">Dongelen <b>fungerer også uten en Fritz!Box-ruter</b>, men minst ett av de to punktene må være oppfylt:</p>
+		<ul>
+		<li data-tx="t0225:b43acc79">Ruteren din lar deg registrere en VOIP-telefon (de fleste moderne rutere kan gjøre dette - men "EasyBox" fra Vodafone, for eksempel, kan ikke det). Det er best å sjekke bruksanvisningen for ruteren din på forhånd.</li>
+		<li data-tx="t0226:98a33bc2">Hvis telefonleverandøren din tillater direkte registrering av en VOIP-telefon direkte til infrastrukturen - da spiller ikke rutermodellen noen rolle. (Deutsche Telekom tillater dette, Vodafone gjør det for eksempel ikke. Det er best å spørre leverandøren din).</li>
+		</ul> 
+
+		<div class="notification is-info">
+			<p data-tx="t0230:12c794d9">Dongelen fungerer <b>ikke på Vodafone-tilkoblinger</b> i kombinasjon med en EasyBox fra Vodafone.</p>
+		</div>
+		
+		<p data-tx="t0227:9c63c692">Hvis du har konfigurert donglen - spesielt i kombinasjon med en ruter som ikke er Fritz!Box, eller en "historisk" Fritz!Box-modell - kan du skrive en <a href="#tester">erfaringsrapport</a> slik at denne hjelpen kan forbedres.</p>
 
 		<p class="subtitle mt-6" data-tx="t0124:bd004e4f">Det er her det blir praktisk: instruksjonene veileder deg trinn for trinn gjennom bestilling og oppsett - rundt €10 maskinvare, en engangsinnsats på noen få minutter.</p>
 
@@ -181,6 +195,8 @@
 		<p data-tx="t0168:54d5a6"><strong>Godt gjort:</strong> LED-lampen blinker nå sakte (ca. én gang i sekundet) - PhoneBlock-donglen er i WLAN, har mottatt en adresse og venter på konfigurasjon (neste trinn).</p>
 
 		<p data-tx="t0169:cddfc489"><strong>Fungerte ikke</strong> Sjekk i ruterinnstillingene om WPS er aktivert (på Fritz!Box: <em>WLAN → Sikkerhet → WPS</em>). Hvis WPS-vinduet var for kort, starter PhoneBlock-donglen automatisk sammenkoblingen på nytt - da er det bare å trykke på WPS-knappen igjen.</p>
+
+		<p data-tx="t0228:6f5d0796"><strong>Har ikke ditt WLAN WPS? </strong> Noen tilgangspunkter (f.eks. UniFi) har ikke en WPS-knapp. Skriv deretter inn WLAN-tilgangsdataene direkte i Flash-dialogen: La PhoneBlock-dongelen ligge på datamaskinen (eller koble den til igjen), klikk på <strong>"Flash now"</strong> øverst i trinn 2, og koble til dongelen - i stedet for en ny installasjon tilbyr dialogen nå <strong>"Configure Wi-Fi"</strong>. Velg nettverket ditt fra listen og skriv inn Wi-Fi-passordet; dialogen vil be om det direkte etter den første installasjonen. Koble deretter PhoneBlock-dongelen til ruteren som i trinn 3.</p>
 
 		<h2 data-tx="t0170:6da0bfa" id="schritt-7">Trinn 5 - Registrer deg som telefon og konfigurer PhoneBlock-tilgang</h2>
 

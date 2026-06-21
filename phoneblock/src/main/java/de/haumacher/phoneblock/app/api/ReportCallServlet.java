@@ -12,8 +12,10 @@ import org.apache.ibatis.session.SqlSession;
 
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.app.LoginFilter;
+import de.haumacher.phoneblock.db.BlockList;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.db.Signals;
 import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.AuthToken;
@@ -44,11 +46,6 @@ import jakarta.servlet.http.HttpServletResponse;
  * reset job, no aggregate query. Reports beyond the quota are still written
  * to the per-user call log ({@code CALLERS}) for the user's own activity
  * history, but do not move the global counter.</p>
- *
- * <p>Reports for numbers that are not in the {@code NUMBERS} table are
- * silently accepted but have no effect — we do not create new rows, since
- * that would let clients pollute the database with numbers that have never
- * received a proper SPAM rating.</p>
  */
 @WebServlet(urlPatterns = ReportCallServlet.PATTERN)
 public class ReportCallServlet extends HttpServlet {
@@ -95,6 +92,10 @@ public class ReportCallServlet extends HttpServlet {
 		}
 		String phoneId = NumberAnalyzer.getPhoneId(number);
 
+		// A catch by one of the user's personal prefix wildcards (#377) is reported
+		// with wildcard=true so the server weights it down by the rule's breadth.
+		boolean wildcardTriggered = Boolean.parseBoolean(req.getParameter("wildcard"));
+
 		long now = System.currentTimeMillis();
 		int today = (int) LocalDate.ofInstant(Instant.ofEpochMilli(now), ZoneOffset.UTC).toEpochDay();
 
@@ -105,15 +106,21 @@ public class ReportCallServlet extends HttpServlet {
 
 			long userId = auth.getUserId();
 
+			// Per-day quota is the only abuse guard on this endpoint — each
+			// reported call counts equally, no per-(user, phone) dedup
+			// (that was the old CALLERS / firstFromUser concept, removed in
+			// #342). The shared DB.recordCall path handles the rest.
 			if (users.tryConsumeCallReportQuota(userId, today, DAILY_QUOTA) == 1) {
-				// recordCall is a no-op for phones that are not in NUMBERS, which is
-				// exactly the "only count known SPAM numbers" semantic we want.
-				reports.recordCall(phoneId, now);
-			}
-
-			// Maintain the per-user call log regardless of global-counter outcome.
-			if (users.addCall(userId, phoneId, now) == 0) {
-				users.insertCaller(userId, phoneId, now);
+				double weight = 1.0;
+				if (wildcardTriggered) {
+					// Server recomputes the weight from the user's own wildcard list; a
+					// claim without a matching wildcard (stale client state) yields 0.0
+					// and is dropped rather than counted at full weight.
+					weight = db.wildcardReportWeight(session.getMapper(BlockList.class), userId, phoneId);
+				}
+				if (weight > 0.0) {
+					db.recordCall(reports, number, phoneId, dialPrefix, now, weight);
+				}
 			}
 
 			session.commit();

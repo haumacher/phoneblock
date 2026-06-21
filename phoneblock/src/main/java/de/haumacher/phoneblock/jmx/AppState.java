@@ -46,23 +46,8 @@ public class AppState implements AppStateMBean {
 	}
 
 	@Override
-	public int getRatings() {
-		return _db.getRatings();
-	}
-
-	@Override
 	public int getSearches() {
 		return _db.getSearches();
-	}
-	
-	@Override
-	public int getActiveNumbers() {
-		return _db.getActiveReportCount();
-	}
-	
-	@Override
-	public int getArchivedNumbers() {
-		return _db.getArchivedReportCount();
 	}
 	
 	@Override

@@ -489,6 +489,60 @@ Future<bool> updateWhitelistComment(String phone, String comment, String authTok
   return _updatePersonalizedComment(PersonalizedListType.whitelist, phone, comment, authToken);
 }
 
+/// Adds a personal wildcard-prefix block to the server (#377).
+///
+/// The [prefix] is sent in international format with `wildcard: true`; the server creates the
+/// rule without casting a community vote. Returns true on success (HTTP 204).
+/// Requires authentication via [authToken].
+Future<bool> addWildcardToServer(String prefix, String authToken) async {
+  try {
+    final headers = <String, String>{
+      "User-Agent": "PhoneBlockMobile/$appVersion",
+      "Authorization": "Bearer $authToken",
+      "Content-Type": "application/json; charset=UTF-8",
+    };
+
+    final body = json.encode({"phone": prefix, "wildcard": true});
+    final url = '$pbBaseUrl/api/blacklist/$prefix';
+    AppLogger.instance.info('api', 'PUT $url (wildcard)');
+    final response = await http.put(Uri.parse(url), headers: headers, body: body);
+
+    if (response.statusCode == 204) {
+      return true;
+    }
+    AppLogger.instance.error('api', 'Failed to add wildcard: ${response.statusCode} - ${response.body}');
+    return false;
+  } catch (e, s) {
+    AppLogger.instance.error('api', 'Error adding wildcard to server', e, s);
+    return false;
+  }
+}
+
+/// Removes a personal wildcard-prefix block from the server (#377).
+///
+/// Returns true on success (HTTP 204). Requires authentication via [authToken].
+Future<bool> removeWildcardFromServer(String prefix, String authToken) async {
+  try {
+    final headers = <String, String>{
+      "User-Agent": "PhoneBlockMobile/$appVersion",
+      "Authorization": "Bearer $authToken",
+    };
+
+    final url = '$pbBaseUrl/api/blacklist/$prefix?wildcard=true';
+    AppLogger.instance.info('api', 'DELETE $url');
+    final response = await http.delete(Uri.parse(url), headers: headers);
+
+    if (response.statusCode == 204) {
+      return true;
+    }
+    AppLogger.instance.error('api', 'Failed to remove wildcard: ${response.statusCode} - ${response.body}');
+    return false;
+  } catch (e, s) {
+    AppLogger.instance.error('api', 'Error removing wildcard from server', e, s);
+    return false;
+  }
+}
+
 /// WorkManager background task callback.
 ///
 /// Must be a top-level function. Called by Android WorkManager when
@@ -1769,6 +1823,26 @@ class _MainScreenState extends State<MainScreen> {
       ),
     );
 
+    // Copy number to clipboard option
+    items.add(
+      PopupMenuItem(
+        child: Row(
+          children: [
+            Icon(Icons.copy, color: Colors.blueGrey),
+            SizedBox(width: 12),
+            Text(context.l10n.copyNumber),
+          ],
+        ),
+        onTap: () {
+          Future.delayed(Duration.zero, () {
+            if (context.mounted) {
+              _copyNumber(context, call);
+            }
+          });
+        },
+      ),
+    );
+
     // Always show delete option
     items.add(
       PopupMenuItem(
@@ -2408,6 +2482,18 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   /// Opens the phone number on PhoneBlock website in a WebView.
+  /// Copies the call's phone number to the system clipboard.
+  Future<void> _copyNumber(BuildContext context, ScreenedCall call) async {
+    await Clipboard.setData(ClipboardData(text: call.phoneNumber));
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(context.l10n.numberCopied),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   Future<void> _viewOnPhoneBlock(ScreenedCall call) async {
     String? token = await getAuthToken();
     if (token == null) {
@@ -3858,14 +3944,23 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
           ? await fetchBlacklist(widget.authToken)
           : await fetchWhitelist(widget.authToken);
 
-      List<WildcardBlock> wildcards = [];
-      if (_isBlacklist) {
-        wildcards = await ScreenedCallsDatabase.instance.getAllWildcardBlocks();
-      }
-
       if (numberList != null) {
+        // The server now carries wildcard prefixes inline (#377); split them out so the
+        // exact numbers and the wildcard blocks are shown in their respective sections.
+        final exact = <api.PersonalizedNumber>[];
+        final serverWildcards = <api.PersonalizedNumber>[];
+        for (final n in numberList.numbers) {
+          (n.wildcard ? serverWildcards : exact).add(n);
+        }
+
+        List<WildcardBlock> wildcards = [];
+        if (_isBlacklist) {
+          await _syncWildcards(serverWildcards);
+          wildcards = await ScreenedCallsDatabase.instance.getAllWildcardBlocks();
+        }
+
         setState(() {
-          _numbers = numberList.numbers;
+          _numbers = exact;
           _wildcardBlocks = wildcards;
           _isLoading = false;
         });
@@ -3882,6 +3977,51 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
         _isLoading = false;
       });
     }
+  }
+
+  /// Reconciles local wildcard blocks with the server (#377).
+  ///
+  /// The server is the source of truth; the local copy exists only so the native
+  /// CallScreeningService can block offline. The app's pre-existing local-only wildcards are
+  /// lifted to the server once (migration); afterwards the local set mirrors the server, so
+  /// wildcards added or removed on any of the user's devices propagate here.
+  Future<void> _syncWildcards(List<api.PersonalizedNumber> serverWildcards) async {
+    final db = ScreenedCallsDatabase.instance;
+    final prefs = await SharedPreferences.getInstance();
+
+    // One-time migration of the app's existing local-only wildcards to the server.
+    if (!(prefs.getBool('wildcards_migrated') ?? false)) {
+      final onServer = serverWildcards.map((w) => w.phone).toSet();
+      for (final local in await db.getAllWildcardBlocks()) {
+        if (!onServer.contains(local.prefix) && await addWildcardToServer(local.prefix, widget.authToken)) {
+          serverWildcards.add(api.PersonalizedNumber(
+              phone: local.prefix, wildcard: true, created: local.created.millisecondsSinceEpoch));
+        }
+      }
+      await prefs.setBool('wildcards_migrated', true);
+    }
+
+    // Mirror the server set into the local store: add server-only, drop local-only.
+    final serverPrefixes = serverWildcards.map((w) => w.phone).toSet();
+    final local = await db.getAllWildcardBlocks();
+    final localPrefixes = local.map((w) => w.prefix).toSet();
+
+    for (final sw in serverWildcards) {
+      if (!localPrefixes.contains(sw.phone)) {
+        await db.insertWildcardBlock(WildcardBlock(
+          prefix: sw.phone,
+          comment: null,
+          created: sw.created > 0 ? DateTime.fromMillisecondsSinceEpoch(sw.created) : DateTime.now(),
+        ));
+      }
+    }
+    for (final lw in local) {
+      if (!serverPrefixes.contains(lw.prefix)) {
+        await db.deleteWildcardBlock(lw.id!);
+      }
+    }
+
+    await syncWildcardPrefixesToNative();
   }
 
   /// Edit the comment for a number in the list.
@@ -4124,6 +4264,8 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
 
     await ScreenedCallsDatabase.instance.insertWildcardBlock(block);
     await syncWildcardPrefixesToNative();
+    // Sync the wildcard to the server (#377) so the user's other devices honor it too.
+    await addWildcardToServer(prefix, widget.authToken);
     await _loadNumbers();
 
     if (context.mounted) {
@@ -4600,6 +4742,8 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
 
         await ScreenedCallsDatabase.instance.deleteWildcardBlock(block.id!);
         await syncWildcardPrefixesToNative();
+        // Remove the wildcard on the server too (#377), so the deletion propagates.
+        await removeWildcardFromServer(block.prefix, widget.authToken);
 
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

@@ -470,11 +470,23 @@ abstract class AppLocalizations {
   /// **'Als SPAM melden'**
   String get reportAsSpam;
 
-  /// Menu item to view on PhoneBlock
+  /// Menu item to open the number's PhoneBlock page in the in-app browser
   ///
   /// In de, this message translates to:
-  /// **'Auf PhoneBlock ansehen'**
+  /// **'Im Browser öffnen'**
   String get viewOnPhoneBlockMenu;
+
+  /// Menu item to copy the phone number to the clipboard
+  ///
+  /// In de, this message translates to:
+  /// **'Nummer kopieren'**
+  String get copyNumber;
+
+  /// Snackbar message after copying the phone number to the clipboard
+  ///
+  /// In de, this message translates to:
+  /// **'Nummer in Zwischenablage kopiert'**
+  String get numberCopied;
 
   /// Menu item to delete call
   ///

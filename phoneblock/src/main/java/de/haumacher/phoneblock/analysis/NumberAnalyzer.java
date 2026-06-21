@@ -99,6 +99,70 @@ public class NumberAnalyzer {
 		return phoneId;
 	}
 
+	/**
+	 * Shortest phone-ID prefix accepted as a wildcard block (#377).
+	 *
+	 * <p>
+	 * Breadth is self-limiting through the report weight, so we only guard against a
+	 * prefix so short it blocks almost everything on the user's own devices. At length 3
+	 * a user can block a non-German country code ({@code +1} &rarr; {@code 001}) or a German
+	 * city ({@code +49 30} &rarr; {@code 030}), while a bare {@code 0} (all national) or
+	 * {@code 00} (all international) is still rejected.
+	 * </p>
+	 *
+	 * <p>
+	 * <b>Known limitation (#377):</b> wildcards are stored and matched in this German-centric
+	 * phone-ID form. German numbers shed their country code ({@code +49 30} &rarr; {@code 030}),
+	 * everyone else keeps {@code 00<cc>} ({@code +1} &rarr; {@code 001}). A clean prefix exists
+	 * for foreign country codes, but <em>not</em> for "all of Germany": {@code +49} &rarr;
+	 * {@code 0} matches every phone-ID (German {@code 0…} and international {@code 00…} alike).
+	 * Blocking a whole country symmetrically requires storing/matching wildcards in international
+	 * ({@code +CC}) form; until then this floor caps the damage at city level for Germany.
+	 * </p>
+	 */
+	public static final int MIN_WILDCARD_PREFIX_LENGTH = 3;
+
+	/**
+	 * Converts a phone number prefix (international {@code +}, {@code 00}-international or
+	 * national form) to the database phone-ID prefix used as a wildcard-block key (#377).
+	 *
+	 * <p>
+	 * Unlike {@link #toId}, this does not run country analysis, so it also works for a
+	 * partial number (a prefix). It is the inverse of {@link #toInternationalFormat}.
+	 * </p>
+	 *
+	 * @return the digits-only phone-ID prefix, or {@code null} if the input is not a
+	 *         usable prefix (empty, contains a wildcard char, or shorter than
+	 *         {@link #MIN_WILDCARD_PREFIX_LENGTH}).
+	 */
+	public static String toWildcardId(String prefixText, String dialPrefix) {
+		String normalized = normalizeNumber(prefixText);
+		if (normalized.isEmpty() || normalized.contains("*")) {
+			return null;
+		}
+
+		String international;
+		if (normalized.startsWith("+")) {
+			international = normalized;
+		} else if (normalized.startsWith("00")) {
+			international = "+" + normalized.substring(2);
+		} else if (normalized.startsWith("0")) {
+			// National number in the user's country.
+			international = dialPrefix + normalized.substring(1);
+		} else {
+			return null;
+		}
+
+		String phoneId;
+		if (international.startsWith(GERMAN_DIAL_PREFIX)) {
+			phoneId = "0" + international.substring(GERMAN_DIAL_PREFIX.length());
+		} else {
+			phoneId = "00" + international.substring(1);
+		}
+
+		return phoneId.length() < MIN_WILDCARD_PREFIX_LENGTH ? null : phoneId;
+	}
+
 	public static PhoneNumer analyzePhoneID(String phone) {
 		return analyze(phone, GERMAN_DIAL_PREFIX);
 	}

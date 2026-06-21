@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>de.haumacher</groupId>
 		<artifactId>phoneblock-parent</artifactId>
-		<version>3.0.3-SNAPSHOT</version>
+		<version>3.1.3-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>fake-mail-check</artifactId>

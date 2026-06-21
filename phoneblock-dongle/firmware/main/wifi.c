@@ -1,5 +1,6 @@
 #include "wifi.h"
 
+#include <stdio.h>
 #include <string.h>
 
 #include "esp_event.h"
@@ -25,6 +26,8 @@ static const char *TAG = "wifi";
 #endif
 
 static EventGroupHandle_t s_events;
+static esp_netif_t       *s_sta_netif;
+static bool               s_started;
 static bool               s_wps_active;
 static bool               s_has_ip;
 // Guards the time between esp_wifi_disconnect() and the next
@@ -185,7 +188,13 @@ static void schedule_failsafe(void)
     if (s_failsafe_active) return;
     s_failsafe_active = true;
     s_consecutive_disconnects = 0;
-    ESP_LOGW(TAG, "stored credentials not associating — entering failsafe "
+    // ERROR, not WARN: the dongle is effectively offline (it cannot
+    // associate with stored credentials) and needs operator attention.
+    // Logging at ERROR also makes the log-report beacon ship it — a lone
+    // transient disconnect (WARN) would not warrant that, but persistent
+    // failure that drove us into failsafe does. Fires once per entry
+    // (guarded by s_failsafe_active above).
+    ESP_LOGE(TAG, "stored credentials not associating — entering failsafe "
                   "(alternating WPS-listening and stored-credentials "
                   "retry every %d s; credentials remain in NVS)",
              FAILSAFE_PHASE_MS / 1000);
@@ -344,6 +353,132 @@ static void on_got_ip(void *arg, esp_event_base_t base, int32_t id, void *data)
 
 bool wifi_is_wps_active(void) { return s_wps_active || s_wps_restart_pending; }
 bool wifi_has_ip(void)        { return s_has_ip; }
+bool wifi_sta_started(void)   { return s_started; }
+
+bool wifi_get_ip_str(char *buf, size_t cap)
+{
+    if (s_sta_netif == NULL || !s_has_ip) {
+        return false;
+    }
+    esp_netif_ip_info_t info;
+    if (esp_netif_get_ip_info(s_sta_netif, &info) != ESP_OK) {
+        return false;
+    }
+    snprintf(buf, cap, IPSTR, IP2STR(&info.ip));
+    return true;
+}
+
+// Take the STA away from the pairing machinery (WPS round, failsafe
+// alternation) so a direct esp_wifi_connect() or scan can run without
+// racing it. Mirrors the transition pattern of failsafe_to_connect():
+// s_wps_restart_pending gates the disconnect handler for the duration.
+static void teardown_pairing(void)
+{
+    exit_failsafe();
+    // The failsafe task may be mid-transition (inside a 500 ms
+    // vTaskDelay in failsafe_to_wps) and would re-enable WPS right
+    // after we disable it below — wait for it to drain first. Same
+    // for an in-flight wps_restart_task.
+    for (int i = 0; i < 30 && s_failsafe_task != NULL; i++) {
+        vTaskDelay(pdMS_TO_TICKS(100));
+    }
+    for (int i = 0; i < 20 && s_wps_restart_pending; i++) {
+        vTaskDelay(pdMS_TO_TICKS(100));
+    }
+
+    s_wps_restart_pending = true;
+    esp_wifi_wps_disable();  // safe even if not currently enabled
+    s_wps_active = false;
+    esp_wifi_disconnect();
+    vTaskDelay(pdMS_TO_TICKS(500));
+    s_wps_restart_pending = false;
+}
+
+esp_err_t wifi_set_credentials(const char *ssid, const char *password)
+{
+    wifi_config_t cfg = { 0 };
+    size_t ssid_len = strlen(ssid);
+    size_t pass_len = strlen(password);
+    if (ssid_len == 0 || ssid_len > sizeof(cfg.sta.ssid)
+            || pass_len > sizeof(cfg.sta.password) - 1) {
+        return ESP_ERR_INVALID_ARG;
+    }
+    if (!s_started) {
+        return ESP_ERR_WIFI_NOT_STARTED;
+    }
+
+    ESP_LOGI(TAG, "switching to provisioned credentials (SSID=%s)", ssid);
+    teardown_pairing();
+
+    memcpy(cfg.sta.ssid, ssid, ssid_len);
+    memcpy(cfg.sta.password, password, pass_len);
+    // Same defensive security baseline as seed_baked_creds() — without
+    // PMF capability the STA gets Reason 210 against any modern
+    // WPA2/WPA3-transitional AP. Open networks need the OPEN
+    // threshold, or the driver refuses to associate without a key.
+    cfg.sta.threshold.authmode = pass_len ? WIFI_AUTH_WPA2_PSK
+                                          : WIFI_AUTH_OPEN;
+    cfg.sta.pmf_cfg.capable    = true;
+    cfg.sta.pmf_cfg.required   = false;
+
+    // WIFI_STORAGE_FLASH persists this to NVS for the next boot.
+    esp_err_t err = esp_wifi_set_config(WIFI_IF_STA, &cfg);
+    if (err != ESP_OK) {
+        ESP_LOGW(TAG, "esp_wifi_set_config: %s", esp_err_to_name(err));
+        return err;
+    }
+
+    // Fresh credentials get a fresh failsafe budget.
+    s_consecutive_disconnects = 0;
+    return esp_wifi_connect();
+}
+
+int wifi_scan(wifi_ap_record_t *records, int max_records)
+{
+    if (!s_started) {
+        return -1;
+    }
+
+    // Scanning coexists with a normal (connected or reconnecting)
+    // station, but not with an active WPS round — the driver rejects
+    // it. Suspend WPS for the scan and resume afterwards, so closing
+    // the provisioning dialog without sending credentials leaves the
+    // device in the same pairing mode it was in before.
+    bool resume_wps = s_wps_active || s_wps_restart_pending
+            || (s_failsafe_active && s_failsafe_in_wps);
+    if (resume_wps) {
+        teardown_pairing();
+    }
+
+    int result = -1;
+    bool resume_connect = false;
+    esp_err_t err = esp_wifi_scan_start(NULL, true /* block */);
+    if (err == ESP_ERR_WIFI_STATE && !s_has_ip && !resume_wps) {
+        // The STA is mid-association — typically the reconnect loop on
+        // stored credentials that no longer work (e.g. Reason 210),
+        // which is exactly the situation provisioning gets the user
+        // out of. Pause the loop for the scan and resume afterwards.
+        teardown_pairing();
+        resume_connect = true;
+        err = esp_wifi_scan_start(NULL, true);
+    }
+    if (err == ESP_OK) {
+        uint16_t n = (uint16_t)max_records;
+        // Also frees the driver-internal scan list.
+        err = esp_wifi_scan_get_ap_records(&n, records);
+        result = (err == ESP_OK) ? n : -1;
+    }
+    if (err != ESP_OK) {
+        ESP_LOGW(TAG, "scan failed: %s", esp_err_to_name(err));
+    }
+
+    if (resume_wps) {
+        start_wps();
+    } else if (resume_connect) {
+        esp_wifi_connect();
+    }
+    return result;
+}
 
 static bool load_persisted_creds(wifi_config_t *out)
 {
@@ -378,6 +513,7 @@ esp_err_t wifi_connect(void)
     s_events = xEventGroupCreate();
 
     esp_netif_t *sta_netif = esp_netif_create_default_wifi_sta();
+    s_sta_netif = sta_netif;
 
     // DHCP option 12 (host-name) is built from the netif's hostname at
     // the time DHCPDISCOVER/REQUEST is sent. Setting it later (e.g.
@@ -420,6 +556,7 @@ esp_err_t wifi_connect(void)
     }
 
     ESP_ERROR_CHECK(esp_wifi_start());
+    s_started = true;
 
     if (!have_stored && !have_baked) {
         start_wps();

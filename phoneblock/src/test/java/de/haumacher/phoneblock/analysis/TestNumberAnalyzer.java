@@ -78,6 +78,37 @@ class TestNumberAnalyzer {
 
 	@ParameterizedTest
 	@CsvSource({
+		// International (+), 00-international and national input all map to the same phone-ID prefix.
+		"+4930123, +49, 030123",
+		"004930123, +49, 030123",
+		"030123, +49, 030123",
+		"0049 30 123, +49, 030123",
+		// Non-German numbers keep the 00 + country-code form.
+		"+1888123, +49, 001888123",
+		"001888123, +49, 001888123",
+		"+39061234, +49, 0039061234",
+		// Shortest accepted prefixes (3-char floor): a foreign country code or a German city.
+		"+1, +49, 001",
+		"030, +49, 030",
+	})
+	void testToWildcardId(String input, String dialPrefix, String expected) {
+		assertEquals(expected, NumberAnalyzer.toWildcardId(input, dialPrefix));
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+		"+49, +49",      // all of Germany -> "0" (len 1), and German-centric phone-ID can't express it anyway (#377)
+		"0, +49",        // all national -> too short
+		"00, +49",       // all international -> too short
+		"+49301*, +49",  // contains a wildcard char
+		"12345, +49",    // bare digits without +/00/0 prefix are ambiguous
+	})
+	void testToWildcardIdRejected(String input, String dialPrefix) {
+		assertNull(NumberAnalyzer.toWildcardId(input, dialPrefix));
+	}
+
+	@ParameterizedTest
+	@CsvSource({
 		// Hungary - trunk prefix "06"
 		"06123456789, +36, +36123456789, Hungary",
 		"061234567, +36, +361234567, Hungary",

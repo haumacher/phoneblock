@@ -57,8 +57,8 @@ class TestCommunityEntries {
 	@Test
 	void wildcardsFromBothAggregationLevels() {
 		DB.CommunityBinarySources sources = new DB.CommunityBinarySources(
-			List.of(new AggregationInfo("030123", 5, 8)),
-			List.of(new AggregationInfo("03012", 3, 12)),
+			List.of(new AggregationInfo("030123", 5)),
+			List.of(new AggregationInfo("03012", 3)),
 			Set.of());
 
 		List<Entry> entries = CommunityEntries.from(emptyCommunity(), sources, 1);
@@ -104,7 +104,7 @@ class TestCommunityEntries {
 	void malformedPhoneIdsAreSkipped() {
 		Blocklist blocklist = community(row("garbage", 10));
 		DB.CommunityBinarySources sources = new DB.CommunityBinarySources(
-			List.of(new AggregationInfo("", 5, 5)),
+			List.of(new AggregationInfo("", 5)),
 			List.of(),
 			Set.of(""));
 

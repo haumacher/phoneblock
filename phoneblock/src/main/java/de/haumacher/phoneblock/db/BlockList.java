@@ -26,7 +26,7 @@ public interface BlockList {
 	 */
 	@Select("""
 			select PHONE from PERSONALIZATION
-			where USERID = #{userId} and BLOCKED
+			where USERID = #{userId} and BLOCKED and not WILDCARD
 			order by PHONE
 			""")
 	List<String> getPersonalizations(long userId);
@@ -36,7 +36,7 @@ public interface BlockList {
 	 */
 	@Select("""
 			select PHONE, CREATED from PERSONALIZATION
-			where USERID = #{userId} and BLOCKED
+			where USERID = #{userId} and BLOCKED and not WILDCARD
 			order by PHONE
 			""")
 	List<DBPersonalization> getPersonalizationsWithCreated(long userId);
@@ -46,7 +46,7 @@ public interface BlockList {
 	 */
 	@Select("""
 			select PHONE from PERSONALIZATION
-			where USERID = #{userId} and NOT BLOCKED
+			where USERID = #{userId} and NOT BLOCKED and not WILDCARD
 			order by PHONE
 			""")
 	Set<String> getExcluded(long userId);
@@ -56,7 +56,7 @@ public interface BlockList {
 	 */
 	@Select("""
 			select PHONE from PERSONALIZATION
-			where USERID = #{userId} and NOT BLOCKED
+			where USERID = #{userId} and NOT BLOCKED and not WILDCARD
 			order by PHONE
 			""")
 	List<String> getWhiteList(long userId);
@@ -66,7 +66,7 @@ public interface BlockList {
 	 */
 	@Select("""
 			select PHONE, CREATED from PERSONALIZATION
-			where USERID = #{userId} and NOT BLOCKED
+			where USERID = #{userId} and NOT BLOCKED and not WILDCARD
 			order by PHONE
 			""")
 	List<DBPersonalization> getWhiteListWithCreated(long userId);
@@ -146,5 +146,65 @@ public interface BlockList {
 			where PHONE = #{phone}
 			""")
 	int updatePersonalizationHash(String phone, byte[] sha1);
+
+	/**
+	 * All blocked wildcard prefixes (phone-ID form) of the user with the given user ID (#377).
+	 */
+	@Select("""
+			select PHONE from PERSONALIZATION
+			where USERID = #{userId} and BLOCKED and WILDCARD
+			order by PHONE
+			""")
+	List<String> getBlockedWildcards(long userId);
+
+	/**
+	 * Wildcard prefixes of the given block state for the user with the given user ID, with
+	 * creation timestamp (#377).
+	 */
+	@Select("""
+			select PHONE, BLOCKED, CREATED from PERSONALIZATION
+			where USERID = #{userId} and WILDCARD and BLOCKED = #{blocked}
+			order by PHONE
+			""")
+	List<DBPersonalization> getWildcardsWithCreated(long userId, boolean blocked);
+
+	/**
+	 * Adds a wildcard-prefix personalization (#377). The prefix is stored bare (no {@code *}),
+	 * has no SHA1 (it is matched by prefix, not by exact hash) and is honored only by the
+	 * user's own devices.
+	 */
+	@Insert("""
+			insert into PERSONALIZATION (USERID, PHONE, SHA1, BLOCKED, WILDCARD, CREATED)
+			values (#{userId}, #{phone}, null, #{blocked}, true, #{created})
+			""")
+	void addWildcard(long userId, String phone, boolean blocked, long created);
+
+	/**
+	 * Removes a wildcard-prefix personalization (#377).
+	 */
+	@Delete("""
+			delete from PERSONALIZATION
+			where USERID = #{userId} and PHONE = #{phone} and WILDCARD
+			""")
+	boolean removeWildcard(long userId, String phone);
+
+	/**
+	 * Removes all blocklist entries of the user that are subsumed by the given wildcard prefix
+	 * (#377).
+	 *
+	 * <p>
+	 * Every blocked entry ({@code BLOCKED}) whose phone ID starts with the prefix is deleted —
+	 * both exact single-number blocks and narrower (more specific) wildcard blocks that the new,
+	 * broader wildcard now covers. White-listed (allowed) entries are kept so that they can keep
+	 * overriding the wildcard.
+	 * </p>
+	 *
+	 * @return the number of deleted entries.
+	 */
+	@Delete("""
+			delete from PERSONALIZATION
+			where USERID = #{userId} and BLOCKED and PHONE like #{prefix} || '%'
+			""")
+	int removeBlocksWithPrefix(long userId, String prefix);
 
 }

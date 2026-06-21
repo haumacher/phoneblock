@@ -28,14 +28,11 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	/** @see #getPhone() */
 	private static final String PHONE__PROP = "phone";
 
-	/** @see #isActive() */
-	private static final String ACTIVE__PROP = "active";
-
 	/** @see #getCalls() */
 	private static final String CALLS__PROP = "calls";
 
-	/** @see #getVotes() */
-	private static final String VOTES__PROP = "votes";
+	/** @see #getRawVotes() */
+	private static final String RAW_VOTES__PROP = "rawVotes";
 
 	/** @see #getRatingLegitimate() */
 	private static final String RATING_LEGITIMATE__PROP = "ratingLegitimate";
@@ -60,11 +57,9 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 
 	private String _phone = "";
 
-	private boolean _active = false;
-
 	private int _calls = 0;
 
-	private int _votes = 0;
+	private int _rawVotes = 0;
 
 	private int _ratingLegitimate = 0;
 
@@ -110,26 +105,6 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 		_phone = value;
 	}
 
-	/**
-	 * Whether the number is considered active. Only active numbers are inserted into a blocklist.
-	 */
-	public final boolean isActive() {
-		return _active;
-	}
-
-	/**
-	 * @see #isActive()
-	 */
-	public de.haumacher.phoneblock.app.api.model.AbstractNumberInfo setActive(boolean value) {
-		internalSetActive(value);
-		return this;
-	}
-
-	/** Internal setter for {@link #isActive()} without chain call utility. */
-	protected final void internalSetActive(boolean value) {
-		_active = value;
-	}
-
 	public final int getCalls() {
 		return _calls;
 	}
@@ -148,23 +123,32 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	}
 
 	/**
-	 * The number of votes that support blocking the requested number.
+	 * Raw cumulative net spam-vote counter from the DB row (#342).
+	 *
+	 * <p>This is the on-disk write-path counter, <em>not</em> the decay-aware
+	 * vote-equivalent that {@code /api/check} or {@code BlockListEntry.votes}
+	 * expose to clients. Use {@code Ema.decode} on the matching
+	 * {@code SPAM_EVIDENCE} / {@code LEGIT_EVIDENCE} columns whenever you
+	 * need a value to compare against a visibility threshold; this field is
+	 * only the right answer for write-side bookkeeping (rating-category
+		 * resolver, {@code NUMBERS_HISTORY} snapshots, internal aggregation
+	 * promotion, migration hooks).</p>
 	 */
-	public final int getVotes() {
-		return _votes;
+	public final int getRawVotes() {
+		return _rawVotes;
 	}
 
 	/**
-	 * @see #getVotes()
+	 * @see #getRawVotes()
 	 */
-	public de.haumacher.phoneblock.app.api.model.AbstractNumberInfo setVotes(int value) {
-		internalSetVotes(value);
+	public de.haumacher.phoneblock.app.api.model.AbstractNumberInfo setRawVotes(int value) {
+		internalSetRawVotes(value);
 		return this;
 	}
 
-	/** Internal setter for {@link #getVotes()} without chain call utility. */
-	protected final void internalSetVotes(int value) {
-		_votes = value;
+	/** Internal setter for {@link #getRawVotes()} without chain call utility. */
+	protected final void internalSetRawVotes(int value) {
+		_rawVotes = value;
 	}
 
 	/**
@@ -337,12 +321,10 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 		super.writeFields(out);
 		out.name(PHONE__PROP);
 		out.value(getPhone());
-		out.name(ACTIVE__PROP);
-		out.value(isActive());
 		out.name(CALLS__PROP);
 		out.value(getCalls());
-		out.name(VOTES__PROP);
-		out.value(getVotes());
+		out.name(RAW_VOTES__PROP);
+		out.value(getRawVotes());
 		out.name(RATING_LEGITIMATE__PROP);
 		out.value(getRatingLegitimate());
 		out.name(RATING_PING__PROP);
@@ -363,9 +345,8 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	protected void readField(de.haumacher.msgbuf.json.JsonReader in, String field) throws java.io.IOException {
 		switch (field) {
 			case PHONE__PROP: setPhone(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
-			case ACTIVE__PROP: setActive(in.nextBoolean()); break;
 			case CALLS__PROP: setCalls(in.nextInt()); break;
-			case VOTES__PROP: setVotes(in.nextInt()); break;
+			case RAW_VOTES__PROP: setRawVotes(in.nextInt()); break;
 			case RATING_LEGITIMATE__PROP: setRatingLegitimate(in.nextInt()); break;
 			case RATING_PING__PROP: setRatingPing(in.nextInt()); break;
 			case RATING_POLL__PROP: setRatingPoll(in.nextInt()); break;
@@ -383,14 +364,11 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	/** XML attribute or element name of a {@link #getPhone} property. */
 	private static final String PHONE__XML_ATTR = "phone";
 
-	/** XML attribute or element name of a {@link #isActive} property. */
-	private static final String ACTIVE__XML_ATTR = "active";
-
 	/** XML attribute or element name of a {@link #getCalls} property. */
 	private static final String CALLS__XML_ATTR = "calls";
 
-	/** XML attribute or element name of a {@link #getVotes} property. */
-	private static final String VOTES__XML_ATTR = "votes";
+	/** XML attribute or element name of a {@link #getRawVotes} property. */
+	private static final String RAW_VOTES__XML_ATTR = "raw-votes";
 
 	/** XML attribute or element name of a {@link #getRatingLegitimate} property. */
 	private static final String RATING_LEGITIMATE__XML_ATTR = "rating-legitimate";
@@ -422,9 +400,8 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 	/** Serializes all fields that are written as XML attributes. */
 	protected void writeAttributes(javax.xml.stream.XMLStreamWriter out) throws javax.xml.stream.XMLStreamException {
 		out.writeAttribute(PHONE__XML_ATTR, getPhone());
-		out.writeAttribute(ACTIVE__XML_ATTR, Boolean.toString(isActive()));
 		out.writeAttribute(CALLS__XML_ATTR, Integer.toString(getCalls()));
-		out.writeAttribute(VOTES__XML_ATTR, Integer.toString(getVotes()));
+		out.writeAttribute(RAW_VOTES__XML_ATTR, Integer.toString(getRawVotes()));
 		out.writeAttribute(RATING_LEGITIMATE__XML_ATTR, Integer.toString(getRatingLegitimate()));
 		out.writeAttribute(RATING_PING__XML_ATTR, Integer.toString(getRatingPing()));
 		out.writeAttribute(RATING_POLL__XML_ATTR, Integer.toString(getRatingPoll()));
@@ -484,16 +461,12 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 				setPhone(value);
 				break;
 			}
-			case ACTIVE__XML_ATTR: {
-				setActive(Boolean.parseBoolean(value));
-				break;
-			}
 			case CALLS__XML_ATTR: {
 				setCalls(Integer.parseInt(value));
 				break;
 			}
-			case VOTES__XML_ATTR: {
-				setVotes(Integer.parseInt(value));
+			case RAW_VOTES__XML_ATTR: {
+				setRawVotes(Integer.parseInt(value));
 				break;
 			}
 			case RATING_LEGITIMATE__XML_ATTR: {
@@ -537,16 +510,12 @@ public abstract class AbstractNumberInfo extends de.haumacher.msgbuf.data.Abstra
 				setPhone(in.getElementText());
 				break;
 			}
-			case ACTIVE__XML_ATTR: {
-				setActive(Boolean.parseBoolean(in.getElementText()));
-				break;
-			}
 			case CALLS__XML_ATTR: {
 				setCalls(Integer.parseInt(in.getElementText()));
 				break;
 			}
-			case VOTES__XML_ATTR: {
-				setVotes(Integer.parseInt(in.getElementText()));
+			case RAW_VOTES__XML_ATTR: {
+				setRawVotes(Integer.parseInt(in.getElementText()));
 				break;
 			}
 			case RATING_LEGITIMATE__XML_ATTR: {

@@ -39,19 +39,18 @@
 					<input form="bulkDelete" th:name="|bl-${entry.phone}|" type="checkbox"/>
 					<strong th:text="${phoneInfo.shortcut}" th:title="${phoneInfo.plus}"></strong>
 					<span class="tag" th:classappend="${entry.rating.cssClass}" th:if="${entry.rating != null and entry.rating.name != 'B_MISSED' and entry.rating.name != 'A_LEGITIMATE'}" th:text="${#messages.msg(entry.rating.labelKey)}"></span>
-					<span class="tag is-light" data-tx="t0031:2fa4fef4" th:if="${not entry.archived and entry.votes &gt; 0}" title="Άμεσες κοινοτικές ψηφοφορίες">
+					<span class="tag is-light" data-tx="t0031:2fa4fef4" th:if="${entry.votes &gt; 0}" title="Άμεσες κοινοτικές ψηφοφορίες">
 						<span class="icon"><i class="fa-solid fa-thumbs-down"></i></span>
 						<span th:text="${entry.votes}"></span>
 					</span>
-					<span class="tag is-light is-warning" data-tx="t0032:61c4c8e6" th:if="${not entry.archived and entry.votesWildcard &gt; entry.votes}" title="Ψήφοι με μπλοκ μπαλαντέρ">
+					<span class="tag is-light is-warning" data-tx="t0032:61c4c8e6" th:if="${entry.votesWildcard &gt; entry.votes}" title="Ψήφοι με μπλοκ μπαλαντέρ">
 						<span class="icon"><i class="fa-solid fa-asterisk"></i></span>
 						<span th:text="${entry.votesWildcard}"></span>
 					</span>
-					<span class="tag is-light has-text-grey" data-tx="t0033:e27cd337" th:if="${entry.archived}" title="Κοινοτική καταχώρηση αρχειοθετημένη (δεν υπάρχουν τρέχουσες ψηφοφορίες)">
-						<span class="icon"><i class="fa-solid fa-box-archive"></i></span>
-						<span data-tx="t0034:5ebeeffa">αρχειοθετημένο</span>
-					</span>
 				</label>
+				<a class="button is-small is-ghost" data-onclick="showNumber" data-tx="t0033:4c6d59d6" th:href="@{/nums/{num}(num=${phoneInfo.zeroZero})}" title="Εμφάνιση πληροφοριών σχετικά με τον αριθμό">
+					<span class="icon is-small"><i class="fa-solid fa-circle-info"></i></span>
+				</a>
 				<button class="button is-small is-ghost edit-toggle" data-tx="t0030:cd459696" title="Επεξεργασία σχολίου" type="button">
 					<span class="icon is-small"><i class="fa-solid fa-pen-to-square"></i></span>
 				</button>
@@ -124,14 +123,69 @@
 						<span data-tx="t0017:6464e726">Προσθήκη κλειδαριάς</span>
 					</button>
 				</p>
+			</div>
+		</form>
+	</div>
+
+	<div class="content">
+		<h2 data-tx="t0034:11a76919">Απαγορεύσεις Wildcard</h2>
+
+		<p data-tx="t0035:99432cc1">Με ένα μπλοκάρισμα μπαλαντέρ, μπλοκάρετε όλους τους αριθμούς που αρχίζουν με ένα συγκεκριμένο πρόθεμα - και μόνο στις δικές σας συσκευές, χωρίς να αλλάξετε τη βαθμολογία της κοινότητας. Εάν ένα wildcard πιάσει μια κλήση, η συσκευή σας αναφέρει τον αριθμό στην κοινότητα- όσο ευρύτερο είναι το πρόθεμα, τόσο μικρότερη είναι η βαρύτητα αυτού του μηνύματος.</p>
+
+		<th:block th:unless="${wildcards.empty}">
+			<p data-tx="t0036:363f6171">Μπλοκάρετε αυτά τα προθέματα χρησιμοποιώντας ένα μπαλαντέρ. Μπορείτε να αφαιρέσετε ένα μπλοκάρισμα εδώ:</p>
+
+			<form id="wildcardDelete" method="post" th:action="@{/update-settings(action='lists')}">
+				<input name="redirect" type="hidden" value="/blacklist"/>
+			</form>
+
+			<div class="field list-entry" th:each="wildcard : ${wildcards}">
+				<label class="checkbox">
+					<input form="wildcardDelete" th:name="|wc-${wildcard.phone}|" type="checkbox"/>
+					<strong th:text="|${wildcard.display}*|"></strong>
+				</label>
+			</div>
+
+			<div class="field is-grouped">
 				<p class="control">
-					<a class="button" th:href="@{/settings}">
-						<span class="icon"><i class="fa-solid fa-arrow-left"></i></span>
-						<span data-tx="t0018:aafd5700">Επιστροφή στις ρυθμίσεις</span>
-					</a>
+					<button class="button is-danger" form="wildcardDelete" type="submit">
+						<span class="icon"><i class="fa-solid fa-trash"></i></span>
+						<span data-tx="t0037:74d7495f">Διαγραφή</span>
+					</button>
+				</p>
+			</div>
+		</th:block>
+
+		<form method="post" th:action="@{/update-settings(action='lists')}">
+			<input name="redirect" type="hidden" value="/blacklist"/>
+
+			<div class="field">
+				<label class="label" data-tx="t0038:1cf90653">Προσθήκη κλειδώματος μπαλαντέρ</label>
+				<p class="control has-icons-left">
+					<input class="input" data-tx="t0039:90bb03f9" name="add-wc" placeholder="z. B. +49301234" type="tel"/>
+					<span class="icon is-small is-left"><i class="fa-solid fa-asterisk"></i></span>
+				</p>
+				<p class="help" data-tx="t0040:32e878da">Εισάγετε ένα πρόθεμα αριθμού (π.χ. έναν κωδικό περιοχής με ένα αριθμητικό μπλοκ). Όλοι οι αριθμοί που αρχίζουν με αυτό το πρόθεμα θα μπλοκαριστούν στις συσκευές σας.</p>
+			</div>
+
+			<div class="field is-grouped">
+				<p class="control">
+					<button class="button is-primary" type="submit">
+						<span class="icon"><i class="fa-solid fa-asterisk"></i></span>
+						<span data-tx="t0041:86dfe9e9">Προσθήκη μπαλαντέρ</span>
+					</button>
 				</p>
 			</div>
 		</form>
+	</div>
+
+	<div class="content">
+		<p class="control">
+			<a class="button" th:href="@{/settings}">
+				<span class="icon"><i class="fa-solid fa-arrow-left"></i></span>
+				<span data-tx="t0018:aafd5700">Επιστροφή στις ρυθμίσεις</span>
+			</a>
+		</p>
 	</div>
 </section>
 

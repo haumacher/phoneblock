@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 
 import de.haumacher.phoneblock.app.api.model.RangeMatch;
 import de.haumacher.phoneblock.db.AggregationInfo;
+import de.haumacher.phoneblock.db.Ema;
 
 public class TestPrefixCheckServlet {
 
@@ -101,10 +102,15 @@ public class TestPrefixCheckServlet {
 		// The aggregation tables key on the national-format DB prefix
 		// ("0163…", "0018…"), but clients hash and compare against the
 		// international form. toRangeMatches() must convert.
+		//
+		// #300 follow-up: votes is the decoded net member evidence (constructor arg
+		// spamEvidence), cnt the member count. now = T0 makes the decode factor exactly 1,
+		// so decoded votes == the raw evidence passed in.
+		long now = Ema.T0_MILLIS;
 		List<RangeMatch> result = PrefixCheckServlet.toRangeMatches(List.of(
-			new AggregationInfo("016378657599", 5, 32),    // German block-of-10
-			new AggregationInfo("01637865759", 7, 384),    // German block-of-100
-			new AggregationInfo("001833378903", 1, 1)));   // US toll-free in DB form
+			new AggregationInfo("016378657599", 5, 0, 32, 0),    // German block-of-10
+			new AggregationInfo("01637865759", 7, 0, 384, 0),    // German block-of-100
+			new AggregationInfo("001833378903", 1, 0, 1, 0)), now); // US toll-free in DB form
 
 		assertEquals("+4916378657599", result.get(0).getPrefix());
 		assertEquals(5, result.get(0).getCnt());

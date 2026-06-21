@@ -130,6 +130,29 @@ class TestNumberTree {
 	}
 	
 	@Test
+	void testExplicitWildcardAbsorbsNumbers() {
+		NumberTree tree = new NumberTree();
+		// Only two numbers under the prefix - below the automatic folding threshold.
+		tree.insert("+4930123010");
+		tree.insert("+4930123011");
+		// A personal wildcard (#377) over a broader prefix must still emit and absorb them.
+		tree.insertWildcard("+49301", 10_000_000, 0);
+		tree.markWildcards();
+
+		assertEquals(List.of("+49301*"), tree.createBlockEntries());
+	}
+
+	@Test
+	void testExplicitWildcardLeaf() {
+		NumberTree tree = new NumberTree();
+		// A personal wildcard with no common numbers under it (leaf node).
+		tree.insertWildcard("+495551234", 10_000_000, 0);
+		tree.markWildcards();
+
+		assertEquals(List.of("+495551234*"), tree.createBlockEntries());
+	}
+
+	@Test
 	void testRealData() throws IOException {
 		NumberTree tree = new NumberTree();
 
@@ -154,7 +177,7 @@ class TestNumberTree {
 		
 		tree.markWildcards();
 
-		List<NumberBlock> blocks = tree.createNumberBlocksByPrefix(1, 300, "+49");
+		List<NumberBlock> blocks = tree.createNumberBlocksByPrefix(1, 300);
 		int numbers = 0;
 		int wildcard = 0;
 		
@@ -209,8 +232,8 @@ class TestNumberTree {
 			"+491632000", "+491632001", "+493012345"
 		};
 
-		List<NumberBlock> first = treeWith(sample).createNumberBlocksByPrefix(1, 1000, "+49");
-		List<NumberBlock> second = treeWith(sample).createNumberBlocksByPrefix(1, 1000, "+49");
+		List<NumberBlock> first = treeWith(sample).createNumberBlocksByPrefix(1, 1000);
+		List<NumberBlock> second = treeWith(sample).createNumberBlocksByPrefix(1, 1000);
 
 		assertEquals(blockIds(first), blockIds(second));
 		for (int i = 0; i < first.size(); i++) {
@@ -228,14 +251,14 @@ class TestNumberTree {
 		);
 
 		List<NumberBlock> reference = treeWith(base.toArray(new String[0]))
-			.createNumberBlocksByPrefix(1, 1000, "+49");
+			.createNumberBlocksByPrefix(1, 1000);
 
 		Random rnd = new Random(42);
 		for (int trial = 0; trial < 5; trial++) {
 			List<String> permuted = new ArrayList<>(base);
 			Collections.shuffle(permuted, rnd);
 			List<NumberBlock> blocks = treeWith(permuted.toArray(new String[0]))
-				.createNumberBlocksByPrefix(1, 1000, "+49");
+				.createNumberBlocksByPrefix(1, 1000);
 
 			assertEquals(blockIds(reference), blockIds(blocks));
 			for (int i = 0; i < reference.size(); i++) {
@@ -253,7 +276,7 @@ class TestNumberTree {
 			sample[i] = String.format("+49152%07d", i);
 		}
 
-		List<NumberBlock> blocks = treeWith(sample).createNumberBlocksByPrefix(1, 1000, "+49");
+		List<NumberBlock> blocks = treeWith(sample).createNumberBlocksByPrefix(1, 1000);
 		for (NumberBlock b : blocks) {
 			assertTrue(b.size() <= 9, "Bucket " + b.getName() + " has " + b.size() + " members");
 		}
@@ -269,7 +292,7 @@ class TestNumberTree {
 			"+18334567890"
 		};
 
-		List<NumberBlock> blocks = treeWith(sample).createNumberBlocksByPrefix(1, 1000, "+49");
+		List<NumberBlock> blocks = treeWith(sample).createNumberBlocksByPrefix(1, 1000);
 
 		Set<String> collected = new HashSet<>();
 		int total = 0;
@@ -294,7 +317,7 @@ class TestNumberTree {
 			"+493012345"
 		};
 
-		List<NumberBlock> blocks = treeWith(sample).createNumberBlocksByPrefix(1, 1000, "+49");
+		List<NumberBlock> blocks = treeWith(sample).createNumberBlocksByPrefix(1, 1000);
 		for (NumberBlock b : blocks) {
 			String id = b.getName();
 			for (String n : b.getNumbers()) {
@@ -315,7 +338,7 @@ class TestNumberTree {
 			"+491632000", "+491632001", "+491632002", "+491632003", "+491632004",
 			"+493012345"
 		};
-		List<NumberBlock> baseBlocks = treeWith(base).createNumberBlocksByPrefix(1, 1000, "+49");
+		List<NumberBlock> baseBlocks = treeWith(base).createNumberBlocksByPrefix(1, 1000);
 		Set<String> baseIds = new HashSet<>(blockIds(baseBlocks));
 
 		// Add a sixth number in the +4915 area.
@@ -323,7 +346,7 @@ class TestNumberTree {
 		System.arraycopy(base, 0, perturbed, 0, base.length);
 		perturbed[base.length] = "+491521099";
 
-		List<NumberBlock> perturbedBlocks = treeWith(perturbed).createNumberBlocksByPrefix(1, 1000, "+49");
+		List<NumberBlock> perturbedBlocks = treeWith(perturbed).createNumberBlocksByPrefix(1, 1000);
 		Set<String> perturbedIds = new HashSet<>(blockIds(perturbedBlocks));
 
 		Set<String> removed = new HashSet<>(baseIds);

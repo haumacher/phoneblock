@@ -5,7 +5,6 @@
 #include <string.h>
 
 #include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
 #include "freertos/semphr.h"
 
 #include "esp_log.h"
@@ -16,19 +15,19 @@
 #include "api.h"
 #include "config.h"
 #include "http_util.h"
+#include "scheduler.h"
 #include "stats.h"
 #include "tr064.h"
 #include "tr064_parse.h"
 
 static const char *TAG = "sync";
 
-// 24 h between scheduled runs, as per design.
-#define SYNC_INTERVAL_US    (24LL * 3600LL * 1000000LL)
+// The 24 h cadence and the manual-trigger wakeup now live in the shared
+// scheduler task (see scheduler.c); sync.c only provides the run body,
+// the status snapshot, and the trigger entry point the web UI calls.
 
-static TaskHandle_t     s_task       = NULL;
-static SemaphoreHandle_t s_trigger   = NULL;    // binary semaphore
-static SemaphoreHandle_t s_lock      = NULL;    // guards s_status updates
-static sync_status_t    s_status;
+static SemaphoreHandle_t s_lock = NULL;    // guards s_status updates
+static sync_status_t     s_status;
 
 static void set_status_running(bool running)
 {
@@ -208,7 +207,6 @@ static void run_once(void)
         snprintf(msg, sizeof(msg), "list: %.60s",
                  detail[0] ? detail : "network");
         set_status_result(false, 0, 0, msg);
-        stats_record_error("sync", msg);
         return;
     }
 
@@ -245,33 +243,26 @@ static void run_once(void)
     set_status_result(ctx.failed == 0, ctx.pushed, ctx.failed, NULL);
 }
 
-static void sync_task(void *arg)
+void sync_run(bool manual)
 {
-    (void)arg;
-    TickType_t timeout = pdMS_TO_TICKS(SYNC_INTERVAL_US / 1000);
-    // On first boot don't fire immediately — the user may still be
-    // in the middle of setup. Wait one interval before the first
-    // scheduled run; a manual trigger can fire sooner.
-    while (1) {
-        bool manual = (xSemaphoreTake(s_trigger, timeout) == pdTRUE);
-        if (!manual && !config_sync_enabled()) {
-            // Scheduled run with auto-sync disabled — skip silently.
-            // Manual triggers always run (see run_once()).
-            continue;
-        }
-        run_once();
+    if (!manual && !config_sync_enabled()) {
+        // Scheduled run with auto-sync disabled — skip silently.
+        // Manual triggers always run.
+        return;
     }
+    run_once();
 }
 
 bool sync_trigger_now(void)
 {
-    if (!s_task || !s_trigger) return false;
+    if (!s_lock) return false;
     xSemaphoreTake(s_lock, portMAX_DELAY);
     bool running = s_status.running;
     xSemaphoreGive(s_lock);
     if (running) return false;
-    xSemaphoreGive(s_trigger);
-    return true;
+    // Hand off to the scheduler task, which runs sync_run(true) on its
+    // own (8 KB) stack — sync must not run on the caller's httpd thread.
+    return scheduler_request_sync();
 }
 
 void sync_snapshot(sync_status_t *out)
@@ -283,11 +274,9 @@ void sync_snapshot(sync_status_t *out)
     xSemaphoreGive(s_lock);
 }
 
-void sync_start(void)
+void sync_init(void)
 {
-    if (s_task) return;
+    if (s_lock) return;
     memset(&s_status, 0, sizeof(s_status));
-    s_lock    = xSemaphoreCreateMutex();
-    s_trigger = xSemaphoreCreateBinary();
-    xTaskCreate(sync_task, "sync", 6144, NULL, 3, &s_task);
+    s_lock = xSemaphoreCreateMutex();
 }

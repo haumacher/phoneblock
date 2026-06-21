@@ -13,7 +13,6 @@
 #include "esp_log.h"
 #include "esp_ota_ops.h"
 #include "esp_partition.h"
-#include "esp_random.h"
 #include "esp_system.h"
 #include "esp_task_wdt.h"
 #include "cJSON.h"
@@ -28,14 +27,6 @@
 #include "config.h"
 
 static const char *TAG = "fwup";
-
-// 24 h between scheduled checks — same cadence as the daily token
-// self-test, with the same ±30 min skew so a fleet-wide power blip
-// doesn't line every dongle up onto the same minute on the CDN.
-#define FWUP_INTERVAL_MS    (24 * 3600 * 1000)
-#define FWUP_JITTER_MS      (30 * 60 * 1000)
-
-static TaskHandle_t s_task = NULL;
 
 // ---------------------------------------------------------------------------
 // OTA signing keys.
@@ -208,7 +199,10 @@ static void reboot_task(void *arg)
 
 void firmware_schedule_reboot(void)
 {
-    xTaskCreate(reboot_task, "fw_reboot", 2048, NULL, 5, NULL);
+    // 2.5 KB: this task logs a WARN line (→ capture path + the log hook's
+    // frame) right before esp_restart(); 2 KB left too little headroom for
+    // the hook. See the stack-sizing note in log_capture.c.
+    xTaskCreate(reboot_task, "fw_reboot", 2560, NULL, 5, NULL);
 }
 
 // Fetch the JSON manifest into the caller-provided buffer. Returns
@@ -218,7 +212,13 @@ void firmware_schedule_reboot(void)
 static esp_err_t fetch_manifest(char *body, size_t cap,
                                 char *err, size_t err_cap)
 {
-    const char *url = CONFIG_PHONEBLOCK_OTA_MANIFEST_URL;
+    // Manifest URL = <base>/<channel>/manifest.json. The channel is a
+    // client-side opt-in (NVS, web UI toggle); config_ota_channel()
+    // clamps it to the known-safe literals "stable"/"beta" so it is
+    // safe to splice into the path here.
+    char url[256];
+    snprintf(url, sizeof(url), "%s/%s/manifest.json",
+             CONFIG_PHONEBLOCK_OTA_BASE_URL, config_ota_channel());
     esp_http_client_config_t cfg = {
         .url = url,
         .crt_bundle_attach = esp_crt_bundle_attach,
@@ -647,39 +647,22 @@ void firmware_try_update(bool force, fw_update_outcome_t *out)
     install_resolved(&d, out);
 }
 
-// --- background task ------------------------------------------------
+// --- scheduled entry point ------------------------------------------
 
-static void update_task(void *arg)
+void firmware_update_run(void)
 {
-    (void)arg;
-    // First iteration runs after a full (jittered) interval. The boot
-    // path already validated the running image; no point overwriting
-    // it the moment we come up.
-    while (1) {
-        uint32_t jitter = esp_random() % (2u * FWUP_JITTER_MS);
-        uint32_t delay  = FWUP_INTERVAL_MS - FWUP_JITTER_MS + jitter;
-        vTaskDelay(pdMS_TO_TICKS(delay));
-        // Skip until the device is provisioned. Using the PhoneBlock
-        // token as the "is configured" proxy mirrors the self-test
-        // task — an unconfigured dongle has nothing to lose by
-        // staying on its current build.
-        if (strlen(config_phoneblock_token()) == 0) continue;
-        // Honour the user's "freeze on this build" choice (set
-        // automatically by the manual firmware-upload path, or
-        // explicitly via the web UI toggle). The "Auf Aktualisierung
-        // prüfen" button bypasses this — that's a manual call and
-        // signals intent.
-        if (!config_auto_update_enabled()) {
-            ESP_LOGI(TAG, "scheduled update check skipped (auto-update off)");
-            continue;
-        }
-        ESP_LOGI(TAG, "scheduled firmware update check");
-        firmware_try_update(false, NULL);
+    // Skip until the device is provisioned. Using the PhoneBlock token as
+    // the "is configured" proxy mirrors the self-test — an unconfigured
+    // dongle has nothing to lose by staying on its current build.
+    if (strlen(config_phoneblock_token()) == 0) return;
+    // Honour the user's "freeze on this build" choice (set automatically
+    // by the manual firmware-upload path, or explicitly via the web UI
+    // toggle). The "Auf Aktualisierung prüfen" button bypasses this —
+    // that's a manual call and signals intent.
+    if (!config_auto_update_enabled()) {
+        ESP_LOGI(TAG, "scheduled update check skipped (auto-update off)");
+        return;
     }
-}
-
-void firmware_update_start(void)
-{
-    if (s_task) return;
-    xTaskCreate(update_task, "fw_update", 8192, NULL, 3, &s_task);
+    ESP_LOGI(TAG, "scheduled firmware update check");
+    firmware_try_update(false, NULL);
 }

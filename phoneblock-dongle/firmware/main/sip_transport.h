@@ -19,9 +19,19 @@ typedef struct sip_transport sip_transport_t;
 // and "tls" are implemented; an unknown value logs a warning and falls
 // back to UDP. If registrar_port == 0, a per-transport default is
 // applied (5060 for UDP/TCP, 5061 for TLS).
+//
+// tls_sni is the hostname used as TLS SNI *and* for certificate
+// verification (TLS transport only; ignored otherwise). It is the
+// service domain the user configured (e.g. tel.t-online.de), which can
+// differ from registrar_host when the latter was resolved via DNS-SRV
+// to a per-PoP edge (e.g. dtm010-…edns.t-ipnet.de). Telekom's edge
+// routes the SIP session by SNI, so connecting with the edge name as
+// SNI completes the handshake but silently drops the REGISTER (#363).
+// Pass NULL/"" to fall back to registrar_host (the pre-#363 behaviour).
 sip_transport_t *sip_transport_open(const char *transport,
                                     const char *registrar_host,
                                     int registrar_port,
+                                    const char *tls_sni,
                                     int local_port);
 
 void sip_transport_close(sip_transport_t *t);
@@ -32,7 +42,8 @@ void sip_transport_close(sip_transport_t *t);
 // address is made; framing buffer is reset.
 bool sip_transport_resolve(sip_transport_t *t,
                            const char *registrar_host,
-                           int registrar_port);
+                           int registrar_port,
+                           const char *tls_sni);
 
 // Send buf to the configured registrar. Phase 4 will route this via the
 // outbound proxy when one is configured. Returns bytes sent or -1.

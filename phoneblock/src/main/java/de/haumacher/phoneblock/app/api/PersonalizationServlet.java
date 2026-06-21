@@ -166,6 +166,16 @@ public class PersonalizationServlet extends HttpServlet {
 				numbers.add(pn);
 			}
 
+			// Personal wildcards (#377): part of the same list, flagged so the client matches
+			// incoming numbers by prefix and reports catches with wildcard=true.
+			boolean blocked = BLACKLIST_PATH.equals(servletPath);
+			for (DBPersonalization wildcard : blockList.getWildcardsWithCreated(userId, blocked)) {
+				numbers.add(PersonalizedNumber.create()
+					.setPhone(NumberAnalyzer.toInternationalFormat(wildcard.getPhone()))
+					.setWildcard(true)
+					.setCreated(wildcard.getCreated()));
+			}
+
 			sendNumberList(resp, numbers);
 		}
 	}
@@ -203,6 +213,30 @@ public class PersonalizationServlet extends HttpServlet {
 
 			// Get user's dial prefix and normalize phone number
 			String dialPrefix = users.getDialPrefix(userName);
+
+			if (update.isWildcard()) {
+				// Create (or re-block) a personal wildcard prefix (#377): no community vote,
+				// honored only by the user's own devices.
+				String prefix = NumberAnalyzer.toWildcardId(phoneText, dialPrefix);
+				if (prefix == null) {
+					ServletUtil.sendError(resp, "Invalid wildcard prefix");
+					return;
+				}
+				boolean blocked = req.getServletPath().equals(BLACKLIST_PATH);
+				BlockList blockList = session.getMapper(BlockList.class);
+				blockList.removePersonalization(userId, prefix);
+				if (blocked) {
+					// A blocking wildcard subsumes all of the user's blocks under that prefix
+					// (#377) — exact single-number blocks and narrower wildcard blocks alike;
+					// allowed entries are kept as deliberate overrides.
+					blockList.removeBlocksWithPrefix(userId, prefix);
+				}
+				blockList.addWildcard(userId, prefix, blocked, System.currentTimeMillis());
+				session.commit();
+				resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+				return;
+			}
+
 			String phone = NumberAnalyzer.toId(phoneText, dialPrefix);
 
 			if (phone == null) {
@@ -279,10 +313,24 @@ public class PersonalizationServlet extends HttpServlet {
 
 			// Get user's dial prefix and normalize phone number
 			String dialPrefix = users.getDialPrefix(userName);
+
+			if (Boolean.parseBoolean(req.getParameter("wildcard"))) {
+				// Remove a personal wildcard prefix (#377); nothing to invert, no vote was cast.
+				String prefix = NumberAnalyzer.toWildcardId(phoneText, dialPrefix);
+				boolean removed = prefix != null && session.getMapper(BlockList.class).removeWildcard(userId, prefix);
+				session.commit();
+				if (removed) {
+					resp.setStatus(HttpServletResponse.SC_NO_CONTENT);
+				} else {
+					ServletUtil.sendMessage(resp, HttpServletResponse.SC_NOT_FOUND, "Wildcard not found in personalization list");
+				}
+				return;
+			}
+
 			String phoneId = NumberAnalyzer.toId(phoneText, dialPrefix);
 
 			BlockList blockList = session.getMapper(BlockList.class);
-			
+
 			// Safety: DB content may be inconsistent: Try also deletion of invalid phone numbers.
 			boolean deleted = blockList.removePersonalization(userId, phoneId == null ? phoneText : phoneId);
 			String listType = req.getServletPath().equals(BLACKLIST_PATH) ? "blacklist" : "whitelist";
@@ -302,8 +350,11 @@ public class PersonalizationServlet extends HttpServlet {
 						int voteDelta = -Ratings.getVotes(rating);
 						long now = System.currentTimeMillis();
 						
-						// Update vote counts in NUMBERS table
-						spamReports.addVote(phoneId, voteDelta, now);
+						// Update vote counts in NUMBERS table. The confidence-model EMAs
+						// (#332) are left untouched on rollback: a correct inversion would
+						// need the original event time, which we did not preserve, and the
+						// decay term will fade the original increment on its own.
+						spamReports.addVote(phoneId, voteDelta, now, 0.0, 0.0, 0.0);
 						
 						// Decrement the specific rating counter (LEGITIMATE, PING, etc.) by -1
 						spamReports.updateRating(phoneId, rating, -1, now);
