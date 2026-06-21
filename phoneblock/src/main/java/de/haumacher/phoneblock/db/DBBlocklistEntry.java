@@ -3,6 +3,8 @@
  */
 package de.haumacher.phoneblock.db;
 
+import de.haumacher.phoneblock.app.api.model.Rating;
+
 /**
  * One row of the published BLOCKLIST table (#342).
  *
@@ -11,10 +13,11 @@ package de.haumacher.phoneblock.db;
  * {@link #getHeat()} the log4 class of the activity EMA, both frozen at
  * publication time — independent of the read moment, unlike the decay-exposed
  * EMA columns on NUMBERS. {@code votes = 0} marks a tombstone: the removal
- * signal served to incremental-sync clients. The last activity and the
- * category counters are joined live from NUMBERS (zero for tombstones whose
- * NUMBERS row is gone); they are informational only — lastActivity for
- * display, the counters for the entry's rating.
+ * signal served to incremental-sync clients. {@link #getCategory()} (the
+ * dominant rating) and {@link #getLastPing()} (last activity) are likewise
+ * frozen at publication and denormalized onto BLOCKLIST (migration 43), so the
+ * sync reads need no live NUMBERS join; they are informational only — the
+ * rating colors the entry, lastActivity is for display.
  * </p>
  */
 public class DBBlocklistEntry {
@@ -27,39 +30,22 @@ public class DBBlocklistEntry {
 
 	private final long _lastPing;
 
-	private final int _legitimate;
+	private final Rating _category;
 
-	private final int _ping;
-
-	private final int _poll;
-
-	private final int _advertising;
-
-	private final int _gamble;
-
-	private final int _fraud;
-
-	private DBBlocklistEntry(String phone, int votes, int heat, long lastPing,
-			int legitimate, int ping, int poll, int advertising, int gamble, int fraud) {
+	private DBBlocklistEntry(String phone, int votes, int heat, long lastPing, Rating category) {
 		_phone = phone;
 		_votes = votes;
 		_heat = heat;
 		_lastPing = lastPing;
-		_legitimate = legitimate;
-		_ping = ping;
-		_poll = poll;
-		_advertising = advertising;
-		_gamble = gamble;
-		_fraud = fraud;
+		_category = category;
 	}
 
 	/**
-	 * Creates a {@link DBBlocklistEntry} for the API download: live last
-	 * activity and category counters, no Heat class.
+	 * Creates a {@link DBBlocklistEntry} for the API download: published last
+	 * activity and dominant category, no Heat class.
 	 */
-	public DBBlocklistEntry(String phone, int votes, long lastPing,
-			int legitimate, int ping, int poll, int advertising, int gamble, int fraud) {
-		this(phone, votes, 0, lastPing, legitimate, ping, poll, advertising, gamble, fraud);
+	public DBBlocklistEntry(String phone, int votes, long lastPing, Rating category) {
+		this(phone, votes, 0, lastPing, category);
 	}
 
 	/**
@@ -67,7 +53,7 @@ public class DBBlocklistEntry {
 	 * votes bucket and Heat class — nothing else is rendered.
 	 */
 	public DBBlocklistEntry(String phone, int votes, int heat) {
-		this(phone, votes, heat, 0, 0, 0, 0, 0, 0, 0);
+		this(phone, votes, heat, 0, null);
 	}
 
 	/** The number in PhoneBlock ID format (see NumberAnalyzer). */
@@ -85,39 +71,17 @@ public class DBBlocklistEntry {
 		return _heat;
 	}
 
-	/** Live last activity timestamp of the number. */
+	/** Published last activity timestamp of the number. */
 	public long getLastPing() {
 		return _lastPing;
 	}
 
-	/** Live {@code A_LEGITIMATE} rating count. */
-	public int getLegitimate() {
-		return _legitimate;
-	}
-
-	/** Live {@code C_PING} rating count. */
-	public int getPing() {
-		return _ping;
-	}
-
-	/** Live {@code D_POLL} rating count. */
-	public int getPoll() {
-		return _poll;
-	}
-
-	/** Live {@code E_ADVERTISING} rating count. */
-	public int getAdvertising() {
-		return _advertising;
-	}
-
-	/** Live {@code F_GAMBLE} rating count. */
-	public int getGamble() {
-		return _gamble;
-	}
-
-	/** Live {@code G_FRAUD} rating count. */
-	public int getFraud() {
-		return _fraud;
+	/**
+	 * The published dominant rating category, or {@code null} on the CardDAV
+	 * path (which does not render a category).
+	 */
+	public Rating getCategory() {
+		return _category;
 	}
 
 }
