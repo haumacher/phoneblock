@@ -459,7 +459,7 @@ flutter analyze
 
 ## Documentation
 
-- **RELEASE-NOTES.md** - Comprehensive release history since version 1.7.0
+- **release-notes/** - Per-version release notes (one `<version>.md` per release, since 1.7.4); `release-notes/README.md` holds project-wide release info
 - **INTEGRATIONS.md** - Third-party API integration guide
 - **JNDI-CONFIGURATION.md** - JNDI configuration reference for all services
 - **OpenAPI Spec** - `phoneblock/src/main/webapp/api/phoneblock.json`
