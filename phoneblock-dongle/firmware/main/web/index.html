@@ -164,7 +164,8 @@ const I18N = {
     'status.thresholds.direct': 'Direkt-Stimmen',
     'status.thresholds.direct.help': 'Stimmen direkt gegen die anrufende Nummer. Default 4 — gleicher Wert wie die öffentliche PhoneBlock-Sperrliste.',
     'status.thresholds.range': 'Range-Stimmen',
-    'status.thresholds.range.help': 'Stimmen gegen Nachbarn im selben 10er- oder 100er-Block. Default 10. Wert 0 schaltet Range-Block ab — dann zählen nur Direkt-Treffer.',
+    'status.thresholds.range.help': 'Stimmen gegen Nachbarn im selben 10er- oder 100er-Block. Default 10. „Aus" schaltet Range-Block ab — dann zählen nur Direkt-Treffer.',
+    'status.thresholds.range.off': 'Aus',
     'status.thresholds.saved': 'Gespeichert.',
     'status.thresholds.invalid': 'Ungültiger Wert.',
     'status.system.title': 'System',
@@ -422,7 +423,8 @@ const I18N = {
     'status.thresholds.direct': 'Direct votes',
     'status.thresholds.direct.help': 'Votes against the calling number itself. Default 4 — same value as the public PhoneBlock blocklist.',
     'status.thresholds.range': 'Range votes',
-    'status.thresholds.range.help': 'Votes against neighbors in the same 10/100-block. Default 10. Set to 0 to disable range-based blocking — only direct hits count then.',
+    'status.thresholds.range.help': 'Votes against neighbors in the same 10/100-block. Default 10. "Off" disables range-based blocking — only direct hits count then.',
+    'status.thresholds.range.off': 'Off',
     'status.thresholds.saved': 'Saved.',
     'status.thresholds.invalid': 'Invalid value.',
     'status.system.title': 'System',
@@ -1387,13 +1389,27 @@ function renderStatus(){
     + '<div style="display:flex;gap:1.5rem;flex-wrap:wrap;align-items:flex-start">'
     + '<label style="display:flex;flex-direction:column;gap:.2rem">'
     + '  <span style="font-size:.85rem">' + esc(t('status.thresholds.direct')) + '</span>'
-    + '  <input id="thrDirect" type="number" min="1" max="99" style="width:5rem">'
+    + '  <select id="thrDirect" style="width:7rem">'
+    + '    <option value="2">2</option>'
+    + '    <option value="4">4</option>'
+    + '    <option value="10">10</option>'
+    + '    <option value="20">20</option>'
+    + '    <option value="50">50</option>'
+    + '    <option value="100">100</option>'
+    + '  </select>'
     + '  <span class="muted" style="font-size:.7rem;max-width:18rem">'
     +     esc(t('status.thresholds.direct.help')) + '</span>'
     + '</label>'
     + '<label style="display:flex;flex-direction:column;gap:.2rem">'
     + '  <span style="font-size:.85rem">' + esc(t('status.thresholds.range')) + '</span>'
-    + '  <input id="thrRange" type="number" min="0" max="999" style="width:5rem">'
+    + '  <select id="thrRange" style="width:7rem">'
+    + '    <option value="0">' + esc(t('status.thresholds.range.off')) + '</option>'
+    + '    <option value="10">10</option>'
+    + '    <option value="20">20</option>'
+    + '    <option value="50">50</option>'
+    + '    <option value="100">100</option>'
+    + '    <option value="500">500</option>'
+    + '  </select>'
     + '  <span class="muted" style="font-size:.7rem;max-width:18rem">'
     +     esc(t('status.thresholds.range.help')) + '</span>'
     + '</label>'
@@ -2209,71 +2225,61 @@ async function refreshAll(){
       refreshAll();
     };
   }
-  // Block thresholds. Both inputs save on blur/change. The server
-  // always returns positive defaults on first boot, so there is no
-  // need for a client-side fallback. We only refresh the visible
-  // value when the user is not currently editing the field — avoids
-  // the polling loop snatching a value out from under their cursor.
+  // Block thresholds. Both are dropdowns with the same fixed option set
+  // the mobile app offers (direct 2/4/10/20/50/100, range Off/10/20/50/
+  // 100/500). Limiting the choices keeps the server's community-binary
+  // cache, keyed on the (minDirect, minRange) pair, shared across many
+  // dongles. The selection saves on change. We only refresh the visible
+  // value when the user is not currently editing the field — avoids the
+  // polling loop snatching the value out from under them.
   const thrDirect = $('thrDirect');
   const thrRange  = $('thrRange');
   const thrMsg    = $('thrMsg');
   const pb = (s && s.phoneblock) || {};
-  if (document.activeElement !== thrDirect && pb.min_direct_votes != null) {
-    thrDirect.value = pb.min_direct_votes;
-  }
-  if (document.activeElement !== thrRange && pb.min_range_votes != null) {
-    thrRange.value = pb.min_range_votes;
-  }
+  // Reflect the stored value. A value that predates the fixed option set
+  // (e.g. a custom number from an older firmware) is injected as an extra
+  // option so the control still shows the true setting rather than
+  // silently snapping to a different one.
+  const ensureThr = (sel, val) => {
+    if (val == null || document.activeElement === sel) return;
+    const str = String(val);
+    if (![...sel.options].some(o => o.value === str)) {
+      const opt = document.createElement('option');
+      opt.value = str;
+      opt.textContent = str;
+      sel.appendChild(opt);
+    }
+    sel.value = str;
+  };
+  ensureThr(thrDirect, pb.min_direct_votes);
+  ensureThr(thrRange, pb.min_range_votes);
   const flashMsg = (text, color) => {
     thrMsg.textContent = text;
     thrMsg.style.color = color;
     setTimeout(() => { if (thrMsg.textContent === text) thrMsg.textContent = ''; }, 2000);
   };
+  const saveThreshold = async (sel, field) => {
+    const v = parseInt(sel.value, 10);
+    if (isNaN(v)) return;
+    sel.disabled = true;
+    const body = new URLSearchParams();
+    body.append(field, String(v));
+    try {
+      const r = await fetch('/api/config', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: body.toString(),
+      });
+      if (r.ok) flashMsg(t('status.thresholds.saved'), '#188038');
+    } catch (_){ /* next poll reconciles */ }
+    sel.disabled = false;
+    refreshAll();
+  };
   if (!thrDirect.onchange){
-    thrDirect.onchange = async () => {
-      const v = parseInt(thrDirect.value, 10);
-      if (!(v >= 1 && v <= 99)) {
-        thrDirect.value = pb.min_direct_votes || '';
-        flashMsg(t('status.thresholds.invalid'), '#d93025');
-        return;
-      }
-      thrDirect.disabled = true;
-      const body = new URLSearchParams();
-      body.append('min_direct_votes', String(v));
-      try {
-        const r = await fetch('/api/config', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-          body: body.toString(),
-        });
-        if (r.ok) flashMsg(t('status.thresholds.saved'), '#188038');
-      } catch (_){ /* next poll reconciles */ }
-      thrDirect.disabled = false;
-      refreshAll();
-    };
+    thrDirect.onchange = () => saveThreshold(thrDirect, 'min_direct_votes');
   }
   if (!thrRange.onchange){
-    thrRange.onchange = async () => {
-      const v = parseInt(thrRange.value, 10);
-      if (!(v >= 0 && v <= 999)) {
-        thrRange.value = pb.min_range_votes != null ? pb.min_range_votes : '';
-        flashMsg(t('status.thresholds.invalid'), '#d93025');
-        return;
-      }
-      thrRange.disabled = true;
-      const body = new URLSearchParams();
-      body.append('min_range_votes', String(v));
-      try {
-        const r = await fetch('/api/config', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-          body: body.toString(),
-        });
-        if (r.ok) flashMsg(t('status.thresholds.saved'), '#188038');
-      } catch (_){ /* next poll reconciles */ }
-      thrRange.disabled = false;
-      refreshAll();
-    };
+    thrRange.onchange = () => saveThreshold(thrRange, 'min_range_votes');
   }
 
   // Errors
