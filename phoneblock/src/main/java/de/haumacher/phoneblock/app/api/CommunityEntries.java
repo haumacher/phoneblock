@@ -74,10 +74,31 @@ public final class CommunityEntries {
 	 */
 	public static List<Entry> from(Blocklist exactCommunity, CommunityBinarySources sources,
 			int minDirect, int minRange, long now) {
+		List<Entry> result = exactEntries(exactCommunity.getNumbers(), minDirect);
+		result.addAll(wildcardsAndWhitelist(sources, minRange, now));
+		return result;
+	}
+
+	/**
+	 * Maps exact community spam rows to blacklist entries, dropping any below
+	 * {@code minDirect} net votes and any with an unrepresentable phone ID.
+	 *
+	 * <p>
+	 * Split out so the size-capped binary path can supply a pre-truncated,
+	 * Heat-ranked, region-scoped row list (see
+	 * {@code DB#getCommunityExactByHeat}) instead of the full exact blocklist:
+	 * the {@code minDirect} filter here is then a redundant safety net, since
+	 * the DB query already gated on the same net-evidence threshold.
+	 * </p>
+	 *
+	 * @param rows      Exact-entry rows (net, decay-aware votes per #338).
+	 * @param minDirect Exact-entry threshold; a row is kept iff its net votes
+	 *                  {@code >= minDirect}. Values below {@code 1} are clamped.
+	 */
+	public static List<Entry> exactEntries(List<BlockListEntry> rows, int minDirect) {
 		int directThreshold = Math.max(minDirect, 1);
 		List<Entry> result = new ArrayList<>();
-
-		for (BlockListEntry row : exactCommunity.getNumbers()) {
+		for (BlockListEntry row : rows) {
 			if (row.getVotes() < directThreshold) {
 				continue;
 			}
@@ -87,15 +108,27 @@ public final class CommunityEntries {
 			}
 			result.add(new Entry(digits, false, true));
 		}
+		return result;
+	}
 
-		// Wildcards only when range-blocking is on (minRange >= 1), mirroring
-		// the dongle API path's `range_hit = (min_range >= 1) && ...` guard.
+	/**
+	 * The always-included community sections: wildcard prefix blocks (when
+	 * range-blocking is on) and the global legitimate-number whitelist. These
+	 * are taken in full &mdash; they are small and the dongle wants them all
+	 * &mdash; so the size cap only ever truncates the exact section
+	 * ({@link #exactEntries}).
+	 *
+	 * @param minRange Wildcard threshold; blocks are emitted only when
+	 *                 {@code minRange >= 1} and their net evidence clears it,
+	 *                 mirroring the dongle API path's {@code range_hit} guard.
+	 */
+	public static List<Entry> wildcardsAndWhitelist(CommunityBinarySources sources, int minRange, long now) {
+		List<Entry> result = new ArrayList<>();
 		if (minRange >= 1) {
 			addAggregations(result, sources.aggregation10(), minRange, now);
 			addAggregations(result, sources.aggregation100(), minRange, now);
 		}
 		addWhitelist(result, sources.whitelist());
-
 		return result;
 	}
 

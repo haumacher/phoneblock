@@ -40,4 +40,16 @@ class TestBlocklistServlet {
 		assertEquals(500, BlocklistServlet.clampToAllowed(600, o), "above max → capped at max");
 	}
 
+	@Test
+	void clampBytesFloorsToNearestBudget() {
+		int[] o = BlocklistServlet.MAX_BYTES_OPTIONS; // {64k,128k,256k,384k,512k}
+		assertEquals(65536, BlocklistServlet.clampDownToAllowed(1000, o), "below min → min (pre-check backstops)");
+		assertEquals(65536, BlocklistServlet.clampDownToAllowed(65536, o));
+		assertEquals(65536, BlocklistServlet.clampDownToAllowed(131071, o), "just under 128k floors to 64k");
+		assertEquals(131072, BlocklistServlet.clampDownToAllowed(131072, o));
+		assertEquals(262144, BlocklistServlet.clampDownToAllowed(300000, o), "300k floors to 256k");
+		assertEquals(524288, BlocklistServlet.clampDownToAllowed(524288, o));
+		assertEquals(524288, BlocklistServlet.clampDownToAllowed(900000, o), "above max → capped at max");
+	}
+
 }

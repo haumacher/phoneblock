@@ -24,17 +24,21 @@ import java.util.function.LongSupplier;
  * API-fallback verdict identical.
  * </p>
  *
+ * <h2>What the cache key captures</h2>
+ *
+ * Beyond the threshold pair, the key carries the {@code dialPrefix} (the list
+ * is region-scoped &mdash; #340 Heat ranking restricted to the caller's
+ * region) and the {@code maxBytes} budget bucket (the direct-number section is
+ * truncated to fit the dongle's storage). Both change the produced bytes, so
+ * both must distinguish cache entries; the servlet snaps each to a small
+ * shared grid (dial set, {@code MAX_BYTES_OPTIONS}) so the fleet still shares
+ * entries.
+ *
  * <h2>What lives outside the cache key</h2>
  *
- * The community binary file is shared across:
- * <ul>
- *   <li>users with different {@code dialPrefix} settings &mdash; phone IDs
- *       are normalised to bare E.164 digits server-side, so the bytes are
- *       dial-prefix-independent;</li>
- *   <li>users with {@code wildcards} on or off &mdash; the file always
- *       carries the prefix section; the dongle decides locally whether to
- *       consult it.</li>
- * </ul>
+ * The community binary file is still shared across users with {@code wildcards}
+ * on or off &mdash; the file always carries the prefix section; the dongle
+ * decides locally whether to consult it.
  *
  * <h2>Staleness</h2>
  *
@@ -55,15 +59,19 @@ public final class BinaryBlocklistCache {
 		return INSTANCE;
 	}
 
-	/** Cache key: the dongle's two SPAM-vote thresholds. */
-	public record Key(int minDirect, int minRange) {
-		// Value-based key; record gives equals/hashCode over both fields.
+	/**
+	 * Cache key: region ({@code dialPrefix}, {@code null} for the global list),
+	 * the dongle's two SPAM-vote thresholds, and the storage budget bucket that
+	 * caps the direct-number section.
+	 */
+	public record Key(String dialPrefix, int minDirect, int minRange, int maxBytes) {
+		// Value-based key; record gives equals/hashCode over all fields.
 	}
 
-	/** Producer of community bytes for a given threshold pair. */
+	/** Producer of community bytes for a given region / threshold / budget. */
 	@FunctionalInterface
 	public interface Encoder {
-		byte[] encode(int minDirect, int minRange);
+		byte[] encode(String dialPrefix, int minDirect, int minRange, int maxBytes);
 	}
 
 	private final ConcurrentMap<Key, Entry> _entries = new ConcurrentHashMap<>();
@@ -83,20 +91,24 @@ public final class BinaryBlocklistCache {
 	 * Returns the cached bytes for the {@code (minDirect, minRange)} pair,
 	 * computing and caching them on a miss or after the entry has expired.
 	 *
+	 * @param dialPrefix Region scope (part of the cache key); {@code null} for
+	 *                   the global list.
 	 * @param minDirect Exact-entry vote threshold (part of the cache key).
 	 * @param minRange  Wildcard net-vote threshold (part of the cache key).
+	 * @param maxBytes  Storage budget bucket capping the direct section (part of
+	 *                  the cache key).
 	 * @param compute   Producer called on a cache miss. Must be deterministic
-	 *                  modulo data freshness: the same pair must always yield
+	 *                  modulo data freshness: the same key must always yield
 	 *                  bytes that are interchangeable between users.
 	 */
-	public byte[] getOrCompute(int minDirect, int minRange, Encoder compute) {
-		Key key = new Key(minDirect, minRange);
+	public byte[] getOrCompute(String dialPrefix, int minDirect, int minRange, int maxBytes, Encoder compute) {
+		Key key = new Key(dialPrefix, minDirect, minRange, maxBytes);
 		long now = _clock.getAsLong();
 		Entry existing = _entries.get(key);
 		if (existing != null && !existing.isStale(now)) {
 			return existing.bytes();
 		}
-		byte[] fresh = compute.encode(minDirect, minRange);
+		byte[] fresh = compute.encode(dialPrefix, minDirect, minRange, maxBytes);
 		_entries.put(key, new Entry(now, fresh));
 		return fresh;
 	}

@@ -12,13 +12,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.app.LoginFilter;
+import de.haumacher.phoneblock.app.api.model.BlockListEntry;
 import de.haumacher.phoneblock.app.api.model.Blocklist;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.settings.UserSettings;
-import de.haumacher.phoneblock.sync.binary.BlocklistBinaryAdapter;
 import de.haumacher.phoneblock.sync.binary.BlocklistBinaryEncoder;
 import de.haumacher.phoneblock.sync.binary.BlocklistBinaryEncoder.Entry;
+import de.haumacher.phoneblock.sync.binary.BlocklistBinaryFormat;
 import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -81,6 +82,16 @@ public class BlocklistServlet extends HttpServlet {
 	public static final String PARAM_MIN_RANGE = "minRange";
 
 	/**
+	 * Query parameter: the dongle's storage budget for the community file, in
+	 * bytes. The server keeps all wildcards and the whitelist (small), then
+	 * truncates the Heat-ranked direct numbers so the encoded file fits. Snapped
+	 * <em>down</em> to {@link #MAX_BYTES_OPTIONS} so the budget bucket — part of
+	 * the cache key — stays shared across the fleet and never exceeds what the
+	 * caller asked for. Defaults to {@link #DEFAULT_BINARY_MAX_BYTES}.
+	 */
+	public static final String PARAM_MAX_BYTES = "maxBytes";
+
+	/**
 	 * Allowed {@code minDirect} values, ascending. Must mirror the client
 	 * pickers (mobile app + dongle UI). A requested value is snapped up to the
 	 * smallest of these that is {@code >=} it (capped at the largest), so the
@@ -95,6 +106,25 @@ public class BlocklistServlet extends HttpServlet {
 	 * {@link #MIN_DIRECT_OPTIONS} and {@link #clampToAllowed}.
 	 */
 	static final int[] MIN_RANGE_OPTIONS = { 0, 10, 20, 50, 100, 500 };
+
+	/**
+	 * Allowed {@code maxBytes} budget buckets, ascending (64/128/256/384/512
+	 * KB). A requested budget is snapped <em>down</em> to the largest bucket
+	 * {@code <=} it (see {@link #clampDownToAllowed}) so the encoded file never
+	 * exceeds the dongle's free flash, while the {@code (dialPrefix, minDirect,
+	 * minRange, maxBytes)} cache key only ever takes a handful of budget values
+	 * across the fleet. A budget below the smallest bucket still gets the
+	 * smallest bucket; the dongle's own free-space pre-check is the backstop.
+	 */
+	static final int[] MAX_BYTES_OPTIONS = { 65536, 131072, 262144, 393216, 524288 };
+
+	/**
+	 * Default community budget when a caller omits {@link #PARAM_MAX_BYTES}.
+	 * 256&nbsp;KB — comfortable for the first-generation dongle's storage
+	 * partition after the answering-machine announcement, and the value the
+	 * dongle would compute on typical hardware.
+	 */
+	public static final int DEFAULT_BINARY_MAX_BYTES = 262144;
 
 	/**
 	 * Hard cap on the {@code ?limit=N} request parameter (#336).
@@ -167,10 +197,7 @@ public class BlocklistServlet extends HttpServlet {
 			// top-N to numbers active in their region. Falls back to the global
 			// ranking when no dial is configured (legacy clients, unmapped
 			// regions).
-			String dialPrefix = (cachedSettings != null) ? cachedSettings.getDialPrefix() : null;
-			if (dialPrefix != null && dialPrefix.isEmpty()) {
-				dialPrefix = null;
-			}
+			String dialPrefix = dialPrefixOf(cachedSettings);
 			result = db.getBlockListByHeatAPI(dialPrefix, limit);
 			LOG.info("Sending Heat-ranked blocklist (dial={}, limit={}, minVotes {}) to user '{}' (agent '{}')",
 				dialPrefix, limit, db.getMinVisibleVotes(), userName, userAgent);
@@ -238,10 +265,17 @@ public class BlocklistServlet extends HttpServlet {
 					db.getMinVisibleVotes()),
 				MIN_DIRECT_OPTIONS);
 			int minRange = clampToAllowed(intParam(req, PARAM_MIN_RANGE, minDirect), MIN_RANGE_OPTIONS);
-			byte[] bytes = BinaryBlocklistCache.getInstance().getOrCompute(minDirect, minRange,
-					(d, r) -> encodeCommunity(db, d, r));
-			LOG.info("Sending binary community blocklist ({} bytes, minDirect {}, minRange {}) to user '{}' (agent '{}')",
-				bytes.length, minDirect, minRange, userName, userAgent);
+			// Storage budget snapped DOWN so the encoded file never exceeds the
+			// dongle's free flash; the direct section is truncated to fit.
+			int maxBytes = clampDownToAllowed(intParam(req, PARAM_MAX_BYTES, DEFAULT_BINARY_MAX_BYTES),
+				MAX_BYTES_OPTIONS);
+			// Region scope: the account's dial prefix restricts the Heat-ranked
+			// direct numbers to the user's region (#340). Part of the cache key.
+			String dialPrefix = dialPrefixOf(cachedSettings);
+			byte[] bytes = BinaryBlocklistCache.getInstance().getOrCompute(dialPrefix, minDirect, minRange, maxBytes,
+					(dp, d, r, mb) -> encodeCommunity(db, dp, d, r, mb));
+			LOG.info("Sending binary community blocklist ({} bytes, dial {}, minDirect {}, minRange {}, maxBytes {}) to user '{}' (agent '{}')",
+				bytes.length, dialPrefix, minDirect, minRange, maxBytes, userName, userAgent);
 			resp.setContentType(BINARY_CONTENT_TYPE);
 			resp.setContentLength(bytes.length);
 			resp.getOutputStream().write(bytes);
@@ -258,11 +292,27 @@ public class BlocklistServlet extends HttpServlet {
 		}
 	}
 
-	private static byte[] encodeCommunity(DB db, int minDirect, int minRange) {
+	/**
+	 * Encodes the size-capped, region-scoped community list. Wildcards and the
+	 * whitelist are taken in full; the Heat-ranked direct numbers fill whatever
+	 * record budget remains under {@code maxBytes}. Dedup in the encoder can
+	 * only shrink the result, so the encoded file never exceeds the budget
+	 * (unless the mandatory wildcards/whitelist alone already do — the dongle's
+	 * free-space pre-check is the backstop there).
+	 */
+	private static byte[] encodeCommunity(DB db, String dialPrefix, int minDirect, int minRange, int maxBytes) {
 		long now = System.currentTimeMillis();
-		Blocklist blocklist = db.getBlockListAPI();
 		DB.CommunityBinarySources sources = db.getCommunityBinarySources(minRange, now);
-		List<Entry> entries = CommunityEntries.from(blocklist, sources, minDirect, minRange, now);
+
+		// Always-included sections first, so their record count is known before
+		// budgeting the direct numbers.
+		List<Entry> entries = CommunityEntries.wildcardsAndWhitelist(sources, minRange, now);
+
+		int budgetRecords = (maxBytes - BlocklistBinaryFormat.HEADER_SIZE) / BlocklistBinaryFormat.RECORD_SIZE;
+		int directLimit = Math.max(0, budgetRecords - entries.size());
+		List<BlockListEntry> exact = db.getCommunityExactByHeat(dialPrefix, minDirect, directLimit, now);
+		entries.addAll(CommunityEntries.exactEntries(exact, minDirect));
+
 		ByteArrayOutputStream buf = new ByteArrayOutputStream();
 		try {
 			BlocklistBinaryEncoder.write(buf, entries);
@@ -286,6 +336,35 @@ public class BlocklistServlet extends HttpServlet {
 			}
 		}
 		return allowed[allowed.length - 1];
+	}
+
+	/**
+	 * Snaps {@code v} <em>down</em> to the largest entry of {@code allowed} that
+	 * is {@code <= v}, or the smallest entry when {@code v} is below all of them
+	 * (floor-clamp). {@code allowed} must be sorted ascending and non-empty.
+	 * Used for the {@code maxBytes} budget so the encoded file never exceeds the
+	 * caller's free space while keeping the cache key on a small shared grid.
+	 */
+	static int clampDownToAllowed(int v, int[] allowed) {
+		int result = allowed[0];
+		for (int a : allowed) {
+			if (a <= v) {
+				result = a;
+			} else {
+				break;
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * The account's dial prefix as a region scope, normalising an empty setting
+	 * to {@code null} (the global, unscoped list). Shared by the Heat-ranked
+	 * JSON path and the binary community path.
+	 */
+	private static String dialPrefixOf(UserSettings settings) {
+		String dialPrefix = (settings != null) ? settings.getDialPrefix() : null;
+		return (dialPrefix != null && dialPrefix.isEmpty()) ? null : dialPrefix;
 	}
 
 	/**

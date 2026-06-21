@@ -1764,6 +1764,50 @@ public class DB {
 	}
 
 	/**
+	 * Exact community spam entries for the size-capped binary community list:
+	 * region-scoped, Heat-ranked and truncated to {@code limit}.
+	 *
+	 * <p>
+	 * Unlike {@link #getBlockListAPI()} (which returns the full exact list for
+	 * the JSON/unbounded paths), this keeps only the top {@code limit} numbers
+	 * by current Heat so a dongle with limited flash gets the spam it is most
+	 * likely to receive. A {@code null}/empty {@code dialPrefix} falls back to
+	 * the global Heat ranking (legacy clients, unmapped regions). Numbers
+	 * dropped by the cap still resolve correctly on the dongle: a local miss
+	 * falls back to the live {@code /num} API.
+	 * </p>
+	 *
+	 * <p>
+	 * The net-evidence gate uses {@code minDirect} (the dongle's
+	 * {@code min_direct_votes}, floored at the published threshold by the
+	 * servlet), so the encoded set is a Heat-ordered subset of exactly what the
+	 * dongle's API-fallback path would decide SPAM. Returns an empty list
+	 * without querying when {@code limit <= 0}.
+	 * </p>
+	 *
+	 * @param dialPrefix Region scope, or {@code null}/empty for the global list.
+	 * @param minDirect  Exact-entry net-vote threshold.
+	 * @param limit      Maximum number of entries (the budget-derived cap).
+	 * @param now        Reference time for decaying the EMA threshold.
+	 */
+	public List<BlockListEntry> getCommunityExactByHeat(String dialPrefix, int minDirect, int limit, long now) {
+		if (limit <= 0) {
+			return List.of();
+		}
+		try (SqlSession session = openSession()) {
+			SpamReports reports = session.getMapper(SpamReports.class);
+			double maxRawSpam = maxRawSpamAt(now, minDirect);
+			List<DBNumberInfo> raw = (dialPrefix != null && !dialPrefix.isEmpty())
+					? reports.getBlocklistByDialHeat(dialPrefix, maxRawSpam, limit)
+					: reports.getBlocklistByHeat(maxRawSpam, limit);
+			return raw.stream()
+					.map(DB::toBlocklistEntry)
+					.filter(Objects::nonNull)
+					.collect(Collectors.toList());
+		}
+	}
+
+	/**
 	 * Gets blocklist changes since the given version (incremental sync).
 	 * Returns entries with VERSION > sinceVersion.
 	 *
