@@ -12,6 +12,7 @@
 #include "esp_http_server.h"
 #include "esp_ota_ops.h"
 #include "esp_partition.h"
+#include "esp_spiffs.h"       // esp_spiffs_info for the data-partition readout
 #include "esp_system.h"       // esp_restart
 #include "esp_wifi.h"         // esp_wifi_restore for factory-reset
 #include "freertos/FreeRTOS.h"
@@ -248,6 +249,19 @@ static void add_system_load(cJSON *root)
     cJSON *sys = cJSON_AddObjectToObject(root, "system");
     cJSON_AddNumberToObject(sys, "free_heap",     (double)esp_get_free_heap_size());
     cJSON_AddNumberToObject(sys, "min_free_heap", (double)esp_get_minimum_free_heap_size());
+
+    // Data-partition (SPIFFS "storage") usage. The blocklist cache, the
+    // announcement blob and the temp files used during sync all share this
+    // one mount; a nearly-full partition is the working hypothesis for the
+    // "rename …: I/O error" the blocklist sync reports, so surface the live
+    // free-byte count here for field diagnosis. Same label as
+    // announcement.c / blocklist_sync.c.
+    size_t fs_total = 0, fs_used = 0;
+    if (esp_spiffs_info("storage", &fs_total, &fs_used) == ESP_OK) {
+        cJSON_AddNumberToObject(sys, "fs_total", (double)fs_total);
+        cJSON_AddNumberToObject(sys, "fs_used",  (double)fs_used);
+        cJSON_AddNumberToObject(sys, "fs_free",  (double)(fs_total - fs_used));
+    }
 
 #if CONFIG_FREERTOS_GENERATE_RUN_TIME_STATS
     UBaseType_t cap = uxTaskGetNumberOfTasks() + 4;   // headroom for mid-sample spawns
