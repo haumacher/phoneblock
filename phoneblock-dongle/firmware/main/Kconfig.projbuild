@@ -29,6 +29,21 @@ menu "PhoneBlock Dongle"
             must be the POSIX form ("CET-1CEST,...") — an IANA name like
             "Europe/Berlin" would NOT work with tzset().
 
+    config MAIL_DAILY_HOUR
+        int "Daily status-mail hour (local time, 0-23)"
+        default 23
+        range 0 23
+        help
+            Local hour at which the daily status mail is sent. Default 23
+            (23:00) so it flushes the day's spam reports / errors at the
+            end of the day. The mail also fires shortly after boot (to
+            surface a post-crash error promptly) and is a no-op unless
+            there is something new to report, so a quiet day mails nothing.
+
+            Needs the wall clock (time_sync.c); until SNTP sets it, the
+            job retries hourly and snaps to this hour once the time is
+            known.
+
     config PHONEBLOCK_OTA_BASE_URL
         string "OTA update base URL"
         default "https://cdn.phoneblock.net/dongle/firmware"
