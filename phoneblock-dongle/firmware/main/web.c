@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 #include "esp_log.h"
 #include "esp_random.h"
@@ -27,6 +28,7 @@
 #include "sip_register.h"
 #include "stats.h"
 #include "sync.h"
+#include "time_sync.h"
 #include "tr064.h"
 #include "web_auth.h"
 
@@ -386,6 +388,23 @@ static esp_err_t handle_status(httpd_req_t *req)
     cJSON_AddBoolToObject  (au,   "logged_in",   web_auth_is_logged_in(req));
     cJSON_AddStringToObject(au,   "user",        config_auth_user());
 
+    cJSON *tm = cJSON_AddObjectToObject(root, "time");
+    bool clock_ok = time_sync_valid();
+    cJSON_AddBoolToObject  (tm,   "valid",   clock_ok);
+    cJSON_AddStringToObject(tm,   "tz",      config_timezone());
+    if (clock_ok) {
+        time_t tnow = time(NULL);
+        struct tm lt;
+        localtime_r(&tnow, &lt);
+        char iso[32];
+        strftime(iso, sizeof(iso), "%Y-%m-%dT%H:%M:%S", &lt);
+        cJSON_AddNumberToObject(tm, "epoch_s", (double)tnow);
+        cJSON_AddStringToObject(tm, "local",   iso);
+    } else {
+        cJSON_AddNumberToObject(tm, "epoch_s", 0);
+        cJSON_AddStringToObject(tm, "local",   "");
+    }
+
     cJSON *fw = cJSON_AddObjectToObject(root, "firmware");
     cJSON_AddBoolToObject  (fw,   "auto_update",  config_auto_update_enabled());
     cJSON_AddStringToObject(fw,   "channel",      config_ota_channel());
@@ -544,6 +563,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     char smtp_to[64]      = "";
     char mail_err_s[4]    = "";
     char mail_spam_s[4]   = "";
+    char tz_s[64]         = "";
 
     bool have_sip_host  = form_get(body, "sip_host",  sip_host,  sizeof(sip_host));
     bool have_sip_user  = form_get(body, "sip_user",  sip_user,  sizeof(sip_user));
@@ -580,7 +600,24 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     bool have_smtp_to    = form_get(body, "smtp_to",       smtp_to,     sizeof(smtp_to));
     bool have_mail_err   = form_get(body, "mail_on_error", mail_err_s,  sizeof(mail_err_s));
     bool have_mail_spam  = form_get(body, "mail_on_spam",  mail_spam_s, sizeof(mail_spam_s));
+    bool have_tz         = form_get(body, "timezone",      tz_s,        sizeof(tz_s));
     free(body);
+
+    // POSIX TZ string (e.g. "CET-1CEST,M3.5.0,M10.5.0/3"): accept only a
+    // sane length of printable ASCII so a malformed POST can never feed
+    // garbage into setenv/tzset. An empty / rejected value leaves the
+    // stored timezone untouched. The browser derives this from its own
+    // DST rules — newlib has no IANA database to map "Europe/Berlin".
+    const char *timezone = NULL;
+    if (have_tz) {
+        size_t n = strlen(tz_s);
+        bool ok = n >= 2 && n < sizeof(tz_s);
+        for (size_t i = 0; ok && i < n; i++) {
+            unsigned char ch = (unsigned char)tz_s[i];
+            if (ch < 0x20 || ch >= 0x7f) ok = false;
+        }
+        if (ok) timezone = tz_s;
+    }
 
     const char *new_host = have_sip_host && sip_host[0] ? sip_host : NULL;
     // A changed registrar (provider / manual edit moving to a different
@@ -677,12 +714,19 @@ static esp_err_t handle_config_post(httpd_req_t *req)
         .smtp_to       = have_smtp_to   ? smtp_to   : NULL,
         .mail_on_error = have_mail_err  ? mail_err_s  : NULL,
         .mail_on_spam  = have_mail_spam ? mail_spam_s : NULL,
+        .timezone      = timezone,
     };
 
     esp_err_t err = config_update(&u);
     if (err != ESP_OK) {
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "nvs write failed");
         return ESP_OK;
+    }
+
+    // Apply a changed timezone to the running clock immediately so daily
+    // jobs and the dashboard reflect it without a reboot.
+    if (timezone) {
+        time_sync_set_timezone(config_timezone());
     }
 
     // Signal the SIP task to re-register with the new credentials.

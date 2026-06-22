@@ -16,6 +16,19 @@ menu "PhoneBlock Dongle"
             the test instance only work there, and vice versa. The token
             prefix (pbt_) is the same in both cases.
 
+    config DONGLE_DEFAULT_TZ
+        string "Default POSIX timezone"
+        default "CET-1CEST,M3.5.0,M10.5.0/3"
+        help
+            POSIX TZ string applied to the wall clock until the user
+            overrides it from the web UI (which can learn the zone from
+            the browser). The default is Europe/Berlin
+            ("CET-1CEST,M3.5.0,M10.5.0/3").
+
+            Note: ESP-IDF's newlib has no IANA timezone database, so this
+            must be the POSIX form ("CET-1CEST,...") — an IANA name like
+            "Europe/Berlin" would NOT work with tzset().
+
     config PHONEBLOCK_OTA_BASE_URL
         string "OTA update base URL"
         default "https://cdn.phoneblock.net/dongle/firmware"

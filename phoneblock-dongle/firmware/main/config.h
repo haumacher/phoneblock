@@ -91,6 +91,11 @@ bool        config_log_info(void);
 // browser will be able to log in (avoids the lockout case).
 bool        config_auth_enabled(void);
 
+// POSIX TZ string for the wall clock (see time_sync.c). NVS value if the
+// user set one via the web UI, else the CONFIG_DONGLE_DEFAULT_TZ Kconfig
+// default (Europe/Berlin). Always non-empty.
+const char *config_timezone(void);
+
 // PhoneBlock user-name pinned at first activation of the access
 // gate. Subsequent logins are accepted only when the JWT subject
 // returned by the server matches this string. Empty when the gate
@@ -299,6 +304,9 @@ typedef struct {
     // "1" = enable, "0" = disable, NULL = leave unchanged. Default off.
     const char *mail_on_error;
     const char *mail_on_spam;
+    // POSIX TZ string for the wall clock. NULL = leave unchanged. The
+    // caller is expected to validate it before writing (see web.c).
+    const char *timezone;
 } config_update_t;
 
 esp_err_t config_update(const config_update_t *u);
