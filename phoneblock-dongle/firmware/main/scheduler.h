@@ -37,3 +37,11 @@ bool scheduler_request_sync(void);
 // The "is a download already in progress" guard lives in
 // blocklist_sync_trigger_now(), the public entry point the web UI calls.
 bool scheduler_request_blocklist_sync(void);
+
+// Notify the scheduler that the wall clock has just been set (or stepped),
+// so any time-of-day ("daily") jobs recompute their next run against real
+// local time instead of the placeholder retry they parked on while the
+// clock was still unknown. Called from time_sync.c. Safe to call before
+// the scheduler task exists — it is then a no-op (the task computes due
+// times from the live clock when it starts).
+void scheduler_notify_time_synced(void);

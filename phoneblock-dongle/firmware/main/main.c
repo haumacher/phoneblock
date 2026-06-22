@@ -30,6 +30,7 @@
 #include "sip_register.h"
 #include "stats.h"
 #include "status_led.h"
+#include "time_sync.h"
 #include "web.h"
 #include "wifi.h"
 
@@ -192,6 +193,13 @@ void app_main(void)
     // Start the LED early so the user sees "CONNECTING" (or
     // "PAIRING" a few hundred ms later) before WiFi blocks us.
     status_led_start();
+
+    // Set up SNTP + timezone before the network comes up: the connect
+    // calls below block until the first IP, and time_sync starts the
+    // clock from that GOT_IP event — registering its handler afterwards
+    // would miss it. Needs config_load() (timezone) and the event loop,
+    // both already done above.
+    time_sync_start();
 
     // On real hardware we drive WiFi ourselves so first-boot pairing
     // via WPS-PBC works without baked credentials. example_connect

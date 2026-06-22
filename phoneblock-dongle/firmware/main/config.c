@@ -57,6 +57,7 @@ static const char *NS   = "phoneblock";
 #define K_MAIL_ON_ERROR "mail_on_error"
 #define K_MAIL_ON_SPAM  "mail_on_spam"
 #define K_DEVICE_ID     "device_id"
+#define K_TIMEZONE      "timezone"
 
 // Direct-vote default mirrors DB.MIN_VOTES on the server (the
 // confidence floor the public blocklist export already enforces).
@@ -127,6 +128,7 @@ typedef struct {
     char mail_on_error[4];   // "1" = mail on ERROR/crash (default off)
     char mail_on_spam[4];    // "1" = mail when spam calls were caught (default off)
     char last_failed_ota[32];   // semver, plus headroom for "-rcN" suffixes
+    char timezone[64];       // POSIX TZ string (empty = use Kconfig default)
 } config_cache_t;
 
 static config_cache_t s_config;
@@ -278,6 +280,7 @@ void config_load(void)
         s_config.mail_on_error[0] = '\0';
         s_config.mail_on_spam[0]  = '\0';
         s_config.last_failed_ota[0] = '\0';
+        copy_default(s_config.timezone, sizeof(s_config.timezone), CONFIG_DONGLE_DEFAULT_TZ);
         return;
     }
     if (err != ESP_OK) {
@@ -363,6 +366,8 @@ void config_load(void)
              s_config.mail_on_spam, sizeof(s_config.mail_on_spam));
     load_str(h, K_LAST_FAIL_OTA, "",
              s_config.last_failed_ota, sizeof(s_config.last_failed_ota));
+    load_str(h, K_TIMEZONE, CONFIG_DONGLE_DEFAULT_TZ,
+             s_config.timezone, sizeof(s_config.timezone));
     nvs_close(h);
 
     ESP_LOGI(TAG, "loaded config: sip=%s@%s:%d, pb=%s",
@@ -413,6 +418,12 @@ bool        config_auth_enabled(void)
 }
 const char *config_auth_user(void)        { return s_config.auth_user; }
 const char *config_auth_persist(void)     { return s_config.auth_persist; }
+const char *config_timezone(void)
+{
+    // Never hand out an empty string: a blank NVS value would leave the
+    // wall clock on UTC. Fall back to the Kconfig default in that case.
+    return s_config.timezone[0] ? s_config.timezone : CONFIG_DONGLE_DEFAULT_TZ;
+}
 bool        config_auto_update_enabled(void)
 {
     // Default on (empty / unrecognised → enabled) so a fresh device
@@ -686,6 +697,8 @@ esp_err_t config_update(const config_update_t *u)
                                         s_config.mail_on_error, sizeof(s_config.mail_on_error));
     if (err == ESP_OK) err = set_str_if(h, K_MAIL_ON_SPAM, u->mail_on_spam,
                                         s_config.mail_on_spam, sizeof(s_config.mail_on_spam));
+    if (err == ESP_OK) err = set_str_if(h, K_TIMEZONE, u->timezone,
+                                        s_config.timezone, sizeof(s_config.timezone));
 
     if (err == ESP_OK) err = nvs_commit(h);
     nvs_close(h);

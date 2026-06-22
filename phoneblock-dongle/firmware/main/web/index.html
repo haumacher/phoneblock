@@ -174,6 +174,11 @@ const I18N = {
     'status.system.col.task': 'Task',
     'status.system.col.cpu': 'CPU',
     'status.system.col.stack': 'Stack frei',
+    'status.clock.now': 'Uhrzeit: {time}',
+    'status.clock.pending': 'Uhrzeit: wird synchronisiert …',
+    'status.tz.current': 'Zeitzone: {tz}',
+    'status.tz.apply': 'Auf {zone} umstellen',
+    'status.tz.saved': 'Zeitzone gespeichert.',
     'status.errors.title': 'Protokoll',
     'status.errors.empty': 'keine Einträge',
     'status.errors.ago': 'vor {age}',
@@ -437,6 +442,11 @@ const I18N = {
     'status.system.col.task': 'Task',
     'status.system.col.cpu': 'CPU',
     'status.system.col.stack': 'Stack free',
+    'status.clock.now': 'Time: {time}',
+    'status.clock.pending': 'Time: synchronising …',
+    'status.tz.current': 'Timezone: {tz}',
+    'status.tz.apply': 'Switch to {zone}',
+    'status.tz.saved': 'Timezone saved.',
     'status.errors.title': 'Log',
     'status.errors.empty': 'no entries',
     'status.errors.ago': '{age} ago',
@@ -1210,6 +1220,104 @@ async function fetchJson(url){
   catch(e){ return null; }
 }
 
+// --- timezone (learn from the browser, push to the dongle) ----------
+// The dongle's newlib has no IANA database, so it needs a POSIX TZ string
+// ("CET-1CEST,M3.5.0,M10.5.0/3"), not "Europe/Berlin". Curated strings for
+// the zones we serve give a canonical result for the European majority
+// (matching the firmware default exactly → no spurious "change?" button);
+// browserPosixTZ() derives one from the browser's own DST rules otherwise.
+const CET = 'CET-1CEST,M3.5.0,M10.5.0/3';
+const EET = 'EET-2EEST,M3.5.0/3,M10.5.0/4';
+const BST = 'GMT0BST,M3.5.0/1,M10.5.0';
+const TZ_TABLE = {
+  'Europe/Berlin':CET,'Europe/Vienna':CET,'Europe/Zurich':CET,'Europe/Paris':CET,
+  'Europe/Madrid':CET,'Europe/Rome':CET,'Europe/Amsterdam':CET,'Europe/Brussels':CET,
+  'Europe/Luxembourg':CET,'Europe/Warsaw':CET,'Europe/Prague':CET,'Europe/Budapest':CET,
+  'Europe/Copenhagen':CET,'Europe/Stockholm':CET,'Europe/Oslo':CET,'Europe/Belgrade':CET,
+  'Europe/Ljubljana':CET,'Europe/Bratislava':CET,'Europe/Zagreb':CET,'Europe/Sarajevo':CET,
+  'Europe/London':BST,'Europe/Dublin':BST,'Europe/Lisbon':'WET0WEST,M3.5.0/1,M10.5.0',
+  'Europe/Athens':EET,'Europe/Helsinki':EET,'Europe/Bucharest':EET,'Europe/Kiev':EET,
+  'Europe/Kyiv':EET,'Europe/Riga':EET,'Europe/Sofia':EET,'Europe/Tallinn':EET,'Europe/Vilnius':EET,
+  'Europe/Moscow':'MSK-3','Europe/Istanbul':'<+03>-3','UTC':'UTC0','Etc/UTC':'UTC0',
+};
+
+function detectZone(){
+  try { return Intl.DateTimeFormat().resolvedOptions().timeZone || ''; }
+  catch(_){ return ''; }
+}
+
+function browserPosixTZ(){
+  const z = detectZone();
+  if (TZ_TABLE[z]) return TZ_TABLE[z];
+  try {
+    const y = new Date().getFullYear();
+    const offAt = d => -d.getTimezoneOffset();          // minutes east of UTC
+    const jan = offAt(new Date(y,0,1,12)), jul = offAt(new Date(y,6,1,12));
+    const std = Math.min(jan,jul), dst = Math.max(jan,jul);
+    const fmt = mins => {                                // POSIX: west positive
+      const tot = -mins, sign = tot<0?'-':'+', a = Math.abs(tot);
+      const hh = Math.floor(a/60), mm = a%60;
+      return sign + hh + (mm ? ':'+String(mm).padStart(2,'0') : '');
+    };
+    const abbr = m => {
+      try {
+        const p = new Intl.DateTimeFormat('en',{timeZoneName:'short'})
+          .formatToParts(new Date(y,m,1)).find(x=>x.type==='timeZoneName');
+        return p && /^[A-Za-z]{2,5}$/.test(p.value) ? p.value : null;
+      } catch(_){ return null; }
+    };
+    const stdName = abbr(0) || ('<'+fmt(std)+'>');
+    if (std === dst) return stdName + fmt(std);          // no DST
+    const dstName = abbr(6) || ('<'+fmt(dst)+'>');
+    let prev = offAt(new Date(y,0,1,12)); const tr = [];
+    for (let m=0;m<12;m++){
+      const dim = new Date(y,m+1,0).getDate();
+      for (let d=1;d<=dim;d++){
+        const cur = offAt(new Date(y,m,d,12));
+        if (cur !== prev){ tr.push({date:new Date(y,m,d), inc:cur>prev}); prev=cur; }
+      }
+    }
+    const spring = tr.find(x=>x.inc), fall = tr.find(x=>!x.inc);
+    if (!spring || !fall) return null;
+    const rule = dt => {
+      const m = dt.getMonth()+1, dow = dt.getDay(), dom = dt.getDate();
+      const dim = new Date(dt.getFullYear(),m,0).getDate();
+      let wk = Math.ceil(dom/7); if (dom+7 > dim) wk = 5;   // 5 = last
+      return 'M'+m+'.'+wk+'.'+dow;
+    };
+    return stdName+fmt(std)+dstName+fmt(dst)+','+rule(spring.date)+','+rule(fall.date);
+  } catch(_){ return null; }
+}
+
+let g_tzPosix;   // computed once, lazily
+function applyTz(deviceTz){
+  const cur = $('tzCurrent'), btn = $('tzApply');
+  if (!cur || !btn) return;
+  cur.textContent = t('status.tz.current', { tz: deviceTz || '–' });
+  if (g_tzPosix === undefined) g_tzPosix = browserPosixTZ();
+  if (g_tzPosix && deviceTz && g_tzPosix !== deviceTz){
+    btn.style.display = '';
+    btn.textContent = t('status.tz.apply', { zone: detectZone() || g_tzPosix });
+    btn.onclick = async () => {
+      btn.disabled = true;
+      const body = new URLSearchParams();
+      body.append('timezone', g_tzPosix);
+      try {
+        const r = await fetch('/api/config', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: body.toString(),
+        });
+        if (r.ok) cur.textContent = t('status.tz.saved');
+      } catch(_){ /* next poll reconciles */ }
+      btn.disabled = false;
+      refreshAll();   // re-reads the device tz; hides the button once applied
+    };
+  } else {
+    btn.style.display = 'none';
+  }
+}
+
 async function postForm(url, form){
   const body = new URLSearchParams();
   for (const [k, v] of new FormData(form).entries()) body.append(k, v);
@@ -1398,6 +1506,11 @@ function renderStatus(){
     + '<th style="text-align:right">'  + esc(t('status.system.col.cpu'))   + '</th>'
     + '<th style="text-align:right">'  + esc(t('status.system.col.stack')) + '</th>'
     + '</tr></thead><tbody id="systemTasks"></tbody></table>'
+    + '<p id="clockInfo" class="muted" style="font-size:.85rem;margin:.8rem 0 .2rem"></p>'
+    + '<p id="tzInfo" class="muted" style="font-size:.8rem;margin:.2rem 0">'
+    +   '<span id="tzCurrent"></span>'
+    +   '<button id="tzApply" class="btn-ghost" style="display:none;margin-left:.6rem;padding:.2rem .6rem;font-size:.75rem;text-transform:none;letter-spacing:0"></button>'
+    + '</p>'
     + '</details>'
     + '<details id="thresholdsSection" class="adminsec" style="display:none">'
     + '<summary>' + esc(t('status.thresholds.title')) + '</summary>'
@@ -2142,6 +2255,15 @@ async function refreshAll(){
       + '<td style="text-align:right">' + tk.stack_free + '</td>';
       tb.appendChild(tr);
     }
+  }
+
+  // Wall clock + timezone.
+  if (s.time) {
+    const ci = $('clockInfo');
+    if (ci) ci.textContent = s.time.valid
+      ? t('status.clock.now', { time: (s.time.local || '').replace('T', ' ') })
+      : t('status.clock.pending');
+    applyTz(s.time.tz || '');
   }
 
   // Calls
