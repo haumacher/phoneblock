@@ -216,11 +216,20 @@ were parked on the "+1 h retry" recompute against real local time immediately.
 
 ### Migration of existing jobs
 
-Leave `selftest`, `fw_update`, `sync`, `mail`, `blocklist` as `SCHED_INTERVAL`
-for now — behavior unchanged. The *enabling* outcome of this work is that we
-*can* convert any of them (most naturally the status `mail`) to `SCHED_DAILY`
-once the clock is trusted. Converting `mail` to a fixed morning send is the
-obvious first consumer and a good acceptance test.
+The status `mail` job becomes `SCHED_DAILY` at a fixed local hour (08:00) — it
+is the natural consumer of the wall clock and the point of the feature. It keeps
+its boot-relative `first_delay_s` first run (a `SCHED_DAILY` job may also fire
+soon after boot), so a post-crash error still mails within minutes instead of
+waiting for the next daily slot. The mail goes through the *user's own SMTP*
+server, so unlike the other jobs there is no shared endpoint to spread across —
+a fixed, predictable morning time is exactly what a user wants. The send is a
+no-op unless there is a new error / new spam, so a quiet day mails nothing.
+
+The server-facing jobs (`selftest`, `fw_update`, `sync`, `blocklist`) stay
+`SCHED_INTERVAL`: they are best-effort and deliberately spread across the fleet
+by boot time + jitter, so a fleet-wide power blip doesn't align every dongle
+onto the same minute hammering phoneblock.net / the CDN. Wall-clock alignment
+would re-introduce exactly that thundering herd.
 
 ---
 
@@ -282,4 +291,5 @@ obvious first consumer and a good acceptance test.
    behavior change).
 2. Timezone config + browser learning + Berlin default.
 3. Scheduler `SCHED_DAILY` support + host tests.
-4. (Optional, follow-up) Convert the status mail job to a fixed daily send.
+4. Convert the status mail job to a fixed daily send (08:00 local), keeping its
+   boot-relative first run.
