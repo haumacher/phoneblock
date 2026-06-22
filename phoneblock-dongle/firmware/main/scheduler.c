@@ -50,11 +50,12 @@ typedef struct {
     // INTERVAL jobs:
     uint32_t    interval_s;
     uint32_t    jitter_s;
-    // First run delay in seconds: 0 = a full (jittered) interval out
-    // (the default — don't act at boot). A small value makes the first
-    // run happen soon after boot, used by the mail job so a post-crash
-    // status mail goes out promptly once the network is up rather than
-    // up to a day later. INTERVAL-only.
+    // First run delay in seconds: 0 = wait a full interval / until the
+    // first scheduled time (the default — don't act at boot). A small
+    // value makes the first run happen soon after boot regardless of
+    // kind, used by the mail job so a post-crash status mail goes out
+    // promptly rather than waiting for the next daily slot. Applies to
+    // both INTERVAL and DAILY jobs.
     uint32_t    first_delay_s;
     // DAILY jobs: local wall-clock time of day to fire at.
     uint8_t     at_hour;       // 0..23
@@ -70,18 +71,30 @@ static void run_mail(void)      { mail_daily_flush(); }
 
 // First mail evaluation 5 min after boot: long enough for Wi-Fi/DHCP to
 // settle, short enough that a crash-reboot's ERROR is mailed promptly.
-#define MAIL_FIRST_DELAY_S  (5 * 60)
+// Kept even though the mail job is now wall-clock daily — the fixed daily
+// slot alone would let a post-crash error wait up to a day.
+#define MAIL_FIRST_DELAY_S       (5 * 60)
 
-// All current jobs are interval-based (best-effort daily housekeeping,
-// deliberately spread across the fleet by boot time + jitter rather than
-// aligned to a wall-clock hour). The SCHED_DAILY path exists so future
-// user-facing "run at HH:MM local" features have a clock to schedule on;
-// it is exercised by the host test (sched_time.c).
+// Local hour the daily status mail is sent at (08:00). The mail goes
+// through the user's own SMTP server, so there is no fleet-wide endpoint
+// to spread the load across — a fixed, predictable morning time is what a
+// user wants. The send is a no-op unless there is a new error / new spam
+// since the last one (see mail_daily_flush), so a quiet day mails nothing.
+#define MAIL_DAILY_HOUR          8
+
+// The server-facing housekeeping jobs stay interval-based: they are
+// best-effort and deliberately spread across the fleet by boot time +
+// jitter, so a fleet-wide power blip doesn't align every dongle onto the
+// same minute hammering phoneblock.net / the CDN. The status mail is
+// wall-clock daily instead — it goes through the user's own SMTP (no
+// shared endpoint to spread) and a fixed morning time is what a user
+// wants. Daily jobs fall back to a retry until the clock is set and keep
+// their boot-relative first run via first_delay_s.
 static sched_job_t s_jobs[] = {
     { .name = "selftest",  .kind = SCHED_INTERVAL, .interval_s = DAY_S, .jitter_s = JITTER_S, .run = run_selftest },
     { .name = "fw_update", .kind = SCHED_INTERVAL, .interval_s = DAY_S, .jitter_s = JITTER_S, .run = run_fw_update },
     { .name = "sync",      .kind = SCHED_INTERVAL, .interval_s = DAY_S, .jitter_s = JITTER_S, .run = run_sync },
-    { .name = "mail",      .kind = SCHED_INTERVAL, .interval_s = DAY_S, .jitter_s = JITTER_S, .first_delay_s = MAIL_FIRST_DELAY_S,      .run = run_mail },
+    { .name = "mail",      .kind = SCHED_DAILY,    .at_hour = MAIL_DAILY_HOUR, .first_delay_s = MAIL_FIRST_DELAY_S, .run = run_mail },
 };
 #define JOB_COUNT (sizeof(s_jobs) / sizeof(s_jobs[0]))
 
