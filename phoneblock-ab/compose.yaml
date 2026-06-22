@@ -32,6 +32,8 @@ services:
       - PORT_COUNT=10
       - RECORDINGS=none
       - CONVERSATION=/opt/phoneblock/conversation
+      # Enable for debugging the SIP communication. This dumps all sent and received SIP packages to the log.
+      - LOG_ALL_PACKETS=no
       # Whether to accept calls from local phones (numbers starting with '*').
       # Set to 'no' if the answerbot is part of a Fritz!Box group call (Sammelruf),
       # e.g. when a doorbell on Phone1 rings all phones in the group — otherwise the
