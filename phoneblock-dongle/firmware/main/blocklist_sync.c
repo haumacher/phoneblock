@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/stat.h>
 #include <unistd.h>
 
 #include "freertos/FreeRTOS.h"
@@ -84,16 +83,6 @@ static void refresh_sizes_locked(void)
 // Streaming HTTPS download into a temp file.
 // ---------------------------------------------------------------------------
 
-// Size of a file in bytes, or 0 if it does not exist / cannot be stat'd.
-static int64_t file_size_bytes(const char *path)
-{
-    struct stat st;
-    if (stat(path, &st) != 0) {
-        return 0;
-    }
-    return (int64_t) st.st_size;
-}
-
 // Free bytes on the storage SPIFFS partition, or -1 if it cannot be read.
 static int64_t spiffs_free_bytes(void)
 {
@@ -105,25 +94,25 @@ static int64_t spiffs_free_bytes(void)
 }
 
 // Storage budget the dongle offers the community file: current free space
-// plus the bytes the existing community file frees when replaced, minus a
-// margin for SPIFFS overhead and the small personal list. Sent to the server
-// as &maxBytes so it caps the encoded file to what actually fits here.
+// minus a margin for SPIFFS overhead and the small personal list. The old
+// community file is deleted before the download starts (see sync_one), so
+// its bytes are already part of this free count — no need to add them back.
+// Sent to the server as &maxBytes so it caps the encoded file to what fits.
 static int64_t community_budget_bytes(void)
 {
     int64_t freeb = spiffs_free_bytes();
     if (freeb < 0) {
         return DEFAULT_COMMUNITY_BUDGET;
     }
-    int64_t budget = freeb + file_size_bytes(BLOCKLIST_COMMUNITY_PATH) - BLOCKLIST_FS_MARGIN;
+    int64_t budget = freeb - BLOCKLIST_FS_MARGIN;
     return budget > 0 ? budget : 0;
 }
 
-// Downloads `url` into `tmp_path`. `final_path` is the file `tmp_path` will be
-// renamed onto by the caller; its current bytes are reclaimable, so they count
-// toward the space available for this download. On any error returns false and
-// writes a message to `err`.
+// Downloads `url` into `tmp_path`. The caller has already removed the live
+// file this temp will be renamed onto, so the whole free partition is
+// available here. On any error returns false and writes a message to `err`.
 static bool download_to_tmp(const char *url, const char *tmp_path,
-                            const char *final_path, char *err, size_t err_cap)
+                            char *err, size_t err_cap)
 {
     FILE *out = fopen(tmp_path, "wb");
     if (out == NULL) {
@@ -171,29 +160,20 @@ static bool download_to_tmp(const char *url, const char *tmp_path,
         return false;
     }
 
-    // Storage pre-check. Turn a mid-write ENOSPC (which leaves a half-written
-    // .tmp) into a clean, actionable error before any bytes land. The file we
-    // are about to replace is reclaimable: if the body fits beside it, keep it
-    // until the atomic rename; if not but it fits once the old one is freed,
-    // reclaim it now (losing the old-file fallback for this download window);
-    // if it does not fit even then, refuse and leave the old file intact.
+    // Storage pre-check: refuse a body that won't fit before any bytes land,
+    // turning a mid-write ENOSPC (which strands a half-written .tmp) into a
+    // clean, actionable error. The old live file was already removed by the
+    // caller, so the free count is exactly what this download has to work with.
     if (content_length > 0) {
         int64_t freeb = spiffs_free_bytes();
-        if (freeb >= 0) {
-            int64_t need = content_length + BLOCKLIST_FS_MARGIN;
-            if (need > freeb) {
-                int64_t reclaim = file_size_bytes(final_path);
-                if (need > freeb + reclaim) {
-                    snprintf(err, err_cap, "too large: %lld B needs > %lld B free",
-                             (long long) content_length, (long long) (freeb + reclaim));
-                    esp_http_client_close(client);
-                    esp_http_client_cleanup(client);
-                    fclose(out);
-                    unlink(tmp_path);
-                    return false;
-                }
-                unlink(final_path);
-            }
+        if (freeb >= 0 && content_length + BLOCKLIST_FS_MARGIN > freeb) {
+            snprintf(err, err_cap, "too large: %lld B needs > %lld B free",
+                     (long long) content_length, (long long) freeb);
+            esp_http_client_close(client);
+            esp_http_client_cleanup(client);
+            fclose(out);
+            unlink(tmp_path);
+            return false;
         }
     }
 
@@ -260,6 +240,17 @@ static bool tmp_parses_ok(const char *tmp_path)
 static bool sync_one(const char *type, const char *path, const char *tmp_path,
                      char *err, size_t err_cap)
 {
+    // Drop the old cached file up front, before downloading the new one.
+    // SPIFFS has no atomic replace — rename() onto an existing name returns
+    // SPIFFS_ERR_CONFLICTING_NAME, which the VFS maps to the catch-all EIO,
+    // so a temp+rename swap fails with "rename …: I/O error" on every run
+    // after the first. Removing the live file first makes the rename target
+    // absent (so it succeeds) and means only one copy is ever on flash, so
+    // the download never needs double the space. The cost is no on-flash
+    // fallback during the download window: if the sync fails, the call-time
+    // path falls back to the PhoneBlock API until the next successful run.
+    unlink(path);
+
     char url[256];
     int n = snprintf(url, sizeof(url), "%s/api/blocklist?format=binary&type=%s",
                      config_phoneblock_base_url(), type);
@@ -282,7 +273,7 @@ static bool sync_one(const char *type, const char *path, const char *tmp_path,
 
     unlink(tmp_path);
 
-    if (!download_to_tmp(url, tmp_path, path, err, err_cap)) {
+    if (!download_to_tmp(url, tmp_path, err, err_cap)) {
         unlink(tmp_path);
         return false;
     }
