@@ -216,7 +216,8 @@ were parked on the "+1 h retry" recompute against real local time immediately.
 
 ### Migration of existing jobs
 
-The status `mail` job becomes `SCHED_DAILY` at a fixed local hour (08:00) — it
+The status `mail` job becomes `SCHED_DAILY` at a fixed local hour
+(`CONFIG_MAIL_DAILY_HOUR`, default 23:00, to flush the day's spam reports) — it
 is the natural consumer of the wall clock and the point of the feature. It keeps
 its boot-relative `first_delay_s` first run (a `SCHED_DAILY` job may also fire
 soon after boot), so a post-crash error still mails within minutes instead of
@@ -291,5 +292,6 @@ would re-introduce exactly that thundering herd.
    behavior change).
 2. Timezone config + browser learning + Berlin default.
 3. Scheduler `SCHED_DAILY` support + host tests.
-4. Convert the status mail job to a fixed daily send (08:00 local), keeping its
-   boot-relative first run.
+4. Convert the status mail job to a fixed daily send
+   (`CONFIG_MAIL_DAILY_HOUR`, default 23:00 local), keeping its boot-relative
+   first run.

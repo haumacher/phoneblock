@@ -75,12 +75,14 @@ static void run_mail(void)      { mail_daily_flush(); }
 // slot alone would let a post-crash error wait up to a day.
 #define MAIL_FIRST_DELAY_S       (5 * 60)
 
-// Local hour the daily status mail is sent at (08:00). The mail goes
-// through the user's own SMTP server, so there is no fleet-wide endpoint
-// to spread the load across — a fixed, predictable morning time is what a
-// user wants. The send is a no-op unless there is a new error / new spam
-// since the last one (see mail_daily_flush), so a quiet day mails nothing.
-#define MAIL_DAILY_HOUR          8
+// Local hour the daily status mail is sent at (build-time configurable,
+// CONFIG_MAIL_DAILY_HOUR, default 23:00 to flush the day's spam reports /
+// errors at day's end). The mail goes through the user's own SMTP server,
+// so there is no fleet-wide endpoint to spread the load across — a fixed,
+// predictable time is what a user wants. The send is a no-op unless there
+// is a new error / new spam since the last one (see mail_daily_flush), so
+// a quiet day mails nothing.
+#define MAIL_DAILY_HOUR          CONFIG_MAIL_DAILY_HOUR
 
 // The server-facing housekeeping jobs stay interval-based: they are
 // best-effort and deliberately spread across the fleet by boot time +
