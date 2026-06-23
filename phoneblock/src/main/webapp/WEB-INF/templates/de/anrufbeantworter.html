@@ -391,6 +391,77 @@
 		Das bietet den besten Datenschutz, weil die ganze Anrufbehandlung bei Dir stattfindet.
 		Die Einrichtung in der Telefonanlage ist dieselbe, den Anrufbeantworter richtest Du über eine Konfigurationsdatei ein. 
 		</p>
+		<div class="notification is-warning">
+			<strong>Wichtig beim Self-Hosting:</strong> Anders als beim Cloud-Anrufbeantworter entfallen zwei Schritte aus der Anleitung oben:
+			<ul>
+				<li><strong>Kein DynDNS nötig.</strong> Der Anrufbeantworter läuft im selben Netz wie die FRITZ!Box und meldet sich lokal an.</li>
+				<li><strong>„Anmeldung aus dem Internet erlauben" bleibt deaktiviert.</strong> Die FRITZ!Box muss dafür nicht aus dem Internet erreichbar sein – lass die Option bewusst aus, um den Router nicht unnötig zu öffnen.</li>
+			</ul>
+		</div>
+		
+		<h3>1. Telefoniegerät in der FRITZ!Box anlegen</h3>
+		<p>
+		Lege ein neues Telefoniegerät an: <em>Telefonie &rarr; Telefoniegeräte &rarr; Neues Gerät einrichten &rarr; Telefon (mit und ohne Anrufbeantworter) &rarr; LAN/WLAN (IP-Telefon)</em>. Benutzername und Kennwort wählst Du frei – sie müssen gleich identisch in der <code>compose.yaml</code> stehen. Bei „Ankommende Anrufe" wählst Du <em>„auf alle Rufnummern reagieren"</em>.
+		</p>
+		
+		<h3>2. compose.yaml anlegen</h3>
+		<pre>services:
+  phoneblock:
+    image: phoneblock/answerbot:1.6.16
+    container_name: phoneblock
+    network_mode: host
+    environment:
+      - PHONEBLOCK_API_KEY=&lt;dein API-Key&gt;
+      - SIP_USER=&lt;Benutzername wie in der FRITZ!Box&gt;
+      - SIP_PASSWD=&lt;Kennwort wie in der FRITZ!Box&gt;
+      - VIA_ADDR=auto-configuration
+      - VIA_ADDR_V6=auto-configuration
+      - HOST_PORT=50060
+      - REGISTRAR=192.168.178.1
+      - ROUTE=192.168.178.1;lr
+      - REALM=fritz.box
+      - MEDIA=audio 4080 RTP/AVP { 8 PCMA 8000 160 }
+      - RECORDINGS=none
+      - CONVERSATION=/opt/phoneblock/conversation
+      - ACCEPT_LOCAL=yes
+    restart: unless-stopped</pre>
+		
+		<h3>3. Wichtige Variablen</h3>
+		<div class="table-container">
+			<table class="table is-fullwidth is-striped">
+				<thead>
+					<tr>
+						<th>Variable</th>
+						<th>Bedeutung</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><code>PHONEBLOCK_API_KEY</code></td>
+						<td>Dein persönlicher API-Key, erstellbar unter <code>phoneblock.net/phoneblock/settings</code>.</td>
+					</tr>
+					<tr>
+						<td><code>SIP_USER</code> / <code>SIP_PASSWD</code></td>
+						<td>Müssen exakt mit dem in der FRITZ!Box angelegten IP-Telefon übereinstimmen.</td>
+					</tr>
+					<tr>
+						<td><code>REGISTRAR</code> / <code>ROUTE</code></td>
+						<td>Adresse der FRITZ!Box. Tipp: Bei eigenem DNS-Server (z.&nbsp;B. Pi-hole/Unbound) hier die <em>IP-Adresse</em> der FRITZ!Box statt <code>fritz.box</code> eintragen, da der Hostname sonst evtl. nicht aufgelöst wird und die Registrierung fehlschlägt.</td>
+					</tr>
+					<tr>
+						<td><code>network_mode: host</code></td>
+						<td>Pflicht – wird für die SIP-/RTP-Kommunikation benötigt.</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		
+		<h3>4. Starten und prüfen</h3>
+		<pre>docker compose up -d
+docker logs -f phoneblock</pre>
+		<p>
+		Erscheint im Log eine Zeile wie <code>Registration of '&lt;sip:...&gt;' 200 OK, expires in 300s</code>, hat sich der Anrufbeantworter erfolgreich an der FRITZ!Box angemeldet. Ein Testanruf gelingt jederzeit über die <em>interne Nummer</em> des Geräts (beginnt mit <code>**</code>) – solche Anrufe nimmt der Anrufbeantworter immer an.
+		</p>
 		
 	</div>
 </section>
