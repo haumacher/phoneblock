@@ -7,7 +7,7 @@ CFLAGS  ?= -Wall -Wextra -Werror -O0 -g -I../main
 IDF_PATH ?= $(HOME)/tools/esp/esp-idf
 CJSON_DIR := $(IDF_PATH)/components/json/cJSON
 
-BINS = test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_tr064_parse test_api_scan test_log_capture test_improv_proto test_sched_time
+BINS = test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_tr064_parse test_api_scan test_log_capture test_improv_proto test_sched_time test_smtp_body
 
 test_sip_parse: test_sip_parse.c ../main/sip_parse.c ../main/sip_parse.h \
                 ../main/audio.c ../main/audio.h
@@ -40,6 +40,9 @@ test_api_scan: test_api_scan.c ../main/api_scan.c ../main/api_scan.h cjson.o
 
 test_sched_time: test_sched_time.c ../main/sched_time.c ../main/sched_time.h
 	$(CC) $(CFLAGS) test_sched_time.c ../main/sched_time.c -o $@
+
+test_smtp_body: test_smtp_body.c ../main/smtp_body.c ../main/smtp_body.h
+	$(CC) $(CFLAGS) test_smtp_body.c ../main/smtp_body.c -o $@
 
 test: $(BINS)
 	@set -e; for b in $(BINS); do echo "→ $$b"; ./$$b; done
