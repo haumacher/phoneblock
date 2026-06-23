@@ -253,6 +253,41 @@ Protocol buffer-like message definitions using msgbuf framework. Generated Java 
 
 ## Development Workflow
 
+### Dongle Release Branches
+
+The dongle firmware ships on its own cadence (`dongle-1.3.x`, `dongle-1.4.x`, …)
+while server-side work keeps landing on `master`. To keep release ports from
+becoming merge battles, follow the **release-branch-first** rule:
+
+1. **Create the release branch at the rc tag immediately.** When
+   `dongle-vX.Y.0-rc1` is tagged, branch `dongle-X.Y.x` off it right away —
+   don't reconstruct it later from `master`.
+2. **Fix on the release branch, forward-merge to `master`.** Dongle fixes for
+   the release go onto `dongle-X.Y.x` first, then get merged *into* `master`.
+   Never the reverse — cherry-picking *from* `master` back onto the release
+   branch is what causes the pain (see below).
+3. **Branch features from where they'll ship.** A `dongle-*` feature branch
+   destined for X.Y must start from `dongle-X.Y.x` (or the rc tag), not from
+   `master`. Otherwise it silently builds on whatever else landed on `master`
+   (e.g. the binary-blocklist rework) and drags that in on every port.
+
+**Why this matters:** `master` carries both server and firmware work. If a
+firmware feature was branched off `master` *after* an unrelated change (e.g.
+the binary blocklist), its commits are interleaved with that change in shared
+files (`scheduler.c`, `web.c`, `CMakeLists.txt`). Cherry-picking such commits
+onto an rc tag that predates the unrelated change forces a 3-way merge that
+mixes both features — you then have to hand-separate the wanted feature from
+the dragged-in one, conflict by conflict.
+
+**When you must port after the fact** (the situation that produced
+`dongle-1.4.x`): enable `git config rerere.enabled true` first. The conflict
+resolution recorded on the first conflicting commit is replayed automatically
+when the next commit hits the same spot (e.g. repeated `scheduler.c`
+collisions), instead of re-resolving by hand each time. Resolve by keeping the
+rc baseline plus only the target feature's hunks, dropping every reference to
+the unrelated change, then validate with a full `idf.py build` **and** the host
+test suite (`cd phoneblock-dongle/firmware/test && make test`) before pushing.
+
 ### Database Migrations
 
 When adding schema changes:
