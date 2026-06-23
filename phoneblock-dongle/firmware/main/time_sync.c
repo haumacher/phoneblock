@@ -14,6 +14,24 @@
 
 static const char *TAG = "time_sync";
 
+// Static SNTP servers we register: the default gateway and pool.ntp.org.
+#define TIME_SYNC_STATIC_SERVERS 2
+
+// Total SNTP slots lwIP must hold: the two static servers above plus the
+// DHCP option-42 server that fills index 0 (see the config below). lwIP is
+// built with a fixed-size server array (CONFIG_LWIP_SNTP_MAX_SERVERS); ask
+// esp_netif_sntp_init() for more than fit and it fails at runtime with
+// ESP_ERR_INVALID_ARG and SNTP never starts. A stale sdkconfig that
+// predated CONFIG_LWIP_SNTP_MAX_SERVERS=3 (sdkconfig.defaults) shipped
+// exactly that crash to the field — silently, because the failure is only
+// visible in the log. Turn it into a build failure so a too-small value
+// (e.g. a stale sdkconfig that didn't pick up the default) can't ship:
+// run `idf.py fullclean` so sdkconfig.defaults takes effect, or raise it.
+#if !defined(CONFIG_LWIP_SNTP_MAX_SERVERS) || \
+    CONFIG_LWIP_SNTP_MAX_SERVERS < (TIME_SYNC_STATIC_SERVERS + 1)
+#error "CONFIG_LWIP_SNTP_MAX_SERVERS must be >= 3 for time_sync's server list; run 'idf.py fullclean' so sdkconfig.defaults applies, or raise it."
+#endif
+
 // Set true once SNTP has stepped the clock at least once. Written from the
 // SNTP sync callback (lwIP's SNTP task context), read everywhere — a plain
 // bool is fine for a one-way latch on a 32-bit MCU.
@@ -90,7 +108,8 @@ void time_sync_start(void)
     // Static list [gateway, pool.ntp.org]; with server_from_dhcp the
     // DHCP-supplied servers are inserted at index 0, pushing these to 1/2.
     // Effective order: DHCP option 42 -> gateway -> pool.ntp.org.
-    esp_sntp_config_t config = ESP_NETIF_SNTP_DEFAULT_CONFIG_MULTIPLE(2,
+    esp_sntp_config_t config =
+        ESP_NETIF_SNTP_DEFAULT_CONFIG_MULTIPLE(TIME_SYNC_STATIC_SERVERS,
             ESP_SNTP_SERVER_LIST(s_gw_server, "pool.ntp.org"));
     config.start                      = false;  // wait for the first IP
     config.server_from_dhcp           = true;   // adopt option-42 servers
