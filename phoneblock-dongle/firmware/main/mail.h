@@ -18,14 +18,14 @@
 // button, and the daily flush skips when it is false.
 bool mail_configured(void);
 
-// Send one mail synchronously over SMTP. Returns true on a 2xx final
-// response. Best-effort: returns false on any failure and logs at
-// WARN/ERROR (which the web UI's log panel surfaces). Performs the TLS
-// handshake itself, so it must run on a task with ~8 KB stack; it checks
-// network availability and a heap floor before connecting. The body may
-// be multi-line UTF-8; it is sent verbatim (no dot-stuffing — callers
-// must not emit lines starting with '.').
-bool mail_send(const char *subject, const char *body);
+// Send a fixed test mail synchronously over SMTP, so the user can verify
+// the configured credentials. Returns true on success; logs the outcome
+// at INFO/WARN (which the web UI's log panel surfaces). Performs the TLS
+// handshake with full cert-chain verification inline, so it must run on a
+// generously-sized stack — it is driven from the scheduler task (16 KB),
+// never from the httpd worker (see scheduler_request_mail_test). The web
+// UI's test button triggers it through that scheduler notification.
+bool mail_send_test(void);
 
 // One daily evaluation, called by the scheduler: if the on-error /
 // on-spam toggles fire — a new ERROR was logged, or spam calls were

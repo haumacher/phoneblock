@@ -27,6 +27,7 @@
 #include "config.h"
 #include "firmware_update.h"
 #include "mail.h"
+#include "scheduler.h"
 #include "sip_register.h"
 #include "stats.h"
 #include "sync.h"
@@ -1823,9 +1824,11 @@ static esp_err_t handle_blocklist_sync_run(httpd_req_t *req)
 
 // POST /api/mail/test — send a test status mail using the saved SMTP
 // settings, so the user can verify credentials right after entering them.
-// Runs mail_send() synchronously: the TLS handshake fits the httpd task's
-// 8 KB stack (the OTA install path runs here too). Not destructive, so it
-// needs no replay nonce — a repeated POST just sends another test mail.
+// Hands the send to the scheduler task and returns immediately: the
+// SMTP/TLS conversation blocks for seconds, and this httpd worker is wired
+// into the task watchdog (a wedged handler panics — see the WDT feeder
+// below), so it must not run the send here. Fire-and-forget; the outcome
+// lands in the log panel. Not destructive, so no replay nonce.
 static esp_err_t handle_mail_test(httpd_req_t *req)
 {
     REQUIRE_AUTH_API(req);
@@ -1834,16 +1837,12 @@ static esp_err_t handle_mail_test(httpd_req_t *req)
                        "Empfänger speichern.");
         return ESP_OK;
     }
-    bool ok = mail_send("PhoneBlock-Dongle: Test",
-                        "Dies ist eine Test-Statusmeldung deines "
-                        "PhoneBlock-Dongles.\n\n"
-                        "Wenn du diese E-Mail erhältst, ist der "
-                        "E-Mail-Versand korrekt eingerichtet.\n");
+    bool ok = scheduler_request_mail_test();
     cJSON *root = cJSON_CreateObject();
     cJSON_AddBoolToObject  (root, "ok", ok);
     cJSON_AddStringToObject(root, "message",
-        ok ? "Test-E-Mail gesendet."
-           : "Versand fehlgeschlagen — bitte Einstellungen und Protokoll prüfen.");
+        ok ? "Test-E-Mail wird gesendet — das Ergebnis steht im Protokoll."
+           : "Versand konnte nicht gestartet werden — bitte Protokoll prüfen.");
     send_json(req, root);
     return ESP_OK;
 }

@@ -152,7 +152,11 @@ static int do_handshake(smtp_conn_t *c, int64_t deadline)
 
 // --- send -----------------------------------------------------------
 
-bool mail_send(const char *subject, const char *body)
+// Synchronous SMTP send. Internal: it runs the mbedTLS handshake (with
+// X.509 chain verification) inline on the caller's stack and blocks on the
+// network for up to MAIL_DEADLINE_S, so it must only ever be driven from
+// the scheduler task — the daily flush and the test trigger both do.
+static bool mail_send(const char *subject, const char *body)
 {
     if (!mail_configured()) {
         ESP_LOGW(TAG, "mail not configured (host/user/pass/recipient)");
@@ -399,4 +403,13 @@ void mail_daily_flush(void)
         if (have_new_spam)  s_reported_spam = cnt.spam_blocked;
     }
     free(body);
+}
+
+bool mail_send_test(void)
+{
+    return mail_send("PhoneBlock-Dongle: Test",
+                     "Dies ist eine Test-Statusmeldung deines "
+                     "PhoneBlock-Dongles.\n\n"
+                     "Wenn du diese E-Mail erhältst, ist der "
+                     "E-Mail-Versand korrekt eingerichtet.\n");
 }
