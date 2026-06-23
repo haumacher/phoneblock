@@ -337,6 +337,80 @@ done:
     return ok;
 }
 
+// --- body assembly (shared by the daily flush and the test mail) -----
+
+// Append the status summary block — device id, uptime, call counters —
+// at body[len]. Returns the new length (clamped to cap on truncation).
+static size_t append_summary(char *body, size_t cap, size_t len,
+                             const stats_counters_t *cnt)
+{
+    if (len >= cap) return len;
+    int64_t up_s = esp_timer_get_time() / 1000000;
+    int w = snprintf(body + len, cap - len,
+        "Gerät: %s\n"
+        "Laufzeit: %lldh %lldmin\n"
+        "Anrufe gesamt: %u | SPAM blockiert: %u | durchgestellt: %u\n",
+        config_device_id(),
+        (long long)(up_s / 3600), (long long)((up_s % 3600) / 60),
+        (unsigned)cnt->total_calls, (unsigned)cnt->spam_blocked,
+        (unsigned)cnt->legitimate);
+    if (w < 0) return len;
+    len += (size_t)w;
+    return len > cap ? cap : len;
+}
+
+// Append the "Neue Meldungen im Protokoll" section: every WARN/ERROR in
+// `errs` (newest first) with at_us > since_us, formatted one per line. The
+// header is written only if at least one entry qualifies, so an empty
+// window adds nothing. Returns the new length; updates *newest_us to the
+// newest at_us appended, which the daily flush uses as its high-water mark.
+static size_t append_log_window(char *body, size_t cap, size_t len,
+                                const stats_error_t *errs, int n,
+                                int64_t since_us, int64_t *newest_us)
+{
+    // Log entries store esp_timer uptime (at_us), not wall-clock. Once the
+    // SNTP clock is valid we recover each entry's real instant —
+    // now_epoch - (now_us - at_us) — since time() and esp_timer share the
+    // same monotonic source. A mail is read minutes-to-days later, so an
+    // absolute local timestamp is far more useful than "+Ns since boot";
+    // keep the uptime form only as a pre-sync fallback.
+    int64_t now_us    = esp_timer_get_time();
+    bool    clock_ok  = time_sync_valid();
+    time_t  now_epoch = clock_ok ? (time_t)time_sync_now_epoch() : 0;
+
+    bool header = false;
+    for (int i = n - 1; i >= 0 && len < cap - 160; i--) {
+        const stats_error_t *e = &errs[i];
+        if (e->at_us <= since_us) continue;
+        char lvl = (e->level == ESP_LOG_ERROR) ? 'E'
+                 : (e->level == ESP_LOG_WARN)  ? 'W' : 0;
+        if (!lvl) continue;
+        if (!header) {
+            int hw = snprintf(body + len, cap - len,
+                              "\nNeue Meldungen im Protokoll:\n");
+            if (hw < 0) break;
+            len += (size_t)hw;
+            header = true;
+        }
+        char when[24];
+        if (clock_ok) {
+            time_t ev = now_epoch - (time_t)((now_us - e->at_us) / 1000000);
+            struct tm lt;
+            localtime_r(&ev, &lt);
+            strftime(when, sizeof(when), "%Y-%m-%d %H:%M:%S", &lt);
+        } else {
+            snprintf(when, sizeof(when), "+%llds",
+                     (long long)(e->at_us / 1000000));
+        }
+        int w = snprintf(body + len, cap - len, "%c %s %s: %s\n",
+                         lvl, when, e->tag, e->message);
+        if (w < 0 || (size_t)w >= cap - len) break;
+        len += (size_t)w;
+        if (e->at_us > *newest_us) *newest_us = e->at_us;
+    }
+    return len;
+}
+
 // --- daily evaluation -----------------------------------------------
 
 void mail_daily_flush(void)
@@ -370,17 +444,9 @@ void mail_daily_flush(void)
     char *body = malloc(MAIL_BODY_CAP);
     if (!body) return;
 
-    int64_t up_s = esp_timer_get_time() / 1000000;
-    size_t  len  = 0;
-    len += snprintf(body + len, MAIL_BODY_CAP - len,
-        "Statusmeldung deines PhoneBlock-Dongles.\n\n"
-        "Gerät: %s\n"
-        "Laufzeit: %lldh %lldmin\n"
-        "Anrufe gesamt: %u | SPAM blockiert: %u | durchgestellt: %u\n",
-        config_device_id(),
-        (long long)(up_s / 3600), (long long)((up_s % 3600) / 60),
-        (unsigned)cnt.total_calls, (unsigned)cnt.spam_blocked,
-        (unsigned)cnt.legitimate);
+    size_t len = snprintf(body, MAIL_BODY_CAP,
+        "Statusmeldung deines PhoneBlock-Dongles.\n\n");
+    len = append_summary(body, MAIL_BODY_CAP, len, &cnt);
 
     if (have_new_spam && len < MAIL_BODY_CAP) {
         len += snprintf(body + len, MAIL_BODY_CAP - len,
@@ -388,46 +454,12 @@ void mail_daily_flush(void)
             (unsigned)(cnt.spam_blocked - s_reported_spam));
     }
 
-    // Log entries store esp_timer uptime (at_us), not wall-clock. Once the
-    // SNTP clock is valid we can recover each entry's real instant —
-    // now_epoch - (now_us - at_us) — since time() and esp_timer share the
-    // same monotonic source. A mail is read minutes-to-days later, so an
-    // absolute local timestamp is far more useful than "+Ns since boot";
-    // we keep the uptime form only as a pre-sync fallback.
-    int64_t now_us     = esp_timer_get_time();
-    bool    clock_ok   = time_sync_valid();
-    time_t  now_epoch  = clock_ok ? (time_t)time_sync_now_epoch() : 0;
-
     // Advance the log high-water mark over every WARN/ERROR we append, so
     // the same window isn't re-mailed; the *trigger* is still a new ERROR.
     int64_t newest_us = s_reported_through_us;
-    if (have_new_error && len < MAIL_BODY_CAP) {
-        len += snprintf(body + len, MAIL_BODY_CAP - len,
-                        "\nNeue Meldungen im Protokoll:\n");
-        for (int i = n - 1; i >= 0 && len < MAIL_BODY_CAP - 160; i--) {
-            const stats_error_t *e = &errs[i];
-            if (e->at_us <= s_reported_through_us) continue;
-            char lvl = (e->level == ESP_LOG_ERROR) ? 'E'
-                     : (e->level == ESP_LOG_WARN)  ? 'W' : 0;
-            if (!lvl) continue;
-            char when[24];
-            if (clock_ok) {
-                time_t ev = now_epoch - (time_t)((now_us - e->at_us) / 1000000);
-                struct tm lt;
-                localtime_r(&ev, &lt);
-                strftime(when, sizeof(when), "%Y-%m-%d %H:%M:%S", &lt);
-            } else {
-                snprintf(when, sizeof(when), "+%llds",
-                         (long long)(e->at_us / 1000000));
-            }
-            int w = snprintf(body + len, MAIL_BODY_CAP - len,
-                             "%c %s %s: %s\n",
-                             lvl, when, e->tag, e->message);
-            if (w < 0 || (size_t)w >= MAIL_BODY_CAP - len) break;
-            len += (size_t)w;
-            if (e->at_us > newest_us) newest_us = e->at_us;
-        }
-    }
+    if (have_new_error)
+        len = append_log_window(body, MAIL_BODY_CAP, len, errs, n,
+                                s_reported_through_us, &newest_us);
 
     const char *subject =
         (have_new_error && have_new_spam) ? "PhoneBlock-Dongle: Fehler und SPAM-Anrufe"
@@ -445,9 +477,25 @@ void mail_daily_flush(void)
 
 bool mail_send_test(void)
 {
-    return mail_send("PhoneBlock-Dongle: Test",
-                     "Dies ist eine Test-Statusmeldung deines "
-                     "PhoneBlock-Dongles.\n\n"
-                     "Wenn du diese E-Mail erhältst, ist der "
-                     "E-Mail-Versand korrekt eingerichtet.\n");
+    char *body = malloc(MAIL_BODY_CAP);
+    if (!body) return false;
+
+    // Just send *the* status mail, built exactly like the daily flush —
+    // summary plus the current WARN/ERROR log window (the whole ring, hence
+    // since_us = 0). No test-only wording: the point of the button is to
+    // see the real mail on demand.
+    stats_counters_t cnt;
+    stats_snapshot_counters(&cnt);
+    stats_error_t errs[STATS_MAX_ERRORS];
+    int     n      = stats_snapshot_errors(errs, STATS_MAX_ERRORS);
+    int64_t newest = 0;
+
+    size_t len = snprintf(body, MAIL_BODY_CAP,
+        "Statusmeldung deines PhoneBlock-Dongles.\n\n");
+    len = append_summary(body, MAIL_BODY_CAP, len, &cnt);
+    len = append_log_window(body, MAIL_BODY_CAP, len, errs, n, 0, &newest);
+
+    bool ok = mail_send("PhoneBlock-Dongle: Statusmeldung", body);
+    free(body);
+    return ok;
 }
