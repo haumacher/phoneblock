@@ -8,4 +8,5 @@ test_log_capture
 test_improv_proto
 test_blocklist_lookup
 test_sched_time
+test_smtp_body
 cjson.o
