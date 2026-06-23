@@ -20,6 +20,7 @@
 #include "mbedtls/ssl.h"
 
 #include "config.h"
+#include "smtp_body.h"
 #include "stats.h"
 #include "time_sync.h"
 #include "wifi.h"
@@ -150,6 +151,24 @@ static int do_handshake(smtp_conn_t *c, int64_t deadline)
         return -1;
     }
     return 0;
+}
+
+// Adapter so smtp_encode_body() can stream straight onto the TLS channel:
+// each encoded chunk is written with chan_write_all under the send
+// deadline. The LF->CRLF and dot-stuffing logic itself lives in
+// smtp_body.c, where it is host-tested.
+struct body_sink_ctx { smtp_conn_t *c; int64_t deadline; };
+
+static int body_chan_sink(void *ctx, const char *data, size_t len)
+{
+    struct body_sink_ctx *b = ctx;
+    return chan_write_all(b->c, (const unsigned char *)data, len, b->deadline);
+}
+
+static int smtp_write_body(smtp_conn_t *c, const char *body, int64_t deadline)
+{
+    struct body_sink_ctx ctx = { c, deadline };
+    return smtp_encode_body(body, body_chan_sink, &ctx);
 }
 
 // --- send -----------------------------------------------------------
@@ -296,9 +315,7 @@ static bool mail_send(const char *subject, const char *body)
                                        deadline) != 0)
             goto done;
     }
-    if (body && body[0]
-            && chan_write_all(&c, (const unsigned char *)body, strlen(body),
-                              deadline) != 0)
+    if (body && body[0] && smtp_write_body(&c, body, deadline) != 0)
         goto done;
 
     ret = smtp_cmd(&c, "\r\n.\r\n", deadline);            // end of DATA
