@@ -489,7 +489,7 @@ esp_err_t web_auth_handle_login_link(httpd_req_t *req)
     // a hostile link inside the dongle UI could trick the user into a
     // login flow that lands on a third-party site.
     if (next[0] != '/' || next[1] == '/') {
-        ESP_LOGW(TAG, "auth/login-link: refusing 'next' = %s", next);
+        ESP_LOGW(TAG, "auth/login-link: refusing 'next' = \"%s\"", next);
         httpd_resp_set_status(req, "400 Bad Request");
         httpd_resp_set_type(req, "text/html; charset=utf-8");
         httpd_resp_sendstr(req,
