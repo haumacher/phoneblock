@@ -148,7 +148,7 @@ const I18N = {
     'status.info': 'Firmware {fw} · IP {ip} · Uptime {uptime} · API-Latenz {api}',
     'status.calls.title': 'Letzte Anrufe',
     'status.calls.empty': 'noch keine Anrufe',
-    'status.calls.col.when': 'vor',
+    'status.calls.col.when': 'Wann',
     'status.calls.col.number': 'Nummer',
     'status.calls.col.name': 'Name',
     'status.calls.col.verdict': 'Urteil',
@@ -174,12 +174,13 @@ const I18N = {
     'status.system.col.stack': 'Stack frei',
     'status.clock.now': 'Uhrzeit: {time}',
     'status.clock.pending': 'Uhrzeit: wird synchronisiert …',
+    'status.time.today': 'heute {time}',
+    'status.time.yesterday': 'gestern {time}',
     'status.tz.current': 'Zeitzone: {tz}',
     'status.tz.apply': 'Auf {zone} umstellen',
     'status.tz.saved': 'Zeitzone gespeichert.',
     'status.errors.title': 'Protokoll',
     'status.errors.empty': 'keine Einträge',
-    'status.errors.ago': 'vor {age}',
     'status.errors.clear': 'Protokoll leeren',
     'status.errors.capture_info': 'Auch Infos protokollieren',
     'status.errors.capture_info.hint': 'Für die Fehlersuche: zeigt zusätzlich Info-Meldungen (z. B. versuchter Server:Port). Füllt das Protokoll schnell — danach wieder ausschalten.',
@@ -400,7 +401,7 @@ const I18N = {
     'status.info': 'Firmware {fw} · IP {ip} · Uptime {uptime} · API latency {api}',
     'status.calls.title': 'Recent calls',
     'status.calls.empty': 'no calls yet',
-    'status.calls.col.when': 'ago',
+    'status.calls.col.when': 'When',
     'status.calls.col.number': 'Number',
     'status.calls.col.name': 'Name',
     'status.calls.col.verdict': 'Verdict',
@@ -426,12 +427,13 @@ const I18N = {
     'status.system.col.stack': 'Stack free',
     'status.clock.now': 'Time: {time}',
     'status.clock.pending': 'Time: synchronising …',
+    'status.time.today': 'today {time}',
+    'status.time.yesterday': 'yesterday {time}',
     'status.tz.current': 'Timezone: {tz}',
     'status.tz.apply': 'Switch to {zone}',
     'status.tz.saved': 'Timezone saved.',
     'status.errors.title': 'Log',
     'status.errors.empty': 'no entries',
-    'status.errors.ago': '{age} ago',
     'status.errors.clear': 'Clear log',
     'status.errors.capture_info': 'Also log info messages',
     'status.errors.capture_info.hint': 'For troubleshooting: also shows info messages (e.g. the server:port tried). Fills the log quickly — switch off again afterwards.',
@@ -652,7 +654,7 @@ const I18N = {
     'status.info': 'Firmware {fw} · IP {ip} · Uptime {uptime} · Latence API {api}',
     'status.calls.title': 'Derniers appels',
     'status.calls.empty': 'aucun appel pour l’instant',
-    'status.calls.col.when': 'il y a',
+    'status.calls.col.when': 'Quand',
     'status.calls.col.number': 'Numéro',
     'status.calls.col.name': 'Nom',
     'status.calls.col.verdict': 'Verdict',
@@ -664,9 +666,10 @@ const I18N = {
     'status.system.col.task': 'Tâche',
     'status.system.col.cpu': 'CPU',
     'status.system.col.stack': 'Pile libre',
+    'status.time.today': "aujourd'hui {time}",
+    'status.time.yesterday': 'hier {time}',
     'status.errors.title': 'Journal',
     'status.errors.empty': 'aucune entrée',
-    'status.errors.ago': 'il y a {age}',
     'status.errors.clear': 'Vider le journal',
     'status.errors.capture_info': 'Journaliser aussi les infos',
     'status.errors.capture_info.hint': "Pour le dépannage : affiche aussi les messages d'info (par ex. le serveur:port essayé). Remplit vite le journal — à désactiver ensuite.",
@@ -887,7 +890,7 @@ const I18N = {
     'status.info': 'Firmware {fw} · IP {ip} · Uptime {uptime} · Latencia API {api}',
     'status.calls.title': 'Últimas llamadas',
     'status.calls.empty': 'aún sin llamadas',
-    'status.calls.col.when': 'hace',
+    'status.calls.col.when': 'Cuándo',
     'status.calls.col.number': 'Número',
     'status.calls.col.name': 'Nombre',
     'status.calls.col.verdict': 'Veredicto',
@@ -899,9 +902,10 @@ const I18N = {
     'status.system.col.task': 'Tarea',
     'status.system.col.cpu': 'CPU',
     'status.system.col.stack': 'Pila libre',
+    'status.time.today': 'hoy {time}',
+    'status.time.yesterday': 'ayer {time}',
     'status.errors.title': 'Registro',
     'status.errors.empty': 'sin entradas',
-    'status.errors.ago': 'hace {age}',
     'status.errors.clear': 'Vaciar registro',
     'status.errors.capture_info': 'Registrar también los mensajes info',
     'status.errors.capture_info.hint': 'Para diagnóstico: muestra también mensajes info (p. ej. el servidor:puerto intentado). Llena el registro rápido; desactívalo después.',
@@ -1151,6 +1155,27 @@ function fmtSec(s){
   if (s < 3600) return Math.round(s/60) + ' min';
   if (s < 86400) return Math.round(s/3600) + ' h';
   return Math.round(s/86400) + ' T';
+}
+
+// Absolute point in time for an event the dongle reported as `ageS`
+// seconds old. We reconstruct the instant from the *browser's* own wall
+// clock (now - age) rather than the device clock: the browser always has
+// an accurate time and the correct local zone, so the rendering works
+// even before the dongle's SNTP sync and never disagrees with the user's
+// own "today"/"yesterday". `withSeconds` adds second precision for the
+// fine-grained log; the call list stays at minute precision.
+function fmtClock(ageS, withSeconds){
+  const locale = (typeof navigator !== 'undefined' && navigator.language) || LANG;
+  const d = new Date(Date.now() - Math.max(0, ageS) * 1000);
+  const time = d.toLocaleTimeString(locale, withSeconds
+    ? {hour: '2-digit', minute: '2-digit', second: '2-digit'}
+    : {hour: '2-digit', minute: '2-digit'});
+  const midnight = x => { const c = new Date(x); c.setHours(0, 0, 0, 0); return c.getTime(); };
+  const today = midnight(Date.now());
+  const day   = midnight(d);
+  if (day === today)             return t('status.time.today',     {time});
+  if (day === today - 86400000)  return t('status.time.yesterday', {time});
+  return d.toLocaleDateString(locale, {day: 'numeric', month: 'numeric'}) + ' ' + time;
 }
 
 async function fetchJson(url){
@@ -2166,7 +2191,7 @@ async function refreshAll(){
       // verdict colour (green / red), which already matches the
       // outcome the user gets.
       const verdictCls = c.suspected ? 'SUSPECT' : c.verdict;
-      return '<tr><td>' + esc(fmtSec(c.age_s)) + '</td>'
+      return '<tr><td>' + esc(fmtClock(c.age_s, false)) + '</td>'
         + '<td>' + numCol + '</td>'
         + '<td>' + nameCol + '</td>'
         + '<td class="v-' + esc(verdictCls) + '">' + esc(verdictLabel(c)) + '</td></tr>';
@@ -2290,7 +2315,7 @@ async function refreshAll(){
         + ';background:' + bg + '"><strong style="color:' + col + '">['
         + esc(e.tag) + ']</strong> ' + esc(e.message)
         + ' <span class="muted">'
-        + esc(t('status.errors.ago', {age: fmtSec(e.age_s)})) + '</span></div>';
+        + esc(fmtClock(e.age_s, true)) + '</span></div>';
     }).join('');
   } else {
     list.innerHTML = '<p class="muted">' + esc(t('status.errors.empty')) + '</p>';

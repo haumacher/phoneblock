@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include <sys/time.h>
+#include <time.h>
 #include "lwip/sockets.h"
 
 #include "esp_crt_bundle.h"
@@ -20,6 +21,7 @@
 
 #include "config.h"
 #include "stats.h"
+#include "time_sync.h"
 #include "wifi.h"
 
 static const char *TAG = "mail";
@@ -369,6 +371,16 @@ void mail_daily_flush(void)
             (unsigned)(cnt.spam_blocked - s_reported_spam));
     }
 
+    // Log entries store esp_timer uptime (at_us), not wall-clock. Once the
+    // SNTP clock is valid we can recover each entry's real instant —
+    // now_epoch - (now_us - at_us) — since time() and esp_timer share the
+    // same monotonic source. A mail is read minutes-to-days later, so an
+    // absolute local timestamp is far more useful than "+Ns since boot";
+    // we keep the uptime form only as a pre-sync fallback.
+    int64_t now_us     = esp_timer_get_time();
+    bool    clock_ok   = time_sync_valid();
+    time_t  now_epoch  = clock_ok ? (time_t)time_sync_now_epoch() : 0;
+
     // Advance the log high-water mark over every WARN/ERROR we append, so
     // the same window isn't re-mailed; the *trigger* is still a new ERROR.
     int64_t newest_us = s_reported_through_us;
@@ -381,10 +393,19 @@ void mail_daily_flush(void)
             char lvl = (e->level == ESP_LOG_ERROR) ? 'E'
                      : (e->level == ESP_LOG_WARN)  ? 'W' : 0;
             if (!lvl) continue;
+            char when[24];
+            if (clock_ok) {
+                time_t ev = now_epoch - (time_t)((now_us - e->at_us) / 1000000);
+                struct tm lt;
+                localtime_r(&ev, &lt);
+                strftime(when, sizeof(when), "%Y-%m-%d %H:%M:%S", &lt);
+            } else {
+                snprintf(when, sizeof(when), "+%llds",
+                         (long long)(e->at_us / 1000000));
+            }
             int w = snprintf(body + len, MAIL_BODY_CAP - len,
-                             "%c +%llds %s: %s\n",
-                             lvl, (long long)(e->at_us / 1000000),
-                             e->tag, e->message);
+                             "%c %s %s: %s\n",
+                             lvl, when, e->tag, e->message);
             if (w < 0 || (size_t)w >= MAIL_BODY_CAP - len) break;
             len += (size_t)w;
             if (e->at_us > newest_us) newest_us = e->at_us;
