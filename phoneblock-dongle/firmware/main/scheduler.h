@@ -38,6 +38,14 @@ bool scheduler_request_sync(void);
 // blocklist_sync_trigger_now(), the public entry point the web UI calls.
 bool scheduler_request_blocklist_sync(void);
 
+// Ask the scheduler to send a status-mail test as soon as possible (the
+// web UI's "send test email" button). The blocking SMTP/TLS send runs on
+// the scheduler task, not the caller's: the httpd handler must return
+// promptly or its task watchdog panics the wedged worker. Fire-and-forget
+// — the outcome is logged (and surfaced in the web UI's log panel), not
+// returned. Returns false if the scheduler task is not running.
+bool scheduler_request_mail_test(void);
+
 // Notify the scheduler that the wall clock has just been set (or stepped),
 // so any time-of-day ("daily") jobs recompute their next run against real
 // local time instead of the placeholder retry they parked on while the
