@@ -1412,7 +1412,14 @@ static void handle_incoming(sip_ctx_t *c, const char *pkt, int len,
     }
 
     char method[16];
-    parse_method(pkt, len, method, sizeof(method));
+    int method_len = parse_method(pkt, len, method, sizeof(method));
+
+    // A SIP CRLF keep-alive ("\r\n\r\n") has no method — parse_method returns
+    // an empty string. Silently ignore it instead of logging a confusing
+    // "method not implemented" with a blank name.
+    if (method_len == 0) {
+        return;
+    }
 
     if (strcmp(method, "OPTIONS") == 0) {
         send_response(c, from, pkt, len, 200, "OK", NULL, NULL);
@@ -1425,7 +1432,7 @@ static void handle_incoming(sip_ctx_t *c, const char *pkt, int len,
     } else if (strcmp(method, "CANCEL") == 0) {
         handle_cancel(c, pkt, len, from);
     } else {
-        ESP_LOGW(TAG, "method %s not implemented yet", method);
+        ESP_LOGW(TAG, "method \"%s\" not implemented yet", method);
     }
 }
 
