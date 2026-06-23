@@ -76,6 +76,19 @@ CONFIG_HTTPD_MAX_URI_LEN=1024
 # then fails with "Failed to create socket" / ESP_ERR_HTTP_CONNECT.
 CONFIG_LWIP_MAX_SOCKETS=16
 
+# Learn NTP servers from DHCP option 42. The dongle's wall clock
+# (time_sync.c) prefers the server(s) the DHCP server hands out — on a
+# Fritz!Box LAN that is the router itself — over the hard-coded
+# pool.ntp.org fallback. Without this, lwIP discards option 42 and we
+# would only ever reach the internet fallback.
+CONFIG_LWIP_DHCP_GET_NTP_SRV=y
+
+# Room for the three SNTP servers time_sync.c configures (DHCP option 42
+# at index 0, the default gateway, and the pool.ntp.org fallback). The
+# lwIP default is 1, which makes esp_netif_sntp_init() fail outright with
+# ESP_ERR_INVALID_ARG ("Tried to configure more servers than enabled").
+CONFIG_LWIP_SNTP_MAX_SERVERS=3
+
 # 4 MB of SPI flash: the ESP32 modules we ship with have 4 MB onboard
 # (the EGBO PICO-D4 packages flash in the SoC; WROOM-32 dev boards
 # use an external 4 MB chip). The IDF default is 2 MB, which cuts

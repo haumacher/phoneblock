@@ -5,4 +5,7 @@ test_sip_auth
 test_tr064_parse
 test_api_scan
 test_log_capture
+test_improv_proto
+test_blocklist_lookup
+test_sched_time
 cjson.o
