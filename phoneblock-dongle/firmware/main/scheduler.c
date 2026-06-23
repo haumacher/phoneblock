@@ -30,6 +30,10 @@ static const char *TAG = "scheduler";
 #define NOTIFY_SYNC      (1u << 0)
 // Task-notification bit raised by time_sync.c once the wall clock is set.
 #define NOTIFY_TIME      (1u << 2)
+// Task-notification bit for an on-demand status-mail test from the web UI.
+// The send runs here, on the scheduler task's stack, so the httpd handler
+// never blocks on the SMTP/TLS conversation (see scheduler_request_mail_test).
+#define NOTIFY_MAIL_TEST (1u << 3)
 
 // While the wall clock is not yet set, a daily job cannot know when its
 // local time-of-day next falls. Re-check this often so it fires promptly
@@ -174,6 +178,16 @@ static void scheduler_task(void *arg)
                                                      esp_timer_get_time());
         }
 
+        // On-demand status-mail test from the web UI. Runs the blocking
+        // SMTP/TLS send here rather than in the httpd handler, which must
+        // return promptly (its task watchdog panics a wedged handler — see
+        // web.c). Fire-and-forget: mail_send_test() logs the outcome at
+        // INFO/WARN, which the web UI's log panel surfaces.
+        if (notify & NOTIFY_MAIL_TEST) {
+            ESP_LOGI(TAG, "manual mail-test trigger");
+            mail_send_test();
+        }
+
         // The wall clock just became valid (or stepped to a new time).
         // Daily jobs parked on the clock-wait retry — or computed against
         // a now-stale time — must recompute against real local time.
@@ -205,6 +219,13 @@ bool scheduler_request_sync(void)
     return true;
 }
 
+bool scheduler_request_mail_test(void)
+{
+    if (!s_task) return false;
+    xTaskNotify(s_task, NOTIFY_MAIL_TEST, eSetBits);
+    return true;
+}
+
 void scheduler_notify_time_synced(void)
 {
     // No-op before the task exists: scheduler_task() computes daily due
@@ -219,9 +240,12 @@ void scheduler_start(void)
     // Create the sync status mutex before the task (or any web-UI
     // snapshot) can touch it.
     sync_init();
-    // 8 KB: sized for the heaviest job, the OTA install path
-    // (esp_https_ota + cert-chain verify + SHA-256 over the 1.4 MB
-    // image), which the standalone fw_update task also ran at 8 KB. The
-    // TLS self-test and the TR-064 sync fit comfortably inside that.
-    xTaskCreate(scheduler_task, "scheduler", 8192, NULL, 3, &s_task);
+    // 16 KB: sized for the heaviest job, the status-mail send. Its SMTP
+    // client runs the mbedTLS handshake with full cert-chain verification
+    // inline on this stack (esp_crt_bundle + ssl_config/entropy/drbg as
+    // stack locals) — that overflowed an 8 KB stack in the field (mail.c
+    // mbedtls_ssl_handshake → X.509 verify), the same way the SIP TLS path
+    // needed 12 KB back in firmware 1.0.10. The OTA install, TLS self-test
+    // and TR-064 sync fit comfortably below this.
+    xTaskCreate(scheduler_task, "scheduler", 16384, NULL, 3, &s_task);
 }
