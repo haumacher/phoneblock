@@ -38,6 +38,14 @@ int parse_method(const char *pkt, int len, char *method, int cap);
 // Returns -1 if the first line doesn't look like a status line.
 int parse_status_code(const char *resp, int len);
 
+// Copy the reason phrase from a status line "SIP/2.0 NNN Reason…" — the
+// text after the numeric code, trimmed of trailing CR/LF — into out.
+// Writes at most cap-1 bytes + NUL. Returns the number of bytes written
+// (0 and empty out if the line isn't a status line or carries no phrase).
+// Registrars often put the actionable cause here ("Forbidden - Registration
+// limit exceeded"), so surfacing it turns a bare "403" into a diagnosis.
+int parse_reason_phrase(const char *resp, int len, char *out, int cap);
+
 // Parse the granted REGISTER expiry (in seconds) from a 200 OK
 // response. Per RFC 3261 §10.2.4 a contact-level ";expires=<n>"
 // parameter takes precedence over the top-level Expires header; this

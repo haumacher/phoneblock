@@ -726,11 +726,30 @@ static register_outcome_t do_register(sip_ctx_t *c, int *granted_expires,
             }
         }
 
-        ESP_LOGI(TAG, "← %d (authenticated)", status);
-        if (err) snprintf(err, err_cap,
-            "authentication rejected: %d — check SIP user/password/realm",
-            status);
-        ESP_LOGE(TAG, "authentication rejected: %d", status);
+        // Surface the registrar's actual cause, not just the bare code.
+        // The full response is only ESP_LOGI (serial-only); the operator
+        // sees the web UI "Protokoll" panel, which mirrors WARN/ERROR. So
+        // lift the status-line reason phrase plus any Warning/Retry-After
+        // header into the ERROR line — that is what turns "403" into a
+        // diagnosis ("Forbidden - Registration limit exceeded; Retry-After:
+        // 1800") without anyone attaching a serial console.
+        char reason[64] = "", warn[80] = "", retry[24] = "";
+        parse_reason_phrase(rx, rx_len, reason, sizeof(reason));
+        const char *wh = find_header(rx, rx_len, "Warning");
+        if (wh) header_value(wh, rx + rx_len, warn, sizeof(warn));
+        const char *rh = find_header(rx, rx_len, "Retry-After");
+        if (rh) header_value(rh, rx + rx_len, retry, sizeof(retry));
+
+        char diag[STATS_ERROR_MSG_LEN];
+        int m = snprintf(diag, sizeof(diag), "authentication rejected: %d%s%s",
+                         status, reason[0] ? " " : "", reason);
+        if (retry[0] && m > 0 && m < (int)sizeof(diag))
+            m += snprintf(diag + m, sizeof(diag) - m, "; Retry-After: %s", retry);
+        if (warn[0] && m > 0 && m < (int)sizeof(diag))
+            snprintf(diag + m, sizeof(diag) - m, "; Warning: %s", warn);
+
+        if (err) snprintf(err, err_cap, "%s", diag);
+        ESP_LOGE(TAG, "%s", diag);
         result = REGISTER_DEFINITIVE;
         goto cleanup;
     }
