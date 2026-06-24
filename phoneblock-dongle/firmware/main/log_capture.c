@@ -104,6 +104,47 @@ char log_capture_parse(const char *line,
 }
 
 // ---------------------------------------------------------------------------
+// Library-noise suppression (host-testable).
+//
+// A few ESP-IDF libraries log routine, self-recovering conditions at WARN
+// because they have no INFO-level path for them. Mirrored into the web
+// "Protokoll" panel those read as faults and alarm users even though
+// nothing is wrong. Drop the specific lines from the ring — they still go
+// to the serial console (log_hook forwards every line there), so they stay
+// available for real debugging.
+//
+// Keep this list SHORT and SPECIFIC: an exact tag plus a message substring,
+// at one level. It is the opposite of a blanket per-tag mute — a genuine
+// error from the same component must still surface.
+struct log_suppress {
+    char        level;   // level letter this rule applies to ('W', 'E', …)
+    const char *tag;     // exact ESP-IDF tag
+    const char *needle;  // substring that must appear in the message
+};
+
+static const struct log_suppress k_suppress[] = {
+    // esp_http_server logs this WARN every time a client socket drops
+    // mid-recv: a browser closing a keep-alive connection, an RST, or an
+    // idle EAGAIN timeout. Routine for a web server handing out the
+    // dongle's own UI; not a fault. The library hard-codes it at WARN with
+    // no INFO path, so the ring is the only place to filter it.
+    // (esp-idf httpd_txrx.c: httpd_sock_err("recv", …) →
+    //  "httpd_sock_err: error in recv : <errno>".)
+    { 'W', "httpd_txrx", "error in recv" },
+};
+
+int log_capture_suppressed(char level, const char *tag, const char *msg)
+{
+    if (!tag || !msg) return 0;
+    for (size_t i = 0; i < sizeof(k_suppress) / sizeof(k_suppress[0]); i++) {
+        const struct log_suppress *s = &k_suppress[i];
+        if (level == s->level && strcmp(tag, s->tag) == 0 && strstr(msg, s->needle))
+            return 1;
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
 // ESP-IDF log hook. Compiled out on the host.
 // ---------------------------------------------------------------------------
 #ifdef ESP_PLATFORM
@@ -138,11 +179,12 @@ static char s_line[192];
 static char s_tag[STATS_ERROR_TAG_LEN];
 static char s_msg[STATS_ERROR_MSG_LEN];
 
-static void capture_line(int level, const char *fmt, va_list ap)
+static void capture_line(char lvl, int level, const char *fmt, va_list ap)
 {
     if (!s_lock || xSemaphoreTake(s_lock, 0) != pdTRUE) return;
     vsnprintf(s_line, sizeof(s_line), fmt, ap);
-    if (log_capture_parse(s_line, s_tag, sizeof(s_tag), s_msg, sizeof(s_msg))) {
+    if (log_capture_parse(s_line, s_tag, sizeof(s_tag), s_msg, sizeof(s_msg))
+            && !log_capture_suppressed(lvl, s_tag, s_msg)) {
         stats_record_error(level, s_tag, s_msg);
     }
     xSemaphoreGive(s_lock);
@@ -181,7 +223,7 @@ static int log_hook(const char *fmt, va_list ap)
     if (level) {
         va_list copy;
         va_copy(copy, ap);
-        capture_line(level, fmt, copy);
+        capture_line(lvl, level, fmt, copy);
         va_end(copy);
     }
 
