@@ -46,14 +46,13 @@ typedef struct {
 } vad_t;
 
 // (Re)initialise a detector. `silence_db` is the dBFS threshold (e.g.
-// -35), `min_silence_ms` the continuous-silence span (e.g. 1500).
+// -35), `min_silence_ms` the continuous-silence span (e.g. 800).
 //
-// The detector starts in the "speaking" state so that the very first
-// stretch of silence on a fresh call still produces a VAD_SILENCE_ONSET
-// — i.e. the caller staying quiet right away is detectable, without
-// having to speak first. (The later dialog stage may want the opposite
-// "wait for intro" bias; that is a policy choice for that stage, not the
-// detector's job.)
+// The detector starts in the non-speaking state so that the caller's very
+// first utterance reliably produces a VAD_SPEECH_ONSET — needed by the
+// dialog await, which keys "did the caller respond" on that event. A
+// caller who instead stays silent still produces a VAD_SILENCE_ONSET after
+// min_silence_ms: that transition is independent of the speaking flag.
 void vad_init(vad_t *v, int silence_db, int min_silence_ms);
 
 // Feed one frame of `n` signed-16-bit PCM samples spanning `frame_ms`

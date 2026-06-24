@@ -77,11 +77,11 @@ static const char *NS   = "phoneblock";
 // VAD defaults — mirror the Cloud/Docker answer bot's well-tuned values
 // (silence-db -35 dBFS, min-silence-time 1500 ms, padding-time 500 ms).
 #define DEFAULT_VAD_SILENCE_DB     (-35)
-#define DEFAULT_VAD_MIN_SILENCE_MS 1500
+#define DEFAULT_VAD_MIN_SILENCE_MS 800   // dialog response time (was 1500)
 #define DEFAULT_VAD_PADDING_MS     500
 // Comfort-noise level: a quiet "live line" hiss, well below the silence
 // threshold so it never reads as the caller speaking.
-#define DEFAULT_NOISE_DB           (-50)
+#define DEFAULT_NOISE_DB           (-60)   // continuous under speech, so subtle
 // Local SIP / RTP bind ports. High "unsuspicious" ports on purpose: not
 // 5060/5061, so they dodge router SIP-ALGs (which only mangle 5060) and
 // are not reserved by a FritzBox's own SIP stack — forwardable 1:1 behind

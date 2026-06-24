@@ -137,8 +137,12 @@ static void test_threshold_is_respected(void)
     assert(db < -35 && db > -50);
 
     vad_t strict; vad_init(&strict, -50, 100);   // -42 dBFS counts as speech
-    assert(feed(&strict, 350.0) == VAD_NONE);     // already "speaking" → no event
-    for (int f = 0; f < 10; f++) assert(feed(&strict, 350.0) == VAD_NONE);
+    // Sustained -42 dBFS: one SPEECH_ONSET once the confirm window passes,
+    // then no further events while it stays loud.
+    int sp = 0;
+    for (int f = 0; f < 10; f++)
+        if (feed(&strict, 350.0) == VAD_SPEECH_ONSET) sp++;
+    assert(sp == 1);
 
     vad_t lax; vad_init(&lax, -35, 100);          // -42 dBFS counts as silence
     int got = 0;

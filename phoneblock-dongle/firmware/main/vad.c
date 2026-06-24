@@ -27,7 +27,7 @@ void vad_init(vad_t *v, int silence_db, int min_silence_ms)
 {
     v->silence_db       = silence_db;
     v->min_silence_ms   = min_silence_ms;
-    v->speaking         = true;   // see header: detect leading silence too
+    v->speaking         = false;  // so the FIRST utterance fires SPEECH_ONSET
     v->silence_ms       = 0;
     v->silence_reported = false;
     v->loud_run         = 0;
