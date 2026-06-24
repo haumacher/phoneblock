@@ -47,6 +47,12 @@ static const char *NS   = "phoneblock";
 #define K_PB_TOKEN      "pb_token"
 #define K_MIN_DIRECT    "min_direct"
 #define K_MIN_RANGE     "min_range"
+#define K_VAD_SIL_DB    "vad_silence_db"
+#define K_VAD_SIL_MS    "vad_min_sil_ms"
+#define K_VAD_PAD_MS    "vad_padding_ms"
+#define K_NOISE_DB      "noise_db"
+#define K_REC_URL       "rec_url"
+#define K_REC_AUTH      "rec_auth"
 #define K_SMTP_HOST     "smtp_host"
 #define K_SMTP_PORT     "smtp_port"
 #define K_SMTP_SECURITY "smtp_security"
@@ -68,6 +74,14 @@ static const char *NS   = "phoneblock";
 // aggressive range-blocking can lower it, users who want to disable
 // range entirely can set it to 0.
 #define DEFAULT_MIN_RANGE_VOTES 10
+// VAD defaults — mirror the Cloud/Docker answer bot's well-tuned values
+// (silence-db -35 dBFS, min-silence-time 1500 ms, padding-time 500 ms).
+#define DEFAULT_VAD_SILENCE_DB     (-35)
+#define DEFAULT_VAD_MIN_SILENCE_MS 1500
+#define DEFAULT_VAD_PADDING_MS     500
+// Comfort-noise level: a quiet "live line" hiss, well below the silence
+// threshold so it never reads as the caller speaking.
+#define DEFAULT_NOISE_DB           (-50)
 // Local SIP / RTP bind ports. High "unsuspicious" ports on purpose: not
 // 5060/5061, so they dodge router SIP-ALGs (which only mangle 5060) and
 // are not reserved by a FritzBox's own SIP stack — forwardable 1:1 behind
@@ -117,6 +131,12 @@ typedef struct {
     char pb_token[64];
     int  min_direct_votes;   // SPAM threshold for direct hits
     int  min_range_votes;    // SPAM threshold for wildcard/range hits; 0 = off
+    int  vad_silence_db;     // dBFS at/below which a frame counts as silence
+    int  vad_min_silence_ms; // continuous silence (ms) that ends caller speech
+    int  vad_padding_ms;     // recording silence padding (ms); reserved
+    int  noise_db;           // comfort-noise level in dBFS
+    char rec_url[128];       // call-recorder upload base URL; empty = off
+    char rec_auth[128];      // optional "Authorization" header value
     // Status email (SMTP submission via the user's own mail account).
     char smtp_host[64];
     int  smtp_port;          // 0 = derive from smtp_security (465 tls / 587 starttls)
@@ -270,6 +290,12 @@ void config_load(void)
         s_config.pb_token[0]  = '\0';
         s_config.min_direct_votes = DEFAULT_MIN_DIRECT_VOTES;
         s_config.min_range_votes  = DEFAULT_MIN_RANGE_VOTES;
+        s_config.vad_silence_db     = DEFAULT_VAD_SILENCE_DB;
+        s_config.vad_min_silence_ms = DEFAULT_VAD_MIN_SILENCE_MS;
+        s_config.vad_padding_ms     = DEFAULT_VAD_PADDING_MS;
+        s_config.noise_db           = DEFAULT_NOISE_DB;
+        s_config.rec_url[0]         = '\0';
+        s_config.rec_auth[0]        = '\0';
         s_config.smtp_host[0]     = '\0';
         s_config.smtp_port        = 0;   // → derive from security
         copy_default(s_config.smtp_security, sizeof(s_config.smtp_security), "tls");
@@ -347,6 +373,12 @@ void config_load(void)
              s_config.pb_token,     sizeof(s_config.pb_token));
     s_config.min_direct_votes = load_int(h, K_MIN_DIRECT, DEFAULT_MIN_DIRECT_VOTES);
     s_config.min_range_votes  = load_int(h, K_MIN_RANGE,  DEFAULT_MIN_RANGE_VOTES);
+    s_config.vad_silence_db     = load_int(h, K_VAD_SIL_DB, DEFAULT_VAD_SILENCE_DB);
+    s_config.vad_min_silence_ms = load_int(h, K_VAD_SIL_MS, DEFAULT_VAD_MIN_SILENCE_MS);
+    s_config.vad_padding_ms     = load_int(h, K_VAD_PAD_MS, DEFAULT_VAD_PADDING_MS);
+    s_config.noise_db           = load_int(h, K_NOISE_DB,   DEFAULT_NOISE_DB);
+    load_str(h, K_REC_URL,  "", s_config.rec_url,  sizeof(s_config.rec_url));
+    load_str(h, K_REC_AUTH, "", s_config.rec_auth, sizeof(s_config.rec_auth));
     load_str(h, K_SMTP_HOST, "",
              s_config.smtp_host, sizeof(s_config.smtp_host));
     s_config.smtp_port = load_int(h, K_SMTP_PORT, 0);
@@ -498,6 +530,12 @@ const char *config_phoneblock_base_url(void) { return s_config.pb_base_url; }
 const char *config_phoneblock_token(void)    { return s_config.pb_token; }
 int         config_min_direct_votes(void)     { return s_config.min_direct_votes; }
 int         config_min_range_votes(void)      { return s_config.min_range_votes; }
+int         config_vad_silence_db(void)       { return s_config.vad_silence_db; }
+int         config_vad_min_silence_ms(void)   { return s_config.vad_min_silence_ms; }
+int         config_vad_padding_ms(void)        { return s_config.vad_padding_ms; }
+int         config_noise_db(void)              { return s_config.noise_db; }
+const char *config_rec_url(void)               { return s_config.rec_url; }
+const char *config_rec_auth(void)              { return s_config.rec_auth; }
 const char *config_smtp_host(void)           { return s_config.smtp_host; }
 const char *config_smtp_security(void)
 {
@@ -679,6 +717,18 @@ esp_err_t config_update(const config_update_t *u)
                                               u->has_min_range_votes,
                                               u->min_range_votes,
                                               &s_config.min_range_votes);
+    if (err == ESP_OK) err = set_int_if(h, K_VAD_SIL_DB, u->vad_silence_db,
+                                        &s_config.vad_silence_db);
+    if (err == ESP_OK) err = set_int_if(h, K_VAD_SIL_MS, u->vad_min_silence_ms,
+                                        &s_config.vad_min_silence_ms);
+    if (err == ESP_OK) err = set_int_if(h, K_VAD_PAD_MS, u->vad_padding_ms,
+                                        &s_config.vad_padding_ms);
+    if (err == ESP_OK) err = set_int_if(h, K_NOISE_DB, u->noise_db,
+                                        &s_config.noise_db);
+    if (err == ESP_OK) err = set_str_if(h, K_REC_URL, u->rec_url,
+                                        s_config.rec_url, sizeof(s_config.rec_url));
+    if (err == ESP_OK) err = set_str_if(h, K_REC_AUTH, u->rec_auth,
+                                        s_config.rec_auth, sizeof(s_config.rec_auth));
     if (err == ESP_OK) err = set_str_if(h, K_SMTP_HOST, u->smtp_host,
                                         s_config.smtp_host, sizeof(s_config.smtp_host));
     if (err == ESP_OK) err = set_int_explicit(h, K_SMTP_PORT, u->has_smtp_port,

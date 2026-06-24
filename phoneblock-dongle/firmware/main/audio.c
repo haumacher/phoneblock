@@ -35,3 +35,21 @@ uint8_t pcm_to_alaw(int16_t pcm)
     }
     return aval ^ mask;
 }
+
+// Straight implementation of the ITU-T G.711 A-law decoder (the classic
+// Sun Microsystems public-domain `alaw2linear`): undo the 0x55 even-bit
+// mask, then expand the 3-bit segment + 4-bit mantissa back to a signed
+// linear magnitude. The sign bit (after unmasking) selects the sign.
+int16_t alaw_to_pcm(uint8_t alaw)
+{
+    alaw ^= 0x55;
+    int mant = (alaw & 0x0F) << 4;
+    int seg  = (alaw & 0x70) >> 4;
+    int mag;
+    if (seg == 0) {
+        mag = mant + 8;
+    } else {
+        mag = (mant + 0x108) << (seg - 1);
+    }
+    return (alaw & 0x80) ? (int16_t)mag : (int16_t)-mag;
+}

@@ -10,3 +10,5 @@ test_blocklist_lookup
 test_sched_time
 test_smtp_body
 cjson.o
+test_vad
+test_version_cmp

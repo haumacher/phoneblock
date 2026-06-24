@@ -367,6 +367,18 @@ static esp_err_t handle_status(httpd_req_t *req)
     cJSON_AddNumberToObject(pb,   "min_direct_votes",   config_min_direct_votes());
     cJSON_AddNumberToObject(pb,   "min_range_votes",    config_min_range_votes());
 
+    // Interactive answer-bot VAD tuning (silence threshold + timing).
+    cJSON *vad = cJSON_AddObjectToObject(root, "vad");
+    cJSON_AddNumberToObject(vad,  "silence_db",         config_vad_silence_db());
+    cJSON_AddNumberToObject(vad,  "min_silence_ms",     config_vad_min_silence_ms());
+    cJSON_AddNumberToObject(vad,  "padding_ms",         config_vad_padding_ms());
+    cJSON_AddNumberToObject(vad,  "noise_db",           config_noise_db());
+
+    // Experimental call recorder.
+    cJSON *rec = cJSON_AddObjectToObject(root, "recorder");
+    cJSON_AddStringToObject(rec,  "url",                config_rec_url());
+    cJSON_AddBoolToObject  (rec,  "auth_set",           config_rec_auth()[0] != '\0');
+
     cJSON *syn = cJSON_AddObjectToObject(root, "sync");
     sync_status_t ss;
     sync_snapshot(&ss);
@@ -573,6 +585,8 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     char sip_port_s[8] = "", sip_exp_s[8] = "";
     char sip_lport_s[8] = "", rtp_port_s[8] = "";
     char min_direct_s[8] = "", min_range_s[8] = "";
+    char vad_db_s[8] = "", vad_sil_s[8] = "", vad_pad_s[8] = "", noise_db_s[8] = "";
+    char rec_url[128] = "", rec_auth[128] = "";
     char sip_transp[8]    = "";
     char sip_authuser[32] = "";
     char sip_outbound[80] = "";
@@ -627,6 +641,12 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     bool have_pb_token   = form_get(body, "pb_token",  pb_token,  sizeof(pb_token));
     bool have_min_direct = form_get(body, "min_direct_votes", min_direct_s, sizeof(min_direct_s));
     bool have_min_range  = form_get(body, "min_range_votes",  min_range_s,  sizeof(min_range_s));
+    bool have_vad_db     = form_get(body, "vad_silence_db",     vad_db_s,  sizeof(vad_db_s));
+    bool have_vad_sil    = form_get(body, "vad_min_silence_ms", vad_sil_s, sizeof(vad_sil_s));
+    bool have_vad_pad    = form_get(body, "vad_padding_ms",     vad_pad_s, sizeof(vad_pad_s));
+    bool have_noise_db   = form_get(body, "noise_db",           noise_db_s, sizeof(noise_db_s));
+    bool have_rec_url    = form_get(body, "rec_url",            rec_url,   sizeof(rec_url));
+    bool have_rec_auth   = form_get(body, "rec_auth",           rec_auth,  sizeof(rec_auth));
     bool have_smtp_host  = form_get(body, "smtp_host",     smtp_host,   sizeof(smtp_host));
     bool have_smtp_port  = form_get(body, "smtp_port",     smtp_port_s, sizeof(smtp_port_s));
     bool have_smtp_sec   = form_get(body, "smtp_security", smtp_sec,    sizeof(smtp_sec));
@@ -736,6 +756,17 @@ static esp_err_t handle_config_post(httpd_req_t *req)
         // explicit-flag setter pattern. Empty form field = leave alone.
         .has_min_range_votes = have_min_range && min_range_s[0],
         .min_range_votes     = have_min_range && min_range_s[0] ? atoi(min_range_s) : 0,
+        // VAD tuning. 0 means "leave unchanged" for all three (config.c uses
+        // set_int_if), so a present-but-empty field is a no-op — they can
+        // never be cleared to a nonsensical 0 dBFS / 0 ms.
+        .vad_silence_db     = have_vad_db  && vad_db_s[0]  ? atoi(vad_db_s)  : 0,
+        .vad_min_silence_ms = have_vad_sil && vad_sil_s[0] ? atoi(vad_sil_s) : 0,
+        .vad_padding_ms     = have_vad_pad && vad_pad_s[0] ? atoi(vad_pad_s) : 0,
+        .noise_db           = have_noise_db && noise_db_s[0] ? atoi(noise_db_s) : 0,
+        // Recorder: present field writes through (empty string clears = off),
+        // absent field leaves the stored value untouched.
+        .rec_url            = have_rec_url  ? rec_url  : NULL,
+        .rec_auth           = have_rec_auth ? rec_auth : NULL,
         // SMTP. Text fields write through when present (a present-but-empty
         // field clears the value — how the user disables mail by emptying
         // the recipient/host). Port: present-but-empty → 0 = "auto" (derive

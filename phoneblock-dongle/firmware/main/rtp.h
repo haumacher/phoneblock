@@ -31,13 +31,27 @@ typedef struct {
 // Pass NULL (or enabled=false) for plain RTP/AVP. The struct is copied,
 // so the caller need not keep it alive.
 //
+// While streaming, the same task also *receives* the caller's inbound
+// RTP on the bound port, decodes the PCMA to linear PCM and runs an
+// energy-based voice-activity detector over it (see vad.h). On each
+// detected speech↔silence transition it logs the level, and on a
+// silence onset it plays a short beep back into the outbound stream —
+// the audible test signal for stage 1 of the interactive answer bot.
+// VAD tuning is read from config_vad_* at stream start.
+//
+// `srtp_rx_key` is the remote's 30-byte SDES master key+salt (from the
+// INVITE's a=crypto offer) used to decrypt the inbound SRTP. Pass NULL
+// when the media is plain RTP/AVP; then the receive path parses the
+// packets directly.
+//
 // Fire-and-forget: ownership of `src` (including its open file handle)
 // is handed to the task — the caller must NOT close it afterwards.
 // Even on failure to spawn, this releases `src`, so the caller is
 // always relieved of it.
 void rtp_play_audio(const struct sockaddr_in *dest,
                     announcement_src_t *src,
-                    const rtp_srtp_tx_t *srtp);
+                    const rtp_srtp_tx_t *srtp,
+                    const uint8_t *srtp_rx_key);
 
 // Signal an in-flight rtp_play_audio task to stop at the next 20 ms
 // frame boundary. Used by the SIP task to preempt the announcement

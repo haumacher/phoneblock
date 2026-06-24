@@ -173,6 +173,44 @@ bool        config_blocklist_enabled(void);
 const char *config_phoneblock_base_url(void);
 const char *config_phoneblock_token(void);
 
+// Voice-activity-detection (VAD) tuning for the interactive answer-bot
+// audio path. The dongle decodes the caller's incoming RTP, measures the
+// energy of each 20 ms frame in dBFS, and classifies it as speech or
+// silence — the same scheme the Cloud/Docker answer bot uses
+// (org.mjsip…AlawSilenceTrimmer). Defaults mirror the values that work
+// well there:
+//
+//   silence_db     = -35  → a 20 ms frame at or below -35 dBFS is "silence"
+//   min_silence_ms = 1500 → that much *continuous* silence after speech
+//                           counts as the caller having stopped talking
+//   padding_ms     = 500  → silence kept before/after speech when recording
+//                           (reserved for the later recording stage; not yet
+//                           consumed by the live VAD)
+//
+// All three are plain (positive-or-negative) integers; 0 means "leave the
+// stored value unchanged" on update, so they can never be cleared to a
+// nonsensical 0 dBFS / 0 ms via the settings form.
+int         config_vad_silence_db(void);
+int         config_vad_min_silence_ms(void);
+int         config_vad_padding_ms(void);
+
+// Level of the comfort noise the answer bot plays to the caller (a quiet
+// "live line" hiss), in dBFS — same unit as the silence threshold.
+// Default -50 (clearly below the -35 silence threshold, so it reads as a
+// quiet background). 0 leaves the stored value unchanged on update; a very
+// low value (e.g. -90) is effectively silence.
+int         config_noise_db(void);
+
+// Experimental call recorder: the dongle streams the caller's incoming
+// audio (8 kHz A-law) in real time via a chunked HTTP/HTTPS PUT to this
+// base URL; the per-call filename is appended as a path segment. Empty =
+// recording off. `rec_auth`, if set, is sent verbatim as the
+// "Authorization" header (e.g. "Basic dXNlcjpwYXNz"). http:// avoids a
+// second TLS session (heap-cheap, for a LAN sink); https:// records to a
+// remote endpoint at the cost of an mbedTLS session alongside the media.
+const char *config_rec_url(void);
+const char *config_rec_auth(void);
+
 // Minimum-vote thresholds for SPAM blocking. Two independent values
 // because direct hits ("this exact number was reported") are a much
 // stronger signal than range hits ("numbers in the same 10/100-block
@@ -309,6 +347,16 @@ typedef struct {
     // value here (= disable range-blocking).
     bool        has_min_range_votes;
     int         min_range_votes;
+    // VAD tuning (see config_vad_*). 0 = leave unchanged for each, so the
+    // web form omits a field it does not mean to touch.
+    int         vad_silence_db;
+    int         vad_min_silence_ms;
+    int         vad_padding_ms;
+    int         noise_db;        // comfort-noise level in dBFS; 0 = unchanged
+    // Call-recorder upload target. NULL = leave unchanged; "" clears
+    // (= recording off). rec_auth follows the same rule.
+    const char *rec_url;
+    const char *rec_auth;
     // Status email (SMTP). String fields follow the usual "NULL = leave
     // unchanged" rule — in particular the web UI passes smtp_pass = NULL
     // when the user did not re-enter the password, so a settings save

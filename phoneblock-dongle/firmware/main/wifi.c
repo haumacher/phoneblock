@@ -556,6 +556,13 @@ esp_err_t wifi_connect(void)
     }
 
     ESP_ERROR_CHECK(esp_wifi_start());
+    // Disable WiFi modem power-save. The ESP-IDF default (WIFI_PS_MIN_MODEM)
+    // lets the station sleep between DTIM beacons, so the AP buffers downlink
+    // packets and delivers them in bursts — adding hundreds of ms of latency
+    // and jitter to the real-time RTP audio path (the caller's voice reaches
+    // the VAD late, so a 1.5 s silence is *heard* as a much longer gap before
+    // the dongle reacts). Always-on radio is fine for a mains-powered dongle.
+    ESP_ERROR_CHECK(esp_wifi_set_ps(WIFI_PS_NONE));
     s_started = true;
 
     if (!have_stored && !have_baked) {

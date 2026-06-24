@@ -168,6 +168,18 @@ const I18N = {
     'status.thresholds.range.off': 'Aus',
     'status.thresholds.saved': 'Gespeichert.',
     'status.thresholds.invalid': 'Ungültiger Wert.',
+    'status.vad.title': 'Antwort-Bot (Sprach­erkennung)',
+    'status.vad.intro': 'Der Dongle wertet das ankommende Audio des Anrufers aus und erkennt, ob gerade gesprochen wird oder Stille herrscht. Diese Werte steuern die Erkennung — sie entsprechen den bewährten Einstellungen des Cloud-Antwort-Bots.',
+    'status.vad.silence_db': 'Stille-Schwelle (dBFS)',
+    'status.vad.silence_db.help': 'Ein 20-ms-Audioabschnitt bei oder unter diesem Pegel gilt als Stille. Default -35. Niedriger (z. B. -45) = unempfindlicher gegen Hintergrundgeräusche.',
+    'status.vad.min_silence': 'Mindest-Stille (ms)',
+    'status.vad.min_silence.help': 'So lange muss durchgehend Stille herrschen, bis der Anrufer als „fertig mit Sprechen“ gilt. Default 1500. Kürzere Pausen zwischen Wörtern lösen nichts aus.',
+    'status.vad.padding': 'Polster (ms)',
+    'status.vad.padding.help': 'Stille, die bei Aufnahmen vor und nach der Sprache des Anrufers behalten wird. Default 500. (Reserviert für die spätere Aufnahme-Stufe.)',
+    'status.vad.noise_db': 'Rausch-Pegel (dBFS)',
+    'status.vad.noise_db.help': 'Lautstärke des leisen „Leitungsrauschens“, das der Dongle dem Anrufer vorspielt. Default -50. Niedriger (z. B. -60) = leiser, sehr niedrig = praktisch still.',
+    'status.vad.saved': 'Gespeichert.',
+    'status.vad.invalid': 'Ungültiger Wert.',
     'status.system.title': 'System',
     'status.system.heap': 'Freier Speicher: {free} (Minimum: {min})',
     'status.system.fs': 'Datenpartition: {free} frei von {total} ({used} belegt)',
@@ -1571,6 +1583,38 @@ function renderStatus(){
     + '</div>'
     + '<p id="thrMsg" class="muted" style="font-size:.75rem;margin:.4rem 0 0;min-height:1em"></p>'
     + '</details>'
+    + '<details id="vadSection" class="adminsec" style="display:none">'
+    + '<summary>' + esc(t('status.vad.title')) + '</summary>'
+    + '<p class="muted" style="font-size:.85rem;margin:.2rem 0 .8rem">'
+    +   esc(t('status.vad.intro')) + '</p>'
+    + '<div style="display:flex;gap:1.5rem;flex-wrap:wrap;align-items:flex-start">'
+    + '<label style="display:flex;flex-direction:column;gap:.2rem">'
+    + '  <span style="font-size:.85rem">' + esc(t('status.vad.silence_db')) + '</span>'
+    + '  <input id="vadDb" type="number" min="-60" max="-1" style="width:5rem">'
+    + '  <span class="muted" style="font-size:.7rem;max-width:18rem">'
+    +     esc(t('status.vad.silence_db.help')) + '</span>'
+    + '</label>'
+    + '<label style="display:flex;flex-direction:column;gap:.2rem">'
+    + '  <span style="font-size:.85rem">' + esc(t('status.vad.min_silence')) + '</span>'
+    + '  <input id="vadSil" type="number" min="100" max="10000" step="100" style="width:6rem">'
+    + '  <span class="muted" style="font-size:.7rem;max-width:18rem">'
+    +     esc(t('status.vad.min_silence.help')) + '</span>'
+    + '</label>'
+    + '<label style="display:flex;flex-direction:column;gap:.2rem">'
+    + '  <span style="font-size:.85rem">' + esc(t('status.vad.padding')) + '</span>'
+    + '  <input id="vadPad" type="number" min="0" max="5000" step="100" style="width:6rem">'
+    + '  <span class="muted" style="font-size:.7rem;max-width:18rem">'
+    +     esc(t('status.vad.padding.help')) + '</span>'
+    + '</label>'
+    + '<label style="display:flex;flex-direction:column;gap:.2rem">'
+    + '  <span style="font-size:.85rem">' + esc(t('status.vad.noise_db')) + '</span>'
+    + '  <input id="vadNoise" type="number" min="-90" max="-1" style="width:5rem">'
+    + '  <span class="muted" style="font-size:.7rem;max-width:18rem">'
+    +     esc(t('status.vad.noise_db.help')) + '</span>'
+    + '</label>'
+    + '</div>'
+    + '<p id="vadMsg" class="muted" style="font-size:.75rem;margin:.4rem 0 0;min-height:1em"></p>'
+    + '</details>'
     + '<details id="syncSection" class="adminsec" style="display:none">'
     + '<summary>' + esc(t('status.sync.title')) + '</summary>'
     + '<p class="muted">' + esc(t('status.sync.intro')) + '</p>'
@@ -1785,7 +1829,7 @@ let mailPrefilled = false;
 // we can toggle the entire dashboard visibility in one go when the
 // gate kicks us out (401 from /api/status).
 const DASHBOARD_SECTIONS = ['heroSlot', 'statusSection', 'callsSection',
-  'thresholdsSection', 'errorsSection', 'resetSection', 'annSection',
+  'thresholdsSection', 'vadSection', 'errorsSection', 'resetSection', 'annSection',
   'localCacheSection', 'syncSection', 'fwSection', 'mailSection', 'authSection'];
 
 // Maps `?login_error=<code>` query values that web_auth_handle_callback
@@ -1889,6 +1933,7 @@ async function refreshAll(){
   const statusSec     = $('statusSection');
   const callsSec      = $('callsSection');
   const thresholdsSec = $('thresholdsSection');
+  const vadSec        = $('vadSection');
   const errorsSec     = $('errorsSection');
   const resetSec      = $('resetSection');
   const annSec        = $('annSection');
@@ -1906,6 +1951,7 @@ async function refreshAll(){
     statusSec.style.display = 'none';
     callsSec.style.display = 'none';
     thresholdsSec.style.display = 'none';
+    vadSec.style.display = 'none';
     errorsSec.style.display = 'none';
     annSec.style.display = 'none';
     syncSec.style.display = 'none';
@@ -1920,6 +1966,7 @@ async function refreshAll(){
   statusSec.style.display = '';
   callsSec.style.display = '';
   thresholdsSec.style.display = '';
+  vadSec.style.display = '';
   errorsSec.style.display = '';
   annSec.style.display = '';
   syncSec.style.display = '';
@@ -2485,6 +2532,47 @@ async function refreshAll(){
   if (!thrRange.onchange){
     thrRange.onchange = () => saveThreshold(thrRange, 'min_range_votes');
   }
+
+  // Answer-bot VAD tuning (silence threshold + timing). Three numeric
+  // fields that all post to /api/config; one small helper binds each.
+  const vd = (s && s.vad) || {};
+  const vadMsg = $('vadMsg');
+  const flashVad = (text, color) => {
+    vadMsg.textContent = text; vadMsg.style.color = color;
+    setTimeout(() => { if (vadMsg.textContent === text) vadMsg.textContent = ''; }, 2000);
+  };
+  const bindVad = (id, key, field, lo, hi) => {
+    const el = $(id);
+    if (!el) return;
+    if (document.activeElement !== el && vd[field] != null) el.value = vd[field];
+    if (!el.onchange){
+      el.onchange = async () => {
+        const v = parseInt(el.value, 10);
+        if (!(v >= lo && v <= hi)) {
+          el.value = vd[field] != null ? vd[field] : '';
+          flashVad(t('status.vad.invalid'), '#d93025');
+          return;
+        }
+        el.disabled = true;
+        const body = new URLSearchParams();
+        body.append(key, String(v));
+        try {
+          const r = await fetch('/api/config', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: body.toString(),
+          });
+          if (r.ok) flashVad(t('status.vad.saved'), '#188038');
+        } catch (_){ /* next poll reconciles */ }
+        el.disabled = false;
+        refreshAll();
+      };
+    }
+  };
+  bindVad('vadDb',    'vad_silence_db',     'silence_db',     -60, -1);
+  bindVad('vadSil',   'vad_min_silence_ms', 'min_silence_ms', 100, 10000);
+  bindVad('vadPad',   'vad_padding_ms',     'padding_ms',     0,   5000);
+  bindVad('vadNoise', 'noise_db',           'noise_db',       -90, -1);
 
   // Errors
   const list = $('errorsList');

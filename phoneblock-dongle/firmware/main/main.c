@@ -26,6 +26,7 @@
 #include "improv.h"
 #include "log_capture.h"
 #include "report_queue.h"
+#include "recorder.h"
 #include "scheduler.h"
 #include "sip_register.h"
 #include "stats.h"
@@ -280,6 +281,12 @@ void app_main(void)
     // off the SIP critical path. Drains a small queue at its own
     // pace; SPAM verdicts enqueue here instead of POSTing inline.
     report_queue_start();
+
+    // Experimental call recorder — background task that streams the
+    // caller's audio to config_rec_url() during a call. Idle (no task
+    // wakeups) until a call begins; safe to create even when recording
+    // is off.
+    recorder_setup();
 
     // Create the shared state for the session-resuming spam-lookup HTTP
     // client before any task that calls phoneblock_check() (the SIP

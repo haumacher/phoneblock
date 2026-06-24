@@ -92,6 +92,8 @@ typedef struct {
     bool     srtp_tx;             // true → answer/stream as SRTP (RTP/SAVP)
     int      srtp_tag;            // crypto tag to echo in the SDP answer
     uint8_t  srtp_tx_key[RTP_SRTP_KEY_LEN];  // our SDES master key+salt
+    bool     srtp_rx_valid;       // true → srtp_rx_key holds the remote's key
+    uint8_t  srtp_rx_key[RTP_SRTP_KEY_LEN];  // remote SDES key+salt (to decrypt rx)
     char     contact_uri[200];    // INVITE Contact = remote target (BYE R-URI)
     char     route[320];          // INVITE Record-Route, echoed as BYE Route
                                   // (Telekom's IMS token URI is ~211 chars;
@@ -977,6 +979,7 @@ static void capture_dialog(sip_ctx_t *c, const char *req, int req_len,
     // on the LAN) simply carries no crypto and is answered RTP/AVP.
     d->srtp_tx  = false;
     d->srtp_tag = 0;
+    d->srtp_rx_valid = false;
     char remote_key_b64[64];
     int crypto_tag = parse_sdp_crypto(req, req_len,
                                       remote_key_b64, sizeof(remote_key_b64));
@@ -985,6 +988,19 @@ static void capture_dialog(sip_ctx_t *c, const char *req, int req_len,
         esp_fill_random(d->srtp_tx_key, sizeof(d->srtp_tx_key));
         d->srtp_tx  = true;
         d->srtp_tag = crypto_tag;
+        // Decode the remote's master key+salt so the RTP task can decrypt
+        // the caller's inbound media for the VAD. A malformed/short key is
+        // non-fatal: we just lose silence detection (and play on regardless).
+        size_t rx_len = 0;
+        if (mbedtls_base64_decode(d->srtp_rx_key, sizeof(d->srtp_rx_key), &rx_len,
+                                  (const unsigned char *)remote_key_b64,
+                                  strlen(remote_key_b64)) == 0
+                && rx_len == RTP_SRTP_KEY_LEN) {
+            d->srtp_rx_valid = true;
+        } else {
+            ESP_LOGW(TAG, "could not decode remote SRTP key (%u b) — rx VAD off",
+                     (unsigned)rx_len);
+        }
         ESP_LOGI(TAG, "SRTP offered (crypto tag %d) → answering RTP/SAVP", crypto_tag);
     } else if (parse_sdp_audio_savp(req, req_len)) {
         ESP_LOGW(TAG, "remote offers RTP/SAVP but no supported crypto suite "
@@ -1338,17 +1354,20 @@ static void handle_ack(sip_ctx_t *c, const char *req, int req_len,
         announcement_src_t src;
         announcement_open(&src);
         if (src.len > 0 && d->rtp_dest_valid) {
-            // PCMA at 8 kHz → 8000 bytes == 1 s, so duration_us = bytes * 125.
-            // Add a short tail margin so the last frame is delivered before BYE.
-            int64_t duration_us = (int64_t)src.len * 125LL;
-            ESP_LOGI(TAG, "ACK received → streaming announcement (%u bytes ≈ %lld ms), then BYE",
-                     (unsigned)src.len, (long long)(duration_us / 1000));
+            // Experimental VAD stage: stream comfort noise endlessly and run
+            // the silence detector on the caller's audio. No timed BYE — the
+            // call stays up until the remote hangs up (its BYE aborts the RTP
+            // task) so the silence threshold can be calibrated on a live call.
+            ESP_LOGI(TAG, "ACK received → streaming comfort noise (endless, until remote BYE)");
             rtp_srtp_tx_t srtp = { .enabled = d->srtp_tx };
             if (d->srtp_tx) {
                 memcpy(srtp.key, d->srtp_tx_key, sizeof(srtp.key));
             }
-            rtp_play_audio(&d->rtp_dest, &src, &srtp);   // task owns src now, closes it
-            d->bye_at_us = esp_timer_get_time() + duration_us + 200000LL;
+            // Hand the remote's key to the rx path only when the media is
+            // SRTP and we decoded it; plain RTP (NULL) is parsed directly.
+            const uint8_t *rx_key = d->srtp_rx_valid ? d->srtp_rx_key : NULL;
+            rtp_play_audio(&d->rtp_dest, &src, &srtp, rx_key);   // task owns src now, closes it
+            d->bye_at_us = 0;   // no scheduled BYE — endless until remote hangs up
             d->state = DIALOG_STREAMING;
         } else {
             announcement_close(&src);   // nothing to stream — release the handle
