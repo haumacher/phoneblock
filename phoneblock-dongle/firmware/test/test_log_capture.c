@@ -127,6 +127,28 @@ int main(void)
         CHECK_STR("utf8-keep/msg", "ab→", msg);
     }
 
+    // --- library-noise suppression -----------------------------------
+    // The benign httpd recv WARN is dropped from the ring; everything else
+    // (other tags, other messages, the same line at ERROR) is kept.
+    CHECK_CHAR("suppress/httpd-recv-warn", 1,
+               log_capture_suppressed('W', "httpd_txrx",
+                                      "httpd_sock_err: error in recv : 104"));
+    // A send error from the same helper is NOT the routine client-drop case.
+    CHECK_CHAR("suppress/httpd-send-warn", 0,
+               log_capture_suppressed('W', "httpd_txrx",
+                                      "httpd_sock_err: error in send : 104"));
+    // Only WARN is suppressed — a genuine ERROR still surfaces.
+    CHECK_CHAR("suppress/httpd-recv-error", 0,
+               log_capture_suppressed('E', "httpd_txrx",
+                                      "httpd_sock_err: error in recv : 104"));
+    // A different tag with the same substring is left alone.
+    CHECK_CHAR("suppress/other-tag", 0,
+               log_capture_suppressed('W', "sip", "error in recv : 104"));
+    // Unrelated lines pass through untouched.
+    CHECK_CHAR("suppress/unrelated", 0,
+               log_capture_suppressed('W', "wifi", "weak signal"));
+    CHECK_CHAR("suppress/null", 0, log_capture_suppressed('W', NULL, NULL));
+
     printf("log_capture: %d tests, %d failures\n", g_tests, g_failures);
     return g_failures ? 1 : 0;
 }
