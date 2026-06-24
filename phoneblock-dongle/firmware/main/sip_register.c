@@ -538,7 +538,12 @@ static int sip_send_recv(sip_ctx_t *c, const char *tx, int tx_len,
 
         int64_t remaining_us = deadline - esp_timer_get_time();
         if (remaining_us <= 0) {
-            ESP_LOGW(TAG, "no response from registrar within %d ms",
+            // INFO, not WARN: a single missed response is a routine
+            // transient (it usually recovers on the next refresh while the
+            // FB binding still covers us). The caller decides whether to
+            // surface it — keeping this off WARN/ERROR avoids flooding the
+            // web "Protokoll" ring (log_capture.c) on every blip (#402).
+            ESP_LOGI(TAG, "no response from registrar within %d ms",
                      SIP_REGISTER_RECV_TIMEOUT_MS);
             return -1;
         }
@@ -618,7 +623,11 @@ static register_outcome_t do_register(sip_ctx_t *c, int *granted_expires,
     ESP_LOGI(TAG, "→ REGISTER (%d bytes):\n%.*s", tx_len, tx_len, tx);
     int rx_len = sip_send_recv(c, tx, tx_len, rx, SIP_RX_BUF_SIZE);
     if (rx_len < 0) {
-        ESP_LOGE(TAG, "sip_send_recv failed");
+        // Don't log here: do_register's contract is to NOT surface the
+        // failure itself (see header comment) — that decision belongs to
+        // the caller. The auth-retry path below (sip_send_recv at the
+        // 401/407 stage) already stays silent; match it so a transient
+        // refresh blip doesn't reach the web log (#402).
         if (err) snprintf(err, err_cap,
             "REGISTER: no response from registrar (timeout/transport)");
         result = REGISTER_TRANSIENT;
@@ -1793,7 +1802,13 @@ static void sip_task(void *arg)
                 // eventually lapse, and try again at the standard
                 // retry interval.
                 int64_t left_s = (s_binding_expires_at_us - now) / 1000000LL;
-                ESP_LOGW(TAG, "re-REGISTER transient (%s) — binding valid "
+                // INFO, not WARN: while the FB binding still covers us this
+                // is a self-healing retry, not a problem the user needs to
+                // see. If the binding does eventually lapse, the definitive
+                // branch below logs the stashed reason at ERROR as a single
+                // dashboard entry. Keeping the covered case off WARN/ERROR
+                // stops the web "Protokoll" ring filling with blips (#402).
+                ESP_LOGI(TAG, "re-REGISTER transient (%s) — binding valid "
                               "for %lld s more, retry in %d s",
                          err, (long long)left_s, retry_delay_s);
                 if (err[0]) {
