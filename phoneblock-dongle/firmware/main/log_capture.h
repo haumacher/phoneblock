@@ -35,3 +35,11 @@ char log_capture_level(const char *line);
 char log_capture_parse(const char *line,
                        char *tag, size_t tag_cap,
                        char *msg, size_t msg_cap);
+
+// True if a parsed (level, tag, message) is known-benign ESP-IDF library
+// noise that should NOT reach the web "Protokoll" ring. The line is still
+// printed to the serial console — this only suppresses the user-facing
+// mirror. Matching is deliberately narrow (exact tag + message substring,
+// at a specific level) so a genuine error from the same component still
+// surfaces. `level` is the letter from log_capture_parse ('W','E',…).
+int log_capture_suppressed(char level, const char *tag, const char *msg);

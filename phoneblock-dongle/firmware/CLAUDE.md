@@ -20,6 +20,16 @@ it shows up on the UI automatically** — no per-call-site plumbing. Keep
 few seconds (they'd flush the 32-entry ring). The parsing of the formatted
 log line is host-tested in `test/test_log_capture.c`.
 
+Some ESP-IDF libraries WARN on routine, self-recovering conditions they
+have no INFO path for (e.g. `httpd_txrx` logs `error in recv` every time a
+browser drops a keep-alive socket). Those aren't faults but would alarm
+users on the panel. The `k_suppress` denylist in `log_capture.c` drops
+such lines from the *ring only* — they still reach the serial console.
+Keep entries narrow (exact tag + message substring + level) so a genuine
+error from the same component still surfaces; add a host test alongside.
+Prefer this over `esp_log_level_set(tag, …)`, which also kills the serial
+line and hides the whole tag.
+
 ### Long-running timer intervals
 
 `pdMS_TO_TICKS(ms)` multiplies its argument by `configTICK_RATE_HZ` in
