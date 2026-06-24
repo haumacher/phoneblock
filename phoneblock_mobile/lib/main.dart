@@ -518,6 +518,67 @@ Future<bool> addWildcardToServer(String prefix, String authToken) async {
   }
 }
 
+/// Reconciles the local `wildcard_blocks` store with the server's wildcard set (#377).
+///
+/// The server is the source of truth; the local store exists only so the native
+/// [CallChecker] can match prefixes during call screening. The app's pre-existing local-only
+/// wildcards are lifted to the server once (migration); afterwards the local set mirrors the
+/// server, so wildcards added or removed on any of the user's devices propagate here.
+///
+/// Context-free (takes [authToken] explicitly) so it runs both from the UI and from the
+/// WorkManager background isolate. [serverWildcards] is the wildcard subset of the user's
+/// blacklist as returned by the API.
+Future<void> reconcileWildcards(List<api.PersonalizedNumber> serverWildcards, String authToken) async {
+  final db = ScreenedCallsDatabase.instance;
+  final prefs = await SharedPreferences.getInstance();
+
+  // One-time migration of the app's existing local-only wildcards to the server.
+  if (!(prefs.getBool('wildcards_migrated') ?? false)) {
+    final onServer = serverWildcards.map((w) => w.phone).toSet();
+    for (final local in await db.getAllWildcardBlocks()) {
+      if (!onServer.contains(local.prefix) && await addWildcardToServer(local.prefix, authToken)) {
+        serverWildcards.add(api.PersonalizedNumber(
+            phone: local.prefix, wildcard: true, created: local.created.millisecondsSinceEpoch));
+      }
+    }
+    await prefs.setBool('wildcards_migrated', true);
+  }
+
+  // Mirror the server set into the local store: add server-only, drop local-only.
+  final serverPrefixes = serverWildcards.map((w) => w.phone).toSet();
+  final local = await db.getAllWildcardBlocks();
+  final localPrefixes = local.map((w) => w.prefix).toSet();
+
+  for (final sw in serverWildcards) {
+    if (!localPrefixes.contains(sw.phone)) {
+      await db.insertWildcardBlock(WildcardBlock(
+        prefix: sw.phone,
+        comment: null,
+        created: sw.created > 0 ? DateTime.fromMillisecondsSinceEpoch(sw.created) : DateTime.now(),
+      ));
+    }
+  }
+  for (final lw in local) {
+    if (!serverPrefixes.contains(lw.prefix)) {
+      await db.deleteWildcardBlock(lw.id!);
+    }
+  }
+}
+
+/// Fetches the user's blacklist and reconciles its wildcard prefixes with the local store (#377).
+///
+/// Safe to call from the WorkManager background isolate (no [BuildContext], no MethodChannel).
+/// Returns false if the server could not be reached.
+Future<bool> syncPersonalWildcards(String authToken) async {
+  final numberList = await fetchBlacklist(authToken);
+  if (numberList == null) {
+    return false;
+  }
+  final serverWildcards = numberList.numbers.where((n) => n.wildcard).toList();
+  await reconcileWildcards(serverWildcards, authToken);
+  return true;
+}
+
 /// Removes a personal wildcard-prefix block from the server (#377).
 ///
 /// Returns true on success (HTTP 204). Requires authentication via [authToken].
@@ -557,7 +618,14 @@ void callbackDispatcher() {
       if (task == 'blocklistSync') {
         final packageInfo = await PackageInfo.fromPlatform();
         appVersion = packageInfo.version;
-        return await BlocklistSyncService.instance.sync();
+        final ok = await BlocklistSyncService.instance.sync();
+        // Also reconcile the user's personal wildcards (#377) so prefixes added on the
+        // website or another device take effect even if the blacklist page is never opened.
+        final authToken = await getAuthToken();
+        if (authToken != null && authToken.isNotEmpty) {
+          await syncPersonalWildcards(authToken);
+        }
+        return ok;
       }
       return Future.value(true);
     } catch (e, s) {
@@ -2888,12 +2956,6 @@ Future<void> registerBlocklistSync() async {
   );
 }
 
-/// Syncs wildcard prefixes from SQLite to SharedPreferences for CallChecker access.
-Future<void> syncWildcardPrefixesToNative() async {
-  final prefixes = await ScreenedCallsDatabase.instance.getWildcardPrefixes();
-  await platform.invokeMethod('setWildcardPrefixes', {'prefixes': prefixes});
-}
-
 Future<bool> checkPermission() async {
   try {
     return await platform.invokeMethod("checkPermission");
@@ -3955,7 +4017,7 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
 
         List<WildcardBlock> wildcards = [];
         if (_isBlacklist) {
-          await _syncWildcards(serverWildcards);
+          await reconcileWildcards(serverWildcards, widget.authToken);
           wildcards = await ScreenedCallsDatabase.instance.getAllWildcardBlocks();
         }
 
@@ -3977,51 +4039,6 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
         _isLoading = false;
       });
     }
-  }
-
-  /// Reconciles local wildcard blocks with the server (#377).
-  ///
-  /// The server is the source of truth; the local copy exists only so the native
-  /// CallScreeningService can block offline. The app's pre-existing local-only wildcards are
-  /// lifted to the server once (migration); afterwards the local set mirrors the server, so
-  /// wildcards added or removed on any of the user's devices propagate here.
-  Future<void> _syncWildcards(List<api.PersonalizedNumber> serverWildcards) async {
-    final db = ScreenedCallsDatabase.instance;
-    final prefs = await SharedPreferences.getInstance();
-
-    // One-time migration of the app's existing local-only wildcards to the server.
-    if (!(prefs.getBool('wildcards_migrated') ?? false)) {
-      final onServer = serverWildcards.map((w) => w.phone).toSet();
-      for (final local in await db.getAllWildcardBlocks()) {
-        if (!onServer.contains(local.prefix) && await addWildcardToServer(local.prefix, widget.authToken)) {
-          serverWildcards.add(api.PersonalizedNumber(
-              phone: local.prefix, wildcard: true, created: local.created.millisecondsSinceEpoch));
-        }
-      }
-      await prefs.setBool('wildcards_migrated', true);
-    }
-
-    // Mirror the server set into the local store: add server-only, drop local-only.
-    final serverPrefixes = serverWildcards.map((w) => w.phone).toSet();
-    final local = await db.getAllWildcardBlocks();
-    final localPrefixes = local.map((w) => w.prefix).toSet();
-
-    for (final sw in serverWildcards) {
-      if (!localPrefixes.contains(sw.phone)) {
-        await db.insertWildcardBlock(WildcardBlock(
-          prefix: sw.phone,
-          comment: null,
-          created: sw.created > 0 ? DateTime.fromMillisecondsSinceEpoch(sw.created) : DateTime.now(),
-        ));
-      }
-    }
-    for (final lw in local) {
-      if (!serverPrefixes.contains(lw.prefix)) {
-        await db.deleteWildcardBlock(lw.id!);
-      }
-    }
-
-    await syncWildcardPrefixesToNative();
   }
 
   /// Edit the comment for a number in the list.
@@ -4263,7 +4280,6 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
     );
 
     await ScreenedCallsDatabase.instance.insertWildcardBlock(block);
-    await syncWildcardPrefixesToNative();
     // Sync the wildcard to the server (#377) so the user's other devices honor it too.
     await addWildcardToServer(prefix, widget.authToken);
     await _loadNumbers();
@@ -4741,7 +4757,6 @@ class _PersonalizedNumberListScreenState extends State<PersonalizedNumberListScr
         if (confirmed != true) return false;
 
         await ScreenedCallsDatabase.instance.deleteWildcardBlock(block.id!);
-        await syncWildcardPrefixesToNative();
         // Remove the wildcard on the server too (#377), so the deletion propagates.
         await removeWildcardFromServer(block.prefix, widget.authToken);
 
