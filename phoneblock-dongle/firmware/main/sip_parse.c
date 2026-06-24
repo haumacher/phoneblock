@@ -59,6 +59,24 @@ int parse_status_code(const char *resp, int len)
     return status;
 }
 
+int parse_reason_phrase(const char *resp, int len, char *out, int cap)
+{
+    if (cap > 0) out[0] = '\0';
+    if (cap <= 0 || parse_status_code(resp, len) < 0) return 0;
+    // Status line: "SIP/2.0" SP code SP reason-phrase. Skip the version
+    // and the 3-digit code, then the single SP before the phrase.
+    const char *p   = resp + 8;          // past "SIP/2.0 "
+    const char *end = resp + len;
+    while (p < end && *p != ' ' && *p != '\r' && *p != '\n') p++;  // code
+    while (p < end && *p == ' ') p++;                              // SP(s)
+    int n = 0;
+    while (p < end && *p != '\r' && *p != '\n' && n < cap - 1) {
+        out[n++] = *p++;
+    }
+    out[n] = '\0';
+    return n;
+}
+
 // Parse a non-negative integer at *pp up to end. Advances *pp past the
 // digits. Returns -1 if no digits, otherwise the parsed value clamped
 // to 30 days.
