@@ -557,7 +557,16 @@ void callbackDispatcher() {
       if (task == 'blocklistSync') {
         final packageInfo = await PackageInfo.fromPlatform();
         appVersion = packageInfo.version;
-        return await BlocklistSyncService.instance.sync();
+        // Fire-and-forget: a failed sync must NOT cause WorkManager to retry.
+        // Returning sync()'s `false` maps to Result.retry, which re-issues the
+        // same `?since=<version>` request within minutes. A sync that keeps
+        // failing (e.g. a slow or truncated response that never advances the
+        // stored version) then becomes a tight retry loop hammering the
+        // server's expensive blocklist-delta query. There is nothing to gain
+        // from an immediate retry: the next periodic run tries again, and once
+        // the server responds normally the sync recovers on its own.
+        await BlocklistSyncService.instance.sync();
+        return true;
       }
       return Future.value(true);
     } catch (e, s) {
