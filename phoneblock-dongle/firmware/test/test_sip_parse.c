@@ -79,6 +79,13 @@ static void expect_status(int expected, const char *resp)
     report_int("parse_status_code", resp, expected, got);
 }
 
+static void expect_reason(const char *expected, const char *resp)
+{
+    char buf[64] = "sentinel";
+    parse_reason_phrase(resp, (int)strlen(resp), buf, sizeof(buf));
+    report_str("parse_reason_phrase", resp, expected, buf);
+}
+
 static void expect_register_expires(int expected, const char *resp)
 {
     int got = parse_register_expires(resp, (int)strlen(resp));
@@ -229,6 +236,22 @@ static void test_parse_status_code(void)
     expect_status(-1,  SAMPLE_INVITE);             // not a response
     expect_status(-1,  "");                         // too short
     expect_status(-1,  "HTTP/1.1 200 OK\r\n\r\n"); // wrong protocol
+}
+
+static void test_parse_reason_phrase(void)
+{
+    expect_reason("OK",        "SIP/2.0 200 OK\r\n\r\n");
+    expect_reason("Forbidden", "SIP/2.0 403 Forbidden\r\n\r\n");
+    // Multi-word phrase with a provider-specific cause is kept whole.
+    expect_reason("Forbidden - Registration limit exceeded",
+        "SIP/2.0 403 Forbidden - Registration limit exceeded\r\n"
+        "Retry-After: 1800\r\n\r\n");
+    expect_reason("Busy Here", "SIP/2.0 486 Busy Here\r\n\r\n");
+    // No phrase after the code → empty.
+    expect_reason("",          "SIP/2.0 100\r\n\r\n");
+    // Not a status line → empty (sentinel cleared).
+    expect_reason("",          SAMPLE_INVITE);
+    expect_reason("",          "");
 }
 
 static void test_parse_register_expires(void)
@@ -586,6 +609,7 @@ int main(void)
 {
     test_parse_method();
     test_parse_status_code();
+    test_parse_reason_phrase();
     test_parse_register_expires();
     test_parse_cseq();
     test_parse_call_id();

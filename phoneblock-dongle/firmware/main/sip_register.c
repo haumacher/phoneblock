@@ -726,11 +726,30 @@ static register_outcome_t do_register(sip_ctx_t *c, int *granted_expires,
             }
         }
 
-        ESP_LOGI(TAG, "← %d (authenticated)", status);
-        if (err) snprintf(err, err_cap,
-            "authentication rejected: %d — check SIP user/password/realm",
-            status);
-        ESP_LOGE(TAG, "authentication rejected: %d", status);
+        // Surface the registrar's actual cause, not just the bare code.
+        // The full response is only ESP_LOGI (serial-only); the operator
+        // sees the web UI "Protokoll" panel, which mirrors WARN/ERROR. So
+        // lift the status-line reason phrase plus any Warning/Retry-After
+        // header into the ERROR line — that is what turns "403" into a
+        // diagnosis ("Forbidden - Registration limit exceeded; Retry-After:
+        // 1800") without anyone attaching a serial console.
+        char reason[64] = "", warn[80] = "", retry[24] = "";
+        parse_reason_phrase(rx, rx_len, reason, sizeof(reason));
+        const char *wh = find_header(rx, rx_len, "Warning");
+        if (wh) header_value(wh, rx + rx_len, warn, sizeof(warn));
+        const char *rh = find_header(rx, rx_len, "Retry-After");
+        if (rh) header_value(rh, rx + rx_len, retry, sizeof(retry));
+
+        char diag[STATS_ERROR_MSG_LEN];
+        int m = snprintf(diag, sizeof(diag), "authentication rejected: %d%s%s",
+                         status, reason[0] ? " " : "", reason);
+        if (retry[0] && m > 0 && m < (int)sizeof(diag))
+            m += snprintf(diag + m, sizeof(diag) - m, "; Retry-After: %s", retry);
+        if (warn[0] && m > 0 && m < (int)sizeof(diag))
+            snprintf(diag + m, sizeof(diag) - m, "; Warning: %s", warn);
+
+        if (err) snprintf(err, err_cap, "%s", diag);
+        ESP_LOGE(TAG, "%s", diag);
         result = REGISTER_DEFINITIVE;
         goto cleanup;
     }
@@ -1496,6 +1515,41 @@ static void handle_incoming(sip_ctx_t *c, const char *pkt, int len,
 // busy-waits — CPU usage is essentially zero between events.
 // ---------------------------------------------------------------------------
 
+// Force a fresh transport connection (new source port, new TLS session)
+// before the next REGISTER. Used when a *previously established*
+// registration is suddenly refused with a definitive error: a negative
+// SIP response never tears the connection down on its own (it is a
+// successfully-received response), so the dongle would otherwise re-REGISTER
+// forever over the very same connection. If the registrar is wedged on
+// soft-state bound to that connection — observed on Telekom hybrid lines
+// (#423), where a byte-identical REGISTER that earned a 200 starts earning
+// 403 on a stable connection — only a clean connection can reset it, the
+// way a real phone recovers by re-registering on a fresh socket.
+//
+// Reuses the configured transport kind. A NULL reopen result keeps the old
+// handle so the caller never dereferences NULL; the next retry then runs
+// over the old connection (or its transparent reconnect) as before.
+static void reopen_transport(sip_ctx_t *c)
+{
+    char host[64];
+    int  port;
+    dial_destination(host, sizeof(host), &port);
+    const char *outbound = config_sip_outbound();
+    const char *sni = (outbound && outbound[0]) ? host : config_sip_host();
+
+    sip_transport_t *nt = sip_transport_open(config_sip_transport(),
+                                             host, port, sni,
+                                             config_sip_local_port());
+    if (nt) {
+        sip_transport_close(c->transport);
+        c->transport = nt;
+        ESP_LOGW(TAG, "reopened SIP connection after definitive rejection");
+    } else {
+        ESP_LOGW(TAG, "reopen after definitive rejection failed — "
+                      "keeping existing connection");
+    }
+}
+
 static void sip_task(void *arg)
 {
     sip_ctx_t ctx = {0};
@@ -1845,6 +1899,7 @@ static void sip_task(void *arg)
             } else {
                 // Either definitive (won't recover with retries) or
                 // transient that has finally outlived the binding.
+                bool was_registered = s_registered;
                 if (s_registered) stats_record_sip_state(false);
                 s_registered = false;
                 char msg[STATS_ERROR_MSG_LEN];
@@ -1863,6 +1918,21 @@ static void sip_task(void *arg)
                 s_binding_expires_at_us = 0;
                 s_pending_error[0] = '\0';
                 refresh_at_us = now + (int64_t)retry_delay_s * 1000000LL;
+
+                // A definitive rejection of an *established* binding is the
+                // #423 signature: the connection is healthy at the TCP/TLS
+                // layer (no transport error fired, so nothing else reopens
+                // it), yet the registrar refuses a REGISTER that succeeded
+                // minutes earlier. Force a clean connection before the next
+                // attempt so it gets a fresh start instead of re-presenting
+                // the same wedged context every 30 s. Gated on was_registered
+                // so a genuine wrong-credentials setup (never registered)
+                // doesn't churn the connection, and on a connection-oriented
+                // transport (UDP has no connection state to reset).
+                if (r == REGISTER_DEFINITIVE && was_registered
+                        && strcasecmp(canonical_transport(), "udp") != 0) {
+                    reopen_transport(&ctx);
+                }
             }
             continue;
         }
