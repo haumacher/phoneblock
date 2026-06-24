@@ -243,11 +243,11 @@ const I18N = {
     'status.mail.security': 'Verschlüsselung',
     'status.mail.security.tls': 'TLS (Port 465)',
     'status.mail.security.starttls': 'STARTTLS (Port 587)',
-    'status.mail.user': 'Benutzername',
+    'status.mail.user': 'Benutzername (SMTP-Login)',
     'status.mail.pass': 'Passwort',
     'status.mail.pass.keep': 'gespeichert — leer lassen, um es zu behalten',
-    'status.mail.from': 'Absender (leer = Benutzername)',
-    'status.mail.to': 'Empfänger',
+    'status.mail.from': 'Absender (E-Mail, leer = Benutzername)',
+    'status.mail.to': 'Empfänger (E-Mail)',
     'status.mail.help': 'Tipp: Bei Gmail oder Outlook brauchst du meist ein „App-Passwort" (bei aktivierter Zwei-Faktor-Anmeldung), nicht dein normales Kontopasswort. Klassische Anbieter wie GMX, web.de oder mailbox.org funktionieren mit Benutzername und Passwort.',
     'status.mail.on_error': 'E-Mail bei Fehlern und Abstürzen',
     'status.mail.on_error.help': 'Sendet einmal täglich eine E-Mail, wenn seit der letzten Meldung ein Fehler im Protokoll aufgetreten ist — dazu zählt auch ein Neustart nach einem Absturz.',
@@ -259,6 +259,11 @@ const I18N = {
     'status.mail.testing': 'Sende Test-E-Mail…',
     'status.mail.test.sent': 'Test-E-Mail wird gesendet — das Ergebnis steht im Protokoll.',
     'status.mail.test.fail': 'Versand fehlgeschlagen — bitte Einstellungen und Protokoll prüfen.',
+    'status.mail.err.host': 'SMTP-Server fehlt',
+    'status.mail.err.user': 'Benutzername fehlt',
+    'status.mail.err.pass': 'Passwort fehlt',
+    'status.mail.err.to': 'Empfänger ungültig',
+    'status.mail.err.from': 'Absender ungültig',
     'status.sync.title': 'Sperrlisten-Sync',
     'status.sync.intro': 'Am Mobilteil gesperrte Nummern („Nummer sperren") werden einmal pro Tag zur PhoneBlock-Datenbank übertragen und danach aus der Fritz!Box entfernt. Der Answerbot fängt die Anrufer dann für alle PhoneBlock-Nutzer ab.',
     'status.sync.unavailable': 'Nicht verfügbar — nur mit Fritz!Box-Einrichtung nutzbar.',
@@ -496,11 +501,11 @@ const I18N = {
     'status.mail.security': 'Encryption',
     'status.mail.security.tls': 'TLS (port 465)',
     'status.mail.security.starttls': 'STARTTLS (port 587)',
-    'status.mail.user': 'User name',
+    'status.mail.user': 'User name (SMTP login)',
     'status.mail.pass': 'Password',
     'status.mail.pass.keep': 'stored — leave blank to keep it',
-    'status.mail.from': 'Sender (blank = user name)',
-    'status.mail.to': 'Recipient',
+    'status.mail.from': 'Sender (email, blank = user name)',
+    'status.mail.to': 'Recipient (email)',
     'status.mail.help': 'Tip: Gmail and Outlook usually need an "app password" (when two-factor sign-in is on), not your normal account password. Classic providers such as GMX, web.de or mailbox.org work with user name and password.',
     'status.mail.on_error': 'Email on errors and crashes',
     'status.mail.on_error.help': 'Sends one email a day when an error has appeared in the log since the last notification — this includes a reboot after a crash.',
@@ -512,6 +517,11 @@ const I18N = {
     'status.mail.testing': 'Sending test email…',
     'status.mail.test.sent': 'Sending test email — the result will appear in the log.',
     'status.mail.test.fail': 'Sending failed — please check the settings and the log.',
+    'status.mail.err.host': 'SMTP server missing',
+    'status.mail.err.user': 'User name missing',
+    'status.mail.err.pass': 'Password missing',
+    'status.mail.err.to': 'Recipient invalid',
+    'status.mail.err.from': 'Sender invalid',
     'status.sync.title': 'Blocklist sync',
     'status.sync.intro': 'Numbers blocked at the handset ("Block number") are uploaded to the PhoneBlock database once a day and then removed from the Fritz!Box. The answer bot afterwards catches those callers for every PhoneBlock user.',
     'status.sync.unavailable': 'Unavailable — requires a Fritz!Box setup.',
@@ -732,11 +742,11 @@ const I18N = {
     'status.mail.security': 'Chiffrement',
     'status.mail.security.tls': 'TLS (port 465)',
     'status.mail.security.starttls': 'STARTTLS (port 587)',
-    'status.mail.user': 'Nom d’utilisateur',
+    'status.mail.user': 'Nom d’utilisateur (identifiant SMTP)',
     'status.mail.pass': 'Mot de passe',
     'status.mail.pass.keep': 'enregistré — laisser vide pour le conserver',
-    'status.mail.from': 'Expéditeur (vide = nom d’utilisateur)',
-    'status.mail.to': 'Destinataire',
+    'status.mail.from': 'Expéditeur (e-mail, vide = nom d’utilisateur)',
+    'status.mail.to': 'Destinataire (e-mail)',
     'status.mail.help': 'Astuce : pour Gmail ou Outlook, il faut généralement un « mot de passe d’application » (si la connexion à deux facteurs est activée), pas ton mot de passe habituel. Les fournisseurs classiques comme GMX, web.de ou mailbox.org fonctionnent avec le nom d’utilisateur et le mot de passe.',
     'status.mail.on_error': 'E-mail en cas d’erreurs et de plantages',
     'status.mail.on_error.help': 'Envoie un e-mail par jour si une erreur est apparue dans le journal depuis la dernière notification — y compris un redémarrage après un plantage.',
@@ -748,6 +758,11 @@ const I18N = {
     'status.mail.testing': 'Envoi de l’e-mail de test…',
     'status.mail.test.sent': 'E-mail de test en cours d’envoi — le résultat apparaîtra dans le journal.',
     'status.mail.test.fail': 'Échec de l’envoi — vérifie les réglages et le journal.',
+    'status.mail.err.host': 'Serveur SMTP manquant',
+    'status.mail.err.user': 'Nom d’utilisateur manquant',
+    'status.mail.err.pass': 'Mot de passe manquant',
+    'status.mail.err.to': 'Destinataire invalide',
+    'status.mail.err.from': 'Expéditeur invalide',
     'status.sync.title': 'Synchro liste de blocage',
     'status.sync.intro': 'Les numéros bloqués depuis le combiné (« Bloquer le numéro ») sont envoyés à la base PhoneBlock une fois par jour, puis retirés de la Fritz!Box. Le bot répondeur intercepte ensuite ces appelants pour tous les utilisateurs PhoneBlock.',
     'status.sync.unavailable': 'Indisponible — nécessite une configuration Fritz!Box.',
@@ -968,11 +983,11 @@ const I18N = {
     'status.mail.security': 'Cifrado',
     'status.mail.security.tls': 'TLS (puerto 465)',
     'status.mail.security.starttls': 'STARTTLS (puerto 587)',
-    'status.mail.user': 'Nombre de usuario',
+    'status.mail.user': 'Nombre de usuario (acceso SMTP)',
     'status.mail.pass': 'Contraseña',
     'status.mail.pass.keep': 'guardada — déjala en blanco para conservarla',
-    'status.mail.from': 'Remitente (vacío = nombre de usuario)',
-    'status.mail.to': 'Destinatario',
+    'status.mail.from': 'Remitente (correo, vacío = nombre de usuario)',
+    'status.mail.to': 'Destinatario (correo)',
     'status.mail.help': 'Consejo: en Gmail u Outlook normalmente necesitas una «contraseña de aplicación» (si tienes activada la verificación en dos pasos), no tu contraseña habitual. Proveedores clásicos como GMX, web.de o mailbox.org funcionan con nombre de usuario y contraseña.',
     'status.mail.on_error': 'Correo en caso de errores y fallos',
     'status.mail.on_error.help': 'Envía un correo al día si ha aparecido un error en el registro desde la última notificación — esto incluye un reinicio tras un fallo.',
@@ -984,6 +999,11 @@ const I18N = {
     'status.mail.testing': 'Enviando correo de prueba…',
     'status.mail.test.sent': 'Enviando correo de prueba — el resultado aparecerá en el registro.',
     'status.mail.test.fail': 'Envío fallido — comprueba los ajustes y el registro.',
+    'status.mail.err.host': 'Falta el servidor SMTP',
+    'status.mail.err.user': 'Falta el usuario',
+    'status.mail.err.pass': 'Falta la contraseña',
+    'status.mail.err.to': 'Destinatario no válido',
+    'status.mail.err.from': 'Remitente no válido',
     'status.sync.title': 'Sincronización de lista de bloqueo',
     'status.sync.intro': 'Los números bloqueados desde el terminal («Bloquear número») se envían a la base de PhoneBlock una vez al día y luego se eliminan de la Fritz!Box. El bot luego intercepta esas llamadas para todos los usuarios de PhoneBlock.',
     'status.sync.unavailable': 'No disponible — requiere configuración Fritz!Box.',
@@ -2631,8 +2651,32 @@ async function refreshAll(){
       });
       return r.ok;
     };
+    const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // Reject incomplete / malformed input before it reaches the SMTP path,
+    // where a bad value would otherwise fail silently and still report a
+    // green "success": an empty recipient (mail_configured() then refuses
+    // the send) or a non-address like "My Dongle" in the Absender field
+    // (the server rejects MAIL FROM:<My Dongle>). Returns a ready-to-show
+    // message and focuses the offending field, or '' when the form is valid.
+    const validateMail = () => {
+      const bad = (id, key) => { $(id).focus(); return t(key); };
+      if (!$('mailHost').value.trim()) return bad('mailHost', 'status.mail.err.host');
+      if (!$('mailUser').value.trim()) return bad('mailUser', 'status.mail.err.user');
+      // The password may be left blank only when one is already stored —
+      // the "leave blank to keep it" hint (mailPassKeep) is shown then.
+      if (!$('mailPass').value && !$('mailPassKeep').textContent)
+        return bad('mailPass', 'status.mail.err.pass');
+      if (!EMAIL_RE.test($('mailTo').value.trim()))
+        return bad('mailTo', 'status.mail.err.to');
+      const from = $('mailFrom').value.trim();
+      if (from && !EMAIL_RE.test(from))
+        return bad('mailFrom', 'status.mail.err.from');
+      return '';
+    };
     mailSave.onclick = async () => {
       const m = $('mailMsg');
+      const err = validateMail();
+      if (err){ m.textContent = err; m.style.color = '#d93025'; return; }
       mailSave.disabled = true;
       m.textContent = '';
       let ok = false;
@@ -2644,6 +2688,8 @@ async function refreshAll(){
     };
     mailTest.onclick = async () => {
       const m = $('mailMsg');
+      const err = validateMail();
+      if (err){ m.textContent = err; m.style.color = '#d93025'; return; }
       mailTest.disabled = true; mailSave.disabled = true;
       m.textContent = t('status.mail.testing');
       m.style.color = '#1a73e8';
