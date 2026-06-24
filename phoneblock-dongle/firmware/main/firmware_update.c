@@ -25,6 +25,7 @@
 #include "sdkconfig.h"
 
 #include "config.h"
+#include "version_cmp.h"
 
 static const char *TAG = "fwup";
 
@@ -164,29 +165,6 @@ static void copy_str(char *dst, size_t cap, const char *src)
     size_t n = strnlen(src, cap - 1);
     memcpy(dst, src, n);
     dst[n] = '\0';
-}
-
-// Lightweight semver-ish comparison for our own version strings
-// (Project version from CMakeLists.txt, e.g. "1.5.3" or "1.5.3-rc1").
-// Returns <0 / 0 / >0 like strcmp. Numeric major.minor.patch compare,
-// then any pre-release suffix ("-rc1", "-dev", …) is treated as
-// strictly less than the same release without the suffix — enough
-// to keep "1.5.3-rc1" from displacing a freshly flashed "1.5.3".
-// Two pre-release suffixes are treated as equal; we don't have rc
-// orderings to worry about today.
-static int semver_cmp(const char *a, const char *b)
-{
-    int aMaj = 0, aMin = 0, aPat = 0;
-    int bMaj = 0, bMin = 0, bPat = 0;
-    sscanf(a, "%d.%d.%d", &aMaj, &aMin, &aPat);
-    sscanf(b, "%d.%d.%d", &bMaj, &bMin, &bPat);
-    if (aMaj != bMaj) return aMaj < bMaj ? -1 : 1;
-    if (aMin != bMin) return aMin < bMin ? -1 : 1;
-    if (aPat != bPat) return aPat < bPat ? -1 : 1;
-    int aPre = strchr(a, '-') ? 1 : 0;
-    int bPre = strchr(b, '-') ? 1 : 0;
-    if (aPre != bPre) return aPre ? -1 : 1;
-    return 0;
 }
 
 static void reboot_task(void *arg)
@@ -425,7 +403,7 @@ static void resolve_manifest(bool force, const char *current_version,
     copy_str(d->new_version, sizeof(d->new_version), new_version);
     copy_str(d->app_url,     sizeof(d->app_url),     new_url);
 
-    int vcmp = semver_cmp(new_version, current_version);
+    int vcmp = version_cmp(new_version, current_version);
     if (vcmp == 0) {
         cJSON_Delete(root);
         d->result = FW_UPDATE_NO_NEW;
