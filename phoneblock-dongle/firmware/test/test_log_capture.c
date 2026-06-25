@@ -149,6 +149,35 @@ int main(void)
                log_capture_suppressed('W', "wifi", "weak signal"));
     CHECK_CHAR("suppress/null", 0, log_capture_suppressed('W', NULL, NULL));
 
+    // --- log_strip_ansi: colour removal for the live log stream -------
+    {
+        // A coloured line collapses to its plain text (length returned,
+        // not NUL-terminated by the function — terminate before compare).
+        char a[] = GREEN "I (12345) sip: REGISTER ok" RESET "\n";
+        int n = log_strip_ansi(a, (int)strlen(a));
+        a[n] = '\0';
+        CHECK_STR("strip/coloured", "I (12345) sip: REGISTER ok\n", a);
+
+        // No escapes → unchanged, same length.
+        char b[] = "W (7) wifi: weak signal\n";
+        int m = log_strip_ansi(b, (int)strlen(b));
+        b[m] = '\0';
+        CHECK_STR("strip/plain", "W (7) wifi: weak signal\n", b);
+
+        // Escape with no terminating 'm' before end is dropped wholesale
+        // (no stray bytes left behind).
+        char c[] = "x\033[0;3";
+        int k = log_strip_ansi(c, (int)strlen(c));
+        c[k] = '\0';
+        CHECK_STR("strip/truncated-escape", "x", c);
+
+        // Embedded reset between two runs of text.
+        char d[] = "ab" RESET "cd";
+        int j = log_strip_ansi(d, (int)strlen(d));
+        d[j] = '\0';
+        CHECK_STR("strip/embedded-reset", "abcd", d);
+    }
+
     printf("log_capture: %d tests, %d failures\n", g_tests, g_failures);
     return g_failures ? 1 : 0;
 }
