@@ -10,6 +10,7 @@
 #include "esp_task_wdt.h"
 #include "esp_timer.h"
 #include "esp_app_desc.h"
+#include "esp_heap_caps.h"   // heap_caps_get_largest_free_block
 #include "esp_netif.h"
 #include "esp_http_server.h"
 #include "esp_ota_ops.h"
@@ -254,6 +255,12 @@ static void add_system_load(cJSON *root)
     cJSON *sys = cJSON_AddObjectToObject(root, "system");
     cJSON_AddNumberToObject(sys, "free_heap",     (double)esp_get_free_heap_size());
     cJSON_AddNumberToObject(sys, "min_free_heap", (double)esp_get_minimum_free_heap_size());
+    // Largest contiguous free block (MALLOC_CAP_DEFAULT — what malloc/mbedTLS
+    // draw from). When this falls below a TLS connection's buffer the
+    // handshake fails with -0x7F00 even though free_heap still looks fine, so
+    // a low value here vs. free_heap is the fingerprint of heap fragmentation.
+    cJSON_AddNumberToObject(sys, "largest_free_block",
+                            (double)heap_caps_get_largest_free_block(MALLOC_CAP_DEFAULT));
 
     // Data-partition (SPIFFS "storage") usage. The blocklist cache, the
     // announcement blob and the temp files used during sync all share this
