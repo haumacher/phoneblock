@@ -1,8 +1,17 @@
 #include "mail_html.h"
 
+// Each builder writes a terminating '\0' at body[len] before returning, so
+// the buffer is always a valid C string after any call. This matters
+// because the assembled body is consumed as a C string (smtp_encode_body
+// reads to the NUL): without the terminator the mail would stream whatever
+// uninitialised heap follows the content until a stray NUL — leaking heap
+// memory into the message. All three reserve at least one byte (the loop
+// bounds stop below cap), so body[len] is always in range.
+
 size_t append_str(char *body, size_t cap, size_t len, const char *s)
 {
     while (*s && len < cap - 1) body[len++] = *s++;
+    body[len] = '\0';
     return len;
 }
 
@@ -20,6 +29,7 @@ size_t append_html_escaped(char *body, size_t cap, size_t len, const char *s)
             default:   body[len++] = *s;                           break;
         }
     }
+    body[len] = '\0';
     return len;
 }
 
@@ -39,5 +49,6 @@ size_t append_url_encoded(char *body, size_t cap, size_t len, const char *s)
             body[len++] = hex[ch & 0x0F];
         }
     }
+    body[len] = '\0';
     return len;
 }

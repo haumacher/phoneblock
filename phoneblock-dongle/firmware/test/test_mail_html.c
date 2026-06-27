@@ -91,6 +91,26 @@ int main(void)
             assert(strncmp(buf + i, "%2B", 3) == 0);
     }
 
+    // --- regression: the builders must NUL-terminate, so a body assembled
+    // into a dirty (uninitialised) buffer never streams trailing heap garbage
+    // into the mail. Without the terminator, strcmp below reads the 'X' fill
+    // past the appended content.
+    {
+        char buf[64];
+        memset(buf, 'X', sizeof(buf));          // simulate uninitialised heap
+        size_t len = append_str(buf, sizeof(buf), 0, "Hallo");
+        assert(buf[len] == '\0');               // terminated by the helper itself
+        assert(strcmp(buf, "Hallo") == 0);      // no trailing 'X' leaked
+        // Chain the escaper and the url-encoder; the last call owns the NUL.
+        memset(buf, 'X', sizeof(buf));
+        len = append_str(buf, sizeof(buf), 0, "n=");
+        len = append_html_escaped(buf, sizeof(buf), len, "<b>");
+        assert(buf[len] == '\0');
+        len = append_url_encoded(buf, sizeof(buf), len, " +4");
+        assert(buf[len] == '\0');
+        assert(strcmp(buf, "n=&lt;b&gt;%20%2B4") == 0);
+    }
+
     printf("test_mail_html: all assertions passed\n");
     return 0;
 }
