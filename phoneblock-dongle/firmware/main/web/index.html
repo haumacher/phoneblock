@@ -168,7 +168,7 @@ const I18N = {
     'status.thresholds.saved': 'Gespeichert.',
     'status.thresholds.invalid': 'Ungültiger Wert.',
     'status.system.title': 'System',
-    'status.system.heap': 'Freier Speicher: {free} (Minimum: {min})',
+    'status.system.heap': 'Freier Speicher: {free} (Minimum: {min}, größter Block: {largest})',
     'status.system.col.task': 'Task',
     'status.system.col.cpu': 'CPU',
     'status.system.col.stack': 'Stack frei',
@@ -426,7 +426,7 @@ const I18N = {
     'status.thresholds.saved': 'Saved.',
     'status.thresholds.invalid': 'Invalid value.',
     'status.system.title': 'System',
-    'status.system.heap': 'Free memory: {free} (minimum: {min})',
+    'status.system.heap': 'Free memory: {free} (minimum: {min}, largest block: {largest})',
     'status.system.col.task': 'Task',
     'status.system.col.cpu': 'CPU',
     'status.system.col.stack': 'Stack free',
@@ -672,7 +672,7 @@ const I18N = {
     'status.calls.log_known': 'Journaliser les appels connus',
     'status.calls.log_known.help': 'Si désactivé, les appels provenant de numéros du carnet d’adresses et les codes internes (**, *…) n’apparaissent pas dans la liste — les compteurs ci-dessus restent mis à jour.',
     'status.system.title': 'Système',
-    'status.system.heap': 'Mémoire libre : {free} (minimum : {min})',
+    'status.system.heap': 'Mémoire libre : {free} (minimum : {min}, plus grand bloc : {largest})',
     'status.system.col.task': 'Tâche',
     'status.system.col.cpu': 'CPU',
     'status.system.col.stack': 'Pile libre',
@@ -913,7 +913,7 @@ const I18N = {
     'status.calls.log_known': 'Registrar llamadas conocidas',
     'status.calls.log_known.help': 'Si está desactivado, las llamadas de números de la agenda y los códigos internos (**, *…) no aparecen en la lista — los contadores de arriba se siguen actualizando.',
     'status.system.title': 'Sistema',
-    'status.system.heap': 'Memoria libre: {free} (mínimo: {min})',
+    'status.system.heap': 'Memoria libre: {free} (mínimo: {min}, bloque mayor: {largest})',
     'status.system.col.task': 'Tarea',
     'status.system.col.cpu': 'CPU',
     'status.system.col.stack': 'Pila libre',
@@ -2087,6 +2087,7 @@ async function refreshAll(){
     $('systemSection').style.display = '';
     $('systemHeap').textContent = t('status.system.heap', {
       free: kb(s.system.free_heap), min: kb(s.system.min_free_heap),
+      largest: kb(s.system.largest_free_block),
     });
     const tb = $('systemTasks');
     tb.innerHTML = '';
