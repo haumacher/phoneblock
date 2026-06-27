@@ -20,6 +20,7 @@
 #include "mbedtls/ssl.h"
 
 #include "config.h"
+#include "mail_html.h"
 #include "smtp_body.h"
 #include "stats.h"
 #include "time_sync.h"
@@ -42,8 +43,15 @@ static const char *TAG = "mail";
 // Buffer for one command / header line (commands, base64 credentials,
 // the assembled header block). Comfortably larger than the longest line.
 #define MAIL_LINE_CAP       640
-// Upper bound for the assembled status body (summary + new log window).
-#define MAIL_BODY_CAP       4096
+// Upper bound for the assembled status body. The status mail is a single
+// text/html document — summary + up to STATS_MAX_CALLS calls + the log
+// window. text/html (not multipart/alternative) keeps the body — held in
+// RAM across the heap-hungry TLS handshake — small. 8 KB is comfortable
+// headroom for the worst case (10 calls + the full 32-entry log ring).
+#define MAIL_BODY_CAP       8192
+
+// Content-Type for the status mail body.
+#define MAIL_BODY_CT        "text/html; charset=utf-8"
 
 // Connection wrapping the raw socket plus the TLS session. `tls_up`
 // switches the read/write helpers between plaintext (the pre-STARTTLS
@@ -177,7 +185,7 @@ static int smtp_write_body(smtp_conn_t *c, const char *body, int64_t deadline)
 // X.509 chain verification) inline on the caller's stack and blocks on the
 // network for up to MAIL_DEADLINE_S, so it must only ever be driven from
 // the scheduler task — the daily flush and the test trigger both do.
-static bool mail_send(const char *subject, const char *body)
+static bool mail_send(const char *subject, const char *content_type, const char *body)
 {
     if (!mail_configured()) {
         ESP_LOGW(TAG, "mail not configured (host/user/pass/recipient)");
@@ -308,9 +316,9 @@ static bool mail_send(const char *subject, const char *body)
             "To: <%s>\r\n"
             "Subject: %s\r\n"
             "MIME-Version: 1.0\r\n"
-            "Content-Type: text/plain; charset=utf-8\r\n"
+            "Content-Type: %s\r\n"
             "\r\n",
-            from, to, subject);
+            from, to, subject, content_type);
         if (hlen < 0 || chan_write_all(&c, (unsigned char *)buf, (size_t)hlen,
                                        deadline) != 0)
             goto done;
@@ -338,77 +346,177 @@ done:
 }
 
 // --- body assembly (shared by the daily flush and the test mail) -----
+//
+// The body is a single text/html document. The pure string builders
+// (append_str / append_html_escaped / append_url_encoded) live in
+// mail_html.c so the injection-guarding escaping is host-tested; the
+// helpers below add the device-specific formatting on top. All are bounded
+// by `cap` and never write past it, so a full body truncates cleanly.
 
-// Append the status summary block — device id, uptime, call counters —
-// at body[len]. Returns the new length (clamped to cap on truncation).
-static size_t append_summary(char *body, size_t cap, size_t len,
-                             const stats_counters_t *cnt)
+// Render a call/log instant as local wall-clock once SNTP is valid, else the
+// "+Ns since boot" fallback. at_us is esp_timer uptime; see append_log_html.
+static void format_event_time(int64_t at_us, char *out, size_t cap)
 {
-    if (len >= cap) return len;
+    if (time_sync_valid()) {
+        int64_t now_us    = esp_timer_get_time();
+        time_t  now_epoch = (time_t)time_sync_now_epoch();
+        time_t  ev = now_epoch - (time_t)((now_us - at_us) / 1000000);
+        struct tm lt;
+        localtime_r(&ev, &lt);
+        strftime(out, cap, "%Y-%m-%d %H:%M:%S", &lt);
+    } else {
+        snprintf(out, cap, "+%llds", (long long)(at_us / 1000000));
+    }
+}
+
+// Verdict label matching the web UI's wording (status.calls.verdict.*).
+static void verdict_label(const stats_call_t *c, char *out, size_t cap)
+{
+    if (c->white_listed)            snprintf(out, cap, "Whitelist");
+    else if (c->black_listed)       snprintf(out, cap, "Blacklist");
+    else if (c->verdict == VERDICT_SPAM)
+                                    snprintf(out, cap, "SPAM (%d Stimmen)", c->votes);
+    else if (c->suspected)          snprintf(out, cap, "SPAM-VERDACHT (%d Stimmen)", c->votes);
+    else if (c->verdict == VERDICT_ERROR)
+                                    snprintf(out, cap, "Fehler");
+    else                            snprintf(out, cap, "durchgestellt");
+}
+
+// Append the summary block (device id, uptime, call counters) as HTML.
+static size_t append_summary_html(char *body, size_t cap, size_t len,
+                                  const stats_counters_t *cnt)
+{
     int64_t up_s = esp_timer_get_time() / 1000000;
-    int w = snprintf(body + len, cap - len,
-        "Gerät: %s\n"
-        "Laufzeit: %lldh %lldmin\n"
-        "Anrufe gesamt: %u | SPAM blockiert: %u | durchgestellt: %u\n",
+    char line[320];
+    snprintf(line, sizeof(line),
+        "<p style=\"font-size:14px;line-height:1.5\">"
+        "Ger&auml;t: <b>%s</b><br>"
+        "Laufzeit: %lldh %lldmin<br>"
+        "Anrufe gesamt: %u &nbsp;|&nbsp; SPAM blockiert: %u &nbsp;|&nbsp; durchgestellt: %u"
+        "</p>",
         config_device_id(),
         (long long)(up_s / 3600), (long long)((up_s % 3600) / 60),
         (unsigned)cnt->total_calls, (unsigned)cnt->spam_blocked,
         (unsigned)cnt->legitimate);
-    if (w < 0) return len;
-    len += (size_t)w;
-    return len > cap ? cap : len;
+    return append_str(body, cap, len, line);
 }
 
-// Append the "Neue Meldungen im Protokoll" section: every WARN/ERROR in
-// `errs` (newest first) with at_us > since_us, formatted one per line. The
-// header is written only if at least one entry qualifies, so an empty
-// window adds nothing. Returns the new length; updates *newest_us to the
-// newest at_us appended, which the daily flush uses as its high-water mark.
-static size_t append_log_window(char *body, size_t cap, size_t len,
-                                const stats_error_t *errs, int n,
-                                int64_t since_us, int64_t *newest_us)
+// Append the recent-calls table. Dialable numbers link to their PhoneBlock
+// detail page (<base>/nums/<number>); the server normalises the number and
+// redirects to its canonical form, exactly as the web UI's links do. Renders
+// nothing when there are no calls.
+static size_t append_calls_html(char *body, size_t cap, size_t len,
+                                const stats_call_t *calls, int ncalls)
 {
-    // Log entries store esp_timer uptime (at_us), not wall-clock. Once the
-    // SNTP clock is valid we recover each entry's real instant —
-    // now_epoch - (now_us - at_us) — since time() and esp_timer share the
-    // same monotonic source. A mail is read minutes-to-days later, so an
-    // absolute local timestamp is far more useful than "+Ns since boot";
-    // keep the uptime form only as a pre-sync fallback.
-    int64_t now_us    = esp_timer_get_time();
-    bool    clock_ok  = time_sync_valid();
-    time_t  now_epoch = clock_ok ? (time_t)time_sync_now_epoch() : 0;
+    if (ncalls <= 0) return len;
+    const char *base = config_phoneblock_base_url();
 
+    len = append_str(body, cap, len,
+        "<h3 style=\"font-size:15px;margin:1.2em 0 .3em\">Letzte Anrufe</h3>"
+        "<table cellpadding=\"5\" cellspacing=\"0\" "
+        "style=\"border-collapse:collapse;font-size:14px\">"
+        "<tr style=\"text-align:left;color:#555;border-bottom:1px solid #ccc\">"
+        "<th>Zeit</th><th>Nummer</th><th>Name</th><th>Bewertung</th></tr>");
+
+    for (int i = 0; i < ncalls && len < cap - 400; i++) {
+        const stats_call_t *c = &calls[i];
+        char when[24]; format_event_time(c->at_us, when, sizeof(when));
+        char vl[48];   verdict_label(c, vl, sizeof(vl));
+        // API-checked entries carry a PhoneBlock label/location; phone-book
+        // and internal-code entries fall back to the raw number/display.
+        bool checked     = c->label[0] != '\0';
+        const char *num  = checked ? c->label    : c->number;
+        const char *name = checked ? c->location : c->display;
+        bool dialable = c->number[0] == '+' ||
+                        (c->number[0] >= '0' && c->number[0] <= '9');
+
+        len = append_str(body, cap, len, "<tr style=\"border-bottom:1px solid #eee\"><td>");
+        len = append_html_escaped(body, cap, len, when);
+        len = append_str(body, cap, len, "</td><td>");
+        if (dialable && base && base[0]) {
+            len = append_str(body, cap, len, "<a href=\"");
+            len = append_str(body, cap, len, base);          // our own URL, no escaping needed
+            len = append_str(body, cap, len, "/nums/");
+            len = append_url_encoded(body, cap, len, c->number);
+            len = append_str(body, cap, len, "\">");
+            len = append_html_escaped(body, cap, len, num);
+            len = append_str(body, cap, len, "</a>");
+        } else {
+            len = append_html_escaped(body, cap, len, num);
+        }
+        len = append_str(body, cap, len, "</td><td>");
+        len = append_html_escaped(body, cap, len, name ? name : "");
+        len = append_str(body, cap, len, "</td><td>");
+        len = append_html_escaped(body, cap, len, vl);
+        len = append_str(body, cap, len, "</td></tr>");
+    }
+    return append_str(body, cap, len, "</table>");
+}
+
+// Append the "Neue Meldungen im Protokoll" section as an HTML <pre> block:
+// every WARN/ERROR in `errs` (newest first) with at_us > since_us. The header
+// is emitted only if at least one entry qualifies. Updates *newest_us to the
+// newest at_us appended, which the daily flush uses as its high-water mark.
+//
+// Log entries store esp_timer uptime (at_us), not wall-clock; format_event_time
+// recovers the real instant once SNTP is valid (time() and esp_timer share the
+// same monotonic source), far more useful in a mail read minutes-to-days later.
+static size_t append_log_html(char *body, size_t cap, size_t len,
+                              const stats_error_t *errs, int n,
+                              int64_t since_us, int64_t *newest_us)
+{
     bool header = false;
-    for (int i = n - 1; i >= 0 && len < cap - 160; i--) {
+    for (int i = n - 1; i >= 0 && len < cap - 220; i--) {
         const stats_error_t *e = &errs[i];
         if (e->at_us <= since_us) continue;
         char lvl = (e->level == ESP_LOG_ERROR) ? 'E'
                  : (e->level == ESP_LOG_WARN)  ? 'W' : 0;
         if (!lvl) continue;
         if (!header) {
-            int hw = snprintf(body + len, cap - len,
-                              "\nNeue Meldungen im Protokoll:\n");
-            if (hw < 0) break;
-            len += (size_t)hw;
+            len = append_str(body, cap, len,
+                "<h3 style=\"font-size:15px;margin:1.2em 0 .3em\">Neue Meldungen im Protokoll</h3>"
+                "<pre style=\"font-size:13px;white-space:pre-wrap;word-break:break-word;margin:0\">");
             header = true;
         }
         char when[24];
-        if (clock_ok) {
-            time_t ev = now_epoch - (time_t)((now_us - e->at_us) / 1000000);
-            struct tm lt;
-            localtime_r(&ev, &lt);
-            strftime(when, sizeof(when), "%Y-%m-%d %H:%M:%S", &lt);
-        } else {
-            snprintf(when, sizeof(when), "+%llds",
-                     (long long)(e->at_us / 1000000));
-        }
-        int w = snprintf(body + len, cap - len, "%c %s %s: %s\n",
-                         lvl, when, e->tag, e->message);
-        if (w < 0 || (size_t)w >= cap - len) break;
-        len += (size_t)w;
+        format_event_time(e->at_us, when, sizeof(when));
+        char prefix[56];
+        snprintf(prefix, sizeof(prefix), "%c %s %s: ", lvl, when, e->tag);
+        len = append_html_escaped(body, cap, len, prefix);   // tag is ours, but cheap to escape
+        len = append_html_escaped(body, cap, len, e->message);
+        len = append_str(body, cap, len, "\n");
         if (e->at_us > *newest_us) *newest_us = e->at_us;
     }
+    if (header) len = append_str(body, cap, len, "</pre>");
     return len;
+}
+
+// Assemble the full text/html status body. `include_log` gates the log
+// section (the daily flush only attaches it once a new ERROR has fired;
+// the test mail always shows the whole ring). `spam_delta` > 0 adds the
+// "since the last mail" line. Returns the assembled length.
+static size_t build_status_html(char *body, size_t cap,
+                                const stats_counters_t *cnt,
+                                const stats_call_t *calls, int ncalls,
+                                const stats_error_t *errs, int nerr,
+                                int64_t since_us, int64_t *newest_us,
+                                bool include_log, uint32_t spam_delta)
+{
+    size_t len = append_str(body, cap, 0,
+        "<html><body style=\"font-family:Arial,Helvetica,sans-serif;color:#222\">"
+        "<p>Statusmeldung deines PhoneBlock-Dongles.</p>");
+    len = append_summary_html(body, cap, len, cnt);
+    if (spam_delta) {
+        char line[160];
+        snprintf(line, sizeof(line),
+            "<p>Seit der letzten Meldung wurden <b>%u</b> SPAM-Anrufe blockiert.</p>",
+            (unsigned)spam_delta);
+        len = append_str(body, cap, len, line);
+    }
+    len = append_calls_html(body, cap, len, calls, ncalls);
+    if (include_log)
+        len = append_log_html(body, cap, len, errs, nerr, since_us, newest_us);
+    return append_str(body, cap, len, "</body></html>\n");
 }
 
 // --- daily evaluation -----------------------------------------------
@@ -444,29 +552,22 @@ void mail_daily_flush(void)
     char *body = malloc(MAIL_BODY_CAP);
     if (!body) return;
 
-    size_t len = snprintf(body, MAIL_BODY_CAP,
-        "Statusmeldung deines PhoneBlock-Dongles.\n\n");
-    len = append_summary(body, MAIL_BODY_CAP, len, &cnt);
-
-    if (have_new_spam && len < MAIL_BODY_CAP) {
-        len += snprintf(body + len, MAIL_BODY_CAP - len,
-            "\nSeit der letzten Meldung wurden %u SPAM-Anrufe blockiert.\n",
-            (unsigned)(cnt.spam_blocked - s_reported_spam));
-    }
+    stats_call_t calls[STATS_MAX_CALLS];
+    int ncalls = stats_snapshot_calls(calls, STATS_MAX_CALLS);
 
     // Advance the log high-water mark over every WARN/ERROR we append, so
     // the same window isn't re-mailed; the *trigger* is still a new ERROR.
     int64_t newest_us = s_reported_through_us;
-    if (have_new_error)
-        len = append_log_window(body, MAIL_BODY_CAP, len, errs, n,
-                                s_reported_through_us, &newest_us);
+    build_status_html(body, MAIL_BODY_CAP, &cnt, calls, ncalls, errs, n,
+                      s_reported_through_us, &newest_us, have_new_error,
+                      have_new_spam ? (cnt.spam_blocked - s_reported_spam) : 0);
 
     const char *subject =
         (have_new_error && have_new_spam) ? "PhoneBlock-Dongle: Fehler und SPAM-Anrufe"
       : have_new_error                    ? "PhoneBlock-Dongle: Fehler im Protokoll"
       :                                     "PhoneBlock-Dongle: SPAM-Anrufe blockiert";
 
-    if (mail_send(subject, body)) {
+    if (mail_send(subject, MAIL_BODY_CT, body)) {
         // Advance the marks only after a confirmed send, so a failure
         // retries the same window next cycle.
         if (have_new_error) s_reported_through_us = newest_us;
@@ -481,21 +582,21 @@ bool mail_send_test(void)
     if (!body) return false;
 
     // Just send *the* status mail, built exactly like the daily flush —
-    // summary plus the current WARN/ERROR log window (the whole ring, hence
-    // since_us = 0). No test-only wording: the point of the button is to
-    // see the real mail on demand.
+    // summary, the recent calls, and the current WARN/ERROR log window (the
+    // whole ring, hence since_us = 0). No test-only wording: the point of the
+    // button is to see the real mail on demand.
     stats_counters_t cnt;
     stats_snapshot_counters(&cnt);
     stats_error_t errs[STATS_MAX_ERRORS];
     int     n      = stats_snapshot_errors(errs, STATS_MAX_ERRORS);
+    stats_call_t calls[STATS_MAX_CALLS];
+    int     ncalls = stats_snapshot_calls(calls, STATS_MAX_CALLS);
     int64_t newest = 0;
 
-    size_t len = snprintf(body, MAIL_BODY_CAP,
-        "Statusmeldung deines PhoneBlock-Dongles.\n\n");
-    len = append_summary(body, MAIL_BODY_CAP, len, &cnt);
-    len = append_log_window(body, MAIL_BODY_CAP, len, errs, n, 0, &newest);
+    build_status_html(body, MAIL_BODY_CAP, &cnt, calls, ncalls, errs, n,
+                      0, &newest, true, 0);
 
-    bool ok = mail_send("PhoneBlock-Dongle: Statusmeldung", body);
+    bool ok = mail_send("PhoneBlock-Dongle: Statusmeldung", MAIL_BODY_CT, body);
     free(body);
     return ok;
 }
