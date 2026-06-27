@@ -1,6 +1,8 @@
 #pragma once
 
 #include <stddef.h>
+#include <stdbool.h>
+#include <stdint.h>
 
 // Global log capture: mirrors every WARN/ERROR line the firmware emits
 // — our own modules and the ESP-IDF libraries alike — into the stats
@@ -16,6 +18,36 @@
 
 // Install the log hook. Call once, after stats_setup(). ESP-only.
 void log_capture_start(void);
+
+// --- Live full-log stream (ESP-only) --------------------------------
+// Beyond the 32-entry WARN/ERROR ring, one client at a time can follow
+// the *complete* log live: every formatted line that reaches the serial
+// console, all levels, ANSI colour stripped. The HTTP handler in web.c
+// drives this:
+//
+//   log_stream_open()  reserves the single slot and allocates the buffer;
+//                      returns false if a stream is already active or out
+//                      of memory.
+//   log_stream_read()  blocks up to timeout_ms for the next line, copies
+//                      it into out (cap must be >= LOG_STREAM_LINE_MAX),
+//                      returns its byte count — 0 on timeout, when the
+//                      caller should emit a heartbeat to detect a gone
+//                      client.
+//   log_stream_close() releases the slot and frees the buffer.
+//
+// While a stream is open, the log hook tees each line into it. With none
+// open the hot-path cost is a single bool read per logged line.
+#define LOG_STREAM_LINE_MAX 1024   // bytes mirrored per line (longer clipped)
+
+bool   log_stream_open(void);
+size_t log_stream_read(char *out, size_t cap, uint32_t timeout_ms);
+void   log_stream_close(void);
+
+// Strip in-place every ANSI escape ("ESC[...m") from the first `len`
+// bytes of `s`, returning the new length. Host-testable; used to turn a
+// colourised console line into plain text for the stream and to pin the
+// behaviour in test/test_log_capture.c.
+int log_strip_ansi(char *s, int len);
 
 // --- Host-testable log-line parsing (no ESP-IDF dependencies) -------
 // Split out so test/test_log_capture.c can pin the fragile parsing on

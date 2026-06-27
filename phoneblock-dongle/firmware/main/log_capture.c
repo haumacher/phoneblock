@@ -36,6 +36,21 @@ char log_capture_level(const char *line)
     return is_level(c) ? c : '\0';
 }
 
+int log_strip_ansi(char *s, int len)
+{
+    int w = 0;
+    for (int r = 0; r < len; ) {
+        if (s[r] == '\033') {            // ESC: drop up to and including 'm'
+            r++;
+            while (r < len && s[r] != 'm') r++;
+            if (r < len) r++;            // skip the terminating 'm'
+        } else {
+            s[w++] = s[r++];
+        }
+    }
+    return w;
+}
+
 // Largest length <= len whose prefix ends on a UTF-8 character boundary.
 // A hard byte-truncation at msg_cap can cut a multibyte sequence — an
 // arrow in our own messages, or an umlaut in an external string like a
@@ -151,9 +166,11 @@ int log_capture_suppressed(char level, const char *tag, const char *msg)
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <stdlib.h>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
+#include "freertos/message_buffer.h"
 
 #include "esp_log.h"
 
@@ -162,6 +179,19 @@ int log_capture_suppressed(char level, const char *tag, const char *msg)
 
 // Previous (console) sink, so the serial log stays fully intact.
 static vprintf_like_t s_console;
+
+// --- Live full-log stream state --------------------------------------
+// One subscriber drains every formatted line through a message buffer.
+// s_stream_on is the hot-path gate (read once per logged line); the
+// buffer + scratch exist only while a client is attached. State changes
+// (open/close) and the per-line tee both run under s_lock, so a tee
+// never touches a buffer that close() is freeing.
+#define LOG_STREAM_BUF_BYTES 6144   // message-buffer capacity for bursts
+
+static volatile bool         s_stream_on;
+static MessageBufferHandle_t s_stream_buf;
+static char                 *s_stream_scratch;   // LOG_STREAM_LINE_MAX bytes
+static uint32_t              s_stream_dropped;    // lines lost to a full buffer
 
 // The hook runs on the stack of whatever task logs the line, and the
 // formatting scratch dominates that cost. Keeping line/tag/msg here as
@@ -179,15 +209,106 @@ static char s_line[192];
 static char s_tag[STATS_ERROR_TAG_LEN];
 static char s_msg[STATS_ERROR_MSG_LEN];
 
-static void capture_line(char lvl, int level, const char *fmt, va_list ap)
+// Tee one log line into the live stream (caller holds s_lock). Re-formats
+// at full width into the heap scratch — the 192 B ring buffer above would
+// clip long lines (e.g. a SIP dump) far shorter than a stream viewer wants
+// — strips the console's ANSI colour, and enqueues it. A full buffer drops
+// the line and bumps a counter the reader surfaces.
+static void stream_tee_locked(const char *fmt, va_list ap)
+{
+    if (!s_stream_on || !s_stream_buf || !s_stream_scratch) return;
+    int n = vsnprintf(s_stream_scratch, LOG_STREAM_LINE_MAX, fmt, ap);
+    if (n <= 0) return;
+    if (n >= LOG_STREAM_LINE_MAX) n = LOG_STREAM_LINE_MAX - 1;
+    n = log_strip_ansi(s_stream_scratch, n);
+    if (n <= 0) return;
+    if (xMessageBufferSend(s_stream_buf, s_stream_scratch, (size_t)n, 0) == 0)
+        s_stream_dropped++;
+}
+
+static void capture_line(char lvl, int level, bool stream,
+                         const char *fmt, va_list ap)
 {
     if (!s_lock || xSemaphoreTake(s_lock, 0) != pdTRUE) return;
-    vsnprintf(s_line, sizeof(s_line), fmt, ap);
-    if (log_capture_parse(s_line, s_tag, sizeof(s_tag), s_msg, sizeof(s_msg))
-            && !log_capture_suppressed(lvl, s_tag, s_msg)) {
-        stats_record_error(level, s_tag, s_msg);
+    if (level) {
+        va_list a1;
+        va_copy(a1, ap);
+        vsnprintf(s_line, sizeof(s_line), fmt, a1);
+        va_end(a1);
+        if (log_capture_parse(s_line, s_tag, sizeof(s_tag), s_msg, sizeof(s_msg))
+                && !log_capture_suppressed(lvl, s_tag, s_msg)) {
+            stats_record_error(level, s_tag, s_msg);
+        }
+    }
+    if (stream) {
+        va_list a2;
+        va_copy(a2, ap);
+        stream_tee_locked(fmt, a2);
+        va_end(a2);
     }
     xSemaphoreGive(s_lock);
+}
+
+// --- Live-stream subscriber API (see log_capture.h) ------------------
+
+bool log_stream_open(void)
+{
+    if (!s_lock) return false;
+    MessageBufferHandle_t mb = xMessageBufferCreate(LOG_STREAM_BUF_BYTES);
+    char *scratch = malloc(LOG_STREAM_LINE_MAX);
+    if (!mb || !scratch) {
+        if (mb) vMessageBufferDelete(mb);
+        free(scratch);
+        return false;
+    }
+    bool ok = false;
+    xSemaphoreTake(s_lock, portMAX_DELAY);
+    if (!s_stream_on) {
+        s_stream_buf     = mb;
+        s_stream_scratch = scratch;
+        s_stream_dropped = 0;
+        s_stream_on      = true;   // publish last: gates the tee
+        ok = true;
+    }
+    xSemaphoreGive(s_lock);
+    if (!ok) { vMessageBufferDelete(mb); free(scratch); }  // lost the race
+    return ok;
+}
+
+void log_stream_close(void)
+{
+    if (!s_lock) return;
+    MessageBufferHandle_t mb = NULL;
+    char *scratch = NULL;
+    xSemaphoreTake(s_lock, portMAX_DELAY);
+    if (s_stream_on) {
+        s_stream_on      = false;  // retract first: no tee past this point
+        mb               = s_stream_buf;     s_stream_buf = NULL;
+        scratch          = s_stream_scratch; s_stream_scratch = NULL;
+    }
+    xSemaphoreGive(s_lock);
+    if (mb) vMessageBufferDelete(mb);   // safe: tee is gated off, reader is us
+    free(scratch);
+}
+
+size_t log_stream_read(char *out, size_t cap, uint32_t timeout_ms)
+{
+    if (!s_stream_buf || cap == 0) return 0;
+    // Surface any overflow since the last read before the next real line.
+    uint32_t dropped = 0;
+    if (xSemaphoreTake(s_lock, 0) == pdTRUE) {
+        dropped = s_stream_dropped;
+        s_stream_dropped = 0;
+        xSemaphoreGive(s_lock);
+    }
+    if (dropped) {
+        int n = snprintf(out, cap,
+                         "... %lu log line(s) dropped (stream overflow)\n",
+                         (unsigned long)dropped);
+        return (n > 0 && (size_t)n < cap) ? (size_t)n : 0;
+    }
+    return xMessageBufferReceive(s_stream_buf, out, cap,
+                                 pdMS_TO_TICKS(timeout_ms));
 }
 
 // STACK SIZING — important. This hook runs on the stack of whatever task
@@ -220,10 +341,15 @@ static int log_hook(const char *fmt, va_list ap)
     if      (lvl == 'E') level = ESP_LOG_ERROR;
     else if (lvl == 'W') level = ESP_LOG_WARN;
     else if (lvl == 'I' && config_log_info()) level = ESP_LOG_INFO;
-    if (level) {
+
+    // A live subscriber gets *every* line regardless of level — that is the
+    // point of "what the serial console shows". s_stream_on is a single
+    // volatile read when nobody is streaming (the common case).
+    bool stream = s_stream_on;
+    if (level || stream) {
         va_list copy;
         va_copy(copy, ap);
-        capture_line(lvl, level, fmt, copy);
+        capture_line(lvl, level, stream, fmt, copy);
         va_end(copy);
     }
 

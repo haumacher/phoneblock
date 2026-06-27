@@ -1,5 +1,6 @@
 #include "web.h"
 
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -26,6 +27,7 @@
 #include "blocklist_sync.h"
 #include "config.h"
 #include "firmware_update.h"
+#include "log_capture.h"
 #include "mail.h"
 #include "scheduler.h"
 #include "sip_register.h"
@@ -1289,6 +1291,91 @@ static esp_err_t handle_errors(httpd_req_t *req)
     return ESP_OK;
 }
 
+// GET /api/log/stream — follow the full log live (every line that hits
+// the serial console, all levels), one subscriber at a time.
+//
+// esp_http_server dispatches handlers on its single worker task, so a
+// handler that blocked in the stream loop would freeze the whole web UI.
+// Instead we detach the request (httpd_req_async_handler_begin) and serve
+// it from a dedicated task, leaving the worker free; the worker returns
+// immediately. The task sends one chunk per log line — each chunk is its
+// own TCP write, so lines reach the client the instant they are logged.
+
+// True while the streaming client's socket is still open. During idle
+// gaps we must notice a vanished client *without writing*: a heartbeat
+// byte would litter the log with blank lines. A non-blocking MSG_PEEK
+// returns 0 on an orderly close (FIN) and a hard error on a reset;
+// EWOULDBLOCK means "connected, nothing to read" — the normal case for a
+// stream the client only reads from.
+static bool log_client_connected(int fd)
+{
+    if (fd < 0) return false;
+    char probe;
+    int r = recv(fd, &probe, 1, MSG_DONTWAIT | MSG_PEEK);
+    if (r == 0) return false;                                   // client closed
+    if (r < 0 && errno != EAGAIN && errno != EWOULDBLOCK)
+        return false;                                           // reset / error
+    return true;
+}
+
+static void log_stream_task(void *arg)
+{
+    httpd_req_t *req = (httpd_req_t *)arg;
+    int fd = httpd_req_to_sockfd(req);
+    char *buf = malloc(LOG_STREAM_LINE_MAX);
+    if (buf) {
+        httpd_resp_set_type(req, "text/plain; charset=utf-8");
+        httpd_resp_set_hdr(req, "Cache-Control", "no-store");
+        httpd_resp_set_hdr(req, "X-Accel-Buffering", "no");  // no proxy buffering
+        esp_err_t err = httpd_resp_send_chunk(req, "--- live log ---\n",
+                                              HTTPD_RESP_USE_STRLEN);
+        while (err == ESP_OK) {
+            size_t n = log_stream_read(buf, LOG_STREAM_LINE_MAX, 5000);
+            if (n > 0) {
+                err = httpd_resp_send_chunk(req, buf, n);  // one chunk per line
+            } else if (!log_client_connected(fd)) {
+                break;            // idle gap and the peer is gone — free the slot
+            }
+            // else: idle but still connected — emit nothing (no heartbeat noise)
+        }
+        free(buf);
+    }
+    httpd_resp_send_chunk(req, NULL, 0);         // best-effort terminate
+    httpd_req_async_handler_complete(req);
+    log_stream_close();
+    vTaskDelete(NULL);
+}
+
+static esp_err_t handle_log_stream(httpd_req_t *req)
+{
+    REQUIRE_AUTH_API(req);
+
+    // Single subscriber: reserve the slot before detaching the request.
+    if (!log_stream_open()) {
+        httpd_resp_set_status(req, "409 Conflict");
+        httpd_resp_set_type(req, "text/plain");
+        httpd_resp_sendstr(req, "log stream already in use\n");
+        return ESP_OK;
+    }
+
+    httpd_req_t *areq = NULL;
+    if (httpd_req_async_handler_begin(req, &areq) != ESP_OK) {
+        log_stream_close();
+        httpd_resp_set_status(req, "500 Internal Server Error");
+        httpd_resp_set_type(req, "text/plain");
+        httpd_resp_sendstr(req, "cannot start log stream\n");
+        return ESP_OK;
+    }
+    // 4 KB stack: the read buffer is on the heap, the send path is plain
+    // HTTP (no TLS), so the chunk framing is all this task needs.
+    if (xTaskCreate(log_stream_task, "logstream", 4096, areq,
+                    tskIDLE_PRIORITY + 5, NULL) != pdPASS) {
+        httpd_req_async_handler_complete(areq);  // can no longer respond on req
+        log_stream_close();
+    }
+    return ESP_OK;
+}
+
 // GET /api/announcement — streams the currently active A-law audio.
 // Content-Type: audio/basic (the IANA-registered type for G.711
 // µ-law, close enough to A-law for a "audio payload" hint; browsers
@@ -1907,6 +1994,7 @@ static const httpd_uri_t URIS[] = {
     { .uri = "/api/status",  .method = HTTP_GET,  .handler = handle_status,      .user_ctx = NULL },
     { .uri = "/api/calls",   .method = HTTP_GET,  .handler = handle_calls,       .user_ctx = NULL },
     { .uri = "/api/errors",  .method = HTTP_GET,  .handler = handle_errors,      .user_ctx = NULL },
+    { .uri = "/api/log/stream", .method = HTTP_GET, .handler = handle_log_stream, .user_ctx = NULL },
     { .uri = "/api/errors/clear",    .method = HTTP_POST, .handler = handle_errors_clear,   .user_ctx = NULL },
     { .uri = "/api/calls/clear",     .method = HTTP_POST, .handler = handle_calls_clear,    .user_ctx = NULL },
     { .uri = "/api/factory-reset",   .method = HTTP_POST, .handler = handle_factory_reset,  .user_ctx = NULL },
