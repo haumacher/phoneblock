@@ -52,6 +52,20 @@ CONFIG_ESP_TLS_CLIENT_SESSION_TICKETS=y
 # pins TLS 1.2 explicitly - see check_client() in api.c.
 CONFIG_MBEDTLS_SSL_PROTO_TLS1_3=n
 
+# TLS receive buffer: 8 KB instead of the 16 KB default. Every TLS
+# connection (SIP registrar, phoneblock.net API, SMTP) allocates this as
+# one contiguous block in mbedtls_ssl_setup(). On the classic ESP32 the
+# heap fragments under the SIP reconnect churn and the per-call media
+# pressure, and a 16 KB contiguous block then can't be found -> setup
+# fails with MBEDTLS_ERR_SSL_ALLOC_FAILED (-0x7F00) and the connection
+# (registration or spam lookup) dies. Halving the buffer halves the
+# contiguous demand, so the on-demand allocation survives a fragmented
+# heap. 8 KB still comfortably holds our servers' handshake certificate
+# records (Telekom + phoneblock.net chains are ~3-5 KB); the out buffer
+# is already 4 KB (ASYMMETRIC_CONTENT_LEN). Going lower (e.g. 4 KB) would
+# need Maximum-Fragment-Length negotiation to cap the cert record too.
+CONFIG_MBEDTLS_SSL_IN_CONTENT_LEN=8192
+
 # Main task stack: 8 KB is enough for cJSON + TLS + example helpers.
 CONFIG_ESP_MAIN_TASK_STACK_SIZE=8192
 
