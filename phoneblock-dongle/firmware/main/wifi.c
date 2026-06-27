@@ -558,6 +558,16 @@ esp_err_t wifi_connect(void)
     ESP_ERROR_CHECK(esp_wifi_start());
     s_started = true;
 
+    // Disable WiFi modem power-save. The ESP-IDF default is
+    // WIFI_PS_MIN_MODEM: the radio sleeps between DTIM beacons, which on
+    // some APs (incl. Fritz!Box) loses enough downlink ACKs that the AP
+    // disassociates the station with reason 34 (DISASSOC_LOW_ACK). Each
+    // such drop tears down the long-lived TLS socket to the Telekom SIP
+    // registrar, surfacing as a "Host is unreachable" / re-REGISTER storm
+    // even though the registration itself is fine. The dongle is mains-
+    // powered, so there is nothing to save by sleeping — keep the radio on.
+    ESP_ERROR_CHECK(esp_wifi_set_ps(WIFI_PS_NONE));
+
     if (!have_stored && !have_baked) {
         start_wps();
     }
