@@ -102,6 +102,10 @@ typedef struct {
     bool     srtp_tx;             // true → answer/stream as SRTP (RTP/SAVP)
     int      srtp_tag;            // crypto tag to echo in the SDP answer
     uint8_t  srtp_tx_key[RTP_SRTP_KEY_LEN];  // our SDES master key+salt
+    char     media_ip[48];        // SDP c=/o= address to advertise (public,
+                                  // STUN-mapped if available, else signalling IP)
+    int      media_port;          // SDP m= port to advertise (public, post-NAT;
+                                  // 0 until prepare_media_endpoint ran)
     char     contact_uri[200];    // INVITE Contact = remote target (BYE R-URI)
     char     route[320];          // INVITE Record-Route, echoed as BYE Route
                                   // (Telekom's IMS token URI is ~211 chars;
@@ -650,7 +654,7 @@ static register_outcome_t do_register(sip_ctx_t *c, int *granted_expires,
     ESP_LOGI(TAG, "← %d (%d bytes)", status, rx_len);
 
     if (status == 200) {
-        int granted = parse_register_expires(rx, rx_len);
+        int granted = parse_register_expires(rx, rx_len, config_device_id());
         if (granted >= 0) *granted_expires = granted;
         result = REGISTER_OK;
         goto cleanup;
@@ -764,7 +768,7 @@ static register_outcome_t do_register(sip_ctx_t *c, int *granted_expires,
         goto cleanup;
     }
     {
-        int granted = parse_register_expires(rx, rx_len);
+        int granted = parse_register_expires(rx, rx_len, config_device_id());
         if (granted >= 0) *granted_expires = granted;
     }
     result = REGISTER_OK;
@@ -888,9 +892,15 @@ static void send_response(sip_ctx_t *c, const struct sockaddr_in *peer,
 // When the dialog negotiated SRTP (d->srtp_tx), the media line uses the
 // secure RTP/SAVP profile and carries our SDES key in an a=crypto line
 // echoing the offer's crypto tag; otherwise it stays plain RTP/AVP.
-static int build_sdp_body(const char *our_ip, const dialog_t *d,
+static int build_sdp_body(const char *fallback_ip, const dialog_t *d,
                           char *out, int cap)
 {
+    // Advertise the endpoint prepare_media_endpoint() resolved (public,
+    // STUN-mapped). Fall back to the signalling IP / local port if it was
+    // never set (defensive — the answer path always sets it first).
+    const char *ip = (d && d->media_ip[0]) ? d->media_ip : fallback_ip;
+    int port       = (d && d->media_port > 0) ? d->media_port : config_rtp_port();
+
     int n = snprintf(out, cap,
         "v=0\r\n"
         "o=phoneblock-dongle 0 0 IN IP4 %s\r\n"
@@ -899,7 +909,7 @@ static int build_sdp_body(const char *our_ip, const dialog_t *d,
         "t=0 0\r\n"
         "m=audio %d RTP/%s 8\r\n"
         "a=rtpmap:8 PCMA/8000\r\n",
-        our_ip, our_ip, config_rtp_port(),
+        ip, ip, port,
         (d && d->srtp_tx) ? "SAVP" : "AVP");
 
     if (d && d->srtp_tx) {
@@ -917,6 +927,46 @@ static int build_sdp_body(const char *our_ip, const dialog_t *d,
 
     n += snprintf(out + n, cap - n, "a=sendrecv\r\n");
     return n;
+}
+
+// Decide the IP:port to advertise as our media endpoint in the SDP answer,
+// storing it in the dialog for build_sdp_body (and any later retransmit).
+//
+// The signalling layer already knows our public IP (REGISTER "received="),
+// but not the public UDP *port* our RTP is mapped to: we bind a fixed local
+// port and used to advertise it verbatim, which is only correct when the
+// router preserves that port across NAT. So we ask STUN — on the very RTP
+// socket the announcement will stream from — for the post-NAT endpoint and
+// advertise that, falling back to the signalling IP + local port when STUN
+// yields nothing.
+static void prepare_media_endpoint(sip_ctx_t *c, dialog_t *d)
+{
+    snprintf(d->media_ip, sizeof(d->media_ip), "%s", advertised_host(c));
+    d->media_port = config_rtp_port();
+
+    // Under endpoint-dependent (symmetric) NAT the STUN-learned port wouldn't
+    // match the one the media gateway sees, so advertising it is pointless —
+    // stay on the local port. The boot-time probe already warned that only a
+    // port-identical RTP forward (or a VoIP router) fixes audio here.
+    if (rtp_nat_mapping() == NAT_MAP_ENDPOINT_DEPENDENT) {
+        ESP_LOGW(TAG, "symmetric NAT — advertising local RTP endpoint %s:%d "
+                      "(audio needs a port-identical RTP port-forward)",
+                 d->media_ip, d->media_port);
+        return;
+    }
+
+    char ip[INET_ADDRSTRLEN];
+    int  port = 0;
+    if (rtp_stun_map(config_stun_server(), ip, sizeof(ip), &port) && port > 0) {
+        ESP_LOGI(TAG, "media endpoint via STUN: %s:%d (local was %s:%d)",
+                 ip, port, d->media_ip, d->media_port);
+        snprintf(d->media_ip, sizeof(d->media_ip), "%s", ip);
+        d->media_port = port;
+    } else {
+        ESP_LOGW(TAG, "STUN gave no mapping — advertising local RTP endpoint "
+                      "%s:%d (only correct if the router preserves the port)",
+                 d->media_ip, d->media_port);
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -1338,6 +1388,9 @@ static void handle_invite(sip_ctx_t *c, const char *req, int req_len,
 
     if (d->verdict == VERDICT_SPAM) {
         char sdp[384];
+        // Resolve the public media endpoint (STUN) before answering, so the
+        // SDP carries the post-NAT IP:port the announcement is sent from.
+        prepare_media_endpoint(c, d);
         build_sdp_body(advertised_host(c), d, sdp, sizeof(sdp));
         send_response(c, from, req, req_len, 200, "OK", d->our_tag, sdp);
         d->state = DIALOG_ANSWERED;
@@ -1715,6 +1768,17 @@ static void sip_task(void *arg)
         s_sip_task = NULL;
         vTaskDelete(NULL);
         return;
+    }
+
+    // One-shot NAT mapping probe for direct-provider setups (a STUN server is
+    // configured only by a provider preset, never for a Fritz!Box on the LAN).
+    // Run here — after the initial registration attempt put the network up, but
+    // before the watchdog is armed below — so its ~1 s of STUN exchanges can't
+    // trip it. The result gates per-call STUN (see prepare_media_endpoint). A
+    // later provider switch via reload keeps this boot result until reboot; the
+    // NAT type is a property of the router, not the provider.
+    if (config_stun_server()[0]) {
+        rtp_probe_nat_mapping(config_stun_server());
     }
 
     // Subscribe to the task watchdog. Any iteration that doesn't loop

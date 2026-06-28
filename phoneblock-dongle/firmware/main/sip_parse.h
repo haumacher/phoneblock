@@ -46,17 +46,22 @@ int parse_status_code(const char *resp, int len);
 // limit exceeded"), so surfacing it turns a bare "403" into a diagnosis.
 int parse_reason_phrase(const char *resp, int len, char *out, int cap);
 
-// Parse the granted REGISTER expiry (in seconds) from a 200 OK
-// response. Per RFC 3261 §10.2.4 a contact-level ";expires=<n>"
-// parameter takes precedence over the top-level Expires header; this
-// function checks the first Contact line for the parameter and falls
-// back to Expires. Returns -1 when neither is present, in which case
-// the caller should retain whatever value it requested.
+// Parse the granted REGISTER expiry (in seconds) for OUR binding from a
+// 200 OK response. Per RFC 3261 §10.2.4 a contact-level ";expires=<n>"
+// parameter takes precedence over the top-level Expires header.
 //
-// Multi-binding responses (rare for a single AOR REGISTER) are not
-// disambiguated — the first Contact wins. Values are clamped to
-// 30 days as a sanity bound on parser overflow.
-int parse_register_expires(const char *resp, int resp_len);
+// A 200 OK echoes every binding on the AOR, so on a line shared with the
+// router's own VoIP client there are several Contact headers with
+// differing leases. `instance` is the +sip.instance UUID we registered
+// with (config_device_id()): the Contact carrying it identifies our
+// binding and its ";expires=" is returned. A lone Contact is taken as
+// ours even without a match; among several foreign bindings with no
+// match we do NOT guess and fall back to the top-level Expires header.
+// Pass NULL/"" to opt out of disambiguation entirely — then the first
+// Contact wins (legacy behaviour). Returns -1 when nothing applies, in which
+// case the caller should retain whatever value it requested. Values are
+// clamped to 30 days as a sanity bound on parser overflow.
+int parse_register_expires(const char *resp, int resp_len, const char *instance);
 
 // Extract the numeric part of the CSeq header. 0 if absent or malformed.
 uint32_t parse_cseq(const char *req, int req_len);

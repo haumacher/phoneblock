@@ -88,8 +88,15 @@ static void expect_reason(const char *expected, const char *resp)
 
 static void expect_register_expires(int expected, const char *resp)
 {
-    int got = parse_register_expires(resp, (int)strlen(resp));
+    int got = parse_register_expires(resp, (int)strlen(resp), NULL);
     report_int("parse_register_expires", resp, expected, got);
+}
+
+static void expect_register_expires_inst(int expected, const char *resp,
+                                         const char *instance)
+{
+    int got = parse_register_expires(resp, (int)strlen(resp), instance);
+    report_int("parse_register_expires(inst)", resp, expected, got);
 }
 
 static void expect_cseq(uint32_t expected, const char *req)
@@ -300,6 +307,63 @@ static void test_parse_register_expires(void)
     expect_register_expires(-1,
         "SIP/2.0 200 OK\r\n"
         "Expires: \r\n\r\n");
+
+    // --- Multi-binding disambiguation by +sip.instance (real field logs) ---
+
+    // Fritz!Box line: the FB's own native binding is listed FIRST with the
+    // long 3600 s lease; OUR dongle binding follows with only 1800 s. The
+    // old "first Contact wins" logic mis-read 3600 and refreshed too late.
+    const char *fb_resp =
+        "SIP/2.0 200 OK\r\n"
+        "From: <sip:+4970412875@tel.t-online.de>;tag=bab44de7256553c7\r\n"
+        "CSeq: 4 REGISTER\r\n"
+        "Call-ID: 5dbd8740@phoneblock\r\n"
+        "Contact: <sip:+4970412875@93.195.216.76:61632;uniq=A591F883F8F54013C560272D96A2896;user=phone;transport=tls>;expires=3600;+sip.instance=\"<urn:uuid:9139c396-82ea-64d4-284a-14c307513cdc>\"\r\n"
+        "Contact: <sip:+4970412875@93.195.216.76:15060>;expires=1800;+sip.instance=\"<urn:uuid:7097f5e2-c1a0-4986-9f96-dd9ec2b9b9ac>\"\r\n"
+        "Content-Length: 0\r\n\r\n";
+    expect_register_expires_inst(1800, fb_resp,
+        "7097f5e2-c1a0-4986-9f96-dd9ec2b9b9ac");
+    // Without the instance, the legacy behaviour still picks the first.
+    expect_register_expires(3600, fb_resp);
+
+    // Speedport line: three bindings; the native MMTel device holds 3600 s,
+    // both :15060 bindings (ours + a stale one) get 660 s. Ours is last.
+    const char *sp_resp =
+        "SIP/2.0 200 OK\r\n"
+        "CSeq: 3 REGISTER\r\n"
+        "Contact: <sip:+4944896042@84.182.185.55:15060>;expires=660;+sip.instance=\"<urn:uuid:9cfefa74-96fd-48c6-87fa-6e4e46a2f87e>\"\r\n"
+        "Contact: <sip:+4944896042@84.182.185.55:5060;user=phone>;expires=3600;+sip.instance=\"<urn:uuid:00000000-0000-0000-0000-b86685933e15>\";+g.3gpp.icsi-ref=\"urn%3Aurn-7%3A3gpp-service.ims.icsi.mmtel\";audio\r\n"
+        "Contact: <sip:+4944896042@84.182.185.55:15060>;expires=660;+sip.instance=\"<urn:uuid:43eb6d15-baf1-49c9-8759-885894880b66>\"\r\n"
+        "Content-Length: 0\r\n\r\n";
+    expect_register_expires_inst(660, sp_resp,
+        "43eb6d15-baf1-49c9-8759-885894880b66");
+
+    // Single binding (the common case): matched by instance.
+    expect_register_expires_inst(3600,
+        "SIP/2.0 200 OK\r\n"
+        "Contact: <sip:alice@host:15060>;expires=3600;+sip.instance=\"<urn:uuid:abcd>\"\r\n\r\n",
+        "abcd");
+
+    // Instance given but our binding is absent among several foreign ones:
+    // do NOT borrow a foreign lease — fall back to top-level Expires.
+    expect_register_expires_inst(900,
+        "SIP/2.0 200 OK\r\n"
+        "Contact: <sip:a@h:5060>;expires=3600;+sip.instance=\"<urn:uuid:1111>\"\r\n"
+        "Contact: <sip:a@h:5061>;expires=7200;+sip.instance=\"<urn:uuid:2222>\"\r\n"
+        "Expires: 900\r\n\r\n",
+        "deadbeef");
+    // ...and with no top-level Expires either → -1 (keep requested).
+    expect_register_expires_inst(-1,
+        "SIP/2.0 200 OK\r\n"
+        "Contact: <sip:a@h:5060>;expires=3600;+sip.instance=\"<urn:uuid:1111>\"\r\n"
+        "Contact: <sip:a@h:5061>;expires=7200;+sip.instance=\"<urn:uuid:2222>\"\r\n\r\n",
+        "deadbeef");
+
+    // A lone Contact without our instance is still taken as ours.
+    expect_register_expires_inst(1200,
+        "SIP/2.0 200 OK\r\n"
+        "Contact: <sip:a@h:5060>;expires=1200\r\n\r\n",
+        "7097f5e2-c1a0-4986-9f96-dd9ec2b9b9ac");
 }
 
 static void test_parse_cseq(void)

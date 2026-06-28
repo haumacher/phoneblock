@@ -55,6 +55,15 @@ int         config_contact_port_override(void);
 int         config_sip_local_port(void);
 int         config_rtp_port(void);
 
+// STUN server ("host" or "host:port"; default port 3478) the dongle
+// queries on its own RTP socket to discover the public (post-NAT) IP:port
+// its media will appear to come from. That endpoint is advertised in the
+// SDP answer instead of the unmapped local port, which is only correct
+// when the router happens to preserve that port across NAT. Empty (the
+// default) disables STUN; a provider preset fills it in (e.g. Telekom →
+// stun.t-online.de).
+const char *config_stun_server(void);
+
 // Fritz!Box "app" credentials created by
 // X_AVM-DE_AppSetup:RegisterApp during the setup wizard. Only
 // Phone rights, no internet access — used by the later sync task
@@ -252,6 +261,8 @@ typedef struct {
     const char *sip_outbound;
     const char *sip_realm;
     const char *sip_srtp;
+    const char *sip_stun;       // STUN server "host[:port]" ("" disables),
+                                // NULL = leave unchanged
     const char *fritzbox_app_user;
     const char *fritzbox_app_pass;
     // "1" = enable sync, "0" = disable, NULL = leave unchanged.
