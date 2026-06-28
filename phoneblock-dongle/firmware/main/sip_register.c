@@ -1479,9 +1479,14 @@ static void handle_incoming(sip_ctx_t *c, const char *pkt, int len,
     int method_len = parse_method(pkt, len, method, sizeof(method));
 
     // A SIP CRLF keep-alive ("\r\n\r\n") has no method — parse_method returns
-    // an empty string. Silently ignore it instead of logging a confusing
-    // "method not implemented" with a blank name.
+    // an empty string. Nothing to answer, but log a distinct one-line marker
+    // (not the "method not implemented" with a blank name) so the inbound
+    // keep-alive cadence is trivial to grep/time in the live log — useful to
+    // tell a NAT idle-timeout (no inbound pings) from a carrier-side reset
+    // (pings flowing yet the connection still dropped).
     if (method_len == 0) {
+        ESP_LOGI(TAG, "← SIP keepalive ping (%d bytes) from %s:%d",
+                 len, from_ip, ntohs(from->sin_port));
         return;
     }
 
