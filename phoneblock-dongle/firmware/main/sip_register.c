@@ -50,6 +50,16 @@ static const char *TAG = "sip";
 // blocking recv runs before we loop back to feed the task watchdog.
 #define SIP_REGISTER_RECV_SLICE_MS    2000
 
+// NAT/connection keepalive interval. The REGISTER refresh runs at only
+// granted/2 (~30 min for Telekom's 3600 s grant); between refreshes the
+// long-lived TLS/TCP connection sits idle and the Fritz!Box NAT mapping (or
+// the carrier) drops it, so the next refresh finds a reset connection
+// (esp-tls read error -0x0050, then reconnect). A periodic double-CRLF ping
+// (RFC 5626 §3.5.1 / RFC 5626 keep-alive) keeps the mapping and the
+// connection warm. 30 s stays safely under the typical ~30 s UDP NAT window
+// and is trivially cheap (4 bytes) on a mains-powered device.
+#define SIP_KEEPALIVE_INTERVAL_S      30
+
 // Issue #380: after we decide a call is not spam we must NOT reply with a
 // fast final response (486/480) — that makes the Fritz!Box drop the
 // Fritz!Fon app from the call (it suppresses the app while DECT keeps
@@ -1469,9 +1479,14 @@ static void handle_incoming(sip_ctx_t *c, const char *pkt, int len,
     int method_len = parse_method(pkt, len, method, sizeof(method));
 
     // A SIP CRLF keep-alive ("\r\n\r\n") has no method — parse_method returns
-    // an empty string. Silently ignore it instead of logging a confusing
-    // "method not implemented" with a blank name.
+    // an empty string. Nothing to answer, but log a distinct one-line marker
+    // (not the "method not implemented" with a blank name) so the inbound
+    // keep-alive cadence is trivial to grep/time in the live log — useful to
+    // tell a NAT idle-timeout (no inbound pings) from a carrier-side reset
+    // (pings flowing yet the connection still dropped).
     if (method_len == 0) {
+        ESP_LOGI(TAG, "← SIP keepalive ping (%d bytes) from %s:%d",
+                 len, from_ip, ntohs(from->sin_port));
         return;
     }
 
@@ -1644,6 +1659,7 @@ static void sip_task(void *arg)
     const int retry_delay_s = 30;
     char *rx = NULL;
     int64_t refresh_at_us = 0;  // absolute deadline for next REGISTER (microseconds)
+    int64_t keepalive_at_us = 0; // absolute deadline for next NAT keepalive ping
 
     // Settle pause only when the caller asked for it (TR-064
     // provisioning sets s_settle_pending). For boot or manual config
@@ -1678,6 +1694,9 @@ static void sip_task(void *arg)
         s_pending_error[0] = '\0';
         refresh_at_us = esp_timer_get_time() + (int64_t)retry_delay_s * 1000000LL;
     }
+    // First keepalive one interval out; it self-reschedules in the loop and
+    // stays active across reconnects/refreshes regardless of register state.
+    keepalive_at_us = esp_timer_get_time() + (int64_t)SIP_KEEPALIVE_INTERVAL_S * 1000000LL;
 
     rx = malloc(SIP_RX_BUF_SIZE);
     if (!rx) {
@@ -1854,6 +1873,19 @@ static void sip_task(void *arg)
                     ctx.dialog.state = DIALOG_REJECTED;
                 }
                 continue;
+            }
+            // NAT/connection keepalive: a double-CRLF ping keeps the
+            // long-lived stream connection and the Fritz!Box NAT mapping warm
+            // between the (expires/2) REGISTER refreshes, so the idle TLS
+            // connection isn't silently dropped and only noticed at the next
+            // refresh. Skipped when a refresh is already due (the REGISTER
+            // itself is traffic). A failed send just means the connection is
+            // already gone — harmless; the refresh/recv path reconnects.
+            if (now >= keepalive_at_us) {
+                if (now < refresh_at_us) {
+                    sip_transport_send(ctx.transport, "\r\n\r\n", 4);
+                }
+                keepalive_at_us = now + (int64_t)SIP_KEEPALIVE_INTERVAL_S * 1000000LL;
             }
             // Most select() returns now are just the 500ms reload-poll
             // cap firing; only refresh when the real deadline is due.
