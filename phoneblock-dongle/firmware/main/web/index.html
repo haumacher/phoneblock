@@ -128,6 +128,8 @@ const I18N = {
     'status.sip.at': 'bei {host} als {user}',
     'status.sip.ext': 'Interne Nummer {n}',
     'status.sip.public_ip': 'öffentliche IP {ip}',
+    'status.sip.nat_symmetric': '⚠️ symmetrisches NAT — Audio braucht eine portgleiche RTP-Port-Weiterleitung',
+    'status.sip.stun': 'STUN {server} · NAT: {nat}',
     'status.sip.setup_cta': 'Telefonie einrichten',
     'status.sip.redo_cta': 'Telefonie neu einrichten',
     'status.token.set': 'PhoneBlock-Token gesetzt',
@@ -375,6 +377,8 @@ const I18N = {
     'sip.manual.outbound.hint': 'Optional, Format host[:port]. Leer = direkt zum Registrar.',
     'sip.manual.realm': 'Realm',
     'sip.manual.realm.hint': 'Leer = aus Challenge übernehmen.',
+    'sip.manual.stun': 'STUN-Server',
+    'sip.manual.stun.hint': 'Optional, Format host[:port]. Ermittelt bei direkter Provider-Anmeldung den öffentlichen RTP-Port. Leer = aus. Wird vom Provider-Preset gesetzt (Telekom: stun.t-online.de:3478).',
     'sip.manual.srtp': 'SRTP',
     'sip.manual.srtp.hint': 'SRTP wird automatisch ausgehandelt: Sprache wird verschlüsselt, sobald der Anbieter es anbietet (z. B. Telekom), sonst unverschlüsseltes RTP (z. B. Fritz!Box im LAN).',
     'sip.manual.local_port': 'Lokaler SIP-Port',
@@ -405,6 +409,8 @@ const I18N = {
     'status.sip.at': 'at {host} as {user}',
     'status.sip.ext': 'Internal number {n}',
     'status.sip.public_ip': 'Public IP {ip}',
+    'status.sip.nat_symmetric': '⚠️ symmetric NAT — audio needs a port-identical RTP port forward',
+    'status.sip.stun': 'STUN {server} · NAT: {nat}',
     'status.sip.setup_cta': 'Set up telephony',
     'status.sip.redo_cta': 'Reconfigure telephony',
     'status.token.set': 'PhoneBlock token set',
@@ -650,6 +656,8 @@ const I18N = {
     'sip.manual.outbound.hint': 'Optional, format host[:port]. Empty = register via the registrar directly.',
     'sip.manual.realm': 'Realm',
     'sip.manual.realm.hint': 'Empty = take from the server challenge.',
+    'sip.manual.stun': 'STUN server',
+    'sip.manual.stun.hint': 'Optional, format host[:port]. Discovers the public RTP port for direct provider registration. Empty = off. Set by the provider preset (Telekom: stun.t-online.de:3478).',
     'sip.manual.srtp': 'SRTP',
     'sip.manual.srtp.hint': 'SRTP is negotiated automatically: media is encrypted whenever the provider offers it (e.g. Telekom), otherwise plain RTP (e.g. the Fritz!Box on the LAN).',
     'sip.manual.local_port': 'Local SIP port',
@@ -680,6 +688,8 @@ const I18N = {
     'status.sip.at': 'sur {host} en tant que {user}',
     'status.sip.ext': 'Numéro interne {n}',
     'status.sip.public_ip': 'IP publique {ip}',
+    'status.sip.nat_symmetric': '⚠️ NAT symétrique — l’audio nécessite une redirection de port RTP identique',
+    'status.sip.stun': 'STUN {server} · NAT : {nat}',
     'status.sip.setup_cta': 'Configurer la téléphonie',
     'status.sip.redo_cta': 'Reconfigurer la téléphonie',
     'status.token.set': 'Jeton PhoneBlock enregistré',
@@ -907,6 +917,8 @@ const I18N = {
     'sip.manual.outbound.hint': 'Optionnel, format hôte[:port]. Vide = passer directement par le registrar.',
     'sip.manual.realm': 'Realm',
     'sip.manual.realm.hint': 'Vide = reprendre la valeur du challenge du serveur.',
+    'sip.manual.stun': 'Serveur STUN',
+    'sip.manual.stun.hint': 'Optionnel, format hôte[:port]. Détecte le port RTP public lors d’un enregistrement direct chez l’opérateur. Vide = désactivé. Défini par le préréglage opérateur (Telekom : stun.t-online.de:3478).',
     'sip.manual.srtp': 'SRTP',
     'sip.manual.srtp.hint': 'Le SRTP est négocié automatiquement : le média est chiffré dès que le fournisseur le propose (p. ex. Telekom), sinon RTP en clair (p. ex. la Fritz!Box sur le LAN).',
     'sip.manual.local_port': 'Port SIP local',
@@ -937,6 +949,8 @@ const I18N = {
     'status.sip.at': 'en {host} como {user}',
     'status.sip.ext': 'Número interno {n}',
     'status.sip.public_ip': 'IP pública {ip}',
+    'status.sip.nat_symmetric': '⚠️ NAT simétrico — el audio necesita una redirección de puerto RTP idéntica',
+    'status.sip.stun': 'STUN {server} · NAT: {nat}',
     'status.sip.setup_cta': 'Configurar la telefonía',
     'status.sip.redo_cta': 'Reconfigurar la telefonía',
     'status.token.set': 'Token PhoneBlock configurado',
@@ -1164,6 +1178,8 @@ const I18N = {
     'sip.manual.outbound.hint': 'Opcional, formato host[:puerto]. Vacío = registrar directamente.',
     'sip.manual.realm': 'Realm',
     'sip.manual.realm.hint': 'Vacío = tomarlo del challenge del servidor.',
+    'sip.manual.stun': 'Servidor STUN',
+    'sip.manual.stun.hint': 'Opcional, formato host[:puerto]. Detecta el puerto RTP público al registrarse directamente con el proveedor. Vacío = desactivado. Lo define el preajuste del proveedor (Telekom: stun.t-online.de:3478).',
     'sip.manual.srtp': 'SRTP',
     'sip.manual.srtp.hint': 'El SRTP se negocia automáticamente: el audio se cifra cuando el proveedor lo ofrece (p. ej. Telekom); de lo contrario, RTP sin cifrar (p. ej. la Fritz!Box en la LAN).',
     'sip.manual.local_port': 'Puerto SIP local',
@@ -1405,6 +1421,9 @@ const PROVIDERS = {
     transport: 'tls',
     authUser: 'anonymous@t-online.de',
     anonymous: true,
+    // Telekom's own STUN — lets the dongle advertise its real post-NAT RTP
+    // port in the SDP instead of the unmapped local port.
+    stun: 'stun.t-online.de:3478',
     userHint: 'Rufnummer im Format +49… (E.164). Kein Passwort nötig — die Anmeldung erfolgt anonym (anonymous@t-online.de).',
   },
   einsundeins: {
@@ -1412,6 +1431,7 @@ const PROVIDERS = {
     host: 'sip.1und1.de',
     port: 5060,
     transport: 'tcp',
+    stun: 'stun.1und1.de:3478',
     userHint: 'Format: 49…, ohne „+" und ohne führende 0. Passwort = „Telefoniepasswort" aus dem 1&1-Control-Center.',
   },
   sipgate: {
@@ -1419,6 +1439,7 @@ const PROVIDERS = {
     host: 'sipgate.de',
     port: 5060,
     transport: 'tcp',
+    stun: 'stun.sipgate.net:10000',
     userHint: 'SIP-ID aus dem sipgate-Webportal. Passwort = separates SIP-Passwort.',
   },
   easybell: {
@@ -1426,6 +1447,7 @@ const PROVIDERS = {
     host: 'voip.easybell.de',
     port: 5060,
     transport: 'tcp',
+    // easybell documents that a STUN server is not required; left empty.
     userHint: 'SIP-Benutzer und -Passwort aus dem easybell-Kundenportal.',
   },
 };
@@ -2182,6 +2204,11 @@ async function refreshAll(){
     }
     if (s.sip.public_ip){
       parts.push(t('status.sip.public_ip', {ip: s.sip.public_ip}));
+    }
+    if (s.sip.nat_mapping === 'endpoint-dependent'){
+      parts.push(t('status.sip.nat_symmetric'));
+    } else if (s.sip.stun){
+      parts.push(t('status.sip.stun', {server: s.sip.stun, nat: s.sip.nat_mapping || 'unknown'}));
     }
     $('sipDetail').textContent = parts.join(' · ');
     sipCta.textContent = t('status.sip.redo_cta');
@@ -3214,6 +3241,9 @@ async function onProviderSubmit(e){
   body.append('sip_auth_user', p.authUser || '');
   body.append('sip_outbound', '');
   body.append('sip_realm', '');
+  // STUN server for RTP NAT discovery — set per preset (empty = off), so
+  // switching providers also clears a previous provider's STUN server.
+  body.append('sip_stun', p.stun || '');
   try {
     const r = await fetch('/api/config', {
       method: 'POST',
@@ -3250,6 +3280,7 @@ async function renderSipManual(){
   const au    = sip.auth_user || '';
   const outb  = sip.outbound  || '';
   const realm = sip.realm     || '';
+  const stun  = sip.stun      || '';
   // No stored password ⇒ pre-tick "anonymous", so the saved state stays
   // visible on reload (the password itself is never sent to the client).
   const passSet = !!sip.pass_set;
@@ -3316,6 +3347,10 @@ async function renderSipManual(){
     +     '<input type="number" name="rtp_port" min="1" max="65535" value="' + esc(rport) + '"></label>'
     +   '<p class="muted" style="font-size:.75rem;margin:.2rem 0 .6rem">'
     +     esc(t('sip.manual.rtp_port.hint')) + '</p>'
+    +   '<label>' + esc(t('sip.manual.stun'))
+    +     '<input type="text" name="sip_stun" value="' + esc(stun) + '"></label>'
+    +   '<p class="muted" style="font-size:.75rem;margin:.2rem 0 .6rem">'
+    +     esc(t('sip.manual.stun.hint')) + '</p>'
     +   '<div class="muted" style="font-size:.75rem;margin:.6rem 0;border-left:3px solid #ccc;padding-left:.6rem">'
     +     '<strong>' + esc(t('sip.manual.fwd.title')) + '</strong><br>'
     +     esc(t('sip.manual.fwd.body', {sip: lportShown, rtp: rportShown}))

@@ -30,6 +30,7 @@
 #include "firmware_update.h"
 #include "log_capture.h"
 #include "mail.h"
+#include "rtp.h"
 #include "scheduler.h"
 #include "sip_register.h"
 #include "stats.h"
@@ -353,6 +354,8 @@ static esp_err_t handle_status(httpd_req_t *req)
     cJSON_AddStringToObject(sip,  "outbound",          config_sip_outbound());
     cJSON_AddStringToObject(sip,  "realm",             config_sip_realm());
     cJSON_AddStringToObject(sip,  "srtp",              config_sip_srtp());
+    cJSON_AddStringToObject(sip,  "stun",              config_stun_server());
+    cJSON_AddStringToObject(sip,  "nat_mapping",       rtp_nat_mapping_str());
     // Local bind ports (to forward) + the public IP the registrar sees
     // us at — together these are what a UDP-behind-NAT setup needs.
     cJSON_AddNumberToObject(sip,  "local_port",        config_sip_local_port());
@@ -587,6 +590,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     char sip_outbound[80] = "";
     char sip_realm[64]    = "";
     char sip_srtp[16]     = "";
+    char sip_stun[64]     = "";
     char sip_anon_s[4]    = "";
     char sync_en_s[4]     = "";
     char log_known_s[4]   = "";
@@ -620,6 +624,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     bool have_sip_out   = form_get(body, "sip_outbound",  sip_outbound, sizeof(sip_outbound));
     bool have_sip_realm = form_get(body, "sip_realm",     sip_realm,    sizeof(sip_realm));
     bool have_sip_srtp  = form_get(body, "sip_srtp",      sip_srtp,     sizeof(sip_srtp));
+    bool have_sip_stun  = form_get(body, "sip_stun",      sip_stun,     sizeof(sip_stun));
     // Present only when the manual form's "anonymous" box is ticked. Its
     // presence (not its value) is the signal to clear a stored password.
     bool have_sip_anon  = form_get(body, "sip_anon",      sip_anon_s,   sizeof(sip_anon_s));
@@ -729,6 +734,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
         .sip_outbound  = have_sip_out   ? sip_outbound : NULL,
         .sip_realm     = have_sip_realm ? sip_realm    : NULL,
         .sip_srtp      = have_sip_srtp  ? sip_srtp     : NULL,
+        .sip_stun      = have_sip_stun  ? sip_stun     : NULL,
         .sync_enabled    = have_sync_en   ? sync_en_s    : NULL,
         .log_known_calls = have_log_known ? log_known_s  : NULL,
         .log_info        = have_log_info  ? log_info_s   : NULL,
@@ -882,6 +888,7 @@ static esp_err_t finish_fritzbox_setup(httpd_req_t *req,
         .sip_outbound  = "",
         .sip_realm     = "",
         .sip_srtp      = "off",
+        .sip_stun      = "",
         .fritzbox_app_user = app_user,
         .fritzbox_app_pass = app_pass,
     };
