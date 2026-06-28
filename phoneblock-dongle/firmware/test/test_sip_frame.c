@@ -235,6 +235,104 @@ static void test_reset_clears_partial(void)
     check_str_eq("reset: pop content after", MSG_OK_NOBODY, out);
 }
 
+// A lone CRLF (a keep-alive PONG) glued in front of a real message
+// (RFC 3261 §7.5) must be surfaced as its own 2-byte frame, never parsed
+// as part of the following start-line. This is the exact failure seen on
+// the persistent Telekom connection: a pong landed just before the 200 OK
+// to a re-REGISTER, producing "\r\nSIP/2.0 200 OK…" and a bogus
+// "REGISTER rejected: -1". The 2-byte frame lets handle_incoming log the
+// inbound pong and leaves the next message clean.
+static void test_leading_crlf_pong_then_message(void)
+{
+    char combined[BUF_CAP];
+    int n = snprintf(combined, sizeof(combined), "\r\n%s", MSG_OK_NOBODY);
+
+    char buf[BUF_CAP];
+    char out[BUF_CAP];
+    sip_framer_t f;
+    sip_framer_init(&f, buf, sizeof(buf));
+
+    sip_framer_append(&f, combined, n);
+    check_int("pong+msg: pop pong length", 2, sip_framer_pop(&f, out, sizeof(out)));
+    check_str_eq("pong+msg: pong content", "\r\n", out);
+    int len = (int)strlen(MSG_OK_NOBODY);
+    check_int("pong+msg: pop message", len, sip_framer_pop(&f, out, sizeof(out)));
+    check_str_eq("pong+msg: message content", MSG_OK_NOBODY, out);
+    check_int("pong+msg: empty after", 0, sip_framer_pop(&f, out, sizeof(out)));
+}
+
+// A lone leading CRLF in its own read pops right away as a 2-byte pong
+// (immediate surfacing — no waiting), and the message in the next read
+// pops clean after it.
+static void test_leading_crlf_split_reads(void)
+{
+    char buf[BUF_CAP];
+    char out[BUF_CAP];
+    sip_framer_t f;
+    sip_framer_init(&f, buf, sizeof(buf));
+
+    sip_framer_append(&f, "\r\n", 2);
+    check_int("pong-split: pop pong immediately", 2,
+              sip_framer_pop(&f, out, sizeof(out)));
+    check_str_eq("pong-split: pong content", "\r\n", out);
+    int len = (int)strlen(MSG_OK_NOBODY);
+    sip_framer_append(&f, MSG_OK_NOBODY, len);
+    check_int("pong-split: pop message", len, sip_framer_pop(&f, out, sizeof(out)));
+    check_str_eq("pong-split: message content", MSG_OK_NOBODY, out);
+}
+
+// Documented edge of immediate surfacing: a CRLFCRLF ping split across two
+// reads is reported as two separate pongs (so it is not answered). Harmless
+// and very rare — a 4-byte ping normally rides a single TLS record.
+static void test_split_ping_seen_as_two_pongs(void)
+{
+    char buf[BUF_CAP];
+    char out[BUF_CAP];
+    sip_framer_t f;
+    sip_framer_init(&f, buf, sizeof(buf));
+
+    sip_framer_append(&f, "\r\n", 2);
+    check_int("split-ping: first half → pong", 2, sip_framer_pop(&f, out, sizeof(out)));
+    sip_framer_append(&f, "\r\n", 2);
+    check_int("split-ping: second half → pong", 2, sip_framer_pop(&f, out, sizeof(out)));
+    check_int("split-ping: empty after", 0, sip_framer_pop(&f, out, sizeof(out)));
+}
+
+// A CRLFCRLF keep-alive PING must still pop as a standalone 4-byte frame
+// so the caller can answer it with a pong — the leading-CRLF skip must
+// not swallow it.
+static void test_keepalive_ping_preserved(void)
+{
+    char buf[BUF_CAP];
+    char out[BUF_CAP];
+    sip_framer_t f;
+    sip_framer_init(&f, buf, sizeof(buf));
+
+    sip_framer_append(&f, "\r\n\r\n", 4);
+    check_int("ping: pop length", 4, sip_framer_pop(&f, out, sizeof(out)));
+    check_str_eq("ping: content", "\r\n\r\n", out);
+    check_int("ping: empty after", 0, sip_framer_pop(&f, out, sizeof(out)));
+}
+
+// A PING immediately followed by a real message in one read: the ping
+// pops first, the message second.
+static void test_ping_then_message(void)
+{
+    char combined[BUF_CAP];
+    int n = snprintf(combined, sizeof(combined), "\r\n\r\n%s", MSG_OK_NOBODY);
+
+    char buf[BUF_CAP];
+    char out[BUF_CAP];
+    sip_framer_t f;
+    sip_framer_init(&f, buf, sizeof(buf));
+
+    sip_framer_append(&f, combined, n);
+    check_int("ping+msg: pop ping", 4, sip_framer_pop(&f, out, sizeof(out)));
+    int len = (int)strlen(MSG_OK_NOBODY);
+    check_int("ping+msg: pop message", len, sip_framer_pop(&f, out, sizeof(out)));
+    check_str_eq("ping+msg: content", MSG_OK_NOBODY, out);
+}
+
 int main(void)
 {
     test_single_message();
@@ -246,6 +344,11 @@ int main(void)
     test_malformed_content_length();
     test_overflow_append();
     test_reset_clears_partial();
+    test_leading_crlf_pong_then_message();
+    test_leading_crlf_split_reads();
+    test_split_ping_seen_as_two_pongs();
+    test_keepalive_ping_preserved();
+    test_ping_then_message();
 
     printf("test_sip_frame: %d tests, %d failures\n", g_tests, g_failures);
     return g_failures == 0 ? 0 : 1;
