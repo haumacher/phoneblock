@@ -168,7 +168,7 @@ const I18N = {
     'status.thresholds.saved': 'Gespeichert.',
     'status.thresholds.invalid': 'Ungültiger Wert.',
     'status.system.title': 'System',
-    'status.system.heap': 'Freier Speicher: {free} (Minimum: {min})',
+    'status.system.heap': 'Freier Speicher: {free} (Minimum: {min}, größter Block: {largest})',
     'status.system.col.task': 'Task',
     'status.system.col.cpu': 'CPU',
     'status.system.col.stack': 'Stack frei',
@@ -426,7 +426,7 @@ const I18N = {
     'status.thresholds.saved': 'Saved.',
     'status.thresholds.invalid': 'Invalid value.',
     'status.system.title': 'System',
-    'status.system.heap': 'Free memory: {free} (minimum: {min})',
+    'status.system.heap': 'Free memory: {free} (minimum: {min}, largest block: {largest})',
     'status.system.col.task': 'Task',
     'status.system.col.cpu': 'CPU',
     'status.system.col.stack': 'Stack free',
@@ -672,7 +672,7 @@ const I18N = {
     'status.calls.log_known': 'Journaliser les appels connus',
     'status.calls.log_known.help': 'Si désactivé, les appels provenant de numéros du carnet d’adresses et les codes internes (**, *…) n’apparaissent pas dans la liste — les compteurs ci-dessus restent mis à jour.',
     'status.system.title': 'Système',
-    'status.system.heap': 'Mémoire libre : {free} (minimum : {min})',
+    'status.system.heap': 'Mémoire libre : {free} (minimum : {min}, plus grand bloc : {largest})',
     'status.system.col.task': 'Tâche',
     'status.system.col.cpu': 'CPU',
     'status.system.col.stack': 'Pile libre',
@@ -913,7 +913,7 @@ const I18N = {
     'status.calls.log_known': 'Registrar llamadas conocidas',
     'status.calls.log_known.help': 'Si está desactivado, las llamadas de números de la agenda y los códigos internos (**, *…) no aparecen en la lista — los contadores de arriba se siguen actualizando.',
     'status.system.title': 'Sistema',
-    'status.system.heap': 'Memoria libre: {free} (mínimo: {min})',
+    'status.system.heap': 'Memoria libre: {free} (mínimo: {min}, bloque mayor: {largest})',
     'status.system.col.task': 'Tarea',
     'status.system.col.cpu': 'CPU',
     'status.system.col.stack': 'Pila libre',
@@ -1482,17 +1482,17 @@ function renderStatus(){
     + '</details>'
     + '<details id="systemSection" class="adminsec" style="display:none">'
     + '<summary>' + esc(t('status.system.title')) + '</summary>'
-    + '<p id="systemHeap" class="muted" style="font-size:.85rem;margin:.2rem 0 .6rem"></p>'
+    + '<p id="systemHeap" class="muted" style="font-size:.85rem;margin:.2rem 0 .2rem"></p>'
+    + '<p id="clockInfo" class="muted" style="font-size:.85rem;margin:.2rem 0 .2rem"></p>'
+    + '<p id="tzInfo" class="muted" style="font-size:.8rem;margin:.2rem 0 .8rem">'
+    +   '<span id="tzCurrent"></span>'
+    +   '<button id="tzApply" class="btn-ghost" style="display:none;margin-left:.6rem;padding:.2rem .6rem;font-size:.75rem;text-transform:none;letter-spacing:0"></button>'
+    + '</p>'
     + '<table style="width:100%;border-collapse:collapse;font-size:.8rem"><thead><tr>'
     + '<th style="text-align:left">'   + esc(t('status.system.col.task'))  + '</th>'
     + '<th style="text-align:right">'  + esc(t('status.system.col.cpu'))   + '</th>'
     + '<th style="text-align:right">'  + esc(t('status.system.col.stack')) + '</th>'
     + '</tr></thead><tbody id="systemTasks"></tbody></table>'
-    + '<p id="clockInfo" class="muted" style="font-size:.85rem;margin:.8rem 0 .2rem"></p>'
-    + '<p id="tzInfo" class="muted" style="font-size:.8rem;margin:.2rem 0">'
-    +   '<span id="tzCurrent"></span>'
-    +   '<button id="tzApply" class="btn-ghost" style="display:none;margin-left:.6rem;padding:.2rem .6rem;font-size:.75rem;text-transform:none;letter-spacing:0"></button>'
-    + '</p>'
     + '</details>'
     + '<details id="thresholdsSection" class="adminsec" style="display:none">'
     + '<summary>' + esc(t('status.thresholds.title')) + '</summary>'
@@ -2087,6 +2087,7 @@ async function refreshAll(){
     $('systemSection').style.display = '';
     $('systemHeap').textContent = t('status.system.heap', {
       free: kb(s.system.free_heap), min: kb(s.system.min_free_heap),
+      largest: kb(s.system.largest_free_block),
     });
     const tb = $('systemTasks');
     tb.innerHTML = '';
