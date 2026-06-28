@@ -180,6 +180,7 @@ const I18N = {
     'status.tz.apply': 'Auf {zone} umstellen',
     'status.tz.saved': 'Zeitzone gespeichert.',
     'status.errors.title': 'Protokoll',
+    'status.errors.note': 'Das Protokoll dient der Fehleranalyse — nicht jeder angezeigte Eintrag ist ein echtes Problem; viele Fehler sind vorübergehend und verschwinden von selbst.',
     'status.errors.empty': 'keine Einträge',
     'status.errors.clear': 'Protokoll leeren',
     'status.errors.capture_info': 'Auch Infos protokollieren',
@@ -438,6 +439,7 @@ const I18N = {
     'status.tz.apply': 'Switch to {zone}',
     'status.tz.saved': 'Timezone saved.',
     'status.errors.title': 'Log',
+    'status.errors.note': 'The log is for diagnosing problems — not every entry is a real fault; many errors are transient and clear up on their own.',
     'status.errors.empty': 'no entries',
     'status.errors.clear': 'Clear log',
     'status.errors.capture_info': 'Also log info messages',
@@ -679,6 +681,7 @@ const I18N = {
     'status.time.today': "aujourd'hui {time}",
     'status.time.yesterday': 'hier {time}',
     'status.errors.title': 'Journal',
+    'status.errors.note': "Le journal sert à diagnostiquer les problèmes — toute entrée affichée n'est pas forcément un vrai défaut ; beaucoup d'erreurs sont passagères et disparaissent d'elles-mêmes.",
     'status.errors.empty': 'aucune entrée',
     'status.errors.clear': 'Vider le journal',
     'status.errors.capture_info': 'Journaliser aussi les infos',
@@ -920,6 +923,7 @@ const I18N = {
     'status.time.today': 'hoy {time}',
     'status.time.yesterday': 'ayer {time}',
     'status.errors.title': 'Registro',
+    'status.errors.note': 'El registro sirve para diagnosticar problemas — no toda entrada es un fallo real; muchos errores son transitorios y desaparecen solos.',
     'status.errors.empty': 'sin entradas',
     'status.errors.clear': 'Vaciar registro',
     'status.errors.capture_info': 'Registrar también los mensajes info',
@@ -1465,10 +1469,13 @@ function renderStatus(){
     + '</section>'
     // Admin/config areas as collapsible cards. Status + recent calls
     // above stay always-open (the "is it working" view); everything here
-    // is configure-once, so it ships collapsed — except the log, which is
-    // the usual diagnostic landing and opens by default.
-    + '<details id="errorsSection" class="adminsec" open style="display:none">'
+    // is configure-once, so it ships collapsed — the log included: it
+    // surfaces transient, self-healing errors that alarm users who open
+    // it by reflex, so it stays closed until someone goes looking.
+    + '<details id="errorsSection" class="adminsec" style="display:none">'
     + '<summary>' + esc(t('status.errors.title')) + '</summary>'
+    + '<p class="muted" style="font-size:.72rem;margin:.2rem 0 .6rem">'
+    +   esc(t('status.errors.note')) + '</p>'
     + '<div id="errorsList"></div>'
     + '<p style="margin-top:.6rem">'
     + '  <button id="errorsClear" class="btn-ghost" style="display:none;padding:.2rem .6rem;font-size:.75rem;text-transform:none;letter-spacing:0">'
