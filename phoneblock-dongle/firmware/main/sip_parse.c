@@ -95,22 +95,75 @@ static int parse_uint_clamped(const char **pp, const char *end)
     return n;
 }
 
-int parse_register_expires(const char *resp, int resp_len)
+// Extract the contact-level ";expires=<n>" from a single Contact header
+// value [c, eol). Returns -1 when the parameter is absent.
+static int contact_expires(const char *c, const char *eol)
+{
+    for (const char *q = c; q + 9 <= eol; q++) {
+        if (q[0] == ';' && strncasecmp(q + 1, "expires=", 8) == 0) {
+            const char *p = q + 9;
+            return parse_uint_clamped(&p, eol);
+        }
+    }
+    return -1;
+}
+
+int parse_register_expires(const char *resp, int resp_len, const char *instance)
 {
     const char *end = resp + resp_len;
+    size_t inst_len = (instance && instance[0]) ? strlen(instance) : 0;
 
-    // Contact-level ";expires=<n>" wins over the top-level header.
-    const char *c = find_header(resp, resp_len, "Contact");
-    if (c) {
-        const char *eol = c;
+    // A 200 OK to REGISTER echoes ALL bindings currently held on the AOR,
+    // not just ours — on a Telekom line shared with the router's own VoIP
+    // (Fritz!Box / Speedport) that means several Contact headers with
+    // different ";expires=" values. We must read the lease of OUR binding,
+    // identified by the +sip.instance UUID we registered with; reading the
+    // first Contact instead picks up a foreign device's (longer) grant and
+    // makes us refresh too late (the binding lapses → missed inbound calls).
+    int  first_contact_expires = -1;
+    int  contact_count         = 0;
+    bool have_match            = false;
+    int  match_expires        = -1;
+
+    const char *p = resp;
+    while (p < end && *p != '\n') p++;   // skip the status line
+    if (p < end) p++;
+
+    while (p < end) {
+        const char *eol = p;
         while (eol < end && *eol != '\r' && *eol != '\n') eol++;
-        for (const char *q = c; q + 9 <= eol; q++) {
-            if (q[0] == ';' && strncasecmp(q + 1, "expires=", 8) == 0) {
-                const char *p = q + 9;
-                int n = parse_uint_clamped(&p, eol);
-                if (n >= 0) return n;
+
+        if ((size_t)(end - p) >= 8 && strncasecmp(p, "Contact:", 8) == 0) {
+            const char *c = p + 8;
+            while (c < eol && (*c == ' ' || *c == '\t')) c++;
+            int exp = contact_expires(c, eol);
+            contact_count++;
+            if (contact_count == 1) first_contact_expires = exp;
+            if (inst_len && !have_match) {
+                for (const char *r = c; r + inst_len <= eol; r++) {
+                    if (strncasecmp(r, instance, inst_len) == 0) {
+                        have_match   = true;
+                        match_expires = exp;
+                        break;
+                    }
+                }
             }
         }
+
+        p = eol;
+        while (p < end && (*p == '\r' || *p == '\n')) p++;
+    }
+
+    // Our own binding's lease wins. If we matched it but it carried no
+    // ";expires=", fall through to the top-level Expires header.
+    if (have_match && match_expires >= 0) return match_expires;
+    if (inst_len == 0) {
+        // Caller opted out of disambiguation: legacy "first Contact wins".
+        if (first_contact_expires >= 0) return first_contact_expires;
+    } else if (!have_match && contact_count == 1 && first_contact_expires >= 0) {
+        // Instance given but not echoed: a lone Contact can only be ours;
+        // never guess from one of several foreign bindings.
+        return first_contact_expires;
     }
 
     const char *e = find_header(resp, resp_len, "Expires");

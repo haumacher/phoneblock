@@ -37,6 +37,7 @@ gegenchecken — Registrar-Namen und Port-/Transport-Zwang können sich
 | Auth-User | E-Mail des T-Online-Accounts |
 | Passwort | T-Online-Webpasswort |
 | SRTP | bei TLS Pflicht; G.711a (PCMA) Pflicht für Notruf |
+| STUN | `stun.t-online.de:3478` — im Preset gesetzt; der Dongle ermittelt damit seinen öffentlichen (post-NAT) RTP-Port und annonciert ihn im SDP statt des lokalen Ports |
 | Stolperfalle | Reg nur aus Telekom-Netz, fremde ISPs werden abgelehnt |
 
 ### Vodafone (DSL / Kabel, ehem. Arcor/KDG)

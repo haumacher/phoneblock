@@ -25,6 +25,7 @@ static const char *NS   = "phoneblock";
 #define K_SIP_OUTBOUND  "sip_outbound"
 #define K_SIP_REALM     "sip_realm"
 #define K_SIP_SRTP      "sip_srtp"
+#define K_SIP_STUN      "sip_stun"
 #define K_FB_APP_USER   "fb_app_user"
 #define K_FB_APP_PASS   "fb_app_pass"
 #define K_SYNC_ENABLED  "sync_enabled"
@@ -93,6 +94,8 @@ typedef struct {
     char sip_outbound[80];
     char sip_realm[64];
     char sip_srtp[16];       // "off" | "optional" | "mandatory"
+    char sip_stun[64];       // STUN server "host[:port]" for RTP NAT
+                             // discovery; "" = disabled (set by provider preset)
     char fb_app_user[32];
     char fb_app_pass[40];    // spec cap is 32; 40 for NUL + padding
     char sync_enabled[4];    // "1" | "0" (or empty = default off)
@@ -244,6 +247,7 @@ void config_load(void)
         s_config.sip_outbound[0]  = '\0';
         s_config.sip_realm[0]     = '\0';
         copy_default(s_config.sip_srtp,   sizeof(s_config.sip_srtp),   "optional");
+        s_config.sip_stun[0]      = '\0';
         s_config.fb_app_user[0]   = '\0';
         s_config.fb_app_pass[0]   = '\0';
         s_config.sync_enabled[0]  = '\0';
@@ -302,6 +306,8 @@ void config_load(void)
              s_config.sip_realm,    sizeof(s_config.sip_realm));
     load_str(h, K_SIP_SRTP,     "optional",
              s_config.sip_srtp,     sizeof(s_config.sip_srtp));
+    load_str(h, K_SIP_STUN,     "",
+             s_config.sip_stun,     sizeof(s_config.sip_stun));
     load_str(h, K_FB_APP_USER,  "",
              s_config.fb_app_user,  sizeof(s_config.fb_app_user));
     load_str(h, K_FB_APP_PASS,  "",
@@ -467,6 +473,7 @@ int         config_rtp_port(void)
 {
     return s_config.rtp_port > 0 ? s_config.rtp_port : DEFAULT_RTP_PORT;
 }
+const char *config_stun_server(void)         { return s_config.sip_stun; }
 const char *config_phoneblock_base_url(void) { return s_config.pb_base_url; }
 const char *config_phoneblock_token(void)    { return s_config.pb_token; }
 int         config_min_direct_votes(void)     { return s_config.min_direct_votes; }
@@ -614,6 +621,8 @@ esp_err_t config_update(const config_update_t *u)
                                         s_config.sip_realm, sizeof(s_config.sip_realm));
     if (err == ESP_OK) err = set_str_if(h, K_SIP_SRTP, u->sip_srtp,
                                         s_config.sip_srtp, sizeof(s_config.sip_srtp));
+    if (err == ESP_OK) err = set_str_if(h, K_SIP_STUN, u->sip_stun,
+                                        s_config.sip_stun, sizeof(s_config.sip_stun));
     if (err == ESP_OK) err = set_str_if(h, K_FB_APP_USER, u->fritzbox_app_user,
                                         s_config.fb_app_user, sizeof(s_config.fb_app_user));
     if (err == ESP_OK) err = set_str_if(h, K_FB_APP_PASS, u->fritzbox_app_pass,
