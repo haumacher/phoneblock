@@ -7,7 +7,7 @@ CFLAGS  ?= -Wall -Wextra -Werror -O0 -g -I../main
 IDF_PATH ?= $(HOME)/tools/esp/esp-idf
 CJSON_DIR := $(IDF_PATH)/components/json/cJSON
 
-BINS = test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_tr064_parse test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_version_cmp
+BINS = test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_tr064_parse test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_version_cmp
 
 test_sip_parse: test_sip_parse.c ../main/sip_parse.c ../main/sip_parse.h \
                 ../main/audio.c ../main/audio.h
@@ -46,6 +46,9 @@ test_sched_time: test_sched_time.c ../main/sched_time.c ../main/sched_time.h
 
 test_smtp_body: test_smtp_body.c ../main/smtp_body.c ../main/smtp_body.h
 	$(CC) $(CFLAGS) test_smtp_body.c ../main/smtp_body.c -o $@
+
+test_mail_html: test_mail_html.c ../main/mail_html.c ../main/mail_html.h
+	$(CC) $(CFLAGS) test_mail_html.c ../main/mail_html.c -o $@
 
 test_version_cmp: test_version_cmp.c ../main/version_cmp.c ../main/version_cmp.h
 	$(CC) $(CFLAGS) test_version_cmp.c ../main/version_cmp.c -o $@
