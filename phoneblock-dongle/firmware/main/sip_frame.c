@@ -62,6 +62,30 @@ static int parse_content_length(const char *p, int len)
 
 int sip_framer_pop(sip_framer_t *f, char *out, int out_cap)
 {
+    // RFC 3261 §7.5 / RFC 5626 §4.4.1: leading CRLFs before the start-line
+    // are keep-alives, not part of the next message. A CRLFCRLF is a PING
+    // (popped as a 4-byte frame below so the caller can pong it); a lone
+    // CRLF is a PONG answering our own ping. Surface the lone CRLF as its
+    // own 2-byte frame immediately — so the caller can log the inbound pong
+    // the moment it arrives (live ping↔pong correlation), AND so it can
+    // never glue onto the next message's start-line ("\r\nSIP/2.0 200 OK…"
+    // → bogus "rejected: -1", the ~30 min re-REGISTER failure on the
+    // persistent Telekom connection).
+    //
+    // Surfacing without waiting means a CRLFCRLF ping split across two
+    // recv()s (its two CRLFs in separate reads) is seen as two pongs and
+    // not answered — harmless and very rare (a 4-byte ping rides one TLS
+    // record), and worth it for the visibility.
+    if (f->have >= 2 && f->buf[0] == '\r' && f->buf[1] == '\n'
+            && !(f->have >= 4 && f->buf[2] == '\r' && f->buf[3] == '\n')) {
+        if (out_cap < 3) return -1;
+        out[0] = '\r'; out[1] = '\n'; out[2] = '\0';
+        int rest = f->have - 2;
+        if (rest > 0) memmove(f->buf, f->buf + 2, rest);
+        f->have = rest;
+        return 2;
+    }
+
     int hdr_end = find_headers_end(f->buf, f->have);
     if (hdr_end < 0) return 0;
 

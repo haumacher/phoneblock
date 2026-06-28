@@ -1459,12 +1459,38 @@ static void handle_incoming(sip_ctx_t *c, const char *pkt, int len,
     char from_ip[INET_ADDRSTRLEN];
     inet_ntoa_r(from->sin_addr, from_ip, sizeof(from_ip));
 
+    bool is_response = (len >= 7 && strncmp(pkt, "SIP/2.0", 7) == 0);
+    char method[16];
+    int  method_len  = is_response ? 0 : parse_method(pkt, len, method, sizeof(method));
+
+    // A SIP CRLF keep-alive carries no method and no SIP/2.0 status line.
+    // Handle it here — before the generic packet dump below — so it is
+    // logged exactly once (one distinct, greppable marker) instead of also
+    // being dumped (with its blank CRLFs) by that line. RFC 5626 §4.4.1: a
+    // double-CRLF "ping" (>=4 bytes) is answered with a single-CRLF "pong"
+    // (2 bytes). Telekom probes us with pings every ~60 s and resets the
+    // flow if we never answer. A lone CRLF (2 bytes) is a pong answering our
+    // own ping — log it (this is how we see that Telekom really does answer)
+    // but don't reply, that would loop.
+    if (!is_response && method_len == 0) {
+        if (len >= 4) {
+            ESP_LOGI(TAG, "← SIP keepalive ping (%d bytes) from %s:%d",
+                     len, from_ip, ntohs(from->sin_port));
+            sip_transport_send(c->transport, "\r\n", 2);
+            ESP_LOGI(TAG, "→ SIP keepalive pong (2 bytes)");
+        } else {
+            ESP_LOGI(TAG, "← SIP keepalive pong (%d bytes) from %s:%d",
+                     len, from_ip, ntohs(from->sin_port));
+        }
+        return;
+    }
+
     ESP_LOGI(TAG, "← from %s:%d  %d bytes:\n%.*s",
              from_ip, ntohs(from->sin_port),
              len, len, pkt);
 
     // Handle responses to our own out-of-dialog requests (BYE from us).
-    if (len >= 7 && strncmp(pkt, "SIP/2.0", 7) == 0) {
+    if (is_response) {
         int status = parse_status_code(pkt, len);
         if (c->dialog.state == DIALOG_BYE_SENT) {
             ESP_LOGI(TAG, "← %d on BYE → dialog closed", status);
@@ -1472,21 +1498,6 @@ static void handle_incoming(sip_ctx_t *c, const char *pkt, int len,
         } else {
             ESP_LOGW(TAG, "ignoring stray response %d", status);
         }
-        return;
-    }
-
-    char method[16];
-    int method_len = parse_method(pkt, len, method, sizeof(method));
-
-    // A SIP CRLF keep-alive ("\r\n\r\n") has no method — parse_method returns
-    // an empty string. Nothing to answer, but log a distinct one-line marker
-    // (not the "method not implemented" with a blank name) so the inbound
-    // keep-alive cadence is trivial to grep/time in the live log — useful to
-    // tell a NAT idle-timeout (no inbound pings) from a carrier-side reset
-    // (pings flowing yet the connection still dropped).
-    if (method_len == 0) {
-        ESP_LOGI(TAG, "← SIP keepalive ping (%d bytes) from %s:%d",
-                 len, from_ip, ntohs(from->sin_port));
         return;
     }
 
@@ -1782,6 +1793,10 @@ static void sip_task(void *arg)
             // to see whether the new creds work.
             err[0] = '\0';
             r = do_register(&ctx, &granted_expires, err, sizeof(err));
+            // Defer the idle keepalive (see reconnect path): this REGISTER
+            // is fresh traffic, no need to ping right after it.
+            keepalive_at_us = esp_timer_get_time()
+                            + (int64_t)SIP_KEEPALIVE_INTERVAL_S * 1000000LL;
             ok = (r == REGISTER_OK);
             s_registered = ok;
             stats_record_sip_state(ok);
@@ -1813,6 +1828,12 @@ static void sip_task(void *arg)
             ESP_LOGW(TAG, "transport reconnected → re-REGISTER");
             err[0] = '\0';
             r = do_register(&ctx, &granted_expires, err, sizeof(err));
+            // A REGISTER is traffic; defer the idle keepalive a full
+            // interval so we never ping a connection we just used — least
+            // of all a freshly reconnected one, where an immediate ping
+            // only draws a lone-CRLF pong with nothing to keep alive.
+            keepalive_at_us = esp_timer_get_time()
+                            + (int64_t)SIP_KEEPALIVE_INTERVAL_S * 1000000LL;
             ok = (r == REGISTER_OK);
             s_registered = ok;
             stats_record_sip_state(ok);
@@ -1884,6 +1905,7 @@ static void sip_task(void *arg)
             if (now >= keepalive_at_us) {
                 if (now < refresh_at_us) {
                     sip_transport_send(ctx.transport, "\r\n\r\n", 4);
+                    ESP_LOGI(TAG, "→ SIP keepalive ping (4 bytes)");
                 }
                 keepalive_at_us = now + (int64_t)SIP_KEEPALIVE_INTERVAL_S * 1000000LL;
             }
@@ -1899,6 +1921,9 @@ static void sip_task(void *arg)
             err[0] = '\0';
             r = do_register(&ctx, &granted_expires, err, sizeof(err));
             now = esp_timer_get_time();
+            // Defer the idle keepalive (see reconnect path): the refresh
+            // REGISTER is traffic, so the next ping is a full interval out.
+            keepalive_at_us = now + (int64_t)SIP_KEEPALIVE_INTERVAL_S * 1000000LL;
             if (r == REGISTER_OK) {
                 ESP_LOGI(TAG, "re-REGISTERED (granted %d s)", granted_expires);
                 if (!s_registered) stats_record_sip_state(true);
