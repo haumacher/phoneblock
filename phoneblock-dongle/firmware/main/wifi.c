@@ -259,27 +259,29 @@ static void on_wifi_event(void *arg, esp_event_base_t base, int32_t id, void *da
             // fields (threshold.authmode, pmf_cfg, sae_pwe_h2e, …)
             // needed to associate with the AP we just paired with.
             //
-            // For the single-AP case (ap_cred_cnt <= 1) we therefore
-            // do NOT touch sta_config — leaving the driver-populated
-            // version in place, which esp_wifi_set_storage(FLASH)
-            // also persists to NVS for the next boot. Earlier code
-            // here built a fresh wifi_config_t = {0} and copied only
-            // SSID/passphrase into it; that wiped the security
-            // fields, so on the next boot the STA loaded a config
-            // with no PMF capability, no auth-mode threshold, and
-            // got Reason 210 on every reconnect against any modern
-            // PMF-enabled AP. See recovery path above for the
-            // user-visible symptom.
+            // We read-modify-write that driver config rather than
+            // rebuilding it from scratch: get it first, change only the
+            // fields we must, set it back. Rebuilding a fresh
+            // wifi_config_t = {0} and copying only SSID/passphrase (as
+            // earlier code did) wiped the security fields, so on the
+            // next boot the STA loaded a config with no PMF capability,
+            // no auth-mode threshold, and got Reason 210 on every
+            // reconnect against any modern PMF-enabled AP. See the
+            // recovery path above for the user-visible symptom.
             //
-            // For the rare multi-AP case (ap_cred_cnt > 1) we still
-            // need to pick one credential set. We then read-modify-
-            // write: get the driver's cfg first, override only the
-            // SSID/passphrase fields, set it back. Security fields
-            // stay intact.
+            // Two things we override:
+            //  - scan_method → WIFI_ALL_CHANNEL_SCAN, so that if the AP
+            //    is hidden, the stored-credentials reconnect on the next
+            //    boot can still find it (a hidden SSID is invisible to
+            //    the default fast scan — see wifi_set_credentials() and
+            //    issue #458). The immediate post-WPS connect below is
+            //    unaffected; this matters for later reboots.
+            //  - for the rare multi-AP case (ap_cred_cnt > 1), the
+            //    SSID/passphrase, to pick one of the offered sets.
             wifi_event_sta_wps_er_success_t *evt = data;
-            if (evt && evt->ap_cred_cnt > 1) {
-                wifi_config_t cfg;
-                if (esp_wifi_get_config(WIFI_IF_STA, &cfg) == ESP_OK) {
+            wifi_config_t cfg;
+            if (esp_wifi_get_config(WIFI_IF_STA, &cfg) == ESP_OK) {
+                if (evt && evt->ap_cred_cnt > 1) {
                     memset(cfg.sta.ssid,     0, sizeof(cfg.sta.ssid));
                     memset(cfg.sta.password, 0, sizeof(cfg.sta.password));
                     memcpy(cfg.sta.ssid,
@@ -288,15 +290,16 @@ static void on_wifi_event(void *arg, esp_event_base_t base, int32_t id, void *da
                     memcpy(cfg.sta.password,
                            evt->ap_cred[0].passphrase,
                            sizeof(cfg.sta.password));
-                    ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &cfg));
                     ESP_LOGI(TAG, "WPS success — picked SSID=%s of %d offered",
                              cfg.sta.ssid, evt->ap_cred_cnt);
                 } else {
-                    ESP_LOGW(TAG, "esp_wifi_get_config failed — "
-                                  "trusting driver-internal cfg");
+                    ESP_LOGI(TAG, "WPS success — credentials auto-persisted");
                 }
+                cfg.sta.scan_method = WIFI_ALL_CHANNEL_SCAN;
+                ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &cfg));
             } else {
-                ESP_LOGI(TAG, "WPS success — credentials auto-persisted");
+                ESP_LOGW(TAG, "esp_wifi_get_config failed — "
+                              "trusting driver-internal cfg");
             }
             ESP_ERROR_CHECK(esp_wifi_wps_disable());
             s_wps_active = false;
@@ -420,6 +423,15 @@ esp_err_t wifi_set_credentials(const char *ssid, const char *password)
                                           : WIFI_AUTH_OPEN;
     cfg.sta.pmf_cfg.capable    = true;
     cfg.sta.pmf_cfg.required   = false;
+    // A hidden AP omits its SSID from beacons, so the default
+    // WIFI_FAST_SCAN — which stops at the first beaconed SSID that
+    // matches — never locates it. WIFI_ALL_CHANNEL_SCAN runs a full
+    // active scan (directed probe requests across all channels), which
+    // is the only way to associate with a hidden SSID. There is no
+    // dedicated "hidden" flag in wifi_sta_config_t; scan_method is the
+    // lever. sort_method stays at its zero-init default
+    // (WIFI_CONNECT_AP_BY_SIGNAL). See issue #458.
+    cfg.sta.scan_method        = WIFI_ALL_CHANNEL_SCAN;
 
     // WIFI_STORAGE_FLASH persists this to NVS for the next boot.
     esp_err_t err = esp_wifi_set_config(WIFI_IF_STA, &cfg);
@@ -504,6 +516,9 @@ static void seed_baked_creds(void)
     cfg.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
     cfg.sta.pmf_cfg.capable    = true;
     cfg.sta.pmf_cfg.required   = false;
+    // Full active scan so a hidden SSID can be associated with — see the
+    // rationale in wifi_set_credentials() and issue #458.
+    cfg.sta.scan_method        = WIFI_ALL_CHANNEL_SCAN;
 
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &cfg));
 }
@@ -548,6 +563,21 @@ esp_err_t wifi_connect(void)
 
     if (have_stored) {
         ESP_LOGI(TAG, "using stored credentials (SSID=%s)", stored.sta.ssid);
+        // Credentials persisted by firmware that predates hidden-SSID
+        // support carry scan_method = WIFI_FAST_SCAN, which can't locate
+        // a hidden AP. Upgrade the persisted config in place so a device
+        // paired on old firmware still connects if its SSID is hidden
+        // after the update. Idempotent: only rewritten when it differs,
+        // so a config already on all-channel scan isn't touched. See
+        // issue #458.
+        if (stored.sta.scan_method != WIFI_ALL_CHANNEL_SCAN) {
+            stored.sta.scan_method = WIFI_ALL_CHANNEL_SCAN;
+            esp_err_t err = esp_wifi_set_config(WIFI_IF_STA, &stored);
+            if (err != ESP_OK) {
+                ESP_LOGW(TAG, "failed to upgrade stored scan_method: %s",
+                         esp_err_to_name(err));
+            }
+        }
     } else if (have_baked) {
         ESP_LOGI(TAG, "seeding from baked credentials (SSID=%s)", BAKED_SSID);
         seed_baked_creds();
