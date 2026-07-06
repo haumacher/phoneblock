@@ -938,10 +938,24 @@ static int build_sdp_body(const char *fallback_ip, const dialog_t *d,
 // socket the announcement will stream from — for the post-NAT endpoint and
 // advertise that, falling back to the signalling IP + local port when STUN
 // yields nothing.
+//
+// STUN only applies to direct-provider registration behind NAT, where a
+// preset fills in sip_stun. Without a configured server (the Fritz!Box case)
+// there is no NAT to traverse and we advertise the local endpoint directly.
 static void prepare_media_endpoint(sip_ctx_t *c, dialog_t *d)
 {
     snprintf(d->media_ip, sizeof(d->media_ip), "%s", advertised_host(c));
     d->media_port = config_rtp_port();
+
+    // No STUN server configured (the Fritz!Box-on-the-LAN default): the dongle
+    // registers on the local network and RTP flows straight to the box, so the
+    // local endpoint is exactly right — no NAT to traverse. Advertise it
+    // quietly; a WARN here would only alarm those users on the field panel.
+    if (!config_stun_server()[0]) {
+        ESP_LOGI(TAG, "no STUN configured — advertising local RTP endpoint "
+                      "%s:%d", d->media_ip, d->media_port);
+        return;
+    }
 
     // Under endpoint-dependent (symmetric) NAT the STUN-learned port wouldn't
     // match the one the media gateway sees, so advertising it is pointless —
