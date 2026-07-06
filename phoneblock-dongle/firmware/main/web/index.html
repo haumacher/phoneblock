@@ -176,6 +176,8 @@ const I18N = {
     'status.system.col.task': 'Task',
     'status.system.col.cpu': 'CPU',
     'status.system.col.stack': 'Stack frei',
+    'status.system.led_quiet': 'LED nur bei Problemen leuchten lassen',
+    'status.system.led_quiet.hint': 'Normalerweise leuchtet die LED dauerhaft, wenn alles in Ordnung ist. Mit dieser Option bleibt sie im Normalbetrieb aus und leuchtet oder blinkt nur, wenn ein Problem vorliegt (Einrichtung nötig, keine Registrierung, Token ungültig, keine Verbindung). Praktisch im Wohnzimmer.',
     'status.clock.now': 'Uhrzeit: {time}',
     'status.clock.pending': 'Uhrzeit: wird synchronisiert …',
     'status.time.today': 'heute {time}',
@@ -457,6 +459,8 @@ const I18N = {
     'status.system.col.task': 'Task',
     'status.system.col.cpu': 'CPU',
     'status.system.col.stack': 'Stack free',
+    'status.system.led_quiet': 'Only light the LED when there is a problem',
+    'status.system.led_quiet.hint': 'Normally the LED stays lit while everything is fine. With this option it stays dark in normal operation and only lights or blinks when there is a problem (setup needed, not registered, token rejected, no connection). Handy in a living room.',
     'status.clock.now': 'Time: {time}',
     'status.clock.pending': 'Time: synchronising …',
     'status.time.today': 'today {time}',
@@ -725,6 +729,8 @@ const I18N = {
     'status.system.col.task': 'Tâche',
     'status.system.col.cpu': 'CPU',
     'status.system.col.stack': 'Pile libre',
+    'status.system.led_quiet': 'N’allumer la LED qu’en cas de problème',
+    'status.system.led_quiet.hint': 'Normalement la LED reste allumée quand tout va bien. Avec cette option elle reste éteinte en fonctionnement normal et ne s’allume ou ne clignote qu’en cas de problème (configuration requise, non enregistré, jeton refusé, pas de connexion). Pratique dans un salon.',
     'status.time.today': "aujourd'hui {time}",
     'status.time.yesterday': 'hier {time}',
     'status.errors.title': 'Journal',
@@ -986,6 +992,8 @@ const I18N = {
     'status.system.col.task': 'Tarea',
     'status.system.col.cpu': 'CPU',
     'status.system.col.stack': 'Pila libre',
+    'status.system.led_quiet': 'Encender el LED solo cuando haya un problema',
+    'status.system.led_quiet.hint': 'Normalmente el LED permanece encendido cuando todo está bien. Con esta opción se queda apagado en funcionamiento normal y solo se enciende o parpadea cuando hay un problema (configuración necesaria, sin registrar, token rechazado, sin conexión). Útil en el salón.',
     'status.time.today': 'hoy {time}',
     'status.time.yesterday': 'ayer {time}',
     'status.errors.title': 'Registro',
@@ -1589,6 +1597,11 @@ function renderStatus(){
     + '<th style="text-align:right">'  + esc(t('status.system.col.cpu'))   + '</th>'
     + '<th style="text-align:right">'  + esc(t('status.system.col.stack')) + '</th>'
     + '</tr></thead><tbody id="systemTasks"></tbody></table>'
+    + '<label style="display:flex;align-items:center;gap:.4rem;font-weight:normal;margin-top:.9rem;font-size:.85rem">'
+    +   '<input type="checkbox" id="ledQuietChk" style="width:auto">'
+    +   '<span>' + esc(t('status.system.led_quiet')) + '</span></label>'
+    + '<p class="muted" style="font-size:.72rem;margin:.2rem 0 0">'
+    +   esc(t('status.system.led_quiet.hint')) + '</p>'
     + '</details>'
     + '<details id="thresholdsSection" class="adminsec" style="display:none">'
     + '<summary>' + esc(t('status.thresholds.title')) + '</summary>'
@@ -2592,6 +2605,25 @@ async function refreshAll(){
     logChk.onchange = async () => {
       const body = new URLSearchParams();
       body.append('log_info', logChk.checked ? '1' : '0');
+      try {
+        await fetch('/api/config', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: body.toString(),
+        });
+      } catch (_){ /* next poll reconciles */ }
+      refreshAll();
+    };
+  }
+
+  // Status-LED quiet mode. Reflect the stored state on every poll;
+  // persist via /api/config on change.
+  const ledQuietChk = $('ledQuietChk');
+  if (ledQuietChk){
+    ledQuietChk.checked = !!(s.led && s.led.quiet);
+    ledQuietChk.onchange = async () => {
+      const body = new URLSearchParams();
+      body.append('led_quiet', ledQuietChk.checked ? '1' : '0');
       try {
         await fetch('/api/config', {
           method: 'POST',

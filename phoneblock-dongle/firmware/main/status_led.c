@@ -103,8 +103,14 @@ typedef struct {
     uint8_t  ticks;    // total ticks before the pattern wraps
 } pattern_t;
 
-static pattern_t pattern_for(led_state_t s)
+static pattern_t pattern_for(led_state_t s, bool quiet)
 {
+    // Quiet mode inverts only the READY signal: a healthy dongle keeps
+    // its LED dark, so any light at all means "look at me". The fault
+    // states below are left untouched — they must stay visible.
+    if (s == ST_READY && quiet) {
+        return (pattern_t){ .on_mask = 0x0, .ticks = 1 };
+    }
     switch (s) {
         case ST_PAIRING:
             // 100 ms on / 100 ms off  →  (on off) repeating every 4 ticks
@@ -158,15 +164,21 @@ static void led_task(void *arg)
              (unsigned)uxTaskGetStackHighWaterMark(NULL));
 
     led_state_t last_state = (led_state_t)-1;
-    pattern_t   pat        = pattern_for(ST_CONNECTING);
+    bool        last_quiet = false;
+    pattern_t   pat        = pattern_for(ST_CONNECTING, false);
     uint8_t     tick       = 0;
 
     while (1) {
-        led_state_t s = derive_state();
-        if (s != last_state) {
-            pat = pattern_for(s);
+        led_state_t s     = derive_state();
+        bool        quiet = config_led_quiet();
+        // Recompute on a quiet-mode toggle too, not just a state change:
+        // the user may flip the setting while the dongle sits in READY,
+        // when the state itself never changes.
+        if (s != last_state || quiet != last_quiet) {
+            pat = pattern_for(s, quiet);
             tick = 0;
             last_state = s;
+            last_quiet = quiet;
         }
         bool on = (pat.on_mask >> tick) & 0x1u;
         int level = active_low ? !on : on;

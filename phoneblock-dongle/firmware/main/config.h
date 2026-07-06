@@ -92,6 +92,16 @@ bool        config_log_known_calls(void);
 // on, reproduced, read, and turned off again.
 bool        config_log_info(void);
 
+// Whether the status LED runs in "quiet mode". Default off — the LED is
+// solid-on in the READY state, as it always has been. When on, READY
+// instead leaves the LED *dark*: off now means "everything is fine", so
+// a lit/blinking LED unambiguously signals a problem (setup needed,
+// registration lost, token rejected, no connection). Only the READY
+// pattern changes; the fault states keep their existing blink/on
+// patterns, so the dongle still signals trouble visibly. Meant for
+// living-room installs where a permanently-lit LED is a nuisance.
+bool        config_led_quiet(void);
+
 // Whether the web UI requires "Login with PhoneBlock" before
 // showing call data or accepting setting changes. Default off —
 // during initial provisioning the LAN-local UI must be reachable
@@ -277,6 +287,9 @@ typedef struct {
     // "1" = also capture INFO log lines, "0" = only WARN/ERROR. NULL =
     // leave unchanged. Default when unset is "off".
     const char *log_info;
+    // "1" = status LED quiet mode (dark when READY), "0" = solid-on when
+    // READY. NULL = leave unchanged. Default when unset is "off".
+    const char *led_quiet;
     // "1" = require "Login with PhoneBlock" before serving the UI,
     // "0" = open access. NULL = leave unchanged. Default when the
     // key is unset is "open access" (setup phase).

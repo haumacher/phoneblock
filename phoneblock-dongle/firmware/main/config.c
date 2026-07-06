@@ -31,6 +31,7 @@ static const char *NS   = "phoneblock";
 #define K_SYNC_ENABLED  "sync_enabled"
 #define K_LOG_KNOWN     "log_known_calls"
 #define K_LOG_INFO      "log_info"
+#define K_LED_QUIET     "led_quiet"
 #define K_AUTH_ENABLED  "auth_enabled"
 #define K_AUTH_USER     "auth_user"
 #define K_AUTH_PERSIST  "auth_persist"
@@ -104,6 +105,7 @@ typedef struct {
     char sync_enabled[4];    // "1" | "0" (or empty = default off)
     char log_known[4];       // "1" | "0" (or empty = default on)
     char log_info[4];        // "1" = also mirror INFO lines to the log panel (default off)
+    char led_quiet[4];       // "1" = LED dark when READY (default off = solid on)
     char auth_enabled[4];    // "1" | "0" (or empty = default off)
     char auth_user[64];      // pinned PhoneBlock user-name; empty = no pin
     char auth_persist[33];   // 32 hex chars + NUL; empty = nobody is "remembered"
@@ -259,6 +261,7 @@ void config_load(void)
         s_config.sync_enabled[0]  = '\0';
         s_config.log_known[0]     = '\0';
         s_config.log_info[0]      = '\0';
+        s_config.led_quiet[0]     = '\0';
         s_config.auth_enabled[0]  = '\0';
         s_config.auth_user[0]     = '\0';
         s_config.auth_persist[0]  = '\0';
@@ -327,6 +330,8 @@ void config_load(void)
              s_config.log_known, sizeof(s_config.log_known));
     load_str(h, K_LOG_INFO, "",
              s_config.log_info, sizeof(s_config.log_info));
+    load_str(h, K_LED_QUIET, "",
+             s_config.led_quiet, sizeof(s_config.led_quiet));
     load_str(h, K_AUTH_ENABLED, "",
              s_config.auth_enabled, sizeof(s_config.auth_enabled));
     load_str(h, K_AUTH_USER, "",
@@ -420,6 +425,13 @@ bool        config_log_info(void)
     // the UI for troubleshooting, when the context that only INFO lines
     // carry (e.g. "registrar host:port") is needed. Only "1" enables it.
     return s_config.log_info[0] == '1';
+}
+bool        config_led_quiet(void)
+{
+    // Default off (empty / unrecognised → solid-on when READY, the
+    // original behaviour). Only an explicit "1" flips the LED to
+    // dark-when-fine; see the header for the full semantics.
+    return s_config.led_quiet[0] == '1';
 }
 bool        config_auth_enabled(void)
 {
@@ -672,6 +684,8 @@ esp_err_t config_update(const config_update_t *u)
                                         s_config.log_known, sizeof(s_config.log_known));
     if (err == ESP_OK) err = set_str_if(h, K_LOG_INFO, u->log_info,
                                         s_config.log_info, sizeof(s_config.log_info));
+    if (err == ESP_OK) err = set_str_if(h, K_LED_QUIET, u->led_quiet,
+                                        s_config.led_quiet, sizeof(s_config.led_quiet));
     if (err == ESP_OK) err = set_str_if(h, K_AUTH_ENABLED, u->auth_enabled,
                                         s_config.auth_enabled, sizeof(s_config.auth_enabled));
     if (err == ESP_OK) err = set_str_if(h, K_AUTH_USER, u->auth_user,
