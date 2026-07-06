@@ -66,7 +66,7 @@ typedef struct {
 // crash ERROR then ships once more, which is the point). Independent of
 // logreport.c's marks: this is a separate sink.
 static int64_t  s_reported_through_us = 0;  // newest log at_us already mailed
-static uint32_t s_reported_spam       = 0;  // spam_blocked count at last mail
+static int64_t  s_reported_calls_us   = 0;  // newest call at_us already mailed
 
 bool mail_configured(void)
 {
@@ -493,24 +493,25 @@ static size_t append_log_html(char *body, size_t cap, size_t len,
 
 // Assemble the full text/html status body. `include_log` gates the log
 // section (the daily flush only attaches it once a new ERROR has fired;
-// the test mail always shows the whole ring). `spam_delta` > 0 adds the
+// the test mail always shows the whole ring). `new_calls` > 0 adds the
 // "since the last mail" line. Returns the assembled length.
 static size_t build_status_html(char *body, size_t cap,
                                 const stats_counters_t *cnt,
                                 const stats_call_t *calls, int ncalls,
                                 const stats_error_t *errs, int nerr,
                                 int64_t since_us, int64_t *newest_us,
-                                bool include_log, uint32_t spam_delta)
+                                bool include_log, int new_calls)
 {
     size_t len = append_str(body, cap, 0,
         "<html><body style=\"font-family:Arial,Helvetica,sans-serif;color:#222\">"
         "<p>Statusmeldung deines PhoneBlock-Dongles.</p>");
     len = append_summary_html(body, cap, len, cnt);
-    if (spam_delta) {
+    if (new_calls > 0) {
         char line[160];
-        snprintf(line, sizeof(line),
-            "<p>Seit der letzten Meldung wurden <b>%u</b> SPAM-Anrufe blockiert.</p>",
-            (unsigned)spam_delta);
+        snprintf(line, sizeof(line), new_calls == 1
+            ? "<p>Seit der letzten Meldung ist <b>1</b> neuer Anruf eingegangen.</p>"
+            : "<p>Seit der letzten Meldung sind <b>%d</b> neue Anrufe eingegangen.</p>",
+            new_calls);
         len = append_str(body, cap, len, line);
     }
     len = append_calls_html(body, cap, len, calls, ncalls);
@@ -542,36 +543,44 @@ void mail_daily_flush(void)
         }
     }
 
-    stats_counters_t cnt;
-    stats_snapshot_counters(&cnt);
-    bool have_new_spam = on_spam && (cnt.spam_blocked > s_reported_spam);
+    // New calls since the last mail. The snapshot is newest-first and at_us
+    // is monotonic, so the new calls are the leading run above the mark —
+    // all verdicts, not just spam. mail_on_spam is the "report calls" opt-in.
+    stats_call_t calls[STATS_MAX_CALLS];
+    int ncalls = stats_snapshot_calls(calls, STATS_MAX_CALLS);
+    int new_calls = 0;
+    while (new_calls < ncalls && calls[new_calls].at_us > s_reported_calls_us)
+        new_calls++;
+    bool have_new_calls = on_spam && new_calls > 0;
 
-    if (!have_new_error && !have_new_spam) return;   // nothing noteworthy
+    if (!have_new_error && !have_new_calls) return;   // nothing noteworthy
     if (esp_get_free_heap_size() < MAIL_MIN_FREE_HEAP) return;
 
     char *body = malloc(MAIL_BODY_CAP);
     if (!body) return;
 
-    stats_call_t calls[STATS_MAX_CALLS];
-    int ncalls = stats_snapshot_calls(calls, STATS_MAX_CALLS);
+    stats_counters_t cnt;
+    stats_snapshot_counters(&cnt);
 
     // Advance the log high-water mark over every WARN/ERROR we append, so
     // the same window isn't re-mailed; the *trigger* is still a new ERROR.
+    // The call table shows only the new calls (0 when calls aren't reported).
     int64_t newest_us = s_reported_through_us;
-    build_status_html(body, MAIL_BODY_CAP, &cnt, calls, ncalls, errs, n,
+    build_status_html(body, MAIL_BODY_CAP, &cnt, calls,
+                      have_new_calls ? new_calls : 0, errs, n,
                       s_reported_through_us, &newest_us, have_new_error,
-                      have_new_spam ? (cnt.spam_blocked - s_reported_spam) : 0);
+                      have_new_calls ? new_calls : 0);
 
     const char *subject =
-        (have_new_error && have_new_spam) ? "PhoneBlock-Dongle: Fehler und SPAM-Anrufe"
-      : have_new_error                    ? "PhoneBlock-Dongle: Fehler im Protokoll"
-      :                                     "PhoneBlock-Dongle: SPAM-Anrufe blockiert";
+        (have_new_error && have_new_calls) ? "PhoneBlock-Dongle: Fehler und neue Anrufe"
+      : have_new_error                     ? "PhoneBlock-Dongle: Fehler im Protokoll"
+      :                                      "PhoneBlock-Dongle: Neue Anrufe";
 
     if (mail_send(subject, MAIL_BODY_CT, body)) {
         // Advance the marks only after a confirmed send, so a failure
         // retries the same window next cycle.
         if (have_new_error) s_reported_through_us = newest_us;
-        if (have_new_spam)  s_reported_spam = cnt.spam_blocked;
+        if (have_new_calls) s_reported_calls_us = calls[0].at_us;
     }
     free(body);
 }
