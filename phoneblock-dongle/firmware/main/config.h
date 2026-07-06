@@ -215,12 +215,16 @@ const char *config_smtp_pass(void);
 const char *config_smtp_from(void);
 // Recipient of the status mails.
 const char *config_smtp_to(void);
-// Trigger toggles (both default off — status mail is opt-in):
-//   on_error: a daily mail when an ERROR was logged since the last one;
-//             also drives the immediate crash mail at boot.
-//   on_spam:  a daily mail when spam calls were caught since the last one.
+// Trigger toggles:
+//   on_error:  (default off) a daily mail when an ERROR was logged since the
+//              last one; also drives the immediate crash mail at boot.
+//   on_spam:   (default off) a daily mail when spam calls were caught since
+//              the last one.
+//   on_update: (default on) a one-shot mail after a firmware update, with a
+//              link to the release's changelog.
 bool        config_mail_on_error(void);
 bool        config_mail_on_spam(void);
+bool        config_mail_on_update(void);
 
 // Version string of the most recent OTA download that did NOT survive
 // to the next successful boot, or "" if no such record exists. Set by
@@ -334,9 +338,11 @@ typedef struct {
     const char *smtp_pass;
     const char *smtp_from;
     const char *smtp_to;
-    // "1" = enable, "0" = disable, NULL = leave unchanged. Default off.
+    // "1" = enable, "0" = disable, NULL = leave unchanged. on_error/on_spam
+    // default off, on_update defaults on (see config_mail_on_update).
     const char *mail_on_error;
     const char *mail_on_spam;
+    const char *mail_on_update;
     // POSIX TZ string for the wall clock. NULL = leave unchanged. The
     // caller is expected to validate it before writing (see web.c).
     const char *timezone;

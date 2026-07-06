@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdbool.h>
 #include <stddef.h>
 
 // Pure, dependency-free string builders for assembling the HTML status mail
@@ -23,3 +24,15 @@ size_t append_html_escaped(char *body, size_t cap, size_t len, const char *s);
 // Append `s` percent-encoded for a URL path segment (e.g. a phone number,
 // whose leading '+' must become %2B).
 size_t append_url_encoded(char *body, size_t cap, size_t len, const char *s);
+
+// Build the GitHub release-notes ("changelog") URL for firmware `version`
+// into out[cap]. Returns true and a NUL-terminated URL when `version` is a
+// released form — "X.Y.Z" optionally followed by "-<suffix>" of
+// [0-9A-Za-z.] (e.g. "1.4.1", "1.4.1-rc1"); the URL always points at the
+// bare "X.Y.Z.md" page (release.sh guarantees it exists). Returns false and
+// out[0]='\0' for dev / git-describe builds ("1.3.4-5-gabcdef", second
+// hyphen) that have no release-notes page. Mirrors fwLink() in the web UI.
+// A cap of 160 comfortably holds any real version. Pure/host-testable, so
+// the version parsing that feeds an update mail's link is covered by
+// test/test_mail_html.c.
+bool mail_changelog_url(const char *version, char *out, size_t cap);

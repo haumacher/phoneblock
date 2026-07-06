@@ -52,3 +52,61 @@ size_t append_url_encoded(char *body, size_t cap, size_t len, const char *s)
     body[len] = '\0';
     return len;
 }
+
+// Extract the released "X.Y.Z" prefix of `version` into base[cap], matching
+// the web UI's fwLink regex ^(\d+\.\d+\.\d+)(?:-[0-9A-Za-z.]+)?$: three
+// dot-separated digit groups, then either end-of-string or a single '-'
+// followed by one-or-more [0-9A-Za-z.] and nothing else. A git-describe dev
+// build ("1.3.4-5-gabcdef") has a second '-', which the suffix rule rejects
+// — so it (correctly) gets no changelog page. Returns false (base cleared)
+// on any deviation or if base is too small.
+static bool parse_release_base(const char *v, char *base, size_t cap)
+{
+    if (cap) base[0] = '\0';
+    const char *p = v;
+    size_t bi = 0;
+    for (int group = 0; group < 3; group++) {
+        if (group > 0) {
+            if (*p != '.' || bi + 1 >= cap) return false;
+            base[bi++] = *p++;
+        }
+        if (!(*p >= '0' && *p <= '9')) return false;   // need at least one digit
+        while (*p >= '0' && *p <= '9') {
+            if (bi + 1 >= cap) return false;
+            base[bi++] = *p++;
+        }
+    }
+    base[bi] = '\0';
+    if (*p == '\0') return true;                       // bare X.Y.Z
+    if (*p != '-') return false;
+    if (*++p == '\0') return false;                    // "-" with empty suffix
+    for (; *p; p++) {
+        char c = *p;
+        if (!((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') ||
+              (c >= 'a' && c <= 'z') || c == '.'))
+            return false;                              // e.g. a second '-'
+    }
+    return true;
+}
+
+bool mail_changelog_url(const char *version, char *out, size_t cap)
+{
+    if (cap) out[0] = '\0';
+    char base[16];   // "255.255.255" and headroom; longer → parse fails
+    if (!parse_release_base(version, base, sizeof(base))) return false;
+
+    // The base is [0-9.] only, so appending it raw is injection-safe.
+    size_t len = append_str(out, cap, 0,
+        "https://github.com/haumacher/phoneblock/blob/master/"
+        "phoneblock-dongle/firmware/release-notes/");
+    len = append_str(out, cap, len, base);
+    len = append_str(out, cap, len, ".md");
+    // A too-small buffer would silently truncate into a broken link; reject
+    // it (and clear the partial write) rather than emit one. The full URL is
+    // ~113 bytes for X.Y.Z.
+    if (len >= cap - 1) {
+        out[0] = '\0';
+        return false;
+    }
+    return true;
+}

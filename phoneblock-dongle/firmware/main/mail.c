@@ -68,6 +68,15 @@ typedef struct {
 static int64_t  s_reported_through_us = 0;  // newest log at_us already mailed
 static int64_t  s_reported_calls_us   = 0;  // newest call at_us already mailed
 
+// One-shot "we just updated" latch. Set once at boot (mail_note_update, from
+// main.c) when the running image is a freshly-installed OTA build, consumed
+// by mail_report_update() on the next scheduler mail run. RAM-only like the
+// marks above: lost on reboot, which only drops the notice if the device
+// reboots again within minutes of the update — acceptable for an
+// informational mail.
+static bool s_update_pending = false;
+static char s_update_version[32];
+
 bool mail_configured(void)
 {
     return config_smtp_host()[0] && config_smtp_user()[0]
@@ -608,4 +617,71 @@ bool mail_send_test(void)
     bool ok = mail_send("PhoneBlock-Dongle: Statusmeldung", MAIL_BODY_CT, body);
     free(body);
     return ok;
+}
+
+void mail_note_update(const char *version)
+{
+    if (!version || !version[0]) return;
+    snprintf(s_update_version, sizeof(s_update_version), "%s", version);
+    s_update_pending = true;
+}
+
+void mail_report_update(void)
+{
+    if (!s_update_pending) return;
+
+    // Opted out (default on) or not configured: drop the latch. There is
+    // nothing to send and nothing to retry — leaving it set would re-check
+    // every daily run for the rest of this boot.
+    if (!config_mail_on_update() || !mail_configured()) {
+        s_update_pending = false;
+        return;
+    }
+    if (!wifi_has_ip()) return;                 // retry next cycle
+    if (esp_get_free_heap_size() < MAIL_MIN_FREE_HEAP) return;
+
+    char *body = malloc(MAIL_BODY_CAP);
+    if (!body) return;
+
+    // One sentence: "Die Firmware auf deinem <Dongle> wurde auf <Version>
+    // aktualisiert." — the dongle name links to its own web UI (by IP, the
+    // address that is guaranteed reachable on the LAN) and the version links
+    // to that release's changelog. Each link degrades to plain text when its
+    // target is unavailable (no IP / a dev build with no changelog page).
+    size_t len = append_str(body, MAIL_BODY_CAP, 0,
+        "<html><body style=\"font-family:Arial,Helvetica,sans-serif;color:#222\">"
+        "<p>Die Firmware auf deinem ");
+
+    char ip[16];
+    if (wifi_get_ip_str(ip, sizeof(ip))) {
+        len = append_str(body, MAIL_BODY_CAP, len, "<a href=\"http://");
+        len = append_html_escaped(body, MAIL_BODY_CAP, len, ip);
+        len = append_str(body, MAIL_BODY_CAP, len,
+            "/\" target=\"_blank\" rel=\"noopener\">PhoneBlock-Dongle</a>");
+    } else {
+        len = append_str(body, MAIL_BODY_CAP, len, "PhoneBlock-Dongle");
+    }
+
+    len = append_str(body, MAIL_BODY_CAP, len, " wurde auf ");
+
+    char url[160];
+    if (mail_changelog_url(s_update_version, url, sizeof(url))) {
+        len = append_str(body, MAIL_BODY_CAP, len, "<a href=\"");
+        len = append_html_escaped(body, MAIL_BODY_CAP, len, url);
+        len = append_str(body, MAIL_BODY_CAP, len,
+            "\" target=\"_blank\" rel=\"noopener\">Version ");
+        len = append_html_escaped(body, MAIL_BODY_CAP, len, s_update_version);
+        len = append_str(body, MAIL_BODY_CAP, len, "</a>");
+    } else {
+        len = append_str(body, MAIL_BODY_CAP, len, "Version ");
+        len = append_html_escaped(body, MAIL_BODY_CAP, len, s_update_version);
+    }
+
+    append_str(body, MAIL_BODY_CAP, len, " aktualisiert.</p></body></html>\n");
+
+    // Clear the latch only after a confirmed send, so a transient SMTP
+    // failure retries on the next mail run instead of losing the notice.
+    if (mail_send("PhoneBlock-Dongle: Firmware aktualisiert", MAIL_BODY_CT, body))
+        s_update_pending = false;
+    free(body);
 }

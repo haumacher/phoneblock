@@ -466,6 +466,7 @@ static esp_err_t handle_status(httpd_req_t *req)
     cJSON_AddBoolToObject  (ml,   "pass_set", config_smtp_pass()[0] != '\0');
     cJSON_AddBoolToObject  (ml,   "on_error", config_mail_on_error());
     cJSON_AddBoolToObject  (ml,   "on_spam",  config_mail_on_spam());
+    cJSON_AddBoolToObject  (ml,   "on_update", config_mail_on_update());
 
     add_system_load(root);
 
@@ -610,6 +611,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     char smtp_to[64]      = "";
     char mail_err_s[4]    = "";
     char mail_spam_s[4]   = "";
+    char mail_upd_s[4]    = "";
     char tz_s[64]         = "";
 
     bool have_sip_host  = form_get(body, "sip_host",  sip_host,  sizeof(sip_host));
@@ -650,6 +652,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     bool have_smtp_to    = form_get(body, "smtp_to",       smtp_to,     sizeof(smtp_to));
     bool have_mail_err   = form_get(body, "mail_on_error", mail_err_s,  sizeof(mail_err_s));
     bool have_mail_spam  = form_get(body, "mail_on_spam",  mail_spam_s, sizeof(mail_spam_s));
+    bool have_mail_upd   = form_get(body, "mail_on_update", mail_upd_s, sizeof(mail_upd_s));
     bool have_tz         = form_get(body, "timezone",      tz_s,        sizeof(tz_s));
     free(body);
 
@@ -767,6 +770,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
         .smtp_to       = have_smtp_to   ? smtp_to   : NULL,
         .mail_on_error = have_mail_err  ? mail_err_s  : NULL,
         .mail_on_spam  = have_mail_spam ? mail_spam_s : NULL,
+        .mail_on_update = have_mail_upd ? mail_upd_s  : NULL,
         .timezone      = timezone,
     };
 

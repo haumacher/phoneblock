@@ -37,6 +37,33 @@ static void check_url(const char *in, const char *want)
     }
 }
 
+#define CHANGELOG_PRE \
+    "https://github.com/haumacher/phoneblock/blob/master/" \
+    "phoneblock-dongle/firmware/release-notes/"
+
+// A released version must yield the "X.Y.Z.md" changelog URL (pre-release
+// suffix stripped); a dev/git-describe build must be rejected (no page).
+static void check_changelog(const char *version, const char *want_base)
+{
+    char buf[CAP];
+    bool ok = mail_changelog_url(version, buf, sizeof(buf));
+    if (want_base) {
+        char want[CAP];
+        snprintf(want, sizeof(want), "%s%s.md", CHANGELOG_PRE, want_base);
+        if (!ok || strcmp(buf, want) != 0) {
+            fprintf(stderr, "mail_changelog_url(%s):\n  got:  %s (ok=%d)\n"
+                    "  want: %s\n", version, buf, ok, want);
+            assert(0);
+        }
+    } else {
+        if (ok || buf[0] != '\0') {
+            fprintf(stderr, "mail_changelog_url(%s): expected rejection, "
+                    "got %s (ok=%d)\n", version, buf, ok);
+            assert(0);
+        }
+    }
+}
+
 int main(void)
 {
     // --- append_str ---
@@ -109,6 +136,27 @@ int main(void)
         len = append_url_encoded(buf, sizeof(buf), len, " +4");
         assert(buf[len] == '\0');
         assert(strcmp(buf, "n=&lt;b&gt;%20%2B4") == 0);
+    }
+
+    // --- mail_changelog_url: released versions map to a X.Y.Z.md page ---
+    check_changelog("1.4.1", "1.4.1");         // bare release
+    check_changelog("1.4.0", "1.4.0");
+    check_changelog("10.20.30", "10.20.30");   // multi-digit groups
+    check_changelog("1.4.1-rc1", "1.4.1");     // pre-release suffix stripped
+    check_changelog("1.4.1-rc2.3", "1.4.1");   // dotted suffix still one page
+    // Rejected: dev / git-describe builds and malformed strings have no page.
+    check_changelog("1.3.4-5-gabcdef", NULL);  // second hyphen (git describe)
+    check_changelog("1.4", NULL);              // only two groups
+    check_changelog("1.4.x", NULL);            // non-numeric group
+    check_changelog("", NULL);
+    check_changelog("–", NULL);                // the UI's em-dash placeholder
+    check_changelog("1.4.1-", NULL);           // empty suffix after '-'
+    // Bounds: a buffer too small for the full URL must fail cleanly, not
+    // hand back a truncated (broken) link.
+    {
+        char small[32];
+        assert(!mail_changelog_url("1.4.1", small, sizeof(small)));
+        assert(small[0] == '\0');
     }
 
     printf("test_mail_html: all assertions passed\n");

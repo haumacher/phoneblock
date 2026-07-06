@@ -74,7 +74,11 @@ typedef struct {
 static void run_selftest(void)  { selftest_run(); }
 static void run_fw_update(void) { firmware_update_run(); }
 static void run_sync(void)      { sync_run(false); }   // scheduled: honour toggle
-static void run_mail(void)      { mail_daily_flush(); }
+// Send the one-shot firmware-update notice first (no-op unless an OTA just
+// completed this boot), then the daily error/spam evaluation. Both send over
+// the scheduler task's 16 KB stack. The mail job first fires
+// MAIL_FIRST_DELAY_S after boot, so the update notice goes out within minutes.
+static void run_mail(void)      { mail_report_update(); mail_daily_flush(); }
 static void run_blocklist(void) { blocklist_sync_run(); }
 
 // First mail evaluation 5 min after boot: long enough for Wi-Fi/DHCP to
