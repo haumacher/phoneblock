@@ -55,6 +55,7 @@ static const char *NS   = "phoneblock";
 #define K_SMTP_TO       "smtp_to"
 #define K_MAIL_ON_ERROR "mail_on_error"
 #define K_MAIL_ON_SPAM  "mail_on_spam"
+#define K_MAIL_ON_UPDATE "mail_on_update"
 #define K_DEVICE_ID     "device_id"
 #define K_TIMEZONE      "timezone"
 
@@ -126,6 +127,7 @@ typedef struct {
     char smtp_to[64];        // recipient of the status mails
     char mail_on_error[4];   // "1" = mail on ERROR/crash (default off)
     char mail_on_spam[4];    // "1" = mail when spam calls were caught (default off)
+    char mail_on_update[4];  // "0" = suppress firmware-update mail (default on)
     char last_failed_ota[32];   // semver, plus headroom for "-rcN" suffixes
     char timezone[64];       // POSIX TZ string (empty = use Kconfig default)
 } config_cache_t;
@@ -277,6 +279,7 @@ void config_load(void)
         s_config.smtp_to[0]       = '\0';
         s_config.mail_on_error[0] = '\0';
         s_config.mail_on_spam[0]  = '\0';
+        s_config.mail_on_update[0] = '\0';   // empty → default on (see getter)
         s_config.last_failed_ota[0] = '\0';
         copy_default(s_config.timezone, sizeof(s_config.timezone), CONFIG_DONGLE_DEFAULT_TZ);
         return;
@@ -360,6 +363,8 @@ void config_load(void)
              s_config.mail_on_error, sizeof(s_config.mail_on_error));
     load_str(h, K_MAIL_ON_SPAM, "",
              s_config.mail_on_spam, sizeof(s_config.mail_on_spam));
+    load_str(h, K_MAIL_ON_UPDATE, "",
+             s_config.mail_on_update, sizeof(s_config.mail_on_update));
     load_str(h, K_LAST_FAIL_OTA, "",
              s_config.last_failed_ota, sizeof(s_config.last_failed_ota));
     load_str(h, K_TIMEZONE, CONFIG_DONGLE_DEFAULT_TZ,
@@ -512,6 +517,13 @@ bool        config_mail_on_error(void)
 bool        config_mail_on_spam(void)
 {
     return s_config.mail_on_spam[0] == '1';
+}
+bool        config_mail_on_update(void)
+{
+    // Default on: a firmware update is low-volume and worth telling the
+    // owner about. Only an explicit "0" (box unticked and saved) suppresses
+    // it; an unset/empty value — an untouched device — counts as on.
+    return s_config.mail_on_update[0] != '0';
 }
 const char *config_last_failed_ota(void)     { return s_config.last_failed_ota; }
 
@@ -675,6 +687,8 @@ esp_err_t config_update(const config_update_t *u)
                                         s_config.mail_on_error, sizeof(s_config.mail_on_error));
     if (err == ESP_OK) err = set_str_if(h, K_MAIL_ON_SPAM, u->mail_on_spam,
                                         s_config.mail_on_spam, sizeof(s_config.mail_on_spam));
+    if (err == ESP_OK) err = set_str_if(h, K_MAIL_ON_UPDATE, u->mail_on_update,
+                                        s_config.mail_on_update, sizeof(s_config.mail_on_update));
     if (err == ESP_OK) err = set_str_if(h, K_TIMEZONE, u->timezone,
                                         s_config.timezone, sizeof(s_config.timezone));
 

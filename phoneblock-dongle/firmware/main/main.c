@@ -25,6 +25,7 @@
 #include "crashreport.h"
 #include "improv.h"
 #include "log_capture.h"
+#include "mail.h"
 #include "report_queue.h"
 #include "scheduler.h"
 #include "sip_register.h"
@@ -234,6 +235,14 @@ void app_main(void)
         ESP_LOGI(TAG, "marking running firmware (%s) valid — rollback cancelled",
                  running->label);
         esp_ota_mark_app_valid_cancel_rollback();
+        // PENDING_VERIFY is the first boot of a freshly OTA-flashed image —
+        // whether via CDN auto-update or a manual POST /api/firmware upload;
+        // a USB factory flash lands VALID and is skipped. This is the true
+        // "the firmware was just updated" signal, so latch a one-shot
+        // notification mail for the scheduler to send once Wi-Fi/SMTP are up
+        // (see mail_report_update).
+        const esp_app_desc_t *app = esp_app_get_description();
+        if (app != NULL) mail_note_update(app->version);
     }
 
     // Clear the auto-update guard if we successfully booted into the

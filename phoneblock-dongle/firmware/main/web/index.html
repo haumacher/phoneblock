@@ -256,6 +256,8 @@ const I18N = {
     'status.mail.on_error.help': 'Sendet einmal täglich eine E-Mail, wenn seit der letzten Meldung ein Fehler im Protokoll aufgetreten ist — dazu zählt auch ein Neustart nach einem Absturz.',
     'status.mail.on_spam': 'E-Mail bei abgefangenen SPAM-Anrufen',
     'status.mail.on_spam.help': 'Sendet einmal täglich eine E-Mail, wenn seit der letzten Meldung SPAM-Anrufe blockiert wurden.',
+    'status.mail.on_update': 'E-Mail bei Firmware-Aktualisierung',
+    'status.mail.on_update.help': 'Sendet eine E-Mail, nachdem sich der Dongle auf eine neue Firmware-Version aktualisiert hat — mit einem Link zum Änderungsprotokoll.',
     'status.mail.save': 'Speichern',
     'status.mail.saved': 'Gespeichert.',
     'status.mail.test': 'Test-E-Mail senden',
@@ -519,6 +521,8 @@ const I18N = {
     'status.mail.on_error.help': 'Sends one email a day when an error has appeared in the log since the last notification — this includes a reboot after a crash.',
     'status.mail.on_spam': 'Email on blocked spam calls',
     'status.mail.on_spam.help': 'Sends one email a day when spam calls have been blocked since the last notification.',
+    'status.mail.on_update': 'Email on firmware update',
+    'status.mail.on_update.help': 'Sends an email after the dongle has updated itself to a new firmware version — with a link to the changelog.',
     'status.mail.save': 'Save',
     'status.mail.saved': 'Saved.',
     'status.mail.test': 'Send test email',
@@ -1592,6 +1596,12 @@ function renderStatus(){
     + '    <input id="mailOnSpam" type="checkbox" style="width:auto;margin:0">'
     + '    <span>' + esc(t('status.mail.on_spam')) + '</span></label>'
     + '</p>'
+    + '<p style="margin-top:.4rem;font-size:.85rem">'
+    + '  <label title="' + esc(t('status.mail.on_update.help')) + '" '
+    +    'style="display:flex;align-items:center;gap:.4rem;font-weight:400;color:#444;margin:0">'
+    + '    <input id="mailOnUpdate" type="checkbox" style="width:auto;margin:0">'
+    + '    <span>' + esc(t('status.mail.on_update')) + '</span></label>'
+    + '</p>'
     + '<p style="margin-top:.6rem">'
     + '  <button id="mailSave" class="btn-primary" style="padding:.4rem .9rem;font-size:.9rem">'
     +   esc(t('status.mail.save')) + '</button>'
@@ -2657,6 +2667,7 @@ async function refreshAll(){
       $('mailPassKeep').textContent = mail.pass_set ? t('status.mail.pass.keep') : '';
       $('mailOnError').checked = !!mail.on_error;
       $('mailOnSpam').checked  = !!mail.on_spam;
+      $('mailOnUpdate').checked = !!mail.on_update;
       mailPrefilled = true;
     }
   }
@@ -2672,6 +2683,7 @@ async function refreshAll(){
       body.append('smtp_to',       $('mailTo').value.trim());
       body.append('mail_on_error', $('mailOnError').checked ? '1' : '0');
       body.append('mail_on_spam',  $('mailOnSpam').checked ? '1' : '0');
+      body.append('mail_on_update', $('mailOnUpdate').checked ? '1' : '0');
       // Only send the password when the user typed one; an absent field
       // tells the server to keep the stored value.
       const pw = $('mailPass').value;
