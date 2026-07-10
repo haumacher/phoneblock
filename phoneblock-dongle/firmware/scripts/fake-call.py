@@ -20,7 +20,11 @@ name trips is_known_contact() and the call skips the blocklist/API check
 """
 import socket, sys, time
 
-caller = sys.argv[1] if len(sys.argv) > 1 else "030330755602"
+if len(sys.argv) < 2 or sys.argv[1] in ("-h", "--help"):
+    print(__doc__)
+    sys.exit(0 if len(sys.argv) > 1 else 2)
+
+caller = sys.argv[1]
 host   = sys.argv[2] if len(sys.argv) > 2 else "answerbot"
 port   = int(sys.argv[3]) if len(sys.argv) > 3 else 15060
 
