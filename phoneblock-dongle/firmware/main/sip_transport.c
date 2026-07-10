@@ -35,11 +35,16 @@ typedef enum { TR_UDP, TR_TCP, TR_TLS } transport_kind_t;
 // sip_register task then never loops back to esp_task_wdt_reset() and the
 // task watchdog panics the device (field crash, 1.4.1 —
 // esp_tls_conn_write → mbedtls_net_send → lwip_write, IDLE1 reported but
-// sip_register named as the offender). SO_SNDTIMEO caps each syscall so a
-// stall surfaces as EAGAIN (raw TCP) / MBEDTLS_ERR_SSL_WANT_WRITE (TLS);
-// the overall deadline — well under CONFIG_ESP_TASK_WDT_TIMEOUT_S — then
-// makes tls_send_all fail-and-reconnect instead of spinning.
-#define SIP_STREAM_SEND_TIMEO_S     4
+// sip_register named as the offender).
+//
+// SIP_STREAM_SEND_SLICE_MS is set as SO_SNDTIMEO so each blocking write
+// returns at least that often (as EAGAIN on raw TCP / WANT_WRITE on TLS),
+// letting the loop reclaim control; SIP_STREAM_SEND_DEADLINE_MS is the
+// overall budget after which the send is treated as failed and the link is
+// reconnected. Both stay well under CONFIG_ESP_TASK_WDT_TIMEOUT_S (60 s),
+// so the deadline — not a WDT feed — is what bounds the send. The 2 s slice
+// mirrors SIP_REGISTER_RECV_SLICE_MS on the recv path.
+#define SIP_STREAM_SEND_SLICE_MS    2000
 #define SIP_STREAM_SEND_DEADLINE_MS 10000
 
 struct sip_transport {
@@ -80,12 +85,18 @@ static inline bool is_stream(transport_kind_t kind)
 
 // Bound how long a single send() on a stream socket may block, so a stalled
 // TCP window can't wedge the SIP task forever (see SIP_STREAM_SEND_* above).
-// Best-effort: a failure here only means we fall back to the old blocking
-// behaviour, so it's not worth failing the connect over.
+// A failure here only means we fall back to the old blocking behaviour, so
+// it's not worth failing the connect over — but WARN so it surfaces on the
+// web Protokoll panel if a build ever lacks SO_SNDTIMEO support.
 static void set_send_timeout(int fd)
 {
-    struct timeval tv = { .tv_sec = SIP_STREAM_SEND_TIMEO_S, .tv_usec = 0 };
-    setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv));
+    struct timeval tv = {
+        .tv_sec  = SIP_STREAM_SEND_SLICE_MS / 1000,
+        .tv_usec = (SIP_STREAM_SEND_SLICE_MS % 1000) * 1000,
+    };
+    if (setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv)) < 0) {
+        ESP_LOGW(TAG, "SO_SNDTIMEO: %s", strerror(errno));
+    }
 }
 
 // Copy a hostname into a fixed-size buffer, always NUL-terminated. A NULL
@@ -464,8 +475,24 @@ static int tcp_send_all(sip_transport_t *t, const void *buf, int len)
 
     const char *p = buf;
     int remaining = len;
+    int64_t deadline = esp_timer_get_time()
+                     + (int64_t)SIP_STREAM_SEND_DEADLINE_MS * 1000;
     while (remaining > 0) {
         int n = send(t->sock, p, remaining, 0);
+        if (n < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+            // The per-syscall SO_SNDTIMEO slice expired with a full send
+            // window. Retry within the overall budget so a brief stall
+            // doesn't needlessly tear down the registrar link; a
+            // persistently dead peer reconnects instead of hanging the SIP
+            // task into a watchdog panic. The blocking send paces the loop.
+            if (esp_timer_get_time() >= deadline) {
+                ESP_LOGW(TAG, "TCP send stalled >%d ms — reconnecting",
+                         SIP_STREAM_SEND_DEADLINE_MS);
+                tcp_reconnect(t);
+                return -1;
+            }
+            continue;
+        }
         if (n <= 0) {
             ESP_LOGW(TAG, "TCP send: %s", strerror(errno));
             tcp_reconnect(t);
