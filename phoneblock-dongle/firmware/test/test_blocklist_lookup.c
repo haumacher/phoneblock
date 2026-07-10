@@ -348,11 +348,52 @@ static void test_lookup_handles_null_inputs(void)
     blocklist_close(bl);
 }
 
+// blocklist_lookup_ex() must report whether the hit came from the exact
+// section or a prefix/wildcard entry — the dongle uses this to label a
+// blocklist hit "(Nummer)" vs "(Bereich)".
+static void test_wildcard_flag(void)
+{
+    uint64_t exact[] = {
+        make_record("4930111111", true),   // exact black number
+    };
+    uint64_t prefix[] = {
+        make_record("4930", true),          // black wildcard for the block
+    };
+    if (write_file(temp_path(), exact, 1, prefix, 1) != 0) {
+        fprintf(stderr, "write_file failed\n");
+        g_failures++;
+        return;
+    }
+    blocklist_t *bl = blocklist_open(temp_path());
+
+    bool wc = true;  // seed with the wrong value to prove it gets written
+    CHECK_VERDICT("exact hit verdict", BLOCKLIST_SPAM,
+                  blocklist_lookup_ex(bl, "4930111111", true, &wc));
+    CHECK_INT("exact hit → not wildcard", 0, (long)wc);
+
+    wc = false;
+    CHECK_VERDICT("wildcard hit verdict", BLOCKLIST_SPAM,
+                  blocklist_lookup_ex(bl, "4930222222", true, &wc));
+    CHECK_INT("prefix hit → wildcard", 1, (long)wc);
+
+    wc = true;
+    CHECK_VERDICT("miss verdict", BLOCKLIST_UNKNOWN,
+                  blocklist_lookup_ex(bl, "4920000000", true, &wc));
+    CHECK_INT("miss → wildcard cleared", 0, (long)wc);
+
+    // NULL out-pointer must be tolerated (blocklist_lookup() relies on it).
+    CHECK_VERDICT("null out-ptr tolerated", BLOCKLIST_SPAM,
+                  blocklist_lookup_ex(bl, "4930111111", true, NULL));
+
+    blocklist_close(bl);
+}
+
 int main(void)
 {
     test_key_encoding();
     test_exact_lookup();
     test_wildcards_and_longest_match();
+    test_wildcard_flag();
     test_consult_wildcards_flag();
     test_over_long_query();
     test_open_rejects_bad_magic();

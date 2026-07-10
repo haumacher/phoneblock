@@ -309,7 +309,15 @@ static esp_http_client_handle_t check_client(void)
 verdict_t phoneblock_check(const char *phone_number, pb_check_result_t *out,
                            api_phases_t *phases_opt)
 {
-    if (out) memset(out, 0, sizeof(*out));
+    if (out) {
+        memset(out, 0, sizeof(*out));
+        // Default to the error characterisation; any early return (mutex
+        // missing, transport/parse failure) then logs as "Fehler" rather
+        // than the memset-zero VERDICT_LEGITIMATE / PB_ASSESS_UNKNOWN. The
+        // success path below overwrites both.
+        out->verdict    = VERDICT_ERROR;
+        out->assessment = PB_ASSESS_ERROR;
+    }
     verdict_t verdict = VERDICT_ERROR;
     int phone_len = (int)strlen(phone_number);
 
@@ -439,33 +447,35 @@ verdict_t phoneblock_check(const char *phone_number, pb_check_result_t *out,
 
     if (out) {
         out->verdict = verdict;
-        out->white_listed = scan.white_listed;
-        out->black_listed = scan.black_listed;
+        out->wildcard = false;   // API hits are per exact number
         strncpy(out->label,    scan.label,    sizeof(out->label)    - 1);
         strncpy(out->location, scan.location, sizeof(out->location) - 1);
-        // For the count: keep showing the underlying community signal
-        // even when an override is in effect. Lets the UI render
-        // "Whitelist (sonst SPAM, 12 Stimmen)" / "Blacklist (0 Stimmen
-        // in Community)" without losing context.
+
+        // Surface both community tallies so the label can show
+        // "n direkt, m Range". direct is the exact-number vote count;
+        // range is the raw neighbourhood signal (strongest of the 10-/
+        // 100-block aggregations), independent of the aggregation-count
+        // gate that compute_wildcard_votes() applies for the decision.
+        out->direct_votes = scan.direct_votes;
+        out->range_votes  = scan.v10 > scan.v100 ? scan.v10 : scan.v100;
         int community = scan.direct_votes;
         if (scan.v10  > community) community = scan.v10;
         if (scan.v100 > community) community = scan.v100;
-        if (scan.white_listed || scan.black_listed) {
-            out->votes = community;
-            out->suspected = false;  // override is final, no soft state
+
+        // Personal override wins; then a positive community verdict; then
+        // a soft (below-threshold) signal; else nothing is known. Absence
+        // of a signal is "unbekannt", never "legitim" — only a whitelist
+        // entry earns the legitimate characterisation here.
+        if (scan.white_listed) {
+            out->assessment = PB_ASSESS_LEGITIMATE;
+        } else if (scan.black_listed) {
+            out->assessment = PB_ASSESS_BLACKLIST;
         } else if (verdict == VERDICT_SPAM) {
-            // Show whichever side actually cleared its threshold;
-            // direct dominates when both did (more specific signal).
-            out->votes = direct_hit ? scan.direct_votes : wildcard_votes;
-            out->suspected = false;
+            out->assessment = PB_ASSESS_SPAM;
         } else if (community > 0) {
-            // Some evidence exists but it didn't clear the relevant
-            // threshold (or range-blocking is off). SPAM-VERDACHT.
-            out->votes = community;
-            out->suspected = true;
+            out->assessment = PB_ASSESS_SUSPECT;
         } else {
-            out->votes = 0;
-            out->suspected = false;
+            out->assessment = PB_ASSESS_UNKNOWN;
         }
     }
 

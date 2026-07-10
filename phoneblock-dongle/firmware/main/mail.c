@@ -378,17 +378,42 @@ static void format_event_time(int64_t at_us, char *out, size_t cap)
     }
 }
 
-// Verdict label matching the web UI's wording (status.calls.verdict.*).
+// Verdict label matching the web UI's wording (status.calls.verdict.* in
+// index.html). Both surfaces render the same pb_assessment_t, so keep the
+// wording here and the i18n strings there in lock-step.
 static void verdict_label(const stats_call_t *c, char *out, size_t cap)
 {
-    if (c->white_listed)            snprintf(out, cap, "Whitelist");
-    else if (c->black_listed)       snprintf(out, cap, "Blacklist");
-    else if (c->verdict == VERDICT_SPAM)
-                                    snprintf(out, cap, "SPAM (%d Stimmen)", c->votes);
-    else if (c->suspected)          snprintf(out, cap, "SPAM-VERDACHT (%d Stimmen)", c->votes);
-    else if (c->verdict == VERDICT_ERROR)
-                                    snprintf(out, cap, "Fehler");
-    else                            snprintf(out, cap, "durchgestellt");
+    const char *scope = c->wildcard ? "Bereich" : "Nummer";
+    switch (c->assessment) {
+    case PB_ASSESS_BLACKLIST:
+        snprintf(out, cap, "SPAM (Blacklist, %s)", scope);
+        break;
+    case PB_ASSESS_SPAM_LIST:
+        snprintf(out, cap, "SPAM (Blockliste, %s)", scope);
+        break;
+    case PB_ASSESS_SPAM:
+        // Test-forced spam carries no counts (both 0) — show plain "SPAM".
+        if (c->direct_votes == 0 && c->range_votes == 0)
+            snprintf(out, cap, "SPAM");
+        else
+            snprintf(out, cap, "SPAM (%d direkt, %d Range)",
+                     c->direct_votes, c->range_votes);
+        break;
+    case PB_ASSESS_SUSPECT:
+        snprintf(out, cap, "SPAM-VERDACHT (%d direkt, %d Range)",
+                 c->direct_votes, c->range_votes);
+        break;
+    case PB_ASSESS_LEGITIMATE:
+        snprintf(out, cap, "legitim");
+        break;
+    case PB_ASSESS_ERROR:
+        snprintf(out, cap, "Fehler");
+        break;
+    case PB_ASSESS_UNKNOWN:
+    default:
+        snprintf(out, cap, "unbekannt");
+        break;
+    }
 }
 
 // Append the summary block (device id, uptime, call counters) as HTML.

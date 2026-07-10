@@ -69,6 +69,15 @@ void blocklist_close(blocklist_t *bl);
 blocklist_verdict_t blocklist_lookup(blocklist_t *bl, const char *digits,
                                      bool consult_wildcards);
 
+// As blocklist_lookup(), but also reports whether the hit came from the
+// prefix (wildcard/range) section rather than the exact section. On a hit,
+// `*matched_wildcard` is set to true for a range match and false for an
+// exact-number match; it is left false on a miss. Pass NULL when the
+// distinction is not needed (blocklist_lookup() is the thin wrapper).
+blocklist_verdict_t blocklist_lookup_ex(blocklist_t *bl, const char *digits,
+                                        bool consult_wildcards,
+                                        bool *matched_wildcard);
+
 // Diagnostics — total record count across both sections.
 int blocklist_size(const blocklist_t *bl);
 

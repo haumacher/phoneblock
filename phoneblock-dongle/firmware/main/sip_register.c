@@ -72,6 +72,22 @@ static const char *TAG = "sip";
 // value; the true minimum is unknown.
 #define SIP_DECLINE_DELAY_US          (3LL * 1000000LL)
 
+// After answering a spam caller with 200 OK we wait for the ACK before
+// streaming the tone. If that ACK is lost (UDP) or never arrives, the
+// single dialog slot must not stay wedged in DIALOG_ANSWERED forever —
+// give up after this long and BYE, freeing the slot for the next call.
+// 32 s ≈ RFC 3261 Timer H (64*T1); a real ACK arrives in milliseconds.
+#define SIP_ACK_TIMEOUT_US            (32LL * 1000000LL)
+
+// After we send a final teardown message we wait for the far side to
+// confirm it: the ACK to our 480 decline (DIALOG_REJECTED) or the 200 to
+// our BYE (DIALOG_BYE_SENT). If that confirmation is lost (UDP) and no new
+// call comes in to reclaim the slot, don't sit in the teardown state
+// forever — after this long, give up and return the dialog to IDLE so the
+// dongle is always back at rest on its own. 32 s ≈ RFC 3261 Timer F/H; a
+// real confirmation arrives in milliseconds on the LAN.
+#define SIP_TEARDOWN_TIMEOUT_US       (32LL * 1000000LL)
+
 // How much of an incoming INVITE we keep so the main loop can build the
 // delayed decline response (it echoes Via/From/To/Call-ID/CSeq, all near
 // the top — a truncated SDP tail is irrelevant).
@@ -1166,6 +1182,11 @@ static void send_bye(sip_ctx_t *c)
     sip_transport_send_to(c->transport, &d->peer, tx, tx_len);
     free(tx);
     d->state = DIALOG_BYE_SENT;
+    // Arm a teardown timeout: if the 200 to this BYE is lost, the main loop
+    // resets the dialog to IDLE instead of lingering in BYE_SENT. A received
+    // 200 (handle_incoming) supersedes this by memset-ing the dialog. The
+    // preempt path in handle_invite also wipes it when a new call arrives.
+    d->bye_at_us = esp_timer_get_time() + SIP_TEARDOWN_TIMEOUT_US;
 }
 
 // Extract the caller's number (user part of the From URI), normalize it
@@ -1253,23 +1274,38 @@ static verdict_t check_invite_caller(const char *req, int req_len)
     // number is genuinely in no list (in which case the API will also
     // refresh server-side LASTPING counters, so we keep that path live).
     pb_check_result_t result;
+    memset(&result, 0, sizeof(result));
     verdict_t v;
     const char *digits = (number[0] == '+') ? number + 1 : number;
     // Skip the local files entirely when the cache is disabled — every
     // call then resolves against the live server API.
+    bool wildcard = false, personal = false;
     blocklist_verdict_t local = config_blocklist_enabled()
-        ? blocklist_sync_check(digits, config_blocklist_wildcards())
+        ? blocklist_sync_check_ex(digits, config_blocklist_wildcards(),
+                                  &wildcard, &personal)
         : BLOCKLIST_UNKNOWN;
     if (local == BLOCKLIST_SPAM) {
-        memset(&result, 0, sizeof(result));
-        result.verdict = VERDICT_SPAM;
+        result.verdict  = VERDICT_SPAM;
+        result.wildcard = wildcard;
+        // A personal-list SPAM hit is the user's own blacklist; a
+        // community-list hit is generic blocklist spam. Neither carries
+        // per-number vote counts, so the label uses the (Nummer)/(Bereich)
+        // qualifier instead — this is what fixed the misleading
+        // "SPAM (0 Stimmen)" the local cache used to log.
+        result.assessment = personal ? PB_ASSESS_BLACKLIST : PB_ASSESS_SPAM_LIST;
         v = VERDICT_SPAM;
-        ESP_LOGI(TAG, "local blocklist → SPAM for %s", number);
+        ESP_LOGI(TAG, "local blocklist → SPAM (%s, %s) for %s",
+                 personal ? "personal" : "community",
+                 wildcard ? "wildcard" : "exact", number);
     } else if (local == BLOCKLIST_LEGIT) {
-        memset(&result, 0, sizeof(result));
-        result.verdict = VERDICT_LEGITIMATE;
+        result.verdict    = VERDICT_LEGITIMATE;
+        // On a whitelist (personal or the general community list) the
+        // number is genuinely legitimate — unlike an un-rated number,
+        // which phoneblock_check() leaves as PB_ASSESS_UNKNOWN.
+        result.assessment = PB_ASSESS_LEGITIMATE;
         v = VERDICT_LEGITIMATE;
-        ESP_LOGI(TAG, "local blocklist → LEGIT for %s", number);
+        ESP_LOGI(TAG, "local blocklist → LEGIT (%s) for %s",
+                 personal ? "personal" : "community", number);
     } else {
         v = phoneblock_check(number, &result, NULL);
     }
@@ -1343,44 +1379,35 @@ static void handle_invite(sip_ctx_t *c, const char *req, int req_len,
         return;
     }
 
-    // Second call arriving while we're busy with another. The new caller may
-    // be a spammer we must take right away, so the two long-lived states are
-    // preempted; the rest clear within ~a second.
+    // A new INVITE (different Call-ID — the retransmit case returned above)
+    // always wins: the dongle screens the newest call, so no incoming call is
+    // silently ignored because an earlier dialog got stuck. Tear the old slot
+    // down and fall through to handle the new caller.
+    //
+    // Only an already-answered dialog (2xx sent) needs a BYE to close it
+    // properly; STREAMING additionally aborts the tone. Every other state is
+    // either unestablished/deciding (TRYING), kept deliberately ringing
+    // (PROCEEDING, #380), already declined (REJECTED, awaiting an ACK that may
+    // never come), or already being torn down (BYE_SENT, awaiting a 200 that
+    // may be lost) — nothing to send, just reclaim the slot. Any straggler
+    // ACK/200/BYE for the old Call-ID Call-ID-mismatches in handle_incoming
+    // and is discarded.
+    //
+    // We deliberately do NOT reply 486 Busy Here for the old call: a "busy"
+    // from us makes the Fritz!Box drop the Fritz!Fon app for that call (#380).
+    // Leaving the old branch without a final response keeps the real phones
+    // ringing; the box CANCELs it when that call ends (handle_cancel still
+    // 200-OKs the CANCEL).
     if (d->state != DIALOG_IDLE) {
         if (d->state == DIALOG_STREAMING) {
-            // Playing a tone at an already-classified spammer — abort it and
-            // BYE so the new caller isn't held off 5–15 s.
-            ESP_LOGI(TAG, "second INVITE during STREAMING → preempt: "
-                          "abort announcement, BYE old dialog, take new call");
             rtp_request_abort();
             send_bye(c);
-            // BYE is fire-and-forget UDP. Any straggler 200/ACK/BYE for the
-            // old Call-ID will Call-ID-mismatch in handle_incoming and be
-            // discarded — wipe and fall through to the IDLE path.
-            memset(d, 0, sizeof(*d));
-        } else if (d->state == DIALOG_PROCEEDING) {
-            // We already decided the first call is legitimate and are only
-            // holding its 180 to keep the Fritz!Box ringing the real phones
-            // (#380). The dongle isn't needed for that — so don't waste the
-            // slot: leave the first branch ringing (no final response, so its
-            // app keeps ringing) and take the slot to spam-check the new
-            // caller now. When the first call ends, the box CANCELs its branch;
-            // handle_cancel still 200-OKs that (it echoes the CANCEL's own
-            // To-tag), we just no longer send its 480.
-            ESP_LOGI(TAG, "second INVITE during PROCEEDING → leave first call "
-                          "ringing, handle new (possibly spam) caller");
-            memset(d, 0, sizeof(*d));
-        } else {
-            // TRYING/ANSWERED/REJECTED/BYE_SENT all clear within ~a second.
-            // Reply 180 Ringing (not 486 Busy Here: a "busy" from us would make
-            // the box drop the Fritz!Fon app for this call too, #380). We don't
-            // track it — the real phones ring it and the box cancels our branch.
-            ESP_LOGW(TAG, "second INVITE in state %d → 180 Ringing (untracked)",
-                     d->state);
-            send_response(c, from, req, req_len, 180, "Ringing",
-                          NULL, NULL);
-            return;
+        } else if (d->state == DIALOG_ANSWERED) {
+            send_bye(c);
         }
+        ESP_LOGI(TAG, "second INVITE during state %d → preempt, screen new caller",
+                 d->state);
+        memset(d, 0, sizeof(*d));
     }
 
     capture_dialog(c, req, req_len, from);
@@ -1408,7 +1435,11 @@ static void handle_invite(sip_ctx_t *c, const char *req, int req_len,
         build_sdp_body(advertised_host(c), d, sdp, sizeof(sdp));
         send_response(c, from, req, req_len, 200, "OK", d->our_tag, sdp);
         d->state = DIALOG_ANSWERED;
-        d->bye_at_us = 0;   // not a decline-delay; BYE deadline is set after ACK
+        // Arm an ACK-timeout safety net (SIP_ACK_TIMEOUT_US): a received ACK
+        // (handle_ack) supersedes it by moving to STREAMING and setting the
+        // real post-tone BYE deadline; if no ACK ever arrives the main loop
+        // BYEs and frees the slot instead of wedging it forever.
+        d->bye_at_us = esp_timer_get_time() + SIP_ACK_TIMEOUT_US;
         ESP_LOGI(TAG, "SPAM → 200 OK sent, waiting for ACK to hang up");
     } else {
         // VERDICT_LEGITIMATE or VERDICT_ERROR → don't take the call, but don't
@@ -1960,6 +1991,12 @@ static void sip_task(void *arg)
                 if (ctx.dialog.state == DIALOG_STREAMING) {
                     ESP_LOGI(TAG, "tone finished → sending BYE");
                     send_bye(&ctx);
+                } else if (ctx.dialog.state == DIALOG_ANSWERED) {
+                    // ACK for our 200 OK never arrived (SIP_ACK_TIMEOUT_US) —
+                    // don't wedge the single dialog slot; BYE and free it so
+                    // the next call can be screened.
+                    ESP_LOGW(TAG, "ACK timeout in ANSWERED → BYE, freeing dialog");
+                    send_bye(&ctx);
                 } else if (ctx.dialog.state == DIALOG_PROCEEDING) {
                     // #380: the other phones have had SIP_DECLINE_DELAY_US to
                     // start ringing; now decline with 480 (built from the
@@ -1970,6 +2007,17 @@ static void sip_task(void *arg)
                                   480, "Temporarily Unavailable",
                                   ctx.dialog.our_tag, NULL);
                     ctx.dialog.state = DIALOG_REJECTED;
+                    // Wait for the ACK to our 480, but not forever (see
+                    // SIP_TEARDOWN_TIMEOUT_US) — reset to IDLE if it's lost.
+                    ctx.dialog.bye_at_us = now + SIP_TEARDOWN_TIMEOUT_US;
+                } else if (ctx.dialog.state == DIALOG_REJECTED) {
+                    // ACK to our 480 never arrived — return to rest.
+                    ESP_LOGI(TAG, "ACK timeout after 480 → dialog reset to idle");
+                    memset(&ctx.dialog, 0, sizeof(ctx.dialog));
+                } else if (ctx.dialog.state == DIALOG_BYE_SENT) {
+                    // 200 to our BYE never arrived — return to rest.
+                    ESP_LOGI(TAG, "200 timeout after BYE → dialog reset to idle");
+                    memset(&ctx.dialog, 0, sizeof(ctx.dialog));
                 }
                 continue;
             }
