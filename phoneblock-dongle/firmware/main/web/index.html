@@ -273,6 +273,7 @@ const I18N = {
     'status.mail.err.pass': 'Passwort fehlt',
     'status.mail.err.to': 'Empfänger ungültig',
     'status.mail.err.from': 'Absender ungültig',
+    'status.mail.err.from_user': 'Absender nötig — der Benutzername ist keine E-Mail-Adresse',
     'status.sync.title': 'Sperrlisten-Sync',
     'status.sync.intro': 'Am Mobilteil gesperrte Nummern („Nummer sperren") werden einmal pro Tag zur PhoneBlock-Datenbank übertragen und danach aus der Fritz!Box entfernt. Der Answerbot fängt die Anrufer dann für alle PhoneBlock-Nutzer ab.',
     'status.sync.unavailable': 'Nicht verfügbar — nur mit Fritz!Box-Einrichtung nutzbar.',
@@ -556,6 +557,7 @@ const I18N = {
     'status.mail.err.pass': 'Password missing',
     'status.mail.err.to': 'Recipient invalid',
     'status.mail.err.from': 'Sender invalid',
+    'status.mail.err.from_user': 'Sender required — the user name is not an email address',
     'status.sync.title': 'Blocklist sync',
     'status.sync.intro': 'Numbers blocked at the handset ("Block number") are uploaded to the PhoneBlock database once a day and then removed from the Fritz!Box. The answer bot afterwards catches those callers for every PhoneBlock user.',
     'status.sync.unavailable': 'Unavailable — requires a Fritz!Box setup.',
@@ -819,6 +821,7 @@ const I18N = {
     'status.mail.err.pass': 'Mot de passe manquant',
     'status.mail.err.to': 'Destinataire invalide',
     'status.mail.err.from': 'Expéditeur invalide',
+    'status.mail.err.from_user': 'Expéditeur requis — le nom d’utilisateur n’est pas une adresse e-mail',
     'status.sync.title': 'Synchro liste de blocage',
     'status.sync.intro': 'Les numéros bloqués depuis le combiné (« Bloquer le numéro ») sont envoyés à la base PhoneBlock une fois par jour, puis retirés de la Fritz!Box. Le bot répondeur intercepte ensuite ces appelants pour tous les utilisateurs PhoneBlock.',
     'status.sync.unavailable': 'Indisponible — nécessite une configuration Fritz!Box.',
@@ -1082,6 +1085,7 @@ const I18N = {
     'status.mail.err.pass': 'Falta la contraseña',
     'status.mail.err.to': 'Destinatario no válido',
     'status.mail.err.from': 'Remitente no válido',
+    'status.mail.err.from_user': 'Se requiere remitente — el usuario no es una dirección de correo',
     'status.sync.title': 'Sincronización de lista de bloqueo',
     'status.sync.intro': 'Los números bloqueados desde el terminal («Bloquear número») se envían a la base de PhoneBlock una vez al día y luego se eliminan de la Fritz!Box. El bot luego intercepta esas llamadas para todos los usuarios de PhoneBlock.',
     'status.sync.unavailable': 'No disponible — requiere configuración Fritz!Box.',
@@ -2935,9 +2939,16 @@ async function refreshAll(){
         return bad('mailPass', 'status.mail.err.pass');
       if (!EMAIL_RE.test($('mailTo').value.trim()))
         return bad('mailTo', 'status.mail.err.to');
+      // The effective sender is the Absender field, or the SMTP user name
+      // when it is left blank (see config_smtp_from()). Either way it becomes
+      // the MAIL FROM address, which the server rejects unless it is itself a
+      // valid email — so validate whichever one applies. A blank Absender
+      // atop a non-email user name is the case that fails silently (#466);
+      // point the user at the Absender field to supply a real address.
       const from = $('mailFrom').value.trim();
-      if (from && !EMAIL_RE.test(from))
-        return bad('mailFrom', 'status.mail.err.from');
+      const sender = from || $('mailUser').value.trim();
+      if (!EMAIL_RE.test(sender))
+        return bad('mailFrom', from ? 'status.mail.err.from' : 'status.mail.err.from_user');
       return '';
     };
     mailSave.onclick = async () => {
