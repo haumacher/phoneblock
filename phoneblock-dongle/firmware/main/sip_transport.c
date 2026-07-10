@@ -9,6 +9,7 @@
 #include "esp_netif.h"
 #include "esp_tls.h"
 #include "esp_crt_bundle.h"
+#include "esp_timer.h"
 
 #include "lwip/netdb.h"
 
@@ -27,6 +28,19 @@ typedef enum { TR_UDP, TR_TCP, TR_TLS } transport_kind_t;
 // complete in <2 s; 10 s gives us headroom for slower paths without
 // blocking the SIP task long enough to feel like a hang.
 #define SIP_TLS_HANDSHAKE_TIMEOUT_MS 10000
+
+// Send bounds for the stream transports (TCP/TLS). Without them a send on a
+// half-dead link (the TCP window fills, the peer never ACKs) blocks in
+// lwip_write → sys_arch_sem_wait(timeout=0) *forever*: the WDT-subscribed
+// sip_register task then never loops back to esp_task_wdt_reset() and the
+// task watchdog panics the device (field crash, 1.4.1 —
+// esp_tls_conn_write → mbedtls_net_send → lwip_write, IDLE1 reported but
+// sip_register named as the offender). SO_SNDTIMEO caps each syscall so a
+// stall surfaces as EAGAIN (raw TCP) / MBEDTLS_ERR_SSL_WANT_WRITE (TLS);
+// the overall deadline — well under CONFIG_ESP_TASK_WDT_TIMEOUT_S — then
+// makes tls_send_all fail-and-reconnect instead of spinning.
+#define SIP_STREAM_SEND_TIMEO_S     4
+#define SIP_STREAM_SEND_DEADLINE_MS 10000
 
 struct sip_transport {
     transport_kind_t kind;
@@ -62,6 +76,16 @@ static void tls_drop(sip_transport_t *t);
 static inline bool is_stream(transport_kind_t kind)
 {
     return kind == TR_TCP || kind == TR_TLS;
+}
+
+// Bound how long a single send() on a stream socket may block, so a stalled
+// TCP window can't wedge the SIP task forever (see SIP_STREAM_SEND_* above).
+// Best-effort: a failure here only means we fall back to the old blocking
+// behaviour, so it's not worth failing the connect over.
+static void set_send_timeout(int fd)
+{
+    struct timeval tv = { .tv_sec = SIP_STREAM_SEND_TIMEO_S, .tv_usec = 0 };
+    setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv));
 }
 
 // Copy a hostname into a fixed-size buffer, always NUL-terminated. A NULL
@@ -214,6 +238,8 @@ static bool tcp_connect(sip_transport_t *t)
         return false;
     }
 
+    set_send_timeout(sock);
+
     struct sockaddr_in actual = {0};
     socklen_t alen = sizeof(actual);
     if (getsockname(sock, (struct sockaddr *)&actual, &alen) == 0) {
@@ -293,9 +319,11 @@ static bool tls_connect(sip_transport_t *t)
     }
 
     // Read back the kernel-assigned local port from the underlying fd
-    // so Via/Contact stay consistent with what the registrar sees.
+    // so Via/Contact stay consistent with what the registrar sees — and
+    // bound send() on that same fd so a stalled TLS write can't hang us.
     int fd = -1;
     if (esp_tls_get_conn_sockfd(tls, &fd) == ESP_OK && fd >= 0) {
+        set_send_timeout(fd);
         struct sockaddr_in actual = {0};
         socklen_t alen = sizeof(actual);
         if (getsockname(fd, (struct sockaddr *)&actual, &alen) == 0) {
@@ -455,11 +483,26 @@ static int tls_send_all(sip_transport_t *t, const void *buf, int len)
 
     const char *p = buf;
     int remaining = len;
+    int64_t deadline = esp_timer_get_time()
+                     + (int64_t)SIP_STREAM_SEND_DEADLINE_MS * 1000;
     while (remaining > 0) {
         ssize_t n = esp_tls_conn_write(t->tls, p, (size_t)remaining);
         if (n == ESP_TLS_ERR_SSL_WANT_READ || n == ESP_TLS_ERR_SSL_WANT_WRITE) {
-            // Synchronous mode shouldn't really return WANT_*, but if a
-            // renegotiation pulls us here, just retry once after a tick.
+            // The per-syscall SO_SNDTIMEO fired (a stalled TCP window on a
+            // half-dead link) or a renegotiation wants the other direction.
+            // Retry until the overall deadline, then fail-and-reconnect.
+            // We deliberately do NOT feed the task watchdog here: the
+            // deadline is well under CONFIG_ESP_TASK_WDT_TIMEOUT_S, so it
+            // bounds this loop on its own — and if that ever stops holding,
+            // the watchdog must still fire and produce a crash dump pointing
+            // here, rather than us silently masking the hang. The blocking
+            // send paces the loop, so it can't hot-spin.
+            if (esp_timer_get_time() > deadline) {
+                ESP_LOGW(TAG, "TLS write stalled >%d ms — reconnecting",
+                         SIP_STREAM_SEND_DEADLINE_MS);
+                tls_reconnect(t);
+                return -1;
+            }
             continue;
         }
         if (n <= 0) {
