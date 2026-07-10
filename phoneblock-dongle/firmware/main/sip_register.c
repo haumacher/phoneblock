@@ -79,6 +79,15 @@ static const char *TAG = "sip";
 // 32 s ≈ RFC 3261 Timer H (64*T1); a real ACK arrives in milliseconds.
 #define SIP_ACK_TIMEOUT_US            (32LL * 1000000LL)
 
+// After we send a final teardown message we wait for the far side to
+// confirm it: the ACK to our 480 decline (DIALOG_REJECTED) or the 200 to
+// our BYE (DIALOG_BYE_SENT). If that confirmation is lost (UDP) and no new
+// call comes in to reclaim the slot, don't sit in the teardown state
+// forever — after this long, give up and return the dialog to IDLE so the
+// dongle is always back at rest on its own. 32 s ≈ RFC 3261 Timer F/H; a
+// real confirmation arrives in milliseconds on the LAN.
+#define SIP_TEARDOWN_TIMEOUT_US       (32LL * 1000000LL)
+
 // How much of an incoming INVITE we keep so the main loop can build the
 // delayed decline response (it echoes Via/From/To/Call-ID/CSeq, all near
 // the top — a truncated SDP tail is irrelevant).
@@ -1173,6 +1182,11 @@ static void send_bye(sip_ctx_t *c)
     sip_transport_send_to(c->transport, &d->peer, tx, tx_len);
     free(tx);
     d->state = DIALOG_BYE_SENT;
+    // Arm a teardown timeout: if the 200 to this BYE is lost, the main loop
+    // resets the dialog to IDLE instead of lingering in BYE_SENT. A received
+    // 200 (handle_incoming) supersedes this by memset-ing the dialog. The
+    // preempt path in handle_invite also wipes it when a new call arrives.
+    d->bye_at_us = esp_timer_get_time() + SIP_TEARDOWN_TIMEOUT_US;
 }
 
 // Extract the caller's number (user part of the From URI), normalize it
@@ -1993,6 +2007,17 @@ static void sip_task(void *arg)
                                   480, "Temporarily Unavailable",
                                   ctx.dialog.our_tag, NULL);
                     ctx.dialog.state = DIALOG_REJECTED;
+                    // Wait for the ACK to our 480, but not forever (see
+                    // SIP_TEARDOWN_TIMEOUT_US) — reset to IDLE if it's lost.
+                    ctx.dialog.bye_at_us = now + SIP_TEARDOWN_TIMEOUT_US;
+                } else if (ctx.dialog.state == DIALOG_REJECTED) {
+                    // ACK to our 480 never arrived — return to rest.
+                    ESP_LOGI(TAG, "ACK timeout after 480 → dialog reset to idle");
+                    memset(&ctx.dialog, 0, sizeof(ctx.dialog));
+                } else if (ctx.dialog.state == DIALOG_BYE_SENT) {
+                    // 200 to our BYE never arrived — return to rest.
+                    ESP_LOGI(TAG, "200 timeout after BYE → dialog reset to idle");
+                    memset(&ctx.dialog, 0, sizeof(ctx.dialog));
                 }
                 continue;
             }
