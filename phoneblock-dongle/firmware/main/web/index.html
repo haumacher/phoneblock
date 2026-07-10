@@ -50,6 +50,7 @@
   .v-SPAM{color:#d93025;font-weight:600}
   .v-LEGITIMATE{color:#188038}
   .v-SUSPECT{color:#e8710a;font-weight:500}
+  .v-UNKNOWN{color:#888}
   .v-ERROR{color:#e8710a}
   .muted{color:#888;font-size:.85rem}
   .error-row{border-left:3px solid #f44336;padding:.2rem .5rem;margin-bottom:.35rem;
@@ -157,10 +158,16 @@ const I18N = {
     'status.calls.clear': 'Liste leeren',
     'status.calls.log_known': 'Bekannte Anrufer protokollieren',
     'status.calls.log_known.help': 'Wenn deaktiviert, erscheinen Anrufe von Nummern aus dem Telefonbuch und interne Codes (**, *…) nicht in der Liste — die Zähler oben werden trotzdem aktualisiert.',
-    'status.calls.verdict.spam': 'SPAM ({votes} Stimmen)',
-    'status.calls.verdict.suspect': 'SPAM-VERDACHT ({votes} Stimmen)',
-    'status.calls.verdict.whitelist': 'Whitelist',
-    'status.calls.verdict.blacklist': 'Blacklist',
+    'status.calls.verdict.spam': 'SPAM ({direct} direkt, {range} Range)',
+    'status.calls.verdict.spam_plain': 'SPAM',
+    'status.calls.verdict.spam_list': 'SPAM (Blockliste, {scope})',
+    'status.calls.verdict.suspect': 'SPAM-VERDACHT ({direct} direkt, {range} Range)',
+    'status.calls.verdict.blacklist': 'Blacklist ({scope})',
+    'status.calls.verdict.legitimate': 'legitim',
+    'status.calls.verdict.unknown': 'unbekannt',
+    'status.calls.verdict.error': 'Fehler',
+    'status.calls.verdict.scope.number': 'Nummer',
+    'status.calls.verdict.scope.range': 'Bereich',
     'status.thresholds.title': 'Block-Schwellen',
     'status.thresholds.intro': 'Ab wie vielen PhoneBlock-Stimmen der Dongle einen Anruf wegnimmt. Direkt-Stimmen wiegen schwerer als Range-Stimmen, deshalb getrennte Werte.',
     'status.thresholds.direct': 'Direkt-Stimmen',
@@ -441,10 +448,16 @@ const I18N = {
     'status.calls.clear': 'Clear list',
     'status.calls.log_known': 'Log known callers',
     'status.calls.log_known.help': 'When off, calls from numbers in the address book and internal codes (**, *…) are not added to the list — counters above still update.',
-    'status.calls.verdict.spam': 'SPAM ({votes} votes)',
-    'status.calls.verdict.suspect': 'SPAM-SUSPECT ({votes} votes)',
-    'status.calls.verdict.whitelist': 'Whitelist',
-    'status.calls.verdict.blacklist': 'Blacklist',
+    'status.calls.verdict.spam': 'SPAM ({direct} direct, {range} range)',
+    'status.calls.verdict.spam_plain': 'SPAM',
+    'status.calls.verdict.spam_list': 'SPAM (blocklist, {scope})',
+    'status.calls.verdict.suspect': 'SPAM-SUSPECT ({direct} direct, {range} range)',
+    'status.calls.verdict.blacklist': 'Blacklist ({scope})',
+    'status.calls.verdict.legitimate': 'legitimate',
+    'status.calls.verdict.unknown': 'unknown',
+    'status.calls.verdict.error': 'Error',
+    'status.calls.verdict.scope.number': 'number',
+    'status.calls.verdict.scope.range': 'range',
     'status.thresholds.title': 'Block thresholds',
     'status.thresholds.intro': 'How many PhoneBlock votes the dongle requires before it traps a call. Direct votes weigh more than range votes, so each side has its own threshold.',
     'status.thresholds.direct': 'Direct votes',
@@ -2434,23 +2447,38 @@ async function refreshAll(){
     if (isKnownContact(display))       return esc(num);
     return linkToNumber(num, esc(num));
   };
-  // Verdict label rules (per user spec):
-  //   verdict=SPAM           → "SPAM (n Votes)"
-  //   verdict=LEGITIMATE,
-  //     suspected=true       → "SPAM-VERDACHT (n Votes)"
-  //     suspected=false      → "LEGITIMATE"  (or empty for non-checked)
-  //   verdict=ERROR          → "ERROR"
-  // The phone-book / non-dialable entries never went through the
-  // API check (label is empty) — keep their verdict as-is.
+  // Log characterisation → label. Mirrors verdict_label() in mail.c so
+  // both surfaces read identically. `c.assessment` is the wire name from
+  // web.c (assessment_string); the (Nummer)/(Bereich) qualifier comes from
+  // `c.wildcard`, the direct/range counts from the community signal.
   const verdictLabel = (c) => {
-    // User-personal overrides win over the community signal — display
-    // them distinctively so it's obvious which evidence drove the
-    // verdict.
-    if (c.whitelisted)        return t('status.calls.verdict.whitelist');
-    if (c.blacklisted)        return t('status.calls.verdict.blacklist');
-    if (c.verdict === 'SPAM') return t('status.calls.verdict.spam', {votes: c.votes});
-    if (c.suspected)          return t('status.calls.verdict.suspect', {votes: c.votes});
-    return c.verdict;
+    const scope = t(c.wildcard ? 'status.calls.verdict.scope.range'
+                               : 'status.calls.verdict.scope.number');
+    switch (c.assessment) {
+      case 'blacklist': return t('status.calls.verdict.blacklist', {scope});
+      case 'spam_list': return t('status.calls.verdict.spam_list', {scope});
+      case 'spam':
+        // Test-forced spam carries no counts — show plain "SPAM".
+        return (c.direct_votes || c.range_votes)
+          ? t('status.calls.verdict.spam', {direct: c.direct_votes, range: c.range_votes})
+          : t('status.calls.verdict.spam_plain');
+      case 'suspect':
+        return t('status.calls.verdict.suspect', {direct: c.direct_votes, range: c.range_votes});
+      case 'legitimate': return t('status.calls.verdict.legitimate');
+      case 'error':      return t('status.calls.verdict.error');
+      default:           return t('status.calls.verdict.unknown');
+    }
+  };
+  // Colour class per assessment: spam/blacklist red, suspect orange,
+  // legitimate green, unknown grey, error orange.
+  const verdictClass = (a) => {
+    switch (a) {
+      case 'spam': case 'spam_list': case 'blacklist': return 'SPAM';
+      case 'suspect':    return 'SUSPECT';
+      case 'legitimate': return 'LEGITIMATE';
+      case 'error':      return 'ERROR';
+      default:           return 'UNKNOWN';
+    }
   };
   const hasCalls = calls && calls.calls.length;
   if (hasCalls){
@@ -2466,13 +2494,10 @@ async function refreshAll(){
       const nameCol = apiChecked
         ? esc(c.location)
         : esc(c.display);
-      // SPAM-VERDACHT keeps c.verdict=LEGITIMATE (dongle let the call
-      // through), but green is the wrong colour for "soft signal,
-      // user should look at this". Promote it to a separate v-SUSPECT
-      // (orange) class. Whitelist/blacklist follow their underlying
-      // verdict colour (green / red), which already matches the
-      // outcome the user gets.
-      const verdictCls = c.suspected ? 'SUSPECT' : c.verdict;
+      // Colour follows the assessment: SPAM-VERDACHT gets its own orange
+      // v-SUSPECT (green would wrongly imply "fine"), an un-rated number
+      // gets neutral v-UNKNOWN, and spam/blacklist share red.
+      const verdictCls = verdictClass(c.assessment);
       return '<tr><td>' + esc(fmtClock(c.age_s, false)) + '</td>'
         + '<td>' + numCol + '</td>'
         + '<td>' + nameCol + '</td>'

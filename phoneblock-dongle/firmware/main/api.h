@@ -49,40 +49,44 @@ typedef struct {
 // `label` and `location` are non-empty only if the queried number had
 // an active row in the NUMBERS table. Archived rows are filtered out
 // by the server (`AND s.ACTIVE`) and produce empty strings here.
+
+// How the dongle characterises a call for the user's log, independent of
+// the action-driving verdict_t. Both display surfaces — the web UI
+// (verdictLabel in index.html) and the e-mail report (verdict_label in
+// mail.c) — render this same enum, so the wording stays identical across
+// both. Absence of any negative signal is deliberately *not* "legitimate":
+// only a phone-book match or a whitelist entry earns PB_ASSESS_LEGITIMATE;
+// a number the community simply hasn't rated is PB_ASSESS_UNKNOWN.
+typedef enum {
+    PB_ASSESS_UNKNOWN = 0,   // checked against the community, no signal → "unbekannt"
+    PB_ASSESS_LEGITIMATE,    // phone book or whitelist (personal/community) → "legitim"
+    PB_ASSESS_SUSPECT,       // votes present but below threshold → "SPAM-VERDACHT (…)"
+    PB_ASSESS_SPAM,          // community spam from the live API → "SPAM (n direkt, m Range)"
+    PB_ASSESS_SPAM_LIST,     // community spam from the local cache → "SPAM (Blockliste, …)"
+    PB_ASSESS_BLACKLIST,     // personal blacklist override → "Blacklist (…)"
+    PB_ASSESS_ERROR,         // lookup failed → "Fehler"
+} pb_assessment_t;
+
+// `assessment` drives the log label (see pb_assessment_t). It is derived
+// from the community signal plus any personal override / list source.
 //
-// `votes` is the count to surface in the UI:
-//   - direct + effective wildcard votes when verdict == SPAM
-//   - max(raw range10, raw range100) when verdict == LEGITIMATE but
-//     `suspected` is set (votes exist in the bucket aggregations but
-//     didn't pass the cnt threshold to count as SPAM)
-//   - 0 otherwise
+// `direct_votes` / `range_votes` are the community tallies against the
+// number, surfaced for the SPAM and SPAM-VERDACHT labels: direct votes
+// cast against the exact number, and the raw neighbourhood (10-/100-block)
+// signal respectively. Both are 0 for list-cache hits, which carry no
+// per-number counts (the binary blocklist stores only a black/white bit).
 //
-// `suspected` is true exactly when verdict == LEGITIMATE and any range
-// votes were present in the response — i.e. there is a soft signal
-// that the number is in a SPAM neighborhood without enough evidence
-// to block.
-//
-// `white_listed` / `black_listed` reflect the per-user BLOCKLIST entry
-// the server attaches to a matching numbers[] row, when the API
-// request was authenticated with a token belonging to a user who has
-// personalized this number. They are *hard* overrides:
-//
-//   white_listed → verdict = LEGITIMATE  (regardless of votes)
-//   black_listed → verdict = SPAM        (regardless of votes)
-//   white_listed wins over black_listed if both are somehow set.
-//
-// When an override is in effect, `votes` reflects the underlying
-// community signal (so the UI can still show "you whitelisted this
-// despite N reports"), but `suspected` is forced to false — the
-// override is final, the soft-signal label would just confuse.
+// `wildcard` is true when a local-cache hit matched a range/prefix entry
+// rather than the exact number — it selects the "(Bereich)" vs "(Nummer)"
+// qualifier on the Blacklist / SPAM-(Blockliste) labels.
 typedef struct {
-    verdict_t verdict;
-    int       votes;
-    bool      suspected;
-    bool      white_listed;
-    bool      black_listed;
-    char      label[32];
-    char      location[80];
+    verdict_t       verdict;        // action-driving decision (ring vs. take call)
+    pb_assessment_t assessment;     // how to characterise it in the call log
+    int             direct_votes;   // direct community votes against the number
+    int             range_votes;    // raw neighbourhood (range) votes
+    bool            wildcard;        // local-cache hit was a range/prefix, not exact
+    char            label[32];
+    char            location[80];
 } pb_check_result_t;
 
 // Initialise the API layer. Must be called exactly once from app_main,

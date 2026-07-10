@@ -406,21 +406,38 @@ bool blocklist_sync_trigger_now(void)
 blocklist_verdict_t blocklist_sync_check(const char *digits,
                                          bool consult_wildcards)
 {
+    return blocklist_sync_check_ex(digits, consult_wildcards, NULL, NULL);
+}
+
+blocklist_verdict_t blocklist_sync_check_ex(const char *digits,
+                                            bool consult_wildcards,
+                                            bool *wildcard_out,
+                                            bool *personal_out)
+{
+    if (wildcard_out) *wildcard_out = false;
+    if (personal_out) *personal_out = false;
+
     blocklist_verdict_t v = BLOCKLIST_UNKNOWN;
+    bool wildcard = false;
 
     blocklist_t *personal = blocklist_open(BLOCKLIST_PERSONAL_PATH);
     if (personal != NULL) {
-        v = blocklist_lookup(personal, digits, consult_wildcards);
+        v = blocklist_lookup_ex(personal, digits, consult_wildcards, &wildcard);
         blocklist_close(personal);
     }
     if (v != BLOCKLIST_UNKNOWN) {
+        if (wildcard_out) *wildcard_out = wildcard;
+        if (personal_out) *personal_out = true;
         return v;
     }
 
     blocklist_t *community = blocklist_open(BLOCKLIST_COMMUNITY_PATH);
     if (community != NULL) {
-        v = blocklist_lookup(community, digits, consult_wildcards);
+        v = blocklist_lookup_ex(community, digits, consult_wildcards, &wildcard);
         blocklist_close(community);
+    }
+    if (v != BLOCKLIST_UNKNOWN && wildcard_out) {
+        *wildcard_out = wildcard;
     }
     return v;
 }

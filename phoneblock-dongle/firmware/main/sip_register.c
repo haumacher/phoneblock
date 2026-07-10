@@ -1253,23 +1253,38 @@ static verdict_t check_invite_caller(const char *req, int req_len)
     // number is genuinely in no list (in which case the API will also
     // refresh server-side LASTPING counters, so we keep that path live).
     pb_check_result_t result;
+    memset(&result, 0, sizeof(result));
     verdict_t v;
     const char *digits = (number[0] == '+') ? number + 1 : number;
     // Skip the local files entirely when the cache is disabled — every
     // call then resolves against the live server API.
+    bool wildcard = false, personal = false;
     blocklist_verdict_t local = config_blocklist_enabled()
-        ? blocklist_sync_check(digits, config_blocklist_wildcards())
+        ? blocklist_sync_check_ex(digits, config_blocklist_wildcards(),
+                                  &wildcard, &personal)
         : BLOCKLIST_UNKNOWN;
     if (local == BLOCKLIST_SPAM) {
-        memset(&result, 0, sizeof(result));
-        result.verdict = VERDICT_SPAM;
+        result.verdict  = VERDICT_SPAM;
+        result.wildcard = wildcard;
+        // A personal-list SPAM hit is the user's own blacklist; a
+        // community-list hit is generic blocklist spam. Neither carries
+        // per-number vote counts, so the label uses the (Nummer)/(Bereich)
+        // qualifier instead — this is what fixed the misleading
+        // "SPAM (0 Stimmen)" the local cache used to log.
+        result.assessment = personal ? PB_ASSESS_BLACKLIST : PB_ASSESS_SPAM_LIST;
         v = VERDICT_SPAM;
-        ESP_LOGI(TAG, "local blocklist → SPAM for %s", number);
+        ESP_LOGI(TAG, "local blocklist → SPAM (%s, %s) for %s",
+                 personal ? "personal" : "community",
+                 wildcard ? "wildcard" : "exact", number);
     } else if (local == BLOCKLIST_LEGIT) {
-        memset(&result, 0, sizeof(result));
-        result.verdict = VERDICT_LEGITIMATE;
+        result.verdict    = VERDICT_LEGITIMATE;
+        // On a whitelist (personal or the general community list) the
+        // number is genuinely legitimate — unlike an un-rated number,
+        // which phoneblock_check() leaves as PB_ASSESS_UNKNOWN.
+        result.assessment = PB_ASSESS_LEGITIMATE;
         v = VERDICT_LEGITIMATE;
-        ESP_LOGI(TAG, "local blocklist → LEGIT for %s", number);
+        ESP_LOGI(TAG, "local blocklist → LEGIT (%s) for %s",
+                 personal ? "personal" : "community", number);
     } else {
         v = phoneblock_check(number, &result, NULL);
     }

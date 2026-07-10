@@ -122,12 +122,20 @@ static void send_json(httpd_req_t *req, cJSON *root)
     cJSON_Delete(root);
 }
 
-static const char *verdict_string(verdict_t v)
+// Wire name for the log characterisation. The web UI (verdictLabel in
+// index.html) maps these onto localised labels and colour classes; keep
+// the set in sync with pb_assessment_t and the JS switch.
+static const char *assessment_string(pb_assessment_t a)
 {
-    switch (v) {
-        case VERDICT_SPAM:       return "SPAM";
-        case VERDICT_LEGITIMATE: return "LEGITIMATE";
-        default:                 return "ERROR";
+    switch (a) {
+        case PB_ASSESS_LEGITIMATE: return "legitimate";
+        case PB_ASSESS_SUSPECT:    return "suspect";
+        case PB_ASSESS_SPAM:       return "spam";
+        case PB_ASSESS_SPAM_LIST:  return "spam_list";
+        case PB_ASSESS_BLACKLIST:  return "blacklist";
+        case PB_ASSESS_ERROR:      return "error";
+        case PB_ASSESS_UNKNOWN:
+        default:                   return "unknown";
     }
 }
 
@@ -493,11 +501,10 @@ static esp_err_t handle_calls(httpd_req_t *req)
         cJSON_AddStringToObject(o, "display",     calls[i].display);
         cJSON_AddStringToObject(o, "label",       calls[i].label);
         cJSON_AddStringToObject(o, "location",    calls[i].location);
-        cJSON_AddNumberToObject(o, "votes",       calls[i].votes);
-        cJSON_AddBoolToObject  (o, "suspected",   calls[i].suspected);
-        cJSON_AddBoolToObject  (o, "whitelisted", calls[i].white_listed);
-        cJSON_AddBoolToObject  (o, "blacklisted", calls[i].black_listed);
-        cJSON_AddStringToObject(o, "verdict",     verdict_string(calls[i].verdict));
+        cJSON_AddStringToObject(o, "assessment",   assessment_string(calls[i].assessment));
+        cJSON_AddNumberToObject(o, "direct_votes", calls[i].direct_votes);
+        cJSON_AddNumberToObject(o, "range_votes",  calls[i].range_votes);
+        cJSON_AddBoolToObject  (o, "wildcard",     calls[i].wildcard);
         cJSON_AddItemToArray(arr, o);
     }
     send_json(req, root);

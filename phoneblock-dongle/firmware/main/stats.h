@@ -35,10 +35,10 @@ typedef struct {
     // a non-empty `label` to switch to the rich rendering.
     char      label[STATS_LABEL_LEN];          // PhoneBlock shortcut, e.g. "(DE) 015735…"
     char      location[STATS_LOCATION_LEN];    // operator / area, e.g. "Telefónica …"
-    int       votes;                           // count to display next to verdict
-    bool      suspected;                       // votes>0 but below SPAM threshold
-    bool      white_listed;                    // user-personal whitelist hit (hard override)
-    bool      black_listed;                    // user-personal blacklist hit (hard override)
+    pb_assessment_t assessment;                // log characterisation (see pb_assessment_t)
+    int       direct_votes;                    // direct community votes against the number
+    int       range_votes;                     // raw neighbourhood (range) votes
+    bool      wildcard;                         // local-cache hit was a range/prefix, not exact
 } stats_call_t;
 
 typedef struct {

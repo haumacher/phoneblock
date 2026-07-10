@@ -258,6 +258,15 @@ static blocklist_verdict_t verdict_of(uint64_t record)
 blocklist_verdict_t blocklist_lookup(blocklist_t *bl, const char *digits,
                                      bool consult_wildcards)
 {
+    return blocklist_lookup_ex(bl, digits, consult_wildcards, NULL);
+}
+
+blocklist_verdict_t blocklist_lookup_ex(blocklist_t *bl, const char *digits,
+                                        bool consult_wildcards,
+                                        bool *matched_wildcard)
+{
+    if (matched_wildcard) *matched_wildcard = false;
+
     if (bl == NULL || digits == NULL || digits[0] == '\0') {
         return BLOCKLIST_UNKNOWN;
     }
@@ -280,7 +289,7 @@ blocklist_verdict_t blocklist_lookup(blocklist_t *bl, const char *digits,
                             &hit_record, &insertion)) {
             result = verdict_of(hit_record);
             fclose(f);
-            return result;
+            return result;  // exact hit — matched_wildcard stays false
         }
     }
 
@@ -305,6 +314,7 @@ blocklist_verdict_t blocklist_lookup(blocklist_t *bl, const char *digits,
         if (find_in_section(f, bl->prefix_offset, bl->prefix_count, target,
                             hi, &hit_record, &insertion)) {
             result = verdict_of(hit_record);
+            if (matched_wildcard) *matched_wildcard = true;
             fclose(f);
             return result;
         }

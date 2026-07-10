@@ -51,6 +51,18 @@ bool blocklist_sync_trigger_now(void);
 blocklist_verdict_t blocklist_sync_check(const char *digits,
                                          bool consult_wildcards);
 
+// As blocklist_sync_check(), but also reports where and how the hit was
+// found so the caller can label it precisely:
+//   *wildcard_out → true if the match was a range/prefix entry (vs exact).
+//   *personal_out → true if the hit came from the personal list (vs the
+//                   community list); i.e. a black/white override the user
+//                   set themselves.
+// Both are set to false on a miss. Either out-pointer may be NULL.
+blocklist_verdict_t blocklist_sync_check_ex(const char *digits,
+                                            bool consult_wildcards,
+                                            bool *wildcard_out,
+                                            bool *personal_out);
+
 // Status snapshot for the dashboard.
 typedef struct {
     bool    have_community;
