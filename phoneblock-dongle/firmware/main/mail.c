@@ -386,7 +386,7 @@ static void verdict_label(const stats_call_t *c, char *out, size_t cap)
     const char *scope = c->wildcard ? "Bereich" : "Nummer";
     switch (c->assessment) {
     case PB_ASSESS_BLACKLIST:
-        snprintf(out, cap, "Blacklist (%s)", scope);
+        snprintf(out, cap, "SPAM (Blacklist, %s)", scope);
         break;
     case PB_ASSESS_SPAM_LIST:
         snprintf(out, cap, "SPAM (Blockliste, %s)", scope);
