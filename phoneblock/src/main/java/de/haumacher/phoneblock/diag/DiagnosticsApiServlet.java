@@ -440,20 +440,35 @@ public class DiagnosticsApiServlet extends HttpServlet {
 				"appliesTo must be SIGNATURE, SAMPLE or BOTH.");
 			return;
 		}
+		// A new rule defaults to DRAFT (the model default): masking is layered onto
+		// the built-in scrubber only for LIVE rows, so an agent can propose a rule and
+		// audit it against real samples before it shapes any signature. Creating one
+		// directly LIVE is a promotion and carries the same admin gate as
+		// POST /scrub/{id}/state.
+		String state = body.getOrDefault("state", DiagScrubRule.DRAFT);
+		if (!DiagScrubRule.DRAFT.equals(state) && !DiagScrubRule.LIVE.equals(state)
+				&& !DiagScrubRule.DISABLED.equals(state)) {
+			ServletUtil.sendMessage(resp, HttpServletResponse.SC_BAD_REQUEST,
+				"state must be one of DRAFT, LIVE, DISABLED.");
+			return;
+		}
+		if (DiagScrubRule.LIVE.equals(state) && !authorize(req, resp, true)) {
+			return;
+		}
 		DiagScrubRule rule = new DiagScrubRule();
 		rule.setName(body.getOrDefault("name", ""));
 		rule.setSource(trimToNull(body.get("source")));
 		rule.setPattern(pattern);
 		rule.setReplacement(body.getOrDefault("replacement", ""));
 		rule.setAppliesTo(appliesTo);
-		rule.setState(DiagScrubRule.LIVE);
+		rule.setState(state);
 		rule.setVersion(1);
 		rule.setAuthor(LoginFilter.getAuthenticatedUser(req));
 		rule.setUpdated(System.currentTimeMillis());
 		mapper.insertScrubRule(rule);
 		bumpRulesetVersion(session);
 		session.commit();
-		LOG.info("Diagnostics scrub rule {} created LIVE by {}.", rule.getId(), rule.getAuthor());
+		LOG.info("Diagnostics scrub rule {} created {} by {}.", rule.getId(), rule.getState(), rule.getAuthor());
 		writeJson(resp, w -> writeScrub(w, rule));
 	}
 

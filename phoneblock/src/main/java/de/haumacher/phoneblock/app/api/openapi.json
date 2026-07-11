@@ -186,12 +186,13 @@
 			},
 			"post": {
 				"tags": ["author"],
-				"summary": "Create a scrub rule (lands LIVE).",
-				"description": "A new scrub rule only ever adds masking (tightening the anonymizer), so it applies LIVE immediately under the diagnostics capability. The relaxing direction — disabling/re-enabling a rule — is the admin-gated /scrub/{id}/state transition.",
+				"summary": "Create a scrub rule (defaults to DRAFT).",
+				"description": "A new rule defaults to DRAFT: it is stored but not layered onto the scrubber, so it can be audited against real samples before it shapes any signature. Promote it with the admin-gated /scrub/{id}/state transition, or create it directly LIVE by passing state=LIVE (which then also requires the admin capability). Diagnostics-only tokens can create DRAFT or DISABLED rules.",
 				"requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ScrubCreate" } } } },
 				"responses": {
 					"200": { "description": "The created scrub rule.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ScrubRule" } } } },
-					"400": { "description": "pattern missing/invalid, or bad appliesTo." }
+					"400": { "description": "pattern missing/invalid, bad appliesTo, or bad state." },
+						"403": { "description": "state=LIVE requested without the admin capability." }
 				}
 			}
 		},
@@ -458,7 +459,8 @@
 					"source": { "type": "string", "nullable": true },
 					"pattern": { "type": "string" },
 					"replacement": { "type": "string", "description": "e.g. <mac>. Supports $1 group refs." },
-					"appliesTo": { "type": "string", "enum": ["SIGNATURE", "SAMPLE", "BOTH"], "default": "BOTH" }
+					"appliesTo": { "type": "string", "enum": ["SIGNATURE", "SAMPLE", "BOTH"], "default": "BOTH" },
+					"state": { "type": "string", "enum": ["DRAFT", "LIVE", "DISABLED"], "default": "DRAFT", "description": "state=LIVE also requires the admin capability." }
 				}
 			},
 			"AuditRequest": {
