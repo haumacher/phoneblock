@@ -47,6 +47,12 @@ public class DongleSilenceDetector {
 		long cutoff = now - _silenceDays * DAY_MS;
 		boolean live = DiagRule.LIVE.equals(rule.getState()) && DiagRule.ACTOR_USER.equals(rule.getActor());
 
+		// The notification's source is the carrier rule's scope by construction, so
+		// rule.source == notification.source is an invariant (nothing keys on it — it
+		// is audit metadata filterable via GET /notifications?source=). Guard null,
+		// since an all-sources rule would violate the NOT NULL column.
+		String source = rule.getSource() != null ? rule.getSource() : "DONGLE-LIVENESS";
+
 		// Rearm: a device that has checked in again (last access back within the
 		// window) clears its latched silence notification.
 		int cleared = mapper.clearReturnedSilentNotifications(rule.getId(), cutoff, now);
@@ -60,11 +66,11 @@ public class DongleSilenceDetector {
 
 			if (!live) {
 				// SHADOW: project what LIVE would do, send nothing.
-				mapper.insertNotification("DONGLE", device.getDeviceId(), userName, rule.getId(),
+				mapper.insertNotification(source, device.getDeviceId(), userName, rule.getId(),
 					"PENDING", true, now, null);
 				notified++;
-			} else if (notifier.notifyUser(rule, "DONGLE", device.getDeviceId(), userName)) {
-				mapper.insertNotification("DONGLE", device.getDeviceId(), userName, rule.getId(),
+			} else if (notifier.notifyUser(rule, source, device.getDeviceId(), userName)) {
+				mapper.insertNotification(source, device.getDeviceId(), userName, rule.getId(),
 					"SENT", false, now, now);
 				notified++;
 			}
