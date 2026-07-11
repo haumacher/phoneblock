@@ -112,8 +112,16 @@ def t_ingest_status(_):
 
 
 def t_list_signatures(a):
-    return api("GET", "/signatures",
+    rows = api("GET", "/signatures",
                query={"limit": a.get("limit", 100), "source": a.get("source")})
+    # Rank by volume and project to the fields the tuning loop actually reads, so
+    # the ranked view is native — no reason to curl + sort by hand.
+    if isinstance(rows, list):
+        rows.sort(key=lambda s: -(s.get("totalEvents") or 0))
+        rows = [{"totalEvents": s.get("totalEvents"), "source": s.get("source"),
+                 "tag": s.get("tag"), "signature": s.get("signature"),
+                 "sigId": s.get("sigId")} for s in rows]
+    return rows
 
 
 def t_get_signature(a):

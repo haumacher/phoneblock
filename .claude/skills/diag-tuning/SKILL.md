@@ -25,11 +25,17 @@ the admin token itself from `~/.m2/settings.xml` (server id `phoneblock-admin`,
 at another deployment with `PHONEBLOCK_API`, or override the token with
 `PHONEBLOCK_ADMIN_TOKEN`.
 
-Key tools: `ingest_status`, `list_signatures`, `get_signature`, `audit_scrub`,
-`list_scrub_rules`, `create_scrub_rule`, `set_scrub_state`, `list_rules`,
-`list_notifications`, `origin_timeline`. If the MCP is unavailable, every call
-maps 1:1 to `POST/GET <base>/admin/diag/…` — you can fall back to curl with the
-same token.
+Key tools: `ingest_status`, `list_signatures` (returns a volume-ranked, compact
+list), `get_signature`, `audit_scrub`, `list_scrub_rules`, `create_scrub_rule`,
+`set_scrub_state`, `list_rules`, `list_notifications`, `origin_timeline`.
+
+**Always use these MCP tools — do not hand-roll `curl` plus token extraction from
+`settings.xml`.** The server exists precisely to hold the token and the endpoints
+for you. If you find yourself writing a shell script to hit the API, stop: the MCP
+is either not loaded (check `.mcp.json` is trusted, reload the session) or a tool
+is missing something worth adding. The 1:1 mapping to `GET/POST
+<base>/admin/diag/…` is documentation of what each tool does and a stopgap for
+when the MCP **process itself** is down — not a routine alternative.
 
 ## Mental model — the pipeline
 
