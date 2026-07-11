@@ -205,6 +205,7 @@ public class DB {
 		configuration.addMapper(BlockList.class);
 		configuration.addMapper(Users.class);
 		configuration.addMapper(FtcReports.class);
+		configuration.addMapper(de.haumacher.phoneblock.diag.DiagnosticsMapper.class);
 		_sessionFactory = new SqlSessionFactoryBuilder().build(configuration);
 		
 		setupSchema();

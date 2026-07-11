@@ -615,6 +615,46 @@ espcoredump.py info_corefile -c <user>-<timestamp>.elf phoneblock_dongle.elf
 
 ---
 
+## Diagnostics Ingestion
+
+**JNDI Prefix:** `diagnostics/`
+**System Property Prefix:** `diagnostics.`
+**Source:** `DiagnosticsService.java`
+
+A scheduled reader that tails the server's rolling log, recognizes source-specific error lines (the dongle reports written by `LogReportServlet`, first), normalizes and scrubs them, and rolls up the `DIAG_*` aggregate tables (see `docs/plans/2026-07-11-diagnostics-framework-design.md`). Decoupled from the request path — nothing writes diagnostics synchronously on a request; the log file is the buffer.
+
+### Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `diagnostics/enabled` | Boolean | `true` | Master switch for the ingestion reader and its retention job. |
+| `diagnostics/logFile` | String | `/var/log/tomcat10/phoneblock.log` | The `writer.latest` base path from `tinylog.properties`; the reader tails its numbered siblings `phoneblock.log.<count>`. **Must match tinylog's `log/file`** or nothing is ingested. |
+| `diagnostics/intervalMinutes` | Integer | `5` | How often the reader polls the log for new lines. |
+| `diagnostics/sampleCap` | Integer | `20` | Max retained raw `DIAG_SAMPLE` rows per signature. |
+| `diagnostics/retentionDays` | Integer | `30` | Age after which raw samples are purged (aggregates are kept indefinitely). |
+| `diagnostics/maxLinesPerPoll` | Integer | `50000` | Upper bound on lines processed per transaction; a larger backlog is caught up over successive polls. |
+
+### Example Configuration
+
+**Tomcat context.xml:**
+```xml
+<Context>
+  <Environment name="diagnostics/logFile" value="/var/log/tomcat10/phoneblock.log" type="java.lang.String"/>
+  <Environment name="diagnostics/intervalMinutes" value="5" type="java.lang.Integer"/>
+</Context>
+```
+
+**System Properties:**
+```bash
+-Ddiagnostics.logFile=/var/log/tomcat10/phoneblock.log
+```
+
+**Notes:**
+- The reader follows tinylog's monotonic `{count}` segments and ignores the fixed-name `latest` copy (it duplicates the active segment), so lines are counted once. Its checkpoint is persisted in `DIAG_INGEST_CURSOR`.
+- If the reader falls more than `writer.backups` segments behind, the pruned span is lost (logged as a gap) — keep `intervalMinutes` well under the time it takes to roll `backups` segments.
+
+---
+
 ## Complete Example Configuration
 
 Here's a complete example Tomcat `context.xml` file with common production settings:
