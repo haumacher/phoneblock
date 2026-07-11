@@ -706,6 +706,26 @@ The **mail kill switch** and the **ruleset version** are runtime rows in the `PR
 - `diag.mail.enabled` (default `false`) — while `false`, no user help mail is ever sent even by a `LIVE`+`USER` rule; this is the master gate on top of per-rule promotion. Set to `true` only once the shadow projections look right.
 - `diag.ruleset.version` — bumped on any rule/template/scrub change; reserved for a future in-memory rule cache (the matcher and the ingest scrubber currently reload rules fresh each run, so anonymizer edits take effect within one ingest interval without a redeploy).
 
+#### Translating the help-mail templates
+
+The `DIAG_TEMPLATE` rows are authored in German (`de`) and read back in the user's language (falling back `lang → en → de`). To fill in every supported locale via DeepL — **over the API, not on the server** — use the `phoneblock-translate-maven-plugin` (a client tool; target languages are derived from the `Language` enum, so they never drift from a hand-kept list):
+
+```bash
+cd phoneblock
+mvn -Pwith-deepl phoneblock-translate:translate-diag-templates \
+  -Dtranslate.apiUrl=https://phoneblock.net/pb-test/api \
+  -Dtranslate.dryRun=true          # drop this to actually write
+```
+
+Both secrets come from `settings.xml` servers (they never touch the command line):
+
+```xml
+<server><id>deepl</id><passphrase>YOUR_DEEPL_API_KEY</passphrase></server>       <!-- shared with auto-translate -->
+<server><id>phoneblock-admin</id><password>YOUR_API_TOKEN</password></server>     <!-- token with ACCESS_DIAGNOSTICS -->
+```
+
+The token needs `ACCESS_DIAGNOSTICS` (the `POST /templates` author route). By default only missing locales are filled; pass `-Dtranslate.overwrite=true` to re-translate existing ones.
+
 ### Example Configuration
 
 **Tomcat context.xml:**
