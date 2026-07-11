@@ -296,11 +296,7 @@
       - MEDIA=audio 4080 RTP/AVP { 8 PCMA 8000 160 }
       - RECORDINGS=none
       - CONVERSATION=/opt/phoneblock/conversation
-      # Zur Fehlersuche auf "yes" setzen: protokolliert die gesamte SIP-Kommunikation.
       - LOG_ALL_PACKETS=no
-      # Nimmt auch Anrufe interner Telefone (Nummern mit "*") an – nötig für den Testanruf
-      # über die interne Nummer. Auf "no" setzen, wenn der Anrufbeantworter Teil eines
-      # Sammelrufs ist (z. B. eine Türklingel, die alle Telefone klingeln lässt).
       - ACCEPT_LOCAL=yes
     restart: unless-stopped</pre>
 		
@@ -325,6 +321,14 @@
 					<tr>
 						<td><code>REGISTRAR</code> / <code>ROUTE</code></td>
 						<td data-tx="t0093:17dcf955">Fritz!Box 的地址。提示：如果使用自有 DNS 服务器（例如 Pi-hole/Unbound），请在此处输入 Fritz!Box 的 <em>IP 地址</em> 代替 <code>fritz.box</code>，否则主机名可能无法解析，导致注册失败。</td>
+					</tr>
+					<tr>
+						<td><code>ACCEPT_LOCAL</code></td>
+						<td data-tx="t0097:3aeb6350">也接听内线电话（以<code>*</code>开头的号码）——这是通过内线号码进行测试呼叫所必需的。 如果答录机属于集体呼叫系统的一部分（例如，能让所有电话同时响起的门铃），请将该值设置为 <code>no</code>。</td>
+					</tr>
+					<tr>
+						<td><code>LOG_ALL_PACKETS</code></td>
+						<td data-tx="t0098:231f7ac9">为进行故障排查，请将该选项设置为 <code>yes</code>：这样会将所有的SIP通信记录到日志中。</td>
 					</tr>
 					<tr>
 						<td><code>network_mode: host</code></td>

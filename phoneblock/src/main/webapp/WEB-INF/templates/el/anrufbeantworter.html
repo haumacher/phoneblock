@@ -296,11 +296,7 @@
       - MEDIA=audio 4080 RTP/AVP { 8 PCMA 8000 160 }
       - RECORDINGS=none
       - CONVERSATION=/opt/phoneblock/conversation
-      # Zur Fehlersuche auf "yes" setzen: protokolliert die gesamte SIP-Kommunikation.
       - LOG_ALL_PACKETS=no
-      # Nimmt auch Anrufe interner Telefone (Nummern mit "*") an – nötig für den Testanruf
-      # über die interne Nummer. Auf "no" setzen, wenn der Anrufbeantworter Teil eines
-      # Sammelrufs ist (z. B. eine Türklingel, die alle Telefone klingeln lässt).
       - ACCEPT_LOCAL=yes
     restart: unless-stopped</pre>
 		
@@ -325,6 +321,14 @@
 					<tr>
 						<td><code>REGISTRAR</code> / <code>ROUTE</code></td>
 						<td data-tx="t0093:17dcf955">Διεύθυνση του Fritz!Box. Συμβουλή: Εάν χρησιμοποιείτε δικό σας διακομιστή DNS (π.χ. Pi-hole/Unbound), εισάγετε εδώ τη <em>διεύθυνση IP</em> του Fritz!Box αντί για <code>fritz.box</code>, καθώς διαφορετικά το όνομα κεντρικού υπολογιστή ενδέχεται να μην αναγνωριστεί και η εγγραφή να αποτύχει.</td>
+					</tr>
+					<tr>
+						<td><code>ACCEPT_LOCAL</code></td>
+						<td data-tx="t0097:3aeb6350">Δέχεται επίσης κλήσεις από εσωτερικά τηλέφωνα (αριθμοί με <code>*</code>) – απαραίτητο για τη δοκιμαστική κλήση μέσω του εσωτερικού αριθμού. Ορίστε την τιμή σε <code>no</code>, εάν ο τηλεφωνητής αποτελεί μέρος μιας ομαδικής κλήσης (π.χ. ένα κουδούνι πόρτας που κάνει όλα τα τηλέφωνα να χτυπήσουν).</td>
+					</tr>
+					<tr>
+						<td><code>LOG_ALL_PACKETS</code></td>
+						<td data-tx="t0098:231f7ac9">Για τον εντοπισμό σφαλμάτων, ορίστε την τιμή σε <code>yes</code>: έτσι θα καταγράφεται στο αρχείο καταγραφής ολόκληρη η επικοινωνία SIP.</td>
 					</tr>
 					<tr>
 						<td><code>network_mode: host</code></td>

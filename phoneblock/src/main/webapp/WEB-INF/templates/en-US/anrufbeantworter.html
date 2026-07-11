@@ -296,11 +296,7 @@
       - MEDIA=audio 4080 RTP/AVP { 8 PCMA 8000 160 }
       - RECORDINGS=none
       - CONVERSATION=/opt/phoneblock/conversation
-      # Zur Fehlersuche auf "yes" setzen: protokolliert die gesamte SIP-Kommunikation.
       - LOG_ALL_PACKETS=no
-      # Nimmt auch Anrufe interner Telefone (Nummern mit "*") an – nötig für den Testanruf
-      # über die interne Nummer. Auf "no" setzen, wenn der Anrufbeantworter Teil eines
-      # Sammelrufs ist (z. B. eine Türklingel, die alle Telefone klingeln lässt).
       - ACCEPT_LOCAL=yes
     restart: unless-stopped</pre>
 		
@@ -325,6 +321,14 @@
 					<tr>
 						<td><code>REGISTRAR</code> / <code>ROUTE</code></td>
 						<td data-tx="t0093:17dcf955">Fritz!Box address. Tip: If you're using your own DNS server (e.g., Pi-hole/Unbound), enter the <em>IP address</em> of the Fritz!Box here instead of <code>fritz.box</code>, otherwise the hostname may not be resolved and the registration will fail.</td>
+					</tr>
+					<tr>
+						<td><code>ACCEPT_LOCAL</code></td>
+						<td data-tx="t0097:3aeb6350">Also accepts calls from internal phones (numbers starting with <code>*</code>) – required for the test call using the internal number. Set the value to <code>no</code> if the answering machine is part of a group call (e.g., a doorbell that rings all phones).</td>
+					</tr>
+					<tr>
+						<td><code>LOG_ALL_PACKETS</code></td>
+						<td data-tx="t0098:231f7ac9">Set to <code>yes</code> for troubleshooting: this will log all SIP communication.</td>
 					</tr>
 					<tr>
 						<td><code>network_mode: host</code></td>

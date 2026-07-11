@@ -296,11 +296,7 @@
       - MEDIA=audio 4080 RTP/AVP { 8 PCMA 8000 160 }
       - RECORDINGS=none
       - CONVERSATION=/opt/phoneblock/conversation
-      # Zur Fehlersuche auf "yes" setzen: protokolliert die gesamte SIP-Kommunikation.
       - LOG_ALL_PACKETS=no
-      # Nimmt auch Anrufe interner Telefone (Nummern mit "*") an – nötig für den Testanruf
-      # über die interne Nummer. Auf "no" setzen, wenn der Anrufbeantworter Teil eines
-      # Sammelrufs ist (z. B. eine Türklingel, die alle Telefone klingeln lässt).
       - ACCEPT_LOCAL=yes
     restart: unless-stopped</pre>
 		
@@ -325,6 +321,14 @@
 					<tr>
 						<td><code>REGISTRAR</code> / <code>ROUTE</code></td>
 						<td data-tx="t0093:17dcf955">عنوان جهاز Fritz!Box. نصيحة: في حالة استخدام خادم DNS خاص (مثل Pi-hole/Unbound)، أدخل هنا <em>عنوان IP</em> لجهاز Fritz!Box بدلاً من <code>fritz.box</code>، وإلا فقد لا يتم تحليل اسم المضيف ويفشل التسجيل.</td>
+					</tr>
+					<tr>
+						<td><code>ACCEPT_LOCAL</code></td>
+						<td data-tx="t0097:3aeb6350">يستقبل أيضًا المكالمات الواردة من الهواتف الداخلية (الأرقام التي تبدأ بـ <code>*</code>) – وهو أمر ضروري لإجراء مكالمة اختبار عبر الرقم الداخلي. اضبط القيمة على <code>no</code> إذا كان جهاز الرد الآلي جزءًا من نظام الاتصال الجماعي (مثل جرس الباب الذي يجعل جميع الهواتف ترن).</td>
+					</tr>
+					<tr>
+						<td><code>LOG_ALL_PACKETS</code></td>
+						<td data-tx="t0098:231f7ac9">اضبط الخيار على <code>yes</code> لتشخيص الأخطاء: سيؤدي ذلك إلى تسجيل جميع اتصالات SIP في السجل.</td>
 					</tr>
 					<tr>
 						<td><code>network_mode: host</code></td>

@@ -296,11 +296,7 @@
       - MEDIA=audio 4080 RTP/AVP { 8 PCMA 8000 160 }
       - RECORDINGS=none
       - CONVERSATION=/opt/phoneblock/conversation
-      # Zur Fehlersuche auf "yes" setzen: protokolliert die gesamte SIP-Kommunikation.
       - LOG_ALL_PACKETS=no
-      # Nimmt auch Anrufe interner Telefone (Nummern mit "*") an – nötig für den Testanruf
-      # über die interne Nummer. Auf "no" setzen, wenn der Anrufbeantworter Teil eines
-      # Sammelrufs ist (z. B. eine Türklingel, die alle Telefone klingeln lässt).
       - ACCEPT_LOCAL=yes
     restart: unless-stopped</pre>
 		
@@ -325,6 +321,14 @@
 					<tr>
 						<td><code>REGISTRAR</code> / <code>ROUTE</code></td>
 						<td data-tx="t0093:17dcf955">Адреса Fritz!Box. Порада: якщо ви використовуєте власний DNS-сервер (наприклад, Pi-hole/Unbound), введіть тут <em>IP-адресу</em> Fritz!Box замість <code>fritz.box</code>, оскільки в іншому випадку ім’я хоста може не розпізнатися, і реєстрація завершиться невдачею.</td>
+					</tr>
+					<tr>
+						<td><code>ACCEPT_LOCAL</code></td>
+						<td data-tx="t0097:3aeb6350">Також приймає дзвінки з внутрішніх телефонів (номери з <code>*</code>) — це необхідно для тестового дзвінка на внутрішній номер. Встановіть значення <code>no</code>, якщо автовідповідач є частиною групового виклику (наприклад, дверний дзвінок, який змушує дзвонити всі телефони).</td>
+					</tr>
+					<tr>
+						<td><code>LOG_ALL_PACKETS</code></td>
+						<td data-tx="t0098:231f7ac9">Для діагностики помилок встановіть значення <code>yes</code>: у цьому випадку у журналі буде записано весь обмін даними SIP.</td>
 					</tr>
 					<tr>
 						<td><code>network_mode: host</code></td>
