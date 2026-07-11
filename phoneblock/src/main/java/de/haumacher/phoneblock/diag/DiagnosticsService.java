@@ -61,6 +61,8 @@ public class DiagnosticsService implements ServletContextListener {
 	private int _quietDays = 3;
 	private int _userDailyCap = 3;
 	private int _globalDailyCap = 100;
+	private boolean _serverSource = false;
+	private String _nodeId = "server";
 
 	private ScheduledFuture<?> _ingestTask;
 	private ScheduledFuture<?> _retentionTask;
@@ -82,7 +84,11 @@ public class DiagnosticsService implements ServletContextListener {
 
 		_reader = new SegmentedLogReader(_logFile);
 		_aggregator = new DiagnosticsAggregator(_sampleCap);
-		_recognizers = List.of(new DongleRecognizer());
+		// Dongle first; the server recognizer (opt-in) catches everything else at
+		// WARN/ERROR. Order matters — the first non-null recognizer wins.
+		_recognizers = _serverSource
+			? List.of(new DongleRecognizer(), new ServerRecognizer(_nodeId))
+			: List.of(new DongleRecognizer());
 		_matcher = new DiagnosticsMatcher(_quietDays);
 		MailService mailService = _mail == null ? null : _mail.getMailService();
 		_notifier = new MailNotifier(_db, mailService, _userDailyCap, _globalDailyCap);
@@ -243,6 +249,8 @@ public class DiagnosticsService implements ServletContextListener {
 		_quietDays = intProp("quietDays", _quietDays);
 		_userDailyCap = intProp("userDailyCap", _userDailyCap);
 		_globalDailyCap = intProp("globalDailyCap", _globalDailyCap);
+		_serverSource = boolProp("serverSource", _serverSource);
+		_nodeId = strProp("nodeId", _nodeId);
 	}
 
 	private static String strProp(String name, String defaultValue) {

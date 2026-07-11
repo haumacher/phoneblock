@@ -637,6 +637,30 @@ A scheduled reader that tails the server's rolling log, recognizes source-specif
 | `diagnostics/quietDays` | Integer | `3` | After this many days without a new event, a latched notification is cleared (rearmed) so a recurrence re-notifies. |
 | `diagnostics/userDailyCap` | Integer | `3` | Max diagnostics help mails per user per day. |
 | `diagnostics/globalDailyCap` | Integer | `100` | Max diagnostics help mails across the fleet per day. |
+| `diagnostics/serverSource` | Boolean | `false` | Also ingest the server's own native WARN/ERROR log lines as `source=SERVER` (the second source). Off by default. |
+| `diagnostics/nodeId` | String | `server` | The `origin_id` used for `SERVER`-source events. |
+
+### Introspection REST API & token capabilities
+
+The agent-facing REST API lives at `/api/diag/*` and is gated by two `AuthToken`
+capabilities (columns on the `TOKENS` table, minted by a direct DB update — there
+is no UI to create such a token):
+
+- `ACCESS_DIAGNOSTICS` — read signatures/rules, dry-run and author rules into
+  `DRAFT`/`SHADOW`. Required for every `/api/diag` route.
+- `ACCESS_ADMIN` — the one elevated transition, promoting a rule to `LIVE`.
+
+Mint by flipping the flags on an ordinary token, e.g.:
+
+```sql
+UPDATE TOKENS SET ACCESS_DIAGNOSTICS = TRUE WHERE ID = <token-id>;   -- agent token
+UPDATE TOKENS SET ACCESS_ADMIN = TRUE       WHERE ID = <human-token-id>;
+```
+
+Endpoints: `GET /api/diag/signatures` (unmatched feed via `?unmatched=true`),
+`GET /api/diag/signatures/{sigId}` (detail + samples), `GET /api/diag/rules`,
+`POST /api/diag/rules/dryrun`, `POST /api/diag/rules` (creates in SHADOW),
+`POST /api/diag/rules/{id}/state` (`LIVE` needs `ACCESS_ADMIN`).
 
 The **mail kill switch** and the **ruleset version** are runtime rows in the `PROPERTIES` table (not JNDI), so they can be flipped without a redeploy:
 

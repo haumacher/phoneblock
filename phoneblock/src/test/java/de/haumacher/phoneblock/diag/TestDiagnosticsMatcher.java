@@ -190,6 +190,20 @@ public class TestDiagnosticsMatcher {
 	}
 
 	@Test
+	public void testDryRunProjectsWithoutWriting() throws Exception {
+		ingest("sip", "sip: REGISTER rejected: 400", "dev-a", 3, T0);
+		ingest("sip", "sip: REGISTER rejected: 401", "dev-b", 3, T0);
+		try (SqlSession s = _db.openSession()) {
+			DiagnosticsMatcher.DryRun dr = DiagnosticsMatcher.dryRun(
+				s.getMapper(DiagnosticsMapper.class), "DONGLE", "sip", "REGISTER rejected", 1, 2);
+			assertEquals(1, dr.matchingSignatures()); // 400/401 -> <N> -> one signature
+			assertEquals(2, dr.matchingOrigins());
+			assertEquals(1, dr.matchingUsers());       // both use user-1
+		}
+		assertEquals(0, scalar("SELECT COUNT(*) FROM DIAG_NOTIFICATION")); // no side effects
+	}
+
+	@Test
 	public void testRearmWhenQuiet() throws Exception {
 		insertRule(rule("sip", "REGISTER rejected", DiagRule.ACTOR_USER, DiagRule.SHADOW, 2));
 		ingest("sip", "sip: REGISTER rejected: 400", "dev-a", 3, T0);

@@ -115,6 +115,10 @@ public interface DiagnosticsMapper {
 	@Select("SELECT " + SIGNATURE_COLS + " FROM DIAG_SIGNATURE WHERE SIG_ID = #{sigId}")
 	SignatureRow getSignature(String sigId);
 
+	@Select("SELECT RECEIVED_MS AS RECEIVEDMS, SEVERITY, TAG, ORIGIN_ID AS ORIGINID, MESSAGE_SCRUBBED AS MESSAGESCRUBBED "
+			+ "FROM DIAG_SAMPLE WHERE SIG_ID = #{sigId} ORDER BY RECEIVED_MS DESC LIMIT #{limit}")
+	List<java.util.Map<String, Object>> listSamples(@Param("sigId") String sigId, @Param("limit") int limit);
+
 	@Update("UPDATE DIAG_SIGNATURE SET CATEGORY = #{category} WHERE SIG_ID = #{sigId}")
 	void setSignatureCategory(@Param("sigId") String sigId, @Param("category") String category);
 

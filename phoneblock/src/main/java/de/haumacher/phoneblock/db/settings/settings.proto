@@ -82,7 +82,13 @@ message AuthToken {
 	
 	/** Whether this token is allowed to log-in to the website. */
 	boolean accessLogin;
-	
+
+	/** Whether this token may read/author diagnostics (rules, signatures) up to SHADOW. */
+	boolean accessDiagnostics;
+
+	/** Whether this token holds the elevated admin capability (e.g. promoting a diagnostics rule to LIVE). */
+	boolean accessAdmin;
+
 	/** When this token was used or updated the last time. */
 	long lastAccess;
 	

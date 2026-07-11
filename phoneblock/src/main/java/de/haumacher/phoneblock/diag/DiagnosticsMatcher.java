@@ -3,7 +3,11 @@
  */
 package de.haumacher.phoneblock.diag;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +47,43 @@ public class DiagnosticsMatcher {
 
 	/** Outcome of one matcher pass. */
 	public record MatchStats(int rules, int matched, int notified, int cleared, int classified) {}
+
+	/** Projection of what a candidate rule <em>would</em> match, with no side effects. */
+	public record DryRun(int matchingSignatures, int matchingOrigins, int matchingUsers,
+			List<String> sampleSignatures) {}
+
+	/**
+	 * Evaluates a candidate rule against the current aggregates without writing
+	 * anything — the introspection API's "how many would this fire for?".
+	 */
+	public static DryRun dryRun(DiagnosticsMapper mapper, String source, String matchTag,
+			String matchRegex, int minDays, int minEvents) {
+		Pattern pattern = Pattern.compile(matchRegex);
+		Set<String> origins = new HashSet<>();
+		Set<String> users = new HashSet<>();
+		List<String> sampleSignatures = new ArrayList<>();
+		int matchingSignatures = 0;
+
+		for (SignatureRow sig : mapper.listSignatures(source, false)) {
+			if (matchTag != null && !matchTag.equals(sig.getTag())) {
+				continue;
+			}
+			if (!pattern.matcher(sig.getSignature()).find()) {
+				continue;
+			}
+			matchingSignatures++;
+			if (sampleSignatures.size() < 10) {
+				sampleSignatures.add(sig.getSignature());
+			}
+			for (OriginRow origin : mapper.originsOverThreshold(sig.getSigId(), minEvents, minDays)) {
+				origins.add(origin.getOriginId());
+				if (origin.getUserId() != null) {
+					users.add(origin.getUserId());
+				}
+			}
+		}
+		return new DryRun(matchingSignatures, origins.size(), users.size(), sampleSignatures);
+	}
 
 	public MatchStats run(DiagnosticsMapper mapper, Notifier notifier, long now) {
 		List<DiagRule> rules = mapper.listActiveRules();
