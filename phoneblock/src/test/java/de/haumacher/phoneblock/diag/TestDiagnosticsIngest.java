@@ -181,6 +181,10 @@ public class TestDiagnosticsIngest {
 		try (SqlSession session = _db.openSession()) {
 			DiagnosticsMapper mapper = session.getMapper(DiagnosticsMapper.class);
 
+			// The schema/migration seeds three LIVE rules; assert against that baseline.
+			int liveBefore = mapper.listLiveScrubRules().size();
+			int draftBefore = mapper.listScrubRules(DiagScrubRule.DRAFT).size();
+
 			DiagScrubRule rule = new DiagScrubRule();
 			rule.setName("mac");
 			rule.setPattern("\\b([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}\\b");
@@ -191,12 +195,12 @@ public class TestDiagnosticsIngest {
 			session.commit();
 
 			// DRAFT is not yet live.
-			assertEquals(0, mapper.listLiveScrubRules().size());
-			assertEquals(1, mapper.listScrubRules(DiagScrubRule.DRAFT).size());
+			assertEquals(liveBefore, mapper.listLiveScrubRules().size());
+			assertEquals(draftBefore + 1, mapper.listScrubRules(DiagScrubRule.DRAFT).size());
 
 			mapper.setScrubRuleState(rule.getId(), DiagScrubRule.LIVE, T0);
 			session.commit();
-			assertEquals(1, mapper.listLiveScrubRules().size());
+			assertEquals(liveBefore + 1, mapper.listLiveScrubRules().size());
 			// setRuleState bumps the version (1 -> 2).
 			assertEquals(2, mapper.getScrubRule(rule.getId()).getVersion());
 		}
