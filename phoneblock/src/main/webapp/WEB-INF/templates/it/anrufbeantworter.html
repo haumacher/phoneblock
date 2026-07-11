@@ -298,6 +298,9 @@
       - CONVERSATION=/opt/phoneblock/conversation
       # Zur Fehlersuche auf "yes" setzen: protokolliert die gesamte SIP-Kommunikation.
       - LOG_ALL_PACKETS=no
+      # Nimmt auch Anrufe interner Telefone (Nummern mit "*") an – nötig für den Testanruf
+      # über die interne Nummer. Auf "no" setzen, wenn der Anrufbeantworter Teil eines
+      # Sammelrufs ist (z. B. eine Türklingel, die alle Telefone klingeln lässt).
       - ACCEPT_LOCAL=yes
     restart: unless-stopped</pre>
 		
