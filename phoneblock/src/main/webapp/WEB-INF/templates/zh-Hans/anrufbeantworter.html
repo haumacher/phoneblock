@@ -272,6 +272,76 @@
 		<h2 data-tx="t0079:b65f7797" id="experts">供专家使用：自助托管</h2>
 		
 		<p data-tx="t0080:5a67a3ba">你真的会用电脑吗？你家里有 RaspberryPI 或其他微型电脑吗？那就自己安装答录机吧。最好的方法是使用准备好的 <a href="https://hub.docker.com/r/phoneblock/answerbot">Docker 镜像</a>。这样可以提供最好的数据保护，因为所有呼叫处理都是在您的终端进行的。电话系统中的设置是一样的，您可以通过配置文件来设置应答机。</p>
+		<div class="notification is-warning" data-tx="t0084:4bc9a0f9"><strong>自主托管时的注意事项：</strong> 与云语音信箱不同，上述操作指南中的两个步骤可以省略：<ul> <li><strong>无需使用DynDNS。</strong> 答录机与 Fritz!Box 位于同一网络中，并通过本地方式登录。</li> <li><strong>“允许从互联网登录”选项保持禁用状态。</strong> 为此，Fritz!Box 无需对互联网开放——请有意保留该选项的禁用状态，以免不必要地开放路由器。</li> </ul></div>
+		
+		<h3 data-tx="t0085:b85e4fee">1. 在 Fritz!Box 中添加电话设备</h3>
+		<p data-tx="t0086:77837d1f">添加新的电话设备：<em>电话 → 电话设备 → 设置新设备 → 电话（带或不带答录机） → LAN/WLAN（IP电话）</em>。 用户名和密码可自行设定——它们必须与<code>compose.yaml</code>中的内容完全一致。在“来电”选项中，请选择<em>“响应所有号码”</em>。</p>
+		
+		<h3 data-tx="t0087:f0ff4af">2. 创建 compose.yaml 文件</h3>
+		<pre>services:
+  phoneblock:
+    image: phoneblock/answerbot:latest
+    container_name: phoneblock
+    network_mode: host
+    environment:
+      - PHONEBLOCK_API_KEY=&lt;dein API-Key&gt;
+      - SIP_USER=&lt;Benutzername wie in der Fritz!Box&gt;
+      - SIP_PASSWD=&lt;Kennwort wie in der Fritz!Box&gt;
+      - VIA_ADDR=auto-configuration
+      - VIA_ADDR_V6=auto-configuration
+      - HOST_PORT=50060
+      - REGISTRAR=192.168.178.1
+      - ROUTE=192.168.178.1;lr
+      - REALM=fritz.box
+      - MEDIA=audio 4080 RTP/AVP { 8 PCMA 8000 160 }
+      - RECORDINGS=none
+      - CONVERSATION=/opt/phoneblock/conversation
+      - LOG_ALL_PACKETS=no
+      - ACCEPT_LOCAL=yes
+    restart: unless-stopped</pre>
+		
+		<h3 data-tx="t0088:68a01d83">3. 重要变量</h3>
+		<div class="table-container">
+			<table class="table is-fullwidth is-striped">
+				<thead>
+					<tr>
+						<th data-tx="t0089:c616aa64">变量</th>
+						<th data-tx="t0090:f0e3578f">含义</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><code>PHONEBLOCK_API_KEY</code></td>
+						<td data-tx="t0091:c8ab1645">您的个人 API 密钥，可在 <code>phoneblock.net/phoneblock/settings</code> 处生成。</td>
+					</tr>
+					<tr>
+						<td><code>SIP_USER</code> / <code>SIP_PASSWD</code></td>
+						<td data-tx="t0092:ea799cc3">必须与在Fritz!Box中设置的IP电话完全一致。</td>
+					</tr>
+					<tr>
+						<td><code>REGISTRAR</code> / <code>ROUTE</code></td>
+						<td data-tx="t0093:17dcf955">Fritz!Box 的地址。提示：如果使用自有 DNS 服务器（例如 Pi-hole/Unbound），请在此处输入 Fritz!Box 的 <em>IP 地址</em> 代替 <code>fritz.box</code>，否则主机名可能无法解析，导致注册失败。</td>
+					</tr>
+					<tr>
+						<td><code>ACCEPT_LOCAL</code></td>
+						<td data-tx="t0097:3aeb6350">也接听内线电话（以<code>*</code>开头的号码）——这是通过内线号码进行测试呼叫所必需的。 如果答录机属于集体呼叫系统的一部分（例如，能让所有电话同时响起的门铃），请将该值设置为 <code>no</code>。</td>
+					</tr>
+					<tr>
+						<td><code>LOG_ALL_PACKETS</code></td>
+						<td data-tx="t0098:231f7ac9">为进行故障排查，请将该选项设置为 <code>yes</code>：这样会将所有的SIP通信记录到日志中。</td>
+					</tr>
+					<tr>
+						<td><code>network_mode: host</code></td>
+						<td data-tx="t0094:a961a2ea">必填项——SIP/RTP通信所需。</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		
+		<h3 data-tx="t0095:cc612f71">4. 启动和检查</h3>
+		<pre>docker compose up -d
+docker logs -f phoneblock</pre>
+		<p data-tx="t0096:dabc390b">如果日志中出现类似 <code>Registration of '&lt;sip:...&gt;' 200 OK, expires in 300s</code> 的记录，则说明答录机已成功在 Fritz!Box 上注册。 您可以随时拨打该设备的<em>内部号码</em>（以<code>**</code>开头）进行测试——答录机始终会接听此类来电。</p>
 		
 	</div>
 </section>

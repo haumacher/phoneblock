@@ -272,6 +272,76 @@
 		<h2 data-tx="t0079:b65f7797" id="experts">للخبراء: الاستضافة الذاتية</h2>
 		
 		<p data-tx="t0080:5a67a3ba">هل أنت جيد حقاً مع أجهزة الكمبيوتر، هل لديك جهاز RaspberryPI أو كمبيوتر شخصي صغير آخر يعمل في المنزل على أي حال؟ إذن قم ببساطة بتثبيت جهاز الرد على المكالمات بنفسك. أفضل طريقة للقيام بذلك هي باستخدام صورة <a href="https://hub.docker.com/r/phoneblock/answerbot">Docker المعدة . يوفر هذا أفضل حماية للبيانات لأن كل معالجة المكالمات تتم من طرفك. الإعداد في نظام الهاتف هو نفسه، فأنت تقوم بإعداد جهاز الرد الآلي عبر ملف تهيئة.</a></p>
+		<div class="notification is-warning" data-tx="t0084:4bc9a0f9"><strong>أمر مهم عند الاستضافة الذاتية:</strong> على عكس جهاز الرد الآلي السحابي، يتم استبعاد خطوتين من الإرشادات المذكورة أعلاه: <ul> <li><strong>لا حاجة إلى DynDNS.</strong> يعمل جهاز الرد الآلي على نفس الشبكة التي يعمل عليها جهاز Fritz!Box ويتم تسجيل الدخول إليه محليًّا.</li> <li><strong>يظل خيار «السماح بتسجيل الدخول من الإنترنت» معطلاً.</strong> ولا يلزم أن يكون جهاز Fritz!Box متاحًا عبر الإنترنت لهذا الغرض – اترك الخيار معطلاً عن قصد حتى لا تفتح الموجه دون داعٍ.</li> </ul></div>
+		
+		<h3 data-tx="t0085:b85e4fee">1. إنشاء جهاز هاتفي في جهاز Fritz!Box</h3>
+		<p data-tx="t0086:77837d1f">قم بإضافة جهاز اتصال هاتفي جديد: <em>الاتصالات الهاتفية → أجهزة الاتصال الهاتفي → إعداد جهاز جديد → هاتف (مع أو بدون جهاز الرد الآلي) → LAN/WLAN (هاتف IP)</em>. يمكنك اختيار اسم المستخدم وكلمة المرور بحرية – يجب أن يكونا متطابقين تمامًا في ملف <code>compose.yaml</code>. في قسم «المكالمات الواردة»، اختر <em>«الرد على جميع أرقام الهواتف»</em>.</p>
+		
+		<h3 data-tx="t0087:f0ff4af">2. إنشاء ملف compose.yaml</h3>
+		<pre>services:
+  phoneblock:
+    image: phoneblock/answerbot:latest
+    container_name: phoneblock
+    network_mode: host
+    environment:
+      - PHONEBLOCK_API_KEY=&lt;dein API-Key&gt;
+      - SIP_USER=&lt;Benutzername wie in der Fritz!Box&gt;
+      - SIP_PASSWD=&lt;Kennwort wie in der Fritz!Box&gt;
+      - VIA_ADDR=auto-configuration
+      - VIA_ADDR_V6=auto-configuration
+      - HOST_PORT=50060
+      - REGISTRAR=192.168.178.1
+      - ROUTE=192.168.178.1;lr
+      - REALM=fritz.box
+      - MEDIA=audio 4080 RTP/AVP { 8 PCMA 8000 160 }
+      - RECORDINGS=none
+      - CONVERSATION=/opt/phoneblock/conversation
+      - LOG_ALL_PACKETS=no
+      - ACCEPT_LOCAL=yes
+    restart: unless-stopped</pre>
+		
+		<h3 data-tx="t0088:68a01d83">3. المتغيرات المهمة</h3>
+		<div class="table-container">
+			<table class="table is-fullwidth is-striped">
+				<thead>
+					<tr>
+						<th data-tx="t0089:c616aa64">متغير</th>
+						<th data-tx="t0090:f0e3578f">المعنى</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><code>PHONEBLOCK_API_KEY</code></td>
+						<td data-tx="t0091:c8ab1645">مفتاح API الشخصي الخاص بك، والذي يمكن إنشاؤه على <code>phoneblock.net/phoneblock/settings</code>.</td>
+					</tr>
+					<tr>
+						<td><code>SIP_USER</code> / <code>SIP_PASSWD</code></td>
+						<td data-tx="t0092:ea799cc3">يجب أن تتطابق تمامًا مع رقم الهاتف عبر بروتوكول الإنترنت (IP) الذي تم إنشاؤه في جهاز Fritz!Box.</td>
+					</tr>
+					<tr>
+						<td><code>REGISTRAR</code> / <code>ROUTE</code></td>
+						<td data-tx="t0093:17dcf955">عنوان جهاز Fritz!Box. نصيحة: في حالة استخدام خادم DNS خاص (مثل Pi-hole/Unbound)، أدخل هنا <em>عنوان IP</em> لجهاز Fritz!Box بدلاً من <code>fritz.box</code>، وإلا فقد لا يتم تحليل اسم المضيف ويفشل التسجيل.</td>
+					</tr>
+					<tr>
+						<td><code>ACCEPT_LOCAL</code></td>
+						<td data-tx="t0097:3aeb6350">يستقبل أيضًا المكالمات الواردة من الهواتف الداخلية (الأرقام التي تبدأ بـ <code>*</code>) – وهو أمر ضروري لإجراء مكالمة اختبار عبر الرقم الداخلي. اضبط القيمة على <code>no</code> إذا كان جهاز الرد الآلي جزءًا من نظام الاتصال الجماعي (مثل جرس الباب الذي يجعل جميع الهواتف ترن).</td>
+					</tr>
+					<tr>
+						<td><code>LOG_ALL_PACKETS</code></td>
+						<td data-tx="t0098:231f7ac9">اضبط الخيار على <code>yes</code> لتشخيص الأخطاء: سيؤدي ذلك إلى تسجيل جميع اتصالات SIP في السجل.</td>
+					</tr>
+					<tr>
+						<td><code>network_mode: host</code></td>
+						<td data-tx="t0094:a961a2ea">إلزامي – مطلوب للاتصال عبر بروتوكولي SIP وRTP.</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		
+		<h3 data-tx="t0095:cc612f71">4. التشغيل والتحقق</h3>
+		<pre>docker compose up -d
+docker logs -f phoneblock</pre>
+		<p data-tx="t0096:dabc390b">إذا ظهر في السجل سطر مثل <code>Registration of '&lt;sip:...&gt;' 200 OK, expires in 300s</code>، فهذا يعني أن جهاز الرد الآلي قد سجل دخوله بنجاح على جهاز Fritz!Box. يمكن إجراء مكالمة تجريبية في أي وقت عبر <em>الرقم الداخلي</em> للجهاز (الذي يبدأ بـ <code>**</code>) – حيث يستقبل جهاز الرد الآلي هذه المكالمات دائمًا.</p>
 		
 	</div>
 </section>
