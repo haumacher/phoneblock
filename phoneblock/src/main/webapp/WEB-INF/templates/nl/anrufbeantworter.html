@@ -272,6 +272,76 @@
 		<h2 data-tx="t0079:b65f7797" id="experts">Voor experts: zelf hosten</h2>
 		
 		<p data-tx="t0080:5a67a3ba">Ben je echt goed met computers, heb je thuis toch al een RaspberryPI of een andere mini PC draaien? Installeer het antwoordapparaat dan gewoon zelf. De beste manier om dit te doen is met de voorbereide <a href="https://hub.docker.com/r/phoneblock/answerbot">Docker image</a>. Dit biedt de beste gegevensbescherming omdat alle gespreksafhandeling aan jouw kant plaatsvindt. De setup in de telefooncentrale is hetzelfde, je stelt het antwoordapparaat in via een configuratiebestand.</p>
+		<div class="notification is-warning" data-tx="t0084:4bc9a0f9"><strong>Belangrijk bij zelfhosting:</strong> In tegenstelling tot bij het cloud-antwoordapparaat vallen twee stappen uit de bovenstaande handleiding weg: <ul> <li><strong>Geen DynDNS nodig.</strong> Het antwoordapparaat draait in hetzelfde netwerk als de Fritz!Box en meldt zich lokaal aan.</li> <li><strong>"Toegang vanaf het internet toestaan" blijft uitgeschakeld.</strong> De Fritz!Box hoeft hiervoor niet bereikbaar te zijn via het internet – laat de optie bewust uitgeschakeld om de router niet onnodig open te stellen.</li> </ul></div>
+		
+		<h3 data-tx="t0085:b85e4fee">1. Een telefoontoestel in de Fritz!Box aanmaken</h3>
+		<p data-tx="t0086:77837d1f">Voeg een nieuw telefoontoestel toe: <em>Telefonie → Telefoontoestellen → Nieuw toestel instellen → Telefoon (met en zonder antwoordapparaat) → LAN/WLAN (IP-telefoon)</em>. Je kunt zelf een gebruikersnaam en wachtwoord kiezen – deze moeten exact hetzelfde zijn als in het bestand <code>compose.yaml</code>. Bij "Inkomende oproepen" selecteer je <em>"reageren op alle nummers"</em>.</p>
+		
+		<h3 data-tx="t0087:f0ff4af">2. Maak het bestand `compose.yaml` aan</h3>
+		<pre>services:
+  phoneblock:
+    image: phoneblock/answerbot:latest
+    container_name: phoneblock
+    network_mode: host
+    environment:
+      - PHONEBLOCK_API_KEY=&lt;dein API-Key&gt;
+      - SIP_USER=&lt;Benutzername wie in der Fritz!Box&gt;
+      - SIP_PASSWD=&lt;Kennwort wie in der Fritz!Box&gt;
+      - VIA_ADDR=auto-configuration
+      - VIA_ADDR_V6=auto-configuration
+      - HOST_PORT=50060
+      - REGISTRAR=192.168.178.1
+      - ROUTE=192.168.178.1;lr
+      - REALM=fritz.box
+      - MEDIA=audio 4080 RTP/AVP { 8 PCMA 8000 160 }
+      - RECORDINGS=none
+      - CONVERSATION=/opt/phoneblock/conversation
+      - LOG_ALL_PACKETS=no
+      - ACCEPT_LOCAL=yes
+    restart: unless-stopped</pre>
+		
+		<h3 data-tx="t0088:68a01d83">3. Belangrijke variabelen</h3>
+		<div class="table-container">
+			<table class="table is-fullwidth is-striped">
+				<thead>
+					<tr>
+						<th data-tx="t0089:c616aa64">Variabele</th>
+						<th data-tx="t0090:f0e3578f">Betekenis</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><code>PHONEBLOCK_API_KEY</code></td>
+						<td data-tx="t0091:c8ab1645">Je persoonlijke API-sleutel, die je kunt aanmaken op <code>phoneblock.net/phoneblock/settings</code>.</td>
+					</tr>
+					<tr>
+						<td><code>SIP_USER</code> / <code>SIP_PASSWD</code></td>
+						<td data-tx="t0092:ea799cc3">Deze moeten exact overeenkomen met de IP-telefoon die in de Fritz!Box is aangemaakt.</td>
+					</tr>
+					<tr>
+						<td><code>REGISTRAR</code> / <code>ROUTE</code></td>
+						<td data-tx="t0093:17dcf955">Adres van de Fritz!Box. Tip: Als je een eigen DNS-server hebt (bijv. Pi-hole/Unbound) voer hier het <em>IP-adres</em> van de Fritz!Box in plaats van <code>fritz.box</code> in, omdat de hostnaam anders mogelijk niet wordt omgezet en de registratie mislukt.</td>
+					</tr>
+					<tr>
+						<td><code>ACCEPT_LOCAL</code></td>
+						<td data-tx="t0097:3aeb6350">Neemt ook oproepen van interne telefoons (nummers met <code>*</code>) aan – dit is nodig voor de testoproep via het interne nummer. Stel de waarde in op <code>no</code> als het antwoordapparaat deel uitmaakt van een collectieve oproep (bijvoorbeeld een deurbel die alle telefoons laat overgaan).</td>
+					</tr>
+					<tr>
+						<td><code>LOG_ALL_PACKETS</code></td>
+						<td data-tx="t0098:231f7ac9">Stel in op <code>yes</code> om fouten op te sporen: hierdoor wordt alle SIP-communicatie in het logboek vastgelegd.</td>
+					</tr>
+					<tr>
+						<td><code>network_mode: host</code></td>
+						<td data-tx="t0094:a961a2ea">Verplicht – vereist voor SIP-/RTP-communicatie.</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		
+		<h3 data-tx="t0095:cc612f71">4. Opstarten en controleren</h3>
+		<pre>docker compose up -d
+docker logs -f phoneblock</pre>
+		<p data-tx="t0096:dabc390b">Als er in het logboek een regel verschijnt zoals <code>Registration of '&lt;sip:...&gt;' 200 OK, expires in 300s</code>, dan heeft het antwoordapparaat zich met succes aangemeld bij de Fritz!Box. Een testoproep kan op elk moment worden gedaan via het <em>interne nummer</em> van het apparaat (begint met <code>**</code>) – dergelijke oproepen worden altijd door het antwoordapparaat aangenomen.</p>
 		
 	</div>
 </section>

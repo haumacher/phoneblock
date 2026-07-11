@@ -272,6 +272,76 @@
 		<h2 data-tx="t0079:b65f7797" id="experts">For experts: self-hosting</h2>
 		
 		<p data-tx="t0080:5a67a3ba">Are you really good with computers, do you have a RaspberryPI or another mini PC running at home anyway? Then simply install the answering machine yourself. The best way to do this is with the prepared <a href="https://hub.docker.com/r/phoneblock/answerbot">Docker image</a>. This offers the best data protection because all call handling takes place at your end. The setup in the telephone system is the same, you set up the answering machine via a configuration file.</p>
+		<div class="notification is-warning" data-tx="t0084:4bc9a0f9"><strong>Important for self-hosting:</strong> Unlike with the cloud answering machine, two steps in the instructions above are not necessary: <ul> <li><strong>No DynDNS required.</strong> The answering machine runs on the same network as the Fritz!Box and logs in locally.</li> <li><strong>"Allow login from the Internet" remains disabled.</strong> The Fritz!Box does not need to be accessible from the Internet for this—leave the option disabled on purpose so as not to unnecessarily open up the router.</li> </ul></div>
+		
+		<h3 data-tx="t0085:b85e4fee">1. Set up a phone in the Fritz!Box</h3>
+		<p data-tx="t0086:77837d1f">Set up a new phone: <em>Telephony → Phone Devices → Set Up New Device → Phone (with or without an answering machine) → LAN/Wi-Fi (IP Phone)</em>. You can choose any username and password you like—they must be exactly the same as those specified in the <code>compose.yaml</code> file. Under "Incoming Calls," select <em>"Respond to all phone numbers"</em>.</p>
+		
+		<h3 data-tx="t0087:f0ff4af">2. Create a `compose.yaml` file</h3>
+		<pre>services:
+  phoneblock:
+    image: phoneblock/answerbot:latest
+    container_name: phoneblock
+    network_mode: host
+    environment:
+      - PHONEBLOCK_API_KEY=&lt;dein API-Key&gt;
+      - SIP_USER=&lt;Benutzername wie in der Fritz!Box&gt;
+      - SIP_PASSWD=&lt;Kennwort wie in der Fritz!Box&gt;
+      - VIA_ADDR=auto-configuration
+      - VIA_ADDR_V6=auto-configuration
+      - HOST_PORT=50060
+      - REGISTRAR=192.168.178.1
+      - ROUTE=192.168.178.1;lr
+      - REALM=fritz.box
+      - MEDIA=audio 4080 RTP/AVP { 8 PCMA 8000 160 }
+      - RECORDINGS=none
+      - CONVERSATION=/opt/phoneblock/conversation
+      - LOG_ALL_PACKETS=no
+      - ACCEPT_LOCAL=yes
+    restart: unless-stopped</pre>
+		
+		<h3 data-tx="t0088:68a01d83">3. Important Variables</h3>
+		<div class="table-container">
+			<table class="table is-fullwidth is-striped">
+				<thead>
+					<tr>
+						<th data-tx="t0089:c616aa64">Variable</th>
+						<th data-tx="t0090:f0e3578f">Meaning</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><code>PHONEBLOCK_API_KEY</code></td>
+						<td data-tx="t0091:c8ab1645">Your personal API key, which you can create at <code>phoneblock.net/phoneblock/settings</code>.</td>
+					</tr>
+					<tr>
+						<td><code>SIP_USER</code> / <code>SIP_PASSWD</code></td>
+						<td data-tx="t0092:ea799cc3">They must match exactly the IP phone set up in the Fritz!Box.</td>
+					</tr>
+					<tr>
+						<td><code>REGISTRAR</code> / <code>ROUTE</code></td>
+						<td data-tx="t0093:17dcf955">Fritz!Box address. Tip: If you're using your own DNS server (e.g., Pi-hole/Unbound), enter the <em>IP address</em> of the Fritz!Box here instead of <code>fritz.box</code>, otherwise the hostname may not be resolved and the registration will fail.</td>
+					</tr>
+					<tr>
+						<td><code>ACCEPT_LOCAL</code></td>
+						<td data-tx="t0097:3aeb6350">Also accepts calls from internal phones (numbers starting with <code>*</code>) – required for the test call using the internal number. Set the value to <code>no</code> if the answering machine is part of a group call (e.g., a doorbell that rings all phones).</td>
+					</tr>
+					<tr>
+						<td><code>LOG_ALL_PACKETS</code></td>
+						<td data-tx="t0098:231f7ac9">Set to <code>yes</code> for troubleshooting: this will log all SIP communication.</td>
+					</tr>
+					<tr>
+						<td><code>network_mode: host</code></td>
+						<td data-tx="t0094:a961a2ea">Required – needed for SIP/RTP communication.</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		
+		<h3 data-tx="t0095:cc612f71">4. Start and check</h3>
+		<pre>docker compose up -d
+docker logs -f phoneblock</pre>
+		<p data-tx="t0096:dabc390b">If a line such as <code>Registration of '&lt;sip:...&gt;' 200 OK, expires in 300s</code> appears in the log, the answering machine has successfully registered with the Fritz!Box. You can make a test call at any time using the device’s <em>internal number</em> (which starts with <code>**</code>)—the answering machine always answers such calls.</p>
 		
 	</div>
 </section>
