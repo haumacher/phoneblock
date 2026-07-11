@@ -296,6 +296,8 @@
       - MEDIA=audio 4080 RTP/AVP { 8 PCMA 8000 160 }
       - RECORDINGS=none
       - CONVERSATION=/opt/phoneblock/conversation
+      # Zur Fehlersuche auf "yes" setzen: protokolliert die gesamte SIP-Kommunikation.
+      - LOG_ALL_PACKETS=no
       - ACCEPT_LOCAL=yes
     restart: unless-stopped</pre>
 		
