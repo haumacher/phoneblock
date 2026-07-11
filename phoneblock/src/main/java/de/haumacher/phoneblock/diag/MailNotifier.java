@@ -70,11 +70,7 @@ public class MailNotifier implements Notifier {
 				return false;
 			}
 
-			String lang = settings.getLang() == null || settings.getLang().isBlank() ? "de" : settings.getLang();
-			DiagTemplate tpl = dm.getTemplate(rule.getTemplateKey(), lang);
-			if (tpl == null) {
-				tpl = dm.getTemplate(rule.getTemplateKey(), "de");
-			}
+			DiagTemplate tpl = resolveTemplate(dm, rule.getTemplateKey(), settings.getLang());
 			if (tpl == null) {
 				LOG.warn("No diagnostics template '{}' (rule {}) — cannot mail.", rule.getTemplateKey(), rule.getId());
 				return false;
@@ -98,6 +94,21 @@ public class MailNotifier implements Notifier {
 	public void notifyDev(DiagRule rule, String source, String originId, String userId) {
 		LOG.warn("Diagnostics DEV alert [{}]: rule '{}' (#{}) on {} origin {} (user {}).",
 			rule.getCategory(), rule.getName(), rule.getId(), source, originId, userId);
+	}
+
+	/**
+	 * Picks the template in the user's language, falling back to English (the
+	 * international default) and only then to German.
+	 */
+	static DiagTemplate resolveTemplate(DiagnosticsMapper dm, String templateKey, String userLang) {
+		String lang = userLang == null || userLang.isBlank() ? "en" : userLang;
+		for (String candidate : new String[] {lang, "en", "de"}) {
+			DiagTemplate tpl = dm.getTemplate(templateKey, candidate);
+			if (tpl != null) {
+				return tpl;
+			}
+		}
+		return null;
 	}
 
 	/** Safe {@code {placeholder}} substitution — no code, no expression evaluation. */
