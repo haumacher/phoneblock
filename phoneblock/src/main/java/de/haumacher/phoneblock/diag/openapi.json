@@ -1,0 +1,528 @@
+{
+	"openapi": "3.0.3",
+	"info": {
+		"title": "PhoneBlock Diagnostics API",
+		"description": "Internal admin/agent API for the diagnostics framework: discover error signatures across sources, author and promote detection rules, grow the anonymizer, and audit the help-mail flow. Distinct from the public PhoneBlock API (/api/phoneblock.json). Every endpoint requires a bearer token with the diagnostics capability; the few elevated transitions additionally require the admin capability (noted per operation). Mint such a token by flipping ACCESS_DIAGNOSTICS / ACCESS_ADMIN on an ordinary API key directly in the database.",
+		"version": "v1"
+	},
+	"servers": [
+		{
+			"url": "{{CONTEXT}}/api",
+			"description": "This deployment"
+		}
+	],
+	"security": [
+		{
+			"APIKey": []
+		}
+	],
+	"tags": [
+		{ "name": "read", "description": "Read / discover (accessDiagnostics)" },
+		{ "name": "experiment", "description": "Side-effect-free experiments (accessDiagnostics)" },
+		{ "name": "author", "description": "Author rules/templates/scrub (accessDiagnostics; LIVE promotion needs accessAdmin)" },
+		{ "name": "admin", "description": "Elevated actions (accessAdmin)" }
+	],
+	"paths": {
+		"/admin/diag/signatures": {
+			"get": {
+				"tags": ["read"],
+				"summary": "List error signatures.",
+				"description": "Ranked by total events. Use unmatched=true for the long tail of signatures no rule has categorised yet (the triage feed).",
+				"parameters": [
+					{ "name": "source", "in": "query", "schema": { "type": "string" }, "description": "Restrict to one source, e.g. DONGLE or SERVER." },
+					{ "name": "unmatched", "in": "query", "schema": { "type": "boolean" }, "description": "Only signatures with no category (category IS NULL)." },
+					{ "name": "limit", "in": "query", "schema": { "type": "integer", "default": 100 } }
+				],
+				"responses": {
+					"200": {
+						"description": "The matching signatures.",
+						"content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Signature" } } } }
+					}
+				}
+			}
+		},
+		"/admin/diag/signatures/{sigId}": {
+			"get": {
+				"tags": ["read"],
+				"summary": "One signature with its retained samples.",
+				"parameters": [
+					{ "name": "sigId", "in": "path", "required": true, "schema": { "type": "string" } }
+				],
+				"responses": {
+					"200": {
+						"description": "Signature detail.",
+						"content": { "application/json": { "schema": { "$ref": "#/components/schemas/SignatureDetail" } } }
+					},
+					"404": { "description": "No such signature." }
+				}
+			}
+		},
+		"/admin/diag/origins/{source}/{originId}/timeline": {
+			"get": {
+				"tags": ["read"],
+				"summary": "One origin's signatures over time.",
+				"parameters": [
+					{ "name": "source", "in": "path", "required": true, "schema": { "type": "string" } },
+					{ "name": "originId", "in": "path", "required": true, "schema": { "type": "string" }, "description": "e.g. the dongle device UUID." },
+					{ "name": "since", "in": "query", "schema": { "type": "integer", "format": "int64" }, "description": "Only entries with last_seen >= this Unix-millis timestamp." }
+				],
+				"responses": {
+					"200": {
+						"description": "Timeline entries (column-keyed rows).",
+						"content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/TimelineEntry" } } } }
+					}
+				}
+			}
+		},
+		"/admin/diag/rules": {
+			"get": {
+				"tags": ["read"],
+				"summary": "List detection rules.",
+				"parameters": [
+					{ "name": "state", "in": "query", "schema": { "type": "string", "enum": ["DRAFT", "SHADOW", "LIVE", "DISABLED"] } }
+				],
+				"responses": {
+					"200": { "description": "The rules.", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Rule" } } } } }
+				}
+			},
+			"post": {
+				"tags": ["author"],
+				"summary": "Create a detection rule (lands in DRAFT/SHADOW).",
+				"description": "A rule cannot be created LIVE; create it in SHADOW, review its dry-run projection, then promote via /state.",
+				"requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RuleCreate" } } } },
+				"responses": {
+					"200": { "description": "The created rule.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Rule" } } } },
+					"400": { "description": "matchRegex missing." },
+					"403": { "description": "Attempted to create LIVE." }
+				}
+			}
+		},
+		"/admin/diag/rules/{id}": {
+			"get": {
+				"tags": ["read"],
+				"summary": "One detection rule.",
+				"parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } } ],
+				"responses": {
+					"200": { "description": "The rule.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Rule" } } } },
+					"404": { "description": "No such rule." }
+				}
+			}
+		},
+		"/admin/diag/rules/{id}/stats": {
+			"get": {
+				"tags": ["read"],
+				"summary": "Per-rule notification counts by state.",
+				"parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } } ],
+				"responses": {
+					"200": { "description": "The stats.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RuleStats" } } } },
+					"404": { "description": "No such rule." }
+				}
+			}
+		},
+		"/admin/diag/rules/{id}/state": {
+			"post": {
+				"tags": ["author"],
+				"summary": "Change a rule's state (DRAFT/SHADOW/DISABLED, or LIVE).",
+				"description": "Promoting to LIVE is the one elevated transition and additionally requires the admin capability; a diagnostics-only token is rejected with a privilege-mismatch.",
+				"parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } } ],
+				"requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/StateChangeRequest" } } } },
+				"responses": {
+					"200": { "description": "New state.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/StateChange" } } } },
+					"400": { "description": "Invalid state." },
+					"403": { "description": "LIVE requested without the admin capability." },
+					"404": { "description": "No such rule." }
+				}
+			}
+		},
+		"/admin/diag/rules/dryrun": {
+			"post": {
+				"tags": ["experiment"],
+				"summary": "Project a candidate rule against history (no side effects).",
+				"requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DryRunRequest" } } } },
+				"responses": {
+					"200": { "description": "Projection.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DryRunResult" } } } },
+					"400": { "description": "matchRegex missing or invalid." }
+				}
+			}
+		},
+		"/admin/diag/templates": {
+			"get": {
+				"tags": ["read"],
+				"summary": "List mail templates.",
+				"parameters": [ { "name": "key", "in": "query", "schema": { "type": "string" }, "description": "Restrict to one templateKey." } ],
+				"responses": {
+					"200": { "description": "The templates.", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Template" } } } } }
+				}
+			},
+			"post": {
+				"tags": ["author"],
+				"summary": "Create or update a mail template (by templateKey + lang).",
+				"requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TemplateUpsert" } } } },
+				"responses": {
+					"200": { "description": "The stored template.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Template" } } } },
+					"400": { "description": "templateKey, subject or body missing." }
+				}
+			}
+		},
+		"/admin/diag/mail/preview": {
+			"post": {
+				"tags": ["experiment"],
+				"summary": "Render a template with placeholder substitution (no side effects).",
+				"requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MailPreviewRequest" } } } },
+				"responses": {
+					"200": { "description": "Rendered subject/body.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MailPreview" } } } },
+					"404": { "description": "No such template." }
+				}
+			}
+		},
+		"/admin/diag/scrub": {
+			"get": {
+				"tags": ["read"],
+				"summary": "List scrub (anonymizer) rules.",
+				"parameters": [ { "name": "state", "in": "query", "schema": { "type": "string", "enum": ["DRAFT", "LIVE", "DISABLED"] } } ],
+				"responses": {
+					"200": { "description": "The scrub rules.", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/ScrubRule" } } } } }
+				}
+			},
+			"post": {
+				"tags": ["author"],
+				"summary": "Create a scrub rule (lands LIVE).",
+				"description": "A new scrub rule only ever adds masking (tightening the anonymizer), so it applies LIVE immediately under the diagnostics capability. The relaxing direction — disabling/re-enabling a rule — is the admin-gated /scrub/{id}/state transition.",
+				"requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ScrubCreate" } } } },
+				"responses": {
+					"200": { "description": "The created scrub rule.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ScrubRule" } } } },
+					"400": { "description": "pattern missing/invalid, or bad appliesTo." }
+				}
+			}
+		},
+		"/admin/diag/scrub/{id}/state": {
+			"post": {
+				"tags": ["admin"],
+				"summary": "Change a scrub rule's state (admin).",
+				"description": "Disabling relaxes the anonymizer (retains more text) and re-enabling re-tightens; both require the admin capability.",
+				"parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } } ],
+				"requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ScrubStateChangeRequest" } } } },
+				"responses": {
+					"200": { "description": "New state.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/StateChange" } } } },
+					"400": { "description": "Invalid state." },
+					"403": { "description": "Missing the admin capability." },
+					"404": { "description": "No such scrub rule." }
+				}
+			}
+		},
+		"/admin/diag/scrub/audit": {
+			"post": {
+				"tags": ["experiment"],
+				"summary": "Scan retained samples for PII shapes still present (no side effects).",
+				"description": "With candidatePattern, reports the samples that pattern would newly mask (test a proposed scrub rule against real data); without one, applies built-in suspicious-shape probes (email, IPv4, long digit run).",
+				"requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuditRequest" } } } },
+				"responses": {
+					"200": { "description": "Scan result.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AuditResult" } } } },
+					"400": { "description": "Invalid candidatePattern." }
+				}
+			}
+		},
+		"/admin/diag/notifications": {
+			"get": {
+				"tags": ["read"],
+				"summary": "Sent/pending help-mail audit.",
+				"parameters": [
+					{ "name": "source", "in": "query", "schema": { "type": "string" } },
+					{ "name": "ruleId", "in": "query", "schema": { "type": "integer", "format": "int64" } },
+					{ "name": "state", "in": "query", "schema": { "type": "string", "enum": ["PENDING", "SENT", "CLEARED", "SUPPRESSED"] } },
+					{ "name": "since", "in": "query", "schema": { "type": "integer", "format": "int64" }, "description": "first_matched >= this Unix-millis timestamp." },
+					{ "name": "limit", "in": "query", "schema": { "type": "integer", "default": 200 } }
+				],
+				"responses": {
+					"200": { "description": "Notification rows (column-keyed).", "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/NotificationRow" } } } } }
+				}
+			}
+		},
+		"/admin/diag/ingest/status": {
+			"get": {
+				"tags": ["read"],
+				"summary": "Reader health: cursor position, lag, aggregate counts.",
+				"responses": {
+					"200": { "description": "Ingest status.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/IngestStatus" } } } }
+				}
+			}
+		},
+		"/admin/diag/killswitch": {
+			"post": {
+				"tags": ["admin"],
+				"summary": "Flip the global help-mail kill switch (admin).",
+				"description": "Sets diag.mail.enabled fleet-wide. While off, no LIVE+USER rule can mail anyone.",
+				"requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Killswitch" } } } },
+				"responses": {
+					"200": { "description": "New state.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Killswitch" } } } },
+					"400": { "description": "enabled missing." },
+					"403": { "description": "Missing the admin capability." }
+				}
+			}
+		}
+	},
+	"components": {
+		"securitySchemes": {
+			"APIKey": {
+				"description": "A PhoneBlock API key with the diagnostics capability (ACCESS_DIAGNOSTICS), set by a direct DB update. Elevated operations additionally need ACCESS_ADMIN.",
+				"type": "http",
+				"scheme": "Bearer"
+			}
+		},
+		"schemas": {
+			"Signature": {
+				"type": "object",
+				"properties": {
+					"sigId": { "type": "string", "description": "Stable content hash (source + normalized signature); the id used in URLs." },
+					"source": { "type": "string" },
+					"signature": { "type": "string", "description": "The normalized, scrubbed grouping key." },
+					"tag": { "type": "string" },
+					"category": { "type": "string", "nullable": true, "description": "null = unmatched (no rule has categorised it)." },
+					"totalEvents": { "type": "integer", "format": "int64" },
+					"firstSeen": { "type": "integer", "format": "int64" },
+					"lastSeen": { "type": "integer", "format": "int64" }
+				}
+			},
+			"SampleEntry": {
+				"type": "object",
+				"properties": {
+					"receivedMs": { "type": "integer", "format": "int64" },
+					"severity": { "type": "string", "enum": ["E", "W"] },
+					"uptimeS": { "type": "integer", "format": "int64", "nullable": true, "description": "Reporter uptime in seconds (the dongle fills it; other sources null)." },
+					"tag": { "type": "string" },
+					"originId": { "type": "string" },
+					"message": { "type": "string", "description": "The scrubbed raw line." }
+				}
+			},
+			"SignatureDetail": {
+				"type": "object",
+				"properties": {
+					"signature": { "$ref": "#/components/schemas/Signature" },
+					"samples": { "type": "array", "items": { "$ref": "#/components/schemas/SampleEntry" } }
+				}
+			},
+			"TimelineEntry": {
+				"type": "object",
+				"description": "Column-keyed row (uppercase keys).",
+				"properties": {
+					"SIGID": { "type": "string" },
+					"SIGNATURE": { "type": "string" },
+					"TAG": { "type": "string" },
+					"CATEGORY": { "type": "string", "nullable": true },
+					"FIRSTSEEN": { "type": "integer", "format": "int64" },
+					"LASTSEEN": { "type": "integer", "format": "int64" },
+					"EVENTCOUNT": { "type": "integer", "format": "int64" },
+					"DISTINCTDAYS": { "type": "integer" }
+				}
+			},
+			"Rule": {
+				"type": "object",
+				"properties": {
+					"id": { "type": "integer", "format": "int64" },
+					"name": { "type": "string" },
+					"source": { "type": "string", "nullable": true, "description": "null = all sources." },
+					"matchTag": { "type": "string", "nullable": true, "description": "null = any tag." },
+					"matchRegex": { "type": "string" },
+					"category": { "type": "string" },
+					"actor": { "type": "string", "enum": ["USER", "DEV", "NONE"] },
+					"minDistinctDays": { "type": "integer" },
+					"minEvents": { "type": "integer" },
+					"templateKey": { "type": "string", "nullable": true },
+					"state": { "type": "string", "enum": ["DRAFT", "SHADOW", "LIVE", "DISABLED"] },
+					"author": { "type": "string" },
+					"notes": { "type": "string" }
+				}
+			},
+			"RuleCreate": {
+				"type": "object",
+				"required": ["matchRegex"],
+				"properties": {
+					"name": { "type": "string" },
+					"source": { "type": "string", "nullable": true },
+					"matchTag": { "type": "string", "nullable": true },
+					"matchRegex": { "type": "string" },
+					"category": { "type": "string" },
+					"actor": { "type": "string", "enum": ["USER", "DEV", "NONE"], "default": "NONE" },
+					"minDistinctDays": { "type": "integer", "default": 1 },
+					"minEvents": { "type": "integer", "default": 1 },
+					"templateKey": { "type": "string", "nullable": true },
+					"state": { "type": "string", "enum": ["DRAFT", "SHADOW"], "default": "DRAFT" },
+					"notes": { "type": "string" }
+				}
+			},
+			"RuleStats": {
+				"type": "object",
+				"properties": {
+					"ruleId": { "type": "integer", "format": "int64" },
+					"state": { "type": "string" },
+					"notificationsByState": { "type": "object", "additionalProperties": { "type": "integer", "format": "int64" } }
+				}
+			},
+			"StateChangeRequest": {
+				"type": "object",
+				"required": ["state"],
+				"properties": { "state": { "type": "string", "enum": ["DRAFT", "SHADOW", "LIVE", "DISABLED"] } }
+			},
+			"ScrubStateChangeRequest": {
+				"type": "object",
+				"required": ["state"],
+				"properties": { "state": { "type": "string", "enum": ["DRAFT", "LIVE", "DISABLED"] } }
+			},
+			"StateChange": {
+				"type": "object",
+				"properties": {
+					"id": { "type": "integer", "format": "int64" },
+					"state": { "type": "string" }
+				}
+			},
+			"DryRunRequest": {
+				"type": "object",
+				"required": ["matchRegex"],
+				"properties": {
+					"source": { "type": "string", "nullable": true },
+					"matchTag": { "type": "string", "nullable": true },
+					"matchRegex": { "type": "string" },
+					"minDistinctDays": { "type": "integer", "default": 1 },
+					"minEvents": { "type": "integer", "default": 1 }
+				}
+			},
+			"DryRunResult": {
+				"type": "object",
+				"properties": {
+					"matchingSignatures": { "type": "integer" },
+					"matchingOrigins": { "type": "integer" },
+					"matchingUsers": { "type": "integer" },
+					"sampleSignatures": { "type": "array", "items": { "type": "string" } }
+				}
+			},
+			"Template": {
+				"type": "object",
+				"properties": {
+					"templateKey": { "type": "string" },
+					"lang": { "type": "string" },
+					"subject": { "type": "string" },
+					"body": { "type": "string" },
+					"updated": { "type": "integer", "format": "int64" }
+				}
+			},
+			"TemplateUpsert": {
+				"type": "object",
+				"required": ["templateKey", "subject", "body"],
+				"properties": {
+					"templateKey": { "type": "string" },
+					"lang": { "type": "string", "default": "de" },
+					"subject": { "type": "string" },
+					"body": { "type": "string", "description": "Placeholders: {deviceId}, {source}, {category}, {userId}." }
+				}
+			},
+			"MailPreviewRequest": {
+				"type": "object",
+				"required": ["templateKey"],
+				"properties": {
+					"templateKey": { "type": "string" },
+					"lang": { "type": "string", "default": "en" },
+					"originId": { "type": "string", "description": "Fills {deviceId}." },
+					"source": { "type": "string" },
+					"category": { "type": "string" },
+					"userId": { "type": "string" }
+				}
+			},
+			"MailPreview": {
+				"type": "object",
+				"properties": {
+					"templateKey": { "type": "string" },
+					"lang": { "type": "string", "description": "The resolved language (falls back lang -> en -> de)." },
+					"subject": { "type": "string" },
+					"body": { "type": "string" }
+				}
+			},
+			"ScrubRule": {
+				"type": "object",
+				"properties": {
+					"id": { "type": "integer", "format": "int64" },
+					"name": { "type": "string" },
+					"source": { "type": "string", "nullable": true },
+					"pattern": { "type": "string" },
+					"replacement": { "type": "string" },
+					"appliesTo": { "type": "string", "enum": ["SIGNATURE", "SAMPLE", "BOTH"] },
+					"state": { "type": "string", "enum": ["DRAFT", "LIVE", "DISABLED"] },
+					"version": { "type": "integer" },
+					"author": { "type": "string" },
+					"updated": { "type": "integer", "format": "int64" }
+				}
+			},
+			"ScrubCreate": {
+				"type": "object",
+				"required": ["pattern"],
+				"properties": {
+					"name": { "type": "string" },
+					"source": { "type": "string", "nullable": true },
+					"pattern": { "type": "string" },
+					"replacement": { "type": "string", "description": "e.g. <mac>. Supports $1 group refs." },
+					"appliesTo": { "type": "string", "enum": ["SIGNATURE", "SAMPLE", "BOTH"], "default": "BOTH" }
+				}
+			},
+			"AuditRequest": {
+				"type": "object",
+				"properties": {
+					"source": { "type": "string", "nullable": true },
+					"candidatePattern": { "type": "string", "description": "Optional regex to test against retained samples." },
+					"limit": { "type": "integer", "default": 500 }
+				}
+			},
+			"AuditResult": {
+				"type": "object",
+				"properties": {
+					"scanned": { "type": "integer" },
+					"matched": { "type": "integer" },
+					"matches": { "type": "array", "items": { "$ref": "#/components/schemas/AuditMatch" } }
+				}
+			},
+			"AuditMatch": {
+				"type": "object",
+				"description": "Column-keyed row (uppercase keys).",
+				"properties": {
+					"SIGID": { "type": "string" },
+					"SOURCE": { "type": "string" },
+					"ORIGINID": { "type": "string" },
+					"MESSAGE": { "type": "string" }
+				}
+			},
+			"NotificationRow": {
+				"type": "object",
+				"description": "Column-keyed row (uppercase keys).",
+				"properties": {
+					"ID": { "type": "integer", "format": "int64" },
+					"SOURCE": { "type": "string" },
+					"ORIGINID": { "type": "string" },
+					"USERID": { "type": "string", "nullable": true },
+					"RULEID": { "type": "integer", "format": "int64" },
+					"STATE": { "type": "string" },
+					"DRYRUN": { "type": "boolean" },
+					"FIRSTMATCHED": { "type": "integer", "format": "int64" },
+					"SENTAT": { "type": "integer", "format": "int64", "nullable": true },
+					"CLEAREDAT": { "type": "integer", "format": "int64", "nullable": true }
+				}
+			},
+			"IngestStatus": {
+				"type": "object",
+				"properties": {
+					"streamId": { "type": "string" },
+					"segmentCount": { "type": "integer", "format": "int64", "description": "-1 when no cursor yet." },
+					"byteOffset": { "type": "integer", "format": "int64" },
+					"lastLineTs": { "type": "integer", "format": "int64" },
+					"lagMs": { "type": "integer", "format": "int64", "description": "now - lastLineTs, or -1 if never ingested." },
+					"signatures": { "type": "integer", "format": "int64" },
+					"originSignatures": { "type": "integer", "format": "int64" },
+					"totalEvents": { "type": "integer", "format": "int64" },
+					"samples": { "type": "integer", "format": "int64" }
+				}
+			},
+			"Killswitch": {
+				"type": "object",
+				"required": ["enabled"],
+				"properties": { "enabled": { "type": "boolean" } }
+			}
+		}
+	}
+}

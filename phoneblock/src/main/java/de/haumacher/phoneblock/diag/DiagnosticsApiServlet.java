@@ -31,10 +31,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * The diagnostics introspection REST API ({@code /api/diag/*}) — the primitive an
- * agent (optionally via a thin MCP wrapper) drives to discover unmatched
- * signatures, dry-run candidate rules, author rules (into DRAFT/SHADOW) and
- * promote them.
+ * The diagnostics introspection REST API ({@code /api/admin/diag/*}) — the
+ * primitive an agent (optionally via a thin MCP wrapper) drives to discover
+ * unmatched signatures, dry-run candidate rules, author rules (into DRAFT/SHADOW)
+ * and promote them. It also serves its own interactive Swagger UI at
+ * {@code GET /api/admin/diag/} and the OpenAPI document at
+ * {@code GET /api/admin/diag/openapi.json}. {@code /api/admin/} is reserved as the
+ * umbrella for admin tooling; diagnostics is its first area.
  *
  * <p>Auth: every route requires the {@code accessDiagnostics} token capability;
  * the one elevated transition — moving a rule to {@code LIVE} — additionally
@@ -48,17 +51,29 @@ public class DiagnosticsApiServlet extends HttpServlet {
 	private static final Logger LOG = LoggerFactory.getLogger(DiagnosticsApiServlet.class);
 
 	/** The servlet path (matched by {@code BasicLoginFilter} for the capability check). */
-	public static final String SERVLET_PATH = "/api/diag";
+	public static final String SERVLET_PATH = "/api/admin/diag";
 
 	/** The full URL pattern this servlet is mapped to. */
 	public static final String URL_PATTERN = SERVLET_PATH + "/*";
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		String path = path(req);
+		// Public, unauthenticated: the interactive docs and their OpenAPI spec. The
+		// browser must load the spec before any token is entered, so these two bypass
+		// the capability gate; every endpoint they drive stays token-gated (you click
+		// "Authorize" and paste a bearer token to actually call anything).
+		if (path.equals("/openapi.json")) {
+			serveOpenApiSpec(req, resp);
+			return;
+		}
+		if (path.equals("/")) {
+			serveSwaggerUi(req, resp);
+			return;
+		}
 		if (!authorize(req, resp, false)) {
 			return;
 		}
-		String path = path(req);
 		try (SqlSession session = DBService.getInstance().openSession()) {
 			DiagnosticsMapper mapper = session.getMapper(DiagnosticsMapper.class);
 			if (path.equals("/signatures")) {
@@ -714,6 +729,62 @@ public class DiagnosticsApiServlet extends HttpServlet {
 		} else {
 			w.value(v);
 		}
+	}
+
+	/**
+	 * Serves the bundled OpenAPI 3.0 document for this API. Self-describing under
+	 * the API's own path ({@code GET /api/admin/diag/openapi.json}). Deliberately
+	 * separate from the public {@code /api/phoneblock.json} — this is internal
+	 * agent/admin tooling, not a published user contract — and served
+	 * unauthenticated so the Swagger UI can load it before a token is entered (the
+	 * endpoints it describes stay token-gated).
+	 *
+	 * <p>The {@code {{CONTEXT}}} placeholder in the bundled spec is replaced with
+	 * the live context path, so the server URL is correct on any deployment
+	 * (prod {@code /phoneblock}, test {@code /pb-test}, …) and Swagger "Try it out"
+	 * targets the same host it was served from.</p>
+	 */
+	private void serveOpenApiSpec(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		String spec;
+		try (java.io.InputStream in = DiagnosticsApiServlet.class.getResourceAsStream("openapi.json")) {
+			if (in == null) {
+				ServletUtil.sendMessage(resp, HttpServletResponse.SC_NOT_FOUND, "OpenAPI spec not bundled.");
+				return;
+			}
+			spec = new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+		}
+		spec = spec.replace("{{CONTEXT}}", req.getContextPath());
+		resp.setContentType("application/json");
+		resp.setCharacterEncoding("UTF-8");
+		resp.getWriter().write(spec);
+	}
+
+	/**
+	 * Serves the interactive Swagger UI shell for this API at
+	 * {@code GET /api/admin/diag/}. The heavy assets come from the {@code swagger-ui-dist}
+	 * webjar (same-origin, so the strict CSP's {@code script-src 'self'} is
+	 * satisfied); a small same-origin bootstrap ({@code assets/js/diag-api.js})
+	 * instantiates it against this API's spec. Unauthenticated like the spec — you
+	 * open the page, click "Authorize", paste a bearer token, then call endpoints.
+	 */
+	private void serveSwaggerUi(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		String ctx = req.getContextPath();
+		String swagger = ctx + de.haumacher.phoneblock.app.UIProperties.SWAGGER_PATH;
+		resp.setContentType("text/html;charset=UTF-8");
+		StringBuilder html = new StringBuilder(1024);
+		html.append("<!DOCTYPE html>\n<html>\n<head>\n")
+			.append("<meta charset=\"UTF-8\"/>\n")
+			.append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/>\n")
+			.append("<title>PhoneBlock Diagnostics API</title>\n")
+			.append("<link rel=\"stylesheet\" href=\"").append(swagger).append("/swagger-ui.css\"/>\n")
+			.append("</head>\n<body>\n")
+			.append("<section id=\"swagger-ui\"></section>\n")
+			.append("<input id=\"openapi-url\" type=\"hidden\" value=\"")
+			.append(ctx).append("/api/admin/diag/openapi.json\"/>\n")
+			.append("<script src=\"").append(swagger).append("/swagger-ui-bundle.js\"></script>\n")
+			.append("<script src=\"").append(ctx).append("/assets/js/diag-api.js\"></script>\n")
+			.append("</body>\n</html>\n");
+		resp.getWriter().write(html.toString());
 	}
 
 	private interface JsonBody {

@@ -1,7 +1,7 @@
 -- Diagnostics framework: hot-editable anonymizer rules (DIAG_SCRUB_RULE).
 -- The built-in Scrubber rule set stays the always-on baseline; LIVE rows here are
--- layered on top so an agent can grow the anonymizer (via POST /api/diag/scrub,
--- informed by POST /api/diag/scrub/audit) without a server redeploy. No rows are
+-- layered on top so an agent can grow the anonymizer (via POST /api/admin/diag/scrub,
+-- informed by POST /api/admin/diag/scrub/audit) without a server redeploy. No rows are
 -- seeded: the baseline already masks the high-confidence PII shapes.
 CREATE TABLE DIAG_SCRUB_RULE (
 	ID BIGINT NOT NULL AUTO_INCREMENT,

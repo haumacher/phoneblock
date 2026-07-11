@@ -643,15 +643,24 @@ A scheduled reader that tails the server's rolling log, recognizes source-specif
 
 ### Introspection REST API & token capabilities
 
-The agent-facing REST API lives at `/api/diag/*` and is gated by two `AuthToken`
+The agent-facing REST API lives at `/api/admin/diag/*` and is gated by two `AuthToken`
 capabilities (columns on the `TOKENS` table, minted by a direct DB update — there
 is no UI to create such a token):
 
 - `ACCESS_DIAGNOSTICS` — read signatures/rules, dry-run and author rules into
   `DRAFT`/`SHADOW`, and create scrub rules (tightening the anonymizer). Required
-  for every `/api/diag` route.
+  for every `/api/admin/diag` data route.
 - `ACCESS_ADMIN` — the elevated transitions: promoting a rule to `LIVE`, changing
   a scrub rule's state (relaxing the anonymizer), and the mail kill switch.
+
+`/api/admin/` is reserved as the umbrella for admin tooling; diagnostics is its
+first area. The API ships **interactive Swagger UI** at `GET /api/admin/diag/` and
+its OpenAPI document at `GET /api/admin/diag/openapi.json`. These two are served
+**unauthenticated** (so the browser can load the docs before a token is entered);
+open the UI, click *Authorize*, paste a bearer token, then call any endpoint. The
+endpoints themselves stay token-gated as above — the security is the token, not
+hiding the docs (consistent with the interface being internet-accessible by
+design).
 
 Mint by flipping the flags on an ordinary token, e.g.:
 
@@ -660,7 +669,7 @@ UPDATE TOKENS SET ACCESS_DIAGNOSTICS = TRUE WHERE ID = <token-id>;   -- agent to
 UPDATE TOKENS SET ACCESS_ADMIN = TRUE       WHERE ID = <human-token-id>;
 ```
 
-Endpoints (all under `/api/diag`, `ACCESS_DIAGNOSTICS` unless noted):
+Endpoints (all under `/api/admin/diag`, `ACCESS_DIAGNOSTICS` unless noted):
 
 *Read / discover*
 - `GET /signatures` — signature feed (unmatched long tail via `?unmatched=true`).

@@ -23,7 +23,7 @@ import java.util.regex.Pattern;
  * counts). On top of the baseline, LIVE rows of {@code DIAG_SCRUB_RULE} are
  * layered so an agent can grow the anonymizer without a redeploy (see
  * {@code docs/plans/2026-07-11-diagnostics-framework-design.md}); the audit loop
- * (<code>POST /api/diag/scrub/audit</code>) surfaces leaked shapes to add.</p>
+ * (<code>POST /api/admin/diag/scrub/audit</code>) surfaces leaked shapes to add.</p>
  *
  * <p>The {@code applies_to} dimension splits the pass in two: rules tagged
  * {@code SIGNATURE} or {@code BOTH} shape the grouping key; rules tagged

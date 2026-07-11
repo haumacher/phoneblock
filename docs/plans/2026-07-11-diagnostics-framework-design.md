@@ -3,7 +3,7 @@
 **Date:** 2026-07-11
 **Status:** Draft — for review. **Implemented on branch `diagnostics-framework`**
 (package `de.haumacher.phoneblock.diag`): Phase 1 (reader + dongle recognizer +
-`DIAG_*` tables), Phase 2 (auth capabilities + the full `/api/diag` REST API —
+`DIAG_*` tables), Phase 2 (auth capabilities + the full `/api/admin/diag` REST API —
 signatures, origins timeline, rules + stats, templates + preview, scrub rules +
 audit, notifications, ingest status, kill switch), Phases 3–4 (rule engine,
 matcher, help-mail — seeded rules ship in SHADOW, mail kill switch off), the
@@ -422,7 +422,7 @@ optional thin local wrapper** that shells out to those endpoints with the agent'
 token; the server never depends on MCP. Because the wrapper is configured with a
 diagnostics-only token, the promote path is simply absent from its toolset.
 
-**Conventions.** Base path `/api/diag`. Bearer token (`Authorization: Bearer …`),
+**Conventions.** Base path `/api/admin/diag`. Bearer token (`Authorization: Bearer …`),
 `Accept: application/json`. Reads/dry-runs gate on `accessDiagnostics`; the one
 elevated transition (→ `LIVE`) gates on `accessAdmin` — enforced in each
 servlet's `checkTokenAuthorization`. Writes are non-`GET`, so errors use
@@ -435,38 +435,38 @@ an optional query filter everywhere (default: all).
 
 | Method & path | Purpose | MCP tool |
 |---|---|---|
-| `GET /api/diag/signatures?source=&matched=false&minOrigins=&since=&limit=&offset=` | The unmatched long tail (`category IS NULL` when `matched=false`), ranked by origin-count × recency | `list_unmatched_signatures` |
-| `GET /api/diag/signatures/{sigId}` | One signature: stats + capped scrubbed samples | `signature_detail` |
-| `GET /api/diag/origins/{source}/{originId}/timeline?since=` | One origin's signatures over time | `origin_timeline` |
-| `GET /api/diag/rules?source=&state=` | List rules | `list_rules` |
-| `GET /api/diag/rules/{id}` | One rule | — |
-| `GET /api/diag/rules/{id}/stats?window=` | Per-rule hit stats (incl. shadow projections) | `rule_hit_stats` |
-| `GET /api/diag/notifications?source=&ruleId=&state=&since=` | Sent/pending mail audit | — |
-| `GET /api/diag/ingest/status` | Reader health: cursor position, lag, last run | — |
+| `GET /api/admin/diag/signatures?source=&matched=false&minOrigins=&since=&limit=&offset=` | The unmatched long tail (`category IS NULL` when `matched=false`), ranked by origin-count × recency | `list_unmatched_signatures` |
+| `GET /api/admin/diag/signatures/{sigId}` | One signature: stats + capped scrubbed samples | `signature_detail` |
+| `GET /api/admin/diag/origins/{source}/{originId}/timeline?since=` | One origin's signatures over time | `origin_timeline` |
+| `GET /api/admin/diag/rules?source=&state=` | List rules | `list_rules` |
+| `GET /api/admin/diag/rules/{id}` | One rule | — |
+| `GET /api/admin/diag/rules/{id}/stats?window=` | Per-rule hit stats (incl. shadow projections) | `rule_hit_stats` |
+| `GET /api/admin/diag/notifications?source=&ruleId=&state=&since=` | Sent/pending mail audit | — |
+| `GET /api/admin/diag/ingest/status` | Reader health: cursor position, lag, last run | — |
 
 **Experiment (no side effects)** — `accessDiagnostics`
 
 | Method & path | Body | Returns | MCP tool |
 |---|---|---|---|
-| `POST /api/diag/rules/dryrun` | `{source?, matchTag?, matchRegex, minDistinctDays, minEvents, window}` | `{matchingOrigins, matchingUsers, projectedMailsPerWeek, sampleLines[]}` | `dryrun_rule` |
-| `POST /api/diag/mail/preview` | `{templateId, originId?}` | `{subject, body, lang}` | `preview_mail` |
-| `POST /api/diag/scrub/audit` | `{source?, candidatePattern?}` | `{matches[]}` — retained samples still matching PII shapes | `audit_samples` |
+| `POST /api/admin/diag/rules/dryrun` | `{source?, matchTag?, matchRegex, minDistinctDays, minEvents, window}` | `{matchingOrigins, matchingUsers, projectedMailsPerWeek, sampleLines[]}` | `dryrun_rule` |
+| `POST /api/admin/diag/mail/preview` | `{templateId, originId?}` | `{subject, body, lang}` | `preview_mail` |
+| `POST /api/admin/diag/scrub/audit` | `{source?, candidatePattern?}` | `{matches[]}` — retained samples still matching PII shapes | `audit_samples` |
 
 **Author (lands in DRAFT/SHADOW)** — `accessDiagnostics`
 
 | Method & path | Purpose | MCP tool |
 |---|---|---|
-| `POST /api/diag/rules` · `PUT /api/diag/rules/{id}` | Create (DRAFT) / update a detection rule | `upsert_rule` |
-| `POST /api/diag/templates` · `PUT /api/diag/templates/{id}` | Create / update a mail template | `upsert_template` |
-| `POST /api/diag/scrub` · `PUT /api/diag/scrub/{id}` | Create / update a scrub rule — *tightening* applies live; *relaxing* returns `202` pending human review | `upsert_scrub_rule` |
-| `POST /api/diag/rules/{id}/state` | Body `{state}`. `DRAFT`↔`SHADOW`, `DISABLED` allowed here | `set_rule_state` (≤ SHADOW) |
+| `POST /api/admin/diag/rules` · `PUT /api/admin/diag/rules/{id}` | Create (DRAFT) / update a detection rule | `upsert_rule` |
+| `POST /api/admin/diag/templates` · `PUT /api/admin/diag/templates/{id}` | Create / update a mail template | `upsert_template` |
+| `POST /api/admin/diag/scrub` · `PUT /api/admin/diag/scrub/{id}` | Create / update a scrub rule — *tightening* applies live; *relaxing* returns `202` pending human review | `upsert_scrub_rule` |
+| `POST /api/admin/diag/rules/{id}/state` | Body `{state}`. `DRAFT`↔`SHADOW`, `DISABLED` allowed here | `set_rule_state` (≤ SHADOW) |
 
 **Promote / admin** — `accessAdmin`
 
 | Method & path | Purpose | MCP tool |
 |---|---|---|
-| `POST /api/diag/rules/{id}/state` with `{state: "LIVE"}` | The one elevated transition — same endpoint, `LIVE` target requires `accessAdmin`; a diagnostics-only token gets the standard privilege-mismatch rejection | *(not in the agent wrapper)* |
-| `POST /api/diag/killswitch` | Body `{enabled}` — global mail cutoff | — |
+| `POST /api/admin/diag/rules/{id}/state` with `{state: "LIVE"}` | The one elevated transition — same endpoint, `LIVE` target requires `accessAdmin`; a diagnostics-only token gets the standard privilege-mismatch rejection | *(not in the agent wrapper)* |
+| `POST /api/admin/diag/killswitch` | Body `{enabled}` — global mail cutoff | — |
 
 The `set_rule_state` endpoint is shared: the *target state* selects the required
 capability (`LIVE` → `accessAdmin`, everything else → `accessDiagnostics`), so the
