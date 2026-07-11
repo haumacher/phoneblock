@@ -497,7 +497,8 @@ CREATE INDEX DIAG_NOTIFICATION_LATCH_IDX ON DIAG_NOTIFICATION (RULE_ID, ORIGIN_I
 CREATE INDEX DIAG_NOTIFICATION_SENT_IDX ON DIAG_NOTIFICATION (STATE, SENT_AT);
 
 -- Hot-editable anonymizer rules, layered on top of the built-in Scrubber
--- baseline; see db-migration-52.sql.
+-- baseline; see db-migration-52.sql. Three signature-collapse rules are seeded
+-- LIVE below (kept in sync with that migration).
 CREATE TABLE DIAG_SCRUB_RULE (
 	ID BIGINT NOT NULL AUTO_INCREMENT,
 	NAME CHARACTER VARYING(128) DEFAULT '' NOT NULL,
@@ -513,6 +514,11 @@ CREATE TABLE DIAG_SCRUB_RULE (
 );
 
 CREATE INDEX DIAG_SCRUB_RULE_STATE_IDX ON DIAG_SCRUB_RULE (STATE);
+
+-- Seeded signature-collapse rules (kept in sync with db-migration-52.sql).
+INSERT INTO DIAG_SCRUB_RULE (NAME, SOURCE, PATTERN, REPLACEMENT, APPLIES_TO, STATE) VALUES ('diag-dyndns-host', 'SERVER', '(wrong password \(\d+ characters\): ).*', '$1<DYNDNS-HOST>', 'SIGNATURE', 'LIVE');
+INSERT INTO DIAG_SCRUB_RULE (NAME, SOURCE, PATTERN, REPLACEMENT, APPLIES_TO, STATE) VALUES ('diag-addressbook-path', 'SERVER', '(/phoneblock/contacts/addresses/)[^/]+/[^''\s]*', '$1<BOOK>/<CARD>', 'BOTH', 'LIVE');
+INSERT INTO DIAG_SCRUB_RULE (NAME, SOURCE, PATTERN, REPLACEMENT, APPLIES_TO, STATE) VALUES ('diag-address-card', 'SERVER', '(Prevent deleting card: ).*', '$1<CARD>', 'BOTH', 'LIVE');
 
 INSERT INTO DIAG_TEMPLATE (TEMPLATE_KEY, LANG, SUBJECT, BODY, UPDATED) VALUES
 	('help-register-rejected', 'de',
