@@ -653,14 +653,16 @@ is no UI to create such a token):
 - `ACCESS_ADMIN` — the elevated transitions: promoting a rule to `LIVE`, changing
   a scrub rule's state (relaxing the anonymizer), and the mail kill switch.
 
-`/api/admin/` is reserved as the umbrella for admin tooling; diagnostics is its
-first area. The API ships **interactive Swagger UI** at `GET /api/admin/diag/` and
-its OpenAPI document at `GET /api/admin/diag/openapi.json`. These two are served
-**unauthenticated** (so the browser can load the docs before a token is entered);
-open the UI, click *Authorize*, paste a bearer token, then call any endpoint. The
-endpoints themselves stay token-gated as above — the security is the token, not
-hiding the docs (consistent with the interface being internet-accessible by
-design).
+`/api/admin/` is the umbrella for admin tooling; diagnostics (`/api/admin/diag/*`)
+is its first area. The admin console (`AdminApiServlet`) serves the **interactive
+Swagger UI** at `GET /api/admin/` and the OpenAPI document at
+`GET /api/admin/openapi.json`; further admin areas add their paths to that same
+spec and appear in the same UI, so the individual admin servlets carry no
+Swagger/OpenAPI plumbing. These two doc routes are served **unauthenticated** (so
+the browser can load the docs before a token is entered); open the UI, click
+*Authorize*, paste a bearer token, then call any endpoint. The endpoints
+themselves stay token-gated as above — the security is the token, not hiding the
+docs (consistent with the interface being internet-accessible by design).
 
 Mint by flipping the flags on an ordinary token, e.g.:
 

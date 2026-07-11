@@ -4,6 +4,7 @@
 package de.haumacher.phoneblock.diag;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -157,6 +158,21 @@ public class TestDiagnosticsIngest {
 			String sigId = text("SELECT SIG_ID FROM DIAG_SIGNATURE");
 			java.util.Map<String, Object> sample = mapper.listSamples(sigId, 20).get(0);
 			assertEquals(100L, ((Number) sample.get("UPTIMES")).longValue());
+		}
+	}
+
+	@Test
+	public void testNotificationRowsUseCamelCaseKeys() throws Exception {
+		try (SqlSession session = _db.openSession()) {
+			DiagnosticsMapper mapper = session.getMapper(DiagnosticsMapper.class);
+			mapper.insertNotification("DONGLE", "dev-a", "user-1", 1L, "SENT", false, T0, T0);
+			session.commit();
+
+			java.util.Map<String, Object> row = mapper.listNotifications(null, -1, null, 0, 10).get(0);
+			// Quoted SQL aliases must survive as camelCase map keys (not H2-uppercased).
+			assertTrue(row.containsKey("originId"), "keys=" + row.keySet());
+			assertTrue(row.containsKey("ruleId"), "keys=" + row.keySet());
+			assertEquals("dev-a", row.get("originId"));
 		}
 	}
 

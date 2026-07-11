@@ -1,8 +1,8 @@
 {
 	"openapi": "3.0.3",
 	"info": {
-		"title": "PhoneBlock Diagnostics API",
-		"description": "Internal admin/agent API for the diagnostics framework: discover error signatures across sources, author and promote detection rules, grow the anonymizer, and audit the help-mail flow. Distinct from the public PhoneBlock API (/api/phoneblock.json). Every endpoint requires a bearer token with the diagnostics capability; the few elevated transitions additionally require the admin capability (noted per operation). Mint such a token by flipping ACCESS_DIAGNOSTICS / ACCESS_ADMIN on an ordinary API key directly in the database.",
+		"title": "PhoneBlock Admin API",
+		"description": "Internal admin/agent API. Its first area is diagnostics (/admin/diag): discover error signatures across sources, author and promote detection rules, grow the anonymizer, and audit the help-mail flow. Future admin areas add their paths here under /admin/. Distinct from the public PhoneBlock API (/api/phoneblock.json). Every data endpoint requires a bearer token with the diagnostics capability; the few elevated transitions additionally require the admin capability (noted per operation). Mint such a token by flipping ACCESS_DIAGNOSTICS / ACCESS_ADMIN on an ordinary API key directly in the database.",
 		"version": "v1"
 	},
 	"servers": [
@@ -303,16 +303,15 @@
 			},
 			"TimelineEntry": {
 				"type": "object",
-				"description": "Column-keyed row (uppercase keys).",
 				"properties": {
-					"SIGID": { "type": "string" },
-					"SIGNATURE": { "type": "string" },
-					"TAG": { "type": "string" },
-					"CATEGORY": { "type": "string", "nullable": true },
-					"FIRSTSEEN": { "type": "integer", "format": "int64" },
-					"LASTSEEN": { "type": "integer", "format": "int64" },
-					"EVENTCOUNT": { "type": "integer", "format": "int64" },
-					"DISTINCTDAYS": { "type": "integer" }
+					"sigId": { "type": "string" },
+					"signature": { "type": "string" },
+					"tag": { "type": "string" },
+					"category": { "type": "string", "nullable": true },
+					"firstSeen": { "type": "integer", "format": "int64" },
+					"lastSeen": { "type": "integer", "format": "int64" },
+					"eventCount": { "type": "integer", "format": "int64" },
+					"distinctDays": { "type": "integer" }
 				}
 			},
 			"Rule": {
@@ -480,28 +479,26 @@
 			},
 			"AuditMatch": {
 				"type": "object",
-				"description": "Column-keyed row (uppercase keys).",
 				"properties": {
-					"SIGID": { "type": "string" },
-					"SOURCE": { "type": "string" },
-					"ORIGINID": { "type": "string" },
-					"MESSAGE": { "type": "string" }
+					"sigId": { "type": "string" },
+					"source": { "type": "string" },
+					"originId": { "type": "string" },
+					"message": { "type": "string" }
 				}
 			},
 			"NotificationRow": {
 				"type": "object",
-				"description": "Column-keyed row (uppercase keys).",
 				"properties": {
-					"ID": { "type": "integer", "format": "int64" },
-					"SOURCE": { "type": "string" },
-					"ORIGINID": { "type": "string" },
-					"USERID": { "type": "string", "nullable": true },
-					"RULEID": { "type": "integer", "format": "int64" },
-					"STATE": { "type": "string" },
-					"DRYRUN": { "type": "boolean" },
-					"FIRSTMATCHED": { "type": "integer", "format": "int64" },
-					"SENTAT": { "type": "integer", "format": "int64", "nullable": true },
-					"CLEAREDAT": { "type": "integer", "format": "int64", "nullable": true }
+					"id": { "type": "integer", "format": "int64" },
+					"source": { "type": "string" },
+					"originId": { "type": "string" },
+					"userId": { "type": "string", "nullable": true },
+					"ruleId": { "type": "integer", "format": "int64" },
+					"state": { "type": "string" },
+					"dryRun": { "type": "boolean" },
+					"firstMatched": { "type": "integer", "format": "int64" },
+					"sentAt": { "type": "integer", "format": "int64", "nullable": true },
+					"clearedAt": { "type": "integer", "format": "int64", "nullable": true }
 				}
 			},
 			"IngestStatus": {

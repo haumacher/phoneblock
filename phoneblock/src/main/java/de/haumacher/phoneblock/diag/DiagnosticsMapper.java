@@ -231,9 +231,13 @@ public interface DiagnosticsMapper {
 
 	// ---- Notification audit ----
 
-	@Select("SELECT ID, SOURCE, ORIGIN_ID AS ORIGINID, USER_ID AS USERID, RULE_ID AS RULEID, "
-			+ "STATE, DRY_RUN AS DRYRUN, FIRST_MATCHED AS FIRSTMATCHED, SENT_AT AS SENTAT, "
-			+ "CLEARED_AT AS CLEAREDAT FROM DIAG_NOTIFICATION "
+	// Quoted aliases so H2 keeps the camelCase column labels (unquoted -> uppercased);
+	// these rows are emitted verbatim as JSON objects, so the keys must be the API's
+	// camelCase names.
+	@Select("SELECT ID AS \"id\", SOURCE AS \"source\", ORIGIN_ID AS \"originId\", "
+			+ "USER_ID AS \"userId\", RULE_ID AS \"ruleId\", STATE AS \"state\", "
+			+ "DRY_RUN AS \"dryRun\", FIRST_MATCHED AS \"firstMatched\", SENT_AT AS \"sentAt\", "
+			+ "CLEARED_AT AS \"clearedAt\" FROM DIAG_NOTIFICATION "
 			+ "WHERE (#{ruleId} < 0 OR RULE_ID = #{ruleId}) "
 			+ "AND (#{source} IS NULL OR SOURCE = #{source}) "
 			+ "AND (#{state} IS NULL OR STATE = #{state}) "
@@ -248,9 +252,9 @@ public interface DiagnosticsMapper {
 
 	// ---- Per-origin timeline (introspection) ----
 
-	@Select("SELECT o.SIG_ID AS SIGID, s.SIGNATURE, s.TAG, s.CATEGORY, "
-			+ "o.FIRST_SEEN AS FIRSTSEEN, o.LAST_SEEN AS LASTSEEN, "
-			+ "o.EVENT_COUNT AS EVENTCOUNT, o.DISTINCT_DAYS AS DISTINCTDAYS "
+	@Select("SELECT o.SIG_ID AS \"sigId\", s.SIGNATURE AS \"signature\", s.TAG AS \"tag\", "
+			+ "s.CATEGORY AS \"category\", o.FIRST_SEEN AS \"firstSeen\", o.LAST_SEEN AS \"lastSeen\", "
+			+ "o.EVENT_COUNT AS \"eventCount\", o.DISTINCT_DAYS AS \"distinctDays\" "
 			+ "FROM DIAG_ORIGIN_SIGNATURE o JOIN DIAG_SIGNATURE s ON s.SIG_ID = o.SIG_ID "
 			+ "WHERE o.SOURCE = #{source} AND o.ORIGIN_ID = #{originId} "
 			+ "AND (#{since} = 0 OR o.LAST_SEEN >= #{since}) ORDER BY o.LAST_SEEN DESC")
@@ -259,7 +263,8 @@ public interface DiagnosticsMapper {
 
 	// ---- Sample audit (scan retained samples for still-leaking PII shapes) ----
 
-	@Select("SELECT SIG_ID AS SIGID, SOURCE, ORIGIN_ID AS ORIGINID, MESSAGE_SCRUBBED AS MESSAGE "
+	@Select("SELECT SIG_ID AS \"sigId\", SOURCE AS \"source\", ORIGIN_ID AS \"originId\", "
+			+ "MESSAGE_SCRUBBED AS \"message\" "
 			+ "FROM DIAG_SAMPLE WHERE (#{source} IS NULL OR SOURCE = #{source}) "
 			+ "ORDER BY RECEIVED_MS DESC LIMIT #{limit}")
 	List<java.util.Map<String, Object>> recentSamples(@Param("source") String source, @Param("limit") int limit);
