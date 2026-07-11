@@ -66,6 +66,8 @@ public class DiagnosticsApiServlet extends HttpServlet {
 				listRules(req, resp, mapper);
 			} else if (path.startsWith("/rules/")) {
 				ruleDetail(resp, mapper, path.substring("/rules/".length()));
+			} else if (path.equals("/templates")) {
+				listTemplates(req, resp, mapper);
 			} else {
 				ServletUtil.sendMessage(resp, HttpServletResponse.SC_NOT_FOUND, "Unknown resource: " + path);
 			}
@@ -86,6 +88,8 @@ public class DiagnosticsApiServlet extends HttpServlet {
 				createRule(req, resp, session, mapper);
 			} else if (path.matches("/rules/\\d+/state")) {
 				setRuleState(req, resp, session, mapper, ruleId(path));
+			} else if (path.equals("/templates")) {
+				upsertTemplate(req, resp, session, mapper);
 			} else {
 				ServletUtil.sendMessage(resp, HttpServletResponse.SC_NOT_FOUND, "Unknown resource: " + path);
 			}
@@ -161,6 +165,18 @@ public class DiagnosticsApiServlet extends HttpServlet {
 			return;
 		}
 		writeJson(resp, w -> writeRule(w, rule));
+	}
+
+	private void listTemplates(HttpServletRequest req, HttpServletResponse resp, DiagnosticsMapper mapper)
+			throws IOException {
+		List<DiagTemplate> templates = mapper.listTemplates(trimToNull(req.getParameter("key")));
+		writeJson(resp, w -> {
+			w.beginArray();
+			for (DiagTemplate t : templates) {
+				writeTemplate(w, t);
+			}
+			w.endArray();
+		});
 	}
 
 	// ---- Experiment ----
@@ -263,6 +279,27 @@ public class DiagnosticsApiServlet extends HttpServlet {
 		});
 	}
 
+	private void upsertTemplate(HttpServletRequest req, HttpServletResponse resp, SqlSession session,
+			DiagnosticsMapper mapper) throws IOException {
+		Map<String, String> body = readObject(req);
+		String key = trimToNull(body.get("templateKey"));
+		if (key == null || body.get("subject") == null || body.get("body") == null) {
+			ServletUtil.sendMessage(resp, HttpServletResponse.SC_BAD_REQUEST,
+				"templateKey, subject and body are required.");
+			return;
+		}
+		DiagTemplate template = new DiagTemplate();
+		template.setTemplateKey(key);
+		template.setLang(body.getOrDefault("lang", "de"));
+		template.setSubject(body.get("subject"));
+		template.setBody(body.get("body"));
+		template.setUpdated(System.currentTimeMillis());
+		mapper.upsertTemplate(template);
+		bumpRulesetVersion(session);
+		session.commit();
+		writeJson(resp, w -> writeTemplate(w, template));
+	}
+
 	// ---- helpers ----
 
 	/**
@@ -326,6 +363,16 @@ public class DiagnosticsApiServlet extends HttpServlet {
 		w.name("state").value(r.getState());
 		w.name("author").value(r.getAuthor());
 		w.name("notes").value(r.getNotes());
+		w.endObject();
+	}
+
+	private static void writeTemplate(JsonWriter w, DiagTemplate t) throws IOException {
+		w.beginObject();
+		w.name("templateKey").value(t.getTemplateKey());
+		w.name("lang").value(t.getLang());
+		w.name("subject").value(t.getSubject());
+		w.name("body").value(t.getBody());
+		w.name("updated").value(t.getUpdated());
 		w.endObject();
 	}
 

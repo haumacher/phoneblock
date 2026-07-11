@@ -4,7 +4,9 @@
 package de.haumacher.phoneblock.diag;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -211,6 +213,18 @@ public class TestDiagnosticsMatcher {
 
 		assertEquals(1, scalar("SELECT COUNT(*) FROM DIAG_NOTIFICATION"));
 		assertEquals("PENDING", text("SELECT STATE FROM DIAG_NOTIFICATION"));
+	}
+
+	@Test
+	public void testEnglishTemplatesSeeded() throws Exception {
+		try (SqlSession s = _db.openSession()) {
+			DiagnosticsMapper m = s.getMapper(DiagnosticsMapper.class);
+			DiagTemplate en = m.getTemplate("help-internet-exposed", "en");
+			assertNotNull(en, "English template should be seeded");
+			assertTrue(en.getSubject().startsWith("Security notice"));
+			assertNotNull(m.getTemplate("help-device-silent", "en"));
+			assertNotNull(m.getTemplate("help-register-rejected", "en"));
+		}
 	}
 
 	@Test

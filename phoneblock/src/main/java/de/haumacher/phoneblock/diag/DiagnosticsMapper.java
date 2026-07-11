@@ -168,9 +168,14 @@ public interface DiagnosticsMapper {
 
 	// ---- Templates ----
 
-	@Select("SELECT ID, TEMPLATE_KEY AS TEMPLATEKEY, LANG, SUBJECT, BODY, UPDATED "
-			+ "FROM DIAG_TEMPLATE WHERE TEMPLATE_KEY = #{templateKey} AND LANG = #{lang}")
+	String TEMPLATE_COLS = "ID, TEMPLATE_KEY AS TEMPLATEKEY, LANG, SUBJECT, BODY, UPDATED";
+
+	@Select("SELECT " + TEMPLATE_COLS + " FROM DIAG_TEMPLATE WHERE TEMPLATE_KEY = #{templateKey} AND LANG = #{lang}")
 	DiagTemplate getTemplate(@Param("templateKey") String templateKey, @Param("lang") String lang);
+
+	@Select("SELECT " + TEMPLATE_COLS + " FROM DIAG_TEMPLATE "
+			+ "WHERE (#{templateKey} IS NULL OR TEMPLATE_KEY = #{templateKey}) ORDER BY TEMPLATE_KEY, LANG")
+	List<DiagTemplate> listTemplates(@Param("templateKey") String templateKey);
 
 	@Insert("MERGE INTO DIAG_TEMPLATE (TEMPLATE_KEY, LANG, SUBJECT, BODY, UPDATED) "
 			+ "KEY(TEMPLATE_KEY, LANG) VALUES (#{templateKey}, #{lang}, #{subject}, #{body}, #{updated})")
