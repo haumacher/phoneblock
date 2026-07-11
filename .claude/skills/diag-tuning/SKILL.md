@@ -98,18 +98,25 @@ you the real raw tail — that is what you design a rule against.
   signature and can raise a help mail. They carry SHADOW→LIVE state and a
   kill-switch; treat promotion as outbound-affecting and confirm first.
 
-## Current backlog (as of the framework's first live run)
+## Scrub rules currently LIVE (server source)
 
-Concrete items surfaced from the live logs — pick up from here:
+Three scrub rules run against the `SERVER` source, each collapsing a fragmented
+family (`list_scrub_rules`). Scrub rules apply to new events only — they do not
+retro-merge the pre-existing fragmented signatures, which linger in the ranking
+and just stop growing:
 
-- **3 validated scrub rules pending as DRAFT** (create once the `state`-param
-  endpoint is redeployed; all `source: SERVER`):
-  - `diag-dyndns-host` — `(wrong password \(\d+ characters\): ).*` → `$1<DYNDNS-HOST>`,
-    `SIGNATURE` (collapses ~1.3k DynIpServlet events; keeps the `fb-fb-…` config-bug
-    tail visible — flip to `BOTH` if the occasional password-in-username is a concern).
-  - `diag-addressbook-path` — `(/phoneblock/contacts/addresses/)[^/]+/[^'\s]*` →
-    `$1<BOOK>/<CARD>`, `BOTH` (~0.8k events; also plugs the URL-encoded email leak).
-  - `diag-address-card` — `(Prevent deleting card: ).*` → `$1<CARD>`, `BOTH` (~0.5k).
+- `diag-dyndns-host` — `(wrong password \(\d+ characters\): ).*` → `$1<DYNDNS-HOST>`,
+  `SIGNATURE` (folded ~1.3k DynIpServlet events into one signature; keeps the raw
+  tail in samples so the `fb-fb-…` config-bug and which hosts are hammered stay
+  visible — flip to `BOTH` if the occasional password-in-username matters).
+- `diag-addressbook-path` — `(/phoneblock/contacts/addresses/)[^/]+/[^'\s]*` →
+  `$1<BOOK>/<CARD>`, `BOTH` (~0.8k events; also masks the URL-encoded email leak).
+- `diag-address-card` — `(Prevent deleting card: ).*` → `$1<CARD>`, `BOTH` (~0.5k).
+
+## Open observations from the live logs
+
+Surfaced from the logs, not yet acted on:
+
 - **Detection-rule candidates:** answerbot registration failing
   (`SipService: … register ab-<N> … Timeout`, ~1.7k) → user-addressable help mail;
   an auth-scanning cluster (`DB: Invalid user name` ~3.6k, invalid password,
@@ -118,3 +125,5 @@ Concrete items surfaced from the live logs — pick up from here:
   `GoogleUpdateService.java:111,114,119`; and the SEO indexers
   (`GoogleUpdateService` 429s + `IndexNowUpdateService` HTTP errors) flooding
   ~63% of all events — need backoff / lower log level.
+- **No stale-fragment cleanup:** there is no step to prune signatures with no
+  recent events, so pre-rule fragments stay visible in the ranking indefinitely.

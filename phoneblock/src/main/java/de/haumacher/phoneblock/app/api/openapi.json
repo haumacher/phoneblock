@@ -2,7 +2,7 @@
 	"openapi": "3.0.3",
 	"info": {
 		"title": "PhoneBlock Admin API",
-		"description": "Internal admin/agent API. Its first area is diagnostics (/admin/diag): discover error signatures across sources, author and promote detection rules, grow the anonymizer, and audit the help-mail flow. Future admin areas add their paths here under /admin/. Distinct from the public PhoneBlock API (/api/phoneblock.json). Every data endpoint requires a bearer token with the diagnostics capability; the few elevated transitions additionally require the admin capability (noted per operation). Mint such a token by flipping ACCESS_DIAGNOSTICS / ACCESS_ADMIN on an ordinary API key directly in the database.",
+		"description": "Internal admin/agent API for PhoneBlock, served under /admin/. It exposes diagnostics (/admin/diag): discover error signatures across sources, author and promote detection rules, grow the anonymizer (scrub rules), and audit the help-mail flow. Distinct from the public PhoneBlock API (/api/phoneblock.json). Every data endpoint requires a bearer token with the diagnostics capability; the few elevated transitions additionally require the admin capability (noted per operation). Mint such a token by flipping ACCESS_DIAGNOSTICS / ACCESS_ADMIN on an ordinary API key directly in the database.",
 		"version": "v1"
 	},
 	"servers": [
