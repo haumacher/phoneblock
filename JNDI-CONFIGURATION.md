@@ -639,6 +639,7 @@ A scheduled reader that tails the server's rolling log, recognizes source-specif
 | `diagnostics/globalDailyCap` | Integer | `100` | Max diagnostics help mails across the fleet per day. |
 | `diagnostics/serverSource` | Boolean | `false` | Also ingest the server's own native WARN/ERROR log lines as `source=SERVER` (the second source). Off by default. |
 | `diagnostics/nodeId` | String | `server` | The `origin_id` used for `SERVER`-source events. |
+| `diagnostics/silenceDays` | Integer | `5` | A dongle whose auth token has not been used (daily self-test) for this many days is treated as silent — nudged via the `"Dongle silent (no contact)"` rule (a heartbeat gap over `TOKENS`, not a log signal). |
 
 ### Introspection REST API & token capabilities
 

@@ -4,7 +4,7 @@ CREATE TABLE PROPERTIES (
 	CONSTRAINT PROPERTIES_PK PRIMARY KEY (NAME)
 );
 
-INSERT INTO PROPERTIES (NAME, VAL) VALUES('db.version', '49');
+INSERT INTO PROPERTIES (NAME, VAL) VALUES('db.version', '50');
 INSERT INTO PROPERTIES (NAME, VAL) VALUES('blocklist.version', '1');
 INSERT INTO PROPERTIES (NAME, VAL) VALUES('diag.ruleset.version', '1');
 INSERT INTO PROPERTIES (NAME, VAL) VALUES('diag.mail.enabled', 'false');
@@ -515,4 +515,13 @@ INSERT INTO DIAG_TEMPLATE (TEMPLATE_KEY, LANG, SUBJECT, BODY, UPDATED) VALUES
 
 INSERT INTO DIAG_RULE (NAME, SOURCE, MATCH_TAG, MATCH_REGEX, CATEGORY, ACTOR, MIN_DISTINCT_DAYS, MIN_EVENTS, TEMPLATE_KEY, STATE, AUTHOR, NOTES, CREATED, UPDATED) VALUES
 	('Dongle web UI internet-exposed', 'DONGLE', NULL, 'parse_block|Bad request syntax', 'security-exposed', 'USER', 1, 1, 'help-internet-exposed', 'SHADOW', 'seed', 'Embedded HTTP server receiving scanner garbage -> reachable from the internet. Fires on first detection.', 0, 0);
+
+INSERT INTO DIAG_TEMPLATE (TEMPLATE_KEY, LANG, SUBJECT, BODY, UPDATED) VALUES
+	('help-device-silent', 'de',
+	 'Meldet sich dein PhoneBlock-Dongle noch?',
+	 '<p>Hallo,</p><p>dein PhoneBlock-Dongle (Geraet {deviceId}) hat sich seit mehreren Tagen nicht mehr bei PhoneBlock gemeldet.</p><p>Falls du das Geraet bewusst ausser Betrieb genommen hast, kannst du diese Nachricht ignorieren.</p><p>Andernfalls pruefe bitte, ob der Dongle mit Strom versorgt und mit deinem Heimnetz (WLAN/LAN) verbunden ist.</p><p>Viele Gruesse<br/>Dein PhoneBlock-Team</p>',
+	 0);
+
+INSERT INTO DIAG_RULE (NAME, SOURCE, MATCH_TAG, MATCH_REGEX, CATEGORY, ACTOR, MIN_DISTINCT_DAYS, MIN_EVENTS, TEMPLATE_KEY, STATE, AUTHOR, NOTES, CREATED, UPDATED) VALUES
+	('Dongle silent (no contact)', 'DONGLE-LIVENESS', NULL, '(?!)', 'device-silent', 'USER', 1, 1, 'help-device-silent', 'SHADOW', 'seed', 'Heartbeat gap: no token use for several days. Detected by DongleSilenceDetector, not the signature matcher.', 0, 0);
 

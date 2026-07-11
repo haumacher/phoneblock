@@ -50,6 +50,7 @@ public class DiagnosticsService implements ServletContextListener {
 	private List<LineRecognizer> _recognizers;
 	private DiagnosticsMatcher _matcher;
 	private Notifier _notifier;
+	private DongleSilenceDetector _silenceDetector;
 
 	private boolean _enabled;
 	private Path _logFile;
@@ -63,10 +64,12 @@ public class DiagnosticsService implements ServletContextListener {
 	private int _globalDailyCap = 100;
 	private boolean _serverSource = false;
 	private String _nodeId = "server";
+	private int _silenceDays = 5;
 
 	private ScheduledFuture<?> _ingestTask;
 	private ScheduledFuture<?> _retentionTask;
 	private ScheduledFuture<?> _matchTask;
+	private ScheduledFuture<?> _silenceTask;
 
 	public DiagnosticsService(SchedulerService scheduler, DBService db, MailServiceStarter mail) {
 		_scheduler = scheduler;
@@ -92,6 +95,7 @@ public class DiagnosticsService implements ServletContextListener {
 		_matcher = new DiagnosticsMatcher(_quietDays);
 		MailService mailService = _mail == null ? null : _mail.getMailService();
 		_notifier = new MailNotifier(_db, mailService, _userDailyCap, _globalDailyCap);
+		_silenceDetector = new DongleSilenceDetector(_silenceDays);
 
 		LOG.info("Starting diagnostics ingestion from {} every {} min (sample cap {}, retention {} d); "
 			+ "matcher every {} min.", _logFile, _intervalMinutes, _sampleCap, _retentionDays, _matchIntervalMinutes);
@@ -103,6 +107,8 @@ public class DiagnosticsService implements ServletContextListener {
 			this::safeRunRetention, 60_000L, 24L * 60 * 60 * 1000, TimeUnit.MILLISECONDS);
 		_matchTask = _scheduler.scheduler().scheduleAtFixedRate(
 			this::safeRunMatch, 90_000L, _matchIntervalMinutes * 60L * 1000L, TimeUnit.MILLISECONDS);
+		_silenceTask = _scheduler.scheduler().scheduleAtFixedRate(
+			this::safeRunSilence, 120_000L, 24L * 60 * 60 * 1000, TimeUnit.MILLISECONDS);
 	}
 
 	@Override
@@ -115,6 +121,9 @@ public class DiagnosticsService implements ServletContextListener {
 		}
 		if (_matchTask != null) {
 			_matchTask.cancel(false);
+		}
+		if (_silenceTask != null) {
+			_silenceTask.cancel(false);
 		}
 	}
 
@@ -143,6 +152,27 @@ public class DiagnosticsService implements ServletContextListener {
 		try (SqlSession session = _db.db().openSession()) {
 			DiagnosticsMapper mapper = session.getMapper(DiagnosticsMapper.class);
 			_matcher.run(mapper, _notifier, System.currentTimeMillis());
+			session.commit();
+		}
+	}
+
+	private void safeRunSilence() {
+		try {
+			runSilence();
+		} catch (Exception ex) {
+			LOG.error("Diagnostics silence check failed.", ex);
+		}
+	}
+
+	/**
+	 * Nudges (or, in shadow, projects) users whose dongle has stopped its daily
+	 * token checks for {@code silenceDays}. Public for verification.
+	 */
+	public void runSilence() {
+		try (SqlSession session = _db.db().openSession()) {
+			DiagnosticsMapper mapper = session.getMapper(DiagnosticsMapper.class);
+			de.haumacher.phoneblock.db.Users users = session.getMapper(de.haumacher.phoneblock.db.Users.class);
+			_silenceDetector.run(mapper, users, _notifier, System.currentTimeMillis());
 			session.commit();
 		}
 	}
@@ -251,6 +281,7 @@ public class DiagnosticsService implements ServletContextListener {
 		_globalDailyCap = intProp("globalDailyCap", _globalDailyCap);
 		_serverSource = boolProp("serverSource", _serverSource);
 		_nodeId = strProp("nodeId", _nodeId);
+		_silenceDays = intProp("silenceDays", _silenceDays);
 	}
 
 	private static String strProp(String name, String defaultValue) {

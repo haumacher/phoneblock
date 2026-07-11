@@ -145,6 +145,9 @@ public interface DiagnosticsMapper {
 	@Select("SELECT " + RULE_COLS + " FROM DIAG_RULE WHERE ID = #{id}")
 	DiagRule getRule(long id);
 
+	@Select("SELECT " + RULE_COLS + " FROM DIAG_RULE WHERE NAME = #{name} LIMIT 1")
+	DiagRule getRuleByName(String name);
+
 	@Insert("INSERT INTO DIAG_RULE (NAME, SOURCE, MATCH_TAG, MATCH_REGEX, CATEGORY, ACTOR, "
 			+ "MIN_DISTINCT_DAYS, MIN_EVENTS, TEMPLATE_KEY, STATE, AUTHOR, NOTES, CREATED, UPDATED) "
 			+ "VALUES (#{name}, #{source, jdbcType=VARCHAR}, #{matchTag, jdbcType=VARCHAR}, #{matchRegex}, "
@@ -198,4 +201,25 @@ public interface DiagnosticsMapper {
 	@Select("SELECT COUNT(*) FROM DIAG_NOTIFICATION "
 			+ "WHERE STATE='SENT' AND DRY_RUN=FALSE AND USER_ID=#{userId} AND SENT_AT >= #{cutoff}")
 	long countSentForUserSince(@Param("userId") String userId, @Param("cutoff") long cutoff);
+
+	// ---- Dongle liveness (silence) detection over the TOKENS table ----
+
+	// The latest token per dongle device (device id parsed from the User-Agent),
+	// restricted to devices that were active (LASTACCESS > 0) but have not checked
+	// in since #{cutoff}.
+	String LATEST_DONGLE_TOKEN = "SELECT DEVICEID, USERID, LASTACCESS, CREATED, ID FROM ("
+			+ "SELECT d.*, ROW_NUMBER() OVER (PARTITION BY DEVICEID ORDER BY CREATED DESC, ID DESC) AS RN FROM ("
+			+ "SELECT t.ID, t.USERID AS USERID, t.CREATED, t.LASTACCESS AS LASTACCESS, "
+			+ "REGEXP_REPLACE(t.USERAGENT, '.*\\(([0-9a-fA-F-]+)\\).*', '$1') AS DEVICEID "
+			+ "FROM TOKENS t WHERE t.USERAGENT LIKE 'PhoneBlock-Dongle/%(%)') d) r WHERE r.RN = 1";
+
+	@Select("SELECT DEVICEID, USERID, LASTACCESS FROM (" + LATEST_DONGLE_TOKEN
+			+ ") x WHERE x.LASTACCESS > 0 AND x.LASTACCESS < #{cutoff}")
+	List<SilentDongle> findSilentDongles(long cutoff);
+
+	@Update("UPDATE DIAG_NOTIFICATION SET STATE='CLEARED', CLEARED_AT=#{clearedAt} "
+			+ "WHERE RULE_ID=#{ruleId} AND STATE IN ('PENDING', 'SENT') AND ORIGIN_ID IN ("
+			+ "SELECT DEVICEID FROM (" + LATEST_DONGLE_TOKEN + ") x WHERE x.LASTACCESS >= #{recentCutoff})")
+	int clearReturnedSilentNotifications(@Param("ruleId") long ruleId,
+			@Param("recentCutoff") long recentCutoff, @Param("clearedAt") long clearedAt);
 }
