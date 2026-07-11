@@ -123,13 +123,24 @@ and just stop growing:
 
 Surfaced from the logs, not yet acted on:
 
-- **Detection-rule candidates:** answerbot registration failing
-  (`SipService: … register ab-<N> … Timeout`, ~1.7k) → user-addressable help mail;
-  an auth-scanning cluster (`DB: Invalid user name` ~3.6k, invalid password,
-  DynDNS wrong-password, login failures) → a `category=SECURITY` tag rather than a mail.
-- **Two code bugs (not rules):** the log string typo `Goolge` →
-  `GoogleUpdateService.java:111,114,119`; and the SEO indexers
-  (`GoogleUpdateService` 429s + `IndexNowUpdateService` HTTP errors) flooding
-  ~63% of all events — need backoff / lower log level.
+- **Scanning / recon clusters** → candidates for a `category=SECURITY` tag
+  (track, don't mail): auth scanning (`DB: Invalid user name` ~3.7k, invalid
+  password, DynDNS wrong-password ~1.4k, login failures — the largest block);
+  DNS-server recon (`DnsServer: No zone found for: version.bind. / id.server. /
+  shadowserver.org. / .` plus ~360 malformed-packet `WireParseException`s); and
+  SIP scanning (`SipProvider: … OPTIONS sip:nm …` — sipvicious/svmap).
+- **Onboarding signal:** `CardDavServlet: … not found: / Benutzername/` — a user
+  pasted the literal placeholder "Benutzername" from a setup guide into their
+  CardDAV client. Low volume, but a concrete docs/UX fix.
 - **No stale-fragment cleanup:** there is no step to prune signatures with no
   recent events, so pre-rule fragments stay visible in the ranking indefinitely.
+
+Already handled (do not re-propose):
+
+- **Answerbot registration failures** (`SipService: … register ab-<N> … Timeout`)
+  are the retry churn of the existing mechanism: `SipService.onRegistrationFailure`
+  disables a bot after `disableTimeout` (3 days) and, for a bot that had
+  registered before, sends `sendDiableMail`. A never-registered ("temporary") bot
+  is disabled silently (no mail) — the one arguable gap.
+- **Two code bugs** — the `Goolge` typo and the Google/IndexNow log flood (~62% of
+  events) — fixed in this PR (backoff + one-shot logging in the two index services).
