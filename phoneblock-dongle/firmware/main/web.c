@@ -55,6 +55,12 @@ static httpd_handle_t s_server = NULL;
 #define REQUIRE_AUTH_API(req) do { \
     if (!web_auth_required((req), true)) return ESP_OK; \
 } while (0)
+// For the intentionally-public routes: LAN-only when the gate is off,
+// fully public when it is on (so remote login works). See
+// docs/network-access-control.md.
+#define REQUIRE_LOCAL_HTML(req) do { \
+    if (!web_public_allowed((req), false)) return ESP_OK; \
+} while (0)
 
 // In-flight OAuth provisioning state: a random nonce set by
 // /register-start, consumed once by /token-callback to defeat CSRF.
@@ -195,6 +201,7 @@ static void set_pna_response_headers(httpd_req_t *req)
 
 static esp_err_t handle_pna_preflight(httpd_req_t *req)
 {
+    REQUIRE_LOCAL_HTML(req);
     char origin[64];
     if (httpd_req_get_hdr_value_str(req, "Origin", origin, sizeof(origin)) != ESP_OK
             || !pna_origin_allowed(origin)) {
@@ -231,6 +238,7 @@ static esp_err_t handle_pna_preflight(httpd_req_t *req)
 
 static esp_err_t handle_favicon(httpd_req_t *req)
 {
+    REQUIRE_LOCAL_HTML(req);
     httpd_resp_set_type(req, "image/svg+xml");
     httpd_resp_set_hdr(req, "Cache-Control", "public, max-age=31536000, immutable");
     return httpd_resp_send(req, (const char *)ab_logo_bot_svg_start,
@@ -239,11 +247,15 @@ static esp_err_t handle_favicon(httpd_req_t *req)
 
 static esp_err_t handle_root(httpd_req_t *req)
 {
-    // Intentionally NOT gated. The SPA shell is harmless static markup
-    // and contains both the dashboard and the in-page login state; it
-    // chooses between them at runtime based on a 200/401 from the
-    // gated /api/status. Gating "/" here would break the in-page login
-    // bounce, since web_auth_required redirects HTML routes to "/".
+    // Locality-gated but NOT auth-gated. The SPA shell is harmless static
+    // markup and contains both the dashboard and the in-page login state;
+    // it chooses between them at runtime based on a 200/401 from the gated
+    // /api/status. Auth-gating "/" would break the in-page login bounce
+    // (web_auth_required redirects HTML routes to "/"). REQUIRE_LOCAL_HTML
+    // still keeps a gate-off dongle from serving the shell to a remote
+    // scanner, while staying fully public once the gate is on so remote
+    // login works.
+    REQUIRE_LOCAL_HTML(req);
     set_pna_response_headers(req);
     httpd_resp_set_type(req, "text/html; charset=utf-8");
     httpd_resp_send(req, (const char *)index_html_start,

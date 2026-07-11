@@ -7,7 +7,7 @@ CFLAGS  ?= -Wall -Wextra -Werror -O0 -g -I../main
 IDF_PATH ?= $(HOME)/tools/esp/esp-idf
 CJSON_DIR := $(IDF_PATH)/components/json/cJSON
 
-BINS = test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_tr064_parse test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_version_cmp
+BINS = test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_tr064_parse test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_version_cmp test_net_local
 
 test_sip_parse: test_sip_parse.c ../main/sip_parse.c ../main/sip_parse.h \
                 ../main/audio.c ../main/audio.h
@@ -52,6 +52,9 @@ test_mail_html: test_mail_html.c ../main/mail_html.c ../main/mail_html.h
 
 test_version_cmp: test_version_cmp.c ../main/version_cmp.c ../main/version_cmp.h
 	$(CC) $(CFLAGS) test_version_cmp.c ../main/version_cmp.c -o $@
+
+test_net_local: test_net_local.c ../main/net_local.c ../main/net_local.h
+	$(CC) $(CFLAGS) test_net_local.c ../main/net_local.c -o $@
 
 test: $(BINS)
 	@set -e; for b in $(BINS); do echo "→ $$b"; ./$$b; done

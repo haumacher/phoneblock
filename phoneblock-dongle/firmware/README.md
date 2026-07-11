@@ -44,6 +44,44 @@ Dev-relevante Kconfig-Optionen (in `sdkconfig.defaults.local` oder
 - `CONFIG_SIP_TEST_FORCE_SPAM_STAR_NUMBERS` — Test-Hook für den
   RTP/Audio-Pfad
 
+## Netzwerkzugriff
+
+> ## ⚠️ MACHE DEINEN PHONEBLOCK-DONGLE NIEMALS AUS DEM INTERNET ERREICHBAR!
+>
+> Der Dongle ist ein Gerät für das lokale Heimnetz. Er gehört nicht ins
+> Internet — kein Port-Forwarding, keine DMZ, keine öffentliche Weiter-
+> leitung. Er hält seine gesamte Konfiguration (inkl. Firmware-Upload und
+> Werksreset) hinter einer einfachen HTTP-Oberfläche; im Internet ist das
+> eine Einladung.
+
+Damit ein **versehentliches** Offenlegen (falsch gesetztes Port-Forwarding,
+DMZ-Host) nicht sofort zur Übernahme führt, gilt eine defensive Grundregel:
+
+- **Ohne aktivierte Authentifizierung (Standard) antwortet der Dongle nur
+  Clients aus dem lokalen Netz.** Entfernte Anfragen erhalten `403`. Das
+  ist ein Sicherheitsnetz für den Fehlerfall — **keine** Einladung, das
+  Gerät bewusst zu exponieren.
+
+Alles Weitere richtet sich an alle, die genau wissen, was sie tun und die
+Konsequenzen tragen. Details und Bedrohungsmodell:
+[docs/network-access-control.md](docs/network-access-control.md).
+
+- **Mit aktivierter Authentifizierung** („Login mit PhoneBlock", an das
+  eigene PhoneBlock-Konto gebunden) verlangt jede Anfrage ein gültiges
+  Session-Cookie; erst dann wird auch entfernter Zugriff überhaupt
+  beantwortet.
+- „Lokal" bezieht sich auf die unmittelbare TCP-Gegenstelle.
+  `X-Forwarded-For`/`Forwarded` werden **nur** ausgewertet, wenn die
+  Gegenstelle selbst lokal ist (der vertrauenswürdige Reverse-Proxy) — von
+  einer entfernten Gegenstelle werden sie ignoriert und können daher nicht
+  gefälscht werden.
+- Wer trotz der Warnung einen Reverse-Proxy vor einen Dongle **mit
+  deaktivierter** Authentifizierung setzt, muss die echte Client-Adresse in
+  `X-Forwarded-For`/`Forwarded` weiterreichen — sonst sind entfernte
+  Clients nicht von einem direkten lokalen Client zu unterscheiden und
+  werden bedient. Sinnvoller ist ohnehin: erst die Authentifizierung
+  aktivieren.
+
 ## Bauen
 
 ```bash
