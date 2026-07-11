@@ -19,6 +19,8 @@ import org.slf4j.LoggerFactory;
 
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.mail.MailService;
+import de.haumacher.phoneblock.mail.MailServiceStarter;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
@@ -41,10 +43,13 @@ public class DiagnosticsService implements ServletContextListener {
 
 	private final SchedulerService _scheduler;
 	private final DBService _db;
+	private final MailServiceStarter _mail;
 
 	private SegmentedLogReader _reader;
 	private DiagnosticsAggregator _aggregator;
 	private List<LineRecognizer> _recognizers;
+	private DiagnosticsMatcher _matcher;
+	private Notifier _notifier;
 
 	private boolean _enabled;
 	private Path _logFile;
@@ -52,13 +57,19 @@ public class DiagnosticsService implements ServletContextListener {
 	private int _sampleCap = 20;
 	private int _retentionDays = 30;
 	private int _maxLinesPerPoll = 50_000;
+	private int _matchIntervalMinutes = 60;
+	private int _quietDays = 3;
+	private int _userDailyCap = 3;
+	private int _globalDailyCap = 100;
 
 	private ScheduledFuture<?> _ingestTask;
 	private ScheduledFuture<?> _retentionTask;
+	private ScheduledFuture<?> _matchTask;
 
-	public DiagnosticsService(SchedulerService scheduler, DBService db) {
+	public DiagnosticsService(SchedulerService scheduler, DBService db, MailServiceStarter mail) {
 		_scheduler = scheduler;
 		_db = db;
+		_mail = mail;
 	}
 
 	@Override
@@ -72,15 +83,20 @@ public class DiagnosticsService implements ServletContextListener {
 		_reader = new SegmentedLogReader(_logFile);
 		_aggregator = new DiagnosticsAggregator(_sampleCap);
 		_recognizers = List.of(new DongleRecognizer());
+		_matcher = new DiagnosticsMatcher(_quietDays);
+		MailService mailService = _mail == null ? null : _mail.getMailService();
+		_notifier = new MailNotifier(_db, mailService, _userDailyCap, _globalDailyCap);
 
-		LOG.info("Starting diagnostics ingestion from {} every {} min (sample cap {}, retention {} d).",
-			_logFile, _intervalMinutes, _sampleCap, _retentionDays);
+		LOG.info("Starting diagnostics ingestion from {} every {} min (sample cap {}, retention {} d); "
+			+ "matcher every {} min.", _logFile, _intervalMinutes, _sampleCap, _retentionDays, _matchIntervalMinutes);
 
 		long periodMs = _intervalMinutes * 60L * 1000L;
 		_ingestTask = _scheduler.scheduler().scheduleAtFixedRate(
 			this::safeRunIngest, 30_000L, periodMs, TimeUnit.MILLISECONDS);
 		_retentionTask = _scheduler.scheduler().scheduleAtFixedRate(
 			this::safeRunRetention, 60_000L, 24L * 60 * 60 * 1000, TimeUnit.MILLISECONDS);
+		_matchTask = _scheduler.scheduler().scheduleAtFixedRate(
+			this::safeRunMatch, 90_000L, _matchIntervalMinutes * 60L * 1000L, TimeUnit.MILLISECONDS);
 	}
 
 	@Override
@@ -91,6 +107,9 @@ public class DiagnosticsService implements ServletContextListener {
 		if (_retentionTask != null) {
 			_retentionTask.cancel(false);
 		}
+		if (_matchTask != null) {
+			_matchTask.cancel(false);
+		}
 	}
 
 	private void safeRunIngest() {
@@ -98,6 +117,27 @@ public class DiagnosticsService implements ServletContextListener {
 			runIngest();
 		} catch (Exception ex) {
 			LOG.error("Diagnostics ingestion failed.", ex);
+		}
+	}
+
+	private void safeRunMatch() {
+		try {
+			runMatch();
+		} catch (Exception ex) {
+			LOG.error("Diagnostics matcher failed.", ex);
+		}
+	}
+
+	/**
+	 * Evaluates the active rules against the current aggregates: classifies,
+	 * projects (SHADOW) or sends (LIVE) notifications, and rearms quiet matches.
+	 * Public for verification.
+	 */
+	public void runMatch() {
+		try (SqlSession session = _db.db().openSession()) {
+			DiagnosticsMapper mapper = session.getMapper(DiagnosticsMapper.class);
+			_matcher.run(mapper, _notifier, System.currentTimeMillis());
+			session.commit();
 		}
 	}
 
@@ -199,6 +239,10 @@ public class DiagnosticsService implements ServletContextListener {
 		_sampleCap = intProp("sampleCap", _sampleCap);
 		_retentionDays = intProp("retentionDays", _retentionDays);
 		_maxLinesPerPoll = intProp("maxLinesPerPoll", _maxLinesPerPoll);
+		_matchIntervalMinutes = intProp("matchIntervalMinutes", _matchIntervalMinutes);
+		_quietDays = intProp("quietDays", _quietDays);
+		_userDailyCap = intProp("userDailyCap", _userDailyCap);
+		_globalDailyCap = intProp("globalDailyCap", _globalDailyCap);
 	}
 
 	private static String strProp(String name, String defaultValue) {

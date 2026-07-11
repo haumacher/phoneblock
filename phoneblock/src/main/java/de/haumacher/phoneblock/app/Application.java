@@ -129,7 +129,7 @@ public class Application implements ServletContextListener {
 			new CallRetentionService(scheduler, db),
 			new BlocklistVersionService(scheduler, db),
 			new FtcImportService(scheduler, db),
-			new DiagnosticsService(scheduler, db)
+			new DiagnosticsService(scheduler, db, mail)
 		};
 
 		for (int n = 0, cnt = _services.length; n < cnt; n++) {

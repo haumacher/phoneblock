@@ -633,6 +633,15 @@ A scheduled reader that tails the server's rolling log, recognizes source-specif
 | `diagnostics/sampleCap` | Integer | `20` | Max retained raw `DIAG_SAMPLE` rows per signature. |
 | `diagnostics/retentionDays` | Integer | `30` | Age after which raw samples are purged (aggregates are kept indefinitely). |
 | `diagnostics/maxLinesPerPoll` | Integer | `50000` | Upper bound on lines processed per transaction; a larger backlog is caught up over successive polls. |
+| `diagnostics/matchIntervalMinutes` | Integer | `60` | How often the rule matcher evaluates the aggregates. |
+| `diagnostics/quietDays` | Integer | `3` | After this many days without a new event, a latched notification is cleared (rearmed) so a recurrence re-notifies. |
+| `diagnostics/userDailyCap` | Integer | `3` | Max diagnostics help mails per user per day. |
+| `diagnostics/globalDailyCap` | Integer | `100` | Max diagnostics help mails across the fleet per day. |
+
+The **mail kill switch** and the **ruleset version** are runtime rows in the `PROPERTIES` table (not JNDI), so they can be flipped without a redeploy:
+
+- `diag.mail.enabled` (default `false`) — while `false`, no user help mail is ever sent even by a `LIVE`+`USER` rule; this is the master gate on top of per-rule promotion. Set to `true` only once the shadow projections look right.
+- `diag.ruleset.version` — bumped on any rule/template change; reserved for a future in-memory rule cache (the matcher currently reads rules fresh each run).
 
 ### Example Configuration
 
