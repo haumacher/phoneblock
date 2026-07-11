@@ -272,6 +272,67 @@
 		<h2 data-tx="t0079:b65f7797" id="experts">Para expertos: autoalojamiento</h2>
 		
 		<p data-tx="t0080:5a67a3ba">¿Eres realmente bueno con los ordenadores, tienes una RaspberryPI u otro mini PC funcionando en casa de todos modos? Entonces simplemente instale el contestador automático usted mismo. La mejor manera de hacerlo es con la imagen preparada <a href="https://hub.docker.com/r/phoneblock/answerbot">Docker</a>. Esto ofrece la mejor protección de datos porque todo el manejo de llamadas se lleva a cabo en su extremo. La configuración en el sistema telefónico es la misma, se configura el contestador automático a través de un archivo de configuración.</p>
+		<div class="notification is-warning" data-tx="t0084:4bc9a0f9"><strong>Importante para el autoalojamiento:</strong> A diferencia del contestador automático en la nube, en las instrucciones anteriores se omiten dos pasos: <ul> <li><strong>No es necesario utilizar DynDNS.</strong> El contestador automático funciona en la misma red que el Fritz!Box y se conecta de forma local.</li> <li><strong>La opción «Permitir el inicio de sesión desde Internet» permanece desactivada.</strong> Para ello, no es necesario que se pueda acceder al Fritz!Box desde Internet; deja la opción desactivada a propósito para no abrir el router innecesariamente.</li> </ul></div>
+		
+		<h3 data-tx="t0085:b85e4fee">1. Configurar un teléfono en el Fritz!Box</h3>
+		<p data-tx="t0086:77837d1f">Configura un nuevo dispositivo de telefonía: <em>Telefonía → Dispositivos de telefonía → Configurar nuevo dispositivo → Teléfono (con o sin contestador) → LAN/WLAN (teléfono IP)</em>. Puedes elegir libremente el nombre de usuario y la contraseña; deben coincidir exactamente con los que figuran en el archivo <code>compose.yaml</code>. En «Llamadas entrantes», selecciona <em>«responder a todos los números de teléfono»</em>.</p>
+		
+		<h3 data-tx="t0087:f0ff4af">2. Crear el archivo «compose.yaml»</h3>
+		<pre>services:
+  phoneblock:
+    image: phoneblock/answerbot:latest
+    container_name: phoneblock
+    network_mode: host
+    environment:
+      - PHONEBLOCK_API_KEY=&lt;dein API-Key&gt;
+      - SIP_USER=&lt;Benutzername wie in der Fritz!Box&gt;
+      - SIP_PASSWD=&lt;Kennwort wie in der Fritz!Box&gt;
+      - VIA_ADDR=auto-configuration
+      - VIA_ADDR_V6=auto-configuration
+      - HOST_PORT=50060
+      - REGISTRAR=192.168.178.1
+      - ROUTE=192.168.178.1;lr
+      - REALM=fritz.box
+      - MEDIA=audio 4080 RTP/AVP { 8 PCMA 8000 160 }
+      - RECORDINGS=none
+      - CONVERSATION=/opt/phoneblock/conversation
+      - ACCEPT_LOCAL=yes
+    restart: unless-stopped</pre>
+		
+		<h3 data-tx="t0088:68a01d83">3. Variables importantes</h3>
+		<div class="table-container">
+			<table class="table is-fullwidth is-striped">
+				<thead>
+					<tr>
+						<th data-tx="t0089:c616aa64">Variable</th>
+						<th data-tx="t0090:f0e3578f">Significado</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><code>PHONEBLOCK_API_KEY</code></td>
+						<td data-tx="t0091:c8ab1645">Tu clave API personal, que puedes crear en <code>phoneblock.net/phoneblock/settings</code>.</td>
+					</tr>
+					<tr>
+						<td><code>SIP_USER</code> / <code>SIP_PASSWD</code></td>
+						<td data-tx="t0092:ea799cc3">Deben coincidir exactamente con el teléfono IP configurado en el Fritz!Box.</td>
+					</tr>
+					<tr>
+						<td><code>REGISTRAR</code> / <code>ROUTE</code></td>
+						<td data-tx="t0093:17dcf955">Dirección de la Fritz!Box. Consejo: si utilizas un servidor DNS propio (por ejemplo, Pi-hole/Unbound), introduce aquí la <em>dirección IP</em> del Fritz!Box en lugar de <code>fritz.box</code>, ya que, de lo contrario, es posible que el nombre de host no se resuelva y el registro falle.</td>
+					</tr>
+					<tr>
+						<td><code>network_mode: host</code></td>
+						<td data-tx="t0094:a961a2ea">Obligatorio: necesario para la comunicación SIP/RTP.</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		
+		<h3 data-tx="t0095:cc612f71">4. Poner en marcha y comprobar</h3>
+		<pre>docker compose up -d
+docker logs -f phoneblock</pre>
+		<p data-tx="t0096:dabc390b">Si en el registro aparece una línea como <code>Registration of '&lt;sip:...&gt;' 200 OK, expires in 300s</code>, significa que el contestador automático se ha registrado correctamente en el Fritz!Box. Se puede realizar una llamada de prueba en cualquier momento al <em>número interno</em> del dispositivo (que empieza por <code>**</code>); el contestador automático siempre responde a este tipo de llamadas.</p>
 		
 	</div>
 </section>

@@ -272,6 +272,67 @@
 		<h2 data-tx="t0079:b65f7797" id="experts">Για ειδικούς: self-hosting</h2>
 		
 		<p data-tx="t0080:5a67a3ba">Είστε πραγματικά καλός με τους υπολογιστές, έχετε ένα RaspberryPI ή ένα άλλο μίνι PC που τρέχει στο σπίτι ούτως ή άλλως; Τότε απλά εγκαταστήστε τον τηλεφωνητή μόνοι σας. Ο καλύτερος τρόπος για να το κάνετε αυτό είναι με την προετοιμασμένη εικόνα <a href="https://hub.docker.com/r/phoneblock/answerbot">Docker image</a>. Αυτό προσφέρει την καλύτερη προστασία των δεδομένων, επειδή όλος ο χειρισμός των κλήσεων πραγματοποιείται στο δικό σας μέρος. Η ρύθμιση στο τηλεφωνικό σύστημα είναι η ίδια, ρυθμίζετε τον αυτόματο τηλεφωνητή μέσω ενός αρχείου ρυθμίσεων.</p>
+		<div class="notification is-warning" data-tx="t0084:4bc9a0f9"><strong>Σημαντικό για την αυτο-φιλοξενία:</strong> Σε αντίθεση με τον τηλεφωνητή στο cloud, δύο βήματα από τις παραπάνω οδηγίες δεν ισχύουν: <ul> <li><strong>Δεν απαιτείται DynDNS.</strong> Ο τηλεφωνητής λειτουργεί στο ίδιο δίκτυο με το Fritz!Box και συνδέεται τοπικά.</li> <li><strong>Η επιλογή «Να επιτρέπεται η σύνδεση από το Διαδίκτυο» παραμένει απενεργοποιημένη.</strong> Το Fritz!Box δεν χρειάζεται να είναι προσβάσιμο από το Διαδίκτυο – άφησε σκόπιμα την επιλογή απενεργοποιημένη, ώστε να μην ανοίξεις τον δρομολογητή χωρίς λόγο.</li> </ul></div>
+		
+		<h3 data-tx="t0085:b85e4fee">1. Δημιουργία τηλεφωνικής συσκευής στο Fritz!Box</h3>
+		<p data-tx="t0086:77837d1f">Προσθέστε μια νέα συσκευή τηλεφωνίας: <em>Τηλεφωνία → Συσκευές τηλεφωνίας → Ρύθμιση νέας συσκευής → Τηλέφωνο (με ή χωρίς τηλεφωνητή) → LAN/WLAN (IP τηλέφωνο)</em>. Μπορείς να επιλέξεις ελεύθερα το όνομα χρήστη και τον κωδικό πρόσβασης – πρέπει να είναι ακριβώς τα ίδια με αυτά που αναγράφονται στο αρχείο <code>compose.yaml</code>. Στην ενότητα «Εισερχόμενες κλήσεις», επιλέξτε <em>«απόκριση σε όλους τους αριθμούς»</em>.</p>
+		
+		<h3 data-tx="t0087:f0ff4af">2. Δημιουργία του αρχείου compose.yaml</h3>
+		<pre>services:
+  phoneblock:
+    image: phoneblock/answerbot:latest
+    container_name: phoneblock
+    network_mode: host
+    environment:
+      - PHONEBLOCK_API_KEY=&lt;dein API-Key&gt;
+      - SIP_USER=&lt;Benutzername wie in der Fritz!Box&gt;
+      - SIP_PASSWD=&lt;Kennwort wie in der Fritz!Box&gt;
+      - VIA_ADDR=auto-configuration
+      - VIA_ADDR_V6=auto-configuration
+      - HOST_PORT=50060
+      - REGISTRAR=192.168.178.1
+      - ROUTE=192.168.178.1;lr
+      - REALM=fritz.box
+      - MEDIA=audio 4080 RTP/AVP { 8 PCMA 8000 160 }
+      - RECORDINGS=none
+      - CONVERSATION=/opt/phoneblock/conversation
+      - ACCEPT_LOCAL=yes
+    restart: unless-stopped</pre>
+		
+		<h3 data-tx="t0088:68a01d83">3. Σημαντικές μεταβλητές</h3>
+		<div class="table-container">
+			<table class="table is-fullwidth is-striped">
+				<thead>
+					<tr>
+						<th data-tx="t0089:c616aa64">Μεταβλητή</th>
+						<th data-tx="t0090:f0e3578f">Σημασία</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><code>PHONEBLOCK_API_KEY</code></td>
+						<td data-tx="t0091:c8ab1645">Το προσωπικό σου κλειδί API, το οποίο μπορείς να δημιουργήσεις στη διεύθυνση <code>phoneblock.net/phoneblock/settings</code>.</td>
+					</tr>
+					<tr>
+						<td><code>SIP_USER</code> / <code>SIP_PASSWD</code></td>
+						<td data-tx="t0092:ea799cc3">Πρέπει να ταιριάζουν ακριβώς με το IP τηλέφωνο που έχει δημιουργηθεί στο Fritz!Box.</td>
+					</tr>
+					<tr>
+						<td><code>REGISTRAR</code> / <code>ROUTE</code></td>
+						<td data-tx="t0093:17dcf955">Διεύθυνση του Fritz!Box. Συμβουλή: Εάν χρησιμοποιείτε δικό σας διακομιστή DNS (π.χ. Pi-hole/Unbound), εισάγετε εδώ τη <em>διεύθυνση IP</em> του Fritz!Box αντί για <code>fritz.box</code>, καθώς διαφορετικά το όνομα κεντρικού υπολογιστή ενδέχεται να μην αναγνωριστεί και η εγγραφή να αποτύχει.</td>
+					</tr>
+					<tr>
+						<td><code>network_mode: host</code></td>
+						<td data-tx="t0094:a961a2ea">Υποχρεωτικό – απαιτείται για την επικοινωνία μέσω SIP/RTP.</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		
+		<h3 data-tx="t0095:cc612f71">4. Εκκίνηση και έλεγχος</h3>
+		<pre>docker compose up -d
+docker logs -f phoneblock</pre>
+		<p data-tx="t0096:dabc390b">Αν στο αρχείο καταγραφής εμφανιστεί μια γραμμή όπως <code>Registration of '&lt;sip:...&gt;' 200 OK, expires in 300s</code>, αυτό σημαίνει ότι ο τηλεφωνητής έχει συνδεθεί με επιτυχία στο Fritz!Box. Μπορείτε να πραγματοποιήσετε μια δοκιμαστική κλήση ανά πάσα στιγμή μέσω του <em>εσωτερικού αριθμού</em> της συσκευής (που ξεκινά με <code>**</code>) – ο τηλεφωνητής δέχεται πάντα τέτοιες κλήσεις.</p>
 		
 	</div>
 </section>

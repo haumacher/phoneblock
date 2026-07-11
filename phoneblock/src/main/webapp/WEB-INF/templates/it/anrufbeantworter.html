@@ -272,6 +272,67 @@
 		<h2 data-tx="t0079:b65f7797" id="experts">Per gli esperti: self-hosting</h2>
 		
 		<p data-tx="t0080:5a67a3ba">Siete davvero bravi con i computer, avete un RaspberryPI o un altro mini PC in funzione a casa? Allora installate semplicemente la segreteria telefonica da soli. Il modo migliore per farlo è con l'immagine <a href="https://hub.docker.com/r/phoneblock/answerbot">Docker</a> preparata. In questo modo si ottiene la migliore protezione dei dati, perché tutta la gestione delle chiamate avviene da parte dell'utente. L'impostazione nel sistema telefonico è la stessa, la segreteria telefonica viene impostata tramite un file di configurazione.</p>
+		<div class="notification is-warning" data-tx="t0084:4bc9a0f9"><strong>Importante per l'hosting autonomo:</strong> A differenza della segreteria telefonica su cloud, nella procedura sopra indicata vengono omessi due passaggi: <ul> <li><strong>Non è necessario il DynDNS.</strong> La segreteria telefonica funziona sulla stessa rete del Fritz!Box e si registra localmente.</li> <li><strong>L'opzione «Consenti l'accesso da Internet» rimane disattivata.</strong> Il Fritz!Box non deve essere accessibile da Internet: lascia l'opzione disattivata di proposito per non esporre inutilmente il router.</li> </ul></div>
+		
+		<h3 data-tx="t0085:b85e4fee">1. Configurare il dispositivo telefonico nel Fritz!Box</h3>
+		<p data-tx="t0086:77837d1f">Crea un nuovo dispositivo telefonico: <em>Telefonia → Dispositivi telefonici → Configura nuovo dispositivo → Telefono (con o senza segreteria telefonica) → LAN/Wi-Fi (telefono IP)</em>. Puoi scegliere liberamente nome utente e password: devono essere identici nel file <code>compose.yaml</code>. Alla voce «Chiamate in arrivo», seleziona <em>«rispondere a tutti i numeri»</em>.</p>
+		
+		<h3 data-tx="t0087:f0ff4af">2. Creare il file compose.yaml</h3>
+		<pre>services:
+  phoneblock:
+    image: phoneblock/answerbot:latest
+    container_name: phoneblock
+    network_mode: host
+    environment:
+      - PHONEBLOCK_API_KEY=&lt;dein API-Key&gt;
+      - SIP_USER=&lt;Benutzername wie in der Fritz!Box&gt;
+      - SIP_PASSWD=&lt;Kennwort wie in der Fritz!Box&gt;
+      - VIA_ADDR=auto-configuration
+      - VIA_ADDR_V6=auto-configuration
+      - HOST_PORT=50060
+      - REGISTRAR=192.168.178.1
+      - ROUTE=192.168.178.1;lr
+      - REALM=fritz.box
+      - MEDIA=audio 4080 RTP/AVP { 8 PCMA 8000 160 }
+      - RECORDINGS=none
+      - CONVERSATION=/opt/phoneblock/conversation
+      - ACCEPT_LOCAL=yes
+    restart: unless-stopped</pre>
+		
+		<h3 data-tx="t0088:68a01d83">3. Variabili importanti</h3>
+		<div class="table-container">
+			<table class="table is-fullwidth is-striped">
+				<thead>
+					<tr>
+						<th data-tx="t0089:c616aa64">Variabile</th>
+						<th data-tx="t0090:f0e3578f">Significato</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><code>PHONEBLOCK_API_KEY</code></td>
+						<td data-tx="t0091:c8ab1645">La tua chiave API personale, che puoi generare su <code>phoneblock.net/phoneblock/settings</code>.</td>
+					</tr>
+					<tr>
+						<td><code>SIP_USER</code> / <code>SIP_PASSWD</code></td>
+						<td data-tx="t0092:ea799cc3">Devono corrispondere esattamente al telefono IP configurato nel Fritz!Box.</td>
+					</tr>
+					<tr>
+						<td><code>REGISTRAR</code> / <code>ROUTE</code></td>
+						<td data-tx="t0093:17dcf955">Indirizzo del Fritz!Box. Suggerimento: se si utilizza un server DNS proprio (ad es. Pi-hole/Unbound), inserire qui l'<em>indirizzo IP</em> del Fritz!Box al posto di <code>fritz.box</code>, poiché altrimenti il nome host potrebbe non essere risolto e la registrazione potrebbe non andare a buon fine.</td>
+					</tr>
+					<tr>
+						<td><code>network_mode: host</code></td>
+						<td data-tx="t0094:a961a2ea">Obbligatorio – necessario per la comunicazione SIP/RTP.</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		
+		<h3 data-tx="t0095:cc612f71">4. Avvio e verifica</h3>
+		<pre>docker compose up -d
+docker logs -f phoneblock</pre>
+		<p data-tx="t0096:dabc390b">Se nel log compare una riga del tipo <code>Registration of '&lt;sip:...&gt;' 200 OK, expires in 300s</code>, significa che la segreteria telefonica si è registrata con successo sul Fritz!Box. È possibile effettuare una chiamata di prova in qualsiasi momento utilizzando il <em>numero interno</em> del dispositivo (che inizia con <code>**</code>): la segreteria telefonica risponde sempre a questo tipo di chiamate.</p>
 		
 	</div>
 </section>

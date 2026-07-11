@@ -272,6 +272,67 @@
 		<h2 data-tx="t0079:b65f7797" id="experts">For eksperter: selvhosting</h2>
 		
 		<p data-tx="t0080:5a67a3ba">Er du veldig flink med datamaskiner, har du en RaspberryPI eller en annen mini-PC hjemme uansett? Da er det bare å installere telefonsvareren selv. Den beste måten å gjøre dette på er med det forberedte <a href="https://hub.docker.com/r/phoneblock/answerbot">Docker-imaget</a>. Dette gir den beste databeskyttelsen fordi all samtalehåndtering skjer hos deg. Oppsettet i telefonsystemet er det samme, du setter opp telefonsvareren via en konfigurasjonsfil.</p>
+		<div class="notification is-warning" data-tx="t0084:4bc9a0f9"><strong>Viktig ved egen hosting:</strong> I motsetning til ved bruk av en skybasert telefonsvarer, kan to trinn i veiledningen ovenfor utelates: <ul> <li><strong>Ingen DynDNS nødvendig.</strong> Telefonsvareren kjører i samme nettverk som Fritz!Boxen og logger seg på lokalt.</li> <li><strong>«Tillat pålogging fra Internett» forblir deaktivert.</strong> Fritz!Box-en trenger ikke å være tilgjengelig fra Internett – la alternativet være deaktivert for å unngå å åpne ruteren unødvendig.</li> </ul></div>
+		
+		<h3 data-tx="t0085:b85e4fee">1. Opprette en telefonenhet i Fritz!Box</h3>
+		<p data-tx="t0086:77837d1f">Opprett en ny telefonenhet: <em>Telefoni → Telefonenheter → Konfigurer ny enhet → Telefon (med eller uten telefonsvarer) → LAN/WLAN (IP-telefon)</em>. Du kan velge brukernavn og passord fritt – de må være identiske i <code>compose.yaml</code>. Under «Innkommende anrop» velger du <em>«svar på alle telefonnumre»</em>.</p>
+		
+		<h3 data-tx="t0087:f0ff4af">2. Opprett compose.yaml</h3>
+		<pre>services:
+  phoneblock:
+    image: phoneblock/answerbot:latest
+    container_name: phoneblock
+    network_mode: host
+    environment:
+      - PHONEBLOCK_API_KEY=&lt;dein API-Key&gt;
+      - SIP_USER=&lt;Benutzername wie in der Fritz!Box&gt;
+      - SIP_PASSWD=&lt;Kennwort wie in der Fritz!Box&gt;
+      - VIA_ADDR=auto-configuration
+      - VIA_ADDR_V6=auto-configuration
+      - HOST_PORT=50060
+      - REGISTRAR=192.168.178.1
+      - ROUTE=192.168.178.1;lr
+      - REALM=fritz.box
+      - MEDIA=audio 4080 RTP/AVP { 8 PCMA 8000 160 }
+      - RECORDINGS=none
+      - CONVERSATION=/opt/phoneblock/conversation
+      - ACCEPT_LOCAL=yes
+    restart: unless-stopped</pre>
+		
+		<h3 data-tx="t0088:68a01d83">3. Viktige variabler</h3>
+		<div class="table-container">
+			<table class="table is-fullwidth is-striped">
+				<thead>
+					<tr>
+						<th data-tx="t0089:c616aa64">Variabel</th>
+						<th data-tx="t0090:f0e3578f">Betydning</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><code>PHONEBLOCK_API_KEY</code></td>
+						<td data-tx="t0091:c8ab1645">Din personlige API-nøkkel, som du kan opprette på <code>phoneblock.net/phoneblock/settings</code>.</td>
+					</tr>
+					<tr>
+						<td><code>SIP_USER</code> / <code>SIP_PASSWD</code></td>
+						<td data-tx="t0092:ea799cc3">Må stemme nøyaktig overens med IP-telefonen som er opprettet i Fritz!Box.</td>
+					</tr>
+					<tr>
+						<td><code>REGISTRAR</code> / <code>ROUTE</code></td>
+						<td data-tx="t0093:17dcf955">Adressen til Fritz!Box. Tips: Hvis du bruker din egen DNS-server (f.eks. Pi-hole/Unbound), må du her oppgi <em>IP-adressen</em> til Fritz!Box i stedet for <code>fritz.box</code>, da vertsnavnet ellers kanskje ikke blir oppløst og registreringen mislykkes.</td>
+					</tr>
+					<tr>
+						<td><code>network_mode: host</code></td>
+						<td data-tx="t0094:a961a2ea">Obligatorisk – kreves for SIP-/RTP-kommunikasjon.</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		
+		<h3 data-tx="t0095:cc612f71">4. Start og sjekk</h3>
+		<pre>docker compose up -d
+docker logs -f phoneblock</pre>
+		<p data-tx="t0096:dabc390b">Hvis det vises en linje i loggen som <code>Registration of '&lt;sip:...&gt;' 200 OK, expires in 300s</code>, har telefonsvareren logget seg på Fritz!Boxen. Du kan når som helst foreta en testanrop via enhetens <em>interne nummer</em> (begynner med <code>**</code>) – telefonsvareren tar alltid imot slike anrop.</p>
 		
 	</div>
 </section>
