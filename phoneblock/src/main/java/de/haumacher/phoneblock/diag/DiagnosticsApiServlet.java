@@ -847,9 +847,10 @@ public class DiagnosticsApiServlet extends HttpServlet {
 	}
 
 	private static long ruleId(String path) {
-		// "/rules/<id>/state" or "/rules/<id>/stats"
+		// "/rules/<id>", "/rules/<id>/state" or "/rules/<id>/stats"
 		String s = path.substring("/rules/".length());
-		return parseLong(s.substring(0, s.indexOf('/')), -1);
+		int slash = s.indexOf('/');
+		return parseLong(slash < 0 ? s : s.substring(0, slash), -1);
 	}
 
 	private static long scrubId(String path) {
