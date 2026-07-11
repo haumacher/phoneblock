@@ -399,6 +399,7 @@ static esp_err_t handle_status(httpd_req_t *req)
     cJSON_AddNumberToObject(syn, "last_ago_s", (double)ago_s);
     cJSON_AddNumberToObject(syn, "last_pushed", ss.last_pushed);
     cJSON_AddNumberToObject(syn, "last_failed", ss.last_failed);
+    cJSON_AddNumberToObject(syn, "last_skipped", ss.last_skipped);
     cJSON_AddStringToObject(syn, "last_error", ss.last_error);
 
     cJSON *bl = cJSON_AddObjectToObject(root, "blocklist");
