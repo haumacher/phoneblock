@@ -47,7 +47,7 @@ import de.haumacher.phoneblock.shared.Language;
  *
  * <p>For each template key, the {@code sourceLang} (default {@code de}) row is the
  * master; its subject and (HTML) body are translated into each other locale and
- * written back via {@code POST /api/admin/diag/templates}. Placeholders like
+ * written back via {@code POST /admin/diag/templates}. Placeholders like
  * {@code {deviceId}} are shielded from translation; the body is translated with
  * DeepL HTML tag handling so markup is preserved.</p>
  *
@@ -227,7 +227,7 @@ public class TranslateDiagTemplatesMojo extends AbstractMojo {
 
 	private Map<String, Map<String, Template>> fetchTemplates(String base, String bearer)
 			throws MojoExecutionException {
-		HttpRequest req = HttpRequest.newBuilder(URI.create(base + "/api/admin/diag/templates"))
+		HttpRequest req = HttpRequest.newBuilder(URI.create(base + "/admin/diag/templates"))
 			.header("Authorization", "Bearer " + bearer)
 			.header("Accept", "application/json")
 			.GET().build();
@@ -257,7 +257,7 @@ public class TranslateDiagTemplatesMojo extends AbstractMojo {
 		payload.put("subject", subject);
 		payload.put("body", body);
 		try {
-			HttpRequest req = HttpRequest.newBuilder(URI.create(base + "/api/admin/diag/templates"))
+			HttpRequest req = HttpRequest.newBuilder(URI.create(base + "/admin/diag/templates"))
 				.header("Authorization", "Bearer " + bearer)
 				.header("Content-Type", "application/json")
 				.header("Accept", "application/json")
