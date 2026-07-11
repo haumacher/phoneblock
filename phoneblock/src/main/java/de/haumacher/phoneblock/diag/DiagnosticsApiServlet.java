@@ -157,6 +157,10 @@ public class DiagnosticsApiServlet extends HttpServlet {
 				w.beginObject();
 				w.name("receivedMs").value(asLong(s.get("RECEIVEDMS")));
 				w.name("severity").value(str(s.get("SEVERITY")));
+				// Optional source-specific attribute: the reporter uptime in seconds
+				// (the dongle fills it; other sources leave it null).
+				w.name("uptimeS");
+				writeValue(w, s.get("UPTIMES"));
 				w.name("tag").value(str(s.get("TAG")));
 				w.name("originId").value(str(s.get("ORIGINID")));
 				w.name("message").value(str(s.get("MESSAGESCRUBBED")));

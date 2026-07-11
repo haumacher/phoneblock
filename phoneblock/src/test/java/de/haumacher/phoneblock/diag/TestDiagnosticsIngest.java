@@ -149,6 +149,18 @@ public class TestDiagnosticsIngest {
 	}
 
 	@Test
+	public void testSampleDetailExposesUptime() throws Exception {
+		ingest(20, dongle("dev-a", "sip: REGISTER rejected: 400", T0)); // uptime 100
+
+		try (SqlSession session = _db.openSession()) {
+			DiagnosticsMapper mapper = session.getMapper(DiagnosticsMapper.class);
+			String sigId = text("SELECT SIG_ID FROM DIAG_SIGNATURE");
+			java.util.Map<String, Object> sample = mapper.listSamples(sigId, 20).get(0);
+			assertEquals(100L, ((Number) sample.get("UPTIMES")).longValue());
+		}
+	}
+
+	@Test
 	public void testScrubRuleCrudAndState() throws Exception {
 		try (SqlSession session = _db.openSession()) {
 			DiagnosticsMapper mapper = session.getMapper(DiagnosticsMapper.class);
