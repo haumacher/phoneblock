@@ -105,6 +105,8 @@ public class DiagnosticsApiServlet extends HttpServlet {
 				createRule(req, resp, session, mapper);
 			} else if (path.matches("/rules/\\d+/state")) {
 				setRuleState(req, resp, session, mapper, ruleId(path));
+			} else if (path.matches("/rules/\\d+")) {
+				updateRule(req, resp, session, mapper, ruleId(path));
 			} else if (path.equals("/templates")) {
 				upsertTemplate(req, resp, session, mapper);
 			} else if (path.equals("/scrub")) {
@@ -308,6 +310,73 @@ public class DiagnosticsApiServlet extends HttpServlet {
 			w.name("state").value(state);
 			w.endObject();
 		});
+	}
+
+	/**
+	 * Edits a rule's definition (everything except its state — that is the
+	 * admin-gated {@code /state} transition). Patch semantics: only the fields
+	 * present in the body change, so a caller can retune just {@code matchRegex}
+	 * without restating the rest. Editing a LIVE rule can change what mail goes
+	 * out, so it carries the same admin gate as promotion.
+	 */
+	private void updateRule(HttpServletRequest req, HttpServletResponse resp, SqlSession session,
+			DiagnosticsMapper mapper, long id) throws IOException {
+		DiagRule rule = mapper.getRule(id);
+		if (rule == null) {
+			ServletUtil.sendMessage(resp, HttpServletResponse.SC_NOT_FOUND, "No such rule.");
+			return;
+		}
+		if (DiagRule.LIVE.equals(rule.getState()) && !authorize(req, resp, true)) {
+			return;
+		}
+		Map<String, String> body = readObject(req);
+		if (body.containsKey("name")) {
+			rule.setName(body.getOrDefault("name", ""));
+		}
+		if (body.containsKey("source")) {
+			rule.setSource(trimToNull(body.get("source")));
+		}
+		if (body.containsKey("matchTag")) {
+			rule.setMatchTag(trimToNull(body.get("matchTag")));
+		}
+		if (body.containsKey("matchRegex")) {
+			String rx = body.get("matchRegex");
+			if (rx == null || rx.isBlank()) {
+				ServletUtil.sendMessage(resp, HttpServletResponse.SC_BAD_REQUEST, "matchRegex cannot be empty.");
+				return;
+			}
+			try {
+				Pattern.compile(rx);
+			} catch (PatternSyntaxException ex) {
+				ServletUtil.sendMessage(resp, HttpServletResponse.SC_BAD_REQUEST, "Invalid matchRegex: " + ex.getMessage());
+				return;
+			}
+			rule.setMatchRegex(rx);
+		}
+		if (body.containsKey("category")) {
+			rule.setCategory(body.getOrDefault("category", ""));
+		}
+		if (body.containsKey("actor")) {
+			rule.setActor(body.getOrDefault("actor", DiagRule.ACTOR_NONE));
+		}
+		if (body.containsKey("minDistinctDays")) {
+			rule.setMinDistinctDays(parseInt(body.get("minDistinctDays"), rule.getMinDistinctDays()));
+		}
+		if (body.containsKey("minEvents")) {
+			rule.setMinEvents(parseInt(body.get("minEvents"), rule.getMinEvents()));
+		}
+		if (body.containsKey("templateKey")) {
+			rule.setTemplateKey(trimToNull(body.get("templateKey")));
+		}
+		if (body.containsKey("notes")) {
+			rule.setNotes(body.getOrDefault("notes", ""));
+		}
+		rule.setUpdated(System.currentTimeMillis());
+		mapper.updateRule(rule);
+		bumpRulesetVersion(session);
+		session.commit();
+		LOG.info("Diagnostics rule {} edited by {}.", id, LoginFilter.getAuthenticatedUser(req));
+		writeJson(resp, w -> writeRule(w, rule));
 	}
 
 	private void upsertTemplate(HttpServletRequest req, HttpServletResponse resp, SqlSession session,

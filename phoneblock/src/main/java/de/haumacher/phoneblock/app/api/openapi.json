@@ -106,6 +106,19 @@
 					"200": { "description": "The rule.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Rule" } } } },
 					"404": { "description": "No such rule." }
 				}
+			},
+			"post": {
+				"tags": ["author"],
+				"summary": "Edit a detection rule (patch).",
+				"description": "Retune a rule's definition — matchRegex, thresholds, actor, category, template, notes — without a redeploy. Patch semantics: only the fields present in the body change; the state is changed via /state, not here. Editing a LIVE rule additionally requires the admin capability (it can change what mail goes out). matchRegex is validated by compiling it.",
+				"parameters": [ { "name": "id", "in": "path", "required": true, "schema": { "type": "integer", "format": "int64" } } ],
+				"requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RuleCreate" } } } },
+				"responses": {
+					"200": { "description": "The updated rule.", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Rule" } } } },
+					"400": { "description": "Empty or invalid matchRegex." },
+					"403": { "description": "Editing a LIVE rule without the admin capability." },
+					"404": { "description": "No such rule." }
+				}
 			}
 		},
 		"/admin/diag/rules/{id}/stats": {

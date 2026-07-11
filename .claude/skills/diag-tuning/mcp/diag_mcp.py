@@ -178,6 +178,19 @@ def t_list_notifications(a):
     return api("GET", "/notifications", query={"state": a.get("state")})
 
 
+def t_create_rule(a):
+    return api("POST", "/rules", body={k: v for k, v in a.items() if v is not None})
+
+
+def t_update_rule(a):
+    body = {k: v for k, v in a.items() if k != "id" and v is not None}
+    return api("POST", "/rules/%d" % int(a["id"]), body=body)
+
+
+def t_set_rule_state(a):
+    return api("POST", "/rules/%d/state" % int(a["id"]), body={"state": a["state"]})
+
+
 TOOLS = [
     {
         "name": "ingest_status",
@@ -307,6 +320,69 @@ TOOLS = [
             "properties": {"state": {"type": "string"}},
         },
         "handler": t_list_notifications,
+    },
+    {
+        "name": "create_rule",
+        "description": "Create a detection rule (lands SHADOW/DRAFT; promote via "
+                       "set_rule_state). matchRegex is tested against the signature "
+                       "text; actor NONE|USER|DEV.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "name": {"type": "string"},
+                "source": {"type": "string"},
+                "matchTag": {"type": "string"},
+                "matchRegex": {"type": "string"},
+                "category": {"type": "string"},
+                "actor": {"type": "string", "enum": ["NONE", "USER", "DEV"]},
+                "minDistinctDays": {"type": "integer"},
+                "minEvents": {"type": "integer"},
+                "templateKey": {"type": "string"},
+                "notes": {"type": "string"},
+                "state": {"type": "string", "enum": ["DRAFT", "SHADOW"]},
+            },
+            "required": ["matchRegex"],
+        },
+        "handler": t_create_rule,
+    },
+    {
+        "name": "update_rule",
+        "description": "Edit a detection rule's definition (patch: only the given "
+                       "fields change; state is changed via set_rule_state). Use to "
+                       "retune matchRegex/thresholds without a redeploy. Editing a "
+                       "LIVE rule needs the admin capability.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer"},
+                "name": {"type": "string"},
+                "source": {"type": "string"},
+                "matchTag": {"type": "string"},
+                "matchRegex": {"type": "string"},
+                "category": {"type": "string"},
+                "actor": {"type": "string", "enum": ["NONE", "USER", "DEV"]},
+                "minDistinctDays": {"type": "integer"},
+                "minEvents": {"type": "integer"},
+                "templateKey": {"type": "string"},
+                "notes": {"type": "string"},
+            },
+            "required": ["id"],
+        },
+        "handler": t_update_rule,
+    },
+    {
+        "name": "set_rule_state",
+        "description": "Promote/retire a detection rule "
+                       "(DRAFT|SHADOW|LIVE|DISABLED). LIVE requires admin.",
+        "inputSchema": {
+            "type": "object",
+            "properties": {
+                "id": {"type": "integer"},
+                "state": {"type": "string", "enum": ["DRAFT", "SHADOW", "LIVE", "DISABLED"]},
+            },
+            "required": ["id", "state"],
+        },
+        "handler": t_set_rule_state,
     },
 ]
 

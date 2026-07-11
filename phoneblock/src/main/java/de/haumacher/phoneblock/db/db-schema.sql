@@ -538,7 +538,7 @@ INSERT INTO DIAG_TEMPLATE (TEMPLATE_KEY, LANG, SUBJECT, BODY, UPDATED) VALUES
 	 0);
 
 INSERT INTO DIAG_RULE (NAME, SOURCE, MATCH_TAG, MATCH_REGEX, CATEGORY, ACTOR, MIN_DISTINCT_DAYS, MIN_EVENTS, TEMPLATE_KEY, STATE, AUTHOR, NOTES, CREATED, UPDATED) VALUES
-	('Dongle web UI internet-exposed', 'DONGLE', NULL, 'parse_block|Bad request syntax', 'security-exposed', 'USER', 1, 1, 'help-internet-exposed', 'SHADOW', 'seed', 'Embedded HTTP server receiving scanner garbage -> reachable from the internet. Fires on first detection.', 0, 0);
+	('Dongle web UI internet-exposed', 'DONGLE', NULL, 'parse_block|Bad request syntax|Method Not Allowed|not allowed for URI', 'security-exposed', 'USER', 1, 1, 'help-internet-exposed', 'SHADOW', 'seed', 'Embedded HTTP server receiving scanner garbage -> reachable from the internet. Fires on first detection.', 0, 0);
 
 INSERT INTO DIAG_TEMPLATE (TEMPLATE_KEY, LANG, SUBJECT, BODY, UPDATED) VALUES
 	('help-device-silent', 'de',
