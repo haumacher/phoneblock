@@ -38,6 +38,7 @@
 		<module>phoneblock-ab</module>
 		<module>phoneblock-accounting</module>
 		<module>phoneblock-shared</module>
+		<module>phoneblock-translate-maven-plugin</module>
 		<module>fake-mail-check</module>
 		<module>phoneblock</module>
 		<module>phoneblock-tools</module>

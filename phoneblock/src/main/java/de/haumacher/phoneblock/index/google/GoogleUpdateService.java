@@ -41,9 +41,15 @@ public class GoogleUpdateService implements IndexUpdateService {
 
 	private static final Logger LOG = LoggerFactory.getLogger(GoogleUpdateService.class);
 
+	/** How long to stop submitting after Google reports the daily quota is used up. */
+	private static final long RATE_LIMIT_BACKOFF_MS = 60 * 60 * 1000L;
+
 	private String _contextPath;
 	private boolean _active;
 	private HttpRequestFactory _requestFactory;
+
+	/** While {@code now < this}, skip submissions: the quota is exhausted (HTTP 429). */
+	private volatile long _rateLimitedUntil;
 
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
@@ -92,31 +98,44 @@ public class GoogleUpdateService implements IndexUpdateService {
 		if (!_active) {
 			return;
 		}
-		
+
+		// The Google indexing API allows only ~200 requests/day. Once the quota is
+		// used up it answers 429 for every further call; without a backoff that
+		// floods the log with one warning per submitted URL for the rest of the day.
+		if (System.currentTimeMillis() < _rateLimitedUntil) {
+			return;
+		}
+
 		if (!path.startsWith("/")) {
 			path = "/" + path;
 		}
-		
+
 		String url = "https://phoneblock.net" + _contextPath + path;
 
 		try {
-			AbstractInputStreamContent body = new ByteArrayContent("application/json; charset=UTF-8", 
+			AbstractInputStreamContent body = new ByteArrayContent("application/json; charset=UTF-8",
 				toByteArray(UpdateMessage.create().setUrl(url).setType(Type.URL_UPDATED)));
 			HttpRequest request = _requestFactory.buildPostRequest(
 				new GenericUrl("https://indexing.googleapis.com/v3/urlNotifications:publish"), body);
 			HttpResponse response = request.execute();
-			
+
 			int code = response.getStatusCode();
 			if (code == HttpURLConnection.HTTP_OK) {
-				LOG.info("Added URL to Goolge index: " + url);
+				LOG.info("Added URL to Google index: " + url);
+			} else if (code == 429) {
+				_rateLimitedUntil = System.currentTimeMillis() + RATE_LIMIT_BACKOFF_MS;
+				try (InputStream in = response.getContent()) {
+					LOG.info("Google indexing quota exhausted (429), pausing index updates for {} min.",
+						RATE_LIMIT_BACKOFF_MS / 60000);
+				}
 			} else {
 				try (InputStream in = response.getContent()) {
-					LOG.warn("Failed to add URL to Goolge index (" + code + "): " + url + ": " +
+					LOG.warn("Failed to add URL to Google index (" + code + "): " + url + ": " +
 						ConnectionUtil.readText(in, response.getContentEncoding()));
 				}
 			}
 		} catch (IOException ex) {
-			LOG.error("Failed to add URL to Goolge index: " +  url + ": " + ex.getMessage());
+			LOG.error("Failed to add URL to Google index: " +  url + ": " + ex.getMessage());
 		}
 	}
 

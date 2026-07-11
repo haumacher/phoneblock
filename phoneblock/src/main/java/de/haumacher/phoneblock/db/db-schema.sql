@@ -4,8 +4,10 @@ CREATE TABLE PROPERTIES (
 	CONSTRAINT PROPERTIES_PK PRIMARY KEY (NAME)
 );
 
-INSERT INTO PROPERTIES (NAME, VAL) VALUES('db.version', '45');
+INSERT INTO PROPERTIES (NAME, VAL) VALUES('db.version', '52');
 INSERT INTO PROPERTIES (NAME, VAL) VALUES('blocklist.version', '1');
+INSERT INTO PROPERTIES (NAME, VAL) VALUES('diag.ruleset.version', '1');
+INSERT INTO PROPERTIES (NAME, VAL) VALUES('diag.mail.enabled', 'false');
 
 
 CREATE TABLE NUMBERS (
@@ -243,6 +245,8 @@ CREATE TABLE TOKENS (
 	ACCESS_CARDDAV BOOLEAN DEFAULT false NOT NULL,
 	ACCESS_RATE BOOLEAN DEFAULT false NOT NULL,
 	ACCESS_LOGIN BOOLEAN DEFAULT false NOT NULL,
+	ACCESS_DIAGNOSTICS BOOLEAN DEFAULT false NOT NULL,
+	ACCESS_ADMIN BOOLEAN DEFAULT false NOT NULL,
 	LASTACCESS BIGINT DEFAULT 0 NOT NULL,
 	USERAGENT CHARACTER VARYING(512) NOT NULL,
 	CONSTRAINT TOKENS_PK PRIMARY KEY (ID)
@@ -382,4 +386,181 @@ INSERT INTO FTC_SUBJECTS (LABEL, RATING) VALUES ('Reducing your debt (credit car
 INSERT INTO FTC_SUBJECTS (LABEL, RATING) VALUES ('Vacation  & timeshares', 'E_ADVERTISING');
 INSERT INTO FTC_SUBJECTS (LABEL, RATING) VALUES ('Warranties  & protection plans', 'G_FRAUD');
 INSERT INTO FTC_SUBJECTS (LABEL, RATING) VALUES ('Work from home  & other ways to make money', 'G_FRAUD');
+
+
+-- Diagnostics framework (docs/plans/2026-07-11-diagnostics-framework-design.md):
+-- see db-migration-46.sql for the rationale of each table.
+CREATE TABLE DIAG_SIGNATURE (
+	SIG_ID CHARACTER(40) NOT NULL,
+	SOURCE CHARACTER VARYING(32) NOT NULL,
+	SIGNATURE CHARACTER VARYING(1024) NOT NULL,
+	TAG CHARACTER VARYING(64) DEFAULT '' NOT NULL,
+	CATEGORY CHARACTER VARYING(64),
+	SAMPLE_MESSAGE CHARACTER VARYING(1024) DEFAULT '' NOT NULL,
+	FIRST_SEEN BIGINT DEFAULT 0 NOT NULL,
+	LAST_SEEN BIGINT DEFAULT 0 NOT NULL,
+	TOTAL_EVENTS BIGINT DEFAULT 0 NOT NULL,
+	CONSTRAINT DIAG_SIGNATURE_PK PRIMARY KEY (SIG_ID)
+);
+
+CREATE INDEX DIAG_SIGNATURE_SOURCE_IDX ON DIAG_SIGNATURE (SOURCE, CATEGORY);
+
+CREATE TABLE DIAG_ORIGIN_SIGNATURE (
+	SIG_ID CHARACTER(40) NOT NULL,
+	SOURCE CHARACTER VARYING(32) NOT NULL,
+	ORIGIN_ID CHARACTER VARYING(128) NOT NULL,
+	USER_ID CHARACTER VARYING(64),
+	FIRST_SEEN BIGINT DEFAULT 0 NOT NULL,
+	LAST_SEEN BIGINT DEFAULT 0 NOT NULL,
+	EVENT_COUNT BIGINT DEFAULT 0 NOT NULL,
+	DISTINCT_DAYS INTEGER DEFAULT 0 NOT NULL,
+	LAST_DAY INTEGER DEFAULT 0 NOT NULL,
+	CONSTRAINT DIAG_ORIGIN_SIGNATURE_PK PRIMARY KEY (SIG_ID, ORIGIN_ID)
+);
+
+CREATE INDEX DIAG_ORIGIN_SIGNATURE_ORIGIN_IDX ON DIAG_ORIGIN_SIGNATURE (SOURCE, ORIGIN_ID);
+
+CREATE TABLE DIAG_SAMPLE (
+	ID BIGINT NOT NULL AUTO_INCREMENT,
+	RECEIVED_MS BIGINT DEFAULT 0 NOT NULL,
+	SOURCE CHARACTER VARYING(32) NOT NULL,
+	SIG_ID CHARACTER(40) NOT NULL,
+	ORIGIN_ID CHARACTER VARYING(128) DEFAULT '' NOT NULL,
+	USER_ID CHARACTER VARYING(64),
+	SEVERITY CHARACTER(1) DEFAULT 'E' NOT NULL,
+	UPTIME_S BIGINT,
+	TAG CHARACTER VARYING(64) DEFAULT '' NOT NULL,
+	MESSAGE_SCRUBBED CHARACTER VARYING(1024) DEFAULT '' NOT NULL,
+	CONSTRAINT DIAG_SAMPLE_PK PRIMARY KEY (ID)
+);
+
+CREATE INDEX DIAG_SAMPLE_SIG_IDX ON DIAG_SAMPLE (SIG_ID);
+CREATE INDEX DIAG_SAMPLE_RECEIVED_IDX ON DIAG_SAMPLE (RECEIVED_MS);
+
+CREATE TABLE DIAG_INGEST_CURSOR (
+	STREAM_ID CHARACTER VARYING(64) NOT NULL,
+	SEGMENT_COUNT BIGINT DEFAULT 0 NOT NULL,
+	BYTE_OFFSET BIGINT DEFAULT 0 NOT NULL,
+	LAST_LINE_TS BIGINT DEFAULT 0 NOT NULL,
+	UPDATED BIGINT DEFAULT 0 NOT NULL,
+	CONSTRAINT DIAG_INGEST_CURSOR_PK PRIMARY KEY (STREAM_ID)
+);
+
+-- Diagnostics rule engine + notification ledger; see db-migration-47.sql.
+CREATE TABLE DIAG_RULE (
+	ID BIGINT NOT NULL AUTO_INCREMENT,
+	NAME CHARACTER VARYING(128) DEFAULT '' NOT NULL,
+	SOURCE CHARACTER VARYING(32),
+	MATCH_TAG CHARACTER VARYING(64),
+	MATCH_REGEX CHARACTER VARYING(512) NOT NULL,
+	CATEGORY CHARACTER VARYING(64) DEFAULT '' NOT NULL,
+	ACTOR CHARACTER VARYING(8) DEFAULT 'NONE' NOT NULL,
+	MIN_DISTINCT_DAYS INTEGER DEFAULT 1 NOT NULL,
+	MIN_EVENTS INTEGER DEFAULT 1 NOT NULL,
+	TEMPLATE_KEY CHARACTER VARYING(64),
+	STATE CHARACTER VARYING(8) DEFAULT 'DRAFT' NOT NULL,
+	AUTHOR CHARACTER VARYING(64) DEFAULT '' NOT NULL,
+	NOTES CHARACTER VARYING(1024) DEFAULT '' NOT NULL,
+	CREATED BIGINT DEFAULT 0 NOT NULL,
+	UPDATED BIGINT DEFAULT 0 NOT NULL,
+	CONSTRAINT DIAG_RULE_PK PRIMARY KEY (ID)
+);
+
+CREATE INDEX DIAG_RULE_STATE_IDX ON DIAG_RULE (STATE);
+
+CREATE TABLE DIAG_TEMPLATE (
+	ID BIGINT NOT NULL AUTO_INCREMENT,
+	TEMPLATE_KEY CHARACTER VARYING(64) NOT NULL,
+	LANG CHARACTER VARYING(8) DEFAULT 'de' NOT NULL,
+	SUBJECT CHARACTER VARYING(256) DEFAULT '' NOT NULL,
+	BODY CHARACTER VARYING(8192) DEFAULT '' NOT NULL,
+	UPDATED BIGINT DEFAULT 0 NOT NULL,
+	CONSTRAINT DIAG_TEMPLATE_PK PRIMARY KEY (ID),
+	CONSTRAINT DIAG_TEMPLATE_KEY_UQ UNIQUE (TEMPLATE_KEY, LANG)
+);
+
+CREATE TABLE DIAG_NOTIFICATION (
+	ID BIGINT NOT NULL AUTO_INCREMENT,
+	SOURCE CHARACTER VARYING(32) NOT NULL,
+	ORIGIN_ID CHARACTER VARYING(128) NOT NULL,
+	USER_ID CHARACTER VARYING(64),
+	RULE_ID BIGINT NOT NULL,
+	STATE CHARACTER VARYING(12) DEFAULT 'PENDING' NOT NULL,
+	DRY_RUN BOOLEAN DEFAULT FALSE NOT NULL,
+	FIRST_MATCHED BIGINT DEFAULT 0 NOT NULL,
+	SENT_AT BIGINT,
+	CLEARED_AT BIGINT,
+	CONSTRAINT DIAG_NOTIFICATION_PK PRIMARY KEY (ID)
+);
+
+CREATE INDEX DIAG_NOTIFICATION_LATCH_IDX ON DIAG_NOTIFICATION (RULE_ID, ORIGIN_ID, STATE);
+CREATE INDEX DIAG_NOTIFICATION_SENT_IDX ON DIAG_NOTIFICATION (STATE, SENT_AT);
+
+-- Hot-editable anonymizer rules, layered on top of the built-in Scrubber
+-- baseline; see db-migration-52.sql. Three signature-collapse rules are seeded
+-- LIVE below (kept in sync with that migration).
+CREATE TABLE DIAG_SCRUB_RULE (
+	ID BIGINT NOT NULL AUTO_INCREMENT,
+	NAME CHARACTER VARYING(128) DEFAULT '' NOT NULL,
+	SOURCE CHARACTER VARYING(32),
+	PATTERN CHARACTER VARYING(512) NOT NULL,
+	REPLACEMENT CHARACTER VARYING(128) DEFAULT '' NOT NULL,
+	APPLIES_TO CHARACTER VARYING(10) DEFAULT 'BOTH' NOT NULL,
+	STATE CHARACTER VARYING(8) DEFAULT 'DRAFT' NOT NULL,
+	VERSION INTEGER DEFAULT 1 NOT NULL,
+	AUTHOR CHARACTER VARYING(64) DEFAULT '' NOT NULL,
+	UPDATED BIGINT DEFAULT 0 NOT NULL,
+	CONSTRAINT DIAG_SCRUB_RULE_PK PRIMARY KEY (ID)
+);
+
+CREATE INDEX DIAG_SCRUB_RULE_STATE_IDX ON DIAG_SCRUB_RULE (STATE);
+
+-- Seeded signature-collapse rules (kept in sync with db-migration-52.sql).
+INSERT INTO DIAG_SCRUB_RULE (NAME, SOURCE, PATTERN, REPLACEMENT, APPLIES_TO, STATE) VALUES ('diag-dyndns-host', 'SERVER', '(wrong password \(\d+ characters\): ).*', '$1<DYNDNS-HOST>', 'SIGNATURE', 'LIVE');
+INSERT INTO DIAG_SCRUB_RULE (NAME, SOURCE, PATTERN, REPLACEMENT, APPLIES_TO, STATE) VALUES ('diag-addressbook-path', 'SERVER', '(/phoneblock/contacts/addresses/)[^/]+/[^''\s]*', '$1<BOOK>/<CARD>', 'BOTH', 'LIVE');
+INSERT INTO DIAG_SCRUB_RULE (NAME, SOURCE, PATTERN, REPLACEMENT, APPLIES_TO, STATE) VALUES ('diag-address-card', 'SERVER', '(Prevent deleting card: ).*', '$1<CARD>', 'BOTH', 'LIVE');
+
+INSERT INTO DIAG_TEMPLATE (TEMPLATE_KEY, LANG, SUBJECT, BODY, UPDATED) VALUES
+	('help-register-rejected', 'de',
+	 'Dein PhoneBlock-Dongle kann sich nicht anmelden',
+	 '<p>Hallo,</p><p>dein PhoneBlock-Dongle (Geraet {deviceId}) versucht seit mehreren Tagen vergeblich, sich bei deiner Fritz!Box anzumelden - die Anmeldung (SIP REGISTER) wird abgelehnt.</p><p>Bitte pruefe in der Fritz!Box unter "Telefonie / Telefoniegeraete" den Benutzernamen und die Nebenstelle des IP-Telefons, das du fuer PhoneBlock eingerichtet hast.</p><p>Viele Gruesse<br/>Dein PhoneBlock-Team</p>',
+	 0);
+
+INSERT INTO DIAG_RULE (NAME, SOURCE, MATCH_TAG, MATCH_REGEX, CATEGORY, ACTOR, MIN_DISTINCT_DAYS, MIN_EVENTS, TEMPLATE_KEY, STATE, AUTHOR, NOTES, CREATED, UPDATED) VALUES
+	('SIP registration rejected', 'DONGLE', 'sip', 'REGISTER rejected', 'user-install-sip', 'USER', 2, 5, 'help-register-rejected', 'SHADOW', 'seed', 'Wrong SIP user / extension in the Fritz!Box.', 0, 0),
+	('rate API rejects submissions', 'DONGLE', 'api', 'rate: HTTP', 'firmware-bug', 'DEV', 1, 10, NULL, 'SHADOW', 'seed', 'See issue #469 (wildcards / non-E.164 to /api/rate).', 0, 0),
+	('WiFi transient disconnects', 'DONGLE', 'wifi', 'disconnected', 'environmental', 'NONE', 1, 1, NULL, 'SHADOW', 'seed', 'Noisy RF/environment; classify only.', 0, 0);
+
+INSERT INTO DIAG_TEMPLATE (TEMPLATE_KEY, LANG, SUBJECT, BODY, UPDATED) VALUES
+	('help-internet-exposed', 'de',
+	 'Sicherheitshinweis: Dein PhoneBlock-Dongle ist aus dem Internet erreichbar',
+	 '<p>Hallo,</p><p>wir haben festgestellt, dass die Weboberflaeche deines PhoneBlock-Dongles (Geraet {deviceId}) aus dem Internet erreichbar ist: Das Geraet erhaelt automatisierte Anfragen von Schwachstellen-Scannern aus dem Netz.</p><p><strong>Das ist ein Sicherheitsrisiko.</strong> Der Dongle ist fuer den Betrieb im Heimnetz gedacht und muss nicht aus dem Internet erreichbar sein.</p><p>Bitte pruefe die Einstellungen deines Routers (z. B. Fritz!Box) und entferne eine eventuell eingerichtete Portfreigabe bzw. "Exposed Host"/DMZ-Regel, die auf den Dongle zeigt.</p><p>Viele Gruesse<br/>Dein PhoneBlock-Team</p>',
+	 0);
+
+INSERT INTO DIAG_RULE (NAME, SOURCE, MATCH_TAG, MATCH_REGEX, CATEGORY, ACTOR, MIN_DISTINCT_DAYS, MIN_EVENTS, TEMPLATE_KEY, STATE, AUTHOR, NOTES, CREATED, UPDATED) VALUES
+	('Dongle web UI internet-exposed', 'DONGLE', NULL, 'parse_block|Bad request syntax', 'security-exposed', 'USER', 1, 1, 'help-internet-exposed', 'SHADOW', 'seed', 'Embedded HTTP server receiving scanner garbage -> reachable from the internet. Fires on first detection.', 0, 0);
+
+INSERT INTO DIAG_TEMPLATE (TEMPLATE_KEY, LANG, SUBJECT, BODY, UPDATED) VALUES
+	('help-device-silent', 'de',
+	 'Meldet sich dein PhoneBlock-Dongle noch?',
+	 '<p>Hallo,</p><p>dein PhoneBlock-Dongle (Geraet {deviceId}) hat sich seit mehreren Tagen nicht mehr bei PhoneBlock gemeldet.</p><p>Falls du das Geraet bewusst ausser Betrieb genommen hast, kannst du diese Nachricht ignorieren.</p><p>Andernfalls pruefe bitte, ob der Dongle mit Strom versorgt und mit deinem Heimnetz (WLAN/LAN) verbunden ist.</p><p>Viele Gruesse<br/>Dein PhoneBlock-Team</p>',
+	 0);
+
+INSERT INTO DIAG_RULE (NAME, SOURCE, MATCH_TAG, MATCH_REGEX, CATEGORY, ACTOR, MIN_DISTINCT_DAYS, MIN_EVENTS, TEMPLATE_KEY, STATE, AUTHOR, NOTES, CREATED, UPDATED) VALUES
+	('Dongle silent (no contact)', 'DONGLE-LIVENESS', NULL, '(?!)', 'device-silent', 'USER', 1, 1, 'help-device-silent', 'SHADOW', 'seed', 'Heartbeat gap: no token use for several days. Detected by DongleSilenceDetector, not the signature matcher.', 0, 0);
+
+-- English versions of the help-mail templates (see db-migration-51.sql).
+INSERT INTO DIAG_TEMPLATE (TEMPLATE_KEY, LANG, SUBJECT, BODY, UPDATED) VALUES
+	('help-register-rejected', 'en',
+	 'Your PhoneBlock dongle cannot register',
+	 '<p>Hello,</p><p>your PhoneBlock dongle (device {deviceId}) has been trying to register with your Fritz!Box for several days without success - the registration (SIP REGISTER) is being rejected.</p><p>Please check the user name and the extension of the IP phone you set up for PhoneBlock, in your Fritz!Box under "Telephony / Telephony devices".</p><p>Best regards,<br/>Your PhoneBlock team</p>',
+	 0),
+	('help-internet-exposed', 'en',
+	 'Security notice: your PhoneBlock dongle is reachable from the internet',
+	 '<p>Hello,</p><p>we have detected that the web interface of your PhoneBlock dongle (device {deviceId}) is reachable from the internet: the device is receiving automated requests from vulnerability scanners.</p><p><strong>This is a security risk.</strong> The dongle is meant to run on your home network and does not need to be reachable from the internet.</p><p>Please check your router settings (e.g. Fritz!Box) and remove any port forwarding or "Exposed Host"/DMZ rule that points to the dongle.</p><p>Best regards,<br/>Your PhoneBlock team</p>',
+	 0),
+	('help-device-silent', 'en',
+	 'Is your PhoneBlock dongle still there?',
+	 '<p>Hello,</p><p>your PhoneBlock dongle (device {deviceId}) has not contacted PhoneBlock for several days.</p><p>If you have intentionally taken the device out of service, you can ignore this message.</p><p>Otherwise, please check that the dongle has power and is connected to your home network (Wi-Fi/LAN).</p><p>Best regards,<br/>Your PhoneBlock team</p>',
+	 0);
 

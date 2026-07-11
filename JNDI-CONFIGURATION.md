@@ -615,6 +615,138 @@ espcoredump.py info_corefile -c <user>-<timestamp>.elf phoneblock_dongle.elf
 
 ---
 
+## Diagnostics Ingestion
+
+**JNDI Prefix:** `diagnostics/`
+**System Property Prefix:** `diagnostics.`
+**Source:** `DiagnosticsService.java`
+
+A scheduled reader that tails the server's rolling log, recognizes source-specific error lines (the dongle reports written by `LogReportServlet`, first), normalizes and scrubs them, and rolls up the `DIAG_*` aggregate tables (see `docs/plans/2026-07-11-diagnostics-framework-design.md`). Decoupled from the request path — nothing writes diagnostics synchronously on a request; the log file is the buffer.
+
+### Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `diagnostics/enabled` | Boolean | `true` | Master switch for the ingestion reader and its retention job. |
+| `diagnostics/logFile` | String | `/var/log/tomcat10/phoneblock.log` | The `writer.latest` base path from `tinylog.properties`; the reader tails its numbered siblings `phoneblock.log.<count>`. **Must match tinylog's `log/file`** or nothing is ingested. |
+| `diagnostics/intervalMinutes` | Integer | `5` | How often the reader polls the log for new lines. |
+| `diagnostics/sampleCap` | Integer | `20` | Max retained raw `DIAG_SAMPLE` rows per signature. |
+| `diagnostics/retentionDays` | Integer | `30` | Age after which raw samples are purged (aggregates are kept indefinitely). |
+| `diagnostics/maxLinesPerPoll` | Integer | `50000` | Upper bound on lines processed per transaction; a larger backlog is caught up over successive polls. |
+| `diagnostics/matchIntervalMinutes` | Integer | `60` | How often the rule matcher evaluates the aggregates. |
+| `diagnostics/quietDays` | Integer | `3` | After this many days without a new event, a latched notification is cleared (rearmed) so a recurrence re-notifies. |
+| `diagnostics/userDailyCap` | Integer | `3` | Max diagnostics help mails per user per day. |
+| `diagnostics/globalDailyCap` | Integer | `100` | Max diagnostics help mails across the fleet per day. |
+| `diagnostics/serverSource` | Boolean | `false` | Also ingest the server's own native WARN/ERROR log lines as `source=SERVER` (the second source). Off by default. |
+| `diagnostics/nodeId` | String | `server` | The `origin_id` used for `SERVER`-source events. |
+| `diagnostics/silenceDays` | Integer | `5` | A dongle whose auth token has not been used (daily self-test) for this many days is treated as silent — nudged via the `"Dongle silent (no contact)"` rule (a heartbeat gap over `TOKENS`, not a log signal). |
+
+### Introspection REST API & token capabilities
+
+The agent-facing REST API lives at `/api/admin/diag/*` and is gated by two `AuthToken`
+capabilities (columns on the `TOKENS` table, minted by a direct DB update — there
+is no UI to create such a token):
+
+- `ACCESS_DIAGNOSTICS` — read signatures/rules, dry-run and author rules into
+  `DRAFT`/`SHADOW`, and create scrub rules (tightening the anonymizer). Required
+  for every `/api/admin/diag` data route.
+- `ACCESS_ADMIN` — the elevated transitions: promoting a rule to `LIVE`, changing
+  a scrub rule's state (relaxing the anonymizer), and the mail kill switch.
+
+`/api/admin/` is the umbrella for admin tooling; diagnostics (`/api/admin/diag/*`)
+is its first area. The admin console (`AdminApiServlet`) serves the **interactive
+Swagger UI** at `GET /api/admin/` and the OpenAPI document at
+`GET /api/admin/openapi.json`; further admin areas add their paths to that same
+spec and appear in the same UI, so the individual admin servlets carry no
+Swagger/OpenAPI plumbing. These two doc routes are served **unauthenticated** (so
+the browser can load the docs before a token is entered); open the UI, click
+*Authorize*, paste a bearer token, then call any endpoint. The endpoints
+themselves stay token-gated as above — the security is the token, not hiding the
+docs (consistent with the interface being internet-accessible by design).
+
+Mint by flipping the flags on an ordinary token, e.g.:
+
+```sql
+UPDATE TOKENS SET ACCESS_DIAGNOSTICS = TRUE WHERE ID = <token-id>;   -- agent token
+UPDATE TOKENS SET ACCESS_ADMIN = TRUE       WHERE ID = <human-token-id>;
+```
+
+Endpoints (all under `/api/admin/diag`, `ACCESS_DIAGNOSTICS` unless noted):
+
+*Read / discover*
+- `GET /signatures` — signature feed (unmatched long tail via `?unmatched=true`).
+- `GET /signatures/{sigId}` — one signature: stats + capped scrubbed samples.
+- `GET /origins/{source}/{originId}/timeline` — one origin's signatures over time.
+- `GET /rules` · `GET /rules/{id}` — detection rules.
+- `GET /rules/{id}/stats` — per-rule notification counts by state.
+- `GET /templates` — mail templates.
+- `GET /scrub` — scrub (anonymizer) rules.
+- `GET /notifications` — sent/pending mail audit (`?ruleId=&state=&since=`).
+- `GET /ingest/status` — reader health: cursor position, lag, aggregate counts.
+
+*Experiment (no side effects)*
+- `POST /rules/dryrun` — project a candidate rule against history.
+- `POST /mail/preview` — render a template with placeholder substitution.
+- `POST /scrub/audit` — scan retained samples for PII shapes still present
+  (optionally test a `candidatePattern`).
+
+*Author / promote*
+- `POST /rules` (creates in `SHADOW`) · `POST /rules/{id}/state`
+  (`LIVE` needs `ACCESS_ADMIN`).
+- `POST /templates` — create/update a mail template.
+- `POST /scrub` — create a scrub rule; a new rule only adds masking, so it lands
+  `LIVE` immediately under `ACCESS_DIAGNOSTICS`.
+- `POST /scrub/{id}/state` — change a scrub rule's state (relaxing / re-enabling);
+  needs `ACCESS_ADMIN`.
+- `POST /killswitch` — flip `diag.mail.enabled` (fleet-wide mail cutoff); needs
+  `ACCESS_ADMIN`.
+
+The **mail kill switch** and the **ruleset version** are runtime rows in the `PROPERTIES` table (not JNDI), so they can be flipped without a redeploy:
+
+- `diag.mail.enabled` (default `false`) — while `false`, no user help mail is ever sent even by a `LIVE`+`USER` rule; this is the master gate on top of per-rule promotion. Set to `true` only once the shadow projections look right.
+- `diag.ruleset.version` — bumped on any rule/template/scrub change; reserved for a future in-memory rule cache (the matcher and the ingest scrubber currently reload rules fresh each run, so anonymizer edits take effect within one ingest interval without a redeploy).
+
+#### Translating the help-mail templates
+
+The `DIAG_TEMPLATE` rows are authored in German (`de`) and read back in the user's language (falling back `lang → en → de`). To fill in every supported locale via DeepL — **over the API, not on the server** — use the `phoneblock-translate-maven-plugin` (a client tool; target languages are derived from the `Language` enum, so they never drift from a hand-kept list):
+
+```bash
+cd phoneblock
+mvn -Pwith-deepl phoneblock-translate:translate-diag-templates \
+  -Dtranslate.apiUrl=https://phoneblock.net/pb-test/api \
+  -Dtranslate.dryRun=true          # drop this to actually write
+```
+
+Both secrets come from `settings.xml` servers (they never touch the command line):
+
+```xml
+<server><id>deepl</id><passphrase>YOUR_DEEPL_API_KEY</passphrase></server>       <!-- shared with auto-translate -->
+<server><id>phoneblock-admin</id><password>YOUR_API_TOKEN</password></server>     <!-- token with ACCESS_DIAGNOSTICS -->
+```
+
+The token needs `ACCESS_DIAGNOSTICS` (the `POST /templates` author route). By default only missing locales are filled; pass `-Dtranslate.overwrite=true` to re-translate existing ones.
+
+### Example Configuration
+
+**Tomcat context.xml:**
+```xml
+<Context>
+  <Environment name="diagnostics/logFile" value="/var/log/tomcat10/phoneblock.log" type="java.lang.String"/>
+  <Environment name="diagnostics/intervalMinutes" value="5" type="java.lang.Integer"/>
+</Context>
+```
+
+**System Properties:**
+```bash
+-Ddiagnostics.logFile=/var/log/tomcat10/phoneblock.log
+```
+
+**Notes:**
+- The reader follows tinylog's monotonic `{count}` segments and ignores the fixed-name `latest` copy (it duplicates the active segment), so lines are counted once. Its checkpoint is persisted in `DIAG_INGEST_CURSOR`.
+- If the reader falls more than `writer.backups` segments behind, the pruned span is lost (logged as a gap) — keep `intervalMinutes` well under the time it takes to roll `backups` segments.
+
+---
+
 ## Complete Example Configuration
 
 Here's a complete example Tomcat `context.xml` file with common production settings:

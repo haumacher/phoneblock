@@ -26,6 +26,7 @@ import de.haumacher.phoneblock.app.api.SpamCheckServlet;
 import de.haumacher.phoneblock.app.api.TestConnectServlet;
 import de.haumacher.phoneblock.carddav.CardDavServlet;
 import de.haumacher.phoneblock.dongle.coredump.CoredumpServlet;
+import de.haumacher.phoneblock.diag.DiagnosticsApiServlet;
 import de.haumacher.phoneblock.dongle.logreport.LogReportServlet;
 import de.haumacher.phoneblock.db.settings.AuthToken;
 import de.haumacher.phoneblock.util.ServletUtil;
@@ -58,6 +59,7 @@ import jakarta.servlet.http.HttpServletResponse;
 	SearchApiServlet.PATTERN,
 	CardDavServlet.URL_PATTERN,
 	NumServlet.PREFIX + "/*",
+	DiagnosticsApiServlet.URL_PATTERN,
 })
 public class BasicLoginFilter extends LoginFilter {
 
@@ -142,6 +144,8 @@ public class BasicLoginFilter extends LoginFilter {
 			return authorization.isAccessQuery();
 		case CardDavServlet.DIR_NAME:
 			return authorization.isAccessCarddav();
+		case DiagnosticsApiServlet.SERVLET_PATH:
+			return authorization.isAccessDiagnostics();
 		default:
 			LOG.warn("Requesting CardDAV permission for unknown resource: {} - {}", request.getServletPath(), request.getPathInfo());
 			

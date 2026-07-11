@@ -23,6 +23,7 @@ module de.haumacher.phoneblock {
 	
 	exports de.haumacher.phoneblock.db to org.mybatis;
 	exports de.haumacher.phoneblock.db.settings to org.mybatis;
+	exports de.haumacher.phoneblock.diag to org.mybatis;
 	
 	requires transitive de.haumacher.phoneblock.shared;
 	requires transitive de.haumacher.phoneblock.ab;

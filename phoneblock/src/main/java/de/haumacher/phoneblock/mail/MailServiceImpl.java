@@ -182,6 +182,34 @@ public class MailServiceImpl implements MailService {
 	}
 	
 	@Override
+	public boolean sendDiagnosticsMail(UserSettings userSettings, String subject, String htmlBody) {
+		String receiver = userSettings.getEmail();
+		if (receiver == null || receiver.isBlank()) {
+			LOG.warn("Cannot send diagnostics mail to '{}', no e-mail provided.", userSettings.getId());
+			return false;
+		}
+		LOG.info("Sending diagnostics mail to '{}'.", receiver);
+		try {
+			MimeMessage msg = createMessage();
+			msg.setSubject(subject);
+			String plainTextContent = htmlToPlainText(htmlBody);
+			MimeMultipart alternativePart = new MimeMultipart("alternative");
+			MimeBodyPart html = new MimeBodyPart();
+			html.setText(htmlBody, "utf-8", "html");
+			alternativePart.addBodyPart(html);
+			MimeBodyPart text = new MimeBodyPart();
+			text.setText(plainTextContent, "utf-8");
+			alternativePart.addBodyPart(text);
+			msg.setContent(alternativePart);
+			sendMail(new InternetAddress(receiver), msg);
+			return true;
+		} catch (MessagingException ex) {
+			LOG.error("Failed to send diagnostics mail to: " + receiver, ex);
+			return false;
+		}
+	}
+
+	@Override
 	public boolean sendThanksMail(String donator, UserSettings userSettings, int amount) {
 		String receiver = userSettings.getEmail();
 		if (receiver == null || receiver.isBlank()) {

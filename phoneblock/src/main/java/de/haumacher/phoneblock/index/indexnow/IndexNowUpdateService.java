@@ -27,10 +27,21 @@ public class IndexNowUpdateService implements IndexUpdateService {
 
 	private static final Logger LOG = LoggerFactory.getLogger(IndexUpdateService.class);
 
+	/** After this many consecutive failures, pause instead of logging every one. */
+	private static final int MAX_FAILURES = 5;
+
+	/** How long to stop submitting once indexnow is failing repeatedly. */
+	private static final long BACKOFF_MS = 60 * 60 * 1000L;
+
 	private String _apiKey;
 	private String _contextPath;
 	private boolean _active;
-	
+
+	private int _consecutiveFailures;
+
+	/** While {@code now < this}, skip submissions: indexnow is failing repeatedly. */
+	private volatile long _pausedUntil;
+
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
 		_apiKey = lookupApiKey();
@@ -66,11 +77,17 @@ public class IndexNowUpdateService implements IndexUpdateService {
 	
 	@Override
 	public void publishPathUpdate(String path) {
-		if (_active) {
-			doPublishUpdate(path);
+		if (!_active) {
+			return;
 		}
+		// When indexnow rejects (a bad/unverified key, or rate limiting) it does so
+		// for every URL, flooding the log. Back off once it fails repeatedly.
+		if (System.currentTimeMillis() < _pausedUntil) {
+			return;
+		}
+		doPublishUpdate(path);
 	}
-	
+
 	private void doPublishUpdate(String path) {
 		if (!path.startsWith("/")) {
 			path = "/" + path;
@@ -82,12 +99,29 @@ public class IndexNowUpdateService implements IndexUpdateService {
 			connection.connect();
 			int code = connection.getResponseCode();
 			if (code != HttpURLConnection.HTTP_OK) {
-				LOG.warn("Failed to send URL update of '" + url + "' (status " + code + "): " + ConnectionUtil.readText(connection));
+				onFailure(url, "status " + code + ": " + ConnectionUtil.readText(connection));
 			} else {
+				_consecutiveFailures = 0;
 				LOG.info("Updated URL in indexnow: " + url);
 			}
 		} catch (IOException ex) {
-			LOG.error("Failed to send update of '" + url + "': " + ex.getMessage());
+			onFailure(url, ex.getMessage());
+		}
+	}
+
+	/**
+	 * Records a failed submission, logging each one until {@link #MAX_FAILURES} in a
+	 * row; from then on it pauses for {@link #BACKOFF_MS} and logs only once, so a
+	 * persistently broken indexnow endpoint cannot flood the log.
+	 */
+	private void onFailure(String url, String detail) {
+		_consecutiveFailures++;
+		if (_consecutiveFailures >= MAX_FAILURES) {
+			_pausedUntil = System.currentTimeMillis() + BACKOFF_MS;
+			LOG.warn("Indexnow failing repeatedly, pausing updates for {} min. Last failure: {}",
+				BACKOFF_MS / 60000, detail);
+		} else {
+			LOG.warn("Failed to send URL update of '" + url + "': " + detail);
 		}
 	}
 
