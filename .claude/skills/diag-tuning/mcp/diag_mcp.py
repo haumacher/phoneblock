@@ -7,9 +7,12 @@ analysis and propose/audit scrub rules without hand-rolling curl.
 
 Config (all optional, via environment):
   PHONEBLOCK_API          base API URL, ending in ``/api``
-                          (default: https://phoneblock.net/pb-test/api)
+                          (default: https://phoneblock.net/phoneblock/api = prod)
+  PHONEBLOCK_TOKEN_SERVER settings.xml <server> id to read the token from
+                          (default: ``phoneblock-admin``); lets prod and test
+                          use separate tokens.
   PHONEBLOCK_ADMIN_TOKEN  the bearer token; if unset, it is read from
-                          ~/.m2/settings.xml server id ``phoneblock-admin``
+                          ~/.m2/settings.xml server id PHONEBLOCK_TOKEN_SERVER
                           (``<password>`` or ``<passphrase>``) — the same
                           secret source the translate plugin uses.
 
@@ -28,7 +31,7 @@ import urllib.request
 
 SERVER_NAME = "phoneblock-diag"
 SERVER_VERSION = "1.0.0"
-DEFAULT_API = "https://phoneblock.net/pb-test/api"
+DEFAULT_API = "https://phoneblock.net/phoneblock/api"
 
 
 def log(*args):
@@ -47,14 +50,16 @@ def load_token():
     tok = os.environ.get("PHONEBLOCK_ADMIN_TOKEN")
     if tok and tok.strip():
         return tok.strip()
-    # Fall back to the Maven settings.xml server the translate plugin uses.
+    # Fall back to a Maven settings.xml server (same secret store as the translate
+    # plugin). The env picks which one, so prod and test use separate tokens.
+    server = os.environ.get("PHONEBLOCK_TOKEN_SERVER", "phoneblock-admin")
     path = os.path.expanduser("~/.m2/settings.xml")
     try:
         xml = open(path, encoding="utf-8").read()
     except OSError:
         return None
     block = re.search(
-        r"<server>\s*<id>\s*phoneblock-admin\s*</id>(.*?)</server>", xml, re.S)
+        r"<server>\s*<id>\s*" + re.escape(server) + r"\s*</id>(.*?)</server>", xml, re.S)
     if not block:
         return None
     for tag in ("password", "passphrase"):

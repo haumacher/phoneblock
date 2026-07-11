@@ -19,11 +19,13 @@ its data is real production traffic. Base URL: `https://phoneblock.net/pb-test/a
 ## Access — the `phoneblock-diag` MCP
 
 Tools come from the local MCP server registered in `.mcp.json`
-(`.claude/skills/diag-tuning/mcp/diag_mcp.py`, zero-dependency Python). It reads
-the admin token itself from `~/.m2/settings.xml` (server id `phoneblock-admin`,
-`<password>` or `<passphrase>`) — **the token never lives in the repo**. Point it
-at another deployment with `PHONEBLOCK_API`, or override the token with
-`PHONEBLOCK_ADMIN_TOKEN`.
+(`.claude/skills/diag-tuning/mcp/diag_mcp.py`, zero-dependency Python). Two
+servers are registered: **`phoneblock-diag` targets production** (the default —
+this is where the framework runs), and **`phoneblock-diag-test` targets
+`pb-test`**. Each reads its own admin token from `~/.m2/settings.xml`
+(`<password>`/`<passphrase>`) via the server id in `PHONEBLOCK_TOKEN_SERVER`:
+`phoneblock-admin` for prod, `phoneblock-admin-test` for test — **the token never
+lives in the repo**. Prefer the prod tools unless you deliberately want test.
 
 Key tools: `ingest_status`, `list_signatures` (returns a volume-ranked, compact
 list), `get_signature`, `audit_scrub`, `list_scrub_rules`, `create_scrub_rule`,
