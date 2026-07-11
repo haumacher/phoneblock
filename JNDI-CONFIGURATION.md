@@ -648,8 +648,10 @@ capabilities (columns on the `TOKENS` table, minted by a direct DB update — th
 is no UI to create such a token):
 
 - `ACCESS_DIAGNOSTICS` — read signatures/rules, dry-run and author rules into
-  `DRAFT`/`SHADOW`. Required for every `/api/diag` route.
-- `ACCESS_ADMIN` — the one elevated transition, promoting a rule to `LIVE`.
+  `DRAFT`/`SHADOW`, and create scrub rules (tightening the anonymizer). Required
+  for every `/api/diag` route.
+- `ACCESS_ADMIN` — the elevated transitions: promoting a rule to `LIVE`, changing
+  a scrub rule's state (relaxing the anonymizer), and the mail kill switch.
 
 Mint by flipping the flags on an ordinary token, e.g.:
 
@@ -658,15 +660,40 @@ UPDATE TOKENS SET ACCESS_DIAGNOSTICS = TRUE WHERE ID = <token-id>;   -- agent to
 UPDATE TOKENS SET ACCESS_ADMIN = TRUE       WHERE ID = <human-token-id>;
 ```
 
-Endpoints: `GET /api/diag/signatures` (unmatched feed via `?unmatched=true`),
-`GET /api/diag/signatures/{sigId}` (detail + samples), `GET /api/diag/rules`,
-`POST /api/diag/rules/dryrun`, `POST /api/diag/rules` (creates in SHADOW),
-`POST /api/diag/rules/{id}/state` (`LIVE` needs `ACCESS_ADMIN`).
+Endpoints (all under `/api/diag`, `ACCESS_DIAGNOSTICS` unless noted):
+
+*Read / discover*
+- `GET /signatures` — signature feed (unmatched long tail via `?unmatched=true`).
+- `GET /signatures/{sigId}` — one signature: stats + capped scrubbed samples.
+- `GET /origins/{source}/{originId}/timeline` — one origin's signatures over time.
+- `GET /rules` · `GET /rules/{id}` — detection rules.
+- `GET /rules/{id}/stats` — per-rule notification counts by state.
+- `GET /templates` — mail templates.
+- `GET /scrub` — scrub (anonymizer) rules.
+- `GET /notifications` — sent/pending mail audit (`?ruleId=&state=&since=`).
+- `GET /ingest/status` — reader health: cursor position, lag, aggregate counts.
+
+*Experiment (no side effects)*
+- `POST /rules/dryrun` — project a candidate rule against history.
+- `POST /mail/preview` — render a template with placeholder substitution.
+- `POST /scrub/audit` — scan retained samples for PII shapes still present
+  (optionally test a `candidatePattern`).
+
+*Author / promote*
+- `POST /rules` (creates in `SHADOW`) · `POST /rules/{id}/state`
+  (`LIVE` needs `ACCESS_ADMIN`).
+- `POST /templates` — create/update a mail template.
+- `POST /scrub` — create a scrub rule; a new rule only adds masking, so it lands
+  `LIVE` immediately under `ACCESS_DIAGNOSTICS`.
+- `POST /scrub/{id}/state` — change a scrub rule's state (relaxing / re-enabling);
+  needs `ACCESS_ADMIN`.
+- `POST /killswitch` — flip `diag.mail.enabled` (fleet-wide mail cutoff); needs
+  `ACCESS_ADMIN`.
 
 The **mail kill switch** and the **ruleset version** are runtime rows in the `PROPERTIES` table (not JNDI), so they can be flipped without a redeploy:
 
 - `diag.mail.enabled` (default `false`) — while `false`, no user help mail is ever sent even by a `LIVE`+`USER` rule; this is the master gate on top of per-rule promotion. Set to `true` only once the shadow projections look right.
-- `diag.ruleset.version` — bumped on any rule/template change; reserved for a future in-memory rule cache (the matcher currently reads rules fresh each run).
+- `diag.ruleset.version` — bumped on any rule/template/scrub change; reserved for a future in-memory rule cache (the matcher and the ingest scrubber currently reload rules fresh each run, so anonymizer edits take effect within one ingest interval without a redeploy).
 
 ### Example Configuration
 

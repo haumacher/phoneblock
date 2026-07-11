@@ -147,4 +147,55 @@ public class TestDiagnosticsIngest {
 		assertEquals("mail: status mail to <email> failed", text("SELECT MESSAGE_SCRUBBED FROM DIAG_SAMPLE"));
 		assertEquals("mail: status mail to <email> failed", text("SELECT SIGNATURE FROM DIAG_SIGNATURE"));
 	}
+
+	@Test
+	public void testScrubRuleCrudAndState() throws Exception {
+		try (SqlSession session = _db.openSession()) {
+			DiagnosticsMapper mapper = session.getMapper(DiagnosticsMapper.class);
+
+			DiagScrubRule rule = new DiagScrubRule();
+			rule.setName("mac");
+			rule.setPattern("\\b([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}\\b");
+			rule.setReplacement("<mac>");
+			rule.setAppliesTo(DiagScrubRule.BOTH);
+			rule.setState(DiagScrubRule.DRAFT);
+			mapper.insertScrubRule(rule);
+			session.commit();
+
+			// DRAFT is not yet live.
+			assertEquals(0, mapper.listLiveScrubRules().size());
+			assertEquals(1, mapper.listScrubRules(DiagScrubRule.DRAFT).size());
+
+			mapper.setScrubRuleState(rule.getId(), DiagScrubRule.LIVE, T0);
+			session.commit();
+			assertEquals(1, mapper.listLiveScrubRules().size());
+			// setRuleState bumps the version (1 -> 2).
+			assertEquals(2, mapper.getScrubRule(rule.getId()).getVersion());
+		}
+	}
+
+	@Test
+	public void testIngestAppliesLiveDbScrubRule() throws Exception {
+		try (SqlSession session = _db.openSession()) {
+			DiagnosticsMapper mapper = session.getMapper(DiagnosticsMapper.class);
+			DiagScrubRule rule = new DiagScrubRule();
+			rule.setName("mac");
+			rule.setPattern("\\b([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}\\b");
+			rule.setReplacement("<mac>");
+			rule.setAppliesTo(DiagScrubRule.BOTH);
+			rule.setState(DiagScrubRule.LIVE);
+			mapper.insertScrubRule(rule);
+			session.commit();
+		}
+
+		DiagnosticsAggregator aggregator = new DiagnosticsAggregator(20);
+		try (SqlSession session = _db.openSession()) {
+			DiagnosticsMapper mapper = session.getMapper(DiagnosticsMapper.class);
+			Scrubber scrubber = Scrubber.withLiveRules(mapper.listLiveScrubRules());
+			aggregator.apply(mapper, dongle("dev-a", "wifi: assoc 00:11:22:33:44:55 lost", T0), scrubber);
+			session.commit();
+		}
+
+		assertEquals("wifi: assoc <mac> lost", text("SELECT MESSAGE_SCRUBBED FROM DIAG_SAMPLE"));
+	}
 }

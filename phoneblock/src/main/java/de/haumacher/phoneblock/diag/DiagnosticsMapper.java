@@ -227,4 +227,71 @@ public interface DiagnosticsMapper {
 			+ "SELECT DEVICEID FROM (" + LATEST_DONGLE_TOKEN + ") x WHERE x.LASTACCESS >= #{recentCutoff})")
 	int clearReturnedSilentNotifications(@Param("ruleId") long ruleId,
 			@Param("recentCutoff") long recentCutoff, @Param("clearedAt") long clearedAt);
+
+	// ---- Notification audit ----
+
+	@Select("SELECT ID, SOURCE, ORIGIN_ID AS ORIGINID, USER_ID AS USERID, RULE_ID AS RULEID, "
+			+ "STATE, DRY_RUN AS DRYRUN, FIRST_MATCHED AS FIRSTMATCHED, SENT_AT AS SENTAT, "
+			+ "CLEARED_AT AS CLEAREDAT FROM DIAG_NOTIFICATION "
+			+ "WHERE (#{ruleId} < 0 OR RULE_ID = #{ruleId}) "
+			+ "AND (#{source} IS NULL OR SOURCE = #{source}) "
+			+ "AND (#{state} IS NULL OR STATE = #{state}) "
+			+ "AND (#{since} = 0 OR FIRST_MATCHED >= #{since}) "
+			+ "ORDER BY ID DESC LIMIT #{limit}")
+	List<java.util.Map<String, Object>> listNotifications(@Param("source") String source,
+			@Param("ruleId") long ruleId, @Param("state") String state,
+			@Param("since") long since, @Param("limit") int limit);
+
+	@Select("SELECT STATE, COUNT(*) AS N FROM DIAG_NOTIFICATION WHERE RULE_ID = #{ruleId} GROUP BY STATE")
+	List<java.util.Map<String, Object>> notificationStatsByState(long ruleId);
+
+	// ---- Per-origin timeline (introspection) ----
+
+	@Select("SELECT o.SIG_ID AS SIGID, s.SIGNATURE, s.TAG, s.CATEGORY, "
+			+ "o.FIRST_SEEN AS FIRSTSEEN, o.LAST_SEEN AS LASTSEEN, "
+			+ "o.EVENT_COUNT AS EVENTCOUNT, o.DISTINCT_DAYS AS DISTINCTDAYS "
+			+ "FROM DIAG_ORIGIN_SIGNATURE o JOIN DIAG_SIGNATURE s ON s.SIG_ID = o.SIG_ID "
+			+ "WHERE o.SOURCE = #{source} AND o.ORIGIN_ID = #{originId} "
+			+ "AND (#{since} = 0 OR o.LAST_SEEN >= #{since}) ORDER BY o.LAST_SEEN DESC")
+	List<java.util.Map<String, Object>> originTimeline(@Param("source") String source,
+			@Param("originId") String originId, @Param("since") long since);
+
+	// ---- Sample audit (scan retained samples for still-leaking PII shapes) ----
+
+	@Select("SELECT SIG_ID AS SIGID, SOURCE, ORIGIN_ID AS ORIGINID, MESSAGE_SCRUBBED AS MESSAGE "
+			+ "FROM DIAG_SAMPLE WHERE (#{source} IS NULL OR SOURCE = #{source}) "
+			+ "ORDER BY RECEIVED_MS DESC LIMIT #{limit}")
+	List<java.util.Map<String, Object>> recentSamples(@Param("source") String source, @Param("limit") int limit);
+
+	// ---- Scrub rules (hot-editable anonymizer) ----
+
+	String SCRUB_COLS = "ID, NAME, SOURCE, PATTERN, REPLACEMENT, APPLIES_TO AS APPLIESTO, "
+			+ "STATE, VERSION, AUTHOR, UPDATED";
+
+	@Select("SELECT " + SCRUB_COLS + " FROM DIAG_SCRUB_RULE WHERE STATE = 'LIVE' ORDER BY ID")
+	List<DiagScrubRule> listLiveScrubRules();
+
+	@Select("SELECT " + SCRUB_COLS + " FROM DIAG_SCRUB_RULE "
+			+ "WHERE (#{state} IS NULL OR STATE = #{state}) ORDER BY ID")
+	List<DiagScrubRule> listScrubRules(@Param("state") String state);
+
+	@Select("SELECT " + SCRUB_COLS + " FROM DIAG_SCRUB_RULE WHERE ID = #{id}")
+	DiagScrubRule getScrubRule(long id);
+
+	@Insert("INSERT INTO DIAG_SCRUB_RULE (NAME, SOURCE, PATTERN, REPLACEMENT, APPLIES_TO, STATE, VERSION, AUTHOR, UPDATED) "
+			+ "VALUES (#{name}, #{source, jdbcType=VARCHAR}, #{pattern}, #{replacement}, #{appliesTo}, "
+			+ "#{state}, #{version}, #{author}, #{updated})")
+	@Options(useGeneratedKeys = true, keyProperty = "id")
+	void insertScrubRule(DiagScrubRule rule);
+
+	@Update("UPDATE DIAG_SCRUB_RULE SET STATE=#{state}, VERSION=VERSION+1, UPDATED=#{updated} WHERE ID=#{id}")
+	int setScrubRuleState(@Param("id") long id, @Param("state") String state, @Param("updated") long updated);
+
+	// ---- Ingest health ----
+
+	@Select("SELECT COUNT(*) FROM DIAG_ORIGIN_SIGNATURE")
+	long countOriginSignatures();
+
+	@Select("SELECT COUNT(*) FROM DIAG_SAMPLE")
+	long countAllSamples();
 }

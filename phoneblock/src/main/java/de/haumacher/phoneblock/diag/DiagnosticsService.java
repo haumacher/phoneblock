@@ -202,6 +202,10 @@ public class DiagnosticsService implements ServletContextListener {
 		try (SqlSession session = db.openSession()) {
 			DiagnosticsMapper mapper = session.getMapper(DiagnosticsMapper.class);
 
+			// Rebuild the scrubber from the current LIVE DB rules once per run (cheap:
+			// a handful of rows) so anonymizer edits take effect without a redeploy.
+			Scrubber scrubber = Scrubber.withLiveRules(mapper.listLiveScrubRules());
+
 			IngestCursor cursor = mapper.getCursor(STREAM_ID);
 			long segment = cursor != null ? cursor.getSegmentCount() : -1;
 			long offset = cursor != null ? cursor.getByteOffset() : 0;
@@ -226,7 +230,7 @@ public class DiagnosticsService implements ServletContextListener {
 					for (LineRecognizer recognizer : _recognizers) {
 						DiagEvent event = recognizer.recognize(parsed);
 						if (event != null) {
-							_aggregator.apply(mapper, event);
+							_aggregator.apply(mapper, event, scrubber);
 							totalEvents++;
 							if (event.timestampMs() > lastTs) {
 								lastTs = event.timestampMs();

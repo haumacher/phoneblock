@@ -24,18 +24,31 @@ public class DiagnosticsAggregator {
 	}
 
 	/**
-	 * Applies one event through the mapper. Must be called within an open
-	 * session; the caller commits the batch.
+	 * Applies one event through the mapper using only the built-in scrub rules.
+	 * Convenience for callers (and tests) that do not layer DB scrub rules.
 	 */
 	public void apply(DiagnosticsMapper mapper, DiagEvent event) {
-		String scrubbed = truncate(Scrubber.scrub(event.message()));
-		String signature = truncate(LogNormalizer.normalize(scrubbed));
+		apply(mapper, event, Scrubber.builtin());
+	}
+
+	/**
+	 * Applies one event through the mapper, scrubbing with the given
+	 * {@link Scrubber} (built-ins plus any LIVE {@code DIAG_SCRUB_RULE} rows). Must
+	 * be called within an open session; the caller commits the batch.
+	 *
+	 * <p>Signature and sample are scrubbed independently so a {@code SAMPLE}-only
+	 * scrub rule can mask the retained text without forking the grouping key.</p>
+	 */
+	public void apply(DiagnosticsMapper mapper, DiagEvent event, Scrubber scrubber) {
+		String forSignature = truncate(scrubber.scrubForSignature(event.message()));
+		String forSample = truncate(scrubber.scrubForSample(event.message()));
+		String signature = truncate(LogNormalizer.normalize(forSignature));
 		String sigId = LogNormalizer.sigId(event.source(), signature);
 		long ts = event.timestampMs();
 		int epochDay = event.epochDay();
 
 		if (mapper.updateSignature(sigId, event.tag(), ts, ts, 1) == 0) {
-			mapper.insertSignature(sigId, event.source(), signature, event.tag(), scrubbed, ts, ts, 1);
+			mapper.insertSignature(sigId, event.source(), signature, event.tag(), forSample, ts, ts, 1);
 		}
 
 		if (mapper.updateOriginSignature(sigId, event.originId(), ts, 1, epochDay) == 0) {
@@ -45,7 +58,7 @@ public class DiagnosticsAggregator {
 
 		if (mapper.countSamples(sigId) < _sampleCap) {
 			mapper.insertSample(ts, event.source(), sigId, event.originId(), event.userId(),
-				event.severity(), event.uptimeS(), event.tag(), scrubbed);
+				event.severity(), event.uptimeS(), event.tag(), forSample);
 		}
 	}
 

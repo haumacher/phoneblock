@@ -3,10 +3,14 @@
 **Date:** 2026-07-11
 **Status:** Draft — for review. **Implemented on branch `diagnostics-framework`**
 (package `de.haumacher.phoneblock.diag`): Phase 1 (reader + dongle recognizer +
-`DIAG_*` tables), Phase 2 (auth capabilities + `/api/diag` REST API), Phases 3–4
-(rule engine, matcher, help-mail — seeded rules ship in SHADOW, mail kill switch
-off), Phase 6 (opt-in server-log recognizer). **Phase 5 (firmware-side scrub
-subset) is the only part not built** — it belongs to a firmware release.
+`DIAG_*` tables), Phase 2 (auth capabilities + the full `/api/diag` REST API —
+signatures, origins timeline, rules + stats, templates + preview, scrub rules +
+audit, notifications, ingest status, kill switch), Phases 3–4 (rule engine,
+matcher, help-mail — seeded rules ship in SHADOW, mail kill switch off), the
+hot-editable `DIAG_SCRUB_RULE` anonymizer (built-in baseline + LIVE DB rules
+layered on, `applies_to`-aware, audit loop), and Phase 6 (opt-in server-log
+recognizer). **Phase 5 (firmware-side scrub subset) is the only part not built**
+— it belongs to a firmware release (#472).
 **Scope:** `phoneblock/` server (generic ingest, rule engine, scheduler, mail),
 `phoneblock-tools/` (offline analysis), plus per-source adapters (dongle firmware
 first; mobile app and the server's own logs later)

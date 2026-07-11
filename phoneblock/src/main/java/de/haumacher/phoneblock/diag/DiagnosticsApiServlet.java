@@ -4,9 +4,12 @@
 package de.haumacher.phoneblock.diag;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
@@ -64,10 +67,20 @@ public class DiagnosticsApiServlet extends HttpServlet {
 				signatureDetail(resp, mapper, path.substring("/signatures/".length()));
 			} else if (path.equals("/rules")) {
 				listRules(req, resp, mapper);
+			} else if (path.matches("/rules/\\d+/stats")) {
+				ruleStats(resp, mapper, ruleId(path));
 			} else if (path.startsWith("/rules/")) {
 				ruleDetail(resp, mapper, path.substring("/rules/".length()));
 			} else if (path.equals("/templates")) {
 				listTemplates(req, resp, mapper);
+			} else if (path.equals("/scrub")) {
+				listScrub(req, resp, mapper);
+			} else if (path.equals("/notifications")) {
+				listNotifications(req, resp, mapper);
+			} else if (path.equals("/ingest/status")) {
+				ingestStatus(resp, mapper);
+			} else if (path.startsWith("/origins/") && path.endsWith("/timeline")) {
+				originTimeline(req, resp, mapper, path);
 			} else {
 				ServletUtil.sendMessage(resp, HttpServletResponse.SC_NOT_FOUND, "Unknown resource: " + path);
 			}
@@ -90,6 +103,16 @@ public class DiagnosticsApiServlet extends HttpServlet {
 				setRuleState(req, resp, session, mapper, ruleId(path));
 			} else if (path.equals("/templates")) {
 				upsertTemplate(req, resp, session, mapper);
+			} else if (path.equals("/scrub")) {
+				createScrub(req, resp, session, mapper);
+			} else if (path.matches("/scrub/\\d+/state")) {
+				setScrubState(req, resp, session, mapper, scrubId(path));
+			} else if (path.equals("/scrub/audit")) {
+				auditSamples(req, resp, mapper);
+			} else if (path.equals("/mail/preview")) {
+				mailPreview(req, resp, mapper);
+			} else if (path.equals("/killswitch")) {
+				killswitch(req, resp, session);
 			} else {
 				ServletUtil.sendMessage(resp, HttpServletResponse.SC_NOT_FOUND, "Unknown resource: " + path);
 			}
@@ -300,6 +323,270 @@ public class DiagnosticsApiServlet extends HttpServlet {
 		writeJson(resp, w -> writeTemplate(w, template));
 	}
 
+	private void listScrub(HttpServletRequest req, HttpServletResponse resp, DiagnosticsMapper mapper)
+			throws IOException {
+		List<DiagScrubRule> rules = mapper.listScrubRules(trimToNull(req.getParameter("state")));
+		writeJson(resp, w -> {
+			w.beginArray();
+			for (DiagScrubRule r : rules) {
+				writeScrub(w, r);
+			}
+			w.endArray();
+		});
+	}
+
+	private void listNotifications(HttpServletRequest req, HttpServletResponse resp, DiagnosticsMapper mapper)
+			throws IOException {
+		String source = trimToNull(req.getParameter("source"));
+		long ruleId = parseLong(req.getParameter("ruleId"), -1);
+		String state = trimToNull(req.getParameter("state"));
+		long since = parseLong(req.getParameter("since"), 0);
+		int limit = intParam(req, "limit", 200);
+		List<Map<String, Object>> rows = mapper.listNotifications(source, ruleId, state, since, limit);
+		writeJson(resp, w -> writeRows(w, rows));
+	}
+
+	private void ruleStats(HttpServletResponse resp, DiagnosticsMapper mapper, long ruleId) throws IOException {
+		DiagRule rule = mapper.getRule(ruleId);
+		if (rule == null) {
+			ServletUtil.sendMessage(resp, HttpServletResponse.SC_NOT_FOUND, "No such rule.");
+			return;
+		}
+		List<Map<String, Object>> byState = mapper.notificationStatsByState(ruleId);
+		writeJson(resp, w -> {
+			w.beginObject();
+			w.name("ruleId").value(ruleId);
+			w.name("state").value(rule.getState());
+			w.name("notificationsByState").beginObject();
+			for (Map<String, Object> row : byState) {
+				w.name(str(row.get("STATE"))).value(asLong(row.get("N")));
+			}
+			w.endObject();
+			w.endObject();
+		});
+	}
+
+	private void ingestStatus(HttpServletResponse resp, DiagnosticsMapper mapper) throws IOException {
+		IngestCursor cursor = mapper.getCursor("server");
+		long now = System.currentTimeMillis();
+		long lastTs = cursor == null ? 0 : cursor.getLastLineTs();
+		writeJson(resp, w -> {
+			w.beginObject();
+			w.name("streamId").value("server");
+			w.name("segmentCount").value(cursor == null ? -1 : cursor.getSegmentCount());
+			w.name("byteOffset").value(cursor == null ? 0 : cursor.getByteOffset());
+			w.name("lastLineTs").value(lastTs);
+			w.name("lagMs").value(lastTs == 0 ? -1 : now - lastTs);
+			w.name("signatures").value(mapper.countSignatures());
+			w.name("originSignatures").value(mapper.countOriginSignatures());
+			w.name("totalEvents").value(mapper.totalEvents());
+			w.name("samples").value(mapper.countAllSamples());
+			w.endObject();
+		});
+	}
+
+	private void originTimeline(HttpServletRequest req, HttpServletResponse resp, DiagnosticsMapper mapper,
+			String path) throws IOException {
+		// "/origins/<source>/<originId>/timeline"
+		String middle = path.substring("/origins/".length(), path.length() - "/timeline".length());
+		int slash = middle.indexOf('/');
+		if (slash < 0) {
+			ServletUtil.sendMessage(resp, HttpServletResponse.SC_BAD_REQUEST,
+				"Path must be /origins/{source}/{originId}/timeline.");
+			return;
+		}
+		String source = middle.substring(0, slash);
+		String originId = middle.substring(slash + 1);
+		long since = parseLong(req.getParameter("since"), 0);
+		List<Map<String, Object>> rows = mapper.originTimeline(source, originId, since);
+		writeJson(resp, w -> writeRows(w, rows));
+	}
+
+	// ---- Author / experiment (scrub) ----
+
+	/**
+	 * Creates a scrub rule. A new rule only ever <em>adds</em> masking
+	 * (tightening), so it lands {@code LIVE} immediately under
+	 * {@code accessDiagnostics} — matching the design's asymmetric gate. The
+	 * relaxing direction (disabling a rule) is the admin-gated
+	 * {@code /scrub/{id}/state} transition.
+	 */
+	private void createScrub(HttpServletRequest req, HttpServletResponse resp, SqlSession session,
+			DiagnosticsMapper mapper) throws IOException {
+		Map<String, String> body = readObject(req);
+		String pattern = body.get("pattern");
+		if (pattern == null || pattern.isBlank()) {
+			ServletUtil.sendMessage(resp, HttpServletResponse.SC_BAD_REQUEST, "pattern is required.");
+			return;
+		}
+		try {
+			Pattern.compile(pattern);
+		} catch (PatternSyntaxException ex) {
+			ServletUtil.sendMessage(resp, HttpServletResponse.SC_BAD_REQUEST, "Invalid pattern: " + ex.getMessage());
+			return;
+		}
+		String appliesTo = body.getOrDefault("appliesTo", DiagScrubRule.BOTH);
+		if (!DiagScrubRule.BOTH.equals(appliesTo) && !DiagScrubRule.SIGNATURE.equals(appliesTo)
+				&& !DiagScrubRule.SAMPLE.equals(appliesTo)) {
+			ServletUtil.sendMessage(resp, HttpServletResponse.SC_BAD_REQUEST,
+				"appliesTo must be SIGNATURE, SAMPLE or BOTH.");
+			return;
+		}
+		DiagScrubRule rule = new DiagScrubRule();
+		rule.setName(body.getOrDefault("name", ""));
+		rule.setSource(trimToNull(body.get("source")));
+		rule.setPattern(pattern);
+		rule.setReplacement(body.getOrDefault("replacement", ""));
+		rule.setAppliesTo(appliesTo);
+		rule.setState(DiagScrubRule.LIVE);
+		rule.setVersion(1);
+		rule.setAuthor(LoginFilter.getAuthenticatedUser(req));
+		rule.setUpdated(System.currentTimeMillis());
+		mapper.insertScrubRule(rule);
+		bumpRulesetVersion(session);
+		session.commit();
+		LOG.info("Diagnostics scrub rule {} created LIVE by {}.", rule.getId(), rule.getAuthor());
+		writeJson(resp, w -> writeScrub(w, rule));
+	}
+
+	/**
+	 * Changes a scrub rule's state. Disabling relaxes the anonymizer (retains more
+	 * text) and re-enabling re-tightens; both are outward-affecting anonymizer
+	 * changes, so this transition requires {@code accessAdmin}.
+	 */
+	private void setScrubState(HttpServletRequest req, HttpServletResponse resp, SqlSession session,
+			DiagnosticsMapper mapper, long id) throws IOException {
+		if (!authorize(req, resp, true)) {
+			return;
+		}
+		Map<String, String> body = readObject(req);
+		String state = body.get("state");
+		if (!DiagScrubRule.LIVE.equals(state) && !DiagScrubRule.DISABLED.equals(state)
+				&& !DiagScrubRule.DRAFT.equals(state)) {
+			ServletUtil.sendMessage(resp, HttpServletResponse.SC_BAD_REQUEST,
+				"state must be one of DRAFT, LIVE, DISABLED.");
+			return;
+		}
+		if (mapper.getScrubRule(id) == null) {
+			ServletUtil.sendMessage(resp, HttpServletResponse.SC_NOT_FOUND, "No such scrub rule.");
+			return;
+		}
+		mapper.setScrubRuleState(id, state, System.currentTimeMillis());
+		bumpRulesetVersion(session);
+		session.commit();
+		LOG.info("Diagnostics scrub rule {} state -> {} by {}.", id, state, LoginFilter.getAuthenticatedUser(req));
+		writeJson(resp, w -> {
+			w.beginObject();
+			w.name("id").value(id);
+			w.name("state").value(state);
+			w.endObject();
+		});
+	}
+
+	/**
+	 * Scans retained samples for PII shapes that survived scrubbing. With a
+	 * {@code candidatePattern} it reports the samples that pattern would newly
+	 * mask (so an agent can test a proposed scrub rule against real data); without
+	 * one it applies a set of built-in "suspicious shape" probes. No side effects.
+	 */
+	private void auditSamples(HttpServletRequest req, HttpServletResponse resp, DiagnosticsMapper mapper)
+			throws IOException {
+		Map<String, String> body = readObject(req);
+		String source = trimToNull(body.get("source"));
+		int limit = parseInt(body.get("limit"), 500);
+		List<Pattern> probes = new ArrayList<>();
+		String candidate = trimToNull(body.get("candidatePattern"));
+		if (candidate != null) {
+			try {
+				probes.add(Pattern.compile(candidate));
+			} catch (PatternSyntaxException ex) {
+				ServletUtil.sendMessage(resp, HttpServletResponse.SC_BAD_REQUEST,
+					"Invalid candidatePattern: " + ex.getMessage());
+				return;
+			}
+		} else {
+			// Default probes: email-ish, IPv4, and a long bare digit run (a phone or
+			// account number that the conservative baseline leaves untouched).
+			probes.add(Pattern.compile("[A-Za-z0-9._%+\\-]+@[A-Za-z0-9.\\-]+\\.[A-Za-z]{2,}"));
+			probes.add(Pattern.compile("\\b(?:\\d{1,3}\\.){3}\\d{1,3}\\b"));
+			probes.add(Pattern.compile("\\b\\d{7,}\\b"));
+		}
+		List<Map<String, Object>> samples = mapper.recentSamples(source, limit);
+		List<Map<String, Object>> matches = new ArrayList<>();
+		for (Map<String, Object> s : samples) {
+			String message = str(s.get("MESSAGE"));
+			for (Pattern p : probes) {
+				if (p.matcher(message).find()) {
+					matches.add(s);
+					break;
+				}
+			}
+		}
+		writeJson(resp, w -> {
+			w.beginObject();
+			w.name("scanned").value(samples.size());
+			w.name("matched").value(matches.size());
+			w.name("matches");
+			writeRows(w, matches);
+			w.endObject();
+		});
+	}
+
+	/** Renders a template with placeholder substitution — no side effects. */
+	private void mailPreview(HttpServletRequest req, HttpServletResponse resp, DiagnosticsMapper mapper)
+			throws IOException {
+		Map<String, String> body = readObject(req);
+		String key = trimToNull(body.get("templateKey"));
+		if (key == null) {
+			ServletUtil.sendMessage(resp, HttpServletResponse.SC_BAD_REQUEST, "templateKey is required.");
+			return;
+		}
+		String lang = body.getOrDefault("lang", "en");
+		DiagTemplate tpl = MailNotifier.resolveTemplate(mapper, key, lang);
+		if (tpl == null) {
+			ServletUtil.sendMessage(resp, HttpServletResponse.SC_NOT_FOUND, "No such template: " + key);
+			return;
+		}
+		Map<String, String> vars = Map.of(
+			"deviceId", body.getOrDefault("originId", "<device>"),
+			"source", body.getOrDefault("source", ""),
+			"category", body.getOrDefault("category", ""),
+			"userId", body.getOrDefault("userId", ""));
+		String subject = MailNotifier.render(tpl.getSubject(), vars);
+		String rendered = MailNotifier.render(tpl.getBody(), vars);
+		writeJson(resp, w -> {
+			w.beginObject();
+			w.name("templateKey").value(key);
+			w.name("lang").value(tpl.getLang());
+			w.name("subject").value(subject);
+			w.name("body").value(rendered);
+			w.endObject();
+		});
+	}
+
+	/** Flips the global mail kill switch ({@code diag.mail.enabled}). Admin-gated. */
+	private void killswitch(HttpServletRequest req, HttpServletResponse resp, SqlSession session) throws IOException {
+		if (!authorize(req, resp, true)) {
+			return;
+		}
+		Map<String, String> body = readObject(req);
+		String enabled = body.get("enabled");
+		if (enabled == null) {
+			ServletUtil.sendMessage(resp, HttpServletResponse.SC_BAD_REQUEST, "enabled (boolean) is required.");
+			return;
+		}
+		boolean on = Boolean.parseBoolean(enabled);
+		de.haumacher.phoneblock.db.Users users = session.getMapper(de.haumacher.phoneblock.db.Users.class);
+		users.updateProperty("diag.mail.enabled", Boolean.toString(on));
+		session.commit();
+		LOG.warn("Diagnostics mail kill switch set to {} by {}.", on, LoginFilter.getAuthenticatedUser(req));
+		writeJson(resp, w -> {
+			w.beginObject();
+			w.name("enabled").value(on);
+			w.endObject();
+		});
+	}
+
 	// ---- helpers ----
 
 	/**
@@ -376,6 +663,47 @@ public class DiagnosticsApiServlet extends HttpServlet {
 		w.endObject();
 	}
 
+	private static void writeScrub(JsonWriter w, DiagScrubRule r) throws IOException {
+		w.beginObject();
+		w.name("id").value(r.getId());
+		w.name("name").value(r.getName());
+		w.name("source"); nullable(w, r.getSource());
+		w.name("pattern").value(r.getPattern());
+		w.name("replacement").value(r.getReplacement());
+		w.name("appliesTo").value(r.getAppliesTo());
+		w.name("state").value(r.getState());
+		w.name("version").value(r.getVersion());
+		w.name("author").value(r.getAuthor());
+		w.name("updated").value(r.getUpdated());
+		w.endObject();
+	}
+
+	/** Writes a list of column-keyed rows as a JSON array of objects. */
+	private static void writeRows(JsonWriter w, List<Map<String, Object>> rows) throws IOException {
+		w.beginArray();
+		for (Map<String, Object> row : rows) {
+			w.beginObject();
+			for (Map.Entry<String, Object> e : row.entrySet()) {
+				w.name(e.getKey());
+				writeValue(w, e.getValue());
+			}
+			w.endObject();
+		}
+		w.endArray();
+	}
+
+	private static void writeValue(JsonWriter w, Object v) throws IOException {
+		if (v == null) {
+			w.nullValue();
+		} else if (v instanceof Boolean b) {
+			w.value(b.booleanValue());
+		} else if (v instanceof Number n) {
+			w.value(n.longValue());
+		} else {
+			w.value(v.toString());
+		}
+	}
+
 	private static void nullable(JsonWriter w, String v) throws IOException {
 		if (v == null) {
 			w.nullValue();
@@ -427,8 +755,14 @@ public class DiagnosticsApiServlet extends HttpServlet {
 	}
 
 	private static long ruleId(String path) {
-		// "/rules/<id>/state"
+		// "/rules/<id>/state" or "/rules/<id>/stats"
 		String s = path.substring("/rules/".length());
+		return parseLong(s.substring(0, s.indexOf('/')), -1);
+	}
+
+	private static long scrubId(String path) {
+		// "/scrub/<id>/state"
+		String s = path.substring("/scrub/".length());
 		return parseLong(s.substring(0, s.indexOf('/')), -1);
 	}
 
