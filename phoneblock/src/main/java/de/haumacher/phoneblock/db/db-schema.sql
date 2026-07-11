@@ -4,7 +4,7 @@ CREATE TABLE PROPERTIES (
 	CONSTRAINT PROPERTIES_PK PRIMARY KEY (NAME)
 );
 
-INSERT INTO PROPERTIES (NAME, VAL) VALUES('db.version', '48');
+INSERT INTO PROPERTIES (NAME, VAL) VALUES('db.version', '49');
 INSERT INTO PROPERTIES (NAME, VAL) VALUES('blocklist.version', '1');
 INSERT INTO PROPERTIES (NAME, VAL) VALUES('diag.ruleset.version', '1');
 INSERT INTO PROPERTIES (NAME, VAL) VALUES('diag.mail.enabled', 'false');
@@ -506,4 +506,13 @@ INSERT INTO DIAG_RULE (NAME, SOURCE, MATCH_TAG, MATCH_REGEX, CATEGORY, ACTOR, MI
 	('SIP registration rejected', 'DONGLE', 'sip', 'REGISTER rejected', 'user-install-sip', 'USER', 2, 5, 'help-register-rejected', 'SHADOW', 'seed', 'Wrong SIP user / extension in the Fritz!Box.', 0, 0),
 	('rate API rejects submissions', 'DONGLE', 'api', 'rate: HTTP', 'firmware-bug', 'DEV', 1, 10, NULL, 'SHADOW', 'seed', 'See issue #469 (wildcards / non-E.164 to /api/rate).', 0, 0),
 	('WiFi transient disconnects', 'DONGLE', 'wifi', 'disconnected', 'environmental', 'NONE', 1, 1, NULL, 'SHADOW', 'seed', 'Noisy RF/environment; classify only.', 0, 0);
+
+INSERT INTO DIAG_TEMPLATE (TEMPLATE_KEY, LANG, SUBJECT, BODY, UPDATED) VALUES
+	('help-internet-exposed', 'de',
+	 'Sicherheitshinweis: Dein PhoneBlock-Dongle ist aus dem Internet erreichbar',
+	 '<p>Hallo,</p><p>wir haben festgestellt, dass die Weboberflaeche deines PhoneBlock-Dongles (Geraet {deviceId}) aus dem Internet erreichbar ist: Das Geraet erhaelt automatisierte Anfragen von Schwachstellen-Scannern aus dem Netz.</p><p><strong>Das ist ein Sicherheitsrisiko.</strong> Der Dongle ist fuer den Betrieb im Heimnetz gedacht und muss nicht aus dem Internet erreichbar sein.</p><p>Bitte pruefe die Einstellungen deines Routers (z. B. Fritz!Box) und entferne eine eventuell eingerichtete Portfreigabe bzw. "Exposed Host"/DMZ-Regel, die auf den Dongle zeigt.</p><p>Viele Gruesse<br/>Dein PhoneBlock-Team</p>',
+	 0);
+
+INSERT INTO DIAG_RULE (NAME, SOURCE, MATCH_TAG, MATCH_REGEX, CATEGORY, ACTOR, MIN_DISTINCT_DAYS, MIN_EVENTS, TEMPLATE_KEY, STATE, AUTHOR, NOTES, CREATED, UPDATED) VALUES
+	('Dongle web UI internet-exposed', 'DONGLE', NULL, 'parse_block|Bad request syntax', 'security-exposed', 'USER', 1, 1, 'help-internet-exposed', 'SHADOW', 'seed', 'Embedded HTTP server receiving scanner garbage -> reachable from the internet. Fires on first detection.', 0, 0);
 

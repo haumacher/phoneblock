@@ -190,6 +190,30 @@ public class TestDiagnosticsMatcher {
 	}
 
 	@Test
+	public void testSecurityRuleFiresOnFirstEvent() throws Exception {
+		// The internet-exposed rule: tag-agnostic, matches malformed-HTTP scanner
+		// garbage, threshold 1/1 so it fires on the very first detected probe.
+		DiagRule r = new DiagRule();
+		r.setName("exposed");
+		r.setSource("DONGLE");
+		r.setMatchTag(null);
+		r.setMatchRegex("parse_block|Bad request syntax");
+		r.setCategory("security-exposed");
+		r.setActor(DiagRule.ACTOR_USER);
+		r.setState(DiagRule.SHADOW);
+		r.setMinEvents(1);
+		r.setMinDistinctDays(1);
+		insertRule(r);
+
+		// One malformed-request line, one event, same day.
+		ingest("httpd_parse", "httpd_parse: parse_block: incomplete (1/9) with parser error = 16", "dev-x", 1, T0);
+		runMatcher(new CapturingNotifier(), T0 + 1000);
+
+		assertEquals(1, scalar("SELECT COUNT(*) FROM DIAG_NOTIFICATION"));
+		assertEquals("PENDING", text("SELECT STATE FROM DIAG_NOTIFICATION"));
+	}
+
+	@Test
 	public void testDryRunProjectsWithoutWriting() throws Exception {
 		ingest("sip", "sip: REGISTER rejected: 400", "dev-a", 3, T0);
 		ingest("sip", "sip: REGISTER rejected: 401", "dev-b", 3, T0);
