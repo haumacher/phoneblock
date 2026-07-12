@@ -59,7 +59,7 @@ public class UdpRequest implements Runnable {
 		} catch (Throwable ex) {
 			// Malformed packets are expected background noise on a public UDP:53
 			// (scanners, spoofed probes); do not spam WARN with untrusted input.
-			LOG.info("Error processing UDP connection from " + _rxPacket.getSocketAddress() + ", " + ex, ex);
+			LOG.info("Error processing UDP connection from " + _rxPacket.getSocketAddress() + ", " + ex);
 		}
 	}
 }
