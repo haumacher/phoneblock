@@ -813,7 +813,7 @@ public class DB {
 				return new AuthContext(result, userSettings);
 			}
 		} catch (IOException | RuntimeException e) {
-			LOG.info("Failed to parse authorization token '{}': {}", token, e.getMessage());
+			LOG.warn("Failed to parse authorization token '{}': {}", token, e.getMessage());
 			return null;
 		}
 	}
