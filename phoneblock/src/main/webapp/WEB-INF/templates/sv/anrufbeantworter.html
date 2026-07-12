@@ -272,6 +272,76 @@
 		<h2 data-tx="t0079:b65f7797" id="experts">För experter: självhosting</h2>
 		
 		<p data-tx="t0080:5a67a3ba">Är du riktigt duktig på datorer, har du en RaspberryPI eller någon annan minidator hemma i alla fall? Då är det bara att installera telefonsvararen själv. Det bästa sättet att göra detta är med den förberedda <a href="https://hub.docker.com/r/phoneblock/answerbot">Docker-bilden</a>. Detta ger det bästa dataskyddet eftersom all samtalshantering sker på din sida. Inställningen i telefonsystemet är densamma, du ställer in telefonsvararen via en konfigurationsfil.</p>
+		<div class="notification is-warning" data-tx="t0084:4bc9a0f9"><strong>Viktigt vid egenhosting:</strong> Till skillnad från molnbaserade telefonsvarare utelämnas två steg i anvisningarna ovan: <ul> <li><strong>Inget DynDNS behövs.</strong> Telefonsvararen körs i samma nätverk som Fritz!Boxen och ansluter lokalt.</li> <li><strong>”Tillåt inloggning från internet” förblir inaktiverat.</strong> Fritz!Boxen behöver inte vara tillgänglig från internet för detta – lämna alternativet avsiktligt avmarkerat för att inte öppna routern i onödan.</li> </ul></div>
+		
+		<h3 data-tx="t0085:b85e4fee">1. Skapa en telefonenhet i Fritz!Box</h3>
+		<p data-tx="t0086:77837d1f">Lägg till en ny telefonenhet: <em>Telefoni → Telefonenheter → Konfigurera ny enhet → Telefon (med eller utan telefonsvarare) → LAN/WLAN (IP-telefon)</em>. Du väljer själv användarnamn och lösenord – de måste vara identiska i filen <code>compose.yaml</code>. Under ”Inkommande samtal” väljer du <em>”svara på alla telefonnummer”</em>.</p>
+		
+		<h3 data-tx="t0087:f0ff4af">2. Skapa filen compose.yaml</h3>
+		<pre>services:
+  phoneblock:
+    image: phoneblock/answerbot:latest
+    container_name: phoneblock
+    network_mode: host
+    environment:
+      - PHONEBLOCK_API_KEY=&lt;dein API-Key&gt;
+      - SIP_USER=&lt;Benutzername wie in der Fritz!Box&gt;
+      - SIP_PASSWD=&lt;Kennwort wie in der Fritz!Box&gt;
+      - VIA_ADDR=auto-configuration
+      - VIA_ADDR_V6=auto-configuration
+      - HOST_PORT=50060
+      - REGISTRAR=192.168.178.1
+      - ROUTE=192.168.178.1;lr
+      - REALM=fritz.box
+      - MEDIA=audio 4080 RTP/AVP { 8 PCMA 8000 160 }
+      - RECORDINGS=none
+      - CONVERSATION=/opt/phoneblock/conversation
+      - LOG_ALL_PACKETS=no
+      - ACCEPT_LOCAL=yes
+    restart: unless-stopped</pre>
+		
+		<h3 data-tx="t0088:68a01d83">3. Viktiga variabler</h3>
+		<div class="table-container">
+			<table class="table is-fullwidth is-striped">
+				<thead>
+					<tr>
+						<th data-tx="t0089:c616aa64">Variabel</th>
+						<th data-tx="t0090:f0e3578f">Betydelse</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><code>PHONEBLOCK_API_KEY</code></td>
+						<td data-tx="t0091:c8ab1645">Din personliga API-nyckel, som du kan skapa på <code>phoneblock.net/phoneblock/settings</code>.</td>
+					</tr>
+					<tr>
+						<td><code>SIP_USER</code> / <code>SIP_PASSWD</code></td>
+						<td data-tx="t0092:ea799cc3">Måste stämma exakt överens med den IP-telefon som har skapats i Fritz!Box.</td>
+					</tr>
+					<tr>
+						<td><code>REGISTRAR</code> / <code>ROUTE</code></td>
+						<td data-tx="t0093:17dcf955">Fritz!Boxens adress. Tips: Om du använder en egen DNS-server (t.ex. Pi-hole/Unbound) ska du här ange <em>IP-adressen</em> till Fritz!Box istället för <code>fritz.box</code>, eftersom värdnamnet annars eventuellt inte kan lösas upp och registreringen misslyckas.</td>
+					</tr>
+					<tr>
+						<td><code>ACCEPT_LOCAL</code></td>
+						<td data-tx="t0097:3aeb6350">Tar även emot samtal från interna telefoner (nummer som börjar med <code>*</code>) – detta krävs för testsamtalet via det interna numret. Ställ in värdet på <code>no</code> om telefonsvararen ingår i en samlingssignal (t.ex. en dörrklocka som får alla telefoner att ringa).</td>
+					</tr>
+					<tr>
+						<td><code>LOG_ALL_PACKETS</code></td>
+						<td data-tx="t0098:231f7ac9">Ställ in på <code>yes</code> för felsökning: då loggas all SIP-kommunikation i loggfilen.</td>
+					</tr>
+					<tr>
+						<td><code>network_mode: host</code></td>
+						<td data-tx="t0094:a961a2ea">Obligatoriskt – krävs för SIP-/RTP-kommunikation.</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		
+		<h3 data-tx="t0095:cc612f71">4. Starta och kontrollera</h3>
+		<pre>docker compose up -d
+docker logs -f phoneblock</pre>
+		<p data-tx="t0096:dabc390b">Om en rad som <code>Registration of '&lt;sip:...&gt;' 200 OK, expires in 300s</code> visas i loggen, har telefonsvararen loggat in på Fritz!Boxen utan problem. Ett testsamtal kan när som helst ringas via enhetens <em>interna nummer</em> (börjar med <code>**</code>) – sådana samtal tar telefonsvararen alltid emot.</p>
 		
 	</div>
 </section>

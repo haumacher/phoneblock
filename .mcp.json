@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "phoneblock-diag": {
+      "command": "python3",
+      "args": [".claude/skills/diag-tuning/mcp/diag_mcp.py"],
+      "env": {
+        "PHONEBLOCK_API": "https://phoneblock.net/phoneblock/api",
+        "PHONEBLOCK_TOKEN_SERVER": "phoneblock-admin"
+      }
+    },
+    "phoneblock-diag-test": {
+      "command": "python3",
+      "args": [".claude/skills/diag-tuning/mcp/diag_mcp.py"],
+      "env": {
+        "PHONEBLOCK_API": "https://phoneblock.net/pb-test/api",
+        "PHONEBLOCK_TOKEN_SERVER": "phoneblock-admin-test"
+      }
+    }
+  }
+}

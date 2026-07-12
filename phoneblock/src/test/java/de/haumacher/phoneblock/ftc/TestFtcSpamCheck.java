@@ -78,7 +78,7 @@ class TestFtcSpamCheck {
 					}
 
 					service.processRow(_db, session, ftcReports, spamReports, subjectCache,
-						phoneNumber.strip(), createdDate.strip(), subject);
+						phoneNumber.strip(), recentDate(createdDate.strip()), subject);
 				}
 			}
 
@@ -102,6 +102,20 @@ class TestFtcSpamCheck {
 	}
 
 	/**
+	 * Rewrites a fixture complaint date onto a recent day (keeping its time of
+	 * day) so the decay-aware vote count (#338) stays inside the visibility
+	 * window no matter when the suite runs. The CSV carries static dates; without
+	 * this normalization they age past the decay window over wall-clock time and
+	 * the single-complaint lookups decode to 0 visible votes — a time-bomb that
+	 * turned the assertions red months after the fixture was written.
+	 */
+	private static String recentDate(String createdDate) {
+		int space = createdDate.indexOf(' ');
+		String time = space < 0 ? "12:00:00" : createdDate.substring(space + 1);
+		return java.time.LocalDate.now().minusDays(2) + " " + time;
+	}
+
+	/**
 	 * Converts a 10-digit US number to the phone ID used in the NUMBERS table.
 	 */
 	private static String toPhoneId(String tenDigit) {
@@ -114,11 +128,11 @@ class TestFtcSpamCheck {
 	 * Test that getPhoneApiInfo returns correct votes and rating for a number
 	 * with FTC complaints (two complaints for "Vacation & timeshares").
 	 *
-	 * <p>Note: {@code votes} is decay-aware since #338 — the fixture's static
-	 * complaint dates decay relative to {@code now}, so the decoded count
-	 * cannot be a fixed integer. The assertion only verifies that the FTC
-	 * import path produced visible votes; the exact decoded value depends on
-	 * the test fixture's age.</p>
+	 * <p>Note: {@code votes} is decay-aware since #338. {@link #recentDate} pins
+	 * the fixture's complaint dates to a couple of days ago so the decoded count
+	 * stays visible regardless of when the suite runs, but the exact value still
+	 * depends on the decay curve — so the assertion only verifies that the FTC
+	 * import path produced visible votes, not a fixed integer.</p>
 	 */
 	@Test
 	void testLookupReturnsVotesAndRating() {

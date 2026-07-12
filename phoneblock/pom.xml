@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>de.haumacher</groupId>
 		<artifactId>phoneblock-parent</artifactId>
-		<version>3.1.4-SNAPSHOT</version>
+		<version>3.2.2-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>phoneblock</artifactId>
@@ -759,6 +759,21 @@ Copy '.phoneblock.template' to '.phoneblock' and fill in your local values
 								</configuration>
 							</execution>
 						</executions>
+					</plugin>
+
+					<!-- Translates the DIAG_TEMPLATE mail templates into all supported locales
+						 over the diagnostics REST API (not on the server). DeepL key + API token
+						 come from settings.xml servers 'deepl' / 'phoneblock-admin'; target langs
+						 are derived from the Language enum. Run manually, e.g.:
+						 mvn -Pwith-deepl phoneblock-translate:translate-diag-templates \
+						   -Dtranslate.apiUrl=https://phoneblock.net/pb-test/api -Dtranslate.dryRun=true -->
+					<plugin>
+						<groupId>de.haumacher</groupId>
+						<artifactId>phoneblock-translate-maven-plugin</artifactId>
+						<version>${project.version}</version>
+						<configuration>
+							<sourceLang>de</sourceLang>
+						</configuration>
 					</plugin>
 				</plugins>
 			</build>

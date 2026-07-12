@@ -205,6 +205,7 @@ public class DB {
 		configuration.addMapper(BlockList.class);
 		configuration.addMapper(Users.class);
 		configuration.addMapper(FtcReports.class);
+		configuration.addMapper(de.haumacher.phoneblock.diag.DiagnosticsMapper.class);
 		_sessionFactory = new SqlSessionFactoryBuilder().build(configuration);
 		
 		setupSchema();
@@ -970,7 +971,14 @@ public class DB {
 			updateLocalization(reports, phone, dialPrefix, 0, 0, votes, heatInc, spamEvidenceInc, time);
 		}
 
-		boolean classifyChanged = classify(oldVotes) != classify(newVotes);
+		// SEO index ping (#91 follow-up): submit the number's public page to the
+		// search index only when it first crosses into the spam class — i.e. reaches
+		// MIN_VOTES upward. Every other vote is churn: re-pinging an already-indexed
+		// page (or a 1..MIN_VOTES-1 number that is not even publicly listed) just
+		// burns the ~200/day Google indexing quota, so genuinely new spam numbers
+		// never get submitted. Down-votes and later increments do not re-ping.
+		boolean becameSpam = oldVotes < MIN_VOTES && newVotes >= MIN_VOTES;
+
 		// #342: no event-driven version bump. The periodic
 		// BlocklistVersionService sweep is the single source of VERSION
 		// changes — it detects visibility-class flips between snapshots
@@ -983,7 +991,7 @@ public class DB {
 		// in privacy-aware lookups.
 		updatePhoneHashVisibility(reports, phone, hash);
 
-		return classifyChanged;
+		return becameSpam;
 	}
 
 	/**
@@ -1356,11 +1364,16 @@ public class DB {
 	 * Adds a rating for a phone number without DB commit.
 	 * @param recordVote
 	 *
-	 * @return Whether an index update is required.
+	 * @return Whether recording this rating pushed the number across {@link #MIN_VOTES}
+	 *         into the spam class — i.e. whether to submit its page to the search index.
 	 */
 	public boolean addRating(SpamReports reports, PhoneNumer number, String dialPrefix, UserComment comment, boolean recordVote) {
-		boolean updateRequired = false;
-		
+		// The returned flag drives the SEO index ping and is true only when this rating
+		// pushes the number across MIN_VOTES (see processVotes). Persisting the
+		// comment/rating itself is not a reason to re-submit the page to the search
+		// index — that churn just burns the daily indexing quota.
+		boolean becameSpam = false;
+
 		String phone = NumberAnalyzer.getPhoneId(number);
 		Rating rating = comment.getRating();
 		String commentText = comment.getComment();
@@ -1380,7 +1393,6 @@ public class DB {
 					LOG.info("Replaced existing comment for phone {} by user ID {}.", phone, userId);
 				}
 				reports.addComment(comment.getId(), phone, rating, commentText, comment.getLang(), comment.getService(), created, userId);
-				updateRequired = true;
 			} else {
 				// No comment text — still record the user's rating choice so it is visible on
 				// the personal blacklist/whitelist view. Update the existing row's rating in
@@ -1389,28 +1401,21 @@ public class DB {
 				if (updated == 0) {
 					reports.addComment(comment.getId(), phone, rating, null, comment.getLang(), comment.getService(), created, userId);
 				}
-				updateRequired = true;
 			}
 		} else if (hasCommentText) {
 			// Anonymous comment (e.g. captcha-protected web rating without login).
 			reports.addComment(comment.getId(), phone, rating, commentText, comment.getLang(), comment.getService(), created, userId);
-			updateRequired = true;
 		}
 
 		if (recordVote) {
-			updateRequired |= processVotes(reports, number, dialPrefix, Ratings.getVotes(rating), created);
+			becameSpam = processVotes(reports, number, dialPrefix, Ratings.getVotes(rating), created);
 			if (rating != Rating.B_MISSED) {
-				Rating oldRating = rating(reports, phone);
-
-				// Record rating.
+				// Record the rating tally (not itself a reason to re-index).
 				reports.updateRating(phone, rating, 1, created);
-
-				Rating newRating = rating(reports, phone);
-				updateRequired |= oldRating != newRating;
 			}
 		}
 
-		return updateRequired;
+		return becameSpam;
 	}
 
 	private Rating rating(SpamReports reports, String phone) {
@@ -1436,17 +1441,6 @@ public class DB {
 		}
 	}
 
-	private int classify(int newVotes) {
-		if (newVotes <= 0) {
-			return 0;
-		}
-		else if (newVotes < MIN_VOTES) {
-			return 1;
-		}
-		else {
-			return 2;
-		}
-	}
 
 	/**
 	 * The time in milliseconds since epoch when the last update to the spam report table was done.

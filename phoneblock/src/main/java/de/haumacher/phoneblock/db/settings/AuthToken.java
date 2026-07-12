@@ -51,6 +51,12 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject {
 	/** @see #isAccessLogin() */
 	private static final String ACCESS_LOGIN__PROP = "accessLogin";
 
+	/** @see #isAccessDiagnostics() */
+	private static final String ACCESS_DIAGNOSTICS__PROP = "accessDiagnostics";
+
+	/** @see #isAccessAdmin() */
+	private static final String ACCESS_ADMIN__PROP = "accessAdmin";
+
 	/** @see #getLastAccess() */
 	private static final String LAST_ACCESS__PROP = "lastAccess";
 
@@ -83,6 +89,10 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject {
 	private boolean _accessRate = false;
 
 	private boolean _accessLogin = false;
+
+	private boolean _accessDiagnostics = false;
+
+	private boolean _accessAdmin = false;
 
 	private long _lastAccess = 0L;
 
@@ -340,6 +350,46 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject {
 	}
 
 	/**
+	 * Whether this token may read/author diagnostics (rules, signatures) up to SHADOW.
+	 */
+	public final boolean isAccessDiagnostics() {
+		return _accessDiagnostics;
+	}
+
+	/**
+	 * @see #isAccessDiagnostics()
+	 */
+	public de.haumacher.phoneblock.db.settings.AuthToken setAccessDiagnostics(boolean value) {
+		internalSetAccessDiagnostics(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #isAccessDiagnostics()} without chain call utility. */
+	protected final void internalSetAccessDiagnostics(boolean value) {
+		_accessDiagnostics = value;
+	}
+
+	/**
+	 * Whether this token holds the elevated admin capability (e.g. promoting a diagnostics rule to LIVE).
+	 */
+	public final boolean isAccessAdmin() {
+		return _accessAdmin;
+	}
+
+	/**
+	 * @see #isAccessAdmin()
+	 */
+	public de.haumacher.phoneblock.db.settings.AuthToken setAccessAdmin(boolean value) {
+		internalSetAccessAdmin(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #isAccessAdmin()} without chain call utility. */
+	protected final void internalSetAccessAdmin(boolean value) {
+		_accessAdmin = value;
+	}
+
+	/**
 	 * When this token was used or updated the last time.
 	 */
 	public final long getLastAccess() {
@@ -438,6 +488,10 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject {
 		out.value(isAccessRate());
 		out.name(ACCESS_LOGIN__PROP);
 		out.value(isAccessLogin());
+		out.name(ACCESS_DIAGNOSTICS__PROP);
+		out.value(isAccessDiagnostics());
+		out.name(ACCESS_ADMIN__PROP);
+		out.value(isAccessAdmin());
 		out.name(LAST_ACCESS__PROP);
 		out.value(getLastAccess());
 		out.name(USER_AGENT__PROP);
@@ -461,6 +515,8 @@ public class AuthToken extends de.haumacher.msgbuf.data.AbstractDataObject {
 			case ACCESS_CARDDAV__PROP: setAccessCarddav(in.nextBoolean()); break;
 			case ACCESS_RATE__PROP: setAccessRate(in.nextBoolean()); break;
 			case ACCESS_LOGIN__PROP: setAccessLogin(in.nextBoolean()); break;
+			case ACCESS_DIAGNOSTICS__PROP: setAccessDiagnostics(in.nextBoolean()); break;
+			case ACCESS_ADMIN__PROP: setAccessAdmin(in.nextBoolean()); break;
 			case LAST_ACCESS__PROP: setLastAccess(in.nextLong()); break;
 			case USER_AGENT__PROP: setUserAgent(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case TOKEN__PROP: setToken(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;

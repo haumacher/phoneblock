@@ -92,10 +92,11 @@ public class SearchOperation {
 						if (!indexedComments.containsKey(comment.getComment())) {
 							comment.setId(UUID.randomUUID().toString());
 							_comments.add(comment);
-							
-							db.addRating(mapper, _number, _dialPrefix, comment, true);
+
+							// Meta-search comments count as votes; ping the index only when
+							// one of them pushes the number across the spam threshold.
+							indexUpdated |= db.addRating(mapper, _number, _dialPrefix, comment, true);
 							commentCnt++;
-							indexUpdated = true;
 						}
 					}
 					LOG.info("Found " + commentCnt + " new comments: " + _number);

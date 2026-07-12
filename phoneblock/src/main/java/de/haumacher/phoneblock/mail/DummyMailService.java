@@ -66,6 +66,12 @@ public class DummyMailService implements MailService {
 	}
 
 	@Override
+	public boolean sendDiagnosticsMail(UserSettings userSettings, String subject, String htmlBody) {
+		LOG.info("Send diagnostics mail to {}: {}", userSettings.getEmail(), subject);
+		return true;
+	}
+
+	@Override
 	public void shutdown() {
 		LOG.info("Shut-down.");
 	}

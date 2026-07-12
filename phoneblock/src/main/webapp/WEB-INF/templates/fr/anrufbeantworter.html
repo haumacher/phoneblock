@@ -272,6 +272,76 @@
 		<h2 data-tx="t0079:b65f7797" id="experts">Pour les experts : héberger soi-même</h2>
 		
 		<p data-tx="t0080:5a67a3ba">Tu t'y connais vraiment en informatique, tu as un RaspberryPI ou un autre mini-PC qui tourne de toute façon à la maison ? Alors installe le répondeur téléphonique toi-même. Le mieux est de le faire avec l'image <a href="https://hub.docker.com/r/phoneblock/answerbot">Docker</a> préparée à l'avance. Cela offre la meilleure protection des données, car tout le traitement des appels se fait chez toi. La configuration dans le système téléphonique est la même, tu installes le répondeur via un fichier de configuration.</p>
+		<div class="notification is-warning" data-tx="t0084:4bc9a0f9"><strong>Point important concernant l'auto-hébergement :</strong> Contrairement à la messagerie vocale dans le cloud, deux étapes de la procédure ci-dessus ne sont pas nécessaires : <ul> <li><strong>Pas besoin de DynDNS.</strong> Le répondeur fonctionne sur le même réseau que la Fritz!Box et se connecte en local.</li> <li><strong>L'option « Autoriser la connexion depuis Internet » reste désactivée.</strong> La Fritz!Box n'a pas besoin d'être accessible depuis Internet pour cela – désactivez délibérément cette option afin de ne pas ouvrir inutilement le routeur.</li> </ul></div>
+		
+		<h3 data-tx="t0085:b85e4fee">1. Configurer un appareil téléphonique dans la Fritz!Box</h3>
+		<p data-tx="t0086:77837d1f">Configurez un nouvel appareil téléphonique : <em>Téléphonie → Appareils téléphoniques → Configurer un nouvel appareil → Téléphone (avec ou sans répondeur) → LAN/Wi-Fi (téléphone IP)</em>. Tu peux choisir librement ton nom d'utilisateur et ton mot de passe ; ils doivent être exactement identiques dans le fichier <code>compose.yaml</code>. Dans la section « Appels entrants », sélectionne <em>« Répondre à tous les numéros »</em>.</p>
+		
+		<h3 data-tx="t0087:f0ff4af">2. Créer le fichier compose.yaml</h3>
+		<pre>services:
+  phoneblock:
+    image: phoneblock/answerbot:latest
+    container_name: phoneblock
+    network_mode: host
+    environment:
+      - PHONEBLOCK_API_KEY=&lt;dein API-Key&gt;
+      - SIP_USER=&lt;Benutzername wie in der Fritz!Box&gt;
+      - SIP_PASSWD=&lt;Kennwort wie in der Fritz!Box&gt;
+      - VIA_ADDR=auto-configuration
+      - VIA_ADDR_V6=auto-configuration
+      - HOST_PORT=50060
+      - REGISTRAR=192.168.178.1
+      - ROUTE=192.168.178.1;lr
+      - REALM=fritz.box
+      - MEDIA=audio 4080 RTP/AVP { 8 PCMA 8000 160 }
+      - RECORDINGS=none
+      - CONVERSATION=/opt/phoneblock/conversation
+      - LOG_ALL_PACKETS=no
+      - ACCEPT_LOCAL=yes
+    restart: unless-stopped</pre>
+		
+		<h3 data-tx="t0088:68a01d83">3. Variables importantes</h3>
+		<div class="table-container">
+			<table class="table is-fullwidth is-striped">
+				<thead>
+					<tr>
+						<th data-tx="t0089:c616aa64">Variable</th>
+						<th data-tx="t0090:f0e3578f">Signification</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr>
+						<td><code>PHONEBLOCK_API_KEY</code></td>
+						<td data-tx="t0091:c8ab1645">Ta clé API personnelle, que tu peux créer sur <code>phoneblock.net/phoneblock/settings</code>.</td>
+					</tr>
+					<tr>
+						<td><code>SIP_USER</code> / <code>SIP_PASSWD</code></td>
+						<td data-tx="t0092:ea799cc3">Ils doivent correspondre exactement au numéro de téléphone IP configuré dans la Fritz!Box.</td>
+					</tr>
+					<tr>
+						<td><code>REGISTRAR</code> / <code>ROUTE</code></td>
+						<td data-tx="t0093:17dcf955">Adresse de la Fritz!Box. Astuce : si vous utilisez votre propre serveur DNS (par exemple Pi-hole/Unbound), saisissez ici l'<em>adresse IP</em> de la Fritz!Box à la place de <code>fritz.box</code>, car sinon le nom d'hôte risque de ne pas être résolu et l'enregistrement échouera.</td>
+					</tr>
+					<tr>
+						<td><code>ACCEPT_LOCAL</code></td>
+						<td data-tx="t0097:3aeb6350">Accepte également les appels provenant de téléphones internes (numéros commençant par <code>*</code>) – nécessaire pour l'appel test via le numéro interne. Définissez la valeur sur <code>no</code> si le répondeur fait partie d'un système d'appel groupé (par exemple, une sonnette qui fait sonner tous les téléphones).</td>
+					</tr>
+					<tr>
+						<td><code>LOG_ALL_PACKETS</code></td>
+						<td data-tx="t0098:231f7ac9">Pour le dépannage, réglez sur <code>yes</code> : cela permet alors d'enregistrer l'intégralité des communications SIP dans le journal.</td>
+					</tr>
+					<tr>
+						<td><code>network_mode: host</code></td>
+						<td data-tx="t0094:a961a2ea">Obligatoire – nécessaire pour la communication SIP/RTP.</td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+		
+		<h3 data-tx="t0095:cc612f71">4. Démarrer et vérifier</h3>
+		<pre>docker compose up -d
+docker logs -f phoneblock</pre>
+		<p data-tx="t0096:dabc390b">Si une ligne telle que <code>Registration of '&lt;sip:...&gt;' 200 OK, expires in 300s</code> apparaît dans le journal, cela signifie que le répondeur s'est connecté avec succès à la Fritz!Box. Il est possible d'effectuer un appel test à tout moment via le <em>numéro interne</em> de l'appareil (commençant par <code>**&lt;/x3 ») – le répondeur accepte toujours ce type d'appels.</code></p>
 		
 	</div>
 </section>

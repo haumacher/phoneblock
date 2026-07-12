@@ -255,6 +255,10 @@
 
 		<p data-tx="t0180:9741140b">Save → the LED is now permanently lit → the PhoneBlock dongle is ready for use. Spam calls will now be silently intercepted before your phone rings.</p>
 
+		<div class="notification is-warning">
+			<p data-tx="t0232:dd690562"><strong>Security Note:</strong> Use the dongle exclusively on your local home network. It must <strong>not</strong> be accessible from the Internet—do not set up any port forwarding or an “Exposed Host”/DMZ entry for the dongle in your router. A dongle that is accessible from the Internet will be detected and attacked by automated scanners; a password on the web interface does not protect against this, because the mere fact that it is accessible poses a risk.</p>
+		</div>
+
 		<hr class="my-5"/>
 
 		<p class="has-text-grey" data-tx="t0181:9316079d">Something is not working, you are using Firefox/Safari, Linux with peculiarities or another board? The detailed instructions with all options, Linux pitfalls and the ESP-IDF toolchain can be found in the repo: <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</p>

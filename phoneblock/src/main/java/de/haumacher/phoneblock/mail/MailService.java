@@ -39,6 +39,14 @@ public interface MailService {
 	boolean sendDiableMail(UserSettings userSettings, AnswerBotSip answerbot);
 	boolean sendThanksMail(String donator, UserSettings userSettings, int amount);
 
+	/**
+	 * Sends a diagnostics help mail with a literal subject and HTML body (rendered
+	 * from a {@code DIAG_TEMPLATE}), reusing the normal from-address/transport.
+	 *
+	 * @return {@code true} if the mail was actually sent.
+	 */
+	boolean sendDiagnosticsMail(UserSettings userSettings, String subject, String htmlBody);
+
 	void shutdown();
 	
 }
