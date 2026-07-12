@@ -40,9 +40,6 @@ typedef struct {
     bool    valid;
 } api_phases_t;
 
-// Buffer size the LAN debug-query server must provide for api_run_probe().
-#define API_PROBE_REPORT_CAP 1536
-
 // Display + count info lifted from the /api/check-prefix response.
 // Populated by phoneblock_check() when called with a non-NULL `out`.
 //
@@ -128,17 +125,6 @@ bool phoneblock_selftest(api_phases_t *phases_opt);
 // phoneblock_selftest() on the same task. Returns the HTTP status code,
 // or -1 on a transport/setup failure.
 int phoneblock_post_log(const char *body, size_t len);
-
-// Diagnostic latency probe for issue #329. Runs `rounds` (clamped to
-// 1..5) back-to-back iterations; each iteration measures one /api/test
-// and one /api/check-prefix call. The check call uses a fixed synthetic
-// number, so it exercises the real spam-lookup code path without
-// touching a real subscriber's privacy and without creating a report.
-// Formats a per-call phase breakdown plus a per-endpoint average into
-// `report` (NUL-terminated, truncated to `cap`; use API_PROBE_REPORT_CAP).
-// Returns the number of calls measured. Triggered via the LAN debug-
-// query server's PROBE command.
-int api_run_probe(int rounds, char *report, size_t cap);
 
 // Submit a spam rating for `phone` with the given rating code (e.g.
 // "B_MISSED", "E_ADVERTISING"). Optional short comment (NULL for

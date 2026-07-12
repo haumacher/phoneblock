@@ -39,6 +39,14 @@ bool web_auth_session_valid(httpd_req_t *req);
 //             index.html can render its in-page login state.
 bool web_auth_required(httpd_req_t *req, bool is_api);
 
+// Gating helper for the intentionally-public routes (SPA shell,
+// favicon, the /auth login handshake, the OPTIONS PNA preflight).
+// Fully public when the gate is on (so the login flow is reachable
+// from anywhere); LAN-only when the gate is off. Returns false after
+// sending a 403 itself; the caller should `return ESP_OK` then.
+// See docs/network-access-control.md.
+bool web_public_allowed(httpd_req_t *req, bool is_api);
+
 // HTTP handlers (registered in web.c's URI table).
 
 // GET /auth/start — start an authentication round-trip. Used both

@@ -5,37 +5,9 @@ Ausbaustufe der Dongle-Firmware. Nach dem Boot:
 1. Netzverbindung aufbauen (Ethernet in QEMU, später WiFi auf Hardware).
 2. Einmaliger Selbsttest gegen die PhoneBlock-API mit der konfigurierten
    Testnummer.
-3. TCP-Server auf Port **5060** starten, der als Stand-in für den späteren
-   SIP-Empfang dient.
-4. SIP-Registrierung am konfigurierten Registrar (Fritz!Box), mit periodischem
+3. SIP-Registrierung am konfigurierten Registrar (Fritz!Box), mit periodischem
    Refresh. Danach Empfangs-Loop über `select()` — bereit für eingehende
    Pakete (OPTIONS/INVITE, aktuell nur Logging).
-
-## TCP-Server-Protokoll (Port 5060)
-
-- Pro Verbindung eine Zeile mit einer Telefonnummer + `\n` (optional `\r\n`).
-- Server prüft die Nummer über die PhoneBlock-API und antwortet mit einer
-  Zeile:
-    - `SPAM\n`         — Nummer hat eine oder mehr Spam-Stimmen
-    - `LEGITIMATE\n`   — Nummer ist sauber (0 Stimmen)
-    - `ERROR\n`        — Eingabe ungültig oder API-Fehler
-- Verbindung wird sofort nach der Antwort geschlossen.
-
-Beispiel vom Host aus (nc):
-
-```bash
-echo "01749999999" | nc -N localhost 5060
-# → LEGITIMATE
-```
-
-Statt einer Nummer kann `PROBE` (optional `PROBE <runden>`, 1–5, Standard 3)
-gesendet werden: Der Server misst dann pro Runde je einen `/api/test`- und
-`/api/check-prefix`-Aufruf und antwortet mit der Latenz-Phasenaufschlüsselung
-(connect/request/wait/download). Diagnose-Hilfe für die API-Latenz (Issue #329).
-
-```bash
-echo "PROBE 3" | nc -N localhost 5060
-```
 
 ## Voraussetzungen
 
@@ -72,6 +44,44 @@ Dev-relevante Kconfig-Optionen (in `sdkconfig.defaults.local` oder
 - `CONFIG_SIP_TEST_FORCE_SPAM_STAR_NUMBERS` — Test-Hook für den
   RTP/Audio-Pfad
 
+## Netzwerkzugriff
+
+> ## ⚠️ MACHE DEINEN PHONEBLOCK-DONGLE NIEMALS AUS DEM INTERNET ERREICHBAR!
+>
+> Der Dongle ist ein Gerät für das lokale Heimnetz. Er gehört nicht ins
+> Internet — kein Port-Forwarding, keine DMZ, keine öffentliche Weiter-
+> leitung. Er hält seine gesamte Konfiguration (inkl. Firmware-Upload und
+> Werksreset) hinter einer einfachen HTTP-Oberfläche; im Internet ist das
+> eine Einladung.
+
+Damit ein **versehentliches** Offenlegen (falsch gesetztes Port-Forwarding,
+DMZ-Host) nicht sofort zur Übernahme führt, gilt eine defensive Grundregel:
+
+- **Ohne aktivierte Authentifizierung (Standard) antwortet der Dongle nur
+  Clients aus dem lokalen Netz.** Entfernte Anfragen erhalten `403`. Das
+  ist ein Sicherheitsnetz für den Fehlerfall — **keine** Einladung, das
+  Gerät bewusst zu exponieren.
+
+Alles Weitere richtet sich an alle, die genau wissen, was sie tun und die
+Konsequenzen tragen. Details und Bedrohungsmodell:
+[docs/network-access-control.md](docs/network-access-control.md).
+
+- **Mit aktivierter Authentifizierung** („Login mit PhoneBlock", an das
+  eigene PhoneBlock-Konto gebunden) verlangt jede Anfrage ein gültiges
+  Session-Cookie; erst dann wird auch entfernter Zugriff überhaupt
+  beantwortet.
+- „Lokal" bezieht sich auf die unmittelbare TCP-Gegenstelle.
+  `X-Forwarded-For`/`Forwarded` werden **nur** ausgewertet, wenn die
+  Gegenstelle selbst lokal ist (der vertrauenswürdige Reverse-Proxy) — von
+  einer entfernten Gegenstelle werden sie ignoriert und können daher nicht
+  gefälscht werden.
+- Wer trotz der Warnung einen Reverse-Proxy vor einen Dongle **mit
+  deaktivierter** Authentifizierung setzt, muss die echte Client-Adresse in
+  `X-Forwarded-For`/`Forwarded` weiterreichen — sonst sind entfernte
+  Clients nicht von einem direkten lokalen Client zu unterscheiden und
+  werden bedient. Sinnvoller ist ohnehin: erst die Authentifizierung
+  aktivieren.
+
 ## Bauen
 
 ```bash
@@ -88,7 +98,7 @@ Beenden eines laufenden QEMU-Prozesses jeweils mit `Ctrl+A`, dann `X`.
 
 QEMU user-mode networking gibt dem emulierten ESP32 eine private IP
 (`10.0.2.15`) hinter einem NAT. Für ausgehende Verbindungen reicht das;
-für eingehende Pakete (SIP-INVITE, TCP-Dummy-Server-Queries) braucht es
+für eingehende Pakete (SIP-INVITE) braucht es
 explizite Port-Forwardings.
 
 ### 1) PhoneBlock-API-Selbsttest (nur Outbound)
@@ -108,23 +118,7 @@ I (xxxx) phoneblock: HTTP 200, NNN bytes: {"phone":"...","votes":0,...}
 I (xxxx) phoneblock: Number 01749999999 → 0 votes → LEGITIMATE
 ```
 
-### 2) TCP-Dummy-Server vom Host aus abfragen
-
-Mit `hostfwd` kann der Host direkt gegen den Dummy-Server auf
-Port 5060 sprechen:
-
-```bash
-idf.py qemu --qemu-extra-args="-nic user,model=open_eth,hostfwd=tcp::5060-:5060"
-```
-
-Zweites Terminal:
-
-```bash
-echo "01749999999" | nc -N localhost 5060
-# → LEGITIMATE
-```
-
-### 3) SIP-Registrierung an der Fritz!Box
+### 2) SIP-Registrierung an der Fritz!Box
 
 Funktioniert über QEMUs NAT, weil REGISTER outbound ist und das
 rport-/received-Mechanismus die Antwort automatisch zurückroutet. Keine
@@ -143,7 +137,7 @@ I (xxxx) sip: ← 200 (authenticated)
 I (xxxx) sip: REGISTERED as phoneblock-ab@192.168.178.1 (expires 300 s)
 ```
 
-### 4) Eingehende SIP-Anrufe (INVITE) — mit NAT-Workaround
+### 3) Eingehende SIP-Anrufe (INVITE) — mit NAT-Workaround
 
 Hier hat die Fritz!Box das Problem, den Dongle **aktiv** zu erreichen.
 Unsere REGISTER-Pakete tragen standardmäßig `Via: …/UDP 10.0.2.15:15060`
@@ -210,7 +204,7 @@ Dialog: `100 Trying` → Caller-Lookup via PhoneBlock-API → bei Spam
 Das komplette Verhalten, inkl. Retransmit-Dedupe, CANCEL-Handling und
 Tonausspielung, landet im gleichen `sip_register.c`.
 
-### 5) Web-UI im Browser öffnen
+### 4) Web-UI im Browser öffnen
 
 Der Dongle serviert unter Port 80 ein Status-Dashboard. Mit einem
 TCP-Hostfwd kommt man vom Host-Browser dran:
@@ -277,7 +271,7 @@ LAN, hat eine echte DHCP-IP und braucht keine NAT-Akrobatik mehr.
 ## Struktur
 
 - `main/main.c` — Boot-Sequenz, Netzverbindung, HTTPS-Selbsttest,
-  TCP-Dummy-Server, Start des SIP-Tasks
+  Start des SIP-Tasks
 - `main/improv.{c,h}`, `main/improv_proto.{c,h}` — WLAN-Einrichtung ohne
   WPS über den Browser-Installer (Improv-Serial-Protokoll auf UART0,
   Issue #372)
