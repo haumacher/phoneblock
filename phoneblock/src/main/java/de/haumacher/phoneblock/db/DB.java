@@ -749,6 +749,10 @@ public class DB {
 			return null;
 		}
 
+		// The USERAGENT column is NOT NULL; clients may omit the User-Agent header.
+		// Normalize here so the change detection and the DB update below never see null.
+		userAgent = nonNullUA(userAgent);
+
 		try {
 			TokenInfo tokenInfo = TokenInfo.parse(token);
 

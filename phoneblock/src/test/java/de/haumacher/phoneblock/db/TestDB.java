@@ -174,6 +174,27 @@ public class TestDB {
 		return context.getAuthorization();
 	}
 
+	/**
+	 * Tests that a request without a {@code User-Agent} header (null user agent) does not
+	 * violate the NOT NULL constraint on the USERAGENT column when the token is updated.
+	 */
+	@Test
+	void testAuthTokenWithoutUserAgent() {
+		_db.createUser("ua-user", "UA User", "de", "+49");
+
+		long time = 1000;
+		AuthToken token = _db.createLoginToken("ua-user", time++, "creating-browser");
+
+		// Skip rate limit so the update path (which writes USERAGENT) is exercised.
+		time += DB.RATE_LIMIT_MS;
+
+		// A client omitting the User-Agent header yields a null user agent; this used to
+		// crash with "NULL not allowed for column USERAGENT".
+		AuthContext context = _db.checkAuthToken(token.getToken(), time++, null, true);
+		assertNotNull(context);
+		assertEquals("-", context.getAuthorization().getUserAgent());
+	}
+
 	@Test
 	void testTopSearches() {
 		long day = DB.MILLIS_PER_DAY;
