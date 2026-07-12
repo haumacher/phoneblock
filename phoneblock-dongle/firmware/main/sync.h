@@ -34,6 +34,7 @@ typedef struct {
     int64_t last_at_us;      // esp_timer when the last attempt finished
     int     last_pushed;     // count of entries successfully submitted
     int     last_failed;     // count of entries that errored on push or delete
+    int     last_skipped;    // count of unrateable entries (wildcard / non-E.164) left in place
     char    last_error[64];  // short diagnostic, empty on success
 } sync_status_t;
 

@@ -15,6 +15,7 @@
 #include "api.h"
 #include "config.h"
 #include "http_util.h"
+#include "phone_norm.h"
 #include "scheduler.h"
 #include "stats.h"
 #include "tr064.h"
@@ -36,15 +37,17 @@ static void set_status_running(bool running)
     xSemaphoreGive(s_lock);
 }
 
-static void set_status_result(bool ok, int pushed, int failed, const char *err)
+static void set_status_result(bool ok, int pushed, int failed, int skipped,
+                              const char *err)
 {
     xSemaphoreTake(s_lock, portMAX_DELAY);
-    s_status.ever_ran    = true;
-    s_status.last_ok     = ok;
-    s_status.running     = false;
-    s_status.last_at_us  = esp_timer_get_time();
-    s_status.last_pushed = pushed;
-    s_status.last_failed = failed;
+    s_status.ever_ran     = true;
+    s_status.last_ok      = ok;
+    s_status.running      = false;
+    s_status.last_at_us   = esp_timer_get_time();
+    s_status.last_pushed  = pushed;
+    s_status.last_failed  = failed;
+    s_status.last_skipped = skipped;
     if (err) {
         strncpy(s_status.last_error, err, sizeof(s_status.last_error) - 1);
         s_status.last_error[sizeof(s_status.last_error) - 1] = '\0';
@@ -109,29 +112,11 @@ static int http_get_to_buf(const char *url, char *buf, int cap)
 // can exercise the real AVM XML shapes. sync.c only glues the
 // callback plus per-entry PhoneBlock submission around it.
 
-// Convert what we read from the Fritz!Box into a form the PhoneBlock
-// /api/rate endpoint accepts. The server is lenient but prefers +49…
-// E.164. "00…" → "+…", leading-zero national → "+49…". Anything
-// already starting with "+" or "*" is passed through.
-static void normalise_phone(const char *in, char *out, size_t cap)
-{
-    if (!in || !*in) { out[0] = '\0'; return; }
-    if (in[0] == '+' || in[0] == '*') {
-        strncpy(out, in, cap - 1);
-        out[cap - 1] = '\0';
-        return;
-    }
-    if (in[0] == '0' && in[1] == '0') {
-        snprintf(out, cap, "+%s", in + 2);
-        return;
-    }
-    if (in[0] == '0') {
-        snprintf(out, cap, "+49%s", in + 1);
-        return;
-    }
-    strncpy(out, in, cap - 1);
-    out[cap - 1] = '\0';
-}
+// Normalisation of a Fritz!Box call-barring entry into the E.164 form the
+// PhoneBlock /api/rate endpoint accepts now lives in phone_norm.c, so it
+// can be exercised by the host test suite. Wildcards ("+43*") and bare
+// non-E.164 numbers are classified PHONE_SKIP and never reach the network
+// (issue #469) — sending them produced HTTP 400s retried on every run.
 
 typedef struct {
     const char *host;
@@ -139,14 +124,21 @@ typedef struct {
     const char *app_pass;
     int pushed;
     int failed;
+    int skipped;
 } run_ctx_t;
 
 static void process_contact(const char *uid, const char *number, void *user)
 {
     run_ctx_t *c = user;
     char normalised[48];
-    normalise_phone(number, normalised, sizeof(normalised));
-    if (!normalised[0]) { c->failed++; return; }
+    if (phone_normalise(number, normalised, sizeof(normalised)) != PHONE_RATEABLE) {
+        // Wildcard or non-normalisable entry — leave it in the Fritz!Box
+        // silently. Deliberately not WARN: it recurs every sync run and
+        // would flush the 32-entry log ring (issue #469). The run summary
+        // reports the aggregate skip count at INFO.
+        c->skipped++;
+        return;
+    }
 
     if (!phoneblock_rate(normalised, "B_MISSED", NULL)) {
         ESP_LOGW(TAG, "rate failed for %s, keeping in Fritz!Box", normalised);
@@ -179,12 +171,12 @@ static void run_once(void)
     const char *app_pass = config_fritzbox_app_pass();
     if (!host[0] || !app_user[0] || !app_pass[0]) {
         ESP_LOGI(TAG, "sync skipped — no Fritz!Box app credentials");
-        set_status_result(false, 0, 0, "not set up for Fritz!Box");
+        set_status_result(false, 0, 0, 0, "not set up for Fritz!Box");
         return;
     }
     if (strlen(config_phoneblock_token()) == 0) {
         ESP_LOGI(TAG, "sync skipped — no PhoneBlock token");
-        set_status_result(false, 0, 0, "no PhoneBlock token");
+        set_status_result(false, 0, 0, 0, "no PhoneBlock token");
         return;
     }
     // The config_sync_enabled() gate is applied in the task loop
@@ -206,21 +198,21 @@ static void run_once(void)
         char msg[80];
         snprintf(msg, sizeof(msg), "list: %.60s",
                  detail[0] ? detail : "network");
-        set_status_result(false, 0, 0, msg);
+        set_status_result(false, 0, 0, 0, msg);
         return;
     }
 
     ESP_LOGI(TAG, "GET %s", url);
     char *xml = malloc(8192);
     if (!xml) {
-        set_status_result(false, 0, 0, "out of memory");
+        set_status_result(false, 0, 0, 0, "out of memory");
         return;
     }
     int len = http_get_to_buf(url, xml, 8192);
     if (len <= 0) {
         ESP_LOGE(TAG, "list download failed (len=%d)", len);
         free(xml);
-        set_status_result(false, 0, 0, "list download failed");
+        set_status_result(false, 0, 0, 0, "list download failed");
         return;
     }
     ESP_LOGI(TAG, "phonebook XML: %d bytes", len);
@@ -232,15 +224,18 @@ static void run_once(void)
 
     run_ctx_t ctx = {
         .host = host, .app_user = app_user, .app_pass = app_pass,
-        .pushed = 0, .failed = 0,
+        .pushed = 0, .failed = 0, .skipped = 0,
     };
     int total = tr064_parse_phonebook_contacts(xml, len,
                                                 process_contact, &ctx);
     free(xml);
-    ESP_LOGI(TAG, "sync done: %d contacts, %d pushed, %d failed",
-             total, ctx.pushed, ctx.failed);
+    ESP_LOGI(TAG, "sync done: %d contacts, %d pushed, %d failed, %d skipped",
+             total, ctx.pushed, ctx.failed, ctx.skipped);
 
-    set_status_result(ctx.failed == 0, ctx.pushed, ctx.failed, NULL);
+    // Skipped (unrateable) entries are not failures — a run with only
+    // skips still reports ok, so the dashboard doesn't flag it red.
+    set_status_result(ctx.failed == 0, ctx.pushed, ctx.failed, ctx.skipped,
+                      NULL);
 }
 
 void sync_run(bool manual)
