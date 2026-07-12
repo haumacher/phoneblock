@@ -135,7 +135,8 @@ public class StatsController extends DefaultController {
 			"SpamBlocker", "SpamBlocker",
 			"FRITZOS_CardDAV_Client", "Fritz!Box",
 			"PhoneBlockMobile", "PhoneBlock Mobile",
-			"PhoneSpamBlocker", "PhoneSpamBlocker");
+			"PhoneSpamBlocker", "PhoneSpamBlocker",
+			"kallm", "Kallm");
 		colorIndex = 0;
 		boolean firstDataset = true;
 		for (Map.Entry<String, List<Integer>> entry : perAgentData.entrySet()) {
