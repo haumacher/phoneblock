@@ -749,6 +749,10 @@ public class DB {
 			return null;
 		}
 
+		// The USERAGENT column is NOT NULL; clients may omit the User-Agent header.
+		// Normalize here so the change detection and the DB update below never see null.
+		userAgent = nonNullUA(userAgent);
+
 		try {
 			TokenInfo tokenInfo = TokenInfo.parse(token);
 
@@ -809,7 +813,7 @@ public class DB {
 				return new AuthContext(result, userSettings);
 			}
 		} catch (IOException | RuntimeException e) {
-			LOG.info("Failed to parse authorization token '{}': {}", token, e.getMessage());
+			LOG.warn("Failed to parse authorization token '{}': {}", token, e.getMessage());
 			return null;
 		}
 	}
