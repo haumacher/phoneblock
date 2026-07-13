@@ -175,8 +175,15 @@ public class DefaultController implements WebController {
     		if (acceptLanguageHeader == null) {
 				locale = null;
     		} else {
-    			List<LanguageRange> acceptLanguage = LanguageRange.parse(acceptLanguageHeader);
-    			locale = Locale.lookup(acceptLanguage, Language.supportedLocales());
+    			try {
+    				List<LanguageRange> acceptLanguage = LanguageRange.parse(acceptLanguageHeader);
+    				locale = Locale.lookup(acceptLanguage, Language.supportedLocales());
+    			} catch (IllegalArgumentException ex) {
+    				// A malformed Accept-Language header (e.g. "en=0.9;q=0.9") makes LanguageRange.parse
+    				// throw; fall back to the default language rather than failing the whole request.
+    				LOG.warn("Ignoring malformed Accept-Language header '{}': {}", acceptLanguageHeader, ex.getMessage());
+    				locale = null;
+    			}
     		}
     		lang = Language.fromLocale(locale);
     		
