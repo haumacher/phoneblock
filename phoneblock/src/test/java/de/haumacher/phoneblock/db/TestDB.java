@@ -3,6 +3,7 @@
  */
 package de.haumacher.phoneblock.db;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -771,6 +772,39 @@ public class TestDB {
 				.stream().map(AggregationInfo::getPrefix).collect(Collectors.toSet());
 			assertTrue(hundreds.contains("0402999629"), "spread×mass /100 must qualify");
 		}
+	}
+
+	/**
+	 * Regression for the /10 aggregation clear boundary (incremental rebuild). A member one digit
+	 * shorter than the number being rated produces a /10 block whose {@code PREFIX} equals the
+	 * incremental rebuild's own /100 scope. {@link SpamReports#clearAggregation10ForHundred} must
+	 * clear that boundary row with an inclusive lower bound; a strict {@code >} leaves it behind and
+	 * {@link DB#writeBlocksFromTens} then collides with it on re-insert (unique-key violation on
+	 * {@code NUMBERS_AGGREGATION_10(PREFIX)}), which surfaced as an HTTP 500 on {@code /api/rate}.
+	 *
+	 * <p>Numbers are synthetic (030-1234567…).</p>
+	 */
+	@Test
+	void testIncrementalRebuildClearsBoundaryTenBlock() {
+		long now = System.currentTimeMillis();
+
+		// Four 11-digit members sharing the 10-digit prefix "0301234567" form a /10 concentration
+		// block with PREFIX "0301234567" (written under the 9-digit /100 scope "030123456").
+		processVotes("03012345670", 2, now);
+		processVotes("03012345671", 2, now);
+		processVotes("03012345672", 2, now);
+		processVotes("03012345673", 2, now);
+		assertTrue(wildcardVotes("03012345679") > 0, "four members -> /10 '0301234567' is a block");
+
+		// Rating a 12-digit number in the same range runs the incremental rebuild for /100 scope
+		// prefix100("030123456700") == "0301234567" — exactly the existing /10 block's prefix. The
+		// clear must remove that row so the re-insert does not collide. Before the fix this threw a
+		// unique-key violation (JdbcSQLIntegrityConstraintViolationException).
+		assertDoesNotThrow(() -> processVotes("030123456700", 2, now),
+			"incremental rebuild must clear the boundary /10 row before re-inserting it");
+
+		// The /10 block survives the rebuild intact.
+		assertTrue(wildcardVotes("03012345679") > 0, "/10 block intact after incremental rebuild");
 	}
 
 	/**
