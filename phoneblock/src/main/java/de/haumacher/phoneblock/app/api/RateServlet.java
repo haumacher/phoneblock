@@ -5,6 +5,9 @@ package de.haumacher.phoneblock.app.api;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import de.haumacher.msgbuf.json.JsonReader;
 import de.haumacher.msgbuf.server.io.ReaderAdapter;
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
@@ -25,8 +28,23 @@ import jakarta.servlet.http.HttpServletResponse;
  */
 @WebServlet(urlPatterns = RateServlet.PATH)
 public class RateServlet extends HttpServlet {
-	
+
+	private static final Logger LOG = LoggerFactory.getLogger(RateServlet.class);
+
 	public static final String PATH = "/api/rate";
+
+	@Override
+	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		try {
+			super.service(req, resp);
+		} catch (Exception ex) {
+			LOG.error("Request failed.", ex);
+
+			String message = ex.getMessage();
+			ServletUtil.sendMessage(resp, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+				ex.getClass().getName() + (message == null ? "" : ": " + message));
+		}
+	}
 
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
