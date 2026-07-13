@@ -529,6 +529,8 @@ public class TestDB {
 			_db.recordCall(reports, blocklist, userId, number, id, "+49", now);
 			tx.commit();
 		}
+		// Drain the deferred block-aggregation recompute so tests see the effect immediately.
+		_db.drainDirtyBlocks();
 	}
 
 	/** Looks up the test user by login, creating it on first use. */
@@ -941,6 +943,9 @@ public class TestDB {
 
 	private void processVotes(String phone, int votes, long time) {
 		_db.processVotes(NumberAnalyzer.analyze(phone, "+49"), "+49", votes, time);
+		// Block aggregation is now recomputed off the request path; drain synchronously so tests
+		// observe the block state deterministically instead of waiting for the timer.
+		_db.drainDirtyBlocks();
 	}
 
 	/** Raw EMA columns straight from NUMBERS — for confidence-model assertions (#332). */
@@ -1480,6 +1485,8 @@ public class TestDB {
 
 	private void addRating(String userName, String phoneId, Rating rating, String comment, long now) {
 		_db.addRating(userName, NumberAnalyzer.analyze(phoneId, "+49"), "+49", rating, comment, "de", now);
+		// Drain the deferred block-aggregation recompute so tests see the effect immediately.
+		_db.drainDirtyBlocks();
 	}
 
 	public List<? extends UserComment> getComments(String phone) {
