@@ -140,8 +140,14 @@ public interface SpamReports {
 	@Delete("delete from NUMBERS_AGGREGATION_100")
 	void clearAggregation100();
 
-	/** Clears the /10 rows of a single /100 block (its /10 prefixes are {@code p100 + digit…}). */
-	@Delete("delete from NUMBERS_AGGREGATION_10 where PREFIX > #{p100} and PREFIX < concat(#{p100}, 'Z')")
+	/**
+	 * Clears the /10 rows of a single /100 block. Its /10 prefixes are {@code p100 + digit…}, but a
+	 * member number one digit shorter than the rated number yields a /10 prefix equal to {@code p100}
+	 * itself, so the lower bound must be inclusive ({@code >=}) — matching {@link #clearAggregation100ForHundred}.
+	 * A strict {@code >} would leave that boundary row behind and {@link DB#writeBlocksFromTens} would
+	 * then collide with it on re-insert (unique-key violation on PREFIX).
+	 */
+	@Delete("delete from NUMBERS_AGGREGATION_10 where PREFIX >= #{p100} and PREFIX < concat(#{p100}, 'Z')")
 	void clearAggregation10ForHundred(String p100);
 
 	/** Clears the /100 row(s) within a /100 block's prefix range (covers over-long-number buckets). */
