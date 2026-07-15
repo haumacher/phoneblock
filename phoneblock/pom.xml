@@ -750,6 +750,10 @@ Copy '.phoneblock.template' to '.phoneblock' and fill in your local values
 						<executions>
 							<execution>
 								<id>translate-messages</id>
+								<!-- The translate goal has no default phase; bind it so message
+									 bundles regenerate on every build (only when with-deepl is
+									 active, i.e. for developers who opted in via settings.xml). -->
+								<phase>process-resources</phase>
 								<goals>
 									<goal>translate</goal>
 								</goals>
