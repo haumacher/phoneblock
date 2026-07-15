@@ -70,6 +70,13 @@ class TestNumberAnalyzer {
 		"+*4917650642+*602*, +4917650642602*",
 		"*004917650642+*602*, 004917650642602*",
 		"00+491722144286, 00491722144286",
+		// Surrounding whitespace must be stripped so the leading '+' is preserved (#leading-space).
+		"' +4989896798174', +4989896798174",
+		"'+4989896798174 ', +4989896798174",
+		"'  +4989896798174  ', +4989896798174",
+		// Interior whitespace is already removed as an interior grouping char by the regex.
+		"'+49 89 6798174', +49896798174",
+		"'  +49 89 6798174  ', +49896798174",
 	})
 	void testNormalize(String input, String normalized) {
 		String normalizedNumber = NumberAnalyzer.normalizeNumber(input);
