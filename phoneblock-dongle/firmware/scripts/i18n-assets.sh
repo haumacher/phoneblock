@@ -96,7 +96,17 @@ fi
 
 [[ -z "$STAGE" ]] && STAGE="$(mktemp -d -t dongle-i18n.XXXXXX)"
 ASSETS="${STAGE}/assets"
-mkdir -p "${ASSETS}/audio" "${ASSETS}/mail"
+mkdir -p "${ASSETS}/audio" "${ASSETS}/mail" "${ASSETS}/ui"
+
+# Machine-readable German UI source (extracted from index.html, the single
+# source of truth) — used to DeepL-translate UI locales that have no reviewed
+# pack in scripts/i18n/ui/. Best-effort: needs node; committed packs work
+# without it.
+DE_UI=""
+if command -v node >/dev/null; then
+    DE_UI="${STAGE}/lang-de.json"
+    node "${SRC_DIR}/extract-de-ui.js" > "$DE_UI" || DE_UI=""
+fi
 
 echo "==> version ${VERSION}"
 echo "==> staging ${STAGE}"
@@ -168,21 +178,36 @@ synth_announcement() {
     ffmpeg -y -loglevel error -i "$mp3" -ar 8000 -ac 1 -f alaw "$out_alaw"
 }
 
-# --- Translate the German mail pack into <lang>, preserving keys -----------
-build_mail_pack() {
-    local lang="$1" deepl="$2" out="$3"
+# --- Translate a German key→string JSON pack into <lang>, keys preserved ---
+build_json_pack() {
+    local src="$1" deepl="$2" out="$3"
     if [[ "$deepl" == "-" || "$deepl" == "DE" ]]; then
-        cp "${SRC_DIR}/mail.de.json" "$out"; return
+        cp "$src" "$out"; return
     fi
-    # Translate each value; keys and placeholders are preserved.
-    local keys; keys="$(jq -r 'keys_unsorted[]' "${SRC_DIR}/mail.de.json")"
+    # Translate each value; keys and placeholders/tags are preserved.
+    local keys; keys="$(jq -r 'keys_unsorted[]' "$src")"
     local tmp; tmp="$(mktemp)"; echo '{}' > "$tmp"
     while IFS= read -r k; do
-        local v; v="$(jq -r --arg k "$k" '.[$k]' "${SRC_DIR}/mail.de.json")"
+        local v; v="$(jq -r --arg k "$k" '.[$k]' "$src")"
         local tv; tv="$(deepl_translate "$deepl" "$v")"
         jq --arg k "$k" --arg v "$tv" '.[$k]=$v' "$tmp" > "${tmp}.n" && mv "${tmp}.n" "$tmp"
     done <<< "$keys"
     mv "$tmp" "$out"
+}
+
+# --- UI locale pack: reviewed committed pack if present, else DeepL from de -
+# UI packs are fetched by the browser directly (not by the firmware) and are
+# not part of the signed manifest — the browser trusts the CDN over HTTPS.
+# German is the inline base in index.html and is never published.
+build_ui_pack() {
+    local code="$1" deepl="$2" out="$3"
+    if [[ -f "${SRC_DIR}/ui/lang-${code}.json" ]]; then
+        cp "${SRC_DIR}/ui/lang-${code}.json" "$out"      # reviewed translation
+    elif [[ -n "$DE_UI" && -f "$DE_UI" ]]; then
+        build_json_pack "$DE_UI" "$deepl" "$out"         # DeepL from de source
+    else
+        die "no reviewed UI pack for '${code}' and cannot extract the de source (node?)"
+    fi
 }
 
 # --- Build the assets + manifest -------------------------------------------
@@ -210,8 +235,13 @@ while read -r code deepl; do
 
     mail_rel="mail/mail-${code}.json"
     mail_abs="${ASSETS}/${mail_rel}"
-    build_mail_pack "$code" "$deepl" "$mail_abs"
+    build_json_pack "${SRC_DIR}/mail.de.json" "$deepl" "$mail_abs"
     add_asset "$code" mail "$mail_rel" "$mail_abs"
+
+    # UI pack (browser-fetched, not in the manifest). German is inline.
+    if [[ "$code" != "de" ]]; then
+        build_ui_pack "$code" "$deepl" "${ASSETS}/ui/lang-${code}.json"
+    fi
 done < "${SRC_DIR}/languages.txt"
 
 # Canonical manifest bytes (compact, stable key order per language).
@@ -280,9 +310,11 @@ if [[ $NO_UPLOAD -eq 0 || $DRY_RUN -eq 1 ]]; then
 -mkdir ${CDN_I18N}
 -mkdir ${CDN_I18N}/audio
 -mkdir ${CDN_I18N}/mail
+-mkdir ${CDN_I18N}/ui
 SFTP
-    run scp "${ASSETS}"/audio/* "${CDN_HOST}:${CDN_I18N}/audio/"
-    run scp "${ASSETS}"/mail/*  "${CDN_HOST}:${CDN_I18N}/mail/"
+    run scp "${ASSETS}"/audio/*    "${CDN_HOST}:${CDN_I18N}/audio/"
+    run scp "${ASSETS}"/mail/*     "${CDN_HOST}:${CDN_I18N}/mail/"
+    run scp "${ASSETS}"/ui/*.json  "${CDN_HOST}:${CDN_I18N}/ui/"
     sftp_batch <<SFTP
 put ${ASSETS}/manifest.json      ${CDN_I18N}/manifest.json.tmp
 put ${ASSETS}/manifest.json.sig  ${CDN_I18N}/manifest.json.sig.tmp
