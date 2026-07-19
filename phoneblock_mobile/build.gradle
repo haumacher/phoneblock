@@ -1,5 +1,5 @@
 plugins {
-    id 'de.haumacher.auto-translate-arb' version '1.1.0'
+    id 'de.haumacher.auto-translate-arb' version '1.1.1'
 }
 
 translateArb {
