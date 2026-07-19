@@ -115,6 +115,25 @@ bool        config_auth_enabled(void);
 // default (Europe/Berlin). Always non-empty.
 const char *config_timezone(void);
 
+// UI / content locale code selected in the web UI ("de", "en", "fr", …),
+// persisted so the autonomously-generated status mail and the answer-bot
+// announcement can be localized to the language the user picked. Empty or
+// corrupt NVS reads back as "en". Always a value that satisfies
+// config_lang_code_valid(), so it is safe to splice into a CDN asset URL
+// and a SPIFFS filename.
+const char *config_ui_lang(void);
+
+// True once a valid UI language has actually been configured (NVS holds a
+// config_lang_code_valid() code), i.e. config_ui_lang() is a real choice and
+// not the "en" default. The web UI reads this to auto-pick the browser's
+// language on first contact without clobbering a user's real selection.
+bool        config_ui_lang_is_set(void);
+
+// True if code is a well-formed locale code (2..11 chars of [a-z0-9] with
+// single interior hyphens). Used to validate the ui_lang POST before it is
+// written and, defensively, on every read.
+bool        config_lang_code_valid(const char *code);
+
 // PhoneBlock user-name pinned at first activation of the access
 // gate. Subsequent logins are accepted only when the JWT subject
 // returned by the server matches this string. Empty when the gate
@@ -359,6 +378,10 @@ typedef struct {
     // POSIX TZ string for the wall clock. NULL = leave unchanged. The
     // caller is expected to validate it before writing (see web.c).
     const char *timezone;
+    // UI / content locale code ("de","en",…). NULL = leave unchanged. The
+    // caller must pass only a config_lang_code_valid() string (web.c guards
+    // the POST); the getter clamps defensively on read.
+    const char *ui_lang;
 } config_update_t;
 
 esp_err_t config_update(const config_update_t *u);

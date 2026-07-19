@@ -159,6 +159,37 @@ int main(void)
         assert(small[0] == '\0');
     }
 
+    // --- mail_render: ICU {name} substitution for localized mail strings ---
+    {
+        char b[64];
+        mail_render(b, sizeof(b), "on your {device} v{version}",
+                    "device", "Dongle", "version", "1.5", (const char *)NULL);
+        assert(strcmp(b, "on your Dongle v1.5") == 0);
+        // Placeholders may appear in any order (the whole point vs. printf).
+        mail_render(b, sizeof(b), "{b} then {a}",
+                    "a", "A", "b", "B", (const char *)NULL);
+        assert(strcmp(b, "B then A") == 0);
+        // Adjacent placeholders.
+        mail_render(b, sizeof(b), "{a}{b}", "a", "1", "b", "2", (const char *)NULL);
+        assert(strcmp(b, "12") == 0);
+        // No placeholders / no args → copied through unchanged.
+        mail_render(b, sizeof(b), "SPAM", (const char *)NULL);
+        assert(strcmp(b, "SPAM") == 0);
+        // An unknown placeholder is left verbatim (not dropped).
+        mail_render(b, sizeof(b), "x {y} z", "a", "A", (const char *)NULL);
+        assert(strcmp(b, "x {y} z") == 0);
+        // Values are inserted verbatim — the caller pre-escapes; HTML passes.
+        mail_render(b, sizeof(b), "<b>{n}</b>", "n", "<a>1</a>", (const char *)NULL);
+        assert(strcmp(b, "<b><a>1</a></b>") == 0);
+        // A '{' with no matching '}' is copied literally, not eaten.
+        mail_render(b, sizeof(b), "a { b", "b", "X", (const char *)NULL);
+        assert(strcmp(b, "a { b") == 0);
+        // Bounds: a too-small buffer truncates cleanly (NUL-terminated, no OOB).
+        char tiny[8];
+        mail_render(tiny, sizeof(tiny), "{a}{a}{a}", "a", "1234", (const char *)NULL);
+        assert(tiny[7] == '\0' && strlen(tiny) <= 7);
+    }
+
     printf("test_mail_html: all assertions passed\n");
     return 0;
 }

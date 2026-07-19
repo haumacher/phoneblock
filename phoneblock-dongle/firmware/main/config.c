@@ -64,6 +64,7 @@ static const char *NS   = "phoneblock";
 #define K_MAIL_ON_UPDATE "mail_on_update"
 #define K_DEVICE_ID     "device_id"
 #define K_TIMEZONE      "timezone"
+#define K_UI_LANG       "ui_lang"
 
 // Direct-vote default mirrors DB.MIN_VOTES on the server (the
 // confidence floor the public blocklist export already enforces).
@@ -139,6 +140,10 @@ typedef struct {
     char mail_on_update[4];  // "0" = suppress firmware-update mail (default on)
     char last_failed_ota[32];   // semver, plus headroom for "-rcN" suffixes
     char timezone[64];       // POSIX TZ string (empty = use Kconfig default)
+    char ui_lang[12];        // UI/content locale code ("de","en","zh-Hans",…);
+                             // empty = default "de". Selects the downloaded
+                             // announcement + mail pack; spliced into a CDN
+                             // URL and a SPIFFS filename, so validated on read.
 } config_cache_t;
 
 static config_cache_t s_config;
@@ -294,6 +299,7 @@ void config_load(void)
         s_config.mail_on_update[0] = '\0';   // empty → default on (see getter)
         s_config.last_failed_ota[0] = '\0';
         copy_default(s_config.timezone, sizeof(s_config.timezone), CONFIG_DONGLE_DEFAULT_TZ);
+        s_config.ui_lang[0] = '\0';   // empty → default "en" (see getter)
         return;
     }
     if (err != ESP_OK) {
@@ -387,6 +393,8 @@ void config_load(void)
              s_config.last_failed_ota, sizeof(s_config.last_failed_ota));
     load_str(h, K_TIMEZONE, CONFIG_DONGLE_DEFAULT_TZ,
              s_config.timezone, sizeof(s_config.timezone));
+    load_str(h, K_UI_LANG, "",
+             s_config.ui_lang, sizeof(s_config.ui_lang));
     nvs_close(h);
 
     ESP_LOGI(TAG, "loaded config: sip=%s@%s:%d, pb=%s",
@@ -449,6 +457,42 @@ const char *config_timezone(void)
     // Never hand out an empty string: a blank NVS value would leave the
     // wall clock on UTC. Fall back to the Kconfig default in that case.
     return s_config.timezone[0] ? s_config.timezone : CONFIG_DONGLE_DEFAULT_TZ;
+}
+bool config_lang_code_valid(const char *code)
+{
+    // A locale code as used by the web UI and CDN asset paths: 2..11 chars
+    // of [a-z0-9] with optional single hyphens between segments (e.g. "de",
+    // "en", "zh-Hans", "pt-BR" lower-cased). Deliberately strict — the value
+    // is spliced into a CDN URL and a SPIFFS filename, so this rules out
+    // path traversal ("../"), separators, and case tricks at the source.
+    if (!code) return false;
+    size_t n = strlen(code);
+    if (n < 2 || n > 11) return false;
+    if (code[0] == '-' || code[n - 1] == '-') return false;
+    for (size_t i = 0; i < n; i++) {
+        char ch = code[i];
+        bool ok = (ch >= 'a' && ch <= 'z') || (ch >= '0' && ch <= '9') ||
+                  (ch == '-' && code[i - 1] != '-');
+        if (!ok) return false;
+    }
+    return true;
+}
+const char *config_ui_lang(void)
+{
+    // Clamp on read, mirroring config_ota_channel(): a blank or corrupt NVS
+    // value can never redirect an asset download to an arbitrary path. The
+    // default is English (the universal fallback used everywhere else — the
+    // embedded UI/mail packs and the download fallback chain), so a headless
+    // dongle that no browser ever configured mails and answers in English
+    // rather than assuming German.
+    return config_lang_code_valid(s_config.ui_lang) ? s_config.ui_lang : "en";
+}
+// Whether a valid UI language was ever explicitly configured (vs. running on
+// the default). The web UI uses this to auto-select the browser's language on
+// first contact without overriding a real user choice.
+bool config_ui_lang_is_set(void)
+{
+    return config_lang_code_valid(s_config.ui_lang);
 }
 bool        config_auto_update_enabled(void)
 {
@@ -739,6 +783,8 @@ esp_err_t config_update(const config_update_t *u)
                                         s_config.mail_on_update, sizeof(s_config.mail_on_update));
     if (err == ESP_OK) err = set_str_if(h, K_TIMEZONE, u->timezone,
                                         s_config.timezone, sizeof(s_config.timezone));
+    if (err == ESP_OK) err = set_str_if(h, K_UI_LANG, u->ui_lang,
+                                        s_config.ui_lang, sizeof(s_config.ui_lang));
 
     if (err == ESP_OK) err = nvs_commit(h);
     nvs_close(h);

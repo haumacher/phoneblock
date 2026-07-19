@@ -18,7 +18,11 @@
 
 // Spawn the scheduler task (idempotent). Initialises the sync subsystem's
 // status mutex before starting, so a web-UI snapshot is safe immediately.
-void scheduler_start(void);
+// Start the scheduler task. Pass i18n_refresh_soon=true when this boot is the
+// first after a firmware update (see main.c): the localized-asset sync then
+// runs shortly after boot instead of at its usual ~3 min slot, so a new
+// release picks up its version's announcement / mail / UI packs promptly.
+void scheduler_start(bool i18n_refresh_soon);
 
 // Ask the scheduler to run the blocklist sync as soon as possible,
 // bypassing the auto-sync toggle (manual intent from the web UI). Wakes
@@ -45,6 +49,14 @@ bool scheduler_request_blocklist_sync(void);
 // — the outcome is logged (and surfaced in the web UI's log panel), not
 // returned. Returns false if the scheduler task is not running.
 bool scheduler_request_mail_test(void);
+
+// Ask the scheduler to download the localized device assets (announcement
+// audio / mail pack) for the current ui_lang as soon as possible — raised
+// when the user switches the UI language. Runs the blocking HTTPS/SPIFFS
+// work on the scheduler task, not the caller's httpd thread. The "already
+// running" guard lives in i18n_sync_trigger_now(). Returns false if the
+// scheduler task is not running.
+bool scheduler_request_i18n_sync(void);
 
 // Notify the scheduler that the wall clock has just been set (or stepped),
 // so any time-of-day ("daily") jobs recompute their next run against real
