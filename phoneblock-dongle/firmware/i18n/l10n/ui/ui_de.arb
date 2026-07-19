@@ -1449,5 +1449,15 @@
   "@back.sip": {
     "description": "Dongle web UI: back.sip",
     "x-translated": "b2200652"
+  },
+  "i18n.loading": "Übersetzung wird geladen …",
+  "@i18n.loading": {
+    "description": "Dongle web UI: i18n.loading",
+    "x-translated": "5b32a685"
+  },
+  "i18n.unavailable": "Übersetzung nicht verfügbar – Standardsprache wird angezeigt.",
+  "@i18n.unavailable": {
+    "description": "Dongle web UI: i18n.unavailable",
+    "x-translated": "aae4abf2"
   }
 }

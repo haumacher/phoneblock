@@ -289,5 +289,7 @@
   "token.current.missing": "Det er ikke opprettet noen token ennå.",
   "token.submit": "Logg inn på PhoneBlock",
   "back.status": "← tilbake til status",
-  "back.sip": "← tilbake til utvalget"
+  "back.sip": "← tilbake til utvalget",
+  "i18n.loading": "Oversettelsen lastes inn …",
+  "i18n.unavailable": "Oversettelse ikke tilgjengelig – standardspråket vises."
 }

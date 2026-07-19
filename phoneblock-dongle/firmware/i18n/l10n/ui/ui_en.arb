@@ -15,6 +15,8 @@
   "status.sip.redo_cta": "Reconfigure telephony",
   "status.token.set": "PhoneBlock token set",
   "status.token.missing": "No PhoneBlock token",
+  "status.token.rejected": "Token Rejected",
+  "status.token.rejected.msg": "PhoneBlock has rejected the token. Please generate a new token by clicking \"Request New.\"",
   "status.token.cta": "Create token",
   "status.token.test": "Test",
   "status.token.renew": "Renew",
@@ -288,6 +290,6 @@
   "token.submit": "Sign in to PhoneBlock",
   "back.status": "← back to status",
   "back.sip": "← back to the choice",
-  "status.token.rejected": "Token Rejected",
-  "status.token.rejected.msg": "PhoneBlock has rejected the token. Please generate a new token by clicking \"Request New.\""
+  "i18n.loading": "Translation is loading …",
+  "i18n.unavailable": "Translation not available – default language is displayed."
 }

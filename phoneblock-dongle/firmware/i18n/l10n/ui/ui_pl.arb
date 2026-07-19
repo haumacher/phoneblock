@@ -289,5 +289,7 @@
   "token.current.missing": "Nie skonfigurowano jeszcze tokenu.",
   "token.submit": "Zaloguj się do serwisu PhoneBlock",
   "back.status": "← powrót do statusu",
-  "back.sip": "← powrót do listy"
+  "back.sip": "← powrót do listy",
+  "i18n.loading": "Tłumaczenie się ładuje…",
+  "i18n.unavailable": "Tłumaczenie niedostępne – wyświetlany jest język domyślny."
 }

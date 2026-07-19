@@ -123,6 +123,7 @@
     <option value="ar">العربية</option>
     <option value="zh">中文</option>
   </select>
+  <span id="langStatus" style="display:none;font-size:.8rem;color:#888;margin-left:.4rem"></span>
 </footer>
 
 <script>
@@ -163,6 +164,21 @@ function storePack(reqLang, dict){
   I18N[reqLang] = dict;    // and under what was asked, so t(LANG) resolves
   return loc;
 }
+// Switching language is not instant: the device downloads the new pack (audio +
+// mail + UI, several seconds) before /api/i18n/ui serves it. Without feedback a
+// user picks a language and "nothing happens". Show a small status next to the
+// selector — "loading" while we poll, cleared once the real pack renders, or a
+// note if it never arrives (the page then stays on the embedded English pack).
+// The status text itself resolves via t()'s English fallback, so it is readable
+// even before the chosen locale's pack exists.
+function setLangStatus(kind){
+  const el = document.getElementById('langStatus');
+  if (!el) return;
+  if (!kind) { el.style.display = 'none'; el.textContent = ''; return; }
+  el.textContent = kind === 'loading' ? t('i18n.loading') : t('i18n.unavailable');
+  el.style.color = kind === 'loading' ? '#888' : '#c0392b';
+  el.style.display = '';
+}
 function loadUiPack(lang){
   if (!lang) return Promise.resolve();
   return fetch('/api/i18n/ui')
@@ -188,13 +204,15 @@ function loadDeviceLang(){
 // (en is the embedded fallback → already "real", so it stops immediately.)
 function awaitUiPack(lang, tries){
   tries = tries || 0;
-  if (LANG !== lang ||
-      (I18N[lang] && I18N[lang]['@@locale'] === lang) || tries > 30) return;
+  if (LANG !== lang) return;                          // user switched again
+  if (I18N[lang] && I18N[lang]['@@locale'] === lang) { setLangStatus(''); return; }
+  if (tries > 30) { setLangStatus('unavailable'); return; }  // gave up polling
+  setLangStatus('loading');
   setTimeout(() => {
     if (LANG !== lang) return;
     fetch('/api/i18n/ui').then(r => r.ok ? r.json() : null).then(dict => {
       if (LANG !== lang) return;
-      if (storePack(lang, dict) === lang) route();   // real pack arrived
+      if (storePack(lang, dict) === lang) { setLangStatus(''); route(); }
       else awaitUiPack(lang, tries + 1);
     }).catch(() => awaitUiPack(lang, tries + 1));
   }, 2000);
@@ -2649,8 +2667,11 @@ function wireAnnouncement(){
         }).catch(() => {});
       } catch (_){}
       delete I18N[lang];                 // force reload of the new locale
-      loadUiPack(lang).then(route);      // device pack, or English while it downloads
-      awaitUiPack(lang);                 // then poll for the real locale pack
+      // While the device downloads the new pack it serves the embedded English
+      // pack (which carries the i18n.loading/unavailable strings), so start the
+      // poll only after loadUiPack has populated I18N[lang] — then the status
+      // label resolves to real text instead of the raw key on the first switch.
+      loadUiPack(lang).then(() => { route(); awaitUiPack(lang); });
     });
   }
   document.documentElement.lang = LANG;

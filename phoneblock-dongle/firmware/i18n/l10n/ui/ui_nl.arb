@@ -289,5 +289,7 @@
   "token.current.missing": "Er is nog geen token ingesteld.",
   "token.submit": "Aanmelden bij PhoneBlock",
   "back.status": "← terug naar de status",
-  "back.sip": "← terug naar de selectie"
+  "back.sip": "← terug naar de selectie",
+  "i18n.loading": "Vertaling wordt geladen …",
+  "i18n.unavailable": "Vertaling niet beschikbaar – de standaardtaal wordt weergegeven."
 }

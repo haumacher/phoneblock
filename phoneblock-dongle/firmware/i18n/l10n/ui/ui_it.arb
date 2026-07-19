@@ -289,5 +289,7 @@
   "token.current.missing": "Non è stato ancora configurato alcun token.",
   "token.submit": "Accedi a PhoneBlock",
   "back.status": "← Torna allo stato",
-  "back.sip": "← torna alla selezione"
+  "back.sip": "← torna alla selezione",
+  "i18n.loading": "Caricamento della traduzione in corso…",
+  "i18n.unavailable": "Traduzione non disponibile – Viene visualizzata la lingua predefinita."
 }

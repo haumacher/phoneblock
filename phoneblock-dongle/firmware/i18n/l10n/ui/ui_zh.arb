@@ -289,5 +289,7 @@
   "token.current.missing": "尚未设置令牌。",
   "token.submit": "在PhoneBlock上注册",
   "back.status": "← 返回状态",
-  "back.sip": "← 返回选项列表"
+  "back.sip": "← 返回选项列表",
+  "i18n.loading": "正在加载翻译……",
+  "i18n.unavailable": "无翻译可用——将显示默认语言。"
 }
