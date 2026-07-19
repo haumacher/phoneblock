@@ -24,3 +24,18 @@ idf_component_register(
         espcoredump
         protocol_examples_common
 )
+
+# Bake the German web-UI strings into the image as the offline fallback,
+# stripped (drop the ARB @key metadata) from the single normative source
+# i18n/l10n/ui/ui_de.arb — so German is NOT duplicated in index.html and there
+# is no extract/inject step. web.c serves this at /api/i18n/ui when no
+# downloaded pack is present; the browser reads it same-origin.
+set(_ui_de_arb  "${CMAKE_CURRENT_SOURCE_DIR}/../i18n/l10n/ui/ui_de.arb")
+set(_ui_de_json "${CMAKE_CURRENT_BINARY_DIR}/ui_de.json")
+add_custom_command(
+    OUTPUT  "${_ui_de_json}"
+    COMMAND python3 -c "import json,sys;d=json.load(open(sys.argv[1],encoding='utf-8'));json.dump({k:v for k,v in d.items() if k=='@@locale' or not k.startswith('@')},open(sys.argv[2],'w',encoding='utf-8'),ensure_ascii=False,separators=(',',':'))" "${_ui_de_arb}" "${_ui_de_json}"
+    DEPENDS "${_ui_de_arb}"
+    COMMENT "Stripping ui_de.arb -> ui_de.json (embedded German UI fallback)"
+    VERBATIM)
+target_add_binary_data(${COMPONENT_LIB} "${_ui_de_json}" TEXT DEPENDS "${_ui_de_json}")

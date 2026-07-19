@@ -1469,32 +1469,44 @@ static esp_err_t handle_announcement_get(httpd_req_t *req)
     return ESP_OK;
 }
 
-// GET /api/i18n/ui — serves the UI translation pack for the active ui_lang
-// that i18n_sync downloaded to SPIFFS, so the browser localizes SAME-ORIGIN
-// and a configured dongle needs no CDN at runtime. 404 when there is none
-// (German is inline in index.html, and de is never downloaded). No auth: the
-// page needs this to render, possibly before login.
+// The German web-UI strings, baked into the image from i18n/l10n/ui/ui_de.arb
+// (stripped to JSON at build; see main/CMakeLists.txt). This is the single
+// normative German source and the offline fallback — served when no downloaded
+// pack for the active locale is present. TEXT embed → NUL-terminated, so the
+// JSON length is (end - start - 1).
+extern const char ui_de_json_start[] asm("_binary_ui_de_json_start");
+extern const char ui_de_json_end[]   asm("_binary_ui_de_json_end");
+
+// GET /api/i18n/ui — serves the UI translation pack for the active ui_lang.
+// If i18n_sync has downloaded one to SPIFFS, serve that (same-origin, so a
+// configured dongle needs no CDN at runtime); otherwise serve the baked-in
+// German fallback. Never 404s — the browser always gets a usable dict. No
+// auth: the page needs this to render, possibly before login.
 static esp_err_t handle_i18n_ui(httpd_req_t *req)
 {
+    httpd_resp_set_type(req, "application/json");
+    httpd_resp_set_hdr(req, "Cache-Control", "no-store");
+
     char path[48];
     snprintf(path, sizeof(path), "/spiffs/ui-%s.json", config_ui_lang());
     FILE *f = fopen(path, "rb");
-    if (!f) {
-        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "no ui pack");
+    if (f) {
+        char buf[1024];
+        size_t n;
+        while ((n = fread(buf, 1, sizeof(buf), f)) > 0) {
+            if (httpd_resp_send_chunk(req, buf, n) != ESP_OK) {
+                fclose(f);
+                return ESP_FAIL;
+            }
+        }
+        fclose(f);
+        httpd_resp_send_chunk(req, NULL, 0);
         return ESP_OK;
     }
-    httpd_resp_set_type(req, "application/json");
-    httpd_resp_set_hdr(req, "Cache-Control", "no-store");
-    char buf[1024];
-    size_t n;
-    while ((n = fread(buf, 1, sizeof(buf), f)) > 0) {
-        if (httpd_resp_send_chunk(req, buf, n) != ESP_OK) {
-            fclose(f);
-            return ESP_FAIL;
-        }
-    }
-    fclose(f);
-    httpd_resp_send_chunk(req, NULL, 0);
+    // No downloaded pack (e.g. ui_lang=de, or a locale still downloading) →
+    // the baked-in German fallback.
+    httpd_resp_send(req, ui_de_json_start,
+                    (size_t)(ui_de_json_end - ui_de_json_start - 1));
     return ESP_OK;
 }
 

@@ -29,11 +29,11 @@ is translated at release time.
     source (mirrors the compiled fallback in `main/mail_i18n.c`); the other
     `mail_<lang>.arb` are its translations. Values keep `printf` specifiers
     (`%d %s %lld %u`) and `<b>` tags.
-  - `ui/ui_<lang>.arb` — web-UI strings. `ui_de.arb` is regenerated from the
-    inline `I18N.de` in `index.html` (the runtime German source) by
-    `gen-ui-de-arb.js`; the others are its translations.
-- `gen-ui-de-arb.js` — regenerates `l10n/ui/ui_de.arb` from `index.html`,
-  preserving the plugin's per-key CRC so unchanged strings aren't re-translated.
+  - `ui/ui_<lang>.arb` — web-UI strings. `ui_de.arb` is the single normative
+    German UI source (edit it directly — nothing is duplicated in
+    `index.html`); it is baked into the firmware as the offline German fallback
+    (stripped to JSON at build, `main/CMakeLists.txt`) and served at
+    `/api/i18n/ui`. The other `ui_<lang>.arb` are its translations.
 - `public.pem` — the release **public** key (same one in `main/manifest_sig.c`);
   used only for the release script's signature self-check.
 
@@ -44,18 +44,16 @@ app uses** (`phoneblock_mobile`) — with the same `deepl` server credential in
 `~/.m2/settings.xml`. Outputs are committed; no translation runs at release.
 
 ```bash
-# 1. If the German UI text changed, refresh the UI source from index.html:
-node i18n/gen-ui-de-arb.js
-
-# 2. Translate both projects (mail + ui) into en/fr/es (and any new locale):
+# Edit the German sources directly: l10n/mail/mail_de.arb and l10n/ui/ui_de.arb.
+# Then translate both projects (mail + ui) into every target locale:
 cd i18n/l10n && gradle translateArb
 
 # 3. Review + commit the updated l10n/**/*_<lang>.arb.
 ```
 
-Edit German only: `l10n/mail/mail_de.arb` for mail, `index.html`'s `I18N.de`
-(then step 1) for the UI. A new locale: add it to `targetLangs` in
-`l10n/mail/build.gradle` + `l10n/ui/build.gradle` and to `languages.txt`.
+Edit German only: `l10n/mail/mail_de.arb` and `l10n/ui/ui_de.arb`. A new
+locale: add it to `targetLangs` in `l10n/mail/build.gradle` +
+`l10n/ui/build.gradle` and to `languages.txt`.
 
 ## Asset kinds & CDN layout
 

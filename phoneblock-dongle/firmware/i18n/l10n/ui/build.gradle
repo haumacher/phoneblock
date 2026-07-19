@@ -1,9 +1,9 @@
-// Translate the dongle web-UI strings (German source) into the other
-// locales. Same plugin/credential as phoneblock_mobile's translateArb.
+// Translate the dongle web-UI strings into the other locales. Same
+// plugin/credential as phoneblock_mobile's translateArb.
 //
-// ui_de.arb is regenerated from the inline `I18N.de` in main/web/index.html
-// (the runtime German source) by ../../gen-ui-de-arb.js — run that before
-// translating whenever the German UI text changes, then `gradle translateArb`.
+// ui_de.arb is the single normative German UI source — edit it directly. It is
+// baked into the firmware as the offline German fallback (stripped to JSON at
+// build, see main/CMakeLists.txt) and translated here into the other locales.
 plugins {
     id 'de.haumacher.auto-translate-arb' version '1.1.1'
 }

@@ -141,10 +141,11 @@ get_announcement() {
     return 1
 }
 
-# Clean an ARB file into a published pack: drop @@locale and every @key
-# metadata block, leaving a plain key→string dict the firmware/browser use.
+# Clean an ARB file into a published pack: drop the @key metadata blocks but
+# KEEP @@locale, so the browser can tell a real locale pack from the German
+# fallback the device serves while a pack is still downloading.
 strip_arb() {
-    jq 'with_entries(select(.key | startswith("@") | not))' "$1" > "$2"
+    jq 'with_entries(select(.key == "@@locale" or (.key | startswith("@") | not)))' "$1" > "$2"
 }
 
 # --- Build the assets + manifest -------------------------------------------

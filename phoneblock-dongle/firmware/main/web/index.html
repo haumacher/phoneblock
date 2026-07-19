@@ -128,311 +128,16 @@
 <script>
 // --- i18n -----------------------------------------------------------
 
-const I18N = {
-  de: {
-    'nav.home': 'Status',
-    'status.title': 'Status',
-    'status.sip.connected': 'Angemeldet',
-    'status.sip.connecting': 'Verbinde…',
-    'status.sip.not_configured': 'Nicht eingerichtet',
-    'status.sip.since': 'seit {duration}',
-    'status.sip.at': 'bei {host} als {user}',
-    'status.sip.ext': 'Interne Nummer {n}',
-    'status.sip.public_ip': 'öffentliche IP {ip}',
-    'status.sip.nat_symmetric': '⚠️ symmetrisches NAT — Audio braucht eine portgleiche RTP-Port-Weiterleitung',
-    'status.sip.stun': 'STUN {server} · NAT: {nat}',
-    'status.sip.setup_cta': 'Telefonie einrichten',
-    'status.sip.redo_cta': 'Telefonie neu einrichten',
-    'status.token.set': 'PhoneBlock-Token gesetzt',
-    'status.token.missing': 'Kein PhoneBlock-Token',
-    'status.token.rejected': 'Token abgelehnt',
-    'status.token.rejected.msg': 'PhoneBlock hat das Token zurückgewiesen. Bitte über „Neu anfordern" ein neues Token erzeugen.',
-    'status.token.cta': 'Token anlegen',
-    'status.token.test': 'Testen',
-    'status.token.renew': 'Neu anfordern',
-    'status.token.testing': 'Prüfe Token…',
-    'status.token.test.ok': 'Token gültig — PhoneBlock erreichbar.',
-    'status.token.test.fail': 'Token wurde abgelehnt. Bitte neu anfordern.',
-    'status.token.test.none': 'Kein Token gesetzt.',
-    'status.counters.total': 'Gesamt',
-    'status.counters.spam': 'Spam geblockt',
-    'status.counters.legit': 'Legitim',
-    'status.counters.errors': 'Fehler',
-    'status.info': 'Firmware {fw} · IP {ip} · Uptime {uptime} · API-Latenz {api}',
-    'status.calls.title': 'Letzte Anrufe',
-    'status.calls.empty': 'noch keine Anrufe',
-    'status.calls.col.when': 'Wann',
-    'status.calls.col.number': 'Nummer',
-    'status.calls.col.name': 'Name',
-    'status.calls.col.verdict': 'Urteil',
-    'status.calls.clear': 'Liste leeren',
-    'status.calls.log_known': 'Bekannte Anrufer protokollieren',
-    'status.calls.log_known.help': 'Wenn deaktiviert, erscheinen Anrufe von Nummern aus dem Telefonbuch und interne Codes (**, *…) nicht in der Liste — die Zähler oben werden trotzdem aktualisiert.',
-    'status.calls.verdict.spam': 'SPAM ({direct} direkt, {range} Range)',
-    'status.calls.verdict.spam_plain': 'SPAM',
-    'status.calls.verdict.spam_list': 'SPAM (Blockliste, {scope})',
-    'status.calls.verdict.suspect': 'SPAM-VERDACHT ({direct} direkt, {range} Range)',
-    'status.calls.verdict.blacklist': 'SPAM (Blacklist, {scope})',
-    'status.calls.verdict.legitimate': 'legitim',
-    'status.calls.verdict.unknown': 'unbekannt',
-    'status.calls.verdict.error': 'Fehler',
-    'status.calls.verdict.scope.number': 'Nummer',
-    'status.calls.verdict.scope.range': 'Bereich',
-    'status.thresholds.title': 'Block-Schwellen',
-    'status.thresholds.intro': 'Ab wie vielen PhoneBlock-Stimmen der Dongle einen Anruf wegnimmt. Direkt-Stimmen wiegen schwerer als Range-Stimmen, deshalb getrennte Werte.',
-    'status.thresholds.direct': 'Direkt-Stimmen',
-    'status.thresholds.direct.help': 'Stimmen direkt gegen die anrufende Nummer. Default 4 — gleicher Wert wie die öffentliche PhoneBlock-Sperrliste.',
-    'status.thresholds.range': 'Range-Stimmen',
-    'status.thresholds.range.help': 'Stimmen gegen Nachbarn im selben 10er- oder 100er-Block. Default 10. „Aus" schaltet Range-Block ab — dann zählen nur Direkt-Treffer.',
-    'status.thresholds.range.off': 'Aus',
-    'status.thresholds.saved': 'Gespeichert.',
-    'status.thresholds.invalid': 'Ungültiger Wert.',
-    'status.system.title': 'System',
-    'status.system.heap': 'Freier Speicher: {free} (Minimum: {min}, größter Block: {largest})',
-    'status.system.fs': 'Datenpartition: {free} frei von {total} ({used} belegt)',
-    'status.system.col.task': 'Task',
-    'status.system.col.cpu': 'CPU',
-    'status.system.col.stack': 'Stack frei',
-    'status.system.led_quiet': 'LED nur bei Problemen leuchten lassen',
-    'status.system.led_quiet.hint': 'Normalerweise leuchtet die LED dauerhaft, wenn alles in Ordnung ist. Mit dieser Option bleibt sie im Normalbetrieb aus und leuchtet oder blinkt nur, wenn ein Problem vorliegt (Einrichtung nötig, keine Registrierung, Token ungültig, keine Verbindung). Praktisch im Wohnzimmer.',
-    'status.clock.now': 'Uhrzeit: {time}',
-    'status.clock.pending': 'Uhrzeit: wird synchronisiert …',
-    'status.time.today': 'heute {time}',
-    'status.time.yesterday': 'gestern {time}',
-    'status.tz.current': 'Zeitzone: {tz}',
-    'status.tz.apply': 'Auf {zone} umstellen',
-    'status.tz.saved': 'Zeitzone gespeichert.',
-    'status.errors.title': 'Protokoll',
-    'status.errors.note': 'Das Protokoll dient der Fehleranalyse — nicht jeder angezeigte Eintrag ist ein echtes Problem; viele Fehler sind vorübergehend und verschwinden von selbst.',
-    'status.errors.empty': 'keine Einträge',
-    'status.errors.clear': 'Protokoll leeren',
-    'status.errors.capture_info': 'Auch Infos protokollieren',
-    'status.errors.capture_info.hint': 'Für die Fehlersuche: zeigt zusätzlich Info-Meldungen (z. B. versuchter Server:Port). Füllt das Protokoll schnell — danach wieder ausschalten.',
-    'status.auth.title': 'Zugangsschutz',
-    'status.auth.intro': 'Schützt die Konfigurationsoberfläche im laufenden Betrieb. Aktivierst Du den Schutz, fragt diese Seite ab dann nach einer Anmeldung über Deinen PhoneBlock-Account, bevor sie Anrufdaten zeigt oder Einstellungen entgegennimmt.',
-    'status.auth.disabled': 'Zugangsschutz aus — jeder im LAN erreicht das Dashboard ohne Anmeldung.',
-    'status.auth.enabled': 'Zugangsschutz aktiv — angemeldet als PhoneBlock-Nutzer.',
-    'status.auth.enabled.user': 'Zugangsschutz aktiv — angemeldet als {user}.',
-    'status.auth.no_token': 'Zugangsschutz benötigt einen konfigurierten PhoneBlock-Token (siehe Schritt 2 oben). Erst dann kann der Dongle Deine Identität gegen den Server prüfen.',
-    'status.auth.enable': 'Zugangsschutz einschalten',
-    'status.auth.disable': 'Zugangsschutz ausschalten',
-    'status.auth.logout': 'Abmelden',
-    'status.auth.activate.intro': 'Vor dem Einschalten wirst Du zu phoneblock.net umgeleitet, um Dich anzumelden — erst nach erfolgreicher Anmeldung wird der Schutz aktiviert. So kannst Du Dich nicht aussperren.',
-    'login.title': 'Anmeldung erforderlich',
-    'login.intro': 'Der Zugangsschutz für diesen Dongle ist aktiv. Klicke unten, um Dich über Deinen PhoneBlock-Account anzumelden — Du wirst kurz zu phoneblock.net umgeleitet und automatisch zurückgeschickt.',
-    'login.button': 'Mit PhoneBlock anmelden',
-    'login.remember': 'Angemeldet bleiben',
-    'login.remember.help': 'Setzt einen Cookie auf diesem Gerät, damit der Dongle Dich beim nächsten Mal ohne Umweg über phoneblock.net wiedererkennt. Es wird nur ein Browser gleichzeitig „gemerkt“.',
-    'login.error.mismatch': 'Anmeldung fehlgeschlagen — dieser PhoneBlock-Account ist nicht der Eigentümer dieses Dongles.',
-    'login.error.mismatch_named': 'Anmeldung fehlgeschlagen — dieser Dongle gehört zum Account {expected}, Du bist aber als anderer Nutzer angemeldet.',
-    'login.error.rejected': 'Anmeldung fehlgeschlagen — der PhoneBlock-Server hat die Identität nicht bestätigt.',
-    'login.error.expired': 'Die Anmeldung ist abgelaufen oder ungültig. Bitte erneut versuchen.',
-    'login.error.persist': 'Aktivierung konnte nicht gespeichert werden. Bitte erneut versuchen.',
-    'login.error.missing': 'Die Antwort von phoneblock.net war unvollständig. Bitte erneut versuchen.',
-    'login.error.generic': 'Anmeldung fehlgeschlagen. Bitte erneut versuchen.',
-    'status.reset.title': 'Werkseinstellungen',
-    'status.reset.intro': 'Löscht alle Einstellungen im Dongle (SIP-Zugangsdaten, PhoneBlock-Token, Fehlerverlauf) und startet neu.',
-    'status.reset.button': 'Konfiguration zurücksetzen',
-    'status.reset.confirm': 'Alle Dongle-Einstellungen wirklich löschen und neu starten?',
-    'status.reset.running': 'Wird zurückgesetzt — der Dongle startet gleich neu.',
-    'status.reset.error': 'Zurücksetzen fehlgeschlagen: {msg}',
-    'status.fw.title': 'Firmware aktualisieren',
-    'status.fw.intro': 'Neue Firmware-Datei hochladen oder direkt gegen die PhoneBlock-CDN prüfen. In beiden Fällen landet die neue Version im inaktiven Flash-Slot; nach dem Neustart bootet der Dongle die neue Version und rollt bei Fehlern automatisch zurück.',
-    'status.fw.current': 'Aktive Partition: {partition} · Version {version}',
-    'status.fw.pick': 'Firmware wählen (.bin)',
-    'status.fw.submit': 'Hochladen & neu starten',
-    'status.fw.confirm': 'Neue Firmware installieren und Dongle neu starten?',
-    'status.fw.uploading': 'Übertrage… {pct} %',
-    'status.fw.done': 'Firmware übertragen — Dongle startet neu. Bitte einen Moment warten und dann die Seite neu laden.',
-    'status.fw.error': 'Fehler: {msg}',
-    'status.fw.check': 'Auf Aktualisierung prüfen',
-    'status.fw.checking': 'Prüfe auf Aktualisierung…',
-    'status.fw.check.none': 'Keine neue Version verfügbar (aktuell {version}).',
-    'status.fw.check.found': 'Neue Version {version} wird installiert…',
-    'status.fw.check.installed': 'Version {version} installiert — Dongle startet neu. Bitte einen Moment warten und dann die Seite neu laden.',
-    'status.fw.check.error': 'Prüfung fehlgeschlagen: {msg}',
-    'status.fw.failed': 'Letztes Update auf Version {version} hat den Boot nicht überstanden — automatisch zurückgerollt. Auto-Update überspringt diese Version. Klick auf „Auf Aktualisierung prüfen", um es erneut zu versuchen.',
-    'status.fw.auto_update': 'Tägliche Auto-Aktualisierung',
-    'status.fw.auto_update.help': 'Wenn aktiv, prüft der Dongle einmal pro Tag, ob auf der PhoneBlock-CDN eine neuere Version liegt, und installiert sie automatisch. Beim manuellen Hochladen einer Firmware wird diese Option automatisch ausgeschaltet, damit der Daily-Check Deinen handgewählten Build nicht überschreibt — schalte sie hier wieder ein, wenn Du dem Release-Strom folgen willst.',
-    'status.fw.channel': 'Update-Kanal',
-    'status.fw.channel.help': 'Wähle „Beta", wenn Du Testversionen vorab erhalten möchtest — etwa um einen gemeldeten Fehler gegenzuprüfen. „Stabil" liefert nur freigegebene Versionen. Sobald eine getestete Version final freigegeben wird, wechselst Du automatisch wieder auf diese.',
-    'status.fw.channel.stable': 'Stabil',
-    'status.fw.channel.beta': 'Beta (Testversionen)',
-    'status.fw.crash_report': 'Fehlerberichte an phoneblock.net senden',
-    'status.fw.crash_report.help': 'Wenn der Dongle wegen eines Programmfehlers neu startet, wird ein Speicherauszug auf einer dafür reservierten Flash-Partition abgelegt. Ist diese Option aktiv, lädt der Dongle den Auszug beim nächsten Start an phoneblock.net hoch — das hilft uns, Felddefekte zu finden und zu fixen. Schalte die Option aus, wenn der Dongle solche Berichte nicht senden soll; gespeicherte Auszüge werden dann lokal gelöscht statt verschickt.',
-    'status.mail.title': 'Status-E-Mails',
-    'status.mail.intro': 'Der Dongle kann dir Statusmeldungen direkt per E-Mail schicken — über dein eigenes E-Mail-Konto. Trage die Zugangsdaten deines Mail-Anbieters ein; der Dongle versendet darüber höchstens eine Meldung pro Tag.',
-    'status.mail.host': 'SMTP-Server',
-    'status.mail.port': 'Port (leer = automatisch)',
-    'status.mail.security': 'Verschlüsselung',
-    'status.mail.security.tls': 'TLS (Port 465)',
-    'status.mail.security.starttls': 'STARTTLS (Port 587)',
-    'status.mail.user': 'Benutzername (SMTP-Login)',
-    'status.mail.pass': 'Passwort',
-    'status.mail.pass.keep': 'gespeichert — leer lassen, um es zu behalten',
-    'status.mail.from': 'Absender (E-Mail, leer = Benutzername)',
-    'status.mail.to': 'Empfänger (E-Mail)',
-    'status.mail.help': 'Tipp: Bei Gmail oder Outlook brauchst du meist ein „App-Passwort" (bei aktivierter Zwei-Faktor-Anmeldung), nicht dein normales Kontopasswort. Klassische Anbieter wie GMX, web.de oder mailbox.org funktionieren mit Benutzername und Passwort.',
-    'status.mail.on_error': 'E-Mail bei Fehlern und Abstürzen',
-    'status.mail.on_error.help': 'Sendet einmal täglich eine E-Mail, wenn seit der letzten Meldung ein Fehler im Protokoll aufgetreten ist — dazu zählt auch ein Neustart nach einem Absturz.',
-    'status.mail.on_spam': 'E-Mail bei abgefangenen SPAM-Anrufen',
-    'status.mail.on_spam.help': 'Sendet einmal täglich eine E-Mail, wenn seit der letzten Meldung SPAM-Anrufe blockiert wurden.',
-    'status.mail.on_update': 'E-Mail bei Firmware-Aktualisierung',
-    'status.mail.on_update.help': 'Sendet eine E-Mail, nachdem sich der Dongle auf eine neue Firmware-Version aktualisiert hat — mit einem Link zum Änderungsprotokoll.',
-    'status.mail.save': 'Speichern',
-    'status.mail.saved': 'Gespeichert.',
-    'status.mail.test': 'Test-E-Mail senden',
-    'status.mail.testing': 'Sende Test-E-Mail…',
-    'status.mail.test.sent': 'Test-E-Mail wird gesendet — das Ergebnis steht im Protokoll.',
-    'status.mail.test.fail': 'Versand fehlgeschlagen — bitte Einstellungen und Protokoll prüfen.',
-    'status.mail.err.host': 'SMTP-Server fehlt',
-    'status.mail.err.user': 'Benutzername fehlt',
-    'status.mail.err.pass': 'Passwort fehlt',
-    'status.mail.err.to': 'Empfänger ungültig',
-    'status.mail.err.from': 'Absender ungültig',
-    'status.mail.err.from_user': 'Absender nötig — der Benutzername ist keine E-Mail-Adresse',
-    'status.sync.title': 'Sperrlisten-Sync',
-    'status.sync.intro': 'Am Mobilteil gesperrte Nummern („Nummer sperren") werden einmal pro Tag zur PhoneBlock-Datenbank übertragen und danach aus der Fritz!Box entfernt. Der Answerbot fängt die Anrufer dann für alle PhoneBlock-Nutzer ab.',
-    'status.sync.unavailable': 'Nicht verfügbar — nur mit Fritz!Box-Einrichtung nutzbar.',
-    'status.sync.never': 'Noch nicht gelaufen.',
-    'status.sync.last_ok': 'Letzter Lauf vor {ago}: {n} übertragen.',
-    'status.sync.last_partial': 'Letzter Lauf vor {ago}: {n} übertragen, {f} Fehler.',
-    'status.sync.last_fail': 'Letzter Lauf vor {ago} fehlgeschlagen: {err}',
-    'status.sync.running': 'Sync läuft gerade…',
-    'status.sync.run_now': 'Jetzt synchronisieren',
-    'status.sync.triggered': 'Sync gestartet.',
-    'status.sync.busy': 'Sync läuft bereits.',
-    'status.sync.enable': 'Sperrlisten-Sync aktivieren',
-    'status.sync.disabled': 'Automatischer Sync deaktiviert — manuell weiterhin möglich.',
-    'status.localcache.title': 'Blocklist-Cache',
-    'status.localcache.intro': 'Einmal pro Tag lädt der Dongle die aktuelle Sperrliste und Deine persönliche Black-/White-List herunter und legt sie auf dem internen Flash ab. Eingehende Anrufe werden so überwiegend ohne Server-Anfrage entschieden — schneller und auch bei Netzproblemen verlässlich.',
-    'status.localcache.enable': 'Blocklist-Cache verwenden',
-    'status.localcache.enable.help': 'Lädt die Sperrliste auf den Dongle und entscheidet Anrufe lokal. Aus: Jeder Anruf wird direkt beim Server geprüft — langsamer und nur bei funktionierender Internetverbindung möglich.',
-    'status.localcache.disabled': 'Deaktiviert — Anrufe werden direkt beim Server geprüft.',
-    'status.localcache.never': 'Noch nicht heruntergeladen.',
-    'status.localcache.have': '{community} Einträge in der Gemeinschaftsliste, {personal} persönlich. Aktualisiert vor {ago}.',
-    'status.localcache.last_fail': 'Letzter Download vor {ago} fehlgeschlagen: {err}',
-    'status.localcache.running': 'Download läuft gerade…',
-    'status.localcache.wildcards': 'Wildcard-Sperren auswerten',
-    'status.localcache.wildcards.help': 'Sperrt nicht nur exakte Nummern, sondern auch Rufnummern-Bereiche (z.B. „030 12 34 56*"), wenn die Gemeinschaft sie als Spam meldet. Aus, wenn Du nur exakte Treffer sperren willst.',
-    'status.localcache.run_now': 'Jetzt herunterladen',
-    'status.localcache.triggered': 'Download gestartet.',
-    'status.localcache.busy': 'Download läuft bereits.',
-    'status.ann.title': 'Spam-Ansage',
-    'status.ann.default': 'Eingebaute Standard-Ansage ({kb} KB).',
-    'status.ann.custom': 'Eigene Ansage ({kb} KB).',
-    'status.ann.play': 'Aktuelle Ansage anhören',
-    'status.ann.stop': 'Stopp',
-    'status.ann.upload.label': 'Eigene Ansage hochladen (WAV/MP3/OGG, max. {s} s)',
-    'status.ann.upload.pick': 'Datei wählen',
-    'status.ann.upload.submit': 'Hochladen',
-    'status.ann.upload.converting': 'Konvertiere…',
-    'status.ann.upload.uploading': 'Übertrage…',
-    'status.ann.upload.done': 'Gespeichert ({kb} KB).',
-    'status.ann.upload.error': 'Fehler: {msg}',
-    'status.ann.upload.toolong': 'Zu lang — maximal {s} Sekunden.',
-    'status.ann.upload.decode_fail': 'Datei konnte nicht dekodiert werden.',
-    'status.ann.reset.button': 'Auf Standard zurücksetzen',
-    'status.ann.reset.confirm': 'Eigene Ansage wirklich verwerfen?',
-    'status.ann.accept_test': 'Lokale Testanrufe annehmen',
-    'status.ann.accept_test.help': 'Wenn aktiviert, beantwortet der Dongle Anrufe auf interne Fritz!Box-Codes (**622, *21#, …) wie Spam — also mit Ansage und Auflegen. So lässt sich der Anruf-Ablauf von einem internen Telefon aus testen, ohne eine echte Nummer auf PhoneBlock zu melden.',
-    'hero.title': 'Einrichtung',
-    'hero.intro': 'Zwei Schritte, dann blockt dein Dongle Spam-Anrufe automatisch. Beide abhaken, erst dann ist das Gerät einsatzbereit.',
-    'hero.step1.todo': 'Den Dongle bei deiner Telefonanlage anmelden',
-    'hero.step1.done': 'Telefonie eingerichtet',
-    'hero.step2.todo': 'Mit PhoneBlock verbinden — damit der Dongle weiß, was Spam ist',
-    'hero.step2.done': 'Mit PhoneBlock verbunden',
-    'hero.cta.sip': 'Telefonie einrichten',
-    'hero.cta.token': 'PhoneBlock verbinden',
-    'sip.entry.title': 'Telefonie einrichten',
-    'sip.entry.intro': 'Wähle, wie der Dongle sich bei deiner Telefonanlage anmeldet.',
-    'sip.entry.fritzbox': 'Fritz!Box (empfohlen)',
-    'sip.entry.fritzbox.desc': 'Automatische Einrichtung. Der Dongle legt sich selbst als IP-Telefon an.',
-    'sip.entry.provider': 'Anderer Anbieter',
-    'sip.entry.provider.desc': 'Direkt bei Telekom, Vodafone, 1&1, sipgate oder easybell anmelden.',
-    'sip.entry.manual': 'Manuell (Experte)',
-    'sip.entry.manual.desc': 'Alle SIP-Felder selbst ausfüllen.',
-    'sip.fb.title': 'Fritz!Box-Einrichtung',
-    'sip.fb.intro': 'Einmalig das Fritz!Box-Admin-Passwort eingeben. Es wird nicht gespeichert.',
-    'sip.fb.host': 'Fritz!Box (Host oder IP)',
-    'sip.fb.user': 'Benutzer',
-    'sip.fb.user.hint': '(leer lassen → Standard-Benutzer der Fritz!Box)',
-    'sip.fb.pass': 'Passwort',
-    'sip.fb.submit': 'Nebenstelle einrichten',
-    'sip.fb.working': 'Richte Nebenstelle ein (~2–5 s)…',
-    'sip.fb.done': 'Nebenstelle angelegt — Anmeldung startet.',
-    'sip.fb.done.withnum': 'Nebenstelle angelegt (interne Nummer {n}) — Anmeldung startet.',
-    'sip.fb.error': 'Fehler: {msg}',
-    'sip.fb.2fa.title': 'Zwei-Faktor-Bestätigung',
-    'sip.fb.2fa.button': 'beliebigen Knopf an der Fritz!Box drücken',
-    'sip.fb.2fa.dtmf': 'Folge {seq} an einem angeschlossenen Telefon wählen',
-    'sip.fb.2fa.instructions': 'Bitte jetzt {hints}.',
-    'sip.fb.2fa.cancelled': '2FA abgebrochen.',
-    'sip.fb.2fa.timeout': 'Zeitüberschreitung. Bitte erneut versuchen.',
-    'sip.prov.title': 'Anbieter wählen',
-    'sip.prov.intro': 'Wähle deinen Anbieter; die Zugangsdaten bekommst du aus dem jeweiligen Kundenportal. Ist dein Anbieter nicht gelistet, nutze die manuelle Konfiguration.',
-    'sip.prov.provider': 'Anbieter',
-    'sip.prov.user': 'SIP-Benutzer / Rufnummer',
-    'sip.prov.pass': 'Passwort',
-    'sip.prov.submit': 'Zugangsdaten speichern',
-    'sip.prov.done': 'Gespeichert. Anmeldung startet.',
-    'sip.prov.error': 'Fehler: {msg}',
-    'sip.manual.title': 'Manuelle Konfiguration',
-    'sip.manual.intro': 'Vollständige SIP-Felder. Passwort leer lassen heißt „unverändert".',
-    'sip.manual.host': 'SIP-Registrar',
-    'sip.manual.port': 'SIP-Port',
-    'sip.manual.port.hint': 'Leer lassen = automatisch via DNS-SRV bzw. Transport-Default (5060 UDP/TCP, 5061 TLS).',
-    'sip.manual.user': 'SIP-Benutzer',
-    'sip.manual.pass': 'SIP-Passwort',
-    'sip.manual.pass.hint': 'Leer lassen = gespeichertes Passwort behalten.',
-    'sip.manual.anon': 'Ohne Passwort anmelden (anonym)',
-    'sip.manual.anon.hint': 'Entfernt ein gespeichertes Passwort und meldet sich ohne an — z. B. anonymous@t-online.de bei der Telekom.',
-    'sip.manual.submit': 'Speichern',
-    'sip.manual.done': 'Gespeichert.',
-    'sip.manual.error': 'Fehler: {msg}',
-    'sip.manual.advanced': 'Erweiterte Parameter',
-    'sip.manual.transport': 'Transport',
-    'sip.manual.transport.hint': 'UDP, TCP und TLS sind wählbar. TLS verschlüsselt die Verbindung und wird empfohlen, sofern der Anbieter es unterstützt. Die Sprachübertragung selbst ist derzeit noch unverschlüsselt.',
-    'sip.manual.auth_user': 'Auth-Benutzer',
-    'sip.manual.auth_user.hint': 'Leer lassen = SIP-Benutzer auch als Auth. Bei Telekom: E-Mail.',
-    'sip.manual.outbound': 'Outbound-Proxy',
-    'sip.manual.outbound.hint': 'Optional, Format host[:port]. Leer = direkt zum Registrar.',
-    'sip.manual.realm': 'Realm',
-    'sip.manual.realm.hint': 'Leer = aus Challenge übernehmen.',
-    'sip.manual.stun': 'STUN-Server',
-    'sip.manual.stun.hint': 'Optional, Format host[:port]. Ermittelt bei direkter Provider-Anmeldung den öffentlichen RTP-Port. Leer = aus. Wird vom Provider-Preset gesetzt (Telekom: stun.t-online.de:3478).',
-    'sip.manual.srtp': 'SRTP',
-    'sip.manual.srtp.hint': 'SRTP wird automatisch ausgehandelt: Sprache wird verschlüsselt, sobald der Anbieter es anbietet (z. B. Telekom), sonst unverschlüsseltes RTP (z. B. Fritz!Box im LAN).',
-    'sip.manual.local_port': 'Lokaler SIP-Port',
-    'sip.manual.local_port.hint': 'Port, auf dem der Dongle SIP empfängt (Standard 15060). Leer = Standard.',
-    'sip.manual.rtp_port': 'RTP-Port (Audio)',
-    'sip.manual.rtp_port.hint': 'Port für den Sprachkanal (Standard 16000). Leer = Standard.',
-    'sip.manual.fwd.title': 'Port-Weiterleitung bei direkter Provider-Anmeldung',
-    'sip.manual.fwd.body': 'Meldet sich der Dongle direkt beim Provider an (statt über einen VoIP-Router) und der Anbieter unterstützt nur UDP, richte im Router je eine UDP-Weiterleitung auf den Dongle ein — portgleich (externer Port = interner Port): {sip} (SIP) und {rtp} (RTP). Die öffentliche IP ermittelt der Dongle automatisch (oben im Status sichtbar); sie muss nicht eingetragen werden. Das funktioniert nur mit einer echten (eigenen) öffentlichen IPv4 — nicht bei DS-Lite/CGNAT (geteilte IPv4), wo keine Weiterleitung möglich ist; dann hilft nur TCP/TLS, falls der Anbieter es unterstützt.',
-    'sip.manual.srtp.off': 'aus',
-    'sip.manual.srtp.optional': 'optional',
-    'sip.manual.srtp.mandatory': 'Pflicht',
-    'token.title': 'PhoneBlock verbinden',
-    'token.intro': 'Der Dongle fragt für jeden eingehenden Anruf die PhoneBlock-Datenbank ab. Dafür brauchst du einen Token.',
-    'token.how': 'Ein Klick auf den Knopf unten leitet dich zu phoneblock.net, wo du dich einmalig anmelden kannst (Google, Facebook oder Account). Anschließend landest du zurück hier — der Token ist dann gesetzt.',
-    'token.current.set': 'Ein Token ist bereits eingerichtet. Eine erneute Anmeldung erzeugt einen neuen.',
-    'token.current.missing': 'Noch kein Token eingerichtet.',
-    'token.submit': 'Bei PhoneBlock anmelden',
-    'back.status': '← zurück zum Status',
-    'back.sip': '← zurück zur Auswahl',
-  },
-};
+const I18N = {};
 
-// Language resolution: explicit user choice via localStorage, else
-// navigator.language ("en-GB" → "en"), else German. If we have no
-// strings for the requested language we fall back to the German
-// master block, so any key added to only `de` still renders.
+// The UI language is the device's ui_lang. All strings — including German —
+// are loaded at runtime from the dongle (/api/i18n/ui); nothing is baked into
+// this page. t() falls back to the German pack (once loaded) then to the key.
 let LANG = 'de';   // the device's ui_lang, filled in from /api/status on boot
 const t = (k, p) => {
-  // (I18N[LANG] || {}) so a locale still being loaded can't throw; the
-  // German master block backs every key.
+  // (… || {}) so a locale still loading can't throw.
   let s = (I18N[LANG] || {})[k];
-  if (s === undefined) s = I18N.de[k];
+  if (s === undefined) s = (I18N.de || {})[k];
   if (s === undefined) return k;
   if (p) for (const [name, val] of Object.entries(p))
     s = s.replaceAll('{' + name + '}', val);
@@ -440,19 +145,29 @@ const t = (k, p) => {
 };
 
 // The UI language is a DEVICE setting (ui_lang — it also drives the status
-// mail and the answer-bot announcement). German is inline here; every other
-// locale's UI pack is downloaded ONCE by the firmware and served by the dongle
-// itself at /api/i18n/ui (same-origin). So a configured dongle needs no CDN at
-// runtime (issue #460); t() falls back to inline German for anything missing.
-const _uiLoads = {};
+// mail and the answer-bot announcement). NOTHING is baked into this page: the
+// dongle serves the strings for its ui_lang from /api/i18n/ui (same-origin) —
+// the German fallback from firmware ROM (built from i18n/l10n/ui/ui_de.arb, the
+// single normative source), other locales from what the firmware downloaded to
+// SPIFFS. So a configured dongle needs no CDN at runtime (issue #460), and
+// German is never duplicated in HTML.
+//
+// Each served pack carries "@@locale"; while a just-selected locale is still
+// downloading, the device serves the German fallback (@@locale:"de"), which we
+// show as a readable placeholder and keep polling until the real pack arrives.
+function storePack(reqLang, dict){
+  if (!dict || typeof dict !== 'object') return null;
+  const loc = dict['@@locale'] || reqLang;
+  I18N[loc] = dict;        // under the actual served locale (populates de too)
+  I18N[reqLang] = dict;    // and under what was asked, so t(LANG) resolves
+  return loc;
+}
 function loadUiPack(lang){
-  if (!lang || lang === 'de' || I18N[lang]) return Promise.resolve();
-  if (_uiLoads[lang]) return _uiLoads[lang];
-  _uiLoads[lang] = fetch('/api/i18n/ui')
+  if (!lang) return Promise.resolve();
+  return fetch('/api/i18n/ui')
     .then(r => r.ok ? r.json() : null)
-    .then(dict => { if (dict && typeof dict === 'object') I18N[lang] = dict; })
-    .catch(() => { /* not downloaded yet → German fallback via t() */ });
-  return _uiLoads[lang];
+    .then(dict => { storePack(lang, dict); })
+    .catch(() => { /* device unreachable → keys via t(); page is from it */ });
 }
 // Read the device's ui_lang from /api/status, reflect it in the selector, and
 // load its UI pack from the device.
@@ -465,17 +180,18 @@ function loadDeviceLang(){
     return loadUiPack(LANG);
   }).catch(() => {});
 }
-// After switching language, the firmware downloads the new pack; poll the
-// device until it serves it, then re-render. Bounded so it can't spin forever.
+// After switching language, the firmware downloads the new pack; the device
+// serves the German fallback meanwhile. Poll until it serves the real locale
+// (@@locale === lang), then re-render. Bounded so it can't spin forever.
 function awaitUiPack(lang, tries){
   tries = tries || 0;
-  if (lang === 'de' || LANG !== lang || I18N[lang] || tries > 20) return;
+  if (lang === 'de' || LANG !== lang ||
+      (I18N[lang] && I18N[lang]['@@locale'] === lang) || tries > 30) return;
   setTimeout(() => {
     if (LANG !== lang) return;
-    delete _uiLoads[lang];
     fetch('/api/i18n/ui').then(r => r.ok ? r.json() : null).then(dict => {
       if (LANG !== lang) return;
-      if (dict && typeof dict === 'object') { I18N[lang] = dict; route(); }
+      if (storePack(lang, dict) === lang) route();   // real pack arrived
       else awaitUiPack(lang, tries + 1);
     }).catch(() => awaitUiPack(lang, tries + 1));
   }, 2000);
@@ -2929,9 +2645,9 @@ function wireAnnouncement(){
           body: new URLSearchParams({ ui_lang: lang }).toString(),
         }).catch(() => {});
       } catch (_){}
-      delete I18N[lang]; delete _uiLoads[lang];
-      route();
-      awaitUiPack(lang);
+      delete I18N[lang];                 // force reload of the new locale
+      loadUiPack(lang).then(route);      // device pack, or German while it downloads
+      awaitUiPack(lang);                 // then poll for the real locale pack
     });
   }
   document.documentElement.lang = LANG;
