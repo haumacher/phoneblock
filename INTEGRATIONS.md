@@ -97,6 +97,8 @@ Before integrating, you need to register your app with PhoneBlock to receive an 
 **Current Registered Apps:**
 - `PhoneBlockMobile` → Redirects to `PhoneBlockMobile://auth`
 - `PhoneSpamBlocker` → Redirects to `PhoneSpamBlocker://auth`
+- `SpamBlocker` → Redirects to `spamblocker://auth`
+- `kallm` → Redirects to `kallm://phoneblock-auth` (iOS CallKit call blocker for Italy; `state` round-tripped for CSRF protection)
 
 ### Step 5: Token Reception
 

@@ -13,6 +13,9 @@
 #include "freertos/task.h"
 #include "sdkconfig.h"
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 static const char *TAG = "wifi";
 
 #define WIFI_CONNECTED_BIT BIT0

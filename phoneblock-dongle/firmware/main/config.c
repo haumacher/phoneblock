@@ -10,6 +10,9 @@
 
 #include "sdkconfig.h"
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 static const char *TAG  = "config";
 static const char *NS   = "phoneblock";
 

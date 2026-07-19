@@ -16,9 +16,13 @@
 #include "mbedtls/sha1.h"
 
 #include "api_scan.h"
+#include "strbuf.h"
 #include "config.h"
 #include "http_util.h"
 #include "stats.h"
+
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
 
 static const char *TAG = "api";
 
@@ -350,15 +354,11 @@ verdict_t phoneblock_check(const char *phone_number, pb_check_result_t *out,
     }
 
     char url[256];
-    int n = snprintf(url, sizeof(url),
-                     "%s/api/check-prefix?sha1=%s&format=json",
-                     config_phoneblock_base_url(), hash_full);
-    if (have_p10 && n < (int)sizeof(url)) {
-        n += snprintf(url + n, sizeof(url) - n, "&prefix10=%s", hash_p10);
-    }
-    if (have_p100 && n < (int)sizeof(url)) {
-        n += snprintf(url + n, sizeof(url) - n, "&prefix100=%s", hash_p100);
-    }
+    strbuf_t ub = sb_init(url, sizeof(url));
+    sb_appendf(&ub, "%s/api/check-prefix?sha1=%s&format=json",
+               config_phoneblock_base_url(), hash_full);
+    if (have_p10)  sb_appendf(&ub, "&prefix10=%s", hash_p10);
+    if (have_p100) sb_appendf(&ub, "&prefix100=%s", hash_p100);
 
     char auth_header[128];
     snprintf(auth_header, sizeof(auth_header), "Bearer %s", config_phoneblock_token());
@@ -741,85 +741,6 @@ int phoneblock_post_log(const char *body, size_t len)
     xSemaphoreGive(s_check_mutex);
     free(resp.data);
     return status;
-}
-
-// --- Diagnostic latency probe (issue #329) --------------------------
-
-// Synthetic number for the probe's /api/check-prefix call. Exercises
-// the real spam-lookup path (hashing, three k-anonymity buckets,
-// streaming JSON parse) without querying a real subscriber. Never
-// reported: phoneblock_check() does not POST /api/report-call.
-#define PROBE_SYNTHETIC_NUMBER "+490000000000"
-
-static void phases_add(api_phases_t *acc, const api_phases_t *p)
-{
-    acc->connect_us  += p->connect_us;
-    acc->request_us  += p->request_us;
-    acc->wait_us     += p->wait_us;
-    acc->download_us += p->download_us;
-    acc->total_us    += p->total_us;
-}
-
-// Appends one formatted phase line to report[pos..cap). Returns the new
-// position, clamped to cap-1 so the buffer stays NUL-terminable.
-static size_t probe_append(char *report, size_t pos, size_t cap,
-                           const char *tag, const api_phases_t *p)
-{
-    if (pos >= cap) return cap - 1;
-    int n = snprintf(report + pos, cap - pos,
-        "%-6s total=%4lld connect=%4lld request=%3lld wait=%4lld download=%4lld (ms)\n",
-        tag,
-        (long long)(p->total_us    / 1000), (long long)(p->connect_us  / 1000),
-        (long long)(p->request_us  / 1000), (long long)(p->wait_us     / 1000),
-        (long long)(p->download_us / 1000));
-    if (n < 0) return pos;
-    pos += (size_t)n;
-    return pos < cap ? pos : cap - 1;
-}
-
-int api_run_probe(int rounds, char *report, size_t cap)
-{
-    if (!report || cap == 0) return 0;
-    if (rounds < 1) rounds = 1;
-    if (rounds > 5) rounds = 5;
-
-    report[0] = '\0';
-    size_t pos = 0;
-    int n = snprintf(report, cap, "PROBE issue#329 rounds=%d\n", rounds);
-    if (n > 0) pos = (size_t)n < cap ? (size_t)n : cap - 1;
-
-    api_phases_t test_sum = {0}, check_sum = {0};
-    int measured = 0;
-    char tag[8];
-
-    for (int r = 1; r <= rounds; r++) {
-        api_phases_t pt = {0};
-        phoneblock_selftest(&pt);
-        phases_add(&test_sum, &pt);
-        snprintf(tag, sizeof(tag), "test%d", r);
-        pos = probe_append(report, pos, cap, tag, &pt);
-        measured++;
-
-        api_phases_t pc = {0};
-        phoneblock_check(PROBE_SYNTHETIC_NUMBER, NULL, &pc);
-        phases_add(&check_sum, &pc);
-        snprintf(tag, sizeof(tag), "chk%d", r);
-        pos = probe_append(report, pos, cap, tag, &pc);
-        measured++;
-    }
-
-    if (rounds > 1) {
-        api_phases_t ta = test_sum, ca = check_sum;
-        ta.connect_us /= rounds; ta.request_us /= rounds; ta.wait_us /= rounds;
-        ta.download_us /= rounds; ta.total_us /= rounds;
-        ca.connect_us /= rounds; ca.request_us /= rounds; ca.wait_us /= rounds;
-        ca.download_us /= rounds; ca.total_us /= rounds;
-        pos = probe_append(report, pos, cap, "AVGtst", &ta);
-        pos = probe_append(report, pos, cap, "AVGchk", &ca);
-    }
-
-    report[pos < cap ? pos : cap - 1] = '\0';
-    return measured;
 }
 
 bool phoneblock_verify_auth_code(const char *code, const char *state,

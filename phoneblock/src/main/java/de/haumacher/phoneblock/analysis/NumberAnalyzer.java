@@ -82,7 +82,7 @@ public class NumberAnalyzer {
 	 * Removes grouping characters from the given phone number.
 	 */
 	public static String normalizeNumber(String phoneNumber) {
-		return NORMALIZE_PATTERN.matcher(phoneNumber).replaceAll("");
+		return NORMALIZE_PATTERN.matcher(phoneNumber.strip()).replaceAll("");
 	}
 
 	/**

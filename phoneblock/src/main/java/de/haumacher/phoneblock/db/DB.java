@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -34,6 +35,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -165,6 +167,22 @@ public class DB {
 
 	private List<ScheduledFuture<?>> _tasks = new ArrayList<>();
 
+	/**
+	 * /100 prefixes touched by a vote/report/call since the last {@link #drainDirtyBlocks()} run
+	 * (#300 follow-up). Multiple signals in the same /100 coalesce to a single background recompute.
+	 */
+	private final Set<String> _dirtyHundreds = ConcurrentHashMap.newKeySet();
+
+	/**
+	 * Serialises the writers of the {@code NUMBERS_AGGREGATION_*} tables — the periodic full sweep
+	 * ({@link #recomputeBlockAggregation}) and the dirty-set drain ({@link #drainDirtyBlocks()}) — so
+	 * they never clash on the shared aggregation rows. Both run off the request path.
+	 */
+	private final Object _aggregationLock = new Object();
+
+	/** Interval of the background {@link #drainDirtyBlocks()} worker (#300 follow-up). */
+	private static final long BLOCK_DIRTY_DRAIN_INTERVAL_MS = 5_000L;
+
 	private MailService _mailService;
 
 	private DBConfig _config;
@@ -212,7 +230,11 @@ public class DB {
 
 		 Date timeHistory = schedule(0, this::runActivityRetention);
 		 LOG.info("Scheduled activity-ledger retention: " + timeHistory);
-		 
+
+		 _tasks.add(_scheduler.scheduler().scheduleWithFixedDelay(this::drainDirtyBlocks,
+			 BLOCK_DIRTY_DRAIN_INTERVAL_MS, BLOCK_DIRTY_DRAIN_INTERVAL_MS, TimeUnit.MILLISECONDS));
+		 LOG.info("Scheduled block-aggregation dirty-set drain every {} ms.", BLOCK_DIRTY_DRAIN_INTERVAL_MS);
+
 		 if (_config.isSendHelpMails() && _mailService != null) {
 			 Date supportMails = schedule(18, this::sendSupportMails);
 			 LOG.info("Scheduled support mails: " + supportMails);
@@ -749,6 +771,10 @@ public class DB {
 			return null;
 		}
 
+		// The USERAGENT column is NOT NULL; clients may omit the User-Agent header.
+		// Normalize here so the change detection and the DB update below never see null.
+		userAgent = nonNullUA(userAgent);
+
 		try {
 			TokenInfo tokenInfo = TokenInfo.parse(token);
 
@@ -809,7 +835,7 @@ public class DB {
 				return new AuthContext(result, userSettings);
 			}
 		} catch (IOException | RuntimeException e) {
-			LOG.info("Failed to parse authorization token '{}': {}", token, e.getMessage());
+			LOG.warn("Failed to parse authorization token '{}': {}", token, e.getMessage());
 			return null;
 		}
 	}
@@ -962,10 +988,11 @@ public class DB {
 			reports.mergeActivity(phone, epochDay(time), 0, 0, absVotes);
 		}
 
-		// #300 follow-up: rebuild this number's /100 block aggregation now (real-time, scoped to the
-		// touched /100), counting how many of its numbers are *currently* spam. The daily sweep
-		// (recomputeBlockAggregation) handles only the silent decay of blocks that get no votes.
-		recomputeBlockForNumber(reports, phone, time);
+		// #300 follow-up: mark this number's /100 block dirty so the background drainDirtyBlocks()
+		// worker recomputes its aggregation off the request path (was a synchronous recompute here,
+		// which held the NUMBERS row lock across a range scan+rewrite and raced with concurrent
+		// writers). The periodic recomputeBlockAggregation sweep reconciles any drift.
+		markBlockDirty(phone);
 
 		if (votes > 0) {
 			updateLocalization(reports, phone, dialPrefix, 0, 0, votes, heatInc, spamEvidenceInc, time);
@@ -1081,7 +1108,7 @@ public class DB {
 			updateLocalization(reports, phone, dialPrefix, 0, 0, 0, 0.0, spamNeg, now);
 		}
 		updatePhoneHashVisibility(reports, phone, hash);
-		recomputeBlockForNumber(reports, phone, now);
+		markBlockDirty(phone);
 	}
 
 	// Removed: pingRelatedNumbers (#91). Bumping LASTPING on all spam
@@ -1114,36 +1141,92 @@ public class DB {
 	public void recomputeBlockAggregation(long now) {
 		double minNetRaw = Ema.projectedThreshold(MIN_MEMBER_VOTES - 0.5, now, Ema.CLASSIFICATION_TAU_MILLIS);
 
-		try (SqlSession session = openSession()) {
-			SpamReports reports = session.getMapper(SpamReports.class);
+		synchronized (_aggregationLock) {
+			try (SqlSession session = openSession()) {
+				SpamReports reports = session.getMapper(SpamReports.class);
 
-			List<AggregationInfo> tens = reports.aggregateMembersByTen(minNetRaw);
+				List<AggregationInfo> tens = reports.aggregateMembersByTen(minNetRaw);
 
-			reports.clearAggregation10();
-			reports.clearAggregation100();
+				reports.clearAggregation10();
+				reports.clearAggregation100();
 
-			int[] blocks = writeBlocksFromTens(reports, tens);
+				int[] blocks = writeBlocksFromTens(reports, tens);
 
-			session.commit();
-			LOG.info("Recomputed block aggregation: {} /10 blocks, {} /100 blocks (from {} populated /10).",
-				blocks[0], blocks[1], tens.size());
+				session.commit();
+				LOG.info("Recomputed block aggregation: {} /10 blocks, {} /100 blocks (from {} populated /10).",
+					blocks[0], blocks[1], tens.size());
+			}
 		}
 	}
 
 	/**
-	 * Incremental, real-time rebuild of the single /100 block touching the given number (#300
-	 * follow-up). Same computation as {@link #recomputeBlockAggregation} but scoped to one /100, so
-	 * a newly forming spam block is detected at vote time without waiting for the daily sweep. The
-	 * sweep stays responsible only for the silent decay of blocks that get no further votes.
+	 * Rebuilds the aggregation of a single /100 block from the current {@code NUMBERS} evidence (#300
+	 * follow-up). Same computation as {@link #recomputeBlockAggregation} but scoped to one /100.
+	 * Invoked only by the background {@link #drainDirtyBlocks()} worker (serialised via
+	 * {@link #_aggregationLock}), never from a request thread.
 	 */
-	void recomputeBlockForNumber(SpamReports reports, String phone, long now) {
-		String p100 = prefix100(phone);
+	void recomputeBlockForHundred(SpamReports reports, String p100, long now) {
 		double minNetRaw = Ema.projectedThreshold(MIN_MEMBER_VOTES - 0.5, now, Ema.CLASSIFICATION_TAU_MILLIS);
 
 		List<AggregationInfo> tens = reports.aggregateMembersByTenForHundred(p100, minNetRaw);
 		reports.clearAggregation10ForHundred(p100);
 		reports.clearAggregation100ForHundred(p100);
 		writeBlocksFromTens(reports, tens);
+	}
+
+	/**
+	 * Marks the /100 block containing {@code phone} as dirty so the background
+	 * {@link #drainDirtyBlocks()} worker recomputes its aggregation off the request path (#300
+	 * follow-up). Replaces the former synchronous per-vote recompute, which held the touched
+	 * {@code NUMBERS} row lock across a wide range scan+rewrite and raced with concurrent writers on
+	 * the shared aggregation tables. This is a cheap in-memory {@code Set.add} — no DB access, no
+	 * lock — so it adds no contention to the request path.
+	 */
+	private void markBlockDirty(String phone) {
+		_dirtyHundreds.add(prefix100(phone));
+	}
+
+	/**
+	 * Recomputes the aggregation of every /100 marked dirty since the last run, off the request path
+	 * and serialised against the full sweep (#300 follow-up). Coalescing keeps the work proportional
+	 * to the number of distinct touched blocks. On failure the batch is re-queued; the periodic
+	 * {@link #recomputeBlockAggregation} sweep is the ultimate backstop for any missed update.
+	 *
+	 * <p>Public so tests can drain deterministically instead of waiting for the timer.</p>
+	 */
+	public void drainDirtyBlocks() {
+		if (_dirtyHundreds.isEmpty()) {
+			return;
+		}
+
+		Set<String> batch = new HashSet<>();
+		for (Iterator<String> it = _dirtyHundreds.iterator(); it.hasNext();) {
+			batch.add(it.next());
+			it.remove();
+		}
+		if (batch.isEmpty()) {
+			return;
+		}
+
+		long now = System.currentTimeMillis();
+		synchronized (_aggregationLock) {
+			try (SqlSession session = openSession()) {
+				SpamReports reports = session.getMapper(SpamReports.class);
+				for (String p100 : batch) {
+					// Commit per /100: each block becomes visible as soon as it is recomputed, the
+					// aggregation-table lock is held only briefly, and a single failing block does not
+					// discard the others (only it is re-queued). The periodic full sweep reconciles.
+					try {
+						recomputeBlockForHundred(reports, p100, now);
+						session.commit();
+					} catch (RuntimeException ex) {
+						session.rollback();
+						_dirtyHundreds.add(p100);
+						LOG.error("Block aggregation drain failed for /100 {}; will retry.", p100, ex);
+					}
+				}
+			}
+		}
 	}
 
 	/**
@@ -2642,9 +2725,10 @@ public class DB {
 		// pure search carries no hash, and recordCall's UPDATE branch would not set it.
 		updatePhoneHashVisibility(reports, phoneId, hash);
 
-		// Per-region signal (#340) and real-time block rebuild for the touched /100 (#300
-		// follow-up) — a call report can push a block over the spam gate just like a vote.
-		recomputeBlockForNumber(reports, phoneId, now);
+		// Per-region signal (#340) and block rebuild for the touched /100 (#300 follow-up) — a call
+		// report can push a block over the spam gate just like a vote. The recompute is deferred to
+		// the background drainDirtyBlocks() worker (off the request path); see markBlockDirty.
+		markBlockDirty(phoneId);
 		updateLocalization(reports, phoneId, dialPrefix, 0, 1, 0, heatInc, evidenceInc, now);
 	}
 

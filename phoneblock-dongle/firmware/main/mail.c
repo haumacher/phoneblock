@@ -28,6 +28,9 @@
 #include "time_sync.h"
 #include "wifi.h"
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 static const char *TAG = "mail";
 
 // Same heap headroom rationale as crashreport.c / logreport.c: the TLS
@@ -319,17 +322,34 @@ static bool mail_send(const char *subject, const char *content_type, const char 
     ret = smtp_cmd(&c, "DATA\r\n", deadline);
     if (ret != 354) goto done;
 
+    // RFC 5322 Date header, in UTC so it is independent of the configured
+    // timezone. Without it, receiving clients (e.g. Thunderbird) fall back to
+    // the arrival time or show no send date at all (issue #488). Emitted only
+    // when the clock is SNTP-synced; the "C" locale that ESP-IDF/newlib use by
+    // default makes strftime's %a/%b the English abbreviations the RFC wants.
+    // If the clock is unset the header is omitted and the receiving MTA adds
+    // its own Date — better than stamping a bogus time.
+    char date_hdr[48] = "";
+    if (time_sync_valid()) {
+        time_t    now = (time_t)time_sync_now_epoch();
+        struct tm gmt;
+        gmtime_r(&now, &gmt);
+        strftime(date_hdr, sizeof(date_hdr),
+                 "Date: %a, %d %b %Y %H:%M:%S +0000\r\n", &gmt);
+    }
+
     // Header block + body. UTF-8 body declared via Content-Type; the
     // Subject stays ASCII so no encoded-word is needed.
     {
         int hlen = snprintf(buf, MAIL_LINE_CAP,
+            "%s"
             "From: PhoneBlock Dongle <%s>\r\n"
             "To: <%s>\r\n"
             "Subject: %s\r\n"
             "MIME-Version: 1.0\r\n"
             "Content-Type: %s\r\n"
             "\r\n",
-            from, to, subject, content_type);
+            date_hdr, from, to, subject, content_type);
         if (hlen < 0 || chan_write_all(&c, (unsigned char *)buf, (size_t)hlen,
                                        deadline) != 0)
             goto done;
@@ -481,7 +501,7 @@ static size_t append_calls_html(char *body, size_t cap, size_t len,
     for (int i = 0; i < ncalls && len < cap - 400; i++) {
         const stats_call_t *c = &calls[i];
         char when[24]; format_event_time(c->at_us, when, sizeof(when));
-        char vl[48];   verdict_label(c, vl, sizeof(vl));
+        char vl[64];   verdict_label(c, vl, sizeof(vl));
         // API-checked entries carry a PhoneBlock label/location; phone-book
         // and internal-code entries fall back to the raw number/display.
         bool checked     = c->label[0] != '\0';

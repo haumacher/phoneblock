@@ -1,5 +1,8 @@
 #include "audio.h"
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 // Straight implementation of the ITU-T G.711 A-law encoder:
 // 13-bit magnitude → 3-bit segment + 4-bit mantissa → XOR with 0x55
 // to flip even bits (and the sign bit for positives). Matches the

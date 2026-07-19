@@ -6,6 +6,9 @@
 #include "freertos/semphr.h"
 #include "esp_timer.h"
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 // All mutable state lives here and is guarded by s_mutex. Callers
 // either record an event (briefly lock, mutate, unlock) or take a
 // snapshot (briefly lock, memcpy, unlock). Snapshots mean the web

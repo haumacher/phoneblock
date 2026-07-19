@@ -7,7 +7,7 @@ CFLAGS  ?= -Wall -Wextra -Werror -O0 -g -I../main
 IDF_PATH ?= $(HOME)/tools/esp/esp-idf
 CJSON_DIR := $(IDF_PATH)/components/json/cJSON
 
-BINS = test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_tr064_parse test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_version_cmp
+BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_version_cmp test_net_local
 
 test_sip_parse: test_sip_parse.c ../main/sip_parse.c ../main/sip_parse.h \
                 ../main/audio.c ../main/audio.h
@@ -25,6 +25,9 @@ test_sip_auth: test_sip_auth.c ../main/sip_auth.c ../main/sip_auth.h
 
 test_tr064_parse: test_tr064_parse.c ../main/tr064_parse.c ../main/tr064_parse.h
 	$(CC) $(CFLAGS) test_tr064_parse.c ../main/tr064_parse.c -o $@
+
+test_phone_norm: test_phone_norm.c ../main/phone_norm.c ../main/phone_norm.h
+	$(CC) $(CFLAGS) test_phone_norm.c ../main/phone_norm.c -o $@
 
 test_log_capture: test_log_capture.c ../main/log_capture.c ../main/log_capture.h
 	$(CC) $(CFLAGS) test_log_capture.c ../main/log_capture.c -o $@
@@ -52,6 +55,21 @@ test_mail_html: test_mail_html.c ../main/mail_html.c ../main/mail_html.h
 
 test_version_cmp: test_version_cmp.c ../main/version_cmp.c ../main/version_cmp.h
 	$(CC) $(CFLAGS) test_version_cmp.c ../main/version_cmp.c -o $@
+
+test_net_local: test_net_local.c ../main/net_local.c ../main/net_local.h
+	$(CC) $(CFLAGS) test_net_local.c ../main/net_local.c -o $@
+
+# strbuf.h is header-only; build its test with AddressSanitizer so any overrun
+# of the (malloc'd) destination buffer aborts.
+test_strbuf: test_strbuf.c ../main/strbuf.h
+	$(CC) $(CFLAGS) -fsanitize=address test_strbuf.c -o $@
+
+# Built with AddressSanitizer: this test exists to catch buffer overruns in
+# the SIP response builder, so the sanitizer must be active for it to mean
+# anything. sip_response.c / the test define _GNU_SOURCE themselves (memmem).
+test_sip_response: test_sip_response.c ../main/sip_response.c ../main/sip_response.h \
+                   ../main/sip_parse.c ../main/sip_parse.h ../main/audio.c
+	$(CC) $(CFLAGS) -fsanitize=address test_sip_response.c ../main/sip_response.c ../main/sip_parse.c ../main/audio.c -o $@
 
 test: $(BINS)
 	@set -e; for b in $(BINS); do echo "→ $$b"; ./$$b; done

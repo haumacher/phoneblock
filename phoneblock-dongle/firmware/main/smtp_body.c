@@ -2,6 +2,9 @@
 
 #include <string.h>
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 int smtp_encode_body(const char *body, smtp_body_sink sink, void *ctx)
 {
     for (const char *p = body; *p; ) {

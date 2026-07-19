@@ -40,6 +40,9 @@
 #include "tr064.h"
 #include "web_auth.h"
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 static const char *TAG = "web";
 
 static httpd_handle_t s_server = NULL;
@@ -55,6 +58,12 @@ static httpd_handle_t s_server = NULL;
 } while (0)
 #define REQUIRE_AUTH_API(req) do { \
     if (!web_auth_required((req), true)) return ESP_OK; \
+} while (0)
+// For the intentionally-public routes: LAN-only when the gate is off,
+// fully public when it is on (so remote login works). See
+// docs/network-access-control.md.
+#define REQUIRE_LOCAL_HTML(req) do { \
+    if (!web_public_allowed((req), false)) return ESP_OK; \
 } while (0)
 
 // In-flight OAuth provisioning state: a random nonce set by
@@ -101,8 +110,10 @@ static struct {
 // Embedded via EMBED_FILES in CMakeLists.txt; the linker emits
 // _binary_<file>_<ext>_{start,end} symbols which we alias to friendlier
 // C names.
-extern const uint8_t index_html_start[] asm("_binary_index_html_start");
-extern const uint8_t index_html_end[]   asm("_binary_index_html_end");
+// The dashboard SPA is embedded gzip-compressed (see main/CMakeLists.txt) and
+// served with Content-Encoding: gzip. Symbol name follows the .gz filename.
+extern const uint8_t index_html_gz_start[] asm("_binary_index_html_gz_start");
+extern const uint8_t index_html_gz_end[]   asm("_binary_index_html_gz_end");
 
 extern const uint8_t ab_logo_bot_svg_start[] asm("_binary_ab_logo_bot_svg_start");
 extern const uint8_t ab_logo_bot_svg_end[]   asm("_binary_ab_logo_bot_svg_end");
@@ -196,6 +207,7 @@ static void set_pna_response_headers(httpd_req_t *req)
 
 static esp_err_t handle_pna_preflight(httpd_req_t *req)
 {
+    REQUIRE_LOCAL_HTML(req);
     char origin[64];
     if (httpd_req_get_hdr_value_str(req, "Origin", origin, sizeof(origin)) != ESP_OK
             || !pna_origin_allowed(origin)) {
@@ -232,6 +244,7 @@ static esp_err_t handle_pna_preflight(httpd_req_t *req)
 
 static esp_err_t handle_favicon(httpd_req_t *req)
 {
+    REQUIRE_LOCAL_HTML(req);
     httpd_resp_set_type(req, "image/svg+xml");
     httpd_resp_set_hdr(req, "Cache-Control", "public, max-age=31536000, immutable");
     return httpd_resp_send(req, (const char *)ab_logo_bot_svg_start,
@@ -240,15 +253,23 @@ static esp_err_t handle_favicon(httpd_req_t *req)
 
 static esp_err_t handle_root(httpd_req_t *req)
 {
-    // Intentionally NOT gated. The SPA shell is harmless static markup
-    // and contains both the dashboard and the in-page login state; it
-    // chooses between them at runtime based on a 200/401 from the
-    // gated /api/status. Gating "/" here would break the in-page login
-    // bounce, since web_auth_required redirects HTML routes to "/".
+    // Locality-gated but NOT auth-gated. The SPA shell is harmless static
+    // markup and contains both the dashboard and the in-page login state;
+    // it chooses between them at runtime based on a 200/401 from the gated
+    // /api/status. Auth-gating "/" would break the in-page login bounce
+    // (web_auth_required redirects HTML routes to "/"). REQUIRE_LOCAL_HTML
+    // still keeps a gate-off dongle from serving the shell to a remote
+    // scanner, while staying fully public once the gate is on so remote
+    // login works.
+    REQUIRE_LOCAL_HTML(req);
     set_pna_response_headers(req);
     httpd_resp_set_type(req, "text/html; charset=utf-8");
-    httpd_resp_send(req, (const char *)index_html_start,
-                    index_html_end - index_html_start);
+    // Served pre-compressed. Every browser that reaches this dashboard sends
+    // "Accept-Encoding: gzip", so we emit gzip unconditionally rather than
+    // embedding a second uncompressed copy (which would defeat the saving).
+    httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
+    httpd_resp_send(req, (const char *)index_html_gz_start,
+                    index_html_gz_end - index_html_gz_start);
     return ESP_OK;
 }
 
@@ -400,6 +421,7 @@ static esp_err_t handle_status(httpd_req_t *req)
     cJSON_AddNumberToObject(syn, "last_ago_s", (double)ago_s);
     cJSON_AddNumberToObject(syn, "last_pushed", ss.last_pushed);
     cJSON_AddNumberToObject(syn, "last_failed", ss.last_failed);
+    cJSON_AddNumberToObject(syn, "last_skipped", ss.last_skipped);
     cJSON_AddStringToObject(syn, "last_error", ss.last_error);
 
     cJSON *bl = cJSON_AddObjectToObject(root, "blocklist");

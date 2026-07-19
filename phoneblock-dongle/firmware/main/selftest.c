@@ -8,6 +8,9 @@
 #include "config.h"
 #include "logreport.h"
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 static const char *TAG = "selftest";
 
 void selftest_run(void)

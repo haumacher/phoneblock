@@ -5,6 +5,9 @@
 #include <string.h>
 #include <strings.h>
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 const char *find_header(const char *msg, int msg_len, const char *name)
 {
     size_t name_len = strlen(name);

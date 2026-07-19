@@ -4,6 +4,9 @@
 
 #include "cJSON.h"
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 void api_scan_init(api_scan_t *s, const char *phone)
 {
     memset(s, 0, sizeof(*s));

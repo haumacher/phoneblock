@@ -11,6 +11,9 @@
 
 #include "config.h"
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 static const char *TAG = "announcement";
 
 // No announcement is baked into the firmware anymore (issue #460): the

@@ -3,7 +3,7 @@
 
 	<groupId>de.haumacher</groupId>
 	<artifactId>phoneblock-parent</artifactId>
-	<version>3.2.2-SNAPSHOT</version>
+	<version>3.2.5-SNAPSHOT</version>
 	
 	<name>PhoneBlock Aggregator</name>
 	<description>Maven aggregator building all parts of PhoneBlock</description>

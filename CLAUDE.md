@@ -288,6 +288,38 @@ rc baseline plus only the target feature's hunks, dropping every reference to
 the unrelated change, then validate with a full `idf.py build` **and** the host
 test suite (`cd phoneblock-dongle/firmware/test && make test`) before pushing.
 
+### Dongle Firmware: Building Strings Safely
+
+**Never assemble a string with a running `snprintf` offset** — i.e. avoid
+`n += snprintf(buf + n, cap - n, ...)`. `snprintf` returns the length it
+*would* have written, so an over-long field pushes `n` past the buffer; the
+next call then gets a negative `cap - n` (a huge `size_t`) and overruns the
+allocation. This is exactly the heap-corruption bug fixed in the SIP response
+builder.
+
+For any **multi-step append**, use the bounded builder in
+`phoneblock-dongle/firmware/main/strbuf.h`:
+
+```c
+strbuf_t sb = sb_init(buf, sizeof(buf));
+sb_appendf(&sb, "REGISTER %s SIP/2.0\r\n", uri);
+sb_appendf(&sb, "Call-ID: %s\r\n", call_id);
+if (sb.truncated) { /* all-or-nothing: drop the message */ }
+int len = sb.len;                 // bytes written; buf is NUL-terminated
+```
+
+`sb_appendf()` never advances past the buffer (memory-safe by construction,
+however long the inputs) and records `sb.truncated`. Callers for whom a
+partial result is invalid (SIP messages — a dropped header is malformed, and
+on TCP a missing Content-Length mis-frames) check `sb.truncated` and send
+nothing; callers for whom a clamped result is fine (URLs, log lines) ignore it.
+
+A single bounded write — `snprintf(dst, sizeof dst, ...)` with the result
+checked or intentionally ignored — is fine; only the accumulator pattern is
+banned. `sprintf`/`vsprintf`/`strcat`/`gets` are hard-banned at compile time
+via `main/banned_apis.h` (included last in every `.c`); using one is a
+"poisoned" compile error that points you here.
+
 ### Database Migrations
 
 When adding schema changes:
@@ -377,13 +409,13 @@ Java `ResourceBundle` keys used by the web app live in `phoneblock/src/main/java
 
 - **Only edit `Messages_de.properties`** — it is the source of truth.
 - **All other `Messages_<lang>.properties` files are auto-generated via DeepL** — never edit them directly.
-- Translation is run via the `tl-maven-plugin` (`com.top-logic:tl-maven-plugin:translate`) with the `with-deepl` profile. Eclipse launch: `phoneblock/bin/Translate PhoneBlock Resources.launch`.
-- Manual command-line trigger (uses the `translate-messages` execution configured in `phoneblock/pom.xml`, so the plugin version is taken from there):
+- Translation runs automatically during the build (`process-resources`) via the `tl-maven-plugin`'s `translate-messages` execution — **but only when the `with-deepl` profile is active.** That profile is opt-in per developer (it needs a DeepL API key and the TopLogic Nexus, which are not in the repo); enable it locally in `~/.m2/settings.xml` with a `deepl` server holding the key plus `<activeProfiles>with-deepl</activeProfiles>`. With that in place, editing `Messages_de.properties` and rebuilding keeps all bundles in sync — no separate step. Eclipse launch: `phoneblock/bin/Translate PhoneBlock Resources.launch`.
+- To translate explicitly without a full build:
   ```bash
   cd phoneblock
   mvn -Pwith-deepl com.top-logic:tl-maven-plugin:translate@translate-messages -N
   ```
-- After adding/changing a key in `Messages_de.properties`, run the translation before committing so all language bundles stay in sync (otherwise the runtime throws `MissingResourceException`).
+- If you build **without** `with-deepl` enabled, the bundles are not regenerated — run the translation above before committing so all languages stay in sync (otherwise the runtime throws `MissingResourceException`).
 
 ### Mobile App Internationalization (phoneblock_mobile/)
 

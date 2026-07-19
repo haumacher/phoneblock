@@ -3,6 +3,7 @@
  */
 package de.haumacher.phoneblock.db;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -172,6 +173,27 @@ public class TestDB {
 		AuthContext context = _db.checkAuthToken(token, time, userAgent, renew);
 		assertNotNull(context);
 		return context.getAuthorization();
+	}
+
+	/**
+	 * Tests that a request without a {@code User-Agent} header (null user agent) does not
+	 * violate the NOT NULL constraint on the USERAGENT column when the token is updated.
+	 */
+	@Test
+	void testAuthTokenWithoutUserAgent() {
+		_db.createUser("ua-user", "UA User", "de", "+49");
+
+		long time = 1000;
+		AuthToken token = _db.createLoginToken("ua-user", time++, "creating-browser");
+
+		// Skip rate limit so the update path (which writes USERAGENT) is exercised.
+		time += DB.RATE_LIMIT_MS;
+
+		// A client omitting the User-Agent header yields a null user agent; this used to
+		// crash with "NULL not allowed for column USERAGENT".
+		AuthContext context = _db.checkAuthToken(token.getToken(), time++, null, true);
+		assertNotNull(context);
+		assertEquals("-", context.getAuthorization().getUserAgent());
 	}
 
 	@Test
@@ -507,6 +529,8 @@ public class TestDB {
 			_db.recordCall(reports, blocklist, userId, number, id, "+49", now);
 			tx.commit();
 		}
+		// Drain the deferred block-aggregation recompute so tests see the effect immediately.
+		_db.drainDirtyBlocks();
 	}
 
 	/** Looks up the test user by login, creating it on first use. */
@@ -753,6 +777,39 @@ public class TestDB {
 	}
 
 	/**
+	 * Regression for the /10 aggregation clear boundary (incremental rebuild). A member one digit
+	 * shorter than the number being rated produces a /10 block whose {@code PREFIX} equals the
+	 * incremental rebuild's own /100 scope. {@link SpamReports#clearAggregation10ForHundred} must
+	 * clear that boundary row with an inclusive lower bound; a strict {@code >} leaves it behind and
+	 * {@link DB#writeBlocksFromTens} then collides with it on re-insert (unique-key violation on
+	 * {@code NUMBERS_AGGREGATION_10(PREFIX)}), which surfaced as an HTTP 500 on {@code /api/rate}.
+	 *
+	 * <p>Numbers are synthetic (030-1234567…).</p>
+	 */
+	@Test
+	void testIncrementalRebuildClearsBoundaryTenBlock() {
+		long now = System.currentTimeMillis();
+
+		// Four 11-digit members sharing the 10-digit prefix "0301234567" form a /10 concentration
+		// block with PREFIX "0301234567" (written under the 9-digit /100 scope "030123456").
+		processVotes("03012345670", 2, now);
+		processVotes("03012345671", 2, now);
+		processVotes("03012345672", 2, now);
+		processVotes("03012345673", 2, now);
+		assertTrue(wildcardVotes("03012345679") > 0, "four members -> /10 '0301234567' is a block");
+
+		// Rating a 12-digit number in the same range runs the incremental rebuild for /100 scope
+		// prefix100("030123456700") == "0301234567" — exactly the existing /10 block's prefix. The
+		// clear must remove that row so the re-insert does not collide. Before the fix this threw a
+		// unique-key violation (JdbcSQLIntegrityConstraintViolationException).
+		assertDoesNotThrow(() -> processVotes("030123456700", 2, now),
+			"incremental rebuild must clear the boundary /10 row before re-inserting it");
+
+		// The /10 block survives the rebuild intact.
+		assertTrue(wildcardVotes("03012345679") > 0, "/10 block intact after incremental rebuild");
+	}
+
+	/**
 	 * The prev/next navigation on the number page must skip numbers whose
 	 * classification has decayed so far that the displayed vote count rounds to
 	 * 0 — landing on such a faded number would show an empty page (#300).
@@ -886,6 +943,9 @@ public class TestDB {
 
 	private void processVotes(String phone, int votes, long time) {
 		_db.processVotes(NumberAnalyzer.analyze(phone, "+49"), "+49", votes, time);
+		// Block aggregation is now recomputed off the request path; drain synchronously so tests
+		// observe the block state deterministically instead of waiting for the timer.
+		_db.drainDirtyBlocks();
 	}
 
 	/** Raw EMA columns straight from NUMBERS — for confidence-model assertions (#332). */
@@ -1425,6 +1485,8 @@ public class TestDB {
 
 	private void addRating(String userName, String phoneId, Rating rating, String comment, long now) {
 		_db.addRating(userName, NumberAnalyzer.analyze(phoneId, "+49"), "+49", rating, comment, "de", now);
+		// Drain the deferred block-aggregation recompute so tests see the effect immediately.
+		_db.drainDirtyBlocks();
 	}
 
 	public List<? extends UserComment> getComments(String phone) {

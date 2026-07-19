@@ -21,6 +21,9 @@
 #include "ticks_util.h"
 #include "time_sync.h"
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 static const char *TAG = "scheduler";
 
 // 24 h between scheduled runs, with ±30 min skew so a fleet-wide power

@@ -12,6 +12,9 @@
 #include "stats.h"
 #include "wifi.h"
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 static const char *TAG = "logreport";
 
 // Same heap headroom rationale as crashreport.c: a full TLS handshake to

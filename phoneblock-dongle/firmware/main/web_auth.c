@@ -11,6 +11,10 @@
 #include "api.h"
 #include "config.h"
 #include "web.h"
+#include "web_access.h"
+
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
 
 static const char *TAG = "web_auth";
 
@@ -182,10 +186,38 @@ bool web_auth_is_logged_in(httpd_req_t *req)
     return web_auth_session_valid(req);
 }
 
+// Refuse a remote caller reaching a gate-off dongle. 403 with a hint to
+// enable authentication for remote access (see docs/network-access-
+// control.md). API routes get JSON, HTML routes a short page.
+static void reject_remote(httpd_req_t *req, bool is_api)
+{
+    httpd_resp_set_status(req, "403 Forbidden");
+    if (is_api) {
+        httpd_resp_set_type(req, "application/json");
+        httpd_resp_sendstr(req, "{\"ok\":false,\"reason\":\"local_only\"}");
+    } else {
+        httpd_resp_set_type(req, "text/html; charset=utf-8");
+        httpd_resp_sendstr(req,
+            "<!doctype html><meta charset=utf-8>"
+            "<title>PhoneBlock Dongle</title>"
+            "<p>This dongle only answers requests from the local network. "
+            "To reach it remotely, enable authentication "
+            "(\"Login with PhoneBlock\") in its settings from a device on "
+            "the same network first.</p>");
+    }
+}
+
 bool web_auth_required(httpd_req_t *req, bool is_api)
 {
-    // Open access while the gate is off — the typical setup case.
-    if (!config_auth_enabled()) return true;
+    if (!config_auth_enabled()) {
+        // Gate off: LAN-only. Serve local clients (direct or via a
+        // trusted local reverse proxy); refuse remote peers outright.
+        if (web_client_is_local(req)) return true;
+        reject_remote(req, is_api);
+        return false;
+    }
+    // Gate on: authenticated access, from anywhere (a valid session
+    // cookie tied to the pinned PhoneBlock account is the credential).
     if (web_auth_session_valid(req)) return true;
 
     if (is_api) {
@@ -200,6 +232,20 @@ bool web_auth_required(httpd_req_t *req, bool is_api)
         httpd_resp_set_hdr(req, "Location", "/");
         httpd_resp_send(req, NULL, 0);
     }
+    return false;
+}
+
+bool web_public_allowed(httpd_req_t *req, bool is_api)
+{
+    // Intentionally-public routes (the SPA shell, favicon, the login
+    // handshake, the PNA preflight). When the gate is on they must be
+    // reachable from wherever the user browses so login works. When the
+    // gate is off they are LAN-only, like everything else — a remote
+    // scanner should not even be able to fingerprint the device or begin
+    // an activation it could never complete.
+    if (config_auth_enabled()) return true;
+    if (web_client_is_local(req)) return true;
+    reject_remote(req, is_api);
     return false;
 }
 
@@ -233,6 +279,10 @@ static bool pct_encode(const char *src, char *dst, size_t cap)
 
 esp_err_t web_auth_handle_start(httpd_req_t *req)
 {
+    // LAN-only while the gate is off — activation must be initiated from
+    // the local network, so a remote party can never pin the gate to
+    // their own account.
+    if (!web_public_allowed(req, false)) return ESP_OK;
     // The "activate=1" query flag persists across the round-trip via
     // s_login_activates; only the dongle UI passes it. The CSRF
     // nonce is stored alongside so we can match it on the callback.
@@ -327,6 +377,9 @@ static esp_err_t redirect_login_error(httpd_req_t *req, const char *code,
 
 esp_err_t web_auth_handle_callback(httpd_req_t *req)
 {
+    // Same locality rule as /auth/start: while the gate is off the
+    // callback completing an *activation* must come from the LAN.
+    if (!web_public_allowed(req, false)) return ESP_OK;
     char query[1024];
     if (httpd_req_get_url_query_str(req, query, sizeof(query)) != ESP_OK) {
         ESP_LOGW(TAG, "auth/callback: missing query");
@@ -432,6 +485,7 @@ esp_err_t web_auth_handle_callback(httpd_req_t *req)
 
 esp_err_t web_auth_handle_logout(httpd_req_t *req)
 {
+    if (!web_public_allowed(req, false)) return ESP_OK;
     char id[SESSION_ID_HEX + 1];
     if (get_cookie_session(req, id, sizeof(id))) {
         lock();
