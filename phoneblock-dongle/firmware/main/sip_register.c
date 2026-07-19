@@ -26,6 +26,7 @@
 #include "report_queue.h"
 #include "sip_parse.h"
 #include "sip_response.h"
+#include "strbuf.h"
 #include "sip_auth.h"
 #include "sip_transport.h"
 #include "sip_srv.h"
@@ -478,7 +479,8 @@ static int build_register(sip_ctx_t *c, char *buf, int cap, bool with_auth)
         instance[0] = '\0';
     }
 
-    int n = snprintf(buf, cap,
+    strbuf_t sb = sb_init(buf, cap);
+    sb_appendf(&sb,
         "REGISTER %s SIP/2.0\r\n"
         "Via: SIP/2.0/%s %s:%d;branch=z9hG4bK%s;rport\r\n"
         "Max-Forwards: 70\r\n"
@@ -514,7 +516,7 @@ static int build_register(sip_ctx_t *c, char *buf, int cap, bool with_auth)
             qop, nc, cnonce,
             response);
 
-        n += snprintf(buf + n, cap - n,
+        sb_appendf(&sb,
             "Authorization: Digest username=\"%s\", realm=\"%s\", "
             "nonce=\"%s\", uri=\"%s\", response=\"%s\", algorithm=%s",
             auth_user, realm,
@@ -522,19 +524,21 @@ static int build_register(sip_ctx_t *c, char *buf, int cap, bool with_auth)
             response, c->challenge.algorithm);
 
         if (qop[0]) {
-            n += snprintf(buf + n, cap - n,
+            sb_appendf(&sb,
                 ", qop=%s, nc=%s, cnonce=\"%s\"",
                 qop, nc, cnonce);
         }
         if (c->challenge.opaque[0]) {
-            n += snprintf(buf + n, cap - n,
+            sb_appendf(&sb,
                 ", opaque=\"%s\"", c->challenge.opaque);
         }
-        n += snprintf(buf + n, cap - n, "\r\n");
+        sb_appendf(&sb, "\r\n");
     }
 
-    n += snprintf(buf + n, cap - n, "Content-Length: 0\r\n\r\n");
-    return n;
+    sb_appendf(&sb, "Content-Length: 0\r\n\r\n");
+    // A truncated REGISTER would be malformed; report it un-buildable so the
+    // caller doesn't put a partial request on the wire.
+    return sb.truncated ? -1 : sb.len;
 }
 
 // ---------------------------------------------------------------------------
@@ -652,6 +656,12 @@ static register_outcome_t do_register(sip_ctx_t *c, int *granted_expires,
     register_outcome_t result = REGISTER_DEFINITIVE;
     c->cseq++;
     int tx_len = build_register(c, tx, SIP_TX_BUF_SIZE, false);
+    if (tx_len < 0) {
+        ESP_LOGE(TAG, "REGISTER exceeds %d-byte buffer", SIP_TX_BUF_SIZE);
+        if (err) snprintf(err, err_cap, "REGISTER aborted: request too large");
+        result = REGISTER_DEFINITIVE;
+        goto cleanup;
+    }
     ESP_LOGI(TAG, "→ REGISTER (%d bytes):\n%.*s", tx_len, tx_len, tx);
     int rx_len = sip_send_recv(c, tx, tx_len, rx, SIP_RX_BUF_SIZE);
     if (rx_len < 0) {
@@ -720,6 +730,14 @@ static register_outcome_t do_register(sip_ctx_t *c, int *granted_expires,
     for (int stale_retry = 0; ; stale_retry++) {
         c->cseq++;
         tx_len = build_register(c, tx, SIP_TX_BUF_SIZE, true);
+        if (tx_len < 0) {
+            ESP_LOGE(TAG, "REGISTER (with auth) exceeds %d-byte buffer",
+                     SIP_TX_BUF_SIZE);
+            if (err) snprintf(err, err_cap,
+                "REGISTER aborted: authenticated request too large");
+            result = REGISTER_DEFINITIVE;
+            goto cleanup;
+        }
         ESP_LOGI(TAG, "→ REGISTER with auth (%d bytes):\n%.*s",
                  tx_len, tx_len, tx);
         rx_len = sip_send_recv(c, tx, tx_len, rx, SIP_RX_BUF_SIZE);
@@ -860,7 +878,8 @@ static int build_sdp_body(const char *fallback_ip, const dialog_t *d,
     const char *ip = (d && d->media_ip[0]) ? d->media_ip : fallback_ip;
     int port       = (d && d->media_port > 0) ? d->media_port : config_rtp_port();
 
-    int n = snprintf(out, cap,
+    strbuf_t sb = sb_init(out, cap);
+    sb_appendf(&sb,
         "v=0\r\n"
         "o=phoneblock-dongle 0 0 IN IP4 %s\r\n"
         "s=-\r\n"
@@ -878,14 +897,14 @@ static int build_sdp_body(const char *fallback_ip, const dialog_t *d,
         if (mbedtls_base64_encode((unsigned char *)key_b64, sizeof(key_b64),
                                   &b64_len, d->srtp_tx_key,
                                   RTP_SRTP_KEY_LEN) == 0) {
-            n += snprintf(out + n, cap - n,
+            sb_appendf(&sb,
                 "a=crypto:%d AES_CM_128_HMAC_SHA1_80 inline:%.*s\r\n",
                 d->srtp_tag, (int)b64_len, key_b64);
         }
     }
 
-    n += snprintf(out + n, cap - n, "a=sendrecv\r\n");
-    return n;
+    sb_appendf(&sb, "a=sendrecv\r\n");
+    return sb.len;
 }
 
 // Decide the IP:port to advertise as our media endpoint in the SDP answer,

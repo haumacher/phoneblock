@@ -20,6 +20,7 @@
 
 #include "config.h"
 #include "http_util.h"
+#include "strbuf.h"
 #include "scheduler.h"
 
 static const char *TAG = "blsync";
@@ -252,8 +253,9 @@ static bool sync_one(const char *type, const char *path, const char *tmp_path,
     unlink(path);
 
     char url[256];
-    int n = snprintf(url, sizeof(url), "%s/api/blocklist?format=binary&type=%s",
-                     config_phoneblock_base_url(), type);
+    strbuf_t ub = sb_init(url, sizeof(url));
+    sb_appendf(&ub, "%s/api/blocklist?format=binary&type=%s",
+               config_phoneblock_base_url(), type);
 
     // The community list carries no per-entry vote counts, so the server
     // applies our two thresholds at encode time. Send them so the
@@ -261,14 +263,14 @@ static bool sync_one(const char *type, const char *path, const char *tmp_path,
     // (api.c: direct >= min_direct, wildcard >= min_range) would decide.
     // The personal list is the user's explicit black/white set — no
     // thresholding, so no parameters.
-    if (strcmp(type, "community") == 0 && n > 0 && (size_t) n < sizeof(url)) {
+    if (strcmp(type, "community") == 0) {
         // maxBytes lets the server cap the (size-unbounded) community list to
         // our free flash: it keeps all wildcards + whitelist and truncates the
         // Heat-ranked direct numbers to fit. minDirect/minRange keep the
         // encoded verdict identical to the API-fallback path.
-        snprintf(url + n, sizeof(url) - n, "&minDirect=%d&minRange=%d&maxBytes=%lld",
-                 config_min_direct_votes(), config_min_range_votes(),
-                 (long long) community_budget_bytes());
+        sb_appendf(&ub, "&minDirect=%d&minRange=%d&maxBytes=%lld",
+                   config_min_direct_votes(), config_min_range_votes(),
+                   (long long) community_budget_bytes());
     }
 
     unlink(tmp_path);

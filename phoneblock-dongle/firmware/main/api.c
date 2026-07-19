@@ -16,6 +16,7 @@
 #include "mbedtls/sha1.h"
 
 #include "api_scan.h"
+#include "strbuf.h"
 #include "config.h"
 #include "http_util.h"
 #include "stats.h"
@@ -350,15 +351,11 @@ verdict_t phoneblock_check(const char *phone_number, pb_check_result_t *out,
     }
 
     char url[256];
-    int n = snprintf(url, sizeof(url),
-                     "%s/api/check-prefix?sha1=%s&format=json",
-                     config_phoneblock_base_url(), hash_full);
-    if (have_p10 && n < (int)sizeof(url)) {
-        n += snprintf(url + n, sizeof(url) - n, "&prefix10=%s", hash_p10);
-    }
-    if (have_p100 && n < (int)sizeof(url)) {
-        n += snprintf(url + n, sizeof(url) - n, "&prefix100=%s", hash_p100);
-    }
+    strbuf_t ub = sb_init(url, sizeof(url));
+    sb_appendf(&ub, "%s/api/check-prefix?sha1=%s&format=json",
+               config_phoneblock_base_url(), hash_full);
+    if (have_p10)  sb_appendf(&ub, "&prefix10=%s", hash_p10);
+    if (have_p100) sb_appendf(&ub, "&prefix100=%s", hash_p100);
 
     char auth_header[128];
     snprintf(auth_header, sizeof(auth_header), "Bearer %s", config_phoneblock_token());
