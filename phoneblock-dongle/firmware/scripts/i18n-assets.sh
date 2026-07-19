@@ -63,6 +63,13 @@ CDN_BASE="${CDN_BASE:-/public_html/cdn/dongle}"
 CDN_FIRMWARE="${CDN_BASE}/firmware"
 # CDN_I18N (the firmware/<version>/i18n dir) is computed once VERSION is known.
 
+# The upload runs unattended, so SSH must never block on a prompt: BatchMode
+# turns a missing key/passphrase into an immediate "Permission denied" instead
+# of a passphrase prompt that hangs forever, and refuses an unknown host key
+# rather than waiting on a yes/no; ConnectTimeout bounds a dead/slow host.
+# (Set up ssh-agent + a known_hosts entry for $CDN_HOST once, as for release.sh.)
+SSH_OPTS=(-o BatchMode=yes -o ConnectTimeout=20)
+
 # --- signing payload domain tag (must equal i18n_sync.c) -------------------
 SIG_DOMAIN=$'phoneblock-dongle-i18n-v1\n'
 
@@ -261,8 +268,8 @@ fi
 run() { if [[ $DRY_RUN -eq 1 ]]; then printf '+ %s\n' "$*"; else "$@"; fi; }
 sftp_batch() {
     local script; script="$(cat)"
-    if [[ $DRY_RUN -eq 1 ]]; then printf '+ sftp -b - %s <<EOF\n%s\nEOF\n' "$CDN_HOST" "$script"
-    else printf '%s\n' "$script" | sftp -b - "$CDN_HOST"; fi
+    if [[ $DRY_RUN -eq 1 ]]; then printf '+ sftp %s -b - %s <<EOF\n%s\nEOF\n' "${SSH_OPTS[*]}" "$CDN_HOST" "$script"
+    else printf '%s\n' "$script" | sftp "${SSH_OPTS[@]}" -b - "$CDN_HOST"; fi
 }
 
 if [[ $NO_UPLOAD -eq 1 ]]; then
@@ -283,9 +290,9 @@ if [[ $NO_UPLOAD -eq 0 || $DRY_RUN -eq 1 ]]; then
 -mkdir ${CDN_I18N}/mail
 -mkdir ${CDN_I18N}/ui
 SFTP
-    run scp "${ASSETS}"/audio/*    "${CDN_HOST}:${CDN_I18N}/audio/"
-    run scp "${ASSETS}"/mail/*     "${CDN_HOST}:${CDN_I18N}/mail/"
-    run scp "${ASSETS}"/ui/*.json  "${CDN_HOST}:${CDN_I18N}/ui/"
+    run scp "${SSH_OPTS[@]}" "${ASSETS}"/audio/*    "${CDN_HOST}:${CDN_I18N}/audio/"
+    run scp "${SSH_OPTS[@]}" "${ASSETS}"/mail/*     "${CDN_HOST}:${CDN_I18N}/mail/"
+    run scp "${SSH_OPTS[@]}" "${ASSETS}"/ui/*.json  "${CDN_HOST}:${CDN_I18N}/ui/"
     sftp_batch <<SFTP
 put ${ASSETS}/manifest.json      ${CDN_I18N}/manifest.json.tmp
 put ${ASSETS}/manifest.json.sig  ${CDN_I18N}/manifest.json.sig.tmp
