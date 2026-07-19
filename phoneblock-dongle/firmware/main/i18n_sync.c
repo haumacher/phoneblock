@@ -517,12 +517,12 @@ static void run_once(void)
     // meanwhile the embedded English UI/mail and silent announcement cover it.)
     prune_stale(lang);
 
-    bool ok = true;
-    if (!sync_kind_chain(assets, "announcement", base, ann_path, ann_chain, acn,
-                         err, sizeof(err))) {
-        ESP_LOGW(TAG, "announcement sync: %s", err);
-        ok = false;
-    }
+    // Download order is chosen for perceived responsiveness: the UI pack FIRST
+    // (a browser waiting on the language switch re-renders as soon as it lands,
+    // ~24 KB), then the small mail pack, and the big announcement (~80-96 KB)
+    // LAST — it is only needed on the next answered call, so it must not delay
+    // the visible UI update.
+    //
     // Mail and UI packs both have an embedded ENGLISH fallback (mail_i18n.c /
     // web.c), so they download ONLY the active locale's pack — no en/de chain.
     // If it isn't published, download nothing and use the embedded English. (A
@@ -530,16 +530,25 @@ static void run_once(void)
     // English fallback.) en itself is embedded, so downloading it is redundant
     // but harmless — the manifest publishes every locale uniformly.
     const char *single_chain[1] = { lang };
+    bool ok = true;
+    if (!sync_kind_chain(assets, "ui", base, ui_path, single_chain, 1,
+                         err, sizeof(err))) {
+        ESP_LOGW(TAG, "ui pack sync: %s", err);
+        ok = false;
+    }
     char err2[64] = "";
     if (!sync_kind_chain(assets, "mail", base, mail_path, single_chain, 1,
                          err2, sizeof(err2))) {
         ESP_LOGW(TAG, "mail pack sync: %s", err2);
         if (ok) { ok = false; strncpy(err, err2, sizeof(err) - 1); }
     }
+    // The announcement has no embedded fallback (silence), so it uses the
+    // [ui_lang, en, de] chain built above; downloaded last (biggest, least
+    // time-critical).
     char err3[64] = "";
-    if (!sync_kind_chain(assets, "ui", base, ui_path, single_chain, 1,
+    if (!sync_kind_chain(assets, "announcement", base, ann_path, ann_chain, acn,
                          err3, sizeof(err3))) {
-        ESP_LOGW(TAG, "ui pack sync: %s", err3);
+        ESP_LOGW(TAG, "announcement sync: %s", err3);
         if (ok) { ok = false; strncpy(err, err3, sizeof(err) - 1); }
     }
 
