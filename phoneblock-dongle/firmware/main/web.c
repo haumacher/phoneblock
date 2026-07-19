@@ -451,6 +451,9 @@ static esp_err_t handle_status(httpd_req_t *req)
     // UI reconciles its own localStorage pick against this so mail/audio
     // and the page agree; "de" when the user never changed it.
     cJSON_AddStringToObject(root, "ui_lang", config_ui_lang());
+    // Whether ui_lang is a real user choice or still the "en" default — the web
+    // UI auto-selects the browser's language on first contact when unset.
+    cJSON_AddBoolToObject(root, "ui_lang_set", config_ui_lang_is_set());
 
     cJSON *cnt = cJSON_AddObjectToObject(root, "counters");
     cJSON_AddNumberToObject(cnt,  "total",        c.total_calls);

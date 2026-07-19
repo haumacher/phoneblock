@@ -299,7 +299,7 @@ void config_load(void)
         s_config.mail_on_update[0] = '\0';   // empty → default on (see getter)
         s_config.last_failed_ota[0] = '\0';
         copy_default(s_config.timezone, sizeof(s_config.timezone), CONFIG_DONGLE_DEFAULT_TZ);
-        s_config.ui_lang[0] = '\0';   // empty → default "de" (see getter)
+        s_config.ui_lang[0] = '\0';   // empty → default "en" (see getter)
         return;
     }
     if (err != ESP_OK) {
@@ -480,8 +480,19 @@ bool config_lang_code_valid(const char *code)
 const char *config_ui_lang(void)
 {
     // Clamp on read, mirroring config_ota_channel(): a blank or corrupt NVS
-    // value can never redirect an asset download to an arbitrary path.
-    return config_lang_code_valid(s_config.ui_lang) ? s_config.ui_lang : "de";
+    // value can never redirect an asset download to an arbitrary path. The
+    // default is English (the universal fallback used everywhere else — the
+    // embedded UI/mail packs and the download fallback chain), so a headless
+    // dongle that no browser ever configured mails and answers in English
+    // rather than assuming German.
+    return config_lang_code_valid(s_config.ui_lang) ? s_config.ui_lang : "en";
+}
+// Whether a valid UI language was ever explicitly configured (vs. running on
+// the default). The web UI uses this to auto-select the browser's language on
+// first contact without overriding a real user choice.
+bool config_ui_lang_is_set(void)
+{
+    return config_lang_code_valid(s_config.ui_lang);
 }
 bool        config_auto_update_enabled(void)
 {
