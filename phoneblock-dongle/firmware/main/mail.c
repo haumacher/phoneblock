@@ -317,17 +317,34 @@ static bool mail_send(const char *subject, const char *content_type, const char 
     ret = smtp_cmd(&c, "DATA\r\n", deadline);
     if (ret != 354) goto done;
 
+    // RFC 5322 Date header, in UTC so it is independent of the configured
+    // timezone. Without it, receiving clients (e.g. Thunderbird) fall back to
+    // the arrival time or show no send date at all (issue #488). Emitted only
+    // when the clock is SNTP-synced; the "C" locale that ESP-IDF/newlib use by
+    // default makes strftime's %a/%b the English abbreviations the RFC wants.
+    // If the clock is unset the header is omitted and the receiving MTA adds
+    // its own Date — better than stamping a bogus time.
+    char date_hdr[48] = "";
+    if (time_sync_valid()) {
+        time_t    now = (time_t)time_sync_now_epoch();
+        struct tm gmt;
+        gmtime_r(&now, &gmt);
+        strftime(date_hdr, sizeof(date_hdr),
+                 "Date: %a, %d %b %Y %H:%M:%S +0000\r\n", &gmt);
+    }
+
     // Header block + body. UTF-8 body declared via Content-Type; the
     // Subject stays ASCII so no encoded-word is needed.
     {
         int hlen = snprintf(buf, MAIL_LINE_CAP,
+            "%s"
             "From: PhoneBlock Dongle <%s>\r\n"
             "To: <%s>\r\n"
             "Subject: %s\r\n"
             "MIME-Version: 1.0\r\n"
             "Content-Type: %s\r\n"
             "\r\n",
-            from, to, subject, content_type);
+            date_hdr, from, to, subject, content_type);
         if (hlen < 0 || chan_write_all(&c, (unsigned char *)buf, (size_t)hlen,
                                        deadline) != 0)
             goto done;
