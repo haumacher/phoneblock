@@ -229,6 +229,7 @@ void app_main(void)
     // ESP_OTA_IMG_PENDING_VERIFY and need this confirmation.
     const esp_partition_t *running = esp_ota_get_running_partition();
     esp_ota_img_states_t ota_state;
+    bool fw_just_updated = false;
     if (running != NULL
             && esp_ota_get_state_partition(running, &ota_state) == ESP_OK
             && ota_state == ESP_OTA_IMG_PENDING_VERIFY) {
@@ -240,7 +241,9 @@ void app_main(void)
         // a USB factory flash lands VALID and is skipped. This is the true
         // "the firmware was just updated" signal, so latch a one-shot
         // notification mail for the scheduler to send once Wi-Fi/SMTP are up
-        // (see mail_report_update).
+        // (see mail_report_update), and refresh this version's localized
+        // assets promptly rather than at the usual 3 min slot.
+        fw_just_updated = true;
         const esp_app_desc_t *app = esp_app_get_description();
         if (app != NULL) mail_note_update(app->version);
     }
@@ -318,5 +321,5 @@ void app_main(void)
     // skip-until-configured / user-toggle gates, and the daily
     // last_failed_ota guard (cleared above on a healthy boot) still
     // keeps a brick-and-rollback build from being re-tried in a loop.
-    scheduler_start();
+    scheduler_start(fw_just_updated);
 }

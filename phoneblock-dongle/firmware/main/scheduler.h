@@ -18,7 +18,11 @@
 
 // Spawn the scheduler task (idempotent). Initialises the sync subsystem's
 // status mutex before starting, so a web-UI snapshot is safe immediately.
-void scheduler_start(void);
+// Start the scheduler task. Pass i18n_refresh_soon=true when this boot is the
+// first after a firmware update (see main.c): the localized-asset sync then
+// runs shortly after boot instead of at its usual ~3 min slot, so a new
+// release picks up its version's announcement / mail / UI packs promptly.
+void scheduler_start(bool i18n_refresh_soon);
 
 // Ask the scheduler to run the blocklist sync as soon as possible,
 // bypassing the auto-sync toggle (manual intent from the web UI). Wakes

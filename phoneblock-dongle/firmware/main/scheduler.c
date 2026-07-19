@@ -298,7 +298,7 @@ void scheduler_notify_time_synced(void)
     if (s_task) xTaskNotify(s_task, NOTIFY_TIME, eSetBits);
 }
 
-void scheduler_start(void)
+void scheduler_start(bool i18n_refresh_soon)
 {
     if (s_task) return;
     // Create the sync / blocklist status mutexes before the task (or any
@@ -306,6 +306,13 @@ void scheduler_start(void)
     sync_init();
     blocklist_sync_init();
     i18n_sync_init();
+    // First boot after a firmware update: pull this version's localized assets
+    // ~30 s after boot (enough for Wi-Fi/DHCP to come up) instead of the usual
+    // 3 min, so the new release's announcement / mail / UI refresh promptly.
+    if (i18n_refresh_soon) {
+        for (size_t i = 0; i < JOB_COUNT; i++)
+            if (s_jobs[i].run == run_i18n) s_jobs[i].first_delay_s = 30;
+    }
     // 16 KB: sized for the heaviest job, the status-mail send. Its SMTP
     // client runs the mbedTLS handshake with full cert-chain verification
     // inline on this stack (esp_crt_bundle + ssl_config/entropy/drbg as
