@@ -119,6 +119,12 @@ public class CreateAuthTokenServlet extends HttpServlet {
 				redirectUrl = ServletUtil.withParam(redirectUrl,
 					STATE, req.getParameter(STATE));
 				break;
+			case "kallm":
+				redirectUrl = ServletUtil.withParam("kallm://phoneblock-auth",
+					TOKEN_PARAM, loginToken.getToken());
+				redirectUrl = ServletUtil.withParam(redirectUrl,
+					STATE, req.getParameter(STATE));
+				break;
 			case APP_ID_DONGLE:
 				redirectUrl = ServletUtil.withParam(callback,
 					TOKEN_PARAM, loginToken.getToken());
