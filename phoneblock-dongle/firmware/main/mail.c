@@ -1,5 +1,6 @@
 #include "mail.h"
 
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,6 +21,7 @@
 #include "mbedtls/ssl.h"
 
 #include "config.h"
+#include "mail_i18n.h"
 #include "mail_html.h"
 #include "smtp_body.h"
 #include "stats.h"
@@ -378,40 +380,58 @@ static void format_event_time(int64_t at_us, char *out, size_t cap)
     }
 }
 
+// snprintf whose format string is a localized (runtime) i18n value rather
+// than a compile-time literal. The format always comes from our own
+// mail_i18n table / signature-verified pack — never user input — so the
+// -Wformat-nonliteral this would otherwise trip is suppressed here, in one
+// audited place, instead of at every call site.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+static void mail_fmt(char *out, size_t cap, const char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    vsnprintf(out, cap, fmt, ap);
+    va_end(ap);
+}
+#pragma GCC diagnostic pop
+
 // Verdict label matching the web UI's wording (status.calls.verdict.* in
-// index.html). Both surfaces render the same pb_assessment_t, so keep the
-// wording here and the i18n strings there in lock-step.
+// index.html). Both surfaces render the same pb_assessment_t; the wording
+// lives in mail_i18n (compiled German fallback + downloaded pack) and must
+// stay in lock-step with the UI i18n strings.
 static void verdict_label(const stats_call_t *c, char *out, size_t cap)
 {
-    const char *scope = c->wildcard ? "Bereich" : "Nummer";
+    const char *scope = c->wildcard ? mail_i18n_str("verdict.scope.range")
+                                    : mail_i18n_str("verdict.scope.number");
     switch (c->assessment) {
     case PB_ASSESS_BLACKLIST:
-        snprintf(out, cap, "SPAM (Blacklist, %s)", scope);
+        mail_fmt(out, cap, mail_i18n_str("verdict.spam_blacklist"), scope);
         break;
     case PB_ASSESS_SPAM_LIST:
-        snprintf(out, cap, "SPAM (Blockliste, %s)", scope);
+        mail_fmt(out, cap, mail_i18n_str("verdict.spam_blocklist"), scope);
         break;
     case PB_ASSESS_SPAM:
         // Test-forced spam carries no counts (both 0) — show plain "SPAM".
         if (c->direct_votes == 0 && c->range_votes == 0)
-            snprintf(out, cap, "SPAM");
+            snprintf(out, cap, "%s", mail_i18n_str("verdict.spam"));
         else
-            snprintf(out, cap, "SPAM (%d direkt, %d Range)",
+            mail_fmt(out, cap, mail_i18n_str("verdict.spam_votes"),
                      c->direct_votes, c->range_votes);
         break;
     case PB_ASSESS_SUSPECT:
-        snprintf(out, cap, "SPAM-VERDACHT (%d direkt, %d Range)",
+        mail_fmt(out, cap, mail_i18n_str("verdict.spam_suspect"),
                  c->direct_votes, c->range_votes);
         break;
     case PB_ASSESS_LEGITIMATE:
-        snprintf(out, cap, "legitim");
+        snprintf(out, cap, "%s", mail_i18n_str("verdict.legitimate"));
         break;
     case PB_ASSESS_ERROR:
-        snprintf(out, cap, "Fehler");
+        snprintf(out, cap, "%s", mail_i18n_str("verdict.error"));
         break;
     case PB_ASSESS_UNKNOWN:
     default:
-        snprintf(out, cap, "unbekannt");
+        snprintf(out, cap, "%s", mail_i18n_str("verdict.unknown"));
         break;
     }
 }
@@ -421,17 +441,17 @@ static size_t append_summary_html(char *body, size_t cap, size_t len,
                                   const stats_counters_t *cnt)
 {
     int64_t up_s = esp_timer_get_time() / 1000000;
-    char line[320];
+    char uptime[64], counts[192];
+    mail_fmt(uptime, sizeof(uptime), mail_i18n_str("sum.uptime"),
+             (long long)(up_s / 3600), (long long)((up_s % 3600) / 60));
+    mail_fmt(counts, sizeof(counts), mail_i18n_str("sum.calls"),
+             (unsigned)cnt->total_calls, (unsigned)cnt->spam_blocked,
+             (unsigned)cnt->legitimate);
+    char line[400];
     snprintf(line, sizeof(line),
         "<p style=\"font-size:14px;line-height:1.5\">"
-        "Ger&auml;t: <b>%s</b><br>"
-        "Laufzeit: %lldh %lldmin<br>"
-        "Anrufe gesamt: %u &nbsp;|&nbsp; SPAM blockiert: %u &nbsp;|&nbsp; durchgestellt: %u"
-        "</p>",
-        config_device_id(),
-        (long long)(up_s / 3600), (long long)((up_s % 3600) / 60),
-        (unsigned)cnt->total_calls, (unsigned)cnt->spam_blocked,
-        (unsigned)cnt->legitimate);
+        "%s <b>%s</b><br>%s<br>%s</p>",
+        mail_i18n_str("sum.device"), config_device_id(), uptime, counts);
     return append_str(body, cap, len, line);
 }
 
@@ -445,12 +465,20 @@ static size_t append_calls_html(char *body, size_t cap, size_t len,
     if (ncalls <= 0) return len;
     const char *base = config_phoneblock_base_url();
 
-    len = append_str(body, cap, len,
-        "<h3 style=\"font-size:15px;margin:1.2em 0 .3em\">Letzte Anrufe</h3>"
+    char heading[320];
+    snprintf(heading, sizeof(heading),
+        "<h3 style=\"font-size:15px;margin:1.2em 0 .3em\">%s</h3>"
         "<table cellpadding=\"5\" cellspacing=\"0\" "
         "style=\"border-collapse:collapse;font-size:14px\">"
-        "<tr style=\"text-align:left;color:#555;border-bottom:1px solid #ccc\">"
-        "<th>Zeit</th><th>Nummer</th><th>Name</th><th>Bewertung</th></tr>");
+        "<tr style=\"text-align:left;color:#555;border-bottom:1px solid #ccc\">",
+        mail_i18n_str("calls.heading"));
+    len = append_str(body, cap, len, heading);
+    char hrow[192];
+    snprintf(hrow, sizeof(hrow),
+        "<th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr>",
+        mail_i18n_str("calls.time"), mail_i18n_str("calls.number"),
+        mail_i18n_str("calls.name"), mail_i18n_str("calls.rating"));
+    len = append_str(body, cap, len, hrow);
 
     for (int i = 0; i < ncalls && len < cap - 400; i++) {
         const stats_call_t *c = &calls[i];
@@ -507,9 +535,12 @@ static size_t append_log_html(char *body, size_t cap, size_t len,
                  : (e->level == ESP_LOG_WARN)  ? 'W' : 0;
         if (!lvl) continue;
         if (!header) {
-            len = append_str(body, cap, len,
-                "<h3 style=\"font-size:15px;margin:1.2em 0 .3em\">Neue Meldungen im Protokoll</h3>"
-                "<pre style=\"font-size:13px;white-space:pre-wrap;word-break:break-word;margin:0\">");
+            char hd[256];
+            snprintf(hd, sizeof(hd),
+                "<h3 style=\"font-size:15px;margin:1.2em 0 .3em\">%s</h3>"
+                "<pre style=\"font-size:13px;white-space:pre-wrap;word-break:break-word;margin:0\">",
+                mail_i18n_str("log.heading"));
+            len = append_str(body, cap, len, hd);
             header = true;
         }
         char when[24];
@@ -536,16 +567,20 @@ static size_t build_status_html(char *body, size_t cap,
                                 int64_t since_us, int64_t *newest_us,
                                 bool include_log, int new_calls)
 {
-    size_t len = append_str(body, cap, 0,
+    char intro[224];
+    snprintf(intro, sizeof(intro),
         "<html><body style=\"font-family:Arial,Helvetica,sans-serif;color:#222\">"
-        "<p>Statusmeldung deines PhoneBlock-Dongles.</p>");
+        "<p>%s</p>", mail_i18n_str("intro"));
+    size_t len = append_str(body, cap, 0, intro);
     len = append_summary_html(body, cap, len, cnt);
     if (new_calls > 0) {
-        char line[160];
-        snprintf(line, sizeof(line), new_calls == 1
-            ? "<p>Seit der letzten Meldung ist <b>1</b> neuer Anruf eingegangen.</p>"
-            : "<p>Seit der letzten Meldung sind <b>%d</b> neue Anrufe eingegangen.</p>",
-            new_calls);
+        char sentence[192], line[224];
+        if (new_calls == 1)
+            snprintf(sentence, sizeof(sentence), "%s", mail_i18n_str("newcalls.one"));
+        else
+            mail_fmt(sentence, sizeof(sentence), mail_i18n_str("newcalls.many"),
+                     new_calls);
+        snprintf(line, sizeof(line), "<p>%s</p>", sentence);
         len = append_str(body, cap, len, line);
     }
     len = append_calls_html(body, cap, len, calls, ncalls);
@@ -606,9 +641,9 @@ void mail_daily_flush(void)
                       have_new_calls ? new_calls : 0);
 
     const char *subject =
-        (have_new_error && have_new_calls) ? "PhoneBlock-Dongle: Fehler und neue Anrufe"
-      : have_new_error                     ? "PhoneBlock-Dongle: Fehler im Protokoll"
-      :                                      "PhoneBlock-Dongle: Neue Anrufe";
+        (have_new_error && have_new_calls) ? mail_i18n_str("subj.error_and_calls")
+      : have_new_error                     ? mail_i18n_str("subj.error")
+      :                                      mail_i18n_str("subj.calls");
 
     if (mail_send(subject, MAIL_BODY_CT, body)) {
         // Advance the marks only after a confirmed send, so a failure
@@ -639,7 +674,7 @@ bool mail_send_test(void)
     build_status_html(body, MAIL_BODY_CAP, &cnt, calls, ncalls, errs, n,
                       0, &newest, true, 0);
 
-    bool ok = mail_send("PhoneBlock-Dongle: Statusmeldung", MAIL_BODY_CT, body);
+    bool ok = mail_send(mail_i18n_str("subj.status"), MAIL_BODY_CT, body);
     free(body);
     return ok;
 }
@@ -673,40 +708,48 @@ void mail_report_update(void)
     // address that is guaranteed reachable on the LAN) and the version links
     // to that release's changelog. Each link degrades to plain text when its
     // target is unavailable (no IP / a dev build with no changelog page).
-    size_t len = append_str(body, MAIL_BODY_CAP, 0,
+    char intro[224];
+    snprintf(intro, sizeof(intro),
         "<html><body style=\"font-family:Arial,Helvetica,sans-serif;color:#222\">"
-        "<p>Die Firmware auf deinem ");
+        "<p>%s", mail_i18n_str("update.intro1"));
+    size_t len = append_str(body, MAIL_BODY_CAP, 0, intro);
 
     char ip[16];
     if (wifi_get_ip_str(ip, sizeof(ip))) {
         len = append_str(body, MAIL_BODY_CAP, len, "<a href=\"http://");
         len = append_html_escaped(body, MAIL_BODY_CAP, len, ip);
         len = append_str(body, MAIL_BODY_CAP, len,
-            "/\" target=\"_blank\" rel=\"noopener\">PhoneBlock-Dongle</a>");
+            "/\" target=\"_blank\" rel=\"noopener\">");
+        len = append_str(body, MAIL_BODY_CAP, len, mail_i18n_str("update.link"));
+        len = append_str(body, MAIL_BODY_CAP, len, "</a>");
     } else {
-        len = append_str(body, MAIL_BODY_CAP, len, "PhoneBlock-Dongle");
+        len = append_str(body, MAIL_BODY_CAP, len, mail_i18n_str("update.link"));
     }
 
-    len = append_str(body, MAIL_BODY_CAP, len, " wurde auf ");
+    len = append_str(body, MAIL_BODY_CAP, len, mail_i18n_str("update.intro2"));
 
     char url[160];
     if (mail_changelog_url(s_update_version, url, sizeof(url))) {
         len = append_str(body, MAIL_BODY_CAP, len, "<a href=\"");
         len = append_html_escaped(body, MAIL_BODY_CAP, len, url);
         len = append_str(body, MAIL_BODY_CAP, len,
-            "\" target=\"_blank\" rel=\"noopener\">Version ");
+            "\" target=\"_blank\" rel=\"noopener\">");
+        len = append_str(body, MAIL_BODY_CAP, len, mail_i18n_str("update.version_prefix"));
         len = append_html_escaped(body, MAIL_BODY_CAP, len, s_update_version);
         len = append_str(body, MAIL_BODY_CAP, len, "</a>");
     } else {
-        len = append_str(body, MAIL_BODY_CAP, len, "Version ");
+        len = append_str(body, MAIL_BODY_CAP, len, mail_i18n_str("update.version_prefix"));
         len = append_html_escaped(body, MAIL_BODY_CAP, len, s_update_version);
     }
 
-    append_str(body, MAIL_BODY_CAP, len, " aktualisiert.</p></body></html>\n");
+    char tail[64];
+    snprintf(tail, sizeof(tail), "%s</p></body></html>\n",
+             mail_i18n_str("update.intro3"));
+    append_str(body, MAIL_BODY_CAP, len, tail);
 
     // Clear the latch only after a confirmed send, so a transient SMTP
     // failure retries on the next mail run instead of losing the notice.
-    if (mail_send("PhoneBlock-Dongle: Firmware aktualisiert", MAIL_BODY_CT, body))
+    if (mail_send(mail_i18n_str("subj.update"), MAIL_BODY_CT, body))
         s_update_pending = false;
     free(body);
 }

@@ -82,6 +82,23 @@ menu "PhoneBlock Dongle"
             Mozilla root CA store (enabled via
             CONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL).
 
+    config PHONEBLOCK_I18N_BASE_URL
+        string "i18n asset base URL"
+        default "https://cdn.phoneblock.net/dongle/i18n"
+        help
+            HTTPS base URL for the localized device assets (issue #460).
+            The firmware fetches "<base>/manifest.json" and its detached
+            signature "<base>/manifest.json.sig", then downloads the
+            announcement audio and status-mail string pack for the selected
+            ui_lang from the paths the manifest lists (resolved relative to
+            this base). Assets are SHA-256-verified against the
+            signature-authenticated manifest.
+
+            The manifest is signed with the same release key as OTA
+            (ECDSA-P256; see scripts/i18n-assets.sh and RELEASE.md). No
+            per-language payload is baked into the firmware, so adding a
+            language is a publish step here, not a firmware change.
+
     config SIP_REGISTRAR_PORT
         int "SIP registrar port"
         default 5060
@@ -188,13 +205,17 @@ menu "PhoneBlock Dongle"
             chip type and this setting is ignored.
 
     config RTP_PLAY_ANNOUNCEMENT
-        bool "Play embedded voice announcement to spam callers"
+        bool "Play voice announcement to spam callers"
         default y
         help
-            When enabled, answered spam calls stream the audio file
-            embedded from main/audio/announcement.alaw to the caller
-            (G.711 A-law, 8 kHz, 20 ms frames) before BYE. Disable to
-            send BYE immediately after ACK (silent pickup, old behavior).
+            When enabled, answered spam calls stream the active
+            announcement to the caller (G.711 A-law, 8 kHz, 20 ms frames)
+            before BYE. The announcement is resolved at call time from
+            SPIFFS: a user-uploaded custom file, else the localized file
+            downloaded from the CDN for the selected ui_lang, else nothing
+            (silent pickup). No announcement is baked into the firmware
+            (issue #460). Disable this to always send BYE immediately after
+            ACK regardless of any stored file.
 
     config CRASH_TEST_ENABLE
         bool "Expose a deliberate-crash button in the web UI (dev only)"

@@ -9,16 +9,24 @@
 #include "esp_log.h"
 #include "esp_spiffs.h"
 
+#include "config.h"
+
 static const char *TAG = "announcement";
 
-// EMBED_FILES in main/CMakeLists.txt makes the linker emit these.
-extern const uint8_t announcement_default_start[] asm("_binary_announcement_alaw_start");
-extern const uint8_t announcement_default_end[]   asm("_binary_announcement_alaw_end");
+// No announcement is baked into the firmware anymore (issue #460): the
+// binary carried a single German recording, which does not scale to the
+// languages the web UI supports. The active announcement is now either a
+// user-uploaded custom file or a localized file downloaded from the CDN for
+// the selected ui_lang (see i18n_sync.c); with neither present the caller
+// answers silently and hangs up (announcement_open returns len == 0).
 
 #define SPIFFS_BASE_PATH  "/spiffs"
 #define SPIFFS_LABEL      "storage"
 #define SPIFFS_FILE       "/spiffs/announcement.alaw"
 #define SPIFFS_TEMP       "/spiffs/announcement.alaw.tmp"
+// Downloaded, per-locale announcement: "/spiffs/announcement-<lang>.alaw".
+#define SPIFFS_LOCALIZED_PREFIX "/spiffs/announcement-"
+#define SPIFFS_LOCALIZED_SUFFIX ".alaw"
 
 static bool     s_spiffs_mounted = false;
 // Latch for "there is no usable custom file" so we don't keep stat()-ing
@@ -61,9 +69,31 @@ static long custom_size(void)
     return (long)st.st_size;
 }
 
-static size_t default_len(void)
+void announcement_localized_path(char *out, size_t cap, const char *lang)
 {
-    return (size_t)(announcement_default_end - announcement_default_start);
+    // lang comes from config_ui_lang(), which only ever returns a
+    // config_lang_code_valid() string — no separators or "..", so this
+    // cannot escape the SPIFFS namespace.
+    snprintf(out, cap, "%s%s%s",
+             SPIFFS_LOCALIZED_PREFIX, lang, SPIFFS_LOCALIZED_SUFFIX);
+}
+
+// Size of the downloaded announcement for the current ui_lang, or -1 if
+// there is none / it is unusable. stat()-only, like custom_size(); not
+// latched because it legitimately changes when the locale is switched or a
+// fresh file is downloaded, and a missing file is the normal (not warned)
+// case here.
+static long localized_size(void)
+{
+    if (!s_spiffs_mounted) return -1;
+    char path[48];
+    announcement_localized_path(path, sizeof(path), config_ui_lang());
+    struct stat st;
+    if (stat(path, &st) != 0) return -1;
+    if (st.st_size <= 0 || (size_t)st.st_size > ANNOUNCEMENT_MAX_BYTES) {
+        return -1;
+    }
+    return (long)st.st_size;
 }
 
 esp_err_t announcement_init(void)
@@ -102,21 +132,34 @@ esp_err_t announcement_open(announcement_src_t *src)
     src->pos  = 0;
     src->len  = 0;
 
+    // Resolution order: user-uploaded custom file > downloaded localized
+    // file for the active locale > nothing (empty source → silent pickup).
+    const char *path = SPIFFS_FILE;
+    char lpath[48];
     long sz = custom_size();
+    if (sz <= 0) {
+        long lsz = localized_size();
+        if (lsz > 0) {
+            announcement_localized_path(lpath, sizeof(lpath), config_ui_lang());
+            path = lpath;
+            sz   = lsz;
+        }
+    }
+
     if (sz > 0) {
-        FILE *f = fopen(SPIFFS_FILE, "rb");
+        FILE *f = fopen(path, "rb");
         if (f) {
             src->file = f;
             src->len  = (size_t)sz;
             return ESP_OK;
         }
-        // Lost the race with a delete, or SPIFFS hiccup: fall through
-        // to the embedded default rather than serving nothing.
-        ESP_LOGW(TAG, "fopen(%s): %s — using embedded default",
-                 SPIFFS_FILE, strerror(errno));
+        // Lost the race with a delete, or a SPIFFS hiccup. There is no
+        // embedded fallback anymore — leave the source empty so the caller
+        // answers silently and goes to BYE rather than serving nothing.
+        ESP_LOGW(TAG, "fopen(%s): %s — no announcement, silent pickup",
+                 path, strerror(errno));
     }
-    src->mem = announcement_default_start;
-    src->len = default_len();
+    src->len = 0;   // no audio available (see announcement.h)
     return ESP_OK;
 }
 
@@ -233,7 +276,7 @@ esp_err_t announcement_reset(void)
     }
     unlink(SPIFFS_TEMP);  // best-effort cleanup of any stale temp
     forget_custom_state();
-    ESP_LOGI(TAG, "announcement reset to embedded default");
+    ESP_LOGI(TAG, "custom announcement reset (localized/silent takes over)");
     return ESP_OK;
 }
 
@@ -242,8 +285,17 @@ bool announcement_is_custom(void)
     return custom_size() > 0;
 }
 
+const char *announcement_source(void)
+{
+    if (custom_size() > 0)    return "custom";
+    if (localized_size() > 0) return "localized";
+    return "none";
+}
+
 size_t announcement_length(void)
 {
     long sz = custom_size();
-    return sz > 0 ? (size_t)sz : default_len();
+    if (sz > 0) return (size_t)sz;
+    sz = localized_size();
+    return sz > 0 ? (size_t)sz : 0;
 }

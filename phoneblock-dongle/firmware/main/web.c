@@ -26,6 +26,7 @@
 #include "announcement.h"
 #include "api.h"
 #include "blocklist_sync.h"
+#include "i18n_sync.h"
 #include "config.h"
 #include "firmware_update.h"
 #include "log_capture.h"
@@ -419,9 +420,15 @@ static esp_err_t handle_status(httpd_req_t *req)
 
     cJSON *ann = cJSON_AddObjectToObject(root, "announcement");
     cJSON_AddBoolToObject  (ann,  "custom",  announcement_is_custom());
+    cJSON_AddStringToObject(ann,  "source",  announcement_source());
     cJSON_AddNumberToObject(ann,  "bytes",   (double)announcement_length());
     cJSON_AddNumberToObject(ann,  "max_bytes", (double)ANNOUNCEMENT_MAX_BYTES);
     cJSON_AddBoolToObject  (ann,  "accept_test_calls", config_accept_test_calls());
+
+    // Locale the device persisted (from the language selector's POST). The
+    // UI reconciles its own localStorage pick against this so mail/audio
+    // and the page agree; "de" when the user never changed it.
+    cJSON_AddStringToObject(root, "ui_lang", config_ui_lang());
 
     cJSON *cnt = cJSON_AddObjectToObject(root, "counters");
     cJSON_AddNumberToObject(cnt,  "total",        c.total_calls);
@@ -624,6 +631,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     char mail_spam_s[4]   = "";
     char mail_upd_s[4]    = "";
     char tz_s[64]         = "";
+    char ui_lang_s[12]    = "";
 
     bool have_sip_host  = form_get(body, "sip_host",  sip_host,  sizeof(sip_host));
     bool have_sip_user  = form_get(body, "sip_user",  sip_user,  sizeof(sip_user));
@@ -666,6 +674,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     bool have_mail_spam  = form_get(body, "mail_on_spam",  mail_spam_s, sizeof(mail_spam_s));
     bool have_mail_upd   = form_get(body, "mail_on_update", mail_upd_s, sizeof(mail_upd_s));
     bool have_tz         = form_get(body, "timezone",      tz_s,        sizeof(tz_s));
+    bool have_ui_lang    = form_get(body, "ui_lang",       ui_lang_s,   sizeof(ui_lang_s));
     free(body);
 
     // POSIX TZ string (e.g. "CET-1CEST,M3.5.0,M10.5.0/3"): accept only a
@@ -711,6 +720,13 @@ static esp_err_t handle_config_post(httpd_req_t *req)
                           strcmp(smtp_sec, "starttls") == 0)) {
         smtp_security = smtp_sec;
     }
+
+    // UI/content locale: accept only a well-formed code (validated the same
+    // way the getter clamps on read), so a malformed POST can never write a
+    // value that the asset-URL / SPIFFS-filename builder would have to
+    // defend against. An unrecognised value is ignored (left unchanged).
+    const char *ui_lang = (have_ui_lang && config_lang_code_valid(ui_lang_s))
+                          ? ui_lang_s : NULL;
 
     config_update_t u = {
         .sip_host   = new_host,
@@ -785,6 +801,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
         .mail_on_spam  = have_mail_spam ? mail_spam_s : NULL,
         .mail_on_update = have_mail_upd ? mail_upd_s  : NULL,
         .timezone      = timezone,
+        .ui_lang       = ui_lang,
     };
 
     // Snapshot the PhoneBlock token before the update so we can detect
@@ -793,6 +810,12 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     char old_token[64];
     strncpy(old_token, config_phoneblock_token(), sizeof(old_token) - 1);
     old_token[sizeof(old_token) - 1] = '\0';
+
+    // Snapshot the locale too: a change means the device needs a different
+    // announcement (and mail pack) from the CDN.
+    char old_lang[12];
+    strncpy(old_lang, config_ui_lang(), sizeof(old_lang) - 1);
+    old_lang[sizeof(old_lang) - 1] = '\0';
 
     esp_err_t err = config_update(&u);
     if (err != ESP_OK) {
@@ -812,6 +835,12 @@ static esp_err_t handle_config_post(httpd_req_t *req)
         // is a no-op when one is already in flight, so this never
         // disrupts an ongoing run.
         blocklist_sync_trigger_now();
+    }
+
+    // Locale changed: pull the matching announcement / mail pack now so the
+    // user doesn't wait for the daily i18n slot. No-op if one is in flight.
+    if (strcmp(old_lang, config_ui_lang()) != 0) {
+        i18n_sync_trigger_now();
     }
 
     // Signal the SIP task to re-register with the new credentials.
