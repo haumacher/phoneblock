@@ -152,6 +152,10 @@ int tr064_parse_phonebook_contacts(char *xml, int xml_len,
     while (remaining > 0) {
         char *open = memmem(p, remaining, "<contact", 8);
         if (!open) break;
+        // Need at least one byte after "<contact" to classify the tag. If the
+        // match sits flush against the buffer end, reading open[8] would run
+        // one past it (and no complete <contact…>…</contact> can follow).
+        if ((open - xml) + 8 >= xml_len) break;
         char after = open[8];
         if (after != '>' && after != ' ' && after != '\t'
             && after != '\r' && after != '\n') {

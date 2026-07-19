@@ -137,7 +137,16 @@ blocklist_t *blocklist_open(const char *path_owned)
         fclose(f);
         return NULL;
     }
+    // Grab the real file size so the header's record counts can be sanity
+    // checked below.
+    long file_size = -1;
+    if (fseek(f, 0, SEEK_END) == 0) {
+        file_size = ftell(f);
+    }
     fclose(f);
+    if (file_size < BLOCKLIST_HEADER_SIZE) {
+        return NULL;
+    }
 
     uint32_t magic = read_u32(hdr);
     if (magic != BLOCKLIST_MAGIC) {
@@ -150,6 +159,18 @@ blocklist_t *blocklist_open(const char *path_owned)
     uint16_t prefix_lengths = read_u16(hdr + 6);
     uint32_t exact_count = read_u32(hdr + 8);
     uint32_t prefix_count = read_u32(hdr + 12);
+
+    // Reject a header whose record counts don't fit the actual file. A corrupt
+    // or hostile count would otherwise drive read_record()'s offset past 2 GiB,
+    // where the (long)off seek truncates on a 32-bit target and reads the wrong
+    // record. Bounding the counts by the real (sub-megabyte) file keeps every
+    // computed offset representable.
+    uint64_t need = (uint64_t)BLOCKLIST_HEADER_SIZE
+                  + ((uint64_t)exact_count + (uint64_t)prefix_count)
+                        * BLOCKLIST_RECORD_SIZE;
+    if (need > (uint64_t)file_size) {
+        return NULL;
+    }
 
     blocklist_t *bl = (blocklist_t *)calloc(1, sizeof(*bl));
     if (bl == NULL) {
