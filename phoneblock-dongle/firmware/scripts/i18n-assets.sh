@@ -102,13 +102,28 @@ done
 
 # The firmware release version. Assets are published co-located with the .bin
 # under firmware/<version>/i18n/, and the device fetches the subtree matching
-# the version it runs. MUST equal the firmware release version (what
-# esp_app_get_description()->version reports). Default to git describe; pass
-# --version explicitly for a clean release tag.
+# the version it runs. MUST equal what the device asks for: the firmware
+# version (esp_app_get_description()->version) after version_release_tag()
+# strips the git-describe build suffix. We derive the version the SAME way the
+# firmware does — release.sh's version.txt if present, else a `dongle-v*` git
+# describe (NOT a bare `git describe`, which in this monorepo picks up the
+# unrelated Maven `3.2.x` web-app tags) — then apply the same suffix stripping.
 if [[ -z "$VERSION" ]]; then
-    VERSION="$(cd "$FW_DIR" && git describe --tags --always 2>/dev/null || true)"
+    if [[ -f "${FW_DIR}/version.txt" ]]; then
+        VERSION="$(cat "${FW_DIR}/version.txt")"
+    else
+        VERSION="$(cd "$FW_DIR" && git describe --tags --match 'dongle-v*' --always --dirty 2>/dev/null || true)"
+        VERSION="${VERSION#dongle-v}"
+    fi
     [[ -z "$VERSION" ]] && die "cannot determine version — pass --version <firmware-version>"
 fi
+# Match version_release_tag() (main/version_cmp.c): drop the "-dirty" flag and
+# the "-<commits>-g<hash>" git-describe suffix, but KEEP an "-rcN" pre-release
+# tag (an rc has its own asset subtree). So 1.5.1-3-gdeadbee-dirty -> 1.5.1,
+# 1.6.0-rc1-2-gabc1234 -> 1.6.0-rc1.
+VERSION="${VERSION%-dirty}"
+VERSION="$(printf '%s' "$VERSION" | sed -E 's/-[0-9]+-g[0-9a-f]+$//')"
+[[ -z "$VERSION" ]] && die "empty version after normalization"
 echo "==> firmware version ${VERSION} (assets go to firmware/${VERSION}/i18n)"
 CDN_I18N="${CDN_FIRMWARE}/${VERSION}/i18n"
 
@@ -185,14 +200,16 @@ while read -r code _rest; do
         echo "   no committed mail translation — falls back to German mail"
     fi
 
-    # UI pack — downloaded by the firmware (like mail) and served same-origin
-    # to the browser, so a configured dongle needs no CDN at runtime. German
-    # is inline in index.html, so there is no de UI pack.
-    if [[ "$code" != "de" && -f "${SRC_DIR}/l10n/ui/ui_${code}.arb" ]]; then
+    # UI pack — downloaded by the firmware and served same-origin, so a
+    # configured dongle needs no CDN at runtime. English is also baked into the
+    # image as the offline fallback, but we still publish EVERY locale listed
+    # (incl. en and de) — uniform pipeline, no special-casing; a device whose
+    # ui_lang has no published pack just keeps serving the embedded English.
+    if [[ -f "${SRC_DIR}/l10n/ui/ui_${code}.arb" ]]; then
         strip_arb "${SRC_DIR}/l10n/ui/ui_${code}.arb" "${ASSETS}/ui/lang-${code}.json"
         add_asset "$code" ui "ui/lang-${code}.json" "${ASSETS}/ui/lang-${code}.json"
-    elif [[ "$code" != "de" ]]; then
-        echo "   no committed UI translation — falls back to German UI"
+    else
+        echo "   no committed UI translation — falls back to English UI"
     fi
 done < "${SRC_DIR}/languages.txt"
 

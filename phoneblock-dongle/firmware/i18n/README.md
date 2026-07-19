@@ -17,23 +17,29 @@ is translated at release time.
   (raw G.711 A-law, 8 kHz mono — exactly what the device streams, the same
   format as the old single `main/audio/announcement.alaw`). Hand-record or
   synthesize each however you like and drop it here; the release script uses
-  it verbatim (a `.wav`/`.mp3`/`.m4a`/`.flac` is converted). A language with
-  no recording ships **text-only** (the device answers silently).
+  it verbatim (a `.wav`/`.mp3`/`.m4a`/`.flac` is converted with ffmpeg). When
+  both a `.alaw` and a source recording (e.g. `announcement-<lang>.mp3`) are
+  committed, the `.alaw` is used verbatim and the source is kept only for
+  re-encoding. A language with no recording ships **text-only** (the device
+  answers silently).
 - `audio/announcement-<lang>.txt` — the **transcript of the recording next to
   it**, co-located with the `.alaw`. Keep it in lock-step with what the audio
   actually says; it's the source when re-recording / re-synthesizing and the
   reference for translating the spoken text to a new language. Not consumed by
   the build.
 - `l10n/` — the **translation project** (see "Translating" below):
-  - `mail/mail_<lang>.arb` — status-mail strings. `mail_de.arb` is the German
-    source (mirrors the compiled fallback in `main/mail_i18n.c`); the other
-    `mail_<lang>.arb` are its translations. Values keep `printf` specifiers
-    (`%d %s %lld %u`) and `<b>` tags.
+  - `mail/mail_<lang>.arb` — status-mail strings. `mail_de.arb` is the single
+    normative German source (edit it directly); the other `mail_<lang>.arb` are
+    its translations. Its English translation `mail_en.arb` is baked into the
+    firmware as the offline fallback (stripped to JSON at build,
+    `main/CMakeLists.txt`), consumed by `main/mail_i18n.c`. Values use ICU
+    `{name}` placeholders (never `printf` specifiers) and may contain `<b>` tags.
   - `ui/ui_<lang>.arb` — web-UI strings. `ui_de.arb` is the single normative
     German UI source (edit it directly — nothing is duplicated in
-    `index.html`); it is baked into the firmware as the offline German fallback
-    (stripped to JSON at build, `main/CMakeLists.txt`) and served at
-    `/api/i18n/ui`. The other `ui_<lang>.arb` are its translations.
+    `index.html`); the other `ui_<lang>.arb` are its translations. Its English
+    translation `ui_en.arb` is baked into the firmware as the offline fallback
+    (most widely understood; stripped to JSON at build, `main/CMakeLists.txt`)
+    and served at `/api/i18n/ui` whenever the active locale's pack is missing.
 - `public.pem` — the release **public** key (same one in `main/manifest_sig.c`);
   used only for the release script's signature self-check.
 
@@ -89,6 +95,6 @@ co-located i18n bundle together. To (re)publish assets on their own:
 `--version` MUST equal the firmware release version (what the device reports
 as `firmware_version`). The only credential needed at release is the OTA
 signing key (KeePassXC, via `../release.settings`) — no translation runs here.
-A missing pack degrades to the firmware's compiled German fallback / the
-browser's inline German. The manifest is signed with the same ECDSA-P256
+A missing pack (UI or mail) degrades to the firmware's embedded English
+fallback for that surface. The manifest is signed with the same ECDSA-P256
 release key as OTA.

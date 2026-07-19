@@ -1469,18 +1469,17 @@ static esp_err_t handle_announcement_get(httpd_req_t *req)
     return ESP_OK;
 }
 
-// The German web-UI strings, baked into the image from i18n/l10n/ui/ui_de.arb
-// (stripped to JSON at build; see main/CMakeLists.txt). This is the single
-// normative German source and the offline fallback — served when no downloaded
-// pack for the active locale is present. TEXT embed → NUL-terminated, so the
-// JSON length is (end - start - 1).
-extern const char ui_de_json_start[] asm("_binary_ui_de_json_start");
-extern const char ui_de_json_end[]   asm("_binary_ui_de_json_end");
+// The ENGLISH web-UI strings, baked into the image from i18n/l10n/ui/ui_en.arb
+// (stripped to JSON at build; see main/CMakeLists.txt) — the universal offline
+// fallback, served when no downloaded pack for the active locale is present.
+// TEXT embed → NUL-terminated, so the JSON length is (end - start - 1).
+extern const char ui_en_json_start[] asm("_binary_ui_en_json_start");
+extern const char ui_en_json_end[]   asm("_binary_ui_en_json_end");
 
 // GET /api/i18n/ui — serves the UI translation pack for the active ui_lang.
 // If i18n_sync has downloaded one to SPIFFS, serve that (same-origin, so a
 // configured dongle needs no CDN at runtime); otherwise serve the baked-in
-// German fallback. Never 404s — the browser always gets a usable dict. No
+// English fallback. Never 404s — the browser always gets a usable dict. No
 // auth: the page needs this to render, possibly before login.
 static esp_err_t handle_i18n_ui(httpd_req_t *req)
 {
@@ -1503,10 +1502,10 @@ static esp_err_t handle_i18n_ui(httpd_req_t *req)
         httpd_resp_send_chunk(req, NULL, 0);
         return ESP_OK;
     }
-    // No downloaded pack (e.g. ui_lang=de, or a locale still downloading) →
-    // the baked-in German fallback.
-    httpd_resp_send(req, ui_de_json_start,
-                    (size_t)(ui_de_json_end - ui_de_json_start - 1));
+    // No downloaded pack (a locale still downloading, or offline) → the
+    // baked-in English fallback.
+    httpd_resp_send(req, ui_en_json_start,
+                    (size_t)(ui_en_json_end - ui_en_json_start - 1));
     return ESP_OK;
 }
 

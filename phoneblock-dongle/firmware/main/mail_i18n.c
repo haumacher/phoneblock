@@ -11,58 +11,40 @@
 
 static const char *TAG = "mail_i18n";
 
-// Compiled-in German fallback — kept in sync with the German mail source
-// i18n/l10n/mail/mail_de.arb (the translation source). Used whenever
-// ui_lang is "de", the downloaded pack is missing/invalid, or a key is absent.
-static const struct { const char *key, *val; } DE[] = {
-    { "intro",                 "Statusmeldung deines PhoneBlock-Dongles." },
+// Embedded ENGLISH mail pack — the universal offline fallback, baked into the
+// image at build from i18n/l10n/mail/mail_en.arb (stripped to mail_en.json, see
+// main/CMakeLists.txt). Used whenever the downloaded pack for the active
+// ui_lang is missing/invalid, or a key is absent from it. This mirrors the web
+// UI, which embeds the English ui_en pack the same way — German is NOT compiled
+// in; it is a normal downloaded locale (mail_de.arb is the translation source).
+extern const char mail_en_json_start[] asm("_binary_mail_en_json_start");
+extern const char mail_en_json_end[]   asm("_binary_mail_en_json_end");
 
-    { "subj.error_and_calls",  "PhoneBlock-Dongle: Fehler und neue Anrufe" },
-    { "subj.error",            "PhoneBlock-Dongle: Fehler im Protokoll" },
-    { "subj.calls",            "PhoneBlock-Dongle: Neue Anrufe" },
-    { "subj.status",           "PhoneBlock-Dongle: Statusmeldung" },
-    { "subj.update",           "PhoneBlock-Dongle: Firmware aktualisiert" },
+// Parsed lazily on first use, then kept forever (its valuestrings must outlive
+// every mail_i18n_str() return). Only ever touched from the single mail task.
+static cJSON *s_en = NULL;
 
-    { "newcalls.one",          "Seit der letzten Meldung ist <b>1</b> neuer Anruf eingegangen." },
-    { "newcalls.many",         "Seit der letzten Meldung sind <b>{count}</b> neue Anrufe eingegangen." },
-
-    { "sum.device",            "Ger&auml;t:" },
-    { "sum.uptime",            "Laufzeit: {hours}h {minutes}min" },
-    { "sum.calls",             "Anrufe gesamt: {total} &nbsp;|&nbsp; SPAM blockiert: {blocked} &nbsp;|&nbsp; durchgestellt: {passed}" },
-
-    { "calls.heading",         "Letzte Anrufe" },
-    { "calls.time",            "Zeit" },
-    { "calls.number",          "Nummer" },
-    { "calls.name",            "Name" },
-    { "calls.rating",          "Bewertung" },
-
-    { "verdict.scope.range",   "Bereich" },
-    { "verdict.scope.number",  "Nummer" },
-    { "verdict.spam_blacklist","SPAM (Blacklist, {scope})" },
-    { "verdict.spam_blocklist","SPAM (Blockliste, {scope})" },
-    { "verdict.spam",          "SPAM" },
-    { "verdict.spam_votes",    "SPAM ({direct} direkt, {range} Range)" },
-    { "verdict.spam_suspect",  "SPAM-VERDACHT ({direct} direkt, {range} Range)" },
-    { "verdict.legitimate",    "legitim" },
-    { "verdict.error",         "Fehler" },
-    { "verdict.unknown",       "unbekannt" },
-
-    { "log.heading",           "Neue Meldungen im Protokoll" },
-
-    { "update.body",           "Die Firmware auf deinem {device} wurde auf Version {version} aktualisiert." },
-};
-
-static const char *de_fallback(const char *key)
+static const char *en_fallback(const char *key)
 {
-    for (size_t i = 0; i < sizeof(DE) / sizeof(DE[0]); i++) {
-        if (strcmp(DE[i].key, key) == 0) return DE[i].val;
+    if (!s_en) {
+        // target_add_binary_data appends a NUL terminator, so the blob is a
+        // C string; the -1 drops it from the parsed length.
+        s_en = cJSON_ParseWithLength(mail_en_json_start,
+                                     (size_t)(mail_en_json_end - mail_en_json_start - 1));
+        if (!s_en) ESP_LOGE(TAG, "embedded English mail pack did not parse");
+    }
+    if (s_en) {
+        cJSON *v = cJSON_GetObjectItem(s_en, key);
+        if (cJSON_IsString(v) && v->valuestring && v->valuestring[0]) {
+            return v->valuestring;
+        }
     }
     ESP_LOGW(TAG, "no fallback for key '%s'", key);
     return key;
 }
 
-// Lazily-loaded downloaded pack for the active non-German locale. Mutated
-// only from the (single) mail build task, so no locking needed.
+// Lazily-loaded downloaded pack for the active locale. Mutated only from the
+// (single) mail build task, so no locking needed.
 static cJSON *s_pack      = NULL;
 static char   s_pack_lang[12] = "";
 
@@ -73,8 +55,6 @@ static void ensure_pack(const char *lang)
     if (s_pack) { cJSON_Delete(s_pack); s_pack = NULL; }
     strncpy(s_pack_lang, lang, sizeof(s_pack_lang) - 1);
     s_pack_lang[sizeof(s_pack_lang) - 1] = '\0';
-
-    if (strcmp(lang, "de") == 0) return;          // German uses the compiled table
 
     char path[48];
     snprintf(path, sizeof(path), "/spiffs/mail-%s.json", lang);
@@ -104,5 +84,5 @@ const char *mail_i18n_str(const char *key)
             return v->valuestring;
         }
     }
-    return de_fallback(key);
+    return en_fallback(key);
 }

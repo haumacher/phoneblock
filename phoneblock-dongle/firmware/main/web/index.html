@@ -130,14 +130,15 @@
 
 const I18N = {};
 
-// The UI language is the device's ui_lang. All strings — including German —
-// are loaded at runtime from the dongle (/api/i18n/ui); nothing is baked into
-// this page. t() falls back to the German pack (once loaded) then to the key.
-let LANG = 'de';   // the device's ui_lang, filled in from /api/status on boot
+// The UI language is the device's ui_lang. All strings are loaded at runtime
+// from the dongle (/api/i18n/ui); nothing is baked into this page. The device
+// serves the active locale's pack, or the embedded English pack as a fallback,
+// so t() falls back to the English pack (always present) then to the key.
+let LANG = 'en';   // the device's ui_lang, filled in from /api/status on boot
 const t = (k, p) => {
   // (… || {}) so a locale still loading can't throw.
   let s = (I18N[LANG] || {})[k];
-  if (s === undefined) s = (I18N.de || {})[k];
+  if (s === undefined) s = (I18N.en || {})[k];
   if (s === undefined) return k;
   if (p) for (const [name, val] of Object.entries(p))
     s = s.replaceAll('{' + name + '}', val);
@@ -147,18 +148,18 @@ const t = (k, p) => {
 // The UI language is a DEVICE setting (ui_lang — it also drives the status
 // mail and the answer-bot announcement). NOTHING is baked into this page: the
 // dongle serves the strings for its ui_lang from /api/i18n/ui (same-origin) —
-// the German fallback from firmware ROM (built from i18n/l10n/ui/ui_de.arb, the
-// single normative source), other locales from what the firmware downloaded to
-// SPIFFS. So a configured dongle needs no CDN at runtime (issue #460), and
-// German is never duplicated in HTML.
+// either the locale pack the firmware downloaded to SPIFFS, or the baked-in
+// English fallback (from i18n/l10n/ui/ui_en.arb) when that locale isn't
+// available yet. So a configured dongle needs no CDN at runtime (issue #460).
 //
 // Each served pack carries "@@locale"; while a just-selected locale is still
-// downloading, the device serves the German fallback (@@locale:"de"), which we
-// show as a readable placeholder and keep polling until the real pack arrives.
+// downloading (or offline), the device serves the English fallback
+// (@@locale:"en"), a readable placeholder — we keep polling until it serves
+// the real locale. German is a normal downloaded locale (no special-casing).
 function storePack(reqLang, dict){
   if (!dict || typeof dict !== 'object') return null;
   const loc = dict['@@locale'] || reqLang;
-  I18N[loc] = dict;        // under the actual served locale (populates de too)
+  I18N[loc] = dict;        // under the actual served locale (populates en too)
   I18N[reqLang] = dict;    // and under what was asked, so t(LANG) resolves
   return loc;
 }
@@ -169,23 +170,25 @@ function loadUiPack(lang){
     .then(dict => { storePack(lang, dict); })
     .catch(() => { /* device unreachable → keys via t(); page is from it */ });
 }
-// Read the device's ui_lang from /api/status, reflect it in the selector, and
-// load its UI pack from the device.
+// Read the device's ui_lang from /api/status, reflect it in the selector, load
+// its UI pack, and (if only the fallback was served) poll until the real
+// locale pack downloads.
 function loadDeviceLang(){
   return fetch('/api/status').then(r => r.ok ? r.json() : null).then(d => {
-    LANG = (d && d.ui_lang) ? String(d.ui_lang) : 'de';
+    LANG = (d && d.ui_lang) ? String(d.ui_lang) : 'en';
     document.documentElement.lang = LANG;
     const sel = document.getElementById('langSelect');
     if (sel) sel.value = LANG;
-    return loadUiPack(LANG);
+    return loadUiPack(LANG).then(() => awaitUiPack(LANG));
   }).catch(() => {});
 }
-// After switching language, the firmware downloads the new pack; the device
-// serves the German fallback meanwhile. Poll until it serves the real locale
+// The firmware downloads the active locale's pack; the device serves the
+// English fallback meanwhile. Poll until it serves the real locale
 // (@@locale === lang), then re-render. Bounded so it can't spin forever.
+// (en is the embedded fallback → already "real", so it stops immediately.)
 function awaitUiPack(lang, tries){
   tries = tries || 0;
-  if (lang === 'de' || LANG !== lang ||
+  if (LANG !== lang ||
       (I18N[lang] && I18N[lang]['@@locale'] === lang) || tries > 30) return;
   setTimeout(() => {
     if (LANG !== lang) return;
@@ -2634,7 +2637,7 @@ function wireAnnouncement(){
       // The UI language is a DEVICE setting — it also drives the status mail
       // and the answer-bot announcement. POST it; the firmware localizes those
       // and downloads the matching UI pack, which the dongle then serves at
-      // /api/i18n/ui. Re-render now (German until the pack arrives), then poll
+      // /api/i18n/ui. Re-render now (English until the pack arrives), then poll
       // the device for the new pack.
       LANG = lang;
       document.documentElement.lang = lang;
@@ -2646,7 +2649,7 @@ function wireAnnouncement(){
         }).catch(() => {});
       } catch (_){}
       delete I18N[lang];                 // force reload of the new locale
-      loadUiPack(lang).then(route);      // device pack, or German while it downloads
+      loadUiPack(lang).then(route);      // device pack, or English while it downloads
       awaitUiPack(lang);                 // then poll for the real locale pack
     });
   }
@@ -2656,8 +2659,8 @@ function wireAnnouncement(){
 // --- boot ----------------------------------------------------------
 
 // The UI language comes from the device (ui_lang); load it + its UI pack from
-// the dongle itself (same-origin, no CDN), then render. Resolves immediately
-// for German / on any failure (t() falls back to inline German).
+// the dongle itself (same-origin, no CDN), then render. On any failure t()
+// falls back to the embedded English pack the device serves.
 loadDeviceLang().then(route);
 </script>
 </body>

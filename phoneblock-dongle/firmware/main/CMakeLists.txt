@@ -25,17 +25,33 @@ idf_component_register(
         protocol_examples_common
 )
 
-# Bake the German web-UI strings into the image as the offline fallback,
-# stripped (drop the ARB @key metadata) from the single normative source
-# i18n/l10n/ui/ui_de.arb — so German is NOT duplicated in index.html and there
-# is no extract/inject step. web.c serves this at /api/i18n/ui when no
-# downloaded pack is present; the browser reads it same-origin.
-set(_ui_de_arb  "${CMAKE_CURRENT_SOURCE_DIR}/../i18n/l10n/ui/ui_de.arb")
-set(_ui_de_json "${CMAKE_CURRENT_BINARY_DIR}/ui_de.json")
+# Bake the ENGLISH web-UI strings into the image as the universal offline
+# fallback (most widely understood), stripped (drop the ARB @key metadata, keep
+# @@locale) from i18n/l10n/ui/ui_en.arb. web.c serves this at /api/i18n/ui when
+# no downloaded pack for the active locale is present; the browser reads it
+# same-origin. German is NOT embedded — it is a normal downloaded locale like
+# any other (its source ui_de.arb is the translation source).
+set(_ui_en_arb  "${CMAKE_CURRENT_SOURCE_DIR}/../i18n/l10n/ui/ui_en.arb")
+set(_ui_en_json "${CMAKE_CURRENT_BINARY_DIR}/ui_en.json")
 add_custom_command(
-    OUTPUT  "${_ui_de_json}"
-    COMMAND python3 -c "import json,sys;d=json.load(open(sys.argv[1],encoding='utf-8'));json.dump({k:v for k,v in d.items() if k=='@@locale' or not k.startswith('@')},open(sys.argv[2],'w',encoding='utf-8'),ensure_ascii=False,separators=(',',':'))" "${_ui_de_arb}" "${_ui_de_json}"
-    DEPENDS "${_ui_de_arb}"
-    COMMENT "Stripping ui_de.arb -> ui_de.json (embedded German UI fallback)"
+    OUTPUT  "${_ui_en_json}"
+    COMMAND python3 -c "import json,sys;d=json.load(open(sys.argv[1],encoding='utf-8'));json.dump({k:v for k,v in d.items() if k=='@@locale' or not k.startswith('@')},open(sys.argv[2],'w',encoding='utf-8'),ensure_ascii=False,separators=(',',':'))" "${_ui_en_arb}" "${_ui_en_json}"
+    DEPENDS "${_ui_en_arb}"
+    COMMENT "Stripping ui_en.arb -> ui_en.json (embedded English UI fallback)"
     VERBATIM)
-target_add_binary_data(${COMPONENT_LIB} "${_ui_de_json}" TEXT DEPENDS "${_ui_de_json}")
+target_add_binary_data(${COMPONENT_LIB} "${_ui_en_json}" TEXT DEPENDS "${_ui_en_json}")
+
+# Same for the status-mail strings: bake the ENGLISH mail pack into the image as
+# the universal offline fallback, stripped from i18n/l10n/mail/mail_en.arb.
+# mail_i18n.c parses this once and uses it whenever the downloaded pack for the
+# active ui_lang is missing/invalid. German is NOT compiled in — it is a normal
+# downloaded locale (mail_de.arb is the translation source).
+set(_mail_en_arb  "${CMAKE_CURRENT_SOURCE_DIR}/../i18n/l10n/mail/mail_en.arb")
+set(_mail_en_json "${CMAKE_CURRENT_BINARY_DIR}/mail_en.json")
+add_custom_command(
+    OUTPUT  "${_mail_en_json}"
+    COMMAND python3 -c "import json,sys;d=json.load(open(sys.argv[1],encoding='utf-8'));json.dump({k:v for k,v in d.items() if k=='@@locale' or not k.startswith('@')},open(sys.argv[2],'w',encoding='utf-8'),ensure_ascii=False,separators=(',',':'))" "${_mail_en_arb}" "${_mail_en_json}"
+    DEPENDS "${_mail_en_arb}"
+    COMMENT "Stripping mail_en.arb -> mail_en.json (embedded English mail fallback)"
+    VERBATIM)
+target_add_binary_data(${COMPONENT_LIB} "${_mail_en_json}" TEXT DEPENDS "${_mail_en_json}")

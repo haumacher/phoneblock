@@ -385,7 +385,7 @@ static void format_event_time(int64_t at_us, char *out, size_t cap)
 
 // Verdict label matching the web UI's wording (status.calls.verdict.* in
 // index.html). Both surfaces render the same pb_assessment_t; the wording
-// lives in mail_i18n (compiled German fallback + downloaded pack) and must
+// lives in mail_i18n (embedded English fallback + downloaded pack) and must
 // stay in lock-step with the UI i18n strings.
 static void verdict_label(const stats_call_t *c, char *out, size_t cap)
 {

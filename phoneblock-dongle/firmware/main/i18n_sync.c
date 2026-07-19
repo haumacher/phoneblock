@@ -487,15 +487,16 @@ static void run_once(void)
         return;
     }
 
-    // Download-time fallback chain: prefer the active ui_lang, then English,
-    // then German. Whichever locale's content is chosen is stored under the
-    // ui_lang name, so only ONE announcement and ONE mail pack ever live on
-    // the device (announcement.c / mail_i18n.c read just that file).
-    const char *chain[3];
-    int cn = 0;
-    chain[cn++] = lang;
-    if (strcmp(lang, "en") != 0) chain[cn++] = "en";
-    if (strcmp(lang, "de") != 0) chain[cn++] = "de";
+    // The announcement has NO embedded fallback (a missing recording means the
+    // device answers silently), so we try to salvage SOME speech with a
+    // download-time chain: prefer the active ui_lang, then English, then German
+    // recording. Whichever is chosen is stored under the ui_lang name, so only
+    // ONE announcement ever lives on the device (announcement.c reads it).
+    const char *ann_chain[3];
+    int acn = 0;
+    ann_chain[acn++] = lang;
+    if (strcmp(lang, "en") != 0) ann_chain[acn++] = "en";
+    if (strcmp(lang, "de") != 0) ann_chain[acn++] = "de";
 
     char ann_path[48];
     announcement_localized_path(ann_path, sizeof(ann_path), lang);
@@ -505,22 +506,26 @@ static void run_once(void)
     snprintf(ui_path, sizeof(ui_path), "%s/ui-%s.json", SPIFFS_DIR, lang);
 
     bool ok = true;
-    if (!sync_kind_chain(assets, "announcement", base, ann_path, chain, cn,
+    if (!sync_kind_chain(assets, "announcement", base, ann_path, ann_chain, acn,
                          err, sizeof(err))) {
         ESP_LOGW(TAG, "announcement sync: %s", err);
         ok = false;
     }
+    // Mail and UI packs both have an embedded ENGLISH fallback (mail_i18n.c /
+    // web.c), so they download ONLY the active locale's pack — no en/de chain.
+    // If it isn't published, download nothing and use the embedded English. (A
+    // chain fallback would pull German for a missing locale, contradicting the
+    // English fallback.) en itself is embedded, so downloading it is redundant
+    // but harmless — the manifest publishes every locale uniformly.
+    const char *single_chain[1] = { lang };
     char err2[64] = "";
-    if (!sync_kind_chain(assets, "mail", base, mail_path, chain, cn,
+    if (!sync_kind_chain(assets, "mail", base, mail_path, single_chain, 1,
                          err2, sizeof(err2))) {
         ESP_LOGW(TAG, "mail pack sync: %s", err2);
         if (ok) { ok = false; strncpy(err, err2, sizeof(err) - 1); }
     }
-    // UI pack: downloaded like mail, then served same-origin by web.c so the
-    // browser never needs the CDN at runtime. German is inline in the page, so
-    // there is no de UI asset (the chain then finds nothing → serves inline).
     char err3[64] = "";
-    if (!sync_kind_chain(assets, "ui", base, ui_path, chain, cn,
+    if (!sync_kind_chain(assets, "ui", base, ui_path, single_chain, 1,
                          err3, sizeof(err3))) {
         ESP_LOGW(TAG, "ui pack sync: %s", err3);
         if (ok) { ok = false; strncpy(err, err3, sizeof(err) - 1); }
