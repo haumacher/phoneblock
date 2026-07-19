@@ -26,6 +26,9 @@
 #include "time_sync.h"
 #include "wifi.h"
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 static const char *TAG = "mail";
 
 // Same heap headroom rationale as crashreport.c / logreport.c: the TLS
@@ -472,7 +475,7 @@ static size_t append_calls_html(char *body, size_t cap, size_t len,
     for (int i = 0; i < ncalls && len < cap - 400; i++) {
         const stats_call_t *c = &calls[i];
         char when[24]; format_event_time(c->at_us, when, sizeof(when));
-        char vl[48];   verdict_label(c, vl, sizeof(vl));
+        char vl[64];   verdict_label(c, vl, sizeof(vl));
         // API-checked entries carry a PhoneBlock label/location; phone-book
         // and internal-code entries fall back to the raw number/display.
         bool checked     = c->label[0] != '\0';

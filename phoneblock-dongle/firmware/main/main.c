@@ -31,6 +31,9 @@
 #include "web.h"
 #include "wifi.h"
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 static const char *TAG = "phoneblock";
 
 // Announce the dongle on the LAN as "answerbot" via mDNS. The matching

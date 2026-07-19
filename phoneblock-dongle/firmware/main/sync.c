@@ -21,6 +21,9 @@
 #include "tr064.h"
 #include "tr064_parse.h"
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 static const char *TAG = "sync";
 
 // The 24 h cadence and the manual-trigger wakeup now live in the shared

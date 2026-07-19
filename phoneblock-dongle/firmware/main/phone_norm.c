@@ -4,6 +4,9 @@
 #include <stdio.h>
 #include <string.h>
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 // True if `s` is non-empty and every character is an ASCII digit.
 static bool all_digits(const char *s)
 {

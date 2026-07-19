@@ -8,6 +8,9 @@
 
 #include "net_local.h"
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 static const char *TAG = "web_access";
 
 // Read the request's immediate TCP peer into `out` (v4-mapped

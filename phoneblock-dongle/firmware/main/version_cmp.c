@@ -4,6 +4,9 @@
 #include <stdio.h>
 #include <string.h>
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 // Natural compare of two pre-release identifiers (the part after the
 // first '-', e.g. "rc1", "rc2", "rc10", "dev"). Non-digit runs compare
 // byte-wise; digit runs compare numerically (leading zeros ignored), so

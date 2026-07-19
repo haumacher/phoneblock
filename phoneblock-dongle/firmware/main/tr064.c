@@ -17,6 +17,9 @@
 #include "http_util.h"
 #include "tr064_parse.h"
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 // Short aliases for the parser helpers — keeps call sites compact.
 #define xml_find_text(...)       tr064_xml_find_text(__VA_ARGS__)
 #define xml_unescape_inplace(...) tr064_xml_unescape_inplace(__VA_ARGS__)

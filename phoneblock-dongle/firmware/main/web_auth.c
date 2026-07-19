@@ -13,6 +13,9 @@
 #include "web.h"
 #include "web_access.h"
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 static const char *TAG = "web_auth";
 
 // --- Session store --------------------------------------------------

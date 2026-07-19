@@ -25,11 +25,16 @@
 #include "announcement.h"
 #include "report_queue.h"
 #include "sip_parse.h"
+#include "sip_response.h"
+#include "strbuf.h"
 #include "sip_auth.h"
 #include "sip_transport.h"
 #include "sip_srv.h"
 #include "rtp.h"
 #include "stats.h"
+
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
 
 static const char *TAG = "sip";
 
@@ -477,7 +482,8 @@ static int build_register(sip_ctx_t *c, char *buf, int cap, bool with_auth)
         instance[0] = '\0';
     }
 
-    int n = snprintf(buf, cap,
+    strbuf_t sb = sb_init(buf, cap);
+    sb_appendf(&sb,
         "REGISTER %s SIP/2.0\r\n"
         "Via: SIP/2.0/%s %s:%d;branch=z9hG4bK%s;rport\r\n"
         "Max-Forwards: 70\r\n"
@@ -513,7 +519,7 @@ static int build_register(sip_ctx_t *c, char *buf, int cap, bool with_auth)
             qop, nc, cnonce,
             response);
 
-        n += snprintf(buf + n, cap - n,
+        sb_appendf(&sb,
             "Authorization: Digest username=\"%s\", realm=\"%s\", "
             "nonce=\"%s\", uri=\"%s\", response=\"%s\", algorithm=%s",
             auth_user, realm,
@@ -521,19 +527,21 @@ static int build_register(sip_ctx_t *c, char *buf, int cap, bool with_auth)
             response, c->challenge.algorithm);
 
         if (qop[0]) {
-            n += snprintf(buf + n, cap - n,
+            sb_appendf(&sb,
                 ", qop=%s, nc=%s, cnonce=\"%s\"",
                 qop, nc, cnonce);
         }
         if (c->challenge.opaque[0]) {
-            n += snprintf(buf + n, cap - n,
+            sb_appendf(&sb,
                 ", opaque=\"%s\"", c->challenge.opaque);
         }
-        n += snprintf(buf + n, cap - n, "\r\n");
+        sb_appendf(&sb, "\r\n");
     }
 
-    n += snprintf(buf + n, cap - n, "Content-Length: 0\r\n\r\n");
-    return n;
+    sb_appendf(&sb, "Content-Length: 0\r\n\r\n");
+    // A truncated REGISTER would be malformed; report it un-buildable so the
+    // caller doesn't put a partial request on the wire.
+    return sb.truncated ? -1 : sb.len;
 }
 
 // ---------------------------------------------------------------------------
@@ -651,6 +659,12 @@ static register_outcome_t do_register(sip_ctx_t *c, int *granted_expires,
     register_outcome_t result = REGISTER_DEFINITIVE;
     c->cseq++;
     int tx_len = build_register(c, tx, SIP_TX_BUF_SIZE, false);
+    if (tx_len < 0) {
+        ESP_LOGE(TAG, "REGISTER exceeds %d-byte buffer", SIP_TX_BUF_SIZE);
+        if (err) snprintf(err, err_cap, "REGISTER aborted: request too large");
+        result = REGISTER_DEFINITIVE;
+        goto cleanup;
+    }
     ESP_LOGI(TAG, "→ REGISTER (%d bytes):\n%.*s", tx_len, tx_len, tx);
     int rx_len = sip_send_recv(c, tx, tx_len, rx, SIP_RX_BUF_SIZE);
     if (rx_len < 0) {
@@ -719,6 +733,14 @@ static register_outcome_t do_register(sip_ctx_t *c, int *granted_expires,
     for (int stale_retry = 0; ; stale_retry++) {
         c->cseq++;
         tx_len = build_register(c, tx, SIP_TX_BUF_SIZE, true);
+        if (tx_len < 0) {
+            ESP_LOGE(TAG, "REGISTER (with auth) exceeds %d-byte buffer",
+                     SIP_TX_BUF_SIZE);
+            if (err) snprintf(err, err_cap,
+                "REGISTER aborted: authenticated request too large");
+            result = REGISTER_DEFINITIVE;
+            goto cleanup;
+        }
         ESP_LOGI(TAG, "→ REGISTER with auth (%d bytes):\n%.*s",
                  tx_len, tx_len, tx);
         rx_len = sip_send_recv(c, tx, tx_len, rx, SIP_RX_BUF_SIZE);
@@ -799,55 +821,17 @@ cleanup:
 // Incoming request handling
 // ---------------------------------------------------------------------------
 
-// Copy one full "Name: value\r\n" line from req into out. Returns bytes
-// written (0 if the header is absent or doesn't fit).
-static int echo_header_line(const char *req, int req_len, const char *name,
-                            char *out, int out_cap)
-{
-    const char *val = find_header(req, req_len, name);
-    if (!val) return 0;
-
-    // Scan forward to end of line.
-    const char *end = req + req_len;
-    const char *eol = val;
-    while (eol < end && *eol != '\r' && *eol != '\n') eol++;
-    int val_len = (int)(eol - val);
-
-    int written = snprintf(out, out_cap, "%s: %.*s\r\n", name, val_len, val);
-    return written > 0 && written < out_cap ? written : 0;
-}
-
-// Like echo_header_line, but appends ";tag=<our_tag>" to the To-header's
-// URI part (for generating a valid UAS response to a dialog-forming request).
-static int echo_to_with_tag(const char *req, int req_len,
-                            const char *our_tag, char *out, int out_cap)
-{
-    const char *val = find_header(req, req_len, "To");
-    if (!val) return 0;
-    const char *end = req + req_len;
-    const char *eol = val;
-    while (eol < end && *eol != '\r' && *eol != '\n') eol++;
-    int val_len = (int)(eol - val);
-
-    // Check if the request already has a tag (some re-INVITEs do).
-    if (memmem(val, val_len, ";tag=", 5)) {
-        return snprintf(out, out_cap, "To: %.*s\r\n", val_len, val);
-    }
-    int written = snprintf(out, out_cap, "To: %.*s;tag=%s\r\n",
-                           val_len, val, our_tag);
-    return written > 0 && written < out_cap ? written : 0;
-}
-
-// Build a SIP response that echoes routing headers (Via/From/To/Call-ID/
-// CSeq) from the request, adds Contact + Allow + User-Agent, an optional
-// SDP body, and a matching Content-Length. Caller provides the status line,
-// an optional fixed To-tag (NULL → generate a fresh one, for stateless
-// responses like OPTIONS), and an optional body (NULL → empty).
-static int build_response(sip_ctx_t *c, const char *req, int req_len,
+// The SIP response builder (echo Via/From/To/Call-ID/CSeq, add Contact +
+// Allow + User-Agent + optional SDP) lives in sip_response.c so its buffer
+// arithmetic can be unit-tested on the host — see sip_response.h and
+// test/test_sip_response.c. send_response() resolves the local identity /
+// advertised host+port and, for stateless responses (no override tag),
+// mints a fresh To-tag, then hands everything to sip_response_build().
+static void send_response(sip_ctx_t *c, const struct sockaddr_in *peer,
+                          const char *req, int req_len,
                           int status, const char *reason,
                           const char *our_tag_override,
-                          const char *body,
-                          char *out, int out_cap)
+                          const char *body)
 {
     char tag_buf[20];
     const char *our_tag;
@@ -858,45 +842,25 @@ static int build_response(sip_ctx_t *c, const char *req, int req_len,
         our_tag = tag_buf;
     }
 
-    int body_len = body ? (int)strlen(body) : 0;
-
-    int n = snprintf(out, out_cap, "SIP/2.0 %d %s\r\n", status, reason);
-    n += echo_header_line(req, req_len, "Via", out + n, out_cap - n);
-    n += echo_header_line(req, req_len, "From", out + n, out_cap - n);
-    n += echo_to_with_tag(req, req_len, our_tag, out + n, out_cap - n);
-    n += echo_header_line(req, req_len, "Call-ID", out + n, out_cap - n);
-    n += echo_header_line(req, req_len, "CSeq", out + n, out_cap - n);
-    n += snprintf(out + n, out_cap - n,
-        "Contact: <sip:%s@%s:%d>\r\n"
-        "Allow: INVITE, ACK, CANCEL, BYE, OPTIONS\r\n"
-        "User-Agent: phoneblock-dongle/0.1\r\n",
-        current_identity_user(), advertised_host(c), advertised_port());
-
-    if (body_len > 0) {
-        n += snprintf(out + n, out_cap - n,
-            "Content-Type: application/sdp\r\n"
-            "Content-Length: %d\r\n\r\n%s",
-            body_len, body);
-    } else {
-        n += snprintf(out + n, out_cap - n,
-            "Content-Length: 0\r\n\r\n");
-    }
-    return n;
-}
-
-static void send_response(sip_ctx_t *c, const struct sockaddr_in *peer,
-                          const char *req, int req_len,
-                          int status, const char *reason,
-                          const char *our_tag_override,
-                          const char *body)
-{
     char *tx = malloc(SIP_TX_BUF_SIZE);
     if (!tx) {
         ESP_LOGE(TAG, "malloc failed for response buffer");
         return;
     }
-    int tx_len = build_response(c, req, req_len, status, reason,
-                                our_tag_override, body, tx, SIP_TX_BUF_SIZE);
+    int tx_len = sip_response_build(req, req_len, status, reason,
+                                    our_tag, body,
+                                    current_identity_user(),
+                                    advertised_host(c), advertised_port(),
+                                    tx, SIP_TX_BUF_SIZE);
+    if (tx_len < 0) {
+        // The request's headers were too large to echo into a complete
+        // response. Send nothing rather than a partial, invalid message —
+        // only reachable from a malformed/oversized request.
+        ESP_LOGW(TAG, "dropping %d %s: response exceeds %d-byte buffer",
+                 status, reason, SIP_TX_BUF_SIZE);
+        free(tx);
+        return;
+    }
     ESP_LOGI(TAG, "→ %d %s (%d bytes):\n%.*s", status, reason, tx_len, tx_len, tx);
     sip_transport_send_to(c->transport, peer, tx, tx_len);
     free(tx);
@@ -917,7 +881,8 @@ static int build_sdp_body(const char *fallback_ip, const dialog_t *d,
     const char *ip = (d && d->media_ip[0]) ? d->media_ip : fallback_ip;
     int port       = (d && d->media_port > 0) ? d->media_port : config_rtp_port();
 
-    int n = snprintf(out, cap,
+    strbuf_t sb = sb_init(out, cap);
+    sb_appendf(&sb,
         "v=0\r\n"
         "o=phoneblock-dongle 0 0 IN IP4 %s\r\n"
         "s=-\r\n"
@@ -935,14 +900,14 @@ static int build_sdp_body(const char *fallback_ip, const dialog_t *d,
         if (mbedtls_base64_encode((unsigned char *)key_b64, sizeof(key_b64),
                                   &b64_len, d->srtp_tx_key,
                                   RTP_SRTP_KEY_LEN) == 0) {
-            n += snprintf(out + n, cap - n,
+            sb_appendf(&sb,
                 "a=crypto:%d AES_CM_128_HMAC_SHA1_80 inline:%.*s\r\n",
                 d->srtp_tag, (int)b64_len, key_b64);
         }
     }
 
-    n += snprintf(out + n, cap - n, "a=sendrecv\r\n");
-    return n;
+    sb_appendf(&sb, "a=sendrecv\r\n");
+    return sb.len;
 }
 
 // Decide the IP:port to advertise as our media endpoint in the SDP answer,
