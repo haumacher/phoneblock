@@ -25,6 +25,7 @@
 #include "announcement.h"
 #include "report_queue.h"
 #include "sip_parse.h"
+#include "sip_response.h"
 #include "sip_auth.h"
 #include "sip_transport.h"
 #include "sip_srv.h"
@@ -799,55 +800,17 @@ cleanup:
 // Incoming request handling
 // ---------------------------------------------------------------------------
 
-// Copy one full "Name: value\r\n" line from req into out. Returns bytes
-// written (0 if the header is absent or doesn't fit).
-static int echo_header_line(const char *req, int req_len, const char *name,
-                            char *out, int out_cap)
-{
-    const char *val = find_header(req, req_len, name);
-    if (!val) return 0;
-
-    // Scan forward to end of line.
-    const char *end = req + req_len;
-    const char *eol = val;
-    while (eol < end && *eol != '\r' && *eol != '\n') eol++;
-    int val_len = (int)(eol - val);
-
-    int written = snprintf(out, out_cap, "%s: %.*s\r\n", name, val_len, val);
-    return written > 0 && written < out_cap ? written : 0;
-}
-
-// Like echo_header_line, but appends ";tag=<our_tag>" to the To-header's
-// URI part (for generating a valid UAS response to a dialog-forming request).
-static int echo_to_with_tag(const char *req, int req_len,
-                            const char *our_tag, char *out, int out_cap)
-{
-    const char *val = find_header(req, req_len, "To");
-    if (!val) return 0;
-    const char *end = req + req_len;
-    const char *eol = val;
-    while (eol < end && *eol != '\r' && *eol != '\n') eol++;
-    int val_len = (int)(eol - val);
-
-    // Check if the request already has a tag (some re-INVITEs do).
-    if (memmem(val, val_len, ";tag=", 5)) {
-        return snprintf(out, out_cap, "To: %.*s\r\n", val_len, val);
-    }
-    int written = snprintf(out, out_cap, "To: %.*s;tag=%s\r\n",
-                           val_len, val, our_tag);
-    return written > 0 && written < out_cap ? written : 0;
-}
-
-// Build a SIP response that echoes routing headers (Via/From/To/Call-ID/
-// CSeq) from the request, adds Contact + Allow + User-Agent, an optional
-// SDP body, and a matching Content-Length. Caller provides the status line,
-// an optional fixed To-tag (NULL → generate a fresh one, for stateless
-// responses like OPTIONS), and an optional body (NULL → empty).
-static int build_response(sip_ctx_t *c, const char *req, int req_len,
+// The SIP response builder (echo Via/From/To/Call-ID/CSeq, add Contact +
+// Allow + User-Agent + optional SDP) lives in sip_response.c so its buffer
+// arithmetic can be unit-tested on the host — see sip_response.h and
+// test/test_sip_response.c. send_response() resolves the local identity /
+// advertised host+port and, for stateless responses (no override tag),
+// mints a fresh To-tag, then hands everything to sip_response_build().
+static void send_response(sip_ctx_t *c, const struct sockaddr_in *peer,
+                          const char *req, int req_len,
                           int status, const char *reason,
                           const char *our_tag_override,
-                          const char *body,
-                          char *out, int out_cap)
+                          const char *body)
 {
     char tag_buf[20];
     const char *our_tag;
@@ -858,45 +821,16 @@ static int build_response(sip_ctx_t *c, const char *req, int req_len,
         our_tag = tag_buf;
     }
 
-    int body_len = body ? (int)strlen(body) : 0;
-
-    int n = snprintf(out, out_cap, "SIP/2.0 %d %s\r\n", status, reason);
-    n += echo_header_line(req, req_len, "Via", out + n, out_cap - n);
-    n += echo_header_line(req, req_len, "From", out + n, out_cap - n);
-    n += echo_to_with_tag(req, req_len, our_tag, out + n, out_cap - n);
-    n += echo_header_line(req, req_len, "Call-ID", out + n, out_cap - n);
-    n += echo_header_line(req, req_len, "CSeq", out + n, out_cap - n);
-    n += snprintf(out + n, out_cap - n,
-        "Contact: <sip:%s@%s:%d>\r\n"
-        "Allow: INVITE, ACK, CANCEL, BYE, OPTIONS\r\n"
-        "User-Agent: phoneblock-dongle/0.1\r\n",
-        current_identity_user(), advertised_host(c), advertised_port());
-
-    if (body_len > 0) {
-        n += snprintf(out + n, out_cap - n,
-            "Content-Type: application/sdp\r\n"
-            "Content-Length: %d\r\n\r\n%s",
-            body_len, body);
-    } else {
-        n += snprintf(out + n, out_cap - n,
-            "Content-Length: 0\r\n\r\n");
-    }
-    return n;
-}
-
-static void send_response(sip_ctx_t *c, const struct sockaddr_in *peer,
-                          const char *req, int req_len,
-                          int status, const char *reason,
-                          const char *our_tag_override,
-                          const char *body)
-{
     char *tx = malloc(SIP_TX_BUF_SIZE);
     if (!tx) {
         ESP_LOGE(TAG, "malloc failed for response buffer");
         return;
     }
-    int tx_len = build_response(c, req, req_len, status, reason,
-                                our_tag_override, body, tx, SIP_TX_BUF_SIZE);
+    int tx_len = sip_response_build(req, req_len, status, reason,
+                                    our_tag, body,
+                                    current_identity_user(),
+                                    advertised_host(c), advertised_port(),
+                                    tx, SIP_TX_BUF_SIZE);
     ESP_LOGI(TAG, "→ %d %s (%d bytes):\n%.*s", status, reason, tx_len, tx_len, tx);
     sip_transport_send_to(c->transport, peer, tx, tx_len);
     free(tx);
