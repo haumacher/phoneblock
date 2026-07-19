@@ -10,12 +10,20 @@
 #
 #   ./scripts/i18n-assets.sh [options]
 #
+# Announcement recordings are committed to git (scripts/i18n/audio/
+# announcement-<lang>.alaw — like today's single main/audio/announcement.alaw)
+# so you can hand-record / tune each one. A language with no recording ships
+# text-only (the device answers silently). Mail and web-UI text ship as
+# committed packs where present, else are DeepL-translated from the German.
+#
 # Options:
-#   --version V     Manifest version label (default: git describe / date).
+#   --version V     Firmware release version (default: git describe). Assets
+#                   go to firmware/<version>/i18n/; MUST match the firmware.
 #   --langs "a b"   Only build these firmware codes (default: all in
 #                   languages.txt).
-#   --from-audio D  Use pre-rendered recordings D/announcement.<lang>.{mp3,wav,m4a}
-#                   instead of ElevenLabs TTS (for human voice-overs).
+#   --from-audio D  Take announcement recordings from dir D instead of
+#                   scripts/i18n/audio (.alaw used as-is; wav/mp3/m4a/flac
+#                   converted via ffmpeg).
 #   --key FILE      Sign with this ECDSA-P256 private-key PEM directly
 #                   (skips the KeePassXC pull; used by the roundtrip test).
 #   --stage DIR     Staging dir for the built artifacts (default: a mktemp).
@@ -24,12 +32,10 @@
 #   --dry-run       --no-upload, and also print (not run) the sftp/scp cmds.
 #   -h | --help     This help.
 #
+# Assembles committed files only — no translation runs here. Translations are
+# produced during development (see scripts/i18n/README.md) and committed.
+#
 # Credentials (env or scripts/release.settings, same file release.sh uses):
-#   DEEPL_API_KEY         DeepL auth key (translate the German source).
-#   DEEPL_API_URL         default https://api-free.deepl.com/v2/translate
-#   ELEVENLABS_API_KEY    ElevenLabs key (text-to-speech).
-#   ELEVENLABS_VOICE_ID   voice to synthesize with (required for TTS).
-#   ELEVENLABS_MODEL      default eleven_multilingual_v2.
 #   KEEPASS_DB/ENTRY/ATTACHMENT   OTA signing key (see sign-manifest.sh).
 #
 # Signed payload for the manifest (must match i18n_sync.c I18N_SIG_DOMAIN):
@@ -47,20 +53,21 @@ SRC_DIR="${SCRIPT_DIR}/i18n"
 FW_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
 # --- CDN layout (mirrors release.sh) ---------------------------------------
+# i18n assets are co-located with the firmware: firmware/<version>/i18n/.
 CDN_HOST="${CDN_HOST:-haumac@cdn.phoneblock.net}"
 CDN_BASE="${CDN_BASE:-/public_html/cdn/dongle}"
-CDN_I18N="${CDN_BASE}/i18n"
+CDN_FIRMWARE="${CDN_BASE}/firmware"
+# CDN_I18N (the firmware/<version>/i18n dir) is computed once VERSION is known.
 
 # --- signing payload domain tag (must equal i18n_sync.c) -------------------
 SIG_DOMAIN=$'phoneblock-dongle-i18n-v1\n'
 
-# --- ElevenLabs defaults ---------------------------------------------------
-ELEVENLABS_MODEL="${ELEVENLABS_MODEL:-eleven_multilingual_v2}"
-DEEPL_API_URL="${DEEPL_API_URL:-https://api-free.deepl.com/v2/translate}"
+# Announcement recordings are committed to the repo (like today's single
+# main/audio/announcement.alaw). Default source dir; --from-audio overrides.
+AUDIO_DIR="${SRC_DIR}/audio"
 
 VERSION=""
 ONLY_LANGS=""
-FROM_AUDIO=""
 KEY_PEM=""
 STAGE=""
 NO_UPLOAD=0
@@ -75,7 +82,7 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         --version)    VERSION="$2"; shift 2;;
         --langs)      ONLY_LANGS="$2"; shift 2;;
-        --from-audio) FROM_AUDIO="$2"; shift 2;;
+        --from-audio) AUDIO_DIR="$2"; shift 2;;
         --key)        KEY_PEM="$2"; shift 2;;
         --stage)      STAGE="$2"; shift 2;;
         --no-upload)  NO_UPLOAD=1; shift;;
@@ -85,129 +92,49 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-for t in jq openssl sha256sum curl; do
+for t in jq openssl sha256sum; do
     command -v "$t" >/dev/null || die "$t not found in PATH"
 done
 
+# The firmware release version. Assets are published co-located with the .bin
+# under firmware/<version>/i18n/, and the device fetches the subtree matching
+# the version it runs. MUST equal the firmware release version (what
+# esp_app_get_description()->version reports). Default to git describe; pass
+# --version explicitly for a clean release tag.
 if [[ -z "$VERSION" ]]; then
-    VERSION="$(cd "$FW_DIR" && git describe --tags --always --dirty 2>/dev/null || true)"
-    [[ -z "$VERSION" ]] && VERSION="$(TZ=UTC printf '%(%Y%m%d%H%M%S)T' -1)"
+    VERSION="$(cd "$FW_DIR" && git describe --tags --always 2>/dev/null || true)"
+    [[ -z "$VERSION" ]] && die "cannot determine version — pass --version <firmware-version>"
 fi
+echo "==> firmware version ${VERSION} (assets go to firmware/${VERSION}/i18n)"
+CDN_I18N="${CDN_FIRMWARE}/${VERSION}/i18n"
 
 [[ -z "$STAGE" ]] && STAGE="$(mktemp -d -t dongle-i18n.XXXXXX)"
 ASSETS="${STAGE}/assets"
 mkdir -p "${ASSETS}/audio" "${ASSETS}/mail" "${ASSETS}/ui"
 
-# Machine-readable German UI source (extracted from index.html, the single
-# source of truth) — used to DeepL-translate UI locales that have no reviewed
-# pack in scripts/i18n/ui/. Best-effort: needs node; committed packs work
-# without it.
-DE_UI=""
-if command -v node >/dev/null; then
-    DE_UI="${STAGE}/lang-de.json"
-    node "${SRC_DIR}/extract-de-ui.js" > "$DE_UI" || DE_UI=""
-fi
-
-echo "==> version ${VERSION}"
 echo "==> staging ${STAGE}"
 
-# --- DeepL: translate one text, protecting %-placeholders and <b> tags -----
-# Placeholders (%s %d %u %lld …) and the literal <b>/</b> must survive
-# translation verbatim. We swap them for opaque sentinels DeepL won't touch,
-# translate, then swap back. Passthrough for the source language.
-deepl_translate() {
-    local target="$1" text="$2"
-    if [[ "$target" == "-" || "$target" == "DE" ]]; then
-        printf '%s' "$text"; return
+# --- Announcement: use the committed recording for <lang> ------------------
+# Prefer a ready ".alaw" (raw G.711 A-law 8 kHz mono, exactly what the device
+# streams) used verbatim; otherwise convert a committed wav/mp3/m4a/flac via
+# ffmpeg. Recordings live in AUDIO_DIR (scripts/i18n/audio, or --from-audio),
+# committed to git so you can hand-record / tune each one. Returns non-zero
+# when a language has no recording yet — that locale then ships text-only.
+get_announcement() {
+    local lang="$1" out_alaw="$2"
+    if [[ -f "${AUDIO_DIR}/announcement-${lang}.alaw" ]]; then
+        cp "${AUDIO_DIR}/announcement-${lang}.alaw" "$out_alaw"; return 0
     fi
-    [[ -n "${DEEPL_API_KEY:-}" ]] || die "DEEPL_API_KEY not set (needed to translate to ${target})"
-    DEEPL_API_KEY="$DEEPL_API_KEY" DEEPL_API_URL="$DEEPL_API_URL" \
-    python3 - "$target" "$text" <<'PY'
-import os, re, sys, json, urllib.request, urllib.parse
-target, text = sys.argv[1], sys.argv[2]
-# Protect printf specifiers and the bold tags with sentinels.
-toks = []
-def stash(m):
-    toks.append(m.group(0)); return f"{len(toks)-1}"
-protected = re.sub(r'%[0-9]*[a-zA-Z]+|</?b>', stash, text)
-data = urllib.parse.urlencode({
-    "text": protected, "target_lang": target,
-    "tag_handling": "xml", "ignore_tags": "x",
-}).encode()
-req = urllib.request.Request(os.environ["DEEPL_API_URL"], data=data,
-    headers={"Authorization": "DeepL-Auth-Key " + os.environ["DEEPL_API_KEY"]})
-with urllib.request.urlopen(req, timeout=30) as r:
-    out = json.load(r)["translations"][0]["text"]
-# Restore sentinels.
-out = re.sub("([0-9]+)", lambda m: toks[int(m.group(1))], out)
-sys.stdout.write(out)
-PY
-}
-
-# --- ElevenLabs TTS → mp3, then ffmpeg → raw G.711 A-law 8 kHz mono --------
-synth_announcement() {
-    local lang="$1" deepl="$2" out_alaw="$3"
-    local mp3="${STAGE}/announcement.${lang}.mp3"
-
-    if [[ -n "$FROM_AUDIO" ]]; then
-        local src=""
-        for ext in mp3 wav m4a; do
-            [[ -f "${FROM_AUDIO}/announcement.${lang}.${ext}" ]] && src="${FROM_AUDIO}/announcement.${lang}.${ext}"
-        done
-        [[ -n "$src" ]] || die "no ${FROM_AUDIO}/announcement.${lang}.{mp3,wav,m4a}"
-        command -v ffmpeg >/dev/null || die "ffmpeg not found"
+    local src=""
+    for ext in wav mp3 m4a flac; do
+        [[ -f "${AUDIO_DIR}/announcement-${lang}.${ext}" ]] && src="${AUDIO_DIR}/announcement-${lang}.${ext}"
+    done
+    if [[ -n "$src" ]]; then
+        command -v ffmpeg >/dev/null || die "ffmpeg needed to convert ${src}"
         ffmpeg -y -loglevel error -i "$src" -ar 8000 -ac 1 -f alaw "$out_alaw"
-        return
+        return 0
     fi
-
-    [[ -n "${ELEVENLABS_API_KEY:-}" ]]  || die "ELEVENLABS_API_KEY not set (or use --from-audio)"
-    [[ -n "${ELEVENLABS_VOICE_ID:-}" ]] || die "ELEVENLABS_VOICE_ID not set"
-    command -v ffmpeg >/dev/null || die "ffmpeg not found"
-
-    local text
-    text="$(deepl_translate "$deepl" "$(cat "${SRC_DIR}/announcement.de.txt")")"
-    local body
-    body="$(jq -nc --arg t "$text" --arg m "$ELEVENLABS_MODEL" \
-        '{text:$t, model_id:$m, voice_settings:{stability:0.5, similarity_boost:0.75}}')"
-    curl -sf -X POST \
-        "https://api.elevenlabs.io/v1/text-to-speech/${ELEVENLABS_VOICE_ID}" \
-        -H "xi-api-key: ${ELEVENLABS_API_KEY}" \
-        -H "Content-Type: application/json" \
-        -H "Accept: audio/mpeg" \
-        -d "$body" -o "$mp3" || die "ElevenLabs TTS failed for ${lang}"
-    ffmpeg -y -loglevel error -i "$mp3" -ar 8000 -ac 1 -f alaw "$out_alaw"
-}
-
-# --- Translate a German key→string JSON pack into <lang>, keys preserved ---
-build_json_pack() {
-    local src="$1" deepl="$2" out="$3"
-    if [[ "$deepl" == "-" || "$deepl" == "DE" ]]; then
-        cp "$src" "$out"; return
-    fi
-    # Translate each value; keys and placeholders/tags are preserved.
-    local keys; keys="$(jq -r 'keys_unsorted[]' "$src")"
-    local tmp; tmp="$(mktemp)"; echo '{}' > "$tmp"
-    while IFS= read -r k; do
-        local v; v="$(jq -r --arg k "$k" '.[$k]' "$src")"
-        local tv; tv="$(deepl_translate "$deepl" "$v")"
-        jq --arg k "$k" --arg v "$tv" '.[$k]=$v' "$tmp" > "${tmp}.n" && mv "${tmp}.n" "$tmp"
-    done <<< "$keys"
-    mv "$tmp" "$out"
-}
-
-# --- UI locale pack: reviewed committed pack if present, else DeepL from de -
-# UI packs are fetched by the browser directly (not by the firmware) and are
-# not part of the signed manifest — the browser trusts the CDN over HTTPS.
-# German is the inline base in index.html and is never published.
-build_ui_pack() {
-    local code="$1" deepl="$2" out="$3"
-    if [[ -f "${SRC_DIR}/ui/lang-${code}.json" ]]; then
-        cp "${SRC_DIR}/ui/lang-${code}.json" "$out"      # reviewed translation
-    elif [[ -n "$DE_UI" && -f "$DE_UI" ]]; then
-        build_json_pack "$DE_UI" "$deepl" "$out"         # DeepL from de source
-    else
-        die "no reviewed UI pack for '${code}' and cannot extract the de source (node?)"
-    fi
+    return 1
 }
 
 # --- Build the assets + manifest -------------------------------------------
@@ -223,24 +150,39 @@ add_asset() {  # lang kind relpath absfile
         <<< "$MANIFEST_ASSETS")"
 }
 
-while read -r code deepl; do
+while read -r code _rest; do
     [[ -z "$code" || "$code" == \#* ]] && continue
     if [[ -n "$ONLY_LANGS" && " $ONLY_LANGS " != *" $code "* ]]; then continue; fi
-    echo "==> ${code} (deepl=${deepl})"
+    echo "==> ${code}"
 
+    # Announcement recording (committed; a locale without one ships silent).
     ann_rel="audio/announcement-${code}.alaw"
     ann_abs="${ASSETS}/${ann_rel}"
-    synth_announcement "$code" "$deepl" "$ann_abs"
-    add_asset "$code" announcement "$ann_rel" "$ann_abs"
+    if get_announcement "$code" "$ann_abs"; then
+        add_asset "$code" announcement "$ann_rel" "$ann_abs"
+    else
+        echo "   no announcement recording — text-only (silent pickup)"
+    fi
 
-    mail_rel="mail/mail-${code}.json"
-    mail_abs="${ASSETS}/${mail_rel}"
-    build_json_pack "${SRC_DIR}/mail.de.json" "$deepl" "$mail_abs"
-    add_asset "$code" mail "$mail_rel" "$mail_abs"
+    # Mail pack: committed per-locale translation (de = the source pack).
+    # Absent → the firmware's compiled German fallback is used for that locale.
+    mail_src="${SRC_DIR}/mail/mail-${code}.json"
+    [[ "$code" == "de" ]] && mail_src="${SRC_DIR}/mail.de.json"
+    if [[ -f "$mail_src" ]]; then
+        cp "$mail_src" "${ASSETS}/mail/mail-${code}.json"
+        add_asset "$code" mail "mail/mail-${code}.json" "${ASSETS}/mail/mail-${code}.json"
+    else
+        echo "   no committed mail pack — falls back to German mail"
+    fi
 
-    # UI pack (browser-fetched, not in the manifest). German is inline.
+    # UI pack (browser-fetched, not in the manifest). German is inline; absent
+    # → the browser falls back to the inline German via t().
     if [[ "$code" != "de" ]]; then
-        build_ui_pack "$code" "$deepl" "${ASSETS}/ui/lang-${code}.json"
+        if [[ -f "${SRC_DIR}/ui/lang-${code}.json" ]]; then
+            cp "${SRC_DIR}/ui/lang-${code}.json" "${ASSETS}/ui/lang-${code}.json"
+        else
+            echo "   no committed UI pack — falls back to German UI"
+        fi
     fi
 done < "${SRC_DIR}/languages.txt"
 
@@ -307,6 +249,8 @@ if [[ $NO_UPLOAD -eq 0 || $DRY_RUN -eq 1 ]]; then
     # whose assets aren't up yet.
     sftp_batch <<SFTP
 -mkdir ${CDN_BASE}
+-mkdir ${CDN_FIRMWARE}
+-mkdir ${CDN_FIRMWARE}/${VERSION}
 -mkdir ${CDN_I18N}
 -mkdir ${CDN_I18N}/audio
 -mkdir ${CDN_I18N}/mail

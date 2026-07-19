@@ -37,11 +37,15 @@ firmware change.
    inline as the base; move en/fr/es (and future locales) to CDN-fetched
    `lang-<code>.json`, lazy-loaded by the browser on language pick.
 
-6. **Release script — generate + sign + publish assets**
-   (`scripts/i18n-assets.sh`). Translate the announcement script + UI/mail
-   strings (DeepL), synthesize audio (ElevenLabs → ffmpeg `-f alaw`), build
-   and sign the manifest (existing OTA key), upload to `cdn.phoneblock.net`.
-   Prepared with credential placeholders; run by the maintainer at deploy.
+6. **Release script — assemble + sign + publish assets, co-located with the
+   firmware** (`scripts/i18n-assets.sh`, called by `scripts/release.sh` as one
+   step). Announcement recordings are **committed** (`scripts/i18n/audio/
+   announcement-<lang>.alaw`, hand-recorded/tuned); mail + UI text ship as
+   committed packs where present, else DeepL-translated from the German.
+   Build + sign the manifest (existing OTA key) and publish to
+   `firmware/<version>/i18n/` so each release carries its own bundle next to
+   its `.bin` — the device fetches the subtree for the exact version it runs,
+   so a newer release's key changes never disturb older firmware in the field.
 
 ## Verification
 

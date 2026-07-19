@@ -8,8 +8,15 @@ firmware carries no per-language payload — see `main/i18n_sync.c`.
 
 - `languages.txt` — locales to publish: `<firmware-code> <deepl-target>`.
   Add a line, re-run the generator, done — no firmware change.
-- `announcement.de.txt` — the German announcement script (the TTS source /
-  DeepL translation source). **Edit this** to change what callers hear.
+- `audio/announcement-<lang>.alaw` — the **committed announcement recordings**
+  (raw G.711 A-law, 8 kHz mono — exactly what the device streams; the same
+  format as the old single `main/audio/announcement.alaw`). Hand-record or
+  synthesize each one however you like and drop it here; the release script
+  uses it verbatim. `main/audio/convert.sh` converts a wav/mp3 to `.alaw`. A
+  language with no file here ships **text-only** (the device answers silently).
+- `announcement.de.txt` — reference transcript of the German recording (what
+  the voice says); not consumed by the build, just handy for re-recording and
+  for translators.
 - `mail.de.json` — the German status-mail strings, keyed. Mirrors the
   compiled-in fallback table in `main/mail_i18n.c`; keep the keys in sync.
   Values may contain `printf` specifiers (`%d`, `%s`, `%lld`, `%u`) and the
@@ -26,29 +33,43 @@ firmware carries no per-language payload — see `main/i18n_sync.c`.
 
 ## Asset kinds
 
-| Kind | Path on CDN | Fetched by | Integrity |
+Assets are **co-located with the firmware release** on the CDN, under
+`firmware/<version>/i18n/` — the device fetches the subtree matching the
+version it runs (see `main/i18n_sync.c`), so an older release in the field is
+never affected by a newer one's key changes, and there is a single version
+axis to reason about.
+
+| Kind | Path on CDN (under `firmware/<version>/i18n/`) | Fetched by | Integrity |
 |------|-------------|-----------|-----------|
-| announcement audio | `i18n/audio/announcement-<lang>.alaw` | firmware | SHA-256 in signed manifest |
-| mail string pack | `i18n/mail/mail-<lang>.json` | firmware | SHA-256 in signed manifest |
-| web-UI pack | `i18n/ui/lang-<code>.json` | browser | HTTPS (CDN TLS) |
+| announcement audio | `audio/announcement-<lang>.alaw` | firmware | SHA-256 in signed manifest |
+| mail string pack | `mail/mail-<lang>.json` | firmware | SHA-256 in signed manifest |
+| web-UI pack | `ui/lang-<code>.json` | browser | HTTPS (CDN TLS) |
 
 Only the firmware-consumed assets (audio, mail) are in the signed
 `manifest.json`; the UI packs are plain browser-fetched static files.
 
 ## Publishing
 
+Assets ship **with the firmware, in one step**: `scripts/release.sh` calls
+`i18n-assets.sh` for the release version, so `release.sh` alone publishes the
+`.bin` and its co-located i18n bundle. To (re)publish assets on their own:
+
 ```bash
 # Dry run: build + sign locally with a test key, print the upload commands.
 ../i18n-assets.sh --dry-run --key /path/to/test-private.pem
 
-# Real release (needs DeepL + ElevenLabs keys and the OTA signing key):
+# Standalone real publish for a given firmware version:
 ../i18n-assets.sh --version 1.5.0
 ```
 
-See `../i18n-assets.sh --help` for all options (`--from-audio` for human
-voice-overs instead of TTS, `--langs` to build a subset, `--no-upload`).
-Credentials come from `../release.settings` (gitignored) or the environment.
+`--version` MUST equal the firmware release version (what the device reports
+as `firmware_version`). See `../i18n-assets.sh --help` for all options
+(`--from-audio` to take recordings from another dir, `--langs` for a subset,
+`--no-upload`). The only credential a fully-committed setup needs is the OTA
+signing key (KeePassXC, via `../release.settings`); `DEEPL_API_KEY` is used
+only to fill in text packs for locales that don't have a committed one.
 
 Adding a language is a **publish step, not a firmware change**: every
-deployed dongle picks up the new locale from the CDN after the user selects
-it. The manifest is signed with the same ECDSA-P256 release key as OTA.
+deployed dongle picks up the new locale from its version's CDN subtree after
+the user selects it. The manifest is signed with the same ECDSA-P256 release
+key as OTA.

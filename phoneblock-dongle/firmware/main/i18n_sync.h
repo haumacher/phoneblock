@@ -7,8 +7,12 @@
 // and (later) the status-mail string pack — for the active ui_lang from the
 // CDN, so the firmware carries no per-language payload (issue #460).
 //
+// Assets are co-located with the firmware release on the CDN, under
+//   <CONFIG_PHONEBLOCK_OTA_BASE_URL>/<this-firmware-version>/i18n/
+// so each release carries its own i18n bundle next to its .bin and an older
+// release in the field is never affected by a newer one's key changes.
 // Source of truth is a signed manifest at
-//   <CONFIG_PHONEBLOCK_I18N_BASE_URL>/manifest.json
+//   <…>/i18n/manifest.json
 // with a detached signature at .../manifest.json.sig (ECDSA-P256 over
 // "phoneblock-dongle-i18n-v1\n" + the manifest bytes; same release key as
 // OTA, verified via manifest_sig.c). The manifest maps each locale to its

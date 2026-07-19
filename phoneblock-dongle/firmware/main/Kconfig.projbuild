@@ -82,23 +82,6 @@ menu "PhoneBlock Dongle"
             Mozilla root CA store (enabled via
             CONFIG_MBEDTLS_CERTIFICATE_BUNDLE_DEFAULT_FULL).
 
-    config PHONEBLOCK_I18N_BASE_URL
-        string "i18n asset base URL"
-        default "https://cdn.phoneblock.net/dongle/i18n"
-        help
-            HTTPS base URL for the localized device assets (issue #460).
-            The firmware fetches "<base>/manifest.json" and its detached
-            signature "<base>/manifest.json.sig", then downloads the
-            announcement audio and status-mail string pack for the selected
-            ui_lang from the paths the manifest lists (resolved relative to
-            this base). Assets are SHA-256-verified against the
-            signature-authenticated manifest.
-
-            The manifest is signed with the same release key as OTA
-            (ECDSA-P256; see scripts/i18n-assets.sh and RELEASE.md). No
-            per-language payload is baked into the firmware, so adding a
-            language is a publish step here, not a firmware change.
-
     config SIP_REGISTRAR_PORT
         int "SIP registrar port"
         default 5060

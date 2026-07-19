@@ -16,6 +16,7 @@
 #include "freertos/semphr.h"
 
 #include "cJSON.h"
+#include "esp_app_desc.h"
 #include "esp_crt_bundle.h"
 #include "esp_http_client.h"
 #include "esp_log.h"
@@ -397,7 +398,14 @@ static bool sync_asset(cJSON *lang_obj, const char *kind, const char *base_url,
 static void run_once(void)
 {
     const char *lang = config_ui_lang();   // validated, safe for URLs/paths
-    const char *base = CONFIG_PHONEBLOCK_I18N_BASE_URL;
+    // Assets are co-located with the firmware release that speaks their key
+    // contract: "<ota-base>/<this-version>/i18n/…". The device reads only the
+    // subtree for the exact version it is running, so a newer release that
+    // changes the key contract never disturbs older firmware in the field —
+    // and there is only one version axis to reason about.
+    char base[160];
+    snprintf(base, sizeof(base), "%s/%s/i18n",
+             CONFIG_PHONEBLOCK_OTA_BASE_URL, esp_app_get_description()->version);
     char err[64] = "";
 
     char *manifest = malloc(MANIFEST_CAP);

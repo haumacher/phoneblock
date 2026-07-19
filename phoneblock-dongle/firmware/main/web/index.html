@@ -443,20 +443,34 @@ const t = (k, p) => {
 
 // The firmware ships only the German base locale inline — the offline
 // fallback and the source every key falls back to. Every other locale
-// (en/fr/es and beyond) is fetched on demand from the CDN as
-// <base>/ui/lang-<code>.json (a flat key→string dict, same shape as the
-// inline `de` block), generated + published by the release pipeline. This
-// keeps the firmware free of per-language UI payload (issue #460): adding a
-// language is a publish step, not a reflash. A failed/absent fetch degrades
-// to German — so the browser needs internet (it usually does, even when the
-// dongle itself is still being provisioned) to render a non-German UI.
-const I18N_UI_BASE = 'https://cdn.phoneblock.net/dongle/i18n/ui';
+// (en/fr/es and beyond) is fetched on demand from the CDN, co-located with
+// the firmware release that serves this page:
+//   <fw-base>/<firmware_version>/i18n/ui/lang-<code>.json
+// (a flat key→string dict, same shape as the inline `de` block), generated +
+// published by the release pipeline alongside the .bin. Pinning to the
+// running firmware's version means a browser always loads strings that match
+// the firmware serving it, and an older release in the field is never
+// affected when a newer one changes the keys. This keeps the firmware free of
+// per-language UI payload (issue #460): adding a language is a publish step,
+// not a reflash. A failed/absent fetch degrades to German — so the browser
+// needs internet (it usually does, even when the dongle itself is still being
+// provisioned) to render a non-German UI.
+const FW_CDN_BASE = 'https://cdn.phoneblock.net/dongle/firmware';
+let _fwVer = null;
+function fwVersion(){
+  if (_fwVer) return Promise.resolve(_fwVer);
+  return fetch('/api/status')
+    .then(r => r.ok ? r.json() : null)
+    .then(d => { _fwVer = (d && d.firmware_version) ? String(d.firmware_version) : ''; return _fwVer; })
+    .catch(() => (_fwVer = ''));
+}
 const _langLoads = {};
 function ensureLangLoaded(lang){
   if (!lang || lang === 'de' || I18N[lang]) return Promise.resolve();
   if (_langLoads[lang]) return _langLoads[lang];
-  _langLoads[lang] = fetch(`${I18N_UI_BASE}/lang-${lang}.json`, {cache: 'default'})
-    .then(r => r.ok ? r.json() : null)
+  _langLoads[lang] = fwVersion()
+    .then(v => v ? fetch(`${FW_CDN_BASE}/${v}/i18n/ui/lang-${lang}.json`, {cache: 'default'}) : null)
+    .then(r => (r && r.ok) ? r.json() : null)
     .then(dict => { if (dict && typeof dict === 'object') I18N[lang] = dict; })
     .catch(() => { /* offline / no such locale → German fallback via t() */ });
   return _langLoads[lang];

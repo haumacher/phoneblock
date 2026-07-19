@@ -1,17 +1,17 @@
 # Locales to publish localized dongle assets for (issue #460).
 #
-# One per line: "<firmware-code> <deepl-target>".
-#   firmware-code : the ui_lang value the device stores / the web UI selects
-#                   (must satisfy config_lang_code_valid(): [a-z0-9-], 2..11).
-#   deepl-target  : the DeepL target-language code used to translate the
-#                   German source (announcement.de.txt, mail.de.json).
-#                   "-" means "source language, no translation" (for de).
+# One locale code per line — the ui_lang value the device stores / the web UI
+# selects (must satisfy config_lang_code_valid(): [a-z0-9-], 2..11 chars).
 #
-# Add a language by appending a line here and re-running i18n-assets.sh —
-# no firmware change, no reflash. Start with the four the web UI already
-# ships; extend toward the full set the website supports as recordings /
-# translations are reviewed.
-de -
-en EN-GB
-fr FR
-es ES
+# All translations are authored during development and committed to git:
+#   audio/announcement-<code>.alaw   (hand-recorded / synthesized)
+#   mail/mail-<code>.json            (de = mail.de.json, the source)
+#   ui/lang-<code>.json              (de is inline in index.html)
+# A locale with a missing asset degrades gracefully (silent audio / German
+# text). The release script only assembles committed files — no translation
+# runs at release time. Add a language by committing its packs and appending
+# a line here; no firmware change.
+de
+en
+fr
+es
