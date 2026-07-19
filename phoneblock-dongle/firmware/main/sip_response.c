@@ -7,29 +7,31 @@
 
 #include "sip_parse.h"   // find_header
 
-// Append a formatted fragment at `out` (capacity `cap`, incl. NUL) and return
-// the number of bytes written — but ONLY if the whole fragment fit. If it
-// would not fit (or cap <= 0), nothing usable is emitted and 0 is returned.
+// Format one fragment at `out` (capacity `cap`, incl. NUL). Returns the number
+// of bytes written on success, or -1 if the fragment did not fit entirely (or
+// cap <= 0). vsnprintf never writes more than `cap` bytes, so this can't
+// overrun `out`; the -1 lets the builder abandon a response that would be
+// truncated instead of emitting a partial (and, on TCP, mis-framed) one.
 //
-// This is the invariant the whole builder rests on: because a fragment that
-// doesn't fit contributes 0, a running accumulator `n` can never be advanced
-// past `out_cap - 1`. Every subsequent `out + n` therefore stays inside the
-// buffer and every `out_cap - n` stays >= 1. snprintf's return value (the
-// length it WOULD have written) is deliberately not trusted as the advance —
-// that unclamped value on the ";tag=" path is what previously ran the cursor
-// off the end and smashed adjacent heap metadata.
+// IMPORTANT: a caller must treat -1 as "stop" and must NOT fold it into a
+// running length with `n += append_fmt(...)`. Doing so would move the cursor
+// *backwards*, and repeated failures would drive it negative — pointing
+// `out + n` before the buffer and making `cap - n` larger than the buffer,
+// i.e. reintroducing the very overflow this guards against. sip_response_build
+// routes every call through the ADD() macro so the check cannot be skipped.
 static int append_fmt(char *out, int cap, const char *fmt, ...)
 {
-    if (cap <= 0) return 0;
+    if (cap <= 0) return -1;
     va_list ap;
     va_start(ap, fmt);
     int w = vsnprintf(out, (size_t)cap, fmt, ap);
     va_end(ap);
-    return (w > 0 && w < cap) ? w : 0;
+    return (w >= 0 && w < cap) ? w : -1;
 }
 
 // Copy one full "Name: value\r\n" line from req into out. Returns bytes
-// written (0 if the header is absent or doesn't fit).
+// written, 0 if the header is absent (nothing to echo — not an error), or -1
+// if the header is present but does not fit.
 static int echo_header_line(const char *req, int req_len, const char *name,
                             char *out, int out_cap)
 {
@@ -45,8 +47,8 @@ static int echo_header_line(const char *req, int req_len, const char *name,
 }
 
 // Like echo_header_line, but for the To header of a dialog-forming request:
-// if the To has no tag yet, append ";tag=<our_tag>". Both branches go through
-// append_fmt, so an over-long To is dropped whole rather than overrunning.
+// if the To has no tag yet, append ";tag=<our_tag>". Returns bytes written,
+// 0 if there is no To header, or -1 if the To does not fit.
 static int echo_to_with_tag(const char *req, int req_len,
                             const char *our_tag, char *out, int out_cap)
 {
@@ -71,33 +73,47 @@ int sip_response_build(const char *req, int req_len,
                        int contact_port,
                        char *out, int out_cap)
 {
-    if (out_cap <= 0) return 0;
+    if (out_cap <= 0) return -1;
     int body_len = body ? (int)strlen(body) : 0;
 
     int n = 0;
-    n += append_fmt(out + n, out_cap - n, "SIP/2.0 %d %s\r\n", status, reason);
-    n += echo_header_line(req, req_len, "Via",     out + n, out_cap - n);
-    n += echo_header_line(req, req_len, "From",    out + n, out_cap - n);
-    n += echo_to_with_tag(req, req_len, our_tag,   out + n, out_cap - n);
-    n += echo_header_line(req, req_len, "Call-ID", out + n, out_cap - n);
-    n += echo_header_line(req, req_len, "CSeq",    out + n, out_cap - n);
-    n += append_fmt(out + n, out_cap - n,
+
+    // Append a fragment (or the result of an echo_* helper) and advance the
+    // cursor — but abandon the whole response if it did not fit. Because n is
+    // only ever advanced by a non-negative amount, it stays within
+    // [0, out_cap - 1], so every `out + n` / `out_cap - n` below is in range.
+    // Skipping the `< 0` check on any single call would break that invariant
+    // (see append_fmt()'s note), so every append MUST go through this macro.
+    #define ADD(expr) do {          \
+        int w_ = (expr);            \
+        if (w_ < 0) return -1;      \
+        n += w_;                    \
+    } while (0)
+
+    ADD(append_fmt(out + n, out_cap - n, "SIP/2.0 %d %s\r\n", status, reason));
+    ADD(echo_header_line(req, req_len, "Via",     out + n, out_cap - n));
+    ADD(echo_header_line(req, req_len, "From",    out + n, out_cap - n));
+    ADD(echo_to_with_tag(req, req_len, our_tag,   out + n, out_cap - n));
+    ADD(echo_header_line(req, req_len, "Call-ID", out + n, out_cap - n));
+    ADD(echo_header_line(req, req_len, "CSeq",    out + n, out_cap - n));
+    ADD(append_fmt(out + n, out_cap - n,
         "Contact: <sip:%s@%s:%d>\r\n"
         "Allow: INVITE, ACK, CANCEL, BYE, OPTIONS\r\n"
         "User-Agent: phoneblock-dongle/0.1\r\n",
-        contact_user, contact_host, contact_port);
+        contact_user, contact_host, contact_port));
 
     if (body_len > 0) {
-        n += append_fmt(out + n, out_cap - n,
+        ADD(append_fmt(out + n, out_cap - n,
             "Content-Type: application/sdp\r\n"
             "Content-Length: %d\r\n\r\n%s",
-            body_len, body);
+            body_len, body));
     } else {
-        n += append_fmt(out + n, out_cap - n,
-            "Content-Length: 0\r\n\r\n");
+        ADD(append_fmt(out + n, out_cap - n,
+            "Content-Length: 0\r\n\r\n"));
     }
 
-    // n is always <= out_cap - 1; guarantee a terminator regardless.
-    out[n < out_cap ? n : out_cap - 1] = '\0';
+    #undef ADD
+
+    out[n] = '\0';   // n is in [0, out_cap - 1]
     return n;
 }

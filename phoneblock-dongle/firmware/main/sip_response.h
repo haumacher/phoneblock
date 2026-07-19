@@ -16,10 +16,14 @@
 // no tag yet, ";tag=<our_tag>" is appended to the echoed To. Callers that
 // need a fresh stateless tag (e.g. OPTIONS) generate one and pass it in.
 //
-// Returns the number of bytes written (always strictly < out_cap). The
-// result is NUL-terminated. The function never writes outside `out`, no
-// matter how long the request's headers are — every field that does not fit
-// in the remaining space is dropped whole rather than truncated mid-write.
+// Returns the number of bytes written (NUL-terminated, always < out_cap) on
+// success, or -1 if the complete response does not fit in `out`. It is
+// all-or-nothing: rather than emit a response with a header dropped from the
+// middle (invalid SIP, and on TCP a Content-Length framing hazard), a request
+// whose echoed headers overflow the buffer yields -1 and the caller must send
+// nothing. The function never writes outside `out` regardless of input. A
+// legitimate request always fits comfortably; -1 only happens for a
+// pathologically oversized (malformed/hostile) request.
 int sip_response_build(const char *req, int req_len,
                        int status, const char *reason,
                        const char *our_tag, const char *body,

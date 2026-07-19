@@ -831,6 +831,15 @@ static void send_response(sip_ctx_t *c, const struct sockaddr_in *peer,
                                     current_identity_user(),
                                     advertised_host(c), advertised_port(),
                                     tx, SIP_TX_BUF_SIZE);
+    if (tx_len < 0) {
+        // The request's headers were too large to echo into a complete
+        // response. Send nothing rather than a partial, invalid message —
+        // only reachable from a malformed/oversized request.
+        ESP_LOGW(TAG, "dropping %d %s: response exceeds %d-byte buffer",
+                 status, reason, SIP_TX_BUF_SIZE);
+        free(tx);
+        return;
+    }
     ESP_LOGI(TAG, "→ %d %s (%d bytes):\n%.*s", status, reason, tx_len, tx_len, tx);
     sip_transport_send_to(c->transport, peer, tx, tx_len);
     free(tx);
