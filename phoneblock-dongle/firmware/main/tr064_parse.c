@@ -10,6 +10,9 @@
 
 #include <string.h>
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 int tr064_xml_find_text(const char *xml, const char *tag,
                         char *out, size_t cap)
 {

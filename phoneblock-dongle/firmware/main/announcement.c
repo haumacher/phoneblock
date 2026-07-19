@@ -9,6 +9,9 @@
 #include "esp_log.h"
 #include "esp_spiffs.h"
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 static const char *TAG = "announcement";
 
 // EMBED_FILES in main/CMakeLists.txt makes the linker emit these.

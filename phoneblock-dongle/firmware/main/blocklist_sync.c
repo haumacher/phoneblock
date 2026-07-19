@@ -23,6 +23,9 @@
 #include "strbuf.h"
 #include "scheduler.h"
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 static const char *TAG = "blsync";
 
 // Stream-read chunk for the HTTPS download. Small to stay friendly with

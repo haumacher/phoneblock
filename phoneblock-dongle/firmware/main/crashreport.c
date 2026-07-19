@@ -19,6 +19,9 @@
 #include "config.h"
 #include "http_util.h"
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 static const char *TAG = "crashrep";
 
 // Hard cap matches the partition size (see partitions.csv: 0xD000 = 52 KB).

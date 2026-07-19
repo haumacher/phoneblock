@@ -1,5 +1,8 @@
 #include "mail_html.h"
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 // Each builder writes a terminating '\0' at body[len] before returning, so
 // the buffer is always a valid C string after any call. This matters
 // because the assembled body is consumed as a C string (smtp_encode_body

@@ -12,6 +12,9 @@
 #include "config.h"
 #include "scheduler.h"
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 static const char *TAG = "time_sync";
 
 // Static SNTP servers we register: the default gateway and pool.ntp.org.

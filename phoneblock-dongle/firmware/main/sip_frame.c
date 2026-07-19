@@ -4,6 +4,9 @@
 
 #include "sip_parse.h"
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 void sip_framer_init(sip_framer_t *f, char *buf, int cap)
 {
     f->buf = buf;

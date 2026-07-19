@@ -6,6 +6,9 @@
 #include "sip_parse.h"   // find_header
 #include "strbuf.h"
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 // Echo one full "Name: value\r\n" line from req into the builder. A missing
 // header is simply skipped; if the header is present but does not fit, the
 // builder records the truncation (checked once at the end).

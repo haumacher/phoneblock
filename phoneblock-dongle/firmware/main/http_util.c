@@ -7,6 +7,9 @@
 
 #include "config.h"
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 static char s_user_agent[120] = "";
 
 const char *http_util_user_agent(void)

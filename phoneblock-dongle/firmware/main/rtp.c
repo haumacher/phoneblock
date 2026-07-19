@@ -16,6 +16,9 @@
 
 #include "srtp.h"
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 static const char *TAG = "rtp";
 
 // Singleton RTP socket, created once and reused for every call: the STUN

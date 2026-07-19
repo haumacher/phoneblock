@@ -8,6 +8,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 // Powers of 11 used in the base-11 key encoding. POW11[i] is the place
 // value of slot SLOTS - 1 - i, i.e. the contribution of a symbol at the
 // i-th least-significant slot. 11^16 ≈ 4.6e16 fits comfortably in 56 bits.

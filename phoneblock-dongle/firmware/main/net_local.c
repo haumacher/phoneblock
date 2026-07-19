@@ -9,6 +9,9 @@
 #include "lwip/sockets.h"
 #else
 #include <arpa/inet.h>
+
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
 #endif
 
 // --- Parsing --------------------------------------------------------

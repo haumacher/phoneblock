@@ -21,6 +21,9 @@
 #include "http_util.h"
 #include "stats.h"
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 static const char *TAG = "api";
 
 // Live token-health flag, fed from every Bearer-authenticated call.

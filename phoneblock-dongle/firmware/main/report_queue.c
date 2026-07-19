@@ -11,6 +11,9 @@
 #include "api.h"
 #include "rtp.h"
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 static const char *TAG = "report_q";
 
 // Phone numbers in the queue are E.164 / "00" form, never longer

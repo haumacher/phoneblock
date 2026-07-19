@@ -177,6 +177,9 @@ int log_capture_suppressed(char level, const char *tag, const char *msg)
 #include "config.h"
 #include "stats.h"
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 // Previous (console) sink, so the serial log stays fully intact.
 static vprintf_like_t s_console;
 

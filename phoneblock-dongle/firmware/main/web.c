@@ -39,6 +39,9 @@
 #include "tr064.h"
 #include "web_auth.h"
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 static const char *TAG = "web";
 
 static httpd_handle_t s_server = NULL;

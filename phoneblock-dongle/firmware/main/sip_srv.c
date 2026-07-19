@@ -164,6 +164,9 @@ int sip_srv_pick(const sip_srv_record_t *records, int n, uint32_t rnd)
 #include "lwip/inet.h"
 #include "lwip/ip_addr.h"
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 static const char *TAG = "sip_srv";
 
 // Encode "_sips._tcp.tel.t-online.de" into DNS labels:

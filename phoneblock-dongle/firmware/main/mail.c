@@ -26,6 +26,9 @@
 #include "time_sync.h"
 #include "wifi.h"
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 static const char *TAG = "mail";
 
 // Same heap headroom rationale as crashreport.c / logreport.c: the TLS

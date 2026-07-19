@@ -14,6 +14,9 @@
 #include "improv_proto.h"
 #include "wifi.h"
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 static const char *TAG = "improv";
 
 #define IMPROV_UART CONFIG_ESP_CONSOLE_UART_NUM

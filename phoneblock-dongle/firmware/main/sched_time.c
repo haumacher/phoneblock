@@ -1,5 +1,8 @@
 #include "sched_time.h"
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 long seconds_until_daily(time_t now, int at_hour, int at_minute)
 {
     struct tm lt;

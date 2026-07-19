@@ -3,6 +3,9 @@
 #include <string.h>
 #include <strings.h>
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 static void copy_value(const char *src, size_t src_len, char *dst, size_t dst_cap)
 {
     size_t n = src_len < dst_cap - 1 ? src_len : dst_cap - 1;

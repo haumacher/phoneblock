@@ -2,6 +2,9 @@
 
 #include <string.h>
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 static const uint8_t HEADER[6] = { 'I', 'M', 'P', 'R', 'O', 'V' };
 
 #define IMPROV_VERSION 1

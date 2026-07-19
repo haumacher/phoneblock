@@ -33,6 +33,9 @@
 #include "rtp.h"
 #include "stats.h"
 
+// Must be last: bans unsafe string APIs for the rest of this file.
+#include "banned_apis.h"
+
 static const char *TAG = "sip";
 
 // The local SIP port (bound + advertised) is configurable via
