@@ -78,11 +78,13 @@ void announcement_localized_path(char *out, size_t cap, const char *lang)
              SPIFFS_LOCALIZED_PREFIX, lang, SPIFFS_LOCALIZED_SUFFIX);
 }
 
-// Size of the downloaded announcement for the current ui_lang, or -1 if
-// there is none / it is unusable. stat()-only, like custom_size(); not
-// latched because it legitimately changes when the locale is switched or a
-// fresh file is downloaded, and a missing file is the normal (not warned)
-// case here.
+// Size of the single downloaded announcement for the active ui_lang, or -1 if
+// there is none / it is unusable. There is only ever one localized file on the
+// device: i18n_sync.c picks the content via the ui_lang → en → de fallback
+// chain at *download* time and stores it under the ui_lang name, so playback
+// just reads that one file. stat()-only, like custom_size(); not latched — a
+// missing file is the normal (not warned) case and it changes on locale
+// switch / download.
 static long localized_size(void)
 {
     if (!s_spiffs_mounted) return -1;
@@ -90,9 +92,7 @@ static long localized_size(void)
     announcement_localized_path(path, sizeof(path), config_ui_lang());
     struct stat st;
     if (stat(path, &st) != 0) return -1;
-    if (st.st_size <= 0 || (size_t)st.st_size > ANNOUNCEMENT_MAX_BYTES) {
-        return -1;
-    }
+    if (st.st_size <= 0 || (size_t)st.st_size > ANNOUNCEMENT_MAX_BYTES) return -1;
     return (long)st.st_size;
 }
 
@@ -132,8 +132,10 @@ esp_err_t announcement_open(announcement_src_t *src)
     src->pos  = 0;
     src->len  = 0;
 
-    // Resolution order: user-uploaded custom file > downloaded localized
-    // file for the active locale > nothing (empty source → silent pickup).
+    // Resolution order: user-uploaded custom file > the single downloaded
+    // localized file for the active locale > nothing (empty source → silent
+    // pickup). The download-time ui_lang → en → de fallback lives in
+    // i18n_sync.c, so there is only one file to consider here.
     const char *path = SPIFFS_FILE;
     char lpath[48];
     long sz = custom_size();

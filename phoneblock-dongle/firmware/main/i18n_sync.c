@@ -359,17 +359,14 @@ static void prune_stale(const char *keep_lang)
 }
 
 // ---------------------------------------------------------------------------
-// One asset (announcement / mail): skip if the on-disk SHA already matches,
-// else download + verify + rename. Missing in the manifest is not an error.
+// Download one manifest asset into final_path (skip if the on-disk SHA already
+// matches). The asset is stored under the ui_lang name regardless of which
+// fallback locale it came from — the device keeps exactly one file per kind.
 // ---------------------------------------------------------------------------
 
-static bool sync_asset(cJSON *lang_obj, const char *kind, const char *base_url,
-                       const char *final_path, char *err, size_t err_cap)
+static bool download_asset(cJSON *asset, const char *kind, const char *base_url,
+                           const char *final_path, char *err, size_t err_cap)
 {
-    cJSON *asset = cJSON_GetObjectItem(lang_obj, kind);
-    if (!cJSON_IsObject(asset)) {
-        return true;   // this locale has no such asset — fine
-    }
     cJSON *jpath = cJSON_GetObjectItem(asset, "path");
     cJSON *jsha  = cJSON_GetObjectItem(asset, "sha256");
     if (!cJSON_IsString(jpath) || !cJSON_IsString(jsha) ||
@@ -389,6 +386,29 @@ static bool sync_asset(cJSON *lang_obj, const char *kind, const char *base_url,
     snprintf(url, sizeof(url), "%s/%s", base_url, jpath->valuestring);
     return download_verify_rename(url, final_path, jsha->valuestring,
                                   err, err_cap);
+}
+
+// Download a single asset of `kind` (announcement / mail) for the first locale
+// in `chain` (ui_lang → en → de) whose manifest entry has it, storing it under
+// final_path. Fetching only ONE file — the fallback is over which locale's
+// content to pick, not over how many are kept. If no chain locale offers it,
+// remove any stale file and treat as success (that content is unavailable, the
+// caller's compiled/inline fallback or silence takes over).
+static bool sync_kind_chain(cJSON *assets, const char *kind, const char *base_url,
+                            const char *final_path, const char **chain, int chain_n,
+                            char *err, size_t err_cap)
+{
+    for (int i = 0; i < chain_n; i++) {
+        cJSON *lo = cJSON_GetObjectItem(assets, chain[i]);
+        cJSON *asset = cJSON_IsObject(lo) ? cJSON_GetObjectItem(lo, kind) : NULL;
+        if (cJSON_IsObject(asset)) {
+            if (i > 0) ESP_LOGI(TAG, "%s: no '%s', falling back to '%s'",
+                                kind, chain[0], chain[i]);
+            return download_asset(asset, kind, base_url, final_path, err, err_cap);
+        }
+    }
+    unlink(final_path);   // not offered in any chain locale → serve fallback
+    return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -450,16 +470,22 @@ static void run_once(void)
     }
 
     cJSON *assets = cJSON_GetObjectItem(root, "assets");
-    cJSON *lang_obj = assets ? cJSON_GetObjectItem(assets, lang) : NULL;
-    if (!cJSON_IsObject(lang_obj)) {
-        // No assets published for this locale yet: not a hard error, but
-        // clear any stale files so we don't keep serving another language.
-        ESP_LOGW(TAG, "no assets for locale '%s'", lang);
+    if (!cJSON_IsObject(assets)) {
+        ESP_LOGW(TAG, "manifest has no assets object");
         cJSON_Delete(root);
-        prune_stale(lang);
-        set_status(true, lang, NULL);
+        set_status(false, lang, "no assets");
         return;
     }
+
+    // Download-time fallback chain: prefer the active ui_lang, then English,
+    // then German. Whichever locale's content is chosen is stored under the
+    // ui_lang name, so only ONE announcement and ONE mail pack ever live on
+    // the device (announcement.c / mail_i18n.c read just that file).
+    const char *chain[3];
+    int cn = 0;
+    chain[cn++] = lang;
+    if (strcmp(lang, "en") != 0) chain[cn++] = "en";
+    if (strcmp(lang, "de") != 0) chain[cn++] = "de";
 
     char ann_path[48];
     announcement_localized_path(ann_path, sizeof(ann_path), lang);
@@ -467,12 +493,14 @@ static void run_once(void)
     snprintf(mail_path, sizeof(mail_path), "%s/mail-%s.json", SPIFFS_DIR, lang);
 
     bool ok = true;
-    if (!sync_asset(lang_obj, "announcement", base, ann_path, err, sizeof(err))) {
+    if (!sync_kind_chain(assets, "announcement", base, ann_path, chain, cn,
+                         err, sizeof(err))) {
         ESP_LOGW(TAG, "announcement sync: %s", err);
         ok = false;
     }
     char err2[64] = "";
-    if (!sync_asset(lang_obj, "mail", base, mail_path, err2, sizeof(err2))) {
+    if (!sync_kind_chain(assets, "mail", base, mail_path, chain, cn,
+                         err2, sizeof(err2))) {
         ESP_LOGW(TAG, "mail pack sync: %s", err2);
         if (ok) { ok = false; strncpy(err, err2, sizeof(err) - 1); }
     }

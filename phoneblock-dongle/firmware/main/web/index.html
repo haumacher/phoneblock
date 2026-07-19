@@ -478,9 +478,13 @@ const _langLoads = {};
 function ensureLangLoaded(lang){
   if (!lang || lang === 'de' || I18N[lang]) return Promise.resolve();
   if (_langLoads[lang]) return _langLoads[lang];
+  const fetchPack = (v, code) => (!v) ? Promise.resolve(null)
+    : fetch(`${FW_CDN_BASE}/${v}/i18n/ui/lang-${code}.json`, {cache: 'default'})
+        .then(r => (r && r.ok) ? r.json() : null).catch(() => null);
+  // Download-time fallback chain: ui_lang → en (then German via t()). Only one
+  // pack is kept — whichever content is found is stored under I18N[lang].
   _langLoads[lang] = fwVersion()
-    .then(v => v ? fetch(`${FW_CDN_BASE}/${v}/i18n/ui/lang-${lang}.json`, {cache: 'default'}) : null)
-    .then(r => (r && r.ok) ? r.json() : null)
+    .then(v => fetchPack(v, lang).then(d => (d || lang === 'en') ? d : fetchPack(v, 'en')))
     .then(dict => { if (dict && typeof dict === 'object') I18N[lang] = dict; })
     .catch(() => { /* offline / no such locale → German fallback via t() */ });
   return _langLoads[lang];

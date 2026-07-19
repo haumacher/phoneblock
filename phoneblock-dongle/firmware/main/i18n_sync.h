@@ -26,13 +26,18 @@
 //                                "sha256":"<hex>", "bytes": 1234} },
 //       "de": { ... }, ... } }
 //
-// Each asset is streamed to a SPIFFS temp file, its SHA-256 checked against
-// the (signature-authenticated) manifest, then renamed into place:
+// Exactly ONE announcement and ONE mail pack are kept on the device, for the
+// active ui_lang. Which locale's content fills them is chosen at download time
+// by a fallback chain — ui_lang → en → de — so a locale with no recording /
+// no translation still gets a usable asset (e.g. German audio) instead of
+// nothing. The chosen content is stored under the ui_lang name:
 //   announcement → /spiffs/announcement-<lang>.alaw  (announcement.c reads it)
-//   mail pack    → /spiffs/mail-<lang>.json          (mail.c reads it)
-// Assets for other locales are pruned so the shared 640 KB storage partition
-// is not filled by stale downloads. A locale whose SHA already matches the
-// on-disk file is skipped (no re-download).
+//   mail pack    → /spiffs/mail-<lang>.json          (mail_i18n.c reads it)
+// Each asset is streamed to a SPIFFS temp file, its SHA-256 checked against
+// the (signature-authenticated) manifest, then renamed into place. Assets for
+// other locales are pruned so the shared 640 KB storage partition is not
+// filled by stale downloads. A locale whose SHA already matches the on-disk
+// file is skipped (no re-download).
 //
 // Runs on the scheduler task (never on the httpd thread): daily, ~shortly
 // after boot, and on demand when the user switches the UI language.
