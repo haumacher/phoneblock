@@ -27,9 +27,5 @@
   "verdict.error": "Σφάλμα",
   "verdict.unknown": "άγνωστο",
   "log.heading": "Νέες καταχωρήσεις στο αρχείο καταγραφής",
-  "update.intro1": "Το firmware στη συσκευή σου ",
-  "update.link": "Dongle PhoneBlock",
-  "update.intro2": " δημοσιεύτηκε στο ",
-  "update.version_prefix": "Έκδοση ",
-  "update.intro3": " ενημερώθηκε."
+  "update.body": "Το firmware της συσκευής σου {device} ενημερώθηκε στην έκδοση {version}."
 }

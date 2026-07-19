@@ -27,9 +27,5 @@
   "verdict.error": "Помилка",
   "verdict.unknown": "невідомо",
   "log.heading": "Нові записи в протоколі",
-  "update.intro1": "Прошивка на твоєму ",
-  "update.link": "Донгл PhoneBlock",
-  "update.intro2": " було опубліковано на ",
-  "update.version_prefix": "Версія ",
-  "update.intro3": " оновлено."
+  "update.body": "Прошивка на твоєму {device} була оновлена до версії {version}."
 }

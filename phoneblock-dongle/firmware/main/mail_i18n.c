@@ -12,7 +12,7 @@
 static const char *TAG = "mail_i18n";
 
 // Compiled-in German fallback — kept in sync with the German mail source
-// scripts/i18n/l10n/mail/mail_de.arb (the translation source). Used whenever
+// i18n/l10n/mail/mail_de.arb (the translation source). Used whenever
 // ui_lang is "de", the downloaded pack is missing/invalid, or a key is absent.
 static const struct { const char *key, *val; } DE[] = {
     { "intro",                 "Statusmeldung deines PhoneBlock-Dongles." },
@@ -49,11 +49,7 @@ static const struct { const char *key, *val; } DE[] = {
 
     { "log.heading",           "Neue Meldungen im Protokoll" },
 
-    { "update.intro1",         "Die Firmware auf deinem " },
-    { "update.link",           "PhoneBlock-Dongle" },
-    { "update.intro2",         " wurde auf " },
-    { "update.version_prefix", "Version " },
-    { "update.intro3",         " aktualisiert." },
+    { "update.body",           "Die Firmware auf deinem {device} wurde auf Version {version} aktualisiert." },
 };
 
 static const char *de_fallback(const char *key)

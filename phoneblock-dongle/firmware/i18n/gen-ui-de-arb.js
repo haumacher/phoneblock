@@ -1,20 +1,20 @@
 #!/usr/bin/env node
-// Regenerate scripts/i18n/l10n/ui/ui_de.arb from the inline `I18N.de` in
+// Regenerate i18n/l10n/ui/ui_de.arb from the inline `I18N.de` in
 // main/web/index.html — the runtime source of truth for the German web UI, so
 // German is never duplicated. Run this whenever the German UI text changes,
-// then `cd scripts/i18n/l10n && gradle translateArb` and commit.
+// then `cd i18n/l10n && gradle translateArb` and commit.
 //
 // It MERGES: for a key whose German value is unchanged, the existing @key
 // metadata (incl. the plugin's `x-translated` CRC) is preserved so the
 // translator skips it; a changed/new key gets a fresh @key with no CRC, so it
 // is re-translated. Keys dropped from the UI are dropped here too.
 //
-//   node scripts/i18n/gen-ui-de-arb.js
+//   node i18n/gen-ui-de-arb.js
 
 const fs = require('fs');
 const path = require('path');
 
-const ROOT = path.join(__dirname, '..', '..');            // firmware/
+const ROOT = path.join(__dirname, '..');            // firmware/
 const INDEX = path.join(ROOT, 'main', 'web', 'index.html');
 const OUT = path.join(__dirname, 'l10n', 'ui', 'ui_de.arb');
 

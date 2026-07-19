@@ -4,7 +4,7 @@
 // (mail_<lang>.arb, ui_<lang>.arb) are committed to git; the release script
 // only assembles those committed files — no translation runs at release time.
 //
-// Run:  cd scripts/i18n/l10n && gradle translateArb
+// Run:  cd i18n/l10n && gradle translateArb
 //       (needs a DeepL key under the `deepl` server id in ~/.m2/settings.xml,
 //        exactly like phoneblock_mobile's translateArb and the web plugins.)
 pluginManagement {

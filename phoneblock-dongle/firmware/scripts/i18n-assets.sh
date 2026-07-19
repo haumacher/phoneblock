@@ -6,17 +6,17 @@
 #
 # The firmware carries NO per-language payload — this script is how a
 # language reaches the fleet. Adding one is: append a line to
-# scripts/i18n/languages.txt and re-run this. No firmware change, no reflash.
+# i18n/languages.txt and re-run this. No firmware change, no reflash.
 #
 #   ./scripts/i18n-assets.sh [options]
 #
 # All sources are committed to git; nothing is translated at release time.
-# Announcement recordings: scripts/i18n/audio/announcement-<lang>.alaw (like
+# Announcement recordings: i18n/audio/announcement-<lang>.alaw (like
 # today's single main/audio/announcement.alaw) — hand-record / tune each; a
 # language with no recording ships text-only (silent pickup). Mail + web-UI
-# text: the committed ARB files under scripts/i18n/l10n/ (mail_<lang>.arb,
+# text: the committed ARB files under i18n/l10n/ (mail_<lang>.arb,
 # ui_<lang>.arb), translated during development by the auto-translate-arb
-# Gradle plugin (see scripts/i18n/l10n/); this script just strips their @key
+# Gradle plugin (see i18n/l10n/); this script just strips their @key
 # metadata into the published packs. Missing packs degrade to the firmware's
 # compiled German fallback / the browser's inline German.
 #
@@ -26,7 +26,7 @@
 #   --langs "a b"   Only build these firmware codes (default: all in
 #                   languages.txt).
 #   --from-audio D  Take announcement recordings from dir D instead of
-#                   scripts/i18n/audio (.alaw used as-is; wav/mp3/m4a/flac
+#                   i18n/audio (.alaw used as-is; wav/mp3/m4a/flac
 #                   converted via ffmpeg).
 #   --key FILE      Sign with this ECDSA-P256 private-key PEM directly
 #                   (skips the KeePassXC pull; used by the roundtrip test).
@@ -37,7 +37,7 @@
 #   -h | --help     This help.
 #
 # Assembles committed files only — no translation runs here. Translations are
-# produced during development (see scripts/i18n/README.md) and committed.
+# produced during development (see i18n/README.md) and committed.
 #
 # Credentials (env or scripts/release.settings, same file release.sh uses):
 #   KEEPASS_DB/ENTRY/ATTACHMENT   OTA signing key (see sign-manifest.sh).
@@ -53,8 +53,8 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SRC_DIR="${SCRIPT_DIR}/i18n"
 FW_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+SRC_DIR="${FW_DIR}/i18n"
 
 # --- CDN layout (mirrors release.sh) ---------------------------------------
 # i18n assets are co-located with the firmware: firmware/<version>/i18n/.
@@ -121,7 +121,7 @@ echo "==> staging ${STAGE}"
 # --- Announcement: use the committed recording for <lang> ------------------
 # Prefer a ready ".alaw" (raw G.711 A-law 8 kHz mono, exactly what the device
 # streams) used verbatim; otherwise convert a committed wav/mp3/m4a/flac via
-# ffmpeg. Recordings live in AUDIO_DIR (scripts/i18n/audio, or --from-audio),
+# ffmpeg. Recordings live in AUDIO_DIR (i18n/audio, or --from-audio),
 # committed to git so you can hand-record / tune each one. Returns non-zero
 # when a language has no recording yet — that locale then ships text-only.
 get_announcement() {
@@ -225,7 +225,7 @@ base64 -w0 < "$SIGBIN" > "${ASSETS}/manifest.json.sig"
 echo "==> signature written (${ASSETS}/manifest.json.sig)"
 
 # Self-check: verify against the release public key so a signing-key mixup
-# is caught before publishing. Ships as scripts/i18n/public.pem (the same
+# is caught before publishing. Ships as i18n/public.pem (the same
 # key baked into manifest_sig.c); override with I18N_PUBLIC_PEM for tests.
 PUBLIC_PEM="${I18N_PUBLIC_PEM:-${SRC_DIR}/public.pem}"
 if [[ -f "$PUBLIC_PEM" ]]; then

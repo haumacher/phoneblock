@@ -27,9 +27,5 @@
   "verdict.error": "错误",
   "verdict.unknown": "未知",
   "log.heading": "日志中的新记录",
-  "update.intro1": "你设备上的固件",
-  "update.link": "PhoneBlock 适配器",
-  "update.intro2": " 已发布于",
-  "update.version_prefix": "版本",
-  "update.intro3": " 已更新。"
+  "update.body": "您 {device} 的固件已更新至 {version}。"
 }

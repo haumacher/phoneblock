@@ -272,7 +272,7 @@ run scp "${STAGE_VERSION}"/* "${CDN_HOST}:${REMOTE_VERSION}/"
 # from the same version tree as its .bin (see i18n_sync.c). This is the single
 # deploy step for #460 — signs with the same OTA key, no extra services
 # required (recordings and reviewed text packs are committed in
-# scripts/i18n/). If it fails, the firmware release still completes — publish
+# i18n/). If it fails, the firmware release still completes — publish
 # i18n separately with scripts/i18n-assets.sh --version ${VERSION}.
 I18N_ARGS=(--version "${VERSION}")
 [[ "$MODE" == "dry-run" ]] && I18N_ARGS+=(--dry-run)

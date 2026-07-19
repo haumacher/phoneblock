@@ -27,9 +27,5 @@
   "verdict.error": "Błąd",
   "verdict.unknown": "nieznane",
   "log.heading": "Nowe wpisy w protokole",
-  "update.intro1": "Oprogramowanie sprzętowe w Twoim ",
-  "update.link": "Klucz PhoneBlock",
-  "update.intro2": " zostało opublikowane na ",
-  "update.version_prefix": "Wersja ",
-  "update.intro3": " zaktualizowano."
+  "update.body": "Oprogramowanie sprzętowe na Twoim {device} zostało zaktualizowane do wersji {version}."
 }

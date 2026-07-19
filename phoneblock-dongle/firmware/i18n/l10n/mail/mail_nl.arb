@@ -27,9 +27,5 @@
   "verdict.error": "Fout",
   "verdict.unknown": "onbekend",
   "log.heading": "Nieuwe berichten in het logboek",
-  "update.intro1": "De firmware op je ",
-  "update.link": "PhoneBlock-dongle",
-  "update.intro2": " werd op ",
-  "update.version_prefix": "Versie ",
-  "update.intro3": " bijgewerkt."
+  "update.body": "De firmware op je {device} is bijgewerkt naar versie {version}."
 }

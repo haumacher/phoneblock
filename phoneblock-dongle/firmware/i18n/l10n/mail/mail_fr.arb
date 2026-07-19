@@ -27,9 +27,5 @@
   "verdict.error": "Erreur",
   "verdict.unknown": "inconnu",
   "log.heading": "Nouvelles entrées dans le journal",
-  "update.intro1": "Le micrologiciel de ton ",
-  "update.link": "Clé PhoneBlock",
-  "update.intro2": " a été publié sur ",
-  "update.version_prefix": "Version ",
-  "update.intro3": " mis à jour."
+  "update.body": "Le micrologiciel de ton {device} a été mis à jour vers la version {version}."
 }

@@ -135,29 +135,13 @@
     "description": "Log-section heading",
     "x-translated": "a056731e"
   },
-  "update.intro1": "Die Firmware auf deinem ",
-  "@update.intro1": {
-    "description": "Status-mail string (update.intro1); keep %d/%s/%u/%lld and <b> tags",
-    "x-translated": "42492e5"
-  },
-  "update.link": "PhoneBlock-Dongle",
-  "@update.link": {
-    "description": "Status-mail string (update.link); keep %d/%s/%u/%lld and <b> tags",
-    "x-translated": "86a345d4"
-  },
-  "update.intro2": " wurde auf ",
-  "@update.intro2": {
-    "description": "Status-mail string (update.intro2); keep %d/%s/%u/%lld and <b> tags",
-    "x-translated": "92a7bf82"
-  },
-  "update.version_prefix": "Version ",
-  "@update.version_prefix": {
-    "description": "Status-mail string (update.version_prefix); keep %d/%s/%u/%lld and <b> tags",
-    "x-translated": "12c822ca"
-  },
-  "update.intro3": " aktualisiert.",
-  "@update.intro3": {
-    "description": "Status-mail string (update.intro3); keep %d/%s/%u/%lld and <b> tags",
-    "x-translated": "cf0fec2b"
+  "update.body": "Die Firmware auf deinem {device} wurde auf Version {version} aktualisiert.",
+  "@update.body": {
+    "description": "Firmware-update notice. {device} = linked device name (PhoneBlock-Dongle), {version} = linked version number; both are HTML inserted by the firmware.",
+    "placeholders": {
+      "device": {},
+      "version": {}
+    },
+    "x-translated": "d9af8de3"
   }
 }

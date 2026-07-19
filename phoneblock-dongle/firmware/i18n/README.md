@@ -42,10 +42,10 @@ app uses** (`phoneblock_mobile`) — with the same `deepl` server credential in
 
 ```bash
 # 1. If the German UI text changed, refresh the UI source from index.html:
-node scripts/i18n/gen-ui-de-arb.js
+node i18n/gen-ui-de-arb.js
 
 # 2. Translate both projects (mail + ui) into en/fr/es (and any new locale):
-cd scripts/i18n/l10n && gradle translateArb
+cd i18n/l10n && gradle translateArb
 
 # 3. Review + commit the updated l10n/**/*_<lang>.arb.
 ```

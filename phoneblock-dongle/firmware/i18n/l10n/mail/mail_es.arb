@@ -27,9 +27,5 @@
   "verdict.error": "Error",
   "verdict.unknown": "desconocido",
   "log.heading": "Nuevas entradas en el registro",
-  "update.intro1": "El firmware de tu ",
-  "update.link": "Dongle PhoneBlock",
-  "update.intro2": " se publicó en ",
-  "update.version_prefix": "Versión ",
-  "update.intro3": " Actualizado."
+  "update.body": "El firmware de tu {device} se ha actualizado a la versión {version}."
 }

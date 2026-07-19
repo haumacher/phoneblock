@@ -396,6 +396,31 @@ static void mail_fmt(char *out, size_t cap, const char *fmt, ...)
 }
 #pragma GCC diagnostic pop
 
+// Render a localized template into `out`, substituting the ICU named
+// placeholders {ka}->va and {kb}->vb wherever they appear. Unlike positional
+// printf, this lets a translation put the placeholders in whatever order the
+// target language's grammar needs (see the firmware-update message). Values
+// are inserted verbatim (the caller pre-escapes any dynamic parts).
+static void mail_render2(char *out, size_t cap, const char *tmpl,
+                         const char *ka, const char *va,
+                         const char *kb, const char *vb)
+{
+    char ta[24], tb[24];
+    snprintf(ta, sizeof(ta), "{%s}", ka);
+    snprintf(tb, sizeof(tb), "{%s}", kb);
+    size_t la = strlen(ta), lb = strlen(tb), len = 0;
+    for (const char *p = tmpl; *p; ) {
+        if (strncmp(p, ta, la) == 0) {
+            len = append_str(out, cap, len, va); p += la;
+        } else if (strncmp(p, tb, lb) == 0) {
+            len = append_str(out, cap, len, vb); p += lb;
+        } else {
+            char c[2] = { *p, '\0' };
+            len = append_str(out, cap, len, c); p++;
+        }
+    }
+}
+
 // Verdict label matching the web UI's wording (status.calls.verdict.* in
 // index.html). Both surfaces render the same pb_assessment_t; the wording
 // lives in mail_i18n (compiled German fallback + downloaded pack) and must
@@ -703,49 +728,47 @@ void mail_report_update(void)
     char *body = malloc(MAIL_BODY_CAP);
     if (!body) return;
 
-    // One sentence: "Die Firmware auf deinem <Dongle> wurde auf <Version>
-    // aktualisiert." — the dongle name links to its own web UI (by IP, the
-    // address that is guaranteed reachable on the LAN) and the version links
-    // to that release's changelog. Each link degrades to plain text when its
-    // target is unavailable (no IP / a dev build with no changelog page).
-    char intro[224];
-    snprintf(intro, sizeof(intro),
-        "<html><body style=\"font-family:Arial,Helvetica,sans-serif;color:#222\">"
-        "<p>%s", mail_i18n_str("update.intro1"));
-    size_t len = append_str(body, MAIL_BODY_CAP, 0, intro);
-
+    // One translatable sentence with two placeholders: {device} (the dongle
+    // name, linked to its own web UI by LAN IP) and {version} (linked to the
+    // release changelog). Build each fragment here — linked, or plain text
+    // when the target is unavailable (no IP / a dev build with no changelog) —
+    // then substitute into the localized message so the translation controls
+    // word order. "PhoneBlock-Dongle" is a product name, not translated.
+    char dev[128];
+    size_t dl = 0;
     char ip[16];
     if (wifi_get_ip_str(ip, sizeof(ip))) {
-        len = append_str(body, MAIL_BODY_CAP, len, "<a href=\"http://");
-        len = append_html_escaped(body, MAIL_BODY_CAP, len, ip);
-        len = append_str(body, MAIL_BODY_CAP, len,
-            "/\" target=\"_blank\" rel=\"noopener\">");
-        len = append_str(body, MAIL_BODY_CAP, len, mail_i18n_str("update.link"));
-        len = append_str(body, MAIL_BODY_CAP, len, "</a>");
+        dl = append_str(dev, sizeof(dev), dl, "<a href=\"http://");
+        dl = append_html_escaped(dev, sizeof(dev), dl, ip);
+        dl = append_str(dev, sizeof(dev), dl,
+            "/\" target=\"_blank\" rel=\"noopener\">PhoneBlock-Dongle</a>");
     } else {
-        len = append_str(body, MAIL_BODY_CAP, len, mail_i18n_str("update.link"));
+        dl = append_str(dev, sizeof(dev), dl, "PhoneBlock-Dongle");
     }
+    (void)dl;
 
-    len = append_str(body, MAIL_BODY_CAP, len, mail_i18n_str("update.intro2"));
-
+    char ver[224];
+    size_t vl = 0;
     char url[160];
     if (mail_changelog_url(s_update_version, url, sizeof(url))) {
-        len = append_str(body, MAIL_BODY_CAP, len, "<a href=\"");
-        len = append_html_escaped(body, MAIL_BODY_CAP, len, url);
-        len = append_str(body, MAIL_BODY_CAP, len,
-            "\" target=\"_blank\" rel=\"noopener\">");
-        len = append_str(body, MAIL_BODY_CAP, len, mail_i18n_str("update.version_prefix"));
-        len = append_html_escaped(body, MAIL_BODY_CAP, len, s_update_version);
-        len = append_str(body, MAIL_BODY_CAP, len, "</a>");
+        vl = append_str(ver, sizeof(ver), vl, "<a href=\"");
+        vl = append_html_escaped(ver, sizeof(ver), vl, url);
+        vl = append_str(ver, sizeof(ver), vl, "\" target=\"_blank\" rel=\"noopener\">");
+        vl = append_html_escaped(ver, sizeof(ver), vl, s_update_version);
+        vl = append_str(ver, sizeof(ver), vl, "</a>");
     } else {
-        len = append_str(body, MAIL_BODY_CAP, len, mail_i18n_str("update.version_prefix"));
-        len = append_html_escaped(body, MAIL_BODY_CAP, len, s_update_version);
+        vl = append_html_escaped(ver, sizeof(ver), vl, s_update_version);
     }
+    (void)vl;
 
-    char tail[64];
-    snprintf(tail, sizeof(tail), "%s</p></body></html>\n",
-             mail_i18n_str("update.intro3"));
-    append_str(body, MAIL_BODY_CAP, len, tail);
+    char sentence[512];
+    mail_render2(sentence, sizeof(sentence), mail_i18n_str("update.body"),
+                 "device", dev, "version", ver);
+
+    size_t len = append_str(body, MAIL_BODY_CAP, 0,
+        "<html><body style=\"font-family:Arial,Helvetica,sans-serif;color:#222\"><p>");
+    len = append_str(body, MAIL_BODY_CAP, len, sentence);
+    append_str(body, MAIL_BODY_CAP, len, "</p></body></html>\n");
 
     // Clear the latch only after a confirmed send, so a transient SMTP
     // failure retries on the next mail run instead of losing the notice.

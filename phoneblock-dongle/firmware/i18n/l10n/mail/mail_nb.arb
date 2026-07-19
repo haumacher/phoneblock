@@ -27,9 +27,5 @@
   "verdict.error": "Feil",
   "verdict.unknown": "ukjent",
   "log.heading": "Nye oppføringer i protokollen",
-  "update.intro1": "Firmware på din ",
-  "update.link": "PhoneBlock-dongle",
-  "update.intro2": " ble publisert på ",
-  "update.version_prefix": "Versjon ",
-  "update.intro3": " oppdatert."
+  "update.body": "Firmware på din {device} er oppdatert til versjon {version}."
 }

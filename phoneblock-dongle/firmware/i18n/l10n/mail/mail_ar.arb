@@ -27,9 +27,5 @@
   "verdict.error": "خطأ",
   "verdict.unknown": "غير معروف",
   "log.heading": "أخبار جديدة في المحضر",
-  "update.intro1": "البرنامج الثابت على جهازك ",
-  "update.link": "جهاز PhoneBlock",
-  "update.intro2": " تم نشره على ",
-  "update.version_prefix": "الإصدار ",
-  "update.intro3": " تم تحديثه."
+  "update.body": "تم تحديث البرنامج الثابت على جهازك {device} إلى الإصدار {version}."
 }
