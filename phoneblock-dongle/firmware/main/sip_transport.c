@@ -229,21 +229,24 @@ static bool tcp_connect(sip_transport_t *t)
         return false;
     }
 
-    if (t->local_port > 0) {
-        struct sockaddr_in local = {
-            .sin_family      = AF_INET,
-            .sin_addr.s_addr = htonl(INADDR_ANY),
-            .sin_port        = htons(t->local_port),
-        };
-        int yes = 1;
-        setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
-        if (bind(sock, (struct sockaddr *)&local, sizeof(local)) < 0) {
-            // Non-fatal: kernel will pick an ephemeral port. Via/Contact
-            // get re-read below from getsockname() so consistency holds.
-            ESP_LOGW(TAG, "TCP bind %d failed (%s); using ephemeral",
-                     t->local_port, strerror(errno));
-        }
-    }
+    // Deliberately do NOT bind() the socket to the configured local port
+    // (t->local_port). Doing so pinned every connect to the same source
+    // port, so a reconnect to the same registrar produced a 4-tuple
+    // (localIP:15060 → registrarIP:5060) identical to the just-closed
+    // connection still lingering in TIME_WAIT — and connect() then failed
+    // with EADDRINUSE ("Address already in use"). SO_REUSEADDR lets you
+    // *bind* a TIME_WAIT port but does not relax the connect-side 4-tuple
+    // uniqueness check, so binding was the trap, not the cure.
+    //
+    // A fixed source port buys nothing here: the advertised Contact/Via
+    // port comes from config (advertised_port() in sip_register.c), and for
+    // connection-oriented SIP the registrar reuses THIS connection for
+    // responses and in-dialog requests (RFC 3261 §18.2 / RFC 5923) rather
+    // than dialing back to the advertised port. Letting the kernel assign a
+    // fresh ephemeral source port each connect means a reconnect draws a
+    // new 4-tuple that can't collide with the lingering TIME_WAIT one. This
+    // matches TLS, which already connects from an ephemeral port via
+    // esp-tls and reconnects without trouble.
 
     if (connect(sock, (struct sockaddr *)&t->registrar,
                 sizeof(t->registrar)) < 0) {
@@ -254,6 +257,10 @@ static bool tcp_connect(sip_transport_t *t)
 
     set_send_timeout(sock);
 
+    // Record the kernel-assigned ephemeral source port for diagnostics /
+    // the local-port accessor. It is NOT what gets advertised — Via/Contact
+    // use the configured port (advertised_port() in sip_register.c) — so a
+    // fresh port on each reconnect is expected and harmless.
     struct sockaddr_in actual = {0};
     socklen_t alen = sizeof(actual);
     if (getsockname(sock, (struct sockaddr *)&actual, &alen) == 0) {
