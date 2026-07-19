@@ -53,6 +53,9 @@
   .v-UNKNOWN{color:#888}
   .v-ERROR{color:#e8710a}
   .muted{color:#888;font-size:.85rem}
+  .i18n-bubble{margin:.7rem 0 0;padding:.55rem .9rem;border-radius:.7rem;
+    background:#e67e22;color:#fff;font-size:.9rem;font-weight:600;
+    box-shadow:0 1px 4px rgba(0,0,0,.15)}
   .error-row{border-left:3px solid #f44336;padding:.2rem .5rem;margin-bottom:.35rem;
              font-size:.9rem;background:#fffafa}
   .login-error{color:#d93025;background:#fce8e6;border-left:3px solid #d93025;
@@ -123,7 +126,6 @@
     <option value="ar">العربية</option>
     <option value="zh">中文</option>
   </select>
-  <span id="langStatus" style="display:none;font-size:.8rem;color:#888;margin-left:.4rem"></span>
 </footer>
 
 <script>
@@ -164,19 +166,26 @@ function storePack(reqLang, dict){
   I18N[reqLang] = dict;    // and under what was asked, so t(LANG) resolves
   return loc;
 }
-// Switching language is not instant: the device downloads the new pack (audio +
-// mail + UI, several seconds) before /api/i18n/ui serves it. Without feedback a
-// user picks a language and "nothing happens". Show a small status next to the
-// selector — "loading" while we poll, cleared once the real pack renders, or a
-// note if it never arrives (the page then stays on the embedded English pack).
-// The status text itself resolves via t()'s English fallback, so it is readable
-// even before the chosen locale's pack exists.
-function setLangStatus(kind){
-  const el = document.getElementById('langStatus');
+// Switching language is not instant: the device downloads the new pack (UI +
+// mail + audio, several seconds) before /api/i18n/ui serves it. Without feedback
+// a user picks a language and "nothing happens". Show a prominent bubble below
+// the PhoneBlock token display — orange "loading" while we poll, which simply
+// DISAPPEARS once the real pack renders (no "OK" noise), or a red note if it
+// never arrives (the page then stays on the embedded English pack). The text
+// resolves via t()'s English fallback, so it is readable even before the chosen
+// locale's pack exists.
+//
+// The state is global so it survives a route()/renderStatus rebuild: the bubble
+// element is recreated by renderStatus, which then calls applyLangStatus() to
+// restore the current state.
+let g_i18nStatus = '';   // '' | 'loading' | 'unavailable'
+function setLangStatus(kind){ g_i18nStatus = kind || ''; applyLangStatus(); }
+function applyLangStatus(){
+  const el = document.getElementById('langStatus');   // only on the status page
   if (!el) return;
-  if (!kind) { el.style.display = 'none'; el.textContent = ''; return; }
-  el.textContent = kind === 'loading' ? t('i18n.loading') : t('i18n.unavailable');
-  el.style.color = kind === 'loading' ? '#888' : '#c0392b';
+  if (!g_i18nStatus) { el.style.display = 'none'; el.textContent = ''; return; }
+  el.textContent = g_i18nStatus === 'loading' ? t('i18n.loading') : t('i18n.unavailable');
+  el.style.background = g_i18nStatus === 'loading' ? '#e67e22' : '#c0392b';
   el.style.display = '';
 }
 function loadUiPack(lang){
@@ -518,6 +527,7 @@ function renderStatus(){
     + '  <a id="tokenRenew" href="/register-start" class="btn-ghost" style="display:none;padding:.3rem .7rem;font-size:.85rem">'
     +    esc(t('status.token.renew')) + '</a>'
     + '</div>'
+    + '<div id="langStatus" class="i18n-bubble" style="display:none"></div>'
     + '<div class="grid" style="margin-top:.8rem">'
     + '  <div class="stat"><div class="stat-label">' + esc(t('status.counters.total'))  + '</div><div class="stat-value" id="cTotal">–</div></div>'
     + '  <div class="stat"><div class="stat-label">' + esc(t('status.counters.spam'))   + '</div><div class="stat-value" id="cSpam">–</div></div>'
@@ -798,6 +808,7 @@ function renderStatus(){
     +   'Panic auslösen (Dev)</button></p>';
   // Freshly (re)built DOM — let the next poll prefill the mail form once.
   mailPrefilled = false;
+  applyLangStatus();   // restore the translation bubble after the rebuild
   refreshAll();
   pollTimer = setInterval(refreshAll, 3000);
 }
