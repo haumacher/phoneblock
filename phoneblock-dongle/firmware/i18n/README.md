@@ -19,8 +19,11 @@ is translated at release time.
   synthesize each however you like and drop it here; the release script uses
   it verbatim (a `.wav`/`.mp3`/`.m4a`/`.flac` is converted). A language with
   no recording ships **text-only** (the device answers silently).
-- `announcement.de.txt` — reference transcript of the German recording; not
-  consumed by the build, handy for re-recording / for translators.
+- `audio/announcement-<lang>.txt` — the **transcript of the recording next to
+  it**, co-located with the `.alaw`. Keep it in lock-step with what the audio
+  actually says; it's the source when re-recording / re-synthesizing and the
+  reference for translating the spoken text to a new language. Not consumed by
+  the build.
 - `l10n/` — the **translation project** (see "Translating" below):
   - `mail/mail_<lang>.arb` — status-mail strings. `mail_de.arb` is the German
     source (mirrors the compiled fallback in `main/mail_i18n.c`); the other

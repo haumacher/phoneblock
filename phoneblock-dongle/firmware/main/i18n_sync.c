@@ -32,6 +32,7 @@
 #include "http_util.h"
 #include "manifest_sig.h"
 #include "scheduler.h"
+#include "version_cmp.h"
 
 static const char *TAG = "i18nsync";
 
@@ -344,7 +345,8 @@ static void prune_stale(const char *keep_lang)
         // "announcement.alaw" has no "-<lang>" and never matches.
         bool stale =
             is_stale_localized(e->d_name, "announcement-", ".alaw", keep_lang) ||
-            is_stale_localized(e->d_name, "mail-", ".json", keep_lang);
+            is_stale_localized(e->d_name, "mail-", ".json", keep_lang) ||
+            is_stale_localized(e->d_name, "ui-", ".json", keep_lang);
         if (stale) {
             // Sized for SPIFFS_DIR + '/' + a full dirent name so the
             // formatted path can never be truncated (-Wformat-truncation).
@@ -384,8 +386,11 @@ static bool download_asset(cJSON *asset, const char *kind, const char *base_url,
 
     char url[256];
     snprintf(url, sizeof(url), "%s/%s", base_url, jpath->valuestring);
-    return download_verify_rename(url, final_path, jsha->valuestring,
-                                  err, err_cap);
+    if (!download_verify_rename(url, final_path, jsha->valuestring, err, err_cap)) {
+        ESP_LOGW(TAG, "%s download %s: %s", kind, url, err);
+        return false;
+    }
+    return true;
 }
 
 // Download a single asset of `kind` (announcement / mail) for the first locale
@@ -418,14 +423,19 @@ static bool sync_kind_chain(cJSON *assets, const char *kind, const char *base_ur
 static void run_once(void)
 {
     const char *lang = config_ui_lang();   // validated, safe for URLs/paths
-    // Assets are co-located with the firmware release that speaks their key
-    // contract: "<ota-base>/<this-version>/i18n/…". The device reads only the
-    // subtree for the exact version it is running, so a newer release that
-    // changes the key contract never disturbs older firmware in the field —
-    // and there is only one version axis to reason about.
+    // i18n is keyed by the release TAG. A release build reports its exact tag
+    // (version.txt), e.g. "1.5.0" or "1.5.0-rc2" or "1.6.0-rc1" — each gets its
+    // own bundle (an rc must be able to ship new strings). A dev build reports
+    // git-describe, "<tag>-<N>-g<hash>[-dirty]"; we strip only that dev suffix
+    // so it reuses its tag's bundle instead of needing a publish per commit.
+    // release.sh publishes i18n under the same tag (VERSION).
+    char tag[48];
+    strncpy(tag, esp_app_get_description()->version, sizeof(tag) - 1);
+    tag[sizeof(tag) - 1] = '\0';
+    version_release_tag(tag);   // in-place strip of the git-describe dev suffix
     char base[160];
     snprintf(base, sizeof(base), "%s/%s/i18n",
-             CONFIG_PHONEBLOCK_OTA_BASE_URL, esp_app_get_description()->version);
+             CONFIG_PHONEBLOCK_OTA_BASE_URL, tag);
     char err[64] = "";
 
     char *manifest = malloc(MANIFEST_CAP);
@@ -439,7 +449,7 @@ static void run_once(void)
     char url[256];
     snprintf(url, sizeof(url), "%s/manifest.json", base);
     if (!http_get_buf(url, manifest, MANIFEST_CAP, err, sizeof(err))) {
-        ESP_LOGW(TAG, "manifest fetch: %s", err);
+        ESP_LOGW(TAG, "manifest fetch %s: %s", url, err);
         free(manifest); free(sig);
         set_status(false, lang, err);
         return;
@@ -448,7 +458,7 @@ static void run_once(void)
 
     snprintf(url, sizeof(url), "%s/manifest.json.sig", base);
     if (!http_get_buf(url, sig, SIG_B64_CAP, err, sizeof(err))) {
-        ESP_LOGW(TAG, "signature fetch: %s", err);
+        ESP_LOGW(TAG, "signature fetch %s: %s", url, err);
         free(manifest); free(sig);
         set_status(false, lang, err);
         return;
@@ -491,6 +501,8 @@ static void run_once(void)
     announcement_localized_path(ann_path, sizeof(ann_path), lang);
     char mail_path[48];
     snprintf(mail_path, sizeof(mail_path), "%s/mail-%s.json", SPIFFS_DIR, lang);
+    char ui_path[48];
+    snprintf(ui_path, sizeof(ui_path), "%s/ui-%s.json", SPIFFS_DIR, lang);
 
     bool ok = true;
     if (!sync_kind_chain(assets, "announcement", base, ann_path, chain, cn,
@@ -503,6 +515,15 @@ static void run_once(void)
                          err2, sizeof(err2))) {
         ESP_LOGW(TAG, "mail pack sync: %s", err2);
         if (ok) { ok = false; strncpy(err, err2, sizeof(err) - 1); }
+    }
+    // UI pack: downloaded like mail, then served same-origin by web.c so the
+    // browser never needs the CDN at runtime. German is inline in the page, so
+    // there is no de UI asset (the chain then finds nothing → serves inline).
+    char err3[64] = "";
+    if (!sync_kind_chain(assets, "ui", base, ui_path, chain, cn,
+                         err3, sizeof(err3))) {
+        ESP_LOGW(TAG, "ui pack sync: %s", err3);
+        if (ok) { ok = false; strncpy(err, err3, sizeof(err) - 1); }
     }
 
     cJSON_Delete(root);

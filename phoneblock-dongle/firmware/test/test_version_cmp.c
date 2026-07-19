@@ -2,6 +2,7 @@
 // OTA manifest decision relies on. Pure libc.
 #include <assert.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "version_cmp.h"
 
@@ -38,6 +39,21 @@ int main(void)
 
     // --- non-numeric pre-release identifiers fall back to byte order ---
     assert(sgn(version_cmp("1.4.0-rc1", "1.4.0-dev")) == 1); // 'd' < 'r'
+
+    // --- version_release_tag: strip git-describe dev suffix, keep the tag ---
+    {
+        char b[64];
+        #define TAG(in, exp) do { strcpy(b, in); version_release_tag(b); \
+            assert(strcmp(b, exp) == 0); } while (0)
+        TAG("1.5.0", "1.5.0");                                  // clean release
+        TAG("1.5.0-rc2", "1.5.0-rc2");                          // clean rc tag
+        TAG("1.6.0-rc1", "1.6.0-rc1");                          // rc keeps its own id
+        TAG("1.5.0-rc2-47-gd1639ea8-dirty", "1.5.0-rc2");       // dev off an rc
+        TAG("1.5.0-rc2-47-gd1639ea8", "1.5.0-rc2");             // dev, not dirty
+        TAG("1.5.0-47-gdeadbee", "1.5.0");                      // dev off a stable
+        TAG("1.5.0-dirty", "1.5.0");                            // dirty at the tag
+        #undef TAG
+    }
 
     printf("test_version_cmp: OK\n");
     return 0;

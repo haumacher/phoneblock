@@ -24,11 +24,11 @@ static const struct { const char *key, *val; } DE[] = {
     { "subj.update",           "PhoneBlock-Dongle: Firmware aktualisiert" },
 
     { "newcalls.one",          "Seit der letzten Meldung ist <b>1</b> neuer Anruf eingegangen." },
-    { "newcalls.many",         "Seit der letzten Meldung sind <b>%d</b> neue Anrufe eingegangen." },
+    { "newcalls.many",         "Seit der letzten Meldung sind <b>{count}</b> neue Anrufe eingegangen." },
 
     { "sum.device",            "Ger&auml;t:" },
-    { "sum.uptime",            "Laufzeit: %lldh %lldmin" },
-    { "sum.calls",             "Anrufe gesamt: %u &nbsp;|&nbsp; SPAM blockiert: %u &nbsp;|&nbsp; durchgestellt: %u" },
+    { "sum.uptime",            "Laufzeit: {hours}h {minutes}min" },
+    { "sum.calls",             "Anrufe gesamt: {total} &nbsp;|&nbsp; SPAM blockiert: {blocked} &nbsp;|&nbsp; durchgestellt: {passed}" },
 
     { "calls.heading",         "Letzte Anrufe" },
     { "calls.time",            "Zeit" },
@@ -38,11 +38,11 @@ static const struct { const char *key, *val; } DE[] = {
 
     { "verdict.scope.range",   "Bereich" },
     { "verdict.scope.number",  "Nummer" },
-    { "verdict.spam_blacklist","SPAM (Blacklist, %s)" },
-    { "verdict.spam_blocklist","SPAM (Blockliste, %s)" },
+    { "verdict.spam_blacklist","SPAM (Blacklist, {scope})" },
+    { "verdict.spam_blocklist","SPAM (Blockliste, {scope})" },
     { "verdict.spam",          "SPAM" },
-    { "verdict.spam_votes",    "SPAM (%d direkt, %d Range)" },
-    { "verdict.spam_suspect",  "SPAM-VERDACHT (%d direkt, %d Range)" },
+    { "verdict.spam_votes",    "SPAM ({direct} direkt, {range} Range)" },
+    { "verdict.spam_suspect",  "SPAM-VERDACHT ({direct} direkt, {range} Range)" },
     { "verdict.legitimate",    "legitim" },
     { "verdict.error",         "Fehler" },
     { "verdict.unknown",       "unbekannt" },

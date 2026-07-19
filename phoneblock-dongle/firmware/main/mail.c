@@ -380,46 +380,8 @@ static void format_event_time(int64_t at_us, char *out, size_t cap)
     }
 }
 
-// snprintf whose format string is a localized (runtime) i18n value rather
-// than a compile-time literal. The format always comes from our own
-// mail_i18n table / signature-verified pack — never user input — so the
-// -Wformat-nonliteral this would otherwise trip is suppressed here, in one
-// audited place, instead of at every call site.
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
-static void mail_fmt(char *out, size_t cap, const char *fmt, ...)
-{
-    va_list ap;
-    va_start(ap, fmt);
-    vsnprintf(out, cap, fmt, ap);
-    va_end(ap);
-}
-#pragma GCC diagnostic pop
-
-// Render a localized template into `out`, substituting the ICU named
-// placeholders {ka}->va and {kb}->vb wherever they appear. Unlike positional
-// printf, this lets a translation put the placeholders in whatever order the
-// target language's grammar needs (see the firmware-update message). Values
-// are inserted verbatim (the caller pre-escapes any dynamic parts).
-static void mail_render2(char *out, size_t cap, const char *tmpl,
-                         const char *ka, const char *va,
-                         const char *kb, const char *vb)
-{
-    char ta[24], tb[24];
-    snprintf(ta, sizeof(ta), "{%s}", ka);
-    snprintf(tb, sizeof(tb), "{%s}", kb);
-    size_t la = strlen(ta), lb = strlen(tb), len = 0;
-    for (const char *p = tmpl; *p; ) {
-        if (strncmp(p, ta, la) == 0) {
-            len = append_str(out, cap, len, va); p += la;
-        } else if (strncmp(p, tb, lb) == 0) {
-            len = append_str(out, cap, len, vb); p += lb;
-        } else {
-            char c[2] = { *p, '\0' };
-            len = append_str(out, cap, len, c); p++;
-        }
-    }
-}
+// mail_render() (ICU {name} substitution for the localized strings) lives in
+// mail_html.c so it is host-tested (test/test_mail_html.c).
 
 // Verdict label matching the web UI's wording (status.calls.verdict.* in
 // index.html). Both surfaces render the same pb_assessment_t; the wording
@@ -429,34 +391,39 @@ static void verdict_label(const stats_call_t *c, char *out, size_t cap)
 {
     const char *scope = c->wildcard ? mail_i18n_str("verdict.scope.range")
                                     : mail_i18n_str("verdict.scope.number");
+    char direct[12], range[12];
+    snprintf(direct, sizeof(direct), "%d", c->direct_votes);
+    snprintf(range,  sizeof(range),  "%d", c->range_votes);
     switch (c->assessment) {
     case PB_ASSESS_BLACKLIST:
-        mail_fmt(out, cap, mail_i18n_str("verdict.spam_blacklist"), scope);
+        mail_render(out, cap, mail_i18n_str("verdict.spam_blacklist"),
+                    "scope", scope, (const char *)NULL);
         break;
     case PB_ASSESS_SPAM_LIST:
-        mail_fmt(out, cap, mail_i18n_str("verdict.spam_blocklist"), scope);
+        mail_render(out, cap, mail_i18n_str("verdict.spam_blocklist"),
+                    "scope", scope, (const char *)NULL);
         break;
     case PB_ASSESS_SPAM:
         // Test-forced spam carries no counts (both 0) — show plain "SPAM".
         if (c->direct_votes == 0 && c->range_votes == 0)
-            snprintf(out, cap, "%s", mail_i18n_str("verdict.spam"));
+            mail_render(out, cap, mail_i18n_str("verdict.spam"), (const char *)NULL);
         else
-            mail_fmt(out, cap, mail_i18n_str("verdict.spam_votes"),
-                     c->direct_votes, c->range_votes);
+            mail_render(out, cap, mail_i18n_str("verdict.spam_votes"),
+                        "direct", direct, "range", range, (const char *)NULL);
         break;
     case PB_ASSESS_SUSPECT:
-        mail_fmt(out, cap, mail_i18n_str("verdict.spam_suspect"),
-                 c->direct_votes, c->range_votes);
+        mail_render(out, cap, mail_i18n_str("verdict.spam_suspect"),
+                    "direct", direct, "range", range, (const char *)NULL);
         break;
     case PB_ASSESS_LEGITIMATE:
-        snprintf(out, cap, "%s", mail_i18n_str("verdict.legitimate"));
+        mail_render(out, cap, mail_i18n_str("verdict.legitimate"), (const char *)NULL);
         break;
     case PB_ASSESS_ERROR:
-        snprintf(out, cap, "%s", mail_i18n_str("verdict.error"));
+        mail_render(out, cap, mail_i18n_str("verdict.error"), (const char *)NULL);
         break;
     case PB_ASSESS_UNKNOWN:
     default:
-        snprintf(out, cap, "%s", mail_i18n_str("verdict.unknown"));
+        mail_render(out, cap, mail_i18n_str("verdict.unknown"), (const char *)NULL);
         break;
     }
 }
@@ -466,12 +433,18 @@ static size_t append_summary_html(char *body, size_t cap, size_t len,
                                   const stats_counters_t *cnt)
 {
     int64_t up_s = esp_timer_get_time() / 1000000;
+    char hours[16], minutes[16], total[16], blocked[16], passed[16];
+    snprintf(hours,   sizeof(hours),   "%lld", (long long)(up_s / 3600));
+    snprintf(minutes, sizeof(minutes), "%lld", (long long)((up_s % 3600) / 60));
+    snprintf(total,   sizeof(total),   "%u", (unsigned)cnt->total_calls);
+    snprintf(blocked, sizeof(blocked), "%u", (unsigned)cnt->spam_blocked);
+    snprintf(passed,  sizeof(passed),  "%u", (unsigned)cnt->legitimate);
     char uptime[64], counts[192];
-    mail_fmt(uptime, sizeof(uptime), mail_i18n_str("sum.uptime"),
-             (long long)(up_s / 3600), (long long)((up_s % 3600) / 60));
-    mail_fmt(counts, sizeof(counts), mail_i18n_str("sum.calls"),
-             (unsigned)cnt->total_calls, (unsigned)cnt->spam_blocked,
-             (unsigned)cnt->legitimate);
+    mail_render(uptime, sizeof(uptime), mail_i18n_str("sum.uptime"),
+                "hours", hours, "minutes", minutes, (const char *)NULL);
+    mail_render(counts, sizeof(counts), mail_i18n_str("sum.calls"),
+                "total", total, "blocked", blocked, "passed", passed,
+                (const char *)NULL);
     char line[400];
     snprintf(line, sizeof(line),
         "<p style=\"font-size:14px;line-height:1.5\">"
@@ -600,11 +573,15 @@ static size_t build_status_html(char *body, size_t cap,
     len = append_summary_html(body, cap, len, cnt);
     if (new_calls > 0) {
         char sentence[192], line[224];
-        if (new_calls == 1)
-            snprintf(sentence, sizeof(sentence), "%s", mail_i18n_str("newcalls.one"));
-        else
-            mail_fmt(sentence, sizeof(sentence), mail_i18n_str("newcalls.many"),
-                     new_calls);
+        if (new_calls == 1) {
+            mail_render(sentence, sizeof(sentence), mail_i18n_str("newcalls.one"),
+                        (const char *)NULL);
+        } else {
+            char count[12];
+            snprintf(count, sizeof(count), "%d", new_calls);
+            mail_render(sentence, sizeof(sentence), mail_i18n_str("newcalls.many"),
+                        "count", count, (const char *)NULL);
+        }
         snprintf(line, sizeof(line), "<p>%s</p>", sentence);
         len = append_str(body, cap, len, line);
     }
@@ -762,8 +739,8 @@ void mail_report_update(void)
     (void)vl;
 
     char sentence[512];
-    mail_render2(sentence, sizeof(sentence), mail_i18n_str("update.body"),
-                 "device", dev, "version", ver);
+    mail_render(sentence, sizeof(sentence), mail_i18n_str("update.body"),
+                "device", dev, "version", ver, (const char *)NULL);
 
     size_t len = append_str(body, MAIL_BODY_CAP, 0,
         "<html><body style=\"font-family:Arial,Helvetica,sans-serif;color:#222\"><p>");

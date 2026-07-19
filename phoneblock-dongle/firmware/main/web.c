@@ -1469,6 +1469,35 @@ static esp_err_t handle_announcement_get(httpd_req_t *req)
     return ESP_OK;
 }
 
+// GET /api/i18n/ui — serves the UI translation pack for the active ui_lang
+// that i18n_sync downloaded to SPIFFS, so the browser localizes SAME-ORIGIN
+// and a configured dongle needs no CDN at runtime. 404 when there is none
+// (German is inline in index.html, and de is never downloaded). No auth: the
+// page needs this to render, possibly before login.
+static esp_err_t handle_i18n_ui(httpd_req_t *req)
+{
+    char path[48];
+    snprintf(path, sizeof(path), "/spiffs/ui-%s.json", config_ui_lang());
+    FILE *f = fopen(path, "rb");
+    if (!f) {
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "no ui pack");
+        return ESP_OK;
+    }
+    httpd_resp_set_type(req, "application/json");
+    httpd_resp_set_hdr(req, "Cache-Control", "no-store");
+    char buf[1024];
+    size_t n;
+    while ((n = fread(buf, 1, sizeof(buf), f)) > 0) {
+        if (httpd_resp_send_chunk(req, buf, n) != ESP_OK) {
+            fclose(f);
+            return ESP_FAIL;
+        }
+    }
+    fclose(f);
+    httpd_resp_send_chunk(req, NULL, 0);
+    return ESP_OK;
+}
+
 // POST /api/announcement — replaces the current announcement with the
 // request body. Body is raw A-law bytes (8 kHz mono, no header); the
 // UI does the WAV/MP3/OGG → A-law conversion via the browser's Web
@@ -2064,6 +2093,7 @@ static const httpd_uri_t URIS[] = {
     { .uri = "/api/firmware",         .method = HTTP_POST, .handler = handle_firmware_upload,  .user_ctx = NULL },
     { .uri = "/api/firmware/check",   .method = HTTP_POST, .handler = handle_firmware_check,   .user_ctx = NULL },
     { .uri = "/api/firmware/install", .method = HTTP_POST, .handler = handle_firmware_install, .user_ctx = NULL },
+    { .uri = "/api/i18n/ui",         .method = HTTP_GET,  .handler = handle_i18n_ui,            .user_ctx = NULL },
     { .uri = "/api/announcement",    .method = HTTP_GET,  .handler = handle_announcement_get,   .user_ctx = NULL },
     { .uri = "/api/announcement",    .method = HTTP_POST, .handler = handle_announcement_post,  .user_ctx = NULL },
     { .uri = "/api/announcement/reset", .method = HTTP_POST, .handler = handle_announcement_reset, .user_ctx = NULL },

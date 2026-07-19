@@ -274,6 +274,9 @@ run scp "${STAGE_VERSION}"/* "${CDN_HOST}:${REMOTE_VERSION}/"
 # required (recordings and reviewed text packs are committed in
 # i18n/). If it fails, the firmware release still completes — publish
 # i18n separately with scripts/i18n-assets.sh --version ${VERSION}.
+# i18n is published under the release tag (VERSION), so each release — incl.
+# each rc — gets its own bundle. Dev/test builds strip only their git-describe
+# suffix and resolve their tag's bundle (see version_release_tag / i18n_sync.c).
 I18N_ARGS=(--version "${VERSION}")
 [[ "$MODE" == "dry-run" ]] && I18N_ARGS+=(--dry-run)
 if ! "${SCRIPT_DIR}/i18n-assets.sh" "${I18N_ARGS[@]}"; then

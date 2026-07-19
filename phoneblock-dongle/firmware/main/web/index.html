@@ -427,21 +427,9 @@ const I18N = {
 // navigator.language ("en-GB" → "en"), else German. If we have no
 // strings for the requested language we fall back to the German
 // master block, so any key added to only `de` still renders.
-function pickLang(){
-  const ok = c => typeof c === 'string' && /^[a-z]{2}(-[a-z0-9]+)?$/i.test(c);
-  const saved = (typeof localStorage !== 'undefined')
-    ? localStorage.getItem('phoneblock_lang') : null;
-  // Accept a well-formed saved / browser code even if it isn't one of the
-  // built-in blocks — ensureLangLoaded() lazy-loads the rest from the CDN,
-  // and t() falls back to German for anything still missing.
-  if (ok(saved)) return saved;
-  const nav = (typeof navigator !== 'undefined' && navigator.language)
-    ? navigator.language.split('-')[0] : 'de';
-  return ok(nav) ? nav : 'de';
-}
-let LANG = pickLang();
+let LANG = 'de';   // the device's ui_lang, filled in from /api/status on boot
 const t = (k, p) => {
-  // (I18N[LANG] || {}) so a locale still being fetched can't throw; the
+  // (I18N[LANG] || {}) so a locale still being loaded can't throw; the
   // German master block backs every key.
   let s = (I18N[LANG] || {})[k];
   if (s === undefined) s = I18N.de[k];
@@ -451,43 +439,46 @@ const t = (k, p) => {
   return s;
 };
 
-// The firmware ships only the German base locale inline — the offline
-// fallback and the source every key falls back to. Every other locale
-// (en/fr/es and beyond) is fetched on demand from the CDN, co-located with
-// the firmware release that serves this page:
-//   <fw-base>/<firmware_version>/i18n/ui/lang-<code>.json
-// (a flat key→string dict, same shape as the inline `de` block), generated +
-// published by the release pipeline alongside the .bin. Pinning to the
-// running firmware's version means a browser always loads strings that match
-// the firmware serving it, and an older release in the field is never
-// affected when a newer one changes the keys. This keeps the firmware free of
-// per-language UI payload (issue #460): adding a language is a publish step,
-// not a reflash. A failed/absent fetch degrades to German — so the browser
-// needs internet (it usually does, even when the dongle itself is still being
-// provisioned) to render a non-German UI.
-const FW_CDN_BASE = 'https://cdn.phoneblock.net/dongle/firmware';
-let _fwVer = null;
-function fwVersion(){
-  if (_fwVer) return Promise.resolve(_fwVer);
-  return fetch('/api/status')
-    .then(r => r.ok ? r.json() : null)
-    .then(d => { _fwVer = (d && d.firmware_version) ? String(d.firmware_version) : ''; return _fwVer; })
-    .catch(() => (_fwVer = ''));
-}
-const _langLoads = {};
-function ensureLangLoaded(lang){
+// The UI language is a DEVICE setting (ui_lang — it also drives the status
+// mail and the answer-bot announcement). German is inline here; every other
+// locale's UI pack is downloaded ONCE by the firmware and served by the dongle
+// itself at /api/i18n/ui (same-origin). So a configured dongle needs no CDN at
+// runtime (issue #460); t() falls back to inline German for anything missing.
+const _uiLoads = {};
+function loadUiPack(lang){
   if (!lang || lang === 'de' || I18N[lang]) return Promise.resolve();
-  if (_langLoads[lang]) return _langLoads[lang];
-  const fetchPack = (v, code) => (!v) ? Promise.resolve(null)
-    : fetch(`${FW_CDN_BASE}/${v}/i18n/ui/lang-${code}.json`, {cache: 'default'})
-        .then(r => (r && r.ok) ? r.json() : null).catch(() => null);
-  // Download-time fallback chain: ui_lang → en (then German via t()). Only one
-  // pack is kept — whichever content is found is stored under I18N[lang].
-  _langLoads[lang] = fwVersion()
-    .then(v => fetchPack(v, lang).then(d => (d || lang === 'en') ? d : fetchPack(v, 'en')))
+  if (_uiLoads[lang]) return _uiLoads[lang];
+  _uiLoads[lang] = fetch('/api/i18n/ui')
+    .then(r => r.ok ? r.json() : null)
     .then(dict => { if (dict && typeof dict === 'object') I18N[lang] = dict; })
-    .catch(() => { /* offline / no such locale → German fallback via t() */ });
-  return _langLoads[lang];
+    .catch(() => { /* not downloaded yet → German fallback via t() */ });
+  return _uiLoads[lang];
+}
+// Read the device's ui_lang from /api/status, reflect it in the selector, and
+// load its UI pack from the device.
+function loadDeviceLang(){
+  return fetch('/api/status').then(r => r.ok ? r.json() : null).then(d => {
+    LANG = (d && d.ui_lang) ? String(d.ui_lang) : 'de';
+    document.documentElement.lang = LANG;
+    const sel = document.getElementById('langSelect');
+    if (sel) sel.value = LANG;
+    return loadUiPack(LANG);
+  }).catch(() => {});
+}
+// After switching language, the firmware downloads the new pack; poll the
+// device until it serves it, then re-render. Bounded so it can't spin forever.
+function awaitUiPack(lang, tries){
+  tries = tries || 0;
+  if (lang === 'de' || LANG !== lang || I18N[lang] || tries > 20) return;
+  setTimeout(() => {
+    if (LANG !== lang) return;
+    delete _uiLoads[lang];
+    fetch('/api/i18n/ui').then(r => r.ok ? r.json() : null).then(dict => {
+      if (LANG !== lang) return;
+      if (dict && typeof dict === 'object') { I18N[lang] = dict; route(); }
+      else awaitUiPack(lang, tries + 1);
+    }).catch(() => awaitUiPack(lang, tries + 1));
+  }, 2000);
 }
 
 // --- helpers --------------------------------------------------------
@@ -2923,24 +2914,24 @@ function wireAnnouncement(){
   if (sel){
     sel.value = LANG;
     sel.addEventListener('change', () => {
-      LANG = sel.value;
-      try { localStorage.setItem('phoneblock_lang', LANG); } catch (_){}
-      document.documentElement.lang = LANG;
-      // Tell the device its locale. The page itself is localized purely
-      // client-side, but the autonomously-generated status mail and the
-      // answer-bot announcement live on the device — POST the choice so it
-      // can localize them (and download the matching announcement from the
-      // CDN). Fire-and-forget: a failed POST just means the next change or
-      // the /api/config reconcile picks it up.
+      const lang = sel.value;
+      // The UI language is a DEVICE setting — it also drives the status mail
+      // and the answer-bot announcement. POST it; the firmware localizes those
+      // and downloads the matching UI pack, which the dongle then serves at
+      // /api/i18n/ui. Re-render now (German until the pack arrives), then poll
+      // the device for the new pack.
+      LANG = lang;
+      document.documentElement.lang = lang;
       try {
         fetch('/api/config', {
           method: 'POST',
           headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-          body: new URLSearchParams({ ui_lang: LANG }).toString(),
+          body: new URLSearchParams({ ui_lang: lang }).toString(),
         }).catch(() => {});
       } catch (_){}
-      // Lazy-load a CDN locale pack if this isn't a built-in one, then render.
-      ensureLangLoaded(LANG).then(route);
+      delete I18N[lang]; delete _uiLoads[lang];
+      route();
+      awaitUiPack(lang);
     });
   }
   document.documentElement.lang = LANG;
@@ -2948,10 +2939,10 @@ function wireAnnouncement(){
 
 // --- boot ----------------------------------------------------------
 
-// Load the CDN locale pack first if the active locale isn't built in, so the
-// first paint is already localized; ensureLangLoaded resolves immediately for
-// the built-in locales and on any fetch failure (t() then falls back to de).
-ensureLangLoaded(LANG).then(route);
+// The UI language comes from the device (ui_lang); load it + its UI pack from
+// the dongle itself (same-origin, no CDN), then render. Resolves immediately
+// for German / on any failure (t() falls back to inline German).
+loadDeviceLang().then(route);
 </script>
 </body>
 </html>

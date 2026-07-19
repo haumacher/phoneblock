@@ -35,25 +35,37 @@
     "description": "Status-mail string (newcalls.one); keep %d/%s/%u/%lld and <b> tags",
     "x-translated": "1d9d9726"
   },
-  "newcalls.many": "Seit der letzten Meldung sind <b>%d</b> neue Anrufe eingegangen.",
+  "newcalls.many": "Seit der letzten Meldung sind <b>{count}</b> neue Anrufe eingegangen.",
   "@newcalls.many": {
     "description": "Status-mail string (newcalls.many); keep %d/%s/%u/%lld and <b> tags",
-    "x-translated": "de310d4e"
+    "placeholders": {
+      "count": {}
+    },
+    "x-translated": "983053ba"
   },
   "sum.device": "Ger&auml;t:",
   "@sum.device": {
     "description": "Summary label: device",
     "x-translated": "816bbd63"
   },
-  "sum.uptime": "Laufzeit: %lldh %lldmin",
+  "sum.uptime": "Laufzeit: {hours}h {minutes}min",
   "@sum.uptime": {
     "description": "Summary: uptime (%lld hours/minutes)",
-    "x-translated": "1e94de3a"
+    "placeholders": {
+      "hours": {},
+      "minutes": {}
+    },
+    "x-translated": "8b2c55ae"
   },
-  "sum.calls": "Anrufe gesamt: %u | SPAM blockiert: %u | durchgestellt: %u",
+  "sum.calls": "Anrufe gesamt: {total} &nbsp;|&nbsp; SPAM blockiert: {blocked} &nbsp;|&nbsp; durchgestellt: {passed}",
   "@sum.calls": {
     "description": "Summary: call counters (%u total/blocked/passed)",
-    "x-translated": "b8289165"
+    "placeholders": {
+      "total": {},
+      "blocked": {},
+      "passed": {}
+    },
+    "x-translated": "b2be1f77"
   },
   "calls.heading": "Letzte Anrufe",
   "@calls.heading": {
@@ -90,30 +102,44 @@
     "description": "Status-mail string (verdict.scope.number); keep %d/%s/%u/%lld and <b> tags",
     "x-translated": "9a605d5f"
   },
-  "verdict.spam_blacklist": "SPAM (Blacklist, %s)",
+  "verdict.spam_blacklist": "SPAM (Blacklist, {scope})",
   "@verdict.spam_blacklist": {
     "description": "Status-mail string (verdict.spam_blacklist); keep %d/%s/%u/%lld and <b> tags",
-    "x-translated": "e2e1eb5d"
+    "placeholders": {
+      "scope": {}
+    },
+    "x-translated": "cbba0f45"
   },
-  "verdict.spam_blocklist": "SPAM (Blockliste, %s)",
+  "verdict.spam_blocklist": "SPAM (Blockliste, {scope})",
   "@verdict.spam_blocklist": {
     "description": "Status-mail string (verdict.spam_blocklist); keep %d/%s/%u/%lld and <b> tags",
-    "x-translated": "8d7216b8"
+    "placeholders": {
+      "scope": {}
+    },
+    "x-translated": "42b2f851"
   },
   "verdict.spam": "SPAM",
   "@verdict.spam": {
     "description": "Status-mail string (verdict.spam); keep %d/%s/%u/%lld and <b> tags",
     "x-translated": "754f1289"
   },
-  "verdict.spam_votes": "SPAM (%d direkt, %d Range)",
+  "verdict.spam_votes": "SPAM ({direct} direkt, {range} Range)",
   "@verdict.spam_votes": {
     "description": "Status-mail string (verdict.spam_votes); keep %d/%s/%u/%lld and <b> tags",
-    "x-translated": "834092e"
+    "placeholders": {
+      "direct": {},
+      "range": {}
+    },
+    "x-translated": "7bdb288a"
   },
-  "verdict.spam_suspect": "SPAM-VERDACHT (%d direkt, %d Range)",
+  "verdict.spam_suspect": "SPAM-VERDACHT ({direct} direkt, {range} Range)",
   "@verdict.spam_suspect": {
     "description": "Status-mail string (verdict.spam_suspect); keep %d/%s/%u/%lld and <b> tags",
-    "x-translated": "8745bf20"
+    "placeholders": {
+      "direct": {},
+      "range": {}
+    },
+    "x-translated": "c786b812"
   },
   "verdict.legitimate": "legitim",
   "@verdict.legitimate": {

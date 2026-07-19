@@ -184,10 +184,12 @@ while read -r code _rest; do
         echo "   no committed mail translation — falls back to German mail"
     fi
 
-    # UI pack (browser-fetched, not in the manifest). German is inline; absent
-    # → the browser falls back to the inline German via t().
+    # UI pack — downloaded by the firmware (like mail) and served same-origin
+    # to the browser, so a configured dongle needs no CDN at runtime. German
+    # is inline in index.html, so there is no de UI pack.
     if [[ "$code" != "de" && -f "${SRC_DIR}/l10n/ui/ui_${code}.arb" ]]; then
         strip_arb "${SRC_DIR}/l10n/ui/ui_${code}.arb" "${ASSETS}/ui/lang-${code}.json"
+        add_asset "$code" ui "ui/lang-${code}.json" "${ASSETS}/ui/lang-${code}.json"
     elif [[ "$code" != "de" ]]; then
         echo "   no committed UI translation — falls back to German UI"
     fi
