@@ -11,9 +11,9 @@
 
 static const char *TAG = "mail_i18n";
 
-// Compiled-in German fallback — the source of truth, kept in sync with
-// scripts/i18n/mail.de.json. Used whenever ui_lang is "de", the downloaded
-// pack is missing/invalid, or a key is absent from it.
+// Compiled-in German fallback — kept in sync with the German mail source
+// scripts/i18n/l10n/mail/mail_de.arb (the translation source). Used whenever
+// ui_lang is "de", the downloaded pack is missing/invalid, or a key is absent.
 static const struct { const char *key, *val; } DE[] = {
     { "intro",                 "Statusmeldung deines PhoneBlock-Dongles." },
 

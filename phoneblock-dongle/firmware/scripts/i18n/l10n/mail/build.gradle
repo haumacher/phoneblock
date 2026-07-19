@@ -1,0 +1,12 @@
+// Translate the dongle status-mail strings (German source) into the other
+// locales. Same plugin/credential as phoneblock_mobile's translateArb.
+// Placeholders (%d %s %u %lld) and <b> tags are preserved by the plugin's
+// tag/format handling; keep them identical in every locale.
+plugins {
+    id 'de.haumacher.auto-translate-arb' version '1.1.0'
+}
+translateArb {
+    serverId    = 'deepl'
+    sourceFile  = file('mail_de.arb')
+    targetLangs = ['en', 'fr', 'es']
+}

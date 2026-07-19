@@ -1,4 +1,5 @@
 {
+  "@@locale": "en",
   "nav.home": "Status",
   "status.title": "Status",
   "status.sip.connected": "Registered",

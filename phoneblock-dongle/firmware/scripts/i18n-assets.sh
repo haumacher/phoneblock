@@ -10,11 +10,15 @@
 #
 #   ./scripts/i18n-assets.sh [options]
 #
-# Announcement recordings are committed to git (scripts/i18n/audio/
-# announcement-<lang>.alaw — like today's single main/audio/announcement.alaw)
-# so you can hand-record / tune each one. A language with no recording ships
-# text-only (the device answers silently). Mail and web-UI text ship as
-# committed packs where present, else are DeepL-translated from the German.
+# All sources are committed to git; nothing is translated at release time.
+# Announcement recordings: scripts/i18n/audio/announcement-<lang>.alaw (like
+# today's single main/audio/announcement.alaw) — hand-record / tune each; a
+# language with no recording ships text-only (silent pickup). Mail + web-UI
+# text: the committed ARB files under scripts/i18n/l10n/ (mail_<lang>.arb,
+# ui_<lang>.arb), translated during development by the auto-translate-arb
+# Gradle plugin (see scripts/i18n/l10n/); this script just strips their @key
+# metadata into the published packs. Missing packs degrade to the firmware's
+# compiled German fallback / the browser's inline German.
 #
 # Options:
 #   --version V     Firmware release version (default: git describe). Assets
@@ -137,6 +141,12 @@ get_announcement() {
     return 1
 }
 
+# Clean an ARB file into a published pack: drop @@locale and every @key
+# metadata block, leaving a plain key→string dict the firmware/browser use.
+strip_arb() {
+    jq 'with_entries(select(.key | startswith("@") | not))' "$1" > "$2"
+}
+
 # --- Build the assets + manifest -------------------------------------------
 MANIFEST_ASSETS='{}'
 add_asset() {  # lang kind relpath absfile
@@ -164,25 +174,22 @@ while read -r code _rest; do
         echo "   no announcement recording — text-only (silent pickup)"
     fi
 
-    # Mail pack: committed per-locale translation (de = the source pack).
+    # Mail pack from the committed ARB (de = the source ARB). Strip the @key
+    # metadata / @@locale so the published pack is a clean key→string dict.
     # Absent → the firmware's compiled German fallback is used for that locale.
-    mail_src="${SRC_DIR}/mail/mail-${code}.json"
-    [[ "$code" == "de" ]] && mail_src="${SRC_DIR}/mail.de.json"
-    if [[ -f "$mail_src" ]]; then
-        cp "$mail_src" "${ASSETS}/mail/mail-${code}.json"
+    if [[ -f "${SRC_DIR}/l10n/mail/mail_${code}.arb" ]]; then
+        strip_arb "${SRC_DIR}/l10n/mail/mail_${code}.arb" "${ASSETS}/mail/mail-${code}.json"
         add_asset "$code" mail "mail/mail-${code}.json" "${ASSETS}/mail/mail-${code}.json"
     else
-        echo "   no committed mail pack — falls back to German mail"
+        echo "   no committed mail translation — falls back to German mail"
     fi
 
     # UI pack (browser-fetched, not in the manifest). German is inline; absent
     # → the browser falls back to the inline German via t().
-    if [[ "$code" != "de" ]]; then
-        if [[ -f "${SRC_DIR}/ui/lang-${code}.json" ]]; then
-            cp "${SRC_DIR}/ui/lang-${code}.json" "${ASSETS}/ui/lang-${code}.json"
-        else
-            echo "   no committed UI pack — falls back to German UI"
-        fi
+    if [[ "$code" != "de" && -f "${SRC_DIR}/l10n/ui/ui_${code}.arb" ]]; then
+        strip_arb "${SRC_DIR}/l10n/ui/ui_${code}.arb" "${ASSETS}/ui/lang-${code}.json"
+    elif [[ "$code" != "de" ]]; then
+        echo "   no committed UI translation — falls back to German UI"
     fi
 done < "${SRC_DIR}/languages.txt"
 

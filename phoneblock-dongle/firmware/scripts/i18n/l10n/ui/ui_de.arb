@@ -1,0 +1,1163 @@
+{
+  "@@locale": "de",
+  "nav.home": "Status",
+  "@nav.home": {
+    "description": "Dongle web UI: nav.home"
+  },
+  "status.title": "Status",
+  "@status.title": {
+    "description": "Dongle web UI: status.title"
+  },
+  "status.sip.connected": "Angemeldet",
+  "@status.sip.connected": {
+    "description": "Dongle web UI: status.sip.connected"
+  },
+  "status.sip.connecting": "Verbinde…",
+  "@status.sip.connecting": {
+    "description": "Dongle web UI: status.sip.connecting"
+  },
+  "status.sip.not_configured": "Nicht eingerichtet",
+  "@status.sip.not_configured": {
+    "description": "Dongle web UI: status.sip.not_configured"
+  },
+  "status.sip.since": "seit {duration}",
+  "@status.sip.since": {
+    "description": "Dongle web UI: status.sip.since"
+  },
+  "status.sip.at": "bei {host} als {user}",
+  "@status.sip.at": {
+    "description": "Dongle web UI: status.sip.at"
+  },
+  "status.sip.ext": "Interne Nummer {n}",
+  "@status.sip.ext": {
+    "description": "Dongle web UI: status.sip.ext"
+  },
+  "status.sip.public_ip": "öffentliche IP {ip}",
+  "@status.sip.public_ip": {
+    "description": "Dongle web UI: status.sip.public_ip"
+  },
+  "status.sip.nat_symmetric": "⚠️ symmetrisches NAT — Audio braucht eine portgleiche RTP-Port-Weiterleitung",
+  "@status.sip.nat_symmetric": {
+    "description": "Dongle web UI: status.sip.nat_symmetric"
+  },
+  "status.sip.stun": "STUN {server} · NAT: {nat}",
+  "@status.sip.stun": {
+    "description": "Dongle web UI: status.sip.stun"
+  },
+  "status.sip.setup_cta": "Telefonie einrichten",
+  "@status.sip.setup_cta": {
+    "description": "Dongle web UI: status.sip.setup_cta"
+  },
+  "status.sip.redo_cta": "Telefonie neu einrichten",
+  "@status.sip.redo_cta": {
+    "description": "Dongle web UI: status.sip.redo_cta"
+  },
+  "status.token.set": "PhoneBlock-Token gesetzt",
+  "@status.token.set": {
+    "description": "Dongle web UI: status.token.set"
+  },
+  "status.token.missing": "Kein PhoneBlock-Token",
+  "@status.token.missing": {
+    "description": "Dongle web UI: status.token.missing"
+  },
+  "status.token.rejected": "Token abgelehnt",
+  "@status.token.rejected": {
+    "description": "Dongle web UI: status.token.rejected"
+  },
+  "status.token.rejected.msg": "PhoneBlock hat das Token zurückgewiesen. Bitte über „Neu anfordern\" ein neues Token erzeugen.",
+  "@status.token.rejected.msg": {
+    "description": "Dongle web UI: status.token.rejected.msg"
+  },
+  "status.token.cta": "Token anlegen",
+  "@status.token.cta": {
+    "description": "Dongle web UI: status.token.cta"
+  },
+  "status.token.test": "Testen",
+  "@status.token.test": {
+    "description": "Dongle web UI: status.token.test"
+  },
+  "status.token.renew": "Neu anfordern",
+  "@status.token.renew": {
+    "description": "Dongle web UI: status.token.renew"
+  },
+  "status.token.testing": "Prüfe Token…",
+  "@status.token.testing": {
+    "description": "Dongle web UI: status.token.testing"
+  },
+  "status.token.test.ok": "Token gültig — PhoneBlock erreichbar.",
+  "@status.token.test.ok": {
+    "description": "Dongle web UI: status.token.test.ok"
+  },
+  "status.token.test.fail": "Token wurde abgelehnt. Bitte neu anfordern.",
+  "@status.token.test.fail": {
+    "description": "Dongle web UI: status.token.test.fail"
+  },
+  "status.token.test.none": "Kein Token gesetzt.",
+  "@status.token.test.none": {
+    "description": "Dongle web UI: status.token.test.none"
+  },
+  "status.counters.total": "Gesamt",
+  "@status.counters.total": {
+    "description": "Dongle web UI: status.counters.total"
+  },
+  "status.counters.spam": "Spam geblockt",
+  "@status.counters.spam": {
+    "description": "Dongle web UI: status.counters.spam"
+  },
+  "status.counters.legit": "Legitim",
+  "@status.counters.legit": {
+    "description": "Dongle web UI: status.counters.legit"
+  },
+  "status.counters.errors": "Fehler",
+  "@status.counters.errors": {
+    "description": "Dongle web UI: status.counters.errors"
+  },
+  "status.info": "Firmware {fw} · IP {ip} · Uptime {uptime} · API-Latenz {api}",
+  "@status.info": {
+    "description": "Dongle web UI: status.info"
+  },
+  "status.calls.title": "Letzte Anrufe",
+  "@status.calls.title": {
+    "description": "Dongle web UI: status.calls.title"
+  },
+  "status.calls.empty": "noch keine Anrufe",
+  "@status.calls.empty": {
+    "description": "Dongle web UI: status.calls.empty"
+  },
+  "status.calls.col.when": "Wann",
+  "@status.calls.col.when": {
+    "description": "Dongle web UI: status.calls.col.when"
+  },
+  "status.calls.col.number": "Nummer",
+  "@status.calls.col.number": {
+    "description": "Dongle web UI: status.calls.col.number"
+  },
+  "status.calls.col.name": "Name",
+  "@status.calls.col.name": {
+    "description": "Dongle web UI: status.calls.col.name"
+  },
+  "status.calls.col.verdict": "Urteil",
+  "@status.calls.col.verdict": {
+    "description": "Dongle web UI: status.calls.col.verdict"
+  },
+  "status.calls.clear": "Liste leeren",
+  "@status.calls.clear": {
+    "description": "Dongle web UI: status.calls.clear"
+  },
+  "status.calls.log_known": "Bekannte Anrufer protokollieren",
+  "@status.calls.log_known": {
+    "description": "Dongle web UI: status.calls.log_known"
+  },
+  "status.calls.log_known.help": "Wenn deaktiviert, erscheinen Anrufe von Nummern aus dem Telefonbuch und interne Codes (**, *…) nicht in der Liste — die Zähler oben werden trotzdem aktualisiert.",
+  "@status.calls.log_known.help": {
+    "description": "Dongle web UI: status.calls.log_known.help"
+  },
+  "status.calls.verdict.spam": "SPAM ({direct} direkt, {range} Range)",
+  "@status.calls.verdict.spam": {
+    "description": "Dongle web UI: status.calls.verdict.spam"
+  },
+  "status.calls.verdict.spam_plain": "SPAM",
+  "@status.calls.verdict.spam_plain": {
+    "description": "Dongle web UI: status.calls.verdict.spam_plain"
+  },
+  "status.calls.verdict.spam_list": "SPAM (Blockliste, {scope})",
+  "@status.calls.verdict.spam_list": {
+    "description": "Dongle web UI: status.calls.verdict.spam_list"
+  },
+  "status.calls.verdict.suspect": "SPAM-VERDACHT ({direct} direkt, {range} Range)",
+  "@status.calls.verdict.suspect": {
+    "description": "Dongle web UI: status.calls.verdict.suspect"
+  },
+  "status.calls.verdict.blacklist": "SPAM (Blacklist, {scope})",
+  "@status.calls.verdict.blacklist": {
+    "description": "Dongle web UI: status.calls.verdict.blacklist"
+  },
+  "status.calls.verdict.legitimate": "legitim",
+  "@status.calls.verdict.legitimate": {
+    "description": "Dongle web UI: status.calls.verdict.legitimate"
+  },
+  "status.calls.verdict.unknown": "unbekannt",
+  "@status.calls.verdict.unknown": {
+    "description": "Dongle web UI: status.calls.verdict.unknown"
+  },
+  "status.calls.verdict.error": "Fehler",
+  "@status.calls.verdict.error": {
+    "description": "Dongle web UI: status.calls.verdict.error"
+  },
+  "status.calls.verdict.scope.number": "Nummer",
+  "@status.calls.verdict.scope.number": {
+    "description": "Dongle web UI: status.calls.verdict.scope.number"
+  },
+  "status.calls.verdict.scope.range": "Bereich",
+  "@status.calls.verdict.scope.range": {
+    "description": "Dongle web UI: status.calls.verdict.scope.range"
+  },
+  "status.thresholds.title": "Block-Schwellen",
+  "@status.thresholds.title": {
+    "description": "Dongle web UI: status.thresholds.title"
+  },
+  "status.thresholds.intro": "Ab wie vielen PhoneBlock-Stimmen der Dongle einen Anruf wegnimmt. Direkt-Stimmen wiegen schwerer als Range-Stimmen, deshalb getrennte Werte.",
+  "@status.thresholds.intro": {
+    "description": "Dongle web UI: status.thresholds.intro"
+  },
+  "status.thresholds.direct": "Direkt-Stimmen",
+  "@status.thresholds.direct": {
+    "description": "Dongle web UI: status.thresholds.direct"
+  },
+  "status.thresholds.direct.help": "Stimmen direkt gegen die anrufende Nummer. Default 4 — gleicher Wert wie die öffentliche PhoneBlock-Sperrliste.",
+  "@status.thresholds.direct.help": {
+    "description": "Dongle web UI: status.thresholds.direct.help"
+  },
+  "status.thresholds.range": "Range-Stimmen",
+  "@status.thresholds.range": {
+    "description": "Dongle web UI: status.thresholds.range"
+  },
+  "status.thresholds.range.help": "Stimmen gegen Nachbarn im selben 10er- oder 100er-Block. Default 10. „Aus\" schaltet Range-Block ab — dann zählen nur Direkt-Treffer.",
+  "@status.thresholds.range.help": {
+    "description": "Dongle web UI: status.thresholds.range.help"
+  },
+  "status.thresholds.range.off": "Aus",
+  "@status.thresholds.range.off": {
+    "description": "Dongle web UI: status.thresholds.range.off"
+  },
+  "status.thresholds.saved": "Gespeichert.",
+  "@status.thresholds.saved": {
+    "description": "Dongle web UI: status.thresholds.saved"
+  },
+  "status.thresholds.invalid": "Ungültiger Wert.",
+  "@status.thresholds.invalid": {
+    "description": "Dongle web UI: status.thresholds.invalid"
+  },
+  "status.system.title": "System",
+  "@status.system.title": {
+    "description": "Dongle web UI: status.system.title"
+  },
+  "status.system.heap": "Freier Speicher: {free} (Minimum: {min}, größter Block: {largest})",
+  "@status.system.heap": {
+    "description": "Dongle web UI: status.system.heap"
+  },
+  "status.system.fs": "Datenpartition: {free} frei von {total} ({used} belegt)",
+  "@status.system.fs": {
+    "description": "Dongle web UI: status.system.fs"
+  },
+  "status.system.col.task": "Task",
+  "@status.system.col.task": {
+    "description": "Dongle web UI: status.system.col.task"
+  },
+  "status.system.col.cpu": "CPU",
+  "@status.system.col.cpu": {
+    "description": "Dongle web UI: status.system.col.cpu"
+  },
+  "status.system.col.stack": "Stack frei",
+  "@status.system.col.stack": {
+    "description": "Dongle web UI: status.system.col.stack"
+  },
+  "status.system.led_quiet": "LED nur bei Problemen leuchten lassen",
+  "@status.system.led_quiet": {
+    "description": "Dongle web UI: status.system.led_quiet"
+  },
+  "status.system.led_quiet.hint": "Normalerweise leuchtet die LED dauerhaft, wenn alles in Ordnung ist. Mit dieser Option bleibt sie im Normalbetrieb aus und leuchtet oder blinkt nur, wenn ein Problem vorliegt (Einrichtung nötig, keine Registrierung, Token ungültig, keine Verbindung). Praktisch im Wohnzimmer.",
+  "@status.system.led_quiet.hint": {
+    "description": "Dongle web UI: status.system.led_quiet.hint"
+  },
+  "status.clock.now": "Uhrzeit: {time}",
+  "@status.clock.now": {
+    "description": "Dongle web UI: status.clock.now"
+  },
+  "status.clock.pending": "Uhrzeit: wird synchronisiert …",
+  "@status.clock.pending": {
+    "description": "Dongle web UI: status.clock.pending"
+  },
+  "status.time.today": "heute {time}",
+  "@status.time.today": {
+    "description": "Dongle web UI: status.time.today"
+  },
+  "status.time.yesterday": "gestern {time}",
+  "@status.time.yesterday": {
+    "description": "Dongle web UI: status.time.yesterday"
+  },
+  "status.tz.current": "Zeitzone: {tz}",
+  "@status.tz.current": {
+    "description": "Dongle web UI: status.tz.current"
+  },
+  "status.tz.apply": "Auf {zone} umstellen",
+  "@status.tz.apply": {
+    "description": "Dongle web UI: status.tz.apply"
+  },
+  "status.tz.saved": "Zeitzone gespeichert.",
+  "@status.tz.saved": {
+    "description": "Dongle web UI: status.tz.saved"
+  },
+  "status.errors.title": "Protokoll",
+  "@status.errors.title": {
+    "description": "Dongle web UI: status.errors.title"
+  },
+  "status.errors.note": "Das Protokoll dient der Fehleranalyse — nicht jeder angezeigte Eintrag ist ein echtes Problem; viele Fehler sind vorübergehend und verschwinden von selbst.",
+  "@status.errors.note": {
+    "description": "Dongle web UI: status.errors.note"
+  },
+  "status.errors.empty": "keine Einträge",
+  "@status.errors.empty": {
+    "description": "Dongle web UI: status.errors.empty"
+  },
+  "status.errors.clear": "Protokoll leeren",
+  "@status.errors.clear": {
+    "description": "Dongle web UI: status.errors.clear"
+  },
+  "status.errors.capture_info": "Auch Infos protokollieren",
+  "@status.errors.capture_info": {
+    "description": "Dongle web UI: status.errors.capture_info"
+  },
+  "status.errors.capture_info.hint": "Für die Fehlersuche: zeigt zusätzlich Info-Meldungen (z. B. versuchter Server:Port). Füllt das Protokoll schnell — danach wieder ausschalten.",
+  "@status.errors.capture_info.hint": {
+    "description": "Dongle web UI: status.errors.capture_info.hint"
+  },
+  "status.auth.title": "Zugangsschutz",
+  "@status.auth.title": {
+    "description": "Dongle web UI: status.auth.title"
+  },
+  "status.auth.intro": "Schützt die Konfigurationsoberfläche im laufenden Betrieb. Aktivierst Du den Schutz, fragt diese Seite ab dann nach einer Anmeldung über Deinen PhoneBlock-Account, bevor sie Anrufdaten zeigt oder Einstellungen entgegennimmt.",
+  "@status.auth.intro": {
+    "description": "Dongle web UI: status.auth.intro"
+  },
+  "status.auth.disabled": "Zugangsschutz aus — jeder im LAN erreicht das Dashboard ohne Anmeldung.",
+  "@status.auth.disabled": {
+    "description": "Dongle web UI: status.auth.disabled"
+  },
+  "status.auth.enabled": "Zugangsschutz aktiv — angemeldet als PhoneBlock-Nutzer.",
+  "@status.auth.enabled": {
+    "description": "Dongle web UI: status.auth.enabled"
+  },
+  "status.auth.enabled.user": "Zugangsschutz aktiv — angemeldet als {user}.",
+  "@status.auth.enabled.user": {
+    "description": "Dongle web UI: status.auth.enabled.user"
+  },
+  "status.auth.no_token": "Zugangsschutz benötigt einen konfigurierten PhoneBlock-Token (siehe Schritt 2 oben). Erst dann kann der Dongle Deine Identität gegen den Server prüfen.",
+  "@status.auth.no_token": {
+    "description": "Dongle web UI: status.auth.no_token"
+  },
+  "status.auth.enable": "Zugangsschutz einschalten",
+  "@status.auth.enable": {
+    "description": "Dongle web UI: status.auth.enable"
+  },
+  "status.auth.disable": "Zugangsschutz ausschalten",
+  "@status.auth.disable": {
+    "description": "Dongle web UI: status.auth.disable"
+  },
+  "status.auth.logout": "Abmelden",
+  "@status.auth.logout": {
+    "description": "Dongle web UI: status.auth.logout"
+  },
+  "status.auth.activate.intro": "Vor dem Einschalten wirst Du zu phoneblock.net umgeleitet, um Dich anzumelden — erst nach erfolgreicher Anmeldung wird der Schutz aktiviert. So kannst Du Dich nicht aussperren.",
+  "@status.auth.activate.intro": {
+    "description": "Dongle web UI: status.auth.activate.intro"
+  },
+  "login.title": "Anmeldung erforderlich",
+  "@login.title": {
+    "description": "Dongle web UI: login.title"
+  },
+  "login.intro": "Der Zugangsschutz für diesen Dongle ist aktiv. Klicke unten, um Dich über Deinen PhoneBlock-Account anzumelden — Du wirst kurz zu phoneblock.net umgeleitet und automatisch zurückgeschickt.",
+  "@login.intro": {
+    "description": "Dongle web UI: login.intro"
+  },
+  "login.button": "Mit PhoneBlock anmelden",
+  "@login.button": {
+    "description": "Dongle web UI: login.button"
+  },
+  "login.remember": "Angemeldet bleiben",
+  "@login.remember": {
+    "description": "Dongle web UI: login.remember"
+  },
+  "login.remember.help": "Setzt einen Cookie auf diesem Gerät, damit der Dongle Dich beim nächsten Mal ohne Umweg über phoneblock.net wiedererkennt. Es wird nur ein Browser gleichzeitig „gemerkt“.",
+  "@login.remember.help": {
+    "description": "Dongle web UI: login.remember.help"
+  },
+  "login.error.mismatch": "Anmeldung fehlgeschlagen — dieser PhoneBlock-Account ist nicht der Eigentümer dieses Dongles.",
+  "@login.error.mismatch": {
+    "description": "Dongle web UI: login.error.mismatch"
+  },
+  "login.error.mismatch_named": "Anmeldung fehlgeschlagen — dieser Dongle gehört zum Account {expected}, Du bist aber als anderer Nutzer angemeldet.",
+  "@login.error.mismatch_named": {
+    "description": "Dongle web UI: login.error.mismatch_named"
+  },
+  "login.error.rejected": "Anmeldung fehlgeschlagen — der PhoneBlock-Server hat die Identität nicht bestätigt.",
+  "@login.error.rejected": {
+    "description": "Dongle web UI: login.error.rejected"
+  },
+  "login.error.expired": "Die Anmeldung ist abgelaufen oder ungültig. Bitte erneut versuchen.",
+  "@login.error.expired": {
+    "description": "Dongle web UI: login.error.expired"
+  },
+  "login.error.persist": "Aktivierung konnte nicht gespeichert werden. Bitte erneut versuchen.",
+  "@login.error.persist": {
+    "description": "Dongle web UI: login.error.persist"
+  },
+  "login.error.missing": "Die Antwort von phoneblock.net war unvollständig. Bitte erneut versuchen.",
+  "@login.error.missing": {
+    "description": "Dongle web UI: login.error.missing"
+  },
+  "login.error.generic": "Anmeldung fehlgeschlagen. Bitte erneut versuchen.",
+  "@login.error.generic": {
+    "description": "Dongle web UI: login.error.generic"
+  },
+  "status.reset.title": "Werkseinstellungen",
+  "@status.reset.title": {
+    "description": "Dongle web UI: status.reset.title"
+  },
+  "status.reset.intro": "Löscht alle Einstellungen im Dongle (SIP-Zugangsdaten, PhoneBlock-Token, Fehlerverlauf) und startet neu.",
+  "@status.reset.intro": {
+    "description": "Dongle web UI: status.reset.intro"
+  },
+  "status.reset.button": "Konfiguration zurücksetzen",
+  "@status.reset.button": {
+    "description": "Dongle web UI: status.reset.button"
+  },
+  "status.reset.confirm": "Alle Dongle-Einstellungen wirklich löschen und neu starten?",
+  "@status.reset.confirm": {
+    "description": "Dongle web UI: status.reset.confirm"
+  },
+  "status.reset.running": "Wird zurückgesetzt — der Dongle startet gleich neu.",
+  "@status.reset.running": {
+    "description": "Dongle web UI: status.reset.running"
+  },
+  "status.reset.error": "Zurücksetzen fehlgeschlagen: {msg}",
+  "@status.reset.error": {
+    "description": "Dongle web UI: status.reset.error"
+  },
+  "status.fw.title": "Firmware aktualisieren",
+  "@status.fw.title": {
+    "description": "Dongle web UI: status.fw.title"
+  },
+  "status.fw.intro": "Neue Firmware-Datei hochladen oder direkt gegen die PhoneBlock-CDN prüfen. In beiden Fällen landet die neue Version im inaktiven Flash-Slot; nach dem Neustart bootet der Dongle die neue Version und rollt bei Fehlern automatisch zurück.",
+  "@status.fw.intro": {
+    "description": "Dongle web UI: status.fw.intro"
+  },
+  "status.fw.current": "Aktive Partition: {partition} · Version {version}",
+  "@status.fw.current": {
+    "description": "Dongle web UI: status.fw.current"
+  },
+  "status.fw.pick": "Firmware wählen (.bin)",
+  "@status.fw.pick": {
+    "description": "Dongle web UI: status.fw.pick"
+  },
+  "status.fw.submit": "Hochladen & neu starten",
+  "@status.fw.submit": {
+    "description": "Dongle web UI: status.fw.submit"
+  },
+  "status.fw.confirm": "Neue Firmware installieren und Dongle neu starten?",
+  "@status.fw.confirm": {
+    "description": "Dongle web UI: status.fw.confirm"
+  },
+  "status.fw.uploading": "Übertrage… {pct} %",
+  "@status.fw.uploading": {
+    "description": "Dongle web UI: status.fw.uploading"
+  },
+  "status.fw.done": "Firmware übertragen — Dongle startet neu. Bitte einen Moment warten und dann die Seite neu laden.",
+  "@status.fw.done": {
+    "description": "Dongle web UI: status.fw.done"
+  },
+  "status.fw.error": "Fehler: {msg}",
+  "@status.fw.error": {
+    "description": "Dongle web UI: status.fw.error"
+  },
+  "status.fw.check": "Auf Aktualisierung prüfen",
+  "@status.fw.check": {
+    "description": "Dongle web UI: status.fw.check"
+  },
+  "status.fw.checking": "Prüfe auf Aktualisierung…",
+  "@status.fw.checking": {
+    "description": "Dongle web UI: status.fw.checking"
+  },
+  "status.fw.check.none": "Keine neue Version verfügbar (aktuell {version}).",
+  "@status.fw.check.none": {
+    "description": "Dongle web UI: status.fw.check.none"
+  },
+  "status.fw.check.found": "Neue Version {version} wird installiert…",
+  "@status.fw.check.found": {
+    "description": "Dongle web UI: status.fw.check.found"
+  },
+  "status.fw.check.installed": "Version {version} installiert — Dongle startet neu. Bitte einen Moment warten und dann die Seite neu laden.",
+  "@status.fw.check.installed": {
+    "description": "Dongle web UI: status.fw.check.installed"
+  },
+  "status.fw.check.error": "Prüfung fehlgeschlagen: {msg}",
+  "@status.fw.check.error": {
+    "description": "Dongle web UI: status.fw.check.error"
+  },
+  "status.fw.failed": "Letztes Update auf Version {version} hat den Boot nicht überstanden — automatisch zurückgerollt. Auto-Update überspringt diese Version. Klick auf „Auf Aktualisierung prüfen\", um es erneut zu versuchen.",
+  "@status.fw.failed": {
+    "description": "Dongle web UI: status.fw.failed"
+  },
+  "status.fw.auto_update": "Tägliche Auto-Aktualisierung",
+  "@status.fw.auto_update": {
+    "description": "Dongle web UI: status.fw.auto_update"
+  },
+  "status.fw.auto_update.help": "Wenn aktiv, prüft der Dongle einmal pro Tag, ob auf der PhoneBlock-CDN eine neuere Version liegt, und installiert sie automatisch. Beim manuellen Hochladen einer Firmware wird diese Option automatisch ausgeschaltet, damit der Daily-Check Deinen handgewählten Build nicht überschreibt — schalte sie hier wieder ein, wenn Du dem Release-Strom folgen willst.",
+  "@status.fw.auto_update.help": {
+    "description": "Dongle web UI: status.fw.auto_update.help"
+  },
+  "status.fw.channel": "Update-Kanal",
+  "@status.fw.channel": {
+    "description": "Dongle web UI: status.fw.channel"
+  },
+  "status.fw.channel.help": "Wähle „Beta\", wenn Du Testversionen vorab erhalten möchtest — etwa um einen gemeldeten Fehler gegenzuprüfen. „Stabil\" liefert nur freigegebene Versionen. Sobald eine getestete Version final freigegeben wird, wechselst Du automatisch wieder auf diese.",
+  "@status.fw.channel.help": {
+    "description": "Dongle web UI: status.fw.channel.help"
+  },
+  "status.fw.channel.stable": "Stabil",
+  "@status.fw.channel.stable": {
+    "description": "Dongle web UI: status.fw.channel.stable"
+  },
+  "status.fw.channel.beta": "Beta (Testversionen)",
+  "@status.fw.channel.beta": {
+    "description": "Dongle web UI: status.fw.channel.beta"
+  },
+  "status.fw.crash_report": "Fehlerberichte an phoneblock.net senden",
+  "@status.fw.crash_report": {
+    "description": "Dongle web UI: status.fw.crash_report"
+  },
+  "status.fw.crash_report.help": "Wenn der Dongle wegen eines Programmfehlers neu startet, wird ein Speicherauszug auf einer dafür reservierten Flash-Partition abgelegt. Ist diese Option aktiv, lädt der Dongle den Auszug beim nächsten Start an phoneblock.net hoch — das hilft uns, Felddefekte zu finden und zu fixen. Schalte die Option aus, wenn der Dongle solche Berichte nicht senden soll; gespeicherte Auszüge werden dann lokal gelöscht statt verschickt.",
+  "@status.fw.crash_report.help": {
+    "description": "Dongle web UI: status.fw.crash_report.help"
+  },
+  "status.mail.title": "Status-E-Mails",
+  "@status.mail.title": {
+    "description": "Dongle web UI: status.mail.title"
+  },
+  "status.mail.intro": "Der Dongle kann dir Statusmeldungen direkt per E-Mail schicken — über dein eigenes E-Mail-Konto. Trage die Zugangsdaten deines Mail-Anbieters ein; der Dongle versendet darüber höchstens eine Meldung pro Tag.",
+  "@status.mail.intro": {
+    "description": "Dongle web UI: status.mail.intro"
+  },
+  "status.mail.host": "SMTP-Server",
+  "@status.mail.host": {
+    "description": "Dongle web UI: status.mail.host"
+  },
+  "status.mail.port": "Port (leer = automatisch)",
+  "@status.mail.port": {
+    "description": "Dongle web UI: status.mail.port"
+  },
+  "status.mail.security": "Verschlüsselung",
+  "@status.mail.security": {
+    "description": "Dongle web UI: status.mail.security"
+  },
+  "status.mail.security.tls": "TLS (Port 465)",
+  "@status.mail.security.tls": {
+    "description": "Dongle web UI: status.mail.security.tls"
+  },
+  "status.mail.security.starttls": "STARTTLS (Port 587)",
+  "@status.mail.security.starttls": {
+    "description": "Dongle web UI: status.mail.security.starttls"
+  },
+  "status.mail.user": "Benutzername (SMTP-Login)",
+  "@status.mail.user": {
+    "description": "Dongle web UI: status.mail.user"
+  },
+  "status.mail.pass": "Passwort",
+  "@status.mail.pass": {
+    "description": "Dongle web UI: status.mail.pass"
+  },
+  "status.mail.pass.keep": "gespeichert — leer lassen, um es zu behalten",
+  "@status.mail.pass.keep": {
+    "description": "Dongle web UI: status.mail.pass.keep"
+  },
+  "status.mail.from": "Absender (E-Mail, leer = Benutzername)",
+  "@status.mail.from": {
+    "description": "Dongle web UI: status.mail.from"
+  },
+  "status.mail.to": "Empfänger (E-Mail)",
+  "@status.mail.to": {
+    "description": "Dongle web UI: status.mail.to"
+  },
+  "status.mail.help": "Tipp: Bei Gmail oder Outlook brauchst du meist ein „App-Passwort\" (bei aktivierter Zwei-Faktor-Anmeldung), nicht dein normales Kontopasswort. Klassische Anbieter wie GMX, web.de oder mailbox.org funktionieren mit Benutzername und Passwort.",
+  "@status.mail.help": {
+    "description": "Dongle web UI: status.mail.help"
+  },
+  "status.mail.on_error": "E-Mail bei Fehlern und Abstürzen",
+  "@status.mail.on_error": {
+    "description": "Dongle web UI: status.mail.on_error"
+  },
+  "status.mail.on_error.help": "Sendet einmal täglich eine E-Mail, wenn seit der letzten Meldung ein Fehler im Protokoll aufgetreten ist — dazu zählt auch ein Neustart nach einem Absturz.",
+  "@status.mail.on_error.help": {
+    "description": "Dongle web UI: status.mail.on_error.help"
+  },
+  "status.mail.on_spam": "E-Mail bei abgefangenen SPAM-Anrufen",
+  "@status.mail.on_spam": {
+    "description": "Dongle web UI: status.mail.on_spam"
+  },
+  "status.mail.on_spam.help": "Sendet einmal täglich eine E-Mail, wenn seit der letzten Meldung SPAM-Anrufe blockiert wurden.",
+  "@status.mail.on_spam.help": {
+    "description": "Dongle web UI: status.mail.on_spam.help"
+  },
+  "status.mail.on_update": "E-Mail bei Firmware-Aktualisierung",
+  "@status.mail.on_update": {
+    "description": "Dongle web UI: status.mail.on_update"
+  },
+  "status.mail.on_update.help": "Sendet eine E-Mail, nachdem sich der Dongle auf eine neue Firmware-Version aktualisiert hat — mit einem Link zum Änderungsprotokoll.",
+  "@status.mail.on_update.help": {
+    "description": "Dongle web UI: status.mail.on_update.help"
+  },
+  "status.mail.save": "Speichern",
+  "@status.mail.save": {
+    "description": "Dongle web UI: status.mail.save"
+  },
+  "status.mail.saved": "Gespeichert.",
+  "@status.mail.saved": {
+    "description": "Dongle web UI: status.mail.saved"
+  },
+  "status.mail.test": "Test-E-Mail senden",
+  "@status.mail.test": {
+    "description": "Dongle web UI: status.mail.test"
+  },
+  "status.mail.testing": "Sende Test-E-Mail…",
+  "@status.mail.testing": {
+    "description": "Dongle web UI: status.mail.testing"
+  },
+  "status.mail.test.sent": "Test-E-Mail wird gesendet — das Ergebnis steht im Protokoll.",
+  "@status.mail.test.sent": {
+    "description": "Dongle web UI: status.mail.test.sent"
+  },
+  "status.mail.test.fail": "Versand fehlgeschlagen — bitte Einstellungen und Protokoll prüfen.",
+  "@status.mail.test.fail": {
+    "description": "Dongle web UI: status.mail.test.fail"
+  },
+  "status.mail.err.host": "SMTP-Server fehlt",
+  "@status.mail.err.host": {
+    "description": "Dongle web UI: status.mail.err.host"
+  },
+  "status.mail.err.user": "Benutzername fehlt",
+  "@status.mail.err.user": {
+    "description": "Dongle web UI: status.mail.err.user"
+  },
+  "status.mail.err.pass": "Passwort fehlt",
+  "@status.mail.err.pass": {
+    "description": "Dongle web UI: status.mail.err.pass"
+  },
+  "status.mail.err.to": "Empfänger ungültig",
+  "@status.mail.err.to": {
+    "description": "Dongle web UI: status.mail.err.to"
+  },
+  "status.mail.err.from": "Absender ungültig",
+  "@status.mail.err.from": {
+    "description": "Dongle web UI: status.mail.err.from"
+  },
+  "status.mail.err.from_user": "Absender nötig — der Benutzername ist keine E-Mail-Adresse",
+  "@status.mail.err.from_user": {
+    "description": "Dongle web UI: status.mail.err.from_user"
+  },
+  "status.sync.title": "Sperrlisten-Sync",
+  "@status.sync.title": {
+    "description": "Dongle web UI: status.sync.title"
+  },
+  "status.sync.intro": "Am Mobilteil gesperrte Nummern („Nummer sperren\") werden einmal pro Tag zur PhoneBlock-Datenbank übertragen und danach aus der Fritz!Box entfernt. Der Answerbot fängt die Anrufer dann für alle PhoneBlock-Nutzer ab.",
+  "@status.sync.intro": {
+    "description": "Dongle web UI: status.sync.intro"
+  },
+  "status.sync.unavailable": "Nicht verfügbar — nur mit Fritz!Box-Einrichtung nutzbar.",
+  "@status.sync.unavailable": {
+    "description": "Dongle web UI: status.sync.unavailable"
+  },
+  "status.sync.never": "Noch nicht gelaufen.",
+  "@status.sync.never": {
+    "description": "Dongle web UI: status.sync.never"
+  },
+  "status.sync.last_ok": "Letzter Lauf vor {ago}: {n} übertragen.",
+  "@status.sync.last_ok": {
+    "description": "Dongle web UI: status.sync.last_ok"
+  },
+  "status.sync.last_partial": "Letzter Lauf vor {ago}: {n} übertragen, {f} Fehler.",
+  "@status.sync.last_partial": {
+    "description": "Dongle web UI: status.sync.last_partial"
+  },
+  "status.sync.last_fail": "Letzter Lauf vor {ago} fehlgeschlagen: {err}",
+  "@status.sync.last_fail": {
+    "description": "Dongle web UI: status.sync.last_fail"
+  },
+  "status.sync.running": "Sync läuft gerade…",
+  "@status.sync.running": {
+    "description": "Dongle web UI: status.sync.running"
+  },
+  "status.sync.run_now": "Jetzt synchronisieren",
+  "@status.sync.run_now": {
+    "description": "Dongle web UI: status.sync.run_now"
+  },
+  "status.sync.triggered": "Sync gestartet.",
+  "@status.sync.triggered": {
+    "description": "Dongle web UI: status.sync.triggered"
+  },
+  "status.sync.busy": "Sync läuft bereits.",
+  "@status.sync.busy": {
+    "description": "Dongle web UI: status.sync.busy"
+  },
+  "status.sync.enable": "Sperrlisten-Sync aktivieren",
+  "@status.sync.enable": {
+    "description": "Dongle web UI: status.sync.enable"
+  },
+  "status.sync.disabled": "Automatischer Sync deaktiviert — manuell weiterhin möglich.",
+  "@status.sync.disabled": {
+    "description": "Dongle web UI: status.sync.disabled"
+  },
+  "status.localcache.title": "Blocklist-Cache",
+  "@status.localcache.title": {
+    "description": "Dongle web UI: status.localcache.title"
+  },
+  "status.localcache.intro": "Einmal pro Tag lädt der Dongle die aktuelle Sperrliste und Deine persönliche Black-/White-List herunter und legt sie auf dem internen Flash ab. Eingehende Anrufe werden so überwiegend ohne Server-Anfrage entschieden — schneller und auch bei Netzproblemen verlässlich.",
+  "@status.localcache.intro": {
+    "description": "Dongle web UI: status.localcache.intro"
+  },
+  "status.localcache.enable": "Blocklist-Cache verwenden",
+  "@status.localcache.enable": {
+    "description": "Dongle web UI: status.localcache.enable"
+  },
+  "status.localcache.enable.help": "Lädt die Sperrliste auf den Dongle und entscheidet Anrufe lokal. Aus: Jeder Anruf wird direkt beim Server geprüft — langsamer und nur bei funktionierender Internetverbindung möglich.",
+  "@status.localcache.enable.help": {
+    "description": "Dongle web UI: status.localcache.enable.help"
+  },
+  "status.localcache.disabled": "Deaktiviert — Anrufe werden direkt beim Server geprüft.",
+  "@status.localcache.disabled": {
+    "description": "Dongle web UI: status.localcache.disabled"
+  },
+  "status.localcache.never": "Noch nicht heruntergeladen.",
+  "@status.localcache.never": {
+    "description": "Dongle web UI: status.localcache.never"
+  },
+  "status.localcache.have": "{community} Einträge in der Gemeinschaftsliste, {personal} persönlich. Aktualisiert vor {ago}.",
+  "@status.localcache.have": {
+    "description": "Dongle web UI: status.localcache.have"
+  },
+  "status.localcache.last_fail": "Letzter Download vor {ago} fehlgeschlagen: {err}",
+  "@status.localcache.last_fail": {
+    "description": "Dongle web UI: status.localcache.last_fail"
+  },
+  "status.localcache.running": "Download läuft gerade…",
+  "@status.localcache.running": {
+    "description": "Dongle web UI: status.localcache.running"
+  },
+  "status.localcache.wildcards": "Wildcard-Sperren auswerten",
+  "@status.localcache.wildcards": {
+    "description": "Dongle web UI: status.localcache.wildcards"
+  },
+  "status.localcache.wildcards.help": "Sperrt nicht nur exakte Nummern, sondern auch Rufnummern-Bereiche (z.B. „030 12 34 56*\"), wenn die Gemeinschaft sie als Spam meldet. Aus, wenn Du nur exakte Treffer sperren willst.",
+  "@status.localcache.wildcards.help": {
+    "description": "Dongle web UI: status.localcache.wildcards.help"
+  },
+  "status.localcache.run_now": "Jetzt herunterladen",
+  "@status.localcache.run_now": {
+    "description": "Dongle web UI: status.localcache.run_now"
+  },
+  "status.localcache.triggered": "Download gestartet.",
+  "@status.localcache.triggered": {
+    "description": "Dongle web UI: status.localcache.triggered"
+  },
+  "status.localcache.busy": "Download läuft bereits.",
+  "@status.localcache.busy": {
+    "description": "Dongle web UI: status.localcache.busy"
+  },
+  "status.ann.title": "Spam-Ansage",
+  "@status.ann.title": {
+    "description": "Dongle web UI: status.ann.title"
+  },
+  "status.ann.default": "Eingebaute Standard-Ansage ({kb} KB).",
+  "@status.ann.default": {
+    "description": "Dongle web UI: status.ann.default"
+  },
+  "status.ann.custom": "Eigene Ansage ({kb} KB).",
+  "@status.ann.custom": {
+    "description": "Dongle web UI: status.ann.custom"
+  },
+  "status.ann.play": "Aktuelle Ansage anhören",
+  "@status.ann.play": {
+    "description": "Dongle web UI: status.ann.play"
+  },
+  "status.ann.stop": "Stopp",
+  "@status.ann.stop": {
+    "description": "Dongle web UI: status.ann.stop"
+  },
+  "status.ann.upload.label": "Eigene Ansage hochladen (WAV/MP3/OGG, max. {s} s)",
+  "@status.ann.upload.label": {
+    "description": "Dongle web UI: status.ann.upload.label"
+  },
+  "status.ann.upload.pick": "Datei wählen",
+  "@status.ann.upload.pick": {
+    "description": "Dongle web UI: status.ann.upload.pick"
+  },
+  "status.ann.upload.submit": "Hochladen",
+  "@status.ann.upload.submit": {
+    "description": "Dongle web UI: status.ann.upload.submit"
+  },
+  "status.ann.upload.converting": "Konvertiere…",
+  "@status.ann.upload.converting": {
+    "description": "Dongle web UI: status.ann.upload.converting"
+  },
+  "status.ann.upload.uploading": "Übertrage…",
+  "@status.ann.upload.uploading": {
+    "description": "Dongle web UI: status.ann.upload.uploading"
+  },
+  "status.ann.upload.done": "Gespeichert ({kb} KB).",
+  "@status.ann.upload.done": {
+    "description": "Dongle web UI: status.ann.upload.done"
+  },
+  "status.ann.upload.error": "Fehler: {msg}",
+  "@status.ann.upload.error": {
+    "description": "Dongle web UI: status.ann.upload.error"
+  },
+  "status.ann.upload.toolong": "Zu lang — maximal {s} Sekunden.",
+  "@status.ann.upload.toolong": {
+    "description": "Dongle web UI: status.ann.upload.toolong"
+  },
+  "status.ann.upload.decode_fail": "Datei konnte nicht dekodiert werden.",
+  "@status.ann.upload.decode_fail": {
+    "description": "Dongle web UI: status.ann.upload.decode_fail"
+  },
+  "status.ann.reset.button": "Auf Standard zurücksetzen",
+  "@status.ann.reset.button": {
+    "description": "Dongle web UI: status.ann.reset.button"
+  },
+  "status.ann.reset.confirm": "Eigene Ansage wirklich verwerfen?",
+  "@status.ann.reset.confirm": {
+    "description": "Dongle web UI: status.ann.reset.confirm"
+  },
+  "status.ann.accept_test": "Lokale Testanrufe annehmen",
+  "@status.ann.accept_test": {
+    "description": "Dongle web UI: status.ann.accept_test"
+  },
+  "status.ann.accept_test.help": "Wenn aktiviert, beantwortet der Dongle Anrufe auf interne Fritz!Box-Codes (**622, *21#, …) wie Spam — also mit Ansage und Auflegen. So lässt sich der Anruf-Ablauf von einem internen Telefon aus testen, ohne eine echte Nummer auf PhoneBlock zu melden.",
+  "@status.ann.accept_test.help": {
+    "description": "Dongle web UI: status.ann.accept_test.help"
+  },
+  "hero.title": "Einrichtung",
+  "@hero.title": {
+    "description": "Dongle web UI: hero.title"
+  },
+  "hero.intro": "Zwei Schritte, dann blockt dein Dongle Spam-Anrufe automatisch. Beide abhaken, erst dann ist das Gerät einsatzbereit.",
+  "@hero.intro": {
+    "description": "Dongle web UI: hero.intro"
+  },
+  "hero.step1.todo": "Den Dongle bei deiner Telefonanlage anmelden",
+  "@hero.step1.todo": {
+    "description": "Dongle web UI: hero.step1.todo"
+  },
+  "hero.step1.done": "Telefonie eingerichtet",
+  "@hero.step1.done": {
+    "description": "Dongle web UI: hero.step1.done"
+  },
+  "hero.step2.todo": "Mit PhoneBlock verbinden — damit der Dongle weiß, was Spam ist",
+  "@hero.step2.todo": {
+    "description": "Dongle web UI: hero.step2.todo"
+  },
+  "hero.step2.done": "Mit PhoneBlock verbunden",
+  "@hero.step2.done": {
+    "description": "Dongle web UI: hero.step2.done"
+  },
+  "hero.cta.sip": "Telefonie einrichten",
+  "@hero.cta.sip": {
+    "description": "Dongle web UI: hero.cta.sip"
+  },
+  "hero.cta.token": "PhoneBlock verbinden",
+  "@hero.cta.token": {
+    "description": "Dongle web UI: hero.cta.token"
+  },
+  "sip.entry.title": "Telefonie einrichten",
+  "@sip.entry.title": {
+    "description": "Dongle web UI: sip.entry.title"
+  },
+  "sip.entry.intro": "Wähle, wie der Dongle sich bei deiner Telefonanlage anmeldet.",
+  "@sip.entry.intro": {
+    "description": "Dongle web UI: sip.entry.intro"
+  },
+  "sip.entry.fritzbox": "Fritz!Box (empfohlen)",
+  "@sip.entry.fritzbox": {
+    "description": "Dongle web UI: sip.entry.fritzbox"
+  },
+  "sip.entry.fritzbox.desc": "Automatische Einrichtung. Der Dongle legt sich selbst als IP-Telefon an.",
+  "@sip.entry.fritzbox.desc": {
+    "description": "Dongle web UI: sip.entry.fritzbox.desc"
+  },
+  "sip.entry.provider": "Anderer Anbieter",
+  "@sip.entry.provider": {
+    "description": "Dongle web UI: sip.entry.provider"
+  },
+  "sip.entry.provider.desc": "Direkt bei Telekom, Vodafone, 1&1, sipgate oder easybell anmelden.",
+  "@sip.entry.provider.desc": {
+    "description": "Dongle web UI: sip.entry.provider.desc"
+  },
+  "sip.entry.manual": "Manuell (Experte)",
+  "@sip.entry.manual": {
+    "description": "Dongle web UI: sip.entry.manual"
+  },
+  "sip.entry.manual.desc": "Alle SIP-Felder selbst ausfüllen.",
+  "@sip.entry.manual.desc": {
+    "description": "Dongle web UI: sip.entry.manual.desc"
+  },
+  "sip.fb.title": "Fritz!Box-Einrichtung",
+  "@sip.fb.title": {
+    "description": "Dongle web UI: sip.fb.title"
+  },
+  "sip.fb.intro": "Einmalig das Fritz!Box-Admin-Passwort eingeben. Es wird nicht gespeichert.",
+  "@sip.fb.intro": {
+    "description": "Dongle web UI: sip.fb.intro"
+  },
+  "sip.fb.host": "Fritz!Box (Host oder IP)",
+  "@sip.fb.host": {
+    "description": "Dongle web UI: sip.fb.host"
+  },
+  "sip.fb.user": "Benutzer",
+  "@sip.fb.user": {
+    "description": "Dongle web UI: sip.fb.user"
+  },
+  "sip.fb.user.hint": "(leer lassen → Standard-Benutzer der Fritz!Box)",
+  "@sip.fb.user.hint": {
+    "description": "Dongle web UI: sip.fb.user.hint"
+  },
+  "sip.fb.pass": "Passwort",
+  "@sip.fb.pass": {
+    "description": "Dongle web UI: sip.fb.pass"
+  },
+  "sip.fb.submit": "Nebenstelle einrichten",
+  "@sip.fb.submit": {
+    "description": "Dongle web UI: sip.fb.submit"
+  },
+  "sip.fb.working": "Richte Nebenstelle ein (~2–5 s)…",
+  "@sip.fb.working": {
+    "description": "Dongle web UI: sip.fb.working"
+  },
+  "sip.fb.done": "Nebenstelle angelegt — Anmeldung startet.",
+  "@sip.fb.done": {
+    "description": "Dongle web UI: sip.fb.done"
+  },
+  "sip.fb.done.withnum": "Nebenstelle angelegt (interne Nummer {n}) — Anmeldung startet.",
+  "@sip.fb.done.withnum": {
+    "description": "Dongle web UI: sip.fb.done.withnum"
+  },
+  "sip.fb.error": "Fehler: {msg}",
+  "@sip.fb.error": {
+    "description": "Dongle web UI: sip.fb.error"
+  },
+  "sip.fb.2fa.title": "Zwei-Faktor-Bestätigung",
+  "@sip.fb.2fa.title": {
+    "description": "Dongle web UI: sip.fb.2fa.title"
+  },
+  "sip.fb.2fa.button": "beliebigen Knopf an der Fritz!Box drücken",
+  "@sip.fb.2fa.button": {
+    "description": "Dongle web UI: sip.fb.2fa.button"
+  },
+  "sip.fb.2fa.dtmf": "Folge {seq} an einem angeschlossenen Telefon wählen",
+  "@sip.fb.2fa.dtmf": {
+    "description": "Dongle web UI: sip.fb.2fa.dtmf"
+  },
+  "sip.fb.2fa.instructions": "Bitte jetzt {hints}.",
+  "@sip.fb.2fa.instructions": {
+    "description": "Dongle web UI: sip.fb.2fa.instructions"
+  },
+  "sip.fb.2fa.cancelled": "2FA abgebrochen.",
+  "@sip.fb.2fa.cancelled": {
+    "description": "Dongle web UI: sip.fb.2fa.cancelled"
+  },
+  "sip.fb.2fa.timeout": "Zeitüberschreitung. Bitte erneut versuchen.",
+  "@sip.fb.2fa.timeout": {
+    "description": "Dongle web UI: sip.fb.2fa.timeout"
+  },
+  "sip.prov.title": "Anbieter wählen",
+  "@sip.prov.title": {
+    "description": "Dongle web UI: sip.prov.title"
+  },
+  "sip.prov.intro": "Wähle deinen Anbieter; die Zugangsdaten bekommst du aus dem jeweiligen Kundenportal. Ist dein Anbieter nicht gelistet, nutze die manuelle Konfiguration.",
+  "@sip.prov.intro": {
+    "description": "Dongle web UI: sip.prov.intro"
+  },
+  "sip.prov.provider": "Anbieter",
+  "@sip.prov.provider": {
+    "description": "Dongle web UI: sip.prov.provider"
+  },
+  "sip.prov.user": "SIP-Benutzer / Rufnummer",
+  "@sip.prov.user": {
+    "description": "Dongle web UI: sip.prov.user"
+  },
+  "sip.prov.pass": "Passwort",
+  "@sip.prov.pass": {
+    "description": "Dongle web UI: sip.prov.pass"
+  },
+  "sip.prov.submit": "Zugangsdaten speichern",
+  "@sip.prov.submit": {
+    "description": "Dongle web UI: sip.prov.submit"
+  },
+  "sip.prov.done": "Gespeichert. Anmeldung startet.",
+  "@sip.prov.done": {
+    "description": "Dongle web UI: sip.prov.done"
+  },
+  "sip.prov.error": "Fehler: {msg}",
+  "@sip.prov.error": {
+    "description": "Dongle web UI: sip.prov.error"
+  },
+  "sip.manual.title": "Manuelle Konfiguration",
+  "@sip.manual.title": {
+    "description": "Dongle web UI: sip.manual.title"
+  },
+  "sip.manual.intro": "Vollständige SIP-Felder. Passwort leer lassen heißt „unverändert\".",
+  "@sip.manual.intro": {
+    "description": "Dongle web UI: sip.manual.intro"
+  },
+  "sip.manual.host": "SIP-Registrar",
+  "@sip.manual.host": {
+    "description": "Dongle web UI: sip.manual.host"
+  },
+  "sip.manual.port": "SIP-Port",
+  "@sip.manual.port": {
+    "description": "Dongle web UI: sip.manual.port"
+  },
+  "sip.manual.port.hint": "Leer lassen = automatisch via DNS-SRV bzw. Transport-Default (5060 UDP/TCP, 5061 TLS).",
+  "@sip.manual.port.hint": {
+    "description": "Dongle web UI: sip.manual.port.hint"
+  },
+  "sip.manual.user": "SIP-Benutzer",
+  "@sip.manual.user": {
+    "description": "Dongle web UI: sip.manual.user"
+  },
+  "sip.manual.pass": "SIP-Passwort",
+  "@sip.manual.pass": {
+    "description": "Dongle web UI: sip.manual.pass"
+  },
+  "sip.manual.pass.hint": "Leer lassen = gespeichertes Passwort behalten.",
+  "@sip.manual.pass.hint": {
+    "description": "Dongle web UI: sip.manual.pass.hint"
+  },
+  "sip.manual.anon": "Ohne Passwort anmelden (anonym)",
+  "@sip.manual.anon": {
+    "description": "Dongle web UI: sip.manual.anon"
+  },
+  "sip.manual.anon.hint": "Entfernt ein gespeichertes Passwort und meldet sich ohne an — z. B. anonymous@t-online.de bei der Telekom.",
+  "@sip.manual.anon.hint": {
+    "description": "Dongle web UI: sip.manual.anon.hint"
+  },
+  "sip.manual.submit": "Speichern",
+  "@sip.manual.submit": {
+    "description": "Dongle web UI: sip.manual.submit"
+  },
+  "sip.manual.done": "Gespeichert.",
+  "@sip.manual.done": {
+    "description": "Dongle web UI: sip.manual.done"
+  },
+  "sip.manual.error": "Fehler: {msg}",
+  "@sip.manual.error": {
+    "description": "Dongle web UI: sip.manual.error"
+  },
+  "sip.manual.advanced": "Erweiterte Parameter",
+  "@sip.manual.advanced": {
+    "description": "Dongle web UI: sip.manual.advanced"
+  },
+  "sip.manual.transport": "Transport",
+  "@sip.manual.transport": {
+    "description": "Dongle web UI: sip.manual.transport"
+  },
+  "sip.manual.transport.hint": "UDP, TCP und TLS sind wählbar. TLS verschlüsselt die Verbindung und wird empfohlen, sofern der Anbieter es unterstützt. Die Sprachübertragung selbst ist derzeit noch unverschlüsselt.",
+  "@sip.manual.transport.hint": {
+    "description": "Dongle web UI: sip.manual.transport.hint"
+  },
+  "sip.manual.auth_user": "Auth-Benutzer",
+  "@sip.manual.auth_user": {
+    "description": "Dongle web UI: sip.manual.auth_user"
+  },
+  "sip.manual.auth_user.hint": "Leer lassen = SIP-Benutzer auch als Auth. Bei Telekom: E-Mail.",
+  "@sip.manual.auth_user.hint": {
+    "description": "Dongle web UI: sip.manual.auth_user.hint"
+  },
+  "sip.manual.outbound": "Outbound-Proxy",
+  "@sip.manual.outbound": {
+    "description": "Dongle web UI: sip.manual.outbound"
+  },
+  "sip.manual.outbound.hint": "Optional, Format host[:port]. Leer = direkt zum Registrar.",
+  "@sip.manual.outbound.hint": {
+    "description": "Dongle web UI: sip.manual.outbound.hint"
+  },
+  "sip.manual.realm": "Realm",
+  "@sip.manual.realm": {
+    "description": "Dongle web UI: sip.manual.realm"
+  },
+  "sip.manual.realm.hint": "Leer = aus Challenge übernehmen.",
+  "@sip.manual.realm.hint": {
+    "description": "Dongle web UI: sip.manual.realm.hint"
+  },
+  "sip.manual.stun": "STUN-Server",
+  "@sip.manual.stun": {
+    "description": "Dongle web UI: sip.manual.stun"
+  },
+  "sip.manual.stun.hint": "Optional, Format host[:port]. Ermittelt bei direkter Provider-Anmeldung den öffentlichen RTP-Port. Leer = aus. Wird vom Provider-Preset gesetzt (Telekom: stun.t-online.de:3478).",
+  "@sip.manual.stun.hint": {
+    "description": "Dongle web UI: sip.manual.stun.hint"
+  },
+  "sip.manual.srtp": "SRTP",
+  "@sip.manual.srtp": {
+    "description": "Dongle web UI: sip.manual.srtp"
+  },
+  "sip.manual.srtp.hint": "SRTP wird automatisch ausgehandelt: Sprache wird verschlüsselt, sobald der Anbieter es anbietet (z. B. Telekom), sonst unverschlüsseltes RTP (z. B. Fritz!Box im LAN).",
+  "@sip.manual.srtp.hint": {
+    "description": "Dongle web UI: sip.manual.srtp.hint"
+  },
+  "sip.manual.local_port": "Lokaler SIP-Port",
+  "@sip.manual.local_port": {
+    "description": "Dongle web UI: sip.manual.local_port"
+  },
+  "sip.manual.local_port.hint": "Port, auf dem der Dongle SIP empfängt (Standard 15060). Leer = Standard.",
+  "@sip.manual.local_port.hint": {
+    "description": "Dongle web UI: sip.manual.local_port.hint"
+  },
+  "sip.manual.rtp_port": "RTP-Port (Audio)",
+  "@sip.manual.rtp_port": {
+    "description": "Dongle web UI: sip.manual.rtp_port"
+  },
+  "sip.manual.rtp_port.hint": "Port für den Sprachkanal (Standard 16000). Leer = Standard.",
+  "@sip.manual.rtp_port.hint": {
+    "description": "Dongle web UI: sip.manual.rtp_port.hint"
+  },
+  "sip.manual.fwd.title": "Port-Weiterleitung bei direkter Provider-Anmeldung",
+  "@sip.manual.fwd.title": {
+    "description": "Dongle web UI: sip.manual.fwd.title"
+  },
+  "sip.manual.fwd.body": "Meldet sich der Dongle direkt beim Provider an (statt über einen VoIP-Router) und der Anbieter unterstützt nur UDP, richte im Router je eine UDP-Weiterleitung auf den Dongle ein — portgleich (externer Port = interner Port): {sip} (SIP) und {rtp} (RTP). Die öffentliche IP ermittelt der Dongle automatisch (oben im Status sichtbar); sie muss nicht eingetragen werden. Das funktioniert nur mit einer echten (eigenen) öffentlichen IPv4 — nicht bei DS-Lite/CGNAT (geteilte IPv4), wo keine Weiterleitung möglich ist; dann hilft nur TCP/TLS, falls der Anbieter es unterstützt.",
+  "@sip.manual.fwd.body": {
+    "description": "Dongle web UI: sip.manual.fwd.body"
+  },
+  "sip.manual.srtp.off": "aus",
+  "@sip.manual.srtp.off": {
+    "description": "Dongle web UI: sip.manual.srtp.off"
+  },
+  "sip.manual.srtp.optional": "optional",
+  "@sip.manual.srtp.optional": {
+    "description": "Dongle web UI: sip.manual.srtp.optional"
+  },
+  "sip.manual.srtp.mandatory": "Pflicht",
+  "@sip.manual.srtp.mandatory": {
+    "description": "Dongle web UI: sip.manual.srtp.mandatory"
+  },
+  "token.title": "PhoneBlock verbinden",
+  "@token.title": {
+    "description": "Dongle web UI: token.title"
+  },
+  "token.intro": "Der Dongle fragt für jeden eingehenden Anruf die PhoneBlock-Datenbank ab. Dafür brauchst du einen Token.",
+  "@token.intro": {
+    "description": "Dongle web UI: token.intro"
+  },
+  "token.how": "Ein Klick auf den Knopf unten leitet dich zu phoneblock.net, wo du dich einmalig anmelden kannst (Google, Facebook oder Account). Anschließend landest du zurück hier — der Token ist dann gesetzt.",
+  "@token.how": {
+    "description": "Dongle web UI: token.how"
+  },
+  "token.current.set": "Ein Token ist bereits eingerichtet. Eine erneute Anmeldung erzeugt einen neuen.",
+  "@token.current.set": {
+    "description": "Dongle web UI: token.current.set"
+  },
+  "token.current.missing": "Noch kein Token eingerichtet.",
+  "@token.current.missing": {
+    "description": "Dongle web UI: token.current.missing"
+  },
+  "token.submit": "Bei PhoneBlock anmelden",
+  "@token.submit": {
+    "description": "Dongle web UI: token.submit"
+  },
+  "back.status": "← zurück zum Status",
+  "@back.status": {
+    "description": "Dongle web UI: back.status"
+  },
+  "back.sip": "← zurück zur Auswahl",
+  "@back.sip": {
+    "description": "Dongle web UI: back.sip"
+  }
+}

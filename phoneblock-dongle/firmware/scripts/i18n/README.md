@@ -1,75 +1,93 @@
 # Dongle localized assets (issue #460)
 
-Source of truth for the per-language **answer-bot announcement audio** and
-**status-mail string packs** that the firmware pulls from the CDN. The
-firmware carries no per-language payload — see `main/i18n_sync.c`.
+Source of truth for the dongle's localized **answer-bot announcement audio**,
+**status-mail strings**, and **web-UI strings**. The firmware carries no
+per-language payload — assets are published to the CDN, co-located with the
+firmware release, and pulled on demand (see `main/i18n_sync.c`,
+`main/mail_i18n.c`, the loader in `main/web/index.html`).
+
+Everything is **committed to git and translated during development**. Nothing
+is translated at release time.
 
 ## Files
 
-- `languages.txt` — locales to publish: `<firmware-code> <deepl-target>`.
-  Add a line, re-run the generator, done — no firmware change.
-- `audio/announcement-<lang>.alaw` — the **committed announcement recordings**
-  (raw G.711 A-law, 8 kHz mono — exactly what the device streams; the same
+- `languages.txt` — one locale code per line (the `ui_lang` the UI selects /
+  the device stores). Add a line to add a language.
+- `audio/announcement-<lang>.alaw` — **committed announcement recordings**
+  (raw G.711 A-law, 8 kHz mono — exactly what the device streams, the same
   format as the old single `main/audio/announcement.alaw`). Hand-record or
-  synthesize each one however you like and drop it here; the release script
-  uses it verbatim. `main/audio/convert.sh` converts a wav/mp3 to `.alaw`. A
-  language with no file here ships **text-only** (the device answers silently).
-- `announcement.de.txt` — reference transcript of the German recording (what
-  the voice says); not consumed by the build, just handy for re-recording and
-  for translators.
-- `mail.de.json` — the German status-mail strings, keyed. Mirrors the
-  compiled-in fallback table in `main/mail_i18n.c`; keep the keys in sync.
-  Values may contain `printf` specifiers (`%d`, `%s`, `%lld`, `%u`) and the
-  `<b>…</b>` tag — the generator preserves them across translation.
-- `ui/lang-<code>.json` — reviewed **web-UI** translations (en/fr/es
-  extracted from the former inline dicts). German is NOT here: it stays
-  inline in `main/web/index.html` as the offline base and the DeepL source.
-  A locale without a reviewed pack here is DeepL-translated from the
-  extracted German at publish time.
-- `extract-de-ui.js` — prints `I18N.de` from `index.html` as JSON (the
-  machine-readable German UI source; no German text is duplicated in the repo).
-- `public.pem` — the release **public** key (same one baked into
-  `main/manifest_sig.c`). Used only for the generator's signature self-check.
+  synthesize each however you like and drop it here; the release script uses
+  it verbatim (a `.wav`/`.mp3`/`.m4a`/`.flac` is converted). A language with
+  no recording ships **text-only** (the device answers silently).
+- `announcement.de.txt` — reference transcript of the German recording; not
+  consumed by the build, handy for re-recording / for translators.
+- `l10n/` — the **translation project** (see "Translating" below):
+  - `mail/mail_<lang>.arb` — status-mail strings. `mail_de.arb` is the German
+    source (mirrors the compiled fallback in `main/mail_i18n.c`); the other
+    `mail_<lang>.arb` are its translations. Values keep `printf` specifiers
+    (`%d %s %lld %u`) and `<b>` tags.
+  - `ui/ui_<lang>.arb` — web-UI strings. `ui_de.arb` is regenerated from the
+    inline `I18N.de` in `index.html` (the runtime German source) by
+    `gen-ui-de-arb.js`; the others are its translations.
+- `gen-ui-de-arb.js` — regenerates `l10n/ui/ui_de.arb` from `index.html`,
+  preserving the plugin's per-key CRC so unchanged strings aren't re-translated.
+- `public.pem` — the release **public** key (same one in `main/manifest_sig.c`);
+  used only for the release script's signature self-check.
 
-## Asset kinds
+## Translating (development time)
 
-Assets are **co-located with the firmware release** on the CDN, under
-`firmware/<version>/i18n/` — the device fetches the subtree matching the
-version it runs (see `main/i18n_sync.c`), so an older release in the field is
-never affected by a newer one's key changes, and there is a single version
-axis to reason about.
-
-| Kind | Path on CDN (under `firmware/<version>/i18n/`) | Fetched by | Integrity |
-|------|-------------|-----------|-----------|
-| announcement audio | `audio/announcement-<lang>.alaw` | firmware | SHA-256 in signed manifest |
-| mail string pack | `mail/mail-<lang>.json` | firmware | SHA-256 in signed manifest |
-| web-UI pack | `ui/lang-<code>.json` | browser | HTTPS (CDN TLS) |
-
-Only the firmware-consumed assets (audio, mail) are in the signed
-`manifest.json`; the UI packs are plain browser-fetched static files.
-
-## Publishing
-
-Assets ship **with the firmware, in one step**: `scripts/release.sh` calls
-`i18n-assets.sh` for the release version, so `release.sh` alone publishes the
-`.bin` and its co-located i18n bundle. To (re)publish assets on their own:
+Reuses `de.haumacher:auto-translate-arb` — the **same Gradle plugin the mobile
+app uses** (`phoneblock_mobile`) — with the same `deepl` server credential in
+`~/.m2/settings.xml`. Outputs are committed; no translation runs at release.
 
 ```bash
-# Dry run: build + sign locally with a test key, print the upload commands.
+# 1. If the German UI text changed, refresh the UI source from index.html:
+node scripts/i18n/gen-ui-de-arb.js
+
+# 2. Translate both projects (mail + ui) into en/fr/es (and any new locale):
+cd scripts/i18n/l10n && gradle translateArb
+
+# 3. Review + commit the updated l10n/**/*_<lang>.arb.
+```
+
+Edit German only: `l10n/mail/mail_de.arb` for mail, `index.html`'s `I18N.de`
+(then step 1) for the UI. A new locale: add it to `targetLangs` in
+`l10n/mail/build.gradle` + `l10n/ui/build.gradle` and to `languages.txt`.
+
+## Asset kinds & CDN layout
+
+Assets are **co-located with the firmware release**, under
+`firmware/<version>/i18n/` — the device fetches the subtree matching the
+version it runs, so an older release in the field is never affected by a newer
+one's key changes, and there is a single version axis.
+
+| Kind | Path (under `firmware/<version>/i18n/`) | Source | Fetched by | Integrity |
+|------|------|------|-----------|-----------|
+| announcement audio | `audio/announcement-<lang>.alaw` | `audio/*.alaw` | firmware | SHA-256 in signed manifest |
+| mail string pack | `mail/mail-<lang>.json` | `l10n/mail/*.arb` | firmware | SHA-256 in signed manifest |
+| web-UI pack | `ui/lang-<code>.json` | `l10n/ui/*.arb` | browser | HTTPS (CDN TLS) |
+
+The published packs are the ARB files with their `@key` metadata stripped
+(plain key→string JSON). Only the firmware-consumed assets (audio, mail) are
+in the signed `manifest.json`; the UI packs are plain browser-fetched files.
+
+## Publishing (release time)
+
+Assets ship **with the firmware, in one step**: `scripts/release.sh` calls
+`i18n-assets.sh` for the release version, publishing the `.bin` and its
+co-located i18n bundle together. To (re)publish assets on their own:
+
+```bash
+# Dry run: assemble + sign locally with a test key, print the upload commands.
 ../i18n-assets.sh --dry-run --key /path/to/test-private.pem
 
-# Standalone real publish for a given firmware version:
+# Standalone real publish for a firmware version:
 ../i18n-assets.sh --version 1.5.0
 ```
 
 `--version` MUST equal the firmware release version (what the device reports
-as `firmware_version`). See `../i18n-assets.sh --help` for all options
-(`--from-audio` to take recordings from another dir, `--langs` for a subset,
-`--no-upload`). The only credential a fully-committed setup needs is the OTA
-signing key (KeePassXC, via `../release.settings`); `DEEPL_API_KEY` is used
-only to fill in text packs for locales that don't have a committed one.
-
-Adding a language is a **publish step, not a firmware change**: every
-deployed dongle picks up the new locale from its version's CDN subtree after
-the user selects it. The manifest is signed with the same ECDSA-P256 release
-key as OTA.
+as `firmware_version`). The only credential needed at release is the OTA
+signing key (KeePassXC, via `../release.settings`) — no translation runs here.
+A missing pack degrades to the firmware's compiled German fallback / the
+browser's inline German. The manifest is signed with the same ECDSA-P256
+release key as OTA.
