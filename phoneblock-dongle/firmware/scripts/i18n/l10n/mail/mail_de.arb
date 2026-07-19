@@ -2,130 +2,162 @@
   "@@locale": "de",
   "intro": "Statusmeldung deines PhoneBlock-Dongles.",
   "@intro": {
-    "description": "Status mail: intro line"
+    "description": "Status mail: intro line",
+    "x-translated": "4e7bd4ac"
   },
   "subj.error_and_calls": "PhoneBlock-Dongle: Fehler und neue Anrufe",
   "@subj.error_and_calls": {
-    "description": "Status-mail string (subj.error_and_calls); keep %d/%s/%u/%lld and <b> tags"
+    "description": "Status-mail string (subj.error_and_calls); keep %d/%s/%u/%lld and <b> tags",
+    "x-translated": "3a1266be"
   },
   "subj.error": "PhoneBlock-Dongle: Fehler im Protokoll",
   "@subj.error": {
-    "description": "Status-mail string (subj.error); keep %d/%s/%u/%lld and <b> tags"
+    "description": "Status-mail string (subj.error); keep %d/%s/%u/%lld and <b> tags",
+    "x-translated": "40b09e11"
   },
   "subj.calls": "PhoneBlock-Dongle: Neue Anrufe",
   "@subj.calls": {
-    "description": "Status-mail string (subj.calls); keep %d/%s/%u/%lld and <b> tags"
+    "description": "Status-mail string (subj.calls); keep %d/%s/%u/%lld and <b> tags",
+    "x-translated": "49796cd7"
   },
   "subj.status": "PhoneBlock-Dongle: Statusmeldung",
   "@subj.status": {
-    "description": "Status-mail string (subj.status); keep %d/%s/%u/%lld and <b> tags"
+    "description": "Status-mail string (subj.status); keep %d/%s/%u/%lld and <b> tags",
+    "x-translated": "5a104bd8"
   },
   "subj.update": "PhoneBlock-Dongle: Firmware aktualisiert",
   "@subj.update": {
-    "description": "Status-mail string (subj.update); keep %d/%s/%u/%lld and <b> tags"
+    "description": "Status-mail string (subj.update); keep %d/%s/%u/%lld and <b> tags",
+    "x-translated": "a635c63c"
   },
   "newcalls.one": "Seit der letzten Meldung ist <b>1</b> neuer Anruf eingegangen.",
   "@newcalls.one": {
-    "description": "Status-mail string (newcalls.one); keep %d/%s/%u/%lld and <b> tags"
+    "description": "Status-mail string (newcalls.one); keep %d/%s/%u/%lld and <b> tags",
+    "x-translated": "1d9d9726"
   },
   "newcalls.many": "Seit der letzten Meldung sind <b>%d</b> neue Anrufe eingegangen.",
   "@newcalls.many": {
-    "description": "Status-mail string (newcalls.many); keep %d/%s/%u/%lld and <b> tags"
+    "description": "Status-mail string (newcalls.many); keep %d/%s/%u/%lld and <b> tags",
+    "x-translated": "de310d4e"
   },
   "sum.device": "Ger&auml;t:",
   "@sum.device": {
-    "description": "Summary label: device"
+    "description": "Summary label: device",
+    "x-translated": "816bbd63"
   },
   "sum.uptime": "Laufzeit: %lldh %lldmin",
   "@sum.uptime": {
-    "description": "Summary: uptime (%lld hours/minutes)"
+    "description": "Summary: uptime (%lld hours/minutes)",
+    "x-translated": "1e94de3a"
   },
   "sum.calls": "Anrufe gesamt: %u | SPAM blockiert: %u | durchgestellt: %u",
   "@sum.calls": {
-    "description": "Summary: call counters (%u total/blocked/passed)"
+    "description": "Summary: call counters (%u total/blocked/passed)",
+    "x-translated": "b8289165"
   },
   "calls.heading": "Letzte Anrufe",
   "@calls.heading": {
-    "description": "Recent-calls table heading"
+    "description": "Recent-calls table heading",
+    "x-translated": "b2aecfcf"
   },
   "calls.time": "Zeit",
   "@calls.time": {
-    "description": "Table header: time"
+    "description": "Table header: time",
+    "x-translated": "28bf5cda"
   },
   "calls.number": "Nummer",
   "@calls.number": {
-    "description": "Table header: number"
+    "description": "Table header: number",
+    "x-translated": "9a605d5f"
   },
   "calls.name": "Name",
   "@calls.name": {
-    "description": "Table header: name"
+    "description": "Table header: name",
+    "x-translated": "fe11d138"
   },
   "calls.rating": "Bewertung",
   "@calls.rating": {
-    "description": "Table header: rating"
+    "description": "Table header: rating",
+    "x-translated": "e24d7db1"
   },
   "verdict.scope.range": "Bereich",
   "@verdict.scope.range": {
-    "description": "Status-mail string (verdict.scope.range); keep %d/%s/%u/%lld and <b> tags"
+    "description": "Status-mail string (verdict.scope.range); keep %d/%s/%u/%lld and <b> tags",
+    "x-translated": "d394b0f8"
   },
   "verdict.scope.number": "Nummer",
   "@verdict.scope.number": {
-    "description": "Status-mail string (verdict.scope.number); keep %d/%s/%u/%lld and <b> tags"
+    "description": "Status-mail string (verdict.scope.number); keep %d/%s/%u/%lld and <b> tags",
+    "x-translated": "9a605d5f"
   },
   "verdict.spam_blacklist": "SPAM (Blacklist, %s)",
   "@verdict.spam_blacklist": {
-    "description": "Status-mail string (verdict.spam_blacklist); keep %d/%s/%u/%lld and <b> tags"
+    "description": "Status-mail string (verdict.spam_blacklist); keep %d/%s/%u/%lld and <b> tags",
+    "x-translated": "e2e1eb5d"
   },
   "verdict.spam_blocklist": "SPAM (Blockliste, %s)",
   "@verdict.spam_blocklist": {
-    "description": "Status-mail string (verdict.spam_blocklist); keep %d/%s/%u/%lld and <b> tags"
+    "description": "Status-mail string (verdict.spam_blocklist); keep %d/%s/%u/%lld and <b> tags",
+    "x-translated": "8d7216b8"
   },
   "verdict.spam": "SPAM",
   "@verdict.spam": {
-    "description": "Status-mail string (verdict.spam); keep %d/%s/%u/%lld and <b> tags"
+    "description": "Status-mail string (verdict.spam); keep %d/%s/%u/%lld and <b> tags",
+    "x-translated": "754f1289"
   },
   "verdict.spam_votes": "SPAM (%d direkt, %d Range)",
   "@verdict.spam_votes": {
-    "description": "Status-mail string (verdict.spam_votes); keep %d/%s/%u/%lld and <b> tags"
+    "description": "Status-mail string (verdict.spam_votes); keep %d/%s/%u/%lld and <b> tags",
+    "x-translated": "834092e"
   },
   "verdict.spam_suspect": "SPAM-VERDACHT (%d direkt, %d Range)",
   "@verdict.spam_suspect": {
-    "description": "Status-mail string (verdict.spam_suspect); keep %d/%s/%u/%lld and <b> tags"
+    "description": "Status-mail string (verdict.spam_suspect); keep %d/%s/%u/%lld and <b> tags",
+    "x-translated": "8745bf20"
   },
   "verdict.legitimate": "legitim",
   "@verdict.legitimate": {
-    "description": "Status-mail string (verdict.legitimate); keep %d/%s/%u/%lld and <b> tags"
+    "description": "Status-mail string (verdict.legitimate); keep %d/%s/%u/%lld and <b> tags",
+    "x-translated": "30bb7955"
   },
   "verdict.error": "Fehler",
   "@verdict.error": {
-    "description": "Status-mail string (verdict.error); keep %d/%s/%u/%lld and <b> tags"
+    "description": "Status-mail string (verdict.error); keep %d/%s/%u/%lld and <b> tags",
+    "x-translated": "20cfd2b5"
   },
   "verdict.unknown": "unbekannt",
   "@verdict.unknown": {
-    "description": "Status-mail string (verdict.unknown); keep %d/%s/%u/%lld and <b> tags"
+    "description": "Status-mail string (verdict.unknown); keep %d/%s/%u/%lld and <b> tags",
+    "x-translated": "5e6b2084"
   },
   "log.heading": "Neue Meldungen im Protokoll",
   "@log.heading": {
-    "description": "Log-section heading"
+    "description": "Log-section heading",
+    "x-translated": "a056731e"
   },
   "update.intro1": "Die Firmware auf deinem ",
   "@update.intro1": {
-    "description": "Status-mail string (update.intro1); keep %d/%s/%u/%lld and <b> tags"
+    "description": "Status-mail string (update.intro1); keep %d/%s/%u/%lld and <b> tags",
+    "x-translated": "42492e5"
   },
   "update.link": "PhoneBlock-Dongle",
   "@update.link": {
-    "description": "Status-mail string (update.link); keep %d/%s/%u/%lld and <b> tags"
+    "description": "Status-mail string (update.link); keep %d/%s/%u/%lld and <b> tags",
+    "x-translated": "86a345d4"
   },
   "update.intro2": " wurde auf ",
   "@update.intro2": {
-    "description": "Status-mail string (update.intro2); keep %d/%s/%u/%lld and <b> tags"
+    "description": "Status-mail string (update.intro2); keep %d/%s/%u/%lld and <b> tags",
+    "x-translated": "92a7bf82"
   },
   "update.version_prefix": "Version ",
   "@update.version_prefix": {
-    "description": "Status-mail string (update.version_prefix); keep %d/%s/%u/%lld and <b> tags"
+    "description": "Status-mail string (update.version_prefix); keep %d/%s/%u/%lld and <b> tags",
+    "x-translated": "12c822ca"
   },
   "update.intro3": " aktualisiert.",
   "@update.intro3": {
-    "description": "Status-mail string (update.intro3); keep %d/%s/%u/%lld and <b> tags"
+    "description": "Status-mail string (update.intro3); keep %d/%s/%u/%lld and <b> tags",
+    "x-translated": "cf0fec2b"
   }
 }
