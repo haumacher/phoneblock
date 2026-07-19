@@ -227,7 +227,8 @@ static bool download_verify_rename(const char *url, const char *final_path,
         if (n == 0) break;
         mbedtls_sha256_update(&sha, (const uint8_t *)buf, (size_t)n);
         if (fwrite(buf, 1, (size_t)n, out) != (size_t)n) {
-            snprintf(err, err_cap, "fwrite short at %lld", (long long)total);
+            snprintf(err, err_cap, "fwrite short at %lld: %s",
+                     (long long)total, strerror(errno));
             goto out_close;
         }
         total += n;
@@ -505,6 +506,17 @@ static void run_once(void)
     char ui_path[48];
     snprintf(ui_path, sizeof(ui_path), "%s/ui-%s.json", SPIFFS_DIR, lang);
 
+    // Prune the PREVIOUS locale's assets BEFORE downloading the new ones. The
+    // storage partition (~640 KB, shared with the blocklist) cannot hold two
+    // locales at once — an announcement alone is ~80-96 KB — so downloading
+    // first and pruning last overflowed SPIFFS mid-switch (fwrite short), which
+    // left the new UI/mail pack half-written and falling back to English. Now
+    // peak usage is one locale's assets. On-disk SHAs matching the manifest are
+    // still skipped inside sync_kind_chain, so a no-op re-sync re-downloads
+    // nothing. (A crash between prune and download self-heals on the next sync;
+    // meanwhile the embedded English UI/mail and silent announcement cover it.)
+    prune_stale(lang);
+
     bool ok = true;
     if (!sync_kind_chain(assets, "announcement", base, ann_path, ann_chain, acn,
                          err, sizeof(err))) {
@@ -532,7 +544,6 @@ static void run_once(void)
     }
 
     cJSON_Delete(root);
-    prune_stale(lang);
     set_status(ok, lang, ok ? NULL : err);
     if (ok) ESP_LOGI(TAG, "i18n assets in sync for '%s'", lang);
 }
