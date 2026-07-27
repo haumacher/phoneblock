@@ -60,20 +60,14 @@ void heap_guard_start(void);
 void heap_guard_note(const char *what);
 
 #if CONFIG_CRASH_TEST_ENABLE
-// Prove the sentinel actually fires: stage a real overflow across two of this
-// function's own adjacent allocations, check that the walk catches it, put the
-// bytes back and check the heap reads clean again. Writes a one-line outcome
-// into `out` and returns true only if both halves held.
+// Introduce a real heap corruption — overflow one allocation into the header of
+// its neighbour — and leave it there. The sentinel finds it on its next tick and
+// runs the whole path: capture, deliberate panic, core dump, upload on the next
+// boot. That is what proves the evidence survives into a dump, which the host
+// tests cannot reach (they cover the predicate, not the integration).
 //
-// This is the one part of the sentinel the host tests cannot reach — they cover
-// the predicate, not the integration with heap_caps_walk_all(). Run it on the
-// bench after any change to the walk.
-//
-// On demand rather than at boot on purpose: app_main cancels OTA rollback long
-// before the sentinel is armed, so a rehearsal that panicked inside its briefly
-// corrupted window would leave a committed image crash-looping with no rollback
-// left. Between the smash and the restore the heap really is corrupt — a few
-// microseconds in which another task allocating could fault — so this exists
-// only in CONFIG_CRASH_TEST_ENABLE builds, never in production.
-bool heap_guard_rehearse(char *out, size_t cap);
+// Panics the device a few seconds after returning. Writes a one-line outcome
+// into `out`; returns false if the heap offered no adjacent pair to overflow
+// across, in which case nothing was corrupted. Bench builds only.
+bool heap_guard_smash(char *out, size_t cap);
 #endif

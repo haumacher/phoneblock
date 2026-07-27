@@ -13,7 +13,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "esp_attr.h"
 #include "esp_core_dump.h"
 #include "esp_err.h"
 #include "esp_heap_caps.h"
@@ -82,13 +81,6 @@ typedef struct {
     size_t        bad_size;
     hg_capture_t *cap;        // NULL for the boot self-test: judge, don't copy
 } hg_walk_t;
-
-// Survives a warm reboot but not a power cycle — exactly the right lifetime for
-// "how many times have I panicked myself": it bounds a self-inflicted reboot
-// loop, and a user pulling the plug gets a clean slate.
-#define HG_RTC_MAGIC 0x48475031u   // 'HGP1'
-static RTC_NOINIT_ATTR uint32_t s_rtc_magic;
-static RTC_NOINIT_ATTR uint32_t s_rtc_panics;
 
 static bool               s_armed;
 static bool               s_deferred;
@@ -265,18 +257,6 @@ static void hg_check(void)
         return;
     }
 
-    // Bound a self-inflicted reboot loop. The daily firmware-update check never
-    // runs on a device that reboots more often than once a day, so a dongle that
-    // keeps re-corrupting itself has to be left up eventually or it can never be
-    // fixed remotely. The dumps already captured carry the same evidence.
-    if (s_rtc_panics >= CONFIG_HEAP_GUARD_MAX_PANICS) {
-        ESP_LOGE(TAG, "%s -- staying up: already panicked %u times since power-on",
-                 cap.summary, (unsigned)s_rtc_panics);
-        s_armed = false;
-        return;
-    }
-
-    s_rtc_panics++;
     hg_panic_with_evidence(&cap);
 }
 
@@ -287,126 +267,71 @@ static void hg_timer_cb(void *arg)
 }
 
 #if CONFIG_CRASH_TEST_ENABLE
-// Rehearse the detection against a heap corrupted on purpose, so a dev build
-// proves the sentinel actually fires — the boot self-test above only proves it
-// stays quiet, and a detector never observed detecting is not worth shipping.
+// Introduce a real heap corruption and leave it there: overflow the end of one
+// allocation into the header of its neighbour, exactly as the hunted bug does.
+// The sentinel picks it up on its next tick and takes it from there — capture,
+// deliberate panic, core dump, upload on the next boot. Running it that way
+// round is the only thing that proves the evidence survives into a dump, which
+// is the whole point of the feature.
 //
-// Triggered on demand (POST /api/dev/heap-rehearse), deliberately *not* run at
-// boot. app_main calls esp_ota_mark_app_valid_cancel_rollback() long before
-// heap_guard_start(), so a rehearsal that panicked during its corrupted window
-// would leave a committed image crash-looping with no rollback left. On demand,
-// the same failure just reboots into a device that does not rehearse again.
-//
-// The corruption is the real shape of the bug: write past the end of one
-// allocation into the header of the one that follows. No knowledge of the
-// allocator's internals is used, which is the whole point — that is precisely
-// what the guard has to catch without it.
-//
-// The overwritten bytes are saved and put back, so the heap ends as it started,
-// and the smashed span is bounded to lie strictly inside the two allocations we
-// own. Between smash and restore the heap really is corrupt: another task
-// allocating in that window could fault. The window is microseconds during
-// early boot, and this is compiled in only under CONFIG_CRASH_TEST_ENABLE,
-// never in production.
-bool heap_guard_rehearse(char *out, size_t cap)
+// Two successive malloc()s are not reliably neighbours: measured on hardware,
+// two 64-byte blocks came back 4632 bytes apart because TLSF served them from
+// different free-list bins. So allocate a batch and look for an adjacent pair.
+// The blocks are never freed, deliberately — nothing may coalesce over the
+// corruption before the sentinel sees it, and the device is about to reboot.
+bool heap_guard_smash(char *out, size_t cap)
 {
     strbuf_t sb = sb_init(out, (int)cap);
 
-    // Two successive malloc()s are NOT reliably neighbours. Measured on real
-    // hardware, two 64-byte blocks came back 4632 bytes apart (repeatably) —
-    // TLSF served them from different free-list bins, so the earlier version of
-    // this rehearsal skipped every time and never exercised the detection at
-    // all. Allocate a batch and *search* for a neighbouring pair instead of
-    // assuming one, and say so plainly if the heap does not offer one.
-    //
-    // Every block stays allocated across the test, so nothing coalesces and
-    // shifts the layout under us between the smash and the restore.
-    enum { HG_R_N = 32, HG_R_SZ = 64, HG_R_MAX_OVERHEAD = 32 };
-    uint8_t *p[HG_R_N] = { 0 };
-    for (int i = 0; i < HG_R_N; i++) {
-        p[i] = malloc(HG_R_SZ);
+    enum { N = 32, SZ = 64, MAX_OVERHEAD = 32 };
+    uint8_t *p[N] = { 0 };
+    for (int i = 0; i < N; i++) {
+        p[i] = malloc(SZ);
         if (!p[i]) {
-            for (int j = 0; j < i; j++) free(p[j]);
-            sb_appendf(&sb, "skipped: allocation %d of %d failed", i, HG_R_N);
-            ESP_LOGW(TAG, "rehearsal skipped: allocation failed");
+            sb_appendf(&sb, "allocation %d of %d failed", i, N);
+            ESP_LOGW(TAG, "smash: %s", out);
             return false;
         }
     }
 
-    // A genuine neighbour sits exactly one payload plus the allocator's
-    // per-block overhead above its predecessor, so take the closest such pair.
-    int lo = -1, hi = -1;
+    // A real neighbour sits one payload plus the allocator's per-block overhead
+    // above its predecessor, so take the closest such pair.
+    int lo = -1;
     size_t delta = 0;
-    for (int i = 0; i < HG_R_N; i++) {
-        for (int j = 0; j < HG_R_N; j++) {
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
             if (i == j || p[j] <= p[i]) continue;
             size_t d = (size_t)(p[j] - p[i]);
-            if (d < HG_R_SZ || d > HG_R_SZ + HG_R_MAX_OVERHEAD) continue;
-            if (lo < 0 || d < delta) { lo = i; hi = j; delta = d; }
+            if (d < SZ || d > SZ + MAX_OVERHEAD) continue;
+            if (lo < 0 || d < delta) { lo = i; delta = d; }
         }
     }
     if (lo < 0) {
-        for (int i = 0; i < HG_R_N; i++) free(p[i]);
-        sb_appendf(&sb, "skipped: no adjacent pair among %d allocations",
-                   HG_R_N);
-        ESP_LOGW(TAG, "rehearsal skipped: no adjacent pair found");
+        sb_appendf(&sb, "no adjacent pair among %d allocations", N);
+        ESP_LOGW(TAG, "smash: %s", out);
         return false;
     }
-
-    // Scribble from the end of the lower block across the gap that holds the
-    // upper block's header and a few bytes into its payload — all of it memory
-    // this function owns, so the staged overflow cannot touch anything else.
-    size_t span = delta - HG_R_SZ + 4;
-    uint8_t saved[HG_R_MAX_OVERHEAD + 4];
-    if (span > sizeof saved) span = sizeof saved;
 
     // Launder the address through a volatile so the compiler stops tying it to
     // the 64-byte object: writing past p[lo] is undefined behaviour by the
     // language and is precisely the bug being staged, so GCC is right to reject
-    // the plain form (-Werror=maybe-uninitialized) and this says "yes, meant
-    // it" without weakening the flag for the whole file.
-    volatile uintptr_t tail_addr = (uintptr_t)p[lo] + HG_R_SZ;
-    uint8_t *tail = (uint8_t *)tail_addr;
+    // the plain form (-Werror=maybe-uninitialized) and this says "yes, meant it"
+    // without weakening the flag for the whole file.
+    size_t span = delta - SZ + 4;
+    volatile uintptr_t tail_addr = (uintptr_t)p[lo] + SZ;
+    memset((uint8_t *)tail_addr, 'X', span);
 
-    memcpy(saved, tail, span);
-    memset(tail, 'X', span);             // the overflow
-
-    hg_walk_t w = { 0 };
-    heap_caps_walk_all(hg_walker, &w);
-    hg_verdict_t detected = w.verdict;
-
-    memcpy(tail, saved, span);           // undo before anything else notices
-
-    hg_walk_t after = { 0 };
-    heap_caps_walk_all(hg_walker, &after);
-
-    (void)hi;
-    for (int i = 0; i < HG_R_N; i++) free(p[i]);
-
-    bool passed = (detected != HG_OK && after.verdict == HG_OK);
-    if (passed) {
-        sb_appendf(&sb, "passed: %u-byte overflow across a %u-byte block gap "
-                        "detected (%s), heap clean again afterwards",
-                   (unsigned)span, (unsigned)delta,
-                   hg_verdict_str(detected));
-        ESP_LOGI(TAG, "rehearsal %s", out);
-    } else {
-        sb_appendf(&sb, "FAILED: detected=%s, after restore=%s -- the sentinel "
-                        "would not catch a real overflow",
-                   hg_verdict_str(detected), hg_verdict_str(after.verdict));
-        ESP_LOGE(TAG, "rehearsal %s", out);
-    }
-    return passed;
+    sb_appendf(&sb, "%u bytes of 'X' written across a %u-byte block gap at "
+                    "0x%08x -- panic expected within %d s",
+               (unsigned)span, (unsigned)delta, (unsigned)tail_addr,
+               CONFIG_HEAP_GUARD_INTERVAL_S);
+    ESP_LOGW(TAG, "smash: %s", out);
+    return true;
 }
 #endif
 
 void heap_guard_start(void)
 {
-    if (s_rtc_magic != HG_RTC_MAGIC) {      // cold boot: RTC RAM is undefined
-        s_rtc_magic  = HG_RTC_MAGIC;
-        s_rtc_panics = 0;
-    }
-
     // Prove the predicate against a heap known to be intact before arming
     // anything. If a healthy heap trips it, the assumption is wrong rather than
     // the heap — an IDF upgrade changing the walker's contract, say — and arming
@@ -451,10 +376,8 @@ void heap_guard_start(void)
     }
 
     s_armed = true;
-    ESP_LOGI(TAG, "armed: %u blocks in %lld us, checking every %d s "
-                  "(%u self-triggered panics since power-on)",
-             (unsigned)w.blocks, (long long)us,
-             CONFIG_HEAP_GUARD_INTERVAL_S, (unsigned)s_rtc_panics);
+    ESP_LOGI(TAG, "armed: %u blocks in %lld us, checking every %d s",
+             (unsigned)w.blocks, (long long)us, CONFIG_HEAP_GUARD_INTERVAL_S);
 }
 
 #else  /* !CONFIG_HEAP_GUARD_ENABLE */
@@ -471,9 +394,11 @@ void heap_guard_note(const char *what)
 
 #if CONFIG_CRASH_TEST_ENABLE
 // A bench build with the sentinel compiled out still links the dev endpoint.
-bool heap_guard_rehearse(char *out, size_t cap)
+// Corrupting the heap with nothing watching for it would just crash the device
+// somewhere random, so refuse.
+bool heap_guard_smash(char *out, size_t cap)
 {
-    if (cap) snprintf(out, cap, "skipped: sentinel disabled at build time");
+    if (cap) snprintf(out, cap, "refused: sentinel disabled at build time");
     return false;
 }
 #endif

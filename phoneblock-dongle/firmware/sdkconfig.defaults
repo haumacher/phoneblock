@@ -249,11 +249,10 @@ CONFIG_RTP_PLAY_ANNOUNCEMENT=y
 # for production; flipped to y in sdkconfig.defaults.local for
 # bench builds.
 #
-# It also compiles in the heap sentinel's boot rehearsal, which stages a
-# real overflow against two of its own allocations and checks that the
-# sentinel catches it — the one part of heap_guard.c that cannot be
-# covered by the host tests. Worth running on the bench after any change
-# to the walk.
+# It also compiles in POST /api/dev/heap-smash, which corrupts the heap for
+# real and lets the sentinel detect it, capture the evidence and panic —
+# exercising the whole pipeline end to end, which the host tests cannot
+# reach. Worth running on the bench after any change to the walk.
 CONFIG_CRASH_TEST_ENABLE=n
 
 # Heap-corruption sentinel (main/heap_guard.c). Walks the heap every few
@@ -266,4 +265,3 @@ CONFIG_CRASH_TEST_ENABLE=n
 # that corruption is found.
 CONFIG_HEAP_GUARD_ENABLE=y
 CONFIG_HEAP_GUARD_INTERVAL_S=5
-CONFIG_HEAP_GUARD_MAX_PANICS=3

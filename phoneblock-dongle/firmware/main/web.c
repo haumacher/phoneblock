@@ -1941,20 +1941,16 @@ static esp_err_t handle_crash_test(httpd_req_t *req)
     return ESP_OK;
 }
 
-// POST /api/dev/heap-rehearse — prove the heap sentinel actually fires, by
-// staging a real overflow across two of its own adjacent allocations and
-// checking it is caught (see heap_guard_rehearse). Only compiled in when
-// CONFIG_CRASH_TEST_ENABLE=y.
-//
-// No confirmation nonce, unlike /api/dev/crash: on success this neither reboots
-// nor changes any state, so a stale browser replay is harmless. It does corrupt
-// the heap for a few microseconds, which is why it is a bench-only route.
-static esp_err_t handle_heap_rehearse(httpd_req_t *req)
+// POST /api/dev/heap-smash — corrupt the heap for real and let the sentinel take
+// it from there: it detects, captures the evidence and panics, and the next boot
+// uploads the core dump. Exercises the whole pipeline the way a genuine
+// corruption would. Only compiled in when CONFIG_CRASH_TEST_ENABLE=y.
+static esp_err_t handle_heap_smash(httpd_req_t *req)
 {
     REQUIRE_AUTH_API(req);
 
     char detail[160] = "";
-    bool ok = heap_guard_rehearse(detail, sizeof(detail));
+    bool ok = heap_guard_smash(detail, sizeof(detail));
 
     cJSON *root = cJSON_CreateObject();
     cJSON_AddBoolToObject  (root, "ok", ok);
@@ -2082,7 +2078,7 @@ static const httpd_uri_t URIS[] = {
     { .uri = "/api/factory-reset",   .method = HTTP_POST, .handler = handle_factory_reset,  .user_ctx = NULL },
 #ifdef CONFIG_CRASH_TEST_ENABLE
     { .uri = "/api/dev/crash",       .method = HTTP_POST, .handler = handle_crash_test,     .user_ctx = NULL },
-    { .uri = "/api/dev/heap-rehearse", .method = HTTP_POST, .handler = handle_heap_rehearse, .user_ctx = NULL },
+    { .uri = "/api/dev/heap-smash",   .method = HTTP_POST, .handler = handle_heap_smash,     .user_ctx = NULL },
 #endif
     { .uri = "/api/firmware",         .method = HTTP_POST, .handler = handle_firmware_upload,  .user_ctx = NULL },
     { .uri = "/api/firmware/check",   .method = HTTP_POST, .handler = handle_firmware_check,   .user_ctx = NULL },
