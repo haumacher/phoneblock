@@ -78,13 +78,13 @@
 		<div class="notification is-info">
 			<p data-tx="t0136:bbe31efa"><strong>Levering vanuit China - levertijd ca. 2 weken.</strong> Prijs momenteel ca. 10 € inclusief verzendkosten.</p>
 			<p class="mt-2">
-				<a class="button is-primary is-large" href="https://de.aliexpress.com/item/1005006593432047.html" rel="noopener" target="_blank">
+				<a class="button is-primary is-large" rel="noopener" target="_blank" th:href="@{/link/dongle-aliexpress}">
 					<span class="icon"><i class="fas fa-cart-shopping"></i></span>
 					<span data-tx="t0137:49b731d6">Bestel op AliExpress</span>
 				</a>
 			</p>
 			<p class="mt-2">
-				<a class="button is-primary is-large" href="https://www.ebay.de/itm/404930369895" rel="noopener" target="_blank">
+				<a class="button is-primary is-large" rel="noopener" target="_blank" th:href="@{/link/dongle-ebay}">
 					<span class="icon"><i class="fas fa-cart-shopping"></i></span>
 					<span data-tx="t0138:4bfe505a">Bestel op eBay</span>
 				</a>
@@ -92,7 +92,13 @@
 			<p data-tx="t0139:1caf402b">Deze aanbiedingen zijn op geen enkele manier gerelateerd aan PhoneBlock en PhoneBlock is op geen enkele manier betrokken bij de winst. Het gaat uitsluitend om de hardware. U installeert de PhoneBlock software (firmware) zelf na ontvangst (zie hieronder).</p>
 		</div>
 
-		<p data-tx="t0140:41c85d87"><strong>Je bent zelf aan het knutselen en hebt al een ESP32 in de la liggen?</strong> PhoneBlock zal vrijwel zeker werken op je board als het minstens 4MB flashgeheugen heeft. Het kan zijn dat je een andere USB seriële driver nodig hebt of dat je de PIN toewijzing opnieuw moet configureren zodat de status LED knippert - je kunt het beste even kijken op de <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/" rel="noopener" target="_blank">projectpagina</a>.</p>
+		<div class="notification is-warning">
+			<p data-tx="t0233:c7a2b08f"><strong>Bestel alsjeblieft geen "ESP32-S3" — die werkt niet.</strong> Vooral de bij Amazon populaire "LILYGO T-Dongle-S3" wordt steeds weer gekocht, maar kan niet worden ingesteld: het browserinstallatieprogramma loopt vast met de melding "Your ESP32-S3 board is not supported".</p>
+			<p class="mt-2" data-tx="t0234:61c3809d">De S3 heeft een andere processorkern dan de klassieke ESP32, en de PhoneBlock-firmware is alleen beschikbaar voor de klassieke ESP32. Dit is geen stuurprogramma-probleem — met deze boards is er momenteel simpelweg geen manier om PhoneBlock te installeren. Hetzelfde geldt voor de varianten S2, C3, C6 en H2.</p>
+			<p class="mt-2" data-tx="t0235:4564bc8e">Let er daarom op dat in de aanbieding <strong>"ESP32" zonder toevoeging</strong> staat — net zoals bij de twee hierboven gelinkte aanbiedingen.</p>
+		</div>
+
+		<p data-tx="t0140:7f656ebb"><strong>Ben je zelf aan het knutselen en heb je al een ESP32 in de la liggen?</strong> PhoneBlock werkt vrijwel zeker ook op jouw board, mits het een klassieke ESP32 is (geen S2/S3/C3/C6/H2) met minimaal 4 MB flashgeheugen. Mogelijk heb je een andere USB-seriële driver nodig, of moet je de pinconfiguratie aanpassen zodat de status-LED knippert – kijk daarvoor het beste op de <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/" rel="noopener" target="_blank">projectpagina</a>.</p>
 
 		<h2 data-tx="t0149:69477c42" id="schritt-3">Stap 2 - De dongle voorbereiden</h2>
 

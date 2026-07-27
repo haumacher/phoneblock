@@ -78,13 +78,13 @@
 		<div class="notification is-info">
 			<p data-tx="t0136:bbe31efa"><strong>Παράδοση από την Κίνα - περίπου 2 εβδομάδες χρόνος παράδοσης.</strong> Τιμή σήμερα περίπου 10 € συμπεριλαμβανομένης της αποστολής.</p>
 			<p class="mt-2">
-				<a class="button is-primary is-large" href="https://de.aliexpress.com/item/1005006593432047.html" rel="noopener" target="_blank">
+				<a class="button is-primary is-large" rel="noopener" target="_blank" th:href="@{/link/dongle-aliexpress}">
 					<span class="icon"><i class="fas fa-cart-shopping"></i></span>
 					<span data-tx="t0137:49b731d6">Παραγγελία στο AliExpress</span>
 				</a>
 			</p>
 			<p class="mt-2">
-				<a class="button is-primary is-large" href="https://www.ebay.de/itm/404930369895" rel="noopener" target="_blank">
+				<a class="button is-primary is-large" rel="noopener" target="_blank" th:href="@{/link/dongle-ebay}">
 					<span class="icon"><i class="fas fa-cart-shopping"></i></span>
 					<span data-tx="t0138:4bfe505a">Παραγγελία στο eBay</span>
 				</a>
@@ -92,7 +92,13 @@
 			<p data-tx="t0139:1caf402b">Αυτές οι προσφορές δεν σχετίζονται σε καμία περίπτωση με τη PhoneBlock και η PhoneBlock δεν συμμετέχει σε καμία περίπτωση στα κέρδη. Πρόκειται αποκλειστικά για το υλικό. Εγκαθιστάτε μόνοι σας το λογισμικό PhoneBlock (firmware) μετά την παραλαβή (βλ. παρακάτω).</p>
 		</div>
 
-		<p data-tx="t0140:41c85d87"><strong>Μαθαίνετε μόνοι σας και έχετε ήδη ένα ESP32 στο συρτάρι; </strong> Το PhoneBlock θα λειτουργήσει σχεδόν σίγουρα στην πλακέτα σας, εάν διαθέτει τουλάχιστον 4MB μνήμης flash. Μπορεί να χρειαστείτε ένα διαφορετικό σειριακό πρόγραμμα οδήγησης USB ή να πρέπει να επαναρυθμίσετε την ανάθεση PIN ώστε να αναβοσβήνει η λυχνία LED κατάστασης - είναι καλύτερο να ρίξετε μια ματιά στη σελίδα <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/" rel="noopener" target="_blank">project page</a>.</p>
+		<div class="notification is-warning">
+			<p data-tx="t0233:c7a2b08f"><strong>Παρακαλώ, μην παραγγείλετε το «ESP32-S3» — δεν λειτουργεί.</strong> Ειδικά το «LILYGO T-Dongle-S3», που είναι δημοφιλές στο Amazon, αγοράζεται συνεχώς, αλλά δεν μπορεί να ρυθμιστεί: το πρόγραμμα εγκατάστασης μέσω του προγράμματος περιήγησης διακόπτεται με το μήνυμα «Your ESP32-S3 board is not supported».</p>
+			<p class="mt-2" data-tx="t0234:61c3809d">Το S3 διαθέτει διαφορετικό πυρήνα επεξεργαστή από το κλασικό ESP32, ενώ το firmware του PhoneBlock διατίθεται μόνο για το κλασικό ESP32. Δεν πρόκειται για πρόβλημα οδηγού — απλώς, με αυτές τις πλακέτες δεν υπάρχει προς το παρόν κανένας τρόπος να εγκατασταθεί το PhoneBlock. Το ίδιο ισχύει και για τις εκδόσεις S2, C3, C6 και H2.</p>
+			<p class="mt-2" data-tx="t0235:4564bc8e">Γι’ αυτό φρόντισε να αναγράφεται στην προσφορά <strong>«ESP32» χωρίς επιπλέον προσθήκες</strong> — όπως στις δύο προσφορές που παρατίθενται παραπάνω.</p>
+		</div>
+
+		<p data-tx="t0140:7f656ebb"><strong>Κάνεις μόνος σου κατασκευές και έχεις ήδη ένα ESP32 στο συρτάρι σου;</strong> Το PhoneBlock θα λειτουργήσει σχεδόν σίγουρα και στην πλακέτα σου, αν πρόκειται για ένα κλασικό ESP32 (όχι S2/S3/C3/C6/H2) με τουλάχιστον 4 MB μνήμης Flash. Ενδεχομένως να χρειαστείς ένα διαφορετικό πρόγραμμα οδήγησης USB-Serial ή να πρέπει να αναδιαμορφώσεις τη διάταξη των ακίδων, ώστε να αναβοσβήνει η λυχνία κατάστασης (Status-LED) – για αυτό, συνιστούμε να ανατρέξεις στη <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/" rel="noopener" target="_blank">σελίδα του έργου</a>.</p>
 
 		<h2 data-tx="t0149:69477c42" id="schritt-3">Βήμα 2 - Προετοιμάστε το dongle</h2>
 

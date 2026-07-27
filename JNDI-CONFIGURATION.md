@@ -570,6 +570,50 @@ Configuration for the FTC (Federal Trade Commission) Do Not Call complaint data 
 
 ---
 
+## External Links
+
+**JNDI Prefix:** `link/`
+**System Property Prefix:** `link.`
+**Source:** `ExternalLinkServlet.java`, `src/main/java/link.properties`
+
+Targets of the outgoing links served under `/link/<name>` (the pages link to `/link/github`, `/link/dongle-aliexpress`, … instead of the external URL). The defaults ship inside the web application in `link.properties`; every one of them can be re-pointed per deployment, so a link that goes stale — a sales offer that vanished, a moved documentation page — is fixed **without building and deploying a new web application**.
+
+Names of interest for the dongle hardware sources: `dongle-aliexpress`, `dongle-ebay`. Run `GET /link/<name>` to check what a name currently resolves to; a `{0}` in the target is replaced with the remaining path (used by the per-service number lookups such as `/link/tellows.de/<number>`).
+
+### Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `link/file` | String | *unset* | Path of a properties file in the same format as the bundled `link.properties`. All of its entries are overlaid over the bundled ones, so links can also be **added**. The name `file` is reserved and cannot be used as a link name. |
+| `link/<name>` | String | *from `link.properties`* | Target of a single link, e.g. `link/dongle-ebay`. Applied after `link/file`, hence it wins over that file's value for the same link. |
+
+### Example Configuration
+
+**Tomcat context.xml:**
+```xml
+<Context>
+  <!-- Re-point a single offer that vanished: -->
+  <Environment name="link/dongle-ebay" value="&lt;url-of-the-current-offer&gt;" type="java.lang.String"/>
+
+  <!-- …or maintain a whole set of links outside the application: -->
+  <Environment name="link/file" value="/var/lib/phoneblock/link.properties" type="java.lang.String"/>
+</Context>
+```
+
+**System Properties:**
+```bash
+-Dlink.dongle-ebay=<url-of-the-current-offer>
+-Dlink.file=/var/lib/phoneblock/link.properties
+```
+
+**Notes:**
+- Overrides are read **at servlet startup only** — restart the application (or touch `context.xml`, which makes Tomcat reload the context) after changing them.
+- A missing or unreadable `link/file` is logged as an error and skipped; the bundled links stay in effect.
+- The applied overrides are logged at INFO on startup (`Overrode external link '<name>': <url>`), which is the quickest way to confirm the configuration took effect.
+- Only the URL changes — surrounding page text (shop name, price, delivery time on the dongle page) is part of the template and still needs a deployment.
+
+---
+
 ## Dongle Coredump Storage
 
 **JNDI Prefix:** `coredump/`
