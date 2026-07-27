@@ -19,6 +19,7 @@
 #include "api.h"
 #include "config.h"
 #include "crashreport.h"
+#include "heap_guard.h"
 #include "improv.h"
 #include "log_capture.h"
 #include "mail.h"
@@ -192,4 +193,11 @@ void app_main(void)
     // last_failed_ota guard (cleared above on a healthy boot) still
     // keeps a brick-and-rollback build from being re-tried in a loop.
     scheduler_start();
+
+    // Arm the heap-corruption sentinel last, once every subsystem has taken
+    // its allocations: the boot walk it validates the predicate against then
+    // covers a heap in its normal shape. After crashreport_upload_async(), so
+    // a dump from the previous boot gets its chance to upload before this can
+    // ever produce another.
+    heap_guard_start();
 }

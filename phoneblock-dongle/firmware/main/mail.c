@@ -20,6 +20,7 @@
 #include "mbedtls/ssl.h"
 
 #include "config.h"
+#include "heap_guard.h"
 #include "mail_html.h"
 #include "smtp_body.h"
 #include "stats.h"
@@ -203,6 +204,9 @@ static bool mail_send(const char *subject, const char *content_type, const char 
         ESP_LOGW(TAG, "mail not configured (host/user/pass/recipient)");
         return false;
     }
+    // Breadcrumb for the heap sentinel: assembles a multi-KB body and runs an
+    // SMTP/TLS conversation, both heap-heavy.
+    heap_guard_note("mail:send");
     if (!wifi_has_ip()) {
         ESP_LOGW(TAG, "no network — mail not sent");
         return false;

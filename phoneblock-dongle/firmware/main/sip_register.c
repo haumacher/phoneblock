@@ -22,6 +22,7 @@
 #include "api.h"
 #include "blocklist_sync.h"
 #include "config.h"
+#include "heap_guard.h"
 #include "announcement.h"
 #include "report_queue.h"
 #include "sip_parse.h"
@@ -2087,6 +2088,10 @@ static void sip_task(void *arg)
 
         // Incoming packet.
         rx[n] = '\0';
+        // Breadcrumb for the heap sentinel: this is where network-supplied
+        // text gets parsed and echoed into replies, so if the heap goes bad
+        // shortly after, the capture should say so.
+        heap_guard_note("sip:rx");
         handle_incoming(&ctx, rx, n, &from);
     }
 }
