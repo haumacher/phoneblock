@@ -34,11 +34,17 @@ static const char *TAG = "heap_guard";
 #define HG_WIN_BEFORE   192
 #define HG_WIN_AFTER     64
 
-// Boot-walk duration worth complaining about. The heap lock is a portMUX
-// spinlock, so the whole walk runs with interrupts disabled on this core; the
-// measured figure is logged on every boot so the real cost comes back from the
-// field rather than being estimated here.
-#define HG_WALK_BUDGET_US 2000
+// The heap lock is a portMUX spinlock, so the whole walk runs with interrupts
+// disabled on this core. The measured duration is logged on every boot, so the
+// real cost comes back from the field rather than being estimated here: ~600 us
+// for 500-900 blocks on an ESP32-PICO-D4.
+//
+// It is not worth warning about a slow one. Any flash write disables the cache,
+// and the stall lands inside our critical section — so a walk that overlaps the
+// daily blocklist sync, an OTA, or (as at boot) the core-dump upload measures
+// tens of milliseconds instead. That is routine rather than pathological, and
+// harmless: the interrupt watchdog sits at 300 ms and nothing else on the device
+// cares about tens of milliseconds.
 
 // Marker at the head of the capture so the evidence can be found in a core
 // dump with `strings` alone, without gdb or a matching ELF.
@@ -353,11 +359,6 @@ void heap_guard_start(void)
                  (unsigned)w.bad_size, (unsigned)w.blocks);
         return;
     }
-    if (us > HG_WALK_BUDGET_US)
-        ESP_LOGW(TAG, "boot walk took %lld us for %u blocks -- that is time with "
-                      "interrupts disabled; consider a longer interval",
-                 (long long)us, (unsigned)w.blocks);
-
     const esp_timer_create_args_t args = {
         .callback        = hg_timer_cb,
         .name            = "heap_guard",
