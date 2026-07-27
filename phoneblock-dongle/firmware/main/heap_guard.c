@@ -312,38 +312,60 @@ bool heap_guard_rehearse(char *out, size_t cap)
 {
     strbuf_t sb = sb_init(out, (int)cap);
 
-    const size_t n = 64;
-    uint8_t *a = malloc(n);
-    uint8_t *b = malloc(n);
-    if (!a || !b) {
-        free(a); free(b);
-        sb_appendf(&sb, "skipped: allocation failed");
-        ESP_LOGW(TAG, "rehearsal skipped: allocation failed");
+    // Two successive malloc()s are NOT reliably neighbours. Measured on real
+    // hardware, two 64-byte blocks came back 4632 bytes apart (repeatably) —
+    // TLSF served them from different free-list bins, so the earlier version of
+    // this rehearsal skipped every time and never exercised the detection at
+    // all. Allocate a batch and *search* for a neighbouring pair instead of
+    // assuming one, and say so plainly if the heap does not offer one.
+    //
+    // Every block stays allocated across the test, so nothing coalesces and
+    // shifts the layout under us between the smash and the restore.
+    enum { HG_R_N = 32, HG_R_SZ = 64, HG_R_MAX_OVERHEAD = 32 };
+    uint8_t *p[HG_R_N] = { 0 };
+    for (int i = 0; i < HG_R_N; i++) {
+        p[i] = malloc(HG_R_SZ);
+        if (!p[i]) {
+            for (int j = 0; j < i; j++) free(p[j]);
+            sb_appendf(&sb, "skipped: allocation %d of %d failed", i, HG_R_N);
+            ESP_LOGW(TAG, "rehearsal skipped: allocation failed");
+            return false;
+        }
+    }
+
+    // A genuine neighbour sits exactly one payload plus the allocator's
+    // per-block overhead above its predecessor, so take the closest such pair.
+    int lo = -1, hi = -1;
+    size_t delta = 0;
+    for (int i = 0; i < HG_R_N; i++) {
+        for (int j = 0; j < HG_R_N; j++) {
+            if (i == j || p[j] <= p[i]) continue;
+            size_t d = (size_t)(p[j] - p[i]);
+            if (d < HG_R_SZ || d > HG_R_SZ + HG_R_MAX_OVERHEAD) continue;
+            if (lo < 0 || d < delta) { lo = i; hi = j; delta = d; }
+        }
+    }
+    if (lo < 0) {
+        for (int i = 0; i < HG_R_N; i++) free(p[i]);
+        sb_appendf(&sb, "skipped: no adjacent pair among %d allocations",
+                   HG_R_N);
+        ESP_LOGW(TAG, "rehearsal skipped: no adjacent pair found");
         return false;
     }
 
-    // Only proceed if the two allocations really are neighbours, so the span we
-    // scribble over (the gap holding b's header, plus the first bytes of b's
-    // payload) is memory we own. Otherwise there is no safe way to stage an
-    // overflow without guessing at the allocator's layout.
-    if (b <= a || (size_t)(b - a) > n + 32) {
-        free(b); free(a);
-        sb_appendf(&sb, "skipped: allocations are not adjacent (delta=%d)",
-                   (int)(b - a));
-        ESP_LOGW(TAG, "rehearsal skipped: allocations are not adjacent");
-        return false;
-    }
-    size_t span = (size_t)(b - a) - n + 4;
-
-    uint8_t saved[36];
+    // Scribble from the end of the lower block across the gap that holds the
+    // upper block's header and a few bytes into its payload — all of it memory
+    // this function owns, so the staged overflow cannot touch anything else.
+    size_t span = delta - HG_R_SZ + 4;
+    uint8_t saved[HG_R_MAX_OVERHEAD + 4];
     if (span > sizeof saved) span = sizeof saved;
 
     // Launder the address through a volatile so the compiler stops tying it to
-    // the 64-byte object: writing past `a` is undefined behaviour by the
+    // the 64-byte object: writing past p[lo] is undefined behaviour by the
     // language and is precisely the bug being staged, so GCC is right to reject
     // the plain form (-Werror=maybe-uninitialized) and this says "yes, meant
     // it" without weakening the flag for the whole file.
-    volatile uintptr_t tail_addr = (uintptr_t)a + n;
+    volatile uintptr_t tail_addr = (uintptr_t)p[lo] + HG_R_SZ;
     uint8_t *tail = (uint8_t *)tail_addr;
 
     memcpy(saved, tail, span);
@@ -358,13 +380,14 @@ bool heap_guard_rehearse(char *out, size_t cap)
     hg_walk_t after = { 0 };
     heap_caps_walk_all(hg_walker, &after);
 
-    free(b);
-    free(a);
+    (void)hi;
+    for (int i = 0; i < HG_R_N; i++) free(p[i]);
 
     bool passed = (detected != HG_OK && after.verdict == HG_OK);
     if (passed) {
-        sb_appendf(&sb, "passed: %u-byte overflow detected (%s), heap clean "
-                        "again afterwards", (unsigned)span,
+        sb_appendf(&sb, "passed: %u-byte overflow across a %u-byte block gap "
+                        "detected (%s), heap clean again afterwards",
+                   (unsigned)span, (unsigned)delta,
                    hg_verdict_str(detected));
         ESP_LOGI(TAG, "rehearsal %s", out);
     } else {
