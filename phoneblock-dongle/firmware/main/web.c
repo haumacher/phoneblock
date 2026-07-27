@@ -27,6 +27,7 @@
 #include "api.h"
 #include "blocklist_sync.h"
 #include "config.h"
+#include "heap_guard.h"
 #include "firmware_update.h"
 #include "log_capture.h"
 #include "mail.h"
@@ -52,10 +53,16 @@ static httpd_handle_t s_server = NULL;
 // — index.html itself renders the in-page login state) or to a 401
 // (API). The do/while wrapper keeps the macro safe inside an
 // if/else without braces.
+//
+// These macros also carry the heap sentinel's breadcrumb: every handler opens
+// with one of them, which makes them the only central "a request is being
+// served" hook short of touching each handler individually. See heap_guard.h.
 #define REQUIRE_AUTH_HTML(req) do { \
+    heap_guard_note("http:html"); \
     if (!web_auth_required((req), false)) return ESP_OK; \
 } while (0)
 #define REQUIRE_AUTH_API(req) do { \
+    heap_guard_note("http:api"); \
     if (!web_auth_required((req), true)) return ESP_OK; \
 } while (0)
 // For the intentionally-public routes: LAN-only when the gate is off,

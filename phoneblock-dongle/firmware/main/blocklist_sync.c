@@ -19,6 +19,7 @@
 #include "esp_spiffs.h"
 
 #include "config.h"
+#include "heap_guard.h"
 #include "http_util.h"
 #include "strbuf.h"
 #include "scheduler.h"
@@ -372,6 +373,10 @@ void blocklist_sync_run(void)
     if (s_lock == NULL) {
         return;
     }
+    // Breadcrumb for the heap sentinel: downloads and parses a large blob from
+    // the CDN into heap buffers, so it is worth being able to place a
+    // corruption relative to it.
+    heap_guard_note("blocklist:sync");
     if (!config_blocklist_enabled()) {
         // Feature switched off in the web UI: don't refresh the on-flash
         // files. The existing files stay put but are never consulted (the

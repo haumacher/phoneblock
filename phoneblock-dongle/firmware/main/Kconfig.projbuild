@@ -214,4 +214,54 @@ menu "PhoneBlock Dongle"
             The HTML section is also hidden by JS unless the status
             JSON reports the feature as on.
 
+    config HEAP_GUARD_ENABLE
+        bool "Heap-corruption sentinel"
+        default y
+        help
+            Walk the heap periodically and, on finding a block header
+            that cannot be true, copy the surrounding bytes onto the
+            stack and panic deliberately.
+
+            This exists because 1.5.0 and 1.5.1 both crashed inside
+            tlsf_walk_pool while the dashboard read heap statistics —
+            the first code to touch an already-corrupted heap, so the
+            backtrace named the victim and never the culprit. A core
+            dump preserves task stacks but not the heap, so the
+            evidence has to be copied onto a stack to survive; the
+            deliberate panic is what puts it there, and the reboot
+            reinitialises the heap a corrupted dongle cannot recover
+            from anyway.
+
+            Leave enabled until the corruption is found. It allocates
+            nothing and costs one short heap walk per interval.
+
+    config HEAP_GUARD_INTERVAL_S
+        int "Seconds between heap walks"
+        depends on HEAP_GUARD_ENABLE
+        default 5
+        range 1 3600
+        help
+            Shorter is better while hunting: the bytes that identify
+            the writer are only evidence until that memory is freed
+            and reused, which happens on a millisecond timescale. The
+            walk holds the heap's spinlock, so it runs with interrupts
+            disabled — the boot self-test logs the measured duration
+            and block count so the real cost is known per device. A
+            walk is deferred while a call is streaming RTP and runs on
+            the first tick afterwards instead.
+
+    config HEAP_GUARD_MAX_PANICS
+        int "Self-triggered panics allowed per power cycle"
+        depends on HEAP_GUARD_ENABLE
+        default 3
+        range 1 100
+        help
+            A reboot clears the corruption, but not a trigger that
+            recurs every boot. Since the daily firmware-update check
+            never runs on a device that reboots more often than once a
+            day, such a device could never be fixed remotely — so
+            after this many self-triggered panics the sentinel stops
+            panicking and only logs. The counter lives in RTC memory:
+            it survives a reboot but is cleared by a power cycle.
+
 endmenu
