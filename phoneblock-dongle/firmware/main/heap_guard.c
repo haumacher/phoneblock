@@ -1,5 +1,7 @@
 #include "heap_guard.h"
 
+#include <stdio.h>
+
 #include "esp_log.h"
 
 // Must be last: bans unsafe string APIs for the rest of this file.
@@ -289,6 +291,12 @@ static void hg_timer_cb(void *arg)
 // proves the sentinel actually fires — the boot self-test above only proves it
 // stays quiet, and a detector never observed detecting is not worth shipping.
 //
+// Triggered on demand (POST /api/dev/heap-rehearse), deliberately *not* run at
+// boot. app_main calls esp_ota_mark_app_valid_cancel_rollback() long before
+// heap_guard_start(), so a rehearsal that panicked during its corrupted window
+// would leave a committed image crash-looping with no rollback left. On demand,
+// the same failure just reboots into a device that does not rehearse again.
+//
 // The corruption is the real shape of the bug: write past the end of one
 // allocation into the header of the one that follows. No knowledge of the
 // allocator's internals is used, which is the whole point — that is precisely
@@ -300,15 +308,18 @@ static void hg_timer_cb(void *arg)
 // allocating in that window could fault. The window is microseconds during
 // early boot, and this is compiled in only under CONFIG_CRASH_TEST_ENABLE,
 // never in production.
-static void hg_rehearse(void)
+bool heap_guard_rehearse(char *out, size_t cap)
 {
+    strbuf_t sb = sb_init(out, (int)cap);
+
     const size_t n = 64;
     uint8_t *a = malloc(n);
     uint8_t *b = malloc(n);
     if (!a || !b) {
         free(a); free(b);
+        sb_appendf(&sb, "skipped: allocation failed");
         ESP_LOGW(TAG, "rehearsal skipped: allocation failed");
-        return;
+        return false;
     }
 
     // Only proceed if the two allocations really are neighbours, so the span we
@@ -317,8 +328,10 @@ static void hg_rehearse(void)
     // overflow without guessing at the allocator's layout.
     if (b <= a || (size_t)(b - a) > n + 32) {
         free(b); free(a);
+        sb_appendf(&sb, "skipped: allocations are not adjacent (delta=%d)",
+                   (int)(b - a));
         ESP_LOGW(TAG, "rehearsal skipped: allocations are not adjacent");
-        return;
+        return false;
     }
     size_t span = (size_t)(b - a) - n + 4;
 
@@ -348,14 +361,19 @@ static void hg_rehearse(void)
     free(b);
     free(a);
 
-    if (detected != HG_OK && after.verdict == HG_OK)
-        ESP_LOGI(TAG, "rehearsal passed: %zu-byte overflow detected (%s), "
-                      "heap clean again afterwards",
-                 span, hg_verdict_str(detected));
-    else
-        ESP_LOGE(TAG, "rehearsal FAILED: detected=%s, after restore=%s -- the "
-                      "sentinel would not catch a real overflow",
-                 hg_verdict_str(detected), hg_verdict_str(after.verdict));
+    bool passed = (detected != HG_OK && after.verdict == HG_OK);
+    if (passed) {
+        sb_appendf(&sb, "passed: %u-byte overflow detected (%s), heap clean "
+                        "again afterwards", (unsigned)span,
+                   hg_verdict_str(detected));
+        ESP_LOGI(TAG, "rehearsal %s", out);
+    } else {
+        sb_appendf(&sb, "FAILED: detected=%s, after restore=%s -- the sentinel "
+                        "would not catch a real overflow",
+                   hg_verdict_str(detected), hg_verdict_str(after.verdict));
+        ESP_LOGE(TAG, "rehearsal %s", out);
+    }
+    return passed;
 }
 #endif
 
@@ -392,10 +410,6 @@ void heap_guard_start(void)
                       "interrupts disabled; consider a longer interval",
                  (long long)us, (unsigned)w.blocks);
 
-#if CONFIG_CRASH_TEST_ENABLE
-    hg_rehearse();          // dev builds only; proves the detection really fires
-#endif
-
     const esp_timer_create_args_t args = {
         .callback        = hg_timer_cb,
         .name            = "heap_guard",
@@ -431,5 +445,14 @@ void heap_guard_note(const char *what)
 {
     (void)what;
 }
+
+#if CONFIG_CRASH_TEST_ENABLE
+// A bench build with the sentinel compiled out still links the dev endpoint.
+bool heap_guard_rehearse(char *out, size_t cap)
+{
+    if (cap) snprintf(out, cap, "skipped: sentinel disabled at build time");
+    return false;
+}
+#endif
 
 #endif
