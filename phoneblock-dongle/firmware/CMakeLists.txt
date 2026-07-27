@@ -27,7 +27,16 @@ endif()
 # only compute one here when version.txt is absent (i.e. dev builds).
 # If git is unavailable or no tag matches, PROJECT_VER stays unset and
 # ESP-IDF's own fallback applies — no regression.
-if(NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/version.txt")
+# Either way the chosen version and where it came from is printed, because a
+# version.txt that outlived its release run wins silently over git describe and
+# then mis-stamps every build in the workspace — including the version under
+# which a crash report gets filed, which is what a dump is symbolized against.
+# One STATUS line makes that visible instead of mysterious.
+if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/version.txt")
+    file(STRINGS "${CMAKE_CURRENT_LIST_DIR}/version.txt" dongle_ver_file
+         LIMIT_COUNT 1)
+    message(STATUS "Dongle version: ${dongle_ver_file} (from version.txt)")
+else()
     find_package(Git QUIET)
     if(Git_FOUND)
         execute_process(
@@ -41,6 +50,7 @@ if(NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/version.txt")
             string(REGEX REPLACE "^dongle-v" "" PROJECT_VER "${dongle_ver}")
         endif()
     endif()
+    message(STATUS "Dongle version: ${PROJECT_VER} (from git describe)")
 endif()
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)

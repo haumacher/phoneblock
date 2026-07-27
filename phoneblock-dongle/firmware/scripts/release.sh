@@ -116,8 +116,6 @@ fi
 # 2. Build firmware. ESP-IDF reads version from version.txt next to CMakeLists,
 #    which lands in esp_app_desc_t.version and the /api/status payload.
 # ---------------------------------------------------------------------------
-echo "$VERSION" > "${FIRMWARE_DIR}/version.txt"
-
 # Move local build state out of the way so the release is built from
 # sdkconfig.defaults alone — gitignored sticky config has no business
 # in a CDN artifact:
@@ -142,6 +140,13 @@ cleanup() {
     done
 }
 trap cleanup EXIT
+
+# Only now, with cleanup armed, write the file — it must not outlive this
+# script. Written before the trap it could be orphaned by any early exit in
+# between, including the leftover-stash check just below, and a stale
+# version.txt then silently overrides `git describe` for every later dev build
+# in this workspace (that is how a 1.4.1 file came to stamp 1.5.x builds).
+echo "$VERSION" > "${FIRMWARE_DIR}/version.txt"
 
 for f in "${FIRMWARE_DIR}/sdkconfig" "${FIRMWARE_DIR}/sdkconfig.defaults.local"; do
     # Refuse to run if a previous release.sh died before its trap got
