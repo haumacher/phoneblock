@@ -75,7 +75,12 @@ static esp_err_t http_event_handler(esp_http_client_event_t *evt)
 {
     response_buffer_t *resp = (response_buffer_t *)evt->user_data;
 
-    if (evt->event_id == HTTP_EVENT_ON_DATA && !esp_http_client_is_chunked_response(evt->client)) {
+    // No is_chunked_response() gate: esp_http_client de-chunks the body before
+    // ON_DATA fires, so gating on it drops exactly the payloads we need the
+    // moment the server answers with Transfer-Encoding: chunked — leaving an
+    // empty body that reads as a parse failure. sync.c hit this and documents
+    // it; this handler had the same gate.
+    if (evt->event_id == HTTP_EVENT_ON_DATA) {
         int remaining = resp->cap - resp->len - 1;
         int copy = evt->data_len < remaining ? evt->data_len : remaining;
         if (copy > 0) {
@@ -175,7 +180,9 @@ static esp_err_t http_event_shared(esp_http_client_event_t *evt)
     case HTTP_EVENT_ON_DATA:
         if (sink->kind == PB_SINK_SCAN) {
             api_scan_feed(sink->scan, (const char *)evt->data, evt->data_len);
-        } else if (!esp_http_client_is_chunked_response(evt->client)) {
+        } else {
+            // Copy unconditionally — see http_event_handler() above on why an
+            // is_chunked_response() gate silently discards chunked bodies.
             response_buffer_t *resp = sink->buf;
             int remaining = resp->cap - resp->len - 1;
             int copy = evt->data_len < remaining ? evt->data_len : remaining;
