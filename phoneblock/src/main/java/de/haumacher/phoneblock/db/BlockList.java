@@ -188,14 +188,15 @@ public interface BlockList {
 	int updatePersonalizationHash(String phone, byte[] sha1);
 
 	/**
-	 * All blocked wildcard prefixes (phone-ID form) of the user with the given user ID (#377).
+	 * Wildcard prefixes (phone-ID form, stored bare without a trailing {@code *}) of the given
+	 * block state for the user with the given user ID (#377).
 	 */
 	@Select("""
 			select PHONE from PERSONALIZATION
-			where USERID = #{userId} and BLOCKED and WILDCARD
+			where USERID = #{userId} and WILDCARD and BLOCKED = #{blocked}
 			order by PHONE
 			""")
-	List<String> getBlockedWildcards(long userId);
+	List<String> getWildcards(long userId, boolean blocked);
 
 	/**
 	 * Wildcard prefixes of the given block state for the user with the given user ID, with
