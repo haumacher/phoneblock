@@ -78,13 +78,13 @@
 		<div class="notification is-info">
 			<p data-tx="t0136:bbe31efa"><strong>التسليم من الصين - تقريبًا. 2 أسابيع وقت التسليم.</strong> السعر حاليًا حوالي 10 يورو بما في ذلك الشحن.</p>
 			<p class="mt-2">
-				<a class="button is-primary is-large" href="https://de.aliexpress.com/item/1005006593432047.html" rel="noopener" target="_blank">
+				<a class="button is-primary is-large" rel="noopener" target="_blank" th:href="@{/link/dongle-aliexpress}">
 					<span class="icon"><i class="fas fa-cart-shopping"></i></span>
 					<span data-tx="t0137:49b731d6">اطلب على AliExpress</span>
 				</a>
 			</p>
 			<p class="mt-2">
-				<a class="button is-primary is-large" href="https://www.ebay.de/itm/404930369895" rel="noopener" target="_blank">
+				<a class="button is-primary is-large" rel="noopener" target="_blank" th:href="@{/link/dongle-ebay}">
 					<span class="icon"><i class="fas fa-cart-shopping"></i></span>
 					<span data-tx="t0138:4bfe505a">اطلب على موقع إي باي</span>
 				</a>
@@ -92,7 +92,13 @@
 			<p data-tx="t0139:1caf402b">لا ترتبط هذه العروض بأي شكل من الأشكال بـ PhoneBlock ولا تشارك PhoneBlock بأي شكل من الأشكال في الأرباح. هذا يتعلق حصرياً بالأجهزة. يمكنك تثبيت برنامج PhoneBlock (البرنامج الثابت) بنفسك بعد الاستلام (انظر أدناه).</p>
 		</div>
 
-		<p data-tx="t0140:41c85d87"><strong> هل تقوم بالترقيع بنفسك ولديك بالفعل ESP32 في الدرج؟ </strong> سيعمل PhoneBlock بالتأكيد على لوحتك إذا كانت تحتوي على ذاكرة فلاش 4 ميجابايت على الأقل. قد تحتاج إلى برنامج تشغيل USB تسلسلي USB مختلف أو قد تحتاج إلى إعادة تكوين تعيين رقم التعريف الشخصي بحيث يومض مؤشر LED للحالة - من الأفضل إلقاء نظرة على صفحة <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/" rel="noopener" target="_blank"> صفحة المشروع.</a></p>
+		<div class="notification is-warning">
+			<p data-tx="t0233:c7a2b08f"><strong>يرجى عدم طلب جهاز «ESP32-S3» — فهو لا يعمل.</strong> وعلى وجه الخصوص، يتم شراء "LILYGO T-Dongle-S3" — الذي يحظى بشعبية كبيرة على موقع أمازون — مرارًا وتكرارًا، ولكن لا يمكن تهيئته: حيث يتوقف برنامج التثبيت في المتصفح مع ظهور الرسالة "Your ESP32-S3 board is not supported".</p>
+			<p class="mt-2" data-tx="t0234:61c3809d">يحتوي S3 على نواة معالج مختلفة عن تلك الموجودة في ESP32 الكلاسيكي، ولا تتوفر برامج PhoneBlock الثابتة إلا لـ ESP32 الكلاسيكي. هذه ليست مشكلة متعلقة ببرنامج التشغيل — فليس هناك حالياً أي طريقة لتثبيت PhoneBlock على هذه اللوحات. وينطبق الأمر نفسه على الطرازات S2 وC3 وC6 وH2.</p>
+			<p class="mt-2" data-tx="t0235:4564bc8e">لذلك، تأكد من أن العرض يتضمن <strong>"ESP32" دون أي إضافات</strong> — تمامًا كما هو الحال في العرضين المرتبطين أعلاه.</p>
+		</div>
+
+		<p data-tx="t0140:7f656ebb"><strong>هل تقوم بالصناعة اليدوية بنفسك ولديك بالفعل شريحة ESP32 في الدرج؟</strong> من شبه المؤكد أن PhoneBlock سيعمل أيضًا على لوحك، شريطة أن تكون شريحة ESP32 كلاسيكية (ليست من طراز S2/S3/C3/C6/H2) وتحتوي على ذاكرة فلاش بسعة 4 ميغابايت على الأقل. قد تحتاج إلى برنامج تشغيل USB-Serial آخر، أو قد تضطر إلى إعادة تكوين توزيع دبابيس التوصيل (PIN) حتى يومض مصباح LED الخاص بالحالة — وللقيام بذلك، يُنصح بالاطلاع على <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/" rel="noopener" target="_blank">صفحة المشروع</a>.</p>
 
 		<h2 data-tx="t0149:69477c42" id="schritt-3">الخطوة 2 - إعداد الدونجل</h2>
 

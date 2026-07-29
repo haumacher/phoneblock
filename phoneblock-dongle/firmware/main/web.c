@@ -28,6 +28,7 @@
 #include "blocklist_sync.h"
 #include "i18n_sync.h"
 #include "config.h"
+#include "heap_guard.h"
 #include "firmware_update.h"
 #include "log_capture.h"
 #include "mail.h"
@@ -53,10 +54,16 @@ static httpd_handle_t s_server = NULL;
 // — index.html itself renders the in-page login state) or to a 401
 // (API). The do/while wrapper keeps the macro safe inside an
 // if/else without braces.
+//
+// These macros also carry the heap sentinel's breadcrumb: every handler opens
+// with one of them, which makes them the only central "a request is being
+// served" hook short of touching each handler individually. See heap_guard.h.
 #define REQUIRE_AUTH_HTML(req) do { \
+    heap_guard_note("http:html"); \
     if (!web_auth_required((req), false)) return ESP_OK; \
 } while (0)
 #define REQUIRE_AUTH_API(req) do { \
+    heap_guard_note("http:api"); \
     if (!web_auth_required((req), true)) return ESP_OK; \
 } while (0)
 // For the intentionally-public routes: LAN-only when the gate is off,
@@ -2005,6 +2012,24 @@ static esp_err_t handle_crash_test(httpd_req_t *req)
     xTaskCreate(crash_test_task, "crash_test", 2048, NULL, 5, NULL);
     return ESP_OK;
 }
+
+// POST /api/dev/heap-smash — corrupt the heap for real and let the sentinel take
+// it from there: it detects, captures the evidence and panics, and the next boot
+// uploads the core dump. Exercises the whole pipeline the way a genuine
+// corruption would. Only compiled in when CONFIG_CRASH_TEST_ENABLE=y.
+static esp_err_t handle_heap_smash(httpd_req_t *req)
+{
+    REQUIRE_AUTH_API(req);
+
+    char detail[160] = "";
+    bool ok = heap_guard_smash(detail, sizeof(detail));
+
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddBoolToObject  (root, "ok", ok);
+    cJSON_AddStringToObject(root, "message", detail);
+    send_json(req, root);
+    return ESP_OK;
+}
 #endif // CONFIG_CRASH_TEST_ENABLE
 
 // POST /api/sync/run — trigger an immediate blocklist sync.
@@ -2125,6 +2150,7 @@ static const httpd_uri_t URIS[] = {
     { .uri = "/api/factory-reset",   .method = HTTP_POST, .handler = handle_factory_reset,  .user_ctx = NULL },
 #ifdef CONFIG_CRASH_TEST_ENABLE
     { .uri = "/api/dev/crash",       .method = HTTP_POST, .handler = handle_crash_test,     .user_ctx = NULL },
+    { .uri = "/api/dev/heap-smash",   .method = HTTP_POST, .handler = handle_heap_smash,     .user_ctx = NULL },
 #endif
     { .uri = "/api/firmware",         .method = HTTP_POST, .handler = handle_firmware_upload,  .user_ctx = NULL },
     { .uri = "/api/firmware/check",   .method = HTTP_POST, .handler = handle_firmware_check,   .user_ctx = NULL },

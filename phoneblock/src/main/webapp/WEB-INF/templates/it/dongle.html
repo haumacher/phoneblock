@@ -78,13 +78,13 @@
 		<div class="notification is-info">
 			<p data-tx="t0136:bbe31efa"><strong>Consegna dalla Cina - circa 2 settimane di tempo di consegna.</strong> Prezzo attualmente circa 10 € compresa la spedizione.</p>
 			<p class="mt-2">
-				<a class="button is-primary is-large" href="https://de.aliexpress.com/item/1005006593432047.html" rel="noopener" target="_blank">
+				<a class="button is-primary is-large" rel="noopener" target="_blank" th:href="@{/link/dongle-aliexpress}">
 					<span class="icon"><i class="fas fa-cart-shopping"></i></span>
 					<span data-tx="t0137:49b731d6">Ordina su AliExpress</span>
 				</a>
 			</p>
 			<p class="mt-2">
-				<a class="button is-primary is-large" href="https://www.ebay.de/itm/404930369895" rel="noopener" target="_blank">
+				<a class="button is-primary is-large" rel="noopener" target="_blank" th:href="@{/link/dongle-ebay}">
 					<span class="icon"><i class="fas fa-cart-shopping"></i></span>
 					<span data-tx="t0138:4bfe505a">Ordina su eBay</span>
 				</a>
@@ -92,7 +92,13 @@
 			<p data-tx="t0139:1caf402b">Queste offerte non sono in alcun modo legate a PhoneBlock e PhoneBlock non è in alcun modo coinvolto nei profitti. Riguardano esclusivamente l'hardware. Il software PhoneBlock (firmware) va installato da soli dopo la ricezione (vedi sotto).</p>
 		</div>
 
-		<p data-tx="t0140:41c85d87"><strong>Stai armeggiando da solo e hai già un ESP32 nel cassetto? </strong> PhoneBlock funzionerà quasi certamente sulla tua scheda se ha almeno 4MB di memoria flash. Potrebbe essere necessario un driver seriale USB diverso o riconfigurare l'assegnazione del PIN in modo che il LED di stato lampeggi - è meglio dare un'occhiata alla pagina del <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/" rel="noopener" target="_blank">progetto</a>.</p>
+		<div class="notification is-warning">
+			<p data-tx="t0233:c7a2b08f"><strong>Si prega di non ordinare l’“ESP32-S3”: non funziona.</strong> In particolare, il "LILYGO T-Dongle-S3", molto popolare su Amazon, viene acquistato ripetutamente, ma non è possibile configurarlo: il programma di installazione del browser si interrompe con il messaggio "Your ESP32-S3 board is not supported".</p>
+			<p class="mt-2" data-tx="t0234:61c3809d">L'S3 ha un core del processore diverso rispetto al classico ESP32, e il firmware PhoneBlock è disponibile solo per il classico ESP32. Non si tratta di un problema di driver: con queste schede, al momento non c'è semplicemente alcun modo per installare PhoneBlock. Lo stesso vale per le varianti S2, C3, C6 e H2.</p>
+			<p class="mt-2" data-tx="t0235:4564bc8e">Assicurati quindi che nell'offerta sia indicato <strong>"ESP32" senza aggiunte</strong>, proprio come nei due link riportati sopra.</p>
+		</div>
+
+		<p data-tx="t0140:7f656ebb"><strong>Ti piace armeggiare e hai già un ESP32 in un cassetto?</strong> PhoneBlock funzionerà quasi sicuramente anche sulla tua scheda, purché si tratti di un ESP32 classico (non S2/S3/C3/C6/H2) con almeno 4 MB di memoria flash. Potrebbe essere necessario un driver USB-seriale diverso oppure dovrai riconfigurare l’assegnazione dei pin affinché il LED di stato lampeggi: per farlo, ti consigliamo di consultare la <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/" rel="noopener" target="_blank">pagina del progetto</a>.</p>
 
 		<h2 data-tx="t0149:69477c42" id="schritt-3">Fase 2 - Preparazione del dongle</h2>
 

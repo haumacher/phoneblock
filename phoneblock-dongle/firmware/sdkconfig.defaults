@@ -261,4 +261,20 @@ CONFIG_RTP_PLAY_ANNOUNCEMENT=y
 # exercise the coredump-and-upload pipeline end-to-end. MUST stay n
 # for production; flipped to y in sdkconfig.defaults.local for
 # bench builds.
+#
+# It also compiles in POST /api/dev/heap-smash, which corrupts the heap for
+# real and lets the sentinel detect it, capture the evidence and panic —
+# exercising the whole pipeline end to end, which the host tests cannot
+# reach. Worth running on the bench after any change to the walk.
 CONFIG_CRASH_TEST_ENABLE=n
+
+# Heap-corruption sentinel (main/heap_guard.c). Walks the heap every few
+# seconds; on finding a block header that cannot be true it copies the
+# surrounding bytes onto its stack and panics deliberately, so the core
+# dump carries the evidence a dump otherwise never holds (it preserves
+# task stacks, not the heap). Present because 1.5.0 and 1.5.1 both
+# crashed inside tlsf_walk_pool on an already-corrupted heap, where the
+# backtrace names the victim and never the culprit. Keep enabled until
+# that corruption is found.
+CONFIG_HEAP_GUARD_ENABLE=y
+CONFIG_HEAP_GUARD_INTERVAL_S=5

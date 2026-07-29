@@ -92,8 +92,11 @@ typedef struct {
 static esp_err_t http_evt_cb(esp_http_client_event_t *evt)
 {
     resp_buf_t *r = evt->user_data;
-    if (evt->event_id == HTTP_EVENT_ON_DATA
-        && !esp_http_client_is_chunked_response(evt->client)) {
+    // No is_chunked_response() gate: esp_http_client de-chunks the body before
+    // ON_DATA fires, so gating on it drops the whole SOAP response whenever the
+    // Fritz!Box answers chunked — which surfaces as an unexplained "parse
+    // failed" rather than as a transport error. Same bug sync.c documents.
+    if (evt->event_id == HTTP_EVENT_ON_DATA) {
         int remaining = r->cap - r->len - 1;
         int copy = evt->data_len < remaining ? evt->data_len : remaining;
         if (copy > 0) {
