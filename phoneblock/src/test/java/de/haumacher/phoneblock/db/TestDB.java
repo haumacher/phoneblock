@@ -665,6 +665,50 @@ public class TestDB {
 		}
 	}
 
+	/**
+	 * The resolver every server-side call path shares (#482): exact entry first, then the most
+	 * specific matching wildcard.
+	 */
+	@Test
+	void testResolvePersonalizationWithWildcards() {
+		_db.createUser("wc-resolve", "WC", "de", "+49");
+		assertEquals("030123", _db.addWildcard("wc-resolve", "+4930123", true, 100));
+		assertEquals("0301234", _db.addWildcard("wc-resolve", "+49301234", false, 100));
+		assertEquals("0800", _db.addWildcard("wc-resolve", "+49800", false, 100));
+
+		try (SqlSession tx = _db.openSession()) {
+			BlockList bl = tx.getMapper(BlockList.class);
+			long userId = tx.getMapper(Users.class).getUserId("wc-resolve").longValue();
+			bl.addPersonalization(userId, "0301230000", null, 1);
+			tx.commit();
+
+			// An exact entry wins over any wildcard, and reports at full weight.
+			DB.PersonalVerdict exact = _db.resolvePersonalization(bl, userId, "0301230000");
+			assertTrue(exact.blocked());
+			assertFalse(exact.wildcard());
+			assertEquals(1.0, exact.reportWeight("0301230000"));
+
+			// Otherwise the blocking wildcard catches the number — weighted by its breadth:
+			// 030123 (6) vs 0301239999 (10) omits 4 digits -> 0.25.
+			DB.PersonalVerdict blocked = _db.resolvePersonalization(bl, userId, "0301239999");
+			assertTrue(blocked.blocked());
+			assertTrue(blocked.wildcard());
+			assertEquals("030123", blocked.phoneId());
+			assertEquals(0.25, blocked.reportWeight("0301239999"));
+
+			// The narrower allowing wildcard wins over the broader blocking one.
+			DB.PersonalVerdict allowed = _db.resolvePersonalization(bl, userId, "0301234567");
+			assertFalse(allowed.blocked());
+			assertTrue(allowed.wildcard());
+			assertEquals("0301234", allowed.phoneId());
+
+			// A number covered by nothing has no verdict — and a prefix is not matched by a
+			// number that merely starts like it in the other direction.
+			assertNull(_db.resolvePersonalization(bl, userId, "0401234567"));
+			assertNull(_db.resolvePersonalization(bl, userId, "030"));
+		}
+	}
+
 	@Test
 	void testWildcardReportWeightLookup() {
 		_db.createUser("wc-user", "WC", "de", "+49");
