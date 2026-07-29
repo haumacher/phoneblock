@@ -24,8 +24,10 @@
 #include "heap_guard.h"
 #include "mail_i18n.h"
 #include "mail_html.h"
+#include "mail_rcpt.h"
 #include "smtp_body.h"
 #include "stats.h"
+#include "strbuf.h"
 #include "time_sync.h"
 #include "wifi.h"
 
@@ -47,8 +49,10 @@ static const char *TAG = "mail";
 #define MAIL_DEADLINE_S     45
 
 // Buffer for one command / header line (commands, base64 credentials,
-// the assembled header block). Comfortably larger than the longest line.
-#define MAIL_LINE_CAP       640
+// the assembled header block). Comfortably larger than the longest line:
+// the header block is the biggest consumer, and its "To:" alone can carry
+// MAIL_RCPT_MAX addresses (~330 B) on top of Date/From/Subject/Content-Type.
+#define MAIL_LINE_CAP       1024
 // Upper bound for the assembled status body. The status mail is a single
 // text/html document — summary + up to STATS_MAX_CALLS calls + the log
 // window. text/html (not multipart/alternative) keeps the body — held in
@@ -85,8 +89,13 @@ static char s_update_version[32];
 
 bool mail_configured(void)
 {
-    return config_smtp_host()[0] && config_smtp_user()[0]
-        && config_smtp_pass()[0] && config_smtp_to()[0];
+    if (!(config_smtp_host()[0] && config_smtp_user()[0] && config_smtp_pass()[0]))
+        return false;
+    // The recipient field is a ';'-separated list; it counts as configured
+    // only if at least one usable address comes out of it (a spec of just
+    // separators or whitespace does not).
+    mail_rcpt_list_t rcpts;
+    return mail_rcpt_parse(config_smtp_to(), &rcpts) > 0;
 }
 
 // --- low-level channel I/O ------------------------------------------
@@ -223,11 +232,21 @@ static bool mail_send(const char *subject, const char *content_type, const char 
     const char *user     = config_smtp_user();
     const char *pass     = config_smtp_pass();
     const char *from     = config_smtp_from();
-    const char *to       = config_smtp_to();
     const bool  starttls = strcmp(config_smtp_security(), "starttls") == 0;
     // Stored 0 = "auto": the conventional submission port for the mode.
     int         port     = config_smtp_port();
     if (port <= 0) port = starttls ? 587 : 465;
+
+    // Recipients: the stored spec is a ';'-separated list, one RCPT TO per
+    // address below. mail_configured() already guaranteed at least one.
+    mail_rcpt_list_t rcpts;
+    mail_rcpt_parse(config_smtp_to(), &rcpts);
+    if (rcpts.dropped)
+        ESP_LOGW(TAG, "recipient list: entries dropped (over %d, or longer than %d B)",
+                 MAIL_RCPT_MAX, MAIL_RCPT_ADDR_CAP - 1);
+    // Comma-separated form for the RFC 5322 "To:" header and the log lines.
+    char to_hdr[MAIL_RCPT_MAX * (MAIL_RCPT_ADDR_CAP + 4)];
+    mail_rcpt_header(&rcpts, to_hdr, sizeof(to_hdr));
 
     int64_t deadline = esp_timer_get_time() + (int64_t)MAIL_DEADLINE_S * 1000000;
 
@@ -320,11 +339,22 @@ static bool mail_send(const char *subject, const char *content_type, const char 
     snprintf(buf, MAIL_LINE_CAP, "MAIL FROM:<%s>\r\n", from);
     ret = smtp_cmd(&c, buf, deadline);
     if (ret < 200 || ret > 299) goto done;
-    snprintf(buf, MAIL_LINE_CAP, "RCPT TO:<%s>\r\n", to);
-    ret = smtp_cmd(&c, buf, deadline);
-    if (ret < 200 || ret > 299) goto done;
-    ret = smtp_cmd(&c, "DATA\r\n", deadline);
-    if (ret != 354) goto done;
+    // One RCPT TO per recipient (RFC 5321 §3.3). A single rejected address
+    // must not sink the whole mail — providers reject individual recipients
+    // for their own reasons (unknown mailbox, per-recipient policy) — so log
+    // each refusal and go on; only an envelope with no accepted recipient at
+    // all is fatal, since DATA would then be rejected anyway.
+    int accepted = 0;
+    for (int i = 0; i < rcpts.count; i++) {
+        snprintf(buf, MAIL_LINE_CAP, "RCPT TO:<%s>\r\n", rcpts.addr[i]);
+        ret = smtp_cmd(&c, buf, deadline);
+        if (ret >= 200 && ret <= 299) accepted++;
+        else ESP_LOGW(TAG, "recipient %s rejected (code %d)", rcpts.addr[i], ret);
+    }
+    if (accepted == 0) {
+        ESP_LOGW(TAG, "no recipient accepted — mail not sent");
+        goto done;
+    }
 
     // RFC 5322 Date header, in UTC so it is independent of the configured
     // timezone. Without it, receiving clients (e.g. Thunderbird) fall back to
@@ -342,20 +372,26 @@ static bool mail_send(const char *subject, const char *content_type, const char 
                  "Date: %a, %d %b %Y %H:%M:%S +0000\r\n", &gmt);
     }
 
-    // Header block + body. UTF-8 body declared via Content-Type; the
-    // Subject stays ASCII so no encoded-word is needed.
+    // Header block. UTF-8 body declared via Content-Type; the Subject stays
+    // ASCII so no encoded-word is needed. Assembled before DATA so that a
+    // header block which does not fit is caught while the transaction can
+    // still be abandoned cleanly — a dropped header would be malformed mail.
     {
-        int hlen = snprintf(buf, MAIL_LINE_CAP,
-            "%s"
-            "From: PhoneBlock Dongle <%s>\r\n"
-            "To: <%s>\r\n"
-            "Subject: %s\r\n"
-            "MIME-Version: 1.0\r\n"
-            "Content-Type: %s\r\n"
-            "\r\n",
-            date_hdr, from, to, subject, content_type);
-        if (hlen < 0 || chan_write_all(&c, (unsigned char *)buf, (size_t)hlen,
-                                       deadline) != 0)
+        strbuf_t sb = sb_init(buf, MAIL_LINE_CAP);
+        sb_appendf(&sb, "%s", date_hdr);
+        sb_appendf(&sb, "From: PhoneBlock Dongle <%s>\r\n", from);
+        sb_appendf(&sb, "To: %s\r\n", to_hdr);
+        sb_appendf(&sb, "Subject: %s\r\n", subject);
+        sb_appendf(&sb, "MIME-Version: 1.0\r\n");
+        sb_appendf(&sb, "Content-Type: %s\r\n", content_type);
+        sb_appendf(&sb, "\r\n");
+        if (sb.truncated) {
+            ESP_LOGW(TAG, "mail header too long — mail not sent");
+            goto done;
+        }
+        ret = smtp_cmd(&c, "DATA\r\n", deadline);
+        if (ret != 354) goto done;
+        if (chan_write_all(&c, (unsigned char *)buf, (size_t)sb.len, deadline) != 0)
             goto done;
     }
     if (body && body[0] && smtp_write_body(&c, body, deadline) != 0)
@@ -366,7 +402,8 @@ static bool mail_send(const char *subject, const char *content_type, const char 
 
     smtp_cmd(&c, "QUIT\r\n", deadline);                   // best-effort
     ok = true;
-    ESP_LOGI(TAG, "status mail sent to %s", to);
+    ESP_LOGI(TAG, "status mail sent to %s (%d of %d recipient(s))",
+             to_hdr, accepted, rcpts.count);
 
 done:
     if (c.tls_up) mbedtls_ssl_close_notify(&c.ssl);
@@ -376,7 +413,7 @@ done:
     mbedtls_ctr_drbg_free(&drbg);
     mbedtls_entropy_free(&entropy);
     free(buf);
-    if (!ok) ESP_LOGW(TAG, "status mail to %s failed", to);
+    if (!ok) ESP_LOGW(TAG, "status mail to %s failed", to_hdr);
     return ok;
 }
 

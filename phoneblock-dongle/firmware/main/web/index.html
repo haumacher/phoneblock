@@ -1964,6 +1964,9 @@ async function refreshAll(){
       return r.ok;
     };
     const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // Keep in step with MAIL_RCPT_MAX in main/mail_rcpt.h — the firmware
+    // drops recipients beyond it.
+    const MAIL_RCPT_MAX = 5;
     // Reject incomplete / malformed input before it reaches the SMTP path,
     // where a bad value would otherwise fail silently and still report a
     // green "success": an empty recipient (mail_configured() then refuses
@@ -1971,15 +1974,25 @@ async function refreshAll(){
     // (the server rejects MAIL FROM:<My Dongle>). Returns a ready-to-show
     // message and focuses the offending field, or '' when the form is valid.
     const validateMail = () => {
-      const bad = (id, key) => { $(id).focus(); return t(key); };
+      const bad = (id, key, p) => { $(id).focus(); return t(key, p); };
       if (!$('mailHost').value.trim()) return bad('mailHost', 'status.mail.err.host');
       if (!$('mailUser').value.trim()) return bad('mailUser', 'status.mail.err.user');
       // The password may be left blank only when one is already stored —
       // the "leave blank to keep it" hint (mailPassKeep) is shown then.
       if (!$('mailPass').value && !$('mailPassKeep').textContent)
         return bad('mailPass', 'status.mail.err.pass');
-      if (!EMAIL_RE.test($('mailTo').value.trim()))
+      // The recipient field takes one or more addresses separated by ';'
+      // (the firmware splits it in mail_rcpt.c, one RCPT TO per address).
+      // Trailing separators and stray spaces are tolerated here exactly as
+      // they are there; every remaining entry has to be a real address, and
+      // the count has to stay within the firmware's cap — otherwise the
+      // surplus would be dropped silently at send time.
+      const rcpts = $('mailTo').value.split(';')
+                      .map(s => s.trim()).filter(s => s !== '');
+      if (rcpts.length === 0 || !rcpts.every(a => EMAIL_RE.test(a)))
         return bad('mailTo', 'status.mail.err.to');
+      if (rcpts.length > MAIL_RCPT_MAX)
+        return bad('mailTo', 'status.mail.err.to_many', { max: MAIL_RCPT_MAX });
       // The effective sender is the Absender field, or the SMTP user name
       // when it is left blank (see config_smtp_from()). Either way it becomes
       // the MAIL FROM address, which the server rejects unless it is itself a

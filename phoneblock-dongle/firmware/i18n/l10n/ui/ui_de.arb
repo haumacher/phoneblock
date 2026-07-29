@@ -705,7 +705,7 @@
     "description": "Dongle web UI: status.mail.from",
     "x-translated": "e67fd387"
   },
-  "status.mail.to": "Empfänger (E-Mail)",
+  "status.mail.to": "Empfänger (E-Mail, mehrere mit „;\" trennen)",
   "@status.mail.to": {
     "description": "Dongle web UI: status.mail.to",
     "x-translated": "e0b2b7fe"
@@ -794,6 +794,10 @@
   "@status.mail.err.to": {
     "description": "Dongle web UI: status.mail.err.to",
     "x-translated": "1c060773"
+  },
+  "status.mail.err.to_many": "Höchstens {max} Empfänger möglich",
+  "@status.mail.err.to_many": {
+    "description": "Dongle web UI: status.mail.err.to_many"
   },
   "status.mail.err.from": "Absender ungültig",
   "@status.mail.err.from": {

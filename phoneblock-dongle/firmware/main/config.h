@@ -242,7 +242,10 @@ const char *config_smtp_user(void);
 const char *config_smtp_pass(void);
 // Sender address; falls back to config_smtp_user() when unset.
 const char *config_smtp_from(void);
-// Recipient of the status mails.
+// Recipients of the status mails as stored: one or more addresses separated
+// by ';'. Callers hand the raw string to mail_rcpt_parse() rather than
+// interpreting it — the web UI stores it verbatim, so it may carry
+// surrounding whitespace and empty entries.
 const char *config_smtp_to(void);
 // Trigger toggles:
 //   on_error:  (default off) a daily mail when an ERROR was logged since the

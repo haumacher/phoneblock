@@ -8,6 +8,7 @@
 #include "nvs_flash.h"
 #include "nvs.h"
 
+#include "mail_rcpt.h"   // MAIL_RCPT_SPEC_CAP sizes the recipient field
 #include "sdkconfig.h"
 
 // Must be last: bans unsafe string APIs for the rest of this file.
@@ -134,7 +135,10 @@ typedef struct {
     char smtp_user[64];
     char smtp_pass[64];
     char smtp_from[64];      // sender; empty = use smtp_user
-    char smtp_to[64];        // recipient of the status mails
+    // Recipients of the status mails: one or more addresses, ';'-separated
+    // (parsed by mail_rcpt.c, which also sizes this field so a full list
+    // survives a round-trip through NVS).
+    char smtp_to[MAIL_RCPT_SPEC_CAP];
     char mail_on_error[4];   // "1" = mail on ERROR/crash (default off)
     char mail_on_spam[4];    // "1" = mail when spam calls were caught (default off)
     char mail_on_update[4];  // "0" = suppress firmware-update mail (default on)

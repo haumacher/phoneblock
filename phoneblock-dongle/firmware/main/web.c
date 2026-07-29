@@ -32,6 +32,7 @@
 #include "firmware_update.h"
 #include "log_capture.h"
 #include "mail.h"
+#include "mail_rcpt.h"
 #include "rtp.h"
 #include "scheduler.h"
 #include "sip_register.h"
@@ -658,7 +659,10 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     char smtp_user[64]    = "";
     char smtp_pass[64]    = "";
     char smtp_from[64]    = "";
-    char smtp_to[64]      = "";
+    // ';'-separated recipient list. One byte of slack over what config can
+    // store, so an over-long value is detectable below instead of arriving
+    // pre-clipped by form_get.
+    char smtp_to[MAIL_RCPT_SPEC_CAP + 1] = "";
     char mail_err_s[4]    = "";
     char mail_spam_s[4]   = "";
     char mail_upd_s[4]    = "";
@@ -753,6 +757,24 @@ static esp_err_t handle_config_post(httpd_req_t *req)
         smtp_security = smtp_sec;
     }
 
+    // Status-mail recipients: a ';'-separated list (see mail_rcpt.h). The UI
+    // validates it, but the API is open, so re-check here and ignore (leave
+    // unchanged) a spec that would not survive being stored: one that is too
+    // long for the NVS field, or whose entries do not all fit. Storing a
+    // clipped address is the failure worth preventing — it would silently
+    // mail the household's status report to whoever owns the shortened
+    // address. An empty value is accepted: that is how the UI clears the
+    // recipient and turns the status mail off.
+    const char *smtp_to_val = NULL;
+    if (have_smtp_to) {
+        mail_rcpt_list_t rcpts;
+        mail_rcpt_parse(smtp_to, &rcpts);
+        if (strlen(smtp_to) < MAIL_RCPT_SPEC_CAP && !rcpts.dropped)
+            smtp_to_val = smtp_to;
+        else
+            ESP_LOGW(TAG, "smtp_to rejected: too long or too many recipients");
+    }
+
     // UI/content locale: accept only a well-formed code (validated the same
     // way the getter clamps on read), so a malformed POST can never write a
     // value that the asset-URL / SPIFFS-filename builder would have to
@@ -828,7 +850,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
         .smtp_user     = have_smtp_user ? smtp_user : NULL,
         .smtp_pass     = have_smtp_pass && smtp_pass[0] ? smtp_pass : NULL,
         .smtp_from     = have_smtp_from ? smtp_from : NULL,
-        .smtp_to       = have_smtp_to   ? smtp_to   : NULL,
+        .smtp_to       = smtp_to_val,
         .mail_on_error = have_mail_err  ? mail_err_s  : NULL,
         .mail_on_spam  = have_mail_spam ? mail_spam_s : NULL,
         .mail_on_update = have_mail_upd ? mail_upd_s  : NULL,
