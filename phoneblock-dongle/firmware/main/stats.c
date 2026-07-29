@@ -64,19 +64,26 @@ static void bump_counters(verdict_t verdict)
 
 void stats_record_call(const char *number, const char *display, verdict_t verdict)
 {
+    // Verdict-only entries are phone-book / internal-code matches (legit)
+    // or test-forced spam / internal errors — none carry a community
+    // signal. Map the action verdict onto its log characterisation:
+    // a phone-book hit is "legitim", not merely "unbekannt".
+    stats_record_call_assessed(number, display, verdict,
+                               (verdict == VERDICT_SPAM)  ? PB_ASSESS_SPAM
+                             : (verdict == VERDICT_ERROR) ? PB_ASSESS_ERROR
+                             :                              PB_ASSESS_LEGITIMATE);
+}
+
+void stats_record_call_assessed(const char *number, const char *display,
+                                verdict_t verdict, pb_assessment_t assessment)
+{
     lock();
 
     stats_call_t *slot = &s_calls[s_calls_head];
     memset(slot, 0, sizeof(*slot));
     slot->at_us   = esp_timer_get_time();
     slot->verdict = verdict;
-    // Verdict-only entries are phone-book / internal-code matches (legit)
-    // or test-forced spam / internal errors — none carry a community
-    // signal. Map the action verdict onto its log characterisation:
-    // a phone-book hit is "legitim", not merely "unbekannt".
-    slot->assessment = (verdict == VERDICT_SPAM)  ? PB_ASSESS_SPAM
-                     : (verdict == VERDICT_ERROR) ? PB_ASSESS_ERROR
-                     :                              PB_ASSESS_LEGITIMATE;
+    slot->assessment = assessment;
     copy_trim(slot->number,  sizeof(slot->number),  number);
     copy_trim(slot->display, sizeof(slot->display), display);
 

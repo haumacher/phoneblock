@@ -883,6 +883,21 @@ function renderStatus(){
     +   esc(t('status.localcache.run_now')) + '</button>'
     + '  <span id="blMsg" class="muted" style="margin-left:.6rem"></span>'
     + '</p></details>'
+    + '<details id="nameFilterSection" class="adminsec" style="display:none">'
+    + '<summary>' + esc(t('status.names.title')) + '</summary>'
+    + '<p class="muted">' + esc(t('status.names.intro')) + '</p>'
+    + '<div style="margin-top:.6rem;max-width:24rem">'
+    + '  <label style="font-size:.85rem">' + esc(t('status.names.patterns'))
+    +     '<input id="nameFilterPatterns" type="text" autocomplete="off" '
+    +       'spellcheck="false" style="width:100%"></label>'
+    + '</div>'
+    + '<p class="muted" style="margin-top:.5rem;font-size:.8rem">'
+    +   esc(t('status.names.help')) + '</p>'
+    + '<p style="margin-top:.6rem">'
+    + '  <button id="nameFilterSave" class="btn-primary" style="padding:.4rem .9rem;font-size:.9rem">'
+    +   esc(t('status.names.save')) + '</button>'
+    + '  <span id="nameFilterMsg" class="muted" style="margin-left:.6rem"></span>'
+    + '</p></details>'
     + '<details id="mailSection" class="adminsec" style="display:none">'
     + '<summary>' + esc(t('status.mail.title')) + '</summary>'
     + '<p class="muted">' + esc(t('status.mail.intro')) + '</p>'
@@ -1067,6 +1082,7 @@ let resetNonce = '';
 // dashboard build (reset in the build function above), so the 3s poll
 // does not overwrite what the user is typing.
 let mailPrefilled = false;
+let namesPrefilled = false;
 
 // IDs of sections that the dashboard shows or hides on each poll, so
 // we can toggle the entire dashboard visibility in one go when the
@@ -1077,8 +1093,8 @@ let mailPrefilled = false;
 // useful before SIP and the token are configured.
 const DASHBOARD_SECTIONS = ['heroSlot', 'statusSection', 'regionSection',
   'callsSection', 'thresholdsSection', 'errorsSection', 'resetSection',
-  'annSection', 'localCacheSection', 'syncSection', 'fwSection',
-  'mailSection', 'authSection'];
+  'annSection', 'localCacheSection', 'nameFilterSection', 'syncSection',
+  'fwSection', 'mailSection', 'authSection'];
 
 // Maps `?login_error=<code>` query values that web_auth_handle_callback
 // emits to localized text shown in the login section's red banner.
@@ -1190,6 +1206,7 @@ async function refreshAll(){
   const annSec        = $('annSection');
   const syncSec       = $('syncSection');
   const localCacheSec = $('localCacheSection');
+  const nameFilterSec = $('nameFilterSection');
   const fwSec         = $('fwSection');
   const mailSec       = $('mailSection');
   const authSec       = $('authSection');
@@ -1206,6 +1223,7 @@ async function refreshAll(){
     annSec.style.display = 'none';
     syncSec.style.display = 'none';
     localCacheSec.style.display = 'none';
+    nameFilterSec.style.display = 'none';
     resetSec.style.display = 'none';
     fwSec.style.display = 'none';
     mailSec.style.display = 'none';
@@ -1220,6 +1238,7 @@ async function refreshAll(){
   annSec.style.display = '';
   syncSec.style.display = '';
   localCacheSec.style.display = '';
+  nameFilterSec.style.display = '';
   resetSec.style.display = '';
   fwSec.style.display = '';
   mailSec.style.display = '';
@@ -1314,6 +1333,61 @@ async function refreshAll(){
         m.style.color = '#d93025';
       }
       refreshAll();
+    };
+  }
+
+  // Caller-name filter: one text field holding the '|'-separated patterns
+  // exactly as the device stores them (issue #502). Prefilled once, so a
+  // poll cannot overwrite what the user is typing.
+  const nfInput = $('nameFilterPatterns');
+  if (nfInput && !namesPrefilled){
+    nfInput.value = (s.names || {}).patterns || '';
+    namesPrefilled = true;
+  }
+  const nfSave = $('nameFilterSave');
+  if (nfSave && !nfSave.onclick){
+    // Keep in step with NAME_FILTER_MAX / NAME_FILTER_PATTERN_CAP in
+    // main/name_filter.h — the firmware rejects a spec that exceeds either.
+    const NAME_FILTER_MAX = 8;
+    const NAME_FILTER_PATTERN_CAP = 40;
+    nfSave.onclick = async () => {
+      const m = $('nameFilterMsg');
+      // Split the way name_filter_parse() does, so the counts checked here
+      // are the counts the firmware will see. An empty field is valid: that
+      // is how the filter is switched off.
+      const pats = nfInput.value.split('|')
+                     .map(p => p.trim()).filter(p => p !== '');
+      if (pats.length > NAME_FILTER_MAX){
+        m.textContent = t('status.names.err.many', {max: NAME_FILTER_MAX});
+        m.style.color = '#d93025';
+        nfInput.focus();
+        return;
+      }
+      if (pats.some(p => p.length >= NAME_FILTER_PATTERN_CAP)){
+        m.textContent = t('status.names.err.long',
+                          {max: NAME_FILTER_PATTERN_CAP - 1});
+        m.style.color = '#d93025';
+        nfInput.focus();
+        return;
+      }
+      nfSave.disabled = true;
+      m.textContent = '';
+      const body = new URLSearchParams();
+      body.append('spam_names', pats.join('|'));
+      let ok = false;
+      try {
+        const r = await fetch('/api/config', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: body.toString(),
+        });
+        ok = r.ok;
+      } catch (_){}
+      nfSave.disabled = false;
+      // Show the normalized spec that was actually stored.
+      if (ok) nfInput.value = pats.join('|');
+      m.textContent = ok ? t('status.names.saved') : t('status.names.failed');
+      m.style.color = ok ? '#188038' : '#d93025';
     };
   }
 
@@ -1648,9 +1722,13 @@ async function refreshAll(){
     return '<a href="/auth/login-link?next=' + encodeURIComponent(next)
          + '" target="_blank" rel="noopener">' + text + '</a>';
   };
-  const numCell = (num, display) => {
+  const numCell = (num, display, assessment) => {
     if (!num)                          return '';
     if (!looksDialable(num))           return esc(num);
+    // A name-pattern hit has a non-numeric display name too, but it is the
+    // opposite of "a contact you know" — link it so the user can look the
+    // number up and rate it on PhoneBlock.
+    if (assessment === 'name_pattern') return linkToNumber(num, esc(num));
     if (isKnownContact(display))       return esc(num);
     return linkToNumber(num, esc(num));
   };
@@ -1664,6 +1742,7 @@ async function refreshAll(){
     switch (c.assessment) {
       case 'blacklist': return t('status.calls.verdict.blacklist', {scope});
       case 'spam_list': return t('status.calls.verdict.spam_list', {scope});
+      case 'name_pattern': return t('status.calls.verdict.name_pattern');
       case 'spam':
         // Test-forced spam carries no counts — show plain "SPAM".
         return (c.direct_votes || c.range_votes)
@@ -1680,7 +1759,8 @@ async function refreshAll(){
   // legitimate green, unknown grey, error orange.
   const verdictClass = (a) => {
     switch (a) {
-      case 'spam': case 'spam_list': case 'blacklist': return 'SPAM';
+      case 'spam': case 'spam_list': case 'blacklist':
+      case 'name_pattern': return 'SPAM';
       case 'suspect':    return 'SUSPECT';
       case 'legitimate': return 'LEGITIMATE';
       case 'error':      return 'ERROR';
@@ -1697,7 +1777,7 @@ async function refreshAll(){
       const apiChecked = !!(c.label && c.label.length);
       const numCol = apiChecked
         ? linkToNumber(c.number, esc(c.label))
-        : numCell(c.number, c.display);
+        : numCell(c.number, c.display, c.assessment);
       const nameCol = apiChecked
         ? esc(c.location)
         : esc(c.display);

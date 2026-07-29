@@ -50,6 +50,7 @@
   "status.calls.verdict.scope.range": "Settore",
   "region.title": "Lingua e Paese",
   "region.lang": "Lingua",
+  "region.country": "Paese",
   "region.country.hint": "Ai numeri di telefono privi di prefisso internazionale verrà aggiunto questo Paese. Se qui è indicato il Paese sbagliato, PhoneBlock non troverà alcuna voce relativa alla chiamata. La lingua si applica anche al messaggio della segreteria telefonica e all’e-mail di stato.",
   "status.thresholds.title": "Traversine a blocchi",
   "status.thresholds.intro": "A partire da quanti voti PhoneBlock il dongle devia una chiamata. I voti diretti hanno un peso maggiore rispetto a quelli di portata, per questo i valori sono indicati separatamente.",
@@ -296,5 +297,14 @@
   "back.sip": "← torna alla selezione",
   "i18n.loading": "Caricamento della traduzione in corso…",
   "i18n.unavailable": "Traduzione non disponibile – Viene visualizzata la lingua predefinita.",
-  "region.country": "Paese"
+  "status.calls.verdict.name_pattern": "SPAM (modello di nome)",
+  "status.names.title": "Filtro per nome",
+  "status.names.intro": "Se il tuo FRITZ!Box trova il chiamante nella rubrica, ne comunica anche il nome. Se utilizzi una lista antispam di terze parti (ad es. di Tellows), tutte le voci avranno un nome rivelatore: puoi contrassegnarle come spam qui. Lo stesso vale per una rubrica personale in cui assegni lo stesso nome a tutti i chiamanti indesiderati.",
+  "status.names.patterns": "Nomi che indicano spam (separare con |)",
+  "status.names.help": "Una chiamata viene considerata spam non appena il nome segnalato contiene una di queste stringhe; non fa differenza se le lettere sono maiuscole o minuscole. Esempio: “tellows|Score|SPAM”. Il nome di chi chiama è riportato nell’elenco delle ultime chiamate. Lasciando il campo vuoto si disattiva il filtro dei nomi.",
+  "status.names.save": "Salva filtro per nome",
+  "status.names.saved": "Filtro per nome salvato.",
+  "status.names.failed": "Impossibile salvare.",
+  "status.names.err.many": "È possibile inserire al massimo {max} nomi.",
+  "status.names.err.long": "Un nome può contenere al massimo {max} caratteri."
 }

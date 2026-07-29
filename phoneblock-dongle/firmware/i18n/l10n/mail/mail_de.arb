@@ -118,6 +118,11 @@
     },
     "x-translated": "42b2f851"
   },
+  "verdict.spam_name_pattern": "SPAM (Namensmuster)",
+  "@verdict.spam_name_pattern": {
+    "description": "Status-mail string (verdict.spam_name_pattern); keep %d/%s/%u/%lld and <b> tags",
+    "x-translated": "2c7c059a"
+  },
   "verdict.spam": "SPAM",
   "@verdict.spam": {
     "description": "Status-mail string (verdict.spam); keep %d/%s/%u/%lld and <b> tags",

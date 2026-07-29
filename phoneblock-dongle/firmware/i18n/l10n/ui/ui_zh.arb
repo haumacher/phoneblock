@@ -50,6 +50,7 @@
   "status.calls.verdict.scope.range": "领域",
   "region.title": "语言和国家",
   "region.lang": "语言",
+  "region.country": "国家",
   "region.country.hint": "未带国家区号的电话号码将自动补全为该国家。如果此处填写的国家不正确，PhoneBlock 将无法为任何来电找到对应条目。该语言设置同样适用于语音信箱的提示语和状态邮件。",
   "status.thresholds.title": "砌块式枕木",
   "status.thresholds.intro": "当PhoneBlock的投票数达到多少时，该适配器会接听来电。直接投票的权重高于范围投票，因此分别列出数值。",
@@ -296,5 +297,14 @@
   "back.sip": "← 返回选项列表",
   "i18n.loading": "正在加载翻译……",
   "i18n.unavailable": "无翻译可用——将显示默认语言。",
-  "region.country": "国家"
+  "status.calls.verdict.name_pattern": "SPAM（名称模式）",
+  "status.names.title": "名称过滤器",
+  "status.names.intro": "如果你的 FRITZ!Box 在通讯录中找到了来电者，它会同时显示其姓名。 如果你在那里使用了第三方垃圾电话列表（例如来自 Tellows 的），所有条目都会显示一个显眼的名称——你可以直接在此将其标记为垃圾电话。如果你在自己的通讯录中将所有不受欢迎的来电者统一命名为某个名称，情况也是如此。",
+  "status.names.patterns": "表示垃圾邮件的名称（用 | 分隔）",
+  "status.names.help": "只要被举报的姓名中包含以下任意一段文字，该通话即被视为垃圾电话；其中不区分大小写。例如：“tellows|Score|SPAM”。你可以在“最近通话”列表中找到来电者的姓名。留空则会关闭姓名过滤功能。",
+  "status.names.save": "保存名称过滤器",
+  "status.names.saved": "已保存名称过滤器。",
+  "status.names.failed": "保存失败。",
+  "status.names.err.many": "最多可输入 {max} 个名字。",
+  "status.names.err.long": "一个名称的长度最多为 {max} 个字符。"
 }

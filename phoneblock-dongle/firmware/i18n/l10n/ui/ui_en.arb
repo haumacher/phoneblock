@@ -50,6 +50,7 @@
   "status.calls.verdict.scope.range": "range",
   "region.title": "Language and Country",
   "region.lang": "Language",
+  "region.country": "Country",
   "region.country.hint": "Phone numbers without a country code will be assigned this country. If the wrong country is listed here, PhoneBlock will not find a match for any calls. The language also applies to the answering machine message and the status email.",
   "status.thresholds.title": "Block thresholds",
   "status.thresholds.intro": "How many PhoneBlock votes the dongle requires before it traps a call. Direct votes weigh more than range votes, so each side has its own threshold.",
@@ -296,5 +297,14 @@
   "back.sip": "← back to the choice",
   "i18n.loading": "Translation is loading …",
   "i18n.unavailable": "Translation not available – default language is displayed.",
-  "region.country": "Country"
+  "status.calls.verdict.name_pattern": "SPAM (Name Pattern)",
+  "status.names.title": "Name Filter",
+  "status.names.intro": "If your FRITZ!Box finds the caller in a phone book, it will announce their name. If you use a third-party spam list (e.g., from Tellows), all entries will have a telltale name—you can mark these as spam here. The same applies to your own phone book if you give all unwanted callers the same name.",
+  "status.names.patterns": "Names that indicate spam (separate with |)",
+  "status.names.help": "A call is considered spam as soon as the reported name contains any of these strings; case does not matter. Example: “tellows|Score|SPAM.” You can find the caller’s name in the list of recent calls. Leaving this field blank disables the name filter.",
+  "status.names.save": "Save Name Filter",
+  "status.names.saved": "Name filter saved.",
+  "status.names.failed": "Save failed.",
+  "status.names.err.many": "A maximum of {max} names are allowed.",
+  "status.names.err.long": "A name can be no more than {max} characters long."
 }

@@ -62,6 +62,11 @@ typedef enum {
     PB_ASSESS_SPAM_LIST,     // community spam from the local cache → "SPAM (Blockliste, …)"
     PB_ASSESS_BLACKLIST,     // personal blacklist override → "Blacklist (…)"
     PB_ASSESS_ERROR,         // lookup failed → "Fehler"
+    // Blocked by one of the user's own caller-name patterns (issue #502) —
+    // the Fritz!Box announced a name matching config_spam_names(), so no
+    // number lookup happened at all. Appended, never renumbered: the value
+    // is stored in the recent-calls ring.
+    PB_ASSESS_NAME_PATTERN,  // → "SPAM (Namensmuster)"
 } pb_assessment_t;
 
 // `assessment` drives the log label (see pb_assessment_t). It is derived

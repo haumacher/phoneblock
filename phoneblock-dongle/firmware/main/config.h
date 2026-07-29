@@ -229,6 +229,13 @@ bool        config_blocklist_wildcards(void);
 // trades the offline-resilient fast path for always-live server results.
 bool        config_blocklist_enabled(void);
 
+// Caller names that mean spam: '|'-separated texts, matched case-insensitively
+// as substrings against the name the Fritz!Box announces in the INVITE (see
+// name_filter.h for the syntax and issue #502 for the motivation). Empty — the
+// default — means the name filter is off and the display name is only used for
+// the is_known_contact() phone-book skip as before.
+const char *config_spam_names(void);
+
 // PhoneBlock
 // Site root URL, without "/api" suffix — api.c appends "/api/…",
 // web.c appends "/mobile/…" directly.
@@ -372,6 +379,11 @@ typedef struct {
     // time fast path), "0" = disable it. NULL = leave unchanged. Default
     // when unset is "1".
     const char *blocklist_enabled;
+    // '|'-separated caller-name patterns (see name_filter.h). Empty string
+    // clears the filter; NULL leaves the current value untouched. The caller
+    // is expected to have validated the spec with name_filter_parse() —
+    // config stores it verbatim.
+    const char *spam_names;
     const char *phoneblock_base_url;
     const char *phoneblock_token;
     // Direct-hit SPAM threshold. 0 = leave current value untouched

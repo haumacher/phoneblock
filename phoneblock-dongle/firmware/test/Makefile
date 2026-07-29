@@ -7,7 +7,7 @@ CFLAGS  ?= -Wall -Wextra -Werror -O0 -g -I../main
 IDF_PATH ?= $(HOME)/tools/esp/esp-idf
 CJSON_DIR := $(IDF_PATH)/components/json/cJSON
 
-BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_rcpt test_version_cmp test_net_local test_heap_guard
+BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_rcpt test_name_filter test_version_cmp test_net_local test_heap_guard
 
 test_sip_parse: test_sip_parse.c ../main/sip_parse.c ../main/sip_parse.h \
                 ../main/dial_rules.c ../main/dial_rules.h \
@@ -57,6 +57,9 @@ test_mail_html: test_mail_html.c ../main/mail_html.c ../main/mail_html.h
 
 test_mail_rcpt: test_mail_rcpt.c ../main/mail_rcpt.c ../main/mail_rcpt.h ../main/strbuf.h
 	$(CC) $(CFLAGS) test_mail_rcpt.c ../main/mail_rcpt.c -o $@
+
+test_name_filter: test_name_filter.c ../main/name_filter.c ../main/name_filter.h
+	$(CC) $(CFLAGS) test_name_filter.c ../main/name_filter.c -o $@
 
 test_version_cmp: test_version_cmp.c ../main/version_cmp.c ../main/version_cmp.h
 	$(CC) $(CFLAGS) test_version_cmp.c ../main/version_cmp.c -o $@

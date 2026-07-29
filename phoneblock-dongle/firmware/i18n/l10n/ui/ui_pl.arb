@@ -50,6 +50,7 @@
   "status.calls.verdict.scope.range": "Obszar",
   "region.title": "Język i kraj",
   "region.lang": "Język",
+  "region.country": "Kraj",
   "region.country.hint": "Numery telefonów bez numeru kierunkowego kraju zostaną uzupełnione o ten kraj. Jeśli w tym polu podano niewłaściwy kraj, PhoneBlock nie znajdzie żadnego wpisu dla danego połączenia. Język ten dotyczy również komunikatu automatycznej sekretarki oraz wiadomości e-mail z informacją o statusie.",
   "status.thresholds.title": "Podkłady blokowe",
   "status.thresholds.intro": "Od jakiej liczby głosów PhoneBlock kluczyk odbiera połączenie. Głosy bezpośrednie mają większą wagę niż głosy zasięgowe, stąd oddzielne wartości.",
@@ -296,5 +297,14 @@
   "back.sip": "← powrót do listy",
   "i18n.loading": "Tłumaczenie się ładuje…",
   "i18n.unavailable": "Tłumaczenie niedostępne – wyświetlany jest język domyślny.",
-  "region.country": "Kraj"
+  "status.calls.verdict.name_pattern": "SPAM (wzorzec nazwy)",
+  "status.names.title": "Filtr nazwisk",
+  "status.names.intro": "Jeśli router FRITZ!Box znajdzie numer dzwoniącego w książce telefonicznej, podaje również jego nazwisko. Jeśli korzystasz z zewnętrznej listy spamu (np. z serwisu Tellows), wszystkie wpisy będą miały charakterystyczną nazwę — możesz je tutaj oznaczyć jako spam. Dotyczy to również własnej książki telefonicznej, w której wszyscy niepożądani rozmówcy mają tę samą nazwę.",
+  "status.names.patterns": "Nazwy oznaczające spam (oddzielić znakiem |)",
+  "status.names.help": "Połączenie uznaje się za spam, gdy zgłoszona nazwa zawiera jeden z tych tekstów; wielkość liter nie ma znaczenia. Przykład: „tellows|Score|SPAM”. Nazwę dzwoniącego znajdziesz na liście ostatnich połączeń. Pozostawienie tego pola pustego wyłącza filtr nazw.",
+  "status.names.save": "Zapisz filtr nazwisk",
+  "status.names.saved": "Filtr nazw został zapisany.",
+  "status.names.failed": "Zapisanie nie powiodło się.",
+  "status.names.err.many": "Można podać maksymalnie {max} nazwisk.",
+  "status.names.err.long": "Nazwa może mieć maksymalnie {max} znaków."
 }

@@ -20,6 +20,7 @@
   "verdict.scope.number": "Nummer",
   "verdict.spam_blacklist": "SPAM (svarteliste, {scope})",
   "verdict.spam_blocklist": "SPAM (blokkeringsliste, {scope})",
+  "verdict.spam_name_pattern": "SPAM (navnemønster)",
   "verdict.spam": "SPAM",
   "verdict.spam_votes": "SPAM ({direct} direkte, {range} rekkevidde)",
   "verdict.spam_suspect": "MISTANKE OM SPAM ({direct} direkte, {range} Range)",

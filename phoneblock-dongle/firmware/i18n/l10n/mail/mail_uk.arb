@@ -20,6 +20,7 @@
   "verdict.scope.number": "Номер",
   "verdict.spam_blacklist": "СПАМ (Чорний список, {scope})",
   "verdict.spam_blocklist": "СПАМ (список блокування, {scope})",
+  "verdict.spam_name_pattern": "СПАМ (шаблон імені)",
   "verdict.spam": "СПАМ",
   "verdict.spam_votes": "SPAM ({direct} прямий, {range} діапазон)",
   "verdict.spam_suspect": "ПІДОЗРА НА СПАМ ({direct} безпосередньо, {range} діапазон)",

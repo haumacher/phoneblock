@@ -24,6 +24,7 @@
 #include "config.h"
 #include "heap_guard.h"
 #include "announcement.h"
+#include "name_filter.h"
 #include "report_queue.h"
 #include "sip_parse.h"
 #include "sip_response.h"
@@ -1170,6 +1171,12 @@ static void send_bye(sip_ctx_t *c)
 //     HTTP 400 anyway, but the TLS handshake still costs ~1–2 s.
 // Both cases return VERDICT_LEGITIMATE so the dongle keeps ringing (180) and
 // then declines, letting the Fritz!Box continue its normal ring routing (#380).
+//
+// A third short-circuit goes the other way and must be checked *before* (1):
+// the user's own caller-name patterns (config_spam_names(), issue #502). Users
+// who keep a third-party spam list as a Fritz!Box phonebook get exactly the
+// non-numeric display name that (1) reads as "a contact I trust", so without
+// this the calls those lists identify would sail straight through.
 static verdict_t check_invite_caller(const char *req, int req_len)
 {
     const char *hdr = find_header(req, req_len, "From");
@@ -1193,7 +1200,11 @@ static verdict_t check_invite_caller(const char *req, int req_len)
         return VERDICT_ERROR;
     }
 
-    char display[64];
+    // Sized for the whole announced name, not just a recognisable prefix: a
+    // phonebook imported from a spam-list provider carries long labels
+    // ("tellows Score 8 Aggressive advertising"), and a clipped name could
+    // hide the very text a caller-name pattern looks for.
+    char display[96];
     parse_display_name(hdr, val_len, display, sizeof(display));
 
     // Optional: any '*'-prefixed internal Fritz!Box dial code (**622,
@@ -1206,6 +1217,23 @@ static verdict_t check_invite_caller(const char *req, int req_len)
         ESP_LOGW(TAG, "TEST MODE: caller '%s' forced to SPAM", raw_user);
         stats_record_call(raw_user, display, VERDICT_SPAM);
         return VERDICT_SPAM;
+    }
+
+    // The user's own caller-name rules win over everything else: a name they
+    // marked as spam is an explicit local decision, so neither the local
+    // blocklist nor the API is consulted. Deliberately no report_queue_enqueue()
+    // either — this is one household's naming convention, not community
+    // evidence, and the number may be unknown to PhoneBlock entirely.
+    name_filter_t names;
+    if (name_filter_parse(config_spam_names(), &names) > 0) {
+        const char *hit = name_filter_match(&names, display);
+        if (hit) {
+            ESP_LOGI(TAG, "caller name '%s' matches spam pattern '%s' → SPAM",
+                     display, hit);
+            stats_record_call_assessed(raw_user, display, VERDICT_SPAM,
+                                       PB_ASSESS_NAME_PATTERN);
+            return VERDICT_SPAM;
+        }
     }
 
     if (is_known_contact(display)) {
