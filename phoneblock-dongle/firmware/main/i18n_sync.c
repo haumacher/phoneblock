@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 #include "freertos/FreeRTOS.h"
@@ -599,4 +600,18 @@ void i18n_sync_snapshot(i18n_sync_status_t *out)
     xSemaphoreTake(s_lock, portMAX_DELAY);
     *out = s_status;
     xSemaphoreGive(s_lock);
+}
+
+void i18n_sync_ui_path(char *out, size_t cap, const char *lang)
+{
+    snprintf(out, cap, "%s/ui-%s.json", SPIFFS_DIR, lang ? lang : "");
+}
+
+bool i18n_sync_have_ui_pack(const char *lang)
+{
+    if (!lang || !*lang) return false;
+    char path[48];
+    i18n_sync_ui_path(path, sizeof(path), lang);
+    struct stat st;
+    return stat(path, &st) == 0 && st.st_size > 0;
 }

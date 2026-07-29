@@ -462,6 +462,22 @@ static esp_err_t handle_status(httpd_req_t *req)
     // Whether ui_lang is a real user choice or still the "en" default — the web
     // UI auto-selects the browser's language on first contact when unset.
     cJSON_AddBoolToObject(root, "ui_lang_set", config_ui_lang_is_set());
+    // State of the localized-asset download, so the page can tell "the pack is
+    // on its way" from "it will not come". Without this the UI could only
+    // observe that /api/i18n/ui keeps serving the English fallback, and had to
+    // poll for a minute before concluding the pack was unavailable — on every
+    // single page load. `sync_lang` is the locale the last pass handled: when
+    // it differs from ui_lang, that pass says nothing about the current
+    // locale (a switch was just requested), so the page keeps waiting.
+    cJSON *i18 = cJSON_AddObjectToObject(root, "i18n");
+    i18n_sync_status_t is;
+    i18n_sync_snapshot(&is);
+    cJSON_AddBoolToObject  (i18, "have_ui_pack", i18n_sync_have_ui_pack(config_ui_lang()));
+    cJSON_AddBoolToObject  (i18, "running",      is.running);
+    cJSON_AddBoolToObject  (i18, "ever_ran",     is.ever_ran);
+    cJSON_AddBoolToObject  (i18, "last_ok",      is.last_ok);
+    cJSON_AddStringToObject(i18, "sync_lang",    is.lang);
+    cJSON_AddStringToObject(i18, "last_error",   is.last_error);
     // Country of the line, used to expand national caller IDs to E.164.
     // Shown (and changed) under Setup ▸ Region; "+49" until a token
     // activation adopts the account's value or the user picks one.
@@ -1576,7 +1592,7 @@ static esp_err_t handle_i18n_ui(httpd_req_t *req)
     httpd_resp_set_hdr(req, "Cache-Control", "no-store");
 
     char path[48];
-    snprintf(path, sizeof(path), "/spiffs/ui-%s.json", config_ui_lang());
+    i18n_sync_ui_path(path, sizeof(path), config_ui_lang());
     FILE *f = fopen(path, "rb");
     if (f) {
         char buf[1024];
