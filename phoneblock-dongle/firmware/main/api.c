@@ -684,6 +684,85 @@ bool phoneblock_selftest(api_phases_t *phases_opt)
     return ok;
 }
 
+bool phoneblock_fetch_dial_prefix(char *out, size_t cap)
+{
+    if (out == NULL || cap == 0) return false;
+    out[0] = '\0';
+
+    if (s_check_mutex == NULL) {
+        ESP_LOGE(TAG, "phoneblock_fetch_dial_prefix before phoneblock_api_init()");
+        return false;
+    }
+
+    char url[160];
+    snprintf(url, sizeof(url), "%s/api/account", config_phoneblock_base_url());
+
+    char auth_header[128];
+    snprintf(auth_header, sizeof(auth_header), "Bearer %s",
+             config_phoneblock_token());
+
+    // The account object is a handful of short fields; 512 bytes covers it
+    // with room to spare, and a truncated body simply fails the cJSON parse
+    // below rather than yielding a half-read prefix.
+    response_buffer_t resp = { .data = calloc(1, 512), .len = 0, .cap = 512 };
+    if (!resp.data) {
+        ESP_LOGE(TAG, "account: out of memory");
+        return false;
+    }
+
+    xSemaphoreTake(s_check_mutex, portMAX_DELAY);
+
+    esp_http_client_handle_t client = check_client();
+    if (client == NULL) {
+        xSemaphoreGive(s_check_mutex);
+        free(resp.data);
+        return false;
+    }
+
+    pb_sink_t sink = { .kind = PB_SINK_BUFFER, .buf = &resp };
+    esp_http_client_set_url(client, url);
+    esp_http_client_set_method(client, HTTP_METHOD_GET);
+    esp_http_client_set_user_data(client, &sink);
+    http_util_set_user_agent(client);
+    esp_http_client_set_header(client, "Authorization", auth_header);
+    esp_http_client_set_header(client, "Accept", "application/json");
+
+    esp_err_t err = run_and_time(client, &sink, "account", NULL);
+    int status = (err == ESP_OK) ? esp_http_client_get_status_code(client) : 0;
+    note_api_response(err, status);
+    esp_http_client_close(client);
+    xSemaphoreGive(s_check_mutex);
+
+    bool ok = false;
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "account transport: %s", esp_err_to_name(err));
+    } else if (status != 200) {
+        // Status only, never the body: unlike /api/test this response
+        // carries the account's login, display name and e-mail address,
+        // and every WARN/ERROR line is mirrored into the web UI's log
+        // panel (see log_capture.c).
+        ESP_LOGE(TAG, "account: HTTP %d", status);
+    } else {
+        cJSON *root = cJSON_ParseWithLength(resp.data, resp.len);
+        if (root == NULL) {
+            ESP_LOGE(TAG, "account: malformed JSON response");
+        } else {
+            const cJSON *dp = cJSON_GetObjectItemCaseSensitive(root, "dialPrefix");
+            if (cJSON_IsString(dp) && dp->valuestring && dp->valuestring[0]) {
+                strncpy(out, dp->valuestring, cap - 1);
+                out[cap - 1] = '\0';
+                ok = true;
+            } else {
+                ESP_LOGW(TAG, "account: no dialPrefix in response");
+            }
+            cJSON_Delete(root);
+        }
+    }
+
+    free(resp.data);
+    return ok;
+}
+
 int phoneblock_post_log(const char *body, size_t len)
 {
     if (s_check_mutex == NULL) {

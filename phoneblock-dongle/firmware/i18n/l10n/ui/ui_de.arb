@@ -240,6 +240,26 @@
     "description": "Dongle web UI: status.calls.verdict.scope.range",
     "x-translated": "d394b0f8"
   },
+  "region.title": "Sprache und Land",
+  "@region.title": {
+    "description": "Dongle web UI: region.title",
+    "x-translated": "971d72b0"
+  },
+  "region.lang": "Sprache",
+  "@region.lang": {
+    "description": "Dongle web UI: region.lang",
+    "x-translated": "5e96035d"
+  },
+  "region.country": "Land",
+  "@region.country": {
+    "description": "Dongle web UI: region.country",
+    "x-translated": "8327ae6"
+  },
+  "region.country.hint": "Rufnummern ohne Ländervorwahl werden mit diesem Land ergänzt. Steht hier das falsche Land, findet PhoneBlock zu keinem Anruf einen Eintrag. Die Sprache gilt auch für die Ansage des Anrufbeantworters und die Status-Mail.",
+  "@region.country.hint": {
+    "description": "Dongle web UI: region.country.hint",
+    "x-translated": "9df56bb6"
+  },
   "status.thresholds.title": "Block-Schwellen",
   "@status.thresholds.title": {
     "description": "Dongle web UI: status.thresholds.title",

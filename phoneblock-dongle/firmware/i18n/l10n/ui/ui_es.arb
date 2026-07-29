@@ -48,6 +48,9 @@
   "status.calls.verdict.error": "Error",
   "status.calls.verdict.scope.number": "Número",
   "status.calls.verdict.scope.range": "Ámbito",
+  "region.title": "Idioma y país",
+  "region.lang": "Idioma",
+  "region.country.hint": "A los números de teléfono sin prefijo de país se les añadirá este país. Si el país indicado aquí es incorrecto, PhoneBlock no encontrará ninguna entrada para ninguna llamada. El idioma también se aplica al mensaje de voz del contestador automático y al correo electrónico de estado.",
   "status.thresholds.title": "Traviesas de bloque",
   "status.thresholds.intro": "A partir de cuántos votos «PhoneBlock» el dongle desactiva una llamada. Los votos «Directos» tienen más peso que los votos «De alcance», por eso se indican valores por separado.",
   "status.thresholds.direct": "Votos directos",
@@ -292,5 +295,6 @@
   "back.status": "← volver al estado",
   "back.sip": "← volver a la elección",
   "i18n.loading": "Cargando la traducción…",
-  "i18n.unavailable": "Traducción no disponible: se muestra el idioma predeterminado."
+  "i18n.unavailable": "Traducción no disponible: se muestra el idioma predeterminado.",
+  "region.country": "País"
 }

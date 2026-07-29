@@ -116,6 +116,22 @@ verdict_t phoneblock_check(const char *phone_number, pb_check_result_t *out,
 // measured.
 bool phoneblock_selftest(api_phases_t *phases_opt);
 
+// Reads the country dial prefix ("+49", "+44", …) of the PhoneBlock
+// account this dongle's token belongs to, via GET /api/account. On
+// success writes it to `out` (NUL-terminated, truncated to `cap`) and
+// returns true; returns false on any transport, status or parse failure,
+// leaving `out` empty.
+//
+// Called once, when a token is activated, to seed config_dial_prefix()
+// with the country the user already configured on phoneblock.net — from
+// then on the country is a device setting owned by the web UI, so this is
+// deliberately not on any refresh schedule.
+//
+// The response also carries the account's login, display name and e-mail.
+// Only dialPrefix is read; nothing else is stored, and the failure path
+// logs the status code rather than the body.
+bool phoneblock_fetch_dial_prefix(char *out, size_t cap);
+
 // Ships a diagnostic log body (newline-separated WARN/ERROR lines) via
 // POST /api/dongle/log. Runs on the shared session-resuming client so
 // the daily upload resumes the TLS ticket the selftest just primed

@@ -96,7 +96,7 @@ uint64_t blocklist_key(const char *digits)
             if (c < '0' || c > '9') {
                 // Garbage past the prefix → treat as terminator. The caller
                 // controls input shape (we get bare E.164 digits from
-                // normalize_de + '+'-strip), so this is just defence.
+                // normalize_e164 + '+'-strip), so this is just defence.
                 symbol = 0;
             } else {
                 symbol = (c - '0') + 1;

@@ -10,12 +10,13 @@ CJSON_DIR := $(IDF_PATH)/components/json/cJSON
 BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_rcpt test_version_cmp test_net_local test_heap_guard
 
 test_sip_parse: test_sip_parse.c ../main/sip_parse.c ../main/sip_parse.h \
+                ../main/dial_rules.c ../main/dial_rules.h \
                 ../main/audio.c ../main/audio.h
-	$(CC) $(CFLAGS) test_sip_parse.c ../main/sip_parse.c ../main/audio.c -o $@
+	$(CC) $(CFLAGS) test_sip_parse.c ../main/sip_parse.c ../main/dial_rules.c ../main/audio.c -o $@
 
 test_sip_frame: test_sip_frame.c ../main/sip_frame.c ../main/sip_frame.h \
-                ../main/sip_parse.c ../main/sip_parse.h
-	$(CC) $(CFLAGS) test_sip_frame.c ../main/sip_frame.c ../main/sip_parse.c -o $@
+                ../main/sip_parse.c ../main/sip_parse.h ../main/dial_rules.c
+	$(CC) $(CFLAGS) test_sip_frame.c ../main/sip_frame.c ../main/sip_parse.c ../main/dial_rules.c -o $@
 
 test_sip_srv: test_sip_srv.c ../main/sip_srv.c ../main/sip_srv.h
 	$(CC) $(CFLAGS) test_sip_srv.c ../main/sip_srv.c -o $@
@@ -26,8 +27,9 @@ test_sip_auth: test_sip_auth.c ../main/sip_auth.c ../main/sip_auth.h
 test_tr064_parse: test_tr064_parse.c ../main/tr064_parse.c ../main/tr064_parse.h
 	$(CC) $(CFLAGS) test_tr064_parse.c ../main/tr064_parse.c -o $@
 
-test_phone_norm: test_phone_norm.c ../main/phone_norm.c ../main/phone_norm.h
-	$(CC) $(CFLAGS) test_phone_norm.c ../main/phone_norm.c -o $@
+test_phone_norm: test_phone_norm.c ../main/phone_norm.c ../main/phone_norm.h \
+                 ../main/dial_rules.c ../main/dial_rules.h
+	$(CC) $(CFLAGS) test_phone_norm.c ../main/phone_norm.c ../main/dial_rules.c -o $@
 
 test_log_capture: test_log_capture.c ../main/log_capture.c ../main/log_capture.h
 	$(CC) $(CFLAGS) test_log_capture.c ../main/log_capture.c -o $@
@@ -74,8 +76,9 @@ test_strbuf: test_strbuf.c ../main/strbuf.h
 # the SIP response builder, so the sanitizer must be active for it to mean
 # anything. sip_response.c / the test define _GNU_SOURCE themselves (memmem).
 test_sip_response: test_sip_response.c ../main/sip_response.c ../main/sip_response.h \
-                   ../main/sip_parse.c ../main/sip_parse.h ../main/audio.c
-	$(CC) $(CFLAGS) -fsanitize=address test_sip_response.c ../main/sip_response.c ../main/sip_parse.c ../main/audio.c -o $@
+                   ../main/sip_parse.c ../main/sip_parse.h ../main/audio.c \
+                   ../main/dial_rules.c
+	$(CC) $(CFLAGS) -fsanitize=address test_sip_response.c ../main/sip_response.c ../main/sip_parse.c ../main/dial_rules.c ../main/audio.c -o $@
 
 test: $(BINS)
 	@set -e; for b in $(BINS); do echo "→ $$b"; ./$$b; done

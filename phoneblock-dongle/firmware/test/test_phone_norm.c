@@ -18,12 +18,13 @@ static int failures = 0;
     }                                                                     \
 } while (0)
 
-// Expect PHONE_RATEABLE with `in` normalising to `expected`.
-static void ok(const char *in, const char *expected)
+// Expect PHONE_RATEABLE with `in` normalising to `expected` on a line in
+// `dial_prefix`'s country.
+static void ok_cc(const char *dial_prefix, const char *in, const char *expected)
 {
     char out[48];
     strcpy(out, "sentinel");
-    phone_class_t cls = phone_normalise(in, out, sizeof(out));
+    phone_class_t cls = phone_normalise(in, out, sizeof(out), dial_prefix);
     if (cls != PHONE_RATEABLE) {
         fprintf(stderr, "FAIL %s: expected RATEABLE, got SKIP\n", in);
         failures++;
@@ -36,12 +37,18 @@ static void ok(const char *in, const char *expected)
     }
 }
 
+// Shorthand for the German-line cases, which are the bulk of the suite.
+static void ok(const char *in, const char *expected)
+{
+    ok_cc("+49", in, expected);
+}
+
 // Expect PHONE_SKIP and an emptied output buffer.
-static void skip(const char *in)
+static void skip_cc(const char *dial_prefix, const char *in)
 {
     char out[48];
     strcpy(out, "sentinel");
-    phone_class_t cls = phone_normalise(in, out, sizeof(out));
+    phone_class_t cls = phone_normalise(in, out, sizeof(out), dial_prefix);
     if (cls != PHONE_SKIP) {
         fprintf(stderr, "FAIL %s: expected SKIP, got RATEABLE (\"%s\")\n",
                 in, out);
@@ -54,6 +61,11 @@ static void skip(const char *in)
     }
 }
 
+static void skip(const char *in)
+{
+    skip_cc("+49", in);
+}
+
 int main(void)
 {
     // --- normalisation of valid entries ---------------------------------
@@ -63,6 +75,42 @@ int main(void)
     // Real-world numbers from the tr064_parse fixtures.
     ok("069200940084", "+4969200940084");
     ok("030330759014", "+4930330759014");
+
+    // --- lines outside Germany (issue #505) ------------------------------
+    // The national case is the only one the line's country feeds into;
+    // barring entries pushed to /api/rate must carry the right one or the
+    // server records a rating against a number nobody called.
+    ok_cc("+44", "07520694441", "+447520694441");
+    ok_cc("+44", "02071234567", "+442071234567");
+    ok_cc("+385", "0912345678", "+385912345678");   // three-digit country code
+    // Already international: unaffected by the line's country.
+    ok_cc("+44", "+4930123456",   "+4930123456");
+    ok_cc("+44", "004930123456",  "+4930123456");
+    // A missing/empty prefix must not fabricate a number.
+    skip_cc(NULL, "030123456");
+    skip_cc("",   "030123456");
+
+    // --- non-German dialling grammars (issue #432) -----------------------
+    // Italy / Denmark / Czechia have no trunk prefix: the bare number *is*
+    // the national form and a leading zero belongs to it, so unlike the
+    // German case below it is rateable rather than ambiguous.
+    ok_cc("+39",  "0612345678", "+390612345678");
+    ok_cc("+39",  "3331234567", "+393331234567");
+    ok_cc("+45",  "12345678",   "+4512345678");
+    ok_cc("+420", "212345678",  "+420212345678");
+    // NANP: trunk "1", escape "011".
+    ok_cc("+1", "16023651873",   "+16023651873");
+    ok_cc("+1", "01149301234",   "+49301234");
+    // Russia: trunk "8", escape "810".
+    ok_cc("+7", "84951234567",   "+74951234567");
+    ok_cc("+7", "81049301234",   "+49301234");
+    // Australia: the "0011" escape must beat the "0" trunk prefix.
+    ok_cc("+61", "00114930123456", "+4930123456");
+    ok_cc("+61", "0212345678",     "+61212345678");
+    // A bare number in a trunk-prefix country stays ambiguous — these are
+    // hand-typed barring entries, so we do not guess (issue #469).
+    skip_cc("+49", "30123456");
+    skip_cc("+44", "7520694441");
 
     // --- wildcards (issue #469) -----------------------------------------
     skip("+43*");    // trailing wildcard on a country code

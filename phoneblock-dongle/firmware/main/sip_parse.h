@@ -112,18 +112,32 @@ bool is_known_contact(const char *display);
 // (*21#...), and anything that doesn't start with a digit or '+'.
 bool looks_dialable(const char *number);
 
-// Normalize a phone number to E.164 international form, assuming the
-// Fritz!Box is in Germany:
-//   national "030123"          → "+4930123"
-//   international "0049…"      → "+49…"
-//   international "+49…"       → "+49…" (unchanged)
-//   international "00<cc>…"    → "+<cc>…" (non-DE country codes)
+// Normalize a phone number to E.164 international form. `dial_prefix` is
+// the country of the line in "+NN" form (config_dial_prefix()) and is only
+// consulted for the national case — with "+44" for a UK line:
+//   national "07520694441"     → "+447520694441"
+//   international "0044…"      → "+44…"
+//   international "+44…"       → "+44…" (unchanged)
+//   international "00<cc>…"    → "+<cc>…" (any other country code)
 // Non-phone inputs (**622, *21#, empty) pass through unchanged so the
 // caller can recognize them via looks_dialable(). Whitespace, dashes,
 // parentheses and slashes are stripped before prefix handling.
 // The "always-send-international" shape is needed for PhoneBlock's
-// privacy-extension hashed-number lookup.
-void normalize_de(const char *raw, char *out, int cap);
+// privacy-extension hashed-number lookup — which is why a wrong
+// dial_prefix breaks the spam lookup outright rather than just
+// mislabelling the caller's country (issue #505).
+//
+// The trunk prefix and international escape that go with the country come
+// from dial_rules_for(), so lines whose grammar is not Germany's work too:
+// "+1" strips a leading "1" and recognises "011" as the escape, "+39" keeps
+// the leading zero (Italy has no trunk prefix), "+7" uses "8" and "810".
+// A bare national number is expanded with the country code — a caller ID
+// arrives from the Fritz!Box in canonical form, so unlike a hand-typed
+// barring entry (see phone_normalise) there is nothing to guess.
+//
+// The prefix is passed in rather than read from config so the unit stays
+// pure and host-testable; callers use config_dial_prefix().
+void normalize_e164(const char *raw, char *out, int cap, const char *dial_prefix);
 
 // Case-insensitive compare of two non-empty Call-IDs. Returns false if
 // either side is NULL or empty.

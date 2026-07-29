@@ -48,6 +48,9 @@
   "status.calls.verdict.error": "Fel",
   "status.calls.verdict.scope.number": "Nummer",
   "status.calls.verdict.scope.range": "Område",
+  "region.title": "Språk och land",
+  "region.lang": "Språk",
+  "region.country.hint": "Telefonnummer utan landsnummer kompletteras med detta land. Om fel land anges här kommer PhoneBlock inte att hitta någon post för samtalet. Språket gäller även för telefonsvararens meddelande och statusmejlet.",
   "status.thresholds.title": "Block-släpplister",
   "status.thresholds.intro": "Från och med hur många PhoneBlock-röster som krävs för att dongeln ska ta ett samtal. Direkt-röster väger tyngre än Range-röster, därav de separata värdena.",
   "status.thresholds.direct": "Direktröster",
@@ -292,5 +295,6 @@
   "back.status": "← tillbaka till status",
   "back.sip": "← tillbaka till urvalet",
   "i18n.loading": "Översättningen laddas …",
-  "i18n.unavailable": "Översättning saknas – standardspråket visas."
+  "i18n.unavailable": "Översättning saknas – standardspråket visas.",
+  "region.country": "Land"
 }

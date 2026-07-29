@@ -48,6 +48,9 @@
   "status.calls.verdict.error": "Fout",
   "status.calls.verdict.scope.number": "Nummer",
   "status.calls.verdict.scope.range": "Gebied",
+  "region.title": "Taal en land",
+  "region.lang": "Taal",
+  "region.country.hint": "Telefoonnummers zonder landcode worden aangevuld met dit land. Als hier het verkeerde land staat, vindt PhoneBlock voor geen enkel telefoontje een vermelding. De taal geldt ook voor de meldtekst van het antwoordapparaat en de statusmail.",
   "status.thresholds.title": "Blokdwarsliggers",
   "status.thresholds.intro": "Vanaf hoeveel PhoneBlock-stemmen de dongle een oproep wegneemt. Directe stemmen wegen zwaarder dan Range-stemmen, vandaar de afzonderlijke waarden.",
   "status.thresholds.direct": "Directe stemmen",
@@ -292,5 +295,6 @@
   "back.status": "← terug naar de status",
   "back.sip": "← terug naar de selectie",
   "i18n.loading": "Vertaling wordt geladen …",
-  "i18n.unavailable": "Vertaling niet beschikbaar – de standaardtaal wordt weergegeven."
+  "i18n.unavailable": "Vertaling niet beschikbaar – de standaardtaal wordt weergegeven.",
+  "region.country": "Land"
 }

@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "dial_rules.h"
+
 // Must be last: bans unsafe string APIs for the rest of this file.
 #include "banned_apis.h"
 
@@ -17,7 +19,8 @@ static bool all_digits(const char *s)
     return true;
 }
 
-phone_class_t phone_normalise(const char *in, char *out, size_t cap)
+phone_class_t phone_normalise(const char *in, char *out, size_t cap,
+                              const char *dial_prefix)
 {
     if (cap == 0) return PHONE_SKIP;
     out[0] = '\0';
@@ -34,19 +37,42 @@ phone_class_t phone_normalise(const char *in, char *out, size_t cap)
         out[cap - 1] = '\0';
         return PHONE_RATEABLE;
     }
-    if (in[0] == '0' && in[1] == '0') {
-        if (!all_digits(in + 2)) return PHONE_SKIP;
-        snprintf(out, cap, "+%s", in + 2);
+    const dial_rules_t r = dial_rules_for(dial_prefix);
+    const size_t intl_len  = strlen(r.intl);
+    const size_t trunk_len = strlen(r.trunk);
+
+    if (strncmp(in, r.intl, intl_len) == 0) {
+        // International escape ("00" here, "011" in NANP, "810" in Russia).
+        // Checked before the trunk prefix, which is often a prefix of it.
+        if (!all_digits(in + intl_len)) return PHONE_SKIP;
+        snprintf(out, cap, "+%s", in + intl_len);
         return PHONE_RATEABLE;
     }
-    if (in[0] == '0') {
-        if (!all_digits(in + 1)) return PHONE_SKIP;
-        snprintf(out, cap, "+49%s", in + 1);
+    if (!dial_prefix || *dial_prefix != '+' || !dial_prefix[1]) {
+        // No country configured — anything national is unresolvable.
+        return PHONE_SKIP;
+    }
+    if (trunk_len > 0 && strncmp(in, r.trunk, trunk_len) == 0) {
+        // National form with the country's trunk prefix → strip, prepend.
+        if (!all_digits(in + trunk_len)) return PHONE_SKIP;
+        snprintf(out, cap, "%s%s", dial_prefix, in + trunk_len);
+        return PHONE_RATEABLE;
+    }
+    if (trunk_len == 0 && all_digits(in)) {
+        // Country without a trunk prefix (Italy, Denmark, Czechia, …): the
+        // national form *is* the bare number, and a leading zero belongs to
+        // it. Only the country code is missing.
+        snprintf(out, cap, "%s%s", dial_prefix, in);
         return PHONE_RATEABLE;
     }
 
-    // Bare number with no country context (e.g. "1727905225"): we cannot
-    // reliably turn it into E.164, and the raw value is rejected by the
-    // server — skip rather than forward garbage.
+    // A bare number in a country that does have a trunk prefix (e.g. German
+    // "30123456"): we cannot tell an area code from a truncated entry, and
+    // the server rejects the raw value — skip rather than forward garbage.
+    //
+    // Deliberately stricter than normalize_e164(), which expands this case:
+    // these are barring entries typed into the Fritz!Box by hand, not caller
+    // IDs delivered in canonical form, so guessing here would rate numbers
+    // nobody called (issue #469).
     return PHONE_SKIP;
 }

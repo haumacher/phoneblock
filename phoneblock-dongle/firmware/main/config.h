@@ -134,6 +134,30 @@ bool        config_ui_lang_is_set(void);
 // written and, defensively, on every read.
 bool        config_lang_code_valid(const char *code);
 
+// Country dial prefix of the line ("+49", "+44", "+351", …), used to expand
+// a caller ID that arrives in national form (single leading trunk "0") into
+// E.164 — see normalize_e164() / phone_normalise(). Getting this wrong does
+// not just mislabel the caller's country: the expanded number is what gets
+// hashed for the /api/check-prefix lookup and submitted to /api/report-call,
+// so a foreign line silently missed every spam verdict (issue #505).
+//
+// Defaults to "+49" for devices that predate the setting; a freshly
+// activated device adopts its PhoneBlock account's country instead. Always
+// satisfies config_dial_prefix_valid().
+const char *config_dial_prefix(void);
+
+// True once a country has actually been configured (NVS holds a
+// config_dial_prefix_valid() value), i.e. config_dial_prefix() is a real
+// choice and not the "+49" default. Gates the one-shot adoption from the
+// account at token activation, so re-pairing cannot overwrite a user's
+// explicit selection.
+bool        config_dial_prefix_is_set(void);
+
+// True if prefix is "+" followed by 1..3 digits, the first non-zero — the
+// shape the server's account API accepts. Used to validate the dial_prefix
+// POST before it is written and, defensively, on every read.
+bool        config_dial_prefix_valid(const char *prefix);
+
 // PhoneBlock user-name pinned at first activation of the access
 // gate. Subsequent logins are accepted only when the JWT subject
 // returned by the server matches this string. Empty when the gate
@@ -385,6 +409,10 @@ typedef struct {
     // caller must pass only a config_lang_code_valid() string (web.c guards
     // the POST); the getter clamps defensively on read.
     const char *ui_lang;
+    // Country dial prefix ("+49","+44",…). NULL = leave unchanged. The
+    // caller must pass only a config_dial_prefix_valid() string (web.c
+    // guards the POST); the getter clamps defensively on read.
+    const char *dial_prefix;
 } config_update_t;
 
 esp_err_t config_update(const config_update_t *u);
