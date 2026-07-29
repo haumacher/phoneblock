@@ -1617,14 +1617,25 @@ async function refreshAll(){
   $('cSpam').textContent  = s.counters.spam_blocked;
   $('cLegit').textContent = s.counters.legitimate;
   $('cErr').textContent   = s.counters.errors;
-  // innerHTML so the version can be a link; all other interpolated
-  // values are escaped, and the template itself is a trusted constant.
-  $('statusInfo').innerHTML = t('status.info', {
-    fw: fwLink(s.firmware_version),
-    ip: esc(s.ip_address || '–'),
-    uptime: esc(fmtSec(s.uptime_s)),
-    api: esc(s.phoneblock.last_api_ms > 0 ? s.phoneblock.last_api_ms + ' ms' : '–'),
+  // The only line that wants markup (the version links to its release notes),
+  // so it goes through innerHTML — but the template comes from the downloaded
+  // pack, which is NOT signed (see i18n_sync.h) and therefore untrusted input.
+  // So escape the whole assembled line, then splice the one <a> we do want
+  // over a sentinel that cannot survive as markup. A hostile pack can thus
+  // still show wrong text — the accepted trade — but cannot inject script into
+  // this page, which holds the PhoneBlock token and can rewrite SIP settings.
+  // Sentinel: a control character esc() leaves alone and that no translation
+  // can contain by accident. Spliced via a replacer function so a '$' in the
+  // link can never be read as a replacement pattern.
+  const FW_MARK = '\u0001fw\u0001';
+  const infoLine = t('status.info', {
+    fw: FW_MARK,
+    ip: s.ip_address || '–',
+    uptime: fmtSec(s.uptime_s),
+    api: s.phoneblock.last_api_ms > 0 ? s.phoneblock.last_api_ms + ' ms' : '–',
   });
+  $('statusInfo').innerHTML =
+    esc(infoLine).replace(FW_MARK, () => fwLink(s.firmware_version));
 
   // System load / memory — diagnostic card. Surfaces a runaway task as a
   // high CPU% so "the dongle is hot/unstable" can be pinned, not guessed.

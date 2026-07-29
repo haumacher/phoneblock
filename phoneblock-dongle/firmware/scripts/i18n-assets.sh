@@ -28,27 +28,21 @@
 #   --from-audio D  Take announcement recordings from dir D instead of
 #                   i18n/audio (.alaw used as-is; wav/mp3/m4a/flac
 #                   converted via ffmpeg).
-#   --key FILE      Sign with this ECDSA-P256 private-key PEM directly
-#                   (skips the KeePassXC pull; used by the roundtrip test).
 #   --stage DIR     Staging dir for the built artifacts (default: a mktemp).
-#   --no-upload     Build + sign locally, skip the CDN upload. Implies the
-#                   staging dir is kept and printed.
+#   --no-upload     Build locally, skip the CDN upload. Implies the staging
+#                   dir is kept and printed.
 #   --dry-run       --no-upload, and also print (not run) the sftp/scp cmds.
 #   -h | --help     This help.
 #
 # Assembles committed files only — no translation runs here. Translations are
 # produced during development (see i18n/README.md) and committed.
 #
-# Credentials (env or scripts/release.settings, same file release.sh uses):
-#   KEEPASS_DB/ENTRY/ATTACHMENT   OTA signing key (see sign-manifest.sh).
-#
-# Signed payload for the manifest (must match i18n_sync.c I18N_SIG_DOMAIN):
-#
-#   phoneblock-dongle-i18n-v1\n            <-- domain tag, then the raw
-#   <exact bytes of manifest.json>            manifest.json bytes
-#
-# The detached signature (base64 ECDSA-P256-SHA256) is published next to the
-# manifest as manifest.json.sig.
+# The manifest is NOT signed, unlike the OTA manifest (scripts/sign-manifest.sh
+# and manifest_sig.c in the firmware). These assets are display strings and
+# announcement audio: HTTPS + the cert bundle is the transport trust, and a
+# hostile CDN would at worst show a user wrong text. Dropping the signature is
+# what makes publishing a bundle for an unreleased dev build a one-liner that
+# needs no release key — the consumers treat pack strings as untrusted input.
 
 set -euo pipefail
 
@@ -70,16 +64,12 @@ CDN_FIRMWARE="${CDN_BASE}/firmware"
 # (Set up ssh-agent + a known_hosts entry for $CDN_HOST once, as for release.sh.)
 SSH_OPTS=(-o BatchMode=yes -o ConnectTimeout=20)
 
-# --- signing payload domain tag (must equal i18n_sync.c) -------------------
-SIG_DOMAIN=$'phoneblock-dongle-i18n-v1\n'
-
 # Announcement recordings are committed to the repo (like today's single
 # main/audio/announcement.alaw). Default source dir; --from-audio overrides.
 AUDIO_DIR="${SRC_DIR}/audio"
 
 VERSION=""
 ONLY_LANGS=""
-KEY_PEM=""
 STAGE=""
 NO_UPLOAD=0
 DRY_RUN=0
@@ -94,7 +84,6 @@ while [[ $# -gt 0 ]]; do
         --version)    VERSION="$2"; shift 2;;
         --langs)      ONLY_LANGS="$2"; shift 2;;
         --from-audio) AUDIO_DIR="$2"; shift 2;;
-        --key)        KEY_PEM="$2"; shift 2;;
         --stage)      STAGE="$2"; shift 2;;
         --no-upload)  NO_UPLOAD=1; shift;;
         --dry-run)    DRY_RUN=1; NO_UPLOAD=1; shift;;
@@ -103,7 +92,7 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-for t in jq openssl sha256sum; do
+for t in jq sha256sum; do
     command -v "$t" >/dev/null || die "$t not found in PATH"
 done
 
@@ -225,45 +214,6 @@ jq -nc --arg v "$VERSION" --argjson a "$MANIFEST_ASSETS" \
     '{version:$v, assets:$a}' > "${ASSETS}/manifest.json"
 echo "==> manifest:"; jq . "${ASSETS}/manifest.json"
 
-# --- Sign: base64(ECDSA-P256-SHA256 over SIG_DOMAIN + manifest bytes) ------
-sign_payload() {  # writes payload (domain tag + manifest bytes) to $1
-    { printf '%s' "$SIG_DOMAIN"; cat "${ASSETS}/manifest.json"; } > "$1"
-}
-
-PAYLOAD="$(mktemp)"; SIGBIN="$(mktemp)"
-trap 'rm -f "$PAYLOAD" "$SIGBIN"' EXIT
-sign_payload "$PAYLOAD"
-
-if [[ -n "$KEY_PEM" ]]; then
-    [[ -f "$KEY_PEM" ]] || die "key not found: $KEY_PEM"
-    openssl dgst -sha256 -sign "$KEY_PEM" -out "$SIGBIN" "$PAYLOAD"
-else
-    command -v keepassxc-cli >/dev/null || die "keepassxc-cli not found (or pass --key)"
-    command -v shred >/dev/null || die "shred not found"
-    [[ -n "${KEEPASS_DB:-}" ]] || die "KEEPASS_DB not set (or pass --key)"
-    TMP_KEY="$(mktemp -p "${TMPDIR:-/tmp}" dongle-i18n-key.XXXXXX)"
-    trap 'shred -u "$TMP_KEY" 2>/dev/null || true; rm -f "$PAYLOAD" "$SIGBIN"' EXIT
-    keepassxc-cli attachment-export "$KEEPASS_DB" \
-        "${KEEPASS_ENTRY:-PhoneBlock-Dongle Signing Key}" \
-        "${KEEPASS_ATTACHMENT:-private.pem}" "$TMP_KEY" >&2
-    openssl dgst -sha256 -sign "$TMP_KEY" -out "$SIGBIN" "$PAYLOAD"
-fi
-base64 -w0 < "$SIGBIN" > "${ASSETS}/manifest.json.sig"
-echo "==> signature written (${ASSETS}/manifest.json.sig)"
-
-# Self-check: verify against the release public key so a signing-key mixup
-# is caught before publishing. Ships as i18n/public.pem (the same
-# key baked into manifest_sig.c); override with I18N_PUBLIC_PEM for tests.
-PUBLIC_PEM="${I18N_PUBLIC_PEM:-${SRC_DIR}/public.pem}"
-if [[ -f "$PUBLIC_PEM" ]]; then
-    if openssl dgst -sha256 -verify "$PUBLIC_PEM" \
-        -signature "$SIGBIN" "$PAYLOAD" >/dev/null 2>&1; then
-        echo "==> signature self-check OK (${PUBLIC_PEM})"
-    else
-        die "signature self-check FAILED — private key does not match ${PUBLIC_PEM}"
-    fi
-fi
-
 # --- Upload (atomic manifest publish, mirrors release.sh) ------------------
 run() { if [[ $DRY_RUN -eq 1 ]]; then printf '+ %s\n' "$*"; else "$@"; fi; }
 sftp_batch() {
@@ -278,9 +228,9 @@ if [[ $NO_UPLOAD -eq 1 ]]; then
 fi
 
 if [[ $NO_UPLOAD -eq 0 || $DRY_RUN -eq 1 ]]; then
-    # Ensure the dirs exist, ship the asset files, then swap the manifest +
-    # signature in last via posix-rename so a client never reads a manifest
-    # whose assets aren't up yet.
+    # Ensure the dirs exist, ship the asset files, then swap the manifest in
+    # last via posix-rename so a client never reads a manifest whose assets
+    # aren't up yet.
     sftp_batch <<SFTP
 -mkdir ${CDN_BASE}
 -mkdir ${CDN_FIRMWARE}
@@ -294,10 +244,8 @@ SFTP
     run scp "${SSH_OPTS[@]}" "${ASSETS}"/mail/*     "${CDN_HOST}:${CDN_I18N}/mail/"
     run scp "${SSH_OPTS[@]}" "${ASSETS}"/ui/*.json  "${CDN_HOST}:${CDN_I18N}/ui/"
     sftp_batch <<SFTP
-put ${ASSETS}/manifest.json      ${CDN_I18N}/manifest.json.tmp
-put ${ASSETS}/manifest.json.sig  ${CDN_I18N}/manifest.json.sig.tmp
-rename ${CDN_I18N}/manifest.json.sig.tmp ${CDN_I18N}/manifest.json.sig
-rename ${CDN_I18N}/manifest.json.tmp     ${CDN_I18N}/manifest.json
+put ${ASSETS}/manifest.json  ${CDN_I18N}/manifest.json.tmp
+rename ${CDN_I18N}/manifest.json.tmp ${CDN_I18N}/manifest.json
 SFTP
     [[ $DRY_RUN -eq 0 ]] && echo "==> published to ${CDN_HOST}:${CDN_I18N}"
 fi

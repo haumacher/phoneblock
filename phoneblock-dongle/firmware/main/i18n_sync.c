@@ -1,4 +1,4 @@
-// Implementation of i18n_sync.h: fetch a signed asset manifest from the CDN,
+// Implementation of i18n_sync.h: fetch the asset manifest from the CDN,
 // download the announcement (and mail pack) for the active ui_lang with
 // SHA-256 verification, prune stale-locale files.
 
@@ -23,7 +23,6 @@
 #include "esp_log.h"
 #include "esp_spiffs.h"
 #include "esp_timer.h"
-#include "mbedtls/base64.h"
 #include "mbedtls/sha256.h"
 
 #include "sdkconfig.h"
@@ -31,16 +30,10 @@
 #include "announcement.h"
 #include "config.h"
 #include "http_util.h"
-#include "manifest_sig.h"
 #include "scheduler.h"
 #include "version_cmp.h"
 
 static const char *TAG = "i18nsync";
-
-// Domain-separation prefix over the manifest bytes — must match the release
-// script's signing payload byte-for-byte (scripts/i18n-assets.sh). Keeps an
-// i18n signature from ever being accepted on the OTA path and vice versa.
-#define I18N_SIG_DOMAIN "phoneblock-dongle-i18n-v1\n"
 
 #define SPIFFS_LABEL     "storage"
 #define SPIFFS_DIR       "/spiffs"
@@ -51,8 +44,6 @@ static const char *TAG = "i18nsync";
 // Manifest is small JSON (a few assets per locale); cap generously and
 // heap-allocate so a growing locale set never smashes the task stack.
 #define MANIFEST_CAP     (8 * 1024)
-#define SIG_B64_CAP      256
-#define SIG_DER_CAP      128
 
 static SemaphoreHandle_t   s_lock = NULL;
 static i18n_sync_status_t  s_status;
@@ -121,7 +112,7 @@ static bool sha256_file_hex(const char *path, char out[65])
 }
 
 // ---------------------------------------------------------------------------
-// HTTP GET into a caller buffer (for the small manifest + signature files).
+// HTTP GET into a caller buffer (for the small manifest file).
 // ---------------------------------------------------------------------------
 
 static bool http_get_buf(const char *url, char *body, size_t cap,
@@ -283,43 +274,6 @@ out:
 }
 
 // ---------------------------------------------------------------------------
-// Manifest fetch + signature verify.
-// ---------------------------------------------------------------------------
-
-// Verify the detached signature over I18N_SIG_DOMAIN + manifest bytes.
-static bool verify_manifest(const char *manifest, size_t manifest_len,
-                            const char *sig_b64)
-{
-    // Trim trailing whitespace/newline the CDN or base64 tool may append.
-    size_t b64len = strlen(sig_b64);
-    while (b64len > 0 && (sig_b64[b64len - 1] == '\n' ||
-                          sig_b64[b64len - 1] == '\r' ||
-                          sig_b64[b64len - 1] == ' ')) {
-        b64len--;
-    }
-    uint8_t sig[SIG_DER_CAP];
-    size_t sig_len = 0;
-    int rc = mbedtls_base64_decode(sig, sizeof(sig), &sig_len,
-                                   (const uint8_t *)sig_b64, b64len);
-    if (rc != 0) {
-        ESP_LOGW(TAG, "sig base64 decode: -0x%04x", -rc);
-        return false;
-    }
-
-    uint8_t hash[32];
-    mbedtls_sha256_context sha;
-    mbedtls_sha256_init(&sha);
-    mbedtls_sha256_starts(&sha, 0);
-    mbedtls_sha256_update(&sha, (const uint8_t *)I18N_SIG_DOMAIN,
-                          strlen(I18N_SIG_DOMAIN));
-    mbedtls_sha256_update(&sha, (const uint8_t *)manifest, manifest_len);
-    mbedtls_sha256_finish(&sha, hash);
-    mbedtls_sha256_free(&sha);
-
-    return manifest_sig_verify_hash(hash, sig, sig_len);
-}
-
-// ---------------------------------------------------------------------------
 // Prune localized files that are not for `keep_lang`.
 // ---------------------------------------------------------------------------
 
@@ -441,9 +395,7 @@ static void run_once(void)
     char err[64] = "";
 
     char *manifest = malloc(MANIFEST_CAP);
-    char *sig      = malloc(SIG_B64_CAP);
-    if (!manifest || !sig) {
-        free(manifest); free(sig);
+    if (!manifest) {
         set_status(false, lang, "out of memory");
         return;
     }
@@ -452,27 +404,10 @@ static void run_once(void)
     snprintf(url, sizeof(url), "%s/manifest.json", base);
     if (!http_get_buf(url, manifest, MANIFEST_CAP, err, sizeof(err))) {
         ESP_LOGW(TAG, "manifest fetch %s: %s", url, err);
-        free(manifest); free(sig);
+        free(manifest);
         set_status(false, lang, err);
         return;
     }
-    size_t manifest_len = strlen(manifest);
-
-    snprintf(url, sizeof(url), "%s/manifest.json.sig", base);
-    if (!http_get_buf(url, sig, SIG_B64_CAP, err, sizeof(err))) {
-        ESP_LOGW(TAG, "signature fetch %s: %s", url, err);
-        free(manifest); free(sig);
-        set_status(false, lang, err);
-        return;
-    }
-
-    if (!verify_manifest(manifest, manifest_len, sig)) {
-        ESP_LOGE(TAG, "manifest signature INVALID — refusing assets");
-        free(manifest); free(sig);
-        set_status(false, lang, "bad signature");
-        return;
-    }
-    free(sig);
 
     cJSON *root = cJSON_Parse(manifest);
     free(manifest);

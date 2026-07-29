@@ -12,12 +12,18 @@
 //   <CONFIG_PHONEBLOCK_OTA_BASE_URL>/<this-firmware-version>/i18n/
 // so each release carries its own i18n bundle next to its .bin and an older
 // release in the field is never affected by a newer one's key changes.
-// Source of truth is a signed manifest at
+// Source of truth is the manifest at
 //   <…>/i18n/manifest.json
-// with a detached signature at .../manifest.json.sig (ECDSA-P256 over
-// "phoneblock-dongle-i18n-v1\n" + the manifest bytes; same release key as
-// OTA, verified via manifest_sig.c). The manifest maps each locale to its
-// assets and their SHA-256:
+// It is NOT signed — unlike the OTA manifest, which is (manifest_sig.c). The
+// assets are display strings and announcement audio: transport trust is
+// HTTPS + the cert bundle, and a hostile CDN would at worst show the user
+// wrong text. That is a deliberate trade for a workable development loop —
+// publishing a bundle for an unreleased build must not need the release key.
+// Consequence to keep in mind when consuming these strings: treat them as
+// untrusted input, i.e. never interpolate a pack string into HTML unescaped
+// (see the browser side in main/web/index.html).
+//
+// The manifest maps each locale to its assets and their SHA-256:
 //
 //   { "version": "1",
 //     "assets": {
@@ -35,8 +41,9 @@
 //   announcement → /spiffs/announcement-<lang>.alaw  (announcement.c reads it)
 //   mail pack    → /spiffs/mail-<lang>.json          (mail_i18n.c reads it)
 // Each asset is streamed to a SPIFFS temp file, its SHA-256 checked against
-// the (signature-authenticated) manifest, then renamed into place. Assets for
-// other locales are pruned so the shared 640 KB storage partition is not
+// the manifest (integrity against a truncated or corrupted transfer — the
+// manifest itself is only as trustworthy as the CDN), then renamed into place.
+// Assets for other locales are pruned so the shared 640 KB storage is not
 // filled by stale downloads. A locale whose SHA already matches the on-disk
 // file is skipped (no re-download).
 //
@@ -47,7 +54,7 @@ void i18n_sync_init(void);
 
 // Perform one sync pass for the active ui_lang. Safe to call only from the
 // scheduler task (does blocking HTTPS + SPIFFS I/O). A no-op with a clear
-// status if offline / the manifest is missing or fails signature check.
+// status if offline / the manifest is missing or unparseable.
 void i18n_sync_run(void);
 
 // Ask the scheduler task to run i18n_sync_run() on its own stack. Returns
