@@ -46,8 +46,25 @@ is translated at release time.
 ## Translating (development time)
 
 Reuses `de.haumacher:auto-translate-arb` — the **same Gradle plugin the mobile
-app uses** (`phoneblock_mobile`) — with the same `deepl` server credential in
-`~/.m2/settings.xml`. Outputs are committed; no translation runs at release.
+app uses** (`phoneblock_mobile`). Outputs are committed; no translation runs at
+release.
+
+The DeepL key is supplied the **Gradle** way — `serverId = 'deepl'` in the
+`build.gradle` files names the Gradle property `deepl.apiKey`, which belongs in
+your user-global `~/.gradle/gradle.properties` (never in a committed
+`gradle.properties`):
+
+```properties
+deepl.apiKey=YOUR_DEEPL_API_KEY
+```
+
+`DEEPL_API_KEY` in the environment works as a fallback. This is a *different*
+credential store from the Maven-side translation of the web app's
+`Messages_*.properties`, which reads the `deepl` server from
+`~/.m2/settings.xml` — the same key, kept in both places.
+
+Needs Gradle 8.x (the plugin's `plugins {}` block does not load under the
+Gradle 4.x some distributions still package as `gradle`).
 
 ```bash
 # Edit the German sources directly: l10n/mail/mail_de.arb and l10n/ui/ui_de.arb.

@@ -4,9 +4,12 @@
 // (mail_<lang>.arb, ui_<lang>.arb) are committed to git; the release script
 // only assembles those committed files — no translation runs at release time.
 //
-// Run:  cd i18n/l10n && gradle translateArb
-//       (needs a DeepL key under the `deepl` server id in ~/.m2/settings.xml,
-//        exactly like phoneblock_mobile's translateArb and the web plugins.)
+// Run:  cd i18n/l10n && gradle translateArb   (Gradle 8.x)
+//       Needs the DeepL key as the Gradle property `deepl.apiKey` in
+//       ~/.gradle/gradle.properties (the `serverId = 'deepl'` below names that
+//       property), or DEEPL_API_KEY in the environment. NOT the `deepl` server
+//       in ~/.m2/settings.xml — that store feeds the Maven-side translation of
+//       the web app's Messages_*.properties, which is a different plugin.
 pluginManagement {
     repositories {
         mavenLocal()
