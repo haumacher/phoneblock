@@ -48,6 +48,9 @@
   "status.calls.verdict.error": "Feil",
   "status.calls.verdict.scope.number": "Nummer",
   "status.calls.verdict.scope.range": "Område",
+  "region.title": "Språk og land",
+  "region.lang": "Språk",
+  "region.country.hint": "Telefonnumre uten landskode vil bli supplert med dette landet. Hvis det står feil land her, vil PhoneBlock ikke finne noen oppføring for noen samtaler. Språket gjelder også for meldingen på telefonsvareren og status-e-posten.",
   "status.thresholds.title": "Blokksviller",
   "status.thresholds.intro": "Fra hvor mange PhoneBlock-stemmer dongelen avbryter en samtale. Direkte-stemmer veier tyngre enn Range-stemmer, derfor er verdiene oppgitt separat.",
   "status.thresholds.direct": "Direkte stemmer",
@@ -292,5 +295,6 @@
   "back.status": "← tilbake til status",
   "back.sip": "← tilbake til utvalget",
   "i18n.loading": "Oversettelsen lastes inn …",
-  "i18n.unavailable": "Oversettelse ikke tilgjengelig – standardspråket vises."
+  "i18n.unavailable": "Oversettelse ikke tilgjengelig – standardspråket vises.",
+  "region.country": "Land"
 }

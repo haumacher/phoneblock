@@ -48,6 +48,9 @@
   "status.calls.verdict.error": "Error",
   "status.calls.verdict.scope.number": "number",
   "status.calls.verdict.scope.range": "range",
+  "region.title": "Language and Country",
+  "region.lang": "Language",
+  "region.country.hint": "Phone numbers without a country code will be assigned this country. If the wrong country is listed here, PhoneBlock will not find a match for any calls. The language also applies to the answering machine message and the status email.",
   "status.thresholds.title": "Block thresholds",
   "status.thresholds.intro": "How many PhoneBlock votes the dongle requires before it traps a call. Direct votes weigh more than range votes, so each side has its own threshold.",
   "status.thresholds.direct": "Direct votes",
@@ -292,5 +295,6 @@
   "back.status": "← back to status",
   "back.sip": "← back to the choice",
   "i18n.loading": "Translation is loading …",
-  "i18n.unavailable": "Translation not available – default language is displayed."
+  "i18n.unavailable": "Translation not available – default language is displayed.",
+  "region.country": "Country"
 }

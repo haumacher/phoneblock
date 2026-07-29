@@ -201,6 +201,144 @@ function supportedLangs(){
   const sel = document.getElementById('langSelect');
   return sel ? Array.from(sel.options).map(o => o.value) : ['en'];
 }
+
+// --- country / dial prefix ------------------------------------------
+// ISO 3166-1 alpha-2 → E.164 country calling code, generated from the
+// server's location/country-codes.csv. Packed as one string because 246
+// entries as object literals would be several KB of flash for no gain.
+// Country *names* are deliberately absent: Intl.DisplayNames renders them
+// in the active UI language, so adding a locale costs nothing here.
+const COUNTRY_DIAL =
+  'AD+376 AE+971 AF+93 AG+1 AI+1 AL+355 AM+374 AO+244 AQ+672 AR+54 AS+1 AT+43 AU+61 AW+297 ' +
+  'AX+358 AZ+994 BA+387 BB+1 BD+880 BE+32 BF+226 BG+359 BH+973 BI+257 BJ+229 BL+590 BM+1 BN+673 ' +
+  'BO+591 BQ+599 BR+55 BS+1 BT+975 BV+47 BW+267 BY+375 BZ+501 CA+1 CC+61 CD+243 CF+236 CG+242 ' +
+  'CH+41 CI+225 CK+682 CL+56 CM+237 CN+86 CO+57 CR+506 CU+53 CV+238 CW+599 CX+61 CY+357 CZ+420 ' +
+  'DE+49 DJ+253 DK+45 DM+1 DO+1 DZ+213 EC+593 EE+372 EG+20 EH+212 ER+291 ES+34 ET+251 FI+358 ' +
+  'FJ+679 FK+500 FM+691 FO+298 FR+33 GA+241 GB+44 GD+1 GE+995 GF+594 GG+44 GH+233 GI+350 GL+299 ' +
+  'GM+220 GN+224 GP+590 GQ+240 GR+30 GS+500 GT+502 GU+1 GW+245 GY+592 HK+852 HM+672 HN+504 ' +
+  'HR+385 HT+509 HU+36 ID+62 IE+353 IL+972 IM+44 IN+91 IO+246 IQ+964 IR+98 IS+354 IT+39 JE+44 ' +
+  'JM+1 JO+962 JP+81 KE+254 KG+996 KH+855 KI+686 KM+269 KN+1 KP+850 KR+82 KW+965 KY+1 KZ+7 ' +
+  'LA+856 LB+961 LC+1 LI+423 LK+94 LR+231 LS+266 LT+370 LU+352 LV+371 LY+218 MA+212 MC+377 ' +
+  'MD+373 ME+382 MF+590 MG+261 MH+692 MK+389 ML+223 MM+95 MN+976 MO+853 MP+1 MQ+596 MR+222 MS+1 ' +
+  'MT+356 MU+230 MV+960 MW+265 MX+52 MY+60 MZ+258 NA+264 NC+687 NE+227 NF+672 NG+234 NI+505 ' +
+  'NL+31 NO+47 NP+977 NR+674 NU+683 NZ+64 OM+968 PA+507 PE+51 PF+689 PG+675 PH+63 PK+92 PL+48 ' +
+  'PM+508 PN+870 PR+1 PS+970 PT+351 PW+680 PY+595 QA+974 RE+262 RO+40 RU+7 RW+250 SA+966 SB+677 ' +
+  'SC+248 SD+249 SE+46 SG+65 SI+386 SJ+47 SK+421 SL+232 SM+378 SN+221 SO+252 SR+597 SS+211 ' +
+  'ST+239 SV+503 SX+1 SY+963 SZ+268 TC+1 TD+235 TF+262 TG+228 TH+66 TJ+992 TK+690 TL+670 TM+993 ' +
+  'TN+216 TO+676 TR+90 TT+1 TV+688 TW+886 TZ+255 UA+380 UG+256 US+1 UY+598 UZ+998 VA+39 VC+1 ' +
+  'VE+58 VG+1 VI+1 VN+84 VU+678 WF+681 WS+685 YE+967 YT+262 ZA+27 ZM+260 ZW+263';
+
+// The dial prefix the device is on, mirrored from /api/status so the poll
+// does not fight the selector while the user is changing it.
+let DIAL_PREFIX = '+49';
+
+// [{iso, dial, name}] sorted by localized country name. Falls back to the
+// bare ISO code on browsers without Intl.DisplayNames.
+function countryOptions(){
+  let names = null;
+  try { names = new Intl.DisplayNames([LANG, 'en'], {type: 'region'}); } catch (_){}
+  const list = COUNTRY_DIAL.split(' ').map(tok => {
+    const i = tok.indexOf('+');
+    const iso = tok.slice(0, i);
+    let name = iso;
+    if (names){ try { name = names.of(iso) || iso; } catch (_){} }
+    return {iso: iso, dial: tok.slice(i), name: name};
+  });
+  try { list.sort((a, b) => a.name.localeCompare(b.name, LANG)); }
+  catch (_){ list.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0)); }
+  return list;
+}
+
+// Many countries share a dial prefix (+1 spans all of NANP, +44 the UK and
+// the Crown dependencies), and the device stores only the prefix — so it
+// cannot say *which* one was picked. Remember the ISO code locally so the
+// selector shows the country this browser chose rather than whichever one
+// happens to sort first among its prefix-mates.
+function rememberCountry(iso){
+  try { localStorage.setItem('pb_country', iso); } catch (_){}
+}
+function preferredCountry(){
+  try { return localStorage.getItem('pb_country') || ''; } catch (_){ return ''; }
+}
+
+// Select the option carrying `dial`, preferring the country this browser
+// last picked when several share the prefix (see rememberCountry).
+function selectDial(sel, dial){
+  const pref = preferredCountry();
+  let fallback = -1;
+  for (let i = 0; i < sel.options.length; i++){
+    const o = sel.options[i];
+    if (o.value !== dial) continue;
+    if (o.dataset.iso === pref){ sel.selectedIndex = i; return; }
+    if (fallback < 0) fallback = i;
+  }
+  if (fallback >= 0) sel.selectedIndex = fallback;
+}
+
+// Populate the region section's two selectors. Cheap to call repeatedly:
+// the language list is copied once from the footer selector (still the
+// single source of the supported locales), and the country list is rebuilt
+// only when the UI language changed, since its labels are localized.
+function fillRegionSelectors(){
+  const langSel = document.getElementById('regionLang');
+  const cSel    = document.getElementById('regionCountry');
+  if (!langSel || !cSel) return;
+  if (!langSel.options.length){
+    const src = document.getElementById('langSelect');
+    if (src) langSel.innerHTML = src.innerHTML;
+    langSel.value = LANG;
+    langSel.addEventListener('change', () => setUiLang(langSel.value));
+  }
+  if (cSel.dataset.lang !== LANG){
+    const keep = cSel.value || DIAL_PREFIX;
+    cSel.innerHTML = '';
+    for (const c of countryOptions()){
+      const o = document.createElement('option');
+      o.value = c.dial;
+      o.textContent = c.name + ' (' + c.dial + ')';
+      o.dataset.iso = c.iso;
+      cSel.appendChild(o);
+    }
+    cSel.dataset.lang = LANG;
+    selectDial(cSel, keep);
+  }
+  if (!cSel.dataset.wired){
+    cSel.dataset.wired = '1';
+    cSel.addEventListener('change', () => {
+      const opt = cSel.selectedOptions[0];
+      if (opt) rememberCountry(opt.dataset.iso);
+      setDialPrefix(cSel.value);
+    });
+  }
+}
+
+// Reflect the device's country/language in the selectors on every poll,
+// but never while the user has one open — that would snap their choice
+// back before the POST lands.
+function syncRegionSelectors(s){
+  if (s && typeof s.dial_prefix === 'string' && s.dial_prefix){
+    DIAL_PREFIX = s.dial_prefix;
+  }
+  fillRegionSelectors();
+  const cSel    = document.getElementById('regionCountry');
+  const langSel = document.getElementById('regionLang');
+  if (cSel    && document.activeElement !== cSel)    selectDial(cSel, DIAL_PREFIX);
+  if (langSel && document.activeElement !== langSel) langSel.value = LANG;
+}
+
+// Persist the country on the device. Only the prefix travels — that is
+// what normalize_e164() needs; which of the countries sharing it the user
+// picked stays a local display detail.
+function setDialPrefix(dial){
+  DIAL_PREFIX = dial;
+  try {
+    fetch('/api/config', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: new URLSearchParams({ dial_prefix: dial }).toString(),
+    }).catch(() => {});
+  } catch (_){}
+}
 // Best supported match for the browser's preferred languages, or null. Matches
 // exact ("en") then primary subtag ("en-US" -> "en"); folds the Norwegian
 // variants (nn/no) onto nb, which is the one locale whose code isn't just the
@@ -576,6 +714,26 @@ function renderStatus(){
     + '</div>'
     + '<p class="muted" id="statusInfo" style="margin:.6rem 0 0"></p>'
     + '</section>'
+    // Language + country. Deliberately an always-open section rather than one
+    // of the collapsed admin cards below: the country decides how a caller ID
+    // in national form is expanded to E.164, and a wrong one makes every
+    // lookup miss silently (issue #505) — so it has to be findable, not
+    // buried. Visible during setup too, before SIP and the token are done.
+    + '<section id="regionSection">'
+    + '<h2>' + esc(t('region.title')) + '</h2>'
+    + '<div style="display:flex;gap:1.5rem;flex-wrap:wrap;align-items:flex-start">'
+    + '<label style="display:flex;flex-direction:column;gap:.2rem">'
+    + '  <span style="font-size:.85rem">' + esc(t('region.lang')) + '</span>'
+    + '  <select id="regionLang" style="min-width:12rem"></select>'
+    + '</label>'
+    + '<label style="display:flex;flex-direction:column;gap:.2rem">'
+    + '  <span style="font-size:.85rem">' + esc(t('region.country')) + '</span>'
+    + '  <select id="regionCountry" style="min-width:14rem"></select>'
+    + '</label>'
+    + '</div>'
+    + '<p class="muted" style="font-size:.72rem;margin:.5rem 0 0">'
+    +   esc(t('region.country.hint')) + '</p>'
+    + '</section>'
     + '<section id="callsSection" style="display:none">'
     + '<h2 style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.6rem">'
     + '  <span>' + esc(t('status.calls.title')) + '</span>'
@@ -889,9 +1047,14 @@ let mailPrefilled = false;
 // IDs of sections that the dashboard shows or hides on each poll, so
 // we can toggle the entire dashboard visibility in one go when the
 // gate kicks us out (401 from /api/status).
-const DASHBOARD_SECTIONS = ['heroSlot', 'statusSection', 'callsSection',
-  'thresholdsSection', 'errorsSection', 'resetSection', 'annSection',
-  'localCacheSection', 'syncSection', 'fwSection', 'mailSection', 'authSection'];
+// regionSection is in the list so the auth gate hides it with everything
+// else (its POST would 401 anyway), but it is deliberately *not* hidden by
+// the setup-incomplete branch below — picking a language and country is
+// useful before SIP and the token are configured.
+const DASHBOARD_SECTIONS = ['heroSlot', 'statusSection', 'regionSection',
+  'callsSection', 'thresholdsSection', 'errorsSection', 'resetSection',
+  'annSection', 'localCacheSection', 'syncSection', 'fwSection',
+  'mailSection', 'authSection'];
 
 // Maps `?login_error=<code>` query values that web_auth_handle_callback
 // emits to localized text shown in the login section's red banner.
@@ -985,6 +1148,7 @@ async function refreshAll(){
   if (!s) return;
   hideLoginState();
   resetNonce = s.reset_nonce || '';
+  syncRegionSelectors(s);
   const sipConfigured = !!(s.sip.host && s.sip.user);
   const tokenSet      = !!s.phoneblock.token_set;
   // token_ok defaults to true when the field is missing (older
@@ -2710,33 +2874,38 @@ function wireAnnouncement(){
 
 // --- language switcher ---------------------------------------------
 
+// Shared by the footer selector (reachable from every route) and the one in
+// the region section — same setting, one code path.
+function setUiLang(lang){
+  // The UI language is a DEVICE setting — it also drives the status mail
+  // and the answer-bot announcement. POST it; the firmware localizes those
+  // and downloads the matching UI pack, which the dongle then serves at
+  // /api/i18n/ui. Re-render now (English until the pack arrives), then poll
+  // the device for the new pack.
+  LANG = lang;
+  document.documentElement.lang = lang;
+  const foot = document.getElementById('langSelect');
+  if (foot) foot.value = lang;
+  try {
+    fetch('/api/config', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: new URLSearchParams({ ui_lang: lang }).toString(),
+    }).catch(() => {});
+  } catch (_){}
+  delete I18N[lang];                 // force reload of the new locale
+  // While the device downloads the new pack it serves the embedded English
+  // pack (which carries the i18n.loading/unavailable strings), so start the
+  // poll only after loadUiPack has populated I18N[lang] — then the status
+  // label resolves to real text instead of the raw key on the first switch.
+  loadUiPack(lang).then(() => { route(); awaitUiPack(lang); });
+}
+
 {
   const sel = document.getElementById('langSelect');
   if (sel){
     sel.value = LANG;
-    sel.addEventListener('change', () => {
-      const lang = sel.value;
-      // The UI language is a DEVICE setting — it also drives the status mail
-      // and the answer-bot announcement. POST it; the firmware localizes those
-      // and downloads the matching UI pack, which the dongle then serves at
-      // /api/i18n/ui. Re-render now (English until the pack arrives), then poll
-      // the device for the new pack.
-      LANG = lang;
-      document.documentElement.lang = lang;
-      try {
-        fetch('/api/config', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-          body: new URLSearchParams({ ui_lang: lang }).toString(),
-        }).catch(() => {});
-      } catch (_){}
-      delete I18N[lang];                 // force reload of the new locale
-      // While the device downloads the new pack it serves the embedded English
-      // pack (which carries the i18n.loading/unavailable strings), so start the
-      // poll only after loadUiPack has populated I18N[lang] — then the status
-      // label resolves to real text instead of the raw key on the first switch.
-      loadUiPack(lang).then(() => { route(); awaitUiPack(lang); });
-    });
+    sel.addEventListener('change', () => setUiLang(sel.value));
   }
   document.documentElement.lang = LANG;
 }

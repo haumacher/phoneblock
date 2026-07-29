@@ -162,11 +162,18 @@ static void expect_dialable(bool expected, const char *n)
     report_bool("looks_dialable", n, expected, looks_dialable(n));
 }
 
-static void expect_normalize_de(const char *expected, const char *raw)
+static void expect_normalize(const char *dial_prefix, const char *expected,
+                             const char *raw)
 {
     char out[64] = {0};
-    normalize_de(raw, out, sizeof(out));
-    report_str("normalize_de", raw, expected, out);
+    normalize_e164(raw, out, sizeof(out), dial_prefix);
+    report_str("normalize_e164", raw, expected, out);
+}
+
+// Shorthand for the German-line cases, which are the bulk of the suite.
+static void expect_normalize_de(const char *expected, const char *raw)
+{
+    expect_normalize("+49", expected, raw);
 }
 
 static void expect_same_call_id(bool expected, const char *a, const char *b)
@@ -548,6 +555,70 @@ static void test_normalize_de(void)
     expect_normalize_de("",                "");
 }
 
+// Issue #505: a line outside Germany must expand its national numbers with
+// its own country code. Before the dial prefix became configurable, the UK
+// number from the report normalised to "+497520694441" — which is not just
+// a mislabelled country: that string is what gets SHA-1'd for the
+// /api/check-prefix lookup, so every national number missed silently.
+static void test_normalize_e164_foreign(void)
+{
+    // UK line (trunk "0", escape "00" — same grammar as Germany).
+    expect_normalize("+44", "+447520694441", "07520694441");
+    expect_normalize("+44", "+442071234567", "020 7123 4567");
+    // Already international: the line's country is irrelevant.
+    expect_normalize("+44", "+4930123456",   "+4930123456");
+    expect_normalize("+44", "+4930123456",   "00493 0123456");
+    expect_normalize("+44", "+18886749072",  "0018886749072");
+    // Same national input, different line → different country.
+    expect_normalize("+49", "+497520694441", "07520694441");
+    expect_normalize("+385", "+385912345678", "0912345678");   // 3-digit code
+    // Non-external inputs still pass through untouched.
+    expect_normalize("+44", "**622",         "**622");
+    expect_normalize("+44", "",              "");
+    // No country configured: leave the national number alone rather than
+    // stripping a trunk prefix and emitting an unresolvable bare number.
+    expect_normalize(NULL, "030123456",      "030123456");
+    expect_normalize("",   "030123456",      "030123456");
+    // The international forms need no country and stay correct regardless.
+    expect_normalize(NULL, "+4930123456",    "+4930123456");
+    expect_normalize(NULL, "+4930123456",    "004930123456");
+}
+
+// Countries whose dialling grammar is not Germany's (issue #432). The
+// trunk prefix and international escape come from dial_rules_for(), so a
+// leading zero is only stripped where it actually is a trunk prefix.
+static void test_normalize_e164_dial_rules(void)
+{
+    // Italy: no trunk prefix — the leading 0 is part of the number and must
+    // survive. Getting this wrong was the flaw in the first cut of #505.
+    expect_normalize("+39", "+390612345678", "0612345678");
+    expect_normalize("+39", "+393331234567", "3331234567");   // mobile, no 0
+    expect_normalize("+39", "+4930123456",   "004930123456"); // escape is 00
+
+    // Denmark and Czechia likewise have no trunk prefix.
+    expect_normalize("+45",  "+4512345678",   "12345678");
+    expect_normalize("+420", "+420212345678", "212345678");
+
+    // NANP: trunk "1", escape "011".
+    expect_normalize("+1", "+16023651873", "1-602-365-1873");
+    expect_normalize("+1", "+16023651873", "602-365-1873");   // bare, no 1
+    expect_normalize("+1", "+4930123456",  "01149 30 123456");
+    // "00…" is NOT an escape in NANP — it is a national number there.
+    expect_normalize("+1", "+1004930123456", "004930123456");
+
+    // Russia: trunk "8", escape "810".
+    expect_normalize("+7", "+74951234567", "84951234567");
+    expect_normalize("+7", "+4930123456",  "810 49 30123456");
+
+    // Australia: trunk "0", escape "0011" — the longer escape must win over
+    // the trunk prefix it starts with.
+    expect_normalize("+61", "+61212345678", "0212345678");
+    expect_normalize("+61", "+4930123456",  "00114930123456");
+
+    // An unknown country code falls back to the "0"/"00" majority.
+    expect_normalize("+999", "+99930123456", "030123456");
+}
+
 static void test_same_call_id(void)
 {
     expect_same_call_id(true,  "abc@host", "abc@host");
@@ -687,6 +758,8 @@ int main(void)
     test_is_known_contact();
     test_looks_dialable();
     test_normalize_de();
+    test_normalize_e164_foreign();
+    test_normalize_e164_dial_rules();
     test_same_call_id();
     test_parse_sdp();
     test_parse_sdp_crypto();

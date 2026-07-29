@@ -48,6 +48,9 @@
   "status.calls.verdict.error": "Błąd",
   "status.calls.verdict.scope.number": "Numer",
   "status.calls.verdict.scope.range": "Obszar",
+  "region.title": "Język i kraj",
+  "region.lang": "Język",
+  "region.country.hint": "Numery telefonów bez numeru kierunkowego kraju zostaną uzupełnione o ten kraj. Jeśli w tym polu podano niewłaściwy kraj, PhoneBlock nie znajdzie żadnego wpisu dla danego połączenia. Język ten dotyczy również komunikatu automatycznej sekretarki oraz wiadomości e-mail z informacją o statusie.",
   "status.thresholds.title": "Podkłady blokowe",
   "status.thresholds.intro": "Od jakiej liczby głosów PhoneBlock kluczyk odbiera połączenie. Głosy bezpośrednie mają większą wagę niż głosy zasięgowe, stąd oddzielne wartości.",
   "status.thresholds.direct": "Głosy bezpośrednie",
@@ -292,5 +295,6 @@
   "back.status": "← powrót do statusu",
   "back.sip": "← powrót do listy",
   "i18n.loading": "Tłumaczenie się ładuje…",
-  "i18n.unavailable": "Tłumaczenie niedostępne – wyświetlany jest język domyślny."
+  "i18n.unavailable": "Tłumaczenie niedostępne – wyświetlany jest język domyślny.",
+  "region.country": "Kraj"
 }

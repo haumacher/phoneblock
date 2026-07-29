@@ -48,6 +48,9 @@
   "status.calls.verdict.error": "Fejl",
   "status.calls.verdict.scope.number": "Nummer",
   "status.calls.verdict.scope.range": "Område",
+  "region.title": "Sprog og land",
+  "region.lang": "Sprog",
+  "region.country.hint": "Telefonnumre uden landekode suppleres med dette land. Hvis der står et forkert land her, kan PhoneBlock ikke finde nogen oplysning om opkaldet. Sproget gælder også for telefonsvarerens besked og status-e-mailen.",
   "status.thresholds.title": "Blok-sveller",
   "status.thresholds.intro": "Fra hvor mange PhoneBlock-stemmer donglen afbryder et opkald. Direkte stemmer vejer tungere end rækkevidde-stemmer, derfor er der angivet separate værdier.",
   "status.thresholds.direct": "Direkte stemmer",
@@ -292,5 +295,6 @@
   "back.status": "← tilbage til status",
   "back.sip": "← tilbage til oversigten",
   "i18n.loading": "Oversættelse indlæses …",
-  "i18n.unavailable": "Oversættelse ikke tilgængelig – standardsproget vises."
+  "i18n.unavailable": "Oversættelse ikke tilgængelig – standardsproget vises.",
+  "region.country": "Land"
 }

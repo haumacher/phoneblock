@@ -462,6 +462,11 @@ static esp_err_t handle_status(httpd_req_t *req)
     // Whether ui_lang is a real user choice or still the "en" default — the web
     // UI auto-selects the browser's language on first contact when unset.
     cJSON_AddBoolToObject(root, "ui_lang_set", config_ui_lang_is_set());
+    // Country of the line, used to expand national caller IDs to E.164.
+    // Shown (and changed) under Setup ▸ Region; "+49" until a token
+    // activation adopts the account's value or the user picks one.
+    cJSON_AddStringToObject(root, "dial_prefix", config_dial_prefix());
+    cJSON_AddBoolToObject(root, "dial_prefix_set", config_dial_prefix_is_set());
 
     cJSON *cnt = cJSON_AddObjectToObject(root, "counters");
     cJSON_AddNumberToObject(cnt,  "total",        c.total_calls);
@@ -668,6 +673,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     char mail_upd_s[4]    = "";
     char tz_s[64]         = "";
     char ui_lang_s[12]    = "";
+    char dial_prefix_s[8] = "";
 
     bool have_sip_host  = form_get(body, "sip_host",  sip_host,  sizeof(sip_host));
     bool have_sip_user  = form_get(body, "sip_user",  sip_user,  sizeof(sip_user));
@@ -711,6 +717,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     bool have_mail_upd   = form_get(body, "mail_on_update", mail_upd_s, sizeof(mail_upd_s));
     bool have_tz         = form_get(body, "timezone",      tz_s,        sizeof(tz_s));
     bool have_ui_lang    = form_get(body, "ui_lang",       ui_lang_s,   sizeof(ui_lang_s));
+    bool have_dial_pfx   = form_get(body, "dial_prefix",   dial_prefix_s, sizeof(dial_prefix_s));
     free(body);
 
     // POSIX TZ string (e.g. "CET-1CEST,M3.5.0,M10.5.0/3"): accept only a
@@ -781,6 +788,15 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     // defend against. An unrecognised value is ignored (left unchanged).
     const char *ui_lang = (have_ui_lang && config_lang_code_valid(ui_lang_s))
                           ? ui_lang_s : NULL;
+
+    // Country of the line — same guard: the value is prepended to a caller
+    // ID that becomes an API URL and a SHA-1 lookup key, so only the "+NN"
+    // shape the getter accepts is written; anything else is ignored.
+    const char *dial_prefix = (have_dial_pfx && config_dial_prefix_valid(dial_prefix_s))
+                              ? dial_prefix_s : NULL;
+    if (have_dial_pfx && dial_prefix == NULL) {
+        ESP_LOGW(TAG, "dial_prefix rejected: expected \"+NN\"");
+    }
 
     config_update_t u = {
         .sip_host   = new_host,
@@ -856,6 +872,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
         .mail_on_update = have_mail_upd ? mail_upd_s  : NULL,
         .timezone      = timezone,
         .ui_lang       = ui_lang,
+        .dial_prefix   = dial_prefix,
     };
 
     // Snapshot the PhoneBlock token before the update so we can detect
@@ -1293,6 +1310,24 @@ static esp_err_t handle_token_callback(httpd_req_t *req)
     // Immediately exercise the new token so the dashboard has an API
     // latency to show on the first poll, instead of an empty "–".
     phoneblock_selftest(NULL);
+
+    // Seed the country from the account the token belongs to, riding the
+    // TLS session the self-test just primed. Once only, while the device
+    // is still on the "+49" default: from here on the country belongs to
+    // the web UI, and re-pairing must not overwrite a user's choice.
+    // Best-effort — on failure the default stands and the user can pick a
+    // country under Setup ▸ Region.
+    if (!config_dial_prefix_is_set()) {
+        char prefix[8] = "";
+        if (phoneblock_fetch_dial_prefix(prefix, sizeof(prefix))
+                && config_dial_prefix_valid(prefix)) {
+            config_update_t up = { .dial_prefix = prefix };
+            if (config_update(&up) == ESP_OK) {
+                ESP_LOGI(TAG, "token-callback: adopted country %s from account",
+                         prefix);
+            }
+        }
+    }
 
     // Hand the user straight back to the status landing — the pill
     // there flips to green on the next 3s poll.

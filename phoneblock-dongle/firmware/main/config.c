@@ -66,6 +66,15 @@ static const char *NS   = "phoneblock";
 #define K_DEVICE_ID     "device_id"
 #define K_TIMEZONE      "timezone"
 #define K_UI_LANG       "ui_lang"
+#define K_DIAL_PREFIX   "dial_prefix"
+
+// Country dial prefix assumed when a caller ID arrives in national form
+// (single leading trunk "0"). Germany, because that is where the fleet
+// that predates this setting lives — those devices must keep normalising
+// exactly as before (issue #505). New devices overwrite it with the
+// PhoneBlock account's value at token activation; everyone else picks
+// their country in the web UI.
+#define DEFAULT_DIAL_PREFIX "+49"
 
 // Direct-vote default mirrors DB.MIN_VOTES on the server (the
 // confidence floor the public blocklist export already enforces).
@@ -148,6 +157,9 @@ typedef struct {
                              // empty = default "de". Selects the downloaded
                              // announcement + mail pack; spliced into a CDN
                              // URL and a SPIFFS filename, so validated on read.
+    char dial_prefix[8];     // "+49", "+44", … Country of the line, used to
+                             // expand national caller IDs to E.164. Empty or
+                             // malformed reads back as DEFAULT_DIAL_PREFIX.
 } config_cache_t;
 
 static config_cache_t s_config;
@@ -304,6 +316,7 @@ void config_load(void)
         s_config.last_failed_ota[0] = '\0';
         copy_default(s_config.timezone, sizeof(s_config.timezone), CONFIG_DONGLE_DEFAULT_TZ);
         s_config.ui_lang[0] = '\0';   // empty → default "en" (see getter)
+        s_config.dial_prefix[0] = '\0';   // empty → DEFAULT_DIAL_PREFIX (see getter)
         return;
     }
     if (err != ESP_OK) {
@@ -399,6 +412,8 @@ void config_load(void)
              s_config.timezone, sizeof(s_config.timezone));
     load_str(h, K_UI_LANG, "",
              s_config.ui_lang, sizeof(s_config.ui_lang));
+    load_str(h, K_DIAL_PREFIX, "",
+             s_config.dial_prefix, sizeof(s_config.dial_prefix));
     nvs_close(h);
 
     ESP_LOGI(TAG, "loaded config: sip=%s@%s:%d, pb=%s",
@@ -497,6 +512,38 @@ const char *config_ui_lang(void)
 bool config_ui_lang_is_set(void)
 {
     return config_lang_code_valid(s_config.ui_lang);
+}
+bool config_dial_prefix_valid(const char *prefix)
+{
+    // "+" followed by 1..3 digits, first of them non-zero — the same shape
+    // the server accepts (AccountManagementServlet.DIAL_PREFIX_PATTERN), so
+    // a value adopted from the account always survives the round-trip.
+    if (!prefix) return false;
+    size_t n = strlen(prefix);
+    if (n < 2 || n > 4) return false;
+    if (prefix[0] != '+') return false;
+    if (prefix[1] < '1' || prefix[1] > '9') return false;
+    for (size_t i = 2; i < n; i++) {
+        if (prefix[i] < '0' || prefix[i] > '9') return false;
+    }
+    return true;
+}
+const char *config_dial_prefix(void)
+{
+    // Clamp on read like config_ui_lang(): the value is prepended to a
+    // caller ID that ends up in an API URL and a SHA-1 lookup key, so a
+    // blank or corrupt NVS read must degrade to the documented default
+    // rather than produce a malformed number.
+    return config_dial_prefix_valid(s_config.dial_prefix)
+           ? s_config.dial_prefix : DEFAULT_DIAL_PREFIX;
+}
+// Whether a country was ever explicitly configured (vs. running on the
+// DEFAULT_DIAL_PREFIX fallback). Gates the one-shot adoption of the
+// PhoneBlock account's value at token activation, so re-pairing a device
+// cannot silently overwrite a country the user picked in the web UI.
+bool config_dial_prefix_is_set(void)
+{
+    return config_dial_prefix_valid(s_config.dial_prefix);
 }
 bool        config_auto_update_enabled(void)
 {
@@ -789,6 +836,8 @@ esp_err_t config_update(const config_update_t *u)
                                         s_config.timezone, sizeof(s_config.timezone));
     if (err == ESP_OK) err = set_str_if(h, K_UI_LANG, u->ui_lang,
                                         s_config.ui_lang, sizeof(s_config.ui_lang));
+    if (err == ESP_OK) err = set_str_if(h, K_DIAL_PREFIX, u->dial_prefix,
+                                        s_config.dial_prefix, sizeof(s_config.dial_prefix));
 
     if (err == ESP_OK) err = nvs_commit(h);
     nvs_close(h);

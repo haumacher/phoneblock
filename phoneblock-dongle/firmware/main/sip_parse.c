@@ -5,6 +5,8 @@
 #include <string.h>
 #include <strings.h>
 
+#include "dial_rules.h"
+
 // Must be last: bans unsafe string APIs for the rest of this file.
 #include "banned_apis.h"
 
@@ -371,7 +373,7 @@ bool looks_dialable(const char *number)
     return *number >= '0' && *number <= '9';
 }
 
-void normalize_de(const char *raw, char *out, int cap)
+void normalize_e164(const char *raw, char *out, int cap, const char *dial_prefix)
 {
     char buf[48];
     int n = 0;
@@ -384,22 +386,53 @@ void normalize_de(const char *raw, char *out, int cap)
     const char *src = buf;
     int w = 0;
 
+    const dial_rules_t r = dial_rules_for(dial_prefix);
+    const size_t intl_len  = strlen(r.intl);
+    const size_t trunk_len = strlen(r.trunk);
+    const bool have_cc     = dial_prefix && *dial_prefix == '+' && dial_prefix[1];
+
+    // Append the configured country code, bounded.
+    #define EMIT_CC() do { \
+        for (const char *q = dial_prefix; *q && w < cap - 1; q++) out[w++] = *q; \
+    } while (0)
+
     if (src[0] == '+') {
         // Already in E.164 form — pass through.
-    } else if (src[0] == '0' && src[1] == '0') {
-        // International with "00" escape ("0049…", "001…") → "+<cc>…".
+    } else if (strncmp(src, r.intl, intl_len) == 0
+               && src[intl_len] >= '0' && src[intl_len] <= '9') {
+        // International escape ("00…" in most of Europe, "011…" in NANP,
+        // "810…" in Russia) → "+<cc>…". Tested before the trunk prefix
+        // because one is often a prefix of the other ("0" vs "00").
         out[w++] = '+';
-        src += 2;
-    } else if (src[0] == '0' && src[1] >= '0' && src[1] <= '9') {
-        // National German (single leading zero) → strip zero, prepend +49.
-        out[w++] = '+';
-        out[w++] = '4';
-        out[w++] = '9';
-        src += 1;
+        src += intl_len;
+    } else if (!have_cc) {
+        // No country configured — leave the number alone rather than
+        // guessing. Stripping a trunk prefix without prepending a country
+        // would yield a bare number that looks_dialable() accepts and the
+        // API cannot resolve.
+    } else if (trunk_len > 0 && strncmp(src, r.trunk, trunk_len) == 0
+               && src[trunk_len] >= '0' && src[trunk_len] <= '9') {
+        // National form with the country's trunk prefix ("0" in Germany,
+        // "1" in NANP, "8" in Russia) → strip it, prepend the country.
+        src += trunk_len;
+        EMIT_CC();
+    } else if (src[0] >= '0' && src[0] <= '9') {
+        // A plain national number. For countries with no trunk prefix
+        // (Italy, Denmark, Czechia — 106 of 238) this is the normal form
+        // and any leading zero belongs to the number, so it must survive.
+        // For countries that do have one, this is a number given without
+        // it — the normal way to write a NANP number (issue #432). Either
+        // way the country code is what is missing, so prepend it.
+        //
+        // Safe here in a way it is not for hand-typed barring entries (see
+        // phone_normalise): a caller ID comes from the Fritz!Box in
+        // canonical form, not from someone typing a fragment.
+        EMIT_CC();
     }
     // Else (empty, "**622", "*21#", anything not starting with '+' or a
-    // digit-with-leading-0) → pass through unchanged; looks_dialable()
-    // will reject it.
+    // digit) → pass through unchanged; looks_dialable() will reject it.
+
+    #undef EMIT_CC
 
     while (*src && w < cap - 1) {
         out[w++] = *src++;

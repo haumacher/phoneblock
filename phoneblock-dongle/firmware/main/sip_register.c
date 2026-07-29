@@ -1220,7 +1220,7 @@ static verdict_t check_invite_caller(const char *req, int req_len)
     }
 
     char number[64];
-    normalize_de(raw_user, number, sizeof(number));
+    normalize_e164(raw_user, number, sizeof(number), config_dial_prefix());
     ESP_LOGI(TAG, "caller URI=%s raw=%s normalized=%s", uri, raw_user, number);
 
     if (!looks_dialable(number)) {
