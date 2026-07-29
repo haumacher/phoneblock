@@ -180,6 +180,25 @@ function storePack(reqLang, dict){
 // restore the current state.
 let g_i18nStatus = '';   // '' | 'loading' | 'unavailable'
 function setLangStatus(kind){ g_i18nStatus = kind || ''; applyLangStatus(); }
+
+// The device's view of the localized-asset download (status.i18n), refreshed by
+// every /api/status poll. The page asks it whether a pack is still coming
+// instead of inferring that from /api/i18n/ui serving the English fallback —
+// which is indistinguishable from "it will never come" and used to cost a
+// 60-second poll on every page load.
+let g_i18nState = null;
+function noteI18nState(st){ if (st) g_i18nState = st; }
+// True while the device could still produce a pack for `lang`: it has never
+// synced, a pass is in flight, or the last pass was about a different locale
+// (a switch was just requested — the trigger runs on the scheduler task, so
+// `running` is briefly still false). Unknown state (no status yet) counts as
+// "wait": better a short orange bubble than a wrong red one.
+function i18nPackPending(lang){
+  const st = g_i18nState;
+  if (!st) return true;
+  if (st.have_ui_pack) return true;      // present; the next fetch serves it
+  return !st.ever_ran || !!st.running || st.sync_lang !== lang;
+}
 function applyLangStatus(){
   const el = document.getElementById('langStatus');   // only on the status page
   if (!el) return;
@@ -365,6 +384,7 @@ function pickBrowserLang(){
 // announcement — without overriding a real user choice on later visits.
 function loadDeviceLang(){
   return fetch('/api/status').then(r => r.ok ? r.json() : null).then(d => {
+    noteI18nState(d && d.i18n);
     LANG = (d && d.ui_lang) ? String(d.ui_lang) : 'en';
     if (d && d.ui_lang_set === false){
       const auto = pickBrowserLang();
@@ -393,6 +413,10 @@ function awaitUiPack(lang, tries){
   tries = tries || 0;
   if (LANG !== lang) return;                          // user switched again
   if (I18N[lang] && I18N[lang]['@@locale'] === lang) { setLangStatus(''); return; }
+  // The device says no pack is coming for this locale — say so at once instead
+  // of polling. Re-checked on every tick, so a download that fails mid-poll
+  // also stops here rather than running the bound out.
+  if (!i18nPackPending(lang)) { setLangStatus('unavailable'); return; }
   if (tries > 30) { setLangStatus('unavailable'); return; }  // gave up polling
   setLangStatus('loading');
   setTimeout(() => {
@@ -1147,6 +1171,9 @@ async function refreshAll(){
   ]);
   if (!s) return;
   hideLoginState();
+  // Keeps the "is a pack still coming?" answer fresh for awaitUiPack without
+  // any request of its own — this poll runs every 3 s anyway.
+  noteI18nState(s.i18n);
   resetNonce = s.reset_nonce || '';
   syncRegionSelectors(s);
   const sipConfigured = !!(s.sip.host && s.sip.user);

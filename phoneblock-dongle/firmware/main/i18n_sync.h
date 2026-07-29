@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 // Downloads the localized device assets — the answer-bot announcement audio
@@ -63,3 +64,13 @@ typedef struct {
 } i18n_sync_status_t;
 
 void i18n_sync_snapshot(i18n_sync_status_t *out);
+
+// Path of the downloaded web-UI string pack for `lang` on SPIFFS. This module
+// owns the layout; web.c serves the file at /api/i18n/ui.
+void i18n_sync_ui_path(char *out, size_t cap, const char *lang);
+
+// Whether a downloaded UI pack for `lang` is present. False means
+// /api/i18n/ui falls back to the embedded English pack — which the web UI
+// needs to distinguish from "still downloading", so it can say
+// "translation unavailable" straight away instead of polling for a minute.
+bool i18n_sync_have_ui_pack(const char *lang);
