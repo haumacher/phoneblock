@@ -59,3 +59,26 @@ int version_cmp(const char *a, const char *b)
     // ("rc1" < "rc2" < "rc10").
     return prerelease_cmp(aPre + 1, bPre + 1);
 }
+
+// See version_cmp.h. Strips a trailing git-describe dev suffix
+// ("-<count>-g<hash>") and "-dirty" in place, leaving the release tag.
+void version_release_tag(char *v)
+{
+    if (!v) return;
+    size_t L = strlen(v);
+    if (L >= 6 && strcmp(v + L - 6, "-dirty") == 0) { v[L - 6] = '\0'; }
+
+    // Trailing "-g<hash>": require hex after the 'g'.
+    char *g = strrchr(v, '-');
+    if (!g || g[1] != 'g' || g[2] == '\0') return;
+    for (const char *q = g + 2; *q; q++)
+        if (!isxdigit((unsigned char)*q)) return;
+    *g = '\0';                                   // drop "-g<hash>"
+
+    // Preceding "-<count>": require all digits (the commit count).
+    char *c = strrchr(v, '-');
+    if (!c || c[1] == '\0') { *g = '-'; return; }
+    for (const char *q = c + 1; *q; q++)
+        if (!isdigit((unsigned char)*q)) { *g = '-'; return; }
+    *c = '\0';                                   // drop "-<count>"
+}

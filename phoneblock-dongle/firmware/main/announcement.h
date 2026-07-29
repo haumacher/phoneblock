@@ -7,22 +7,29 @@
 
 #include "esp_err.h"
 
-// User-overridable voice announcement. Serves exactly one G.711 A-law
-// stream (8 kHz, mono, no header), either the default baked into the
-// firmware binary or a custom one uploaded through the web UI and
-// stored in the SPIFFS partition.
+// Voice announcement served to answered spam callers as a single G.711
+// A-law stream (8 kHz, mono, no header). No announcement is baked into the
+// firmware (issue #460 — a single German recording does not scale to the
+// UI's languages). The active announcement is resolved at open() time, in
+// order:
+//   1. a custom file the user uploaded through the web UI
+//      (/spiffs/announcement.alaw), else
+//   2. the localized file downloaded from the CDN for the active ui_lang
+//      (/spiffs/announcement-<lang>.alaw, written by i18n_sync.c), else
+//   3. nothing — open() returns an empty source and the caller answers
+//      silently and hangs up. A missing announcement is not fatal: the
+//      dongle's job is to occupy the spam call, not to say anything.
 //
 // Lifecycle:
 //   - announcement_init() must be called once during boot. It mounts
 //     the SPIFFS partition (formatting it on first boot).
 //   - announcement_open()/read()/close() stream the active announcement
-//     sequentially. A custom SPIFFS file is read straight from flash,
-//     never loaded into a single heap block (the device has no PSRAM,
-//     so a ~240 KB contiguous malloc fails once the heap is
-//     fragmented). The embedded default is served from flash RODATA.
-//   - announcement_write_*() replaces the current SPIFFS file.
-//   - announcement_reset() deletes the SPIFFS file; the next open()
-//     falls back to the embedded default.
+//     sequentially. The SPIFFS file is read straight from flash, never
+//     loaded into a single heap block (the device has no PSRAM, so a
+//     ~240 KB contiguous malloc fails once the heap is fragmented).
+//   - announcement_write_*() replaces the custom SPIFFS file.
+//   - announcement_reset() deletes the custom file; the next open()
+//     falls back to the localized download, or to silence.
 
 #define ANNOUNCEMENT_MAX_BYTES (240 * 1024)   // ~30 s at 8 kB/s A-law
 
@@ -46,6 +53,12 @@ typedef struct {
 // legal (means: no audio, caller should go straight to BYE).
 // The caller MUST release the handle with announcement_close().
 esp_err_t   announcement_open(announcement_src_t *src);
+
+// Build the SPIFFS path of the downloaded announcement for a locale:
+// "/spiffs/announcement-<lang>.alaw". lang must be a config_lang_code_valid()
+// code. Shared by announcement_open() and i18n_sync.c so the naming
+// convention lives in one place. A 48-byte buffer is always enough.
+void        announcement_localized_path(char *out, size_t cap, const char *lang);
 
 // Read up to max bytes sequentially from src into out. Returns the
 // number of bytes produced (0 at end-of-stream or on read error).
@@ -79,9 +92,16 @@ void        announcement_write_abort(void);
 // embedded default.
 esp_err_t   announcement_reset(void);
 
-// True if the current announcement comes from SPIFFS (not the
-// embedded default). For the dashboard.
+// True if a user-uploaded custom announcement is present. For the
+// dashboard (distinguishes a hand-uploaded file from a localized download).
 bool        announcement_is_custom(void);
 
-// Byte length the dashboard reports alongside is_custom.
+// Which announcement open() would serve right now, for the dashboard:
+//   "custom"    — user-uploaded file
+//   "localized" — CDN download for the active ui_lang
+//   "none"      — nothing; answered calls are silent
+const char *announcement_source(void);
+
+// Byte length of the announcement open() would serve, or 0 when none is
+// available. The dashboard reports it alongside announcement_source().
 size_t      announcement_length(void);

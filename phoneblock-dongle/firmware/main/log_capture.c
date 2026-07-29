@@ -146,6 +146,13 @@ static const struct log_suppress k_suppress[] = {
     // (esp-idf httpd_txrx.c: httpd_sock_err("recv", …) →
     //  "httpd_sock_err: error in recv : <errno>".)
     { 'W', "httpd_txrx", "error in recv" },
+    // Same story on the send side: the server logs this WARN when a client
+    // drops the socket while a response is being written — a browser closing
+    // an SSE log stream (/api/log/stream), navigating away, or an idle
+    // keep-alive RST (errno 9 = EBADF / 104 = ECONNRESET). Routine, not a
+    // fault. (esp-idf httpd_txrx.c: httpd_sock_err("send", …) →
+    //  "httpd_sock_err: error in send : <errno>".)
+    { 'W', "httpd_txrx", "error in send" },
 };
 
 int log_capture_suppressed(char level, const char *tag, const char *msg)

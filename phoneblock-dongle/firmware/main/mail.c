@@ -1,5 +1,6 @@
 #include "mail.h"
 
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -21,9 +22,12 @@
 
 #include "config.h"
 #include "heap_guard.h"
+#include "mail_i18n.h"
 #include "mail_html.h"
+#include "mail_rcpt.h"
 #include "smtp_body.h"
 #include "stats.h"
+#include "strbuf.h"
 #include "time_sync.h"
 #include "wifi.h"
 
@@ -45,8 +49,10 @@ static const char *TAG = "mail";
 #define MAIL_DEADLINE_S     45
 
 // Buffer for one command / header line (commands, base64 credentials,
-// the assembled header block). Comfortably larger than the longest line.
-#define MAIL_LINE_CAP       640
+// the assembled header block). Comfortably larger than the longest line:
+// the header block is the biggest consumer, and its "To:" alone can carry
+// MAIL_RCPT_MAX addresses (~330 B) on top of Date/From/Subject/Content-Type.
+#define MAIL_LINE_CAP       1024
 // Upper bound for the assembled status body. The status mail is a single
 // text/html document — summary + up to STATS_MAX_CALLS calls + the log
 // window. text/html (not multipart/alternative) keeps the body — held in
@@ -83,8 +89,13 @@ static char s_update_version[32];
 
 bool mail_configured(void)
 {
-    return config_smtp_host()[0] && config_smtp_user()[0]
-        && config_smtp_pass()[0] && config_smtp_to()[0];
+    if (!(config_smtp_host()[0] && config_smtp_user()[0] && config_smtp_pass()[0]))
+        return false;
+    // The recipient field is a ';'-separated list; it counts as configured
+    // only if at least one usable address comes out of it (a spec of just
+    // separators or whitespace does not).
+    mail_rcpt_list_t rcpts;
+    return mail_rcpt_parse(config_smtp_to(), &rcpts) > 0;
 }
 
 // --- low-level channel I/O ------------------------------------------
@@ -221,11 +232,21 @@ static bool mail_send(const char *subject, const char *content_type, const char 
     const char *user     = config_smtp_user();
     const char *pass     = config_smtp_pass();
     const char *from     = config_smtp_from();
-    const char *to       = config_smtp_to();
     const bool  starttls = strcmp(config_smtp_security(), "starttls") == 0;
     // Stored 0 = "auto": the conventional submission port for the mode.
     int         port     = config_smtp_port();
     if (port <= 0) port = starttls ? 587 : 465;
+
+    // Recipients: the stored spec is a ';'-separated list, one RCPT TO per
+    // address below. mail_configured() already guaranteed at least one.
+    mail_rcpt_list_t rcpts;
+    mail_rcpt_parse(config_smtp_to(), &rcpts);
+    if (rcpts.dropped)
+        ESP_LOGW(TAG, "recipient list: entries dropped (over %d, or longer than %d B)",
+                 MAIL_RCPT_MAX, MAIL_RCPT_ADDR_CAP - 1);
+    // Comma-separated form for the RFC 5322 "To:" header and the log lines.
+    char to_hdr[MAIL_RCPT_MAX * (MAIL_RCPT_ADDR_CAP + 4)];
+    mail_rcpt_header(&rcpts, to_hdr, sizeof(to_hdr));
 
     int64_t deadline = esp_timer_get_time() + (int64_t)MAIL_DEADLINE_S * 1000000;
 
@@ -318,11 +339,22 @@ static bool mail_send(const char *subject, const char *content_type, const char 
     snprintf(buf, MAIL_LINE_CAP, "MAIL FROM:<%s>\r\n", from);
     ret = smtp_cmd(&c, buf, deadline);
     if (ret < 200 || ret > 299) goto done;
-    snprintf(buf, MAIL_LINE_CAP, "RCPT TO:<%s>\r\n", to);
-    ret = smtp_cmd(&c, buf, deadline);
-    if (ret < 200 || ret > 299) goto done;
-    ret = smtp_cmd(&c, "DATA\r\n", deadline);
-    if (ret != 354) goto done;
+    // One RCPT TO per recipient (RFC 5321 §3.3). A single rejected address
+    // must not sink the whole mail — providers reject individual recipients
+    // for their own reasons (unknown mailbox, per-recipient policy) — so log
+    // each refusal and go on; only an envelope with no accepted recipient at
+    // all is fatal, since DATA would then be rejected anyway.
+    int accepted = 0;
+    for (int i = 0; i < rcpts.count; i++) {
+        snprintf(buf, MAIL_LINE_CAP, "RCPT TO:<%s>\r\n", rcpts.addr[i]);
+        ret = smtp_cmd(&c, buf, deadline);
+        if (ret >= 200 && ret <= 299) accepted++;
+        else ESP_LOGW(TAG, "recipient %s rejected (code %d)", rcpts.addr[i], ret);
+    }
+    if (accepted == 0) {
+        ESP_LOGW(TAG, "no recipient accepted — mail not sent");
+        goto done;
+    }
 
     // RFC 5322 Date header, in UTC so it is independent of the configured
     // timezone. Without it, receiving clients (e.g. Thunderbird) fall back to
@@ -340,20 +372,26 @@ static bool mail_send(const char *subject, const char *content_type, const char 
                  "Date: %a, %d %b %Y %H:%M:%S +0000\r\n", &gmt);
     }
 
-    // Header block + body. UTF-8 body declared via Content-Type; the
-    // Subject stays ASCII so no encoded-word is needed.
+    // Header block. UTF-8 body declared via Content-Type; the Subject stays
+    // ASCII so no encoded-word is needed. Assembled before DATA so that a
+    // header block which does not fit is caught while the transaction can
+    // still be abandoned cleanly — a dropped header would be malformed mail.
     {
-        int hlen = snprintf(buf, MAIL_LINE_CAP,
-            "%s"
-            "From: PhoneBlock Dongle <%s>\r\n"
-            "To: <%s>\r\n"
-            "Subject: %s\r\n"
-            "MIME-Version: 1.0\r\n"
-            "Content-Type: %s\r\n"
-            "\r\n",
-            date_hdr, from, to, subject, content_type);
-        if (hlen < 0 || chan_write_all(&c, (unsigned char *)buf, (size_t)hlen,
-                                       deadline) != 0)
+        strbuf_t sb = sb_init(buf, MAIL_LINE_CAP);
+        sb_appendf(&sb, "%s", date_hdr);
+        sb_appendf(&sb, "From: PhoneBlock Dongle <%s>\r\n", from);
+        sb_appendf(&sb, "To: %s\r\n", to_hdr);
+        sb_appendf(&sb, "Subject: %s\r\n", subject);
+        sb_appendf(&sb, "MIME-Version: 1.0\r\n");
+        sb_appendf(&sb, "Content-Type: %s\r\n", content_type);
+        sb_appendf(&sb, "\r\n");
+        if (sb.truncated) {
+            ESP_LOGW(TAG, "mail header too long — mail not sent");
+            goto done;
+        }
+        ret = smtp_cmd(&c, "DATA\r\n", deadline);
+        if (ret != 354) goto done;
+        if (chan_write_all(&c, (unsigned char *)buf, (size_t)sb.len, deadline) != 0)
             goto done;
     }
     if (body && body[0] && smtp_write_body(&c, body, deadline) != 0)
@@ -364,7 +402,8 @@ static bool mail_send(const char *subject, const char *content_type, const char 
 
     smtp_cmd(&c, "QUIT\r\n", deadline);                   // best-effort
     ok = true;
-    ESP_LOGI(TAG, "status mail sent to %s", to);
+    ESP_LOGI(TAG, "status mail sent to %s (%d of %d recipient(s))",
+             to_hdr, accepted, rcpts.count);
 
 done:
     if (c.tls_up) mbedtls_ssl_close_notify(&c.ssl);
@@ -374,7 +413,7 @@ done:
     mbedtls_ctr_drbg_free(&drbg);
     mbedtls_entropy_free(&entropy);
     free(buf);
-    if (!ok) ESP_LOGW(TAG, "status mail to %s failed", to);
+    if (!ok) ESP_LOGW(TAG, "status mail to %s failed", to_hdr);
     return ok;
 }
 
@@ -402,40 +441,50 @@ static void format_event_time(int64_t at_us, char *out, size_t cap)
     }
 }
 
+// mail_render() (ICU {name} substitution for the localized strings) lives in
+// mail_html.c so it is host-tested (test/test_mail_html.c).
+
 // Verdict label matching the web UI's wording (status.calls.verdict.* in
-// index.html). Both surfaces render the same pb_assessment_t, so keep the
-// wording here and the i18n strings there in lock-step.
+// index.html). Both surfaces render the same pb_assessment_t; the wording
+// lives in mail_i18n (embedded English fallback + downloaded pack) and must
+// stay in lock-step with the UI i18n strings.
 static void verdict_label(const stats_call_t *c, char *out, size_t cap)
 {
-    const char *scope = c->wildcard ? "Bereich" : "Nummer";
+    const char *scope = c->wildcard ? mail_i18n_str("verdict.scope.range")
+                                    : mail_i18n_str("verdict.scope.number");
+    char direct[12], range[12];
+    snprintf(direct, sizeof(direct), "%d", c->direct_votes);
+    snprintf(range,  sizeof(range),  "%d", c->range_votes);
     switch (c->assessment) {
     case PB_ASSESS_BLACKLIST:
-        snprintf(out, cap, "SPAM (Blacklist, %s)", scope);
+        mail_render(out, cap, mail_i18n_str("verdict.spam_blacklist"),
+                    "scope", scope, (const char *)NULL);
         break;
     case PB_ASSESS_SPAM_LIST:
-        snprintf(out, cap, "SPAM (Blockliste, %s)", scope);
+        mail_render(out, cap, mail_i18n_str("verdict.spam_blocklist"),
+                    "scope", scope, (const char *)NULL);
         break;
     case PB_ASSESS_SPAM:
         // Test-forced spam carries no counts (both 0) — show plain "SPAM".
         if (c->direct_votes == 0 && c->range_votes == 0)
-            snprintf(out, cap, "SPAM");
+            mail_render(out, cap, mail_i18n_str("verdict.spam"), (const char *)NULL);
         else
-            snprintf(out, cap, "SPAM (%d direkt, %d Range)",
-                     c->direct_votes, c->range_votes);
+            mail_render(out, cap, mail_i18n_str("verdict.spam_votes"),
+                        "direct", direct, "range", range, (const char *)NULL);
         break;
     case PB_ASSESS_SUSPECT:
-        snprintf(out, cap, "SPAM-VERDACHT (%d direkt, %d Range)",
-                 c->direct_votes, c->range_votes);
+        mail_render(out, cap, mail_i18n_str("verdict.spam_suspect"),
+                    "direct", direct, "range", range, (const char *)NULL);
         break;
     case PB_ASSESS_LEGITIMATE:
-        snprintf(out, cap, "legitim");
+        mail_render(out, cap, mail_i18n_str("verdict.legitimate"), (const char *)NULL);
         break;
     case PB_ASSESS_ERROR:
-        snprintf(out, cap, "Fehler");
+        mail_render(out, cap, mail_i18n_str("verdict.error"), (const char *)NULL);
         break;
     case PB_ASSESS_UNKNOWN:
     default:
-        snprintf(out, cap, "unbekannt");
+        mail_render(out, cap, mail_i18n_str("verdict.unknown"), (const char *)NULL);
         break;
     }
 }
@@ -445,17 +494,23 @@ static size_t append_summary_html(char *body, size_t cap, size_t len,
                                   const stats_counters_t *cnt)
 {
     int64_t up_s = esp_timer_get_time() / 1000000;
-    char line[320];
+    char hours[16], minutes[16], total[16], blocked[16], passed[16];
+    snprintf(hours,   sizeof(hours),   "%lld", (long long)(up_s / 3600));
+    snprintf(minutes, sizeof(minutes), "%lld", (long long)((up_s % 3600) / 60));
+    snprintf(total,   sizeof(total),   "%u", (unsigned)cnt->total_calls);
+    snprintf(blocked, sizeof(blocked), "%u", (unsigned)cnt->spam_blocked);
+    snprintf(passed,  sizeof(passed),  "%u", (unsigned)cnt->legitimate);
+    char uptime[64], counts[192];
+    mail_render(uptime, sizeof(uptime), mail_i18n_str("sum.uptime"),
+                "hours", hours, "minutes", minutes, (const char *)NULL);
+    mail_render(counts, sizeof(counts), mail_i18n_str("sum.calls"),
+                "total", total, "blocked", blocked, "passed", passed,
+                (const char *)NULL);
+    char line[400];
     snprintf(line, sizeof(line),
         "<p style=\"font-size:14px;line-height:1.5\">"
-        "Ger&auml;t: <b>%s</b><br>"
-        "Laufzeit: %lldh %lldmin<br>"
-        "Anrufe gesamt: %u &nbsp;|&nbsp; SPAM blockiert: %u &nbsp;|&nbsp; durchgestellt: %u"
-        "</p>",
-        config_device_id(),
-        (long long)(up_s / 3600), (long long)((up_s % 3600) / 60),
-        (unsigned)cnt->total_calls, (unsigned)cnt->spam_blocked,
-        (unsigned)cnt->legitimate);
+        "%s <b>%s</b><br>%s<br>%s</p>",
+        mail_i18n_str("sum.device"), config_device_id(), uptime, counts);
     return append_str(body, cap, len, line);
 }
 
@@ -469,12 +524,20 @@ static size_t append_calls_html(char *body, size_t cap, size_t len,
     if (ncalls <= 0) return len;
     const char *base = config_phoneblock_base_url();
 
-    len = append_str(body, cap, len,
-        "<h3 style=\"font-size:15px;margin:1.2em 0 .3em\">Letzte Anrufe</h3>"
+    char heading[320];
+    snprintf(heading, sizeof(heading),
+        "<h3 style=\"font-size:15px;margin:1.2em 0 .3em\">%s</h3>"
         "<table cellpadding=\"5\" cellspacing=\"0\" "
         "style=\"border-collapse:collapse;font-size:14px\">"
-        "<tr style=\"text-align:left;color:#555;border-bottom:1px solid #ccc\">"
-        "<th>Zeit</th><th>Nummer</th><th>Name</th><th>Bewertung</th></tr>");
+        "<tr style=\"text-align:left;color:#555;border-bottom:1px solid #ccc\">",
+        mail_i18n_str("calls.heading"));
+    len = append_str(body, cap, len, heading);
+    char hrow[192];
+    snprintf(hrow, sizeof(hrow),
+        "<th>%s</th><th>%s</th><th>%s</th><th>%s</th></tr>",
+        mail_i18n_str("calls.time"), mail_i18n_str("calls.number"),
+        mail_i18n_str("calls.name"), mail_i18n_str("calls.rating"));
+    len = append_str(body, cap, len, hrow);
 
     for (int i = 0; i < ncalls && len < cap - 400; i++) {
         const stats_call_t *c = &calls[i];
@@ -531,9 +594,12 @@ static size_t append_log_html(char *body, size_t cap, size_t len,
                  : (e->level == ESP_LOG_WARN)  ? 'W' : 0;
         if (!lvl) continue;
         if (!header) {
-            len = append_str(body, cap, len,
-                "<h3 style=\"font-size:15px;margin:1.2em 0 .3em\">Neue Meldungen im Protokoll</h3>"
-                "<pre style=\"font-size:13px;white-space:pre-wrap;word-break:break-word;margin:0\">");
+            char hd[256];
+            snprintf(hd, sizeof(hd),
+                "<h3 style=\"font-size:15px;margin:1.2em 0 .3em\">%s</h3>"
+                "<pre style=\"font-size:13px;white-space:pre-wrap;word-break:break-word;margin:0\">",
+                mail_i18n_str("log.heading"));
+            len = append_str(body, cap, len, hd);
             header = true;
         }
         char when[24];
@@ -560,16 +626,24 @@ static size_t build_status_html(char *body, size_t cap,
                                 int64_t since_us, int64_t *newest_us,
                                 bool include_log, int new_calls)
 {
-    size_t len = append_str(body, cap, 0,
+    char intro[224];
+    snprintf(intro, sizeof(intro),
         "<html><body style=\"font-family:Arial,Helvetica,sans-serif;color:#222\">"
-        "<p>Statusmeldung deines PhoneBlock-Dongles.</p>");
+        "<p>%s</p>", mail_i18n_str("intro"));
+    size_t len = append_str(body, cap, 0, intro);
     len = append_summary_html(body, cap, len, cnt);
     if (new_calls > 0) {
-        char line[160];
-        snprintf(line, sizeof(line), new_calls == 1
-            ? "<p>Seit der letzten Meldung ist <b>1</b> neuer Anruf eingegangen.</p>"
-            : "<p>Seit der letzten Meldung sind <b>%d</b> neue Anrufe eingegangen.</p>",
-            new_calls);
+        char sentence[192], line[224];
+        if (new_calls == 1) {
+            mail_render(sentence, sizeof(sentence), mail_i18n_str("newcalls.one"),
+                        (const char *)NULL);
+        } else {
+            char count[12];
+            snprintf(count, sizeof(count), "%d", new_calls);
+            mail_render(sentence, sizeof(sentence), mail_i18n_str("newcalls.many"),
+                        "count", count, (const char *)NULL);
+        }
+        snprintf(line, sizeof(line), "<p>%s</p>", sentence);
         len = append_str(body, cap, len, line);
     }
     len = append_calls_html(body, cap, len, calls, ncalls);
@@ -630,9 +704,9 @@ void mail_daily_flush(void)
                       have_new_calls ? new_calls : 0);
 
     const char *subject =
-        (have_new_error && have_new_calls) ? "PhoneBlock-Dongle: Fehler und neue Anrufe"
-      : have_new_error                     ? "PhoneBlock-Dongle: Fehler im Protokoll"
-      :                                      "PhoneBlock-Dongle: Neue Anrufe";
+        (have_new_error && have_new_calls) ? mail_i18n_str("subj.error_and_calls")
+      : have_new_error                     ? mail_i18n_str("subj.error")
+      :                                      mail_i18n_str("subj.calls");
 
     if (mail_send(subject, MAIL_BODY_CT, body)) {
         // Advance the marks only after a confirmed send, so a failure
@@ -663,7 +737,7 @@ bool mail_send_test(void)
     build_status_html(body, MAIL_BODY_CAP, &cnt, calls, ncalls, errs, n,
                       0, &newest, true, 0);
 
-    bool ok = mail_send("PhoneBlock-Dongle: Statusmeldung", MAIL_BODY_CT, body);
+    bool ok = mail_send(mail_i18n_str("subj.status"), MAIL_BODY_CT, body);
     free(body);
     return ok;
 }
@@ -692,45 +766,51 @@ void mail_report_update(void)
     char *body = malloc(MAIL_BODY_CAP);
     if (!body) return;
 
-    // One sentence: "Die Firmware auf deinem <Dongle> wurde auf <Version>
-    // aktualisiert." — the dongle name links to its own web UI (by IP, the
-    // address that is guaranteed reachable on the LAN) and the version links
-    // to that release's changelog. Each link degrades to plain text when its
-    // target is unavailable (no IP / a dev build with no changelog page).
-    size_t len = append_str(body, MAIL_BODY_CAP, 0,
-        "<html><body style=\"font-family:Arial,Helvetica,sans-serif;color:#222\">"
-        "<p>Die Firmware auf deinem ");
-
+    // One translatable sentence with two placeholders: {device} (the dongle
+    // name, linked to its own web UI by LAN IP) and {version} (linked to the
+    // release changelog). Build each fragment here — linked, or plain text
+    // when the target is unavailable (no IP / a dev build with no changelog) —
+    // then substitute into the localized message so the translation controls
+    // word order. "PhoneBlock-Dongle" is a product name, not translated.
+    char dev[128];
+    size_t dl = 0;
     char ip[16];
     if (wifi_get_ip_str(ip, sizeof(ip))) {
-        len = append_str(body, MAIL_BODY_CAP, len, "<a href=\"http://");
-        len = append_html_escaped(body, MAIL_BODY_CAP, len, ip);
-        len = append_str(body, MAIL_BODY_CAP, len,
+        dl = append_str(dev, sizeof(dev), dl, "<a href=\"http://");
+        dl = append_html_escaped(dev, sizeof(dev), dl, ip);
+        dl = append_str(dev, sizeof(dev), dl,
             "/\" target=\"_blank\" rel=\"noopener\">PhoneBlock-Dongle</a>");
     } else {
-        len = append_str(body, MAIL_BODY_CAP, len, "PhoneBlock-Dongle");
+        dl = append_str(dev, sizeof(dev), dl, "PhoneBlock-Dongle");
     }
+    (void)dl;
 
-    len = append_str(body, MAIL_BODY_CAP, len, " wurde auf ");
-
+    char ver[224];
+    size_t vl = 0;
     char url[160];
     if (mail_changelog_url(s_update_version, url, sizeof(url))) {
-        len = append_str(body, MAIL_BODY_CAP, len, "<a href=\"");
-        len = append_html_escaped(body, MAIL_BODY_CAP, len, url);
-        len = append_str(body, MAIL_BODY_CAP, len,
-            "\" target=\"_blank\" rel=\"noopener\">Version ");
-        len = append_html_escaped(body, MAIL_BODY_CAP, len, s_update_version);
-        len = append_str(body, MAIL_BODY_CAP, len, "</a>");
+        vl = append_str(ver, sizeof(ver), vl, "<a href=\"");
+        vl = append_html_escaped(ver, sizeof(ver), vl, url);
+        vl = append_str(ver, sizeof(ver), vl, "\" target=\"_blank\" rel=\"noopener\">");
+        vl = append_html_escaped(ver, sizeof(ver), vl, s_update_version);
+        vl = append_str(ver, sizeof(ver), vl, "</a>");
     } else {
-        len = append_str(body, MAIL_BODY_CAP, len, "Version ");
-        len = append_html_escaped(body, MAIL_BODY_CAP, len, s_update_version);
+        vl = append_html_escaped(ver, sizeof(ver), vl, s_update_version);
     }
+    (void)vl;
 
-    append_str(body, MAIL_BODY_CAP, len, " aktualisiert.</p></body></html>\n");
+    char sentence[512];
+    mail_render(sentence, sizeof(sentence), mail_i18n_str("update.body"),
+                "device", dev, "version", ver, (const char *)NULL);
+
+    size_t len = append_str(body, MAIL_BODY_CAP, 0,
+        "<html><body style=\"font-family:Arial,Helvetica,sans-serif;color:#222\"><p>");
+    len = append_str(body, MAIL_BODY_CAP, len, sentence);
+    append_str(body, MAIL_BODY_CAP, len, "</p></body></html>\n");
 
     // Clear the latch only after a confirmed send, so a transient SMTP
     // failure retries on the next mail run instead of losing the notice.
-    if (mail_send("PhoneBlock-Dongle: Firmware aktualisiert", MAIL_BODY_CT, body))
+    if (mail_send(mail_i18n_str("subj.update"), MAIL_BODY_CT, body))
         s_update_pending = false;
     free(body);
 }

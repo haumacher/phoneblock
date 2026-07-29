@@ -133,14 +133,21 @@ int main(void)
     CHECK_CHAR("suppress/httpd-recv-warn", 1,
                log_capture_suppressed('W', "httpd_txrx",
                                       "httpd_sock_err: error in recv : 104"));
-    // A send error from the same helper is NOT the routine client-drop case.
-    CHECK_CHAR("suppress/httpd-send-warn", 0,
+    // The matching send WARN is the same routine client-drop case (a browser
+    // closing an SSE stream mid-send, EBADF/ECONNRESET) — also dropped.
+    CHECK_CHAR("suppress/httpd-send-warn", 1,
+               log_capture_suppressed('W', "httpd_txrx",
+                                      "httpd_sock_err: error in send : 9"));
+    CHECK_CHAR("suppress/httpd-send-warn-104", 1,
                log_capture_suppressed('W', "httpd_txrx",
                                       "httpd_sock_err: error in send : 104"));
     // Only WARN is suppressed — a genuine ERROR still surfaces.
     CHECK_CHAR("suppress/httpd-recv-error", 0,
                log_capture_suppressed('E', "httpd_txrx",
                                       "httpd_sock_err: error in recv : 104"));
+    CHECK_CHAR("suppress/httpd-send-error", 0,
+               log_capture_suppressed('E', "httpd_txrx",
+                                      "httpd_sock_err: error in send : 9"));
     // A different tag with the same substring is left alone.
     CHECK_CHAR("suppress/other-tag", 0,
                log_capture_suppressed('W', "sip", "error in recv : 104"));

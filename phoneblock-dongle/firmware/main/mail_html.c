@@ -1,5 +1,8 @@
 #include "mail_html.h"
 
+#include <stdarg.h>
+#include <string.h>
+
 // Must be last: bans unsafe string APIs for the rest of this file.
 #include "banned_apis.h"
 
@@ -112,4 +115,41 @@ bool mail_changelog_url(const char *version, char *out, size_t cap)
         return false;
     }
     return true;
+}
+
+void mail_render(char *out, size_t cap, const char *tmpl, ...)
+{
+    const char *keys[6], *vals[6];
+    int n = 0;
+    va_list ap;
+    va_start(ap, tmpl);
+    const char *k;
+    while ((k = va_arg(ap, const char *)) != NULL && n < 6) {
+        keys[n] = k;
+        vals[n] = va_arg(ap, const char *);
+        n++;
+    }
+    va_end(ap);
+
+    size_t len = 0;
+    for (const char *p = tmpl; *p; ) {
+        if (*p == '{') {
+            const char *e = strchr(p, '}');
+            if (e) {
+                size_t klen = (size_t)(e - p - 1);
+                int m = -1;
+                for (int i = 0; i < n; i++)
+                    if (strlen(keys[i]) == klen &&
+                        strncmp(p + 1, keys[i], klen) == 0) { m = i; break; }
+                if (m >= 0) {
+                    len = append_str(out, cap, len, vals[m]);
+                    p = e + 1;
+                    continue;
+                }
+            }
+        }
+        char c[2] = { *p, '\0' };
+        len = append_str(out, cap, len, c);
+        p++;
+    }
 }

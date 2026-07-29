@@ -188,13 +188,17 @@ menu "PhoneBlock Dongle"
             chip type and this setting is ignored.
 
     config RTP_PLAY_ANNOUNCEMENT
-        bool "Play embedded voice announcement to spam callers"
+        bool "Play voice announcement to spam callers"
         default y
         help
-            When enabled, answered spam calls stream the audio file
-            embedded from main/audio/announcement.alaw to the caller
-            (G.711 A-law, 8 kHz, 20 ms frames) before BYE. Disable to
-            send BYE immediately after ACK (silent pickup, old behavior).
+            When enabled, answered spam calls stream the active
+            announcement to the caller (G.711 A-law, 8 kHz, 20 ms frames)
+            before BYE. The announcement is resolved at call time from
+            SPIFFS: a user-uploaded custom file, else the localized file
+            downloaded from the CDN for the selected ui_lang, else nothing
+            (silent pickup). No announcement is baked into the firmware
+            (issue #460). Disable this to always send BYE immediately after
+            ACK regardless of any stored file.
 
     config CRASH_TEST_ENABLE
         bool "Expose a deliberate-crash button in the web UI (dev only)"

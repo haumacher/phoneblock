@@ -186,6 +186,19 @@ CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE=y
 # next boot after flashing.
 CONFIG_SPIFFS_PAGE_SIZE=1024
 
+# SPIFFS garbage-collection budget. The default (10) lets an on-demand GC
+# erase at most 10 logical blocks (~40 KB) before a write gives up with a
+# "full" error — even when the partition has plenty of free bytes but they
+# are fragmented across partially-used blocks. That is exactly what happens
+# when i18n_sync prunes the previous locale (creating scattered deleted
+# pages) and then downloads the new ~25 KB UI/mail packs: the write hit
+# SPIFFS_ERR_FULL mid-file (observed as "fwrite short") non-deterministically
+# depending on fragmentation, leaving the pack half-written and the UI stuck
+# on the embedded English fallback. Raise the budget so GC can consolidate
+# enough blocks to complete these writes. Cost: a GC-heavy write may block
+# longer, which is fine on the background scheduler task.
+CONFIG_SPIFFS_GC_MAX_RUNS=128
+
 # PhoneBlock backend. Production by default; the test instance
 # "https://phoneblock.net/pb-test" goes in .local for dev builds.
 # Tokens are bound to one instance — a token generated on the test

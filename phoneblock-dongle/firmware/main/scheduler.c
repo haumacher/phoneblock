@@ -13,6 +13,7 @@
 
 #include "blocklist_sync.h"
 #include "firmware_update.h"
+#include "i18n_sync.h"
 #include "mail.h"
 #include "sched_time.h"
 #include "selftest.h"
@@ -40,6 +41,9 @@ static const char *TAG = "scheduler";
 // The send runs here, on the scheduler task's stack, so the httpd handler
 // never blocks on the SMTP/TLS conversation (see scheduler_request_mail_test).
 #define NOTIFY_MAIL_TEST (1u << 3)
+// Task-notification bit for an on-demand localized-asset download, raised
+// when the user switches the UI language (see i18n_sync_trigger_now).
+#define NOTIFY_I18N      (1u << 4)
 
 // While the wall clock is not yet set, a daily job cannot know when its
 // local time-of-day next falls. Re-check this often so it fires promptly
@@ -83,6 +87,7 @@ static void run_sync(void)      { sync_run(false); }   // scheduled: honour togg
 // MAIL_FIRST_DELAY_S after boot, so the update notice goes out within minutes.
 static void run_mail(void)      { mail_report_update(); mail_daily_flush(); }
 static void run_blocklist(void) { blocklist_sync_run(); }
+static void run_i18n(void)      { i18n_sync_run(); }
 
 // First mail evaluation 5 min after boot: long enough for Wi-Fi/DHCP to
 // settle, short enough that a crash-reboot's ERROR is mailed promptly.
@@ -104,6 +109,12 @@ static void run_blocklist(void) { blocklist_sync_run(); }
 // Wi-Fi/DHCP/TLS to settle. The job short-circuits without a token.
 #define BLOCKLIST_FIRST_DELAY_S  (2 * 60)
 
+// First localized-asset sync 3 min after boot — after Wi-Fi/DHCP/TLS settle,
+// and staggered a minute behind the blocklist download so the two CDN pulls
+// don't contend. Also runs daily to pick up re-recorded announcements /
+// updated string packs. A no-op when offline or the manifest is unreachable.
+#define I18N_FIRST_DELAY_S       (3 * 60)
+
 // The server-facing housekeeping jobs stay interval-based: they are
 // best-effort and deliberately spread across the fleet by boot time +
 // jitter, so a fleet-wide power blip doesn't align every dongle onto the
@@ -118,6 +129,7 @@ static sched_job_t s_jobs[] = {
     { .name = "sync",      .kind = SCHED_INTERVAL, .interval_s = DAY_S, .jitter_s = JITTER_S, .run = run_sync },
     { .name = "mail",      .kind = SCHED_DAILY,    .at_hour = MAIL_DAILY_HOUR, .first_delay_s = MAIL_FIRST_DELAY_S, .run = run_mail },
     { .name = "blocklist", .kind = SCHED_INTERVAL, .interval_s = DAY_S, .jitter_s = JITTER_S, .first_delay_s = BLOCKLIST_FIRST_DELAY_S, .run = run_blocklist },
+    { .name = "i18n",      .kind = SCHED_INTERVAL, .interval_s = DAY_S, .jitter_s = JITTER_S, .first_delay_s = I18N_FIRST_DELAY_S, .run = run_i18n },
 };
 #define JOB_COUNT (sizeof(s_jobs) / sizeof(s_jobs[0]))
 
@@ -217,6 +229,18 @@ static void scheduler_task(void *arg)
             mail_send_test();
         }
 
+        // On-demand localized-asset download (user switched UI language),
+        // then reset its scheduled slot so the daily run doesn't fire again
+        // right behind it.
+        if (notify & NOTIFY_I18N) {
+            ESP_LOGI(TAG, "manual i18n trigger");
+            i18n_sync_run();
+            for (size_t i = 0; i < JOB_COUNT; i++)
+                if (s_jobs[i].run == run_i18n)
+                    s_jobs[i].next_due_us = next_due(&s_jobs[i],
+                                                     esp_timer_get_time());
+        }
+
         // The wall clock just became valid (or stepped to a new time).
         // Daily jobs parked on the clock-wait retry — or computed against
         // a now-stale time — must recompute against real local time.
@@ -262,6 +286,13 @@ bool scheduler_request_mail_test(void)
     return true;
 }
 
+bool scheduler_request_i18n_sync(void)
+{
+    if (!s_task) return false;
+    xTaskNotify(s_task, NOTIFY_I18N, eSetBits);
+    return true;
+}
+
 void scheduler_notify_time_synced(void)
 {
     // No-op before the task exists: scheduler_task() computes daily due
@@ -270,13 +301,21 @@ void scheduler_notify_time_synced(void)
     if (s_task) xTaskNotify(s_task, NOTIFY_TIME, eSetBits);
 }
 
-void scheduler_start(void)
+void scheduler_start(bool i18n_refresh_soon)
 {
     if (s_task) return;
     // Create the sync / blocklist status mutexes before the task (or any
     // web-UI snapshot) can touch them.
     sync_init();
     blocklist_sync_init();
+    i18n_sync_init();
+    // First boot after a firmware update: pull this version's localized assets
+    // ~30 s after boot (enough for Wi-Fi/DHCP to come up) instead of the usual
+    // 3 min, so the new release's announcement / mail / UI refresh promptly.
+    if (i18n_refresh_soon) {
+        for (size_t i = 0; i < JOB_COUNT; i++)
+            if (s_jobs[i].run == run_i18n) s_jobs[i].first_delay_s = 30;
+    }
     // 16 KB: sized for the heaviest job, the status-mail send. Its SMTP
     // client runs the mbedTLS handshake with full cert-chain verification
     // inline on this stack (esp_crt_bundle + ssl_config/entropy/drbg as

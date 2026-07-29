@@ -25,6 +25,16 @@ size_t append_html_escaped(char *body, size_t cap, size_t len, const char *s);
 // whose leading '+' must become %2B).
 size_t append_url_encoded(char *body, size_t cap, size_t len, const char *s);
 
+// Render a localized message template into out[cap], substituting ICU named
+// placeholders {name} from the (key, value) varargs, terminated by a NULL
+// key. Values are inserted verbatim (the caller pre-escapes dynamic parts and
+// formats numbers to strings). An unknown/absent placeholder is left as-is and
+// a template with none is copied through; never writes past cap. This is the
+// single placeholder style for all localized mail strings (mail_i18n /
+// scripts/i18n) — the same the auto-translate-arb plugin uses — so a
+// translation can reorder placeholders for its grammar. Host-tested.
+void mail_render(char *out, size_t cap, const char *tmpl, ...);
+
 // Build the GitHub release-notes ("changelog") URL for firmware `version`
 // into out[cap]. Returns true and a NUL-terminated URL when `version` is a
 // released form — "X.Y.Z" optionally followed by "-<suffix>" of
