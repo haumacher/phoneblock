@@ -708,7 +708,7 @@
   "status.mail.to": "Empfänger (E-Mail, mehrere mit „;\" trennen)",
   "@status.mail.to": {
     "description": "Dongle web UI: status.mail.to",
-    "x-translated": "e0b2b7fe"
+    "x-translated": "e3608712"
   },
   "status.mail.help": "Tipp: Bei Gmail oder Outlook brauchst du meist ein „App-Passwort\" (bei aktivierter Zwei-Faktor-Anmeldung), nicht dein normales Kontopasswort. Klassische Anbieter wie GMX, web.de oder mailbox.org funktionieren mit Benutzername und Passwort.",
   "@status.mail.help": {
@@ -797,7 +797,8 @@
   },
   "status.mail.err.to_many": "Höchstens {max} Empfänger möglich",
   "@status.mail.err.to_many": {
-    "description": "Dongle web UI: status.mail.err.to_many"
+    "description": "Dongle web UI: status.mail.err.to_many",
+    "x-translated": "abc7054d"
   },
   "status.mail.err.from": "Absender ungültig",
   "@status.mail.err.from": {
