@@ -579,6 +579,32 @@ public class TestDB {
 		}
 	}
 
+	/**
+	 * The personal lists handed to the binary blocklist download must carry the wildcards
+	 * (#514) — without them the dongle's personal file has an empty prefix section and a blocked
+	 * range is never caught locally.
+	 */
+	@Test
+	void testPersonalListsIncludeWildcards() {
+		_db.createUser("wc-lists", "WC", "de", "+49");
+		assertEquals("030123", _db.addWildcard("wc-lists", "+4930123", true, 100));
+		assertEquals("0800", _db.addWildcard("wc-lists", "+49800", false, 100));
+
+		try (SqlSession tx = _db.openSession()) {
+			BlockList bl = tx.getMapper(BlockList.class);
+			long userId = tx.getMapper(Users.class).getUserId("wc-lists").longValue();
+			bl.addPersonalization(userId, "0501234567", null, 1);
+			bl.addExclude(userId, "0301235555", null, 1);
+			tx.commit();
+		}
+
+		DB.PersonalLists lists = _db.getPersonalLists("wc-lists");
+		assertEquals(List.of("0501234567"), lists.blacklist());
+		assertEquals(List.of("0301235555"), lists.whitelist());
+		assertEquals(List.of("030123"), lists.blockedWildcards());
+		assertEquals(List.of("0800"), lists.allowedWildcards());
+	}
+
 	@Test
 	void testWildcardBlockHidesButKeepsCoveredExactBlocks() {
 		_db.createUser("wc-subsume", "WC", "de", "+49");

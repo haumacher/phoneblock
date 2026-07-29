@@ -2044,26 +2044,66 @@ public class DB {
 		return (int) Math.round(Math.max(0.0, spam - legit));
 	}
 
-	/** A user's personal black and white phone-ID lists, in raw DB format. */
+	/**
+	 * A user's personal black and white lists, in raw DB format: the exact phone IDs plus the
+	 * wildcard prefixes (#377), which are a separate row kind and must be matched by prefix.
+	 *
+	 * <p>
+	 * Both kinds belong together in every consumer of the personal lists — omitting the
+	 * wildcards silently downgrades a blocked range to "unknown" (#514) — so they travel in one
+	 * object rather than being fetched separately per call site.
+	 * </p>
+	 */
 	public static final class PersonalLists {
 
 		private final List<String> _blacklist;
 
 		private final List<String> _whitelist;
 
-		PersonalLists(List<String> blacklist, List<String> whitelist) {
+		private final List<String> _blockedWildcards;
+
+		private final List<String> _allowedWildcards;
+
+		/**
+		 * Creates a {@link PersonalLists}.
+		 *
+		 * @param blacklist        See {@link #blacklist()}.
+		 * @param whitelist        See {@link #whitelist()}.
+		 * @param blockedWildcards See {@link #blockedWildcards()}.
+		 * @param allowedWildcards See {@link #allowedWildcards()}.
+		 */
+		public PersonalLists(List<String> blacklist, List<String> whitelist,
+				List<String> blockedWildcards, List<String> allowedWildcards) {
 			_blacklist = blacklist;
 			_whitelist = whitelist;
+			_blockedWildcards = blockedWildcards;
+			_allowedWildcards = allowedWildcards;
 		}
 
-		/** Phone IDs the user has explicitly blocked (BLOCKED = true). */
+		/** Exact phone IDs the user has explicitly blocked (BLOCKED = true). */
 		public List<String> blacklist() {
 			return _blacklist;
 		}
 
-		/** Phone IDs the user has explicitly allowed (BLOCKED = false). */
+		/** Exact phone IDs the user has explicitly allowed (BLOCKED = false). */
 		public List<String> whitelist() {
 			return _whitelist;
+		}
+
+		/**
+		 * Prefixes (phone-ID form, no trailing {@code *}) whose whole number range the user has
+		 * blocked.
+		 */
+		public List<String> blockedWildcards() {
+			return _blockedWildcards;
+		}
+
+		/**
+		 * Prefixes (phone-ID form, no trailing {@code *}) whose whole number range the user has
+		 * allowed.
+		 */
+		public List<String> allowedWildcards() {
+			return _allowedWildcards;
 		}
 
 	}
@@ -2072,8 +2112,10 @@ public class DB {
 	 * Loads the user's personal black/white lists in raw DB phone-ID format.
 	 *
 	 * <p>
-	 * Entries may end in {@code *} to mark a wildcard prefix; otherwise they
-	 * are exact phone IDs in national or {@code 00}-international notation.
+	 * Exact entries are phone IDs in national or {@code 00}-international notation. The wildcard
+	 * prefixes are returned separately (and stored bare, without a trailing {@code *}) because
+	 * they are a distinct row kind in {@code PERSONALIZATION}, matched by prefix rather than by
+	 * equality.
 	 * </p>
 	 */
 	public PersonalLists getPersonalLists(String login) {
@@ -2081,12 +2123,15 @@ public class DB {
 			Users users = session.getMapper(Users.class);
 			Long userId = users.getUserId(login);
 			if (userId == null) {
-				return new PersonalLists(List.of(), List.of());
+				return new PersonalLists(List.of(), List.of(), List.of(), List.of());
 			}
 			BlockList blocklist = session.getMapper(BlockList.class);
-			List<String> black = blocklist.getPersonalizations(userId.longValue());
-			List<String> white = blocklist.getWhiteList(userId.longValue());
-			return new PersonalLists(black, white);
+			long id = userId.longValue();
+			List<String> black = blocklist.getPersonalizations(id);
+			List<String> white = blocklist.getWhiteList(id);
+			List<String> blackWildcards = blocklist.getWildcards(id, true);
+			List<String> whiteWildcards = blocklist.getWildcards(id, false);
+			return new PersonalLists(black, white, blackWildcards, whiteWildcards);
 		}
 	}
 
@@ -2757,7 +2802,7 @@ public class DB {
 	 */
 	public double wildcardReportWeight(BlockList blocklist, long userId, String phoneId) {
 		int bestPrefixLength = -1;
-		for (String prefix : blocklist.getBlockedWildcards(userId)) {
+		for (String prefix : blocklist.getWildcards(userId, true)) {
 			if (phoneId.startsWith(prefix) && prefix.length() > bestPrefixLength) {
 				bestPrefixLength = prefix.length();
 			}

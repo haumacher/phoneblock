@@ -24,7 +24,7 @@ public class BlacklistController extends PersonalListController {
 	@Override
 	protected List<WildcardEntry> loadWildcards(BlockList blocklist, long userId) {
 		List<WildcardEntry> result = new ArrayList<>();
-		for (String prefix : blocklist.getBlockedWildcards(userId)) {
+		for (String prefix : blocklist.getWildcards(userId, true)) {
 			result.add(new WildcardEntry(prefix, NumberAnalyzer.toInternationalFormat(prefix)));
 		}
 		return result;

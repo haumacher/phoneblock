@@ -475,7 +475,7 @@
 				{
 					"name": "type",
 					"in": "query",
-					"description": "Selects which list to return when `format=binary`. `community` (default) returns the shared blocklist; `personal` returns the authenticated user's black/white list. Ignored for `json`/`xml`.",
+					"description": "Selects which list to return when `format=binary`. `community` (default) returns the shared blocklist; `personal` returns the authenticated user's black/white list, including the wildcard prefixes of both (encoded in the file's prefix section). Ignored for `json`/`xml`.",
 					"required": false,
 					"schema": {
 						"type": "string",

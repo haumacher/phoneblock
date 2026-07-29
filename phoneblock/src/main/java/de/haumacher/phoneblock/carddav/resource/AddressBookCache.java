@@ -145,7 +145,7 @@ public class AddressBookCache implements ServletContextListener {
 			long userId = users.getUserId(principal);
 			List<String> personalizations = blocklist.getPersonalizations(userId);
 			Set<String> exclusions = blocklist.getExcluded(userId);
-			List<String> wildcards = blocklist.getBlockedWildcards(userId);
+			List<String> wildcards = blocklist.getWildcards(userId, true);
 
 			if (personalizations.isEmpty() && exclusions.isEmpty() && wildcards.isEmpty()) {
 				CommonList common = getCommonList(reports, listType, now);

@@ -281,9 +281,11 @@ public class BlocklistServlet extends HttpServlet {
 			resp.getOutputStream().write(bytes);
 		} else if (TYPE_PERSONAL.equals(type)) {
 			DB.PersonalLists personal = db.getPersonalLists(userName);
-			List<Entry> entries = PersonalEntries.from(personal.blacklist(), personal.whitelist());
-			LOG.info("Sending binary personal blocklist ({} entries) to user '{}' (agent '{}')",
-				entries.size(), userName, userAgent);
+			List<Entry> entries = PersonalEntries.from(personal);
+			LOG.info("Sending binary personal blocklist ({} entries, {} of them wildcards) to user '{}' (agent '{}')",
+				entries.size(),
+				personal.blockedWildcards().size() + personal.allowedWildcards().size(),
+				userName, userAgent);
 			resp.setContentType(BINARY_CONTENT_TYPE);
 			BlocklistBinaryEncoder.write(resp.getOutputStream(), entries);
 		} else {
