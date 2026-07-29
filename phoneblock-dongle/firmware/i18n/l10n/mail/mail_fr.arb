@@ -20,6 +20,7 @@
   "verdict.scope.number": "Numéro",
   "verdict.spam_blacklist": "SPAM (liste noire, {scope})",
   "verdict.spam_blocklist": "SPAM (liste noire, {scope})",
+  "verdict.spam_name_pattern": "SPAM (modèle de nom)",
   "verdict.spam": "SPAM",
   "verdict.spam_votes": "SPAM ({direct} direct, {range} plage)",
   "verdict.spam_suspect": "SOUPÇON DE SPAM ({direct} direct, {range} plage)",

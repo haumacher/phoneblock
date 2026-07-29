@@ -19,7 +19,12 @@
 // off before the user looks.
 #define STATS_MAX_ERRORS     32
 #define STATS_NUMBER_LEN     48
-#define STATS_DISPLAY_LEN    32
+// Wide enough for the labels a Fritz!Box phonebook imported from a spam-list
+// provider carries ("tellows Score 8 Aggressive advertising", 38 chars). The
+// call list is where a user reads the name they then write a caller-name
+// pattern for (issue #502), so clipping it at 31 chars hid exactly the text
+// they need.
+#define STATS_DISPLAY_LEN    48
 #define STATS_LABEL_LEN      32
 #define STATS_LOCATION_LEN   80
 #define STATS_ERROR_TAG_LEN  16
@@ -66,6 +71,14 @@ void stats_setup(void);
 // --- Event hooks (called from the SIP / API code) -------------------
 
 void stats_record_call(const char *number, const char *display, verdict_t verdict);
+
+// Like stats_record_call but with an explicit log characterisation, for
+// decisions the verdict alone does not describe. Used by the caller-name
+// filter (issue #502): the verdict is SPAM, but the reason is the user's own
+// name pattern rather than any community signal, so the entry must not read as
+// "SPAM" from the block list.
+void stats_record_call_assessed(const char *number, const char *display,
+                                verdict_t verdict, pb_assessment_t assessment);
 
 // Like stats_record_call but for entries that went through
 // /api/check-prefix. Copies label/location/votes/suspected from the

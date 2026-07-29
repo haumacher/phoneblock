@@ -215,6 +215,11 @@
     "description": "Dongle web UI: status.calls.verdict.blacklist",
     "x-translated": "cbba0f45"
   },
+  "status.calls.verdict.name_pattern": "SPAM (Namensmuster)",
+  "@status.calls.verdict.name_pattern": {
+    "description": "Dongle web UI: status.calls.verdict.name_pattern",
+    "x-translated": "2c7c059a"
+  },
   "status.calls.verdict.legitimate": "legitim",
   "@status.calls.verdict.legitimate": {
     "description": "Dongle web UI: status.calls.verdict.legitimate",
@@ -964,6 +969,51 @@
   "@status.localcache.busy": {
     "description": "Dongle web UI: status.localcache.busy",
     "x-translated": "ea3b6296"
+  },
+  "status.names.title": "Namensfilter",
+  "@status.names.title": {
+    "description": "Dongle web UI: status.names.title",
+    "x-translated": "d7d726d3"
+  },
+  "status.names.intro": "Wenn Deine FRITZ!Box den Anrufer in einem Telefonbuch findet, meldet sie seinen Namen mit. Verwendest Du dort eine fremde Spam-Liste (z.B. von Tellows), tragen alle Einträge einen verräterischen Namen — den kannst Du hier als Spam markieren. Das gilt genauso für ein eigenes Telefonbuch, in dem Du unerwünschte Anrufer alle gleich benennst.",
+  "@status.names.intro": {
+    "description": "Dongle web UI: status.names.intro",
+    "x-translated": "6a2b0987"
+  },
+  "status.names.patterns": "Namen, die Spam bedeuten (mit | trennen)",
+  "@status.names.patterns": {
+    "description": "Dongle web UI: status.names.patterns",
+    "x-translated": "b270f198"
+  },
+  "status.names.help": "Ein Anruf gilt als Spam, sobald der gemeldete Name einen dieser Texte enthält; Groß- und Kleinschreibung ist dabei egal. Beispiel: „tellows|Score|SPAM\". Den Namen eines Anrufers findest Du in der Liste der letzten Anrufe. Leer lassen schaltet den Namensfilter aus.",
+  "@status.names.help": {
+    "description": "Dongle web UI: status.names.help",
+    "x-translated": "ed38ac49"
+  },
+  "status.names.save": "Namensfilter speichern",
+  "@status.names.save": {
+    "description": "Dongle web UI: status.names.save",
+    "x-translated": "c1b239ca"
+  },
+  "status.names.saved": "Namensfilter gespeichert.",
+  "@status.names.saved": {
+    "description": "Dongle web UI: status.names.saved",
+    "x-translated": "391ecadf"
+  },
+  "status.names.failed": "Speichern fehlgeschlagen.",
+  "@status.names.failed": {
+    "description": "Dongle web UI: status.names.failed",
+    "x-translated": "9a6e70be"
+  },
+  "status.names.err.many": "Höchstens {max} Namen möglich.",
+  "@status.names.err.many": {
+    "description": "Dongle web UI: status.names.err.many",
+    "x-translated": "98b0ca1c"
+  },
+  "status.names.err.long": "Ein Name darf höchstens {max} Zeichen lang sein.",
+  "@status.names.err.long": {
+    "description": "Dongle web UI: status.names.err.long",
+    "x-translated": "3190da5a"
   },
   "status.ann.title": "Spam-Ansage",
   "@status.ann.title": {

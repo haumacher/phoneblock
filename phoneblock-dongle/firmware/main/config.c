@@ -9,6 +9,7 @@
 #include "nvs.h"
 
 #include "mail_rcpt.h"   // MAIL_RCPT_SPEC_CAP sizes the recipient field
+#include "name_filter.h" // NAME_FILTER_SPEC_CAP sizes the spam-name field
 #include "sdkconfig.h"
 
 // Must be last: bans unsafe string APIs for the rest of this file.
@@ -45,6 +46,7 @@ static const char *NS   = "phoneblock";
 #define K_ACCEPT_TEST   "accept_test"
 #define K_BL_WILDCARDS  "bl_wildcards"
 #define K_BL_ENABLED    "bl_enabled"
+#define K_SPAM_NAMES    "spam_names"
 #define K_CONTACT_HOST  "contact_host"
 #define K_CONTACT_PORT  "contact_port"
 #define K_SIP_LPORT     "sip_lport"
@@ -129,6 +131,10 @@ typedef struct {
     char accept_test[4];     // "1" | "0" (empty = use Kconfig default)
     char bl_wildcards[4];    // "1" | "0" (empty = default on)
     char bl_enabled[4];      // "1" | "0" (empty = default on)
+    // Caller names that mean spam: one or more texts, '|'-separated (parsed by
+    // name_filter.c, which also sizes this field so a full spec survives a
+    // round-trip through NVS). Empty = the name filter is off.
+    char spam_names[NAME_FILTER_SPEC_CAP];
     char contact_host[64];
     int  contact_port;
     int  sip_local_port;     // 0 = use DEFAULT_SIP_LOCAL_PORT
@@ -295,6 +301,7 @@ void config_load(void)
         s_config.accept_test[0]   = '\0';
         s_config.bl_wildcards[0]  = '\0';
         s_config.bl_enabled[0]    = '\0';
+        s_config.spam_names[0]    = '\0';
         copy_default(s_config.contact_host, sizeof(s_config.contact_host), CONFIG_SIP_CONTACT_HOST_OVERRIDE);
         s_config.contact_port = CONFIG_SIP_CONTACT_PORT_OVERRIDE;
         s_config.sip_local_port = 0;   // → DEFAULT_SIP_LOCAL_PORT
@@ -376,6 +383,8 @@ void config_load(void)
              s_config.bl_wildcards, sizeof(s_config.bl_wildcards));
     load_str(h, K_BL_ENABLED, "",
              s_config.bl_enabled, sizeof(s_config.bl_enabled));
+    load_str(h, K_SPAM_NAMES, "",
+             s_config.spam_names, sizeof(s_config.spam_names));
     load_str(h, K_CONTACT_HOST, CONFIG_SIP_CONTACT_HOST_OVERRIDE,
              s_config.contact_host, sizeof(s_config.contact_host));
     s_config.contact_port = load_int(h, K_CONTACT_PORT, CONFIG_SIP_CONTACT_PORT_OVERRIDE);
@@ -584,6 +593,7 @@ bool        config_blocklist_enabled(void)
     // and go straight to the server API.
     return s_config.bl_enabled[0] != '0';
 }
+const char *config_spam_names(void)          { return s_config.spam_names; }
 bool        config_accept_test_calls(void)
 {
     // Empty (= NVS key never written) defers to the Kconfig default
@@ -802,6 +812,8 @@ esp_err_t config_update(const config_update_t *u)
                                         s_config.bl_wildcards, sizeof(s_config.bl_wildcards));
     if (err == ESP_OK) err = set_str_if(h, K_BL_ENABLED, u->blocklist_enabled,
                                         s_config.bl_enabled, sizeof(s_config.bl_enabled));
+    if (err == ESP_OK) err = set_str_if(h, K_SPAM_NAMES, u->spam_names,
+                                        s_config.spam_names, sizeof(s_config.spam_names));
     if (err == ESP_OK) err = set_str_if(h, K_PB_URL, u->phoneblock_base_url,
                                         s_config.pb_base_url, sizeof(s_config.pb_base_url));
     if (err == ESP_OK) err = set_str_if(h, K_PB_TOKEN, u->phoneblock_token,

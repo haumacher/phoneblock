@@ -50,6 +50,7 @@
   "status.calls.verdict.scope.range": "Område",
   "region.title": "Språk och land",
   "region.lang": "Språk",
+  "region.country": "Land",
   "region.country.hint": "Telefonnummer utan landsnummer kompletteras med detta land. Om fel land anges här kommer PhoneBlock inte att hitta någon post för samtalet. Språket gäller även för telefonsvararens meddelande och statusmejlet.",
   "status.thresholds.title": "Block-släpplister",
   "status.thresholds.intro": "Från och med hur många PhoneBlock-röster som krävs för att dongeln ska ta ett samtal. Direkt-röster väger tyngre än Range-röster, därav de separata värdena.",
@@ -296,5 +297,14 @@
   "back.sip": "← tillbaka till urvalet",
   "i18n.loading": "Översättningen laddas …",
   "i18n.unavailable": "Översättning saknas – standardspråket visas.",
-  "region.country": "Land"
+  "status.calls.verdict.name_pattern": "SPAM (namnmönster)",
+  "status.names.title": "Namnfilter",
+  "status.names.intro": "Om din FRITZ!Box hittar den som ringer i en telefonbok, meddelar den även personens namn. Om du använder en extern spamlista (t.ex. från Tellows) där, har alla poster ett avslöjande namn – som du kan markera som spam här. Detta gäller även för en egen telefonbok där du ger alla oönskade uppringare samma namn.",
+  "status.names.patterns": "Namn som betyder skräppost (separera med |)",
+  "status.names.help": "Ett samtal betraktas som skräpsamtal så snart det angivna namnet innehåller någon av dessa texter; det spelar ingen roll om bokstäverna är stora eller små. Exempel: ”tellows|Score|SPAM”. Du hittar namnet på den som ringer i listan över de senaste samtalen. Om du lämnar fältet tomt inaktiveras namnfiltret.",
+  "status.names.save": "Spara namnfilter",
+  "status.names.saved": "Namnfilter sparat.",
+  "status.names.failed": "Det gick inte att spara.",
+  "status.names.err.many": "Högst {max} namn är tillåtna.",
+  "status.names.err.long": "Ett namn får innehålla högst {max} tecken."
 }

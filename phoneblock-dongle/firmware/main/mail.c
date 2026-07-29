@@ -464,6 +464,10 @@ static void verdict_label(const stats_call_t *c, char *out, size_t cap)
         mail_render(out, cap, mail_i18n_str("verdict.spam_blocklist"),
                     "scope", scope, (const char *)NULL);
         break;
+    case PB_ASSESS_NAME_PATTERN:
+        mail_render(out, cap, mail_i18n_str("verdict.spam_name_pattern"),
+                    (const char *)NULL);
+        break;
     case PB_ASSESS_SPAM:
         // Test-forced spam carries no counts (both 0) — show plain "SPAM".
         if (c->direct_votes == 0 && c->range_votes == 0)

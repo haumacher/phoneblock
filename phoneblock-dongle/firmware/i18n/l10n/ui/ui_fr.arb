@@ -50,6 +50,7 @@
   "status.calls.verdict.scope.range": "Domaine",
   "region.title": "Langue et pays",
   "region.lang": "Langue",
+  "region.country": "Pays",
   "region.country.hint": "Les numéros de téléphone sans indicatif de pays sont complétés par ce pays. Si le pays indiqué ici est incorrect, PhoneBlock ne trouvera aucune entrée correspondant à l'appel. La langue s'applique également au message d'accueil du répondeur et à l'e-mail de statut.",
   "status.thresholds.title": "Traverses en blocs",
   "status.thresholds.intro": "À partir de combien de votes « PhoneBlock » le dongle intercepte-t-il un appel ? Les votes « Direct » ont plus de poids que les votes « Range », d'où la distinction entre ces deux valeurs.",
@@ -296,5 +297,14 @@
   "back.sip": "← retour au choix",
   "i18n.loading": "Chargement de la traduction…",
   "i18n.unavailable": "Traduction indisponible – la langue par défaut s'affiche.",
-  "region.country": "Pays"
+  "status.calls.verdict.name_pattern": "SPAM (modèle de nom)",
+  "status.names.title": "Filtre par nom",
+  "status.names.intro": "Si ta FRITZ!Box trouve le correspondant dans un répertoire, elle affiche également son nom. Si tu utilises une liste de spam tierce (par exemple celle de Tellows), toutes les entrées portent un nom révélateur — tu peux alors les marquer comme spam ici. Cela vaut également pour ton propre répertoire, dans lequel tu attribues le même nom à tous les appelants indésirables.",
+  "status.names.patterns": "Noms associés au spam (séparés par |)",
+  "status.names.help": "Un appel est considéré comme du spam dès lors que le nom signalé contient l'un de ces textes ; la distinction entre majuscules et minuscules n'a pas d'importance. Exemple : « tellows|Score|SPAM ». Tu trouveras le nom de l'appelant dans la liste des derniers appels. Si tu laisses ce champ vide, le filtre par nom est désactivé.",
+  "status.names.save": "Enregistrer les filtres de noms",
+  "status.names.saved": "Filtre par nom enregistré.",
+  "status.names.failed": "Échec de l'enregistrement.",
+  "status.names.err.many": "{max} noms au maximum.",
+  "status.names.err.long": "Un nom ne doit pas dépasser {max} caractères."
 }

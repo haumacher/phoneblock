@@ -20,6 +20,7 @@
   "verdict.scope.number": "编号",
   "verdict.spam_blacklist": "垃圾邮件（黑名单，{scope}）",
   "verdict.spam_blocklist": "垃圾邮件（屏蔽列表，{scope}）",
+  "verdict.spam_name_pattern": "SPAM（名称模式）",
   "verdict.spam": "垃圾邮件",
   "verdict.spam_votes": "SPAM ({direct} 直接，{range} 范围)",
   "verdict.spam_suspect": "疑似垃圾邮件（{direct} 直接，{range} 范围）",

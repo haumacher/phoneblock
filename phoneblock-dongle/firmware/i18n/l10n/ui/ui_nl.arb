@@ -50,6 +50,7 @@
   "status.calls.verdict.scope.range": "Gebied",
   "region.title": "Taal en land",
   "region.lang": "Taal",
+  "region.country": "Land",
   "region.country.hint": "Telefoonnummers zonder landcode worden aangevuld met dit land. Als hier het verkeerde land staat, vindt PhoneBlock voor geen enkel telefoontje een vermelding. De taal geldt ook voor de meldtekst van het antwoordapparaat en de statusmail.",
   "status.thresholds.title": "Blokdwarsliggers",
   "status.thresholds.intro": "Vanaf hoeveel PhoneBlock-stemmen de dongle een oproep wegneemt. Directe stemmen wegen zwaarder dan Range-stemmen, vandaar de afzonderlijke waarden.",
@@ -296,5 +297,14 @@
   "back.sip": "← terug naar de selectie",
   "i18n.loading": "Vertaling wordt geladen …",
   "i18n.unavailable": "Vertaling niet beschikbaar – de standaardtaal wordt weergegeven.",
-  "region.country": "Land"
+  "status.calls.verdict.name_pattern": "SPAM (naamspatronen)",
+  "status.names.title": "Naamfilter",
+  "status.names.intro": "Als je FRITZ!Box de beller in een telefoonboek vindt, geeft hij ook diens naam door. Als je daar een externe spamlijst gebruikt (bijvoorbeeld van Tellows), hebben alle vermeldingen een veelzeggende naam — die kun je hier als spam markeren. Dit geldt ook voor een eigen telefoonboek waarin je ongewenste bellers allemaal dezelfde naam geeft.",
+  "status.names.patterns": "Namen die spam aangeven (met | scheiden)",
+  "status.names.help": "Een telefoontje wordt als spam beschouwd zodra de gemelde naam een van deze teksten bevat; hoofdletters en kleine letters maken daarbij niet uit. Voorbeeld: „tellows|Score|SPAM”. Je vindt de naam van een beller in de lijst met recente gesprekken. Als je dit veld leeg laat, wordt het naamfilter uitgeschakeld.",
+  "status.names.save": "Naamfilter opslaan",
+  "status.names.saved": "Naamfilter opgeslagen.",
+  "status.names.failed": "Het opslaan is mislukt.",
+  "status.names.err.many": "Er zijn maximaal {max} namen mogelijk.",
+  "status.names.err.long": "Een naam mag maximaal {max} tekens lang zijn."
 }

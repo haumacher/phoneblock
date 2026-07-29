@@ -33,6 +33,7 @@
 #include "log_capture.h"
 #include "mail.h"
 #include "mail_rcpt.h"
+#include "name_filter.h"
 #include "rtp.h"
 #include "scheduler.h"
 #include "sip_register.h"
@@ -153,6 +154,7 @@ static const char *assessment_string(pb_assessment_t a)
         case PB_ASSESS_SPAM:       return "spam";
         case PB_ASSESS_SPAM_LIST:  return "spam_list";
         case PB_ASSESS_BLACKLIST:  return "blacklist";
+        case PB_ASSESS_NAME_PATTERN: return "name_pattern";
         case PB_ASSESS_ERROR:      return "error";
         case PB_ASSESS_UNKNOWN:
         default:                   return "unknown";
@@ -448,6 +450,11 @@ static esp_err_t handle_status(httpd_req_t *req)
     cJSON_AddBoolToObject  (bl, "wildcards",       config_blocklist_wildcards());
     cJSON_AddBoolToObject  (bl, "enabled",         config_blocklist_enabled());
 
+    // Caller-name filter (issue #502): the stored spec is echoed verbatim so
+    // the form field round-trips exactly what the device will match on.
+    cJSON *nm = cJSON_AddObjectToObject(root, "names");
+    cJSON_AddStringToObject(nm, "patterns", config_spam_names());
+
     cJSON *ann = cJSON_AddObjectToObject(root, "announcement");
     cJSON_AddBoolToObject  (ann,  "custom",  announcement_is_custom());
     cJSON_AddStringToObject(ann,  "source",  announcement_source());
@@ -668,6 +675,9 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     // store, so an over-long value is detectable below instead of arriving
     // pre-clipped by form_get.
     char smtp_to[MAIL_RCPT_SPEC_CAP + 1] = "";
+    // '|'-separated caller-name patterns, with the same one byte of slack so an
+    // over-long spec is detectable below instead of arriving pre-clipped.
+    char spam_names[NAME_FILTER_SPEC_CAP + 1] = "";
     char mail_err_s[4]    = "";
     char mail_spam_s[4]   = "";
     char mail_upd_s[4]    = "";
@@ -701,6 +711,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     bool have_test_call = form_get(body, "accept_test_calls", test_calls_s, sizeof(test_calls_s));
     bool have_bl_wild   = form_get(body, "blocklist_wildcards", bl_wild_s, sizeof(bl_wild_s));
     bool have_bl_en     = form_get(body, "blocklist_enabled", bl_enabled_s, sizeof(bl_enabled_s));
+    bool have_spam_names = form_get(body, "spam_names", spam_names, sizeof(spam_names));
     bool have_pb_url     = form_get(body, "pb_url",    pb_url,    sizeof(pb_url));
     bool have_pb_token   = form_get(body, "pb_token",  pb_token,  sizeof(pb_token));
     bool have_min_direct = form_get(body, "min_direct_votes", min_direct_s, sizeof(min_direct_s));
@@ -782,6 +793,20 @@ static esp_err_t handle_config_post(httpd_req_t *req)
             ESP_LOGW(TAG, "smtp_to rejected: too long or too many recipients");
     }
 
+    // Caller-name patterns: reject a spec that would not survive storage in
+    // full, for the same reason as the recipient list — a clipped pattern is a
+    // *shorter* pattern and would block more callers than the user wrote. An
+    // empty value is accepted: that is how the UI turns the name filter off.
+    const char *spam_names_val = NULL;
+    if (have_spam_names) {
+        name_filter_t nf;
+        name_filter_parse(spam_names, &nf);
+        if (strlen(spam_names) < NAME_FILTER_SPEC_CAP && !nf.dropped)
+            spam_names_val = spam_names;
+        else
+            ESP_LOGW(TAG, "spam_names rejected: pattern too long or too many patterns");
+    }
+
     // UI/content locale: accept only a well-formed code (validated the same
     // way the getter clamps on read), so a malformed POST can never write a
     // value that the asset-URL / SPIFFS-filename builder would have to
@@ -846,6 +871,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
         .accept_test_calls = have_test_call ? test_calls_s : NULL,
         .blocklist_wildcards = have_bl_wild ? bl_wild_s : NULL,
         .blocklist_enabled   = have_bl_en   ? bl_enabled_s : NULL,
+        .spam_names          = spam_names_val,
         .phoneblock_base_url = have_pb_url   && pb_url[0]   ? pb_url   : NULL,
         .phoneblock_token    = have_pb_token && pb_token[0] ? pb_token : NULL,
         .min_direct_votes = have_min_direct && min_direct_s[0] ? atoi(min_direct_s) : 0,

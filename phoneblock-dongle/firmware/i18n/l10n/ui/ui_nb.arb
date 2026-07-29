@@ -50,6 +50,7 @@
   "status.calls.verdict.scope.range": "Område",
   "region.title": "Språk og land",
   "region.lang": "Språk",
+  "region.country": "Land",
   "region.country.hint": "Telefonnumre uten landskode vil bli supplert med dette landet. Hvis det står feil land her, vil PhoneBlock ikke finne noen oppføring for noen samtaler. Språket gjelder også for meldingen på telefonsvareren og status-e-posten.",
   "status.thresholds.title": "Blokksviller",
   "status.thresholds.intro": "Fra hvor mange PhoneBlock-stemmer dongelen avbryter en samtale. Direkte-stemmer veier tyngre enn Range-stemmer, derfor er verdiene oppgitt separat.",
@@ -296,5 +297,14 @@
   "back.sip": "← tilbake til utvalget",
   "i18n.loading": "Oversettelsen lastes inn …",
   "i18n.unavailable": "Oversettelse ikke tilgjengelig – standardspråket vises.",
-  "region.country": "Land"
+  "status.calls.verdict.name_pattern": "SPAM (navnemønster)",
+  "status.names.title": "Navnefilter",
+  "status.names.intro": "Hvis FRITZ!Box-en din finner den som ringer i en telefonbok, oppgir den også navnet hans. Hvis du bruker en ekstern spamliste (f.eks. fra Tellows), vil alle oppføringene ha et avslørende navn – som du kan merke som spam her. Det samme gjelder for en egen telefonbok der du gir alle uønskede innringere samme navn.",
+  "status.names.patterns": "Navn som betyr spam (skilles med |)",
+  "status.names.help": "En samtale regnes som spam så snart det oppgitte navnet inneholder en av disse tekstene; det spiller ingen rolle om det er store eller små bokstaver. Eksempel: «tellows|Score|SPAM». Du finner navnet på den som ringer i listen over de siste samtalene. Hvis du lar feltet stå tomt, deaktiveres navnefilteret.",
+  "status.names.save": "Lagre navnefilter",
+  "status.names.saved": "Navnefilter lagret.",
+  "status.names.failed": "Lagringen mislyktes.",
+  "status.names.err.many": "Maksimalt {max} navn tillatt.",
+  "status.names.err.long": "Et navn kan maksimalt bestå av {max} tegn."
 }

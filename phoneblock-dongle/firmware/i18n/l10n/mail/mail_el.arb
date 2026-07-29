@@ -20,6 +20,7 @@
   "verdict.scope.number": "Αριθμός",
   "verdict.spam_blacklist": "SPAM (Μαύρη λίστα, {scope})",
   "verdict.spam_blocklist": "SPAM (Λίστα αποκλεισμού, {scope})",
+  "verdict.spam_name_pattern": "SPAM (πρότυπο ονόματος)",
   "verdict.spam": "SPAM",
   "verdict.spam_votes": "SPAM ({direct} άμεσο, {range} εύρος)",
   "verdict.spam_suspect": "ΥΠΟΠΤΩΣΗ SPAM ({direct} άμεση, {range} εύρος)",

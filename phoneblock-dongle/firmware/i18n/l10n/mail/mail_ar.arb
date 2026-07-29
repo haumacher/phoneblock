@@ -20,6 +20,7 @@
   "verdict.scope.number": "الرقم",
   "verdict.spam_blacklist": "البريد العشوائي (القائمة السوداء، {scope})",
   "verdict.spam_blocklist": "البريد العشوائي (قائمة الحظر، {scope})",
+  "verdict.spam_name_pattern": "البريد العشوائي (أنماط الأسماء)",
   "verdict.spam": "البريد العشوائي",
   "verdict.spam_votes": "البريد العشوائي ({direct} مباشر، {range} نطاق)",
   "verdict.spam_suspect": "اشتباه في البريد العشوائي ({direct} مباشر، {range} نطاق)",
