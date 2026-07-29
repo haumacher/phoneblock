@@ -511,13 +511,13 @@ bool blocklist_sync_trigger_now(void)
 }
 
 blocklist_verdict_t blocklist_sync_check(const char *digits,
-                                         bool consult_wildcards)
+                                         bool community_wildcards)
 {
-    return blocklist_sync_check_ex(digits, consult_wildcards, NULL, NULL);
+    return blocklist_sync_check_ex(digits, community_wildcards, NULL, NULL);
 }
 
 blocklist_verdict_t blocklist_sync_check_ex(const char *digits,
-                                            bool consult_wildcards,
+                                            bool community_wildcards,
                                             bool *wildcard_out,
                                             bool *personal_out)
 {
@@ -529,7 +529,9 @@ blocklist_verdict_t blocklist_sync_check_ex(const char *digits,
 
     blocklist_t *personal = blocklist_open(BLOCKLIST_PERSONAL_PATH);
     if (personal != NULL) {
-        v = blocklist_lookup_ex(personal, digits, consult_wildcards, &wildcard);
+        // Always true, not community_wildcards: the personal prefixes are the
+        // user's own range rules — see blocklist_sync.h (#516).
+        v = blocklist_lookup_ex(personal, digits, true, &wildcard);
         blocklist_close(personal);
     }
     if (v != BLOCKLIST_UNKNOWN) {
@@ -540,7 +542,7 @@ blocklist_verdict_t blocklist_sync_check_ex(const char *digits,
 
     blocklist_t *community = blocklist_open(BLOCKLIST_COMMUNITY_PATH);
     if (community != NULL) {
-        v = blocklist_lookup_ex(community, digits, consult_wildcards, &wildcard);
+        v = blocklist_lookup_ex(community, digits, community_wildcards, &wildcard);
         blocklist_close(community);
     }
     if (v != BLOCKLIST_UNKNOWN && wildcard_out) {

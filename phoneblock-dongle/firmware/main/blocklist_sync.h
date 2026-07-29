@@ -41,15 +41,21 @@ void blocklist_sync_run(void);
 bool blocklist_sync_trigger_now(void);
 
 // Combined verdict using the user's personal list first, then the
-// community list. The `consult_wildcards` flag (the user's
-// "wildcards on/off" preference) gates the prefix-section search in
-// both lists.
+// community list.
+//
+// `community_wildcards` is the user's "Wildcard-Sperren auswerten"
+// preference, which is documented as being about ranges *the community*
+// reports as spam — so it gates the prefix-section search of the community
+// list only. The personal list's prefix section is always consulted: those
+// prefixes are rules the user entered themselves on phoneblock.net, and
+// opting out of the community's range judgement is not opting out of one's
+// own (#516).
 //
 // Returns BLOCKLIST_UNKNOWN when neither file is available or when the
 // query matches no entry. The caller decides the UNKNOWN-vs-LEGIT
 // default policy.
 blocklist_verdict_t blocklist_sync_check(const char *digits,
-                                         bool consult_wildcards);
+                                         bool community_wildcards);
 
 // As blocklist_sync_check(), but also reports where and how the hit was
 // found so the caller can label it precisely:
@@ -59,7 +65,7 @@ blocklist_verdict_t blocklist_sync_check(const char *digits,
 //                   set themselves.
 // Both are set to false on a miss. Either out-pointer may be NULL.
 blocklist_verdict_t blocklist_sync_check_ex(const char *digits,
-                                            bool consult_wildcards,
+                                            bool community_wildcards,
                                             bool *wildcard_out,
                                             bool *personal_out);
 
