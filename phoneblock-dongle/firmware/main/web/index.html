@@ -738,26 +738,6 @@ function renderStatus(){
     + '</div>'
     + '<p class="muted" id="statusInfo" style="margin:.6rem 0 0"></p>'
     + '</section>'
-    // Language + country. Deliberately an always-open section rather than one
-    // of the collapsed admin cards below: the country decides how a caller ID
-    // in national form is expanded to E.164, and a wrong one makes every
-    // lookup miss silently (issue #505) — so it has to be findable, not
-    // buried. Visible during setup too, before SIP and the token are done.
-    + '<section id="regionSection">'
-    + '<h2>' + esc(t('region.title')) + '</h2>'
-    + '<div style="display:flex;gap:1.5rem;flex-wrap:wrap;align-items:flex-start">'
-    + '<label style="display:flex;flex-direction:column;gap:.2rem">'
-    + '  <span style="font-size:.85rem">' + esc(t('region.lang')) + '</span>'
-    + '  <select id="regionLang" style="min-width:12rem"></select>'
-    + '</label>'
-    + '<label style="display:flex;flex-direction:column;gap:.2rem">'
-    + '  <span style="font-size:.85rem">' + esc(t('region.country')) + '</span>'
-    + '  <select id="regionCountry" style="min-width:14rem"></select>'
-    + '</label>'
-    + '</div>'
-    + '<p class="muted" style="font-size:.72rem;margin:.5rem 0 0">'
-    +   esc(t('region.country.hint')) + '</p>'
-    + '</section>'
     + '<section id="callsSection" style="display:none">'
     + '<h2 style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.6rem">'
     + '  <span>' + esc(t('status.calls.title')) + '</span>'
@@ -777,6 +757,26 @@ function renderStatus(){
     + '<th>' + esc(t('status.calls.col.verdict')) + '</th>'
     + '</tr></thead><tbody id="callsBody"></tbody></table>'
     + '</section>'
+    // Language + country. A collapsible card like the admin sections below,
+    // but unlike them it is *not* hidden while setup is incomplete: the
+    // country decides how a caller ID in national form is expanded to E.164,
+    // and a wrong one makes every lookup miss silently (issue #505), so it
+    // has to stay reachable before SIP and the token are done.
+    + '<details id="regionSection" class="adminsec">'
+    + '<summary>' + esc(t('region.title')) + '</summary>'
+    + '<div style="display:flex;gap:1.5rem;flex-wrap:wrap;align-items:flex-start">'
+    + '<label style="display:flex;flex-direction:column;gap:.2rem">'
+    + '  <span style="font-size:.85rem">' + esc(t('region.lang')) + '</span>'
+    + '  <select id="regionLang" style="min-width:12rem"></select>'
+    + '</label>'
+    + '<label style="display:flex;flex-direction:column;gap:.2rem">'
+    + '  <span style="font-size:.85rem">' + esc(t('region.country')) + '</span>'
+    + '  <select id="regionCountry" style="min-width:14rem"></select>'
+    + '</label>'
+    + '</div>'
+    + '<p class="muted" style="font-size:.72rem;margin:.5rem 0 0">'
+    +   esc(t('region.country.hint')) + '</p>'
+    + '</details>'
     // Admin/config areas as collapsible cards. Status + recent calls
     // above stay always-open (the "is it working" view); everything here
     // is configure-once, so it ships collapsed — the log included: it
@@ -1091,8 +1091,8 @@ let namesPrefilled = false;
 // else (its POST would 401 anyway), but it is deliberately *not* hidden by
 // the setup-incomplete branch below — picking a language and country is
 // useful before SIP and the token are configured.
-const DASHBOARD_SECTIONS = ['heroSlot', 'statusSection', 'regionSection',
-  'callsSection', 'thresholdsSection', 'errorsSection', 'resetSection',
+const DASHBOARD_SECTIONS = ['heroSlot', 'statusSection', 'callsSection',
+  'regionSection', 'thresholdsSection', 'errorsSection', 'resetSection',
   'annSection', 'localCacheSection', 'nameFilterSection', 'syncSection',
   'fwSection', 'mailSection', 'authSection'];
 
