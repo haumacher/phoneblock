@@ -1534,5 +1534,270 @@
   "@i18n.unavailable": {
     "description": "Dongle web UI: i18n.unavailable",
     "x-translated": "aae4abf2"
+  },
+  "status.calls.add_contact": "Kontakt",
+  "@status.calls.add_contact": {
+    "description": "Aufschrift des Knopfes in der Anrufliste, mit dem ein unbekannter Anrufer als Kontakt angelegt wird. Kurz halten — steht in einer Tabellenzelle.",
+    "x-translated": "78e91bcb"
+  },
+  "status.phonebook.title": "Telefonbuch für neue Kontakte",
+  "@status.phonebook.title": {
+    "description": "Titel des Einstellungsbereichs, in dem das Ziel-Telefonbuch gewählt wird.",
+    "x-translated": "6162fe4a"
+  },
+  "status.phonebook.intro": "Anrufer, die die Fritz!Box nicht kennt, erscheinen in der Anrufliste ohne Namen. Mit dem +-Knopf daneben legst du sie als Kontakt in der Fritz!Box an — danach zeigt das Telefon den Namen an, und der Dongle fragt PhoneBlock nicht mehr nach dieser Nummer.",
+  "@status.phonebook.intro": {
+    "description": "Erklärung des Einstellungsbereichs für das Ziel-Telefonbuch.",
+    "x-translated": "703ba28d"
+  },
+  "status.phonebook.current": "Neue Kontakte landen in „{name}“.",
+  "@status.phonebook.current": {
+    "description": "Zeigt das aktuell gewählte Ziel-Telefonbuch. {name} ist dessen Name.",
+    "x-translated": "80dde36d"
+  },
+  "status.phonebook.unset": "Noch nicht festgelegt — wird beim ersten Anlegen gefragt.",
+  "@status.phonebook.unset": {
+    "description": "Hinweis, dass noch kein Ziel-Telefonbuch gewählt wurde.",
+    "x-translated": "6dc6cd57"
+  },
+  "status.phonebook.change": "Ändern",
+  "@status.phonebook.change": {
+    "description": "Knopf, der die Auswahl des Ziel-Telefonbuchs öffnet.",
+    "x-translated": "8ee1fb3e"
+  },
+  "status.phonebook.unavailable": "Nicht verfügbar — nur mit Fritz!Box-Einrichtung nutzbar.",
+  "@status.phonebook.unavailable": {
+    "description": "Hinweis, dass die Funktion ohne Fritz!Box-Einrichtung nicht zur Verfügung steht.",
+    "x-translated": "b63a8434"
+  },
+  "status.phonebook.saved": "Gespeichert.",
+  "@status.phonebook.saved": {
+    "description": "Bestätigung, dass das gewählte Ziel-Telefonbuch gespeichert wurde.",
+    "x-translated": "9e7fb387"
+  },
+  "pb.dialog.title": "Kontakt in der Fritz!Box anlegen",
+  "@pb.dialog.title": {
+    "description": "Titel des Dialogs zum Anlegen eines Telefonbuch-Kontakts.",
+    "x-translated": "61332f18"
+  },
+  "pb.dialog.intro": "Beim nächsten Anruf zeigt das Telefon den Namen statt der Nummer. Der Kontakt bleibt in deiner Fritz!Box — er wird nicht an PhoneBlock übertragen.",
+  "@pb.dialog.intro": {
+    "description": "Erklärung im Dialog zum Anlegen eines Kontakts.",
+    "x-translated": "71529284"
+  },
+  "pb.dialog.name": "Name",
+  "@pb.dialog.name": {
+    "description": "Eingabefeld für den Namen des neuen Kontakts.",
+    "x-translated": "fe11d138"
+  },
+  "pb.dialog.type": "Art der Nummer",
+  "@pb.dialog.type": {
+    "description": "Auswahlfeld für die Art der Rufnummer (privat, mobil, …).",
+    "x-translated": "b2e7a0bf"
+  },
+  "pb.dialog.type.home": "Privat",
+  "@pb.dialog.type.home": {
+    "description": "Rufnummern-Art: privater Festnetzanschluss.",
+    "x-translated": "3825953"
+  },
+  "pb.dialog.type.mobile": "Mobil",
+  "@pb.dialog.type.mobile": {
+    "description": "Rufnummern-Art: Mobiltelefon.",
+    "x-translated": "be6c6e63"
+  },
+  "pb.dialog.type.work": "Geschäftlich",
+  "@pb.dialog.type.work": {
+    "description": "Rufnummern-Art: geschäftlicher Anschluss.",
+    "x-translated": "6bad16af"
+  },
+  "pb.dialog.type.fax_home": "Fax privat",
+  "@pb.dialog.type.fax_home": {
+    "description": "Rufnummern-Art: privates Fax.",
+    "x-translated": "3ed2c409"
+  },
+  "pb.dialog.type.fax_work": "Fax geschäftlich",
+  "@pb.dialog.type.fax_work": {
+    "description": "Rufnummern-Art: geschäftliches Fax.",
+    "x-translated": "77a24a7c"
+  },
+  "pb.dialog.vip": "Wichtige Person (VIP)",
+  "@pb.dialog.vip": {
+    "description": "Schalter, der den Kontakt in der Fritz!Box als wichtige Person markiert.",
+    "x-translated": "82b6fcd5"
+  },
+  "pb.dialog.book": "Telefonbuch",
+  "@pb.dialog.book": {
+    "description": "Auswahlfeld für das Telefonbuch, in dem der Kontakt angelegt wird.",
+    "x-translated": "4f184550"
+  },
+  "pb.dialog.book.readonly": "{name} (synchronisiert — nicht beschreibbar)",
+  "@pb.dialog.book.readonly": {
+    "description": "Eintrag für ein synchronisiertes Telefonbuch, in das nicht geschrieben werden kann. {name} ist dessen Name.",
+    "x-translated": "2936f4aa"
+  },
+  "pb.dialog.pick": "In welchem Telefonbuch soll der Kontakt angelegt werden?",
+  "@pb.dialog.pick": {
+    "description": "Frage nach dem Ziel-Telefonbuch beim ersten Anlegen eines Kontakts.",
+    "x-translated": "c5c1c321"
+  },
+  "pb.dialog.none_writable": "Kein beschreibbares Telefonbuch gefunden.",
+  "@pb.dialog.none_writable": {
+    "description": "Fehlermeldung, wenn die Fritz!Box kein Telefonbuch anbietet, in das geschrieben werden kann.",
+    "x-translated": "b2973526"
+  },
+  "pb.dialog.save": "Anlegen",
+  "@pb.dialog.save": {
+    "description": "Knopf, der den Kontakt in der Fritz!Box anlegt.",
+    "x-translated": "e2cc5cfc"
+  },
+  "pb.dialog.cancel": "Abbrechen",
+  "@pb.dialog.cancel": {
+    "description": "Knopf, der den Dialog ohne Änderung schließt.",
+    "x-translated": "6be8bcdf"
+  },
+  "pb.dialog.working": "Wird angelegt…",
+  "@pb.dialog.working": {
+    "description": "Statusmeldung, während der Kontakt angelegt wird.",
+    "x-translated": "bb60b42f"
+  },
+  "pb.dialog.done": "Kontakt angelegt.",
+  "@pb.dialog.done": {
+    "description": "Bestätigung, dass der Kontakt angelegt wurde.",
+    "x-translated": "5373d853"
+  },
+  "pb.dialog.error.name": "Bitte einen Namen eingeben.",
+  "@pb.dialog.error.name": {
+    "description": "Fehlermeldung, wenn das Namensfeld leer oder zu lang ist.",
+    "x-translated": "32cde189"
+  },
+  "pb.dialog.error.number": "Diese Nummer lässt sich nicht als Kontakt speichern.",
+  "@pb.dialog.error.number": {
+    "description": "Fehlermeldung, wenn die Rufnummer nicht in ein Telefonbuch übernommen werden kann.",
+    "x-translated": "b40f5f1e"
+  },
+  "pb.dialog.error.not_writable": "Dieses Telefonbuch wird synchronisiert und kann nicht beschrieben werden. Bitte ein anderes wählen.",
+  "@pb.dialog.error.not_writable": {
+    "description": "Fehlermeldung, wenn das gewählte Telefonbuch von der Fritz!Box nur gelesen wird.",
+    "x-translated": "a8d2a5df"
+  },
+  "pb.dialog.error.no_fritzbox": "Nur mit Fritz!Box-Einrichtung möglich.",
+  "@pb.dialog.error.no_fritzbox": {
+    "description": "Fehlermeldung, wenn keine Fritz!Box-Zugangsdaten hinterlegt sind.",
+    "x-translated": "334c73e9"
+  },
+  "pb.dialog.error.unreachable": "Fritz!Box antwortet nicht.",
+  "@pb.dialog.error.unreachable": {
+    "description": "Fehlermeldung, wenn die Fritz!Box nicht erreichbar ist.",
+    "x-translated": "e9768f2a"
+  },
+  "pb.dialog.error.generic": "Fehlgeschlagen: {msg}",
+  "@pb.dialog.error.generic": {
+    "description": "Allgemeine Fehlermeldung. {msg} ist die Meldung der Fritz!Box.",
+    "x-translated": "3fa9d545"
+  },
+  "status.calls.add_contact.help": "Anrufer als Kontakt im Telefonbuch der Fritz!Box anlegen",
+  "@status.calls.add_contact.help": {
+    "description": "Tooltip des Kontakt-Knopfes in der Anrufliste.",
+    "x-translated": "4f76e5b9"
+  },
+  "status.calls.report_spam": "Spam",
+  "@status.calls.report_spam": {
+    "description": "Aufschrift des Knopfes in der Anrufliste, mit dem eine Nummer als Spam gemeldet wird. Kurz halten — steht in einer Tabellenzelle.",
+    "x-translated": "e3e85003"
+  },
+  "status.calls.report_spam.help": "Diese Nummer bei PhoneBlock als Spam melden",
+  "@status.calls.report_spam.help": {
+    "description": "Tooltip des Spam-Knopfes in der Anrufliste.",
+    "x-translated": "7e82484f"
+  },
+  "status.calls.reported": "gemeldet",
+  "@status.calls.reported": {
+    "description": "Ersetzt den Spam-Knopf, nachdem die Nummer gemeldet wurde.",
+    "x-translated": "f2f6f0b0"
+  },
+  "spam.dialog.title": "Nummer als Spam melden",
+  "@spam.dialog.title": {
+    "description": "Titel des Dialogs zum Melden einer Nummer.",
+    "x-translated": "9ee513d8"
+  },
+  "spam.dialog.intro": "Deine Bewertung zählt für alle PhoneBlock-Nutzer und wird deinem Konto zugeordnet. Über den Dongle lässt sie sich nicht zurücknehmen — das geht nur auf phoneblock.net.",
+  "@spam.dialog.intro": {
+    "description": "Erklärung im Melde-Dialog: die Bewertung ist öffentlich und hier nicht widerrufbar.",
+    "x-translated": "69a293bc"
+  },
+  "spam.dialog.rating": "Art des Anrufs",
+  "@spam.dialog.rating": {
+    "description": "Auswahlfeld für die Art des Spam-Anrufs.",
+    "x-translated": "de4e6233"
+  },
+  "spam.dialog.rating.B_MISSED": "Unbekannt",
+  "@spam.dialog.rating.B_MISSED": {
+    "description": "Bewertung: negativ bewertet, ohne die Art des Anrufs festzulegen.",
+    "x-translated": "dc9aa227"
+  },
+  "spam.dialog.rating.C_PING": "Ping-Anruf",
+  "@spam.dialog.rating.C_PING": {
+    "description": "Bewertung: der Anrufer hat sofort aufgelegt.",
+    "x-translated": "859a0be2"
+  },
+  "spam.dialog.rating.D_POLL": "Umfrage",
+  "@spam.dialog.rating.D_POLL": {
+    "description": "Bewertung: eine Umfrage.",
+    "x-translated": "d1de26b0"
+  },
+  "spam.dialog.rating.E_ADVERTISING": "Werbung",
+  "@spam.dialog.rating.E_ADVERTISING": {
+    "description": "Bewertung: Werbung oder unerwünschte Beratung.",
+    "x-translated": "4b8802e0"
+  },
+  "spam.dialog.rating.F_GAMBLE": "Gewinnspiel",
+  "@spam.dialog.rating.F_GAMBLE": {
+    "description": "Bewertung: Gewinnspiel oder Gewinnbenachrichtigung.",
+    "x-translated": "dfee4617"
+  },
+  "spam.dialog.rating.G_FRAUD": "Betrug",
+  "@spam.dialog.rating.G_FRAUD": {
+    "description": "Bewertung: Betrugsversuch.",
+    "x-translated": "90360044"
+  },
+  "spam.dialog.submit": "Melden",
+  "@spam.dialog.submit": {
+    "description": "Knopf, der die Bewertung an PhoneBlock überträgt.",
+    "x-translated": "df78b8d6"
+  },
+  "spam.dialog.working": "Wird gemeldet…",
+  "@spam.dialog.working": {
+    "description": "Statusmeldung, während die Bewertung übertragen wird.",
+    "x-translated": "8f878fc0"
+  },
+  "spam.dialog.done": "Danke — Bewertung übertragen.",
+  "@spam.dialog.done": {
+    "description": "Bestätigung, dass die Bewertung übertragen wurde.",
+    "x-translated": "7084e766"
+  },
+  "spam.dialog.error.no_token": "Zum Bewerten wird ein PhoneBlock-Konto benötigt.",
+  "@spam.dialog.error.no_token": {
+    "description": "Fehlermeldung, wenn kein PhoneBlock-Token hinterlegt ist.",
+    "x-translated": "3021774d"
+  },
+  "pb.dialog.error.moved": "Das gewählte Telefonbuch gibt es nicht mehr. Bitte ein anderes wählen.",
+  "@pb.dialog.error.moved": {
+    "description": "Fehlermeldung, wenn das gespeicherte Ziel-Telefonbuch in der Fritz!Box nicht mehr existiert.",
+    "x-translated": "ca3645b9"
+  },
+  "spam.dialog.comment": "Grund",
+  "@spam.dialog.comment": {
+    "description": "Eingabefeld für eine kurze Begründung der Spam-Meldung.",
+    "x-translated": "e5c5280"
+  },
+  "spam.dialog.comment.hint": "(optional, wird öffentlich sichtbar)",
+  "@spam.dialog.comment.hint": {
+    "description": "Hinweis am Grund-Feld: die Begründung ist auf phoneblock.net für alle sichtbar.",
+    "x-translated": "3e99b026"
+  },
+  "spam.dialog.error.is_contact": "Dieser Anrufer steht in deinem Telefonbuch. Ein Telefonbuch-Eintrag hat auf dem Dongle immer Vorrang, deshalb ist eine Spam-Meldung hier nicht möglich.",
+  "@spam.dialog.error.is_contact": {
+    "description": "Fehlermeldung, wenn versucht wird, einen Telefonbuch-Kontakt als Spam zu melden.",
+    "x-translated": "74e47230"
   }
 }

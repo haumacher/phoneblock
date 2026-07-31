@@ -10,6 +10,8 @@
 
 #include <string.h>
 
+#include "strbuf.h"
+
 // Must be last: bans unsafe string APIs for the rest of this file.
 #include "banned_apis.h"
 
@@ -187,4 +189,87 @@ int tr064_parse_phonebook_contacts(char *xml, int xml_len,
         remaining = xml_len - (p - xml);
     }
     return count;
+}
+
+// --- phonebook entry building --------------------------------------
+
+bool tr064_number_type_valid(const char *type)
+{
+    if (!type) return false;
+    static const char *const accepted[] = {
+        "home", "mobile", "work", "fax_home", "fax_work", NULL
+    };
+    for (int i = 0; accepted[i]; i++) {
+        if (strcmp(type, accepted[i]) == 0) return true;
+    }
+    return false;
+}
+
+bool tr064_number_plausible(const char *number)
+{
+    if (!number) return false;
+    const char *p = number;
+    if (*p == '+') p++;
+    int digits = 0;
+    for (; *p; p++) {
+        if (*p < '0' || *p > '9') return false;
+        digits++;
+    }
+    return digits >= 3 && digits <= 31;
+}
+
+// Append `s` double-escaped: once for the contact XML, once more for the
+// SOAP argument that carries it. Mapping both levels in one pass avoids a
+// scratch buffer (and the temptation to escape twice by chaining
+// tr064_xml_escape, where the intermediate result would need its own cap).
+static void append_escaped_twice(strbuf_t *sb, const char *s)
+{
+    for (const char *p = s; *p; p++) {
+        switch (*p) {
+            case '&':  sb_appendf(sb, "%s", "&amp;amp;");  break;
+            case '<':  sb_appendf(sb, "%s", "&amp;lt;");   break;
+            case '>':  sb_appendf(sb, "%s", "&amp;gt;");   break;
+            case '"':  sb_appendf(sb, "%s", "&amp;quot;"); break;
+            case '\'': sb_appendf(sb, "%s", "&amp;apos;"); break;
+            default:   sb_appendf(sb, "%c", *p);           break;
+        }
+    }
+}
+
+bool tr064_build_contact_arg(char *out, size_t cap,
+                             const char *name, const char *number,
+                             const char *type, bool vip)
+{
+    if (!out || cap == 0) return false;
+    out[0] = '\0';
+    if (!name || !*name) return false;
+    if (!tr064_number_plausible(number)) return false;
+    if (!tr064_number_type_valid(type)) return false;
+    if (strlen(name) >= TR064_CONTACT_NAME_CAP) return false;
+
+    // The literals are written pre-escaped rather than built plain and
+    // escaped afterwards: that keeps the whole document in one bounded
+    // builder, so sb.truncated is the single all-or-nothing check.
+    strbuf_t sb = sb_init(out, (int)cap);
+    sb_appendf(&sb, "%s", "&lt;?xml version=&quot;1.0&quot; "
+                          "encoding=&quot;utf-8&quot;?&gt;"
+                          "&lt;Envelope&gt;&lt;contact&gt;"
+                          "&lt;category&gt;");
+    sb_appendf(&sb, "%d", vip ? 1 : 0);
+    sb_appendf(&sb, "%s", "&lt;/category&gt;"
+                          "&lt;person&gt;&lt;realName&gt;");
+    append_escaped_twice(&sb, name);
+    sb_appendf(&sb, "%s", "&lt;/realName&gt;&lt;/person&gt;"
+                          "&lt;telephony&gt;&lt;number type=&quot;");
+    sb_appendf(&sb, "%s", type);
+    sb_appendf(&sb, "%s", "&quot; prio=&quot;1&quot; id=&quot;0&quot;&gt;");
+    sb_appendf(&sb, "%s", number);
+    sb_appendf(&sb, "%s", "&lt;/number&gt;&lt;/telephony&gt;"
+                          "&lt;/contact&gt;&lt;/Envelope&gt;");
+
+    if (sb.truncated) {
+        out[0] = '\0';
+        return false;
+    }
+    return true;
 }

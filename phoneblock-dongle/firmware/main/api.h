@@ -147,9 +147,17 @@ bool phoneblock_fetch_dial_prefix(char *out, size_t cap);
 // or -1 on a transport/setup failure.
 int phoneblock_post_log(const char *body, size_t len);
 
+// Longest comment accepted with a rating. The server's column holds far
+// more (8192); this is the device's own frugality — it bounds the JSON body
+// built on the stack in phoneblock_rate() and matches what is reasonable to
+// type into the dongle's web UI.
+#define PB_RATE_COMMENT_CAP 240
+
 // Submit a spam rating for `phone` with the given rating code (e.g.
-// "B_MISSED", "E_ADVERTISING"). Optional short comment (NULL for
-// none). Returns true when the server accepts the rating (HTTP 200).
+// "B_MISSED", "E_ADVERTISING"). `comment` is optional free text (NULL or
+// "" for none), at most PB_RATE_COMMENT_CAP bytes — it is JSON-escaped
+// here, so callers pass it through verbatim and must NOT pre-escape.
+// Returns true when the server accepts the rating (HTTP 200).
 bool phoneblock_rate(const char *phone, const char *rating, const char *comment);
 
 // Reports a confirmed SPAM call to the server (POST /api/report-call/{phone}).

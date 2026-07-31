@@ -339,6 +339,128 @@ static void test_contacts_empty(void)
     CHECK(n == 0);
 }
 
+// --- phonebook entry building ---------------------------------------
+
+static void test_number_type_valid(void)
+{
+    CHECK(tr064_number_type_valid("home"));
+    CHECK(tr064_number_type_valid("mobile"));
+    CHECK(tr064_number_type_valid("work"));
+    CHECK(tr064_number_type_valid("fax_home"));
+    CHECK(tr064_number_type_valid("fax_work"));
+    // Anything the box's UI does not offer is refused, including the
+    // near-misses a client might guess.
+    CHECK(!tr064_number_type_valid("Home"));
+    CHECK(!tr064_number_type_valid("fax"));
+    CHECK(!tr064_number_type_valid(""));
+    CHECK(!tr064_number_type_valid(NULL));
+}
+
+static void test_number_plausible(void)
+{
+    CHECK(tr064_number_plausible("+4930123456"));
+    CHECK(tr064_number_plausible("030123456"));
+    CHECK(tr064_number_plausible("123"));
+    CHECK(!tr064_number_plausible("12"));            // too short
+    CHECK(!tr064_number_plausible("+"));             // no digits
+    CHECK(!tr064_number_plausible("+49 30 12345"));  // spaces not accepted
+    CHECK(!tr064_number_plausible("**622"));         // internal dial code
+    CHECK(!tr064_number_plausible("+49<script>"));
+    CHECK(!tr064_number_plausible(""));
+    CHECK(!tr064_number_plausible(NULL));
+    // 31 digits is the limit, 32 is one too many.
+    CHECK(tr064_number_plausible("+1234567890123456789012345678901"));
+    CHECK(!tr064_number_plausible("+12345678901234567890123456789012"));
+}
+
+static void test_build_contact_arg_basic(void)
+{
+    char buf[TR064_CONTACT_ARG_CAP];
+    CHECK(tr064_build_contact_arg(buf, sizeof(buf), "Oma", "+4930123456",
+                                  "home", false));
+    // The whole document is escaped exactly once at the SOAP-argument
+    // level: no raw '<' may survive, or the envelope would break.
+    CHECK(strchr(buf, '<') == NULL);
+    CHECK(strchr(buf, '>') == NULL);
+    CHECK(strstr(buf, "&lt;contact&gt;") != NULL);
+    CHECK(strstr(buf, "&lt;category&gt;0&lt;/category&gt;") != NULL);
+    CHECK(strstr(buf, "&lt;realName&gt;Oma&lt;/realName&gt;") != NULL);
+    CHECK(strstr(buf, "type=&quot;home&quot;") != NULL);
+    CHECK(strstr(buf, "prio=&quot;1&quot;") != NULL);
+    CHECK(strstr(buf, "&gt;+4930123456&lt;/number&gt;") != NULL);
+}
+
+static void test_build_contact_arg_vip(void)
+{
+    char buf[TR064_CONTACT_ARG_CAP];
+    CHECK(tr064_build_contact_arg(buf, sizeof(buf), "Chef", "+4930123456",
+                                  "work", true));
+    CHECK(strstr(buf, "&lt;category&gt;1&lt;/category&gt;") != NULL);
+    CHECK(strstr(buf, "type=&quot;work&quot;") != NULL);
+}
+
+static void test_build_contact_arg_double_escapes_name(void)
+{
+    char buf[TR064_CONTACT_ARG_CAP];
+    // A name with XML metacharacters must survive two unescape passes:
+    // the box unescapes the SOAP argument, then parses the contact XML.
+    // So "&" has to arrive as "&amp;amp;" here.
+    CHECK(tr064_build_contact_arg(buf, sizeof(buf), "Meier & <Sohn>",
+                                  "+4930123456", "home", false));
+    CHECK(strstr(buf, "Meier &amp;amp; &amp;lt;Sohn&amp;gt;") != NULL);
+    CHECK(strchr(buf, '<') == NULL);
+    // A quote in a name must not be able to close the type attribute.
+    CHECK(tr064_build_contact_arg(buf, sizeof(buf), "Say \"hi\"",
+                                  "+4930123456", "home", false));
+    CHECK(strstr(buf, "Say &amp;quot;hi&amp;quot;") != NULL);
+    CHECK(strchr(buf, '"') == NULL);
+}
+
+static void test_build_contact_arg_rejects_bad_input(void)
+{
+    char buf[TR064_CONTACT_ARG_CAP];
+    CHECK(!tr064_build_contact_arg(buf, sizeof(buf), "", "+4930123456",
+                                   "home", false));
+    CHECK(!tr064_build_contact_arg(buf, sizeof(buf), NULL, "+4930123456",
+                                   "home", false));
+    CHECK(!tr064_build_contact_arg(buf, sizeof(buf), "Oma", "**622",
+                                   "home", false));
+    CHECK(!tr064_build_contact_arg(buf, sizeof(buf), "Oma", "+4930123456",
+                                   "private", false));
+    // Rejection must leave an empty string, never a partial document.
+    CHECK_STR(buf, "");
+
+    char name[TR064_CONTACT_NAME_CAP + 2];
+    memset(name, 'x', sizeof(name) - 1);
+    name[sizeof(name) - 1] = '\0';
+    CHECK(!tr064_build_contact_arg(buf, sizeof(buf), name, "+4930123456",
+                                   "home", false));
+}
+
+static void test_build_contact_arg_worst_case_fits(void)
+{
+    // TR064_CONTACT_ARG_CAP must hold a maximum-length name in which every
+    // character double-escapes to 9 bytes — otherwise a legitimate (if
+    // absurd) contact name would fail with a truncation error.
+    char name[TR064_CONTACT_NAME_CAP];
+    memset(name, '&', sizeof(name) - 1);
+    name[sizeof(name) - 1] = '\0';
+
+    char buf[TR064_CONTACT_ARG_CAP];
+    CHECK(tr064_build_contact_arg(buf, sizeof(buf), name,
+                                  "+1234567890123456789012345678901",
+                                  "fax_work", false));
+    CHECK(strchr(buf, '<') == NULL);
+}
+
+static void test_build_contact_arg_truncation_is_all_or_nothing(void)
+{
+    char small[64];
+    CHECK(!tr064_build_contact_arg(small, sizeof(small), "Oma",
+                                   "+4930123456", "home", false));
+    CHECK_STR(small, "");
+}
+
 int main(void)
 {
     test_find_text_simple();
@@ -370,6 +492,15 @@ int main(void)
     test_contacts_no_match_for_contacts_tag();
     test_contacts_skips_incomplete();
     test_contacts_empty();
+
+    test_number_type_valid();
+    test_number_plausible();
+    test_build_contact_arg_basic();
+    test_build_contact_arg_vip();
+    test_build_contact_arg_double_escapes_name();
+    test_build_contact_arg_rejects_bad_input();
+    test_build_contact_arg_worst_case_fits();
+    test_build_contact_arg_truncation_is_all_or_nothing();
 
     if (failures) {
         fprintf(stderr, "%d test(s) failed\n", failures);

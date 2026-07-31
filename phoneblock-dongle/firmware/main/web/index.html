@@ -68,6 +68,24 @@
                border-radius:4px;font-size:1rem;cursor:pointer;font-family:inherit;
                text-decoration:none;display:inline-block}
   .btn-primary:disabled{background:#aaa;cursor:wait}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;
+    align-items:center;justify-content:center;padding:1rem;z-index:50}
+  .modal>div{background:#fff;border-radius:8px;padding:1.2rem;max-width:24rem;
+    width:100%;box-shadow:0 4px 24px rgba(0,0,0,.2)}
+  .modal h3{margin:0 0 .6rem;font-size:1rem}
+  /* Row actions in the call list. Labelled pills, not bare glyphs: a "+"
+     alone does not say what it adds, and the spam vote next to it is
+     public and irreversible — both need to read unambiguously. */
+  .rowbtn{display:inline-flex;align-items:center;gap:.2rem;background:#fff;
+    border:1px solid #008f7a;color:#008f7a;border-radius:999px;
+    padding:.1rem .5rem;font-size:.72rem;line-height:1.5;cursor:pointer;
+    width:auto;margin:0;white-space:nowrap;text-transform:none;
+    letter-spacing:0;font-weight:500}
+  .rowbtn:hover{background:#e6f5f2}
+  .rowbtn.spam{border-color:#d93025;color:#d93025}
+  .rowbtn.spam:hover{background:#fdecea}
+  .rowbtn[disabled]{opacity:.5;cursor:default}
+  .rowdone{font-size:.72rem;color:#188038;white-space:nowrap}
   .btn-ghost{background:#fff;color:#008f7a;border:1px solid #008f7a;
              padding:.55rem 1.2rem;border-radius:4px;font-size:1rem;
              cursor:pointer;font-family:inherit;text-decoration:none;display:inline-block}
@@ -604,6 +622,304 @@ async function postForm(url, form){
   }
 }
 
+// --- add caller to the Fritz!Box phonebook ---------------------------
+//
+// A caller the box could not resolve arrives without a display name and
+// shows up nameless in the call list. Writing them into a Fritz!Box
+// phonebook makes the box announce the name on the next call — which also
+// means the dongle stops asking PhoneBlock about them (is_known_contact
+// short-circuits) and, with "log known calls" off, they disappear from the
+// list entirely.
+//
+// Numbers we may offer this for: plain E.164 / national, no internal dial
+// codes (**622, *21#) — the same shape tr064_number_plausible() accepts.
+const PLAIN_NUMBER = /^\+?[0-9]{3,31}$/;
+
+const PB_TYPES = ['home', 'mobile', 'work', 'fax_home', 'fax_work'];
+
+let pbDlgEl = null;      // the dialog, built once and reused
+let pbDlgNumber = '';    // number the open dialog is about
+
+// Fill a <select> with the box's phonebooks. Synced books (CardDAV,
+// Google) are listed but disabled: the box rejects writes to them, and
+// showing them explains why the one the user might look for is missing.
+async function pbLoadBooks(sel, msgEl){
+  sel.innerHTML = '';
+  const r = await fetchJson('/api/phonebooks');
+  if (!r || !r.ok){
+    if (msgEl) pbSetMsg(msgEl, pbErrorText(r), '#d93025');
+    return false;
+  }
+  let writable = 0;
+  for (const b of (r.phonebooks || [])){
+    const o = document.createElement('option');
+    o.value = String(b.id);
+    o.textContent = b.writable ? b.name
+                  : t('pb.dialog.book.readonly', {name: b.name});
+    o.disabled = !b.writable;
+    o.dataset.name = b.name;
+    if (b.writable){
+      writable++;
+      if (String(b.id) === String(r.selected)) o.selected = true;
+    }
+    sel.appendChild(o);
+  }
+  if (!writable){
+    if (msgEl) pbSetMsg(msgEl, t('pb.dialog.none_writable'), '#d93025');
+    return false;
+  }
+  return true;
+}
+
+function pbSetMsg(el, text, colour){
+  el.textContent = text;
+  el.style.color = colour || '#888';
+}
+
+// Map the endpoints' stable `code` to localized text; fall back to the
+// English `message` the firmware sent for codes we don't know.
+function pbErrorText(d){
+  const code = d && d.code;
+  if (code === 'no_fritzbox')   return t('pb.dialog.error.no_fritzbox');
+  if (code === 'not_writable')  return t('pb.dialog.error.not_writable');
+  if (code === 'invalid_name')  return t('pb.dialog.error.name');
+  if (code === 'invalid_number') return t('pb.dialog.error.number');
+  return t('pb.dialog.error.generic',
+           {msg: (d && d.message) || t('pb.dialog.error.unreachable')});
+}
+
+// Built fresh on every open rather than cached: the labels come from t(),
+// and the user can switch UI language between two opens (the rest of the
+// UI re-renders for that, a cached dialog would keep the old language).
+function pbBuildDialog(){
+  if (pbDlgEl) pbDlgEl.remove();
+  const wrap = document.createElement('div');
+  wrap.className = 'modal';
+  wrap.style.display = 'none';
+  wrap.innerHTML = ''
+    + '<div>'
+    + '<h3>' + esc(t('pb.dialog.title')) + '</h3>'
+    + '<p class="muted">' + esc(t('pb.dialog.intro')) + '</p>'
+    + '<p style="margin:.4rem 0"><strong id="pbDlgNum"></strong></p>'
+    + '<label>' + esc(t('pb.dialog.name'))
+    + '<input type="text" id="pbName" maxlength="47" autocomplete="off"></label>'
+    + '<label>' + esc(t('pb.dialog.type'))
+    + '<select id="pbType">'
+    +   PB_TYPES.map(ty => '<option value="' + ty + '">'
+    +     esc(t('pb.dialog.type.' + ty)) + '</option>').join('')
+    + '</select></label>'
+    + '<label style="display:flex;align-items:center;gap:.5rem;margin:.6rem 0;font-size:.9rem;color:#222">'
+    + '  <input type="checkbox" id="pbVip" style="width:auto;margin:0">'
+    + '  <span>' + esc(t('pb.dialog.vip')) + '</span>'
+    + '</label>'
+    + '<label id="pbBookRow" style="display:none">' + esc(t('pb.dialog.book'))
+    + '<select id="pbBook"></select></label>'
+    + '<p id="pbDlgMsg" class="muted" style="min-height:1em;margin:.4rem 0"></p>'
+    + '<p style="margin:.8rem 0 0;display:flex;gap:.5rem">'
+    + '  <button id="pbSave" class="btn-primary" style="padding:.4rem .9rem">'
+    +   esc(t('pb.dialog.save')) + '</button>'
+    + '  <button id="pbCancel" class="btn-ghost" style="padding:.4rem .9rem">'
+    +   esc(t('pb.dialog.cancel')) + '</button>'
+    + '</p>'
+    + '</div>';
+  document.body.appendChild(wrap);
+  pbDlgEl = wrap;
+
+  $('pbCancel').onclick = () => { wrap.style.display = 'none'; };
+  // Clicking the backdrop cancels; clicks inside the card must not.
+  wrap.onclick = (e) => { if (e.target === wrap) wrap.style.display = 'none'; };
+  $('pbSave').onclick = pbSubmit;
+  return wrap;
+}
+
+function pbOpenAddContact(number){
+  pbBuildDialog();
+  pbDlgNumber = number;
+  $('pbDlgNum').textContent = number;
+  $('pbName').value = '';
+  $('pbVip').checked = false;
+  $('pbType').selectedIndex = 0;
+  $('pbBookRow').style.display = 'none';
+  pbSetMsg($('pbDlgMsg'), '');
+  $('pbSave').disabled = false;
+  pbDlgEl.style.display = 'flex';
+  $('pbName').focus();
+}
+
+async function pbSubmit(){
+  const msg  = $('pbDlgMsg');
+  const save = $('pbSave');
+  const name = $('pbName').value.trim();
+  if (!name){
+    pbSetMsg(msg, t('pb.dialog.error.name'), '#d93025');
+    return;
+  }
+  save.disabled = true;
+  pbSetMsg(msg, t('pb.dialog.working'));
+
+  const body = new URLSearchParams();
+  body.append('number', pbDlgNumber);
+  body.append('name', name);
+  body.append('type', $('pbType').value);
+  body.append('vip', $('pbVip').checked ? '1' : '0');
+  // Only sent when the user actually picked a target: the firmware
+  // persists the selection only for an explicit pick that then worked.
+  const bookRow = $('pbBookRow');
+  const book    = $('pbBook');
+  if (bookRow.style.display !== 'none' && book.value){
+    body.append('phonebook_id', book.value);
+    const opt = book.options[book.selectedIndex];
+    body.append('phonebook_name', (opt && opt.dataset.name) || '');
+  }
+
+  let d = {};
+  let ok = false;
+  try {
+    const r = await fetch('/api/phonebook/add', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: body.toString(),
+    });
+    d  = await r.json().catch(() => ({}));
+    ok = r.ok && d.ok;
+  } catch (_){ /* handled as a failure below */ }
+
+  if (ok){
+    pbSetMsg(msg, t('pb.dialog.done'), '#188038');
+    setTimeout(() => { if (pbDlgEl) pbDlgEl.style.display = 'none'; }, 700);
+    await refreshAll();
+    return;
+  }
+  // "No phonebook chosen yet" and "that one is read-only" are both
+  // answered by showing the picker rather than by an error the user can
+  // do nothing with.
+  if (d.code === 'no_phonebook' || d.code === 'not_writable'
+      || d.code === 'phonebook_moved'){
+    bookRow.style.display = '';
+    const loaded = await pbLoadBooks($('pbBook'), msg);
+    if (loaded){
+      const warn = d.code === 'not_writable' || d.code === 'phonebook_moved';
+      pbSetMsg(msg, d.code === 'not_writable' ? t('pb.dialog.error.not_writable')
+                  : d.code === 'phonebook_moved' ? t('pb.dialog.error.moved')
+                  : t('pb.dialog.pick'),
+               warn ? '#d93025' : '#888');
+    }
+    save.disabled = false;
+    return;
+  }
+  pbSetMsg(msg, pbErrorText(d), '#d93025');
+  save.disabled = false;
+}
+
+// Row actions. Each sits in the column it changes — "add contact" in the
+// Name column it fills, "report spam" in the Bewertung column it votes on —
+// so what a button does is readable from where it is, without a legend.
+function pbAddButton(number){
+  return ' <button class="rowbtn" data-pbnum="' + esc(number) + '" title="'
+       + esc(t('status.calls.add_contact.help')) + '">'
+       + '<span aria-hidden="true">&#43;</span> '
+       + esc(t('status.calls.add_contact')) + '</button>';
+}
+
+function pbSpamButton(number){
+  return ' <button class="rowbtn spam" data-spamnum="' + esc(number) + '" title="'
+       + esc(t('status.calls.report_spam.help')) + '">'
+       + '<span aria-hidden="true">&#9888;</span> '
+       + esc(t('status.calls.report_spam')) + '</button>';
+}
+
+// --- spam vote -------------------------------------------------------
+// Behind a confirmation on purpose: unlike the phonebook entry (local to
+// the user's box, editable there), a rating is published to the community
+// database under the user's account and cannot be taken back from here.
+let pbSpamDlgEl = null;
+let pbSpamNumber = '';
+
+const PB_RATINGS = ['B_MISSED', 'C_PING', 'D_POLL', 'E_ADVERTISING',
+                    'F_GAMBLE', 'G_FRAUD'];
+
+function pbBuildSpamDialog(){
+  if (pbSpamDlgEl) pbSpamDlgEl.remove();
+  const wrap = document.createElement('div');
+  wrap.className = 'modal';
+  wrap.style.display = 'none';
+  wrap.innerHTML = ''
+    + '<div>'
+    + '<h3>' + esc(t('spam.dialog.title')) + '</h3>'
+    + '<p class="muted">' + esc(t('spam.dialog.intro')) + '</p>'
+    + '<p style="margin:.4rem 0"><strong id="pbSpamNum"></strong></p>'
+    + '<label>' + esc(t('spam.dialog.rating'))
+    + '<select id="pbSpamRating">'
+    +   PB_RATINGS.map(r => '<option value="' + r + '">'
+    +     esc(t('spam.dialog.rating.' + r)) + '</option>').join('')
+    + '</select></label>'
+    + '<label>' + esc(t('spam.dialog.comment'))
+    + ' <span class="muted">' + esc(t('spam.dialog.comment.hint')) + '</span>'
+    + '<textarea id="pbSpamComment" rows="2" maxlength="240"'
+    +   ' style="width:100%;font:inherit"></textarea></label>'
+    + '<p id="pbSpamMsg" class="muted" style="min-height:1em;margin:.4rem 0"></p>'
+    + '<p style="margin:.8rem 0 0;display:flex;gap:.5rem">'
+    + '  <button id="pbSpamSave" class="btn-primary" style="padding:.4rem .9rem">'
+    +   esc(t('spam.dialog.submit')) + '</button>'
+    + '  <button id="pbSpamCancel" class="btn-ghost" style="padding:.4rem .9rem">'
+    +   esc(t('pb.dialog.cancel')) + '</button>'
+    + '</p></div>';
+  document.body.appendChild(wrap);
+  pbSpamDlgEl = wrap;
+  $('pbSpamCancel').onclick = () => { wrap.style.display = 'none'; };
+  wrap.onclick = (e) => { if (e.target === wrap) wrap.style.display = 'none'; };
+  $('pbSpamSave').onclick = pbSpamSubmit;
+  return wrap;
+}
+
+function pbOpenSpamVote(number){
+  pbBuildSpamDialog();
+  pbSpamNumber = number;
+  $('pbSpamNum').textContent = number;
+  $('pbSpamRating').selectedIndex = 0;
+  $('pbSpamComment').value = '';
+  pbSetMsg($('pbSpamMsg'), '');
+  $('pbSpamSave').disabled = false;
+  pbSpamDlgEl.style.display = 'flex';
+}
+
+async function pbSpamSubmit(){
+  const msg  = $('pbSpamMsg');
+  const save = $('pbSpamSave');
+  save.disabled = true;
+  pbSetMsg(msg, t('spam.dialog.working'));
+
+  const body = new URLSearchParams();
+  body.append('number', pbSpamNumber);
+  body.append('rating', $('pbSpamRating').value);
+  // Sent verbatim — the firmware JSON-escapes it (sb_append_json_escaped).
+  const comment = $('pbSpamComment').value.trim();
+  if (comment) body.append('comment', comment);
+
+  let d = {};
+  let ok = false;
+  try {
+    const r = await fetch('/api/rate', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: body.toString(),
+    });
+    d  = await r.json().catch(() => ({}));
+    ok = r.ok && d.ok;
+  } catch (_){ /* handled below */ }
+
+  if (ok){
+    pbSetMsg(msg, t('spam.dialog.done'), '#188038');
+    setTimeout(() => { if (pbSpamDlgEl) pbSpamDlgEl.style.display = 'none'; }, 700);
+    await refreshAll();
+    return;
+  }
+  pbSetMsg(msg, d.code === 'no_token'   ? t('spam.dialog.error.no_token')
+              : d.code === 'is_contact' ? t('spam.dialog.error.is_contact')
+              : pbErrorText(d), '#d93025');
+  save.disabled = false;
+}
+
 // --- provider presets (PROVIDERS.md) --------------------------------
 
 // Transport is always connection-oriented (TLS or TCP), never UDP: only a
@@ -851,6 +1167,18 @@ function renderStatus(){
     + '</div>'
     + '<p id="thrMsg" class="muted" style="font-size:.75rem;margin:.4rem 0 0;min-height:1em"></p>'
     + '</details>'
+    + '<details id="pbSection" class="adminsec" style="display:none">'
+    + '<summary>' + esc(t('status.phonebook.title')) + '</summary>'
+    + '<p class="muted">' + esc(t('status.phonebook.intro')) + '</p>'
+    + '<p id="pbCurrent" style="margin:.4rem 0"></p>'
+    + '<p style="margin:.4rem 0 0">'
+    + '  <button id="pbChange" class="btn-ghost" style="padding:.3rem .7rem;font-size:.85rem">'
+    +   esc(t('status.phonebook.change')) + '</button>'
+    + '  <span id="pbSecMsg" class="muted" style="margin-left:.6rem"></span>'
+    + '</p>'
+    + '<p id="pbSecPick" style="display:none;margin:.6rem 0 0">'
+    + '  <select id="pbSecBook" style="max-width:100%"></select>'
+    + '</p></details>'
     + '<details id="syncSection" class="adminsec" style="display:none">'
     + '<summary>' + esc(t('status.sync.title')) + '</summary>'
     + '<p class="muted">' + esc(t('status.sync.intro')) + '</p>'
@@ -1094,6 +1422,7 @@ let namesPrefilled = false;
 const DASHBOARD_SECTIONS = ['heroSlot', 'statusSection', 'callsSection',
   'regionSection', 'thresholdsSection', 'errorsSection', 'resetSection',
   'annSection', 'localCacheSection', 'nameFilterSection', 'syncSection',
+  'pbSection',
   'fwSection', 'mailSection', 'authSection'];
 
 // Maps `?login_error=<code>` query values that web_auth_handle_callback
@@ -1205,6 +1534,7 @@ async function refreshAll(){
   const resetSec      = $('resetSection');
   const annSec        = $('annSection');
   const syncSec       = $('syncSection');
+  const pbSec         = $('pbSection');
   const localCacheSec = $('localCacheSection');
   const nameFilterSec = $('nameFilterSection');
   const fwSec         = $('fwSection');
@@ -1222,6 +1552,7 @@ async function refreshAll(){
     errorsSec.style.display = 'none';
     annSec.style.display = 'none';
     syncSec.style.display = 'none';
+    pbSec.style.display = 'none';
     localCacheSec.style.display = 'none';
     nameFilterSec.style.display = 'none';
     resetSec.style.display = 'none';
@@ -1237,6 +1568,7 @@ async function refreshAll(){
   errorsSec.style.display = '';
   annSec.style.display = '';
   syncSec.style.display = '';
+  pbSec.style.display = '';
   localCacheSec.style.display = '';
   nameFilterSec.style.display = '';
   resetSec.style.display = '';
@@ -1388,6 +1720,60 @@ async function refreshAll(){
       if (ok) nfInput.value = pats.join('|');
       m.textContent = ok ? t('status.names.saved') : t('status.names.failed');
       m.style.color = ok ? '#188038' : '#d93025';
+    };
+  }
+
+  // Phonebook target for new contacts. Shows what the next "+" will
+  // write to, and lets the user change it up front instead of waiting to
+  // be asked on the first add.
+  const pbk = s.phonebook || {};
+  const pbCurrent = $('pbCurrent');
+  const pbChange  = $('pbChange');
+  if (!pbk.available){
+    pbCurrent.textContent = t('status.phonebook.unavailable');
+    pbCurrent.style.color = '#888';
+    pbChange.disabled = true;
+  } else {
+    pbCurrent.style.color = '#222';
+    pbCurrent.textContent = pbk.id
+      ? t('status.phonebook.current', {name: pbk.name || pbk.id})
+      : t('status.phonebook.unset');
+    pbChange.disabled = false;
+  }
+  if (!pbChange.onclick){
+    pbChange.onclick = async () => {
+      const row = $('pbSecPick');
+      const sel = $('pbSecBook');
+      const msg = $('pbSecMsg');
+      pbChange.disabled = true;
+      pbSetMsg(msg, '');
+      const loaded = await pbLoadBooks(sel, msg);
+      pbChange.disabled = false;
+      if (loaded) row.style.display = '';
+    };
+  }
+  if (!$('pbSecBook').onchange){
+    $('pbSecBook').onchange = async () => {
+      const sel = $('pbSecBook');
+      const msg = $('pbSecMsg');
+      const opt = sel.options[sel.selectedIndex];
+      const body = new URLSearchParams();
+      body.append('fb_phonebook', sel.value);
+      body.append('fb_phonebook_name', (opt && opt.dataset.name) || '');
+      sel.disabled = true;
+      try {
+        await fetch('/api/config', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: body.toString(),
+        });
+        pbSetMsg(msg, t('status.phonebook.saved'), '#188038');
+      } catch (_){
+        pbSetMsg(msg, t('pb.dialog.error.unreachable'), '#d93025');
+      }
+      sel.disabled = false;
+      $('pbSecPick').style.display = 'none';
+      await refreshAll();
     };
   }
 
@@ -1740,6 +2126,9 @@ async function refreshAll(){
     // opposite of "a contact you know" — link it so the user can look the
     // number up and rate it on PhoneBlock.
     if (assessment === 'name_pattern') return linkToNumber(num, esc(num));
+    // A caller you saved as a contact needs no lookup link — and that now
+    // also covers a row whose name the "+ Kontakt" button just filled in:
+    // the link going away is the visible sign that the contact took effect.
     if (isKnownContact(display))       return esc(num);
     return linkToNumber(num, esc(num));
   };
@@ -1778,6 +2167,9 @@ async function refreshAll(){
       default:           return 'UNKNOWN';
     }
   };
+  // Offering the phonebook shortcut needs Fritz!Box app credentials —
+  // without them there is nothing to write to (manual SIP setups).
+  const pbAvailable = !!(s.phonebook && s.phonebook.available);
   const hasCalls = calls && calls.calls.length;
   if (hasCalls){
     tbody.innerHTML = calls.calls.map(c => {
@@ -1792,17 +2184,45 @@ async function refreshAll(){
       const nameCol = apiChecked
         ? esc(c.location)
         : esc(c.display);
+      // No name means the box had no phonebook entry for this caller —
+      // exactly the case the shortcut is for. Rendered as markup and
+      // handled by one delegated listener, because this table is rebuilt
+      // on every 3 s poll.
+      const rateable = PLAIN_NUMBER.test(c.number || '');
+      const canAdd = pbAvailable && !c.display && rateable;
+      // The vote goes in the Bewertung column; once cast, the row says so
+      // instead of offering it again (the device remembers per listed call).
+      // A contact is never offered as spam: the phonebook entry already
+      // overrules every blocklist and API verdict on the device, so the vote
+      // would be one this dongle ignores. (The other direction is allowed —
+      // a SPAM-rated number can still be made a contact, which is how a
+      // false positive gets rescued.) A "SPAM:"-prefixed name comes from the
+      // CardDAV blocklist, not from the user, so isKnownContact() rejects it
+      // and those rows keep the vote.
+      const canReport = rateable && tokenSet && !isKnownContact(c.display);
+      const verdictExtra = c.reported
+        ? ' <span class="rowdone">' + esc(t('status.calls.reported')) + '</span>'
+        : (canReport ? pbSpamButton(c.number) : '');
       // Colour follows the assessment: SPAM-VERDACHT gets its own orange
       // v-SUSPECT (green would wrongly imply "fine"), an un-rated number
       // gets neutral v-UNKNOWN, and spam/blacklist share red.
       const verdictCls = verdictClass(c.assessment);
       return '<tr><td>' + esc(fmtClock(c.age_s, false)) + '</td>'
         + '<td>' + numCol + '</td>'
-        + '<td>' + nameCol + '</td>'
-        + '<td class="v-' + esc(verdictCls) + '">' + esc(verdictLabel(c)) + '</td></tr>';
+        + '<td>' + nameCol + (canAdd ? pbAddButton(c.number) : '') + '</td>'
+        + '<td class="v-' + esc(verdictCls) + '">' + esc(verdictLabel(c))
+        +   verdictExtra + '</td></tr>';
     }).join('');
   } else {
     tbody.innerHTML = '<tr><td colspan="4" class="muted">' + esc(t('status.calls.empty')) + '</td></tr>';
+  }
+  if (!tbody.onclick){
+    tbody.onclick = (e) => {
+      const add = e.target.closest('button[data-pbnum]');
+      if (add) { pbOpenAddContact(add.dataset.pbnum); return; }
+      const spam = e.target.closest('button[data-spamnum]');
+      if (spam) pbOpenSpamVote(spam.dataset.spamnum);
+    };
   }
   const callsClearBtn = $('callsClear');
   callsClearBtn.style.display = hasCalls ? '' : 'none';

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdbool.h>
 #include <stddef.h>
 #include "esp_err.h"
 
@@ -124,6 +125,84 @@ esp_err_t tr064_call_barring_delete(
     const char *host, int port,
     const char *user, const char *pass,
     const char *uid,
+    int *out_err_code, char *out_err_msg, size_t err_msg_cap);
+
+// Phonebook helpers ("Telefonbuch")
+// ---------------------------------
+//
+// Same service and right as the call-barring helpers above: the dongle's
+// app credentials suffice, the admin password is not needed.
+//
+// Used for the personal allowlist: a caller the box could not
+// resolve shows up nameless in the call list, and one click writes them
+// into a Fritz!Box phonebook. From then on the box announces the name, the
+// dongle's is_known_contact() short-circuit skips the API check, and with
+// "log known calls" off the entry stops appearing in the list at all.
+
+// Upper bound on phonebooks we enumerate. A box's own limit is far lower
+// (a handful), so this only bounds our buffers.
+#define TR064_MAX_PHONEBOOKS 8
+#define TR064_PB_NAME_CAP    64
+
+typedef struct {
+    int  id;                        // NewPhonebookID, as used for writes
+    char name[TR064_PB_NAME_CAP];   // "Telefonbuch", "PhoneBlock", …
+    // Whether a new entry may be written here. False for a phonebook that
+    // mirrors an online address book (CardDAV, Google): the box rejects
+    // SetPhonebookEntryUID on those with UPnPError 713, verified against a
+    // 7.6x box for a Google-synced book and for PhoneBlock's own CardDAV
+    // blocklist. Determined by matching the phonebook's name against the
+    // names of the configured online address books — NewPhonebookExtraID
+    // is empty on all books and carries no such link.
+    bool writable;
+} tr064_phonebook_t;
+
+// Enumerate the box's phonebooks with their write eligibility.
+//
+// Costs 2 + P + N SOAP calls (P phonebooks, N online address books), so
+// it belongs on an explicit user action, not a poll. Writes at most `max`
+// entries and reports how many in `*out_count`.
+//
+// A phonebook whose name could not be read is reported with an empty name
+// and writable == false: without the name the online-address-book
+// comparison cannot be made, and offering it anyway could put an
+// allowlist entry into the blocklist phonebook.
+esp_err_t tr064_phonebook_list(
+    const char *host, int port,
+    const char *user, const char *pass,
+    tr064_phonebook_t *out, int max, int *out_count,
+    int *out_err_code, char *out_err_msg, size_t err_msg_cap);
+
+// Read just the name of one phonebook (a single GetPhonebook call).
+//
+// Needed because a NewPhonebookID is *positional*, not a stable handle:
+// creating a phonebook shifts the IDs of all later ones (verified on a
+// 7.6x box — adding a local book moved the CardDAV books from 1,2,3 to
+// 2,3,4). A stored ID can therefore come to denote a different phonebook
+// than the one the user chose, so a write verifies the name it expects
+// before trusting the ID.
+esp_err_t tr064_phonebook_name(
+    const char *host, int port,
+    const char *user, const char *pass,
+    int phonebook_id, char *out, size_t cap,
+    int *out_err_code, char *out_err_msg, size_t err_msg_cap);
+
+// Create one contact in phonebook `phonebook_id` via
+// SetPhonebookEntryUID and return the UniqueID the box assigned.
+//
+// `name`, `number`, `type` and `vip` are validated and assembled by
+// tr064_build_contact_arg(); invalid input fails with
+// ESP_ERR_INVALID_ARG before anything is sent.
+//
+// Writing to a synced phonebook fails with *out_err_code == 713
+// (SpecifiedArrayIndexInvalid) — the caller should surface that as "this
+// phonebook cannot be written to" rather than as a generic SOAP error.
+esp_err_t tr064_phonebook_add(
+    const char *host, int port,
+    const char *user, const char *pass,
+    int phonebook_id,
+    const char *name, const char *number, const char *type, bool vip,
+    char *out_uid, size_t uid_cap,
     int *out_err_code, char *out_err_msg, size_t err_msg_cap);
 
 // Two-factor-authentication helpers

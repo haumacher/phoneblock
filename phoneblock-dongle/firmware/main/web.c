@@ -37,10 +37,12 @@
 #include "rtp.h"
 #include "scheduler.h"
 #include "sip_register.h"
+#include "sip_parse.h"   // is_known_contact() for the "a contact is never spam" rule
 #include "stats.h"
 #include "sync.h"
 #include "time_sync.h"
 #include "tr064.h"
+#include "tr064_parse.h"
 #include "web_auth.h"
 
 // Must be last: bans unsafe string APIs for the rest of this file.
@@ -434,6 +436,14 @@ static esp_err_t handle_status(httpd_req_t *req)
     cJSON_AddNumberToObject(syn, "last_skipped", ss.last_skipped);
     cJSON_AddStringToObject(syn, "last_error", ss.last_error);
 
+    // Personal allowlist: whether the "add this caller to the
+    // Fritz!Box address book" action can be offered at all, plus the
+    // phonebook it would write to once one has been chosen.
+    cJSON *pbk = cJSON_AddObjectToObject(root, "phonebook");
+    cJSON_AddBoolToObject  (pbk, "available", config_fritzbox_app_user()[0] != '\0');
+    cJSON_AddStringToObject(pbk, "id",        config_fritzbox_phonebook());
+    cJSON_AddStringToObject(pbk, "name",      config_fritzbox_phonebook_name());
+
     cJSON *bl = cJSON_AddObjectToObject(root, "blocklist");
     blocklist_sync_status_t bs;
     blocklist_sync_snapshot(&bs);
@@ -573,6 +583,7 @@ static esp_err_t handle_calls(httpd_req_t *req)
         cJSON_AddNumberToObject(o, "direct_votes", calls[i].direct_votes);
         cJSON_AddNumberToObject(o, "range_votes",  calls[i].range_votes);
         cJSON_AddBoolToObject  (o, "wildcard",     calls[i].wildcard);
+        cJSON_AddBoolToObject  (o, "reported",     calls[i].reported);
         cJSON_AddItemToArray(arr, o);
     }
     send_json(req, root);
@@ -700,6 +711,9 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     char tz_s[64]         = "";
     char ui_lang_s[12]    = "";
     char dial_prefix_s[8] = "";
+    char fb_pb_id_s[8]    = "";
+    char dev_mode_s[4]    = "";
+    char fb_pb_name_s[64] = "";
 
     bool have_sip_host  = form_get(body, "sip_host",  sip_host,  sizeof(sip_host));
     bool have_sip_user  = form_get(body, "sip_user",  sip_user,  sizeof(sip_user));
@@ -745,7 +759,19 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     bool have_tz         = form_get(body, "timezone",      tz_s,        sizeof(tz_s));
     bool have_ui_lang    = form_get(body, "ui_lang",       ui_lang_s,   sizeof(ui_lang_s));
     bool have_dial_pfx   = form_get(body, "dial_prefix",   dial_prefix_s, sizeof(dial_prefix_s));
+    bool have_dev_mode   = form_get(body, "dev_mode", dev_mode_s, sizeof(dev_mode_s));
+    bool have_fb_pb      = form_get(body, "fb_phonebook", fb_pb_id_s, sizeof(fb_pb_id_s));
+    bool have_fb_pb_name = form_get(body, "fb_phonebook_name", fb_pb_name_s, sizeof(fb_pb_name_s));
     free(body);
+
+    // Phonebook selection for new contacts: only a decimal ID is stored, so
+    // a malformed value can't reach the SOAP argument later. An empty field
+    // clears the selection (back to "ask on the next add").
+    if (have_fb_pb) {
+        for (const char *p = fb_pb_id_s; *p; p++) {
+            if (*p < '0' || *p > '9') { have_fb_pb = false; break; }
+        }
+    }
 
     // POSIX TZ string (e.g. "CET-1CEST,M3.5.0,M10.5.0/3"): accept only a
     // sane length of printable ASCII so a malformed POST can never feed
@@ -888,6 +914,9 @@ static esp_err_t handle_config_post(httpd_req_t *req)
         .blocklist_wildcards = have_bl_wild ? bl_wild_s : NULL,
         .blocklist_enabled   = have_bl_en   ? bl_enabled_s : NULL,
         .spam_names          = spam_names_val,
+        .dev_mode                = have_dev_mode   ? dev_mode_s   : NULL,
+        .fritzbox_phonebook      = have_fb_pb      ? fb_pb_id_s   : NULL,
+        .fritzbox_phonebook_name = have_fb_pb_name ? fb_pb_name_s : NULL,
         .phoneblock_base_url = have_pb_url   && pb_url[0]   ? pb_url   : NULL,
         .phoneblock_token    = have_pb_token && pb_token[0] ? pb_token : NULL,
         .min_direct_votes = have_min_direct && min_direct_s[0] ? atoi(min_direct_s) : 0,
@@ -2205,6 +2234,534 @@ static esp_err_t handle_calls_clear(httpd_req_t *req)
     return ESP_OK;
 }
 
+// --- Fritz!Box phonebook (personal allowlist) ----------------------
+
+// Reply {ok:false, code, message}. `code` is a stable discriminator the
+// UI localises; `message` carries whatever detail the box gave us and is
+// only shown when the code is unknown to the UI.
+static void send_fail_code(httpd_req_t *req, const char *status,
+                           const char *code, const char *message)
+{
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddBoolToObject  (root, "ok", false);
+    cJSON_AddStringToObject(root, "code", code);
+    cJSON_AddStringToObject(root, "message", message);
+    httpd_resp_set_status(req, status);
+    send_json(req, root);
+}
+
+// True when the dongle holds Fritz!Box app credentials and knows a host to
+// reach the box at — i.e. it was set up by the wizard. Without them no
+// TR-064 call can be made at all.
+static bool fritzbox_reachable(void)
+{
+    return config_sip_host()[0] != '\0'
+        && config_fritzbox_app_user()[0] != '\0'
+        && config_fritzbox_app_pass()[0] != '\0';
+}
+
+// GET /api/phonebooks
+// Enumerates the box's phonebooks so the UI can offer a target for new
+// contacts. Costs a handful of SOAP calls, so it is only fetched when the
+// user actually opens the picker — never from the status poll.
+static esp_err_t handle_phonebooks(httpd_req_t *req)
+{
+    REQUIRE_AUTH_API(req);
+    if (!fritzbox_reachable()) {
+        send_fail_code(req, "409 Conflict", "no_fritzbox",
+                       "No Fritz!Box app credentials — run the Fritz!Box setup.");
+        return ESP_OK;
+    }
+
+    tr064_phonebook_t *books =
+        malloc(sizeof(tr064_phonebook_t) * TR064_MAX_PHONEBOOKS);
+    if (!books) {
+        send_fail_code(req, "500 Internal Server Error", "oom", "Out of memory.");
+        return ESP_OK;
+    }
+
+    int  count = 0;
+    int  code  = 0;
+    char msg[128] = "";
+    esp_err_t err = tr064_phonebook_list(config_sip_host(), 49000,
+                                         config_fritzbox_app_user(),
+                                         config_fritzbox_app_pass(),
+                                         books, TR064_MAX_PHONEBOOKS, &count,
+                                         &code, msg, sizeof(msg));
+    if (err != ESP_OK) {
+        free(books);
+        send_fail_code(req, "502 Bad Gateway", "tr064",
+                       msg[0] ? msg : "Fritz!Box did not answer.");
+        return ESP_OK;
+    }
+
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddBoolToObject  (root, "ok", true);
+    cJSON_AddStringToObject(root, "selected", config_fritzbox_phonebook());
+    cJSON_AddStringToObject(root, "selected_name",
+                            config_fritzbox_phonebook_name());
+    cJSON *arr = cJSON_AddArrayToObject(root, "phonebooks");
+    for (int i = 0; i < count; i++) {
+        cJSON *o = cJSON_CreateObject();
+        cJSON_AddNumberToObject(o, "id",       books[i].id);
+        cJSON_AddStringToObject(o, "name",     books[i].name);
+        cJSON_AddBoolToObject  (o, "writable", books[i].writable);
+        cJSON_AddItemToArray(arr, o);
+    }
+    free(books);
+    send_json(req, root);
+    return ESP_OK;
+}
+
+// POST /api/phonebook/add
+// Body (URL-encoded): number=…&name=…&type=home&vip=0[&phonebook_id=0&phonebook_name=…]
+//
+// Writes one contact into the box's phonebook. `phonebook_id` is only sent
+// when the user picked a target in the dialog; it is then remembered — but
+// only after the write succeeded, so a pick that turns out to be
+// unwritable is not persisted. Without it the stored selection is used,
+// and if there is none the UI is told to ask (code "no_phonebook").
+static esp_err_t handle_phonebook_add(httpd_req_t *req)
+{
+    REQUIRE_AUTH_API(req);
+    if (!fritzbox_reachable()) {
+        send_fail_code(req, "409 Conflict", "no_fritzbox",
+                       "No Fritz!Box app credentials — run the Fritz!Box setup.");
+        return ESP_OK;
+    }
+
+    int total = req->content_len;
+    if (total <= 0 || total > 1024) {
+        send_fail_code(req, "400 Bad Request", "invalid",
+                       "Body missing or too large.");
+        return ESP_OK;
+    }
+    char *body = malloc(total + 1);
+    if (!body) {
+        send_fail_code(req, "500 Internal Server Error", "oom", "Out of memory.");
+        return ESP_OK;
+    }
+    int got = 0;
+    while (got < total) {
+        int n = httpd_req_recv(req, body + got, total - got);
+        if (n <= 0) { free(body); return ESP_FAIL; }
+        got += n;
+    }
+    body[got] = '\0';
+
+    char number[48] = "";
+    char name[TR064_CONTACT_NAME_CAP + 1] = "";
+    char type[16]   = "";
+    char vip_s[4]   = "";
+    char pb_id_s[8] = "";
+    char pb_name[TR064_PB_NAME_CAP] = "";
+    form_get(body, "number", number, sizeof(number));
+    form_get(body, "name",   name,   sizeof(name));
+    form_get(body, "type",   type,   sizeof(type));
+    form_get(body, "vip",    vip_s,  sizeof(vip_s));
+    bool have_pick = form_get(body, "phonebook_id", pb_id_s, sizeof(pb_id_s));
+    form_get(body, "phonebook_name", pb_name, sizeof(pb_name));
+    free(body);
+
+    if (!type[0]) {
+        strncpy(type, "home", sizeof(type) - 1);
+        type[sizeof(type) - 1] = '\0';
+    }
+
+    // Validated here as well as in tr064_build_contact_arg so the caller
+    // gets a specific reason instead of a generic "invalid argument".
+    if (!name[0] || strlen(name) >= TR064_CONTACT_NAME_CAP) {
+        send_fail_code(req, "400 Bad Request", "invalid_name",
+                       "Name missing or too long.");
+        return ESP_OK;
+    }
+    if (!tr064_number_plausible(number)) {
+        send_fail_code(req, "400 Bad Request", "invalid_number",
+                       "Not a number that can be stored in a phone book.");
+        return ESP_OK;
+    }
+    if (!tr064_number_type_valid(type)) {
+        send_fail_code(req, "400 Bad Request", "invalid_type",
+                       "Unknown number type.");
+        return ESP_OK;
+    }
+
+    if (have_pick) {
+        for (const char *p = pb_id_s; *p; p++) {
+            if (*p < '0' || *p > '9') { have_pick = false; break; }
+        }
+        if (!pb_id_s[0]) have_pick = false;
+    }
+    const char *target = have_pick ? pb_id_s : config_fritzbox_phonebook();
+    if (!target[0]) {
+        // No target yet: the UI reacts to this by fetching /api/phonebooks
+        // and asking which phonebook to use.
+        send_fail_code(req, "409 Conflict", "no_phonebook",
+                       "No phone book selected yet.");
+        return ESP_OK;
+    }
+
+    // A stored ID needs re-checking before use: NewPhonebookID is positional,
+    // so creating a phonebook shifts every later ID down by one and the
+    // stored number can end up denoting a different book than the user chose
+    // — including a writable one, where the contact would land silently in
+    // the wrong place. The cached name is what makes that detectable.
+    // A freshly picked ID (have_pick) comes from a list the user just saw, so
+    // it needs no check.
+    char resolved[8] = "";
+    if (!have_pick && config_fritzbox_phonebook_name()[0]) {
+        const char *want = config_fritzbox_phonebook_name();
+        char actual[TR064_PB_NAME_CAP] = "";
+        esp_err_t nerr = tr064_phonebook_name(config_sip_host(), 49000,
+                                              config_fritzbox_app_user(),
+                                              config_fritzbox_app_pass(),
+                                              (int)strtol(target, NULL, 10),
+                                              actual, sizeof(actual),
+                                              NULL, NULL, 0);
+        if (nerr != ESP_OK) {
+            send_fail_code(req, "502 Bad Gateway", "tr064",
+                           "Fritz!Box did not answer.");
+            return ESP_OK;
+        }
+        if (strcmp(actual, want) != 0) {
+            // Shifted. Look for the chosen name again and follow it; only
+            // when it is gone entirely does the user have to decide anew.
+            ESP_LOGW(TAG, "phonebook %s is now '%s', not '%s' — re-resolving",
+                     target, actual, want);
+            tr064_phonebook_t *books =
+                malloc(sizeof(tr064_phonebook_t) * TR064_MAX_PHONEBOOKS);
+            int count = 0;
+            if (books && tr064_phonebook_list(config_sip_host(), 49000,
+                                              config_fritzbox_app_user(),
+                                              config_fritzbox_app_pass(),
+                                              books, TR064_MAX_PHONEBOOKS,
+                                              &count, NULL, NULL, 0) == ESP_OK) {
+                for (int i = 0; i < count; i++) {
+                    if (books[i].writable && strcmp(books[i].name, want) == 0) {
+                        snprintf(resolved, sizeof(resolved), "%d", books[i].id);
+                        break;
+                    }
+                }
+            }
+            free(books);
+            if (!resolved[0]) {
+                send_fail_code(req, "409 Conflict", "phonebook_moved",
+                               "The selected phone book no longer exists.");
+                return ESP_OK;
+            }
+            ESP_LOGI(TAG, "phonebook '%s' moved to ID %s", want, resolved);
+            target = resolved;
+        }
+    }
+
+    int  code = 0;
+    char msg[128] = "";
+    char uid[32]  = "";
+    esp_err_t err = tr064_phonebook_add(config_sip_host(), 49000,
+                                        config_fritzbox_app_user(),
+                                        config_fritzbox_app_pass(),
+                                        (int)strtol(target, NULL, 10),
+                                        name, number, type,
+                                        vip_s[0] == '1',
+                                        uid, sizeof(uid),
+                                        &code, msg, sizeof(msg));
+    if (err != ESP_OK) {
+        // 713 is the box's answer for a phonebook that mirrors an online
+        // address book (CardDAV / Google): those are read-only for
+        // TR-064, so tell the user to pick a different one instead of
+        // reporting a SOAP failure they can do nothing about.
+        if (code == 713) {
+            send_fail_code(req, "409 Conflict", "not_writable",
+                           "This phone book cannot be written to.");
+        } else {
+            send_fail_code(req, "502 Bad Gateway", "tr064",
+                           msg[0] ? msg : "Fritz!Box did not answer.");
+        }
+        return ESP_OK;
+    }
+
+    // Remember the target only now that a write to it has actually worked.
+    // Also persists a re-resolved ID, so the shift is corrected once instead
+    // of being chased again on every add.
+    if (have_pick || resolved[0]) {
+        config_update_t u = {
+            .fritzbox_phonebook      = have_pick ? pb_id_s : resolved,
+            .fritzbox_phonebook_name = have_pick ? pb_name : NULL,
+        };
+        if (config_update(&u) != ESP_OK) {
+            ESP_LOGW(TAG, "contact stored but phonebook selection not saved");
+        }
+    }
+
+    // The Fritz!Box will resolve this caller from now on, but the calls
+    // already listed still say "no name". Fill it in so the user sees the
+    // effect immediately instead of an unchanged row that reads as "nothing
+    // happened" — and so the row stops offering to add the same contact.
+    int touched = stats_set_display(number, name);
+
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddBoolToObject  (root, "ok", true);
+    cJSON_AddStringToObject(root, "uid", uid);
+    cJSON_AddStringToObject(root, "phonebook_id", target);
+    cJSON_AddNumberToObject(root, "calls_updated", touched);
+    send_json(req, root);
+    return ESP_OK;
+}
+
+// POST /api/rate
+// Body (URL-encoded): number=…&rating=B_MISSED
+//
+// Submits a spam rating for a number straight from the call list, so a
+// caller the community has not flagged yet can be reported without going
+// to phoneblock.net. The vote is attributed to the account behind the
+// stored API token, exactly like a rating made on the website.
+//
+// Only the negative ratings are accepted: this backs a "report as spam"
+// action, and A_LEGITIMATE from here would be indistinguishable from a
+// mis-click on a button labelled "Spam".
+static esp_err_t handle_rate(httpd_req_t *req)
+{
+    REQUIRE_AUTH_API(req);
+    if (strlen(config_phoneblock_token()) == 0) {
+        send_fail_code(req, "409 Conflict", "no_token",
+                       "No PhoneBlock token — ratings need an account.");
+        return ESP_OK;
+    }
+
+    int total = req->content_len;
+    if (total <= 0 || total > 512) {
+        send_fail_code(req, "400 Bad Request", "invalid",
+                       "Body missing or too large.");
+        return ESP_OK;
+    }
+    char *body = malloc(total + 1);
+    if (!body) {
+        send_fail_code(req, "500 Internal Server Error", "oom", "Out of memory.");
+        return ESP_OK;
+    }
+    int got = 0;
+    while (got < total) {
+        int n = httpd_req_recv(req, body + got, total - got);
+        if (n <= 0) { free(body); return ESP_FAIL; }
+        got += n;
+    }
+    body[got] = '\0';
+
+    char number[48] = "";
+    char rating[16] = "";
+    char comment[PB_RATE_COMMENT_CAP + 1] = "";
+    form_get(body, "number", number, sizeof(number));
+    form_get(body, "rating", rating, sizeof(rating));
+    form_get(body, "comment", comment, sizeof(comment));
+    free(body);
+
+    // Flatten control characters the textarea may have carried (newlines
+    // above all) to spaces: the comment is shown as one line wherever it is
+    // read, and this keeps the JSON escaping to the printable cases.
+    for (char *p = comment; *p; p++) {
+        if ((unsigned char)*p < 0x20) *p = ' ';
+    }
+
+    if (!tr064_number_plausible(number)) {
+        send_fail_code(req, "400 Bad Request", "invalid_number",
+                       "Not a number that can be rated.");
+        return ESP_OK;
+    }
+    // Whitelisted rather than forwarded: the server would reject an unknown
+    // code anyway, but a typo should fail here with a clear reason instead
+    // of costing a TLS round-trip to find out.
+    static const char *const RATINGS[] = {
+        "B_MISSED", "C_PING", "D_POLL", "E_ADVERTISING", "F_GAMBLE",
+        "G_FRAUD", NULL
+    };
+    bool rating_ok = false;
+    for (int i = 0; RATINGS[i] && !rating_ok; i++) {
+        rating_ok = strcmp(rating, RATINGS[i]) == 0;
+    }
+    if (!rating_ok) {
+        send_fail_code(req, "400 Bad Request", "invalid_rating",
+                       "Unknown rating code.");
+        return ESP_OK;
+    }
+
+    // A caller the box resolves from a phonebook must not be ratable: the
+    // phonebook entry already wins over every blocklist and API verdict in
+    // check_invite_caller(), so the vote would be one this very device
+    // ignores. The reverse direction stays open on purpose — a number rated
+    // SPAM may still be turned into a contact, which is how a user rescues
+    // a false positive.
+    //
+    // The recent-calls ring is the evidence, which makes this a backstop for
+    // a stale page rather than an authoritative check: the ring is RAM-only,
+    // so after a reboot a number that IS a contact is no longer known here
+    // and a hand-crafted POST would get through. That is acceptable because
+    // the rule's real home is the UI (a row with a name is rendered without
+    // the vote button) and there is nothing left to click on for a call the
+    // ring has forgotten. Making it authoritative would mean asking the box
+    // per rating — OnTel has no by-number phonebook lookup, so it would cost
+    // a full phonebook download.
+    char known[STATS_DISPLAY_LEN] = "";
+    if (stats_display_for_number(number, known, sizeof(known))
+        && is_known_contact(known)) {
+        send_fail_code(req, "409 Conflict", "is_contact",
+                       "This caller is a phone-book contact and cannot be "
+                       "rated as spam.");
+        return ESP_OK;
+    }
+
+    if (!phoneblock_rate(number, rating, comment)) {
+        send_fail_code(req, "502 Bad Gateway", "rate_failed",
+                       "PhoneBlock did not accept the rating.");
+        return ESP_OK;
+    }
+    ESP_LOGI(TAG, "rated %s as %s", number, rating);
+    int touched = stats_mark_reported(number);
+
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddBoolToObject  (root, "ok", true);
+    cJSON_AddStringToObject(root, "rating", rating);
+    cJSON_AddBoolToObject  (root, "with_comment", comment[0] != '\0');
+    cJSON_AddNumberToObject(root, "calls_updated", touched);
+    send_json(req, root);
+    return ESP_OK;
+}
+
+// --- dev-mode resource-bundle upload --------------------------------
+
+// POST /api/dev/i18n?kind=ui|mail&lang=<locale>
+//
+// Stores a localized resource bundle straight on the device, replacing what
+// i18n_sync would otherwise have downloaded. This exists for the firmware
+// development loop: a dev build's new UI strings are not in any published
+// CDN bundle (i18n_sync keys the bundle path on the *release tag*, so a
+// dev build gets the previous release's copy — missing exactly the keys
+// under test). Uploading the freshly translated bundle takes the CDN out
+// of that loop.
+//
+// Not user-facing: the route answers 404 unless config_dev_mode() is on,
+// and dev mode itself has no UI control. It is still behind the normal API
+// auth gate, and while it is on i18n_sync stops running so an uploaded
+// bundle is not overwritten by the next daily pass.
+//
+// The body is the bundle JSON verbatim — the same stripped shape the CDN
+// serves (no "@key" description entries). It replaces the file for the
+// given locale, so it takes effect on the next page load.
+static esp_err_t handle_dev_i18n_upload(httpd_req_t *req)
+{
+    // 404 rather than 403: with dev mode off the route should not even
+    // advertise that it exists.
+    if (!config_dev_mode()) {
+        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "Not found");
+        return ESP_OK;
+    }
+    REQUIRE_AUTH_API(req);
+
+    char query[64] = "";
+    char kind[8]   = "";
+    char lang[12]  = "";
+    if (httpd_req_get_url_query_str(req, query, sizeof(query)) == ESP_OK) {
+        httpd_query_key_value(query, "kind", kind, sizeof(kind));
+        httpd_query_key_value(query, "lang", lang, sizeof(lang));
+    }
+    bool is_ui = strcmp(kind, "ui") == 0;
+    if (!is_ui && strcmp(kind, "mail") != 0) {
+        send_fail_code(req, "400 Bad Request", "invalid_kind",
+                       "kind must be 'ui' or 'mail'.");
+        return ESP_OK;
+    }
+    // The locale becomes part of a file name, so accept only what a locale
+    // code may contain — no '.', no '/', nothing that could escape the
+    // directory or collide with another asset's name.
+    size_t lang_len = strlen(lang);
+    bool lang_ok = lang_len >= 2 && lang_len < sizeof(lang) - 1;
+    for (size_t i = 0; lang_ok && i < lang_len; i++) {
+        char c = lang[i];
+        lang_ok = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
+               || (c >= '0' && c <= '9') || c == '-';
+    }
+    if (!lang_ok) {
+        send_fail_code(req, "400 Bad Request", "invalid_lang",
+                       "lang must be a locale code like 'de' or 'zh-Hans'.");
+        return ESP_OK;
+    }
+
+    // Cap well above a real bundle (~30 KB for the UI pack) but far below
+    // the shared 640 KB SPIFFS, so a runaway upload cannot fill storage
+    // that the announcement audio and the blocklist also live in.
+    const int MAX_BYTES = 128 * 1024;
+    int total = req->content_len;
+    if (total <= 2 || total > MAX_BYTES) {
+        char msg[80];
+        snprintf(msg, sizeof(msg), "Bundle missing or over %d bytes.", MAX_BYTES);
+        send_fail_code(req, "400 Bad Request", "invalid", msg);
+        return ESP_OK;
+    }
+
+    char path[48], tmp[56];
+    if (is_ui) i18n_sync_ui_path(path, sizeof(path), lang);
+    else       i18n_sync_mail_path(path, sizeof(path), lang);
+    snprintf(tmp, sizeof(tmp), "%s.part", path);
+
+    // Streamed through a temp file and renamed, like i18n_sync's own
+    // downloads: an interrupted upload then leaves the previous bundle
+    // intact instead of a half-written one the parser would choke on.
+    FILE *f = fopen(tmp, "wb");
+    if (!f) {
+        send_fail_code(req, "500 Internal Server Error", "storage",
+                       "Could not open the bundle file for writing.");
+        return ESP_OK;
+    }
+    char *buf = malloc(1024);
+    if (!buf) {
+        fclose(f);
+        remove(tmp);
+        send_fail_code(req, "500 Internal Server Error", "oom", "Out of memory.");
+        return ESP_OK;
+    }
+    int  got   = 0;
+    bool wrote = true;
+    char first = '\0';
+    while (got < total && wrote) {
+        int want = total - got;
+        if (want > 1024) want = 1024;
+        int n = httpd_req_recv(req, buf, want);
+        if (n <= 0) { wrote = false; break; }
+        if (got == 0) first = buf[0];
+        if (fwrite(buf, 1, n, f) != (size_t)n) wrote = false;
+        got += n;
+        esp_task_wdt_reset();
+    }
+    free(buf);
+    fclose(f);
+
+    // Only the cheapest sanity check: a bundle that does not even start as
+    // a JSON object is a mistake worth catching here (a wrong file, or an
+    // error page), while full validation belongs to the consumer.
+    if (wrote && first != '{') wrote = false;
+    if (!wrote) {
+        remove(tmp);
+        send_fail_code(req, "400 Bad Request", "invalid",
+                       "Upload interrupted or not a JSON object.");
+        return ESP_OK;
+    }
+    remove(path);
+    if (rename(tmp, path) != 0) {
+        remove(tmp);
+        send_fail_code(req, "500 Internal Server Error", "storage",
+                       "Could not activate the uploaded bundle.");
+        return ESP_OK;
+    }
+    ESP_LOGW(TAG, "dev mode: %s bundle for '%s' replaced by upload (%d bytes)",
+             kind, lang, got);
+
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddBoolToObject  (root, "ok", true);
+    cJSON_AddStringToObject(root, "path", path);
+    cJSON_AddNumberToObject(root, "bytes", got);
+    send_json(req, root);
+    return ESP_OK;
+}
+
 // POST /api/token-test
 // Runs phoneblock_selftest() against GET /test and reports whether the
 // currently stored token is still accepted by the server. Always
@@ -2259,6 +2816,11 @@ static const httpd_uri_t URIS[] = {
     { .uri = "/api/announcement",    .method = HTTP_POST, .handler = handle_announcement_post,  .user_ctx = NULL },
     { .uri = "/api/announcement/reset", .method = HTTP_POST, .handler = handle_announcement_reset, .user_ctx = NULL },
     { .uri = "/api/sync/run",        .method = HTTP_POST, .handler = handle_sync_run,       .user_ctx = NULL },
+    { .uri = "/api/phonebooks",      .method = HTTP_GET,  .handler = handle_phonebooks,     .user_ctx = NULL },
+    // Dev-mode only: 404s unless config_dev_mode() is on (see the handler).
+    { .uri = "/api/dev/i18n",        .method = HTTP_POST, .handler = handle_dev_i18n_upload, .user_ctx = NULL },
+    { .uri = "/api/phonebook/add",   .method = HTTP_POST, .handler = handle_phonebook_add,  .user_ctx = NULL },
+    { .uri = "/api/rate",            .method = HTTP_POST, .handler = handle_rate,           .user_ctx = NULL },
     { .uri = "/api/blocklist-sync/run", .method = HTTP_POST, .handler = handle_blocklist_sync_run, .user_ctx = NULL },
     { .uri = "/api/mail/test",       .method = HTTP_POST, .handler = handle_mail_test,      .user_ctx = NULL },
     { .uri = "/api/config",          .method = HTTP_POST, .handler = handle_config_post,    .user_ctx = NULL },

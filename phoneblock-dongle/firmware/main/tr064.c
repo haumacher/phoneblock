@@ -15,6 +15,7 @@
 
 #include "config.h"
 #include "http_util.h"
+#include "strbuf.h"
 #include "tr064_parse.h"
 
 // Must be last: bans unsafe string APIs for the rest of this file.
@@ -664,6 +665,222 @@ esp_err_t tr064_call_barring_delete(const char *host, int port,
                                 out_err_code, out_err_msg, err_msg_cap);
     free(resp);
     return err;
+}
+
+// --- Phonebooks ("Telefonbuch") ------------------------------------
+
+esp_err_t tr064_phonebook_list(const char *host, int port,
+                               const char *user, const char *pass,
+                               tr064_phonebook_t *out, int max,
+                               int *out_count,
+                               int *out_err_code,
+                               char *out_err_msg, size_t err_msg_cap)
+{
+    if (!out || max <= 0) return ESP_ERR_INVALID_ARG;
+    if (out_count) *out_count = 0;
+
+    char url[96];
+    snprintf(url, sizeof(url), "http://%s:%d" ONTEL_CONTROL, host, port);
+
+    char *resp = malloc(SOAP_RESPONSE_CAP);
+    if (!resp) return ESP_ERR_NO_MEM;
+
+    // 1. Which phonebooks exist? A comma-separated list of IDs ("0,1,2").
+    esp_err_t err = call_action(url, ONTEL_SERVICE, user, pass,
+                               "GetPhonebookList", NULL, NULL,
+                               resp, SOAP_RESPONSE_CAP,
+                               out_err_code, out_err_msg, err_msg_cap);
+    if (err != ESP_OK) { free(resp); return err; }
+
+    char ids[64] = "";
+    xml_find_text(resp, "NewPhonebookList", ids, sizeof(ids));
+
+    int count = 0;
+    for (const char *p = ids; *p && count < max; ) {
+        while (*p == ',' || *p == ' ') p++;
+        if (*p < '0' || *p > '9') break;
+        out[count].id       = (int)strtol(p, NULL, 10);
+        out[count].name[0]  = '\0';
+        out[count].writable = false;   // until the name comparison says so
+        count++;
+        while (*p && *p != ',') p++;
+    }
+    if (count == 0) {
+        ESP_LOGW(TAG, "GetPhonebookList returned no usable IDs: '%s'", ids);
+        free(resp);
+        return ESP_FAIL;
+    }
+
+    // 2. Their names — the only handle we have for the online-address-book
+    //    comparison in step 4.
+    for (int i = 0; i < count; i++) {
+        char args[48];
+        snprintf(args, sizeof(args),
+                 "<NewPhonebookID>%d</NewPhonebookID>", out[i].id);
+        if (call_action(url, ONTEL_SERVICE, user, pass,
+                        "GetPhonebook", args, NULL,
+                        resp, SOAP_RESPONSE_CAP, NULL, NULL, 0) != ESP_OK) {
+            // Leave name empty / writable false: reported to the caller as
+            // "exists but do not write here".
+            ESP_LOGW(TAG, "GetPhonebook(%d) failed", out[i].id);
+            continue;
+        }
+        xml_find_text(resp, "NewPhonebookName", out[i].name,
+                      sizeof(out[i].name));
+        xml_unescape_inplace(out[i].name);
+        out[i].writable = out[i].name[0] != '\0';
+    }
+
+    // 3. How many online address books are configured? These are indexed
+    //    separately from phonebook IDs, 1-based.
+    err = call_action(url, ONTEL_SERVICE, user, pass,
+                     "GetNumberOfEntries", NULL, NULL,
+                     resp, SOAP_RESPONSE_CAP,
+                     out_err_code, out_err_msg, err_msg_cap);
+    if (err != ESP_OK) {
+        // Deliberately fatal: without this list every phonebook would look
+        // writable, including the CardDAV blocklist. Better no picker than
+        // a picker that offers the wrong book.
+        ESP_LOGE(TAG, "GetNumberOfEntries failed — cannot tell synced "
+                      "phonebooks apart");
+        free(resp);
+        return err;
+    }
+    char n_online_s[16] = "";
+    xml_find_text(resp, "NewOnTelNumberOfEntries", n_online_s,
+                  sizeof(n_online_s));
+    int n_online = (int)strtol(n_online_s, NULL, 10);
+    if (n_online > 16) n_online = 16;    // sanity bound on the loop
+
+    // 4. Mark every phonebook that mirrors one of them as not writable.
+    for (int idx = 1; idx <= n_online; idx++) {
+        char args[32];
+        snprintf(args, sizeof(args), "<NewIndex>%d</NewIndex>", idx);
+        if (call_action(url, ONTEL_SERVICE, user, pass,
+                        "GetInfoByIndex", args, NULL,
+                        resp, SOAP_RESPONSE_CAP, NULL, NULL, 0) != ESP_OK) {
+            // An online book we cannot read might be any of the phonebooks
+            // — fail rather than guess, same reasoning as step 3.
+            ESP_LOGE(TAG, "GetInfoByIndex(%d) failed", idx);
+            free(resp);
+            return ESP_FAIL;
+        }
+        char name[TR064_PB_NAME_CAP] = "";
+        xml_find_text(resp, "NewName", name, sizeof(name));
+        xml_unescape_inplace(name);
+        if (!name[0]) continue;
+        for (int i = 0; i < count; i++) {
+            if (strcmp(out[i].name, name) == 0) {
+                ESP_LOGI(TAG, "phonebook %d ('%s') is synced → read-only",
+                         out[i].id, out[i].name);
+                out[i].writable = false;
+            }
+        }
+    }
+
+    free(resp);
+    if (out_count) *out_count = count;
+    return ESP_OK;
+}
+
+esp_err_t tr064_phonebook_name(const char *host, int port,
+                               const char *user, const char *pass,
+                               int phonebook_id, char *out, size_t cap,
+                               int *out_err_code,
+                               char *out_err_msg, size_t err_msg_cap)
+{
+    if (!out || cap == 0) return ESP_ERR_INVALID_ARG;
+    out[0] = '\0';
+
+    char url[96];
+    snprintf(url, sizeof(url), "http://%s:%d" ONTEL_CONTROL, host, port);
+
+    char args[48];
+    snprintf(args, sizeof(args),
+             "<NewPhonebookID>%d</NewPhonebookID>", phonebook_id);
+
+    char *resp = malloc(SOAP_RESPONSE_CAP);
+    if (!resp) return ESP_ERR_NO_MEM;
+    esp_err_t err = call_action(url, ONTEL_SERVICE, user, pass,
+                               "GetPhonebook", args, NULL,
+                               resp, SOAP_RESPONSE_CAP,
+                               out_err_code, out_err_msg, err_msg_cap);
+    if (err == ESP_OK) {
+        xml_find_text(resp, "NewPhonebookName", out, cap);
+        xml_unescape_inplace(out);
+    }
+    free(resp);
+    return err;
+}
+
+esp_err_t tr064_phonebook_add(const char *host, int port,
+                              const char *user, const char *pass,
+                              int phonebook_id,
+                              const char *name, const char *number,
+                              const char *type, bool vip,
+                              char *out_uid, size_t uid_cap,
+                              int *out_err_code,
+                              char *out_err_msg, size_t err_msg_cap)
+{
+    if (out_uid && uid_cap) out_uid[0] = '\0';
+
+    char *contact = malloc(TR064_CONTACT_ARG_CAP);
+    if (!contact) return ESP_ERR_NO_MEM;
+    if (!tr064_build_contact_arg(contact, TR064_CONTACT_ARG_CAP,
+                                 name, number, type, vip)) {
+        ESP_LOGE(TAG, "refusing to write contact: invalid name/number/type");
+        free(contact);
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    // One bounded builder for the whole argument list — a clipped
+    // <NewPhonebookEntryData> would be malformed XML, so it is
+    // all-or-nothing (see strbuf.h).
+    const int args_cap = TR064_CONTACT_ARG_CAP + 128;
+    char *args = malloc(args_cap);
+    if (!args) { free(contact); return ESP_ERR_NO_MEM; }
+    strbuf_t sb = sb_init(args, args_cap);
+    sb_appendf(&sb, "<NewPhonebookID>%d</NewPhonebookID>", phonebook_id);
+    sb_appendf(&sb, "<NewPhonebookEntryData>%s</NewPhonebookEntryData>",
+               contact);
+    free(contact);
+    if (sb.truncated) {
+        ESP_LOGE(TAG, "SetPhonebookEntryUID args truncated");
+        free(args);
+        return ESP_ERR_INVALID_SIZE;
+    }
+
+    char url[96];
+    snprintf(url, sizeof(url), "http://%s:%d" ONTEL_CONTROL, host, port);
+
+    char *resp = malloc(SOAP_RESPONSE_CAP);
+    if (!resp) { free(args); return ESP_ERR_NO_MEM; }
+    esp_err_t err = call_action(url, ONTEL_SERVICE, user, pass,
+                               "SetPhonebookEntryUID", args, NULL,
+                               resp, SOAP_RESPONSE_CAP,
+                               out_err_code, out_err_msg, err_msg_cap);
+    free(args);
+    if (err != ESP_OK) {
+        // 713 means "that phonebook mirrors an online address book" — a
+        // choice the user can correct in the dialog, not a fault. Keep it
+        // out of the log panel's WARN/ERROR ring (see firmware CLAUDE.md);
+        // anything else is a real failure worth surfacing there.
+        if (out_err_code && *out_err_code == 713) {
+            ESP_LOGI(TAG, "phonebook %d is read-only (synced) — not written",
+                     phonebook_id);
+        } else {
+            ESP_LOGE(TAG, "SetPhonebookEntryUID(%d) failed", phonebook_id);
+        }
+        free(resp);
+        return err;
+    }
+    if (out_uid && uid_cap) {
+        xml_find_text(resp, "NewPhonebookEntryUniqueID", out_uid, uid_cap);
+    }
+    ESP_LOGI(TAG, "contact added to phonebook %d (uid '%s')",
+             phonebook_id, out_uid ? out_uid : "?");
+    free(resp);
+    return ESP_OK;
 }
 
 // --- 2FA (X_AVM-DE_Auth) -------------------------------------------

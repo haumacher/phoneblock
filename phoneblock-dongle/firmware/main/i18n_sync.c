@@ -507,6 +507,16 @@ void i18n_sync_init(void)
 void i18n_sync_run(void)
 {
     if (!s_lock) return;
+    // Development mode pins whatever assets are on the device: bundles are
+    // uploaded straight to it via /api/dev/i18n, and a sync pass would
+    // replace them with the CDN's copy for this firmware's release tag —
+    // which, for a dev build, is the *previous* release's bundle and
+    // therefore missing exactly the keys under test.
+    if (config_dev_mode()) {
+        set_status(true, config_ui_lang(), NULL);
+        ESP_LOGI(TAG, "dev mode: i18n sync skipped, on-device assets pinned");
+        return;
+    }
     xSemaphoreTake(s_lock, portMAX_DELAY);
     s_status.running = true;
     xSemaphoreGive(s_lock);
@@ -540,6 +550,11 @@ void i18n_sync_snapshot(i18n_sync_status_t *out)
 void i18n_sync_ui_path(char *out, size_t cap, const char *lang)
 {
     snprintf(out, cap, "%s/ui-%s.json", SPIFFS_DIR, lang ? lang : "");
+}
+
+void i18n_sync_mail_path(char *out, size_t cap, const char *lang)
+{
+    snprintf(out, cap, "%s/mail-%s.json", SPIFFS_DIR, lang ? lang : "");
 }
 
 bool i18n_sync_have_ui_pack(const char *lang)
