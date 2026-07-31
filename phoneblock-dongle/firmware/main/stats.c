@@ -214,6 +214,59 @@ void stats_clear_errors(void)
     unlock();
 }
 
+// Both updaters walk the whole ring rather than only the newest match: a
+// number that called twice appears twice, and leaving the older row stale
+// would read as if the change had only half worked.
+static int update_calls(const char *number, const char *display, bool mark_reported)
+{
+    if (!number || !*number) return 0;
+    int n = 0;
+    lock();
+    for (int i = 0; i < s_calls_count; i++) {
+        stats_call_t *c = &s_calls[i];
+        if (strcmp(c->number, number) != 0) continue;
+        if (display) {
+            // Never overwrite a name the Fritz!Box already delivered.
+            if (c->display[0]) continue;
+            strncpy(c->display, display, sizeof(c->display) - 1);
+            c->display[sizeof(c->display) - 1] = '\0';
+        }
+        if (mark_reported) c->reported = true;
+        n++;
+    }
+    unlock();
+    return n;
+}
+
+int stats_set_display(const char *number, const char *display)
+{
+    if (!display || !*display) return 0;
+    return update_calls(number, display, false);
+}
+
+int stats_mark_reported(const char *number)
+{
+    return update_calls(number, NULL, true);
+}
+
+bool stats_display_for_number(const char *number, char *out, size_t cap)
+{
+    if (!out || cap == 0) return false;
+    out[0] = '\0';
+    if (!number || !*number) return false;
+    bool found = false;
+    lock();
+    for (int i = 0; i < s_calls_count && !found; i++) {
+        if (strcmp(s_calls[i].number, number) != 0) continue;
+        if (!s_calls[i].display[0]) continue;
+        strncpy(out, s_calls[i].display, cap - 1);
+        out[cap - 1] = '\0';
+        found = true;
+    }
+    unlock();
+    return found;
+}
+
 void stats_clear_calls(void)
 {
     lock();

@@ -44,6 +44,11 @@ typedef struct {
     int       direct_votes;                    // direct community votes against the number
     int       range_votes;                     // raw neighbourhood (range) votes
     bool      wildcard;                         // local-cache hit was a range/prefix, not exact
+    // Set once the user has submitted a spam rating for this number from
+    // the call list (stats_mark_reported). Purely a UI cue — the vote
+    // itself lives on the server; this stops the list from offering the
+    // same one-click vote again and shows that it went through.
+    bool      reported;
 } stats_call_t;
 
 typedef struct {
@@ -116,6 +121,30 @@ int stats_snapshot_errors(stats_error_t *out, int max);
 
 // Drop all buffered error entries.
 void stats_clear_errors(void);
+
+// --- retroactive updates to listed calls ----------------------------
+//
+// A listed call is a record of what happened, but two of its fields are
+// lookup results the user can change *after* the fact from the call list:
+// the caller's name (once they write a Fritz!Box phonebook entry) and
+// whether they have rated the number. Without updating the ring, the row
+// would keep saying "no name" / keep offering the same vote, and the
+// action would look like it had no effect.
+
+// Fill in `display` for every listed call with this number that has no
+// name yet. Returns how many entries were updated.
+int stats_set_display(const char *number, const char *display);
+
+// Mark every listed call with this number as rated by the user.
+// Returns how many entries were updated.
+int stats_mark_reported(const char *number);
+
+// Copy the first non-empty name recorded for this number into `out`.
+// Returns false when the number is not listed or none of its entries carry
+// a name. Lets the rating path apply the "a contact is never spam" rule
+// without a Fritz!Box round-trip: the name the box announced is already in
+// the list.
+bool stats_display_for_number(const char *number, char *out, size_t cap);
 
 // Drop all buffered call entries (counters are kept).
 void stats_clear_calls(void);

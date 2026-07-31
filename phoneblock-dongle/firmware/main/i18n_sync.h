@@ -76,6 +76,11 @@ void i18n_sync_snapshot(i18n_sync_status_t *out);
 // owns the layout; web.c serves the file at /api/i18n/ui.
 void i18n_sync_ui_path(char *out, size_t cap, const char *lang);
 
+// Same for the status-mail string pack (mail_i18n.c reads it). Both are
+// exposed so the dev-mode upload route in web.c can write a bundle without
+// duplicating the on-device layout.
+void i18n_sync_mail_path(char *out, size_t cap, const char *lang);
+
 // Whether a downloaded UI pack for `lang` is present. False means
 // /api/i18n/ui falls back to the embedded English pack — which the web UI
 // needs to distinguish from "still downloading", so it can say

@@ -75,3 +75,37 @@ static inline void sb_appendf(strbuf_t *sb, const char *fmt, ...)
     sb_vappendf(sb, fmt, ap);
     va_end(ap);
 }
+
+// Append `s` as the *contents* of a JSON string (the enclosing quotes are the
+// caller's). Escapes what RFC 8259 requires — '"', '\\' and every control
+// character below 0x20 — and passes bytes >= 0x80 through untouched, so UTF-8
+// text stays intact.
+//
+// Use this for any user-supplied text that ends up in a hand-built JSON body.
+// Interpolating it with a plain %s instead is an injection: a single '"' ends
+// the string early and the rest of the text becomes JSON structure, which can
+// overwrite a sibling field.
+//
+// Truncation follows the usual rule (sb->truncated is set, nothing runs past
+// the buffer). Note a clipped result may end mid-UTF-8-sequence, so a caller
+// that must emit valid JSON has to honour sb->truncated rather than send what
+// fits.
+static inline void sb_append_json_escaped(strbuf_t *sb, const char *s)
+{
+    if (!s) return;
+    for (const unsigned char *p = (const unsigned char *)s; *p; p++) {
+        switch (*p) {
+            case '"':  sb_appendf(sb, "%s", "\\\""); break;
+            case '\\': sb_appendf(sb, "%s", "\\\\"); break;
+            case '\b': sb_appendf(sb, "%s", "\\b");  break;
+            case '\f': sb_appendf(sb, "%s", "\\f");  break;
+            case '\n': sb_appendf(sb, "%s", "\\n");  break;
+            case '\r': sb_appendf(sb, "%s", "\\r");  break;
+            case '\t': sb_appendf(sb, "%s", "\\t");  break;
+            default:
+                if (*p < 0x20) sb_appendf(sb, "\\u%04x", (unsigned)*p);
+                else           sb_appendf(sb, "%c", (char)*p);
+                break;
+        }
+    }
+}

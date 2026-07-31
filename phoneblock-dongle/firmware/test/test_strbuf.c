@@ -96,6 +96,84 @@ static void test_zero_cap(void)
     free(NULL);
 }
 
+static void test_json_escaped_basic(void)
+{
+    printf("test_json_escaped_basic\n");
+    char buf[128];
+    strbuf_t sb = sb_init(buf, sizeof(buf));
+    sb_append_json_escaped(&sb, "plain text");
+    CHECK(!sb.truncated && strcmp(buf, "plain text") == 0, "plain text unchanged");
+}
+
+static void test_json_escaped_injection(void)
+{
+    printf("test_json_escaped_injection\n");
+    char buf[192];
+    strbuf_t sb = sb_init(buf, sizeof(buf));
+    // The injection this exists to stop: an unescaped '"' would end the JSON
+    // string early and let the rest of the comment add fields of its own —
+    // e.g. overwrite the rating that is being submitted.
+    sb_append_json_escaped(&sb, "x\", \"rating\":\"A_LEGITIMATE");
+    CHECK(!sb.truncated, "fits");
+    CHECK(strcmp(buf, "x\\\", \\\"rating\\\":\\\"A_LEGITIMATE") == 0,
+          "quotes escaped, no structure injected");
+    CHECK(strstr(buf, "\":\"") == NULL, "no bare key/value separator survives");
+}
+
+static void test_json_escaped_backslash(void)
+{
+    printf("test_json_escaped_backslash\n");
+    char buf[64];
+    strbuf_t sb = sb_init(buf, sizeof(buf));
+    sb_append_json_escaped(&sb, "back\\slash");
+    CHECK(strcmp(buf, "back\\\\slash") == 0, "backslash doubled");
+}
+
+static void test_json_escaped_control_chars(void)
+{
+    printf("test_json_escaped_control_chars\n");
+    char buf[128];
+    strbuf_t sb = sb_init(buf, sizeof(buf));
+    sb_append_json_escaped(&sb, "line1\nline2\ttab\r\b\f");
+    CHECK(!sb.truncated, "fits");
+    CHECK(strcmp(buf, "line1\\nline2\\ttab\\r\\b\\f") == 0, "named escapes used");
+    sb = sb_init(buf, sizeof(buf));
+    sb_append_json_escaped(&sb, "bell\x07" "end");   // split: \x07e would be one escape
+    CHECK(strcmp(buf, "bell\\u0007end") == 0, "other control chars use \\u");
+}
+
+static void test_json_escaped_utf8_passes_through(void)
+{
+    printf("test_json_escaped_utf8_passes_through\n");
+    char buf[128];
+    strbuf_t sb = sb_init(buf, sizeof(buf));
+    // German umlauts and the euro sign: valid JSON as raw UTF-8, so they must
+    // not be mangled (a comment is user-typed prose).
+    sb_append_json_escaped(&sb, "Gr\xc3\xbc\xc3\x9f" "e \xe2\x82\xac");
+    CHECK(!sb.truncated, "fits");
+    CHECK(strcmp(buf, "Gr\xc3\xbc\xc3\x9f" "e \xe2\x82\xac") == 0, "UTF-8 untouched");
+}
+
+static void test_json_escaped_truncation_contained(void)
+{
+    printf("test_json_escaped_truncation_contained\n");
+    char buf[8];
+    strbuf_t sb = sb_init(buf, sizeof(buf));
+    sb_append_json_escaped(&sb, "aaaaaaaaaaaaaaaaaaaa");
+    CHECK(sb.truncated, "truncated flag set");
+    CHECK(sb.len == (int)sizeof(buf) - 1, "len saturated at cap-1");
+    CHECK(buf[sizeof(buf) - 1] == '\0', "NUL terminated");
+}
+
+static void test_json_escaped_null_is_noop(void)
+{
+    printf("test_json_escaped_null_is_noop\n");
+    char buf[16];
+    strbuf_t sb = sb_init(buf, sizeof(buf));
+    sb_append_json_escaped(&sb, NULL);
+    CHECK(!sb.truncated && buf[0] == '\0', "NULL leaves an empty string");
+}
+
 int main(void)
 {
     test_basic();
@@ -103,6 +181,14 @@ int main(void)
     test_overflow_is_contained();
     test_accumulator_sweep();
     test_zero_cap();
+    test_json_escaped_basic();
+    test_json_escaped_injection();
+    test_json_escaped_backslash();
+    test_json_escaped_control_chars();
+    test_json_escaped_utf8_passes_through();
+    test_json_escaped_truncation_contained();
+    test_json_escaped_null_is_noop();
+
     printf("\n%d checks, %d failed\n", tests_run, tests_failed);
     return tests_failed ? 1 : 0;
 }

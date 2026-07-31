@@ -30,6 +30,52 @@ void tr064_xml_escape(const char *in, char *out, size_t cap);
 // present. Returns true on success and writes the username to `out`.
 bool tr064_pick_default_user(char *xml, char *out, size_t cap);
 
+// Phonebook-entry building (X_AVM-DE_OnTel:SetPhonebookEntryUID)
+// ---------------------------------------------------------------
+//
+// Longest contact name accepted for a new phonebook entry. Matches the
+// call list's display-name width (STATS_DISPLAY_LEN), which is where the
+// name a user confirms comes from.
+#define TR064_CONTACT_NAME_CAP  48
+
+// Capacity a buffer must have for tr064_build_contact_arg(): the escaped
+// skeleton is ~350 bytes and the worst case — a maximum-length name in
+// which every character is an '&', double-escaping to 9 bytes — comes to
+// 805. Leaves the SOAP envelope (SOAP_ENVELOPE_CAP) room for its ~550
+// bytes of boilerplate; test_tr064_parse.c asserts the worst case fits.
+#define TR064_CONTACT_ARG_CAP   1024
+
+// Whether `type` is one of the number types a Fritz!Box phonebook entry
+// accepts — the five the box's own UI offers (Privat, Mobil,
+// Geschäftlich, Fax privat, Fax geschäftlich). Unknown values are
+// rejected rather than passed through, so nothing a client makes up can
+// reach the box's phonebook.
+bool tr064_number_type_valid(const char *type);
+
+// Whether `number` is plausible as a phonebook number written by us: an
+// optional leading '+' followed by 3..31 digits and nothing else. The
+// call list feeds normalised E.164 here; this rejects everything a
+// hand-crafted request could otherwise smuggle into the contact XML
+// (the escaping already makes it harmless, this keeps it sensible).
+bool tr064_number_plausible(const char *number);
+
+// Build the value for the <NewPhonebookEntryData> SOAP argument of
+// SetPhonebookEntryUID: a Fritz!Box <contact> document, **already
+// XML-escaped** for embedding into the envelope (the box unescapes it
+// once and then parses the contact).
+//
+// `name` is the contact's display name, `number` its single phone number
+// (E.164, `tr064_number_plausible`), `type` one of the values accepted by
+// `tr064_number_type_valid`, and `vip` maps to <category>1</category> —
+// the box's "Wichtige Person". The box fills in `nid`, `mod_time` and
+// `uniqueid` itself.
+//
+// All-or-nothing: returns false and leaves `out` unusable if the document
+// did not fit, because a truncated contact would be malformed XML.
+bool tr064_build_contact_arg(char *out, size_t cap,
+                             const char *name, const char *number,
+                             const char *type, bool vip);
+
 // Walk a Fritz!Box phonebook XML and invoke `cb()` for each contact
 // entry, passing its uniqueid and first number. Handles
 // "<contact>" as well as "<contact …>"-with-attributes; inner

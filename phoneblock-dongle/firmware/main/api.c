@@ -563,18 +563,29 @@ bool phoneblock_rate(const char *phone, const char *rating, const char *comment)
     char auth_header[128];
     snprintf(auth_header, sizeof(auth_header), "Bearer %s", config_phoneblock_token());
 
-    // JSON body — small enough for a stack buffer; phone is typically
-    // +49... (16 chars), rating is the enum name (≤16 chars), comment
-    // cap 120 keeps us well under 256 bytes.
-    char body[256];
+    // JSON body, built with the bounded builder because the comment is
+    // free text from the user. It MUST go through sb_append_json_escaped:
+    // interpolated with a plain %s, a single '"' in the comment would end
+    // the JSON string and the remainder would become structure — enough to
+    // overwrite the rating being submitted. Phone and rating are validated
+    // enum-like tokens, so they need no escaping.
+    //
+    // Sized for the caller-side comment cap (PB_RATE_COMMENT_CAP) at its
+    // worst-case expansion (every byte a control character → 6 bytes).
+    char body[1024];
+    strbuf_t sb = sb_init(body, sizeof(body));
+    sb_appendf(&sb, "{\"phone\":\"%s\",\"rating\":\"%s\"", phone, rating);
     if (comment && *comment) {
-        snprintf(body, sizeof(body),
-            "{\"phone\":\"%s\",\"rating\":\"%s\",\"comment\":\"%.120s\"}",
-            phone, rating, comment);
-    } else {
-        snprintf(body, sizeof(body),
-            "{\"phone\":\"%s\",\"rating\":\"%s\"}",
-            phone, rating);
+        sb_appendf(&sb, "%s", ",\"comment\":\"");
+        sb_append_json_escaped(&sb, comment);
+        sb_appendf(&sb, "%s", "\"");
+    }
+    sb_appendf(&sb, "%s", "}");
+    if (sb.truncated) {
+        // All-or-nothing: a clipped body is malformed JSON, and silently
+        // dropping the user's reason would be worse than failing visibly.
+        ESP_LOGE(TAG, "rate body truncated (comment too long?)");
+        return false;
     }
 
     esp_http_client_config_t config = {
