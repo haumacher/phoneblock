@@ -91,12 +91,23 @@ public interface BlockList {
 	 * Adds a blocklist entry for the user with the given user ID. {@code LAST_ACTIVITY} is seeded to
 	 * the creation time — the moment of the first spam signal — so the initial capped contribution
 	 * {@code Ema.increment(1, created)} can be reconstructed (and later topped up) from the row.
+	 *
+	 * <p>Inserts only when the user has no entry for the number yet, and reports that as the
+	 * affected-row count: callers check for {@code 0} and absorb the duplicate instead of failing
+	 * on the primary key (#520). Two submissions for the same {@code (user, number)} overlapping in
+	 * time — a repeated rating, a retried report — otherwise both pass their own existence check
+	 * and the second one 500s.</p>
+	 *
+	 * @return {@code 1} if the entry was created, {@code 0} if the user already had one.
 	 */
 	@Insert("""
 			insert into PERSONALIZATION (USERID, PHONE, SHA1, BLOCKED, CREATED, LAST_ACTIVITY)
-			values (#{userId}, #{phone}, #{sha1}, true, #{created}, #{created})
+			select #{userId}, #{phone}, #{sha1}, true, #{created}, #{created}
+			where not exists (
+				select 1 from PERSONALIZATION where USERID = #{userId} and PHONE = #{phone}
+			)
 			""")
-	void addPersonalization(long userId, String phone, byte[] sha1, long created);
+	int addPersonalization(long userId, String phone, byte[] sha1, long created);
 
 	/**
 	 * Records new spam/legit activity (a topped-up call or re-rating) for an existing
@@ -143,12 +154,18 @@ public interface BlockList {
 	/**
 	 * Adds an exclusion from the blocklist for the user with the given user ID. {@code LAST_ACTIVITY}
 	 * is seeded to the creation time (see {@link #addPersonalization}).
+	 *
+	 * @return {@code 1} if the entry was created, {@code 0} if the user already had one — see
+	 *         {@link #addPersonalization} for why the insert is conditional.
 	 */
 	@Insert("""
 			insert into PERSONALIZATION (USERID, PHONE, SHA1, BLOCKED, CREATED, LAST_ACTIVITY)
-			values (#{userId}, #{phone}, #{sha1}, false, #{created}, #{created})
+			select #{userId}, #{phone}, #{sha1}, false, #{created}, #{created}
+			where not exists (
+				select 1 from PERSONALIZATION where USERID = #{userId} and PHONE = #{phone}
+			)
 			""")
-	void addExclude(long userId, String phone, byte[] sha1, long created);
+	int addExclude(long userId, String phone, byte[] sha1, long created);
 
 	/**
 	 * Resolves a personalization entry by its SHA1 hash.

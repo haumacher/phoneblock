@@ -1074,7 +1074,12 @@ public class DB {
 		if (entry == null) {
 			// First contact via a call: auto-add the concrete number to the user's blacklist so the
 			// contribution is tracked (hidden from display when a wildcard already covers it).
-			blocklist.addPersonalization(userId, phoneId, hash, now);
+			if (blocklist.addPersonalization(userId, phoneId, hash, now) == 0) {
+				// Another report for the same number committed between the check above and this
+				// insert (#520). That request counted the contribution; counting it again here
+				// would double it, and inserting again would fail the request.
+				return 0.0;
+			}
 			return Ema.increment(1.0, now, Ema.CLASSIFICATION_TAU_MILLIS);
 		}
 		if (!entry.isBlocked()) {
@@ -1325,13 +1330,28 @@ public class DB {
 					if (existing != null) {
 						// Flip to the opposite list: remember the entry so its residual capped
 						// contribution can be reversed once the dial prefix is resolved below.
+						// The row is deleted in this transaction, so the insert below sees no
+						// entry and always applies.
 						flipFrom = existing;
 						blocklist.removePersonalization(userId, phone);
-					}
-					if (block) {
-						blocklist.addPersonalization(userId, phone, sha1, now);
+						if (block) {
+							blocklist.addPersonalization(userId, phone, sha1, now);
+						} else {
+							blocklist.addExclude(userId, phone, sha1, now);
+						}
 					} else {
-						blocklist.addExclude(userId, phone, sha1, now);
+						int inserted = block
+							? blocklist.addPersonalization(userId, phone, sha1, now)
+							: blocklist.addExclude(userId, phone, sha1, now);
+						if (inserted == 0) {
+							// Another rating for the same number committed between the check above
+							// and this insert (#520) — a double submit or a client retry. Its vote
+							// is already recorded, so ours must not count twice, and the request
+							// must not fail over a duplicate the user cannot see.
+							LOG.info("Concurrent rating for number {} ({}) by {}, entry already present.",
+								phone, rating, userName);
+							recordVote = false;
+						}
 					}
 				}
 
