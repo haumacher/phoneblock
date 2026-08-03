@@ -188,6 +188,21 @@ public interface BlockList {
 	int updatePersonalizationHash(String phone, byte[] sha1);
 
 	/**
+	 * The user's most specific wildcard prefix covering the given phone ID (#377), or
+	 * {@code null} if none of their wildcards matches.
+	 *
+	 * <p>Longest prefix wins, mirroring the client-side lookups (binary blocklist, mobile app):
+	 * a narrow rule under a broad one decides, whichever block state it carries.</p>
+	 */
+	@Select("""
+			select PHONE, BLOCKED from PERSONALIZATION
+			where USERID = #{userId} and WILDCARD and #{phoneId} like PHONE || '%'
+			order by length(PHONE) desc
+			limit 1
+			""")
+	DBPersonalization resolveWildcard(long userId, String phoneId);
+
+	/**
 	 * Wildcard prefixes (phone-ID form, stored bare without a trailing {@code *}) of the given
 	 * block state for the user with the given user ID (#377).
 	 */

@@ -2794,6 +2794,50 @@ public class DB {
 	}
 
 	/**
+	 * A user's personalization verdict for one number: their exact entry if they have one,
+	 * otherwise their most specific matching wildcard prefix (#377).
+	 */
+	public record PersonalVerdict(
+			/** Whether the number is blocked ({@code true}) or explicitly allowed. */
+			boolean blocked,
+			/** Whether the verdict comes from a wildcard prefix rather than an exact entry. */
+			boolean wildcard,
+			/** The matched phone ID: the number itself, or the wildcard prefix. */
+			String phoneId) {
+
+		/**
+		 * Report weight for a call caught by this verdict, relative to the given number: full
+		 * weight for an exact entry, reduced by the wildcard's breadth otherwise (see
+		 * {@link DB#wildcardReportWeight(int, int)}).
+		 */
+		public double reportWeight(String caughtNumber) {
+			return wildcard ? wildcardReportWeight(phoneId.length(), caughtNumber.length()) : 1.0;
+		}
+
+	}
+
+	/**
+	 * Resolves what the given user has decided about the given number themselves: their exact
+	 * personalization if there is one, else their most specific matching wildcard prefix.
+	 *
+	 * <p>Exact before wildcard, and the longest wildcard among several — the same precedence the
+	 * on-device lookups apply, so every path reaches the same verdict (#482).</p>
+	 *
+	 * @return the user's verdict, or {@code null} if they have no rule covering the number.
+	 */
+	public PersonalVerdict resolvePersonalization(BlockList blocklist, long userId, String phoneId) {
+		Boolean exact = blocklist.getPersonalizationState(userId, phoneId);
+		if (exact != null) {
+			return new PersonalVerdict(exact.booleanValue(), false, phoneId);
+		}
+		DBPersonalization wildcard = blocklist.resolveWildcard(userId, phoneId);
+		if (wildcard == null) {
+			return null;
+		}
+		return new PersonalVerdict(wildcard.isBlocked(), true, wildcard.getPhone());
+	}
+
+	/**
 	 * Report weight for a wildcard-triggered catch (#377): the longest of the user's blocked
 	 * wildcards that is a prefix of the reported number decides the weight.
 	 *
