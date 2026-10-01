@@ -2,9 +2,7 @@
 
 #include <string.h>
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/semphr.h"
-#include "esp_timer.h"
+#include "platform.h"
 
 // Must be last: bans unsafe string APIs for the rest of this file.
 #include "banned_apis.h"
@@ -14,7 +12,7 @@
 // snapshot (briefly lock, memcpy, unlock). Snapshots mean the web
 // layer never holds the mutex while talking to its HTTP client.
 
-static SemaphoreHandle_t s_mutex;
+static pb_mutex_t *s_mutex;
 
 static stats_counters_t s_counters;
 
@@ -29,12 +27,12 @@ static stats_error_t s_errors[STATS_MAX_ERRORS];
 static int           s_errors_head;
 static int           s_errors_count;
 
-static void lock(void)   { xSemaphoreTake(s_mutex, portMAX_DELAY); }
-static void unlock(void) { xSemaphoreGive(s_mutex); }
+static void lock(void)   { pb_mutex_lock(s_mutex); }
+static void unlock(void) { pb_mutex_unlock(s_mutex); }
 
 void stats_setup(void)
 {
-    s_mutex = xSemaphoreCreateMutex();
+    s_mutex = pb_mutex_create();
     memset(&s_counters, 0, sizeof(s_counters));
     memset(s_calls, 0, sizeof(s_calls));
     memset(s_errors, 0, sizeof(s_errors));
@@ -81,7 +79,7 @@ void stats_record_call_assessed(const char *number, const char *display,
 
     stats_call_t *slot = &s_calls[s_calls_head];
     memset(slot, 0, sizeof(*slot));
-    slot->at_us   = esp_timer_get_time();
+    slot->at_us   = (int64_t)pb_monotonic_us();
     slot->verdict = verdict;
     slot->assessment = assessment;
     copy_trim(slot->number,  sizeof(slot->number),  number);
@@ -102,7 +100,7 @@ void stats_record_call_checked(const char *number, const char *display,
 
     stats_call_t *slot = &s_calls[s_calls_head];
     memset(slot, 0, sizeof(*slot));
-    slot->at_us     = esp_timer_get_time();
+    slot->at_us     = (int64_t)pb_monotonic_us();
     slot->verdict      = result->verdict;
     slot->assessment   = result->assessment;
     slot->direct_votes = result->direct_votes;
@@ -133,7 +131,7 @@ void stats_record_error(int level, const char *tag, const char *message)
     lock();
 
     stats_error_t *slot = &s_errors[s_errors_head];
-    slot->at_us = esp_timer_get_time();
+    slot->at_us = (int64_t)pb_monotonic_us();
     slot->level = level;
     copy_trim(slot->tag,     sizeof(slot->tag),     tag);
     copy_trim(slot->message, sizeof(slot->message), message);
@@ -148,7 +146,7 @@ void stats_record_sip_state(bool registered)
 {
     lock();
     if (registered && !s_counters.sip_registered) {
-        s_counters.sip_registered_since_us = esp_timer_get_time();
+        s_counters.sip_registered_since_us = (int64_t)pb_monotonic_us();
     }
     s_counters.sip_registered = registered;
     unlock();

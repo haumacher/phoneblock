@@ -42,7 +42,8 @@ expect_dialable(false, "**622");
 
 Wer einen komplett neuen Parser abdecken will, ergänzt
 
-1. Den Prototyp in `../main/sip_parse.h`
+1. Den Prototyp in `../main/sip_parse.h` (beziehungsweise im jeweiligen
+    Modulverzeichnis unter `../core/`)
 2. Die Implementation in `../main/sip_parse.c`
 3. Einen Wrapper `expect_<fn>(...)` in `test_sip_parse.c`
 4. Eine `test_<fn>(void)`-Funktion mit den gewünschten Assertions

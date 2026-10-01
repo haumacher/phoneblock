@@ -49,14 +49,15 @@ static const char MSG_OK_NOBODY[] =
     "Content-Length: 0\r\n\r\n";
 
 // INVITE with 120-byte SDP body. The body itself is exactly 120 bytes.
-#define SDP_120 \
+static const char SDP_120[] =
     "v=0\r\n" \
     "o=- 1 1 IN IP4 192.0.2.99\r\n" \
     "s=-\r\n" \
     "c=IN IP4 192.0.2.99\r\n" \
     "t=0 0\r\n" \
     "m=audio 31000 RTP/AVP 8\r\n" \
-    "a=rtpmap:8 PCMA/8000\r\n"
+    "a=rtpmap:8 PCMA/8000\r\n" \
+    "                 ";
 static const char MSG_INVITE_HDRS[] =
     "INVITE sip:alice@192.0.2.7:5060 SIP/2.0\r\n"
     "Via: SIP/2.0/TCP 192.0.2.99:5060;branch=z9hG4bKxyz\r\n"

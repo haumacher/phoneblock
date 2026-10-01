@@ -5,14 +5,11 @@
 #include <string.h>
 #include <errno.h>
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "esp_log.h"
-#include "esp_random.h"
 #include "lwip/sockets.h"
 #include "lwip/netdb.h"
 
 #include "config.h"
+#include "platform.h"
 
 #include "srtp.h"
 
@@ -33,7 +30,7 @@ int rtp_socket_ensure(void)
 
     int sock = socket(AF_INET, SOCK_DGRAM, 0);
     if (sock < 0) {
-        ESP_LOGE(TAG, "RTP socket: %s", strerror(errno));
+        pb_log_err(TAG, "RTP socket: %s", strerror(errno));
         return -1;
     }
     int reuse = 1;
@@ -46,7 +43,7 @@ int rtp_socket_ensure(void)
         .sin_port        = htons(rtp_port),
     };
     if (bind(sock, (struct sockaddr *)&local, sizeof(local)) < 0) {
-        ESP_LOGE(TAG, "bind RTP :%d: %s", rtp_port, strerror(errno));
+        pb_log_err(TAG, "bind RTP :%d: %s", rtp_port, strerror(errno));
         close(sock);
         return -1;
     }
@@ -77,7 +74,7 @@ static bool stun_resolve(const char *server, struct sockaddr_in *out)
     struct addrinfo hints = { .ai_family = AF_INET, .ai_socktype = SOCK_DGRAM };
     struct addrinfo *res = NULL;
     if (getaddrinfo(host, port_str, &hints, &res) != 0 || !res) {
-        ESP_LOGW(TAG, "STUN: DNS lookup of %s failed", host);
+        pb_log_warn(TAG, "STUN: DNS lookup of %s failed", host);
         return false;
     }
     memcpy(out, res->ai_addr, sizeof(*out));
@@ -97,12 +94,12 @@ static bool stun_exchange(int sock, const struct sockaddr_in *srv,
     // port can't be mistaken for the response.
     uint8_t req[20] = { 0x00, 0x01, 0x00, 0x00,
                         0x21, 0x12, 0xA4, 0x42 };
-    for (int i = 8; i < 20; i++) req[i] = (uint8_t)esp_random();
+    for (int i = 8; i < 20; i++) req[i] = (uint8_t)pb_random_u32();
 
     for (int attempt = 0; attempt < 2; attempt++) {
         if (sendto(sock, req, sizeof(req), 0,
                    (struct sockaddr *)srv, sizeof(*srv)) < 0) {
-            ESP_LOGW(TAG, "STUN: sendto failed: %s", strerror(errno));
+            pb_log_warn(TAG, "STUN: sendto failed: %s", strerror(errno));
             continue;
         }
 
@@ -161,10 +158,10 @@ bool rtp_stun_map(const char *stun_server, char *ip_out, int ip_cap,
     struct sockaddr_in srv;
     if (!stun_resolve(stun_server, &srv)) return false;
     if (!stun_exchange(sock, &srv, ip_out, ip_cap, port_out)) {
-        ESP_LOGW(TAG, "STUN: no usable response from %s", stun_server);
+        pb_log_warn(TAG, "STUN: no usable response from %s", stun_server);
         return false;
     }
-    ESP_LOGI(TAG, "STUN: %s → public %s:%d", stun_server, ip_out, *port_out);
+    pb_log_info(TAG, "STUN: %s → public %s:%d", stun_server, ip_out, *port_out);
     return true;
 }
 
@@ -223,11 +220,11 @@ nat_mapping_t rtp_probe_nat_mapping(const char *primary_stun)
         }
         if (mport == first_port) {
             s_nat_mapping = NAT_MAP_ENDPOINT_INDEPENDENT;
-            ESP_LOGI(TAG, "NAT mapping: endpoint-independent (port %d from two "
+            pb_log_info(TAG, "NAT mapping: endpoint-independent (port %d from two "
                           "servers) — STUN usable for media", mport);
         } else {
             s_nat_mapping = NAT_MAP_ENDPOINT_DEPENDENT;
-            ESP_LOGW(TAG, "NAT mapping: endpoint-dependent / symmetric (ports "
+            pb_log_warn(TAG, "NAT mapping: endpoint-dependent / symmetric (ports "
                           "%d vs %d) — STUN cannot fix media; for direct "
                           "provider registration use a port-identical UDP "
                           "forward of the RTP port, or a VoIP router",
@@ -237,7 +234,7 @@ nat_mapping_t rtp_probe_nat_mapping(const char *primary_stun)
     }
 
     s_nat_mapping = NAT_MAP_UNKNOWN;
-    ESP_LOGW(TAG, "NAT mapping: probe inconclusive (need two reachable STUN "
+    pb_log_warn(TAG, "NAT mapping: probe inconclusive (need two reachable STUN "
                   "servers at different IPs)");
     return s_nat_mapping;
 }
@@ -285,7 +282,7 @@ static bool srtp_global_init(void)
     if (inited) return true;
     srtp_err_status_t st = srtp_init();
     if (st != srtp_err_status_ok) {
-        ESP_LOGE(TAG, "srtp_init failed: %d", st);
+        pb_log_err(TAG, "srtp_init failed: %d", st);
         return false;
     }
     inited = true;
@@ -309,7 +306,7 @@ static srtp_t srtp_open_tx(const rtp_srtp_tx_t *keys)
     srtp_t session = NULL;
     srtp_err_status_t st = srtp_create(&session, &policy);
     if (st != srtp_err_status_ok) {
-        ESP_LOGE(TAG, "srtp_create failed: %d", st);
+        pb_log_err(TAG, "srtp_create failed: %d", st);
         return NULL;
     }
     return session;
@@ -332,7 +329,7 @@ static void rtp_audio_task(void *arg)
     if (a->srtp.enabled) {
         srtp_session = srtp_open_tx(&a->srtp);
         if (!srtp_session) {
-            ESP_LOGE(TAG, "SRTP requested but session setup failed — no audio");
+            pb_log_err(TAG, "SRTP requested but session setup failed — no audio");
             goto done;
         }
     }
@@ -347,14 +344,14 @@ static void rtp_audio_task(void *arg)
     char     inbound_src[INET_ADDRSTRLEN] = "";
     int      inbound_port = 0;
 
-    uint16_t seq       = (uint16_t)esp_random();
-    uint32_t timestamp = esp_random();
-    uint32_t ssrc      = esp_random();
+    uint16_t seq       = (uint16_t)pb_random_u32();
+    uint32_t timestamp = pb_random_u32();
+    uint32_t ssrc      = pb_random_u32();
 
     size_t total_frames = (a->src.len + FRAME_SAMPLES - 1) / FRAME_SAMPLES;
     char ip[INET_ADDRSTRLEN];
     inet_ntoa_r(a->dest.sin_addr, ip, sizeof(ip));
-    ESP_LOGI(TAG, "stream %u bytes (%u frames ≈ %u ms) → %s:%d, ssrc=%08lx%s",
+    pb_log_info(TAG, "stream %u bytes (%u frames ≈ %u ms) → %s:%d, ssrc=%08lx%s",
              (unsigned)a->src.len, (unsigned)total_frames,
              (unsigned)(total_frames * 20),
              ip, ntohs(a->dest.sin_port), (unsigned long)ssrc,
@@ -364,10 +361,11 @@ static void rtp_audio_task(void *arg)
     // SRTP appends an auth tag (10 bytes for HMAC_SHA1_80); leave room.
     uint8_t txbuf[RTP_HEADER_BYTES + FRAME_BYTES + SRTP_MAX_TRAILER_LEN];
 
-    TickType_t next = xTaskGetTickCount();
+    pb_deadline_t next;
+    pb_deadline_init(&next);
     for (size_t frame = 0; frame < total_frames; frame++) {
         if (s_abort) {
-            ESP_LOGI(TAG, "stream aborted at frame %u/%u",
+            pb_log_info(TAG, "stream aborted at frame %u/%u",
                      (unsigned)frame, (unsigned)total_frames);
             break;
         }
@@ -403,10 +401,10 @@ static void rtp_audio_task(void *arg)
                                                 RTP_HEADER_BYTES + FRAME_SAMPLES,
                                                 txbuf, &out_len, 0);
             if (st != srtp_err_status_ok) {
-                ESP_LOGW(TAG, "srtp_protect failed: %d", st);
+                pb_log_warn(TAG, "srtp_protect failed: %d", st);
                 seq++;
                 timestamp += FRAME_SAMPLES;
-                vTaskDelayUntil(&next, pdMS_TO_TICKS(20));
+                pb_task_delay_until(&next, 20);
                 continue;
             }
             send_buf = txbuf;
@@ -416,7 +414,7 @@ static void rtp_audio_task(void *arg)
         int n = sendto(sock, send_buf, send_len, 0,
                        (struct sockaddr *)&a->dest, sizeof(a->dest));
         if (n < 0) {
-            ESP_LOGW(TAG, "rtp sendto: %s", strerror(errno));
+            pb_log_warn(TAG, "rtp sendto: %s", strerror(errno));
         }
 
         // Drain whatever the gateway sent back this frame (non-blocking),
@@ -437,20 +435,23 @@ static void rtp_audio_task(void *arg)
 
         seq++;
         timestamp += FRAME_SAMPLES;
-        vTaskDelayUntil(&next, pdMS_TO_TICKS(20));
+        pb_task_delay_until(&next, 20);
     }
 
-    ESP_LOGI(TAG, "inbound RTP during stream: %u packet(s) from %s:%d",
+    pb_log_info(TAG, "inbound RTP during stream: %u packet(s) from %s:%d",
              inbound_pkts, inbound_src, inbound_port);
 
-    ESP_LOGI(TAG, "stream finished");
+    // Stack headroom of this task after a full stream (SRTP key expansion +
+    // per-packet protect peak here); the task ends right after, so this is
+    // the only place it can be read. -1 where the platform can't tell.
+    pb_log_info(TAG, "stream finished (stack headroom %d B of 6144)",
+                pb_task_stack_free());
     if (srtp_session) srtp_dealloc(srtp_session);
 
 done:
     announcement_close(&a->src);
     free(a);
     s_streaming = false;
-    vTaskDelete(NULL);
 }
 
 void rtp_play_audio(const struct sockaddr_in *dest,
@@ -459,7 +460,7 @@ void rtp_play_audio(const struct sockaddr_in *dest,
 {
     rtp_args_t *args = malloc(sizeof(*args));
     if (!args) {
-        ESP_LOGE(TAG, "malloc rtp args failed");
+        pb_log_err(TAG, "malloc rtp args failed");
         announcement_close(src);
         return;
     }
@@ -475,8 +476,9 @@ void rtp_play_audio(const struct sockaddr_in *dest,
                           // race in between enqueue and stream start
     // 6 KB stack: SRTP AES key-expansion + per-packet protect needs more
     // headroom than the old plain-RTP 4 KB.
-    if (xTaskCreate(rtp_audio_task, "rtp_audio", 6144, args, 6, NULL) != pdPASS) {
-        ESP_LOGE(TAG, "xTaskCreate failed");
+    if (!pb_task_create(rtp_audio_task, args, "rtp_audio", 6144,
+                        PB_PRIO_MEDIA)) {
+        pb_log_err(TAG, "task creation failed");
         s_streaming = false;
         announcement_close(&args->src);
         free(args);
