@@ -152,7 +152,10 @@ static volatile bool s_reload_requested = false;
 // s_reload_requested by sip_register_request_reload(); cleared by the
 // task once it has consumed the delay.
 static volatile bool s_settle_pending  = false;
-static pb_task_t *s_sip_task = NULL;
+// Set by sip_register_start() before the task is created, cleared by the
+// task when it gives up — a flag, not a handle, so it can never point at a
+// task that has already ended.
+static volatile bool s_sip_running = false;
 
 // Absolute deadline at which the registrar's binding for the last
 // successful REGISTER actually expires (us, esp_timer clock). Lets
@@ -202,7 +205,7 @@ void sip_register_request_reload(bool needs_settle)
     // Kick it off now so the newly stored creds actually get used.
     // The initial-register block in the task reads s_settle_pending
     // and applies the same 1.5 s pause as the reload-handler.
-    if (!s_sip_task) {
+    if (!s_sip_running) {
         sip_register_start();
         return;
     }
@@ -1798,7 +1801,7 @@ static void sip_task(void *arg)
     rx = malloc(SIP_RX_BUF_SIZE);
     if (!rx) {
         pb_log_err(TAG, "malloc rx buffer failed — aborting SIP task");
-        s_sip_task = NULL;
+        s_sip_running = false;
         return;
     }
 
@@ -2129,7 +2132,7 @@ void sip_register_start(void)
         pb_log_warn(TAG, "SIP config incomplete, skipping registration");
         return;
     }
-    if (s_sip_task) {
+    if (s_sip_running) {
         // Already running — request_reload() handles credential changes.
         return;
     }
@@ -2140,6 +2143,10 @@ void sip_register_start(void)
     // stacked on top of the SIP parser. 8 KB was within ~1 KB of the limit
     // and overflowed in the field (crash-reports/1.0.9). If the API call ever
     // moves into a dedicated worker, this can come back down.
-    s_sip_task = pb_task_create(sip_task, NULL, "sip_register",
-                                12288 * sizeof(uint32_t));
+    s_sip_running = true;
+    if (!pb_task_create(sip_task, NULL, "sip_register", 12288,
+                        PB_PRIO_NORMAL)) {
+        pb_log_err(TAG, "SIP task creation failed");
+        s_sip_running = false;
+    }
 }

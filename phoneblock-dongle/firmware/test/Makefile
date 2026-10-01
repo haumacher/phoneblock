@@ -10,7 +10,7 @@ CJSON_DIR := $(IDF_PATH)/components/json/cJSON
 BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_rcpt test_name_filter test_version_cmp test_net_local test_heap_guard test_platform_linux
 
 test_sip_parse: test_sip_parse.c ../core/sip_parse.c ../core/sip_parse.h \
-				../core/dial_rules.c ../core/dial_rules.h \
+                ../core/dial_rules.c ../core/dial_rules.h \
                 ../main/audio.c ../main/audio.h
 	$(CC) $(CFLAGS) test_sip_parse.c ../core/sip_parse.c ../core/dial_rules.c ../main/audio.c -o $@
 
@@ -82,8 +82,8 @@ test_strbuf: test_strbuf.c ../main/strbuf.h
 # the SIP response builder, so the sanitizer must be active for it to mean
 # anything. sip_response.c / the test define _GNU_SOURCE themselves (memmem).
 test_sip_response: test_sip_response.c ../main/sip_response.c ../main/sip_response.h \
-				   ../core/sip_parse.c ../core/sip_parse.h ../main/audio.c \
-				   ../core/dial_rules.c
+                   ../core/sip_parse.c ../core/sip_parse.h ../main/audio.c \
+                   ../core/dial_rules.c
 	$(CC) $(CFLAGS) -fsanitize=address test_sip_response.c ../main/sip_response.c ../core/sip_parse.c ../core/dial_rules.c ../main/audio.c -o $@
 
 test: $(BINS)
