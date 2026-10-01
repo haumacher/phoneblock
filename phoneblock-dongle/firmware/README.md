@@ -92,6 +92,27 @@ idf.py set-target esp32
 idf.py build
 ```
 
+ESP32-C3 (z.B. "C3 Super Mini") in einem eigenen Build-Verzeichnis, damit
+die ESP32-Konfiguration unangetastet bleibt; die C3-spezifischen Defaults
+(Konsole/Improv über den eingebauten USB-Serial-JTAG, Status-LED GPIO 8)
+liegen in `sdkconfig.defaults.esp32c3`:
+
+```bash
+idf.py -B build-esp32c3 -DIDF_TARGET=esp32c3 -DSDKCONFIG=build-esp32c3/sdkconfig build
+```
+
+`scripts/release.sh` baut beide Varianten. Die C3-Dateien liegen im
+Release unter `<version>/esp32c3/`. Pro Kanal entstehen:
+
+- `manifest.json` – Manifest des Browser-Installers mit allen Chips. Der
+  ESP32-Build bleibt `builds[0]` mit dem Top-Level-`integrity`-Block, denn
+  ältere Dongles lesen für OTA genau das (und höchstens 2047 Bytes –
+  `release.sh` bricht ab, wenn es größer wird).
+- `ota-<target>.json` (`ota-esp32.json`, `ota-esp32c3.json`) – was aktuelle
+  Firmware für OTA abfragt: nur der eigene Build mit eigener Signatur
+  (`scripts/ota-manifest.sh`). Fehlt die Datei im Kanal (404), fällt die
+  Firmware auf `manifest.json` zurück.
+
 Beenden eines laufenden QEMU-Prozesses jeweils mit `Ctrl+A`, dann `X`.
 
 ## Testszenarien im QEMU-Emulator

@@ -32,6 +32,8 @@ static const char *TAG = "status_led";
 //                   (active-high). WROOM-32 routes the external
 //                   SPI flash WP signal through GPIO 10, so we
 //                   must not drive it there.
+//                   ESP32-C3 builds use GPIO 8 instead, the
+//                   active-low on-board LED of the C3 Super Mini.
 //   0..48         → explicit override, returned as-is. Polarity is
 //                   then taken from CONFIG_STATUS_LED_ACTIVE_LOW so
 //                   the user stays in control for non-standard
@@ -49,6 +51,11 @@ static int resolve_status_led(bool *active_low_out)
         return kcfg;
     }
 
+#if CONFIG_IDF_TARGET_ESP32C3
+    *active_low_out = true;
+    ESP_LOGI(TAG, "auto-detect → GPIO 8, active-low (ESP32-C3)");
+    return 8;
+#else
     esp_chip_info_t info;
     esp_chip_info(&info);
     bool emb_flash = (info.features & CHIP_FEATURE_EMB_FLASH) != 0;
@@ -60,6 +67,7 @@ static int resolve_status_led(bool *active_low_out)
              active_low ? "low" : "high",
              emb_flash ? "embedded" : "external");
     return pin;
+#endif
 }
 
 typedef enum {

@@ -5,7 +5,8 @@
 // one of five blink patterns. The pin is taken from CONFIG_STATUS_LED_GPIO
 // when explicitly set; the default value (-2) auto-selects between
 // GPIO 10 (chips with embedded flash, e.g. EGBO PICO-D4 dongle)
-// and GPIO 2 (WROOM-32 dev boards).
+// and GPIO 2 (WROOM-32 dev boards); GPIO 8 on ESP32-C3 builds
+// (C3 Super Mini).
 //
 //   PAIRING    — fast blink (100 ms on / 100 ms off):
 //                WPS-PBC active, press the router's pairing button

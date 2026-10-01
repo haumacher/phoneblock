@@ -21,6 +21,10 @@ set -euo pipefail
 FIRMWARE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SCRIPT_DIR="${FIRMWARE_DIR}/scripts"
 BUILD_DIR="${FIRMWARE_DIR}/build"
+# Second target: ESP32-C3 (C3 Super Mini boards). Own build dir and own
+# sdkconfig, so it never touches the ESP32 build's configuration; the
+# C3-specific defaults come from sdkconfig.defaults.esp32c3.
+C3_BUILD_DIR="${FIRMWARE_DIR}/build-esp32c3"
 RELEASE_ROOT="${FIRMWARE_DIR}/release"
 
 # Local settings (gitignored): KEEPASS_DB and friends so the user
@@ -178,9 +182,11 @@ fi
 # build was baked into the CDN artifact. A full wipe forces regeneration
 # from defaults, so every config value in sdkconfig.defaults actually
 # reaches the released binary.
-rm -rf "$BUILD_DIR"
+rm -rf "$BUILD_DIR" "$C3_BUILD_DIR"
 
 idf.py -C "$FIRMWARE_DIR" build
+idf.py -C "$FIRMWARE_DIR" -B "$C3_BUILD_DIR" \
+    -DIDF_TARGET=esp32c3 -DSDKCONFIG="${C3_BUILD_DIR}/sdkconfig" build
 
 # ---------------------------------------------------------------------------
 # 3. Stage release artifacts into release/<version>/.
@@ -198,6 +204,17 @@ cp "${BUILD_DIR}/partition_table/partition-table.bin" "${STAGE_VERSION}/"
 cp "${BUILD_DIR}/ota_data_initial.bin"                "${STAGE_VERSION}/"
 cp "${BUILD_DIR}/phoneblock_dongle.bin"               "${STAGE_VERSION}/"
 
+# ESP32-C3 artifacts go into an esp32c3/ subdirectory with the same file
+# names: the ESP32 files keep their established URLs (installed dongles and
+# the crash-analysis tooling know them), and the OTA path finds the app by
+# its "/phoneblock_dongle.bin" suffix either way.
+STAGE_C3="${STAGE_VERSION}/esp32c3"
+mkdir -p "$STAGE_C3"
+cp "${C3_BUILD_DIR}/bootloader/bootloader.bin"           "${STAGE_C3}/"
+cp "${C3_BUILD_DIR}/partition_table/partition-table.bin" "${STAGE_C3}/"
+cp "${C3_BUILD_DIR}/ota_data_initial.bin"                "${STAGE_C3}/"
+cp "${C3_BUILD_DIR}/phoneblock_dongle.bin"               "${STAGE_C3}/"
+
 # Ship the unstripped ELF alongside the .bin. Not used by devices —
 # it is the symbolication input for crash dumps that the dongle
 # uploads to /api/dongle/coredump. Resolve a backtrace later with:
@@ -205,17 +222,23 @@ cp "${BUILD_DIR}/phoneblock_dongle.bin"               "${STAGE_VERSION}/"
 # No signing, no manifest entry: this is a debug artefact, not part
 # of the OTA payload.
 cp "${BUILD_DIR}/phoneblock_dongle.elf"               "${STAGE_VERSION}/"
+cp "${C3_BUILD_DIR}/phoneblock_dongle.elf"            "${STAGE_C3}/"
 
-# Sign the app binary. sign-manifest.sh pulls the Ed25519 private key from
-# KeePassXC (master password prompt on tty), signs a deterministic payload
-# of (domain-tag, version, app-sha256), and emits two KEY=VALUE lines. The
-# signature lands in both the versioned and the stable manifest below.
-SIGN_OUT="$("${SCRIPT_DIR}/sign-manifest.sh" \
-    "${STAGE_VERSION}/phoneblock_dongle.bin" "${VERSION}")"
-APP_SHA256="$(printf '%s\n' "$SIGN_OUT" | sed -n 's/^SHA256=//p')"
-APP_SIG="$(printf '%s\n' "$SIGN_OUT" | sed -n 's/^SIG=//p')"
-if [[ -z "$APP_SHA256" || -z "$APP_SIG" ]]; then
-    echo "ERROR: sign-manifest.sh did not return SHA256 + SIG." >&2
+# Sign the app binaries. sign-manifest.sh pulls the private key from
+# KeePassXC (one master password prompt on tty for both), signs a
+# deterministic payload of (domain-tag, version, app-sha256) per binary, and
+# emits two KEY=VALUE lines per binary in argument order. The ESP32
+# signature is the manifest's top-level integrity block (what every dongle
+# before C3 support reads); the C3 one sits inside the C3 build entry.
+SIGN_OUT="$("${SCRIPT_DIR}/sign-manifest.sh" "${VERSION}" \
+    "${STAGE_VERSION}/phoneblock_dongle.bin" \
+    "${STAGE_C3}/phoneblock_dongle.bin")"
+APP_SHA256="$(printf '%s\n' "$SIGN_OUT" | sed -n 's/^SHA256=//p' | sed -n 1p)"
+APP_SIG="$(printf '%s\n' "$SIGN_OUT"    | sed -n 's/^SIG=//p'    | sed -n 1p)"
+C3_APP_SHA256="$(printf '%s\n' "$SIGN_OUT" | sed -n 's/^SHA256=//p' | sed -n 2p)"
+C3_APP_SIG="$(printf '%s\n' "$SIGN_OUT"    | sed -n 's/^SIG=//p'    | sed -n 2p)"
+if [[ -z "$APP_SHA256" || -z "$APP_SIG" || -z "$C3_APP_SHA256" || -z "$C3_APP_SIG" ]]; then
+    echo "ERROR: sign-manifest.sh did not return SHA256 + SIG for both binaries." >&2
     exit 1
 fi
 
@@ -225,6 +248,8 @@ fi
 sed -e "s/@VERSION@/${VERSION}/g" \
     -e "s/@APP_SHA256@/${APP_SHA256}/g" \
     -e "s|@SIGNATURE@|${APP_SIG}|g" \
+    -e "s/@C3_APP_SHA256@/${C3_APP_SHA256}/g" \
+    -e "s|@C3_SIGNATURE@|${C3_APP_SIG}|g" \
     "${SCRIPT_DIR}/manifest.json.tmpl" \
     > "${STAGE_VERSION}/manifest.json"
 
@@ -236,9 +261,32 @@ BASE_URL="https://cdn.phoneblock.net/dongle/firmware/${VERSION}"
 sed -e "s/@VERSION@/${VERSION}/g" \
     -e "s/@APP_SHA256@/${APP_SHA256}/g" \
     -e "s|@SIGNATURE@|${APP_SIG}|g" \
+    -e "s/@C3_APP_SHA256@/${C3_APP_SHA256}/g" \
+    -e "s|@C3_SIGNATURE@|${C3_APP_SIG}|g" \
     -e "s|\"path\": \"|\"path\": \"${BASE_URL}/|g" \
     "${SCRIPT_DIR}/manifest.json.tmpl" \
     > "${STAGE_CHAN}/manifest.json"
+
+# Dongles from before the per-chip OTA files (and newer ones on a channel
+# without them) read the channel manifest into a 2048-byte buffer
+# (firmware_update.c) and treat a longer one as a failed fetch — they would
+# silently stop updating. Refuse to publish anything that doesn't fit.
+MANIFEST_SIZE="$(wc -c < "${STAGE_CHAN}/manifest.json")"
+if (( MANIFEST_SIZE > 2047 )); then
+    echo "ERROR: channel manifest is ${MANIFEST_SIZE} bytes; installed dongles" >&2
+    echo "       only read 2047. Shorten scripts/manifest.json.tmpl." >&2
+    exit 1
+fi
+
+# Per-chip OTA files: what the dongles actually poll (firmware_update.c).
+# One build each, so adding a chip never grows a file installed dongles read.
+# The file name carries the IDF target name (CONFIG_IDF_TARGET).
+"${SCRIPT_DIR}/ota-manifest.sh" "$VERSION" ESP32 \
+    "${BASE_URL}/phoneblock_dongle.bin" "$APP_SHA256" "$APP_SIG" \
+    > "${STAGE_CHAN}/ota-esp32.json"
+"${SCRIPT_DIR}/ota-manifest.sh" "$VERSION" ESP32-C3 \
+    "${BASE_URL}/esp32c3/phoneblock_dongle.bin" "$C3_APP_SHA256" "$C3_APP_SIG" \
+    > "${STAGE_CHAN}/ota-esp32c3.json"
 
 # Plain pointer file for tooling that wants just the version string.
 printf '{ "version": "%s" }\n' "$VERSION" > "${STAGE_CHAN}/version.json"
@@ -268,8 +316,9 @@ sftp_batch <<SFTP
 SFTP
 
 # Local shell expands the glob; scp ships each file into REMOTE_VERSION
-# directly — no subdirectory wrapping.
-run scp "${STAGE_VERSION}"/* "${CDN_HOST}:${REMOTE_VERSION}/"
+# directly, and -r carries the esp32c3/ subdirectory along as
+# REMOTE_VERSION/esp32c3 (REMOTE_VERSION exists, so no wrapping ambiguity).
+run scp -r "${STAGE_VERSION}"/* "${CDN_HOST}:${REMOTE_VERSION}/"
 
 # ---- localized i18n assets, co-located under this version dir -------------
 # One release, one location: the committed announcement recordings + mail/UI
@@ -299,10 +348,14 @@ for CH in "${CHANNELS[@]}"; do
     REMOTE_CH="${CDN_FIRMWARE}/${CH}"
     sftp_batch <<SFTP
 -mkdir ${REMOTE_CH}
-put ${STAGE_CHAN}/manifest.json ${REMOTE_CH}/manifest.json.tmp
-put ${STAGE_CHAN}/version.json  ${REMOTE_CH}/version.json.tmp
-rename ${REMOTE_CH}/manifest.json.tmp ${REMOTE_CH}/manifest.json
-rename ${REMOTE_CH}/version.json.tmp  ${REMOTE_CH}/version.json
+put ${STAGE_CHAN}/manifest.json    ${REMOTE_CH}/manifest.json.tmp
+put ${STAGE_CHAN}/ota-esp32.json   ${REMOTE_CH}/ota-esp32.json.tmp
+put ${STAGE_CHAN}/ota-esp32c3.json ${REMOTE_CH}/ota-esp32c3.json.tmp
+put ${STAGE_CHAN}/version.json     ${REMOTE_CH}/version.json.tmp
+rename ${REMOTE_CH}/manifest.json.tmp    ${REMOTE_CH}/manifest.json
+rename ${REMOTE_CH}/ota-esp32.json.tmp   ${REMOTE_CH}/ota-esp32.json
+rename ${REMOTE_CH}/ota-esp32c3.json.tmp ${REMOTE_CH}/ota-esp32c3.json
+rename ${REMOTE_CH}/version.json.tmp     ${REMOTE_CH}/version.json
 SFTP
 done
 

@@ -49,32 +49,30 @@ menu "PhoneBlock Dongle"
         default "https://cdn.phoneblock.net/dongle/firmware"
         help
             HTTPS base URL the dongle polls for OTA updates. The
-            firmware appends "/<channel>/manifest.json", where the
-            channel ("stable" by default, "beta" for opt-in testers)
-            is selected at runtime in the web UI and persisted in NVS.
-            Releases publish to both channels so beta is always at
-            least as new as stable (see scripts/release.sh).
+            firmware appends "/<channel>/ota-<target>.json" (e.g.
+            ota-esp32c3.json), where the channel ("stable" by default,
+            "beta" for opt-in testers) is selected at runtime in the
+            web UI and persisted in NVS. Releases publish to both
+            channels so beta is always at least as new as stable (see
+            scripts/release.sh).
 
-            The polled file is the same esp-web-tools manifest that the
-            browser-based installer uses, so there is exactly one
-            source of truth per release. Expected shape (as written by
-            release.sh):
+            The per-chip file has the shape of the esp-web-tools
+            manifest, reduced to this chip's build and its app part
+            (written by scripts/ota-manifest.sh):
 
-              {"name": "PhoneBlock Dongle",
-               "version": "1.0.3",
+              {"version": "1.0.3",
                "builds": [{
-                 "chipFamily": "ESP32",
-                 "parts": [
-                   {"path": ".../bootloader.bin",        "offset": 4096},
-                   {"path": ".../partition-table.bin",   "offset": 32768},
-                   {"path": ".../ota_data_initial.bin",  "offset": 61440},
-                   {"path": ".../phoneblock_dongle.bin", "offset": 131072}]}]}
+                 "chipFamily": "ESP32-C3",
+                 "parts": [{"path": ".../esp32c3/phoneblock_dongle.bin"}],
+                 "integrity": {"app_sha256": "...", "signature": "..."}}]}
 
-            Browser-side esp-web-tools flashes all four parts; OTA
-            here picks the part whose path ends in
-            "phoneblock_dongle.bin" (the app slot) and ignores the
-            rest, since bootloader / partition-table / ota_data are
-            only needed on the very first USB flash.
+            If the channel has no per-chip file (404, a channel last
+            published before they existed), the firmware falls back to
+            the channel's installer manifest.json, which lists every
+            chip's build with all parts the browser installer flashes.
+            Either way OTA picks the build whose chipFamily matches its
+            own chip and the part whose path ends in
+            "phoneblock_dongle.bin" (the app slot); see ota_manifest.h.
 
             When `version` differs from the running image,
             esp_https_ota fetches the picked binary and flips the
@@ -166,8 +164,10 @@ menu "PhoneBlock Dongle"
                              to drive). Polarity is auto-detected
                              too: the GPIO 10 dongle LED is wired
                              active-low, the WROOM-32 on-board LED
-                             active-high; STATUS_LED_ACTIVE_LOW is
-                             ignored in this mode.
+                             active-high. ESP32-C3 builds always
+                             use GPIO 8, active-low (C3 Super Mini).
+                             STATUS_LED_ACTIVE_LOW is ignored in
+                             this mode.
               -1           = disable the LED task entirely.
               0..48        = explicit pin override for non-standard
                              hardware. Polarity then comes from

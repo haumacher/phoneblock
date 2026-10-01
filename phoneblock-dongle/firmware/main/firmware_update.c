@@ -25,7 +25,9 @@
 #include "sdkconfig.h"
 
 #include "config.h"
+#include "chip_family.h"
 #include "manifest_sig.h"
+#include "ota_manifest.h"
 #include "version_cmp.h"
 
 // Must be last: bans unsafe string APIs for the rest of this file.
@@ -124,16 +126,19 @@ void firmware_schedule_reboot(void)
 // ESP_OK with a NUL-terminated body on success. On failure, writes a
 // human-readable cause into `err` (DNS/TLS/HTTP-status/empty-body) so
 // the web UI can show it instead of a generic "could not fetch".
-static esp_err_t fetch_manifest(char *body, size_t cap,
-                                char *err, size_t err_cap)
+// `*http_status` gets the response status (0 if none arrived), so the
+// caller can tell a missing file from a failed fetch.
+static esp_err_t fetch_manifest(const char *file, char *body, size_t cap,
+                                int *http_status, char *err, size_t err_cap)
 {
-    // Manifest URL = <base>/<channel>/manifest.json. The channel is a
+    // Manifest URL = <base>/<channel>/<file>. The channel is a
     // client-side opt-in (NVS, web UI toggle); config_ota_channel()
     // clamps it to the known-safe literals "stable"/"beta" so it is
     // safe to splice into the path here.
+    *http_status = 0;
     char url[256];
-    snprintf(url, sizeof(url), "%s/%s/manifest.json",
-             CONFIG_PHONEBLOCK_OTA_BASE_URL, config_ota_channel());
+    snprintf(url, sizeof(url), "%s/%s/%s",
+             CONFIG_PHONEBLOCK_OTA_BASE_URL, config_ota_channel(), file);
     esp_http_client_config_t cfg = {
         .url = url,
         .crt_bundle_attach = esp_crt_bundle_attach,
@@ -155,8 +160,16 @@ static esp_err_t fetch_manifest(char *body, size_t cap,
     }
     int content_len = esp_http_client_fetch_headers(client);
     int status = esp_http_client_get_status_code(client);
+    *http_status = status;
     if (status != 200) {
-        ESP_LOGE(TAG, "manifest HTTP %d (%s)", status, url);
+        // 404 is routine for the per-chip file on a channel published before
+        // it existed (the caller falls back); don't put it on the UI's
+        // error panel. A missing fallback still reaches the UI via `err`.
+        if (status == 404) {
+            ESP_LOGI(TAG, "manifest HTTP 404 (%s)", url);
+        } else {
+            ESP_LOGE(TAG, "manifest HTTP %d (%s)", status, url);
+        }
         snprintf(err, err_cap, "HTTP %d from manifest URL", status);
         esp_http_client_close(client);
         esp_http_client_cleanup(client);
@@ -204,9 +217,25 @@ static void resolve_manifest(bool force, const char *current_version,
 {
     memset(d, 0, sizeof(*d));
 
+    // The per-chip OTA file (ota-<target>.json, one build) is what this
+    // firmware reads. Channels last published before those files existed
+    // only carry the multi-chip installer manifest.json — fall back to it on
+    // 404; ota_manifest_pick() reads both the same way. Firmware before the
+    // per-chip files reads only manifest.json, into 2048 bytes (see the size
+    // guard in release.sh); a fallback manifest.json therefore fits here too.
+    static const char OTA_FILE[] = "ota-" CONFIG_IDF_TARGET ".json";
     char body[2048];
-    if (fetch_manifest(body, sizeof(body),
-                       d->error, sizeof(d->error)) != ESP_OK) {
+    int status;
+    esp_err_t fe = fetch_manifest(OTA_FILE, body, sizeof(body), &status,
+                                  d->error, sizeof(d->error));
+    if (fe != ESP_OK && status == 404) {
+        ESP_LOGI(TAG, "%s not published on this channel, using manifest.json",
+                 OTA_FILE);
+        d->error[0] = '\0';
+        fe = fetch_manifest("manifest.json", body, sizeof(body), &status,
+                            d->error, sizeof(d->error));
+    }
+    if (fe != ESP_OK) {
         d->result = FW_UPDATE_ERR_NETWORK;
         if (d->error[0] == '\0') {
             copy_str(d->error, sizeof(d->error),
@@ -224,14 +253,7 @@ static void resolve_manifest(bool force, const char *current_version,
     }
 
     // ---- Pull the fields we need to verify before trusting anything. ----
-    const cJSON *j_ver       = cJSON_GetObjectItem(root, "version");
-    const cJSON *j_builds    = cJSON_GetObjectItem(root, "builds");
-    const cJSON *j_integrity = cJSON_GetObjectItem(root, "integrity");
-    const cJSON *j_app_hash  = cJSON_IsObject(j_integrity)
-                             ? cJSON_GetObjectItem(j_integrity, "app_sha256") : NULL;
-    const cJSON *j_sig_b64   = cJSON_IsObject(j_integrity)
-                             ? cJSON_GetObjectItem(j_integrity, "signature")  : NULL;
-
+    const cJSON *j_ver = cJSON_GetObjectItem(root, "version");
     if (!cJSON_IsString(j_ver)) {
         cJSON_Delete(root);
         d->result = FW_UPDATE_ERR_PARSE;
@@ -239,24 +261,22 @@ static void resolve_manifest(bool force, const char *current_version,
                  "Manifest missing version field.");
         return;
     }
-    if (!cJSON_IsString(j_app_hash) || strlen(j_app_hash->valuestring) != 64) {
+
+    // This chip's build, its app URL and the integrity block covering it.
+    ota_build_t build;
+    ota_pick_result_t pick = ota_manifest_pick(root, PB_CHIP_FAMILY, &build);
+    if (pick != OTA_PICK_OK) {
+        d->result = pick == OTA_PICK_ERR_INTEGRITY
+                  ? FW_UPDATE_ERR_SIGNATURE : FW_UPDATE_ERR_PARSE;
+        copy_str(d->error, sizeof(d->error), build.error);
         cJSON_Delete(root);
-        d->result = FW_UPDATE_ERR_SIGNATURE;
-        copy_str(d->error, sizeof(d->error),
-                 "Manifest missing integrity.app_sha256.");
-        return;
-    }
-    if (!cJSON_IsString(j_sig_b64)) {
-        cJSON_Delete(root);
-        d->result = FW_UPDATE_ERR_SIGNATURE;
-        copy_str(d->error, sizeof(d->error),
-                 "Manifest missing integrity.signature.");
         return;
     }
 
     const char *new_version  = j_ver->valuestring;
-    const char *app_hash_hex = j_app_hash->valuestring;
-    const char *sig_b64      = j_sig_b64->valuestring;
+    const char *app_hash_hex = build.app_sha256;
+    const char *sig_b64      = build.signature;
+    const char *new_url      = build.app_url;
 
     // ---- Verify signature over (domain-tag, version, app_sha256). ----
     // Up to ~80 B of base64 holds the typical ~70 B ASN.1-DER ECDSA-P256
@@ -283,7 +303,8 @@ static void resolve_manifest(bool force, const char *current_version,
                  "Manifest signature does not match.");
         return;
     }
-    ESP_LOGI(TAG, "manifest signature OK (version=%s)", new_version);
+    ESP_LOGI(TAG, "manifest signature OK (version=%s, chip=%s)",
+             new_version, PB_CHIP_FAMILY);
 
     // Decode the expected hash now so the post-download compare is just
     // a memcmp.
@@ -296,47 +317,6 @@ static void resolve_manifest(bool force, const char *current_version,
         return;
     }
 
-    // ---- Pick app URL from builds[] (URL is *not* signed; trust comes
-    // from the post-download hash compare against the signed value). ----
-    if (!cJSON_IsArray(j_builds) || cJSON_GetArraySize(j_builds) == 0) {
-        cJSON_Delete(root);
-        d->result = FW_UPDATE_ERR_PARSE;
-        copy_str(d->error, sizeof(d->error),
-                 "Manifest has no builds[].");
-        return;
-    }
-    // The browser installer flashes every entry in parts[]
-    // (bootloader, partition-table, ota_data, app). OTA only writes
-    // the app slot, so pick the part whose URL ends in the build's
-    // app binary name. Suffix match keeps us decoupled from the
-    // partition layout (offsets) and from absolute URL prefixes.
-    static const char APP_SUFFIX[] = "/phoneblock_dongle.bin";
-    const cJSON *j_build0 = cJSON_GetArrayItem(j_builds, 0);
-    const cJSON *j_parts  = cJSON_IsObject(j_build0)
-                          ? cJSON_GetObjectItem(j_build0, "parts") : NULL;
-    const char *new_url = NULL;
-    if (cJSON_IsArray(j_parts)) {
-        int n = cJSON_GetArraySize(j_parts);
-        for (int i = 0; i < n; i++) {
-            const cJSON *p = cJSON_GetArrayItem(j_parts, i);
-            const cJSON *jp = cJSON_GetObjectItem(p, "path");
-            if (!cJSON_IsString(jp)) continue;
-            const char *path = jp->valuestring;
-            size_t plen = strlen(path);
-            size_t slen = sizeof(APP_SUFFIX) - 1;
-            if (plen >= slen && strcmp(path + plen - slen, APP_SUFFIX) == 0) {
-                new_url = path;
-                break;
-            }
-        }
-    }
-    if (!new_url) {
-        cJSON_Delete(root);
-        d->result = FW_UPDATE_ERR_PARSE;
-        copy_str(d->error, sizeof(d->error),
-                 "Manifest has no app binary part.");
-        return;
-    }
     copy_str(d->new_version, sizeof(d->new_version), new_version);
     copy_str(d->app_url,     sizeof(d->app_url),     new_url);
 

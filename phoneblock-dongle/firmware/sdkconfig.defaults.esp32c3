@@ -1,0 +1,12 @@
+# ESP32-C3 overrides, layered by ESP-IDF on top of sdkconfig.defaults
+# whenever IDF_TARGET=esp32c3 (build with `idf.py set-target esp32c3`).
+#
+# Target board: ESP32-C3 Super Mini (ESP32-C3FH4, 4 MB flash in package).
+# It has no USB-UART bridge — the USB-C socket is wired straight to the
+# chip's built-in USB-Serial-JTAG controller, and UART0 (GPIO 20/21) is
+# not connected to anything. With the IDF default (console on UART0, USJ
+# only as an output-only secondary) the log is visible but nothing can be
+# *read* over USB, so the browser installer's Improv WiFi provisioning
+# (improv.c) would never get an answer. Make USJ the primary console;
+# improv.c follows CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG.
+CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y
