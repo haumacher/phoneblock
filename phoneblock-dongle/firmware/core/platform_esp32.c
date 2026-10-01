@@ -44,6 +44,12 @@ void pb_watchdog_reset(void)
     esp_task_wdt_reset();
 }
 
+int pb_task_stack_free(void)
+{
+    // ESP-IDF reports the high-water mark in bytes (StackType_t is uint8_t).
+    return (int)uxTaskGetStackHighWaterMark(NULL);
+}
+
 void pb_task_sleep_ms(uint32_t milliseconds)
 {
     vTaskDelay(pdMS_TO_TICKS(milliseconds));

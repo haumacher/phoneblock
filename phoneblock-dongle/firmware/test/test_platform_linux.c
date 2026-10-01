@@ -2,7 +2,9 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
+#include "log_capture.h"
 #include "platform.h"
 
 static volatile int task_done;
@@ -109,6 +111,33 @@ static void test_mac(void)
     }
 }
 
+// Linux log lines use the ESP-IDF layout, so the shared parser (which feeds
+// the web UI's error ring on the ESP32) reads them unchanged — including a
+// message that itself contains ": ".
+static void test_log_format(void)
+{
+    FILE *capture = tmpfile();
+    assert(capture);
+    fflush(stderr);
+    int saved = dup(fileno(stderr));
+    assert(dup2(fileno(capture), fileno(stderr)) >= 0);
+    pb_log_warn("sip", "registrar %s: %d", "fritz.box", 401);
+    fflush(stderr);
+    assert(dup2(saved, fileno(stderr)) >= 0);
+    close(saved);
+
+    char line[256] = "";
+    rewind(capture);
+    assert(fgets(line, sizeof(line), capture));
+    fclose(capture);
+
+    char tag[32], msg[128];
+    assert(log_capture_parse(line, tag, sizeof(tag), msg, sizeof(msg)) == 'W');
+    assert(strcmp(tag, "sip") == 0);
+    assert(strcmp(msg, "registrar fritz.box: 401") == 0);
+    assert(pb_task_stack_free() == -1);
+}
+
 int main(void)
 {
     test_time();
@@ -118,6 +147,7 @@ int main(void)
     test_delay_until();
     test_mutex();
     test_mac();
+    test_log_format();
     pb_log_info("test", "%s", "log ok");
     puts("test_platform_linux: all tests passed");
     return 0;

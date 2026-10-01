@@ -18,6 +18,14 @@
 #define pb_log_warn(tag, ...) ESP_LOGW(tag, __VA_ARGS__)
 #define pb_log_err(tag, ...)  ESP_LOGE(tag, __VA_ARGS__)
 #else
+// Linux prints the same layout as ESP-IDF ("W (<ms>) <tag>: <message>"), so
+// console logs of both builds read and grep alike, and the shared parser in
+// main/log_capture.c (host-tested) applies unchanged. Feeding WARN/ERROR into
+// the web UI's error ring on Linux should not go through that parser, though:
+// these functions know level, tag and message already and can hand them to
+// the ring directly (stats_record_error() + log_capture_suppressed()). The
+// text parser only exists because ESP-IDF's own libraries deliver nothing but
+// formatted lines through the vprintf hook.
 void pb_log_info(const char *tag, const char *fmt, ...)
     __attribute__((format(printf, 2, 3)));
 void pb_log_warn(const char *tag, const char *fmt, ...)
@@ -62,6 +70,10 @@ bool pb_task_create(void (*fn)(void *), void *arg, const char *name,
 // tick becomes a plain yield, so don't build a polling loop on short sleeps.
 void pb_task_sleep_ms(uint32_t ms);
 void pb_task_yield(void);
+
+// Minimum free stack the calling task has had so far (high-water mark), in
+// bytes; -1 where the platform can't tell (Linux).
+int pb_task_stack_free(void);
 
 // Fixed-rate pacing without drift (RTP frames). Opaque: FreeRTOS ticks on the
 // ESP32 (vTaskDelayUntil, tick-exact), CLOCK_MONOTONIC nanoseconds on Linux.

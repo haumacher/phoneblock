@@ -23,9 +23,15 @@ struct pb_mutex {
 static void pb_log(const char *level, const char *tag, const char *fmt,
                    va_list args)
 {
-    fprintf(stderr, "%s (%s): ", level, tag ? tag : "phoneblock");
+    // ESP-IDF layout, see platform.h. One fprintf per part under the stream
+    // lock keeps lines from concurrent threads intact.
+    flockfile(stderr);
+    fprintf(stderr, "%s (%llu) %s: ", level,
+            (unsigned long long)(pb_monotonic_us() / 1000u),
+            tag ? tag : "phoneblock");
     vfprintf(stderr, fmt, args);
     fputc('\n', stderr);
+    funlockfile(stderr);
 }
 
 void pb_log_info(const char *tag, const char *fmt, ...)
@@ -103,6 +109,11 @@ void pb_watchdog_subscribe(void)
 
 void pb_watchdog_reset(void)
 {
+}
+
+int pb_task_stack_free(void)
+{
+    return -1;
 }
 
 void pb_task_sleep_ms(uint32_t milliseconds)

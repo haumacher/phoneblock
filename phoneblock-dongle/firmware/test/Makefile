@@ -70,8 +70,9 @@ test_net_local: test_net_local.c ../main/net_local.c ../main/net_local.h
 test_heap_guard: test_heap_guard.c ../main/heap_guard_scan.c ../main/heap_guard_scan.h
 	$(CC) $(CFLAGS) test_heap_guard.c ../main/heap_guard_scan.c -o $@
 
-test_platform_linux: test_platform_linux.c ../core/platform_linux.c ../core/platform.h
-	$(CC) $(CFLAGS) -pthread test_platform_linux.c ../core/platform_linux.c -o $@
+test_platform_linux: test_platform_linux.c ../core/platform_linux.c ../core/platform.h \
+                     ../main/log_capture.c ../main/log_capture.h
+	$(CC) $(CFLAGS) -pthread test_platform_linux.c ../core/platform_linux.c ../main/log_capture.c -o $@
 
 # strbuf.h is header-only; build its test with AddressSanitizer so any overrun
 # of the (malloc'd) destination buffer aborts.

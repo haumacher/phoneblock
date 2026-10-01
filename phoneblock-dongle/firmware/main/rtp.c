@@ -441,7 +441,11 @@ static void rtp_audio_task(void *arg)
     pb_log_info(TAG, "inbound RTP during stream: %u packet(s) from %s:%d",
              inbound_pkts, inbound_src, inbound_port);
 
-    pb_log_info(TAG, "stream finished");
+    // Stack headroom of this task after a full stream (SRTP key expansion +
+    // per-packet protect peak here); the task ends right after, so this is
+    // the only place it can be read. -1 where the platform can't tell.
+    pb_log_info(TAG, "stream finished (stack headroom %d B of 6144)",
+                pb_task_stack_free());
     if (srtp_session) srtp_dealloc(srtp_session);
 
 done:
