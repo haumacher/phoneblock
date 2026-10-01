@@ -609,3 +609,13 @@ esp_err_t wifi_connect(void)
                         pdFALSE, pdTRUE, portMAX_DELAY);
     return ESP_OK;
 }
+
+bool wifi_link_info(int *rssi, float *tx_dbm)
+{
+    int8_t qdbm;
+    if (esp_wifi_get_max_tx_power(&qdbm) == ESP_OK) *tx_dbm = qdbm / 4.0f;
+    wifi_ap_record_t ap;
+    if (esp_wifi_sta_get_ap_info(&ap) != ESP_OK) return false;
+    *rssi = ap.rssi;
+    return true;
+}

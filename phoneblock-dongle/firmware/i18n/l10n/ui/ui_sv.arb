@@ -359,5 +359,6 @@
   "pb.dialog.error.moved": "Den valda telefonboken finns inte längre. Välj en annan.",
   "spam.dialog.comment": "Motivering",
   "spam.dialog.comment.hint": "(valfritt, visas offentligt)",
-  "spam.dialog.error.is_contact": "Den här uppringaren finns i din telefonbok. En telefonboksuppgift har alltid företräde på dongeln, därför kan det inte vara ett spam-samtal i det här fallet."
+  "spam.dialog.error.is_contact": "Den här uppringaren finns i din telefonbok. En telefonboksuppgift har alltid företräde på dongeln, därför kan det inte vara ett spam-samtal i det här fallet.",
+  "status.system.temp": "Chiptemperatur: {temp} °C"
 }

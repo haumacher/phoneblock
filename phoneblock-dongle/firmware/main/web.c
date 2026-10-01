@@ -24,6 +24,7 @@
 #include "cJSON.h"
 
 #include "announcement.h"
+#include "chip_temp.h"
 #include "api.h"
 #include "blocklist_sync.h"
 #include "i18n_sync.h"
@@ -44,6 +45,7 @@
 #include "tr064.h"
 #include "tr064_parse.h"
 #include "web_auth.h"
+#include "wifi.h"
 
 // Must be last: bans unsafe string APIs for the rest of this file.
 #include "banned_apis.h"
@@ -317,6 +319,21 @@ static void add_system_load(cJSON *root)
         cJSON_AddNumberToObject(sys, "fs_used",  (double)fs_used);
         cJSON_AddNumberToObject(sys, "fs_free",  (double)(fs_total - fs_used));
     }
+
+    // Die temperature, only on chips with a sensor (not the classic ESP32).
+    float temp_c;
+    if (chip_temp_read(&temp_c)) {
+        cJSON_AddNumberToObject(sys, "temp_c", (double)((int)(temp_c * 10.0f + 0.5f)) / 10.0);
+    }
+
+    // Link quality: RSSI is what the dongle receives from the AP; tx_dbm is
+    // the driver's transmit-power limit in effect.
+    int rssi;
+    float tx_dbm = 0;
+    if (wifi_link_info(&rssi, &tx_dbm)) {
+        cJSON_AddNumberToObject(sys, "wifi_rssi", rssi);
+    }
+    if (tx_dbm > 0) cJSON_AddNumberToObject(sys, "wifi_tx_dbm", tx_dbm);
 
 #if CONFIG_FREERTOS_GENERATE_RUN_TIME_STATS
     UBaseType_t cap = uxTaskGetNumberOfTasks() + 4;   // headroom for mid-sample spawns

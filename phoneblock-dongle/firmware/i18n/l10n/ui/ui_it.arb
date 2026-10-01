@@ -359,5 +359,6 @@
   "pb.dialog.error.moved": "La rubrica selezionata non esiste più. Selezionarne un'altra.",
   "spam.dialog.comment": "Motivo",
   "spam.dialog.comment.hint": "(facoltativo, sarà visibile pubblicamente)",
-  "spam.dialog.error.is_contact": "Questo numero è presente nella tua rubrica. Una voce della rubrica ha sempre la precedenza sul dongle, pertanto in questo caso non è possibile segnalare lo spam."
+  "spam.dialog.error.is_contact": "Questo numero è presente nella tua rubrica. Una voce della rubrica ha sempre la precedenza sul dongle, pertanto in questo caso non è possibile segnalare lo spam.",
+  "status.system.temp": "Temperatura del chip: {temp} °C"
 }

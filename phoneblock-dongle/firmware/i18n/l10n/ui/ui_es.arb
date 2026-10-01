@@ -359,5 +359,6 @@
   "pb.dialog.error.moved": "La agenda seleccionada ya no existe. Selecciona otra.",
   "spam.dialog.comment": "Motivo",
   "spam.dialog.comment.hint": "(opcional, será visible públicamente)",
-  "spam.dialog.error.is_contact": "Esta persona figura en tu agenda. Una entrada de la agenda siempre tiene prioridad en el dongle, por lo que en este caso no es posible recibir un aviso de spam."
+  "spam.dialog.error.is_contact": "Esta persona figura en tu agenda. Una entrada de la agenda siempre tiene prioridad en el dongle, por lo que en este caso no es posible recibir un aviso de spam.",
+  "status.system.temp": "Temperatura del chip: {temp} °C"
 }

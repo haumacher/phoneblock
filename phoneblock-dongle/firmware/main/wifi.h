@@ -61,3 +61,8 @@ int wifi_scan(wifi_ap_record_t *records, int max_records);
 // Format the station's current IPv4 address into buf ("192.168.2.7").
 // False while the device has no IP.
 bool wifi_get_ip_str(char *buf, size_t cap);
+
+// Signal strength of the associated AP (dBm) and the driver's transmit-power
+// limit in effect (dBm). Each is set only if known; returns false while not
+// associated (then *rssi is untouched, *tx_dbm may still be set).
+bool wifi_link_info(int *rssi, float *tx_dbm);

@@ -325,6 +325,11 @@
     "description": "Dongle web UI: status.system.fs",
     "x-translated": "a4e729cf"
   },
+  "status.system.temp": "Chiptemperatur: {temp} °C",
+  "@status.system.temp": {
+    "description": "Dongle web UI: status.system.temp — die temperature of the dongle's chip, only shown on chips with a built-in sensor",
+    "x-translated": "db368f8"
+  },
   "status.system.col.task": "Task",
   "@status.system.col.task": {
     "description": "Dongle web UI: status.system.col.task",

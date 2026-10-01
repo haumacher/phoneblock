@@ -359,5 +359,6 @@
   "pb.dialog.error.moved": "Den valgte telefonbog findes ikke længere. Vælg venligst en anden.",
   "spam.dialog.comment": "Begrundelse",
   "spam.dialog.comment.hint": "(valgfrit, bliver synligt for offentligheden)",
-  "spam.dialog.error.is_contact": "Denne opkalder er gemt i din telefonbog. En telefonbogsoplysning har altid forrang på donglen, og derfor er det ikke muligt at markere opkaldet som spam her."
+  "spam.dialog.error.is_contact": "Denne opkalder er gemt i din telefonbog. En telefonbogsoplysning har altid forrang på donglen, og derfor er det ikke muligt at markere opkaldet som spam her.",
+  "status.system.temp": "Chiptemperatur: {temp} °C"
 }

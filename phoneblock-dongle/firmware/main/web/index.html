@@ -1117,6 +1117,7 @@ function renderStatus(){
     + '<summary>' + esc(t('status.system.title')) + '</summary>'
     + '<p id="systemHeap" class="muted" style="font-size:.85rem;margin:.2rem 0 .2rem"></p>'
     + '<p id="systemFs" class="muted" style="font-size:.85rem;margin:.2rem 0 .2rem"></p>'
+    + '<p id="systemTemp" class="muted" style="font-size:.85rem;margin:.2rem 0 .2rem;display:none"></p>'
     + '<p id="clockInfo" class="muted" style="font-size:.85rem;margin:.2rem 0 .2rem"></p>'
     + '<p id="tzInfo" class="muted" style="font-size:.8rem;margin:.2rem 0 .8rem">'
     +   '<span id="tzCurrent"></span>'
@@ -2040,6 +2041,15 @@ async function refreshAll(){
       });
     } else {
       $('systemFs').style.display = 'none';
+    }
+    // Die temperature: only chips with a sensor report it (not the classic
+    // ESP32), so the line stays hidden there.
+    if (s.system.temp_c != null) {
+      $('systemTemp').style.display = '';
+      $('systemTemp').textContent = t('status.system.temp',
+        {temp: s.system.temp_c.toFixed(1)});
+    } else {
+      $('systemTemp').style.display = 'none';
     }
     const tb = $('systemTasks');
     tb.innerHTML = '';
