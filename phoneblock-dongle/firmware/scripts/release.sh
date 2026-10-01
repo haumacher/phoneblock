@@ -313,12 +313,19 @@ sftp_batch <<SFTP
 -mkdir ${CDN_BASE}
 -mkdir ${CDN_FIRMWARE}
 -mkdir ${REMOTE_VERSION}
+-mkdir ${REMOTE_VERSION}/esp32c3
 SFTP
 
-# Local shell expands the glob; scp ships each file into REMOTE_VERSION
-# directly, and -r carries the esp32c3/ subdirectory along as
-# REMOTE_VERSION/esp32c3 (REMOTE_VERSION exists, so no wrapping ambiguity).
-run scp -r "${STAGE_VERSION}"/* "${CDN_HOST}:${REMOTE_VERSION}/"
+# Plain files only, one scp per directory, no -r: OpenSSH >= 9 runs scp over
+# the SFTP protocol, and a recursive upload into a directory that doesn't
+# exist yet fails there with "path canonicalization failed" — so every
+# remote directory is created above and scp only ever copies files into it.
+VERSION_FILES=()
+for f in "${STAGE_VERSION}"/*; do
+    [[ -f "$f" ]] && VERSION_FILES+=("$f")
+done
+run scp "${VERSION_FILES[@]}" "${CDN_HOST}:${REMOTE_VERSION}/"
+run scp "${STAGE_C3}"/* "${CDN_HOST}:${REMOTE_VERSION}/esp32c3/"
 
 # ---- localized i18n assets, co-located under this version dir -------------
 # One release, one location: the committed announcement recordings + mail/UI
