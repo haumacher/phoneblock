@@ -3,14 +3,20 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "sdkconfig.h"
+#if CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
+#include "driver/usb_serial_jtag.h"
+#include "driver/usb_serial_jtag_vfs.h"
+#else
 #include "driver/uart.h"
 #include "driver/uart_vfs.h"
+#endif
 #include "esp_app_desc.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "sdkconfig.h"
 
+#include "chip_family.h"
 #include "improv_proto.h"
 #include "wifi.h"
 
@@ -19,7 +25,21 @@
 
 static const char *TAG = "improv";
 
+// Improv runs over whatever carries the console: UART0 behind the USB-UART
+// bridge on the classic ESP32 boards, the chip's native USB-Serial-JTAG on
+// boards without a bridge (ESP32-C3 Super Mini, see sdkconfig.defaults.esp32c3).
+#if CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
+#define improv_write(buf, len) \
+    usb_serial_jtag_write_bytes((buf), (len), portMAX_DELAY)
+#define improv_read(buf, len, ticks) \
+    usb_serial_jtag_read_bytes((buf), (len), (ticks))
+#else
 #define IMPROV_UART CONFIG_ESP_CONSOLE_UART_NUM
+#define improv_write(buf, len) \
+    uart_write_bytes(IMPROV_UART, (buf), (len))
+#define improv_read(buf, len, ticks) \
+    uart_read_bytes(IMPROV_UART, (buf), (len), (ticks))
+#endif
 
 // The provisioning dialog (esp-web-tools) gives the device 30 s to
 // answer a send-wifi-settings command; report failure before the
@@ -42,7 +62,7 @@ static bool s_provisioning;
 // Every packet is framed in '\n'…'\n': the browser-side parser only
 // recognizes the IMPROV header directly after a newline, and the
 // trailing one keeps the next log line from gluing onto the packet.
-// One uart_write_bytes call per packet — writes are serialized by the
+// One driver write call per packet — writes are serialized by the
 // driver, so log output never lands mid-packet.
 static void send_packet(const uint8_t *pkt, size_t len)
 {
@@ -50,7 +70,7 @@ static void send_packet(const uint8_t *pkt, size_t len)
     framed[0] = '\n';
     memcpy(&framed[1], pkt, len);
     framed[1 + len] = '\n';
-    uart_write_bytes(IMPROV_UART, framed, len + 2);
+    improv_write(framed, len + 2);
 }
 
 static uint8_t current_state(void)
@@ -179,7 +199,7 @@ static void handle_get_info(void)
     const char *strings[] = {
         "PhoneBlock Dongle",            // firmware name
         app ? app->version : "?",       // firmware version
-        "ESP32",                        // chip family
+        PB_CHIP_FAMILY,                 // chip family
         "PhoneBlock Dongle",            // device name
     };
     send_rpc_result(IMPROV_CMD_GET_INFO, strings, 4);
@@ -271,8 +291,7 @@ static void improv_task(void *arg)
         // Short timeout instead of portMAX_DELAY: uart_read_bytes
         // blocks until *length* bytes arrived, not until *some* byte
         // arrived — a full-buffer wait would stall single packets.
-        int n = uart_read_bytes(IMPROV_UART, rx, sizeof(rx),
-                                pdMS_TO_TICKS(100));
+        int n = improv_read(rx, sizeof(rx), pdMS_TO_TICKS(100));
         for (int i = 0; i < n; i++) {
             uint8_t type, payload_len;
             const uint8_t *payload;
@@ -287,11 +306,24 @@ static void improv_task(void *arg)
 
 void improv_start(void)
 {
-    // The console UART runs driver-less by default; logs are written
+    // The console runs driver-less by default; logs are written
     // byte-wise straight into the FIFO. Install the driver and route
-    // the log/stdout VFS through it so Improv packets (one
-    // uart_write_bytes call each) cannot be interleaved mid-packet by
-    // a concurrent log line.
+    // the log/stdout VFS through it so Improv packets (one driver
+    // write call each) cannot be interleaved mid-packet by a
+    // concurrent log line.
+#if CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
+    usb_serial_jtag_driver_config_t cfg = {
+        .tx_buffer_size = 1024,
+        .rx_buffer_size = 1024,
+    };
+    esp_err_t err = usb_serial_jtag_driver_install(&cfg);
+    if (err != ESP_OK) {
+        ESP_LOGW(TAG, "usb_serial_jtag_driver_install: %s — Improv disabled",
+                 esp_err_to_name(err));
+        return;
+    }
+    usb_serial_jtag_vfs_use_driver();
+#else
     esp_err_t err = uart_driver_install(IMPROV_UART, 1024, 1024, 0, NULL, 0);
     if (err != ESP_OK) {
         ESP_LOGW(TAG, "uart_driver_install: %s — Improv disabled",
@@ -299,6 +331,7 @@ void improv_start(void)
         return;
     }
     uart_vfs_dev_use_driver(IMPROV_UART);
+#endif
 
     xTaskCreate(improv_task, "improv", 4096, NULL, 3, NULL);
 }

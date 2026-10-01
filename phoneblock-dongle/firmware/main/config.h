@@ -208,7 +208,7 @@ bool        config_auto_update_enabled(void);
 
 // OTA update channel the daily self-update and the manual "check"
 // button poll. The manifest URL is built as
-// <CONFIG_PHONEBLOCK_OTA_BASE_URL>/<channel>/manifest.json, so the
+// <CONFIG_PHONEBLOCK_OTA_BASE_URL>/<channel>/ota-<target>.json, so the
 // channel is the path segment that selects the released stream.
 // Always returns one of the two known-safe literals "stable" (default)
 // or "beta": any other / corrupt NVS value maps to "stable", which

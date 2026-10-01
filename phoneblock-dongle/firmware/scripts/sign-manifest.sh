@@ -2,11 +2,12 @@
 #
 # Sign a firmware release for the dongle's OTA path.
 #
-#   sign-manifest.sh <app.bin> <version>   # → prints SHA256=…  SIG=…
+#   sign-manifest.sh <version> <app.bin>...   # → prints SHA256=…  SIG=… per bin
 #
-# Inputs are an app binary (phoneblock_dongle.bin) and the version string.
-# Output is two `KEY=VALUE` lines on stdout that the caller — typically
-# release.sh — substitutes into manifest.json.tmpl:
+# Inputs are the version string and one app binary (phoneblock_dongle.bin)
+# per chip family. The key is unlocked once for all of them. Output is two
+# `KEY=VALUE` lines per binary, in argument order, on stdout that the
+# caller — typically release.sh — substitutes into manifest.json.tmpl:
 #
 #   SHA256=<64-hex-chars>           # SHA-256 of the app binary
 #   SIG=<base64>                    # ECDSA-P256-SHA256 signature, ASN.1-DER, see below
@@ -32,13 +33,14 @@
 
 set -euo pipefail
 
-if [[ $# -ne 2 ]]; then
-    echo "usage: $0 <app.bin> <version>" >&2
+if [[ $# -lt 2 ]]; then
+    echo "usage: $0 <version> <app.bin>..." >&2
     exit 2
 fi
 
-APP_BIN="$1"
-VERSION="$2"
+VERSION="$1"
+shift
+APP_BINS=("$@")
 
 KEEPASS_DB="${KEEPASS_DB:-}"
 KEEPASS_ENTRY="${KEEPASS_ENTRY:-PhoneBlock-Dongle Signing Key}"
@@ -48,10 +50,12 @@ if [[ -z "$KEEPASS_DB" ]]; then
     echo "ERROR: set KEEPASS_DB to the path of your .kdbx file." >&2
     exit 1
 fi
-if [[ ! -f "$APP_BIN" ]]; then
-    echo "ERROR: app binary not found: $APP_BIN" >&2
-    exit 1
-fi
+for APP_BIN in "${APP_BINS[@]}"; do
+    if [[ ! -f "$APP_BIN" ]]; then
+        echo "ERROR: app binary not found: $APP_BIN" >&2
+        exit 1
+    fi
+done
 
 command -v keepassxc-cli >/dev/null || {
     echo "ERROR: keepassxc-cli not found in PATH." >&2
@@ -82,4 +86,6 @@ keepassxc-cli attachment-export \
 
 # Hand off to the pure signing helper. Splitting these lets the host-side
 # roundtrip test exercise the signing format without a KeePassXC database.
-exec "${SCRIPT_DIR}/sign-manifest-with-key.sh" "$TMP_KEY" "$APP_BIN" "$VERSION"
+for APP_BIN in "${APP_BINS[@]}"; do
+    "${SCRIPT_DIR}/sign-manifest-with-key.sh" "$TMP_KEY" "$APP_BIN" "$VERSION"
+done

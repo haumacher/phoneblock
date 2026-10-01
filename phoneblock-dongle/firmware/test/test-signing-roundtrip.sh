@@ -131,6 +131,62 @@ else
 fi
 
 # -----------------------------------------------------------------------
+# 7. Multi-chip manifest rendered from the real template: ESP32 under the
+#    top-level integrity block, ESP32-C3 under its own. Both must verify,
+#    and a broken C3 signature must fail the whole manifest.
+# -----------------------------------------------------------------------
+say "Test 7: multi-chip manifest from manifest.json.tmpl"
+head -c 65536 /dev/urandom > "$TMP/app_c3.bin"
+C3_OUT="$("$SCRIPT_DIR/sign-manifest-with-key.sh" \
+          "$TMP/priv.pem" "$TMP/app_c3.bin" "$VERSION")"
+C3_SHA256="$(printf '%s\n' "$C3_OUT" | sed -n 's/^SHA256=//p')"
+C3_SIG="$(printf '%s\n' "$C3_OUT" | sed -n 's/^SIG=//p')"
+render() {  # <c3-signature>
+    sed -e "s/@VERSION@/${VERSION}/g" \
+        -e "s/@APP_SHA256@/${APP_SHA256}/g" \
+        -e "s|@SIGNATURE@|${APP_SIG}|g" \
+        -e "s/@C3_APP_SHA256@/${C3_SHA256}/g" \
+        -e "s|@C3_SIGNATURE@|$1|g" \
+        "$SCRIPT_DIR/manifest.json.tmpl"
+}
+render "$C3_SIG" > "$TMP/manifest_multi.json"
+if [[ "$(jq -r '.builds[0].chipFamily' "$TMP/manifest_multi.json")" == "ESP32" \
+   && "$(jq -r '.integrity.app_sha256' "$TMP/manifest_multi.json")" == "$APP_SHA256" ]]; then
+    ok "ESP32 stays builds[0] under the top-level integrity block"
+else
+    ng "ESP32 not at builds[0] / top-level integrity (breaks installed dongles)"
+fi
+if "$SCRIPT_DIR/verify-manifest.sh" "$TMP/manifest_multi.json" "$TMP/pub.pem" "$TMP/app_c3.bin" >/dev/null; then
+    ok "multi-chip manifest verifies, C3 binary matches"
+else
+    ng "multi-chip manifest rejected"
+fi
+render "$APP_SIG" > "$TMP/manifest_multi_bad.json"
+if "$SCRIPT_DIR/verify-manifest.sh" "$TMP/manifest_multi_bad.json" "$TMP/pub.pem" >/dev/null 2>&1; then
+    ng "C3 build with a foreign signature accepted"
+else
+    ok "C3 build with a foreign signature rejected"
+fi
+
+# -----------------------------------------------------------------------
+# 8. Per-chip OTA file (what the dongles poll) from ota-manifest.sh.
+# -----------------------------------------------------------------------
+say "Test 8: per-chip OTA file"
+"$SCRIPT_DIR/ota-manifest.sh" "$VERSION" ESP32-C3 \
+    "https://cdn.example/$VERSION/esp32c3/phoneblock_dongle.bin" \
+    "$C3_SHA256" "$C3_SIG" > "$TMP/ota-esp32c3.json"
+if "$SCRIPT_DIR/verify-manifest.sh" "$TMP/ota-esp32c3.json" "$TMP/pub.pem" "$TMP/app_c3.bin" >/dev/null; then
+    ok "per-chip OTA file verifies, C3 binary matches"
+else
+    ng "per-chip OTA file rejected"
+fi
+if "$SCRIPT_DIR/verify-manifest.sh" "$TMP/ota-esp32c3.json" "$TMP/pub.pem" "$TMP/app.bin" >/dev/null 2>&1; then
+    ng "per-chip OTA file accepted the ESP32 binary"
+else
+    ok "per-chip OTA file rejects another chip's binary"
+fi
+
+# -----------------------------------------------------------------------
 say ""
 say "Summary: $PASS passed, $FAIL failed"
 [[ $FAIL -eq 0 ]] || exit 1

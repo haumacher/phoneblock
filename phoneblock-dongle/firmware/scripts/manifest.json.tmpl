@@ -12,6 +12,16 @@
         { "path": "ota_data_initial.bin",  "offset": 61440  },
         { "path": "phoneblock_dongle.bin", "offset": 131072 }
       ]
+    },
+    {
+      "chipFamily": "ESP32-C3",
+      "parts": [
+        { "path": "esp32c3/bootloader.bin", "offset": 0 },
+        { "path": "esp32c3/partition-table.bin", "offset": 32768 },
+        { "path": "esp32c3/ota_data_initial.bin", "offset": 61440 },
+        { "path": "esp32c3/phoneblock_dongle.bin", "offset": 131072 }
+      ],
+      "integrity": { "app_sha256": "@C3_APP_SHA256@", "signature": "@C3_SIGNATURE@" }
     }
   ],
   "integrity": {
