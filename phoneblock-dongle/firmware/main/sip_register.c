@@ -6,12 +6,18 @@
 #include <strings.h>
 #include <stdbool.h>
 
-#include "mbedtls/md5.h"
-#include "mbedtls/base64.h"
-
+#ifdef ESP_PLATFORM
 #include "lwip/sockets.h"
-
 #include "sdkconfig.h"
+#else
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#endif
+#ifndef CONFIG_RTP_PLAY_ANNOUNCEMENT
+#define CONFIG_RTP_PLAY_ANNOUNCEMENT 1
+#endif
+
 #include "api.h"
 #include "blocklist_sync.h"
 #include "config.h"
@@ -229,7 +235,7 @@ static void bytes_to_hex(const uint8_t *in, size_t len, char *out)
 static void md5_str(const char *in, char *out_hex33)
 {
     uint8_t digest[16];
-    mbedtls_md5((const unsigned char *)in, strlen(in), digest);
+    pb_md5(in, strlen(in), digest);
     bytes_to_hex(digest, 16, out_hex33);
 }
 
@@ -896,7 +902,7 @@ static int build_sdp_body(const char *fallback_ip, const dialog_t *d,
         // base64 of 30 bytes is 40 chars + NUL.
         char key_b64[48];
         size_t b64_len = 0;
-        if (mbedtls_base64_encode((unsigned char *)key_b64, sizeof(key_b64),
+        if (pb_base64_encode((unsigned char *)key_b64, sizeof(key_b64),
                                   &b64_len, d->srtp_tx_key,
                                   RTP_SRTP_KEY_LEN) == 0) {
             sb_appendf(&sb,
@@ -1037,7 +1043,7 @@ static void capture_dialog(sip_ctx_t *c, const char *req, int req_len,
     d->rtp_dest_valid = false;
     if (rtp_ip[0] && rtp_port > 0) {
         struct in_addr addr;
-        if (inet_aton(rtp_ip, &addr)) {
+        if (inet_pton(AF_INET, rtp_ip, &addr) == 1) {
             d->rtp_dest.sin_family      = AF_INET;
             d->rtp_dest.sin_addr        = addr;
             d->rtp_dest.sin_port        = htons(rtp_port);
@@ -1451,6 +1457,7 @@ static void handle_invite(sip_ctx_t *c, const char *req, int req_len,
 static void handle_ack(sip_ctx_t *c, const char *req, int req_len,
                        const struct sockaddr_in *from)
 {
+    (void)from;
     dialog_t *d = &c->dialog;
     char cid[128];
     parse_call_id(req, req_len, cid, sizeof(cid));
@@ -1546,7 +1553,7 @@ static void handle_incoming(sip_ctx_t *c, const char *pkt, int len,
                             const struct sockaddr_in *from)
 {
     char from_ip[INET_ADDRSTRLEN];
-    inet_ntoa_r(from->sin_addr, from_ip, sizeof(from_ip));
+    inet_ntop(AF_INET, &from->sin_addr, from_ip, sizeof(from_ip));
 
     bool is_response = (len >= 7 && strncmp(pkt, "SIP/2.0", 7) == 0);
     char method[16];
@@ -1667,6 +1674,7 @@ static void reopen_transport(sip_ctx_t *c)
 
 static void sip_task(void *arg)
 {
+    (void)arg;
     sip_ctx_t ctx = {0};
     ctx.cseq = 1;
     random_hex(ctx.from_tag, 16);

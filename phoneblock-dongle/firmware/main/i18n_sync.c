@@ -2,6 +2,10 @@
 // download the announcement (and mail pack) for the active ui_lang with
 // SHA-256 verification, prune stale-locale files.
 
+#ifndef ESP_PLATFORM
+#define _POSIX_C_SOURCE 200809L
+#endif
+
 #include "i18n_sync.h"
 
 #include <dirent.h>
@@ -11,32 +15,44 @@
 #include <string.h>
 #include <strings.h>
 #include <sys/stat.h>
+#ifndef ESP_PLATFORM
+#include <sys/statvfs.h>
+#endif
 #include <unistd.h>
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/semphr.h"
 
 #include "cJSON.h"
-#include "esp_app_desc.h"
+#ifdef ESP_PLATFORM
 #include "esp_crt_bundle.h"
+#include "esp_err.h"
 #include "esp_http_client.h"
-#include "esp_log.h"
 #include "esp_spiffs.h"
-#include "esp_timer.h"
+#include "http_util.h"
 #include "mbedtls/sha256.h"
-
 #include "sdkconfig.h"
+#endif
+
 
 #include "announcement.h"
 #include "config.h"
-#include "http_util.h"
+#include "platform.h"
+#ifndef PHONEBLOCK_DATA_DIR
+#define PHONEBLOCK_DATA_DIR "/var/lib/phoneblock"
+#endif
+#ifndef CONFIG_PHONEBLOCK_OTA_BASE_URL
+#define CONFIG_PHONEBLOCK_OTA_BASE_URL "https://cdn.phoneblock.net/dongle/firmware"
+#endif
 #include "scheduler.h"
 #include "version_cmp.h"
 
 static const char *TAG = "i18nsync";
 
 #define SPIFFS_LABEL     "storage"
+#ifdef ESP_PLATFORM
 #define SPIFFS_DIR       "/spiffs"
+#else
+#define SPIFFS_DIR       PHONEBLOCK_DATA_DIR
+#endif
 #define DOWNLOAD_CHUNK   1024
 // Headroom kept free on the storage partition (SPIFFS metadata overhead the
 // raw free-byte count overstates), matching blocklist_sync's guard.
@@ -45,7 +61,7 @@ static const char *TAG = "i18nsync";
 // heap-allocate so a growing locale set never smashes the task stack.
 #define MANIFEST_CAP     (8 * 1024)
 
-static SemaphoreHandle_t   s_lock = NULL;
+static pb_mutex_t *   s_lock = NULL;
 static i18n_sync_status_t  s_status;
 
 // ---------------------------------------------------------------------------
@@ -55,10 +71,10 @@ static i18n_sync_status_t  s_status;
 static void set_status(bool ok, const char *lang, const char *err)
 {
     if (!s_lock) return;
-    xSemaphoreTake(s_lock, portMAX_DELAY);
+    pb_mutex_lock(s_lock);
     s_status.ever_ran   = true;
     s_status.last_ok    = ok;
-    s_status.last_at_us = esp_timer_get_time();
+    s_status.last_at_us = pb_monotonic_us();
     strncpy(s_status.lang, lang ? lang : "", sizeof(s_status.lang) - 1);
     s_status.lang[sizeof(s_status.lang) - 1] = '\0';
     if (ok || !err) {
@@ -67,14 +83,20 @@ static void set_status(bool ok, const char *lang, const char *err)
         strncpy(s_status.last_error, err, sizeof(s_status.last_error) - 1);
         s_status.last_error[sizeof(s_status.last_error) - 1] = '\0';
     }
-    xSemaphoreGive(s_lock);
+    pb_mutex_unlock(s_lock);
 }
 
 static int64_t spiffs_free_bytes(void)
 {
+#ifdef ESP_PLATFORM
     size_t total = 0, used = 0;
     if (esp_spiffs_info(SPIFFS_LABEL, &total, &used) != ESP_OK) return -1;
     return (int64_t)total - (int64_t)used;
+#else
+    struct statvfs info;
+    if (statvfs(PHONEBLOCK_DATA_DIR, &info) != 0) return -1;
+    return (int64_t)info.f_bavail * (int64_t)info.f_frsize;
+#endif
 }
 
 static void bytes_to_hex(const uint8_t *in, size_t n, char *out)
@@ -93,19 +115,26 @@ static bool sha256_file_hex(const char *path, char out[65])
 {
     FILE *f = fopen(path, "rb");
     if (!f) return false;
-    mbedtls_sha256_context sha;
-    mbedtls_sha256_init(&sha);
-    mbedtls_sha256_starts(&sha, 0);
+    pb_sha256_t *sha = pb_sha256_create();
+    if (!sha) {
+        fclose(f);
+        return false;
+    }
     uint8_t buf[DOWNLOAD_CHUNK];
     size_t n;
     while ((n = fread(buf, 1, sizeof(buf), f)) > 0) {
-        mbedtls_sha256_update(&sha, buf, n);
+        if (!pb_sha256_update(sha, buf, n)) {
+            fclose(f);
+            pb_sha256_destroy(sha);
+            return false;
+        }
     }
     bool read_ok = !ferror(f);
     fclose(f);
     uint8_t digest[32];
-    mbedtls_sha256_finish(&sha, digest);
-    mbedtls_sha256_free(&sha);
+    bool hash_ok = pb_sha256_finish(sha, digest);
+    pb_sha256_destroy(sha);
+    if (!hash_ok) return false;
     if (!read_ok) return false;
     bytes_to_hex(digest, sizeof(digest), out);
     return true;
@@ -115,6 +144,7 @@ static bool sha256_file_hex(const char *path, char out[65])
 // HTTP GET into a caller buffer (for the small manifest file).
 // ---------------------------------------------------------------------------
 
+#ifdef ESP_PLATFORM
 static bool http_get_buf(const char *url, char *body, size_t cap,
                          char *err, size_t err_cap)
 {
@@ -163,11 +193,40 @@ out:
     esp_http_client_cleanup(client);
     return ok;
 }
+#else
+static bool http_get_buf(const char *url, char *body, size_t cap,
+                         char *err, size_t err_cap)
+{
+    size_t body_len = 0;
+    int status = 0;
+    int result = pb_http_request("GET", url, NULL, 0, NULL, 0, 15000,
+                                 body, cap, &body_len, &status, NULL, NULL, NULL);
+    if (result != PB_HTTP_OK) {
+        snprintf(err, err_cap, "HTTP transport failed (%d)", result);
+        return false;
+    }
+    if (status != 200) {
+        snprintf(err, err_cap, "HTTP %d", status);
+        return false;
+    }
+    if (body_len == 0) {
+        snprintf(err, err_cap, "empty body");
+        return false;
+    }
+    if (body_len >= cap - 1) {
+        snprintf(err, err_cap, "manifest too large");
+        return false;
+    }
+    body[body_len] = '\0';
+    return true;
+}
+#endif
 
 // ---------------------------------------------------------------------------
 // Streaming asset download → SHA-256 verify → atomic rename into place.
 // ---------------------------------------------------------------------------
 
+#ifdef ESP_PLATFORM
 static bool download_verify_rename(const char *url, const char *final_path,
                                    const char *expected_sha_hex,
                                    char *err, size_t err_cap)
@@ -260,7 +319,7 @@ static bool download_verify_rename(const char *url, const char *final_path,
         unlink(tmp_path);
         return false;
     }
-    ESP_LOGI(TAG, "downloaded %lld B → %s", (long long)total, final_path);
+    pb_log_info(TAG, "downloaded %lld B → %s", (long long)total, final_path);
     return true;
 
 out_close:
@@ -272,6 +331,104 @@ out:
     unlink(tmp_path);
     return false;
 }
+#else
+typedef struct {
+    FILE *file;
+    int64_t total;
+    int64_t free_bytes;
+    char *error;
+    size_t error_cap;
+    bool failed;
+} i18n_download_t;
+
+static void write_i18n_chunk(const void *data, size_t length, void *context)
+{
+    i18n_download_t *download = context;
+    if (download->failed) return;
+    if ((uint64_t)download->total + length > ANNOUNCEMENT_MAX_BYTES) {
+        snprintf(download->error, download->error_cap, "asset too large");
+        download->failed = true;
+        return;
+    }
+    if (download->free_bytes >= 0 &&
+        download->total + (int64_t)length + FS_MARGIN > download->free_bytes) {
+        snprintf(download->error, download->error_cap, "insufficient storage space");
+        download->failed = true;
+        return;
+    }
+    size_t written = fwrite(data, 1, length, download->file);
+    download->total += (int64_t)written;
+    if (written != length) {
+        snprintf(download->error, download->error_cap, "write failed: %s", strerror(errno));
+        download->failed = true;
+    }
+}
+
+static bool download_verify_rename(const char *url, const char *final_path,
+                                   const char *expected_sha_hex,
+                                   char *err, size_t err_cap)
+{
+    char tmp_path[512];
+    snprintf(tmp_path, sizeof(tmp_path), "%s.tmp", final_path);
+#ifndef ESP_PLATFORM
+    if (mkdir(PHONEBLOCK_DATA_DIR, 0750) != 0 && errno != EEXIST) {
+        snprintf(err, err_cap, "mkdir: %s", strerror(errno));
+        return false;
+    }
+#endif
+    FILE *file = fopen(tmp_path, "wb");
+    if (!file) {
+        snprintf(err, err_cap, "fopen %s: %s", tmp_path, strerror(errno));
+        return false;
+    }
+    i18n_download_t download = {
+        .file = file,
+        .free_bytes = spiffs_free_bytes(),
+        .error = err,
+        .error_cap = err_cap,
+    };
+    int status = 0;
+    int result = pb_http_request("GET", url, NULL, 0, NULL, 0, 30000,
+                                 NULL, 0, NULL, &status,
+                                 write_i18n_chunk, &download, NULL);
+    if (result != PB_HTTP_OK) {
+        snprintf(err, err_cap, "HTTP transport failed (%d)", result);
+        download.failed = true;
+    } else if (status != 200) {
+        snprintf(err, err_cap, "HTTP %d", status);
+        download.failed = true;
+    }
+    if (fflush(file) != 0) {
+        snprintf(err, err_cap, "flush failed: %s", strerror(errno));
+        download.failed = true;
+    }
+    if (fclose(file) != 0) {
+        snprintf(err, err_cap, "close failed: %s", strerror(errno));
+        download.failed = true;
+    }
+    if (download.failed) {
+        unlink(tmp_path);
+        return false;
+    }
+
+    char got_hex[65];
+    if (!sha256_file_hex(tmp_path, got_hex) ||
+        strcasecmp(got_hex, expected_sha_hex) != 0) {
+        snprintf(err, err_cap, "sha mismatch");
+        unlink(tmp_path);
+        return false;
+    }
+    unlink(final_path);
+    if (rename(tmp_path, final_path) != 0) {
+        snprintf(err, err_cap, "rename: %s", strerror(errno));
+        unlink(tmp_path);
+        return false;
+    }
+    pb_log_info(TAG, "downloaded %lld B -> %s",
+                (long long)download.total, final_path);
+    return true;
+}
+#endif
 
 // ---------------------------------------------------------------------------
 // Prune localized files that are not for `keep_lang`.
@@ -306,10 +463,10 @@ static void prune_stale(const char *keep_lang)
         if (stale) {
             // Sized for SPIFFS_DIR + '/' + a full dirent name so the
             // formatted path can never be truncated (-Wformat-truncation).
-            char path[8 + sizeof(e->d_name)];
+            char path[sizeof(SPIFFS_DIR) + sizeof(e->d_name)];
             snprintf(path, sizeof(path), "%s/%s", SPIFFS_DIR, e->d_name);
             if (unlink(path) == 0) {
-                ESP_LOGI(TAG, "pruned stale asset %s", e->d_name);
+                pb_log_info(TAG, "pruned stale asset %s", e->d_name);
             }
         }
     }
@@ -336,14 +493,14 @@ static bool download_asset(cJSON *asset, const char *kind, const char *base_url,
     char on_disk[65];
     if (sha256_file_hex(final_path, on_disk) &&
         strcasecmp(on_disk, jsha->valuestring) == 0) {
-        ESP_LOGI(TAG, "%s up to date", kind);
+        pb_log_info(TAG, "%s up to date", kind);
         return true;   // already have exactly this content
     }
 
     char url[256];
     snprintf(url, sizeof(url), "%s/%s", base_url, jpath->valuestring);
     if (!download_verify_rename(url, final_path, jsha->valuestring, err, err_cap)) {
-        ESP_LOGW(TAG, "%s download %s: %s", kind, url, err);
+        pb_log_warn(TAG, "%s download %s: %s", kind, url, err);
         return false;
     }
     return true;
@@ -363,7 +520,7 @@ static bool sync_kind_chain(cJSON *assets, const char *kind, const char *base_ur
         cJSON *lo = cJSON_GetObjectItem(assets, chain[i]);
         cJSON *asset = cJSON_IsObject(lo) ? cJSON_GetObjectItem(lo, kind) : NULL;
         if (cJSON_IsObject(asset)) {
-            if (i > 0) ESP_LOGI(TAG, "%s: no '%s', falling back to '%s'",
+            if (i > 0) pb_log_info(TAG, "%s: no '%s', falling back to '%s'",
                                 kind, chain[0], chain[i]);
             return download_asset(asset, kind, base_url, final_path, err, err_cap);
         }
@@ -386,7 +543,7 @@ static void run_once(void)
     // so it reuses its tag's bundle instead of needing a publish per commit.
     // release.sh publishes i18n under the same tag (VERSION).
     char tag[48];
-    strncpy(tag, esp_app_get_description()->version, sizeof(tag) - 1);
+    strncpy(tag, pb_firmware_version(), sizeof(tag) - 1);
     tag[sizeof(tag) - 1] = '\0';
     version_release_tag(tag);   // in-place strip of the git-describe dev suffix
     char base[160];
@@ -403,7 +560,7 @@ static void run_once(void)
     char url[256];
     snprintf(url, sizeof(url), "%s/manifest.json", base);
     if (!http_get_buf(url, manifest, MANIFEST_CAP, err, sizeof(err))) {
-        ESP_LOGW(TAG, "manifest fetch %s: %s", url, err);
+        pb_log_warn(TAG, "manifest fetch %s: %s", url, err);
         free(manifest);
         set_status(false, lang, err);
         return;
@@ -418,7 +575,7 @@ static void run_once(void)
 
     cJSON *assets = cJSON_GetObjectItem(root, "assets");
     if (!cJSON_IsObject(assets)) {
-        ESP_LOGW(TAG, "manifest has no assets object");
+        pb_log_warn(TAG, "manifest has no assets object");
         cJSON_Delete(root);
         set_status(false, lang, "no assets");
         return;
@@ -469,13 +626,13 @@ static void run_once(void)
     bool ok = true;
     if (!sync_kind_chain(assets, "ui", base, ui_path, single_chain, 1,
                          err, sizeof(err))) {
-        ESP_LOGW(TAG, "ui pack sync: %s", err);
+        pb_log_warn(TAG, "ui pack sync: %s", err);
         ok = false;
     }
     char err2[64] = "";
     if (!sync_kind_chain(assets, "mail", base, mail_path, single_chain, 1,
                          err2, sizeof(err2))) {
-        ESP_LOGW(TAG, "mail pack sync: %s", err2);
+        pb_log_warn(TAG, "mail pack sync: %s", err2);
         if (ok) { ok = false; strncpy(err, err2, sizeof(err) - 1); }
     }
     // The announcement has no embedded fallback (silence), so it uses the
@@ -484,13 +641,13 @@ static void run_once(void)
     char err3[64] = "";
     if (!sync_kind_chain(assets, "announcement", base, ann_path, ann_chain, acn,
                          err3, sizeof(err3))) {
-        ESP_LOGW(TAG, "announcement sync: %s", err3);
+        pb_log_warn(TAG, "announcement sync: %s", err3);
         if (ok) { ok = false; strncpy(err, err3, sizeof(err) - 1); }
     }
 
     cJSON_Delete(root);
     set_status(ok, lang, ok ? NULL : err);
-    if (ok) ESP_LOGI(TAG, "i18n assets in sync for '%s'", lang);
+    if (ok) pb_log_info(TAG, "i18n assets in sync for '%s'", lang);
 }
 
 // ---------------------------------------------------------------------------
@@ -501,7 +658,7 @@ void i18n_sync_init(void)
 {
     if (s_lock) return;
     memset(&s_status, 0, sizeof(s_status));
-    s_lock = xSemaphoreCreateMutex();
+    s_lock = pb_mutex_create();
 }
 
 void i18n_sync_run(void)
@@ -514,26 +671,26 @@ void i18n_sync_run(void)
     // therefore missing exactly the keys under test.
     if (config_dev_mode()) {
         set_status(true, config_ui_lang(), NULL);
-        ESP_LOGI(TAG, "dev mode: i18n sync skipped, on-device assets pinned");
+        pb_log_info(TAG, "dev mode: i18n sync skipped, on-device assets pinned");
         return;
     }
-    xSemaphoreTake(s_lock, portMAX_DELAY);
+    pb_mutex_lock(s_lock);
     s_status.running = true;
-    xSemaphoreGive(s_lock);
+    pb_mutex_unlock(s_lock);
 
     run_once();
 
-    xSemaphoreTake(s_lock, portMAX_DELAY);
+    pb_mutex_lock(s_lock);
     s_status.running = false;
-    xSemaphoreGive(s_lock);
+    pb_mutex_unlock(s_lock);
 }
 
 bool i18n_sync_trigger_now(void)
 {
     if (!s_lock) return false;
-    xSemaphoreTake(s_lock, portMAX_DELAY);
+    pb_mutex_lock(s_lock);
     bool running = s_status.running;
-    xSemaphoreGive(s_lock);
+    pb_mutex_unlock(s_lock);
     if (running) return false;
     return scheduler_request_i18n_sync();
 }
@@ -542,9 +699,9 @@ void i18n_sync_snapshot(i18n_sync_status_t *out)
 {
     if (!out) return;
     if (!s_lock) { memset(out, 0, sizeof(*out)); return; }
-    xSemaphoreTake(s_lock, portMAX_DELAY);
+    pb_mutex_lock(s_lock);
     *out = s_status;
-    xSemaphoreGive(s_lock);
+    pb_mutex_unlock(s_lock);
 }
 
 void i18n_sync_ui_path(char *out, size_t cap, const char *lang)

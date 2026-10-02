@@ -2,7 +2,6 @@
 
 #include <stdbool.h>
 #include <stddef.h>
-#include "esp_err.h"
 
 // TR-064 auto-provisioning: the dongle uses the Fritz!Box's SOAP API
 // on port 49000 (plain HTTP, LAN-only) to create a fresh IP-phone
@@ -53,9 +52,9 @@ typedef struct {
 // boxes this fails with out->error_code == 866 and the caller then
 // drives the 2FA handshake and retries with the received token.
 //
-// Returns ESP_OK on success and fills `out`. On failure out->error_code
+// Returns 0 on success and fills `out`. On failure out->error_code
 // and out->error_message carry the Fritz!Box's UPnPError details.
-esp_err_t tr064_provision_sip_client(
+int tr064_provision_sip_client(
     const char *host,
     int         port,
     const char *admin_user,
@@ -70,10 +69,10 @@ esp_err_t tr064_provision_sip_client(
 // setup wizard make the user-name input optional: the user only has
 // to type their password.
 //
-// On success writes the username into `out` and returns ESP_OK.
+// On success writes the username into `out` and returns 0.
 // On failure writes the AVM UPnPError (or one of the TR064_ERR_*
-// sentinels) into `*out_err_code` / `out_err_msg`, returns ESP_FAIL.
-esp_err_t tr064_get_default_username(
+// sentinels) into `*out_err_code` / `out_err_msg`, returns nonzero.
+int tr064_get_default_username(
     const char *host, int port,
     const char *admin_user, const char *admin_pass,
     char *out, size_t cap,
@@ -94,7 +93,7 @@ esp_err_t tr064_get_default_username(
 // admin user requires it (pass NULL otherwise). The same token
 // that was used for SetClient4 is valid for RegisterApp within the
 // same session.
-esp_err_t tr064_register_dongle_app(
+int tr064_register_dongle_app(
     const char *host, int port,
     const char *admin_user, const char *admin_pass,
     const char *token_2fa,
@@ -113,7 +112,7 @@ esp_err_t tr064_register_dongle_app(
 
 // Fetch the signed URL of an XML document listing all call-barring
 // entries. The caller then does a plain HTTP GET on that URL.
-esp_err_t tr064_call_barring_list_url(
+int tr064_call_barring_list_url(
     const char *host, int port,
     const char *user, const char *pass,
     char *out_url, size_t url_cap,
@@ -121,7 +120,7 @@ esp_err_t tr064_call_barring_list_url(
 
 // Remove a specific call-barring entry by its UniqueID (as returned
 // inside a <contact><uniqueid>…</uniqueid></contact> block).
-esp_err_t tr064_call_barring_delete(
+int tr064_call_barring_delete(
     const char *host, int port,
     const char *user, const char *pass,
     const char *uid,
@@ -167,7 +166,7 @@ typedef struct {
 // and writable == false: without the name the online-address-book
 // comparison cannot be made, and offering it anyway could put an
 // allowlist entry into the blocklist phonebook.
-esp_err_t tr064_phonebook_list(
+int tr064_phonebook_list(
     const char *host, int port,
     const char *user, const char *pass,
     tr064_phonebook_t *out, int max, int *out_count,
@@ -181,7 +180,7 @@ esp_err_t tr064_phonebook_list(
 // 2,3,4). A stored ID can therefore come to denote a different phonebook
 // than the one the user chose, so a write verifies the name it expects
 // before trusting the ID.
-esp_err_t tr064_phonebook_name(
+int tr064_phonebook_name(
     const char *host, int port,
     const char *user, const char *pass,
     int phonebook_id, char *out, size_t cap,
@@ -197,7 +196,7 @@ esp_err_t tr064_phonebook_name(
 // Writing to a synced phonebook fails with *out_err_code == 713
 // (SpecifiedArrayIndexInvalid) — the caller should surface that as "this
 // phonebook cannot be written to" rather than as a generic SOAP error.
-esp_err_t tr064_phonebook_add(
+int tr064_phonebook_add(
     const char *host, int port,
     const char *user, const char *pass,
     int phonebook_id,
@@ -213,7 +212,7 @@ esp_err_t tr064_phonebook_add(
 // of subsequent 2FA-protected actions, its current state (typically
 // "waitingforauth") and a comma-separated list of usable methods
 // ("button", "dtmf;<seq>", "googleauth"). See X_AVM-DE_Auth SCPD.
-esp_err_t tr064_auth_start(
+int tr064_auth_start(
     const char *host, int port,
     const char *admin_user, const char *admin_pass,
     char *out_token,   size_t token_cap,
@@ -229,7 +228,7 @@ esp_err_t tr064_auth_start(
 // `token_2fa` must be the token returned by tr064_auth_start — per the
 // TR-064 Authentication spec (§6.4), GetState requires the token in the
 // `<avm:token>` SOAP header to identify the running 2FA context.
-esp_err_t tr064_auth_get_state(
+int tr064_auth_get_state(
     const char *host, int port,
     const char *admin_user, const char *admin_pass,
     const char *token_2fa,

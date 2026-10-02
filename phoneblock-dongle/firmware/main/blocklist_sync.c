@@ -9,18 +9,22 @@
 #include <string.h>
 #include <unistd.h>
 
+#ifdef ESP_PLATFORM
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
-
 #include "esp_log.h"
 #include "esp_timer.h"
 #include "esp_http_client.h"
 #include "esp_crt_bundle.h"
 #include "esp_spiffs.h"
+#else
+#include <sys/stat.h>
+#include <sys/statvfs.h>
+#endif
 
 #include "config.h"
 #include "heap_guard.h"
-#include "http_util.h"
+#include "platform.h"
 #include "strbuf.h"
 #include "scheduler.h"
 
@@ -33,7 +37,7 @@
 // checkout that was built before the setting was raised keeps the old value
 // and would silently ship the bug again. Fail the build instead: delete
 // `sdkconfig` (local settings belong in sdkconfig.defaults.local) and rebuild.
-#if CONFIG_SPIFFS_GC_MAX_RUNS < 64
+#if defined(ESP_PLATFORM) && CONFIG_SPIFFS_GC_MAX_RUNS < 64
 #  error "CONFIG_SPIFFS_GC_MAX_RUNS too low — stale sdkconfig, delete it and rebuild"
 #endif
 
@@ -69,7 +73,7 @@ static const char *TAG = "blsync";
 // Community budget advertised when the filesystem size cannot be read.
 #define DEFAULT_COMMUNITY_BUDGET (256 * 1024)
 
-static SemaphoreHandle_t s_lock    = NULL;
+static pb_mutex_t * s_lock    = NULL;
 static blocklist_sync_status_t s_status;
 
 // ---------------------------------------------------------------------------
@@ -111,11 +115,15 @@ static void refresh_sizes_locked(void)
 // Free bytes on the storage SPIFFS partition, or -1 if it cannot be read.
 static int64_t spiffs_free_bytes(void)
 {
+#ifdef ESP_PLATFORM
     size_t total = 0, used = 0;
-    if (esp_spiffs_info(SPIFFS_LABEL, &total, &used) != ESP_OK) {
-        return -1;
-    }
-    return (int64_t) total - (int64_t) used;
+    if (esp_spiffs_info(SPIFFS_LABEL, &total, &used) != ESP_OK) return -1;
+    return (int64_t)total - (int64_t)used;
+#else
+    struct statvfs info;
+    if (statvfs(PHONEBLOCK_DATA_DIR, &info) != 0) return -1;
+    return (int64_t)info.f_bavail * (int64_t)info.f_frsize;
+#endif
 }
 
 // Storage budget the dongle offers the community file: current free space
@@ -148,12 +156,16 @@ static int64_t community_budget_bytes(void)
 //
 // Logged at INFO on purpose: not reaching the target is not a failure — the
 // write needs free pages, not consolidated blocks, and may well succeed
-// anyway — and ESP_LOGW lands in the "Protokoll" panel of the web UI.
+// anyway — and pb_log_warn lands in the "Protokoll" panel of the web UI.
 static void force_gc(const char *why, size_t want)
 {
-    esp_err_t e = esp_spiffs_gc(SPIFFS_LABEL, want);
-    ESP_LOGI(TAG, "gc for %s (%u B): %s", why, (unsigned) want,
-             esp_err_to_name(e));
+#ifdef ESP_PLATFORM
+    esp_err_t result = esp_spiffs_gc(SPIFFS_LABEL, want);
+    pb_log_info(TAG, "gc for %s (%u B): %d", why, (unsigned)want, result);
+#else
+    (void)why;
+    (void)want;
+#endif
 }
 
 // Downloads `url` into `tmp_path`. The caller has already removed the live
@@ -164,147 +176,99 @@ static void force_gc(const char *why, size_t want)
 // to make available, but only when the failure was an out-of-space one — it
 // stays 0 for every other error, so the caller can tell the one failure a
 // garbage-collection pass can fix from the ones it cannot.
+typedef struct {
+    FILE *file;
+    int64_t bytes;
+    size_t *gc_want;
+    char *error;
+    size_t error_cap;
+    bool failed;
+} blocklist_download_t;
+
+static void write_download_chunk(const void *data, size_t length, void *context)
+{
+    blocklist_download_t *download = context;
+    if (download->failed) return;
+    size_t written = fwrite(data, 1, length, download->file);
+    download->bytes += (int64_t)written;
+    if (written == length) return;
+
+    int error = errno;
+    snprintf(download->error, download->error_cap,
+             "fwrite short at %lld bytes: %s",
+             (long long)download->bytes, strerror(error));
+#ifdef ESP_PLATFORM
+    if (error == ENOSPC)
+        *download->gc_want = (size_t)download->bytes + length
+                           + BLOCKLIST_FS_MARGIN;
+#endif
+    download->failed = true;
+}
+
 static bool download_to_tmp(const char *url, const char *tmp_path,
                             size_t *gc_want, char *err, size_t err_cap)
 {
     *gc_want = 0;
-
+#ifndef ESP_PLATFORM
+    if (mkdir(PHONEBLOCK_DATA_DIR, 0750) != 0 && errno != EEXIST) {
+        snprintf(err, err_cap, "mkdir %s: %s", PHONEBLOCK_DATA_DIR,
+                 strerror(errno));
+        return false;
+    }
+#endif
     FILE *out = fopen(tmp_path, "wb");
-    if (out == NULL) {
+    if (!out) {
         snprintf(err, err_cap, "fopen %s: %s", tmp_path, strerror(errno));
         return false;
     }
 
-    // Batch the HTTP chunks into SPIFFS_IO_BUF-sized writes. Without the
-    // buffer stdio still works, just with one SPIFFS write per 1 KB chunk,
-    // so a failed allocation is not worth aborting the download over. The
-    // buffer must outlive every write, i.e. be freed only after fclose().
-    char *iobuf = malloc(SPIFFS_IO_BUF);
-    if (iobuf != NULL) {
-        setvbuf(out, iobuf, _IOFBF, SPIFFS_IO_BUF);
-    }
+    char *io_buffer = malloc(SPIFFS_IO_BUF);
+    if (io_buffer) setvbuf(out, io_buffer, _IOFBF, SPIFFS_IO_BUF);
 
-    esp_http_client_config_t cfg = {
-        .url               = url,
-        .method            = HTTP_METHOD_GET,
-        .crt_bundle_attach = esp_crt_bundle_attach,
-        .timeout_ms        = 30000,
-        .tls_version       = ESP_HTTP_CLIENT_TLS_VER_TLS_1_2,
-    };
-    esp_http_client_handle_t client = esp_http_client_init(&cfg);
-    bool    opened         = false;
-    int64_t content_length = 0;
-    int64_t total          = 0;
-    if (client == NULL) {
-        snprintf(err, err_cap, "http_client_init failed");
-        goto fail;
-    }
-
-    char auth_header[128];
-    snprintf(auth_header, sizeof(auth_header), "Bearer %s",
+    char authorization[128];
+    snprintf(authorization, sizeof(authorization), "Bearer %s",
              config_phoneblock_token());
-
-    http_util_set_user_agent(client);
-    esp_http_client_set_header(client, "Authorization", auth_header);
-    esp_http_client_set_header(client, "Accept", "application/octet-stream");
-
-    esp_err_t err_open = esp_http_client_open(client, 0);
-    if (err_open != ESP_OK) {
-        snprintf(err, err_cap, "open: %s", esp_err_to_name(err_open));
-        goto fail;
-    }
-    opened = true;
-
-    content_length = esp_http_client_fetch_headers(client);
-    int status = esp_http_client_get_status_code(client);
-    if (status != 200) {
+    const pb_http_header_t headers[] = {
+        { "Authorization", authorization },
+        { "Accept", "application/octet-stream" },
+    };
+    blocklist_download_t download = {
+        .file = out,
+        .gc_want = gc_want,
+        .error = err,
+        .error_cap = err_cap,
+    };
+    int status = 0;
+    int result = pb_http_request("GET", url, headers,
+                                 sizeof(headers) / sizeof(headers[0]),
+                                 NULL, 0, 30000, NULL, 0, NULL, &status,
+                                 write_download_chunk, &download, NULL);
+    bool ok = result == PB_HTTP_OK && status == 200 && !download.failed;
+    if (result != PB_HTTP_OK)
+        snprintf(err, err_cap, "HTTP transport failed (%d)", result);
+    else if (status != 200)
         snprintf(err, err_cap, "HTTP %d", status);
-        goto fail;
+
+    if (fflush(out) != 0) {
+        snprintf(err, err_cap, "flush %s: %s", tmp_path, strerror(errno));
+#ifdef ESP_PLATFORM
+        if (errno == ENOSPC)
+            *gc_want = (size_t)download.bytes + BLOCKLIST_FS_MARGIN;
+#endif
+        ok = false;
     }
-
-    // Storage pre-check: refuse a body that won't fit before any bytes land,
-    // turning a mid-write ENOSPC (which strands a half-written .tmp) into a
-    // clean, actionable error. The old live file was already removed by the
-    // caller, so the free count is exactly what this download has to work with.
-    // No gc_want here: this is a real shortage of bytes, which no amount of
-    // garbage collection can conjure up.
-    if (content_length > 0) {
-        int64_t freeb = spiffs_free_bytes();
-        if (freeb >= 0 && content_length + BLOCKLIST_FS_MARGIN > freeb) {
-            snprintf(err, err_cap, "too large: %lld B needs > %lld B free",
-                     (long long) content_length, (long long) freeb);
-            unlink(tmp_path);
-            goto fail;
-        }
-        // The bytes exist — make sure they are also writable, before the
-        // first one arrives. See force_gc().
-        force_gc(tmp_path, (size_t) content_length + BLOCKLIST_FS_MARGIN);
-    }
-
-    char buf[DOWNLOAD_CHUNK];
-    for (;;) {
-        int n = esp_http_client_read(client, buf, sizeof(buf));
-        if (n < 0) {
-            snprintf(err, err_cap, "read failed after %lld bytes",
-                     (long long)total);
-            goto fail;
-        }
-        if (n == 0) {
-            break;
-        }
-        size_t w = fwrite(buf, 1, (size_t)n, out);
-        if (w != (size_t)n) {
-            // errno tells apart the two ways this happens: ENOSPC is SPIFFS
-            // refusing a page (worth a retry after a GC pass), anything else
-            // is a flash-level failure that a retry would only repeat.
-            snprintf(err, err_cap, "fwrite short at %lld bytes: %s",
-                     (long long)total, strerror(errno));
-            if (errno == ENOSPC) {
-                *gc_want = (size_t)(content_length > 0 ? content_length : total)
-                           + BLOCKLIST_FS_MARGIN;
-            }
-            goto fail;
-        }
-        total += n;
-    }
-
-    esp_http_client_close(client);
-    esp_http_client_cleanup(client);
-    client = NULL;
-    opened = false;
-
-    // With a stdio buffer in play this is where an out-of-space failure most
-    // likely surfaces: up to SPIFFS_IO_BUF bytes are still unwritten and go
-    // to flash here.
-    if (fflush(out) != 0 || fclose(out) != 0) {
+    if (fclose(out) != 0) {
         snprintf(err, err_cap, "close %s: %s", tmp_path, strerror(errno));
-        if (errno == ENOSPC) {
-            *gc_want = (size_t)(content_length > 0 ? content_length : total)
-                       + BLOCKLIST_FS_MARGIN;
-        }
-        // fclose() released the stream even when it failed; do not touch it
-        // again in the cleanup below.
-        out = NULL;
-        goto fail;
+        ok = false;
     }
-    out = NULL;
-    free(iobuf);
-
-    if (content_length > 0 && total != content_length) {
-        snprintf(err, err_cap, "short body: got %lld of %lld",
-                 (long long)total, (long long)content_length);
+    free(io_buffer);
+    if (!ok) {
+        unlink(tmp_path);
         return false;
     }
-
-    ESP_LOGI(TAG, "downloaded %lld bytes → %s", (long long)total, tmp_path);
+    pb_log_info(TAG, "downloaded %lld bytes → %s",
+                (long long)download.bytes, tmp_path);
     return true;
-
-fail:
-    if (opened) esp_http_client_close(client);
-    if (client) esp_http_client_cleanup(client);
-    if (out)    fclose(out);
-    free(iobuf);
-    return false;
 }
 
 // Validates that the file at `tmp_path` parses as a binary blocklist.
@@ -378,7 +342,7 @@ static bool sync_one(const char *type, const char *path, const char *tmp_path,
             unlink(tmp_path);
             return false;
         }
-        ESP_LOGI(TAG, "%s list downloaded on retry after gc", type);
+        pb_log_info(TAG, "%s list downloaded on retry after gc", type);
     }
 
     if (!tmp_parses_ok(tmp_path)) {
@@ -402,14 +366,14 @@ static bool sync_one(const char *type, const char *path, const char *tmp_path,
 static void run_once(void)
 {
     if (config_phoneblock_token()[0] == '\0') {
-        ESP_LOGI(TAG, "skipped — no PhoneBlock token");
-        xSemaphoreTake(s_lock, portMAX_DELAY);
+        pb_log_info(TAG, "skipped — no PhoneBlock token");
+        pb_mutex_lock(s_lock);
         s_status.ever_ran    = true;
         s_status.last_ok     = false;
-        s_status.last_at_us  = esp_timer_get_time();
+        s_status.last_at_us  = pb_monotonic_us();
         set_error("no PhoneBlock token");
         refresh_sizes_locked();
-        xSemaphoreGive(s_lock);
+        pb_mutex_unlock(s_lock);
         return;
     }
 
@@ -418,7 +382,7 @@ static void run_once(void)
                                  BLOCKLIST_COMMUNITY_PATH, COMMUNITY_TMP,
                                  err, sizeof(err));
     if (!community_ok) {
-        ESP_LOGW(TAG, "community sync failed: %s", err);
+        pb_log_warn(TAG, "community sync failed: %s", err);
     }
 
     char err_personal[64] = "";
@@ -426,13 +390,13 @@ static void run_once(void)
                                 BLOCKLIST_PERSONAL_PATH, PERSONAL_TMP,
                                 err_personal, sizeof(err_personal));
     if (!personal_ok) {
-        ESP_LOGW(TAG, "personal sync failed: %s", err_personal);
+        pb_log_warn(TAG, "personal sync failed: %s", err_personal);
     }
 
-    xSemaphoreTake(s_lock, portMAX_DELAY);
+    pb_mutex_lock(s_lock);
     s_status.ever_ran   = true;
     s_status.last_ok    = community_ok && personal_ok;
-    s_status.last_at_us = esp_timer_get_time();
+    s_status.last_at_us = pb_monotonic_us();
     s_status.last_error[0] = '\0';
     if (!community_ok) {
         set_error(err);
@@ -440,10 +404,10 @@ static void run_once(void)
         set_error(err_personal);
     }
     refresh_sizes_locked();
-    xSemaphoreGive(s_lock);
+    pb_mutex_unlock(s_lock);
 
     if (community_ok && personal_ok) {
-        ESP_LOGI(TAG, "sync done: community=%d entries, personal=%d entries",
+        pb_log_info(TAG, "sync done: community=%d entries, personal=%d entries",
                  s_status.community_size, s_status.personal_size);
     }
 }
@@ -458,11 +422,11 @@ void blocklist_sync_init(void)
         return;
     }
     memset(&s_status, 0, sizeof(s_status));
-    s_lock = xSemaphoreCreateMutex();
+    s_lock = pb_mutex_create();
 
-    xSemaphoreTake(s_lock, portMAX_DELAY);
+    pb_mutex_lock(s_lock);
     refresh_sizes_locked();
-    xSemaphoreGive(s_lock);
+    pb_mutex_unlock(s_lock);
 }
 
 void blocklist_sync_run(void)
@@ -478,19 +442,19 @@ void blocklist_sync_run(void)
         // Feature switched off in the web UI: don't refresh the on-flash
         // files. The existing files stay put but are never consulted (the
         // call-time path skips them too), so they simply age out.
-        ESP_LOGI(TAG, "skipped — local blocklist cache disabled");
+        pb_log_info(TAG, "skipped — local blocklist cache disabled");
         return;
     }
 
-    xSemaphoreTake(s_lock, portMAX_DELAY);
+    pb_mutex_lock(s_lock);
     s_status.running = true;
-    xSemaphoreGive(s_lock);
+    pb_mutex_unlock(s_lock);
 
     run_once();
 
-    xSemaphoreTake(s_lock, portMAX_DELAY);
+    pb_mutex_lock(s_lock);
     s_status.running = false;
-    xSemaphoreGive(s_lock);
+    pb_mutex_unlock(s_lock);
 }
 
 bool blocklist_sync_trigger_now(void)
@@ -498,9 +462,9 @@ bool blocklist_sync_trigger_now(void)
     if (s_lock == NULL || !config_blocklist_enabled()) {
         return false;
     }
-    xSemaphoreTake(s_lock, portMAX_DELAY);
+    pb_mutex_lock(s_lock);
     bool running = s_status.running;
-    xSemaphoreGive(s_lock);
+    pb_mutex_unlock(s_lock);
     if (running) {
         return false;
     }
@@ -558,7 +522,7 @@ void blocklist_sync_snapshot(blocklist_sync_status_t *out)
         memset(out, 0, sizeof(*out));
         return;
     }
-    xSemaphoreTake(s_lock, portMAX_DELAY);
+    pb_mutex_lock(s_lock);
     *out = s_status;
-    xSemaphoreGive(s_lock);
+    pb_mutex_unlock(s_lock);
 }

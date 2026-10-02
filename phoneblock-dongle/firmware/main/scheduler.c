@@ -4,12 +4,12 @@
 #include <stdint.h>
 #include <time.h>
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-
-#include "esp_log.h"
-#include "esp_random.h"
-#include "esp_timer.h"
+#ifdef ESP_PLATFORM
+#include "sdkconfig.h"
+#endif
+#ifndef CONFIG_MAIL_DAILY_HOUR
+#define CONFIG_MAIL_DAILY_HOUR 23
+#endif
 
 #include "blocklist_sync.h"
 #include "firmware_update.h"
@@ -18,7 +18,7 @@
 #include "sched_time.h"
 #include "selftest.h"
 #include "sync.h"
-#include "ticks_util.h"
+#include "platform.h"
 #include "time_sync.h"
 
 // Must be last: bans unsafe string APIs for the rest of this file.
@@ -51,7 +51,7 @@ static const char *TAG = "scheduler";
 // backstop for the case the notification is somehow missed).
 #define DAILY_CLOCK_WAIT_S  (60 * 60)
 
-static TaskHandle_t s_task = NULL;
+static pb_event_t *s_events;
 
 // INTERVAL: fire every interval_s (±jitter) off the monotonic clock — the
 // original behaviour, robust without a wall clock and spread across a
@@ -135,7 +135,7 @@ static sched_job_t s_jobs[] = {
 
 static int64_t next_due_interval(const sched_job_t *j, int64_t now)
 {
-    uint32_t jitter  = esp_random() % (2u * j->jitter_s);
+    uint32_t jitter  = pb_random_u32() % (2u * j->jitter_s);
     uint32_t delay_s = j->interval_s - j->jitter_s + jitter;
     return now + (int64_t)delay_s * 1000000;
 }
@@ -166,57 +166,52 @@ static void scheduler_task(void *arg)
     // may still be in the middle of setup, and the boot path already ran
     // the synchronous self-test / validated the running image. A job with
     // first_delay_s set instead fires soon after boot (see the mail job).
-    int64_t now = esp_timer_get_time();
+    int64_t now = (int64_t)pb_monotonic_us();
     for (size_t i = 0; i < JOB_COUNT; i++)
         s_jobs[i].next_due_us = s_jobs[i].first_delay_s
             ? now + (int64_t)s_jobs[i].first_delay_s * 1000000
             : next_due(&s_jobs[i], now);
 
     while (1) {
-        now = esp_timer_get_time();
+        now = (int64_t)pb_monotonic_us();
         int64_t earliest = s_jobs[0].next_due_us;
         for (size_t i = 1; i < JOB_COUNT; i++)
             if (s_jobs[i].next_due_us < earliest) earliest = s_jobs[i].next_due_us;
 
         // Sleep until the nearest due time, or until a manual trigger
-        // wakes us. Convert the wait to whole seconds first:
-        // seconds_to_ticks() can't overflow for any interval that fits a
-        // TickType_t, while a raw millisecond conversion of a ~24 h delay
-        // would (see #348 / ticks_util.h). Sub-second precision is
-        // irrelevant for daily jobs; round a positive remainder up to 1 s
-        // so the loop never busy-spins.
+        // wakes us. Sub-second precision is irrelevant for daily jobs;
+        // round a positive remainder up to 1 s so the loop never busy-spins.
         int64_t  wait_us = earliest - now;
         uint32_t wait_s  = wait_us <= 0 ? 0 : (uint32_t)(wait_us / 1000000);
         if (wait_us > 0 && wait_s == 0) wait_s = 1;
 
-        uint32_t notify = 0;
-        xTaskNotifyWait(0, UINT32_MAX, &notify,
-                        wait_s ? seconds_to_ticks(wait_s) : 0);
+        uint32_t wait_ms = wait_s * 1000u;
+        uint32_t notify = pb_event_wait(s_events, wait_ms);
 
-        now = esp_timer_get_time();
+        now = (int64_t)pb_monotonic_us();
 
         // On-demand sync from the web UI: run it regardless of the
         // auto-sync toggle (manual intent), then reset its scheduled slot
         // so the daily run doesn't fire again right behind it.
         if (notify & NOTIFY_SYNC) {
-            ESP_LOGI(TAG, "manual sync trigger");
+            pb_log_info(TAG, "manual sync trigger");
             sync_run(true);
             for (size_t i = 0; i < JOB_COUNT; i++)
                 if (s_jobs[i].run == run_sync)
                     s_jobs[i].next_due_us = next_due(&s_jobs[i],
-                                                     esp_timer_get_time());
+                                                     (int64_t)pb_monotonic_us());
         }
 
         // On-demand blocklist download from the web UI / token-set
         // handler, then reset its scheduled slot so the daily run doesn't
         // fire again right behind it.
         if (notify & NOTIFY_BLOCKLIST) {
-            ESP_LOGI(TAG, "manual blocklist trigger");
+            pb_log_info(TAG, "manual blocklist trigger");
             blocklist_sync_run();
             for (size_t i = 0; i < JOB_COUNT; i++)
                 if (s_jobs[i].run == run_blocklist)
                     s_jobs[i].next_due_us = next_due(&s_jobs[i],
-                                                     esp_timer_get_time());
+                                                     (int64_t)pb_monotonic_us());
         }
 
         // On-demand status-mail test from the web UI. Runs the blocking
@@ -225,7 +220,7 @@ static void scheduler_task(void *arg)
         // web.c). Fire-and-forget: mail_send_test() logs the outcome at
         // INFO/WARN, which the web UI's log panel surfaces.
         if (notify & NOTIFY_MAIL_TEST) {
-            ESP_LOGI(TAG, "manual mail-test trigger");
+            pb_log_info(TAG, "manual mail-test trigger");
             mail_send_test();
         }
 
@@ -233,33 +228,34 @@ static void scheduler_task(void *arg)
         // then reset its scheduled slot so the daily run doesn't fire again
         // right behind it.
         if (notify & NOTIFY_I18N) {
-            ESP_LOGI(TAG, "manual i18n trigger");
+            pb_log_info(TAG, "manual i18n trigger");
             i18n_sync_run();
             for (size_t i = 0; i < JOB_COUNT; i++)
                 if (s_jobs[i].run == run_i18n)
                     s_jobs[i].next_due_us = next_due(&s_jobs[i],
-                                                     esp_timer_get_time());
+                                                     (int64_t)pb_monotonic_us());
         }
 
         // The wall clock just became valid (or stepped to a new time).
         // Daily jobs parked on the clock-wait retry — or computed against
         // a now-stale time — must recompute against real local time.
         if (notify & NOTIFY_TIME) {
-            ESP_LOGI(TAG, "wall clock synced — rescheduling daily jobs");
+            pb_log_info(TAG, "wall clock synced — rescheduling daily jobs");
             for (size_t i = 0; i < JOB_COUNT; i++)
                 if (s_jobs[i].kind == SCHED_DAILY)
                     s_jobs[i].next_due_us =
-                        next_due_daily(&s_jobs[i], esp_timer_get_time());
+                        next_due_daily(&s_jobs[i],
+                                       (int64_t)pb_monotonic_us());
         }
 
         // Fire every job whose scheduled time has come, then reschedule
-        // it. esp_timer_get_time() is re-read after each run so a job's
+        // it. The monotonic clock is re-read after each run so a job's
         // own duration counts against its next interval.
         for (size_t i = 0; i < JOB_COUNT; i++) {
             if (now >= s_jobs[i].next_due_us) {
                 s_jobs[i].run();
                 s_jobs[i].next_due_us = next_due(&s_jobs[i],
-                                                 esp_timer_get_time());
+                                                 (int64_t)pb_monotonic_us());
             }
         }
     }
@@ -267,29 +263,29 @@ static void scheduler_task(void *arg)
 
 bool scheduler_request_sync(void)
 {
-    if (!s_task) return false;
-    xTaskNotify(s_task, NOTIFY_SYNC, eSetBits);
+    if (!s_events) return false;
+    pb_event_set(s_events, NOTIFY_SYNC);
     return true;
 }
 
 bool scheduler_request_blocklist_sync(void)
 {
-    if (!s_task) return false;
-    xTaskNotify(s_task, NOTIFY_BLOCKLIST, eSetBits);
+    if (!s_events) return false;
+    pb_event_set(s_events, NOTIFY_BLOCKLIST);
     return true;
 }
 
 bool scheduler_request_mail_test(void)
 {
-    if (!s_task) return false;
-    xTaskNotify(s_task, NOTIFY_MAIL_TEST, eSetBits);
+    if (!s_events) return false;
+    pb_event_set(s_events, NOTIFY_MAIL_TEST);
     return true;
 }
 
 bool scheduler_request_i18n_sync(void)
 {
-    if (!s_task) return false;
-    xTaskNotify(s_task, NOTIFY_I18N, eSetBits);
+    if (!s_events) return false;
+    pb_event_set(s_events, NOTIFY_I18N);
     return true;
 }
 
@@ -298,12 +294,12 @@ void scheduler_notify_time_synced(void)
     // No-op before the task exists: scheduler_task() computes daily due
     // times from the live clock when it starts, so an early clock-set
     // needs no notification.
-    if (s_task) xTaskNotify(s_task, NOTIFY_TIME, eSetBits);
+    if (s_events) pb_event_set(s_events, NOTIFY_TIME);
 }
 
 void scheduler_start(bool i18n_refresh_soon)
 {
-    if (s_task) return;
+    if (s_events) return;
     // Create the sync / blocklist status mutexes before the task (or any
     // web-UI snapshot) can touch them.
     sync_init();
@@ -323,5 +319,15 @@ void scheduler_start(bool i18n_refresh_soon)
     // mbedtls_ssl_handshake → X.509 verify), the same way the SIP TLS path
     // needed 12 KB back in firmware 1.0.10. The OTA install, TLS self-test
     // and TR-064 sync fit comfortably below this.
-    xTaskCreate(scheduler_task, "scheduler", 16384, NULL, 3, &s_task);
+    s_events = pb_event_create();
+    if (!s_events) {
+        pb_log_err(TAG, "event creation failed");
+        return;
+    }
+    if (!pb_task_create(scheduler_task, NULL, "scheduler", 16384,
+                        PB_PRIO_BACKGROUND)) {
+        pb_event_destroy(s_events);
+        s_events = NULL;
+        pb_log_err(TAG, "task creation failed");
+    }
 }

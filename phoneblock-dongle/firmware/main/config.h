@@ -1,8 +1,8 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stddef.h>
 
-#include "esp_err.h"
 
 // Runtime configuration with a two-stage source of truth:
 //
@@ -321,7 +321,7 @@ const char *config_last_failed_ota(void);
 // Persist or clear the "last failed OTA" marker. Pass NULL or "" to
 // clear. Writes through to NVS immediately; the in-RAM cache is
 // updated on success.
-esp_err_t   config_set_last_failed_ota(const char *version);
+int         config_set_last_failed_ota(const char *version);
 
 // Update the NVS-backed settings atomically. Any field passed as NULL
 // or 0 is left untouched. The in-RAM cache is refreshed after NVS
@@ -454,14 +454,14 @@ typedef struct {
     const char *dial_prefix;
 } config_update_t;
 
-esp_err_t config_update(const config_update_t *u);
+int config_update(const config_update_t *u);
 
 // Erase the entire NVS namespace used by the dongle. Leaves other
 // namespaces (WiFi credentials in the `nvs.net80211` namespace, etc.)
 // intact. Caller should call esp_restart() afterwards, as the RAM
 // cache is *not* refreshed to mirror the erase — a fresh boot
 // guarantees a clean state.
-esp_err_t config_erase(void);
+int config_erase(void);
 
 // Fixed SIP-client username used when provisioning the dongle on a
 // Fritz!Box. Same value on every device and every boot: the box's

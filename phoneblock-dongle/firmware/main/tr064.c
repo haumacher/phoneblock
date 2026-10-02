@@ -4,17 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "esp_log.h"
-#include "esp_http_client.h"
-#include "esp_random.h"
-#include "esp_mac.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "esp_task_wdt.h"
-#include "mbedtls/md5.h"
-
 #include "config.h"
-#include "http_util.h"
+#include "platform.h"
 #include "strbuf.h"
 #include "tr064_parse.h"
 
@@ -50,7 +41,7 @@ static const char *TAG = "tr064";
 static void md5_hex(const char *input, char out_hex[33])
 {
     unsigned char digest[16];
-    mbedtls_md5((const unsigned char *)input, strlen(input), digest);
+    pb_md5(input, strlen(input), digest);
     static const char hex[] = "0123456789abcdef";
     for (int i = 0; i < 16; i++) {
         out_hex[i * 2]     = hex[digest[i] >> 4];
@@ -84,89 +75,37 @@ static void compute_auth_response(const char *user, const char *realm,
 // HTTP POST of a SOAP envelope; accumulates response body in a heap buffer.
 // ---------------------------------------------------------------------------
 
-typedef struct {
-    char *buf;
-    int   len;
-    int   cap;
-} resp_buf_t;
-
-static esp_err_t http_evt_cb(esp_http_client_event_t *evt)
+static int post_soap(const char *url, const char *soap_action,
+                     const char *body, char *resp, int resp_cap,
+                     int *out_status)
 {
-    resp_buf_t *r = evt->user_data;
-    // No is_chunked_response() gate: esp_http_client de-chunks the body before
-    // ON_DATA fires, so gating on it drops the whole SOAP response whenever the
-    // Fritz!Box answers chunked — which surfaces as an unexplained "parse
-    // failed" rather than as a transport error. Same bug sync.c documents.
-    if (evt->event_id == HTTP_EVENT_ON_DATA) {
-        int remaining = r->cap - r->len - 1;
-        int copy = evt->data_len < remaining ? evt->data_len : remaining;
-        if (copy > 0) {
-            memcpy(r->buf + r->len, evt->data, copy);
-            r->len += copy;
-            r->buf[r->len] = '\0';
-        }
-    }
-    return ESP_OK;
-}
+    const pb_http_header_t headers[] = {
+        { "Content-Type", "text/xml; charset=\"utf-8\"" },
+        { "SoapAction", soap_action },
+    };
+    size_t response_len = 0;
+    int status = 0;
+    if (pb_watchdog_is_subscribed()) pb_watchdog_reset();
 
-static esp_err_t post_soap(const char *url, const char *soap_action,
-                           const char *body, char *resp, int resp_cap,
-                           int *out_status)
-{
-    esp_err_t err    = ESP_FAIL;
-    int       status = 0;
-
-    // Provisioning issues one SOAP call per existing telephony client
-    // (find_client_slot loops X_AVM-DE_GetClient3), all synchronously on
-    // the httpd worker. A slow Fritz!Box can stretch that chain past the
-    // task-watchdog window, and the httpd WDT feeder (web.c) can't run
-    // while the worker is busy here — so the worker would trip the
-    // watchdog. Feed it once per SOAP call: each post_soap is bounded by
-    // the 5 s HTTP timeout, so a genuinely wedged single call is still
-    // caught, while a legitimately long multi-call sequence completes.
-    // No-op (guarded) on tasks that aren't watchdog-subscribed.
-    if (esp_task_wdt_status(NULL) == ESP_OK) esp_task_wdt_reset();
-
-    // ESP_ERR_HTTP_CONNECT here often means lwip's socket pool is
-    // momentarily exhausted (browser polling /api/status in parallel
-    // hogs several slots). Give it up to three attempts with a short
-    // back-off; a real network failure still surfaces after that.
+    int result = PB_HTTP_ERROR;
     for (int attempt = 0; attempt < 3; attempt++) {
-        resp_buf_t rb = { .buf = resp, .len = 0, .cap = resp_cap };
-        resp[0] = '\0';
-
-        esp_http_client_config_t cfg = {
-            .url            = url,
-            .method         = HTTP_METHOD_POST,
-            .event_handler  = http_evt_cb,
-            .user_data      = &rb,
-            .timeout_ms     = 5000,
-        };
-        esp_http_client_handle_t c = esp_http_client_init(&cfg);
-        if (!c) return ESP_FAIL;
-
-        http_util_set_user_agent(c);
-        esp_http_client_set_header(c, "Content-Type",
-                                   "text/xml; charset=\"utf-8\"");
-        esp_http_client_set_header(c, "SoapAction", soap_action);
-        esp_http_client_set_post_field(c, body, (int)strlen(body));
-
-        err    = esp_http_client_perform(c);
-        status = esp_http_client_get_status_code(c);
-        esp_http_client_cleanup(c);
-
-        if (err == ESP_OK) break;
-        if (err != ESP_ERR_HTTP_CONNECT || attempt == 2) {
-            ESP_LOGE(TAG, "POST %s: %s", url, esp_err_to_name(err));
+        result = pb_http_request("POST", url, headers,
+                                 sizeof(headers) / sizeof(headers[0]),
+                                 body, strlen(body), 5000,
+                                 resp, (size_t)resp_cap, &response_len, &status,
+                                 NULL, NULL, NULL);
+        if (result == PB_HTTP_OK) break;
+        if (result != PB_HTTP_CONNECT_ERROR || attempt == 2) {
+            pb_log_err(TAG, "POST %s failed (result=%d)", url, result);
             break;
         }
-        ESP_LOGW(TAG, "POST %s: %s, retry %d/2", url,
-                 esp_err_to_name(err), attempt + 1);
-        vTaskDelay(pdMS_TO_TICKS(250));
+        pb_log_warn(TAG, "POST %s connection failed, retry %d/2",
+                    url, attempt + 1);
+        pb_task_sleep_ms(250);
     }
 
     if (out_status) *out_status = status;
-    return err;
+    return result == PB_HTTP_OK ? PB_OK : PB_FAIL;
 }
 
 // ---------------------------------------------------------------------------
@@ -239,7 +178,7 @@ static void build_client_auth(char *out, size_t cap,
 //   2) Compute response, POST ClientAuth → expect 200 + action result.
 // ---------------------------------------------------------------------------
 
-static esp_err_t call_action(const char *url,
+static int call_action(const char *url,
                              const char *service,
                              const char *admin_user, const char *admin_pass,
                              const char *action, const char *args_xml,
@@ -249,7 +188,7 @@ static esp_err_t call_action(const char *url,
                              char *out_err_msg, size_t err_msg_cap)
 {
     char *env = malloc(SOAP_ENVELOPE_CAP);
-    if (!env) return ESP_ERR_NO_MEM;
+    if (!env) return PB_ERR_NO_MEM;
 
     char soap_action[160];
     snprintf(soap_action, sizeof(soap_action), "%s#%s", service, action);
@@ -269,13 +208,13 @@ static esp_err_t call_action(const char *url,
     build_init_challenge(env, SOAP_ENVELOPE_CAP, service, action,
                          admin_user, args_xml, token_2fa);
     int status = 0;
-    esp_err_t err = post_soap(url, soap_action, env, resp, resp_cap, &status);
-    if (err != ESP_OK) {
-        SET_SENTINEL(TR064_ERR_TRANSPORT, esp_err_to_name(err));
+    int err = post_soap(url, soap_action, env, resp, resp_cap, &status);
+    if (err != PB_OK) {
+        SET_SENTINEL(TR064_ERR_TRANSPORT, "HTTP request failed");
         free(env);
         return err;
     }
-    ESP_LOGI(TAG, "InitChallenge %s → HTTP %d, %d bytes", action, status, (int)strlen(resp));
+    pb_log_info(TAG, "InitChallenge %s → HTTP %d, %d bytes", action, status, (int)strlen(resp));
 
     char nonce[64] = "";
     char realm[64] = "";
@@ -288,18 +227,18 @@ static esp_err_t call_action(const char *url,
         char resp_tag[64];
         snprintf(resp_tag, sizeof(resp_tag), "%sResponse", action);
         if (status == 200 && strstr(resp, resp_tag)) {
-            ESP_LOGI(TAG, "%s: answered without challenge", action);
+            pb_log_info(TAG, "%s: answered without challenge", action);
             free(env);
-            return ESP_OK;
+            return PB_OK;
         }
-        ESP_LOGE(TAG, "%s: no Nonce/Realm in InitChallenge response (HTTP %d):\n%s",
+        pb_log_err(TAG, "%s: no Nonce/Realm in InitChallenge response (HTTP %d):\n%s",
                  action, status, resp);
         SET_SENTINEL(TR064_ERR_PARSE,
                      "InitChallenge response without Nonce/Realm");
         free(env);
-        return ESP_FAIL;
+        return PB_FAIL;
     }
-    ESP_LOGI(TAG, "%s challenge: realm=\"%s\" nonce=\"%s\"", action, realm, nonce);
+    pb_log_info(TAG, "%s challenge: realm=\"%s\" nonce=\"%s\"", action, realm, nonce);
 
     // --- Step 2: ClientAuth with computed response ---
     char auth_hex[33];
@@ -310,11 +249,11 @@ static esp_err_t call_action(const char *url,
     resp[0] = '\0';
     err = post_soap(url, soap_action, env, resp, resp_cap, &status);
     free(env);
-    if (err != ESP_OK) {
-        SET_SENTINEL(TR064_ERR_TRANSPORT, esp_err_to_name(err));
+    if (err != PB_OK) {
+        SET_SENTINEL(TR064_ERR_TRANSPORT, "HTTP request failed");
         return err;
     }
-    ESP_LOGI(TAG, "ClientAuth %s → HTTP %d, %d bytes", action, status, (int)strlen(resp));
+    pb_log_info(TAG, "ClientAuth %s → HTTP %d, %d bytes", action, status, (int)strlen(resp));
 
     // AVM's digest scheme returns HTTP 200 *even on auth failure* — it
     // embeds <Status>Unauthenticated</Status> plus a <s:Fault> with
@@ -333,11 +272,11 @@ static esp_err_t call_action(const char *url,
     bool auth_rejected = strstr(resp, "<Status>Unauthenticated</Status>") != NULL;
 
     if (status == 200 && !has_fault && !auth_rejected) {
-        return ESP_OK;
+        return PB_OK;
     }
 
     int code = atoi(err_code_s);
-    ESP_LOGE(TAG, "%s rejected: HTTP %d, auth=%s fault='%s' code=%d desc='%s'\n%s",
+    pb_log_err(TAG, "%s rejected: HTTP %d, auth=%s fault='%s' code=%d desc='%s'\n%s",
              action, status, auth_rejected ? "Unauthenticated" : "(ok)",
              fault, code, err_desc, resp);
 
@@ -366,7 +305,7 @@ static esp_err_t call_action(const char *url,
                  fault[0] ? " " : "", fault);
         SET_SENTINEL(TR064_ERR_HTTP, detail);
     }
-    return ESP_FAIL;
+    return PB_FAIL;
 
     #undef SET_SENTINEL
 }
@@ -375,32 +314,32 @@ static esp_err_t call_action(const char *url,
 // Higher-level helpers
 // ---------------------------------------------------------------------------
 
-static esp_err_t get_num_clients(const char *url,
+static int get_num_clients(const char *url,
                                  const char *admin_user, const char *admin_pass,
                                  int *out_count,
                                  int *out_err_code,
                                  char *out_err_msg, size_t err_msg_cap)
 {
     char *resp = malloc(SOAP_RESPONSE_CAP);
-    if (!resp) return ESP_ERR_NO_MEM;
-    esp_err_t err = call_action(url, X_VOIP_SERVICE,
+    if (!resp) return PB_ERR_NO_MEM;
+    int err = call_action(url, X_VOIP_SERVICE,
                                 admin_user, admin_pass,
                                 "X_AVM-DE_GetNumberOfClients", NULL,
                                 NULL,
                                 resp, SOAP_RESPONSE_CAP,
                                 out_err_code, out_err_msg, err_msg_cap);
-    if (err != ESP_OK) { free(resp); return err; }
+    if (err != PB_OK) { free(resp); return err; }
 
     char count_str[16] = "";
     if (xml_find_text(resp, "NewX_AVM-DE_NumberOfClients",
                       count_str, sizeof(count_str)) < 0) {
-        ESP_LOGE(TAG, "GetNumberOfClients: no count in response:\n%s", resp);
+        pb_log_err(TAG, "GetNumberOfClients: no count in response:\n%s", resp);
         free(resp);
-        return ESP_FAIL;
+        return PB_FAIL;
     }
     *out_count = atoi(count_str);
     free(resp);
-    return ESP_OK;
+    return PB_OK;
 }
 
 // Look for an existing SIP client with the given username. Returns
@@ -409,7 +348,7 @@ static esp_err_t get_num_clients(const char *url,
 // dongle re-run setup idempotently: the second attempt overwrites
 // the entry it created before instead of colliding with it (which
 // the Fritz!Box reports as UPnPError 820).
-static esp_err_t find_client_slot(const char *url,
+static int find_client_slot(const char *url,
                                   const char *admin_user, const char *admin_pass,
                                   const char *username,
                                   int *out_index,
@@ -417,13 +356,13 @@ static esp_err_t find_client_slot(const char *url,
                                   char *out_err_msg, size_t err_msg_cap)
 {
     int num = 0;
-    esp_err_t err = get_num_clients(url, admin_user, admin_pass, &num,
+    int err = get_num_clients(url, admin_user, admin_pass, &num,
                                     out_err_code, out_err_msg, err_msg_cap);
-    if (err != ESP_OK) return err;
+    if (err != PB_OK) return err;
 
     for (int i = 0; i < num; i++) {
         char *resp = malloc(SOAP_RESPONSE_CAP);
-        if (!resp) return ESP_ERR_NO_MEM;
+        if (!resp) return PB_ERR_NO_MEM;
         char args[64];
         snprintf(args, sizeof(args),
                  "<NewX_AVM-DE_ClientIndex>%d</NewX_AVM-DE_ClientIndex>", i);
@@ -432,21 +371,21 @@ static esp_err_t find_client_slot(const char *url,
                           "X_AVM-DE_GetClient3", args, NULL,
                           resp, SOAP_RESPONSE_CAP,
                           out_err_code, out_err_msg, err_msg_cap);
-        if (err != ESP_OK) { free(resp); return err; }
+        if (err != PB_OK) { free(resp); return err; }
         char found[64] = "";
         xml_find_text(resp, "NewX_AVM-DE_ClientUsername", found, sizeof(found));
         free(resp);
         if (strcmp(found, username) == 0) {
-            ESP_LOGI(TAG, "found existing SIP client '%s' at index %d — will overwrite",
+            pb_log_info(TAG, "found existing SIP client '%s' at index %d — will overwrite",
                      username, i);
             *out_index = i;
-            return ESP_OK;
+            return PB_OK;
         }
     }
-    ESP_LOGI(TAG, "no existing SIP client '%s', using next free slot %d",
+    pb_log_info(TAG, "no existing SIP client '%s', using next free slot %d",
              username, num);
     *out_index = num;
-    return ESP_OK;
+    return PB_OK;
 }
 
 static void gen_random_password(char *out, size_t len)
@@ -458,7 +397,7 @@ static void gen_random_password(char *out, size_t len)
         "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     size_t n = strlen(alpha);
     for (size_t i = 0; i < len - 1; i++) {
-        out[i] = alpha[esp_random() % n];
+        out[i] = alpha[pb_random_u32() % n];
     }
     out[len - 1] = '\0';
 }
@@ -478,7 +417,7 @@ static void gen_sip_username(char *out, size_t cap)
 // Public entry point
 // ---------------------------------------------------------------------------
 
-esp_err_t tr064_get_default_username(const char *host, int port,
+int tr064_get_default_username(const char *host, int port,
                                      const char *admin_user, const char *admin_pass,
                                      char *out, size_t cap,
                                      int *out_err_code,
@@ -489,18 +428,18 @@ esp_err_t tr064_get_default_username(const char *host, int port,
     snprintf(url, sizeof(url), "http://%s:%d" LANSEC_CONTROL, host, port);
 
     char *resp = malloc(SOAP_RESPONSE_CAP);
-    if (!resp) return ESP_ERR_NO_MEM;
-    esp_err_t err = call_action(url, LANSEC_SERVICE,
+    if (!resp) return PB_ERR_NO_MEM;
+    int err = call_action(url, LANSEC_SERVICE,
                                 admin_user, admin_pass,
                                 "X_AVM-DE_GetUserList", NULL, NULL,
                                 resp, SOAP_RESPONSE_CAP,
                                 out_err_code, out_err_msg, err_msg_cap);
-    if (err != ESP_OK) { free(resp); return err; }
+    if (err != PB_OK) { free(resp); return err; }
 
     // The <NewX_AVM-DE_UserList> value is a serialised <List>…</List>
     // XML payload with its angle brackets entity-escaped.
     char *list = malloc(SOAP_RESPONSE_CAP);
-    if (!list) { free(resp); return ESP_ERR_NO_MEM; }
+    if (!list) { free(resp); return PB_ERR_NO_MEM; }
     list[0] = '\0';
     xml_find_text(resp, "NewX_AVM-DE_UserList", list, SOAP_RESPONSE_CAP);
     free(resp);
@@ -509,11 +448,11 @@ esp_err_t tr064_get_default_username(const char *host, int port,
     bool ok = pick_default_user(list, out, cap);
     free(list);
     if (!ok) {
-        ESP_LOGE(TAG, "GetUserList: no Username found");
-        return ESP_FAIL;
+        pb_log_err(TAG, "GetUserList: no Username found");
+        return PB_FAIL;
     }
-    ESP_LOGI(TAG, "Fritz!Box default user: %s", out);
-    return ESP_OK;
+    pb_log_info(TAG, "Fritz!Box default user: %s", out);
+    return PB_OK;
 }
 
 // Generate an app password that satisfies AVM's RegisterApp strength
@@ -530,21 +469,21 @@ static void gen_app_password(char *out, size_t cap)
     if (want < 8) want = 8;
 
     // Seed the four mandatory classes.
-    out[0] = '0' + (esp_random() % 10);
-    out[1] = 'A' + (esp_random() % 26);
-    out[2] = 'a' + (esp_random() % 26);
+    out[0] = '0' + (pb_random_u32() % 10);
+    out[1] = 'A' + (pb_random_u32() % 26);
+    out[2] = 'a' + (pb_random_u32() % 26);
     out[3] = '!';
-    for (size_t i = 4; i < want; i++) out[i] = alnum[esp_random() % alnum_n];
+    for (size_t i = 4; i < want; i++) out[i] = alnum[pb_random_u32() % alnum_n];
 
     // Fisher-Yates shuffle so the required chars aren't predictable.
     for (size_t i = want - 1; i > 0; i--) {
-        size_t j = esp_random() % (i + 1);
+        size_t j = pb_random_u32() % (i + 1);
         char tmp = out[i]; out[i] = out[j]; out[j] = tmp;
     }
     out[want] = '\0';
 }
 
-esp_err_t tr064_register_dongle_app(const char *host, int port,
+int tr064_register_dongle_app(const char *host, int port,
                                     const char *admin_user, const char *admin_pass,
                                     const char *token_2fa,
                                     char *out_user, size_t user_cap,
@@ -553,7 +492,7 @@ esp_err_t tr064_register_dongle_app(const char *host, int port,
                                     char *out_err_msg, size_t err_msg_cap)
 {
     if (!out_user || user_cap < 20 || !out_pass || pass_cap < 16) {
-        return ESP_ERR_INVALID_ARG;
+        return PB_ERR_INVALID_ARG;
     }
 
     // Fixed username — AppId is unique-per-box and re-registering
@@ -570,7 +509,7 @@ esp_err_t tr064_register_dongle_app(const char *host, int port,
     // PhoneBlock sync only needs OnTel's CallBarring API, which lives
     // under the Phone right.
     char *args = malloc(512);
-    if (!args) return ESP_ERR_NO_MEM;
+    if (!args) return PB_ERR_NO_MEM;
     snprintf(args, 512,
         // No dashes: the Fritz!Box rejects "phoneblock-dongle" with
         // errorCode 823 "AppID contains invalid characters". AppID
@@ -590,62 +529,62 @@ esp_err_t tr064_register_dongle_app(const char *host, int port,
         out_user, out_pass);
 
     char *resp = malloc(SOAP_RESPONSE_CAP);
-    if (!resp) { free(args); return ESP_ERR_NO_MEM; }
-    esp_err_t err = call_action(url, APPSETUP_SERVICE,
+    if (!resp) { free(args); return PB_ERR_NO_MEM; }
+    int err = call_action(url, APPSETUP_SERVICE,
                                 admin_user, admin_pass,
                                 "RegisterApp", args, token_2fa,
                                 resp, SOAP_RESPONSE_CAP,
                                 out_err_code, out_err_msg, err_msg_cap);
     free(args);
     free(resp);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "RegisterApp failed");
+    if (err != PB_OK) {
+        pb_log_err(TAG, "RegisterApp failed");
         return err;
     }
-    ESP_LOGI(TAG, "dongle app registered (user='%s', %zu-char password)",
+    pb_log_info(TAG, "dongle app registered (user='%s', %zu-char password)",
              out_user, strlen(out_pass));
-    return ESP_OK;
+    return PB_OK;
 }
 
 // --- Call-barring (X_AVM-DE_OnTel) ---------------------------------
 
-esp_err_t tr064_call_barring_list_url(const char *host, int port,
+int tr064_call_barring_list_url(const char *host, int port,
                                       const char *user, const char *pass,
                                       char *out_url, size_t url_cap,
                                       int *out_err_code,
                                       char *out_err_msg, size_t err_msg_cap)
 {
-    if (!out_url || url_cap == 0) return ESP_ERR_INVALID_ARG;
+    if (!out_url || url_cap == 0) return PB_ERR_INVALID_ARG;
     out_url[0] = '\0';
 
     char url[96];
     snprintf(url, sizeof(url), "http://%s:%d" ONTEL_CONTROL, host, port);
 
     char *resp = malloc(SOAP_RESPONSE_CAP);
-    if (!resp) return ESP_ERR_NO_MEM;
-    esp_err_t err = call_action(url, ONTEL_SERVICE,
+    if (!resp) return PB_ERR_NO_MEM;
+    int err = call_action(url, ONTEL_SERVICE,
                                 user, pass,
                                 "GetCallBarringList", NULL, NULL,
                                 resp, SOAP_RESPONSE_CAP,
                                 out_err_code, out_err_msg, err_msg_cap);
-    if (err != ESP_OK) { free(resp); return err; }
+    if (err != PB_OK) { free(resp); return err; }
 
     xml_find_text(resp, "NewPhonebookURL", out_url, url_cap);
     free(resp);
     if (!out_url[0]) {
-        ESP_LOGE(TAG, "GetCallBarringList: no PhonebookURL in response");
-        return ESP_FAIL;
+        pb_log_err(TAG, "GetCallBarringList: no PhonebookURL in response");
+        return PB_FAIL;
     }
-    return ESP_OK;
+    return PB_OK;
 }
 
-esp_err_t tr064_call_barring_delete(const char *host, int port,
+int tr064_call_barring_delete(const char *host, int port,
                                     const char *user, const char *pass,
                                     const char *uid,
                                     int *out_err_code,
                                     char *out_err_msg, size_t err_msg_cap)
 {
-    if (!uid || !*uid) return ESP_ERR_INVALID_ARG;
+    if (!uid || !*uid) return PB_ERR_INVALID_ARG;
 
     char url[96];
     snprintf(url, sizeof(url), "http://%s:%d" ONTEL_CONTROL, host, port);
@@ -657,8 +596,8 @@ esp_err_t tr064_call_barring_delete(const char *host, int port,
         "<NewPhonebookEntryUniqueID>%s</NewPhonebookEntryUniqueID>", uid_esc);
 
     char *resp = malloc(SOAP_RESPONSE_CAP);
-    if (!resp) return ESP_ERR_NO_MEM;
-    esp_err_t err = call_action(url, ONTEL_SERVICE,
+    if (!resp) return PB_ERR_NO_MEM;
+    int err = call_action(url, ONTEL_SERVICE,
                                 user, pass,
                                 "DeleteCallBarringEntryUID", args, NULL,
                                 resp, SOAP_RESPONSE_CAP,
@@ -669,28 +608,28 @@ esp_err_t tr064_call_barring_delete(const char *host, int port,
 
 // --- Phonebooks ("Telefonbuch") ------------------------------------
 
-esp_err_t tr064_phonebook_list(const char *host, int port,
+int tr064_phonebook_list(const char *host, int port,
                                const char *user, const char *pass,
                                tr064_phonebook_t *out, int max,
                                int *out_count,
                                int *out_err_code,
                                char *out_err_msg, size_t err_msg_cap)
 {
-    if (!out || max <= 0) return ESP_ERR_INVALID_ARG;
+    if (!out || max <= 0) return PB_ERR_INVALID_ARG;
     if (out_count) *out_count = 0;
 
     char url[96];
     snprintf(url, sizeof(url), "http://%s:%d" ONTEL_CONTROL, host, port);
 
     char *resp = malloc(SOAP_RESPONSE_CAP);
-    if (!resp) return ESP_ERR_NO_MEM;
+    if (!resp) return PB_ERR_NO_MEM;
 
     // 1. Which phonebooks exist? A comma-separated list of IDs ("0,1,2").
-    esp_err_t err = call_action(url, ONTEL_SERVICE, user, pass,
+    int err = call_action(url, ONTEL_SERVICE, user, pass,
                                "GetPhonebookList", NULL, NULL,
                                resp, SOAP_RESPONSE_CAP,
                                out_err_code, out_err_msg, err_msg_cap);
-    if (err != ESP_OK) { free(resp); return err; }
+    if (err != PB_OK) { free(resp); return err; }
 
     char ids[64] = "";
     xml_find_text(resp, "NewPhonebookList", ids, sizeof(ids));
@@ -706,9 +645,9 @@ esp_err_t tr064_phonebook_list(const char *host, int port,
         while (*p && *p != ',') p++;
     }
     if (count == 0) {
-        ESP_LOGW(TAG, "GetPhonebookList returned no usable IDs: '%s'", ids);
+        pb_log_warn(TAG, "GetPhonebookList returned no usable IDs: '%s'", ids);
         free(resp);
-        return ESP_FAIL;
+        return PB_FAIL;
     }
 
     // 2. Their names — the only handle we have for the online-address-book
@@ -719,10 +658,10 @@ esp_err_t tr064_phonebook_list(const char *host, int port,
                  "<NewPhonebookID>%d</NewPhonebookID>", out[i].id);
         if (call_action(url, ONTEL_SERVICE, user, pass,
                         "GetPhonebook", args, NULL,
-                        resp, SOAP_RESPONSE_CAP, NULL, NULL, 0) != ESP_OK) {
+                        resp, SOAP_RESPONSE_CAP, NULL, NULL, 0) != PB_OK) {
             // Leave name empty / writable false: reported to the caller as
             // "exists but do not write here".
-            ESP_LOGW(TAG, "GetPhonebook(%d) failed", out[i].id);
+            pb_log_warn(TAG, "GetPhonebook(%d) failed", out[i].id);
             continue;
         }
         xml_find_text(resp, "NewPhonebookName", out[i].name,
@@ -737,11 +676,11 @@ esp_err_t tr064_phonebook_list(const char *host, int port,
                      "GetNumberOfEntries", NULL, NULL,
                      resp, SOAP_RESPONSE_CAP,
                      out_err_code, out_err_msg, err_msg_cap);
-    if (err != ESP_OK) {
+    if (err != PB_OK) {
         // Deliberately fatal: without this list every phonebook would look
         // writable, including the CardDAV blocklist. Better no picker than
         // a picker that offers the wrong book.
-        ESP_LOGE(TAG, "GetNumberOfEntries failed — cannot tell synced "
+        pb_log_err(TAG, "GetNumberOfEntries failed — cannot tell synced "
                       "phonebooks apart");
         free(resp);
         return err;
@@ -758,12 +697,12 @@ esp_err_t tr064_phonebook_list(const char *host, int port,
         snprintf(args, sizeof(args), "<NewIndex>%d</NewIndex>", idx);
         if (call_action(url, ONTEL_SERVICE, user, pass,
                         "GetInfoByIndex", args, NULL,
-                        resp, SOAP_RESPONSE_CAP, NULL, NULL, 0) != ESP_OK) {
+                        resp, SOAP_RESPONSE_CAP, NULL, NULL, 0) != PB_OK) {
             // An online book we cannot read might be any of the phonebooks
             // — fail rather than guess, same reasoning as step 3.
-            ESP_LOGE(TAG, "GetInfoByIndex(%d) failed", idx);
+            pb_log_err(TAG, "GetInfoByIndex(%d) failed", idx);
             free(resp);
-            return ESP_FAIL;
+            return PB_FAIL;
         }
         char name[TR064_PB_NAME_CAP] = "";
         xml_find_text(resp, "NewName", name, sizeof(name));
@@ -771,7 +710,7 @@ esp_err_t tr064_phonebook_list(const char *host, int port,
         if (!name[0]) continue;
         for (int i = 0; i < count; i++) {
             if (strcmp(out[i].name, name) == 0) {
-                ESP_LOGI(TAG, "phonebook %d ('%s') is synced → read-only",
+                pb_log_info(TAG, "phonebook %d ('%s') is synced → read-only",
                          out[i].id, out[i].name);
                 out[i].writable = false;
             }
@@ -780,16 +719,16 @@ esp_err_t tr064_phonebook_list(const char *host, int port,
 
     free(resp);
     if (out_count) *out_count = count;
-    return ESP_OK;
+    return PB_OK;
 }
 
-esp_err_t tr064_phonebook_name(const char *host, int port,
+int tr064_phonebook_name(const char *host, int port,
                                const char *user, const char *pass,
                                int phonebook_id, char *out, size_t cap,
                                int *out_err_code,
                                char *out_err_msg, size_t err_msg_cap)
 {
-    if (!out || cap == 0) return ESP_ERR_INVALID_ARG;
+    if (!out || cap == 0) return PB_ERR_INVALID_ARG;
     out[0] = '\0';
 
     char url[96];
@@ -800,12 +739,12 @@ esp_err_t tr064_phonebook_name(const char *host, int port,
              "<NewPhonebookID>%d</NewPhonebookID>", phonebook_id);
 
     char *resp = malloc(SOAP_RESPONSE_CAP);
-    if (!resp) return ESP_ERR_NO_MEM;
-    esp_err_t err = call_action(url, ONTEL_SERVICE, user, pass,
+    if (!resp) return PB_ERR_NO_MEM;
+    int err = call_action(url, ONTEL_SERVICE, user, pass,
                                "GetPhonebook", args, NULL,
                                resp, SOAP_RESPONSE_CAP,
                                out_err_code, out_err_msg, err_msg_cap);
-    if (err == ESP_OK) {
+    if (err == PB_OK) {
         xml_find_text(resp, "NewPhonebookName", out, cap);
         xml_unescape_inplace(out);
     }
@@ -813,7 +752,7 @@ esp_err_t tr064_phonebook_name(const char *host, int port,
     return err;
 }
 
-esp_err_t tr064_phonebook_add(const char *host, int port,
+int tr064_phonebook_add(const char *host, int port,
                               const char *user, const char *pass,
                               int phonebook_id,
                               const char *name, const char *number,
@@ -825,12 +764,12 @@ esp_err_t tr064_phonebook_add(const char *host, int port,
     if (out_uid && uid_cap) out_uid[0] = '\0';
 
     char *contact = malloc(TR064_CONTACT_ARG_CAP);
-    if (!contact) return ESP_ERR_NO_MEM;
+    if (!contact) return PB_ERR_NO_MEM;
     if (!tr064_build_contact_arg(contact, TR064_CONTACT_ARG_CAP,
                                  name, number, type, vip)) {
-        ESP_LOGE(TAG, "refusing to write contact: invalid name/number/type");
+        pb_log_err(TAG, "refusing to write contact: invalid name/number/type");
         free(contact);
-        return ESP_ERR_INVALID_ARG;
+        return PB_ERR_INVALID_ARG;
     }
 
     // One bounded builder for the whole argument list — a clipped
@@ -838,38 +777,38 @@ esp_err_t tr064_phonebook_add(const char *host, int port,
     // all-or-nothing (see strbuf.h).
     const int args_cap = TR064_CONTACT_ARG_CAP + 128;
     char *args = malloc(args_cap);
-    if (!args) { free(contact); return ESP_ERR_NO_MEM; }
+    if (!args) { free(contact); return PB_ERR_NO_MEM; }
     strbuf_t sb = sb_init(args, args_cap);
     sb_appendf(&sb, "<NewPhonebookID>%d</NewPhonebookID>", phonebook_id);
     sb_appendf(&sb, "<NewPhonebookEntryData>%s</NewPhonebookEntryData>",
                contact);
     free(contact);
     if (sb.truncated) {
-        ESP_LOGE(TAG, "SetPhonebookEntryUID args truncated");
+        pb_log_err(TAG, "SetPhonebookEntryUID args truncated");
         free(args);
-        return ESP_ERR_INVALID_SIZE;
+        return PB_ERR_INVALID_SIZE;
     }
 
     char url[96];
     snprintf(url, sizeof(url), "http://%s:%d" ONTEL_CONTROL, host, port);
 
     char *resp = malloc(SOAP_RESPONSE_CAP);
-    if (!resp) { free(args); return ESP_ERR_NO_MEM; }
-    esp_err_t err = call_action(url, ONTEL_SERVICE, user, pass,
+    if (!resp) { free(args); return PB_ERR_NO_MEM; }
+    int err = call_action(url, ONTEL_SERVICE, user, pass,
                                "SetPhonebookEntryUID", args, NULL,
                                resp, SOAP_RESPONSE_CAP,
                                out_err_code, out_err_msg, err_msg_cap);
     free(args);
-    if (err != ESP_OK) {
+    if (err != PB_OK) {
         // 713 means "that phonebook mirrors an online address book" — a
         // choice the user can correct in the dialog, not a fault. Keep it
         // out of the log panel's WARN/ERROR ring (see firmware CLAUDE.md);
         // anything else is a real failure worth surfacing there.
         if (out_err_code && *out_err_code == 713) {
-            ESP_LOGI(TAG, "phonebook %d is read-only (synced) — not written",
+            pb_log_info(TAG, "phonebook %d is read-only (synced) — not written",
                      phonebook_id);
         } else {
-            ESP_LOGE(TAG, "SetPhonebookEntryUID(%d) failed", phonebook_id);
+            pb_log_err(TAG, "SetPhonebookEntryUID(%d) failed", phonebook_id);
         }
         free(resp);
         return err;
@@ -877,10 +816,10 @@ esp_err_t tr064_phonebook_add(const char *host, int port,
     if (out_uid && uid_cap) {
         xml_find_text(resp, "NewPhonebookEntryUniqueID", out_uid, uid_cap);
     }
-    ESP_LOGI(TAG, "contact added to phonebook %d (uid '%s')",
+    pb_log_info(TAG, "contact added to phonebook %d (uid '%s')",
              phonebook_id, out_uid ? out_uid : "?");
     free(resp);
-    return ESP_OK;
+    return PB_OK;
 }
 
 // --- 2FA (X_AVM-DE_Auth) -------------------------------------------
@@ -903,7 +842,7 @@ static void auth_cancel_pending(const char *url,
     free(resp);
 }
 
-esp_err_t tr064_auth_start(const char *host, int port,
+int tr064_auth_start(const char *host, int port,
                            const char *admin_user, const char *admin_pass,
                            char *out_token, size_t token_cap,
                            char *out_state, size_t state_cap,
@@ -917,26 +856,26 @@ esp_err_t tr064_auth_start(const char *host, int port,
     const char *args = "<NewAction>start</NewAction>";
 
     char *resp = malloc(SOAP_RESPONSE_CAP);
-    if (!resp) return ESP_ERR_NO_MEM;
-    esp_err_t err = call_action(url, X_AUTH_SERVICE,
+    if (!resp) return PB_ERR_NO_MEM;
+    int err = call_action(url, X_AUTH_SERVICE,
                                 admin_user, admin_pass,
                                 "SetConfig", args, NULL,
                                 resp, SOAP_RESPONSE_CAP,
                                 NULL, NULL, 0);
-    if (err != ESP_OK) { free(resp); return err; }
+    if (err != PB_OK) { free(resp); return err; }
 
     if (out_token   && token_cap)   xml_find_text(resp, "NewToken",   out_token,   token_cap);
     if (out_state   && state_cap)   xml_find_text(resp, "NewState",   out_state,   state_cap);
     if (out_methods && methods_cap) xml_find_text(resp, "NewMethods", out_methods, methods_cap);
 
-    ESP_LOGI(TAG, "2FA start → token=%.16s… state=%s methods=%s",
+    pb_log_info(TAG, "2FA start → token=%.16s… state=%s methods=%s",
              out_token ? out_token : "", out_state ? out_state : "",
              out_methods ? out_methods : "");
     free(resp);
-    return ESP_OK;
+    return PB_OK;
 }
 
-esp_err_t tr064_auth_get_state(const char *host, int port,
+int tr064_auth_get_state(const char *host, int port,
                                const char *admin_user, const char *admin_pass,
                                const char *token_2fa,
                                char *out_state, size_t state_cap)
@@ -945,38 +884,38 @@ esp_err_t tr064_auth_get_state(const char *host, int port,
     snprintf(url, sizeof(url), "http://%s:%d" X_AUTH_CONTROL, host, port);
 
     char *resp = malloc(SOAP_RESPONSE_CAP);
-    if (!resp) return ESP_ERR_NO_MEM;
-    esp_err_t err = call_action(url, X_AUTH_SERVICE,
+    if (!resp) return PB_ERR_NO_MEM;
+    int err = call_action(url, X_AUTH_SERVICE,
                                 admin_user, admin_pass,
                                 "GetState", NULL, token_2fa,
                                 resp, SOAP_RESPONSE_CAP,
                                 NULL, NULL, 0);
-    if (err != ESP_OK) { free(resp); return err; }
+    if (err != PB_OK) { free(resp); return err; }
 
     char state_local[32] = "";
     xml_find_text(resp, "NewState", state_local, sizeof(state_local));
-    ESP_LOGI(TAG, "2FA state → %s", state_local);
+    pb_log_info(TAG, "2FA state → %s", state_local);
     if (out_state && state_cap) {
         strncpy(out_state, state_local, state_cap - 1);
         out_state[state_cap - 1] = '\0';
     }
     free(resp);
-    return ESP_OK;
+    return PB_OK;
 }
 
-esp_err_t tr064_provision_sip_client(const char *host, int port,
+int tr064_provision_sip_client(const char *host, int port,
                                      const char *admin_user, const char *admin_pass,
                                      const char *phone_name,
                                      const char *token_2fa,
                                      tr064_sip_result_t *out)
 {
-    if (!host || !admin_user || !admin_pass || !out) return ESP_ERR_INVALID_ARG;
+    if (!host || !admin_user || !admin_pass || !out) return PB_ERR_INVALID_ARG;
     out->error_code = 0;
     out->error_message[0] = '\0';
 
     char url[96];
     snprintf(url, sizeof(url), "http://%s:%d" X_VOIP_CONTROL, host, port);
-    ESP_LOGI(TAG, "provisioning SIP client on %s (user=%s)", url, admin_user);
+    pb_log_info(TAG, "provisioning SIP client on %s (user=%s)", url, admin_user);
 
     // 1) Generate credentials. Username is MAC-derived and stable across
     //    re-runs — that is what lets us find and reuse an existing slot
@@ -990,13 +929,13 @@ esp_err_t tr064_provision_sip_client(const char *host, int port,
     //    registered, else the next free slot. Avoids UPnPError 820 on a
     //    re-run.
     int client_index = 0;
-    esp_err_t err = find_client_slot(url, admin_user, admin_pass, user_buf,
+    int err = find_client_slot(url, admin_user, admin_pass, user_buf,
                                      &client_index,
                                      &out->error_code,
                                      out->error_message,
                                      sizeof(out->error_message));
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "find_client_slot failed");
+    if (err != PB_OK) {
+        pb_log_err(TAG, "find_client_slot failed");
         return err;
     }
 
@@ -1013,7 +952,7 @@ esp_err_t tr064_provision_sip_client(const char *host, int port,
                phone_name_esc, sizeof(phone_name_esc));
 
     char *args = malloc(768);
-    if (!args) return ESP_ERR_NO_MEM;
+    if (!args) return PB_ERR_NO_MEM;
     snprintf(args, 768,
         "<NewX_AVM-DE_ClientIndex>%d</NewX_AVM-DE_ClientIndex>"
         "<NewX_AVM-DE_ClientPassword>%s</NewX_AVM-DE_ClientPassword>"
@@ -1025,7 +964,7 @@ esp_err_t tr064_provision_sip_client(const char *host, int port,
         client_index, pass_esc, user_esc, phone_name_esc);
 
     char *resp = malloc(SOAP_RESPONSE_CAP);
-    if (!resp) { free(args); return ESP_ERR_NO_MEM; }
+    if (!resp) { free(args); return PB_ERR_NO_MEM; }
     err = call_action(url, X_VOIP_SERVICE,
                       admin_user, admin_pass,
                       "X_AVM-DE_SetClient4", args,
@@ -1034,7 +973,7 @@ esp_err_t tr064_provision_sip_client(const char *host, int port,
                       &out->error_code,
                       out->error_message, sizeof(out->error_message));
     free(args);
-    if (err != ESP_OK) { free(resp); return err; }
+    if (err != PB_OK) { free(resp); return err; }
 
     char internal_num[16] = "";
     xml_find_text(resp, "NewX_AVM-DE_InternalNumber",
@@ -1049,7 +988,7 @@ esp_err_t tr064_provision_sip_client(const char *host, int port,
             sizeof(out->internal_number) - 1);
     out->internal_number[sizeof(out->internal_number) - 1] = '\0';
 
-    ESP_LOGI(TAG, "provisioned user='%s' internal='%s'",
+    pb_log_info(TAG, "provisioned user='%s' internal='%s'",
              out->sip_user, out->internal_number);
-    return ESP_OK;
+    return PB_OK;
 }

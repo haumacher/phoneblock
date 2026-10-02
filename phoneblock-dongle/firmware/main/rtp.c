@@ -1,3 +1,7 @@
+#ifndef ESP_PLATFORM
+#define _POSIX_C_SOURCE 200809L
+#endif
+
 #include "rtp.h"
 
 #include <stdint.h>
@@ -5,8 +9,17 @@
 #include <string.h>
 #include <errno.h>
 
+#ifdef ESP_PLATFORM
 #include "lwip/sockets.h"
 #include "lwip/netdb.h"
+#else
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <sys/select.h>
+#include <sys/socket.h>
+#include <sys/time.h>
+#include <unistd.h>
+#endif
 
 #include "config.h"
 #include "platform.h"
@@ -17,6 +30,16 @@
 #include "banned_apis.h"
 
 static const char *TAG = "rtp";
+
+static const char *ipv4_to_string(const struct in_addr *address,
+                                  char *out, size_t cap)
+{
+#ifdef ESP_PLATFORM
+    return inet_ntoa_r(*address, out, (int)cap);
+#else
+    return inet_ntop(AF_INET, address, out, (socklen_t)cap);
+#endif
+}
 
 // Singleton RTP socket, created once and reused for every call: the STUN
 // probe (run from the SIP task before we answer) and the streaming task
@@ -139,7 +162,7 @@ static bool stun_exchange(int sock, const struct sockaddr_in *srv,
                     xaddr ^= STUN_MAGIC_COOKIE;
                 }
                 struct in_addr a = { .s_addr = htonl(xaddr) };
-                inet_ntoa_r(a, ip_out, ip_cap);
+                ipv4_to_string(&a, ip_out, (size_t)ip_cap);
                 *port_out = xport;
                 return true;
             }
@@ -350,7 +373,7 @@ static void rtp_audio_task(void *arg)
 
     size_t total_frames = (a->src.len + FRAME_SAMPLES - 1) / FRAME_SAMPLES;
     char ip[INET_ADDRSTRLEN];
-    inet_ntoa_r(a->dest.sin_addr, ip, sizeof(ip));
+    ipv4_to_string(&a->dest.sin_addr, ip, sizeof(ip));
     pb_log_info(TAG, "stream %u bytes (%u frames ≈ %u ms) → %s:%d, ssrc=%08lx%s",
              (unsigned)a->src.len, (unsigned)total_frames,
              (unsigned)(total_frames * 20),
@@ -427,7 +450,8 @@ static void rtp_audio_task(void *arg)
                               (struct sockaddr *)&raddr, &rlen);
             if (rn <= 0) break;
             if (inbound_pkts == 0) {
-                inet_ntoa_r(raddr.sin_addr, inbound_src, sizeof(inbound_src));
+                ipv4_to_string(&raddr.sin_addr, inbound_src,
+                               sizeof(inbound_src));
                 inbound_port = ntohs(raddr.sin_port);
             }
             inbound_pkts++;

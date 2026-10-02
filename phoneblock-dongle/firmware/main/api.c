@@ -5,21 +5,26 @@
 #include <string.h>
 #include <stdlib.h>
 
+#ifdef ESP_PLATFORM
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
-
 #include "esp_log.h"
 #include "esp_http_client.h"
 #include "esp_crt_bundle.h"
 #include "esp_timer.h"
-#include "cJSON.h"
 #include "mbedtls/sha1.h"
+#include "http_util.h"
+#else
+#include "api_http_linux.h"
+#include "platform.h"
+#endif
 
 #include "api_scan.h"
+#include "cJSON.h"
 #include "strbuf.h"
 #include "config.h"
-#include "http_util.h"
 #include "stats.h"
+#include "platform.h"
 
 // Must be last: bans unsafe string APIs for the rest of this file.
 #include "banned_apis.h"
@@ -94,10 +99,10 @@ static esp_err_t http_event_handler(esp_http_client_event_t *evt)
 
 // SHA-1 of `input` → first `hex_chars` uppercase hex digits in `out`.
 // `out` must hold hex_chars + 1 bytes. hex_chars must be even and <= 40.
-static void sha1_hex_prefix(const char *input, int hex_chars, char *out)
+static bool sha1_hex_prefix(const char *input, int hex_chars, char *out)
 {
     unsigned char digest[20];
-    mbedtls_sha1((const unsigned char *)input, strlen(input), digest);
+    if (!pb_sha1(input, strlen(input), digest)) return false;
     static const char H[] = "0123456789ABCDEF";
     int bytes = hex_chars / 2;
     for (int i = 0; i < bytes; i++) {
@@ -105,6 +110,7 @@ static void sha1_hex_prefix(const char *input, int hex_chars, char *out)
         out[2 * i + 1] = H[digest[i] & 0x0F];
     }
     out[hex_chars] = '\0';
+    return true;
 }
 
 // Local replica of DB.computeWildcardVotes — combines 10-/100-range
@@ -231,6 +237,17 @@ static esp_err_t run_and_time(esp_http_client_handle_t client, pb_sink_t *sink,
 {
     sink->timing.t_start = esp_timer_get_time();
     esp_err_t err = esp_http_client_perform(client);
+#ifndef ESP_PLATFORM
+    pb_http_timing_t http_timing = {0};
+    api_http_linux_get_timing(client, &http_timing);
+    if (http_timing.valid) {
+        uint64_t start = (uint64_t)sink->timing.t_start;
+        sink->timing.t_connected = start + http_timing.connect_us;
+        sink->timing.t_headers_sent = sink->timing.t_connected + http_timing.request_us;
+        sink->timing.t_first_header = sink->timing.t_headers_sent + http_timing.wait_us;
+        sink->timing.t_finish = start + http_timing.total_us;
+    }
+#endif
     int64_t total = esp_timer_get_time() - sink->timing.t_start;
 
     api_phases_t p = derive_phases(&sink->timing, total);
@@ -272,12 +289,12 @@ static esp_err_t run_and_time(esp_http_client_handle_t client, pb_sink_t *sink,
 // daily task, and a single esp_http_client handle must not be driven
 // from two tasks at once.
 static esp_http_client_handle_t s_check_client = NULL;
-static SemaphoreHandle_t        s_check_mutex  = NULL;
+static pb_mutex_t *             s_check_mutex  = NULL;
 
 void phoneblock_api_init(void)
 {
     if (s_check_mutex == NULL) {
-        s_check_mutex = xSemaphoreCreateMutex();
+        s_check_mutex = pb_mutex_create();
         if (s_check_mutex == NULL) {
             ESP_LOGE(TAG, "failed to create API mutex");
         }
@@ -339,7 +356,8 @@ verdict_t phoneblock_check(const char *phone_number, pb_check_result_t *out,
     char hash_full[HASH_PREFIX_HEX + 1];
     char hash_p10[HASH_PREFIX_HEX + 1];
     char hash_p100[HASH_PREFIX_HEX + 1];
-    sha1_hex_prefix(phone_number, HASH_PREFIX_HEX, hash_full);
+    if (!sha1_hex_prefix(phone_number, HASH_PREFIX_HEX, hash_full))
+        return VERDICT_ERROR;
 
     bool have_p10  = phone_len > 1;
     bool have_p100 = phone_len > 2;
@@ -349,7 +367,8 @@ verdict_t phoneblock_check(const char *phone_number, pb_check_result_t *out,
         if (n >= (int)sizeof(shorter)) n = sizeof(shorter) - 1;
         memcpy(shorter, phone_number, n);
         shorter[n] = '\0';
-        sha1_hex_prefix(shorter, HASH_PREFIX_HEX, hash_p10);
+        if (!sha1_hex_prefix(shorter, HASH_PREFIX_HEX, hash_p10))
+            return VERDICT_ERROR;
     }
     if (have_p100) {
         char shorter[64];
@@ -357,7 +376,8 @@ verdict_t phoneblock_check(const char *phone_number, pb_check_result_t *out,
         if (n >= (int)sizeof(shorter)) n = sizeof(shorter) - 1;
         memcpy(shorter, phone_number, n);
         shorter[n] = '\0';
-        sha1_hex_prefix(shorter, HASH_PREFIX_HEX, hash_p100);
+        if (!sha1_hex_prefix(shorter, HASH_PREFIX_HEX, hash_p100))
+            return VERDICT_ERROR;
     }
 
     char url[256];
@@ -379,11 +399,11 @@ verdict_t phoneblock_check(const char *phone_number, pb_check_result_t *out,
         ESP_LOGE(TAG, "phoneblock_check before phoneblock_api_init()");
         return VERDICT_ERROR;
     }
-    xSemaphoreTake(s_check_mutex, portMAX_DELAY);
+    pb_mutex_lock(s_check_mutex);
 
     esp_http_client_handle_t client = check_client();
     if (client == NULL) {
-        xSemaphoreGive(s_check_mutex);
+        pb_mutex_unlock(s_check_mutex);
         return VERDICT_ERROR;
     }
 
@@ -493,7 +513,7 @@ cleanup:
     // instead of doing a full handshake. No connection and no socket
     // are held while the dongle is idle.
     esp_http_client_close(client);
-    xSemaphoreGive(s_check_mutex);
+    pb_mutex_unlock(s_check_mutex);
     return verdict;
 }
 
@@ -649,11 +669,11 @@ bool phoneblock_selftest(api_phases_t *phases_opt)
     // spam call and refreshes it every 24 h - keeping check-path
     // lookups on the abbreviated handshake even on dongles that go
     // days without a spam call. See the comment above s_check_client.
-    xSemaphoreTake(s_check_mutex, portMAX_DELAY);
+    pb_mutex_lock(s_check_mutex);
 
     esp_http_client_handle_t client = check_client();
     if (client == NULL) {
-        xSemaphoreGive(s_check_mutex);
+        pb_mutex_unlock(s_check_mutex);
         free(resp.data);
         return false;
     }
@@ -690,7 +710,7 @@ bool phoneblock_selftest(api_phases_t *phases_opt)
     // Close but keep the handle so the freshly issued TLS session
     // ticket survives for the next spam-lookup call.
     esp_http_client_close(client);
-    xSemaphoreGive(s_check_mutex);
+    pb_mutex_unlock(s_check_mutex);
     free(resp.data);
     return ok;
 }
@@ -721,11 +741,11 @@ bool phoneblock_fetch_dial_prefix(char *out, size_t cap)
         return false;
     }
 
-    xSemaphoreTake(s_check_mutex, portMAX_DELAY);
+    pb_mutex_lock(s_check_mutex);
 
     esp_http_client_handle_t client = check_client();
     if (client == NULL) {
-        xSemaphoreGive(s_check_mutex);
+        pb_mutex_unlock(s_check_mutex);
         free(resp.data);
         return false;
     }
@@ -742,7 +762,7 @@ bool phoneblock_fetch_dial_prefix(char *out, size_t cap)
     int status = (err == ESP_OK) ? esp_http_client_get_status_code(client) : 0;
     note_api_response(err, status);
     esp_http_client_close(client);
-    xSemaphoreGive(s_check_mutex);
+    pb_mutex_unlock(s_check_mutex);
 
     bool ok = false;
     if (err != ESP_OK) {
@@ -796,7 +816,7 @@ int phoneblock_post_log(const char *body, size_t len)
         return -1;
     }
 
-    xSemaphoreTake(s_check_mutex, portMAX_DELAY);
+    pb_mutex_lock(s_check_mutex);
 
     // Runs on the shared session-resuming client on purpose: the daily
     // selftest primes the TLS ticket moments before this call, so the
@@ -808,7 +828,7 @@ int phoneblock_post_log(const char *body, size_t len)
     // s_check_client.
     esp_http_client_handle_t client = check_client();
     if (client == NULL) {
-        xSemaphoreGive(s_check_mutex);
+        pb_mutex_unlock(s_check_mutex);
         free(resp.data);
         return -1;
     }
@@ -835,7 +855,7 @@ int phoneblock_post_log(const char *body, size_t len)
     // TLS ticket for the next request.
     esp_http_client_set_post_field(client, NULL, 0);
     esp_http_client_close(client);
-    xSemaphoreGive(s_check_mutex);
+    pb_mutex_unlock(s_check_mutex);
     free(resp.data);
     return status;
 }
