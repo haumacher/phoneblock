@@ -37,8 +37,23 @@ void pb_log_err(const char *tag, const char *fmt, ...)
 // --- Time, randomness, watchdog -----------------------------------------
 
 uint64_t pb_monotonic_us(void);
+const char *pb_firmware_version(void);
 uint32_t pb_random_u32(void);
 void pb_random_fill(void *out, size_t len);
+bool pb_md5(const void *input, size_t input_len, uint8_t output[16]);
+bool pb_sha1(const void *input, size_t input_len, uint8_t output[20]);
+bool pb_ecdsa_p256_verify(const uint8_t *public_key_der, size_t public_key_len,
+                          const uint8_t hash[32], const uint8_t *signature,
+                          size_t signature_len);
+typedef struct pb_sha256 pb_sha256_t;
+pb_sha256_t *pb_sha256_create(void);
+bool pb_sha256_update(pb_sha256_t *context, const void *data, size_t length);
+bool pb_sha256_finish(pb_sha256_t *context, uint8_t output[32]);
+void pb_sha256_destroy(pb_sha256_t *context);
+int pb_base64_encode(unsigned char *dst, size_t dst_len, size_t *output_len,
+                     const unsigned char *src, size_t src_len);
+int pb_base64_decode(unsigned char *dst, size_t dst_len, size_t *output_len,
+                     const unsigned char *src, size_t src_len);
 int pb_watchdog_is_subscribed(void);
 void pb_watchdog_subscribe(void);
 void pb_watchdog_reset(void);
@@ -46,6 +61,7 @@ void pb_watchdog_reset(void);
 // --- Tasks ---------------------------------------------------------------
 
 typedef enum {
+    PB_PRIO_BACKGROUND,  // housekeeping work (scheduler)
     PB_PRIO_NORMAL,  // protocol / background work (SIP task)
     PB_PRIO_MEDIA,   // real-time media pacing, above PB_PRIO_NORMAL (RTP)
 } pb_task_prio_t;
@@ -64,6 +80,89 @@ typedef enum {
 // need a "running" flag set it before creating and clear it in the task.
 bool pb_task_create(void (*fn)(void *), void *arg, const char *name,
                     size_t stack_bytes, pb_task_prio_t prio);
+
+typedef struct pb_event pb_event_t;
+
+// A coalescing bit event. wait() returns and clears all pending bits, or 0
+// when the timeout expires. A zero timeout polls without blocking.
+pb_event_t *pb_event_create(void);
+void pb_event_destroy(pb_event_t *event);
+void pb_event_set(pb_event_t *event, uint32_t bits);
+uint32_t pb_event_wait(pb_event_t *event, uint32_t timeout_ms);
+
+typedef struct pb_tls pb_tls_t;
+
+enum {
+    PB_TLS_WANT_READ = -2,
+    PB_TLS_WANT_WRITE = -3,
+};
+
+pb_tls_t *pb_tls_connect(const char *host, int port, const char *server_name,
+                         uint32_t timeout_ms);
+int pb_tls_fd(pb_tls_t *tls);
+int pb_tls_pending(pb_tls_t *tls);
+int pb_tls_read(pb_tls_t *tls, void *buffer, size_t capacity);
+int pb_tls_write(pb_tls_t *tls, const void *buffer, size_t length);
+void pb_tls_destroy(pb_tls_t *tls);
+
+typedef struct {
+    const char *name;
+    const char *value;
+} pb_http_header_t;
+
+typedef void (*pb_http_data_fn)(const void *data, size_t length, void *context);
+
+typedef struct {
+    uint64_t connect_us;
+    uint64_t request_us;
+    uint64_t wait_us;
+    uint64_t download_us;
+    uint64_t total_us;
+    bool valid;
+} pb_http_timing_t;
+
+typedef struct pb_kv pb_kv_t;
+
+enum {
+    PB_KV_OK = 0,
+    PB_KV_NOT_FOUND = 1,
+    PB_KV_ERROR = -1,
+};
+
+int pb_kv_open(const char *name_space, bool writable, pb_kv_t **store);
+void pb_kv_close(pb_kv_t *store);
+int pb_kv_get_string(pb_kv_t *store, const char *key,
+                     char *value, size_t *value_len);
+int pb_kv_get_i32(pb_kv_t *store, const char *key, int32_t *value);
+int pb_kv_set_string(pb_kv_t *store, const char *key, const char *value);
+int pb_kv_set_i32(pb_kv_t *store, const char *key, int32_t value);
+int pb_kv_erase_key(pb_kv_t *store, const char *key);
+int pb_kv_erase_all(pb_kv_t *store);
+int pb_kv_commit(pb_kv_t *store);
+
+enum {
+    PB_HTTP_OK = 0,
+    PB_HTTP_CONNECT_ERROR = -1,
+    PB_HTTP_ERROR = -2,
+};
+
+enum {
+    PB_OK = 0,
+    PB_FAIL = -1,
+    PB_ERR_NO_MEM = -2,
+    PB_ERR_INVALID_ARG = -3,
+    PB_ERR_INVALID_SIZE = -4,
+};
+
+// Bounded synchronous HTTP request. A nonzero HTTP status is still a
+// completed request; transport/setup failures use the PB_HTTP_* result.
+int pb_http_request(const char *method, const char *url,
+                    const pb_http_header_t *headers, size_t header_count,
+                    const void *body, size_t body_len, uint32_t timeout_ms,
+                    char *response, size_t response_cap,
+                    size_t *response_len, int *http_status,
+                    pb_http_data_fn on_data, void *data_context,
+                    pb_http_timing_t *timing);
 
 // Sleeps at least `ms` milliseconds. On the ESP32 the sleep is rounded to
 // whole FreeRTOS ticks (10 ms at the project's 100 Hz): a request below one

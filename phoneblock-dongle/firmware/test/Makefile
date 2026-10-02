@@ -1,3 +1,4 @@
+
 CC      ?= gcc
 CFLAGS  ?= -Wall -Wextra -Werror -O0 -g -I../main -I../core
 
@@ -6,6 +7,30 @@ CFLAGS  ?= -Wall -Wextra -Werror -O0 -g -I../main -I../core
 # Relax warnings on the third-party cJSON.c only.
 IDF_PATH ?= $(HOME)/tools/esp/esp-idf
 CJSON_DIR := $(IDF_PATH)/components/json/cJSON
+
+LINUX_BUILD_DIR := ../build/linux-host
+LINUX_CORE_SOURCES := ../core/platform_linux.c ../core/sip_parse.c \
+					  ../core/dial_rules.c ../core/tr064_parse.c
+LINUX_MAIN_SOURCES := ../main/announcement.c ../main/api.c \
+					  ../main/api_http_linux.c ../main/api_scan.c \
+					  ../main/audio.c ../main/blocklist_lookup.c \
+					  ../main/blocklist_sync.c ../main/config.c \
+					  ../main/firmware_update.c ../main/heap_guard_scan.c \
+					  ../main/i18n_sync.c ../main/log_capture.c \
+					  ../main/manifest_sig.c ../main/name_filter.c \
+					  ../main/net_local.c ../main/phone_norm.c ../main/rtp.c \
+					  ../main/sched_time.c ../main/scheduler.c \
+					  ../main/sip_auth.c ../main/sip_frame.c \
+					  ../main/sip_register.c ../main/sip_response.c \
+					  ../main/sip_srv.c ../main/sip_transport.c \
+					  ../main/stats.c ../main/sync.c ../main/tr064.c \
+					  ../main/version_cmp.c
+LINUX_OBJECTS := $(patsubst ../core/%.c,$(LINUX_BUILD_DIR)/core/%.o,$(LINUX_CORE_SOURCES)) \
+				 $(patsubst ../main/%.c,$(LINUX_BUILD_DIR)/main/%.o,$(LINUX_MAIN_SOURCES))
+LINUX_CPPFLAGS := -I$(CJSON_DIR) \
+				  -I../managed_components/espressif__esp_libsrtp/esp-port \
+				  -I../managed_components/espressif__esp_libsrtp/libsrtp/include \
+				  -I../managed_components/espressif__esp_libsrtp/libsrtp/crypto/include
 
 BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_rcpt test_name_filter test_version_cmp test_net_local test_heap_guard test_platform_linux test_ota_manifest
 
@@ -74,8 +99,25 @@ test_heap_guard: test_heap_guard.c ../main/heap_guard_scan.c ../main/heap_guard_
 	$(CC) $(CFLAGS) test_heap_guard.c ../main/heap_guard_scan.c -o $@
 
 test_platform_linux: test_platform_linux.c ../core/platform_linux.c ../core/platform.h \
-                     ../main/log_capture.c ../main/log_capture.h
-	$(CC) $(CFLAGS) -pthread test_platform_linux.c ../core/platform_linux.c ../main/log_capture.c -o $@
+					 ../main/config.c ../main/config.h \
+					 ../main/log_capture.c ../main/log_capture.h
+	$(CC) $(CFLAGS) -pthread test_platform_linux.c ../core/platform_linux.c ../main/config.c ../main/log_capture.c -lcurl -lssl -lcrypto -o $@
+
+$(LINUX_BUILD_DIR)/core/%.o: ../core/%.c
+	mkdir -p $(@D)
+	$(CC) $(CFLAGS) -std=gnu11 $(LINUX_CPPFLAGS) -c $< -o $@
+
+$(LINUX_BUILD_DIR)/main/%.o: ../main/%.c
+	mkdir -p $(@D)
+	$(CC) $(CFLAGS) -std=gnu11 $(LINUX_CPPFLAGS) -c $< -o $@
+
+$(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a: $(LINUX_OBJECTS)
+	$(AR) rcs $@ $^
+
+linux-firmware: $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a
+
+test_api_linux: test_api_linux.c $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a cjson.o
+	$(CC) $(CFLAGS) -pthread -I$(CJSON_DIR) $< $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a cjson.o -lcurl -lssl -lcrypto -o $@
 
 # strbuf.h is header-only; build its test with AddressSanitizer so any overrun
 # of the (malloc'd) destination buffer aborts.
@@ -90,11 +132,11 @@ test_sip_response: test_sip_response.c ../main/sip_response.c ../main/sip_respon
                    ../core/dial_rules.c
 	$(CC) $(CFLAGS) -fsanitize=address test_sip_response.c ../main/sip_response.c ../core/sip_parse.c ../core/dial_rules.c ../main/audio.c -o $@
 
-test: $(BINS)
-	@set -e; for b in $(BINS); do echo "→ $$b"; ./$$b; done
+test: $(BINS) test_api_linux
+	@set -e; for b in $(BINS) test_api_linux; do echo "→ $$b"; ./$$b; done
 	@echo "→ test-signing-roundtrip.sh"; ./test-signing-roundtrip.sh
 
 clean:
-	rm -f $(BINS) cjson.o
+	rm -f $(BINS) test_api_linux cjson.o $(LINUX_OBJECTS) $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a
 
-.PHONY: test clean
+.PHONY: linux-firmware test clean

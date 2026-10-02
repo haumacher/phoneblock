@@ -1,16 +1,37 @@
-#include "config.h"
+#ifndef ESP_PLATFORM
+#define _POSIX_C_SOURCE 200809L
+#endif
 
+#include "config.h"
+#include "platform.h"
+
+#include <stdio.h>
 #include <string.h>
 
-#include "esp_log.h"
-#include "esp_random.h"
-#include "esp_mac.h"
-#include "nvs_flash.h"
-#include "nvs.h"
 
 #include "mail_rcpt.h"   // MAIL_RCPT_SPEC_CAP sizes the recipient field
 #include "name_filter.h" // NAME_FILTER_SPEC_CAP sizes the spam-name field
+#ifdef ESP_PLATFORM
 #include "sdkconfig.h"
+#endif
+#ifndef CONFIG_SIP_REGISTRAR_PORT
+#define CONFIG_SIP_REGISTRAR_PORT 5060
+#endif
+#ifndef CONFIG_SIP_EXPIRES
+#define CONFIG_SIP_EXPIRES 3600
+#endif
+#ifndef CONFIG_SIP_CONTACT_HOST_OVERRIDE
+#define CONFIG_SIP_CONTACT_HOST_OVERRIDE ""
+#endif
+#ifndef CONFIG_SIP_CONTACT_PORT_OVERRIDE
+#define CONFIG_SIP_CONTACT_PORT_OVERRIDE 0
+#endif
+#ifndef CONFIG_PHONEBLOCK_BASE_URL
+#define CONFIG_PHONEBLOCK_BASE_URL "https://phoneblock.net/phoneblock"
+#endif
+#ifndef CONFIG_DONGLE_DEFAULT_TZ
+#define CONFIG_DONGLE_DEFAULT_TZ "CET-1CEST,M3.5.0,M10.5.0/3"
+#endif
 
 // Must be last: bans unsafe string APIs for the rest of this file.
 #include "banned_apis.h"
@@ -189,19 +210,19 @@ static void copy_default(char *dst, size_t cap, const char *def)
     dst[n] = '\0';
 }
 
-static void load_str(nvs_handle_t h, const char *key, const char *def,
+static void load_str(pb_kv_t * h, const char *key, const char *def,
                      char *dst, size_t cap)
 {
     size_t len = cap;
-    if (nvs_get_str(h, key, dst, &len) != ESP_OK) {
+    if (pb_kv_get_string(h, key, dst, &len) != PB_KV_OK) {
         copy_default(dst, cap, def);
     }
 }
 
-static int load_int(nvs_handle_t h, const char *key, int def)
+static int load_int(pb_kv_t * h, const char *key, int def)
 {
     int32_t v;
-    return nvs_get_i32(h, key, &v) == ESP_OK ? (int)v : def;
+    return pb_kv_get_i32(h, key, &v) == PB_KV_OK ? (int)v : def;
 }
 
 // Stable per-device id, a UUIDv4 string ("xxxxxxxx-…-xxxxxxxxxxxx", 36
@@ -227,18 +248,17 @@ static void format_uuid(const uint8_t b[16], char *out /* >= 37 */)
 // resolve to identical defaults.
 static void ensure_device_id(void)
 {
-    nvs_handle_t h;
-    esp_err_t err = nvs_open(NS, NVS_READWRITE, &h);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "device-id nvs_open: %s", esp_err_to_name(err));
+    pb_kv_t * h;
+        int err = pb_kv_open(NS, true, &h);
+    if (err != PB_KV_OK) {
+            pb_log_err(TAG, "device-id store open failed (%d)", err);
         return;
     }
 
     size_t len = sizeof(s_device_id);
-    if (nvs_get_str(h, K_DEVICE_ID, s_device_id, &len) == ESP_OK
-            && s_device_id[0]) {
-        nvs_close(h);
-        ESP_LOGI(TAG, "device id %s", s_device_id);
+        if (pb_kv_get_string(h, K_DEVICE_ID, s_device_id, &len) == PB_KV_OK && s_device_id[0]) {
+        pb_kv_close(h);
+            pb_log_info(TAG, "device id %s", s_device_id);
         return;
     }
 
@@ -246,23 +266,21 @@ static void ensure_device_id(void)
     // provides the entropy; XOR the factory MAC into the node field so the
     // id stays globally unique even if the RNG is weakly seeded this early.
     uint8_t b[16];
-    esp_fill_random(b, sizeof(b));
+        pb_random_fill(b, sizeof(b));
     uint8_t mac[6];
-    if (esp_efuse_mac_get_default(mac) == ESP_OK) {
+    if (pb_get_mac(mac) == PB_KV_OK) {
         for (int i = 0; i < 6; i++) b[10 + i] ^= mac[i];
     }
     b[6] = (uint8_t)((b[6] & 0x0F) | 0x40);  // version 4
     b[8] = (uint8_t)((b[8] & 0x3F) | 0x80);  // variant 1 (RFC 4122)
     format_uuid(b, s_device_id);
 
-    err = nvs_set_str(h, K_DEVICE_ID, s_device_id);
-    if (err == ESP_OK) err = nvs_commit(h);
-    nvs_close(h);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "device id persist failed: %s", esp_err_to_name(err));
-    } else {
-        ESP_LOGI(TAG, "minted device id %s", s_device_id);
-    }
+    err = pb_kv_set_string(h, K_DEVICE_ID, s_device_id);
+        if (err == PB_KV_OK) err = pb_kv_commit(h);
+    pb_kv_close(h);
+        if (err != PB_KV_OK) {
+            pb_log_err(TAG, "config_set_last_failed_ota: %s", "key-value store error");
+        }
 }
 
 const char *config_device_id(void)
@@ -276,14 +294,14 @@ void config_load(void)
 {
     ensure_device_id();
 
-    nvs_handle_t h;
-    esp_err_t err = nvs_open(NS, NVS_READONLY, &h);
-    if (err == ESP_ERR_NVS_NOT_FOUND) {
+    pb_kv_t * h;
+    int err = pb_kv_open(NS, false, &h);
+    if (err == PB_KV_NOT_FOUND) {
         // Namespace not yet created. SIP credentials + PhoneBlock
         // token stay empty — the setup wizard fills them. Other
         // fields keep their Kconfig defaults (port, expiry, contact
         // overrides for QEMU, API base URL).
-        ESP_LOGI(TAG, "NVS namespace '%s' empty, using Kconfig defaults", NS);
+        pb_log_info(TAG, "NVS namespace '%s' empty, using Kconfig defaults", NS);
         s_config.sip_host[0]    = '\0';
         s_config.sip_port       = CONFIG_SIP_REGISTRAR_PORT;
         s_config.sip_user[0]    = '\0';
@@ -339,8 +357,8 @@ void config_load(void)
         s_config.dial_prefix[0] = '\0';   // empty → DEFAULT_DIAL_PREFIX (see getter)
         return;
     }
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "nvs_open: %s — all defaults", esp_err_to_name(err));
+    if (err != PB_KV_OK) {
+        pb_log_err(TAG, "nvs_open: %s — all defaults", "key-value store error");
         return;
     }
 
@@ -442,9 +460,9 @@ void config_load(void)
              s_config.ui_lang, sizeof(s_config.ui_lang));
     load_str(h, K_DIAL_PREFIX, "",
              s_config.dial_prefix, sizeof(s_config.dial_prefix));
-    nvs_close(h);
+    pb_kv_close(h);
 
-    ESP_LOGI(TAG, "loaded config: sip=%s@%s:%d, pb=%s",
+    pb_log_info(TAG, "loaded config: sip=%s@%s:%d, pb=%s",
              s_config.sip_user, s_config.sip_host, s_config.sip_port,
              s_config.pb_base_url);
 }
@@ -696,71 +714,71 @@ bool        config_mail_on_update(void)
 }
 const char *config_last_failed_ota(void)     { return s_config.last_failed_ota; }
 
-esp_err_t config_set_last_failed_ota(const char *version)
+int config_set_last_failed_ota(const char *version)
 {
-    nvs_handle_t h;
-    esp_err_t err = nvs_open(NS, NVS_READWRITE, &h);
-    if (err != ESP_OK) return err;
+    pb_kv_t * h;
+    int err = pb_kv_open(NS, true, &h);
+    if (err != PB_KV_OK) return err;
     if (version == NULL || version[0] == '\0') {
         // Tolerate "key never written" — that's the steady state.
-        err = nvs_erase_key(h, K_LAST_FAIL_OTA);
-        if (err == ESP_ERR_NVS_NOT_FOUND) err = ESP_OK;
+        err = pb_kv_erase_key(h, K_LAST_FAIL_OTA);
+        if (err == PB_KV_NOT_FOUND) err = PB_KV_OK;
         s_config.last_failed_ota[0] = '\0';
     } else {
-        err = nvs_set_str(h, K_LAST_FAIL_OTA, version);
-        if (err == ESP_OK) {
+        err = pb_kv_set_string(h, K_LAST_FAIL_OTA, version);
+        if (err == PB_KV_OK) {
             copy_default(s_config.last_failed_ota,
                          sizeof(s_config.last_failed_ota), version);
         }
     }
-    if (err == ESP_OK) err = nvs_commit(h);
-    nvs_close(h);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "config_set_last_failed_ota: %s", esp_err_to_name(err));
+    if (err == PB_KV_OK) err = pb_kv_commit(h);
+    pb_kv_close(h);
+    if (err != PB_KV_OK) {
+        pb_log_err(TAG, "config_set_last_failed_ota: %s", "key-value store error");
     }
     return err;
 }
 
 // --- Updating -------------------------------------------------------
 
-static esp_err_t set_str_if(nvs_handle_t h, const char *key, const char *val,
+static int set_str_if(pb_kv_t * h, const char *key, const char *val,
                             char *cache, size_t cap)
 {
-    if (!val) return ESP_OK;
-    esp_err_t err = nvs_set_str(h, key, val);
-    if (err == ESP_OK) copy_default(cache, cap, val);
+    if (!val) return PB_KV_OK;
+    int err = pb_kv_set_string(h, key, val);
+    if (err == PB_KV_OK) copy_default(cache, cap, val);
     return err;
 }
 
-static esp_err_t set_int_if(nvs_handle_t h, const char *key, int val, int *cache)
+static int set_int_if(pb_kv_t * h, const char *key, int val, int *cache)
 {
-    if (val == 0) return ESP_OK;
-    esp_err_t err = nvs_set_i32(h, key, val);
-    if (err == ESP_OK) *cache = val;
+    if (val == 0) return PB_KV_OK;
+    int err = pb_kv_set_i32(h, key, val);
+    if (err == PB_KV_OK) *cache = val;
     return err;
 }
 
 // Like set_int_if, but the caller decides explicitly via `has_value`
 // whether to write — for fields where 0 is a meaningful value (e.g.
 // "range-block disabled") and can't share the "0 = unchanged" shortcut.
-static esp_err_t set_int_explicit(nvs_handle_t h, const char *key,
+static int set_int_explicit(pb_kv_t * h, const char *key,
                                   bool has_value, int val, int *cache)
 {
-    if (!has_value) return ESP_OK;
-    esp_err_t err = nvs_set_i32(h, key, val);
-    if (err == ESP_OK) *cache = val;
+    if (!has_value) return PB_KV_OK;
+    int err = pb_kv_set_i32(h, key, val);
+    if (err == PB_KV_OK) *cache = val;
     return err;
 }
 
-esp_err_t config_erase(void)
+int config_erase(void)
 {
-    nvs_handle_t h;
-    esp_err_t err = nvs_open(NS, NVS_READWRITE, &h);
-    if (err != ESP_OK) return err;
-    err = nvs_erase_all(h);
-    if (err == ESP_OK) err = nvs_commit(h);
-    nvs_close(h);
-    ESP_LOGI(TAG, "config_erase: %s", esp_err_to_name(err));
+    pb_kv_t * h;
+    int err = pb_kv_open(NS, true, &h);
+    if (err != PB_KV_OK) return err;
+    err = pb_kv_erase_all(h);
+    if (err == PB_KV_OK) err = pb_kv_commit(h);
+    pb_kv_close(h);
+    pb_log_info(TAG, "config_erase: %s", "key-value store error");
     return err;
 }
 
@@ -771,120 +789,120 @@ void config_dongle_username(char *out, size_t cap)
     out[cap - 1] = '\0';
 }
 
-esp_err_t config_update(const config_update_t *u)
+int config_update(const config_update_t *u)
 {
-    nvs_handle_t h;
-    esp_err_t err = nvs_open(NS, NVS_READWRITE, &h);
-    if (err != ESP_OK) return err;
+    pb_kv_t * h;
+    int err = pb_kv_open(NS, true, &h);
+    if (err != PB_KV_OK) return err;
 
     err = set_str_if(h, K_SIP_HOST, u->sip_host,
                      s_config.sip_host, sizeof(s_config.sip_host));
-    if (err == ESP_OK) err = set_int_explicit(h, K_SIP_PORT, u->has_sip_port,
+    if (err == PB_KV_OK) err = set_int_explicit(h, K_SIP_PORT, u->has_sip_port,
                                               u->sip_port, &s_config.sip_port);
-    if (err == ESP_OK) err = set_int_explicit(h, K_SIP_LPORT, u->has_sip_local_port,
+    if (err == PB_KV_OK) err = set_int_explicit(h, K_SIP_LPORT, u->has_sip_local_port,
                                               u->sip_local_port, &s_config.sip_local_port);
-    if (err == ESP_OK) err = set_int_explicit(h, K_RTP_PORT, u->has_rtp_port,
+    if (err == PB_KV_OK) err = set_int_explicit(h, K_RTP_PORT, u->has_rtp_port,
                                               u->rtp_port, &s_config.rtp_port);
-    if (err == ESP_OK) err = set_str_if(h, K_SIP_USER, u->sip_user,
+    if (err == PB_KV_OK) err = set_str_if(h, K_SIP_USER, u->sip_user,
                                         s_config.sip_user, sizeof(s_config.sip_user));
-    if (err == ESP_OK) err = set_str_if(h, K_SIP_PASS, u->sip_pass,
+    if (err == PB_KV_OK) err = set_str_if(h, K_SIP_PASS, u->sip_pass,
                                         s_config.sip_pass, sizeof(s_config.sip_pass));
-    if (err == ESP_OK) err = set_int_if(h, K_SIP_EXPIRES, u->sip_expires, &s_config.sip_expires);
-    if (err == ESP_OK) err = set_str_if(h, K_SIP_INT_NUM, u->sip_internal_number,
+    if (err == PB_KV_OK) err = set_int_if(h, K_SIP_EXPIRES, u->sip_expires, &s_config.sip_expires);
+    if (err == PB_KV_OK) err = set_str_if(h, K_SIP_INT_NUM, u->sip_internal_number,
                                         s_config.sip_int_num, sizeof(s_config.sip_int_num));
-    if (err == ESP_OK) err = set_str_if(h, K_SIP_TRANSP, u->sip_transport,
+    if (err == PB_KV_OK) err = set_str_if(h, K_SIP_TRANSP, u->sip_transport,
                                         s_config.sip_transp, sizeof(s_config.sip_transp));
-    if (err == ESP_OK) err = set_str_if(h, K_SIP_AUTHUSER, u->sip_auth_user,
+    if (err == PB_KV_OK) err = set_str_if(h, K_SIP_AUTHUSER, u->sip_auth_user,
                                         s_config.sip_authuser, sizeof(s_config.sip_authuser));
-    if (err == ESP_OK) err = set_str_if(h, K_SIP_OUTBOUND, u->sip_outbound,
+    if (err == PB_KV_OK) err = set_str_if(h, K_SIP_OUTBOUND, u->sip_outbound,
                                         s_config.sip_outbound, sizeof(s_config.sip_outbound));
-    if (err == ESP_OK) err = set_str_if(h, K_SIP_REALM, u->sip_realm,
+    if (err == PB_KV_OK) err = set_str_if(h, K_SIP_REALM, u->sip_realm,
                                         s_config.sip_realm, sizeof(s_config.sip_realm));
-    if (err == ESP_OK) err = set_str_if(h, K_SIP_SRTP, u->sip_srtp,
+    if (err == PB_KV_OK) err = set_str_if(h, K_SIP_SRTP, u->sip_srtp,
                                         s_config.sip_srtp, sizeof(s_config.sip_srtp));
-    if (err == ESP_OK) err = set_str_if(h, K_SIP_STUN, u->sip_stun,
+    if (err == PB_KV_OK) err = set_str_if(h, K_SIP_STUN, u->sip_stun,
                                         s_config.sip_stun, sizeof(s_config.sip_stun));
-    if (err == ESP_OK) err = set_str_if(h, K_FB_APP_USER, u->fritzbox_app_user,
+    if (err == PB_KV_OK) err = set_str_if(h, K_FB_APP_USER, u->fritzbox_app_user,
                                         s_config.fb_app_user, sizeof(s_config.fb_app_user));
-    if (err == ESP_OK) err = set_str_if(h, K_FB_APP_PASS, u->fritzbox_app_pass,
+    if (err == PB_KV_OK) err = set_str_if(h, K_FB_APP_PASS, u->fritzbox_app_pass,
                                         s_config.fb_app_pass, sizeof(s_config.fb_app_pass));
-    if (err == ESP_OK) err = set_str_if(h, K_FB_PB_ID, u->fritzbox_phonebook,
+    if (err == PB_KV_OK) err = set_str_if(h, K_FB_PB_ID, u->fritzbox_phonebook,
                                         s_config.fb_pb_id, sizeof(s_config.fb_pb_id));
-    if (err == ESP_OK) err = set_str_if(h, K_FB_PB_NAME, u->fritzbox_phonebook_name,
+    if (err == PB_KV_OK) err = set_str_if(h, K_FB_PB_NAME, u->fritzbox_phonebook_name,
                                         s_config.fb_pb_name, sizeof(s_config.fb_pb_name));
-    if (err == ESP_OK) err = set_str_if(h, K_DEV_MODE, u->dev_mode,
+    if (err == PB_KV_OK) err = set_str_if(h, K_DEV_MODE, u->dev_mode,
                                         s_config.dev_mode, sizeof(s_config.dev_mode));
-    if (err == ESP_OK) err = set_str_if(h, K_SYNC_ENABLED, u->sync_enabled,
+    if (err == PB_KV_OK) err = set_str_if(h, K_SYNC_ENABLED, u->sync_enabled,
                                         s_config.sync_enabled, sizeof(s_config.sync_enabled));
-    if (err == ESP_OK) err = set_str_if(h, K_LOG_KNOWN, u->log_known_calls,
+    if (err == PB_KV_OK) err = set_str_if(h, K_LOG_KNOWN, u->log_known_calls,
                                         s_config.log_known, sizeof(s_config.log_known));
-    if (err == ESP_OK) err = set_str_if(h, K_LOG_INFO, u->log_info,
+    if (err == PB_KV_OK) err = set_str_if(h, K_LOG_INFO, u->log_info,
                                         s_config.log_info, sizeof(s_config.log_info));
-    if (err == ESP_OK) err = set_str_if(h, K_LED_QUIET, u->led_quiet,
+    if (err == PB_KV_OK) err = set_str_if(h, K_LED_QUIET, u->led_quiet,
                                         s_config.led_quiet, sizeof(s_config.led_quiet));
-    if (err == ESP_OK) err = set_str_if(h, K_AUTH_ENABLED, u->auth_enabled,
+    if (err == PB_KV_OK) err = set_str_if(h, K_AUTH_ENABLED, u->auth_enabled,
                                         s_config.auth_enabled, sizeof(s_config.auth_enabled));
-    if (err == ESP_OK) err = set_str_if(h, K_AUTH_USER, u->auth_user,
+    if (err == PB_KV_OK) err = set_str_if(h, K_AUTH_USER, u->auth_user,
                                         s_config.auth_user, sizeof(s_config.auth_user));
-    if (err == ESP_OK) err = set_str_if(h, K_AUTH_PERSIST, u->auth_persist,
+    if (err == PB_KV_OK) err = set_str_if(h, K_AUTH_PERSIST, u->auth_persist,
                                         s_config.auth_persist, sizeof(s_config.auth_persist));
-    if (err == ESP_OK) err = set_str_if(h, K_AUTO_UPDATE, u->auto_update,
+    if (err == PB_KV_OK) err = set_str_if(h, K_AUTO_UPDATE, u->auto_update,
                                         s_config.auto_update, sizeof(s_config.auto_update));
-    if (err == ESP_OK) err = set_str_if(h, K_OTA_CHANNEL, u->ota_channel,
+    if (err == PB_KV_OK) err = set_str_if(h, K_OTA_CHANNEL, u->ota_channel,
                                         s_config.ota_channel, sizeof(s_config.ota_channel));
-    if (err == ESP_OK) err = set_str_if(h, K_CRASH_REPORT, u->crash_report,
+    if (err == PB_KV_OK) err = set_str_if(h, K_CRASH_REPORT, u->crash_report,
                                         s_config.crash_report, sizeof(s_config.crash_report));
-    if (err == ESP_OK) err = set_str_if(h, K_ACCEPT_TEST, u->accept_test_calls,
+    if (err == PB_KV_OK) err = set_str_if(h, K_ACCEPT_TEST, u->accept_test_calls,
                                         s_config.accept_test, sizeof(s_config.accept_test));
-    if (err == ESP_OK) err = set_str_if(h, K_BL_WILDCARDS, u->blocklist_wildcards,
+    if (err == PB_KV_OK) err = set_str_if(h, K_BL_WILDCARDS, u->blocklist_wildcards,
                                         s_config.bl_wildcards, sizeof(s_config.bl_wildcards));
-    if (err == ESP_OK) err = set_str_if(h, K_BL_ENABLED, u->blocklist_enabled,
+    if (err == PB_KV_OK) err = set_str_if(h, K_BL_ENABLED, u->blocklist_enabled,
                                         s_config.bl_enabled, sizeof(s_config.bl_enabled));
-    if (err == ESP_OK) err = set_str_if(h, K_SPAM_NAMES, u->spam_names,
+    if (err == PB_KV_OK) err = set_str_if(h, K_SPAM_NAMES, u->spam_names,
                                         s_config.spam_names, sizeof(s_config.spam_names));
-    if (err == ESP_OK) err = set_str_if(h, K_PB_URL, u->phoneblock_base_url,
+    if (err == PB_KV_OK) err = set_str_if(h, K_PB_URL, u->phoneblock_base_url,
                                         s_config.pb_base_url, sizeof(s_config.pb_base_url));
-    if (err == ESP_OK) err = set_str_if(h, K_PB_TOKEN, u->phoneblock_token,
+    if (err == PB_KV_OK) err = set_str_if(h, K_PB_TOKEN, u->phoneblock_token,
                                         s_config.pb_token, sizeof(s_config.pb_token));
-    if (err == ESP_OK) err = set_int_if(h, K_MIN_DIRECT, u->min_direct_votes,
+    if (err == PB_KV_OK) err = set_int_if(h, K_MIN_DIRECT, u->min_direct_votes,
                                         &s_config.min_direct_votes);
-    if (err == ESP_OK) err = set_int_explicit(h, K_MIN_RANGE,
+    if (err == PB_KV_OK) err = set_int_explicit(h, K_MIN_RANGE,
                                               u->has_min_range_votes,
                                               u->min_range_votes,
                                               &s_config.min_range_votes);
-    if (err == ESP_OK) err = set_str_if(h, K_SMTP_HOST, u->smtp_host,
+    if (err == PB_KV_OK) err = set_str_if(h, K_SMTP_HOST, u->smtp_host,
                                         s_config.smtp_host, sizeof(s_config.smtp_host));
-    if (err == ESP_OK) err = set_int_explicit(h, K_SMTP_PORT, u->has_smtp_port,
+    if (err == PB_KV_OK) err = set_int_explicit(h, K_SMTP_PORT, u->has_smtp_port,
                                               u->smtp_port, &s_config.smtp_port);
-    if (err == ESP_OK) err = set_str_if(h, K_SMTP_SECURITY, u->smtp_security,
+    if (err == PB_KV_OK) err = set_str_if(h, K_SMTP_SECURITY, u->smtp_security,
                                         s_config.smtp_security, sizeof(s_config.smtp_security));
-    if (err == ESP_OK) err = set_str_if(h, K_SMTP_USER, u->smtp_user,
+    if (err == PB_KV_OK) err = set_str_if(h, K_SMTP_USER, u->smtp_user,
                                         s_config.smtp_user, sizeof(s_config.smtp_user));
-    if (err == ESP_OK) err = set_str_if(h, K_SMTP_PASS, u->smtp_pass,
+    if (err == PB_KV_OK) err = set_str_if(h, K_SMTP_PASS, u->smtp_pass,
                                         s_config.smtp_pass, sizeof(s_config.smtp_pass));
-    if (err == ESP_OK) err = set_str_if(h, K_SMTP_FROM, u->smtp_from,
+    if (err == PB_KV_OK) err = set_str_if(h, K_SMTP_FROM, u->smtp_from,
                                         s_config.smtp_from, sizeof(s_config.smtp_from));
-    if (err == ESP_OK) err = set_str_if(h, K_SMTP_TO, u->smtp_to,
+    if (err == PB_KV_OK) err = set_str_if(h, K_SMTP_TO, u->smtp_to,
                                         s_config.smtp_to, sizeof(s_config.smtp_to));
-    if (err == ESP_OK) err = set_str_if(h, K_MAIL_ON_ERROR, u->mail_on_error,
+    if (err == PB_KV_OK) err = set_str_if(h, K_MAIL_ON_ERROR, u->mail_on_error,
                                         s_config.mail_on_error, sizeof(s_config.mail_on_error));
-    if (err == ESP_OK) err = set_str_if(h, K_MAIL_ON_SPAM, u->mail_on_spam,
+    if (err == PB_KV_OK) err = set_str_if(h, K_MAIL_ON_SPAM, u->mail_on_spam,
                                         s_config.mail_on_spam, sizeof(s_config.mail_on_spam));
-    if (err == ESP_OK) err = set_str_if(h, K_MAIL_ON_UPDATE, u->mail_on_update,
+    if (err == PB_KV_OK) err = set_str_if(h, K_MAIL_ON_UPDATE, u->mail_on_update,
                                         s_config.mail_on_update, sizeof(s_config.mail_on_update));
-    if (err == ESP_OK) err = set_str_if(h, K_TIMEZONE, u->timezone,
+    if (err == PB_KV_OK) err = set_str_if(h, K_TIMEZONE, u->timezone,
                                         s_config.timezone, sizeof(s_config.timezone));
-    if (err == ESP_OK) err = set_str_if(h, K_UI_LANG, u->ui_lang,
+    if (err == PB_KV_OK) err = set_str_if(h, K_UI_LANG, u->ui_lang,
                                         s_config.ui_lang, sizeof(s_config.ui_lang));
-    if (err == ESP_OK) err = set_str_if(h, K_DIAL_PREFIX, u->dial_prefix,
+    if (err == PB_KV_OK) err = set_str_if(h, K_DIAL_PREFIX, u->dial_prefix,
                                         s_config.dial_prefix, sizeof(s_config.dial_prefix));
 
-    if (err == ESP_OK) err = nvs_commit(h);
-    nvs_close(h);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "config_update: %s", esp_err_to_name(err));
+    if (err == PB_KV_OK) err = pb_kv_commit(h);
+    pb_kv_close(h);
+    if (err != PB_KV_OK) {
+        pb_log_err(TAG, "config_update: %s", "key-value store error");
     } else {
-        ESP_LOGI(TAG, "config_update: committed");
+        pb_log_info(TAG, "config_update: committed");
     }
     return err;
 }

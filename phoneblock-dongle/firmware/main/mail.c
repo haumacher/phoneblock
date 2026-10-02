@@ -14,7 +14,6 @@
 #include "esp_system.h"
 #include "esp_timer.h"
 
-#include "mbedtls/base64.h"
 #include "mbedtls/ctr_drbg.h"
 #include "mbedtls/entropy.h"
 #include "mbedtls/net_sockets.h"
@@ -25,6 +24,7 @@
 #include "mail_i18n.h"
 #include "mail_html.h"
 #include "mail_rcpt.h"
+#include "platform.h"
 #include "smtp_body.h"
 #include "stats.h"
 #include "strbuf.h"
@@ -319,13 +319,13 @@ static bool mail_send(const char *subject, const char *content_type, const char 
     // AUTH LOGIN: username then password, each base64 on its own line.
     ret = smtp_cmd(&c, "AUTH LOGIN\r\n", deadline);
     if (ret != 334) goto done;
-    if (mbedtls_base64_encode((unsigned char *)buf, MAIL_LINE_CAP - 2, &b64len,
+    if (pb_base64_encode((unsigned char *)buf, MAIL_LINE_CAP - 2, &b64len,
                               (const unsigned char *)user, strlen(user)) != 0)
         goto done;
     buf[b64len] = '\r'; buf[b64len + 1] = '\n';
     ret = smtp_cmd_n(&c, buf, b64len + 2, deadline);
     if (ret != 334) goto done;
-    if (mbedtls_base64_encode((unsigned char *)buf, MAIL_LINE_CAP - 2, &b64len,
+    if (pb_base64_encode((unsigned char *)buf, MAIL_LINE_CAP - 2, &b64len,
                               (const unsigned char *)pass, strlen(pass)) != 0)
         goto done;
     buf[b64len] = '\r'; buf[b64len + 1] = '\n';

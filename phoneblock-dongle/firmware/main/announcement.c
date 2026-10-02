@@ -6,10 +6,13 @@
 #include <unistd.h>
 #include <errno.h>
 
+#ifdef ESP_PLATFORM
 #include "esp_log.h"
 #include "esp_spiffs.h"
+#endif
 
 #include "config.h"
+#include "platform.h"
 
 // Must be last: bans unsafe string APIs for the rest of this file.
 #include "banned_apis.h"
@@ -23,15 +26,25 @@ static const char *TAG = "announcement";
 // the selected ui_lang (see i18n_sync.c); with neither present the caller
 // answers silently and hangs up (announcement_open returns len == 0).
 
+#ifdef ESP_PLATFORM
 #define SPIFFS_BASE_PATH  "/spiffs"
 #define SPIFFS_LABEL      "storage"
 #define SPIFFS_FILE       "/spiffs/announcement.alaw"
 #define SPIFFS_TEMP       "/spiffs/announcement.alaw.tmp"
-// Downloaded, per-locale announcement: "/spiffs/announcement-<lang>.alaw".
 #define SPIFFS_LOCALIZED_PREFIX "/spiffs/announcement-"
+#else
+#ifndef PHONEBLOCK_DATA_DIR
+#define PHONEBLOCK_DATA_DIR "/var/lib/phoneblock"
+#endif
+#define SPIFFS_BASE_PATH  PHONEBLOCK_DATA_DIR
+#define SPIFFS_LABEL      "storage"
+#define SPIFFS_FILE       PHONEBLOCK_DATA_DIR "/announcement.alaw"
+#define SPIFFS_TEMP       PHONEBLOCK_DATA_DIR "/announcement.alaw.tmp"
+#define SPIFFS_LOCALIZED_PREFIX PHONEBLOCK_DATA_DIR "/announcement-"
+#endif
 #define SPIFFS_LOCALIZED_SUFFIX ".alaw"
 
-static bool     s_spiffs_mounted = false;
+static bool     s_storage_ready = false;
 // Latch for "there is no usable custom file" so we don't keep stat()-ing
 // SPIFFS (and re-warning about a bad size) on every /api/status poll.
 // Cleared whenever a new file is written or the current one is reset.
@@ -55,7 +68,7 @@ static void forget_custom_state(void)
 // "no custom" result so repeated polls don't re-stat or re-warn.
 static long custom_size(void)
 {
-    if (!s_spiffs_mounted) return -1;
+    if (!s_storage_ready) return -1;
     if (s_no_custom)       return -1;
 
     struct stat st;
@@ -64,7 +77,7 @@ static long custom_size(void)
         return -1;
     }
     if (st.st_size <= 0 || (size_t)st.st_size > ANNOUNCEMENT_MAX_BYTES) {
-        ESP_LOGW(TAG, "SPIFFS file has invalid size %ld, ignoring",
+        pb_log_warn(TAG, "SPIFFS file has invalid size %ld, ignoring",
                  (long)st.st_size);
         s_no_custom = true;
         return -1;
@@ -90,7 +103,7 @@ void announcement_localized_path(char *out, size_t cap, const char *lang)
 // switch / download.
 static long localized_size(void)
 {
-    if (!s_spiffs_mounted) return -1;
+    if (!s_storage_ready) return -1;
     char path[48];
     announcement_localized_path(path, sizeof(path), config_ui_lang());
     struct stat st;
@@ -99,37 +112,47 @@ static long localized_size(void)
     return (long)st.st_size;
 }
 
-esp_err_t announcement_init(void)
+int announcement_init(void)
 {
+#ifdef ESP_PLATFORM
     esp_vfs_spiffs_conf_t cfg = {
         .base_path              = SPIFFS_BASE_PATH,
         .partition_label        = SPIFFS_LABEL,
         .max_files              = 2,
         .format_if_mount_failed = true,
     };
-    esp_err_t err = esp_vfs_spiffs_register(&cfg);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "SPIFFS mount failed: %s", esp_err_to_name(err));
+    int err = esp_vfs_spiffs_register(&cfg);
+    if (err != PB_OK) {
+        pb_log_err(TAG, "SPIFFS mount failed: %s", "SPIFFS error");
         // Keep going — the embedded default will still work.
         return err;
     }
-    s_spiffs_mounted = true;
+    s_storage_ready = true;
 
     size_t total = 0, used = 0;
-    if (esp_spiffs_info(SPIFFS_LABEL, &total, &used) == ESP_OK) {
-        ESP_LOGI(TAG, "SPIFFS mounted: %u B used of %u B",
+    if (esp_spiffs_info(SPIFFS_LABEL, &total, &used) == PB_OK) {
+        pb_log_info(TAG, "SPIFFS mounted: %u B used of %u B",
                  (unsigned)used, (unsigned)total);
     }
     // Legacy cleanup: older firmware uploaded via a temp file plus a
     // rename(). Drop any leftover temp so it doesn't waste a slot —
     // the current code writes the live file in place (see write_begin).
     unlink(SPIFFS_TEMP);
-    return ESP_OK;
+    s_storage_ready = true;
+    return PB_OK;
+#else
+    if (mkdir(PHONEBLOCK_DATA_DIR, 0750) != 0 && errno != EEXIST) {
+        pb_log_err(TAG, "mkdir %s: %s", PHONEBLOCK_DATA_DIR, strerror(errno));
+        return PB_FAIL;
+    }
+    s_storage_ready = true;
+    return PB_OK;
+#endif
 }
 
-esp_err_t announcement_open(announcement_src_t *src)
+int announcement_open(announcement_src_t *src)
 {
-    if (!src) return ESP_ERR_INVALID_ARG;
+    if (!src) return PB_ERR_INVALID_ARG;
     src->file = NULL;
     src->mem  = NULL;
     src->pos  = 0;
@@ -156,16 +179,16 @@ esp_err_t announcement_open(announcement_src_t *src)
         if (f) {
             src->file = f;
             src->len  = (size_t)sz;
-            return ESP_OK;
+            return PB_OK;
         }
         // Lost the race with a delete, or a SPIFFS hiccup. There is no
         // embedded fallback anymore — leave the source empty so the caller
         // answers silently and goes to BYE rather than serving nothing.
-        ESP_LOGW(TAG, "fopen(%s): %s — no announcement, silent pickup",
+        pb_log_warn(TAG, "fopen(%s): %s — no announcement, silent pickup",
                  path, strerror(errno));
     }
     src->len = 0;   // no audio available (see announcement.h)
-    return ESP_OK;
+    return PB_OK;
 }
 
 size_t announcement_read(announcement_src_t *src, uint8_t *out, size_t max)
@@ -192,12 +215,12 @@ void announcement_close(announcement_src_t *src)
     }
 }
 
-esp_err_t announcement_write_begin(size_t total_bytes)
+int announcement_write_begin(size_t total_bytes)
 {
-    if (!s_spiffs_mounted) return ESP_ERR_INVALID_STATE;
-    if (s_write_file)      return ESP_ERR_INVALID_STATE;
+    if (!s_storage_ready) return PB_FAIL;
+    if (s_write_file)      return PB_FAIL;
     if (total_bytes == 0 || total_bytes > ANNOUNCEMENT_MAX_BYTES) {
-        return ESP_ERR_INVALID_ARG;
+        return PB_ERR_INVALID_ARG;
     }
     // Write straight into the live file: fopen("wb") truncates it in
     // place, so the partition only ever holds one announcement-sized
@@ -212,8 +235,8 @@ esp_err_t announcement_write_begin(size_t total_bytes)
 
     s_write_file = fopen(SPIFFS_FILE, "wb");
     if (!s_write_file) {
-        ESP_LOGE(TAG, "fopen(%s): %s", SPIFFS_FILE, strerror(errno));
-        return ESP_FAIL;
+        pb_log_err(TAG, "fopen(%s): %s", SPIFFS_FILE, strerror(errno));
+        return PB_FAIL;
     }
     // Crank the stdio buffer up: SPIFFS pays per flush, not per byte,
     // so bigger batched writes are noticeably faster than the default
@@ -222,42 +245,42 @@ esp_err_t announcement_write_begin(size_t total_bytes)
     setvbuf(s_write_file, s_write_bufio, _IOFBF, sizeof(s_write_bufio));
     s_write_total = total_bytes;
     s_write_got   = 0;
-    return ESP_OK;
+    return PB_OK;
 }
 
-esp_err_t announcement_write_append(const uint8_t *buf, size_t len)
+int announcement_write_append(const uint8_t *buf, size_t len)
 {
-    if (!s_write_file) return ESP_ERR_INVALID_STATE;
-    if (!buf || len == 0) return ESP_ERR_INVALID_ARG;
-    if (s_write_got + len > s_write_total) return ESP_ERR_INVALID_SIZE;
+    if (!s_write_file) return PB_FAIL;
+    if (!buf || len == 0) return PB_ERR_INVALID_ARG;
+    if (s_write_got + len > s_write_total) return PB_ERR_INVALID_SIZE;
     size_t w = fwrite(buf, 1, len, s_write_file);
     if (w != len) {
-        ESP_LOGE(TAG, "short write: %u of %u bytes", (unsigned)w, (unsigned)len);
-        return ESP_FAIL;
+        pb_log_err(TAG, "short write: %u of %u bytes", (unsigned)w, (unsigned)len);
+        return PB_FAIL;
     }
     s_write_got += len;
-    return ESP_OK;
+    return PB_OK;
 }
 
-esp_err_t announcement_write_commit(void)
+int announcement_write_commit(void)
 {
-    if (!s_write_file) return ESP_ERR_INVALID_STATE;
+    if (!s_write_file) return PB_FAIL;
     fclose(s_write_file);
     s_write_file = NULL;
     if (s_write_got != s_write_total) {
-        ESP_LOGE(TAG, "commit: got %u of expected %u",
+        pb_log_err(TAG, "commit: got %u of expected %u",
                  (unsigned)s_write_got, (unsigned)s_write_total);
         // Drop the partially written live file → fall back to default.
         unlink(SPIFFS_FILE);
         forget_custom_state();
         s_write_got = s_write_total = 0;
-        return ESP_ERR_INVALID_SIZE;
+        return PB_ERR_INVALID_SIZE;
     }
     size_t stored = s_write_got;
     s_write_got = s_write_total = 0;
     forget_custom_state();
-    ESP_LOGI(TAG, "stored custom announcement: %u bytes", (unsigned)stored);
-    return ESP_OK;
+    pb_log_info(TAG, "stored custom announcement: %u bytes", (unsigned)stored);
+    return PB_OK;
 }
 
 void announcement_write_abort(void)
@@ -273,16 +296,16 @@ void announcement_write_abort(void)
     s_write_got = s_write_total = 0;
 }
 
-esp_err_t announcement_reset(void)
+int announcement_reset(void)
 {
-    if (!s_spiffs_mounted) return ESP_ERR_INVALID_STATE;
+    if (!s_storage_ready) return PB_FAIL;
     if (unlink(SPIFFS_FILE) != 0 && errno != ENOENT) {
-        ESP_LOGW(TAG, "unlink(%s): %s", SPIFFS_FILE, strerror(errno));
+        pb_log_warn(TAG, "unlink(%s): %s", SPIFFS_FILE, strerror(errno));
     }
     unlink(SPIFFS_TEMP);  // best-effort cleanup of any stale temp
     forget_custom_state();
-    ESP_LOGI(TAG, "custom announcement reset (localized/silent takes over)");
-    return ESP_OK;
+    pb_log_info(TAG, "custom announcement reset (localized/silent takes over)");
+    return PB_OK;
 }
 
 bool announcement_is_custom(void)

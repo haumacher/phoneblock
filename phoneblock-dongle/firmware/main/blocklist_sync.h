@@ -23,8 +23,16 @@
 
 #include "blocklist_lookup.h"
 
+#ifdef ESP_PLATFORM
 #define BLOCKLIST_COMMUNITY_PATH "/spiffs/community.bin"
 #define BLOCKLIST_PERSONAL_PATH  "/spiffs/personal.bin"
+#else
+#ifndef PHONEBLOCK_DATA_DIR
+#define PHONEBLOCK_DATA_DIR "/var/lib/phoneblock"
+#endif
+#define BLOCKLIST_COMMUNITY_PATH PHONEBLOCK_DATA_DIR "/community.bin"
+#define BLOCKLIST_PERSONAL_PATH  PHONEBLOCK_DATA_DIR "/personal.bin"
+#endif
 
 // Initialise the sync status mutex and prime the cached file sizes.
 // Called once by scheduler_start() before the scheduler task (or any

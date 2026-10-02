@@ -5,7 +5,6 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "esp_err.h"
 
 // Voice announcement served to answered spam callers as a single G.711
 // A-law stream (8 kHz, mono, no header). No announcement is baked into the
@@ -33,7 +32,7 @@
 
 #define ANNOUNCEMENT_MAX_BYTES (240 * 1024)   // ~30 s at 8 kB/s A-law
 
-esp_err_t   announcement_init(void);
+int         announcement_init(void);
 
 // A handle for streaming the active announcement frame-by-frame.
 // Either an in-memory source (the embedded default, mapped from flash)
@@ -48,11 +47,11 @@ typedef struct {
 } announcement_src_t;
 
 // Open the active announcement for sequential streaming and fill *src.
-// Always returns ESP_OK with a usable source (falls back to the
+// Always returns 0 with a usable source (falls back to the
 // embedded default if no custom file can be opened). src->len == 0 is
 // legal (means: no audio, caller should go straight to BYE).
 // The caller MUST release the handle with announcement_close().
-esp_err_t   announcement_open(announcement_src_t *src);
+int         announcement_open(announcement_src_t *src);
 
 // Build the SPIFFS path of the downloaded announcement for a locale:
 // "/spiffs/announcement-<lang>.alaw". lang must be a config_lang_code_valid()
@@ -83,14 +82,14 @@ void        announcement_close(announcement_src_t *src);
 //
 // Only one write session at a time. Not thread-safe — call from a
 // single request handler.
-esp_err_t   announcement_write_begin(size_t total_bytes);
-esp_err_t   announcement_write_append(const uint8_t *buf, size_t len);
-esp_err_t   announcement_write_commit(void);
+int         announcement_write_begin(size_t total_bytes);
+int         announcement_write_append(const uint8_t *buf, size_t len);
+int         announcement_write_commit(void);
 void        announcement_write_abort(void);
 
 // Discard any user-provided announcement; the next get() returns the
 // embedded default.
-esp_err_t   announcement_reset(void);
+int         announcement_reset(void);
 
 // True if a user-uploaded custom announcement is present. For the
 // dashboard (distinguishes a hand-uploaded file from a localized download).
