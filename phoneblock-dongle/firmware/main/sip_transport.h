@@ -1,7 +1,12 @@
 #pragma once
 
 #include <stdbool.h>
+#ifdef ESP_PLATFORM
 #include "lwip/sockets.h"
+#else
+#include <netinet/in.h>
+#include <sys/socket.h>
+#endif
 
 // Transport abstraction for the SIP signaling channel.
 //

@@ -4,20 +4,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/semphr.h"
 
-#include "esp_log.h"
-#include "esp_timer.h"
-#include "esp_http_client.h"
-#include "esp_crt_bundle.h"
 
 #include "api.h"
 #include "config.h"
-#include "http_util.h"
 #include "phone_norm.h"
 #include "scheduler.h"
 #include "stats.h"
+#include "platform.h"
 #include "tr064.h"
 #include "tr064_parse.h"
 
@@ -30,24 +24,24 @@ static const char *TAG = "sync";
 // scheduler task (see scheduler.c); sync.c only provides the run body,
 // the status snapshot, and the trigger entry point the web UI calls.
 
-static SemaphoreHandle_t s_lock = NULL;    // guards s_status updates
+static pb_mutex_t * s_lock = NULL;    // guards s_status updates
 static sync_status_t     s_status;
 
 static void set_status_running(bool running)
 {
-    xSemaphoreTake(s_lock, portMAX_DELAY);
+    pb_mutex_lock(s_lock);
     s_status.running = running;
-    xSemaphoreGive(s_lock);
+    pb_mutex_unlock(s_lock);
 }
 
 static void set_status_result(bool ok, int pushed, int failed, int skipped,
                               const char *err)
 {
-    xSemaphoreTake(s_lock, portMAX_DELAY);
+    pb_mutex_lock(s_lock);
     s_status.ever_ran     = true;
     s_status.last_ok      = ok;
     s_status.running      = false;
-    s_status.last_at_us   = esp_timer_get_time();
+    s_status.last_at_us   = pb_monotonic_us();
     s_status.last_pushed  = pushed;
     s_status.last_failed  = failed;
     s_status.last_skipped = skipped;
@@ -57,58 +51,44 @@ static void set_status_result(bool ok, int pushed, int failed, int skipped,
     } else {
         s_status.last_error[0] = '\0';
     }
-    xSemaphoreGive(s_lock);
+    pb_mutex_unlock(s_lock);
 }
 
 // Simple HTTP GET into a heap buffer. Returns bytes written, or -1.
 typedef struct { char *buf; int len; int cap; } http_buf_t;
 
-static esp_err_t http_collect_cb(esp_http_client_event_t *evt)
+static void http_collect_cb(const void *data, size_t length, void *context)
 {
-    http_buf_t *b = evt->user_data;
-    if (evt->event_id == HTTP_EVENT_ON_DATA) {
-        // esp_http_client already de-chunks chunked bodies before the
-        // ON_DATA callback — copy unconditionally. Some earlier code
-        // in this project gated on !is_chunked_response() which drops
-        // exactly the payloads we care about here.
-        int remaining = b->cap - b->len - 1;
-        int copy = evt->data_len < remaining ? evt->data_len : remaining;
-        if (copy > 0) {
-            memcpy(b->buf + b->len, evt->data, copy);
-            b->len += copy;
-            b->buf[b->len] = '\0';
-        }
+    http_buf_t *buffer = context;
+    int available = buffer->cap - buffer->len - 1;
+    size_t copied = length < (size_t)(available > 0 ? available : 0)
+                  ? length : (size_t)(available > 0 ? available : 0);
+    if (copied > 0) {
+        memcpy(buffer->buf + buffer->len, data, copied);
+        buffer->len += (int)copied;
+        buffer->buf[buffer->len] = 0;
     }
-    return ESP_OK;
 }
 
 static int http_get_to_buf(const char *url, char *buf, int cap)
 {
-    http_buf_t hb = { .buf = buf, .len = 0, .cap = cap };
-    buf[0] = '\0';
-    esp_http_client_config_t cfg = {
-        .url               = url,
-        .method            = HTTP_METHOD_GET,
-        .event_handler     = http_collect_cb,
-        .user_data         = &hb,
-        .crt_bundle_attach = esp_crt_bundle_attach,
-        .timeout_ms        = 10000,
-    };
-    esp_http_client_handle_t c = esp_http_client_init(&cfg);
-    if (!c) return -1;
-    http_util_set_user_agent(c);
-    esp_err_t err = esp_http_client_perform(c);
-    int status = (err == ESP_OK) ? esp_http_client_get_status_code(c) : 0;
-    esp_http_client_cleanup(c);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "GET %s: %s", url, esp_err_to_name(err));
+    http_buf_t output = { .buf = buf, .cap = cap };
+    buf[0] = 0;
+    const pb_http_header_t headers[] = { { "Accept", "application/xml" } };
+    size_t length = 0;
+    int status = 0;
+    int result = pb_http_request("GET", url, headers, 1, NULL, 0, 10000,
+                                 NULL, 0, &length, &status,
+                                 http_collect_cb, &output, NULL);
+    if (result != PB_HTTP_OK) {
+        pb_log_err(TAG, "GET %s failed (result=%d)", url, result);
         return -1;
     }
     if (status != 200) {
-        ESP_LOGE(TAG, "GET %s: HTTP %d", url, status);
+        pb_log_err(TAG, "GET %s: HTTP %d", url, status);
         return -1;
     }
-    return hb.len;
+    return output.len;
 }
 
 // Contact parser lives in tr064_parse.c so the host test harness
@@ -145,18 +125,18 @@ static void process_contact(const char *uid, const char *number, void *user)
     }
 
     if (!phoneblock_rate(normalised, "B_MISSED", NULL)) {
-        ESP_LOGW(TAG, "rate failed for %s, keeping in Fritz!Box", normalised);
+        pb_log_warn(TAG, "rate failed for %s, keeping in Fritz!Box", normalised);
         c->failed++;
         return;
     }
 
     int code = 0;
     char detail[96] = "";
-    esp_err_t derr = tr064_call_barring_delete(
+    int derr = tr064_call_barring_delete(
         c->host, 49000, c->app_user, c->app_pass, uid,
         &code, detail, sizeof(detail));
-    if (derr != ESP_OK) {
-        ESP_LOGW(TAG, "delete UID %s failed: code=%d %s — will retry next run",
+    if (derr != PB_OK) {
+        pb_log_warn(TAG, "delete UID %s failed: code=%d %s — will retry next run",
                  uid, code, detail);
         // Rated but not deleted — next run will try again. Since we
         // rate before deleting, the server-side idempotency has to
@@ -174,12 +154,12 @@ static void run_once(void)
     const char *app_user = config_fritzbox_app_user();
     const char *app_pass = config_fritzbox_app_pass();
     if (!host[0] || !app_user[0] || !app_pass[0]) {
-        ESP_LOGI(TAG, "sync skipped — no Fritz!Box app credentials");
+        pb_log_info(TAG, "sync skipped — no Fritz!Box app credentials");
         set_status_result(false, 0, 0, 0, "not set up for Fritz!Box");
         return;
     }
     if (strlen(config_phoneblock_token()) == 0) {
-        ESP_LOGI(TAG, "sync skipped — no PhoneBlock token");
+        pb_log_info(TAG, "sync skipped — no PhoneBlock token");
         set_status_result(false, 0, 0, 0, "no PhoneBlock token");
         return;
     }
@@ -188,17 +168,17 @@ static void run_once(void)
     // reaches run_once, so the user can fire one-off syncs without
     // flipping the auto toggle on.
 
-    ESP_LOGI(TAG, "sync run starting");
+    pb_log_info(TAG, "sync run starting");
     set_status_running(true);
 
     char url[256] = "";
     int  code = 0;
     char detail[96] = "";
-    esp_err_t err = tr064_call_barring_list_url(
+    int err = tr064_call_barring_list_url(
         host, 49000, app_user, app_pass,
         url, sizeof(url), &code, detail, sizeof(detail));
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "GetCallBarringList failed: code=%d %s", code, detail);
+    if (err != PB_OK) {
+        pb_log_err(TAG, "GetCallBarringList failed: code=%d %s", code, detail);
         char msg[80];
         snprintf(msg, sizeof(msg), "list: %.60s",
                  detail[0] ? detail : "network");
@@ -206,7 +186,7 @@ static void run_once(void)
         return;
     }
 
-    ESP_LOGI(TAG, "GET %s", url);
+    pb_log_info(TAG, "GET %s", url);
     char *xml = malloc(8192);
     if (!xml) {
         set_status_result(false, 0, 0, 0, "out of memory");
@@ -214,16 +194,16 @@ static void run_once(void)
     }
     int len = http_get_to_buf(url, xml, 8192);
     if (len <= 0) {
-        ESP_LOGE(TAG, "list download failed (len=%d)", len);
+        pb_log_err(TAG, "list download failed (len=%d)", len);
         free(xml);
         set_status_result(false, 0, 0, 0, "list download failed");
         return;
     }
-    ESP_LOGI(TAG, "phonebook XML: %d bytes", len);
+    pb_log_info(TAG, "phonebook XML: %d bytes", len);
     // Emit the body in chunks — ESP_LOG caps per-line length at ~1 KB.
     for (int off = 0; off < len; off += 700) {
         int chunk = (len - off) > 700 ? 700 : (len - off);
-        ESP_LOGI(TAG, "  [%d..%d] %.*s", off, off + chunk, chunk, xml + off);
+        pb_log_info(TAG, "  [%d..%d] %.*s", off, off + chunk, chunk, xml + off);
     }
 
     run_ctx_t ctx = {
@@ -233,7 +213,7 @@ static void run_once(void)
     int total = tr064_parse_phonebook_contacts(xml, len,
                                                 process_contact, &ctx);
     free(xml);
-    ESP_LOGI(TAG, "sync done: %d contacts, %d pushed, %d failed, %d skipped",
+    pb_log_info(TAG, "sync done: %d contacts, %d pushed, %d failed, %d skipped",
              total, ctx.pushed, ctx.failed, ctx.skipped);
 
     // Skipped (unrateable) entries are not failures — a run with only
@@ -255,9 +235,9 @@ void sync_run(bool manual)
 bool sync_trigger_now(void)
 {
     if (!s_lock) return false;
-    xSemaphoreTake(s_lock, portMAX_DELAY);
+    pb_mutex_lock(s_lock);
     bool running = s_status.running;
-    xSemaphoreGive(s_lock);
+    pb_mutex_unlock(s_lock);
     if (running) return false;
     // Hand off to the scheduler task, which runs sync_run(true) on its
     // own (8 KB) stack — sync must not run on the caller's httpd thread.
@@ -268,14 +248,14 @@ void sync_snapshot(sync_status_t *out)
 {
     if (!out) return;
     if (!s_lock) { memset(out, 0, sizeof(*out)); return; }
-    xSemaphoreTake(s_lock, portMAX_DELAY);
+    pb_mutex_lock(s_lock);
     *out = s_status;
-    xSemaphoreGive(s_lock);
+    pb_mutex_unlock(s_lock);
 }
 
 void sync_init(void)
 {
     if (s_lock) return;
     memset(&s_status, 0, sizeof(s_status));
-    s_lock = xSemaphoreCreateMutex();
+    s_lock = pb_mutex_create();
 }

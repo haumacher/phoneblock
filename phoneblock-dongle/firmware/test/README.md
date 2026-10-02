@@ -1,14 +1,14 @@
 # Firmware-Tests
 
-Host-basierte Unit-Tests für die pure-C-Parser unter `../main/`
-(`sip_parse`, `tr064_parse`, `api_scan`). Keine
-ESP-IDF-Toolchain, keine QEMU-Emulation — direkt mit `gcc` ausführbar,
-einmal Suite-Durchlauf dauert ≪ 100 ms.
+Host-basierte Tests für pure-C-Parser und Linux-Plattformdienste der Firmware.
+Die Parser-Tests laufen direkt mit `gcc`; die Plattform- und API-Integrationstests
+verwenden pthreads, libcurl und OpenSSL.
 
-`test_api_scan` zieht zusätzlich `cJSON` aus
+Die JSON-Tests ziehen `cJSON` aus
 `$(IDF_PATH)/components/json/cJSON/` (nur die `.c`-/`.h`-Dateien, keine
-Toolchain-Aktivierung). Default `IDF_PATH=$(HOME)/tools/esp/esp-idf`,
-bei abweichendem Pfad: `make test IDF_PATH=/...`.
+Toolchain-Aktivierung). Der Linux-Firmware-Archivbuild verwendet außerdem die
+verwalteten libsrtp-Header. Default `IDF_PATH=$(HOME)/tools/esp/esp-idf`, bei
+abweichendem Pfad: `make test IDF_PATH=/...`.
 
 ## Ausführen
 
@@ -17,14 +17,27 @@ cd phoneblock-dongle/firmware/test
 make test
 ```
 
-Erwartete Ausgabe:
-
-```
-88 tests, 0 failures
-```
-
 Bei Fehlschlägen erscheint pro betroffenem Testfall eine Zeile mit
 Funktionsname, Input, erwartetem Wert und tatsächlichem Wert.
+
+## Linux-Firmwaremodule bauen
+
+```bash
+make linux-firmware IDF_PATH=/pfad/zu/esp-idf
+```
+
+Das kompiliert die portablen Firmwaremodule mit `-Werror` und erstellt
+`../build/linux-host/libphoneblock_firmware_linux.a`. Der API-Integrationstest
+linkt gegen dieses Archiv und führt `/api/test` sowie `/api/check-prefix` gegen
+einen lokalen HTTP-Testserver aus:
+
+```bash
+make test_api_linux IDF_PATH=/pfad/zu/esp-idf
+./test_api_linux
+```
+
+Das Archiv ist kein vollständiger Geräte-Daemon: ESP-Hardwarestart, Web-UI und
+Boarddienste bleiben außerhalb dieses Linux-Builds.
 
 ## Neue Tests hinzufügen
 

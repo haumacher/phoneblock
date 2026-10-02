@@ -1,5 +1,6 @@
 #include "firmware_update.h"
 
+#ifdef ESP_PLATFORM
 #include <stdio.h>
 #include <string.h>
 
@@ -17,7 +18,6 @@
 #include "esp_task_wdt.h"
 #include "cJSON.h"
 
-#include "mbedtls/base64.h"
 #include "mbedtls/md.h"
 #include "mbedtls/pk.h"
 #include "mbedtls/sha256.h"
@@ -28,6 +28,7 @@
 #include "chip_family.h"
 #include "manifest_sig.h"
 #include "ota_manifest.h"
+#include "platform.h"
 #include "version_cmp.h"
 
 // Must be last: bans unsafe string APIs for the rest of this file.
@@ -284,9 +285,9 @@ static void resolve_manifest(bool force, const char *current_version,
     // guard before we feed it to mbedtls.
     uint8_t sig[96];
     size_t  sig_len = 0;
-    int rc = mbedtls_base64_decode(sig, sizeof(sig), &sig_len,
-                                   (const unsigned char *)sig_b64,
-                                   strlen(sig_b64));
+    int rc = pb_base64_decode(sig, sizeof(sig), &sig_len,
+                              (const unsigned char *)sig_b64,
+                              strlen(sig_b64));
     if (rc != 0) {
         ESP_LOGE(TAG, "base64_decode(signature): -0x%04x", -rc);
         cJSON_Delete(root);
@@ -561,3 +562,32 @@ void firmware_update_run(void)
     ESP_LOGI(TAG, "scheduled firmware update check");
     firmware_try_update(false, NULL);
 }
+
+#else
+
+#include <stdio.h>
+#include <string.h>
+
+void firmware_check_manifest(bool force, fw_update_outcome_t *out)
+{
+    (void)force;
+    if (!out) return;
+    memset(out, 0, sizeof(*out));
+    out->result = FW_UPDATE_NO_NEW;
+    snprintf(out->current_version, sizeof(out->current_version), "linux");
+}
+
+void firmware_try_update(bool force, fw_update_outcome_t *out)
+{
+    firmware_check_manifest(force, out);
+}
+
+void firmware_update_run(void)
+{
+}
+
+void firmware_schedule_reboot(void)
+{
+}
+
+#endif
