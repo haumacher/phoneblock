@@ -46,6 +46,7 @@
   "status.calls.verdict.name_pattern": "البريد العشوائي (أنماط الأسماء)",
   "status.calls.verdict.legitimate": "شرعي",
   "status.calls.verdict.unknown": "غير معروف",
+  "status.calls.verdict.test": "اختبار",
   "status.calls.verdict.error": "خطأ",
   "status.calls.verdict.scope.number": "الرقم",
   "status.calls.verdict.scope.range": "المجال",
@@ -65,6 +66,7 @@
   "status.system.title": "النظام",
   "status.system.heap": "المساحة الخالية: {free} (الحد الأدنى: {min}، أكبر كتلة: {largest})",
   "status.system.fs": "حصة البيانات: {free} متوفرة من {total} ({used} مستخدمة)",
+  "status.system.temp": "درجة حرارة الرقاقة: {temp} درجة مئوية",
   "status.system.col.task": "المهمة",
   "status.system.col.cpu": "وحدة المعالجة المركزية",
   "status.system.col.stack": "مكدس خالٍ",
@@ -342,7 +344,11 @@
   "status.calls.add_contact.help": "إضافة المتصل كجهة اتصال في دفتر العناوين الخاص بجهاز Fritz!Box",
   "status.calls.report_spam": "البريد العشوائي",
   "status.calls.report_spam.help": "الإبلاغ عن هذا الرقم كرسالة غير مرغوب فيها لدى PhoneBlock",
-  "status.calls.reported": "تم الإبلاغ عنه",
+  "status.calls.whitelist": "القائمة البيضاء",
+  "status.calls.whitelist.help": "إلغاء حظر هذا الرقم",
+  "whitelist.dialog.title": "إضافة الرقم إلى القائمة البيضاء",
+  "whitelist.dialog.working": "جاري البث…",
+  "whitelist.dialog.done": "تم — الرقم مدرج الآن في قائمة الأرقام المسموح بها.",
   "spam.dialog.title": "الإبلاغ عن الرقم باعتباره بريدًا مزعجًا",
   "spam.dialog.intro": "تقييمك مهم لجميع مستخدمي PhoneBlock وسيتم ربطه بحسابك. لا يمكن إلغاؤه عبر جهاز الدونجل — فهذا الإلغاء ممكن فقط على موقع phoneblock.net.",
   "spam.dialog.rating": "نوع المكالمة",
@@ -360,5 +366,6 @@
   "spam.dialog.comment": "السبب",
   "spam.dialog.comment.hint": "(اختياري، سيظهر للجمهور)",
   "spam.dialog.error.is_contact": "هذا المتصل مسجل في دفتر هاتفك. دائمًا ما تكون البيانات المسجلة في دفتر الهاتف لها الأولوية على جهاز الدونجل، ولذلك لا يمكن الإبلاغ عن هذه المكالمة على أنها رسالة غير مرغوب فيها.",
-  "status.system.temp": "درجة حرارة الرقاقة: {temp} درجة مئوية"
+  "whitelist.dialog.intro": "لن يتم حظر المكالمات الواردة من هذا الرقم بعد الآن. وبذلك، فإنك تصنف هذا الرقم في PhoneBlock على أنه رقم شرعي؛ وسيتم ربط هذا التصنيف بحسابك.",
+  "whitelist.dialog.submit": "إلغاء الحظر"
 }

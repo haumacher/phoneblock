@@ -46,6 +46,7 @@
   "status.calls.verdict.name_pattern": "SPAM (patrón de nombres)",
   "status.calls.verdict.legitimate": "legítimo",
   "status.calls.verdict.unknown": "desconocido",
+  "status.calls.verdict.test": "Prueba",
   "status.calls.verdict.error": "Error",
   "status.calls.verdict.scope.number": "Número",
   "status.calls.verdict.scope.range": "Ámbito",
@@ -65,6 +66,7 @@
   "status.system.title": "Sistema",
   "status.system.heap": "Memoria libre: {free} (mínimo: {min}, bloque mayor: {largest})",
   "status.system.fs": "Partición de datos: {free} libres de {total} ({used} usados)",
+  "status.system.temp": "Temperatura del chip: {temp} °C",
   "status.system.col.task": "Tarea",
   "status.system.col.cpu": "CPU",
   "status.system.col.stack": "Pila libre",
@@ -342,7 +344,11 @@
   "status.calls.add_contact.help": "Añadir la persona que llama como contacto en la agenda de la Fritz!Box",
   "status.calls.report_spam": "Correo basura",
   "status.calls.report_spam.help": "Denunciar este número como spam en PhoneBlock",
-  "status.calls.reported": "notificado",
+  "status.calls.whitelist": "Lista blanca",
+  "status.calls.whitelist.help": "Dejar de bloquear este número",
+  "whitelist.dialog.title": "Añadir un número a la lista blanca",
+  "whitelist.dialog.working": "Se está transmitiendo…",
+  "whitelist.dialog.done": "Ya está hecho: el número está en tu lista blanca.",
   "spam.dialog.title": "Denunciar este número como spam",
   "spam.dialog.intro": "Tu valoración es importante para todos los usuarios de PhoneBlock y se asignará a tu cuenta. No se puede anular a través del dongle; solo se puede hacer en phoneblock.net.",
   "spam.dialog.rating": "Tipo de llamada",
@@ -360,5 +366,6 @@
   "spam.dialog.comment": "Motivo",
   "spam.dialog.comment.hint": "(opcional, será visible públicamente)",
   "spam.dialog.error.is_contact": "Esta persona figura en tu agenda. Una entrada de la agenda siempre tiene prioridad en el dongle, por lo que en este caso no es posible recibir un aviso de spam.",
-  "status.system.temp": "Temperatura del chip: {temp} °C"
+  "whitelist.dialog.intro": "Las llamadas procedentes de este número ya no se bloquearán. Al hacerlo, consideras que el número es legítimo en PhoneBlock; esta valoración se asociará a tu cuenta.",
+  "whitelist.dialog.submit": "Dejar de bloquear"
 }

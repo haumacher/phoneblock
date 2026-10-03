@@ -46,6 +46,7 @@
   "status.calls.verdict.name_pattern": "СПАМ (шаблон імені)",
   "status.calls.verdict.legitimate": "законний",
   "status.calls.verdict.unknown": "невідомо",
+  "status.calls.verdict.test": "Тест",
   "status.calls.verdict.error": "Помилка",
   "status.calls.verdict.scope.number": "Номер",
   "status.calls.verdict.scope.range": "Галузь",
@@ -65,6 +66,7 @@
   "status.system.title": "Система",
   "status.system.heap": "Вільний простір: {free} (мінімум: {min}, найбільший блок: {largest})",
   "status.system.fs": "Розділ даних: {free} вільного місця з {total} ({used} зайнято)",
+  "status.system.temp": "Температура мікросхеми: {temp} °C",
   "status.system.col.task": "Завдання",
   "status.system.col.cpu": "Процесор",
   "status.system.col.stack": "Стек вільний",
@@ -342,7 +344,11 @@
   "status.calls.add_contact.help": "Додати абонента як контакт у телефонній книзі Fritz!Box",
   "status.calls.report_spam": "Спам",
   "status.calls.report_spam.help": "Повідомити PhoneBlock про цей номер як спам",
-  "status.calls.reported": "повідомлено",
+  "status.calls.whitelist": "Білий список",
+  "status.calls.whitelist.help": "Більше не блокувати цей номер",
+  "whitelist.dialog.title": "Додати номер до білого списку",
+  "whitelist.dialog.working": "Передається…",
+  "whitelist.dialog.done": "Виконано — номер додано до твого білого списку.",
   "spam.dialog.title": "Поскаржитися на номер як спам",
   "spam.dialog.intro": "Твоя оцінка має значення для всіх користувачів PhoneBlock і прив’язується до твого облікового запису. Її неможливо скасувати за допомогою донгла — це можна зробити лише на сайті phoneblock.net.",
   "spam.dialog.rating": "Тип дзвінка",
@@ -360,5 +366,6 @@
   "spam.dialog.comment": "Причина",
   "spam.dialog.comment.hint": "(необов’язково, буде видно всім)",
   "spam.dialog.error.is_contact": "Цей абонент є у твоїй телефонній книзі. Запис у телефонній книзі завжди має пріоритет над даними з донгла, тому в цьому випадку повідомлення про спам неможливе.",
-  "status.system.temp": "Температура мікросхеми: {temp} °C"
+  "whitelist.dialog.intro": "Дзвінки з цього номера більше не блокуватимуться. Таким чином ти позначаєш цей номер у PhoneBlock як легітимний; ця позначка буде прив’язана до твого облікового запису.",
+  "whitelist.dialog.submit": "Більше не блокувати"
 }

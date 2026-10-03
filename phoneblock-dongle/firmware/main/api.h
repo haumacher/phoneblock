@@ -67,6 +67,9 @@ typedef enum {
     // number lookup happened at all. Appended, never renumbered: the value
     // is stored in the recent-calls ring.
     PB_ASSESS_NAME_PATTERN,  // → "SPAM (Namensmuster)"
+    // A '*'-prefixed internal dial code forced to SPAM to exercise the answer
+    // path (config_accept_test_calls). Labelled "Test", never counted as spam.
+    PB_ASSESS_TEST,          // → "Test"
 } pb_assessment_t;
 
 // `assessment` drives the log label (see pb_assessment_t). It is derived

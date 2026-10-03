@@ -25,6 +25,7 @@
   "verdict.spam_votes": "SPAM ({direct} bezpośredni, {range} zakres)",
   "verdict.spam_suspect": "PODEJRZENIE O SPAM ({direct} bezpośredni, {range} zakres)",
   "verdict.legitimate": "uzasadniony",
+  "verdict.test": "Test",
   "verdict.error": "Błąd",
   "verdict.unknown": "nieznane",
   "log.heading": "Nowe wpisy w protokole",

@@ -159,10 +159,18 @@ static const char *assessment_string(pb_assessment_t a)
         case PB_ASSESS_SPAM_LIST:  return "spam_list";
         case PB_ASSESS_BLACKLIST:  return "blacklist";
         case PB_ASSESS_NAME_PATTERN: return "name_pattern";
+        case PB_ASSESS_TEST:       return "test";
         case PB_ASSESS_ERROR:      return "error";
         case PB_ASSESS_UNKNOWN:
         default:                   return "unknown";
     }
+}
+
+// Whether a listed call is currently blocked as spam, from any source.
+static bool assessment_is_spam(pb_assessment_t a)
+{
+    return a == PB_ASSESS_SPAM || a == PB_ASSESS_SPAM_LIST
+        || a == PB_ASSESS_BLACKLIST || a == PB_ASSESS_NAME_PATTERN;
 }
 
 static void local_ip_str(char *out, size_t cap)
@@ -600,7 +608,6 @@ static esp_err_t handle_calls(httpd_req_t *req)
         cJSON_AddNumberToObject(o, "direct_votes", calls[i].direct_votes);
         cJSON_AddNumberToObject(o, "range_votes",  calls[i].range_votes);
         cJSON_AddBoolToObject  (o, "wildcard",     calls[i].wildcard);
-        cJSON_AddBoolToObject  (o, "reported",     calls[i].reported);
         cJSON_AddItemToArray(arr, o);
     }
     send_json(req, root);
@@ -2507,16 +2514,33 @@ static esp_err_t handle_phonebook_add(httpd_req_t *req)
         }
     }
 
-    // The Fritz!Box will resolve this caller from now on, but the calls
-    // already listed still say "no name". Fill it in so the user sees the
-    // effect immediately instead of an unchanged row that reads as "nothing
-    // happened" — and so the row stops offering to add the same contact.
+    // A caller listed as SPAM also goes onto the user's PhoneBlock whitelist:
+    // the contact only wins on this box, while the whitelist entry also
+    // reaches the user's other devices and lifts their own blacklist entry.
+    // Best effort — the contact is stored either way, so a failed rating is
+    // only reported back, not turned into an error.
+    pb_assessment_t before;
+    bool whitelisted = false;
+    if (stats_assessment_for_number(number, &before) && assessment_is_spam(before)
+        && config_phoneblock_token()[0] != '\0') {
+        whitelisted = phoneblock_rate(number, "A_LEGITIMATE", "");
+        if (whitelisted) {
+            blocklist_sync_trigger_now();
+        } else {
+            ESP_LOGW(TAG, "contact %s stored, but whitelisting it failed", number);
+        }
+    }
+
+    // The Fritz!Box resolves this caller from now on; show the listed calls
+    // in that new state: with the name, as legitimate.
     int touched = stats_set_display(number, name);
+    stats_set_assessment(number, PB_ASSESS_LEGITIMATE);
 
     cJSON *root = cJSON_CreateObject();
     cJSON_AddBoolToObject  (root, "ok", true);
     cJSON_AddStringToObject(root, "uid", uid);
     cJSON_AddStringToObject(root, "phonebook_id", target);
+    cJSON_AddBoolToObject  (root, "whitelisted", whitelisted);
     cJSON_AddNumberToObject(root, "calls_updated", touched);
     send_json(req, root);
     return ESP_OK;
@@ -2629,12 +2653,62 @@ static esp_err_t handle_rate(httpd_req_t *req)
         return ESP_OK;
     }
     ESP_LOGI(TAG, "rated %s as %s", number, rating);
-    int touched = stats_mark_reported(number);
+    // The server put the number on the user's personal blacklist. Show the
+    // listed calls in that state, and pull the list now so the next call from
+    // this number is already blocked instead of after the daily sync.
+    int touched = stats_set_assessment(number, PB_ASSESS_BLACKLIST);
+    blocklist_sync_trigger_now();
 
     cJSON *root = cJSON_CreateObject();
     cJSON_AddBoolToObject  (root, "ok", true);
     cJSON_AddStringToObject(root, "rating", rating);
     cJSON_AddBoolToObject  (root, "with_comment", comment[0] != '\0');
+    cJSON_AddNumberToObject(root, "calls_updated", touched);
+    send_json(req, root);
+    return ESP_OK;
+}
+
+// POST /api/whitelist
+// Body (URL-encoded): number=…
+//
+// Rates a number as legitimate, which puts it on the user's PhoneBlock
+// whitelist. Offered on SPAM rows of the call list as the way to rescue a
+// false positive when no Fritz!Box contact can be written. Its own route
+// rather than a rating code on /api/rate, so a click on "Spam" can never
+// turn into a whitelist entry. A personal whitelist entry also overrides
+// the user's caller-name patterns (check_invite_caller).
+static esp_err_t handle_whitelist(httpd_req_t *req)
+{
+    REQUIRE_AUTH_API(req);
+    if (strlen(config_phoneblock_token()) == 0) {
+        send_fail_code(req, "409 Conflict", "no_token",
+                       "No PhoneBlock token — the whitelist needs an account.");
+        return ESP_OK;
+    }
+    char body[160];
+    if (recv_body(req, body, sizeof(body)) < 0) {
+        send_fail_code(req, "400 Bad Request", "invalid",
+                       "Body missing or too large.");
+        return ESP_OK;
+    }
+    char number[48] = "";
+    form_get(body, "number", number, sizeof(number));
+    if (!tr064_number_plausible(number)) {
+        send_fail_code(req, "400 Bad Request", "invalid_number",
+                       "Not a number that can be rated.");
+        return ESP_OK;
+    }
+    if (!phoneblock_rate(number, "A_LEGITIMATE", "")) {
+        send_fail_code(req, "502 Bad Gateway", "rate_failed",
+                       "PhoneBlock did not accept the rating.");
+        return ESP_OK;
+    }
+    ESP_LOGI(TAG, "whitelisted %s", number);
+    int touched = stats_set_assessment(number, PB_ASSESS_LEGITIMATE);
+    blocklist_sync_trigger_now();
+
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddBoolToObject  (root, "ok", true);
     cJSON_AddNumberToObject(root, "calls_updated", touched);
     send_json(req, root);
     return ESP_OK;
@@ -2827,6 +2901,7 @@ static const httpd_uri_t URIS[] = {
     { .uri = "/api/dev/i18n",        .method = HTTP_POST, .handler = handle_dev_i18n_upload, .user_ctx = NULL },
     { .uri = "/api/phonebook/add",   .method = HTTP_POST, .handler = handle_phonebook_add,  .user_ctx = NULL },
     { .uri = "/api/rate",            .method = HTTP_POST, .handler = handle_rate,           .user_ctx = NULL },
+    { .uri = "/api/whitelist",       .method = HTTP_POST, .handler = handle_whitelist,      .user_ctx = NULL },
     { .uri = "/api/blocklist-sync/run", .method = HTTP_POST, .handler = handle_blocklist_sync_run, .user_ctx = NULL },
     { .uri = "/api/mail/test",       .method = HTTP_POST, .handler = handle_mail_test,      .user_ctx = NULL },
     { .uri = "/api/config",          .method = HTTP_POST, .handler = handle_config_post,    .user_ctx = NULL },

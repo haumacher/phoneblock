@@ -46,6 +46,7 @@
   "status.calls.verdict.name_pattern": "SPAM (Name Pattern)",
   "status.calls.verdict.legitimate": "legitimate",
   "status.calls.verdict.unknown": "unknown",
+  "status.calls.verdict.test": "Test",
   "status.calls.verdict.error": "Error",
   "status.calls.verdict.scope.number": "number",
   "status.calls.verdict.scope.range": "range",
@@ -65,6 +66,7 @@
   "status.system.title": "System",
   "status.system.heap": "Free memory: {free} (minimum: {min}, largest block: {largest})",
   "status.system.fs": "Data partition: {free} free of {total} ({used} used)",
+  "status.system.temp": "Chip temperature: {temp} °C",
   "status.system.col.task": "Task",
   "status.system.col.cpu": "CPU",
   "status.system.col.stack": "Stack free",
@@ -342,7 +344,11 @@
   "status.calls.add_contact.help": "Add a caller as a contact in the Fritz!Box phone book",
   "status.calls.report_spam": "Spam",
   "status.calls.report_spam.help": "Report this number as spam to PhoneBlock",
-  "status.calls.reported": "reported",
+  "status.calls.whitelist": "Whitelist",
+  "status.calls.whitelist.help": "Unblock this number",
+  "whitelist.dialog.title": "Add the number to the whitelist",
+  "whitelist.dialog.working": "Sending...",
+  "whitelist.dialog.done": "Done—the number is now on your whitelist.",
   "spam.dialog.title": "Report this number as spam",
   "spam.dialog.intro": "Your rating matters to all PhoneBlock users and is associated with your account. You can't undo it via the dongle—you can only do that on phoneblock.net.",
   "spam.dialog.rating": "Type of Call",
@@ -360,5 +366,6 @@
   "spam.dialog.comment": "Reason",
   "spam.dialog.comment.hint": "(optional; will be visible to the public)",
   "spam.dialog.error.is_contact": "This caller is in your phone book. A phone book entry always takes precedence on the dongle, so a spam alert isn't possible in this case.",
-  "status.system.temp": "Chip temperature: {temp} °C"
+  "whitelist.dialog.intro": "Calls from this number will no longer be blocked. By doing this, you are marking the number as legitimate in PhoneBlock; this rating is associated with your account.",
+  "whitelist.dialog.submit": "Unblock"
 }

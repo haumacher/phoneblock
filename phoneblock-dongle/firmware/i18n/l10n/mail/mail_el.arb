@@ -25,6 +25,7 @@
   "verdict.spam_votes": "SPAM ({direct} άμεσο, {range} εύρος)",
   "verdict.spam_suspect": "ΥΠΟΠΤΩΣΗ SPAM ({direct} άμεση, {range} εύρος)",
   "verdict.legitimate": "νόμιμος",
+  "verdict.test": "Δοκιμή",
   "verdict.error": "Σφάλμα",
   "verdict.unknown": "άγνωστο",
   "log.heading": "Νέες καταχωρήσεις στο αρχείο καταγραφής",

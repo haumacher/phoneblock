@@ -25,6 +25,7 @@
   "verdict.spam_votes": "SPAM ({direct} 直接，{range} 范围)",
   "verdict.spam_suspect": "疑似垃圾邮件（{direct} 直接，{range} 范围）",
   "verdict.legitimate": "合法的",
+  "verdict.test": "测试",
   "verdict.error": "错误",
   "verdict.unknown": "未知",
   "log.heading": "日志中的新记录",
