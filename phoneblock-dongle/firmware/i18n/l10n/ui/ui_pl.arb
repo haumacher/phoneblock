@@ -46,6 +46,7 @@
   "status.calls.verdict.name_pattern": "SPAM (wzorzec nazwy)",
   "status.calls.verdict.legitimate": "uzasadniony",
   "status.calls.verdict.unknown": "nieznane",
+  "status.calls.verdict.test": "Test",
   "status.calls.verdict.error": "Błąd",
   "status.calls.verdict.scope.number": "Numer",
   "status.calls.verdict.scope.range": "Obszar",
@@ -65,6 +66,7 @@
   "status.system.title": "System",
   "status.system.heap": "Wolna pamięć: {free} (minimum: {min}, największy blok: {largest})",
   "status.system.fs": "Partcja danych: {free} wolnego miejsca z {total} ({used} zajętego)",
+  "status.system.temp": "Temperatura układu scalonego: {temp} °C",
   "status.system.col.task": "Zadanie",
   "status.system.col.cpu": "Procesor",
   "status.system.col.stack": "Stack wolny",
@@ -342,7 +344,11 @@
   "status.calls.add_contact.help": "Dodaj dzwoniącego jako kontakt w książce telefonicznej urządzenia Fritz!Box",
   "status.calls.report_spam": "Spam",
   "status.calls.report_spam.help": "Zgłoś ten numer jako spam w serwisie PhoneBlock",
-  "status.calls.reported": "zgłoszone",
+  "status.calls.whitelist": "Biała lista",
+  "status.calls.whitelist.help": "Nie blokuj już tego numeru",
+  "whitelist.dialog.title": "Dodaj numer do białej listy",
+  "whitelist.dialog.working": "Trwa przesyłanie…",
+  "whitelist.dialog.done": "Załatwione — ten numer znajduje się na twojej białej liście.",
   "spam.dialog.title": "Zgłoś numer jako spam",
   "spam.dialog.intro": "Twoja ocena ma znaczenie dla wszystkich użytkowników PhoneBlock i zostanie przypisana do Twojego konta. Nie można jej cofnąć za pomocą klucza sprzętowego — jest to możliwe wyłącznie na stronie phoneblock.net.",
   "spam.dialog.rating": "Rodzaj połączenia",
@@ -360,5 +366,6 @@
   "spam.dialog.comment": "Powód",
   "spam.dialog.comment.hint": "(opcjonalnie, będzie widoczne publicznie)",
   "spam.dialog.error.is_contact": "Ten numer znajduje się w Twojej książce telefonicznej. Wpis w książce telefonicznej ma zawsze pierwszeństwo w przypadku klucza sprzętowego, dlatego w tym przypadku nie jest możliwe zgłoszenie spamu.",
-  "status.system.temp": "Temperatura układu scalonego: {temp} °C"
+  "whitelist.dialog.intro": "Połączenia z tego numeru nie będą już blokowane. W ten sposób uznajesz ten numer w serwisie PhoneBlock za legalny; ocena ta zostanie przypisana do Twojego konta.",
+  "whitelist.dialog.submit": "Nie blokuj już"
 }

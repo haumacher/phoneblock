@@ -85,7 +85,6 @@
   .rowbtn.spam{border-color:#d93025;color:#d93025}
   .rowbtn.spam:hover{background:#fdecea}
   .rowbtn[disabled]{opacity:.5;cursor:default}
-  .rowdone{font-size:.72rem;color:#188038;white-space:nowrap}
   .btn-ghost{background:#fff;color:#008f7a;border:1px solid #008f7a;
              padding:.55rem 1.2rem;border-radius:4px;font-size:1rem;
              cursor:pointer;font-family:inherit;text-decoration:none;display:inline-block}
@@ -826,6 +825,76 @@ function pbSpamButton(number){
        + esc(t('status.calls.report_spam.help')) + '">'
        + '<span aria-hidden="true">&#9888;</span> '
        + esc(t('status.calls.report_spam')) + '</button>';
+}
+
+function pbWhitelistButton(number){
+  return ' <button class="rowbtn" data-wlnum="' + esc(number) + '" title="'
+       + esc(t('status.calls.whitelist.help')) + '">'
+       + '<span aria-hidden="true">&#10003;</span> '
+       + esc(t('status.calls.whitelist')) + '</button>';
+}
+
+// --- whitelist -------------------------------------------------------
+// Behind a confirmation like the spam vote: the "legitimate" rating is
+// published under the user's account.
+let pbWlDlgEl = null;
+let pbWlNumber = '';
+
+function pbOpenWhitelist(number){
+  if (pbWlDlgEl) pbWlDlgEl.remove();
+  const wrap = document.createElement('div');
+  wrap.className = 'modal';
+  wrap.innerHTML = ''
+    + '<div>'
+    + '<h3>' + esc(t('whitelist.dialog.title')) + '</h3>'
+    + '<p class="muted">' + esc(t('whitelist.dialog.intro')) + '</p>'
+    + '<p style="margin:.4rem 0"><strong id="pbWlNum"></strong></p>'
+    + '<p id="pbWlMsg" class="muted" style="min-height:1em;margin:.4rem 0"></p>'
+    + '<p style="margin:.8rem 0 0;display:flex;gap:.5rem">'
+    + '  <button id="pbWlSave" class="btn-primary" style="padding:.4rem .9rem">'
+    +   esc(t('whitelist.dialog.submit')) + '</button>'
+    + '  <button id="pbWlCancel" class="btn-ghost" style="padding:.4rem .9rem">'
+    +   esc(t('pb.dialog.cancel')) + '</button>'
+    + '</p></div>';
+  document.body.appendChild(wrap);
+  pbWlDlgEl = wrap;
+  pbWlNumber = number;
+  $('pbWlNum').textContent = number;
+  $('pbWlCancel').onclick = () => { wrap.style.display = 'none'; };
+  wrap.onclick = (e) => { if (e.target === wrap) wrap.style.display = 'none'; };
+  $('pbWlSave').onclick = pbWhitelistSubmit;
+  wrap.style.display = 'flex';
+}
+
+async function pbWhitelistSubmit(){
+  const msg  = $('pbWlMsg');
+  const save = $('pbWlSave');
+  save.disabled = true;
+  pbSetMsg(msg, t('whitelist.dialog.working'));
+
+  const body = new URLSearchParams();
+  body.append('number', pbWlNumber);
+  let d = {};
+  let ok = false;
+  try {
+    const r = await fetch('/api/whitelist', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: body.toString(),
+    });
+    d  = await r.json().catch(() => ({}));
+    ok = r.ok && d.ok;
+  } catch (_){ /* handled below */ }
+
+  if (ok){
+    pbSetMsg(msg, t('whitelist.dialog.done'), '#188038');
+    setTimeout(() => { if (pbWlDlgEl) pbWlDlgEl.style.display = 'none'; }, 700);
+    await refreshAll();
+    return;
+  }
+  pbSetMsg(msg, d.code === 'no_token' ? t('spam.dialog.error.no_token')
+              : pbErrorText(d), '#d93025');
+  save.disabled = false;
 }
 
 // --- spam vote -------------------------------------------------------
@@ -2153,8 +2222,9 @@ async function refreshAll(){
       case 'blacklist': return t('status.calls.verdict.blacklist', {scope});
       case 'spam_list': return t('status.calls.verdict.spam_list', {scope});
       case 'name_pattern': return t('status.calls.verdict.name_pattern');
+      case 'test':       return t('status.calls.verdict.test');
       case 'spam':
-        // Test-forced spam carries no counts — show plain "SPAM".
+        // A verdict without counts — show plain "SPAM".
         return (c.direct_votes || c.range_votes)
           ? t('status.calls.verdict.spam', {direct: c.direct_votes, range: c.range_votes})
           : t('status.calls.verdict.spam_plain');
@@ -2180,6 +2250,31 @@ async function refreshAll(){
   // Offering the phonebook shortcut needs Fritz!Box app credentials —
   // without them there is nothing to write to (manual SIP setups).
   const pbAvailable = !!(s.phonebook && s.phonebook.available);
+  // The actions a row offers follow from its *current* assessment — every
+  // action updates the listed calls on the device, so after it the row shows
+  // the new state and its buttons change with it:
+  //   open (unknown / suspect / error): report as spam; add as contact.
+  //   SPAM (list, range, API, blacklist): rescue a false positive — as a
+  //     Fritz!Box contact (the firmware also whitelists the number), or, with
+  //     no box to write to, via the PhoneBlock whitelist. Never "report as
+  //     spam" again.
+  //   SPAM by name pattern: the name comes from a phonebook, so the rescue is
+  //     the whitelist (a personal whitelist entry beats the pattern).
+  //   legitimate / test: nothing to do.
+  const SPAM_STATES = ['spam', 'spam_list', 'blacklist', 'name_pattern'];
+  const OPEN_STATES = ['unknown', 'suspect', 'error'];
+  const rowActions = (c) => {
+    if (!PLAIN_NUMBER.test(c.number || '')) return {};
+    const spam = SPAM_STATES.includes(c.assessment);
+    const open = OPEN_STATES.includes(c.assessment);
+    const contact = pbAvailable && !c.display
+                 && (open || (spam && c.assessment !== 'name_pattern'));
+    return {
+      contact,
+      report:    open && tokenSet,
+      whitelist: spam && !contact && tokenSet,
+    };
+  };
   const hasCalls = calls && calls.calls.length;
   if (hasCalls){
     tbody.innerHTML = calls.calls.map(c => {
@@ -2191,35 +2286,23 @@ async function refreshAll(){
       const numCol = apiChecked
         ? linkToNumber(c.number, esc(c.label))
         : numCell(c.number, c.display, c.assessment);
-      const nameCol = apiChecked
-        ? esc(c.location)
-        : esc(c.display);
-      // No name means the box had no phonebook entry for this caller —
-      // exactly the case the shortcut is for. Rendered as markup and
-      // handled by one delegated listener, because this table is rebuilt
-      // on every 3 s poll.
-      const rateable = PLAIN_NUMBER.test(c.number || '');
-      const canAdd = pbAvailable && !c.display && rateable;
-      // The vote goes in the Bewertung column; once cast, the row says so
-      // instead of offering it again (the device remembers per listed call).
-      // A contact is never offered as spam: the phonebook entry already
-      // overrules every blocklist and API verdict on the device, so the vote
-      // would be one this dongle ignores. (The other direction is allowed —
-      // a SPAM-rated number can still be made a contact, which is how a
-      // false positive gets rescued.) A "SPAM:"-prefixed name comes from the
-      // CardDAV blocklist, not from the user, so isKnownContact() rejects it
-      // and those rows keep the vote.
-      const canReport = rateable && tokenSet && !isKnownContact(c.display);
-      const verdictExtra = c.reported
-        ? ' <span class="rowdone">' + esc(t('status.calls.reported')) + '</span>'
-        : (canReport ? pbSpamButton(c.number) : '');
+      // A name — from the box or just added as a contact — wins over the
+      // PhoneBlock location.
+      const nameCol = esc(c.display || (apiChecked ? c.location : ''));
+      // Rendered as markup and handled by one delegated listener, because
+      // this table is rebuilt on every 3 s poll. Each button sits in the
+      // column it changes: the contact in Name, spam / whitelist in Urteil.
+      const act = rowActions(c);
+      const verdictExtra = act.report    ? pbSpamButton(c.number)
+                         : act.whitelist ? pbWhitelistButton(c.number)
+                         : '';
       // Colour follows the assessment: SPAM-VERDACHT gets its own orange
       // v-SUSPECT (green would wrongly imply "fine"), an un-rated number
       // gets neutral v-UNKNOWN, and spam/blacklist share red.
       const verdictCls = verdictClass(c.assessment);
       return '<tr><td>' + esc(fmtClock(c.age_s, false)) + '</td>'
         + '<td>' + numCol + '</td>'
-        + '<td>' + nameCol + (canAdd ? pbAddButton(c.number) : '') + '</td>'
+        + '<td>' + nameCol + (act.contact ? pbAddButton(c.number) : '') + '</td>'
         + '<td class="v-' + esc(verdictCls) + '">' + esc(verdictLabel(c))
         +   verdictExtra + '</td></tr>';
     }).join('');
@@ -2231,7 +2314,9 @@ async function refreshAll(){
       const add = e.target.closest('button[data-pbnum]');
       if (add) { pbOpenAddContact(add.dataset.pbnum); return; }
       const spam = e.target.closest('button[data-spamnum]');
-      if (spam) pbOpenSpamVote(spam.dataset.spamnum);
+      if (spam) { pbOpenSpamVote(spam.dataset.spamnum); return; }
+      const wl = e.target.closest('button[data-wlnum]');
+      if (wl) pbOpenWhitelist(wl.dataset.wlnum);
     };
   }
   const callsClearBtn = $('callsClear');

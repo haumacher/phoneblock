@@ -1173,7 +1173,9 @@ static void send_bye(sip_ctx_t *c)
 // the user's own caller-name patterns (config_spam_names(), issue #502). Users
 // who keep a third-party spam list as a Fritz!Box phonebook get exactly the
 // non-numeric display name that (1) reads as "a contact I trust", so without
-// this the calls those lists identify would sail straight through.
+// this the calls those lists identify would sail straight through. Only the
+// user's personal whitelist beats a pattern: a decision about one number is
+// more specific than a rule about names.
 static verdict_t check_invite_caller(const char *req, int req_len)
 {
     const char *hdr = find_header(req, req_len, "From");
@@ -1212,23 +1214,43 @@ static verdict_t check_invite_caller(const char *req, int req_len)
     // CONFIG_SIP_TEST_FORCE_SPAM_STAR_NUMBERS until the user changes it.
     if (config_accept_test_calls() && raw_user[0] == '*') {
         pb_log_warn(TAG, "TEST MODE: caller '%s' forced to SPAM", raw_user);
-        stats_record_call(raw_user, display, VERDICT_SPAM);
+        stats_record_call_assessed(raw_user, display, VERDICT_SPAM,
+                                   PB_ASSESS_TEST);
         return VERDICT_SPAM;
     }
 
-    // The user's own caller-name rules win over everything else: a name they
-    // marked as spam is an explicit local decision, so neither the local
-    // blocklist nor the API is consulted. Deliberately no report_queue_enqueue()
-    // either — this is one household's naming convention, not community
-    // evidence, and the number may be unknown to PhoneBlock entirely.
+    char number[64];
+    normalize_e164(raw_user, number, sizeof(number), config_dial_prefix());
+    pb_log_info(TAG, "caller URI=%s raw=%s normalized=%s", uri, raw_user, number);
+    bool dialable = looks_dialable(number);
+
+    // Local-blocklist lookup, done once up front: its personal-whitelist
+    // answer decides whether a caller-name pattern applies, and its verdict is
+    // used further down. The daily-synced binary files cover the common case
+    // (number on the community list, or on the user's own overrides) without
+    // an HTTPS round-trip; skipped entirely when the cache is disabled, so
+    // every call then resolves against the live server API.
+    const char *digits = (number[0] == '+') ? number + 1 : number;
+    bool wildcard = false, personal = false;
+    blocklist_verdict_t local = (dialable && config_blocklist_enabled())
+        ? blocklist_sync_check_ex(digits, config_blocklist_wildcards(),
+                                  &wildcard, &personal)
+        : BLOCKLIST_UNKNOWN;
+    bool whitelisted = local == BLOCKLIST_LEGIT && personal;
+
+    // The user's own caller-name rules win over everything but their personal
+    // whitelist: a name they marked as spam is an explicit local decision, so
+    // neither the blocklists nor the API is consulted. A dialable number is
+    // reported like any other blocked spam call.
     name_filter_t names;
-    if (name_filter_parse(config_spam_names(), &names) > 0) {
+    if (!whitelisted && name_filter_parse(config_spam_names(), &names) > 0) {
         const char *hit = name_filter_match(&names, display);
         if (hit) {
             pb_log_info(TAG, "caller name '%s' matches spam pattern '%s' → SPAM",
                      display, hit);
-            stats_record_call_assessed(raw_user, display, VERDICT_SPAM,
-                                       PB_ASSESS_NAME_PATTERN);
+            stats_record_call_assessed(dialable ? number : raw_user, display,
+                                       VERDICT_SPAM, PB_ASSESS_NAME_PATTERN);
+            if (dialable) report_queue_enqueue(number);
             return VERDICT_SPAM;
         }
     }
@@ -1244,37 +1266,27 @@ static verdict_t check_invite_caller(const char *req, int req_len)
         return VERDICT_LEGITIMATE;
     }
 
-    char number[64];
-    normalize_e164(raw_user, number, sizeof(number), config_dial_prefix());
-    pb_log_info(TAG, "caller URI=%s raw=%s normalized=%s", uri, raw_user, number);
-
-    if (!looks_dialable(number)) {
+    if (!dialable) {
+        // Anonymous or internal: nothing is known about the caller, so it is
+        // listed as "unbekannt" — not "legitim", which only a contact or a
+        // whitelist entry earns.
         pb_log_info(TAG, "non-external caller '%s' → skip API", number);
         if (config_log_known_calls()) {
-            stats_record_call(number, display, VERDICT_LEGITIMATE);
+            stats_record_call_assessed(number, display, VERDICT_LEGITIMATE,
+                                       PB_ASSESS_UNKNOWN);
         } else {
             stats_record_call_counters_only(VERDICT_LEGITIMATE);
         }
         return VERDICT_LEGITIMATE;
     }
 
-    // Local-blocklist fast path: the daily-synced binary files cover the
-    // common case (number on the community list, or on the user's own
-    // overrides) without an HTTPS round-trip. The API call only runs when
-    // the local lookup is UNKNOWN — either no file synced yet, or the
-    // number is genuinely in no list (in which case the API will also
-    // refresh server-side LASTPING counters, so we keep that path live).
+    // The API call only runs when the local lookup is UNKNOWN — either no
+    // file synced yet, or the number is genuinely in no list (in which case
+    // the API will also refresh server-side LASTPING counters, so we keep
+    // that path live).
     pb_check_result_t result;
     memset(&result, 0, sizeof(result));
     verdict_t v;
-    const char *digits = (number[0] == '+') ? number + 1 : number;
-    // Skip the local files entirely when the cache is disabled — every
-    // call then resolves against the live server API.
-    bool wildcard = false, personal = false;
-    blocklist_verdict_t local = config_blocklist_enabled()
-        ? blocklist_sync_check_ex(digits, config_blocklist_wildcards(),
-                                  &wildcard, &personal)
-        : BLOCKLIST_UNKNOWN;
     if (local == BLOCKLIST_SPAM) {
         result.verdict  = VERDICT_SPAM;
         result.wildcard = wildcard;

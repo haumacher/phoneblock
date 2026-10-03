@@ -44,11 +44,6 @@ typedef struct {
     int       direct_votes;                    // direct community votes against the number
     int       range_votes;                     // raw neighbourhood (range) votes
     bool      wildcard;                         // local-cache hit was a range/prefix, not exact
-    // Set once the user has submitted a spam rating for this number from
-    // the call list (stats_mark_reported). Purely a UI cue — the vote
-    // itself lives on the server; this stops the list from offering the
-    // same one-click vote again and shows that it went through.
-    bool      reported;
 } stats_call_t;
 
 typedef struct {
@@ -78,7 +73,8 @@ void stats_setup(void);
 void stats_record_call(const char *number, const char *display, verdict_t verdict);
 
 // Like stats_record_call but with an explicit log characterisation, for
-// decisions the verdict alone does not describe. Used by the caller-name
+// decisions the verdict alone does not describe. A PB_ASSESS_TEST entry is
+// listed but bumps no counter: a test call is neither spam nor a real call. Used by the caller-name
 // filter (issue #502): the verdict is SPAM, but the reason is the user's own
 // name pattern rather than any community signal, so the entry must not read as
 // "SPAM" from the block list.
@@ -124,20 +120,24 @@ void stats_clear_errors(void);
 
 // --- retroactive updates to listed calls ----------------------------
 //
-// A listed call is a record of what happened, but two of its fields are
-// lookup results the user can change *after* the fact from the call list:
-// the caller's name (once they write a Fritz!Box phonebook entry) and
-// whether they have rated the number. Without updating the ring, the row
-// would keep saying "no name" / keep offering the same vote, and the
-// action would look like it had no effect.
+// A listed call shows the caller's *current* state, and two of its fields
+// change when the user acts on it from the call list: the caller's name
+// (once they write a Fritz!Box phonebook entry) and the assessment (once they
+// rate the number as spam or legitimate). The row then shows the new state,
+// and the actions it offers follow from that.
 
 // Fill in `display` for every listed call with this number that has no
 // name yet. Returns how many entries were updated.
 int stats_set_display(const char *number, const char *display);
 
-// Mark every listed call with this number as rated by the user.
-// Returns how many entries were updated.
-int stats_mark_reported(const char *number);
+// Set the assessment of every listed call with this number, as an exact-number
+// decision (clears `wildcard` and the vote counts). Returns how many entries
+// were updated.
+int stats_set_assessment(const char *number, pb_assessment_t assessment);
+
+// Assessment of the newest listed call with this number. Returns false when
+// the number is not listed.
+bool stats_assessment_for_number(const char *number, pb_assessment_t *out);
 
 // Copy the first non-empty name recorded for this number into `out`.
 // Returns false when the number is not listed or none of its entries carry

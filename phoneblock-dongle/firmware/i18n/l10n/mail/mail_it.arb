@@ -25,6 +25,7 @@
   "verdict.spam_votes": "SPAM ({direct} diretto, {range} intervallo)",
   "verdict.spam_suspect": "SOSPETTO DI SPAM ({direct} diretto, {range} intervallo)",
   "verdict.legitimate": "legittimo",
+  "verdict.test": "Test",
   "verdict.error": "Errore",
   "verdict.unknown": "sconosciuto",
   "log.heading": "Nuove segnalazioni nel registro",

@@ -62,10 +62,10 @@ static void bump_counters(verdict_t verdict)
 
 void stats_record_call(const char *number, const char *display, verdict_t verdict)
 {
-    // Verdict-only entries are phone-book / internal-code matches (legit)
-    // or test-forced spam / internal errors — none carry a community
-    // signal. Map the action verdict onto its log characterisation:
-    // a phone-book hit is "legitim", not merely "unbekannt".
+    // Verdict-only entries are phone-book matches (legit) or internal
+    // errors — neither carries a community signal. Map the action verdict
+    // onto its log characterisation: a phone-book hit is "legitim", not
+    // merely "unbekannt".
     stats_record_call_assessed(number, display, verdict,
                                (verdict == VERDICT_SPAM)  ? PB_ASSESS_SPAM
                              : (verdict == VERDICT_ERROR) ? PB_ASSESS_ERROR
@@ -88,7 +88,7 @@ void stats_record_call_assessed(const char *number, const char *display,
     s_calls_head = (s_calls_head + 1) % STATS_MAX_CALLS;
     if (s_calls_count < STATS_MAX_CALLS) s_calls_count++;
 
-    bump_counters(verdict);
+    if (assessment != PB_ASSESS_TEST) bump_counters(verdict);
 
     unlock();
 }
@@ -215,7 +215,8 @@ void stats_clear_errors(void)
 // Both updaters walk the whole ring rather than only the newest match: a
 // number that called twice appears twice, and leaving the older row stale
 // would read as if the change had only half worked.
-static int update_calls(const char *number, const char *display, bool mark_reported)
+static int update_calls(const char *number, const char *display,
+                        const pb_assessment_t *assessment)
 {
     if (!number || !*number) return 0;
     int n = 0;
@@ -229,7 +230,12 @@ static int update_calls(const char *number, const char *display, bool mark_repor
             strncpy(c->display, display, sizeof(c->display) - 1);
             c->display[sizeof(c->display) - 1] = '\0';
         }
-        if (mark_reported) c->reported = true;
+        if (assessment) {
+            c->assessment   = *assessment;
+            c->wildcard     = false;
+            c->direct_votes = 0;
+            c->range_votes  = 0;
+        }
         n++;
     }
     unlock();
@@ -239,12 +245,29 @@ static int update_calls(const char *number, const char *display, bool mark_repor
 int stats_set_display(const char *number, const char *display)
 {
     if (!display || !*display) return 0;
-    return update_calls(number, display, false);
+    return update_calls(number, display, NULL);
 }
 
-int stats_mark_reported(const char *number)
+int stats_set_assessment(const char *number, pb_assessment_t assessment)
 {
-    return update_calls(number, NULL, true);
+    return update_calls(number, NULL, &assessment);
+}
+
+bool stats_assessment_for_number(const char *number, pb_assessment_t *out)
+{
+    if (!number || !*number || !out) return false;
+    bool found = false;
+    lock();
+    // Newest first: s_calls_head - 1 is the most recent entry.
+    for (int k = 1; k <= s_calls_count && !found; k++) {
+        const stats_call_t *c =
+            &s_calls[(s_calls_head - k + STATS_MAX_CALLS) % STATS_MAX_CALLS];
+        if (strcmp(c->number, number) != 0) continue;
+        *out  = c->assessment;
+        found = true;
+    }
+    unlock();
+    return found;
 }
 
 bool stats_display_for_number(const char *number, char *out, size_t cap)

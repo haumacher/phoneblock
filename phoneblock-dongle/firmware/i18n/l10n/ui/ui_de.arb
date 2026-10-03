@@ -230,6 +230,11 @@
     "description": "Dongle web UI: status.calls.verdict.unknown",
     "x-translated": "5e6b2084"
   },
+  "status.calls.verdict.test": "Test",
+  "@status.calls.verdict.test": {
+    "description": "Urteil eines Testanrufs von einem internen Telefon an den Dongle (z. B. **622).",
+    "x-translated": "784dd132"
+  },
   "status.calls.verdict.error": "Fehler",
   "@status.calls.verdict.error": {
     "description": "Dongle web UI: status.calls.verdict.error",
@@ -1715,10 +1720,40 @@
     "description": "Tooltip des Spam-Knopfes in der Anrufliste.",
     "x-translated": "7e82484f"
   },
-  "status.calls.reported": "gemeldet",
-  "@status.calls.reported": {
-    "description": "Ersetzt den Spam-Knopf, nachdem die Nummer gemeldet wurde.",
-    "x-translated": "f2f6f0b0"
+  "status.calls.whitelist": "Whitelist",
+  "@status.calls.whitelist": {
+    "description": "Aufschrift des Knopfes in der Anrufliste, mit dem eine als Spam blockierte Nummer auf die Whitelist gesetzt wird. Kurz halten — steht in einer Tabellenzelle.",
+    "x-translated": "49f71ac7"
+  },
+  "status.calls.whitelist.help": "Diese Nummer nicht mehr blockieren",
+  "@status.calls.whitelist.help": {
+    "description": "Tooltip des Whitelist-Knopfes in der Anrufliste.",
+    "x-translated": "9db0aa8b"
+  },
+  "whitelist.dialog.title": "Nummer auf die Whitelist setzen",
+  "@whitelist.dialog.title": {
+    "description": "Titel des Dialogs, der eine blockierte Nummer auf die Whitelist setzt.",
+    "x-translated": "d74e8db"
+  },
+  "whitelist.dialog.intro": "Anrufe von dieser Nummer werden nicht mehr blockiert. Du bewertest die Nummer damit bei PhoneBlock als legitim; die Bewertung wird deinem Konto zugeordnet.",
+  "@whitelist.dialog.intro": {
+    "description": "Erklärung im Whitelist-Dialog.",
+    "x-translated": "481ec191"
+  },
+  "whitelist.dialog.submit": "Nicht mehr blockieren",
+  "@whitelist.dialog.submit": {
+    "description": "Bestätigungsknopf im Whitelist-Dialog.",
+    "x-translated": "e6cefe8a"
+  },
+  "whitelist.dialog.working": "Wird übertragen…",
+  "@whitelist.dialog.working": {
+    "description": "Fortschrittsmeldung im Whitelist-Dialog.",
+    "x-translated": "cfacab00"
+  },
+  "whitelist.dialog.done": "Erledigt — die Nummer steht auf deiner Whitelist.",
+  "@whitelist.dialog.done": {
+    "description": "Erfolgsmeldung im Whitelist-Dialog.",
+    "x-translated": "d5dd5e82"
   },
   "spam.dialog.title": "Nummer als Spam melden",
   "@spam.dialog.title": {

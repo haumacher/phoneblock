@@ -25,6 +25,7 @@
   "verdict.spam_votes": "البريد العشوائي ({direct} مباشر، {range} نطاق)",
   "verdict.spam_suspect": "اشتباه في البريد العشوائي ({direct} مباشر، {range} نطاق)",
   "verdict.legitimate": "شرعي",
+  "verdict.test": "اختبار",
   "verdict.error": "خطأ",
   "verdict.unknown": "غير معروف",
   "log.heading": "أخبار جديدة في المحضر",

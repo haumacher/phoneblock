@@ -46,6 +46,7 @@
   "status.calls.verdict.name_pattern": "SPAM (namnmönster)",
   "status.calls.verdict.legitimate": "legitim",
   "status.calls.verdict.unknown": "okänt",
+  "status.calls.verdict.test": "Test",
   "status.calls.verdict.error": "Fel",
   "status.calls.verdict.scope.number": "Nummer",
   "status.calls.verdict.scope.range": "Område",
@@ -65,6 +66,7 @@
   "status.system.title": "System",
   "status.system.heap": "Ledigt minne: {free} (Minimum: {min}, största block: {largest})",
   "status.system.fs": "Datapartition: {free} ledigt utrymme av {total} ({used} upptaget)",
+  "status.system.temp": "Chiptemperatur: {temp} °C",
   "status.system.col.task": "Uppgift",
   "status.system.col.cpu": "CPU",
   "status.system.col.stack": "Stack ledig",
@@ -342,7 +344,11 @@
   "status.calls.add_contact.help": "Lägg till den som ringer som kontakt i Fritz!Box-telefonboken",
   "status.calls.report_spam": "Spam",
   "status.calls.report_spam.help": "Anmäl detta nummer som skräppost hos PhoneBlock",
-  "status.calls.reported": "anmäld",
+  "status.calls.whitelist": "Vitlista",
+  "status.calls.whitelist.help": "Sluta blockera det här numret",
+  "whitelist.dialog.title": "Lägg till numret i vitlistan",
+  "whitelist.dialog.working": "Överförs…",
+  "whitelist.dialog.done": "Klart — numret finns nu på din vitlista.",
   "spam.dialog.title": "Anmäl numret som skräppost",
   "spam.dialog.intro": "Ditt betyg är viktigt för alla PhoneBlock-användare och kopplas till ditt konto. Det går inte att återkalla betyget via dongeln – det kan endast göras på phoneblock.net.",
   "spam.dialog.rating": "Typ av samtal",
@@ -360,5 +366,6 @@
   "spam.dialog.comment": "Motivering",
   "spam.dialog.comment.hint": "(valfritt, visas offentligt)",
   "spam.dialog.error.is_contact": "Den här uppringaren finns i din telefonbok. En telefonboksuppgift har alltid företräde på dongeln, därför kan det inte vara ett spam-samtal i det här fallet.",
-  "status.system.temp": "Chiptemperatur: {temp} °C"
+  "whitelist.dialog.intro": "Samtal från det här numret blockeras inte längre. Du markerar därmed numret som legitimt i PhoneBlock; markeringen kopplas till ditt konto.",
+  "whitelist.dialog.submit": "Blockera inte längre"
 }

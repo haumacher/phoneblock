@@ -46,6 +46,7 @@
   "status.calls.verdict.name_pattern": "SPAM (naamspatronen)",
   "status.calls.verdict.legitimate": "legitiem",
   "status.calls.verdict.unknown": "onbekend",
+  "status.calls.verdict.test": "Test",
   "status.calls.verdict.error": "Fout",
   "status.calls.verdict.scope.number": "Nummer",
   "status.calls.verdict.scope.range": "Gebied",
@@ -65,6 +66,7 @@
   "status.system.title": "Systeem",
   "status.system.heap": "Beschikbare opslagruimte: {free} (minimum: {min}, grootste blok: {largest})",
   "status.system.fs": "Gegevenspartitie: {free} vrij van {total} ({used} in gebruik)",
+  "status.system.temp": "Chiptemperatuur: {temp} °C",
   "status.system.col.task": "Taak",
   "status.system.col.cpu": "CPU",
   "status.system.col.stack": "Stack vrij",
@@ -342,7 +344,11 @@
   "status.calls.add_contact.help": "Een beller als contactpersoon toevoegen aan het telefoonboek van de Fritz!Box",
   "status.calls.report_spam": "Spam",
   "status.calls.report_spam.help": "Dit nummer bij PhoneBlock als spam melden",
-  "status.calls.reported": "gemeld",
+  "status.calls.whitelist": "Witte lijst",
+  "status.calls.whitelist.help": "Dit nummer niet meer blokkeren",
+  "whitelist.dialog.title": "Nummer aan de whitelist toevoegen",
+  "whitelist.dialog.working": "Wordt verzonden…",
+  "whitelist.dialog.done": "Geregeld — het nummer staat nu op je whitelist.",
   "spam.dialog.title": "Dit nummer als spam melden",
   "spam.dialog.intro": "Je beoordeling is van belang voor alle PhoneBlock-gebruikers en wordt aan je account gekoppeld. Via de dongle kun je deze niet intrekken — dat kan alleen op phoneblock.net.",
   "spam.dialog.rating": "Soort oproep",
@@ -360,5 +366,6 @@
   "spam.dialog.comment": "Reden",
   "spam.dialog.comment.hint": "(optioneel, wordt openbaar weergegeven)",
   "spam.dialog.error.is_contact": "Deze beller staat in je telefoonboek. Een vermelding in het telefoonboek heeft op de dongle altijd voorrang, daarom is een spammelding hier niet mogelijk.",
-  "status.system.temp": "Chiptemperatuur: {temp} °C"
+  "whitelist.dialog.intro": "Oproepen van dit nummer worden niet meer geblokkeerd. Je markeert het nummer daarmee bij PhoneBlock als legitiem; de beoordeling wordt aan je account gekoppeld.",
+  "whitelist.dialog.submit": "Niet meer blokkeren"
 }

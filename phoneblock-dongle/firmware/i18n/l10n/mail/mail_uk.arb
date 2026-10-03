@@ -25,6 +25,7 @@
   "verdict.spam_votes": "SPAM ({direct} прямий, {range} діапазон)",
   "verdict.spam_suspect": "ПІДОЗРА НА СПАМ ({direct} безпосередньо, {range} діапазон)",
   "verdict.legitimate": "законний",
+  "verdict.test": "Тест",
   "verdict.error": "Помилка",
   "verdict.unknown": "невідомо",
   "log.heading": "Нові записи в протоколі",

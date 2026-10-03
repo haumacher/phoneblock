@@ -25,6 +25,7 @@
   "verdict.spam_votes": "SPAM ({direct} direct, {range} bereik)",
   "verdict.spam_suspect": "VERMOEDEN VAN SPAM ({direct} direct, {range} bereik)",
   "verdict.legitimate": "legitiem",
+  "verdict.test": "Test",
   "verdict.error": "Fout",
   "verdict.unknown": "onbekend",
   "log.heading": "Nieuwe berichten in het logboek",

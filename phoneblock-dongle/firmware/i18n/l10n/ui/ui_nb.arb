@@ -46,6 +46,7 @@
   "status.calls.verdict.name_pattern": "SPAM (navnemønster)",
   "status.calls.verdict.legitimate": "legitim",
   "status.calls.verdict.unknown": "ukjent",
+  "status.calls.verdict.test": "Test",
   "status.calls.verdict.error": "Feil",
   "status.calls.verdict.scope.number": "Nummer",
   "status.calls.verdict.scope.range": "Område",
@@ -65,6 +66,7 @@
   "status.system.title": "System",
   "status.system.heap": "Ledig lagringsplass: {free} (Minimum: {min}, største blokk: {largest})",
   "status.system.fs": "Datapartisjon: {free} ledig av {total} ({used} opptatt)",
+  "status.system.temp": "Chiptemperatur: {temp} °C",
   "status.system.col.task": "Oppgave",
   "status.system.col.cpu": "CPU",
   "status.system.col.stack": "Stack ledig",
@@ -342,7 +344,11 @@
   "status.calls.add_contact.help": "Opprett innringer som kontakt i telefonboken til Fritz!Box",
   "status.calls.report_spam": "Spam",
   "status.calls.report_spam.help": "Rapporter dette nummeret som spam til PhoneBlock",
-  "status.calls.reported": "rapportert",
+  "status.calls.whitelist": "Hvitliste",
+  "status.calls.whitelist.help": "Ikke blokker dette nummeret lenger",
+  "whitelist.dialog.title": "Legg nummeret til på hvitlisten",
+  "whitelist.dialog.working": "Overføres…",
+  "whitelist.dialog.done": "Ferdig — nummeret står på hvitlisten din.",
   "spam.dialog.title": "Rapporter nummeret som spam",
   "spam.dialog.intro": "Din vurdering er viktig for alle PhoneBlock-brukere og knyttes til din konto. Den kan ikke trekkes tilbake via dongelen — det kan bare gjøres på phoneblock.net.",
   "spam.dialog.rating": "Type samtale",
@@ -360,5 +366,6 @@
   "spam.dialog.comment": "Årsak",
   "spam.dialog.comment.hint": "(valgfritt, blir synlig for alle)",
   "spam.dialog.error.is_contact": "Denne innringeren står oppført i telefonboken din. En oppføring i telefonboken har alltid forrang på dongelen, og derfor er det ikke mulig å motta en spam-melding her.",
-  "status.system.temp": "Chiptemperatur: {temp} °C"
+  "whitelist.dialog.intro": "Anrop fra dette nummeret blir ikke lenger blokkert. Dermed vurderer du nummeret som legitimt i PhoneBlock; vurderingen blir knyttet til kontoen din.",
+  "whitelist.dialog.submit": "Ikke blokker lenger"
 }

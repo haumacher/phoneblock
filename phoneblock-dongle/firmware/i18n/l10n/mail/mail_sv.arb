@@ -25,6 +25,7 @@
   "verdict.spam_votes": "SPAM ({direct} direkt, {range} intervall)",
   "verdict.spam_suspect": "MISSTÄNKT SPAM ({direct} direkt, {range} intervall)",
   "verdict.legitimate": "legitim",
+  "verdict.test": "Test",
   "verdict.error": "Fel",
   "verdict.unknown": "okänt",
   "log.heading": "Nya meddelanden i protokollet",

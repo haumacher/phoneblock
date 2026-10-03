@@ -46,6 +46,7 @@
   "status.calls.verdict.name_pattern": "SPAM (modèle de nom)",
   "status.calls.verdict.legitimate": "légitime",
   "status.calls.verdict.unknown": "inconnu",
+  "status.calls.verdict.test": "Test",
   "status.calls.verdict.error": "Erreur",
   "status.calls.verdict.scope.number": "Numéro",
   "status.calls.verdict.scope.range": "Domaine",
@@ -65,6 +66,7 @@
   "status.system.title": "Système",
   "status.system.heap": "Mémoire libre : {free} (minimum : {min}, plus grand bloc : {largest})",
   "status.system.fs": "Partition de données : {free} libres sur {total} ({used} utilisés)",
+  "status.system.temp": "Température de la puce : {temp} °C",
   "status.system.col.task": "Tâche",
   "status.system.col.cpu": "CPU",
   "status.system.col.stack": "Pile libre",
@@ -342,7 +344,11 @@
   "status.calls.add_contact.help": "Ajouter l'appelant comme contact dans le répertoire de la Fritz!Box",
   "status.calls.report_spam": "Spam",
   "status.calls.report_spam.help": "Signaler ce numéro comme spam sur PhoneBlock",
-  "status.calls.reported": "signalé",
+  "status.calls.whitelist": "Liste blanche",
+  "status.calls.whitelist.help": "Ne plus bloquer ce numéro",
+  "whitelist.dialog.title": "Ajouter un numéro à la liste blanche",
+  "whitelist.dialog.working": "En cours de transfert…",
+  "whitelist.dialog.done": "C'est fait — ce numéro figure désormais sur ta liste blanche.",
   "spam.dialog.title": "Signaler ce numéro comme spam",
   "spam.dialog.intro": "Ton évaluation compte pour tous les utilisateurs de PhoneBlock et est associée à ton compte. Elle ne peut pas être annulée via le dongle ; cela n'est possible que sur phoneblock.net.",
   "spam.dialog.rating": "Type d'appel",
@@ -360,5 +366,6 @@
   "spam.dialog.comment": "Raison",
   "spam.dialog.comment.hint": "(facultatif, sera visible publiquement)",
   "spam.dialog.error.is_contact": "Ce correspondant figure dans ton répertoire. Une entrée du répertoire a toujours la priorité sur le dongle ; c'est pourquoi il n'est pas possible de signaler ce numéro comme spam.",
-  "status.system.temp": "Température de la puce : {temp} °C"
+  "whitelist.dialog.intro": "Les appels provenant de ce numéro ne seront plus bloqués. Tu considères ainsi ce numéro comme légitime sur PhoneBlock ; cette évaluation est associée à ton compte.",
+  "whitelist.dialog.submit": "Ne plus bloquer"
 }

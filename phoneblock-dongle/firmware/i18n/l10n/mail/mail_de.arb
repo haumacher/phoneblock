@@ -151,6 +151,11 @@
     "description": "Status-mail string (verdict.legitimate); keep %d/%s/%u/%lld and <b> tags",
     "x-translated": "30bb7955"
   },
+  "verdict.test": "Test",
+  "@verdict.test": {
+    "description": "Status-mail string (verdict.test): verdict of a test call to the dongle's own extension",
+    "x-translated": "784dd132"
+  },
   "verdict.error": "Fehler",
   "@verdict.error": {
     "description": "Status-mail string (verdict.error); keep %d/%s/%u/%lld and <b> tags",
