@@ -712,7 +712,6 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     char ui_lang_s[12]    = "";
     char dial_prefix_s[8] = "";
     char fb_pb_id_s[8]    = "";
-    char dev_mode_s[4]    = "";
     char fb_pb_name_s[64] = "";
 
     bool have_sip_host  = form_get(body, "sip_host",  sip_host,  sizeof(sip_host));
@@ -759,7 +758,6 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     bool have_tz         = form_get(body, "timezone",      tz_s,        sizeof(tz_s));
     bool have_ui_lang    = form_get(body, "ui_lang",       ui_lang_s,   sizeof(ui_lang_s));
     bool have_dial_pfx   = form_get(body, "dial_prefix",   dial_prefix_s, sizeof(dial_prefix_s));
-    bool have_dev_mode   = form_get(body, "dev_mode", dev_mode_s, sizeof(dev_mode_s));
     bool have_fb_pb      = form_get(body, "fb_phonebook", fb_pb_id_s, sizeof(fb_pb_id_s));
     bool have_fb_pb_name = form_get(body, "fb_phonebook_name", fb_pb_name_s, sizeof(fb_pb_name_s));
     free(body);
@@ -914,7 +912,6 @@ static esp_err_t handle_config_post(httpd_req_t *req)
         .blocklist_wildcards = have_bl_wild ? bl_wild_s : NULL,
         .blocklist_enabled   = have_bl_en   ? bl_enabled_s : NULL,
         .spam_names          = spam_names_val,
-        .dev_mode                = have_dev_mode   ? dev_mode_s   : NULL,
         .fritzbox_phonebook      = have_fb_pb      ? fb_pb_id_s   : NULL,
         .fritzbox_phonebook_name = have_fb_pb_name ? fb_pb_name_s : NULL,
         .phoneblock_base_url = have_pb_url   && pb_url[0]   ? pb_url   : NULL,
@@ -2626,7 +2623,7 @@ static esp_err_t handle_rate(httpd_req_t *req)
     return ESP_OK;
 }
 
-// --- dev-mode resource-bundle upload --------------------------------
+// --- dev resource-bundle upload --------------------------------------
 
 // POST /api/dev/i18n?kind=ui|mail&lang=<locale>
 //
@@ -2638,22 +2635,15 @@ static esp_err_t handle_rate(httpd_req_t *req)
 // under test). Uploading the freshly translated bundle takes the CDN out
 // of that loop.
 //
-// Not user-facing: the route answers 404 unless config_dev_mode() is on,
-// and dev mode itself has no UI control. It is still behind the normal API
-// auth gate, and while it is on i18n_sync stops running so an uploaded
-// bundle is not overwritten by the next daily pass.
+// Not user-facing (no UI control), but behind the normal API auth gate. An
+// uploaded bundle stays until the next i18n sync — after a reboot, OTA or UI
+// language switch — so it survives a test session without any pinning.
 //
 // The body is the bundle JSON verbatim — the same stripped shape the CDN
 // serves (no "@key" description entries). It replaces the file for the
 // given locale, so it takes effect on the next page load.
 static esp_err_t handle_dev_i18n_upload(httpd_req_t *req)
 {
-    // 404 rather than 403: with dev mode off the route should not even
-    // advertise that it exists.
-    if (!config_dev_mode()) {
-        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "Not found");
-        return ESP_OK;
-    }
     REQUIRE_AUTH_API(req);
 
     char query[64] = "";
@@ -2751,7 +2741,7 @@ static esp_err_t handle_dev_i18n_upload(httpd_req_t *req)
                        "Could not activate the uploaded bundle.");
         return ESP_OK;
     }
-    ESP_LOGW(TAG, "dev mode: %s bundle for '%s' replaced by upload (%d bytes)",
+    ESP_LOGW(TAG, "dev upload: %s bundle for '%s' replaced by upload (%d bytes)",
              kind, lang, got);
 
     cJSON *root = cJSON_CreateObject();
@@ -2817,7 +2807,6 @@ static const httpd_uri_t URIS[] = {
     { .uri = "/api/announcement/reset", .method = HTTP_POST, .handler = handle_announcement_reset, .user_ctx = NULL },
     { .uri = "/api/sync/run",        .method = HTTP_POST, .handler = handle_sync_run,       .user_ctx = NULL },
     { .uri = "/api/phonebooks",      .method = HTTP_GET,  .handler = handle_phonebooks,     .user_ctx = NULL },
-    // Dev-mode only: 404s unless config_dev_mode() is on (see the handler).
     { .uri = "/api/dev/i18n",        .method = HTTP_POST, .handler = handle_dev_i18n_upload, .user_ctx = NULL },
     { .uri = "/api/phonebook/add",   .method = HTTP_POST, .handler = handle_phonebook_add,  .user_ctx = NULL },
     { .uri = "/api/rate",            .method = HTTP_POST, .handler = handle_rate,           .user_ctx = NULL },

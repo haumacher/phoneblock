@@ -35,7 +35,6 @@ static const char *NS   = "phoneblock";
 #define K_FB_APP_PASS   "fb_app_pass"
 #define K_FB_PB_ID      "fb_pb_id"
 #define K_FB_PB_NAME    "fb_pb_name"
-#define K_DEV_MODE      "dev_mode"
 #define K_SYNC_ENABLED  "sync_enabled"
 #define K_LOG_KNOWN     "log_known_calls"
 #define K_LOG_INFO      "log_info"
@@ -127,7 +126,6 @@ typedef struct {
     // = not chosen yet.
     char fb_pb_id[8];        // decimal NewPhonebookID, "" = unset
     char fb_pb_name[64];     // its name, for display only
-    char dev_mode[4];        // "1" = development mode (see config_dev_mode)
     char sync_enabled[4];    // "1" | "0" (or empty = default off)
     char log_known[4];       // "1" | "0" (or empty = default on)
     char log_info[4];        // "1" = also mirror INFO lines to the log panel (default off)
@@ -300,7 +298,6 @@ void config_load(void)
         s_config.fb_app_pass[0]   = '\0';
         s_config.fb_pb_id[0]      = '\0';
         s_config.fb_pb_name[0]    = '\0';
-        s_config.dev_mode[0]      = '\0';
         s_config.sync_enabled[0]  = '\0';
         s_config.log_known[0]     = '\0';
         s_config.log_info[0]      = '\0';
@@ -374,8 +371,6 @@ void config_load(void)
              s_config.fb_pb_id,     sizeof(s_config.fb_pb_id));
     load_str(h, K_FB_PB_NAME,   "",
              s_config.fb_pb_name,   sizeof(s_config.fb_pb_name));
-    load_str(h, K_DEV_MODE,     "",
-             s_config.dev_mode,     sizeof(s_config.dev_mode));
     load_str(h, K_SYNC_ENABLED, "",
              s_config.sync_enabled, sizeof(s_config.sync_enabled));
     load_str(h, K_LOG_KNOWN, "",
@@ -464,7 +459,6 @@ const char *config_fritzbox_app_user(void)   { return s_config.fb_app_user; }
 const char *config_fritzbox_app_pass(void)   { return s_config.fb_app_pass; }
 const char *config_fritzbox_phonebook(void)  { return s_config.fb_pb_id; }
 const char *config_fritzbox_phonebook_name(void) { return s_config.fb_pb_name; }
-bool        config_dev_mode(void)            { return s_config.dev_mode[0] == '1'; }
 bool        config_sync_enabled(void)
 {
     // Stored as "0"/"1"; anything empty / unrecognised means "off".
@@ -812,8 +806,6 @@ esp_err_t config_update(const config_update_t *u)
                                         s_config.fb_pb_id, sizeof(s_config.fb_pb_id));
     if (err == ESP_OK) err = set_str_if(h, K_FB_PB_NAME, u->fritzbox_phonebook_name,
                                         s_config.fb_pb_name, sizeof(s_config.fb_pb_name));
-    if (err == ESP_OK) err = set_str_if(h, K_DEV_MODE, u->dev_mode,
-                                        s_config.dev_mode, sizeof(s_config.dev_mode));
     if (err == ESP_OK) err = set_str_if(h, K_SYNC_ENABLED, u->sync_enabled,
                                         s_config.sync_enabled, sizeof(s_config.sync_enabled));
     if (err == ESP_OK) err = set_str_if(h, K_LOG_KNOWN, u->log_known_calls,

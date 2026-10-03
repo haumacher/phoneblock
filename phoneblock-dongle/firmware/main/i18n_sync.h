@@ -47,15 +47,18 @@
 // filled by stale downloads. A locale whose SHA already matches the on-disk
 // file is skipped (no re-download).
 //
-// Runs on the scheduler task (never on the httpd thread): daily, ~shortly
-// after boot, and on demand when the user switches the UI language.
+// Runs on the scheduler task (never on the httpd thread): shortly after boot
+// (retried with backoff until a pass succeeds) and on demand when the user
+// switches the UI language. There is no periodic re-sync: a release's bundle
+// only changes with a new firmware version, whose post-OTA boot fetches it.
 
 void i18n_sync_init(void);
 
 // Perform one sync pass for the active ui_lang. Safe to call only from the
 // scheduler task (does blocking HTTPS + SPIFFS I/O). A no-op with a clear
-// status if offline / the manifest is missing or unparseable.
-void i18n_sync_run(void);
+// status if offline / the manifest is missing or unparseable. Returns
+// whether the pass succeeded (same as the snapshot's last_ok).
+bool i18n_sync_run(void);
 
 // Ask the scheduler task to run i18n_sync_run() on its own stack. Returns
 // false if the scheduler is not up yet or a pass is already running.
@@ -77,7 +80,7 @@ void i18n_sync_snapshot(i18n_sync_status_t *out);
 void i18n_sync_ui_path(char *out, size_t cap, const char *lang);
 
 // Same for the status-mail string pack (mail_i18n.c reads it). Both are
-// exposed so the dev-mode upload route in web.c can write a bundle without
+// exposed so the dev upload route in web.c can write a bundle without
 // duplicating the on-device layout.
 void i18n_sync_mail_path(char *out, size_t cap, const char *lang);
 
