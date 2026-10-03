@@ -504,19 +504,9 @@ void i18n_sync_init(void)
     s_lock = xSemaphoreCreateMutex();
 }
 
-void i18n_sync_run(void)
+bool i18n_sync_run(void)
 {
-    if (!s_lock) return;
-    // Development mode pins whatever assets are on the device: bundles are
-    // uploaded straight to it via /api/dev/i18n, and a sync pass would
-    // replace them with the CDN's copy for this firmware's release tag —
-    // which, for a dev build, is the *previous* release's bundle and
-    // therefore missing exactly the keys under test.
-    if (config_dev_mode()) {
-        set_status(true, config_ui_lang(), NULL);
-        ESP_LOGI(TAG, "dev mode: i18n sync skipped, on-device assets pinned");
-        return;
-    }
+    if (!s_lock) return false;
     xSemaphoreTake(s_lock, portMAX_DELAY);
     s_status.running = true;
     xSemaphoreGive(s_lock);
@@ -525,7 +515,9 @@ void i18n_sync_run(void)
 
     xSemaphoreTake(s_lock, portMAX_DELAY);
     s_status.running = false;
+    bool ok = s_status.last_ok;
     xSemaphoreGive(s_lock);
+    return ok;
 }
 
 bool i18n_sync_trigger_now(void)

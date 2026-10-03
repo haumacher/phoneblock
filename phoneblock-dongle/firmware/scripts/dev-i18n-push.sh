@@ -16,11 +16,9 @@
 # byte-identical to what the CDN would serve. Don't strip the ARBs by hand
 # here — the strip rule (keep @@locale, drop @key metadata) lives there.
 #
-# Requires dev mode on the target (POST dev_mode=1 to /api/config); the
-# upload route 404s otherwise. Dev mode also stops i18n_sync, so the pushed
-# bundles are not replaced by the next daily pass. Turn it off with
-# dev_mode=0 when you are done, then trigger a sync to get back onto the
-# published bundles.
+# The pushed bundles stay until the device's next i18n sync — after a reboot,
+# an OTA, or a UI language switch — which puts it back onto the published
+# bundles. Re-run this after flashing a new dev build.
 
 set -euo pipefail
 
@@ -34,7 +32,7 @@ while [[ $# -gt 0 ]]; do
         --host)  HOST="$2";  shift 2;;
         --langs) LANGS="$2"; shift 2;;
         --kinds) KINDS="$2"; shift 2;;
-        -h|--help) sed -n '2,25p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0;;
+        -h|--help) sed -n '2,21p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0;;
         *) echo "unknown option: $1" >&2; exit 2;;
     esac
 done
@@ -47,16 +45,20 @@ if [[ -z "$LANGS" ]]; then
     echo "==> target locale from ${HOST}: ${LANGS}"
 fi
 
-if ! curl -sf -m 10 -X POST "http://${HOST}/api/dev/i18n?kind=ui&lang=zz" \
-        -d '{}' -o /dev/null 2>/dev/null; then
-    # A 400 (bad locale) means the route is live; a 404 means dev mode is off.
-    code="$(curl -s -m 10 -o /dev/null -w '%{http_code}' -X POST \
-            "http://${HOST}/api/dev/i18n?kind=ui&lang=zz" -d '{}')"
-    if [[ "$code" == "404" ]]; then
-        echo "!!! dev mode is off on ${HOST}. Enable it with:" >&2
-        echo "      curl -X POST http://${HOST}/api/config -d dev_mode=1" >&2
-        exit 1
-    fi
+# The first i18n sync runs 30 s (after an OTA) to 3 min after boot and would
+# overwrite anything pushed before it. Wait for it to finish first.
+i18n_settled() {
+    curl -sf -m 10 "http://${HOST}/api/status" | python3 -c '
+import sys, json
+i = json.load(sys.stdin)["i18n"]
+sys.exit(0 if i["ever_ran"] and not i["running"] else 1)'
+}
+if ! i18n_settled; then
+    echo "==> waiting for the boot-time i18n sync on ${HOST}"
+    for _ in $(seq 1 60); do
+        sleep 5
+        i18n_settled && break
+    done
 fi
 
 STAGE="$(mktemp -d)"

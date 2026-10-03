@@ -1479,7 +1479,15 @@ static void handle_ack(sip_ctx_t *c, const char *req, int req_len,
             d->state = DIALOG_STREAMING;
         } else {
             announcement_close(&src);   // nothing to stream — release the handle
-            pb_log_info(TAG, "ACK received → no audio (no rtp_dest or empty) → BYE");
+            // WARN, so it reaches the log panel: the caller hears silence
+            // and a hang-up, which looks like a broken bot.
+            if (src.len == 0) {
+                pb_log_warn(TAG, "ACK received → no announcement on the device "
+                                 "(none uploaded or downloaded) → BYE without audio");
+            } else {
+                pb_log_warn(TAG, "ACK received → no RTP destination in the SDP "
+                                 "→ BYE without audio");
+            }
             send_bye(c);
         }
 #else

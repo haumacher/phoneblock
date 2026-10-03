@@ -82,18 +82,6 @@ const char *config_fritzbox_app_pass(void);
 const char *config_fritzbox_phonebook(void);
 const char *config_fritzbox_phonebook_name(void);
 
-// Development mode. Default OFF and deliberately absent from the web UI —
-// it is set with a hand-crafted POST (`dev_mode=1` to /api/config), so a
-// normal user never turns it on by clicking around. Two effects, both for
-// the firmware development loop:
-//   - /api/dev/i18n accepts localized resource bundles uploaded straight to
-//     the device (otherwise that route 404s), so a dev build's new UI
-//     strings can be tested without publishing a CDN bundle first.
-//   - i18n_sync stops running, which pins whatever assets are on the
-//     device. Without that, the next daily pass would silently replace an
-//     uploaded bundle with the CDN's copy for this firmware's release tag.
-bool        config_dev_mode(void);
-
 // Whether the daily + manual Fritz!Box-blocklist sync is enabled.
 // Default off — the feature is explicit opt-in.
 bool        config_sync_enabled(void);
@@ -357,8 +345,6 @@ typedef struct {
     // NULL = leave unchanged.
     const char *fritzbox_phonebook;
     const char *fritzbox_phonebook_name;
-    // "1" = development mode, "0" = off, NULL = leave unchanged.
-    const char *dev_mode;
     // "1" = enable sync, "0" = disable, NULL = leave unchanged.
     const char *sync_enabled;
     // "1" = log known/internal calls, "0" = skip them, NULL = leave
