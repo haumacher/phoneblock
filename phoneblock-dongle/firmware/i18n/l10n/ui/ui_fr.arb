@@ -359,5 +359,6 @@
   "pb.dialog.error.moved": "Le répertoire sélectionné n'existe plus. Veuillez en choisir un autre.",
   "spam.dialog.comment": "Raison",
   "spam.dialog.comment.hint": "(facultatif, sera visible publiquement)",
-  "spam.dialog.error.is_contact": "Ce correspondant figure dans ton répertoire. Une entrée du répertoire a toujours la priorité sur le dongle ; c'est pourquoi il n'est pas possible de signaler ce numéro comme spam."
+  "spam.dialog.error.is_contact": "Ce correspondant figure dans ton répertoire. Une entrée du répertoire a toujours la priorité sur le dongle ; c'est pourquoi il n'est pas possible de signaler ce numéro comme spam.",
+  "status.system.temp": "Température de la puce : {temp} °C"
 }

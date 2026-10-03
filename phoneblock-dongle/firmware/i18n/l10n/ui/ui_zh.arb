@@ -359,5 +359,6 @@
   "pb.dialog.error.moved": "所选的通讯录已不存在。请选择另一个。",
   "spam.dialog.comment": "原因",
   "spam.dialog.comment.hint": "（可选，将对公众可见）",
-  "spam.dialog.error.is_contact": "该来电者已存入你的通讯录。通讯录中的联系人信息在加密狗中始终具有优先权，因此此处不会触发垃圾短信提示。"
+  "spam.dialog.error.is_contact": "该来电者已存入你的通讯录。通讯录中的联系人信息在加密狗中始终具有优先权，因此此处不会触发垃圾短信提示。",
+  "status.system.temp": "芯片温度：{temp} °C"
 }

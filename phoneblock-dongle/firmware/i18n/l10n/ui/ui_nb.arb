@@ -359,5 +359,6 @@
   "pb.dialog.error.moved": "Den valgte telefonboken finnes ikke lenger. Vennligst velg en annen.",
   "spam.dialog.comment": "Årsak",
   "spam.dialog.comment.hint": "(valgfritt, blir synlig for alle)",
-  "spam.dialog.error.is_contact": "Denne innringeren står oppført i telefonboken din. En oppføring i telefonboken har alltid forrang på dongelen, og derfor er det ikke mulig å motta en spam-melding her."
+  "spam.dialog.error.is_contact": "Denne innringeren står oppført i telefonboken din. En oppføring i telefonboken har alltid forrang på dongelen, og derfor er det ikke mulig å motta en spam-melding her.",
+  "status.system.temp": "Chiptemperatur: {temp} °C"
 }

@@ -359,5 +359,6 @@
   "pb.dialog.error.moved": "Het geselecteerde telefoonboek bestaat niet meer. Kies een ander telefoonboek.",
   "spam.dialog.comment": "Reden",
   "spam.dialog.comment.hint": "(optioneel, wordt openbaar weergegeven)",
-  "spam.dialog.error.is_contact": "Deze beller staat in je telefoonboek. Een vermelding in het telefoonboek heeft op de dongle altijd voorrang, daarom is een spammelding hier niet mogelijk."
+  "spam.dialog.error.is_contact": "Deze beller staat in je telefoonboek. Een vermelding in het telefoonboek heeft op de dongle altijd voorrang, daarom is een spammelding hier niet mogelijk.",
+  "status.system.temp": "Chiptemperatuur: {temp} °C"
 }

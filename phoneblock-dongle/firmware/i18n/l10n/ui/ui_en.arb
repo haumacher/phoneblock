@@ -359,5 +359,6 @@
   "pb.dialog.error.moved": "The selected phone book no longer exists. Please select another one.",
   "spam.dialog.comment": "Reason",
   "spam.dialog.comment.hint": "(optional; will be visible to the public)",
-  "spam.dialog.error.is_contact": "This caller is in your phone book. A phone book entry always takes precedence on the dongle, so a spam alert isn't possible in this case."
+  "spam.dialog.error.is_contact": "This caller is in your phone book. A phone book entry always takes precedence on the dongle, so a spam alert isn't possible in this case.",
+  "status.system.temp": "Chip temperature: {temp} °C"
 }

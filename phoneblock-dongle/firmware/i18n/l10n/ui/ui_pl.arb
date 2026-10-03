@@ -359,5 +359,6 @@
   "pb.dialog.error.moved": "Wybrana książka telefoniczna już nie istnieje. Proszę wybrać inną.",
   "spam.dialog.comment": "Powód",
   "spam.dialog.comment.hint": "(opcjonalnie, będzie widoczne publicznie)",
-  "spam.dialog.error.is_contact": "Ten numer znajduje się w Twojej książce telefonicznej. Wpis w książce telefonicznej ma zawsze pierwszeństwo w przypadku klucza sprzętowego, dlatego w tym przypadku nie jest możliwe zgłoszenie spamu."
+  "spam.dialog.error.is_contact": "Ten numer znajduje się w Twojej książce telefonicznej. Wpis w książce telefonicznej ma zawsze pierwszeństwo w przypadku klucza sprzętowego, dlatego w tym przypadku nie jest możliwe zgłoszenie spamu.",
+  "status.system.temp": "Temperatura układu scalonego: {temp} °C"
 }

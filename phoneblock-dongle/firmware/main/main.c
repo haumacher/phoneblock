@@ -27,6 +27,7 @@
 #include "scheduler.h"
 #include "sip_register.h"
 #include "stats.h"
+#include "chip_temp.h"
 #include "status_led.h"
 #include "time_sync.h"
 #include "web.h"
@@ -69,6 +70,7 @@ void app_main(void)
     // Start the LED early so the user sees "CONNECTING" (or
     // "PAIRING" a few hundred ms later) before WiFi blocks us.
     status_led_start();
+    chip_temp_init();
 
     // Set up SNTP + timezone before the network comes up: the connect
     // calls below block until the first IP, and time_sync starts the
