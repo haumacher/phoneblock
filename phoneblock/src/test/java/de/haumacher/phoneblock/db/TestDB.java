@@ -681,6 +681,61 @@ public class TestDB {
 		}
 	}
 
+	/** Runs one blocklist insert in its own transaction, like one request would. */
+	private int addBlockTx(long userId, String phone, long created) {
+		try (SqlSession tx = _db.openSession()) {
+			int rows = tx.getMapper(BlockList.class).addPersonalization(userId, phone, null, created);
+			tx.commit();
+			return rows;
+		}
+	}
+
+	/** Runs one allow-list insert in its own transaction, like one request would. */
+	private int addAllowTx(long userId, String phone, long created) {
+		try (SqlSession tx = _db.openSession()) {
+			int rows = tx.getMapper(BlockList.class).addExclude(userId, phone, null, created);
+			tx.commit();
+			return rows;
+		}
+	}
+
+	/**
+	 * The personalization inserts must absorb a duplicate instead of violating the primary key
+	 * (#520). Each insert runs in its own transaction, mirroring the two overlapping requests that
+	 * produce the failure: the second request's existence check ran before the first one committed,
+	 * so only the insert itself can still detect the row.
+	 */
+	@Test
+	void testPersonalizationInsertsAbsorbDuplicates() {
+		_db.createUser("dup-user", "DUP", "de", "+49");
+		long userId;
+		try (SqlSession tx = _db.openSession()) {
+			userId = tx.getMapper(Users.class).getUserId("dup-user").longValue();
+		}
+
+		assertEquals(1, addBlockTx(userId, "0301230000", 100));
+		assertEquals(0, addBlockTx(userId, "0301230000", 200), "the duplicate must be absorbed, not throw");
+
+		assertEquals(1, addAllowTx(userId, "0409999999", 100));
+		assertEquals(0, addAllowTx(userId, "0409999999", 200));
+
+		// Neither list may overwrite the other's entry for the same number.
+		assertEquals(0, addAllowTx(userId, "0301230000", 300));
+		assertEquals(0, addBlockTx(userId, "0409999999", 300));
+
+		try (SqlSession tx = _db.openSession()) {
+			BlockList bl = tx.getMapper(BlockList.class);
+
+			// The existing entries are untouched — a duplicate must not reset the activity
+			// timestamp the per-user evidence cap is computed from, nor flip the block state.
+			assertEquals(100, bl.getPersonalizationActivity(userId, "0301230000").getLastActivity());
+			assertTrue(bl.getPersonalizationState(userId, "0301230000").booleanValue(),
+				"an allow must not silently replace an existing block");
+			assertFalse(bl.getPersonalizationState(userId, "0409999999").booleanValue(),
+				"a block must not silently replace an existing allow");
+		}
+	}
+
 	@Test
 	void testQuote() {
 		assertEquals("\"\" 0x0 \"33a0a838-7b11-427a-\" 0x9 \"\" 0xD \"\" 0xA \"\" 0xC \"9c84-59b6ab6d3b0e\" 0x20 \"\"", DB.saveChars("\00033a0a838-7b11-427a-\t\r\n\f9c84-59b6ab6d3b0e "));
