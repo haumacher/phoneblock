@@ -290,8 +290,12 @@ signing key, the `phoneblock.net` SSH deploy, the Play Store keystore). Your job
 release *ready* and say so:
 
 - **Server**: notes file complete, `gh issue list` holds nothing blocking, master gate green.
-  The user runs `phoneblock/bin/deploy-test.sh` (pb-test) and `deploy-prod.sh`
-  (`release:prepare` tags `<version>` and deploys the WAR).
+  The user runs `phoneblock/bin/release.sh` (`release:prepare` tags `<version>`; the
+  `server-release.yml` workflow attaches the WAR to the GitHub release) and then
+  `ssh phoneblock.net sudo pb-deploy <version> pb-test`, later `... phoneblock`. `pb-deploy`
+  stops Tomcat, backs up the H2 files and the current WAR, exchanges the WAR and waits for the
+  context; `--rollback <context> [--with-db]` undoes it. `deploy-test.sh` pushes a snapshot of
+  the working tree to pb-test the same way.
 - **Dongle**: follow `phoneblock-dongle/RELEASE.md`. Branch `dongle-X.Y.x` at the rc tag
   *immediately* (CLAUDE.md); notes at `firmware/release-notes/X.Y.Z.md` must exist before
   `dongle-vX.Y.Z-rc1` is cut; `release.sh` builds, signs, uploads and flips the channel
@@ -332,7 +336,8 @@ are device-only. The rig is shared with the user: never flash while they are rea
 print the *whole* captured ring, and restore any config you changed (e.g. `sip_transport`).
 
 **pb-test** (`https://phoneblock.net/pb-test/`) is the deployed test instance reading live
-data; `deploy-test.sh` puts a WAR there and tails its log. Tell the user the commit hash, the PR
+data; `phoneblock/bin/deploy-test.sh` builds the working tree and hands the WAR to `pb-deploy`
+on the server (which restarts the shared Tomcat, production included). Tell the user the commit hash, the PR
 link and what to try. Never leave a broken build running — the served instance is the shared
 reference for bug reports.
 
