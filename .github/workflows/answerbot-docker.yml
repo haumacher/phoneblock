@@ -1,0 +1,74 @@
+name: Publish Answerbot Docker image
+
+# Builds the self-hosted answerbot (phoneblock-ab) and pushes it to Docker Hub as
+# phoneblock/answerbot. Runs for every server release tag (X.Y.Z, created by the
+# maven-release-plugin) and on demand for any ref, so an already released
+# version can be (re)published without cutting a new release.
+#
+# Required repository secrets: DOCKERHUB_USERNAME, DOCKERHUB_TOKEN (an access
+# token with read/write scope for the phoneblock/answerbot repository).
+
+on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Git ref to build: a release tag (e.g. 3.2.6) or a branch'
+        required: true
+        default: 'master'
+      image_tag:
+        description: 'Docker tag to publish; defaults to the version for a release tag, "edge" for a branch'
+        required: false
+        default: ''
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.ref || github.ref }}
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: maven
+
+      - name: Build answerbot JAR
+        run: mvn -B -pl phoneblock-ab -am -DskipTests package
+
+      - name: Determine image tags
+        id: tags
+        shell: bash
+        run: |
+          REF="${{ github.event.inputs.ref || github.ref_name }}"
+          REQUESTED="${{ github.event.inputs.image_tag }}"
+          if [[ -n "$REQUESTED" ]]; then
+            TAGS="phoneblock/answerbot:$REQUESTED"
+          elif [[ "$REF" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            TAGS="phoneblock/answerbot:$REF,phoneblock/answerbot:latest"
+          else
+            TAGS="phoneblock/answerbot:edge"
+          fi
+          echo "tags=$TAGS" >> "$GITHUB_OUTPUT"
+          echo "Publishing $TAGS"
+
+      - uses: docker/setup-qemu-action@v3
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: phoneblock-ab
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          push: true
+          tags: ${{ steps.tags.outputs.tags }}
