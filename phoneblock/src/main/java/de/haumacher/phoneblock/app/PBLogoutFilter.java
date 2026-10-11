@@ -5,7 +5,9 @@ import java.io.IOException;
 import org.pac4j.jee.filter.LogoutFilter;
 
 import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.util.ServletUtil;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.FilterConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
@@ -16,6 +18,12 @@ import jakarta.servlet.http.HttpServletResponse;
  * Filter for the logout URL that removes a persistent login cookie and removes a single-signon.
  */
 public class PBLogoutFilter extends LogoutFilter {
+
+	@Override
+	public void init(FilterConfig filterConfig) throws ServletException {
+		super.init(filterConfig);
+		setDefaultUrl(ServletUtil.withContextPath(filterConfig.getServletContext().getContextPath(), getDefaultUrl()));
+	}
 
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)

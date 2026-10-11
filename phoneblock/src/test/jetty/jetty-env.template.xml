@@ -13,6 +13,48 @@
 		<Arg type="boolean">true</Arg>
 	</New>
 
+	<!-- Google login (optional; without it only e-mail login is offered) -->
+<!-- 
+	<New class="org.eclipse.jetty.plus.jndi.EnvEntry">
+		<Arg>oauth/google/id</Arg>
+		<Arg type="java.lang.String">TODO.apps.googleusercontent.com</Arg>
+		<Arg type="boolean">true</Arg>
+	</New>
+
+	<New class="org.eclipse.jetty.plus.jndi.EnvEntry">
+		<Arg>oauth/google/secret</Arg>
+		<Arg type="java.lang.String">TODO</Arg>
+		<Arg type="boolean">true</Arg>
+	</New>
+
+	<New class="org.eclipse.jetty.plus.jndi.EnvEntry">
+		<Arg>oauth/callbackBase</Arg>
+		<Arg type="java.lang.String">http://localhost:8080</Arg>
+		<Arg type="boolean">true</Arg>
+	</New>
+-->
+
+	<!-- Donation bank account (optional; shown on the support page and in the EPC QR code) -->
+<!-- 
+	<New class="org.eclipse.jetty.plus.jndi.EnvEntry">
+		<Arg>bank/receiver</Arg>
+		<Arg type="java.lang.String">TODO</Arg>
+		<Arg type="boolean">true</Arg>
+	</New>
+
+	<New class="org.eclipse.jetty.plus.jndi.EnvEntry">
+		<Arg>bank/account</Arg>
+		<Arg type="java.lang.String">DE00000000000000000000</Arg>
+		<Arg type="boolean">true</Arg>
+	</New>
+
+	<New class="org.eclipse.jetty.plus.jndi.EnvEntry">
+		<Arg>bank/bic</Arg>
+		<Arg type="java.lang.String">TODO</Arg>
+		<Arg type="boolean">true</Arg>
+	</New>
+-->
+
 	<!-- SMTP settings -->
 	<New class="org.eclipse.jetty.plus.jndi.EnvEntry">
 		<Arg>smtp/user</Arg>

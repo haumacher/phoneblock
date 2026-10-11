@@ -21,8 +21,9 @@ import jakarta.servlet.http.HttpServletResponse;
  * @see BasicLoginFilter
  */
 @WebFilter(urlPatterns = {
-	"/ab",
-	"/ab/index.html",
+	AnswerbotIndexServlet.DIR,
+	AnswerbotIndexServlet.DIR + "/",
+	AnswerbotIndexServlet.INDEX,
 })
 public class FormLoginFilter extends LoginFilter {
 

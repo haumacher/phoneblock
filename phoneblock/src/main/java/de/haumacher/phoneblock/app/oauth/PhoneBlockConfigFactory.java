@@ -44,12 +44,6 @@ public class PhoneBlockConfigFactory implements ConfigFactory {
     	Properties properties = UIProperties.APP_PROPERTIES;
     	
     	String contextPath = Application.getContextPath();
-    	if (contextPath == null) {
-    		contextPath = properties.getProperty("phoneblock.contextpath");
-    	}
-    	if (contextPath == null) {
-    		contextPath = "/phoneblock";
-    	}
     	
     	List<Client> clientList = new ArrayList<>();
         addGoogleClient(clientList, properties);
@@ -57,7 +51,7 @@ public class PhoneBlockConfigFactory implements ConfigFactory {
         String clientNames = clientList.stream().map(client -> client.getName()).collect(Collectors.joining(","));
         LOG.info("Configured clients: " + clientNames);
 		
-		String callbackUrl = "https://phoneblock.net" + contextPath + "/oauth/callback";
+		String callbackUrl = properties.getProperty(UIProperties.OAUTH_CALLBACK_BASE, "https://phoneblock.net") + contextPath + "/oauth/callback";
 		LOG.info("Using oauth callback URL: " + callbackUrl);
 		Clients clients = new Clients(callbackUrl, clientList);
 		clients.setDefaultSecurityClients(clientNames);

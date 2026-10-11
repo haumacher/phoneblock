@@ -15,10 +15,10 @@
 
 	<filter>
 		<filter-name>callbackFilter</filter-name>
-		<filter-class>org.pac4j.jee.filter.CallbackFilter</filter-class>
+		<filter-class>de.haumacher.phoneblock.app.PBCallbackFilter</filter-class>
 		<init-param>
 			<param-name>defaultUrl</param-name>
-			<param-value>${phoneblock.contextpath}/setup.jsp</param-value>
+			<param-value>/setup.jsp</param-value>
 		</init-param>
 	</filter>
 
@@ -33,7 +33,7 @@
 		
 		<init-param>
 			<param-name>defaultUrl</param-name>
-			<param-value>${phoneblock.contextpath}/</param-value>
+			<param-value>/</param-value>
 		</init-param>
 	</filter>
 

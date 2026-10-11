@@ -36,7 +36,7 @@ dependencies:
   intl: ^0.20.1
 
   # Icons
-  font_awesome_flutter: ^10.2.1
+  font_awesome_flutter: ^11.0.0
 
 dev_dependencies:
   flutter_test:

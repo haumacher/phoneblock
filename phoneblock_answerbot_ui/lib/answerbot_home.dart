@@ -19,8 +19,7 @@ class AnswerbotHome extends StatelessWidget {
   /// Handles login for the answerbot app.
   Future<bool> _handleLogin(BuildContext context) async {
     if (kIsWeb) {
-      // Web version redirects to PhoneBlock login page
-      const basePath = String.fromEnvironment('BASE_PATH', defaultValue: 'https://phoneblock.net/phoneblock');
+      // Web version redirects to the PhoneBlock login page of the server that serves this UI.
       launchUrl(Uri.parse("$basePath/login?locationAfterLogin=/ab/"), webOnlyWindowName: "_self");
       return false; // Can't determine success for web redirect
     } else {
