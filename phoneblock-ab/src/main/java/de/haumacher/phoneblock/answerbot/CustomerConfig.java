@@ -4,7 +4,6 @@
 package de.haumacher.phoneblock.answerbot;
 
 import org.kohsuke.args4j.Option;
-import org.kohsuke.args4j.spi.BooleanOptionHandler;
 import org.mjsip.config.YesNoHandler;
 import org.mjsip.sip.address.SipURI;
 import org.mjsip.sip.config.SipURIHandler;
@@ -41,11 +40,15 @@ public class CustomerConfig implements CustomerOptions {
 			usage = "Authentication realm for registering at the registrar server.")
 	private String realm;
 
-	@Option(name = "--min-votes", handler = GreaterThanZeroIntOptionHandler.class, usage = "The minimum number of PhoneBlock votes for a number to be consideres SPAM.")
-	private int _minVotes = 4;
+	@Option(name = "--min-votes", handler = GreaterThanZeroIntOptionHandler.class, 
+			usage = "The minimum number of PhoneBlock votes for a number to be considered SPAM. " + 
+					"If not set, the 'Mindest-Konfidenz' from your PhoneBlock account settings is used.")
+	private Integer _minVotes;
 
-	@Option(name = "--wildcard", handler = BooleanOptionHandler.class, usage = "Whether to block numbers that are within a range of numbers with high density of SPAM.")
-	private boolean _wildcard;
+	@Option(name = "--wildcard", handler = YesNoHandler.class, 
+			usage = "Whether to block numbers that are within a range of numbers with high density of SPAM. " + 
+					"If not set, the wildcard option from your PhoneBlock account settings is used.")
+	private Boolean _wildcard;
 	
 	@Option(name = "--accept-anonymous", handler = YesNoHandler.class, usage = "Whether to let PhoneBlock accept anonymous calls. This is not recommended. Better configure a separate answering machine in you router to handle anonymous calls.")
 	private boolean _acceptAnonymous = false;
@@ -115,23 +118,26 @@ public class CustomerConfig implements CustomerOptions {
 	}
 
 	@Override
-	public int getMinVotes() {
+	public Integer getMinVotes() {
 		return _minVotes;
 	}
 	
 	/**
 	 * @see #getMinVotes()
 	 */
-	public void setMinVotes(int minVotes) {
+	public void setMinVotes(Integer minVotes) {
 		_minVotes = minVotes;
 	}
 	
 	@Override
-	public boolean getWildcard() {
+	public Boolean getWildcard() {
 		return _wildcard;
 	}
 	
-	public void setWildcard(boolean value) {
+	/**
+	 * @see #getWildcard()
+	 */
+	public void setWildcard(Boolean value) {
 		_wildcard = value;
 	}
 	

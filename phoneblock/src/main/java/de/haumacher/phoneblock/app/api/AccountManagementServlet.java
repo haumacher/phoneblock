@@ -203,7 +203,9 @@ public class AccountManagementServlet extends HttpServlet {
 				.setLang(settings.getLang())
 				.setDialPrefix(settings.getDialPrefix())
 				.setDisplayName(DB.toDisplayName(settings.getDisplayName()))
-				.setEmail(settings.getEmail());
+				.setEmail(settings.getEmail())
+				.setMinVotes(settings.getMinVotes())
+				.setWildcards(settings.isWildcards());
 
 		resp.setContentType("application/json");
 		resp.setCharacterEncoding("UTF-8");

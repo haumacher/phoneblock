@@ -32,6 +32,11 @@ services:
       - PORT_COUNT=10
       - RECORDINGS=none
       - CONVERSATION=/opt/phoneblock/conversation
+      # Blocking options. By default the answerbot uses the "Mindest-Konfidenz" and the
+      # wildcard option from your PhoneBlock account settings
+      # (https://phoneblock.net/phoneblock/settings). Only set these to override them locally.
+      #- MIN_VOTES=4
+      #- WILDCARD=no
       # Enable for debugging the SIP communication. This dumps all sent and received SIP packages to the log.
       - LOG_ALL_PACKETS=no
       # Whether to accept calls from local phones (numbers starting with '*').

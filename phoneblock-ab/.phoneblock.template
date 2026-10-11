@@ -43,6 +43,14 @@ sip-passwd=<fill-in-here>
 # Your API key for accessing the PhoneBlock API. Create one at https://phoneblock.net/phoneblock/settings
 phoneblock-api-key=
 
+# The minimum number of PhoneBlock votes for a number to be considered SPAM. If not set, the
+# "Mindest-Konfidenz" from your PhoneBlock account settings is used.
+#min-votes=4
+
+# Whether to block numbers within a range of numbers with a high density of SPAM. If not set,
+# the wildcard option from your PhoneBlock account settings is used.
+#wildcard=no
+
 # The format of the conversation media stord in the directories in ./conversation/*
 # The default format for telefony calls are 8bit PCMA encoded WAV files. When
 # you create audio files for the answerbot to use for communication, make soure

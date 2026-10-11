@@ -59,8 +59,13 @@ padding-time = 500
 # The maximum value in decibel relative to full scale (dbfs) for an audio segment to be classified as silence.")
 silence-db = -35
 
-# The minimum number of PhoneBlock votes for a number to be considered SPAM.
-min-votes = 4
+# The minimum number of PhoneBlock votes for a number to be considered SPAM. If not set, the
+# "Mindest-Konfidenz" from your PhoneBlock account settings is used.
+#min-votes = 4
+
+# Whether to block numbers within a range of numbers with a high density of SPAM. If not set,
+# the wildcard option from your PhoneBlock account settings is used.
+#wildcard = no
 
 # Whether to let PhoneBlock accept anonymous calls. It is not recommended to enable this option. Better configure a 
 # separate answering machine in you router to gracefully handle anonymous calls.
