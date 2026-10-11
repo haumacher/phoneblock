@@ -62,15 +62,18 @@ mvn versions:use-latest-releases versions:update-properties -DgenerateBackupPoms
 **Release and deploy the server:**
 ```bash
 phoneblock/bin/release.sh                                  # release:prepare → tag → GitHub Actions builds the WAR
-ssh phoneblock.net sudo pb-deploy <version> pb-test        # fetch from the GitHub release, stop Tomcat, back up DB + WAR, exchange, start
-ssh phoneblock.net sudo pb-deploy <version> phoneblock
+ssh -t phoneblock.net sudo pb-deploy <version> pb-test     # fetch from the GitHub release, stop the context, back up DB + WAR, exchange, follow the log
+ssh -t phoneblock.net sudo pb-deploy <version> phoneblock
 phoneblock/bin/deploy-test.sh                              # snapshot of the working tree → pb-test via pb-deploy --war
 ```
 `.github/workflows/server-release.yml` builds the answerbot UI and the WAR for every tag `X.Y.Z` and
 attaches `phoneblock-<version>.war` plus its SHA-256 to the GitHub release. `phoneblock/bin/pb-deploy`
 runs on the server (install once to `/usr/local/bin`, settings in `/etc/phoneblock/pb-deploy.conf`,
-see `pb-deploy.conf.template`); `pb-deploy --rollback <context> [--with-db]` restores the previous
-state. Tomcat hosts both contexts, so every deployment restarts production as well.
+see `pb-deploy.conf.template`, needs a manager user with the `manager-script` role). Only the one
+context is stopped through the Tomcat manager; the exchanged WAR is redeployed by Tomcat's
+autoDeploy, and the script then follows the context's log until Ctrl-C (`--no-tail` for scripts).
+`pb-deploy --rollback <context> [--with-db]` restores the previous state. The context is never
+undeployed, because that would delete its descriptor with the JNDI settings.
 
 ### Answer Bot
 
