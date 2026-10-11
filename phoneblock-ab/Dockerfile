@@ -7,8 +7,10 @@ RUN apt-get update \
  && apt-get install -y --no-install-recommends gosu \
  && rm -rf /var/lib/apt/lists/* \
  && adduser --system --uid 999 --group --home /opt/phoneblock phoneblock \
- && mkdir /opt/phoneblock/bin /opt/phoneblock/conversation /opt/phoneblock/recordings \
- && chown -R phoneblock:phoneblock /opt/phoneblock
+ && install -d -o phoneblock -g phoneblock /opt/phoneblock/bin /opt/phoneblock/conversation /opt/phoneblock/recordings
+# Directories are created with their owner instead of `mkdir` + `chown -R`: the recursive chown
+# has to read the directory, which fails on linux/arm/v7 under QEMU emulation with "Value too
+# large for defined data type" (32-bit stat on 64-bit inodes).
 
 COPY --chown=phoneblock:phoneblock .phoneblock.docker /opt/phoneblock/.phoneblock
 COPY --chown=phoneblock:phoneblock target/phoneblock-ab-*-jar-with-dependencies.jar /opt/phoneblock/bin/phoneblock-ab.jar
