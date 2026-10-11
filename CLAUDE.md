@@ -343,8 +343,8 @@ When adding schema changes:
 ### Message Protocol Changes
 
 When modifying `phoneblock-shared/`:
-1. Edit `.proto` files in `src/main/proto/`
-2. Run `mvn generate-sources` to regenerate Java classes
+1. Edit the `.proto` files (e.g. `phoneblock-shared/src/main/java/de/haumacher/phoneblock/app/api/model/api.proto`; the generated classes live next to them)
+2. Run `mvn -B -pl phoneblock-shared process-sources` to regenerate Java classes (the msgbuf goal is bound to `process-sources`; `generate-sources` stops before it)
 3. Rebuild dependent modules
 
 ### Audio Conversation Updates

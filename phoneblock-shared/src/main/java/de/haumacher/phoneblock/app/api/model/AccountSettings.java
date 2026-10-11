@@ -21,9 +21,19 @@ public class AccountSettings extends AccountData {
 	/** @see #getEmail() */
 	private static final String EMAIL__PROP = "email";
 
+	/** @see #getMinVotes() */
+	private static final String MIN_VOTES__PROP = "minVotes";
+
+	/** @see #isWildcards() */
+	private static final String WILDCARDS__PROP = "wildcards";
+
 	private String _login = null;
 
 	private String _email = null;
+
+	private int _minVotes = 0;
+
+	private boolean _wildcards = false;
 
 	/**
 	 * Creates a {@link AccountSettings} instance.
@@ -93,6 +103,48 @@ public class AccountSettings extends AccountData {
 		return _email != null;
 	}
 
+	/**
+	 * The minimum confidence ("Mindest-Konfidenz") configured in the account settings: the
+	 * number of votes a number needs before the user's devices treat it as SPAM. Clients
+	 * without a setting of their own (e.g. a self-hosted answerbot) use this value.
+	 */
+	public final int getMinVotes() {
+		return _minVotes;
+	}
+
+	/**
+	 * @see #getMinVotes()
+	 */
+	public de.haumacher.phoneblock.app.api.model.AccountSettings setMinVotes(int value) {
+		internalSetMinVotes(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #getMinVotes()} without chain call utility. */
+	protected final void internalSetMinVotes(int value) {
+		_minVotes = value;
+	}
+
+	/**
+	 * Whether the account settings enable wildcard (number range) blocking.
+	 */
+	public final boolean isWildcards() {
+		return _wildcards;
+	}
+
+	/**
+	 * @see #isWildcards()
+	 */
+	public de.haumacher.phoneblock.app.api.model.AccountSettings setWildcards(boolean value) {
+		internalSetWildcards(value);
+		return this;
+	}
+
+	/** Internal setter for {@link #isWildcards()} without chain call utility. */
+	protected final void internalSetWildcards(boolean value) {
+		_wildcards = value;
+	}
+
 	@Override
 	public de.haumacher.phoneblock.app.api.model.AccountSettings setLang(String value) {
 		internalSetLang(value);
@@ -134,6 +186,10 @@ public class AccountSettings extends AccountData {
 			out.name(EMAIL__PROP);
 			out.value(getEmail());
 		}
+		out.name(MIN_VOTES__PROP);
+		out.value(getMinVotes());
+		out.name(WILDCARDS__PROP);
+		out.value(isWildcards());
 	}
 
 	@Override
@@ -141,6 +197,8 @@ public class AccountSettings extends AccountData {
 		switch (field) {
 			case LOGIN__PROP: setLogin(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
 			case EMAIL__PROP: setEmail(de.haumacher.msgbuf.json.JsonUtil.nextStringOptional(in)); break;
+			case MIN_VOTES__PROP: setMinVotes(in.nextInt()); break;
+			case WILDCARDS__PROP: setWildcards(in.nextBoolean()); break;
 			default: super.readField(in, field);
 		}
 	}
@@ -154,6 +212,12 @@ public class AccountSettings extends AccountData {
 	/** XML attribute or element name of a {@link #getEmail} property. */
 	private static final String EMAIL__XML_ATTR = "email";
 
+	/** XML attribute or element name of a {@link #getMinVotes} property. */
+	private static final String MIN_VOTES__XML_ATTR = "min-votes";
+
+	/** XML attribute or element name of a {@link #isWildcards} property. */
+	private static final String WILDCARDS__XML_ATTR = "wildcards";
+
 	@Override
 	public String getXmlTagName() {
 		return ACCOUNT_SETTINGS__XML_ELEMENT;
@@ -165,6 +229,8 @@ public class AccountSettings extends AccountData {
 		super.writeAttributes(out);
 		out.writeAttribute(LOGIN__XML_ATTR, getLogin());
 		out.writeAttribute(EMAIL__XML_ATTR, getEmail());
+		out.writeAttribute(MIN_VOTES__XML_ATTR, Integer.toString(getMinVotes()));
+		out.writeAttribute(WILDCARDS__XML_ATTR, Boolean.toString(isWildcards()));
 	}
 
 	/** Serializes all fields that are written as XML elements. */
@@ -192,6 +258,14 @@ public class AccountSettings extends AccountData {
 				setEmail(value);
 				break;
 			}
+			case MIN_VOTES__XML_ATTR: {
+				setMinVotes(Integer.parseInt(value));
+				break;
+			}
+			case WILDCARDS__XML_ATTR: {
+				setWildcards(Boolean.parseBoolean(value));
+				break;
+			}
 			default: {
 				super.readFieldXmlAttribute(name, value);
 			}
@@ -207,6 +281,14 @@ public class AccountSettings extends AccountData {
 			}
 			case EMAIL__XML_ATTR: {
 				setEmail(in.getElementText());
+				break;
+			}
+			case MIN_VOTES__XML_ATTR: {
+				setMinVotes(Integer.parseInt(in.getElementText()));
+				break;
+			}
+			case WILDCARDS__XML_ATTR: {
+				setWildcards(Boolean.parseBoolean(in.getElementText()));
 				break;
 			}
 			default: {

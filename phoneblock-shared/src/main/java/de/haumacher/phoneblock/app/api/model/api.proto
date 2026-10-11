@@ -519,6 +519,18 @@ message AccountSettings extends AccountData {
 	/** The user's email address. */
 	@Nullable
 	string email;
+
+	/**
+	 * The minimum confidence ("Mindest-Konfidenz") configured in the account settings: the
+	 * number of votes a number needs before the user's devices treat it as SPAM. Clients
+	 * without a setting of their own (e.g. a self-hosted answerbot) use this value.
+	 */
+	int minVotes;
+
+	/**
+	 * Whether the account settings enable wildcard (number range) blocking.
+	 */
+	boolean wildcards;
 }
 
 /** Entry in a personalized number list with optional comment. */

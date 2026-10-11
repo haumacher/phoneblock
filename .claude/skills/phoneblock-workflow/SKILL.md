@@ -77,8 +77,8 @@ a good delivery contains, in order:
   - Maven: the edit loop runs the **owning module only**, output to a log file as CLAUDE.md
     shows (`mvn -B -pl phoneblock -DskipTests install >/tmp/pb-build.log 2>&1`, then `tail`
     and `grep '\[ERROR\]'`). A change in `phoneblock-shared` needs `-am` or a prior `install`;
-    a `.proto` change needs `mvn generate-sources` in the shared module **before** any
-    consumer compiles. Never wrap the build in `&& ... || { ... }` (it trips the permission
+    a `.proto` change needs `mvn -B -pl phoneblock-shared process-sources` **before** any
+    consumer compiles (the msgbuf goal binds to `process-sources`, not `generate-sources`). Never wrap the build in `&& ... || { ... }` (it trips the permission
     allowlist). The full `mvn -B clean install` runs once at the end before the report.
   - Flutter: the edit loop runs `flutter analyze` and the **targeted** test file; the full
     `flutter analyze && flutter test` runs at the end, in the app that changed.
@@ -168,7 +168,14 @@ delivery:
   known project defect, not your regression; say so explicitly.
 - **A stale module install**: a test in `phoneblock` that behaves as if a `phoneblock-shared`
   change never happened is running against the old `~/.m2` artifact — rebuild with `-am` or
-  `install` the shared module. Generated msgbuf classes drift by design after a `.proto` edit;
+  `install` the shared module. **`mvn -pl phoneblock-ab` alone does not build** (even on a
+  clean master): `module-info.java` fails with `module not found: de.haumacher.msgbuf` when
+  the shared module comes from `~/.m2` instead of the reactor. Always build the answerbot as
+  `-pl phoneblock-shared,phoneblock-ab` or with `-am`.
+- **`mvn install` of the `phoneblock` module needs the Flutter answerbot UI built first**
+  (`cd phoneblock_answerbot_ui && flutter build web --base-href /phoneblock/ab/`); without
+  `build/web` the WAR step fails after all tests passed — that is the environment, not the
+  change. Generated msgbuf classes drift by design after a `.proto` edit;
   a compile error there is the build telling you to regenerate, not a defect.
 - **`MissingResourceException` at runtime** after adding a key to `Messages_de.properties`
   means the other bundles were not regenerated: the DeepL step only runs under the `with-deepl`

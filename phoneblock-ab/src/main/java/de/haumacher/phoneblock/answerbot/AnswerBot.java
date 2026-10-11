@@ -70,6 +70,7 @@ import de.haumacher.msgbuf.io.StringW;
 import de.haumacher.msgbuf.json.JsonReader;
 import de.haumacher.msgbuf.json.JsonWriter;
 import de.haumacher.msgbuf.server.io.ReaderAdapter;
+import de.haumacher.phoneblock.app.api.model.AccountSettings;
 import de.haumacher.phoneblock.app.api.model.PhoneInfo;
 import de.haumacher.phoneblock.app.api.model.RateRequest;
 import de.haumacher.phoneblock.app.api.model.Rating;
@@ -89,6 +90,26 @@ public class AnswerBot extends MultipleUAS {
 	 * Prefix of a contact name in a blocklist address book.
 	 */
 	public static final String SPAM_MARKER = "SPAM:";
+
+	/**
+	 * Base URL of the PhoneBlock API.
+	 */
+	static final String API_BASE = "https://phoneblock.net/phoneblock/api";
+
+	/**
+	 * Minimum votes used when neither the local configuration nor the account settings provide a value.
+	 */
+	static final int DEFAULT_MIN_VOTES = 4;
+
+	/**
+	 * Wildcard blocking used when neither the local configuration nor the account settings provide a value.
+	 */
+	static final boolean DEFAULT_WILDCARD = false;
+
+	/**
+	 * How long account settings fetched from PhoneBlock are reused before they are refreshed.
+	 */
+	static final long ACCOUNT_SETTINGS_TTL = 10 * 60 * 1000L;
 	
 	static {
 		String version;
@@ -109,6 +130,10 @@ public class AnswerBot extends MultipleUAS {
 	private AnswerbotOptions _botConfig;
 
 	private Function<String, CustomerOptions> _configForUser;
+
+	private AccountSettings _accountSettings;
+
+	private long _accountSettingsTime;
 
 	/**
 	 * Creates an {@link AnswerBot}.
@@ -284,13 +309,17 @@ public class AnswerBot extends MultipleUAS {
 			// The server already reports whitelisted numbers with rating A_LEGITIMATE and
 			// zero votes, so the vote-restriction check below rejects the call (i.e. the
 			// answerbot does not pick up and the phone rings normally).
-			int votes = user.getWildcard() ? info.getVotesWildcard() : info.getVotes();
-			if (votes < user.getMinVotes()) {
+			AccountSettings account = needsAccountSettings(user) ? accountSettings() : null;
+			int minVotes = effectiveMinVotes(user, account);
+			boolean wildcard = effectiveWildcard(user, account);
+
+			int votes = wildcard ? info.getVotesWildcard() : info.getVotes();
+			if (votes < minVotes) {
 				// Not considered SPAM.
 				if (votes == 0) {
 					LOG.info("Ignoring legitimate call.");
 				} else {
-					LOG.info("Ignoring potential SPAM call from {} due to vote restriction ({} < {}).", from, votes, user.getMinVotes());
+					LOG.info("Ignoring potential SPAM call from {} due to vote restriction ({} < {}).", from, votes, minVotes);
 				}
 				return rejectHandler();
 			} else {
@@ -298,6 +327,112 @@ public class AnswerBot extends MultipleUAS {
 				return spamHandler(userName, from);
 			}
 		}
+	}
+
+	/**
+	 * Whether the given customer relies on the account settings for at least one blocking option.
+	 */
+	static boolean needsAccountSettings(CustomerOptions user) {
+		return user.getMinVotes() == null || user.getWildcard() == null;
+	}
+
+	/**
+	 * The minimum votes to use for the given customer: the local configuration wins, then the
+	 * account settings, then {@link #DEFAULT_MIN_VOTES}.
+	 */
+	static int effectiveMinVotes(CustomerOptions user, AccountSettings account) {
+		Integer local = user.getMinVotes();
+		if (local != null) {
+			return local.intValue();
+		}
+		if (account != null && account.getMinVotes() > 0) {
+			return account.getMinVotes();
+		}
+		return DEFAULT_MIN_VOTES;
+	}
+
+	/**
+	 * Whether to use wildcard votes for the given customer: the local configuration wins, then the
+	 * account settings, then {@link #DEFAULT_WILDCARD}.
+	 */
+	static boolean effectiveWildcard(CustomerOptions user, AccountSettings account) {
+		Boolean local = user.getWildcard();
+		if (local != null) {
+			return local.booleanValue();
+		}
+		if (account != null) {
+			return account.isWildcards();
+		}
+		return DEFAULT_WILDCARD;
+	}
+
+	/**
+	 * The account settings of the answerbot owner, fetched from PhoneBlock and cached for
+	 * {@link #ACCOUNT_SETTINGS_TTL}.
+	 * 
+	 * <p>
+	 * If PhoneBlock cannot be reached, the last successfully fetched settings are kept. Before the
+	 * first successful fetch, <code>null</code> is returned and the defaults apply.
+	 * </p>
+	 */
+	protected synchronized AccountSettings accountSettings() {
+		long now = System.currentTimeMillis();
+		if (_accountSettings == null || now - _accountSettingsTime > ACCOUNT_SETTINGS_TTL) {
+			AccountSettings fresh = fetchAccountSettings();
+			if (fresh != null) {
+				_accountSettings = fresh;
+			} else if (_accountSettings != null) {
+				LOG.warn("Keeping previously fetched account settings (Mindest-Konfidenz {}, wildcards {}).", 
+						_accountSettings.getMinVotes(), _accountSettings.isWildcards());
+			} else {
+				LOG.warn("No account settings available, using defaults (Mindest-Konfidenz {}, wildcards {}).", 
+						DEFAULT_MIN_VOTES, DEFAULT_WILDCARD);
+			}
+			// Also throttle retries after a failure.
+			_accountSettingsTime = now;
+		}
+		return _accountSettings;
+	}
+
+	/**
+	 * Retrieves the account settings of the answerbot owner from PhoneBlock.
+	 * 
+	 * @return The account settings, <code>null</code> if they cannot be retrieved.
+	 */
+	protected AccountSettings fetchAccountSettings() {
+		try {
+			URL url = new URL(API_BASE + "/account");
+			URLConnection connection = url.openConnection();
+			addAuthorization(connection);
+			connection.addRequestProperty("accept", "application/json");
+			try (InputStream in = connection.getInputStream()) {
+				return AccountSettings.readAccountSettings(new JsonReader(new ReaderAdapter(new InputStreamReader(in, StandardCharsets.UTF_8))));
+			}
+		} catch (IOException ex) {
+			LOG.warn("Fetching account settings from PhoneBlock failed: {}", ex.getMessage());
+			return null;
+		}
+	}
+
+	/**
+	 * Logs the blocking options in effect for the given customer and where they come from.
+	 */
+	public void logBlockingOptions(CustomerOptions user) {
+		AccountSettings account = needsAccountSettings(user) ? accountSettings() : null;
+		LOG.info("Minimum votes to treat a call as SPAM: {} ({}).", effectiveMinVotes(user, account), 
+				source(user.getMinVotes() != null, account != null && account.getMinVotes() > 0, "min-votes"));
+		LOG.info("Wildcard (number range) blocking: {} ({}).", effectiveWildcard(user, account), 
+				source(user.getWildcard() != null, account != null, "wildcard"));
+	}
+
+	private static String source(boolean local, boolean account, String option) {
+		if (local) {
+			return "from option '" + option + "'";
+		}
+		if (account) {
+			return "from your PhoneBlock account settings, set option '" + option + "' to override";
+		}
+		return "default, account settings not available";
 	}
 
 	/**
@@ -319,7 +454,7 @@ public class AnswerBot extends MultipleUAS {
 			byte[] hashData = PhoneHash.getPhoneHash(PhoneHash.createPhoneDigest(), internationalForm);
 			String encodeHash = PhoneHash.encodeHash(hashData);
 			
-			URL url = new URL("https://phoneblock.net/phoneblock/api/check?sha1=" + encodeHash + "&format=json");
+			URL url = new URL(API_BASE + "/check?sha1=" + encodeHash + "&format=json");
 			
 			URLConnection connection = url.openConnection();
 			addAuthorization(connection);
@@ -390,7 +525,7 @@ public class AnswerBot extends MultipleUAS {
 		LOG.info("Completed SPAM call for '" + userName + "' with '" + from + "' started " + new Date(startTime) + " talked for " + seconds + " seconds.");
 		if (_botConfig.getSendRatings()) {
 			try {
-				URL url = new URL("https://phoneblock.net/phoneblock/api/rate?format=json");
+				URL url = new URL(API_BASE + "/rate?format=json");
 				HttpURLConnection connection = (HttpURLConnection)url.openConnection();
 				connection.addRequestProperty("accept", "application/json");
 				addAuthorization(connection);
@@ -458,7 +593,8 @@ public class AnswerBot extends MultipleUAS {
 		botConfig.normalize();
 		
 		SipProvider sipProvider = new SipProvider(sipConfig, new ConfiguredScheduler(schedulerConfig));
-		new AnswerBot(sipProvider, botConfig, (id) -> userConfig, portConfig.createPool());
+		AnswerBot bot = new AnswerBot(sipProvider, botConfig, (id) -> userConfig, portConfig.createPool());
+		bot.logBlockingOptions(userConfig);
 		
 		RegistrationClient rc = new RegistrationClient(sipProvider, userConfig, new RegistrationLogger());
 		rc.loopRegister(userConfig);

@@ -827,7 +827,9 @@
 									"lang": "de-DE",
 									"dialPrefix": "+49",
 									"displayName": "John Doe",
-									"email": "john.doe@example.com"
+									"email": "john.doe@example.com",
+									"minVotes": 4,
+									"wildcards": false
 								}
 							}
 						}
@@ -915,7 +917,9 @@
 									"lang": "de-DE",
 									"dialPrefix": "+49",
 									"displayName": "John Doe",
-									"email": "john.doe@example.com"
+									"email": "john.doe@example.com",
+									"minVotes": 4,
+									"wildcards": false
 								}
 							}
 						}
@@ -1603,6 +1607,16 @@
 						"description": "User's email address",
 						"example": "john.doe@example.com",
 						"nullable": true
+					},
+					"minVotes": {
+						"type": "integer",
+						"description": "Minimum confidence ('Mindest-Konfidenz') from the account settings: the number of votes a number needs before the user's devices treat it as SPAM. Clients without a setting of their own (e.g. a self-hosted answerbot) use this value.",
+						"example": 4
+					},
+					"wildcards": {
+						"type": "boolean",
+						"description": "Whether the account settings enable wildcard (number range) blocking.",
+						"example": false
 					}
 				}
 			},
