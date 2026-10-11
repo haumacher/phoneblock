@@ -80,7 +80,7 @@ public class DefaultController implements WebController {
 
 	public static final WebController INSTANCE = new DefaultController();
 	
-	private static final Map<String, Object> PROPS;
+	private static volatile Map<String, Object> _props;
 	private static final Map<String, Object> DEPS;
 
 	private static final List<RatingDisplay> RATINGS = Arrays.asList(Rating.values()).stream()
@@ -88,8 +88,6 @@ public class DefaultController implements WebController {
 		.toList();
 	
 	static {
-		PROPS = toModel(UIProperties.APP_PROPERTIES);
-
 		DEPS = new HashMap<>();
 		DEPS.put("bulma", UIProperties.BULMA_PATH);
 		DEPS.put("bulmaCalendar", UIProperties.BULMA_CALENDAR_PATH);
@@ -341,7 +339,7 @@ public class DefaultController implements WebController {
 		} else {
 			ctx.setVariable(CANONICAL_ATTR, "https://phoneblock.net" + request.getContextPath() + request.getServletPath());
 		}
-        ctx.setVariable("props", PROPS);
+        ctx.setVariable("props", props());
         ctx.setVariable("deps", DEPS);
         ctx.setVariable("contextPath", request.getContextPath());
         
@@ -361,6 +359,23 @@ public class DefaultController implements WebController {
 	/**
 	 * Converts {@link Properties} with '.'-structured keys to nested maps. 
 	 */
+	/**
+	 * The application properties as nested model for the templates.
+	 * 
+	 * <p>
+	 * Built on first use, because {@link UIProperties#APP_PROPERTIES} is completed with runtime
+	 * settings during application startup, see {@link UIProperties#loadRuntimeSettings()}.
+	 * </p>
+	 */
+	static Map<String, Object> props() {
+		Map<String, Object> result = _props;
+		if (result == null) {
+			result = toModel(UIProperties.APP_PROPERTIES);
+			_props = result;
+		}
+		return result;
+	}
+
 	static Map<String, Object> toModel(Properties appProperties) {
 		Map<String, Object> result = new HashMap<>();
 		

@@ -57,8 +57,8 @@ class InfoFieldState extends State<InfoField> {
                   });
                 },
                 icon: shown ?
-                  const Icon(FontAwesomeIcons.eyeSlash) :
-                  const Icon(FontAwesomeIcons.eye),
+                  const FaIcon(FontAwesomeIcons.eyeSlash) :
+                  const FaIcon(FontAwesomeIcons.eye),
               tooltip: shown ? "Versteckt das Passwort." : "Zeigt das Passwort an (Du kannst das Passwort mit dem Kopierknopf kopieren, ohne es vorher anzuzeigen).",
             ),
             if (!widget.noCopy) IconButton(

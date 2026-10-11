@@ -84,6 +84,25 @@ public class ServletUtil {
 		resp.getWriter().write(message);
 	}
 
+	/**
+	 * Prefixes an absolute path of this web application with the given context path.
+	 * 
+	 * <p>
+	 * Deployment descriptors give paths relative to the context (<code>/setup.jsp</code>), while
+	 * redirects need the full path (<code>/pb-test/setup.jsp</code>). Paths that already start with
+	 * the context path, relative paths and full URLs are returned unchanged.
+	 * </p>
+	 */
+	public static String withContextPath(String contextPath, String path) {
+		if (path == null || contextPath == null || contextPath.isEmpty() || !path.startsWith("/") || path.startsWith("//")) {
+			return path;
+		}
+		if (path.equals(contextPath) || path.startsWith(contextPath + "/")) {
+			return path;
+		}
+		return contextPath + path;
+	}
+
 	public static String currentPage(HttpServletRequest req) {
 		String currentPage = (String) req.getAttribute(CURRENT_PAGE);
 		if (currentPage == null) {

@@ -307,10 +307,6 @@
 	</dependencies>
 
 	<build>
-		<filters>
-			<filter>.phoneblock</filter>
-		</filters>
-
 		<resources>
 			<resource>
 				<directory>${project.build.sourceDirectory}</directory>
@@ -330,8 +326,8 @@
 				<artifactId>maven-enforcer-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>check-phoneblock-config</id>
-						<phase>validate</phase>
+						<id>check-answerbot-ui</id>
+						<phase>prepare-package</phase>
 						<goals>
 							<goal>enforce</goal>
 						</goals>
@@ -339,12 +335,12 @@
 							<rules>
 								<requireFilesExist>
 									<files>
-										<file>${project.basedir}/.phoneblock</file>
+										<file>${project.parent.basedir}/phoneblock_answerbot_ui/build/web/main.dart.js</file>
 									</files>
 									<message>
-Configuration file '.phoneblock' is missing.
-Copy '.phoneblock.template' to '.phoneblock' and fill in your local values
-(database URL, OAuth credentials, SMTP settings). See CLAUDE.md for details.
+The answerbot UI is missing or incomplete. Build it before packaging the WAR:
+    cd phoneblock_answerbot_ui &amp;&amp; flutter build web --base-href /ab/
+(a failed Flutter build leaves a partial build/web behind, which this check rejects).
 									</message>
 								</requireFilesExist>
 							</rules>
@@ -386,13 +382,6 @@ Copy '.phoneblock.template' to '.phoneblock' and fill in your local values
 						
 						<configuration>
 							<archiveClasses>true</archiveClasses>
-							
-							<filters>
-								<filter>.phoneblock</filter>
-								<filter>${project.build.outputDirectory}/phoneblock.properties</filter>
-							</filters>
-							
-							<filteringDeploymentDescriptors>true</filteringDeploymentDescriptors>
 							
 					        <webResources>
 					            <resource>

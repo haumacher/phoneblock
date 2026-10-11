@@ -172,9 +172,11 @@ npx webpack
 - Main tables: NUMBERS (phone data), USERS, RATINGS, COMMENTS, SPAMREPORTS, BLOCKLIST
 
 **Configuration:**
-- Requires `.phoneblock` file (see `.phoneblock.template`)
-- Database URL, OAuth credentials, SMTP settings
-- Filtering via Maven resource filtering during build
+- All deployment-specific settings (database, SMTP, OAuth, donation bank account, ...) are read at
+  runtime via JNDI or system properties, see JNDI-CONFIGURATION.md. The WAR contains nothing
+  environment-specific: one build serves `/phoneblock`, `/pb-test` and local Jetty.
+- Local development: `phoneblock/bin/setup-local.sh` creates `src/test/jetty/jetty-env.xml` from
+  its template (git-ignored); `mvn jetty:run` reads it.
 
 **Web UI:**
 - Static assets: `src/main/webapp/assets/`
@@ -475,7 +477,7 @@ In `State` subclasses, the analyzer cannot link a `context.mounted` check to lat
 ## Configuration Files
 
 **Required for local development:**
-- `phoneblock/.phoneblock` - Database, OAuth, SMTP credentials
+- `phoneblock/src/test/jetty/jetty-env.xml` - JNDI settings for the local Jetty (created by `phoneblock/bin/setup-local.sh`)
 - `phoneblock-ab/.phoneblock` - Answer bot SIP and audio settings
 - `phoneblock_mobile/android/key.properties` - Release signing (mobile only)
 

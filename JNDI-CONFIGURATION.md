@@ -125,6 +125,69 @@ The `smtp/properties` context can contain any JavaMail SMTP properties:
 
 ---
 
+## OAuth Login Configuration
+
+**JNDI Prefix:** `oauth/`
+**System Property Prefix:** `oauth.`
+**Source:** `UIProperties.java` (`loadRuntimeSettings()`), `PhoneBlockConfigFactory.java`
+
+Credentials for "Login with Google". Without them only the e-mail login is offered (the server logs `Missing credentials for Google authentication`). Before 3.2.7 these values were compiled into the WAR from a local `.phoneblock` file; they are now read at startup, so one WAR serves every deployment.
+
+### Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `oauth/google/id` | String | Optional | Google OAuth client id |
+| `oauth/google/secret` | String | Optional | Google OAuth client secret (never logged) |
+| `oauth/callbackBase` | String | `https://phoneblock.net` | Protocol and host of the OAuth callback URL; the context path and `/oauth/callback` are appended. Set to `http://localhost:8080` for local development. |
+
+### Example Configuration
+
+**Tomcat context.xml:**
+```xml
+<Context>
+  <Environment name="oauth/google/id" value="1234567890-abc.apps.googleusercontent.com" type="java.lang.String"/>
+  <Environment name="oauth/google/secret" value="GOCSPX-..." type="java.lang.String"/>
+</Context>
+```
+
+**System Properties:**
+```bash
+-Doauth.google.id=1234567890-abc.apps.googleusercontent.com \
+-Doauth.google.secret=GOCSPX-...
+```
+
+---
+
+## Donation Bank Account
+
+**JNDI Prefix:** `bank/`
+**System Property Prefix:** `bank.`
+**Source:** `UIProperties.java` (`loadRuntimeSettings()`), `EpcQrCodeServlet.java`, `support-banktransfer.html`
+
+The bank account shown on the support page and encoded in the EPC QR code for donations. Without these values the support page shows empty fields. Before 3.2.7 these values were compiled into the WAR from a local `.phoneblock` file.
+
+### Properties
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `bank/receiver` | String | Optional | Account holder |
+| `bank/account` | String | Optional | IBAN (without spaces) |
+| `bank/bic` | String | Optional | BIC |
+
+### Example Configuration
+
+**Tomcat context.xml:**
+```xml
+<Context>
+  <Environment name="bank/receiver" value="Bernhard Haumacher" type="java.lang.String"/>
+  <Environment name="bank/account" value="DE00000000000000000000" type="java.lang.String"/>
+  <Environment name="bank/bic" value="GENODEF1XXX" type="java.lang.String"/>
+</Context>
+```
+
+---
+
 ## Comment Classification & Summarization
 
 Comment classification and AI-generated summaries are produced by the standalone
@@ -816,6 +879,15 @@ Here's a complete example Tomcat `context.xml` file with common production setti
   <Environment name="smtp/signingSelector" value="mail" type="java.lang.String"/>
   <Environment name="smtp/signingDomain" value="phoneblock.net" type="java.lang.String"/>
   <Environment name="smtp/signingKey" value="/etc/phoneblock/dkim-private.der" type="java.lang.String"/>
+
+  <!-- Google Login -->
+  <Environment name="oauth/google/id" value="1234567890-abc.apps.googleusercontent.com" type="java.lang.String"/>
+  <Environment name="oauth/google/secret" value="GOCSPX-..." type="java.lang.String"/>
+
+  <!-- Donation Bank Account -->
+  <Environment name="bank/receiver" value="Bernhard Haumacher" type="java.lang.String"/>
+  <Environment name="bank/account" value="DE00000000000000000000" type="java.lang.String"/>
+  <Environment name="bank/bic" value="GENODEF1XXX" type="java.lang.String"/>
 
   <!-- Location Service -->
   <Environment name="location/ip4db" value="/var/lib/phoneblock/IP2LOCATION-LITE-DB1.BIN" type="java.lang.String"/>

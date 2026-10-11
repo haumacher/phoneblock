@@ -96,6 +96,7 @@ public class Application implements ServletContextListener {
 		LOG.info("Starting phoneblock application.");
 
 		_contextPath = sce.getServletContext().getContextPath();
+		UIProperties.loadRuntimeSettings();
 
 		IndexUpdateService indexer;
 		SchedulerService scheduler;
