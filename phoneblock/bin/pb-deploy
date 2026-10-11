@@ -14,9 +14,9 @@
 # <context> is the Tomcat context, i.e. the WAR name without extension: "phoneblock" (production)
 # or "pb-test". Only that context is touched; Tomcat and the other contexts keep running.
 #
-# From the moment the WAR is exchanged, the context's log ($TOMCAT_LOG_DIR/<context>.log) is
-# followed on the terminal, and it stays open after a successful deployment until Ctrl-C, like
-# the old deploy scripts did with `ssh ... tail -f`. --no-tail skips that for scripted use.
+# After a successful deployment the last lines of the context's log
+# ($TOMCAT_LOG_DIR/<context>.log) are shown and followed until Ctrl-C, like the old deploy
+# scripts did with `ssh ... tail -f`. --no-tail skips that for scripted use.
 #
 # A deployment runs these steps, and stops at the first failure:
 #   1. fetch the WAR and verify its SHA-256 (release) or just read it (--war)
@@ -198,34 +198,21 @@ wait_deployed() {
     if [[ "${state:-}" == "stopped" ]]; then
         log "The context stayed stopped: is autoDeploy enabled for the Host? Start it with the manager and check the version in the page footer."
     fi
-    if [[ -z "$TAIL_PID" && -f "$TOMCAT_LOG_DIR/$context.log" ]]; then
-        echo "---- tail of $TOMCAT_LOG_DIR/$context.log ----" >&2
-        tail -n 50 "$TOMCAT_LOG_DIR/$context.log" >&2
+    if [[ -f "$TOMCAT_LOG_DIR/$context.log" ]]; then
+        echo "---- last lines of $TOMCAT_LOG_DIR/$context.log ----" >&2
+        tail -n 30 "$TOMCAT_LOG_DIR/$context.log" >&2
         echo "----" >&2
     fi
     return 1
 }
 
-# follow_log <context>: from now on show the context's log on the terminal (unless --no-tail)
-TAIL_PID=""
+# follow_log <context>: show the last lines of the context's log and follow it until Ctrl-C
+# (unless --no-tail). Called once the context runs, so the file is not recreated any more.
 follow_log() {
     local log="$TOMCAT_LOG_DIR/$1.log"
     [[ "$TAIL" == "yes" && -f "$log" ]] || return 0
     log "Following $log (Ctrl-C to stop)"
-    tail -n 0 -F "$log" >&2 &
-    TAIL_PID=$!
-}
-
-stop_follow() {
-    [[ -n "$TAIL_PID" ]] && kill "$TAIL_PID" 2>/dev/null && wait "$TAIL_PID" 2>/dev/null
-    TAIL_PID=""
-}
-
-# keep_following: after a successful deployment stay on the log until Ctrl-C
-keep_following() {
-    [[ -n "$TAIL_PID" ]] || return 0
-    trap 'stop_follow; exit 0' INT TERM
-    wait "$TAIL_PID" || true
+    exec tail -n 20 -f "$log"
 }
 
 latest_backup() {
@@ -249,13 +236,11 @@ cmd_deploy() {
     local backup
     backup="$(backup_state "$context" "$label")"
     install_war "$war" "$context"
-    follow_log "$context"
 
     if wait_deployed "$context" "$version"; then
         log "Deployment of $version as /$context done. Backup: $backup"
-        keep_following
+        follow_log "$context"
     else
-        stop_follow
         log "Roll back with: $0 --rollback $context    (add --with-db if the new version migrated the database)"
         exit 1
     fi
@@ -308,13 +293,9 @@ cmd_rollback() {
     fi
 
     install_war "$backup/$context.war" "$context"
-    follow_log "$context"
-    if ! wait_deployed "$context" "$version"; then
-        stop_follow
-        exit 1
-    fi
+    wait_deployed "$context" "$version" || exit 1
     log "Rollback of /$context done. State before the rollback: $undo"
-    keep_following
+    follow_log "$context"
 }
 
 cmd_list() {
