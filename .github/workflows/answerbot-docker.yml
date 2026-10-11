@@ -47,7 +47,11 @@ jobs:
         run: |
           REF="${{ github.event.inputs.ref || github.ref_name }}"
           REQUESTED="${{ github.event.inputs.image_tag }}"
-          if [[ -n "$REQUESTED" ]]; then
+          if [[ "$REQUESTED" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            # An explicitly requested release version also moves "latest" (used to republish a
+            # release from a fix branch).
+            TAGS="phoneblock/answerbot:$REQUESTED,phoneblock/answerbot:latest"
+          elif [[ -n "$REQUESTED" ]]; then
             TAGS="phoneblock/answerbot:$REQUESTED"
           elif [[ "$REF" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             TAGS="phoneblock/answerbot:$REF,phoneblock/answerbot:latest"
