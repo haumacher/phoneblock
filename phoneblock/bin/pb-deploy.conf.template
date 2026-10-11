@@ -1,10 +1,14 @@
-# Settings for /usr/local/bin/pb-deploy, sourced as shell. Copy to /etc/phoneblock/pb-deploy.conf
-# and change what differs on this host; the values shown are the defaults.
+# Settings for /usr/local/bin/pb-deploy, sourced as shell. Copy to /etc/phoneblock/pb-deploy.conf,
+# make it root-only (chmod 600) because of the manager password, and change what differs on this
+# host; the values shown are the defaults.
 
-# systemd unit of the Tomcat that hosts the contexts.
-#TOMCAT_SERVICE=tomcat10
+# Tomcat manager text interface and a user with the manager-script role (conf/tomcat-users.xml).
+# Only the contexts are stopped and started; Tomcat itself keeps running.
+#MANAGER_URL=http://localhost:8080/manager/text
+MANAGER_USER=
+MANAGER_PASSWORD=
 
-# Tomcat's webapps directory; <context>.war is placed here.
+# Tomcat's appBase; <context>.war is exchanged here and redeployed by autoDeploy.
 #WEBAPPS=/var/lib/tomcat10/webapps
 
 # Directory with the per-context logs (<context>.log), shown when a deployment fails.
@@ -14,10 +18,11 @@
 #BACKUP_DIR=/var/backups/phoneblock
 
 # Directory with the H2 database files of a context (h2.mv.db, ...); %s is the context name.
-# Must match the db/url JNDI setting in the context's context.xml.
+# Must match the db/url JNDI setting in the context descriptor.
 #DB_DIR_TEMPLATE=/var/lib/tomcat10/work/%s
 
-# URL that has to answer 200 or 302 after the start; %s is the context name.
+# Page that has to answer 200 and show "PhoneBlock <version>" after the deployment; %s is the
+# context name.
 #HEALTH_URL_TEMPLATE=http://localhost:8080/%s/
 #HEALTH_TIMEOUT=180
 

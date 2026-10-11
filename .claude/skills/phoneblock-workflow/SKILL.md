@@ -293,8 +293,9 @@ release *ready* and say so:
   The user runs `phoneblock/bin/release.sh` (`release:prepare` tags `<version>`; the
   `server-release.yml` workflow attaches the WAR to the GitHub release) and then
   `ssh phoneblock.net sudo pb-deploy <version> pb-test`, later `... phoneblock`. `pb-deploy`
-  stops Tomcat, backs up the H2 files and the current WAR, exchanges the WAR and waits for the
-  context; `--rollback <context> [--with-db]` undoes it. `deploy-test.sh` pushes a snapshot of
+  stops only that context via the Tomcat manager, backs up the H2 files and the current WAR,
+  exchanges the WAR, waits for autoDeploy to bring the new version up and then follows the
+  context's log; `--rollback <context> [--with-db]` undoes it. `deploy-test.sh` pushes a snapshot of
   the working tree to pb-test the same way.
 - **Dongle**: follow `phoneblock-dongle/RELEASE.md`. Branch `dongle-X.Y.x` at the rc tag
   *immediately* (CLAUDE.md); notes at `firmware/release-notes/X.Y.Z.md` must exist before
@@ -337,7 +338,7 @@ print the *whole* captured ring, and restore any config you changed (e.g. `sip_t
 
 **pb-test** (`https://phoneblock.net/pb-test/`) is the deployed test instance reading live
 data; `phoneblock/bin/deploy-test.sh` builds the working tree and hands the WAR to `pb-deploy`
-on the server (which restarts the shared Tomcat, production included). Tell the user the commit hash, the PR
+on the server; production keeps running, only the pb-test context is stopped and redeployed. Tell the user the commit hash, the PR
 link and what to try. Never leave a broken build running — the served instance is the shared
 reference for bug reports.
 

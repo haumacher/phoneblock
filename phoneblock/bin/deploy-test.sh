@@ -3,8 +3,9 @@
 # Deploy the current working tree to the pb-test context on phoneblock.net.
 #
 # Builds the answerbot UI and the WAR locally, copies the WAR to the server and hands it to
-# pb-deploy, which stops Tomcat, backs up the database and the current WAR, exchanges the WAR
-# and starts Tomcat again. Note that Tomcat also hosts production, so this restarts it as well.
+# pb-deploy, which stops the pb-test context through the Tomcat manager, backs up its database
+# and the current WAR, exchanges the WAR, waits for the redeployment and then follows the log
+# (Ctrl-C ends it). Production keeps running.
 #
 # Releases are deployed from the GitHub release instead: ssh phoneblock.net sudo pb-deploy <version> pb-test
 
