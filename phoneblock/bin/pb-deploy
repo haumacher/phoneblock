@@ -1,0 +1,261 @@
+#!/bin/bash
+#
+# pb-deploy - deploy a PhoneBlock server release into the Tomcat on this host.
+#
+#   pb-deploy <version> <context>                 fetch phoneblock-<version>.war from the GitHub
+#                                                 release and deploy it as <context>
+#   pb-deploy --war <file> <context>              deploy a WAR that is already on this host
+#                                                 (e.g. a snapshot build copied here for pb-test)
+#   pb-deploy --rollback <context> [--with-db]    restore the WAR (and with --with-db the database)
+#                                                 from the latest backup of <context>
+#   pb-deploy --list <context>                    list the backups of <context>
+#
+# <context> is the Tomcat context, i.e. the WAR name without extension: "phoneblock" (production)
+# or "pb-test".
+#
+# A deployment runs these steps, and stops at the first failure:
+#   1. fetch the WAR and verify its SHA-256 (release) or just read it (--war)
+#   2. stop Tomcat
+#   3. back up the H2 database files and the current WAR to $BACKUP_DIR/<context>/<timestamp>-<label>/
+#   4. exchange the WAR (remove the exploded directory, copy the new WAR in atomically)
+#   5. start Tomcat and wait until the context answers over HTTP
+# If step 5 times out, the log tail and the rollback command are printed.
+#
+# Note: Tomcat hosts both contexts, so a deployment of pb-test restarts production too.
+#
+# Settings can be overridden in /etc/phoneblock/pb-deploy.conf (shell syntax); see the defaults
+# below and pb-deploy.conf.template next to this script in the repository.
+
+set -euo pipefail
+
+# ---- settings ---------------------------------------------------------------------------------
+
+TOMCAT_SERVICE="${TOMCAT_SERVICE:-tomcat10}"
+WEBAPPS="${WEBAPPS:-/var/lib/tomcat10/webapps}"
+TOMCAT_LOG_DIR="${TOMCAT_LOG_DIR:-/var/log/tomcat10}"
+BACKUP_DIR="${BACKUP_DIR:-/var/backups/phoneblock}"
+# Directory with the H2 files (h2.mv.db, ...) of a context; %s is replaced by the context name.
+# This is the default of the db/url JNDI setting; adjust if context.xml points elsewhere.
+DB_DIR_TEMPLATE="${DB_DIR_TEMPLATE:-/var/lib/tomcat10/work/%s}"
+# URL that must answer with 200 or 302 before a deployment counts as successful.
+HEALTH_URL_TEMPLATE="${HEALTH_URL_TEMPLATE:-http://localhost:8080/%s/}"
+HEALTH_TIMEOUT="${HEALTH_TIMEOUT:-180}"
+RELEASE_URL_TEMPLATE="${RELEASE_URL_TEMPLATE:-https://github.com/haumacher/phoneblock/releases/download/%s/phoneblock-%s.war}"
+
+CONFIG_FILE="${PB_DEPLOY_CONF:-/etc/phoneblock/pb-deploy.conf}"
+if [[ -f "$CONFIG_FILE" ]]; then
+    # shellcheck source=/dev/null
+    . "$CONFIG_FILE"
+fi
+
+# ---- helpers ----------------------------------------------------------------------------------
+
+# Progress goes to stderr, so functions can return values on stdout.
+log()  { printf '%s %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*" >&2; }
+die()  { log "ERROR: $*" >&2; exit 1; }
+usage() { sed -n '2,/^$/p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
+
+require_root() {
+    [[ $EUID -eq 0 ]] || die "must run as root (sudo $0 $*)"
+}
+
+check_context() {
+    [[ "$1" =~ ^[A-Za-z0-9_-]+$ ]] || die "invalid context name '$1'"
+}
+
+db_dir()      { printf "$DB_DIR_TEMPLATE" "$1"; }
+health_url()  { printf "$HEALTH_URL_TEMPLATE" "$1"; }
+webapp_owner() { stat -c '%U:%G' "$WEBAPPS"; }
+
+stop_tomcat() {
+    log "Stopping $TOMCAT_SERVICE ..."
+    systemctl stop "$TOMCAT_SERVICE"
+}
+
+start_tomcat() {
+    log "Starting $TOMCAT_SERVICE ..."
+    systemctl start "$TOMCAT_SERVICE"
+}
+
+# backup_state <context> <label> -> prints the backup directory
+backup_state() {
+    local context="$1" label="$2"
+    local dir="$BACKUP_DIR/$context/$(date '+%Y%m%d-%H%M%S')-$label"
+    mkdir -p "$dir"
+
+    local db
+    db="$(db_dir "$context")"
+    if compgen -G "$db/h2*.db" >/dev/null; then
+        mkdir -p "$dir/db"
+        cp -a "$db"/h2*.db "$dir/db/"
+        log "Database backed up to $dir/db ($(du -sh "$dir/db" | cut -f1))"
+    else
+        log "No database files in $db (new context?), nothing to back up"
+    fi
+
+    if [[ -f "$WEBAPPS/$context.war" ]]; then
+        cp -a "$WEBAPPS/$context.war" "$dir/$context.war"
+        sha256sum "$dir/$context.war" > "$dir/$context.war.sha256"
+        log "Current WAR backed up to $dir/$context.war"
+    else
+        log "No current WAR $WEBAPPS/$context.war"
+    fi
+
+    printf '%s\n' "$dir"
+}
+
+# install_war <war file> <context>
+install_war() {
+    local war="$1" context="$2"
+    local owner
+    owner="$(webapp_owner)"
+
+    rm -rf "$WEBAPPS/$context" "$WEBAPPS/$context.war"
+    cp "$war" "$WEBAPPS/$context.war.tmp"
+    chown "$owner" "$WEBAPPS/$context.war.tmp"
+    chmod 644 "$WEBAPPS/$context.war.tmp"
+    mv "$WEBAPPS/$context.war.tmp" "$WEBAPPS/$context.war"
+    log "Installed $WEBAPPS/$context.war ($(sha256sum "$WEBAPPS/$context.war" | cut -c1-16)...)"
+}
+
+# wait_healthy <context> -> 0 if the context answers in time
+wait_healthy() {
+    local context="$1" url status deadline
+    url="$(health_url "$context")"
+    deadline=$((SECONDS + HEALTH_TIMEOUT))
+    log "Waiting for $url ..."
+    while (( SECONDS < deadline )); do
+        status="$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 "$url" || true)"
+        if [[ "$status" == "200" || "$status" == "302" ]]; then
+            log "$context answers with HTTP $status"
+            return 0
+        fi
+        sleep 3
+    done
+    log "ERROR: $url did not answer within ${HEALTH_TIMEOUT}s (last status: ${status:-none})"
+    if [[ -f "$TOMCAT_LOG_DIR/$context.log" ]]; then
+        echo "---- tail of $TOMCAT_LOG_DIR/$context.log ----" >&2
+        tail -n 50 "$TOMCAT_LOG_DIR/$context.log" >&2
+        echo "----" >&2
+    fi
+    return 1
+}
+
+latest_backup() {
+    local context="$1"
+    ls -1d "$BACKUP_DIR/$context"/*/ 2>/dev/null | sort | tail -n 1 | sed 's:/$::'
+}
+
+# ---- commands ---------------------------------------------------------------------------------
+
+cmd_deploy() {
+    local war="$1" context="$2" label="$3"
+    require_root deploy
+    check_context "$context"
+    [[ -f "$war" ]] || die "WAR not found: $war"
+    unzip -tq "$war" >/dev/null || die "$war is not a valid WAR"
+
+    stop_tomcat
+    local backup
+    backup="$(backup_state "$context" "$label")"
+    install_war "$war" "$context"
+    start_tomcat
+
+    if wait_healthy "$context"; then
+        log "Deployment of $label as $context done. Backup: $backup"
+    else
+        log "Roll back with: $0 --rollback $context    (add --with-db if the new version migrated the database)"
+        exit 1
+    fi
+}
+
+cmd_release() {
+    local version="$1" context="$2"
+    [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || die "not a release version: $version"
+    require_root release
+
+    local url tmp war
+    url="$(printf "$RELEASE_URL_TEMPLATE" "$version" "$version")"
+    tmp="$(mktemp -d)"
+    # shellcheck disable=SC2064  # expand now: the function's local is gone when the trap fires
+    trap "rm -rf '$tmp'" EXIT
+    war="$tmp/phoneblock-$version.war"
+
+    log "Fetching $url ..."
+    curl -fsSL -o "$war" "$url" || die "download failed: $url"
+    curl -fsSL -o "$war.sha256" "$url.sha256" || die "download failed: $url.sha256"
+    (cd "$tmp" && sha256sum -c --quiet "phoneblock-$version.war.sha256") || die "SHA-256 mismatch for $war"
+    log "Checksum verified"
+
+    cmd_deploy "$war" "$context" "$version"
+}
+
+cmd_rollback() {
+    local context="$1" with_db="$2"
+    require_root rollback
+    check_context "$context"
+
+    local backup
+    backup="$(latest_backup "$context")"
+    [[ -n "$backup" && -f "$backup/$context.war" ]] || die "no backup with a WAR for $context in $BACKUP_DIR/$context"
+    log "Rolling $context back to $backup"
+
+    stop_tomcat
+    local undo
+    undo="$(backup_state "$context" "before-rollback")"
+    install_war "$backup/$context.war" "$context"
+
+    if [[ "$with_db" == "yes" ]]; then
+        local db
+        db="$(db_dir "$context")"
+        [[ -d "$backup/db" ]] || die "backup $backup has no database files; Tomcat is stopped, the WAR is restored"
+        rm -f "$db"/h2*.db
+        cp -a "$backup/db"/h2*.db "$db/"
+        chown "$(webapp_owner)" "$db"/h2*.db
+        log "Database restored from $backup/db (the replaced files are in $undo/db)"
+    fi
+
+    start_tomcat
+    wait_healthy "$context" || exit 1
+    log "Rollback of $context done. State before the rollback: $undo"
+}
+
+cmd_list() {
+    local context="$1"
+    check_context "$context"
+    if [[ -d "$BACKUP_DIR/$context" ]]; then
+        du -sh "$BACKUP_DIR/$context"/*/ 2>/dev/null
+    else
+        echo "no backups for $context"
+    fi
+}
+
+# ---- main -------------------------------------------------------------------------------------
+
+[[ $# -ge 1 ]] || usage
+case "$1" in
+    --war)
+        [[ $# -eq 3 ]] || usage
+        cmd_deploy "$2" "$3" "$(basename "$2" .war)"
+        ;;
+    --rollback)
+        [[ $# -ge 2 ]] || usage
+        with_db=no
+        [[ "${3:-}" == "--with-db" ]] && with_db=yes
+        cmd_rollback "$2" "$with_db"
+        ;;
+    --list)
+        [[ $# -eq 2 ]] || usage
+        cmd_list "$2"
+        ;;
+    -h|--help)
+        usage
+        ;;
+    --*)
+        usage
+        ;;
+    *)
+        [[ $# -eq 2 ]] || usage
+        cmd_release "$1" "$2"
+        ;;
+esac

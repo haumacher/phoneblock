@@ -1,0 +1,25 @@
+# Settings for /usr/local/bin/pb-deploy, sourced as shell. Copy to /etc/phoneblock/pb-deploy.conf
+# and change what differs on this host; the values shown are the defaults.
+
+# systemd unit of the Tomcat that hosts the contexts.
+#TOMCAT_SERVICE=tomcat10
+
+# Tomcat's webapps directory; <context>.war is placed here.
+#WEBAPPS=/var/lib/tomcat10/webapps
+
+# Directory with the per-context logs (<context>.log), shown when a deployment fails.
+#TOMCAT_LOG_DIR=/var/log/tomcat10
+
+# Where backups go: $BACKUP_DIR/<context>/<timestamp>-<version>/{db/,<context>.war}
+#BACKUP_DIR=/var/backups/phoneblock
+
+# Directory with the H2 database files of a context (h2.mv.db, ...); %s is the context name.
+# Must match the db/url JNDI setting in the context's context.xml.
+#DB_DIR_TEMPLATE=/var/lib/tomcat10/work/%s
+
+# URL that has to answer 200 or 302 after the start; %s is the context name.
+#HEALTH_URL_TEMPLATE=http://localhost:8080/%s/
+#HEALTH_TIMEOUT=180
+
+# Where release WARs are fetched from; both %s are the version.
+#RELEASE_URL_TEMPLATE=https://github.com/haumacher/phoneblock/releases/download/%s/phoneblock-%s.war

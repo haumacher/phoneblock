@@ -59,12 +59,18 @@ mvn dependency-check:check
 mvn versions:use-latest-releases versions:update-properties -DgenerateBackupPoms=false
 ```
 
-**Deploy to Tomcat:**
+**Release and deploy the server:**
 ```bash
-cd phoneblock
-mvn tomcat7:redeploy
+phoneblock/bin/release.sh                                  # release:prepare → tag → GitHub Actions builds the WAR
+ssh phoneblock.net sudo pb-deploy <version> pb-test        # fetch from the GitHub release, stop Tomcat, back up DB + WAR, exchange, start
+ssh phoneblock.net sudo pb-deploy <version> phoneblock
+phoneblock/bin/deploy-test.sh                              # snapshot of the working tree → pb-test via pb-deploy --war
 ```
-Requires `.phoneblock` configuration file with server credentials.
+`.github/workflows/server-release.yml` builds the answerbot UI and the WAR for every tag `X.Y.Z` and
+attaches `phoneblock-<version>.war` plus its SHA-256 to the GitHub release. `phoneblock/bin/pb-deploy`
+runs on the server (install once to `/usr/local/bin`, settings in `/etc/phoneblock/pb-deploy.conf`,
+see `pb-deploy.conf.template`); `pb-deploy --rollback <context> [--with-db]` restores the previous
+state. Tomcat hosts both contexts, so every deployment restarts production as well.
 
 ### Answer Bot
 
@@ -512,9 +518,10 @@ flutter analyze
 ## Deployment
 
 **Web application:**
-- Builds to `phoneblock/target/phoneblock-*.war`
-- Deploy to Tomcat or servlet container
-- Embeds answer bot UI automatically during build
+- Builds to `phoneblock/target/phoneblock-*.war`; the WAR is environment-neutral (configuration via JNDI)
+- Built by GitHub Actions for every release tag and attached to the GitHub release
+- Deployed on phoneblock.net with `pb-deploy` (see *Release and deploy the server* above)
+- Embeds the answer bot UI, which must be built first (`flutter build web --base-href /ab/`)
 
 **Answer bot:**
 - Standalone JAR or Docker image
