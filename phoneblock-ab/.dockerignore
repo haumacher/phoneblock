@@ -1,0 +1,10 @@
+# Only the converted PCMA/PCMA-WB fragments are needed at runtime; the TTS sources are not.
+conversation/*/raw
+conversation/*/*.mp3
+conversation/*/*.wav
+conversation/README.md
+conversation/click.mp3
+src
+.settings
+.classpath
+.project

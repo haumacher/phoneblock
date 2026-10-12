@@ -14,6 +14,9 @@ RUN apt-get update \
 
 COPY --chown=phoneblock:phoneblock .phoneblock.docker /opt/phoneblock/.phoneblock
 COPY --chown=phoneblock:phoneblock target/phoneblock-ab-*-jar-with-dependencies.jar /opt/phoneblock/bin/phoneblock-ab.jar
+# The default conversation (the PCMA/PCMA-WB fragments, see .dockerignore) is part of the image;
+# a bind mount on /opt/phoneblock/conversation replaces it with a custom one (#586).
+COPY --chown=phoneblock:phoneblock conversation/ /opt/phoneblock/conversation/
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
