@@ -7,7 +7,18 @@
 # where /opt/phoneblock/recordings is mounted from the host). If unset, the
 # image default (999) is used.
 #
+# The remapping needs root. When the container is started with another user
+# (docker run --user, compose "user:"), the bot is simply started as that user
+# and PUID/PGID are ignored (#586).
+#
 set -e
+
+if [ "$(id -u)" != "0" ]; then
+    if [ -n "$PUID" ] || [ -n "$PGID" ]; then
+        echo "PUID/PGID are ignored: the container was started as uid $(id -u) instead of root." >&2
+    fi
+    exec java -jar /opt/phoneblock/bin/phoneblock-ab.jar "$@"
+fi
 
 PUID="${PUID:-999}"
 PGID="${PGID:-999}"
