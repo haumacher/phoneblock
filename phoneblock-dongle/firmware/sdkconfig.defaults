@@ -90,6 +90,16 @@ CONFIG_HTTPD_MAX_URI_LEN=1024
 # then fails with "Failed to create socket" / ESP_ERR_HTTP_CONNECT.
 CONFIG_LWIP_MAX_SOCKETS=16
 
+# TIME_WAIT is 2 x MSL. With lwIP's default 60 s, every connection the
+# dongle closes itself (each TR-064 SOAP call, each HTTPS request) keeps
+# its PCB on the heap for 2 min; a phonebook query is ~10 such connections,
+# so a burst (call-barring sync, repeated /api/phonebooks) piled up to
+# ~80 KB and drained the C3's heap (#601). 1 s MSL frees them after 2 s.
+# TIME_WAIT only guards a reused address/port pair against late duplicates;
+# lwIP hands out local ports sequentially, so a pair does not recur within
+# seconds. main.c refuses to build with a stale, larger value.
+CONFIG_LWIP_TCP_MSL=1000
+
 # Learn NTP servers from DHCP option 42. The dongle's wall clock
 # (time_sync.c) prefers the server(s) the DHCP server hands out — on a
 # Fritz!Box LAN that is the router itself — over the hard-coded
