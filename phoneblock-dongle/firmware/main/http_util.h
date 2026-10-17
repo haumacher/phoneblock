@@ -1,10 +1,16 @@
 #pragma once
 
+#ifdef ESP_PLATFORM
 #include "esp_http_client.h"
+#else
+#include "api_http_linux.h"   // esp_http_client shim of the Linux build
+#endif
 
 // Return a stable User-Agent string for all outbound HTTP(S) calls,
-// formatted "PhoneBlock-Dongle/<version>". The version comes from
-// esp_app_get_description() at first call and is then cached.
+// formatted "PhoneBlock-Dongle/<version> (<device id>)". The version comes
+// from pb_firmware_version() at first call and is then cached. Callers of
+// pb_http_request() pass it as a "User-Agent" header (the platform layer
+// can't reach config / this module).
 const char *http_util_user_agent(void);
 
 // Convenience: set the User-Agent header on an esp_http_client handle.

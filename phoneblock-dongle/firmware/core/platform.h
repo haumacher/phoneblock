@@ -17,6 +17,7 @@
 #define pb_log_info(tag, ...) ESP_LOGI(tag, __VA_ARGS__)
 #define pb_log_warn(tag, ...) ESP_LOGW(tag, __VA_ARGS__)
 #define pb_log_err(tag, ...)  ESP_LOGE(tag, __VA_ARGS__)
+#define pb_log_debug(tag, ...) ESP_LOGD(tag, __VA_ARGS__)
 #else
 // Linux prints the same layout as ESP-IDF ("W (<ms>) <tag>: <message>"), so
 // console logs of both builds read and grep alike, and the shared parser in
@@ -32,6 +33,9 @@ void pb_log_warn(const char *tag, const char *fmt, ...)
     __attribute__((format(printf, 2, 3)));
 void pb_log_err(const char *tag, const char *fmt, ...)
     __attribute__((format(printf, 2, 3)));
+// Compiled out, like ESP_LOGD at the firmware's default INFO log level; the
+// dead call keeps the format string checked.
+#define pb_log_debug(tag, ...) do { if (0) pb_log_info(tag, __VA_ARGS__); } while (0)
 #endif
 
 // --- Time, randomness, watchdog -----------------------------------------
@@ -42,9 +46,23 @@ uint32_t pb_random_u32(void);
 void pb_random_fill(void *out, size_t len);
 bool pb_md5(const void *input, size_t input_len, uint8_t output[16]);
 bool pb_sha1(const void *input, size_t input_len, uint8_t output[20]);
-bool pb_ecdsa_p256_verify(const uint8_t *public_key_der, size_t public_key_len,
-                          const uint8_t hash[32], const uint8_t *signature,
-                          size_t signature_len);
+
+// ECDSA-P256 verification of a SHA-256 hash against a DER
+// SubjectPublicKeyInfo key. Returns PB_SIG_VALID, PB_SIG_BAD_KEY (key not
+// parsable or not P-256) or PB_SIG_MISMATCH (signature doesn't verify).
+// *native, if given, receives the backend's negative error code for the log
+// (printed as "-0x%04x" of its negation): the mbedTLS return value on the
+// ESP32 (e.g. -0x4e80 MBEDTLS_ERR_ECP_VERIFY_FAILED), the negated OpenSSL
+// reason code on Linux; 0 when the backend reported none.
+enum {
+    PB_SIG_VALID = 0,
+    PB_SIG_BAD_KEY = 1,
+    PB_SIG_MISMATCH = 2,
+};
+int pb_ecdsa_p256_verify(const uint8_t *public_key_der, size_t public_key_len,
+                         const uint8_t hash[32], const uint8_t *signature,
+                         size_t signature_len, int *native);
+
 typedef struct pb_sha256 pb_sha256_t;
 pb_sha256_t *pb_sha256_create(void);
 bool pb_sha256_update(pb_sha256_t *context, const void *data, size_t length);
@@ -85,10 +103,15 @@ typedef struct pb_event pb_event_t;
 
 // A coalescing bit event. wait() returns and clears all pending bits, or 0
 // when the timeout expires. A zero timeout polls without blocking.
+//
+// The timeout is in seconds, not milliseconds: the scheduler waits up to a
+// day, and a millisecond count of that converted to FreeRTOS ticks overflows
+// 32 bits (#348, see main/ticks_util.h). In seconds even a 24 h wait stays
+// far inside uint32_t on both platforms.
 pb_event_t *pb_event_create(void);
 void pb_event_destroy(pb_event_t *event);
 void pb_event_set(pb_event_t *event, uint32_t bits);
-uint32_t pb_event_wait(pb_event_t *event, uint32_t timeout_ms);
+uint32_t pb_event_wait_s(pb_event_t *event, uint32_t timeout_s);
 
 typedef struct pb_tls pb_tls_t;
 
@@ -123,11 +146,17 @@ typedef struct {
 
 typedef struct pb_kv pb_kv_t;
 
+// Results of the pb_kv_* functions: PB_KV_OK, PB_KV_NOT_FOUND, or any other
+// value for an error. Errors carry the platform's native code (esp_err_t
+// from NVS on the ESP32, where PB_KV_ERROR coincides with ESP_FAIL), so
+// logs can name the actual cause via pb_kv_err_name().
 enum {
     PB_KV_OK = 0,
     PB_KV_NOT_FOUND = 1,
     PB_KV_ERROR = -1,
 };
+
+const char *pb_kv_err_name(int result);
 
 int pb_kv_open(const char *name_space, bool writable, pb_kv_t **store);
 void pb_kv_close(pb_kv_t *store);
@@ -140,11 +169,20 @@ int pb_kv_erase_key(pb_kv_t *store, const char *key);
 int pb_kv_erase_all(pb_kv_t *store);
 int pb_kv_commit(pb_kv_t *store);
 
+// Result of pb_http_request(): PB_HTTP_OK once a response arrived (whatever
+// its status), PB_HTTP_ERROR for bad arguments or a client that could not be
+// set up, otherwise the platform's native transport error (esp_err_t such as
+// ESP_ERR_HTTP_CONNECT on the ESP32, CURLcode on Linux).
+// pb_http_err_name() names any result for logs and user-facing messages;
+// pb_http_is_connect_error() tells whether the connection itself failed —
+// the case worth a short retry (see tr064.c).
 enum {
     PB_HTTP_OK = 0,
-    PB_HTTP_CONNECT_ERROR = -1,
-    PB_HTTP_ERROR = -2,
+    PB_HTTP_ERROR = -1,
 };
+
+const char *pb_http_err_name(int result);
+bool pb_http_is_connect_error(int result);
 
 enum {
     PB_OK = 0,
@@ -155,7 +193,11 @@ enum {
 };
 
 // Bounded synchronous HTTP request. A nonzero HTTP status is still a
-// completed request; transport/setup failures use the PB_HTTP_* result.
+// completed request; transport/setup failures are reported as described
+// above. The platform adds no User-Agent of its own: callers pass
+// http_util_user_agent() (main/http_util.h) in `headers`, so both builds
+// identify as "PhoneBlock-Dongle/<version> (<device id>)". On the ESP32,
+// HTTPS URLs are verified against the ESP-IDF certificate bundle.
 int pb_http_request(const char *method, const char *url,
                     const pb_http_header_t *headers, size_t header_count,
                     const void *body, size_t body_len, uint32_t timeout_ms,

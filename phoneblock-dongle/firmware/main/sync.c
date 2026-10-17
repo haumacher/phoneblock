@@ -4,10 +4,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-
-
 #include "api.h"
 #include "config.h"
+#include "http_util.h"
 #include "phone_norm.h"
 #include "scheduler.h"
 #include "stats.h"
@@ -74,14 +73,18 @@ static int http_get_to_buf(const char *url, char *buf, int cap)
 {
     http_buf_t output = { .buf = buf, .cap = cap };
     buf[0] = 0;
-    const pb_http_header_t headers[] = { { "Accept", "application/xml" } };
+    const pb_http_header_t headers[] = {
+        { "User-Agent", http_util_user_agent() },
+        { "Accept", "application/xml" },
+    };
     size_t length = 0;
     int status = 0;
-    int result = pb_http_request("GET", url, headers, 1, NULL, 0, 10000,
-                                 NULL, 0, &length, &status,
+    int result = pb_http_request("GET", url, headers,
+                                 sizeof(headers) / sizeof(headers[0]),
+                                 NULL, 0, 10000, NULL, 0, &length, &status,
                                  http_collect_cb, &output, NULL);
     if (result != PB_HTTP_OK) {
-        pb_log_err(TAG, "GET %s failed (result=%d)", url, result);
+        pb_log_err(TAG, "GET %s: %s", url, pb_http_err_name(result));
         return -1;
     }
     if (status != 200) {

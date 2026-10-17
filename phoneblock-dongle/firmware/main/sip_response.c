@@ -1,4 +1,8 @@
-#define _GNU_SOURCE   // memmem
+// memmem() needs _GNU_SOURCE on the host build; the IDF build already sets
+// it on the command line (see core/tr064_parse.c).
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
 #include "sip_response.h"
 
 #include <string.h>

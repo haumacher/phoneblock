@@ -33,6 +33,7 @@ static const char *TAG = "announcement";
 #define SPIFFS_LABEL      "storage"
 #define SPIFFS_FILE       "/spiffs/announcement.alaw"
 #define SPIFFS_TEMP       "/spiffs/announcement.alaw.tmp"
+// Downloaded, per-locale announcement: "/spiffs/announcement-<lang>.alaw".
 #define SPIFFS_LOCALIZED_PREFIX "/spiffs/announcement-"
 #else
 #ifndef PHONEBLOCK_DATA_DIR
@@ -123,16 +124,16 @@ int announcement_init(void)
         .max_files              = 2,
         .format_if_mount_failed = true,
     };
-    int err = esp_vfs_spiffs_register(&cfg);
-    if (err != PB_OK) {
-        pb_log_err(TAG, "SPIFFS mount failed: %s", "SPIFFS error");
+    esp_err_t err = esp_vfs_spiffs_register(&cfg);
+    if (err != ESP_OK) {
+        pb_log_err(TAG, "SPIFFS mount failed: %s", esp_err_to_name(err));
         // Keep going — the embedded default will still work.
         return err;
     }
     s_storage_ready = true;
 
     size_t total = 0, used = 0;
-    if (esp_spiffs_info(SPIFFS_LABEL, &total, &used) == PB_OK) {
+    if (esp_spiffs_info(SPIFFS_LABEL, &total, &used) == ESP_OK) {
         pb_log_info(TAG, "SPIFFS mounted: %u B used of %u B",
                  (unsigned)used, (unsigned)total);
     }
@@ -140,7 +141,6 @@ int announcement_init(void)
     // rename(). Drop any leftover temp so it doesn't waste a slot —
     // the current code writes the live file in place (see write_begin).
     unlink(SPIFFS_TEMP);
-    s_storage_ready = true;
     return PB_OK;
 #else
     if (mkdir(PHONEBLOCK_DATA_DIR, 0750) != 0 && errno != EEXIST) {

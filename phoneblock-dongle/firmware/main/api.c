@@ -13,16 +13,15 @@
 #include "esp_crt_bundle.h"
 #include "esp_timer.h"
 #include "mbedtls/sha1.h"
-#include "http_util.h"
 #else
 #include "api_http_linux.h"
-#include "platform.h"
 #endif
 
 #include "api_scan.h"
 #include "cJSON.h"
 #include "strbuf.h"
 #include "config.h"
+#include "http_util.h"
 #include "stats.h"
 #include "platform.h"
 

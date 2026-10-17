@@ -3,6 +3,7 @@
 #endif
 
 #include "sip_transport.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -322,16 +323,42 @@ static void tcp_drop(sip_transport_t *t)
     sip_framer_reset(&t->framer);
 }
 
+// Triggered after a recv/send error. Reconnects once; on success the
+// caller's next REGISTER round-trip succeeds and we surface the
+// reconnect_flag so sip_register can fire a fresh REGISTER. On failure
+// the socket stays -1 and the next call retries the connect.
 static void tcp_reconnect(sip_transport_t *t)
 {
     tcp_drop(t);
-    if (tcp_connect(t)) t->reconnected_flag = true;
+    if (tcp_connect(t)) {
+        t->reconnected_flag = true;
+    }
 }
+
+// ---------------------------------------------------------------------------
+// TLS connect / drop
+// ---------------------------------------------------------------------------
 
 static bool tls_connect(sip_transport_t *t)
 {
-    // Keep the SNI/certificate name separate from the resolved edge host:
-    // some providers route SIP by the configured service domain.
+    // Cert verification: pb_tls_connect() relies on the platform's trust
+    // store — on the ESP32 the ESP-IDF certificate bundle
+    // (CONFIG_MBEDTLS_CERTIFICATE_BUNDLE=y in sdkconfig.defaults). We
+    // intentionally do NOT pin a specific cert: a Telekom CA rotation
+    // would otherwise require a firmware update before the dongle could
+    // re-register. The bundle's update cycle is governed by IDF.
+    //
+    // SNI + cert name: the host argument is used for DNS/TCP connect and,
+    // by default, for SNI and certificate verification. When the
+    // registrar was resolved via DNS-SRV, that hostname is the per-PoP
+    // edge (e.g. dtm010-…edns.t-ipnet.de) — but Telekom's edge routes the
+    // SIP session by SNI and silently drops a REGISTER whose SNI is the
+    // edge name rather than the service domain (#363). The server_name
+    // argument (esp-tls cfg.common_name on the ESP32) overrides BOTH the
+    // SNI and the cert-verify name to the service domain (tel.t-online.de)
+    // while the connect still targets the resolvable edge host. Telekom
+    // then serves the service-domain cert for that SNI, so verification
+    // holds.
     pb_tls_t *tls = pb_tls_connect(t->registrar_host, t->registrar_port,
                                    t->tls_sni, SIP_TLS_HANDSHAKE_TIMEOUT_MS);
     if (!tls) {
@@ -340,6 +367,9 @@ static bool tls_connect(sip_transport_t *t)
         return false;
     }
 
+    // Read back the kernel-assigned local port from the underlying fd
+    // so Via/Contact stay consistent with what the registrar sees — and
+    // bound send() on that same fd so a stalled TLS write can't hang us.
     int fd = pb_tls_fd(tls);
     if (fd >= 0) {
         set_send_timeout(fd);
@@ -571,7 +601,7 @@ int sip_transport_send_to(sip_transport_t *t, const struct sockaddr_in *peer,
         // informational only. Cheap sanity-log when it disagrees.
         if (peer && peer->sin_addr.s_addr
                  && peer->sin_addr.s_addr != t->registrar.sin_addr.s_addr) {
-            pb_log_info(TAG, "stream send_to: peer differs from registrar — ignored");
+            pb_log_debug(TAG, "stream send_to: peer differs from registrar — ignored");
         }
         return (t->kind == TR_TLS) ? tls_send_all(t, buf, len)
                                    : tcp_send_all(t, buf, len);
@@ -726,8 +756,8 @@ static int tls_recv(sip_transport_t *t, int timeout_ms,
     //    built-in select; reading the fd back lets us share the same
     //    timeout-driven loop with UDP/TCP.
     int fd = pb_tls_fd(t->tls);
-    if (fd < 0 || fd < 0) {
-        pb_log_warn(TAG, "esp_tls_get_conn_sockfd failed → reconnect");
+    if (fd < 0) {
+        pb_log_warn(TAG, "TLS socket fd unavailable → reconnect");
         tls_reconnect(t);
         return -1;
     }

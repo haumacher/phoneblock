@@ -42,9 +42,20 @@ static bool verify_with_pubkey(const uint8_t *pubkey_der, size_t pubkey_len,
                                const uint8_t hash[32],
                                const uint8_t *sig, size_t sig_len)
 {
-    bool ok = pb_ecdsa_p256_verify(pubkey_der, pubkey_len, hash, sig, sig_len);
-    if (!ok) pb_log_warn(TAG, "P-256 signature verification failed");
-    return ok;
+    int rc = 0;
+    int verdict = pb_ecdsa_p256_verify(pubkey_der, pubkey_len, hash,
+                                       sig, sig_len, &rc);
+    if (verdict == PB_SIG_BAD_KEY) {
+        pb_log_err(TAG, "pk_parse_public_key: -0x%04x", (unsigned)-rc);
+        return false;
+    }
+    if (verdict != PB_SIG_VALID) {
+        // -0x4e80 = MBEDTLS_ERR_ECP_VERIFY_FAILED for ECDSA. WARN — a
+        // single failure here is recoverable across the remaining slots.
+        pb_log_warn(TAG, "pk_verify: -0x%04x", (unsigned)-rc);
+        return false;
+    }
+    return true;
 }
 
 bool manifest_sig_verify_hash(const uint8_t hash[32],

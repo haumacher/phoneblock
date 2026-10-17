@@ -1,5 +1,6 @@
 #include "platform.h"
 
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -21,6 +22,8 @@
 #include "mbedtls/sha256.h"
 #include "mbedtls/sha1.h"
 #include "nvs.h"
+
+#include "ticks_util.h"
 
 struct pb_event {
     EventGroupHandle_t handle;
@@ -84,23 +87,28 @@ bool pb_sha1(const void *input, size_t input_len, uint8_t output[20])
         && mbedtls_sha1(input, input_len, output) == 0;
 }
 
-bool pb_ecdsa_p256_verify(const uint8_t *public_key_der, size_t public_key_len,
-                          const uint8_t hash[32], const uint8_t *signature,
-                          size_t signature_len)
+int pb_ecdsa_p256_verify(const uint8_t *public_key_der, size_t public_key_len,
+                         const uint8_t hash[32], const uint8_t *signature,
+                         size_t signature_len, int *native)
 {
-    if (!public_key_der || !hash || !signature || signature_len == 0) return false;
+    if (native) *native = 0;
+    if (!public_key_der || !hash || !signature || signature_len == 0)
+        return PB_SIG_MISMATCH;
     mbedtls_pk_context key;
     mbedtls_pk_init(&key);
-    int result = mbedtls_pk_parse_public_key(&key, public_key_der, public_key_len);
-    if (result == 0 && mbedtls_pk_can_do(&key, MBEDTLS_PK_ECDSA)
-            && mbedtls_pk_get_bitlen(&key) == 256) {
-        result = mbedtls_pk_verify(&key, MBEDTLS_MD_SHA256, hash, 32,
-                                   signature, signature_len);
+    int verdict = PB_SIG_VALID;
+    int rc = mbedtls_pk_parse_public_key(&key, public_key_der, public_key_len);
+    if (rc != 0 || !mbedtls_pk_can_do(&key, MBEDTLS_PK_ECDSA)
+            || mbedtls_pk_get_bitlen(&key) != 256) {
+        verdict = PB_SIG_BAD_KEY;
     } else {
-        result = -1;
+        rc = mbedtls_pk_verify(&key, MBEDTLS_MD_SHA256, hash, 32,
+                               signature, signature_len);
+        if (rc != 0) verdict = PB_SIG_MISMATCH;
     }
     mbedtls_pk_free(&key);
-    return result == 0;
+    if (native) *native = rc;
+    return verdict;
 }
 
 pb_sha256_t *pb_sha256_create(void)
@@ -260,12 +268,11 @@ void pb_event_set(pb_event_t *event, uint32_t bits)
     if (event) xEventGroupSetBits(event->handle, bits);
 }
 
-uint32_t pb_event_wait(pb_event_t *event, uint32_t timeout_ms)
+uint32_t pb_event_wait_s(pb_event_t *event, uint32_t timeout_s)
 {
     if (!event) return 0;
-    uint64_t ticks = ((uint64_t)timeout_ms * configTICK_RATE_HZ + 999u) / 1000u;
     return (uint32_t)xEventGroupWaitBits(event->handle, 0x00ffffffu, pdTRUE,
-                                         pdFALSE, (TickType_t)ticks);
+                                         pdFALSE, seconds_to_ticks(timeout_s));
 }
 
 pb_tls_t *pb_tls_connect(const char *host, int port, const char *server_name,
@@ -378,12 +385,12 @@ int pb_http_request(const char *method, const char *url,
                     const pb_http_header_t *headers, size_t header_count,
                     const void *body, size_t body_len, uint32_t timeout_ms,
                     char *response, size_t response_cap,
-            size_t *response_len, int *http_status,
-            pb_http_data_fn on_data, void *data_context,
-            pb_http_timing_t *timing)
+                    size_t *response_len, int *http_status,
+                    pb_http_data_fn on_data, void *data_context,
+                    pb_http_timing_t *timing)
 {
     if (!method || !url || (!response && !on_data)
-        || (response && response_cap == 0)
+            || (response && response_cap == 0)
             || (!body && body_len)) return PB_HTTP_ERROR;
     if (response) response[0] = '\0';
     if (response_len) *response_len = 0;
@@ -393,14 +400,17 @@ int pb_http_request(const char *method, const char *url,
     pb_http_response_buffer_t output = {
         .buffer = response,
         .capacity = response_cap,
-    .on_data = on_data,
-    .data_context = data_context,
-    .started_us = pb_monotonic_us(),
+        .on_data = on_data,
+        .data_context = data_context,
+        .started_us = pb_monotonic_us(),
     };
     esp_http_client_config_t config = {
         .url = url,
         .event_handler = pb_http_event,
         .user_data = &output,
+        // Only consulted for https:// URLs (blocklist / Fritz!Box phonebook
+        // downloads); plain-HTTP TR-064 on the LAN ignores it.
+        .crt_bundle_attach = esp_crt_bundle_attach,
         .timeout_ms = (int)timeout_ms,
     };
     esp_http_client_handle_t client = esp_http_client_init(&config);
@@ -411,7 +421,6 @@ int pb_http_request(const char *method, const char *url,
     else if (strcmp(method, "PUT") == 0) http_method = HTTP_METHOD_PUT;
     else if (strcmp(method, "DELETE") == 0) http_method = HTTP_METHOD_DELETE;
     esp_http_client_set_method(client, http_method);
-    esp_http_client_set_header(client, "User-Agent", "phoneblock-dongle");
     for (size_t i = 0; i < header_count; i++) {
         if (headers[i].name && headers[i].value)
             esp_http_client_set_header(client, headers[i].name,
@@ -441,9 +450,34 @@ int pb_http_request(const char *method, const char *url,
         timing->valid = result == ESP_OK;
     }
     esp_http_client_cleanup(client);
-    if (result == ESP_OK) return PB_HTTP_OK;
-    if (result == ESP_ERR_HTTP_CONNECT) return PB_HTTP_CONNECT_ERROR;
-    return PB_HTTP_ERROR;
+    // esp_err_t is the native result (ESP_OK == PB_HTTP_OK,
+    // ESP_FAIL == PB_HTTP_ERROR), see platform.h.
+    return (int)result;
+}
+
+const char *pb_http_err_name(int result)
+{
+    return esp_err_to_name((esp_err_t)result);
+}
+
+bool pb_http_is_connect_error(int result)
+{
+    return result == ESP_ERR_HTTP_CONNECT;
+}
+
+// NVS results map onto the PB_KV_* contract: ESP_OK is PB_KV_OK,
+// ESP_ERR_NVS_NOT_FOUND becomes PB_KV_NOT_FOUND, and every other esp_err_t
+// is passed through unchanged (none of them equals PB_KV_NOT_FOUND), so
+// pb_kv_err_name() can report the actual NVS error.
+static int kv_result(esp_err_t err)
+{
+    return err == ESP_ERR_NVS_NOT_FOUND ? PB_KV_NOT_FOUND : (int)err;
+}
+
+const char *pb_kv_err_name(int result)
+{
+    return esp_err_to_name(result == PB_KV_NOT_FOUND ? ESP_ERR_NVS_NOT_FOUND
+                                                      : (esp_err_t)result);
 }
 
 int pb_kv_open(const char *name_space, bool writable, pb_kv_t **store)
@@ -451,13 +485,13 @@ int pb_kv_open(const char *name_space, bool writable, pb_kv_t **store)
     if (!name_space || !store) return PB_KV_ERROR;
     *store = NULL;
     pb_kv_t *result = malloc(sizeof(*result));
-    if (!result) return PB_KV_ERROR;
+    if (!result) return ESP_ERR_NO_MEM;
     esp_err_t err = nvs_open(name_space,
                              writable ? NVS_READWRITE : NVS_READONLY,
                              &result->handle);
     if (err != ESP_OK) {
         free(result);
-        return err == ESP_ERR_NVS_NOT_FOUND ? PB_KV_NOT_FOUND : PB_KV_ERROR;
+        return kv_result(err);
     }
     *store = result;
     return PB_KV_OK;
@@ -474,51 +508,43 @@ int pb_kv_get_string(pb_kv_t *store, const char *key,
                      char *value, size_t *value_len)
 {
     if (!store || !key || !value || !value_len) return PB_KV_ERROR;
-    esp_err_t err = nvs_get_str(store->handle, key, value, value_len);
-    if (err == ESP_OK) return PB_KV_OK;
-    return err == ESP_ERR_NVS_NOT_FOUND ? PB_KV_NOT_FOUND : PB_KV_ERROR;
+    return kv_result(nvs_get_str(store->handle, key, value, value_len));
 }
 
 int pb_kv_get_i32(pb_kv_t *store, const char *key, int32_t *value)
 {
     if (!store || !key || !value) return PB_KV_ERROR;
-    esp_err_t err = nvs_get_i32(store->handle, key, value);
-    if (err == ESP_OK) return PB_KV_OK;
-    return err == ESP_ERR_NVS_NOT_FOUND ? PB_KV_NOT_FOUND : PB_KV_ERROR;
+    return kv_result(nvs_get_i32(store->handle, key, value));
 }
 
 int pb_kv_set_string(pb_kv_t *store, const char *key, const char *value)
 {
     if (!store || !key || !value) return PB_KV_ERROR;
-    return nvs_set_str(store->handle, key, value) == ESP_OK
-         ? PB_KV_OK : PB_KV_ERROR;
+    return kv_result(nvs_set_str(store->handle, key, value));
 }
 
 int pb_kv_set_i32(pb_kv_t *store, const char *key, int32_t value)
 {
     if (!store || !key) return PB_KV_ERROR;
-    return nvs_set_i32(store->handle, key, value) == ESP_OK
-         ? PB_KV_OK : PB_KV_ERROR;
+    return kv_result(nvs_set_i32(store->handle, key, value));
 }
 
 int pb_kv_erase_key(pb_kv_t *store, const char *key)
 {
     if (!store || !key) return PB_KV_ERROR;
-    esp_err_t err = nvs_erase_key(store->handle, key);
-    return err == ESP_OK || err == ESP_ERR_NVS_NOT_FOUND
-         ? PB_KV_OK : PB_KV_ERROR;
+    return kv_result(nvs_erase_key(store->handle, key));
 }
 
 int pb_kv_erase_all(pb_kv_t *store)
 {
     if (!store) return PB_KV_ERROR;
-    return nvs_erase_all(store->handle) == ESP_OK ? PB_KV_OK : PB_KV_ERROR;
+    return kv_result(nvs_erase_all(store->handle));
 }
 
 int pb_kv_commit(pb_kv_t *store)
 {
     if (!store) return PB_KV_ERROR;
-    return nvs_commit(store->handle) == ESP_OK ? PB_KV_OK : PB_KV_ERROR;
+    return kv_result(nvs_commit(store->handle));
 }
 
 pb_mutex_t *pb_mutex_create(void)

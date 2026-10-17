@@ -3,9 +3,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "esp_app_desc.h"
-
 #include "config.h"
+#include "platform.h"
 
 // Must be last: bans unsafe string APIs for the rest of this file.
 #include "banned_apis.h"
@@ -15,8 +14,8 @@ static char s_user_agent[120] = "";
 const char *http_util_user_agent(void)
 {
     if (s_user_agent[0]) return s_user_agent;
-    const esp_app_desc_t *app = esp_app_get_description();
-    const char *v = (app && app->version[0]) ? app->version : "0.0.0";
+    const char *v = pb_firmware_version();
+    if (!v || !v[0]) v = "0.0.0";
     // Embed the stable device id so the server can attribute token
     // renewals (and recognise obsolete tokens) to the same physical
     // dongle. config_device_id() is set once at boot, before any HTTP

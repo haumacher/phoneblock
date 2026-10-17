@@ -52,13 +52,12 @@ typedef struct {
 #define ESP_LOGW(tag, ...) pb_log_warn(tag, __VA_ARGS__)
 #define ESP_LOGE(tag, ...) pb_log_err(tag, __VA_ARGS__)
 #define esp_timer_get_time() ((int64_t)pb_monotonic_us())
-#define esp_err_to_name(error) ((error) == PB_HTTP_CONNECT_ERROR ? "connect" : "HTTP")
+#define esp_err_to_name(error) pb_http_err_name(error)
 #define portMAX_DELAY 0
 #define xSemaphoreCreateMutex() pb_mutex_create()
 #define xSemaphoreTake(mutex, timeout) ((void)(timeout), pb_mutex_lock(mutex), 1)
 #define xSemaphoreGive(mutex) (pb_mutex_unlock(mutex), 1)
 #define esp_crt_bundle_attach NULL
-#define http_util_set_user_agent(client) ((void)(client))
 
 esp_http_client_handle_t esp_http_client_init(const esp_http_client_config_t *config);
 void esp_http_client_set_url(esp_http_client_handle_t client, const char *url);

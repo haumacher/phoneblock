@@ -60,6 +60,9 @@ static const char *TAG = "scheduler";
 // manual trigger.
 #define NEVER_US     INT64_MAX
 
+// Longest single sleep of the scheduler loop (see scheduler_task).
+#define MAX_WAIT_S   ((uint32_t)DAY_S)
+
 static pb_event_t *s_events;
 
 // INTERVAL: fire every interval_s (±jitter) off the monotonic clock — the
@@ -211,14 +214,21 @@ static void scheduler_task(void *arg)
             if (s_jobs[i].next_due_us < earliest) earliest = s_jobs[i].next_due_us;
 
         // Sleep until the nearest due time, or until a manual trigger
-        // wakes us. Sub-second precision is irrelevant for daily jobs;
-        // round a positive remainder up to 1 s so the loop never busy-spins.
+        // wakes us. The wait stays in whole seconds all the way down:
+        // seconds_to_ticks() (behind pb_event_wait_s on the ESP32) can't
+        // overflow for any interval that fits a TickType_t, while a raw
+        // millisecond conversion of a ~24 h delay would (see #348 /
+        // ticks_util.h). Capped at a day so even a NEVER_US slot can't
+        // overflow the conversion — the loop just re-evaluates. Sub-second
+        // precision is irrelevant for daily jobs; round a positive
+        // remainder up to 1 s so the loop never busy-spins.
         int64_t  wait_us = earliest - now;
-        uint32_t wait_s  = wait_us <= 0 ? 0 : (uint32_t)(wait_us / 1000000);
+        int64_t  wait_whole_s = wait_us <= 0 ? 0 : wait_us / 1000000;
+        uint32_t wait_s  = wait_whole_s > MAX_WAIT_S ? MAX_WAIT_S
+                                                     : (uint32_t)wait_whole_s;
         if (wait_us > 0 && wait_s == 0) wait_s = 1;
 
-        uint32_t wait_ms = wait_s * 1000u;
-        uint32_t notify = pb_event_wait(s_events, wait_ms);
+        uint32_t notify = pb_event_wait_s(s_events, wait_s);
 
         now = (int64_t)pb_monotonic_us();
 
@@ -292,7 +302,6 @@ static void scheduler_task(void *arg)
                     s_jobs[i].next_due_us = next_due(&s_jobs[i],
                                                      (int64_t)pb_monotonic_us());
                 }
-
             }
         }
     }

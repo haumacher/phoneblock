@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include <string.h>
 
-
 #include "mail_rcpt.h"   // MAIL_RCPT_SPEC_CAP sizes the recipient field
 #include "name_filter.h" // NAME_FILTER_SPEC_CAP sizes the spam-name field
 #ifdef ESP_PLATFORM
@@ -208,7 +207,7 @@ static void copy_default(char *dst, size_t cap, const char *def)
     dst[n] = '\0';
 }
 
-static void load_str(pb_kv_t * h, const char *key, const char *def,
+static void load_str(pb_kv_t *h, const char *key, const char *def,
                      char *dst, size_t cap)
 {
     size_t len = cap;
@@ -217,7 +216,7 @@ static void load_str(pb_kv_t * h, const char *key, const char *def,
     }
 }
 
-static int load_int(pb_kv_t * h, const char *key, int def)
+static int load_int(pb_kv_t *h, const char *key, int def)
 {
     int32_t v;
     return pb_kv_get_i32(h, key, &v) == PB_KV_OK ? (int)v : def;
@@ -246,17 +245,18 @@ static void format_uuid(const uint8_t b[16], char *out /* >= 37 */)
 // resolve to identical defaults.
 static void ensure_device_id(void)
 {
-    pb_kv_t * h;
-        int err = pb_kv_open(NS, true, &h);
+    pb_kv_t *h;
+    int err = pb_kv_open(NS, true, &h);
     if (err != PB_KV_OK) {
-            pb_log_err(TAG, "device-id store open failed (%d)", err);
+        pb_log_err(TAG, "device-id nvs_open: %s", pb_kv_err_name(err));
         return;
     }
 
     size_t len = sizeof(s_device_id);
-        if (pb_kv_get_string(h, K_DEVICE_ID, s_device_id, &len) == PB_KV_OK && s_device_id[0]) {
+    if (pb_kv_get_string(h, K_DEVICE_ID, s_device_id, &len) == PB_KV_OK
+            && s_device_id[0]) {
         pb_kv_close(h);
-            pb_log_info(TAG, "device id %s", s_device_id);
+        pb_log_info(TAG, "device id %s", s_device_id);
         return;
     }
 
@@ -264,9 +264,9 @@ static void ensure_device_id(void)
     // provides the entropy; XOR the factory MAC into the node field so the
     // id stays globally unique even if the RNG is weakly seeded this early.
     uint8_t b[16];
-        pb_random_fill(b, sizeof(b));
+    pb_random_fill(b, sizeof(b));
     uint8_t mac[6];
-    if (pb_get_mac(mac) == PB_KV_OK) {
+    if (pb_get_mac(mac) == 0) {
         for (int i = 0; i < 6; i++) b[10 + i] ^= mac[i];
     }
     b[6] = (uint8_t)((b[6] & 0x0F) | 0x40);  // version 4
@@ -274,11 +274,13 @@ static void ensure_device_id(void)
     format_uuid(b, s_device_id);
 
     err = pb_kv_set_string(h, K_DEVICE_ID, s_device_id);
-        if (err == PB_KV_OK) err = pb_kv_commit(h);
+    if (err == PB_KV_OK) err = pb_kv_commit(h);
     pb_kv_close(h);
-        if (err != PB_KV_OK) {
-            pb_log_err(TAG, "config_set_last_failed_ota: %s", "key-value store error");
-        }
+    if (err != PB_KV_OK) {
+        pb_log_err(TAG, "device id persist failed: %s", pb_kv_err_name(err));
+    } else {
+        pb_log_info(TAG, "minted device id %s", s_device_id);
+    }
 }
 
 const char *config_device_id(void)
@@ -292,7 +294,7 @@ void config_load(void)
 {
     ensure_device_id();
 
-    pb_kv_t * h;
+    pb_kv_t *h;
     int err = pb_kv_open(NS, false, &h);
     if (err == PB_KV_NOT_FOUND) {
         // Namespace not yet created. SIP credentials + PhoneBlock
@@ -355,7 +357,7 @@ void config_load(void)
         return;
     }
     if (err != PB_KV_OK) {
-        pb_log_err(TAG, "nvs_open: %s — all defaults", "key-value store error");
+        pb_log_err(TAG, "nvs_open: %s — all defaults", pb_kv_err_name(err));
         return;
     }
 
@@ -710,7 +712,7 @@ const char *config_last_failed_ota(void)     { return s_config.last_failed_ota; 
 
 int config_set_last_failed_ota(const char *version)
 {
-    pb_kv_t * h;
+    pb_kv_t *h;
     int err = pb_kv_open(NS, true, &h);
     if (err != PB_KV_OK) return err;
     if (version == NULL || version[0] == '\0') {
@@ -728,15 +730,15 @@ int config_set_last_failed_ota(const char *version)
     if (err == PB_KV_OK) err = pb_kv_commit(h);
     pb_kv_close(h);
     if (err != PB_KV_OK) {
-        pb_log_err(TAG, "config_set_last_failed_ota: %s", "key-value store error");
+        pb_log_err(TAG, "config_set_last_failed_ota: %s", pb_kv_err_name(err));
     }
     return err;
 }
 
 // --- Updating -------------------------------------------------------
 
-static int set_str_if(pb_kv_t * h, const char *key, const char *val,
-                            char *cache, size_t cap)
+static int set_str_if(pb_kv_t *h, const char *key, const char *val,
+                      char *cache, size_t cap)
 {
     if (!val) return PB_KV_OK;
     int err = pb_kv_set_string(h, key, val);
@@ -744,7 +746,7 @@ static int set_str_if(pb_kv_t * h, const char *key, const char *val,
     return err;
 }
 
-static int set_int_if(pb_kv_t * h, const char *key, int val, int *cache)
+static int set_int_if(pb_kv_t *h, const char *key, int val, int *cache)
 {
     if (val == 0) return PB_KV_OK;
     int err = pb_kv_set_i32(h, key, val);
@@ -755,8 +757,8 @@ static int set_int_if(pb_kv_t * h, const char *key, int val, int *cache)
 // Like set_int_if, but the caller decides explicitly via `has_value`
 // whether to write — for fields where 0 is a meaningful value (e.g.
 // "range-block disabled") and can't share the "0 = unchanged" shortcut.
-static int set_int_explicit(pb_kv_t * h, const char *key,
-                                  bool has_value, int val, int *cache)
+static int set_int_explicit(pb_kv_t *h, const char *key,
+                            bool has_value, int val, int *cache)
 {
     if (!has_value) return PB_KV_OK;
     int err = pb_kv_set_i32(h, key, val);
@@ -766,13 +768,13 @@ static int set_int_explicit(pb_kv_t * h, const char *key,
 
 int config_erase(void)
 {
-    pb_kv_t * h;
+    pb_kv_t *h;
     int err = pb_kv_open(NS, true, &h);
     if (err != PB_KV_OK) return err;
     err = pb_kv_erase_all(h);
     if (err == PB_KV_OK) err = pb_kv_commit(h);
     pb_kv_close(h);
-    pb_log_info(TAG, "config_erase: %s", "key-value store error");
+    pb_log_info(TAG, "config_erase: %s", pb_kv_err_name(err));
     return err;
 }
 
@@ -785,7 +787,7 @@ void config_dongle_username(char *out, size_t cap)
 
 int config_update(const config_update_t *u)
 {
-    pb_kv_t * h;
+    pb_kv_t *h;
     int err = pb_kv_open(NS, true, &h);
     if (err != PB_KV_OK) return err;
 
@@ -892,7 +894,7 @@ int config_update(const config_update_t *u)
     if (err == PB_KV_OK) err = pb_kv_commit(h);
     pb_kv_close(h);
     if (err != PB_KV_OK) {
-        pb_log_err(TAG, "config_update: %s", "key-value store error");
+        pb_log_err(TAG, "config_update: %s", pb_kv_err_name(err));
     } else {
         pb_log_info(TAG, "config_update: committed");
     }

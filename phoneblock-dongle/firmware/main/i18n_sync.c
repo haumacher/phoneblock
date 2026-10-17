@@ -28,7 +28,6 @@
 #include "esp_http_client.h"
 #include "esp_log.h"
 #include "esp_timer.h"
-#include "http_util.h"
 
 #include "mbedtls/sha256.h"
 #include "sdkconfig.h"
@@ -37,6 +36,7 @@
 
 #include "announcement.h"
 #include "config.h"
+#include "http_util.h"
 #include "platform.h"
 #ifndef PHONEBLOCK_DATA_DIR
 #define PHONEBLOCK_DATA_DIR "/var/lib/phoneblock"
@@ -199,10 +199,13 @@ static bool http_get_buf(const char *url, char *body, size_t cap,
 {
     size_t body_len = 0;
     int status = 0;
-    int result = pb_http_request("GET", url, NULL, 0, NULL, 0, 15000,
+    const pb_http_header_t headers[] = {
+        { "User-Agent", http_util_user_agent() },
+    };
+    int result = pb_http_request("GET", url, headers, 1, NULL, 0, 15000,
                                  body, cap, &body_len, &status, NULL, NULL, NULL);
     if (result != PB_HTTP_OK) {
-        snprintf(err, err_cap, "HTTP transport failed (%d)", result);
+        snprintf(err, err_cap, "%s", pb_http_err_name(result));
         return false;
     }
     if (status != 200) {
@@ -430,11 +433,14 @@ static bool download_verify_rename(const char *url, const char *final_path,
         .error_cap = err_cap,
     };
     int status = 0;
-    int result = pb_http_request("GET", url, NULL, 0, NULL, 0, 30000,
+    const pb_http_header_t headers[] = {
+        { "User-Agent", http_util_user_agent() },
+    };
+    int result = pb_http_request("GET", url, headers, 1, NULL, 0, 30000,
                                  NULL, 0, NULL, &status,
                                  write_i18n_chunk, &download, NULL);
     if (result != PB_HTTP_OK) {
-        snprintf(err, err_cap, "HTTP transport failed (%d)", result);
+        snprintf(err, err_cap, "%s", pb_http_err_name(result));
         download.failed = true;
     } else if (status != 200) {
         snprintf(err, err_cap, "HTTP %d", status);

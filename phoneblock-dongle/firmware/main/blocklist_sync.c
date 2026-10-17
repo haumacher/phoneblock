@@ -16,7 +16,6 @@
 #include "esp_timer.h"
 #include "esp_http_client.h"
 #include "esp_crt_bundle.h"
-#include "http_util.h"
 #else
 #include <sys/stat.h>
 #include <sys/statvfs.h>
@@ -24,6 +23,7 @@
 
 #include "config.h"
 #include "heap_guard.h"
+#include "http_util.h"
 #include "platform.h"
 #include "scheduler.h"
 #include "storage.h"
@@ -32,10 +32,6 @@
 #ifndef PHONEBLOCK_DATA_DIR
 #define PHONEBLOCK_DATA_DIR "/var/lib/phoneblock"
 #endif
-
-#include "scheduler.h"
-#include "storage.h"
-#include "strbuf.h"
 
 // Must be last: bans unsafe string APIs for the rest of this file.
 #include "banned_apis.h"
@@ -300,6 +296,7 @@ static bool download_to_tmp(const char *url, const char *tmp_path,
     snprintf(authorization, sizeof(authorization), "Bearer %s",
              config_phoneblock_token());
     const pb_http_header_t headers[] = {
+        { "User-Agent", http_util_user_agent() },
         { "Authorization", authorization },
         { "Accept", "application/octet-stream" },
     };
@@ -315,7 +312,7 @@ static bool download_to_tmp(const char *url, const char *tmp_path,
                                  write_download_chunk, &download, NULL);
     bool ok = result == PB_HTTP_OK && status == 200 && !download.failed;
     if (result != PB_HTTP_OK)
-        snprintf(err, err_cap, "HTTP transport failed (%d)", result);
+        snprintf(err, err_cap, "%s", pb_http_err_name(result));
     else if (status != 200)
         snprintf(err, err_cap, "HTTP %d", status);
 
