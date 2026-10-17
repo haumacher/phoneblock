@@ -256,21 +256,25 @@ static void on_wifi_event(void *arg, esp_event_base_t base, int32_t id, void *da
         }
 
         case WIFI_EVENT_STA_WPS_ER_SUCCESS: {
-            // The WPS state machine has already populated the driver's
-            // internal sta_config with everything derived from the
-            // M2/M8 exchange — SSID, passphrase, AND the security
-            // fields (threshold.authmode, pmf_cfg, sae_pwe_h2e, …)
-            // needed to associate with the AP we just paired with.
+            // For a single credential set, the WPS state machine
+            // (wps_finish() in esp_wps.c, IDF v5.3) has already updated
+            // the driver's sta_config by read-modify-write: it reads the
+            // current config, overwrites only SSID, passphrase and BSSID
+            // (bssid_set = 0) and forces sae_pwe_h2e = 0. WPS carries no
+            // security policy, so threshold.authmode and pmf_cfg are
+            // whatever the config held before pairing — on a fresh
+            // dongle the driver defaults. That is fine: an unset
+            // threshold with a WPA2-length passphrase is treated as
+            // WPA2 (which admits WPA3), and IDF v5.x always uses PMF
+            // when the AP offers it (pmf_cfg.capable is deprecated).
             //
-            // We read-modify-write that driver config rather than
-            // rebuilding it from scratch: get it first, change only the
-            // fields we must, set it back. Rebuilding a fresh
-            // wifi_config_t = {0} and copying only SSID/passphrase (as
-            // earlier code did) wiped the security fields, so on the
-            // next boot the STA loaded a config with no PMF capability,
-            // no auth-mode threshold, and got Reason 210 on every
-            // reconnect against any modern PMF-enabled AP. See the
-            // recovery path above for the user-visible symptom.
+            // We read-modify-write that driver config in turn: get it,
+            // change only the fields we must, set it back. Earlier code
+            // instead built a fresh wifi_config_t = {0} and copied only
+            // SSID/passphrase into it; that build got Reason 210 on every
+            // reconnect against PMF-enabled APs (see the recovery path
+            // above for the user-visible symptom). Keeping the driver's
+            // config avoids dropping anything the driver did set.
             //
             // Two things we override:
             //  - scan_method → WIFI_ALL_CHANNEL_SCAN, so that if the AP
@@ -513,9 +517,10 @@ static void seed_baked_creds(void)
     // Without these the driver would not associate with WPA2/WPA3-
     // Transitional APs that have PMF "capable" — symptom is Reason
     // 210 (NO_AP_FOUND_W_COMPATIBLE_SECURITY) on every connect.
-    // The WPS-driven path goes through the driver-populated cfg and
-    // doesn't need this; only here, where we hand in a freshly
-    // zero-initialised struct, do we have to fill the defaults.
+    // The WPS path does not set these either: it keeps the driver's
+    // existing config and replaces only SSID/passphrase/BSSID (see the
+    // WIFI_EVENT_STA_WPS_ER_SUCCESS handler). Here we hand in a freshly
+    // zero-initialised struct, so we state the baseline explicitly.
     cfg.sta.threshold.authmode = WIFI_AUTH_WPA2_PSK;
     cfg.sta.pmf_cfg.capable    = true;
     cfg.sta.pmf_cfg.required   = false;
