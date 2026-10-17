@@ -75,16 +75,16 @@ uint32_t pb_random_u32(void)
     return esp_random();
 }
 
-bool pb_md5(const void *input, size_t input_len, uint8_t output[16])
+int pb_md5(const void *input, size_t input_len, uint8_t output[16])
 {
     return input && output
-        && mbedtls_md5(input, input_len, output) == 0;
+        && mbedtls_md5(input, input_len, output) == 0 ? PB_OK : PB_FAIL;
 }
 
-bool pb_sha1(const void *input, size_t input_len, uint8_t output[20])
+int pb_sha1(const void *input, size_t input_len, uint8_t output[20])
 {
     return input && output
-        && mbedtls_sha1(input, input_len, output) == 0;
+        && mbedtls_sha1(input, input_len, output) == 0 ? PB_OK : PB_FAIL;
 }
 
 int pb_ecdsa_p256_verify(const uint8_t *public_key_der, size_t public_key_len,
@@ -124,17 +124,19 @@ pb_sha256_t *pb_sha256_create(void)
     return context;
 }
 
-bool pb_sha256_update(pb_sha256_t *context, const void *data, size_t length)
+int pb_sha256_update(pb_sha256_t *context, const void *data, size_t length)
 {
     return context && !context->finished && data
-        && mbedtls_sha256_update(&context->context, data, length) == 0;
+        && mbedtls_sha256_update(&context->context, data, length) == 0
+        ? PB_OK : PB_FAIL;
 }
 
-bool pb_sha256_finish(pb_sha256_t *context, uint8_t output[32])
+int pb_sha256_finish(pb_sha256_t *context, uint8_t output[32])
 {
-    if (!context || !output || context->finished) return false;
+    if (!context || !output || context->finished) return PB_FAIL;
     context->finished = true;
-    return mbedtls_sha256_finish(&context->context, output) == 0;
+    return mbedtls_sha256_finish(&context->context, output) == 0
+        ? PB_OK : PB_FAIL;
 }
 
 void pb_sha256_destroy(pb_sha256_t *context)
@@ -144,16 +146,25 @@ void pb_sha256_destroy(pb_sha256_t *context)
     free(context);
 }
 
+static int base64_result(int rc)
+{
+    if (rc == 0) return PB_OK;
+    if (rc == MBEDTLS_ERR_BASE64_BUFFER_TOO_SMALL) return PB_ERR_INVALID_SIZE;
+    return PB_FAIL;
+}
+
 int pb_base64_encode(unsigned char *dst, size_t dst_len, size_t *output_len,
                      const unsigned char *src, size_t src_len)
 {
-    return mbedtls_base64_encode(dst, dst_len, output_len, src, src_len);
+    return base64_result(
+        mbedtls_base64_encode(dst, dst_len, output_len, src, src_len));
 }
 
 int pb_base64_decode(unsigned char *dst, size_t dst_len, size_t *output_len,
                      const unsigned char *src, size_t src_len)
 {
-    return mbedtls_base64_decode(dst, dst_len, output_len, src, src_len);
+    return base64_result(
+        mbedtls_base64_decode(dst, dst_len, output_len, src, src_len));
 }
 
 void pb_random_fill(void *out, size_t len)
@@ -161,7 +172,7 @@ void pb_random_fill(void *out, size_t len)
     esp_fill_random(out, len);
 }
 
-int pb_watchdog_is_subscribed(void)
+bool pb_watchdog_is_subscribed(void)
 {
     return esp_task_wdt_status(NULL) == ESP_OK;
 }
@@ -217,13 +228,13 @@ static void pb_task_start(void *opaque)
     vTaskDelete(NULL);
 }
 
-bool pb_task_create(void (*fn)(void *), void *arg, const char *name,
+int pb_task_create(void (*fn)(void *), void *arg, const char *name,
                     size_t stack_bytes, pb_task_prio_t prio)
 {
-    if (!fn) return false;
+    if (!fn) return PB_FAIL;
 
     pb_task_start_t *start = malloc(sizeof(*start));
-    if (!start) return false;
+    if (!start) return PB_FAIL;
     start->fn = fn;
     start->arg = arg;
 
@@ -239,9 +250,9 @@ bool pb_task_create(void (*fn)(void *), void *arg, const char *name,
                     (configSTACK_DEPTH_TYPE)stack_bytes, start, priority,
                     NULL) != pdPASS) {
         free(start);
-        return false;
+        return PB_FAIL;
     }
-    return true;
+    return PB_OK;
 }
 
 pb_event_t *pb_event_create(void)
@@ -463,6 +474,63 @@ const char *pb_http_err_name(int result)
 bool pb_http_is_connect_error(int result)
 {
     return result == ESP_ERR_HTTP_CONNECT;
+}
+
+// The stream is the esp_http_client handle itself: no wrapper allocation,
+// and the calls below are exactly the open/fetch_headers/read/close sequence
+// the downloads used before the platform layer existed.
+int pb_http_stream_open(const char *url,
+                        const pb_http_header_t *headers, size_t header_count,
+                        uint32_t timeout_ms, pb_http_stream_t **stream,
+                        int *http_status, int64_t *content_length)
+{
+    if (stream) *stream = NULL;
+    if (http_status) *http_status = 0;
+    if (content_length) *content_length = 0;
+    if (!url || !stream) return PB_HTTP_ERROR;
+
+    esp_http_client_config_t config = {
+        .url               = url,
+        .method            = HTTP_METHOD_GET,
+        .crt_bundle_attach = esp_crt_bundle_attach,
+        .timeout_ms        = (int)timeout_ms,
+        .tls_version       = ESP_HTTP_CLIENT_TLS_VER_TLS_1_2,
+    };
+    esp_http_client_handle_t client = esp_http_client_init(&config);
+    if (!client) return PB_HTTP_ERROR;
+    for (size_t i = 0; i < header_count; i++) {
+        if (headers[i].name && headers[i].value)
+            esp_http_client_set_header(client, headers[i].name,
+                                       headers[i].value);
+    }
+
+    esp_err_t result = esp_http_client_open(client, 0);
+    if (result != ESP_OK) {
+        esp_http_client_cleanup(client);
+        return (int)result;
+    }
+    int64_t length = esp_http_client_fetch_headers(client);
+    if (http_status) *http_status = esp_http_client_get_status_code(client);
+    if (content_length) *content_length = length;
+    *stream = (pb_http_stream_t *)client;
+    return PB_HTTP_OK;
+}
+
+int pb_http_stream_read(pb_http_stream_t *stream, void *buffer,
+                        size_t capacity)
+{
+    if (!stream || !buffer || capacity == 0) return -1;
+    if (capacity > INT_MAX) capacity = INT_MAX;
+    return esp_http_client_read((esp_http_client_handle_t)stream, buffer,
+                                (int)capacity);
+}
+
+void pb_http_stream_close(pb_http_stream_t *stream)
+{
+    if (!stream) return;
+    esp_http_client_handle_t client = (esp_http_client_handle_t)stream;
+    esp_http_client_close(client);
+    esp_http_client_cleanup(client);
 }
 
 // NVS results map onto the PB_KV_* contract: ESP_OK is PB_KV_OK,

@@ -500,8 +500,8 @@ void rtp_play_audio(const struct sockaddr_in *dest,
                           // race in between enqueue and stream start
     // 6 KB stack: SRTP AES key-expansion + per-packet protect needs more
     // headroom than the old plain-RTP 4 KB.
-    if (!pb_task_create(rtp_audio_task, args, "rtp_audio", 6144,
-                        PB_PRIO_MEDIA)) {
+    if (pb_task_create(rtp_audio_task, args, "rtp_audio", 6144,
+                        PB_PRIO_MEDIA) != PB_OK) {
         pb_log_err(TAG, "task creation failed");
         s_streaming = false;
         announcement_close(&args->src);

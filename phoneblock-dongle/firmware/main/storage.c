@@ -1,5 +1,7 @@
-// Implementation of storage.h. Built for the device and, against the
-// SPIFFS simulation in test/spiffs_host, for test/test_storage_sim.c.
+// Implementation of storage.h. Three builds share this file: the device
+// (SPIFFS), the Linux port (STORAGE_HOSTFS: a plain filesystem, where none
+// of the SPIFFS page arithmetic applies), and, against the SPIFFS simulation
+// in test/spiffs_host, test/test_storage_sim.c.
 
 #include "storage.h"
 
@@ -8,17 +10,26 @@
 #include <string.h>
 #include <unistd.h>
 
+#ifdef STORAGE_HOSTFS
+#include <sys/stat.h>
+#include <sys/statvfs.h>
+
+#include "platform.h"
+#else
 #include "sdkconfig.h"
 #include "esp_err.h"
 #include "esp_log.h"
 #include "esp_spiffs.h"
 
-#include "blocklist_sync.h"
 #include "storage_budget.h"
+#endif
+
+#include "blocklist_sync.h"
 
 // Must be last: bans unsafe string APIs for the rest of this file.
 #include "banned_apis.h"
 
+#ifndef STORAGE_HOSTFS
 // The downloads need a garbage-collection budget far above the IDF default of
 // 10 blocks — see the rationale in sdkconfig.defaults and issue #499.
 // sdkconfig.defaults only seeds a *new* sdkconfig, so a checkout that was
@@ -28,6 +39,87 @@
 #if CONFIG_SPIFFS_GC_MAX_RUNS < 64
 #  error "CONFIG_SPIFFS_GC_MAX_RUNS too low — stale sdkconfig, delete it and rebuild"
 #endif
+#endif
+
+static const char *TAG = "storage";
+
+// One log spelling for both backends: ESP_LOGI on the device (and the sim's
+// shim of it), pb_log_info on the Linux port.
+#ifdef STORAGE_HOSTFS
+#define STORAGE_LOGI pb_log_info
+#else
+#define STORAGE_LOGI ESP_LOGI
+#endif
+
+#ifdef STORAGE_HOSTFS
+// ---------------------------------------------------------------------------
+// Plain-filesystem backend (the Linux port). A real filesystem has no stale
+// pages, erase blocks or lazy reclamation: the budget is the free bytes
+// statvfs() reports, minus a flat margin every writer keeps, and
+// storage_make_room() judges by that alone. The community list stays the
+// one file that yields (storage.h).
+// ---------------------------------------------------------------------------
+
+// Headroom kept free in the storage directory (matches the guard the
+// pre-storage.c Linux writers used: blocklist_sync's BLOCKLIST_FS_MARGIN,
+// i18n_sync's FS_MARGIN).
+#define STORAGE_FS_MARGIN (48 * 1024)
+
+// Free bytes in the data directory, or false if it cannot be read. Creates
+// the directory first: on a fresh install the first caller is the budget
+// query, before any writer had a reason to create it.
+static bool fs_info(int64_t *free_bytes)
+{
+    if (mkdir(PHONEBLOCK_DATA_DIR, 0750) != 0 && errno != EEXIST) return false;
+    struct statvfs info;
+    if (statvfs(PHONEBLOCK_DATA_DIR, &info) != 0) return false;
+    *free_bytes = (int64_t)info.f_bavail * (int64_t)info.f_frsize;
+    return true;
+}
+
+int64_t storage_community_budget(void)
+{
+    int64_t free_bytes;
+    if (!fs_info(&free_bytes)) return -1;
+    int64_t budget = free_bytes - STORAGE_FS_MARGIN;
+    return budget > 0 ? budget : 0;
+}
+
+void storage_make_room(size_t bytes, const char *replaces)
+{
+    int64_t free_bytes;
+    if (!fs_info(&free_bytes)) return;
+    if (free_bytes - (int64_t)bytes >= STORAGE_FS_MARGIN) return;
+
+    // The community list is a cache — calls fall back to the live API
+    // lookup until the next daily sync fetches a list sized for what is
+    // left — so it is the first to go.
+    if (blocklist_sync_evict_community()) {
+        STORAGE_LOGI(TAG, "community list evicted to make room for %u B",
+                    (unsigned)bytes);
+        if (!fs_info(&free_bytes)) return;
+        if (free_bytes - (int64_t)bytes >= STORAGE_FS_MARGIN) return;
+    }
+
+    // Still short: give up the old copy now rather than holding both the old
+    // and the new one at once. Costs the old content for the duration of the
+    // download (the callers' fallbacks cover it).
+    if (replaces != NULL && unlink(replaces) == 0) {
+        STORAGE_LOGI(TAG, "%s removed up front to make room for %u B",
+                    replaces, (unsigned)bytes);
+    }
+}
+
+void storage_gc(const char *why, size_t bytes)
+{
+    // A plain filesystem reclaims deleted blocks itself; there is nothing to
+    // collect. The storage_download() retry after ENOSPC still runs — with
+    // the partial file unlinked, the space is back by then.
+    (void)why;
+    (void)bytes;
+}
+
+#else  // SPIFFS backend (device and host simulation)
 
 // The host simulation maps file removal onto its RAM-backed SPIFFS.
 #ifndef STORAGE_UNLINK
@@ -35,8 +127,6 @@
 #else
 int STORAGE_UNLINK(const char *path);
 #endif
-
-static const char *TAG = "storage";
 
 #define SPIFFS_LABEL "storage"
 
@@ -95,7 +185,7 @@ void storage_make_room(size_t bytes, const char *replaces)
     // lookup until the next daily sync fetches a list sized for what is
     // left — so it is the first to go.
     if (blocklist_sync_evict_community()) {
-        ESP_LOGI(TAG, "community list evicted to make room for %u B",
+        STORAGE_LOGI(TAG, "community list evicted to make room for %u B",
                  (unsigned) bytes);
         if (!fs_info(&total, &used)) return;
         if (storage_budget_asset_fits(&s_geometry, total, used, bytes)) return;
@@ -107,7 +197,7 @@ void storage_make_room(size_t bytes, const char *replaces)
     // including the stale index pages a file written by older firmware
     // through a small buffer keeps trapped — before the write needs them.
     if (replaces != NULL && STORAGE_UNLINK(replaces) == 0) {
-        ESP_LOGI(TAG, "%s removed up front to make room for %u B",
+        STORAGE_LOGI(TAG, "%s removed up front to make room for %u B",
                  replaces, (unsigned) bytes);
     }
 }
@@ -125,9 +215,11 @@ void storage_gc(const char *why, size_t bytes)
     size_t want = (size_t) storage_budget_footprint_pages(&s_geometry, bytes)
                   * s_geometry.page_payload;
     esp_err_t e = esp_spiffs_gc(SPIFFS_LABEL, want);
-    ESP_LOGI(TAG, "gc for %s (%u B): %s", why, (unsigned) want,
+    STORAGE_LOGI(TAG, "gc for %s (%u B): %s", why, (unsigned) want,
              esp_err_to_name(e));
 }
+
+#endif  // STORAGE_HOSTFS
 
 bool storage_file_open(storage_file_t *sf, const char *path)
 {
@@ -183,7 +275,7 @@ bool storage_download(const char *what, storage_attempt_fn attempt, void *ctx,
     bytes = 0;
     r = attempt(ctx, &bytes, err, err_cap);
     if (r == STORAGE_DL_OK) {
-        ESP_LOGI(TAG, "%s written on retry after gc", what);
+        STORAGE_LOGI(TAG, "%s written on retry after gc", what);
     }
     return r == STORAGE_DL_OK;
 }

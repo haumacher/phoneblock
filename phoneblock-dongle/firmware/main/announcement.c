@@ -251,9 +251,7 @@ int announcement_write_begin(size_t total_bytes)
     char lpath[48];
     announcement_localized_path(lpath, sizeof(lpath), config_ui_lang());
     unlink(lpath);
-#ifdef ESP_PLATFORM
     storage_make_room(total_bytes, SPIFFS_FILE);
-#endif
 
     s_write_file = fopen(SPIFFS_FILE, "wb");
     if (!s_write_file) {

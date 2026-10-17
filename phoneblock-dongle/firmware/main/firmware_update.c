@@ -289,7 +289,7 @@ static void resolve_manifest(bool force, const char *current_version,
                               (const unsigned char *)sig_b64,
                               strlen(sig_b64));
     if (rc != 0) {
-        ESP_LOGE(TAG, "base64_decode(signature): -0x%04x", -rc);
+        ESP_LOGE(TAG, "base64_decode(signature) failed (%d)", rc);
         cJSON_Delete(root);
         d->result = FW_UPDATE_ERR_SIGNATURE;
         copy_str(d->error, sizeof(d->error),

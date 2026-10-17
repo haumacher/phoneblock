@@ -101,7 +101,7 @@ static esp_err_t http_event_handler(esp_http_client_event_t *evt)
 static bool sha1_hex_prefix(const char *input, int hex_chars, char *out)
 {
     unsigned char digest[20];
-    if (!pb_sha1(input, strlen(input), digest)) return false;
+    if (pb_sha1(input, strlen(input), digest) != PB_OK) return false;
     static const char H[] = "0123456789ABCDEF";
     int bytes = hex_chars / 2;
     for (int i = 0; i < bytes; i++) {

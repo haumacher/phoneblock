@@ -4,6 +4,40 @@
 #include <stddef.h>
 #include <stdint.h>
 
+// --- Conventions ---------------------------------------------------------
+//
+// Result codes. Every fallible function returns int:
+//
+//   0         success (PB_OK / PB_KV_OK / PB_HTTP_OK / PB_SIG_VALID)
+//   positive  completed with a benign domain outcome — key not found,
+//             signature mismatch, bad key; not an error
+//   negative  failure (PB_FAIL / PB_KV_ERROR / PB_HTTP_ERROR / PB_ERR_*)
+//
+// Where a failure's cause belongs in the log, the result may carry the
+// platform's native code, and the matching companion names it:
+// pb_kv_err_name(), pb_http_err_name(), or the `native` out-param of
+// pb_ecdsa_p256_verify(). Never compare results against raw backend codes
+// (esp_err_t, CURLcode, mbedTLS) directly. Generic operations whose only
+// outcomes are "done" or "failed" use the PB_OK/PB_FAIL/PB_ERR_* family.
+//
+// bool is only for pure questions that cannot fail
+// (pb_watchdog_is_subscribed). Functions that produce a value instead of a
+// status return it directly and document their sentinel: pb_event_wait_s
+// returns 0 on timeout, pb_task_stack_free returns -1 where the platform
+// cannot tell, pb_tls_read/write return a byte count or PB_TLS_WANT_*.
+//
+// Buffers. The caller owns every buffer: output parameters get a capacity
+// and, where text is produced, are always NUL-terminated on success; *_len
+// out-params report the bytes written or needed. Context objects
+// (pb_sha256_t, pb_tls_t, pb_kv_t, pb_event_t, pb_mutex_t) are owned by
+// their creator and freed with the matching destroy/close call.
+//
+// Thread safety. Logging, pb_random_*, pb_monotonic_us, mutexes and events
+// are task-safe. pb_http_request opens a fresh connection per call and holds
+// no shared state, so concurrent calls are safe. Everything else is
+// single-owner: a pb_tls_t connection, a pb_sha256_t context, and a pb_kv_t
+// store must not be shared between tasks without external locking.
+
 // --- Logging -----------------------------------------------------------
 //
 // On ESP-IDF these are the ESP_LOGx macros themselves: they add the
@@ -44,8 +78,9 @@ uint64_t pb_monotonic_us(void);
 const char *pb_firmware_version(void);
 uint32_t pb_random_u32(void);
 void pb_random_fill(void *out, size_t len);
-bool pb_md5(const void *input, size_t input_len, uint8_t output[16]);
-bool pb_sha1(const void *input, size_t input_len, uint8_t output[20]);
+// One-shot digests: PB_OK on success, PB_FAIL otherwise.
+int pb_md5(const void *input, size_t input_len, uint8_t output[16]);
+int pb_sha1(const void *input, size_t input_len, uint8_t output[20]);
 
 // ECDSA-P256 verification of a SHA-256 hash against a DER
 // SubjectPublicKeyInfo key. Returns PB_SIG_VALID, PB_SIG_BAD_KEY (key not
@@ -64,15 +99,20 @@ int pb_ecdsa_p256_verify(const uint8_t *public_key_der, size_t public_key_len,
                          size_t signature_len, int *native);
 
 typedef struct pb_sha256 pb_sha256_t;
+// NULL when the context cannot be created; free with pb_sha256_destroy.
 pb_sha256_t *pb_sha256_create(void);
-bool pb_sha256_update(pb_sha256_t *context, const void *data, size_t length);
-bool pb_sha256_finish(pb_sha256_t *context, uint8_t output[32]);
+// PB_OK on success, PB_FAIL otherwise (also when the context is finished).
+int pb_sha256_update(pb_sha256_t *context, const void *data, size_t length);
+int pb_sha256_finish(pb_sha256_t *context, uint8_t output[32]);
 void pb_sha256_destroy(pb_sha256_t *context);
+// Canonical padded Base64 in and out. PB_OK on success,
+// PB_ERR_INVALID_SIZE when dst is too small, PB_FAIL on malformed input.
 int pb_base64_encode(unsigned char *dst, size_t dst_len, size_t *output_len,
                      const unsigned char *src, size_t src_len);
 int pb_base64_decode(unsigned char *dst, size_t dst_len, size_t *output_len,
                      const unsigned char *src, size_t src_len);
-int pb_watchdog_is_subscribed(void);
+// Pure query: true when the calling task is subscribed to the watchdog.
+bool pb_watchdog_is_subscribed(void);
 void pb_watchdog_subscribe(void);
 void pb_watchdog_reset(void);
 
@@ -93,11 +133,12 @@ typedef enum {
 // more stack, PTHREAD_STACK_MIN differs per target, and musl's default thread
 // stack is small — while an unused Linux stack costs only virtual memory.
 //
-// Returns false if the task could not be created. There is deliberately no
-// handle: a task may finish before the creator could store one. Callers that
-// need a "running" flag set it before creating and clear it in the task.
-bool pb_task_create(void (*fn)(void *), void *arg, const char *name,
-                    size_t stack_bytes, pb_task_prio_t prio);
+// Returns PB_OK, or PB_FAIL if the task could not be created. There is
+// deliberately no handle: a task may finish before the creator could store
+// one. Callers that need a "running" flag set it before creating and clear
+// it in the task.
+int pb_task_create(void (*fn)(void *), void *arg, const char *name,
+                   size_t stack_bytes, pb_task_prio_t prio);
 
 typedef struct pb_event pb_event_t;
 
@@ -205,6 +246,33 @@ int pb_http_request(const char *method, const char *url,
                     size_t *response_len, int *http_status,
                     pb_http_data_fn on_data, void *data_context,
                     pb_http_timing_t *timing);
+
+// Pull-style HTTP GET for downloads that are written out while they arrive
+// (blocklist, i18n assets). The caller drives the transfer: open sends the
+// request and reads the response headers, read hands out the body piece by
+// piece, close ends it at any point — so a refusal (bad status, over budget,
+// full filesystem) needs no abort protocol. On the ESP32 these are the
+// esp_http_client_open / _fetch_headers / _read / _close calls themselves.
+typedef struct pb_http_stream pb_http_stream_t;
+
+// Opens a GET of `url` and reads the response headers. Returns PB_HTTP_OK
+// with *stream set (close it with pb_http_stream_close() whatever the
+// status), or a transport/setup error as for pb_http_request() with *stream
+// NULL. *http_status is the response status (0 if none could be read);
+// *content_length the announced body size, <= 0 when unknown (chunked).
+// `timeout_ms` bounds each network wait, not the whole transfer.
+int pb_http_stream_open(const char *url,
+                        const pb_http_header_t *headers, size_t header_count,
+                        uint32_t timeout_ms, pb_http_stream_t **stream,
+                        int *http_status, int64_t *content_length);
+
+// Reads up to `capacity` body bytes. Returns the byte count, 0 at the end of
+// the body, or a negative value when the transfer failed.
+int pb_http_stream_read(pb_http_stream_t *stream, void *buffer,
+                        size_t capacity);
+
+// Ends the transfer (also mid-body) and frees the stream. NULL is a no-op.
+void pb_http_stream_close(pb_http_stream_t *stream);
 
 // Sleeps at least `ms` milliseconds. On the ESP32 the sleep is rounded to
 // whole FreeRTOS ticks (10 ms at the project's 100 Hz): a request below one

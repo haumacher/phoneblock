@@ -15,23 +15,10 @@
 #include <string.h>
 #include <strings.h>
 #include <sys/stat.h>
-#ifndef ESP_PLATFORM
-#include <sys/statvfs.h>
-#endif
 #include <unistd.h>
 
 
 #include "cJSON.h"
-#ifdef ESP_PLATFORM
-#include "esp_crt_bundle.h"
-#include "esp_err.h"
-#include "esp_http_client.h"
-#include "esp_log.h"
-#include "esp_timer.h"
-
-#include "mbedtls/sha256.h"
-#include "sdkconfig.h"
-#endif
 
 
 #include "announcement.h"
@@ -57,6 +44,13 @@ static const char *TAG = "i18nsync";
 #define SPIFFS_DIR       PHONEBLOCK_DATA_DIR
 #endif
 #define DOWNLOAD_CHUNK   1024
+// Temp file path next to an asset: SPIFFS names are short, a Linux data
+// directory can be anywhere.
+#ifdef ESP_PLATFORM
+#define TMP_PATH_CAP     80
+#else
+#define TMP_PATH_CAP     512
+#endif
 // Manifest is small JSON (a few assets per locale); cap generously and
 // heap-allocate so a growing locale set never smashes the task stack.
 #define MANIFEST_CAP     (8 * 1024)
@@ -86,17 +80,6 @@ static void set_status(bool ok, const char *lang, const char *err)
     pb_mutex_unlock(s_lock);
 }
 
-#ifndef ESP_PLATFORM
-// Headroom kept free in the storage directory (matches blocklist_sync's guard).
-#define FS_MARGIN            (48 * 1024)
-
-static int64_t spiffs_free_bytes(void)
-{
-    struct statvfs info;
-    if (statvfs(PHONEBLOCK_DATA_DIR, &info) != 0) return -1;
-    return (int64_t)info.f_bavail * (int64_t)info.f_frsize;
-}
-#endif
 
 
 static void bytes_to_hex(const uint8_t *in, size_t n, char *out)
@@ -123,7 +106,7 @@ static bool sha256_file_hex(const char *path, char out[65])
     uint8_t buf[DOWNLOAD_CHUNK];
     size_t n;
     while ((n = fread(buf, 1, sizeof(buf), f)) > 0) {
-        if (!pb_sha256_update(sha, buf, n)) {
+        if (pb_sha256_update(sha, buf, n) != PB_OK) {
             fclose(f);
             pb_sha256_destroy(sha);
             return false;
@@ -132,7 +115,7 @@ static bool sha256_file_hex(const char *path, char out[65])
     bool read_ok = !ferror(f);
     fclose(f);
     uint8_t digest[32];
-    bool hash_ok = pb_sha256_finish(sha, digest);
+    bool hash_ok = pb_sha256_finish(sha, digest) == PB_OK;
     pb_sha256_destroy(sha);
     if (!hash_ok) return false;
     if (!read_ok) return false;
@@ -144,35 +127,30 @@ static bool sha256_file_hex(const char *path, char out[65])
 // HTTP GET into a caller buffer (for the small manifest file).
 // ---------------------------------------------------------------------------
 
-#ifdef ESP_PLATFORM
 static bool http_get_buf(const char *url, char *body, size_t cap,
                          char *err, size_t err_cap)
 {
-    esp_http_client_config_t cfg = {
-        .url               = url,
-        .method            = HTTP_METHOD_GET,
-        .crt_bundle_attach = esp_crt_bundle_attach,
-        .timeout_ms        = 15000,
+    const pb_http_header_t headers[] = {
+        { "User-Agent", http_util_user_agent() },
     };
-    esp_http_client_handle_t client = esp_http_client_init(&cfg);
-    if (!client) { snprintf(err, err_cap, "http_client_init"); return false; }
-    http_util_set_user_agent(client);
+    pb_http_stream_t *stream = NULL;
+    int64_t content_len = 0;
+    int status = 0;
+    int rc = pb_http_stream_open(url, headers, 1, 15000, &stream, &status,
+                                 &content_len);
+    if (rc != PB_HTTP_OK) {
+        snprintf(err, err_cap, "open: %s", pb_http_err_name(rc));
+        return false;
+    }
 
     bool ok = false;
-    esp_err_t e = esp_http_client_open(client, 0);
-    if (e != ESP_OK) {
-        snprintf(err, err_cap, "open: %s", esp_err_to_name(e));
-        goto out;
-    }
-    int content_len = esp_http_client_fetch_headers(client);
-    int status = esp_http_client_get_status_code(client);
     if (status != 200) {
         snprintf(err, err_cap, "HTTP %d", status);
-        goto out_close;
+        goto out;
     }
     int total = 0;
     while (total < (int)cap - 1) {
-        int n = esp_http_client_read(client, body + total, cap - 1 - total);
+        int n = pb_http_stream_read(stream, body + total, cap - 1 - total);
         if (n <= 0) break;
         total += n;
         if (content_len > 0 && total >= content_len) break;
@@ -181,55 +159,26 @@ static bool http_get_buf(const char *url, char *body, size_t cap,
     if (total == 0) {
         snprintf(err, err_cap, "empty body");
     } else if (content_len > 0 && total < content_len) {
-        snprintf(err, err_cap, "truncated (%d/%d)", total, content_len);
-    } else if (content_len > 0 && total >= (int)cap - 1 && total < content_len) {
+        snprintf(err, err_cap, "truncated (%d/%lld)", total,
+                 (long long)content_len);
+    } else if (content_len <= 0 && total >= (int)cap - 1) {
         snprintf(err, err_cap, "manifest too large");
     } else {
         ok = true;
     }
-out_close:
-    esp_http_client_close(client);
 out:
-    esp_http_client_cleanup(client);
+    pb_http_stream_close(stream);
     return ok;
 }
-#else
-static bool http_get_buf(const char *url, char *body, size_t cap,
-                         char *err, size_t err_cap)
-{
-    size_t body_len = 0;
-    int status = 0;
-    const pb_http_header_t headers[] = {
-        { "User-Agent", http_util_user_agent() },
-    };
-    int result = pb_http_request("GET", url, headers, 1, NULL, 0, 15000,
-                                 body, cap, &body_len, &status, NULL, NULL, NULL);
-    if (result != PB_HTTP_OK) {
-        snprintf(err, err_cap, "%s", pb_http_err_name(result));
-        return false;
-    }
-    if (status != 200) {
-        snprintf(err, err_cap, "HTTP %d", status);
-        return false;
-    }
-    if (body_len == 0) {
-        snprintf(err, err_cap, "empty body");
-        return false;
-    }
-    if (body_len >= cap - 1) {
-        snprintf(err, err_cap, "manifest too large");
-        return false;
-    }
-    body[body_len] = '\0';
-    return true;
-}
-#endif
 
 // ---------------------------------------------------------------------------
-// Streaming asset download → SHA-256 verify → atomic rename into place.
+// Streaming asset download → SHA-256 verify → atomic rename into place
+// (both platforms).
 // ---------------------------------------------------------------------------
 
-#ifdef ESP_PLATFORM
+// One asset download: `url` into `tmp_path`, SHA-256 checked against
+// `expected_sha_hex`; `final_path` is the file the temp supersedes (handed
+// to storage_make_room() so the old copy goes first when space is short).
 typedef struct {
     const char *url;
     const char *final_path;
@@ -253,27 +202,20 @@ static storage_dl_t download_to_tmp(void *ctx, size_t *bytes,
         return STORAGE_DL_FAILED;
     }
 
-    esp_http_client_config_t cfg = {
-        .url               = a->url,
-        .method            = HTTP_METHOD_GET,
-        .crt_bundle_attach = esp_crt_bundle_attach,
-        .timeout_ms        = 30000,
+    pb_http_stream_t *stream = NULL;
+    pb_sha256_t *sha = pb_sha256_create();
+    if (!sha) { snprintf(err, err_cap, "sha256 init"); goto out; }
+
+    const pb_http_header_t headers[] = {
+        { "User-Agent", http_util_user_agent() },
     };
-    esp_http_client_handle_t client = esp_http_client_init(&cfg);
-    bool opened = false;
-
-    mbedtls_sha256_context sha;
-    mbedtls_sha256_init(&sha);
-    mbedtls_sha256_starts(&sha, 0);
-
-    if (!client) { snprintf(err, err_cap, "http_client_init"); goto out; }
-    http_util_set_user_agent(client);
-
-    esp_err_t e = esp_http_client_open(client, 0);
-    if (e != ESP_OK) { snprintf(err, err_cap, "open: %s", esp_err_to_name(e)); goto out; }
-    opened = true;
-    content_length = esp_http_client_fetch_headers(client);
-    int status = esp_http_client_get_status_code(client);
+    int status = 0;
+    int rc = pb_http_stream_open(a->url, headers, 1, 30000, &stream, &status,
+                                 &content_length);
+    if (rc != PB_HTTP_OK) {
+        snprintf(err, err_cap, "open: %s", pb_http_err_name(rc));
+        goto out;
+    }
     if (status != 200) { snprintf(err, err_cap, "HTTP %d", status); goto out; }
 
     if (content_length > 0) {
@@ -290,10 +232,13 @@ static storage_dl_t download_to_tmp(void *ctx, size_t *bytes,
 
     char buf[DOWNLOAD_CHUNK];
     for (;;) {
-        int n = esp_http_client_read(client, buf, sizeof(buf));
+        int n = pb_http_stream_read(stream, buf, sizeof(buf));
         if (n < 0) { snprintf(err, err_cap, "read failed at %lld", (long long)total); goto out; }
         if (n == 0) break;
-        mbedtls_sha256_update(&sha, (const uint8_t *)buf, (size_t)n);
+        if (pb_sha256_update(sha, buf, (size_t)n) != PB_OK) {
+            snprintf(err, err_cap, "sha256 update failed");
+            goto out;
+        }
         if (!storage_file_write(&out, buf, (size_t)n)) {
             snprintf(err, err_cap, "fwrite short at %lld: %s",
                      (long long)total, strerror(errno));
@@ -307,10 +252,8 @@ static storage_dl_t download_to_tmp(void *ctx, size_t *bytes,
             goto out;
         }
     }
-    esp_http_client_close(client);
-    esp_http_client_cleanup(client);
-    client = NULL;
-    opened = false;
+    pb_http_stream_close(stream);
+    stream = NULL;
 
     if (!storage_file_close(&out)) {
         snprintf(err, err_cap, "close %s: %s", a->tmp_path, strerror(errno));
@@ -320,35 +263,32 @@ static storage_dl_t download_to_tmp(void *ctx, size_t *bytes,
 
     uint8_t digest[32];
     char got_hex[65];
-    mbedtls_sha256_finish(&sha, digest);
+    if (pb_sha256_finish(sha, digest) != PB_OK) {
+        snprintf(err, err_cap, "sha256 finish failed");
+        goto out;
+    }
     bytes_to_hex(digest, sizeof(digest), got_hex);
     if (strcasecmp(got_hex, a->expected_sha_hex) != 0) {
         snprintf(err, err_cap, "sha mismatch");
         goto out;
     }
-    mbedtls_sha256_free(&sha);
+    pb_sha256_destroy(sha);
     return STORAGE_DL_OK;
 
 out:
-    if (opened) esp_http_client_close(client);
-    if (client) esp_http_client_cleanup(client);
+    pb_http_stream_close(stream);
     storage_file_close(&out);
-    mbedtls_sha256_free(&sha);
+    pb_sha256_destroy(sha);
     unlink(a->tmp_path);
     *bytes = (size_t)(content_length > 0 ? content_length : total);
     return result;
 }
 
-#endif
-
-// Streaming asset download → SHA-256 verify → rename into place.
-#ifdef ESP_PLATFORM
-
 static bool download_verify_rename(const char *url, const char *final_path,
                                    const char *expected_sha_hex,
                                    char *err, size_t err_cap)
 {
-    char tmp_path[80];
+    char tmp_path[TMP_PATH_CAP];
     snprintf(tmp_path, sizeof(tmp_path), "%s.tmp", final_path);
     unlink(tmp_path);
 
@@ -376,107 +316,6 @@ static bool download_verify_rename(const char *url, const char *final_path,
 
     return true;
 }
-#else
-typedef struct {
-    FILE *file;
-    int64_t total;
-    int64_t free_bytes;
-    char *error;
-    size_t error_cap;
-    bool failed;
-} i18n_download_t;
-
-static void write_i18n_chunk(const void *data, size_t length, void *context)
-{
-    i18n_download_t *download = context;
-    if (download->failed) return;
-    if ((uint64_t)download->total + length > ANNOUNCEMENT_MAX_BYTES) {
-        snprintf(download->error, download->error_cap, "asset too large");
-        download->failed = true;
-        return;
-    }
-    if (download->free_bytes >= 0 &&
-        download->total + (int64_t)length + FS_MARGIN > download->free_bytes) {
-        snprintf(download->error, download->error_cap, "insufficient storage space");
-        download->failed = true;
-        return;
-    }
-    size_t written = fwrite(data, 1, length, download->file);
-    download->total += (int64_t)written;
-    if (written != length) {
-        snprintf(download->error, download->error_cap, "write failed: %s", strerror(errno));
-        download->failed = true;
-    }
-}
-
-static bool download_verify_rename(const char *url, const char *final_path,
-                                   const char *expected_sha_hex,
-                                   char *err, size_t err_cap)
-{
-    char tmp_path[512];
-    snprintf(tmp_path, sizeof(tmp_path), "%s.tmp", final_path);
-#ifndef ESP_PLATFORM
-    if (mkdir(PHONEBLOCK_DATA_DIR, 0750) != 0 && errno != EEXIST) {
-        snprintf(err, err_cap, "mkdir: %s", strerror(errno));
-        return false;
-    }
-#endif
-    FILE *file = fopen(tmp_path, "wb");
-    if (!file) {
-        snprintf(err, err_cap, "fopen %s: %s", tmp_path, strerror(errno));
-        return false;
-    }
-    i18n_download_t download = {
-        .file = file,
-        .free_bytes = spiffs_free_bytes(),
-        .error = err,
-        .error_cap = err_cap,
-    };
-    int status = 0;
-    const pb_http_header_t headers[] = {
-        { "User-Agent", http_util_user_agent() },
-    };
-    int result = pb_http_request("GET", url, headers, 1, NULL, 0, 30000,
-                                 NULL, 0, NULL, &status,
-                                 write_i18n_chunk, &download, NULL);
-    if (result != PB_HTTP_OK) {
-        snprintf(err, err_cap, "%s", pb_http_err_name(result));
-        download.failed = true;
-    } else if (status != 200) {
-        snprintf(err, err_cap, "HTTP %d", status);
-        download.failed = true;
-    }
-    if (fflush(file) != 0) {
-        snprintf(err, err_cap, "flush failed: %s", strerror(errno));
-        download.failed = true;
-    }
-    if (fclose(file) != 0) {
-        snprintf(err, err_cap, "close failed: %s", strerror(errno));
-        download.failed = true;
-    }
-    if (download.failed) {
-        unlink(tmp_path);
-        return false;
-    }
-
-    char got_hex[65];
-    if (!sha256_file_hex(tmp_path, got_hex) ||
-        strcasecmp(got_hex, expected_sha_hex) != 0) {
-        snprintf(err, err_cap, "sha mismatch");
-        unlink(tmp_path);
-        return false;
-    }
-    unlink(final_path);
-    if (rename(tmp_path, final_path) != 0) {
-        snprintf(err, err_cap, "rename: %s", strerror(errno));
-        unlink(tmp_path);
-        return false;
-    }
-    pb_log_info(TAG, "downloaded %lld B -> %s",
-                (long long)download.total, final_path);
-    return true;
-}
-#endif
 
 // ---------------------------------------------------------------------------
 // Prune localized files that are not for `keep_lang`.

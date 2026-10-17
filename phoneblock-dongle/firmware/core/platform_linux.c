@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/file.h>
 #include <sys/random.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
@@ -41,11 +42,21 @@ typedef struct pb_kv_item {
     struct pb_kv_item *next;
 } pb_kv_item_t;
 
+typedef struct pb_kv_raw {
+    char *line;
+    struct pb_kv_raw *next;
+} pb_kv_raw_t;
+
 struct pb_kv {
     char *path;
     char *name_space;
     bool writable;
+    int lock_fd;
     pb_kv_item_t *items;
+    // Lines of every other namespace, verbatim: pb_kv_commit() writes them
+    // back, so committing one namespace never deletes the rest of the file.
+    pb_kv_raw_t *preserved;
+    pb_kv_raw_t *preserved_tail;
 };
 
 static void pb_log(const char *level, const char *tag, const char *fmt,
@@ -135,9 +146,9 @@ void pb_random_fill(void *out, size_t len)
     }
 }
 
-int pb_watchdog_is_subscribed(void)
+bool pb_watchdog_is_subscribed(void)
 {
-    return 0;
+    return false;
 }
 
 void pb_watchdog_subscribe(void)
@@ -209,15 +220,15 @@ static void *pb_task_start(void *opaque)
 // PTHREAD_STACK_MIN and musl's small default; costs only address space.
 #define PB_LINUX_STACK_FLOOR (512u * 1024u)
 
-bool pb_task_create(void (*fn)(void *), void *arg, const char *name,
+int pb_task_create(void (*fn)(void *), void *arg, const char *name,
                     size_t stack_bytes, pb_task_prio_t prio)
 {
     (void)name;
     (void)prio;  // regular threads; the host scheduler has no RT need here
-    if (!fn) return false;
+    if (!fn) return PB_FAIL;
 
     pb_task_start_t *start = malloc(sizeof(*start));
-    if (!start) return false;
+    if (!start) return PB_FAIL;
     start->fn = fn;
     start->arg = arg;
 
@@ -231,7 +242,7 @@ bool pb_task_create(void (*fn)(void *), void *arg, const char *name,
     pthread_attr_t attributes;
     if (pthread_attr_init(&attributes) != 0) {
         free(start);
-        return false;
+        return PB_FAIL;
     }
     pthread_t thread;
     int rc = pthread_attr_setstacksize(&attributes, stack);
@@ -242,9 +253,9 @@ bool pb_task_create(void (*fn)(void *), void *arg, const char *name,
     pthread_attr_destroy(&attributes);
     if (rc != 0) {
         free(start);
-        return false;
+        return PB_FAIL;
     }
-    return true;
+    return PB_OK;
 }
 
 pb_event_t *pb_event_create(void)
@@ -319,7 +330,8 @@ const char *pb_kv_err_name(int result)
     }
 }
 
-static void pb_kv_clear(pb_kv_t *store)
+// Drops this namespace's entries; the other namespaces' lines stay.
+static void pb_kv_clear_items(pb_kv_t *store)
 {
     pb_kv_item_t *item = store->items;
     while (item) {
@@ -330,6 +342,35 @@ static void pb_kv_clear(pb_kv_t *store)
         item = next;
     }
     store->items = NULL;
+}
+
+static void pb_kv_clear(pb_kv_t *store)
+{
+    pb_kv_clear_items(store);
+    pb_kv_raw_t *raw = store->preserved;
+    while (raw) {
+        pb_kv_raw_t *next = raw->next;
+        free(raw->line);
+        free(raw);
+        raw = next;
+    }
+    store->preserved = NULL;
+    store->preserved_tail = NULL;
+}
+
+static int pb_kv_preserve_line(pb_kv_t *store, const char *line)
+{
+    pb_kv_raw_t *raw = calloc(1, sizeof(*raw));
+    if (!raw) return PB_KV_ERROR;
+    raw->line = strdup(line);
+    if (!raw->line) {
+        free(raw);
+        return PB_KV_ERROR;
+    }
+    if (store->preserved_tail) store->preserved_tail->next = raw;
+    else store->preserved = raw;
+    store->preserved_tail = raw;
+    return PB_KV_OK;
 }
 
 static pb_kv_item_t *pb_kv_find(pb_kv_t *store, const char *key)
@@ -378,20 +419,35 @@ static int pb_kv_load(pb_kv_t *store)
     char line[4096];
     int result = PB_KV_OK;
     while (fgets(line, sizeof(line), input)) {
-        char *entry = pb_kv_trim(line);
-        if (!entry[0] || entry[0] == '#' || entry[0] == ';') continue;
+        // Strip only the line terminator: a value's spaces are content (a
+        // password with a leading or trailing space must round-trip).
+        size_t line_len = strlen(line);
+        while (line_len > 0 && (line[line_len - 1] == '\n'
+                                || line[line_len - 1] == '\r')) {
+            line[--line_len] = '\0';
+        }
+        char probe[4096];
+        snprintf(probe, sizeof(probe), "%s", line);
+        char *entry = pb_kv_trim(probe);
         size_t length = strlen(entry);
         if (entry[0] == '[' && length > 2 && entry[length - 1] == ']') {
             entry[length - 1] = '\0';
             snprintf(section, sizeof(section), "%s", entry + 1);
+        }
+        if (strcmp(section, store->name_space) != 0) {
+            if (pb_kv_preserve_line(store, line) != PB_KV_OK) {
+                result = PB_KV_ERROR;
+                break;
+            }
             continue;
         }
-        if (strcmp(section, store->name_space) != 0) continue;
-        char *separator = strchr(entry, '=');
+        if (!entry[0] || entry[0] == '#' || entry[0] == ';') continue;
+        if (entry[0] == '[') continue;
+        char *separator = strchr(line, '=');
         if (!separator) continue;
-        *separator++ = '\0';
-        char *key = pb_kv_trim(entry);
-        char *value = pb_kv_trim(separator);
+        *separator = '\0';
+        char *key = pb_kv_trim(line);
+        const char *value = separator + 1;
         if (key[0] && pb_kv_assign(store, key, value) != PB_KV_OK) {
             result = PB_KV_ERROR;
             break;
@@ -439,12 +495,39 @@ static int pb_kv_make_parent_dirs(const char *path)
     return PB_KV_OK;
 }
 
+static void pb_kv_lock(pb_kv_t *store)
+{
+    // The settings file is shared between the daemon and any CLI touching
+    // it; hold an exclusive lock for writers (shared for readers) so an
+    // open→edit→commit sequence cannot interleave with another process.
+    store->lock_fd = -1;
+    size_t lock_len = strlen(store->path) + sizeof(".lock");
+    char *lock_path = malloc(lock_len);
+    if (!lock_path) return;
+    snprintf(lock_path, lock_len, "%s.lock", store->path);
+    int fd = open(lock_path, O_RDWR | O_CREAT | O_CLOEXEC, 0600);
+    if (fd < 0) {
+        pb_log_warn("kv", "open %s: %s — continuing without the lock",
+                    lock_path, strerror(errno));
+    } else {
+        if (flock(fd, store->writable ? LOCK_EX : LOCK_SH) == 0) {
+            store->lock_fd = fd;
+        } else {
+            pb_log_warn("kv", "flock %s: %s — continuing without the lock",
+                        lock_path, strerror(errno));
+            close(fd);
+        }
+    }
+    free(lock_path);
+}
+
 int pb_kv_open(const char *name_space, bool writable, pb_kv_t **store_out)
 {
     if (!name_space || !store_out) return PB_KV_ERROR;
     *store_out = NULL;
     pb_kv_t *store = calloc(1, sizeof(*store));
     if (!store) return PB_KV_ERROR;
+    store->lock_fd = -1;
     store->path = strdup(pb_kv_config_path());
     store->name_space = strdup(name_space);
     store->writable = writable;
@@ -452,6 +535,7 @@ int pb_kv_open(const char *name_space, bool writable, pb_kv_t **store_out)
         pb_kv_close(store);
         return PB_KV_ERROR;
     }
+    pb_kv_lock(store);
     int result = pb_kv_load(store);
     if (result == PB_KV_NOT_FOUND && writable) result = PB_KV_OK;
     if (result != PB_KV_OK) {
@@ -465,6 +549,10 @@ int pb_kv_open(const char *name_space, bool writable, pb_kv_t **store_out)
 void pb_kv_close(pb_kv_t *store)
 {
     if (!store) return;
+    if (store->lock_fd >= 0) {
+        flock(store->lock_fd, LOCK_UN);
+        close(store->lock_fd);
+    }
     pb_kv_clear(store);
     free(store->path);
     free(store->name_space);
@@ -536,7 +624,7 @@ int pb_kv_erase_key(pb_kv_t *store, const char *key)
 int pb_kv_erase_all(pb_kv_t *store)
 {
     if (!store || !store->writable) return PB_KV_ERROR;
-    pb_kv_clear(store);
+    pb_kv_clear_items(store);
     return PB_KV_OK;
 }
 
@@ -561,7 +649,13 @@ int pb_kv_commit(pb_kv_t *store)
         free(temp_path);
         return PB_KV_ERROR;
     }
-    int result = fprintf(output, "[%s]\n", store->name_space) < 0
+    int result = PB_KV_OK;
+    for (pb_kv_raw_t *raw = store->preserved; result == PB_KV_OK && raw;
+         raw = raw->next) {
+        if (fprintf(output, "%s\n", raw->line) < 0) result = PB_KV_ERROR;
+    }
+    if (result == PB_KV_OK)
+        result = fprintf(output, "[%s]\n", store->name_space) < 0
                ? PB_KV_ERROR : PB_KV_OK;
     for (pb_kv_item_t *item = store->items; result == PB_KV_OK && item;
          item = item->next) {

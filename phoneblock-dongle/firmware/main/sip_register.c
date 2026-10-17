@@ -2172,8 +2172,8 @@ void sip_register_start(void)
     // and overflowed in the field (crash-reports/1.0.9). If the API call ever
     // moves into a dedicated worker, this can come back down.
     s_sip_running = true;
-    if (!pb_task_create(sip_task, NULL, "sip_register", 12288,
-                        PB_PRIO_NORMAL)) {
+    if (pb_task_create(sip_task, NULL, "sip_register", 12288,
+                        PB_PRIO_NORMAL) != PB_OK) {
         pb_log_err(TAG, "SIP task creation failed");
         s_sip_running = false;
     }
