@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import de.haumacher.phoneblock.app.render.DefaultController;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
+import de.haumacher.phoneblock.db.TokenInfo;
 import de.haumacher.phoneblock.db.settings.AuthToken;
 import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.shared.Language;
@@ -90,9 +91,9 @@ public abstract class LoginFilter implements Filter {
 							return;
 						} else {
 							if (authContext == null) {
-								LOG.info("Dropping outdated login cookie accessing '{}': {}", req.getServletPath(), token);
+								LOG.info("Dropping outdated login cookie accessing '{}' (fingerprint '{}').", req.getServletPath(), TokenInfo.fingerprint(token));
 							} else {
-								LOG.info("Login not allowed with cookie accessing '{}': {}", req.getServletPath(), token);
+								LOG.info("Login not allowed with cookie accessing '{}' (token {}).", req.getServletPath(), authContext.getAuthorization().getId());
 							}
 							removeLoginCookie(req, resp);
 						}
@@ -113,14 +114,14 @@ public abstract class LoginFilter implements Filter {
 					String userName = authContext.getUserName();
 
 					if (checkTokenAuthorization(req, authorization)) {
-						LOG.info("Accepted bearer token {}...({}) for user {}.", token.substring(0, 16), token, authorization.getId(), userName);
+						LOG.info("Accepted bearer token {} for user {}.", authorization.getId(), userName);
 
 						setUser(req, authContext);
 						loggedIn(req, resp, chain);
 						return;
 					} else {
-						LOG.info("Access to {} with bearer token {}... rejected due to privilege mismatch for user {}.",
-								req.getServletPath(), token.substring(0, 16), userName);
+						LOG.info("Access to {} with bearer token {} rejected due to privilege mismatch for user {}.",
+								req.getServletPath(), authorization.getId(), userName);
 					}
 				}
 			} else if (allowBasicAuth(req)) {
@@ -142,7 +143,7 @@ public abstract class LoginFilter implements Filter {
 				String userName = authContext.getUserName();
 
 				if (authorization.isAccessLogin() && checkTokenAuthorization(req, authorization)) {
-					LOG.info("Accepted token parameter {}...({}) for user {}.", tokenParam.substring(0, 16), tokenParam, authorization.getId(), userName);
+					LOG.info("Accepted token parameter {} for user {}.", authorization.getId(), userName);
 
 					// Create session to avoid keeping token in URL
 					setUser(req, authContext);
@@ -152,8 +153,8 @@ public abstract class LoginFilter implements Filter {
 					resp.sendRedirect(redirectUrl);
 					return;
 				} else {
-					LOG.info("Access to {} with token parameter {}... rejected due to privilege mismatch for user {}.",
-							req.getServletPath(), tokenParam.substring(0, 16), userName);
+					LOG.info("Access to {} with token parameter {} rejected due to privilege mismatch for user {}.",
+							req.getServletPath(), authorization.getId(), userName);
 				}
 			}
 		}

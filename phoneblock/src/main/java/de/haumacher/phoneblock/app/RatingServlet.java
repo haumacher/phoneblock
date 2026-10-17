@@ -97,7 +97,7 @@ public class RatingServlet extends HttpServlet {
 				session.setAttribute(ratingAttr, Boolean.TRUE);
 			}
 		} else {
-			LOG.warn("Ignored rating for the same number: " + phoneId + " (" + ratingName + "): " + comment);
+			LOG.warn("Ignored rating for the same number: " + phoneId + " (" + ratingName + ").");
 		}
 		
 		resp.sendRedirect(req.getContextPath() + SearchServlet.NUMS_PREFIX + "/" + phoneId + "?link=true");

@@ -170,7 +170,7 @@ public class RegistrationServlet extends HttpServlet {
 
 			startSetup(req, resp, login, passwd);
 		} catch (Exception ex) {
-			LOG.error("Failed to create user: " + email, ex);
+			LOG.error("Failed to create user for e-mail registration.", ex);
 
 			sendError(req, resp, I18N.getMessage(req, "error.registration.account-creation-failed", ex.getMessage()));
 			return;

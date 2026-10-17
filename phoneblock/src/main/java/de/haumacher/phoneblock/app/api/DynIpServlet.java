@@ -54,7 +54,7 @@ public class DynIpServlet extends HttpServlet {
 		
 		String passwd = req.getParameter("passwd");
 		if (passwd == null) {
-			LOG.warn("DynDNS update without password: " + user);
+			LOG.warn("DynDNS update without password (user name length {}).", user.length());
 			resp.sendError(HttpServletResponse.SC_FORBIDDEN, "No password provided.");
 			return;
 		}
@@ -65,7 +65,7 @@ public class DynIpServlet extends HttpServlet {
 			
 			AnswerBotDynDns settings = users.getDynDns(user);
 			if (settings == null || !settings.getDynDnsPasswd().equals(passwd)) {
-				LOG.warn("DynDNS update with wrong password (" + passwd.length()  + " characters): " + user);
+				LOG.warn("DynDNS update with wrong password ({} characters, user name length {}).", passwd.length(), user.length());
 				resp.sendError(HttpServletResponse.SC_FORBIDDEN, "Wrong user name or password.");
 				return;
 			}
@@ -86,13 +86,13 @@ public class DynIpServlet extends HttpServlet {
 				if (dnsServer != null) {
 					dnsServer.load(update);
 				}
-				LOG.info("Updated IP address for '" + user + "': " + update.getIpv4() + "/" + update.getIpv6());
+				LOG.info("Updated IP address for DynDNS {}: {}/{}", settings.getId(), update.getIpv4(), update.getIpv6());
 			} else {
-				LOG.info("IP address of user unchanged: " + user + "': " + update.getIpv4() + "/" + update.getIpv6());
+				LOG.info("IP address of DynDNS {} unchanged: {}/{}", settings.getId(), update.getIpv4(), update.getIpv6());
 			}
 			
 			if (update.getIpv4().isEmpty() && update.getIpv6().isEmpty()) {
-				LOG.warn("No addresses provided: " + user);
+				LOG.warn("No addresses provided for DynDNS {}.", settings.getId());
 				resp.sendError(HttpServletResponse.SC_NOT_ACCEPTABLE, "No valid addresses provided.");
 				return;
 			}
@@ -123,13 +123,13 @@ public class DynIpServlet extends HttpServlet {
 		try {
 			address = InetAddress.getByName(ip);
 		} catch (UnknownHostException ex) {
-			LOG.warn("Cannot resolve host: (" + ip + ") for user '" + update.getDyndnsUser() + "': " + ex.getMessage());
+			LOG.warn("Cannot resolve host: ({}) for DynDNS user name length {}.", ip, update.getDyndnsUser().length());
 			return;
 		}
 		if (address.isAnyLocalAddress() || address.isLinkLocalAddress() || address.isLoopbackAddress()
 				|| address.isSiteLocalAddress() || address.isMulticastAddress()) {
 			
-			LOG.warn("Provided invalid address (" + ip + "): " + update.getDyndnsUser());
+			LOG.warn("Provided invalid address ({}) for DynDNS user name length {}.", ip, update.getDyndnsUser().length());
 		} else {
 			if (address instanceof Inet4Address) {
 				update.setIpv4(ip);

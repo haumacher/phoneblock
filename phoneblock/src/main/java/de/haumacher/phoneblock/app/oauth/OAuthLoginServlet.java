@@ -77,10 +77,10 @@ public class OAuthLoginServlet extends HttpServlet {
 			CommonProfile commonProfile = (CommonProfile) userProfile;
 			displayName = commonProfile.getDisplayName();
 			locale = commonProfile.getLocale();
-			LOG.info("Received user name: " + displayName);
 			
 			email = commonProfile.getEmail();
-			LOG.info("Received user e-mail: " + email);
+			LOG.info("Received profile (display name given: {}, e-mail given: {}).",
+				displayName != null && !displayName.isBlank(), email != null && !email.isBlank());
 		} else {
 			email = null;
 			displayName = null;
@@ -117,7 +117,7 @@ public class OAuthLoginServlet extends HttpServlet {
 						db.setGoogleId(login, googleId, displayName);
 					}
 				} catch (AddressException e) {
-					LOG.warn("Reveived invalid e-mail address during Google login of {} login: {}", googleId, email);
+					LOG.warn("Received invalid e-mail address (length {}) during Google login of {}.", email.length(), googleId);
 					
 					// Do not try again, see below.
 					email = null;
@@ -139,7 +139,7 @@ public class OAuthLoginServlet extends HttpServlet {
 					login = account.login();
 					passwd = account.password();
 				} catch (AddressException e) {
-					LOG.warn("Reveived invalid e-mail address during Google login of {} login: {}", googleId, email);
+					LOG.warn("Received invalid e-mail address (length {}) during Google login of {}.", email.length(), googleId);
 				}
 			}
 

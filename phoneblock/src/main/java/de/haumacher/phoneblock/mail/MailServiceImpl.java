@@ -112,16 +112,16 @@ public class MailServiceImpl implements MailService {
     	if (!existingUser) {
 			DomainStatus emailStatus = EMailCheckService.getInstance().check(address);
 			if (emailStatus == DomainStatus.DISPOSABLE) {
-				LOG.warn("Rejected disposable e-mail address: " + receiver);
+				LOG.warn("Rejected disposable e-mail domain '{}'.", domain(address));
 				throw new AddressException("Please do not use disposable e-mail addresses.");
 			}
 			if (emailStatus == DomainStatus.INVALID) {
-				LOG.warn("Rejected invalid e-mail domain: " + receiver);
+				LOG.warn("Rejected invalid e-mail domain '{}'.", domain(address));
 				throw new AddressException("The e-mail domain does not accept mail. Please check the entered address.");
 			}
 		}
 
-		LOG.info("Sending activation mail to '{}' in language '{}'.", receiver, language.tag);
+		LOG.info("Sending activation mail in language '{}'.", language.tag);
 
 		Map<String, Object> variables = new HashMap<>();
 		variables.put("name", DB.toDisplayName(address.getAddress()));
@@ -144,15 +144,15 @@ public class MailServiceImpl implements MailService {
 
 		DomainStatus emailStatus = EMailCheckService.getInstance().check(address);
 		if (emailStatus == DomainStatus.DISPOSABLE) {
-			LOG.warn("Rejected disposable e-mail address: " + receiver);
+			LOG.warn("Rejected disposable e-mail domain '{}'.", domain(address));
 			throw new AddressException("Please do not use disposable e-mail addresses.");
 		}
 		if (emailStatus == DomainStatus.INVALID) {
-			LOG.warn("Rejected invalid e-mail domain: " + receiver);
+			LOG.warn("Rejected invalid e-mail domain '{}'.", domain(address));
 			throw new AddressException("The e-mail domain does not accept mail. Please check the entered address.");
 		}
 
-		LOG.info("Sending email change verification mail to '{}' in language '{}'.", receiver, language.tag);
+		LOG.info("Sending email change verification mail in language '{}'.", language.tag);
 
 		Map<String, Object> variables = new HashMap<>();
 		variables.put("name", DB.toDisplayName(address.getAddress()));
@@ -170,13 +170,13 @@ public class MailServiceImpl implements MailService {
 		}
 
 		Language language = getUserLanguage(userSettings);
-		LOG.info("Sending help mail to '{}' in language '{}'.", receiver, language.tag);
+		LOG.info("Sending help mail to user '{}' in language '{}'.", userSettings.getId(), language.tag);
 
 		try {
 			sendMail("mail.subject.help", new InternetAddress(receiver), language, "help-mail", buildVariables(userSettings));
 			return true;
 		} catch (MessagingException | IOException ex) {
-			LOG.error("Failed to send help mail to: " + receiver, ex);
+			LOG.error("Failed to send help mail to user '" + userSettings.getId() + "'.", ex);
 			return false;
 		}
 	}
@@ -188,7 +188,7 @@ public class MailServiceImpl implements MailService {
 			LOG.warn("Cannot send diagnostics mail to '{}', no e-mail provided.", userSettings.getId());
 			return false;
 		}
-		LOG.info("Sending diagnostics mail to '{}'.", receiver);
+		LOG.info("Sending diagnostics mail to user '{}'.", userSettings.getId());
 		try {
 			MimeMessage msg = createMessage();
 			msg.setSubject(subject);
@@ -204,7 +204,7 @@ public class MailServiceImpl implements MailService {
 			sendMail(new InternetAddress(receiver), msg);
 			return true;
 		} catch (MessagingException ex) {
-			LOG.error("Failed to send diagnostics mail to: " + receiver, ex);
+			LOG.error("Failed to send diagnostics mail to user '" + userSettings.getId() + "'.", ex);
 			return false;
 		}
 	}
@@ -218,7 +218,7 @@ public class MailServiceImpl implements MailService {
 		}
 
 		Language language = getUserLanguage(userSettings);
-		LOG.info("Sending thanks mail to '{}' in language '{}'.", receiver, language.tag);
+		LOG.info("Sending thanks mail to user '{}' in language '{}'.", userSettings.getId(), language.tag);
 
 		try {
 			Map<String, Object> variables = buildVariables(userSettings);
@@ -235,7 +235,7 @@ public class MailServiceImpl implements MailService {
 			sendMail("mail.subject.thanks", new InternetAddress(receiver), language, "thanks-mail", variables);
 			return true;
 		} catch (Exception ex) {
-			LOG.error("Failed to send thanks mail to: " + receiver, ex);
+			LOG.error("Failed to send thanks mail to user '" + userSettings.getId() + "'.", ex);
 			return false;
 		}
 	}
@@ -248,13 +248,13 @@ public class MailServiceImpl implements MailService {
 		}
 
 		Language language = getUserLanguage(userSettings);
-		LOG.info("Sending answerbot disable mail to '{}' in language '{}'.", receiver, language.tag);
+		LOG.info("Sending answerbot disable mail to user '{}' in language '{}'.", userSettings.getId(), language.tag);
 
 		try {
 			sendMail("mail.subject.ab-disable", new InternetAddress(receiver), language, "ab-disable-mail", buildVariables(userSettings, answerbot));
 			return true;
 		} catch (MessagingException | IOException ex) {
-			LOG.error("Failed to send answerbot disable mail to: " + receiver, ex);
+			LOG.error("Failed to send answerbot disable mail to user '" + userSettings.getId() + "'.", ex);
 			return false;
 		}
 	}
@@ -280,12 +280,12 @@ public class MailServiceImpl implements MailService {
 		}
 
 		Language language = getUserLanguage(userSettings);
-		LOG.info("Sending welcome mail to '{}' in language '{}'.", receiver, language.tag);
+		LOG.info("Sending welcome mail to user '{}' in language '{}'.", userSettings.getId(), language.tag);
 
 		try {
 			sendMail("mail.subject.welcome", new InternetAddress(receiver), language, "welcome-mail", buildVariables(userSettings));
 		} catch (MessagingException | IOException ex) {
-			LOG.error("Failed to send welcome mail to: " + receiver, ex);
+			LOG.error("Failed to send welcome mail to user '" + userSettings.getId() + "'.", ex);
 		}
 	}
 
@@ -305,8 +305,8 @@ public class MailServiceImpl implements MailService {
 			deviceLabel = I18N.getMessage(language, "mail.defaultDeviceLabel");
 		}
 
-		LOG.info("Sending mobile welcome mail to '{}' for device '{}' in language '{}'.",
-		         receiver, deviceLabel, language.tag);
+		LOG.info("Sending mobile welcome mail to user '{}' in language '{}'.",
+		         userSettings.getId(), language.tag);
 
 		try {
 			Map<String, Object> variables = buildVariables(userSettings);
@@ -318,8 +318,17 @@ public class MailServiceImpl implements MailService {
 			         "mobile-welcome-mail",
 			         variables);
 		} catch (MessagingException | IOException ex) {
-			LOG.error("Failed to send mobile welcome mail to: " + receiver, ex);
+			LOG.error("Failed to send mobile welcome mail to user '" + userSettings.getId() + "'.", ex);
 		}
+	}
+
+	/**
+	 * The domain part of the given address, for logging without the personal part.
+	 */
+	private static String domain(InternetAddress address) {
+		String value = address.getAddress();
+		int at = value == null ? -1 : value.lastIndexOf('@');
+		return at < 0 ? "" : value.substring(at + 1);
 	}
 
 	private Map<String, Object> buildVariables(UserSettings userSettings) {
@@ -508,7 +517,7 @@ public class MailServiceImpl implements MailService {
 		try {
 			sendMail(receiver, msg);
 		} catch (MessagingException ex) {
-			LOG.error("Sending mail to '{}' failed.", receiver);
+			LOG.error("Sending mail failed.");
 			throw ex;
 		}
 	}

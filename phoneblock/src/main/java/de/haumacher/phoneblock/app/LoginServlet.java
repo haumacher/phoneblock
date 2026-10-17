@@ -97,13 +97,13 @@ public class LoginServlet extends HttpServlet {
 		DB db = DBService.getInstance();
 		AuthContext authContext = db.login(userName, password);
 		if (authContext == null) {
-			LOG.warn("Login failed for user: " + userName);
+			LOG.warn("Login failed (user name length {}).", userName.length());
 			sendFailure(req, resp);
 			return;
 		}
 		AuthToken authorization = authContext.getAuthorization();
 		if (!authorization.isAccessLogin()) {
-			LOG.warn("Login attempt with unprivileged token for user: " + userName);
+			LOG.warn("Login attempt with unprivileged token for user {}.", authorization.getUserId());
 			sendFailure(req, resp);
 			return;
 		}
