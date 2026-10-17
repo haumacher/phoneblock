@@ -4,7 +4,6 @@
 package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
-import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,6 +12,7 @@ import de.haumacher.phoneblock.app.render.DefaultController;
 import de.haumacher.phoneblock.app.render.TemplateRenderer;
 import de.haumacher.phoneblock.app.render.controller.ShowCredentialsController;
 import de.haumacher.phoneblock.db.DB;
+import de.haumacher.phoneblock.db.DB.EmailUser;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.shared.Language;
 import de.haumacher.phoneblock.util.I18N;
@@ -154,21 +154,16 @@ public class RegistrationServlet extends HttpServlet {
 			String passwd;
 			
 			DB db = DBService.getInstance();
-			login = db.getEmailLogin(email);
-			if (login == null) {
-				login = UUID.randomUUID().toString();
-				
-				String displayName = DB.toDisplayName(email);
-				
-				Language language = DefaultController.selectLanguage(req);
-				String dialPrefix = DefaultController.selectDialPrefix(req, language);
-				
-				passwd = db.createUser(login, displayName, language.tag, dialPrefix);
-				db.setEmail(login, email);
-			} else {
-				// No longer known.
-				passwd = null;
-			}
+			String displayName = DB.toDisplayName(email);
+
+			Language language = DefaultController.selectLanguage(req);
+			String dialPrefix = DefaultController.selectDialPrefix(req, language);
+
+			// Logs into the existing account for this address, a new one is created only if there is
+			// none (#523). The password of an existing account is no longer known (passwd == null).
+			EmailUser account = db.getOrCreateEmailUser(email, displayName, language.tag, dialPrefix);
+			login = account.login();
+			passwd = account.password();
 			
 			String rememberValue = req.getParameter(LoginServlet.REMEMBER_ME_PARAM);
 			LoginServlet.processRememberMe(req, resp, db, rememberValue, login);

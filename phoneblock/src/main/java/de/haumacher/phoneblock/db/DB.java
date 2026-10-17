@@ -885,14 +885,75 @@ public class DB {
 	}
 	
 	/** 
-	 * Sets the user's e-mail address.
+	 * Sets the user's e-mail address, unless another account already uses it (#523).
+	 *
+	 * @return Whether the address was set. {@code false} if another account uses the (canonical)
+	 *         address, or the user does not exist.
 	 */
-	public void setEmail(String login, String email) throws AddressException {
+	public boolean setEmail(String login, String email) throws AddressException {
 		try (SqlSession session = openSession()) {
 			Users users = session.getMapper(Users.class);
-			users.setEmail(login, canonicalEMail(email));
+			int updated = users.setEmail(login, canonicalEMail(email));
 			session.commit();
+			return updated > 0;
 		}
+	}
+
+	/**
+	 * Login and initial password of an account found or created by
+	 * {@link DB#getOrCreateEmailUser(String, String, String, String)}.
+	 *
+	 * @param login The account's login.
+	 * @param password The generated password if the account was created, {@code null} if an account
+	 *        with the e-mail address already existed.
+	 */
+	public record EmailUser(String login, String password) {
+		/**
+		 * Whether the account was newly created.
+		 */
+		public boolean created() {
+			return password != null;
+		}
+	}
+
+	/**
+	 * Resolves the account with the given e-mail address, creating a new one if there is none.
+	 *
+	 * <p>The account is created together with its e-mail address in a single conditional insert, so
+	 * a repeated or concurrent registration of the same address does not create a second account
+	 * (#523). If another registration created the account in between, that account is returned.</p>
+	 *
+	 * @param email The e-mail address, canonicalized before use.
+	 * @param displayName The display name for a new account.
+	 * @param lang The preferred language (locale tag) for a new account.
+	 * @param dialPrefix The dial prefix for a new account.
+	 */
+	public EmailUser getOrCreateEmailUser(String email, String displayName, String lang, String dialPrefix)
+			throws AddressException {
+		String canonical = canonicalEMail(email);
+		try (SqlSession session = openSession()) {
+			Users users = session.getMapper(Users.class);
+			String existing = users.getEmailLogin(canonical);
+			if (existing != null) {
+				return new EmailUser(existing, null);
+			}
+
+			String login = UUID.randomUUID().toString();
+			String passwd = createPassword(20);
+			int created = users.addEmailUser(login, displayName, lang, dialPrefix, pwhash(passwd),
+				System.currentTimeMillis(), canonical);
+			session.commit();
+			if (created > 0) {
+				return new EmailUser(login, passwd);
+			}
+		}
+
+		// Created concurrently after the lookup above.
+		String concurrent = getEmailLogin(email);
+		if (concurrent == null) {
+			throw new IllegalStateException("Account for e-mail address neither found nor created.");
+		}
+		return new EmailUser(concurrent, null);
 	}
 	
 	/** 
@@ -1069,13 +1130,22 @@ public class DB {
 	 * @return the projected {@code SPAM_EVIDENCE} increment to apply (0.0 if the user has explicitly
 	 *         allowed the number — a call must not add spam evidence on their behalf).
 	 */
-	private double cappedCallSpamContribution(BlockList blocklist, long userId, String phoneId, byte[] hash, long now) {
+	double cappedCallSpamContribution(BlockList blocklist, long userId, String phoneId, byte[] hash, long now) {
 		DBPersonalization entry = blocklist.getPersonalizationActivity(userId, phoneId);
 		if (entry == null) {
 			// First contact via a call: auto-add the concrete number to the user's blacklist so the
 			// contribution is tracked (hidden from display when a wildcard already covers it).
-			blocklist.addPersonalization(userId, phoneId, hash, now);
-			return Ema.increment(1.0, now, Ema.CLASSIFICATION_TAU_MILLIS);
+			if (blocklist.addPersonalization(userId, phoneId, hash, now) > 0) {
+				return Ema.increment(1.0, now, Ema.CLASSIFICATION_TAU_MILLIS);
+			}
+
+			// A concurrent report or rating added the entry after it was read above (#520): it
+			// carries that submission's contribution, top it up like any existing entry.
+			entry = blocklist.getPersonalizationActivity(userId, phoneId);
+			if (entry == null) {
+				// Removed again in the meantime, nothing to account against.
+				return 0.0;
+			}
 		}
 		if (!entry.isBlocked()) {
 			// The user explicitly allowed this number — do not push spam evidence for them.
@@ -1311,29 +1381,14 @@ public class DB {
 				BlockList blocklist = session.getMapper(BlockList.class);
 				long userId = userIdOptional.longValue();
 
-				DBPersonalization existing = blocklist.getPersonalizationActivity(userId, phone);
-
 				boolean block = rating != Rating.A_LEGITIMATE;
-
-				DBPersonalization flipFrom = null;
-				if (existing != null && block == existing.isBlocked()) {
+				PersonalRating personal = applyPersonalRating(blocklist, userId, phone,
+					NumberAnalyzer.getPhoneHash(number), block, now);
+				if (!personal.applied()) {
 					LOG.info("Ignored repeated rating for number {} ({}) by {}.", phone, rating, userName);
 					recordVote = false;
-				} else {
-					byte[] sha1 = NumberAnalyzer.getPhoneHash(number);
-
-					if (existing != null) {
-						// Flip to the opposite list: remember the entry so its residual capped
-						// contribution can be reversed once the dial prefix is resolved below.
-						flipFrom = existing;
-						blocklist.removePersonalization(userId, phone);
-					}
-					if (block) {
-						blocklist.addPersonalization(userId, phone, sha1, now);
-					} else {
-						blocklist.addExclude(userId, phone, sha1, now);
-					}
 				}
+				DBPersonalization flipFrom = personal.flipFrom();
 
 				// Never record community votes for globally whitelisted numbers.
 				if (reports.isWhiteListed(phone)) {
@@ -1373,6 +1428,50 @@ public class DB {
 		if (updateRequired) {
 			_indexer.publishUpdate(number);
 		}
+	}
+
+	/**
+	 * Outcome of {@link DB#applyPersonalRating(BlockList, long, String, byte[], boolean, long)}.
+	 *
+	 * @param applied Whether the rating changed the user's personalization. {@code false} for a
+	 *        repeated rating (the entry is already on the requested list), including a repeat that
+	 *        raced with a concurrent submission of the same rating.
+	 * @param flipFrom The entry that was replaced when the rating flipped the number to the opposite
+	 *        list (its residual capped contribution must be reversed), or {@code null}.
+	 */
+	record PersonalRating(boolean applied, DBPersonalization flipFrom) {
+		static final PersonalRating IGNORED = new PersonalRating(false, null);
+	}
+
+	/**
+	 * Puts the given number on the user's block list ({@code block}) or allow list.
+	 *
+	 * <p>The read of the existing entry and the following insert are not atomic: a concurrent
+	 * submission for the same {@code (user, number)} may commit its entry in between (#520). The
+	 * insert is therefore conditional, and an insert that finds the entry already present is treated
+	 * exactly like a repeated rating: the concurrent submission did the work, including reversing the
+	 * evidence of a flipped entry, so this one must neither record a vote nor reverse anything.</p>
+	 */
+	PersonalRating applyPersonalRating(BlockList blocklist, long userId, String phone, byte[] sha1,
+			boolean block, long now) {
+		DBPersonalization existing = blocklist.getPersonalizationActivity(userId, phone);
+		if (existing != null && block == existing.isBlocked()) {
+			return PersonalRating.IGNORED;
+		}
+
+		if (existing != null) {
+			// Flip to the opposite list: remember the entry so its residual capped
+			// contribution can be reversed once the dial prefix is resolved.
+			blocklist.removePersonalization(userId, phone);
+		}
+		int inserted = block
+			? blocklist.addPersonalization(userId, phone, sha1, now)
+			: blocklist.addExclude(userId, phone, sha1, now);
+		if (inserted == 0) {
+			// A concurrent submission added the entry after it was read above.
+			return PersonalRating.IGNORED;
+		}
+		return new PersonalRating(true, existing);
 	}
 
 	/**
@@ -2907,7 +3006,11 @@ public class DB {
 	}
 
 	/** 
-	 * The local user ID, or <code>null</code>, if the user with the given login does not yet exist.
+	 * The login of the account with the given e-mail address, or <code>null</code>, if there is no
+	 * such account.
+	 *
+	 * <p>If several accounts share the address (#523), the most recently used one is returned, see
+	 * {@link Users#getEmailLogin(String)}.</p>
 	 * 
 	 * @param email the user's e-mail address.
 	 */
@@ -2919,7 +3022,24 @@ public class DB {
 		}
 	}
 
-	private String canonicalEMail(String email) throws AddressException {
+	/**
+	 * Whether any account uses the given e-mail address.
+	 *
+	 * @param email the e-mail address, canonicalized before use.
+	 */
+	public boolean isEmailInUse(String email) throws AddressException {
+		try (SqlSession session = openSession()) {
+			Users users = session.getMapper(Users.class);
+			
+			return users.isEmailInUse(canonicalEMail(email)) > 0;
+		}
+	}
+
+	/**
+	 * The form in which e-mail addresses are stored in and looked up from {@code USERS.EMAIL}: the
+	 * plain address (without a personal name part), stripped and lower-cased.
+	 */
+	public static String canonicalEMail(String email) throws AddressException {
 		InternetAddress address = new InternetAddress(email);
 		return address.getAddress().strip().toLowerCase();
 	}

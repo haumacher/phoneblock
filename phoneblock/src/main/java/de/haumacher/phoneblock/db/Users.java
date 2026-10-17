@@ -37,8 +37,46 @@ public interface Users {
 	@Update("update USERS set PWHASH=#{pwhash} where ID=#{userId}")
 	void setPassword(long userId, byte[] pwhash);
 	
-	@Update("update USERS set EMAIL=#{email} where LOGIN=#{login}")
-	void setEmail(String login, String email);
+	/**
+	 * Sets the e-mail address of the given user, unless another account already uses it (#523).
+	 *
+	 * <p>{@code USERS.EMAIL} has no unique index (production holds duplicates), so the check is part
+	 * of the update: an address another account registered after the caller's own check is not
+	 * assigned a second time. The check is correlated with the updated row (H2 caches an uncorrelated
+	 * {@code NOT EXISTS} within a transaction, see {@link BlockList#addPersonalization}).</p>
+	 *
+	 * @param email The canonical e-mail address (see {@link DB#canonicalEMail(String)}).
+	 * @return The number of updated rows: {@code 1} if the address was set, {@code 0} if another
+	 *         account uses it (or the user does not exist).
+	 */
+	@Update("""
+			update USERS set EMAIL=#{email}
+			where LOGIN=#{login}
+			and not exists (
+				select 1 from USERS o where o.EMAIL=#{email} and o.ID<>USERS.ID
+			)
+			""")
+	int setEmail(String login, String email);
+
+	/**
+	 * Creates a new user with the given e-mail address, unless an account with this address already
+	 * exists (#523).
+	 *
+	 * @param email The canonical e-mail address (see {@link DB#canonicalEMail(String)}).
+	 * @return The number of inserted rows: {@code 1} if the user was created, {@code 0} if an
+	 *         account with this e-mail address exists.
+	 *
+	 * @see BlockList#addPersonalization(long, String, byte[], long) Why the check is correlated.
+	 */
+	@Insert("""
+			insert into USERS (LOGIN, DISPLAYNAME, LOCALE, DIAL, PWHASH, REGISTERED, MIN_VOTES, MAX_LENGTH, EMAIL)
+			select #{login}, #{displayName}, #{lang}, #{dial}, #{pwhash}, #{registered}, 4, 2000, v.EMAIL
+			from (values (#{email})) v (EMAIL)
+			where not exists (
+				select 1 from USERS o where o.EMAIL=v.EMAIL
+			)
+			""")
+	int addEmailUser(String login, String displayName, String lang, String dial, byte[] pwhash, long registered, String email);
 	
 	@Update("update USERS set LOCALE=#{lang} where LOGIN=#{login}")
 	void setLang(String login, String lang);
@@ -259,15 +297,22 @@ public interface Users {
 	String getGoogleLogin(String googleId);
 	
 	/**
-	 * Retrieves the user ID for the user with the given e-mail.
+	 * Retrieves the login of the account with the given e-mail.
+	 *
+	 * <p>{@code USERS.EMAIL} is not unique (#523). If several accounts share the address, the most
+	 * recently used one is chosen ({@code LASTACCESS}), on a tie the oldest one (lowest {@code ID}),
+	 * so that a person is always logged into the same account.</p>
+	 *
+	 * @param email The canonical e-mail address (see {@link DB#canonicalEMail(String)}).
+	 * @return The login, or {@code null} if no account uses this address.
 	 */
-	@Select("select LOGIN from USERS where EMAIL=#{email}")
+	@Select("select LOGIN from USERS where EMAIL=#{email} order by LASTACCESS desc, ID asc limit 1")
 	String getEmailLogin(String email);
 
 	/**
 	 * Checks if an email address is already in use by any user.
 	 *
-	 * @param email The email address to check.
+	 * @param email The canonical e-mail address to check (see {@link DB#canonicalEMail(String)}).
 	 * @return The number of users with this email address (0 if not in use, >0 if already in use).
 	 */
 	@Select("select count(1) from USERS where EMAIL=#{email}")

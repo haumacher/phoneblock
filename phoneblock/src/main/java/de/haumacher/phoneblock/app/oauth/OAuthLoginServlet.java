@@ -29,6 +29,7 @@ import de.haumacher.phoneblock.app.render.DefaultController;
 import de.haumacher.phoneblock.app.render.TemplateRenderer;
 import de.haumacher.phoneblock.app.render.controller.LoginController;
 import de.haumacher.phoneblock.db.DB;
+import de.haumacher.phoneblock.db.DB.EmailUser;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.util.I18N;
 import de.haumacher.phoneblock.shared.Language;
@@ -124,30 +125,39 @@ public class OAuthLoginServlet extends HttpServlet {
 			}
 		}
 		
+		String passwd = null;
 		if (login == null) {
 			// Create new account.
-			login = UUID.randomUUID().toString();
-
-			if (displayName == null) {
-				if (email == null) {
-					displayName = login;
-				} else {
-					displayName = email;
-				}
-			}
-
 			String dialPrefix = DefaultController.selectDialPrefix(req, language);
 
-			String passwd = db.createUser(login, displayName, language.tag, dialPrefix);
-			db.setGoogleId(login, googleId, null);
-			if (email != null) {
+			if (email != null && !email.isBlank()) {
+				// Creates the account together with its e-mail address, so that a concurrent
+				// sign-up with the same address does not create a second account (#523).
 				try {
-					db.setEmail(login, email);
+					EmailUser account = db.getOrCreateEmailUser(email,
+						displayName == null ? email : displayName, language.tag, dialPrefix);
+					login = account.login();
+					passwd = account.password();
 				} catch (AddressException e) {
 					LOG.warn("Reveived invalid e-mail address during Google login of {} login: {}", googleId, email);
 				}
 			}
 
+			if (login == null) {
+				login = UUID.randomUUID().toString();
+				passwd = db.createUser(login, displayName == null ? login : displayName, language.tag, dialPrefix);
+			}
+
+			if (passwd == null) {
+				// The account for this e-mail address was created concurrently: link it like an
+				// existing account found by its e-mail address above.
+				db.setGoogleId(login, googleId, displayName);
+			} else {
+				db.setGoogleId(login, googleId, null);
+			}
+		}
+
+		if (passwd != null) {
 			// Check if this is a mobile app linking flow (skip credentials page)
 			String targetPath = location.isPresent() ? (String) location.get() : null;
 			if (targetPath != null && targetPath.startsWith(CreateAuthTokenServlet.MOBILE_LOGIN)) {

@@ -4,7 +4,6 @@
 package de.haumacher.phoneblock.app.api;
 
 import java.io.IOException;
-import java.util.UUID;
 
 import de.haumacher.msgbuf.json.JsonReader;
 import de.haumacher.msgbuf.server.io.ReaderAdapter;
@@ -13,6 +12,7 @@ import de.haumacher.phoneblock.app.api.model.RegistrationResult;
 import de.haumacher.phoneblock.app.api.model.SessionInfo;
 import de.haumacher.phoneblock.app.render.DefaultController;
 import de.haumacher.phoneblock.db.DB;
+import de.haumacher.phoneblock.db.DB.EmailUser;
 import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.shared.Language;
 import de.haumacher.phoneblock.util.ServletUtil;
@@ -49,15 +49,14 @@ public class VerificationServlet extends HttpServlet {
 		String login;
 		String password;
 		try {
-			login = db.getEmailLogin(email);
-			if (login == null) {
-				
-				Language language = DefaultController.selectLanguage(req);
-				String dialPrefix = DefaultController.selectDialPrefix(req, language);
-				
-				login = UUID.randomUUID().toString();
-				password = db.createUser(login, email, language.tag, dialPrefix);
-				db.setEmail(login, email);
+			Language language = DefaultController.selectLanguage(req);
+			String dialPrefix = DefaultController.selectDialPrefix(req, language);
+
+			// A new account is created only if there is none for this address (#523).
+			EmailUser account = db.getOrCreateEmailUser(email, email, language.tag, dialPrefix);
+			login = account.login();
+			if (account.created()) {
+				password = account.password();
 			} else {
 				password = db.resetPassword(login);
 			}
