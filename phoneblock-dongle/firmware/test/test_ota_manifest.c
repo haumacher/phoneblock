@@ -11,6 +11,7 @@
                c c c c c c c c c c c c c c c c c c c c c c c c c c c c c c c c
 #define HASH_A H64("a")
 #define HASH_C H64("c")
+#define HASH_S H64("5")
 
 #define BASE "https://cdn.example/dongle/firmware/9.9.9/"
 
@@ -24,6 +25,12 @@
     "{\"path\":\"" BASE "esp32c3/bootloader.bin\",\"offset\":0}," \
     "{\"path\":\"" BASE "esp32c3/phoneblock_dongle.bin\",\"offset\":131072}]," \
     "\"integrity\":{\"app_sha256\":\"" HASH_C "\",\"signature\":\"SIGC\"}}"
+
+#define S3_BUILD \
+    "{\"chipFamily\":\"ESP32-S3\",\"parts\":[" \
+    "{\"path\":\"" BASE "esp32s3/bootloader.bin\",\"offset\":0}," \
+    "{\"path\":\"" BASE "esp32s3/phoneblock_dongle.bin\",\"offset\":131072}]," \
+    "\"integrity\":{\"app_sha256\":\"" HASH_S "\",\"signature\":\"SIGS\"}}"
 
 #define TOP_INTEGRITY \
     "\"integrity\":{\"app_sha256\":\"" HASH_A "\",\"signature\":\"SIGA\"}"
@@ -50,7 +57,7 @@ int main(void)
 {
     ota_build_t b;
     const char *multi = "{\"version\":\"9.9.9\",\"builds\":["
-                        ESP32_BUILD "," C3_BUILD "]," TOP_INTEGRITY "}";
+                        ESP32_BUILD "," C3_BUILD "," S3_BUILD "]," TOP_INTEGRITY "}";
 
     // ESP32 takes builds[0] with the top-level integrity — exactly what
     // firmware before C3 support does, so both read the same values.
@@ -65,6 +72,30 @@ int main(void)
     assert(strcmp(b.app_sha256, HASH_C) == 0);
     assert(strcmp(b.signature, "SIGC") == 0);
 
+    // S3 likewise: its own build and integrity, neither C3's nor top-level.
+    assert(pick(multi, "ESP32-S3", &b) == OTA_PICK_OK);
+    assert(strcmp(b.app_url, BASE "esp32s3/phoneblock_dongle.bin") == 0);
+    assert(strcmp(b.app_sha256, HASH_S) == 0);
+    assert(strcmp(b.signature, "SIGS") == 0);
+
+    // Build order does not matter for the non-ESP32 chips.
+    const char *s3_first = "{\"version\":\"9.9.9\",\"builds\":["
+                           ESP32_BUILD "," S3_BUILD "," C3_BUILD "]," TOP_INTEGRITY "}";
+    assert(pick(s3_first, "ESP32-C3", &b) == OTA_PICK_OK);
+    assert(strcmp(b.app_sha256, HASH_C) == 0);
+    assert(pick(s3_first, "ESP32-S3", &b) == OTA_PICK_OK);
+    assert(strcmp(b.app_sha256, HASH_S) == 0);
+
+    // A C3-era manifest (ESP32 + C3, published before S3 support): the S3
+    // must not fall back to either image — neither boots on it.
+    const char *c3_era = "{\"version\":\"9.9.9\",\"builds\":["
+                         ESP32_BUILD "," C3_BUILD "]," TOP_INTEGRITY "}";
+    assert(pick(c3_era, "ESP32-S3", &b) == OTA_PICK_ERR_PARSE);
+    assert(strstr(b.error, "no build for this chip"));
+    // ...while ESP32 and C3 still find theirs.
+    assert(pick(c3_era, "ESP32", &b) == OTA_PICK_OK);
+    assert(pick(c3_era, "ESP32-C3", &b) == OTA_PICK_OK);
+
     // A pre-C3 manifest (ESP32 build only) still works for ESP32...
     const char *legacy = "{\"version\":\"9.9.9\",\"builds\":["
                          ESP32_BUILD "]," TOP_INTEGRITY "}";
@@ -72,6 +103,8 @@ int main(void)
     assert(strcmp(b.app_sha256, HASH_A) == 0);
     // ...and a C3 must not fall back to the ESP32 image.
     assert(pick(legacy, "ESP32-C3", &b) == OTA_PICK_ERR_PARSE);
+    assert(strstr(b.error, "no build for this chip"));
+    assert(pick(legacy, "ESP32-S3", &b) == OTA_PICK_ERR_PARSE);
     assert(strstr(b.error, "no build for this chip"));
 
     // No builds at all.
@@ -122,6 +155,19 @@ int main(void)
     assert(strcmp(b.signature, "SIGC") == 0);
     // Served to the wrong chip (misnamed file): refused, not flashed.
     assert(pick(per_chip, "ESP32", &b) == OTA_PICK_ERR_PARSE);
+    assert(pick(per_chip, "ESP32-S3", &b) == OTA_PICK_ERR_PARSE);
+
+    // Per-chip OTA file for the S3 (ota-esp32s3.json).
+    const char *per_chip_s3 =
+        "{\"version\":\"9.9.9\",\"builds\":[{\"chipFamily\":\"ESP32-S3\","
+        "\"parts\":[{\"path\":\"" BASE "esp32s3/phoneblock_dongle.bin\"}],"
+        "\"integrity\":{\"app_sha256\":\"" HASH_S "\",\"signature\":\"SIGS\"}}]}";
+    assert(pick(per_chip_s3, "ESP32-S3", &b) == OTA_PICK_OK);
+    assert(strcmp(b.app_url, BASE "esp32s3/phoneblock_dongle.bin") == 0);
+    assert(strcmp(b.app_sha256, HASH_S) == 0);
+    assert(strcmp(b.signature, "SIGS") == 0);
+    assert(pick(per_chip_s3, "ESP32", &b) == OTA_PICK_ERR_PARSE);
+    assert(pick(per_chip_s3, "ESP32-C3", &b) == OTA_PICK_ERR_PARSE);
 
     printf("test_ota_manifest: all tests passed\n");
     return 0;

@@ -28,6 +28,9 @@
 #include "sip_register.h"
 #include "stats.h"
 #include "chip_temp.h"
+#if CONFIG_IDF_TARGET_ESP32S3
+#include "display.h"
+#endif
 #include "status_led.h"
 #include "time_sync.h"
 #include "web.h"
@@ -66,6 +69,11 @@ void app_main(void)
     // it, which is fine — those are pre-config and visible on serial.
     log_capture_start();
     config_load();
+#if CONFIG_IDF_TARGET_ESP32S3
+    // Before the SPIFFS mount: a first boot may format the partition for
+    // ~13 s, and the logo shows that the stick is alive meanwhile.
+    display_start();
+#endif
     announcement_init();
     // Start the LED early so the user sees "CONNECTING" (or
     // "PAIRING" a few hundred ms later) before WiFi blocks us.

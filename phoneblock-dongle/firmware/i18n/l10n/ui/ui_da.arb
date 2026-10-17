@@ -347,6 +347,8 @@
   "status.calls.whitelist": "Hvidliste",
   "status.calls.whitelist.help": "Fjern blokeringen af dette nummer",
   "whitelist.dialog.title": "Føj nummeret til hvidlisten",
+  "whitelist.dialog.intro": "Opkald fra dette nummer blokeres ikke længere. Dermed markerer du nummeret som legitimt i PhoneBlock; markeringen knyttes til din konto.",
+  "whitelist.dialog.submit": "Bloker ikke længere",
   "whitelist.dialog.working": "Overføres…",
   "whitelist.dialog.done": "Færdig — nummeret er nu på din hvidliste.",
   "spam.dialog.title": "Anmeld nummeret som spam",
@@ -366,6 +368,6 @@
   "spam.dialog.comment": "Begrundelse",
   "spam.dialog.comment.hint": "(valgfrit, bliver synligt for offentligheden)",
   "spam.dialog.error.is_contact": "Denne opkalder er gemt i din telefonbog. En telefonbogsoplysning har altid forrang på donglen, og derfor er det ikke muligt at markere opkaldet som spam her.",
-  "whitelist.dialog.intro": "Opkald fra dette nummer blokeres ikke længere. Dermed markerer du nummeret som legitimt i PhoneBlock; markeringen knyttes til din konto.",
-  "whitelist.dialog.submit": "Bloker ikke længere"
+  "status.system.lcd_flip": "Skærmen på hovedet (drej 180°)",
+  "status.system.lcd_flip.hint": "Afhængigt af, hvordan USB-porten på din Fritz!Box er placeret, vender stikket den anden vej. Drej skiltet 180°."
 }

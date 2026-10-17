@@ -347,6 +347,8 @@
   "status.calls.whitelist": "Whitelist",
   "status.calls.whitelist.help": "Unblock this number",
   "whitelist.dialog.title": "Add the number to the whitelist",
+  "whitelist.dialog.intro": "Calls from this number will no longer be blocked. By doing this, you are marking the number as legitimate in PhoneBlock; this rating is associated with your account.",
+  "whitelist.dialog.submit": "Unblock",
   "whitelist.dialog.working": "Sending...",
   "whitelist.dialog.done": "Done—the number is now on your whitelist.",
   "spam.dialog.title": "Report this number as spam",
@@ -366,6 +368,6 @@
   "spam.dialog.comment": "Reason",
   "spam.dialog.comment.hint": "(optional; will be visible to the public)",
   "spam.dialog.error.is_contact": "This caller is in your phone book. A phone book entry always takes precedence on the dongle, so a spam alert isn't possible in this case.",
-  "whitelist.dialog.intro": "Calls from this number will no longer be blocked. By doing this, you are marking the number as legitimate in PhoneBlock; this rating is associated with your account.",
-  "whitelist.dialog.submit": "Unblock"
+  "status.system.lcd_flip": "Turn the display upside down (rotate 180°)",
+  "status.system.lcd_flip.hint": "Depending on the orientation of the USB port on your Fritz!Box, the USB flash drive will be oriented differently. Rotate the display 180°."
 }

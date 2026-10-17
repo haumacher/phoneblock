@@ -347,6 +347,8 @@
   "status.calls.whitelist": "Witte lijst",
   "status.calls.whitelist.help": "Dit nummer niet meer blokkeren",
   "whitelist.dialog.title": "Nummer aan de whitelist toevoegen",
+  "whitelist.dialog.intro": "Oproepen van dit nummer worden niet meer geblokkeerd. Je markeert het nummer daarmee bij PhoneBlock als legitiem; de beoordeling wordt aan je account gekoppeld.",
+  "whitelist.dialog.submit": "Niet meer blokkeren",
   "whitelist.dialog.working": "Wordt verzonden…",
   "whitelist.dialog.done": "Geregeld — het nummer staat nu op je whitelist.",
   "spam.dialog.title": "Dit nummer als spam melden",
@@ -366,6 +368,6 @@
   "spam.dialog.comment": "Reden",
   "spam.dialog.comment.hint": "(optioneel, wordt openbaar weergegeven)",
   "spam.dialog.error.is_contact": "Deze beller staat in je telefoonboek. Een vermelding in het telefoonboek heeft op de dongle altijd voorrang, daarom is een spammelding hier niet mogelijk.",
-  "whitelist.dialog.intro": "Oproepen van dit nummer worden niet meer geblokkeerd. Je markeert het nummer daarmee bij PhoneBlock als legitiem; de beoordeling wordt aan je account gekoppeld.",
-  "whitelist.dialog.submit": "Niet meer blokkeren"
+  "status.system.lcd_flip": "Scherm ondersteboven (180° draaien)",
+  "status.system.lcd_flip.hint": "Afhankelijk van de plaatsing van de USB-aansluiting op je Fritz!Box staat de stick andersom. Draai de afbeelding 180°."
 }

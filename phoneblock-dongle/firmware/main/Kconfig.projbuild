@@ -50,7 +50,7 @@ menu "PhoneBlock Dongle"
         help
             HTTPS base URL the dongle polls for OTA updates. The
             firmware appends "/<channel>/ota-<target>.json" (e.g.
-            ota-esp32c3.json), where the channel ("stable" by default,
+            ota-esp32c3.json, ota-esp32s3.json), where the channel ("stable" by default,
             "beta" for opt-in testers) is selected at runtime in the
             web UI and persisted in NVS. Releases publish to both
             channels so beta is always at least as new as stable (see

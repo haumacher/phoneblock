@@ -360,6 +360,16 @@
     "description": "Dongle web UI: status.system.led_quiet.hint",
     "x-translated": "fd788dcb"
   },
+  "status.system.lcd_flip": "Display auf dem Kopf (180° drehen)",
+  "@status.system.lcd_flip": {
+    "description": "Dongle web UI: status.system.lcd_flip",
+    "x-translated": "89fbda39"
+  },
+  "status.system.lcd_flip.hint": "Je nachdem, wie der USB-Anschluss Deiner Fritz!Box liegt, steht der Stick andersherum. Dreht die Anzeige um 180°.",
+  "@status.system.lcd_flip.hint": {
+    "description": "Dongle web UI: status.system.lcd_flip.hint",
+    "x-translated": "a61035a8"
+  },
   "status.clock.now": "Uhrzeit: {time}",
   "@status.clock.now": {
     "description": "Dongle web UI: status.clock.now",

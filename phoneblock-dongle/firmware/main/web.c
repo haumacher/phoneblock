@@ -30,6 +30,9 @@
 #include "i18n_sync.h"
 #include "storage.h"
 #include "config.h"
+#if CONFIG_IDF_TARGET_ESP32S3
+#include "display.h"
+#endif
 #include "heap_guard.h"
 #include "firmware_update.h"
 #include "log_capture.h"
@@ -543,6 +546,13 @@ static esp_err_t handle_status(httpd_req_t *req)
     cJSON *led = cJSON_AddObjectToObject(root, "led");
     cJSON_AddBoolToObject  (led,  "quiet",        config_led_quiet());
 
+#if CONFIG_IDF_TARGET_ESP32S3
+    // Only the S3 build has a display; its absence tells the UI to hide
+    // the orientation option.
+    cJSON *dsp = cJSON_AddObjectToObject(root, "display");
+    cJSON_AddBoolToObject  (dsp,  "flipped",      config_lcd_flipped());
+#endif
+
     cJSON *au = cJSON_AddObjectToObject(root, "auth");
     cJSON_AddBoolToObject  (au,   "enabled",     config_auth_enabled());
     cJSON_AddBoolToObject  (au,   "logged_in",   web_auth_is_logged_in(req));
@@ -671,6 +681,38 @@ static bool form_get(const char *body, const char *key, char *out, size_t cap)
     return false;
 }
 
+// Fingerprint of every setting the SIP registration reads (FNV-1a, 64 bit).
+// handle_config_post() compares it before and after a save, so a toggle
+// unrelated to SIP (LED, display, mail, ...) does not drop a working
+// registration. Hashing instead of copying keeps the httpd stack small.
+static uint64_t sip_config_digest(void)
+{
+    uint64_t h = 0xcbf29ce484222325ULL;
+    const char *strs[] = {
+        config_sip_host(), config_sip_user(), config_sip_pass(),
+        config_sip_internal_number(), config_sip_transport(),
+        config_sip_auth_user(), config_sip_outbound(), config_sip_realm(),
+        config_sip_srtp(), config_stun_server(),
+    };
+    for (size_t i = 0; i < sizeof(strs) / sizeof(strs[0]); i++) {
+        // Include the terminator, so field boundaries count ("ab","" != "a","b").
+        for (const char *c = strs[i] ? strs[i] : ""; ; c++) {
+            h = (h ^ (uint8_t)*c) * 0x100000001b3ULL;
+            if (!*c) break;
+        }
+    }
+    const int ints[] = {
+        config_sip_port(), config_sip_expires(),
+        config_sip_local_port(), config_rtp_port(),
+    };
+    for (size_t i = 0; i < sizeof(ints) / sizeof(ints[0]); i++) {
+        for (int b = 0; b < 4; b++) {
+            h = (h ^ (uint8_t)(ints[i] >> (8 * b))) * 0x100000001b3ULL;
+        }
+    }
+    return h;
+}
+
 static esp_err_t handle_config_post(httpd_req_t *req)
 {
     REQUIRE_AUTH_API(req);
@@ -712,6 +754,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     char log_known_s[4]   = "";
     char log_info_s[4]    = "";
     char led_quiet_s[4]   = "";
+    char lcd_flip_s[4]    = "";
     char auto_update_s[4] = "";
     char channel_s[8]     = "";
     char crash_rep_s[4]   = "";
@@ -760,6 +803,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     bool have_log_known = form_get(body, "log_known_calls", log_known_s, sizeof(log_known_s));
     bool have_log_info  = form_get(body, "log_info", log_info_s, sizeof(log_info_s));
     bool have_led_quiet = form_get(body, "led_quiet", led_quiet_s, sizeof(led_quiet_s));
+    bool have_lcd_flip  = form_get(body, "lcd_flip",  lcd_flip_s,  sizeof(lcd_flip_s));
     bool have_auto_upd  = form_get(body, "auto_update",   auto_update_s, sizeof(auto_update_s));
     bool have_channel   = form_get(body, "channel",       channel_s,     sizeof(channel_s));
     bool have_crash_rep = form_get(body, "crash_report",  crash_rep_s,   sizeof(crash_rep_s));
@@ -931,6 +975,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
         .log_known_calls = have_log_known ? log_known_s  : NULL,
         .log_info        = have_log_info  ? log_info_s   : NULL,
         .led_quiet       = have_led_quiet ? led_quiet_s  : NULL,
+        .lcd_flip        = have_lcd_flip  ? lcd_flip_s   : NULL,
         .auto_update     = have_auto_upd  ? auto_update_s : NULL,
         .ota_channel     = channel,
         .crash_report    = have_crash_rep ? crash_rep_s   : NULL,
@@ -982,6 +1027,8 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     strncpy(old_lang, config_ui_lang(), sizeof(old_lang) - 1);
     old_lang[sizeof(old_lang) - 1] = '\0';
 
+    uint64_t old_sip = sip_config_digest();
+
     int err = config_update(&u);
     if (err != PB_KV_OK) {
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "nvs write failed");
@@ -993,6 +1040,14 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     if (timezone) {
         time_sync_set_timezone(config_timezone());
     }
+
+#if CONFIG_IDF_TARGET_ESP32S3
+    // Turn the display right away, so the user sees the effect of the
+    // checkbox while still holding the stick.
+    if (have_lcd_flip) {
+        display_set_flipped(config_lcd_flipped());
+    }
+#endif
 
     if (strcmp(old_token, config_phoneblock_token()) != 0
             && config_phoneblock_token()[0] != '\0') {
@@ -1008,14 +1063,20 @@ static esp_err_t handle_config_post(httpd_req_t *req)
         i18n_sync_trigger_now();
     }
 
-    // Signal the SIP task to re-register with the new credentials.
-    // Manual edit / provider preset — no Fritz!Box-internal extension
-    // race to absorb, no settle delay needed.
-    sip_register_request_reload(false);
+    // Re-register when a SIP setting changed, or when the SIP form itself
+    // was submitted (saving it unchanged is how a user retries a failed
+    // registration). The same endpoint stores unrelated toggles (LED,
+    // display, mail, ...); re-registering on those dropped a working
+    // registration for nothing. Manual edit / provider preset — no
+    // Fritz!Box-internal extension race to absorb, no settle delay needed.
+    bool sip_changed = have_sip_host || sip_config_digest() != old_sip;
+    if (sip_changed) {
+        sip_register_request_reload(false);
+    }
 
     cJSON *root = cJSON_CreateObject();
     cJSON_AddBoolToObject(root, "ok", true);
-    cJSON_AddStringToObject(root, "message", "Saved, re-registering.");
+    cJSON_AddStringToObject(root, "message", sip_changed ? "Saved, re-registering." : "Saved.");
     send_json(req, root);
     return ESP_OK;
 }
@@ -3009,7 +3070,14 @@ void web_start(void)
     // The default 4 KB is too tight once /api/fritzbox-setup → tr064_*
     // nests through call_action → post_soap → esp_http_client. 8 KB
     // gives us headroom for the deep call chain without overflows.
+    // ESP32-S3: after the SIP setup through TR-064 only 488 B were left
+    // (ESP32-C3: 948 B), the Xtensa register windows make the same calls
+    // deeper. The S3 has the heap to spare (~150 KB free), so +2 KB there.
+#if CONFIG_IDF_TARGET_ESP32S3
+    cfg.stack_size = 10240;
+#else
     cfg.stack_size = 8192;
+#endif
     // Reclaim the least-recently-used connection when every socket slot
     // is taken, instead of refusing the new one. Browsers keep HTTP/1.1
     // keep-alive sockets open, and a device that simply went away (laptop

@@ -347,6 +347,8 @@
   "status.calls.whitelist": "Biała lista",
   "status.calls.whitelist.help": "Nie blokuj już tego numeru",
   "whitelist.dialog.title": "Dodaj numer do białej listy",
+  "whitelist.dialog.intro": "Połączenia z tego numeru nie będą już blokowane. W ten sposób uznajesz ten numer w serwisie PhoneBlock za legalny; ocena ta zostanie przypisana do Twojego konta.",
+  "whitelist.dialog.submit": "Nie blokuj już",
   "whitelist.dialog.working": "Trwa przesyłanie…",
   "whitelist.dialog.done": "Załatwione — ten numer znajduje się na twojej białej liście.",
   "spam.dialog.title": "Zgłoś numer jako spam",
@@ -366,6 +368,6 @@
   "spam.dialog.comment": "Powód",
   "spam.dialog.comment.hint": "(opcjonalnie, będzie widoczne publicznie)",
   "spam.dialog.error.is_contact": "Ten numer znajduje się w Twojej książce telefonicznej. Wpis w książce telefonicznej ma zawsze pierwszeństwo w przypadku klucza sprzętowego, dlatego w tym przypadku nie jest możliwe zgłoszenie spamu.",
-  "whitelist.dialog.intro": "Połączenia z tego numeru nie będą już blokowane. W ten sposób uznajesz ten numer w serwisie PhoneBlock za legalny; ocena ta zostanie przypisana do Twojego konta.",
-  "whitelist.dialog.submit": "Nie blokuj już"
+  "status.system.lcd_flip": "Ekran do góry nogami (obrót o 180°)",
+  "status.system.lcd_flip.hint": "W zależności od położenia portu USB w routerze Fritz!Box, pamięć USB jest włożona odwrotnie. Obróć wyświetlacz o 180°."
 }

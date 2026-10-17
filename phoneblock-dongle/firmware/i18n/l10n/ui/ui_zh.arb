@@ -347,6 +347,8 @@
   "status.calls.whitelist": "白名单",
   "status.calls.whitelist.help": "不再屏蔽该号码",
   "whitelist.dialog.title": "将号码加入白名单",
+  "whitelist.dialog.intro": "来自该号码的来电将不再被拦截。这意味着你在PhoneBlock上将该号码标记为合法；该标记将与你的账户关联。",
+  "whitelist.dialog.submit": "不再屏蔽",
   "whitelist.dialog.working": "正在传输……",
   "whitelist.dialog.done": "已处理——该号码已加入你的白名单。",
   "spam.dialog.title": "将该号码标记为垃圾信息",
@@ -366,6 +368,6 @@
   "spam.dialog.comment": "原因",
   "spam.dialog.comment.hint": "（可选，将对公众可见）",
   "spam.dialog.error.is_contact": "该来电者已存入你的通讯录。通讯录中的联系人信息在加密狗中始终具有优先权，因此此处不会触发垃圾短信提示。",
-  "whitelist.dialog.intro": "来自该号码的来电将不再被拦截。这意味着你在PhoneBlock上将该号码标记为合法；该标记将与你的账户关联。",
-  "whitelist.dialog.submit": "不再屏蔽"
+  "status.system.lcd_flip": "将显示屏倒置（旋转180°）",
+  "status.system.lcd_flip.hint": "根据你的Fritz!Box上USB接口的位置不同，U盘的插入方向也会有所不同。请将图示旋转180°。"
 }

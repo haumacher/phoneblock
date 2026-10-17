@@ -105,23 +105,25 @@ ESP32-S3 (LilyGO T-Dongle-S3) genauso in `build-esp32s3`. Die S3-Defaults
 in `sdkconfig.defaults.esp32s3`: Konsole/Improv über USB-Serial-JTAG, 16 MB
 Flash mit eigener Partitionstabelle `partitions-16mb.csv` (3-MB-OTA-Slots,
 1 MB SPIFFS, ~8,6 MB unformatierte Reserve). Die Status-LED ist die
-APA102-RGB-LED des Boards, die LCD-Hintergrundbeleuchtung wird abgeschaltet:
+APA102-RGB-LED des Boards; das Display zeigt das PhoneBlock-Logo
+(`main/display.c`, nur im S3-Build; Bitmap neu erzeugen mit
+`scripts/gen-lcd-logo.py`, braucht Inkscape und Pillow):
 
 ```bash
 idf.py -B build-esp32s3 -DIDF_TARGET=esp32s3 -DSDKCONFIG=build-esp32s3/sdkconfig build
 ```
 
-Das Release (`scripts/release.sh`, OTA-Manifeste, Browser-Installer) kennt
-den S3 noch nicht (#602).
+`scripts/release.sh` baut alle drei Varianten. Die C3- und S3-Dateien liegen
+im Release unter `<version>/esp32c3/` bzw. `<version>/esp32s3/`. Pro Kanal entstehen:
 
-`scripts/release.sh` baut beide Varianten. Die C3-Dateien liegen im
-Release unter `<version>/esp32c3/`. Pro Kanal entstehen:
-
-- `manifest.json` – Manifest des Browser-Installers mit allen Chips. Der
+- `install.json` – Manifest des Browser-Installers mit allen Chips (ESP32,
+  ESP32-C3, ESP32-S3); `dongle.html` verweist darauf.
+- `manifest.json` – nur noch für ältere Dongles: ESP32 und ESP32-C3. Der
   ESP32-Build bleibt `builds[0]` mit dem Top-Level-`integrity`-Block, denn
   ältere Dongles lesen für OTA genau das (und höchstens 2047 Bytes –
-  `release.sh` bricht ab, wenn es größer wird).
-- `ota-<target>.json` (`ota-esp32.json`, `ota-esp32c3.json`) – was aktuelle
+  `release.sh` bricht ab, wenn es größer wird; mit dem S3 wären es
+  2411 Bytes, daher die eigene Installer-Datei).
+- `ota-<target>.json` (`ota-esp32.json`, `ota-esp32c3.json`, `ota-esp32s3.json`) – was aktuelle
   Firmware für OTA abfragt: nur der eigene Build mit eigener Signatur
   (`scripts/ota-manifest.sh`). Fehlt die Datei im Kanal (404), fällt die
   Firmware auf `manifest.json` zurück.
