@@ -5,7 +5,6 @@ package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
 
-import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xbill.DNS.DClass;
@@ -18,7 +17,6 @@ import de.haumacher.phoneblock.app.render.TemplateRenderer;
 import de.haumacher.phoneblock.app.render.controller.LoginController;
 import de.haumacher.phoneblock.db.DB;
 import de.haumacher.phoneblock.db.DBService;
-import de.haumacher.phoneblock.db.Users;
 import de.haumacher.phoneblock.db.settings.UserSettings;
 import de.haumacher.phoneblock.mail.MailService;
 import de.haumacher.phoneblock.mail.MailServiceStarter;
@@ -123,13 +121,6 @@ public class EmailChangeServlet extends HttpServlet {
 		newEmail = newEmail.trim();
 		req.setAttribute(EMAIL_ATTR, newEmail);
 
-		// Get current email to prevent setting the same email
-		UserSettings settings = LoginFilter.getUserSettings(req);
-		if (settings != null && newEmail.equalsIgnoreCase(settings.getEmail())) {
-			showError(req, resp, CHANGE_PAGE, "error.email.change.same-as-current");
-			return;
-		}
-
 		// Validate email format and MX records
 		try {
 			InternetAddress address = new InternetAddress(newEmail);
@@ -154,19 +145,32 @@ public class EmailChangeServlet extends HttpServlet {
 				showError(req, resp, CHANGE_PAGE, "error.email.change.domain-no-email", domain);
 				return;
 			}
+
+			// Continue with the form in which the address is stored and looked up, otherwise the
+			// check below misses an account that uses the same address in a different spelling
+			// (#523).
+			newEmail = DB.canonicalEMail(newEmail);
 		} catch (AddressException ex) {
 			showError(req, resp, CHANGE_PAGE, "error.email.change.invalid", ex.getMessage());
 			return;
 		}
 
-		// Check if email is already in use by another user
-		int emailUseCount;
-		DB db = DBService.getInstance();
-		try (SqlSession sqlSession = db.openSession()) {
-			Users users = sqlSession.getMapper(Users.class);
-			emailUseCount = users.isEmailInUse(newEmail);
+		// Get current email to prevent setting the same email
+		UserSettings settings = LoginFilter.getUserSettings(req);
+		if (settings != null && newEmail.equalsIgnoreCase(settings.getEmail())) {
+			showError(req, resp, CHANGE_PAGE, "error.email.change.same-as-current");
+			return;
 		}
-		if (emailUseCount > 0) {
+
+		// Check if email is already in use by another user
+		boolean emailInUse;
+		try {
+			emailInUse = DBService.getInstance().isEmailInUse(newEmail);
+		} catch (AddressException ex) {
+			showError(req, resp, CHANGE_PAGE, "error.email.change.invalid", ex.getMessage());
+			return;
+		}
+		if (emailInUse) {
 			showError(req, resp, CHANGE_PAGE, "error.email.change.already-in-use");
 			return;
 		}
@@ -263,11 +267,12 @@ public class EmailChangeServlet extends HttpServlet {
 
 		// Code is valid, update email
 		try {
-			DB db = DBService.getInstance();
-			try (SqlSession sqlSession = db.openSession()) {
-				Users users = sqlSession.getMapper(Users.class);
-				users.setEmail(userName, newEmail);
-				sqlSession.commit();
+			// Another account may have registered the address since the code was sent: the update
+			// is refused then instead of creating a duplicate (#523).
+			if (!DBService.getInstance().setEmail(userName, newEmail)) {
+				clearSessionAttributes(session);
+				showError(req, resp, CHANGE_PAGE, "error.email.change.already-in-use");
+				return;
 			}
 			LOG.info("Email changed successfully for user '{}' to '{}'.", userName, newEmail);
 

@@ -146,7 +146,7 @@ public class EMailVerificationServlet extends HttpServlet {
 
 			// Skip disposable check for existing users (they may have registered
 			// before their domain was classified as disposable).
-			boolean existingUser = DBService.getInstance().getEmailLogin(email) != null;
+			boolean existingUser = DBService.getInstance().isEmailInUse(email);
 
 			// Get language from request (browser locale or authenticated user's preference)
 			mailService.sendActivationMail(email, code, I18N.getUserLanguage(req), existingUser);

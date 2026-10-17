@@ -91,12 +91,28 @@ public interface BlockList {
 	 * Adds a blocklist entry for the user with the given user ID. {@code LAST_ACTIVITY} is seeded to
 	 * the creation time — the moment of the first spam signal — so the initial capped contribution
 	 * {@code Ema.increment(1, created)} can be reconstructed (and later topped up) from the row.
+	 *
+	 * <p>The insert is conditional: it adds nothing if the user already has an entry for the number
+	 * (#520). A concurrent submission for the same {@code (USERID, PHONE)} may have committed its row
+	 * between the caller's check and this insert; a plain insert would then violate the primary key
+	 * (and catching that would poison a PostgreSQL transaction).</p>
+	 *
+	 * <p>The existence check is correlated with the inserted row through the {@code VALUES} table on
+	 * purpose: H2 caches the result of an uncorrelated {@code NOT EXISTS} within a transaction and
+	 * would then miss a row inserted earlier in the same transaction.</p>
+	 *
+	 * @return The number of inserted rows: {@code 1} if the entry was added, {@code 0} if an entry
+	 *         for the number already exists.
 	 */
 	@Insert("""
 			insert into PERSONALIZATION (USERID, PHONE, SHA1, BLOCKED, CREATED, LAST_ACTIVITY)
-			values (#{userId}, #{phone}, #{sha1}, true, #{created}, #{created})
+			select v.USERID, v.PHONE, #{sha1}, true, #{created}, #{created}
+			from (values (#{userId}, #{phone})) v (USERID, PHONE)
+			where not exists (
+				select 1 from PERSONALIZATION e where e.USERID = v.USERID and e.PHONE = v.PHONE
+			)
 			""")
-	void addPersonalization(long userId, String phone, byte[] sha1, long created);
+	int addPersonalization(long userId, String phone, byte[] sha1, long created);
 
 	/**
 	 * Records new spam/legit activity (a topped-up call or re-rating) for an existing
@@ -143,12 +159,21 @@ public interface BlockList {
 	/**
 	 * Adds an exclusion from the blocklist for the user with the given user ID. {@code LAST_ACTIVITY}
 	 * is seeded to the creation time (see {@link #addPersonalization}).
+	 *
+	 * <p>Conditional like {@link #addPersonalization(long, String, byte[], long)} (#520).</p>
+	 *
+	 * @return The number of inserted rows: {@code 1} if the entry was added, {@code 0} if an entry
+	 *         for the number already exists.
 	 */
 	@Insert("""
 			insert into PERSONALIZATION (USERID, PHONE, SHA1, BLOCKED, CREATED, LAST_ACTIVITY)
-			values (#{userId}, #{phone}, #{sha1}, false, #{created}, #{created})
+			select v.USERID, v.PHONE, #{sha1}, false, #{created}, #{created}
+			from (values (#{userId}, #{phone})) v (USERID, PHONE)
+			where not exists (
+				select 1 from PERSONALIZATION e where e.USERID = v.USERID and e.PHONE = v.PHONE
+			)
 			""")
-	void addExclude(long userId, String phone, byte[] sha1, long created);
+	int addExclude(long userId, String phone, byte[] sha1, long created);
 
 	/**
 	 * Resolves a personalization entry by its SHA1 hash.
@@ -213,12 +238,22 @@ public interface BlockList {
 	 * Adds a wildcard-prefix personalization (#377). The prefix is stored bare (no {@code *}),
 	 * has no SHA1 (it is matched by prefix, not by exact hash) and is honored only by the
 	 * user's own devices.
+	 *
+	 * <p>Conditional like {@link #addPersonalization(long, String, byte[], long)} (#520): callers
+	 * remove any entry under the key first, but a concurrent request may re-insert it in between.</p>
+	 *
+	 * @return The number of inserted rows: {@code 1} if the wildcard was added, {@code 0} if an entry
+	 *         under this key already exists.
 	 */
 	@Insert("""
 			insert into PERSONALIZATION (USERID, PHONE, SHA1, BLOCKED, WILDCARD, CREATED)
-			values (#{userId}, #{phone}, null, #{blocked}, true, #{created})
+			select v.USERID, v.PHONE, null, #{blocked}, true, #{created}
+			from (values (#{userId}, #{phone})) v (USERID, PHONE)
+			where not exists (
+				select 1 from PERSONALIZATION e where e.USERID = v.USERID and e.PHONE = v.PHONE
+			)
 			""")
-	void addWildcard(long userId, String phone, boolean blocked, long created);
+	int addWildcard(long userId, String phone, boolean blocked, long created);
 
 	/**
 	 * Removes a wildcard-prefix personalization (#377).

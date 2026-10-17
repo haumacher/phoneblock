@@ -125,9 +125,14 @@ public class AddressResource extends Resource {
 						byte[] sha1 = NumberAnalyzer.getPhoneHash(number);
 						long now = System.currentTimeMillis();
 
-						// Safety, prevent duplicate key constraint violation.
+						// Replace an allow-list entry for the number.
 						blockList.removePersonalization(currentUser, phoneId);
-						blockList.addPersonalization(currentUser, phoneId, sha1, now);
+						if (blockList.addPersonalization(currentUser, phoneId, sha1, now) == 0) {
+							// A concurrent request blocked the number after it was read above
+							// (#520) and has already counted this user's vote.
+							LOG.info("Number already blocked concurrently: " + phoneId);
+							continue;
+						}
 
 						// One capped unit per user (the per-user evidence cap): a Fritz!Box-side
 						// block is one user's vote, like a web rating, and LAST_ACTIVITY (set to

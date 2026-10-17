@@ -36,7 +36,6 @@ import java.util.stream.Collectors;
 
 import javax.sql.DataSource;
 
-import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.session.SqlSession;
 import org.h2.jdbcx.JdbcDataSource;
 import org.junit.jupiter.api.AfterEach;
@@ -331,13 +330,12 @@ public class TestDB {
 		try (SqlSession session = _db.openSession()) {
 			BlockList blockList = session.getMapper(BlockList.class);
 
-			blockList.addExclude(1, "012300000", null, System.currentTimeMillis());
-			try {
-				blockList.addExclude(1, "012300000", null, System.currentTimeMillis());
-				fail("Expecting duplicate key constraint violation.");
-			} catch (PersistenceException ex) {
-				// Expected.
-			}
+			assertEquals(1, blockList.addExclude(1, "012300000", null, System.currentTimeMillis()));
+
+			// A duplicate is not inserted and does not violate the primary key (#520).
+			assertEquals(0, blockList.addExclude(1, "012300000", null, System.currentTimeMillis()));
+			assertEquals(0, blockList.addPersonalization(1, "012300000", null, System.currentTimeMillis()));
+			assertEquals(Boolean.FALSE, blockList.getPersonalizationState(1, "012300000"));
 		}
 	}
 	
