@@ -1691,6 +1691,31 @@ static esp_err_t handle_i18n_ui(httpd_req_t *req)
     return ESP_OK;
 }
 
+// Receive timeouts tolerated per upload before giving up. One timeout
+// is the httpd recv_wait_timeout (5 s) without a single byte.
+#define UPLOAD_RECV_RETRIES 3
+
+// Next piece of a streamed upload body. A receive timeout is retried a
+// few times instead of ending the upload. Every timeout and the final
+// failure are logged with the offset and the heap state, because the
+// client only gets a generic "Upload interrupted.".
+static int upload_recv(httpd_req_t *req, char *buf, int want,
+                       const char *what, int got, int total)
+{
+    for (int timeouts = 0; ; timeouts++) {
+        int n = httpd_req_recv(req, buf, want);
+        if (n > 0) return n;
+        bool retry = n == HTTPD_SOCK_ERR_TIMEOUT && timeouts < UPLOAD_RECV_RETRIES;
+        ESP_LOGW(TAG, "%s upload: recv %d at %d of %d bytes, %s "
+                 "(heap free %u, largest %u)",
+                 what, n, got, total, retry ? "retrying" : "giving up",
+                 (unsigned) esp_get_free_heap_size(),
+                 (unsigned) heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
+        if (!retry) return n;
+        esp_task_wdt_reset();
+    }
+}
+
 // POST /api/announcement — replaces the current announcement with the
 // request body. Body is raw A-law bytes (8 kHz mono, no header); the
 // UI does the WAV/MP3/OGG → A-law conversion via the browser's Web
@@ -1732,7 +1757,7 @@ static esp_err_t handle_announcement_post(httpd_req_t *req)
         int want = total - got;
         if (want > CHUNK) want = CHUNK;
         int64_t rs = esp_timer_get_time();
-        int n = httpd_req_recv(req, chunk, want);
+        int n = upload_recv(req, chunk, want, "announcement", got, total);
         recv_us += esp_timer_get_time() - rs;
         if (n <= 0) {
             free(chunk);
@@ -1846,7 +1871,7 @@ static esp_err_t handle_firmware_upload(httpd_req_t *req)
     while (got < total) {
         int want = total - got;
         if (want > CHUNK) want = CHUNK;
-        int n = httpd_req_recv(req, buf, want);
+        int n = upload_recv(req, buf, want, "firmware", got, total);
         if (n <= 0) {
             free(buf);
             esp_ota_abort(ota);
@@ -2809,7 +2834,7 @@ static esp_err_t handle_dev_i18n_upload(httpd_req_t *req)
     while (got < total && wrote) {
         int want = total - got;
         if (want > 1024) want = 1024;
-        int n = httpd_req_recv(req, buf, want);
+        int n = upload_recv(req, buf, want, "i18n bundle", got, total);
         if (n <= 0) { wrote = false; break; }
         if (got == 0) first = buf[0];
         if (!storage_file_write(&f, buf, (size_t)n)) wrote = false;
