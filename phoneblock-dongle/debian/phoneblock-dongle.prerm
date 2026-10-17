@@ -1,0 +1,9 @@
+#!/bin/sh
+set -e
+
+if [ "$1" = remove ] || [ "$1" = deconfigure ]; then
+    systemctl stop phoneblock-dongle.service || true
+    systemctl disable phoneblock-dongle.service || true
+fi
+
+exit 0

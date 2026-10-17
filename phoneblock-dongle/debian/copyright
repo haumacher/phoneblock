@@ -1,0 +1,13 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: phoneblock-dongle
+Source: https://github.com/haumacher/phoneblock
+
+Files: *
+Copyright: PhoneBlock contributors
+License: GPL-3+
+ This package is free software; you may redistribute it and/or modify it
+ under the terms of the GNU General Public License version 3, or (at your
+ option) any later version.
+ .
+ On Debian systems, the complete text of GPL-3 can be found in
+ /usr/share/common-licenses/GPL-3.

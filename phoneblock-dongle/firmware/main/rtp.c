@@ -419,10 +419,16 @@ static void rtp_audio_task(void *arg)
         const uint8_t *send_buf = pkt;
         size_t send_len = RTP_HEADER_BYTES + FRAME_SAMPLES;
         if (srtp_session) {
+#ifdef ESP_PLATFORM
             size_t out_len = sizeof(txbuf);
             srtp_err_status_t st = srtp_protect(srtp_session, pkt,
                                                 RTP_HEADER_BYTES + FRAME_SAMPLES,
                                                 txbuf, &out_len, 0);
+#else
+            memcpy(txbuf, pkt, send_len);
+            int out_len = (int)send_len;
+            srtp_err_status_t st = srtp_protect(srtp_session, txbuf, &out_len);
+#endif
             if (st != srtp_err_status_ok) {
                 pb_log_warn(TAG, "srtp_protect failed: %d", st);
                 seq++;
@@ -431,7 +437,11 @@ static void rtp_audio_task(void *arg)
                 continue;
             }
             send_buf = txbuf;
+#ifdef ESP_PLATFORM
             send_len = out_len;
+#else
+            send_len = (size_t)out_len;
+#endif
         }
 
         int n = sendto(sock, send_buf, send_len, 0,

@@ -1,0 +1,23 @@
+#!/bin/sh
+set -e
+
+if ! getent group phoneblock >/dev/null; then
+    addgroup --system phoneblock
+fi
+if ! getent passwd phoneblock >/dev/null; then
+    adduser --system --ingroup phoneblock --home /var/lib/phoneblock \
+        --no-create-home --disabled-login --disabled-password phoneblock
+fi
+
+install -d -o phoneblock -g phoneblock -m 0750 /var/lib/phoneblock
+install -d -o root -g phoneblock -m 0770 /etc/phoneblock
+if [ -f /etc/phoneblock/dongle.conf ]; then
+    chown phoneblock:phoneblock /etc/phoneblock/dongle.conf
+    chmod 0600 /etc/phoneblock/dongle.conf
+fi
+
+if [ "$1" = configure ]; then
+    systemctl daemon-reload || true
+fi
+
+exit 0

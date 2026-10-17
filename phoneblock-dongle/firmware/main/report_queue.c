@@ -2,13 +2,8 @@
 
 #include <string.h>
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/queue.h"
-#include "freertos/task.h"
-
-#include "esp_log.h"
-
 #include "api.h"
+#include "platform.h"
 #include "rtp.h"
 
 // Must be last: bans unsafe string APIs for the rest of this file.
@@ -27,20 +22,37 @@ static const char *TAG = "report_q";
 // 4 is plenty of headroom; if a burst overflows, we drop and the
 // server's call counter is just a touch stale.
 #define REPORT_QUEUE_DEPTH 4
+#define REPORT_QUEUE_EVENT 1u
 
 typedef struct {
     char phone[REPORT_PHONE_MAX];
 } report_entry_t;
 
-static QueueHandle_t s_queue = NULL;
-static TaskHandle_t  s_task  = NULL;
+static report_entry_t s_queue[REPORT_QUEUE_DEPTH];
+static unsigned s_head;
+static unsigned s_count;
+static pb_mutex_t *s_lock;
+static pb_event_t *s_event;
+static bool s_running;
+static bool s_attempted;
 
 static void report_worker_task(void *arg)
 {
     (void)arg;
     while (1) {
-        report_entry_t e;
-        if (xQueueReceive(s_queue, &e, portMAX_DELAY) != pdTRUE) continue;
+        report_entry_t entry;
+        pb_mutex_lock(s_lock);
+        if (s_count == 0) {
+            pb_mutex_unlock(s_lock);
+            // Events are latched, so an enqueue between the empty check and
+            // this wait is not lost. Zero is a poll on both platforms.
+            pb_event_wait_s(s_event, 3600);
+            continue;
+        }
+        entry = s_queue[s_head];
+        s_head = (s_head + 1) % REPORT_QUEUE_DEPTH;
+        s_count--;
+        pb_mutex_unlock(s_lock);
 
         // Defer the report's TLS handshake until any in-progress
         // announcement has finished. Running a second TLS session next to
@@ -51,33 +63,48 @@ static void report_worker_task(void *arg)
         // to start (a quick no-announcement call falls through), then wait
         // it out — capped so a stuck flag can't wedge the worker forever.
         for (int i = 0; i < 40 && !rtp_streaming_active(); i++) {
-            vTaskDelay(pdMS_TO_TICKS(50));
+            pb_task_sleep_ms(50);
         }
         for (int i = 0; i < 300 && rtp_streaming_active(); i++) {
-            vTaskDelay(pdMS_TO_TICKS(100));
+            pb_task_sleep_ms(100);
         }
 
-        ESP_LOGI(TAG, "report-call %s", e.phone);
+        pb_log_info(TAG, "report-call %s", entry.phone);
         // phoneblock_report_call logs its own failures (ERROR), which the
         // log hook mirrors to the web UI — nothing to do here on failure.
-        phoneblock_report_call(e.phone);
+        phoneblock_report_call(entry.phone);
     }
 }
 
 void report_queue_start(void)
 {
-    if (s_queue) return;
-    s_queue = xQueueCreate(REPORT_QUEUE_DEPTH, sizeof(report_entry_t));
-    if (!s_queue) {
-        ESP_LOGE(TAG, "queue create failed");
+    if (s_attempted) return;
+    s_attempted = true;
+    s_event = pb_event_create();
+    if (!s_event) {
+        pb_log_err(TAG, "queue event creation failed");
         return;
     }
-    xTaskCreate(report_worker_task, "report_q", 4096, NULL, 3, &s_task);
+    s_lock = pb_mutex_create();
+    if (!s_lock) {
+        pb_log_err(TAG, "queue mutex creation failed");
+        pb_event_destroy(s_event);
+        s_event = NULL;
+        return;
+    }
+    if (pb_task_create(report_worker_task, NULL, "report_q", 4096,
+                       PB_PRIO_BACKGROUND) != PB_OK) {
+        pb_log_err(TAG, "worker task creation failed");
+        pb_event_destroy(s_event);
+        s_event = NULL;
+        return;
+    }
+    s_running = true;
 }
 
 void report_queue_enqueue(const char *phone)
 {
-    if (!s_queue || !phone || !*phone) return;
+    if (!s_running || !phone || !*phone) return;
 
     report_entry_t e;
     size_t n = strlen(phone);
@@ -85,7 +112,15 @@ void report_queue_enqueue(const char *phone)
     memcpy(e.phone, phone, n);
     e.phone[n] = '\0';
 
-    if (xQueueSend(s_queue, &e, 0) != pdTRUE) {
-        ESP_LOGW(TAG, "queue full, dropping report for %s", e.phone);
+    pb_mutex_lock(s_lock);
+    if (s_count == REPORT_QUEUE_DEPTH) {
+        pb_mutex_unlock(s_lock);
+        pb_log_warn(TAG, "queue full, dropping report for %s", e.phone);
+        return;
     }
+    unsigned tail = (s_head + s_count) % REPORT_QUEUE_DEPTH;
+    s_queue[tail] = e;
+    s_count++;
+    pb_mutex_unlock(s_lock);
+    pb_event_set(s_event, REPORT_QUEUE_EVENT);
 }

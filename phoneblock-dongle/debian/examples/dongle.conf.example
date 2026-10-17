@@ -1,0 +1,24 @@
+# Native Linux dongle settings. Values are read from the [phoneblock]
+# namespace. Keep this file owned by the phoneblock service account: the
+# platform store atomically persists its generated device_id here.
+[phoneblock]
+
+# SIP registrar and credentials.
+sip_host=fritz.box
+sip_port=5060
+sip_user=
+sip_pass=
+sip_expires=3600
+sip_lport=15060
+rtp_port=16000
+sip_transp=udp
+sip_authuser=
+sip_realm=
+sip_srtp=optional
+sip_stun=
+
+# PhoneBlock API.
+pb_url=https://phoneblock.net/phoneblock
+pb_token=
+min_direct=4
+min_range=10

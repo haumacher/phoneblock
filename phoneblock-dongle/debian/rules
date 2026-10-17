@@ -1,0 +1,18 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	$(MAKE) -B -C firmware/test phoneblock_linux
+
+override_dh_install:
+	dh_install firmware/build/linux-host/phoneblock-dongle usr/bin
+	dh_install debian/examples/dongle.conf.example etc/phoneblock
+
+override_dh_installsystemd:
+	dh_installsystemd --no-enable --no-start
+
+override_dh_fixperms:
+	dh_fixperms
+	chmod 0755 debian/phoneblock-dongle/usr/bin/phoneblock-dongle

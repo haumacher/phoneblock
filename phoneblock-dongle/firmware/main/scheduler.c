@@ -14,12 +14,14 @@
 #include "blocklist_sync.h"
 #include "firmware_update.h"
 #include "i18n_sync.h"
+#ifdef ESP_PLATFORM
 #include "mail.h"
+#include "time_sync.h"
+#endif
 #include "sched_time.h"
 #include "selftest.h"
 #include "sync.h"
 #include "platform.h"
-#include "time_sync.h"
 
 // Must be last: bans unsafe string APIs for the rest of this file.
 #include "banned_apis.h"
@@ -40,7 +42,9 @@ static const char *TAG = "scheduler";
 // Task-notification bit for an on-demand status-mail test from the web UI.
 // The send runs here, on the scheduler task's stack, so the httpd handler
 // never blocks on the SMTP/TLS conversation (see scheduler_request_mail_test).
+#ifdef ESP_PLATFORM
 #define NOTIFY_MAIL_TEST (1u << 3)
+#endif
 // Task-notification bit for an on-demand localized-asset download, raised
 // when the user switches the UI language (see i18n_sync_trigger_now).
 #define NOTIFY_I18N      (1u << 4)
@@ -49,7 +53,9 @@ static const char *TAG = "scheduler";
 // local time-of-day next falls. Re-check this often so it fires promptly
 // once SNTP succeeds (NOTIFY_TIME also wakes us, so this is just a
 // backstop for the case the notification is somehow missed).
+#ifdef ESP_PLATFORM
 #define DAILY_CLOCK_WAIT_S  (60 * 60)
+#endif
 
 // Backoff bounds for a RETRY job's failed attempts: the first retry 5 min
 // after a failure, doubling up to one try a day.
@@ -70,7 +76,11 @@ static pb_event_t *s_events;
 // fleet. DAILY: fire at a fixed local time-of-day (needs the wall clock).
 // RETRY: fire once after first_delay_s and repeat with backoff only until
 // an attempt succeeds; after that, only a manual trigger runs it again.
+#ifdef ESP_PLATFORM
 typedef enum { SCHED_INTERVAL, SCHED_DAILY, SCHED_RETRY } sched_kind_t;
+#else
+typedef enum { SCHED_INTERVAL, SCHED_RETRY } sched_kind_t;
+#endif
 
 typedef struct {
     const char  *name;
@@ -100,13 +110,16 @@ typedef struct {
 static void run_selftest(void)  { selftest_run(); }
 static void run_fw_update(void) { firmware_update_run(); }
 static void run_sync(void)      { sync_run(false); }   // scheduled: honour toggle
+#ifdef ESP_PLATFORM
 // Send the one-shot firmware-update notice first (no-op unless an OTA just
 // completed this boot), then the daily error/spam evaluation. Both send over
 // the scheduler task's 16 KB stack. The mail job first fires
 // MAIL_FIRST_DELAY_S after boot, so the update notice goes out within minutes.
 static void run_mail(void)      { mail_report_update(); mail_daily_flush(); }
+#endif
 static void run_blocklist(void) { blocklist_sync_run(); }
 
+#ifdef ESP_PLATFORM
 // First mail evaluation 5 min after boot: long enough for Wi-Fi/DHCP to
 // settle, short enough that a crash-reboot's ERROR is mailed promptly.
 // Kept even though the mail job is now wall-clock daily — the fixed daily
@@ -121,6 +134,7 @@ static void run_blocklist(void) { blocklist_sync_run(); }
 // is a new error / new spam since the last one (see mail_daily_flush), so
 // a quiet day mails nothing.
 #define MAIL_DAILY_HOUR          CONFIG_MAIL_DAILY_HOUR
+#endif
 
 // First blocklist download 2 min after boot so a provisioned dongle
 // repopulates its local cache without waiting a full day; long enough for
@@ -147,7 +161,9 @@ static sched_job_t s_jobs[] = {
     { .name = "selftest",  .kind = SCHED_INTERVAL, .interval_s = DAY_S, .jitter_s = JITTER_S, .run = run_selftest },
     { .name = "fw_update", .kind = SCHED_INTERVAL, .interval_s = DAY_S, .jitter_s = JITTER_S, .run = run_fw_update },
     { .name = "sync",      .kind = SCHED_INTERVAL, .interval_s = DAY_S, .jitter_s = JITTER_S, .run = run_sync },
+#ifdef ESP_PLATFORM
     { .name = "mail",      .kind = SCHED_DAILY,    .at_hour = MAIL_DAILY_HOUR, .first_delay_s = MAIL_FIRST_DELAY_S, .run = run_mail },
+#endif
     { .name = "blocklist", .kind = SCHED_INTERVAL, .interval_s = DAY_S, .jitter_s = JITTER_S, .first_delay_s = BLOCKLIST_FIRST_DELAY_S, .run = run_blocklist },
     { .name = "i18n",      .kind = SCHED_RETRY,    .first_delay_s = I18N_FIRST_DELAY_S, .attempt = i18n_sync_run, .backoff_s = RETRY_MIN_S },
 };
@@ -163,6 +179,7 @@ static int64_t next_due_interval(const sched_job_t *j, int64_t now)
 // Next-due time for a daily job, re-anchored onto the esp_timer axis the
 // wait loop sleeps on. Until the wall clock is set, park on a short retry
 // (NOTIFY_TIME wakes us the moment SNTP succeeds; this is the backstop).
+#ifdef ESP_PLATFORM
 static int64_t next_due_daily(const sched_job_t *j, int64_t now_us)
 {
     if (!time_sync_valid())
@@ -170,6 +187,7 @@ static int64_t next_due_daily(const sched_job_t *j, int64_t now_us)
     long secs = seconds_until_daily(time(NULL), j->at_hour, j->at_minute);
     return now_us + (int64_t)secs * 1000000;
 }
+#endif
 
 // Run one attempt of a RETRY job and schedule the next: never again once
 // it succeeded, otherwise after the current backoff, which then doubles.
@@ -188,8 +206,12 @@ static void run_retry(sched_job_t *j)
 
 static int64_t next_due(const sched_job_t *j, int64_t now)
 {
+#ifdef ESP_PLATFORM
     return j->kind == SCHED_DAILY ? next_due_daily(j, now)
                                   : next_due_interval(j, now);
+#else
+    return next_due_interval(j, now);
+#endif
 }
 
 static void scheduler_task(void *arg)
@@ -261,10 +283,12 @@ static void scheduler_task(void *arg)
         // return promptly (its task watchdog panics a wedged handler — see
         // web.c). Fire-and-forget: mail_send_test() logs the outcome at
         // INFO/WARN, which the web UI's log panel surfaces.
+    #ifdef ESP_PLATFORM
         if (notify & NOTIFY_MAIL_TEST) {
             pb_log_info(TAG, "manual mail-test trigger");
             mail_send_test();
         }
+    #endif
 
         // On-demand localized-asset download (user switched UI language).
         // Restarts the job's retry cycle from the shortest backoff, and
@@ -281,6 +305,7 @@ static void scheduler_task(void *arg)
         // The wall clock just became valid (or stepped to a new time).
         // Daily jobs parked on the clock-wait retry — or computed against
         // a now-stale time — must recompute against real local time.
+    #ifdef ESP_PLATFORM
         if (notify & NOTIFY_TIME) {
             pb_log_info(TAG, "wall clock synced — rescheduling daily jobs");
             for (size_t i = 0; i < JOB_COUNT; i++)
@@ -289,6 +314,7 @@ static void scheduler_task(void *arg)
                         next_due_daily(&s_jobs[i],
                                        (int64_t)pb_monotonic_us());
         }
+    #endif
 
         // Fire every job whose scheduled time has come, then reschedule
         // it. The monotonic clock is re-read after each run so a job's
@@ -321,12 +347,19 @@ bool scheduler_request_blocklist_sync(void)
     return true;
 }
 
+#ifdef ESP_PLATFORM
 bool scheduler_request_mail_test(void)
 {
     if (!s_events) return false;
     pb_event_set(s_events, NOTIFY_MAIL_TEST);
     return true;
 }
+#else
+bool scheduler_request_mail_test(void)
+{
+    return false;
+}
+#endif
 
 bool scheduler_request_i18n_sync(void)
 {
