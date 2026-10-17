@@ -44,13 +44,14 @@ Work is a pipeline, not a pile:
 4. **Dispatch** one sub-agent per coherent package (§2). Sequential by default; parallel only with
    disjoint file ownership stated in both briefs (§3). The toolchains give a natural split.
 5. **Review with a novel probe** (§4). Non-negotiable.
-6. **Gate** (§5), **commit and open the PR** (§6), **rerun the component** (§7), hand the user the
-   PR link and what to try. Merging is the user's call unless they said otherwise.
+6. **Gate** (§5), **commit and open the PR** (§6), **merge it yourself** after the gate ran on
+   the merged tree (the user does not merge), **rerun the component** (§7), then hand the user
+   the merge commit, the PR link and what to try.
 7. **Before ever finishing: `gh issue list -R haumacher/phoneblock`.** Anything you defer becomes
    an issue or an issue comment, so a crashed session loses nothing.
 
 Track packages with the task list; keep statuses honest (in_progress on dispatch, completed only
-after the PR is open).
+after the PR is merged).
 
 ## 2. Agent briefs — what makes them work
 
@@ -263,8 +264,10 @@ tree with uncommitted foreign edits; check `git status` first. A change to the A
 
 - **Feature branch → pull request → merge commit into `master`.** The history is a chain of
   `Merge pull request #N from haumacher/<branch>` commits; keep it that way. Push the branch,
-  `gh pr create -R haumacher/phoneblock`, and give the user the link. Merge only when asked,
-  with a merge commit (`gh pr merge --merge`), after the gate ran on the merged tree.
+  `gh pr create -R haumacher/phoneblock`, then merge it yourself — the user does not merge — with
+  a merge commit (`gh pr merge --merge --delete-branch`) after the gate ran on the merged tree
+  (if `origin/master` moved since the branch was cut, merge it in and rerun the gate first).
+  Pull `master` afterwards and give the user the merge commit and the PR link.
 - House style for the commit: a component prefix and an imperative title
   (`Dongle: …`, `Dongle web UI: …`, `release.sh: …`, `CardDAV: …`), then paragraphs of the
   *why* and the as-built mechanism (a short bullet list of behaviors is fine; a changelog is
@@ -411,7 +414,7 @@ Parallel packages work when, and only when, they are physically separated:
   from the templates, and the build's enforcer rule fails without the first.
 - **Merging**: commit each branch yourself (house-style message), open one PR per branch, run
   the full gate (§5) on the merged tree before pushing — generated code and build files are
-  exactly where merges break — then push.
+  exactly where merges break — then push and merge the PRs yourself (§6).
 - After a merge, `git ls-files` the new directories the report names; a `.gitignore` rule
   (`target/`, `build/`, `build-esp32c3/`) can swallow a wrongly named source directory.
 - **A session limit kills every running agent at once** (HTTP 429 mid-flight). Their uncommitted
