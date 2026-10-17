@@ -330,7 +330,8 @@ const char *pb_kv_err_name(int result)
     }
 }
 
-static void pb_kv_clear(pb_kv_t *store)
+// Drops this namespace's entries; the other namespaces' lines stay.
+static void pb_kv_clear_items(pb_kv_t *store)
 {
     pb_kv_item_t *item = store->items;
     while (item) {
@@ -341,6 +342,11 @@ static void pb_kv_clear(pb_kv_t *store)
         item = next;
     }
     store->items = NULL;
+}
+
+static void pb_kv_clear(pb_kv_t *store)
+{
+    pb_kv_clear_items(store);
     pb_kv_raw_t *raw = store->preserved;
     while (raw) {
         pb_kv_raw_t *next = raw->next;
@@ -499,8 +505,11 @@ static void pb_kv_lock(pb_kv_t *store)
     char *lock_path = malloc(lock_len);
     if (!lock_path) return;
     snprintf(lock_path, lock_len, "%s.lock", store->path);
-    int fd = open(lock_path, O_RDWR | O_CREAT, 0600);
-    if (fd >= 0) {
+    int fd = open(lock_path, O_RDWR | O_CREAT | O_CLOEXEC, 0600);
+    if (fd < 0) {
+        pb_log_warn("kv", "open %s: %s — continuing without the lock",
+                    lock_path, strerror(errno));
+    } else {
         if (flock(fd, store->writable ? LOCK_EX : LOCK_SH) == 0) {
             store->lock_fd = fd;
         } else {
@@ -518,6 +527,7 @@ int pb_kv_open(const char *name_space, bool writable, pb_kv_t **store_out)
     *store_out = NULL;
     pb_kv_t *store = calloc(1, sizeof(*store));
     if (!store) return PB_KV_ERROR;
+    store->lock_fd = -1;
     store->path = strdup(pb_kv_config_path());
     store->name_space = strdup(name_space);
     store->writable = writable;
@@ -614,7 +624,7 @@ int pb_kv_erase_key(pb_kv_t *store, const char *key)
 int pb_kv_erase_all(pb_kv_t *store)
 {
     if (!store || !store->writable) return PB_KV_ERROR;
-    pb_kv_clear(store);
+    pb_kv_clear_items(store);
     return PB_KV_OK;
 }
 

@@ -174,19 +174,7 @@ typedef struct {
     const char *value;
 } pb_http_header_t;
 
-// Streaming sink for pb_http_request(). Before the first body chunk it is
-// invoked once with data == NULL and length == 0, announcing the response
-// status and the server's announced body size (-1 when no Content-Length
-// arrived, e.g. chunked), so the sink can prepare — budget checks, making
-// room on flash, hash setup — or refuse the body before a byte of it lands.
-// Every following call carries one body chunk (data != NULL). Returning
-// false aborts the transfer: pb_http_request() then reports a generic
-// transport-level failure, so a sink that aborts must record its own reason
-// first. Only invoked when a response with a body arrives; the status is
-// always available through pb_http_request()'s http_status out-parameter.
-typedef bool (*pb_http_data_fn)(int http_status, int64_t content_length,
-                                const void *data, size_t length,
-                                void *context);
+typedef void (*pb_http_data_fn)(const void *data, size_t length, void *context);
 
 typedef struct {
     uint64_t connect_us;
@@ -258,6 +246,33 @@ int pb_http_request(const char *method, const char *url,
                     size_t *response_len, int *http_status,
                     pb_http_data_fn on_data, void *data_context,
                     pb_http_timing_t *timing);
+
+// Pull-style HTTP GET for downloads that are written out while they arrive
+// (blocklist, i18n assets). The caller drives the transfer: open sends the
+// request and reads the response headers, read hands out the body piece by
+// piece, close ends it at any point — so a refusal (bad status, over budget,
+// full filesystem) needs no abort protocol. On the ESP32 these are the
+// esp_http_client_open / _fetch_headers / _read / _close calls themselves.
+typedef struct pb_http_stream pb_http_stream_t;
+
+// Opens a GET of `url` and reads the response headers. Returns PB_HTTP_OK
+// with *stream set (close it with pb_http_stream_close() whatever the
+// status), or a transport/setup error as for pb_http_request() with *stream
+// NULL. *http_status is the response status (0 if none could be read);
+// *content_length the announced body size, <= 0 when unknown (chunked).
+// `timeout_ms` bounds each network wait, not the whole transfer.
+int pb_http_stream_open(const char *url,
+                        const pb_http_header_t *headers, size_t header_count,
+                        uint32_t timeout_ms, pb_http_stream_t **stream,
+                        int *http_status, int64_t *content_length);
+
+// Reads up to `capacity` body bytes. Returns the byte count, 0 at the end of
+// the body, or a negative value when the transfer failed.
+int pb_http_stream_read(pb_http_stream_t *stream, void *buffer,
+                        size_t capacity);
+
+// Ends the transfer (also mid-body) and frees the stream. NULL is a no-op.
+void pb_http_stream_close(pb_http_stream_t *stream);
 
 // Sleeps at least `ms` milliseconds. On the ESP32 the sleep is rounded to
 // whole FreeRTOS ticks (10 ms at the project's 100 Hz): a request below one

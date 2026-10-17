@@ -293,6 +293,17 @@ static void test_kv_namespaces_and_whitespace(void)
     REQUIRE(strcmp(password, " secret ") == 0);
     pb_kv_close(store);
 
+    // Erasing "beta" (config_erase) leaves "alpha" alone.
+    REQUIRE(pb_kv_open("beta", true, &store) == PB_KV_OK);
+    REQUIRE(pb_kv_erase_all(store) == PB_KV_OK);
+    REQUIRE(pb_kv_commit(store) == PB_KV_OK);
+    pb_kv_close(store);
+    REQUIRE(pb_kv_open("alpha", false, &store) == PB_KV_OK);
+    user_len = sizeof(user);
+    REQUIRE(pb_kv_get_string(store, "user", user, &user_len) == PB_KV_OK);
+    REQUIRE(strcmp(user, "alice") == 0);
+    pb_kv_close(store);
+
     unlink(path);
     unlink(lock_path);
     unsetenv("PHONEBLOCK_CONFIG_FILE");

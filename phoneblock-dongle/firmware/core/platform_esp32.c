@@ -3,7 +3,6 @@
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
-#include <strings.h>
 
 #include "esp_mac.h"
 #include "esp_crt_bundle.h"
@@ -40,9 +39,6 @@ typedef struct {
     size_t length;
     pb_http_data_fn on_data;
     void *data_context;
-    int64_t content_length;
-    bool announced;
-    bool aborted;
     uint64_t started_us;
     uint64_t connected_us;
     uint64_t headers_sent_us;
@@ -368,42 +364,14 @@ static esp_err_t pb_http_event(esp_http_client_event_t *event)
         break;
     case HTTP_EVENT_ON_HEADER:
         if (!response->first_header_us) response->first_header_us = now;
-        if (event->header_key && event->header_value
-                && strcasecmp(event->header_key, "Content-Length") == 0) {
-            response->content_length = (int64_t)atoll(event->header_value);
-        }
         break;
     case HTTP_EVENT_ON_FINISH:
         response->finished_us = now;
         break;
     case HTTP_EVENT_ON_DATA: {
-        if (response->on_data) {
-            // First body chunk: announce status and announced length so the
-            // sink can prepare or refuse before any payload lands. A false
-            // return aborts the transfer: close() out from under the parser
-            // fails the read loop, so perform() reports an error (the sink
-            // carries the reason). Merely returning ESP_FAIL is not enough —
-            // esp_http_client discards the ON_DATA handler's return value.
-            if (!response->announced) {
-                response->announced = true;
-                if (!response->on_data(
-                        esp_http_client_get_status_code(event->client),
-                        response->content_length, NULL, 0,
-                        response->data_context)) {
-                    response->aborted = true;
-                    esp_http_client_close(event->client);
-                    return ESP_FAIL;
-                }
-            }
-            if (!response->on_data(
-                    esp_http_client_get_status_code(event->client),
-                    response->content_length, event->data,
-                    (size_t)event->data_len, response->data_context)) {
-                response->aborted = true;
-                esp_http_client_close(event->client);
-                return ESP_FAIL;
-            }
-        }
+        if (response->on_data)
+            response->on_data(event->data, (size_t)event->data_len,
+                              response->data_context);
 
         if (response->buffer) {
             size_t available = response->capacity > response->length + 1
@@ -445,7 +413,6 @@ int pb_http_request(const char *method, const char *url,
         .capacity = response_cap,
         .on_data = on_data,
         .data_context = data_context,
-        .content_length = -1,
         .started_us = pb_monotonic_us(),
     };
     esp_http_client_config_t config = {
@@ -507,6 +474,63 @@ const char *pb_http_err_name(int result)
 bool pb_http_is_connect_error(int result)
 {
     return result == ESP_ERR_HTTP_CONNECT;
+}
+
+// The stream is the esp_http_client handle itself: no wrapper allocation,
+// and the calls below are exactly the open/fetch_headers/read/close sequence
+// the downloads used before the platform layer existed.
+int pb_http_stream_open(const char *url,
+                        const pb_http_header_t *headers, size_t header_count,
+                        uint32_t timeout_ms, pb_http_stream_t **stream,
+                        int *http_status, int64_t *content_length)
+{
+    if (stream) *stream = NULL;
+    if (http_status) *http_status = 0;
+    if (content_length) *content_length = 0;
+    if (!url || !stream) return PB_HTTP_ERROR;
+
+    esp_http_client_config_t config = {
+        .url               = url,
+        .method            = HTTP_METHOD_GET,
+        .crt_bundle_attach = esp_crt_bundle_attach,
+        .timeout_ms        = (int)timeout_ms,
+        .tls_version       = ESP_HTTP_CLIENT_TLS_VER_TLS_1_2,
+    };
+    esp_http_client_handle_t client = esp_http_client_init(&config);
+    if (!client) return PB_HTTP_ERROR;
+    for (size_t i = 0; i < header_count; i++) {
+        if (headers[i].name && headers[i].value)
+            esp_http_client_set_header(client, headers[i].name,
+                                       headers[i].value);
+    }
+
+    esp_err_t result = esp_http_client_open(client, 0);
+    if (result != ESP_OK) {
+        esp_http_client_cleanup(client);
+        return (int)result;
+    }
+    int64_t length = esp_http_client_fetch_headers(client);
+    if (http_status) *http_status = esp_http_client_get_status_code(client);
+    if (content_length) *content_length = length;
+    *stream = (pb_http_stream_t *)client;
+    return PB_HTTP_OK;
+}
+
+int pb_http_stream_read(pb_http_stream_t *stream, void *buffer,
+                        size_t capacity)
+{
+    if (!stream || !buffer || capacity == 0) return -1;
+    if (capacity > INT_MAX) capacity = INT_MAX;
+    return esp_http_client_read((esp_http_client_handle_t)stream, buffer,
+                                (int)capacity);
+}
+
+void pb_http_stream_close(pb_http_stream_t *stream)
+{
+    if (!stream) return;
+    esp_http_client_handle_t client = (esp_http_client_handle_t)stream;
+    esp_http_client_close(client);
+    esp_http_client_cleanup(client);
 }
 
 // NVS results map onto the PB_KV_* contract: ESP_OK is PB_KV_OK,

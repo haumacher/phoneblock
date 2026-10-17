@@ -56,12 +56,8 @@ static void set_status_result(bool ok, int pushed, int failed, int skipped,
 // Simple HTTP GET into a heap buffer. Returns bytes written, or -1.
 typedef struct { char *buf; int len; int cap; } http_buf_t;
 
-static bool http_collect_cb(int http_status, int64_t content_length,
-                            const void *data, size_t length, void *context)
+static void http_collect_cb(const void *data, size_t length, void *context)
 {
-    (void)http_status;
-    (void)content_length;
-    if (data == NULL) return true;   // status announcement, nothing to collect
     http_buf_t *buffer = context;
     int available = buffer->cap - buffer->len - 1;
     size_t copied = length < (size_t)(available > 0 ? available : 0)
@@ -71,7 +67,6 @@ static bool http_collect_cb(int http_status, int64_t content_length,
         buffer->len += (int)copied;
         buffer->buf[buffer->len] = 0;
     }
-    return true;
 }
 
 static int http_get_to_buf(const char *url, char *buf, int cap)

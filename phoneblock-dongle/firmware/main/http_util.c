@@ -31,9 +31,7 @@ const char *http_util_user_agent(void)
     return s_user_agent;
 }
 
-#ifdef ESP_PLATFORM
 void http_util_set_user_agent(esp_http_client_handle_t client)
 {
     esp_http_client_set_header(client, "User-Agent", http_util_user_agent());
 }
-#endif

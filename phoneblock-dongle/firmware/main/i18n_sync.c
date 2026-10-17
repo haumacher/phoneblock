@@ -44,6 +44,13 @@ static const char *TAG = "i18nsync";
 #define SPIFFS_DIR       PHONEBLOCK_DATA_DIR
 #endif
 #define DOWNLOAD_CHUNK   1024
+// Temp file path next to an asset: SPIFFS names are short, a Linux data
+// directory can be anywhere.
+#ifdef ESP_PLATFORM
+#define TMP_PATH_CAP     80
+#else
+#define TMP_PATH_CAP     512
+#endif
 // Manifest is small JSON (a few assets per locale); cap generously and
 // heap-allocate so a growing locale set never smashes the task stack.
 #define MANIFEST_CAP     (8 * 1024)
@@ -123,32 +130,45 @@ static bool sha256_file_hex(const char *path, char out[65])
 static bool http_get_buf(const char *url, char *body, size_t cap,
                          char *err, size_t err_cap)
 {
-    size_t body_len = 0;
-    int status = 0;
     const pb_http_header_t headers[] = {
         { "User-Agent", http_util_user_agent() },
     };
-    int result = pb_http_request("GET", url, headers, 1, NULL, 0, 15000,
-                                 body, cap, &body_len, &status, NULL, NULL,
-                                 NULL);
-    if (result != PB_HTTP_OK) {
-        snprintf(err, err_cap, "%s", pb_http_err_name(result));
+    pb_http_stream_t *stream = NULL;
+    int64_t content_len = 0;
+    int status = 0;
+    int rc = pb_http_stream_open(url, headers, 1, 15000, &stream, &status,
+                                 &content_len);
+    if (rc != PB_HTTP_OK) {
+        snprintf(err, err_cap, "open: %s", pb_http_err_name(rc));
         return false;
     }
+
+    bool ok = false;
     if (status != 200) {
         snprintf(err, err_cap, "HTTP %d", status);
-        return false;
+        goto out;
     }
-    if (body_len == 0) {
+    int total = 0;
+    while (total < (int)cap - 1) {
+        int n = pb_http_stream_read(stream, body + total, cap - 1 - total);
+        if (n <= 0) break;
+        total += n;
+        if (content_len > 0 && total >= content_len) break;
+    }
+    body[total] = '\0';
+    if (total == 0) {
         snprintf(err, err_cap, "empty body");
-        return false;
-    }
-    if (body_len >= cap - 1) {
+    } else if (content_len > 0 && total < content_len) {
+        snprintf(err, err_cap, "truncated (%d/%lld)", total,
+                 (long long)content_len);
+    } else if (content_len <= 0 && total >= (int)cap - 1) {
         snprintf(err, err_cap, "manifest too large");
-        return false;
+    } else {
+        ok = true;
     }
-    body[body_len] = '\0';
-    return true;
+out:
+    pb_http_stream_close(stream);
+    return ok;
 }
 
 // ---------------------------------------------------------------------------
@@ -166,149 +186,109 @@ typedef struct {
     const char *expected_sha_hex;
 } asset_dl_t;
 
-// Streaming sink state for one attempt (pb_http_data_fn context).
-typedef struct {
-    const asset_dl_t *a;
-    storage_file_t *out;
-    pb_sha256_t *sha;
-    int64_t total;
-    int64_t content_length;  // announced body size, -1 while unknown
-    char    *err;
-    size_t  err_cap;
-    storage_dl_t result;     // STORAGE_DL_OK until the sink aborts
-} asset_sink_t;
-
-// Streams one response chunk into the temp file, hashing as it goes. The
-// status announcement (data == NULL, platform.h) refuses non-200 responses
-// and oversized assets before a byte lands and makes the file's footprint
-// writable up front. Returning false aborts the transfer; the reason is in
-// err/result.
-static bool write_asset_chunk(int status, int64_t content_length,
-                              const void *data, size_t length, void *context)
-{
-    asset_sink_t *sink = context;
-    // Sticky: after an abort the transfer may still deliver buffered chunks
-    // until the close propagates; never touch the file again.
-    if (sink->result != STORAGE_DL_OK) return false;
-    if (data == NULL) {
-        sink->content_length = content_length;
-        if (status != 200) {
-            snprintf(sink->err, sink->err_cap, "HTTP %d", status);
-            sink->result = STORAGE_DL_FAILED;
-            return false;
-        }
-        if (content_length > 0) {
-            if (content_length > ANNOUNCEMENT_MAX_BYTES) {
-                snprintf(sink->err, sink->err_cap, "asset too large: %lld B",
-                         (long long)content_length);
-                sink->result = STORAGE_DL_FAILED;
-                return false;
-            }
-            // The assets have precedence over the community blocklist cache
-            // on the shared storage (storage.h); then make the whole file
-            // writable before the first byte arrives.
-            storage_make_room((size_t)content_length, sink->a->final_path);
-            storage_gc(sink->a->tmp_path, (size_t)content_length);
-        }
-        return true;
-    }
-    if (pb_sha256_update(sink->sha, data, length) != PB_OK) {
-        snprintf(sink->err, sink->err_cap, "sha256 update failed");
-        sink->result = STORAGE_DL_FAILED;
-        return false;
-    }
-    if (!storage_file_write(sink->out, data, length)) {
-        snprintf(sink->err, sink->err_cap, "fwrite short at %lld: %s",
-                 (long long)sink->total, strerror(errno));
-        sink->result = errno == ENOSPC ? STORAGE_DL_FULL : STORAGE_DL_FAILED;
-        return false;
-    }
-    sink->total += (int64_t)length;
-    if (sink->total > ANNOUNCEMENT_MAX_BYTES) {
-        // A body without Content-Length cannot be checked up front.
-        snprintf(sink->err, sink->err_cap, "asset too large: over %u B",
-                 (unsigned)ANNOUNCEMENT_MAX_BYTES);
-        sink->result = STORAGE_DL_FAILED;
-        return false;
-    }
-    return true;
-}
-
 // One download attempt of an asset into its temp file, SHA-256 checked
 // (storage_attempt_fn). Removes the temp file again on any failure.
 static storage_dl_t download_to_tmp(void *ctx, size_t *bytes,
                                     char *err, size_t err_cap)
 {
     const asset_dl_t *a = ctx;
+    storage_dl_t result = STORAGE_DL_FAILED;
+    int64_t content_length = 0;
+    int64_t total = 0;
+
     storage_file_t out;
     if (!storage_file_open(&out, a->tmp_path)) {
         snprintf(err, err_cap, "fopen %s: %s", a->tmp_path, strerror(errno));
         return STORAGE_DL_FAILED;
     }
+
+    pb_http_stream_t *stream = NULL;
     pb_sha256_t *sha = pb_sha256_create();
-    if (sha == NULL) {
-        snprintf(err, err_cap, "out of memory");
-        storage_file_close(&out);
-        unlink(a->tmp_path);
-        return STORAGE_DL_FAILED;
-    }
+    if (!sha) { snprintf(err, err_cap, "sha256 init"); goto out; }
 
     const pb_http_header_t headers[] = {
         { "User-Agent", http_util_user_agent() },
     };
-    asset_sink_t sink = {
-        .a = a, .out = &out, .sha = sha, .content_length = -1,
-        .err = err, .err_cap = err_cap, .result = STORAGE_DL_OK,
-    };
-    err[0] = '\0';
     int status = 0;
-    int result = pb_http_request("GET", a->url, headers,
-                                 sizeof(headers) / sizeof(headers[0]),
-                                 NULL, 0, 30000, NULL, 0, NULL, &status,
-                                 write_asset_chunk, &sink, NULL);
-    storage_dl_t dl = sink.result;
-    if (result != PB_HTTP_OK && dl == STORAGE_DL_OK) {
-        // The sink never aborted: the transport itself failed.
-        snprintf(err, err_cap, "HTTP transport: %s", pb_http_err_name(result));
-        dl = STORAGE_DL_FAILED;
+    int rc = pb_http_stream_open(a->url, headers, 1, 30000, &stream, &status,
+                                 &content_length);
+    if (rc != PB_HTTP_OK) {
+        snprintf(err, err_cap, "open: %s", pb_http_err_name(rc));
+        goto out;
     }
-    // The buffered tail reaches the filesystem here: a full partition most
-    // likely surfaces only now, with up to STORAGE_WRITE_BUF still unwritten.
-    if (!storage_file_close(&out) && dl == STORAGE_DL_OK) {
-        snprintf(err, err_cap, "close %s: %s", a->tmp_path, strerror(errno));
-        dl = errno == ENOSPC ? STORAGE_DL_FULL : STORAGE_DL_FAILED;
+    if (status != 200) { snprintf(err, err_cap, "HTTP %d", status); goto out; }
+
+    if (content_length > 0) {
+        if (content_length > ANNOUNCEMENT_MAX_BYTES) {
+            snprintf(err, err_cap, "asset too large: %lld B", (long long)content_length);
+            goto out;
+        }
+        // The assets have precedence over the community blocklist cache on
+        // the shared partition (storage.h); then make the whole file
+        // writable before the first byte arrives.
+        storage_make_room((size_t)content_length, a->final_path);
+        storage_gc(a->tmp_path, (size_t)content_length);
     }
-    if (dl == STORAGE_DL_OK) {
-        uint8_t digest[32];
-        char got_hex[65];
-        if (pb_sha256_finish(sha, digest) != PB_OK) {
-            snprintf(err, err_cap, "sha256 finish failed");
-            dl = STORAGE_DL_FAILED;
-        } else {
-            bytes_to_hex(digest, sizeof(digest), got_hex);
-            if (strcasecmp(got_hex, a->expected_sha_hex) != 0) {
-                snprintf(err, err_cap, "sha mismatch");
-                dl = STORAGE_DL_FAILED;
-            }
+
+    char buf[DOWNLOAD_CHUNK];
+    for (;;) {
+        int n = pb_http_stream_read(stream, buf, sizeof(buf));
+        if (n < 0) { snprintf(err, err_cap, "read failed at %lld", (long long)total); goto out; }
+        if (n == 0) break;
+        if (pb_sha256_update(sha, buf, (size_t)n) != PB_OK) {
+            snprintf(err, err_cap, "sha256 update failed");
+            goto out;
+        }
+        if (!storage_file_write(&out, buf, (size_t)n)) {
+            snprintf(err, err_cap, "fwrite short at %lld: %s",
+                     (long long)total, strerror(errno));
+            if (errno == ENOSPC) result = STORAGE_DL_FULL;
+            goto out;
+        }
+        total += n;
+        if (total > ANNOUNCEMENT_MAX_BYTES) {
+            snprintf(err, err_cap, "asset too large: over %u B",
+                     (unsigned)ANNOUNCEMENT_MAX_BYTES);
+            goto out;
         }
     }
-    pb_sha256_destroy(sha);
-    if (dl != STORAGE_DL_OK) {
-        unlink(a->tmp_path);
-        *bytes = (size_t)(sink.content_length > 0 ? sink.content_length
-                                                  : sink.total);
-        return dl;
+    pb_http_stream_close(stream);
+    stream = NULL;
+
+    if (!storage_file_close(&out)) {
+        snprintf(err, err_cap, "close %s: %s", a->tmp_path, strerror(errno));
+        if (errno == ENOSPC) result = STORAGE_DL_FULL;
+        goto out;
     }
-    pb_log_info(TAG, "downloaded %lld B → %s",
-                (long long)sink.total, a->tmp_path);
+
+    uint8_t digest[32];
+    char got_hex[65];
+    if (pb_sha256_finish(sha, digest) != PB_OK) {
+        snprintf(err, err_cap, "sha256 finish failed");
+        goto out;
+    }
+    bytes_to_hex(digest, sizeof(digest), got_hex);
+    if (strcasecmp(got_hex, a->expected_sha_hex) != 0) {
+        snprintf(err, err_cap, "sha mismatch");
+        goto out;
+    }
+    pb_sha256_destroy(sha);
     return STORAGE_DL_OK;
+
+out:
+    pb_http_stream_close(stream);
+    storage_file_close(&out);
+    pb_sha256_destroy(sha);
+    unlink(a->tmp_path);
+    *bytes = (size_t)(content_length > 0 ? content_length : total);
+    return result;
 }
 
 static bool download_verify_rename(const char *url, const char *final_path,
                                    const char *expected_sha_hex,
                                    char *err, size_t err_cap)
 {
-    char tmp_path[512];
+    char tmp_path[TMP_PATH_CAP];
     snprintf(tmp_path, sizeof(tmp_path), "%s.tmp", final_path);
     unlink(tmp_path);
 

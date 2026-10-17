@@ -81,79 +81,19 @@ typedef struct {
     int64_t     budget;
 } download_t;
 
-// Streaming sink state for one attempt (pb_http_data_fn context).
-typedef struct {
-    const download_t *d;
-    storage_file_t *out;
-    int64_t total;
-    int64_t content_length;  // announced body size, -1 while unknown
-    char    *err;
-    size_t  err_cap;
-    storage_dl_t result;     // STORAGE_DL_OK until the sink aborts
-} download_sink_t;
-
-// Streams one response chunk into the temp file. The status announcement
-// (data == NULL, platform.h) refuses non-200 responses and over-budget
-// bodies before a byte lands and makes the file's footprint writable up
-// front. Returning false aborts the transfer; the reason is in err/result.
-static bool write_download_chunk(int status, int64_t content_length,
-                                 const void *data, size_t length,
-                                 void *context)
-{
-    download_sink_t *sink = context;
-    // Sticky: after an abort the transfer may still deliver buffered chunks
-    // until the close propagates; never touch the file again.
-    if (sink->result != STORAGE_DL_OK) return false;
-    if (data == NULL) {
-        sink->content_length = content_length;
-        if (status != 200) {
-            snprintf(sink->err, sink->err_cap, "HTTP %d", status);
-            sink->result = STORAGE_DL_FAILED;
-            return false;
-        }
-        if (content_length > 0) {
-            // Budget check before any bytes land. The server snaps &maxBytes
-            // down to a bucket but never below its smallest one, so a list
-            // can still come back larger than the budget; storing it anyway
-            // would be exactly the overfill the budget exists to prevent.
-            if (sink->d->budget >= 0 && content_length > sink->d->budget) {
-                snprintf(sink->err, sink->err_cap,
-                         "too large: %lld B, budget %lld B",
-                         (long long)content_length, (long long)sink->d->budget);
-                sink->result = STORAGE_DL_FAILED;
-                return false;
-            }
-            // Make the whole file writable before the first byte arrives.
-            storage_gc(sink->d->tmp_path, (size_t)content_length);
-        }
-        return true;
-    }
-    if (!storage_file_write(sink->out, data, length)) {
-        // errno tells apart the two ways this happens: ENOSPC is the
-        // filesystem refusing space (worth a retry after a GC pass),
-        // anything else is a failure a retry would only repeat.
-        snprintf(sink->err, sink->err_cap, "fwrite short at %lld bytes: %s",
-                 (long long)sink->total, strerror(errno));
-        sink->result = errno == ENOSPC ? STORAGE_DL_FULL : STORAGE_DL_FAILED;
-        return false;
-    }
-    sink->total += (int64_t)length;
-    if (sink->d->budget >= 0 && sink->total > sink->d->budget) {
-        // A body without Content-Length cannot be checked up front.
-        snprintf(sink->err, sink->err_cap, "too large: over budget %lld B",
-                 (long long)sink->d->budget);
-        sink->result = STORAGE_DL_FAILED;
-        return false;
-    }
-    return true;
-}
+// Stream-read chunk for the HTTPS download. Small to stay friendly with
+// the stack-allocated buffer; storage_file_open()'s stdio buffer batches
+// these chunks into larger flash writes.
+#define DOWNLOAD_CHUNK     1024
 
 // One download attempt of `d->url` into `d->tmp_path` (storage_attempt_fn).
 // Removes the temp file again on any failure.
 static storage_dl_t download_to_tmp(void *ctx, size_t *bytes,
                                     char *err, size_t err_cap)
 {
-    download_t *d = ctx;
+    const download_t *d = ctx;
+    storage_dl_t result = STORAGE_DL_FAILED;
+
     storage_file_t out;
     if (!storage_file_open(&out, d->tmp_path)) {
         snprintf(err, err_cap, "fopen %s: %s", d->tmp_path, strerror(errno));
@@ -168,43 +108,90 @@ static storage_dl_t download_to_tmp(void *ctx, size_t *bytes,
         { "Authorization", auth_header },
         { "Accept", "application/octet-stream" },
     };
-    download_sink_t sink = {
-        .d = d, .out = &out, .content_length = -1,
-        .err = err, .err_cap = err_cap, .result = STORAGE_DL_OK,
-    };
-    err[0] = '\0';
-    int status = 0;
-    int result = pb_http_request("GET", d->url, headers,
-                                 sizeof(headers) / sizeof(headers[0]),
-                                 NULL, 0, 30000, NULL, 0, NULL, &status,
-                                 write_download_chunk, &sink, NULL);
-    storage_dl_t dl = sink.result;
-    if (result != PB_HTTP_OK && dl == STORAGE_DL_OK) {
-        // The sink never aborted: the transport itself failed.
-        snprintf(err, err_cap, "HTTP transport: %s", pb_http_err_name(result));
-        dl = STORAGE_DL_FAILED;
+
+    pb_http_stream_t *stream = NULL;
+    int64_t content_length = 0;
+    int64_t total          = 0;
+    int     status         = 0;
+    int rc = pb_http_stream_open(d->url, headers,
+                                 sizeof(headers) / sizeof(headers[0]), 30000,
+                                 &stream, &status, &content_length);
+    if (rc != PB_HTTP_OK) {
+        snprintf(err, err_cap, "open: %s", pb_http_err_name(rc));
+        goto out;
     }
-    // The buffered tail reaches the filesystem here: a full partition most
-    // likely surfaces only now, with up to STORAGE_WRITE_BUF still unwritten.
-    if (dl == STORAGE_DL_OK && !storage_file_close(&out)) {
+    if (status != 200) {
+        snprintf(err, err_cap, "HTTP %d", status);
+        goto out;
+    }
+
+    if (content_length > 0) {
+        // Budget check before any bytes land. The server snaps &maxBytes down
+        // to a bucket but never below its smallest one, so a list can still
+        // come back larger than the budget; storing it anyway would be
+        // exactly the overfill the budget exists to prevent.
+        if (d->budget >= 0 && content_length > d->budget) {
+            snprintf(err, err_cap, "too large: %lld B, budget %lld B",
+                     (long long) content_length, (long long) d->budget);
+            goto out;
+        }
+        // Make the whole file writable before the first byte arrives.
+        storage_gc(d->tmp_path, (size_t) content_length);
+    }
+
+    char buf[DOWNLOAD_CHUNK];
+    for (;;) {
+        int n = pb_http_stream_read(stream, buf, sizeof(buf));
+        if (n < 0) {
+            snprintf(err, err_cap, "read failed after %lld bytes",
+                     (long long)total);
+            goto out;
+        }
+        if (n == 0) {
+            break;
+        }
+        if (!storage_file_write(&out, buf, (size_t)n)) {
+            // errno tells apart the two ways this happens: ENOSPC is the
+            // filesystem refusing space (worth a retry after a GC pass),
+            // anything else is a failure a retry would only repeat.
+            snprintf(err, err_cap, "fwrite short at %lld bytes: %s",
+                     (long long)total, strerror(errno));
+            if (errno == ENOSPC) result = STORAGE_DL_FULL;
+            goto out;
+        }
+        total += n;
+        if (d->budget >= 0 && total > d->budget) {
+            // A body without Content-Length cannot be checked up front.
+            snprintf(err, err_cap, "too large: over budget %lld B",
+                     (long long) d->budget);
+            goto out;
+        }
+    }
+
+    pb_http_stream_close(stream);
+    stream = NULL;
+
+    if (!storage_file_close(&out)) {
         snprintf(err, err_cap, "close %s: %s", d->tmp_path, strerror(errno));
-        dl = errno == ENOSPC ? STORAGE_DL_FULL : STORAGE_DL_FAILED;
+        if (errno == ENOSPC) result = STORAGE_DL_FULL;
+        goto out;
     }
-    if (dl == STORAGE_DL_OK && sink.content_length > 0
-            && sink.total != sink.content_length) {
+
+    if (content_length > 0 && total != content_length) {
         snprintf(err, err_cap, "short body: got %lld of %lld",
-                 (long long)sink.total, (long long)sink.content_length);
-        dl = STORAGE_DL_FAILED;
+                 (long long)total, (long long)content_length);
+        goto out;
     }
-    if (dl != STORAGE_DL_OK) {
-        unlink(d->tmp_path);
-        *bytes = (size_t)(sink.content_length > 0 ? sink.content_length
-                                                  : sink.total);
-        return dl;
-    }
-    pb_log_info(TAG, "downloaded %lld bytes → %s",
-                (long long)sink.total, d->tmp_path);
+
+    pb_log_info(TAG, "downloaded %lld bytes → %s", (long long)total, d->tmp_path);
     return STORAGE_DL_OK;
+
+out:
+    pb_http_stream_close(stream);
+    storage_file_close(&out);
+    unlink(d->tmp_path);
+    *bytes = (size_t)(content_length > 0 ? content_length : total);
+    return result;
 }
 
 // Validates that the file at `tmp_path` parses as a binary blocklist.
@@ -263,11 +250,11 @@ static bool sync_one(const char *type, const char *path, const char *tmp_path,
         // and truncates the Heat-ranked direct numbers to fit.
         d.budget = storage_community_budget();
         if (d.budget < 0) {
-            snprintf(err, err_cap, "storage not readable");
+            snprintf(err, err_cap, "storage not mounted");
             return false;
         }
         if (d.budget == 0) {
-            snprintf(err, err_cap, "no room for the community list");
+            snprintf(err, err_cap, "no room on the storage partition");
             return false;
         }
         sb_appendf(&ub, "&minDirect=%d&minRange=%d&maxBytes=%lld",

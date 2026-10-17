@@ -42,11 +42,6 @@ typedef struct {
     size_t length;
     pb_http_data_fn on_data;
     void *data_context;
-    CURL *curl;
-    int status;
-    int64_t content_length;
-    bool announced;
-    bool aborted;
 } pb_http_response_buffer_t;
 
 static pthread_once_t s_curl_once = PTHREAD_ONCE_INIT;
@@ -61,31 +56,8 @@ static size_t pb_http_write(void *data, size_t size, size_t count, void *opaque)
 {
     pb_http_response_buffer_t *response = opaque;
     size_t length = size * count;
-    if (response->on_data) {
-        // First body chunk: the headers are in, so announce the status and
-        // the announced body size before any payload. A false return aborts
-        // the transfer (perform then reports CURLE_WRITE_ERROR).
-        if (!response->announced) {
-            response->announced = true;
-            long status = 0;
-            curl_off_t content_length = -1;
-            curl_easy_getinfo(response->curl, CURLINFO_RESPONSE_CODE, &status);
-            curl_easy_getinfo(response->curl, CURLINFO_CONTENT_LENGTH_DOWNLOAD_T,
-                              &content_length);
-            response->status = (int)status;
-            response->content_length = (int64_t)content_length;
-            if (!response->on_data(response->status, response->content_length,
-                                   NULL, 0, response->data_context)) {
-                response->aborted = true;
-                return CURL_WRITEFUNC_ERROR;
-            }
-        }
-        if (!response->on_data(response->status, response->content_length,
-                               data, length, response->data_context)) {
-            response->aborted = true;
-            return CURL_WRITEFUNC_ERROR;
-        }
-    }
+    if (response->on_data)
+        response->on_data(data, length, response->data_context);
     size_t available = response->capacity > response->length + 1
                      ? response->capacity - response->length - 1 : 0;
     size_t copied = length < available ? length : available;
@@ -336,6 +308,59 @@ void pb_tls_destroy(pb_tls_t *tls)
     free(tls);
 }
 
+// Builds a curl handle for one request with the options shared by
+// pb_http_request() and pb_http_stream_open(); the header list goes to
+// *curl_headers (free with curl_slist_free_all after the transfer). NULL when
+// the handle or the header list cannot be built.
+static CURL *pb_curl_create(const char *url, const char *method,
+                            const pb_http_header_t *headers,
+                            size_t header_count, uint32_t timeout_ms,
+                            struct curl_slist **curl_headers)
+{
+    *curl_headers = NULL;
+    CURL *curl = curl_easy_init();
+    if (!curl) return NULL;
+    for (size_t i = 0; i < header_count; i++) {
+        if (!headers[i].name || !headers[i].value) continue;
+        size_t line_len = strlen(headers[i].name) + strlen(headers[i].value) + 3;
+        char *line = malloc(line_len);
+        if (!line) goto fail;
+        snprintf(line, line_len, "%s: %s", headers[i].name, headers[i].value);
+        struct curl_slist *updated = curl_slist_append(*curl_headers, line);
+        free(line);
+        if (!updated) goto fail;
+        *curl_headers = updated;
+    }
+
+    curl_easy_setopt(curl, CURLOPT_URL, url);
+    curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, method);
+    curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1L);
+    // The ESP32's timeout_ms is per socket operation, not a cap on the whole
+    // transfer: map it to a connect deadline plus a stall limit (no bytes for
+    // the timeout), so a long download is not cut off mid-stream.
+    curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT_MS, (long)timeout_ms);
+    curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, 1L);
+    curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME,
+                     (long)(timeout_ms / 1000u + (timeout_ms % 1000u != 0)));
+    // Follow redirects (esp_http_client does by default), bounded, and never
+    // from https down to plain http: the Authorization header would follow.
+    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+    curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 5L);
+    curl_easy_setopt(curl, CURLOPT_REDIR_PROTOCOLS_STR,
+                     strncmp(url, "https:", 6) == 0 ? "https" : "http,https");
+    // Loopback never goes through a proxy, so the host tests work with
+    // http_proxy set.
+    curl_easy_setopt(curl, CURLOPT_NOPROXY, "localhost,127.0.0.1,::1");
+    if (*curl_headers) curl_easy_setopt(curl, CURLOPT_HTTPHEADER, *curl_headers);
+    return curl;
+
+fail:
+    curl_slist_free_all(*curl_headers);
+    *curl_headers = NULL;
+    curl_easy_cleanup(curl);
+    return NULL;
+}
+
 int pb_http_request(const char *method, const char *url,
                     const pb_http_header_t *headers, size_t header_count,
                     const void *body, size_t body_len, uint32_t timeout_ms,
@@ -354,55 +379,19 @@ int pb_http_request(const char *method, const char *url,
     pthread_once(&s_curl_once, pb_curl_init);
     if (s_curl_init_result != CURLE_OK) return (int)s_curl_init_result;
 
-    CURL *curl = curl_easy_init();
-    if (!curl) return PB_HTTP_ERROR;
     struct curl_slist *curl_headers = NULL;
-    for (size_t i = 0; i < header_count; i++) {
-        if (!headers[i].name || !headers[i].value) continue;
-        size_t line_len = strlen(headers[i].name) + strlen(headers[i].value) + 3;
-        char *line = malloc(line_len);
-        if (!line) {
-            curl_slist_free_all(curl_headers);
-            curl_easy_cleanup(curl);
-            return PB_HTTP_ERROR;
-        }
-        snprintf(line, line_len, "%s: %s", headers[i].name, headers[i].value);
-        struct curl_slist *updated = curl_slist_append(curl_headers, line);
-        free(line);
-        if (!updated) {
-            curl_slist_free_all(curl_headers);
-            curl_easy_cleanup(curl);
-            return PB_HTTP_ERROR;
-        }
-        curl_headers = updated;
-    }
+    CURL *curl = pb_curl_create(url, method, headers, header_count,
+                                timeout_ms, &curl_headers);
+    if (!curl) return PB_HTTP_ERROR;
 
     pb_http_response_buffer_t output = {
         .buffer = response,
         .capacity = response_cap,
         .on_data = on_data,
         .data_context = data_context,
-        .curl = curl,
     };
-    curl_easy_setopt(curl, CURLOPT_URL, url);
-    curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, method);
-    curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1L);
-    // The ESP32's timeout_ms is per socket operation, not a cap on the whole
-    // transfer: map it to a connect deadline plus a stall limit (no bytes for
-    // the timeout), so a long download is not cut off mid-stream.
-    curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT_MS, (long)timeout_ms);
-    curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, 1L);
-    curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME,
-                     (long)((timeout_ms + 999u) / 1000u));
-    // Follow redirects (esp_http_client does by default), bounded.
-    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-    curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 5L);
-    // Loopback never goes through a proxy, so the host tests work with
-    // http_proxy set.
-    curl_easy_setopt(curl, CURLOPT_NOPROXY, "localhost,127.0.0.1,::1");
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, pb_http_write);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &output);
-    if (curl_headers) curl_easy_setopt(curl, CURLOPT_HTTPHEADER, curl_headers);
     if (body || body_len) {
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, body ? body : "");
         curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE_LARGE, (curl_off_t)body_len);
@@ -452,4 +441,156 @@ bool pb_http_is_connect_error(int result)
     // itself failed. A timeout is not retried — it already took the full
     // request timeout.
     return result == CURLE_COULDNT_CONNECT;
+}
+
+// Pull reads on top of libcurl's push model: the multi interface runs the
+// transfer only while pb_http_stream_read() pumps it, the write callback
+// parks each chunk in `pending`, and a chunk that does not fit pauses the
+// transfer (CURL_WRITEFUNC_PAUSE) until the reader drained the buffer — so
+// at most one chunk is held, however large the body, and no thread is needed.
+struct pb_http_stream {
+    CURLM *multi;
+    CURL *curl;
+    struct curl_slist *headers;
+    char *pending;
+    size_t pending_cap;
+    size_t pending_start;
+    size_t pending_len;
+    bool paused;
+    bool done;
+    CURLcode result;
+};
+
+static size_t pb_http_stream_write(void *data, size_t size, size_t count,
+                                   void *opaque)
+{
+    pb_http_stream_t *stream = opaque;
+    size_t length = size * count;
+    if (stream->pending_len > 0) {
+        // Not drained yet: curl delivers this chunk again after the unpause.
+        stream->paused = true;
+        return CURL_WRITEFUNC_PAUSE;
+    }
+    if (length > stream->pending_cap) {
+        // Normally at most CURL_MAX_WRITE_SIZE; grow for anything larger
+        // (older libcurl versions deliver buffered data in one piece).
+        char *grown = realloc(stream->pending, length);
+        if (!grown) return CURL_WRITEFUNC_ERROR;
+        stream->pending = grown;
+        stream->pending_cap = length;
+    }
+    memcpy(stream->pending, data, length);
+    stream->pending_start = 0;
+    stream->pending_len = length;
+    return length;
+}
+
+// Advances the transfer until a body chunk is pending or it has finished.
+static void pb_http_stream_pump(pb_http_stream_t *stream)
+{
+    while (stream->pending_len == 0 && !stream->done) {
+        if (stream->paused) {
+            stream->paused = false;
+            curl_easy_pause(stream->curl, CURLPAUSE_CONT);
+            continue;
+        }
+        int running = 0;
+        CURLMcode code = curl_multi_perform(stream->multi, &running);
+        CURLMsg *message;
+        int queued;
+        while ((message = curl_multi_info_read(stream->multi, &queued))) {
+            if (message->msg == CURLMSG_DONE) {
+                stream->done = true;
+                stream->result = message->data.result;
+            }
+        }
+        if (code != CURLM_OK && !stream->done) {
+            stream->done = true;
+            stream->result = CURLE_FAILED_INIT;
+        }
+        if (stream->pending_len == 0 && !stream->done) {
+            // Stalls end through CURLOPT_LOW_SPEED_TIME; the poll timeout
+            // only bounds one wait so that check gets to run.
+            curl_multi_poll(stream->multi, NULL, 0, 1000, NULL);
+        }
+    }
+}
+
+int pb_http_stream_open(const char *url,
+                        const pb_http_header_t *headers, size_t header_count,
+                        uint32_t timeout_ms, pb_http_stream_t **stream,
+                        int *http_status, int64_t *content_length)
+{
+    if (stream) *stream = NULL;
+    if (http_status) *http_status = 0;
+    if (content_length) *content_length = 0;
+    if (!url || !stream) return PB_HTTP_ERROR;
+    pthread_once(&s_curl_once, pb_curl_init);
+    if (s_curl_init_result != CURLE_OK) return (int)s_curl_init_result;
+
+    pb_http_stream_t *result = calloc(1, sizeof(*result));
+    if (!result) return PB_HTTP_ERROR;
+    result->multi = curl_multi_init();
+    result->curl = pb_curl_create(url, "GET", headers, header_count,
+                                  timeout_ms, &result->headers);
+    if (!result->multi || !result->curl) {
+        pb_http_stream_close(result);
+        return PB_HTTP_ERROR;
+    }
+    curl_easy_setopt(result->curl, CURLOPT_WRITEFUNCTION, pb_http_stream_write);
+    curl_easy_setopt(result->curl, CURLOPT_WRITEDATA, result);
+    if (curl_multi_add_handle(result->multi, result->curl) != CURLM_OK) {
+        curl_easy_cleanup(result->curl);
+        result->curl = NULL;
+        pb_http_stream_close(result);
+        return PB_HTTP_ERROR;
+    }
+
+    // The headers are complete once the first body byte is pending or the
+    // transfer ended (a response without body, or a failure).
+    pb_http_stream_pump(result);
+    if (result->done && result->result != CURLE_OK
+            && result->pending_len == 0) {
+        int failure = (int)result->result;
+        pb_http_stream_close(result);
+        return failure;
+    }
+    long status = 0;
+    curl_off_t length = -1;
+    curl_easy_getinfo(result->curl, CURLINFO_RESPONSE_CODE, &status);
+    curl_easy_getinfo(result->curl, CURLINFO_CONTENT_LENGTH_DOWNLOAD_T, &length);
+    if (http_status) *http_status = (int)status;
+    if (content_length) *content_length = length > 0 ? (int64_t)length : 0;
+    *stream = result;
+    return PB_HTTP_OK;
+}
+
+int pb_http_stream_read(pb_http_stream_t *stream, void *buffer,
+                        size_t capacity)
+{
+    if (!stream || !buffer || capacity == 0) return -1;
+    if (capacity > INT_MAX) capacity = INT_MAX;
+    pb_http_stream_pump(stream);
+    if (stream->pending_len == 0) {
+        return stream->result == CURLE_OK ? 0 : -1;
+    }
+    size_t copied = stream->pending_len < capacity
+                  ? stream->pending_len : capacity;
+    memcpy(buffer, stream->pending + stream->pending_start, copied);
+    stream->pending_start += copied;
+    stream->pending_len -= copied;
+    return (int)copied;
+}
+
+void pb_http_stream_close(pb_http_stream_t *stream)
+{
+    if (!stream) return;
+    if (stream->curl) {
+        if (stream->multi) curl_multi_remove_handle(stream->multi, stream->curl);
+        curl_easy_cleanup(stream->curl);
+    }
+    if (stream->multi) curl_multi_cleanup(stream->multi);
+    curl_slist_free_all(stream->headers);
+    free(stream->pending);
+    free(stream);
 }

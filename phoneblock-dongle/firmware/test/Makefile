@@ -17,7 +17,7 @@ LINUX_NET_LIBS := -lcurl -lssl -lcrypto
 LINUX_CORE_SOURCES := ../core/platform_linux.c ../core/platform_linux_net.c \
                       ../core/sip_parse.c ../core/dial_rules.c ../core/tr064_parse.c
 LINUX_MAIN_SOURCES := ../main/announcement.c ../main/api.c \
-                      ../main/api_scan.c \
+                      ../main/api_http_linux.c ../main/api_scan.c \
                       ../main/audio.c ../main/blocklist_lookup.c \
                       ../main/blocklist_sync.c ../main/config.c \
                       ../main/firmware_update.c ../main/heap_guard_scan.c \
@@ -144,13 +144,14 @@ test_platform_linux: test_platform_linux.c linux_test_util.h \
                      ../main/log_capture.c ../main/log_capture.h
 	$(CC) $(CFLAGS) -pthread test_platform_linux.c ../core/platform_linux.c ../main/config.c ../main/log_capture.c -o $@
 
-# The hostfs backend of storage.c, with the data dir redirected into /tmp.
+# The hostfs backend of storage.c. The data dir is a fresh mkdtemp()
+# directory the test publishes in PB_HOSTFS_TEST_DIR.
 test_storage_hostfs: test_storage_hostfs.c linux_test_util.h \
                      ../main/storage.c ../main/storage.h \
                      ../core/platform_linux.c ../core/platform.h \
                      ../main/log_capture.c ../main/log_capture.h
 	$(CC) $(CFLAGS) -DSTORAGE_HOSTFS \
-	  -DPHONEBLOCK_DATA_DIR='"/tmp/phoneblock-hostfs-test"' -pthread \
+	  -DPHONEBLOCK_DATA_DIR='getenv("PB_HOSTFS_TEST_DIR")' -pthread \
 	  test_storage_hostfs.c ../main/storage.c ../core/platform_linux.c \
 	  ../main/log_capture.c -o $@
 

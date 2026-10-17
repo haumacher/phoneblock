@@ -195,46 +195,42 @@ static void test_http_redirect_no_proxy(void)
     unsetenv("http_proxy");
 }
 
-// Sink that records what it was shown and aborts when told to.
+// One canned response for the pb_http_stream_* tests: `head` (status line
+// and headers), then `body_len` bytes of a counting pattern. Sent with
+// MSG_NOSIGNAL and unchecked: a client that closes early is a test case.
 typedef struct {
-    int announcements;       // data == NULL calls
-    int status;              // announced status
-    int64_t content_length;  // announced body size
-    size_t body_bytes;       // data bytes delivered
-    bool abort_at_announce;  // refuse the body before it lands
-    bool abort_mid_body;     // refuse the first data chunk
-} stream_sink_t;
+    const char *head;
+    size_t body_len;
+} canned_response_t;
 
-static bool stream_cb(int http_status, int64_t content_length,
-                      const void *data, size_t length, void *context)
+static uint8_t pattern_byte(size_t i)
 {
-    stream_sink_t *sink = context;
-    if (data == NULL) {
-        sink->announcements++;
-        sink->status = http_status;
-        sink->content_length = content_length;
-        return !sink->abort_at_announce;
-    }
-    if (sink->abort_mid_body) return false;
-    sink->body_bytes += length;
-    return true;
+    return (uint8_t)(i * 7u + (i >> 8));
 }
 
-static void *serve_one_response(void *unused)
+static void *serve_canned(void *opaque)
 {
-    (void)unused;
+    const canned_response_t *response = opaque;
     int client = accept(server_fd, NULL, NULL);
     REQUIRE(client >= 0);
     char request_buf[1024] = {0};
     REQUIRE(recv(client, request_buf, sizeof(request_buf) - 1, 0) > 0);
-    const char *body =
-        "HTTP/1.1 200 OK\r\nContent-Length: 11\r\nConnection: close\r\n\r\nhello world";
-    REQUIRE(send(client, body, strlen(body), 0) == (ssize_t)strlen(body));
+    send(client, response->head, strlen(response->head), MSG_NOSIGNAL);
+    uint8_t chunk[4096];
+    for (size_t sent = 0; sent < response->body_len; ) {
+        size_t n = response->body_len - sent < sizeof(chunk)
+                 ? response->body_len - sent : sizeof(chunk);
+        for (size_t k = 0; k < n; k++) chunk[k] = pattern_byte(sent + k);
+        if (send(client, chunk, n, MSG_NOSIGNAL) != (ssize_t)n) break;
+        sent += n;
+    }
     close(client);
     return NULL;
 }
 
-static void run_stream_case(stream_sink_t *sink)
+// Starts serve_canned() on an ephemeral loopback port; returns the URL.
+static pthread_t start_canned(canned_response_t *response, char *url,
+                              size_t url_cap)
 {
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
     REQUIRE(server_fd >= 0);
@@ -248,48 +244,108 @@ static void run_stream_case(stream_sink_t *sink)
     socklen_t address_len = sizeof(address);
     REQUIRE(getsockname(server_fd, (struct sockaddr *)&address, &address_len)
             == 0);
-    pthread_t server_thread;
-    REQUIRE(pthread_create(&server_thread, NULL, serve_one_response, NULL) == 0);
-
-    char url[64];
-    snprintf(url, sizeof(url), "http://127.0.0.1:%u/",
+    pthread_t thread;
+    REQUIRE(pthread_create(&thread, NULL, serve_canned, response) == 0);
+    snprintf(url, url_cap, "http://127.0.0.1:%u/",
              (unsigned)ntohs(address.sin_port));
-    int status = 0;
-    int result = pb_http_request("GET", url, NULL, 0, NULL, 0, 2000,
-                                 NULL, 0, NULL, &status, stream_cb, sink, NULL);
-    if (!sink->abort_at_announce && !sink->abort_mid_body) {
-        REQUIRE(result == PB_HTTP_OK);
-        REQUIRE(status == 200);
-    } else {
-        // An aborting sink surfaces as a generic transport failure; the sink
-        // carries the reason (platform.h).
-        REQUIRE(result != PB_HTTP_OK);
-    }
-    REQUIRE(pthread_join(server_thread, NULL) == 0);
+    return thread;
+}
+
+static void stop_canned(pthread_t thread)
+{
+    REQUIRE(pthread_join(thread, NULL) == 0);
     close(server_fd);
 }
 
-// The streaming sink sees the status and announced length before the first
-// body byte, and can abort the transfer at the announcement or mid-body.
-static void test_http_streaming_sink(void)
+// Reads the whole body in `piece`-byte reads; returns the byte count, or -1
+// if a read failed. Checks the counting pattern on the way.
+static int64_t read_all(pb_http_stream_t *stream, size_t piece)
 {
-    stream_sink_t sink = {0};
-    run_stream_case(&sink);
-    REQUIRE(sink.announcements == 1);
-    REQUIRE(sink.status == 200);
-    REQUIRE(sink.content_length == 11);
-    REQUIRE(sink.body_bytes == 11);
+    uint8_t buf[1024];
+    REQUIRE(piece <= sizeof(buf));
+    int64_t total = 0;
+    for (;;) {
+        int n = pb_http_stream_read(stream, buf, piece);
+        if (n < 0) return -1;
+        if (n == 0) return total;
+        for (int k = 0; k < n; k++)
+            REQUIRE(buf[k] == pattern_byte((size_t)total + (size_t)k));
+        total += n;
+    }
+}
 
-    stream_sink_t refuse = { .abort_at_announce = true };
-    run_stream_case(&refuse);
-    REQUIRE(refuse.announcements == 1);
-    REQUIRE(refuse.status == 200);
-    REQUIRE(refuse.body_bytes == 0);
+// Pull reads: status and length come with open, the body in caller-sized
+// pieces (a large body crosses many pause/unpause rounds), an error status
+// can be closed unread, a truncated body fails the read, and a refused
+// connection fails the open.
+static void test_http_stream(void)
+{
+    char url[64];
+    pb_http_stream_t *stream = NULL;
+    int status = 0;
+    int64_t length = 0;
 
-    stream_sink_t midway = { .abort_mid_body = true };
-    run_stream_case(&midway);
-    REQUIRE(midway.announcements == 1);
-    REQUIRE(midway.body_bytes == 0);
+    canned_response_t small = {
+        "HTTP/1.1 200 OK\r\nContent-Length: 11\r\nConnection: close\r\n\r\n", 11 };
+    pthread_t thread = start_canned(&small, url, sizeof(url));
+    REQUIRE(pb_http_stream_open(url, NULL, 0, 2000, &stream, &status, &length)
+            == PB_HTTP_OK);
+    REQUIRE(status == 200 && length == 11);
+    REQUIRE(read_all(stream, 3) == 11);
+    pb_http_stream_close(stream);
+    stop_canned(thread);
+
+    canned_response_t large = {
+        "HTTP/1.1 200 OK\r\nContent-Length: 300000\r\nConnection: close\r\n\r\n",
+        300000 };
+    thread = start_canned(&large, url, sizeof(url));
+    REQUIRE(pb_http_stream_open(url, NULL, 0, 2000, &stream, &status, &length)
+            == PB_HTTP_OK);
+    REQUIRE(status == 200 && length == 300000);
+    REQUIRE(read_all(stream, 1000) == 300000);
+    pb_http_stream_close(stream);
+    stop_canned(thread);
+
+    // Without Content-Length (body ends with the connection): length unknown.
+    canned_response_t unsized = {
+        "HTTP/1.1 200 OK\r\nConnection: close\r\n\r\n", 5000 };
+    thread = start_canned(&unsized, url, sizeof(url));
+    REQUIRE(pb_http_stream_open(url, NULL, 0, 2000, &stream, &status, &length)
+            == PB_HTTP_OK);
+    REQUIRE(status == 200 && length <= 0);
+    REQUIRE(read_all(stream, 1024) == 5000);
+    pb_http_stream_close(stream);
+    stop_canned(thread);
+
+    // An error status is reported by open; the body need not be read.
+    canned_response_t missing = {
+        "HTTP/1.1 404 Not Found\r\nContent-Length: 200000\r\nConnection: close\r\n\r\n",
+        200000 };
+    thread = start_canned(&missing, url, sizeof(url));
+    REQUIRE(pb_http_stream_open(url, NULL, 0, 2000, &stream, &status, &length)
+            == PB_HTTP_OK);
+    REQUIRE(status == 404);
+    pb_http_stream_close(stream);
+    stop_canned(thread);
+
+    // The server announces more than it sends: the read fails.
+    canned_response_t truncated = {
+        "HTTP/1.1 200 OK\r\nContent-Length: 1000\r\nConnection: close\r\n\r\n", 10 };
+    thread = start_canned(&truncated, url, sizeof(url));
+    REQUIRE(pb_http_stream_open(url, NULL, 0, 2000, &stream, &status, &length)
+            == PB_HTTP_OK);
+    REQUIRE(status == 200 && length == 1000);
+    REQUIRE(read_all(stream, 1024) == -1);
+    pb_http_stream_close(stream);
+    stop_canned(thread);
+
+    // Nothing listens on port 1: the open itself fails, no stream.
+    stream = (pb_http_stream_t *)&status;
+    int result = pb_http_stream_open("http://127.0.0.1:1/", NULL, 0, 2000,
+                                     &stream, &status, &length);
+    REQUIRE(pb_http_is_connect_error(result));
+    REQUIRE(stream == NULL && status == 0);
+    pb_http_stream_close(NULL);
 }
 
 int main(void)
@@ -298,7 +354,7 @@ int main(void)
     test_ecdsa_verify();
     test_http_errors();
     test_http_redirect_no_proxy();
-    test_http_streaming_sink();
+    test_http_stream();
     puts("test_platform_linux_net: all tests passed");
     return 0;
 }
