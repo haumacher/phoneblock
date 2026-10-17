@@ -35,9 +35,6 @@ static const char *TAG = "status_led";
 #define APA102_B 0xFF
 #define APA102_G 0x60
 #define APA102_R 0x00
-// The board's LCD backlight (GPIO 38, active-low). Nothing drives the
-// LCD, so the light is parked off instead of being left floating.
-#define LCD_BACKLIGHT_GPIO 38
 
 // Resolve CONFIG_STATUS_LED_GPIO into a concrete pin and polarity
 // (or a sentinel telling the caller to disable the task):
@@ -216,15 +213,7 @@ static void led_task(void *arg)
         .intr_type    = GPIO_INTR_DISABLE,
     };
     gpio_config(&cfg);
-    if (apa102) {
-        gpio_set_level(APA102_CI_GPIO, 0);
-        gpio_config_t bl = {
-            .pin_bit_mask = 1ULL << LCD_BACKLIGHT_GPIO,
-            .mode         = GPIO_MODE_OUTPUT,
-        };
-        gpio_config(&bl);
-        gpio_set_level(LCD_BACKLIGHT_GPIO, 1);
-    }
+    if (apa102) gpio_set_level(APA102_CI_GPIO, 0);
 
     // Diagnostic: report the smallest free stack seen so far — i.e. right
     // after gpio_config(), this task's deepest logging call. This is the
