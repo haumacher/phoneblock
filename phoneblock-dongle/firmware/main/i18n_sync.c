@@ -123,7 +123,7 @@ static bool sha256_file_hex(const char *path, char out[65])
     uint8_t buf[DOWNLOAD_CHUNK];
     size_t n;
     while ((n = fread(buf, 1, sizeof(buf), f)) > 0) {
-        if (!pb_sha256_update(sha, buf, n)) {
+        if (pb_sha256_update(sha, buf, n) != PB_OK) {
             fclose(f);
             pb_sha256_destroy(sha);
             return false;
@@ -132,7 +132,7 @@ static bool sha256_file_hex(const char *path, char out[65])
     bool read_ok = !ferror(f);
     fclose(f);
     uint8_t digest[32];
-    bool hash_ok = pb_sha256_finish(sha, digest);
+    bool hash_ok = pb_sha256_finish(sha, digest) == PB_OK;
     pb_sha256_destroy(sha);
     if (!hash_ok) return false;
     if (!read_ok) return false;

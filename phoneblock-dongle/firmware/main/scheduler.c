@@ -370,8 +370,8 @@ void scheduler_start(bool i18n_refresh_soon)
         pb_log_err(TAG, "event creation failed");
         return;
     }
-    if (!pb_task_create(scheduler_task, NULL, "scheduler", 16384,
-                        PB_PRIO_BACKGROUND)) {
+    if (pb_task_create(scheduler_task, NULL, "scheduler", 16384,
+                        PB_PRIO_BACKGROUND) != PB_OK) {
         pb_event_destroy(s_events);
         s_events = NULL;
         pb_log_err(TAG, "task creation failed");

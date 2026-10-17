@@ -8,6 +8,7 @@
 
 #include "platform.h"
 
+#include <fcntl.h>
 #include <limits.h>
 #include <netdb.h>
 #include <curl/curl.h>
@@ -15,6 +16,7 @@
 #include <openssl/evp.h>
 #include <openssl/ssl.h>
 #include <openssl/x509.h>
+#include <poll.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -67,20 +69,20 @@ static size_t pb_http_write(void *data, size_t size, size_t count, void *opaque)
     return length;
 }
 
-bool pb_md5(const void *input, size_t input_len, uint8_t output[16])
+int pb_md5(const void *input, size_t input_len, uint8_t output[16])
 {
     unsigned int output_len = 0;
     return input && output
         && EVP_Digest(input, input_len, output, &output_len, EVP_md5(), NULL) == 1
-        && output_len == 16;
+        && output_len == 16 ? PB_OK : PB_FAIL;
 }
 
-bool pb_sha1(const void *input, size_t input_len, uint8_t output[20])
+int pb_sha1(const void *input, size_t input_len, uint8_t output[20])
 {
     unsigned int output_len = 0;
     return input && output
         && EVP_Digest(input, input_len, output, &output_len, EVP_sha1(), NULL) == 1
-        && output_len == 20;
+        && output_len == 20 ? PB_OK : PB_FAIL;
 }
 
 int pb_ecdsa_p256_verify(const uint8_t *public_key_der, size_t public_key_len,
@@ -125,19 +127,20 @@ pb_sha256_t *pb_sha256_create(void)
     return context;
 }
 
-bool pb_sha256_update(pb_sha256_t *context, const void *data, size_t length)
+int pb_sha256_update(pb_sha256_t *context, const void *data, size_t length)
 {
     return context && !context->finished && data
-        && EVP_DigestUpdate(context->context, data, length) == 1;
+        && EVP_DigestUpdate(context->context, data, length) == 1
+        ? PB_OK : PB_FAIL;
 }
 
-bool pb_sha256_finish(pb_sha256_t *context, uint8_t output[32])
+int pb_sha256_finish(pb_sha256_t *context, uint8_t output[32])
 {
-    if (!context || !output || context->finished) return false;
+    if (!context || !output || context->finished) return PB_FAIL;
     unsigned int length = 0;
     context->finished = true;
     return EVP_DigestFinal_ex(context->context, output, &length) == 1
-        && length == 32;
+        && length == 32 ? PB_OK : PB_FAIL;
 }
 
 void pb_sha256_destroy(pb_sha256_t *context)
@@ -151,28 +154,29 @@ int pb_base64_encode(unsigned char *dst, size_t dst_len, size_t *output_len,
                      const unsigned char *src, size_t src_len)
 {
     if (!dst || !output_len || (!src && src_len) || src_len > INT_MAX)
-        return -1;
+        return PB_FAIL;
     size_t encoded_len = 4 * ((src_len + 2) / 3);
-    if (encoded_len >= dst_len) return -1;
+    if (encoded_len >= dst_len) return PB_ERR_INVALID_SIZE;
     int result = EVP_EncodeBlock(dst, src, (int)src_len);
-    if (result < 0) return -1;
+    if (result < 0) return PB_FAIL;
     *output_len = (size_t)result;
-    return 0;
+    return PB_OK;
 }
 
 int pb_base64_decode(unsigned char *dst, size_t dst_len, size_t *output_len,
                      const unsigned char *src, size_t src_len)
 {
     if (!dst || !output_len || (!src && src_len) || src_len > INT_MAX
-            || src_len % 4 != 0 || src_len / 4 * 3 > dst_len) {
-        return -1;
+            || src_len % 4 != 0) {
+        return PB_FAIL;
     }
+    if (src_len / 4 * 3 > dst_len) return PB_ERR_INVALID_SIZE;
     int result = EVP_DecodeBlock(dst, src, (int)src_len);
-    if (result < 0) return -1;
+    if (result < 0) return PB_FAIL;
     size_t padding = src_len > 0 && src[src_len - 1] == '=' ? 1 : 0;
     if (src_len > 1 && src[src_len - 2] == '=') padding++;
     *output_len = (size_t)result - padding;
-    return 0;
+    return PB_OK;
 }
 
 pb_tls_t *pb_tls_connect(const char *host, int port, const char *server_name,
@@ -182,7 +186,8 @@ pb_tls_t *pb_tls_connect(const char *host, int port, const char *server_name,
 
     char port_text[8];
     snprintf(port_text, sizeof(port_text), "%d", port);
-    struct addrinfo hints = { .ai_family = AF_INET,
+    // AF_UNSPEC: the registrar may be reachable over IPv6 only.
+    struct addrinfo hints = { .ai_family = AF_UNSPEC,
                               .ai_socktype = SOCK_STREAM };
     struct addrinfo *addresses = NULL;
     if (getaddrinfo(host, port_text, &hints, &addresses) != 0) return NULL;
@@ -192,7 +197,35 @@ pb_tls_t *pb_tls_connect(const char *host, int port, const char *server_name,
         fd = socket(address->ai_family, address->ai_socktype,
                     address->ai_protocol);
         if (fd < 0) continue;
-        if (connect(fd, address->ai_addr, address->ai_addrlen) == 0) break;
+
+        // connect() with a deadline: a blocking connect() ignores timeout_ms
+        // entirely while the kernel retries an unreachable peer.
+        int flags = fcntl(fd, F_GETFL, 0);
+        if (flags < 0 || fcntl(fd, F_SETFL, flags | O_NONBLOCK) != 0) {
+            close(fd);
+            fd = -1;
+            continue;
+        }
+        int rc = connect(fd, address->ai_addr, address->ai_addrlen);
+        if (rc != 0 && errno == EINPROGRESS) {
+            struct pollfd pfd = { .fd = fd, .events = POLLOUT };
+            rc = poll(&pfd, 1, (int)timeout_ms);
+            int error = 0;
+            socklen_t error_len = sizeof(error);
+            if (rc > 0
+                    && getsockopt(fd, SOL_SOCKET, SO_ERROR, &error, &error_len) == 0
+                    && error == 0) {
+                rc = 0;
+            } else {
+                rc = -1;
+            }
+        }
+        if (rc == 0) {
+            // TLS operations get their per-call deadline from the socket
+            // timeouts set below; restore blocking mode for them.
+            fcntl(fd, F_SETFL, flags);
+            break;
+        }
         close(fd);
         fd = -1;
     }
@@ -325,7 +358,19 @@ int pb_http_request(const char *method, const char *url,
     curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, method);
     curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1L);
-    curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, (long)timeout_ms);
+    // The ESP32's timeout_ms is per socket operation, not a cap on the whole
+    // transfer: map it to a connect deadline plus a stall limit (no bytes for
+    // the timeout), so a long download is not cut off mid-stream.
+    curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT_MS, (long)timeout_ms);
+    curl_easy_setopt(curl, CURLOPT_LOW_SPEED_LIMIT, 1L);
+    curl_easy_setopt(curl, CURLOPT_LOW_SPEED_TIME,
+                     (long)((timeout_ms + 999u) / 1000u));
+    // Follow redirects (esp_http_client does by default), bounded.
+    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
+    curl_easy_setopt(curl, CURLOPT_MAXREDIRS, 5L);
+    // Loopback never goes through a proxy, so the host tests work with
+    // http_proxy set.
+    curl_easy_setopt(curl, CURLOPT_NOPROXY, "localhost,127.0.0.1,::1");
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, pb_http_write);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &output);
     if (curl_headers) curl_easy_setopt(curl, CURLOPT_HTTPHEADER, curl_headers);

@@ -4,9 +4,13 @@
 // (core/platform_linux_net.c, libcurl + OpenSSL). Built and run only by
 // `make test-linux`; see test_platform_linux.c for the rest.
 
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <unistd.h>
 #include <openssl/ec.h>
 #include <openssl/evp.h>
 #include <openssl/x509.h>
@@ -22,7 +26,7 @@ static void test_crypto(void)
     };
     static const unsigned char message[] = "abc";
     uint8_t digest[16];
-    REQUIRE(pb_md5(message, sizeof(message) - 1, digest));
+    REQUIRE(pb_md5(message, sizeof(message) - 1, digest) == PB_OK);
     REQUIRE(memcmp(digest, expected_md5, sizeof(digest)) == 0);
 
     static const uint8_t expected_sha1[20] = {
@@ -30,7 +34,7 @@ static void test_crypto(void)
         0x25, 0x71, 0x78, 0x50, 0xc2, 0x6c, 0x9c, 0xd0, 0xd8, 0x9d,
     };
     uint8_t sha1[20];
-    REQUIRE(pb_sha1(message, sizeof(message) - 1, sha1));
+    REQUIRE(pb_sha1(message, sizeof(message) - 1, sha1) == PB_OK);
     REQUIRE(memcmp(sha1, expected_sha1, sizeof(sha1)) == 0);
 
     static const uint8_t expected_sha256[32] = {
@@ -41,10 +45,10 @@ static void test_crypto(void)
     };
     pb_sha256_t *sha256 = pb_sha256_create();
     REQUIRE(sha256 != NULL);
-    REQUIRE(pb_sha256_update(sha256, "a", 1));
-    REQUIRE(pb_sha256_update(sha256, "bc", 2));
+    REQUIRE(pb_sha256_update(sha256, "a", 1) == PB_OK);
+    REQUIRE(pb_sha256_update(sha256, "bc", 2) == PB_OK);
     uint8_t sha256_digest[32];
-    REQUIRE(pb_sha256_finish(sha256, sha256_digest));
+    REQUIRE(pb_sha256_finish(sha256, sha256_digest) == PB_OK);
     REQUIRE(memcmp(sha256_digest, expected_sha256, sizeof(sha256_digest)) == 0);
     pb_sha256_destroy(sha256);
 
@@ -83,8 +87,8 @@ static void test_ecdsa_verify(void)
     uint8_t hash[32];
     pb_sha256_t *sha = pb_sha256_create();
     REQUIRE(sha != NULL);
-    REQUIRE(pb_sha256_update(sha, message, sizeof(message) - 1));
-    REQUIRE(pb_sha256_finish(sha, hash));
+    REQUIRE(pb_sha256_update(sha, message, sizeof(message) - 1) == PB_OK);
+    REQUIRE(pb_sha256_finish(sha, hash) == PB_OK);
     pb_sha256_destroy(sha);
 
     EVP_PKEY_CTX *sign_context = EVP_PKEY_CTX_new(key, NULL);
@@ -135,11 +139,68 @@ static void test_http_errors(void)
     REQUIRE(status == 0);
 }
 
+static int server_fd;
+
+static void *serve_redirect(void *unused)
+{
+    (void)unused;
+    for (int request = 0; request < 2; request++) {
+        int client = accept(server_fd, NULL, NULL);
+        REQUIRE(client >= 0);
+        char request_buf[1024] = {0};
+        REQUIRE(recv(client, request_buf, sizeof(request_buf) - 1, 0) > 0);
+        const char *body = strstr(request_buf, "GET /new ") != NULL
+            ? "HTTP/1.1 200 OK\r\nContent-Length: 2\r\nConnection: close\r\n\r\nok"
+            : "HTTP/1.1 302 Found\r\nLocation: /new\r\nContent-Length: 0\r\nConnection: close\r\n\r\n";
+        REQUIRE(send(client, body, strlen(body), 0) == (ssize_t)strlen(body));
+        close(client);
+    }
+    return NULL;
+}
+
+// Redirects are followed, and loopback never goes through a proxy: the test
+// sets http_proxy to an address where nothing listens.
+static void test_http_redirect_no_proxy(void)
+{
+    server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    REQUIRE(server_fd >= 0);
+    struct sockaddr_in address = {
+        .sin_family = AF_INET,
+        .sin_addr.s_addr = htonl(INADDR_LOOPBACK),
+        .sin_port = 0,
+    };
+    REQUIRE(bind(server_fd, (struct sockaddr *)&address, sizeof(address)) == 0);
+    REQUIRE(listen(server_fd, 2) == 0);
+    socklen_t address_len = sizeof(address);
+    REQUIRE(getsockname(server_fd, (struct sockaddr *)&address, &address_len) == 0);
+
+    REQUIRE(setenv("http_proxy", "http://127.0.0.1:1", 1) == 0);
+    pthread_t server_thread;
+    REQUIRE(pthread_create(&server_thread, NULL, serve_redirect, NULL) == 0);
+
+    char url[64];
+    snprintf(url, sizeof(url), "http://127.0.0.1:%u/old",
+             (unsigned)ntohs(address.sin_port));
+    char body[16];
+    size_t body_len = 0;
+    int status = 0;
+    REQUIRE(pb_http_request("GET", url, NULL, 0, NULL, 0, 2000,
+                            body, sizeof(body), &body_len, &status,
+                            NULL, NULL, NULL) == PB_OK);
+    REQUIRE(status == 200);
+    REQUIRE(body_len == 2 && memcmp(body, "ok", 2) == 0);
+    REQUIRE(pthread_join(server_thread, NULL) == 0);
+
+    close(server_fd);
+    unsetenv("http_proxy");
+}
+
 int main(void)
 {
     test_crypto();
     test_ecdsa_verify();
     test_http_errors();
+    test_http_redirect_no_proxy();
     puts("test_platform_linux_net: all tests passed");
     return 0;
 }

@@ -119,7 +119,7 @@ static void test_task(void)
 {
     int value = 0;
     task_done = 0;
-    REQUIRE(pb_task_create(mark_done, &value, "test", 0, PB_PRIO_NORMAL));
+    REQUIRE(pb_task_create(mark_done, &value, "test", 0, PB_PRIO_NORMAL) == PB_OK);
     wait_done();
     REQUIRE(value == 1);
 }
@@ -139,7 +139,7 @@ static void test_task_stack_floor(void)
 {
     int ok = 0;
     task_done = 0;
-    REQUIRE(pb_task_create(use_big_stack, &ok, "big", 1024, PB_PRIO_MEDIA));
+    REQUIRE(pb_task_create(use_big_stack, &ok, "big", 1024, PB_PRIO_MEDIA) == PB_OK);
     wait_done();
     REQUIRE(ok == 1);
 }
@@ -166,7 +166,7 @@ static void test_event(void)
     REQUIRE(pb_event_wait_s(event, 0) == 0);
 
     REQUIRE(pb_task_create(signal_event, event, "event", 1024,
-                          PB_PRIO_NORMAL));
+                          PB_PRIO_NORMAL) == PB_OK);
     REQUIRE(pb_event_wait_s(event, 5) == (1u << 3));
     pb_event_destroy(event);
 }
@@ -242,11 +242,68 @@ static void test_log_format(void)
     REQUIRE(pb_task_stack_free() == -1);
 }
 
+// A commit writes back the other namespaces verbatim, values keep their
+// leading/trailing spaces, and the settings file is locked while open.
+static void test_kv_namespaces_and_whitespace(void)
+{
+    char path[256];
+    use_temp_config(path, sizeof(path));
+
+    pb_kv_t *store = NULL;
+    REQUIRE(pb_kv_open("alpha", true, &store) == PB_KV_OK);
+    char lock_path[300];
+    snprintf(lock_path, sizeof(lock_path), "%s.lock", path);
+    REQUIRE(access(lock_path, F_OK) == 0);
+    REQUIRE(pb_kv_set_string(store, "user", "alice") == PB_KV_OK);
+    REQUIRE(pb_kv_commit(store) == PB_KV_OK);
+    pb_kv_close(store);
+
+    REQUIRE(pb_kv_open("beta", true, &store) == PB_KV_OK);
+    REQUIRE(pb_kv_set_string(store, "token", "xyz") == PB_KV_OK);
+    REQUIRE(pb_kv_commit(store) == PB_KV_OK);
+    pb_kv_close(store);
+
+    // Committing "beta" must not have deleted "alpha".
+    REQUIRE(pb_kv_open("alpha", false, &store) == PB_KV_OK);
+    char user[32];
+    size_t user_len = sizeof(user);
+    REQUIRE(pb_kv_get_string(store, "user", user, &user_len) == PB_KV_OK);
+    REQUIRE(strcmp(user, "alice") == 0);
+    pb_kv_close(store);
+
+    FILE *f = fopen(path, "r");
+    REQUIRE(f != NULL);
+    char content[512] = "";
+    REQUIRE(fread(content, 1, sizeof(content) - 1, f) > 0);
+    fclose(f);
+    REQUIRE(strstr(content, "[alpha]") != NULL);
+    REQUIRE(strstr(content, "[beta]") != NULL);
+
+    // A password with leading/trailing spaces round-trips.
+    REQUIRE(pb_kv_open("alpha", true, &store) == PB_KV_OK);
+    REQUIRE(pb_kv_set_string(store, "password", " secret ") == PB_KV_OK);
+    REQUIRE(pb_kv_commit(store) == PB_KV_OK);
+    pb_kv_close(store);
+
+    REQUIRE(pb_kv_open("alpha", false, &store) == PB_KV_OK);
+    char password[32];
+    size_t password_len = sizeof(password);
+    REQUIRE(pb_kv_get_string(store, "password", password, &password_len)
+            == PB_KV_OK);
+    REQUIRE(strcmp(password, " secret ") == 0);
+    pb_kv_close(store);
+
+    unlink(path);
+    unlink(lock_path);
+    unsetenv("PHONEBLOCK_CONFIG_FILE");
+}
+
 int main(void)
 {
     test_time();
     test_random();
     test_kv_store();
+    test_kv_namespaces_and_whitespace();
     test_config_store();
     test_task();
     test_task_stack_floor();
