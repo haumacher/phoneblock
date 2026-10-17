@@ -15,6 +15,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 
+#include "config.h"
 #include "lcd_logo.h"
 
 // Must be last: bans unsafe string APIs for the rest of this file.
@@ -39,6 +40,22 @@ static const char *TAG = "display";
 #define BL_FULL       255
 #define BL_DIMMED     24
 #define BL_DIM_AFTER_US (60LL * 1000 * 1000)
+
+// Offset of the 80x160 panel inside the controller's 132x162 RAM, in the
+// swapped (landscape) axes, per orientation (LilyGO: 1/26 for normal).
+// Turning the image by 180° mirrors both axes, which may move the visible
+// window to the opposite edge of the RAM; adjust the flipped pair if the
+// rotated logo appears shifted on the hardware.
+#define GAP_NORMAL_X   1
+#define GAP_NORMAL_Y   26
+#define GAP_FLIPPED_X  1
+#define GAP_FLIPPED_Y  26
+
+// Set once display_start() got the panel up; NULL means "no display", and
+// display_set_flipped() then does nothing.
+static esp_lcd_panel_handle_t s_panel;
+static SemaphoreHandle_t s_done;    // given by on_trans_done
+static SemaphoreHandle_t s_lock;    // serialises drawing (boot vs. httpd)
 
 // ST7735 power and gamma setup. The panel is driven through ESP-IDF's
 // ST7789 driver (reset, sleep-out, pixel format, address window, MADCTL
@@ -129,6 +146,53 @@ static uint16_t *decode_logo(void)
     return frame;
 }
 
+// Sets the landscape orientation, normal or rotated by 180°.
+static esp_err_t set_orientation(bool flipped)
+{
+    esp_err_t err = flipped
+        ? esp_lcd_panel_set_gap(s_panel, GAP_FLIPPED_X, GAP_FLIPPED_Y)
+        : esp_lcd_panel_set_gap(s_panel, GAP_NORMAL_X, GAP_NORMAL_Y);
+    if (err == ESP_OK) err = esp_lcd_panel_swap_xy(s_panel, true);
+    if (err == ESP_OK) err = esp_lcd_panel_mirror(s_panel, flipped, !flipped);
+    return err;
+}
+
+// Decodes the logo and sends it to the panel. Returns false (after
+// logging) if that failed.
+static bool draw_logo(void)
+{
+    uint16_t *frame = decode_logo();
+    if (!frame) {
+        ESP_LOGW(TAG, "logo: out of memory or corrupt data");
+        return false;
+    }
+    esp_err_t err = esp_lcd_panel_draw_bitmap(s_panel, 0, 0, LCD_LOGO_W, LCD_LOGO_H, frame);
+    // The transfer runs from the frame buffer by DMA; free it only once
+    // the panel IO reports it done.
+    bool sent = err == ESP_OK && xSemaphoreTake(s_done, pdMS_TO_TICKS(1000)) == pdTRUE;
+    free(frame);
+    if (!sent) {
+        ESP_LOGW(TAG, "logo transfer failed: %s", esp_err_to_name(err));
+    }
+    return sent;
+}
+
+void display_set_flipped(bool flipped)
+{
+    if (!s_lock) return;
+    xSemaphoreTake(s_lock, portMAX_DELAY);
+    if (s_panel) {
+        esp_err_t err = set_orientation(flipped);
+        if (err == ESP_OK) {
+            draw_logo();
+            ESP_LOGI(TAG, "orientation %s", flipped ? "flipped" : "normal");
+        } else {
+            ESP_LOGW(TAG, "orientation: %s", esp_err_to_name(err));
+        }
+    }
+    xSemaphoreGive(s_lock);
+}
+
 void display_start(void)
 {
     if (!backlight_init()) {
@@ -150,8 +214,9 @@ void display_start(void)
         return;
     }
 
-    SemaphoreHandle_t done = xSemaphoreCreateBinary();
-    if (!done) return;
+    s_done = xSemaphoreCreateBinary();
+    s_lock = xSemaphoreCreateMutex();
+    if (!s_done || !s_lock) return;
     esp_lcd_panel_io_handle_t io = NULL;
     esp_lcd_panel_io_spi_config_t io_cfg = {
         .cs_gpio_num         = PIN_CS,
@@ -160,7 +225,7 @@ void display_start(void)
         .pclk_hz             = LCD_PCLK_HZ,
         .trans_queue_depth   = 10,
         .on_color_trans_done = on_trans_done,
-        .user_ctx            = done,
+        .user_ctx            = s_done,
         .lcd_cmd_bits        = 8,
         .lcd_param_bits      = 8,
     };
@@ -185,32 +250,25 @@ void display_start(void)
                                         k_st7735_init[i].data,
                                         k_st7735_init[i].len);
     }
-    // Landscape, with the 80x160 panel's offset inside the controller's
-    // 132x162 RAM (LilyGO: gap 1/26 after swapping the axes).
     if (err == ESP_OK) err = esp_lcd_panel_invert_color(panel, true);
-    if (err == ESP_OK) err = esp_lcd_panel_set_gap(panel, 1, 26);
-    if (err == ESP_OK) err = esp_lcd_panel_swap_xy(panel, true);
-    if (err == ESP_OK) err = esp_lcd_panel_mirror(panel, false, true);
     if (err != ESP_OK) {
         ESP_LOGW(TAG, "panel init: %s", esp_err_to_name(err));
         return;
     }
 
-    uint16_t *frame = decode_logo();
-    if (!frame) {
-        ESP_LOGW(TAG, "logo: out of memory or corrupt data");
-        return;
+    // Published under the lock: from here on display_set_flipped() may
+    // redraw, but only after the boot draw below has finished.
+    xSemaphoreTake(s_lock, portMAX_DELAY);
+    s_panel = panel;
+    err = set_orientation(config_lcd_flipped());
+    if (err != ESP_OK) {
+        ESP_LOGW(TAG, "orientation: %s", esp_err_to_name(err));
     }
-    err = esp_lcd_panel_draw_bitmap(panel, 0, 0, LCD_LOGO_W, LCD_LOGO_H, frame);
-    // The transfer runs from the frame buffer by DMA; free it only once
-    // the panel IO reports it done.
-    bool sent = err == ESP_OK && xSemaphoreTake(done, pdMS_TO_TICKS(1000)) == pdTRUE;
-    free(frame);
-    if (!sent) {
-        ESP_LOGW(TAG, "logo transfer failed: %s", esp_err_to_name(err));
-        return;
-    }
-    esp_lcd_panel_disp_on_off(panel, true);
+    bool shown = err == ESP_OK && draw_logo();
+    if (shown) esp_lcd_panel_disp_on_off(panel, true);
+    else s_panel = NULL;            // stays dark; no redraws on a broken panel
+    xSemaphoreGive(s_lock);
+    if (!shown) return;
 
     ledc_set_duty(LEDC_LOW_SPEED_MODE, BL_CHANNEL, BL_FULL);
     ledc_update_duty(LEDC_LOW_SPEED_MODE, BL_CHANNEL);

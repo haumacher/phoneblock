@@ -347,6 +347,8 @@
   "status.calls.whitelist": "Lista bianca",
   "status.calls.whitelist.help": "Non bloccare più questo numero",
   "whitelist.dialog.title": "Aggiungere il numero alla lista bianca",
+  "whitelist.dialog.intro": "Le chiamate provenienti da questo numero non verranno più bloccate. In questo modo, su PhoneBlock consideri il numero come legittimo; la valutazione verrà associata al tuo account.",
+  "whitelist.dialog.submit": "Non bloccare più",
   "whitelist.dialog.working": "Trasmissione in corso…",
   "whitelist.dialog.done": "Fatto — il numero è nella tua lista bianca.",
   "spam.dialog.title": "Segnala il numero come spam",
@@ -366,6 +368,6 @@
   "spam.dialog.comment": "Motivo",
   "spam.dialog.comment.hint": "(facoltativo, sarà visibile pubblicamente)",
   "spam.dialog.error.is_contact": "Questo numero è presente nella tua rubrica. Una voce della rubrica ha sempre la precedenza sul dongle, pertanto in questo caso non è possibile segnalare lo spam.",
-  "whitelist.dialog.intro": "Le chiamate provenienti da questo numero non verranno più bloccate. In questo modo, su PhoneBlock consideri il numero come legittimo; la valutazione verrà associata al tuo account.",
-  "whitelist.dialog.submit": "Non bloccare più"
+  "status.system.lcd_flip": "Schermo capovolto (ruotare di 180°)",
+  "status.system.lcd_flip.hint": "A seconda della posizione della porta USB del tuo Fritz!Box, la chiavetta va orientata in modo diverso. Ruota l'immagine di 180°."
 }

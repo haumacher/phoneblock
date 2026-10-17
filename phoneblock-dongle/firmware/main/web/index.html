@@ -1202,6 +1202,13 @@ function renderStatus(){
     +   '<span>' + esc(t('status.system.led_quiet')) + '</span></label>'
     + '<p class="muted" style="font-size:.72rem;margin:.2rem 0 0">'
     +   esc(t('status.system.led_quiet.hint')) + '</p>'
+    + '<div id="lcdFlipRow" style="display:none">'
+    + '<label style="display:flex;align-items:center;gap:.4rem;font-weight:normal;margin-top:.9rem;font-size:.85rem">'
+    +   '<input type="checkbox" id="lcdFlipChk" style="width:auto">'
+    +   '<span>' + esc(t('status.system.lcd_flip')) + '</span></label>'
+    + '<p class="muted" style="font-size:.72rem;margin:.2rem 0 0">'
+    +   esc(t('status.system.lcd_flip.hint')) + '</p>'
+    + '</div>'
     + '</details>'
     + '<details id="thresholdsSection" class="adminsec" style="display:none">'
     + '<summary>' + esc(t('status.thresholds.title')) + '</summary>'
@@ -2468,6 +2475,28 @@ async function refreshAll(){
     ledQuietChk.onchange = async () => {
       const body = new URLSearchParams();
       body.append('led_quiet', ledQuietChk.checked ? '1' : '0');
+      try {
+        await fetch('/api/config', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: body.toString(),
+        });
+      } catch (_){ /* next poll reconciles */ }
+      refreshAll();
+    };
+  }
+
+  // Display orientation (T-Dongle-S3 only). The status JSON carries
+  // "display" only on a build with a display, so the row stays hidden on
+  // the ESP32 / ESP32-C3 sticks.
+  const lcdFlipRow = $('lcdFlipRow');
+  const lcdFlipChk = $('lcdFlipChk');
+  if (lcdFlipRow && lcdFlipChk){
+    lcdFlipRow.style.display = s.display ? '' : 'none';
+    lcdFlipChk.checked = !!(s.display && s.display.flipped);
+    lcdFlipChk.onchange = async () => {
+      const body = new URLSearchParams();
+      body.append('lcd_flip', lcdFlipChk.checked ? '1' : '0');
       try {
         await fetch('/api/config', {
           method: 'POST',
