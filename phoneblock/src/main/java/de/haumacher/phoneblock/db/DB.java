@@ -783,7 +783,7 @@ public class DB {
 
 				DBAuthToken result = users.getAuthToken(tokenInfo.id);
 				if (result == null) {
-					LOG.info("Outdated authorization token received: {}", token);
+					TokenInfo.logRejected(LOG, "outdated", "Outdated authorization token received", token);
 					return null;
 				}
 
@@ -791,7 +791,7 @@ public class DB {
 				byte[] digest = sha256().digest(tokenInfo.secret);
 
 				if (!Arrays.equals(digest, expectedHash)) {
-					LOG.info("Invalid authorization token received for user {}: {}", result.getUserId(), token);
+					TokenInfo.logRejected(LOG, "invalid", "Invalid authorization token received for user " + result.getUserId(), token);
 					return null;
 				}
 
@@ -835,7 +835,7 @@ public class DB {
 				return new AuthContext(result, userSettings);
 			}
 		} catch (IOException | RuntimeException e) {
-			LOG.warn("Failed to parse authorization token '{}': {}", token, e.getMessage());
+			TokenInfo.logParseFailure(LOG, token, e);
 			return null;
 		}
 	}
@@ -3118,11 +3118,12 @@ public class DB {
 					// Compatibility - FRITZ!Box cannot send bearer tokens.
 					AuthContext authContext = checkAuthToken(passwd, System.currentTimeMillis(), userAgent, false);
 					if (authContext == null) {
-						LOG.warn("Invalid token received from {}.", login);
+						LOG.warn("Invalid token received in basic authentication (login length {}).", login.length());
 						return null;
 					}
 					if (!login.equals(authContext.getUserName())) {
-						LOG.warn("User name mismatch in token authorization: {} vs. {}", login, authContext.getUserName());
+						LOG.warn("User name mismatch in token authorization for user {} (supplied login length {}).",
+							authContext.getAuthorization().getUserId(), login.length());
 						return null;
 					}
 					return authContext;
@@ -3135,7 +3136,7 @@ public class DB {
 				}
 			}
 		}
-		LOG.warn("Invalid authentication received: {}", authHeader);
+		LOG.warn("Invalid authentication received.");
 		return null;
 	}
 
@@ -3159,10 +3160,10 @@ public class DB {
 					DBUserSettings settings = getUserSettings(users, login);
 					return new AuthContext(authorization, settings);
 				} else {
-					LOG.warn("Invalid password (length " + passwd.length() + ") for user: " + login);
+					LOG.warn("Invalid password (length {}) for login (length {}).", passwd.length(), login.length());
 				}
 			} else {
-				LOG.warn("Invalid user name supplied: '" + saveChars(login) + "'");
+				LOG.warn("Invalid user name supplied (length {}).", login.length());
 			}
 		}
 		return null;
@@ -3804,7 +3805,7 @@ public class DB {
 	public static boolean processContribution(Users users, MessageDetails messageDetails) {
 		DBContribution existing = users.getContribution(messageDetails.tx);
 		if (existing != null) {
-			LOG.info("Skipping already recorded donation from {}.", messageDetails.sender);
+			LOG.info("Skipping already recorded donation (transaction '{}').", messageDetails.tx);
 			return false;
 		}
 		
@@ -3820,7 +3821,7 @@ public class DB {
 			userId = unique(messageDetails.uid, users.findUser(messageDetails.uid + "%"));
 		}
 		
-		LOG.info("Recording donation from {}/{} ({} Ct).", messageDetails.sender, messageDetails.uid, messageDetails.amount);
+		LOG.info("Recording donation for user {} ({} Ct).", userId, messageDetails.amount);
 		
 		users.insertContribution(Contribution.create()
 			.setUserId(userId)
@@ -3839,7 +3840,7 @@ public class DB {
 	private static Long unique(String uid, List<Long> users) {
 		Long result = users.size() == 1 ? users.get(0) : null;
 		if (result == null) {
-			LOG.warn("User for user {} not found ({} matches).", uid, users.size());
+			LOG.warn("No unique user found for contribution (key length {}, {} matches).", uid == null ? 0 : uid.length(), users.size());
 		}
 		return result;
 	}

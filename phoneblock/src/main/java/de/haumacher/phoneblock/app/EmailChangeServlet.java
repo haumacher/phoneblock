@@ -208,7 +208,7 @@ public class EmailChangeServlet extends HttpServlet {
 		// Increment request counter
 		session.setAttribute(SESSION_REQUESTS, requests == null ? 1 : requests + 1);
 
-		LOG.info("Email change verification code sent to '{}' for user '{}'.", newEmail, userName);
+		LOG.info("Email change verification code sent for user '{}'.", userName);
 
 		// Show code entry form
 		req.setAttribute(NEW_EMAIL_ATTR, newEmail);
@@ -274,7 +274,7 @@ public class EmailChangeServlet extends HttpServlet {
 				showError(req, resp, CHANGE_PAGE, "error.email.change.already-in-use");
 				return;
 			}
-			LOG.info("Email changed successfully for user '{}' to '{}'.", userName, newEmail);
+			LOG.info("Email changed successfully for user '{}'.", userName);
 
 			UserSettings settings = LoginFilter.getUserSettings(req);
 			if (settings != null) {

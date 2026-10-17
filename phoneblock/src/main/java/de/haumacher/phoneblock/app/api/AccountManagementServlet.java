@@ -179,7 +179,7 @@ public class AccountManagementServlet extends HttpServlet {
 			if (displayName != null && !displayName.isEmpty()) {
 				users.setDisplayName(userName, displayName.trim());
 				updated = true;
-				LOG.info("Updated display name for user '{}' to '{}'", userName, displayName.trim());
+				LOG.info("Updated display name for user '{}'.", userName);
 			}
 
 			if (updated) {
