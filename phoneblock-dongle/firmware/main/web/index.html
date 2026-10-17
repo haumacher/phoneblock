@@ -2123,7 +2123,9 @@ async function refreshAll(){
     const tb = $('systemTasks');
     tb.innerHTML = '';
     const tasks = (s.system.tasks || []).slice()
-      .sort((a, b) => b.cpu_pct - a.cpu_pct);
+      // Name as tie-break: most tasks sit at 0 %, and the order the
+      // firmware lists them in changes between snapshots.
+      .sort((a, b) => b.cpu_pct - a.cpu_pct || a.name.localeCompare(b.name));
     for (const tk of tasks) {
       const tr = document.createElement('tr');
       tr.innerHTML =
