@@ -36,6 +36,16 @@
 #include "web.h"
 #include "wifi.h"
 
+#include "sdkconfig.h"
+
+// TIME_WAIT (2 x MSL) holds every self-closed TCP connection on the heap;
+// the lwIP default of 60 s let connection bursts drain it (#601).
+// sdkconfig.defaults only seeds a *new* sdkconfig, so a checkout that was
+// built before keeps the old value — delete sdkconfig and rebuild.
+#if CONFIG_LWIP_TCP_MSL > 1000
+#  error "CONFIG_LWIP_TCP_MSL too high — stale sdkconfig, delete it and rebuild"
+#endif
+
 // Must be last: bans unsafe string APIs for the rest of this file.
 #include "banned_apis.h"
 
