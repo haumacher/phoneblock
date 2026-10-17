@@ -206,16 +206,21 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 						return null;
 					}
 					
-					Boolean state = blocklist.getPersonalizationState(userId, phoneId);
+					// Exact entry or wildcard prefix — a range the user blocked must be
+					// caught here too (#482); the hash-based /api/check path this method
+					// replaces cannot see wildcards at all.
+					DB.PersonalVerdict personal = db.resolvePersonalization(blocklist, userId, phoneId);
 
 					PhoneInfo info;
-					if (state != null) {
+					if (personal != null) {
 						// There is a personalization for the calling number.
-						if (state.booleanValue()) {
+						if (personal.blocked()) {
 							// Locally blocked.
-							LOG.info("Caller is on blacklist of {}: {}", botName, phoneId);
+							LOG.info("Caller is on blacklist of {}: {} (matched {})", botName, phoneId,
+								personal.phoneId());
 							info = NumberAnalyzer.phoneInfoFromId(phoneId)
 								.setRating(Rating.B_MISSED)
+								.setBlackListed(true)
 								.setVotes(1000)
 								.setVotesWildcard(1000);
 						} else {
@@ -223,6 +228,7 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 							LOG.info("Call form white-listed number of {}.", botName);
 							info = NumberAnalyzer.phoneInfoFromId(phoneId)
 								.setRating(Rating.A_LEGITIMATE)
+								.setWhiteListed(true)
 								.setVotes(0);
 						}
 					} else {
@@ -262,7 +268,14 @@ public class SipService implements ServletContextListener, RegistrationClientLis
 						String phoneId = NumberAnalyzer.getPhoneId(number);
 						// Spam evidence is capped per user (the answer-bot owner) inside recordCall.
 						BlockList blocklist = session.getMapper(BlockList.class);
-						db.recordCall(reports, blocklist, ownerUserId, number, phoneId, dialPrefix, startTime);
+						// A pickup decided by one of the owner's prefix wildcards is reported
+						// with the rule's weight, not at full strength (#377) — same resolver
+						// (and therefore the same precedence) fetchPhoneInfo used to decide.
+						DB.PersonalVerdict personal =
+							db.resolvePersonalization(blocklist, ownerUserId, phoneId);
+						double weight = personal != null ? personal.reportWeight(phoneId) : 1.0;
+						db.recordCall(reports, blocklist, ownerUserId, number, phoneId, dialPrefix,
+							startTime, weight);
 					}
 
 					session.commit();
