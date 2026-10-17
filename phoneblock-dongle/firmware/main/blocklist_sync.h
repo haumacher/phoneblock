@@ -40,6 +40,13 @@ void blocklist_sync_run(void);
 // if the scheduler is not running or a run is already in progress.
 bool blocklist_sync_trigger_now(void);
 
+// Deletes the cached community list to make room for a file that has
+// precedence on the shared storage partition (storage.c,
+// storage_make_room()). Lookups fall back to the live API until the next
+// daily sync downloads a list sized for what is left. Returns false if there
+// was no community file.
+bool blocklist_sync_evict_community(void);
+
 // Combined verdict using the user's personal list first, then the
 // community list.
 //

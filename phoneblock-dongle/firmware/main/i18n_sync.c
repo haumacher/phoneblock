@@ -21,7 +21,6 @@
 #include "esp_crt_bundle.h"
 #include "esp_http_client.h"
 #include "esp_log.h"
-#include "esp_spiffs.h"
 #include "esp_timer.h"
 #include "mbedtls/sha256.h"
 
@@ -31,16 +30,13 @@
 #include "config.h"
 #include "http_util.h"
 #include "scheduler.h"
+#include "storage.h"
 #include "version_cmp.h"
 
 static const char *TAG = "i18nsync";
 
-#define SPIFFS_LABEL     "storage"
 #define SPIFFS_DIR       "/spiffs"
 #define DOWNLOAD_CHUNK   1024
-// Headroom kept free on the storage partition (SPIFFS metadata overhead the
-// raw free-byte count overstates), matching blocklist_sync's guard.
-#define FS_MARGIN        (48 * 1024)
 // Manifest is small JSON (a few assets per locale); cap generously and
 // heap-allocate so a growing locale set never smashes the task stack.
 #define MANIFEST_CAP     (8 * 1024)
@@ -68,13 +64,6 @@ static void set_status(bool ok, const char *lang, const char *err)
         s_status.last_error[sizeof(s_status.last_error) - 1] = '\0';
     }
     xSemaphoreGive(s_lock);
-}
-
-static int64_t spiffs_free_bytes(void)
-{
-    size_t total = 0, used = 0;
-    if (esp_spiffs_info(SPIFFS_LABEL, &total, &used) != ESP_OK) return -1;
-    return (int64_t)total - (int64_t)used;
 }
 
 static void bytes_to_hex(const uint8_t *in, size_t n, char *out)
@@ -168,85 +157,131 @@ out:
 // Streaming asset download → SHA-256 verify → atomic rename into place.
 // ---------------------------------------------------------------------------
 
+typedef struct {
+    const char *url;
+    const char *final_path;
+    const char *tmp_path;
+    const char *expected_sha_hex;
+} asset_dl_t;
+
+// One download attempt of an asset into its temp file, SHA-256 checked
+// (storage_attempt_fn). Removes the temp file again on any failure.
+static storage_dl_t download_to_tmp(void *ctx, size_t *bytes,
+                                    char *err, size_t err_cap)
+{
+    const asset_dl_t *a = ctx;
+    storage_dl_t result = STORAGE_DL_FAILED;
+    int64_t content_length = 0;
+    int64_t total = 0;
+
+    storage_file_t out;
+    if (!storage_file_open(&out, a->tmp_path)) {
+        snprintf(err, err_cap, "fopen %s: %s", a->tmp_path, strerror(errno));
+        return STORAGE_DL_FAILED;
+    }
+
+    esp_http_client_config_t cfg = {
+        .url               = a->url,
+        .method            = HTTP_METHOD_GET,
+        .crt_bundle_attach = esp_crt_bundle_attach,
+        .timeout_ms        = 30000,
+    };
+    esp_http_client_handle_t client = esp_http_client_init(&cfg);
+    bool opened = false;
+
+    mbedtls_sha256_context sha;
+    mbedtls_sha256_init(&sha);
+    mbedtls_sha256_starts(&sha, 0);
+
+    if (!client) { snprintf(err, err_cap, "http_client_init"); goto out; }
+    http_util_set_user_agent(client);
+
+    esp_err_t e = esp_http_client_open(client, 0);
+    if (e != ESP_OK) { snprintf(err, err_cap, "open: %s", esp_err_to_name(e)); goto out; }
+    opened = true;
+    content_length = esp_http_client_fetch_headers(client);
+    int status = esp_http_client_get_status_code(client);
+    if (status != 200) { snprintf(err, err_cap, "HTTP %d", status); goto out; }
+
+    if (content_length > 0) {
+        if (content_length > ANNOUNCEMENT_MAX_BYTES) {
+            snprintf(err, err_cap, "asset too large: %lld B", (long long)content_length);
+            goto out;
+        }
+        // The assets have precedence over the community blocklist cache on
+        // the shared partition (storage.h); then make the whole file
+        // writable before the first byte arrives.
+        storage_make_room((size_t)content_length, a->final_path);
+        storage_gc(a->tmp_path, (size_t)content_length);
+    }
+
+    char buf[DOWNLOAD_CHUNK];
+    for (;;) {
+        int n = esp_http_client_read(client, buf, sizeof(buf));
+        if (n < 0) { snprintf(err, err_cap, "read failed at %lld", (long long)total); goto out; }
+        if (n == 0) break;
+        mbedtls_sha256_update(&sha, (const uint8_t *)buf, (size_t)n);
+        if (!storage_file_write(&out, buf, (size_t)n)) {
+            snprintf(err, err_cap, "fwrite short at %lld: %s",
+                     (long long)total, strerror(errno));
+            if (errno == ENOSPC) result = STORAGE_DL_FULL;
+            goto out;
+        }
+        total += n;
+        if (total > ANNOUNCEMENT_MAX_BYTES) {
+            snprintf(err, err_cap, "asset too large: over %u B",
+                     (unsigned)ANNOUNCEMENT_MAX_BYTES);
+            goto out;
+        }
+    }
+    esp_http_client_close(client);
+    esp_http_client_cleanup(client);
+    client = NULL;
+    opened = false;
+
+    if (!storage_file_close(&out)) {
+        snprintf(err, err_cap, "close %s: %s", a->tmp_path, strerror(errno));
+        if (errno == ENOSPC) result = STORAGE_DL_FULL;
+        goto out;
+    }
+
+    uint8_t digest[32];
+    char got_hex[65];
+    mbedtls_sha256_finish(&sha, digest);
+    bytes_to_hex(digest, sizeof(digest), got_hex);
+    if (strcasecmp(got_hex, a->expected_sha_hex) != 0) {
+        snprintf(err, err_cap, "sha mismatch");
+        goto out;
+    }
+    mbedtls_sha256_free(&sha);
+    return STORAGE_DL_OK;
+
+out:
+    if (opened) esp_http_client_close(client);
+    if (client) esp_http_client_cleanup(client);
+    storage_file_close(&out);
+    mbedtls_sha256_free(&sha);
+    unlink(a->tmp_path);
+    *bytes = (size_t)(content_length > 0 ? content_length : total);
+    return result;
+}
+
+// Streaming asset download → SHA-256 verify → rename into place.
 static bool download_verify_rename(const char *url, const char *final_path,
                                    const char *expected_sha_hex,
                                    char *err, size_t err_cap)
 {
     char tmp_path[80];
     snprintf(tmp_path, sizeof(tmp_path), "%s.tmp", final_path);
+    unlink(tmp_path);
 
-    FILE *out = fopen(tmp_path, "wb");
-    if (!out) { snprintf(err, err_cap, "fopen %s: %s", tmp_path, strerror(errno)); return false; }
-
-    esp_http_client_config_t cfg = {
-        .url               = url,
-        .method            = HTTP_METHOD_GET,
-        .crt_bundle_attach = esp_crt_bundle_attach,
-        .timeout_ms        = 30000,
+    asset_dl_t a = {
+        .url              = url,
+        .final_path       = final_path,
+        .tmp_path         = tmp_path,
+        .expected_sha_hex = expected_sha_hex,
     };
-    esp_http_client_handle_t client = esp_http_client_init(&cfg);
-    if (!client) { snprintf(err, err_cap, "http_client_init"); fclose(out); unlink(tmp_path); return false; }
-    http_util_set_user_agent(client);
-
-    mbedtls_sha256_context sha;
-    mbedtls_sha256_init(&sha);
-    mbedtls_sha256_starts(&sha, 0);
-
-    esp_err_t e = esp_http_client_open(client, 0);
-    if (e != ESP_OK) { snprintf(err, err_cap, "open: %s", esp_err_to_name(e)); goto out; }
-    int64_t content_length = esp_http_client_fetch_headers(client);
-    int status = esp_http_client_get_status_code(client);
-    if (status != 200) { snprintf(err, err_cap, "HTTP %d", status); goto out_close; }
-
-    if (content_length > 0) {
-        if (content_length > ANNOUNCEMENT_MAX_BYTES) {
-            snprintf(err, err_cap, "asset too large: %lld B", (long long)content_length);
-            goto out_close;
-        }
-        int64_t freeb = spiffs_free_bytes();
-        if (freeb >= 0 && content_length + FS_MARGIN > freeb) {
-            snprintf(err, err_cap, "no space: %lld B needs > %lld free",
-                     (long long)content_length, (long long)freeb);
-            goto out_close;
-        }
-    }
-
-    char buf[DOWNLOAD_CHUNK];
-    int64_t total = 0;
-    for (;;) {
-        int n = esp_http_client_read(client, buf, sizeof(buf));
-        if (n < 0) { snprintf(err, err_cap, "read failed at %lld", (long long)total); goto out_close; }
-        if (n == 0) break;
-        mbedtls_sha256_update(&sha, (const uint8_t *)buf, (size_t)n);
-        if (fwrite(buf, 1, (size_t)n, out) != (size_t)n) {
-            snprintf(err, err_cap, "fwrite short at %lld: %s",
-                     (long long)total, strerror(errno));
-            goto out_close;
-        }
-        total += n;
-    }
-    esp_http_client_close(client);
-    esp_http_client_cleanup(client);
-    client = NULL;
-
-    if (fflush(out) != 0 || fclose(out) != 0) {
-        snprintf(err, err_cap, "close %s: %s", tmp_path, strerror(errno));
-        out = NULL;
-        mbedtls_sha256_free(&sha);
-        unlink(tmp_path);
-        return false;
-    }
-    out = NULL;
-
-    uint8_t digest[32];
-    char got_hex[65];
-    mbedtls_sha256_finish(&sha, digest);
-    mbedtls_sha256_free(&sha);
-    bytes_to_hex(digest, sizeof(digest), got_hex);
-
-    if (strcasecmp(got_hex, expected_sha_hex) != 0) {
-        snprintf(err, err_cap, "sha mismatch");
-        unlink(tmp_path);
+    if (!storage_download(tmp_path, download_to_tmp, &a, err, err_cap)) {
         return false;
     }
 
@@ -260,17 +295,8 @@ static bool download_verify_rename(const char *url, const char *final_path,
         unlink(tmp_path);
         return false;
     }
-    ESP_LOGI(TAG, "downloaded %lld B → %s", (long long)total, final_path);
+    ESP_LOGI(TAG, "downloaded → %s", final_path);
     return true;
-
-out_close:
-    if (client) esp_http_client_close(client);
-out:
-    if (client) esp_http_client_cleanup(client);
-    if (out) fclose(out);
-    mbedtls_sha256_free(&sha);
-    unlink(tmp_path);
-    return false;
 }
 
 // ---------------------------------------------------------------------------
@@ -302,7 +328,13 @@ static void prune_stale(const char *keep_lang)
         bool stale =
             is_stale_localized(e->d_name, "announcement-", ".alaw", keep_lang) ||
             is_stale_localized(e->d_name, "mail-", ".json", keep_lang) ||
-            is_stale_localized(e->d_name, "ui-", ".json", keep_lang);
+            is_stale_localized(e->d_name, "ui-", ".json", keep_lang) ||
+            // Temp files a download interrupted by a reboot left behind, of
+            // any locale (an empty keep_lang matches every one): nothing else
+            // ever removes them, and they hold space for good.
+            is_stale_localized(e->d_name, "announcement-", ".alaw.tmp", "") ||
+            is_stale_localized(e->d_name, "mail-", ".json.tmp", "") ||
+            is_stale_localized(e->d_name, "ui-", ".json.tmp", "");
         if (stale) {
             // Sized for SPIFFS_DIR + '/' + a full dirent name so the
             // formatted path can never be truncated (-Wformat-truncation).
@@ -342,11 +374,9 @@ static bool download_asset(cJSON *asset, const char *kind, const char *base_url,
 
     char url[256];
     snprintf(url, sizeof(url), "%s/%s", base_url, jpath->valuestring);
-    if (!download_verify_rename(url, final_path, jsha->valuestring, err, err_cap)) {
-        ESP_LOGW(TAG, "%s download %s: %s", kind, url, err);
-        return false;
-    }
-    return true;
+    // No log here: run_once() reports a failed kind in one WARN line.
+    return download_verify_rename(url, final_path, jsha->valuestring,
+                                  err, err_cap);
 }
 
 // Download a single asset of `kind` (announcement / mail) for the first locale
@@ -453,6 +483,17 @@ static void run_once(void)
     // meanwhile the embedded English UI/mail and silent announcement cover it.)
     prune_stale(lang);
 
+    // The user's own recorded announcement supersedes the localized one
+    // (announcement_open() prefers it), so while there is one the localized
+    // file is dead weight on the shared storage partition — up to 96 KB that
+    // the community blocklist and a re-recording need more (#542). Neither
+    // kept nor downloaded; announcement.c asks for a sync when the user's
+    // recording goes away.
+    bool custom_ann = announcement_is_custom();
+    if (custom_ann && unlink(ann_path) == 0) {
+        ESP_LOGI(TAG, "own announcement active — localized one removed");
+    }
+
     // Download order is chosen for perceived responsiveness: the UI pack FIRST
     // (a browser waiting on the language switch re-renders as soon as it lands,
     // ~24 KB), then the small mail pack, and the big announcement (~80-96 KB)
@@ -482,7 +523,8 @@ static void run_once(void)
     // [ui_lang, en, de] chain built above; downloaded last (biggest, least
     // time-critical).
     char err3[64] = "";
-    if (!sync_kind_chain(assets, "announcement", base, ann_path, ann_chain, acn,
+    if (!custom_ann &&
+        !sync_kind_chain(assets, "announcement", base, ann_path, ann_chain, acn,
                          err3, sizeof(err3))) {
         ESP_LOGW(TAG, "announcement sync: %s", err3);
         if (ok) { ok = false; strncpy(err, err3, sizeof(err) - 1); }

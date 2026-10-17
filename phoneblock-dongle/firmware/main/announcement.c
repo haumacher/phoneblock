@@ -10,6 +10,8 @@
 #include "esp_spiffs.h"
 
 #include "config.h"
+#include "i18n_sync.h"
+#include "storage.h"
 
 // Must be last: bans unsafe string APIs for the rest of this file.
 #include "banned_apis.h"
@@ -192,6 +194,14 @@ void announcement_close(announcement_src_t *src)
     }
 }
 
+// The user's recording is gone (failed upload, reset): the localized
+// announcement, which i18n_sync does not keep alongside a recording, has to
+// be fetched again — until then calls are answered silently.
+static void lost_custom(void)
+{
+    i18n_sync_trigger_now();
+}
+
 esp_err_t announcement_write_begin(size_t total_bytes)
 {
     if (!s_spiffs_mounted) return ESP_ERR_INVALID_STATE;
@@ -209,6 +219,16 @@ esp_err_t announcement_write_begin(size_t total_bytes)
     // interrupted is acceptable here: the default takes over until the
     // user re-uploads.
     forget_custom_state();
+
+    // The recording supersedes the localized announcement (see open()), and
+    // i18n_sync does not keep that one while a custom file exists. Drop it
+    // now so its space serves this upload; an upload that fails asks for it
+    // back (lost_custom()). Then claim the room on the shared partition —
+    // the user's own file has precedence over the community blocklist cache.
+    char lpath[48];
+    announcement_localized_path(lpath, sizeof(lpath), config_ui_lang());
+    unlink(lpath);
+    storage_make_room(total_bytes, SPIFFS_FILE);
 
     s_write_file = fopen(SPIFFS_FILE, "wb");
     if (!s_write_file) {
@@ -251,6 +271,7 @@ esp_err_t announcement_write_commit(void)
         unlink(SPIFFS_FILE);
         forget_custom_state();
         s_write_got = s_write_total = 0;
+        lost_custom();
         return ESP_ERR_INVALID_SIZE;
     }
     size_t stored = s_write_got;
@@ -271,6 +292,7 @@ void announcement_write_abort(void)
     unlink(SPIFFS_FILE);
     forget_custom_state();
     s_write_got = s_write_total = 0;
+    lost_custom();
 }
 
 esp_err_t announcement_reset(void)
@@ -281,6 +303,7 @@ esp_err_t announcement_reset(void)
     }
     unlink(SPIFFS_TEMP);  // best-effort cleanup of any stale temp
     forget_custom_state();
+    lost_custom();
     ESP_LOGI(TAG, "custom announcement reset (localized/silent takes over)");
     return ESP_OK;
 }
