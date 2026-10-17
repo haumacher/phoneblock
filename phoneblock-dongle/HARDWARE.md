@@ -261,6 +261,14 @@ DevKit direkt in den Fritz!Box-Port passt. Kosten: ca. 1–2 €.
 - Sobald man eine eigene Serie baut, ist ein Custom-PCB mit C3 billiger
 - Als **Referenzdesign** für spätere Eigen-PCB trotzdem interessant
 
+**Stand 1.7.0:** Die Firmware läuft auf dem T-Dongle-S3 (#602) — für alle,
+die ein fertiges USB-A-Board ohne Basteln wollen. Status-LED ist die
+APA102-RGB-LED (GPIO 40 Daten, GPIO 39 Takt, BGR), die
+LCD-Hintergrundbeleuchtung (GPIO 38, active-low) wird abgeschaltet, Display
+und SD-Slot bleiben ungenutzt. Eigene Partitionstabelle für die 16 MB
+Flash: `firmware/partitions-16mb.csv`. Gemessen: 178 KB freier Heap im
+Betrieb, Chip-Temperatur ~57 °C.
+
 ## Offene Hardware-Punkte
 
 Aus [PROGRESS.md](PROGRESS.md):

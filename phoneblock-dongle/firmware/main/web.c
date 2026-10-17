@@ -3009,7 +3009,14 @@ void web_start(void)
     // The default 4 KB is too tight once /api/fritzbox-setup → tr064_*
     // nests through call_action → post_soap → esp_http_client. 8 KB
     // gives us headroom for the deep call chain without overflows.
+    // ESP32-S3: after the SIP setup through TR-064 only 488 B were left
+    // (ESP32-C3: 948 B), the Xtensa register windows make the same calls
+    // deeper. The S3 has the heap to spare (~150 KB free), so +2 KB there.
+#if CONFIG_IDF_TARGET_ESP32S3
+    cfg.stack_size = 10240;
+#else
     cfg.stack_size = 8192;
+#endif
     // Reclaim the least-recently-used connection when every socket slot
     // is taken, instead of refusing the new one. Browsers keep HTTP/1.1
     // keep-alive sockets open, and a device that simply went away (laptop
