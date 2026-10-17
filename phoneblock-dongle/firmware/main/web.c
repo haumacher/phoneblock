@@ -28,6 +28,7 @@
 #include "api.h"
 #include "blocklist_sync.h"
 #include "i18n_sync.h"
+#include "storage.h"
 #include "config.h"
 #include "heap_guard.h"
 #include "firmware_update.h"
@@ -2785,16 +2786,19 @@ static esp_err_t handle_dev_i18n_upload(httpd_req_t *req)
 
     // Streamed through a temp file and renamed, like i18n_sync's own
     // downloads: an interrupted upload then leaves the previous bundle
-    // intact instead of a half-written one the parser would choke on.
-    FILE *f = fopen(tmp, "wb");
-    if (!f) {
+    // intact instead of a half-written one the parser would choke on. Same
+    // write discipline as those downloads, too: precedence over the
+    // community cache and the shared write buffer (storage.h).
+    storage_make_room((size_t)total, path);
+    storage_file_t f;
+    if (!storage_file_open(&f, tmp)) {
         send_fail_code(req, "500 Internal Server Error", "storage",
                        "Could not open the bundle file for writing.");
         return ESP_OK;
     }
     char *buf = malloc(1024);
     if (!buf) {
-        fclose(f);
+        storage_file_close(&f);
         remove(tmp);
         send_fail_code(req, "500 Internal Server Error", "oom", "Out of memory.");
         return ESP_OK;
@@ -2808,12 +2812,12 @@ static esp_err_t handle_dev_i18n_upload(httpd_req_t *req)
         int n = httpd_req_recv(req, buf, want);
         if (n <= 0) { wrote = false; break; }
         if (got == 0) first = buf[0];
-        if (fwrite(buf, 1, n, f) != (size_t)n) wrote = false;
+        if (!storage_file_write(&f, buf, (size_t)n)) wrote = false;
         got += n;
         esp_task_wdt_reset();
     }
     free(buf);
-    fclose(f);
+    if (!storage_file_close(&f)) wrote = false;
 
     // Only the cheapest sanity check: a bundle that does not even start as
     // a JSON object is a mistake worth catching here (a wrong file, or an

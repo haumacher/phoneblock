@@ -7,7 +7,7 @@ CFLAGS  ?= -Wall -Wextra -Werror -O0 -g -I../main -I../core
 IDF_PATH ?= $(HOME)/tools/esp/esp-idf
 CJSON_DIR := $(IDF_PATH)/components/json/cJSON
 
-BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_rcpt test_name_filter test_version_cmp test_net_local test_heap_guard test_platform_linux test_ota_manifest test_stats
+BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_rcpt test_name_filter test_version_cmp test_net_local test_heap_guard test_platform_linux test_ota_manifest test_stats test_storage_budget test_storage_sim
 
 test_sip_parse: test_sip_parse.c ../core/sip_parse.c ../core/sip_parse.h \
                 ../core/dial_rules.c ../core/dial_rules.h \
@@ -45,6 +45,34 @@ test_api_scan: test_api_scan.c ../main/api_scan.c ../main/api_scan.h cjson.o
 
 test_ota_manifest: test_ota_manifest.c ../main/ota_manifest.c ../main/ota_manifest.h cjson.o
 	$(CC) $(CFLAGS) -I$(CJSON_DIR) test_ota_manifest.c ../main/ota_manifest.c cjson.o -o $@
+
+test_storage_budget: test_storage_budget.c ../main/storage_budget.c ../main/storage_budget.h
+	$(CC) $(CFLAGS) test_storage_budget.c ../main/storage_budget.c -o $@
+
+# test_storage_sim runs the unmodified ESP-IDF SPIFFS core on a RAM flash
+# (spiffs_host/) with the dongle's geometry, read from the same files the
+# firmware is built from: page size and GC budget from sdkconfig.defaults,
+# the partition size from partitions.csv. The core is third-party code, built
+# once with warnings off; storage.c / storage_budget.c are built with ours.
+SPIFFS_SRC := $(IDF_PATH)/components/spiffs/spiffs/src
+SPIFFS_INC := $(IDF_PATH)/components/spiffs/include
+SIM_PAGE   := $(shell sed -n 's/^CONFIG_SPIFFS_PAGE_SIZE=//p' ../sdkconfig.defaults)
+SIM_GCRUNS := $(shell sed -n 's/^CONFIG_SPIFFS_GC_MAX_RUNS=//p' ../sdkconfig.defaults)
+SIM_PART   := $(shell awk -F, '$$1 ~ /^storage/ { gsub(/ /, "", $$5); print $$5 }' ../partitions.csv)
+SIM_FLAGS  := -DCONFIG_SPIFFS_PAGE_SIZE=$(SIM_PAGE) -DCONFIG_SPIFFS_GC_MAX_RUNS=$(SIM_GCRUNS) \
+              -DSIM_PART_SIZE=$(SIM_PART) -Ispiffs_host -I$(SPIFFS_INC) -I$(SPIFFS_SRC)
+SPIFFS_CORE := spiffs_core_cache.o spiffs_core_check.o spiffs_core_gc.o \
+               spiffs_core_hydrogen.o spiffs_core_nucleus.o
+
+spiffs_core_%.o: $(SPIFFS_SRC)/spiffs_%.c spiffs_host/sdkconfig.h ../sdkconfig.defaults ../partitions.csv
+	$(CC) -O2 -g -w $(SIM_FLAGS) -c $< -o $@
+
+test_storage_sim: test_storage_sim.c spiffs_host/spiffs_sim.c spiffs_host/spiffs_sim.h \
+                  ../main/storage.c ../main/storage.h ../main/storage_budget.c \
+                  ../main/storage_budget.h $(SPIFFS_CORE)
+	$(CC) $(CFLAGS) $(SIM_FLAGS) -DSTORAGE_UNLINK=sim_vfs_unlink \
+	    test_storage_sim.c spiffs_host/spiffs_sim.c ../main/storage.c \
+	    ../main/storage_budget.c $(SPIFFS_CORE) -o $@
 
 test_blocklist_lookup: test_blocklist_lookup.c ../main/blocklist_lookup.c ../main/blocklist_lookup.h
 	$(CC) $(CFLAGS) test_blocklist_lookup.c ../main/blocklist_lookup.c -o $@
@@ -99,6 +127,6 @@ test: $(BINS)
 	@echo "→ test-signing-roundtrip.sh"; ./test-signing-roundtrip.sh
 
 clean:
-	rm -f $(BINS) cjson.o
+	rm -f $(BINS) cjson.o $(SPIFFS_CORE)
 
 .PHONY: test clean

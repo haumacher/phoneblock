@@ -16,58 +16,26 @@
 #include "esp_timer.h"
 #include "esp_http_client.h"
 #include "esp_crt_bundle.h"
-#include "esp_spiffs.h"
 
 #include "config.h"
 #include "heap_guard.h"
 #include "http_util.h"
-#include "strbuf.h"
 #include "scheduler.h"
+#include "storage.h"
+#include "strbuf.h"
 
 // Must be last: bans unsafe string APIs for the rest of this file.
 #include "banned_apis.h"
 
-// The downloads here and in i18n_sync.c need a garbage-collection budget far
-// above the IDF default of 10 blocks — see the rationale in sdkconfig.defaults
-// and issue #499. sdkconfig.defaults only seeds a *new* sdkconfig, so a
-// checkout that was built before the setting was raised keeps the old value
-// and would silently ship the bug again. Fail the build instead: delete
-// `sdkconfig` (local settings belong in sdkconfig.defaults.local) and rebuild.
-#if CONFIG_SPIFFS_GC_MAX_RUNS < 64
-#  error "CONFIG_SPIFFS_GC_MAX_RUNS too low — stale sdkconfig, delete it and rebuild"
-#endif
-
 static const char *TAG = "blsync";
 
 // Stream-read chunk for the HTTPS download. Small to stay friendly with
-// the stack-allocated buffer; the stdio buffer below batches these chunks
-// into larger SPIFFS writes.
+// the stack-allocated buffer; storage_file_open()'s stdio buffer batches
+// these chunks into larger SPIFFS writes.
 #define DOWNLOAD_CHUNK     1024
-
-// stdio buffer for the temp file. SPIFFS pays per write *call* — cache
-// flush, object-index update and one garbage-collection check each time —
-// not per byte, so batching the 1 KB HTTP chunks into 4 KB writes cuts that
-// cost (and the GC churn) fourfold. Heap-allocated for the duration of the
-// download rather than static: 4 KB of DRAM is worth more to the heap the
-// TLS session comes out of, and the scheduler task's 16 KB stack has to
-// hold the handshake as well.
-#define SPIFFS_IO_BUF      4096
 
 #define COMMUNITY_TMP      BLOCKLIST_COMMUNITY_PATH ".tmp"
 #define PERSONAL_TMP       BLOCKLIST_PERSONAL_PATH ".tmp"
-
-// SPIFFS partition label shared with announcement.c — the community,
-// personal and announcement files all live on this one mount.
-#define SPIFFS_LABEL       "storage"
-
-// Headroom kept free on the storage partition: SPIFFS block/metadata
-// overhead the raw free-byte count overstates, plus room for the small
-// personal list. Used both to size the budget advertised to the server
-// (&maxBytes) and to guard each download against a mid-write ENOSPC.
-#define BLOCKLIST_FS_MARGIN      (48 * 1024)
-
-// Community budget advertised when the filesystem size cannot be read.
-#define DEFAULT_COMMUNITY_BUDGET (256 * 1024)
 
 static SemaphoreHandle_t s_lock    = NULL;
 static blocklist_sync_status_t s_status;
@@ -108,84 +76,31 @@ static void refresh_sizes_locked(void)
 // Streaming HTTPS download into a temp file.
 // ---------------------------------------------------------------------------
 
-// Free bytes on the storage SPIFFS partition, or -1 if it cannot be read.
-static int64_t spiffs_free_bytes(void)
+typedef struct {
+    const char *url;
+    const char *tmp_path;
+    // Largest body the partition's budget admits, or -1 for no budget check
+    // (the personal list: a few KB the user curates, never truncated).
+    int64_t     budget;
+} download_t;
+
+// One download attempt of `d->url` into `d->tmp_path` (storage_attempt_fn).
+// The caller has already removed the live file this temp will be renamed
+// onto. Removes the temp file again on any failure.
+static storage_dl_t download_to_tmp(void *ctx, size_t *bytes,
+                                    char *err, size_t err_cap)
 {
-    size_t total = 0, used = 0;
-    if (esp_spiffs_info(SPIFFS_LABEL, &total, &used) != ESP_OK) {
-        return -1;
-    }
-    return (int64_t) total - (int64_t) used;
-}
+    const download_t *d = ctx;
+    storage_dl_t result = STORAGE_DL_FAILED;
 
-// Storage budget the dongle offers the community file: current free space
-// minus a margin for SPIFFS overhead and the small personal list. The old
-// community file is deleted before the download starts (see sync_one), so
-// its bytes are already part of this free count — no need to add them back.
-// Sent to the server as &maxBytes so it caps the encoded file to what fits.
-static int64_t community_budget_bytes(void)
-{
-    int64_t freeb = spiffs_free_bytes();
-    if (freeb < 0) {
-        return DEFAULT_COMMUNITY_BUDGET;
-    }
-    int64_t budget = freeb - BLOCKLIST_FS_MARGIN;
-    return budget > 0 ? budget : 0;
-}
-
-// Runs a garbage-collection pass that tries to make `want` bytes writable on
-// the storage partition.
-//
-// SPIFFS reclaims deleted pages lazily — one logical block per GC run — and
-// the GC that runs implicitly inside a write gives up after
-// CONFIG_SPIFFS_GC_MAX_RUNS blocks. After the daily unlink of the old
-// community list (see sync_one), whose pages are scattered across
-// partially-used blocks, that budget could be exhausted before a single
-// contiguous page was free: the write then failed with SPIFFS_ERR_FULL,
-// surfacing as ENOSPC and a short fwrite, while the partition still reported
-// hundreds of KB free (issue #499). Asking for the space up front does the
-// consolidation in one deliberate pass on the background scheduler task.
-//
-// Logged at INFO on purpose: not reaching the target is not a failure — the
-// write needs free pages, not consolidated blocks, and may well succeed
-// anyway — and ESP_LOGW lands in the "Protokoll" panel of the web UI.
-static void force_gc(const char *why, size_t want)
-{
-    esp_err_t e = esp_spiffs_gc(SPIFFS_LABEL, want);
-    ESP_LOGI(TAG, "gc for %s (%u B): %s", why, (unsigned) want,
-             esp_err_to_name(e));
-}
-
-// Downloads `url` into `tmp_path`. The caller has already removed the live
-// file this temp will be renamed onto, so the whole free partition is
-// available here. On any error returns false and writes a message to `err`.
-//
-// `*gc_want` is set to the number of bytes a retry would need the filesystem
-// to make available, but only when the failure was an out-of-space one — it
-// stays 0 for every other error, so the caller can tell the one failure a
-// garbage-collection pass can fix from the ones it cannot.
-static bool download_to_tmp(const char *url, const char *tmp_path,
-                            size_t *gc_want, char *err, size_t err_cap)
-{
-    *gc_want = 0;
-
-    FILE *out = fopen(tmp_path, "wb");
-    if (out == NULL) {
-        snprintf(err, err_cap, "fopen %s: %s", tmp_path, strerror(errno));
-        return false;
-    }
-
-    // Batch the HTTP chunks into SPIFFS_IO_BUF-sized writes. Without the
-    // buffer stdio still works, just with one SPIFFS write per 1 KB chunk,
-    // so a failed allocation is not worth aborting the download over. The
-    // buffer must outlive every write, i.e. be freed only after fclose().
-    char *iobuf = malloc(SPIFFS_IO_BUF);
-    if (iobuf != NULL) {
-        setvbuf(out, iobuf, _IOFBF, SPIFFS_IO_BUF);
+    storage_file_t out;
+    if (!storage_file_open(&out, d->tmp_path)) {
+        snprintf(err, err_cap, "fopen %s: %s", d->tmp_path, strerror(errno));
+        return STORAGE_DL_FAILED;
     }
 
     esp_http_client_config_t cfg = {
-        .url               = url,
+        .url               = d->url,
         .method            = HTTP_METHOD_GET,
         .crt_bundle_attach = esp_crt_bundle_attach,
         .timeout_ms        = 30000,
@@ -197,7 +112,7 @@ static bool download_to_tmp(const char *url, const char *tmp_path,
     int64_t total          = 0;
     if (client == NULL) {
         snprintf(err, err_cap, "http_client_init failed");
-        goto fail;
+        goto out;
     }
 
     char auth_header[128];
@@ -211,7 +126,7 @@ static bool download_to_tmp(const char *url, const char *tmp_path,
     esp_err_t err_open = esp_http_client_open(client, 0);
     if (err_open != ESP_OK) {
         snprintf(err, err_cap, "open: %s", esp_err_to_name(err_open));
-        goto fail;
+        goto out;
     }
     opened = true;
 
@@ -219,26 +134,21 @@ static bool download_to_tmp(const char *url, const char *tmp_path,
     int status = esp_http_client_get_status_code(client);
     if (status != 200) {
         snprintf(err, err_cap, "HTTP %d", status);
-        goto fail;
+        goto out;
     }
 
-    // Storage pre-check: refuse a body that won't fit before any bytes land,
-    // turning a mid-write ENOSPC (which strands a half-written .tmp) into a
-    // clean, actionable error. The old live file was already removed by the
-    // caller, so the free count is exactly what this download has to work with.
-    // No gc_want here: this is a real shortage of bytes, which no amount of
-    // garbage collection can conjure up.
     if (content_length > 0) {
-        int64_t freeb = spiffs_free_bytes();
-        if (freeb >= 0 && content_length + BLOCKLIST_FS_MARGIN > freeb) {
-            snprintf(err, err_cap, "too large: %lld B needs > %lld B free",
-                     (long long) content_length, (long long) freeb);
-            unlink(tmp_path);
-            goto fail;
+        // Budget check before any bytes land. The server snaps &maxBytes down
+        // to a bucket but never below its smallest one, so a list can still
+        // come back larger than the budget; storing it anyway would be
+        // exactly the overfill the budget exists to prevent.
+        if (d->budget >= 0 && content_length > d->budget) {
+            snprintf(err, err_cap, "too large: %lld B, budget %lld B",
+                     (long long) content_length, (long long) d->budget);
+            goto out;
         }
-        // The bytes exist — make sure they are also writable, before the
-        // first one arrives. See force_gc().
-        force_gc(tmp_path, (size_t) content_length + BLOCKLIST_FS_MARGIN);
+        // Make the whole file writable before the first byte arrives.
+        storage_gc(d->tmp_path, (size_t) content_length);
     }
 
     char buf[DOWNLOAD_CHUNK];
@@ -247,25 +157,27 @@ static bool download_to_tmp(const char *url, const char *tmp_path,
         if (n < 0) {
             snprintf(err, err_cap, "read failed after %lld bytes",
                      (long long)total);
-            goto fail;
+            goto out;
         }
         if (n == 0) {
             break;
         }
-        size_t w = fwrite(buf, 1, (size_t)n, out);
-        if (w != (size_t)n) {
+        if (!storage_file_write(&out, buf, (size_t)n)) {
             // errno tells apart the two ways this happens: ENOSPC is SPIFFS
             // refusing a page (worth a retry after a GC pass), anything else
             // is a flash-level failure that a retry would only repeat.
             snprintf(err, err_cap, "fwrite short at %lld bytes: %s",
                      (long long)total, strerror(errno));
-            if (errno == ENOSPC) {
-                *gc_want = (size_t)(content_length > 0 ? content_length : total)
-                           + BLOCKLIST_FS_MARGIN;
-            }
-            goto fail;
+            if (errno == ENOSPC) result = STORAGE_DL_FULL;
+            goto out;
         }
         total += n;
+        if (d->budget >= 0 && total > d->budget) {
+            // A body without Content-Length cannot be checked up front.
+            snprintf(err, err_cap, "too large: over budget %lld B",
+                     (long long) d->budget);
+            goto out;
+        }
     }
 
     esp_http_client_close(client);
@@ -273,38 +185,28 @@ static bool download_to_tmp(const char *url, const char *tmp_path,
     client = NULL;
     opened = false;
 
-    // With a stdio buffer in play this is where an out-of-space failure most
-    // likely surfaces: up to SPIFFS_IO_BUF bytes are still unwritten and go
-    // to flash here.
-    if (fflush(out) != 0 || fclose(out) != 0) {
-        snprintf(err, err_cap, "close %s: %s", tmp_path, strerror(errno));
-        if (errno == ENOSPC) {
-            *gc_want = (size_t)(content_length > 0 ? content_length : total)
-                       + BLOCKLIST_FS_MARGIN;
-        }
-        // fclose() released the stream even when it failed; do not touch it
-        // again in the cleanup below.
-        out = NULL;
-        goto fail;
+    if (!storage_file_close(&out)) {
+        snprintf(err, err_cap, "close %s: %s", d->tmp_path, strerror(errno));
+        if (errno == ENOSPC) result = STORAGE_DL_FULL;
+        goto out;
     }
-    out = NULL;
-    free(iobuf);
 
     if (content_length > 0 && total != content_length) {
         snprintf(err, err_cap, "short body: got %lld of %lld",
                  (long long)total, (long long)content_length);
-        return false;
+        goto out;
     }
 
-    ESP_LOGI(TAG, "downloaded %lld bytes → %s", (long long)total, tmp_path);
-    return true;
+    ESP_LOGI(TAG, "downloaded %lld bytes → %s", (long long)total, d->tmp_path);
+    return STORAGE_DL_OK;
 
-fail:
+out:
     if (opened) esp_http_client_close(client);
     if (client) esp_http_client_cleanup(client);
-    if (out)    fclose(out);
-    free(iobuf);
-    return false;
+    storage_file_close(&out);
+    unlink(d->tmp_path);
+    *bytes = (size_t)(content_length > 0 ? content_length : total);
+    return result;
 }
 
 // Validates that the file at `tmp_path` parses as a binary blocklist.
@@ -334,12 +236,20 @@ static bool sync_one(const char *type, const char *path, const char *tmp_path,
     // the download never needs double the space. The cost is no on-flash
     // fallback during the download window: if the sync fails, the call-time
     // path falls back to the PhoneBlock API until the next successful run.
+    //
+    // It also has to come before the budget below, which is computed from
+    // what is left on the partition: a community file an older firmware
+    // sized too large is gone by then, so the very next sync asks for a list
+    // that fits.
     unlink(path);
+    unlink(tmp_path);
 
     char url[256];
     strbuf_t ub = sb_init(url, sizeof(url));
     sb_appendf(&ub, "%s/api/blocklist?format=binary&type=%s",
                config_phoneblock_base_url(), type);
+
+    download_t d = { .url = url, .tmp_path = tmp_path, .budget = -1 };
 
     // The community list carries no per-entry vote counts, so the server
     // applies our two thresholds at encode time. Send them so the
@@ -348,37 +258,27 @@ static bool sync_one(const char *type, const char *path, const char *tmp_path,
     // The personal list is the user's explicit black/white set — no
     // thresholding, so no parameters.
     if (strcmp(type, "community") == 0) {
-        // maxBytes lets the server cap the (size-unbounded) community list to
-        // our free flash: it keeps all wildcards + whitelist and truncates the
-        // Heat-ranked direct numbers to fit. minDirect/minRange keep the
-        // encoded verdict identical to the API-fallback path.
+        // The community list is the one file on the partition that yields:
+        // it gets what the shared budget leaves next to the announcements and
+        // packs (storage_budget.h), and &maxBytes lets the server cap the
+        // (size-unbounded) list to that — it keeps all wildcards + whitelist
+        // and truncates the Heat-ranked direct numbers to fit.
+        d.budget = storage_community_budget();
+        if (d.budget < 0) {
+            snprintf(err, err_cap, "storage not mounted");
+            return false;
+        }
+        if (d.budget == 0) {
+            snprintf(err, err_cap, "no room on the storage partition");
+            return false;
+        }
         sb_appendf(&ub, "&minDirect=%d&minRange=%d&maxBytes=%lld",
                    config_min_direct_votes(), config_min_range_votes(),
-                   (long long) community_budget_bytes());
+                   (long long) d.budget);
     }
 
-    unlink(tmp_path);
-
-    size_t gc_want = 0;
-    if (!download_to_tmp(url, tmp_path, &gc_want, err, err_cap)) {
-        unlink(tmp_path);
-        if (gc_want == 0) {
-            return false;
-        }
-        // The write ran out of writable pages although the byte count said
-        // otherwise, i.e. garbage collection could not keep up (issue #499).
-        // Unlinking the half-written temp just released more pages, so a
-        // second, unhurried GC pass now has more to work with than the one
-        // inside the failed write did — try the download once more. A single
-        // retry: if it fails again the call-time path falls back to the
-        // PhoneBlock API, which is not worth hammering the flash for.
-        force_gc("retry", gc_want);
-        gc_want = 0;
-        if (!download_to_tmp(url, tmp_path, &gc_want, err, err_cap)) {
-            unlink(tmp_path);
-            return false;
-        }
-        ESP_LOGI(TAG, "%s list downloaded on retry after gc", type);
+    if (!storage_download(tmp_path, download_to_tmp, &d, err, err_cap)) {
+        return false;
     }
 
     if (!tmp_parses_ok(tmp_path)) {
@@ -491,6 +391,19 @@ void blocklist_sync_run(void)
     xSemaphoreTake(s_lock, portMAX_DELAY);
     s_status.running = false;
     xSemaphoreGive(s_lock);
+}
+
+bool blocklist_sync_evict_community(void)
+{
+    if (unlink(BLOCKLIST_COMMUNITY_PATH) != 0) {
+        return false;
+    }
+    if (s_lock != NULL) {
+        xSemaphoreTake(s_lock, portMAX_DELAY);
+        refresh_sizes_locked();
+        xSemaphoreGive(s_lock);
+    }
+    return true;
 }
 
 bool blocklist_sync_trigger_now(void)

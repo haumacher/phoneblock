@@ -78,8 +78,11 @@ void        announcement_close(announcement_src_t *src);
 //
 // The write goes straight into the live file (no temp + rename), so the
 // partition never needs room for two copies. The trade-off is that an
-// interrupted write leaves no custom announcement and the embedded
-// default takes over until the user re-uploads (see write_begin).
+// interrupted write leaves no custom announcement until the user re-uploads
+// (see write_begin). write_begin also drops the localized announcement — a
+// recording supersedes it and i18n_sync.c does not keep both on the shared
+// partition — and a failed write or a reset asks i18n_sync to fetch it
+// again.
 //
 // Only one write session at a time. Not thread-safe — call from a
 // single request handler.
