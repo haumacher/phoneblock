@@ -111,6 +111,12 @@ bool        config_log_info(void);
 // living-room installs where a permanently-lit LED is a nuisance.
 bool        config_led_quiet(void);
 
+// Whether the T-Dongle-S3 display is rotated by 180°. Depending on how the
+// Fritz!Box's USB port is oriented, the stick sits upside down; this turns
+// the logo the right way up. Default off; only meaningful on the S3 build
+// (the other targets have no display and never show the option).
+bool        config_lcd_flipped(void);
+
 // Whether the web UI requires "Login with PhoneBlock" before
 // showing call data or accepting setting changes. Default off —
 // during initial provisioning the LAN-local UI must be reachable
@@ -356,6 +362,9 @@ typedef struct {
     // "1" = status LED quiet mode (dark when READY), "0" = solid-on when
     // READY. NULL = leave unchanged. Default when unset is "off".
     const char *led_quiet;
+    // "1" = display rotated 180° (S3 only), "0" = normal orientation.
+    // NULL = leave unchanged. Default when unset is "off".
+    const char *lcd_flip;
     // "1" = require "Login with PhoneBlock" before serving the UI,
     // "0" = open access. NULL = leave unchanged. Default when the
     // key is unset is "open access" (setup phase).

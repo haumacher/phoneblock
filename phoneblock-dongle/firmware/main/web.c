@@ -30,6 +30,9 @@
 #include "i18n_sync.h"
 #include "storage.h"
 #include "config.h"
+#if CONFIG_IDF_TARGET_ESP32S3
+#include "display.h"
+#endif
 #include "heap_guard.h"
 #include "firmware_update.h"
 #include "log_capture.h"
@@ -543,6 +546,13 @@ static esp_err_t handle_status(httpd_req_t *req)
     cJSON *led = cJSON_AddObjectToObject(root, "led");
     cJSON_AddBoolToObject  (led,  "quiet",        config_led_quiet());
 
+#if CONFIG_IDF_TARGET_ESP32S3
+    // Only the S3 build has a display; its absence tells the UI to hide
+    // the orientation option.
+    cJSON *dsp = cJSON_AddObjectToObject(root, "display");
+    cJSON_AddBoolToObject  (dsp,  "flipped",      config_lcd_flipped());
+#endif
+
     cJSON *au = cJSON_AddObjectToObject(root, "auth");
     cJSON_AddBoolToObject  (au,   "enabled",     config_auth_enabled());
     cJSON_AddBoolToObject  (au,   "logged_in",   web_auth_is_logged_in(req));
@@ -712,6 +722,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     char log_known_s[4]   = "";
     char log_info_s[4]    = "";
     char led_quiet_s[4]   = "";
+    char lcd_flip_s[4]    = "";
     char auto_update_s[4] = "";
     char channel_s[8]     = "";
     char crash_rep_s[4]   = "";
@@ -760,6 +771,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     bool have_log_known = form_get(body, "log_known_calls", log_known_s, sizeof(log_known_s));
     bool have_log_info  = form_get(body, "log_info", log_info_s, sizeof(log_info_s));
     bool have_led_quiet = form_get(body, "led_quiet", led_quiet_s, sizeof(led_quiet_s));
+    bool have_lcd_flip  = form_get(body, "lcd_flip",  lcd_flip_s,  sizeof(lcd_flip_s));
     bool have_auto_upd  = form_get(body, "auto_update",   auto_update_s, sizeof(auto_update_s));
     bool have_channel   = form_get(body, "channel",       channel_s,     sizeof(channel_s));
     bool have_crash_rep = form_get(body, "crash_report",  crash_rep_s,   sizeof(crash_rep_s));
@@ -931,6 +943,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
         .log_known_calls = have_log_known ? log_known_s  : NULL,
         .log_info        = have_log_info  ? log_info_s   : NULL,
         .led_quiet       = have_led_quiet ? led_quiet_s  : NULL,
+        .lcd_flip        = have_lcd_flip  ? lcd_flip_s   : NULL,
         .auto_update     = have_auto_upd  ? auto_update_s : NULL,
         .ota_channel     = channel,
         .crash_report    = have_crash_rep ? crash_rep_s   : NULL,
@@ -993,6 +1006,14 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     if (timezone) {
         time_sync_set_timezone(config_timezone());
     }
+
+#if CONFIG_IDF_TARGET_ESP32S3
+    // Turn the display right away, so the user sees the effect of the
+    // checkbox while still holding the stick.
+    if (have_lcd_flip) {
+        display_set_flipped(config_lcd_flipped());
+    }
+#endif
 
     if (strcmp(old_token, config_phoneblock_token()) != 0
             && config_phoneblock_token()[0] != '\0') {

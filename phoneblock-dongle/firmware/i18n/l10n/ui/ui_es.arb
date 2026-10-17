@@ -347,6 +347,8 @@
   "status.calls.whitelist": "Lista blanca",
   "status.calls.whitelist.help": "Dejar de bloquear este número",
   "whitelist.dialog.title": "Añadir un número a la lista blanca",
+  "whitelist.dialog.intro": "Las llamadas procedentes de este número ya no se bloquearán. Al hacerlo, consideras que el número es legítimo en PhoneBlock; esta valoración se asociará a tu cuenta.",
+  "whitelist.dialog.submit": "Dejar de bloquear",
   "whitelist.dialog.working": "Se está transmitiendo…",
   "whitelist.dialog.done": "Ya está hecho: el número está en tu lista blanca.",
   "spam.dialog.title": "Denunciar este número como spam",
@@ -366,6 +368,6 @@
   "spam.dialog.comment": "Motivo",
   "spam.dialog.comment.hint": "(opcional, será visible públicamente)",
   "spam.dialog.error.is_contact": "Esta persona figura en tu agenda. Una entrada de la agenda siempre tiene prioridad en el dongle, por lo que en este caso no es posible recibir un aviso de spam.",
-  "whitelist.dialog.intro": "Las llamadas procedentes de este número ya no se bloquearán. Al hacerlo, consideras que el número es legítimo en PhoneBlock; esta valoración se asociará a tu cuenta.",
-  "whitelist.dialog.submit": "Dejar de bloquear"
+  "status.system.lcd_flip": "Pantalla al revés (girar 180°)",
+  "status.system.lcd_flip.hint": "Dependiendo de la orientación del puerto USB de tu Fritz!Box, el dispositivo estará colocado al revés. Gira la imagen 180°."
 }
