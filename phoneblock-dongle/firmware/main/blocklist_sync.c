@@ -9,23 +9,33 @@
 #include <string.h>
 #include <unistd.h>
 
+#ifdef ESP_PLATFORM
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
-
 #include "esp_log.h"
 #include "esp_timer.h"
 #include "esp_http_client.h"
 #include "esp_crt_bundle.h"
+#else
+#include <sys/stat.h>
+#include <sys/statvfs.h>
+#endif
 
 #include "config.h"
 #include "heap_guard.h"
 #include "http_util.h"
+#include "platform.h"
 #include "scheduler.h"
 #include "storage.h"
 #include "strbuf.h"
 
+#ifndef PHONEBLOCK_DATA_DIR
+#define PHONEBLOCK_DATA_DIR "/var/lib/phoneblock"
+#endif
+
 // Must be last: bans unsafe string APIs for the rest of this file.
 #include "banned_apis.h"
+
 
 static const char *TAG = "blsync";
 
@@ -37,7 +47,17 @@ static const char *TAG = "blsync";
 #define COMMUNITY_TMP      BLOCKLIST_COMMUNITY_PATH ".tmp"
 #define PERSONAL_TMP       BLOCKLIST_PERSONAL_PATH ".tmp"
 
-static SemaphoreHandle_t s_lock    = NULL;
+// Headroom kept free on the storage partition: SPIFFS block/metadata
+// overhead the raw free-byte count overstates, plus room for the small
+// personal list. Used both to size the budget advertised to the server
+// (&maxBytes) and to guard each download against a mid-write ENOSPC.
+#define BLOCKLIST_FS_MARGIN      (48 * 1024)
+
+// Community budget advertised when the filesystem size cannot be read.
+#define DEFAULT_COMMUNITY_BUDGET (256 * 1024)
+
+static pb_mutex_t * s_lock    = NULL;
+
 static blocklist_sync_status_t s_status;
 
 // ---------------------------------------------------------------------------
@@ -76,6 +96,7 @@ static void refresh_sizes_locked(void)
 // Streaming HTTPS download into a temp file.
 // ---------------------------------------------------------------------------
 
+#ifdef ESP_PLATFORM
 typedef struct {
     const char *url;
     const char *tmp_path;
@@ -208,6 +229,111 @@ out:
     *bytes = (size_t)(content_length > 0 ? content_length : total);
     return result;
 }
+#else
+// Free bytes in the storage directory, or -1 if it cannot be read.
+static int64_t spiffs_free_bytes(void)
+{
+    struct statvfs info;
+    if (statvfs(PHONEBLOCK_DATA_DIR, &info) != 0) return -1;
+    return (int64_t)info.f_bavail * (int64_t)info.f_frsize;
+}
+
+// Storage budget the dongle offers the community file: current free space
+// minus a margin for filesystem overhead and the small personal list. The old
+// community file is deleted before the download starts (see sync_one), so
+// its bytes are already part of this free count — no need to add them back.
+// Sent to the server as &maxBytes so it caps the encoded file to what fits.
+static int64_t community_budget_bytes(void)
+{
+    int64_t freeb = spiffs_free_bytes();
+    if (freeb < 0) {
+        return DEFAULT_COMMUNITY_BUDGET;
+    }
+    int64_t budget = freeb - BLOCKLIST_FS_MARGIN;
+    return budget > 0 ? budget : 0;
+}
+
+typedef struct {
+    FILE *file;
+    int64_t bytes;
+    char *error;
+    size_t error_cap;
+    bool failed;
+} blocklist_download_t;
+
+static void write_download_chunk(const void *data, size_t length, void *context)
+{
+    blocklist_download_t *download = context;
+    if (download->failed) return;
+    size_t written = fwrite(data, 1, length, download->file);
+    download->bytes += (int64_t)written;
+    if (written == length) return;
+
+    snprintf(download->error, download->error_cap,
+             "fwrite short at %lld bytes: %s",
+             (long long)download->bytes, strerror(errno));
+    download->failed = true;
+}
+
+static bool download_to_tmp(const char *url, const char *tmp_path,
+                            char *err, size_t err_cap)
+{
+    if (mkdir(PHONEBLOCK_DATA_DIR, 0750) != 0 && errno != EEXIST) {
+        snprintf(err, err_cap, "mkdir %s: %s", PHONEBLOCK_DATA_DIR,
+                 strerror(errno));
+        return false;
+    }
+    FILE *out = fopen(tmp_path, "wb");
+    if (!out) {
+        snprintf(err, err_cap, "fopen %s: %s", tmp_path, strerror(errno));
+        return false;
+    }
+
+    char *io_buffer = malloc(STORAGE_WRITE_BUF);
+    if (io_buffer) setvbuf(out, io_buffer, _IOFBF, STORAGE_WRITE_BUF);
+
+    char authorization[128];
+    snprintf(authorization, sizeof(authorization), "Bearer %s",
+             config_phoneblock_token());
+    const pb_http_header_t headers[] = {
+        { "User-Agent", http_util_user_agent() },
+        { "Authorization", authorization },
+        { "Accept", "application/octet-stream" },
+    };
+    blocklist_download_t download = {
+        .file = out,
+        .error = err,
+        .error_cap = err_cap,
+    };
+    int status = 0;
+    int result = pb_http_request("GET", url, headers,
+                                 sizeof(headers) / sizeof(headers[0]),
+                                 NULL, 0, 30000, NULL, 0, NULL, &status,
+                                 write_download_chunk, &download, NULL);
+    bool ok = result == PB_HTTP_OK && status == 200 && !download.failed;
+    if (result != PB_HTTP_OK)
+        snprintf(err, err_cap, "%s", pb_http_err_name(result));
+    else if (status != 200)
+        snprintf(err, err_cap, "HTTP %d", status);
+
+    if (fflush(out) != 0) {
+        snprintf(err, err_cap, "flush %s: %s", tmp_path, strerror(errno));
+        ok = false;
+    }
+    if (fclose(out) != 0) {
+        snprintf(err, err_cap, "close %s: %s", tmp_path, strerror(errno));
+        ok = false;
+    }
+    free(io_buffer);
+    if (!ok) {
+        unlink(tmp_path);
+        return false;
+    }
+    pb_log_info(TAG, "downloaded %lld bytes → %s",
+                (long long)download.bytes, tmp_path);
+    return true;
+}
+#endif
 
 // Validates that the file at `tmp_path` parses as a binary blocklist.
 // Returns true if it does. Catches truncated downloads, wrong content-type
@@ -249,7 +375,9 @@ static bool sync_one(const char *type, const char *path, const char *tmp_path,
     sb_appendf(&ub, "%s/api/blocklist?format=binary&type=%s",
                config_phoneblock_base_url(), type);
 
+#ifdef ESP_PLATFORM
     download_t d = { .url = url, .tmp_path = tmp_path, .budget = -1 };
+#endif
 
     // The community list carries no per-entry vote counts, so the server
     // applies our two thresholds at encode time. Send them so the
@@ -258,6 +386,7 @@ static bool sync_one(const char *type, const char *path, const char *tmp_path,
     // The personal list is the user's explicit black/white set — no
     // thresholding, so no parameters.
     if (strcmp(type, "community") == 0) {
+#ifdef ESP_PLATFORM
         // The community list is the one file on the partition that yields:
         // it gets what the shared budget leaves next to the announcements and
         // packs (storage_budget.h), and &maxBytes lets the server cap the
@@ -275,11 +404,23 @@ static bool sync_one(const char *type, const char *path, const char *tmp_path,
         sb_appendf(&ub, "&minDirect=%d&minRange=%d&maxBytes=%lld",
                    config_min_direct_votes(), config_min_range_votes(),
                    (long long) d.budget);
+#else
+        sb_appendf(&ub, "&minDirect=%d&minRange=%d&maxBytes=%lld",
+                   config_min_direct_votes(), config_min_range_votes(),
+                   (long long) community_budget_bytes());
+#endif
     }
 
+#ifdef ESP_PLATFORM
     if (!storage_download(tmp_path, download_to_tmp, &d, err, err_cap)) {
         return false;
     }
+#else
+    if (!download_to_tmp(url, tmp_path, err, err_cap)) {
+        unlink(tmp_path);
+        return false;
+    }
+#endif
 
     if (!tmp_parses_ok(tmp_path)) {
         snprintf(err, err_cap, "downloaded %s is malformed", type);
@@ -302,14 +443,14 @@ static bool sync_one(const char *type, const char *path, const char *tmp_path,
 static void run_once(void)
 {
     if (config_phoneblock_token()[0] == '\0') {
-        ESP_LOGI(TAG, "skipped — no PhoneBlock token");
-        xSemaphoreTake(s_lock, portMAX_DELAY);
+        pb_log_info(TAG, "skipped — no PhoneBlock token");
+        pb_mutex_lock(s_lock);
         s_status.ever_ran    = true;
         s_status.last_ok     = false;
-        s_status.last_at_us  = esp_timer_get_time();
+        s_status.last_at_us  = pb_monotonic_us();
         set_error("no PhoneBlock token");
         refresh_sizes_locked();
-        xSemaphoreGive(s_lock);
+        pb_mutex_unlock(s_lock);
         return;
     }
 
@@ -318,7 +459,7 @@ static void run_once(void)
                                  BLOCKLIST_COMMUNITY_PATH, COMMUNITY_TMP,
                                  err, sizeof(err));
     if (!community_ok) {
-        ESP_LOGW(TAG, "community sync failed: %s", err);
+        pb_log_warn(TAG, "community sync failed: %s", err);
     }
 
     char err_personal[64] = "";
@@ -326,13 +467,13 @@ static void run_once(void)
                                 BLOCKLIST_PERSONAL_PATH, PERSONAL_TMP,
                                 err_personal, sizeof(err_personal));
     if (!personal_ok) {
-        ESP_LOGW(TAG, "personal sync failed: %s", err_personal);
+        pb_log_warn(TAG, "personal sync failed: %s", err_personal);
     }
 
-    xSemaphoreTake(s_lock, portMAX_DELAY);
+    pb_mutex_lock(s_lock);
     s_status.ever_ran   = true;
     s_status.last_ok    = community_ok && personal_ok;
-    s_status.last_at_us = esp_timer_get_time();
+    s_status.last_at_us = pb_monotonic_us();
     s_status.last_error[0] = '\0';
     if (!community_ok) {
         set_error(err);
@@ -340,10 +481,10 @@ static void run_once(void)
         set_error(err_personal);
     }
     refresh_sizes_locked();
-    xSemaphoreGive(s_lock);
+    pb_mutex_unlock(s_lock);
 
     if (community_ok && personal_ok) {
-        ESP_LOGI(TAG, "sync done: community=%d entries, personal=%d entries",
+        pb_log_info(TAG, "sync done: community=%d entries, personal=%d entries",
                  s_status.community_size, s_status.personal_size);
     }
 }
@@ -358,11 +499,11 @@ void blocklist_sync_init(void)
         return;
     }
     memset(&s_status, 0, sizeof(s_status));
-    s_lock = xSemaphoreCreateMutex();
+    s_lock = pb_mutex_create();
 
-    xSemaphoreTake(s_lock, portMAX_DELAY);
+    pb_mutex_lock(s_lock);
     refresh_sizes_locked();
-    xSemaphoreGive(s_lock);
+    pb_mutex_unlock(s_lock);
 }
 
 void blocklist_sync_run(void)
@@ -378,19 +519,19 @@ void blocklist_sync_run(void)
         // Feature switched off in the web UI: don't refresh the on-flash
         // files. The existing files stay put but are never consulted (the
         // call-time path skips them too), so they simply age out.
-        ESP_LOGI(TAG, "skipped — local blocklist cache disabled");
+        pb_log_info(TAG, "skipped — local blocklist cache disabled");
         return;
     }
 
-    xSemaphoreTake(s_lock, portMAX_DELAY);
+    pb_mutex_lock(s_lock);
     s_status.running = true;
-    xSemaphoreGive(s_lock);
+    pb_mutex_unlock(s_lock);
 
     run_once();
 
-    xSemaphoreTake(s_lock, portMAX_DELAY);
+    pb_mutex_lock(s_lock);
     s_status.running = false;
-    xSemaphoreGive(s_lock);
+    pb_mutex_unlock(s_lock);
 }
 
 bool blocklist_sync_evict_community(void)
@@ -399,9 +540,9 @@ bool blocklist_sync_evict_community(void)
         return false;
     }
     if (s_lock != NULL) {
-        xSemaphoreTake(s_lock, portMAX_DELAY);
+        pb_mutex_lock(s_lock);
         refresh_sizes_locked();
-        xSemaphoreGive(s_lock);
+        pb_mutex_unlock(s_lock);
     }
     return true;
 }
@@ -411,9 +552,9 @@ bool blocklist_sync_trigger_now(void)
     if (s_lock == NULL || !config_blocklist_enabled()) {
         return false;
     }
-    xSemaphoreTake(s_lock, portMAX_DELAY);
+    pb_mutex_lock(s_lock);
     bool running = s_status.running;
-    xSemaphoreGive(s_lock);
+    pb_mutex_unlock(s_lock);
     if (running) {
         return false;
     }
@@ -471,7 +612,7 @@ void blocklist_sync_snapshot(blocklist_sync_status_t *out)
         memset(out, 0, sizeof(*out));
         return;
     }
-    xSemaphoreTake(s_lock, portMAX_DELAY);
+    pb_mutex_lock(s_lock);
     *out = s_status;
-    xSemaphoreGive(s_lock);
+    pb_mutex_unlock(s_lock);
 }

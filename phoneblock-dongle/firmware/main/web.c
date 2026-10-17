@@ -36,6 +36,7 @@
 #include "mail.h"
 #include "mail_rcpt.h"
 #include "name_filter.h"
+#include "platform.h"
 #include "rtp.h"
 #include "scheduler.h"
 #include "sip_register.h"
@@ -981,8 +982,8 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     strncpy(old_lang, config_ui_lang(), sizeof(old_lang) - 1);
     old_lang[sizeof(old_lang) - 1] = '\0';
 
-    esp_err_t err = config_update(&u);
-    if (err != ESP_OK) {
+    int err = config_update(&u);
+    if (err != PB_KV_OK) {
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "nvs write failed");
         return ESP_OK;
     }
@@ -2031,9 +2032,9 @@ static void factory_reset_task(void *arg)
     // Let the HTTP response drain and the client close its socket.
     vTaskDelay(pdMS_TO_TICKS(1000));
 
-    esp_err_t err = config_erase();
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "config_erase failed: %s", esp_err_to_name(err));
+    int err = config_erase();
+    if (err != PB_KV_OK) {
+        ESP_LOGE(TAG, "config_erase failed: %s", pb_kv_err_name(err));
     }
     esp_err_t wifi_err = esp_wifi_restore();
     if (wifi_err != ESP_OK) {

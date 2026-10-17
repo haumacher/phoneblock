@@ -1,7 +1,6 @@
 #include "manifest_sig.h"
 
-#include "esp_log.h"
-#include "mbedtls/pk.h"
+#include "platform.h"
 
 static const char *TAG = "mfsig";
 
@@ -43,27 +42,20 @@ static bool verify_with_pubkey(const uint8_t *pubkey_der, size_t pubkey_len,
                                const uint8_t hash[32],
                                const uint8_t *sig, size_t sig_len)
 {
-    mbedtls_pk_context pk;
-    mbedtls_pk_init(&pk);
-    bool ok = false;
-
-    int rc = mbedtls_pk_parse_public_key(&pk, pubkey_der, pubkey_len);
-    if (rc != 0) {
-        ESP_LOGE(TAG, "pk_parse_public_key: -0x%04x", -rc);
-        goto done;
+    int rc = 0;
+    int verdict = pb_ecdsa_p256_verify(pubkey_der, pubkey_len, hash,
+                                       sig, sig_len, &rc);
+    if (verdict == PB_SIG_BAD_KEY) {
+        pb_log_err(TAG, "pk_parse_public_key: -0x%04x", (unsigned)-rc);
+        return false;
     }
-    rc = mbedtls_pk_verify(&pk, MBEDTLS_MD_SHA256,
-                           hash, 32, sig, sig_len);
-    if (rc != 0) {
+    if (verdict != PB_SIG_VALID) {
         // -0x4e80 = MBEDTLS_ERR_ECP_VERIFY_FAILED for ECDSA. WARN — a
         // single failure here is recoverable across the remaining slots.
-        ESP_LOGW(TAG, "pk_verify: -0x%04x", -rc);
-        goto done;
+        pb_log_warn(TAG, "pk_verify: -0x%04x", (unsigned)-rc);
+        return false;
     }
-    ok = true;
-done:
-    mbedtls_pk_free(&pk);
-    return ok;
+    return true;
 }
 
 bool manifest_sig_verify_hash(const uint8_t hash[32],
