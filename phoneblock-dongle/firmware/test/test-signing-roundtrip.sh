@@ -135,21 +135,67 @@ fi
 #    top-level integrity block, ESP32-C3 under its own. Both must verify,
 #    and a broken C3 signature must fail the whole manifest.
 # -----------------------------------------------------------------------
-say "Test 7: multi-chip manifest from manifest.json.tmpl"
+say "Test 7: multi-chip manifests from install.json.tmpl / manifest.json.tmpl"
 head -c 65536 /dev/urandom > "$TMP/app_c3.bin"
 C3_OUT="$("$SCRIPT_DIR/sign-manifest-with-key.sh" \
           "$TMP/priv.pem" "$TMP/app_c3.bin" "$VERSION")"
 C3_SHA256="$(printf '%s\n' "$C3_OUT" | sed -n 's/^SHA256=//p')"
 C3_SIG="$(printf '%s\n' "$C3_OUT" | sed -n 's/^SIG=//p')"
-render() {  # <c3-signature>
+head -c 65536 /dev/urandom > "$TMP/app_s3.bin"
+S3_OUT="$("$SCRIPT_DIR/sign-manifest-with-key.sh" \
+          "$TMP/priv.pem" "$TMP/app_s3.bin" "$VERSION")"
+S3_SHA256="$(printf '%s\n' "$S3_OUT" | sed -n 's/^SHA256=//p')"
+S3_SIG="$(printf '%s\n' "$S3_OUT" | sed -n 's/^SIG=//p')"
+render() {  # <c3-signature> <s3-signature> [<template>]
     sed -e "s/@VERSION@/${VERSION}/g" \
         -e "s/@APP_SHA256@/${APP_SHA256}/g" \
         -e "s|@SIGNATURE@|${APP_SIG}|g" \
         -e "s/@C3_APP_SHA256@/${C3_SHA256}/g" \
         -e "s|@C3_SIGNATURE@|$1|g" \
-        "$SCRIPT_DIR/manifest.json.tmpl"
+        -e "s/@S3_APP_SHA256@/${S3_SHA256}/g" \
+        -e "s|@S3_SIGNATURE@|$2|g" \
+        "$SCRIPT_DIR/${3:-install.json.tmpl}"
 }
-render "$C3_SIG" > "$TMP/manifest_multi.json"
+render "$C3_SIG" "$S3_SIG" > "$TMP/manifest_multi.json"
+if grep -q '@[A-Z0-9_]*@' "$TMP/manifest_multi.json"; then
+    ng "install.json.tmpl has placeholders this test (and release.sh) do not fill"
+else
+    ok "every install.json.tmpl placeholder substituted"
+fi
+if [[ "$(jq -r '[.builds[].chipFamily] | join(",")' "$TMP/manifest_multi.json")" == "ESP32,ESP32-C3,ESP32-S3" ]]; then
+    ok "install.json lists ESP32, ESP32-C3, ESP32-S3"
+else
+    ng "unexpected builds in install.json.tmpl"
+fi
+
+# Legacy channel manifest.json: what dongles before the per-chip OTA files
+# poll. ESP32 + C3 only, and at most 2047 bytes when rendered the way
+# release.sh renders the channel copy (absolute URLs).
+render "$C3_SIG" "$S3_SIG" manifest.json.tmpl \
+    | sed -e "s|\"path\": \"|\"path\": \"https://cdn.phoneblock.net/dongle/firmware/${VERSION}/|g" \
+    > "$TMP/manifest_legacy.json"
+if grep -q '@[A-Z0-9_]*@' "$TMP/manifest_legacy.json"; then
+    ng "manifest.json.tmpl has unfilled placeholders"
+else
+    ok "every manifest.json.tmpl placeholder substituted"
+fi
+if [[ "$(jq -r '[.builds[].chipFamily] | join(",")' "$TMP/manifest_legacy.json")" == "ESP32,ESP32-C3" ]]; then
+    ok "manifest.json lists ESP32, ESP32-C3 (no S3)"
+else
+    ng "manifest.json must stay ESP32 + ESP32-C3 only"
+fi
+LEGACY_SIZE="$(wc -c < "$TMP/manifest_legacy.json")"
+if (( LEGACY_SIZE <= 2047 )); then
+    ok "channel manifest.json is ${LEGACY_SIZE} bytes (<= 2047)"
+else
+    ng "channel manifest.json is ${LEGACY_SIZE} bytes, installed dongles read 2047"
+fi
+if "$SCRIPT_DIR/verify-manifest.sh" "$TMP/manifest_legacy.json" "$TMP/pub.pem" "$TMP/app.bin" >/dev/null \
+   && [[ "$(jq -r '.integrity.app_sha256' "$TMP/manifest_legacy.json")" == "$APP_SHA256" ]]; then
+    ok "manifest.json verifies, ESP32 under the top-level integrity block"
+else
+    ng "manifest.json rejected"
+fi
 if [[ "$(jq -r '.builds[0].chipFamily' "$TMP/manifest_multi.json")" == "ESP32" \
    && "$(jq -r '.integrity.app_sha256' "$TMP/manifest_multi.json")" == "$APP_SHA256" ]]; then
     ok "ESP32 stays builds[0] under the top-level integrity block"
@@ -161,11 +207,22 @@ if "$SCRIPT_DIR/verify-manifest.sh" "$TMP/manifest_multi.json" "$TMP/pub.pem" "$
 else
     ng "multi-chip manifest rejected"
 fi
-render "$APP_SIG" > "$TMP/manifest_multi_bad.json"
+if "$SCRIPT_DIR/verify-manifest.sh" "$TMP/manifest_multi.json" "$TMP/pub.pem" "$TMP/app_s3.bin" >/dev/null; then
+    ok "multi-chip manifest verifies, S3 binary matches"
+else
+    ng "multi-chip manifest rejected the S3 binary"
+fi
+render "$APP_SIG" "$S3_SIG" > "$TMP/manifest_multi_bad.json"
 if "$SCRIPT_DIR/verify-manifest.sh" "$TMP/manifest_multi_bad.json" "$TMP/pub.pem" >/dev/null 2>&1; then
     ng "C3 build with a foreign signature accepted"
 else
     ok "C3 build with a foreign signature rejected"
+fi
+render "$C3_SIG" "$C3_SIG" > "$TMP/manifest_multi_bad_s3.json"
+if "$SCRIPT_DIR/verify-manifest.sh" "$TMP/manifest_multi_bad_s3.json" "$TMP/pub.pem" >/dev/null 2>&1; then
+    ng "S3 build with a foreign signature accepted"
+else
+    ok "S3 build with a foreign signature rejected"
 fi
 
 # -----------------------------------------------------------------------
@@ -185,6 +242,21 @@ if "$SCRIPT_DIR/verify-manifest.sh" "$TMP/ota-esp32c3.json" "$TMP/pub.pem" "$TMP
 else
     ok "per-chip OTA file rejects another chip's binary"
 fi
+"$SCRIPT_DIR/ota-manifest.sh" "$VERSION" ESP32-S3 \
+    "https://cdn.example/$VERSION/esp32s3/phoneblock_dongle.bin" \
+    "$S3_SHA256" "$S3_SIG" > "$TMP/ota-esp32s3.json"
+if "$SCRIPT_DIR/verify-manifest.sh" "$TMP/ota-esp32s3.json" "$TMP/pub.pem" "$TMP/app_s3.bin" >/dev/null; then
+    ok "S3 per-chip OTA file verifies, S3 binary matches"
+else
+    ng "S3 per-chip OTA file rejected"
+fi
+for other in app.bin app_c3.bin; do
+    if "$SCRIPT_DIR/verify-manifest.sh" "$TMP/ota-esp32s3.json" "$TMP/pub.pem" "$TMP/$other" >/dev/null 2>&1; then
+        ng "S3 per-chip OTA file accepted $other"
+    else
+        ok "S3 per-chip OTA file rejects $other"
+    fi
+done
 
 # -----------------------------------------------------------------------
 say ""
