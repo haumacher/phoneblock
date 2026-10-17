@@ -681,6 +681,38 @@ static bool form_get(const char *body, const char *key, char *out, size_t cap)
     return false;
 }
 
+// Fingerprint of every setting the SIP registration reads (FNV-1a, 64 bit).
+// handle_config_post() compares it before and after a save, so a toggle
+// unrelated to SIP (LED, display, mail, ...) does not drop a working
+// registration. Hashing instead of copying keeps the httpd stack small.
+static uint64_t sip_config_digest(void)
+{
+    uint64_t h = 0xcbf29ce484222325ULL;
+    const char *strs[] = {
+        config_sip_host(), config_sip_user(), config_sip_pass(),
+        config_sip_internal_number(), config_sip_transport(),
+        config_sip_auth_user(), config_sip_outbound(), config_sip_realm(),
+        config_sip_srtp(), config_stun_server(),
+    };
+    for (size_t i = 0; i < sizeof(strs) / sizeof(strs[0]); i++) {
+        // Include the terminator, so field boundaries count ("ab","" != "a","b").
+        for (const char *c = strs[i] ? strs[i] : ""; ; c++) {
+            h = (h ^ (uint8_t)*c) * 0x100000001b3ULL;
+            if (!*c) break;
+        }
+    }
+    const int ints[] = {
+        config_sip_port(), config_sip_expires(),
+        config_sip_local_port(), config_rtp_port(),
+    };
+    for (size_t i = 0; i < sizeof(ints) / sizeof(ints[0]); i++) {
+        for (int b = 0; b < 4; b++) {
+            h = (h ^ (uint8_t)(ints[i] >> (8 * b))) * 0x100000001b3ULL;
+        }
+    }
+    return h;
+}
+
 static esp_err_t handle_config_post(httpd_req_t *req)
 {
     REQUIRE_AUTH_API(req);
@@ -995,6 +1027,8 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     strncpy(old_lang, config_ui_lang(), sizeof(old_lang) - 1);
     old_lang[sizeof(old_lang) - 1] = '\0';
 
+    uint64_t old_sip = sip_config_digest();
+
     int err = config_update(&u);
     if (err != PB_KV_OK) {
         httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "nvs write failed");
@@ -1029,14 +1063,20 @@ static esp_err_t handle_config_post(httpd_req_t *req)
         i18n_sync_trigger_now();
     }
 
-    // Signal the SIP task to re-register with the new credentials.
-    // Manual edit / provider preset — no Fritz!Box-internal extension
-    // race to absorb, no settle delay needed.
-    sip_register_request_reload(false);
+    // Re-register when a SIP setting changed, or when the SIP form itself
+    // was submitted (saving it unchanged is how a user retries a failed
+    // registration). The same endpoint stores unrelated toggles (LED,
+    // display, mail, ...); re-registering on those dropped a working
+    // registration for nothing. Manual edit / provider preset — no
+    // Fritz!Box-internal extension race to absorb, no settle delay needed.
+    bool sip_changed = have_sip_host || sip_config_digest() != old_sip;
+    if (sip_changed) {
+        sip_register_request_reload(false);
+    }
 
     cJSON *root = cJSON_CreateObject();
     cJSON_AddBoolToObject(root, "ok", true);
-    cJSON_AddStringToObject(root, "message", "Saved, re-registering.");
+    cJSON_AddStringToObject(root, "message", sip_changed ? "Saved, re-registering." : "Saved.");
     send_json(req, root);
     return ESP_OK;
 }
