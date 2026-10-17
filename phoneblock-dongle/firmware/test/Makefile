@@ -17,7 +17,7 @@ LINUX_NET_LIBS := -lcurl -lssl -lcrypto
 LINUX_CORE_SOURCES := ../core/platform_linux.c ../core/platform_linux_net.c \
                       ../core/sip_parse.c ../core/dial_rules.c ../core/tr064_parse.c
 LINUX_MAIN_SOURCES := ../main/announcement.c ../main/api.c \
-                      ../main/api_http_linux.c ../main/api_scan.c \
+                      ../main/api_scan.c \
                       ../main/audio.c ../main/blocklist_lookup.c \
                       ../main/blocklist_sync.c ../main/config.c \
                       ../main/firmware_update.c ../main/heap_guard_scan.c \
