@@ -17,7 +17,7 @@ LINUX_NET_LIBS := -lcurl -lssl -lcrypto
 LINUX_CORE_SOURCES := ../core/platform_linux.c ../core/platform_linux_net.c \
                       ../core/sip_parse.c ../core/dial_rules.c ../core/tr064_parse.c
 LINUX_MAIN_SOURCES := ../main/announcement.c ../main/api.c \
-                      ../main/api_http_linux.c ../main/api_scan.c \
+                      ../main/api_scan.c \
                       ../main/audio.c ../main/blocklist_lookup.c \
                       ../main/blocklist_sync.c ../main/config.c \
                       ../main/firmware_update.c ../main/heap_guard_scan.c \
@@ -28,16 +28,17 @@ LINUX_MAIN_SOURCES := ../main/announcement.c ../main/api.c \
                       ../main/sip_auth.c ../main/sip_frame.c \
                       ../main/sip_register.c ../main/sip_response.c \
                       ../main/sip_srv.c ../main/sip_transport.c \
-                      ../main/stats.c ../main/sync.c ../main/tr064.c \
-                      ../main/version_cmp.c
+                      ../main/stats.c ../main/storage.c \
+                      ../main/sync.c ../main/tr064.c ../main/version_cmp.c
 LINUX_OBJECTS := $(patsubst ../core/%.c,$(LINUX_BUILD_DIR)/core/%.o,$(LINUX_CORE_SOURCES)) \
                  $(patsubst ../main/%.c,$(LINUX_BUILD_DIR)/main/%.o,$(LINUX_MAIN_SOURCES))
-LINUX_CPPFLAGS := -I$(CJSON_DIR) \
+# -DSTORAGE_HOSTFS selects storage.c's plain-filesystem backend.
+LINUX_CPPFLAGS := -DSTORAGE_HOSTFS -I$(CJSON_DIR) \
                   -I../managed_components/espressif__esp_libsrtp/esp-port \
                   -I../managed_components/espressif__esp_libsrtp/libsrtp/include \
                   -I../managed_components/espressif__esp_libsrtp/libsrtp/crypto/include
 
-BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_rcpt test_name_filter test_version_cmp test_net_local test_heap_guard test_platform_linux test_ota_manifest test_stats test_storage_budget test_storage_sim
+BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_rcpt test_name_filter test_version_cmp test_net_local test_heap_guard test_platform_linux test_ota_manifest test_stats test_storage_budget test_storage_sim test_storage_hostfs
 
 test_sip_parse: test_sip_parse.c ../core/sip_parse.c ../core/sip_parse.h \
                 ../core/dial_rules.c ../core/dial_rules.h \
@@ -142,6 +143,16 @@ test_platform_linux: test_platform_linux.c linux_test_util.h \
                      ../main/config.c ../main/config.h \
                      ../main/log_capture.c ../main/log_capture.h
 	$(CC) $(CFLAGS) -pthread test_platform_linux.c ../core/platform_linux.c ../main/config.c ../main/log_capture.c -o $@
+
+# The hostfs backend of storage.c, with the data dir redirected into /tmp.
+test_storage_hostfs: test_storage_hostfs.c linux_test_util.h \
+                     ../main/storage.c ../main/storage.h \
+                     ../core/platform_linux.c ../core/platform.h \
+                     ../main/log_capture.c ../main/log_capture.h
+	$(CC) $(CFLAGS) -DSTORAGE_HOSTFS \
+	  -DPHONEBLOCK_DATA_DIR='"/tmp/phoneblock-hostfs-test"' -pthread \
+	  test_storage_hostfs.c ../main/storage.c ../core/platform_linux.c \
+	  ../main/log_capture.c -o $@
 
 test_platform_linux_net: test_platform_linux_net.c linux_test_util.h \
                          ../core/platform_linux.c ../core/platform_linux_net.c \

@@ -2,8 +2,6 @@
 
 #ifdef ESP_PLATFORM
 #include "esp_http_client.h"
-#else
-#include "api_http_linux.h"   // esp_http_client shim of the Linux build
 #endif
 
 // Return a stable User-Agent string for all outbound HTTP(S) calls,
@@ -13,5 +11,9 @@
 // can't reach config / this module).
 const char *http_util_user_agent(void);
 
-// Convenience: set the User-Agent header on an esp_http_client handle.
+#ifdef ESP_PLATFORM
+// Convenience: set the User-Agent header on an esp_http_client handle
+// (crashreport.c). Everywhere else callers pass http_util_user_agent() as a
+// pb_http_request() header.
 void http_util_set_user_agent(esp_http_client_handle_t client);
+#endif

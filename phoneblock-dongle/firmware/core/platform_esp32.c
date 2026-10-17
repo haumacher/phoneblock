@@ -3,6 +3,7 @@
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
 #include "esp_mac.h"
 #include "esp_crt_bundle.h"
@@ -39,6 +40,9 @@ typedef struct {
     size_t length;
     pb_http_data_fn on_data;
     void *data_context;
+    int64_t content_length;
+    bool announced;
+    bool aborted;
     uint64_t started_us;
     uint64_t connected_us;
     uint64_t headers_sent_us;
@@ -364,14 +368,42 @@ static esp_err_t pb_http_event(esp_http_client_event_t *event)
         break;
     case HTTP_EVENT_ON_HEADER:
         if (!response->first_header_us) response->first_header_us = now;
+        if (event->header_key && event->header_value
+                && strcasecmp(event->header_key, "Content-Length") == 0) {
+            response->content_length = (int64_t)atoll(event->header_value);
+        }
         break;
     case HTTP_EVENT_ON_FINISH:
         response->finished_us = now;
         break;
     case HTTP_EVENT_ON_DATA: {
-        if (response->on_data)
-            response->on_data(event->data, (size_t)event->data_len,
-                              response->data_context);
+        if (response->on_data) {
+            // First body chunk: announce status and announced length so the
+            // sink can prepare or refuse before any payload lands. A false
+            // return aborts the transfer: close() out from under the parser
+            // fails the read loop, so perform() reports an error (the sink
+            // carries the reason). Merely returning ESP_FAIL is not enough —
+            // esp_http_client discards the ON_DATA handler's return value.
+            if (!response->announced) {
+                response->announced = true;
+                if (!response->on_data(
+                        esp_http_client_get_status_code(event->client),
+                        response->content_length, NULL, 0,
+                        response->data_context)) {
+                    response->aborted = true;
+                    esp_http_client_close(event->client);
+                    return ESP_FAIL;
+                }
+            }
+            if (!response->on_data(
+                    esp_http_client_get_status_code(event->client),
+                    response->content_length, event->data,
+                    (size_t)event->data_len, response->data_context)) {
+                response->aborted = true;
+                esp_http_client_close(event->client);
+                return ESP_FAIL;
+            }
+        }
 
         if (response->buffer) {
             size_t available = response->capacity > response->length + 1
@@ -413,6 +445,7 @@ int pb_http_request(const char *method, const char *url,
         .capacity = response_cap,
         .on_data = on_data,
         .data_context = data_context,
+        .content_length = -1,
         .started_us = pb_monotonic_us(),
     };
     esp_http_client_config_t config = {

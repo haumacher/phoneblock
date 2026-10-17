@@ -174,7 +174,19 @@ typedef struct {
     const char *value;
 } pb_http_header_t;
 
-typedef void (*pb_http_data_fn)(const void *data, size_t length, void *context);
+// Streaming sink for pb_http_request(). Before the first body chunk it is
+// invoked once with data == NULL and length == 0, announcing the response
+// status and the server's announced body size (-1 when no Content-Length
+// arrived, e.g. chunked), so the sink can prepare — budget checks, making
+// room on flash, hash setup — or refuse the body before a byte of it lands.
+// Every following call carries one body chunk (data != NULL). Returning
+// false aborts the transfer: pb_http_request() then reports a generic
+// transport-level failure, so a sink that aborts must record its own reason
+// first. Only invoked when a response with a body arrives; the status is
+// always available through pb_http_request()'s http_status out-parameter.
+typedef bool (*pb_http_data_fn)(int http_status, int64_t content_length,
+                                const void *data, size_t length,
+                                void *context);
 
 typedef struct {
     uint64_t connect_us;

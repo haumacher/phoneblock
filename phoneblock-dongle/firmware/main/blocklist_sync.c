@@ -9,18 +9,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#ifdef ESP_PLATFORM
-#include "freertos/FreeRTOS.h"
-#include "freertos/semphr.h"
-#include "esp_log.h"
-#include "esp_timer.h"
-#include "esp_http_client.h"
-#include "esp_crt_bundle.h"
-#else
-#include <sys/stat.h>
-#include <sys/statvfs.h>
-#endif
-
 #include "config.h"
 #include "heap_guard.h"
 #include "http_util.h"
@@ -39,22 +27,8 @@
 
 static const char *TAG = "blsync";
 
-// Stream-read chunk for the HTTPS download. Small to stay friendly with
-// the stack-allocated buffer; storage_file_open()'s stdio buffer batches
-// these chunks into larger SPIFFS writes.
-#define DOWNLOAD_CHUNK     1024
-
 #define COMMUNITY_TMP      BLOCKLIST_COMMUNITY_PATH ".tmp"
 #define PERSONAL_TMP       BLOCKLIST_PERSONAL_PATH ".tmp"
-
-// Headroom kept free on the storage partition: SPIFFS block/metadata
-// overhead the raw free-byte count overstates, plus room for the small
-// personal list. Used both to size the budget advertised to the server
-// (&maxBytes) and to guard each download against a mid-write ENOSPC.
-#define BLOCKLIST_FS_MARGIN      (48 * 1024)
-
-// Community budget advertised when the filesystem size cannot be read.
-#define DEFAULT_COMMUNITY_BUDGET (256 * 1024)
 
 static pb_mutex_t * s_lock    = NULL;
 
@@ -93,247 +67,145 @@ static void refresh_sizes_locked(void)
 }
 
 // ---------------------------------------------------------------------------
-// Streaming HTTPS download into a temp file.
+// Streaming HTTPS download into a temp file (both platforms).
 // ---------------------------------------------------------------------------
 
-#ifdef ESP_PLATFORM
+// One download: `url` into `tmp_path`. The caller has already removed the
+// live file this temp will be renamed onto, so the whole free partition is
+// available here. `budget` is the largest body the storage budget admits,
+// or -1 for no budget check (the personal list: a few KB the user curates,
+// never truncated).
 typedef struct {
     const char *url;
     const char *tmp_path;
-    // Largest body the partition's budget admits, or -1 for no budget check
-    // (the personal list: a few KB the user curates, never truncated).
     int64_t     budget;
 } download_t;
 
+// Streaming sink state for one attempt (pb_http_data_fn context).
+typedef struct {
+    const download_t *d;
+    storage_file_t *out;
+    int64_t total;
+    int64_t content_length;  // announced body size, -1 while unknown
+    char    *err;
+    size_t  err_cap;
+    storage_dl_t result;     // STORAGE_DL_OK until the sink aborts
+} download_sink_t;
+
+// Streams one response chunk into the temp file. The status announcement
+// (data == NULL, platform.h) refuses non-200 responses and over-budget
+// bodies before a byte lands and makes the file's footprint writable up
+// front. Returning false aborts the transfer; the reason is in err/result.
+static bool write_download_chunk(int status, int64_t content_length,
+                                 const void *data, size_t length,
+                                 void *context)
+{
+    download_sink_t *sink = context;
+    // Sticky: after an abort the transfer may still deliver buffered chunks
+    // until the close propagates; never touch the file again.
+    if (sink->result != STORAGE_DL_OK) return false;
+    if (data == NULL) {
+        sink->content_length = content_length;
+        if (status != 200) {
+            snprintf(sink->err, sink->err_cap, "HTTP %d", status);
+            sink->result = STORAGE_DL_FAILED;
+            return false;
+        }
+        if (content_length > 0) {
+            // Budget check before any bytes land. The server snaps &maxBytes
+            // down to a bucket but never below its smallest one, so a list
+            // can still come back larger than the budget; storing it anyway
+            // would be exactly the overfill the budget exists to prevent.
+            if (sink->d->budget >= 0 && content_length > sink->d->budget) {
+                snprintf(sink->err, sink->err_cap,
+                         "too large: %lld B, budget %lld B",
+                         (long long)content_length, (long long)sink->d->budget);
+                sink->result = STORAGE_DL_FAILED;
+                return false;
+            }
+            // Make the whole file writable before the first byte arrives.
+            storage_gc(sink->d->tmp_path, (size_t)content_length);
+        }
+        return true;
+    }
+    if (!storage_file_write(sink->out, data, length)) {
+        // errno tells apart the two ways this happens: ENOSPC is the
+        // filesystem refusing space (worth a retry after a GC pass),
+        // anything else is a failure a retry would only repeat.
+        snprintf(sink->err, sink->err_cap, "fwrite short at %lld bytes: %s",
+                 (long long)sink->total, strerror(errno));
+        sink->result = errno == ENOSPC ? STORAGE_DL_FULL : STORAGE_DL_FAILED;
+        return false;
+    }
+    sink->total += (int64_t)length;
+    if (sink->d->budget >= 0 && sink->total > sink->d->budget) {
+        // A body without Content-Length cannot be checked up front.
+        snprintf(sink->err, sink->err_cap, "too large: over budget %lld B",
+                 (long long)sink->d->budget);
+        sink->result = STORAGE_DL_FAILED;
+        return false;
+    }
+    return true;
+}
+
 // One download attempt of `d->url` into `d->tmp_path` (storage_attempt_fn).
-// The caller has already removed the live file this temp will be renamed
-// onto. Removes the temp file again on any failure.
+// Removes the temp file again on any failure.
 static storage_dl_t download_to_tmp(void *ctx, size_t *bytes,
                                     char *err, size_t err_cap)
 {
-    const download_t *d = ctx;
-    storage_dl_t result = STORAGE_DL_FAILED;
-
+    download_t *d = ctx;
     storage_file_t out;
     if (!storage_file_open(&out, d->tmp_path)) {
         snprintf(err, err_cap, "fopen %s: %s", d->tmp_path, strerror(errno));
         return STORAGE_DL_FAILED;
     }
 
-    esp_http_client_config_t cfg = {
-        .url               = d->url,
-        .method            = HTTP_METHOD_GET,
-        .crt_bundle_attach = esp_crt_bundle_attach,
-        .timeout_ms        = 30000,
-        .tls_version       = ESP_HTTP_CLIENT_TLS_VER_TLS_1_2,
-    };
-    esp_http_client_handle_t client = esp_http_client_init(&cfg);
-    bool    opened         = false;
-    int64_t content_length = 0;
-    int64_t total          = 0;
-    if (client == NULL) {
-        snprintf(err, err_cap, "http_client_init failed");
-        goto out;
-    }
-
     char auth_header[128];
     snprintf(auth_header, sizeof(auth_header), "Bearer %s",
              config_phoneblock_token());
-
-    http_util_set_user_agent(client);
-    esp_http_client_set_header(client, "Authorization", auth_header);
-    esp_http_client_set_header(client, "Accept", "application/octet-stream");
-
-    esp_err_t err_open = esp_http_client_open(client, 0);
-    if (err_open != ESP_OK) {
-        snprintf(err, err_cap, "open: %s", esp_err_to_name(err_open));
-        goto out;
-    }
-    opened = true;
-
-    content_length = esp_http_client_fetch_headers(client);
-    int status = esp_http_client_get_status_code(client);
-    if (status != 200) {
-        snprintf(err, err_cap, "HTTP %d", status);
-        goto out;
-    }
-
-    if (content_length > 0) {
-        // Budget check before any bytes land. The server snaps &maxBytes down
-        // to a bucket but never below its smallest one, so a list can still
-        // come back larger than the budget; storing it anyway would be
-        // exactly the overfill the budget exists to prevent.
-        if (d->budget >= 0 && content_length > d->budget) {
-            snprintf(err, err_cap, "too large: %lld B, budget %lld B",
-                     (long long) content_length, (long long) d->budget);
-            goto out;
-        }
-        // Make the whole file writable before the first byte arrives.
-        storage_gc(d->tmp_path, (size_t) content_length);
-    }
-
-    char buf[DOWNLOAD_CHUNK];
-    for (;;) {
-        int n = esp_http_client_read(client, buf, sizeof(buf));
-        if (n < 0) {
-            snprintf(err, err_cap, "read failed after %lld bytes",
-                     (long long)total);
-            goto out;
-        }
-        if (n == 0) {
-            break;
-        }
-        if (!storage_file_write(&out, buf, (size_t)n)) {
-            // errno tells apart the two ways this happens: ENOSPC is SPIFFS
-            // refusing a page (worth a retry after a GC pass), anything else
-            // is a flash-level failure that a retry would only repeat.
-            snprintf(err, err_cap, "fwrite short at %lld bytes: %s",
-                     (long long)total, strerror(errno));
-            if (errno == ENOSPC) result = STORAGE_DL_FULL;
-            goto out;
-        }
-        total += n;
-        if (d->budget >= 0 && total > d->budget) {
-            // A body without Content-Length cannot be checked up front.
-            snprintf(err, err_cap, "too large: over budget %lld B",
-                     (long long) d->budget);
-            goto out;
-        }
-    }
-
-    esp_http_client_close(client);
-    esp_http_client_cleanup(client);
-    client = NULL;
-    opened = false;
-
-    if (!storage_file_close(&out)) {
-        snprintf(err, err_cap, "close %s: %s", d->tmp_path, strerror(errno));
-        if (errno == ENOSPC) result = STORAGE_DL_FULL;
-        goto out;
-    }
-
-    if (content_length > 0 && total != content_length) {
-        snprintf(err, err_cap, "short body: got %lld of %lld",
-                 (long long)total, (long long)content_length);
-        goto out;
-    }
-
-    ESP_LOGI(TAG, "downloaded %lld bytes → %s", (long long)total, d->tmp_path);
-    return STORAGE_DL_OK;
-
-out:
-    if (opened) esp_http_client_close(client);
-    if (client) esp_http_client_cleanup(client);
-    storage_file_close(&out);
-    unlink(d->tmp_path);
-    *bytes = (size_t)(content_length > 0 ? content_length : total);
-    return result;
-}
-#else
-// Free bytes in the storage directory, or -1 if it cannot be read.
-static int64_t spiffs_free_bytes(void)
-{
-    struct statvfs info;
-    if (statvfs(PHONEBLOCK_DATA_DIR, &info) != 0) return -1;
-    return (int64_t)info.f_bavail * (int64_t)info.f_frsize;
-}
-
-// Storage budget the dongle offers the community file: current free space
-// minus a margin for filesystem overhead and the small personal list. The old
-// community file is deleted before the download starts (see sync_one), so
-// its bytes are already part of this free count — no need to add them back.
-// Sent to the server as &maxBytes so it caps the encoded file to what fits.
-static int64_t community_budget_bytes(void)
-{
-    int64_t freeb = spiffs_free_bytes();
-    if (freeb < 0) {
-        return DEFAULT_COMMUNITY_BUDGET;
-    }
-    int64_t budget = freeb - BLOCKLIST_FS_MARGIN;
-    return budget > 0 ? budget : 0;
-}
-
-typedef struct {
-    FILE *file;
-    int64_t bytes;
-    char *error;
-    size_t error_cap;
-    bool failed;
-} blocklist_download_t;
-
-static void write_download_chunk(const void *data, size_t length, void *context)
-{
-    blocklist_download_t *download = context;
-    if (download->failed) return;
-    size_t written = fwrite(data, 1, length, download->file);
-    download->bytes += (int64_t)written;
-    if (written == length) return;
-
-    snprintf(download->error, download->error_cap,
-             "fwrite short at %lld bytes: %s",
-             (long long)download->bytes, strerror(errno));
-    download->failed = true;
-}
-
-static bool download_to_tmp(const char *url, const char *tmp_path,
-                            char *err, size_t err_cap)
-{
-    if (mkdir(PHONEBLOCK_DATA_DIR, 0750) != 0 && errno != EEXIST) {
-        snprintf(err, err_cap, "mkdir %s: %s", PHONEBLOCK_DATA_DIR,
-                 strerror(errno));
-        return false;
-    }
-    FILE *out = fopen(tmp_path, "wb");
-    if (!out) {
-        snprintf(err, err_cap, "fopen %s: %s", tmp_path, strerror(errno));
-        return false;
-    }
-
-    char *io_buffer = malloc(STORAGE_WRITE_BUF);
-    if (io_buffer) setvbuf(out, io_buffer, _IOFBF, STORAGE_WRITE_BUF);
-
-    char authorization[128];
-    snprintf(authorization, sizeof(authorization), "Bearer %s",
-             config_phoneblock_token());
     const pb_http_header_t headers[] = {
         { "User-Agent", http_util_user_agent() },
-        { "Authorization", authorization },
+        { "Authorization", auth_header },
         { "Accept", "application/octet-stream" },
     };
-    blocklist_download_t download = {
-        .file = out,
-        .error = err,
-        .error_cap = err_cap,
+    download_sink_t sink = {
+        .d = d, .out = &out, .content_length = -1,
+        .err = err, .err_cap = err_cap, .result = STORAGE_DL_OK,
     };
+    err[0] = '\0';
     int status = 0;
-    int result = pb_http_request("GET", url, headers,
+    int result = pb_http_request("GET", d->url, headers,
                                  sizeof(headers) / sizeof(headers[0]),
                                  NULL, 0, 30000, NULL, 0, NULL, &status,
-                                 write_download_chunk, &download, NULL);
-    bool ok = result == PB_HTTP_OK && status == 200 && !download.failed;
-    if (result != PB_HTTP_OK)
-        snprintf(err, err_cap, "%s", pb_http_err_name(result));
-    else if (status != 200)
-        snprintf(err, err_cap, "HTTP %d", status);
-
-    if (fflush(out) != 0) {
-        snprintf(err, err_cap, "flush %s: %s", tmp_path, strerror(errno));
-        ok = false;
+                                 write_download_chunk, &sink, NULL);
+    storage_dl_t dl = sink.result;
+    if (result != PB_HTTP_OK && dl == STORAGE_DL_OK) {
+        // The sink never aborted: the transport itself failed.
+        snprintf(err, err_cap, "HTTP transport: %s", pb_http_err_name(result));
+        dl = STORAGE_DL_FAILED;
     }
-    if (fclose(out) != 0) {
-        snprintf(err, err_cap, "close %s: %s", tmp_path, strerror(errno));
-        ok = false;
+    // The buffered tail reaches the filesystem here: a full partition most
+    // likely surfaces only now, with up to STORAGE_WRITE_BUF still unwritten.
+    if (dl == STORAGE_DL_OK && !storage_file_close(&out)) {
+        snprintf(err, err_cap, "close %s: %s", d->tmp_path, strerror(errno));
+        dl = errno == ENOSPC ? STORAGE_DL_FULL : STORAGE_DL_FAILED;
     }
-    free(io_buffer);
-    if (!ok) {
-        unlink(tmp_path);
-        return false;
+    if (dl == STORAGE_DL_OK && sink.content_length > 0
+            && sink.total != sink.content_length) {
+        snprintf(err, err_cap, "short body: got %lld of %lld",
+                 (long long)sink.total, (long long)sink.content_length);
+        dl = STORAGE_DL_FAILED;
+    }
+    if (dl != STORAGE_DL_OK) {
+        unlink(d->tmp_path);
+        *bytes = (size_t)(sink.content_length > 0 ? sink.content_length
+                                                  : sink.total);
+        return dl;
     }
     pb_log_info(TAG, "downloaded %lld bytes → %s",
-                (long long)download.bytes, tmp_path);
-    return true;
+                (long long)sink.total, d->tmp_path);
+    return STORAGE_DL_OK;
 }
-#endif
 
 // Validates that the file at `tmp_path` parses as a binary blocklist.
 // Returns true if it does. Catches truncated downloads, wrong content-type
@@ -375,9 +247,7 @@ static bool sync_one(const char *type, const char *path, const char *tmp_path,
     sb_appendf(&ub, "%s/api/blocklist?format=binary&type=%s",
                config_phoneblock_base_url(), type);
 
-#ifdef ESP_PLATFORM
     download_t d = { .url = url, .tmp_path = tmp_path, .budget = -1 };
-#endif
 
     // The community list carries no per-entry vote counts, so the server
     // applies our two thresholds at encode time. Send them so the
@@ -386,41 +256,28 @@ static bool sync_one(const char *type, const char *path, const char *tmp_path,
     // The personal list is the user's explicit black/white set — no
     // thresholding, so no parameters.
     if (strcmp(type, "community") == 0) {
-#ifdef ESP_PLATFORM
-        // The community list is the one file on the partition that yields:
-        // it gets what the shared budget leaves next to the announcements and
-        // packs (storage_budget.h), and &maxBytes lets the server cap the
+        // The community list is the one file in the storage that yields: it
+        // gets what the shared budget leaves next to the announcements and
+        // packs (storage.h), and &maxBytes lets the server cap the
         // (size-unbounded) list to that — it keeps all wildcards + whitelist
         // and truncates the Heat-ranked direct numbers to fit.
         d.budget = storage_community_budget();
         if (d.budget < 0) {
-            snprintf(err, err_cap, "storage not mounted");
+            snprintf(err, err_cap, "storage not readable");
             return false;
         }
         if (d.budget == 0) {
-            snprintf(err, err_cap, "no room on the storage partition");
+            snprintf(err, err_cap, "no room for the community list");
             return false;
         }
         sb_appendf(&ub, "&minDirect=%d&minRange=%d&maxBytes=%lld",
                    config_min_direct_votes(), config_min_range_votes(),
                    (long long) d.budget);
-#else
-        sb_appendf(&ub, "&minDirect=%d&minRange=%d&maxBytes=%lld",
-                   config_min_direct_votes(), config_min_range_votes(),
-                   (long long) community_budget_bytes());
-#endif
     }
 
-#ifdef ESP_PLATFORM
     if (!storage_download(tmp_path, download_to_tmp, &d, err, err_cap)) {
         return false;
     }
-#else
-    if (!download_to_tmp(url, tmp_path, err, err_cap)) {
-        unlink(tmp_path);
-        return false;
-    }
-#endif
 
     if (!tmp_parses_ok(tmp_path)) {
         snprintf(err, err_cap, "downloaded %s is malformed", type);

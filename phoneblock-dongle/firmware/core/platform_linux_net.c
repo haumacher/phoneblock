@@ -42,6 +42,11 @@ typedef struct {
     size_t length;
     pb_http_data_fn on_data;
     void *data_context;
+    CURL *curl;
+    int status;
+    int64_t content_length;
+    bool announced;
+    bool aborted;
 } pb_http_response_buffer_t;
 
 static pthread_once_t s_curl_once = PTHREAD_ONCE_INIT;
@@ -56,8 +61,31 @@ static size_t pb_http_write(void *data, size_t size, size_t count, void *opaque)
 {
     pb_http_response_buffer_t *response = opaque;
     size_t length = size * count;
-    if (response->on_data)
-        response->on_data(data, length, response->data_context);
+    if (response->on_data) {
+        // First body chunk: the headers are in, so announce the status and
+        // the announced body size before any payload. A false return aborts
+        // the transfer (perform then reports CURLE_WRITE_ERROR).
+        if (!response->announced) {
+            response->announced = true;
+            long status = 0;
+            curl_off_t content_length = -1;
+            curl_easy_getinfo(response->curl, CURLINFO_RESPONSE_CODE, &status);
+            curl_easy_getinfo(response->curl, CURLINFO_CONTENT_LENGTH_DOWNLOAD_T,
+                              &content_length);
+            response->status = (int)status;
+            response->content_length = (int64_t)content_length;
+            if (!response->on_data(response->status, response->content_length,
+                                   NULL, 0, response->data_context)) {
+                response->aborted = true;
+                return CURL_WRITEFUNC_ERROR;
+            }
+        }
+        if (!response->on_data(response->status, response->content_length,
+                               data, length, response->data_context)) {
+            response->aborted = true;
+            return CURL_WRITEFUNC_ERROR;
+        }
+    }
     size_t available = response->capacity > response->length + 1
                      ? response->capacity - response->length - 1 : 0;
     size_t copied = length < available ? length : available;
@@ -354,6 +382,7 @@ int pb_http_request(const char *method, const char *url,
         .capacity = response_cap,
         .on_data = on_data,
         .data_context = data_context,
+        .curl = curl,
     };
     curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, method);

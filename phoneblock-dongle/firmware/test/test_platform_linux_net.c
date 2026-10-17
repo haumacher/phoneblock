@@ -195,12 +195,110 @@ static void test_http_redirect_no_proxy(void)
     unsetenv("http_proxy");
 }
 
+// Sink that records what it was shown and aborts when told to.
+typedef struct {
+    int announcements;       // data == NULL calls
+    int status;              // announced status
+    int64_t content_length;  // announced body size
+    size_t body_bytes;       // data bytes delivered
+    bool abort_at_announce;  // refuse the body before it lands
+    bool abort_mid_body;     // refuse the first data chunk
+} stream_sink_t;
+
+static bool stream_cb(int http_status, int64_t content_length,
+                      const void *data, size_t length, void *context)
+{
+    stream_sink_t *sink = context;
+    if (data == NULL) {
+        sink->announcements++;
+        sink->status = http_status;
+        sink->content_length = content_length;
+        return !sink->abort_at_announce;
+    }
+    if (sink->abort_mid_body) return false;
+    sink->body_bytes += length;
+    return true;
+}
+
+static void *serve_one_response(void *unused)
+{
+    (void)unused;
+    int client = accept(server_fd, NULL, NULL);
+    REQUIRE(client >= 0);
+    char request_buf[1024] = {0};
+    REQUIRE(recv(client, request_buf, sizeof(request_buf) - 1, 0) > 0);
+    const char *body =
+        "HTTP/1.1 200 OK\r\nContent-Length: 11\r\nConnection: close\r\n\r\nhello world";
+    REQUIRE(send(client, body, strlen(body), 0) == (ssize_t)strlen(body));
+    close(client);
+    return NULL;
+}
+
+static void run_stream_case(stream_sink_t *sink)
+{
+    server_fd = socket(AF_INET, SOCK_STREAM, 0);
+    REQUIRE(server_fd >= 0);
+    struct sockaddr_in address = {
+        .sin_family = AF_INET,
+        .sin_addr.s_addr = htonl(INADDR_LOOPBACK),
+        .sin_port = 0,
+    };
+    REQUIRE(bind(server_fd, (struct sockaddr *)&address, sizeof(address)) == 0);
+    REQUIRE(listen(server_fd, 1) == 0);
+    socklen_t address_len = sizeof(address);
+    REQUIRE(getsockname(server_fd, (struct sockaddr *)&address, &address_len)
+            == 0);
+    pthread_t server_thread;
+    REQUIRE(pthread_create(&server_thread, NULL, serve_one_response, NULL) == 0);
+
+    char url[64];
+    snprintf(url, sizeof(url), "http://127.0.0.1:%u/",
+             (unsigned)ntohs(address.sin_port));
+    int status = 0;
+    int result = pb_http_request("GET", url, NULL, 0, NULL, 0, 2000,
+                                 NULL, 0, NULL, &status, stream_cb, sink, NULL);
+    if (!sink->abort_at_announce && !sink->abort_mid_body) {
+        REQUIRE(result == PB_HTTP_OK);
+        REQUIRE(status == 200);
+    } else {
+        // An aborting sink surfaces as a generic transport failure; the sink
+        // carries the reason (platform.h).
+        REQUIRE(result != PB_HTTP_OK);
+    }
+    REQUIRE(pthread_join(server_thread, NULL) == 0);
+    close(server_fd);
+}
+
+// The streaming sink sees the status and announced length before the first
+// body byte, and can abort the transfer at the announcement or mid-body.
+static void test_http_streaming_sink(void)
+{
+    stream_sink_t sink = {0};
+    run_stream_case(&sink);
+    REQUIRE(sink.announcements == 1);
+    REQUIRE(sink.status == 200);
+    REQUIRE(sink.content_length == 11);
+    REQUIRE(sink.body_bytes == 11);
+
+    stream_sink_t refuse = { .abort_at_announce = true };
+    run_stream_case(&refuse);
+    REQUIRE(refuse.announcements == 1);
+    REQUIRE(refuse.status == 200);
+    REQUIRE(refuse.body_bytes == 0);
+
+    stream_sink_t midway = { .abort_mid_body = true };
+    run_stream_case(&midway);
+    REQUIRE(midway.announcements == 1);
+    REQUIRE(midway.body_bytes == 0);
+}
+
 int main(void)
 {
     test_crypto();
     test_ecdsa_verify();
     test_http_errors();
     test_http_redirect_no_proxy();
+    test_http_streaming_sink();
     puts("test_platform_linux_net: all tests passed");
     return 0;
 }
