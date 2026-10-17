@@ -13,6 +13,10 @@
 // guards against the not-yet-started Wi-Fi driver via
 // wifi_sta_started().
 //
+// The service ends by itself 10 minutes after boot once Wi-Fi has an IP
+// (the stick is then in its router, not on a PC): the task, its stack and
+// the driver are released and the console falls back to driver-less output.
+//
 // Side effect: installs the UART driver on the console UART and
 // routes the log/stdout VFS through it, so that log lines and Improv
 // packets serialize per-write instead of interleaving byte-wise.

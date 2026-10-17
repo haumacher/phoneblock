@@ -1,6 +1,7 @@
 #include "improv.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "sdkconfig.h"
@@ -12,6 +13,7 @@
 #include "driver/uart_vfs.h"
 #endif
 #include "esp_app_desc.h"
+#include "esp_timer.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -53,9 +55,11 @@ static const char *TAG = "improv";
 
 #define SCAN_MAX_APS 20
 
-// Single consumer (the improv task) — keeping the scan results off
-// its stack is cheaper than sizing the stack for 20 ap records.
-static wifi_ap_record_t s_scan_records[SCAN_MAX_APS];
+// Improv is only reachable while the stick is plugged into a PC, and
+// every plug-in is a fresh boot. Once the dongle is online and this
+// long after boot, nobody is going to provision it any more: the task
+// ends and returns its stack and the driver buffers to the heap.
+#define SERVICE_WINDOW_US (10LL * 60 * 1000 * 1000)
 
 static bool s_provisioning;
 
@@ -207,11 +211,14 @@ static void handle_get_info(void)
 
 static void handle_scan(void)
 {
-    int n = wifi_scan(s_scan_records, SCAN_MAX_APS);
+    // On the heap only while scanning: too big for the task stack, and
+    // not worth keeping for the rest of the uptime.
+    wifi_ap_record_t *records = malloc(SCAN_MAX_APS * sizeof(wifi_ap_record_t));
+    int n = records ? wifi_scan(records, SCAN_MAX_APS) : 0;
 
     int sent = 0;
     for (int i = 0; i < n; i++) {
-        const char *ssid = (const char *)s_scan_records[i].ssid;
+        const char *ssid = (const char *)records[i].ssid;
         if (ssid[0] == '\0') {
             continue;  // hidden network — "join other" covers it
         }
@@ -220,22 +227,23 @@ static void handle_scan(void)
         // keeping the first occurrence keeps the strongest.
         bool dup = false;
         for (int j = 0; j < i && !dup; j++) {
-            dup = strcmp(ssid, (const char *)s_scan_records[j].ssid) == 0;
+            dup = strcmp(ssid, (const char *)records[j].ssid) == 0;
         }
         if (dup) {
             continue;
         }
 
         char rssi[8];
-        snprintf(rssi, sizeof(rssi), "%d", s_scan_records[i].rssi);
+        snprintf(rssi, sizeof(rssi), "%d", records[i].rssi);
         const char *strings[] = {
             ssid,
             rssi,
-            s_scan_records[i].authmode == WIFI_AUTH_OPEN ? "NO" : "YES",
+            records[i].authmode == WIFI_AUTH_OPEN ? "NO" : "YES",
         };
         send_rpc_result(IMPROV_CMD_SCAN_NETWORKS, strings, 3);
         sent++;
     }
+    free(records);
     ESP_LOGI(TAG, "scan: %d networks reported", sent);
 
     // Empty result terminates the list (also the "scan impossible
@@ -287,7 +295,7 @@ static void improv_task(void *arg)
     send_state();
 
     uint8_t rx[64];
-    for (;;) {
+    while (!wifi_has_ip() || esp_timer_get_time() < SERVICE_WINDOW_US) {
         // Short timeout instead of portMAX_DELAY: uart_read_bytes
         // blocks until *length* bytes arrived, not until *some* byte
         // arrived — a full-buffer wait would stall single packets.
@@ -302,6 +310,19 @@ static void improv_task(void *arg)
             }
         }
     }
+
+    // Back to the driver-less console the boot started with. The switch
+    // takes the VFS write lock, so no log line is still inside the driver
+    // when it goes away; nothing but this task writes to it directly.
+#if CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG
+    usb_serial_jtag_vfs_use_nonblocking();
+    usb_serial_jtag_driver_uninstall();
+#else
+    uart_vfs_dev_use_nonblocking(IMPROV_UART);
+    uart_driver_delete(IMPROV_UART);
+#endif
+    ESP_LOGI(TAG, "dongle is online, Improv service ended");
+    vTaskDelete(NULL);
 }
 
 void improv_start(void)
