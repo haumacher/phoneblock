@@ -165,7 +165,9 @@ menu "PhoneBlock Dongle"
                              too: the GPIO 10 dongle LED is wired
                              active-low, the WROOM-32 on-board LED
                              active-high. ESP32-C3 builds always
-                             use GPIO 8, active-low (C3 Super Mini).
+                             use GPIO 8, active-low (C3 Super Mini);
+                             ESP32-S3 builds drive the APA102 RGB
+                             LED of the LilyGO T-Dongle-S3.
                              STATUS_LED_ACTIVE_LOW is ignored in
                              this mode.
               -1           = disable the LED task entirely.

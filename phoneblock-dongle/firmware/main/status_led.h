@@ -6,7 +6,8 @@
 // when explicitly set; the default value (-2) auto-selects between
 // GPIO 10 (chips with embedded flash, e.g. EGBO PICO-D4 dongle)
 // and GPIO 2 (WROOM-32 dev boards); GPIO 8 on ESP32-C3 builds
-// (C3 Super Mini).
+// (C3 Super Mini). ESP32-S3 builds (LilyGO T-Dongle-S3) drive the
+// board's APA102 RGB LED with the same patterns instead.
 //
 //   PAIRING    — fast blink (100 ms on / 100 ms off):
 //                WPS-PBC active, press the router's pairing button

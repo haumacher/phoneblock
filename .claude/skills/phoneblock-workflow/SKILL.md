@@ -84,9 +84,9 @@ a good delivery contains, in order:
   - Flutter: the edit loop runs `flutter analyze` and the **targeted** test file; the full
     `flutter analyze && flutter test` runs at the end, in the app that changed.
   - Dongle: the edit loop is `make test` in `firmware/test` (add the new test to `BINS` in the
-    Makefile) plus `idf.py build`; the esp32c3 build
-    (`idf.py -B build-esp32c3 -DIDF_TARGET=esp32c3 -DSDKCONFIG=build-esp32c3/sdkconfig build`)
-    runs at the end. `source ~/tools/esp/esp-idf/export.sh` first.
+    Makefile) plus `idf.py build`; the esp32c3 and esp32s3 builds
+    (`idf.py -B build-esp32c3 -DIDF_TARGET=esp32c3 -DSDKCONFIG=build-esp32c3/sdkconfig build`,
+    same with `esp32s3`) run at the end. `source ~/tools/esp/esp-idf/export.sh` first.
   - A run whose inputs did not change is not repeated "to be sure". Batch independent lookups.
 - **The standing rules block**: ALL existing tests green in every toolchain the change touches;
   **never hand-edit generated code** (msgbuf Java classes, `app_*.arb` except `app_de.arb`,
@@ -249,7 +249,8 @@ cd phoneblock_mobile && flutter analyze && flutter test            # or phoneblo
 # dongle firmware
 cd phoneblock-dongle/firmware/test && make test
 cd phoneblock-dongle/firmware && idf.py build \
-  && idf.py -B build-esp32c3 -DIDF_TARGET=esp32c3 -DSDKCONFIG=build-esp32c3/sdkconfig build
+  && idf.py -B build-esp32c3 -DIDF_TARGET=esp32c3 -DSDKCONFIG=build-esp32c3/sdkconfig build \
+  && idf.py -B build-esp32s3 -DIDF_TARGET=esp32s3 -DSDKCONFIG=build-esp32s3/sdkconfig build
 ```
 
 All green or no commit: `BUILD SUCCESS`, analyzer with zero errors and no *new* warnings in

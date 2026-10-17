@@ -1,0 +1,31 @@
+# Name,     Type, SubType, Offset,    Size
+# Layout for boards with 16 MB flash (ESP32-S3: LilyGO T-Dongle-S3),
+# selected by sdkconfig.defaults.esp32s3. The 4 MB boards keep
+# partitions.csv; see there for the history of the shared parts.
+#
+# The partition table cannot be changed over the air, so this layout is
+# fixed for every S3 dongle from its first USB install on:
+#   - ota_0/ota_1: 3 MB each, ~2x the current image, room for e.g. an
+#     LCD UI without ever touching the table again.
+#   - coredump: 256 KB instead of 52 KB — the S3 has more RAM and so
+#     potentially larger task stacks in a dump.
+#   - storage: 1 MB SPIFFS (~0.8 MB usable, 1.6x the 4 MB layout). Not
+#     more: when the partition holds no valid SPIFFS (leftovers of the
+#     board's demo or an earlier firmware), the first boot formats it
+#     before WiFi and Improv come up, measured at 13.5 s per MB on the
+#     T-Dongle-S3. A first try with 9.6 MB took 130 s, longer than the
+#     browser installer waits for Improv. The storage budget (storage.c)
+#     follows esp_spiffs_info(), so nothing else depends on the size.
+#     Label "storage" as on the 4 MB layout.
+#   - reserve: the remaining ~8.6 MB, left unformatted and unused for
+#     now, so a later firmware can claim it (e.g. for recordings or the
+#     full community list, formatted in the background) without a new
+#     partition table.
+nvs,        data, nvs,      0x9000,    0x6000
+otadata,    data, ota,      0xf000,    0x2000
+phy_init,   data, phy,      0x11000,   0x1000
+ota_0,      app,  ota_0,    0x20000,   0x300000
+ota_1,      app,  ota_1,    0x320000,  0x300000
+coredump,   data, coredump, 0x620000,  0x40000
+storage,    data, spiffs,   0x660000,  0x100000
+reserve,    data, undefined, 0x760000, 0x8A0000
