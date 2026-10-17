@@ -101,6 +101,19 @@ liegen in `sdkconfig.defaults.esp32c3`:
 idf.py -B build-esp32c3 -DIDF_TARGET=esp32c3 -DSDKCONFIG=build-esp32c3/sdkconfig build
 ```
 
+ESP32-S3 (LilyGO T-Dongle-S3) genauso in `build-esp32s3`. Die S3-Defaults
+in `sdkconfig.defaults.esp32s3`: Konsole/Improv über USB-Serial-JTAG, 16 MB
+Flash mit eigener Partitionstabelle `partitions-16mb.csv` (3-MB-OTA-Slots,
+1 MB SPIFFS, ~8,6 MB unformatierte Reserve). Die Status-LED ist die
+APA102-RGB-LED des Boards, die LCD-Hintergrundbeleuchtung wird abgeschaltet:
+
+```bash
+idf.py -B build-esp32s3 -DIDF_TARGET=esp32s3 -DSDKCONFIG=build-esp32s3/sdkconfig build
+```
+
+Das Release (`scripts/release.sh`, OTA-Manifeste, Browser-Installer) kennt
+den S3 noch nicht (#602).
+
 `scripts/release.sh` baut beide Varianten. Die C3-Dateien liegen im
 Release unter `<version>/esp32c3/`. Pro Kanal entstehen:
 
