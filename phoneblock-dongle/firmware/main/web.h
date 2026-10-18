@@ -8,6 +8,7 @@
 void web_start(void);
 void web_stop(void);
 void web_configure_listener(uint16_t port, const char *bind_address);
+uint16_t web_listening_port(void);
 
 // Percent-decode `src` (length `src_len`, '+' treated as space) into
 // `dst` of capacity `cap`. NUL-terminates. esp_http_server's

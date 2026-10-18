@@ -24,7 +24,8 @@ static void print_usage(const char *program)
 {
     fprintf(stderr,
             "Usage: %s [--config PATH] [--check-config | --probe-sip] "
-            "[--service] [--web PORT] [--web-bind ADDRESS]\n",
+            "[--service] [--web PORT] [--web-bind ADDRESS] "
+            "[--web-port-file PATH]\n",
             program);
 }
 
@@ -71,6 +72,7 @@ int main(int argc, char **argv)
 {
     const char *config_path = NULL;
     const char *web_bind = NULL;
+    const char *web_port_file = NULL;
     bool check = false;
     bool probe = false;
     bool service = false;
@@ -82,12 +84,13 @@ int main(int argc, char **argv)
         { "service", no_argument, NULL, 's' },
         { "web", required_argument, NULL, 'w' },
         { "web-bind", required_argument, NULL, 'b' },
+        { "web-port-file", required_argument, NULL, 'f' },
         { "help", no_argument, NULL, 'h' },
         { NULL, 0, NULL, 0 },
     };
 
     int option;
-    while ((option = getopt_long(argc, argv, "c:tpw:b:sh", options, NULL)) != -1) {
+    while ((option = getopt_long(argc, argv, "c:tpw:b:f:sh", options, NULL)) != -1) {
         switch (option) {
         case 'c': config_path = optarg; break;
         case 't': check = true; break;
@@ -97,7 +100,7 @@ int main(int argc, char **argv)
             char *end = NULL;
             errno = 0;
             unsigned long port = strtoul(optarg, &end, 10);
-            if (errno || !end || *end || port == 0 || port > UINT16_MAX) {
+            if (errno || !end || *end || port > UINT16_MAX) {
                 print_usage(argv[0]);
                 return EXIT_FAILURE;
             }
@@ -105,6 +108,7 @@ int main(int argc, char **argv)
             break;
         }
         case 'b': web_bind = optarg; break;
+        case 'f': web_port_file = optarg; break;
         case 'h': print_usage(argv[0]); return EXIT_SUCCESS;
         default: print_usage(argv[0]); return EXIT_FAILURE;
         }
@@ -181,6 +185,26 @@ int main(int argc, char **argv)
     scheduler_start(false);
     web_configure_listener(web_port, web_bind);
     web_start();
+    if (web_port_file) {
+        uint16_t port = web_listening_port();
+        char temp_path[512];
+        int temp_length = snprintf(temp_path, sizeof(temp_path), "%s.tmp",
+                                   web_port_file);
+        if (!port || temp_length < 0 || (size_t)temp_length >= sizeof(temp_path)) {
+            pb_log_err("linux", "HTTP server did not publish a bound port");
+            web_stop();
+            return EXIT_FAILURE;
+        }
+        FILE *port_output = fopen(temp_path, "w");
+        bool wrote_port = port_output && fprintf(port_output, "%u\n", port) >= 0;
+        if (port_output && fclose(port_output) != 0) wrote_port = false;
+        if (!wrote_port || rename(temp_path, web_port_file) != 0) {
+            pb_log_err("linux", "could not publish HTTP port to %s", web_port_file);
+            remove(temp_path);
+            web_stop();
+            return EXIT_FAILURE;
+        }
+    }
 
     pb_log_info("linux", "service started; waiting for SIGINT or SIGTERM");
     int received_signal = 0;

@@ -3284,13 +3284,18 @@ void web_start(void)
 
 void web_configure_listener(uint16_t port, const char *bind_address)
 {
-    if (s_server || port == 0) return;
+    if (s_server) return;
     s_web_port = port;
     if (!bind_address) {
         s_web_bind_address[0] = '\0';
         return;
     }
     snprintf(s_web_bind_address, sizeof(s_web_bind_address), "%s", bind_address);
+}
+
+uint16_t web_listening_port(void)
+{
+    return web_http_server_port(s_server);
 }
 
 void web_stop(void)
