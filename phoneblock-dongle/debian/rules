@@ -16,6 +16,7 @@ override_dh_auto_build:
 
 override_dh_install:
 	dh_install firmware/build/linux-host/phoneblock-dongle usr/bin
+	dh_install firmware/build/linux-host/web/* usr/share/phoneblock-dongle/web
 	dh_install debian/examples/dongle.conf.example etc/phoneblock
 
 override_dh_installsystemd:

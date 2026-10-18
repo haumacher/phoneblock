@@ -30,6 +30,11 @@
 #define STATS_ERROR_TAG_LEN  16
 #define STATS_ERROR_MSG_LEN  128
 
+enum {
+    STATS_LOG_LEVEL_ERROR = 1,
+    STATS_LOG_LEVEL_WARN = 2,
+};
+
 typedef struct {
     int64_t   at_us;                           // esp_timer_get_time() at event
     char      number[STATS_NUMBER_LEN];        // raw From-user or normalized
@@ -48,7 +53,7 @@ typedef struct {
 
 typedef struct {
     int64_t at_us;
-    int     level;                             // ESP_LOG_WARN | ESP_LOG_ERROR
+    int     level;                             // STATS_LOG_LEVEL_WARN | ERROR
     char    tag[STATS_ERROR_TAG_LEN];          // e.g. "sip", "api", "tr064"
     char    message[STATS_ERROR_MSG_LEN];
 } stats_error_t;
@@ -96,7 +101,7 @@ void stats_record_call_checked(const char *number, const char *display,
 // to reflect that a call happened.
 void stats_record_call_counters_only(verdict_t verdict);
 // Append a WARN/ERROR entry to the displayed log ring. `level` is an
-// esp_log_level_t (ESP_LOG_WARN / ESP_LOG_ERROR). Normally called only
+// STATS_LOG_LEVEL_WARN / STATS_LOG_LEVEL_ERROR. Normally called only
 // by the global log hook in log_capture.c, which mirrors every WARN /
 // ERROR line into this ring.
 void stats_record_error(int level, const char *tag, const char *message);

@@ -9,17 +9,21 @@ IDF_PATH ?= $(HOME)/tools/esp/esp-idf
 CJSON_DIR := $(IDF_PATH)/components/json/cJSON
 
 # Linux build of the portable firmware modules (`make test-linux`). It uses
-# the distribution cJSON, libsrtp2, libcurl and OpenSSL development packages.
+# the distribution cJSON, libsrtp2, libmicrohttpd, libcurl and OpenSSL development packages.
 LINUX_BUILD_DIR := ../build/linux-host
+LINUX_WEB_DIR := $(LINUX_BUILD_DIR)/web
+LINUX_WEB_ASSETS := $(LINUX_WEB_DIR)/index.html.gz \
+                    $(LINUX_WEB_DIR)/ab-logo-bot.svg \
+                    $(LINUX_WEB_DIR)/ui_en.json
 # pkg-config is required: without it the include flags would silently come
 # out empty and the build fail later on a missing header.
-ifneq ($(filter linux-firmware phoneblock_linux test-linux test_api_linux,$(MAKECMDGOALS)),)
-ifneq ($(shell pkg-config --exists libcjson libsrtp2 && echo ok),ok)
-$(error pkg-config cannot find libcjson and libsrtp2; install pkg-config, libcjson-dev and libsrtp2-dev)
+ifneq ($(filter linux-firmware phoneblock_linux test-linux test_api_linux test_web_http_linux,$(MAKECMDGOALS)),)
+ifneq ($(shell pkg-config --exists libcjson libsrtp2 libmicrohttpd && echo ok),ok)
+$(error pkg-config cannot find libcjson, libsrtp2 and libmicrohttpd; install pkg-config, libcjson-dev, libsrtp2-dev and libmicrohttpd-dev)
 endif
 endif
-LINUX_PKG_CFLAGS := $(shell pkg-config --cflags libcjson libsrtp2 2>/dev/null)
-LINUX_PKG_LIBS := $(shell pkg-config --libs libcjson libsrtp2 2>/dev/null)
+LINUX_PKG_CFLAGS := $(shell pkg-config --cflags libcjson libsrtp2 libmicrohttpd 2>/dev/null)
+LINUX_PKG_LIBS := $(shell pkg-config --libs libcjson libsrtp2 libmicrohttpd 2>/dev/null)
 LINUX_SRTP_INCLUDEDIR := $(shell pkg-config --variable=includedir libsrtp2 2>/dev/null)
 LINUX_NET_LIBS := -lcurl -lssl -lcrypto $(LINUX_PKG_LIBS)
 LINUX_CORE_SOURCES := ../core/platform_linux.c ../core/platform_linux_net.c \
@@ -32,7 +36,7 @@ LINUX_MAIN_SOURCES := ../main/announcement.c ../main/api.c \
                       ../main/heap_guard_scan.c \
                       ../main/http_util.c ../main/i18n_sync.c ../main/log_capture.c \
                       ../main/logreport_linux.c ../main/mail_linux.c \
-                      ../main/manifest_sig.c ../main/name_filter.c \
+                      ../main/mail_rcpt.c ../main/manifest_sig.c ../main/name_filter.c \
                       ../main/net_local.c ../main/phone_norm.c \
                       ../main/report_queue.c ../main/rtp.c \
                       ../main/sched_time.c ../main/scheduler.c \
@@ -41,7 +45,9 @@ LINUX_MAIN_SOURCES := ../main/announcement.c ../main/api.c \
                       ../main/sip_srv.c ../main/sip_transport.c \
                       ../main/stats.c ../main/storage.c \
                       ../main/sync.c ../main/time_sync_linux.c ../main/tr064.c \
-                      ../main/version_cmp.c
+                      ../main/version_cmp.c \
+                      ../main/web_access.c ../main/web_auth.c ../main/web.c \
+                      ../main/web_http_linux.c
 LINUX_OBJECTS := $(patsubst ../core/%.c,$(LINUX_BUILD_DIR)/core/%.o,$(LINUX_CORE_SOURCES)) \
                  $(patsubst ../main/%.c,$(LINUX_BUILD_DIR)/main/%.o,$(LINUX_MAIN_SOURCES))
 # -DSTORAGE_HOSTFS selects storage.c's plain-filesystem backend.
@@ -51,6 +57,9 @@ LINUX_CPPFLAGS := -DSTORAGE_HOSTFS -I../main -I../core $(LINUX_PKG_CFLAGS) \
 # build passes the package version, a plain build reports "linux-dev".
 ifdef PHONEBLOCK_VERSION
 LINUX_CPPFLAGS += -DPHONEBLOCK_VERSION='"$(PHONEBLOCK_VERSION)"'
+endif
+ifneq ($(strip $(PHONEBLOCK_DATA_DIR)),)
+LINUX_CPPFLAGS += -DPHONEBLOCK_DATA_DIR=\"$(PHONEBLOCK_DATA_DIR)\"
 endif
 
 BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_rcpt test_name_filter test_version_cmp test_net_local test_heap_guard test_platform_linux test_ota_manifest test_stats test_storage_budget test_storage_sim test_storage_hostfs
@@ -194,6 +203,12 @@ test_api_linux: test_api_linux.c linux_test_util.h \
 	  $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a \
 	  $(LINUX_NET_LIBS) -o $@
 
+test_web_http_linux: test_web_http_linux.c ../main/web_http.h \
+                     ../main/web_http_linux.c
+	$(CC) $(CFLAGS) -pthread $(shell pkg-config --cflags libmicrohttpd) \
+	  test_web_http_linux.c ../main/web_http_linux.c \
+	  $(shell pkg-config --libs libmicrohttpd) -o $@
+
 # strbuf.h is header-only; build its test with AddressSanitizer so any overrun
 # of the (malloc'd) destination buffer aborts.
 test_strbuf: test_strbuf.c ../main/strbuf.h
@@ -213,7 +228,7 @@ test: $(BINS)
 
 # Linux build of the firmware modules plus its network tests; needs the
 # extra prerequisites listed at LINUX_BUILD_DIR above.
-LINUX_BINS = test_platform_linux_net test_api_linux
+LINUX_BINS = test_platform_linux_net test_api_linux test_web_http_linux
 
 # The service binary. debian/rules builds it with the distribution's CFLAGS,
 # CPPFLAGS and LDFLAGS (optimisation and hardening) instead of the test flags.
@@ -223,7 +238,19 @@ $(LINUX_BUILD_DIR)/phoneblock-dongle: ../main/main_linux.c \
 	  $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a \
 	  $(LDFLAGS) $(LINUX_NET_LIBS) -o $@
 
-phoneblock_linux: $(LINUX_BUILD_DIR)/phoneblock-dongle
+$(LINUX_WEB_DIR)/index.html.gz: ../main/web/index.html
+	mkdir -p $(@D)
+	gzip -9 -n -c $< > $@
+
+$(LINUX_WEB_DIR)/ab-logo-bot.svg: ../main/web/ab-logo-bot.svg
+	mkdir -p $(@D)
+	install -m 0644 $< $@
+
+$(LINUX_WEB_DIR)/ui_en.json: ../i18n/l10n/ui/ui_en.arb
+	mkdir -p $(@D)
+	python3 -c 'import json,sys; d=json.load(open(sys.argv[1],encoding="utf-8")); json.dump({k:v for k,v in d.items() if k=="@@locale" or not k.startswith("@")},open(sys.argv[2],"w",encoding="utf-8"),ensure_ascii=False,separators=(",",":"))' $< $@
+
+phoneblock_linux: $(LINUX_BUILD_DIR)/phoneblock-dongle $(LINUX_WEB_ASSETS)
 
 test-linux: linux-firmware phoneblock_linux $(LINUX_BINS)
 	@set -e; for b in $(LINUX_BINS); do echo "→ $$b"; ./$$b; done

@@ -1652,6 +1652,9 @@ async function refreshAll(){
   fwSec.style.display = '';
   mailSec.style.display = '';
   authSec.style.display = '';
+  if (s.mail_reporting === false) mailSec.style.display = 'none';
+  if (s.firmware_update === false) fwSec.style.display = 'none';
+  if (s.factory_reset === false) resetSec.style.display = 'none';
 
   // Local blocklist-cache section: status line + wildcards toggle +
   // manual "download now" button. The task runs daily on its own; the

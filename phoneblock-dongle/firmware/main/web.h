@@ -1,12 +1,13 @@
 #pragma once
 
 #include <stddef.h>
+#include <stdint.h>
 
-// Start the on-device HTTP server that exposes the status + config web
-// UI under http://<dongle-ip>/. Idempotent; safe to call once during
-// app_main() after networking is up. Runs in its own FreeRTOS task
-// spawned by esp_http_server.
+// Start the web server that exposes the shared status + config UI.
+// Idempotent; ESP serves on port 80, Linux on port 8080.
 void web_start(void);
+void web_stop(void);
+void web_configure_listener(uint16_t port, const char *bind_address);
 
 // Percent-decode `src` (length `src_len`, '+' treated as space) into
 // `dst` of capacity `cap`. NUL-terminates. esp_http_server's
