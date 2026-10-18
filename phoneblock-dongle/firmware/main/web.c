@@ -1458,6 +1458,29 @@ static void get_forwarded_prefix(web_http_request_t *req, char *out, size_t cap)
     while (length > 1 && out[length - 1] == '/') out[--length] = '\0';
 }
 
+static bool valid_callback_authority(const char *authority)
+{
+    if (!authority || !authority[0]) return false;
+    for (const unsigned char *p = (const unsigned char *)authority; *p; p++) {
+        if (*p <= 0x20 || *p >= 0x7f || strchr("/?#@,\\", *p)) return false;
+    }
+    return true;
+}
+
+static void get_callback_authority(web_http_request_t *req, char *out, size_t cap)
+{
+    out[0] = '\0';
+    if (web_http_get_header(req, "X-Forwarded-Host", out, cap) == WEB_HTTP_OK
+            && valid_callback_authority(out)) {
+        return;
+    }
+    out[0] = '\0';
+    if (web_http_get_header(req, "Host", out, cap) != WEB_HTTP_OK
+            || !valid_callback_authority(out)) {
+        snprintf(out, cap, "answerbot");
+    }
+}
+
 // GET /register-start
 // Generate a CSRF nonce, build http(s)://<phoneblock>/pb/dongle-register
 // ?callback=<us>&state=<nonce>, redirect the browser there. The server
@@ -1476,23 +1499,23 @@ static web_http_error_t handle_register_start(web_http_request_t *req)
     // Callback URL uses whatever Host the browser reached us under
     // (answerbot / fritz.box-local-name / raw IP) so phoneblock.net
     // redirects back to the same origin the user came from.
-    char host[64] = "answerbot";
-    web_http_get_header(req, "Host", host, sizeof(host));
+    char host[128];
+    get_callback_authority(req, host, sizeof(host));
 
-    char forwarded_prefix[192];
+    char forwarded_prefix[128];
     get_forwarded_prefix(req, forwarded_prefix, sizeof(forwarded_prefix));
-    char callback_plain[320];
+    char callback_plain[280];
     snprintf(callback_plain, sizeof(callback_plain),
              "http://%s%s/token-callback", host, forwarded_prefix);
 
-    char callback_enc[960];
+    char callback_enc[900];
     url_encode(callback_plain, callback_enc, sizeof(callback_enc));
 
     // Reuse the existing mobile-login flow on phoneblock.net via its
     // /mobile/login endpoint. `appId=PhoneBlockDongle` switches the
     // /create-token servlet into the dynamic-callback branch, where it
     // echoes our CSRF state back and redirects to our callback URL.
-    char url[1400];
+    char url[1200];
     snprintf(url, sizeof(url),
              "%s/mobile/login?appId=PhoneBlockDongle&tokenLabel=%s"
              "&callback=%s&state=%s",
@@ -1595,7 +1618,7 @@ static web_http_error_t handle_token_callback(web_http_request_t *req)
 
     // Hand the user straight back to the status landing — the pill
     // there flips to green on the next 3s poll.
-    char forwarded_prefix[192];
+    char forwarded_prefix[128];
     get_forwarded_prefix(req, forwarded_prefix, sizeof(forwarded_prefix));
     char location[196];
     snprintf(location, sizeof(location), "%s/", forwarded_prefix);
