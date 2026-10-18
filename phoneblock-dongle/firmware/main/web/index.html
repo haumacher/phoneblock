@@ -148,8 +148,8 @@
 <script>
 // --- i18n -----------------------------------------------------------
 
-// Home Assistant serves the app below a mounted path; standalone ESP/Linux
-// servers serve it at /. Preserve that mount for API requests and assets.
+// A reverse proxy may serve the app below a mounted path; standalone
+// ESP/Linux servers serve it at /. Preserve the mount for requests/assets.
 const APP_BASE_PATH = location.pathname.replace(/\/+$/, '');
 const appUrl = (path) => APP_BASE_PATH && path.startsWith('/') && !path.startsWith('//')
   ? APP_BASE_PATH + path : path;
@@ -3380,7 +3380,8 @@ async function renderToken(){
     + (set ? esc(t('token.current.set')) : esc(t('token.current.missing')))
     + '</p>'
     + '<p style="margin-top:.8rem">'
-    + '<a href="/register-start" class="btn-primary">' + esc(t('token.submit')) + '</a>'
+    + '<a href="/register-start" target="_blank" rel="noopener" class="btn-primary">'
+    + esc(t('token.submit')) + '</a>'
     + '</p></section>';
 }
 

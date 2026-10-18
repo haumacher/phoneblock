@@ -1445,6 +1445,19 @@ static void url_encode(const char *in, char *out, size_t cap)
     out[o] = '\0';
 }
 
+static void get_forwarded_prefix(web_http_request_t *req, char *out, size_t cap)
+{
+    out[0] = '\0';
+    if (web_http_get_header(req, "X-Forwarded-Prefix", out, cap) != WEB_HTTP_OK)
+        return;
+    if (out[0] != '/' || out[1] == '/' || strchr(out, '?') || strchr(out, '#')) {
+        out[0] = '\0';
+        return;
+    }
+    size_t length = strlen(out);
+    while (length > 1 && out[length - 1] == '/') out[--length] = '\0';
+}
+
 // GET /register-start
 // Generate a CSRF nonce, build http(s)://<phoneblock>/pb/dongle-register
 // ?callback=<us>&state=<nonce>, redirect the browser there. The server
@@ -1466,18 +1479,20 @@ static web_http_error_t handle_register_start(web_http_request_t *req)
     char host[64] = "answerbot";
     web_http_get_header(req, "Host", host, sizeof(host));
 
-    char callback_plain[128];
+    char forwarded_prefix[192];
+    get_forwarded_prefix(req, forwarded_prefix, sizeof(forwarded_prefix));
+    char callback_plain[320];
     snprintf(callback_plain, sizeof(callback_plain),
-             "http://%s/token-callback", host);
+             "http://%s%s/token-callback", host, forwarded_prefix);
 
-    char callback_enc[256];
+    char callback_enc[960];
     url_encode(callback_plain, callback_enc, sizeof(callback_enc));
 
     // Reuse the existing mobile-login flow on phoneblock.net via its
     // /mobile/login endpoint. `appId=PhoneBlockDongle` switches the
     // /create-token servlet into the dynamic-callback branch, where it
     // echoes our CSRF state back and redirects to our callback URL.
-    char url[512];
+    char url[1400];
     snprintf(url, sizeof(url),
              "%s/mobile/login?appId=PhoneBlockDongle&tokenLabel=%s"
              "&callback=%s&state=%s",
@@ -1580,8 +1595,12 @@ static web_http_error_t handle_token_callback(web_http_request_t *req)
 
     // Hand the user straight back to the status landing — the pill
     // there flips to green on the next 3s poll.
+    char forwarded_prefix[192];
+    get_forwarded_prefix(req, forwarded_prefix, sizeof(forwarded_prefix));
+    char location[196];
+    snprintf(location, sizeof(location), "%s/", forwarded_prefix);
     web_http_set_status(req, "302 Found");
-    web_http_set_header(req, "Location", "/");
+    web_http_set_header(req, "Location", location);
     web_http_send(req, NULL, 0);
     return WEB_HTTP_OK;
 }
