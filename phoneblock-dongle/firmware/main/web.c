@@ -1502,20 +1502,20 @@ static web_http_error_t handle_register_start(web_http_request_t *req)
     char host[128];
     get_callback_authority(req, host, sizeof(host));
 
-    char forwarded_prefix[128];
+    char forwarded_prefix[192];
     get_forwarded_prefix(req, forwarded_prefix, sizeof(forwarded_prefix));
-    char callback_plain[280];
+    char callback_plain[352];
     snprintf(callback_plain, sizeof(callback_plain),
              "http://%s%s/token-callback", host, forwarded_prefix);
 
-    char callback_enc[900];
+    char callback_enc[1088];
     url_encode(callback_plain, callback_enc, sizeof(callback_enc));
 
     // Reuse the existing mobile-login flow on phoneblock.net via its
     // /mobile/login endpoint. `appId=PhoneBlockDongle` switches the
     // /create-token servlet into the dynamic-callback branch, where it
     // echoes our CSRF state back and redirects to our callback URL.
-    char url[1200];
+    char url[1400];
     snprintf(url, sizeof(url),
              "%s/mobile/login?appId=PhoneBlockDongle&tokenLabel=%s"
              "&callback=%s&state=%s",
@@ -1535,7 +1535,7 @@ static web_http_error_t handle_register_start(web_http_request_t *req)
 // the user a friendly success page that links back to the main UI.
 static web_http_error_t handle_token_callback(web_http_request_t *req)
 {
-    REQUIRE_AUTH_HTML(req);
+    REQUIRE_LOCAL_HTML(req);
     char query[512];
     if (web_http_get_query_string(req, query, sizeof(query)) != WEB_HTTP_OK) {
         web_http_set_type(req, "text/html; charset=utf-8");
@@ -1618,7 +1618,7 @@ static web_http_error_t handle_token_callback(web_http_request_t *req)
 
     // Hand the user straight back to the status landing — the pill
     // there flips to green on the next 3s poll.
-    char forwarded_prefix[128];
+    char forwarded_prefix[192];
     get_forwarded_prefix(req, forwarded_prefix, sizeof(forwarded_prefix));
     char location[196];
     snprintf(location, sizeof(location), "%s/", forwarded_prefix);
