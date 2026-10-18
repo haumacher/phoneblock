@@ -148,6 +148,38 @@
 <script>
 // --- i18n -----------------------------------------------------------
 
+// Home Assistant serves the app below a mounted path; standalone ESP/Linux
+// servers serve it at /. Preserve that mount for API requests and assets.
+const APP_BASE_PATH = location.pathname.replace(/\/+$/, '');
+const appUrl = (path) => APP_BASE_PATH && path.startsWith('/') && !path.startsWith('//')
+  ? APP_BASE_PATH + path : path;
+const nativeFetch = window.fetch.bind(window);
+window.fetch = (input, ...args) => nativeFetch(
+  typeof input === 'string' ? appUrl(input) : input, ...args);
+const nativeXhrOpen = XMLHttpRequest.prototype.open;
+XMLHttpRequest.prototype.open = function(method, url, ...args){
+  return nativeXhrOpen.call(this, method, appUrl(url), ...args);
+};
+
+function fixMountedLinks(root){
+  const elements = [];
+  if (root.matches && root.matches('[href^="/"],[src^="/"]')) elements.push(root);
+  if (root.querySelectorAll) elements.push(...root.querySelectorAll('[href^="/"],[src^="/"]'));
+  for (const element of elements) {
+    for (const attr of ['href', 'src']) {
+      const value = element.getAttribute(attr);
+      if (value && value.startsWith('/') && !value.startsWith('//'))
+        element.setAttribute(attr, appUrl(value));
+    }
+  }
+}
+fixMountedLinks(document);
+new MutationObserver((changes) => {
+  for (const change of changes)
+    for (const node of change.addedNodes)
+      if (node.nodeType === Node.ELEMENT_NODE) fixMountedLinks(node);
+}).observe(document.documentElement, {childList:true, subtree:true});
+
 const I18N = {};
 
 // The UI language is the device's ui_lang. All strings are loaded at runtime
@@ -1534,7 +1566,7 @@ function showLoginState(){
     loginBtn.onclick = (e) => {
       e.preventDefault();
       const remember = $('loginRemember') && $('loginRemember').checked;
-      window.location.href = '/auth/start' + (remember ? '?remember=1' : '');
+      window.location.href = appUrl('/auth/start' + (remember ? '?remember=1' : ''));
     };
   }
 
@@ -2559,7 +2591,7 @@ async function refreshAll(){
     // 302 back to /auth/callback, which sets the cookie and persists
     // auth_enabled=1 only on success. No JS-side state to manage.
     authEnableBtn.onclick = () => {
-      window.location.href = '/auth/start?activate=1';
+      window.location.href = appUrl('/auth/start?activate=1');
     };
   }
   if (!authLogoutBtn.onclick){
@@ -2571,7 +2603,7 @@ async function refreshAll(){
         // back on the SPA, which then renders the in-page login state.
         await fetch('/auth/logout', { method: 'POST', redirect: 'manual' });
       } catch (_){ /* navigate anyway */ }
-      window.location.href = '/';
+      window.location.href = appUrl('/');
     };
   }
   if (!authDisableBtn.onclick){
