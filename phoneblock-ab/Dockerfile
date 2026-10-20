@@ -46,6 +46,7 @@ USER phoneblock
 RUN mkdir -p /opt/phoneblock/bin /opt/phoneblock/conversation /opt/phoneblock/recordings
 COPY --from=builder --chown=phoneblock:phoneblock /build/phoneblock-ab/target/*-jar-with-dependencies.jar /opt/phoneblock/bin/
 COPY --chown=phoneblock:phoneblock phoneblock-ab/.phoneblock.docker /opt/phoneblock/.phoneblock
+COPY --chown=phoneblock:phoneblock phoneblock-ab/conversation/ /opt/phoneblock/conversation/
 
 RUN for f in /opt/phoneblock/bin/*-jar-with-dependencies.jar; do \
         mv "$f" /opt/phoneblock/bin/phoneblock-ab.jar; \
