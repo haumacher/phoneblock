@@ -4,9 +4,7 @@
 
 #include "api.h"
 #include "config.h"
-#ifdef ESP_PLATFORM
 #include "logreport.h"
-#endif
 #include "platform.h"
 
 // Must be last: bans unsafe string APIs for the rest of this file.
@@ -26,7 +24,5 @@ void selftest_run(void)
     // without crashing) becomes visible server-side instead of only on
     // the local web UI. No-op when there's nothing new or the user opted
     // out.
-#ifdef ESP_PLATFORM
     logreport_flush();
-#endif
 }

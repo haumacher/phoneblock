@@ -11,9 +11,15 @@ CJSON_DIR := $(IDF_PATH)/components/json/cJSON
 # Linux build of the portable firmware modules (`make test-linux`). It uses
 # the distribution cJSON, libsrtp2, libcurl and OpenSSL development packages.
 LINUX_BUILD_DIR := ../build/linux-host
+# pkg-config is required: without it the include flags would silently come
+# out empty and the build fail later on a missing header.
+ifneq ($(filter linux-firmware phoneblock_linux test-linux test_api_linux,$(MAKECMDGOALS)),)
+ifneq ($(shell pkg-config --exists libcjson libsrtp2 && echo ok),ok)
+$(error pkg-config cannot find libcjson and libsrtp2; install pkg-config, libcjson-dev and libsrtp2-dev)
+endif
+endif
 LINUX_PKG_CFLAGS := $(shell pkg-config --cflags libcjson libsrtp2 2>/dev/null)
-LINUX_PKG_LIBS := $(shell pkg-config --libs libcjson 2>/dev/null) \
-	$(shell pkg-config --static --libs libsrtp2 2>/dev/null)
+LINUX_PKG_LIBS := $(shell pkg-config --libs libcjson libsrtp2 2>/dev/null)
 LINUX_SRTP_INCLUDEDIR := $(shell pkg-config --variable=includedir libsrtp2 2>/dev/null)
 LINUX_NET_LIBS := -lcurl -lssl -lcrypto $(LINUX_PKG_LIBS)
 LINUX_CORE_SOURCES := ../core/platform_linux.c ../core/platform_linux_net.c \
@@ -22,23 +28,30 @@ LINUX_MAIN_SOURCES := ../main/announcement.c ../main/api.c \
                       ../main/api_scan.c \
                       ../main/audio.c ../main/blocklist_lookup.c \
                       ../main/blocklist_sync.c ../main/config.c \
-					  ../main/firmware_update.c ../main/heap_guard_linux.c \
-					  ../main/heap_guard_scan.c \
+                      ../main/firmware_update.c ../main/heap_guard_linux.c \
+                      ../main/heap_guard_scan.c \
                       ../main/http_util.c ../main/i18n_sync.c ../main/log_capture.c \
+                      ../main/logreport_linux.c ../main/mail_linux.c \
                       ../main/manifest_sig.c ../main/name_filter.c \
-					  ../main/net_local.c ../main/phone_norm.c \
-					  ../main/report_queue.c ../main/rtp.c \
+                      ../main/net_local.c ../main/phone_norm.c \
+                      ../main/report_queue.c ../main/rtp.c \
                       ../main/sched_time.c ../main/scheduler.c \
                       ../main/sip_auth.c ../main/sip_frame.c \
-					  ../main/selftest.c ../main/sip_register.c ../main/sip_response.c \
+                      ../main/selftest.c ../main/sip_register.c ../main/sip_response.c \
                       ../main/sip_srv.c ../main/sip_transport.c \
                       ../main/stats.c ../main/storage.c \
-                      ../main/sync.c ../main/tr064.c ../main/version_cmp.c
+                      ../main/sync.c ../main/time_sync_linux.c ../main/tr064.c \
+                      ../main/version_cmp.c
 LINUX_OBJECTS := $(patsubst ../core/%.c,$(LINUX_BUILD_DIR)/core/%.o,$(LINUX_CORE_SOURCES)) \
                  $(patsubst ../main/%.c,$(LINUX_BUILD_DIR)/main/%.o,$(LINUX_MAIN_SOURCES))
 # -DSTORAGE_HOSTFS selects storage.c's plain-filesystem backend.
 LINUX_CPPFLAGS := -DSTORAGE_HOSTFS -I../main -I../core $(LINUX_PKG_CFLAGS) \
-				  -I$(LINUX_SRTP_INCLUDEDIR)/srtp2
+                  -I$(LINUX_SRTP_INCLUDEDIR)/srtp2 $(CPPFLAGS)
+# The version reported in the User-Agent (pb_firmware_version()); the Debian
+# build passes the package version, a plain build reports "linux-dev".
+ifdef PHONEBLOCK_VERSION
+LINUX_CPPFLAGS += -DPHONEBLOCK_VERSION='"$(PHONEBLOCK_VERSION)"'
+endif
 
 BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_rcpt test_name_filter test_version_cmp test_net_local test_heap_guard test_platform_linux test_ota_manifest test_stats test_storage_budget test_storage_sim test_storage_hostfs
 
@@ -202,11 +215,13 @@ test: $(BINS)
 # extra prerequisites listed at LINUX_BUILD_DIR above.
 LINUX_BINS = test_platform_linux_net test_api_linux
 
+# The service binary. debian/rules builds it with the distribution's CFLAGS,
+# CPPFLAGS and LDFLAGS (optimisation and hardening) instead of the test flags.
 $(LINUX_BUILD_DIR)/phoneblock-dongle: ../main/main_linux.c \
-									  $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a
-	$(CC) $(CFLAGS) -pthread -I../main -I../core $(LINUX_PKG_CFLAGS) $< \
+                                      $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a
+	$(CC) $(CFLAGS) -std=gnu11 -pthread $(LINUX_CPPFLAGS) $< \
 	  $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a \
-	  $(LINUX_NET_LIBS) -o $@
+	  $(LDFLAGS) $(LINUX_NET_LIBS) -o $@
 
 phoneblock_linux: $(LINUX_BUILD_DIR)/phoneblock-dongle
 
@@ -215,6 +230,6 @@ test-linux: linux-firmware phoneblock_linux $(LINUX_BINS)
 	@echo "→ test_linux_entrypoint.sh"; ./test_linux_entrypoint.sh
 
 clean:
-	rm -f $(BINS) $(LINUX_BINS) phoneblock_linux cjson.o $(SPIFFS_CORE) $(LINUX_OBJECTS) $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a $(LINUX_BUILD_DIR)/phoneblock-dongle
+	rm -f $(BINS) $(LINUX_BINS) cjson.o $(SPIFFS_CORE) $(LINUX_OBJECTS) $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a $(LINUX_BUILD_DIR)/phoneblock-dongle
 
 .PHONY: linux-firmware phoneblock_linux test test-linux clean

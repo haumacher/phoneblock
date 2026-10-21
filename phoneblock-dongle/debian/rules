@@ -1,10 +1,18 @@
 #!/usr/bin/make -f
 
+# Optimised, hardened build with the distribution's flags; the version from
+# debian/changelog becomes the User-Agent version (pb_firmware_version()).
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+include /usr/share/dpkg/buildflags.mk
+include /usr/share/dpkg/pkg-info.mk
+
 %:
 	dh $@
 
 override_dh_auto_build:
-	$(MAKE) -B -C firmware/test phoneblock_linux
+	$(MAKE) -B -C firmware/test phoneblock_linux \
+	  CFLAGS="$(CFLAGS) -Wall" CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)" \
+	  PHONEBLOCK_VERSION="$(DEB_VERSION)"
 
 override_dh_install:
 	dh_install firmware/build/linux-host/phoneblock-dongle usr/bin
@@ -12,7 +20,3 @@ override_dh_install:
 
 override_dh_installsystemd:
 	dh_installsystemd --no-enable --no-start
-
-override_dh_fixperms:
-	dh_fixperms
-	chmod 0755 debian/phoneblock-dongle/usr/bin/phoneblock-dongle

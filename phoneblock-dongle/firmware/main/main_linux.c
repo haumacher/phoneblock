@@ -9,6 +9,7 @@
 #include "sip_register.h"
 #include "sip_transport.h"
 #include "stats.h"
+#include "time_sync.h"
 
 #include <errno.h>
 #include <getopt.h>
@@ -96,17 +97,24 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
+    // Same order as app_main() in main.c; the ESP32-only steps (NVS/netif
+    // init, LED, Wi-Fi, mDNS, web UI, OTA rollback, crash-dump upload, heap
+    // sentinel) have no Linux counterpart in this step. log_capture_start()
+    // is skipped too: its hook is ESP-IDF's vprintf sink, and on Linux the
+    // log goes to the journal.
     stats_setup();
     config_load();
 
     if (check) return check_config() ? EXIT_SUCCESS : EXIT_FAILURE;
     if (probe) return probe_sip();
-    if (!check_config()) return EXIT_FAILURE;
 
     if (announcement_init() != PB_OK) {
         pb_log_err("linux", "announcement storage initialization failed");
         return EXIT_FAILURE;
     }
+    // The host keeps the wall clock; this only applies the configured
+    // timezone (see time_sync_linux.c).
+    time_sync_start();
 
     // Block termination signals before creating workers. They inherit the
     // mask, leaving this thread as the single orderly shutdown point.
@@ -127,13 +135,24 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    phoneblock_api_init();
     report_queue_start();
+    phoneblock_api_init();
+
+    // Like the ESP32, keep running when unconfigured: the web UI (step 4)
+    // must be reachable on a fresh install to set things up.
     if (config_phoneblock_token()[0]) {
-        pb_log_info("linux", "initial PhoneBlock self-test");
+        pb_log_info("linux", "initial self-test");
         phoneblock_selftest(NULL);
+    } else {
+        pb_log_info("linux", "PhoneBlock token not configured yet");
     }
-    sip_register_start();
+
+    if (config_sip_host()[0]) {
+        sip_register_start();
+    } else {
+        pb_log_info("linux", "SIP not configured yet");
+    }
+
     scheduler_start(false);
 
     pb_log_info("linux", "service started; waiting for SIGINT or SIGTERM");

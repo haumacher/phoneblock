@@ -9,7 +9,7 @@ Rules-Requires-Root: no
 
 Package: phoneblock-dongle
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ca-certificates
+Depends: ${shlibs:Depends}, ${misc:Depends}, adduser, ca-certificates
 Description: PhoneBlock Linux SIP spam-call blocker
  Shared PhoneBlock dongle firmware modules running as a native Linux service.
  Registers as a SIP endpoint, checks callers against PhoneBlock, and can

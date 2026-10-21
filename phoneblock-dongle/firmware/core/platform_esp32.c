@@ -14,6 +14,7 @@
 #include "esp_timer.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
+#include "freertos/queue.h"
 #include "freertos/semphr.h"
 #include "freertos/task.h"
 #include "mbedtls/base64.h"
@@ -284,6 +285,23 @@ uint32_t pb_event_wait_s(pb_event_t *event, uint32_t timeout_s)
     if (!event) return 0;
     return (uint32_t)xEventGroupWaitBits(event->handle, 0x00ffffffu, pdTRUE,
                                          pdFALSE, seconds_to_ticks(timeout_s));
+}
+
+// The FreeRTOS queue handle is used directly as the opaque pb_queue_t.
+pb_queue_t *pb_queue_create(size_t depth, size_t item_size)
+{
+    return (pb_queue_t *)xQueueCreate(depth, item_size);
+}
+
+bool pb_queue_send(pb_queue_t *queue, const void *item)
+{
+    return queue && xQueueSend((QueueHandle_t)queue, item, 0) == pdTRUE;
+}
+
+void pb_queue_receive(pb_queue_t *queue, void *item)
+{
+    while (xQueueReceive((QueueHandle_t)queue, item, portMAX_DELAY) != pdTRUE) {
+    }
 }
 
 pb_tls_t *pb_tls_connect(const char *host, int port, const char *server_name,
