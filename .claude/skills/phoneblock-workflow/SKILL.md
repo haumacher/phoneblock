@@ -333,6 +333,7 @@ curl -s http://answerbot/api/status  > $TMPDIR/status.json
 curl -s -X POST --data-binary @phoneblock-dongle/firmware/build/phoneblock_dongle.bin \
      -H 'Content-Type: application/octet-stream' http://answerbot/api/firmware   # unsigned OTA, reboots
 phoneblock-dongle/firmware/scripts/fake-call.py 0301234567 answerbot          # synthetic caller, bare number
+phoneblock-dongle/firmware/scripts/fake-call.py --audio <spam-nr> answerbot   # spam call that plays the announcement (RTP)
 ```
 
 Then read `/api/calls` or the web UI's "Letzte Anrufe" panel. QEMU recipes for paths that need no
