@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -70,6 +71,15 @@ void pb_log_err(const char *tag, const char *fmt, ...)
 // Compiled out, like ESP_LOGD at the firmware's default INFO log level; the
 // dead call keeps the format string checked.
 #define pb_log_debug(tag, ...) do { if (0) pb_log_info(tag, __VA_ARGS__); } while (0)
+
+// The direct feed described above: once set, every pb_log_* line is also
+// handed to `sink` after it was printed, with its level letter ('I', 'W' or
+// 'E'), tag and printf arguments. The sink decides what to keep and formats
+// only that. log_capture_start() (main/log_capture_linux.c) installs it; set
+// it once at startup, before other tasks log. The sink must not log itself.
+typedef void (*pb_log_sink_t)(char level, const char *tag, const char *fmt,
+                              va_list args);
+void pb_log_set_sink(pb_log_sink_t sink);
 #endif
 
 // --- Time, randomness, watchdog -----------------------------------------

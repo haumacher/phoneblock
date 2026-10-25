@@ -31,6 +31,8 @@ Zu beachten ist, dass auch die verwendeten Images für alle Ziel-Plattformen geb
 
 Um jetzt für mehrere Plattformen zu Bauen muss `buildx` mit dem zuvor definierten Builder ausgeführt werden. Die Plattformen werden kommasepariert angegeben. Mit `-t ` werden die Tags definiert.
 
-`docker buildx build --platform linux/amd64,linux/arm/v7,linux/arm64/v8 --builder build_multi -t phoneblock/answerbot:latest .`
+`docker buildx build --platform linux/amd64,linux/arm/v7,linux/arm64/v8 --builder build_multi -f phoneblock-ab/Dockerfile -t phoneblock/answerbot:latest .`
+
+Der Befehl wird im Wurzelverzeichnis des Repositories ausgeführt. Das JAR wird im Docker-Build selbst gebaut (kein JDK/Maven auf dem Host nötig), und zwar nur einmal auf der Plattform des Build-Rechners; emuliert werden nur die Laufzeit-Images.
 
 Hiernach sollten Images für `linux/amd64`, `linux/arm/v7` und `linux/arm64/v8` gebaut worden sein. Wird zusätzlich noch `--push` hinzugefügt, so werden die Images direkt auf Dockerhub veröffentlicht.

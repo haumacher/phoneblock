@@ -1,3 +1,19 @@
+# Self-contained build: no JDK or Maven on the host. Build from the repository root (the answerbot
+# needs the parent POM and phoneblock-shared):
+#
+#   docker build -f phoneblock-ab/Dockerfile -t phoneblock/answerbot .
+#
+# The build context is limited by Dockerfile.dockerignore next to this file.
+
+# The JAR is platform-independent, so it is built once on the build host's own platform, not once
+# per target platform under QEMU emulation.
+FROM --platform=$BUILDPLATFORM maven:3.9.9-eclipse-temurin-17 AS build
+WORKDIR /build
+COPY . .
+RUN --mount=type=cache,target=/root/.m2 \
+    mvn -B -pl phoneblock-ab -am -DskipTests package \
+ && cp phoneblock-ab/target/phoneblock-ab-*-jar-with-dependencies.jar /build/phoneblock-ab.jar
+
 FROM eclipse-temurin:17
 LABEL org.opencontainers.image.authors=play@haumacher.de
 
@@ -12,12 +28,12 @@ RUN apt-get update \
 # has to read the directory, which fails on linux/arm/v7 under QEMU emulation with "Value too
 # large for defined data type" (32-bit stat on 64-bit inodes).
 
-COPY --chown=phoneblock:phoneblock .phoneblock.docker /opt/phoneblock/.phoneblock
-COPY --chown=phoneblock:phoneblock target/phoneblock-ab-*-jar-with-dependencies.jar /opt/phoneblock/bin/phoneblock-ab.jar
-# The default conversation (the PCMA/PCMA-WB fragments, see .dockerignore) is part of the image;
-# a bind mount on /opt/phoneblock/conversation replaces it with a custom one (#586).
-COPY --chown=phoneblock:phoneblock conversation/ /opt/phoneblock/conversation/
-COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+COPY --chown=phoneblock:phoneblock phoneblock-ab/.phoneblock.docker /opt/phoneblock/.phoneblock
+COPY --from=build --chown=phoneblock:phoneblock /build/phoneblock-ab.jar /opt/phoneblock/bin/phoneblock-ab.jar
+# The default conversation (the PCMA/PCMA-WB fragments, see Dockerfile.dockerignore) is part of the
+# image; a bind mount on /opt/phoneblock/conversation replaces it with a custom one (#586).
+COPY --chown=phoneblock:phoneblock phoneblock-ab/conversation/ /opt/phoneblock/conversation/
+COPY phoneblock-ab/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 WORKDIR /opt/phoneblock/

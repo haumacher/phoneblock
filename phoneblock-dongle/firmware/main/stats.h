@@ -30,9 +30,12 @@
 #define STATS_ERROR_TAG_LEN  16
 #define STATS_ERROR_MSG_LEN  128
 
+// Levels of the log ring, numerically equal to ESP-IDF's esp_log_level_t
+// (log_capture.c asserts that), so the ESP32 hook can store those directly.
 enum {
     STATS_LOG_LEVEL_ERROR = 1,
     STATS_LOG_LEVEL_WARN = 2,
+    STATS_LOG_LEVEL_INFO = 3,
 };
 
 typedef struct {
@@ -100,10 +103,10 @@ void stats_record_call_checked(const char *number, const char *display,
 // codes) but still wants the dashboard counters (total/legitimate)
 // to reflect that a call happened.
 void stats_record_call_counters_only(verdict_t verdict);
-// Append a WARN/ERROR entry to the displayed log ring. `level` is an
+// Append a WARN/ERROR entry to the displayed log ring. `level` is
 // STATS_LOG_LEVEL_WARN / STATS_LOG_LEVEL_ERROR. Normally called only
-// by the global log hook in log_capture.c, which mirrors every WARN /
-// ERROR line into this ring.
+// by the global log hook in log_capture.c (log_capture_linux.c on Linux),
+// which mirrors every WARN / ERROR line into this ring.
 void stats_record_error(int level, const char *tag, const char *message);
 void stats_record_sip_state(bool registered);
 

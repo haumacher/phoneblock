@@ -35,8 +35,9 @@ LINUX_MAIN_SOURCES := ../main/announcement.c ../main/api.c \
                       ../main/firmware_update.c ../main/heap_guard_linux.c \
                       ../main/heap_guard_scan.c \
                       ../main/http_util.c ../main/i18n_sync.c ../main/log_capture.c \
-                      ../main/logreport_linux.c ../main/mail_linux.c \
-                      ../main/mail_rcpt.c ../main/manifest_sig.c ../main/name_filter.c \
+                      ../main/log_capture_linux.c ../main/logreport.c \
+                      ../main/mail_linux.c ../main/mail_rcpt.c \
+                      ../main/manifest_sig.c ../main/name_filter.c \
                       ../main/net_local.c ../main/phone_norm.c \
                       ../main/report_queue.c ../main/rtp.c \
                       ../main/sched_time.c ../main/scheduler.c \
@@ -68,7 +69,7 @@ ifneq ($(strip $(PHONEBLOCK_DATA_DIR)),)
 LINUX_CPPFLAGS += -DPHONEBLOCK_DATA_DIR=\"$(PHONEBLOCK_DATA_DIR)\"
 endif
 
-BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_rcpt test_name_filter test_version_cmp test_net_local test_heap_guard test_platform_linux test_ota_manifest test_stats test_storage_budget test_storage_sim test_storage_hostfs
+BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_rcpt test_name_filter test_version_cmp test_net_local test_heap_guard test_platform_linux test_log_capture_linux test_ota_manifest test_stats test_storage_budget test_storage_sim test_storage_hostfs
 
 test_sip_parse: test_sip_parse.c ../core/sip_parse.c ../core/sip_parse.h \
                 ../core/dial_rules.c ../core/dial_rules.h \
@@ -173,6 +174,15 @@ test_platform_linux: test_platform_linux.c linux_test_util.h \
                      ../main/config.c ../main/config.h \
                      ../main/log_capture.c ../main/log_capture.h
 	$(CC) $(CFLAGS) -pthread test_platform_linux.c ../core/platform_linux.c ../main/config.c ../main/log_capture.c -o $@
+
+test_log_capture_linux: test_log_capture_linux.c linux_test_util.h \
+                        ../main/log_capture_linux.c ../main/log_capture.c \
+                        ../main/log_capture.h ../main/stats.c ../main/stats.h \
+                        ../main/config.c ../main/config.h \
+                        ../core/platform_linux.c ../core/platform.h
+	$(CC) $(CFLAGS) -pthread test_log_capture_linux.c ../main/log_capture_linux.c \
+	  ../main/log_capture.c ../main/stats.c ../main/config.c \
+	  ../core/platform_linux.c -o $@
 
 # The hostfs backend of storage.c. The data dir is a fresh mkdtemp()
 # directory the test publishes in PB_HOSTFS_TEST_DIR.

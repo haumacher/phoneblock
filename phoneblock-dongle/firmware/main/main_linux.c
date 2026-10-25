@@ -3,6 +3,7 @@
 #include "announcement.h"
 #include "api.h"
 #include "config.h"
+#include "log_capture.h"
 #include "platform.h"
 #include "report_queue.h"
 #include "scheduler.h"
@@ -129,10 +130,11 @@ int main(int argc, char **argv)
 
     // Same order as app_main() in main.c; the ESP32-only steps (NVS/netif
     // init, LED, Wi-Fi, mDNS, OTA rollback, crash-dump upload, heap
-    // sentinel) have no Linux counterpart. log_capture_start()
-    // is skipped too: its hook is ESP-IDF's vprintf sink, and on Linux the
-    // log goes to the journal.
+    // sentinel) have no Linux counterpart. The log hook mirrors WARN/ERROR
+    // into the web UI's log ring (and the log report) like on the ESP32; the
+    // console lines still go to the journal.
     stats_setup();
+    log_capture_start();
     config_load();
 
     if (check) return check_config() ? EXIT_SUCCESS : EXIT_FAILURE;

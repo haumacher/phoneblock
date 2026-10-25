@@ -187,6 +187,11 @@ int log_capture_suppressed(char level, const char *tag, const char *msg)
 // Must be last: bans unsafe string APIs for the rest of this file.
 #include "banned_apis.h"
 
+// The ring stores ESP-IDF levels as-is (stats.h defines the portable names).
+_Static_assert((int)STATS_LOG_LEVEL_ERROR == (int)ESP_LOG_ERROR, "log level mismatch");
+_Static_assert((int)STATS_LOG_LEVEL_WARN == (int)ESP_LOG_WARN, "log level mismatch");
+_Static_assert((int)STATS_LOG_LEVEL_INFO == (int)ESP_LOG_INFO, "log level mismatch");
+
 // Previous (console) sink, so the serial log stays fully intact.
 static vprintf_like_t s_console;
 
