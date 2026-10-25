@@ -51,9 +51,11 @@ Das kompiliert die portablen Firmwaremodule mit `-Werror` zu
   `make phoneblock_linux`, Einstiegspunkt `../main/main_linux.c`).
 
 ESP-Hardwarestart, Web-UI und Boarddienste bleiben außerhalb dieses
-Linux-Builds; Statusmail und Log-Report sind unter Linux Platzhalter
-(`mail_linux.c`, `logreport_linux.c`). Das Debian-Paket für den Dienst liegt
-unter `../../debian/`.
+Linux-Builds; die Statusmail ist unter Linux ein Platzhalter (`mail_linux.c`).
+WARN/ERROR-Zeilen landen wie auf dem ESP32 im Fehlerring und im Log-Report:
+`../main/log_capture_linux.c` übernimmt sie direkt aus `pb_log_*` (Test:
+`test_log_capture_linux`). Das Debian-Paket für den Dienst liegt unter
+`../../debian/`.
 
 ## Neue Tests hinzufügen
 

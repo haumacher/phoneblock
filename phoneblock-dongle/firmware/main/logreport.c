@@ -4,13 +4,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "esp_log.h"
+#ifdef ESP_PLATFORM
 #include "esp_system.h"
+#include "wifi.h"
+#endif
 
 #include "api.h"
 #include "config.h"
+#include "platform.h"
 #include "stats.h"
-#include "wifi.h"
 
 // Must be last: bans unsafe string APIs for the rest of this file.
 #include "banned_apis.h"
@@ -32,11 +34,11 @@ static const char *TAG = "logreport";
 // over-run the buffer.
 #define LOGREPORT_BODY_CAP          6144
 
-// High-water mark: the largest at_us already shipped. esp_timer time is
-// uptime-relative and resets to ~0 on reboot, so after a reboot the
-// current ring is shipped once more — which is intended (the reboot
-// itself is worth surfacing). RAM-only; there is no value in persisting
-// it across boots.
+// High-water mark: the largest at_us already shipped. The monotonic clock
+// (esp_timer on the ESP32) is uptime-relative and resets on reboot (or a
+// service restart on Linux), so afterwards the current ring is shipped
+// once more — which is intended (the restart itself is worth surfacing).
+// RAM-only; there is no value in persisting it across boots.
 static int64_t s_reported_through_us = 0;
 
 // Snapshots the WARN/ERROR ring and assembles the upload body on the
@@ -70,7 +72,7 @@ static char *logreport_build_body(size_t *out_len, int64_t *out_through,
     bool have_new_error = false;
     for (int i = 0; i < n; i++) {
         if (errs[i].at_us > s_reported_through_us
-                && errs[i].level == ESP_LOG_ERROR) {
+                && errs[i].level == STATS_LOG_LEVEL_ERROR) {
             have_new_error = true;
             break;
         }
@@ -96,8 +98,8 @@ static char *logreport_build_body(size_t *out_len, int64_t *out_through,
         // INFO is never shipped, even when the user enabled the INFO view
         // and the ring holds INFO lines.
         char lvl;
-        if      (e->level == ESP_LOG_ERROR) lvl = 'E';
-        else if (e->level == ESP_LOG_WARN)  lvl = 'W';
+        if      (e->level == STATS_LOG_LEVEL_ERROR) lvl = 'E';
+        else if (e->level == STATS_LOG_LEVEL_WARN)  lvl = 'W';
         else continue;
 
         int w = snprintf(body + len, LOGREPORT_BODY_CAP - len,
@@ -133,9 +135,12 @@ void logreport_flush(void)
     // PhoneBlock"). Off → never ship anything.
     if (!config_crash_report_enabled()) return;
     if (strlen(config_phoneblock_token()) == 0) return;
+#ifdef ESP_PLATFORM
     // No network → try again next cycle instead of failing a pointless
-    // TLS handshake.
+    // TLS handshake. On Linux the host owns the network; without one the
+    // upload fails and the next cycle retries, as below.
     if (!wifi_has_ip()) return;
+#endif
 
     size_t  len;
     int64_t shipped_through;
@@ -143,12 +148,14 @@ void logreport_flush(void)
     char *body = logreport_build_body(&len, &shipped_through, &shipped);
     if (!body) return;   // nothing new to ship; errs[] already off the stack
 
+#ifdef ESP_PLATFORM
     size_t free_heap = esp_get_free_heap_size();
     if (free_heap < LOGREPORT_MIN_FREE_HEAP) {
         // Defer; the high-water mark is untouched so we retry next cycle.
         free(body);
         return;
     }
+#endif
 
     // Hands off to the shared session-resuming client (POST
     // /api/dongle/log). The selftest just primed the TLS ticket, so this
@@ -161,10 +168,10 @@ void logreport_flush(void)
         // INFO, deliberately: a WARN/ERROR here would itself land in the
         // ring and ship next cycle as a self-amplifying "log upload"
         // entry. Same reason for the failure branch below.
-        ESP_LOGI(TAG, "shipped %d log entr%s to server",
+        pb_log_info(TAG, "shipped %d log entr%s to server",
                  shipped, shipped == 1 ? "y" : "ies");
     } else {
         // Keep the high-water mark unchanged → retry next cycle.
-        ESP_LOGI(TAG, "log upload failed (status=%d) — retry next cycle", status);
+        pb_log_info(TAG, "log upload failed (status=%d) — retry next cycle", status);
     }
 }

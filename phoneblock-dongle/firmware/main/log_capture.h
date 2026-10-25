@@ -16,7 +16,9 @@
 // WARN/ERROR shows up automatically. To surface a new unusual condition,
 // log it at the right level — no extra plumbing.
 
-// Install the log hook. Call once, after stats_setup(). ESP-only.
+// Install the log hook. Call once, after stats_setup(). On Linux there is
+// no vprintf hook to install; log_capture_linux.c registers a pb_log sink
+// instead, which feeds the same ring without parsing text.
 void log_capture_start(void);
 
 // --- Live full-log stream (ESP-only) --------------------------------
