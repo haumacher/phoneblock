@@ -1,11 +1,12 @@
 # Board extras that only the ESP32-S3 build (LilyGO T-Dongle-S3) carries:
-# the boot logo on its TFT. Kept out of the other targets' source list, so
-# their images do not change.
+# the logo, spam badge and caller screen on its TFT. Kept out of the other
+# targets' source list, so their images do not change (display.h turns the
+# notifications into empty inline functions there).
 set(_board_srcs)
 set(_board_requires)
 idf_build_get_property(_target IDF_TARGET)
 if(_target STREQUAL "esp32s3")
-    list(APPEND _board_srcs "display.c" "lcd_logo.c")
+    list(APPEND _board_srcs "display.c" "display_model.c" "lcd_font.c" "lcd_logo.c")
     list(APPEND _board_requires esp_lcd esp_driver_spi esp_driver_ledc)
 endif()
 

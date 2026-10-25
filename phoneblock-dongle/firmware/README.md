@@ -105,9 +105,11 @@ ESP32-S3 (LilyGO T-Dongle-S3) genauso in `build-esp32s3`. Die S3-Defaults
 in `sdkconfig.defaults.esp32s3`: Konsole/Improv über USB-Serial-JTAG, 16 MB
 Flash mit eigener Partitionstabelle `partitions-16mb.csv` (3-MB-OTA-Slots,
 1 MB SPIFFS, ~8,6 MB unformatierte Reserve). Die Status-LED ist die
-APA102-RGB-LED des Boards; das Display zeigt das PhoneBlock-Logo
-(`main/display.c`, nur im S3-Build; Bitmap neu erzeugen mit
-`scripts/gen-lcd-logo.py`, braucht Inkscape und Pillow):
+APA102-RGB-LED des Boards; das Display zeigt das PhoneBlock-Logo mit
+Spam-Zähler und während eines Anrufs den Anrufer (`main/display.c`,
+`main/display_model.c`, nur im S3-Build; Logo neu erzeugen mit
+`scripts/gen-lcd-logo.py`, braucht Inkscape und Pillow; Schriften mit
+`scripts/gen-lcd-font.py`, braucht Pillow und xfonts-base):
 
 ```bash
 idf.py -B build-esp32s3 -DIDF_TARGET=esp32s3 -DSDKCONFIG=build-esp32s3/sdkconfig build

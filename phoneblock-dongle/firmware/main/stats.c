@@ -2,6 +2,7 @@
 
 #include <string.h>
 
+#include "display.h"
 #include "platform.h"
 
 // Must be last: bans unsafe string APIs for the rest of this file.
@@ -72,18 +73,36 @@ void stats_record_call(const char *number, const char *display, verdict_t verdic
                              :                              PB_ASSESS_LEGITIMATE);
 }
 
+static void fill_call(stats_call_t *c, const char *number, const char *display,
+                      verdict_t verdict, pb_assessment_t assessment)
+{
+    memset(c, 0, sizeof(*c));
+    c->at_us      = (int64_t)pb_monotonic_us();
+    c->verdict    = verdict;
+    c->assessment = assessment;
+    copy_trim(c->number,  sizeof(c->number),  number);
+    copy_trim(c->display, sizeof(c->display), display);
+}
+
+// Every screened call reaches the display (T-Dongle-S3; DISPLAY_PRESENT is 0
+// and the notifications are empty elsewhere, so this compiles away). Called
+// outside the lock: the display only copies and schedules a redraw, but the
+// redraw itself recounts the ring through stats_count_calls().
+static void announce_call(const stats_call_t *shown)
+{
+    display_call_started(shown);
+    display_calls_changed();
+}
+
 void stats_record_call_assessed(const char *number, const char *display,
                                 verdict_t verdict, pb_assessment_t assessment)
 {
+    stats_call_t shown;
     lock();
 
     stats_call_t *slot = &s_calls[s_calls_head];
-    memset(slot, 0, sizeof(*slot));
-    slot->at_us   = (int64_t)pb_monotonic_us();
-    slot->verdict = verdict;
-    slot->assessment = assessment;
-    copy_trim(slot->number,  sizeof(slot->number),  number);
-    copy_trim(slot->display, sizeof(slot->display), display);
+    fill_call(slot, number, display, verdict, assessment);
+    if (DISPLAY_PRESENT) shown = *slot;
 
     s_calls_head = (s_calls_head + 1) % STATS_MAX_CALLS;
     if (s_calls_count < STATS_MAX_CALLS) s_calls_count++;
@@ -91,11 +110,13 @@ void stats_record_call_assessed(const char *number, const char *display,
     if (assessment != PB_ASSESS_TEST) bump_counters(verdict);
 
     unlock();
+    if (DISPLAY_PRESENT) announce_call(&shown);
 }
 
 void stats_record_call_checked(const char *number, const char *display,
                                const pb_check_result_t *result)
 {
+    stats_call_t shown;
     lock();
 
     stats_call_t *slot = &s_calls[s_calls_head];
@@ -110,6 +131,7 @@ void stats_record_call_checked(const char *number, const char *display,
     copy_trim(slot->display,  sizeof(slot->display),  display);
     copy_trim(slot->label,    sizeof(slot->label),    result->label);
     copy_trim(slot->location, sizeof(slot->location), result->location);
+    if (DISPLAY_PRESENT) shown = *slot;
 
     s_calls_head = (s_calls_head + 1) % STATS_MAX_CALLS;
     if (s_calls_count < STATS_MAX_CALLS) s_calls_count++;
@@ -117,13 +139,22 @@ void stats_record_call_checked(const char *number, const char *display,
     bump_counters(result->verdict);
 
     unlock();
+    if (DISPLAY_PRESENT) announce_call(&shown);
 }
 
-void stats_record_call_counters_only(verdict_t verdict)
+void stats_record_call_counters_only(const char *number, const char *display,
+                                     verdict_t verdict, pb_assessment_t assessment)
 {
     lock();
     bump_counters(verdict);
     unlock();
+    // Not listed, but the display is the phone in the room, not the list:
+    // it shows every call.
+    if (DISPLAY_PRESENT) {
+        stats_call_t shown;
+        fill_call(&shown, number, display, verdict, assessment);
+        display_call_started(&shown);
+    }
 }
 
 void stats_record_error(int level, const char *tag, const char *message)
@@ -239,6 +270,7 @@ static int update_calls(const char *number, const char *display,
         n++;
     }
     unlock();
+    if (n > 0) display_calls_changed();
     return n;
 }
 
@@ -294,4 +326,16 @@ void stats_clear_calls(void)
     s_calls_head = 0;
     s_calls_count = 0;
     unlock();
+    display_calls_changed();
+}
+
+int stats_count_calls(bool (*match)(const stats_call_t *call))
+{
+    int n = 0;
+    lock();
+    for (int i = 0; i < s_calls_count; i++) {
+        if (match(&s_calls[i])) n++;
+    }
+    unlock();
+    return n;
 }

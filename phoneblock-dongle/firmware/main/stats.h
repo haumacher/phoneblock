@@ -93,8 +93,10 @@ void stats_record_call_checked(const char *number, const char *display,
 // ring buffer. Used by sip_register.c when the user has opted out of
 // listing "known" calls (phone-book matches, internal Fritz!Box
 // codes) but still wants the dashboard counters (total/legitimate)
-// to reflect that a call happened.
-void stats_record_call_counters_only(verdict_t verdict);
+// to reflect that a call happened. The caller's number, name and
+// assessment still go to the display (T-Dongle-S3), which shows every call.
+void stats_record_call_counters_only(const char *number, const char *display,
+                                     verdict_t verdict, pb_assessment_t assessment);
 // Append a WARN/ERROR entry to the displayed log ring. `level` is an
 // esp_log_level_t (ESP_LOG_WARN / ESP_LOG_ERROR). Normally called only
 // by the global log hook in log_capture.c, which mirrors every WARN /
@@ -148,3 +150,8 @@ bool stats_display_for_number(const char *number, char *out, size_t cap);
 
 // Drop all buffered call entries (counters are kept).
 void stats_clear_calls(void);
+
+// Number of listed calls for which `match` returns true (called under the
+// stats lock: `match` must not call back into stats). Used by the display
+// to count the blocked spam calls for its badge.
+int stats_count_calls(bool (*match)(const stats_call_t *call));
