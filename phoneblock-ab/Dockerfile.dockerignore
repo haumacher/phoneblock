@@ -1,0 +1,19 @@
+# Build context of phoneblock-ab/Dockerfile, which is the repository root. Everything is excluded
+# except what the answerbot build and image need: the reactor POMs (Maven parses every module of
+# the parent even with -pl), the sources of phoneblock-shared and phoneblock-ab, and the runtime
+# files of the image.
+*
+!pom.xml
+!*/pom.xml
+!phoneblock-shared/src
+!phoneblock-ab/src
+!phoneblock-ab/.phoneblock.docker
+!phoneblock-ab/docker-entrypoint.sh
+!phoneblock-ab/conversation
+
+# Only the converted PCMA/PCMA-WB fragments are needed at runtime; the TTS sources are not.
+phoneblock-ab/conversation/*/raw
+phoneblock-ab/conversation/*/*.mp3
+phoneblock-ab/conversation/*/*.wav
+phoneblock-ab/conversation/README.md
+phoneblock-ab/conversation/click.mp3

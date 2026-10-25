@@ -90,10 +90,9 @@ java -jar phoneblock-ab/target/phoneblock-ab-*-jar-with-dependencies.jar -f ~/.p
 ```
 Requires `.phoneblock` configuration file (see `phoneblock-ab/.phoneblock.template`)
 
-**Build Docker image:**
+**Build Docker image** (from the repository root; the JAR is built inside Docker, no JDK needed):
 ```bash
-cd phoneblock-ab
-docker build -t phoneblock/answerbot .
+docker build -f phoneblock-ab/Dockerfile -t phoneblock/answerbot .
 ```
 
 ### Accounting Tool
