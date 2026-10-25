@@ -1,5 +1,6 @@
 #include "web_http.h"
 
+#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -160,11 +161,9 @@ int web_http_get_header(web_http_request_t *request, const char *name,
         ? 0 : -1;
 }
 
-int web_http_get_query(web_http_request_t *request, const char *name,
-                       char *value, size_t capacity)
+bool web_http_has_header(web_http_request_t *request, const char *name)
 {
-    return httpd_query_key_value(request->uri, name, value, capacity) == ESP_OK
-        ? 0 : -1;
+    return httpd_req_get_hdr_value_len(request, name) > 0;
 }
 
 int web_http_get_query_string(web_http_request_t *request, char *query,

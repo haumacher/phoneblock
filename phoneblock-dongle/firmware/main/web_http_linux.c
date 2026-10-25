@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
 #define WEB_HTTP_MAX_BODY (8U * 1024U * 1024U)
 
@@ -373,8 +374,20 @@ static int append_header(web_http_request_t *request, const char *name,
     return 0;
 }
 
+// Like httpd_resp_set_type() on the ESP32: a later call replaces the type,
+// so an error response sent after a handler already set one does not go out
+// with two Content-Type headers.
 int web_http_set_type(web_http_request_t *request, const char *content_type)
 {
+    for (size_t index = 0; index < request->header_count; index++) {
+        response_header_t *header = &request->headers[index];
+        if (strcasecmp(header->name, MHD_HTTP_HEADER_CONTENT_TYPE) != 0) continue;
+        char *value = strdup(content_type);
+        if (!value) return -1;
+        free(header->value);
+        header->value = value;
+        return 0;
+    }
     return append_header(request, MHD_HTTP_HEADER_CONTENT_TYPE, content_type);
 }
 
@@ -452,12 +465,10 @@ int web_http_get_header(web_http_request_t *request, const char *name,
                       value, capacity);
 }
 
-int web_http_get_query(web_http_request_t *request, const char *name,
-                       char *value, size_t capacity)
+bool web_http_has_header(web_http_request_t *request, const char *name)
 {
-    return copy_value(MHD_lookup_connection_value(request->connection,
-                                                   MHD_GET_ARGUMENT_KIND, name),
-                      value, capacity);
+    return MHD_lookup_connection_value(request->connection, MHD_HEADER_KIND,
+                                       name) != NULL;
 }
 
 int web_http_get_query_string(web_http_request_t *request, char *query,

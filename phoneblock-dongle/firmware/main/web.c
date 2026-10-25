@@ -165,8 +165,10 @@ static FILE *open_web_asset(const char *name)
     return fopen(path, "rb");
 }
 
+// `encoding` (e.g. "gzip") is announced only once the file is open, so a
+// missing asset gets a plain-text 404 a browser can display.
 static web_http_error_t send_web_asset(web_http_request_t *request,
-                                       const char *name)
+                                       const char *name, const char *encoding)
 {
     FILE *file = open_web_asset(name);
     if (!file) {
@@ -174,6 +176,7 @@ static web_http_error_t send_web_asset(web_http_request_t *request,
                             "web asset not installed");
         return WEB_HTTP_OK;
     }
+    if (encoding) web_http_set_header(request, "Content-Encoding", encoding);
     char buffer[4096];
     size_t length;
     while ((length = fread(buffer, 1, sizeof(buffer), file)) > 0) {
@@ -334,7 +337,7 @@ static web_http_error_t handle_favicon(web_http_request_t *req)
                          ab_logo_bot_svg_end - ab_logo_bot_svg_start) == 0
         ? WEB_HTTP_OK : WEB_HTTP_FAIL;
 #else
-    return send_web_asset(req, "ab-logo-bot.svg");
+    return send_web_asset(req, "ab-logo-bot.svg", NULL);
 #endif
 }
 
@@ -360,8 +363,7 @@ static web_http_error_t handle_root(web_http_request_t *req)
                          index_html_gz_end - index_html_gz_start) == 0
         ? WEB_HTTP_OK : WEB_HTTP_FAIL;
 #else
-    web_http_set_header(req, "Content-Encoding", "gzip");
-    return send_web_asset(req, "index.html.gz");
+    return send_web_asset(req, "index.html.gz", "gzip");
 #endif
 }
 
@@ -529,10 +531,8 @@ static web_http_error_t handle_status(web_http_request_t *req)
     // back (#619, #621). HA marks every ingress request with X-Ingress-Path;
     // there the UI hides the sign-in buttons and the token comes from the
     // app configuration. Everywhere else the sign-in stays as it is.
-    char ingress_path[256];
-    bool via_ingress = web_http_get_header(req, "X-Ingress-Path", ingress_path,
-                                           sizeof(ingress_path)) == WEB_HTTP_OK;
-    cJSON_AddBoolToObject  (pb,   "token_signin",       !via_ingress);
+    cJSON_AddBoolToObject  (pb,   "token_signin",
+                            !web_http_has_header(req, "X-Ingress-Path"));
     cJSON_AddNumberToObject(pb,   "last_api_ms",        (double)(c.last_api_duration_us / 1000));
     // Phase breakdown of the last API call — investigation aid for
     // issue #329 (connect/request/wait/download split).
@@ -1861,7 +1861,7 @@ static web_http_error_t handle_i18n_ui(web_http_request_t *req)
                     (size_t)(ui_en_json_end - ui_en_json_start - 1));
     return WEB_HTTP_OK;
 #else
-    return send_web_asset(req, "ui_en.json");
+    return send_web_asset(req, "ui_en.json", NULL);
 #endif
 }
 
@@ -1880,16 +1880,16 @@ static int upload_recv(web_http_request_t *req, char *buf, int want,
         int n = web_http_read_body(req, buf, want);
         if (n > 0) return n;
         bool retry = n == WEB_HTTP_RECV_TIMEOUT && timeouts < UPLOAD_RECV_RETRIES;
-    #ifdef ESP_PLATFORM
+#ifdef ESP_PLATFORM
         ESP_LOGW(TAG, "%s upload: recv %d at %d of %d bytes, %s "
                  "(heap free %u, largest %u)",
                  what, n, got, total, retry ? "retrying" : "giving up",
                  (unsigned) esp_get_free_heap_size(),
                  (unsigned) heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
-    #else
+#else
         pb_log_warn(TAG, "%s upload: recv %d at %d of %d bytes, %s",
-                what, n, got, total, retry ? "retrying" : "giving up");
-    #endif
+                    what, n, got, total, retry ? "retrying" : "giving up");
+#endif
         if (!retry) return n;
         pb_watchdog_reset();
     }
@@ -2676,7 +2676,7 @@ static web_http_error_t handle_phonebook_add(web_http_request_t *req)
         if (strcmp(actual, want) != 0) {
             // Shifted. Look for the chosen name again and follow it; only
             // when it is gone entirely does the user have to decide anew.
-                     pb_log_warn(TAG, "phonebook %s is now '%s', not '%s' — re-resolving",
+            pb_log_warn(TAG, "phonebook %s is now '%s', not '%s' — re-resolving",
                      target, actual, want);
             tr064_phonebook_t *books =
                 malloc(sizeof(tr064_phonebook_t) * TR064_MAX_PHONEBOOKS);
@@ -3201,11 +3201,7 @@ static void httpd_wdt_feeder_cb(void *arg)
 void web_start(void)
 {
     if (s_server) {
-#ifdef ESP_PLATFORM
         pb_log_warn(TAG, "web_start() called twice — ignoring");
-#else
-        pb_log_warn(TAG, "web_start() called twice — ignoring");
-#endif
         return;
     }
     generate_reset_nonce();
@@ -3214,6 +3210,9 @@ void web_start(void)
         .port = s_web_port,
         .bind_address = s_web_bind_address[0] ? s_web_bind_address : NULL,
         .max_uri_handlers = sizeof(URIS) / sizeof(URIS[0]) + 2,
+        // Enables glob matching so the catch-all "/*" OPTIONS preflight
+        // entry covers every URI. All other routes use literal paths, so
+        // wildcard matching has no effect on them.
         .wildcard_uri_match = true,
         .lru_purge = true,
     };

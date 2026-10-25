@@ -26,8 +26,7 @@ static void print_usage(const char *program)
 {
     fprintf(stderr,
             "Usage: %s [--config PATH] [--check-config | --probe-sip] "
-            "[--service] [--web PORT] [--web-bind ADDRESS] "
-            "[--web-port-file PATH]\n",
+            "[--web PORT] [--web-bind ADDRESS] [--web-port-file PATH]\n",
             program);
 }
 
@@ -81,13 +80,11 @@ int main(int argc, char **argv)
     const char *web_port_file = NULL;
     bool check = false;
     bool probe = false;
-    bool service = false;
     uint16_t web_port = 8080;
     static const struct option options[] = {
         { "config", required_argument, NULL, 'c' },
         { "check-config", no_argument, NULL, 't' },
         { "probe-sip", no_argument, NULL, 'p' },
-        { "service", no_argument, NULL, 's' },
         { "web", required_argument, NULL, 'w' },
         { "web-bind", required_argument, NULL, 'b' },
         { "web-port-file", required_argument, NULL, 'f' },
@@ -96,12 +93,11 @@ int main(int argc, char **argv)
     };
 
     int option;
-    while ((option = getopt_long(argc, argv, "c:tpw:b:f:sh", options, NULL)) != -1) {
+    while ((option = getopt_long(argc, argv, "c:tpw:b:f:h", options, NULL)) != -1) {
         switch (option) {
         case 'c': config_path = optarg; break;
         case 't': check = true; break;
         case 'p': probe = true; break;
-        case 's': service = true; break;
         case 'w': {
             char *end = NULL;
             errno = 0;
@@ -119,7 +115,7 @@ int main(int argc, char **argv)
         default: print_usage(argv[0]); return EXIT_FAILURE;
         }
     }
-    if (optind != argc || (check && (probe || service)) || (probe && service)) {
+    if (optind != argc || (check && probe)) {
         print_usage(argv[0]);
         return EXIT_FAILURE;
     }
@@ -139,10 +135,6 @@ int main(int argc, char **argv)
 
     if (check) return check_config() ? EXIT_SUCCESS : EXIT_FAILURE;
     if (probe) return probe_sip();
-    if (service) {
-        pb_log_info("linux", "starting service mode; configure SIP and PhoneBlock "
-                             "through the web UI if needed");
-    }
 
     if (announcement_init() != PB_OK) {
         pb_log_err("linux", "announcement storage initialization failed");

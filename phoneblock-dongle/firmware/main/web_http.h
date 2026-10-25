@@ -71,8 +71,9 @@ int web_http_send_error(web_http_request_t *request, int status,
                         const char *message);
 int web_http_get_header(web_http_request_t *request, const char *name,
                         char *value, size_t capacity);
-int web_http_get_query(web_http_request_t *request, const char *name,
-                       char *value, size_t capacity);
+// True if the request carries header `name`, whatever its length; needs no
+// buffer, so a presence check costs no stack.
+bool web_http_has_header(web_http_request_t *request, const char *name);
 int web_http_get_query_string(web_http_request_t *request, char *query,
                               size_t capacity);
 int web_http_query_value(const char *query, const char *name, char *value,

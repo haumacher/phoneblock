@@ -9,6 +9,7 @@
 #include "lwip/sockets.h"
 #else
 #include <ifaddrs.h>
+#include <limits.h>
 #include <net/if.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
@@ -53,6 +54,36 @@ static bool peer_addr(web_http_request_t *req, net_addr_t *out)
 
 // Snapshot the dongle's own interface addresses for the same-subnet /
 // same-prefix "local" checks.
+#ifndef ESP_PLATFORM
+// Name of the interface carrying the IPv4 default route (lowest metric), or
+// "" when there is none. Read from /proc/net/route, whose columns are
+// Iface Destination Gateway Flags RefCnt Use Metric Mask ...
+static void default_route_interface(char *name, size_t capacity)
+{
+    name[0] = '\0';
+    FILE *routes = fopen("/proc/net/route", "r");
+    if (!routes) return;
+    char line[256];
+    unsigned long best_metric = ULONG_MAX;
+    if (fgets(line, sizeof(line), routes)) {   // column header
+        while (fgets(line, sizeof(line), routes)) {
+            char iface[IF_NAMESIZE + 1];
+            unsigned long destination, mask, metric;
+            unsigned flags;
+            if (sscanf(line, "%16s %lx %*x %x %*d %*d %lu %lx",
+                       iface, &destination, &flags, &metric, &mask) != 5)
+                continue;
+            if (destination != 0 || mask != 0 || !(flags & 0x1u)) continue;
+            if (metric < best_metric) {
+                best_metric = metric;
+                snprintf(name, capacity, "%s", iface);
+            }
+        }
+    }
+    fclose(routes);
+}
+#endif
+
 static void load_self(netloc_self_t *self)
 {
     memset(self, 0, sizeof(*self));
@@ -77,16 +108,28 @@ static void load_self(netloc_self_t *self)
         self->n_v6++;
     }
 #else
+    // IPv4: the interface with the default route, like ESP-IDF's default
+    // netif (a Linux host often has more: Docker or Home Assistant bridges,
+    // a VPN). Without a default route, the first interface with an IPv4
+    // address. IPv6: the prefixes of all interfaces, as there are several
+    // per interface anyway.
+    char default_if[IF_NAMESIZE + 1];
+    default_route_interface(default_if, sizeof(default_if));
+    bool v4_from_default = false;
     struct ifaddrs *interfaces = NULL;
     if (getifaddrs(&interfaces) != 0) return;
     for (struct ifaddrs *entry = interfaces; entry; entry = entry->ifa_next) {
         if (!entry->ifa_addr || (entry->ifa_flags & IFF_LOOPBACK)) continue;
         if (entry->ifa_addr->sa_family == AF_INET && entry->ifa_netmask) {
+            bool is_default = default_if[0]
+                && strcmp(entry->ifa_name, default_if) == 0;
+            if (v4_from_default || (self->have_v4 && !is_default)) continue;
             const struct sockaddr_in *address =
                 (const struct sockaddr_in *)entry->ifa_addr;
             const struct sockaddr_in *mask =
                 (const struct sockaddr_in *)entry->ifa_netmask;
             self->have_v4 = true;
+            v4_from_default = is_default;
             memcpy(self->v4_addr, &address->sin_addr, sizeof(self->v4_addr));
             memcpy(self->v4_mask, &mask->sin_addr, sizeof(self->v4_mask));
         } else if (entry->ifa_addr->sa_family == AF_INET6
@@ -115,6 +158,16 @@ bool web_local_ipv4_string(char *out, size_t capacity)
 {
     if (!out || !capacity) return false;
     out[0] = '\0';
+#ifdef ESP_PLATFORM
+    // Straight from the default netif, as before the port: load_self() would
+    // put the IPv6 list on the stack of /api/status as well.
+    esp_netif_t *netif = esp_netif_get_default_netif();
+    if (!netif) return false;
+    esp_netif_ip_info_t info;
+    if (esp_netif_get_ip_info(netif, &info) != ESP_OK) return false;
+    esp_ip4addr_ntoa(&info.ip, out, capacity);
+    return out[0] != '\0';
+#else
     netloc_self_t self;
     load_self(&self);
     if (!self.have_v4) return false;
@@ -126,6 +179,7 @@ bool web_local_ipv4_string(char *out, size_t capacity)
         return false;
     }
     return true;
+#endif
 }
 
 bool web_client_is_local(web_http_request_t *req)

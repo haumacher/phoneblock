@@ -225,7 +225,7 @@ test_api_linux: test_api_linux.c linux_test_util.h \
 	  $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a \
 	  $(LINUX_NET_LIBS) -o $@
 
-test_web_http_linux: test_web_http_linux.c ../main/web_http.h \
+test_web_http_linux: test_web_http_linux.c linux_test_util.h ../main/web_http.h \
                      ../main/web_http_linux.c
 	$(CC) $(CFLAGS) -pthread $(shell pkg-config --cflags libmicrohttpd) \
 	  test_web_http_linux.c ../main/web_http_linux.c \
