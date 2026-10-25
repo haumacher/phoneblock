@@ -1078,6 +1078,19 @@ function route(){
 
 window.addEventListener('hashchange', route);
 
+// The phoneblock.net sign-in runs in its own tab. Opening it from script
+// (instead of target="_blank") is what allows /token-callback to close
+// that tab again when the token is stored; this tab follows the result on
+// the status page, whose token pill turns green with the next poll. No
+// "noopener": it would make window.open() return null, hiding a blocked
+// popup — then the link simply navigates in place, as before.
+document.addEventListener('click', (e) => {
+  const a = e.target.closest && e.target.closest('a[data-token-link]');
+  if (!a || !window.open(a.href, '_blank')) return;
+  e.preventDefault();
+  if ((location.hash || '#/') !== '#/') location.hash = '#/';
+});
+
 // --- views: status --------------------------------------------------
 
 function renderStatus(){
@@ -1111,7 +1124,7 @@ function renderStatus(){
     +    esc(t('status.token.cta')) + '</a>'
     + '  <button id="tokenTest" class="btn-ghost" style="display:none;padding:.3rem .7rem;font-size:.85rem">'
     +    esc(t('status.token.test')) + '</button>'
-    + '  <a id="tokenRenew" href="/register-start" class="btn-ghost" style="display:none;padding:.3rem .7rem;font-size:.85rem">'
+    + '  <a id="tokenRenew" href="/register-start" data-token-link class="btn-ghost" style="display:none;padding:.3rem .7rem;font-size:.85rem">'
     +    esc(t('status.token.renew')) + '</a>'
     + '</div>'
     + '<div id="langStatus" class="i18n-bubble" style="display:none"></div>'
@@ -3345,7 +3358,7 @@ async function renderToken(){
     + (set ? esc(t('token.current.set')) : esc(t('token.current.missing')))
     + '</p>'
     + '<p style="margin-top:.8rem">'
-    + '<a href="/register-start" class="btn-primary">' + esc(t('token.submit')) + '</a>'
+    + '<a href="/register-start" data-token-link class="btn-primary">' + esc(t('token.submit')) + '</a>'
     + '</p></section>';
 }
 
