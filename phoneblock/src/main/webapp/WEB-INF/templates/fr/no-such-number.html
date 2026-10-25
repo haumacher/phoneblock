@@ -9,7 +9,14 @@
 <div class="content">
 	<h1 data-tx="t0001:657a0bf2">Le numéro d'appel ☎ <span th:text="${number}"></span> n'existe pas</h1>
 
-	<p data-tx="t0002:d5692a3b">Le numéro que tu recherches n'est pas un numéro de téléphone. Veuillez corriger votre recherche et réessayer!</p>
+	<th:block th:switch="${rejection == null ? '' : rejection.reason.name()}">
+	<p data-tx="t0012:5d700b22" th:case="'TOO_SHORT'">Ce numéro est trop court pour correspondre à un numéro de téléphone complet. Veuillez saisir le numéro en indiquant l'indicatif !</p>
+	<p data-tx="t0013:726b7d22" th:case="'MISSING_TRUNK_PREFIX'">Dans ta zone d'indicatif <span th:text="${rejection.countryCode}">+49</span>, les numéros au format national commencent par <code th:text="${rejection.trunkPrefix}">0</code>. Veuillez saisir le numéro avec l'indicatif ou au format international avec <code>+</code> !</p>
+	<p data-tx="t0014:677a6be1" th:case="'UNKNOWN_COUNTRY_CODE'">Le numéro <code th:text="${rejection.plus}">+21712345678</code> ne commence pas par un indicatif de pays valide : aucun pays ne dispose d'un indicatif correspondant au début de ce numéro. Si ce numéro t'a appelé, l'affichage du numéro a probablement été falsifié.</p>
+	<p data-tx="t0015:d45a2691" th:case="'TRUNK_PREFIX_AFTER_COUNTRY_CODE'">Selon la notation internationale, l'indicatif pays <span th:text="${rejection.countryCode}">+49</span> n'est pas suivi d'un <code th:text="${rejection.trunkPrefix}">0</code>. Veuillez ne pas ajouter le <code th:text="${rejection.trunkPrefix}">0</code> après l'indicatif pays !</p>
+	<p data-tx="t0016:2b386c4c" th:case="'TOO_SHORT_FOR_PREFIX'">Les numéros commençant par l'indicatif <code th:text="${rejection.prefix}">032</code> comportent, après l'indicatif du pays <span th:text="${rejection.countryCode}">+49</span>, au moins <span th:text="${rejection.minDigits}">11</span> chiffres, alors que le numéro recherché n'en compte que <span th:text="${rejection.digits}">10</span>. Si ce numéro t'a appelé, l'affichage du numéro a probablement été falsifié.</p>
+	<p data-tx="t0002:d5692a3b" th:case="*">Le numéro que tu recherches n'est pas un numéro de téléphone. Veuillez corriger votre recherche et réessayer!</p>
+	</th:block>
 
 	<h2 data-tx="t0003:379d2439">Formats de recherche pris en charge</h2>
 

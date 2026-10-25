@@ -8,7 +8,7 @@ Type=simple
 User=phoneblock
 Group=phoneblock
 WorkingDirectory=/var/lib/phoneblock
-ExecStart=/usr/bin/phoneblock-dongle --config /etc/phoneblock/dongle.conf
+ExecStart=/usr/bin/phoneblock-dongle --config /var/lib/phoneblock/dongle.conf
 Restart=on-failure
 RestartSec=10s
 UMask=0077
@@ -21,7 +21,7 @@ ProtectKernelModules=yes
 ProtectControlGroups=yes
 # AF_NETLINK: getifaddrs() (MAC for the device id, local IP lookup).
 RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX AF_NETLINK
-ReadWritePaths=/etc/phoneblock /var/lib/phoneblock
+ReadWritePaths=/var/lib/phoneblock
 
 [Install]
 WantedBy=multi-user.target

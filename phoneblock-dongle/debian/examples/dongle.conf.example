@@ -1,9 +1,25 @@
-# Native Linux dongle settings. Values are read from the [phoneblock]
-# namespace. Keep this file owned by the phoneblock service account: the
-# platform store atomically persists its generated device_id here.
+# PhoneBlock Linux dongle settings (/var/lib/phoneblock/dongle.conf).
+#
+# This file is the service's settings store, like the dongle's NVS: the
+# service rewrites it (the generated device_id now, the web UI's settings
+# later). Lines above the [phoneblock] section are kept as they are; comments
+# inside the section are not, so all explanations live up here.
+#
+# SIP registrar and credentials (the IP phone set up in the Fritz!Box):
+#   sip_host, sip_port      registrar, e.g. fritz.box and 5060
+#   sip_user, sip_pass      user name and password of the IP phone
+#   sip_authuser, sip_realm only if the registrar needs them
+#   sip_expires             registration lifetime in seconds
+#   sip_lport, rtp_port     local SIP and RTP ports
+#   sip_transp              udp, tcp or tls
+#   sip_srtp                off, optional or mandatory
+#   sip_stun                STUN server, empty for none
+#
+# PhoneBlock API:
+#   pb_url                  keep the default unless you use a test server
+#   pb_token                API token from your PhoneBlock settings
+#   min_direct, min_range   votes needed to block a number / a number range
 [phoneblock]
-
-# SIP registrar and credentials.
 sip_host=fritz.box
 sip_port=5060
 sip_user=
@@ -16,8 +32,6 @@ sip_authuser=
 sip_realm=
 sip_srtp=optional
 sip_stun=
-
-# PhoneBlock API.
 pb_url=https://phoneblock.net/phoneblock
 pb_token=
 min_direct=4

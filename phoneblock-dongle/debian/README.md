@@ -11,16 +11,17 @@ Das Paket baut die gemeinsam genutzten Firmware-Module als
 `frontend_linux` wird nicht verwendet. Das Programm nutzt die cJSON-, libsrtp2-,
 libcurl- und OpenSSL-Bibliotheken der Distribution.
 
-Kopiere `/etc/phoneblock/dongle.conf.example` nach `dongle.conf`, trage die
-SIP-Zugangsdaten und den PhoneBlock-Token ein und prüfe die Konfiguration, bevor
-du den Dienst aktivierst:
+Die Einstellungen liegen wie der übrige Gerätezustand unter `/var/lib/phoneblock`:
+Der Dienst schreibt `dongle.conf` selbst (die Geräte-ID, später die Einstellungen
+aus der Weboberfläche). Bei der Installation wird die Datei aus der Vorlage
+`/usr/share/doc/phoneblock-dongle/examples/dongle.conf.example` angelegt. Trage
+die SIP-Zugangsdaten und den PhoneBlock-Token ein und prüfe die Konfiguration,
+bevor du den Dienst aktivierst:
 
 ```sh
-sudo install -o phoneblock -g phoneblock -m 0600 \
-  /etc/phoneblock/dongle.conf.example /etc/phoneblock/dongle.conf
-sudoedit /etc/phoneblock/dongle.conf
+sudoedit /var/lib/phoneblock/dongle.conf
 sudo -u phoneblock /usr/bin/phoneblock-dongle \
-  --config /etc/phoneblock/dongle.conf --check-config
+  --config /var/lib/phoneblock/dongle.conf --check-config
 sudo systemctl enable --now phoneblock-dongle
 ```
 

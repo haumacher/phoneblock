@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 static void print_usage(const char *program)
 {
@@ -38,6 +39,10 @@ static bool check_config(void)
     }
     if (!config_sip_user()[0]) {
         pb_log_err("linux", "SIP user is not configured");
+        valid = false;
+    }
+    if (!config_sip_pass()[0]) {
+        pb_log_err("linux", "SIP password is not configured");
         valid = false;
     }
     if (!config_phoneblock_token()[0]) {
@@ -209,13 +214,18 @@ int main(int argc, char **argv)
     pb_log_info("linux", "service started; waiting for SIGINT or SIGTERM");
     int received_signal = 0;
     int wait_error = sigwait(&signals, &received_signal);
+    // _exit(), not return: exit() would run the atexit handlers (OpenSSL's
+    // global cleanup among them) under the SIP, RTP, scheduler and report
+    // workers, which are still running and may be inside a TLS request.
+    // Nothing needs flushing: settings are committed when they change, and
+    // the log goes unbuffered to stderr.
     if (wait_error != 0) {
         pb_log_err("linux", "waiting for termination signal failed: %s",
                    strerror(wait_error));
         web_stop();
-        return EXIT_FAILURE;
+        _exit(EXIT_FAILURE);
     }
     pb_log_info("linux", "received signal %d; exiting", received_signal);
     web_stop();
-    return EXIT_SUCCESS;
+    _exit(EXIT_SUCCESS);
 }

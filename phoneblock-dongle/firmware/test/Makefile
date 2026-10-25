@@ -26,7 +26,6 @@ LINUX_PKG_CFLAGS := $(shell pkg-config --cflags libcjson libsrtp2 libmicrohttpd 
 LINUX_PKG_LIBS := $(shell pkg-config --libs libcjson libsrtp2 libmicrohttpd 2>/dev/null)
 LINUX_SRTP_INCLUDEDIR := $(shell pkg-config --variable=includedir libsrtp2 2>/dev/null)
 LINUX_NET_LIBS := -lcurl -lssl -lcrypto $(LINUX_PKG_LIBS)
-PHONEBLOCK_VERSION ?= $(shell git -C ../../.. describe --tags --match 'dongle-v*' --abbrev=0 2>/dev/null | sed 's/^dongle-v//')
 LINUX_CORE_SOURCES := ../core/platform_linux.c ../core/platform_linux_net.c \
                       ../core/sip_parse.c ../core/dial_rules.c ../core/tr064_parse.c
 LINUX_MAIN_SOURCES := ../main/announcement.c ../main/api.c \
@@ -54,16 +53,19 @@ LINUX_OBJECTS := $(patsubst ../core/%.c,$(LINUX_BUILD_DIR)/core/%.o,$(LINUX_CORE
 # -DSTORAGE_HOSTFS selects storage.c's plain-filesystem backend.
 LINUX_CPPFLAGS := -DSTORAGE_HOSTFS -I../main -I../core $(LINUX_PKG_CFLAGS) \
                   -I$(LINUX_SRTP_INCLUDEDIR)/srtp2 $(CPPFLAGS)
-# The version reported in the User-Agent (pb_firmware_version()); the Debian
-# build passes the package version, a plain build reports "linux-dev".
-ifdef PHONEBLOCK_VERSION
+# The version reported in the User-Agent (pb_firmware_version()): the firmware
+# version these modules were built from, derived exactly like the ESP32 build
+# does it (firmware/CMakeLists.txt), so the server sees one version scheme
+# for the whole fleet. Outside a git checkout the caller passes it (debian/
+# rules falls back to the package version); without either it is "linux-dev".
+ifeq ($(origin PHONEBLOCK_VERSION),undefined)
+PHONEBLOCK_VERSION := $(shell git describe --tags --match "dongle-v*" --always --dirty 2>/dev/null | sed 's/^dongle-v//')
+endif
+ifneq ($(PHONEBLOCK_VERSION),)
 LINUX_CPPFLAGS += -DPHONEBLOCK_VERSION='"$(PHONEBLOCK_VERSION)"'
 endif
 ifneq ($(strip $(PHONEBLOCK_DATA_DIR)),)
 LINUX_CPPFLAGS += -DPHONEBLOCK_DATA_DIR=\"$(PHONEBLOCK_DATA_DIR)\"
-endif
-ifneq ($(strip $(PHONEBLOCK_VERSION)),)
-LINUX_CPPFLAGS += -DPHONEBLOCK_VERSION=\"$(PHONEBLOCK_VERSION)\"
 endif
 
 BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_rcpt test_name_filter test_version_cmp test_net_local test_heap_guard test_platform_linux test_ota_manifest test_stats test_storage_budget test_storage_sim test_storage_hostfs

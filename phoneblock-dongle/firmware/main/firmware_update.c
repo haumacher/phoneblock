@@ -568,13 +568,16 @@ void firmware_update_run(void)
 #include <stdio.h>
 #include <string.h>
 
+#include "platform.h"
+
 void firmware_check_manifest(bool force, fw_update_outcome_t *out)
 {
     (void)force;
     if (!out) return;
     memset(out, 0, sizeof(*out));
     out->result = FW_UPDATE_NO_NEW;
-    snprintf(out->current_version, sizeof(out->current_version), "linux");
+    snprintf(out->current_version, sizeof(out->current_version), "%s",
+             pb_firmware_version());
 }
 
 void firmware_try_update(bool force, fw_update_outcome_t *out)

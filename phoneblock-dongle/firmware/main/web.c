@@ -1445,42 +1445,6 @@ static void url_encode(const char *in, char *out, size_t cap)
     out[o] = '\0';
 }
 
-static void get_forwarded_prefix(web_http_request_t *req, char *out, size_t cap)
-{
-    out[0] = '\0';
-    if (web_http_get_header(req, "X-Forwarded-Prefix", out, cap) != WEB_HTTP_OK)
-        return;
-    if (out[0] != '/' || out[1] == '/' || strchr(out, '?') || strchr(out, '#')) {
-        out[0] = '\0';
-        return;
-    }
-    size_t length = strlen(out);
-    while (length > 1 && out[length - 1] == '/') out[--length] = '\0';
-}
-
-static bool valid_callback_authority(const char *authority)
-{
-    if (!authority || !authority[0]) return false;
-    for (const unsigned char *p = (const unsigned char *)authority; *p; p++) {
-        if (*p <= 0x20 || *p >= 0x7f || strchr("/?#@,\\", *p)) return false;
-    }
-    return true;
-}
-
-static void get_callback_authority(web_http_request_t *req, char *out, size_t cap)
-{
-    out[0] = '\0';
-    if (web_http_get_header(req, "X-Forwarded-Host", out, cap) == WEB_HTTP_OK
-            && valid_callback_authority(out)) {
-        return;
-    }
-    out[0] = '\0';
-    if (web_http_get_header(req, "Host", out, cap) != WEB_HTTP_OK
-            || !valid_callback_authority(out)) {
-        snprintf(out, cap, "answerbot");
-    }
-}
-
 // GET /register-start
 // Generate a CSRF nonce, build http(s)://<phoneblock>/pb/dongle-register
 // ?callback=<us>&state=<nonce>, redirect the browser there. The server
@@ -1499,23 +1463,21 @@ static web_http_error_t handle_register_start(web_http_request_t *req)
     // Callback URL uses whatever Host the browser reached us under
     // (answerbot / fritz.box-local-name / raw IP) so phoneblock.net
     // redirects back to the same origin the user came from.
-    char host[128];
-    get_callback_authority(req, host, sizeof(host));
+    char host[64] = "answerbot";
+    web_http_get_header(req, "Host", host, sizeof(host));
 
-    char forwarded_prefix[192];
-    get_forwarded_prefix(req, forwarded_prefix, sizeof(forwarded_prefix));
-    char callback_plain[352];
+    char callback_plain[128];
     snprintf(callback_plain, sizeof(callback_plain),
-             "http://%s%s/token-callback", host, forwarded_prefix);
+             "http://%s/token-callback", host);
 
-    char callback_enc[1088];
+    char callback_enc[256];
     url_encode(callback_plain, callback_enc, sizeof(callback_enc));
 
     // Reuse the existing mobile-login flow on phoneblock.net via its
     // /mobile/login endpoint. `appId=PhoneBlockDongle` switches the
     // /create-token servlet into the dynamic-callback branch, where it
     // echoes our CSRF state back and redirects to our callback URL.
-    char url[1400];
+    char url[512];
     snprintf(url, sizeof(url),
              "%s/mobile/login?appId=PhoneBlockDongle&tokenLabel=%s"
              "&callback=%s&state=%s",
@@ -1535,7 +1497,7 @@ static web_http_error_t handle_register_start(web_http_request_t *req)
 // the user a friendly success page that links back to the main UI.
 static web_http_error_t handle_token_callback(web_http_request_t *req)
 {
-    REQUIRE_LOCAL_HTML(req);
+    REQUIRE_AUTH_HTML(req);
     char query[512];
     if (web_http_get_query_string(req, query, sizeof(query)) != WEB_HTTP_OK) {
         web_http_set_type(req, "text/html; charset=utf-8");
@@ -1616,15 +1578,20 @@ static web_http_error_t handle_token_callback(web_http_request_t *req)
         }
     }
 
-    // Hand the user straight back to the status landing — the pill
-    // there flips to green on the next 3s poll.
-    char forwarded_prefix[192];
-    get_forwarded_prefix(req, forwarded_prefix, sizeof(forwarded_prefix));
-    char location[196];
-    snprintf(location, sizeof(location), "%s/", forwarded_prefix);
-    web_http_set_status(req, "302 Found");
-    web_http_set_header(req, "Location", location);
-    web_http_send(req, NULL, 0);
+    // The web UI opens the sign-in in its own tab and waits on the status
+    // page, whose pill flips to green on the next 3 s poll — so this tab
+    // closes itself. Browsers allow that only for script-opened tabs; a
+    // tab opened any other way (popup blocked, old bookmark) falls back to
+    // the status landing. "./" rather than "/" so the fallback stays under
+    // a reverse proxy's path prefix.
+    static const char close_page[] =
+        "<!DOCTYPE html><meta charset=\"utf-8\"><title>PhoneBlock</title>"
+        "<script>window.close();"
+        "setTimeout(function(){location.replace('./');},500);</script>"
+        "<noscript><meta http-equiv=\"refresh\" content=\"0;url=./\"></noscript>";
+    web_http_set_type(req, "text/html; charset=utf-8");
+    web_http_set_header(req, "Cache-Control", "no-store");
+    web_http_send(req, close_page, sizeof(close_page) - 1);
     return WEB_HTTP_OK;
 }
 

@@ -9,7 +9,14 @@
 <div class="content">
 	<h1 data-tx="t0001:657a0bf2">Il numero di telefono ☎ <span th:text="${number}"></span> non esiste.</h1>
 
-	<p data-tx="t0002:d5692a3b">Il numero cercato non è un numero di telefono. Correggere la ricerca e riprovare!</p>
+	<th:block th:switch="${rejection == null ? '' : rejection.reason.name()}">
+	<p data-tx="t0012:5d700b22" th:case="'TOO_SHORT'">Il numero è troppo corto per essere un numero di telefono completo. Inserisci il numero con il prefisso!</p>
+	<p data-tx="t0013:726b7d22" th:case="'MISSING_TRUNK_PREFIX'">Nella tua zona con prefisso <span th:text="${rejection.countryCode}">+49</span>, i numeri in formato nazionale iniziano con <code th:text="${rejection.trunkPrefix}">0</code>. Inserisci il numero con il prefisso oppure in formato internazionale con <code>+</code>!</p>
+	<p data-tx="t0014:677a6be1" th:case="'UNKNOWN_COUNTRY_CODE'">Il numero <code th:text="${rejection.plus}">+21712345678</code> non inizia con un prefisso internazionale valido: a nessun Paese è stato assegnato un prefisso che inizi con questo numero. Se hai ricevuto una chiamata da questo numero, è probabile che l'indicazione del numero chiamante sia stata falsificata.</p>
+	<p data-tx="t0015:d45a2691" th:case="'TRUNK_PREFIX_AFTER_COUNTRY_CODE'">Secondo le convenzioni internazionali, il prefisso internazionale <span th:text="${rejection.countryCode}">+49</span> non è seguito da <code th:text="${rejection.trunkPrefix}">0</code>. Ti preghiamo di omettere lo <code th:text="${rejection.trunkPrefix}">0</code> dopo il prefisso internazionale!</p>
+	<p data-tx="t0016:2b386c4c" th:case="'TOO_SHORT_FOR_PREFIX'">I numeri con il prefisso <code th:text="${rejection.prefix}">032</code> hanno, dopo il prefisso internazionale <span th:text="${rejection.countryCode}">+49</span>, almeno <span th:text="${rejection.minDigits}">11</span> cifre, mentre il numero che stai cercando ne ha solo <span th:text="${rejection.digits}">10</span>. Se hai ricevuto una chiamata da questo numero, è probabile che l'identificativo del chiamante sia stato falsificato.</p>
+	<p data-tx="t0002:d5692a3b" th:case="*">Il numero cercato non è un numero di telefono. Correggere la ricerca e riprovare!</p>
+	</th:block>
 
 	<h2 data-tx="t0003:379d2439">Formati di ricerca supportati</h2>
 

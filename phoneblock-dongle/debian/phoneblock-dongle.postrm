@@ -6,8 +6,6 @@ set -e
 # Purge removes the settings and downloaded data; the system user stays, as
 # Debian policy recommends, so no stale files can end up owned by a reused UID.
 if [ "$1" = purge ]; then
-    rm -f /etc/phoneblock/dongle.conf
-    rmdir --ignore-fail-on-non-empty /etc/phoneblock 2>/dev/null || true
     rm -rf /var/lib/phoneblock
 fi
 

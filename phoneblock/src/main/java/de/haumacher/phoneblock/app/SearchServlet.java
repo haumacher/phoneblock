@@ -227,13 +227,18 @@ public class SearchServlet extends HttpServlet {
 		String dialPrefix = ServletUtil.lookupDialPrefix(req);
 		PhoneNumer number = NumberAnalyzer.extractNumber(query, dialPrefix);
 		if (number == null) {
-			req.setAttribute(NUMBER_ATTR, query);
-			TemplateRenderer.getInstance(req).process("/no-such-number", req, resp);
+			sendNoSuchNumber(req, resp, query, dialPrefix);
 			return;
 		}
 
 		// Send to display page.
 		resp.sendRedirect(req.getContextPath() +  SearchServlet.NUMS_PREFIX + "/" + number.getZeroZero());
+	}
+
+	private static void sendNoSuchNumber(HttpServletRequest req, HttpServletResponse resp, String query, String dialPrefix) throws IOException {
+		req.setAttribute(NUMBER_ATTR, query);
+		req.setAttribute("rejection", NumberAnalyzer.diagnose(query, dialPrefix));
+		TemplateRenderer.getInstance(req).process("/no-such-number", req, resp);
 	}
 
 	@Override
@@ -253,8 +258,7 @@ public class SearchServlet extends HttpServlet {
 		String dialPrefix = ServletUtil.lookupDialPrefix(req);
 		PhoneNumer number = NumberAnalyzer.extractNumber(query, dialPrefix);
 		if (number == null) {
-			req.setAttribute(NUMBER_ATTR, query);
-			TemplateRenderer.getInstance(req).process("/no-such-number", req, resp);
+			sendNoSuchNumber(req, resp, query, dialPrefix);
 			return;
 		}
 		

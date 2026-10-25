@@ -700,6 +700,22 @@ int pb_kv_commit(pb_kv_t *store)
         return PB_KV_ERROR;
     }
     fchmod(fd, S_IRUSR | S_IWUSR);
+    // The rewrite replaces the file, so it would otherwise belong to whoever
+    // ran the binary: one `sudo phoneblock-dongle --check-config` (which
+    // persists a freshly minted device id) would leave a root-owned file the
+    // service account can no longer read. Keep the existing owner, and
+    // refuse the write when that is not possible.
+    struct stat existing;
+    if (stat(store->path, &existing) == 0
+            && (existing.st_uid != geteuid() || existing.st_gid != getegid())
+            && fchown(fd, existing.st_uid, existing.st_gid) != 0) {
+        pb_log_err("kv", "cannot keep owner of %s: %s", store->path,
+                   strerror(errno));
+        close(fd);
+        unlink(temp_path);
+        free(temp_path);
+        return PB_KV_ERROR;
+    }
     FILE *output = fdopen(fd, "w");
     if (!output) {
         close(fd);
