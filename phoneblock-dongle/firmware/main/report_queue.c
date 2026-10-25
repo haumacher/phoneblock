@@ -23,6 +23,18 @@ static const char *TAG = "report_q";
 // server's call counter is just a touch stale.
 #define REPORT_QUEUE_DEPTH 4
 
+// Worker stack, most of it for the TLS handshake of the report POST. On the
+// ESP32-S3 the POST peaked at 4228 B (measured with 8 KB: 3964 B free), so
+// 4 KB overflowed on the first reported spam call and rebooted the dongle.
+// The C3 fits into 4 KB (RISC-V frames are smaller), and the ESP32 fleet's
+// heap is too tight to give more where it is not needed; the S3 has more
+// than 100 KB free.
+#if defined(CONFIG_IDF_TARGET_ESP32S3)
+#define REPORT_TASK_STACK 8192
+#else
+#define REPORT_TASK_STACK 4096
+#endif
+
 typedef struct {
     char phone[REPORT_PHONE_MAX];
 } report_entry_t;
@@ -66,7 +78,7 @@ void report_queue_start(void)
         pb_log_err(TAG, "queue create failed");
         return;
     }
-    if (pb_task_create(report_worker_task, NULL, "report_q", 4096,
+    if (pb_task_create(report_worker_task, NULL, "report_q", REPORT_TASK_STACK,
                        PB_PRIO_BACKGROUND) != PB_OK) {
         pb_log_err(TAG, "worker task create failed");
     }
