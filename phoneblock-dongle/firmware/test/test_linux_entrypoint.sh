@@ -16,8 +16,12 @@ sip_lport=39123
 pb_url=https://phoneblock.net/phoneblock
 EOF
 
-if PHONEBLOCK_CONFIG_FILE="$config" "$binary" --check-config; then
-    printf '%s\n' 'FAIL: incomplete config was accepted' >&2
+# Exactly 1: a crash (139), a missing binary (127) or a loader error must not
+# pass as "rejected".
+status=0
+PHONEBLOCK_CONFIG_FILE="$config" "$binary" --check-config || status=$?
+if [ "$status" -ne 1 ]; then
+    printf 'FAIL: incomplete config: expected exit 1, got %s\n' "$status" >&2
     exit 1
 fi
 
@@ -27,5 +31,19 @@ EOF
 
 PHONEBLOCK_CONFIG_FILE="$config" "$binary" --check-config
 PHONEBLOCK_CONFIG_FILE="$config" "$binary" --probe-sip
+
+# A root run on a fresh config persists the minted device id; the rewritten
+# file must keep its owner, or the service account loses its settings.
+if [ "$(id -u)" -eq 0 ]; then
+    owned="$tmpdir/owned.conf"
+    grep -v '^device_id=' "$config" > "$owned"
+    chown 65534:65534 "$owned"
+    PHONEBLOCK_CONFIG_FILE="$owned" "$binary" --check-config
+    grep -q '^device_id=' "$owned" || { echo 'FAIL: device id not persisted' >&2; exit 1; }
+    if [ "$(stat -c %u:%g "$owned")" != 65534:65534 ]; then
+        echo "FAIL: root run changed the owner to $(stat -c %u:%g "$owned")" >&2
+        exit 1
+    fi
+fi
 "$binary" --help >/dev/null 2>&1
 printf '%s\n' 'test_linux_entrypoint: all tests passed'

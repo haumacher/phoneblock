@@ -8,9 +8,7 @@ Management-Ports dürfen nicht aus dem Internet erreichbar sein.
 
 ```sh
 sudo apt install ./phoneblock-dongle_0.1.0_$(dpkg --print-architecture).deb
-sudo install -o phoneblock -g phoneblock -m 0600 \
-  /etc/phoneblock/dongle.conf.example /etc/phoneblock/dongle.conf
-sudoedit /etc/phoneblock/dongle.conf
+sudoedit /var/lib/phoneblock/dongle.conf
 ```
 
 Bearbeite den Abschnitt `[phoneblock]`. Trage `sip_host`, `sip_user`,
@@ -24,9 +22,9 @@ Führe die Prüfungen als Dienstbenutzer aus, bevor du systemd aktivierst:
 
 ```sh
 sudo -u phoneblock /usr/bin/phoneblock-dongle \
-  --config /etc/phoneblock/dongle.conf --check-config
+  --config /var/lib/phoneblock/dongle.conf --check-config
 sudo -u phoneblock /usr/bin/phoneblock-dongle \
-  --config /etc/phoneblock/dongle.conf --probe-sip
+  --config /var/lib/phoneblock/dongle.conf --probe-sip
 ```
 
 `--check-config` prüft die erforderlichen SIP- und PhoneBlock-Einstellungen.

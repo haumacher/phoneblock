@@ -3,7 +3,7 @@ Upstream-Name: phoneblock-dongle
 Source: https://github.com/haumacher/phoneblock
 
 Files: *
-Copyright: PhoneBlock contributors
+Copyright: 2021-2026 Bernhard Haumacher and PhoneBlock contributors
 License: GPL-3+
  This package is free software; you may redistribute it and/or modify it
  under the terms of the GNU General Public License version 3, or (at your

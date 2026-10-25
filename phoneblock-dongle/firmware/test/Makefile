@@ -47,9 +47,15 @@ LINUX_OBJECTS := $(patsubst ../core/%.c,$(LINUX_BUILD_DIR)/core/%.o,$(LINUX_CORE
 # -DSTORAGE_HOSTFS selects storage.c's plain-filesystem backend.
 LINUX_CPPFLAGS := -DSTORAGE_HOSTFS -I../main -I../core $(LINUX_PKG_CFLAGS) \
                   -I$(LINUX_SRTP_INCLUDEDIR)/srtp2 $(CPPFLAGS)
-# The version reported in the User-Agent (pb_firmware_version()); the Debian
-# build passes the package version, a plain build reports "linux-dev".
-ifdef PHONEBLOCK_VERSION
+# The version reported in the User-Agent (pb_firmware_version()): the firmware
+# version these modules were built from, derived exactly like the ESP32 build
+# does it (firmware/CMakeLists.txt), so the server sees one version scheme
+# for the whole fleet. Outside a git checkout the caller passes it (debian/
+# rules falls back to the package version); without either it is "linux-dev".
+ifeq ($(origin PHONEBLOCK_VERSION),undefined)
+PHONEBLOCK_VERSION := $(shell git describe --tags --match "dongle-v*" --always --dirty 2>/dev/null | sed 's/^dongle-v//')
+endif
+ifneq ($(PHONEBLOCK_VERSION),)
 LINUX_CPPFLAGS += -DPHONEBLOCK_VERSION='"$(PHONEBLOCK_VERSION)"'
 endif
 
