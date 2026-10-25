@@ -119,6 +119,23 @@ static void test_contact_flow(void)
           "row shows the contact as legitimate");
 }
 
+// A known caller with "list known calls" off: counted, not listed (its
+// number and name only go to the display, which shows every call).
+static void test_counters_only_not_listed(void)
+{
+    printf("counters only:\n");
+    stats_clear_calls();
+    stats_counters_t before, after;
+    stats_snapshot_counters(&before);
+    stats_record_call_counters_only(NUM_A, "Max Müller", VERDICT_LEGITIMATE,
+                                    PB_ASSESS_LEGITIMATE);
+    stats_snapshot_counters(&after);
+    stats_call_t calls[STATS_MAX_CALLS];
+    CHECK(stats_snapshot_calls(calls, STATS_MAX_CALLS) == 0, "not listed");
+    CHECK(after.total_calls == before.total_calls + 1, "total counter bumped");
+    CHECK(after.legitimate == before.legitimate + 1, "legitimate counter bumped");
+}
+
 int main(void)
 {
     stats_setup();
@@ -126,6 +143,7 @@ int main(void)
     test_set_assessment_all_rows();
     test_assessment_for_number();
     test_contact_flow();
+    test_counters_only_not_listed();
     printf("\n%d checks, %d failed\n", tests_run, tests_failed);
     return tests_failed ? 1 : 0;
 }
