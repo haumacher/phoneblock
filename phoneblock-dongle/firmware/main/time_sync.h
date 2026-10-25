@@ -33,10 +33,18 @@ bool time_sync_valid(void);
 // UTC seconds since the epoch, or 0 when !time_sync_valid().
 int64_t time_sync_now_epoch(void);
 
-// Apply a POSIX TZ string at runtime: setenv("TZ")+tzset(). Called by the
+// Apply a POSIX TZ string at runtime: setenv("TZ")+tzset() under the
+// timezone lock (time_sync_tz.c, shared by both builds). Called by the
 // web settings handler after persisting a new timezone so the change
 // takes effect without a reboot. A NULL/empty argument is ignored.
 //
 // Note: must be a POSIX TZ string ("CET-1CEST,M3.5.0,M10.5.0/3"), not an
 // IANA name ("Europe/Berlin") — ESP-IDF's newlib ships no zone database.
 void time_sync_set_timezone(const char *posix_tz);
+
+// Hold this lock around every local-time conversion (localtime_r, mktime,
+// strftime on a local struct tm): time_sync_set_timezone() changes TZ
+// under it, and a concurrent change would race with the conversion.
+// No-op until time_sync_start() ran.
+void time_sync_tz_lock(void);
+void time_sync_tz_unlock(void);

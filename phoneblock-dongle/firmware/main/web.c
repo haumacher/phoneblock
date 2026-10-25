@@ -644,19 +644,17 @@ static web_http_error_t handle_status(web_http_request_t *req)
     cJSON_AddStringToObject(au,   "user",        config_auth_user());
 
     cJSON *tm = cJSON_AddObjectToObject(root, "time");
-#ifdef ESP_PLATFORM
     bool clock_ok = time_sync_valid();
-#else
-    bool clock_ok = time(NULL) > 0;
-#endif
     cJSON_AddBoolToObject  (tm,   "valid",   clock_ok);
     cJSON_AddStringToObject(tm,   "tz",      config_timezone());
     if (clock_ok) {
         time_t tnow = time(NULL);
         struct tm lt;
-        localtime_r(&tnow, &lt);
         char iso[32];
+        time_sync_tz_lock();
+        localtime_r(&tnow, &lt);
         strftime(iso, sizeof(iso), "%Y-%m-%dT%H:%M:%S", &lt);
+        time_sync_tz_unlock();
         cJSON_AddNumberToObject(tm, "epoch_s", (double)tnow);
         cJSON_AddStringToObject(tm, "local",   iso);
     } else {
@@ -1126,14 +1124,7 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
 
     // Apply a changed timezone to the running clock immediately so daily
     // jobs and the dashboard reflect it without a reboot.
-    if (timezone) {
-#ifdef ESP_PLATFORM
-        time_sync_set_timezone(config_timezone());
-#else
-        setenv("TZ", config_timezone(), 1);
-        tzset();
-#endif
-    }
+    if (timezone) time_sync_set_timezone(config_timezone());
 
 #if CONFIG_IDF_TARGET_ESP32S3
     // Turn the display right away, so the user sees the effect of the

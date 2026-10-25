@@ -45,7 +45,8 @@ LINUX_MAIN_SOURCES := ../main/announcement.c ../main/api.c \
                       ../main/selftest.c ../main/sip_register.c ../main/sip_response.c \
                       ../main/sip_srv.c ../main/sip_transport.c \
                       ../main/stats.c ../main/storage.c \
-                      ../main/sync.c ../main/time_sync_linux.c ../main/tr064.c \
+                      ../main/sync.c ../main/time_sync_linux.c \
+                      ../main/time_sync_tz.c ../main/tr064.c \
                       ../main/version_cmp.c \
                       ../main/web_access.c ../main/web_auth.c ../main/web.c \
                       ../main/web_http_linux.c
@@ -69,7 +70,7 @@ ifneq ($(strip $(PHONEBLOCK_DATA_DIR)),)
 LINUX_CPPFLAGS += -DPHONEBLOCK_DATA_DIR=\"$(PHONEBLOCK_DATA_DIR)\"
 endif
 
-BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_rcpt test_name_filter test_version_cmp test_net_local test_heap_guard test_platform_linux test_log_capture_linux test_ota_manifest test_stats test_storage_budget test_storage_sim test_storage_hostfs
+BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_rcpt test_name_filter test_version_cmp test_net_local test_heap_guard test_platform_linux test_log_capture_linux test_time_sync_tz test_ota_manifest test_stats test_storage_budget test_storage_sim test_storage_hostfs
 
 test_sip_parse: test_sip_parse.c ../core/sip_parse.c ../core/sip_parse.h \
                 ../core/dial_rules.c ../core/dial_rules.h \
@@ -174,6 +175,11 @@ test_platform_linux: test_platform_linux.c linux_test_util.h \
                      ../main/config.c ../main/config.h \
                      ../main/log_capture.c ../main/log_capture.h
 	$(CC) $(CFLAGS) -pthread test_platform_linux.c ../core/platform_linux.c ../main/config.c ../main/log_capture.c -o $@
+
+test_time_sync_tz: test_time_sync_tz.c linux_test_util.h ../main/time_sync_tz.c \
+                   ../main/time_sync.h ../core/platform_linux.c ../core/platform.h
+	$(CC) $(CFLAGS) -pthread test_time_sync_tz.c ../main/time_sync_tz.c \
+	  ../core/platform_linux.c -o $@
 
 test_log_capture_linux: test_log_capture_linux.c linux_test_util.h \
                         ../main/log_capture_linux.c ../main/log_capture.c \

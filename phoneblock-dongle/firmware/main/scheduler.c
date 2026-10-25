@@ -167,7 +167,9 @@ static int64_t next_due_daily(const sched_job_t *j, int64_t now_us)
 {
     if (!time_sync_valid())
         return now_us + (int64_t)DAILY_CLOCK_WAIT_S * 1000000;
+    time_sync_tz_lock();   // localtime_r/mktime inside, see time_sync.h
     long secs = seconds_until_daily(time(NULL), j->at_hour, j->at_minute);
+    time_sync_tz_unlock();
     return now_us + (int64_t)secs * 1000000;
 }
 
