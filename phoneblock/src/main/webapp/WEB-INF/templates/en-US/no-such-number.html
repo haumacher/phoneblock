@@ -9,7 +9,14 @@
 <div class="content">
 	<h1 data-tx="t0001:657a0bf2">The phone number ☎ <span th:text="${number}"></span> does not exist</h1>
 
-	<p data-tx="t0002:d5692a3b">The number you are looking for is not a telephone number. Please correct your search and try again!</p>
+	<th:block th:switch="${rejection == null ? '' : rejection.reason.name()}">
+	<p data-tx="t0012:5d700b22" th:case="'TOO_SHORT'">The number is too short to be a complete phone number. Please enter the number with the area code!</p>
+	<p data-tx="t0013:726b7d22" th:case="'MISSING_TRUNK_PREFIX'">In your area code range <span th:text="${rejection.countryCode}">+49</span>, numbers in the national format begin with <code th:text="${rejection.trunkPrefix}">0</code>. Please enter the number with the area code or in the international format with <code>+</code>!</p>
+	<p data-tx="t0014:677a6be1" th:case="'UNKNOWN_COUNTRY_CODE'">The number <code th:text="${rejection.plus}">+21712345678</code> does not begin with a valid country code—no country has been assigned a code that begins with this number. If you received a call from this number, the caller ID was likely spoofed.</p>
+	<p data-tx="t0015:d45a2691" th:case="'TRUNK_PREFIX_AFTER_COUNTRY_CODE'">In international formatting, the country code <span th:text="${rejection.countryCode}">+49</span> is not followed by a <code th:text="${rejection.trunkPrefix}">0</code>. Please omit the <code th:text="${rejection.trunkPrefix}">0</code> after the country code!</p>
+	<p data-tx="t0016:2b386c4c" th:case="'TOO_SHORT_FOR_PREFIX'">Numbers with the area code <code th:text="${rejection.prefix}">032</code> have at least <span th:text="${rejection.countryCode}">11</span> digits after the country code <span th:text="${rejection.minDigits}">+49</span>, but the number you're looking for has only <span th:text="${rejection.digits}">10</span>. If this number called you, the caller ID was likely spoofed.</p>
+	<p data-tx="t0002:d5692a3b" th:case="*">The number you are looking for is not a telephone number. Please correct your search and try again!</p>
+	</th:block>
 
 	<h2 data-tx="t0003:379d2439">Supported search formats</h2>
 

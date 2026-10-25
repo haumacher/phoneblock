@@ -9,7 +9,14 @@
 <div class="content">
 	<h1 data-tx="t0001:657a0bf2">Ο αριθμός τηλεφώνου ☎ <span th:text="${number}"></span> δεν υπάρχει</h1>
 
-	<p data-tx="t0002:d5692a3b">Ο αριθμός που αναζητάτε δεν είναι αριθμός τηλεφώνου. Παρακαλώ διορθώστε την αναζήτησή σας και προσπαθήστε ξανά!</p>
+	<th:block th:switch="${rejection == null ? '' : rejection.reason.name()}">
+	<p data-tx="t0012:5d700b22" th:case="'TOO_SHORT'">Ο αριθμός είναι πολύ μικρός για να αποτελεί πλήρη τηλεφωνικό αριθμό. Παρακαλώ, πληκτρολόγησε τον αριθμό με τον κωδικό περιοχής!</p>
+	<p data-tx="t0013:726b7d22" th:case="'MISSING_TRUNK_PREFIX'">Στην περιοχή κωδικού σου <span th:text="${rejection.countryCode}">+49</span>, οι αριθμοί με εθνική μορφή ξεκινούν με <code th:text="${rejection.trunkPrefix}">0</code>. Παρακαλώ, πληκτρολόγησε τον αριθμό με τον κωδικό ή σε διεθνή μορφή με <code>+</code>!</p>
+	<p data-tx="t0014:677a6be1" th:case="'UNKNOWN_COUNTRY_CODE'">Ο αριθμός <code th:text="${rejection.plus}">+21712345678</code> δεν ξεκινά με έγκυρο κωδικό χώρας – σε καμία χώρα δεν έχει εκχωρηθεί κωδικός χώρας με τον οποίο να ξεκινά αυτός ο αριθμός. Εάν έλαβες κλήση από αυτόν τον αριθμό, η εμφάνιση του αριθμού κλήσης πιθανότατα ήταν πλαστή.</p>
+	<p data-tx="t0015:d45a2691" th:case="'TRUNK_PREFIX_AFTER_COUNTRY_CODE'">Σύμφωνα με τη διεθνή μορφή γραφής, μετά τον κωδικό χώρας <span th:text="${rejection.countryCode}">+49</span> δεν ακολουθεί <code th:text="${rejection.trunkPrefix}">0</code>. Παρακαλώ, μην βάζεις το <code th:text="${rejection.trunkPrefix}">0</code> μετά τον κωδικό χώρας!</p>
+	<p data-tx="t0016:2b386c4c" th:case="'TOO_SHORT_FOR_PREFIX'">Οι αριθμοί με τον κωδικό <code th:text="${rejection.prefix}">032</code> έχουν, μετά τον κωδικό χώρας <span th:text="${rejection.countryCode}">+49</span>, τουλάχιστον <span th:text="${rejection.minDigits}">11</span> ψηφία, ενώ ο αριθμός που αναζητάς έχει μόνο <span th:text="${rejection.digits}">10</span>. Εάν έλαβες κλήση από αυτόν τον αριθμό, η ένδειξη του αριθμού κλήσης πιθανότατα ήταν πλαστή.</p>
+	<p data-tx="t0002:d5692a3b" th:case="*">Ο αριθμός που αναζητάτε δεν είναι αριθμός τηλεφώνου. Παρακαλώ διορθώστε την αναζήτησή σας και προσπαθήστε ξανά!</p>
+	</th:block>
 
 	<h2 data-tx="t0003:379d2439">Υποστηριζόμενες μορφές αναζήτησης</h2>
 

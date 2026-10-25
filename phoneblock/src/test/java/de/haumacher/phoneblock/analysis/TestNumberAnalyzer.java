@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
@@ -387,6 +388,54 @@ class TestNumberAnalyzer {
 		PhoneNumer result = NumberAnalyzer.analyze(input, userDialPrefix);
 		assertNotNull(result, "Number " + input + " should be valid even with unknown dial prefix");
 		assertEquals(expectedDial, result.getDial(), "Dial format should fall back to '00' prefix");
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+		"abc, +49, NO_NUMBER",
+		"0301234*, +49, NO_NUMBER",
+		"000301234567, +49, NO_NUMBER",
+		"+491234, +49, TOO_SHORT",
+		"012345, +49, TOO_SHORT",
+		"301234567, +49, MISSING_TRUNK_PREFIX",
+		"04951234567, +7, MISSING_TRUNK_PREFIX",
+		"+21712345678, +49, UNKNOWN_COUNTRY_CODE",
+		"+4903012345678, +49, TRUNK_PREFIX_AFTER_COUNTRY_CODE",
+		"+112025550123, +49, TRUNK_PREFIX_AFTER_COUNTRY_CODE",
+		"+49 32 12345678, +49, TOO_SHORT_FOR_PREFIX",
+	})
+	void testDiagnose(String input, String dialPrefix, NumberRejection.Reason expected) {
+		assertNull(NumberAnalyzer.extractNumber(input, dialPrefix));
+		assertEquals(expected, NumberAnalyzer.diagnose(input, dialPrefix).getReason());
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+		"+49 32 123456789, +49",
+		"030 12345678, +49",
+		"+1 202 555 0123, +49",
+	})
+	void testDiagnoseValid(String input, String dialPrefix) {
+		assertNotNull(NumberAnalyzer.extractNumber(input, dialPrefix));
+		assertNull(NumberAnalyzer.diagnose(input, dialPrefix));
+	}
+
+	@Test
+	void testDiagnoseDetails() {
+		NumberRejection tooShort = NumberAnalyzer.diagnose("+49 32 12345678", "+49");
+		assertEquals("+493212345678", tooShort.getPlus());
+		assertEquals("+49", tooShort.getCountryCode());
+		assertEquals("032", tooShort.getPrefix());
+		assertEquals(11, tooShort.getMinDigits());
+		assertEquals(10, tooShort.getDigits());
+
+		NumberRejection trunk = NumberAnalyzer.diagnose("+112025550123", "+49");
+		assertEquals("+1", trunk.getCountryCode());
+		assertEquals("1", trunk.getTrunkPrefix());
+
+		NumberRejection missing = NumberAnalyzer.diagnose("04951234567", "+7");
+		assertEquals("+7", missing.getCountryCode());
+		assertEquals("8", missing.getTrunkPrefix());
 	}
 
 }

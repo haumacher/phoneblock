@@ -9,7 +9,14 @@
 <div class="content">
 	<h1 data-tx="t0001:657a0bf2">Telefonnummeret ☎ <span th:text="${number}"></span> finnes ikke</h1>
 
-	<p data-tx="t0002:d5692a3b">Nummeret du leter etter er ikke et telefonnummer. Korriger søket ditt og prøv igjen!</p>
+	<th:block th:switch="${rejection == null ? '' : rejection.reason.name()}">
+	<p data-tx="t0012:5d700b22" th:case="'TOO_SHORT'">Nummeret er for kort til å være et fullstendig telefonnummer. Vennligst skriv inn nummeret med retningsnummer!</p>
+	<p data-tx="t0013:726b7d22" th:case="'MISSING_TRUNK_PREFIX'">I ditt retningsnummerområde <span th:text="${rejection.countryCode}">+49</span> begynner numrene i nasjonal skrivemåte med <code th:text="${rejection.trunkPrefix}">0</code>. Vennligst skriv inn nummeret med retningsnummer eller i internasjonal skrivemåte med <code>+</code>!</p>
+	<p data-tx="t0014:677a6be1" th:case="'UNKNOWN_COUNTRY_CODE'">Nummeret <code th:text="${rejection.plus}">+21712345678</code> begynner ikke med et gyldig landskode – det finnes ikke noe land som har tildelt en landskode som dette nummeret begynner med. Hvis du har mottatt en samtale fra dette nummeret, er nummervisningen sannsynligvis forfalsket.</p>
+	<p data-tx="t0015:d45a2691" th:case="'TRUNK_PREFIX_AFTER_COUNTRY_CODE'">I internasjonal skrivemåte følger det ikke noe <span th:text="${rejection.countryCode}">0</span> etter landskoden <code th:text="${rejection.trunkPrefix}">+49</code>. Vennligst utelat <code th:text="${rejection.trunkPrefix}">0</code> etter landskoden!</p>
+	<p data-tx="t0016:2b386c4c" th:case="'TOO_SHORT_FOR_PREFIX'">Nummer med retningsnummeret <code th:text="${rejection.prefix}">032</code> har minst <span th:text="${rejection.countryCode}">11</span> sifre etter landskoden <span th:text="${rejection.minDigits}">+49</span>, men nummeret du leter etter har bare <span th:text="${rejection.digits}">10</span>. Hvis du har mottatt en samtale fra dette nummeret, er nummervisningen sannsynligvis forfalsket.</p>
+	<p data-tx="t0002:d5692a3b" th:case="*">Nummeret du leter etter er ikke et telefonnummer. Korriger søket ditt og prøv igjen!</p>
+	</th:block>
 
 	<h2 data-tx="t0003:379d2439">Støttede søkeformater</h2>
 
