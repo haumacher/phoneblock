@@ -1484,11 +1484,20 @@ static esp_err_t handle_token_callback(httpd_req_t *req)
         }
     }
 
-    // Hand the user straight back to the status landing — the pill
-    // there flips to green on the next 3s poll.
-    httpd_resp_set_status(req, "302 Found");
-    httpd_resp_set_hdr(req, "Location", "/");
-    httpd_resp_send(req, NULL, 0);
+    // The web UI opens the sign-in in its own tab and waits on the status
+    // page, whose pill flips to green on the next 3 s poll — so this tab
+    // closes itself. Browsers allow that only for script-opened tabs; a
+    // tab opened any other way (popup blocked, old bookmark) falls back to
+    // the status landing. "./" rather than "/" so the fallback stays under
+    // a reverse proxy's path prefix.
+    httpd_resp_set_type(req, "text/html; charset=utf-8");
+    httpd_resp_set_hdr(req, "Cache-Control", "no-store");
+    httpd_resp_send(req,
+        "<!DOCTYPE html><meta charset=\"utf-8\"><title>PhoneBlock</title>"
+        "<script>window.close();"
+        "setTimeout(function(){location.replace('./');},500);</script>"
+        "<noscript><meta http-equiv=\"refresh\" content=\"0;url=./\"></noscript>",
+        HTTPD_RESP_USE_STRLEN);
     return ESP_OK;
 }
 
