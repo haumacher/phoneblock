@@ -21,6 +21,7 @@
 #include "api.h"
 #include "blocklist_sync.h"
 #include "config.h"
+#include "display.h"
 #include "heap_guard.h"
 #include "announcement.h"
 #include "name_filter.h"
@@ -1267,7 +1268,8 @@ static verdict_t check_invite_caller(const char *req, int req_len)
         if (config_log_known_calls()) {
             stats_record_call(raw_user, display, VERDICT_LEGITIMATE);
         } else {
-            stats_record_call_counters_only(VERDICT_LEGITIMATE);
+            stats_record_call_counters_only(raw_user, display, VERDICT_LEGITIMATE,
+                                            PB_ASSESS_LEGITIMATE);
         }
         return VERDICT_LEGITIMATE;
     }
@@ -1281,7 +1283,8 @@ static verdict_t check_invite_caller(const char *req, int req_len)
             stats_record_call_assessed(number, display, VERDICT_LEGITIMATE,
                                        PB_ASSESS_UNKNOWN);
         } else {
-            stats_record_call_counters_only(VERDICT_LEGITIMATE);
+            stats_record_call_counters_only(number, display, VERDICT_LEGITIMATE,
+                                            PB_ASSESS_UNKNOWN);
         }
         return VERDICT_LEGITIMATE;
     }
@@ -1515,6 +1518,10 @@ static void handle_ack(sip_ctx_t *c, const char *req, int req_len,
 #endif
     } else if (d->state == DIALOG_REJECTED) {
         // Non-spam: we declined with 480, ACK confirms, dialog done.
+        // The display keeps showing the caller: our branch is done, but the
+        // other phones keep ringing (#380), and the Fritz!Box sends the
+        // dongle nothing more about this call — its screen ends on the
+        // display's own fallback timeout, or when the next call replaces it.
         pb_log_info(TAG, "ACK received after 480 → dialog closed");
         memset(d, 0, sizeof(*d));
     } else {
@@ -1539,6 +1546,7 @@ static void handle_bye(sip_ctx_t *c, const char *req, int req_len,
         // the remote is gone, every further RTP packet is wasted.
         rtp_request_abort();
         memset(d, 0, sizeof(*d));
+        display_call_ended();
     }
 }
 
@@ -1566,6 +1574,9 @@ static void handle_cancel(sip_ctx_t *c, const char *req, int req_len,
         send_response(c, from, req, req_len, 487, "Request Terminated",
                       d->our_tag, NULL);
         memset(d, 0, sizeof(*d));
+        // The call was answered elsewhere or the caller hung up while our
+        // branch was still ringing: the caller screen goes.
+        display_call_ended();
     }
 }
 
@@ -1611,6 +1622,7 @@ static void handle_incoming(sip_ctx_t *c, const char *pkt, int len,
         if (c->dialog.state == DIALOG_BYE_SENT) {
             pb_log_info(TAG, "← %d on BYE → dialog closed", status);
             memset(&c->dialog, 0, sizeof(c->dialog));
+            display_call_ended();
         } else {
             pb_log_warn(TAG, "ignoring stray response %d", status);
         }
@@ -2029,13 +2041,15 @@ static void sip_task(void *arg)
                     // SIP_TEARDOWN_TIMEOUT_US) — reset to IDLE if it's lost.
                     ctx.dialog.bye_at_us = now + SIP_TEARDOWN_TIMEOUT_US;
                 } else if (ctx.dialog.state == DIALOG_REJECTED) {
-                    // ACK to our 480 never arrived — return to rest.
+                    // ACK to our 480 never arrived — return to rest. The
+                    // caller screen stays (see handle_ack).
                     pb_log_info(TAG, "ACK timeout after 480 → dialog reset to idle");
                     memset(&ctx.dialog, 0, sizeof(ctx.dialog));
                 } else if (ctx.dialog.state == DIALOG_BYE_SENT) {
                     // 200 to our BYE never arrived — return to rest.
                     pb_log_info(TAG, "200 timeout after BYE → dialog reset to idle");
                     memset(&ctx.dialog, 0, sizeof(ctx.dialog));
+                    display_call_ended();
                 }
                 continue;
             }

@@ -70,7 +70,7 @@ ifneq ($(strip $(PHONEBLOCK_DATA_DIR)),)
 LINUX_CPPFLAGS += -DPHONEBLOCK_DATA_DIR=\"$(PHONEBLOCK_DATA_DIR)\"
 endif
 
-BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_rcpt test_name_filter test_version_cmp test_net_local test_heap_guard test_platform_linux test_log_capture_linux test_time_sync_tz test_ota_manifest test_stats test_storage_budget test_storage_sim test_storage_hostfs
+BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_rcpt test_name_filter test_version_cmp test_net_local test_heap_guard test_platform_linux test_log_capture_linux test_time_sync_tz test_ota_manifest test_stats test_display_model test_display_probe test_storage_budget test_storage_sim test_storage_hostfs
 
 test_sip_parse: test_sip_parse.c ../core/sip_parse.c ../core/sip_parse.h \
                 ../core/dial_rules.c ../core/dial_rules.h \
@@ -166,9 +166,26 @@ test_heap_guard: test_heap_guard.c ../main/heap_guard_scan.c ../main/heap_guard_
 
 # test_stats and test_platform_linux link only core/platform_linux.c (libc +
 # pthreads); the libcurl/OpenSSL half lives in platform_linux_net.c.
-test_stats: test_stats.c ../main/stats.c ../main/stats.h ../main/api.h \
+test_stats: test_stats.c ../main/stats.c ../main/stats.h ../main/api.h ../main/display.h \
             ../core/platform_linux.c ../core/platform.h ../main/log_capture.c
 	$(CC) $(CFLAGS) -pthread test_stats.c ../main/stats.c ../core/platform_linux.c ../main/log_capture.c -o $@
+
+# The display's model (badge rule, caller screen, UTF-8, text fitting) on top
+# of the real stats ring and the generated fonts. With AddressSanitizer: the
+# UTF-8 decoder and the text fitting must never overrun, whatever the input.
+test_display_model: test_display_model.c ../main/display_model.c ../main/display_model.h \
+                    ../main/lcd_font.c ../main/lcd_font.h ../main/strbuf.h \
+                    ../main/stats.c ../main/stats.h ../main/display.h ../main/api.h \
+                    ../core/platform_linux.c ../core/platform.h ../main/log_capture.c
+	$(CC) $(CFLAGS) -fsanitize=address -pthread test_display_model.c ../main/display_model.c \
+	  ../main/lcd_font.c ../main/stats.c ../core/platform_linux.c ../main/log_capture.c -o $@
+
+test_display_probe: test_display_probe.c ../main/display_model.c ../main/display_model.h \
+                    ../main/lcd_font.c ../main/lcd_font.h ../main/strbuf.h \
+                    ../main/stats.c ../main/stats.h ../main/display.h ../main/api.h \
+                    ../core/platform_linux.c ../core/platform.h ../main/log_capture.c
+	$(CC) $(CFLAGS) -fsanitize=address -pthread test_display_probe.c ../main/display_model.c \
+	  ../main/lcd_font.c ../main/stats.c ../core/platform_linux.c ../main/log_capture.c -o $@
 
 test_platform_linux: test_platform_linux.c linux_test_util.h \
                      ../core/platform_linux.c ../core/platform.h \
