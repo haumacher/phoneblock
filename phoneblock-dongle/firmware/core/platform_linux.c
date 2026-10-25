@@ -69,25 +69,43 @@ struct pb_kv {
     pb_kv_raw_t *preserved_tail;
 };
 
-static void pb_log(const char *level, const char *tag, const char *fmt,
-                   va_list args)
+// Set once at startup by log_capture_start(); read on every log call.
+static pb_log_sink_t s_log_sink;
+
+void pb_log_set_sink(pb_log_sink_t sink)
 {
+    __atomic_store_n(&s_log_sink, sink, __ATOMIC_RELEASE);
+}
+
+static void pb_log(char level, const char *tag, const char *fmt, va_list args)
+{
+    if (!tag) tag = "phoneblock";
+    pb_log_sink_t sink = __atomic_load_n(&s_log_sink, __ATOMIC_ACQUIRE);
+    va_list sink_args;
+    if (sink) va_copy(sink_args, args);
+
     // ESP-IDF layout, see platform.h. One fprintf per part under the stream
     // lock keeps lines from concurrent threads intact.
     flockfile(stderr);
-    fprintf(stderr, "%s (%llu) %s: ", level,
-            (unsigned long long)(pb_monotonic_us() / 1000u),
-            tag ? tag : "phoneblock");
+    fprintf(stderr, "%c (%llu) %s: ", level,
+            (unsigned long long)(pb_monotonic_us() / 1000u), tag);
     vfprintf(stderr, fmt, args);
     fputc('\n', stderr);
     funlockfile(stderr);
+
+    // Outside the stream lock: the sink takes the stats lock, and the
+    // console line is already out either way.
+    if (sink) {
+        sink(level, tag, fmt, sink_args);
+        va_end(sink_args);
+    }
 }
 
 void pb_log_info(const char *tag, const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    pb_log("I", tag, fmt, args);
+    pb_log('I', tag, fmt, args);
     va_end(args);
 }
 
@@ -95,7 +113,7 @@ void pb_log_warn(const char *tag, const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    pb_log("W", tag, fmt, args);
+    pb_log('W', tag, fmt, args);
     va_end(args);
 }
 
@@ -103,7 +121,7 @@ void pb_log_err(const char *tag, const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
-    pb_log("E", tag, fmt, args);
+    pb_log('E', tag, fmt, args);
     va_end(args);
 }
 
