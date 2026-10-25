@@ -12,6 +12,7 @@ import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -24,6 +25,7 @@ import com.opencsv.CSVReaderBuilder;
 import com.opencsv.ICSVParser;
 import com.opencsv.exceptions.CsvValidationException;
 
+import de.haumacher.phoneblock.analysis.NumberRejection.Reason;
 import de.haumacher.phoneblock.analysis.model.NationalDestinationCode;
 import de.haumacher.phoneblock.app.api.model.PhoneInfo;
 import de.haumacher.phoneblock.app.api.model.PhoneNumer;
@@ -191,6 +193,31 @@ public class NumberAnalyzer {
 	 * @param dialPrefix The users local dial prefix.
 	 */
 	public static PhoneNumer analyze(String phone, String dialPrefix) {
+		return analyze(phone, dialPrefix, rejection -> {});
+	}
+
+	/**
+	 * Explains why the given search text is not accepted as phone number.
+	 *
+	 * @param query The search text as entered by the user.
+	 * @param dialPrefix The users local dial prefix.
+	 * @return The reason for the rejection, or <code>null</code> if the text is a valid number.
+	 */
+	public static NumberRejection diagnose(String query, String dialPrefix) {
+		String rawPhoneNumber = normalizeNumber(query);
+		if (rawPhoneNumber.isEmpty() || rawPhoneNumber.contains("*")) {
+			return new NumberRejection(Reason.NO_NUMBER);
+		}
+
+		NumberRejection[] result = {null};
+		analyze(rawPhoneNumber, dialPrefix, rejection -> result[0] = rejection);
+		return result[0];
+	}
+
+	/**
+	 * Analyzes the given (normalized) phone number and reports the reason, if it is not valid.
+	 */
+	private static PhoneNumer analyze(String phone, String dialPrefix, Consumer<NumberRejection> onReject) {
 		// Look up country by dial prefix to get trunk prefix information for parsing
 		// This is used by PhoneHash.toInternationalForm() to convert national format to international
 		List<String> userTrunkPrefixes = null;
@@ -204,12 +231,14 @@ public class NumberAnalyzer {
 		String plus = PhoneHash.toInternationalForm(phone, dialPrefix, userTrunkPrefixes);
 		if (plus == null) {
 			// Not a valid number.
+			onReject.accept(internationalFormRejection(phone, dialPrefix, userTrunkPrefixes));
 			return null;
 		}
 		
 		PrefixInfo info = findInfo(plus);
 		String countryCode = info.getCountryCode();
 		if (countryCode == null) {
+			onReject.accept(new NumberRejection(Reason.UNKNOWN_COUNTRY_CODE).setPlus(plus));
 			return null;
 		}
 
@@ -230,6 +259,12 @@ public class NumberAnalyzer {
 		int minDigits = info.getMinDigits();
 		if (minDigits >= 0) {
 			if (plus.length() < minDigits + countryCode.length()) {
+				onReject.accept(new NumberRejection(Reason.TOO_SHORT_FOR_PREFIX)
+					.setPlus(plus)
+					.setCountryCode(countryCode)
+					.setPrefix(info.getCityCode())
+					.setMinDigits(minDigits)
+					.setDigits(plus.length() - countryCode.length()));
 				return null;
 			}
 		}
@@ -251,6 +286,10 @@ public class NumberAnalyzer {
 			for (String trunkPrefix : numberTrunkPrefixes) {
 				if (!trunkPrefix.isEmpty() && localPart.startsWith(trunkPrefix)) {
 					// The local part must not start with a trunk prefix
+					onReject.accept(new NumberRejection(Reason.TRUNK_PREFIX_AFTER_COUNTRY_CODE)
+						.setPlus(plus)
+						.setCountryCode(countryCode)
+						.setTrunkPrefix(trunkPrefix));
 					return null;
 				}
 			}
@@ -310,6 +349,27 @@ public class NumberAnalyzer {
 		}
 		
 		return result;
+	}
+
+	/**
+	 * Distinguishes the cases in which {@link PhoneHash#toInternationalForm(String, String, List)}
+	 * rejects a number.
+	 */
+	private static NumberRejection internationalFormRejection(String phone, String dialPrefix, List<String> trunkPrefixes) {
+		if (phone.startsWith("000")) {
+			return new NumberRejection(Reason.NO_NUMBER);
+		}
+		if (phone.startsWith("+") || phone.startsWith("00")) {
+			return new NumberRejection(Reason.TOO_SHORT);
+		}
+
+		List<String> prefixes = trunkPrefixes == null || trunkPrefixes.isEmpty() ? List.of("0") : trunkPrefixes;
+		if (prefixes.stream().anyMatch(p -> p.isEmpty() || phone.startsWith(p))) {
+			return new NumberRejection(Reason.TOO_SHORT);
+		}
+		return new NumberRejection(Reason.MISSING_TRUNK_PREFIX)
+			.setCountryCode(dialPrefix)
+			.setTrunkPrefix(prefixes.get(0));
 	}
 
 	/**

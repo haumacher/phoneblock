@@ -9,7 +9,14 @@
 <div class="content">
 	<h1 data-tx="t0001:657a0bf2">电话号码 ☎ <span th:text="${number}"></span> 不存在</h1>
 
-	<p data-tx="t0002:d5692a3b">您要查找的号码不是电话号码。请更正搜索结果并重试！</p>
+	<th:block th:switch="${rejection == null ? '' : rejection.reason.name()}">
+	<p data-tx="t0012:5d700b22" th:case="'TOO_SHORT'">该号码太短，无法作为完整的电话号码。请输入包含区号的号码！</p>
+	<p data-tx="t0013:726b7d22" th:case="'MISSING_TRUNK_PREFIX'">在您的区号范围 <span th:text="${rejection.countryCode}">+49</span> 内，采用国内格式书写的号码以 <code th:text="${rejection.trunkPrefix}">0</code> 开头。请输入带区号的号码，或采用国际格式（以 <code>+</code> 开头）输入！</p>
+	<p data-tx="t0014:677a6be1" th:case="'UNKNOWN_COUNTRY_CODE'">号码 <code th:text="${rejection.plus}">+21712345678</code> 并未以有效的国家代码开头——没有任何国家被分配了以该号码开头的国家代码。如果你接到过这个号码的来电，那么来电显示很可能被伪造了。</p>
+	<p data-tx="t0015:d45a2691" th:case="'TRUNK_PREFIX_AFTER_COUNTRY_CODE'">按照国际拨号规范，国家代码<span th:text="${rejection.countryCode}">+49</span>后面不加<code th:text="${rejection.trunkPrefix}">0</code>。请在国家代码后省略<code th:text="${rejection.trunkPrefix}">0</code>！</p>
+	<p data-tx="t0016:2b386c4c" th:case="'TOO_SHORT_FOR_PREFIX'">以区号 <code th:text="${rejection.prefix}">032</code> 开头的号码，在国家代码 <span th:text="${rejection.countryCode}">+49</span> 之后至少有 <span th:text="${rejection.minDigits}">11</span> 位数字，但你查询的号码只有 <span th:text="${rejection.digits}">10</span> 位。 如果该号码曾给你打过电话，那么来电显示很可能被伪造了。</p>
+	<p data-tx="t0002:d5692a3b" th:case="*">您要查找的号码不是电话号码。请更正搜索结果并重试！</p>
+	</th:block>
 
 	<h2 data-tx="t0003:379d2439">支持的搜索格式</h2>
 

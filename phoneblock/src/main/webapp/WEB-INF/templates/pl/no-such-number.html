@@ -9,7 +9,14 @@
 <div class="content">
 	<h1 data-tx="t0001:657a0bf2">Numer telefonu ☎ <span th:text="${number}"></span> nie istnieje</h1>
 
-	<p data-tx="t0002:d5692a3b">Szukany numer nie jest numerem telefonu. Popraw wyszukiwanie i spróbuj ponownie!</p>
+	<th:block th:switch="${rejection == null ? '' : rejection.reason.name()}">
+	<p data-tx="t0012:5d700b22" th:case="'TOO_SHORT'">Ten numer jest zbyt krótki, by stanowić pełny numer telefonu. Wpisz numer wraz z numerem kierunkowym!</p>
+	<p data-tx="t0013:726b7d22" th:case="'MISSING_TRUNK_PREFIX'">W Twoim obszarze numerów kierunkowych <span th:text="${rejection.countryCode}">+49</span> numery w formacie krajowym zaczynają się od <code th:text="${rejection.trunkPrefix}">0</code>. Wpisz numer wraz z numerem kierunkowym lub w formacie międzynarodowym z przedrostkiem <code>+</code>!</p>
+	<p data-tx="t0014:677a6be1" th:case="'UNKNOWN_COUNTRY_CODE'">Numer <code th:text="${rejection.plus}">+21712345678</code> nie zaczyna się od żadnego prawidłowego kodu krajowego – żadnemu krajowi nie przypisano kodu, od którego zaczynałby się ten numer. Jeśli zadzwonił do Ciebie ten numer, prawdopodobnie wyświetlony numer został sfałszowany.</p>
+	<p data-tx="t0015:d45a2691" th:case="'TRUNK_PREFIX_AFTER_COUNTRY_CODE'">Zgodnie z międzynarodowymi zasadami po numerze kierunkowym kraju <span th:text="${rejection.countryCode}">+49</span> nie podaje się cyfry <code th:text="${rejection.trunkPrefix}">0</code>. Proszę pominąć cyfrę <code th:text="${rejection.trunkPrefix}">0</code> po numerze kierunkowym kraju!</p>
+	<p data-tx="t0016:2b386c4c" th:case="'TOO_SHORT_FOR_PREFIX'">Numery z prefiksem <code th:text="${rejection.prefix}">032</code> mają po prefiksie krajowym <span th:text="${rejection.countryCode}">+49</span> co najmniej <span th:text="${rejection.minDigits}">11</span> cyfr, natomiast szukany numer ma tylko <span th:text="${rejection.digits}">10</span>. Jeśli ten numer do Ciebie dzwonił, prawdopodobnie wyświetlany numer został sfałszowany.</p>
+	<p data-tx="t0002:d5692a3b" th:case="*">Szukany numer nie jest numerem telefonu. Popraw wyszukiwanie i spróbuj ponownie!</p>
+	</th:block>
 
 	<h2 data-tx="t0003:379d2439">Obsługiwane formaty wyszukiwania</h2>
 

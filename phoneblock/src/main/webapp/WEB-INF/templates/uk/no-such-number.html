@@ -9,7 +9,14 @@
 <div class="content">
 	<h1 data-tx="t0001:657a0bf2">Номер телефону ☎ <span th:text="${number}"></span> не існує</h1>
 
-	<p data-tx="t0002:d5692a3b">Номер, який ви шукаєте, не є номером телефону. Будь ласка, виправте пошук і спробуйте ще раз!</p>
+	<th:block th:switch="${rejection == null ? '' : rejection.reason.name()}">
+	<p data-tx="t0012:5d700b22" th:case="'TOO_SHORT'">Цей номер занадто короткий, щоб бути повним телефонним номером. Будь ласка, введіть номер із кодом міста!</p>
+	<p data-tx="t0013:726b7d22" th:case="'MISSING_TRUNK_PREFIX'">У твоїй зоні телефонного коду <span th:text="${rejection.countryCode}">+49</span> номери у національному форматі починаються з <code th:text="${rejection.trunkPrefix}">0</code>. Будь ласка, введи номер із телефонним кодом або у міжнародному форматі з <code>+</code>!</p>
+	<p data-tx="t0014:677a6be1" th:case="'UNKNOWN_COUNTRY_CODE'">Номер <code th:text="${rejection.plus}">+21712345678</code> не починається з дійсного міжнародного префікса — жодній країні не присвоєно префікс, з якого починається цей номер. Якщо тобі дзвонили з цього номера, ймовірно, номер абонента був підроблений.</p>
+	<p data-tx="t0015:d45a2691" th:case="'TRUNK_PREFIX_AFTER_COUNTRY_CODE'">Згідно з міжнародними правилами написання, після телефонного коду країни <span th:text="${rejection.countryCode}">+49</span> не ставиться <code th:text="${rejection.trunkPrefix}">0</code>. Будь ласка, не вказуй <code th:text="${rejection.trunkPrefix}">0</code> після телефонного коду країни!</p>
+	<p data-tx="t0016:2b386c4c" th:case="'TOO_SHORT_FOR_PREFIX'">Номери з префіксом <code th:text="${rejection.prefix}">032</code> після міжнародного префіксу <span th:text="${rejection.countryCode}">+49</span> мають щонайменше <span th:text="${rejection.minDigits}">11</span> цифр, тоді як номер, який ти шукаєш, має лише <span th:text="${rejection.digits}">10</span>. Якщо тобі дзвонили з цього номера, ймовірно, номер абонента був підроблений.</p>
+	<p data-tx="t0002:d5692a3b" th:case="*">Номер, який ви шукаєте, не є номером телефону. Будь ласка, виправте пошук і спробуйте ще раз!</p>
+	</th:block>
 
 	<h2 data-tx="t0003:379d2439">Підтримувані формати пошуку</h2>
 

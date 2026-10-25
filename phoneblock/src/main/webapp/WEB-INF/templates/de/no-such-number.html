@@ -9,10 +9,37 @@
 <div class="content">
 	<h1 data-tx="t0001:657a0bf2">Die Rufnummer ☎ <span th:text="${number}"></span> existiert nicht</h1>
 
-	<p data-tx="t0002:d5692a3b">
+	<th:block th:switch="${rejection == null ? '' : rejection.reason.name()}">
+	<p data-tx="t0012:5d700b22" th:case="'TOO_SHORT'">
+		Die Nummer ist zu kurz für eine vollständige Telefonnummer.
+		Bitte gib die Nummer mit Vorwahl ein!
+	</p>
+	<p data-tx="t0013:726b7d22" th:case="'MISSING_TRUNK_PREFIX'">
+		In Deinem Vorwahlbereich <span th:text="${rejection.countryCode}">+49</span> beginnen Nummern in nationaler
+		Schreibweise mit <code th:text="${rejection.trunkPrefix}">0</code>. Bitte gib die Nummer mit Vorwahl
+		oder in internationaler Schreibweise mit <code>+</code> ein!
+	</p>
+	<p data-tx="t0014:677a6be1" th:case="'UNKNOWN_COUNTRY_CODE'">
+		Die Nummer <code th:text="${rejection.plus}">+21712345678</code> beginnt mit keiner gültigen Ländervorwahl
+		– keinem Land ist eine Vorwahl zugeteilt, mit der diese Nummer beginnt. Falls Dich diese Nummer angerufen hat,
+		wurde die Rufnummernanzeige vermutlich gefälscht.
+	</p>
+	<p data-tx="t0015:d45a2691" th:case="'TRUNK_PREFIX_AFTER_COUNTRY_CODE'">
+		In internationaler Schreibweise folgt auf die Ländervorwahl <span th:text="${rejection.countryCode}">+49</span>
+		keine <code th:text="${rejection.trunkPrefix}">0</code>. Bitte lass die <code th:text="${rejection.trunkPrefix}">0</code>
+		nach der Ländervorwahl weg!
+	</p>
+	<p data-tx="t0016:2b386c4c" th:case="'TOO_SHORT_FOR_PREFIX'">
+		Nummern mit der Vorwahl <code th:text="${rejection.prefix}">032</code> haben nach der Ländervorwahl
+		<span th:text="${rejection.countryCode}">+49</span> mindestens <span th:text="${rejection.minDigits}">11</span> Ziffern,
+		die gesuchte Nummer hat aber nur <span th:text="${rejection.digits}">10</span>. Falls Dich diese Nummer angerufen hat,
+		wurde die Rufnummernanzeige vermutlich gefälscht.
+	</p>
+	<p data-tx="t0002:d5692a3b" th:case="*">
 		Bei der von Dir gesuchten Nummer handelt es sich nicht um eine Telefonnummer.
 		Bitte korrigiere Deine Sucheingabe und versuche es noch einmal!
 	</p>
+	</th:block>
 
 	<h2 data-tx="t0003:379d2439">Unterstützte Suchformate</h2>
 
