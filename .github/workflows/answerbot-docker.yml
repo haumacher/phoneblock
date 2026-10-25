@@ -32,15 +32,6 @@ jobs:
         with:
           ref: ${{ github.event.inputs.ref || github.ref }}
 
-      - uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-          cache: maven
-
-      - name: Build answerbot JAR
-        run: mvn -B -pl phoneblock-ab -am -DskipTests package
-
       - name: Determine image tags
         id: tags
         shell: bash
@@ -72,7 +63,10 @@ jobs:
 
       - uses: docker/build-push-action@v6
         with:
-          context: phoneblock-ab
+          # The JAR is built inside the image build (see phoneblock-ab/Dockerfile), once on the
+          # runner's platform; the context is the repository root.
+          context: .
+          file: phoneblock-ab/Dockerfile
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           push: true
           tags: ${{ steps.tags.outputs.tags }}
