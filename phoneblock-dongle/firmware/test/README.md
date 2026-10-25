@@ -28,14 +28,11 @@ Events, Key-Value-Store, MAC — nur libc und pthreads) läuft in `make test` mi
 base64 über OpenSSL) wird nur von `make test-linux` gebaut. Dafür zusätzlich
 nötig:
 
-- die Entwicklungspakete von libcurl und OpenSSL, unter Debian/Ubuntu:
+- `pkg-config` und die Entwicklungspakete von libcurl, OpenSSL, cJSON und
+  libsrtp2, unter Debian/Ubuntu:
   ```bash
-  sudo apt install libcurl4-openssl-dev libssl-dev
+  sudo apt install pkg-config libcurl4-openssl-dev libssl-dev libcjson-dev libsrtp2-dev
   ```
-- die libsrtp-Header unter `../managed_components/` — dieses Verzeichnis ist
-  nicht eingecheckt, sondern wird vom ESP-IDF-Komponentenmanager angelegt.
-  Einmal `idf.py build` (oder `idf.py reconfigure`) im Firmware-Verzeichnis
-  ausführen.
 
 ```bash
 make test-linux IDF_PATH=/pfad/zu/esp-idf
@@ -48,10 +45,15 @@ Das kompiliert die portablen Firmwaremodule mit `-Werror` zu
 - `test_platform_linux_net` — Hashes, base64, ECDSA-Prüfung und die
   Fehlerbenennung von `pb_http_request()`;
 - `test_api_linux` — linkt gegen das Archiv und führt `/api/test` sowie
-  `/api/check-prefix` gegen einen lokalen HTTP-Testserver aus.
+  `/api/check-prefix` gegen einen lokalen HTTP-Testserver aus;
+- `test_linux_entrypoint.sh` — prüft `--check-config` und `--probe-sip` des
+  Linux-Dienstes `../build/linux-host/phoneblock-dongle` (auch einzeln:
+  `make phoneblock_linux`, Einstiegspunkt `../main/main_linux.c`).
 
-Das Archiv ist kein vollständiger Geräte-Daemon: ESP-Hardwarestart, Web-UI und
-Boarddienste bleiben außerhalb dieses Linux-Builds.
+ESP-Hardwarestart, Web-UI und Boarddienste bleiben außerhalb dieses
+Linux-Builds; Statusmail und Log-Report sind unter Linux Platzhalter
+(`mail_linux.c`, `logreport_linux.c`). Das Debian-Paket für den Dienst liegt
+unter `../../debian/`.
 
 ## Neue Tests hinzufügen
 

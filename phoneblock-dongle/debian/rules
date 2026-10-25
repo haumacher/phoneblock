@@ -1,0 +1,33 @@
+#!/usr/bin/make -f
+
+# Optimised, hardened build with the distribution's flags.
+export DEB_BUILD_MAINT_OPTIONS = hardening=+all
+include /usr/share/dpkg/buildflags.mk
+include /usr/share/dpkg/pkg-info.mk
+
+# The User-Agent carries the firmware version these modules were built from,
+# as on the ESP32 (git describe, see firmware/CMakeLists.txt). A build from
+# the source package, without git history, falls back to the package version.
+PB_VERSION := $(shell git describe --tags --match "dongle-v*" --dirty 2>/dev/null | sed 's/^dongle-v//')
+ifeq ($(PB_VERSION),)
+PB_VERSION := $(DEB_VERSION_UPSTREAM)
+endif
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	$(MAKE) -B -C firmware/test phoneblock_linux \
+	  CFLAGS="$(CFLAGS) -Wall" CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)" \
+	  PHONEBLOCK_VERSION="$(PB_VERSION)"
+
+# No top-level Makefile, so dh_auto_clean would do nothing.
+override_dh_auto_clean:
+	$(MAKE) -C firmware/test clean
+
+override_dh_install:
+	dh_install firmware/build/linux-host/phoneblock-dongle usr/bin
+	dh_install debian/examples/dongle.conf.example usr/share/doc/phoneblock-dongle/examples
+
+override_dh_installsystemd:
+	dh_installsystemd --no-enable --no-start

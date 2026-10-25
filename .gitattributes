@@ -1,0 +1,4 @@
+/phoneblock-dongle/debian/rules text eol=lf
+/phoneblock-dongle/debian/*.postinst text eol=lf
+/phoneblock-dongle/debian/*.postrm text eol=lf
+/phoneblock-dongle/firmware/test/test_linux_entrypoint.sh text eol=lf

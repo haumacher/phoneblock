@@ -2,11 +2,10 @@
 
 #include <string.h>
 
-#include "esp_log.h"
-
 #include "api.h"
 #include "config.h"
 #include "logreport.h"
+#include "platform.h"
 
 // Must be last: bans unsafe string APIs for the rest of this file.
 #include "banned_apis.h"
@@ -18,7 +17,7 @@ void selftest_run(void)
     // Skip until the device is provisioned; an unconfigured dongle has
     // no token to validate.
     if (strlen(config_phoneblock_token()) == 0) return;
-    ESP_LOGI(TAG, "scheduled token self-test");
+    pb_log_info(TAG, "scheduled token self-test");
     phoneblock_selftest(NULL);
     // Piggyback the daily wakeup: ship any new WARN/ERROR log lines so a
     // running-but-misbehaving dongle (e.g. one that lost SIP registration

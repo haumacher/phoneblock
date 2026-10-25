@@ -1,0 +1,27 @@
+[Unit]
+Description=PhoneBlock SIP spam-call blocker
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=phoneblock
+Group=phoneblock
+WorkingDirectory=/var/lib/phoneblock
+ExecStart=/usr/bin/phoneblock-dongle --config /var/lib/phoneblock/dongle.conf
+Restart=on-failure
+RestartSec=10s
+UMask=0077
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+# AF_NETLINK: getifaddrs() (MAC for the device id, local IP lookup).
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX AF_NETLINK
+ReadWritePaths=/var/lib/phoneblock
+
+[Install]
+WantedBy=multi-user.target

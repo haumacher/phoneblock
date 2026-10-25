@@ -2,13 +2,8 @@
 
 #include <string.h>
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/queue.h"
-#include "freertos/task.h"
-
-#include "esp_log.h"
-
 #include "api.h"
+#include "platform.h"
 #include "rtp.h"
 
 // Must be last: bans unsafe string APIs for the rest of this file.
@@ -32,15 +27,14 @@ typedef struct {
     char phone[REPORT_PHONE_MAX];
 } report_entry_t;
 
-static QueueHandle_t s_queue = NULL;
-static TaskHandle_t  s_task  = NULL;
+static pb_queue_t *s_queue = NULL;
 
 static void report_worker_task(void *arg)
 {
     (void)arg;
     while (1) {
         report_entry_t e;
-        if (xQueueReceive(s_queue, &e, portMAX_DELAY) != pdTRUE) continue;
+        pb_queue_receive(s_queue, &e);
 
         // Defer the report's TLS handshake until any in-progress
         // announcement has finished. Running a second TLS session next to
@@ -51,13 +45,13 @@ static void report_worker_task(void *arg)
         // to start (a quick no-announcement call falls through), then wait
         // it out — capped so a stuck flag can't wedge the worker forever.
         for (int i = 0; i < 40 && !rtp_streaming_active(); i++) {
-            vTaskDelay(pdMS_TO_TICKS(50));
+            pb_task_sleep_ms(50);
         }
         for (int i = 0; i < 300 && rtp_streaming_active(); i++) {
-            vTaskDelay(pdMS_TO_TICKS(100));
+            pb_task_sleep_ms(100);
         }
 
-        ESP_LOGI(TAG, "report-call %s", e.phone);
+        pb_log_info(TAG, "report-call %s", e.phone);
         // phoneblock_report_call logs its own failures (ERROR), which the
         // log hook mirrors to the web UI — nothing to do here on failure.
         phoneblock_report_call(e.phone);
@@ -67,12 +61,15 @@ static void report_worker_task(void *arg)
 void report_queue_start(void)
 {
     if (s_queue) return;
-    s_queue = xQueueCreate(REPORT_QUEUE_DEPTH, sizeof(report_entry_t));
+    s_queue = pb_queue_create(REPORT_QUEUE_DEPTH, sizeof(report_entry_t));
     if (!s_queue) {
-        ESP_LOGE(TAG, "queue create failed");
+        pb_log_err(TAG, "queue create failed");
         return;
     }
-    xTaskCreate(report_worker_task, "report_q", 4096, NULL, 3, &s_task);
+    if (pb_task_create(report_worker_task, NULL, "report_q", 4096,
+                       PB_PRIO_BACKGROUND) != PB_OK) {
+        pb_log_err(TAG, "worker task create failed");
+    }
 }
 
 void report_queue_enqueue(const char *phone)
@@ -85,7 +82,7 @@ void report_queue_enqueue(const char *phone)
     memcpy(e.phone, phone, n);
     e.phone[n] = '\0';
 
-    if (xQueueSend(s_queue, &e, 0) != pdTRUE) {
-        ESP_LOGW(TAG, "queue full, dropping report for %s", e.phone);
+    if (!pb_queue_send(s_queue, &e)) {
+        pb_log_warn(TAG, "queue full, dropping report for %s", e.phone);
     }
 }

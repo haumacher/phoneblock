@@ -171,6 +171,39 @@ static void test_event(void)
     pb_event_destroy(event);
 }
 
+static void send_late(void *arg)
+{
+    pb_task_sleep_ms(2);
+    int value = 42;
+    pb_queue_send(arg, &value);
+}
+
+// FIFO order, a full queue refuses instead of blocking, and receive()
+// blocks until another task sends.
+static void test_queue(void)
+{
+    REQUIRE(pb_queue_create(0, sizeof(int)) == NULL);
+    pb_queue_t *queue = pb_queue_create(2, sizeof(int));
+    REQUIRE(queue != NULL);
+
+    int a = 1, b = 2, c = 3, out = 0;
+    REQUIRE(pb_queue_send(queue, &a));
+    REQUIRE(pb_queue_send(queue, &b));
+    REQUIRE(!pb_queue_send(queue, &c));
+    pb_queue_receive(queue, &out);
+    REQUIRE(out == 1);
+    REQUIRE(pb_queue_send(queue, &c));  // wraps around the ring
+    pb_queue_receive(queue, &out);
+    REQUIRE(out == 2);
+    pb_queue_receive(queue, &out);
+    REQUIRE(out == 3);
+
+    REQUIRE(pb_task_create(send_late, queue, "queue", 1024,
+                          PB_PRIO_NORMAL) == PB_OK);
+    pb_queue_receive(queue, &out);
+    REQUIRE(out == 42);
+}
+
 // Fixed-rate pacing must not drift: 10 intervals of 20 ms take ~200 ms
 // regardless of the work done between them.
 static void test_delay_until(void)
@@ -319,6 +352,7 @@ int main(void)
     test_task();
     test_task_stack_floor();
     test_event();
+    test_queue();
     test_delay_until();
     test_mutex();
     test_mac();

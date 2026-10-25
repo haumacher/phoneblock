@@ -154,6 +154,16 @@ void pb_event_destroy(pb_event_t *event);
 void pb_event_set(pb_event_t *event, uint32_t bits);
 uint32_t pb_event_wait_s(pb_event_t *event, uint32_t timeout_s);
 
+typedef struct pb_queue pb_queue_t;
+
+// A fixed-depth FIFO of fixed-size items, copied in and out by value.
+// send() never blocks and returns false when the queue is full; receive()
+// blocks until an item is available. Safe for one or more producers and
+// consumers on different tasks.
+pb_queue_t *pb_queue_create(size_t depth, size_t item_size);
+bool pb_queue_send(pb_queue_t *queue, const void *item);
+void pb_queue_receive(pb_queue_t *queue, void *item);
+
 typedef struct pb_tls pb_tls_t;
 
 enum {

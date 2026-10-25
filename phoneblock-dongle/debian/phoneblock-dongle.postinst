@@ -1,0 +1,27 @@
+#!/bin/sh
+set -e
+
+if [ "$1" = configure ]; then
+    if ! getent group phoneblock >/dev/null; then
+        addgroup --system phoneblock
+    fi
+    if ! getent passwd phoneblock >/dev/null; then
+        adduser --system --ingroup phoneblock --home /var/lib/phoneblock \
+            --no-create-home --disabled-login --disabled-password phoneblock
+    fi
+
+    # The settings are device state, like the dongle's NVS: the service
+    # rewrites the file (device id, later the web UI's settings), so it lives
+    # with the other state under /var/lib, not in /etc. A fresh install gets
+    # the example to fill in; an existing file is never touched.
+    install -d -o phoneblock -g phoneblock -m 0750 /var/lib/phoneblock
+    if [ ! -e /var/lib/phoneblock/dongle.conf ]; then
+        install -o phoneblock -g phoneblock -m 0600 \
+            /usr/share/doc/phoneblock-dongle/examples/dongle.conf.example \
+            /var/lib/phoneblock/dongle.conf
+    fi
+fi
+
+#DEBHELPER#
+
+exit 0

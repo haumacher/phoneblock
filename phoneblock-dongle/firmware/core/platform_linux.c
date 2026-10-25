@@ -36,6 +36,16 @@ struct pb_event {
     uint32_t bits;
 };
 
+struct pb_queue {
+    pthread_mutex_t mutex;
+    pthread_cond_t changed;
+    size_t depth;
+    size_t item_size;
+    size_t head;
+    size_t count;
+    unsigned char items[];
+};
+
 typedef struct pb_kv_item {
     char *key;
     char *value;
@@ -319,6 +329,54 @@ uint32_t pb_event_wait_s(pb_event_t *event, uint32_t timeout_s)
     event->bits = 0;
     pthread_mutex_unlock(&event->mutex);
     return bits;
+}
+
+pb_queue_t *pb_queue_create(size_t depth, size_t item_size)
+{
+    if (depth == 0 || item_size == 0 || depth > SIZE_MAX / item_size)
+        return NULL;
+    pb_queue_t *queue = calloc(1, sizeof(*queue) + depth * item_size);
+    if (!queue) return NULL;
+    if (pthread_mutex_init(&queue->mutex, NULL) != 0) {
+        free(queue);
+        return NULL;
+    }
+    if (pthread_cond_init(&queue->changed, NULL) != 0) {
+        pthread_mutex_destroy(&queue->mutex);
+        free(queue);
+        return NULL;
+    }
+    queue->depth = depth;
+    queue->item_size = item_size;
+    return queue;
+}
+
+bool pb_queue_send(pb_queue_t *queue, const void *item)
+{
+    if (!queue) return false;
+    pthread_mutex_lock(&queue->mutex);
+    if (queue->count == queue->depth) {
+        pthread_mutex_unlock(&queue->mutex);
+        return false;
+    }
+    size_t tail = (queue->head + queue->count) % queue->depth;
+    memcpy(queue->items + tail * queue->item_size, item, queue->item_size);
+    queue->count++;
+    pthread_cond_signal(&queue->changed);
+    pthread_mutex_unlock(&queue->mutex);
+    return true;
+}
+
+void pb_queue_receive(pb_queue_t *queue, void *item)
+{
+    pthread_mutex_lock(&queue->mutex);
+    while (queue->count == 0)
+        pthread_cond_wait(&queue->changed, &queue->mutex);
+    memcpy(item, queue->items + queue->head * queue->item_size,
+           queue->item_size);
+    queue->head = (queue->head + 1) % queue->depth;
+    queue->count--;
+    pthread_mutex_unlock(&queue->mutex);
 }
 
 const char *pb_kv_err_name(int result)
@@ -642,6 +700,22 @@ int pb_kv_commit(pb_kv_t *store)
         return PB_KV_ERROR;
     }
     fchmod(fd, S_IRUSR | S_IWUSR);
+    // The rewrite replaces the file, so it would otherwise belong to whoever
+    // ran the binary: one `sudo phoneblock-dongle --check-config` (which
+    // persists a freshly minted device id) would leave a root-owned file the
+    // service account can no longer read. Keep the existing owner, and
+    // refuse the write when that is not possible.
+    struct stat existing;
+    if (stat(store->path, &existing) == 0
+            && (existing.st_uid != geteuid() || existing.st_gid != getegid())
+            && fchown(fd, existing.st_uid, existing.st_gid) != 0) {
+        pb_log_err("kv", "cannot keep owner of %s: %s", store->path,
+                   strerror(errno));
+        close(fd);
+        unlink(temp_path);
+        free(temp_path);
+        return PB_KV_ERROR;
+    }
     FILE *output = fdopen(fd, "w");
     if (!output) {
         close(fd);

@@ -8,35 +8,56 @@ CFLAGS  ?= -Wall -Wextra -Werror -O0 -g -I../main -I../core
 IDF_PATH ?= $(HOME)/tools/esp/esp-idf
 CJSON_DIR := $(IDF_PATH)/components/json/cJSON
 
-# Linux build of the portable firmware modules (`make test-linux`). Unlike
-# the default suite it needs libcurl and OpenSSL development headers (Debian:
-# libcurl4-openssl-dev, libssl-dev) and the libsrtp headers that `idf.py
-# build` fetches into ../managed_components/ — see README.md.
+# Linux build of the portable firmware modules (`make test-linux`). It uses
+# the distribution cJSON, libsrtp2, libcurl and OpenSSL development packages.
 LINUX_BUILD_DIR := ../build/linux-host
-LINUX_NET_LIBS := -lcurl -lssl -lcrypto
+# pkg-config is required: without it the include flags would silently come
+# out empty and the build fail later on a missing header.
+ifneq ($(filter linux-firmware phoneblock_linux test-linux test_api_linux,$(MAKECMDGOALS)),)
+ifneq ($(shell pkg-config --exists libcjson libsrtp2 && echo ok),ok)
+$(error pkg-config cannot find libcjson and libsrtp2; install pkg-config, libcjson-dev and libsrtp2-dev)
+endif
+endif
+LINUX_PKG_CFLAGS := $(shell pkg-config --cflags libcjson libsrtp2 2>/dev/null)
+LINUX_PKG_LIBS := $(shell pkg-config --libs libcjson libsrtp2 2>/dev/null)
+LINUX_SRTP_INCLUDEDIR := $(shell pkg-config --variable=includedir libsrtp2 2>/dev/null)
+LINUX_NET_LIBS := -lcurl -lssl -lcrypto $(LINUX_PKG_LIBS)
 LINUX_CORE_SOURCES := ../core/platform_linux.c ../core/platform_linux_net.c \
                       ../core/sip_parse.c ../core/dial_rules.c ../core/tr064_parse.c
 LINUX_MAIN_SOURCES := ../main/announcement.c ../main/api.c \
                       ../main/api_scan.c \
                       ../main/audio.c ../main/blocklist_lookup.c \
                       ../main/blocklist_sync.c ../main/config.c \
-                      ../main/firmware_update.c ../main/heap_guard_scan.c \
+                      ../main/firmware_update.c ../main/heap_guard_linux.c \
+                      ../main/heap_guard_scan.c \
                       ../main/http_util.c ../main/i18n_sync.c ../main/log_capture.c \
+                      ../main/logreport_linux.c ../main/mail_linux.c \
                       ../main/manifest_sig.c ../main/name_filter.c \
-                      ../main/net_local.c ../main/phone_norm.c ../main/rtp.c \
+                      ../main/net_local.c ../main/phone_norm.c \
+                      ../main/report_queue.c ../main/rtp.c \
                       ../main/sched_time.c ../main/scheduler.c \
                       ../main/sip_auth.c ../main/sip_frame.c \
-                      ../main/sip_register.c ../main/sip_response.c \
+                      ../main/selftest.c ../main/sip_register.c ../main/sip_response.c \
                       ../main/sip_srv.c ../main/sip_transport.c \
                       ../main/stats.c ../main/storage.c \
-                      ../main/sync.c ../main/tr064.c ../main/version_cmp.c
+                      ../main/sync.c ../main/time_sync_linux.c ../main/tr064.c \
+                      ../main/version_cmp.c
 LINUX_OBJECTS := $(patsubst ../core/%.c,$(LINUX_BUILD_DIR)/core/%.o,$(LINUX_CORE_SOURCES)) \
                  $(patsubst ../main/%.c,$(LINUX_BUILD_DIR)/main/%.o,$(LINUX_MAIN_SOURCES))
 # -DSTORAGE_HOSTFS selects storage.c's plain-filesystem backend.
-LINUX_CPPFLAGS := -DSTORAGE_HOSTFS -I$(CJSON_DIR) \
-                  -I../managed_components/espressif__esp_libsrtp/esp-port \
-                  -I../managed_components/espressif__esp_libsrtp/libsrtp/include \
-                  -I../managed_components/espressif__esp_libsrtp/libsrtp/crypto/include
+LINUX_CPPFLAGS := -DSTORAGE_HOSTFS -I../main -I../core $(LINUX_PKG_CFLAGS) \
+                  -I$(LINUX_SRTP_INCLUDEDIR)/srtp2 $(CPPFLAGS)
+# The version reported in the User-Agent (pb_firmware_version()): the firmware
+# version these modules were built from, derived exactly like the ESP32 build
+# does it (firmware/CMakeLists.txt), so the server sees one version scheme
+# for the whole fleet. Outside a git checkout the caller passes it (debian/
+# rules falls back to the package version); without either it is "linux-dev".
+ifeq ($(origin PHONEBLOCK_VERSION),undefined)
+PHONEBLOCK_VERSION := $(shell git describe --tags --match "dongle-v*" --always --dirty 2>/dev/null | sed 's/^dongle-v//')
+endif
+ifneq ($(PHONEBLOCK_VERSION),)
+LINUX_CPPFLAGS += -DPHONEBLOCK_VERSION='"$(PHONEBLOCK_VERSION)"'
+endif
 
 BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_rcpt test_name_filter test_version_cmp test_net_local test_heap_guard test_platform_linux test_ota_manifest test_stats test_storage_budget test_storage_sim test_storage_hostfs
 
@@ -174,8 +195,10 @@ $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a: $(LINUX_OBJECTS)
 linux-firmware: $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a
 
 test_api_linux: test_api_linux.c linux_test_util.h \
-                $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a cjson.o
-	$(CC) $(CFLAGS) -pthread -I$(CJSON_DIR) $< $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a cjson.o $(LINUX_NET_LIBS) -o $@
+                $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a
+	$(CC) $(CFLAGS) -pthread $(LINUX_PKG_CFLAGS) $< \
+	  $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a \
+	  $(LINUX_NET_LIBS) -o $@
 
 # strbuf.h is header-only; build its test with AddressSanitizer so any overrun
 # of the (malloc'd) destination buffer aborts.
@@ -198,10 +221,21 @@ test: $(BINS)
 # extra prerequisites listed at LINUX_BUILD_DIR above.
 LINUX_BINS = test_platform_linux_net test_api_linux
 
-test-linux: linux-firmware $(LINUX_BINS)
+# The service binary. debian/rules builds it with the distribution's CFLAGS,
+# CPPFLAGS and LDFLAGS (optimisation and hardening) instead of the test flags.
+$(LINUX_BUILD_DIR)/phoneblock-dongle: ../main/main_linux.c \
+                                      $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a
+	$(CC) $(CFLAGS) -std=gnu11 -pthread $(LINUX_CPPFLAGS) $< \
+	  $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a \
+	  $(LDFLAGS) $(LINUX_NET_LIBS) -o $@
+
+phoneblock_linux: $(LINUX_BUILD_DIR)/phoneblock-dongle
+
+test-linux: linux-firmware phoneblock_linux $(LINUX_BINS)
 	@set -e; for b in $(LINUX_BINS); do echo "→ $$b"; ./$$b; done
+	@echo "→ test_linux_entrypoint.sh"; ./test_linux_entrypoint.sh
 
 clean:
-	rm -f $(BINS) $(LINUX_BINS) cjson.o $(SPIFFS_CORE) $(LINUX_OBJECTS) $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a
+	rm -f $(BINS) $(LINUX_BINS) cjson.o $(SPIFFS_CORE) $(LINUX_OBJECTS) $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a $(LINUX_BUILD_DIR)/phoneblock-dongle
 
-.PHONY: linux-firmware test test-linux clean
+.PHONY: linux-firmware phoneblock_linux test test-linux clean

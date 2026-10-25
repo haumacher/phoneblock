@@ -419,10 +419,21 @@ static void rtp_audio_task(void *arg)
         const uint8_t *send_buf = pkt;
         size_t send_len = RTP_HEADER_BYTES + FRAME_SAMPLES;
         if (srtp_session) {
+            // The switch is really the libsrtp API generation, not the
+            // platform: esp_libsrtp ships the libsrtp 3 API (separate output
+            // buffer, size_t lengths, MKI index), while Linux builds against
+            // the distribution's libsrtp2 (in-place, int length). libsrtp2
+            // exposes no version macro to test instead.
+#ifdef ESP_PLATFORM
             size_t out_len = sizeof(txbuf);
             srtp_err_status_t st = srtp_protect(srtp_session, pkt,
                                                 RTP_HEADER_BYTES + FRAME_SAMPLES,
                                                 txbuf, &out_len, 0);
+#else
+            memcpy(txbuf, pkt, send_len);
+            int out_len = (int)send_len;
+            srtp_err_status_t st = srtp_protect(srtp_session, txbuf, &out_len);
+#endif
             if (st != srtp_err_status_ok) {
                 pb_log_warn(TAG, "srtp_protect failed: %d", st);
                 seq++;
@@ -431,7 +442,11 @@ static void rtp_audio_task(void *arg)
                 continue;
             }
             send_buf = txbuf;
+#ifdef ESP_PLATFORM
             send_len = out_len;
+#else
+            send_len = (size_t)out_len;
+#endif
         }
 
         int n = sendto(sock, send_buf, send_len, 0,
