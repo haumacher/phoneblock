@@ -523,6 +523,16 @@ static web_http_error_t handle_status(web_http_request_t *req)
     cJSON_AddStringToObject(pb,   "base_url",           config_phoneblock_base_url());
     cJSON_AddBoolToObject  (pb,   "token_set",          strlen(config_phoneblock_token()) > 0);
     cJSON_AddBoolToObject  (pb,   "token_ok",           api_token_is_valid());
+    // The web sign-in (/register-start -> phoneblock.net -> /token-callback)
+    // cannot complete through Home Assistant ingress: phoneblock.net refuses
+    // most HA callback hosts, and ingress rejects the cross-site redirect
+    // back (#619, #621). HA marks every ingress request with X-Ingress-Path;
+    // there the UI hides the sign-in buttons and the token comes from the
+    // app configuration. Everywhere else the sign-in stays as it is.
+    char ingress_path[256];
+    bool via_ingress = web_http_get_header(req, "X-Ingress-Path", ingress_path,
+                                           sizeof(ingress_path)) == WEB_HTTP_OK;
+    cJSON_AddBoolToObject  (pb,   "token_signin",       !via_ingress);
     cJSON_AddNumberToObject(pb,   "last_api_ms",        (double)(c.last_api_duration_us / 1000));
     // Phase breakdown of the last API call — investigation aid for
     // issue #329 (connect/request/wait/download split).
