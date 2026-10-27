@@ -11,7 +11,7 @@ if [ "$1" = configure ]; then
     fi
 
     # The settings are device state, like the dongle's NVS: the service
-    # rewrites the file (device id, later the web UI's settings), so it lives
+    # rewrites the file (device id, the web UI's settings), so it lives
     # with the other state under /var/lib, not in /etc. A fresh install gets
     # the example to fill in; an existing file is never touched.
     install -d -o phoneblock -g phoneblock -m 0750 /var/lib/phoneblock
