@@ -149,7 +149,7 @@ int web_http_send_error(web_http_request_t *request, int status,
         : status == 401 ? HTTPD_401_UNAUTHORIZED
         : status == 403 ? HTTPD_403_FORBIDDEN
         : status == 404 ? HTTPD_404_NOT_FOUND
-        : status == 500 ? HTTPD_500_INTERNAL_SERVER_ERROR
+        : status == 501 ? HTTPD_501_METHOD_NOT_IMPLEMENTED
         : HTTPD_500_INTERNAL_SERVER_ERROR;
     return httpd_resp_send_err(request, code, message) == ESP_OK ? 0 : -1;
 }

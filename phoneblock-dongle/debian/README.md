@@ -9,7 +9,8 @@ dpkg-buildpackage -us -uc
 Das Paket baut die gemeinsam genutzten Firmware-Module als
 `/usr/bin/phoneblock-dongle`. Die separate, ältere Implementierung
 `frontend_linux` wird nicht verwendet. Das Programm nutzt die cJSON-, libsrtp2-,
-libcurl- und OpenSSL-Bibliotheken der Distribution.
+libcurl-, OpenSSL- und libmicrohttpd-Bibliotheken der Distribution; die
+Build-Abhängigkeiten stehen in `debian/control`.
 
 Die Einstellungen liegen wie der übrige Gerätezustand unter `/var/lib/phoneblock`:
 Der Dienst schreibt `dongle.conf` selbst (die Geräte-ID, später die Einstellungen
