@@ -4,7 +4,7 @@ Hash: SHA512
 Architectures: amd64 arm64 armhf
 Codename: trixie
 Components: stable beta
-Date: Tue, 27 Oct 2026 20:53:15 +0000
+Date: Tue, 27 Oct 2026 20:56:40 +0000
 Label: PhoneBlock Dongle
 Origin: PhoneBlock
 Suite: trixie
@@ -62,8 +62,8 @@ SHA512:
  1b46b9b08d5b338be9d732a1724795b2eab63daffde377218727c90857b79fe6a47bceed495117fcde60f7339812ef75ef4c69f82dd79fb69b6cbf8006b521f2               20 stable/binary-armhf/Packages.gz
 -----BEGIN PGP SIGNATURE-----
 
-iHUEARYKAB0WIQQKGUi5X0W63WJst1Ot+siqVYEWPwUCauEPOwAKCRCt+siqVYEW
-P0npAQDI8HiF8f2w1KV+/CL94kLDBDh3FQvX2jIcdiqSTYh9jQD/fTW8eZnVlb28
-u0cGH/bceab7VkNr41qYN4fFn++EmQQ=
-=hSio
+iHUEARYKAB0WIQQKGUi5X0W63WJst1Ot+siqVYEWPwUCauEQCAAKCRCt+siqVYEW
+Pz4kAP4gOJ+OxK+AjVFzj9t/Gx7fteBayo6WZ6JfNJJBea7w9wD8DJSIcIUk0dLD
+led1ya+7DK1iYMJscp5drNaECPZ++AE=
+=JVLU
 -----END PGP SIGNATURE-----
