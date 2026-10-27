@@ -7,28 +7,46 @@ dpkg-buildpackage -us -uc
 ```
 
 Das Paket baut die gemeinsam genutzten Firmware-Module als
-`/usr/bin/phoneblock-dongle`. Die separate, ältere Implementierung
-`frontend_linux` wird nicht verwendet. Das Programm nutzt die cJSON-, libsrtp2-,
+`/usr/bin/phoneblock-dongle` und installiert die Web-Oberfläche nach
+`/usr/share/phoneblock-dongle/web`. Das Programm nutzt die cJSON-, libsrtp2-,
 libcurl-, OpenSSL- und libmicrohttpd-Bibliotheken der Distribution; die
 Build-Abhängigkeiten stehen in `debian/control`.
 
-Die Einstellungen liegen wie der übrige Gerätezustand unter `/var/lib/phoneblock`:
-Der Dienst schreibt `dongle.conf` selbst (die Geräte-ID, später die Einstellungen
-aus der Weboberfläche). Bei der Installation wird die Datei aus der Vorlage
-`/usr/share/doc/phoneblock-dongle/examples/dongle.conf.example` angelegt. Trage
-die SIP-Zugangsdaten und den PhoneBlock-Token ein und prüfe die Konfiguration,
-bevor du den Dienst aktivierst:
+## Einrichtung
+
+Dienst starten und die Web-Oberfläche öffnen:
 
 ```sh
-sudoedit /var/lib/phoneblock/dongle.conf
-sudo -u phoneblock /usr/bin/phoneblock-dongle \
-  --config /var/lib/phoneblock/dongle.conf --check-config
 sudo systemctl enable --now phoneblock-dongle
 ```
 
-`--probe-sip` prüft die Namensauflösung und das Binden des lokalen UDP-
-Transports, ohne eine REGISTER-Anfrage zu senden. Die Registrierung übernimmt
-nach dem Start das gemeinsame SIP-Firmwaremodul. Das Linux-System hat derzeit
-dieselbe Web-Oberfläche wie die ESP-Firmware unter `http://<server>:8080/`.
-Firmware-Upload, WLAN-Werksreset und E-Mail-Testversand sind hardwareabhängig
-und auf Linux nicht verfügbar.
+Unter `http://<server>:8080/` läuft dieselbe Oberfläche wie auf dem ESP32-Dongle:
+Dort richtest du die Telefonie an der Fritz!Box ein (TR-064) und meldest dich
+bei PhoneBlock an. Ohne eingerichtete Anmeldung ist sie nur aus dem lokalen
+Netz erreichbar. Firmware-Upload, Werksreset und Statusmail sind
+hardwareabhängig und auf Linux nicht verfügbar. Das Log steht im Journal
+(`journalctl -u phoneblock-dongle -f`).
+
+## Einstellungen
+
+Die Einstellungen liegen wie der übrige Gerätezustand in
+`/var/lib/phoneblock/dongle.conf`. Der Dienst schreibt die Datei selbst (die
+Geräte-ID und die Einstellungen aus der Web-Oberfläche); bei der Installation
+wird sie aus der Vorlage
+`/usr/share/doc/phoneblock-dongle/examples/dongle.conf.example` angelegt.
+
+Wer sie lieber von Hand bearbeitet, hält den Dienst vorher an — er schreibt die
+Datei bei jeder Änderung aus seinem Speicher neu und überschreibt sonst die
+Handänderung:
+
+```sh
+sudo systemctl stop phoneblock-dongle
+sudoedit /var/lib/phoneblock/dongle.conf
+sudo -u phoneblock /usr/bin/phoneblock-dongle \
+  --config /var/lib/phoneblock/dongle.conf --check-config
+sudo systemctl start phoneblock-dongle
+```
+
+`--check-config` prüft die erforderlichen SIP- und PhoneBlock-Einstellungen.
+`--probe-sip` prüft die Namensauflösung des Registrars und das Binden des
+lokalen SIP-Transports, ohne eine REGISTER-Anfrage zu senden.

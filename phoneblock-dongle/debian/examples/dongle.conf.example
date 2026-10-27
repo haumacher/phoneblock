@@ -1,9 +1,10 @@
 # PhoneBlock Linux dongle settings (/var/lib/phoneblock/dongle.conf).
 #
 # This file is the service's settings store, like the dongle's NVS: the
-# service rewrites it (the generated device_id now, the web UI's settings
-# later). Lines above the [phoneblock] section are kept as they are; comments
-# inside the section are not, so all explanations live up here.
+# service rewrites it (the generated device_id and the web UI's settings),
+# so stop the service before editing it by hand. Lines above the [phoneblock]
+# section are kept as they are; comments inside the section are not, so all
+# explanations live up here.
 #
 # SIP registrar and credentials (the IP phone set up in the Fritz!Box):
 #   sip_host, sip_port      registrar, e.g. fritz.box and 5060
