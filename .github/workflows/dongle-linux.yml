@@ -4,8 +4,8 @@ name: Dongle Linux packages
 # request that touches it, and on a dongle-v* release tag (pushed by
 # phoneblock-dongle/firmware/scripts/release.sh) builds the Debian packages for
 # all suites and architectures and publishes them in the APT repository on
-# GitHub Pages (https://haumacher.github.io/phoneblock/apt). Installation:
-# phoneblock-dongle/debian/README.md.
+# GitHub Pages (https://haumacher.github.io/phoneblock/apt, its index.html
+# explains the installation).
 
 on:
   push:
@@ -16,9 +16,15 @@ on:
       - 'phoneblock-dongle/**'
       - '.github/workflows/dongle-linux.yml'
   workflow_dispatch:
+    inputs:
+      republish:
+        description: Only renew the indices and the page of the APT repository (no build)
+        type: boolean
+        default: false
 
 jobs:
   matrix:
+    if: ${{ !inputs.republish }}
     runs-on: ubuntu-24.04
     outputs:
       builds: ${{ steps.matrix.outputs.builds }}
@@ -78,7 +84,10 @@ jobs:
 
   publish:
     needs: build
-    if: startsWith(github.ref, 'refs/tags/dongle-v')
+    if: >-
+      always() &&
+      ((startsWith(github.ref, 'refs/tags/dongle-v') && needs.build.result == 'success')
+      || inputs.republish)
     runs-on: ubuntu-24.04
     concurrency:
       group: dongle-apt-repository
@@ -104,7 +113,8 @@ jobs:
             git -C site remote add origin "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}"
           fi
 
-      - uses: actions/download-artifact@v4
+      - if: ${{ !inputs.republish }}
+        uses: actions/download-artifact@v4
         with:
           path: artifacts
 
@@ -124,10 +134,13 @@ jobs:
         run: |
           cd site
           touch .nojekyll
+          printf '<!doctype html><meta http-equiv="refresh" content="0; url=apt/"><a href="apt/">apt/</a>\n' > index.html
           git add -A
-          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
-            commit -q -m "Dongle packages ${GITHUB_REF_NAME}"
-          git push -q origin gh-pages
+          if ! git diff --cached --quiet; then
+            git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -q -m "Dongle packages ${GITHUB_REF_NAME}"
+            git push -q origin gh-pages
+          fi
 
       - uses: actions/upload-pages-artifact@v3
         with:

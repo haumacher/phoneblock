@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PhoneBlock Dongle APT-Repository</title>
+<style>
+:root { color-scheme: light dark; --fg: #222; --muted: #555; --bg: #fff; --code: #f4f4f4; --line: #ddd; }
+@media (prefers-color-scheme: dark) { :root { --fg: #e6e6e6; --muted: #aaa; --bg: #161616; --code: #262626; --line: #3a3a3a; } }
+body { font-family: system-ui, sans-serif; line-height: 1.5; margin: 0 auto; max-width: 46rem; padding: 2rem 1rem; color: var(--fg); background: var(--bg); }
+h1 { margin-bottom: 0.2rem; }
+p.lead { color: var(--muted); margin-top: 0; }
+pre { background: var(--code); padding: 0.8rem; overflow-x: auto; border-radius: 4px; }
+code { font-family: ui-monospace, monospace; }
+table { border-collapse: collapse; width: 100%; }
+th, td { text-align: left; padding: 0.3rem 0.6rem; border-bottom: 1px solid var(--line); }
+footer { margin-top: 3rem; color: var(--muted); font-size: 0.9rem; }
+a { color: inherit; }
+</style>
+</head>
+<body>
+<h1>PhoneBlock Dongle für Linux</h1>
+<p class="lead">Der PhoneBlock-Anrufbeantworter als Dienst auf einem Raspberry Pi oder
+einem anderen Debian/Ubuntu-Rechner im Heimnetz: gleiche Web-Oberfläche und gleiche
+Version wie die Firmware des ESP32-Dongles. Diese Seite ist das APT-Repository des Pakets
+<code>phoneblock-dongle</code>.</p>
+
+<h2>Installation</h2>
+<p>Die Suite richtet sich nach dem System:</p>
+<table>
+<tr><th>System</th><th>Suite</th></tr>
+<tr><td>Debian 12, Raspberry Pi OS (Bookworm), Ubuntu 22.04</td><td><code>bookworm</code></td></tr>
+<tr><td>Debian 13, Raspberry Pi OS (Trixie), Ubuntu 24.04 und neuer</td><td><code>trixie</code></td></tr>
+</table>
+<p>Der Kanal <code>stable</code> enthält nur Releases, <code>beta</code> zusätzlich
+Vorabversionen (wie die Update-Kanäle der Dongle-Firmware). Beispiel für Bookworm und
+<code>@CHANNEL@</code>:</p>
+<pre><code>sudo curl -fsSLo /usr/share/keyrings/phoneblock-dongle.gpg \
+  @SITE_URL@/phoneblock-dongle.gpg
+echo "deb [signed-by=/usr/share/keyrings/phoneblock-dongle.gpg] @SITE_URL@ bookworm @CHANNEL@" \
+  | sudo tee /etc/apt/sources.list.d/phoneblock-dongle.list
+sudo apt update
+sudo apt install phoneblock-dongle</code></pre>
+<p>APT wählt die Architektur selbst (amd64, arm64 und armhf werden veröffentlicht).
+Welche Version in welchem Kanal liegt, zeigt die Tabelle unten.</p>
+
+<h2>Einrichtung</h2>
+<p>Dienst starten, Fritz!Box und PhoneBlock-Anmeldung in der Web-Oberfläche einrichten,
+Port, Einstellungen und Fehlersuche:
+<a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/debian/README.md">Anleitung zum Linux-Dienst</a>.</p>
+
+<h2>Updates</h2>
+<pre><code>sudo apt update &amp;&amp; sudo apt upgrade</code></pre>
+
+<h2>Veröffentlichte Versionen</h2>
+<table>
+<tr><th>Suite</th><th>Kanal</th><th>Version</th><th>Architekturen</th></tr>
+@PACKAGES@
+</table>
+
+<footer>
+Signaturschlüssel: <a href="phoneblock-dongle.gpg">phoneblock-dongle.gpg</a> (binär) &middot;
+<a href="phoneblock-dongle.asc">phoneblock-dongle.asc</a> (ASCII) &middot;
+<a href="https://phoneblock.net/">PhoneBlock</a> &middot;
+<a href="https://github.com/haumacher/phoneblock">Quellcode auf GitHub</a>
+</footer>
+</body>
+</html>
