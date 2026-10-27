@@ -19,5 +19,5 @@ Einrichtung und Konfiguration: [debian/README.md](debian/README.md).
       wieder.
 - [ ] Netzausfall und Fritz!Box-Neustart: Dienst registriert sich ohne
       Eingriff neu.
-- [ ] Geänderter Port per systemd-Override wirkt.
+- [ ] Port 80 in `/etc/default/phoneblock-dongle` wirkt nach einem Neustart.
 - [ ] `apt upgrade` auf die nächste Version behält `dongle.conf`.

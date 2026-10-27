@@ -8,11 +8,16 @@ Type=simple
 User=phoneblock
 Group=phoneblock
 WorkingDirectory=/var/lib/phoneblock
+# PHONEBLOCK_WEB_PORT, PHONEBLOCK_WEB_BIND (web UI port and address).
+EnvironmentFile=-/etc/default/phoneblock-dongle
 ExecStart=/usr/bin/phoneblock-dongle --config /var/lib/phoneblock/dongle.conf
 Restart=on-failure
 RestartSec=10s
 UMask=0077
 NoNewPrivileges=yes
+# Only to allow a web port below 1024 (80, as on the ESP32).
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
 PrivateTmp=yes
 ProtectSystem=strict
 ProtectHome=yes

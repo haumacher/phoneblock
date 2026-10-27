@@ -38,29 +38,15 @@ Unter `http://<server>:8080/` läuft dieselbe Oberfläche wie auf dem ESP32-Dong
 Dort richtest du die Telefonie an der Fritz!Box ein (TR-064) und meldest dich
 bei PhoneBlock an. Ohne eingerichtete Anmeldung ist sie nur aus dem lokalen
 Netz erreichbar. Firmware-Upload, Werksreset und Statusmail sind
-hardwareabhängig und auf Linux nicht verfügbar. Das Log steht im Journal
-(`journalctl -u phoneblock-dongle -f`).
+hardwareabhängig und auf Linux nicht verfügbar.
 
 ## Port und Adresse der Web-Oberfläche
 
-Standard ist Port 8080 auf allen Adressen. Geändert wird das über die
-Kommandozeile des Dienstes, mit einem systemd-Override:
-
-```sh
-sudo systemctl edit phoneblock-dongle
-```
-
-```ini
-[Service]
-ExecStart=
-ExecStart=/usr/bin/phoneblock-dongle --config /var/lib/phoneblock/dongle.conf --web 8081 --web-bind 192.168.178.10
-```
-
-`--web PORT` setzt den Port (`0` = ein freier Port, siehe `--web-port-file
-PATH`), `--web-bind ADDRESS` bindet an eine einzelne IPv4- oder IPv6-Adresse.
-Der Dienst läuft als Benutzer `phoneblock`; für einen Port unter 1024 (z. B.
-80) zusätzlich `AmbientCapabilities=CAP_NET_BIND_SERVICE` in denselben
-`[Service]`-Abschnitt. Danach `sudo systemctl restart phoneblock-dongle`.
+Standard ist Port 8080 auf allen Adressen. Port und Adresse stehen
+(auskommentiert) in `/etc/default/phoneblock-dongle`; nach einer Änderung
+`sudo systemctl restart phoneblock-dongle`. Auch ein Port unter 1024 (z. B. 80)
+geht ohne weiteren Schritt. Beim direkten Aufruf überschreiben `--web` und
+`--web-bind` diese Werte (`phoneblock-dongle --help`).
 
 ## Einstellungen
 
@@ -85,6 +71,18 @@ sudo systemctl start phoneblock-dongle
 `--check-config` prüft die erforderlichen SIP- und PhoneBlock-Einstellungen.
 `--probe-sip` prüft die Namensauflösung des Registrars und das Binden des
 lokalen SIP-Transports, ohne eine REGISTER-Anfrage zu senden.
+
+## Fehlersuche
+
+Startet der Dienst nicht oder ist die Oberfläche nicht erreichbar, steht der
+Grund im Journal — etwa ein ungültiger Wert in `/etc/default/phoneblock-dongle`
+oder ein schon belegter Port:
+
+```sh
+systemctl status phoneblock-dongle
+journalctl -u phoneblock-dongle -b       # seit dem Systemstart
+journalctl -u phoneblock-dongle -f       # laufend mitlesen
+```
 
 ## Paket selbst bauen
 
