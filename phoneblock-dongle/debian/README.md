@@ -5,28 +5,13 @@ Module, gleiche Web-Oberfläche und gleiche Version wie das ESP32-Image.
 
 ## Installation aus dem APT-Repository
 
-Jedes Firmware-Release (`dongle-v*`-Tag) baut die Pakete für amd64, arm64 und
-armhf und veröffentlicht sie unter `https://haumacher.github.io/phoneblock/apt`
-(Workflow `.github/workflows/dongle-linux.yml`).
-
-| System | Suite |
-|---|---|
-| Debian 12, Raspberry Pi OS (Bookworm), Ubuntu 22.04 | `bookworm` |
-| Debian 13, Raspberry Pi OS (Trixie), Ubuntu 24.04 und neuer | `trixie` |
-
-Kanal `stable` enthält nur Releases, `beta` zusätzlich Vorabversionen (wie die
-Firmware-Kanäle).
-
-```sh
-sudo curl -fsSLo /usr/share/keyrings/phoneblock-dongle.gpg \
-  https://haumacher.github.io/phoneblock/apt/phoneblock-dongle.gpg
-echo "deb [signed-by=/usr/share/keyrings/phoneblock-dongle.gpg] https://haumacher.github.io/phoneblock/apt bookworm stable" \
-  | sudo tee /etc/apt/sources.list.d/phoneblock-dongle.list
-sudo apt update
-sudo apt install phoneblock-dongle
-```
-
-Updates kommen danach mit `apt upgrade`.
+Jedes Firmware-Release (`dongle-v*`-Tag) baut die Pakete für Bookworm und Trixie
+auf amd64, arm64 und armhf und veröffentlicht sie im APT-Repository
+<https://haumacher.github.io/phoneblock/apt/> (Workflow
+`.github/workflows/dongle-linux.yml`). Die Seite dort beschreibt, wie man das
+Repository einträgt, welche Suite zu welchem System gehört und welche Version in
+den Kanälen `stable` und `beta` liegt. Sie entsteht beim Veröffentlichen aus
+`debian/apt-index.html` (`debian/apt-publish.sh`).
 
 ## Einrichtung
 

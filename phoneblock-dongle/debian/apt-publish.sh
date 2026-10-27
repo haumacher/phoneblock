@@ -4,9 +4,12 @@
 #
 # Usage: apt-publish.sh REPO_DIR TAG ARTIFACT_DIR
 #
+# Also writes REPO_DIR/index.html, the install page, from apt-index.html.
+#
 #   REPO_DIR      the repository tree (checkout of the gh-pages branch, apt/)
 #   TAG           the release tag, e.g. dongle-v1.7.0-beta4
-#   ARTIFACT_DIR  one subdirectory per build, named <suite>-<arch>, with .deb files
+#   ARTIFACT_DIR  one subdirectory per build, named <suite>-<arch>, with .deb
+#                 files; without any, only the indices and the page are renewed
 #
 # Channels as in firmware/scripts/release.sh: a pre-release tag (anything
 # after a "-") goes to component "beta" only, a release to "stable" and
@@ -17,6 +20,8 @@ set -eu
 REPO=$1
 TAG=$2
 ART=$3
+TEMPLATE=$(cd "$(dirname "$0")" && pwd)/apt-index.html
+SITE_URL=https://haumacher.github.io/phoneblock/apt
 
 SUITES="bookworm trixie"
 ARCHS="amd64 arm64 armhf"
@@ -27,6 +32,7 @@ esac
 
 mkdir -p "$REPO"
 for build in "$ART"/*/; do
+    [ -d "$build" ] || continue
     suite=$(basename "$build")
     suite=${suite%%-*}
     for component in $COMPONENTS; do
@@ -74,3 +80,33 @@ done
 # The key users install (debian/README.md), exported from the signing key.
 gpg --batch --yes --export -o phoneblock-dongle.gpg
 gpg --batch --yes --armor --export -o phoneblock-dongle.asc
+
+# The install page with the newest version per suite and component.
+packages=$(mktemp)
+for suite in $SUITES; do
+    for component in stable beta; do
+        versions=$(cat dists/$suite/$component/binary-*/Packages \
+            | sed -n 's/^Version: //p' | sort -uV)
+        if [ -z "$versions" ]; then
+            printf '<tr><td>%s</td><td>%s</td><td colspan="2">noch keine</td></tr>\n' \
+                "$suite" "$component"
+            continue
+        fi
+        newest=$(printf '%s\n' "$versions" | tail -n 1)
+        archs=$(for arch in $ARCHS; do
+            if grep -qx "Version: $newest" "dists/$suite/$component/binary-$arch/Packages"; then
+                printf '%s ' "$arch"
+            fi
+        done)
+        printf '<tr><td>%s</td><td>%s</td><td>%s</td><td>%s</td></tr>\n' \
+            "$suite" "$component" "$newest" "${archs% }"
+    done
+done > "$packages"
+# The example names "stable" once it has a release, "beta" until then.
+channel=beta
+if [ -s dists/bookworm/stable/binary-amd64/Packages ]; then
+    channel=stable
+fi
+sed -e "s|@SITE_URL@|$SITE_URL|g" -e "s|@CHANNEL@|$channel|g" -e "/@PACKAGES@/{r $packages" -e 'd;}' \
+    "$TEMPLATE" > index.html
+rm -f "$packages"
