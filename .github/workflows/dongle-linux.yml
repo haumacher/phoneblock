@@ -148,11 +148,30 @@ jobs:
         with:
           path: site
 
-      # Pages takes a deployment with an already deployed version for the
-      # same one and keeps the old site. The version defaults to the source
-      # commit, which a republish and a later tag can share; the gh-pages
-      # commit changes with every publish.
+      # Not actions/deploy-pages: it names the deployment after the source
+      # commit, and Pages takes a deployment with a known name for the
+      # existing one and keeps the old site. A republish and a later tag can
+      # share the source commit; the gh-pages commit is new for every publish.
       - id: deploy
-        uses: actions/deploy-pages@v4
+        name: Deploy to GitHub Pages
         env:
-          GITHUB_SHA: ${{ steps.store.outputs.sha }}
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.store.outputs.sha }}
+        run: |
+          artifact=$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts?name=github-pages" -q '.artifacts[0].id')
+          oidc=$(curl -fsS -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL" | jq -r .value)
+          gh api "repos/$GITHUB_REPOSITORY/pages/deployments" -F artifact_id="$artifact" \
+            -f pages_build_version="$VERSION" -f oidc_token="$oidc" > deployment.json
+          echo "page_url=$(jq -r .page_url deployment.json)" >> "$GITHUB_OUTPUT"
+          status_url=$(jq -r .status_url deployment.json)
+          for i in $(seq 120); do
+            status=$(gh api "$status_url" -q .status)
+            case $status in
+            succeed) echo "deployed $VERSION"; exit 0 ;;
+            deployment_failed|deployment_perms_error|deployment_content_failed|deployment_cancelled|deployment_lost)
+              echo "::error::Pages deployment: $status"; exit 1 ;;
+            esac
+            sleep 5
+          done
+          echo "::error::Pages deployment: no final status (last: $status)"
+          exit 1

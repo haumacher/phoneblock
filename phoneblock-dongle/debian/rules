@@ -34,5 +34,7 @@ override_dh_install:
 	# that tree, and postinst needs the template.
 	dh_install debian/examples/dongle.conf.example usr/share/phoneblock-dongle
 
+# Not enabled on installation: the user starts it once (debian/README.md).
+# An upgrade restarts it when it is enabled.
 override_dh_installsystemd:
-	dh_installsystemd --no-enable --no-start
+	dh_installsystemd --no-enable
