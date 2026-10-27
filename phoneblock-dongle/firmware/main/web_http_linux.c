@@ -11,7 +11,18 @@
 #include <string.h>
 #include <strings.h>
 
-#define WEB_HTTP_MAX_BODY (8U * 1024U * 1024U)
+// Request bodies are buffered before routing and before the login check, so
+// the cap bounds what any LAN client can make the service hold: the largest
+// real upload is the announcement (ANNOUNCEMENT_MAX_BYTES, 240 KB), and the
+// connection limit multiplies this cap into the worst case (4 MB).
+#define WEB_HTTP_MAX_BODY (256U * 1024U)
+#define WEB_HTTP_MAX_CONNECTIONS 16U
+
+// web.c keeps request state in plain statics (the OAuth nonce, the pending
+// Fritz!Box 2FA handshake), written for the ESP32's single httpd task. Run
+// the handlers one at a time here too; the connections themselves (and the
+// buffering of their bodies) stay parallel.
+static pthread_mutex_t s_handler_lock = PTHREAD_MUTEX_INITIALIZER;
 
 typedef struct {
     char *name;
@@ -33,6 +44,7 @@ struct web_http_request {
     response_header_t headers[32];
     size_t header_count;
     unsigned status;
+    bool have_content_length;
     bool initialized;
 };
 
@@ -66,7 +78,14 @@ static enum MHD_Result add_header(void *argument, enum MHD_ValueKind kind,
 {
     (void)kind;
     web_http_request_t *request = argument;
-    if (strcmp(key, MHD_HTTP_HEADER_CONTENT_LENGTH) != 0) return MHD_YES;
+    if (strcasecmp(key, MHD_HTTP_HEADER_CONTENT_LENGTH) != 0) return MHD_YES;
+    // A second Content-Length is a framing ambiguity (request smuggling
+    // through a proxy); refuse it rather than pick one.
+    if (request->have_content_length) {
+        request->status = 400;
+        return MHD_NO;
+    }
+    request->have_content_length = true;
     char *end = NULL;
     unsigned long long length = strtoull(value, &end, 10);
     if (!end || *end || length > WEB_HTTP_MAX_BODY) {
@@ -182,6 +201,16 @@ static int queue_request_response(web_http_request_t *request)
     return result;
 }
 
+// Answers a request whose Content-Length add_header() refused.
+static enum MHD_Result queue_rejection(web_http_request_t *request)
+{
+    const char *message = request->status == 413 ? "Request body too large\n"
+        : request->status == 500 ? "Out of memory\n"
+        : "Invalid request body length\n";
+    if (web_http_send_text(request, message) != 0) return MHD_NO;
+    return queue_request_response(request);
+}
+
 static enum MHD_Result access_request(void *context,
                                      struct MHD_Connection *connection,
                                      const char *url, const char *method,
@@ -214,6 +243,9 @@ static enum MHD_Result access_request(void *context,
             return MHD_NO;
         }
         request->initialized = true;
+        // Refuse a bad or oversized body now, before any of it is read;
+        // MHD then closes the connection instead of draining the upload.
+        if (request->status != 200) return queue_rejection(request);
         return MHD_YES;
     }
 
@@ -234,20 +266,16 @@ static enum MHD_Result access_request(void *context,
         return MHD_YES;
     }
 
-    if (request->status != 200) {
-        const char *message = request->status == 413
-            ? "Request body too large\n" : "Invalid request body length\n";
-        request->response_body = strdup(message);
-        request->response_length = strlen(message);
-        return queue_request_response(request);
-    }
+    if (request->status != 200) return queue_rejection(request);
 
     if (!request->route) {
         web_http_set_status(request, "404 Not Found");
         web_http_set_type(request, "text/plain; charset=utf-8");
         web_http_send_text(request, "Not found\n");
     } else {
+        pthread_mutex_lock(&s_handler_lock);
         request->route->handler(request);
+        pthread_mutex_unlock(&s_handler_lock);
     }
     return queue_request_response(request);
 }
@@ -314,6 +342,7 @@ web_http_error_t web_http_server_start(web_http_server_t **server_out,
         MHD_OPTION_URI_LOG_CALLBACK, capture_raw_uri, server,
         MHD_OPTION_NOTIFY_COMPLETED, request_completed, NULL,
         MHD_OPTION_CONNECTION_TIMEOUT, 30U,
+        MHD_OPTION_CONNECTION_LIMIT, WEB_HTTP_MAX_CONNECTIONS,
         MHD_OPTION_END);
     if (!server->daemon) {
         free(server);

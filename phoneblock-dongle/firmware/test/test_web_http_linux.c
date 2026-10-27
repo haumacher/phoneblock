@@ -3,10 +3,13 @@
 #include "web_http.h"
 
 #include <arpa/inet.h>
+#include <pthread.h>
+#include <stdatomic.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <time.h>
 #include <unistd.h>
 
 #include "linux_test_util.h"
@@ -60,7 +63,24 @@ static web_http_error_t handle_has_header(web_http_request_t *request)
         web_http_has_header(request, "X-Ingress-Path") ? "yes" : "no");
 }
 
+// Records how many handlers ever ran at the same time: web.c relies on one
+// handler at a time, as on the ESP32's single httpd task.
+static atomic_int s_running;
+static atomic_int s_max_running;
+
+static web_http_error_t handle_slow(web_http_request_t *request)
+{
+    int now = atomic_fetch_add(&s_running, 1) + 1;
+    int max = atomic_load(&s_max_running);
+    while (now > max && !atomic_compare_exchange_weak(&s_max_running, &max, now)) {}
+    struct timespec pause = { .tv_sec = 0, .tv_nsec = 100 * 1000 * 1000 };
+    nanosleep(&pause, NULL);
+    atomic_fetch_sub(&s_running, 1);
+    return web_http_send_text(request, "slow");
+}
+
 static const web_http_route_t routes[] = {
+    { "/slow", WEB_HTTP_GET, handle_slow },
     { "/health", WEB_HTTP_GET, handle_health },
     { "/text", WEB_HTTP_GET, handle_text },
     { "/echo", WEB_HTTP_POST, handle_echo },
@@ -109,6 +129,20 @@ static size_t request(uint16_t port, const char *message,
     response[received] = '\0';
     close(client);
     return received;
+}
+
+typedef struct {
+    uint16_t port;
+    char response[1024];
+} slow_client_t;
+
+static void *slow_client(void *argument)
+{
+    slow_client_t *client = argument;
+    request(client->port,
+            "GET /slow HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n",
+            client->response, sizeof(client->response));
+    return NULL;
 }
 
 int main(void)
@@ -173,6 +207,36 @@ int main(void)
                    "GET /has-header HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n",
                    response, sizeof(response)) > 0);
     REQUIRE(strstr(response, "\r\n\r\nno") != NULL);
+
+    // Parallel connections, but their handlers run one after the other.
+    slow_client_t clients[3];
+    pthread_t threads[3];
+    for (int i = 0; i < 3; i++) {
+        clients[i].port = port;
+        REQUIRE(pthread_create(&threads[i], NULL, slow_client, &clients[i]) == 0);
+    }
+    for (int i = 0; i < 3; i++) {
+        REQUIRE(pthread_join(threads[i], NULL) == 0);
+        REQUIRE(strstr(clients[i].response, "\r\n\r\nslow") != NULL);
+    }
+    REQUIRE(atomic_load(&s_max_running) == 1);
+
+    // A body over the cap is refused from its Content-Length, before any
+    // of it is buffered or a handler runs.
+    REQUIRE(request(port,
+                   "POST /echo HTTP/1.1\r\nHost: localhost\r\n"
+                   "Content-Length: 1048576\r\nConnection: close\r\n\r\n",
+                   response, sizeof(response)) > 0);
+    REQUIRE(strstr(response, "413") != NULL);
+
+    // Two Content-Length headers: ambiguous framing, refused.
+    REQUIRE(request(port,
+                   "POST /echo HTTP/1.1\r\nHost: localhost\r\n"
+                   "Content-Length: 2\r\nContent-Length: 2\r\n"
+                   "Connection: close\r\n\r\nhi",
+                   response, sizeof(response)) > 0);
+    REQUIRE(strstr(response, "400") != NULL);
+    REQUIRE(strstr(response, "\r\n\r\nhi") == NULL);
 
     web_http_server_stop(server);
     puts("test_web_http_linux: all tests passed");
