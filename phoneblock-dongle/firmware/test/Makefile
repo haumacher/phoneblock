@@ -294,6 +294,7 @@ phoneblock_linux: $(LINUX_BUILD_DIR)/phoneblock-dongle $(LINUX_WEB_ASSETS)
 test-linux: linux-firmware phoneblock_linux $(LINUX_BINS)
 	@set -e; for b in $(LINUX_BINS); do echo "→ $$b"; ./$$b; done
 	@echo "→ test_linux_entrypoint.sh"; ./test_linux_entrypoint.sh
+	@echo "→ test_deb_version.sh"; ./test_deb_version.sh
 
 clean:
 	rm -f $(BINS) $(LINUX_BINS) cjson.o $(SPIFFS_CORE) $(LINUX_OBJECTS) $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a $(LINUX_BUILD_DIR)/phoneblock-dongle

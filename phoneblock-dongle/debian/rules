@@ -6,11 +6,13 @@ include /usr/share/dpkg/buildflags.mk
 include /usr/share/dpkg/pkg-info.mk
 
 # The User-Agent carries the firmware version these modules were built from,
-# as on the ESP32 (git describe, see firmware/CMakeLists.txt). A build from
-# the source package, without git history, falls back to the package version.
+# as on the ESP32 (git describe, see firmware/CMakeLists.txt). The package
+# version is the same one in Debian syntax (debian/build-deb.sh writes it to
+# debian/changelog), so a build from the source package, without git
+# history, maps it back.
 PB_VERSION := $(shell git describe --tags --match "dongle-v*" --dirty 2>/dev/null | sed 's/^dongle-v//')
 ifeq ($(PB_VERSION),)
-PB_VERSION := $(DEB_VERSION_UPSTREAM)
+PB_VERSION := $(shell debian/pb-version from-debian "$(DEB_VERSION_UPSTREAM)")
 endif
 
 %:

@@ -1,0 +1,28 @@
+#!/bin/sh
+# Maps a dongle firmware version (`git describe` without "dongle-v") to Debian
+# version syntax and back, see build-deb.sh. Debian forbids "-" in a native
+# package's version, and "~" sorts a pre-release before its release.
+#
+#   pb-version to-debian   1.7.0-beta4-12-gabc  ->  1.7.0~beta4+12.gabc
+#   pb-version from-debian 1.7.0~beta4+12.gabc  ->  1.7.0-beta4-12-gabc
+set -eu
+
+case "${1:-}" in
+to-debian)
+    printf '%s\n' "$2" | sed \
+        -e 's/-\([0-9][0-9]*\)-g\([0-9a-f][0-9a-f]*\)/+\1.g\2/' \
+        -e '/+/s/-dirty$/.dirty/' \
+        -e 's/-dirty$/+dirty/' \
+        -e 's/-/~/g'
+    ;;
+from-debian)
+    printf '%s\n' "$2" | sed \
+        -e 's/[.+]dirty$/-dirty/' \
+        -e 's/+\([0-9][0-9]*\)\.g/-\1-g/' \
+        -e 's/~/-/g'
+    ;;
+*)
+    echo "usage: $0 to-debian|from-debian VERSION" >&2
+    exit 2
+    ;;
+esac
