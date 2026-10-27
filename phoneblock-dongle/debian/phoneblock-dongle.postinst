@@ -17,7 +17,7 @@ if [ "$1" = configure ]; then
     install -d -o phoneblock -g phoneblock -m 0750 /var/lib/phoneblock
     if [ ! -e /var/lib/phoneblock/dongle.conf ]; then
         install -o phoneblock -g phoneblock -m 0600 \
-            /usr/share/doc/phoneblock-dongle/examples/dongle.conf.example \
+            /usr/share/phoneblock-dongle/dongle.conf.example \
             /var/lib/phoneblock/dongle.conf
     fi
 fi

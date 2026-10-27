@@ -136,12 +136,8 @@ dann, wenn die automatische Ausführung aus ist (z. B. für Tests).
 
 ## Linux-Variante
 
-Dieselbe Firmware läuft auch als nativer Linux-Dienst (Raspberry Pi,
-Homeserver, Home Assistant) — gleiche Module, gleiche Web-Oberfläche unter
-`http://<server>:8080/`, gleiche Version wie das ESP32-Image. Paketbau und
-Einrichtung: [debian/README.md](debian/README.md), Abnahme:
-[LINUX-VALIDATION.md](LINUX-VALIDATION.md), offene Punkte:
-[FUTURE.md](FUTURE.md).
+Dieselbe Firmware läuft auch als Linux-Dienst (Raspberry Pi, Homeserver):
+[debian/README.md](debian/README.md).
 
 ## Hardware
 

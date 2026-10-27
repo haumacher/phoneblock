@@ -80,6 +80,13 @@ void pb_log_err(const char *tag, const char *fmt, ...)
 typedef void (*pb_log_sink_t)(char level, const char *tag, const char *fmt,
                               va_list args);
 void pb_log_set_sink(pb_log_sink_t sink);
+
+// State directory of the Linux service (announcement, blocklists, language
+// packs; the settings file is passed with --config). The ESP32 keeps the
+// same files on SPIFFS.
+#ifndef PHONEBLOCK_DATA_DIR
+#define PHONEBLOCK_DATA_DIR "/var/lib/phoneblock"
+#endif
 #endif
 
 // --- Time, randomness, watchdog -----------------------------------------

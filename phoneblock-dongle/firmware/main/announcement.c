@@ -36,9 +36,6 @@ static const char *TAG = "announcement";
 // Downloaded, per-locale announcement: "/spiffs/announcement-<lang>.alaw".
 #define SPIFFS_LOCALIZED_PREFIX "/spiffs/announcement-"
 #else
-#ifndef PHONEBLOCK_DATA_DIR
-#define PHONEBLOCK_DATA_DIR "/var/lib/phoneblock"
-#endif
 #define SPIFFS_BASE_PATH  PHONEBLOCK_DATA_DIR
 #define SPIFFS_LABEL      "storage"
 #define SPIFFS_FILE       PHONEBLOCK_DATA_DIR "/announcement.alaw"

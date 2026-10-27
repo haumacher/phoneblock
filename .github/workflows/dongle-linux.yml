@@ -1,0 +1,137 @@
+name: Dongle Linux packages
+
+# Builds and tests the Linux service of the dongle firmware for every pull
+# request that touches it, and on a dongle-v* release tag (pushed by
+# phoneblock-dongle/firmware/scripts/release.sh) builds the Debian packages for
+# all suites and architectures and publishes them in the APT repository on
+# GitHub Pages (https://haumacher.github.io/phoneblock/apt). Installation:
+# phoneblock-dongle/debian/README.md.
+
+on:
+  push:
+    tags:
+      - 'dongle-v*'
+  pull_request:
+    paths:
+      - 'phoneblock-dongle/**'
+      - '.github/workflows/dongle-linux.yml'
+  workflow_dispatch:
+
+jobs:
+  matrix:
+    runs-on: ubuntu-24.04
+    outputs:
+      builds: ${{ steps.matrix.outputs.builds }}
+    steps:
+      - id: matrix
+        # Pull requests: one native build with the tests; tags: every suite
+        # and architecture. The arm64 runners cannot execute 32-bit ARM code,
+        # so armhf is emulated.
+        run: |
+          if [ "$GITHUB_EVENT_NAME" = pull_request ]; then
+            suites="trixie"; archs="amd64"
+          else
+            suites="bookworm trixie"; archs="amd64 arm64 armhf"
+          fi
+          builds=""
+          for suite in $suites; do
+            for arch in $archs; do
+              case $arch in
+              amd64) runner=ubuntu-24.04;     platform=linux/amd64;  test=--test ;;
+              arm64) runner=ubuntu-24.04-arm; platform=linux/arm64;  test=--test ;;
+              armhf) runner=ubuntu-24.04;     platform=linux/arm/v7; test= ;;
+              esac
+              builds="$builds${builds:+,}{\"suite\":\"$suite\",\"arch\":\"$arch\",\"runner\":\"$runner\",\"platform\":\"$platform\",\"test\":\"$test\"}"
+            done
+          done
+          echo "builds=[$builds]" >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: matrix
+    name: ${{ matrix.suite }} ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.matrix.outputs.builds) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # the version comes from git describe --tags
+
+      - if: matrix.arch == 'armhf'
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm
+
+      - name: Build in debian:${{ matrix.suite }}
+        run: >
+          docker run --rm --platform ${{ matrix.platform }}
+          -v "$PWD":/src -w /src/phoneblock-dongle debian:${{ matrix.suite }}
+          debian/ci-build.sh ${{ matrix.test }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.suite }}-${{ matrix.arch }}
+          path: phoneblock-dongle/dist/*.deb
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/dongle-v')
+    runs-on: ubuntu-24.04
+    concurrency:
+      group: dongle-apt-repository
+      cancel-in-progress: false
+    permissions:
+      contents: write   # the gh-pages branch keeps the repository's pool
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}apt
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: src
+
+      - name: Check out the repository state (gh-pages)
+        run: |
+          if git ls-remote --exit-code --heads "https://github.com/${GITHUB_REPOSITORY}" gh-pages >/dev/null; then
+            git clone --depth 1 --branch gh-pages "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}" site
+          else
+            git init -b gh-pages site
+            git -C site remote add origin "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}"
+          fi
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Import the signing key
+        env:
+          APT_SIGNING_KEY: ${{ secrets.APT_SIGNING_KEY }}
+        run: |
+          sudo apt-get install -y -qq apt-utils >/dev/null
+          printf '%s\n' "$APT_SIGNING_KEY" | gpg --batch --import
+
+      - name: Add the packages and sign the indices
+        env:
+          APT_SIGNING_PASSPHRASE: ${{ secrets.APT_SIGNING_PASSPHRASE }}
+        run: src/phoneblock-dongle/debian/apt-publish.sh site/apt "$GITHUB_REF_NAME" artifacts
+
+      - name: Store the repository state
+        run: |
+          cd site
+          touch .nojekyll
+          git add -A
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -q -m "Dongle packages ${GITHUB_REF_NAME}"
+          git push -q origin gh-pages
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - id: deploy
+        uses: actions/deploy-pages@v4

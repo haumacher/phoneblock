@@ -51,16 +51,12 @@ In beiden Modi wird signiert — sonst wäre der Stage-Output kein Spiegel des L
 
 ## Linux-Paket
 
-Das Debian-Paket trägt dieselbe Version wie die Firmware, abgeleitet aus dem
-`dongle-v*`-Tag (`dongle-v1.7.0-beta4` → `1.7.0~beta4`). Am Release-Tag, mit
-sauberem Tree:
-
-```
-debian/build-deb.sh
-```
-
-Pakete liegen danach in `dist/`. Einen automatischen Build oder Upload gibt es
-noch nicht (siehe [FUTURE.md](FUTURE.md)).
+Kein eigener Schritt: Der Tag, den `release.sh` pusht, startet
+`.github/workflows/dongle-linux.yml`. Der Workflow baut die Pakete und
+veröffentlicht sie im APT-Repository, im selben Kanal wie die Firmware. Läuft
+er nicht durch, ist das Release für Linux nicht erschienen — im Actions-Tab
+prüfen. Paket und Repository: [debian/README.md](debian/README.md),
+Abnahme eines Release-Kandidaten: [LINUX-VALIDATION.md](LINUX-VALIDATION.md).
 
 ## OTA-Signing-Key
 

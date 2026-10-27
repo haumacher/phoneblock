@@ -30,7 +30,9 @@ override_dh_auto_clean:
 override_dh_install:
 	dh_install firmware/build/linux-host/phoneblock-dongle usr/bin
 	dh_install firmware/build/linux-host/web/* usr/share/phoneblock-dongle/web
-	dh_install debian/examples/dongle.conf.example usr/share/doc/phoneblock-dongle/examples
+	# Not under /usr/share/doc: minimized installs (Ubuntu images, ...) drop
+	# that tree, and postinst needs the template.
+	dh_install debian/examples/dongle.conf.example usr/share/phoneblock-dongle
 
 override_dh_installsystemd:
 	dh_installsystemd --no-enable --no-start

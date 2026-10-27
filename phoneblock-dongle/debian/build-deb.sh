@@ -3,13 +3,8 @@
 #
 # The version comes from the same `git describe --match "dongle-v*"` as the
 # ESP32 firmware (firmware/CMakeLists.txt), so the package, the binary's
-# User-Agent and the ESP32 image of one commit carry one version. Debian
-# syntax differs only in its separators:
-#
-#   dongle-v1.7.0                 -> 1.7.0
-#   dongle-v1.7.0-beta4           -> 1.7.0~beta4          (sorts before 1.7.0)
-#   dongle-v1.7.0-beta4-12-gabc   -> 1.7.0~beta4+12.gabc  (after beta4)
-#   ...-dirty                     -> ...+dirty / ....dirty
+# User-Agent and the ESP32 image of one commit carry one version, written in
+# Debian syntax by debian/pb-version.
 #
 # debian/changelog is generated here (not tracked in git); further arguments
 # go to dpkg-buildpackage, e.g. `debian/build-deb.sh -b` for a binary-only
@@ -17,6 +12,7 @@
 # i.e. into the repository root; they are moved to phoneblock-dongle/dist/.
 #
 # Usage, in phoneblock-dongle/:  debian/build-deb.sh [dpkg-buildpackage args]
+#                                debian/build-deb.sh --changelog-only
 set -eu
 
 cd "$(dirname "$0")/.."
@@ -38,6 +34,8 @@ phoneblock-dongle (${VERSION}) unstable; urgency=medium
  -- ${MAINTAINER}  ${DATE}
 EOF
 echo "phoneblock-dongle ${VERSION} (${DESCRIBE})"
+# CI writes the changelog first, so `apt-get build-dep` can read the package.
+if [ "${1:-}" = --changelog-only ]; then exit 0; fi
 
 dpkg-buildpackage -us -uc "$@"
 

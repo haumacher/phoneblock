@@ -45,5 +45,33 @@ if [ "$(id -u)" -eq 0 ]; then
         exit 1
     fi
 fi
+# A web port that is already taken must stop the service with an error, not
+# leave it running without its web UI. Unconfigured (no token, no SIP user),
+# so neither instance talks to the network. Starting the service needs its
+# state directory (PHONEBLOCK_DATA_DIR, /var/lib/phoneblock), so root only,
+# as in the CI container.
+if [ "$(id -u)" -eq 0 ]; then
+unconfigured="$tmpdir/unconfigured.conf"
+printf '[phoneblock]\nsip_lport=39124\n' > "$unconfigured"
+port_file="$tmpdir/web.port"
+PHONEBLOCK_CONFIG_FILE="$unconfigured" "$binary" --web 0 --web-bind 127.0.0.1 \
+    --web-port-file "$port_file" >"$tmpdir/first.log" 2>&1 &
+first=$!
+for _ in $(seq 1 50); do [ -s "$port_file" ] && break; sleep 0.1; done
+[ -s "$port_file" ] || { echo 'FAIL: no web port published' >&2; kill "$first"; exit 1; }
+taken=$(cat "$port_file")
+second="$tmpdir/second.conf"
+printf '[phoneblock]\nsip_lport=39125\n' > "$second"
+status=0
+PHONEBLOCK_CONFIG_FILE="$second" timeout 10 "$binary" --web "$taken" \
+    --web-bind 127.0.0.1 >"$tmpdir/second.log" 2>&1 || status=$?
+kill "$first"; wait "$first" 2>/dev/null || true
+if [ "$status" -ne 1 ]; then
+    printf 'FAIL: taken web port: expected exit 1, got %s\n' "$status" >&2
+    cat "$tmpdir/second.log" >&2
+    exit 1
+fi
+fi
+
 "$binary" --help >/dev/null 2>&1
 printf '%s\n' 'test_linux_entrypoint: all tests passed'

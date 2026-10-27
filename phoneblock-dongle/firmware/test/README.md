@@ -21,43 +21,22 @@ Funktionsname, Input, erwartetem Wert und tatsächlichem Wert.
 
 ## Linux-Build der Firmwaremodule (`make test-linux`)
 
-Die portablen Firmwaremodule lassen sich auch für Linux bauen. Die
-Plattformschicht ist dafür geteilt: `../core/platform_linux.c` (Logging, Tasks,
-Events, Key-Value-Store, MAC — nur libc und pthreads) läuft in `make test` mit;
-`../core/platform_linux_net.c` (HTTP über libcurl, TLS, Hashes, Signaturen und
-base64 über OpenSSL) wird nur von `make test-linux` gebaut. Dafür zusätzlich
-nötig:
-
-- `pkg-config` und die Entwicklungspakete von libcurl, OpenSSL, cJSON,
-  libsrtp2 und libmicrohttpd (Web-Oberfläche), unter Debian/Ubuntu:
-  ```bash
-  sudo apt install pkg-config libcurl4-openssl-dev libssl-dev libcjson-dev \
-    libsrtp2-dev libmicrohttpd-dev
-  ```
+Die portablen Firmwaremodule lassen sich auch für Linux bauen; die
+Plattformschicht ist geteilt (`../core/platform_linux.c`: libc und pthreads,
+läuft in `make test` mit; `../core/platform_linux_net.c`: libcurl und OpenSSL,
+nur in `make test-linux`). Nötig sind die Build-Abhängigkeiten aus
+`../../debian/control` (`Build-Depends`).
 
 ```bash
-make test-linux IDF_PATH=/pfad/zu/esp-idf
+make test-linux
 ```
 
-Das kompiliert die portablen Firmwaremodule mit `-Werror` zu
-`../build/linux-host/libphoneblock_firmware_linux.a` (auch einzeln:
-`make linux-firmware`) und führt dann aus:
-
-- `test_platform_linux_net` — Hashes, base64, ECDSA-Prüfung und die
-  Fehlerbenennung von `pb_http_request()`;
-- `test_api_linux` — linkt gegen das Archiv und führt `/api/test` sowie
-  `/api/check-prefix` gegen einen lokalen HTTP-Testserver aus;
-- `test_linux_entrypoint.sh` — prüft `--check-config` und `--probe-sip` des
-  Linux-Dienstes `../build/linux-host/phoneblock-dongle` (auch einzeln:
-  `make phoneblock_linux`, Einstiegspunkt `../main/main_linux.c`).
-
-Die Web-Oberfläche läuft auf Linux über libmicrohttpd (`../main/web_http_linux.c`,
-Test: `test_web_http_linux`); ESP-Hardwarestart und Boarddienste bleiben außerhalb
-dieses Linux-Builds, die Statusmail ist unter Linux ein Platzhalter (`mail_linux.c`).
-WARN/ERROR-Zeilen landen wie auf dem ESP32 im Fehlerring und im Log-Report:
-`../main/log_capture_linux.c` übernimmt sie direkt aus `pb_log_*` (Test:
-`test_log_capture_linux`). Das Debian-Paket für den Dienst liegt unter
-`../../debian/`.
+Das kompiliert die Module mit `-Werror` zu
+`../build/linux-host/libphoneblock_firmware_linux.a` (einzeln: `make
+linux-firmware`), baut den Dienst `../build/linux-host/phoneblock-dongle` (`make
+phoneblock_linux`, Einstiegspunkt `../main/main_linux.c`) und führt die
+Linux-Tests aus (`LINUX_BINS` und die Shell-Tests im Target `test-linux` des
+Makefiles). Paket und Betrieb des Dienstes: `../../debian/README.md`.
 
 ## Neue Tests hinzufügen
 

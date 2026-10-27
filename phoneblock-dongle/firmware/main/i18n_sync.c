@@ -25,9 +25,6 @@
 #include "config.h"
 #include "http_util.h"
 #include "platform.h"
-#ifndef PHONEBLOCK_DATA_DIR
-#define PHONEBLOCK_DATA_DIR "/var/lib/phoneblock"
-#endif
 #ifndef CONFIG_PHONEBLOCK_OTA_BASE_URL
 #define CONFIG_PHONEBLOCK_OTA_BASE_URL "https://cdn.phoneblock.net/dongle/firmware"
 #endif
