@@ -1,0 +1,8 @@
+# Settings of the phoneblock-dongle service, read by its systemd unit.
+# After a change: sudo systemctl restart phoneblock-dongle
+#
+# Port of the web UI (default 8080).
+#PHONEBLOCK_WEB_PORT=8080
+#
+# Address the web UI listens on (default: all addresses), IPv4 or IPv6.
+#PHONEBLOCK_WEB_BIND=192.168.178.10

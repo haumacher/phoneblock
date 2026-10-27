@@ -32,6 +32,16 @@ EOF
 PHONEBLOCK_CONFIG_FILE="$config" "$binary" --check-config
 PHONEBLOCK_CONFIG_FILE="$config" "$binary" --probe-sip
 
+# The web port also comes from the environment (/etc/default/phoneblock-dongle);
+# a malformed value is an error, not silently the default port.
+status=0
+PHONEBLOCK_WEB_PORT=80x PHONEBLOCK_CONFIG_FILE="$config" "$binary" --check-config \
+    2>/dev/null || status=$?
+if [ "$status" -ne 1 ]; then
+    printf 'FAIL: invalid PHONEBLOCK_WEB_PORT: expected exit 1, got %s\n' "$status" >&2
+    exit 1
+fi
+
 # A root run on a fresh config persists the minted device id; the rewritten
 # file must keep its owner, or the service account loses its settings.
 if [ "$(id -u)" -eq 0 ]; then
@@ -63,8 +73,10 @@ taken=$(cat "$port_file")
 second="$tmpdir/second.conf"
 printf '[phoneblock]\nsip_lport=39125\n' > "$second"
 status=0
-PHONEBLOCK_CONFIG_FILE="$second" timeout 10 "$binary" --web "$taken" \
-    --web-bind 127.0.0.1 >"$tmpdir/second.log" 2>&1 || status=$?
+# Port and address from the environment, as the systemd unit passes them.
+PHONEBLOCK_WEB_PORT="$taken" PHONEBLOCK_WEB_BIND=127.0.0.1 \
+PHONEBLOCK_CONFIG_FILE="$second" timeout 10 "$binary" \
+    >"$tmpdir/second.log" 2>&1 || status=$?
 kill "$first"; wait "$first" 2>/dev/null || true
 if [ "$status" -ne 1 ]; then
     printf 'FAIL: taken web port: expected exit 1, got %s\n' "$status" >&2

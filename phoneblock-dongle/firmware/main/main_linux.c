@@ -26,8 +26,21 @@ static void print_usage(const char *program)
 {
     fprintf(stderr,
             "Usage: %s [--config PATH] [--check-config | --probe-sip] "
-            "[--web PORT] [--web-bind ADDRESS] [--web-port-file PATH]\n",
+            "[--web PORT] [--web-bind ADDRESS] [--web-port-file PATH]\n"
+            "The environment variables PHONEBLOCK_WEB_PORT and "
+            "PHONEBLOCK_WEB_BIND set the defaults of --web and --web-bind.\n",
             program);
+}
+
+// Parses a TCP port, 0 meaning any free port.
+static bool parse_port(const char *text, uint16_t *port)
+{
+    char *end = NULL;
+    errno = 0;
+    unsigned long value = strtoul(text, &end, 10);
+    if (errno || end == text || *end || value > UINT16_MAX) return false;
+    *port = (uint16_t)value;
+    return true;
 }
 
 static bool check_config(void)
@@ -80,7 +93,16 @@ int main(int argc, char **argv)
     const char *web_port_file = NULL;
     bool check = false;
     bool probe = false;
+    // Defaults from the environment, so the service's port is one line in
+    // /etc/default/phoneblock-dongle (debian/README.md); the options win.
     uint16_t web_port = 8080;
+    const char *env_port = getenv("PHONEBLOCK_WEB_PORT");
+    if (env_port && env_port[0] && !parse_port(env_port, &web_port)) {
+        fprintf(stderr, "invalid PHONEBLOCK_WEB_PORT: %s\n", env_port);
+        return EXIT_FAILURE;
+    }
+    const char *env_bind = getenv("PHONEBLOCK_WEB_BIND");
+    if (env_bind && env_bind[0]) web_bind = env_bind;
     static const struct option options[] = {
         { "config", required_argument, NULL, 'c' },
         { "check-config", no_argument, NULL, 't' },
@@ -98,17 +120,12 @@ int main(int argc, char **argv)
         case 'c': config_path = optarg; break;
         case 't': check = true; break;
         case 'p': probe = true; break;
-        case 'w': {
-            char *end = NULL;
-            errno = 0;
-            unsigned long port = strtoul(optarg, &end, 10);
-            if (errno || !end || *end || port > UINT16_MAX) {
+        case 'w':
+            if (!parse_port(optarg, &web_port)) {
                 print_usage(argv[0]);
                 return EXIT_FAILURE;
             }
-            web_port = (uint16_t)port;
             break;
-        }
         case 'b': web_bind = optarg; break;
         case 'f': web_port_file = optarg; break;
         case 'h': print_usage(argv[0]); return EXIT_SUCCESS;

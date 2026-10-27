@@ -43,24 +43,11 @@ hardwareabhängig und auf Linux nicht verfügbar. Das Log steht im Journal
 
 ## Port und Adresse der Web-Oberfläche
 
-Standard ist Port 8080 auf allen Adressen. Geändert wird das über die
-Kommandozeile des Dienstes, mit einem systemd-Override:
-
-```sh
-sudo systemctl edit phoneblock-dongle
-```
-
-```ini
-[Service]
-ExecStart=
-ExecStart=/usr/bin/phoneblock-dongle --config /var/lib/phoneblock/dongle.conf --web 8081 --web-bind 192.168.178.10
-```
-
-`--web PORT` setzt den Port (`0` = ein freier Port, siehe `--web-port-file
-PATH`), `--web-bind ADDRESS` bindet an eine einzelne IPv4- oder IPv6-Adresse.
-Der Dienst läuft als Benutzer `phoneblock`; für einen Port unter 1024 (z. B.
-80) zusätzlich `AmbientCapabilities=CAP_NET_BIND_SERVICE` in denselben
-`[Service]`-Abschnitt. Danach `sudo systemctl restart phoneblock-dongle`.
+Standard ist Port 8080 auf allen Adressen. Port und Adresse stehen
+(auskommentiert) in `/etc/default/phoneblock-dongle`; nach einer Änderung
+`sudo systemctl restart phoneblock-dongle`. Auch ein Port unter 1024 (z. B. 80)
+geht ohne weiteren Schritt. Beim direkten Aufruf überschreiben `--web` und
+`--web-bind` diese Werte (`phoneblock-dongle --help`).
 
 ## Einstellungen
 
