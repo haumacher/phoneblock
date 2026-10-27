@@ -131,6 +131,7 @@ jobs:
         run: src/phoneblock-dongle/debian/apt-publish.sh site/apt "$GITHUB_REF_NAME" artifacts
 
       - name: Store the repository state
+        id: store
         run: |
           cd site
           touch .nojekyll
@@ -141,10 +142,17 @@ jobs:
               commit -q -m "Dongle packages ${GITHUB_REF_NAME}"
             git push -q origin gh-pages
           fi
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site
 
+      # Pages takes a deployment with an already deployed version for the
+      # same one and keeps the old site. The version defaults to the source
+      # commit, which a republish and a later tag can share; the gh-pages
+      # commit changes with every publish.
       - id: deploy
         uses: actions/deploy-pages@v4
+        env:
+          GITHUB_SHA: ${{ steps.store.outputs.sha }}
