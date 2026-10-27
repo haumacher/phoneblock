@@ -71,6 +71,11 @@ const char *pb_firmware_version(void)
     return description ? description->version : "unknown";
 }
 
+const char *pb_platform_tag(void)
+{
+    return NULL;
+}
+
 uint32_t pb_random_u32(void)
 {
     return esp_random();

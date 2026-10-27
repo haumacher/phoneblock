@@ -141,6 +141,15 @@ const char *pb_firmware_version(void)
 #endif
 }
 
+const char *pb_platform_tag(void)
+{
+#ifdef PHONEBLOCK_PLATFORM
+    return PHONEBLOCK_PLATFORM;
+#else
+    return "Linux";
+#endif
+}
+
 uint32_t pb_random_u32(void)
 {
     uint32_t value;

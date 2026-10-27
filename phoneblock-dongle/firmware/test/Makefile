@@ -66,11 +66,18 @@ endif
 ifneq ($(PHONEBLOCK_VERSION),)
 LINUX_CPPFLAGS += -DPHONEBLOCK_VERSION='"$(PHONEBLOCK_VERSION)"'
 endif
+# The platform comment in the User-Agent (pb_platform_tag()), so the API key
+# device list tells Linux installs from dongles: "Linux" by default, set by
+# the packaging that builds it, e.g. PHONEBLOCK_PLATFORM="Linux; HA" for the
+# Home Assistant app.
+ifneq ($(strip $(PHONEBLOCK_PLATFORM)),)
+LINUX_CPPFLAGS += -DPHONEBLOCK_PLATFORM='"$(PHONEBLOCK_PLATFORM)"'
+endif
 ifneq ($(strip $(PHONEBLOCK_DATA_DIR)),)
 LINUX_CPPFLAGS += -DPHONEBLOCK_DATA_DIR=\"$(PHONEBLOCK_DATA_DIR)\"
 endif
 
-BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_rcpt test_name_filter test_version_cmp test_net_local test_heap_guard test_platform_linux test_log_capture_linux test_time_sync_tz test_ota_manifest test_stats test_display_model test_display_probe test_storage_budget test_storage_sim test_storage_hostfs
+BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_rcpt test_name_filter test_version_cmp test_http_util test_net_local test_heap_guard test_platform_linux test_log_capture_linux test_time_sync_tz test_ota_manifest test_stats test_display_model test_display_probe test_storage_budget test_storage_sim test_storage_hostfs
 
 test_sip_parse: test_sip_parse.c ../core/sip_parse.c ../core/sip_parse.h \
                 ../core/dial_rules.c ../core/dial_rules.h \
@@ -157,6 +164,10 @@ test_name_filter: test_name_filter.c ../main/name_filter.c ../main/name_filter.h
 
 test_version_cmp: test_version_cmp.c ../main/version_cmp.c ../main/version_cmp.h
 	$(CC) $(CFLAGS) test_version_cmp.c ../main/version_cmp.c -o $@
+
+test_http_util: test_http_util.c linux_test_util.h ../main/http_util.c \
+                ../main/http_util.h
+	$(CC) $(CFLAGS) test_http_util.c ../main/http_util.c -o $@
 
 test_net_local: test_net_local.c ../main/net_local.c ../main/net_local.h
 	$(CC) $(CFLAGS) test_net_local.c ../main/net_local.c -o $@
