@@ -2,11 +2,12 @@
 
 #include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
+#ifdef ESP_PLATFORM
 #include "esp_log.h"
-#include "esp_random.h"
 #include "esp_task_wdt.h"
 #include "esp_timer.h"
 #include "esp_app_desc.h"
@@ -21,6 +22,11 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "lwip/sockets.h"     // INET_ADDRSTRLEN
+#else
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <unistd.h>
+#endif
 #include "cJSON.h"
 
 #include "announcement.h"
@@ -50,14 +56,24 @@
 #include "tr064.h"
 #include "tr064_parse.h"
 #include "web_auth.h"
+#include "web_access.h"
+#ifdef ESP_PLATFORM
 #include "wifi.h"
+#endif
+#include "web_http.h"
 
 // Must be last: bans unsafe string APIs for the rest of this file.
 #include "banned_apis.h"
 
 static const char *TAG = "web";
 
-static httpd_handle_t s_server = NULL;
+static web_http_server_t *s_server = NULL;
+#ifdef ESP_PLATFORM
+static uint16_t s_web_port = 80;
+#else
+static uint16_t s_web_port = 8080;
+#endif
+static char s_web_bind_address[64];
 
 // Gate handlers behind the SSO session cookie. With the gate
 // disabled (config_auth_enabled() == false) these are no-ops; once
@@ -71,17 +87,17 @@ static httpd_handle_t s_server = NULL;
 // served" hook short of touching each handler individually. See heap_guard.h.
 #define REQUIRE_AUTH_HTML(req) do { \
     heap_guard_note("http:html"); \
-    if (!web_auth_required((req), false)) return ESP_OK; \
+    if (!web_auth_required((req), false)) return WEB_HTTP_OK; \
 } while (0)
 #define REQUIRE_AUTH_API(req) do { \
     heap_guard_note("http:api"); \
-    if (!web_auth_required((req), true)) return ESP_OK; \
+    if (!web_auth_required((req), true)) return WEB_HTTP_OK; \
 } while (0)
 // For the intentionally-public routes: LAN-only when the gate is off,
 // fully public when it is on (so remote login works). See
 // docs/network-access-control.md.
 #define REQUIRE_LOCAL_HTML(req) do { \
-    if (!web_public_allowed((req), false)) return ESP_OK; \
+    if (!web_public_allowed((req), false)) return WEB_HTTP_OK; \
 } while (0)
 
 // In-flight OAuth provisioning state: a random nonce set by
@@ -102,7 +118,7 @@ static void generate_reset_nonce(void)
 {
     static const char hex[] = "0123456789abcdef";
     for (int i = 0; i < 16; i++) {
-        s_reset_nonce[i] = hex[esp_random() & 0xf];
+        s_reset_nonce[i] = hex[pb_random_u32() & 0xf];
     }
     s_reset_nonce[16] = '\0';
 }
@@ -125,6 +141,7 @@ static struct {
 
 // --- Embedded HTML (placeholder; full UI lands in the next step) ---
 
+#ifdef ESP_PLATFORM
 // Embedded via EMBED_FILES in CMakeLists.txt; the linker emits
 // _binary_<file>_<ext>_{start,end} symbols which we alias to friendlier
 // C names.
@@ -135,19 +152,59 @@ extern const uint8_t index_html_gz_end[]   asm("_binary_index_html_gz_end");
 
 extern const uint8_t ab_logo_bot_svg_start[] asm("_binary_ab_logo_bot_svg_start");
 extern const uint8_t ab_logo_bot_svg_end[]   asm("_binary_ab_logo_bot_svg_end");
+#else
+#define WEB_ASSET_DIR "/usr/share/phoneblock-dongle/web"
+
+static FILE *open_web_asset(const char *name)
+{
+    const char *directory = getenv("PHONEBLOCK_WEB_DIR");
+    if (!directory || !directory[0]) directory = WEB_ASSET_DIR;
+    char path[512];
+    int length = snprintf(path, sizeof(path), "%s/%s", directory, name);
+    if (length < 0 || (size_t)length >= sizeof(path)) return NULL;
+    return fopen(path, "rb");
+}
+
+// `encoding` (e.g. "gzip") is announced only once the file is open, so a
+// missing asset gets a plain-text 404 a browser can display.
+static web_http_error_t send_web_asset(web_http_request_t *request,
+                                       const char *name, const char *encoding)
+{
+    FILE *file = open_web_asset(name);
+    if (!file) {
+        web_http_send_error(request, WEB_HTTP_STATUS_NOT_FOUND,
+                            "web asset not installed");
+        return WEB_HTTP_OK;
+    }
+    if (encoding) web_http_set_header(request, "Content-Encoding", encoding);
+    char buffer[4096];
+    size_t length;
+    while ((length = fread(buffer, 1, sizeof(buffer), file)) > 0) {
+        if (web_http_send_chunk(request, buffer, length) != WEB_HTTP_OK) {
+            fclose(file);
+            return WEB_HTTP_FAIL;
+        }
+    }
+    bool read_error = ferror(file);
+    fclose(file);
+    if (read_error) return WEB_HTTP_FAIL;
+    return web_http_send_chunk(request, NULL, 0) == WEB_HTTP_OK
+        ? WEB_HTTP_OK : WEB_HTTP_FAIL;
+}
+#endif
 
 // --- Helpers --------------------------------------------------------
 
-static void send_json(httpd_req_t *req, cJSON *root)
+static void send_json(web_http_request_t *req, cJSON *root)
 {
     char *body = cJSON_PrintUnformatted(root);
-    httpd_resp_set_type(req, "application/json; charset=utf-8");
-    httpd_resp_set_hdr(req, "Cache-Control", "no-store");
+    web_http_set_type(req, "application/json; charset=utf-8");
+    web_http_set_header(req, "Cache-Control", "no-store");
     if (body) {
-        httpd_resp_send(req, body, HTTPD_RESP_USE_STRLEN);
+        web_http_send_text(req, body);
         cJSON_free(body);
     } else {
-        httpd_resp_send(req, "{}", 2);
+        web_http_send(req, "{}", 2);
     }
     cJSON_Delete(root);
 }
@@ -180,12 +237,7 @@ static bool assessment_is_spam(pb_assessment_t a)
 
 static void local_ip_str(char *out, size_t cap)
 {
-    out[0] = '\0';
-    esp_netif_t *netif = esp_netif_get_default_netif();
-    if (!netif) return;
-    esp_netif_ip_info_t info;
-    if (esp_netif_get_ip_info(netif, &info) != ESP_OK) return;
-    esp_ip4addr_ntoa(&info.ip, out, cap);
+    if (!web_local_ipv4_string(out, cap)) out[0] = '\0';
 }
 
 // --- Private Network Access opt-in ---------------------------------
@@ -217,68 +269,79 @@ static bool pna_origin_allowed(const char *origin)
 
 // Mirrors the PNA/ACAO headers onto a regular 2xx response if the
 // caller's Origin is on the allowlist. No-op otherwise.
-static void set_pna_response_headers(httpd_req_t *req)
+static void set_pna_response_headers(web_http_request_t *req)
 {
     char origin[64];
-    if (httpd_req_get_hdr_value_str(req, "Origin", origin, sizeof(origin)) != ESP_OK) {
+    if (web_http_get_header(req, "Origin", origin, sizeof(origin)) != WEB_HTTP_OK) {
         return;
     }
     if (!pna_origin_allowed(origin)) {
         return;
     }
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin",          PNA_ALLOWED_ORIGIN);
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Private-Network", "true");
-    httpd_resp_set_hdr(req, "Vary",
+    web_http_set_header(req, "Access-Control-Allow-Origin",          PNA_ALLOWED_ORIGIN);
+    web_http_set_header(req, "Access-Control-Allow-Private-Network", "true");
+    web_http_set_header(req, "Vary",
                        "Origin, Access-Control-Request-Private-Network");
 }
 
-static esp_err_t handle_pna_preflight(httpd_req_t *req)
+static web_http_error_t handle_pna_preflight(web_http_request_t *req)
 {
     REQUIRE_LOCAL_HTML(req);
     char origin[64];
-    if (httpd_req_get_hdr_value_str(req, "Origin", origin, sizeof(origin)) != ESP_OK
+    if (web_http_get_header(req, "Origin", origin, sizeof(origin)) != WEB_HTTP_OK
             || !pna_origin_allowed(origin)) {
-        httpd_resp_set_status(req, "404 Not Found");
-        httpd_resp_send(req, NULL, 0);
-        return ESP_OK;
+        web_http_set_status(req, "404 Not Found");
+        web_http_send(req, NULL, 0);
+        return WEB_HTTP_OK;
     }
 
     // The preflight is *triggered* by the PNA header; mirror it back
     // only when present so plain CORS-only callers (no PNA in use) see
     // a clean ACAO response.
     char pna[8];
-    bool wants_pna = httpd_req_get_hdr_value_str(
+    bool wants_pna = web_http_get_header(
         req, "Access-Control-Request-Private-Network",
-        pna, sizeof(pna)) == ESP_OK
+        pna, sizeof(pna)) == WEB_HTTP_OK
         && strcmp(pna, "true") == 0;
 
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Origin",  PNA_ALLOWED_ORIGIN);
+    web_http_set_header(req, "Access-Control-Allow-Origin",  PNA_ALLOWED_ORIGIN);
     if (wants_pna) {
-        httpd_resp_set_hdr(req, "Access-Control-Allow-Private-Network", "true");
+        web_http_set_header(req, "Access-Control-Allow-Private-Network", "true");
     }
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-    httpd_resp_set_hdr(req, "Access-Control-Allow-Headers", "Content-Type");
-    httpd_resp_set_hdr(req, "Access-Control-Max-Age",       "600");
-    httpd_resp_set_hdr(req, "Vary",
+    web_http_set_header(req, "Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    web_http_set_header(req, "Access-Control-Allow-Headers", "Content-Type");
+    web_http_set_header(req, "Access-Control-Max-Age",       "600");
+    web_http_set_header(req, "Vary",
                        "Origin, Access-Control-Request-Private-Network");
 
-    httpd_resp_set_status(req, "204 No Content");
-    httpd_resp_send(req, NULL, 0);
-    return ESP_OK;
+    web_http_set_status(req, "204 No Content");
+    web_http_send(req, NULL, 0);
+    return WEB_HTTP_OK;
 }
 
 // --- Handlers -------------------------------------------------------
 
-static esp_err_t handle_favicon(httpd_req_t *req)
+static web_http_error_t handle_health(web_http_request_t *req)
 {
-    REQUIRE_LOCAL_HTML(req);
-    httpd_resp_set_type(req, "image/svg+xml");
-    httpd_resp_set_hdr(req, "Cache-Control", "public, max-age=31536000, immutable");
-    return httpd_resp_send(req, (const char *)ab_logo_bot_svg_start,
-                           ab_logo_bot_svg_end - ab_logo_bot_svg_start);
+    web_http_set_type(req, "text/plain; charset=utf-8");
+    return web_http_send_text(req, "ok\n");
 }
 
-static esp_err_t handle_root(httpd_req_t *req)
+static web_http_error_t handle_favicon(web_http_request_t *req)
+{
+    REQUIRE_LOCAL_HTML(req);
+    web_http_set_type(req, "image/svg+xml");
+    web_http_set_header(req, "Cache-Control", "public, max-age=31536000, immutable");
+#ifdef ESP_PLATFORM
+    return web_http_send(req, ab_logo_bot_svg_start,
+                         ab_logo_bot_svg_end - ab_logo_bot_svg_start) == 0
+        ? WEB_HTTP_OK : WEB_HTTP_FAIL;
+#else
+    return send_web_asset(req, "ab-logo-bot.svg", NULL);
+#endif
+}
+
+static web_http_error_t handle_root(web_http_request_t *req)
 {
     // Locality-gated but NOT auth-gated. The SPA shell is harmless static
     // markup and contains both the dashboard and the in-page login state;
@@ -290,14 +353,18 @@ static esp_err_t handle_root(httpd_req_t *req)
     // login works.
     REQUIRE_LOCAL_HTML(req);
     set_pna_response_headers(req);
-    httpd_resp_set_type(req, "text/html; charset=utf-8");
+    web_http_set_type(req, "text/html; charset=utf-8");
     // Served pre-compressed. Every browser that reaches this dashboard sends
     // "Accept-Encoding: gzip", so we emit gzip unconditionally rather than
     // embedding a second uncompressed copy (which would defeat the saving).
-    httpd_resp_set_hdr(req, "Content-Encoding", "gzip");
-    httpd_resp_send(req, (const char *)index_html_gz_start,
-                    index_html_gz_end - index_html_gz_start);
-    return ESP_OK;
+#ifdef ESP_PLATFORM
+    web_http_set_header(req, "Content-Encoding", "gzip");
+    return web_http_send(req, index_html_gz_start,
+                         index_html_gz_end - index_html_gz_start) == 0
+        ? WEB_HTTP_OK : WEB_HTTP_FAIL;
+#else
+    return send_web_asset(req, "index.html.gz", "gzip");
+#endif
 }
 
 // Add heap figures and, where the run-time stats are compiled in, a
@@ -310,6 +377,7 @@ static esp_err_t handle_root(httpd_req_t *req)
 // a single core reads ~50%.
 static void add_system_load(cJSON *root)
 {
+#ifdef ESP_PLATFORM
     cJSON *sys = cJSON_AddObjectToObject(root, "system");
     cJSON_AddNumberToObject(sys, "free_heap",     (double)esp_get_free_heap_size());
     cJSON_AddNumberToObject(sys, "min_free_heap", (double)esp_get_minimum_free_heap_size());
@@ -377,34 +445,53 @@ static void add_system_load(cJSON *root)
     free(a);
     free(b);
 #endif
+#else
+    (void)root;
+#endif
 }
 
-static esp_err_t handle_status(httpd_req_t *req)
+static web_http_error_t handle_status(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
     stats_counters_t c;
     stats_snapshot_counters(&c);
 
-    int64_t now_us   = esp_timer_get_time();
+    int64_t now_us   = pb_monotonic_us();
     int64_t uptime_s = now_us / 1000000;
     int64_t registered_for_s =
         c.sip_registered ? (now_us - c.sip_registered_since_us) / 1000000 : 0;
 
+#ifdef ESP_PLATFORM
     const esp_app_desc_t *app = esp_app_get_description();
+    const esp_partition_t *running = esp_ota_get_running_partition();
+#endif
 
     char ip[INET_ADDRSTRLEN] = "";
     local_ip_str(ip, sizeof(ip));
 
-    const esp_partition_t *running = esp_ota_get_running_partition();
-
     cJSON *root = cJSON_CreateObject();
+#ifdef ESP_PLATFORM
     cJSON_AddStringToObject(root, "firmware_version",   app ? app->version : "");
     cJSON_AddStringToObject(root, "firmware_partition", running ? running->label : "");
-    cJSON_AddStringToObject(root, "firmware_failed",    config_last_failed_ota());
     cJSON_AddStringToObject(root, "project_name",       app ? app->project_name : "");
+#else
+    cJSON_AddStringToObject(root, "firmware_version", pb_firmware_version());
+    cJSON_AddStringToObject(root, "firmware_partition", "");
+    cJSON_AddStringToObject(root, "project_name", "PhoneBlock-Dongle");
+#endif
+    cJSON_AddStringToObject(root, "firmware_failed", config_last_failed_ota());
     cJSON_AddNumberToObject(root, "uptime_s",         (double)uptime_s);
     cJSON_AddStringToObject(root, "ip_address",       ip);
     cJSON_AddStringToObject(root, "reset_nonce",      s_reset_nonce);
+#ifdef ESP_PLATFORM
+    cJSON_AddBoolToObject(root, "mail_reporting", true);
+    cJSON_AddBoolToObject(root, "firmware_update", true);
+    cJSON_AddBoolToObject(root, "factory_reset", true);
+#else
+    cJSON_AddBoolToObject(root, "mail_reporting", false);
+    cJSON_AddBoolToObject(root, "firmware_update", false);
+    cJSON_AddBoolToObject(root, "factory_reset", false);
+#endif
 #ifdef CONFIG_CRASH_TEST_ENABLE
     cJSON_AddBoolToObject  (root, "crash_test_enabled", true);
 #else
@@ -438,6 +525,14 @@ static esp_err_t handle_status(httpd_req_t *req)
     cJSON_AddStringToObject(pb,   "base_url",           config_phoneblock_base_url());
     cJSON_AddBoolToObject  (pb,   "token_set",          strlen(config_phoneblock_token()) > 0);
     cJSON_AddBoolToObject  (pb,   "token_ok",           api_token_is_valid());
+    // The web sign-in (/register-start -> phoneblock.net -> /token-callback)
+    // cannot complete through Home Assistant ingress: phoneblock.net refuses
+    // most HA callback hosts, and ingress rejects the cross-site redirect
+    // back (#619, #621). HA marks every ingress request with X-Ingress-Path;
+    // there the UI hides the sign-in buttons and the token comes from the
+    // app configuration. Everywhere else the sign-in stays as it is.
+    cJSON_AddBoolToObject  (pb,   "token_signin",
+                            !web_http_has_header(req, "X-Ingress-Path"));
     cJSON_AddNumberToObject(pb,   "last_api_ms",        (double)(c.last_api_duration_us / 1000));
     // Phase breakdown of the last API call — investigation aid for
     // issue #329 (connect/request/wait/download split).
@@ -565,9 +660,11 @@ static esp_err_t handle_status(httpd_req_t *req)
     if (clock_ok) {
         time_t tnow = time(NULL);
         struct tm lt;
-        localtime_r(&tnow, &lt);
         char iso[32];
+        time_sync_tz_lock();
+        localtime_r(&tnow, &lt);
         strftime(iso, sizeof(iso), "%Y-%m-%dT%H:%M:%S", &lt);
+        time_sync_tz_unlock();
         cJSON_AddNumberToObject(tm, "epoch_s", (double)tnow);
         cJSON_AddStringToObject(tm, "local",   iso);
     } else {
@@ -597,15 +694,15 @@ static esp_err_t handle_status(httpd_req_t *req)
     add_system_load(root);
 
     send_json(req, root);
-    return ESP_OK;
+    return WEB_HTTP_OK;
 }
 
-static esp_err_t handle_calls(httpd_req_t *req)
+static web_http_error_t handle_calls(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
     stats_call_t calls[STATS_MAX_CALLS];
     int n = stats_snapshot_calls(calls, STATS_MAX_CALLS);
-    int64_t now_us = esp_timer_get_time();
+    int64_t now_us = pb_monotonic_us();
 
     cJSON *root = cJSON_CreateObject();
     cJSON *arr  = cJSON_AddArrayToObject(root, "calls");
@@ -623,7 +720,7 @@ static esp_err_t handle_calls(httpd_req_t *req)
         cJSON_AddItemToArray(arr, o);
     }
     send_json(req, root);
-    return ESP_OK;
+    return WEB_HTTP_OK;
 }
 
 // --- URL-encoded form parsing --------------------------------------
@@ -713,26 +810,26 @@ static uint64_t sip_config_digest(void)
     return h;
 }
 
-static esp_err_t handle_config_post(httpd_req_t *req)
+static web_http_error_t handle_config_post(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
-    int total = req->content_len;
+    int total = web_http_body_length(req);
     if (total <= 0 || total > 2048) {
-        httpd_resp_send_err(req, HTTPD_400_BAD_REQUEST, "body missing or too large");
-        return ESP_OK;
+        web_http_send_error(req, WEB_HTTP_STATUS_BAD_REQUEST, "body missing or too large");
+        return WEB_HTTP_OK;
     }
     char *body = malloc(total + 1);
     if (!body) {
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "oom");
-        return ESP_OK;
+        web_http_send_error(req, WEB_HTTP_STATUS_INTERNAL_SERVER_ERROR, "oom");
+        return WEB_HTTP_OK;
     }
     int got = 0;
     while (got < total) {
-        int n = httpd_req_recv(req, body + got, total - got);
+        int n = web_http_read_body(req, body + got, total - got);
         if (n <= 0) {
             free(body);
-            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "recv");
-            return ESP_OK;
+            web_http_send_error(req, WEB_HTTP_STATUS_INTERNAL_SERVER_ERROR, "recv");
+            return WEB_HTTP_OK;
         }
         got += n;
     }
@@ -900,7 +997,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
         if (strlen(smtp_to) < MAIL_RCPT_SPEC_CAP && !rcpts.dropped)
             smtp_to_val = smtp_to;
         else
-            ESP_LOGW(TAG, "smtp_to rejected: too long or too many recipients");
+            pb_log_warn(TAG, "smtp_to rejected: too long or too many recipients");
     }
 
     // Caller-name patterns: reject a spec that would not survive storage in
@@ -914,7 +1011,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
         if (strlen(spam_names) < NAME_FILTER_SPEC_CAP && !nf.dropped)
             spam_names_val = spam_names;
         else
-            ESP_LOGW(TAG, "spam_names rejected: pattern too long or too many patterns");
+            pb_log_warn(TAG, "spam_names rejected: pattern too long or too many patterns");
     }
 
     // UI/content locale: accept only a well-formed code (validated the same
@@ -930,7 +1027,7 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     const char *dial_prefix = (have_dial_pfx && config_dial_prefix_valid(dial_prefix_s))
                               ? dial_prefix_s : NULL;
     if (have_dial_pfx && dial_prefix == NULL) {
-        ESP_LOGW(TAG, "dial_prefix rejected: expected \"+NN\"");
+        pb_log_warn(TAG, "dial_prefix rejected: expected \"+NN\"");
     }
 
     config_update_t u = {
@@ -1031,15 +1128,13 @@ static esp_err_t handle_config_post(httpd_req_t *req)
 
     int err = config_update(&u);
     if (err != PB_KV_OK) {
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "nvs write failed");
-        return ESP_OK;
+        web_http_send_error(req, WEB_HTTP_STATUS_INTERNAL_SERVER_ERROR, "nvs write failed");
+        return WEB_HTTP_OK;
     }
 
     // Apply a changed timezone to the running clock immediately so daily
     // jobs and the dashboard reflect it without a reboot.
-    if (timezone) {
-        time_sync_set_timezone(config_timezone());
-    }
+    if (timezone) time_sync_set_timezone(config_timezone());
 
 #if CONFIG_IDF_TARGET_ESP32S3
     // Turn the display right away, so the user sees the effect of the
@@ -1078,18 +1173,18 @@ static esp_err_t handle_config_post(httpd_req_t *req)
     cJSON_AddBoolToObject(root, "ok", true);
     cJSON_AddStringToObject(root, "message", sip_changed ? "Saved, re-registering." : "Saved.");
     send_json(req, root);
-    return ESP_OK;
+    return WEB_HTTP_OK;
 }
 
 // Receive up to `cap` bytes from the request body into `buf`.
 // Returns bytes read, or a negative error code. NUL-terminates.
-static int recv_body(httpd_req_t *req, char *buf, int cap)
+static int recv_body(web_http_request_t *req, char *buf, int cap)
 {
-    int total = req->content_len;
+    int total = web_http_body_length(req);
     if (total <= 0 || total > cap - 1) return -1;
     int got = 0;
     while (got < total) {
-        int n = httpd_req_recv(req, buf + got, total - got);
+        int n = web_http_read_body(req, buf + got, total - got);
         if (n <= 0) return -1;
         got += n;
     }
@@ -1097,12 +1192,12 @@ static int recv_body(httpd_req_t *req, char *buf, int cap)
     return got;
 }
 
-static void send_fail(httpd_req_t *req, const char *message)
+static void send_fail(web_http_request_t *req, const char *message)
 {
     cJSON *root = cJSON_CreateObject();
     cJSON_AddBoolToObject(root, "ok", false);
     cJSON_AddStringToObject(root, "message", message);
-    httpd_resp_set_status(req, "400 Bad Request");
+    web_http_set_status(req, "400 Bad Request");
     send_json(req, root);
 }
 
@@ -1112,7 +1207,7 @@ static void send_fail(httpd_req_t *req, const char *message)
 // off a re-register, and emit the success JSON. `res` must come from a
 // successful tr064_provision_sip_client(); `auth_token` is the 2FA token
 // when one is in play, NULL otherwise.
-static esp_err_t finish_fritzbox_setup(httpd_req_t *req,
+static web_http_error_t finish_fritzbox_setup(web_http_request_t *req,
         const char *fritz_host, const char *fritz_user,
         const char *fritz_pass, const char *auth_token,
         const tr064_sip_result_t *res)
@@ -1126,17 +1221,17 @@ static esp_err_t finish_fritzbox_setup(httpd_req_t *req,
     char app_pass[40] = "";
     int  app_err_code = 0;
     char app_err_msg[128] = "";
-    esp_err_t app_err = tr064_register_dongle_app(
+    int app_err = tr064_register_dongle_app(
         fritz_host, 49000, fritz_user, fritz_pass, auth_token,
         app_user, sizeof(app_user),
         app_pass, sizeof(app_pass),
         &app_err_code, app_err_msg, sizeof(app_err_msg));
-    if (app_err != ESP_OK) {
+    if (app_err != PB_OK) {
         // ERROR, not WARN: failing to register the TR-064 app leaves the
         // blocklist sync to the Fritz!Box disabled — a real loss of
         // function worth surfacing (and shipping via the log beacon),
         // not transient noise.
-        ESP_LOGE(TAG,
+        pb_log_err(TAG,
             "RegisterApp failed (code %d, %s) — sync feature disabled",
             app_err_code, app_err_msg);
         app_user[0] = '\0';
@@ -1164,9 +1259,9 @@ static esp_err_t finish_fritzbox_setup(httpd_req_t *req,
         .fritzbox_app_user = app_user,
         .fritzbox_app_pass = app_pass,
     };
-    if (config_update(&u) != ESP_OK) {
+    if (config_update(&u) != PB_KV_OK) {
         send_fail(req, "NVS write failed.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
     // TR-064 just provisioned a new extension on the Fritz!Box — give the
     // box 1.5 s to make it live before the first REGISTER, otherwise it
@@ -1182,7 +1277,7 @@ static esp_err_t finish_fritzbox_setup(httpd_req_t *req,
     cJSON_AddStringToObject(root, "internal_number", res->internal_number);
     cJSON_AddBoolToObject  (root, "app_registered", app_user[0] != '\0');
     send_json(req, root);
-    return ESP_OK;
+    return WEB_HTTP_OK;
 }
 
 // POST /api/fritzbox-setup
@@ -1191,13 +1286,13 @@ static esp_err_t finish_fritzbox_setup(httpd_req_t *req,
 // SIP credentials (plus the registrar host) via config_update() and
 // triggers sip_register_request_reload() so the dongle registers
 // with the new identity right away.
-static esp_err_t handle_fritzbox_setup(httpd_req_t *req)
+static web_http_error_t handle_fritzbox_setup(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
     char body[512];
     if (recv_body(req, body, sizeof(body)) < 0) {
         send_fail(req, "Body missing or too large.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
 
     char fritz_host[64]  = "";
@@ -1219,46 +1314,46 @@ static esp_err_t handle_fritzbox_setup(httpd_req_t *req)
     if (!fritz_user[0] && fritz_pass[0]) {
         int code = 0;
         char detail[128] = "";
-        esp_err_t lerr = tr064_get_default_username(
+        int lerr = tr064_get_default_username(
             fritz_host, 49000, "", fritz_pass,
             fritz_user, sizeof(fritz_user),
             &code, detail, sizeof(detail));
-        if (lerr != ESP_OK || !fritz_user[0]) {
+        if (lerr != PB_OK || !fritz_user[0]) {
             char msg[240];
             snprintf(msg, sizeof(msg),
                 "Could not auto-detect the Fritz!Box username (%s). "
                 "Please enter it explicitly.",
                 detail[0] ? detail : "no details");
             send_fail(req, msg);
-            return ESP_OK;
+            return WEB_HTTP_OK;
         }
     }
     if (!fritz_user[0]) strncpy(fritz_user, "admin", sizeof(fritz_user) - 1);
     if (!fritz_pass[0]) {
         send_fail(req, "Fritz!Box password missing.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
 
     tr064_sip_result_t res;
     memset(&res, 0, sizeof(res));
-    esp_err_t err = tr064_provision_sip_client(
+    int err = tr064_provision_sip_client(
         fritz_host, 49000, fritz_user, fritz_pass, phone_name, NULL, &res);
-    if (err != ESP_OK && res.error_code == 866) {
+    if (err != PB_OK && res.error_code == 866) {
         // Fritz!Box requires 2FA — start the handshake, stash the
         // credentials + phone name for the retry, and tell the web UI
         // to show the "press a button" instructions + start polling.
         memset(&s_2fa, 0, sizeof(s_2fa));
-        esp_err_t aerr = tr064_auth_start(fritz_host, 49000,
+        int aerr = tr064_auth_start(fritz_host, 49000,
             fritz_user, fritz_pass,
             s_2fa.token,   sizeof(s_2fa.token),
             s_2fa.state,   sizeof(s_2fa.state),
             s_2fa.methods, sizeof(s_2fa.methods));
-        if (aerr != ESP_OK || !s_2fa.token[0]) {
+        if (aerr != PB_OK || !s_2fa.token[0]) {
             send_fail(req, "2FA start failed (X_AVM-DE_Auth unreachable?)");
-            return ESP_OK;
+            return WEB_HTTP_OK;
         }
         s_2fa.active      = true;
-        s_2fa.started_us  = esp_timer_get_time();
+        s_2fa.started_us  = pb_monotonic_us();
         strncpy(s_2fa.fritz_host, fritz_host, sizeof(s_2fa.fritz_host) - 1);
         strncpy(s_2fa.fritz_user, fritz_user, sizeof(s_2fa.fritz_user) - 1);
         strncpy(s_2fa.fritz_pass, fritz_pass, sizeof(s_2fa.fritz_pass) - 1);
@@ -1277,9 +1372,9 @@ static esp_err_t handle_fritzbox_setup(httpd_req_t *req)
             "Please press any button on the Fritz!Box now. "
             "Alternatively dial the DTMF sequence on a connected phone.");
         send_json(req, root);
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
-    if (err != ESP_OK) {
+    if (err != PB_OK) {
         char msg[320];
         switch (res.error_code) {
             case TR064_ERR_TRANSPORT:
@@ -1319,7 +1414,7 @@ static esp_err_t handle_fritzbox_setup(httpd_req_t *req)
                 break;
         }
         send_fail(req, msg);
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
 
     // Provisioning succeeded — register the app instance, persist the
@@ -1356,13 +1451,13 @@ static void url_encode(const char *in, char *out, size_t cap)
 // ?callback=<us>&state=<nonce>, redirect the browser there. The server
 // handles OAuth, then redirects back to /token-callback with ?token=…
 // &state=<nonce>.
-static esp_err_t handle_register_start(httpd_req_t *req)
+static web_http_error_t handle_register_start(web_http_request_t *req)
 {
     REQUIRE_AUTH_HTML(req);
     // Random 32-hex-char nonce.
     static const char hex[] = "0123456789abcdef";
     for (int i = 0; i < 32; i++) {
-        s_oauth_nonce[i] = hex[esp_random() & 0x0f];
+        s_oauth_nonce[i] = hex[pb_random_u32() & 0x0f];
     }
     s_oauth_nonce[32] = '\0';
 
@@ -1370,7 +1465,7 @@ static esp_err_t handle_register_start(httpd_req_t *req)
     // (answerbot / fritz.box-local-name / raw IP) so phoneblock.net
     // redirects back to the same origin the user came from.
     char host[64] = "answerbot";
-    httpd_req_get_hdr_value_str(req, "Host", host, sizeof(host));
+    web_http_get_header(req, "Host", host, sizeof(host));
 
     char callback_plain[128];
     snprintf(callback_plain, sizeof(callback_plain),
@@ -1390,28 +1485,28 @@ static esp_err_t handle_register_start(httpd_req_t *req)
              config_phoneblock_base_url(), "PhoneBlock-Dongle",
              callback_enc, s_oauth_nonce);
 
-    ESP_LOGI(TAG, "register-start → redirect to %s", url);
-    httpd_resp_set_status(req, "302 Found");
-    httpd_resp_set_hdr(req, "Location", url);
-    httpd_resp_send(req, NULL, 0);
-    return ESP_OK;
+    pb_log_info(TAG, "register-start → redirect to %s", url);
+    web_http_set_status(req, "302 Found");
+    web_http_set_header(req, "Location", url);
+    web_http_send(req, NULL, 0);
+    return WEB_HTTP_OK;
 }
 
 // GET /token-callback?token=…&state=<nonce>
 // phoneblock.net redirects the user's browser here after successful
 // login. We verify the CSRF nonce, commit the token to NVS, and show
 // the user a friendly success page that links back to the main UI.
-static esp_err_t handle_token_callback(httpd_req_t *req)
+static web_http_error_t handle_token_callback(web_http_request_t *req)
 {
     REQUIRE_AUTH_HTML(req);
     char query[512];
-    if (httpd_req_get_url_query_str(req, query, sizeof(query)) != ESP_OK) {
-        httpd_resp_set_type(req, "text/html; charset=utf-8");
-        httpd_resp_send(req,
+    if (web_http_get_query_string(req, query, sizeof(query)) != WEB_HTTP_OK) {
+        web_http_set_type(req, "text/html; charset=utf-8");
+        web_http_send(req,
             "<p>Missing query parameters. "
             "<a href=\"/\">Back to configuration</a>.</p>",
-            HTTPD_RESP_USE_STRLEN);
-        return ESP_OK;
+            WEB_HTTP_RESP_USE_STRLEN);
+        return WEB_HTTP_OK;
     }
     char token_raw[128] = "";
     char token[128]     = "";
@@ -1419,11 +1514,11 @@ static esp_err_t handle_token_callback(httpd_req_t *req)
     char state[64]      = "";
     // Server's /create-token uses `loginToken` as the parameter name;
     // accept `token` too for robustness if we ever change the server.
-    if (httpd_query_key_value(query, "loginToken", token_raw, sizeof(token_raw)) != ESP_OK) {
-        httpd_query_key_value(query, "token", token_raw, sizeof(token_raw));
+    if (web_http_query_value(query, "loginToken", token_raw, sizeof(token_raw)) != WEB_HTTP_OK) {
+        web_http_query_value(query, "token", token_raw, sizeof(token_raw));
     }
-    httpd_query_key_value(query, "state", state_raw, sizeof(state_raw));
-    // httpd_query_key_value does *not* unescape %XX sequences. A token
+    web_http_query_value(query, "state", state_raw, sizeof(state_raw));
+    // web_http_query_value does *not* unescape %XX sequences. A token
     // containing e.g. '+' or '/' arrives here as "%2B"/"%2F" and, if
     // stored raw, the server never recognises it — length mismatch
     // (35 vs 37 chars) was the tell. Decode both values.
@@ -1432,34 +1527,34 @@ static esp_err_t handle_token_callback(httpd_req_t *req)
 
     if (!s_oauth_nonce[0] || strcmp(state, s_oauth_nonce) != 0) {
         s_oauth_nonce[0] = '\0';
-        ESP_LOGW(TAG, "token-callback: bad or missing CSRF state");
-        httpd_resp_set_status(req, "400 Bad Request");
-        httpd_resp_set_type(req, "text/html; charset=utf-8");
-        httpd_resp_send(req,
+        pb_log_warn(TAG, "token-callback: bad or missing CSRF state");
+        web_http_set_status(req, "400 Bad Request");
+        web_http_set_type(req, "text/html; charset=utf-8");
+        web_http_send(req,
             "<p>Invalid or expired CSRF state. "
             "<a href=\"/\">Please start over</a>.</p>",
-            HTTPD_RESP_USE_STRLEN);
-        return ESP_OK;
+            WEB_HTTP_RESP_USE_STRLEN);
+        return WEB_HTTP_OK;
     }
     s_oauth_nonce[0] = '\0';  // single-use
 
     if (!token[0]) {
-        httpd_resp_set_status(req, "400 Bad Request");
-        httpd_resp_set_type(req, "text/html; charset=utf-8");
-        httpd_resp_send(req,
+        web_http_set_status(req, "400 Bad Request");
+        web_http_set_type(req, "text/html; charset=utf-8");
+        web_http_send(req,
             "<p>No token in the redirect. "
             "<a href=\"/\">Back</a>.</p>",
-            HTTPD_RESP_USE_STRLEN);
-        return ESP_OK;
+            WEB_HTTP_RESP_USE_STRLEN);
+        return WEB_HTTP_OK;
     }
 
     config_update_t u = { .phoneblock_token = token };
-    if (config_update(&u) != ESP_OK) {
-        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "nvs");
-        return ESP_OK;
+    if (config_update(&u) != PB_KV_OK) {
+        web_http_send_error(req, WEB_HTTP_STATUS_INTERNAL_SERVER_ERROR, "nvs");
+        return WEB_HTTP_OK;
     }
 
-    ESP_LOGI(TAG, "token-callback: stored new PhoneBlock token (%d chars)",
+    pb_log_info(TAG, "token-callback: stored new PhoneBlock token (%d chars)",
              (int)strlen(token));
 
     // Immediately exercise the new token so the dashboard has an API
@@ -1477,8 +1572,8 @@ static esp_err_t handle_token_callback(httpd_req_t *req)
         if (phoneblock_fetch_dial_prefix(prefix, sizeof(prefix))
                 && config_dial_prefix_valid(prefix)) {
             config_update_t up = { .dial_prefix = prefix };
-            if (config_update(&up) == ESP_OK) {
-                ESP_LOGI(TAG, "token-callback: adopted country %s from account",
+            if (config_update(&up) == PB_KV_OK) {
+                pb_log_info(TAG, "token-callback: adopted country %s from account",
                          prefix);
             }
         }
@@ -1490,15 +1585,15 @@ static esp_err_t handle_token_callback(httpd_req_t *req)
     // tab opened any other way (popup blocked, old bookmark) falls back to
     // the status landing. "./" rather than "/" so the fallback stays under
     // a reverse proxy's path prefix.
-    httpd_resp_set_type(req, "text/html; charset=utf-8");
-    httpd_resp_set_hdr(req, "Cache-Control", "no-store");
-    httpd_resp_send(req,
+    static const char close_page[] =
         "<!DOCTYPE html><meta charset=\"utf-8\"><title>PhoneBlock</title>"
         "<script>window.close();"
         "setTimeout(function(){location.replace('./');},500);</script>"
-        "<noscript><meta http-equiv=\"refresh\" content=\"0;url=./\"></noscript>",
-        HTTPD_RESP_USE_STRLEN);
-    return ESP_OK;
+        "<noscript><meta http-equiv=\"refresh\" content=\"0;url=./\"></noscript>";
+    web_http_set_type(req, "text/html; charset=utf-8");
+    web_http_set_header(req, "Cache-Control", "no-store");
+    web_http_send(req, close_page, sizeof(close_page) - 1);
+    return WEB_HTTP_OK;
 }
 
 // GET /api/fritzbox-2fa-status
@@ -1508,28 +1603,28 @@ static esp_err_t handle_token_callback(httpd_req_t *req)
 // resulting SIP credentials in NVS, and returns ok=true with the same
 // shape as a direct success. On "stopped"/"blocked" or on a timeout
 // (2 minutes) the pending state is wiped and an error returned.
-static esp_err_t handle_fritzbox_2fa_status(httpd_req_t *req)
+static web_http_error_t handle_fritzbox_2fa_status(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
     if (!s_2fa.active) {
         send_fail(req, "No 2FA request in progress.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
     // 2-minute hard cap, mirroring the Fritz!Box's own timeout.
-    int64_t age_us = esp_timer_get_time() - s_2fa.started_us;
+    int64_t age_us = pb_monotonic_us() - s_2fa.started_us;
     if (age_us > 120LL * 1000 * 1000) {
         s_2fa.active = false;
         send_fail(req, "Timed out. Please start over.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
 
     char state[32] = "";
-    esp_err_t err = tr064_auth_get_state(s_2fa.fritz_host, 49000,
+    int err = tr064_auth_get_state(s_2fa.fritz_host, 49000,
         s_2fa.fritz_user, s_2fa.fritz_pass, s_2fa.token,
         state, sizeof(state));
-    if (err != ESP_OK) {
+    if (err != PB_OK) {
         send_fail(req, "GetState failed.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
 
     if (strcmp(state, "authenticated") != 0) {
@@ -1547,7 +1642,7 @@ static esp_err_t handle_fritzbox_2fa_status(httpd_req_t *req)
                      : "Waiting for confirmation on the router…");
         if (terminal) s_2fa.active = false;
         send_json(req, root);
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
 
     // 2FA done → retry SetClient4 with the token.
@@ -1557,7 +1652,7 @@ static esp_err_t handle_fritzbox_2fa_status(httpd_req_t *req)
         s_2fa.fritz_user, s_2fa.fritz_pass, s_2fa.phone_name,
         s_2fa.token, &res);
 
-    if (err != ESP_OK) {
+    if (err != PB_OK) {
         // Wipe the cached admin password before bailing — the round-trip
         // is over either way.
         memset(s_2fa.fritz_pass, 0, sizeof(s_2fa.fritz_pass));
@@ -1568,12 +1663,12 @@ static esp_err_t handle_fritzbox_2fa_status(httpd_req_t *req)
             res.error_code,
             res.error_message[0] ? res.error_message : "(no details)");
         send_fail(req, msg);
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
 
     // Provisioning succeeded — same tail as the direct path, passing the
     // 2FA token so the app instance registers within the auth session.
-    esp_err_t rc = finish_fritzbox_setup(req, s_2fa.fritz_host,
+    web_http_error_t rc = finish_fritzbox_setup(req, s_2fa.fritz_host,
         s_2fa.fritz_user, s_2fa.fritz_pass, s_2fa.token, &res);
     // The 2FA round-trip is over; wipe the cached admin password.
     memset(s_2fa.fritz_pass, 0, sizeof(s_2fa.fritz_pass));
@@ -1581,12 +1676,12 @@ static esp_err_t handle_fritzbox_2fa_status(httpd_req_t *req)
     return rc;
 }
 
-static esp_err_t handle_errors(httpd_req_t *req)
+static web_http_error_t handle_errors(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
     stats_error_t errs[STATS_MAX_ERRORS];
     int n = stats_snapshot_errors(errs, STATS_MAX_ERRORS);
-    int64_t now_us = esp_timer_get_time();
+    int64_t now_us = pb_monotonic_us();
 
     cJSON *root = cJSON_CreateObject();
     cJSON *arr  = cJSON_AddArrayToObject(root, "errors");
@@ -1594,16 +1689,17 @@ static esp_err_t handle_errors(httpd_req_t *req)
         cJSON *o = cJSON_CreateObject();
         cJSON_AddNumberToObject(o, "age_s",   (double)((now_us - errs[i].at_us) / 1000000));
         cJSON_AddStringToObject(o, "level",
-            errs[i].level == ESP_LOG_ERROR ? "E" :
-            errs[i].level == ESP_LOG_WARN  ? "W" : "I");
+            errs[i].level == STATS_LOG_LEVEL_ERROR ? "E" :
+            errs[i].level == STATS_LOG_LEVEL_WARN  ? "W" : "I");
         cJSON_AddStringToObject(o, "tag",     errs[i].tag);
         cJSON_AddStringToObject(o, "message", errs[i].message);
         cJSON_AddItemToArray(arr, o);
     }
     send_json(req, root);
-    return ESP_OK;
+    return WEB_HTTP_OK;
 }
 
+#ifdef ESP_PLATFORM
 // GET /api/log/stream — follow the full log live (every line that hits
 // the serial console, all levels), one subscriber at a time.
 //
@@ -1633,19 +1729,19 @@ static bool log_client_connected(int fd)
 
 static void log_stream_task(void *arg)
 {
-    httpd_req_t *req = (httpd_req_t *)arg;
-    int fd = httpd_req_to_sockfd(req);
+    web_http_request_t *req = (web_http_request_t *)arg;
+    int fd = web_http_request_to_sockfd(req);
     char *buf = malloc(LOG_STREAM_LINE_MAX);
     if (buf) {
-        httpd_resp_set_type(req, "text/plain; charset=utf-8");
-        httpd_resp_set_hdr(req, "Cache-Control", "no-store");
-        httpd_resp_set_hdr(req, "X-Accel-Buffering", "no");  // no proxy buffering
-        esp_err_t err = httpd_resp_send_chunk(req, "--- live log ---\n",
-                                              HTTPD_RESP_USE_STRLEN);
+        web_http_set_type(req, "text/plain; charset=utf-8");
+        web_http_set_header(req, "Cache-Control", "no-store");
+        web_http_set_header(req, "X-Accel-Buffering", "no");  // no proxy buffering
+        esp_err_t err = web_http_send_chunk(req, "--- live log ---\n",
+                                              WEB_HTTP_RESP_USE_STRLEN);
         while (err == ESP_OK) {
             size_t n = log_stream_read(buf, LOG_STREAM_LINE_MAX, 5000);
             if (n > 0) {
-                err = httpd_resp_send_chunk(req, buf, n);  // one chunk per line
+                err = web_http_send_chunk(req, buf, n);  // one chunk per line
             } else if (!log_client_connected(fd)) {
                 break;            // idle gap and the peer is gone — free the slot
             }
@@ -1653,31 +1749,31 @@ static void log_stream_task(void *arg)
         }
         free(buf);
     }
-    httpd_resp_send_chunk(req, NULL, 0);         // best-effort terminate
+    web_http_send_chunk(req, NULL, 0);         // best-effort terminate
     httpd_req_async_handler_complete(req);
     log_stream_close();
     vTaskDelete(NULL);
 }
 
-static esp_err_t handle_log_stream(httpd_req_t *req)
+static esp_err_t handle_log_stream(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
 
     // Single subscriber: reserve the slot before detaching the request.
     if (!log_stream_open()) {
-        httpd_resp_set_status(req, "409 Conflict");
-        httpd_resp_set_type(req, "text/plain");
-        httpd_resp_sendstr(req, "log stream already in use\n");
-        return ESP_OK;
+        web_http_set_status(req, "409 Conflict");
+        web_http_set_type(req, "text/plain");
+        web_http_send_text(req, "log stream already in use\n");
+        return WEB_HTTP_OK;
     }
 
-    httpd_req_t *areq = NULL;
+    web_http_request_t *areq = NULL;
     if (httpd_req_async_handler_begin(req, &areq) != ESP_OK) {
         log_stream_close();
-        httpd_resp_set_status(req, "500 Internal Server Error");
-        httpd_resp_set_type(req, "text/plain");
-        httpd_resp_sendstr(req, "cannot start log stream\n");
-        return ESP_OK;
+        web_http_set_status(req, "500 Internal Server Error");
+        web_http_set_type(req, "text/plain");
+        web_http_send_text(req, "cannot start log stream\n");
+        return WEB_HTTP_OK;
     }
     // 4 KB stack: the read buffer is on the heap, the send path is plain
     // HTTP (no TLS), so the chunk framing is all this task needs.
@@ -1688,23 +1784,24 @@ static esp_err_t handle_log_stream(httpd_req_t *req)
     }
     return ESP_OK;
 }
+#endif
 
 // GET /api/announcement — streams the currently active A-law audio.
 // Content-Type: audio/basic (the IANA-registered type for G.711
 // µ-law, close enough to A-law for a "audio payload" hint; browsers
 // don't decode either natively, the UI wraps it in a WAV header).
-static esp_err_t handle_announcement_get(httpd_req_t *req)
+static web_http_error_t handle_announcement_get(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
     announcement_src_t src;
     announcement_open(&src);
     if (src.len == 0) {
         announcement_close(&src);
-        httpd_resp_send_err(req, HTTPD_404_NOT_FOUND, "no announcement");
-        return ESP_OK;
+        web_http_send_error(req, WEB_HTTP_STATUS_NOT_FOUND, "no announcement");
+        return WEB_HTTP_OK;
     }
-    httpd_resp_set_type(req, "audio/basic");
-    httpd_resp_set_hdr(req, "Cache-Control", "no-store");
+    web_http_set_type(req, "audio/basic");
+    web_http_set_header(req, "Cache-Control", "no-store");
 
     // Stream the announcement in chunks straight from its source (flash
     // RODATA for the default, SPIFFS for a custom one) so we never hold
@@ -1712,32 +1809,34 @@ static esp_err_t handle_announcement_get(httpd_req_t *req)
     uint8_t buf[1024];
     size_t n;
     while ((n = announcement_read(&src, buf, sizeof(buf))) > 0) {
-        if (httpd_resp_send_chunk(req, (const char *)buf, n) != ESP_OK) {
+        if (web_http_send_chunk(req, (const char *)buf, n) != WEB_HTTP_OK) {
             announcement_close(&src);
-            return ESP_FAIL;   // socket gone — abort the response
+            return WEB_HTTP_FAIL;   // socket gone — abort the response
         }
     }
     announcement_close(&src);
-    httpd_resp_send_chunk(req, NULL, 0);   // terminate the chunked response
-    return ESP_OK;
+    web_http_send_chunk(req, NULL, 0);   // terminate the chunked response
+    return WEB_HTTP_OK;
 }
 
 // The ENGLISH web-UI strings, baked into the image from i18n/l10n/ui/ui_en.arb
 // (stripped to JSON at build; see main/CMakeLists.txt) — the universal offline
 // fallback, served when no downloaded pack for the active locale is present.
 // TEXT embed → NUL-terminated, so the JSON length is (end - start - 1).
+#ifdef ESP_PLATFORM
 extern const char ui_en_json_start[] asm("_binary_ui_en_json_start");
 extern const char ui_en_json_end[]   asm("_binary_ui_en_json_end");
+#endif
 
 // GET /api/i18n/ui — serves the UI translation pack for the active ui_lang.
 // If i18n_sync has downloaded one to SPIFFS, serve that (same-origin, so a
 // configured dongle needs no CDN at runtime); otherwise serve the baked-in
 // English fallback. Never 404s — the browser always gets a usable dict. No
 // auth: the page needs this to render, possibly before login.
-static esp_err_t handle_i18n_ui(httpd_req_t *req)
+static web_http_error_t handle_i18n_ui(web_http_request_t *req)
 {
-    httpd_resp_set_type(req, "application/json");
-    httpd_resp_set_hdr(req, "Cache-Control", "no-store");
+    web_http_set_type(req, "application/json");
+    web_http_set_header(req, "Cache-Control", "no-store");
 
     char path[48];
     i18n_sync_ui_path(path, sizeof(path), config_ui_lang());
@@ -1746,20 +1845,24 @@ static esp_err_t handle_i18n_ui(httpd_req_t *req)
         char buf[1024];
         size_t n;
         while ((n = fread(buf, 1, sizeof(buf), f)) > 0) {
-            if (httpd_resp_send_chunk(req, buf, n) != ESP_OK) {
+            if (web_http_send_chunk(req, buf, n) != WEB_HTTP_OK) {
                 fclose(f);
-                return ESP_FAIL;
+                return WEB_HTTP_FAIL;
             }
         }
         fclose(f);
-        httpd_resp_send_chunk(req, NULL, 0);
-        return ESP_OK;
+        web_http_send_chunk(req, NULL, 0);
+        return WEB_HTTP_OK;
     }
     // No downloaded pack (a locale still downloading, or offline) → the
     // baked-in English fallback.
-    httpd_resp_send(req, ui_en_json_start,
+#ifdef ESP_PLATFORM
+    web_http_send(req, ui_en_json_start,
                     (size_t)(ui_en_json_end - ui_en_json_start - 1));
-    return ESP_OK;
+    return WEB_HTTP_OK;
+#else
+    return send_web_asset(req, "ui_en.json", NULL);
+#endif
 }
 
 // Receive timeouts tolerated per upload before giving up. One timeout
@@ -1770,20 +1873,25 @@ static esp_err_t handle_i18n_ui(httpd_req_t *req)
 // few times instead of ending the upload. Every timeout and the final
 // failure are logged with the offset and the heap state, because the
 // client only gets a generic "Upload interrupted.".
-static int upload_recv(httpd_req_t *req, char *buf, int want,
+static int upload_recv(web_http_request_t *req, char *buf, int want,
                        const char *what, int got, int total)
 {
     for (int timeouts = 0; ; timeouts++) {
-        int n = httpd_req_recv(req, buf, want);
+        int n = web_http_read_body(req, buf, want);
         if (n > 0) return n;
-        bool retry = n == HTTPD_SOCK_ERR_TIMEOUT && timeouts < UPLOAD_RECV_RETRIES;
+        bool retry = n == WEB_HTTP_RECV_TIMEOUT && timeouts < UPLOAD_RECV_RETRIES;
+#ifdef ESP_PLATFORM
         ESP_LOGW(TAG, "%s upload: recv %d at %d of %d bytes, %s "
                  "(heap free %u, largest %u)",
                  what, n, got, total, retry ? "retrying" : "giving up",
                  (unsigned) esp_get_free_heap_size(),
                  (unsigned) heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
+#else
+        pb_log_warn(TAG, "%s upload: recv %d at %d of %d bytes, %s",
+                    what, n, got, total, retry ? "retrying" : "giving up");
+#endif
         if (!retry) return n;
-        esp_task_wdt_reset();
+        pb_watchdog_reset();
     }
 }
 
@@ -1792,24 +1900,24 @@ static int upload_recv(httpd_req_t *req, char *buf, int want,
 // UI does the WAV/MP3/OGG → A-law conversion via the browser's Web
 // Audio API before uploading. Streamed straight into SPIFFS via the
 // announcement_write_* API so we don't hold the full 240 KB on heap.
-static esp_err_t handle_announcement_post(httpd_req_t *req)
+static web_http_error_t handle_announcement_post(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
-    int total = req->content_len;
+    int total = web_http_body_length(req);
     if (total <= 0 || total > (int)ANNOUNCEMENT_MAX_BYTES) {
         char msg[64];
         snprintf(msg, sizeof(msg),
             "Audio missing or over %u bytes cap.",
             (unsigned)ANNOUNCEMENT_MAX_BYTES);
         send_fail(req, msg);
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
 
-    int64_t t0 = esp_timer_get_time();
-    esp_err_t err = announcement_write_begin((size_t)total);
-    if (err != ESP_OK) {
+    int64_t t0 = pb_monotonic_us();
+    int err = announcement_write_begin((size_t)total);
+    if (err != PB_OK) {
         send_fail(req, "Could not open upload target.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
 
     // 8 KB chunks on the heap: bigger batches keep SPIFFS flushes
@@ -1819,7 +1927,7 @@ static esp_err_t handle_announcement_post(httpd_req_t *req)
     if (!chunk) {
         announcement_write_abort();
         send_fail(req, "Out of memory.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
     int64_t recv_us = 0;
     int64_t write_us = 0;
@@ -1827,43 +1935,41 @@ static esp_err_t handle_announcement_post(httpd_req_t *req)
     while (got < total) {
         int want = total - got;
         if (want > CHUNK) want = CHUNK;
-        int64_t rs = esp_timer_get_time();
+        int64_t rs = pb_monotonic_us();
         int n = upload_recv(req, chunk, want, "announcement", got, total);
-        recv_us += esp_timer_get_time() - rs;
+        recv_us += pb_monotonic_us() - rs;
         if (n <= 0) {
             free(chunk);
             announcement_write_abort();
             send_fail(req, "Upload interrupted.");
-            return ESP_OK;
+            return WEB_HTTP_OK;
         }
-        int64_t ws = esp_timer_get_time();
-        if (announcement_write_append((const uint8_t *)chunk, n) != ESP_OK) {
+        int64_t ws = pb_monotonic_us();
+        if (announcement_write_append((const uint8_t *)chunk, n) != PB_OK) {
             free(chunk);
             announcement_write_abort();
             send_fail(req, "SPIFFS write failed.");
-            return ESP_OK;
+            return WEB_HTTP_OK;
         }
-        write_us += esp_timer_get_time() - ws;
+        write_us += pb_monotonic_us() - ws;
         got += n;
         // Up to 240 KB audio blob; SPIFFS write latency plus the
         // browser upload can push this past CONFIG_ESP_TASK_WDT_TIMEOUT_S
         // on a slow link. Same rationale as the firmware upload handler.
-        esp_task_wdt_reset();
+        pb_watchdog_reset();
     }
     free(chunk);
 
-    int64_t cs = esp_timer_get_time();
-    esp_err_t cerr = ESP_OK;
-    (void)cerr;
+    int64_t cs = pb_monotonic_us();
     // Commit measured separately from the per-chunk write time.
 
-    if (announcement_write_commit() != ESP_OK) {
+    if (announcement_write_commit() != PB_OK) {
         send_fail(req, "Commit failed.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
-    int64_t commit_us = esp_timer_get_time() - cs;
-    int64_t total_us  = esp_timer_get_time() - t0;
-    ESP_LOGI(TAG,
+    int64_t commit_us = pb_monotonic_us() - cs;
+    int64_t total_us  = pb_monotonic_us() - t0;
+    pb_log_info(TAG,
         "announcement upload: %d bytes in %lld ms "
         "(recv %lld ms, write %lld ms, commit %lld ms)",
         got,
@@ -1877,12 +1983,12 @@ static esp_err_t handle_announcement_post(httpd_req_t *req)
     cJSON_AddNumberToObject(root, "bytes", got);
     cJSON_AddStringToObject(root, "message", "Announcement saved.");
     send_json(req, root);
-    return ESP_OK;
+    return WEB_HTTP_OK;
 }
 
 // POST /api/announcement/reset — drop the custom announcement, fall
 // back to the embedded default.
-static esp_err_t handle_announcement_reset(httpd_req_t *req)
+static web_http_error_t handle_announcement_reset(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
     announcement_reset();
@@ -1890,28 +1996,29 @@ static esp_err_t handle_announcement_reset(httpd_req_t *req)
     cJSON_AddBoolToObject  (root, "ok", true);
     cJSON_AddStringToObject(root, "message", "Announcement reset to default.");
     send_json(req, root);
-    return ESP_OK;
+    return WEB_HTTP_OK;
 }
 
+#ifdef ESP_PLATFORM
 // POST /api/firmware — upload a new firmware binary. Streams the
 // request body into the inactive OTA slot (ota_0/ota_1), verifies
 // the image, flips the boot partition, and reboots. The new image
 // comes up in "pending verify" state; unless the boot path reaches
 // esp_ota_mark_app_valid_cancel_rollback() (in app_main after
 // web_start), the bootloader rolls back on the next reset.
-static esp_err_t handle_firmware_upload(httpd_req_t *req)
+static esp_err_t handle_firmware_upload(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
-    int total = req->content_len;
+    int total = web_http_body_length(req);
     if (total <= 0) {
         send_fail(req, "Upload body missing.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
 
     const esp_partition_t *target = esp_ota_get_next_update_partition(NULL);
     if (!target) {
         send_fail(req, "No OTA slot configured.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
     if ((size_t)total > target->size) {
         char msg[96];
@@ -1925,7 +2032,7 @@ static esp_err_t handle_firmware_upload(httpd_req_t *req)
     esp_ota_handle_t ota = 0;
     esp_err_t err = esp_ota_begin(target, OTA_WITH_SEQUENTIAL_WRITES, &ota);
     if (err != ESP_OK) {
-        ESP_LOGE(TAG, "esp_ota_begin: %s", esp_err_to_name(err));
+        pb_log_err(TAG, "esp_ota_begin: %s", esp_err_to_name(err));
         send_fail(req, "Could not start OTA write.");
         return ESP_OK;
     }
@@ -1937,7 +2044,7 @@ static esp_err_t handle_firmware_upload(httpd_req_t *req)
         send_fail(req, "Out of memory.");
         return ESP_OK;
     }
-    int64_t t0 = esp_timer_get_time();
+    int64_t t0 = pb_monotonic_us();
     int got = 0;
     while (got < total) {
         int want = total - got;
@@ -1951,7 +2058,7 @@ static esp_err_t handle_firmware_upload(httpd_req_t *req)
         }
         err = esp_ota_write(ota, buf, n);
         if (err != ESP_OK) {
-            ESP_LOGE(TAG, "esp_ota_write: %s", esp_err_to_name(err));
+            pb_log_err(TAG, "esp_ota_write: %s", esp_err_to_name(err));
             free(buf);
             esp_ota_abort(ota);
             send_fail(req, "Flash write failed.");
@@ -1969,13 +2076,13 @@ static esp_err_t handle_firmware_upload(httpd_req_t *req)
 
     err = esp_ota_end(ota);
     if (err != ESP_OK) {
-        ESP_LOGE(TAG, "esp_ota_end: %s", esp_err_to_name(err));
+        pb_log_err(TAG, "esp_ota_end: %s", esp_err_to_name(err));
         send_fail(req, "Image verification failed.");
         return ESP_OK;
     }
     err = esp_ota_set_boot_partition(target);
     if (err != ESP_OK) {
-        ESP_LOGE(TAG, "esp_ota_set_boot_partition: %s", esp_err_to_name(err));
+        pb_log_err(TAG, "esp_ota_set_boot_partition: %s", esp_err_to_name(err));
         send_fail(req, "Could not activate new partition.");
         return ESP_OK;
     }
@@ -1987,13 +2094,13 @@ static esp_err_t handle_firmware_upload(httpd_req_t *req)
     // when ready to follow the released stream again.
     config_update_t off = { .auto_update = "0" };
     if (config_update(&off) != ESP_OK) {
-        ESP_LOGW(TAG, "firmware upload: auto-update disable failed (continuing)");
+        pb_log_warn(TAG, "firmware upload: auto-update disable failed (continuing)");
     } else {
-        ESP_LOGI(TAG, "firmware upload: auto-update disabled");
+        pb_log_info(TAG, "firmware upload: auto-update disabled");
     }
 
-    int64_t total_us = esp_timer_get_time() - t0;
-    ESP_LOGI(TAG, "firmware upload: %d bytes to %s in %lld ms",
+    int64_t total_us = pb_monotonic_us() - t0;
+    pb_log_info(TAG, "firmware upload: %d bytes to %s in %lld ms",
              got, target->label, (long long)(total_us / 1000));
 
     cJSON *root = cJSON_CreateObject();
@@ -2006,6 +2113,15 @@ static esp_err_t handle_firmware_upload(httpd_req_t *req)
     firmware_schedule_reboot();
     return ESP_OK;
 }
+#else
+static web_http_error_t handle_firmware_upload(web_http_request_t *req)
+{
+    REQUIRE_AUTH_API(req);
+    web_http_send_error(req, WEB_HTTP_STATUS_NOT_IMPLEMENTED,
+                        "firmware upload is not available on Linux");
+    return WEB_HTTP_OK;
+}
+#endif
 
 // POST /api/firmware/check — read-only manifest check (no download).
 // Returns within ~1-2 s. If a newer version is available, the frontend
@@ -2018,7 +2134,7 @@ static esp_err_t handle_firmware_upload(httpd_req_t *req)
 // loop; the user pressing this button means "yes, try again". The
 // matching marker is left in NVS until /install actually overwrites
 // it, so a check + cancel never silently forgets the prior failure.
-static esp_err_t handle_firmware_check(httpd_req_t *req)
+static web_http_error_t handle_firmware_check(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
     fw_update_outcome_t out;
@@ -2029,13 +2145,13 @@ static esp_err_t handle_firmware_check(httpd_req_t *req)
         case FW_UPDATE_ERR_PARSE:
         case FW_UPDATE_ERR_SIGNATURE:
             send_fail(req, out.error);
-            return ESP_OK;
+            return WEB_HTTP_OK;
         // SKIPPED_FAILED is unreachable with force=true, but treat it
         // defensively so a future caller change does not silently
         // misreport "ok".
         case FW_UPDATE_SKIPPED_FAILED:
             send_fail(req, "Update skipped — previously rolled back.");
-            return ESP_OK;
+            return WEB_HTTP_OK;
         default:
             break;
     }
@@ -2046,7 +2162,7 @@ static esp_err_t handle_firmware_check(httpd_req_t *req)
     cJSON_AddStringToObject(ok, "current_version", out.current_version);
     cJSON_AddStringToObject(ok, "new_version",     out.new_version);
     send_json(req, ok);
-    return ESP_OK;
+    return WEB_HTTP_OK;
 }
 
 // POST /api/firmware/install — download + flash the version the
@@ -2055,7 +2171,7 @@ static esp_err_t handle_firmware_check(httpd_req_t *req)
 // installiert…" while it waits. Re-fetches the manifest internally —
 // keeps the protocol stateless and tolerates the rare case where the
 // CDN flips between check and install.
-static esp_err_t handle_firmware_install(httpd_req_t *req)
+static web_http_error_t handle_firmware_install(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
     fw_update_outcome_t out;
@@ -2067,10 +2183,10 @@ static esp_err_t handle_firmware_install(httpd_req_t *req)
         case FW_UPDATE_ERR_SIGNATURE:
         case FW_UPDATE_ERR_OTA:
             send_fail(req, out.error);
-            return ESP_OK;
+            return WEB_HTTP_OK;
         case FW_UPDATE_SKIPPED_FAILED:
             send_fail(req, "Update skipped — previously rolled back.");
-            return ESP_OK;
+            return WEB_HTTP_OK;
         default:
             break;
     }
@@ -2081,9 +2197,10 @@ static esp_err_t handle_firmware_install(httpd_req_t *req)
     cJSON_AddStringToObject(ok, "current_version", out.current_version);
     cJSON_AddStringToObject(ok, "new_version",     out.new_version);
     send_json(req, ok);
-    return ESP_OK;
+    return WEB_HTTP_OK;
 }
 
+#ifdef ESP_PLATFORM
 // POST /api/factory-reset — erases our NVS namespace, the stored
 // WiFi credentials and the uploaded announcement, then reboots.
 // On the next boot wifi_connect sees an empty nvs.net80211 and
@@ -2104,20 +2221,20 @@ static void factory_reset_task(void *arg)
 
     int err = config_erase();
     if (err != PB_KV_OK) {
-        ESP_LOGE(TAG, "config_erase failed: %s", pb_kv_err_name(err));
+        pb_log_err(TAG, "config_erase failed: %s", pb_kv_err_name(err));
     }
     esp_err_t wifi_err = esp_wifi_restore();
     if (wifi_err != ESP_OK) {
-        ESP_LOGW(TAG, "esp_wifi_restore: %s", esp_err_to_name(wifi_err));
+        pb_log_warn(TAG, "esp_wifi_restore: %s", esp_err_to_name(wifi_err));
     }
     announcement_reset();
 
     vTaskDelay(pdMS_TO_TICKS(200));
-    ESP_LOGW(TAG, "factory-reset: restarting now");
+    pb_log_warn(TAG, "factory-reset: restarting now");
     esp_restart();
 }
 
-static esp_err_t handle_factory_reset(httpd_req_t *req)
+static esp_err_t handle_factory_reset(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
     // Users have reported surprise factory resets without pressing the
@@ -2126,7 +2243,7 @@ static esp_err_t handle_factory_reset(httpd_req_t *req)
     // either a deliberate click or an unexpected client (stale tab,
     // extension, scanner, ...).
     char peer_ip[INET6_ADDRSTRLEN] = "?";
-    int fd = httpd_req_to_sockfd(req);
+    int fd = web_http_request_to_sockfd(req);
     if (fd >= 0) {
         struct sockaddr_in6 sa;
         socklen_t sa_len = sizeof(sa);
@@ -2137,21 +2254,21 @@ static esp_err_t handle_factory_reset(httpd_req_t *req)
         }
     }
     char ua[128] = "";
-    if (httpd_req_get_hdr_value_str(req, "User-Agent", ua, sizeof(ua)) != ESP_OK) {
+    if (web_http_get_header(req, "User-Agent", ua, sizeof(ua)) != ESP_OK) {
         ua[0] = '\0';
     }
-    ESP_LOGW(TAG, "factory-reset request from %s, UA=\"%s\"", peer_ip, ua);
+    pb_log_warn(TAG, "factory-reset request from %s, UA=\"%s\"", peer_ip, ua);
 
     // Require an explicit confirmation token in the POST body. A naked
     // fetch('/api/factory-reset', {method:'POST'}) — stale tab, browser
     // replay, scanner — will have no body and is rejected. The UI
     // sends the token only after the user confirmed the dialog.
     char body[32] = "";
-    int want = req->content_len;
+    int want = web_http_body_length(req);
     if (want > 0 && want < (int)sizeof(body)) {
         int have = 0;
         while (have < want) {
-            int r = httpd_req_recv(req, body + have, want - have);
+            int r = web_http_read_body(req, body + have, want - have);
             if (r <= 0) break;
             have += r;
         }
@@ -2160,8 +2277,8 @@ static esp_err_t handle_factory_reset(httpd_req_t *req)
     char expected[48];
     snprintf(expected, sizeof(expected), "confirm=%s", s_reset_nonce);
     if (s_reset_nonce[0] == '\0' || strcmp(body, expected) != 0) {
-        ESP_LOGW(TAG, "factory-reset: stale/missing nonce — rejected");
-        httpd_resp_set_status(req, "400 Bad Request");
+        pb_log_warn(TAG, "factory-reset: stale/missing nonce — rejected");
+        web_http_set_status(req, "400 Bad Request");
         cJSON *err_root = cJSON_CreateObject();
         cJSON_AddBoolToObject  (err_root, "ok", false);
         cJSON_AddStringToObject(err_root, "message",
@@ -2185,6 +2302,15 @@ static esp_err_t handle_factory_reset(httpd_req_t *req)
     xTaskCreate(factory_reset_task, "factory_reset", 3072, NULL, 5, NULL);
     return ESP_OK;
 }
+#else
+static web_http_error_t handle_factory_reset(web_http_request_t *req)
+{
+    REQUIRE_AUTH_API(req);
+    web_http_send_error(req, WEB_HTTP_STATUS_NOT_IMPLEMENTED,
+                        "factory reset is not available on Linux");
+    return WEB_HTTP_OK;
+}
+#endif
 
 #ifdef CONFIG_CRASH_TEST_ENABLE
 // Background task: short grace period to flush the HTTP response, then
@@ -2205,12 +2331,12 @@ static void crash_test_task(void *arg)
 // this URI and replies 404. Auth + per-boot nonce are mandatory: a
 // stale Firefox replay after the post-panic reboot must not retrigger
 // the panic, which would otherwise lock the device into a crash loop.
-static esp_err_t handle_crash_test(httpd_req_t *req)
+static esp_err_t handle_crash_test(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
 
     char peer_ip[INET6_ADDRSTRLEN] = "?";
-    int fd = httpd_req_to_sockfd(req);
+    int fd = web_http_request_to_sockfd(req);
     if (fd >= 0) {
         struct sockaddr_in6 sa;
         socklen_t sa_len = sizeof(sa);
@@ -2219,14 +2345,14 @@ static esp_err_t handle_crash_test(httpd_req_t *req)
             inet_ntop(AF_INET6, &sa.sin6_addr, peer_ip, sizeof(peer_ip));
         }
     }
-    ESP_LOGW(TAG, "crash-test request from %s", peer_ip);
+    pb_log_warn(TAG, "crash-test request from %s", peer_ip);
 
     char body[32] = "";
-    int want = req->content_len;
+    int want = web_http_body_length(req);
     if (want > 0 && want < (int)sizeof(body)) {
         int have = 0;
         while (have < want) {
-            int r = httpd_req_recv(req, body + have, want - have);
+            int r = web_http_read_body(req, body + have, want - have);
             if (r <= 0) break;
             have += r;
         }
@@ -2235,8 +2361,8 @@ static esp_err_t handle_crash_test(httpd_req_t *req)
     char expected[48];
     snprintf(expected, sizeof(expected), "confirm=%s", s_reset_nonce);
     if (s_reset_nonce[0] == '\0' || strcmp(body, expected) != 0) {
-        ESP_LOGW(TAG, "crash-test: stale/missing nonce — rejected");
-        httpd_resp_set_status(req, "400 Bad Request");
+        pb_log_warn(TAG, "crash-test: stale/missing nonce — rejected");
+        web_http_set_status(req, "400 Bad Request");
         cJSON *err_root = cJSON_CreateObject();
         cJSON_AddBoolToObject  (err_root, "ok", false);
         cJSON_AddStringToObject(err_root, "message",
@@ -2263,7 +2389,7 @@ static esp_err_t handle_crash_test(httpd_req_t *req)
 // it from there: it detects, captures the evidence and panics, and the next boot
 // uploads the core dump. Exercises the whole pipeline the way a genuine
 // corruption would. Only compiled in when CONFIG_CRASH_TEST_ENABLE=y.
-static esp_err_t handle_heap_smash(httpd_req_t *req)
+static esp_err_t handle_heap_smash(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
 
@@ -2279,7 +2405,7 @@ static esp_err_t handle_heap_smash(httpd_req_t *req)
 #endif // CONFIG_CRASH_TEST_ENABLE
 
 // POST /api/sync/run — trigger an immediate blocklist sync.
-static esp_err_t handle_sync_run(httpd_req_t *req)
+static web_http_error_t handle_sync_run(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
     bool triggered = sync_trigger_now();
@@ -2288,12 +2414,12 @@ static esp_err_t handle_sync_run(httpd_req_t *req)
     cJSON_AddStringToObject(root, "message",
         triggered ? "Sync triggered." : "Sync is already running.");
     send_json(req, root);
-    return ESP_OK;
+    return WEB_HTTP_OK;
 }
 
 // POST /api/blocklist-sync/run — trigger an immediate download of the
 // community + personal binary blocklist files.
-static esp_err_t handle_blocklist_sync_run(httpd_req_t *req)
+static web_http_error_t handle_blocklist_sync_run(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
     bool triggered = blocklist_sync_trigger_now();
@@ -2302,7 +2428,7 @@ static esp_err_t handle_blocklist_sync_run(httpd_req_t *req)
     cJSON_AddStringToObject(root, "message",
         triggered ? "Download triggered." : "Download already running.");
     send_json(req, root);
-    return ESP_OK;
+    return WEB_HTTP_OK;
 }
 
 // POST /api/mail/test — send a test status mail using the saved SMTP
@@ -2312,13 +2438,18 @@ static esp_err_t handle_blocklist_sync_run(httpd_req_t *req)
 // into the task watchdog (a wedged handler panics — see the WDT feeder
 // below), so it must not run the send here. Fire-and-forget; the outcome
 // lands in the log panel. Not destructive, so no replay nonce.
-static esp_err_t handle_mail_test(httpd_req_t *req)
+static web_http_error_t handle_mail_test(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
+#ifndef ESP_PLATFORM
+    web_http_send_error(req, WEB_HTTP_STATUS_NOT_IMPLEMENTED,
+                        "mail sending is not available on Linux");
+    return WEB_HTTP_OK;
+#else
     if (!mail_configured()) {
         send_fail(req, "Bitte zuerst Server, Benutzer, Passwort und "
                        "Empfänger speichern.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
     bool ok = scheduler_request_mail_test();
     cJSON *root = cJSON_CreateObject();
@@ -2327,29 +2458,30 @@ static esp_err_t handle_mail_test(httpd_req_t *req)
         ok ? "Test-E-Mail wird gesendet — das Ergebnis steht im Protokoll."
            : "Versand konnte nicht gestartet werden — bitte Protokoll prüfen.");
     send_json(req, root);
-    return ESP_OK;
+    return WEB_HTTP_OK;
+#endif
 }
 
 // POST /api/errors/clear — drops all buffered error entries.
-static esp_err_t handle_errors_clear(httpd_req_t *req)
+static web_http_error_t handle_errors_clear(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
     stats_clear_errors();
     cJSON *root = cJSON_CreateObject();
     cJSON_AddBoolToObject(root, "ok", true);
     send_json(req, root);
-    return ESP_OK;
+    return WEB_HTTP_OK;
 }
 
 // POST /api/calls/clear — drops all buffered call entries.
-static esp_err_t handle_calls_clear(httpd_req_t *req)
+static web_http_error_t handle_calls_clear(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
     stats_clear_calls();
     cJSON *root = cJSON_CreateObject();
     cJSON_AddBoolToObject(root, "ok", true);
     send_json(req, root);
-    return ESP_OK;
+    return WEB_HTTP_OK;
 }
 
 // --- Fritz!Box phonebook (personal allowlist) ----------------------
@@ -2357,14 +2489,14 @@ static esp_err_t handle_calls_clear(httpd_req_t *req)
 // Reply {ok:false, code, message}. `code` is a stable discriminator the
 // UI localises; `message` carries whatever detail the box gave us and is
 // only shown when the code is unknown to the UI.
-static void send_fail_code(httpd_req_t *req, const char *status,
+static void send_fail_code(web_http_request_t *req, const char *status,
                            const char *code, const char *message)
 {
     cJSON *root = cJSON_CreateObject();
     cJSON_AddBoolToObject  (root, "ok", false);
     cJSON_AddStringToObject(root, "code", code);
     cJSON_AddStringToObject(root, "message", message);
-    httpd_resp_set_status(req, status);
+    web_http_set_status(req, status);
     send_json(req, root);
 }
 
@@ -2382,35 +2514,35 @@ static bool fritzbox_reachable(void)
 // Enumerates the box's phonebooks so the UI can offer a target for new
 // contacts. Costs a handful of SOAP calls, so it is only fetched when the
 // user actually opens the picker — never from the status poll.
-static esp_err_t handle_phonebooks(httpd_req_t *req)
+static web_http_error_t handle_phonebooks(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
     if (!fritzbox_reachable()) {
         send_fail_code(req, "409 Conflict", "no_fritzbox",
                        "No Fritz!Box app credentials — run the Fritz!Box setup.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
 
     tr064_phonebook_t *books =
         malloc(sizeof(tr064_phonebook_t) * TR064_MAX_PHONEBOOKS);
     if (!books) {
         send_fail_code(req, "500 Internal Server Error", "oom", "Out of memory.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
 
     int  count = 0;
     int  code  = 0;
     char msg[128] = "";
-    esp_err_t err = tr064_phonebook_list(config_sip_host(), 49000,
+    int err = tr064_phonebook_list(config_sip_host(), 49000,
                                          config_fritzbox_app_user(),
                                          config_fritzbox_app_pass(),
                                          books, TR064_MAX_PHONEBOOKS, &count,
                                          &code, msg, sizeof(msg));
-    if (err != ESP_OK) {
+    if (err != PB_OK) {
         free(books);
         send_fail_code(req, "502 Bad Gateway", "tr064",
                        msg[0] ? msg : "Fritz!Box did not answer.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
 
     cJSON *root = cJSON_CreateObject();
@@ -2428,7 +2560,7 @@ static esp_err_t handle_phonebooks(httpd_req_t *req)
     }
     free(books);
     send_json(req, root);
-    return ESP_OK;
+    return WEB_HTTP_OK;
 }
 
 // POST /api/phonebook/add
@@ -2439,30 +2571,30 @@ static esp_err_t handle_phonebooks(httpd_req_t *req)
 // only after the write succeeded, so a pick that turns out to be
 // unwritable is not persisted. Without it the stored selection is used,
 // and if there is none the UI is told to ask (code "no_phonebook").
-static esp_err_t handle_phonebook_add(httpd_req_t *req)
+static web_http_error_t handle_phonebook_add(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
     if (!fritzbox_reachable()) {
         send_fail_code(req, "409 Conflict", "no_fritzbox",
                        "No Fritz!Box app credentials — run the Fritz!Box setup.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
 
-    int total = req->content_len;
+    int total = web_http_body_length(req);
     if (total <= 0 || total > 1024) {
         send_fail_code(req, "400 Bad Request", "invalid",
                        "Body missing or too large.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
     char *body = malloc(total + 1);
     if (!body) {
         send_fail_code(req, "500 Internal Server Error", "oom", "Out of memory.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
     int got = 0;
     while (got < total) {
-        int n = httpd_req_recv(req, body + got, total - got);
-        if (n <= 0) { free(body); return ESP_FAIL; }
+        int n = web_http_read_body(req, body + got, total - got);
+        if (n <= 0) { free(body); return WEB_HTTP_FAIL; }
         got += n;
     }
     body[got] = '\0';
@@ -2491,17 +2623,17 @@ static esp_err_t handle_phonebook_add(httpd_req_t *req)
     if (!name[0] || strlen(name) >= TR064_CONTACT_NAME_CAP) {
         send_fail_code(req, "400 Bad Request", "invalid_name",
                        "Name missing or too long.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
     if (!tr064_number_plausible(number)) {
         send_fail_code(req, "400 Bad Request", "invalid_number",
                        "Not a number that can be stored in a phone book.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
     if (!tr064_number_type_valid(type)) {
         send_fail_code(req, "400 Bad Request", "invalid_type",
                        "Unknown number type.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
 
     if (have_pick) {
@@ -2516,7 +2648,7 @@ static esp_err_t handle_phonebook_add(httpd_req_t *req)
         // and asking which phonebook to use.
         send_fail_code(req, "409 Conflict", "no_phonebook",
                        "No phone book selected yet.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
 
     // A stored ID needs re-checking before use: NewPhonebookID is positional,
@@ -2530,21 +2662,21 @@ static esp_err_t handle_phonebook_add(httpd_req_t *req)
     if (!have_pick && config_fritzbox_phonebook_name()[0]) {
         const char *want = config_fritzbox_phonebook_name();
         char actual[TR064_PB_NAME_CAP] = "";
-        esp_err_t nerr = tr064_phonebook_name(config_sip_host(), 49000,
+        int nerr = tr064_phonebook_name(config_sip_host(), 49000,
                                               config_fritzbox_app_user(),
                                               config_fritzbox_app_pass(),
                                               (int)strtol(target, NULL, 10),
                                               actual, sizeof(actual),
                                               NULL, NULL, 0);
-        if (nerr != ESP_OK) {
+        if (nerr != PB_OK) {
             send_fail_code(req, "502 Bad Gateway", "tr064",
                            "Fritz!Box did not answer.");
-            return ESP_OK;
+            return WEB_HTTP_OK;
         }
         if (strcmp(actual, want) != 0) {
             // Shifted. Look for the chosen name again and follow it; only
             // when it is gone entirely does the user have to decide anew.
-            ESP_LOGW(TAG, "phonebook %s is now '%s', not '%s' — re-resolving",
+            pb_log_warn(TAG, "phonebook %s is now '%s', not '%s' — re-resolving",
                      target, actual, want);
             tr064_phonebook_t *books =
                 malloc(sizeof(tr064_phonebook_t) * TR064_MAX_PHONEBOOKS);
@@ -2553,7 +2685,7 @@ static esp_err_t handle_phonebook_add(httpd_req_t *req)
                                               config_fritzbox_app_user(),
                                               config_fritzbox_app_pass(),
                                               books, TR064_MAX_PHONEBOOKS,
-                                              &count, NULL, NULL, 0) == ESP_OK) {
+                                              &count, NULL, NULL, 0) == PB_OK) {
                 for (int i = 0; i < count; i++) {
                     if (books[i].writable && strcmp(books[i].name, want) == 0) {
                         snprintf(resolved, sizeof(resolved), "%d", books[i].id);
@@ -2565,9 +2697,9 @@ static esp_err_t handle_phonebook_add(httpd_req_t *req)
             if (!resolved[0]) {
                 send_fail_code(req, "409 Conflict", "phonebook_moved",
                                "The selected phone book no longer exists.");
-                return ESP_OK;
+                return WEB_HTTP_OK;
             }
-            ESP_LOGI(TAG, "phonebook '%s' moved to ID %s", want, resolved);
+            pb_log_info(TAG, "phonebook '%s' moved to ID %s", want, resolved);
             target = resolved;
         }
     }
@@ -2575,7 +2707,7 @@ static esp_err_t handle_phonebook_add(httpd_req_t *req)
     int  code = 0;
     char msg[128] = "";
     char uid[32]  = "";
-    esp_err_t err = tr064_phonebook_add(config_sip_host(), 49000,
+    int err = tr064_phonebook_add(config_sip_host(), 49000,
                                         config_fritzbox_app_user(),
                                         config_fritzbox_app_pass(),
                                         (int)strtol(target, NULL, 10),
@@ -2583,7 +2715,7 @@ static esp_err_t handle_phonebook_add(httpd_req_t *req)
                                         vip_s[0] == '1',
                                         uid, sizeof(uid),
                                         &code, msg, sizeof(msg));
-    if (err != ESP_OK) {
+    if (err != PB_OK) {
         // 713 is the box's answer for a phonebook that mirrors an online
         // address book (CardDAV / Google): those are read-only for
         // TR-064, so tell the user to pick a different one instead of
@@ -2595,7 +2727,7 @@ static esp_err_t handle_phonebook_add(httpd_req_t *req)
             send_fail_code(req, "502 Bad Gateway", "tr064",
                            msg[0] ? msg : "Fritz!Box did not answer.");
         }
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
 
     // Remember the target only now that a write to it has actually worked.
@@ -2606,8 +2738,8 @@ static esp_err_t handle_phonebook_add(httpd_req_t *req)
             .fritzbox_phonebook      = have_pick ? pb_id_s : resolved,
             .fritzbox_phonebook_name = have_pick ? pb_name : NULL,
         };
-        if (config_update(&u) != ESP_OK) {
-            ESP_LOGW(TAG, "contact stored but phonebook selection not saved");
+        if (config_update(&u) != PB_KV_OK) {
+            pb_log_warn(TAG, "contact stored but phonebook selection not saved");
         }
     }
 
@@ -2624,7 +2756,7 @@ static esp_err_t handle_phonebook_add(httpd_req_t *req)
         if (whitelisted) {
             blocklist_sync_trigger_now();
         } else {
-            ESP_LOGW(TAG, "contact %s stored, but whitelisting it failed", number);
+            pb_log_warn(TAG, "contact %s stored, but whitelisting it failed", number);
         }
     }
 
@@ -2640,7 +2772,7 @@ static esp_err_t handle_phonebook_add(httpd_req_t *req)
     cJSON_AddBoolToObject  (root, "whitelisted", whitelisted);
     cJSON_AddNumberToObject(root, "calls_updated", touched);
     send_json(req, root);
-    return ESP_OK;
+    return WEB_HTTP_OK;
 }
 
 // POST /api/rate
@@ -2654,30 +2786,30 @@ static esp_err_t handle_phonebook_add(httpd_req_t *req)
 // Only the negative ratings are accepted: this backs a "report as spam"
 // action, and A_LEGITIMATE from here would be indistinguishable from a
 // mis-click on a button labelled "Spam".
-static esp_err_t handle_rate(httpd_req_t *req)
+static web_http_error_t handle_rate(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
     if (strlen(config_phoneblock_token()) == 0) {
         send_fail_code(req, "409 Conflict", "no_token",
                        "No PhoneBlock token — ratings need an account.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
 
-    int total = req->content_len;
+    int total = web_http_body_length(req);
     if (total <= 0 || total > 512) {
         send_fail_code(req, "400 Bad Request", "invalid",
                        "Body missing or too large.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
     char *body = malloc(total + 1);
     if (!body) {
         send_fail_code(req, "500 Internal Server Error", "oom", "Out of memory.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
     int got = 0;
     while (got < total) {
-        int n = httpd_req_recv(req, body + got, total - got);
-        if (n <= 0) { free(body); return ESP_FAIL; }
+        int n = web_http_read_body(req, body + got, total - got);
+        if (n <= 0) { free(body); return WEB_HTTP_FAIL; }
         got += n;
     }
     body[got] = '\0';
@@ -2700,7 +2832,7 @@ static esp_err_t handle_rate(httpd_req_t *req)
     if (!tr064_number_plausible(number)) {
         send_fail_code(req, "400 Bad Request", "invalid_number",
                        "Not a number that can be rated.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
     // Whitelisted rather than forwarded: the server would reject an unknown
     // code anyway, but a typo should fail here with a clear reason instead
@@ -2716,7 +2848,7 @@ static esp_err_t handle_rate(httpd_req_t *req)
     if (!rating_ok) {
         send_fail_code(req, "400 Bad Request", "invalid_rating",
                        "Unknown rating code.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
 
     // A caller the box resolves from a phonebook must not be ratable: the
@@ -2741,15 +2873,15 @@ static esp_err_t handle_rate(httpd_req_t *req)
         send_fail_code(req, "409 Conflict", "is_contact",
                        "This caller is a phone-book contact and cannot be "
                        "rated as spam.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
 
     if (!phoneblock_rate(number, rating, comment)) {
         send_fail_code(req, "502 Bad Gateway", "rate_failed",
                        "PhoneBlock did not accept the rating.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
-    ESP_LOGI(TAG, "rated %s as %s", number, rating);
+    pb_log_info(TAG, "rated %s as %s", number, rating);
     // The server put the number on the user's personal blacklist. Show the
     // listed calls in that state, and pull the list now so the next call from
     // this number is already blocked instead of after the daily sync.
@@ -2762,7 +2894,7 @@ static esp_err_t handle_rate(httpd_req_t *req)
     cJSON_AddBoolToObject  (root, "with_comment", comment[0] != '\0');
     cJSON_AddNumberToObject(root, "calls_updated", touched);
     send_json(req, root);
-    return ESP_OK;
+    return WEB_HTTP_OK;
 }
 
 // POST /api/whitelist
@@ -2774,33 +2906,33 @@ static esp_err_t handle_rate(httpd_req_t *req)
 // rather than a rating code on /api/rate, so a click on "Spam" can never
 // turn into a whitelist entry. A personal whitelist entry also overrides
 // the user's caller-name patterns (check_invite_caller).
-static esp_err_t handle_whitelist(httpd_req_t *req)
+static web_http_error_t handle_whitelist(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
     if (strlen(config_phoneblock_token()) == 0) {
         send_fail_code(req, "409 Conflict", "no_token",
                        "No PhoneBlock token — the whitelist needs an account.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
     char body[160];
     if (recv_body(req, body, sizeof(body)) < 0) {
         send_fail_code(req, "400 Bad Request", "invalid",
                        "Body missing or too large.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
     char number[48] = "";
     form_get(body, "number", number, sizeof(number));
     if (!tr064_number_plausible(number)) {
         send_fail_code(req, "400 Bad Request", "invalid_number",
                        "Not a number that can be rated.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
     if (!phoneblock_rate(number, "A_LEGITIMATE", "")) {
         send_fail_code(req, "502 Bad Gateway", "rate_failed",
                        "PhoneBlock did not accept the rating.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
-    ESP_LOGI(TAG, "whitelisted %s", number);
+    pb_log_info(TAG, "whitelisted %s", number);
     int touched = stats_set_assessment(number, PB_ASSESS_LEGITIMATE);
     blocklist_sync_trigger_now();
 
@@ -2808,7 +2940,7 @@ static esp_err_t handle_whitelist(httpd_req_t *req)
     cJSON_AddBoolToObject  (root, "ok", true);
     cJSON_AddNumberToObject(root, "calls_updated", touched);
     send_json(req, root);
-    return ESP_OK;
+    return WEB_HTTP_OK;
 }
 
 // --- dev resource-bundle upload --------------------------------------
@@ -2830,22 +2962,22 @@ static esp_err_t handle_whitelist(httpd_req_t *req)
 // The body is the bundle JSON verbatim — the same stripped shape the CDN
 // serves (no "@key" description entries). It replaces the file for the
 // given locale, so it takes effect on the next page load.
-static esp_err_t handle_dev_i18n_upload(httpd_req_t *req)
+static web_http_error_t handle_dev_i18n_upload(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
 
     char query[64] = "";
     char kind[8]   = "";
     char lang[12]  = "";
-    if (httpd_req_get_url_query_str(req, query, sizeof(query)) == ESP_OK) {
-        httpd_query_key_value(query, "kind", kind, sizeof(kind));
-        httpd_query_key_value(query, "lang", lang, sizeof(lang));
+    if (web_http_get_query_string(req, query, sizeof(query)) == WEB_HTTP_OK) {
+        web_http_query_value(query, "kind", kind, sizeof(kind));
+        web_http_query_value(query, "lang", lang, sizeof(lang));
     }
     bool is_ui = strcmp(kind, "ui") == 0;
     if (!is_ui && strcmp(kind, "mail") != 0) {
         send_fail_code(req, "400 Bad Request", "invalid_kind",
                        "kind must be 'ui' or 'mail'.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
     // The locale becomes part of a file name, so accept only what a locale
     // code may contain — no '.', no '/', nothing that could escape the
@@ -2860,19 +2992,19 @@ static esp_err_t handle_dev_i18n_upload(httpd_req_t *req)
     if (!lang_ok) {
         send_fail_code(req, "400 Bad Request", "invalid_lang",
                        "lang must be a locale code like 'de' or 'zh-Hans'.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
 
     // Cap well above a real bundle (~30 KB for the UI pack) but far below
     // the shared 640 KB SPIFFS, so a runaway upload cannot fill storage
     // that the announcement audio and the blocklist also live in.
     const int MAX_BYTES = 128 * 1024;
-    int total = req->content_len;
+    int total = web_http_body_length(req);
     if (total <= 2 || total > MAX_BYTES) {
         char msg[80];
         snprintf(msg, sizeof(msg), "Bundle missing or over %d bytes.", MAX_BYTES);
         send_fail_code(req, "400 Bad Request", "invalid", msg);
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
 
     char path[48], tmp[56];
@@ -2890,14 +3022,14 @@ static esp_err_t handle_dev_i18n_upload(httpd_req_t *req)
     if (!storage_file_open(&f, tmp)) {
         send_fail_code(req, "500 Internal Server Error", "storage",
                        "Could not open the bundle file for writing.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
     char *buf = malloc(1024);
     if (!buf) {
         storage_file_close(&f);
         remove(tmp);
         send_fail_code(req, "500 Internal Server Error", "oom", "Out of memory.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
     int  got   = 0;
     bool wrote = true;
@@ -2910,7 +3042,7 @@ static esp_err_t handle_dev_i18n_upload(httpd_req_t *req)
         if (got == 0) first = buf[0];
         if (!storage_file_write(&f, buf, (size_t)n)) wrote = false;
         got += n;
-        esp_task_wdt_reset();
+        pb_watchdog_reset();
     }
     free(buf);
     if (!storage_file_close(&f)) wrote = false;
@@ -2923,16 +3055,16 @@ static esp_err_t handle_dev_i18n_upload(httpd_req_t *req)
         remove(tmp);
         send_fail_code(req, "400 Bad Request", "invalid",
                        "Upload interrupted or not a JSON object.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
     remove(path);
     if (rename(tmp, path) != 0) {
         remove(tmp);
         send_fail_code(req, "500 Internal Server Error", "storage",
                        "Could not activate the uploaded bundle.");
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
-    ESP_LOGW(TAG, "dev upload: %s bundle for '%s' replaced by upload (%d bytes)",
+    pb_log_warn(TAG, "dev upload: %s bundle for '%s' replaced by upload (%d bytes)",
              kind, lang, got);
 
     cJSON *root = cJSON_CreateObject();
@@ -2940,14 +3072,14 @@ static esp_err_t handle_dev_i18n_upload(httpd_req_t *req)
     cJSON_AddStringToObject(root, "path", path);
     cJSON_AddNumberToObject(root, "bytes", got);
     send_json(req, root);
-    return ESP_OK;
+    return WEB_HTTP_OK;
 }
 
 // POST /api/token-test
 // Runs phoneblock_selftest() against GET /test and reports whether the
 // currently stored token is still accepted by the server. Always
 // returns HTTP 200; `ok` in the JSON body tells the UI the outcome.
-static esp_err_t handle_token_test(httpd_req_t *req)
+static web_http_error_t handle_token_test(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
     // Response shape: { ok: bool, code: "ok"|"fail"|"none", message: ... }
@@ -2960,7 +3092,7 @@ static esp_err_t handle_token_test(httpd_req_t *req)
         cJSON_AddStringToObject(root, "code", "none");
         cJSON_AddStringToObject(root, "message", "No token configured.");
         send_json(req, root);
-        return ESP_OK;
+        return WEB_HTTP_OK;
     }
     bool ok = phoneblock_selftest(NULL);
     cJSON_AddBoolToObject  (root, "ok", ok);
@@ -2969,59 +3101,63 @@ static esp_err_t handle_token_test(httpd_req_t *req)
         ok ? "Token valid — PhoneBlock reachable."
            : "Token was rejected. Please request a new one.");
     send_json(req, root);
-    return ESP_OK;
+    return WEB_HTTP_OK;
 }
 
 // --- Server lifecycle -----------------------------------------------
 
-static const httpd_uri_t URIS[] = {
-    { .uri = "/",                .method = HTTP_GET,  .handler = handle_root,        .user_ctx = NULL },
-    { .uri = "/favicon.ico",     .method = HTTP_GET,  .handler = handle_favicon,     .user_ctx = NULL },
-    { .uri = "/ab-logo-bot.svg", .method = HTTP_GET,  .handler = handle_favicon,     .user_ctx = NULL },
-    { .uri = "/api/status",  .method = HTTP_GET,  .handler = handle_status,      .user_ctx = NULL },
-    { .uri = "/api/calls",   .method = HTTP_GET,  .handler = handle_calls,       .user_ctx = NULL },
-    { .uri = "/api/errors",  .method = HTTP_GET,  .handler = handle_errors,      .user_ctx = NULL },
-    { .uri = "/api/log/stream", .method = HTTP_GET, .handler = handle_log_stream, .user_ctx = NULL },
-    { .uri = "/api/errors/clear",    .method = HTTP_POST, .handler = handle_errors_clear,   .user_ctx = NULL },
-    { .uri = "/api/calls/clear",     .method = HTTP_POST, .handler = handle_calls_clear,    .user_ctx = NULL },
-    { .uri = "/api/factory-reset",   .method = HTTP_POST, .handler = handle_factory_reset,  .user_ctx = NULL },
-#ifdef CONFIG_CRASH_TEST_ENABLE
-    { .uri = "/api/dev/crash",       .method = HTTP_POST, .handler = handle_crash_test,     .user_ctx = NULL },
-    { .uri = "/api/dev/heap-smash",   .method = HTTP_POST, .handler = handle_heap_smash,     .user_ctx = NULL },
+static const web_http_route_t URIS[] = {
+    { .uri = "/health",               .method = WEB_HTTP_GET,     .handler = handle_health },
+    { .uri = "/",                    .method = WEB_HTTP_GET,     .handler = handle_root },
+    { .uri = "/favicon.ico",         .method = WEB_HTTP_GET,     .handler = handle_favicon },
+    { .uri = "/ab-logo-bot.svg",     .method = WEB_HTTP_GET,     .handler = handle_favicon },
+    { .uri = "/api/status",          .method = WEB_HTTP_GET,     .handler = handle_status },
+    { .uri = "/api/calls",           .method = WEB_HTTP_GET,     .handler = handle_calls },
+    { .uri = "/api/errors",          .method = WEB_HTTP_GET,     .handler = handle_errors },
+#ifdef ESP_PLATFORM
+    { .uri = "/api/log/stream",      .method = WEB_HTTP_GET,     .handler = handle_log_stream },
 #endif
-    { .uri = "/api/firmware",         .method = HTTP_POST, .handler = handle_firmware_upload,  .user_ctx = NULL },
-    { .uri = "/api/firmware/check",   .method = HTTP_POST, .handler = handle_firmware_check,   .user_ctx = NULL },
-    { .uri = "/api/firmware/install", .method = HTTP_POST, .handler = handle_firmware_install, .user_ctx = NULL },
-    { .uri = "/api/i18n/ui",         .method = HTTP_GET,  .handler = handle_i18n_ui,            .user_ctx = NULL },
-    { .uri = "/api/announcement",    .method = HTTP_GET,  .handler = handle_announcement_get,   .user_ctx = NULL },
-    { .uri = "/api/announcement",    .method = HTTP_POST, .handler = handle_announcement_post,  .user_ctx = NULL },
-    { .uri = "/api/announcement/reset", .method = HTTP_POST, .handler = handle_announcement_reset, .user_ctx = NULL },
-    { .uri = "/api/sync/run",        .method = HTTP_POST, .handler = handle_sync_run,       .user_ctx = NULL },
-    { .uri = "/api/phonebooks",      .method = HTTP_GET,  .handler = handle_phonebooks,     .user_ctx = NULL },
-    { .uri = "/api/dev/i18n",        .method = HTTP_POST, .handler = handle_dev_i18n_upload, .user_ctx = NULL },
-    { .uri = "/api/phonebook/add",   .method = HTTP_POST, .handler = handle_phonebook_add,  .user_ctx = NULL },
-    { .uri = "/api/rate",            .method = HTTP_POST, .handler = handle_rate,           .user_ctx = NULL },
-    { .uri = "/api/whitelist",       .method = HTTP_POST, .handler = handle_whitelist,      .user_ctx = NULL },
-    { .uri = "/api/blocklist-sync/run", .method = HTTP_POST, .handler = handle_blocklist_sync_run, .user_ctx = NULL },
-    { .uri = "/api/mail/test",       .method = HTTP_POST, .handler = handle_mail_test,      .user_ctx = NULL },
-    { .uri = "/api/config",          .method = HTTP_POST, .handler = handle_config_post,    .user_ctx = NULL },
-    { .uri = "/api/fritzbox-setup",      .method = HTTP_POST, .handler = handle_fritzbox_setup,      .user_ctx = NULL },
-    { .uri = "/api/fritzbox-2fa-status", .method = HTTP_GET,  .handler = handle_fritzbox_2fa_status, .user_ctx = NULL },
-    { .uri = "/api/token-test",          .method = HTTP_POST, .handler = handle_token_test,          .user_ctx = NULL },
-    { .uri = "/register-start",      .method = HTTP_GET,  .handler = handle_register_start, .user_ctx = NULL },
-    { .uri = "/token-callback",      .method = HTTP_GET,  .handler = handle_token_callback, .user_ctx = NULL },
-    { .uri = "/auth/start",          .method = HTTP_GET,  .handler = web_auth_handle_start,      .user_ctx = NULL },
-    { .uri = "/auth/login-link",     .method = HTTP_GET,  .handler = web_auth_handle_login_link, .user_ctx = NULL },
-    { .uri = "/auth/callback",       .method = HTTP_GET,  .handler = web_auth_handle_callback,   .user_ctx = NULL },
-    { .uri = "/auth/logout",         .method = HTTP_POST, .handler = web_auth_handle_logout,     .user_ctx = NULL },
-    { .uri = "/auth/disable",        .method = HTTP_POST, .handler = web_auth_handle_disable,    .user_ctx = NULL },
+    { .uri = "/api/errors/clear",    .method = WEB_HTTP_POST,    .handler = handle_errors_clear },
+    { .uri = "/api/calls/clear",     .method = WEB_HTTP_POST,    .handler = handle_calls_clear },
+    { .uri = "/api/factory-reset",   .method = WEB_HTTP_POST,    .handler = handle_factory_reset },
+#ifdef CONFIG_CRASH_TEST_ENABLE
+    { .uri = "/api/dev/crash",       .method = WEB_HTTP_POST,    .handler = handle_crash_test },
+    { .uri = "/api/dev/heap-smash",  .method = WEB_HTTP_POST,    .handler = handle_heap_smash },
+#endif
+    { .uri = "/api/firmware",           .method = WEB_HTTP_POST, .handler = handle_firmware_upload },
+    { .uri = "/api/firmware/check",     .method = WEB_HTTP_POST, .handler = handle_firmware_check },
+    { .uri = "/api/firmware/install",   .method = WEB_HTTP_POST, .handler = handle_firmware_install },
+    { .uri = "/api/i18n/ui",            .method = WEB_HTTP_GET,  .handler = handle_i18n_ui },
+    { .uri = "/api/announcement",       .method = WEB_HTTP_GET,  .handler = handle_announcement_get },
+    { .uri = "/api/announcement",       .method = WEB_HTTP_POST, .handler = handle_announcement_post },
+    { .uri = "/api/announcement/reset", .method = WEB_HTTP_POST, .handler = handle_announcement_reset },
+    { .uri = "/api/sync/run",           .method = WEB_HTTP_POST, .handler = handle_sync_run },
+    { .uri = "/api/phonebooks",         .method = WEB_HTTP_GET,  .handler = handle_phonebooks },
+    { .uri = "/api/dev/i18n",           .method = WEB_HTTP_POST, .handler = handle_dev_i18n_upload },
+    { .uri = "/api/phonebook/add",      .method = WEB_HTTP_POST, .handler = handle_phonebook_add },
+    { .uri = "/api/rate",               .method = WEB_HTTP_POST, .handler = handle_rate },
+    { .uri = "/api/whitelist",          .method = WEB_HTTP_POST, .handler = handle_whitelist },
+    { .uri = "/api/blocklist-sync/run", .method = WEB_HTTP_POST, .handler = handle_blocklist_sync_run },
+    { .uri = "/api/mail/test",          .method = WEB_HTTP_POST, .handler = handle_mail_test },
+    { .uri = "/api/config",             .method = WEB_HTTP_POST, .handler = handle_config_post },
+    { .uri = "/api/fritzbox-setup",     .method = WEB_HTTP_POST, .handler = handle_fritzbox_setup },
+    { .uri = "/api/fritzbox-2fa-status",.method = WEB_HTTP_GET,  .handler = handle_fritzbox_2fa_status },
+    { .uri = "/api/token-test",         .method = WEB_HTTP_POST, .handler = handle_token_test },
+    { .uri = "/register-start",         .method = WEB_HTTP_GET,  .handler = handle_register_start },
+    { .uri = "/token-callback",         .method = WEB_HTTP_GET,  .handler = handle_token_callback },
+    { .uri = "/auth/start",             .method = WEB_HTTP_GET,  .handler = web_auth_handle_start },
+    { .uri = "/auth/login-link",        .method = WEB_HTTP_GET,  .handler = web_auth_handle_login_link },
+    { .uri = "/auth/callback",          .method = WEB_HTTP_GET,  .handler = web_auth_handle_callback },
+    { .uri = "/auth/logout",            .method = WEB_HTTP_POST, .handler = web_auth_handle_logout },
+    { .uri = "/auth/disable",           .method = WEB_HTTP_POST, .handler = web_auth_handle_disable },
     // Catch-all OPTIONS handler for the PNA preflight Chrome/Edge sends
     // before navigating from https://phoneblock.net to this dongle's
     // LAN IP. Method-scoped to OPTIONS so it doesn't shadow any of the
     // GET/POST routes above.
-    { .uri = "/*",                   .method = HTTP_OPTIONS, .handler = handle_pna_preflight, .user_ctx = NULL },
+    { .uri = "/*",                       .method = WEB_HTTP_OPTIONS, .handler = handle_pna_preflight },
 };
 
+#ifdef ESP_PLATFORM
 // Task-watchdog feeder for the HTTPD worker. ESP-IDF's esp_http_server
 // hides its internal task handle, so we can't call esp_task_wdt_add()
 // on it directly from outside. Instead we inject a work item through
@@ -3038,9 +3174,9 @@ static void httpd_wdt_subscribe_work(void *arg)
 {
     (void)arg;
     if (esp_task_wdt_add(NULL) == ESP_OK) {
-        ESP_LOGI(TAG, "HTTPD worker subscribed to task watchdog");
+        pb_log_info(TAG, "HTTPD worker subscribed to task watchdog");
     } else {
-        ESP_LOGW(TAG, "HTTPD worker task-watchdog subscribe failed");
+        pb_log_warn(TAG, "HTTPD worker task-watchdog subscribe failed");
     }
 }
 
@@ -3057,25 +3193,30 @@ static void httpd_wdt_feeder_cb(void *arg)
         // Best effort. If the queue is full because a handler is
         // already wedged, that's exactly the case where we *want*
         // the watchdog to fire — so a failed enqueue is harmless.
-        httpd_queue_work(s_server, httpd_wdt_reset_work, NULL);
+        web_http_server_queue_work(s_server, httpd_wdt_reset_work, NULL);
     }
 }
+#endif
 
 void web_start(void)
 {
     if (s_server) {
-        ESP_LOGW(TAG, "web_start() called twice — ignoring");
+        pb_log_warn(TAG, "web_start() called twice — ignoring");
         return;
     }
     generate_reset_nonce();
     web_auth_setup();
-    httpd_config_t cfg = HTTPD_DEFAULT_CONFIG();
-    cfg.server_port = 80;
-    cfg.max_uri_handlers = sizeof(URIS) / sizeof(URIS[0]) + 2;
-    // Enables glob matching so the catch-all "/*" OPTIONS preflight
-    // entry covers every URI. All other routes use literal paths, so
-    // wildcard matching has no effect on them.
-    cfg.uri_match_fn = httpd_uri_match_wildcard;
+    web_http_server_config_t cfg = {
+        .port = s_web_port,
+        .bind_address = s_web_bind_address[0] ? s_web_bind_address : NULL,
+        .max_uri_handlers = sizeof(URIS) / sizeof(URIS[0]) + 2,
+        // Enables glob matching so the catch-all "/*" OPTIONS preflight
+        // entry covers every URI. All other routes use literal paths, so
+        // wildcard matching has no effect on them.
+        .wildcard_uri_match = true,
+        .lru_purge = true,
+    };
+#ifdef ESP_PLATFORM
     // The default 4 KB is too tight once /api/fritzbox-setup → tr064_*
     // nests through call_action → post_soap → esp_http_client. 8 KB
     // gives us headroom for the deep call chain without overflows.
@@ -3083,9 +3224,9 @@ void web_start(void)
     // (ESP32-C3: 948 B), the Xtensa register windows make the same calls
     // deeper. The S3 has the heap to spare (~150 KB free), so +2 KB there.
 #if CONFIG_IDF_TARGET_ESP32S3
-    cfg.stack_size = 10240;
+    cfg.worker_stack_size = 10240;
 #else
-    cfg.stack_size = 8192;
+    cfg.worker_stack_size = 8192;
 #endif
     // Reclaim the least-recently-used connection when every socket slot
     // is taken, instead of refusing the new one. Browsers keep HTTP/1.1
@@ -3098,21 +3239,18 @@ void web_start(void)
     // idle socket is closed to admit each new client, so the UI stays
     // reachable; an evicted browser transparently reconnects on its next
     // 3 s poll. See issue #328.
-    cfg.lru_purge_enable = true;
-    if (httpd_start(&s_server, &cfg) != ESP_OK) {
-        ESP_LOGE(TAG, "httpd_start failed");
+    if (web_http_server_start(&s_server, &cfg, URIS,
+                              sizeof(URIS) / sizeof(URIS[0])) != WEB_HTTP_OK) {
+        pb_log_err(TAG, "httpd_start failed");
         return;
     }
-    for (size_t i = 0; i < sizeof(URIS) / sizeof(URIS[0]); i++) {
-        httpd_register_uri_handler(s_server, &URIS[i]);
-    }
-    ESP_LOGI(TAG, "HTTP server listening on :80");
+    pb_log_info(TAG, "HTTP server listening on :80");
 
     // Subscribe the HTTPD worker to the watchdog (runs on its task)
     // and start the periodic reset feeder. Period = TIMEOUT/4 so a
     // single missed feed still leaves three quarters of the budget
     // before the panic fires.
-    httpd_queue_work(s_server, httpd_wdt_subscribe_work, NULL);
+    web_http_server_queue_work(s_server, httpd_wdt_subscribe_work, NULL);
     const esp_timer_create_args_t timer_args = {
         .callback = httpd_wdt_feeder_cb,
         .name     = "httpd_wdt",
@@ -3122,6 +3260,37 @@ void web_start(void)
             (uint64_t)CONFIG_ESP_TASK_WDT_TIMEOUT_S * 1000000ULL / 4ULL;
         esp_timer_start_periodic(s_httpd_wdt_feeder, period_us);
     } else {
-        ESP_LOGW(TAG, "HTTPD WDT feeder timer create failed");
+        pb_log_warn(TAG, "HTTPD WDT feeder timer create failed");
     }
+#else
+    if (web_http_server_start(&s_server, &cfg, URIS,
+                              sizeof(URIS) / sizeof(URIS[0])) != WEB_HTTP_OK) {
+        pb_log_err(TAG, "HTTP server start failed");
+        return;
+    }
+    pb_log_info(TAG, "HTTP server listening on :%u", cfg.port);
+#endif
+}
+
+void web_configure_listener(uint16_t port, const char *bind_address)
+{
+    if (s_server) return;
+    s_web_port = port;
+    if (!bind_address) {
+        s_web_bind_address[0] = '\0';
+        return;
+    }
+    snprintf(s_web_bind_address, sizeof(s_web_bind_address), "%s", bind_address);
+}
+
+uint16_t web_listening_port(void)
+{
+    return web_http_server_port(s_server);
+}
+
+void web_stop(void)
+{
+    if (!s_server) return;
+    web_http_server_stop(s_server);
+    s_server = NULL;
 }

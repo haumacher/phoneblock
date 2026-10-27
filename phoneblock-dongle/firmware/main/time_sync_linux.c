@@ -4,12 +4,9 @@
 #include <time.h>
 
 #include "config.h"
-#include "platform.h"
 
 // Must be last: bans unsafe string APIs for the rest of this file.
 #include "banned_apis.h"
-
-static const char *TAG = "time_sync";
 
 // On Linux the host keeps the wall clock (systemd-timesyncd, chrony, ...),
 // so there is no SNTP client here. Hosts without an RTC (a Raspberry Pi)
@@ -18,19 +15,21 @@ static const char *TAG = "time_sync";
 // scheduler parks its daily jobs on the hourly clock-wait backstop.
 #define TIME_SYNC_PLAUSIBLE_EPOCH 1767225600
 
-void time_sync_set_timezone(const char *posix_tz)
-{
-    if (!posix_tz || !posix_tz[0]) return;
-    setenv("TZ", posix_tz, 1);
-    tzset();
-    pb_log_info(TAG, "timezone set: %s", posix_tz);
-}
-
 // Applies the persisted timezone; without one the host's zone stays in
-// effect (TZ / /etc/localtime).
+// effect (TZ from the environment, else /etc/localtime). Runs before any
+// other thread starts.
 void time_sync_start(void)
 {
     time_sync_set_timezone(config_timezone());
+    // Make sure TZ exists from here on. A later change from the web UI then
+    // replaces this entry in place instead of growing the environment,
+    // which other threads may be scanning (getenv, e.g. curl's proxy
+    // lookup). ":/etc/localtime" is the host zone, the same that an unset
+    // TZ means on glibc and musl.
+    if (!getenv("TZ")) {
+        setenv("TZ", ":/etc/localtime", 1);
+        tzset();
+    }
 }
 
 bool time_sync_valid(void)

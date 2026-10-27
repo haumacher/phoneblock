@@ -28,10 +28,11 @@ Events, Key-Value-Store, MAC — nur libc und pthreads) läuft in `make test` mi
 base64 über OpenSSL) wird nur von `make test-linux` gebaut. Dafür zusätzlich
 nötig:
 
-- `pkg-config` und die Entwicklungspakete von libcurl, OpenSSL, cJSON und
-  libsrtp2, unter Debian/Ubuntu:
+- `pkg-config` und die Entwicklungspakete von libcurl, OpenSSL, cJSON,
+  libsrtp2 und libmicrohttpd (Web-Oberfläche), unter Debian/Ubuntu:
   ```bash
-  sudo apt install pkg-config libcurl4-openssl-dev libssl-dev libcjson-dev libsrtp2-dev
+  sudo apt install pkg-config libcurl4-openssl-dev libssl-dev libcjson-dev \
+    libsrtp2-dev libmicrohttpd-dev
   ```
 
 ```bash

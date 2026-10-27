@@ -11,6 +11,7 @@
 #include "sip_transport.h"
 #include "stats.h"
 #include "time_sync.h"
+#include "web.h"
 
 #include <errno.h>
 #include <getopt.h>
@@ -24,7 +25,8 @@
 static void print_usage(const char *program)
 {
     fprintf(stderr,
-            "Usage: %s [--config PATH] [--check-config | --probe-sip]\n",
+            "Usage: %s [--config PATH] [--check-config | --probe-sip] "
+            "[--web PORT] [--web-bind ADDRESS] [--web-port-file PATH]\n",
             program);
 }
 
@@ -74,22 +76,41 @@ static int probe_sip(void)
 int main(int argc, char **argv)
 {
     const char *config_path = NULL;
+    const char *web_bind = NULL;
+    const char *web_port_file = NULL;
     bool check = false;
     bool probe = false;
+    uint16_t web_port = 8080;
     static const struct option options[] = {
         { "config", required_argument, NULL, 'c' },
         { "check-config", no_argument, NULL, 't' },
         { "probe-sip", no_argument, NULL, 'p' },
+        { "web", required_argument, NULL, 'w' },
+        { "web-bind", required_argument, NULL, 'b' },
+        { "web-port-file", required_argument, NULL, 'f' },
         { "help", no_argument, NULL, 'h' },
         { NULL, 0, NULL, 0 },
     };
 
     int option;
-    while ((option = getopt_long(argc, argv, "c:tph", options, NULL)) != -1) {
+    while ((option = getopt_long(argc, argv, "c:tpw:b:f:h", options, NULL)) != -1) {
         switch (option) {
         case 'c': config_path = optarg; break;
         case 't': check = true; break;
         case 'p': probe = true; break;
+        case 'w': {
+            char *end = NULL;
+            errno = 0;
+            unsigned long port = strtoul(optarg, &end, 10);
+            if (errno || !end || *end || port > UINT16_MAX) {
+                print_usage(argv[0]);
+                return EXIT_FAILURE;
+            }
+            web_port = (uint16_t)port;
+            break;
+        }
+        case 'b': web_bind = optarg; break;
+        case 'f': web_port_file = optarg; break;
         case 'h': print_usage(argv[0]); return EXIT_SUCCESS;
         default: print_usage(argv[0]); return EXIT_FAILURE;
         }
@@ -104,10 +125,10 @@ int main(int argc, char **argv)
     }
 
     // Same order as app_main() in main.c; the ESP32-only steps (NVS/netif
-    // init, LED, Wi-Fi, mDNS, web UI, OTA rollback, crash-dump upload, heap
-    // sentinel) have no Linux counterpart in this step. The log hook mirrors
-    // WARN/ERROR into the web UI's log ring (and the log report) like on the
-    // ESP32; the console lines still go to the journal.
+    // init, LED, Wi-Fi, mDNS, OTA rollback, crash-dump upload, heap
+    // sentinel) have no Linux counterpart. The log hook mirrors WARN/ERROR
+    // into the web UI's log ring (and the log report) like on the ESP32; the
+    // console lines still go to the journal.
     stats_setup();
     log_capture_start();
     config_load();
@@ -145,8 +166,8 @@ int main(int argc, char **argv)
     report_queue_start();
     phoneblock_api_init();
 
-    // Like the ESP32, keep running when unconfigured: the web UI (step 4)
-    // must be reachable on a fresh install to set things up.
+    // Like the ESP32, keep running when unconfigured: the web UI must be
+    // reachable on a fresh install to set things up.
     if (config_phoneblock_token()[0]) {
         pb_log_info("linux", "initial self-test");
         phoneblock_selftest(NULL);
@@ -154,13 +175,35 @@ int main(int argc, char **argv)
         pb_log_info("linux", "PhoneBlock token not configured yet");
     }
 
-    if (config_sip_host()[0]) {
+    if (config_sip_host()[0] && config_sip_user()[0]) {
         sip_register_start();
     } else {
         pb_log_info("linux", "SIP not configured yet");
     }
 
     scheduler_start(false);
+    web_configure_listener(web_port, web_bind);
+    web_start();
+    if (web_port_file) {
+        uint16_t port = web_listening_port();
+        char temp_path[512];
+        int temp_length = snprintf(temp_path, sizeof(temp_path), "%s.tmp",
+                                   web_port_file);
+        if (!port || temp_length < 0 || (size_t)temp_length >= sizeof(temp_path)) {
+            pb_log_err("linux", "HTTP server did not publish a bound port");
+            web_stop();
+            return EXIT_FAILURE;
+        }
+        FILE *port_output = fopen(temp_path, "w");
+        bool wrote_port = port_output && fprintf(port_output, "%u\n", port) >= 0;
+        if (port_output && fclose(port_output) != 0) wrote_port = false;
+        if (!wrote_port || rename(temp_path, web_port_file) != 0) {
+            pb_log_err("linux", "could not publish HTTP port to %s", web_port_file);
+            remove(temp_path);
+            web_stop();
+            return EXIT_FAILURE;
+        }
+    }
 
     pb_log_info("linux", "service started; waiting for SIGINT or SIGTERM");
     int received_signal = 0;
@@ -173,8 +216,10 @@ int main(int argc, char **argv)
     if (wait_error != 0) {
         pb_log_err("linux", "waiting for termination signal failed: %s",
                    strerror(wait_error));
+        web_stop();
         _exit(EXIT_FAILURE);
     }
     pb_log_info("linux", "received signal %d; exiting", received_signal);
+    web_stop();
     _exit(EXIT_SUCCESS);
 }

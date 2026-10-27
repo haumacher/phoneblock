@@ -148,6 +148,38 @@
 <script>
 // --- i18n -----------------------------------------------------------
 
+// A reverse proxy may serve the app below a mounted path; standalone
+// ESP/Linux servers serve it at /. Preserve the mount for requests/assets.
+const APP_BASE_PATH = location.pathname.replace(/\/+$/, '');
+const appUrl = (path) => APP_BASE_PATH && path.startsWith('/') && !path.startsWith('//')
+  ? APP_BASE_PATH + path : path;
+const nativeFetch = window.fetch.bind(window);
+window.fetch = (input, ...args) => nativeFetch(
+  typeof input === 'string' ? appUrl(input) : input, ...args);
+const nativeXhrOpen = XMLHttpRequest.prototype.open;
+XMLHttpRequest.prototype.open = function(method, url, ...args){
+  return nativeXhrOpen.call(this, method, appUrl(url), ...args);
+};
+
+function fixMountedLinks(root){
+  const elements = [];
+  if (root.matches && root.matches('[href^="/"],[src^="/"]')) elements.push(root);
+  if (root.querySelectorAll) elements.push(...root.querySelectorAll('[href^="/"],[src^="/"]'));
+  for (const element of elements) {
+    for (const attr of ['href', 'src']) {
+      const value = element.getAttribute(attr);
+      if (value && value.startsWith('/') && !value.startsWith('//'))
+        element.setAttribute(attr, appUrl(value));
+    }
+  }
+}
+fixMountedLinks(document);
+new MutationObserver((changes) => {
+  for (const change of changes)
+    for (const node of change.addedNodes)
+      if (node.nodeType === Node.ELEMENT_NODE) fixMountedLinks(node);
+}).observe(document.documentElement, {childList:true, subtree:true});
+
 const I18N = {};
 
 // The UI language is the device's ui_lang. All strings are loaded at runtime
@@ -1547,7 +1579,7 @@ function showLoginState(){
     loginBtn.onclick = (e) => {
       e.preventDefault();
       const remember = $('loginRemember') && $('loginRemember').checked;
-      window.location.href = '/auth/start' + (remember ? '?remember=1' : '');
+      window.location.href = appUrl('/auth/start' + (remember ? '?remember=1' : ''));
     };
   }
 
@@ -1616,6 +1648,9 @@ async function refreshAll(){
   // token_ok defaults to true when the field is missing (older
   // firmware) so a stale frontend never falsely reports "rejected".
   const tokenOk       = s.phoneblock.token_ok !== false;
+  // token_signin is false behind Home Assistant ingress, where the web
+  // sign-in cannot complete (see web.c); missing means available.
+  const tokenSignin   = s.phoneblock.token_signin !== false;
   const heroSlot      = $('heroSlot');
   const statusSec     = $('statusSection');
   const callsSec      = $('callsSection');
@@ -1665,6 +1700,9 @@ async function refreshAll(){
   fwSec.style.display = '';
   mailSec.style.display = '';
   authSec.style.display = '';
+  if (s.mail_reporting === false) mailSec.style.display = 'none';
+  if (s.firmware_update === false) fwSec.style.display = 'none';
+  if (s.factory_reset === false) resetSec.style.display = 'none';
 
   // Local blocklist-cache section: status line + wildcards toggle +
   // manual "download now" button. The task runs daily on its own; the
@@ -2054,7 +2092,7 @@ async function refreshAll(){
     }
     tokenCta.style.display   = 'none';
     tokenTest.style.display  = '';
-    tokenRenew.style.display = '';
+    tokenRenew.style.display = tokenSignin ? '' : 'none';
   } else {
     tokenPill.textContent = t('status.token.missing');
     tokenPill.className = 'pill bad';
@@ -2569,7 +2607,7 @@ async function refreshAll(){
     // 302 back to /auth/callback, which sets the cookie and persists
     // auth_enabled=1 only on success. No JS-side state to manage.
     authEnableBtn.onclick = () => {
-      window.location.href = '/auth/start?activate=1';
+      window.location.href = appUrl('/auth/start?activate=1');
     };
   }
   if (!authLogoutBtn.onclick){
@@ -2581,7 +2619,7 @@ async function refreshAll(){
         // back on the SPA, which then renders the in-page login state.
         await fetch('/auth/logout', { method: 'POST', redirect: 'manual' });
       } catch (_){ /* navigate anyway */ }
-      window.location.href = '/';
+      window.location.href = appUrl('/');
     };
   }
   if (!authDisableBtn.onclick){
@@ -3348,6 +3386,7 @@ async function onManualSubmit(e){
 async function renderToken(){
   const s = await fetchJson('/api/status');
   const set = !!(s && s.phoneblock.token_set);
+  const signin = !(s && s.phoneblock.token_signin === false);
   app.innerHTML = ''
     + '<section>'
     + '<div class="crumb"><a href="#/">' + esc(t('back.status')) + '</a></div>'
@@ -3357,9 +3396,12 @@ async function renderToken(){
     + '<p class="muted">'
     + (set ? esc(t('token.current.set')) : esc(t('token.current.missing')))
     + '</p>'
-    + '<p style="margin-top:.8rem">'
-    + '<a href="/register-start" data-token-link class="btn-primary">' + esc(t('token.submit')) + '</a>'
-    + '</p></section>';
+    + (signin
+        ? '<p style="margin-top:.8rem">'
+          + '<a href="/register-start" data-token-link class="btn-primary">' + esc(t('token.submit')) + '</a>'
+          + '</p>'
+        : '')
+    + '</section>';
 }
 
 // --- announcement (G.711 A-law, 8 kHz mono) ------------------------

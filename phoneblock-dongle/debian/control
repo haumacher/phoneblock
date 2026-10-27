@@ -3,7 +3,8 @@ Section: net
 Priority: optional
 Maintainer: Bernhard Haumacher <haui@haumacher.de>
 Build-Depends: debhelper-compat (= 13), pkgconf,
- libcjson-dev, libsrtp2-dev, libcurl4-openssl-dev, libssl-dev
+ libcjson-dev, libsrtp2-dev, libcurl4-openssl-dev, libssl-dev,
+ libmicrohttpd-dev
 Standards-Version: 4.6.2
 Rules-Requires-Root: no
 

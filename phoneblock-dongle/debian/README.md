@@ -28,4 +28,6 @@ sudo systemctl enable --now phoneblock-dongle
 `--probe-sip` prüft die Namensauflösung und das Binden des lokalen UDP-
 Transports, ohne eine REGISTER-Anfrage zu senden. Die Registrierung übernimmt
 nach dem Start das gemeinsame SIP-Firmwaremodul. Das Linux-System hat derzeit
-kein Web-Dashboard; dieses folgt in Schritt 4.
+dieselbe Web-Oberfläche wie die ESP-Firmware unter `http://<server>:8080/`.
+Firmware-Upload, WLAN-Werksreset und E-Mail-Testversand sind hardwareabhängig
+und auf Linux nicht verfügbar.

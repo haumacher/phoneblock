@@ -90,14 +90,6 @@ static void on_got_ip(void *arg, esp_event_base_t base, int32_t id, void *data)
     }
 }
 
-void time_sync_set_timezone(const char *posix_tz)
-{
-    if (!posix_tz || !posix_tz[0]) return;
-    setenv("TZ", posix_tz, 1);
-    tzset();
-    ESP_LOGI(TAG, "timezone set: %s", posix_tz);
-}
-
 void time_sync_start(void)
 {
     static bool inited = false;
