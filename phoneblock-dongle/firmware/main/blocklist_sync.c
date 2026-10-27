@@ -17,10 +17,6 @@
 #include "storage.h"
 #include "strbuf.h"
 
-#ifndef PHONEBLOCK_DATA_DIR
-#define PHONEBLOCK_DATA_DIR "/var/lib/phoneblock"
-#endif
-
 // Must be last: bans unsafe string APIs for the rest of this file.
 #include "banned_apis.h"
 

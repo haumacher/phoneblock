@@ -184,13 +184,19 @@ int main(int argc, char **argv)
     scheduler_start(false);
     web_configure_listener(web_port, web_bind);
     web_start();
+    // Without its web UI the service cannot be set up or watched; fail, so
+    // systemd reports it (and retries) instead of a silently headless daemon.
+    uint16_t port = web_listening_port();
+    if (!port) {
+        pb_log_err("linux", "web UI could not listen on port %u", web_port);
+        _exit(EXIT_FAILURE);
+    }
     if (web_port_file) {
-        uint16_t port = web_listening_port();
         char temp_path[512];
         int temp_length = snprintf(temp_path, sizeof(temp_path), "%s.tmp",
                                    web_port_file);
-        if (!port || temp_length < 0 || (size_t)temp_length >= sizeof(temp_path)) {
-            pb_log_err("linux", "HTTP server did not publish a bound port");
+        if (temp_length < 0 || (size_t)temp_length >= sizeof(temp_path)) {
+            pb_log_err("linux", "web port file path too long: %s", web_port_file);
             web_stop();
             return EXIT_FAILURE;
         }

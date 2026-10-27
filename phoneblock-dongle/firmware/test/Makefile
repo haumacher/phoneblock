@@ -18,8 +18,8 @@ LINUX_WEB_ASSETS := $(LINUX_WEB_DIR)/index.html.gz \
 # pkg-config is required: without it the include flags would silently come
 # out empty and the build fail later on a missing header.
 ifneq ($(filter linux-firmware phoneblock_linux test-linux test_api_linux test_web_http_linux,$(MAKECMDGOALS)),)
-ifneq ($(shell pkg-config --exists libcjson libsrtp2 libmicrohttpd && echo ok),ok)
-$(error pkg-config cannot find libcjson, libsrtp2 and libmicrohttpd; install pkg-config, libcjson-dev, libsrtp2-dev and libmicrohttpd-dev)
+ifneq ($(shell pkg-config --exists libcjson libsrtp2 libmicrohttpd libcurl openssl && echo ok),ok)
+$(error pkg-config cannot find the Linux build dependencies; install the Build-Depends of phoneblock-dongle/debian/control)
 endif
 endif
 LINUX_PKG_CFLAGS := $(shell pkg-config --cflags libcjson libsrtp2 libmicrohttpd 2>/dev/null)

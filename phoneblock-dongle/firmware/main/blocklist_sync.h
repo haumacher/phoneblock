@@ -27,9 +27,7 @@
 #define BLOCKLIST_COMMUNITY_PATH "/spiffs/community.bin"
 #define BLOCKLIST_PERSONAL_PATH  "/spiffs/personal.bin"
 #else
-#ifndef PHONEBLOCK_DATA_DIR
-#define PHONEBLOCK_DATA_DIR "/var/lib/phoneblock"
-#endif
+#include "platform.h"   // PHONEBLOCK_DATA_DIR
 #define BLOCKLIST_COMMUNITY_PATH PHONEBLOCK_DATA_DIR "/community.bin"
 #define BLOCKLIST_PERSONAL_PATH  PHONEBLOCK_DATA_DIR "/personal.bin"
 #endif
