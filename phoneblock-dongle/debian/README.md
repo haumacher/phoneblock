@@ -38,8 +38,7 @@ Unter `http://<server>:8080/` läuft dieselbe Oberfläche wie auf dem ESP32-Dong
 Dort richtest du die Telefonie an der Fritz!Box ein (TR-064) und meldest dich
 bei PhoneBlock an. Ohne eingerichtete Anmeldung ist sie nur aus dem lokalen
 Netz erreichbar. Firmware-Upload, Werksreset und Statusmail sind
-hardwareabhängig und auf Linux nicht verfügbar. Das Log steht im Journal
-(`journalctl -u phoneblock-dongle -f`).
+hardwareabhängig und auf Linux nicht verfügbar.
 
 ## Port und Adresse der Web-Oberfläche
 
@@ -72,6 +71,18 @@ sudo systemctl start phoneblock-dongle
 `--check-config` prüft die erforderlichen SIP- und PhoneBlock-Einstellungen.
 `--probe-sip` prüft die Namensauflösung des Registrars und das Binden des
 lokalen SIP-Transports, ohne eine REGISTER-Anfrage zu senden.
+
+## Fehlersuche
+
+Startet der Dienst nicht oder ist die Oberfläche nicht erreichbar, steht der
+Grund im Journal — etwa ein ungültiger Wert in `/etc/default/phoneblock-dongle`
+oder ein schon belegter Port:
+
+```sh
+systemctl status phoneblock-dongle
+journalctl -u phoneblock-dongle -b       # seit dem Systemstart
+journalctl -u phoneblock-dongle -f       # laufend mitlesen
+```
 
 ## Paket selbst bauen
 
