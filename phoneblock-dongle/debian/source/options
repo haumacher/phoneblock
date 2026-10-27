@@ -2,6 +2,7 @@
 # of the ESP-IDF and host builds. The host test binaries are removed by
 # dh_auto_clean (make clean) before the source package is assembled.
 tar-ignore
+tar-ignore = "dist"
 tar-ignore = "firmware/build"
 tar-ignore = "firmware/build-*"
 tar-ignore = "firmware/managed_components"

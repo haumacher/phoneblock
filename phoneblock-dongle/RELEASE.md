@@ -49,6 +49,19 @@ dann die beiden Dateien per sftp ersetzen).
 `--stage` baut nur lokal nach `firmware/release/<version>/`, `--dry-run` zeigt die ssh/scp-Befehle.
 In beiden Modi wird signiert — sonst wäre der Stage-Output kein Spiegel des Live-Manifests.
 
+## Linux-Paket
+
+Das Debian-Paket trägt dieselbe Version wie die Firmware, abgeleitet aus dem
+`dongle-v*`-Tag (`dongle-v1.7.0-beta4` → `1.7.0~beta4`). Am Release-Tag, mit
+sauberem Tree:
+
+```
+debian/build-deb.sh
+```
+
+Pakete liegen danach in `dist/`. Einen automatischen Build oder Upload gibt es
+noch nicht (siehe [FUTURE.md](FUTURE.md)).
+
 ## OTA-Signing-Key
 
 Die OTA-Update-Pfad-Verifikation hängt an einem ECDSA-P256-Schlüssel

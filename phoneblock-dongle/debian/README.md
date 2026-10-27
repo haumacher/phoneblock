@@ -3,8 +3,16 @@
 Baue das native Linux-Daemon-Paket im Verzeichnis `phoneblock-dongle`:
 
 ```sh
-dpkg-buildpackage -us -uc
+debian/build-deb.sh        # Quell- und Binärpaket; -b: nur Binärpaket
 ```
+
+Das Skript leitet die Paketversion aus demselben `dongle-v*`-Tag ab wie die
+ESP32-Firmware (`git describe`) und schreibt sie nach `debian/changelog` (nicht
+im Git): `dongle-v1.7.0-beta4` wird zu `1.7.0~beta4`, ein Stand zwölf Commits
+danach zu `1.7.0~beta4+12.g<hash>`. Paket, User-Agent und ESP32-Image desselben
+Commits tragen so dieselbe Version. Die Ergebnisse landen in
+`phoneblock-dongle/dist/`. Ein direktes `dpkg-buildpackage` scheitert ohne die
+erzeugte `debian/changelog`.
 
 Das Paket baut die gemeinsam genutzten Firmware-Module als
 `/usr/bin/phoneblock-dongle` und installiert die Web-Oberfläche nach

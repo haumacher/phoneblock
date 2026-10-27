@@ -1,53 +1,66 @@
 # Linux-Dongle testen
 
-Diese Checkliste gilt für den Linux-Dienst mit gemeinsam genutzten Firmware-
-Modulen auf einem Debian-Rechner im selben LAN wie die Fritz!Box. SIP- und
-Management-Ports dürfen nicht aus dem Internet erreichbar sein.
+Diese Checkliste gilt für den Linux-Dienst (Debian-Paket aus `debian/`) auf
+einem Rechner im selben LAN wie die Fritz!Box. SIP- und Web-Port dürfen nicht
+aus dem Internet erreichbar sein.
 
-## Installation und Konfiguration
+## Installation
+
+Paket bauen (siehe `debian/README.md`) und installieren:
 
 ```sh
-sudo apt install ./phoneblock-dongle_0.1.0_$(dpkg --print-architecture).deb
-sudoedit /var/lib/phoneblock/dongle.conf
+debian/build-deb.sh -b
+sudo apt install ./dist/phoneblock-dongle_*_$(dpkg --print-architecture).deb
+dpkg-query -W phoneblock-dongle
+sudo systemctl enable --now phoneblock-dongle
+journalctl -u phoneblock-dongle -f
 ```
 
-Bearbeite den Abschnitt `[phoneblock]`. Trage `sip_host`, `sip_user`,
-`sip_pass` und `pb_token` ein. Die standardmäßige PhoneBlock-URL kann bleiben,
-außer du verwendest einen Testserver. Eine Ansage wird als rohe, mono G.711-
-A-law-Datei mit 8 kHz unter `/var/lib/phoneblock/announcement.alaw` abgelegt.
+Die Paketversion entspricht dem `dongle-v*`-Stand, aus dem gebaut wurde; die
+Web-Oberfläche zeigt dieselbe Version in `/api/status` (`firmware_version`, mit
+`-` statt `~`/`+`).
 
-## Vorabprüfung
+## Einrichtung über die Web-Oberfläche
 
-Führe die Prüfungen als Dienstbenutzer aus, bevor du systemd aktivierst:
+Öffne `http://<server>:8080/` von einem Rechner im LAN:
+
+- **Telefonie einrichten** → Fritz!Box: legt das IP-Telefon per TR-064 an
+  (2FA-Bestätigung an der Fritz!Box, falls aktiv).
+- **PhoneBlock verbinden**: Anmeldung auf phoneblock.net, der Token landet
+  automatisch im Dienst.
+- Die Abschnitte Firmware-Update, Werksreset und Status-E-Mails sind auf Linux
+  ausgeblendet; `GET /health` antwortet mit `ok`.
+- Optional eine eigene Ansage unter „Spam-Ansage" hochladen; sie liegt danach
+  als `/var/lib/phoneblock/announcement.alaw`.
+
+## Prüfungen von Hand
+
+Für eine Einrichtung ohne Web-Oberfläche den Dienst anhalten (er schreibt
+`dongle.conf` aus seinem Speicher neu), die Datei bearbeiten und als
+Dienstbenutzer prüfen:
 
 ```sh
+sudo systemctl stop phoneblock-dongle
+sudoedit /var/lib/phoneblock/dongle.conf
 sudo -u phoneblock /usr/bin/phoneblock-dongle \
   --config /var/lib/phoneblock/dongle.conf --check-config
 sudo -u phoneblock /usr/bin/phoneblock-dongle \
   --config /var/lib/phoneblock/dongle.conf --probe-sip
+sudo systemctl start phoneblock-dongle
 ```
 
 `--check-config` prüft die erforderlichen SIP- und PhoneBlock-Einstellungen.
 `--probe-sip` prüft die Namensauflösung des Registrars und ob sich der
-konfigurierte lokale SIP-Transport binden lässt. Dabei findet keine
+konfigurierte lokale SIP-Transport binden lässt; dabei findet keine
 Authentifizierung und keine Registrierung statt.
 
-## Dienst testen
+## Betrieb
 
-```sh
-sudo systemctl enable --now phoneblock-dongle
-sudo systemctl status phoneblock-dongle
-journalctl -u phoneblock-dongle -f
-```
-
-Prüfe, dass sich der Dienst an der Fritz!Box registriert, PhoneBlock-Abfragen
-ausführt und SIGTERM verarbeitet. Bei SIGTERM wird der Prozess beendet; bei
-einem Stopp läuft die Registrierung beim Registrar ab. Ein Web-Dashboard und
-eine ordentliche SIP-Abmeldung gehören nicht zu diesem Schritt.
-
-## Umfang
-
-Der Dienst verwendet die gemeinsamen Firmware-Module für SIP, RTP, die
-PhoneBlock-API, den Scheduler, Sperrlisten, i18n und Speicher. Firmware-Updates
-sind unter Linux deaktiviert. Die ESP32-Weboberfläche und ihr HTTP-Server sind
-nicht enthalten; sie folgen in naher Zukunft.
+- Der Dienst registriert sich an der Fritz!Box (Statuspille „Angemeldet").
+- Ein Testanruf einer Spam-Nummer wird angenommen, die Ansage gespielt und der
+  Anruf erscheint unter „Letzte Anrufe".
+- `systemctl restart phoneblock-dongle`: die Einstellungen aus der
+  Web-Oberfläche bleiben erhalten, die Registrierung kommt wieder.
+- Netzausfall und Fritz!Box-Neustart übersteht der Dienst ohne Eingriff.
+- Bei SIGTERM beendet sich der Prozess; die Registrierung läuft danach beim
+  Registrar ab (keine SIP-Abmeldung).

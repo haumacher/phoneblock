@@ -20,7 +20,8 @@ die Plattformschicht ist getrennt:
   libmicrohttpd). Funktionen ohne Linux-Gegenstück (Firmware-Upload,
   Werksreset, Statusmail) blendet die UI aus.
 - Einstiegspunkt `main/main_linux.c`, Debian-Paket unter `debian/`
-  (Dienstbenutzer `phoneblock`, Zustand unter `/var/lib/phoneblock`).
+  (Dienstbenutzer `phoneblock`, Zustand unter `/var/lib/phoneblock`), gebaut
+  mit `debian/build-deb.sh` in der Version des `dongle-v*`-Tags.
 - Betrieb hinter Home-Assistant-Ingress (Pfadpräfix, Anmeldung per Token aus
   der App-Konfiguration).
 
