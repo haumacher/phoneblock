@@ -122,10 +122,38 @@ fi
 DESCRIBE="$(git describe --tags --match 'dongle-v*' --exact-match 2>/dev/null || true)"
 if [[ -z "$DESCRIBE" ]]; then
     echo "ERROR: HEAD is not a 'dongle-v*' tag. Tag the release first:" >&2
-    echo "       git tag dongle-vX.Y.Z && git push --tags" >&2
+    echo "       git pull && git tag dongle-vX.Y.Z   (release.sh pushes it when done)" >&2
     exit 1
 fi
 VERSION="${DESCRIBE#dongle-v}"
+
+# With two dongle-v* tags on HEAD, `git describe` silently picks one of them.
+# That happens when a new tag lands on an old commit (tagged without pulling
+# first): the run then rebuilds and re-uploads the previous version.
+HEAD_TAGS="$(git tag --points-at HEAD --list 'dongle-v*')"
+if [[ "$(printf '%s\n' "$HEAD_TAGS" | wc -l)" -gt 1 ]]; then
+    echo "ERROR: HEAD carries several dongle-v* tags:" >&2
+    printf '         %s\n' $HEAD_TAGS >&2
+    echo "       Delete the wrong one (git tag -d ...), pull, tag the right commit." >&2
+    exit 1
+fi
+
+# Release from the latest state of the branch, and never a second time.
+# release.sh pushes the tag as its last step, so a tag already on origin is a
+# finished release.
+git fetch --quiet origin
+if UPSTREAM="$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null)"; then
+    BEHIND="$(git rev-list --count "HEAD..$UPSTREAM")"
+    if [[ "$BEHIND" -gt 0 ]]; then
+        echo "ERROR: HEAD is $BEHIND commit(s) behind $UPSTREAM. Pull first, then" >&2
+        echo "       move the tag: git tag -d $DESCRIBE && git pull && git tag $DESCRIBE" >&2
+        exit 1
+    fi
+fi
+if [[ "$MODE" == "full" ]] && git ls-remote --exit-code --tags origin "refs/tags/$DESCRIBE" >/dev/null; then
+    echo "ERROR: $DESCRIBE is already on origin, i.e. already released." >&2
+    exit 1
+fi
 echo "Releasing version: $VERSION"
 
 # Every release must ship a release-notes file. The web UI links the

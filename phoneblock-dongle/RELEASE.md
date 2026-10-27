@@ -4,11 +4,14 @@
 
 ```
 . $IDF_PATH/export.sh
+git pull
 git tag dongle-vX.Y.Z
 firmware/scripts/release.sh
 ```
 
-Voraussetzung: sauberer Tree, HEAD genau auf einem `dongle-v*`-Tag,
+Voraussetzung: sauberer, aktueller Tree, HEAD genau auf einem `dongle-v*`-Tag
+(`release.sh` bricht ab, wenn der Branch hinter `origin` liegt, HEAD mehrere
+`dongle-v*`-Tags trägt oder der Tag schon auf `origin` liegt),
 KeePassXC-Master-Passwort zur Hand (siehe „OTA-Signing-Key").
 
 Pfad zur `.kdbx` einmalig in `firmware/scripts/release.settings`
