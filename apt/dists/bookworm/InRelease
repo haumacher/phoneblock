@@ -4,7 +4,7 @@ Hash: SHA512
 Architectures: amd64 arm64 armhf
 Codename: bookworm
 Components: stable beta
-Date: Tue, 27 Oct 2026 20:50:08 +0000
+Date: Tue, 27 Oct 2026 20:52:43 +0000
 Label: PhoneBlock Dongle
 Origin: PhoneBlock
 Suite: bookworm
@@ -62,8 +62,8 @@ SHA512:
  1b46b9b08d5b338be9d732a1724795b2eab63daffde377218727c90857b79fe6a47bceed495117fcde60f7339812ef75ef4c69f82dd79fb69b6cbf8006b521f2               20 stable/binary-armhf/Packages.gz
 -----BEGIN PGP SIGNATURE-----
 
-iHUEARYKAB0WIQQKGUi5X0W63WJst1Ot+siqVYEWPwUCauEOgAAKCRCt+siqVYEW
-P9KKAP0fBHZtCmEOpqQ07HaoWSyGn2tZlmaA32lBrKmiCyLo/gD/Tu1H3L9+BvV9
-cn7Eu5dk9qqtpRo61IUdHa9e4oT/gw0=
-=TiXo
+iHUEARYKAB0WIQQKGUi5X0W63WJst1Ot+siqVYEWPwUCauEPGwAKCRCt+siqVYEW
+P8MDAQC4n0sVJwpDonfefBH2kTvF3UkLlDxDjkNoyIbgBB4ouwEAgaIJP88dwDCR
+g82LH8E2V6i22lNVbDncGE2AFLy2qgw=
+=i0sj
 -----END PGP SIGNATURE-----
