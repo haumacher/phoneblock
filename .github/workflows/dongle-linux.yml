@@ -5,7 +5,13 @@ name: Dongle Linux packages
 # phoneblock-dongle/firmware/scripts/release.sh) builds the Debian packages for
 # all suites and architectures and publishes them in the APT repository on
 # GitHub Pages (https://haumacher.github.io/phoneblock/apt, its index.html
-# explains the installation).
+# explains the installation). After that, the docker job builds the container
+# image from the published package (phoneblock-dongle/docker) and pushes it
+# to Docker Hub.
+#
+# Docker Hub needs the repository secrets DOCKERHUB_USERNAME and
+# DOCKERHUB_TOKEN, as for answerbot-docker.yml; the token needs read/write
+# scope for the image below (DOCKER_IMAGE).
 
 on:
   push:
@@ -21,10 +27,17 @@ on:
         description: Only renew the indices and the page of the APT repository (no build)
         type: boolean
         default: false
+      docker_version:
+        description: Only (re)publish the Docker image of this released version, e.g. 1.7.0-beta7 (no package build)
+        type: string
+        default: ''
+
+env:
+  DOCKER_IMAGE: phoneblock/answerbot2
 
 jobs:
   matrix:
-    if: ${{ !inputs.republish }}
+    if: ${{ !inputs.republish && !inputs.docker_version }}
     runs-on: ubuntu-24.04
     outputs:
       builds: ${{ steps.matrix.outputs.builds }}
@@ -175,3 +188,75 @@ jobs:
           done
           echo "::error::Pages deployment: no final status (last: $status)"
           exit 1
+
+  docker:
+    needs: publish
+    if: >-
+      always() &&
+      ((startsWith(github.ref, 'refs/tags/dongle-v') && needs.publish.result == 'success')
+      || inputs.docker_version != '')
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Determine the version and the image tags
+        id: version
+        env:
+          REQUESTED: ${{ inputs.docker_version }}
+        run: |
+          version="${REQUESTED:-${GITHUB_REF_NAME#dongle-v}}"
+          if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-z]+[0-9]+)?$ ]]; then
+            echo "::error::Not a released firmware version: $version"
+            exit 1
+          fi
+          # A pre-release is only in the beta channel; a release is in both,
+          # and moves "latest" as well.
+          if [[ "$version" == *-* ]]; then
+            channel=beta
+            tags="$DOCKER_IMAGE:$version,$DOCKER_IMAGE:beta"
+          else
+            channel=stable
+            tags="$DOCKER_IMAGE:$version,$DOCKER_IMAGE:beta,$DOCKER_IMAGE:latest"
+          fi
+          {
+            echo "deb=$(phoneblock-dongle/debian/pb-version to-debian "$version")"
+            echo "channel=$channel"
+            echo "tags=$tags"
+          } >> "$GITHUB_OUTPUT"
+          echo "Publishing $tags"
+
+      # GitHub Pages can serve the old indices for a few minutes after the
+      # deployment.
+      - name: Wait until the APT repository serves the package
+        env:
+          DEB: ${{ steps.version.outputs.deb }}
+          CHANNEL: ${{ steps.version.outputs.channel }}
+        run: |
+          url="https://haumacher.github.io/phoneblock/apt/dists/trixie/$CHANNEL/binary-amd64/Packages"
+          for _ in $(seq 60); do
+            if curl -fsS "$url" | grep -qx "Version: $DEB"; then
+              echo "$DEB is in $url"; exit 0
+            fi
+            sleep 10
+          done
+          echo "::error::$DEB did not appear in $url"
+          exit 1
+
+      - uses: docker/setup-qemu-action@v3
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: phoneblock-dongle/docker
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          build-args: |
+            PHONEBLOCK_VERSION=${{ steps.version.outputs.deb }}
+            PHONEBLOCK_CHANNEL=${{ steps.version.outputs.channel }}
+          push: true
+          tags: ${{ steps.version.outputs.tags }}
