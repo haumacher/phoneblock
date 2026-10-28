@@ -48,11 +48,13 @@ static void expect(const char *version, const char *platform,
 
 int main(void)
 {
-    // ESP32: no platform comment, the string stays as it was.
+    // No platform comment: the plain format older firmware sends.
     expect("1.7.0", NULL, ID, "PhoneBlock-Dongle/1.7.0 (" ID ")");
     expect("1.7.0", "", ID, "PhoneBlock-Dongle/1.7.0 (" ID ")");
 
-    // Linux: the platform comment goes before the device id.
+    // The platform comment goes before the device id.
+    expect("1.7.0", "ESP32-C3", ID,
+           "PhoneBlock-Dongle/1.7.0 (ESP32-C3) (" ID ")");
     expect("1.7.0-beta4-12-g092776f", "Linux", ID,
            "PhoneBlock-Dongle/1.7.0-beta4-12-g092776f (Linux) (" ID ")");
     expect("1.7.0-beta4-12-g092776f", "Linux; HA", ID,

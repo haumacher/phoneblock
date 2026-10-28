@@ -5,12 +5,12 @@
 #endif
 
 // Return a stable User-Agent string for all outbound HTTP(S) calls,
-// formatted "PhoneBlock-Dongle/<version> (<device id>)". Linux builds add
-// a platform comment before the device id (pb_platform_tag()), e.g.
-// "PhoneBlock-Dongle/<version> (Linux) (<device id>)". The version comes
-// from pb_firmware_version() at first call and is then cached. Callers of
-// pb_http_request() pass it as a "User-Agent" header (the platform layer
-// can't reach config / this module).
+// formatted "PhoneBlock-Dongle/<version> (<platform>) (<device id>)", the
+// platform comment from pb_platform_tag(), e.g. "ESP32-C3" or "Linux; HA".
+// Without a device id it is just "PhoneBlock-Dongle/<version>". The
+// version comes from pb_firmware_version() at first call and is then
+// cached. Callers of pb_http_request() pass it as a "User-Agent" header
+// (the platform layer can't reach config / this module).
 const char *http_util_user_agent(void);
 
 #ifdef ESP_PLATFORM

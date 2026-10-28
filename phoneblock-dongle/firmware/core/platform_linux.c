@@ -141,13 +141,31 @@ const char *pb_firmware_version(void)
 #endif
 }
 
+// The packaging that runs the service sets PHONEBLOCK_PLATFORM (the Home
+// Assistant app "Linux; HA"), since a prebuilt .deb cannot carry it. The
+// value goes into an HTTP header as a comment (RFC 9110: "(", ")" and "\"
+// are special there) and into a bracket the server parses, so anything but
+// short printable ASCII without those characters falls back to the
+// default.
+#define PB_PLATFORM_TAG_MAX 32
+
 const char *pb_platform_tag(void)
 {
-#ifdef PHONEBLOCK_PLATFORM
-    return PHONEBLOCK_PLATFORM;
-#else
-    return "Linux";
-#endif
+    const char *tag = getenv("PHONEBLOCK_PLATFORM");
+    if (!tag || !tag[0]) return "Linux";
+    size_t len = strlen(tag);
+    bool valid = len <= PB_PLATFORM_TAG_MAX;
+    for (size_t i = 0; valid && i < len; i++) {
+        unsigned char c = (unsigned char)tag[i];
+        valid = c >= 0x20 && c < 0x7f && c != '(' && c != ')' && c != '\\';
+    }
+    if (!valid) {
+        pb_log_warn("platform", "ignoring invalid PHONEBLOCK_PLATFORM "
+                    "(printable ASCII without brackets, at most %d "
+                    "characters)", PB_PLATFORM_TAG_MAX);
+        return "Linux";
+    }
+    return tag;
 }
 
 uint32_t pb_random_u32(void)

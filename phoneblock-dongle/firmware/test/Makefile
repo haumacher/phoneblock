@@ -66,13 +66,6 @@ endif
 ifneq ($(PHONEBLOCK_VERSION),)
 LINUX_CPPFLAGS += -DPHONEBLOCK_VERSION='"$(PHONEBLOCK_VERSION)"'
 endif
-# The platform comment in the User-Agent (pb_platform_tag()), so the API key
-# device list tells Linux installs from dongles: "Linux" by default, set by
-# the packaging that builds it, e.g. PHONEBLOCK_PLATFORM="Linux; HA" for the
-# Home Assistant app.
-ifneq ($(strip $(PHONEBLOCK_PLATFORM)),)
-LINUX_CPPFLAGS += -DPHONEBLOCK_PLATFORM='"$(PHONEBLOCK_PLATFORM)"'
-endif
 ifneq ($(strip $(PHONEBLOCK_DATA_DIR)),)
 LINUX_CPPFLAGS += -DPHONEBLOCK_DATA_DIR=\"$(PHONEBLOCK_DATA_DIR)\"
 endif

@@ -24,6 +24,7 @@
 #include "mbedtls/sha1.h"
 #include "nvs.h"
 
+#include "chip_family.h"
 #include "ticks_util.h"
 
 struct pb_event {
@@ -73,7 +74,7 @@ const char *pb_firmware_version(void)
 
 const char *pb_platform_tag(void)
 {
-    return NULL;
+    return PB_CHIP_FAMILY;
 }
 
 uint32_t pb_random_u32(void)

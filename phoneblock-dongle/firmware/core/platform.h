@@ -93,9 +93,10 @@ void pb_log_set_sink(pb_log_sink_t sink);
 
 uint64_t pb_monotonic_us(void);
 const char *pb_firmware_version(void);
-// Platform comment for the User-Agent, e.g. "Linux" or "Linux; HA", so the
-// server can tell Linux installs from dongles. NULL on the ESP32, whose
-// User-Agent stays unchanged.
+// Platform comment for the User-Agent, so the server can tell the dongle
+// models and Linux installs apart: the chip family on the ESP32 ("ESP32",
+// "ESP32-C3", "ESP32-S3"), on Linux "Linux" or what the PHONEBLOCK_PLATFORM
+// environment variable sets, e.g. "Linux; HA" for the Home Assistant app.
 const char *pb_platform_tag(void);
 uint32_t pb_random_u32(void);
 void pb_random_fill(void *out, size_t len);
