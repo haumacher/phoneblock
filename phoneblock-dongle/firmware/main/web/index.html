@@ -1397,6 +1397,21 @@ function renderStatus(){
     +   esc(t('status.mail.test')) + '</button>'
     + '  <span id="mailMsg" class="muted" style="margin-left:.6rem"></span>'
     + '</p></details>'
+    + '<details id="webhookSection" class="adminsec" style="display:none">'
+    + '<summary>' + esc(t('status.webhook.title')) + '</summary>'
+    + '<p class="muted">' + esc(t('status.webhook.intro')) + '</p>'
+    + '<div style="margin-top:.6rem;max-width:24rem">'
+    + '  <label style="font-size:.85rem">' + esc(t('status.webhook.url'))
+    +     '<input id="webhookUrl" type="url" autocomplete="off" '
+    +       'spellcheck="false" placeholder="http://" style="width:100%"></label>'
+    + '</div>'
+    + '<p class="muted" style="margin-top:.5rem;font-size:.8rem">'
+    +   esc(t('status.webhook.help')) + '</p>'
+    + '<p style="margin-top:.6rem">'
+    + '  <button id="webhookSave" class="btn-primary" style="padding:.4rem .9rem;font-size:.9rem">'
+    +   esc(t('status.webhook.save')) + '</button>'
+    + '  <span id="webhookMsg" class="muted" style="margin-left:.6rem"></span>'
+    + '</p></details>'
     + '<details id="annSection" class="adminsec" style="display:none">'
     + '<summary>' + esc(t('status.ann.title')) + '</summary>'
     + '<p id="annCurrent" class="muted"></p>'
@@ -1533,6 +1548,7 @@ let resetNonce = '';
 // does not overwrite what the user is typing.
 let mailPrefilled = false;
 let namesPrefilled = false;
+let webhookPrefilled = false;
 
 // IDs of sections that the dashboard shows or hides on each poll, so
 // we can toggle the entire dashboard visibility in one go when the
@@ -1545,7 +1561,7 @@ const DASHBOARD_SECTIONS = ['heroSlot', 'statusSection', 'callsSection',
   'regionSection', 'thresholdsSection', 'errorsSection', 'resetSection',
   'annSection', 'localCacheSection', 'nameFilterSection', 'syncSection',
   'pbSection',
-  'fwSection', 'mailSection', 'authSection'];
+  'fwSection', 'mailSection', 'webhookSection', 'authSection'];
 
 // Maps `?login_error=<code>` query values that web_auth_handle_callback
 // emits to localized text shown in the login section's red banner.
@@ -1664,6 +1680,7 @@ async function refreshAll(){
   const nameFilterSec = $('nameFilterSection');
   const fwSec         = $('fwSection');
   const mailSec       = $('mailSection');
+  const webhookSec    = $('webhookSection');
   const authSec       = $('authSection');
   if (!sipConfigured || !tokenSet){
     // Setup incomplete — show the hero with per-step progress until
@@ -1683,6 +1700,7 @@ async function refreshAll(){
     resetSec.style.display = 'none';
     fwSec.style.display = 'none';
     mailSec.style.display = 'none';
+    webhookSec.style.display = 'none';
     authSec.style.display = 'none';
     return;
   }
@@ -1699,6 +1717,7 @@ async function refreshAll(){
   resetSec.style.display = '';
   fwSec.style.display = '';
   mailSec.style.display = '';
+  webhookSec.style.display = '';
   authSec.style.display = '';
   if (s.mail_reporting === false) mailSec.style.display = 'none';
   if (s.firmware_update === false) fwSec.style.display = 'none';
@@ -1847,6 +1866,52 @@ async function refreshAll(){
       // Show the normalized spec that was actually stored.
       if (ok) nfInput.value = pats.join('|');
       m.textContent = ok ? t('status.names.saved') : t('status.names.failed');
+      m.style.color = ok ? '#188038' : '#d93025';
+    };
+  }
+
+  // Call webhook (#644): one URL, prefilled once like the name filter.
+  const whInput = $('webhookUrl');
+  if (whInput && !webhookPrefilled){
+    whInput.value = (s.webhook || {}).url || '';
+    webhookPrefilled = true;
+  }
+  const whSave = $('webhookSave');
+  if (whSave && !whSave.onclick){
+    // Keep in step with CONFIG_WEBHOOK_URL_CAP in main/config.h and
+    // netloc_http_url_host() in main/net_local.c, which the firmware applies
+    // when storing (a refused value is not stored).
+    const WEBHOOK_URL_MAX = 127;
+    const WEBHOOK_URL_RE = /^http:\/\/(\[[0-9a-f:.]+\]|[^\s\/?#@:\[\]]+)(:\d{1,5})?([\/?#]\S*)?$/i;
+    whSave.onclick = async () => {
+      const m = $('webhookMsg');
+      const url = whInput.value.trim();
+      const bad = (key, p) => {
+        m.textContent = t(key, p);
+        m.style.color = '#d93025';
+        whInput.focus();
+      };
+      // Empty is valid: that is how the webhook is switched off.
+      if (url && /^https:/i.test(url)) return bad('status.webhook.err.https');
+      if (url.length > WEBHOOK_URL_MAX)
+        return bad('status.webhook.err.long', {max: WEBHOOK_URL_MAX});
+      if (url && !WEBHOOK_URL_RE.test(url)) return bad('status.webhook.err.url');
+      whSave.disabled = true;
+      m.textContent = '';
+      const body = new URLSearchParams();
+      body.append('webhook_url', url);
+      let ok = false;
+      try {
+        const r = await fetch('/api/config', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+          body: body.toString(),
+        });
+        ok = r.ok;
+      } catch (_){}
+      whSave.disabled = false;
+      if (ok) whInput.value = url;
+      m.textContent = ok ? t('status.webhook.saved') : t('status.webhook.failed');
       m.style.color = ok ? '#188038' : '#d93025';
     };
   }

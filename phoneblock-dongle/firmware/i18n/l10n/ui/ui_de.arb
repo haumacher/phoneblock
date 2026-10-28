@@ -1035,6 +1035,46 @@
     "description": "Dongle web UI: status.names.err.long",
     "x-translated": "3190da5a"
   },
+  "status.webhook.title": "Webhook bei Anrufen",
+  "@status.webhook.title": {
+    "description": "Dongle web UI: status.webhook.title"
+  },
+  "status.webhook.intro": "Bei jedem Anruf, der in der Anrufliste erscheint, schickt der Dongle die Anrufdaten per HTTP POST an diese Adresse, z.B. an Home Assistant, ioBroker oder Node-RED. Der Inhalt ist ein Eintrag der Anrufliste als JSON, mit denselben Feldern wie /api/calls.",
+  "@status.webhook.intro": {
+    "description": "Dongle web UI: status.webhook.intro"
+  },
+  "status.webhook.url": "Webhook-Adresse",
+  "@status.webhook.url": {
+    "description": "Dongle web UI: status.webhook.url"
+  },
+  "status.webhook.help": "Nur http:// und nur ein Gerät in Deinem Heimnetz, z.B. http://homeassistant.local:8123/api/webhook/phoneblock. Leer lassen schaltet den Webhook aus.",
+  "@status.webhook.help": {
+    "description": "Dongle web UI: status.webhook.help"
+  },
+  "status.webhook.save": "Webhook speichern",
+  "@status.webhook.save": {
+    "description": "Dongle web UI: status.webhook.save"
+  },
+  "status.webhook.saved": "Webhook gespeichert.",
+  "@status.webhook.saved": {
+    "description": "Dongle web UI: status.webhook.saved"
+  },
+  "status.webhook.failed": "Speichern fehlgeschlagen.",
+  "@status.webhook.failed": {
+    "description": "Dongle web UI: status.webhook.failed"
+  },
+  "status.webhook.err.https": "https wird nicht unterstützt: Der Dongle sendet nur per http, und nur im Heimnetz.",
+  "@status.webhook.err.https": {
+    "description": "Dongle web UI: status.webhook.err.https"
+  },
+  "status.webhook.err.url": "Bitte eine Adresse der Form http://gerät:port/pfad eingeben.",
+  "@status.webhook.err.url": {
+    "description": "Dongle web UI: status.webhook.err.url"
+  },
+  "status.webhook.err.long": "Die Adresse darf höchstens {max} Zeichen lang sein.",
+  "@status.webhook.err.long": {
+    "description": "Dongle web UI: status.webhook.err.long"
+  },
   "status.ann.title": "Spam-Ansage",
   "@status.ann.title": {
     "description": "Dongle web UI: status.ann.title",

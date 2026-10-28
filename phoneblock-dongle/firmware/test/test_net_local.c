@@ -126,6 +126,36 @@ int main(void)
     assert(!netloc_forwarded_last("for=unknown", &a));
     assert(!netloc_forwarded_last("by=192.168.1.1;proto=https", &a)); // no for=
 
+    // --- webhook URL host ---
+    char host[64];
+    assert(netloc_http_url_host("http://homeassistant.local:8123/api/webhook/abc",
+                                host, sizeof(host)));
+    assert(strcmp(host, "homeassistant.local") == 0);
+    assert(netloc_http_url_host("HTTP://192.168.1.10/hook", host, sizeof(host)));
+    assert(strcmp(host, "192.168.1.10") == 0);
+    assert(netloc_http_url_host("http://homeassistant.3a", host, sizeof(host)));
+    assert(strcmp(host, "homeassistant.3a") == 0);
+    assert(netloc_http_url_host("http://[fd00::10]:1880/hook?x=1", host, sizeof(host)));
+    assert(strcmp(host, "fd00::10") == 0);
+    assert(netloc_http_url_host("http://nodered:1880?x=1", host, sizeof(host)));
+    assert(strcmp(host, "nodered") == 0);
+    assert(!netloc_http_url_host("https://homeassistant.local/hook", host, sizeof(host)));
+    assert(!netloc_http_url_host("ftp://192.168.1.10/", host, sizeof(host)));
+    assert(!netloc_http_url_host("http://", host, sizeof(host)));
+    assert(!netloc_http_url_host("http:///hook", host, sizeof(host)));
+    assert(!netloc_http_url_host("http://user:pw@192.168.1.10/", host, sizeof(host)));
+    assert(!netloc_http_url_host("http://192.168.1.10:/", host, sizeof(host)));
+    assert(!netloc_http_url_host("http://192.168.1.10:0/", host, sizeof(host)));
+    assert(!netloc_http_url_host("http://192.168.1.10:65536/", host, sizeof(host)));
+    assert(!netloc_http_url_host("http://192.168.1.10:80x/", host, sizeof(host)));
+    assert(!netloc_http_url_host("http://[fd00::10/", host, sizeof(host)));
+    assert(!netloc_http_url_host("http://[fd00::10]x/", host, sizeof(host)));
+    assert(!netloc_http_url_host("http://192.168.1.10/a b", host, sizeof(host)));
+    assert(!netloc_http_url_host("http://192.168.1.10/\r\nX: y", host, sizeof(host)));
+    assert(!netloc_http_url_host("http://h\xc3\xa4st/", host, sizeof(host)));
+    assert(!netloc_http_url_host("http://abcdefghij/", host, 10));   // host too long
+    assert(netloc_http_url_host("http://abcdefghi/", host, 10));     // fits exactly
+
     printf("test_net_local: OK\n");
     return 0;
 }

@@ -57,6 +57,7 @@
 #include "tr064_parse.h"
 #include "web_auth.h"
 #include "web_access.h"
+#include "webhook.h"
 #ifdef ESP_PLATFORM
 #include "wifi.h"
 #endif
@@ -691,10 +692,31 @@ static web_http_error_t handle_status(web_http_request_t *req)
     cJSON_AddBoolToObject  (ml,   "on_spam",  config_mail_on_spam());
     cJSON_AddBoolToObject  (ml,   "on_update", config_mail_on_update());
 
+    cJSON *wh = cJSON_AddObjectToObject(root, "webhook");
+    cJSON_AddStringToObject(wh,   "url",      config_webhook_url());
+
     add_system_load(root);
 
     send_json(req, root);
     return WEB_HTTP_OK;
+}
+
+cJSON *web_call_json(const stats_call_t *call, int64_t now_us,
+                     int64_t now_epoch)
+{
+    cJSON *o = cJSON_CreateObject();
+    int64_t age_s = (now_us - call->at_us) / 1000000;
+    cJSON_AddNumberToObject(o, "age_s",       (double)age_s);
+    cJSON_AddNumberToObject(o, "epoch_s",     now_epoch ? (double)(now_epoch - age_s) : 0);
+    cJSON_AddStringToObject(o, "number",      call->number);
+    cJSON_AddStringToObject(o, "display",     call->display);
+    cJSON_AddStringToObject(o, "label",       call->label);
+    cJSON_AddStringToObject(o, "location",    call->location);
+    cJSON_AddStringToObject(o, "assessment",   assessment_string(call->assessment));
+    cJSON_AddNumberToObject(o, "direct_votes", call->direct_votes);
+    cJSON_AddNumberToObject(o, "range_votes",  call->range_votes);
+    cJSON_AddBoolToObject  (o, "wildcard",     call->wildcard);
+    return o;
 }
 
 static web_http_error_t handle_calls(web_http_request_t *req)
@@ -711,19 +733,7 @@ static web_http_error_t handle_calls(web_http_request_t *req)
     cJSON *root = cJSON_CreateObject();
     cJSON *arr  = cJSON_AddArrayToObject(root, "calls");
     for (int i = 0; i < n; i++) {
-        cJSON *o = cJSON_CreateObject();
-        int64_t age_s = (now_us - calls[i].at_us) / 1000000;
-        cJSON_AddNumberToObject(o, "age_s",       (double)age_s);
-        cJSON_AddNumberToObject(o, "epoch_s",     now_epoch ? (double)(now_epoch - age_s) : 0);
-        cJSON_AddStringToObject(o, "number",      calls[i].number);
-        cJSON_AddStringToObject(o, "display",     calls[i].display);
-        cJSON_AddStringToObject(o, "label",       calls[i].label);
-        cJSON_AddStringToObject(o, "location",    calls[i].location);
-        cJSON_AddStringToObject(o, "assessment",   assessment_string(calls[i].assessment));
-        cJSON_AddNumberToObject(o, "direct_votes", calls[i].direct_votes);
-        cJSON_AddNumberToObject(o, "range_votes",  calls[i].range_votes);
-        cJSON_AddBoolToObject  (o, "wildcard",     calls[i].wildcard);
-        cJSON_AddItemToArray(arr, o);
+        cJSON_AddItemToArray(arr, web_call_json(&calls[i], now_us, now_epoch));
     }
     send_json(req, root);
     return WEB_HTTP_OK;
@@ -841,6 +851,16 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
     }
     body[got] = '\0';
 
+    // Call webhook URL, with one byte of slack like the lists below. On the
+    // heap: this handler runs on the httpd stack, which has little to spare
+    // on the ESP32-C3. Freed once config_update() has copied it.
+    char *webhook_url = calloc(1, CONFIG_WEBHOOK_URL_CAP + 1);
+    if (!webhook_url) {
+        free(body);
+        web_http_send_error(req, WEB_HTTP_STATUS_INTERNAL_SERVER_ERROR, "oom");
+        return WEB_HTTP_OK;
+    }
+
     char sip_host[64], sip_user[32], sip_pass[64];
     char pb_url[128],  pb_token[64];
     char sip_port_s[8] = "", sip_exp_s[8] = "";
@@ -925,6 +945,7 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
     bool have_smtp_pass  = form_get(body, "smtp_pass",     smtp_pass,   sizeof(smtp_pass));
     bool have_smtp_from  = form_get(body, "smtp_from",     smtp_from,   sizeof(smtp_from));
     bool have_smtp_to    = form_get(body, "smtp_to",       smtp_to,     sizeof(smtp_to));
+    bool have_webhook    = form_get(body, "webhook_url",   webhook_url, CONFIG_WEBHOOK_URL_CAP + 1);
     bool have_mail_err   = form_get(body, "mail_on_error", mail_err_s,  sizeof(mail_err_s));
     bool have_mail_spam  = form_get(body, "mail_on_spam",  mail_spam_s, sizeof(mail_spam_s));
     bool have_mail_upd   = form_get(body, "mail_on_update", mail_upd_s, sizeof(mail_upd_s));
@@ -1020,6 +1041,18 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
             pb_log_warn(TAG, "spam_names rejected: pattern too long or too many patterns");
     }
 
+    // Call webhook: only a plain-http URL that fits in full (a clipped URL
+    // would post the household's calls somewhere else). Empty turns it off.
+    // Whether the host is in the home network needs DNS; webhook.c checks
+    // that on every delivery.
+    const char *webhook_val = NULL;
+    if (have_webhook) {
+        if (webhook_url_valid(webhook_url))
+            webhook_val = webhook_url;
+        else
+            pb_log_warn(TAG, "webhook_url rejected: not a plain http URL or too long");
+    }
+
     // UI/content locale: accept only a well-formed code (validated the same
     // way the getter clamps on read), so a malformed POST can never write a
     // value that the asset-URL / SPIFFS-filename builder would have to
@@ -1112,6 +1145,7 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
         .mail_on_error = have_mail_err  ? mail_err_s  : NULL,
         .mail_on_spam  = have_mail_spam ? mail_spam_s : NULL,
         .mail_on_update = have_mail_upd ? mail_upd_s  : NULL,
+        .webhook_url   = webhook_val,
         .timezone      = timezone,
         .ui_lang       = ui_lang,
         .dial_prefix   = dial_prefix,
@@ -1133,6 +1167,7 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
     uint64_t old_sip = sip_config_digest();
 
     int err = config_update(&u);
+    free(webhook_url);
     if (err != PB_KV_OK) {
         web_http_send_error(req, WEB_HTTP_STATUS_INTERNAL_SERVER_ERROR, "nvs write failed");
         return WEB_HTTP_OK;

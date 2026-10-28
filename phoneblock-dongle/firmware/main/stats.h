@@ -97,6 +97,14 @@ void stats_record_call_assessed(const char *number, const char *display,
 void stats_record_call_checked(const char *number, const char *display,
                                const pb_check_result_t *result);
 
+// Called with the sequence number of every call added to the recent-calls
+// ring (stats_record_call*, not stats_record_call_counters_only), after the
+// stats lock is released, on the recording task. The call webhook
+// (webhook.c) uses it to queue the call; it must not block. One listener;
+// NULL removes it.
+typedef void (*stats_call_listener_t)(uint32_t seq);
+void stats_set_call_listener(stats_call_listener_t listener);
+
 // Bumps counters for a call without adding it to the recent-calls
 // ring buffer. Used by sip_register.c when the user has opted out of
 // listing "known" calls (phone-book matches, internal Fritz!Box
@@ -158,6 +166,11 @@ bool stats_display_for_number(const char *number, char *out, size_t cap);
 
 // Drop all buffered call entries (counters are kept).
 void stats_clear_calls(void);
+
+// Copy the listed call with this sequence number (see
+// stats_set_call_listener) into `out`. False once it has left the ring
+// (more than STATS_MAX_CALLS newer calls, or stats_clear_calls()).
+bool stats_get_call(uint32_t seq, stats_call_t *out);
 
 // Number of listed calls for which `match` returns true (called under the
 // stats lock: `match` must not call back into stats). Used by the display

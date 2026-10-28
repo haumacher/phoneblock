@@ -12,6 +12,7 @@
 #include "stats.h"
 #include "time_sync.h"
 #include "web.h"
+#include "webhook.h"
 
 #include <errno.h>
 #include <getopt.h>
@@ -181,6 +182,7 @@ int main(int argc, char **argv)
     }
 
     report_queue_start();
+    webhook_start();
     phoneblock_api_init();
 
     // Like the ESP32, keep running when unconfigured: the web UI must be
