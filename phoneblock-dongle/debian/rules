@@ -19,11 +19,13 @@ endif
 	dh $@
 
 override_dh_auto_build:
-	$(MAKE) -B -C firmware/test phoneblock_linux \
+	$(MAKE) -B -C firmware/linux \
 	  CFLAGS="$(CFLAGS) -Wall" CPPFLAGS="$(CPPFLAGS)" LDFLAGS="$(LDFLAGS)" \
 	  PHONEBLOCK_VERSION="$(PB_VERSION)"
 
-# No top-level Makefile, so dh_auto_clean would do nothing.
+# No top-level Makefile, so dh_auto_clean would do nothing. The test Makefile
+# includes firmware/linux/Makefile, so its clean removes both the test
+# binaries and the build products.
 override_dh_auto_clean:
 	$(MAKE) -C firmware/test clean
 

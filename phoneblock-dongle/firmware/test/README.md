@@ -36,7 +36,9 @@ Das kompiliert die Module mit `-Werror` zu
 linux-firmware`), baut den Dienst `../build/linux-host/phoneblock-dongle` (`make
 phoneblock_linux`, Einstiegspunkt `../main/main_linux.c`) und führt die
 Linux-Tests aus (`LINUX_BINS` und die Shell-Tests im Target `test-linux` des
-Makefiles). Paket und Betrieb des Dienstes: `../../debian/README.md`.
+Makefiles). Der Build des Dienstes selbst steht in `../linux/Makefile`, den
+dieses Makefile einbindet und den auch `debian/rules` nutzt; `make -C ../linux`
+baut ihn ohne Tests. Paket und Betrieb des Dienstes: `../../debian/README.md`.
 
 ## Neue Tests hinzufügen
 
