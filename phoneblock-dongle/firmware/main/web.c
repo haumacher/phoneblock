@@ -1280,6 +1280,13 @@ static web_http_error_t finish_fritzbox_setup(web_http_request_t *req,
     return WEB_HTTP_OK;
 }
 
+// Shown when the box refuses TR-064 for apps altogether (#651): neither
+// the username nor the password is the problem then.
+static const char FRITZ_APP_ACCESS_OFF[] =
+    "The Fritz!Box does not allow access for apps (TR-064). "
+    "Enable \"Allow access for apps\" under Home Network → Network → "
+    "Network Settings and try again.";
+
 // POST /api/fritzbox-setup
 // Body (URL-encoded): fritz_host=…&fritz_user=…&fritz_pass=…&phone_name=…
 // Runs tr064_provision_sip_client; on success, stores the generated
@@ -1318,6 +1325,10 @@ static web_http_error_t handle_fritzbox_setup(web_http_request_t *req)
             fritz_host, 49000, "", fritz_pass,
             fritz_user, sizeof(fritz_user),
             &code, detail, sizeof(detail));
+        if (lerr != PB_OK && code == TR064_ERR_APP_ACCESS) {
+            send_fail(req, FRITZ_APP_ACCESS_OFF);
+            return WEB_HTTP_OK;
+        }
         if (lerr != PB_OK || !fritz_user[0]) {
             char msg[240];
             snprintf(msg, sizeof(msg),
@@ -1399,6 +1410,9 @@ static web_http_error_t handle_fritzbox_setup(web_http_request_t *req)
                 snprintf(msg, sizeof(msg),
                     "Could not parse the Fritz!Box response: %s.",
                     res.error_message);
+                break;
+            case TR064_ERR_APP_ACCESS:
+                snprintf(msg, sizeof(msg), "%s", FRITZ_APP_ACCESS_OFF);
                 break;
             case 820:
             case 402:

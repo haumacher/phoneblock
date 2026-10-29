@@ -30,6 +30,14 @@ void tr064_xml_escape(const char *in, char *out, size_t cap);
 // present. Returns true on success and writes the username to `out`.
 bool tr064_pick_default_user(char *xml, char *out, size_t cap);
 
+// Whether an InitChallenge answer without Nonce/Realm means the
+// Fritz!Box refuses TR-064 for apps altogether. With "Zugriff für Apps"
+// switched off (Heimnetz → Netzwerk → Netzwerkeinstellungen) the box
+// answers every action with HTTP 500 and UPnPError 401 "Invalid Action"
+// instead of a challenge, so the wizard can name the setting instead of
+// blaming the username (#651).
+bool tr064_is_app_access_disabled(int http_status, const char *resp);
+
 // Phonebook-entry building (X_AVM-DE_OnTel:SetPhonebookEntryUID)
 // ---------------------------------------------------------------
 //

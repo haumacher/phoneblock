@@ -273,3 +273,13 @@ bool tr064_build_contact_arg(char *out, size_t cap,
     }
     return true;
 }
+
+bool tr064_is_app_access_disabled(int http_status, const char *resp)
+{
+    if (http_status != 500 || !resp) return false;
+    char code[16];
+    if (tr064_xml_find_text(resp, "errorCode", code, sizeof(code)) < 0) {
+        return false;
+    }
+    return strcmp(code, "401") == 0;
+}

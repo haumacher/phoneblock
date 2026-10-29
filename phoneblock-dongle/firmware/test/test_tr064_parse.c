@@ -461,6 +461,46 @@ static void test_build_contact_arg_truncation_is_all_or_nothing(void)
     CHECK_STR(small, "");
 }
 
+// InitChallenge answer of a Fritz!Box with "Zugriff für Apps" switched
+// off, as logged in #651.
+static const char APP_ACCESS_OFF_RESP[] =
+    "<?xml version=\"1.0\"?>\n"
+    "<s:Envelope xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\""
+    " s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\">\n"
+    "<s:Body>\n<s:Fault>\n"
+    "<faultcode>s:Client</faultcode>\n"
+    "<faultstring>UPnPError</faultstring>\n"
+    "<detail>\n"
+    "<UPnPError xmlns=\"urn:schemas-upnp-org:control-1-0\">\n"
+    "<errorCode>401</errorCode>\n"
+    "<errorDescription>Invalid Action</errorDescription>\n"
+    "</UPnPError>\n"
+    "</detail>\n</s:Fault>\n</s:Body>\n</s:Envelope>\n";
+
+static void test_app_access_disabled_detected(void)
+{
+    CHECK(tr064_is_app_access_disabled(500, APP_ACCESS_OFF_RESP));
+}
+
+static void test_app_access_disabled_needs_http_500(void)
+{
+    CHECK(!tr064_is_app_access_disabled(200, APP_ACCESS_OFF_RESP));
+    CHECK(!tr064_is_app_access_disabled(503, APP_ACCESS_OFF_RESP));
+}
+
+static void test_app_access_disabled_other_fault(void)
+{
+    // 402 "Invalid Args": a real fault, but not the app-access switch.
+    CHECK(!tr064_is_app_access_disabled(500,
+        "<s:Fault><detail><UPnPError>"
+        "<errorCode>402</errorCode>"
+        "<errorDescription>Invalid Args</errorDescription>"
+        "</UPnPError></detail></s:Fault>"));
+    CHECK(!tr064_is_app_access_disabled(500, "<html>Internal error</html>"));
+    CHECK(!tr064_is_app_access_disabled(500, ""));
+    CHECK(!tr064_is_app_access_disabled(500, NULL));
+}
+
 int main(void)
 {
     test_find_text_simple();
@@ -485,6 +525,10 @@ int main(void)
     test_pick_default_user_fallback_first();
     test_pick_default_user_empty();
     test_pick_default_user_single_entry();
+
+    test_app_access_disabled_detected();
+    test_app_access_disabled_needs_http_500();
+    test_app_access_disabled_other_fault();
 
     test_contacts_real_world();
     test_contacts_plain_tags();
