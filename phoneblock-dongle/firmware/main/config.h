@@ -293,6 +293,11 @@ const char *config_smtp_from(void);
 // interpreting it — the web UI stores it verbatim, so it may carry
 // surrounding whitespace and empty entries.
 const char *config_smtp_to(void);
+// Call webhook (webhook.c): a plain-http URL in the home network that gets
+// one POST per listed call. Empty = off (default). Stored as the web UI
+// validated it (netloc_http_url_host()).
+#define CONFIG_WEBHOOK_URL_CAP 128
+const char *config_webhook_url(void);
 // Trigger toggles:
 //   on_error:  (default off) a daily mail when an ERROR was logged since the
 //              last one; also drives the immediate crash mail at boot.
@@ -436,6 +441,9 @@ typedef struct {
     const char *mail_on_error;
     const char *mail_on_spam;
     const char *mail_on_update;
+    // Call webhook URL, "" = off. NULL = leave unchanged. The caller
+    // validates it before writing (see web.c).
+    const char *webhook_url;
     // POSIX TZ string for the wall clock. NULL = leave unchanged. The
     // caller is expected to validate it before writing (see web.c).
     const char *timezone;

@@ -6,6 +6,7 @@
 // esp_netif glue that feeds these functions lives in web_access.c.
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 // Max of the dongle's own IPv6 addresses we track for same-prefix
@@ -50,6 +51,15 @@ bool netloc_is_local(const net_addr_t *a, const netloc_self_t *self);
 // value into `out`. Returns false if the header is empty or the chosen
 // token is not a valid IP literal (fail closed).
 bool netloc_xff_rightmost(const char *xff, net_addr_t *out);
+
+// Host of a plain-http URL, "http://host[:port][/path...]" (scheme
+// case-insensitive), copied into `host`; an IPv6 literal comes without its
+// brackets. The call webhook (webhook.c) checks the host with
+// netloc_is_local() after resolving it. False for any other scheme (https
+// is refused on purpose: no TLS next to a running announcement), user info
+// ("user@host"), an empty host, a bad port, whitespace, control or
+// non-ASCII characters anywhere, or a host that does not fit `cap`.
+bool netloc_http_url_host(const char *url, char *host, size_t cap);
 
 // Parse the last `for=` element of an RFC 7239 Forwarded header value
 // into `out`. Handles quoting, `[v6]` brackets and a trailing `:port`

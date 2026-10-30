@@ -5,6 +5,7 @@
 #include "api.h"
 #include "platform.h"
 #include "rtp.h"
+#include "webhook.h"
 
 // Must be last: bans unsafe string APIs for the rest of this file.
 #include "banned_apis.h"
@@ -35,11 +36,39 @@ static const char *TAG = "report_q";
 #define REPORT_TASK_STACK 4096
 #endif
 
+// The call webhook shares this worker instead of a task of its own (a
+// second 4 KB stack is a lot on the ESP32): its entries carry the call's
+// sequence number in the stats ring, not a copy of the call.
+typedef enum {
+    REPORT_KIND_REPORT,
+    REPORT_KIND_WEBHOOK,
+} report_kind_t;
+
 typedef struct {
-    char phone[REPORT_PHONE_MAX];
+    report_kind_t kind;
+    uint32_t      call_seq;                    // REPORT_KIND_WEBHOOK
+    char          phone[REPORT_PHONE_MAX];     // REPORT_KIND_REPORT
 } report_entry_t;
 
 static pb_queue_t *s_queue = NULL;
+
+void report_queue_wait_announcement(void)
+{
+    // Defer the report's TLS handshake until any in-progress
+    // announcement has finished. Running a second TLS session next to
+    // the SRTP media stream exhausts the ESP32 heap (RTP sendto fails
+    // with ENOMEM, mbedTLS cert parse OOMs, httpd-task watchdog
+    // reboot). The report is enqueued at SPAM detection, before the
+    // ACK that starts streaming, so first give the stream up to ~2 s
+    // to start (a quick no-announcement call falls through), then wait
+    // it out — capped so a stuck flag can't wedge the worker forever.
+    for (int i = 0; i < 40 && !rtp_streaming_active(); i++) {
+        pb_task_sleep_ms(50);
+    }
+    for (int i = 0; i < 300 && rtp_streaming_active(); i++) {
+        pb_task_sleep_ms(100);
+    }
+}
 
 static void report_worker_task(void *arg)
 {
@@ -48,20 +77,15 @@ static void report_worker_task(void *arg)
         report_entry_t e;
         pb_queue_receive(s_queue, &e);
 
-        // Defer the report's TLS handshake until any in-progress
-        // announcement has finished. Running a second TLS session next to
-        // the SRTP media stream exhausts the ESP32 heap (RTP sendto fails
-        // with ENOMEM, mbedTLS cert parse OOMs, httpd-task watchdog
-        // reboot). The report is enqueued at SPAM detection, before the
-        // ACK that starts streaming, so first give the stream up to ~2 s
-        // to start (a quick no-announcement call falls through), then wait
-        // it out — capped so a stuck flag can't wedge the worker forever.
-        for (int i = 0; i < 40 && !rtp_streaming_active(); i++) {
-            pb_task_sleep_ms(50);
+        if (e.kind == REPORT_KIND_WEBHOOK) {
+            // Plain http in the home network; webhook_deliver() waits out
+            // an announcement itself, but only for spam calls, so a
+            // legitimate call is posted while the phone still rings.
+            webhook_deliver(e.call_seq);
+            continue;
         }
-        for (int i = 0; i < 300 && rtp_streaming_active(); i++) {
-            pb_task_sleep_ms(100);
-        }
+
+        report_queue_wait_announcement();
 
         pb_log_info(TAG, "report-call %s", e.phone);
         // phoneblock_report_call logs its own failures (ERROR), which the
@@ -89,6 +113,8 @@ void report_queue_enqueue(const char *phone)
     if (!s_queue || !phone || !*phone) return;
 
     report_entry_t e;
+    memset(&e, 0, sizeof(e));
+    e.kind = REPORT_KIND_REPORT;
     size_t n = strlen(phone);
     if (n >= sizeof(e.phone)) n = sizeof(e.phone) - 1;
     memcpy(e.phone, phone, n);
@@ -96,5 +122,20 @@ void report_queue_enqueue(const char *phone)
 
     if (!pb_queue_send(s_queue, &e)) {
         pb_log_warn(TAG, "queue full, dropping report for %s", e.phone);
+    }
+}
+
+void report_queue_enqueue_webhook(uint32_t call_seq)
+{
+    if (!s_queue || call_seq == 0) return;
+
+    report_entry_t e;
+    memset(&e, 0, sizeof(e));
+    e.kind = REPORT_KIND_WEBHOOK;
+    e.call_seq = call_seq;
+
+    if (!pb_queue_send(s_queue, &e)) {
+        pb_log_warn(TAG, "queue full, dropping webhook for call %u",
+                    (unsigned)call_seq);
     }
 }

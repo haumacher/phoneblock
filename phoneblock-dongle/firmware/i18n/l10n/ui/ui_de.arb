@@ -1035,6 +1035,56 @@
     "description": "Dongle web UI: status.names.err.long",
     "x-translated": "3190da5a"
   },
+  "status.webhook.title": "Webhook bei Anrufen",
+  "@status.webhook.title": {
+    "description": "Dongle web UI: status.webhook.title",
+    "x-translated": "da59c8b9"
+  },
+  "status.webhook.intro": "Bei jedem Anruf, der in der Anrufliste erscheint, schickt der Dongle die Anrufdaten per HTTP POST an diese Adresse, z.B. an Home Assistant, ioBroker oder Node-RED. Der Inhalt ist ein Eintrag der Anrufliste als JSON, mit denselben Feldern wie /api/calls.",
+  "@status.webhook.intro": {
+    "description": "Dongle web UI: status.webhook.intro",
+    "x-translated": "105acbfd"
+  },
+  "status.webhook.url": "Webhook-Adresse",
+  "@status.webhook.url": {
+    "description": "Dongle web UI: status.webhook.url",
+    "x-translated": "44cfc761"
+  },
+  "status.webhook.help": "Nur http:// und nur an Adressen in Deinem Heimnetz, z.B. http://homeassistant.local:8123/api/webhook/phoneblock. Leer lassen schaltet den Webhook aus.",
+  "@status.webhook.help": {
+    "description": "Dongle web UI: status.webhook.help",
+    "x-translated": "8722b9aa"
+  },
+  "status.webhook.save": "Webhook speichern",
+  "@status.webhook.save": {
+    "description": "Dongle web UI: status.webhook.save",
+    "x-translated": "b0b775fc"
+  },
+  "status.webhook.saved": "Webhook gespeichert.",
+  "@status.webhook.saved": {
+    "description": "Dongle web UI: status.webhook.saved",
+    "x-translated": "355ea70a"
+  },
+  "status.webhook.failed": "Speichern fehlgeschlagen.",
+  "@status.webhook.failed": {
+    "description": "Dongle web UI: status.webhook.failed",
+    "x-translated": "9a6e70be"
+  },
+  "status.webhook.err.https": "https wird nicht unterstützt: Der Dongle sendet nur per http, und nur im Heimnetz.",
+  "@status.webhook.err.https": {
+    "description": "Dongle web UI: status.webhook.err.https",
+    "x-translated": "6d63b69e"
+  },
+  "status.webhook.err.url": "Bitte eine gültige http-Adresse eingeben, z.B. http://homeassistant.local:8123/api/webhook/phoneblock.",
+  "@status.webhook.err.url": {
+    "description": "Dongle web UI: status.webhook.err.url",
+    "x-translated": "dd3ae17c"
+  },
+  "status.webhook.err.long": "Die Adresse darf höchstens {max} Zeichen lang sein.",
+  "@status.webhook.err.long": {
+    "description": "Dongle web UI: status.webhook.err.long",
+    "x-translated": "f58b70f9"
+  },
   "status.ann.title": "Spam-Ansage",
   "@status.ann.title": {
     "description": "Dongle web UI: status.ann.title",

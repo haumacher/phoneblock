@@ -136,6 +136,57 @@ static void test_counters_only_not_listed(void)
     CHECK(after.legitimate == before.legitimate + 1, "legitimate counter bumped");
 }
 
+// Listener for the webhook hook: remembers every sequence number it gets.
+static uint32_t s_heard[2 * STATS_MAX_CALLS];
+static int      s_heard_count;
+
+static void hear(uint32_t seq)
+{
+    if (s_heard_count < (int)(sizeof(s_heard) / sizeof(s_heard[0])))
+        s_heard[s_heard_count++] = seq;
+}
+
+static void test_call_listener(void)
+{
+    printf("call listener:\n");
+    stats_clear_calls();
+    s_heard_count = 0;
+    stats_set_call_listener(hear);
+
+    stats_record_call(NUM_A, "Max", VERDICT_LEGITIMATE);
+    record_checked(NUM_B, PB_ASSESS_SPAM, false);
+    stats_record_call_counters_only(NUM_A, "Max", VERDICT_LEGITIMATE,
+                                    PB_ASSESS_LEGITIMATE);
+    CHECK(s_heard_count == 2, "listed calls notified, counters-only not");
+    CHECK(s_heard[0] != 0 && s_heard[1] == s_heard[0] + 1,
+          "sequence numbers count up from a nonzero start");
+
+    stats_call_t c;
+    CHECK(stats_get_call(s_heard[0], &c) && strcmp(c.number, NUM_A) == 0
+          && strcmp(c.display, "Max") == 0, "first call found by its number");
+    CHECK(stats_get_call(s_heard[1], &c) && strcmp(c.number, NUM_B) == 0
+          && c.direct_votes == 7, "checked call found with its API fields");
+    CHECK(!stats_get_call(0, &c), "0 is never a call");
+    CHECK(!stats_get_call(s_heard[1] + 1, &c), "a future number is not found");
+
+    // The ring keeps STATS_MAX_CALLS entries: once that many newer calls
+    // came in, the first one is gone.
+    uint32_t first = s_heard[0];
+    for (int i = 0; i < STATS_MAX_CALLS - 1; i++)
+        stats_record_call(NUM_B, "", VERDICT_LEGITIMATE);
+    CHECK(!stats_get_call(first, &c), "overwritten call is gone");
+    CHECK(stats_get_call(first + 1, &c) && strcmp(c.number, NUM_B) == 0,
+          "the next call is still listed");
+
+    stats_clear_calls();
+    CHECK(!stats_get_call(first + 1, &c), "cleared list finds nothing");
+
+    stats_set_call_listener(NULL);
+    s_heard_count = 0;
+    stats_record_call(NUM_A, "", VERDICT_LEGITIMATE);
+    CHECK(s_heard_count == 0, "removed listener hears nothing");
+}
+
 int main(void)
 {
     stats_setup();
@@ -144,6 +195,7 @@ int main(void)
     test_assessment_for_number();
     test_contact_flow();
     test_counters_only_not_listed();
+    test_call_listener();
     printf("\n%d checks, %d failed\n", tests_run, tests_failed);
     return tests_failed ? 1 : 0;
 }

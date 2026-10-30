@@ -23,6 +23,12 @@ static stats_counters_t s_counters;
 static stats_call_t  s_calls[STATS_MAX_CALLS];
 static int           s_calls_head;
 static int           s_calls_count;
+// Sequence number of each listed call, parallel to s_calls (kept out of
+// stats_call_t, so the snapshot arrays on the httpd stack do not grow).
+// Starts at 1; 0 is never handed out.
+static uint32_t      s_calls_seq[STATS_MAX_CALLS];
+static uint32_t      s_next_seq = 1;
+static stats_call_listener_t s_call_listener;
 
 static stats_error_t s_errors[STATS_MAX_ERRORS];
 static int           s_errors_head;
@@ -36,6 +42,7 @@ void stats_setup(void)
     s_mutex = pb_mutex_create();
     memset(&s_counters, 0, sizeof(s_counters));
     memset(s_calls, 0, sizeof(s_calls));
+    memset(s_calls_seq, 0, sizeof(s_calls_seq));
     memset(s_errors, 0, sizeof(s_errors));
     s_calls_head = s_calls_count = 0;
     s_errors_head = s_errors_count = 0;
@@ -94,6 +101,28 @@ static void announce_call(const stats_call_t *shown)
     display_calls_changed();
 }
 
+// Numbers the call just written at s_calls_head. Called under the lock.
+static uint32_t push_seq(void)
+{
+    uint32_t seq = s_next_seq++;
+    if (s_next_seq == 0) s_next_seq = 1;
+    s_calls_seq[s_calls_head] = seq;
+    return seq;
+}
+
+// Tells the listener (the call webhook) about a newly listed call. Outside
+// the lock, like the display: the listener only queues the number.
+static void notify_listener(uint32_t seq)
+{
+    stats_call_listener_t listener = s_call_listener;
+    if (listener) listener(seq);
+}
+
+void stats_set_call_listener(stats_call_listener_t listener)
+{
+    s_call_listener = listener;
+}
+
 void stats_record_call_assessed(const char *number, const char *display,
                                 verdict_t verdict, pb_assessment_t assessment)
 {
@@ -103,6 +132,7 @@ void stats_record_call_assessed(const char *number, const char *display,
     stats_call_t *slot = &s_calls[s_calls_head];
     fill_call(slot, number, display, verdict, assessment);
     if (DISPLAY_PRESENT) shown = *slot;
+    uint32_t seq = push_seq();
 
     s_calls_head = (s_calls_head + 1) % STATS_MAX_CALLS;
     if (s_calls_count < STATS_MAX_CALLS) s_calls_count++;
@@ -111,6 +141,7 @@ void stats_record_call_assessed(const char *number, const char *display,
 
     unlock();
     if (DISPLAY_PRESENT) announce_call(&shown);
+    notify_listener(seq);
 }
 
 void stats_record_call_checked(const char *number, const char *display,
@@ -132,6 +163,7 @@ void stats_record_call_checked(const char *number, const char *display,
     copy_trim(slot->label,    sizeof(slot->label),    result->label);
     copy_trim(slot->location, sizeof(slot->location), result->location);
     if (DISPLAY_PRESENT) shown = *slot;
+    uint32_t seq = push_seq();
 
     s_calls_head = (s_calls_head + 1) % STATS_MAX_CALLS;
     if (s_calls_count < STATS_MAX_CALLS) s_calls_count++;
@@ -140,6 +172,7 @@ void stats_record_call_checked(const char *number, const char *display,
 
     unlock();
     if (DISPLAY_PRESENT) announce_call(&shown);
+    notify_listener(seq);
 }
 
 void stats_record_call_counters_only(const char *number, const char *display,
@@ -327,6 +360,20 @@ void stats_clear_calls(void)
     s_calls_count = 0;
     unlock();
     display_calls_changed();
+}
+
+bool stats_get_call(uint32_t seq, stats_call_t *out)
+{
+    if (seq == 0 || !out) return false;
+    bool found = false;
+    lock();
+    for (int i = 0; i < s_calls_count && !found; i++) {
+        if (s_calls_seq[i] != seq) continue;
+        *out  = s_calls[i];
+        found = true;
+    }
+    unlock();
+    return found;
 }
 
 int stats_count_calls(bool (*match)(const stats_call_t *call))
