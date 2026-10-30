@@ -58,6 +58,7 @@ LINUX_MAIN_SOURCES := ../main/announcement.c ../main/api.c \
                       ../main/time_sync_tz.c ../main/tr064.c \
                       ../main/version_cmp.c \
                       ../main/web_access.c ../main/web_auth.c ../main/web.c \
+                      ../main/webhook.c \
                       ../main/web_http_linux.c
 LINUX_OBJECTS := $(patsubst ../core/%.c,$(LINUX_BUILD_DIR)/core/%.o,$(LINUX_CORE_SOURCES)) \
                  $(patsubst ../main/%.c,$(LINUX_BUILD_DIR)/main/%.o,$(LINUX_MAIN_SOURCES))

@@ -93,6 +93,11 @@ void pb_log_set_sink(pb_log_sink_t sink);
 
 uint64_t pb_monotonic_us(void);
 const char *pb_firmware_version(void);
+// Platform comment for the User-Agent, so the server can tell the dongle
+// models and Linux installs apart: the chip family on the ESP32 ("ESP32",
+// "ESP32-C3", "ESP32-S3"), on Linux "Linux" or what the PHONEBLOCK_PLATFORM
+// environment variable sets, e.g. "Linux; HA" for the Home Assistant app.
+const char *pb_platform_tag(void);
 uint32_t pb_random_u32(void);
 void pb_random_fill(void *out, size_t len);
 // One-shot digests: PB_OK on success, PB_FAIL otherwise.
@@ -264,8 +269,9 @@ enum {
 // completed request; transport/setup failures are reported as described
 // above. The platform adds no User-Agent of its own: callers pass
 // http_util_user_agent() (main/http_util.h) in `headers`, so both builds
-// identify as "PhoneBlock-Dongle/<version> (<device id>)". On the ESP32,
-// HTTPS URLs are verified against the ESP-IDF certificate bundle.
+// identify as "PhoneBlock-Dongle/<version> [(<platform>)] (<device id>)".
+// On the ESP32, HTTPS URLs are verified against the ESP-IDF certificate
+// bundle.
 int pb_http_request(const char *method, const char *url,
                     const pb_http_header_t *headers, size_t header_count,
                     const void *body, size_t body_len, uint32_t timeout_ms,

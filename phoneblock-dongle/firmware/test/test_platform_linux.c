@@ -248,6 +248,32 @@ static void test_mac(void)
     }
 }
 
+// PHONEBLOCK_PLATFORM sets the User-Agent's platform comment; a value that
+// could break the header or the server's bracket parsing falls back.
+static void test_platform_tag(void)
+{
+    unsetenv("PHONEBLOCK_PLATFORM");
+    REQUIRE(strcmp(pb_platform_tag(), "Linux") == 0);
+    setenv("PHONEBLOCK_PLATFORM", "", 1);
+    REQUIRE(strcmp(pb_platform_tag(), "Linux") == 0);
+    setenv("PHONEBLOCK_PLATFORM", "Linux; HA", 1);
+    REQUIRE(strcmp(pb_platform_tag(), "Linux; HA") == 0);
+    // 32 characters pass, 33 do not.
+    setenv("PHONEBLOCK_PLATFORM", "Linux; 1234567890123456789012345", 1);
+    REQUIRE(strcmp(pb_platform_tag(), "Linux; 1234567890123456789012345") == 0);
+    setenv("PHONEBLOCK_PLATFORM", "Linux; 12345678901234567890123456", 1);
+    REQUIRE(strcmp(pb_platform_tag(), "Linux") == 0);
+    setenv("PHONEBLOCK_PLATFORM", "Linux\r\nX-Injected: 1", 1);
+    REQUIRE(strcmp(pb_platform_tag(), "Linux") == 0);
+    setenv("PHONEBLOCK_PLATFORM", "Linux) (x", 1);
+    REQUIRE(strcmp(pb_platform_tag(), "Linux") == 0);
+    setenv("PHONEBLOCK_PLATFORM", "Linux\\", 1);
+    REQUIRE(strcmp(pb_platform_tag(), "Linux") == 0);
+    setenv("PHONEBLOCK_PLATFORM", "Linux; Docker \xc3\xa4", 1);
+    REQUIRE(strcmp(pb_platform_tag(), "Linux") == 0);
+    unsetenv("PHONEBLOCK_PLATFORM");
+}
+
 // Linux log lines use the ESP-IDF layout, so the shared parser (which feeds
 // the web UI's error ring on the ESP32) reads them unchanged — including a
 // message that itself contains ": ".
@@ -357,6 +383,7 @@ int main(void)
     test_mutex();
     test_mac();
     test_log_format();
+    test_platform_tag();
     pb_log_info("test", "%s", "log ok");
     puts("test_platform_linux: all tests passed");
     return 0;

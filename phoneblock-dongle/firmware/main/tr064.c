@@ -251,8 +251,14 @@ static int call_action(const char *url,
         }
         pb_log_err(TAG, "%s: no Nonce/Realm in InitChallenge response (HTTP %d):\n%s",
                  action, status, resp);
-        SET_SENTINEL(TR064_ERR_PARSE,
-                     "InitChallenge response without Nonce/Realm");
+        if (tr064_is_app_access_disabled(status, resp)) {
+            // The box refuses TR-064 for apps altogether (#651).
+            SET_SENTINEL(TR064_ERR_APP_ACCESS,
+                         "InitChallenge refused: UPnPError 401 Invalid Action");
+        } else {
+            SET_SENTINEL(TR064_ERR_PARSE,
+                         "InitChallenge response without Nonce/Realm");
+        }
         free(env);
         return PB_FAIL;
     }

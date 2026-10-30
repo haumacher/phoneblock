@@ -72,6 +72,8 @@
   "status.system.col.stack": "Stack free",
   "status.system.led_quiet": "Only light the LED when there is a problem",
   "status.system.led_quiet.hint": "Normally the LED stays lit while everything is fine. With this option it stays dark in normal operation and only lights or blinks when there is a problem (setup needed, not registered, token rejected, no connection). Handy in a living room.",
+  "status.system.lcd_flip": "Turn the display upside down (rotate 180°)",
+  "status.system.lcd_flip.hint": "Depending on the orientation of the USB port on your Fritz!Box, the USB flash drive will be oriented differently. Rotate the display 180°.",
   "status.clock.now": "Time: {time}",
   "status.clock.pending": "Time: synchronising …",
   "status.time.today": "today {time}",
@@ -368,6 +370,14 @@
   "spam.dialog.comment": "Reason",
   "spam.dialog.comment.hint": "(optional; will be visible to the public)",
   "spam.dialog.error.is_contact": "This caller is in your phone book. A phone book entry always takes precedence on the dongle, so a spam alert isn't possible in this case.",
-  "status.system.lcd_flip": "Turn the display upside down (rotate 180°)",
-  "status.system.lcd_flip.hint": "Depending on the orientation of the USB port on your Fritz!Box, the USB flash drive will be oriented differently. Rotate the display 180°."
+  "status.webhook.title": "Webhook for Calls",
+  "status.webhook.intro": "For every call that appears in the call log, the dongle sends the call data via HTTP POST to this address—for example, to Home Assistant, ioBroker, or Node-RED. The content is a call log entry in JSON format, with the same fields as /api/calls.",
+  "status.webhook.url": "Webhook URL",
+  "status.webhook.help": "Only http:// and only to addresses on your home network, e.g., http://homeassistant.local:8123/api/webhook/phoneblock. Leaving this field blank disables the webhook.",
+  "status.webhook.save": "Save Webhook",
+  "status.webhook.saved": "Webhook saved.",
+  "status.webhook.failed": "Save failed.",
+  "status.webhook.err.https": "https is not supported: The dongle only transmits via http, and only on the home network.",
+  "status.webhook.err.url": "Please enter a valid HTTP address, such as http://homeassistant.local:8123/api/webhook/phoneblock.",
+  "status.webhook.err.long": "The address may be no more than {max} characters long."
 }

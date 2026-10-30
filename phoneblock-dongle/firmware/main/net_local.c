@@ -219,3 +219,52 @@ bool netloc_forwarded_last(const char *forwarded, net_addr_t *out)
     if (found) *out = last;
     return found;
 }
+
+// --- Webhook URL ----------------------------------------------------
+
+bool netloc_http_url_host(const char *url, char *host, size_t cap)
+{
+    if (!url || !host || cap == 0) return false;
+    host[0] = '\0';
+    for (const char *c = url; *c; c++) {
+        if ((unsigned char)*c <= ' ' || (unsigned char)*c >= 0x7f) return false;
+    }
+    static const char scheme[] = "http://";
+    for (size_t i = 0; i < sizeof(scheme) - 1; i++) {
+        if (tolower((unsigned char)url[i]) != scheme[i]) return false;
+    }
+    const char *p = url + sizeof(scheme) - 1;
+
+    // The authority runs to the first '/', '?' or '#'.
+    const char *end = p;
+    while (*end && *end != '/' && *end != '?' && *end != '#') end++;
+    if (memchr(p, '@', (size_t)(end - p))) return false;
+
+    const char *h = p, *he;
+    if (*p == '[') {
+        h = p + 1;
+        he = memchr(h, ']', (size_t)(end - h));
+        if (!he) return false;
+        p = he + 1;
+    } else {
+        he = memchr(p, ':', (size_t)(end - p));
+        if (!he) he = end;
+        p = he;
+    }
+    if (p < end) {
+        if (*p != ':' || p + 1 == end) return false;
+        long port = 0;
+        for (const char *d = p + 1; d < end; d++) {
+            if (!isdigit((unsigned char)*d)) return false;
+            port = port * 10 + (*d - '0');
+            if (port > 65535) return false;
+        }
+        if (port == 0) return false;
+    }
+
+    size_t len = (size_t)(he - h);
+    if (len == 0 || len >= cap) return false;
+    memcpy(host, h, len);
+    host[len] = '\0';
+    return true;
+}

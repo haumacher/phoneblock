@@ -69,6 +69,67 @@ journalctl -u phoneblock-dongle -b       # seit dem Systemstart
 journalctl -u phoneblock-dongle -f       # laufend mitlesen
 ```
 
+## Docker
+
+Für NAS und andere Docker-Hosts gibt es den Dienst als Image
+[`phoneblock/answerbot2`](https://hub.docker.com/r/phoneblock/answerbot2) auf
+Docker Hub (amd64, arm64, armhf). Es enthält genau das Paket aus dem
+APT-Repository und entsteht bei jedem Release im selben Workflow
+(`phoneblock-dongle/docker`). Tags: die Firmware-Version (z. B. `1.7.0-beta7`),
+`beta` für die jeweils neueste Version und `latest` für das neueste stabile
+Release.
+
+```sh
+docker run -d --name phoneblock --network host --restart unless-stopped \
+  -v phoneblock:/var/lib/phoneblock -e TZ=Europe/Berlin \
+  phoneblock/answerbot2:beta
+```
+
+Oder mit Docker Compose:
+
+```yaml
+services:
+  phoneblock:
+    image: phoneblock/answerbot2:beta
+    network_mode: host
+    restart: unless-stopped
+    environment:
+      TZ: Europe/Berlin
+    volumes:
+      - phoneblock:/var/lib/phoneblock
+volumes:
+  phoneblock:
+```
+
+Danach geht es weiter wie unter "Einrichtung", mit der Oberfläche unter
+`http://<server>:8080/`.
+
+- **Netzwerk:** Mit `--network host` erreicht die Fritz!Box den Dienst über
+  SIP und RTP (UDP) direkt unter der Adresse des Hosts. Port und Adresse der
+  Oberfläche setzen `PHONEBLOCK_WEB_PORT` und `PHONEBLOCK_WEB_BIND` als
+  Umgebungsvariablen. Ohne Host-Netzwerk müssen die SIP- und RTP-Ports
+  (`sip_lport`, `rtp_port`) weitergeleitet und `contact_host`/`contact_port`
+  in den Einstellungen auf die Adresse des Hosts gesetzt werden.
+- **Daten:** Einstellungen, Geräte-ID und Ansage liegen im Volume unter
+  `/var/lib/phoneblock`. Der Dienst läuft als Benutzer `phoneblock` (UID 100);
+  ein eingebundenes Host-Verzeichnis übergibt der Container beim Start diesem
+  Benutzer. Wer das nicht will, startet mit `--user <uid>:<gid>` und einem
+  Verzeichnis, in das dieser Benutzer schreiben darf.
+- **Updates:** `docker pull phoneblock/answerbot2:beta` und den Container neu
+  anlegen; die Einstellungen bleiben im Volume.
+- **Vom alten AnswerBot-Container (`phoneblock/answerbot`):** Die Einstellungen
+  werden nicht übernommen; Fritz!Box und PhoneBlock-Anmeldung richtest du in
+  der Oberfläche neu ein. Der Dienst nimmt Spam-Anrufe an und spielt die Ansage
+  ab, ein Gespräch mit dem Anrufer wie beim AnswerBot führt er noch nicht.
+
+Ein Image aus einer veröffentlichten Version selbst bauen (Debian-Syntax der
+Version, siehe `debian/pb-version`):
+
+```sh
+docker build --build-arg PHONEBLOCK_VERSION=1.7.0~beta7 \
+  -t phoneblock-dongle phoneblock-dongle/docker
+```
+
 ## Paket selbst bauen
 
 Im Verzeichnis `phoneblock-dongle`:

@@ -34,6 +34,7 @@
 #include "status_led.h"
 #include "time_sync.h"
 #include "web.h"
+#include "webhook.h"
 #include "wifi.h"
 
 #include "sdkconfig.h"
@@ -187,6 +188,7 @@ void app_main(void)
     // off the SIP critical path. Drains a small queue at its own
     // pace; SPAM verdicts enqueue here instead of POSTing inline.
     report_queue_start();
+    webhook_start();
 
     // Create the shared state for the session-resuming spam-lookup HTTP
     // client before any task that calls phoneblock_check() (the SIP

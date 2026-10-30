@@ -6,11 +6,13 @@
 #ifdef ESP_PLATFORM
 #include "esp_log.h"
 #include "esp_netif.h"
+#include "lwip/netdb.h"
 #include "lwip/sockets.h"
 #else
 #include <ifaddrs.h>
 #include <limits.h>
 #include <net/if.h>
+#include <netdb.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -24,6 +26,27 @@
 
 static const char *TAG = "web_access";
 
+// Convert a socket address into `out` (v4-mapped normalized). Returns false
+// for any other family.
+static bool sockaddr_to_net(const struct sockaddr *sa, net_addr_t *out)
+{
+    if (sa->sa_family == AF_INET6) {
+        const struct sockaddr_in6 *v6 = (const struct sockaddr_in6 *)sa;
+        memcpy(out->bytes, v6->sin6_addr.s6_addr, 16);
+        return true;
+    }
+    if (sa->sa_family == AF_INET) {
+        // Non-dual-stack path: build the v4-mapped form by hand.
+        const struct sockaddr_in *v4 = (const struct sockaddr_in *)sa;
+        memset(out->bytes, 0, 10);
+        out->bytes[10] = 0xff;
+        out->bytes[11] = 0xff;
+        memcpy(out->bytes + 12, &v4->sin_addr.s_addr, 4);
+        return true;
+    }
+    return false;
+}
+
 // Read the request's immediate TCP peer into `out` (v4-mapped
 // normalized). Returns false on any failure (fail closed).
 static bool peer_addr(web_http_request_t *req, net_addr_t *out)
@@ -34,22 +57,7 @@ static bool peer_addr(web_http_request_t *req, net_addr_t *out)
     struct sockaddr_storage sa;
     socklen_t len = sizeof(sa);
     if (getpeername(fd, (struct sockaddr *)&sa, &len) != 0) return false;
-
-    if (sa.ss_family == AF_INET6) {
-        const struct sockaddr_in6 *v6 = (const struct sockaddr_in6 *)&sa;
-        memcpy(out->bytes, v6->sin6_addr.s6_addr, 16);
-        return true;
-    }
-    if (sa.ss_family == AF_INET) {
-        // Non-dual-stack path: build the v4-mapped form by hand.
-        const struct sockaddr_in *v4 = (const struct sockaddr_in *)&sa;
-        memset(out->bytes, 0, 10);
-        out->bytes[10] = 0xff;
-        out->bytes[11] = 0xff;
-        memcpy(out->bytes + 12, &v4->sin_addr.s_addr, 4);
-        return true;
-    }
-    return false;
+    return sockaddr_to_net((const struct sockaddr *)&sa, out);
 }
 
 // Snapshot the dongle's own interface addresses for the same-subnet /
@@ -213,4 +221,33 @@ bool web_client_is_local(web_http_request_t *req)
 
     // Direct client on the LAN.
     return true;
+}
+
+web_host_locality_t web_host_locality(const char *host)
+{
+    if (!host || !*host) return WEB_HOST_UNRESOLVED;
+    struct addrinfo hints = { .ai_family = AF_UNSPEC, .ai_socktype = SOCK_STREAM };
+    struct addrinfo *res = NULL;
+    if (getaddrinfo(host, NULL, &hints, &res) != 0 || !res) {
+        return WEB_HOST_UNRESOLVED;
+    }
+
+    netloc_self_t self;
+    load_self(&self);
+
+    // Every address must be local: the HTTP client picks one on its own,
+    // so a name that also resolves to a global address fails closed.
+    web_host_locality_t verdict = WEB_HOST_LOCAL;
+    bool any = false;
+    for (const struct addrinfo *a = res; a; a = a->ai_next) {
+        net_addr_t addr;
+        if (!sockaddr_to_net(a->ai_addr, &addr)) continue;
+        any = true;
+        if (!netloc_is_local(&addr, &self)) {
+            verdict = WEB_HOST_REMOTE;
+            break;
+        }
+    }
+    freeaddrinfo(res);
+    return any ? verdict : WEB_HOST_UNRESOLVED;
 }

@@ -88,6 +88,7 @@ static const char *NS   = "phoneblock";
 #define K_MAIL_ON_ERROR "mail_on_error"
 #define K_MAIL_ON_SPAM  "mail_on_spam"
 #define K_MAIL_ON_UPDATE "mail_on_update"
+#define K_WEBHOOK_URL   "webhook_url"
 #define K_DEVICE_ID     "device_id"
 #define K_TIMEZONE      "timezone"
 #define K_UI_LANG       "ui_lang"
@@ -187,6 +188,7 @@ typedef struct {
     char mail_on_error[4];   // "1" = mail on ERROR/crash (default off)
     char mail_on_spam[4];    // "1" = mail when spam calls were caught (default off)
     char mail_on_update[4];  // "0" = suppress firmware-update mail (default on)
+    char webhook_url[CONFIG_WEBHOOK_URL_CAP];   // call webhook; empty = off
     char last_failed_ota[32];   // semver, plus headroom for "-rcN" suffixes
     char timezone[64];       // POSIX TZ string (empty = use Kconfig default)
     char ui_lang[12];        // UI/content locale code ("de","en","zh-Hans",…);
@@ -353,6 +355,7 @@ void config_load(void)
         s_config.mail_on_error[0] = '\0';
         s_config.mail_on_spam[0]  = '\0';
         s_config.mail_on_update[0] = '\0';   // empty → default on (see getter)
+        s_config.webhook_url[0]   = '\0';
         s_config.last_failed_ota[0] = '\0';
         copy_default(s_config.timezone, sizeof(s_config.timezone), CONFIG_DONGLE_DEFAULT_TZ);
         s_config.ui_lang[0] = '\0';   // empty → default "en" (see getter)
@@ -454,6 +457,8 @@ void config_load(void)
              s_config.mail_on_spam, sizeof(s_config.mail_on_spam));
     load_str(h, K_MAIL_ON_UPDATE, "",
              s_config.mail_on_update, sizeof(s_config.mail_on_update));
+    load_str(h, K_WEBHOOK_URL, "",
+             s_config.webhook_url, sizeof(s_config.webhook_url));
     load_str(h, K_LAST_FAIL_OTA, "",
              s_config.last_failed_ota, sizeof(s_config.last_failed_ota));
     load_str(h, K_TIMEZONE, CONFIG_DONGLE_DEFAULT_TZ,
@@ -703,6 +708,7 @@ const char *config_smtp_from(void)
     return s_config.smtp_from[0] ? s_config.smtp_from : s_config.smtp_user;
 }
 const char *config_smtp_to(void)             { return s_config.smtp_to; }
+const char *config_webhook_url(void)         { return s_config.webhook_url; }
 bool        config_mail_on_error(void)
 {
     // Default off: status mail is opt-in. Only "1" enables it.
@@ -897,6 +903,8 @@ int config_update(const config_update_t *u)
                                         s_config.mail_on_spam, sizeof(s_config.mail_on_spam));
     if (err == PB_KV_OK) err = set_str_if(h, K_MAIL_ON_UPDATE, u->mail_on_update,
                                         s_config.mail_on_update, sizeof(s_config.mail_on_update));
+    if (err == PB_KV_OK) err = set_str_if(h, K_WEBHOOK_URL, u->webhook_url,
+                                        s_config.webhook_url, sizeof(s_config.webhook_url));
     if (err == PB_KV_OK) err = set_str_if(h, K_TIMEZONE, u->timezone,
                                         s_config.timezone, sizeof(s_config.timezone));
     if (err == PB_KV_OK) err = set_str_if(h, K_UI_LANG, u->ui_lang,
