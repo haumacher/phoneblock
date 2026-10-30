@@ -4,20 +4,19 @@
 package de.haumacher.phoneblock.ftc;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
@@ -27,8 +26,6 @@ import org.apache.ibatis.session.SqlSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.opencsv.CSVReaderHeaderAware;
-
 import de.haumacher.phoneblock.analysis.NumberAnalyzer;
 import de.haumacher.phoneblock.app.api.model.PhoneNumer;
 import de.haumacher.phoneblock.app.api.model.Rating;
@@ -37,24 +34,29 @@ import de.haumacher.phoneblock.db.DBService;
 import de.haumacher.phoneblock.db.FtcReports;
 import de.haumacher.phoneblock.db.SpamReports;
 import de.haumacher.phoneblock.db.Users;
+import de.haumacher.phoneblock.ftc.FtcApiClient.Complaint;
+import de.haumacher.phoneblock.ftc.FtcApiClient.RateLimitException;
 import de.haumacher.phoneblock.scheduler.SchedulerService;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 
 /**
  * Service that imports FTC (Federal Trade Commission) Do-Not-Call complaint data
- * from daily CSV files published at ftc.gov.
+ * from the FTC's complaints API (see {@link FtcApiClient}).
  *
  * <p>
- * The service runs daily at a configurable time and downloads complaint data for
- * each day since the last successful import. Phone numbers are normalized to E.164
- * format (prepending +1 for US numbers) and fed directly into the main NUMBERS table
- * as regular spam reports. Provenance is tracked in the FTC_REPORTS and FTC_SUBJECTS tables.
+ * The service runs daily at a configurable time and fetches the complaints created since the last
+ * import, one hour of complaints at a time. The FTC uploads complaints in batches about a day
+ * late, so an hour is only imported once the API holds a complaint created after it. Phone
+ * numbers are normalized to E.164 format (prepending +1 for US numbers) and fed directly into the
+ * main NUMBERS table as regular spam reports. Provenance is tracked in the FTC_REPORTS and
+ * FTC_SUBJECTS tables.
  * </p>
  *
  * <p>Configuration via JNDI or system properties:</p>
  * <ul>
  * <li><code>ftc/enabled</code> - Whether the import is active (default: false)</li>
+ * <li><code>ftc/api-key</code> - The api.data.gov key for the FTC API (required)</li>
  * <li><code>ftc/schedule/hour</code> - Hour of day to run (0-23, default: 6)</li>
  * <li><code>ftc/schedule/minute</code> - Minute of hour to run (0-59, default: 0)</li>
  * </ul>
@@ -64,27 +66,16 @@ public class FtcImportService implements ServletContextListener {
 	private static final Logger LOG = LoggerFactory.getLogger(FtcImportService.class);
 
 	/**
-	 * URL pattern for daily FTC DNC complaint CSV files.
-	 * The date placeholder is formatted as YYYY-MM-DD.
+	 * Property key in the PROPERTIES table holding the start of the first hour not yet imported
+	 * (ISO local date-time, UTC).
 	 */
-	private static final String FTC_CSV_URL_PATTERN =
-		"https://www.ftc.gov/sites/default/files/DNC_Complaint_Numbers_%s.csv";
-
-	/** Property key in the PROPERTIES table for tracking the last imported date. */
-	private static final String PROPERTY_LAST_DATE = "ftc.sync.last_date";
+	static final String PROPERTY_NEXT_HOUR = "ftc.sync.next_hour";
 
 	/** Number of days to bootstrap when no previous import exists (~5 weeks). */
 	private static final int DEFAULT_BOOTSTRAP_DAYS = 35;
 
-	/** Date-time format used in FTC CSV Created_Date column: "2026-03-05 00:03:04". */
-	private static final DateTimeFormatter CREATED_DATE_FORMAT =
-		DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
-	/** User-Agent header for HTTP requests (FTC blocks requests without a browser-like UA). */
-	private static final String USER_AGENT = "Mozilla/5.0";
-
-	/** Number of rows after which the SQL session is committed. */
-	private static final int COMMIT_INTERVAL = 1000;
+	/** Delay before resuming an import that hit the API's rate limit. */
+	private static final long RATE_LIMIT_RETRY_MINUTES = 60;
 
 	/** Dial prefix for US phone numbers. */
 	private static final String US_DIAL_PREFIX = "+1";
@@ -93,9 +84,13 @@ public class FtcImportService implements ServletContextListener {
 	private final DBService _dbService;
 
 	private boolean _enabled = false;
+	private String _apiKey;
 	private int _scheduleHour = 6;
 	private int _scheduleMinute = 0;
+	private FtcApiClient _client;
 	private ScheduledFuture<?> _task;
+	private ScheduledFuture<?> _retry;
+	private final AtomicBoolean _running = new AtomicBoolean();
 
 	/**
 	 * Cached subject information (label to ID + rating).
@@ -117,6 +112,11 @@ public class FtcImportService implements ServletContextListener {
 			LOG.info("FTC import disabled.");
 			return;
 		}
+		if (_apiKey == null || _apiKey.isBlank()) {
+			LOG.error("FTC import enabled but no API key configured (ftc/api-key), import disabled.");
+			return;
+		}
+		_client = new FtcApiClient(_apiKey.strip());
 
 		LOG.info("Starting FTC import service: schedule={}:{}", _scheduleHour, String.format("%02d", _scheduleMinute));
 
@@ -149,139 +149,139 @@ public class FtcImportService implements ServletContextListener {
 		if (_task != null) {
 			_task.cancel(false);
 		}
+		synchronized (this) {
+			if (_retry != null) {
+				_retry.cancel(false);
+			}
+		}
 	}
 
 	/**
-	 * Main import loop called by the scheduler.
-	 *
-	 * <p>
-	 * Reads the last imported date from the PROPERTIES table. If no previous import
-	 * exists, bootstraps from today minus {@link #DEFAULT_BOOTSTRAP_DAYS}. Then loops
-	 * over each day from last+1 through yesterday, downloading and importing CSV data
-	 * for each day.
-	 * </p>
+	 * Entry point called by the scheduler.
 	 */
 	void runImport() {
+		if (!_running.compareAndSet(false, true)) {
+			LOG.info("FTC import already running.");
+			return;
+		}
+		try {
+			runImport(_dbService.db(), _client);
+		} catch (RateLimitException ex) {
+			LOG.warn("FTC API rate limit reached, resuming import in {} minutes.", RATE_LIMIT_RETRY_MINUTES);
+			scheduleRetry();
+		} catch (Exception ex) {
+			LOG.error("FTC import failed.", ex);
+		} finally {
+			_running.set(false);
+		}
+	}
+
+	private synchronized void scheduleRetry() {
+		if (_retry != null && !_retry.isDone()) {
+			return;
+		}
+		_retry = _schedulerService.scheduler().schedule((Runnable) this::runImport, RATE_LIMIT_RETRY_MINUTES, TimeUnit.MINUTES);
+	}
+
+	/**
+	 * Imports all complete hours since the last import.
+	 *
+	 * <p>
+	 * Reads the first hour not yet imported from the PROPERTIES table. If no previous import
+	 * exists, bootstraps from today minus {@link #DEFAULT_BOOTSTRAP_DAYS}. Then imports each hour
+	 * before the hour of the newest complaint available, committing the hour's votes together with
+	 * the advanced position. An import interrupted by an error resumes with the interrupted hour.
+	 * </p>
+	 *
+	 * @return number of complaints imported.
+	 */
+	int runImport(DB db, FtcApiClient client) throws IOException {
 		LOG.info("Starting FTC import.");
 
-		DB db = _dbService.db();
 		try (SqlSession session = db.openSession()) {
 			Users users = session.getMapper(Users.class);
 			FtcReports ftcReports = session.getMapper(FtcReports.class);
 			SpamReports spamReports = session.getMapper(SpamReports.class);
 
-			// Determine start date.
-			String lastDateStr = users.getProperty(PROPERTY_LAST_DATE);
-			LocalDate startDate;
-			if (lastDateStr != null) {
-				startDate = LocalDate.parse(lastDateStr, DateTimeFormatter.ISO_LOCAL_DATE).plusDays(1);
-			} else {
-				startDate = LocalDate.now().minusDays(DEFAULT_BOOTSTRAP_DAYS);
+			String nextHourStr = users.getProperty(PROPERTY_NEXT_HOUR);
+			LocalDateTime hour = nextHourStr != null
+				? LocalDateTime.parse(nextHourStr)
+				: LocalDate.now(ZoneOffset.UTC).minusDays(DEFAULT_BOOTSTRAP_DAYS).atStartOfDay();
+
+			LocalDateTime newest = client.fetchNewestCreatedDate(LocalDateTime.now(ZoneOffset.UTC));
+			if (newest == null) {
+				LOG.warn("FTC API returned no complaints.");
+				return 0;
 			}
+			LocalDateTime end = newest.truncatedTo(ChronoUnit.HOURS);
 
-			LocalDate yesterday = LocalDate.now().minusDays(1);
+			Map<String, SubjectInfo> subjectCache = new HashMap<>();
+			int total = 0;
+			try {
+				for (; hour.isBefore(end); hour = hour.plusHours(1)) {
+					total += importHour(db, session, client, ftcReports, spamReports, subjectCache, hour);
 
-			int totalImported = 0;
-			for (LocalDate date = startDate; !date.isAfter(yesterday); date = date.plusDays(1)) {
-				try {
-					int count = importDay(db, session, ftcReports, spamReports, date);
-					totalImported += count;
-
-					// Update the last imported date in PROPERTIES.
-					String dateValue = date.format(DateTimeFormatter.ISO_LOCAL_DATE);
-					if (lastDateStr != null) {
-						users.updateProperty(PROPERTY_LAST_DATE, dateValue);
+					String position = hour.plusHours(1).toString();
+					if (nextHourStr != null) {
+						users.updateProperty(PROPERTY_NEXT_HOUR, position);
 					} else {
-						users.addProperty(PROPERTY_LAST_DATE, dateValue);
-						lastDateStr = dateValue; // Switch to update mode for subsequent days.
+						users.addProperty(PROPERTY_NEXT_HOUR, position);
+						nextHourStr = position;
 					}
-
 					session.commit();
-
-					if (count > 0) {
-						LOG.info("Imported {} FTC records for {}.", count, date);
-					}
-				} catch (IOException ex) {
-					LOG.warn("Failed to download FTC CSV for {}: {}", date, ex.getMessage());
 				}
+			} finally {
+				LOG.info("FTC import: {} complaints imported, next hour to import: {}, complaints available until: {}.",
+					total, hour, newest);
 			}
-
-			LOG.info("FTC import completed. Total records imported: {}", totalImported);
-		} catch (Exception ex) {
-			LOG.error("FTC import failed.", ex);
+			return total;
 		}
 	}
 
 	/**
-	 * Downloads and parses one day's CSV file. Returns the number of rows imported.
+	 * Fetches and processes all complaints created in the given hour.
 	 *
-	 * @param db the database instance.
-	 * @param session the active SQL session.
-	 * @param ftcReports the FtcReports mapper.
-	 * @param spamReports the SpamReports mapper.
-	 * @param date the date to import.
-	 * @return number of rows imported.
-	 * @throws IOException if the download fails (but not for HTTP 404, which returns 0).
+	 * @return number of complaints processed.
 	 */
-	int importDay(DB db, SqlSession session, FtcReports ftcReports, SpamReports spamReports, LocalDate date) throws IOException {
-		String url = String.format(FTC_CSV_URL_PATTERN, date.format(DateTimeFormatter.ISO_LOCAL_DATE));
+	int importHour(DB db, SqlSession session, FtcApiClient client, FtcReports ftcReports, SpamReports spamReports,
+			Map<String, SubjectInfo> subjectCache, LocalDateTime hour) throws IOException {
+		LocalDateTime last = hour.plusHours(1).minusSeconds(1);
 
-		HttpURLConnection connection = (HttpURLConnection) URI.create(url).toURL().openConnection();
-		connection.setRequestProperty("User-Agent", USER_AGENT);
-		connection.setConnectTimeout(30_000);
-		connection.setReadTimeout(60_000);
-
-		int responseCode = connection.getResponseCode();
-		if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
-			// No data for this day (weekend/holiday) - skip silently.
-			LOG.debug("No FTC CSV for {} (404).", date);
-			return 0;
-		}
-		if (responseCode != HttpURLConnection.HTTP_OK) {
-			throw new IOException("HTTP " + responseCode + " for " + url);
-		}
-
-		Map<String, SubjectInfo> subjectCache = new HashMap<>();
-
+		// Pages may overlap, if complaints with the same creation date are ordered differently in
+		// subsequent requests.
+		Set<String> seen = new HashSet<>();
 		int count = 0;
-		try (InputStream in = connection.getInputStream()) {
-			CSVReaderHeaderAware reader = new CSVReaderHeaderAware(
-				new InputStreamReader(in, StandardCharsets.UTF_8));
-
-			Map<String, String> row;
-			while ((row = reader.readMap()) != null) {
-				String phoneNumber = row.get("Company_Phone_Number");
-				String createdDate = row.get("Created_Date");
-				String subject = row.get("Subject");
-
-				if (phoneNumber == null || createdDate == null) {
+		for (int offset = 0; ; offset += FtcApiClient.PAGE_SIZE) {
+			List<Complaint> page = client.fetchPage(hour, last, offset);
+			for (Complaint complaint : page) {
+				if (complaint.id() != null && !seen.add(complaint.id())) {
+					continue;
+				}
+				if (complaint.phoneNumber() == null || complaint.createdDate() == null) {
 					continue;
 				}
 
 				processRow(db, session, ftcReports, spamReports, subjectCache,
-					phoneNumber.strip(), createdDate.strip(), subject);
+					complaint.phoneNumber().strip(), complaint.createdDate().strip(), complaint.subject());
 				count++;
-
-				if (count % COMMIT_INTERVAL == 0) {
-					session.commit();
-				}
 			}
-		} catch (Exception ex) {
-			throw new IOException("Failed to parse FTC CSV for " + date + ": " + ex.getMessage(), ex);
+			if (page.size() < FtcApiClient.PAGE_SIZE) {
+				break;
+			}
 		}
-
+		LOG.debug("Imported {} FTC complaints for {}.", count, hour);
 		return count;
 	}
 
 	/**
-	 * Processes one CSV row: normalizes the phone number, feeds votes into the
+	 * Processes one complaint: normalizes the phone number, feeds votes into the
 	 * main NUMBERS table, resolves the complaint subject for rating updates,
 	 * and upserts provenance data into FTC_REPORTS.
 	 */
 	void processRow(DB db, SqlSession session, FtcReports ftcReports, SpamReports spamReports,
 					Map<String, SubjectInfo> subjectCache,
 					String phoneNumber, String createdDate, String subject) {
-		// Validate: FTC CSV has bare 10-digit US numbers like "8886749072".
+		// Validate: FTC data has bare 10-digit US numbers like "8886749072".
 		if (phoneNumber.length() != 10 || !phoneNumber.chars().allMatch(Character::isDigit)) {
 			return;
 		}
@@ -292,7 +292,7 @@ public class FtcImportService implements ServletContextListener {
 		// Parse Created_Date to unix millis.
 		long createdMillis;
 		try {
-			LocalDateTime dateTime = LocalDateTime.parse(createdDate, CREATED_DATE_FORMAT);
+			LocalDateTime dateTime = LocalDateTime.parse(createdDate, FtcApiClient.DATE_TIME_FORMAT);
 			createdMillis = dateTime.toInstant(ZoneOffset.UTC).toEpochMilli();
 		} catch (Exception ex) {
 			LOG.debug("Skipping row with unparseable date: {}", createdDate);
@@ -372,6 +372,12 @@ public class FtcImportService implements ServletContextListener {
 			}
 
 			try {
+				_apiKey = String.valueOf(envCtx.lookup("ftc/api-key"));
+			} catch (NamingException ex) {
+				_apiKey = System.getProperty("ftc.api-key");
+			}
+
+			try {
 				_scheduleHour = ((Number) envCtx.lookup("ftc/schedule/hour")).intValue();
 			} catch (NamingException ex) {
 				String value = System.getProperty("ftc.schedule.hour");
@@ -390,6 +396,8 @@ public class FtcImportService implements ServletContextListener {
 			}
 		} catch (NamingException ex) {
 			LOG.info("Not using JNDI configuration for FTC import: {}", ex.getMessage());
+			_enabled = Boolean.parseBoolean(System.getProperty("ftc.enabled"));
+			_apiKey = System.getProperty("ftc.api-key");
 		}
 
 		// Validate.
