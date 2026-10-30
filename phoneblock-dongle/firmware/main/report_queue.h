@@ -36,3 +36,8 @@ void report_queue_enqueue_webhook(uint32_t call_seq);
 // has not started within ~2 s), capped at ~32 s. For worker-side requests
 // that must not run next to the SRTP stream.
 void report_queue_wait_announcement(void);
+
+// Waits only for a running announcement to stop (capped at ~30 s), without
+// waiting for one to start: for a call that has already ended, whose stream
+// may still be winding down after the caller's BYE.
+void report_queue_wait_stream_end(void);

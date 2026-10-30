@@ -15,6 +15,7 @@ Usage:
     scripts/fake-call.py '*123' answerbot        # star-number spam test mode
     scripts/fake-call.py --hang 030330755602     # leave the call hanging
     scripts/fake-call.py --audio 030330755602    # receive the announcement
+    scripts/fake-call.py --audio --bye-after 3 '*123'   # caller hangs up early
 
 --hang: send only the INVITE and deliberately withhold the teardown (no
 ACK, no CANCEL), leaving the dongle in its answered/ringing dialog. Use it
@@ -31,6 +32,11 @@ RTP/SRTP, the report deferred until the stream has ended, stack headroom of
 the streaming and report tasks. Without --audio the dongle finds no RTP
 destination and hangs up without audio.
 
+--bye-after SECONDS (with --audio): hang up like an impatient caller, i.e.
+send BYE that many seconds after the ACK, while the announcement is still
+playing. The call's duration_s in /api/calls (and the call webhook) then
+shows when the caller left.
+
 Note: send only the bare number (no display name). A non-numeric display
 name trips is_known_contact() and the call skips the blocklist/API check
 (and is dropped entirely when "log known calls" is off).
@@ -46,6 +52,16 @@ if audio:
     args.remove("--audio")
 if hang and audio:
     sys.exit("--hang and --audio exclude each other")
+bye_after = None
+if "--bye-after" in args:
+    i = args.index("--bye-after")
+    try:
+        bye_after = float(args[i + 1])
+    except (IndexError, ValueError):
+        sys.exit("--bye-after needs a number of seconds")
+    del args[i:i + 2]
+    if not audio:
+        sys.exit("--bye-after needs --audio")
 if not args or args[0] in ("-h", "--help"):
     print(__doc__)
     sys.exit(0 if args else 2)
@@ -142,6 +158,9 @@ def receive_audio():
                 break
         except socket.timeout:
             pass
+        if bye_after is not None and time.time() - start >= bye_after:
+            print(f"-> BYE (--bye-after {bye_after:g} s)"); sock.send(msg("BYE", 2))
+            break
         if time.time() - (last or start) > 5:
             print("-> BYE (stream silent for 5 s)"); sock.send(msg("BYE", 2))
             break

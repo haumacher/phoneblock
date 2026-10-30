@@ -109,7 +109,8 @@ static void status_url(uint16_t port, char *out, size_t cap)
 
 // Checks the posted JSON against what was recorded.
 static void expect_call(const char *request, const char *number,
-                        const char *display, const char *assessment)
+                        const char *display, const char *assessment,
+                        int duration_s)
 {
     REQUIRE(strncmp(request, "POST /hook HTTP/1.1\r\n", 21) == 0);
     REQUIRE(strstr(request, "Content-Type: application/json\r\n") != NULL);
@@ -122,6 +123,7 @@ static void expect_call(const char *request, const char *number,
                    assessment) == 0);
     REQUIRE(cJSON_GetObjectItem(call, "age_s")->valuedouble >= 0);
     REQUIRE(cJSON_GetObjectItem(call, "epoch_s")->valuedouble > 0);
+    REQUIRE(cJSON_GetObjectItem(call, "duration_s")->valueint == duration_s);
     cJSON_Delete(call);
 }
 
@@ -190,12 +192,15 @@ int main(void)
     // A legitimate call goes out at once.
     stats_record_call("0301234567", "Test", VERDICT_LEGITIMATE);
     REQUIRE(receive_post(request, sizeof(request), 5000));
-    expect_call(request, "0301234567", "Test", "legitimate");
+    expect_call(request, "0301234567", "Test", "legitimate", 0);
 
-    // A spam call too, after the announcement wait (no stream here: ~2 s).
+    // A spam call is answered: it is posted when it ends, as sip_register.c
+    // reports it, with its duration (here a caller who hung up after 4 s).
     stats_record_call("0309876543", "", VERDICT_SPAM);
-    REQUIRE(receive_post(request, sizeof(request), 8000));
-    expect_call(request, "0309876543", "", "spam");
+    REQUIRE(!receive_post(request, sizeof(request), 1000));
+    stats_call_ended(stats_last_call_seq(), 4200000);
+    REQUIRE(receive_post(request, sizeof(request), 5000));
+    expect_call(request, "0309876543", "", "spam", 4);
 
     // TEST-NET-1 is neither private nor on our subnet: refused before any
     // connection, with the reason in the web UI's log ring.

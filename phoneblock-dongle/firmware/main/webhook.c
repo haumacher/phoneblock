@@ -81,9 +81,10 @@ void webhook_deliver(uint32_t call_seq)
             return;
     }
 
-    // A spam call is answered with the announcement; posting next to the
-    // SRTP stream would compete for the heap like the spam report would.
-    if (call.verdict == VERDICT_SPAM) report_queue_wait_announcement();
+    // A spam call is posted when it has ended (stats_call_ended()), but
+    // after the caller's BYE the stream may still be stopping; posting next
+    // to it would compete for the heap like the spam report would.
+    if (call.verdict == VERDICT_SPAM) report_queue_wait_stream_end();
 
     cJSON *json = web_call_json(&call, (int64_t)pb_monotonic_us(),
                                 time_sync_now_epoch());

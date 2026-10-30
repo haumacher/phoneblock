@@ -65,6 +65,11 @@ void report_queue_wait_announcement(void)
     for (int i = 0; i < 40 && !rtp_streaming_active(); i++) {
         pb_task_sleep_ms(50);
     }
+    report_queue_wait_stream_end();
+}
+
+void report_queue_wait_stream_end(void)
+{
     for (int i = 0; i < 300 && rtp_streaming_active(); i++) {
         pb_task_sleep_ms(100);
     }
