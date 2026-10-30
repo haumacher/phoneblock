@@ -703,12 +703,18 @@ static web_http_error_t handle_calls(web_http_request_t *req)
     stats_call_t calls[STATS_MAX_CALLS];
     int n = stats_snapshot_calls(calls, STATS_MAX_CALLS);
     int64_t now_us = pb_monotonic_us();
+    // Absolute time for machine clients (Home Assistant, ioBroker, #644),
+    // derived from the age instead of stored per call, so the call buffer
+    // stays as it is. 0 while the clock is not set, as in /api/status.
+    int64_t now_epoch = time_sync_now_epoch();
 
     cJSON *root = cJSON_CreateObject();
     cJSON *arr  = cJSON_AddArrayToObject(root, "calls");
     for (int i = 0; i < n; i++) {
         cJSON *o = cJSON_CreateObject();
-        cJSON_AddNumberToObject(o, "age_s",       (double)((now_us - calls[i].at_us) / 1000000));
+        int64_t age_s = (now_us - calls[i].at_us) / 1000000;
+        cJSON_AddNumberToObject(o, "age_s",       (double)age_s);
+        cJSON_AddNumberToObject(o, "epoch_s",     now_epoch ? (double)(now_epoch - age_s) : 0);
         cJSON_AddStringToObject(o, "number",      calls[i].number);
         cJSON_AddStringToObject(o, "display",     calls[i].display);
         cJSON_AddStringToObject(o, "label",       calls[i].label);

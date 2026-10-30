@@ -246,6 +246,12 @@ test_api_linux: test_api_linux.c linux_test_util.h \
 	  $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a \
 	  $(LINUX_NET_LIBS) -o $@
 
+test_web_calls_linux: test_web_calls_linux.c linux_test_util.h \
+                      $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a
+	$(CC) $(CFLAGS) -pthread $(LINUX_PKG_CFLAGS) $< \
+	  $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a \
+	  $(LINUX_NET_LIBS) -o $@
+
 test_web_http_linux: test_web_http_linux.c linux_test_util.h ../main/web_http.h \
                      ../main/web_http_linux.c
 	$(CC) $(CFLAGS) -pthread $(shell pkg-config --cflags libmicrohttpd) \
@@ -271,7 +277,7 @@ test: $(BINS)
 
 # Linux build of the firmware modules plus its network tests; needs the
 # extra prerequisites listed at LINUX_BUILD_DIR above.
-LINUX_BINS = test_platform_linux_net test_api_linux test_web_http_linux
+LINUX_BINS = test_platform_linux_net test_api_linux test_web_http_linux test_web_calls_linux
 
 # The service binary. debian/rules builds it with the distribution's CFLAGS,
 # CPPFLAGS and LDFLAGS (optimisation and hardening) instead of the test flags.
