@@ -3,7 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="icon" type="image/svg+xml" href="/ab-logo-bot.svg">
+<script>
+// All URLs of the UI are relative (api/status, ab-logo-bot.svg), so the app
+// also works below a reverse proxy's mount path such as Home Assistant's
+// ingress. They resolve against this page's address, which must end in "/";
+// a mount opened without it (/phoneblock instead of /phoneblock/) gets it here.
+if (!location.pathname.endsWith('/'))
+  history.replaceState(null, '', location.pathname + '/' + location.search + location.hash);
+</script>
+<link rel="icon" type="image/svg+xml" href="ab-logo-bot.svg">
 <title>PhoneBlock Dongle</title>
 <style>
   *{box-sizing:border-box}
@@ -120,7 +128,7 @@
 </head>
 <body>
 <header>
-  <img src="/ab-logo-bot.svg" alt="" width="32" height="32">
+  <img src="ab-logo-bot.svg" alt="" width="32" height="32">
   <h1>PhoneBlock Dongle</h1>
   <a href="#/" id="homeLink"></a>
 </header>
@@ -147,38 +155,6 @@
 
 <script>
 // --- i18n -----------------------------------------------------------
-
-// A reverse proxy may serve the app below a mounted path; standalone
-// ESP/Linux servers serve it at /. Preserve the mount for requests/assets.
-const APP_BASE_PATH = location.pathname.replace(/\/+$/, '');
-const appUrl = (path) => APP_BASE_PATH && path.startsWith('/') && !path.startsWith('//')
-  ? APP_BASE_PATH + path : path;
-const nativeFetch = window.fetch.bind(window);
-window.fetch = (input, ...args) => nativeFetch(
-  typeof input === 'string' ? appUrl(input) : input, ...args);
-const nativeXhrOpen = XMLHttpRequest.prototype.open;
-XMLHttpRequest.prototype.open = function(method, url, ...args){
-  return nativeXhrOpen.call(this, method, appUrl(url), ...args);
-};
-
-function fixMountedLinks(root){
-  const elements = [];
-  if (root.matches && root.matches('[href^="/"],[src^="/"]')) elements.push(root);
-  if (root.querySelectorAll) elements.push(...root.querySelectorAll('[href^="/"],[src^="/"]'));
-  for (const element of elements) {
-    for (const attr of ['href', 'src']) {
-      const value = element.getAttribute(attr);
-      if (value && value.startsWith('/') && !value.startsWith('//'))
-        element.setAttribute(attr, appUrl(value));
-    }
-  }
-}
-fixMountedLinks(document);
-new MutationObserver((changes) => {
-  for (const change of changes)
-    for (const node of change.addedNodes)
-      if (node.nodeType === Node.ELEMENT_NODE) fixMountedLinks(node);
-}).observe(document.documentElement, {childList:true, subtree:true});
 
 const I18N = {};
 
@@ -258,7 +234,7 @@ function applyLangStatus(){
 }
 function loadUiPack(lang){
   if (!lang) return Promise.resolve();
-  return fetch('/api/i18n/ui')
+  return fetch('api/i18n/ui')
     .then(r => r.ok ? r.json() : null)
     .then(dict => { storePack(lang, dict); })
     .catch(() => { /* device unreachable → keys via t(); page is from it */ });
@@ -400,7 +376,7 @@ function syncRegionSelectors(s){
 function setDialPrefix(dial){
   DIAL_PREFIX = dial;
   try {
-    fetch('/api/config', {
+    fetch('api/config', {
       method: 'POST',
       headers: {'Content-Type': 'application/x-www-form-urlencoded'},
       body: new URLSearchParams({ dial_prefix: dial }).toString(),
@@ -432,7 +408,7 @@ function pickBrowserLang(){
 // language and persist it — this also localizes the status mail and the
 // announcement — without overriding a real user choice on later visits.
 function loadDeviceLang(){
-  return fetch('/api/status').then(r => r.ok ? r.json() : null).then(d => {
+  return fetch('api/status').then(r => r.ok ? r.json() : null).then(d => {
     noteI18nState(d && d.i18n);
     LANG = (d && d.ui_lang) ? String(d.ui_lang) : 'en';
     if (d && d.ui_lang_set === false){
@@ -440,7 +416,7 @@ function loadDeviceLang(){
       if (auto && auto !== LANG){
         LANG = auto;
         try {
-          fetch('/api/config', {
+          fetch('api/config', {
             method: 'POST',
             headers: {'Content-Type': 'application/x-www-form-urlencoded'},
             body: new URLSearchParams({ ui_lang: auto }).toString(),
@@ -470,7 +446,7 @@ function awaitUiPack(lang, tries){
   setLangStatus('loading');
   setTimeout(() => {
     if (LANG !== lang) return;
-    fetch('/api/i18n/ui').then(r => r.ok ? r.json() : null).then(dict => {
+    fetch('api/i18n/ui').then(r => r.ok ? r.json() : null).then(dict => {
       if (LANG !== lang) return;
       if (storePack(lang, dict) === lang) { setLangStatus(''); route(); }
       else awaitUiPack(lang, tries + 1);
@@ -622,7 +598,7 @@ function applyTz(deviceTz){
       const body = new URLSearchParams();
       body.append('timezone', g_tzPosix);
       try {
-        const r = await fetch('/api/config', {
+        const r = await fetch('api/config', {
           method: 'POST',
           headers: {'Content-Type': 'application/x-www-form-urlencoded'},
           body: body.toString(),
@@ -676,7 +652,7 @@ let pbDlgNumber = '';    // number the open dialog is about
 // showing them explains why the one the user might look for is missing.
 async function pbLoadBooks(sel, msgEl){
   sel.innerHTML = '';
-  const r = await fetchJson('/api/phonebooks');
+  const r = await fetchJson('api/phonebooks');
   if (!r || !r.ok){
     if (msgEl) pbSetMsg(msgEl, pbErrorText(r), '#d93025');
     return false;
@@ -806,7 +782,7 @@ async function pbSubmit(){
   let d = {};
   let ok = false;
   try {
-    const r = await fetch('/api/phonebook/add', {
+    const r = await fetch('api/phonebook/add', {
       method: 'POST',
       headers: {'Content-Type': 'application/x-www-form-urlencoded'},
       body: body.toString(),
@@ -909,7 +885,7 @@ async function pbWhitelistSubmit(){
   let d = {};
   let ok = false;
   try {
-    const r = await fetch('/api/whitelist', {
+    const r = await fetch('api/whitelist', {
       method: 'POST',
       headers: {'Content-Type': 'application/x-www-form-urlencoded'},
       body: body.toString(),
@@ -1000,7 +976,7 @@ async function pbSpamSubmit(){
   let d = {};
   let ok = false;
   try {
-    const r = await fetch('/api/rate', {
+    const r = await fetch('api/rate', {
       method: 'POST',
       headers: {'Content-Type': 'application/x-www-form-urlencoded'},
       body: body.toString(),
@@ -1137,7 +1113,7 @@ function renderStatus(){
     + '  <span>' + esc(t('login.remember')) + '</span>'
     + '</label>'
     + '<p style="margin-top:1.2rem">'
-    + '<a id="loginButton" href="/auth/start" class="btn-primary">'
+    + '<a id="loginButton" href="auth/start" class="btn-primary">'
     +   esc(t('login.button')) + '</a>'
     + '</p>'
     + '</section>'
@@ -1156,7 +1132,7 @@ function renderStatus(){
     +    esc(t('status.token.cta')) + '</a>'
     + '  <button id="tokenTest" class="btn-ghost" style="display:none;padding:.3rem .7rem;font-size:.85rem">'
     +    esc(t('status.token.test')) + '</button>'
-    + '  <a id="tokenRenew" href="/register-start" data-token-link class="btn-ghost" style="display:none;padding:.3rem .7rem;font-size:.85rem">'
+    + '  <a id="tokenRenew" href="register-start" data-token-link class="btn-ghost" style="display:none;padding:.3rem .7rem;font-size:.85rem">'
     +    esc(t('status.token.renew')) + '</a>'
     + '</div>'
     + '<div id="langStatus" class="i18n-bubble" style="display:none"></div>'
@@ -1595,7 +1571,7 @@ function showLoginState(){
     loginBtn.onclick = (e) => {
       e.preventDefault();
       const remember = $('loginRemember') && $('loginRemember').checked;
-      window.location.href = appUrl('/auth/start' + (remember ? '?remember=1' : ''));
+      window.location.href = 'auth/start' + (remember ? '?remember=1' : '');
     };
   }
 
@@ -1642,15 +1618,15 @@ async function refreshAll(){
     showLoginState();
     return;
   }
-  const sResp = await fetch('/api/status').catch(() => null);
+  const sResp = await fetch('api/status').catch(() => null);
   if (sResp && sResp.status === 401){
     showLoginState();
     return;
   }
   const [s, calls, errs] = await Promise.all([
     sResp && sResp.ok ? sResp.json().catch(() => null) : null,
-    fetchJson('/api/calls'),
-    fetchJson('/api/errors'),
+    fetchJson('api/calls'),
+    fetchJson('api/errors'),
   ]);
   if (!s) return;
   hideLoginState();
@@ -1769,7 +1745,7 @@ async function refreshAll(){
       const body = new URLSearchParams();
       body.append('blocklist_enabled', want ? '1' : '0');
       try {
-        await fetch('/api/config', {
+        await fetch('api/config', {
           method: 'POST',
           headers: {'Content-Type': 'application/x-www-form-urlencoded'},
           body: body.toString(),
@@ -1786,7 +1762,7 @@ async function refreshAll(){
       const body = new URLSearchParams();
       body.append('blocklist_wildcards', want ? '1' : '0');
       try {
-        await fetch('/api/config', {
+        await fetch('api/config', {
           method: 'POST',
           headers: {'Content-Type': 'application/x-www-form-urlencoded'},
           body: body.toString(),
@@ -1802,7 +1778,7 @@ async function refreshAll(){
       blRun.disabled = true;
       m.textContent = '';
       try {
-        const r = await fetch('/api/blocklist-sync/run', {method: 'POST'});
+        const r = await fetch('api/blocklist-sync/run', {method: 'POST'});
         const d = await r.json().catch(() => ({}));
         m.textContent = d.ok ? t('status.localcache.triggered')
                               : t('status.localcache.busy');
@@ -1855,7 +1831,7 @@ async function refreshAll(){
       body.append('spam_names', pats.join('|'));
       let ok = false;
       try {
-        const r = await fetch('/api/config', {
+        const r = await fetch('api/config', {
           method: 'POST',
           headers: {'Content-Type': 'application/x-www-form-urlencoded'},
           body: body.toString(),
@@ -1955,7 +1931,7 @@ async function refreshAll(){
       body.append('fb_phonebook_name', (opt && opt.dataset.name) || '');
       sel.disabled = true;
       try {
-        await fetch('/api/config', {
+        await fetch('api/config', {
           method: 'POST',
           headers: {'Content-Type': 'application/x-www-form-urlencoded'},
           body: body.toString(),
@@ -2022,7 +1998,7 @@ async function refreshAll(){
       const body = new URLSearchParams();
       body.append('sync_enabled', want ? '1' : '0');
       try {
-        await fetch('/api/config', {
+        await fetch('api/config', {
           method: 'POST',
           headers: {'Content-Type': 'application/x-www-form-urlencoded'},
           body: body.toString(),
@@ -2037,7 +2013,7 @@ async function refreshAll(){
       syncRun.disabled = true;
       m.textContent = '';
       try {
-        const r = await fetch('/api/sync/run', {method: 'POST'});
+        const r = await fetch('api/sync/run', {method: 'POST'});
         const d = await r.json().catch(() => ({}));
         m.textContent = d.ok ? t('status.sync.triggered') : t('status.sync.busy');
         m.style.color = d.ok ? '#188038' : '#e8710a';
@@ -2073,7 +2049,7 @@ async function refreshAll(){
       const body = new URLSearchParams();
       body.append('accept_test_calls', want ? '1' : '0');
       try {
-        await fetch('/api/config', {
+        await fetch('api/config', {
           method: 'POST',
           headers: {'Content-Type': 'application/x-www-form-urlencoded'},
           body: body.toString(),
@@ -2173,7 +2149,7 @@ async function refreshAll(){
       m.textContent = t('status.token.testing');
       m.style.color = '#888';
       try {
-        const r = await fetch('/api/token-test', { method: 'POST' });
+        const r = await fetch('api/token-test', { method: 'POST' });
         const d = await r.json().catch(() => ({}));
         // Render the outcome from i18n instead of echoing the
         // server's English message — the server ships ok + a
@@ -2320,7 +2296,7 @@ async function refreshAll(){
   // private contacts never get round-tripped via phoneblock.net.
   const linkToNumber = (num, text) => {
     const next = '/nums/' + encodeURIComponent(num);
-    return '<a href="/auth/login-link?next=' + encodeURIComponent(next)
+    return '<a href="auth/login-link?next=' + encodeURIComponent(next)
          + '" target="_blank" rel="noopener">' + text + '</a>';
   };
   const numCell = (num, display, assessment) => {
@@ -2449,7 +2425,7 @@ async function refreshAll(){
   if (!callsClearBtn.onclick){
     callsClearBtn.onclick = async () => {
       callsClearBtn.disabled = true;
-      try { await fetch('/api/calls/clear', { method: 'POST' }); }
+      try { await fetch('api/calls/clear', { method: 'POST' }); }
       catch (_){ /* next poll will reflect whatever state we end up in */ }
       await refreshAll();
       callsClearBtn.disabled = false;
@@ -2466,7 +2442,7 @@ async function refreshAll(){
       const body = new URLSearchParams();
       body.append('log_known_calls', want ? '1' : '0');
       try {
-        await fetch('/api/config', {
+        await fetch('api/config', {
           method: 'POST',
           headers: {'Content-Type': 'application/x-www-form-urlencoded'},
           body: body.toString(),
@@ -2514,7 +2490,7 @@ async function refreshAll(){
     const body = new URLSearchParams();
     body.append(field, String(v));
     try {
-      const r = await fetch('/api/config', {
+      const r = await fetch('api/config', {
         method: 'POST',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: body.toString(),
@@ -2557,7 +2533,7 @@ async function refreshAll(){
   if (!clearBtn.onclick){
     clearBtn.onclick = async () => {
       clearBtn.disabled = true;
-      try { await fetch('/api/errors/clear', { method: 'POST' }); }
+      try { await fetch('api/errors/clear', { method: 'POST' }); }
       catch (_){ /* next poll will reflect whatever state we end up in */ }
       await refreshAll();
       clearBtn.disabled = false;
@@ -2573,7 +2549,7 @@ async function refreshAll(){
       const body = new URLSearchParams();
       body.append('log_info', logChk.checked ? '1' : '0');
       try {
-        await fetch('/api/config', {
+        await fetch('api/config', {
           method: 'POST',
           headers: {'Content-Type': 'application/x-www-form-urlencoded'},
           body: body.toString(),
@@ -2592,7 +2568,7 @@ async function refreshAll(){
       const body = new URLSearchParams();
       body.append('led_quiet', ledQuietChk.checked ? '1' : '0');
       try {
-        await fetch('/api/config', {
+        await fetch('api/config', {
           method: 'POST',
           headers: {'Content-Type': 'application/x-www-form-urlencoded'},
           body: body.toString(),
@@ -2614,7 +2590,7 @@ async function refreshAll(){
       const body = new URLSearchParams();
       body.append('lcd_flip', lcdFlipChk.checked ? '1' : '0');
       try {
-        await fetch('/api/config', {
+        await fetch('api/config', {
           method: 'POST',
           headers: {'Content-Type': 'application/x-www-form-urlencoded'},
           body: body.toString(),
@@ -2672,7 +2648,7 @@ async function refreshAll(){
     // 302 back to /auth/callback, which sets the cookie and persists
     // auth_enabled=1 only on success. No JS-side state to manage.
     authEnableBtn.onclick = () => {
-      window.location.href = appUrl('/auth/start?activate=1');
+      window.location.href = 'auth/start?activate=1';
     };
   }
   if (!authLogoutBtn.onclick){
@@ -2682,15 +2658,15 @@ async function refreshAll(){
         // Server's logout 302s back to /; fetch follows it but stops
         // once we read .ok — we navigate explicitly below to land
         // back on the SPA, which then renders the in-page login state.
-        await fetch('/auth/logout', { method: 'POST', redirect: 'manual' });
+        await fetch('auth/logout', { method: 'POST', redirect: 'manual' });
       } catch (_){ /* navigate anyway */ }
-      window.location.href = appUrl('/');
+      window.location.href = './';
     };
   }
   if (!authDisableBtn.onclick){
     authDisableBtn.onclick = async () => {
       authDisableBtn.disabled = true;
-      try { await fetch('/auth/disable', { method: 'POST' }); }
+      try { await fetch('auth/disable', { method: 'POST' }); }
       catch (_){ /* next poll will reconcile */ }
       authDisableBtn.disabled = false;
       refreshAll();
@@ -2712,7 +2688,7 @@ async function refreshAll(){
           resetBtn.disabled = false;
           return;
         }
-        const r = await fetch('/api/factory-reset', {
+        const r = await fetch('api/factory-reset', {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: 'confirm=' + encodeURIComponent(resetNonce),
@@ -2750,7 +2726,7 @@ async function refreshAll(){
     crashTestBtn.onclick = () => {
       if (!confirm('Panic auslösen?')) return;
       crashTestBtn.disabled = true;
-      fetch('/api/dev/crash', {
+      fetch('api/dev/crash', {
         method: 'POST',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: 'confirm=' + encodeURIComponent(resetNonce || ''),
@@ -2801,7 +2777,7 @@ async function refreshAll(){
         const body = new URLSearchParams();
         body.append('auto_update', want ? '1' : '0');
         try {
-          await fetch('/api/config', {
+          await fetch('api/config', {
             method: 'POST',
             headers: {'Content-Type': 'application/x-www-form-urlencoded'},
             body: body.toString(),
@@ -2827,7 +2803,7 @@ async function refreshAll(){
         const body = new URLSearchParams();
         body.append('channel', want);
         try {
-          await fetch('/api/config', {
+          await fetch('api/config', {
             method: 'POST',
             headers: {'Content-Type': 'application/x-www-form-urlencoded'},
             body: body.toString(),
@@ -2850,7 +2826,7 @@ async function refreshAll(){
         const body = new URLSearchParams();
         body.append('crash_report', want ? '1' : '0');
         try {
-          await fetch('/api/config', {
+          await fetch('api/config', {
             method: 'POST',
             headers: {'Content-Type': 'application/x-www-form-urlencoded'},
             body: body.toString(),
@@ -2900,7 +2876,7 @@ async function refreshAll(){
       return body;
     };
     const save = async () => {
-      const r = await fetch('/api/config', {
+      const r = await fetch('api/config', {
         method: 'POST',
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: collect().toString(),
@@ -2975,7 +2951,7 @@ async function refreshAll(){
         // ask the dongle to send through the stored settings.
         await save();
         $('mailPass').value = '';
-        const r = await fetch('/api/mail/test', {method: 'POST'});
+        const r = await fetch('api/mail/test', {method: 'POST'});
         const d = await r.json().catch(() => ({}));
         ok = !!d.ok;
       } catch (_){}
@@ -3002,7 +2978,7 @@ async function refreshAll(){
       // XHR over fetch(): we want upload-progress events, which
       // the fetch API does not expose.
       const xhr = new XMLHttpRequest();
-      xhr.open('POST', '/api/firmware', true);
+      xhr.open('POST', 'api/firmware', true);
       xhr.setRequestHeader('Content-Type', 'application/octet-stream');
       xhr.upload.onprogress = (e) => {
         if (!e.lengthComputable) return;
@@ -3056,7 +3032,7 @@ async function refreshAll(){
         // Phase 1: read-only manifest check (~1-2 s). The user gets
         // immediate feedback ("none" / "version X gefunden") before
         // we commit to the long download.
-        const rc = await fetch('/api/firmware/check', {method: 'POST'});
+        const rc = await fetch('api/firmware/check', {method: 'POST'});
         const dc = await rc.json().catch(() => ({}));
         if (!rc.ok || !dc.ok){
           fwMsg.textContent = t('status.fw.check.error',
@@ -3077,7 +3053,7 @@ async function refreshAll(){
         fwMsg.textContent = t('status.fw.check.found',
           {version: dc.new_version});
         fwMsg.style.color = '#1a73e8';
-        const ri = await fetch('/api/firmware/install', {method: 'POST'});
+        const ri = await fetch('api/firmware/install', {method: 'POST'});
         const di = await ri.json().catch(() => ({}));
         if (ri.ok && di.ok && di.installed){
           fwMsg.textContent = t('status.fw.check.installed',
@@ -3163,7 +3139,7 @@ async function onFritzboxSubmit(e){
   btn.disabled = true;
   msg.textContent = t('sip.fb.working');
   msg.style.color = '#888';
-  const r = await postForm('/api/fritzbox-setup', e.target);
+  const r = await postForm('api/fritzbox-setup', e.target);
   if (r.ok){
     const n = r.data.internal_number;
     msg.textContent = n ? t('sip.fb.done.withnum', {n}) : t('sip.fb.done');
@@ -3196,7 +3172,7 @@ async function poll2FA(msgEl, btn){
   const deadline = Date.now() + 130 * 1000;
   while (Date.now() < deadline){
     await new Promise(r => setTimeout(r, 2000));
-    const r = await fetchJson('/api/fritzbox-2fa-status');
+    const r = await fetchJson('api/fritzbox-2fa-status');
     if (!r) continue;
     if (r.ok){
       const n = r.internal_number;
@@ -3298,7 +3274,7 @@ async function onProviderSubmit(e){
   // switching providers also clears a previous provider's STUN server.
   body.append('sip_stun', p.stun || '');
   try {
-    const r = await fetch('/api/config', {
+    const r = await fetch('api/config', {
       method: 'POST',
       headers: {'Content-Type': 'application/x-www-form-urlencoded'},
       body: body.toString(),
@@ -3323,7 +3299,7 @@ async function onProviderSubmit(e){
 // --- views: manual (expert) ----------------------------------------
 
 async function renderSipManual(){
-  const s = await fetchJson('/api/status');
+  const s = await fetchJson('api/status');
   const sip = s ? s.sip : {};
   const host  = sip.host  || '';
   // 0 means "auto" — let the firmware pick via DNS-SRV or transport default.
@@ -3434,7 +3410,7 @@ async function onManualSubmit(e){
   btn.disabled = true;
   msg.textContent = t('sip.fb.working');
   msg.style.color = '#888';
-  const r = await postForm('/api/config', e.target);
+  const r = await postForm('api/config', e.target);
   if (r.ok){
     msg.textContent = t('sip.manual.done');
     msg.style.color = '#188038';
@@ -3449,7 +3425,7 @@ async function onManualSubmit(e){
 // --- views: token wizard -------------------------------------------
 
 async function renderToken(){
-  const s = await fetchJson('/api/status');
+  const s = await fetchJson('api/status');
   const set = !!(s && s.phoneblock.token_set);
   const signin = !(s && s.phoneblock.token_signin === false);
   app.innerHTML = ''
@@ -3463,7 +3439,7 @@ async function renderToken(){
     + '</p>'
     + (signin
         ? '<p style="margin-top:.8rem">'
-          + '<a href="/register-start" data-token-link class="btn-primary">' + esc(t('token.submit')) + '</a>'
+          + '<a href="register-start" data-token-link class="btn-primary">' + esc(t('token.submit')) + '</a>'
           + '</p>'
         : '')
     + '</section>';
@@ -3581,7 +3557,7 @@ function wireAnnouncement(){
   playBtn.onclick = async () => {
     setAnnMsg('');
     try {
-      const r = await fetch('/api/announcement');
+      const r = await fetch('api/announcement');
       if (!r.ok) throw new Error('HTTP ' + r.status);
       const alaw = new Uint8Array(await r.arrayBuffer());
       const pcm = new Int16Array(alaw.length);
@@ -3624,7 +3600,7 @@ function wireAnnouncement(){
     }
     setAnnMsg(t('status.ann.upload.uploading'), '#888');
     try {
-      const r = await fetch('/api/announcement', {
+      const r = await fetch('api/announcement', {
         method: 'POST',
         headers: {'Content-Type': 'application/octet-stream'},
         body: alaw,
@@ -3646,7 +3622,7 @@ function wireAnnouncement(){
     resetBtn.disabled = true;
     setAnnMsg('');
     try {
-      const r = await fetch('/api/announcement/reset', {method: 'POST'});
+      const r = await fetch('api/announcement/reset', {method: 'POST'});
       if (!r.ok) throw new Error('HTTP ' + r.status);
       refreshAll();
     } catch (e){
@@ -3671,7 +3647,7 @@ function setUiLang(lang){
   const foot = document.getElementById('langSelect');
   if (foot) foot.value = lang;
   try {
-    fetch('/api/config', {
+    fetch('api/config', {
       method: 'POST',
       headers: {'Content-Type': 'application/x-www-form-urlencoded'},
       body: new URLSearchParams({ ui_lang: lang }).toString(),
