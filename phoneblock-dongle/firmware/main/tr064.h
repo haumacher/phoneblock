@@ -18,6 +18,7 @@
 #define TR064_ERR_HTTP       (-2)   // HTTP status != 200 without UPnPError body
 #define TR064_ERR_AUTH       (-3)   // HTTP 503 + faultstring "Unauthenticated"
 #define TR064_ERR_PARSE      (-4)   // unexpected/malformed response body
+#define TR064_ERR_APP_ACCESS (-5)   // TR-064 "Zugriff für Apps" is off
 
 typedef struct {
     char sip_user[32];
