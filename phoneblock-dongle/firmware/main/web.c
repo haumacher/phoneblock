@@ -716,6 +716,7 @@ cJSON *web_call_json(const stats_call_t *call, int64_t now_us,
     cJSON_AddNumberToObject(o, "direct_votes", call->direct_votes);
     cJSON_AddNumberToObject(o, "range_votes",  call->range_votes);
     cJSON_AddBoolToObject  (o, "wildcard",     call->wildcard);
+    cJSON_AddNumberToObject(o, "duration_s",   call->duration_s);
     return o;
 }
 

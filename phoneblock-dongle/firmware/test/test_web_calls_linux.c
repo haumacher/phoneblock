@@ -86,6 +86,8 @@ int main(void)
     cJSON *epoch = cJSON_GetObjectItem(call, "epoch_s");
     REQUIRE(cJSON_IsNumber(age) && cJSON_IsNumber(epoch));
     REQUIRE(age->valuedouble >= 0);
+    // Spam call still on the line (not ended yet): no duration so far.
+    REQUIRE(cJSON_GetObjectItem(call, "duration_s")->valueint == 0);
     // The host keeps the wall clock, so it is set: epoch_s is not the
     // "clock not set" 0, and age plus epoch is the time of the request.
     double sum = epoch->valuedouble + age->valuedouble;

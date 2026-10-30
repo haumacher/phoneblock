@@ -28,6 +28,7 @@ static int           s_calls_count;
 // Starts at 1; 0 is never handed out.
 static uint32_t      s_calls_seq[STATS_MAX_CALLS];
 static uint32_t      s_next_seq = 1;
+static uint32_t      s_last_seq;
 static stats_call_listener_t s_call_listener;
 
 static stats_error_t s_errors[STATS_MAX_ERRORS];
@@ -107,6 +108,7 @@ static uint32_t push_seq(void)
     uint32_t seq = s_next_seq++;
     if (s_next_seq == 0) s_next_seq = 1;
     s_calls_seq[s_calls_head] = seq;
+    s_last_seq = seq;
     return seq;
 }
 
@@ -141,7 +143,7 @@ void stats_record_call_assessed(const char *number, const char *display,
 
     unlock();
     if (DISPLAY_PRESENT) announce_call(&shown);
-    notify_listener(seq);
+    if (verdict != VERDICT_SPAM) notify_listener(seq);
 }
 
 void stats_record_call_checked(const char *number, const char *display,
@@ -172,7 +174,7 @@ void stats_record_call_checked(const char *number, const char *display,
 
     unlock();
     if (DISPLAY_PRESENT) announce_call(&shown);
-    notify_listener(seq);
+    if (result->verdict != VERDICT_SPAM) notify_listener(seq);
 }
 
 void stats_record_call_counters_only(const char *number, const char *display,
@@ -360,6 +362,31 @@ void stats_clear_calls(void)
     s_calls_count = 0;
     unlock();
     display_calls_changed();
+}
+
+uint32_t stats_last_call_seq(void)
+{
+    lock();
+    uint32_t seq = s_last_seq;
+    unlock();
+    return seq;
+}
+
+void stats_call_ended(uint32_t seq, int64_t duration_us)
+{
+    if (seq == 0) return;
+    int64_t s = duration_us > 0 ? (duration_us + 500000) / 1000000 : 0;
+    if (s > UINT16_MAX) s = UINT16_MAX;
+    bool found = false;
+    lock();
+    for (int i = 0; i < s_calls_count; i++) {
+        if (s_calls_seq[i] != seq) continue;
+        found = s_calls[i].verdict == VERDICT_SPAM;
+        if (found) s_calls[i].duration_s = (uint16_t)s;
+        break;
+    }
+    unlock();
+    if (found) notify_listener(seq);
 }
 
 bool stats_get_call(uint32_t seq, stats_call_t *out)

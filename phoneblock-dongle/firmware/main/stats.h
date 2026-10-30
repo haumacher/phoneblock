@@ -52,6 +52,10 @@ typedef struct {
     int       direct_votes;                    // direct community votes against the number
     int       range_votes;                     // raw neighbourhood (range) votes
     bool      wildcard;                         // local-cache hit was a range/prefix, not exact
+    // Seconds from the dongle's answer to the hang-up, by either side (a
+    // spam caller may hang up before the announcement ends). 0 for calls
+    // the dongle does not answer and while an answered call is still on.
+    uint16_t  duration_s;
 } stats_call_t;
 
 typedef struct {
@@ -99,11 +103,23 @@ void stats_record_call_checked(const char *number, const char *display,
 
 // Called with the sequence number of every call added to the recent-calls
 // ring (stats_record_call*, not stats_record_call_counters_only), after the
-// stats lock is released, on the recording task. The call webhook
-// (webhook.c) uses it to queue the call; it must not block. One listener;
-// NULL removes it.
+// stats lock is released, on the recording task. A spam call is answered
+// by the dongle, so it is announced only when it ends (stats_call_ended()),
+// with its duration; every other call when it is recorded. The call
+// webhook (webhook.c) uses it to queue the call; it must not block. One
+// listener; NULL removes it.
 typedef void (*stats_call_listener_t)(uint32_t seq);
 void stats_set_call_listener(stats_call_listener_t listener);
+
+// Sequence number of the call most recently added to the ring, 0 before
+// the first. sip_register.c compares it before and after screening a call
+// to learn whether, and as which number, the call was listed.
+uint32_t stats_last_call_seq(void);
+
+// The answered spam call `seq` has ended after `duration_us`: stores the
+// duration and announces the call to the listener. Ignored for a call that
+// has left the ring or is not a spam call.
+void stats_call_ended(uint32_t seq, int64_t duration_us);
 
 // Bumps counters for a call without adding it to the recent-calls
 // ring buffer. Used by sip_register.c when the user has opted out of

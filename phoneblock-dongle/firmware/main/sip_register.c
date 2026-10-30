@@ -138,6 +138,9 @@ typedef struct {
                                   // action (send BYE after a tone, or send the
                                   // delayed 480 while PROCEEDING); 0 = none
     verdict_t verdict;            // cached API result for this call
+    uint32_t call_seq;            // the spam call's entry in the call list
+                                  // (stats), 0 once it ended or if not listed
+    int64_t  answered_at_us;      // when our 200 OK went out (call duration)
     char     invite_msg[SIP_INVITE_STORE_CAP];  // stored INVITE so the main
     int      invite_len;          // loop can send the delayed decline (#380)
 } dialog_t;
@@ -1137,9 +1140,20 @@ static int build_bye(sip_ctx_t *c, char *buf, int cap)
         current_identity_user(), our_host, our_port);
 }
 
+// The answered spam call ends, whoever hangs up: our BYE after the
+// announcement, or the caller's BYE when they hang up before it is over.
+// Its duration goes into the call list, which also posts the call webhook.
+static void end_answered_call(dialog_t *d)
+{
+    if (!d->call_seq) return;
+    stats_call_ended(d->call_seq, (int64_t)pb_monotonic_us() - d->answered_at_us);
+    d->call_seq = 0;
+}
+
 static void send_bye(sip_ctx_t *c)
 {
     dialog_t *d = &c->dialog;
+    end_answered_call(d);
     d->out_cseq++;
 
     char *tx = malloc(SIP_TX_BUF_SIZE);
@@ -1437,9 +1451,13 @@ static void handle_invite(sip_ctx_t *c, const char *req, int req_len,
 
     // Synchronous API check. Budget is ~500 ms–1 s; Fritz!Box waits longer
     // than that. Later this can move to a worker task if needed.
+    uint32_t seq_before = stats_last_call_seq();
     d->verdict = check_invite_caller(req, req_len);
+    uint32_t seq = stats_last_call_seq();
 
     if (d->verdict == VERDICT_SPAM) {
+        // Listed by check_invite_caller() iff the newest entry changed.
+        d->call_seq = seq != seq_before ? seq : 0;
         char sdp[384];
         // Resolve the public media endpoint (STUN) before answering, so the
         // SDP carries the post-NAT IP:port the announcement is sent from.
@@ -1447,6 +1465,7 @@ static void handle_invite(sip_ctx_t *c, const char *req, int req_len,
         build_sdp_body(advertised_host(c), d, sdp, sizeof(sdp));
         send_response(c, from, req, req_len, 200, "OK", d->our_tag, sdp);
         d->state = DIALOG_ANSWERED;
+        d->answered_at_us = (int64_t)pb_monotonic_us();
         // Arm an ACK-timeout safety net (SIP_ACK_TIMEOUT_US): a received ACK
         // (handle_ack) supersedes it by moving to STREAMING and setting the
         // real post-tone BYE deadline; if no ACK ever arrives the main loop
@@ -1545,6 +1564,7 @@ static void handle_bye(sip_ctx_t *c, const char *req, int req_len,
         // If we were still streaming the announcement, stop it now —
         // the remote is gone, every further RTP packet is wasted.
         rtp_request_abort();
+        end_answered_call(d);
         memset(d, 0, sizeof(*d));
         display_call_ended();
     }

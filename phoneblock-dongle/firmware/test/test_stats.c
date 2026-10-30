@@ -154,25 +154,50 @@ static void test_call_listener(void)
     stats_set_call_listener(hear);
 
     stats_record_call(NUM_A, "Max", VERDICT_LEGITIMATE);
+    CHECK(s_heard_count == 1 && s_heard[0] == stats_last_call_seq(),
+          "a legitimate call is notified when recorded");
     record_checked(NUM_B, PB_ASSESS_SPAM, false);
+    uint32_t spam_seq = stats_last_call_seq();
+    CHECK(s_heard_count == 1, "an answered spam call is not notified yet");
     stats_record_call_counters_only(NUM_A, "Max", VERDICT_LEGITIMATE,
                                     PB_ASSESS_LEGITIMATE);
-    CHECK(s_heard_count == 2, "listed calls notified, counters-only not");
+    CHECK(stats_last_call_seq() == spam_seq,
+          "a counters-only call gets no sequence number");
+    stats_call_ended(spam_seq, 12600000);   // 12.6 s
+    CHECK(s_heard_count == 2, "the spam call is notified when it ends");
     CHECK(s_heard[0] != 0 && s_heard[1] == s_heard[0] + 1,
           "sequence numbers count up from a nonzero start");
+    stats_call_ended(s_heard[0], 5000000);
+    CHECK(s_heard_count == 2, "ending a call the dongle did not answer is ignored");
 
     stats_call_t c;
     CHECK(stats_get_call(s_heard[0], &c) && strcmp(c.number, NUM_A) == 0
           && strcmp(c.display, "Max") == 0, "first call found by its number");
     CHECK(stats_get_call(s_heard[1], &c) && strcmp(c.number, NUM_B) == 0
           && c.direct_votes == 7, "checked call found with its API fields");
+    CHECK(c.duration_s == 13, "duration rounded to whole seconds");
+    CHECK(stats_get_call(s_heard[0], &c) && c.duration_s == 0,
+          "a call the dongle did not answer has no duration");
+
+    // A caller who hangs up at once, and a call that would overflow the field.
+    stats_record_call(NUM_B, "", VERDICT_SPAM);
+    stats_call_ended(stats_last_call_seq(), 400000);
+    CHECK(stats_get_call(stats_last_call_seq(), &c) && c.duration_s == 0,
+          "under half a second rounds to 0");
+    stats_record_call(NUM_B, "", VERDICT_SPAM);
+    stats_call_ended(stats_last_call_seq(), (int64_t)100000 * 1000000);
+    CHECK(stats_get_call(stats_last_call_seq(), &c) && c.duration_s == UINT16_MAX,
+          "a duration beyond the field is clamped");
+    CHECK(s_heard_count == 4, "each ended spam call is notified once");
+    stats_call_ended(0, 1000000);
+    CHECK(s_heard_count == 4, "sequence number 0 is ignored");
     CHECK(!stats_get_call(0, &c), "0 is never a call");
-    CHECK(!stats_get_call(s_heard[1] + 1, &c), "a future number is not found");
+    CHECK(!stats_get_call(stats_last_call_seq() + 1, &c), "a future number is not found");
 
     // The ring keeps STATS_MAX_CALLS entries: once that many newer calls
     // came in, the first one is gone.
     uint32_t first = s_heard[0];
-    for (int i = 0; i < STATS_MAX_CALLS - 1; i++)
+    for (int i = 0; i < STATS_MAX_CALLS - 3; i++)
         stats_record_call(NUM_B, "", VERDICT_LEGITIMATE);
     CHECK(!stats_get_call(first, &c), "overwritten call is gone");
     CHECK(stats_get_call(first + 1, &c) && strcmp(c.number, NUM_B) == 0,
