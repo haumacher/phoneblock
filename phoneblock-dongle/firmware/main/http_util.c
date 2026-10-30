@@ -22,8 +22,22 @@ const char *http_util_user_agent(void)
     // call, so it is populated by the time this lazily builds the string.
     const char *id = config_device_id();
     if (id && id[0]) {
-        snprintf(s_user_agent, sizeof(s_user_agent),
-                 "PhoneBlock-Dongle/%s (%s)", v, id);
+        // The server reads the device id from the last bracket
+        // (DongleRecognizer, DiagnosticsMapper), so the platform comment
+        // goes before it, and is dropped rather than cutting off the id
+        // when both do not fit. Without an id there is no platform
+        // comment either, or DiagnosticsMapper's LIKE '...(%)' would take
+        // the comment for a device id.
+        const char *platform = pb_platform_tag();
+        int n = -1;
+        if (platform && platform[0]) {
+            n = snprintf(s_user_agent, sizeof(s_user_agent),
+                         "PhoneBlock-Dongle/%s (%s) (%s)", v, platform, id);
+        }
+        if (n < 0 || (size_t)n >= sizeof(s_user_agent)) {
+            snprintf(s_user_agent, sizeof(s_user_agent),
+                     "PhoneBlock-Dongle/%s (%s)", v, id);
+        }
     } else {
         snprintf(s_user_agent, sizeof(s_user_agent),
                  "PhoneBlock-Dongle/%s", v);

@@ -63,6 +63,8 @@ static void *serve_test_endpoint(void *unused)
         recv_request(client, request, sizeof(request));
         REQUIRE(strstr(request, "Authorization: Bearer linux-api-test") != NULL);
         REQUIRE(strstr(request, "User-Agent: PhoneBlock-Dongle/") != NULL);
+        // The Linux build tells itself apart from a dongle (pb_platform_tag()).
+        REQUIRE(strstr(request, " (Linux") != NULL);
         REQUIRE(strstr(request, x->request_line) != NULL);
         if (x->body_part) REQUIRE(strstr(request, x->body_part) != NULL);
         char response[512];

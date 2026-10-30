@@ -28,7 +28,9 @@ static void print_usage(const char *program)
             "Usage: %s [--config PATH] [--check-config | --probe-sip] "
             "[--web PORT] [--web-bind ADDRESS] [--web-port-file PATH]\n"
             "The environment variables PHONEBLOCK_WEB_PORT and "
-            "PHONEBLOCK_WEB_BIND set the defaults of --web and --web-bind.\n",
+            "PHONEBLOCK_WEB_BIND set the defaults of --web and --web-bind.\n"
+            "PHONEBLOCK_PLATFORM replaces \"Linux\" in the User-Agent, "
+            "e.g. \"Linux; HA\" (set by the packaging, not by users).\n",
             program);
 }
 
