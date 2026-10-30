@@ -595,13 +595,14 @@ Configuration for the blocklist download API endpoint (`/api/blocklist`).
 **System Property Prefix:** `ftc.`
 **Source:** `FtcImportService.java`
 
-Configuration for the FTC (Federal Trade Commission) Do Not Call complaint data import. When enabled, downloads daily CSV files from ftc.gov containing US spam phone number complaints and stores them in separate FTC tables for hash-based lookup by the mobile app.
+Configuration for the FTC (Federal Trade Commission) Do Not Call complaint data import. When enabled, fetches the US spam call complaints from the FTC's complaints API (`api.ftc.gov/v0/dnc-complaints`) once a day and counts each complaint as a spam vote for the reported number.
 
 ### Properties
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
 | `ftc/enabled` | Boolean | `false` | Enable FTC Do Not Call data import |
+| `ftc/api-key` | String | - | api.data.gov key for the FTC API (required, free sign-up at https://api.data.gov/signup/) |
 | `ftc/schedule/hour` | Integer | `6` | Hour of day (UTC) to run daily import (0-23) |
 | `ftc/schedule/minute` | Integer | `0` | Minute of hour to run daily import (0-59) |
 
@@ -611,6 +612,7 @@ Configuration for the FTC (Federal Trade Commission) Do Not Call complaint data 
 ```xml
 <Context>
   <Environment name="ftc/enabled" value="true" type="java.lang.Boolean"/>
+  <Environment name="ftc/api-key" value="your-api-data-gov-key" type="java.lang.String"/>
   <Environment name="ftc/schedule/hour" value="6" type="java.lang.Integer"/>
   <Environment name="ftc/schedule/minute" value="0" type="java.lang.Integer"/>
 </Context>
@@ -619,6 +621,7 @@ Configuration for the FTC (Federal Trade Commission) Do Not Call complaint data 
 **System Properties:**
 ```bash
 -Dftc.enabled=true \
+-Dftc.api-key=your-api-data-gov-key \
 -Dftc.schedule.hour=6 \
 -Dftc.schedule.minute=0
 ```
@@ -626,10 +629,10 @@ Configuration for the FTC (Federal Trade Commission) Do Not Call complaint data 
 **Note:**
 - Disabled by default; must be explicitly enabled
 - On first run, bootstraps by importing the last 5 weeks of available data
-- Subsequent runs import only new days since the last successful import
-- FTC CSV files are published weekdays only; weekends and holidays are skipped automatically
-- FTC data is stored in separate tables (FTC_NUMBERS, FTC_REPORTS, FTC_SUBJECTS) and does not modify the community NUMBERS table
-- The imported data is used as a fallback in the mobile app's hash-based spam check when no community votes exist
+- Imports hour by hour; an hour is imported once the API holds a newer complaint (the FTC uploads complaints in daily batches, about a day late), and the position is kept in the `ftc.sync.next_hour` property
+- When the key's request quota is exhausted (HTTP 429; 1,000 requests per hour, 50 complaints per request), the import pauses and resumes an hour later; the 5-week bootstrap takes several hours
+- The CSV downloads from `www.ftc.gov` are no longer used, because that host answers requests from outside the US with HTTP 404
+- Complaints are added as votes to the community NUMBERS table; FTC_REPORTS and FTC_SUBJECTS record their provenance and map complaint subjects to ratings
 
 ---
 
