@@ -14,10 +14,14 @@ if (!location.pathname.endsWith('/'))
 <link rel="icon" type="image/svg+xml" href="ab-logo-bot.svg">
 <title>PhoneBlock Dongle</title>
 <style>
+  /* Colour tokens: the fixed states a message or mark can be in. JS uses
+     them as var(--…) too, so a state has one colour everywhere. */
+  :root{--brand:#008f7a;--ok:#188038;--err:#d93025;--warn:#e8710a;
+        --caution:#b06000;--info:#1a73e8;--muted:#888;--text:#222;--text2:#444}
   *{box-sizing:border-box}
   body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;
-       margin:0;background:#f5f5f7;color:#222;line-height:1.45}
-  header{background:#008f7a;color:#fff;padding:.8rem 1rem;
+       margin:0;background:#f5f5f7;color:var(--text);line-height:1.45}
+  header{background:var(--brand);color:#fff;padding:.8rem 1rem;
          display:flex;align-items:center;gap:.6rem}
   header img{display:block;width:32px;height:32px}
   header h1{margin:0;font-size:1.25rem;font-weight:600;flex:1}
@@ -52,28 +56,35 @@ if (!location.pathname.endsWith('/'))
   .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.5rem}
   .stat{padding:.6rem;background:#fafafa;border-radius:4px;text-align:center}
   .stat-label{font-size:.75rem;color:#666;text-transform:uppercase;letter-spacing:.3px}
-  .stat-value{font-size:1.6rem;font-weight:600;color:#008f7a;line-height:1.2}
+  .stat-value{font-size:1.6rem;font-weight:600;color:var(--brand);line-height:1.2}
   table{width:100%;border-collapse:collapse;font-size:.9rem}
   td,th{padding:.4rem .5rem;text-align:left;border-bottom:1px solid #eee}
   th{font-weight:600;color:#666;font-size:.75rem;text-transform:uppercase;letter-spacing:.3px}
-  .v-SPAM{color:#d93025;font-weight:600}
-  .v-LEGITIMATE{color:#188038}
-  .v-SUSPECT{color:#e8710a;font-weight:500}
-  .v-UNKNOWN{color:#888}
-  .v-ERROR{color:#e8710a}
-  .muted{color:#888;font-size:.85rem}
+  .v-SPAM{color:var(--err);font-weight:600}
+  .v-LEGITIMATE{color:var(--ok)}
+  .v-SUSPECT{color:var(--warn);font-weight:500}
+  .v-UNKNOWN{color:var(--muted)}
+  .v-ERROR{color:var(--warn)}
+  .muted{color:var(--muted);font-size:.85rem}
   .i18n-bubble{margin:.7rem 0 0;padding:.55rem .9rem;border-radius:.7rem;
     background:#e67e22;color:#fff;font-size:.9rem;font-weight:600;
     box-shadow:0 1px 4px rgba(0,0,0,.15)}
-  .error-row{border-left:3px solid #f44336;padding:.2rem .5rem;margin-bottom:.35rem;
+  .i18n-bubble.failed{background:#c0392b}
+  /* Log line; the level (lvl-E/W/I) colours the left border and the tag. */
+  .error-row{border-left:3px solid var(--err);padding:.2rem .5rem;margin-bottom:.35rem;
              font-size:.9rem;background:#fffafa}
-  .login-error{color:#d93025;background:#fce8e6;border-left:3px solid #d93025;
+  .error-row strong{color:var(--err)}
+  .error-row.lvl-W{border-left-color:var(--warn);background:#fffdf6}
+  .error-row.lvl-W strong{color:var(--warn)}
+  .error-row.lvl-I{border-left-color:var(--muted);background:#fafafa}
+  .error-row.lvl-I strong{color:var(--muted)}
+  .login-error{color:var(--err);background:#fce8e6;border-left:3px solid var(--err);
                padding:.6rem .8rem;border-radius:4px;margin:.4rem 0 1rem}
   label{display:block;margin:.6rem 0 .2rem;font-size:.8rem;color:#555}
   input, select{width:100%;padding:.4rem;border:1px solid #ccc;border-radius:4px;
         font-size:.95rem;font-family:inherit}
   input:read-only{background:#fafafa;color:#555}
-  .btn-primary{background:#008f7a;color:#fff;border:0;padding:.55rem 1.2rem;
+  .btn-primary{background:var(--brand);color:#fff;border:0;padding:.55rem 1.2rem;
                border-radius:4px;font-size:1rem;cursor:pointer;font-family:inherit;
                text-decoration:none;display:inline-block}
   .btn-primary:disabled{background:#aaa;cursor:wait}
@@ -86,22 +97,22 @@ if (!location.pathname.endsWith('/'))
      alone does not say what it adds, and the spam vote next to it is
      public and irreversible — both need to read unambiguously. */
   .rowbtn{display:inline-flex;align-items:center;gap:.2rem;background:#fff;
-    border:1px solid #008f7a;color:#008f7a;border-radius:999px;
+    border:1px solid var(--brand);color:var(--brand);border-radius:999px;
     padding:.1rem .5rem;font-size:.72rem;line-height:1.5;cursor:pointer;
     width:auto;margin:0;white-space:nowrap;text-transform:none;
     letter-spacing:0;font-weight:500}
   .rowbtn:hover{background:#e6f5f2}
-  .rowbtn.spam{border-color:#d93025;color:#d93025}
+  .rowbtn.spam{border-color:var(--err);color:var(--err)}
   .rowbtn.spam:hover{background:#fdecea}
   .rowbtn[disabled]{opacity:.5;cursor:default}
-  .btn-ghost{background:#fff;color:#008f7a;border:1px solid #008f7a;
+  .btn-ghost{background:#fff;color:var(--brand);border:1px solid var(--brand);
              padding:.55rem 1.2rem;border-radius:4px;font-size:1rem;
              cursor:pointer;font-family:inherit;text-decoration:none;display:inline-block}
-  .hero{background:linear-gradient(135deg,#008f7a,#00b894);color:#fff;
+  .hero{background:linear-gradient(135deg,var(--brand),#00b894);color:#fff;
         border-radius:8px;padding:1.5rem;margin-bottom:1rem}
   .hero h2{color:#fff;border-bottom:1px solid rgba(255,255,255,.3)}
   .hero p{margin:.4rem 0}
-  .hero .btn-primary{background:#fff;color:#008f7a;margin-top:.4rem}
+  .hero .btn-primary{background:#fff;color:var(--brand);margin-top:.4rem}
   .hero-step{display:flex;align-items:center;gap:.8rem;
              padding:.8rem 1rem;margin-top:.8rem;
              background:rgba(255,255,255,.12);border-radius:6px}
@@ -109,22 +120,94 @@ if (!location.pathname.endsWith('/'))
                    width:1.8rem;height:1.8rem;flex-shrink:0;
                    border-radius:50%;font-weight:700;font-size:1rem;
                    background:rgba(255,255,255,.18);color:#fff}
-  .hero-step.done .mark{background:#fff;color:#008f7a}
+  .hero-step.done .mark{background:#fff;color:var(--brand)}
   .hero-step .body{flex:1;min-width:0}
   .hero-step .body strong{display:block;font-size:1rem}
   .choice{display:block;padding:1rem;background:#fafafa;border:1px solid #e0e0e0;
           border-radius:6px;margin-bottom:.6rem;text-decoration:none;color:inherit}
-  .choice:hover{border-color:#008f7a;background:#f0f9f6}
-  .choice strong{color:#008f7a;display:block;margin-bottom:.2rem}
+  .choice:hover{border-color:var(--brand);background:#f0f9f6}
+  .choice strong{color:var(--brand);display:block;margin-bottom:.2rem}
   .cta-row{margin:.4rem 0 .2rem}
   .status-row{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;
               margin:.4rem 0}
   .status-row .pill{min-width:10rem;text-align:center}
-  footer{text-align:center;color:#888;font-size:.8rem;padding:1rem}
-  footer a{color:#888}
-  .crumb{font-size:.85rem;color:#888;margin-bottom:.4rem}
-  .crumb a{color:#008f7a;text-decoration:none}
+  footer{text-align:center;color:var(--muted);font-size:.8rem;padding:1rem}
+  footer a{color:var(--muted)}
+  .crumb{font-size:.85rem;color:var(--muted);margin-bottom:.4rem}
+  .crumb a{color:var(--brand);text-decoration:none}
   .crumb a:hover{text-decoration:underline}
+
+  /* ---- Shared vocabulary for the markup the views build in JS: one class
+     per role, so equal elements look and behave the same everywhere. ---- */
+  /* Button sizes. .btn-primary has no border, .btn-ghost a 1px one: the
+     primary variant gets 1px more padding so both line up in one row. */
+  .btn-sm{padding:.3rem .7rem;font-size:.85rem}
+  .btn-primary.btn-sm{padding:calc(.3rem + 1px) calc(.7rem + 1px)}
+  /* Mini button next to a heading or a line of text (no h2 caps). */
+  .btn-xs{padding:.2rem .6rem;font-size:.75rem;text-transform:none;letter-spacing:0}
+  .btn-danger{border-color:var(--err);color:var(--err)}
+  label.btn-ghost{margin:0}
+  /* A row of actions: buttons, then an inline status message (.after).
+     Hidden buttons take no gap, so toggling one never shifts the rest. */
+  .actions{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;margin:.6rem 0}
+  .after{margin-left:.6rem}
+  .actions .after{margin-left:.3rem}
+  .modal .actions{margin-top:.8rem}
+  .modal .actions>button{padding:.4rem .9rem}
+  .modal .actions>.btn-primary{padding:calc(.4rem + 1px) calc(.9rem + 1px)}
+  /* One line of state (current value, progress, outcome); .msg-line keeps
+     its height while empty so the layout does not jump. */
+  .status-line{margin:.4rem 0}
+  .msg-line{min-height:1em;margin:.4rem 0}
+  .info-line{margin:.2rem 0}
+  /* Help text: .help explains a block, .hint a single field or option. */
+  .help{color:var(--muted);font-size:.8rem;margin:.5rem 0 .8rem}
+  .hint{color:var(--muted);font-size:.75rem;margin:.2rem 0 .6rem}
+  .hint:last-child{margin-bottom:0}
+  .callout{color:var(--muted);font-size:.75rem;margin:.6rem 0;
+     border-left:3px solid #ccc;padding-left:.6rem}
+  /* Text tones for a fixed state (after .help/.hint, so they win). */
+  .txt-err{color:var(--err)}
+  .txt-caution{color:var(--caution)}
+  /* A checkbox (or a short select) with its text on one line; .opt is the
+     paragraph wrapping one such option inside a group. */
+  .check{display:flex;align-items:center;gap:.4rem;margin:.6rem 0 .2rem;
+     font-size:.85rem;font-weight:400;color:var(--text2)}
+  .check>input,.check>select{width:auto;margin:0}
+  .check>select{min-width:0}   /* may shrink: a long option must not widen the page */
+  .opt{margin:.6rem 0 .2rem}
+  .opt>.check{margin:0}
+  h2 .check{font-size:.75rem;gap:.3rem}
+  /* Value fields side by side: caption, control, hint stacked. */
+  .fields{display:flex;gap:1.2rem;flex-wrap:wrap;align-items:flex-start}
+  .field{display:flex;flex-direction:column;gap:.2rem;font-size:.85rem}
+  .field .hint{max-width:16rem;margin:0}
+  .w-num{width:7rem}
+  .w-pick{min-width:14rem}
+  label>input[type=file]{margin-top:.3rem}
+  /* A narrow settings form; .stack spaces several fields evenly. */
+  .form{max-width:24rem;margin-top:.6rem}
+  .form label{font-size:.85rem}
+  .stack{display:flex;flex-direction:column;gap:.5rem}
+  textarea{width:100%;font:inherit}
+  /* Nested disclosure inside a card or a form. */
+  details.sub{margin:.6rem 0;font-size:.85rem}
+  details.sub>summary{font-size:.9rem;color:var(--brand)}
+  /* Small heading and rows of a list (dialog speakers, editor phases). */
+  .list{font-size:.85rem}
+  .list-title{margin:.5rem 0 .2rem;font-size:.85rem;font-weight:600}
+  .list-row{display:flex;align-items:center;gap:.3rem;margin:.15rem 0}
+  .list-row .on{font-weight:600}
+  /* A card heading with controls on the right. */
+  h2.bar{display:flex;align-items:center;justify-content:space-between;
+     flex-wrap:wrap;gap:.6rem}
+  h2.bar .tools{display:flex;align-items:center;gap:.8rem}
+  .counters{margin-top:.8rem}
+  .tasks{font-size:.8rem;margin-top:.8rem}
+  .num{text-align:right}
+  /* Every card ends on its padding, whatever its last element is. */
+  section>:last-child,details.adminsec>:last-child{margin-bottom:0}
+  footer select{font-size:.8rem;border:none;background:transparent;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -136,7 +219,7 @@ if (!location.pathname.endsWith('/'))
 <main id="app"></main>
 <footer>
   PhoneBlock Dongle · <a href="https://phoneblock.net">phoneblock.net</a> ·
-  <select id="langSelect" style="font-size:.8rem;border:none;background:transparent;color:#888">
+  <select id="langSelect">
     <option value="de">Deutsch</option>
     <option value="en">English</option>
     <option value="fr">Français</option>
@@ -230,7 +313,7 @@ function applyLangStatus(){
   if (!el) return;
   if (!g_i18nStatus) { el.style.display = 'none'; el.textContent = ''; return; }
   el.textContent = g_i18nStatus === 'loading' ? t('i18n.loading') : t('i18n.unavailable');
-  el.style.background = g_i18nStatus === 'loading' ? '#e67e22' : '#c0392b';
+  el.classList.toggle('failed', g_i18nStatus !== 'loading');
   el.style.display = '';
 }
 function loadUiPack(lang){
@@ -655,7 +738,7 @@ async function pbLoadBooks(sel, msgEl){
   sel.innerHTML = '';
   const r = await fetchJson('api/phonebooks');
   if (!r || !r.ok){
-    if (msgEl) pbSetMsg(msgEl, pbErrorText(r), '#d93025');
+    if (msgEl) pbSetMsg(msgEl, pbErrorText(r), 'var(--err)');
     return false;
   }
   let writable = 0;
@@ -673,7 +756,7 @@ async function pbLoadBooks(sel, msgEl){
     sel.appendChild(o);
   }
   if (!writable){
-    if (msgEl) pbSetMsg(msgEl, t('pb.dialog.none_writable'), '#d93025');
+    if (msgEl) pbSetMsg(msgEl, t('pb.dialog.none_writable'), 'var(--err)');
     return false;
   }
   return true;
@@ -681,7 +764,7 @@ async function pbLoadBooks(sel, msgEl){
 
 function pbSetMsg(el, text, colour){
   el.textContent = text;
-  el.style.color = colour || '#888';
+  el.style.color = colour || 'var(--muted)';
 }
 
 // Map the endpoints' stable `code` to localized text; fall back to the
@@ -708,7 +791,7 @@ function pbBuildDialog(){
     + '<div>'
     + '<h3>' + esc(t('pb.dialog.title')) + '</h3>'
     + '<p class="muted">' + esc(t('pb.dialog.intro')) + '</p>'
-    + '<p style="margin:.4rem 0"><strong id="pbDlgNum"></strong></p>'
+    + '<p class="status-line"><strong id="pbDlgNum"></strong></p>'
     + '<label>' + esc(t('pb.dialog.name'))
     + '<input type="text" id="pbName" maxlength="47" autocomplete="off"></label>'
     + '<label>' + esc(t('pb.dialog.type'))
@@ -716,17 +799,17 @@ function pbBuildDialog(){
     +   PB_TYPES.map(ty => '<option value="' + ty + '">'
     +     esc(t('pb.dialog.type.' + ty)) + '</option>').join('')
     + '</select></label>'
-    + '<label style="display:flex;align-items:center;gap:.5rem;margin:.6rem 0;font-size:.9rem;color:#222">'
-    + '  <input type="checkbox" id="pbVip" style="width:auto;margin:0">'
+    + '<label class="check">'
+    + '  <input type="checkbox" id="pbVip">'
     + '  <span>' + esc(t('pb.dialog.vip')) + '</span>'
     + '</label>'
     + '<label id="pbBookRow" style="display:none">' + esc(t('pb.dialog.book'))
     + '<select id="pbBook"></select></label>'
-    + '<p id="pbDlgMsg" class="muted" style="min-height:1em;margin:.4rem 0"></p>'
-    + '<p style="margin:.8rem 0 0;display:flex;gap:.5rem">'
-    + '  <button id="pbSave" class="btn-primary" style="padding:.4rem .9rem">'
+    + '<p id="pbDlgMsg" class="muted msg-line"></p>'
+    + '<p class="actions">'
+    + '  <button id="pbSave" class="btn-primary">'
     +   esc(t('pb.dialog.save')) + '</button>'
-    + '  <button id="pbCancel" class="btn-ghost" style="padding:.4rem .9rem">'
+    + '  <button id="pbCancel" class="btn-ghost">'
     +   esc(t('pb.dialog.cancel')) + '</button>'
     + '</p>'
     + '</div>';
@@ -759,7 +842,7 @@ async function pbSubmit(){
   const save = $('pbSave');
   const name = $('pbName').value.trim();
   if (!name){
-    pbSetMsg(msg, t('pb.dialog.error.name'), '#d93025');
+    pbSetMsg(msg, t('pb.dialog.error.name'), 'var(--err)');
     return;
   }
   save.disabled = true;
@@ -793,7 +876,7 @@ async function pbSubmit(){
   } catch (_){ /* handled as a failure below */ }
 
   if (ok){
-    pbSetMsg(msg, t('pb.dialog.done'), '#188038');
+    pbSetMsg(msg, t('pb.dialog.done'), 'var(--ok)');
     setTimeout(() => { if (pbDlgEl) pbDlgEl.style.display = 'none'; }, 700);
     await refreshAll();
     return;
@@ -810,12 +893,12 @@ async function pbSubmit(){
       pbSetMsg(msg, d.code === 'not_writable' ? t('pb.dialog.error.not_writable')
                   : d.code === 'phonebook_moved' ? t('pb.dialog.error.moved')
                   : t('pb.dialog.pick'),
-               warn ? '#d93025' : '#888');
+               warn ? 'var(--err)' : 'var(--muted)');
     }
     save.disabled = false;
     return;
   }
-  pbSetMsg(msg, pbErrorText(d), '#d93025');
+  pbSetMsg(msg, pbErrorText(d), 'var(--err)');
   save.disabled = false;
 }
 
@@ -857,12 +940,12 @@ function pbOpenWhitelist(number){
     + '<div>'
     + '<h3>' + esc(t('whitelist.dialog.title')) + '</h3>'
     + '<p class="muted">' + esc(t('whitelist.dialog.intro')) + '</p>'
-    + '<p style="margin:.4rem 0"><strong id="pbWlNum"></strong></p>'
-    + '<p id="pbWlMsg" class="muted" style="min-height:1em;margin:.4rem 0"></p>'
-    + '<p style="margin:.8rem 0 0;display:flex;gap:.5rem">'
-    + '  <button id="pbWlSave" class="btn-primary" style="padding:.4rem .9rem">'
+    + '<p class="status-line"><strong id="pbWlNum"></strong></p>'
+    + '<p id="pbWlMsg" class="muted msg-line"></p>'
+    + '<p class="actions">'
+    + '  <button id="pbWlSave" class="btn-primary">'
     +   esc(t('whitelist.dialog.submit')) + '</button>'
-    + '  <button id="pbWlCancel" class="btn-ghost" style="padding:.4rem .9rem">'
+    + '  <button id="pbWlCancel" class="btn-ghost">'
     +   esc(t('pb.dialog.cancel')) + '</button>'
     + '</p></div>';
   document.body.appendChild(wrap);
@@ -896,13 +979,13 @@ async function pbWhitelistSubmit(){
   } catch (_){ /* handled below */ }
 
   if (ok){
-    pbSetMsg(msg, t('whitelist.dialog.done'), '#188038');
+    pbSetMsg(msg, t('whitelist.dialog.done'), 'var(--ok)');
     setTimeout(() => { if (pbWlDlgEl) pbWlDlgEl.style.display = 'none'; }, 700);
     await refreshAll();
     return;
   }
   pbSetMsg(msg, d.code === 'no_token' ? t('spam.dialog.error.no_token')
-              : pbErrorText(d), '#d93025');
+              : pbErrorText(d), 'var(--err)');
   save.disabled = false;
 }
 
@@ -925,7 +1008,7 @@ function pbBuildSpamDialog(){
     + '<div>'
     + '<h3>' + esc(t('spam.dialog.title')) + '</h3>'
     + '<p class="muted">' + esc(t('spam.dialog.intro')) + '</p>'
-    + '<p style="margin:.4rem 0"><strong id="pbSpamNum"></strong></p>'
+    + '<p class="status-line"><strong id="pbSpamNum"></strong></p>'
     + '<label>' + esc(t('spam.dialog.rating'))
     + '<select id="pbSpamRating">'
     +   PB_RATINGS.map(r => '<option value="' + r + '">'
@@ -933,13 +1016,12 @@ function pbBuildSpamDialog(){
     + '</select></label>'
     + '<label>' + esc(t('spam.dialog.comment'))
     + ' <span class="muted">' + esc(t('spam.dialog.comment.hint')) + '</span>'
-    + '<textarea id="pbSpamComment" rows="2" maxlength="240"'
-    +   ' style="width:100%;font:inherit"></textarea></label>'
-    + '<p id="pbSpamMsg" class="muted" style="min-height:1em;margin:.4rem 0"></p>'
-    + '<p style="margin:.8rem 0 0;display:flex;gap:.5rem">'
-    + '  <button id="pbSpamSave" class="btn-primary" style="padding:.4rem .9rem">'
+    + '<textarea id="pbSpamComment" rows="2" maxlength="240"></textarea></label>'
+    + '<p id="pbSpamMsg" class="muted msg-line"></p>'
+    + '<p class="actions">'
+    + '  <button id="pbSpamSave" class="btn-primary">'
     +   esc(t('spam.dialog.submit')) + '</button>'
-    + '  <button id="pbSpamCancel" class="btn-ghost" style="padding:.4rem .9rem">'
+    + '  <button id="pbSpamCancel" class="btn-ghost">'
     +   esc(t('pb.dialog.cancel')) + '</button>'
     + '</p></div>';
   document.body.appendChild(wrap);
@@ -987,14 +1069,14 @@ async function pbSpamSubmit(){
   } catch (_){ /* handled below */ }
 
   if (ok){
-    pbSetMsg(msg, t('spam.dialog.done'), '#188038');
+    pbSetMsg(msg, t('spam.dialog.done'), 'var(--ok)');
     setTimeout(() => { if (pbSpamDlgEl) pbSpamDlgEl.style.display = 'none'; }, 700);
     await refreshAll();
     return;
   }
   pbSetMsg(msg, d.code === 'no_token'   ? t('spam.dialog.error.no_token')
               : d.code === 'is_contact' ? t('spam.dialog.error.is_contact')
-              : pbErrorText(d), '#d93025');
+              : pbErrorText(d), 'var(--err)');
   save.disabled = false;
 }
 
@@ -1109,11 +1191,11 @@ function renderStatus(){
     + '<p id="loginError" class="login-error" style="display:none"></p>'
     + '<p>' + esc(t('login.intro')) + '</p>'
     + '<label title="' + esc(t('login.remember.help')) + '" '
-    +   'style="display:flex;align-items:center;gap:.4rem;margin:.8rem 0;font-size:.9rem;color:#444">'
-    + '  <input id="loginRemember" type="checkbox" style="width:auto;margin:0">'
+    +   'class="check">'
+    + '  <input id="loginRemember" type="checkbox">'
     + '  <span>' + esc(t('login.remember')) + '</span>'
     + '</label>'
-    + '<p style="margin-top:1.2rem">'
+    + '<p class="actions">'
     + '<a id="loginButton" href="auth/start" class="btn-primary">'
     +   esc(t('login.button')) + '</a>'
     + '</p>'
@@ -1124,36 +1206,36 @@ function renderStatus(){
     + '<div class="status-row">'
     + '  <span id="sipPill" class="pill bad">…</span>'
     + '  <span class="muted" id="sipDetail"></span>'
-    + '  <a id="sipCta" href="#/setup/sip" class="btn-ghost" style="display:none;padding:.3rem .7rem;font-size:.85rem"></a>'
+    + '  <a id="sipCta" href="#/setup/sip" class="btn-ghost btn-sm" style="display:none"></a>'
     + '</div>'
     + '<div class="status-row">'
     + '  <span id="tokenPill" class="pill bad">…</span>'
     + '  <span id="tokenMsg" class="muted"></span>'
-    + '  <a id="tokenCta" href="#/setup/token" class="btn-ghost" style="display:none;padding:.3rem .7rem;font-size:.85rem">'
+    + '  <a id="tokenCta" href="#/setup/token" class="btn-ghost btn-sm" style="display:none">'
     +    esc(t('status.token.cta')) + '</a>'
-    + '  <button id="tokenTest" class="btn-ghost" style="display:none;padding:.3rem .7rem;font-size:.85rem">'
+    + '  <button id="tokenTest" class="btn-ghost btn-sm" style="display:none">'
     +    esc(t('status.token.test')) + '</button>'
-    + '  <a id="tokenRenew" href="register-start" data-token-link class="btn-ghost" style="display:none;padding:.3rem .7rem;font-size:.85rem">'
+    + '  <a id="tokenRenew" href="register-start" data-token-link class="btn-ghost btn-sm" style="display:none">'
     +    esc(t('status.token.renew')) + '</a>'
     + '</div>'
     + '<div id="langStatus" class="i18n-bubble" style="display:none"></div>'
-    + '<div class="grid" style="margin-top:.8rem">'
+    + '<div class="grid counters">'
     + '  <div class="stat"><div class="stat-label">' + esc(t('status.counters.total'))  + '</div><div class="stat-value" id="cTotal">–</div></div>'
     + '  <div class="stat"><div class="stat-label">' + esc(t('status.counters.spam'))   + '</div><div class="stat-value" id="cSpam">–</div></div>'
     + '  <div class="stat"><div class="stat-label">' + esc(t('status.counters.legit')) + '</div><div class="stat-value" id="cLegit">–</div></div>'
     + '  <div class="stat"><div class="stat-label">' + esc(t('status.counters.errors'))+ '</div><div class="stat-value" id="cErr">–</div></div>'
     + '</div>'
-    + '<p class="muted" id="statusInfo" style="margin:.6rem 0 0"></p>'
+    + '<p class="muted status-line" id="statusInfo"></p>'
     + '</section>'
     + '<section id="callsSection" style="display:none">'
-    + '<h2 style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.6rem">'
+    + '<h2 class="bar">'
     + '  <span>' + esc(t('status.calls.title')) + '</span>'
-    + '  <span style="display:flex;align-items:center;gap:.8rem">'
-    + '    <label title="' + esc(t('status.calls.log_known.help')) + '" style="font-size:.75rem;font-weight:400;color:#444;display:flex;align-items:center;gap:.3rem">'
-    + '      <input id="callsLogKnown" type="checkbox" style="width:auto;margin:0">'
+    + '  <span class="tools">'
+    + '    <label title="' + esc(t('status.calls.log_known.help')) + '" class="check">'
+    + '      <input id="callsLogKnown" type="checkbox">'
     + '      <span>' + esc(t('status.calls.log_known')) + '</span>'
     + '    </label>'
-    + '    <button id="callsClear" class="btn-ghost" style="display:none;padding:.2rem .6rem;font-size:.75rem;text-transform:none;letter-spacing:0">'
+    + '    <button id="callsClear" class="btn-ghost btn-xs" style="display:none">'
     +      esc(t('status.calls.clear')) + '</button>'
     + '  </span>'
     + '</h2>'
@@ -1171,17 +1253,17 @@ function renderStatus(){
     // has to stay reachable before SIP and the token are done.
     + '<details id="regionSection" class="adminsec">'
     + '<summary>' + esc(t('region.title')) + '</summary>'
-    + '<div style="display:flex;gap:1.5rem;flex-wrap:wrap;align-items:flex-start">'
-    + '<label style="display:flex;flex-direction:column;gap:.2rem">'
-    + '  <span style="font-size:.85rem">' + esc(t('region.lang')) + '</span>'
-    + '  <select id="regionLang" style="min-width:12rem"></select>'
+    + '<div class="fields">'
+    + '<label class="field">'
+    + '  <span>' + esc(t('region.lang')) + '</span>'
+    + '  <select id="regionLang" class="w-pick"></select>'
     + '</label>'
-    + '<label style="display:flex;flex-direction:column;gap:.2rem">'
-    + '  <span style="font-size:.85rem">' + esc(t('region.country')) + '</span>'
-    + '  <select id="regionCountry" style="min-width:14rem"></select>'
+    + '<label class="field">'
+    + '  <span>' + esc(t('region.country')) + '</span>'
+    + '  <select id="regionCountry" class="w-pick"></select>'
     + '</label>'
     + '</div>'
-    + '<p class="muted" style="font-size:.72rem;margin:.5rem 0 0">'
+    + '<p class="hint">'
     +   esc(t('region.country.hint')) + '</p>'
     + '</details>'
     // Admin/config areas as collapsible cards. Status + recent calls
@@ -1191,55 +1273,55 @@ function renderStatus(){
     // it by reflex, so it stays closed until someone goes looking.
     + '<details id="errorsSection" class="adminsec" style="display:none">'
     + '<summary>' + esc(t('status.errors.title')) + '</summary>'
-    + '<p class="muted" style="font-size:.72rem;margin:.2rem 0 .6rem">'
+    + '<p class="hint">'
     +   esc(t('status.errors.note')) + '</p>'
     + '<div id="errorsList"></div>'
-    + '<p style="margin-top:.6rem">'
-    + '  <button id="errorsClear" class="btn-ghost" style="display:none;padding:.2rem .6rem;font-size:.75rem;text-transform:none;letter-spacing:0">'
+    + '<p class="actions">'
+    + '  <button id="errorsClear" class="btn-ghost btn-xs" style="display:none">'
     +    esc(t('status.errors.clear')) + '</button>'
     + '</p>'
-    + '<label style="display:flex;align-items:center;gap:.4rem;font-weight:normal;margin-top:.7rem;font-size:.85rem">'
-    +   '<input type="checkbox" id="logInfoChk" style="width:auto">'
+    + '<label class="check">'
+    +   '<input type="checkbox" id="logInfoChk">'
     +   '<span>' + esc(t('status.errors.capture_info')) + '</span></label>'
-    + '<p class="muted" style="font-size:.72rem;margin:.2rem 0 0">'
+    + '<p class="hint">'
     +   esc(t('status.errors.capture_info.hint')) + '</p>'
     + '</details>'
     + '<details id="systemSection" class="adminsec" style="display:none">'
     + '<summary>' + esc(t('status.system.title')) + '</summary>'
-    + '<p id="systemHeap" class="muted" style="font-size:.85rem;margin:.2rem 0 .2rem"></p>'
-    + '<p id="systemFs" class="muted" style="font-size:.85rem;margin:.2rem 0 .2rem"></p>'
-    + '<p id="systemTemp" class="muted" style="font-size:.85rem;margin:.2rem 0 .2rem;display:none"></p>'
-    + '<p id="clockInfo" class="muted" style="font-size:.85rem;margin:.2rem 0 .2rem"></p>'
-    + '<p id="tzInfo" class="muted" style="font-size:.8rem;margin:.2rem 0 .8rem">'
+    + '<p id="systemHeap" class="muted info-line"></p>'
+    + '<p id="systemFs" class="muted info-line"></p>'
+    + '<p id="systemTemp" class="muted info-line" style="display:none"></p>'
+    + '<p id="clockInfo" class="muted info-line"></p>'
+    + '<p id="tzInfo" class="muted info-line">'
     +   '<span id="tzCurrent"></span>'
-    +   '<button id="tzApply" class="btn-ghost" style="display:none;margin-left:.6rem;padding:.2rem .6rem;font-size:.75rem;text-transform:none;letter-spacing:0"></button>'
+    +   '<button id="tzApply" class="btn-ghost btn-xs after" style="display:none"></button>'
     + '</p>'
-    + '<table style="width:100%;border-collapse:collapse;font-size:.8rem"><thead><tr>'
-    + '<th style="text-align:left">'   + esc(t('status.system.col.task'))  + '</th>'
-    + '<th style="text-align:right">'  + esc(t('status.system.col.cpu'))   + '</th>'
-    + '<th style="text-align:right">'  + esc(t('status.system.col.stack')) + '</th>'
+    + '<table class="tasks"><thead><tr>'
+    + '<th>'   + esc(t('status.system.col.task'))  + '</th>'
+    + '<th class="num">'  + esc(t('status.system.col.cpu'))   + '</th>'
+    + '<th class="num">'  + esc(t('status.system.col.stack')) + '</th>'
     + '</tr></thead><tbody id="systemTasks"></tbody></table>'
-    + '<label style="display:flex;align-items:center;gap:.4rem;font-weight:normal;margin-top:.9rem;font-size:.85rem">'
-    +   '<input type="checkbox" id="ledQuietChk" style="width:auto">'
+    + '<label class="check">'
+    +   '<input type="checkbox" id="ledQuietChk">'
     +   '<span>' + esc(t('status.system.led_quiet')) + '</span></label>'
-    + '<p class="muted" style="font-size:.72rem;margin:.2rem 0 0">'
+    + '<p class="hint">'
     +   esc(t('status.system.led_quiet.hint')) + '</p>'
     + '<div id="lcdFlipRow" style="display:none">'
-    + '<label style="display:flex;align-items:center;gap:.4rem;font-weight:normal;margin-top:.9rem;font-size:.85rem">'
-    +   '<input type="checkbox" id="lcdFlipChk" style="width:auto">'
+    + '<label class="check">'
+    +   '<input type="checkbox" id="lcdFlipChk">'
     +   '<span>' + esc(t('status.system.lcd_flip')) + '</span></label>'
-    + '<p class="muted" style="font-size:.72rem;margin:.2rem 0 0">'
+    + '<p class="hint">'
     +   esc(t('status.system.lcd_flip.hint')) + '</p>'
     + '</div>'
     + '</details>'
     + '<details id="thresholdsSection" class="adminsec" style="display:none">'
     + '<summary>' + esc(t('status.thresholds.title')) + '</summary>'
-    + '<p class="muted" style="font-size:.85rem;margin:.2rem 0 .8rem">'
+    + '<p class="muted">'
     +   esc(t('status.thresholds.intro')) + '</p>'
-    + '<div style="display:flex;gap:1.5rem;flex-wrap:wrap;align-items:flex-start">'
-    + '<label style="display:flex;flex-direction:column;gap:.2rem">'
-    + '  <span style="font-size:.85rem">' + esc(t('status.thresholds.direct')) + '</span>'
-    + '  <select id="thrDirect" style="width:7rem">'
+    + '<div class="fields">'
+    + '<label class="field">'
+    + '  <span>' + esc(t('status.thresholds.direct')) + '</span>'
+    + '  <select id="thrDirect" class="w-num">'
     + '    <option value="2">2</option>'
     + '    <option value="4">4</option>'
     + '    <option value="10">10</option>'
@@ -1247,12 +1329,12 @@ function renderStatus(){
     + '    <option value="50">50</option>'
     + '    <option value="100">100</option>'
     + '  </select>'
-    + '  <span class="muted" style="font-size:.7rem;max-width:18rem">'
+    + '  <span class="hint">'
     +     esc(t('status.thresholds.direct.help')) + '</span>'
     + '</label>'
-    + '<label style="display:flex;flex-direction:column;gap:.2rem">'
-    + '  <span style="font-size:.85rem">' + esc(t('status.thresholds.range')) + '</span>'
-    + '  <select id="thrRange" style="width:7rem">'
+    + '<label class="field">'
+    + '  <span>' + esc(t('status.thresholds.range')) + '</span>'
+    + '  <select id="thrRange" class="w-num">'
     + '    <option value="0">' + esc(t('status.thresholds.range.off')) + '</option>'
     + '    <option value="10">10</option>'
     + '    <option value="20">20</option>'
@@ -1260,293 +1342,293 @@ function renderStatus(){
     + '    <option value="100">100</option>'
     + '    <option value="500">500</option>'
     + '  </select>'
-    + '  <span class="muted" style="font-size:.7rem;max-width:18rem">'
+    + '  <span class="hint">'
     +     esc(t('status.thresholds.range.help')) + '</span>'
     + '</label>'
     + '</div>'
-    + '<p id="thrMsg" class="muted" style="font-size:.75rem;margin:.4rem 0 0;min-height:1em"></p>'
+    + '<p id="thrMsg" class="muted msg-line"></p>'
     + '</details>'
     + '<details id="pbSection" class="adminsec" style="display:none">'
     + '<summary>' + esc(t('status.phonebook.title')) + '</summary>'
     + '<p class="muted">' + esc(t('status.phonebook.intro')) + '</p>'
-    + '<p id="pbCurrent" style="margin:.4rem 0"></p>'
-    + '<p style="margin:.4rem 0 0">'
-    + '  <button id="pbChange" class="btn-ghost" style="padding:.3rem .7rem;font-size:.85rem">'
+    + '<p id="pbCurrent" class="status-line"></p>'
+    + '<p class="actions">'
+    + '  <button id="pbChange" class="btn-ghost btn-sm">'
     +   esc(t('status.phonebook.change')) + '</button>'
-    + '  <span id="pbSecMsg" class="muted" style="margin-left:.6rem"></span>'
+    + '  <span id="pbSecMsg" class="muted after"></span>'
     + '</p>'
-    + '<p id="pbSecPick" style="display:none;margin:.6rem 0 0">'
-    + '  <select id="pbSecBook" style="max-width:100%"></select>'
+    + '<p id="pbSecPick" class="opt" style="display:none">'
+    + '  <select id="pbSecBook"></select>'
     + '</p></details>'
     + '<details id="syncSection" class="adminsec" style="display:none">'
     + '<summary>' + esc(t('status.sync.title')) + '</summary>'
     + '<p class="muted">' + esc(t('status.sync.intro')) + '</p>'
-    + '<label style="display:flex;align-items:center;gap:.5rem;margin:.4rem 0;font-size:.9rem;color:#222">'
-    + '  <input type="checkbox" id="syncEnable" style="width:auto;margin:0">'
+    + '<label class="check">'
+    + '  <input type="checkbox" id="syncEnable">'
     + '  <span>' + esc(t('status.sync.enable')) + '</span>'
     + '</label>'
-    + '<p id="syncStatus" class="muted" style="margin-top:.4rem"></p>'
-    + '<p style="margin:.4rem 0 0">'
-    + '  <button id="syncRun" class="btn-ghost" style="padding:.3rem .7rem;font-size:.85rem">'
+    + '<p id="syncStatus" class="muted status-line"></p>'
+    + '<p class="actions">'
+    + '  <button id="syncRun" class="btn-ghost btn-sm">'
     +   esc(t('status.sync.run_now')) + '</button>'
-    + '  <span id="syncMsg" class="muted" style="margin-left:.6rem"></span>'
+    + '  <span id="syncMsg" class="muted after"></span>'
     + '</p></details>'
     + '<details id="localCacheSection" class="adminsec" style="display:none">'
     + '<summary>' + esc(t('status.localcache.title')) + '</summary>'
     + '<p class="muted">' + esc(t('status.localcache.intro')) + '</p>'
     + '<label title="' + esc(t('status.localcache.enable.help')) + '" '
-    +   'style="display:flex;align-items:center;gap:.5rem;margin:.4rem 0;font-size:.9rem;color:#222">'
-    + '  <input type="checkbox" id="blEnabled" style="width:auto;margin:0">'
+    +   'class="check">'
+    + '  <input type="checkbox" id="blEnabled">'
     + '  <span>' + esc(t('status.localcache.enable')) + '</span>'
     + '</label>'
     + '<label title="' + esc(t('status.localcache.wildcards.help')) + '" '
-    +   'style="display:flex;align-items:center;gap:.5rem;margin:.4rem 0;font-size:.9rem;color:#222">'
-    + '  <input type="checkbox" id="blWildcards" style="width:auto;margin:0">'
+    +   'class="check">'
+    + '  <input type="checkbox" id="blWildcards">'
     + '  <span>' + esc(t('status.localcache.wildcards')) + '</span>'
     + '</label>'
-    + '<p id="localCacheStatus" class="muted" style="margin-top:.4rem"></p>'
-    + '<p style="margin:.4rem 0 0">'
-    + '  <button id="blRun" class="btn-ghost" style="padding:.3rem .7rem;font-size:.85rem">'
+    + '<p id="localCacheStatus" class="muted status-line"></p>'
+    + '<p class="actions">'
+    + '  <button id="blRun" class="btn-ghost btn-sm">'
     +   esc(t('status.localcache.run_now')) + '</button>'
-    + '  <span id="blMsg" class="muted" style="margin-left:.6rem"></span>'
+    + '  <span id="blMsg" class="muted after"></span>'
     + '</p></details>'
     + '<details id="nameFilterSection" class="adminsec" style="display:none">'
     + '<summary>' + esc(t('status.names.title')) + '</summary>'
     + '<p class="muted">' + esc(t('status.names.intro')) + '</p>'
-    + '<div style="margin-top:.6rem;max-width:24rem">'
-    + '  <label style="font-size:.85rem">' + esc(t('status.names.patterns'))
+    + '<div class="form">'
+    + '  <label>' + esc(t('status.names.patterns'))
     +     '<input id="nameFilterPatterns" type="text" autocomplete="off" '
-    +       'spellcheck="false" style="width:100%"></label>'
+    +       'spellcheck="false"></label>'
     + '</div>'
-    + '<p class="muted" style="margin-top:.5rem;font-size:.8rem">'
+    + '<p class="help">'
     +   esc(t('status.names.help')) + '</p>'
-    + '<p style="margin-top:.6rem">'
-    + '  <button id="nameFilterSave" class="btn-primary" style="padding:.4rem .9rem;font-size:.9rem">'
+    + '<p class="actions">'
+    + '  <button id="nameFilterSave" class="btn-primary btn-sm">'
     +   esc(t('status.names.save')) + '</button>'
-    + '  <span id="nameFilterMsg" class="muted" style="margin-left:.6rem"></span>'
+    + '  <span id="nameFilterMsg" class="muted after"></span>'
     + '</p></details>'
     + '<details id="mailSection" class="adminsec" style="display:none">'
     + '<summary>' + esc(t('status.mail.title')) + '</summary>'
     + '<p class="muted">' + esc(t('status.mail.intro')) + '</p>'
-    + '<div style="margin-top:.6rem;display:flex;flex-direction:column;gap:.5rem;max-width:24rem">'
-    + '  <label style="font-size:.85rem">' + esc(t('status.mail.host'))
-    +     '<input id="mailHost" type="text" autocomplete="off" style="width:100%"></label>'
-    + '  <label style="font-size:.85rem">' + esc(t('status.mail.security'))
-    +     '<select id="mailSec" style="width:100%">'
+    + '<div class="form stack">'
+    + '  <label>' + esc(t('status.mail.host'))
+    +     '<input id="mailHost" type="text" autocomplete="off"></label>'
+    + '  <label>' + esc(t('status.mail.security'))
+    +     '<select id="mailSec">'
     +       '<option value="tls">' + esc(t('status.mail.security.tls')) + '</option>'
     +       '<option value="starttls">' + esc(t('status.mail.security.starttls')) + '</option>'
     +     '</select></label>'
-    + '  <label style="font-size:.85rem">' + esc(t('status.mail.port'))
-    +     '<input id="mailPort" type="number" min="1" max="65535" style="width:100%"></label>'
-    + '  <label style="font-size:.85rem">' + esc(t('status.mail.user'))
-    +     '<input id="mailUser" type="text" autocomplete="off" style="width:100%"></label>'
-    + '  <label style="font-size:.85rem">' + esc(t('status.mail.pass'))
-    +     '<input id="mailPass" type="password" autocomplete="off" style="width:100%">'
-    +     '<span id="mailPassKeep" class="muted" style="font-size:.75rem"></span></label>'
-    + '  <label style="font-size:.85rem">' + esc(t('status.mail.from'))
-    +     '<input id="mailFrom" type="text" autocomplete="off" style="width:100%"></label>'
-    + '  <label style="font-size:.85rem">' + esc(t('status.mail.to'))
-    +     '<input id="mailTo" type="text" autocomplete="off" style="width:100%"></label>'
+    + '  <label>' + esc(t('status.mail.port'))
+    +     '<input id="mailPort" type="number" min="1" max="65535"></label>'
+    + '  <label>' + esc(t('status.mail.user'))
+    +     '<input id="mailUser" type="text" autocomplete="off"></label>'
+    + '  <label>' + esc(t('status.mail.pass'))
+    +     '<input id="mailPass" type="password" autocomplete="off">'
+    +     '<span id="mailPassKeep" class="hint"></span></label>'
+    + '  <label>' + esc(t('status.mail.from'))
+    +     '<input id="mailFrom" type="text" autocomplete="off"></label>'
+    + '  <label>' + esc(t('status.mail.to'))
+    +     '<input id="mailTo" type="text" autocomplete="off"></label>'
     + '</div>'
-    + '<p class="muted" style="margin-top:.5rem;font-size:.8rem">' + esc(t('status.mail.help')) + '</p>'
-    + '<p style="margin-top:.5rem;font-size:.85rem">'
+    + '<p class="help">' + esc(t('status.mail.help')) + '</p>'
+    + '<p class="opt">'
     + '  <label title="' + esc(t('status.mail.on_error.help')) + '" '
-    +    'style="display:flex;align-items:center;gap:.4rem;font-weight:400;color:#444;margin:0">'
-    + '    <input id="mailOnError" type="checkbox" style="width:auto;margin:0">'
+    +    'class="check">'
+    + '    <input id="mailOnError" type="checkbox">'
     + '    <span>' + esc(t('status.mail.on_error')) + '</span></label>'
     + '</p>'
-    + '<p style="margin-top:.4rem;font-size:.85rem">'
+    + '<p class="opt">'
     + '  <label title="' + esc(t('status.mail.on_spam.help')) + '" '
-    +    'style="display:flex;align-items:center;gap:.4rem;font-weight:400;color:#444;margin:0">'
-    + '    <input id="mailOnSpam" type="checkbox" style="width:auto;margin:0">'
+    +    'class="check">'
+    + '    <input id="mailOnSpam" type="checkbox">'
     + '    <span>' + esc(t('status.mail.on_spam')) + '</span></label>'
     + '</p>'
-    + '<p style="margin-top:.4rem;font-size:.85rem">'
+    + '<p class="opt">'
     + '  <label title="' + esc(t('status.mail.on_update.help')) + '" '
-    +    'style="display:flex;align-items:center;gap:.4rem;font-weight:400;color:#444;margin:0">'
-    + '    <input id="mailOnUpdate" type="checkbox" style="width:auto;margin:0">'
+    +    'class="check">'
+    + '    <input id="mailOnUpdate" type="checkbox">'
     + '    <span>' + esc(t('status.mail.on_update')) + '</span></label>'
     + '</p>'
-    + '<p style="margin-top:.6rem">'
-    + '  <button id="mailSave" class="btn-primary" style="padding:.4rem .9rem;font-size:.9rem">'
+    + '<p class="actions">'
+    + '  <button id="mailSave" class="btn-primary btn-sm">'
     +   esc(t('status.mail.save')) + '</button>'
-    + '  <button id="mailTest" class="btn-ghost" style="padding:.3rem .7rem;font-size:.85rem;margin-left:.4rem">'
+    + '  <button id="mailTest" class="btn-ghost btn-sm">'
     +   esc(t('status.mail.test')) + '</button>'
-    + '  <span id="mailMsg" class="muted" style="margin-left:.6rem"></span>'
+    + '  <span id="mailMsg" class="muted after"></span>'
     + '</p></details>'
     + '<details id="webhookSection" class="adminsec" style="display:none">'
     + '<summary>' + esc(t('status.webhook.title')) + '</summary>'
     + '<p class="muted">' + esc(t('status.webhook.intro')) + '</p>'
-    + '<div style="margin-top:.6rem;max-width:24rem">'
-    + '  <label style="font-size:.85rem">' + esc(t('status.webhook.url'))
+    + '<div class="form">'
+    + '  <label>' + esc(t('status.webhook.url'))
     +     '<input id="webhookUrl" type="url" autocomplete="off" '
-    +       'spellcheck="false" placeholder="http://" style="width:100%"></label>'
+    +       'spellcheck="false" placeholder="http://"></label>'
     + '</div>'
-    + '<p class="muted" style="margin-top:.5rem;font-size:.8rem">'
+    + '<p class="help">'
     +   esc(t('status.webhook.help')) + '</p>'
-    + '<p style="margin-top:.6rem">'
-    + '  <button id="webhookSave" class="btn-primary" style="padding:.4rem .9rem;font-size:.9rem">'
+    + '<p class="actions">'
+    + '  <button id="webhookSave" class="btn-primary btn-sm">'
     +   esc(t('status.webhook.save')) + '</button>'
-    + '  <span id="webhookMsg" class="muted" style="margin-left:.6rem"></span>'
+    + '  <span id="webhookMsg" class="muted after"></span>'
     + '</p></details>'
     + '<details id="annSection" class="adminsec" style="display:none">'
     + '<summary>' + esc(t('status.ann.title')) + '</summary>'
     // Answer-bot mode (#429) first: everything below depends on it — the
     // announcement, or the interactive dialog with its speakers and tuning.
-    + '<p style="margin-top:.3rem;font-size:.85rem">'
-    + '  <label style="display:flex;align-items:center;gap:.4rem;font-weight:400;color:#444;margin:0">'
+    + '<p class="opt">'
+    + '  <label class="check">'
     + '    <span>' + esc(t('status.dialog.mode')) + '</span>'
-    + '    <select id="annMode" style="width:auto;margin:0">'
+    + '    <select id="annMode">'
     + '      <option value="announcement">' + esc(t('status.dialog.mode.announcement')) + '</option>'
     + '      <option value="dialog">' + esc(t('status.dialog.mode.dialog')) + '</option>'
     + '    </select>'
     + '  </label>'
     + '</p>'
-    + '<p class="muted" style="margin:.3rem 0 .8rem;font-size:.8rem">' + esc(t('status.dialog.help')) + '</p>'
+    + '<p class="help">' + esc(t('status.dialog.help')) + '</p>'
     // The announcement itself: only in announcement mode (dialog mode keeps
     // no announcement, #429).
     + '<div id="annAnnouncement">'
     + '<p id="annCurrent" class="muted"></p>'
-    + '<p style="margin:.4rem 0">'
-    + '  <button id="annPlay" class="btn-ghost" style="padding:.3rem .7rem;font-size:.85rem">'
+    + '<p class="actions">'
+    + '  <button id="annPlay" class="btn-ghost btn-sm">'
     +   esc(t('status.ann.play')) + '</button>'
-    + '  <button id="annStop" class="btn-ghost" style="display:none;padding:.3rem .7rem;font-size:.85rem">'
+    + '  <button id="annStop" class="btn-ghost btn-sm" style="display:none">'
     +   esc(t('status.ann.stop')) + '</button>'
-    + '  <button id="annReset" class="btn-ghost" style="display:none;padding:.3rem .7rem;font-size:.85rem;margin-left:.5rem">'
+    + '  <button id="annReset" class="btn-ghost btn-sm" style="display:none">'
     +   esc(t('status.ann.reset.button')) + '</button>'
     + '</p>'
-    + '<label style="margin-top:.8rem">'
+    + '<label>'
     +   esc(t('status.ann.upload.label', {s: 30}))
-    +   '<input id="annFile" type="file" accept="audio/*" style="margin-top:.3rem">'
+    +   '<input id="annFile" type="file" accept="audio/*">'
     + '</label>'
-    + '<p style="margin-top:.4rem">'
-    + '  <button id="annUpload" class="btn-primary" style="padding:.4rem .9rem;font-size:.9rem" disabled>'
+    + '<p class="actions">'
+    + '  <button id="annUpload" class="btn-primary btn-sm" disabled>'
     +   esc(t('status.ann.upload.submit')) + '</button>'
-    + '  <span id="annMsg" class="muted" style="margin-left:.6rem"></span>'
+    + '  <span id="annMsg" class="muted after"></span>'
     + '</p>'
     + '</div>'
     + '<div id="annDialog" style="display:none">'
-    + '<p id="annDialogClips" class="muted" style="margin-top:.3rem;font-size:.85rem"></p>'
+    + '<p id="annDialogClips" class="muted status-line"></p>'
     // Speaker choice and the own set's editor (#429).
-    + '<p style="margin:.6rem 0 .2rem;font-size:.85rem">' + esc(t('status.dialog.speaker')) + '</p>'
-    + '<div id="dlgSpk" style="font-size:.85rem"></div>'
-    + '<details id="dlgEdit" style="margin-top:.6rem;font-size:.85rem">'
-    + '<summary style="font-size:.9rem">' + esc(t('status.dialog.edit.title')) + '</summary>'
-    + '<p class="muted" style="font-size:.8rem">' + esc(t('status.dialog.edit.intro')) + '</p>'
-    + '<p style="font-size:.8rem;color:#b06000">' + esc(t('status.dialog.edit.yes_hint')) + '</p>'
+    + '<p class="list-title">' + esc(t('status.dialog.speaker')) + '</p>'
+    + '<div id="dlgSpk" class="list"></div>'
+    + '<details id="dlgEdit" class="sub">'
+    + '<summary>' + esc(t('status.dialog.edit.title')) + '</summary>'
+    + '<p class="help">' + esc(t('status.dialog.edit.intro')) + '</p>'
+    + '<p class="help txt-caution">' + esc(t('status.dialog.edit.yes_hint')) + '</p>'
     + '<div id="dlgPhases"></div>'
-    + '<p id="dlgGauge" class="muted" style="margin:.4rem 0"></p>'
-    + '<p style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center">'
-    + '  <button id="dlgUpload" class="btn-primary" style="padding:.35rem .8rem;font-size:.85rem" disabled>'
+    + '<p id="dlgGauge" class="muted status-line"></p>'
+    + '<p class="actions">'
+    + '  <button id="dlgUpload" class="btn-primary btn-sm" disabled>'
     +     esc(t('status.dialog.edit.upload')) + '</button>'
-    + '  <button id="dlgSave" class="btn-ghost" style="padding:.3rem .7rem;font-size:.85rem">'
+    + '  <button id="dlgSave" class="btn-ghost btn-sm">'
     +     esc(t('status.dialog.edit.download')) + '</button>'
-    + '  <label class="btn-ghost" style="padding:.3rem .7rem;font-size:.85rem;margin:0;cursor:pointer">'
+    + '  <label class="btn-ghost btn-sm">'
     +     esc(t('status.dialog.edit.load_file'))
     + '    <input id="dlgFile" type="file" accept=".bin,application/octet-stream" style="display:none"></label>'
     + '</p>'
     + '<p id="dlgMsg" class="muted"></p>'
     + '</details>'
-    + '<details style="margin-top:.6rem"><summary style="font-size:.9rem">'
+    + '<details class="sub"><summary>'
     +   esc(t('status.dialog.tuning'))
-    + '  <span id="annDialogMsg" class="muted" style="margin-left:.6rem"></span></summary>'
-    + '<div style="display:flex;gap:1.2rem;flex-wrap:wrap;align-items:flex-start;margin-top:.4rem">'
-    + '<label style="display:flex;flex-direction:column;gap:.2rem;font-size:.85rem">'
+    + '  <span id="annDialogMsg" class="muted after"></span></summary>'
+    + '<div class="fields">'
+    + '<label class="field">'
     +   esc(t('status.dialog.vad_silence_db'))
-    + '  <input id="annVadDb" type="number" min="-70" max="-10" step="1" style="width:7rem">'
-    + '  <span class="muted" style="font-size:.7rem;max-width:16rem">'
+    + '  <input id="annVadDb" type="number" min="-70" max="-10" step="1" class="w-num">'
+    + '  <span class="hint">'
     +     esc(t('status.dialog.vad_silence_db.help')) + '</span>'
     + '</label>'
-    + '<label style="display:flex;flex-direction:column;gap:.2rem;font-size:.85rem">'
+    + '<label class="field">'
     +   esc(t('status.dialog.vad_min_silence_ms'))
-    + '  <input id="annVadMs" type="number" min="200" max="5000" step="50" style="width:7rem">'
-    + '  <span class="muted" style="font-size:.7rem;max-width:16rem">'
+    + '  <input id="annVadMs" type="number" min="200" max="5000" step="50" class="w-num">'
+    + '  <span class="hint">'
     +     esc(t('status.dialog.vad_min_silence_ms.help')) + '</span>'
     + '</label>'
-    + '<label style="display:flex;flex-direction:column;gap:.2rem;font-size:.85rem">'
+    + '<label class="field">'
     +   esc(t('status.dialog.comfort_noise'))
-    + '  <input id="annNoise" type="number" min="-90" max="-30" step="1" style="width:7rem">'
-    + '  <span class="muted" style="font-size:.7rem;max-width:16rem">'
+    + '  <input id="annNoise" type="number" min="-90" max="-30" step="1" class="w-num">'
+    + '  <span class="hint">'
     +     esc(t('status.dialog.comfort_noise.help')) + '</span>'
     + '</label>'
     + '</div>'
     + '</details>'
     + '</div>'
-    + '<p style="margin-top:.8rem;font-size:.85rem">'
+    + '<p class="opt">'
     + '  <label title="' + esc(t('status.ann.accept_test.help')) + '" '
-    +    'style="display:flex;align-items:center;gap:.4rem;font-weight:400;color:#444;margin:0">'
-    + '    <input id="annAcceptTest" type="checkbox" style="width:auto;margin:0">'
+    +    'class="check">'
+    + '    <input id="annAcceptTest" type="checkbox">'
     + '    <span>' + esc(t('status.ann.accept_test')) + '</span>'
     + '  </label>'
     + '</p></details>'
     + '<details id="fwSection" class="adminsec" style="display:none">'
     + '<summary>' + esc(t('status.fw.title')) + '</summary>'
     + '<p class="muted">' + esc(t('status.fw.intro')) + '</p>'
-    + '<p id="fwFailed" style="display:none;margin-top:.3rem;color:#d93025"></p>'
-    + '<p id="fwCurrent" class="muted" style="margin-top:.3rem"></p>'
-    + '<p style="margin-top:.6rem">'
+    + '<p id="fwFailed" class="status-line txt-err" style="display:none"></p>'
+    + '<p id="fwCurrent" class="muted status-line"></p>'
+    + '<p class="actions">'
     + '  <input type="file" id="fwFile" accept=".bin,application/octet-stream" style="display:none">'
-    + '  <button id="fwPick" class="btn-ghost" style="padding:.3rem .7rem;font-size:.85rem">'
+    + '  <button id="fwPick" class="btn-ghost btn-sm">'
     +   esc(t('status.fw.pick')) + '</button>'
-    + '  <span id="fwFileName" class="muted" style="margin-left:.6rem"></span>'
+    + '  <span id="fwFileName" class="muted after"></span>'
     + '</p>'
-    + '<p style="margin-top:.4rem">'
-    + '  <button id="fwUpload" class="btn-primary" style="padding:.4rem .9rem;font-size:.9rem" disabled>'
+    + '<p class="actions">'
+    + '  <button id="fwUpload" class="btn-primary btn-sm" disabled>'
     +   esc(t('status.fw.submit')) + '</button>'
-    + '  <button id="fwCheck" class="btn-ghost" style="padding:.3rem .7rem;font-size:.85rem;margin-left:.4rem">'
+    + '  <button id="fwCheck" class="btn-ghost btn-sm">'
     +   esc(t('status.fw.check')) + '</button>'
-    + '  <span id="fwMsg" class="muted" style="margin-left:.6rem"></span>'
+    + '  <span id="fwMsg" class="muted after"></span>'
     + '</p>'
-    + '<p style="margin-top:.6rem;font-size:.85rem">'
+    + '<p class="opt">'
     + '  <label title="' + esc(t('status.fw.auto_update.help')) + '" '
-    +    'style="display:flex;align-items:center;gap:.4rem;font-weight:400;color:#444;margin:0">'
-    + '    <input id="fwAutoUpdate" type="checkbox" style="width:auto;margin:0">'
+    +    'class="check">'
+    + '    <input id="fwAutoUpdate" type="checkbox">'
     + '    <span>' + esc(t('status.fw.auto_update')) + '</span>'
     + '  </label>'
     + '</p>'
-    + '<p style="margin-top:.4rem;font-size:.85rem">'
+    + '<p class="opt">'
     + '  <label title="' + esc(t('status.fw.channel.help')) + '" '
-    +    'style="display:flex;align-items:center;gap:.4rem;font-weight:400;color:#444;margin:0">'
+    +    'class="check">'
     + '    <span>' + esc(t('status.fw.channel')) + '</span>'
-    + '    <select id="fwChannel" style="width:auto;margin:0">'
+    + '    <select id="fwChannel">'
     + '      <option value="stable">' + esc(t('status.fw.channel.stable')) + '</option>'
     + '      <option value="beta">' + esc(t('status.fw.channel.beta')) + '</option>'
     + '    </select>'
     + '  </label>'
     + '</p>'
-    + '<p style="margin-top:.4rem;font-size:.85rem">'
+    + '<p class="opt">'
     + '  <label title="' + esc(t('status.fw.crash_report.help')) + '" '
-    +    'style="display:flex;align-items:center;gap:.4rem;font-weight:400;color:#444;margin:0">'
-    + '    <input id="fwCrashReport" type="checkbox" style="width:auto;margin:0">'
+    +    'class="check">'
+    + '    <input id="fwCrashReport" type="checkbox">'
     + '    <span>' + esc(t('status.fw.crash_report')) + '</span>'
     + '  </label>'
     + '</p></details>'
     + '<details id="authSection" class="adminsec" style="display:none">'
     + '<summary>' + esc(t('status.auth.title')) + '</summary>'
     + '<p class="muted">' + esc(t('status.auth.intro')) + '</p>'
-    + '<p id="authState" class="muted" style="margin-top:.4rem"></p>'
-    + '<p id="authActivateHint" class="muted" style="display:none;margin-top:.4rem">'
+    + '<p id="authState" class="muted status-line"></p>'
+    + '<p id="authActivateHint" class="muted status-line" style="display:none">'
     +   esc(t('status.auth.activate.intro')) + '</p>'
-    + '<p style="margin-top:.6rem">'
-    + '  <button id="authEnable" class="btn-primary" style="display:none;padding:.4rem .9rem;font-size:.9rem">'
+    + '<p class="actions">'
+    + '  <button id="authEnable" class="btn-primary btn-sm" style="display:none">'
     +    esc(t('status.auth.enable')) + '</button>'
-    + '  <button id="authLogout" class="btn-ghost" style="display:none;padding:.3rem .7rem;font-size:.85rem">'
+    + '  <button id="authLogout" class="btn-ghost btn-sm" style="display:none">'
     +    esc(t('status.auth.logout')) + '</button>'
-    + '  <button id="authDisable" class="btn-ghost" style="display:none;border-color:#d93025;color:#d93025;padding:.3rem .7rem;font-size:.85rem;margin-left:.4rem">'
+    + '  <button id="authDisable" class="btn-ghost btn-sm btn-danger" style="display:none">'
     +    esc(t('status.auth.disable')) + '</button>'
     + '</p></details>'
     + '<details id="resetSection" class="adminsec" style="display:none">'
     + '<summary>' + esc(t('status.reset.title')) + '</summary>'
     + '<p class="muted">' + esc(t('status.reset.intro')) + '</p>'
-    + '<p style="margin-top:.6rem">'
-    + '<button id="resetBtn" class="btn-ghost" style="border-color:#d93025;color:#d93025;padding:.3rem .7rem;font-size:.85rem">'
+    + '<p class="actions">'
+    + '<button id="resetBtn" class="btn-ghost btn-sm btn-danger">'
     +   esc(t('status.reset.button')) + '</button>'
-    + '<span id="resetMsg" class="muted" style="margin-left:.6rem"></span>'
+    + '<span id="resetMsg" class="muted after"></span>'
     + '</p></details>'
     // Dev-only crash trigger. Hidden in production by JS below
     // (s.crash_test_enabled=false leaves display:none in place).
-    + '<p id="crashTestRow" style="display:none;margin-top:1rem">'
-    + '<button id="crashTestBtn" class="btn-ghost" style="border-color:#d93025;color:#d93025;padding:.3rem .7rem;font-size:.85rem">'
+    + '<p id="crashTestRow" class="actions" style="display:none">'
+    + '<button id="crashTestBtn" class="btn-ghost btn-sm btn-danger">'
     +   'Panic auslösen (Dev)</button></p>';
   // Freshly (re)built DOM — let the next poll prefill the mail form once.
   mailPrefilled = false;
@@ -1664,7 +1746,7 @@ function renderDialog(d, ownAnnouncement){
   const syncing = !d.own && (d.sync === 'pending' || d.sync === 'downloading');
   $('dlgEdit').style.display = syncing ? 'none' : '';
   $('annDialogClips').style.color = d.clips_present ? ''
-    : (d.sync === 'pending' || d.sync === 'downloading') ? '#888' : '#b06000';
+    : (d.sync === 'pending' || d.sync === 'downloading') ? 'var(--muted)' : 'var(--caution)';
   if (!dialogPrefilled){
     $('annVadDb').value = d.vad_silence_db;
     $('annVadMs').value = d.vad_min_silence_ms;
@@ -1706,7 +1788,7 @@ function renderDialog(d, ownAnnouncement){
       const v = Number(el.value);
       if (!Number.isInteger(v) || v < min || v > max){
         m.textContent = t('status.dialog.err.range', {min, max});
-        m.style.color = '#d93025';
+        m.style.color = 'var(--err)';
         el.focus();
         return;
       }
@@ -1714,7 +1796,7 @@ function renderDialog(d, ownAnnouncement){
       let ok = false;
       try { ok = await postConfig({[key]: String(v)}); } catch (_){}
       m.textContent = ok ? t('status.dialog.saved') : t('status.dialog.failed');
-      m.style.color = ok ? '#188038' : '#d93025';
+      m.style.color = ok ? 'var(--ok)' : 'var(--err)';
     };
   }
 }
@@ -1877,23 +1959,23 @@ async function refreshAll(){
   const blAgo = bl.last_ago_s >= 0 ? fmtSec(bl.last_ago_s) : '–';
   if (!blOn){
     blStatus.textContent = t('status.localcache.disabled');
-    blStatus.style.color = '#888';
+    blStatus.style.color = 'var(--muted)';
   } else if (bl.running){
     blStatus.textContent = t('status.localcache.running');
-    blStatus.style.color = '#e8710a';
+    blStatus.style.color = 'var(--warn)';
   } else if (!bl.ever_ran && !bl.have_community && !bl.have_personal){
     blStatus.textContent = t('status.localcache.never');
-    blStatus.style.color = '#888';
+    blStatus.style.color = 'var(--muted)';
   } else if (bl.ever_ran && !bl.last_ok){
     blStatus.textContent = t('status.localcache.last_fail',
       {ago: blAgo, err: bl.last_error || '–'});
-    blStatus.style.color = '#d93025';
+    blStatus.style.color = 'var(--err)';
   } else {
     blStatus.textContent = t('status.localcache.have',
       {community: bl.community_size || 0,
        personal:  bl.personal_size  || 0,
        ago:       blAgo});
-    blStatus.style.color = '#188038';
+    blStatus.style.color = 'var(--ok)';
   }
   const blWildcards = $('blWildcards');
   const blRun       = $('blRun');
@@ -1946,10 +2028,10 @@ async function refreshAll(){
         const d = await r.json().catch(() => ({}));
         m.textContent = d.ok ? t('status.localcache.triggered')
                               : t('status.localcache.busy');
-        m.style.color = d.ok ? '#188038' : '#e8710a';
+        m.style.color = d.ok ? 'var(--ok)' : 'var(--warn)';
       } catch (_){
         m.textContent = 'Network error';
-        m.style.color = '#d93025';
+        m.style.color = 'var(--err)';
       }
       refreshAll();
     };
@@ -1978,14 +2060,14 @@ async function refreshAll(){
                      .map(p => p.trim()).filter(p => p !== '');
       if (pats.length > NAME_FILTER_MAX){
         m.textContent = t('status.names.err.many', {max: NAME_FILTER_MAX});
-        m.style.color = '#d93025';
+        m.style.color = 'var(--err)';
         nfInput.focus();
         return;
       }
       if (pats.some(p => p.length >= NAME_FILTER_PATTERN_CAP)){
         m.textContent = t('status.names.err.long',
                           {max: NAME_FILTER_PATTERN_CAP - 1});
-        m.style.color = '#d93025';
+        m.style.color = 'var(--err)';
         nfInput.focus();
         return;
       }
@@ -2006,7 +2088,7 @@ async function refreshAll(){
       // Show the normalized spec that was actually stored.
       if (ok) nfInput.value = pats.join('|');
       m.textContent = ok ? t('status.names.saved') : t('status.names.failed');
-      m.style.color = ok ? '#188038' : '#d93025';
+      m.style.color = ok ? 'var(--ok)' : 'var(--err)';
     };
   }
 
@@ -2028,7 +2110,7 @@ async function refreshAll(){
       const url = whInput.value.trim();
       const bad = (key, p) => {
         m.textContent = t(key, p);
-        m.style.color = '#d93025';
+        m.style.color = 'var(--err)';
         whInput.focus();
       };
       // Empty is valid: that is how the webhook is switched off.
@@ -2052,7 +2134,7 @@ async function refreshAll(){
       whSave.disabled = false;
       if (ok) whInput.value = url;
       m.textContent = ok ? t('status.webhook.saved') : t('status.webhook.failed');
-      m.style.color = ok ? '#188038' : '#d93025';
+      m.style.color = ok ? 'var(--ok)' : 'var(--err)';
     };
   }
 
@@ -2064,10 +2146,10 @@ async function refreshAll(){
   const pbChange  = $('pbChange');
   if (!pbk.available){
     pbCurrent.textContent = t('status.phonebook.unavailable');
-    pbCurrent.style.color = '#888';
+    pbCurrent.style.color = 'var(--muted)';
     pbChange.disabled = true;
   } else {
-    pbCurrent.style.color = '#222';
+    pbCurrent.style.color = 'var(--text)';
     pbCurrent.textContent = pbk.id
       ? t('status.phonebook.current', {name: pbk.name || pbk.id})
       : t('status.phonebook.unset');
@@ -2100,9 +2182,9 @@ async function refreshAll(){
           headers: {'Content-Type': 'application/x-www-form-urlencoded'},
           body: body.toString(),
         });
-        pbSetMsg(msg, t('status.phonebook.saved'), '#188038');
+        pbSetMsg(msg, t('status.phonebook.saved'), 'var(--ok)');
       } catch (_){
-        pbSetMsg(msg, t('pb.dialog.error.unreachable'), '#d93025');
+        pbSetMsg(msg, t('pb.dialog.error.unreachable'), 'var(--err)');
       }
       sel.disabled = false;
       $('pbSecPick').style.display = 'none';
@@ -2123,36 +2205,36 @@ async function refreshAll(){
   syncEnable.disabled = !sync.available;
   if (!sync.available){
     syncStatus.textContent = t('status.sync.unavailable');
-    syncStatus.style.color = '#888';
+    syncStatus.style.color = 'var(--muted)';
     syncRun.disabled = true;
   } else if (!sync.enabled){
     // Auto sync off but the manual button stays available so the
     // user can still test or do one-off submissions.
     syncStatus.textContent = t('status.sync.disabled');
-    syncStatus.style.color = '#888';
+    syncStatus.style.color = 'var(--muted)';
     syncRun.disabled = false;
   } else if (sync.running){
     syncStatus.textContent = t('status.sync.running');
-    syncStatus.style.color = '#e8710a';
+    syncStatus.style.color = 'var(--warn)';
     syncRun.disabled = true;
   } else if (!sync.ever_ran){
     syncStatus.textContent = t('status.sync.never');
-    syncStatus.style.color = '#888';
+    syncStatus.style.color = 'var(--muted)';
     syncRun.disabled = false;
   } else if (!sync.last_ok){
     syncStatus.textContent = t('status.sync.last_fail',
       {ago, err: sync.last_error || '–'});
-    syncStatus.style.color = '#d93025';
+    syncStatus.style.color = 'var(--err)';
     syncRun.disabled = false;
   } else if (sync.last_failed > 0){
     syncStatus.textContent = t('status.sync.last_partial',
       {ago, n: sync.last_pushed, f: sync.last_failed});
-    syncStatus.style.color = '#e8710a';
+    syncStatus.style.color = 'var(--warn)';
     syncRun.disabled = false;
   } else {
     syncStatus.textContent = t('status.sync.last_ok',
       {ago, n: sync.last_pushed});
-    syncStatus.style.color = '#188038';
+    syncStatus.style.color = 'var(--ok)';
     syncRun.disabled = false;
   }
   if (!syncEnable.onchange){
@@ -2180,10 +2262,10 @@ async function refreshAll(){
         const r = await fetch('api/sync/run', {method: 'POST'});
         const d = await r.json().catch(() => ({}));
         m.textContent = d.ok ? t('status.sync.triggered') : t('status.sync.busy');
-        m.style.color = d.ok ? '#188038' : '#e8710a';
+        m.style.color = d.ok ? 'var(--ok)' : 'var(--warn)';
       } catch (_){
         m.textContent = 'Network error';
-        m.style.color = '#d93025';
+        m.style.color = 'var(--err)';
       }
       // Next poll will reflect the "running" state and re-enable
       // the button when done.
@@ -2296,7 +2378,7 @@ async function refreshAll(){
       tokenPill.className = 'pill bad';
       const m = $('tokenMsg');
       m.textContent = t('status.token.rejected.msg');
-      m.style.color = '#d93025';
+      m.style.color = 'var(--err)';
       m.dataset.persist = 'rejected';
     }
     tokenCta.style.display   = 'none';
@@ -2315,7 +2397,7 @@ async function refreshAll(){
       const m = $('tokenMsg');
       tokenTest.disabled = true;
       m.textContent = t('status.token.testing');
-      m.style.color = '#888';
+      m.style.color = 'var(--muted)';
       try {
         const r = await fetch('api/token-test', { method: 'POST' });
         const d = await r.json().catch(() => ({}));
@@ -2327,10 +2409,10 @@ async function refreshAll(){
         else if (d.code === 'none') key = 'status.token.test.none';
         else                        key = 'status.token.test.fail';
         m.textContent = t(key);
-        m.style.color = d.ok ? '#188038' : '#d93025';
+        m.style.color = d.ok ? 'var(--ok)' : 'var(--err)';
       } catch (_){
         m.textContent = 'Network error';
-        m.style.color = '#d93025';
+        m.style.color = 'var(--err)';
       }
       tokenTest.disabled = false;
     };
@@ -2397,8 +2479,8 @@ async function refreshAll(){
       const tr = document.createElement('tr');
       tr.innerHTML =
         '<td>' + esc(tk.name) + '</td>'
-      + '<td style="text-align:right">' + tk.cpu_pct + '%</td>'
-      + '<td style="text-align:right">' + tk.stack_free + '</td>';
+      + '<td class="num">' + tk.cpu_pct + '%</td>'
+      + '<td class="num">' + tk.stack_free + '</td>';
       tb.appendChild(tr);
     }
   }
@@ -2663,7 +2745,7 @@ async function refreshAll(){
         headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         body: body.toString(),
       });
-      if (r.ok) flashMsg(t('status.thresholds.saved'), '#188038');
+      if (r.ok) flashMsg(t('status.thresholds.saved'), 'var(--ok)');
     } catch (_){ /* next poll reconciles */ }
     sel.disabled = false;
     refreshAll();
@@ -2682,14 +2764,9 @@ async function refreshAll(){
   if (hasErrs){
     list.innerHTML = errs.errors.map(e => {
       // Severity colours the left border + tag: error red, warning amber,
-      // info grey. The .error-row class hard-codes a red border/tint, so
-      // override both inline (otherwise info lines look alarming).
-      const col = e.level === 'E' ? '#d93025'
-                : e.level === 'W' ? '#e8830c' : '#888';
-      const bg  = e.level === 'E' ? '#fffafa'
-                : e.level === 'W' ? '#fffdf6' : '#fafafa';
-      return '<div class="error-row" style="border-left-color:' + col
-        + ';background:' + bg + '"><strong style="color:' + col + '">['
+      // info grey (otherwise info lines look alarming).
+      const lvl = e.level === 'E' || e.level === 'W' ? e.level : 'I';
+      return '<div class="error-row lvl-' + lvl + '"><strong>['
         + esc(e.tag) + ']</strong> ' + esc(e.message)
         + ' <span class="muted">'
         + esc(fmtClock(e.age_s, true)) + '</span></div>';
@@ -2791,7 +2868,7 @@ async function refreshAll(){
     authState.textContent = u
         ? t('status.auth.enabled.user', {user: u})
         : t('status.auth.enabled');
-    authState.style.color = '#188038';
+    authState.style.color = 'var(--ok)';
     authHint.style.display = 'none';
     authEnableBtn.style.display = 'none';
     authLogoutBtn.style.display = '';
@@ -2805,7 +2882,7 @@ async function refreshAll(){
     authDisableBtn.style.display = 'none';
   } else {
     authState.textContent = t('status.auth.no_token');
-    authState.style.color = '#e8710a';
+    authState.style.color = 'var(--warn)';
     authHint.style.display = 'none';
     authEnableBtn.style.display = 'none';
     authLogoutBtn.style.display = 'none';
@@ -2852,7 +2929,7 @@ async function refreshAll(){
         if (!resetNonce){
           resetMsg.textContent = t('status.reset.error',
             {msg: 'No nonce'});
-          resetMsg.style.color = '#d93025';
+          resetMsg.style.color = 'var(--err)';
           resetBtn.disabled = false;
           return;
         }
@@ -2864,19 +2941,19 @@ async function refreshAll(){
         const d = await r.json().catch(() => ({}));
         if (r.ok && d.ok){
           resetMsg.textContent = t('status.reset.running');
-          resetMsg.style.color = '#e8710a';
+          resetMsg.style.color = 'var(--warn)';
           // Device is about to reboot; stop the poll loop so we do
           // not flood the log with error noise during the outage.
           stopPolling();
         } else {
           resetMsg.textContent = t('status.reset.error',
             {msg: d.message || r.statusText});
-          resetMsg.style.color = '#d93025';
+          resetMsg.style.color = 'var(--err)';
           resetBtn.disabled = false;
         }
       } catch (_){
         resetMsg.textContent = t('status.reset.error', {msg: 'Network error'});
-        resetMsg.style.color = '#d93025';
+        resetMsg.style.color = 'var(--err)';
         resetBtn.disabled = false;
       }
     };
@@ -3096,7 +3173,7 @@ async function refreshAll(){
     mailSave.onclick = async () => {
       const m = $('mailMsg');
       const err = validateMail();
-      if (err){ m.textContent = err; m.style.color = '#d93025'; return; }
+      if (err){ m.textContent = err; m.style.color = 'var(--err)'; return; }
       mailSave.disabled = true;
       m.textContent = '';
       let ok = false;
@@ -3104,15 +3181,15 @@ async function refreshAll(){
       mailSave.disabled = false;
       $('mailPass').value = '';   // typed password is now stored
       m.textContent = ok ? t('status.mail.saved') : t('status.mail.test.fail');
-      m.style.color = ok ? '#188038' : '#d93025';
+      m.style.color = ok ? 'var(--ok)' : 'var(--err)';
     };
     mailTest.onclick = async () => {
       const m = $('mailMsg');
       const err = validateMail();
-      if (err){ m.textContent = err; m.style.color = '#d93025'; return; }
+      if (err){ m.textContent = err; m.style.color = 'var(--err)'; return; }
       mailTest.disabled = true; mailSave.disabled = true;
       m.textContent = t('status.mail.testing');
-      m.style.color = '#1a73e8';
+      m.style.color = 'var(--info)';
       let ok = false;
       try {
         // Save first so the test uses exactly what is on screen, then
@@ -3125,7 +3202,7 @@ async function refreshAll(){
       } catch (_){}
       mailTest.disabled = false; mailSave.disabled = false;
       m.textContent = ok ? t('status.mail.test.sent') : t('status.mail.test.fail');
-      m.style.color = ok ? '#188038' : '#d93025';
+      m.style.color = ok ? 'var(--ok)' : 'var(--err)';
     };
   }
   if (fwPick && !fwPick.onclick){
@@ -3152,18 +3229,18 @@ async function refreshAll(){
         if (!e.lengthComputable) return;
         const pct = Math.round(e.loaded * 100 / e.total);
         fwMsg.textContent = t('status.fw.uploading', {pct: pct});
-        fwMsg.style.color = '#1a73e8';
+        fwMsg.style.color = 'var(--info)';
       };
       xhr.onload = () => {
         let d = {}; try { d = JSON.parse(xhr.responseText); } catch (_){}
         if (xhr.status >= 200 && xhr.status < 300 && d.ok){
           fwMsg.textContent = t('status.fw.done');
-          fwMsg.style.color = '#e8710a';
+          fwMsg.style.color = 'var(--warn)';
           stopPolling();
         } else {
           fwMsg.textContent = t('status.fw.error',
             {msg: d.message || xhr.statusText || 'HTTP ' + xhr.status});
-          fwMsg.style.color = '#d93025';
+          fwMsg.style.color = 'var(--err)';
           fwUpload.disabled = false;
           fwPick.disabled   = false;
           fwCheck.disabled  = false;
@@ -3171,7 +3248,7 @@ async function refreshAll(){
       };
       xhr.onerror = () => {
         fwMsg.textContent = t('status.fw.error', {msg: 'Network error'});
-        fwMsg.style.color = '#d93025';
+        fwMsg.style.color = 'var(--err)';
         fwUpload.disabled = false;
         fwPick.disabled   = false;
         fwCheck.disabled  = false;
@@ -3189,7 +3266,7 @@ async function refreshAll(){
       const fwFailedEl = $('fwFailed');
       if (fwFailedEl) fwFailedEl.style.display = 'none';
       fwMsg.textContent = t('status.fw.checking');
-      fwMsg.style.color = '#1a73e8';
+      fwMsg.style.color = 'var(--info)';
       // Tracks whether install reached the reboot-imminent state.
       // When set, finally{} keeps fwUpdateInFlight true so a late
       // /api/status reply (still showing last_failed_ota = the
@@ -3205,13 +3282,13 @@ async function refreshAll(){
         if (!rc.ok || !dc.ok){
           fwMsg.textContent = t('status.fw.check.error',
             {msg: dc.message || rc.statusText});
-          fwMsg.style.color = '#d93025';
+          fwMsg.style.color = 'var(--err)';
           return;
         }
         if (!dc.available){
           fwMsg.textContent = t('status.fw.check.none',
             {version: dc.current_version || s.firmware_version});
-          fwMsg.style.color = '#666';
+          fwMsg.style.color = 'var(--muted)';
           return;
         }
 
@@ -3220,13 +3297,13 @@ async function refreshAll(){
         // happening, instead of "Prüfe…" freezing for half a minute.
         fwMsg.textContent = t('status.fw.check.found',
           {version: dc.new_version});
-        fwMsg.style.color = '#1a73e8';
+        fwMsg.style.color = 'var(--info)';
         const ri = await fetch('api/firmware/install', {method: 'POST'});
         const di = await ri.json().catch(() => ({}));
         if (ri.ok && di.ok && di.installed){
           fwMsg.textContent = t('status.fw.check.installed',
             {version: di.new_version});
-          fwMsg.style.color = '#e8710a';
+          fwMsg.style.color = 'var(--warn)';
           rebooting = true;
           stopPolling();
           // The browser is now stuck on the pre-reboot HTML and
@@ -3238,10 +3315,10 @@ async function refreshAll(){
         }
         fwMsg.textContent = t('status.fw.check.error',
           {msg: di.message || ri.statusText});
-        fwMsg.style.color = '#d93025';
+        fwMsg.style.color = 'var(--err)';
       } catch (_){
         fwMsg.textContent = t('status.fw.check.error', {msg: 'Network error'});
-        fwMsg.style.color = '#d93025';
+        fwMsg.style.color = 'var(--err)';
       } finally {
         if (!rebooting){
           fwUpdateInFlight  = false;
@@ -3293,9 +3370,9 @@ function renderSipFritzbox(){
     + '<input type="text" name="fritz_user" autocomplete="off"></label>'
     + '<label>' + esc(t('sip.fb.pass'))
     + '<input type="password" name="fritz_pass" required autocomplete="off"></label>'
-    + '<p style="margin-top:.8rem">'
+    + '<p class="actions">'
     + '<button type="submit" class="btn-primary">' + esc(t('sip.fb.submit')) + '</button>'
-    + '<span id="fbMsg" class="muted" style="margin-left:.6rem"></span>'
+    + '<span id="fbMsg" class="muted after"></span>'
     + '</p></form></section>';
   $('fbForm').addEventListener('submit', onFritzboxSubmit);
 }
@@ -3306,12 +3383,12 @@ async function onFritzboxSubmit(e){
   const btn = e.target.querySelector('button');
   btn.disabled = true;
   msg.textContent = t('sip.fb.working');
-  msg.style.color = '#888';
+  msg.style.color = 'var(--muted)';
   const r = await postForm('api/fritzbox-setup', e.target);
   if (r.ok){
     const n = r.data.internal_number;
     msg.textContent = n ? t('sip.fb.done.withnum', {n}) : t('sip.fb.done');
-    msg.style.color = '#188038';
+    msg.style.color = 'var(--ok)';
     setTimeout(() => location.hash = '#/', 800);
     return;
   }
@@ -3319,12 +3396,12 @@ async function onFritzboxSubmit(e){
     e.target.querySelector('input[name=fritz_pass]').value = '';
     msg.innerHTML = esc(t('sip.fb.2fa.instructions', {hints: ''}))
                   + render2FAInstructions(r.data.methods || '');
-    msg.style.color = '#e8710a';
+    msg.style.color = 'var(--warn)';
     await poll2FA(msg, btn);
     return;
   }
   msg.textContent = t('sip.fb.error', {msg: r.data.message || r.statusText});
-  msg.style.color = '#d93025';
+  msg.style.color = 'var(--err)';
   btn.disabled = false;
 }
 
@@ -3345,19 +3422,19 @@ async function poll2FA(msgEl, btn){
     if (r.ok){
       const n = r.internal_number;
       msgEl.textContent = n ? t('sip.fb.done.withnum', {n}) : t('sip.fb.done');
-      msgEl.style.color = '#188038';
+      msgEl.style.color = 'var(--ok)';
       setTimeout(() => location.hash = '#/', 800);
       return;
     }
     if (r.terminal){
       msgEl.textContent = t('sip.fb.error', {msg: r.message || t('sip.fb.2fa.cancelled')});
-      msgEl.style.color = '#d93025';
+      msgEl.style.color = 'var(--err)';
       btn.disabled = false;
       return;
     }
   }
   msgEl.textContent = t('sip.fb.2fa.timeout');
-  msgEl.style.color = '#d93025';
+  msgEl.style.color = 'var(--err)';
   btn.disabled = false;
 }
 
@@ -3376,14 +3453,14 @@ function renderSipProvider(){
     + '<form id="provForm">'
     + '<label>' + esc(t('sip.prov.provider'))
     + '<select name="provider" id="provSelect" required>' + opts + '</select></label>'
-    + '<div id="provHint" class="muted" style="margin:.5rem 0"></div>'
+    + '<div id="provHint" class="muted status-line"></div>'
     + '<label>' + esc(t('sip.prov.user'))
     + '<input type="text" name="sip_user" required></label>'
     + '<div id="provPassBlock"><label>' + esc(t('sip.prov.pass'))
     + '<input type="password" name="sip_pass" id="provPass" required autocomplete="off"></label></div>'
-    + '<p style="margin-top:.8rem">'
+    + '<p class="actions">'
     + '<button type="submit" class="btn-primary">' + esc(t('sip.prov.submit')) + '</button>'
-    + '<span id="provMsg" class="muted" style="margin-left:.6rem"></span>'
+    + '<span id="provMsg" class="muted after"></span>'
     + '</p></form></section>';
   $('provSelect').addEventListener('change', onProviderChange);
   $('provForm').addEventListener('submit', onProviderSubmit);
@@ -3410,14 +3487,14 @@ async function onProviderSubmit(e){
   const p = PROVIDERS[key];
   if (!p){
     msg.textContent = t('sip.prov.error', {msg: '—'});
-    msg.style.color = '#d93025';
+    msg.style.color = 'var(--err)';
     return;
   }
   const host = p.host;
   // Build the POST body ourselves since the preset supplies host/port.
   btn.disabled = true;
   msg.textContent = t('sip.fb.working');
-  msg.style.color = '#888';
+  msg.style.color = 'var(--muted)';
   // A preset defines a *complete* SIP profile. Send every expert field
   // — including explicit resets for the ones the preset doesn't use —
   // so a prior manual/other-provider setup can't leave stale values
@@ -3450,16 +3527,16 @@ async function onProviderSubmit(e){
     const d = await r.json().catch(() => ({}));
     if (r.ok && d.ok){
       msg.textContent = t('sip.prov.done');
-      msg.style.color = '#188038';
+      msg.style.color = 'var(--ok)';
       setTimeout(() => location.hash = '#/', 800);
       return;
     }
     msg.textContent = t('sip.prov.error', {msg: d.message || r.statusText});
-    msg.style.color = '#d93025';
+    msg.style.color = 'var(--err)';
     btn.disabled = false;
   } catch (_){
     msg.textContent = t('sip.prov.error', {msg: 'Network error'});
-    msg.style.color = '#d93025';
+    msg.style.color = 'var(--err)';
     btn.disabled = false;
   }
 }
@@ -3499,63 +3576,63 @@ async function renderSipManual(){
     + '<input type="text"   name="sip_host" value="' + esc(host) + '"></label>'
     + '<label>' + esc(t('sip.manual.port'))
     + '<input type="number" name="sip_port" min="0" max="65535" value="' + esc(port) + '"></label>'
-    + '<p class="muted" style="font-size:.75rem;margin:.2rem 0 .6rem">'
+    + '<p class="hint">'
     +   esc(t('sip.manual.port.hint')) + '</p>'
     + '<label>' + esc(t('sip.manual.user'))
     + '<input type="text"   name="sip_user" value="' + esc(user) + '"></label>'
     + '<label>' + esc(t('sip.manual.pass'))
     + '<input type="password" name="sip_pass" id="sipPass" autocomplete="off"></label>'
-    + '<p class="muted" style="font-size:.75rem;margin:.2rem 0 .6rem">'
+    + '<p class="hint">'
     +   esc(t('sip.manual.pass.hint')) + '</p>'
-    + '<label style="display:flex;align-items:center;gap:.4rem;font-weight:normal">'
-    +   '<input type="checkbox" name="sip_anon" id="sipAnon" style="width:auto"'
+    + '<label class="check">'
+    +   '<input type="checkbox" name="sip_anon" id="sipAnon"'
     +     (passSet ? '' : ' checked') + '>'
     +   '<span>' + esc(t('sip.manual.anon')) + '</span></label>'
-    + '<p class="muted" style="font-size:.75rem;margin:.2rem 0 .6rem">'
+    + '<p class="hint">'
     +   esc(t('sip.manual.anon.hint')) + '</p>'
-    + '<details style="margin:1rem 0">'
-    +   '<summary style="color:#008f7a;font-size:.9rem">'
+    + '<details class="sub">'
+    +   '<summary>'
     +     esc(t('sip.manual.advanced')) + '</summary>'
     +   '<label>' + esc(t('sip.manual.transport'))
     +     '<select name="sip_transport">'
     +       opt('udp', tr, 'UDP') + opt('tcp', tr, 'TCP') + opt('tls', tr, 'TLS')
     +     '</select></label>'
-    +   '<p class="muted" style="font-size:.75rem;margin:.2rem 0 .6rem">'
+    +   '<p class="hint">'
     +     esc(t('sip.manual.transport.hint')) + '</p>'
     +   '<label>' + esc(t('sip.manual.auth_user'))
     +     '<input type="text" name="sip_auth_user" value="' + esc(au) + '"></label>'
-    +   '<p class="muted" style="font-size:.75rem;margin:.2rem 0 .6rem">'
+    +   '<p class="hint">'
     +     esc(t('sip.manual.auth_user.hint')) + '</p>'
     +   '<label>' + esc(t('sip.manual.outbound'))
     +     '<input type="text" name="sip_outbound" value="' + esc(outb) + '"></label>'
-    +   '<p class="muted" style="font-size:.75rem;margin:.2rem 0 .6rem">'
+    +   '<p class="hint">'
     +     esc(t('sip.manual.outbound.hint')) + '</p>'
     +   '<label>' + esc(t('sip.manual.realm'))
     +     '<input type="text" name="sip_realm" value="' + esc(realm) + '"></label>'
-    +   '<p class="muted" style="font-size:.75rem;margin:.2rem 0 .6rem">'
+    +   '<p class="hint">'
     +     esc(t('sip.manual.realm.hint')) + '</p>'
-    +   '<p class="muted" style="font-size:.75rem;margin:.2rem 0 .6rem">'
+    +   '<p class="hint">'
     +     esc(t('sip.manual.srtp.hint')) + '</p>'
     +   '<label>' + esc(t('sip.manual.local_port'))
     +     '<input type="number" name="sip_local_port" min="1" max="65535" value="' + esc(lport) + '"></label>'
-    +   '<p class="muted" style="font-size:.75rem;margin:.2rem 0 .6rem">'
+    +   '<p class="hint">'
     +     esc(t('sip.manual.local_port.hint')) + '</p>'
     +   '<label>' + esc(t('sip.manual.rtp_port'))
     +     '<input type="number" name="rtp_port" min="1" max="65535" value="' + esc(rport) + '"></label>'
-    +   '<p class="muted" style="font-size:.75rem;margin:.2rem 0 .6rem">'
+    +   '<p class="hint">'
     +     esc(t('sip.manual.rtp_port.hint')) + '</p>'
     +   '<label>' + esc(t('sip.manual.stun'))
     +     '<input type="text" name="sip_stun" value="' + esc(stun) + '"></label>'
-    +   '<p class="muted" style="font-size:.75rem;margin:.2rem 0 .6rem">'
+    +   '<p class="hint">'
     +     esc(t('sip.manual.stun.hint')) + '</p>'
-    +   '<div class="muted" style="font-size:.75rem;margin:.6rem 0;border-left:3px solid #ccc;padding-left:.6rem">'
+    +   '<div class="callout">'
     +     '<strong>' + esc(t('sip.manual.fwd.title')) + '</strong><br>'
     +     esc(t('sip.manual.fwd.body', {sip: lportShown, rtp: rportShown}))
     +   '</div>'
     + '</details>'
-    + '<p style="margin-top:.8rem">'
+    + '<p class="actions">'
     + '<button type="submit" class="btn-primary">' + esc(t('sip.manual.submit')) + '</button>'
-    + '<span id="manMsg" class="muted" style="margin-left:.6rem"></span>'
+    + '<span id="manMsg" class="muted after"></span>'
     + '</p></form></section>';
   // "Anonymous" disables the password field: a disabled field is left
   // out of the form body, so the backend sees the explicit sip_anon
@@ -3577,16 +3654,16 @@ async function onManualSubmit(e){
   const btn = e.target.querySelector('button');
   btn.disabled = true;
   msg.textContent = t('sip.fb.working');
-  msg.style.color = '#888';
+  msg.style.color = 'var(--muted)';
   const r = await postForm('api/config', e.target);
   if (r.ok){
     msg.textContent = t('sip.manual.done');
-    msg.style.color = '#188038';
+    msg.style.color = 'var(--ok)';
     setTimeout(() => location.hash = '#/', 800);
     return;
   }
   msg.textContent = t('sip.manual.error', {msg: r.data.message || r.statusText});
-  msg.style.color = '#d93025';
+  msg.style.color = 'var(--err)';
   btn.disabled = false;
 }
 
@@ -3606,7 +3683,7 @@ async function renderToken(){
     + (set ? esc(t('token.current.set')) : esc(t('token.current.missing')))
     + '</p>'
     + (signin
-        ? '<p style="margin-top:.8rem">'
+        ? '<p class="actions">'
           + '<a href="register-start" data-token-link class="btn-primary">' + esc(t('token.submit')) + '</a>'
           + '</p>'
         : '')
@@ -3815,12 +3892,11 @@ const dlgPlay = a => { dlgStop(); dlgAudio = a; };
 function dlgMsg(text, color){
   const m = $('dlgMsg');
   m.textContent = text || '';
-  m.style.color = color || '#888';
+  m.style.color = color || 'var(--muted)';
 }
 function dlgBtn(label, title, fn){
   const b = document.createElement('button');
-  b.className = 'btn-ghost';
-  b.style.cssText = 'padding:.15rem .45rem;font-size:.8rem;margin:0 .2rem 0 0';
+  b.className = 'btn-ghost btn-xs';
   b.textContent = label;
   if (title) b.title = title;
   b.onclick = fn;
@@ -3838,11 +3914,11 @@ async function dlgSpeakers(d){
   box.textContent = '';
   const row = (label, active, play, choose) => {
     const p = document.createElement('div');
-    p.style.cssText = 'display:flex;align-items:center;gap:.3rem;margin:.15rem 0';
+    p.className = 'list-row';
     if (play) p.append(dlgBtn('▶', t('status.ann.play'), play));
     const s = document.createElement('span');
     s.textContent = label;
-    if (active) s.style.fontWeight = '600';
+    if (active) s.className = 'on';
     p.append(s);
     if (active) p.append(Object.assign(document.createElement('span'),
       {className: 'muted', textContent: '✓ ' + t('status.dialog.speaker.active')}));
@@ -3879,12 +3955,12 @@ function dlgRender(){
   ph.forEach((clips, p) => {
     const name = t('status.dialog.phase.' + DLG_PHASES[p]);
     const h = document.createElement('p');
-    h.style.cssText = 'margin:.5rem 0 .1rem;font-weight:600';
+    h.className = 'list-title';
     h.textContent = name + ' (' + clips.length + ')';
     box.append(h);
     clips.forEach((c, k) => {
       const r = document.createElement('div');
-      r.style.cssText = 'display:flex;align-items:center;margin:.1rem 0';
+      r.className = 'list-row';
       // No order: the dongle picks a phase's clips at random (dialog.c).
       r.append(dlgBtn('▶', t('status.ann.play'), () => dlgPlay(playAlaw(c))),
                dlgBtn('✕', t('status.dialog.edit.delete'), () => { clips.splice(k, 1); dlgDirty = true; dlgRender(); }),
@@ -3903,7 +3979,7 @@ function dlgRender(){
   const gauge = $('dlgGauge');
   gauge.textContent = t('status.dialog.edit.gauge',
     {kb: Math.round(bytes / 1024), max: Math.round(dlgMax / 1024)}) + (reason ? ' — ' + reason : '');
-  gauge.style.color = reason ? '#b06000' : '';
+  gauge.style.color = reason ? 'var(--caution)' : '';
   $('dlgUpload').disabled = !!reason || !dlgEd;
   $('dlgUpload').title = reason;
 }
@@ -3915,7 +3991,7 @@ function dlgPick(put){
     if (!inp.files.length) return;
     dlgMsg(t('status.ann.upload.converting'));
     try { put(await convertToAlaw(inp.files[0])); dlgMsg(''); }
-    catch (e){ dlgMsg(t('status.ann.upload.error', {msg: e.message}), '#d93025'); }
+    catch (e){ dlgMsg(t('status.ann.upload.error', {msg: e.message}), 'var(--err)'); }
     dlgRender();
   };
   inp.click();
@@ -3973,7 +4049,7 @@ function dlgSetChanged(d){
   // Just uploaded from the editor: it already holds what is on the device.
   if (first || !dlgEd || uploaded) return;
   if (dlgDirty){
-    dlgMsg(t('status.dialog.edit.changed'), '#b06000');
+    dlgMsg(t('status.dialog.edit.changed'), 'var(--caution)');
     $('dlgMsg').append(' ', dlgBtn(t('status.dialog.edit.reload'), '', dlgLoad));
     return;
   }
@@ -3991,7 +4067,7 @@ function wireDlgEditor(){
     $('dlgFile').value = '';
     if (!f) return;
     const ph = dlgParse(new Uint8Array(await f.arrayBuffer()));
-    if (!ph){ dlgMsg(t('status.dialog.edit.bad_file'), '#d93025'); return; }
+    if (!ph){ dlgMsg(t('status.dialog.edit.bad_file'), 'var(--err)'); return; }
     dlgEd = ph;
     dlgDirty = true;
     dlgMsg('');
@@ -4009,10 +4085,10 @@ function wireDlgEditor(){
       if (!r.ok || !d.ok) throw new Error(d.message || ('HTTP ' + r.status));
       dlgDirty = false;
       dlgUploaded = true;
-      dlgMsg(t('status.dialog.edit.done', {kb: Math.round(body.length / 1024)}), '#188038');
+      dlgMsg(t('status.dialog.edit.done', {kb: Math.round(body.length / 1024)}), 'var(--ok)');
       refreshAll();
     } catch (e){
-      dlgMsg(t('status.ann.upload.error', {msg: e.message || 'network'}), '#d93025');
+      dlgMsg(t('status.ann.upload.error', {msg: e.message || 'network'}), 'var(--err)');
     }
     b.disabled = false;
   };
@@ -4035,7 +4111,7 @@ function setAnnMsg(text, color){
   const el = $('annMsg');
   if (annMsgTimer){ clearTimeout(annMsgTimer); annMsgTimer = null; }
   el.textContent = text || '';
-  el.style.color = color || '#888';
+  el.style.color = color || 'var(--muted)';
 }
 
 function wireAnnouncement(){
@@ -4060,7 +4136,7 @@ function wireAnnouncement(){
       playBtn.style.display = 'none';
       stopBtn.style.display = '';
     } catch (e){
-      setAnnMsg(t('status.ann.upload.error', {msg: e.message || 'network'}), '#d93025');
+      setAnnMsg(t('status.ann.upload.error', {msg: e.message || 'network'}), 'var(--err)');
     }
   };
   stopBtn.onclick = () => {
@@ -4075,16 +4151,16 @@ function wireAnnouncement(){
     if (!fileIn.files.length) return;
     const file = fileIn.files[0];
     uploadBtn.disabled = true;
-    setAnnMsg(t('status.ann.upload.converting'), '#888');
+    setAnnMsg(t('status.ann.upload.converting'), 'var(--muted)');
     let alaw;
     try {
       alaw = await convertToAlaw(file);
     } catch (e){
-      setAnnMsg(t('status.ann.upload.error', {msg: e.message}), '#d93025');
+      setAnnMsg(t('status.ann.upload.error', {msg: e.message}), 'var(--err)');
       uploadBtn.disabled = false;
       return;
     }
-    setAnnMsg(t('status.ann.upload.uploading'), '#888');
+    setAnnMsg(t('status.ann.upload.uploading'), 'var(--muted)');
     try {
       const r = await fetch('api/announcement', {
         method: 'POST',
@@ -4093,12 +4169,12 @@ function wireAnnouncement(){
       });
       const d = await r.json().catch(() => ({}));
       if (!r.ok || !d.ok) throw new Error(d.message || ('HTTP ' + r.status));
-      setAnnMsg(t('status.ann.upload.done', {kb: Math.round(alaw.length / 1024)}), '#188038');
+      setAnnMsg(t('status.ann.upload.done', {kb: Math.round(alaw.length / 1024)}), 'var(--ok)');
       fileIn.value = '';
       annMsgTimer = setTimeout(() => setAnnMsg(''), 4000);
       refreshAll();
     } catch (e){
-      setAnnMsg(t('status.ann.upload.error', {msg: e.message || 'network'}), '#d93025');
+      setAnnMsg(t('status.ann.upload.error', {msg: e.message || 'network'}), 'var(--err)');
     }
     uploadBtn.disabled = !fileIn.files.length;
   };
@@ -4112,7 +4188,7 @@ function wireAnnouncement(){
       if (!r.ok) throw new Error('HTTP ' + r.status);
       refreshAll();
     } catch (e){
-      setAnnMsg(t('status.ann.upload.error', {msg: e.message || 'network'}), '#d93025');
+      setAnnMsg(t('status.ann.upload.error', {msg: e.message || 'network'}), 'var(--err)');
     }
     resetBtn.disabled = false;
   };
