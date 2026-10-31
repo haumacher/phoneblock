@@ -68,16 +68,30 @@ the Docker host.
 
 ## Configuration
 
+All settings are made in the web UI; the quick start above needs no further
+options. Only the time zone and, if needed, the web UI's port are set as
+environment variables when the container is created:
+
 | Variable | Default | Meaning |
 | --- | --- | --- |
 | `TZ` | UTC | time zone for logs and call times, e.g. `Europe/Berlin` |
 | `PHONEBLOCK_WEB_PORT` | `8080` | port of the web UI |
 | `PHONEBLOCK_WEB_BIND` | all addresses | address the web UI listens on |
 
-Set port and address of the web UI with these variables rather than with
-`--web`/`--web-bind`, so the container's health check finds the web UI.
+With host networking the web UI uses the port directly on the Docker host. If
+port 8080 is already taken there (e.g. by the NAS's own interface), choose
+another one: add `-e PHONEBLOCK_WEB_PORT=8090` to the `docker run` command, or
+with Compose:
 
-All other settings are made in the web UI.
+```yaml
+    environment:
+      TZ: Europe/Berlin
+      PHONEBLOCK_WEB_PORT: "8090"
+```
+
+The web UI is then at `http://<docker-host>:8090/`. Use these variables rather
+than the `--web`/`--web-bind` options, so the container's health check finds
+the web UI.
 
 ## Data
 
