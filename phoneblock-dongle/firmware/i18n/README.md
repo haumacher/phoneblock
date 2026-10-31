@@ -96,10 +96,13 @@ The dialog sentences are an ARB project like the others
 (`l10n/dialog/dialog_de.arb`, keys `<phase>_<n>`, translated by
 `./gradlew translateArb`). No sentence may contain "Ja"/"yes" in any
 language: a recorded "yes" can be abused as consent. `scripts/tts-dialog.py`
-speaks them through ElevenLabs (key and voice from `ELEVENLABS_API_KEY` /
-`ELEVENLABS_VOICE_ID` or `elevenlabs.apiKey` / `elevenlabs.voiceId` in
-`~/.gradle/gradle.properties`) and keeps a compact `.mp3` master next to
-each clip. Every `.alaw` is converted locally from that master: trimmed,
+speaks them through ElevenLabs (the API key from `ELEVENLABS_API_KEY` or
+`elevenlabs.apiKey` in `~/.gradle/gradle.properties`) with the voice and
+model fixed in the script (`VOICE = "Leonie"`, `MODEL = "eleven_v4"`;
+`ELEVENLABS_VOICE` / `ELEVENLABS_MODEL` override them for a trial). It keeps
+a compact `.mp3` master next to each clip and records the speaker in
+`<lang>/voice.json`; a locale spoken by another voice or model is
+regenerated as a whole. Every `.alaw` is converted locally from that master: trimmed,
 normalized to a common speech level, then A-law encoded.
 
 ```bash
