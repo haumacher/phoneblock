@@ -9,9 +9,14 @@ the #460 i18n decision.
 
 ## Decisions
 
-1. **Opt-in mode.** New config `ab_mode` = `announcement` (default) | `dialog`.
-   The fleet keeps today's behavior (play the announcement, then BYE) until the
-   user switches. Dialog mode and announcements do not coexist on flash:
+1. **Mode, settled per device.** New config `ab_mode` = `announcement` | `dialog`.
+   On the first boot of a firmware that knows it, the mode is decided once and
+   stored: a device that is already set up (SIP or PhoneBlock token
+   configured, i.e. updated from an older firmware) keeps the announcement, so
+   the fleet's behavior does not change on the update; a new installation (or
+   one after a factory reset) starts with the dialog. One release suffices —
+   a two-step "store the status quo first" release would flip every device
+   that skips the intermediate version (auto-update off, offline). Dialog mode and announcements do not coexist on flash:
    switching to `dialog` deletes the user's own recording (after a confirmation
    in the web UI; it can be uploaded again after switching back) and the
    localized announcement is neither downloaded nor kept. Uploading an own

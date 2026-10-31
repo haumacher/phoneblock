@@ -116,8 +116,11 @@ static void test_config_dialog(void)
     char path[256];
     use_temp_config(path, sizeof(path));
 
+    // A new installation starts with the dialog (test_config_ab_mode_settle).
     config_load();
-    REQUIRE(strcmp(config_ab_mode(), "announcement") == 0);
+    REQUIRE(config_ab_dialog());
+    config_update_t start = { .ab_mode = "announcement" };
+    REQUIRE(config_update(&start) == PB_KV_OK);
     REQUIRE(!config_ab_dialog());
     REQUIRE(config_vad_silence_db() == -35);
     REQUIRE(config_vad_min_silence_ms() == 800);
@@ -175,6 +178,65 @@ static void test_config_dialog(void)
     REQUIRE(config_vad_silence_db() == -35);
     REQUIRE(config_vad_min_silence_ms() == 800);
     REQUIRE(config_comfort_noise_db() == -60);
+
+    REQUIRE(config_erase() == PB_KV_OK);
+    unlink(path);
+    unsetenv("PHONEBLOCK_CONFIG_FILE");
+}
+
+// The mode is settled once per device (#429): a new installation starts with
+// the dialog, a device updated from a firmware without ab_mode keeps the
+// announcement, a stored choice is never overridden, a factory reset counts
+// as a new installation.
+static void test_config_ab_mode_settle(void)
+{
+    char path[256];
+    use_temp_config(path, sizeof(path));
+
+    // New installation: nothing stored.
+    config_load();
+    REQUIRE(config_ab_dialog());
+    // The decision is stored, so the setup wizard that follows keeps it.
+    config_update_t setup = { .sip_host = "fritz.box", .sip_user = "pb-test" };
+    REQUIRE(config_update(&setup) == PB_KV_OK);
+    config_load();
+    REQUIRE(config_ab_dialog());
+
+    // Updated device: set up by an older firmware, no ab_mode key yet.
+    REQUIRE(config_erase() == PB_KV_OK);
+    pb_kv_t *h;
+    REQUIRE(pb_kv_open("phoneblock", true, &h) == PB_KV_OK);
+    REQUIRE(pb_kv_set_string(h, "sip_user", "pb-test") == PB_KV_OK);
+    REQUIRE(pb_kv_commit(h) == PB_KV_OK);
+    pb_kv_close(h);
+    config_load();
+    REQUIRE(!config_ab_dialog());
+    REQUIRE(strcmp(config_ab_mode(), "announcement") == 0);
+    // ... and it stays so, also when the device is reconfigured.
+    config_update_t clear = { .sip_user = "" };
+    REQUIRE(config_update(&clear) == PB_KV_OK);
+    config_load();
+    REQUIRE(!config_ab_dialog());
+
+    // A device set up only with a PhoneBlock token counts as set up, too.
+    REQUIRE(config_erase() == PB_KV_OK);
+    REQUIRE(pb_kv_open("phoneblock", true, &h) == PB_KV_OK);
+    REQUIRE(pb_kv_set_string(h, "pb_token", "token-A") == PB_KV_OK);
+    REQUIRE(pb_kv_commit(h) == PB_KV_OK);
+    pb_kv_close(h);
+    config_load();
+    REQUIRE(!config_ab_dialog());
+
+    // A stored choice wins over the rule: dialog on a set-up device.
+    config_update_t pick = { .ab_mode = "dialog" };
+    REQUIRE(config_update(&pick) == PB_KV_OK);
+    config_load();
+    REQUIRE(config_ab_dialog());
+
+    // Factory reset: a new installation again.
+    REQUIRE(config_erase() == PB_KV_OK);
+    config_load();
+    REQUIRE(config_ab_dialog());
 
     REQUIRE(config_erase() == PB_KV_OK);
     unlink(path);
@@ -449,6 +511,7 @@ int main(void)
     test_kv_namespaces_and_whitespace();
     test_config_store();
     test_config_dialog();
+    test_config_ab_mode_settle();
     test_task();
     test_task_stack_floor();
     test_event();
