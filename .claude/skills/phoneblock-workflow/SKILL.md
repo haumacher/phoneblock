@@ -310,7 +310,9 @@ release *ready* and say so:
   `scripts/audio-assets.sh`, no firmware release needed — `N` changes only with an incompatible
   audio file format, and a firmware reading `v<N>` must find it published before it ships.
   Dialog sentences: `i18n/l10n/dialog/dialog_de.arb` → `translateArb` →
-  `scripts/tts-dialog.py` (ElevenLabs; key/voice in `~/.gradle/gradle.properties`).
+  `scripts/tts-dialog.py` (ElevenLabs; key in `~/.gradle/gradle.properties`, speakers in
+  `i18n/audio/dialog/speakers.json`; the audio is not in git: `--fetch`/`--upload` the masters
+  from/to the CDN `audio/tts/`).
 - **Mobile**: bump `version:` in `pubspec.yaml`, add the fastlane changelog for the new
   versionCode, tag `pb-mobile-<version>`; the GitHub Action builds and publishes the release.
 

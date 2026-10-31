@@ -13,3 +13,7 @@ sdkconfig.defaults.local.*
 !sdkconfig.defaults
 !sdkconfig.defaults.local.template
 scripts/release.settings
+# Dialog clip audio: the masters live on the CDN (scripts/tts-dialog.py
+# --upload / --fetch), the .alaw files are converted from them locally.
+i18n/audio/dialog/*/*/*.mp3
+i18n/audio/dialog/*/*/*.alaw

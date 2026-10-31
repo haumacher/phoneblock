@@ -26,9 +26,12 @@
 #    removed — a device that read the previous manifest a moment ago can
 #    still fetch what it names.
 #
-# Sources (committed): i18n/audio/announcement-<lang>.alaw (or .wav/.mp3/
-# .m4a/.flac, converted via ffmpeg) and i18n/audio/dialog/<lang>/
-# <phase>-<n>.alaw, for the codes in i18n/languages.txt.
+# Sources: i18n/audio/announcement-<lang>.alaw (or .wav/.mp3/.m4a/.flac,
+# converted via ffmpeg; committed) and i18n/audio/dialog/<lang>/<speaker>/
+# <phase>-<n>.alaw of the default speaker in i18n/audio/dialog/speakers.json,
+# for the codes in i18n/languages.txt. The .alaw clips are not committed:
+# scripts/tts-dialog.py --fetch brings their masters from the CDN and
+# converts them.
 #
 # Options:
 #   --langs "a b"   Only these codes (default: all in languages.txt). Note:
@@ -115,7 +118,9 @@ get_announcement() {
     return 1
 }
 
-# Dialog clips: the set for <lang> from AUDIO_DIR/dialog/<lang>/, raw A-law
+# Dialog clips: the set for <lang> from AUDIO_DIR/dialog/<lang>/<speaker>/
+# (the default speaker; the device's choice of speaker is not in format 1 of
+# the manifest), raw A-law
 # like the announcement, numbered per phase (<phase>-1.alaw, <phase>-2.alaw,
 # ... — the count is free, the header carries it). Published in up to three
 # size tiers (main/storage_budget.h; the device takes the largest within its
@@ -142,9 +147,16 @@ DIALOG_TIER_S="$(fw_define storage_budget.h STORAGE_DIALOG_TIER_S)"
 DIALOG_TIER_M="$(fw_define storage_budget.h STORAGE_DIALOG_TIER_M)"
 DIALOG_MAX_CLIPS="$(fw_define dialog.h DIALOG_MAX_CLIPS)"
 
+DIALOG_SPEAKER="$(jq -r .default "${SRC_DIR}/audio/dialog/speakers.json")"
+
 build_dialog() {
-    local lang="$1" src="${AUDIO_DIR}/dialog/$1"
+    local lang="$1" src="${AUDIO_DIR}/dialog/$1/${DIALOG_SPEAKER}"
     [[ -d "$src" ]] || return 0
+    local n_txt n_alaw
+    n_txt="$(find "$src" -maxdepth 1 -name '*.txt' | wc -l)"
+    n_alaw="$(find "$src" -maxdepth 1 -name '*.alaw' | wc -l)"
+    [[ "$n_txt" -eq "$n_alaw" ]] \
+        || die "dialog: ${lang}/${DIALOG_SPEAKER} has ${n_txt} sentences but ${n_alaw} clips — run scripts/tts-dialog.py --fetch"
     local tiers rc=0
     tiers="$(python3 -I - "$src" "$lang" "${CHANNEL}" "$DIALOG_MAX_CLIPS" \
              "s=${DIALOG_TIER_S}" "m=${DIALOG_TIER_M}" "l=all" <<'PY'
