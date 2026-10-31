@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "dialog.h"      // DIALOG_SPEAKER_CAP, dialog_speaker_valid()
 #include "mail_rcpt.h"   // MAIL_RCPT_SPEC_CAP sizes the recipient field
 #include "name_filter.h" // NAME_FILTER_SPEC_CAP sizes the spam-name field
 #ifdef ESP_PLATFORM
@@ -97,6 +98,7 @@ static const char *NS   = "phoneblock";
 #define K_VAD_SIL_DB    "vad_sil_db"
 #define K_VAD_MIN_SIL   "vad_min_sil_ms"
 #define K_CN_LEVEL      "cn_level"
+#define K_DIALOG_SPK    "dialog_speaker"
 
 // Country dial prefix assumed when a caller ID arrives in national form
 // (single leading trunk "0"). Germany, because that is where the fleet
@@ -214,6 +216,8 @@ typedef struct {
     int  vad_silence_db;     // 0 = default; clamped on read
     int  vad_min_silence_ms; // 0 = default; clamped on read
     int  comfort_noise_db;   // 0 = default; clamped on read
+    char dialog_speaker[DIALOG_SPEAKER_CAP];   // dialog speaker id; empty =
+                                               // not picked yet
 } config_cache_t;
 
 static config_cache_t s_config;
@@ -422,6 +426,7 @@ static void load_values(void)
         s_config.vad_silence_db     = 0;  // 0 → defaults (see getters)
         s_config.vad_min_silence_ms = 0;
         s_config.comfort_noise_db   = 0;
+        s_config.dialog_speaker[0]  = '\0';
         return;
     }
     if (err != PB_KV_OK) {
@@ -534,6 +539,8 @@ static void load_values(void)
     s_config.vad_silence_db     = load_int(h, K_VAD_SIL_DB,  0);
     s_config.vad_min_silence_ms = load_int(h, K_VAD_MIN_SIL, 0);
     s_config.comfort_noise_db   = load_int(h, K_CN_LEVEL,    0);
+    load_str(h, K_DIALOG_SPK, "",
+             s_config.dialog_speaker, sizeof(s_config.dialog_speaker));
     pb_kv_close(h);
 
     pb_log_info(TAG, "loaded config: sip=%s@%s:%d, pb=%s",
@@ -809,6 +816,22 @@ bool config_ab_dialog(void)
 {
     return strcmp(config_ab_mode(), "dialog") == 0;
 }
+bool config_dialog_speaker_valid(const char *id)
+{
+    return id && (id[0] == '\0' || dialog_speaker_valid(id));
+}
+const char *config_dialog_speaker(void)
+{
+    // Clamped on read: the id is compared against the dialog index only,
+    // but a corrupt NVS value must still read back as "the default".
+    return dialog_speaker_valid(s_config.dialog_speaker) ? s_config.dialog_speaker : "";
+}
+int config_set_dialog_speaker(const char *id)
+{
+    config_update_t u = { 0 };
+    u.dialog_speaker = id ? id : "";
+    return config_update(&u);
+}
 // The three dialog tunables are clamped on read: an unset (0) or out-of-range
 // NVS value yields the default rather than a VAD that never (or always)
 // hears the caller.
@@ -1020,6 +1043,14 @@ int config_update(const config_update_t *u)
                                         s_config.webhook_url, sizeof(s_config.webhook_url));
     if (err == PB_KV_OK) err = set_str_if(h, K_TIMEZONE, u->timezone,
                                         s_config.timezone, sizeof(s_config.timezone));
+    // Another ui_lang clears the dialog speaker (#429): the next sync picks
+    // one of the new locale's speakers — devices start in English, and a
+    // pick made there must not pin the voice after the switch to the user's
+    // language. Also an explicit choice: the voices differ per locale.
+    const char *dialog_speaker = u->dialog_speaker;
+    if (u->ui_lang && !dialog_speaker && strcmp(u->ui_lang, s_config.ui_lang) != 0) {
+        dialog_speaker = "";
+    }
     if (err == PB_KV_OK) err = set_str_if(h, K_UI_LANG, u->ui_lang,
                                         s_config.ui_lang, sizeof(s_config.ui_lang));
     if (err == PB_KV_OK) err = set_str_if(h, K_DIAL_PREFIX, u->dial_prefix,
@@ -1032,6 +1063,9 @@ int config_update(const config_update_t *u)
                                         &s_config.vad_min_silence_ms);
     if (err == PB_KV_OK) err = set_int_if(h, K_CN_LEVEL, u->comfort_noise_db,
                                         &s_config.comfort_noise_db);
+    if (err == PB_KV_OK) err = set_str_if(h, K_DIALOG_SPK, dialog_speaker,
+                                        s_config.dialog_speaker, sizeof(s_config.dialog_speaker));
+
 
     if (err == PB_KV_OK) err = pb_kv_commit(h);
     pb_kv_close(h);

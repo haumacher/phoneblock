@@ -184,6 +184,57 @@ static void test_config_dialog(void)
     unsetenv("PHONEBLOCK_CONFIG_FILE");
 }
 
+// The dialog speaker (#429): empty until the sync picks one, persisted,
+// validated, and cleared by a change of ui_lang (the next sync picks one of
+// the new locale's speakers) — also an explicit choice.
+static void test_config_dialog_speaker(void)
+{
+    char path[256];
+    use_temp_config(path, sizeof(path));
+    config_load();
+    REQUIRE(strcmp(config_dialog_speaker(), "") == 0);
+
+    REQUIRE(config_set_dialog_speaker("roger") == PB_KV_OK);
+    config_load();
+    REQUIRE(strcmp(config_dialog_speaker(), "roger") == 0);
+
+    // The POST's validation: "" (pick again) and speaker ids.
+    REQUIRE(config_dialog_speaker_valid("") && config_dialog_speaker_valid("a-1") &&
+            config_dialog_speaker_valid("leonie"));
+    REQUIRE(!config_dialog_speaker_valid(NULL) && !config_dialog_speaker_valid("Roger") &&
+            !config_dialog_speaker_valid("1a") && !config_dialog_speaker_valid("a_b") &&
+            !config_dialog_speaker_valid("../x") &&
+            !config_dialog_speaker_valid("abcdefghijklmnopq"));
+
+    // Same ui_lang again: the speaker stays.
+    config_update_t lang = { .ui_lang = "de" };
+    REQUIRE(config_update(&lang) == PB_KV_OK);
+    config_update_t choose = { .dialog_speaker = "leonie" };
+    REQUIRE(config_update(&choose) == PB_KV_OK);
+    REQUIRE(config_update(&lang) == PB_KV_OK);
+    REQUIRE(strcmp(config_dialog_speaker(), "leonie") == 0);
+    // Another ui_lang clears it, persistently.
+    config_update_t fr = { .ui_lang = "fr" };
+    REQUIRE(config_update(&fr) == PB_KV_OK);
+    REQUIRE(strcmp(config_dialog_speaker(), "") == 0);
+    config_load();
+    REQUIRE(strcmp(config_dialog_speaker(), "") == 0 && strcmp(config_ui_lang(), "fr") == 0);
+    // Both in one update: the speaker given wins.
+    config_update_t both = { .ui_lang = "en", .dialog_speaker = "roger" };
+    REQUIRE(config_update(&both) == PB_KV_OK);
+    REQUIRE(strcmp(config_dialog_speaker(), "roger") == 0);
+    // Unrelated updates leave it alone.
+    config_update_t other = { .sip_host = "fritz.box" };
+    REQUIRE(config_update(&other) == PB_KV_OK);
+    REQUIRE(strcmp(config_dialog_speaker(), "roger") == 0);
+
+    REQUIRE(config_erase() == PB_KV_OK);
+    config_load();
+    REQUIRE(strcmp(config_dialog_speaker(), "") == 0);
+    unlink(path);
+    unsetenv("PHONEBLOCK_CONFIG_FILE");
+}
+
 // The mode is settled once per device (#429): a new installation starts with
 // the dialog, a device updated from a firmware without ab_mode keeps the
 // announcement, a stored choice is never overridden, a factory reset counts
@@ -511,6 +562,7 @@ int main(void)
     test_kv_namespaces_and_whitespace();
     test_config_store();
     test_config_dialog();
+    test_config_dialog_speaker();
     test_config_ab_mode_settle();
     test_task();
     test_task_stack_floor();

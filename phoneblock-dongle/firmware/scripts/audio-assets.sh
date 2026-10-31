@@ -18,18 +18,18 @@
 # firmware in the field could not read (see i18n/README.md, "Audio channel").
 #
 # Safe to run while devices download:
-#  * every file name is content-addressed (<kind>-<lang>[-<tier>]-<sha8>),
-#    so an upload never replaces a file of the live manifest;
-#  * files are uploaded first, the manifest last, swapped in via sftp's
-#    posix-rename (atomic);
-#  * then files that neither the new nor the previous manifest references are
-#    removed — a device that read the previous manifest a moment ago can
-#    still fetch what it names.
+#  * every file name is content-addressed (<kind>-<lang>[-<speaker>-<tier>]
+#    -<sha8>), so an upload never replaces a file of the live manifest;
+#  * the set files are uploaded first, then the dialog indexes naming them,
+#    the manifest last, swapped in via sftp's posix-rename (atomic);
+#  * then files that neither the new nor the previous generation references
+#    (its manifest, or a dialog index it names) are removed — a device that
+#    read the previous manifest a moment ago can still fetch what it names.
 #
 # Sources: i18n/audio/announcement-<lang>.alaw (or .wav/.mp3/.m4a/.flac,
 # converted via ffmpeg; committed) and i18n/audio/dialog/<lang>/<speaker>/
-# <phase>-<n>.alaw of the default speaker in i18n/audio/dialog/speakers.json,
-# for the codes in i18n/languages.txt. The .alaw clips are not committed:
+# <phase>-<n>.alaw of every speaker in i18n/audio/dialog/speakers.json, for
+# the codes in i18n/languages.txt. The .alaw clips are not committed:
 # scripts/tts-dialog.py --fetch brings their masters from the CDN and
 # converts them.
 #
@@ -59,6 +59,7 @@ ONLY_LANGS=""
 STAGE=""
 NO_UPLOAD=0
 DRY_RUN=0
+NO_CLEANUP=0
 
 die() { echo "ERROR: $*" >&2; exit 1; }
 
@@ -118,14 +119,14 @@ get_announcement() {
     return 1
 }
 
-# Dialog clips: the set for <lang> from AUDIO_DIR/dialog/<lang>/<speaker>/
-# (the default speaker; the device's choice of speaker is not in format 1 of
-# the manifest), raw A-law
-# like the announcement, numbered per phase (<phase>-1.alaw, <phase>-2.alaw,
-# ... — the count is free, the header carries it). Published in up to three
-# size tiers (main/storage_budget.h; the device takes the largest within its
-# partition's budget), each ONE file dialog-<lang>-<tier>-<sha8>.bin —
-# a single SPIFFS object on the device instead of one per clip (see
+# Dialog clips: the sets for <lang> from AUDIO_DIR/dialog/<lang>/<speaker>/,
+# one per speaker of i18n/audio/dialog/speakers.json whose directory has a
+# complete clip set, raw A-law like the announcement, numbered per phase
+# (<phase>-1.alaw, <phase>-2.alaw, ... — the count is free, the header
+# carries it). Each speaker's set is published in up to three size tiers
+# (main/storage_budget.h; the device takes the largest within its
+# partition's budget), each ONE file dialog-<lang>-<speaker>-<tier>-<sha8>.bin
+# — a single SPIFFS object on the device instead of one per clip (see
 # test_storage_sim.c) — holding the clip table as a header (format in
 # main/dialog.h), then the clips in phase and clip order:
 #
@@ -139,33 +140,33 @@ get_announcement() {
 # by clip number. A tier equal to a smaller one is not published. The limits
 # are read from the firmware sources, so the two cannot drift apart.
 #
-# Sets MANIFEST_ASSETS[lang].dialog to the list of tiers {path, sha256,
-# bytes}, smallest first, and prints one line per tier. Publishes nothing
-# when the locale has no clips or misses a phase (the firmware only uses
-# complete sets); dies when even the minimum set exceeds the s tier.
+# The speakers and their tiers go into the locale's index
+# dialog-<lang>-<sha8>.json (main/dialog_manifest.h), the default speaker
+# first, each with its name and gender from speakers.json and a preview: its
+# hello-1 master, tts/<lang>/<speaker>/hello-1.mp3 relative to <OTA base>/
+# audio/ (uploaded by tts-dialog.py --upload). MANIFEST_ASSETS[lang].dialog
+# names the index {path, sha256, bytes}. Publishes nothing for a locale
+# without the default speaker's clips; a speaker missing a phase or clips
+# (masters not fetched) is left out with a note, except the default, whose
+# incomplete set stops the publish; so does a minimum set over the s tier.
 DIALOG_TIER_S="$(fw_define storage_budget.h STORAGE_DIALOG_TIER_S)"
 DIALOG_TIER_M="$(fw_define storage_budget.h STORAGE_DIALOG_TIER_M)"
 DIALOG_MAX_CLIPS="$(fw_define dialog.h DIALOG_MAX_CLIPS)"
-
-DIALOG_SPEAKER="$(jq -r .default "${SRC_DIR}/audio/dialog/speakers.json")"
+DIALOG_INDEX_MAX="$(fw_define dialog_manifest.h DIALOG_INDEX_MAX_BYTES)"
+SPEAKERS_JSON="${SRC_DIR}/audio/dialog/speakers.json"
 
 build_dialog() {
-    local lang="$1" src="${AUDIO_DIR}/dialog/$1/${DIALOG_SPEAKER}"
-    [[ -d "$src" ]] || return 0
-    local n_txt n_alaw
-    n_txt="$(find "$src" -maxdepth 1 -name '*.txt' | wc -l)"
-    n_alaw="$(find "$src" -maxdepth 1 -name '*.alaw' | wc -l)"
-    [[ "$n_txt" -eq "$n_alaw" ]] \
-        || die "dialog: ${lang}/${DIALOG_SPEAKER} has ${n_txt} sentences but ${n_alaw} clips — run scripts/tts-dialog.py --fetch"
-    local tiers rc=0
-    tiers="$(python3 -I - "$src" "$lang" "${CHANNEL}" "$DIALOG_MAX_CLIPS" \
+    local lang="$1" entry rc=0
+    entry="$(python3 -I - "${AUDIO_DIR}/dialog/${lang}" "$lang" "${CHANNEL}" "$SPEAKERS_JSON" \
+             "$DIALOG_MAX_CLIPS" "$DIALOG_INDEX_MAX" \
              "s=${DIALOG_TIER_S}" "m=${DIALOG_TIER_M}" "l=all" <<'PY'
 import hashlib, json, os, re, struct, sys
 
-src, lang, out_dir, max_clips = sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4])
+src, lang, out_dir, speakers_json = sys.argv[1:5]
+max_clips, index_max = int(sys.argv[5]), int(sys.argv[6])
 # Tier name and byte limit, smallest first; "all": no limit.
 limits = [(t, None if v == "all" else int(v))
-          for t, v in (a.split("=") for a in sys.argv[5:])]
+          for t, v in (a.split("=") for a in sys.argv[7:])]
 PHASES = ["hello", "who-is-there", "am-aparat", "question", "cant-hear-you"]
 # After the minimum set (clip 1 of each phase): the further clips, phase by
 # phase in this order.
@@ -174,81 +175,121 @@ EXTRA = ["question", "cant-hear-you", "am-aparat", "hello", "who-is-there"]
 def say(msg):
     print("   dialog: " + msg, file=sys.stderr)
 
-clips = {}
-for ph in PHASES:
-    found = []
-    for name in os.listdir(src):
-        m = re.fullmatch(re.escape(ph) + r"-([0-9]+)\.alaw", name)
-        if m:
-            found.append((int(m.group(1)), name))
-    if not found:
-        say(f"no '{ph}' clip — the {lang} set is incomplete, not published")
-        sys.exit(3)
-    if len(found) > max_clips:
-        say(f"{len(found)} '{ph}' clips, the firmware takes at most {max_clips}")
-        sys.exit(4)
-    data = []
-    for _, name in sorted(found):
-        with open(os.path.join(src, name), "rb") as f:
-            b = f.read()
-        if not b:
-            say(f"{name} is empty — the {lang} set is not published")
-            sys.exit(3)
-        data.append(b)
-    clips[ph] = data
+with open(speakers_json, encoding="utf-8") as f:
+    table = json.load(f)
+rows = sorted(table["speakers"], key=lambda s: s["id"] != table["default"])
 
-order = [(ph, 0) for ph in PHASES]
-order += [(ph, i) for ph in EXTRA for i in range(1, len(clips[ph]))]
+def load_clips(d, label):
+    """{phase: [bytes]} of a complete set in d, or a reason why not."""
+    names = os.listdir(d)
+    n_txt = sum(1 for n in names if n.endswith(".txt"))
+    n_alaw = sum(1 for n in names if n.endswith(".alaw"))
+    if n_txt != n_alaw:
+        return f"{label} has {n_txt} sentences but {n_alaw} clips — run scripts/tts-dialog.py --fetch"
+    clips = {}
+    for ph in PHASES:
+        found = sorted((int(m.group(1)), n) for n in names
+                       for m in [re.fullmatch(re.escape(ph) + r"-([0-9]+)\.alaw", n)] if m)
+        if not found:
+            return f"{label} has no '{ph}' clip"
+        if len(found) > max_clips:
+            say(f"{label}: {len(found)} '{ph}' clips, the firmware takes at most {max_clips}")
+            sys.exit(4)
+        data = []
+        for _, name in found:
+            with open(os.path.join(d, name), "rb") as f:
+                b = f.read()
+            if not b:
+                return f"{label}: {name} is empty"
+            data.append(b)
+        clips[ph] = data
+    return clips
 
-def build(n):
+def build(clips, order, n):
     """The set file of the first n clips of the priority order."""
     count = {ph: 0 for ph in PHASES}
     for ph, _ in order[:n]:
         count[ph] += 1
     hlen = 8 + len(PHASES) + 8 * n
-    table, body, off = b"", b"", hlen
+    table_, body, off = b"", b"", hlen
     for ph in PHASES:
         for i in range(count[ph]):   # a phase's included clips are its first ones
             c = clips[ph][i]
-            table += struct.pack("<II", off, len(c))
+            table_ += struct.pack("<II", off, len(c))
             body += c
             off += len(c)
     head = b"PBDS" + struct.pack("<BBH", 1, len(PHASES), hlen)
     head += bytes(count[ph] for ph in PHASES)
-    return head + table + body, count
+    return head + table_ + body, count
 
-tiers, last_n = [], 0
-for tier, limit in limits:
-    n = 0
-    while n < len(order) and (limit is None or len(build(n + 1)[0]) <= limit):
-        n += 1
-    if n < len(PHASES):
-        size = len(build(len(PHASES))[0])
-        say(f"the {lang} minimum set (one clip per phase) has {size} bytes, "
-            f"over the {tier} tier's {limit}")
-        sys.exit(4)
-    if n == last_n:
-        continue   # same clips as the tier below
-    last_n = n
-    blob, count = build(n)
-    sha = hashlib.sha256(blob).hexdigest()
-    # Content-addressed: a republished set never overwrites a file a device
-    # may be downloading (scripts/audio-assets.sh).
-    rel = f"dialog-{lang}-{tier}-{sha[:8]}.bin"
-    with open(os.path.join(out_dir, rel), "wb") as f:
+def write(name, blob):
+    with open(os.path.join(out_dir, name), "wb") as f:
         f.write(blob)
-    tiers.append({"path": rel, "sha256": sha, "bytes": len(blob)})
-    say(f"{tier}: {len(blob)} B, {n} of {len(order)} clips (" +
-        ", ".join(f"{ph} {count[ph]}" for ph in PHASES) + ")")
-print(json.dumps(tiers, separators=(",", ":")))
+
+speakers = []
+for row in rows:
+    sid = row["id"]
+    d = os.path.join(src, sid)
+    label = f"{lang}/{sid}"
+    if not os.path.isdir(d):
+        continue
+    clips = load_clips(d, label)
+    if isinstance(clips, str):
+        if not speakers and sid == table["default"]:
+            say(clips + " — the default speaker's set must be complete")
+            sys.exit(4)
+        say(clips + " — speaker left out")
+        continue
+    order = [(ph, 0) for ph in PHASES]
+    order += [(ph, i) for ph in EXTRA for i in range(1, len(clips[ph]))]
+    sets, last_n = [], 0
+    for tier, limit in limits:
+        n = 0
+        while n < len(order) and (limit is None or len(build(clips, order, n + 1)[0]) <= limit):
+            n += 1
+        if n < len(PHASES):
+            size = len(build(clips, order, len(PHASES))[0])
+            say(f"the {label} minimum set (one clip per phase) has {size} bytes, "
+                f"over the {tier} tier's {limit}")
+            sys.exit(4)
+        if n == last_n:
+            continue   # same clips as the tier below
+        last_n = n
+        blob, count = build(clips, order, n)
+        sha = hashlib.sha256(blob).hexdigest()
+        # Content-addressed: a republished set never overwrites a file a
+        # device may be downloading (scripts/audio-assets.sh).
+        rel = f"dialog-{lang}-{sid}-{tier}-{sha[:8]}.bin"
+        write(rel, blob)
+        sets.append({"path": rel, "sha256": sha, "bytes": len(blob)})
+        say(f"{sid} {tier}: {len(blob)} B, {n} of {len(order)} clips (" +
+            ", ".join(f"{ph} {count[ph]}" for ph in PHASES) + ")")
+    speakers.append({"id": sid, "name": row.get("name") or row.get("voice") or sid,
+                     "gender": row.get("gender", ""),
+                     "preview": f"tts/{lang}/{sid}/hello-1.mp3", "sets": sets})
+
+if not speakers:
+    sys.exit(3)          # no dialog for this locale
+if speakers[0]["id"] != table["default"]:
+    say(f"the default speaker {table['default']} has no {lang} clips")
+    sys.exit(4)
+index = json.dumps({"speakers": speakers}, separators=(",", ":"), ensure_ascii=False).encode()
+if len(index) > index_max:
+    say(f"the {lang} index has {len(index)} bytes, the firmware reads at most {index_max}")
+    sys.exit(4)
+sha = hashlib.sha256(index).hexdigest()
+rel = f"dialog-{lang}-{sha[:8]}.json"
+write(rel, index)
+say(f"index: {len(index)} B, speakers " + ", ".join(s["id"] for s in speakers))
+print(json.dumps({"path": rel, "sha256": sha, "bytes": len(index)}, separators=(",", ":")))
 PY
     )" || rc=$?
     case "$rc" in
         0) ;;
         3) return 0;;
-        *) die "dialog: the ${lang} set cannot be published (see above)";;
+        *) die "dialog: the ${lang} sets cannot be published (see above)";;
     esac
-    MANIFEST_ASSETS="$(jq -c --arg l "$lang" --argjson d "$tiers" \
+    MANIFEST_ASSETS="$(jq -c --arg l "$lang" --argjson d "$entry" \
         '.[$l] = ((.[$l] // {}) + {dialog: $d})' <<< "$MANIFEST_ASSETS")"
 }
 
@@ -295,9 +336,22 @@ remote_files() {
     printf 'ls -1 %s\n' "$REMOTE" | sftp "${SSH_OPTS[@]}" -b - "$CDN_HOST" 2>/dev/null \
         | grep -v '^sftp>' | sed 's|.*/||' || true
 }
-# File names a manifest references.
+# File names a manifest references directly: announcements and dialog indexes.
 manifest_paths() {
-    jq -r '.assets[] | (.announcement.path // empty), ((.dialog // [])[] | .path)' "$1"
+    jq -r '.assets[] | (.announcement.path // empty), (.dialog.path? // empty)' "$1"
+}
+# The set files an index names.
+index_paths() {
+    jq -r '.speakers[]?.sets[]?.path' "$1"
+}
+# Every file of a generation: what its manifest names, plus the sets its
+# indexes name (the indexes read from directory $2).
+generation_paths() {
+    local f
+    for f in $(manifest_paths "$1"); do
+        echo "$f"
+        [[ "$f" == *.json && -f "$2/$f" ]] && index_paths "$2/$f"
+    done
 }
 
 if [[ $NO_UPLOAD -eq 1 ]]; then
@@ -316,23 +370,44 @@ sftp_batch <<SFTP
 -mkdir ${REMOTE}
 SFTP
 
-# The previous generation: what the live manifest references stays.
-PREV="${STAGE}/manifest.prev.json"
+# The previous generation: what the live manifest references stays — the
+# files it names and the sets its dialog indexes name.
+PREV_DIR="${STAGE}/prev"
+mkdir -p "$PREV_DIR"
+PREV="${PREV_DIR}/manifest.json"
 echo '{"assets":{}}' > "$PREV"
 if [[ $DRY_RUN -eq 0 ]]; then
     printf 'get %s/manifest.json %s\n' "$REMOTE" "$PREV" \
         | sftp "${SSH_OPTS[@]}" -b - "$CDN_HOST" >/dev/null 2>&1 || echo '{"assets":{}}' > "$PREV"
+    PREV_INDEXES="$(manifest_paths "$PREV" | grep '\.json$' || true)"
+    if [[ -n "$PREV_INDEXES" ]]; then
+        for f in $PREV_INDEXES; do printf -- '-get %s/%s %s/%s\n' "$REMOTE" "$f" "$PREV_DIR" "$f"; done \
+            | sftp "${SSH_OPTS[@]}" -b - "$CDN_HOST" >/dev/null 2>&1 || true
+        # Without an index the cleanup cannot know which sets it names: then
+        # nothing is removed this time.
+        for f in $PREV_INDEXES; do
+            [[ -f "${PREV_DIR}/${f}" ]] || { echo "==> previous index ${f} not readable — no cleanup this time"; NO_CLEANUP=1; }
+        done
+    fi
 fi
 mapfile -t HAVE < <(remote_files)
 
-# Content-addressed: a name on the CDN already has these bytes.
+# Content-addressed: a name on the CDN already has these bytes. The sets
+# first, then the indexes that name them (the manifest last, below).
 UPLOAD=()
-for f in $(manifest_paths "${CHANNEL}/manifest.json"); do
+for f in $(generation_paths "${CHANNEL}/manifest.json" "$CHANNEL" | grep -v '\.json$'); do
     if [[ " ${HAVE[*]:-} " != *" ${f} "* ]]; then UPLOAD+=("${CHANNEL}/${f}"); fi
 done
-echo "==> ${#UPLOAD[@]} new file(s) to upload"
+UPLOAD_IX=()
+for f in $(manifest_paths "${CHANNEL}/manifest.json" | grep '\.json$' || true); do
+    if [[ " ${HAVE[*]:-} " != *" ${f} "* ]]; then UPLOAD_IX+=("${CHANNEL}/${f}"); fi
+done
+echo "==> ${#UPLOAD[@]} new file(s) and ${#UPLOAD_IX[@]} new index(es) to upload"
 if [[ ${#UPLOAD[@]} -gt 0 ]]; then
     run scp "${SSH_OPTS[@]}" "${UPLOAD[@]}" "${CDN_HOST}:${REMOTE}/"
+fi
+if [[ ${#UPLOAD_IX[@]} -gt 0 ]]; then
+    run scp "${SSH_OPTS[@]}" "${UPLOAD_IX[@]}" "${CDN_HOST}:${REMOTE}/"
 fi
 
 # The manifest last, atomically (OpenSSH's sftp rename is posix-rename).
@@ -341,16 +416,17 @@ put ${CHANNEL}/manifest.json ${REMOTE}/manifest.json.tmp
 rename ${REMOTE}/manifest.json.tmp ${REMOTE}/manifest.json
 SFTP
 
-# Cleanup: files of older generations, referenced by neither manifest.
-KEEP=" $(manifest_paths "${CHANNEL}/manifest.json" | tr '\n' ' ') $(manifest_paths "$PREV" | tr '\n' ' ') "
+# Cleanup: files of older generations, referenced by neither generation
+# (directly or through its dialog indexes).
+KEEP=" $(generation_paths "${CHANNEL}/manifest.json" "$CHANNEL" | tr '\n' ' ') $(generation_paths "$PREV" "$PREV_DIR" | tr '\n' ' ') "
 DROP=()
 for f in "${HAVE[@]:-}"; do
-    [[ -z "$f" ]] && continue
-    [[ "$f" =~ ^(announcement|dialog)-.*\.(alaw|bin)$ ]] || continue
+    [[ -z "$f" || $NO_CLEANUP -eq 1 ]] && continue
+    [[ "$f" =~ ^(announcement|dialog)-.*\.(alaw|bin|json)$ ]] || continue
     [[ "$KEEP" == *" ${f} "* ]] || DROP+=("$f")
 done
 if [[ $DRY_RUN -eq 1 ]]; then
-    echo "+ cleanup: remove ${REMOTE}/(announcement|dialog)-* named by neither the new nor the previous manifest"
+    echo "+ cleanup: remove ${REMOTE}/(announcement|dialog)-* named by neither the new nor the previous generation (manifest + dialog indexes)"
 elif [[ ${#DROP[@]} -gt 0 ]]; then
     echo "==> removing ${#DROP[@]} file(s) of older generations"
     for f in "${DROP[@]}"; do printf -- '-rm %s/%s\n' "$REMOTE" "$f"; done | sftp_batch

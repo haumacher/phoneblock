@@ -24,8 +24,8 @@
 //     "assets": {
 //       "de": { "announcement": { "path": "announcement-de-1a2b3c4d.alaw",
 //                                 "sha256": "<hex>", "bytes": 78762 },
-//               "dialog": [ { "path": "dialog-de-s-5e6f7a8b.bin", ... },
-//                           ... ] },         // the size tiers, dialog_manifest.h
+//               "dialog": { "path": "dialog-de-9c0d1e2f.json", ... } },
+//                           // the speaker index, dialog_manifest.h
 //       ... } }
 //
 // Pure (cJSON only), host-tested in test/test_audio_manifest.c.

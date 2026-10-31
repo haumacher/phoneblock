@@ -85,13 +85,14 @@ static long custom_size(void)
     return (long)st.st_size;
 }
 
-void announcement_localized_path(char *out, size_t cap, const char *lang)
+bool announcement_localized_path(char *out, size_t cap, const char *lang)
 {
     // lang comes from config_ui_lang(), which only ever returns a
     // config_lang_code_valid() string — no separators or "..", so this
     // cannot escape the SPIFFS namespace.
-    snprintf(out, cap, "%s%s%s",
-             SPIFFS_LOCALIZED_PREFIX, lang, SPIFFS_LOCALIZED_SUFFIX);
+    int n = snprintf(out, cap, "%s%s%s",
+                     SPIFFS_LOCALIZED_PREFIX, lang, SPIFFS_LOCALIZED_SUFFIX);
+    return n >= 0 && (size_t)n < cap;
 }
 
 // Size of the single downloaded announcement for the active ui_lang, or -1 if
@@ -104,8 +105,9 @@ void announcement_localized_path(char *out, size_t cap, const char *lang)
 static long localized_size(void)
 {
     if (!s_storage_ready) return -1;
-    char path[48];
-    announcement_localized_path(path, sizeof(path), config_ui_lang());
+    // A path that does not fit: no localized file (i18n_sync WARNs).
+    char path[PB_DATA_PATH_CAP];
+    if (!announcement_localized_path(path, sizeof(path), config_ui_lang())) return -1;
     struct stat st;
     if (stat(path, &st) != 0) return -1;
     if (st.st_size <= 0 || (size_t)st.st_size > ANNOUNCEMENT_MAX_BYTES) return -1;
@@ -162,10 +164,10 @@ int announcement_open(announcement_src_t *src)
     // pickup). The download-time ui_lang → en → de fallback lives in
     // i18n_sync.c, so there is only one file to consider here.
     const char *path = SPIFFS_FILE;
-    char lpath[48];
+    char lpath[PB_DATA_PATH_CAP];
     long sz = custom_size();
     if (sz <= 0) {
-        long lsz = localized_size();
+        long lsz = localized_size();   // > 0 only if the path fits
         if (lsz > 0) {
             announcement_localized_path(lpath, sizeof(lpath), config_ui_lang());
             path = lpath;
@@ -245,9 +247,8 @@ int announcement_write_begin(size_t total_bytes)
     // now so its space serves this upload; an upload that fails asks for it
     // back (lost_custom()). Then claim the room on the shared partition —
     // the user's own file has precedence over the community blocklist cache.
-    char lpath[48];
-    announcement_localized_path(lpath, sizeof(lpath), config_ui_lang());
-    unlink(lpath);
+    char lpath[PB_DATA_PATH_CAP];
+    if (announcement_localized_path(lpath, sizeof(lpath), config_ui_lang())) unlink(lpath);
     storage_make_room(total_bytes, SPIFFS_FILE);
 
     s_write_file = fopen(SPIFFS_FILE, "wb");

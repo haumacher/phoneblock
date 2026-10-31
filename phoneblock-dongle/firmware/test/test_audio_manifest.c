@@ -25,17 +25,27 @@ static int checks = 0;
     "{\"path\":\"" path "\",\"sha256\":\"" sha "\",\"bytes\":" #bytes "}"
 
 // A channel as scripts/audio-assets.sh publishes it: content-addressed names
-// (<kind>-<lang>[-<tier>]-<sha8>), German with three tiers, English with an
-// announcement and one tier, French with an announcement only.
+// (<kind>-<lang>[-<speaker>-<tier>]-<sha8>), German and English with an
+// announcement and a dialog index, French with an announcement only.
 static const char *CHANNEL =
     "{\"format\":1,\"assets\":{"
     "\"de\":{\"announcement\":" ASSET("announcement-de-01234567.alaw", SHA, 78762) ","
-    "\"dialog\":[" ASSET("dialog-de-s-01234567.bin", SHA, 117995) ","
-                   ASSET("dialog-de-m-fedcba98.bin", SHA2, 221243) ","
-                   ASSET("dialog-de-l-01234567.bin", SHA, 489075) "]},"
+    "\"dialog\":" ASSET("dialog-de-01234567.json", SHA, 2210) "},"
     "\"en\":{\"announcement\":" ASSET("announcement-en-fedcba98.alaw", SHA2, 70001) ","
-    "\"dialog\":[" ASSET("dialog-en-s-fedcba98.bin", SHA2, 128037) "]},"
+    "\"dialog\":" ASSET("dialog-en-fedcba98.json", SHA2, 1100) "},"
     "\"fr\":{\"announcement\":" ASSET("announcement-fr-01234567.alaw", SHA, 80000) "}}}";
+
+// The German index named there.
+static const char *DE_INDEX =
+    "{\"speakers\":["
+    "{\"id\":\"leonie\",\"name\":\"Leonie\",\"gender\":\"female\","
+    "\"preview\":\"tts/de/leonie/hello-1.mp3\",\"sets\":["
+    ASSET("dialog-de-leonie-s-01234567.bin", SHA, 117995) ","
+    ASSET("dialog-de-leonie-m-fedcba98.bin", SHA2, 221243) ","
+    ASSET("dialog-de-leonie-l-01234567.bin", SHA, 489075) "]},"
+    "{\"id\":\"roger\",\"name\":\"Roger\",\"gender\":\"male\","
+    "\"preview\":\"tts/de/roger/hello-1.mp3\",\"sets\":["
+    ASSET("dialog-de-roger-s-01234567.bin", SHA, 120000) "]}]}";
 
 static void test_format_gate(void)
 {
@@ -137,40 +147,45 @@ static void test_announcement_chain(void)
     cJSON_Delete(as);
 }
 
-// The dialog tiers come from the same manifest: content-addressed paths,
-// missing tiers (English has only s) and missing locales (French has none).
+// The dialog index comes from the same manifest: content-addressed paths,
+// missing locales (French has none) fall back along the chain; the index
+// then names each speaker's tiers.
 static void test_dialog_from_channel(void)
 {
     cJSON *root = cJSON_Parse(CHANNEL);
     const cJSON *assets = audio_manifest_assets(root);
-    dialog_manifest_set_t d;
+    audio_asset_t ix;
     const char *de[] = { "de" };
-    CHECK(dialog_manifest_select(assets, de, 1, 131072, &d) &&
-          strcmp(d.path, "dialog-de-s-01234567.bin") == 0);
-    CHECK(dialog_manifest_select(assets, de, 1, 229376, &d) &&
-          strcmp(d.path, "dialog-de-m-fedcba98.bin") == 0 && strcmp(d.sha256, SHA2) == 0);
-    CHECK(dialog_manifest_select(assets, de, 1, UINT64_MAX, &d) && d.bytes == 489075);
-
-    // English has a set but only the s tier: the largest budget takes it.
-    const char *en[] = { "en", "de" };
-    CHECK(dialog_manifest_select(assets, en, 2, UINT64_MAX, &d) &&
-          strcmp(d.lang, "en") == 0 && d.bytes == 128037);
-    // French has no set: German follows, at the tier of the budget.
+    CHECK(dialog_manifest_index(assets, de, 1, &ix) &&
+          strcmp(ix.path, "dialog-de-01234567.json") == 0 && ix.bytes == 2210);
     const char *fr[] = { "fr", "en", "de" };
-    CHECK(dialog_manifest_select(assets, fr, 3, 229376, &d) && strcmp(d.lang, "en") == 0);
+    CHECK(dialog_manifest_index(assets, fr, 3, &ix) && strcmp(ix.lang, "en") == 0 &&
+          strcmp(ix.sha256, SHA2) == 0);
     const char *fr_de[] = { "fr", "de" };
-    CHECK(dialog_manifest_select(assets, fr_de, 2, 229376, &d) && strcmp(d.lang, "de") == 0 &&
-          d.bytes == 221243);
-    // English's s tier does not fit a budget below it: German's s does.
-    CHECK(dialog_manifest_select(assets, en, 2, 120000, &d) && strcmp(d.lang, "de") == 0 &&
-          d.bytes == 117995);
+    CHECK(dialog_manifest_index(assets, fr_de, 2, &ix) && strcmp(ix.lang, "de") == 0);
     cJSON_Delete(root);
 
-    // A tier path that would leave the channel makes the locale malformed.
-    cJSON *as = cJSON_Parse("{\"it\":{\"dialog\":[" ASSET("../x.bin", SHA, 1000) "]},"
-                            "\"de\":{\"dialog\":[" ASSET("dialog-de-s-0.bin", SHA, 1000) "]}}");
+    cJSON *index = cJSON_Parse(DE_INDEX);
+    dialog_manifest_set_t d;
+    CHECK(dialog_index_select(index, "leonie", 131072, &d) == DIALOG_PICK_CHOSEN &&
+          strcmp(d.path, "dialog-de-leonie-s-01234567.bin") == 0);
+    CHECK(dialog_index_select(index, "leonie", 229376, &d) == DIALOG_PICK_CHOSEN &&
+          strcmp(d.path, "dialog-de-leonie-m-fedcba98.bin") == 0 && strcmp(d.sha256, SHA2) == 0);
+    CHECK(dialog_index_select(index, "", UINT64_MAX, &d) == DIALOG_PICK_CHOSEN &&
+          d.bytes == 489075);
+    // Roger has only s: the largest budget takes it.
+    CHECK(dialog_index_select(index, "roger", UINT64_MAX, &d) == DIALOG_PICK_CHOSEN &&
+          d.bytes == 120000 && strcmp(d.speaker, "roger") == 0);
+    // Below Roger's s but above Leonie's: the default's.
+    CHECK(dialog_index_select(index, "roger", 119000, &d) == DIALOG_PICK_NO_FIT &&
+          d.bytes == 117995 && strcmp(d.speaker, "leonie") == 0);
+    cJSON_Delete(index);
+
+    // An index path that would leave the channel makes the locale malformed.
+    cJSON *as = cJSON_Parse("{\"it\":{\"dialog\":" ASSET("../x.json", SHA, 1000) "},"
+                            "\"de\":{\"dialog\":" ASSET("dialog-de-0.json", SHA, 1000) "}}");
     const char *it[] = { "it", "de" };
-    CHECK(dialog_manifest_select(as, it, 2, 131072, &d) && strcmp(d.lang, "de") == 0);
+    CHECK(dialog_manifest_index(as, it, 2, &ix) && strcmp(ix.lang, "de") == 0);
     cJSON_Delete(as);
 }
 

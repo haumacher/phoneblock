@@ -37,7 +37,7 @@
 //       ... } }
 //
 // The audio channel's manifest has the same shape with the announcement and
-// the dialog's size tiers per locale (audio_manifest.h, dialog_manifest.h).
+// the dialog's speaker index per locale (audio_manifest.h, dialog_manifest.h).
 //
 // Exactly ONE announcement and ONE mail pack are kept on the device, for the
 // active ui_lang. Which locale's announcement fills it is chosen at download
@@ -52,9 +52,13 @@
 // manifest itself is only as trustworthy as the CDN), then renamed into place.
 // Assets for other locales are pruned so the shared storage is not filled by
 // stale downloads. The dialog clip set of the interactive answer bot (#429)
-// is kept only while ab_mode is "dialog", taken from the first chain locale
-// with a fitting size tier and stored under that locale's name
-// (dialog_store.h). It takes the place of the localized announcement, which
+// is kept only while ab_mode is "dialog": the speaker index of the first
+// chain locale that has one is kept (re-downloaded only when its SHA
+// changes); the configured dialog_speaker is used while the index lists it,
+// otherwise one is picked at random and persisted (INFO); of it the largest
+// tier within the budget is stored under that locale's name (dialog_store.h).
+// An own set (POST /api/dialog) takes precedence: while one is on the device,
+// no CDN set is fetched. The set takes the place of the localized announcement, which
 // is then neither downloaded nor kept (and of the own recording, which the
 // switch to dialog mode deletes, web.c). A file whose SHA already matches the
 // manifest is skipped (no re-download).
@@ -74,7 +78,9 @@ void i18n_sync_init(void);
 bool i18n_sync_run(void);
 
 // Ask the scheduler task to run i18n_sync_run() on its own stack. Returns
-// false if the scheduler is not up yet or a pass is already running.
+// false if the scheduler is not up yet or a pass is already running — in the
+// latter case one more pass follows the running one, since what the caller
+// changed may postdate what that pass looked at.
 bool i18n_sync_trigger_now(void);
 
 typedef struct {
@@ -89,13 +95,15 @@ typedef struct {
 void i18n_sync_snapshot(i18n_sync_status_t *out);
 
 // Path of the downloaded web-UI string pack for `lang` on SPIFFS. This module
-// owns the layout; web.c serves the file at /api/i18n/ui.
-void i18n_sync_ui_path(char *out, size_t cap, const char *lang);
+// owns the layout; web.c serves the file at /api/i18n/ui. Size `out` with
+// PB_DATA_PATH_CAP (platform.h); false (and `out` not to be used) if the path
+// does not fit — a Linux data directory too long for it.
+bool i18n_sync_ui_path(char *out, size_t cap, const char *lang);
 
 // Same for the status-mail string pack (mail_i18n.c reads it). Both are
 // exposed so the dev upload route in web.c can write a bundle without
 // duplicating the on-device layout.
-void i18n_sync_mail_path(char *out, size_t cap, const char *lang);
+bool i18n_sync_mail_path(char *out, size_t cap, const char *lang);
 
 // Whether a downloaded UI pack for `lang` is present. False means
 // /api/i18n/ui falls back to the embedded English pack — which the web UI

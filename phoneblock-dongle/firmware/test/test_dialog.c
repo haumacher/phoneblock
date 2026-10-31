@@ -448,138 +448,335 @@ static void test_lang_valid(void)
     for (size_t i = 0; i < sizeof(bad) / sizeof(bad[0]); i++) CHECK(!dialog_lang_valid(bad[i]));
 }
 
-// --- Manifest selection ----------------------------------------------------------
+// --- Manifest → index → set -----------------------------------------------------
 
 #define SHA "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
 
-#define TIER(path, bytes) \
+#define FILE_(path, bytes) \
     "{\"path\":\"" path "\",\"sha256\":\"" SHA "\",\"bytes\":" #bytes "}"
+#define SPK(id, gender, sets) \
+    "{\"id\":\"" id "\",\"name\":\"N-" id "\",\"gender\":\"" gender "\"," \
+    "\"preview\":\"tts/x/" id "/hello-1.mp3\",\"sets\":[" sets "]}"
 
-// German in three tiers, as audio-assets.sh publishes a large set.
-#define DE_TIERS "\"dialog\":[" TIER("audio/dialog-de-s.alaw", 130000) "," \
-                 TIER("audio/dialog-de-m.alaw", 200000) "," \
-                 TIER("audio/dialog-de-l.alaw", 300000) "]"
+// German index: two speakers in three tiers each.
+#define DE_INDEX "{\"speakers\":[" \
+    SPK("leonie", "female", FILE_("dialog-de-leonie-s.bin", 130000) "," \
+                            FILE_("dialog-de-leonie-m.bin", 200000) "," \
+                            FILE_("dialog-de-leonie-l.bin", 300000)) "," \
+    SPK("roger", "male",    FILE_("dialog-de-roger-s.bin", 125000) "," \
+                            FILE_("dialog-de-roger-m.bin", 210000) "," \
+                            FILE_("dialog-de-roger-l.bin", 310000)) "]}"
+// English index: Roger has only a large set, so a small budget falls back.
+#define EN_INDEX "{\"speakers\":[" \
+    SPK("leonie", "female", FILE_("dialog-en-leonie-s.bin", 120000)) "," \
+    SPK("roger", "male",    FILE_("dialog-en-roger-l.bin", 400000)) "]}"
 
-#define ANN(l) "\"announcement\":{\"path\":\"audio/announcement-" l ".alaw\"," \
+#define ANN(l) "\"announcement\":{\"path\":\"announcement-" l ".alaw\"," \
                "\"sha256\":\"" SHA "\",\"bytes\":78762}"
 
-static cJSON *assets_of(cJSON *root)
+// The channel manifest: fr without a dialog, en and de with an index.
+static const char *const CHANNEL_ASSETS =
+    "{\"fr\":{" ANN("fr") "},"
+    "\"en\":{" ANN("en") ",\"dialog\":" FILE_("dialog-en-11111111.json", 900) "},"
+    "\"de\":{" ANN("de") ",\"dialog\":" FILE_("dialog-de-22222222.json", 1200) "}}";
+
+// The whole selection as the sync does it, with the index files served from
+// memory by their path. Returns the pick; *lang, *speaker, *path copied out.
+static dialog_pick_t select_full(const char *const *chain, int n, const char *speaker,
+                                 uint64_t budget, char *lang, char *spk, char *path)
 {
-    return cJSON_GetObjectItem(root, "assets");
+    lang[0] = spk[0] = path[0] = '\0';
+    cJSON *assets = cJSON_Parse(CHANNEL_ASSETS);
+    CHECK(assets != NULL);
+    audio_asset_t ix;
+    dialog_pick_t r = DIALOG_PICK_NONE;
+    if (dialog_manifest_index(assets, chain, n, &ix)) {
+        snprintf(lang, 12, "%s", ix.lang);
+        const char *text = strcmp(ix.path, "dialog-de-22222222.json") == 0 ? DE_INDEX
+                         : strcmp(ix.path, "dialog-en-11111111.json") == 0 ? EN_INDEX : NULL;
+        CHECK(text != NULL);
+        cJSON *index = cJSON_Parse(text);
+        CHECK(index != NULL);
+        dialog_manifest_set_t set;
+        r = dialog_index_select(index, speaker, budget, &set);
+        if (r != DIALOG_PICK_NONE) {
+            snprintf(spk, DIALOG_SPEAKER_CAP, "%s", set.speaker);
+            snprintf(path, 64, "%s", set.path);
+            CHECK(set.sha256 && strcmp(set.sha256, SHA) == 0 && set.bytes > DIALOG_HEADER_MIN);
+        }
+        cJSON_Delete(index);
+    }
+    cJSON_Delete(assets);
+    return r;
 }
 
-static bool picks(cJSON *root, const char *const *chain, int n, uint64_t budget,
-                  const char *lang, const char *path)
+static void test_select_speaker_and_tier(void)
 {
-    dialog_manifest_set_t set;
-    if (!dialog_manifest_select(assets_of(root), chain, n, budget, &set)) return false;
-    return set.lang && strcmp(set.lang, lang) == 0 && set.path &&
-           strcmp(set.path, path) == 0 && set.sha256 && strcmp(set.sha256, SHA) == 0;
-}
-
-static void test_manifest_tier_by_budget(void)
-{
-    cJSON *root = cJSON_Parse("{\"version\":\"1.7.0\",\"assets\":{"
-                              "\"de\":{" ANN("de") "," DE_TIERS "}}}");
-    CHECK(root != NULL);
+    char lang[12], spk[DIALOG_SPEAKER_CAP], path[64];
     const char *de[] = { "de" };
-    CHECK(picks(root, de, 1, 131072, "de", "audio/dialog-de-s.alaw"));
-    CHECK(picks(root, de, 1, 229376, "de", "audio/dialog-de-m.alaw"));
-    CHECK(picks(root, de, 1, UINT64_MAX, "de", "audio/dialog-de-l.alaw"));
-    // The boundaries: a tier of exactly the budget fits, one byte less not.
-    CHECK(picks(root, de, 1, 200000, "de", "audio/dialog-de-m.alaw"));
-    CHECK(picks(root, de, 1, 199999, "de", "audio/dialog-de-s.alaw"));
-    CHECK(picks(root, de, 1, 130000, "de", "audio/dialog-de-s.alaw"));
-    dialog_manifest_set_t set;
-    CHECK(!dialog_manifest_select(assets_of(root), de, 1, 129999, &set));
-    CHECK(set.lang == NULL && set.path == NULL && set.bytes == 0);
-    CHECK(dialog_manifest_select(assets_of(root), de, 1, 300000, &set) && set.bytes == 300000);
-    cJSON_Delete(root);
-
-    // The order in the list does not matter, nor does a single tier.
-    root = cJSON_Parse("{\"assets\":{\"de\":{\"dialog\":["
-                       TIER("l.alaw", 300000) "," TIER("s.alaw", 130000) ","
-                       TIER("m.alaw", 200000) "]},"
-                       "\"it\":{\"dialog\":[" TIER("it.alaw", 90000) "]}}}");
-    CHECK(picks(root, de, 1, 250000, "de", "m.alaw"));
-    const char *it[] = { "it" };
-    CHECK(picks(root, it, 1, 131072, "it", "it.alaw"));
-    CHECK(picks(root, it, 1, UINT64_MAX, "it", "it.alaw"));
-    cJSON_Delete(root);
+    // The chosen speaker present: its largest fitting tier.
+    CHECK(select_full(de, 1, "roger", 229376, lang, spk, path) == DIALOG_PICK_CHOSEN);
+    CHECK(strcmp(lang, "de") == 0 && strcmp(spk, "roger") == 0 &&
+          strcmp(path, "dialog-de-roger-m.bin") == 0);
+    CHECK(select_full(de, 1, "roger", 131072, lang, spk, path) == DIALOG_PICK_CHOSEN &&
+          strcmp(path, "dialog-de-roger-s.bin") == 0);
+    CHECK(select_full(de, 1, "roger", UINT64_MAX, lang, spk, path) == DIALOG_PICK_CHOSEN &&
+          strcmp(path, "dialog-de-roger-l.bin") == 0);
+    // A tier of exactly the budget fits, one byte less does not.
+    CHECK(select_full(de, 1, "leonie", 200000, lang, spk, path) == DIALOG_PICK_CHOSEN &&
+          strcmp(path, "dialog-de-leonie-m.bin") == 0);
+    CHECK(select_full(de, 1, "leonie", 199999, lang, spk, path) == DIALOG_PICK_CHOSEN &&
+          strcmp(path, "dialog-de-leonie-s.bin") == 0);
+    // None chosen: the default (first) speaker.
+    CHECK(select_full(de, 1, "", 229376, lang, spk, path) == DIALOG_PICK_CHOSEN &&
+          strcmp(spk, "leonie") == 0 && strcmp(path, "dialog-de-leonie-m.bin") == 0);
+    CHECK(select_full(de, 1, NULL, 229376, lang, spk, path) == DIALOG_PICK_CHOSEN &&
+          strcmp(spk, "leonie") == 0);
+    // The chosen speaker absent in this locale: the default's set.
+    CHECK(select_full(de, 1, "hans", 229376, lang, spk, path) == DIALOG_PICK_ABSENT &&
+          strcmp(spk, "leonie") == 0 && strcmp(path, "dialog-de-leonie-m.bin") == 0);
+    // Budget below every tier of the chosen speaker: the default's fitting
+    // tier (English Roger has only 400 KB) ...
+    const char *en[] = { "en" };
+    CHECK(select_full(en, 1, "roger", 229376, lang, spk, path) == DIALOG_PICK_NO_FIT &&
+          strcmp(spk, "leonie") == 0 && strcmp(path, "dialog-en-leonie-s.bin") == 0);
+    CHECK(select_full(en, 1, "roger", UINT64_MAX, lang, spk, path) == DIALOG_PICK_CHOSEN &&
+          strcmp(path, "dialog-en-roger-l.bin") == 0);
+    // ... and nothing when the default does not fit either (no other
+    // speaker, no other locale: the locale is the first with an index).
+    CHECK(select_full(en, 1, "roger", 119999, lang, spk, path) == DIALOG_PICK_NONE &&
+          strcmp(lang, "en") == 0 && spk[0] == '\0' && path[0] == '\0');
+    CHECK(select_full(de, 1, "roger", 124999, lang, spk, path) == DIALOG_PICK_NONE);
+    CHECK(select_full(de, 1, "leonie", 125000, lang, spk, path) == DIALOG_PICK_NONE);
 }
 
-static void test_manifest_chain_fallback(void)
+static void test_select_locale_chain(void)
 {
-    cJSON *root = cJSON_Parse(
-        "{\"version\":\"1.7.0\",\"assets\":{"
-        "\"fr\":{" ANN("fr") "},"
-        "\"en\":{" ANN("en") ",\"dialog\":[" TIER("audio/dialog-en-m.alaw", 150000) "]},"
-        "\"de\":{" ANN("de") "," DE_TIERS "}}}");
-    CHECK(root != NULL);
-    const char *chain[] = { "fr", "en", "de" };
-    // No set for fr; en has only a tier above the small budget, so the whole
-    // German set is taken — never German tiers mixed with English ones.
-    CHECK(picks(root, chain, 3, 131072, "de", "audio/dialog-de-s.alaw"));
-    // With room for it, English wins.
-    CHECK(picks(root, chain, 3, 229376, "en", "audio/dialog-en-m.alaw"));
-    CHECK(picks(root, chain, 3, UINT64_MAX, "en", "audio/dialog-en-m.alaw"));
-    // A chain that ends before German has nothing for the small budget.
-    dialog_manifest_set_t set;
-    CHECK(!dialog_manifest_select(assets_of(root), chain, 2, 131072, &set));
-    // An invalid chain entry is not looked up (it would name the file).
-    const char *bogus[] = { "../de", "de" };
-    CHECK(picks(root, bogus, 2, 131072, "de", "audio/dialog-de-s.alaw"));
-    cJSON_Delete(root);
+    char lang[12], spk[DIALOG_SPEAKER_CAP], path[64];
+    // fr has no dialog entry: en's index; it has Roger.
+    const char *fr[] = { "fr", "en", "de" };
+    CHECK(select_full(fr, 3, "roger", UINT64_MAX, lang, spk, path) == DIALOG_PICK_CHOSEN &&
+          strcmp(lang, "en") == 0 && strcmp(path, "dialog-en-roger-l.bin") == 0);
+    const char *fr_de[] = { "fr", "de" };
+    CHECK(select_full(fr_de, 2, "roger", 131072, lang, spk, path) == DIALOG_PICK_CHOSEN &&
+          strcmp(lang, "de") == 0 && strcmp(path, "dialog-de-roger-s.bin") == 0);
+    // Nothing in the chain.
+    const char *it[] = { "it", "fr" };
+    CHECK(select_full(it, 2, "", UINT64_MAX, lang, spk, path) == DIALOG_PICK_NONE &&
+          lang[0] == '\0');
+    // Invalid codes and the own set's pseudo-locale are never looked up.
+    cJSON *assets = cJSON_Parse("{\"own\":{\"dialog\":" FILE_("o.json", 10) "},"
+                                "\"de\":{\"dialog\":" FILE_("d.json", 10) "}}");
+    const char *bogus[] = { "../de", "own", "de" };
+    audio_asset_t ix;
+    CHECK(dialog_manifest_index(assets, bogus, 3, &ix) && strcmp(ix.lang, "de") == 0 &&
+          strcmp(ix.path, "d.json") == 0 && ix.bytes == 10);
+    CHECK(!dialog_manifest_index(assets, bogus, 2, &ix) && ix.lang == NULL && ix.path == NULL);
+    CHECK(!dialog_manifest_index(NULL, bogus, 3, &ix));
+    cJSON_Delete(assets);
 }
 
-// Each malformed variant skips its locale as a whole, German following —
-// also when the bad tier is not the one the budget would pick.
-static void test_manifest_malformed_locale_skipped(void)
+// A malformed index entry in the manifest skips its locale.
+static void test_manifest_index_malformed(void)
 {
-    static const char *const bad_it[] = {
-        "{}", "\"x\"", "[]", "[1]", "null",
-        // the single-object form of an earlier draft
-        TIER("a.alaw", 50000),
-        // short sha / no path / empty path / no bytes / too few bytes /
-        // fractional / negative / not a number
-        "[{\"path\":\"a.alaw\",\"sha256\":\"abc\",\"bytes\":50000}]",
-        "[{\"sha256\":\"" SHA "\",\"bytes\":50000}]",
-        "[{\"path\":\"\",\"sha256\":\"" SHA "\",\"bytes\":50000}]",
-        "[{\"path\":\"a.alaw\",\"sha256\":\"" SHA "\"}]",
-        "[{\"path\":\"a.alaw\",\"sha256\":\"" SHA "\",\"bytes\":8}]",
-        "[{\"path\":\"a.alaw\",\"sha256\":\"" SHA "\",\"bytes\":50000.5}]",
-        "[{\"path\":\"a.alaw\",\"sha256\":\"" SHA "\",\"bytes\":-1}]",
-        "[{\"path\":\"a.alaw\",\"sha256\":\"" SHA "\",\"bytes\":\"50000\"}]",
-        "[{\"path\":7,\"sha256\":\"" SHA "\",\"bytes\":50000}]",
-        // a good small tier next to a broken large one
-        "[" TIER("s.alaw", 50000) ",{\"path\":\"l.alaw\",\"bytes\":300000}]",
+    static const char *const bad[] = {
+        "{}", "\"x\"", "[]", "null",
+        // the tier list of the unpublished first format
+        "[" FILE_("dialog-it-s.bin", 50000) "]",
+        "{\"path\":\"a.json\",\"sha256\":\"abc\",\"bytes\":500}",
+        "{\"path\":\"../a.json\",\"sha256\":\"" SHA "\",\"bytes\":500}",
+        "{\"sha256\":\"" SHA "\",\"bytes\":500}",
+        "{\"path\":\"a.json\",\"sha256\":\"" SHA "\"}",
+        "{\"path\":\"a.json\",\"sha256\":\"" SHA "\",\"bytes\":0}",
+        "{\"path\":\"a.json\",\"sha256\":\"" SHA "\",\"bytes\":1.5}",
+        "{\"path\":\"a.json\",\"sha256\":\"" SHA "\",\"bytes\":8193}",   // > DIALOG_INDEX_MAX_BYTES
     };
-    for (size_t i = 0; i < sizeof(bad_it) / sizeof(bad_it[0]); i++) {
-        char json[2048];
-        snprintf(json, sizeof(json),
-                 "{\"assets\":{\"de\":{" DE_TIERS "},\"it\":{\"dialog\":%s}}}",
-                 bad_it[i]);
-        cJSON *root = cJSON_Parse(json);
-        CHECK(root != NULL);
+    for (size_t i = 0; i < sizeof(bad) / sizeof(bad[0]); i++) {
+        char json[512];
+        snprintf(json, sizeof(json), "{\"it\":{\"dialog\":%s},"
+                 "\"de\":{\"dialog\":" FILE_("dialog-de-1.json", 8192) "}}", bad[i]);
+        cJSON *assets = cJSON_Parse(json);
+        CHECK(assets != NULL);
         const char *chain[] = { "it", "de" };
-        CHECK(picks(root, chain, 2, 131072, "de", "audio/dialog-de-s.alaw"));
-        cJSON_Delete(root);
+        audio_asset_t ix;
+        CHECK(dialog_manifest_index(assets, chain, 2, &ix) && strcmp(ix.lang, "de") == 0);
+        cJSON_Delete(assets);
     }
 }
 
-static void test_manifest_old_format(void)
+// Malformed speakers are skipped, the others stay usable; the first
+// well-formed one is the default.
+static void test_index_malformed_speakers(void)
 {
-    // A bundle from before the dialog: no "dialog" anywhere → no set, the
-    // call takes the announcement path.
-    cJSON *root = cJSON_Parse(
-        "{\"version\":\"1.6.0\",\"assets\":{"
-        "\"de\":{" ANN("de") "},\"en\":{" ANN("en") "}}}");
-    const char *chain[] = { "fr", "en", "de" };
+    const char *json = "{\"speakers\":["
+        "{\"id\":\"Bad\",\"sets\":[" FILE_("a.bin", 1000) "]},"           // id not lower case
+        "{\"id\":\"nosets\"},"
+        "{\"id\":\"empty\",\"sets\":[]},"
+        "{\"id\":\"brokentier\",\"sets\":[" FILE_("a.bin", 1000) ",{\"path\":\"b.bin\"}]},"
+        "{\"id\":\"smalltier\",\"sets\":[" FILE_("a.bin", 8) "]},"        // not > header min
+        "{\"id\":\"escapes\",\"sets\":[" FILE_("../a.bin", 1000) "]},"
+        "7,"
+        "{\"id\":\"anna\",\"gender\":\"female\",\"sets\":[" FILE_("anna.bin", 1000) "],\"x\":1},"
+        "{\"id\":\"anna\",\"sets\":[" FILE_("anna2.bin", 900) "]},"      // duplicate id
+        "{\"id\":\"ben\",\"name\":\"Ben B.\",\"gender\":\"male\",\"preview\":\"tts/de/ben/hello-1.mp3\","
+        " \"sets\":[" FILE_("ben.bin", 2000) "]},"
+        "{\"id\":\"carl\",\"preview\":\"../x.mp3\",\"sets\":[" FILE_("carl.bin", 3000) "]}"
+        "]}";
+    cJSON *index = cJSON_Parse(json);
+    CHECK(index != NULL);
     dialog_manifest_set_t set;
-    CHECK(!dialog_manifest_select(assets_of(root), chain, 3, UINT64_MAX, &set));
-    CHECK(set.lang == NULL);
-    CHECK(!dialog_manifest_select(NULL, chain, 3, UINT64_MAX, &set));
-    cJSON_Delete(root);
+    CHECK(dialog_index_select(index, "", UINT64_MAX, &set) == DIALOG_PICK_CHOSEN &&
+          strcmp(set.speaker, "anna") == 0 && strcmp(set.path, "anna.bin") == 0);
+    CHECK(dialog_index_select(index, "ben", UINT64_MAX, &set) == DIALOG_PICK_CHOSEN &&
+          strcmp(set.path, "ben.bin") == 0 && set.lang == NULL);
+    CHECK(dialog_index_select(index, "brokentier", UINT64_MAX, &set) == DIALOG_PICK_ABSENT &&
+          strcmp(set.speaker, "anna") == 0);
+    CHECK(dialog_index_select(index, "Bad", UINT64_MAX, &set) == DIALOG_PICK_ABSENT);
+    CHECK(dialog_index_select(index, "ben", 1999, &set) == DIALOG_PICK_NO_FIT &&
+          strcmp(set.speaker, "anna") == 0);
+    CHECK(dialog_index_select(index, "ben", 999, &set) == DIALOG_PICK_NONE &&
+          set.path == NULL && set.speaker == NULL);
+
+    // The listing: anna, ben, carl — names, genders, previews checked.
+    dialog_speaker_t sp;
+    CHECK(dialog_index_speaker(index, 0, &sp) && strcmp(sp.id, "anna") == 0 &&
+          strcmp(sp.name, "anna") == 0 && strcmp(sp.gender, "female") == 0 &&
+          strcmp(sp.preview, "") == 0);
+    CHECK(dialog_index_speaker(index, 1, &sp) && strcmp(sp.id, "ben") == 0 &&
+          strcmp(sp.name, "Ben B.") == 0 && strcmp(sp.gender, "male") == 0 &&
+          strcmp(sp.preview, "tts/de/ben/hello-1.mp3") == 0);
+    CHECK(dialog_index_speaker(index, 2, &sp) && strcmp(sp.id, "carl") == 0 &&
+          strcmp(sp.preview, "") == 0 && strcmp(sp.gender, "") == 0);
+    CHECK(!dialog_index_speaker(index, 3, &sp) && sp.id == NULL);
+    CHECK(!dialog_index_speaker(index, -1, &sp));
+    cJSON_Delete(index);
+
+    // No usable speaker at all.
+    const char *none[] = { "{}", "{\"speakers\":{}}", "{\"speakers\":[]}", "[]",
+                           "{\"speakers\":[{\"id\":\"a\"}]}" };
+    for (size_t i = 0; i < sizeof(none) / sizeof(none[0]); i++) {
+        cJSON *ix = cJSON_Parse(none[i]);
+        CHECK(dialog_index_select(ix, "", UINT64_MAX, &set) == DIALOG_PICK_NONE);
+        CHECK(!dialog_index_speaker(ix, 0, &sp));
+        bool re;
+        CHECK(dialog_index_resolve_speaker(ix, "", 0, &re) == NULL && !re);
+        cJSON_Delete(ix);
+    }
+    CHECK(dialog_index_select(NULL, "", UINT64_MAX, &set) == DIALOG_PICK_NONE);
+}
+
+// Forward compatible: unknown fields and a speaker of a later shape next
+// to a usable one.
+static void test_index_forward_compatible(void)
+{
+    cJSON *index = cJSON_Parse("{\"format\":2,\"speakers\":["
+        "{\"id\":\"leonie\",\"styles\":[1],\"sets\":["
+        "{\"path\":\"s.bin\",\"sha256\":\"" SHA "\",\"bytes\":120000,\"codec\":\"pcma\"},"
+        "{\"path\":\"xl.bin\",\"sha256\":\"" SHA "\",\"bytes\":900000}]}],\"extra\":{}}");
+    dialog_manifest_set_t set;
+    CHECK(dialog_index_select(index, "", 131072, &set) == DIALOG_PICK_CHOSEN &&
+          set.bytes == 120000 && strcmp(set.path, "s.bin") == 0);
+    cJSON_Delete(index);
+}
+
+// The random default: uniform over all speakers; a speaker the locale
+// lacks (or none yet) is drawn again, one it has stays.
+static void test_speaker_resolve(void)
+{
+    cJSON *index = cJSON_Parse("{\"speakers\":["
+        SPK("leonie", "female", FILE_("l.bin", 1000)) ","
+        SPK("roger", "male", FILE_("r.bin", 1000)) ","
+        SPK("anna", "female", FILE_("a.bin", 1000)) "]}");
+    // r maps onto the list by r % n: first, middle, last, and wrap-around.
+    CHECK(strcmp(dialog_index_random_speaker(index, 0), "leonie") == 0);
+    CHECK(strcmp(dialog_index_random_speaker(index, 1), "roger") == 0);
+    CHECK(strcmp(dialog_index_random_speaker(index, 2), "anna") == 0);
+    CHECK(strcmp(dialog_index_random_speaker(index, 3), "leonie") == 0);
+    CHECK(strcmp(dialog_index_random_speaker(index, UINT32_MAX), "leonie") == 0);  // 2^32-1 = 0 mod 3
+    CHECK(strcmp(dialog_index_random_speaker(index, UINT32_MAX - 1), "anna") == 0);
+    // Uniform: each speaker equally often over full cycles.
+    int seen[3] = { 0 };
+    for (uint32_t r = 0; r < 300; r++) {
+        const char *id = dialog_index_random_speaker(index, r);
+        seen[strcmp(id, "leonie") == 0 ? 0 : strcmp(id, "roger") == 0 ? 1 : 2]++;
+    }
+    CHECK(seen[0] == 100 && seen[1] == 100 && seen[2] == 100);
+
+    bool re;
+    // Empty: a pick within the list, to be persisted (first and last index).
+    const char *p = dialog_index_resolve_speaker(index, "", 0, &re);
+    CHECK(re && p && strcmp(p, "leonie") == 0);
+    p = dialog_index_resolve_speaker(index, NULL, 2, &re);
+    CHECK(re && p && strcmp(p, "anna") == 0);
+    // Present: unchanged, nothing to persist, whatever r.
+    p = dialog_index_resolve_speaker(index, "roger", 0, &re);
+    CHECK(!re && strcmp(p, "roger") == 0);
+    p = dialog_index_resolve_speaker(index, "anna", 1, &re);
+    CHECK(!re && strcmp(p, "anna") == 0);
+    // Absent from this locale (a German-only voice, a speaker removed from
+    // the CDN): drawn again.
+    p = dialog_index_resolve_speaker(index, "hans", 1, &re);
+    CHECK(re && strcmp(p, "roger") == 0);
+    dialog_manifest_set_t set;
+    CHECK(dialog_index_select(index, p, UINT64_MAX, &set) == DIALOG_PICK_CHOSEN &&
+          strcmp(set.speaker, "roger") == 0);
+    cJSON_Delete(index);
+}
+
+static void test_speaker_valid(void)
+{
+    const char *good[] = { "roger", "a", "a-1", "leonie", "abcdefghijklmnop" };
+    for (size_t i = 0; i < sizeof(good) / sizeof(good[0]); i++) CHECK(dialog_speaker_valid(good[i]));
+    const char *bad[] = { NULL, "", "Roger", "1a", "abcdefghijklmnopq", "a_b", "../x",
+                          "-a", "a b", "a.b", "a/b" };
+    for (size_t i = 0; i < sizeof(bad) / sizeof(bad[0]); i++) CHECK(!dialog_speaker_valid(bad[i]));
+}
+
+// A set the web UI's builder made (main/web/index.html, dlgBuild(); checked
+// against this vector by dialog_set_js_check.js): clip counts 1,2,1,3,1,
+// the i-th clip of the file 3 + 2*i bytes of phase*16 + clip.
+static const char JS_SET_VECTOR[] =
+    "5042445301054d0001020103014d00000003000000500000000500000055000000070000005c"
+    "00000009000000650000000b000000700000000d0000007d0000000f0000008c000000110000"
+    "0000000010101010101111111111111120202020202020202030303030303030303030303131"
+    "3131313131313131313131323232323232323232323232323232404040404040404040404040"
+    "4040404040";
+
+static void test_js_built_set(void)
+{
+    uint8_t f[256];
+    size_t n = strlen(JS_SET_VECTOR) / 2;
+    CHECK(n <= sizeof(f));
+    for (size_t i = 0; i < n; i++) {
+        unsigned v;
+        CHECK(sscanf(JS_SET_VECTOR + 2 * i, "%2x", &v) == 1);
+        f[i] = (uint8_t)v;
+    }
+    dialog_set_t set;
+    memset(&set, 0, sizeof(set));
+    CHECK(dialog_header_parse(f, n, n, &set) == DIALOG_HEADER_OK);
+    static const uint8_t counts[DIALOG_PHASE_COUNT] = { 1, 2, 1, 3, 1 };
+    // Read back: every clip where the builder put it, with its bytes.
+    uint8_t g[256];
+    memset(g, 0, sizeof(g));
+    uint32_t off = 8 + 5 + 8 * 8;
+    int i = 0;
+    for (int p = 0; p < DIALOG_PHASE_COUNT; p++) {
+        CHECK(set.count[p] == counts[p]);
+        for (int k = 0; k < counts[p]; k++, i++) {
+            uint32_t len = 3 + 2 * (uint32_t)i;
+            CHECK(set.clip[p][k].off == off && set.clip[p][k].len == len);
+            for (uint32_t b = 0; b < len; b++) CHECK(f[off + b] == (uint8_t)(p * 16 + k));
+            off += len;
+        }
+    }
+    CHECK(off == n);
+    // Write it again from the parse (as audio-assets.sh / build_set do) →
+    // the same bytes.
+    uint32_t lens[8];
+    for (int k = 0; k < 8; k++) lens[k] = 3 + 2 * (uint32_t)k;
+    size_t m = build_set(g, sizeof(g), 5, counts, lens);
+    CHECK(m == n && memcmp(g, f, 8 + 5 + 8 * 8) == 0);
 }
 
 // --- Clip store on the file system -------------------------------------------------
@@ -630,7 +827,7 @@ static void test_store(const char *dir)
     CHECK(strcmp(path, want) == 0);
 
     // The index alone: a set without its file is no set.
-    CHECK(dialog_store_write_index("de") == PB_OK);
+    CHECK(dialog_store_write_index("de", "roger") == PB_OK);
     CHECK(!dialog_store_load(&back) && back.lang[0] == '\0');
     // A file cut short is not one either, nor one without a header.
     write_buf(path, f, n - 1);
@@ -639,23 +836,37 @@ static void test_store(const char *dir)
     CHECK(!dialog_store_load(&back));
     write_buf(path, f, n);
     CHECK(dialog_store_read_file("de", &back) && strcmp(back.lang, "de") == 0);
-    CHECK(dialog_store_load(&back) && strcmp(back.lang, "de") == 0);
+    CHECK(dialog_store_load(&back) && strcmp(back.lang, "de") == 0 &&
+          strcmp(back.speaker, "roger") == 0);
     CHECK(back.count[DIALOG_PHASE_QUESTION] == 4 &&
           back.clip[DIALOG_PHASE_HELLO][0].off == DE_HLEN);
     CHECK(!dialog_store_read_file("fr", &back) && !dialog_store_read_file("../x", &back));
 
-    // The index names the locale, exactly "<lang>\n".
+    // The index names the locale and the speaker: "<lang>\n<speaker>\n",
+    // or the speakerless "<lang>\n" (own set, earlier firmware).
+    write_text(dir, "dialog.idx", "de\n");
+    CHECK(dialog_store_load(&back) && back.speaker[0] == '\0');
+    write_text(dir, "dialog.idx", "de\n\n");
+    CHECK(dialog_store_load(&back) && back.speaker[0] == '\0');
+    write_text(dir, "dialog.idx", "de\nleonie\n");
+    CHECK(dialog_store_load(&back) && strcmp(back.speaker, "leonie") == 0);
     write_text(dir, "dialog.idx", "de");
     CHECK(!dialog_store_load(&back));
-    write_text(dir, "dialog.idx", "de\nde\n");
+    write_text(dir, "dialog.idx", "de\nleonie");
+    CHECK(!dialog_store_load(&back));
+    write_text(dir, "dialog.idx", "de\nLeonie\n");
+    CHECK(!dialog_store_load(&back));
+    write_text(dir, "dialog.idx", "de\nleonie\nx\n");
     CHECK(!dialog_store_load(&back));
     write_text(dir, "dialog.idx", "../x\n");
     CHECK(!dialog_store_load(&back));
     // The text format of an earlier draft does not parse.
     write_text(dir, "dialog.idx", "de\n0:1\n0:1\n0:1\n0:1\n0:1\n");
     CHECK(!dialog_store_load(&back));
-    CHECK(dialog_store_write_index("../x") == PB_FAIL);
-    CHECK(dialog_store_write_index("de") == PB_OK && dialog_store_load(&back));
+    CHECK(dialog_store_write_index("../x", NULL) == PB_FAIL);
+    CHECK(dialog_store_write_index("de", "Bad") == PB_FAIL);
+    CHECK(dialog_store_write_index("de", NULL) == PB_OK && dialog_store_load(&back) &&
+          back.speaker[0] == '\0');
 
     // Another locale's leftovers go, the kept locale's file stays — and so
     // does the index, which remove_others never touches.
@@ -673,11 +884,109 @@ static void test_store(const char *dir)
     dialog_store_drop_index();
     CHECK(!dialog_store_load(&back) && exists(dir, "dialog-de.alaw"));
 
-    CHECK(dialog_store_write_index("de") == PB_OK);
+    CHECK(dialog_store_write_index("de", "leonie") == PB_OK);
     CHECK(dialog_store_remove_all() == 2);
     CHECK(!exists(dir, "dialog-de.alaw") && !exists(dir, "dialog.idx"));
     CHECK(exists(dir, "announcement-de.alaw"));   // not the store's business
     unlink(other);
+}
+
+// The kept dialog index and the user's own set.
+static void test_store_own(const char *dir)
+{
+    static uint8_t f[4096];
+    size_t n = build_set(f, sizeof(f), 5, DE_COUNTS, DE_LENS);
+    dialog_set_t back;
+
+    // The speakers file: read back verbatim, refused when absent or too big.
+    CHECK(dialog_store_read_speakers() == NULL);
+    char spk[DIALOG_STORE_PATH_CAP];
+    dialog_store_speakers_path(spk, sizeof(spk));
+    char want[512];
+    snprintf(want, sizeof(want), "%s/dialog-speakers.json", dir);
+    CHECK(strcmp(spk, want) == 0);
+    write_text(dir, "dialog-speakers.json", "{\"speakers\":[]}");
+    char *text = dialog_store_read_speakers();
+    CHECK(text && strcmp(text, "{\"speakers\":[]}") == 0);
+    free(text);
+    static char big[DIALOG_INDEX_MAX_BYTES + 2];
+    memset(big, ' ', sizeof(big) - 1);
+    write_text(dir, "dialog-speakers.json", big);
+    CHECK(dialog_store_read_speakers() == NULL);
+    write_text(dir, "dialog-speakers.json", "{}");
+
+    // A CDN set in place, then the own set written as the upload does:
+    // file, then index line "own".
+    char path[DIALOG_STORE_PATH_CAP];
+    dialog_store_file_path(path, sizeof(path), "de");
+    write_buf(path, f, n);
+    CHECK(dialog_store_write_index("de", "roger") == PB_OK);
+    CHECK(!dialog_store_has_own() && !dialog_store_claim_own());
+    CHECK(dialog_store_load(&back) && strcmp(back.lang, "de") == 0);   // untouched
+
+    char own[DIALOG_STORE_PATH_CAP];
+    dialog_store_file_path(own, sizeof(own), DIALOG_OWN_LANG);
+    write_buf(own, f, n);
+    CHECK(dialog_store_has_own());
+    // The sync's pass with an own set present (here: interrupted before its
+    // index line): the index is repaired to "own", the CDN set goes, the own
+    // file keeps its bytes.
+    CHECK(dialog_store_claim_own());
+    CHECK(dialog_store_load(&back) && strcmp(back.lang, DIALOG_OWN_LANG) == 0 &&
+          back.speaker[0] == '\0' && back.count[DIALOG_PHASE_QUESTION] == 4);
+    CHECK(!exists(dir, "dialog-de.alaw") && exists(dir, "dialog-own.alaw"));
+    // A second pass changes nothing.
+    CHECK(dialog_store_claim_own());
+    CHECK(dialog_store_load(&back) && strcmp(back.lang, DIALOG_OWN_LANG) == 0);
+    uint8_t g[4096];
+    FILE *fp = fopen(own, "rb");
+    CHECK(fp && fread(g, 1, sizeof(g), fp) == n && memcmp(f, g, n) == 0);
+    if (fp) fclose(fp);
+    // A broken own file is no own set.
+    write_bytes(own, 40);
+    CHECK(!dialog_store_has_own() && !dialog_store_claim_own());
+    write_buf(own, f, n);
+
+    // An upload's temp file goes with the others.
+    write_text(dir, "dialog-own.alaw.part", "x");
+    CHECK(dialog_store_remove_others(DIALOG_OWN_LANG) == 1 && exists(dir, "dialog-own.alaw"));
+
+    // Leaving dialog mode: everything goes, the own set and the index too.
+    CHECK(dialog_store_remove_all() == 3);
+    CHECK(!exists(dir, "dialog-own.alaw") && !exists(dir, "dialog.idx") &&
+          !exists(dir, "dialog-speakers.json"));
+    CHECK(!dialog_store_has_own() && !dialog_store_load(&back));
+
+    // The upload flag (web.c / i18n_sync.c).
+    CHECK(!dialog_store_upload_active());
+    dialog_store_set_upload_active(true);
+    CHECK(dialog_store_upload_active());
+    dialog_store_set_upload_active(false);
+}
+
+// `test_dialog FILE...`: checks that each file is a valid set (the staged
+// .bin files of audio-assets.sh --no-upload).
+static int check_files(int argc, char **argv)
+{
+    static uint8_t hdr[DIALOG_HEADER_MAX];
+    int bad = 0;
+    for (int i = 1; i < argc; i++) {
+        FILE *f = fopen(argv[i], "rb");
+        if (!f) { fprintf(stderr, "%s: cannot open\n", argv[i]); bad++; continue; }
+        size_t n = fread(hdr, 1, sizeof(hdr), f);
+        fseek(f, 0, SEEK_END);
+        long size = ftell(f);
+        fclose(f);
+        dialog_set_t set;
+        if (size <= 0 || dialog_header_parse(hdr, n, (uint64_t)size, &set) != DIALOG_HEADER_OK) {
+            fprintf(stderr, "%s: not a valid dialog set\n", argv[i]);
+            bad++;
+            continue;
+        }
+        printf("%s: ok, %ld B, clips %u/%u/%u/%u/%u\n", argv[i], size, set.count[0],
+               set.count[1], set.count[2], set.count[3], set.count[4]);
+    }
+    return bad ? 1 : 0;
 }
 
 // --- RTP receive parser --------------------------------------------------------------
@@ -729,8 +1038,9 @@ static void test_rtp_rx(void)
     CHECK(!rtp_rx_payload(pkt, 32, 8, &pl, &n));
 }
 
-int main(void)
+int main(int argc, char **argv)
 {
+    if (argc > 1) return check_files(argc, argv);
     test_hello_then_silence_asks_who_is_there();
     test_speech_leads_to_am_aparat_then_questions();
     test_turn_waits_for_min_silence();
@@ -744,10 +1054,14 @@ int main(void)
     test_phase_names();
     test_header_parse();
     test_lang_valid();
-    test_manifest_tier_by_budget();
-    test_manifest_chain_fallback();
-    test_manifest_malformed_locale_skipped();
-    test_manifest_old_format();
+    test_select_speaker_and_tier();
+    test_select_locale_chain();
+    test_manifest_index_malformed();
+    test_index_malformed_speakers();
+    test_index_forward_compatible();
+    test_speaker_resolve();
+    test_speaker_valid();
+    test_js_built_set();
     test_rtp_rx();
 
     const char *tmp = getenv("TMPDIR");
@@ -756,6 +1070,7 @@ int main(void)
     CHECK(mkdtemp(dir) != NULL);
     CHECK(setenv("PB_DIALOG_TEST_DIR", dir, 1) == 0);
     test_store(dir);
+    test_store_own(dir);
     rmdir(dir);
     printf("test_dialog: %d checks, %d failures\n", checks, failures);
     return failures ? 1 : 0;

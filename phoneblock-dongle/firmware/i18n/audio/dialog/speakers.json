@@ -1,7 +1,11 @@
 {
   "default": "leonie",
   "speakers": [
-    { "id": "leonie", "voice": "Leonie", "gender": "female" },
-    { "id": "roger",  "voice": "Roger",  "gender": "male" }
+    {"id": "leonie", "voice": "Leonie", "gender": "female"},
+    {"id": "roger", "voice": "Roger", "gender": "male"},
+    {"id": "lisa", "name": "Lisa", "voice": "p2Wol3C7j3rHbfOrbL18", "gender": "female", "langs": ["de"]},
+    {"id": "tosca", "name": "Tosca", "voice": "fNmw8sukfGuvWVOp33Ge", "gender": "female", "langs": ["de"]},
+    {"id": "johann", "name": "Johann", "voice": "R3XXDwKMU2YHwBcuYUH3", "gender": "male", "langs": ["de"]},
+    {"id": "grandpa", "name": "Grandpa", "voice": "GtvrBPZOsCHv7plFvX8i", "gender": "male", "langs": ["de"]}
   ]
 }

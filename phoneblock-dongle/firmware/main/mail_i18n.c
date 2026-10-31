@@ -8,6 +8,8 @@
 #include "esp_log.h"
 
 #include "config.h"
+#include "i18n_sync.h"   // i18n_sync_mail_path(): the module owning the layout
+#include "platform.h"    // PB_DATA_PATH_CAP
 
 static const char *TAG = "mail_i18n";
 
@@ -56,8 +58,8 @@ static void ensure_pack(const char *lang)
     strncpy(s_pack_lang, lang, sizeof(s_pack_lang) - 1);
     s_pack_lang[sizeof(s_pack_lang) - 1] = '\0';
 
-    char path[48];
-    snprintf(path, sizeof(path), "/spiffs/mail-%s.json", lang);
+    char path[PB_DATA_PATH_CAP];
+    if (!i18n_sync_mail_path(path, sizeof(path), lang)) return;   // i18n_sync WARNs
     FILE *f = fopen(path, "rb");
     if (!f) return;                               // not downloaded yet → fallback
     fseek(f, 0, SEEK_END);

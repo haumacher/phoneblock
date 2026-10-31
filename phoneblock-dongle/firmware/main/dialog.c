@@ -155,6 +155,20 @@ bool dialog_lang_valid(const char *s)
     return true;
 }
 
+bool dialog_speaker_valid(const char *s)
+{
+    if (!s) return false;
+    const char *z = memchr(s, '\0', DIALOG_SPEAKER_CAP);
+    if (!z) return false;                       // over 16 characters
+    size_t n = (size_t)(z - s);
+    if (n < 1 || s[0] < 'a' || s[0] > 'z') return false;
+    for (size_t i = 1; i < n; i++) {
+        char c = s[i];
+        if (!((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-')) return false;
+    }
+    return true;
+}
+
 static uint32_t le32(const uint8_t *p)
 {
     return (uint32_t)p[0] | (uint32_t)p[1] << 8 | (uint32_t)p[2] << 16 |

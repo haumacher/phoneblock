@@ -79,14 +79,39 @@ static web_http_error_t handle_slow(web_http_request_t *request)
     return web_http_send_text(request, "slow");
 }
 
+// Answers the length of the body it got (a route with a larger max_body).
+static web_http_error_t handle_length(web_http_request_t *request)
+{
+    char text[32];
+    snprintf(text, sizeof(text), "got %zu", web_http_body_length(request));
+    return web_http_send_text(request, text);
+}
+
+#define BIG_MAX (512U * 1024U)
+
+// What on_body_refused last reported.
+static char s_refused_uri[64];
+static unsigned long long s_refused_length;
+static size_t s_refused_max;
+static int s_refused_calls;
+
+static void on_refused(const char *uri, unsigned long long length, size_t max)
+{
+    snprintf(s_refused_uri, sizeof(s_refused_uri), "%s", uri);
+    s_refused_length = length;
+    s_refused_max = max;
+    s_refused_calls++;
+}
+
 static const web_http_route_t routes[] = {
-    { "/slow", WEB_HTTP_GET, handle_slow },
-    { "/health", WEB_HTTP_GET, handle_health },
-    { "/text", WEB_HTTP_GET, handle_text },
-    { "/echo", WEB_HTTP_POST, handle_echo },
-    { "/query", WEB_HTTP_GET, handle_query },
-    { "/retype", WEB_HTTP_GET, handle_retype },
-    { "/has-header", WEB_HTTP_GET, handle_has_header },
+    { "/big", WEB_HTTP_POST, handle_length, BIG_MAX },
+    { "/slow", WEB_HTTP_GET, handle_slow, 0 },
+    { "/health", WEB_HTTP_GET, handle_health, 0 },
+    { "/text", WEB_HTTP_GET, handle_text, 0 },
+    { "/echo", WEB_HTTP_POST, handle_echo, 0 },
+    { "/query", WEB_HTTP_GET, handle_query, 0 },
+    { "/retype", WEB_HTTP_GET, handle_retype, 0 },
+    { "/has-header", WEB_HTTP_GET, handle_has_header, 0 },
 };
 
 // Number of occurrences of `needle` in `haystack`.
@@ -150,6 +175,7 @@ int main(void)
     web_http_server_config_t config = {
         .port = 0,
         .bind_address = "127.0.0.1",
+        .on_body_refused = on_refused,
     };
     web_http_server_t *server = NULL;
     REQUIRE(web_http_server_start(&server, &config, routes,
@@ -228,6 +254,40 @@ int main(void)
                    "Content-Length: 1048576\r\nConnection: close\r\n\r\n",
                    response, sizeof(response)) > 0);
     REQUIRE(strstr(response, "413") != NULL);
+    // ...as JSON naming the reason, and reported to the owner (its WARN).
+    REQUIRE(strstr(response, "Content-Type: application/json") != NULL);
+    REQUIRE(strstr(response, "\"code\":\"too_large\"") != NULL);
+    REQUIRE(strstr(response, "1048576 bytes") != NULL);
+    REQUIRE(s_refused_calls == 1);
+    REQUIRE(strcmp(s_refused_uri, "/echo") == 0);
+    REQUIRE(s_refused_length == 1048576ULL && s_refused_max == WEB_HTTP_MAX_BODY);
+
+    // A route with a larger max_body takes a body over the default cap...
+    {
+        size_t n = WEB_HTTP_MAX_BODY + 4096;
+        char head[160];
+        int hl = snprintf(head, sizeof(head), "POST /big HTTP/1.1\r\nHost: localhost\r\n"
+                          "Content-Length: %zu\r\nConnection: close\r\n\r\n", n);
+        char *msg = malloc((size_t)hl + n + 1);
+        REQUIRE(msg != NULL);
+        memcpy(msg, head, (size_t)hl);
+        memset(msg + hl, 'a', n);
+        msg[(size_t)hl + n] = '\0';
+        REQUIRE(request(port, msg, response, sizeof(response)) > 0);
+        free(msg);
+        char want[32];
+        snprintf(want, sizeof(want), "\r\n\r\ngot %zu", n);
+        REQUIRE(strstr(response, "200 OK") != NULL);
+        REQUIRE(strstr(response, want) != NULL);
+    }
+    // ...but not one over its own.
+    REQUIRE(request(port,
+                   "POST /big HTTP/1.1\r\nHost: localhost\r\n"
+                   "Content-Length: 524289\r\nConnection: close\r\n\r\n",
+                   response, sizeof(response)) > 0);
+    REQUIRE(strstr(response, "413") != NULL);
+    REQUIRE(strstr(response, "\"code\":\"too_large\"") != NULL);
+    REQUIRE(s_refused_calls == 2 && s_refused_max == BIG_MAX);
 
     // Two Content-Length headers: ambiguous framing, refused.
     REQUIRE(request(port,

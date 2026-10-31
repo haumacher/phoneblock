@@ -37,9 +37,17 @@
 // -1 if the partition cannot be read (not mounted).
 int64_t storage_community_budget(void);
 
+// The dialog budget on a plain filesystem (the Linux port): no partition
+// limits it, so this ceiling does — above the largest published tier
+// (`l`, 450–530 KB) with room for a larger own set, and within what the
+// Linux HTTP layer buffers (WEB_HTTP_MAX_RESPONSE, web_http.h; checked in
+// web.c).
+#define STORAGE_DIALOG_PLAIN_FS_MAX (2U * 1024U * 1024U)
+
 // Largest dialog clip set file (#429) the partition takes, in bytes: the
-// tier limit of its layout (storage_budget_dialog()), UINT64_MAX on a plain
-// filesystem (the Linux port), which takes the largest published tier.
+// tier limit of its layout (storage_budget_dialog()), or
+// STORAGE_DIALOG_PLAIN_FS_MAX on a plain filesystem (the Linux port). Both
+// the downloaded tier and an own set (POST /api/dialog) are held to it.
 uint64_t storage_dialog_budget(void);
 
 // Makes room for a rarely written file of `bytes` that is about to be written
