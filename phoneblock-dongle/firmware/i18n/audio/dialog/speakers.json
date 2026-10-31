@@ -1,0 +1,7 @@
+{
+  "default": "leonie",
+  "speakers": [
+    { "id": "leonie", "voice": "Leonie", "gender": "female" },
+    { "id": "roger",  "voice": "Roger",  "gender": "male" }
+  ]
+}

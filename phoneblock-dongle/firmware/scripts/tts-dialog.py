@@ -2,38 +2,48 @@
 """Speak the answer-bot dialog sentences into the dongle's clip files.
 
 Reads i18n/l10n/dialog/dialog_<lang>.arb (German source + DeepL translations,
-see i18n/README.md) and writes, for every key <phase>_<n>,
+see i18n/README.md) and, for every speaker of i18n/audio/dialog/speakers.json
+and every key <phase>_<n>, writes into i18n/audio/dialog/<lang>/<speaker>/
 
-    i18n/audio/dialog/<lang>/<phase>-<n>.mp3    the master: ElevenLabs' 44.1 kHz
-                                                output re-encoded to MASTER_FFMPEG
-                                                (24 kHz mono, 48 kbit/s)
-    i18n/audio/dialog/<lang>/<phase>-<n>.alaw   converted locally with ffmpeg:
-                                                raw G.711 A-law, 8 kHz mono
-    i18n/audio/dialog/<lang>/<phase>-<n>.txt    the sentence that was spoken
-    i18n/audio/dialog/<lang>/voice.json         the voice and model that spoke them
+    <phase>-<n>.txt    the sentence that was spoken            (committed)
+    voice.json         the voice, model and tempo that spoke    (committed)
+    <phase>-<n>.mp3    the master: ElevenLabs' 44.1 kHz output re-encoded to
+                       MASTER_FFMPEG (24 kHz mono, 48 kbit/s)   (on the CDN)
+    <phase>-<n>.alaw   converted locally with ffmpeg: raw G.711 A-law,
+                       8 kHz mono                               (local only)
 
-through the ElevenLabs text-to-speech API. The master is kept so a different
-device encoding (trimming, loudness, a wideband codec) is a local re-run of
---convert-only, not new API credits. The .txt is the transcript and the cache
-key: a clip is only (re)generated when its sentence changed, so a run after
-editing one sentence costs one request. A different voice or model than the
-one voice.json records regenerates the whole locale. Clips whose key is gone from the
-ARB are deleted. scripts/audio-assets.sh publishes the result.
+through the ElevenLabs text-to-speech API. Every speaker is one voice in all
+languages (the premade and multilingual library voices speak them all).
+
+The masters are what costs API credits, and with several speakers they are too
+large for git: --upload copies them with their .txt and voice.json to the CDN
+(CDN_TTS below, named like the local files: <lang>/<speaker>/question-14.mp3),
+--fetch brings them into a fresh checkout. A different device encoding
+(trimming, loudness, a wideband codec) is a local re-run of --convert-only,
+not new API credits.
+
+The .txt is the transcript and the cache key: a clip is only (re)generated
+when its sentence changed, so a run after editing one sentence costs one
+request per speaker. A speaker whose voice.json records another voice or
+model is regenerated as a whole. An interrupted run resumes with the clips
+still missing. Clips whose key is gone from the ARB are deleted.
+scripts/audio-assets.sh publishes the result.
 
 Usage:
     scripts/tts-dialog.py --list-voices
-    scripts/tts-dialog.py [--langs "de en"] [--force] [--dry-run]
-    scripts/tts-dialog.py --convert-only [--langs "de en"]
+    scripts/tts-dialog.py [--langs "de en"] [--speakers "roger"] [--force] [--dry-run]
+    scripts/tts-dialog.py --convert-only [--langs ...] [--speakers ...]
+    scripts/tts-dialog.py --upload | --fetch [--langs ...] [--speakers ...]
 
-Credentials, voice and model, looked up in this order:
-    ELEVENLABS_API_KEY / ELEVENLABS_VOICE / ELEVENLABS_MODEL environment
-    variables, else elevenlabs.apiKey / elevenlabs.voice / elevenlabs.model
-    in ~/.gradle/gradle.properties (next to deepl.apiKey, never committed),
-    else the defaults VOICE and MODEL below. The voice is a name from
-    --list-voices (the part before " - ", case-insensitive) or a voice ID;
-    it must be in the account's voice library.
+The API key comes from the ELEVENLABS_API_KEY environment variable, else
+elevenlabs.apiKey in ~/.gradle/gradle.properties (next to deepl.apiKey, never
+committed). A speaker's voice is a name from --list-voices (the part before
+" - ", case-insensitive) or a voice ID; it must be a premade voice, one in the
+account's library, or a voice ID from the shared library. The CDN account is
+CDN_HOST (default haumac@cdn.phoneblock.net, as audio-assets.sh).
 """
 import argparse
+import filecmp
 import json
 import math
 import os
@@ -42,6 +52,7 @@ import shutil
 import struct
 import subprocess
 import sys
+import tempfile
 import time
 import urllib.error
 import urllib.request
@@ -50,16 +61,23 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 FIRMWARE = os.path.dirname(HERE)
 L10N = os.path.join(FIRMWARE, "i18n", "l10n", "dialog")
 AUDIO = os.path.join(FIRMWARE, "i18n", "audio", "dialog")
+SPEAKERS = os.path.join(AUDIO, "speakers.json")
 LANGUAGES = os.path.join(FIRMWARE, "i18n", "languages.txt")
 API = "https://api.elevenlabs.io/v1"
 
-# The voice and model all published clips are spoken with.
-VOICE = "Leonie"
+CDN_HOST = os.environ.get("CDN_HOST", "haumac@cdn.phoneblock.net")
+CDN_BASE = os.environ.get("CDN_BASE", "/public_html/cdn/dongle")
+# The masters: https://cdn.phoneblock.net/dongle/firmware/audio/tts/<lang>/<speaker>/.
+# Outside the audio/v<N> channels: they are the source, not a device format.
+CDN_TTS = CDN_BASE + "/firmware/audio/tts"
+SSH_OPTS = ["-o", "BatchMode=yes", "-o", "ConnectTimeout=20"]
+
+# The model all speakers speak with.
 MODEL = "eleven_v4"
 # Speed-up applied locally when converting a master (ffmpeg atempo, pitch
 # kept): eleven_v4 speaks ~30 % slower than eleven_multilingual_v2 and ignores
 # the API's voice_settings.speed. 1.25 brings it back to about the v2 pace.
-# Recorded per locale in voice.json; changing it only re-converts, no API
+# Recorded per speaker in voice.json; changing it only re-converts, no API
 # requests.
 TEMPO = 1.25
 
@@ -226,18 +244,19 @@ def to_alaw(master, out, tempo):
     os.replace(tmp, out)
 
 
-def check_budget(lang):
-    """True if lang's minimum set (clip 1 of every phase) fits MAX_SET_BYTES."""
-    d = os.path.join(AUDIO, lang)
+
+
+def check_budget(d, label):
+    """True if the minimum set in d (clip 1 of every phase) fits MAX_SET_BYTES."""
     total = sum(os.path.getsize(os.path.join(d, n)) for n in os.listdir(d)
                 if n.endswith(".alaw"))
     minimum = sum(os.path.getsize(os.path.join(d, f"{ph.replace('_', '-')}-1.alaw"))
                   for ph in PHASES
                   if os.path.exists(os.path.join(d, f"{ph.replace('_', '-')}-1.alaw")))
-    print(f"{lang}: all clips {total} B ({total / 8000:.1f} s), "
+    print(f"{label}: all clips {total} B ({total / 8000:.1f} s), "
           f"minimum set {minimum} B of {MAX_SET_BYTES} B")
     if minimum > MAX_SET_BYTES:
-        print(f"{lang}: minimum set too large for the smallest device tier")
+        print(f"{label}: minimum set too large for the smallest device tier")
         return False
     return True
 
@@ -266,31 +285,150 @@ def clips_of(lang):
     return clips
 
 
+SPEAKER_ID_RE = re.compile(r"^[a-z][a-z0-9-]{0,15}$")
+
+
+def speakers():
+    """The speaker table: [{id, voice, gender[, langs]}], the default first.
+    A speaker with `langs` speaks only those locales; the default speaks all."""
+    with open(SPEAKERS, encoding="utf-8") as f:
+        table = json.load(f)
+    rows = table["speakers"]
+    ids = [s["id"] for s in rows]
+    for s in rows:
+        if not SPEAKER_ID_RE.match(s["id"]) or s.get("gender") not in ("female", "male"):
+            sys.exit(f"{SPEAKERS}: bad speaker {s}")
+    if len(set(ids)) != len(ids) or table.get("default") not in ids:
+        sys.exit(f"{SPEAKERS}: duplicate ids or default not among {ids}")
+    if any("langs" in s for s in rows if s["id"] == table["default"]):
+        sys.exit(f"{SPEAKERS}: the default speaker must speak every language (no 'langs')")
+    return sorted(rows, key=lambda s: s["id"] != table["default"])
+
+
+def selected(a):
+    langs = a.langs.split() if a.langs else languages()
+    rows = speakers()
+    if a.speakers:
+        want = a.speakers.split()
+        unknown = set(want) - {s["id"] for s in rows}
+        if unknown:
+            sys.exit(f"unknown speaker(s) {' '.join(sorted(unknown))}, see {SPEAKERS}")
+        rows = [s for s in rows if s["id"] in want]
+    return langs, rows
+
+
+def sftp(batch):
+    """Runs an sftp batch on CDN_HOST ('-' prefixed lines may fail)."""
+    r = subprocess.run(["sftp", *SSH_OPTS, "-b", "-", CDN_HOST], input=batch,
+                       text=True, capture_output=True)
+    if r.returncode != 0:
+        sys.exit(f"sftp {CDN_HOST}: {r.stderr.strip() or r.stdout.strip()}")
+
+
+def upload(langs, rows):
+    """Copies masters, transcripts and voice.json of every speaker directory
+    to CDN_TTS, one sftp session per directory (the next --upload repeats
+    whatever an interrupted one did not finish; files are replaced in place)."""
+    dirs = [(lang, s["id"]) for lang in langs for s in rows
+            if os.path.exists(os.path.join(AUDIO, lang, s["id"], "voice.json"))]
+    total = 0
+    for i, (lang, sid) in enumerate(dirs, 1):
+        d = os.path.join(AUDIO, lang, sid)
+        remote = f"{CDN_TTS}/{lang}/{sid}"
+        lines = [f"-mkdir {CDN_BASE}{p}" for p in
+                 ("/firmware", "/firmware/audio", "/firmware/audio/tts", f"/firmware/audio/tts/{lang}")]
+        lines.append(f"-mkdir {remote}")
+        names = sorted(x for x in os.listdir(d)
+                       if x.endswith(".txt") and os.path.exists(os.path.join(d, x[:-4] + ".mp3")))
+        # Master before transcript: a transcript on the CDN vouches for its master.
+        for x in names:
+            lines.append(f'put "{os.path.join(d, x[:-4] + ".mp3")}" {remote}/{x[:-4]}.mp3')
+            lines.append(f'put "{os.path.join(d, x)}" {remote}/{x}')
+        lines.append(f'put "{os.path.join(d, "voice.json")}" {remote}/voice.json')
+        print(f"[{i}/{len(dirs)}] {lang}/{sid}: {len(names)} masters ...", end=" ", flush=True)
+        sftp("\n".join(lines) + "\n")
+        print("done", flush=True)
+        total += len(names)
+    print(f"uploaded {total} masters to {CDN_HOST}:{CDN_TTS}")
+
+
+def fetch(langs, rows):
+    """Brings the CDN's master of every clip whose local transcript and
+    voice.json match the CDN's, and converts it. Returns the number fetched."""
+    n = 0
+    for lang in langs:
+        for s in rows:
+            d = os.path.join(AUDIO, lang, s["id"])
+            if not os.path.exists(os.path.join(d, "voice.json")):
+                continue
+            with tempfile.TemporaryDirectory() as tmp:
+                r = subprocess.run(["sftp", *SSH_OPTS, "-b", "-", CDN_HOST],
+                                   input=f"get {CDN_TTS}/{lang}/{s['id']}/* {tmp}/\n",
+                                   text=True, capture_output=True)
+                if r.returncode != 0 or not os.path.exists(os.path.join(tmp, "voice.json")):
+                    print(f"{lang}/{s['id']}: nothing on the CDN")
+                    continue
+                key = lambda v: (v.get("voice_id"), v.get("model"))
+                if key(recorded_speaker(tmp)) != key(recorded_speaker(d)):
+                    print(f"{lang}/{s['id']}: the CDN has another voice or model, not fetched")
+                    continue
+                tempo = recorded_speaker(d).get("tempo", 1)
+                got = 0
+                for x in sorted(os.listdir(d)):
+                    if not x.endswith(".txt"):
+                        continue
+                    mp3 = x[:-4] + ".mp3"
+                    if os.path.exists(os.path.join(d, mp3)):
+                        continue
+                    remote_txt = os.path.join(tmp, x)
+                    if (os.path.exists(remote_txt) and os.path.exists(os.path.join(tmp, mp3))
+                            and filecmp.cmp(remote_txt, os.path.join(d, x), shallow=False)):
+                        shutil.copyfile(os.path.join(tmp, mp3), os.path.join(d, mp3))
+                        to_alaw(os.path.join(d, mp3), os.path.join(d, x[:-4] + ".alaw"), tempo)
+                        got += 1
+                print(f"{lang}/{s['id']}: fetched {got}")
+                n += got
+    return n
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("--langs", help="space-separated locales (default: languages.txt)")
+    ap.add_argument("--speakers", help="space-separated speaker ids (default: speakers.json)")
     ap.add_argument("--force", action="store_true", help="regenerate every clip")
     ap.add_argument("--dry-run", action="store_true", help="show what would be generated")
     ap.add_argument("--list-voices", action="store_true", help="list the account's voices")
     ap.add_argument("--convert-only", action="store_true",
                     help="re-create every .alaw from its .mp3 master, no API calls")
+    ap.add_argument("--upload", action="store_true", help="copy the masters to the CDN")
+    ap.add_argument("--fetch", action="store_true",
+                    help="copy missing masters from the CDN and convert them")
     a = ap.parse_args()
 
-    if not a.list_voices and not a.dry_run and not shutil.which("ffmpeg"):
+    if not a.list_voices and not a.dry_run and not a.upload and not shutil.which("ffmpeg"):
         sys.exit("ffmpeg needed to convert the masters (e.g. sudo apt install ffmpeg)")
+    langs, rows = selected(a)
+    if a.upload:
+        upload(langs, rows)
+        return
+    if a.fetch:
+        print(f"fetched {fetch(langs, rows)}")
+        return
     over = []
     if a.convert_only:
-        langs = a.langs.split() if a.langs else languages()
         n = 0
         for lang in langs:
-            d = os.path.join(AUDIO, lang)
-            tempo = recorded_speaker(d).get("tempo", 1)
-            for name in sorted(os.listdir(d)) if os.path.isdir(d) else []:
-                if name.endswith(".mp3"):
-                    to_alaw(os.path.join(d, name), os.path.join(d, name[:-4] + ".alaw"), tempo)
-                    n += 1
-            if os.path.isdir(d) and not check_budget(lang):
-                over.append(lang)
+            for s in rows:
+                d = os.path.join(AUDIO, lang, s["id"])
+                if not os.path.isdir(d):
+                    continue
+                tempo = recorded_speaker(d).get("tempo", 1)
+                for name in sorted(os.listdir(d)):
+                    if name.endswith(".mp3"):
+                        to_alaw(os.path.join(d, name), os.path.join(d, name[:-4] + ".alaw"), tempo)
+                        n += 1
+                if not check_budget(d, f"{lang}/{s['id']}"):
+                    over.append(f"{lang}/{s['id']}")
         print(f"converted {n}")
         if over:
             sys.exit(f"over budget: {' '.join(over)} — shorten the first sentence of a phase in dialog_de.arb")
@@ -306,73 +444,85 @@ def main():
             print(f"{v['voice_id']}  {v.get('category', ''):12}  {v['name']}")
         return
 
-    voice_name = setting("ELEVENLABS_VOICE", "elevenlabs.voice", VOICE)
-    model = setting("ELEVENLABS_MODEL", "elevenlabs.model", MODEL)
-    voice = voice_id(voice_name, key) if key else voice_name   # --dry-run without a key
-    speaker = {"voice": voice_name, "voice_id": voice, "model": model, "tempo": TEMPO}
-
-    langs = a.langs.split() if a.langs else languages()
-    made = kept = removed = 0
-    for lang in langs:
-        if not os.path.exists(os.path.join(L10N, f"dialog_{lang}.arb")):
-            print(f"{lang}: no dialog_{lang}.arb, skipped")
-            continue
-        clips = clips_of(lang)
-        out_dir = os.path.join(AUDIO, lang)
-        os.makedirs(out_dir, exist_ok=True)
-        wanted = {os.path.join(out_dir, "voice.json")}
-        was = recorded_speaker(out_dir)
-        same_speaker = (was.get("voice_id"), was.get("model")) == (voice, model)
-        # Same masters, other speed-up: re-convert the kept clips.
-        reconvert = was.get("tempo", 1) != TEMPO
-        for (ph, n), text in sorted(clips.items(), key=lambda c: (PHASES.index(c[0][0]), c[0][1])):
-            base = os.path.join(out_dir, f"{ph.replace('_', '-')}-{n}")
-            wanted.update((base + ".mp3", base + ".alaw", base + ".txt"))
-            try:
-                with open(base + ".txt", encoding="utf-8") as f:
-                    same = f.read().strip() == text
-            except OSError:
-                same = False
-            if same and same_speaker and os.path.exists(base + ".mp3") and not a.force:
-                if (reconvert or not os.path.exists(base + ".alaw")) and not a.dry_run:
-                    to_alaw(base + ".mp3", base + ".alaw", TEMPO)
-                kept += 1
+    made = kept = removed = missing = 0
+    for s in rows:
+        voice = voice_id(s["voice"], key) if key else s["voice"]   # --dry-run without a key
+        speaker = {"voice": s["voice"], "voice_id": voice, "model": MODEL, "tempo": TEMPO}
+        for lang in langs:
+            if lang not in s.get("langs", [lang]):
                 continue
-            print(f"{lang}: {os.path.basename(base)}: {text}")
-            made += 1
-            if a.dry_run:
+            if not os.path.exists(os.path.join(L10N, f"dialog_{lang}.arb")):
+                print(f"{lang}: no dialog_{lang}.arb, skipped")
                 continue
-            audio = request(f"/text-to-speech/{voice}?output_format=mp3_44100_128", key,
-                            {"text": text, "model_id": model})
-            if len(audio) < 1600:     # < 0.1 s at 128 kbit/s: not speech
-                sys.exit(f"{lang}/{ph}_{n}: suspiciously short audio ({len(audio)} bytes)")
-            with open(base + ".dl.mp3", "wb") as f:
-                f.write(audio)
-            subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", base + ".dl.mp3",
-                            *MASTER_FFMPEG, "-f", "mp3", base + ".mp3.tmp"], check=True)
-            os.remove(base + ".dl.mp3")
-            os.replace(base + ".mp3.tmp", base + ".mp3")
-            to_alaw(base + ".mp3", base + ".alaw", TEMPO)
-            with open(base + ".txt", "w", encoding="utf-8") as f:
-                f.write(text + "\n")
-        if not a.dry_run:
-            # Only once every clip of the locale is spoken by this speaker: an
-            # interrupted run leaves the old record, and the next run starts
-            # the locale over.
-            with open(os.path.join(out_dir, "voice.json"), "w", encoding="utf-8") as f:
-                json.dump(speaker, f, indent=2)
-                f.write("\n")
-        for name in os.listdir(out_dir):
-            path = os.path.join(out_dir, name)
-            if path not in wanted and name.endswith((".mp3", ".alaw", ".txt", ".json")):
-                print(f"{lang}: {name}: no longer in the ARB, removed")
-                if not a.dry_run:
-                    os.remove(path)
-                removed += 1
-        if not a.dry_run and not check_budget(lang):
-            over.append(lang)
+            clips = clips_of(lang)
+            label = f"{lang}/{s['id']}"
+            out_dir = os.path.join(AUDIO, lang, s["id"])
+            os.makedirs(out_dir, exist_ok=True)
+            wanted = {os.path.join(out_dir, "voice.json")}
+            was = recorded_speaker(out_dir)
+            # Spoken by another voice or model: none of the clips counts.
+            respeak = (was.get("voice_id"), was.get("model")) != (voice, MODEL)
+            if respeak and not a.dry_run:
+                for name in os.listdir(out_dir):
+                    if name.endswith((".mp3", ".alaw", ".txt")):
+                        os.remove(os.path.join(out_dir, name))
+                was = {}
+            # Recorded up front: every clip with a transcript is then this
+            # speaker's, and an interrupted run resumes where it stopped.
+            if not a.dry_run:
+                with open(os.path.join(out_dir, "voice.json"), "w", encoding="utf-8") as f:
+                    json.dump(speaker, f, indent=2)
+                    f.write("\n")
+            # Same masters, other speed-up: re-convert the kept clips.
+            reconvert = was.get("tempo", 1) != TEMPO
+            for (ph, n), text in sorted(clips.items(), key=lambda c: (PHASES.index(c[0][0]), c[0][1])):
+                base = os.path.join(out_dir, f"{ph.replace('_', '-')}-{n}")
+                wanted.update((base + ".mp3", base + ".alaw", base + ".txt"))
+                try:
+                    with open(base + ".txt", encoding="utf-8") as f:
+                        same = f.read().strip() == text and not respeak
+                except OSError:
+                    same = False
+                if same and not a.force:
+                    if not os.path.exists(base + ".mp3"):
+                        missing += 1   # spoken, but the master is on the CDN (--fetch)
+                    elif (reconvert or not os.path.exists(base + ".alaw")) and not a.dry_run:
+                        to_alaw(base + ".mp3", base + ".alaw", TEMPO)
+                    kept += 1
+                    continue
+                print(f"{label}: {os.path.basename(base)}: {text}")
+                made += 1
+                if a.dry_run:
+                    continue
+                audio = request(f"/text-to-speech/{voice}?output_format=mp3_44100_128", key,
+                                {"text": text, "model_id": MODEL})
+                if len(audio) < 1600:     # < 0.1 s at 128 kbit/s: not speech
+                    sys.exit(f"{label}/{ph}_{n}: suspiciously short audio ({len(audio)} bytes)")
+                with open(base + ".dl.mp3", "wb") as f:
+                    f.write(audio)
+                subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", base + ".dl.mp3",
+                                *MASTER_FFMPEG, "-f", "mp3", base + ".mp3.tmp"], check=True)
+                os.remove(base + ".dl.mp3")
+                os.replace(base + ".mp3.tmp", base + ".mp3")
+                to_alaw(base + ".mp3", base + ".alaw", TEMPO)
+                # Last: the transcript marks the clip as done.
+                with open(base + ".txt", "w", encoding="utf-8") as f:
+                    f.write(text + "\n")
+            for name in os.listdir(out_dir):
+                path = os.path.join(out_dir, name)
+                if path not in wanted and name.endswith((".mp3", ".alaw", ".txt", ".json")):
+                    print(f"{label}: {name}: no longer in the ARB, removed")
+                    if not a.dry_run:
+                        os.remove(path)
+                    removed += 1
+            if not a.dry_run and not check_budget(out_dir, label):
+                over.append(label)
     verb = "would generate" if a.dry_run else "generated"
     print(f"{verb} {made}, unchanged {kept}, removed {removed}")
+    if missing:
+        print(f"{missing} unchanged clip(s) have no local master: run --fetch")
+    if made and not a.dry_run:
+        print("new masters: run --upload, then commit the .txt and voice.json files")
     if over:
         sys.exit(f"over budget: {' '.join(over)} — shorten the first sentence of a phase in dialog_de.arb")
 
