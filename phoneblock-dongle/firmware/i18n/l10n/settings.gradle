@@ -18,4 +18,4 @@ pluginManagement {
     }
 }
 rootProject.name = 'dongle-i18n'
-include 'mail', 'ui'
+include 'mail', 'ui', 'dialog'

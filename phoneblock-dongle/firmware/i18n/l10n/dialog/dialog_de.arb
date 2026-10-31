@@ -1,0 +1,183 @@
+{
+  "@@locale": "de",
+  "hello_1": "Guten Tag!",
+  "@hello_1": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Begrüßung, wenn der Dongle den Anruf annimmt. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "4cdc9bef"
+  },
+  "hello_2": "Hallo, mit wem spreche ich?",
+  "@hello_2": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Begrüßung, wenn der Dongle den Anruf annimmt. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "d86739df"
+  },
+  "hello_3": "Einen schönen guten Tag!",
+  "@hello_3": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Begrüßung, wenn der Dongle den Anruf annimmt. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "85373742"
+  },
+  "hello_4": "Guten Tag, was wünschen Sie?",
+  "@hello_4": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Begrüßung, wenn der Dongle den Anruf annimmt. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "f6c5759d"
+  },
+  "who_is_there_1": "Hallo, wer ist da bitte?",
+  "@who_is_there_1": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Nachfrage, wenn sich der Anrufer nach der Begrüßung nicht meldet. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "557d2b73"
+  },
+  "who_is_there_2": "Hallo, ist da jemand?",
+  "@who_is_there_2": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Nachfrage, wenn sich der Anrufer nach der Begrüßung nicht meldet. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "a9c24e0e"
+  },
+  "who_is_there_3": "Hallo, bitte melden Sie sich!",
+  "@who_is_there_3": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Nachfrage, wenn sich der Anrufer nach der Begrüßung nicht meldet. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "fb8bc56f"
+  },
+  "who_is_there_4": "Ich höre nichts, wer sind Sie?",
+  "@who_is_there_4": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Nachfrage, wenn sich der Anrufer nach der Begrüßung nicht meldet. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "f9068b59"
+  },
+  "am_aparat_1": "Am Apparat!",
+  "@am_aparat_1": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Antwort, wenn sich der Anrufer gemeldet hat: bestätigt, dass er richtig ist, ohne Ja zu sagen oder einen Namen zu nennen. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "f39f5e68"
+  },
+  "am_aparat_2": "Sie sind hier richtig!",
+  "@am_aparat_2": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Antwort, wenn sich der Anrufer gemeldet hat: bestätigt, dass er richtig ist, ohne Ja zu sagen oder einen Namen zu nennen. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "86893e53"
+  },
+  "am_aparat_3": "Ich bin ganz Ohr!",
+  "@am_aparat_3": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Antwort, wenn sich der Anrufer gemeldet hat: bestätigt, dass er richtig ist, ohne Ja zu sagen oder einen Namen zu nennen. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "738ffcb5"
+  },
+  "am_aparat_4": "Schön, dass Sie anrufen.",
+  "@am_aparat_4": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Antwort, wenn sich der Anrufer gemeldet hat: bestätigt, dass er richtig ist, ohne Ja zu sagen oder einen Namen zu nennen. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "62b28a7"
+  },
+  "am_aparat_5": "Um was geht es genau?",
+  "@am_aparat_5": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Antwort, wenn sich der Anrufer gemeldet hat: bestätigt, dass er richtig ist, ohne Ja zu sagen oder einen Namen zu nennen. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "72deff82"
+  },
+  "am_aparat_6": "Da sind Sie bei mir genau richtig!",
+  "@am_aparat_6": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Antwort, wenn sich der Anrufer gemeldet hat: bestätigt, dass er richtig ist, ohne Ja zu sagen oder einen Namen zu nennen. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "25926408"
+  },
+  "am_aparat_7": "Endlich melden Sie sich. Darauf habe ich schon lange gewartet!",
+  "@am_aparat_7": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Antwort, wenn sich der Anrufer gemeldet hat: bestätigt, dass er richtig ist, ohne Ja zu sagen oder einen Namen zu nennen. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "4fe273a3"
+  },
+  "question_1": "Können Sie das noch genauer erklären?",
+  "@question_1": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Naive Rückfrage, nachdem der Anrufer etwas gesagt hat; soll ihn zum Weiterreden bringen. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "41f043"
+  },
+  "question_2": "Wie geht es jetzt weiter?",
+  "@question_2": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Naive Rückfrage, nachdem der Anrufer etwas gesagt hat; soll ihn zum Weiterreden bringen. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "d94571de"
+  },
+  "question_3": "Kann ich das auch schriftlich bekommen?",
+  "@question_3": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Naive Rückfrage, nachdem der Anrufer etwas gesagt hat; soll ihn zum Weiterreden bringen. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "483e79fe"
+  },
+  "question_4": "Ist das aber auch wirklich sicher?",
+  "@question_4": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Naive Rückfrage, nachdem der Anrufer etwas gesagt hat; soll ihn zum Weiterreden bringen. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "ad3f743d"
+  },
+  "question_5": "Muss ich das jetzt sofort entscheiden?",
+  "@question_5": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Naive Rückfrage, nachdem der Anrufer etwas gesagt hat; soll ihn zum Weiterreden bringen. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "ab809081"
+  },
+  "question_6": "Was genau soll ich jetzt machen?",
+  "@question_6": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Naive Rückfrage, nachdem der Anrufer etwas gesagt hat; soll ihn zum Weiterreden bringen. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "b89ed68b"
+  },
+  "question_7": "Benötigen Sie noch weitere Informationen?",
+  "@question_7": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Naive Rückfrage, nachdem der Anrufer etwas gesagt hat; soll ihn zum Weiterreden bringen. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "fb22e40"
+  },
+  "question_8": "Wie muss ich mir das genau vorstellen?",
+  "@question_8": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Naive Rückfrage, nachdem der Anrufer etwas gesagt hat; soll ihn zum Weiterreden bringen. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "3b47c341"
+  },
+  "question_9": "Kann ich mich darauf auch wirklich verlassen?",
+  "@question_9": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Naive Rückfrage, nachdem der Anrufer etwas gesagt hat; soll ihn zum Weiterreden bringen. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "edf7bb73"
+  },
+  "question_10": "Mich würden noch weitere Beispiele interessieren.",
+  "@question_10": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Naive Rückfrage, nachdem der Anrufer etwas gesagt hat; soll ihn zum Weiterreden bringen. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "2dd4d91e"
+  },
+  "question_11": "Das ist prima. Was muss ich jetzt tun?",
+  "@question_11": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Naive Rückfrage, nachdem der Anrufer etwas gesagt hat; soll ihn zum Weiterreden bringen. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "7b1f0e5e"
+  },
+  "question_12": "Wirklich interessant. Kann ich mehr darüber erfahren?",
+  "@question_12": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Naive Rückfrage, nachdem der Anrufer etwas gesagt hat; soll ihn zum Weiterreden bringen. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "e6090f04"
+  },
+  "question_13": "Wie lange habe ich Zeit, mir das zu überlegen?",
+  "@question_13": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Naive Rückfrage, nachdem der Anrufer etwas gesagt hat; soll ihn zum Weiterreden bringen. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "346d6cd2"
+  },
+  "question_14": "Können Sie mir das an einem Beispiel erklären?",
+  "@question_14": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Naive Rückfrage, nachdem der Anrufer etwas gesagt hat; soll ihn zum Weiterreden bringen. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "fdfe7c3"
+  },
+  "question_15": "Können Sie mir mehr Informationen dazu geben?",
+  "@question_15": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Naive Rückfrage, nachdem der Anrufer etwas gesagt hat; soll ihn zum Weiterreden bringen. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "1ec4b684"
+  },
+  "question_16": "Entschuldigung, können Sie das noch einmal wiederholen?",
+  "@question_16": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Naive Rückfrage, nachdem der Anrufer etwas gesagt hat; soll ihn zum Weiterreden bringen. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "b1f0d92c"
+  },
+  "cant_hear_you_1": "Sind Sie noch dran?",
+  "@cant_hear_you_1": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Nachfrage, wenn der Anrufer auf eine Frage nicht antwortet. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "8f251ba3"
+  },
+  "cant_hear_you_2": "Haben Sie etwas gesagt?",
+  "@cant_hear_you_2": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Nachfrage, wenn der Anrufer auf eine Frage nicht antwortet. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "340dbd91"
+  },
+  "cant_hear_you_3": "Hallo? Ich kann Sie nicht hören.",
+  "@cant_hear_you_3": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Nachfrage, wenn der Anrufer auf eine Frage nicht antwortet. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "c4ede910"
+  },
+  "cant_hear_you_4": "Entschuldigen Sie, die Leitung ist schlecht. Was haben Sie gerade gesagt?",
+  "@cant_hear_you_4": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Nachfrage, wenn der Anrufer auf eine Frage nicht antwortet. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "ec08afd6"
+  },
+  "cant_hear_you_5": "Ist die Verbindung unterbrochen? Hören Sie mich?",
+  "@cant_hear_you_5": {
+    "description": "Gesprochener Satz des Antwort-Bots am Telefon. Nachfrage, wenn der Anrufer auf eine Frage nicht antwortet. Kurz, gesprochene Sprache, höfliche Anrede. Niemals das Wort »Ja« (oder ein gleichbedeutendes Wort) verwenden: ein aufgezeichnetes »Ja« wird missbraucht, um Vertragsabschlüsse zu behaupten.",
+    "x-translated": "8c70fb63"
+  }
+}

@@ -1,6 +1,7 @@
 // Host-filesystem backend of storage.c (the Linux port's STORAGE_HOSTFS
 // build): budget from statvfs, no-op GC, the shared write-buffer file
-// discipline, and storage_download()'s GC-retry discipline.
+// discipline, storage_download()'s GC-retry discipline and the unlimited
+// dialog budget.
 //
 // The data directory is a fresh temp directory: -DPHONEBLOCK_DATA_DIR (see
 // the Makefile rule) reads it from PB_HOSTFS_TEST_DIR, which main() sets, so
@@ -66,6 +67,9 @@ int main(void)
     // machine or CI runner that is comfortably positive.
     int64_t budget = storage_community_budget();
     REQUIRE(budget > 0);
+
+    // A plain filesystem takes the largest dialog tier (#429).
+    REQUIRE(storage_dialog_budget() == UINT64_MAX);
 
     // With plenty of space and nothing cached, making room is a no-op that
     // must not fail or remove the file it is about to replace.

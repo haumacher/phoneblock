@@ -1,6 +1,6 @@
 // Host test for the interactive answer-bot dialog (issue #429): the state
-// machine (dialog.c), the on-device clip-set index (dialog.c), the selection
-// of a clip set from the i18n manifest (dialog_manifest.c), the clip store
+// machine (dialog.c), the clip-set header (dialog.c), the choice of a size
+// tier from the i18n manifest (dialog_manifest.c), the clip store
 // (dialog_store.c, in a temp directory) and the RTP receive parser (rtp_rx.c).
 #define _POSIX_C_SOURCE 200809L
 #include <stdio.h>
@@ -14,7 +14,6 @@
 #include "dialog_store.h"
 #include "platform.h"
 #include "rtp_rx.h"
-#include "strbuf.h"
 
 static int failures = 0;
 static int checks = 0;
@@ -317,116 +316,149 @@ static void test_phase_names(void)
     CHECK(dialog_phase_name(DIALOG_PHASE_COUNT) == NULL);
 }
 
-// --- Clip-set index ------------------------------------------------------------
+// --- Clip-set header ------------------------------------------------------------
 
-// The German set as published: hello, who-is-there, am-aparat, three
-// questions, cant-hear-you, back to back in one 63903-byte file.
-static dialog_set_t german_set(void)
+static void put32(uint8_t *p, uint32_t v)
 {
-    dialog_set_t s;
-    memset(&s, 0, sizeof(s));
-    snprintf(s.lang, sizeof(s.lang), "de");
-    static const uint32_t len[] = { 7431, 7802, 7059, 7802, 11146, 12260, 10403 };
-    static const int phase_of[] = { 0, 1, 2, 3, 3, 3, 4 };
-    uint32_t off = 0;
-    for (int i = 0; i < 7; i++) {
-        int p = phase_of[i];
-        s.clip[p][s.count[p]].off = off;
-        s.clip[p][s.count[p]].len = len[i];
-        s.count[p]++;
-        off += len[i];
-    }
-    return s;
+    p[0] = (uint8_t)v; p[1] = (uint8_t)(v >> 8);
+    p[2] = (uint8_t)(v >> 16); p[3] = (uint8_t)(v >> 24);
 }
 
-static void test_set_index_round_trip(void)
+// Builds a set file as audio-assets.sh does: the header for `phases` phases
+// with counts[p] clips each, then the clips (lens[], phase by phase, each
+// filled with 0xD5) back to back. Returns the file's length.
+static size_t build_set(uint8_t *out, size_t cap, int phases,
+                        const uint8_t *counts, const uint32_t *lens)
 {
-    dialog_set_t s = german_set();
-    char text[DIALOG_SET_TEXT_CAP];
-    int n = dialog_set_format(&s, text, sizeof(text));
-    CHECK(n > 0 && strcmp(text, "de\n0:7431\n7431:7802\n15233:7059\n"
-                                "22292:7802 30094:11146 41240:12260\n"
-                                "53500:10403\n") == 0);
-    dialog_set_t back;
-    CHECK(dialog_set_parse(text, &back));
-    CHECK(dialog_set_equal(&back, &s));
-    CHECK(dialog_set_within(&back, 63903));
-    CHECK(!dialog_set_within(&back, 63902));   // last clip one byte short
+    size_t clips = 0;
+    for (int p = 0; p < phases; p++) clips += counts[p];
+    size_t hlen = 8 + (size_t)phases + 8 * clips;
+    size_t total = hlen;
+    for (size_t i = 0; i < clips; i++) total += lens[i];
+    CHECK(total <= cap);
+    if (total > cap) return 0;
+    memset(out, 0xD5, total);
+    memcpy(out, "PBDS", 4);
+    out[4] = DIALOG_HEADER_VERSION;
+    out[5] = (uint8_t)phases;
+    out[6] = (uint8_t)hlen; out[7] = (uint8_t)(hlen >> 8);
+    uint32_t off = (uint32_t)hlen;
+    uint8_t *e = out + 8 + phases;
+    for (int p = 0; p < phases; p++) out[8 + p] = counts[p];
+    for (size_t i = 0; i < clips; i++, e += 8) {
+        put32(e, off);
+        put32(e + 4, lens[i]);
+        off += lens[i];
+    }
+    return total;
+}
 
-    // The largest table (8 clips per phase, 10-digit numbers, longest
-    // locale) fits the documented buffer.
-    dialog_set_t big;
-    memset(&big, 0, sizeof(big));
-    snprintf(big.lang, sizeof(big.lang), "zh-hans-xyz");
+// A German-sized set: 2 hello, 2 who-is-there, 3 am-aparat, 4 questions,
+// 2 cant-hear-you (the TTS set's shape), short clips.
+static const uint8_t DE_COUNTS[DIALOG_PHASE_COUNT] = { 2, 2, 3, 4, 2 };
+static const uint32_t DE_LENS[13] = { 101, 102, 103, 104, 105, 106, 107,
+                                      108, 109, 110, 111, 112, 113 };
+#define DE_HLEN (8 + 5 + 8 * 13)
+
+static void test_header_parse(void)
+{
+    static uint8_t f[4096];
+    size_t n = build_set(f, sizeof(f), 5, DE_COUNTS, DE_LENS);
+    dialog_set_t set;
+    memset(&set, 0, sizeof(set));
+    snprintf(set.lang, sizeof(set.lang), "de");
+    CHECK(dialog_header_parse(f, n, n, &set) == DIALOG_HEADER_OK);
+    CHECK(strcmp(set.lang, "de") == 0);   // the caller's
+    uint32_t off = DE_HLEN;
+    int i = 0;
     for (int p = 0; p < DIALOG_PHASE_COUNT; p++) {
-        big.count[p] = DIALOG_MAX_CLIPS;
-        for (int c = 0; c < DIALOG_MAX_CLIPS; c++) {
-            big.clip[p][c].off = 4000000000u;
-            big.clip[p][c].len = 1000000000u;
+        CHECK(set.count[p] == DE_COUNTS[p]);
+        for (int c = 0; c < DE_COUNTS[p]; c++, i++) {
+            CHECK(set.clip[p][c].off == off && set.clip[p][c].len == DE_LENS[i]);
+            off += DE_LENS[i];
         }
     }
-    CHECK(dialog_set_format(&big, text, sizeof(text)) > 0);
-    CHECK(dialog_set_parse(text, &back) == false);   // off+len > 32 bit
-    for (int p = 0; p < DIALOG_PHASE_COUNT; p++)
-        for (int c = 0; c < DIALOG_MAX_CLIPS; c++) big.clip[p][c].off = 1000000000u;
-    CHECK(dialog_set_format(&big, text, sizeof(text)) > 0);
-    CHECK(dialog_set_parse(text, &back) && dialog_set_equal(&back, &big));
+    CHECK(off == n);
+    // Only the header needs to be in the buffer.
+    CHECK(dialog_header_parse(f, DE_HLEN, n, &set) == DIALOG_HEADER_OK);
 
-    char tiny[8];
-    CHECK(dialog_set_format(&s, tiny, sizeof(tiny)) == -1);
+    // Truncated: the header not read completely yet, or the file itself
+    // ending early (the last clip past its end), or too short for anything.
+    CHECK(dialog_header_parse(f, DE_HLEN - 1, n, &set) == DIALOG_HEADER_SHORT);
+    CHECK(set.count[0] == 0 && set.clip[0][0].len == 0);   // cleared
+    CHECK(dialog_header_parse(f, 7, n, &set) == DIALOG_HEADER_SHORT);
+    CHECK(dialog_header_parse(f, 12, n, &set) == DIALOG_HEADER_SHORT);
+    CHECK(dialog_header_parse(f, n - 1, n - 1, &set) == DIALOG_HEADER_BAD);
+    CHECK(dialog_header_parse(f, DE_HLEN - 1, DE_HLEN - 1, &set) == DIALOG_HEADER_BAD);
+    CHECK(dialog_header_parse(f, 7, 7, &set) == DIALOG_HEADER_BAD);
+    CHECK(dialog_header_parse(f, 0, 0, &set) == DIALOG_HEADER_BAD);
+    // Bytes past the stated file size do not count.
+    CHECK(dialog_header_parse(f, n, DE_HLEN - 1, &set) == DIALOG_HEADER_BAD);
 
-    // Different tables are not equal.
-    dialog_set_t other = s;
-    other.clip[DIALOG_PHASE_QUESTION][2].len--;
-    CHECK(!dialog_set_equal(&other, &s));
-    other = s;
-    snprintf(other.lang, sizeof(other.lang), "en");
-    CHECK(!dialog_set_equal(&other, &s));
-
-    const char *bad[] = {
-        "", "de", "de\n", "de\n0:1\n0:1\n0:1\n0:1\n",            // phase missing
-        "de\n0:1\n0:1\n0:1\n0:1\n0:1\n0:1\n",                     // extra line
-        "de\n0:1\n0:1\n0:0\n0:1\n0:1\n",                          // empty clip
-        "de\n0:1\n0:1\n0:1\n0:1 0:1 0:1 0:1 0:1 0:1 0:1 0:1 0:1\n0:1\n", // 9 clips
-        "De\n0:1\n0:1\n0:1\n0:1\n0:1\n", "../x\n0:1\n0:1\n0:1\n0:1\n0:1\n",
-        "de\n0:1\n0:1\n0:1\n0:1\n0:1",                            // no final newline
-        "de\n0:1\n0:1\n0:1\n0:1\n0:1x\n", "de\n-1:1\n0:1\n0:1\n0:1\n0:1\n",
-        "de\n0:1  0:1\n0:1\n0:1\n0:1\n0:1\n", "de\n0;1\n0:1\n0:1\n0:1\n0:1\n",
-        "de\n4294967296:1\n0:1\n0:1\n0:1\n0:1\n",
+    // Malformed: each variant of the valid file.
+    static uint8_t g[4096];
+    struct { size_t at; uint8_t v; } bad[] = {
+        { 0, 'X' },                       // magic
+        { 4, DIALOG_HEADER_VERSION + 1 }, // version
+        { 4, 0 },
+        { 5, 4 },                         // fewer phases than this firmware has
+        { 6, DE_HLEN + 1 },               // header length off by one
+        { 6, DE_HLEN - 1 },
+        { 8, 0 },                         // a phase without a clip
+        { 8 + 3, 5 },                     // counts no longer match the length
+        { 8 + 5 + 4, 0 },                 // first clip: length 0
+        { 8 + 5 + 0, 0 },                 // first clip inside the header
+        { 8 + 5 + 8 * 12 + 2, 1 },        // last clip past the end of the file
+        { 8 + 5 + 8 * 12 + 7, 0xFF },     // ... a 32-bit length overflowing it
     };
-    for (size_t i = 0; i < sizeof(bad) / sizeof(bad[0]); i++) {
-        CHECK(!dialog_set_parse(bad[i], &back));
-        CHECK(back.lang[0] == '\0' && back.count[0] == 0);
+    for (size_t k = 0; k < sizeof(bad) / sizeof(bad[0]); k++) {
+        memcpy(g, f, n);
+        g[bad[k].at] = bad[k].v;
+        if (bad[k].at == 8 + 5 + 8 * 12 + 7) g[8 + 5 + 8 * 12 + 3] = 0xFF;  // offset too
+        CHECK(dialog_header_parse(g, n, n, &set) == DIALOG_HEADER_BAD);
+        CHECK(set.count[0] == 0);
     }
-    CHECK(!dialog_set_parse(NULL, &back));
+    // A header length beyond DIALOG_HEADER_MAX (the device reads no more).
+    memcpy(g, f, n);
+    g[6] = (uint8_t)(DIALOG_HEADER_MAX + 8); g[7] = (uint8_t)((DIALOG_HEADER_MAX + 8) >> 8);
+    CHECK(dialog_header_parse(g, n, 100000, &set) == DIALOG_HEADER_BAD);
+
+    // DIALOG_MAX_CLIPS per phase fits the header limit; one more does not
+    // parse.
+    uint8_t max[DIALOG_PHASE_COUNT] = { DIALOG_MAX_CLIPS, DIALOG_MAX_CLIPS, DIALOG_MAX_CLIPS,
+                                        DIALOG_MAX_CLIPS, DIALOG_MAX_CLIPS };
+    static uint32_t lens[DIALOG_PHASE_COUNT * (DIALOG_MAX_CLIPS + 1)];
+    for (size_t k = 0; k < sizeof(lens) / sizeof(lens[0]); k++) lens[k] = 1;
+    n = build_set(g, sizeof(g), 5, max, lens);
+    CHECK(8 + 5 + 8 * 5 * DIALOG_MAX_CLIPS <= DIALOG_HEADER_MAX);
+    CHECK(dialog_header_parse(g, n, n, &set) == DIALOG_HEADER_OK);
+    CHECK(set.count[DIALOG_PHASE_QUESTION] == DIALOG_MAX_CLIPS);
+    CHECK(set.clip[DIALOG_PHASE_CANT_HEAR_YOU][DIALOG_MAX_CLIPS - 1].off == n - 1);
+    max[DIALOG_PHASE_QUESTION]++;
+    n = build_set(g, sizeof(g), 5, max, lens);
+    CHECK(dialog_header_parse(g, n, n, &set) == DIALOG_HEADER_BAD);
+}
+
+static void test_lang_valid(void)
+{
+    CHECK(dialog_lang_valid("de") && dialog_lang_valid("zh-hans") &&
+          dialog_lang_valid("abcdefghijk"));
+    const char *bad[] = { NULL, "", "d", "De", "../x", "de/x", "-de", "de-",
+                          "zh--hans", "abcdefghijkl", "de.alaw" };
+    for (size_t i = 0; i < sizeof(bad) / sizeof(bad[0]); i++) CHECK(!dialog_lang_valid(bad[i]));
 }
 
 // --- Manifest selection ----------------------------------------------------------
 
 #define SHA "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
 
-// A dialog asset: one file plus the clip table.
-#define DIALOG(path, bytes, phases) \
-    "\"dialog\":{\"path\":\"" path "\",\"sha256\":\"" SHA "\"," \
-    "\"bytes\":" #bytes ",\"phases\":{" phases "}}"
+#define TIER(path, bytes) \
+    "{\"path\":\"" path "\",\"sha256\":\"" SHA "\",\"bytes\":" #bytes "}"
 
-// The complete German set with three questions, as i18n-assets.sh publishes it.
-#define DE_PHASES \
-    "\"hello\":[[0,7431]],\"who-is-there\":[[7431,7802]]," \
-    "\"am-aparat\":[[15233,7059]]," \
-    "\"question\":[[22292,7802],[30094,11146],[41240,12260]]," \
-    "\"cant-hear-you\":[[53500,10403]]"
-#define DE_DIALOG DIALOG("audio/dialog-de.alaw", 63903, DE_PHASES)
-
-// Five one-clip phases in a 50-byte file.
-#define SMALL_PHASES \
-    "\"hello\":[[0,10]],\"who-is-there\":[[10,10]],\"am-aparat\":[[20,10]]," \
-    "\"question\":[[30,10]],\"cant-hear-you\":[[40,10]]"
-
-// English with a phase missing (no cant-hear-you).
-#define EN_INCOMPLETE DIALOG("audio/dialog-en.alaw", 40, \
-    "\"hello\":[[0,10]],\"who-is-there\":[[10,10]],\"am-aparat\":[[20,10]]," \
-    "\"question\":[[30,10]]")
+// German in three tiers, as audio-assets.sh publishes a large set.
+#define DE_TIERS "\"dialog\":[" TIER("audio/dialog-de-s.alaw", 130000) "," \
+                 TIER("audio/dialog-de-m.alaw", 200000) "," \
+                 TIER("audio/dialog-de-l.alaw", 300000) "]"
 
 #define ANN(l) "\"announcement\":{\"path\":\"audio/announcement-" l ".alaw\"," \
                "\"sha256\":\"" SHA "\",\"bytes\":78762}"
@@ -436,118 +468,103 @@ static cJSON *assets_of(cJSON *root)
     return cJSON_GetObjectItem(root, "assets");
 }
 
-static void test_manifest_fallback_to_german(void)
+static bool picks(cJSON *root, const char *const *chain, int n, uint64_t budget,
+                  const char *lang, const char *path)
+{
+    dialog_manifest_set_t set;
+    if (!dialog_manifest_select(assets_of(root), chain, n, budget, &set)) return false;
+    return set.lang && strcmp(set.lang, lang) == 0 && set.path &&
+           strcmp(set.path, path) == 0 && set.sha256 && strcmp(set.sha256, SHA) == 0;
+}
+
+static void test_manifest_tier_by_budget(void)
+{
+    cJSON *root = cJSON_Parse("{\"version\":\"1.7.0\",\"assets\":{"
+                              "\"de\":{" ANN("de") "," DE_TIERS "}}}");
+    CHECK(root != NULL);
+    const char *de[] = { "de" };
+    CHECK(picks(root, de, 1, 131072, "de", "audio/dialog-de-s.alaw"));
+    CHECK(picks(root, de, 1, 229376, "de", "audio/dialog-de-m.alaw"));
+    CHECK(picks(root, de, 1, UINT64_MAX, "de", "audio/dialog-de-l.alaw"));
+    // The boundaries: a tier of exactly the budget fits, one byte less not.
+    CHECK(picks(root, de, 1, 200000, "de", "audio/dialog-de-m.alaw"));
+    CHECK(picks(root, de, 1, 199999, "de", "audio/dialog-de-s.alaw"));
+    CHECK(picks(root, de, 1, 130000, "de", "audio/dialog-de-s.alaw"));
+    dialog_manifest_set_t set;
+    CHECK(!dialog_manifest_select(assets_of(root), de, 1, 129999, &set));
+    CHECK(set.lang == NULL && set.path == NULL && set.bytes == 0);
+    CHECK(dialog_manifest_select(assets_of(root), de, 1, 300000, &set) && set.bytes == 300000);
+    cJSON_Delete(root);
+
+    // The order in the list does not matter, nor does a single tier.
+    root = cJSON_Parse("{\"assets\":{\"de\":{\"dialog\":["
+                       TIER("l.alaw", 300000) "," TIER("s.alaw", 130000) ","
+                       TIER("m.alaw", 200000) "]},"
+                       "\"it\":{\"dialog\":[" TIER("it.alaw", 90000) "]}}}");
+    CHECK(picks(root, de, 1, 250000, "de", "m.alaw"));
+    const char *it[] = { "it" };
+    CHECK(picks(root, it, 1, 131072, "it", "it.alaw"));
+    CHECK(picks(root, it, 1, UINT64_MAX, "it", "it.alaw"));
+    cJSON_Delete(root);
+}
+
+static void test_manifest_chain_fallback(void)
 {
     cJSON *root = cJSON_Parse(
         "{\"version\":\"1.7.0\",\"assets\":{"
         "\"fr\":{" ANN("fr") "},"
-        "\"en\":{" ANN("en") "," EN_INCOMPLETE "},"
-        "\"de\":{" ANN("de") "," DE_DIALOG "}}}");
+        "\"en\":{" ANN("en") ",\"dialog\":[" TIER("audio/dialog-en-m.alaw", 150000) "]},"
+        "\"de\":{" ANN("de") "," DE_TIERS "}}}");
     CHECK(root != NULL);
     const char *chain[] = { "fr", "en", "de" };
+    // No set for fr; en has only a tier above the small budget, so the whole
+    // German set is taken — never German tiers mixed with English ones.
+    CHECK(picks(root, chain, 3, 131072, "de", "audio/dialog-de-s.alaw"));
+    // With room for it, English wins.
+    CHECK(picks(root, chain, 3, 229376, "en", "audio/dialog-en-m.alaw"));
+    CHECK(picks(root, chain, 3, UINT64_MAX, "en", "audio/dialog-en-m.alaw"));
+    // A chain that ends before German has nothing for the small budget.
     dialog_manifest_set_t set;
-    CHECK(dialog_manifest_select(assets_of(root), chain, 3, &set));
-    CHECK(set.lang && strcmp(set.lang, "de") == 0);
-    CHECK(strcmp(set.set.lang, "de") == 0);
-    // The whole German set: its file, never mixed with the English phases.
-    CHECK(set.path && strcmp(set.path, "audio/dialog-de.alaw") == 0);
-    CHECK(set.sha256 && strcmp(set.sha256, SHA) == 0);
-    CHECK(set.bytes == 63903);
-    dialog_set_t want = german_set();
-    CHECK(dialog_set_equal(&set.set, &want));
-
-    // The incomplete English set alone yields nothing.
-    const char *en_only[] = { "en" };
-    CHECK(!dialog_manifest_select(assets_of(root), en_only, 1, &set));
-    CHECK(set.lang == NULL && set.path == NULL && set.set.count[0] == 0);
+    CHECK(!dialog_manifest_select(assets_of(root), chain, 2, 131072, &set));
+    // An invalid chain entry is not looked up (it would name the file).
+    const char *bogus[] = { "../de", "de" };
+    CHECK(picks(root, bogus, 2, 131072, "de", "audio/dialog-de-s.alaw"));
     cJSON_Delete(root);
 }
 
-static void test_manifest_preferred_locale_wins(void)
-{
-    cJSON *root = cJSON_Parse(
-        "{\"assets\":{\"de\":{" DE_DIALOG "},"
-        "\"it\":{" DIALOG("audio/dialog-it.alaw", 50, SMALL_PHASES) "}}}");
-    const char *chain[] = { "it", "en", "de" };
-    dialog_manifest_set_t set;
-    CHECK(dialog_manifest_select(assets_of(root), chain, 3, &set));
-    CHECK(set.lang && strcmp(set.lang, "it") == 0);
-    CHECK(set.set.count[DIALOG_PHASE_QUESTION] == 1);
-    CHECK(set.set.clip[DIALOG_PHASE_CANT_HEAR_YOU][0].off == 40);
-    cJSON_Delete(root);
-}
-
-// Each malformed variant of an otherwise complete set must skip its locale
-// as a whole, German following.
+// Each malformed variant skips its locale as a whole, German following —
+// also when the bad tier is not the one the budget would pick.
 static void test_manifest_malformed_locale_skipped(void)
 {
     static const char *const bad_it[] = {
-        // short sha
-        "{\"path\":\"a.alaw\",\"sha256\":\"abc\",\"bytes\":50,\"phases\":{" SMALL_PHASES "}}",
-        // no path / empty path / no bytes / zero bytes / fractional bytes
-        "{\"sha256\":\"" SHA "\",\"bytes\":50,\"phases\":{" SMALL_PHASES "}}",
-        "{\"path\":\"\",\"sha256\":\"" SHA "\",\"bytes\":50,\"phases\":{" SMALL_PHASES "}}",
-        "{\"path\":\"a.alaw\",\"sha256\":\"" SHA "\",\"phases\":{" SMALL_PHASES "}}",
-        "{\"path\":\"a.alaw\",\"sha256\":\"" SHA "\",\"bytes\":0,\"phases\":{" SMALL_PHASES "}}",
-        "{\"path\":\"a.alaw\",\"sha256\":\"" SHA "\",\"bytes\":50.5,\"phases\":{" SMALL_PHASES "}}",
-        // no phases / phases not an object
-        "{\"path\":\"a.alaw\",\"sha256\":\"" SHA "\",\"bytes\":50}",
-        "{\"path\":\"a.alaw\",\"sha256\":\"" SHA "\",\"bytes\":50,\"phases\":[]}",
-        // a clip past the end of the file
-        "{\"path\":\"a.alaw\",\"sha256\":\"" SHA "\",\"bytes\":49,\"phases\":{" SMALL_PHASES "}}",
-        // an empty clip, a negative offset, a clip that is not a pair
-        "{\"path\":\"a.alaw\",\"sha256\":\"" SHA "\",\"bytes\":50,\"phases\":{"
-        "\"hello\":[[0,0]],\"who-is-there\":[[10,10]],\"am-aparat\":[[20,10]],"
-        "\"question\":[[30,10]],\"cant-hear-you\":[[40,10]]}}",
-        "{\"path\":\"a.alaw\",\"sha256\":\"" SHA "\",\"bytes\":50,\"phases\":{"
-        "\"hello\":[[-1,10]],\"who-is-there\":[[10,10]],\"am-aparat\":[[20,10]],"
-        "\"question\":[[30,10]],\"cant-hear-you\":[[40,10]]}}",
-        "{\"path\":\"a.alaw\",\"sha256\":\"" SHA "\",\"bytes\":50,\"phases\":{"
-        "\"hello\":[[0]],\"who-is-there\":[[10,10]],\"am-aparat\":[[20,10]],"
-        "\"question\":[[30,10]],\"cant-hear-you\":[[40,10]]}}",
-        "{\"path\":\"a.alaw\",\"sha256\":\"" SHA "\",\"bytes\":50,\"phases\":{"
-        "\"hello\":[{\"off\":0,\"len\":10}],\"who-is-there\":[[10,10]],\"am-aparat\":[[20,10]],"
-        "\"question\":[[30,10]],\"cant-hear-you\":[[40,10]]}}",
-        // a phase with no clip
-        "{\"path\":\"a.alaw\",\"sha256\":\"" SHA "\",\"bytes\":50,\"phases\":{"
-        "\"hello\":[],\"who-is-there\":[[10,10]],\"am-aparat\":[[20,10]],"
-        "\"question\":[[30,10]],\"cant-hear-you\":[[40,10]]}}",
+        "{}", "\"x\"", "[]", "[1]", "null",
+        // the single-object form of an earlier draft
+        TIER("a.alaw", 50000),
+        // short sha / no path / empty path / no bytes / too few bytes /
+        // fractional / negative / not a number
+        "[{\"path\":\"a.alaw\",\"sha256\":\"abc\",\"bytes\":50000}]",
+        "[{\"sha256\":\"" SHA "\",\"bytes\":50000}]",
+        "[{\"path\":\"\",\"sha256\":\"" SHA "\",\"bytes\":50000}]",
+        "[{\"path\":\"a.alaw\",\"sha256\":\"" SHA "\"}]",
+        "[{\"path\":\"a.alaw\",\"sha256\":\"" SHA "\",\"bytes\":8}]",
+        "[{\"path\":\"a.alaw\",\"sha256\":\"" SHA "\",\"bytes\":50000.5}]",
+        "[{\"path\":\"a.alaw\",\"sha256\":\"" SHA "\",\"bytes\":-1}]",
+        "[{\"path\":\"a.alaw\",\"sha256\":\"" SHA "\",\"bytes\":\"50000\"}]",
+        "[{\"path\":7,\"sha256\":\"" SHA "\",\"bytes\":50000}]",
+        // a good small tier next to a broken large one
+        "[" TIER("s.alaw", 50000) ",{\"path\":\"l.alaw\",\"bytes\":300000}]",
     };
     for (size_t i = 0; i < sizeof(bad_it) / sizeof(bad_it[0]); i++) {
         char json[2048];
         snprintf(json, sizeof(json),
-                 "{\"assets\":{\"de\":{" DE_DIALOG "},\"it\":{\"dialog\":%s}}}",
+                 "{\"assets\":{\"de\":{" DE_TIERS "},\"it\":{\"dialog\":%s}}}",
                  bad_it[i]);
         cJSON *root = cJSON_Parse(json);
         CHECK(root != NULL);
         const char *chain[] = { "it", "de" };
-        dialog_manifest_set_t set;
-        CHECK(dialog_manifest_select(assets_of(root), chain, 2, &set));
-        CHECK(set.lang && strcmp(set.lang, "de") == 0);
-        CHECK(set.bytes == 63903);
+        CHECK(picks(root, chain, 2, 131072, "de", "audio/dialog-de-s.alaw"));
         cJSON_Delete(root);
     }
-}
-
-static void test_manifest_too_many_clips(void)
-{
-    char q[1024];
-    strbuf_t sb = sb_init(q, sizeof(q));
-    for (int i = 0; i <= DIALOG_MAX_CLIPS; i++)
-        sb_appendf(&sb, "%s[%d,1]", i ? "," : "", i);
-    CHECK(!sb.truncated);
-    char json[2048];
-    snprintf(json, sizeof(json),
-             "{\"assets\":{\"de\":{\"dialog\":{\"path\":\"a.alaw\",\"sha256\":\"" SHA "\","
-             "\"bytes\":50,\"phases\":{"
-             "\"hello\":[[0,1]],\"who-is-there\":[[1,1]],\"am-aparat\":[[2,1]],"
-             "\"question\":[%s],\"cant-hear-you\":[[3,1]]}}}}}", q);
-    cJSON *root = cJSON_Parse(json);
-    CHECK(root != NULL);
-    const char *chain[] = { "de" };
-    dialog_manifest_set_t set;
-    CHECK(!dialog_manifest_select(assets_of(root), chain, 1, &set));
-    cJSON_Delete(root);
 }
 
 static void test_manifest_old_format(void)
@@ -559,29 +576,35 @@ static void test_manifest_old_format(void)
         "\"de\":{" ANN("de") "},\"en\":{" ANN("en") "}}}");
     const char *chain[] = { "fr", "en", "de" };
     dialog_manifest_set_t set;
-    CHECK(!dialog_manifest_select(assets_of(root), chain, 3, &set));
+    CHECK(!dialog_manifest_select(assets_of(root), chain, 3, UINT64_MAX, &set));
     CHECK(set.lang == NULL);
-    CHECK(!dialog_manifest_select(NULL, chain, 3, &set));
-    cJSON_Delete(root);
-
-    // The per-clip form of an early draft (phase → array of files) is not a
-    // set either.
-    root = cJSON_Parse(
-        "{\"assets\":{\"de\":{\"dialog\":{\"hello\":[{\"path\":\"h.alaw\","
-        "\"sha256\":\"" SHA "\",\"bytes\":10}]}}}}");
-    CHECK(!dialog_manifest_select(assets_of(root), chain, 3, &set));
+    CHECK(!dialog_manifest_select(NULL, chain, 3, UINT64_MAX, &set));
     cJSON_Delete(root);
 }
 
 // --- Clip store on the file system -------------------------------------------------
 
-static void write_bytes(const char *path, size_t n)
+static void write_buf(const char *path, const uint8_t *buf, size_t n)
 {
     FILE *f = fopen(path, "wb");
     CHECK(f != NULL);
     if (!f) return;
-    for (size_t i = 0; i < n; i++) fputc(0xD5, f);
+    CHECK(fwrite(buf, 1, n, f) == n);
     fclose(f);
+}
+
+static void write_bytes(const char *path, size_t n)
+{
+    static uint8_t junk[64];
+    memset(junk, 0xD5, sizeof(junk));
+    write_buf(path, junk, n < sizeof(junk) ? n : sizeof(junk));
+}
+
+static void write_text(const char *dir, const char *name, const char *text)
+{
+    char path[512];
+    snprintf(path, sizeof(path), "%s/%s", dir, name);
+    write_buf(path, (const uint8_t *)text, strlen(text));
 }
 
 static bool exists(const char *dir, const char *name)
@@ -595,9 +618,10 @@ static bool exists(const char *dir, const char *name)
 
 static void test_store(const char *dir)
 {
-    dialog_set_t s = german_set();
+    static uint8_t f[4096];
+    size_t n = build_set(f, sizeof(f), 5, DE_COUNTS, DE_LENS);
     dialog_set_t back;
-    CHECK(!dialog_store_load(&back, false));    // nothing there yet
+    CHECK(!dialog_store_load(&back));    // nothing there yet
 
     char path[DIALOG_STORE_PATH_CAP];
     dialog_store_file_path(path, sizeof(path), "de");
@@ -605,15 +629,33 @@ static void test_store(const char *dir)
     snprintf(want, sizeof(want), "%s/dialog-de.alaw", dir);
     CHECK(strcmp(path, want) == 0);
 
-    // The index alone: a set without its file is no set on the call path.
-    CHECK(dialog_store_write_index(&s) == PB_OK);
-    CHECK(dialog_store_load(&back, false) && dialog_set_equal(&back, &s));
-    CHECK(!dialog_store_load(&back, true));
-    // A file shorter than the table is not one either.
-    write_bytes(path, 63902);
-    CHECK(!dialog_store_load(&back, true));
-    write_bytes(path, 63903);
-    CHECK(dialog_store_load(&back, true) && dialog_set_equal(&back, &s));
+    // The index alone: a set without its file is no set.
+    CHECK(dialog_store_write_index("de") == PB_OK);
+    CHECK(!dialog_store_load(&back) && back.lang[0] == '\0');
+    // A file cut short is not one either, nor one without a header.
+    write_buf(path, f, n - 1);
+    CHECK(!dialog_store_load(&back) && !dialog_store_read_file("de", &back));
+    write_bytes(path, 64);
+    CHECK(!dialog_store_load(&back));
+    write_buf(path, f, n);
+    CHECK(dialog_store_read_file("de", &back) && strcmp(back.lang, "de") == 0);
+    CHECK(dialog_store_load(&back) && strcmp(back.lang, "de") == 0);
+    CHECK(back.count[DIALOG_PHASE_QUESTION] == 4 &&
+          back.clip[DIALOG_PHASE_HELLO][0].off == DE_HLEN);
+    CHECK(!dialog_store_read_file("fr", &back) && !dialog_store_read_file("../x", &back));
+
+    // The index names the locale, exactly "<lang>\n".
+    write_text(dir, "dialog.idx", "de");
+    CHECK(!dialog_store_load(&back));
+    write_text(dir, "dialog.idx", "de\nde\n");
+    CHECK(!dialog_store_load(&back));
+    write_text(dir, "dialog.idx", "../x\n");
+    CHECK(!dialog_store_load(&back));
+    // The text format of an earlier draft does not parse.
+    write_text(dir, "dialog.idx", "de\n0:1\n0:1\n0:1\n0:1\n0:1\n");
+    CHECK(!dialog_store_load(&back));
+    CHECK(dialog_store_write_index("../x") == PB_FAIL);
+    CHECK(dialog_store_write_index("de") == PB_OK && dialog_store_load(&back));
 
     // Another locale's leftovers go, the kept locale's file stays — and so
     // does the index, which remove_others never touches.
@@ -629,9 +671,9 @@ static void test_store(const char *dir)
     CHECK(!exists(dir, "dialog-fr.alaw") && !exists(dir, "dialog-de.alaw.tmp"));
 
     dialog_store_drop_index();
-    CHECK(!dialog_store_load(&back, false) && exists(dir, "dialog-de.alaw"));
+    CHECK(!dialog_store_load(&back) && exists(dir, "dialog-de.alaw"));
 
-    CHECK(dialog_store_write_index(&s) == PB_OK);
+    CHECK(dialog_store_write_index("de") == PB_OK);
     CHECK(dialog_store_remove_all() == 2);
     CHECK(!exists(dir, "dialog-de.alaw") && !exists(dir, "dialog.idx"));
     CHECK(exists(dir, "announcement-de.alaw"));   // not the store's business
@@ -700,11 +742,11 @@ int main(void)
     test_packet_resets_rx_timeout();
     test_incomplete_set_refused();
     test_phase_names();
-    test_set_index_round_trip();
-    test_manifest_fallback_to_german();
-    test_manifest_preferred_locale_wins();
+    test_header_parse();
+    test_lang_valid();
+    test_manifest_tier_by_budget();
+    test_manifest_chain_fallback();
     test_manifest_malformed_locale_skipped();
-    test_manifest_too_many_clips();
     test_manifest_old_format();
     test_rtp_rx();
 

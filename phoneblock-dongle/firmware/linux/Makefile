@@ -42,7 +42,7 @@ LINUX_MAIN_SOURCES := ../main/announcement.c ../main/api.c \
                       ../main/api_scan.c \
                       ../main/audio.c ../main/blocklist_lookup.c \
                       ../main/blocklist_sync.c ../main/config.c \
-                      ../main/dialog.c ../main/dialog_manifest.c \
+                      ../main/dialog.c ../main/dialog_manifest.c ../main/audio_manifest.c \
                       ../main/dialog_store.c \
                       ../main/firmware_update.c ../main/heap_guard_linux.c \
                       ../main/heap_guard_scan.c \

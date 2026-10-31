@@ -56,8 +56,8 @@ static const char *TAG = "scheduler";
 #define RETRY_MIN_S  (5 * 60)
 #define RETRY_MAX_S  DAY_S
 
-// next_due_us of a RETRY job that has succeeded: it only runs again on a
-// manual trigger.
+// next_due_us of a RETRY job that has succeeded and has no recheck: it only
+// runs again on a manual trigger.
 #define NEVER_US     INT64_MAX
 
 // Longest single sleep of the scheduler loop (see scheduler_task).
@@ -69,7 +69,8 @@ static pb_event_t *s_events;
 // original behaviour, robust without a wall clock and spread across a
 // fleet. DAILY: fire at a fixed local time-of-day (needs the wall clock).
 // RETRY: fire once after first_delay_s and repeat with backoff only until
-// an attempt succeeds; after that, only a manual trigger runs it again.
+// an attempt succeeds; after that, recheck_s (±jitter_s) later if set, and
+// otherwise only on a manual trigger (sched_retry_delay_s()).
 typedef enum { SCHED_INTERVAL, SCHED_DAILY, SCHED_RETRY } sched_kind_t;
 
 typedef struct {
@@ -92,9 +93,11 @@ typedef struct {
     // INTERVAL / DAILY jobs:
     void      (*run)(void);
     // RETRY jobs: returns whether the attempt succeeded. backoff_s is the
-    // delay before the next retry, doubled after each failure.
+    // delay before the next retry, doubled after each failure; recheck_s
+    // (with jitter_s) the delay after a success, 0 for none.
     bool      (*attempt)(void);
     uint32_t    backoff_s;
+    uint32_t    recheck_s;
 } sched_job_t;
 
 static void run_selftest(void)  { selftest_run(); }
@@ -129,10 +132,11 @@ static void run_blocklist(void) { blocklist_sync_run(); }
 
 // Localized-asset sync 3 min after boot — after Wi-Fi/DHCP/TLS settle, and
 // staggered a minute behind the blocklist download so the two CDN pulls
-// don't contend. No periodic re-run: a release's bundle only changes with a
-// new firmware version, and the boot after its OTA fetches it. A failed pass
-// (offline, CDN hiccup) is retried, since a missing announcement means the
-// device answers spam calls silently.
+// don't contend. A failed pass (offline, CDN hiccup) is retried, since a
+// missing announcement means the device answers spam calls silently. After
+// a success it runs again a day later (± jitter): the audio channel
+// (audio_manifest.h) is republished without a firmware update; an unchanged
+// one costs the two manifest GETs and no download.
 #define I18N_FIRST_DELAY_S       (3 * 60)
 
 // The server-facing housekeeping jobs stay interval-based: they are
@@ -149,7 +153,7 @@ static sched_job_t s_jobs[] = {
     { .name = "sync",      .kind = SCHED_INTERVAL, .interval_s = DAY_S, .jitter_s = JITTER_S, .run = run_sync },
     { .name = "mail",      .kind = SCHED_DAILY,    .at_hour = MAIL_DAILY_HOUR, .first_delay_s = MAIL_FIRST_DELAY_S, .run = run_mail },
     { .name = "blocklist", .kind = SCHED_INTERVAL, .interval_s = DAY_S, .jitter_s = JITTER_S, .first_delay_s = BLOCKLIST_FIRST_DELAY_S, .run = run_blocklist },
-    { .name = "i18n",      .kind = SCHED_RETRY,    .first_delay_s = I18N_FIRST_DELAY_S, .attempt = i18n_sync_run, .backoff_s = RETRY_MIN_S },
+    { .name = "i18n",      .kind = SCHED_RETRY,    .first_delay_s = I18N_FIRST_DELAY_S, .attempt = i18n_sync_run, .backoff_s = RETRY_MIN_S, .recheck_s = DAY_S, .jitter_s = JITTER_S },
 };
 #define JOB_COUNT (sizeof(s_jobs) / sizeof(s_jobs[0]))
 
@@ -173,19 +177,19 @@ static int64_t next_due_daily(const sched_job_t *j, int64_t now_us)
     return now_us + (int64_t)secs * 1000000;
 }
 
-// Run one attempt of a RETRY job and schedule the next: never again once
-// it succeeded, otherwise after the current backoff, which then doubles.
+// Run one attempt of a RETRY job and schedule the next (sched_retry_delay_s()).
 static void run_retry(sched_job_t *j)
 {
-    if (j->attempt()) {
-        j->next_due_us = NEVER_US;
-        j->backoff_s   = RETRY_MIN_S;
-        return;
-    }
-    pb_log_warn(TAG, "%s failed, retry in %u s", j->name, (unsigned)j->backoff_s);
-    j->next_due_us = (int64_t)pb_monotonic_us() + (int64_t)j->backoff_s * 1000000;
-    j->backoff_s   = j->backoff_s >= RETRY_MAX_S / 2 ? RETRY_MAX_S
-                                                     : j->backoff_s * 2;
+    const sched_retry_t cfg = {
+        .min_s = RETRY_MIN_S, .max_s = RETRY_MAX_S,
+        .recheck_s = j->recheck_s, .jitter_s = j->jitter_s,
+    };
+    bool ok = j->attempt();
+    uint32_t delay = sched_retry_delay_s(&cfg, ok, &j->backoff_s, pb_random_u32());
+    if (!ok) pb_log_warn(TAG, "%s failed, retry in %u s", j->name, (unsigned)delay);
+    j->next_due_us = delay == SCHED_NEVER_S
+        ? NEVER_US
+        : (int64_t)pb_monotonic_us() + (int64_t)delay * 1000000;
 }
 
 static int64_t next_due(const sched_job_t *j, int64_t now)

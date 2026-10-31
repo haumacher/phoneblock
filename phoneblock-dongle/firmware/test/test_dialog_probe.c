@@ -7,6 +7,7 @@
 #include "cJSON.h"
 #include "dialog.h"
 #include "dialog_manifest.h"
+#include "storage_budget.h"
 
 static int failures = 0;
 static int checks = 0;
@@ -134,49 +135,133 @@ static void probe_clip_index_in_range(void)
 // --- Manifest: what a future bundle may add must not break this firmware ----
 
 #define SHA "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
-#define FIVE_PHASES \
-    "\"hello\":[[0,100]],\"who-is-there\":[[100,100]],\"am-aparat\":[[200,100]]," \
-    "\"question\":[[300,100]],\"cant-hear-you\":[[400,100]]"
+#define TIER(path, bytes) \
+    "{\"path\":\"" path "\",\"sha256\":\"" SHA "\",\"bytes\":" #bytes "}"
 
 static void probe_manifest_forward_compatible(void)
 {
-    // A later bundle adds a sixth phase, an extra field on the asset, and a
-    // third element per clip.
+    // A later bundle adds a field to each tier and a fourth, larger tier
+    // (and a key next to the list): the largest tier within the budget is
+    // still found, the rest ignored.
     const char *json =
-        "{\"de\":{\"announcement\":{},\"dialog\":{"
-        "\"path\":\"audio/dialog-de.alaw\",\"sha256\":\"" SHA "\","
-        "\"bytes\":600,\"voice\":\"x\",\"phases\":{"
-        "\"hello\":[[0,100,\"h\"]],"
-        "\"who-is-there\":[[100,100]],"
-        "\"am-aparat\":[[200,100]],"
-        "\"question\":[[300,100]],"
-        "\"cant-hear-you\":[[400,100]],"
-        "\"goodbye\":[[500,100]]}}}}";
+        "{\"de\":{\"announcement\":{},\"dialog-v2\":{},\"dialog\":["
+        "{\"path\":\"audio/dialog-de-s.alaw\",\"sha256\":\"" SHA "\","
+        "\"bytes\":120000,\"voice\":\"x\",\"clips\":[1,2]},"
+        "{\"path\":\"audio/dialog-de-xl.alaw\",\"sha256\":\"" SHA "\","
+        "\"bytes\":900000,\"voice\":\"y\"}]}}";
     cJSON *assets = cJSON_Parse(json);
     CHECK(assets != NULL);
     const char *chain[] = { "fr", "en", "de" };
     dialog_manifest_set_t set;
-    CHECK(dialog_manifest_select(assets, chain, 3, &set));
+    CHECK(dialog_manifest_select(assets, chain, 3, 131072, &set));
     CHECK(set.lang && strcmp(set.lang, "de") == 0);
-    for (int p = 0; p < DIALOG_PHASE_COUNT; p++) CHECK(set.set.count[p] == 1);
+    CHECK(set.bytes == 120000 && strcmp(set.path, "audio/dialog-de-s.alaw") == 0);
     cJSON_Delete(assets);
 }
 
-// A locale whose `dialog` is not an object (garbage from a broken bundle) is
-// skipped, the next chain locale is used.
+// A locale whose `dialog` is not a tier list (garbage from a broken bundle,
+// or the single-object form of an unreleased draft) is skipped, the next
+// chain locale is used.
 static void probe_manifest_garbage_dialog(void)
 {
     const char *json =
         "{\"fr\":{\"dialog\":\"oops\"},"
         "\"en\":{\"dialog\":[1,2,3]},"
-        "\"de\":{\"dialog\":{\"path\":\"audio/dialog-de.alaw\",\"sha256\":\"" SHA "\","
-        "\"bytes\":500,\"phases\":{" FIVE_PHASES "}}}}";
+        "\"it\":{\"dialog\":" TIER("audio/dialog-it.alaw", 500) "},"
+        "\"de\":{\"dialog\":[" TIER("audio/dialog-de-s.alaw", 500) "]}}";
     cJSON *assets = cJSON_Parse(json);
-    const char *chain[] = { "fr", "en", "de" };
+    const char *chain[] = { "fr", "en", "it", "de" };
     dialog_manifest_set_t set;
-    CHECK(dialog_manifest_select(assets, chain, 3, &set));
+    CHECK(dialog_manifest_select(assets, chain, 4, 131072, &set));
     CHECK(set.lang && strcmp(set.lang, "de") == 0);
     cJSON_Delete(assets);
+}
+
+// A later firmware's sixth phase in the header (its clips after ours) leaves
+// this firmware's five intact.
+static void probe_header_extra_phase(void)
+{
+    // P = 6, one clip each: header 8 + 6 + 6 * 8 = 62 bytes, clips of 10.
+    uint8_t f[62 + 60];
+    memset(f, 0xD5, sizeof(f));
+    memcpy(f, "PBDS", 4);
+    f[4] = DIALOG_HEADER_VERSION;
+    f[5] = 6;
+    f[6] = 62; f[7] = 0;
+    for (int p = 0; p < 6; p++) {
+        f[8 + p] = 1;
+        uint32_t off = 62 + 10u * (uint32_t)p;
+        uint8_t *e = f + 14 + 8 * p;
+        e[0] = (uint8_t)off; e[1] = (uint8_t)(off >> 8); e[2] = 0; e[3] = 0;
+        e[4] = 10; e[5] = 0; e[6] = 0; e[7] = 0;
+    }
+    dialog_set_t set;
+    memset(&set, 0, sizeof(set));
+    CHECK(dialog_header_parse(f, sizeof(f), sizeof(f), &set) == DIALOG_HEADER_OK);
+    for (int p = 0; p < DIALOG_PHASE_COUNT; p++) {
+        CHECK(set.count[p] == 1 && set.clip[p][0].off == 62 + 10u * (uint32_t)p);
+    }
+    // A later format version is not guessed at.
+    f[4] = DIALOG_HEADER_VERSION + 1;
+    CHECK(dialog_header_parse(f, sizeof(f), sizeof(f), &set) == DIALOG_HEADER_BAD);
+}
+
+
+// --- Tier selection at the boundaries (written independently of the delivery) --
+
+#define SHA64 "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
+#define BTIER(name, n) "{\"path\":\"" name "\",\"sha256\":\"" SHA64 "\",\"bytes\":" #n "}"
+
+static bool pick(const char *json, const char *const *chain, int n, uint64_t budget,
+                 dialog_manifest_set_t *out)
+{
+    cJSON *assets = cJSON_Parse(json);
+    CHECK(assets != NULL);
+    bool ok = dialog_manifest_select(assets, chain, n, budget, out);
+    static char path[64], lang[12];
+    if (ok) {                       // copy out before the JSON goes
+        snprintf(path, sizeof(path), "%s", out->path);
+        snprintf(lang, sizeof(lang), "%s", out->lang);
+        out->path = path; out->lang = lang;
+    }
+    cJSON_Delete(assets);
+    return ok;
+}
+
+static void probe_tier_boundaries(void)
+{
+    // Tiers listed out of order; a budget exactly at a tier's size takes it.
+    const char *json =
+        "{\"fr\":{\"dialog\":[" BTIER("dialog-fr-l-1.bin", 500000) ","
+                              BTIER("dialog-fr-s-1.bin", 120000) ","
+                              BTIER("dialog-fr-m-1.bin", 220000) "]},"
+        " \"en\":{\"dialog\":[" BTIER("dialog-en-s-1.bin", 100000) "]}}";
+    const char *chain[] = { "fr", "en", "de" };
+    dialog_manifest_set_t set;
+    CHECK(pick(json, chain, 3, 120000, &set) && strcmp(set.path, "dialog-fr-s-1.bin") == 0);
+    CHECK(pick(json, chain, 3, 219999, &set) && strcmp(set.path, "dialog-fr-s-1.bin") == 0);
+    CHECK(pick(json, chain, 3, 220000, &set) && strcmp(set.path, "dialog-fr-m-1.bin") == 0);
+    CHECK(pick(json, chain, 3, UINT64_MAX, &set) && strcmp(set.path, "dialog-fr-l-1.bin") == 0);
+    // Every fr tier too large: the whole locale is skipped, en's fits.
+    CHECK(pick(json, chain, 3, 110000, &set) && strcmp(set.lang, "en") == 0
+          && strcmp(set.path, "dialog-en-s-1.bin") == 0);
+    // Nothing fits anywhere.
+    CHECK(!pick(json, chain, 3, 99999, &set));
+}
+
+// The real partition: the C3 rig's esp_spiffs_info() total gets the S tier,
+// the 1 MB layout the M tier; the budget never shrinks as storage grows.
+static void probe_budget_by_partition(void)
+{
+    CHECK(storage_budget_dialog(484025) == STORAGE_DIALOG_TIER_S);
+    CHECK(storage_budget_dialog(STORAGE_DIALOG_M_TOTAL - 1) == STORAGE_DIALOG_TIER_S);
+    CHECK(storage_budget_dialog(STORAGE_DIALOG_M_TOTAL) == STORAGE_DIALOG_TIER_M);
+    uint64_t prev = 0;
+    for (uint64_t t = 100000; t < 4000000; t += 7919) {
+        uint64_t b = storage_budget_dialog(t);
+        CHECK(b >= prev);
+        prev = b;
+    }
 }
 
 int main(void)
@@ -188,6 +273,9 @@ int main(void)
     probe_clip_index_in_range();
     probe_manifest_forward_compatible();
     probe_manifest_garbage_dialog();
+    probe_header_extra_phase();
+    probe_tier_boundaries();
+    probe_budget_by_partition();
     printf("test_dialog_probe: %d checks, %d failures\n", checks, failures);
     return failures ? 1 : 0;
 }

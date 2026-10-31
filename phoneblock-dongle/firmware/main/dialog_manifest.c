@@ -2,23 +2,10 @@
 
 #include "dialog_manifest.h"
 
-#include <stdio.h>
 #include <string.h>
 
 // Must be last: bans unsafe string APIs for the rest of this file.
 #include "banned_apis.h"
-
-static bool hex64(const char *s)
-{
-    if (strlen(s) != 64) return false;
-    for (int i = 0; i < 64; i++) {
-        char c = s[i];
-        bool ok = (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') ||
-                  (c >= 'A' && c <= 'F');
-        if (!ok) return false;
-    }
-    return true;
-}
 
 // A JSON number that is a whole uint32 (lo..UINT32_MAX).
 static bool get_u32(const cJSON *n, uint32_t lo, uint32_t *out)
@@ -32,64 +19,60 @@ static bool get_u32(const cJSON *n, uint32_t lo, uint32_t *out)
     return true;
 }
 
-// The clip list of one phase; false if missing, empty, too long or with a
-// malformed entry. Bounds against the file are checked by the caller.
-static bool parse_phase(const cJSON *list, uint8_t *count,
-                        dialog_clip_t clips[DIALOG_MAX_CLIPS])
+// One tier entry; false if malformed.
+static bool parse_tier(const cJSON *t, dialog_manifest_set_t *out)
 {
-    if (!cJSON_IsArray(list)) return false;
-    int n = cJSON_GetArraySize(list);
-    if (n < 1 || n > DIALOG_MAX_CLIPS) return false;
-    for (int i = 0; i < n; i++) {
-        const cJSON *e = cJSON_GetArrayItem(list, i);
-        // [offset, length]; further elements are left for later bundles.
-        if (!cJSON_IsArray(e) || cJSON_GetArraySize(e) < 2) return false;
-        if (!get_u32(cJSON_GetArrayItem(e, 0), 0, &clips[i].off)) return false;
-        if (!get_u32(cJSON_GetArrayItem(e, 1), 1, &clips[i].len)) return false;
-    }
-    *count = (uint8_t)n;
+    if (!cJSON_IsObject(t)) return false;
+    const cJSON *path  = cJSON_GetObjectItemCaseSensitive(t, "path");
+    const cJSON *sha   = cJSON_GetObjectItemCaseSensitive(t, "sha256");
+    const cJSON *bytes = cJSON_GetObjectItemCaseSensitive(t, "bytes");
+    if (!cJSON_IsString(path) || !audio_manifest_path_ok(path->valuestring)) return false;
+    if (!cJSON_IsString(sha) || !audio_manifest_sha_ok(sha->valuestring)) return false;
+    if (!get_u32(bytes, DIALOG_HEADER_MIN + 1, &out->bytes)) return false;
+    out->path   = path->valuestring;
+    out->sha256 = sha->valuestring;
     return true;
 }
 
-static bool parse_set(const cJSON *dialog, const char *lang,
+// The largest tier of `dialog` within `budget`. False if the list is
+// malformed (then the whole locale is) or no tier fits.
+static bool pick_tier(const cJSON *dialog, uint64_t budget,
                       dialog_manifest_set_t *out)
 {
-    if (!cJSON_IsObject(dialog)) return false;
-    const cJSON *path   = cJSON_GetObjectItemCaseSensitive(dialog, "path");
-    const cJSON *sha    = cJSON_GetObjectItemCaseSensitive(dialog, "sha256");
-    const cJSON *bytes  = cJSON_GetObjectItemCaseSensitive(dialog, "bytes");
-    const cJSON *phases = cJSON_GetObjectItemCaseSensitive(dialog, "phases");
-    if (!cJSON_IsString(path) || !path->valuestring[0]) return false;
-    if (!cJSON_IsString(sha) || !hex64(sha->valuestring)) return false;
-    if (!get_u32(bytes, 1, &out->bytes)) return false;
-    if (!cJSON_IsObject(phases)) return false;
-    if (strlen(lang) >= sizeof(out->set.lang)) return false;
-
-    for (int p = 0; p < DIALOG_PHASE_COUNT; p++) {
-        const cJSON *list = cJSON_GetObjectItemCaseSensitive(
-            phases, dialog_phase_name((dialog_phase_t)p));
-        if (!parse_phase(list, &out->set.count[p], out->set.clip[p])) return false;
+    if (!cJSON_IsArray(dialog) || cJSON_GetArraySize(dialog) < 1) return false;
+    bool found = false;
+    const cJSON *t;
+    cJSON_ArrayForEach(t, dialog) {
+        dialog_manifest_set_t tier;
+        if (!parse_tier(t, &tier)) return false;
+        if (tier.bytes > budget) continue;
+        if (!found || tier.bytes > out->bytes) {
+            out->path   = tier.path;
+            out->sha256 = tier.sha256;
+            out->bytes  = tier.bytes;
+            found = true;
+        }
     }
-    if (!dialog_set_within(&out->set, out->bytes)) return false;
-
-    out->lang   = lang;
-    out->path   = path->valuestring;
-    out->sha256 = sha->valuestring;
-    snprintf(out->set.lang, sizeof(out->set.lang), "%s", lang);
-    return true;
+    return found;
 }
 
 bool dialog_manifest_select(const cJSON *assets, const char *const *chain,
-                            int chain_n, dialog_manifest_set_t *out)
+                            int chain_n, uint64_t budget,
+                            dialog_manifest_set_t *out)
 {
     memset(out, 0, sizeof(*out));
     if (!cJSON_IsObject(assets)) return false;
     for (int i = 0; i < chain_n; i++) {
+        // The locale names the stored file (dialog_store.h).
+        if (!dialog_lang_valid(chain[i])) continue;
         const cJSON *locale = cJSON_GetObjectItemCaseSensitive(assets, chain[i]);
         const cJSON *dialog = cJSON_IsObject(locale)
             ? cJSON_GetObjectItemCaseSensitive(locale, "dialog") : NULL;
-        if (parse_set(dialog, chain[i], out)) return true;
-        memset(out, 0, sizeof(*out));   // never a partial set from this locale
+        if (pick_tier(dialog, budget, out)) {
+            out->lang = chain[i];
+            return true;
+        }
+        memset(out, 0, sizeof(*out));   // never a partial pick from this locale
     }
     return false;
 }

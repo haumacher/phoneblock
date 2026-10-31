@@ -1,6 +1,7 @@
-// Implementation of i18n_sync.h: fetch the asset manifest from the CDN,
-// download the announcement (and mail pack) for the active ui_lang with
-// SHA-256 verification, prune stale-locale files.
+// Implementation of i18n_sync.h: fetch the firmware bundle's manifest (UI
+// and mail packs) and the audio channel's (announcement, dialog clips) from
+// the CDN, download what the active ui_lang needs with SHA-256
+// verification, prune stale-locale files.
 
 #ifndef ESP_PLATFORM
 #define _POSIX_C_SOURCE 200809L
@@ -22,6 +23,7 @@
 
 
 #include "announcement.h"
+#include "audio_manifest.h"
 #include "config.h"
 #include "dialog_manifest.h"
 #include "dialog_store.h"
@@ -50,9 +52,14 @@ static const char *TAG = "i18nsync";
 #else
 #define TMP_PATH_CAP     512
 #endif
-// Manifest is small JSON (a few assets per locale); cap generously and
-// heap-allocate so a growing locale set never smashes the task stack.
-#define MANIFEST_CAP     (8 * 1024)
+// Manifests are small JSON (the audio channel's, the larger one, is ~7 KB
+// with the announcements and dialog tiers of 14 locales); cap with room for
+// more locales and heap-allocate so a growing locale set never smashes the
+// task stack. One contiguous block, so not more than needed.
+#define MANIFEST_CAP     (12 * 1024)
+// Largest UI / mail pack or announcement accepted; the dialog set is bounded
+// by its manifest size instead (its tier may be larger on the Linux port).
+#define ASSET_MAX_BYTES  ANNOUNCEMENT_MAX_BYTES
 
 static pb_mutex_t *   s_lock = NULL;
 static i18n_sync_status_t  s_status;
@@ -176,13 +183,15 @@ out:
 // ---------------------------------------------------------------------------
 
 // One asset download: `url` into `tmp_path`, SHA-256 checked against
-// `expected_sha_hex`; `final_path` is the file the temp supersedes (handed
-// to storage_make_room() so the old copy goes first when space is short).
+// `expected_sha_hex`, refused beyond `max_bytes`; `final_path` is the file
+// the temp supersedes (handed to storage_make_room() so the old copy goes
+// first when space is short).
 typedef struct {
     const char *url;
     const char *final_path;
     const char *tmp_path;
     const char *expected_sha_hex;
+    uint32_t    max_bytes;
 } asset_dl_t;
 
 // One download attempt of an asset into its temp file, SHA-256 checked
@@ -218,7 +227,7 @@ static storage_dl_t download_to_tmp(void *ctx, size_t *bytes,
     if (status != 200) { snprintf(err, err_cap, "HTTP %d", status); goto out; }
 
     if (content_length > 0) {
-        if (content_length > ANNOUNCEMENT_MAX_BYTES) {
+        if (content_length > a->max_bytes) {
             snprintf(err, err_cap, "asset too large: %lld B", (long long)content_length);
             goto out;
         }
@@ -245,9 +254,9 @@ static storage_dl_t download_to_tmp(void *ctx, size_t *bytes,
             goto out;
         }
         total += n;
-        if (total > ANNOUNCEMENT_MAX_BYTES) {
+        if (total > a->max_bytes) {
             snprintf(err, err_cap, "asset too large: over %u B",
-                     (unsigned)ANNOUNCEMENT_MAX_BYTES);
+                     (unsigned)a->max_bytes);
             goto out;
         }
     }
@@ -283,8 +292,11 @@ out:
     return result;
 }
 
+// `max_bytes`: ASSET_MAX_BYTES, or for the dialog set its size in the
+// manifest, which its tier was chosen by.
 static bool download_verify_rename(const char *url, const char *final_path,
                                    const char *expected_sha_hex,
+                                   uint32_t max_bytes,
                                    char *err, size_t err_cap)
 {
     char tmp_path[TMP_PATH_CAP];
@@ -296,6 +308,7 @@ static bool download_verify_rename(const char *url, const char *final_path,
         .final_path       = final_path,
         .tmp_path         = tmp_path,
         .expected_sha_hex = expected_sha_hex,
+        .max_bytes        = max_bytes,
     };
     if (!storage_download(tmp_path, download_to_tmp, &a, err, err_cap)) {
         return false;
@@ -393,20 +406,49 @@ static bool download_asset(cJSON *asset, const char *kind, const char *base_url,
     char url[256];
     snprintf(url, sizeof(url), "%s/%s", base_url, jpath->valuestring);
     // No log here: run_once() reports a failed kind in one WARN line.
-    return download_verify_rename(url, final_path, jsha->valuestring,
+    return download_verify_rename(url, final_path, jsha->valuestring, ASSET_MAX_BYTES,
                                   err, err_cap);
 
 }
 
-// The dialog clip set (#429), kept only while ab_mode is "dialog". Taken as a
-// whole from the first locale of `chain` that offers a complete set
-// (dialog_manifest.h): one file, stored under that locale's name, plus the
-// clip table as the index, written once the file is in place
-// (dialog_store.h). Any other set on the device goes first, so the partition
-// holds one set at a time. The file is a rarely written asset like the
-// announcement whose place it takes: download_verify_rename() claims its room
-// ahead of the community blocklist.
-static bool sync_dialog(cJSON *assets, const char *base_url,
+// The localized announcement from the audio channel: the first locale of
+// `chain` that has one (audio_manifest_announcement()), stored under
+// final_path whichever locale it came from. Without any, the stale file goes
+// (silent pickup until one is published).
+static bool sync_announcement(const cJSON *assets, const char *base_url,
+                              const char *final_path, const char **chain,
+                              int chain_n, char *err, size_t err_cap)
+{
+    audio_asset_t a;
+    if (!audio_manifest_announcement(assets, chain, chain_n, &a)) {
+        unlink(final_path);
+        return true;
+    }
+    if (a.lang != chain[0]) {
+        pb_log_info(TAG, "announcement: no '%s', falling back to '%s'", chain[0], a.lang);
+    }
+    char on_disk[65];
+    if (sha256_file_hex(final_path, on_disk) && strcasecmp(on_disk, a.sha256) == 0) {
+        pb_log_info(TAG, "announcement up to date");
+        return true;
+    }
+    char url[256];
+    snprintf(url, sizeof(url), "%s/%s", base_url, a.path);
+    return download_verify_rename(url, final_path, a.sha256, ASSET_MAX_BYTES,
+                                  err, err_cap);
+}
+
+// The dialog clip set (#429), kept only while ab_mode is "dialog". The largest
+// size tier within the partition's dialog budget (storage_dialog_budget()),
+// taken as a whole from the first locale of `chain` that offers one
+// (dialog_manifest.h): one file, stored under that locale's name, its clip
+// table in the header. The index marks it complete only once the file is
+// verified, in place and its header valid (dialog_store.h). Any other set on
+// the device goes first, so the partition holds one set at a time; another
+// tier of the same locale replaces the file like a new release does. The
+// file is a rarely written asset like the announcement whose place it takes:
+// download_verify_rename() claims its room ahead of the community blocklist.
+static bool sync_dialog(const cJSON *assets, const char *base_url,
                         const char **chain, int chain_n,
                         char *err, size_t err_cap)
 {
@@ -418,64 +460,73 @@ static bool sync_dialog(cJSON *assets, const char *base_url,
         return true;
     }
 
-    // ~350 B of clip table each: on the heap, not the scheduler stack that
+    // The clip table is ~1.3 KB: on the heap, not the scheduler stack that
     // the TLS session of the download needs.
-    dialog_manifest_set_t *want = malloc(sizeof(*want));
     dialog_set_t *have = malloc(sizeof(*have));
-    bool ok = true;
-    if (!want || !have) {
+    if (!have) {
         snprintf(err, err_cap, "dialog: out of memory");
-        ok = false;
-        goto out;
+        return false;
     }
-    if (!dialog_manifest_select(assets, chain, chain_n, want)) {
+    bool ok = true;
+    uint64_t budget = storage_dialog_budget();
+    dialog_manifest_set_t want;
+    if (!dialog_manifest_select(assets, chain, chain_n, budget, &want)) {
         dialog_store_remove_all();
         pb_log_warn(TAG, "dialog mode, but this firmware's i18n bundle has no "
-                         "complete dialog clip set — calls are hung up "
-                         "without audio");
+                         "dialog clip set within %llu bytes — calls are hung up "
+                         "without audio", (unsigned long long)budget);
         goto out;   // nothing to fetch: not a failed pass
     }
-    if (strcmp(want->lang, chain[0]) != 0) {
-        pb_log_info(TAG, "dialog: no complete set for '%s', using '%s'",
-                    chain[0], want->lang);
-    }
-
-    bool index_ok = dialog_store_load(have, false) &&
-                    dialog_set_equal(have, &want->set);
-    if (!index_ok) dialog_store_drop_index();
-    int removed = dialog_store_remove_others(want->lang);
-    if (removed > 0) {
-        pb_log_info(TAG, "dialog: %d file(s) of another set removed", removed);
+    if (strcmp(want.lang, chain[0]) != 0) {
+        pb_log_info(TAG, "dialog: no set for '%s', using '%s'", chain[0], want.lang);
     }
 
     char path[DIALOG_STORE_PATH_CAP];
-    dialog_store_file_path(path, sizeof(path), want->lang);
+    dialog_store_file_path(path, sizeof(path), want.lang);
     char on_disk[65];
-    if (!(sha256_file_hex(path, on_disk) && strcasecmp(on_disk, want->sha256) == 0)) {
-        char url[256];
-        snprintf(url, sizeof(url), "%s/%s", base_url, want->path);
-        if (!download_verify_rename(url, path, want->sha256, err, err_cap)) {
-            ok = false;
-            goto out;
-        }
-    } else if (index_ok) {
-        pb_log_info(TAG, "dialog clip set '%s' up to date", want->lang);
+    bool file_ok = sha256_file_hex(path, on_disk) &&
+                   strcasecmp(on_disk, want.sha256) == 0;
+    bool index_ok = dialog_store_load(have) && strcmp(have->lang, want.lang) == 0;
+    if (file_ok && index_ok) {
+        pb_log_info(TAG, "dialog clip set '%s' (%lu B) up to date", want.lang,
+                    (unsigned long)want.bytes);
         goto out;
     }
 
-    if (!index_ok && dialog_store_write_index(&want->set) != PB_OK) {
+    dialog_store_drop_index();
+    int removed = dialog_store_remove_others(want.lang);
+    if (removed > 0) {
+        pb_log_info(TAG, "dialog: %d file(s) of another set removed", removed);
+    }
+    if (!file_ok) {
+        char url[256];
+        snprintf(url, sizeof(url), "%s/%s", base_url, want.path);
+        if (!download_verify_rename(url, path, want.sha256, want.bytes, err, err_cap)) {
+            ok = false;
+            goto out;
+        }
+    }
+    // Verified, so a bad header is a publishing error, not a transfer one:
+    // the file stays (a new download would bring the same bytes), unused.
+    if (!dialog_store_read_file(want.lang, have)) {
+        snprintf(err, err_cap, "dialog: '%s' set has a malformed clip table, unusable",
+                 want.lang);
+        ok = false;
+        goto out;
+    }
+    if (dialog_store_write_index(want.lang) != PB_OK) {
         snprintf(err, err_cap, "dialog: index write failed");
         ok = false;
         goto out;
     }
-    pb_log_info(TAG, "dialog clip set '%s' complete", want->lang);
+    pb_log_info(TAG, "dialog clip set '%s' complete (%lu B, %s)", want.lang,
+                (unsigned long)want.bytes, want.path);
 out:
-    free(want);
     free(have);
     return ok;
 }
 
-// Download a single asset of `kind` (announcement / mail) for the first locale
+// Download a single asset of `kind` (ui / mail) for the first locale
 // in `chain` (ui_lang → en → de) whose manifest entry has it, storing it under
 // final_path. Fetching only ONE file — the fallback is over which locale's
 // content to pick, not over how many are kept. If no chain locale offers it,
@@ -502,6 +553,26 @@ static bool sync_kind_chain(cJSON *assets, const char *kind, const char *base_ur
 // Run-loop.
 // ---------------------------------------------------------------------------
 
+// Fetches and parses the manifest at `url`. NULL (err set) if it cannot be
+// fetched or is not JSON.
+static cJSON *fetch_manifest(const char *url, char *err, size_t err_cap)
+{
+    char *buf = malloc(MANIFEST_CAP);
+    if (!buf) {
+        snprintf(err, err_cap, "out of memory");
+        return NULL;
+    }
+    if (!http_get_buf(url, buf, MANIFEST_CAP, err, err_cap)) {
+        pb_log_warn(TAG, "manifest fetch %s: %s", url, err);
+        free(buf);
+        return NULL;
+    }
+    cJSON *root = cJSON_Parse(buf);
+    free(buf);
+    if (!root) snprintf(err, err_cap, "manifest parse");
+    return root;
+}
+
 static void run_once(void)
 {
     const char *lang = config_ui_lang();   // validated, safe for URLs/paths
@@ -527,36 +598,6 @@ static void run_once(void)
         if (removed > 0) {
             pb_log_info(TAG, "announcement mode — %d dialog file(s) removed", removed);
         }
-    }
-
-    char *manifest = malloc(MANIFEST_CAP);
-    if (!manifest) {
-        set_status(false, lang, "out of memory");
-        return;
-    }
-
-    char url[256];
-    snprintf(url, sizeof(url), "%s/manifest.json", base);
-    if (!http_get_buf(url, manifest, MANIFEST_CAP, err, sizeof(err))) {
-        pb_log_warn(TAG, "manifest fetch %s: %s", url, err);
-        free(manifest);
-        set_status(false, lang, err);
-        return;
-    }
-
-    cJSON *root = cJSON_Parse(manifest);
-    free(manifest);
-    if (!root) {
-        set_status(false, lang, "manifest parse");
-        return;
-    }
-
-    cJSON *assets = cJSON_GetObjectItem(root, "assets");
-    if (!cJSON_IsObject(assets)) {
-        pb_log_warn(TAG, "manifest has no assets object");
-        cJSON_Delete(root);
-        set_status(false, lang, "no assets");
-        return;
     }
 
     // The announcement has NO embedded fallback (a missing recording means the
@@ -608,7 +649,7 @@ static void run_once(void)
 
     // Download order is chosen for perceived responsiveness: the UI pack FIRST
     // (a browser waiting on the language switch re-renders as soon as it lands,
-    // ~24 KB), then the small mail pack, and the big announcement (~80-96 KB)
+    // ~24 KB), then the small mail pack, and the big audio files
     // LAST — it is only needed on the next answered call, so it must not delay
     // the visible UI update.
     //
@@ -618,40 +659,74 @@ static void run_once(void)
     // chain fallback would pull German for a missing locale, contradicting the
     // English fallback.) en itself is embedded, so downloading it is redundant
     // but harmless — the manifest publishes every locale uniformly.
+    //
+    // The packs come from this firmware's bundle; the audio below from the
+    // audio channel. Either one failing leaves the other to run.
     const char *single_chain[1] = { lang };
     bool ok = true;
-    if (!sync_kind_chain(assets, "ui", base, ui_path, single_chain, 1,
-                         err, sizeof(err))) {
-        pb_log_warn(TAG, "ui pack sync: %s", err);
+    char url[256];
+    snprintf(url, sizeof(url), "%s/manifest.json", base);
+    cJSON *root = fetch_manifest(url, err, sizeof(err));
+    cJSON *assets = root ? cJSON_GetObjectItem(root, "assets") : NULL;
+    if (!cJSON_IsObject(assets)) {
+        if (root) {
+            pb_log_warn(TAG, "manifest has no assets object");
+            snprintf(err, sizeof(err), "no assets");
+        }
         ok = false;
+    } else {
+        if (!sync_kind_chain(assets, "ui", base, ui_path, single_chain, 1,
+                             err, sizeof(err))) {
+            pb_log_warn(TAG, "ui pack sync: %s", err);
+            ok = false;
+        }
+        char err2[64] = "";
+        if (!sync_kind_chain(assets, "mail", base, mail_path, single_chain, 1,
+                             err2, sizeof(err2))) {
+            pb_log_warn(TAG, "mail pack sync: %s", err2);
+            if (ok) { ok = false; snprintf(err, sizeof(err), "%s", err2); }
+        }
     }
-    char err2[64] = "";
-    if (!sync_kind_chain(assets, "mail", base, mail_path, single_chain, 1,
-                         err2, sizeof(err2))) {
-        pb_log_warn(TAG, "mail pack sync: %s", err2);
-        if (ok) { ok = false; strncpy(err, err2, sizeof(err) - 1); }
-    }
-    // The announcement has no embedded fallback (silence), so it uses the
-    // [ui_lang, en, de] chain built above; downloaded last (biggest, least
-    // time-critical).
-    char err3[64] = "";
-    if (!custom_ann && !dialog_mode &&
-        !sync_kind_chain(assets, "announcement", base, ann_path, ann_chain, acn,
-                         err3, sizeof(err3))) {
-        pb_log_warn(TAG, "announcement sync: %s", err3);
-        if (ok) { ok = false; strncpy(err, err3, sizeof(err) - 1); }
-    }
-
-    // The dialog clips last: only needed on a call, and only in dialog mode
-    // (otherwise this removes them). Same [ui_lang, en, de] chain as the
-    // announcement, whose place they take — no embedded fallback either.
-    char err4[64] = "";
-    if (!sync_dialog(assets, base, ann_chain, acn, err4, sizeof(err4))) {
-        pb_log_warn(TAG, "dialog clip sync: %s", err4);
-        if (ok) { ok = false; snprintf(err, sizeof(err), "%s", err4); }
-    }
-
     cJSON_Delete(root);
+
+    // The audio — announcement and dialog clips — from the audio channel,
+    // versioned by its format, not by this firmware (audio_manifest.h).
+    // Without it the files on the device stay as they are: a CDN hiccup must
+    // not silence the bot.
+    char abase[160];
+    snprintf(abase, sizeof(abase), "%s/audio/v%d", CONFIG_PHONEBLOCK_OTA_BASE_URL,
+             AUDIO_FORMAT_VERSION);
+    snprintf(url, sizeof(url), "%s/manifest.json", abase);
+    char err3[64] = "";
+    cJSON *aroot = fetch_manifest(url, err3, sizeof(err3));
+    const cJSON *aassets = audio_manifest_assets(aroot);
+    if (!aassets) {
+        if (aroot) {
+            snprintf(err3, sizeof(err3), "audio manifest: not format %d",
+                     AUDIO_FORMAT_VERSION);
+            pb_log_warn(TAG, "%s", err3);
+        }
+        if (ok) { ok = false; snprintf(err, sizeof(err), "%s", err3); }
+    } else {
+        // The announcement has no embedded fallback (silence), so it uses
+        // the [ui_lang, en, de] chain built above; downloaded after the
+        // packs (bigger, least time-critical).
+        if (!custom_ann && !dialog_mode &&
+            !sync_announcement(aassets, abase, ann_path, ann_chain, acn,
+                               err3, sizeof(err3))) {
+            pb_log_warn(TAG, "announcement sync: %s", err3);
+            if (ok) { ok = false; snprintf(err, sizeof(err), "%s", err3); }
+        }
+        // The dialog clips last: only needed on a call, and only in dialog
+        // mode (otherwise this removes them). Same [ui_lang, en, de] chain
+        // as the announcement, whose place they take.
+        char err4[64] = "";
+        if (!sync_dialog(aassets, abase, ann_chain, acn, err4, sizeof(err4))) {
+            pb_log_warn(TAG, "dialog clip sync: %s", err4);
+            if (ok) { ok = false; snprintf(err, sizeof(err), "%s", err4); }
+        }
+    }
+    cJSON_Delete(aroot);
     set_status(ok, lang, ok ? NULL : err);
     if (ok) pb_log_info(TAG, "i18n assets in sync for '%s'", lang);
 }

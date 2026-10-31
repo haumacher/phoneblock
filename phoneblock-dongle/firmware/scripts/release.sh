@@ -451,14 +451,16 @@ for T in "${EXTRA_TARGETS[@]}"; do
     run scp "${STAGE_VERSION}/${T}"/* "${CDN_HOST}:${REMOTE_VERSION}/${T}/"
 done
 
-# ---- localized i18n assets, co-located under this version dir -------------
-# One release, one location: the committed announcement recordings + mail/UI
-# packs are published to firmware/<version>/i18n/, so the device fetches them
-# from the same version tree as its .bin (see i18n_sync.c). This is the single
-# deploy step for #460 — no key and no extra services required (the i18n
-# manifest is unsigned, unlike the OTA one; recordings and reviewed text packs
-# are committed in i18n/). If it fails, the firmware release still completes — publish
-# i18n separately with scripts/i18n-assets.sh --version ${VERSION}.
+# ---- localized string packs, co-located under this version dir -------------
+# The committed mail/UI packs are published to firmware/<version>/i18n/, so
+# the device fetches them from the same version tree as its .bin (see
+# i18n_sync.c) — their keys belong to this firmware's code. No key and no
+# extra services required (the i18n manifest is unsigned, unlike the OTA
+# one). The audio (announcements, dialog clips) is not part of a release: it
+# has its own channel, published independently with scripts/audio-assets.sh
+# (firmware/audio/v<N>/, see i18n/README.md). If this step fails, the
+# firmware release still completes — publish the packs separately with
+# scripts/i18n-assets.sh --version ${VERSION}.
 # i18n is published under the release tag (VERSION), so each release — incl.
 # each rc — gets its own bundle. Dev/test builds strip only their git-describe
 # suffix and resolve their tag's bundle (see version_release_tag / i18n_sync.c).

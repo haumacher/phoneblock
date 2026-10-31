@@ -4,63 +4,66 @@
 #include <stddef.h>
 #include <stdint.h>
 
-// Downloads the localized device assets — the answer-bot announcement audio
-// and (later) the status-mail string pack — for the active ui_lang from the
-// CDN, so the firmware carries no per-language payload (issue #460).
+// Downloads the localized device assets — the web-UI and status-mail string
+// packs, the answer-bot announcement audio and the dialog clip set — for the
+// active ui_lang from the CDN, so the firmware carries no per-language
+// payload (issue #460). Two sources:
 //
-// Assets are co-located with the firmware release on the CDN, under
-//   <CONFIG_PHONEBLOCK_OTA_BASE_URL>/<this-firmware-version>/i18n/
-// so each release carries its own i18n bundle next to its .bin and an older
-// release in the field is never affected by a newer one's key changes.
-// Source of truth is the manifest at
-//   <…>/i18n/manifest.json
-// It is NOT signed — unlike the OTA manifest, which is (manifest_sig.c). The
-// assets are display strings and announcement audio: transport trust is
-// HTTPS + the cert bundle, and a hostile CDN would at worst show the user
-// wrong text. That is a deliberate trade for a workable development loop —
-// publishing a bundle for an unreleased build must not need the release key.
-// Consequence to keep in mind when consuming these strings: treat them as
-// untrusted input, i.e. never interpolate a pack string into HTML unescaped
-// (see the browser side in main/web/index.html).
+//  * The firmware bundle, co-located with the release on the CDN, under
+//      <CONFIG_PHONEBLOCK_OTA_BASE_URL>/<this-firmware-version>/i18n/
+//    with the UI and mail packs, whose keys belong to this firmware's code,
+//    so an older release in the field is never affected by a newer one's
+//    key changes (scripts/i18n-assets.sh).
+//  * The audio channel, versioned by the audio format alone
+//      <CONFIG_PHONEBLOCK_OTA_BASE_URL>/audio/v<AUDIO_FORMAT_VERSION>/
+//    with the announcements and the dialog clip sets, republished in place
+//    whenever the audio changes (audio_manifest.h, scripts/audio-assets.sh).
 //
-// The manifest maps each locale to its assets and their SHA-256:
+// Neither manifest is signed — unlike the OTA manifest, which is
+// (manifest_sig.c). The assets are display strings and audio: transport
+// trust is HTTPS + the cert bundle, and a hostile CDN would at worst show the
+// user wrong text. That is a deliberate trade for a workable development
+// loop — publishing a bundle for an unreleased build must not need the
+// release key. Consequence to keep in mind when consuming these strings:
+// treat them as untrusted input, i.e. never interpolate a pack string into
+// HTML unescaped (see the browser side in main/web/index.html).
 //
-//   { "version": "1",
+// The bundle's manifest maps each locale to its packs and their SHA-256:
+//
+//   { "version": "1.7.0",
 //     "assets": {
-//       "en": { "announcement": {"path":"audio/announcement-en.alaw",
-//                                "sha256":"<hex>", "bytes": 78762},
-//               "mail":         {"path":"mail/mail-en.json",
-//                                "sha256":"<hex>", "bytes": 1234} },
-//       "de": { ...,
-//               "dialog": {"path":"audio/dialog-de.alaw",
-//                          "sha256":"<hex>", "bytes": 63903,
-//                          "phases": {"hello": [[0, 7431]], ...}} },
-//                                      // clip table: see dialog_manifest.h
+//       "en": { "ui":   {"path":"ui/lang-en.json", "sha256":"<hex>", "bytes": 24310},
+//               "mail": {"path":"mail/mail-en.json", "sha256":"<hex>", "bytes": 1234} },
 //       ... } }
 //
+// The audio channel's manifest has the same shape with the announcement and
+// the dialog's size tiers per locale (audio_manifest.h, dialog_manifest.h).
+//
 // Exactly ONE announcement and ONE mail pack are kept on the device, for the
-// active ui_lang. Which locale's content fills them is chosen at download time
-// by a fallback chain — ui_lang → en → de — so a locale with no recording /
-// no translation still gets a usable asset (e.g. German audio) instead of
-// nothing. The chosen content is stored under the ui_lang name:
+// active ui_lang. Which locale's announcement fills it is chosen at download
+// time by a fallback chain — ui_lang → en → de — so a locale with no
+// recording still gets usable audio (e.g. German) instead of nothing; the
+// packs take only ui_lang (their fallback is the embedded English). The
+// chosen content is stored under the ui_lang name:
 //   announcement → /spiffs/announcement-<lang>.alaw  (announcement.c reads it)
 //   mail pack    → /spiffs/mail-<lang>.json          (mail_i18n.c reads it)
 // Each asset is streamed to a SPIFFS temp file, its SHA-256 checked against
 // the manifest (integrity against a truncated or corrupted transfer — the
 // manifest itself is only as trustworthy as the CDN), then renamed into place.
-// Assets for other locales are pruned so the shared 640 KB storage is not
-// filled by stale downloads. The dialog clip set of the interactive answer bot
-// (#429) is kept only while ab_mode is "dialog", taken from the first chain
-// locale with a complete set and stored under that locale's name
+// Assets for other locales are pruned so the shared storage is not filled by
+// stale downloads. The dialog clip set of the interactive answer bot (#429)
+// is kept only while ab_mode is "dialog", taken from the first chain locale
+// with a fitting size tier and stored under that locale's name
 // (dialog_store.h). It takes the place of the localized announcement, which
 // is then neither downloaded nor kept (and of the own recording, which the
-// switch to dialog mode deletes, web.c). A locale whose SHA already matches the on-disk
-// file is skipped (no re-download).
+// switch to dialog mode deletes, web.c). A file whose SHA already matches the
+// manifest is skipped (no re-download).
 //
-// Runs on the scheduler task (never on the httpd thread): shortly after boot
-// (retried with backoff until a pass succeeds) and on demand when the user
-// switches the UI language. There is no periodic re-sync: a release's bundle
-// only changes with a new firmware version, whose post-OTA boot fetches it.
+// Runs on the scheduler task (never on the httpd thread): shortly after boot,
+// retried with backoff until a pass succeeds, then re-checked once a day
+// (scheduler.c) — the audio channel changes without a firmware update; with
+// nothing changed a pass costs the two manifest GETs. And on demand when the
+// user switches the UI language or the answer-bot mode.
 
 void i18n_sync_init(void);
 

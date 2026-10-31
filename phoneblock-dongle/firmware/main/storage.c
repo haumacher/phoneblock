@@ -39,6 +39,11 @@
 #if CONFIG_SPIFFS_GC_MAX_RUNS < 64
 #  error "CONFIG_SPIFFS_GC_MAX_RUNS too low — stale sdkconfig, delete it and rebuild"
 #endif
+// The 1 MB partition of the 16 MB layout needs a full rotation of its 256
+// blocks per GC call (sdkconfig.defaults.esp32s3, test_storage_sim_16mb).
+#if defined(CONFIG_ESPTOOLPY_FLASHSIZE_16MB) && CONFIG_SPIFFS_GC_MAX_RUNS < 256
+#  error "CONFIG_SPIFFS_GC_MAX_RUNS too low for the 16 MB layout — stale sdkconfig, delete it and rebuild"
+#endif
 #endif
 
 static const char *TAG = "storage";
@@ -83,6 +88,13 @@ int64_t storage_community_budget(void)
     if (!fs_info(&free_bytes)) return -1;
     int64_t budget = free_bytes - STORAGE_FS_MARGIN;
     return budget > 0 ? budget : 0;
+}
+
+uint64_t storage_dialog_budget(void)
+{
+    // Space on a real filesystem is the operator's business: the largest
+    // tier of a locale is ~150 KB, and storage_make_room() still runs.
+    return UINT64_MAX;
 }
 
 void storage_make_room(size_t bytes, const char *replaces)
@@ -173,6 +185,14 @@ int64_t storage_community_budget(void)
     size_t total, used;
     if (!fs_info(&total, &used)) return -1;
     return (int64_t) storage_budget_community(&s_geometry, total, used);
+}
+
+uint64_t storage_dialog_budget(void)
+{
+    size_t total, used;
+    // Not mounted: the smallest tier, which every layout takes.
+    if (!fs_info(&total, &used)) return STORAGE_DIALOG_TIER_S;
+    return storage_budget_dialog(total);
 }
 
 void storage_make_room(size_t bytes, const char *replaces)

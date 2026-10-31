@@ -5,10 +5,12 @@
 #   ./scripts/dev-i18n-push.sh [--host answerbot] [--langs "de en"] [--kinds "ui mail dialog"]
 #
 # Kinds: ui and mail (the default), and dialog — the interactive answer bot's
-# clip set (#429): the concatenated clip file, then its clip table from the
-# staged manifest. The dialog kind needs the dongle in dialog mode
-# (ab_mode=dialog; the device answers 409 otherwise) and a locale that has a
-# complete set in i18n/audio/dialog/ (German today).
+# clip set (#429): the size tier the device would download, i.e. the largest
+# staged tier within the dialog budget it reports in /api/status (the
+# smallest tier if it reports none). The clip table travels in the file's
+# header; the device checks it and marks the set complete. The dialog kind
+# needs the dongle in dialog mode (ab_mode=dialog; the device answers 409
+# otherwise) and a locale that has a complete set in i18n/audio/dialog/.
 #
 # Why this exists: i18n_sync.c derives the CDN bundle path from the running
 # firmware's *release tag* (git-describe suffix stripped). A dev build
@@ -17,14 +19,14 @@
 # keys. Publishing a bundle per test build is not an option (that is a
 # release step). This pushes the bundles the device would have downloaded.
 #
-# The bundles are produced by scripts/i18n-assets.sh --no-upload, i.e. the
-# same generator the release uses, so what lands on the device is
-# byte-identical to what the CDN would serve. Don't strip the ARBs by hand
+# The bundles are produced by scripts/i18n-assets.sh and audio-assets.sh
+# --no-upload, i.e. the same generators the publishing uses, so what lands
+# on the device is byte-identical to what the CDN would serve. Don't strip the ARBs by hand
 # here — the strip rule (keep @@locale, drop @key metadata) lives there.
 #
 # The pushed bundles stay until the device's next i18n sync — after a reboot,
-# an OTA, or a UI language switch — which puts it back onto the published
-# bundles. Re-run this after flashing a new dev build.
+# an OTA, a UI language switch, or the daily check — which puts it back onto
+# the published bundles. Re-run this after flashing a new dev build.
 
 set -euo pipefail
 
@@ -38,7 +40,7 @@ while [[ $# -gt 0 ]]; do
         --host)  HOST="$2";  shift 2;;
         --langs) LANGS="$2"; shift 2;;
         --kinds) KINDS="$2"; shift 2;;
-        -h|--help) sed -n '2,28p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0;;
+        -h|--help) sed -n '2,30p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0;;
         *) echo "unknown option: $1" >&2; exit 2;;
     esac
 done
@@ -70,8 +72,14 @@ fi
 STAGE="$(mktemp -d)"
 trap 'rm -rf "${STAGE}"' EXIT
 
-echo "==> building bundles with the release generator"
+echo "==> building bundles with the release generators"
 "${HERE}/i18n-assets.sh" --langs "${LANGS}" --no-upload --stage "${STAGE}" >/dev/null
+CHANNEL=""
+if [[ " ${KINDS} " == *" dialog "* ]]; then
+    # The audio channel (audio-assets.sh), staged next to the bundle.
+    "${HERE}/audio-assets.sh" --langs "${LANGS}" --no-upload --stage "${STAGE}" >/dev/null
+    CHANNEL="$(ls -d "${STAGE}"/audio/v* | tail -1)"
+fi
 
 # POST one file; prints the device's answer (its message on a refusal).
 push() {  # kind lang file
@@ -94,23 +102,26 @@ for lang in ${LANGS}; do
         case "$kind" in
             ui)     file="${STAGE}/assets/ui/lang-${lang}.json";;
             mail)   file="${STAGE}/assets/mail/mail-${lang}.json";;
-            dialog) file="${STAGE}/assets/audio/dialog-${lang}.alaw";;
+            dialog)
+                # The device's budget: a number, null (unlimited) or absent
+                # (older firmware: take the smallest tier).
+                budget="$(curl -sf -m 10 "http://${HOST}/api/status" | jq -r \
+                    'if (.dialog | has("budget_bytes")) then (.dialog.budget_bytes // "all") else "s" end')"
+                rel="$(jq -r --arg l "$lang" --arg b "$budget" '
+                    (.assets[$l].dialog // []) | sort_by(.bytes)
+                    | if $b == "s" then .[0]
+                      elif $b == "all" then .[-1]
+                      else map(select(.bytes <= ($b | tonumber))) | .[-1] end
+                    | .path // empty' "${CHANNEL}/manifest.json")"
+                file="${CHANNEL}/${rel:-none}"
+                [[ -n "$rel" ]] && echo "    dialog/${lang}: tier ${rel##*/} for budget ${budget}";;
             *) echo "unknown kind: ${kind}" >&2; exit 2;;
         esac
         if [[ ! -f "$file" ]]; then
             echo "    ${kind}/${lang}: no bundle generated, skipped"
             continue
         fi
-        if [[ "$kind" != dialog ]]; then
-            push "$kind" "$lang" "$file"
-            continue
-        fi
-        # The audio first (it drops the device's index), then the clip table
-        # from the staged manifest, which makes the set usable.
-        index="${STAGE}/dialog-index-${lang}.json"
-        jq --arg l "$lang" '{($l): {dialog: .assets[$l].dialog}}' \
-            "${STAGE}/assets/manifest.json" > "$index"
-        push dialog "$lang" "$file" && push dialog-index "$lang" "$index"
+        push "$kind" "$lang" "$file"
     done
 done
 

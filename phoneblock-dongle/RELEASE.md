@@ -52,6 +52,23 @@ dann die beiden Dateien per sftp ersetzen).
 `--stage` baut nur lokal nach `firmware/release/<version>/`, `--dry-run` zeigt die ssh/scp-Befehle.
 In beiden Modi wird signiert — sonst wäre der Stage-Output kein Spiegel des Live-Manifests.
 
+`release.sh` veröffentlicht außerdem die UI- und Mail-Pakete der Version nach
+`firmware/<version>/i18n/` (`scripts/i18n-assets.sh`). Das **Audio** (Ansagen und
+Dialog-Clips) gehört nicht zum Release: Es liegt im versionsunabhängigen
+Audio-Kanal `firmware/audio/v<N>/` und wird separat veröffentlicht, wann immer
+es sich ändert:
+
+```bash
+firmware/scripts/audio-assets.sh --dry-run   # zeigen, was hochginge
+firmware/scripts/audio-assets.sh             # veröffentlichen
+```
+
+Die Geräte prüfen den Kanal täglich und laden nur geänderte Dateien. `N`
+(`AUDIO_FORMAT_VERSION`) steigt nur bei einer inkompatiblen Formatänderung —
+Regeln in `firmware/i18n/README.md`, Abschnitt „Audio-Kanal“. Vor dem ersten
+Release einer Firmware, die einen neuen Kanal `v<N>` liest, muss dieser
+veröffentlicht sein.
+
 ## Linux-Paket
 
 Kein eigener Schritt: Der Tag, den `release.sh` pusht, startet
