@@ -1,0 +1,14 @@
+// Translate the answer-bot dialog sentences (German source, dialog_de.arb)
+// into the other locales; scripts/tts-dialog.py then speaks each locale's
+// sentences into i18n/audio/dialog/<lang>/. Key = <phase>_<n>, the phase in
+// the manifest spelling with '-' as '_' (hello, who_is_there, am_aparat,
+// question, cant_hear_you); the number of keys per phase is the number of
+// clips (1..8). Same plugin/credential as mail/ and ui/.
+plugins {
+    id 'de.haumacher.auto-translate-arb' version '1.1.1'
+}
+translateArb {
+    serverId    = 'deepl'
+    sourceFile  = file('dialog_de.arb')
+    targetLangs = ['ar', 'da', 'el', 'en', 'es', 'fr', 'it', 'nb', 'nl', 'pl', 'sv', 'uk', 'zh']
+}
