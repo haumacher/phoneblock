@@ -323,32 +323,30 @@ def sftp(batch):
 
 
 def upload(langs, rows):
-    """Copies masters, transcripts and voice.json of every complete speaker
-    directory to CDN_TTS (the next --upload repeats whatever an interrupted
-    one did not finish; files are replaced in place)."""
-    lines = []
-    for p in ("/firmware", "/firmware/audio", "/firmware/audio/tts"):
-        lines.append(f"-mkdir {CDN_BASE}{p}")
-    n = 0
-    for lang in langs:
-        lines.append(f"-mkdir {CDN_TTS}/{lang}")
-        for s in rows:
-            d = os.path.join(AUDIO, lang, s["id"])
-            if not os.path.exists(os.path.join(d, "voice.json")):
-                continue
-            remote = f"{CDN_TTS}/{lang}/{s['id']}"
-            lines.append(f"-mkdir {remote}")
-            names = sorted(x for x in os.listdir(d)
-                           if x.endswith(".txt") and os.path.exists(os.path.join(d, x[:-4] + ".mp3")))
-            # Master before transcript: a transcript on the CDN vouches for its master.
-            for x in names:
-                lines.append(f'put "{os.path.join(d, x[:-4] + ".mp3")}" {remote}/{x[:-4]}.mp3')
-                lines.append(f'put "{os.path.join(d, x)}" {remote}/{x}')
-            lines.append(f'put "{os.path.join(d, "voice.json")}" {remote}/voice.json')
-            n += len(names)
-            print(f"{lang}/{s['id']}: {len(names)} masters")
-    sftp("\n".join(lines) + "\n")
-    print(f"uploaded {n} masters to {CDN_HOST}:{CDN_TTS}")
+    """Copies masters, transcripts and voice.json of every speaker directory
+    to CDN_TTS, one sftp session per directory (the next --upload repeats
+    whatever an interrupted one did not finish; files are replaced in place)."""
+    dirs = [(lang, s["id"]) for lang in langs for s in rows
+            if os.path.exists(os.path.join(AUDIO, lang, s["id"], "voice.json"))]
+    total = 0
+    for i, (lang, sid) in enumerate(dirs, 1):
+        d = os.path.join(AUDIO, lang, sid)
+        remote = f"{CDN_TTS}/{lang}/{sid}"
+        lines = [f"-mkdir {CDN_BASE}{p}" for p in
+                 ("/firmware", "/firmware/audio", "/firmware/audio/tts", f"/firmware/audio/tts/{lang}")]
+        lines.append(f"-mkdir {remote}")
+        names = sorted(x for x in os.listdir(d)
+                       if x.endswith(".txt") and os.path.exists(os.path.join(d, x[:-4] + ".mp3")))
+        # Master before transcript: a transcript on the CDN vouches for its master.
+        for x in names:
+            lines.append(f'put "{os.path.join(d, x[:-4] + ".mp3")}" {remote}/{x[:-4]}.mp3')
+            lines.append(f'put "{os.path.join(d, x)}" {remote}/{x}')
+        lines.append(f'put "{os.path.join(d, "voice.json")}" {remote}/voice.json')
+        print(f"[{i}/{len(dirs)}] {lang}/{sid}: {len(names)} masters ...", end=" ", flush=True)
+        sftp("\n".join(lines) + "\n")
+        print("done", flush=True)
+        total += len(names)
+    print(f"uploaded {total} masters to {CDN_HOST}:{CDN_TTS}")
 
 
 def fetch(langs, rows):
