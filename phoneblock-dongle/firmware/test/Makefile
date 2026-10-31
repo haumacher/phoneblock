@@ -8,7 +8,7 @@ CFLAGS  ?= -Wall -Wextra -Werror -O0 -g -I../main -I../core
 IDF_PATH ?= $(HOME)/tools/esp/esp-idf
 CJSON_DIR := $(IDF_PATH)/components/json/cJSON
 
-BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_rcpt test_name_filter test_version_cmp test_http_util test_net_local test_heap_guard test_platform_linux test_log_capture_linux test_time_sync_tz test_ota_manifest test_stats test_display_model test_display_probe test_storage_budget test_storage_sim test_storage_hostfs
+BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_rcpt test_name_filter test_version_cmp test_http_util test_net_local test_heap_guard test_platform_linux test_log_capture_linux test_time_sync_tz test_ota_manifest test_stats test_display_model test_display_probe test_storage_budget test_storage_sim test_storage_hostfs test_vad test_dialog test_dialog_probe
 
 test_sip_parse: test_sip_parse.c ../core/sip_parse.c ../core/sip_parse.h \
                 ../core/dial_rules.c ../core/dial_rules.h \
@@ -46,6 +46,28 @@ test_api_scan: test_api_scan.c ../main/api_scan.c ../main/api_scan.h cjson.o
 
 test_ota_manifest: test_ota_manifest.c ../main/ota_manifest.c ../main/ota_manifest.h cjson.o
 	$(CC) $(CFLAGS) -I$(CJSON_DIR) test_ota_manifest.c ../main/ota_manifest.c cjson.o -o $@
+
+# The dialog's receive path: A-law decode and the VAD (needs libm).
+test_vad: test_vad.c ../main/vad.c ../main/vad.h ../main/audio.c ../main/audio.h
+	$(CC) $(CFLAGS) test_vad.c ../main/vad.c ../main/audio.c -lm -o $@
+
+# The dialog state machine, its clip-set index, the manifest selection of a
+# clip set (cJSON) and the RTP receive parser.
+# The clip store runs against a fresh temp directory (PB_DIALOG_TEST_DIR,
+# set by main()), like test_storage_hostfs.
+test_dialog: test_dialog.c ../main/dialog.c ../main/dialog.h \
+             ../main/dialog_manifest.c ../main/dialog_manifest.h \
+             ../main/dialog_store.c ../main/dialog_store.h \
+             ../main/rtp_rx.c ../main/rtp_rx.h ../main/vad.h ../main/strbuf.h cjson.o
+	$(CC) $(CFLAGS) -fsanitize=address -I$(CJSON_DIR) \
+	  -DPHONEBLOCK_DATA_DIR='getenv("PB_DIALOG_TEST_DIR")' \
+	  test_dialog.c ../main/dialog.c ../main/dialog_manifest.c \
+	  ../main/dialog_store.c ../main/rtp_rx.c cjson.o -o $@
+
+test_dialog_probe: test_dialog_probe.c ../main/dialog.c ../main/dialog.h \
+             ../main/dialog_manifest.c ../main/dialog_manifest.h ../main/vad.h cjson.o
+	$(CC) $(CFLAGS) -fsanitize=address -I$(CJSON_DIR) test_dialog_probe.c ../main/dialog.c \
+	  ../main/dialog_manifest.c cjson.o -o $@
 
 test_storage_budget: test_storage_budget.c ../main/storage_budget.c ../main/storage_budget.h
 	$(CC) $(CFLAGS) test_storage_budget.c ../main/storage_budget.c -o $@

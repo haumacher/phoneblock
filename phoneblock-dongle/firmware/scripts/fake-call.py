@@ -32,6 +32,19 @@ RTP/SRTP, the report deferred until the stream has ended, stack headroom of
 the streaming and report tasks. Without --audio the dongle finds no RTP
 destination and hangs up without audio.
 
+--talk SPEC (with --audio): also send a PCMA stream to the dongle, like a
+caller's phone does (20 ms frames, quiet line noise), with "speech" (a loud
+tone) in the windows of SPEC, seconds after the ACK: "2-3.5,9-10". Use it for
+the interactive dialog (ab_mode=dialog): the dongle's VAD hears the tone as
+speech and answers after the pause. Implies --max SECONDS of 120 unless given.
+
+--mute-after SECONDS (with --talk): stop sending RTP at that point while
+staying on the line — a caller whose media died. The dialog must hang up by
+itself ~30 s later (no RTP from the caller).
+
+--max SECONDS (with --audio): end the call with our BYE after that long
+(default 120).
+
 --bye-after SECONDS (with --audio): hang up like an impatient caller, i.e.
 send BYE that many seconds after the ACK, while the announcement is still
 playing. The call's duration_s in /api/calls (and the call webhook) then
@@ -62,6 +75,31 @@ if "--bye-after" in args:
     del args[i:i + 2]
     if not audio:
         sys.exit("--bye-after needs --audio")
+def take_opt(name, conv):
+    if name not in args:
+        return None
+    i = args.index(name)
+    try:
+        v = conv(args[i + 1])
+    except (IndexError, ValueError):
+        sys.exit(f"{name} needs a value")
+    del args[i:i + 2]
+    if not audio:
+        sys.exit(f"{name} needs --audio")
+    return v
+
+def parse_talk(spec):
+    out = []
+    for part in spec.split(","):
+        a, b = part.split("-")
+        out.append((float(a), float(b)))
+    return out
+
+talk = take_opt("--talk", parse_talk)
+mute_after = take_opt("--mute-after", float)
+max_secs = take_opt("--max", float) or 120.0
+if mute_after is not None and talk is None:
+    sys.exit("--mute-after needs --talk")
 if not args or args[0] in ("-h", "--help"):
     print(__doc__)
     sys.exit(0 if args else 2)
@@ -122,6 +160,7 @@ def drain(label, secs):
                 if code == 200 and any(l.lower().startswith("cseq:") and "INVITE" in l
                                        for l in lines):
                     remember_to_tag(lines)
+                    remember_media(lines)
                     if audio:
                         break                # the stream starts right after
     return final
@@ -133,12 +172,58 @@ def remember_to_tag(lines):
         if l.lower().startswith(("to:", "t:")) and "tag=" in l:
             to_tag = ";tag=" + l.split("tag=", 1)[1].split(";")[0].strip()
 
+remote_media = None                          # (ip, port) from the dongle's SDP answer
+
+def remember_media(lines):
+    global remote_media
+    ip, port = None, None
+    for l in lines:
+        if l.startswith("c=IN IP4 "):
+            ip = l.split()[2]
+        elif l.startswith("m=audio "):
+            port = int(l.split()[1])
+    if ip and port:
+        remote_media = (ip, port)
+
+def alaw(sample):
+    """G.711 A-law encode of one 16-bit linear sample."""
+    sign = 0x80 if sample >= 0 else 0x00
+    if sample < 0:
+        sample = -sample - 1
+    sample = min(sample, 32635) >> 3
+    if sample >= 32:
+        exp = sample.bit_length() - 5
+        code = (exp << 4) | ((sample >> exp) & 0x0F)
+    else:
+        code = sample >> 1
+    return (code | sign) ^ 0x55
+
+import math
+QUIET = bytes(alaw(int(30 * math.sin(i))) for i in range(160))           # ~ -60 dBFS
+LOUD  = bytes(alaw(int(12000 * math.sin(2 * math.pi * 440 * i / 8000)))  # ~ -11 dBFS
+              for i in range(160))
+
 def receive_audio():
     """Count RTP packets until the dongle hangs up or the stream goes silent."""
     sock.settimeout(0.002)
     packets, first, last = 0, None, None
-    end = time.time() + 120
+    end = time.time() + max_secs
+    seq, ts, next_tx, sent = 0, 0, time.time(), 0
     while time.time() < end:
+        now = time.time()
+        if talk is not None and remote_media and now >= next_tx and \
+                (mute_after is None or now - start < mute_after):
+            t = now - start
+            payload = LOUD if any(a <= t < b for a, b in talk) else QUIET
+            hdr = bytes([0x80, 8, seq >> 8 & 0xFF, seq & 0xFF,
+                         ts >> 24 & 0xFF, ts >> 16 & 0xFF, ts >> 8 & 0xFF, ts & 0xFF,
+                         0x12, 0x34, 0x56, 0x78])
+            rtp.sendto(hdr + payload, remote_media)
+            seq = (seq + 1) & 0xFFFF; ts = (ts + 160) & 0xFFFFFFFF
+            next_tx += 0.02; sent += 1
+        elif mute_after is not None and sent and now - start >= mute_after and sent > 0:
+            print(f"-> (--mute-after {mute_after:g} s) RTP stopped, staying on the line")
+            sent = -1
         try:
             rtp.recv(2048)
             packets += 1
@@ -161,11 +246,13 @@ def receive_audio():
         if bye_after is not None and time.time() - start >= bye_after:
             print(f"-> BYE (--bye-after {bye_after:g} s)"); sock.send(msg("BYE", 2))
             break
-        if time.time() - (last or start) > 5:
+        if talk is None and time.time() - (last or start) > 5:
             print("-> BYE (stream silent for 5 s)"); sock.send(msg("BYE", 2))
             break
+    else:
+        print(f"-> BYE (--max {max_secs:g} s)"); sock.send(msg("BYE", 2))
     span = (last - first) if first else 0.0
-    print(f"RTP: {packets} packet(s) over {span:.1f} s")
+    print(f"RTP: {packets} packet(s) over {span:.1f} s, call {time.time() - start:.1f} s")
 
 # Allow >3 s so the non-spam decline (480 after SIP_DECLINE_DELAY) is seen.
 print("-> INVITE"); sock.send(msg("INVITE", 1, sdp)); final = drain("after INVITE", 3.5)

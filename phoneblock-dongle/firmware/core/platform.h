@@ -328,6 +328,18 @@ typedef struct {
 void pb_deadline_init(pb_deadline_t *deadline);
 void pb_task_delay_until(pb_deadline_t *deadline, uint32_t interval_ms);
 
+// --- Network latency ----------------------------------------------------
+
+// Switches the network link to low latency (true) for real-time two-way
+// audio, and back to its normal mode (false). On the ESP32 this turns WiFi
+// modem power save off: modem sleep makes the access point buffer downlink
+// packets and deliver them in bursts at the DTIM beacons, which delays the
+// caller's audio to the dialog's VAD by hundreds of milliseconds. Kept off
+// only for the duration of a dialog call, since an always-on radio heats the
+// small boards. false restores the mode that was active before the
+// matching true. A no-op on Linux.
+void pb_net_low_latency(bool enable);
+
 // --- Mutex ---------------------------------------------------------------
 
 typedef struct pb_mutex pb_mutex_t;

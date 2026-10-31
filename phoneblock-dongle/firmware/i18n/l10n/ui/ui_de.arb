@@ -1175,6 +1175,91 @@
     "description": "Dongle web UI: status.ann.accept_test.help",
     "x-translated": "c63b291"
   },
+  "status.dialog.mode": "Bei Spam-Anrufen",
+  "@status.dialog.mode": {
+    "description": "Dongle web UI: label of the answer-bot mode selector (what the dongle does with an answered spam call)",
+    "x-translated": "103f6bc4"
+  },
+  "status.dialog.mode.announcement": "Ansage abspielen und auflegen",
+  "@status.dialog.mode.announcement": {
+    "description": "Dongle web UI: answer-bot mode option — play the announcement, then hang up",
+    "x-translated": "9beee9f5"
+  },
+  "status.dialog.mode.dialog": "Mit dem Anrufer sprechen (Dialog)",
+  "@status.dialog.mode.dialog": {
+    "description": "Dongle web UI: answer-bot mode option — interactive dialog that keeps the spam caller talking",
+    "x-translated": "671473fd"
+  },
+  "status.dialog.help": "Im Dialog nimmt der Dongle den Spam-Anruf an und hält den Anrufer mit kurzen Sätzen hin, die auf seine Antworten reagieren, bis er auflegt – ohne Zeitlimit. Im Dialog gibt es keine Ansage: Eine eigene Aufnahme wird beim Umschalten gelöscht und kann erst im Ansage-Modus wieder hochgeladen werden.",
+  "@status.dialog.help": {
+    "description": "Dongle web UI: explanation of the dialog answer-bot mode",
+    "x-translated": "f8a5c764"
+  },
+  "status.dialog.clips.present": "Dialog-Sätze geladen ({lang}).",
+  "@status.dialog.clips.present": {
+    "description": "Dongle web UI: dialog clip set is on the device; {lang} is the language name of the clips",
+    "x-translated": "121a0130"
+  },
+  "status.dialog.clips.missing": "Dialog-Sätze noch nicht geladen – bis dahin legt der Dongle Spam-Anrufe ohne Ansage auf.",
+  "@status.dialog.clips.missing": {
+    "description": "Dongle web UI: dialog mode is on but no complete clip set is on the device yet",
+    "x-translated": "339c5b70"
+  },
+  "status.dialog.confirm_delete_own": "Deine eigene Ansage wird gelöscht, wenn du auf den Dialog umschaltest. Du kannst sie im Ansage-Modus wieder hochladen. Fortfahren?",
+  "@status.dialog.confirm_delete_own": {
+    "description": "Dongle web UI: confirmation before switching to dialog mode while an own recorded announcement exists; the switch deletes it",
+    "x-translated": "21e131ca"
+  },
+  "status.dialog.vad_silence_db": "Stille-Schwelle (dBFS)",
+  "@status.dialog.vad_silence_db": {
+    "description": "Dongle web UI: label of the voice-detection silence threshold field",
+    "x-translated": "8b8d7079"
+  },
+  "status.dialog.vad_silence_db.help": "Leiser als dieser Pegel gilt der Anrufer als still. Höher (z.B. -30) bei Rauschen in der Leitung, tiefer (z.B. -45) für leise Anrufer. Standard: -35.",
+  "@status.dialog.vad_silence_db.help": {
+    "description": "Dongle web UI: help for the silence threshold field",
+    "x-translated": "8948457f"
+  },
+  "status.dialog.vad_min_silence_ms": "Antwortzeit (ms)",
+  "@status.dialog.vad_min_silence_ms": {
+    "description": "Dongle web UI: label of the field for how long the caller must be silent before the bot answers",
+    "x-translated": "257de909"
+  },
+  "status.dialog.vad_min_silence_ms.help": "So lange muss der Anrufer schweigen, bevor der Dongle antwortet. Standard: 800.",
+  "@status.dialog.vad_min_silence_ms.help": {
+    "description": "Dongle web UI: help for the response time field",
+    "x-translated": "de486bf"
+  },
+  "status.dialog.comfort_noise": "Leitungsrauschen (dBFS)",
+  "@status.dialog.comfort_noise": {
+    "description": "Dongle web UI: label of the comfort-noise level field",
+    "x-translated": "76c8d205"
+  },
+  "status.dialog.comfort_noise.help": "Leises Rauschen unter und zwischen den Sätzen, damit die Leitung nicht tot klingt. -90 ist praktisch aus. Standard: -60.",
+  "@status.dialog.comfort_noise.help": {
+    "description": "Dongle web UI: help for the comfort-noise level field",
+    "x-translated": "64de224"
+  },
+  "status.dialog.save": "Dialog-Einstellungen speichern",
+  "@status.dialog.save": {
+    "description": "Dongle web UI: button that saves the dialog settings",
+    "x-translated": "5aa21d66"
+  },
+  "status.dialog.saved": "Gespeichert.",
+  "@status.dialog.saved": {
+    "description": "Dongle web UI: dialog settings saved",
+    "x-translated": "9e7fb387"
+  },
+  "status.dialog.failed": "Speichern fehlgeschlagen.",
+  "@status.dialog.failed": {
+    "description": "Dongle web UI: saving the dialog settings failed",
+    "x-translated": "9a6e70be"
+  },
+  "status.dialog.err.range": "Bitte eine ganze Zahl von {min} bis {max} eingeben.",
+  "@status.dialog.err.range": {
+    "description": "Dongle web UI: validation error of a dialog settings field; {min} and {max} are the allowed bounds",
+    "x-translated": "27d68741"
+  },
   "hero.title": "Einrichtung",
   "@hero.title": {
     "description": "Dongle web UI: hero.title",

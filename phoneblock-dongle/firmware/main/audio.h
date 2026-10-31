@@ -11,3 +11,15 @@
 //    32767  → 0xAA   (positive full scale)
 //   -32768  → 0x2A   (negative full scale)
 uint8_t pcm_to_alaw(int16_t pcm);
+
+// Decode a single 8-bit G.711 A-law byte back to a 16-bit signed-linear PCM
+// sample — the inverse of pcm_to_alaw. Used on the receive path (the caller's
+// PCMA into the VAD, vad.h) and to mix dialog clips with comfort noise.
+// ITU-T G.711 reference (Sun public-domain alaw2linear); pure C, host-tested.
+//
+// Reference vectors (round-trip of pcm_to_alaw's):
+//   0xD5 → 8       (decoded zero / silence; A-law has no exact 0)
+//   0x55 → -8      (the negative twin: the sign bit is the only difference)
+//   0xAA → 32256   (positive full scale)
+//   0x2A → -32256  (negative full scale)
+int16_t alaw_to_pcm(uint8_t alaw);

@@ -70,7 +70,11 @@ void report_queue_wait_announcement(void)
 
 void report_queue_wait_stream_end(void)
 {
-    for (int i = 0; i < 300 && rtp_streaming_active(); i++) {
+    // No bound of its own, so the TLS session never overlaps the SRTP media:
+    // every stream ends by itself — the announcement with its audio, the
+    // dialog (#429, no time cap) at the latest DIALOG_RX_TIMEOUT_MS after
+    // the caller's last packet, or by the SIP task's abort on BYE.
+    while (rtp_streaming_active()) {
         pb_task_sleep_ms(100);
     }
 }

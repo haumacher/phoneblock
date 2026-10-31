@@ -38,3 +38,22 @@ uint8_t pcm_to_alaw(int16_t pcm)
     }
     return aval ^ mask;
 }
+
+// ITU-T G.711 A-law decoder: undo the even-bit mask 0x55, then expand the
+// 3-bit segment + 4-bit mantissa back to a linear magnitude (with the half-
+// step bias that puts the result in the middle of the quantisation interval).
+// After unmasking, a set sign bit means positive — the encoder's 0xD5 mask
+// for val >= 0 sets it.
+int16_t alaw_to_pcm(uint8_t alaw)
+{
+    alaw ^= 0x55;
+    int mant = (alaw & 0x0F) << 4;
+    int seg  = (alaw & 0x70) >> 4;
+    int mag;
+    if (seg == 0) {
+        mag = mant + 8;
+    } else {
+        mag = (mant + 0x108) << (seg - 1);
+    }
+    return (alaw & 0x80) ? (int16_t)mag : (int16_t)-mag;
+}

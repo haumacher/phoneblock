@@ -1,7 +1,8 @@
 # Dongle localized assets (issue #460)
 
 Source of truth for the dongle's localized **answer-bot announcement audio**,
-**status-mail strings**, and **web-UI strings**. The firmware carries no
+the **dialog clips** of the interactive answer bot, **status-mail strings**, and
+**web-UI strings**. The firmware carries no
 per-language payload — assets are published to the CDN, co-located with the
 firmware release, and pulled on demand (see `main/i18n_sync.c`,
 `main/mail_i18n.c`, the loader in `main/web/index.html`).
@@ -27,6 +28,18 @@ is translated at release time.
   actually says; it's the source when re-recording / re-synthesizing and the
   reference for translating the spoken text to a new language. Not consumed by
   the build.
+- `audio/dialog/<lang>/<phase>-<n>.alaw` — the **dialog clips** of the
+  interactive answer bot (#429, `ab_mode=dialog`): raw A-law like the
+  announcement, one short sentence each, with a `<phase>-<n>.txt` transcript
+  next to it (same rules as the announcement's). The five phases are `hello`,
+  `who-is-there`, `am-aparat`, `question` and `cant-hear-you` (the flow is in
+  `main/dialog.h`); each has 1..8 numbered clips (`question-1.alaw`,
+  `question-2.alaw`, …), of which the device picks one at random, never the
+  same twice in a row. Adding a variant is adding a file and republishing — no
+  firmware change. `i18n-assets.sh` concatenates a locale's clips (phase
+  order, clip order) into one published file, `audio/dialog-<lang>.alaw`. A locale is published only with **all five** phases; until
+  a language is recorded (TTS is a manual step), devices fall back along
+  `ui_lang → en → de` to the German set.
 - `l10n/` — the **translation project** (see "Translating" below):
   - `mail/mail_<lang>.arb` — status-mail strings. `mail_de.arb` is the single
     normative German source (edit it directly); the other `mail_<lang>.arb` are
@@ -88,9 +101,41 @@ one's key changes, and there is a single version axis.
 | announcement audio | `audio/announcement-<lang>.alaw` | `audio/*.alaw` | firmware | SHA-256 from the manifest |
 | mail string pack | `mail/mail-<lang>.json` | `l10n/mail/*.arb` | firmware | SHA-256 from the manifest |
 | web-UI pack | `ui/lang-<code>.json` | `l10n/ui/*.arb` | firmware, served at `/api/i18n/ui` | SHA-256 from the manifest |
+| dialog clips | `audio/dialog-<lang>.alaw` | `audio/dialog/<lang>/` | firmware, only while `ab_mode=dialog` | SHA-256 from the manifest |
 
 The published packs are the ARB files with their `@key` metadata stripped
 (plain key→string JSON).
+
+The dialog clips are an **additive** manifest key: `assets.<lang>.dialog` is
+one asset `{path, sha256, bytes}` like the others, plus `phases`, the clip
+table — each phase mapped to the `[offset, length]` of its clips within that
+file, in clip order. Firmware that predates the dialog ignores it; phases and
+fields a firmware does not know are ignored too.
+
+```json
+"de": { "announcement": {…}, "mail": {…}, "ui": {…},
+        "dialog": { "path": "audio/dialog-de.alaw", "sha256": "…", "bytes": 63903,
+                    "phases": { "hello":    [[0, 7431]],
+                                "question": [[22292, 7802], [30094, 11146], [41240, 12260]],
+                                … } } }
+```
+
+One file rather than one per clip: on the dongle's SPIFFS every file costs
+index pages and GC relocations, and eight small files drove the storage
+simulator (`test/test_storage_sim.c`) into GC failures that one file of the
+same size does not.
+
+The device takes the set **as a whole** from the first locale of its
+`ui_lang → en → de` chain that has all five phases (never mixed across
+languages), stores it as `dialog-<lang>.alaw` plus a `dialog.idx` holding the
+clip table, written after the file is in place (`main/dialog_store.h`), and
+removes it when `ab_mode` goes back to `announcement` or the chosen locale
+changes. In dialog mode the set takes the place of both announcements: the
+localized one is neither downloaded nor kept, and switching to dialog deletes
+an own recording (a new one can be uploaded in announcement mode only). The
+set (~64 KB for German) is a rarely written asset in the storage budget, ahead
+of the community blocklist. The whole manifest must stay below the firmware's
+8 KB fetch buffer (`MANIFEST_CAP` in `main/i18n_sync.c`).
 
 **The manifest is not signed** — unlike the OTA manifest. The per-asset SHA-256
 protects against a truncated or corrupted transfer, not against a hostile CDN:

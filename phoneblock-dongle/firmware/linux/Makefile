@@ -34,13 +34,16 @@ endif
 LINUX_PKG_CFLAGS := $(shell pkg-config --cflags libcjson libsrtp2 libmicrohttpd 2>/dev/null)
 LINUX_PKG_LIBS := $(shell pkg-config --libs libcjson libsrtp2 libmicrohttpd 2>/dev/null)
 LINUX_SRTP_INCLUDEDIR := $(shell pkg-config --variable=includedir libsrtp2 2>/dev/null)
-LINUX_NET_LIBS := -lcurl -lssl -lcrypto $(LINUX_PKG_LIBS)
+# -lm: the dialog's VAD and comfort noise (vad.c, rtp.c) use libm.
+LINUX_NET_LIBS := -lcurl -lssl -lcrypto $(LINUX_PKG_LIBS) -lm
 LINUX_CORE_SOURCES := ../core/platform_linux.c ../core/platform_linux_net.c \
                       ../core/sip_parse.c ../core/dial_rules.c ../core/tr064_parse.c
 LINUX_MAIN_SOURCES := ../main/announcement.c ../main/api.c \
                       ../main/api_scan.c \
                       ../main/audio.c ../main/blocklist_lookup.c \
                       ../main/blocklist_sync.c ../main/config.c \
+                      ../main/dialog.c ../main/dialog_manifest.c \
+                      ../main/dialog_store.c \
                       ../main/firmware_update.c ../main/heap_guard_linux.c \
                       ../main/heap_guard_scan.c \
                       ../main/http_util.c ../main/i18n_sync.c ../main/log_capture.c \
@@ -48,7 +51,7 @@ LINUX_MAIN_SOURCES := ../main/announcement.c ../main/api.c \
                       ../main/mail_linux.c ../main/mail_rcpt.c \
                       ../main/manifest_sig.c ../main/name_filter.c \
                       ../main/net_local.c ../main/phone_norm.c \
-                      ../main/report_queue.c ../main/rtp.c \
+                      ../main/report_queue.c ../main/rtp.c ../main/rtp_rx.c \
                       ../main/sched_time.c ../main/scheduler.c \
                       ../main/sip_auth.c ../main/sip_frame.c \
                       ../main/selftest.c ../main/sip_register.c ../main/sip_response.c \
@@ -56,7 +59,7 @@ LINUX_MAIN_SOURCES := ../main/announcement.c ../main/api.c \
                       ../main/stats.c ../main/storage.c \
                       ../main/sync.c ../main/time_sync_linux.c \
                       ../main/time_sync_tz.c ../main/tr064.c \
-                      ../main/version_cmp.c \
+                      ../main/vad.c ../main/version_cmp.c \
                       ../main/web_access.c ../main/web_auth.c ../main/web.c \
                       ../main/webhook.c \
                       ../main/web_http_linux.c

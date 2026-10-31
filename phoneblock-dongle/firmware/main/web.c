@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <sys/stat.h>
 
 #ifdef ESP_PLATFORM
 #include "esp_log.h"
@@ -36,6 +37,8 @@
 #include "i18n_sync.h"
 #include "storage.h"
 #include "config.h"
+#include "dialog_manifest.h"
+#include "dialog_store.h"
 #if CONFIG_IDF_TARGET_ESP32S3
 #include "display.h"
 #endif
@@ -598,6 +601,19 @@ static web_http_error_t handle_status(web_http_request_t *req)
     cJSON_AddNumberToObject(ann,  "max_bytes", (double)ANNOUNCEMENT_MAX_BYTES);
     cJSON_AddBoolToObject  (ann,  "accept_test_calls", config_accept_test_calls());
 
+    // Answer-bot mode and the interactive dialog (#429): its tuning, and
+    // whether a complete clip set is on the device and from which locale
+    // (the set may come from a fallback locale, e.g. German for "fr").
+    cJSON *dlg = cJSON_AddObjectToObject(root, "dialog");
+    dialog_set_t dset;
+    bool have_set = dialog_store_load(&dset, false);
+    cJSON_AddStringToObject(dlg, "mode",                config_ab_mode());
+    cJSON_AddNumberToObject(dlg, "vad_silence_db",      config_vad_silence_db());
+    cJSON_AddNumberToObject(dlg, "vad_min_silence_ms",  config_vad_min_silence_ms());
+    cJSON_AddNumberToObject(dlg, "comfort_noise_level", config_comfort_noise_db());
+    cJSON_AddBoolToObject  (dlg, "clips_present",       have_set);
+    cJSON_AddStringToObject(dlg, "clips_lang",          have_set ? dset.lang : "");
+
     // Locale the device persisted (from the language selector's POST). The
     // UI reconciles its own localStorage pick against this so mail/audio
     // and the page agree; "de" when the user never changed it.
@@ -906,6 +922,10 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
     char dial_prefix_s[8] = "";
     char fb_pb_id_s[8]    = "";
     char fb_pb_name_s[64] = "";
+    char ab_mode_s[16]    = "";
+    char vad_db_s[8]      = "";
+    char vad_ms_s[8]      = "";
+    char cn_level_s[8]    = "";
 
     bool have_sip_host  = form_get(body, "sip_host",  sip_host,  sizeof(sip_host));
     bool have_sip_user  = form_get(body, "sip_user",  sip_user,  sizeof(sip_user));
@@ -955,6 +975,10 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
     bool have_dial_pfx   = form_get(body, "dial_prefix",   dial_prefix_s, sizeof(dial_prefix_s));
     bool have_fb_pb      = form_get(body, "fb_phonebook", fb_pb_id_s, sizeof(fb_pb_id_s));
     bool have_fb_pb_name = form_get(body, "fb_phonebook_name", fb_pb_name_s, sizeof(fb_pb_name_s));
+    bool have_ab_mode    = form_get(body, "ab_mode",            ab_mode_s,  sizeof(ab_mode_s));
+    bool have_vad_db     = form_get(body, "vad_silence_db",     vad_db_s,   sizeof(vad_db_s));
+    bool have_vad_ms     = form_get(body, "vad_min_silence_ms", vad_ms_s,   sizeof(vad_ms_s));
+    bool have_cn_level   = form_get(body, "comfort_noise_level", cn_level_s, sizeof(cn_level_s));
     free(body);
 
     // Phonebook selection for new contacts: only a decimal ID is stored, so
@@ -1070,6 +1094,35 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
         pb_log_warn(TAG, "dial_prefix rejected: expected \"+NN\"");
     }
 
+    // Answer-bot mode and dialog tuning (#429): only the two known modes and
+    // values inside the documented ranges are stored; anything else is
+    // refused with a WARN and leaves the stored value as it is. An empty
+    // numeric field means "unchanged".
+    const char *ab_mode = NULL;
+    if (have_ab_mode) {
+        if (config_ab_mode_valid(ab_mode_s)) ab_mode = ab_mode_s;
+        else pb_log_warn(TAG, "ab_mode rejected: expected announcement or dialog");
+    }
+    int vad_db = 0, vad_ms = 0, cn_level = 0;
+    if (have_vad_db && vad_db_s[0]) {
+        int v = atoi(vad_db_s);
+        if (config_vad_silence_db_valid(v)) vad_db = v;
+        else pb_log_warn(TAG, "vad_silence_db rejected: %d..%d dBFS",
+                         CONFIG_VAD_SILENCE_DB_MIN, CONFIG_VAD_SILENCE_DB_MAX);
+    }
+    if (have_vad_ms && vad_ms_s[0]) {
+        int v = atoi(vad_ms_s);
+        if (config_vad_min_silence_ms_valid(v)) vad_ms = v;
+        else pb_log_warn(TAG, "vad_min_silence_ms rejected: %d..%d ms",
+                         CONFIG_VAD_MIN_SILENCE_MS_MIN, CONFIG_VAD_MIN_SILENCE_MS_MAX);
+    }
+    if (have_cn_level && cn_level_s[0]) {
+        int v = atoi(cn_level_s);
+        if (config_comfort_noise_db_valid(v)) cn_level = v;
+        else pb_log_warn(TAG, "comfort_noise_level rejected: %d..%d dBFS",
+                         CONFIG_COMFORT_NOISE_DB_MIN, CONFIG_COMFORT_NOISE_DB_MAX);
+    }
+
     config_update_t u = {
         .sip_host   = new_host,
         // Port present in the form writes through; absent (a partial
@@ -1150,6 +1203,10 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
         .timezone      = timezone,
         .ui_lang       = ui_lang,
         .dial_prefix   = dial_prefix,
+        .ab_mode            = ab_mode,
+        .vad_silence_db     = vad_db,
+        .vad_min_silence_ms = vad_ms,
+        .comfort_noise_db   = cn_level,
     };
 
     // Snapshot the PhoneBlock token before the update so we can detect
@@ -1166,6 +1223,7 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
     old_lang[sizeof(old_lang) - 1] = '\0';
 
     uint64_t old_sip = sip_config_digest();
+    bool old_dialog = config_ab_dialog();
 
     int err = config_update(&u);
     free(webhook_url);
@@ -1194,9 +1252,18 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
         blocklist_sync_trigger_now();
     }
 
+    // Switched to dialog mode (#429): the own recording goes now — dialog
+    // mode and an own recording do not coexist, the flash holds the clip set
+    // in their place. The web UI asked the user before posting the switch.
+    if (!old_dialog && config_ab_dialog() && announcement_is_custom()) {
+        pb_log_info(TAG, "dialog mode on — own announcement deleted");
+        announcement_reset();
+    }
+
     // Locale changed: pull the matching announcement / mail pack now so the
     // user doesn't wait for the daily i18n slot. No-op if one is in flight.
-    if (strcmp(old_lang, config_ui_lang()) != 0) {
+    // A switch of the answer-bot mode fetches (or removes) the dialog clips.
+    if (strcmp(old_lang, config_ui_lang()) != 0 || old_dialog != config_ab_dialog()) {
         i18n_sync_trigger_now();
     }
 
@@ -1966,6 +2033,16 @@ static web_http_error_t handle_announcement_post(web_http_request_t *req)
             "Audio missing or over %u bytes cap.",
             (unsigned)ANNOUNCEMENT_MAX_BYTES);
         send_fail(req, msg);
+        return WEB_HTTP_OK;
+    }
+
+    // Dialog mode (#429) and an own recording do not coexist: the switch to
+    // dialog deletes it, and a new one is only taken in announcement mode.
+    if (config_ab_dialog()) {
+        pb_log_warn(TAG, "announcement upload refused: dialog mode is on "
+                         "(switch back to the announcement first)");
+        send_fail(req, "Dialog mode is on: an own announcement can only be "
+                       "uploaded in announcement mode.");
         return WEB_HTTP_OK;
     }
 
@@ -3001,7 +3078,7 @@ static web_http_error_t handle_whitelist(web_http_request_t *req)
 
 // --- dev resource-bundle upload --------------------------------------
 
-// POST /api/dev/i18n?kind=ui|mail&lang=<locale>
+// POST /api/dev/i18n?kind=ui|mail|dialog|dialog-index&lang=<locale>
 //
 // Stores a localized resource bundle straight on the device, replacing what
 // i18n_sync would otherwise have downloaded. This exists for the firmware
@@ -3015,29 +3092,132 @@ static web_http_error_t handle_whitelist(web_http_request_t *req)
 // uploaded bundle stays until the next i18n sync — after a reboot, OTA or UI
 // language switch — so it survives a test session without any pinning.
 //
-// The body is the bundle JSON verbatim — the same stripped shape the CDN
-// serves (no "@key" description entries). It replaces the file for the
-// given locale, so it takes effect on the next page load.
+//   ui, mail      the bundle JSON verbatim — the same stripped shape the CDN
+//                 serves (no "@key" description entries). It replaces the
+//                 file for the given locale, so it takes effect on the next
+//                 page load.
+//   dialog        the dialog clip set (#429): the concatenated clip file
+//                 exactly as i18n-assets.sh stages it
+//                 (assets/audio/dialog-<lang>.alaw). Drops the index first,
+//                 so the device has no usable set until ...
+//   dialog-index  ... the clip table follows: the staged manifest's "assets"
+//                 object (or {"<lang>": {"dialog": {...}}}, or the whole
+//                 manifest). Parsed with the real selection code
+//                 (dialog_manifest_select(), chain = just <lang>), checked
+//                 against the file on flash, then written as the index —
+//                 from then on calls get the dialog.
+//
+// The dialog kinds need ab_mode=dialog (409 otherwise): a set pushed onto an
+// announcement-mode device would only be removed by the next sync.
+
+// The dialog-index body: one locale's manifest entry is ~1 KB; the whole
+// manifest stays below i18n_sync's fetch buffer of the same size.
+#define DEV_DIALOG_INDEX_MAX (8 * 1024)
+
+static web_http_error_t dev_dialog_index(web_http_request_t *req, const char *lang,
+                                         int total)
+{
+    if (total <= 2 || total > DEV_DIALOG_INDEX_MAX) {
+        char msg[80];
+        snprintf(msg, sizeof(msg), "Index JSON missing or over %d bytes.",
+                 DEV_DIALOG_INDEX_MAX);
+        send_fail_code(req, "400 Bad Request", "invalid", msg);
+        return WEB_HTTP_OK;
+    }
+    char *body = malloc((size_t)total + 1);
+    if (!body) {
+        send_fail_code(req, "500 Internal Server Error", "oom", "Out of memory.");
+        return WEB_HTTP_OK;
+    }
+    int got = 0;
+    while (got < total) {
+        int n = upload_recv(req, body + got, total - got, "dialog index", got, total);
+        if (n <= 0) break;
+        got += n;
+    }
+    body[got] = '\0';
+    cJSON *root = got == total ? cJSON_Parse(body) : NULL;
+    free(body);
+    if (!root) {
+        send_fail_code(req, "400 Bad Request", "invalid",
+                       "Upload interrupted or not valid JSON.");
+        return WEB_HTTP_OK;
+    }
+    // The whole manifest or just its "assets" object.
+    const cJSON *assets = cJSON_GetObjectItemCaseSensitive(root, "assets");
+    if (!cJSON_IsObject(assets)) assets = root;
+
+    dialog_manifest_set_t *sel = malloc(sizeof(*sel));
+    if (!sel) {
+        cJSON_Delete(root);
+        send_fail_code(req, "500 Internal Server Error", "oom", "Out of memory.");
+        return WEB_HTTP_OK;
+    }
+    const char *chain[1] = { lang };
+    const char *problem = NULL;
+    char msg[160];
+    char path[DIALOG_STORE_PATH_CAP];
+    dialog_store_file_path(path, sizeof(path), lang);
+    struct stat st;
+    if (!dialog_manifest_select(assets, chain, 1, sel)) {
+        problem = "No complete dialog set for this locale in the JSON "
+                  "(all five phases, well-formed clips).";
+    } else if (stat(path, &st) != 0 || st.st_size <= 0) {
+        problem = "The dialog audio file is not on the device: push kind=dialog first.";
+    } else if ((uint64_t)st.st_size != sel->bytes ||
+               !dialog_set_within(&sel->set, (uint64_t)st.st_size)) {
+        snprintf(msg, sizeof(msg),
+                 "Clip table does not match the audio on the device "
+                 "(manifest %lu bytes, file %ld bytes).",
+                 (unsigned long)sel->bytes, (long)st.st_size);
+        problem = msg;
+    } else if (dialog_store_write_index(&sel->set) != PB_OK) {
+        free(sel);
+        cJSON_Delete(root);
+        send_fail_code(req, "500 Internal Server Error", "storage",
+                       "Could not write the dialog index.");
+        return WEB_HTTP_OK;
+    }
+    free(sel);
+    cJSON_Delete(root);
+    if (problem) {
+        send_fail_code(req, "400 Bad Request", "invalid", problem);
+        return WEB_HTTP_OK;
+    }
+    pb_log_warn(TAG, "dev upload: dialog clip set for '%s' activated by upload", lang);
+
+    cJSON *ok = cJSON_CreateObject();
+    cJSON_AddBoolToObject  (ok, "ok", true);
+    cJSON_AddStringToObject(ok, "path", path);
+    cJSON_AddNumberToObject(ok, "bytes", (double)st.st_size);
+    send_json(req, ok);
+    return WEB_HTTP_OK;
+}
+
 static web_http_error_t handle_dev_i18n_upload(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
 
     char query[64] = "";
-    char kind[8]   = "";
+    char kind[16]  = "";   // fits "dialog-index"
     char lang[12]  = "";
     if (web_http_get_query_string(req, query, sizeof(query)) == WEB_HTTP_OK) {
         web_http_query_value(query, "kind", kind, sizeof(kind));
         web_http_query_value(query, "lang", lang, sizeof(lang));
     }
-    bool is_ui = strcmp(kind, "ui") == 0;
-    if (!is_ui && strcmp(kind, "mail") != 0) {
+    bool is_ui     = strcmp(kind, "ui") == 0;
+    bool is_dialog = strcmp(kind, "dialog") == 0;
+    bool is_index  = strcmp(kind, "dialog-index") == 0;
+    if (!is_ui && !is_dialog && !is_index && strcmp(kind, "mail") != 0) {
         send_fail_code(req, "400 Bad Request", "invalid_kind",
-                       "kind must be 'ui' or 'mail'.");
+                       "kind must be 'ui', 'mail', 'dialog' or 'dialog-index'.");
         return WEB_HTTP_OK;
     }
     // The locale becomes part of a file name, so accept only what a locale
     // code may contain — no '.', no '/', nothing that could escape the
-    // directory or collide with another asset's name.
+    // directory or collide with another asset's name. The dialog kinds take
+    // exactly what the device's own locale codes are (lower case), since
+    // the stored index must parse back (dialog_set_parse()).
     size_t lang_len = strlen(lang);
     bool lang_ok = lang_len >= 2 && lang_len < sizeof(lang) - 1;
     for (size_t i = 0; lang_ok && i < lang_len; i++) {
@@ -3045,17 +3225,32 @@ static web_http_error_t handle_dev_i18n_upload(web_http_request_t *req)
         lang_ok = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
                || (c >= '0' && c <= '9') || c == '-';
     }
+    if ((is_dialog || is_index) && !config_lang_code_valid(lang)) lang_ok = false;
     if (!lang_ok) {
         send_fail_code(req, "400 Bad Request", "invalid_lang",
-                       "lang must be a locale code like 'de' or 'zh-Hans'.");
+                       "lang must be a locale code like 'de' or 'zh-Hans' "
+                       "(lower case for the dialog kinds).");
+        return WEB_HTTP_OK;
+    }
+    if ((is_dialog || is_index) && !config_ab_dialog()) {
+        pb_log_warn(TAG, "dev upload: %s refused — ab_mode is not 'dialog'", kind);
+        send_fail_code(req, "409 Conflict", "wrong_mode",
+                       "The dialog set can only be pushed in dialog mode "
+                       "(ab_mode=dialog); the next sync would remove it otherwise.");
         return WEB_HTTP_OK;
     }
 
+    int total = web_http_body_length(req);
+    if (is_index) return dev_dialog_index(req, lang, total);
+
     // Cap well above a real bundle (~30 KB for the UI pack) but far below
     // the shared 640 KB SPIFFS, so a runaway upload cannot fill storage
-    // that the announcement audio and the blocklist also live in.
-    const int MAX_BYTES = 128 * 1024;
-    int total = web_http_body_length(req);
+    // that the announcement audio and the blocklist also live in. The
+    // dialog set gets the cap of the CDN download path it stands in for
+    // (i18n_sync.c refuses any asset over ANNOUNCEMENT_MAX_BYTES, 240 KB =
+    // 30 s of audio, almost four times the German 64 KB set): what the dev
+    // push accepts, a published bundle could deliver too.
+    const int MAX_BYTES = is_dialog ? (int)ANNOUNCEMENT_MAX_BYTES : 128 * 1024;
     if (total <= 2 || total > MAX_BYTES) {
         char msg[80];
         snprintf(msg, sizeof(msg), "Bundle missing or over %d bytes.", MAX_BYTES);
@@ -3063,9 +3258,17 @@ static web_http_error_t handle_dev_i18n_upload(web_http_request_t *req)
         return WEB_HTTP_OK;
     }
 
-    char path[48], tmp[56];
-    if (is_ui) i18n_sync_ui_path(path, sizeof(path), lang);
-    else       i18n_sync_mail_path(path, sizeof(path), lang);
+    char path[DIALOG_STORE_PATH_CAP], tmp[DIALOG_STORE_PATH_CAP + 8];
+    if (is_dialog) {
+        dialog_store_file_path(path, sizeof(path), lang);
+        // Never a half-replaced set that still counts as complete: without
+        // the index the call path ignores the file until dialog-index lands.
+        dialog_store_drop_index();
+    } else if (is_ui) {
+        i18n_sync_ui_path(path, sizeof(path), lang);
+    } else {
+        i18n_sync_mail_path(path, sizeof(path), lang);
+    }
     snprintf(tmp, sizeof(tmp), "%s.part", path);
 
     // Streamed through a temp file and renamed, like i18n_sync's own
@@ -3105,12 +3308,14 @@ static web_http_error_t handle_dev_i18n_upload(web_http_request_t *req)
 
     // Only the cheapest sanity check: a bundle that does not even start as
     // a JSON object is a mistake worth catching here (a wrong file, or an
-    // error page), while full validation belongs to the consumer.
-    if (wrote && first != '{') wrote = false;
+    // error page), while full validation belongs to the consumer. The
+    // dialog audio is raw A-law; its check is the clip table (dialog-index).
+    if (wrote && !is_dialog && first != '{') wrote = false;
     if (!wrote) {
         remove(tmp);
         send_fail_code(req, "400 Bad Request", "invalid",
-                       "Upload interrupted or not a JSON object.");
+                       is_dialog ? "Upload interrupted."
+                                 : "Upload interrupted or not a JSON object.");
         return WEB_HTTP_OK;
     }
     remove(path);

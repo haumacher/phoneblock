@@ -31,7 +31,12 @@
 //                                "sha256":"<hex>", "bytes": 78762},
 //               "mail":         {"path":"mail/mail-en.json",
 //                                "sha256":"<hex>", "bytes": 1234} },
-//       "de": { ... }, ... } }
+//       "de": { ...,
+//               "dialog": {"path":"audio/dialog-de.alaw",
+//                          "sha256":"<hex>", "bytes": 63903,
+//                          "phases": {"hello": [[0, 7431]], ...}} },
+//                                      // clip table: see dialog_manifest.h
+//       ... } }
 //
 // Exactly ONE announcement and ONE mail pack are kept on the device, for the
 // active ui_lang. Which locale's content fills them is chosen at download time
@@ -44,7 +49,12 @@
 // the manifest (integrity against a truncated or corrupted transfer — the
 // manifest itself is only as trustworthy as the CDN), then renamed into place.
 // Assets for other locales are pruned so the shared 640 KB storage is not
-// filled by stale downloads. A locale whose SHA already matches the on-disk
+// filled by stale downloads. The dialog clip set of the interactive answer bot
+// (#429) is kept only while ab_mode is "dialog", taken from the first chain
+// locale with a complete set and stored under that locale's name
+// (dialog_store.h). It takes the place of the localized announcement, which
+// is then neither downloaded nor kept (and of the own recording, which the
+// switch to dialog mode deletes, web.c). A locale whose SHA already matches the on-disk
 // file is skipped (no re-download).
 //
 // Runs on the scheduler task (never on the httpd thread): shortly after boot

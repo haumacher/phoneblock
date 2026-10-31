@@ -13,7 +13,12 @@
 # All sources are committed to git; nothing is translated at release time.
 # Announcement recordings: i18n/audio/announcement-<lang>.alaw (like
 # today's single main/audio/announcement.alaw) — hand-record / tune each; a
-# language with no recording ships text-only (silent pickup). Mail + web-UI
+# language with no recording ships text-only (silent pickup). Dialog clips
+# of the interactive answer bot (#429): i18n/audio/dialog/<lang>/
+# <phase>-<n>.alaw, concatenated into ONE published file per locale
+# (audio/dialog-<lang>.alaw) and only as a complete set (all five phases),
+# under the manifest's additive assets.<lang>.dialog key with the clip
+# table (phase -> [[offset, length], ...]). Mail + web-UI
 # text: the committed ARB files under i18n/l10n/ (mail_<lang>.arb,
 # ui_<lang>.arb), translated during development by the auto-translate-arb
 # Gradle plugin (see i18n/l10n/); this script just strips their @key
@@ -126,6 +131,8 @@ CDN_I18N="${CDN_FIRMWARE}/${VERSION}/i18n"
 [[ -z "$STAGE" ]] && STAGE="$(mktemp -d -t dongle-i18n.XXXXXX)"
 ASSETS="${STAGE}/assets"
 mkdir -p "${ASSETS}/audio" "${ASSETS}/mail" "${ASSETS}/ui"
+# The dialog phases, in the firmware's order (main/dialog.h).
+DIALOG_PHASES=(hello who-is-there am-aparat question cant-hear-you)
 
 echo "==> staging ${STAGE}"
 
@@ -160,6 +167,52 @@ strip_arb() {
 }
 
 # --- Build the assets + manifest -------------------------------------------
+# Dialog clips: the set for <lang> from AUDIO_DIR/dialog/<lang>/, raw A-law
+# like the announcement, numbered per phase (<phase>-1.alaw, <phase>-2.alaw,
+# ... — the count is free, the firmware takes what the manifest lists).
+# Concatenates them, in phase order and clip order, into ONE file
+# ASSETS/audio/dialog-<lang>.alaw — a single SPIFFS object on the device
+# instead of one per clip (see test_storage_sim.c) — and prints the
+# manifest's dialog asset: {path, sha256, bytes, phases}, phases mapping each
+# phase to the [offset, length] of its clips within the file. Prints nothing
+# (and returns 1) when the locale has no clips or misses a phase: the firmware
+# only uses complete sets, so a partial one is not published at all.
+build_dialog() {
+    local lang="$1" src="${AUDIO_DIR}/dialog/$1"
+    [[ -d "$src" ]] || return 1
+    local rel="audio/dialog-${lang}.alaw"
+    local abs="${ASSETS}/${rel}"
+    local phases='{}' phase f len off=0
+    : > "$abs"
+    for phase in "${DIALOG_PHASES[@]}"; do
+        local files=()
+        while IFS= read -r f; do files+=("$f"); done < <(
+            find "$src" -maxdepth 1 -type f -name "${phase}-*.alaw" -printf '%f\n' \
+                | grep -E "^${phase}-[0-9]+\.alaw$" | sort -V)
+        if [[ ${#files[@]} -eq 0 ]]; then
+            echo "   dialog: no '${phase}' clip — the ${lang} set is incomplete, not published" >&2
+            rm -f "$abs"
+            return 1
+        fi
+        for f in "${files[@]}"; do
+            len="$(stat -c%s "${src}/${f}")"
+            if [[ "$len" -eq 0 ]]; then
+                echo "   dialog: ${f} is empty — the ${lang} set is not published" >&2
+                rm -f "$abs"
+                return 1
+            fi
+            cat "${src}/${f}" >> "$abs"
+            phases="$(jq -c --arg ph "$phase" --argjson o "$off" --argjson n "$len" \
+                '.[$ph] = ((.[$ph] // []) + [[$o, $n]])' <<< "$phases")"
+            off=$((off + len))
+        done
+    done
+    local sha
+    sha="$(sha256sum "$abs" | awk '{print $1}')"
+    jq -cn --arg p "$rel" --arg s "$sha" --argjson b "$off" --argjson ph "$phases" \
+        '{path:$p, sha256:$s, bytes:$b, phases:$ph}'
+}
+
 MANIFEST_ASSETS='{}'
 add_asset() {  # lang kind relpath absfile
     local lang="$1" kind="$2" rel="$3" abs="$4"
@@ -184,6 +237,14 @@ while read -r code _rest; do
         add_asset "$code" announcement "$ann_rel" "$ann_abs"
     else
         echo "   no announcement recording — text-only (silent pickup)"
+    fi
+
+    # Dialog clip set (complete sets only; others fall back along the
+    # firmware's ui_lang → en → de chain).
+    if dialog_json="$(build_dialog "$code")"; then
+        MANIFEST_ASSETS="$(jq -c --arg l "$code" --argjson d "$dialog_json" \
+            '.[$l] = ((.[$l] // {}) + {dialog: $d})' <<< "$MANIFEST_ASSETS")"
+        echo "   dialog: $(jq -r '"\(.bytes) B: " + ([.phases | to_entries[] | "\(.key) \(.value | length)"] | join(", "))' <<< "$dialog_json")"
     fi
 
     # Mail pack from the committed ARB (de = the source ARB). Strip the @key

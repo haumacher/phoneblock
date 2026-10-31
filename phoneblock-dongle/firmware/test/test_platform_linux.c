@@ -108,6 +108,79 @@ static void test_config_store(void)
     unsetenv("PHONEBLOCK_CONFIG_FILE");
 }
 
+// The answer-bot mode and dialog tuning (#429): defaults on a fresh store,
+// write → read back (also after a reload from the store), the "0 = leave
+// unchanged" rule, and the clamp of out-of-range stored values.
+static void test_config_dialog(void)
+{
+    char path[256];
+    use_temp_config(path, sizeof(path));
+
+    config_load();
+    REQUIRE(strcmp(config_ab_mode(), "announcement") == 0);
+    REQUIRE(!config_ab_dialog());
+    REQUIRE(config_vad_silence_db() == -35);
+    REQUIRE(config_vad_min_silence_ms() == 800);
+    REQUIRE(config_comfort_noise_db() == -60);
+
+    config_update_t update = {
+        .ab_mode            = "dialog",
+        .vad_silence_db     = -42,
+        .vad_min_silence_ms = 1200,
+        .comfort_noise_db   = -70,
+    };
+    REQUIRE(config_update(&update) == PB_KV_OK);
+    REQUIRE(config_ab_dialog());
+    REQUIRE(config_vad_silence_db() == -42);
+    REQUIRE(config_vad_min_silence_ms() == 1200);
+    REQUIRE(config_comfort_noise_db() == -70);
+
+    config_load();
+    REQUIRE(strcmp(config_ab_mode(), "dialog") == 0);
+    REQUIRE(config_vad_silence_db() == -42);
+    REQUIRE(config_vad_min_silence_ms() == 1200);
+    REQUIRE(config_comfort_noise_db() == -70);
+
+    // An update that does not mention them leaves them alone.
+    config_update_t other = { .sip_host = "fritz.box" };
+    REQUIRE(config_update(&other) == PB_KV_OK);
+    config_load();
+    REQUIRE(config_ab_dialog());
+    REQUIRE(config_vad_min_silence_ms() == 1200);
+
+    // Back to the announcement.
+    config_update_t back = { .ab_mode = "announcement" };
+    REQUIRE(config_update(&back) == PB_KV_OK);
+    config_load();
+    REQUIRE(!config_ab_dialog());
+
+    // Validation the web POST applies, and the clamp on read: a value that
+    // got stored anyway reads back as the default.
+    REQUIRE(config_ab_mode_valid("dialog") && config_ab_mode_valid("announcement"));
+    REQUIRE(!config_ab_mode_valid("Dialog") && !config_ab_mode_valid("") &&
+            !config_ab_mode_valid(NULL));
+    REQUIRE(!config_vad_silence_db_valid(-5) && !config_vad_silence_db_valid(-80));
+    REQUIRE(!config_vad_min_silence_ms_valid(100) &&
+            !config_vad_min_silence_ms_valid(6000));
+    REQUIRE(!config_comfort_noise_db_valid(-20) && !config_comfort_noise_db_valid(-100));
+    config_update_t wild = {
+        .ab_mode            = "chat",
+        .vad_silence_db     = 5,
+        .vad_min_silence_ms = 99999,
+        .comfort_noise_db   = -200,
+    };
+    REQUIRE(config_update(&wild) == PB_KV_OK);
+    config_load();
+    REQUIRE(strcmp(config_ab_mode(), "announcement") == 0);
+    REQUIRE(config_vad_silence_db() == -35);
+    REQUIRE(config_vad_min_silence_ms() == 800);
+    REQUIRE(config_comfort_noise_db() == -60);
+
+    REQUIRE(config_erase() == PB_KV_OK);
+    unlink(path);
+    unsetenv("PHONEBLOCK_CONFIG_FILE");
+}
+
 static void wait_done(void)
 {
     for (int attempt = 0; attempt < 1000 && !task_done; attempt++) {
@@ -375,6 +448,7 @@ int main(void)
     test_kv_store();
     test_kv_namespaces_and_whitespace();
     test_config_store();
+    test_config_dialog();
     test_task();
     test_task_stack_floor();
     test_event();

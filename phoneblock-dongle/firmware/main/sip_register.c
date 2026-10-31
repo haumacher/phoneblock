@@ -21,6 +21,7 @@
 #include "api.h"
 #include "blocklist_sync.h"
 #include "config.h"
+#include "dialog_store.h"
 #include "display.h"
 #include "heap_guard.h"
 #include "announcement.h"
@@ -126,6 +127,11 @@ typedef struct {
     bool     srtp_tx;             // true → answer/stream as SRTP (RTP/SAVP)
     int      srtp_tag;            // crypto tag to echo in the SDP answer
     uint8_t  srtp_tx_key[RTP_SRTP_KEY_LEN];  // our SDES master key+salt
+    bool     srtp_rx_valid;       // srtp_rx_key holds the remote's key
+    uint8_t  srtp_rx_key[RTP_SRTP_KEY_LEN];  // remote SDES key+salt: decrypts
+                                  // the caller's audio for the dialog (#429)
+    bool     interactive;         // STREAMING is the dialog, not the
+                                  // announcement: BYE when its task ends
     char     media_ip[48];        // SDP c=/o= address to advertise (public,
                                   // STUN-mapped if available, else signalling IP)
     int      media_port;          // SDP m= port to advertise (public, post-NAT;
@@ -1077,6 +1083,19 @@ static void capture_dialog(sip_ctx_t *c, const char *req, int req_len,
         pb_random_fill(d->srtp_tx_key, sizeof(d->srtp_tx_key));
         d->srtp_tx  = true;
         d->srtp_tag = crypto_tag;
+        // The remote's master key+salt decrypts the caller's audio, which
+        // only the dialog listens to. A malformed key is not fatal: the
+        // dialog then runs deaf (rtp.c warns once per call when it matters).
+        size_t rx_len = 0;
+        d->srtp_rx_valid =
+            pb_base64_decode(d->srtp_rx_key, sizeof(d->srtp_rx_key), &rx_len,
+                             (const unsigned char *)remote_key_b64,
+                             strlen(remote_key_b64)) == PB_OK
+            && rx_len == RTP_SRTP_KEY_LEN;
+        if (!d->srtp_rx_valid) {
+            pb_log_info(TAG, "remote SRTP key not decodable (%u bytes)",
+                        (unsigned)rx_len);
+        }
         pb_log_info(TAG, "SRTP offered (crypto tag %d) → answering RTP/SAVP", crypto_tag);
     } else if (parse_sdp_audio_savp(req, req_len)) {
         pb_log_warn(TAG, "remote offers RTP/SAVP but no supported crypto suite "
@@ -1503,6 +1522,35 @@ static void handle_ack(sip_ctx_t *c, const char *req, int req_len,
     if (d->state == DIALOG_ANSWERED) {
         // Spam call: we answered with 200 OK, ACK confirms.
 #if CONFIG_RTP_PLAY_ANNOUNCEMENT
+        // Dialog mode (#429): hold a conversation if the clip set is
+        // complete on the device. Dialog mode keeps no announcement at all
+        // (neither the localized one nor an own recording), so without the
+        // set the call is hung up without audio — and the log says why.
+        if (config_ab_dialog() && d->rtp_dest_valid) {
+            dialog_set_t set;
+            if (dialog_store_load(&set, true)) {
+                pb_log_info(TAG, "ACK received → dialog (%s clips) until the caller "
+                                 "hangs up", set.lang);
+                rtp_srtp_tx_t srtp = { .enabled = d->srtp_tx };
+                if (d->srtp_tx) {
+                    memcpy(srtp.key, d->srtp_tx_key, sizeof(srtp.key));
+                }
+                rtp_play_dialog(&d->rtp_dest, &srtp,
+                                d->srtp_rx_valid ? d->srtp_rx_key : NULL, &set);
+                // No deadline: the call lasts as long as the caller talks.
+                // A remote BYE aborts the task; if the caller's media stops
+                // instead, the task ends itself (DIALOG_RX_TIMEOUT_MS) and
+                // the main loop BYEs once it is gone.
+                d->interactive = true;
+                d->bye_at_us = 0;
+                d->state = DIALOG_STREAMING;
+                return;
+            }
+            pb_log_warn(TAG, "ACK received → dialog mode is on, but the dialog clip "
+                             "set is not (yet) on the device → BYE without audio");
+            send_bye(c);
+            return;
+        }
         announcement_src_t src;
         announcement_open(&src);
         if (src.len > 0 && d->rtp_dest_valid) {
@@ -2034,6 +2082,15 @@ static void sip_task(void *arg)
 
         if (n == 0) {
             now = (int64_t)pb_monotonic_us();
+            // The dialog task has ended (the caller's media stopped, or no
+            // audio could be set up) while the call is up: hang up now.
+            if (ctx.dialog.state == DIALOG_STREAMING && ctx.dialog.interactive
+                    && !rtp_streaming_active()) {
+                pb_log_info(TAG, "dialog ended → sending BYE");
+                ctx.dialog.bye_at_us = 0;
+                send_bye(&ctx);
+                continue;
+            }
             // BYE deadline first — the dialog is still active and needs
             // tearing down before anything else.
             if (ctx.dialog.bye_at_us && now >= ctx.dialog.bye_at_us) {

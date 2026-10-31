@@ -2,7 +2,13 @@
 #
 # Push localized resource bundles straight to a dongle, no CDN round-trip.
 #
-#   ./scripts/dev-i18n-push.sh [--host answerbot] [--langs "de en"] [--kinds "ui mail"]
+#   ./scripts/dev-i18n-push.sh [--host answerbot] [--langs "de en"] [--kinds "ui mail dialog"]
+#
+# Kinds: ui and mail (the default), and dialog — the interactive answer bot's
+# clip set (#429): the concatenated clip file, then its clip table from the
+# staged manifest. The dialog kind needs the dongle in dialog mode
+# (ab_mode=dialog; the device answers 409 otherwise) and a locale that has a
+# complete set in i18n/audio/dialog/ (German today).
 #
 # Why this exists: i18n_sync.c derives the CDN bundle path from the running
 # firmware's *release tag* (git-describe suffix stripped). A dev build
@@ -32,7 +38,7 @@ while [[ $# -gt 0 ]]; do
         --host)  HOST="$2";  shift 2;;
         --langs) LANGS="$2"; shift 2;;
         --kinds) KINDS="$2"; shift 2;;
-        -h|--help) sed -n '2,21p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0;;
+        -h|--help) sed -n '2,28p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0;;
         *) echo "unknown option: $1" >&2; exit 2;;
     esac
 done
@@ -67,22 +73,44 @@ trap 'rm -rf "${STAGE}"' EXIT
 echo "==> building bundles with the release generator"
 "${HERE}/i18n-assets.sh" --langs "${LANGS}" --no-upload --stage "${STAGE}" >/dev/null
 
+# POST one file; prints the device's answer (its message on a refusal).
+push() {  # kind lang file
+    local out code
+    out="$(mktemp)"
+    code="$(curl -s -m 60 -o "$out" -w '%{http_code}' -X POST \
+            "http://${HOST}/api/dev/i18n?kind=$1&lang=$2" --data-binary "@$3")"
+    printf '    %s/%s: ' "$1" "$2"
+    python3 -c '
+import sys, json
+d = json.load(open(sys.argv[1]))
+print("%d bytes -> %s" % (d["bytes"], d["path"]) if d.get("ok")
+      else "REFUSED (HTTP %s): %s" % (sys.argv[2], d.get("message")))' "$out" "$code"
+    rm -f "$out"
+    [[ "$code" == 200 ]]
+}
+
 for lang in ${LANGS}; do
     for kind in ${KINDS}; do
         case "$kind" in
-            ui)   file="${STAGE}/assets/ui/lang-${lang}.json";;
-            mail) file="${STAGE}/assets/mail/mail-${lang}.json";;
+            ui)     file="${STAGE}/assets/ui/lang-${lang}.json";;
+            mail)   file="${STAGE}/assets/mail/mail-${lang}.json";;
+            dialog) file="${STAGE}/assets/audio/dialog-${lang}.alaw";;
             *) echo "unknown kind: ${kind}" >&2; exit 2;;
         esac
         if [[ ! -f "$file" ]]; then
             echo "    ${kind}/${lang}: no bundle generated, skipped"
             continue
         fi
-        printf '    %s/%s: ' "${kind}" "${lang}"
-        curl -sf -m 60 -X POST \
-             "http://${HOST}/api/dev/i18n?kind=${kind}&lang=${lang}" \
-             --data-binary "@${file}" \
-        | python3 -c 'import sys,json; d=json.load(sys.stdin); print("%d bytes -> %s" % (d["bytes"], d["path"]))'
+        if [[ "$kind" != dialog ]]; then
+            push "$kind" "$lang" "$file"
+            continue
+        fi
+        # The audio first (it drops the device's index), then the clip table
+        # from the staged manifest, which makes the set usable.
+        index="${STAGE}/dialog-index-${lang}.json"
+        jq --arg l "$lang" '{($l): {dialog: .assets[$l].dialog}}' \
+            "${STAGE}/assets/manifest.json" > "$index"
+        push dialog "$lang" "$file" && push dialog-index "$lang" "$index"
     done
 done
 

@@ -1,8 +1,8 @@
 // The "storage" SPIFFS partition (640 KB, mounted at /spiffs by
 // announcement.c), shared by every file the dongle keeps: the community and
 // personal blocklists (blocklist_sync.c), the localized announcement, UI and
-// mail packs (i18n_sync.c) and the user's own recorded announcement
-// (announcement.c).
+// mail packs, the dialog clips (i18n_sync.c, dialog_store.h) and the user's own
+// recorded announcement (announcement.c).
 //
 // This module is the single owner of the partition's budget (the arithmetic
 // and its derivation live in storage_budget.h) and of the write discipline
