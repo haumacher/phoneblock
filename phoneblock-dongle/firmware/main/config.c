@@ -310,10 +310,52 @@ const char *config_device_id(void)
 
 // --- Public API -----------------------------------------------------
 
+// The answer-bot mode is decided once per device, on the first boot of a
+// firmware that knows it, and then stored (#429): a device that has been
+// set up already (it was updated from an older firmware) keeps the
+// announcement it had; a new installation, or one after a factory reset,
+// starts with the dialog. Writing the decision right away keeps the setup
+// wizard that runs next, and a later rollback and re-update, from changing
+// it. A stored value is never touched here.
+static void settle_ab_mode(void)
+{
+    pb_kv_t *h;
+    int err = pb_kv_open(NS, true, &h);
+    if (err != PB_KV_OK) {
+        pb_log_err(TAG, "ab_mode nvs_open: %s", pb_kv_err_name(err));
+        return;
+    }
+    char stored[sizeof(s_config.ab_mode)];
+    size_t len = sizeof(stored);
+    if (pb_kv_get_string(h, K_AB_MODE, stored, &len) != PB_KV_NOT_FOUND) {
+        pb_kv_close(h);
+        return;
+    }
+    bool set_up = s_config.sip_host[0] || s_config.sip_user[0] || s_config.pb_token[0];
+    const char *mode = set_up ? "announcement" : "dialog";
+    err = pb_kv_set_string(h, K_AB_MODE, mode);
+    if (err == PB_KV_OK) err = pb_kv_commit(h);
+    pb_kv_close(h);
+    if (err != PB_KV_OK) {
+        pb_log_err(TAG, "ab_mode persist failed: %s", pb_kv_err_name(err));
+        return;
+    }
+    copy_default(s_config.ab_mode, sizeof(s_config.ab_mode), mode);
+    pb_log_info(TAG, "answer-bot mode settled: %s (%s)", mode,
+                set_up ? "updated device keeps the announcement" : "new installation");
+}
+
+static void load_values(void);
+
 void config_load(void)
 {
     ensure_device_id();
+    load_values();
+    settle_ab_mode();
+}
 
+static void load_values(void)
+{
     pb_kv_t *h;
     int err = pb_kv_open(NS, false, &h);
     if (err == PB_KV_NOT_FOUND) {
