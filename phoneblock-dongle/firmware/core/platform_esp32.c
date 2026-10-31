@@ -11,6 +11,7 @@
 #include "esp_http_client.h"
 #include "esp_task_wdt.h"
 #include "esp_tls.h"
+#include "esp_wifi.h"
 #include "esp_timer.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
@@ -665,4 +666,29 @@ int pb_get_mac(uint8_t mac[6])
 {
     if (!mac) return -1;
     return esp_read_mac(mac, ESP_MAC_WIFI_STA) == ESP_OK ? 0 : -1;
+}
+
+// WiFi power-save mode in force before pb_net_low_latency(true), restored by
+// pb_net_low_latency(false). Single caller (the RTP task, one call at a time).
+static wifi_ps_type_t s_saved_ps = WIFI_PS_MIN_MODEM;
+static bool           s_low_latency = false;
+
+void pb_net_low_latency(bool enable)
+{
+    if (enable == s_low_latency) return;
+    if (enable) {
+        if (esp_wifi_get_ps(&s_saved_ps) != ESP_OK) s_saved_ps = WIFI_PS_MIN_MODEM;
+        esp_err_t err = esp_wifi_set_ps(WIFI_PS_NONE);
+        if (err != ESP_OK) {
+            ESP_LOGI("platform", "WiFi power save stays on: %s", esp_err_to_name(err));
+            return;
+        }
+        s_low_latency = true;
+        ESP_LOGI("platform", "WiFi power save off for the dialog");
+    } else {
+        esp_err_t err = esp_wifi_set_ps(s_saved_ps);
+        s_low_latency = false;
+        ESP_LOGI("platform", "WiFi power save restored (%d): %s", (int)s_saved_ps,
+                 esp_err_to_name(err));
+    }
 }

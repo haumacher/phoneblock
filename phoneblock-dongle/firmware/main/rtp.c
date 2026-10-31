@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <math.h>
 
 #ifdef ESP_PLATFORM
 #include "lwip/sockets.h"
@@ -21,8 +22,13 @@
 #include <unistd.h>
 #endif
 
+#include "audio.h"
 #include "config.h"
+#include "dialog.h"
+#include "dialog_store.h"
 #include "platform.h"
+#include "rtp_rx.h"
+#include "vad.h"
 
 #include "srtp.h"
 
@@ -264,7 +270,9 @@ nat_mapping_t rtp_probe_nat_mapping(const char *primary_stun)
 
 #define FRAME_SAMPLES    160          // 20 ms at 8 kHz
 #define FRAME_BYTES      FRAME_SAMPLES // 1 byte per sample for PCMA
+#define FRAME_MS         20
 #define RTP_HEADER_BYTES 12
+#define PT_PCMA          8
 
 // Abort flag. Single-call-at-a-time semantics elsewhere in the SIP
 // stack guarantee at most one rtp_audio_task ever runs, so a single
@@ -335,6 +343,107 @@ static srtp_t srtp_open_tx(const rtp_srtp_tx_t *keys)
     return session;
 }
 
+// Create an inbound-only SRTP session keyed with the *remote's* SDES master
+// key/salt (the INVITE's a=crypto offer), to decrypt the caller's media for
+// the dialog's VAD. Returns NULL on failure.
+static srtp_t srtp_open_rx(const uint8_t key[RTP_SRTP_KEY_LEN])
+{
+    if (!srtp_global_init()) return NULL;
+
+    srtp_policy_t policy;
+    memset(&policy, 0, sizeof(policy));
+    srtp_crypto_policy_set_aes_cm_128_hmac_sha1_80(&policy.rtp);
+    srtp_crypto_policy_set_aes_cm_128_hmac_sha1_80(&policy.rtcp);
+    policy.ssrc.type = ssrc_any_inbound;
+    policy.key       = (uint8_t *)key;    // not retained by libsrtp after create
+    policy.next      = NULL;
+
+    srtp_t session = NULL;
+    srtp_err_status_t st = srtp_create(&session, &policy);
+    if (st != srtp_err_status_ok) {
+        pb_log_err(TAG, "srtp_create (rx) failed: %d", st);
+        return NULL;
+    }
+    return session;
+}
+
+// Outbound stream state shared by the announcement and the dialog task.
+typedef struct {
+    int                       sock;
+    const struct sockaddr_in *dest;
+    srtp_t                    srtp;      // NULL = plain RTP/AVP
+    uint16_t                  seq;
+    uint32_t                  timestamp;
+    uint32_t                  ssrc;
+} rtp_tx_t;
+
+static void rtp_tx_init(rtp_tx_t *tx, int sock, const struct sockaddr_in *dest,
+                        srtp_t srtp)
+{
+    tx->sock      = sock;
+    tx->dest      = dest;
+    tx->srtp      = srtp;
+    tx->seq       = (uint16_t)pb_random_u32();
+    tx->timestamp = pb_random_u32();
+    tx->ssrc      = pb_random_u32();
+}
+
+// Sends one 20 ms PCMA frame. `pkt` holds the FRAME_SAMPLES payload bytes
+// at offset RTP_HEADER_BYTES; the header is filled in here. Sequence number
+// and timestamp advance even when a packet could not be protected or sent,
+// so the receiver sees the gap as loss, not as a time warp.
+static void rtp_tx_frame(rtp_tx_t *tx, uint8_t pkt[RTP_HEADER_BYTES + FRAME_BYTES])
+{
+    // SRTP appends an auth tag (10 bytes for HMAC_SHA1_80); leave room.
+    uint8_t txbuf[RTP_HEADER_BYTES + FRAME_BYTES + SRTP_MAX_TRAILER_LEN];
+
+    pkt[0]  = 0x80;                              // V=2, P=X=0, CC=0
+    pkt[1]  = PT_PCMA;                           // M=0, PT=8 (PCMA)
+    pkt[2]  = (uint8_t)(tx->seq >> 8);
+    pkt[3]  = (uint8_t)(tx->seq);
+    pkt[4]  = (uint8_t)(tx->timestamp >> 24);
+    pkt[5]  = (uint8_t)(tx->timestamp >> 16);
+    pkt[6]  = (uint8_t)(tx->timestamp >> 8);
+    pkt[7]  = (uint8_t)(tx->timestamp);
+    pkt[8]  = (uint8_t)(tx->ssrc >> 24);
+    pkt[9]  = (uint8_t)(tx->ssrc >> 16);
+    pkt[10] = (uint8_t)(tx->ssrc >> 8);
+    pkt[11] = (uint8_t)(tx->ssrc);
+    tx->seq++;
+    tx->timestamp += FRAME_SAMPLES;
+
+    const uint8_t *send_buf = pkt;
+    size_t send_len = RTP_HEADER_BYTES + FRAME_SAMPLES;
+    if (tx->srtp) {
+        // The switch is really the libsrtp API generation, not the
+        // platform: esp_libsrtp ships the libsrtp 3 API (separate output
+        // buffer, size_t lengths, MKI index), while Linux builds against
+        // the distribution's libsrtp2 (in-place, int length). libsrtp2
+        // exposes no version macro to test instead.
+#ifdef ESP_PLATFORM
+        size_t out_len = sizeof(txbuf);
+        srtp_err_status_t st = srtp_protect(tx->srtp, pkt, send_len,
+                                            txbuf, &out_len, 0);
+#else
+        memcpy(txbuf, pkt, send_len);
+        int out_len = (int)send_len;
+        srtp_err_status_t st = srtp_protect(tx->srtp, txbuf, &out_len);
+#endif
+        if (st != srtp_err_status_ok) {
+            pb_log_warn(TAG, "srtp_protect failed: %d", st);
+            return;
+        }
+        send_buf = txbuf;
+        send_len = (size_t)out_len;
+    }
+
+    int n = sendto(tx->sock, send_buf, send_len, 0,
+                   (const struct sockaddr *)tx->dest, sizeof(*tx->dest));
+    if (n < 0) {
+        pb_log_warn(TAG, "rtp sendto: %s", strerror(errno));
+    }
+}
+
 static void rtp_audio_task(void *arg)
 {
     rtp_args_t *a = (rtp_args_t *)arg;
@@ -367,9 +476,8 @@ static void rtp_audio_task(void *arg)
     char     inbound_src[INET_ADDRSTRLEN] = "";
     int      inbound_port = 0;
 
-    uint16_t seq       = (uint16_t)pb_random_u32();
-    uint32_t timestamp = pb_random_u32();
-    uint32_t ssrc      = pb_random_u32();
+    rtp_tx_t tx;
+    rtp_tx_init(&tx, sock, &a->dest, srtp_session);
 
     size_t total_frames = (a->src.len + FRAME_SAMPLES - 1) / FRAME_SAMPLES;
     char ip[INET_ADDRSTRLEN];
@@ -377,12 +485,10 @@ static void rtp_audio_task(void *arg)
     pb_log_info(TAG, "stream %u bytes (%u frames ≈ %u ms) → %s:%d, ssrc=%08lx%s",
              (unsigned)a->src.len, (unsigned)total_frames,
              (unsigned)(total_frames * 20),
-             ip, ntohs(a->dest.sin_port), (unsigned long)ssrc,
+             ip, ntohs(a->dest.sin_port), (unsigned long)tx.ssrc,
              srtp_session ? " (SRTP)" : "");
 
     uint8_t pkt[RTP_HEADER_BYTES + FRAME_BYTES];
-    // SRTP appends an auth tag (10 bytes for HMAC_SHA1_80); leave room.
-    uint8_t txbuf[RTP_HEADER_BYTES + FRAME_BYTES + SRTP_MAX_TRAILER_LEN];
 
     pb_deadline_t next;
     pb_deadline_init(&next);
@@ -402,58 +508,7 @@ static void rtp_audio_task(void *arg)
             memset(pkt + RTP_HEADER_BYTES + payload, 0xD5,
                    FRAME_SAMPLES - payload);
         }
-
-        pkt[0]  = 0x80;                              // V=2, P=X=0, CC=0
-        pkt[1]  = 8;                                 // M=0, PT=8 (PCMA)
-        pkt[2]  = (uint8_t)(seq >> 8);
-        pkt[3]  = (uint8_t)(seq);
-        pkt[4]  = (uint8_t)(timestamp >> 24);
-        pkt[5]  = (uint8_t)(timestamp >> 16);
-        pkt[6]  = (uint8_t)(timestamp >> 8);
-        pkt[7]  = (uint8_t)(timestamp);
-        pkt[8]  = (uint8_t)(ssrc >> 24);
-        pkt[9]  = (uint8_t)(ssrc >> 16);
-        pkt[10] = (uint8_t)(ssrc >> 8);
-        pkt[11] = (uint8_t)(ssrc);
-
-        const uint8_t *send_buf = pkt;
-        size_t send_len = RTP_HEADER_BYTES + FRAME_SAMPLES;
-        if (srtp_session) {
-            // The switch is really the libsrtp API generation, not the
-            // platform: esp_libsrtp ships the libsrtp 3 API (separate output
-            // buffer, size_t lengths, MKI index), while Linux builds against
-            // the distribution's libsrtp2 (in-place, int length). libsrtp2
-            // exposes no version macro to test instead.
-#ifdef ESP_PLATFORM
-            size_t out_len = sizeof(txbuf);
-            srtp_err_status_t st = srtp_protect(srtp_session, pkt,
-                                                RTP_HEADER_BYTES + FRAME_SAMPLES,
-                                                txbuf, &out_len, 0);
-#else
-            memcpy(txbuf, pkt, send_len);
-            int out_len = (int)send_len;
-            srtp_err_status_t st = srtp_protect(srtp_session, txbuf, &out_len);
-#endif
-            if (st != srtp_err_status_ok) {
-                pb_log_warn(TAG, "srtp_protect failed: %d", st);
-                seq++;
-                timestamp += FRAME_SAMPLES;
-                pb_task_delay_until(&next, 20);
-                continue;
-            }
-            send_buf = txbuf;
-#ifdef ESP_PLATFORM
-            send_len = out_len;
-#else
-            send_len = (size_t)out_len;
-#endif
-        }
-
-        int n = sendto(sock, send_buf, send_len, 0,
-                       (struct sockaddr *)&a->dest, sizeof(a->dest));
-        if (n < 0) {
-            pb_log_warn(TAG, "rtp sendto: %s", strerror(errno));
-        }
+        rtp_tx_frame(&tx, pkt);
 
         // Drain whatever the gateway sent back this frame (non-blocking),
         // remembering the first source for the post-stream summary.
@@ -472,8 +527,6 @@ static void rtp_audio_task(void *arg)
             inbound_pkts++;
         }
 
-        seq++;
-        timestamp += FRAME_SAMPLES;
         pb_task_delay_until(&next, 20);
     }
 
@@ -520,6 +573,266 @@ void rtp_play_audio(const struct sockaddr_in *dest,
         pb_log_err(TAG, "task creation failed");
         s_streaming = false;
         announcement_close(&args->src);
+        free(args);
+    }
+}
+
+// --- Interactive dialog (issue #429) ---------------------------------------
+
+typedef struct {
+    struct sockaddr_in dest;
+    rtp_srtp_tx_t      srtp;                           // our TX key
+    bool               rx_key_valid;
+    uint8_t            rx_key[RTP_SRTP_KEY_LEN];       // remote's SDES key+salt
+    dialog_set_t       set;
+} rtp_dialog_args_t;
+
+static uint32_t dialog_rng(void *ctx)
+{
+    (void)ctx;
+    return pb_random_u32();
+}
+
+// Peak amplitude of uniform white noise whose RMS is `db` dBFS: a uniform
+// distribution over [-a, a] has an RMS of a/sqrt(3), so the configured level
+// is the level the caller actually hears.
+static int noise_amp_from_db(int db)
+{
+    double a = 32768.0 * pow(10.0, (double)db / 20.0) * sqrt(3.0);
+    if (a < 1.0)     return 1;
+    if (a > 32767.0) return 32767;
+    return (int)a;
+}
+
+// One outbound 20 ms frame: continuous comfort noise, with up to `clip_n`
+// samples of the prompt (A-law `clip`) mixed on top. Running the noise under
+// the speech instead of only between prompts keeps the line sounding the same
+// throughout, so the prompt ↔ await transitions are seamless.
+static void mix_frame(uint8_t *out, uint32_t *rng, int amp,
+                      const uint8_t *clip, size_t clip_n)
+{
+    uint32_t x = *rng;
+    for (size_t i = 0; i < FRAME_SAMPLES; i++) {
+        x ^= x << 13; x ^= x >> 17; x ^= x << 5;      // xorshift32
+        int s = (int)(int16_t)(x >> 16) * amp / 32768;
+        if (i < clip_n) s += alaw_to_pcm(clip[i]);
+        if (s > 32767)  s = 32767;
+        if (s < -32768) s = -32768;
+        out[i] = pcm_to_alaw((int16_t)s);
+    }
+    *rng = x;
+}
+
+// Decrypts (if `rx`) and parses one received datagram and feeds its PCMA
+// audio to the VAD, the VAD's transitions to the dialog. Returns false if
+// the packet was not usable audio.
+static bool dialog_rx_packet(uint8_t *buf, int len, srtp_t rx, vad_t *vad,
+                             dialog_sm_t *dlg)
+{
+    if (rx) {
+#ifdef ESP_PLATFORM
+        size_t plain_len = (size_t)len;
+        srtp_err_status_t st = srtp_unprotect(rx, buf, (size_t)len, buf,
+                                              &plain_len);
+#else
+        int plain_len = len;
+        srtp_err_status_t st = srtp_unprotect(rx, buf, &plain_len);
+#endif
+        if (st != srtp_err_status_ok) return false;   // auth / replay failure
+        len = (int)plain_len;
+    }
+    const uint8_t *payload;
+    size_t n;
+    if (!rtp_rx_payload(buf, (size_t)len, PT_PCMA, &payload, &n)) return false;
+
+    // One VAD frame per FRAME_SAMPLES; a 30 ms packet becomes 20 + 10 ms.
+    while (n > 0) {
+        int16_t pcm[FRAME_SAMPLES];
+        size_t k = n < FRAME_SAMPLES ? n : FRAME_SAMPLES;
+        for (size_t i = 0; i < k; i++) pcm[i] = alaw_to_pcm(payload[i]);
+        int ms = (int)(k / 8);                         // 8 samples per ms
+        vad_event_t ev = vad_process(vad, pcm, k, ms > 0 ? ms : 1, NULL);
+        if (ev != VAD_NONE) dialog_vad(dlg, ev);
+        payload += k;
+        n -= k;
+    }
+    return true;
+}
+
+static void rtp_dialog_task(void *arg)
+{
+    rtp_dialog_args_t *a = (rtp_dialog_args_t *)arg;
+    srtp_t srtp_tx = NULL, srtp_rx = NULL;
+    // The set's single file stays open for the call; a prompt is a seek to
+    // its clip and `clip_left` bytes from there.
+    FILE *clips = NULL;
+    uint32_t clip_left = 0;
+
+    int sock = rtp_socket_ensure();
+    if (sock < 0) goto done;
+
+    {
+        char path[DIALOG_STORE_PATH_CAP];
+        dialog_store_file_path(path, sizeof(path), a->set.lang);
+        clips = fopen(path, "rb");
+        if (!clips) {
+            // handle_ack() checked the set just now, so this is a race with
+            // a sync removing it: the first prompt ends the dialog below and
+            // the SIP task hangs up.
+            pb_log_warn(TAG, "dialog: %s cannot be opened", path);
+        }
+    }
+
+    if (a->srtp.enabled) {
+        srtp_tx = srtp_open_tx(&a->srtp);
+        if (!srtp_tx) {
+            pb_log_err(TAG, "SRTP requested but session setup failed — no audio");
+            goto done;
+        }
+    }
+
+    // The caller's side: plain RTP is parsed directly; SRTP needs the
+    // remote's key. Without a usable one the inbound audio is opaque, so the
+    // dialog runs deaf (every await times out) rather than ending the call.
+    bool deaf = false;
+    if (a->srtp.enabled) {
+        if (a->rx_key_valid) srtp_rx = srtp_open_rx(a->rx_key);
+        if (!srtp_rx) {
+            deaf = true;
+            pb_log_warn(TAG, "dialog: no usable SRTP key for the caller's audio "
+                             "(%s) — the bot cannot hear the caller this call",
+                        a->rx_key_valid ? "session setup failed"
+                                        : "missing or undecodable a=crypto key");
+        }
+    }
+
+    pb_net_low_latency(true);
+
+    rtp_tx_t tx;
+    rtp_tx_init(&tx, sock, &a->dest, srtp_tx);
+
+    int silence_db     = config_vad_silence_db();
+    int min_silence_ms = config_vad_min_silence_ms();
+    int noise_amp      = noise_amp_from_db(config_comfort_noise_db());
+    uint32_t noise_rng = pb_random_u32() | 1u;
+    vad_t vad;
+    vad_init(&vad, silence_db, min_silence_ms);
+
+    char ip[INET_ADDRSTRLEN];
+    ipv4_to_string(&a->dest.sin_addr, ip, sizeof(ip));
+    pb_log_info(TAG, "dialog (%s clips) → %s:%d, ssrc=%08lx%s, caller audio %s, "
+                     "VAD %d dBFS / %d ms",
+                a->set.lang, ip, ntohs(a->dest.sin_port), (unsigned long)tx.ssrc,
+                srtp_tx ? " (SRTP)" : "",
+                deaf ? "unreadable" : (srtp_rx ? "SRTP" : "plain"),
+                silence_db, min_silence_ms);
+
+    dialog_sm_t dlg;
+    dialog_action_t act = dialog_start(&dlg, a->set.count, dialog_rng, NULL);
+    bool clip_done = true;
+    unsigned prompts = 0, rx_audio = 0, rx_other = 0;
+    uint8_t pkt[RTP_HEADER_BYTES + FRAME_BYTES];
+
+    pb_deadline_t next;
+    pb_deadline_init(&next);
+    for (;;) {
+        if (s_abort) {
+            pb_log_info(TAG, "dialog aborted (call ended)");
+            break;
+        }
+        if (act.kind == DIALOG_ACT_END) {
+            if (dialog_media_lost(&dlg)) {
+                // The normal end when the caller's BYE got lost: INFO.
+                pb_log_info(TAG, "no RTP from the caller for %u s → BYE",
+                            DIALOG_RX_TIMEOUT_MS / 1000u);
+            } else {
+                pb_log_warn(TAG, "dialog: clip set incomplete — hanging up");
+            }
+            break;
+        }
+        if (act.kind == DIALOG_ACT_SAY) {
+            const dialog_clip_t *k = &a->set.clip[act.phase][act.clip];
+            if (!clips || fseek(clips, (long)k->off, SEEK_SET) != 0) {
+                // No audio to say: end the call rather than loop in silence
+                // (the WARN above, or a broken file, once per call).
+                if (clips) pb_log_warn(TAG, "dialog: seek to clip %s-%d failed",
+                                       dialog_phase_name(act.phase), act.clip + 1);
+                break;
+            }
+            clip_left = k->len;
+            clip_done = false;
+            prompts++;
+            pb_log_info(TAG, "dialog: say %s-%d",
+                        dialog_phase_name(act.phase), act.clip + 1);
+        } else if (act.kind == DIALOG_ACT_LISTEN) {
+            vad_init(&vad, silence_db, min_silence_ms);
+        }
+
+        // Everything the caller sent since the last tick (usually one 20 ms
+        // packet, more under jitter), in arrival order.
+        for (;;) {
+            uint8_t rbuf[512];
+            int rn = recvfrom(sock, rbuf, sizeof(rbuf), MSG_DONTWAIT, NULL, NULL);
+            if (rn <= 0) break;
+            // Any datagram from the caller keeps the call alive, readable or
+            // not (a deaf dialog still sees the media stop).
+            dialog_rx(&dlg);
+            if (deaf) continue;
+            if (dialog_rx_packet(rbuf, rn, srtp_rx, &vad, &dlg)) rx_audio++;
+            else rx_other++;
+        }
+
+        // This tick's prompt audio, straight from flash.
+        uint8_t chunk[FRAME_SAMPLES];
+        size_t chunk_n = 0;
+        if (clip_left > 0) {
+            size_t want = clip_left < sizeof(chunk) ? clip_left : sizeof(chunk);
+            chunk_n = fread(chunk, 1, want, clips);
+            clip_left = chunk_n < want ? 0 : clip_left - (uint32_t)chunk_n;
+            if (clip_left == 0) clip_done = true;
+        }
+        mix_frame(pkt + RTP_HEADER_BYTES, &noise_rng, noise_amp, chunk, chunk_n);
+        rtp_tx_frame(&tx, pkt);
+
+        pb_task_delay_until(&next, FRAME_MS);
+        act = dialog_tick(&dlg, FRAME_MS, clip_done);
+    }
+
+    pb_log_info(TAG, "dialog finished after %u s: %u prompt(s), %u audio packet(s) "
+                     "from the caller, %u other (stack headroom %d B of %d)",
+                (unsigned)(dlg.elapsed_ms / 1000), prompts, rx_audio, rx_other,
+                pb_task_stack_free(), RTP_DIALOG_STACK);
+    pb_net_low_latency(false);
+
+done:
+    if (clips) fclose(clips);
+    if (srtp_tx) srtp_dealloc(srtp_tx);
+    if (srtp_rx) srtp_dealloc(srtp_rx);
+    free(a);
+    s_streaming = false;
+}
+
+void rtp_play_dialog(const struct sockaddr_in *dest, const rtp_srtp_tx_t *srtp,
+                     const uint8_t *srtp_rx_key, const dialog_set_t *set)
+{
+    rtp_dialog_args_t *args = calloc(1, sizeof(*args));
+    if (!args) {
+        pb_log_err(TAG, "malloc dialog args failed");
+        return;
+    }
+    args->dest = *dest;
+    if (srtp) args->srtp = *srtp;
+    if (srtp_rx_key) {
+        args->rx_key_valid = true;
+        memcpy(args->rx_key, srtp_rx_key, RTP_SRTP_KEY_LEN);
+    }
+    args->set = *set;
+    s_abort = false;
+    s_streaming = true;   // before the task starts, see rtp_play_audio
+    if (pb_task_create(rtp_dialog_task, args, "rtp_dialog", RTP_DIALOG_STACK,
+                       PB_PRIO_MEDIA) != PB_OK) {
+        pb_log_err(TAG, "dialog task creation failed");
+        s_streaming = false;
         free(args);
     }
 }

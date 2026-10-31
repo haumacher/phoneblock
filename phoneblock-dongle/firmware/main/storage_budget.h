@@ -3,10 +3,11 @@
 // test/test_storage_sim.c). storage.c applies it to the live partition.
 //
 // One budget covers the whole partition. The rarely written files — the
-// localized announcement, the UI and mail packs (i18n_sync.c) and the user's
-// own recorded announcement (announcement.c) — have precedence; the daily
-// community blocklist gets what remains, which the dongle expresses to the
-// server as a smaller &maxBytes (blocklist_sync.c).
+// localized announcement or the dialog clips, the UI and mail packs
+// (i18n_sync.c) and the user's own recorded announcement (announcement.c) —
+// have precedence; the daily community blocklist gets what remains, which
+// the dongle expresses to the server as a smaller &maxBytes
+// (blocklist_sync.c).
 //
 // Derivation. "Free" as esp_spiffs_info() reports it is not "writable": the
 // old budget (free space minus 48 KB, every day) drove the partition into a

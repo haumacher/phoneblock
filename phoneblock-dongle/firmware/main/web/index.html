@@ -1390,6 +1390,9 @@ function renderStatus(){
     + '</p></details>'
     + '<details id="annSection" class="adminsec" style="display:none">'
     + '<summary>' + esc(t('status.ann.title')) + '</summary>'
+    // The announcement itself: only in announcement mode (dialog mode keeps
+    // no announcement, #429).
+    + '<div id="annAnnouncement">'
     + '<p id="annCurrent" class="muted"></p>'
     + '<p style="margin:.4rem 0">'
     + '  <button id="annPlay" class="btn-ghost" style="padding:.3rem .7rem;font-size:.85rem">'
@@ -1408,6 +1411,47 @@ function renderStatus(){
     +   esc(t('status.ann.upload.submit')) + '</button>'
     + '  <span id="annMsg" class="muted" style="margin-left:.6rem"></span>'
     + '</p>'
+    + '</div>'
+    // Answer-bot mode (#429): announcement, or the interactive dialog with
+    // its VAD / comfort-noise tuning (shown only in dialog mode).
+    + '<p style="margin-top:.9rem;font-size:.85rem">'
+    + '  <label style="display:flex;align-items:center;gap:.4rem;font-weight:400;color:#444;margin:0">'
+    + '    <span>' + esc(t('status.dialog.mode')) + '</span>'
+    + '    <select id="annMode" style="width:auto;margin:0">'
+    + '      <option value="announcement">' + esc(t('status.dialog.mode.announcement')) + '</option>'
+    + '      <option value="dialog">' + esc(t('status.dialog.mode.dialog')) + '</option>'
+    + '    </select>'
+    + '  </label>'
+    + '</p>'
+    + '<p class="muted" style="margin-top:.3rem;font-size:.8rem">' + esc(t('status.dialog.help')) + '</p>'
+    + '<div id="annDialog" style="display:none">'
+    + '<p id="annDialogClips" class="muted" style="margin-top:.3rem;font-size:.85rem"></p>'
+    + '<div style="display:flex;gap:1.2rem;flex-wrap:wrap;align-items:flex-start;margin-top:.4rem">'
+    + '<label style="display:flex;flex-direction:column;gap:.2rem;font-size:.85rem">'
+    +   esc(t('status.dialog.vad_silence_db'))
+    + '  <input id="annVadDb" type="number" min="-70" max="-10" step="1" style="width:7rem">'
+    + '  <span class="muted" style="font-size:.7rem;max-width:16rem">'
+    +     esc(t('status.dialog.vad_silence_db.help')) + '</span>'
+    + '</label>'
+    + '<label style="display:flex;flex-direction:column;gap:.2rem;font-size:.85rem">'
+    +   esc(t('status.dialog.vad_min_silence_ms'))
+    + '  <input id="annVadMs" type="number" min="200" max="5000" step="50" style="width:7rem">'
+    + '  <span class="muted" style="font-size:.7rem;max-width:16rem">'
+    +     esc(t('status.dialog.vad_min_silence_ms.help')) + '</span>'
+    + '</label>'
+    + '<label style="display:flex;flex-direction:column;gap:.2rem;font-size:.85rem">'
+    +   esc(t('status.dialog.comfort_noise'))
+    + '  <input id="annNoise" type="number" min="-90" max="-30" step="1" style="width:7rem">'
+    + '  <span class="muted" style="font-size:.7rem;max-width:16rem">'
+    +     esc(t('status.dialog.comfort_noise.help')) + '</span>'
+    + '</label>'
+    + '</div>'
+    + '<p style="margin-top:.5rem">'
+    + '  <button id="annDialogSave" class="btn-primary" style="padding:.4rem .9rem;font-size:.9rem">'
+    +   esc(t('status.dialog.save')) + '</button>'
+    + '  <span id="annDialogMsg" class="muted" style="margin-left:.6rem"></span>'
+    + '</p>'
+    + '</div>'
     + '<p style="margin-top:.8rem;font-size:.85rem">'
     + '  <label title="' + esc(t('status.ann.accept_test.help')) + '" '
     +    'style="display:flex;align-items:center;gap:.4rem;font-weight:400;color:#444;margin:0">'
@@ -1486,6 +1530,7 @@ function renderStatus(){
     +   'Panic auslösen (Dev)</button></p>';
   // Freshly (re)built DOM — let the next poll prefill the mail form once.
   mailPrefilled = false;
+  dialogPrefilled = false;
   applyLangStatus();   // restore the translation bubble after the rebuild
   refreshAll();
   pollTimer = setInterval(refreshAll, 3000);
@@ -1525,6 +1570,7 @@ let resetNonce = '';
 let mailPrefilled = false;
 let namesPrefilled = false;
 let webhookPrefilled = false;
+let dialogPrefilled = false;
 
 // IDs of sections that the dashboard shows or hides on each poll, so
 // we can toggle the entire dashboard visibility in one go when the
@@ -1554,6 +1600,91 @@ const LOGIN_ERROR_KEYS = {
 // /api/status would return 200 → dashboard) cannot bury the error.
 // Cleared by reloading the page (URL is stripped on first show).
 let stickyLoginError = false;
+
+// Display name of a locale code, from the footer's language selector.
+function langName(code){
+  const opt = document.querySelector('#langSelect option[value="' + code + '"]');
+  return opt ? opt.textContent : code;
+}
+
+async function postConfig(params){
+  const body = new URLSearchParams(params);
+  const r = await fetch('api/config', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+    body: body.toString(),
+  });
+  return r.ok;
+}
+
+// `ownAnnouncement`: an own recording is on the device — switching to dialog
+// mode deletes it, so the switch asks first.
+function renderDialog(d, ownAnnouncement){
+  const mode = $('annMode');
+  if (!mode) return;
+  const modeRow = mode.closest('p');
+  if (!d){
+    modeRow.style.display = 'none';
+    return;
+  }
+  const dialogOn = d.mode === 'dialog';
+  if (!mode.disabled) mode.value = dialogOn ? 'dialog' : 'announcement';
+  $('annDialog').style.display = dialogOn ? '' : 'none';
+  $('annAnnouncement').style.display = dialogOn ? 'none' : '';
+  mode.dataset.own = ownAnnouncement ? '1' : '';
+  $('annDialogClips').textContent = d.clips_present
+    ? t('status.dialog.clips.present', {lang: langName(d.clips_lang)})
+    : t('status.dialog.clips.missing');
+  $('annDialogClips').style.color = d.clips_present ? '' : '#b06000';
+  if (!dialogPrefilled){
+    $('annVadDb').value = d.vad_silence_db;
+    $('annVadMs').value = d.vad_min_silence_ms;
+    $('annNoise').value = d.comfort_noise_level;
+    dialogPrefilled = true;
+  }
+  if (!mode.onchange){
+    mode.onchange = async () => {
+      if (mode.value === 'dialog' && mode.dataset.own
+          && !confirm(t('status.dialog.confirm_delete_own'))){
+        mode.value = 'announcement';
+        return;
+      }
+      mode.disabled = true;
+      try { await postConfig({ab_mode: mode.value}); } catch (_){ /* next poll reconciles */ }
+      mode.disabled = false;
+      refreshAll();
+    };
+  }
+  const save = $('annDialogSave');
+  if (!save.onclick){
+    save.onclick = async () => {
+      const m = $('annDialogMsg');
+      const fields = [
+        ['annVadDb', 'vad_silence_db', -70, -10],
+        ['annVadMs', 'vad_min_silence_ms', 200, 5000],
+        ['annNoise', 'comfort_noise_level', -90, -30],
+      ];
+      const params = {};
+      for (const [id, key, min, max] of fields){
+        const v = Number($(id).value);
+        if (!Number.isInteger(v) || v < min || v > max){
+          m.textContent = t('status.dialog.err.range', {min, max});
+          m.style.color = '#d93025';
+          $(id).focus();
+          return;
+        }
+        params[key] = String(v);
+      }
+      save.disabled = true;
+      m.textContent = '';
+      let ok = false;
+      try { ok = await postConfig(params); } catch (_){}
+      save.disabled = false;
+      m.textContent = ok ? t('status.dialog.saved') : t('status.dialog.failed');
+      m.style.color = ok ? '#188038' : '#d93025';
+    };
+  }
+}
 
 function showLoginState(){
   const loginSec = $('loginSection');
@@ -2059,6 +2190,10 @@ async function refreshAll(){
       refreshAll();
     };
   }
+
+  // Answer-bot mode and dialog settings (#429). Older firmware has no
+  // `dialog` object: the controls stay hidden there.
+  renderDialog(s.dialog, (s.announcement || {}).custom);
 
   // SIP pill + detail
   const sipPill = $('sipPill');

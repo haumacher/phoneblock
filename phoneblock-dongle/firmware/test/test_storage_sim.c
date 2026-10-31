@@ -67,6 +67,7 @@ bool blocklist_sync_evict_community(void)
     return true;
 }
 
+
 // ---------------------------------------------------------------------------
 // One simulated device.
 // ---------------------------------------------------------------------------
@@ -78,7 +79,14 @@ typedef struct {
     long list;        // community list the server would send unbounded
     bool legacy;      // flash state left behind by 1.6.0 / 1.7.0-beta3
     bool upload;      // the user records a new announcement on UPLOAD_DAY
+    bool dialog;      // ab_mode=dialog: the German dialog clip set (#429)
 } device_t;
+
+// The German dialog clip set as published: one file of all seven clips
+// (i18n-assets.sh concatenates i18n/audio/dialog/de/), plus its clip-table
+// index (~100 B).
+#define DIALOG_BYTES 63903L
+#define DIALOG_INDEX 100L
 
 typedef struct {
     int  write_failures;     // writes SPIFFS refused (SPIFFS_ERR_FULL etc.)
@@ -87,6 +95,8 @@ typedef struct {
     int  gc_errors;          // "SPIFFS_gc failed" ERROR lines
     int  min_free_pct_at_full; // lowest reported free share after an ERR_FULL
     long community_bytes;    // community list on flash at the end
+    int  community_days;     // days the community list was on flash
+    bool dialog_present;     // dialog set on flash at the end (#429)
 } outcome_t;
 
 static outcome_t s_out;
@@ -169,16 +179,42 @@ static bool new_download(const char *path, const char *final_vfs, long size)
     return true;
 }
 
+// i18n_sync.c sync_dialog(): the set's one file through storage_download
+// with the precedence of every rarely written asset, the index after it. A
+// changed release (`delta`) replaces both.
+static long s_dialog_have = -1;   // size of the set on flash, -1: none
+
+static void new_dialog(long delta)
+{
+    long bytes = DIALOG_BYTES + delta / 8;
+    if (s_dialog_have == bytes) return;              // up to date
+    sim_unlink("/dialog.idx");                       // the table changed
+    s_dialog_have = -1;
+    if (!new_download("/dialog-de.alaw", "/spiffs/dialog-de.alaw", bytes)) return;
+    size_t w;
+    if (!sim_write_file("/dialog.idx", DIALOG_INDEX, STORAGE_WRITE_BUF, &w)) {
+        int e = sim_last_err();
+        sim_unlink("/dialog.idx");
+        note_write_failure(e);
+        return;
+    }
+    s_dialog_have = bytes;
+}
+
 static void new_i18n(const device_t *d, long delta)
 {
     bool custom = sim_file_size("/announcement.alaw") > 0;
-    if (custom) sim_unlink("/announcement-de.alaw");   // recording supersedes
+    // An own recording supersedes the localized announcement, and so does the
+    // dialog (#429), which never plays it (and whose switch deleted the own
+    // recording, web.c).
+    if (custom || d->dialog) sim_unlink("/announcement-de.alaw");
     new_download("/ui-de.json", "/spiffs/ui-de.json", d->ui + delta);
     new_download("/mail-de.json", "/spiffs/mail-de.json", 2 * KB + delta / 8);
-    if (!custom) {
+    if (!custom && !d->dialog) {
         new_download("/announcement-de.alaw", "/spiffs/announcement-de.alaw",
                      d->ann + delta);
     }
+    if (d->dialog) new_dialog(delta);
 }
 
 static void new_blocklist(const device_t *d)
@@ -194,6 +230,7 @@ static void new_blocklist(const device_t *d)
     }
     sim_unlink("/personal.bin");
     new_download("/personal.bin", NULL, 2 * KB);
+    if (sim_file_size("/community.bin") > 0) s_out.community_days++;
 }
 
 static void new_upload(long size)
@@ -294,6 +331,7 @@ static outcome_t run(const device_t *d, policy_t p)
 {
     memset(&s_out, 0, sizeof(s_out));
     s_evictions = 0;
+    s_dialog_have = -1;
     sim_init();
     sim_log_reset();
 
@@ -306,6 +344,9 @@ static outcome_t run(const device_t *d, policy_t p)
         old_blocklist(d);
         memset(&s_out, 0, sizeof(s_out));
     }
+    // A device switched to dialog mode: the switch deleted the own
+    // recording (web.c), whatever was there before.
+    if (d->dialog) sim_unlink("/announcement.alaw");
     int gc_errors_before = sim_gc_error_count();
     sim_log_reset();
 
@@ -316,7 +357,9 @@ static outcome_t run(const device_t *d, policy_t p)
             long delta = day ? 1500 : 0;
             if (p == POLICY_NEW) new_i18n(d, delta); else old_i18n(d, delta);
         }
-        if (day == UPLOAD_DAY && d->upload) {
+        // In dialog mode there is no own recording: the switch deleted it,
+        // and the upload API refuses (web.c).
+        if (day == UPLOAD_DAY && d->upload && !d->dialog) {
             long size = d->custom ? d->custom + 20 * KB : 120 * KB;
             if (size > 240 * KB) size = 240 * KB;
             if (p == POLICY_NEW) new_upload(size); else old_upload(size);
@@ -325,15 +368,17 @@ static outcome_t run(const device_t *d, policy_t p)
     }
     s_out.gc_errors = sim_gc_error_count() - gc_errors_before;
     s_out.community_bytes = sim_file_size("/community.bin");
+    s_out.dialog_present = sim_file_size("/dialog-de.alaw") == s_dialog_have
+                           && s_dialog_have > 0 && sim_file_size("/dialog.idx") > 0;
     return s_out;
 }
 
 static const char *describe(const device_t *d)
 {
     static char buf[128];
-    snprintf(buf, sizeof(buf), "own %3ld KB, ann %2ld KB, ui %2ld KB, list %4ld KB%s",
+    snprintf(buf, sizeof(buf), "own %3ld KB, ann %2ld KB, ui %2ld KB, list %4ld KB%s%s",
              d->custom / KB, d->ann / KB, d->ui / KB, d->list / KB,
-             d->legacy ? ", 1.6.0 flash" : "");
+             d->legacy ? ", 1.6.0 flash" : "", d->dialog ? ", dialog" : "");
     return buf;
 }
 
@@ -360,7 +405,7 @@ static void test_old_reproduces_field_failures(void)
 
     // #529: plain dongle, a user with low thresholds (list larger than any
     // budget). The list fills the partition up to 48 KB below full every day.
-    device_t d529 = { 0, 79 * KB, 29 * KB, 1000 * KB, false, false };
+    device_t d529 = { 0, 79 * KB, 29 * KB, 1000 * KB, false, false, false };
     outcome_t o = run(&d529, POLICY_OLD);
     printf("    %s: %d failed writes (%d SPIFFS_ERR_FULL, at >= %d %% free), "
            "%d \"SPIFFS_gc failed\"\n", describe(&d529), o.write_failures,
@@ -370,7 +415,7 @@ static void test_old_reproduces_field_failures(void)
 
     // #542: own recording + localized announcement + the default 40 KB list.
     // The budget is not even binding — the write fails anyway.
-    device_t d542 = { 175 * KB, 79 * KB, 29 * KB, 40 * KB, true, false };
+    device_t d542 = { 175 * KB, 79 * KB, 29 * KB, 40 * KB, true, false, false };
     o = run(&d542, POLICY_OLD);
     printf("    %s: %d failed writes (%d SPIFFS_ERR_FULL, at >= %d %% free), "
            "%d \"SPIFFS_gc failed\"\n", describe(&d542), o.write_failures,
@@ -387,16 +432,16 @@ static void test_new_policy(void)
     printf("new policy: %d days without a failed write\n", DAYS);
     static const device_t devices[] = {
         // custom    ann       ui       list        legacy upload
-        {   0,       79 * KB,  29 * KB,   40 * KB,  false, true  }, // default
-        {   0,       79 * KB,  29 * KB, 1000 * KB,  false, false }, // #529
-        {   0,       79 * KB,  29 * KB, 1000 * KB,  false, true  },
-        {   0,       96 * KB,  49 * KB, 1000 * KB,  false, true  }, // largest assets
-        {   0,       79 * KB,  29 * KB, 1000 * KB,  true,  true  }, // #529, after OTA
-        {  60 * KB,  73 * KB,  27 * KB, 1000 * KB,  false, true  },
-        { 120 * KB,  96 * KB,  49 * KB,   40 * KB,  false, true  },
-        { 175 * KB,  79 * KB,  29 * KB,   40 * KB,  true,  false }, // #542
-        { 175 * KB,  79 * KB,  29 * KB, 1000 * KB,  true,  true  },
-        { 220 * KB,  96 * KB,  49 * KB, 1000 * KB,  true,  true  }, // max recording
+        {   0,       79 * KB,  29 * KB,   40 * KB,  false, true, false  }, // default
+        {   0,       79 * KB,  29 * KB, 1000 * KB,  false, false, false }, // #529
+        {   0,       79 * KB,  29 * KB, 1000 * KB,  false, true, false  },
+        {   0,       96 * KB,  49 * KB, 1000 * KB,  false, true, false  }, // largest assets
+        {   0,       79 * KB,  29 * KB, 1000 * KB,  true,  true, false  }, // #529, after OTA
+        {  60 * KB,  73 * KB,  27 * KB, 1000 * KB,  false, true, false  },
+        { 120 * KB,  96 * KB,  49 * KB,   40 * KB,  false, true, false  },
+        { 175 * KB,  79 * KB,  29 * KB,   40 * KB,  true,  false, false }, // #542
+        { 175 * KB,  79 * KB,  29 * KB, 1000 * KB,  true,  true, false  },
+        { 220 * KB,  96 * KB,  49 * KB, 1000 * KB,  true,  true, false  }, // max recording
     };
     for (size_t i = 0; i < sizeof(devices) / sizeof(devices[0]); i++) {
         const device_t *d = &devices[i];
@@ -410,13 +455,47 @@ static void test_new_policy(void)
               o.refusals, s_evictions);
     }
 
+    // Dialog mode (#429): the clip set in place of the localized
+    // announcement and of any own recording (the switch deletes it; `upload`
+    // is refused). Every row clean, the set kept, and the community cache
+    // gets a list on every day.
+    printf("new policy, dialog mode: %d days\n", DAYS);
+    static const device_t dialog_rows[] = {
+        // custom ann       ui       list        legacy upload dialog
+        {  0,    79 * KB,  29 * KB,   40 * KB,  false, false, true }, // default list
+        {  0,    79 * KB,  29 * KB,   40 * KB,  false, true,  true }, // upload refused
+        {  0,    79 * KB,  29 * KB, 1000 * KB,  false, true,  true }, // #529
+        {  0,    96 * KB,  49 * KB, 1000 * KB,  false, true,  true }, // largest assets
+        {  0,    79 * KB,  29 * KB, 1000 * KB,  true,  true,  true }, // #529, after OTA
+        {  0,    96 * KB,  49 * KB,   40 * KB,  true,  false, true }, // legacy, default list
+        // Switched from announcement mode with a maximal own recording on a
+        // 1.6.0 flash (the old worst case): the recording goes with the switch.
+        { 220 * KB, 96 * KB, 49 * KB, 1000 * KB, true,  true,  true },
+        { 175 * KB, 79 * KB, 29 * KB,   40 * KB, true,  false, true }, // #542
+    };
+    for (size_t i = 0; i < sizeof(dialog_rows) / sizeof(dialog_rows[0]); i++) {
+        const device_t *d = &dialog_rows[i];
+        outcome_t o = run(d, POLICY_NEW);
+        CHECK(o.write_failures == 0 && o.gc_errors == 0 && sim_log_count('W') == 0
+              && sim_log_count('E') == 0 && o.dialog_present
+              && sim_file_size("/announcement-de.alaw") < 0
+              && sim_file_size("/announcement.alaw") < 0
+              && o.refusals == 0 && o.community_days == DAYS,
+              "%s: %d failed writes, %d gc errors, set %s, community %ld KB "
+              "(on %d of %d days), %d evictions",
+              describe(d), o.write_failures, o.gc_errors,
+              o.dialog_present ? "kept" : "ABSENT",
+              o.community_bytes > 0 ? o.community_bytes / KB : 0,
+              o.community_days, DAYS, s_evictions);
+    }
+
     // Without an own recording the community cache must not be starved: a
     // default list is kept every day, a large one gets a real budget.
-    device_t plain = { 0, 79 * KB, 29 * KB, 40 * KB, false, false };
+    device_t plain = { 0, 79 * KB, 29 * KB, 40 * KB, false, false, false };
     outcome_t o = run(&plain, POLICY_NEW);
     CHECK(o.refusals == 0 && o.community_bytes == 40 * KB,
           "default list cached every day (%d days without)", o.refusals);
-    device_t big = { 0, 79 * KB, 29 * KB, 1000 * KB, false, false };
+    device_t big = { 0, 79 * KB, 29 * KB, 1000 * KB, false, false, false };
     o = run(&big, POLICY_NEW);
     CHECK(o.refusals == 0 && o.community_bytes == 128 * KB,
           "large list gets the 128 KB bucket (%ld KB)", o.community_bytes / KB);
@@ -428,7 +507,7 @@ static void test_self_healing(void)
     // A dongle coming from 1.6.0 holds an oversized community list. The
     // first sync deletes it before computing the budget, so the very first
     // list it asks for already fits.
-    device_t d = { 0, 79 * KB, 29 * KB, 1000 * KB, true, false };
+    device_t d = { 0, 79 * KB, 29 * KB, 1000 * KB, true, false, false };
     sim_init();
     old_i18n(&d, 0);
     // Larger than the new budget allows; the old one (free - 48 KB) offered
@@ -491,9 +570,9 @@ static void test_transition_after_weeks_of_old_policy(void)
 {
     printf("transition: %d days old policy, then new policy on the same flash\n", DAYS);
     static const device_t devices[] = {
-        {   0,       79 * KB,  29 * KB, 1000 * KB,  false, false }, // #529
-        { 175 * KB,  79 * KB,  29 * KB,   40 * KB,  false, false }, // #542
-        { 220 * KB,  96 * KB,  49 * KB, 1000 * KB,  false, false }, // max recording
+        {   0,       79 * KB,  29 * KB, 1000 * KB,  false, false, false }, // #529
+        { 175 * KB,  79 * KB,  29 * KB,   40 * KB,  false, false, false }, // #542
+        { 220 * KB,  96 * KB,  49 * KB, 1000 * KB,  false, false, false }, // max recording
     };
     for (size_t i = 0; i < sizeof(devices) / sizeof(devices[0]); i++) {
         const device_t *d = &devices[i];

@@ -322,6 +322,35 @@ const char *config_last_failed_ota(void);
 // updated on success.
 int         config_set_last_failed_ota(const char *version);
 
+// Answer-bot mode (issue #429): "announcement" (default) plays the
+// announcement and hangs up; "dialog" holds an interactive conversation with
+// the caller from a downloaded clip set (dialog.h), falling back to the
+// announcement while no complete set is on the device. In dialog mode the
+// user's own uploaded announcement serves only as that fallback. Always one
+// of the two literals.
+const char *config_ab_mode(void);
+bool        config_ab_dialog(void);   // config_ab_mode() is "dialog"
+bool        config_ab_mode_valid(const char *mode);
+
+// Dialog tuning. The caller's audio counts as silence at or below
+// vad_silence_db (dBFS); their turn ends after vad_min_silence_ms of
+// continuous silence. comfort_noise_db is the level (dBFS) of the hiss the
+// dongle sends under and between its prompts. Each getter clamps to the
+// range below and falls back to its default (-35 dBFS, 800 ms, -60 dBFS)
+// when unset or out of range; the _valid() functions guard the web POST.
+#define CONFIG_VAD_SILENCE_DB_MIN       (-70)
+#define CONFIG_VAD_SILENCE_DB_MAX       (-10)
+#define CONFIG_VAD_MIN_SILENCE_MS_MIN   200
+#define CONFIG_VAD_MIN_SILENCE_MS_MAX   5000
+#define CONFIG_COMFORT_NOISE_DB_MIN     (-90)
+#define CONFIG_COMFORT_NOISE_DB_MAX     (-30)
+int         config_vad_silence_db(void);
+int         config_vad_min_silence_ms(void);
+int         config_comfort_noise_db(void);
+bool        config_vad_silence_db_valid(int db);
+bool        config_vad_min_silence_ms_valid(int ms);
+bool        config_comfort_noise_db_valid(int db);
+
 // Update the NVS-backed settings atomically. Any field passed as NULL
 // or 0 is left untouched. The in-RAM cache is refreshed after NVS
 // commit succeeds; on failure the cache is unchanged.
@@ -455,6 +484,14 @@ typedef struct {
     // caller must pass only a config_dial_prefix_valid() string (web.c
     // guards the POST); the getter clamps defensively on read.
     const char *dial_prefix;
+    // Answer-bot mode: "announcement" | "dialog". NULL = leave unchanged.
+    // The caller passes only a config_ab_mode_valid() value (web.c).
+    const char *ab_mode;
+    // Dialog tuning; 0 = leave unchanged (none of them has 0 in its valid
+    // range). The caller passes only values its _valid() check accepts.
+    int         vad_silence_db;
+    int         vad_min_silence_ms;
+    int         comfort_noise_db;
 } config_update_t;
 
 int config_update(const config_update_t *u);

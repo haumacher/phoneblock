@@ -851,3 +851,9 @@ int pb_get_mac(uint8_t mac[6])
     freeifaddrs(interfaces);
     return best_rank >= 0 ? 0 : -1;
 }
+
+void pb_net_low_latency(bool enable)
+{
+    // A wired or desktop link has no modem sleep to switch off.
+    (void)enable;
+}

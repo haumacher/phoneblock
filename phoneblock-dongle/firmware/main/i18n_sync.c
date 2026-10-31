@@ -23,6 +23,8 @@
 
 #include "announcement.h"
 #include "config.h"
+#include "dialog_manifest.h"
+#include "dialog_store.h"
 #include "http_util.h"
 #include "platform.h"
 #ifndef CONFIG_PHONEBLOCK_OTA_BASE_URL
@@ -349,7 +351,8 @@ static void prune_stale(const char *keep_lang)
             // ever removes them, and they hold space for good.
             is_stale_localized(e->d_name, "announcement-", ".alaw.tmp", "") ||
             is_stale_localized(e->d_name, "mail-", ".json.tmp", "") ||
-            is_stale_localized(e->d_name, "ui-", ".json.tmp", "");
+            is_stale_localized(e->d_name, "ui-", ".json.tmp", "") ||
+            is_stale_localized(e->d_name, "dialog-", ".alaw.tmp", "");
         if (stale) {
             // Sized for SPIFFS_DIR + '/' + a full dirent name so the
             // formatted path can never be truncated (-Wformat-truncation).
@@ -393,6 +396,83 @@ static bool download_asset(cJSON *asset, const char *kind, const char *base_url,
     return download_verify_rename(url, final_path, jsha->valuestring,
                                   err, err_cap);
 
+}
+
+// The dialog clip set (#429), kept only while ab_mode is "dialog". Taken as a
+// whole from the first locale of `chain` that offers a complete set
+// (dialog_manifest.h): one file, stored under that locale's name, plus the
+// clip table as the index, written once the file is in place
+// (dialog_store.h). Any other set on the device goes first, so the partition
+// holds one set at a time. The file is a rarely written asset like the
+// announcement whose place it takes: download_verify_rename() claims its room
+// ahead of the community blocklist.
+static bool sync_dialog(cJSON *assets, const char *base_url,
+                        const char **chain, int chain_n,
+                        char *err, size_t err_cap)
+{
+    if (!config_ab_dialog()) {
+        int removed = dialog_store_remove_all();
+        if (removed > 0) {
+            pb_log_info(TAG, "announcement mode — %d dialog file(s) removed", removed);
+        }
+        return true;
+    }
+
+    // ~350 B of clip table each: on the heap, not the scheduler stack that
+    // the TLS session of the download needs.
+    dialog_manifest_set_t *want = malloc(sizeof(*want));
+    dialog_set_t *have = malloc(sizeof(*have));
+    bool ok = true;
+    if (!want || !have) {
+        snprintf(err, err_cap, "dialog: out of memory");
+        ok = false;
+        goto out;
+    }
+    if (!dialog_manifest_select(assets, chain, chain_n, want)) {
+        dialog_store_remove_all();
+        pb_log_warn(TAG, "dialog mode, but this firmware's i18n bundle has no "
+                         "complete dialog clip set — calls are hung up "
+                         "without audio");
+        goto out;   // nothing to fetch: not a failed pass
+    }
+    if (strcmp(want->lang, chain[0]) != 0) {
+        pb_log_info(TAG, "dialog: no complete set for '%s', using '%s'",
+                    chain[0], want->lang);
+    }
+
+    bool index_ok = dialog_store_load(have, false) &&
+                    dialog_set_equal(have, &want->set);
+    if (!index_ok) dialog_store_drop_index();
+    int removed = dialog_store_remove_others(want->lang);
+    if (removed > 0) {
+        pb_log_info(TAG, "dialog: %d file(s) of another set removed", removed);
+    }
+
+    char path[DIALOG_STORE_PATH_CAP];
+    dialog_store_file_path(path, sizeof(path), want->lang);
+    char on_disk[65];
+    if (!(sha256_file_hex(path, on_disk) && strcasecmp(on_disk, want->sha256) == 0)) {
+        char url[256];
+        snprintf(url, sizeof(url), "%s/%s", base_url, want->path);
+        if (!download_verify_rename(url, path, want->sha256, err, err_cap)) {
+            ok = false;
+            goto out;
+        }
+    } else if (index_ok) {
+        pb_log_info(TAG, "dialog clip set '%s' up to date", want->lang);
+        goto out;
+    }
+
+    if (!index_ok && dialog_store_write_index(&want->set) != PB_OK) {
+        snprintf(err, err_cap, "dialog: index write failed");
+        ok = false;
+        goto out;
+    }
+    pb_log_info(TAG, "dialog clip set '%s' complete", want->lang);
+out:
+    free(want);
+    free(have);
+    return ok;
 }
 
 // Download a single asset of `kind` (announcement / mail) for the first locale
@@ -439,6 +519,15 @@ static void run_once(void)
     snprintf(base, sizeof(base), "%s/%s/i18n",
              CONFIG_PHONEBLOCK_OTA_BASE_URL, tag);
     char err[64] = "";
+
+    // Switched to announcement mode: the dialog clips go right away, even if
+    // the CDN cannot be reached this time (sync_dialog() repeats it).
+    if (!config_ab_dialog()) {
+        int removed = dialog_store_remove_all();
+        if (removed > 0) {
+            pb_log_info(TAG, "announcement mode — %d dialog file(s) removed", removed);
+        }
+    }
 
     char *manifest = malloc(MANIFEST_CAP);
     if (!manifest) {
@@ -505,9 +594,16 @@ static void run_once(void)
     // the community blocklist and a re-recording need more (#542). Neither
     // kept nor downloaded; announcement.c asks for a sync when the user's
     // recording goes away.
+    //
+    // The dialog (#429) supersedes it the same way: a call in dialog mode
+    // never plays it, and its space is what the clip set needs. Switching
+    // back to announcement mode brings it back on the sync the switch
+    // triggers.
     bool custom_ann = announcement_is_custom();
-    if (custom_ann && unlink(ann_path) == 0) {
-        pb_log_info(TAG, "own announcement active — localized one removed");
+    bool dialog_mode = config_ab_dialog();
+    if ((custom_ann || dialog_mode) && unlink(ann_path) == 0) {
+        pb_log_info(TAG, "%s — localized announcement removed",
+                    custom_ann ? "own announcement active" : "dialog mode");
     }
 
     // Download order is chosen for perceived responsiveness: the UI pack FIRST
@@ -539,11 +635,20 @@ static void run_once(void)
     // [ui_lang, en, de] chain built above; downloaded last (biggest, least
     // time-critical).
     char err3[64] = "";
-    if (!custom_ann &&
+    if (!custom_ann && !dialog_mode &&
         !sync_kind_chain(assets, "announcement", base, ann_path, ann_chain, acn,
                          err3, sizeof(err3))) {
         pb_log_warn(TAG, "announcement sync: %s", err3);
         if (ok) { ok = false; strncpy(err, err3, sizeof(err) - 1); }
+    }
+
+    // The dialog clips last: only needed on a call, and only in dialog mode
+    // (otherwise this removes them). Same [ui_lang, en, de] chain as the
+    // announcement, whose place they take — no embedded fallback either.
+    char err4[64] = "";
+    if (!sync_dialog(assets, base, ann_chain, acn, err4, sizeof(err4))) {
+        pb_log_warn(TAG, "dialog clip sync: %s", err4);
+        if (ok) { ok = false; snprintf(err, sizeof(err), "%s", err4); }
     }
 
     cJSON_Delete(root);

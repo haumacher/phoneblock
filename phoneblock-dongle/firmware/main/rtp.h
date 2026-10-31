@@ -11,6 +11,7 @@
 #endif
 
 #include "announcement.h"
+#include "dialog.h"
 
 // The UDP port the dongle binds for RTP audio is configurable via
 // config_rtp_port() (default 16000); the SDP advertises the same value.
@@ -44,6 +45,24 @@ typedef struct {
 void rtp_play_audio(const struct sockaddr_in *dest,
                     announcement_src_t *src,
                     const rtp_srtp_tx_t *srtp);
+
+// Stack of the dialog task: SRTP TX + RX sessions, the receive buffer and
+// the VAD frame on top of what the announcement task needs.
+#define RTP_DIALOG_STACK 7168
+
+// Spawn a task that holds the interactive dialog (dialog.h) with the caller
+// at `dest`, from the clip set `set` on the device (dialog_store.h), until
+// rtp_request_abort() or until the caller's media stops (DIALOG_RX_TIMEOUT_MS
+// without a packet — there is no time cap); then it exits and
+// rtp_streaming_active() turns false, which is the SIP task's cue to send
+// its BYE. Two-way: it receives the caller's RTP on the shared socket,
+// decrypts it with `srtp_rx_key` (the remote's 30-byte SDES key+salt from
+// the INVITE's a=crypto) when the call is SRTP, and feeds the PCMA audio to
+// the VAD. With SRTP but no key (NULL) the dialog runs deaf. `srtp` as for
+// rtp_play_audio. WiFi power save is off for the task's lifetime
+// (pb_net_low_latency()). All arguments are copied.
+void rtp_play_dialog(const struct sockaddr_in *dest, const rtp_srtp_tx_t *srtp,
+                     const uint8_t *srtp_rx_key, const dialog_set_t *set);
 
 // Ensure the singleton RTP UDP socket exists and is bound to
 // config_rtp_port(); returns its fd or -1 on failure. The socket is
@@ -95,8 +114,8 @@ const char   *rtp_nat_mapping_str(void);
 // our own audio. Safe to call when no streaming task is active.
 void rtp_request_abort(void);
 
-// True from just before an announcement stream starts until the
-// streaming task exits. The report-call worker waits on this so its TLS
+// True from just before an announcement stream or a dialog starts until its
+// task exits. The report-call worker waits on this so its TLS
 // handshake never overlaps the SRTP media stream (combined heap use
 // crashes the ESP32). Safe to call from any task.
 bool rtp_streaming_active(void);

@@ -93,6 +93,10 @@ static const char *NS   = "phoneblock";
 #define K_TIMEZONE      "timezone"
 #define K_UI_LANG       "ui_lang"
 #define K_DIAL_PREFIX   "dial_prefix"
+#define K_AB_MODE       "ab_mode"
+#define K_VAD_SIL_DB    "vad_sil_db"
+#define K_VAD_MIN_SIL   "vad_min_sil_ms"
+#define K_CN_LEVEL      "cn_level"
 
 // Country dial prefix assumed when a caller ID arrives in national form
 // (single leading trunk "0"). Germany, because that is where the fleet
@@ -118,6 +122,14 @@ static const char *NS   = "phoneblock";
 // 0 means "use this default".
 #define DEFAULT_SIP_LOCAL_PORT 15060
 #define DEFAULT_RTP_PORT       16000
+// Interactive answer-bot dialog (#429). The VAD defaults are the values that
+// work for the Cloud/Docker answer bot (-35 dBFS); the response time is
+// shorter than its 1500 ms so the bot answers briskly. The comfort noise is a
+// quiet "live line" hiss, far below the silence threshold so it never reads
+// as the caller speaking (and is not echoed back as such).
+#define DEFAULT_VAD_SILENCE_DB      (-35)
+#define DEFAULT_VAD_MIN_SILENCE_MS  800
+#define DEFAULT_COMFORT_NOISE_DB    (-60)
 // Version string of the most recent OTA download that did NOT survive
 // to the next successful boot. Set pessimistically before
 // esp_https_ota() runs and only cleared once main.c sees the running
@@ -198,6 +210,10 @@ typedef struct {
     char dial_prefix[8];     // "+49", "+44", … Country of the line, used to
                              // expand national caller IDs to E.164. Empty or
                              // malformed reads back as DEFAULT_DIAL_PREFIX.
+    char ab_mode[16];        // "announcement" (default, also empty) | "dialog"
+    int  vad_silence_db;     // 0 = default; clamped on read
+    int  vad_min_silence_ms; // 0 = default; clamped on read
+    int  comfort_noise_db;   // 0 = default; clamped on read
 } config_cache_t;
 
 static config_cache_t s_config;
@@ -360,6 +376,10 @@ void config_load(void)
         copy_default(s_config.timezone, sizeof(s_config.timezone), CONFIG_DONGLE_DEFAULT_TZ);
         s_config.ui_lang[0] = '\0';   // empty → default "en" (see getter)
         s_config.dial_prefix[0] = '\0';   // empty → DEFAULT_DIAL_PREFIX (see getter)
+        s_config.ab_mode[0] = '\0';       // empty → "announcement"
+        s_config.vad_silence_db     = 0;  // 0 → defaults (see getters)
+        s_config.vad_min_silence_ms = 0;
+        s_config.comfort_noise_db   = 0;
         return;
     }
     if (err != PB_KV_OK) {
@@ -467,6 +487,11 @@ void config_load(void)
              s_config.ui_lang, sizeof(s_config.ui_lang));
     load_str(h, K_DIAL_PREFIX, "",
              s_config.dial_prefix, sizeof(s_config.dial_prefix));
+    load_str(h, K_AB_MODE, "",
+             s_config.ab_mode, sizeof(s_config.ab_mode));
+    s_config.vad_silence_db     = load_int(h, K_VAD_SIL_DB,  0);
+    s_config.vad_min_silence_ms = load_int(h, K_VAD_MIN_SIL, 0);
+    s_config.comfort_noise_db   = load_int(h, K_CN_LEVEL,    0);
     pb_kv_close(h);
 
     pb_log_info(TAG, "loaded config: sip=%s@%s:%d, pb=%s",
@@ -727,6 +752,52 @@ bool        config_mail_on_update(void)
 }
 const char *config_last_failed_ota(void)     { return s_config.last_failed_ota; }
 
+bool config_ab_mode_valid(const char *mode)
+{
+    return mode && (strcmp(mode, "announcement") == 0 ||
+                    strcmp(mode, "dialog") == 0);
+}
+const char *config_ab_mode(void)
+{
+    // Allowlist on read: only an explicit "dialog" switches the fleet's
+    // behaviour; empty or anything else is the announcement.
+    return strcmp(s_config.ab_mode, "dialog") == 0 ? "dialog" : "announcement";
+}
+bool config_ab_dialog(void)
+{
+    return strcmp(config_ab_mode(), "dialog") == 0;
+}
+// The three dialog tunables are clamped on read: an unset (0) or out-of-range
+// NVS value yields the default rather than a VAD that never (or always)
+// hears the caller.
+bool config_vad_silence_db_valid(int db)
+{
+    return db >= CONFIG_VAD_SILENCE_DB_MIN && db <= CONFIG_VAD_SILENCE_DB_MAX;
+}
+bool config_vad_min_silence_ms_valid(int ms)
+{
+    return ms >= CONFIG_VAD_MIN_SILENCE_MS_MIN && ms <= CONFIG_VAD_MIN_SILENCE_MS_MAX;
+}
+bool config_comfort_noise_db_valid(int db)
+{
+    return db >= CONFIG_COMFORT_NOISE_DB_MIN && db <= CONFIG_COMFORT_NOISE_DB_MAX;
+}
+int config_vad_silence_db(void)
+{
+    return config_vad_silence_db_valid(s_config.vad_silence_db)
+           ? s_config.vad_silence_db : DEFAULT_VAD_SILENCE_DB;
+}
+int config_vad_min_silence_ms(void)
+{
+    return config_vad_min_silence_ms_valid(s_config.vad_min_silence_ms)
+           ? s_config.vad_min_silence_ms : DEFAULT_VAD_MIN_SILENCE_MS;
+}
+int config_comfort_noise_db(void)
+{
+    return config_comfort_noise_db_valid(s_config.comfort_noise_db)
+           ? s_config.comfort_noise_db : DEFAULT_COMFORT_NOISE_DB;
+}
+
 int config_set_last_failed_ota(const char *version)
 {
     pb_kv_t *h;
@@ -911,6 +982,14 @@ int config_update(const config_update_t *u)
                                         s_config.ui_lang, sizeof(s_config.ui_lang));
     if (err == PB_KV_OK) err = set_str_if(h, K_DIAL_PREFIX, u->dial_prefix,
                                         s_config.dial_prefix, sizeof(s_config.dial_prefix));
+    if (err == PB_KV_OK) err = set_str_if(h, K_AB_MODE, u->ab_mode,
+                                        s_config.ab_mode, sizeof(s_config.ab_mode));
+    if (err == PB_KV_OK) err = set_int_if(h, K_VAD_SIL_DB, u->vad_silence_db,
+                                        &s_config.vad_silence_db);
+    if (err == PB_KV_OK) err = set_int_if(h, K_VAD_MIN_SIL, u->vad_min_silence_ms,
+                                        &s_config.vad_min_silence_ms);
+    if (err == PB_KV_OK) err = set_int_if(h, K_CN_LEVEL, u->comfort_noise_db,
+                                        &s_config.comfort_noise_db);
 
     if (err == PB_KV_OK) err = pb_kv_commit(h);
     pb_kv_close(h);
