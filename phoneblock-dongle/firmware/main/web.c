@@ -17,7 +17,6 @@
 #include "esp_http_server.h"
 #include "esp_ota_ops.h"
 #include "esp_partition.h"
-#include "esp_spiffs.h"       // esp_spiffs_info for the data-partition readout
 #include "esp_system.h"       // esp_restart
 #include "esp_wifi.h"         // esp_wifi_restore for factory-reset
 #include "freertos/FreeRTOS.h"
@@ -393,14 +392,12 @@ static void add_system_load(cJSON *root)
     cJSON_AddNumberToObject(sys, "largest_free_block",
                             (double)heap_caps_get_largest_free_block(MALLOC_CAP_DEFAULT));
 
-    // Data-partition (SPIFFS "storage") usage. The blocklist cache, the
-    // announcement blob and the temp files used during sync all share this
-    // one mount; a nearly-full partition is the working hypothesis for the
-    // "rename …: I/O error" the blocklist sync reports, so surface the live
-    // free-byte count here for field diagnosis. Same label as
-    // announcement.c / blocklist_sync.c.
+    // Data-partition ("storage", SPIFFS or LittleFS, storage.h) usage. The
+    // blocklist cache, the announcement blob, the packs, the dialog set and
+    // the temp files used during sync all share this one mount; surface the
+    // live free-byte count here for field diagnosis.
     size_t fs_total = 0, fs_used = 0;
-    if (esp_spiffs_info("storage", &fs_total, &fs_used) == ESP_OK) {
+    if (storage_info(&fs_total, &fs_used)) {
         cJSON_AddNumberToObject(sys, "fs_total", (double)fs_total);
         cJSON_AddNumberToObject(sys, "fs_used",  (double)fs_used);
         cJSON_AddNumberToObject(sys, "fs_free",  (double)(fs_total - fs_used));
@@ -3521,7 +3518,7 @@ static web_http_error_t handle_dev_i18n_upload(web_http_request_t *req)
     int total = web_http_body_length(req);
 
     // Cap well above a real bundle (~30 KB for the UI pack) but far below
-    // the shared 640 KB SPIFFS, so a runaway upload cannot fill storage
+    // the shared 640 KB storage of the 4 MB boards, so a runaway upload cannot fill storage
     // that the announcement audio and the blocklist also live in. The
     // dialog set gets the device's dialog budget, as the CDN download it
     // stands in for (dialog_set_cap()).

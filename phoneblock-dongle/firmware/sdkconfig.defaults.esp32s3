@@ -15,14 +15,7 @@ CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
 CONFIG_ESPTOOLPY_FLASHSIZE="16MB"
 CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions-16mb.csv"
 
-# SPIFFS garbage-collection budget for the 1 MB storage partition (see
-# sdkconfig.defaults for the 128 of the 640 KB one). Before SPIFFS reaches
-# the blocks a deleted file left behind it relocates the older ones (GC
-# rotation, main/storage_budget.h), and on 256 blocks one call limited to 128
-# of them does not get there: the deliberate GC pass before every download
-# (storage_gc()) then logs "SPIFFS_gc failed" at ERROR on most days (the
-# writes themselves still succeed). A budget of one rotation over the whole
-# partition runs the simulation clean
-# (test/test_storage_sim_16mb, built from this value). storage.c refuses to
-# build the 16 MB layout with less.
-CONFIG_SPIFFS_GC_MAX_RUNS=256
+# The storage partition (the rest of the 16 MB) is LittleFS: it formats in
+# milliseconds where SPIFFS took 13.5 s per MB (partitions-16mb.csv), and it
+# needs no SPIFFS GC tuning (main/storage.h, storage_budget.h).
+CONFIG_PHONEBLOCK_STORAGE_LITTLEFS=y

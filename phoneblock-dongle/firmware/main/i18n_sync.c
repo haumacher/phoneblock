@@ -453,9 +453,11 @@ static bool sync_announcement(const cJSON *assets, const char *base_url,
 // marks it complete only once the file is verified, in place and its header
 // valid (dialog_store.h). Any other set on the device goes first, so the
 // partition holds one set at a time; another tier or speaker of the same
-// locale replaces the file like a new release does. The file is a rarely
-// written asset like the announcement whose place it takes:
-// download_verify_rename() claims its room ahead of the community blocklist.
+// locale replaces the file like a new release does — delete-first, the old
+// file removed before the download, so the set never needs room for two
+// copies. The file is a rarely written asset like the announcement whose
+// place it takes: download_verify_rename() claims its room ahead of the
+// community blocklist.
 //
 // The user's own set (DIALOG_OWN_LANG) is never replaced: while it is on
 // the device only the index is kept current, for the web UI's speaker list.
@@ -583,6 +585,13 @@ static bool sync_dialog(const cJSON *assets, const char *base_url,
         pb_log_info(TAG, "dialog: %d file(s) of another set removed", removed);
     }
     if (!file_ok) {
+        // Delete-first: without the index the old set (another release,
+        // tier or speaker of this locale) is unusable from here on anyway,
+        // and keeping it through the download would make the set need room
+        // for two copies (storage_budget.h, the M tier). Its leftover temp
+        // went with dialog_store_remove_others(). A failed download leaves
+        // no set; the next sync retries.
+        unlink(path);
         snprintf(url, sizeof(url), "%s/%s", base_url, want.path);
         if (!download_verify_rename(url, path, want.sha256, want.bytes, err, err_cap)) {
             ok = false;

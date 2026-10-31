@@ -6,10 +6,6 @@
 #include <unistd.h>
 #include <errno.h>
 
-#ifdef ESP_PLATFORM
-#include "esp_log.h"
-#include "esp_spiffs.h"
-#endif
 
 #include "config.h"
 #include "i18n_sync.h"
@@ -29,15 +25,11 @@ static const char *TAG = "announcement";
 // answers silently and hangs up (announcement_open returns len == 0).
 
 #ifdef ESP_PLATFORM
-#define SPIFFS_BASE_PATH  "/spiffs"
-#define SPIFFS_LABEL      "storage"
 #define SPIFFS_FILE       "/spiffs/announcement.alaw"
 #define SPIFFS_TEMP       "/spiffs/announcement.alaw.tmp"
 // Downloaded, per-locale announcement: "/spiffs/announcement-<lang>.alaw".
 #define SPIFFS_LOCALIZED_PREFIX "/spiffs/announcement-"
 #else
-#define SPIFFS_BASE_PATH  PHONEBLOCK_DATA_DIR
-#define SPIFFS_LABEL      "storage"
 #define SPIFFS_FILE       PHONEBLOCK_DATA_DIR "/announcement.alaw"
 #define SPIFFS_TEMP       PHONEBLOCK_DATA_DIR "/announcement.alaw.tmp"
 #define SPIFFS_LOCALIZED_PREFIX PHONEBLOCK_DATA_DIR "/announcement-"
@@ -117,25 +109,13 @@ static long localized_size(void)
 int announcement_init(void)
 {
 #ifdef ESP_PLATFORM
-    esp_vfs_spiffs_conf_t cfg = {
-        .base_path              = SPIFFS_BASE_PATH,
-        .partition_label        = SPIFFS_LABEL,
-        .max_files              = 2,
-        .format_if_mount_failed = true,
-    };
-    esp_err_t err = esp_vfs_spiffs_register(&cfg);
-    if (err != ESP_OK) {
-        pb_log_err(TAG, "SPIFFS mount failed: %s", esp_err_to_name(err));
-        // Keep going — the embedded default will still work.
-        return err;
+    // The storage partition (SPIFFS or LittleFS, storage.h), logged there.
+    if (!storage_mount()) {
+        // Keep going — calls are answered without an announcement.
+        return PB_FAIL;
     }
     s_storage_ready = true;
 
-    size_t total = 0, used = 0;
-    if (esp_spiffs_info(SPIFFS_LABEL, &total, &used) == ESP_OK) {
-        pb_log_info(TAG, "SPIFFS mounted: %u B used of %u B",
-                 (unsigned)used, (unsigned)total);
-    }
     // Legacy cleanup: older firmware uploaded via a temp file plus a
     // rename(). Drop any leftover temp so it doesn't waste a slot —
     // the current code writes the live file in place (see write_begin).

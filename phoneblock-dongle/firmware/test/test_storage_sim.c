@@ -21,11 +21,9 @@
 //
 // File contents are synthetic; sizes are the CDN's real asset sizes.
 //
-// Built twice (Makefile): test_storage_sim with the 640 KB partition of the
-// 4 MB boards (partitions.csv, sdkconfig.defaults) and test_storage_sim_16mb
-// with the 1 MB one of the 16 MB boards (partitions-16mb.csv, with the GC
-// budget of sdkconfig.defaults.esp32s3). The old policy's field reproduction
-// runs on the 640 KB layout only, where the failures were reported.
+// Built with the 640 KB partition of the classic ESP32 (partitions.csv,
+// sdkconfig.defaults), the one board left on SPIFFS; the C3 and the S3 are on
+// LittleFS, whose budget is plain block arithmetic (test_storage_budget.c).
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -109,7 +107,7 @@ static long dialog_bytes(void)
 // storage_budget.c computes in — and the community bucket a large list gets.
 #define SIM_BLOCKS  (SIM_PART_SIZE / 4096)
 #define SIM_TOTAL   (((SIM_BLOCKS - 2) * 3 + 1) * 1019L)
-#define SIM_BUCKET  (SIM_PART_SIZE >= 0x100000 ? 256 * KB : 128 * KB)
+#define SIM_BUCKET  (128 * KB)
 
 typedef struct {
     int  write_failures;     // writes SPIFFS refused (SPIFFS_ERR_FULL etc.)
@@ -205,7 +203,7 @@ static bool new_download(const char *path, const char *final_vfs, long size)
 // i18n_sync.c sync_dialog(): the set's one file through storage_download
 // with the precedence of every rarely written asset, the marker after it. A
 // changed release (`delta`: a few clips shorter, so still within the tier)
-// replaces both.
+// replaces both, the old set file removed before the download.
 static long s_dialog_have = -1;   // size of the set on flash, -1: none
 
 static void new_dialog(long delta)
@@ -213,6 +211,7 @@ static void new_dialog(long delta)
     long bytes = dialog_bytes() - delta / 8;
     if (s_dialog_have == bytes) return;              // up to date
     sim_unlink("/dialog.idx");                       // the set changed
+    sim_unlink("/dialog-de.alaw");                   // delete-first (i18n_sync.c)
     s_dialog_have = -1;
     if (!new_download("/dialog-de.alaw", "/spiffs/dialog-de.alaw", bytes)) return;
     size_t w;
@@ -420,11 +419,9 @@ static void test_geometry(void)
     esp_spiffs_info("storage", &t, &u);
     CHECK(t == (size_t) SIM_TOTAL && u == 0, "%d KB partition reports %zu B total, %zu used",
           SIM_PART_SIZE / 1024, t, u);
-    // The dialog tier follows the partition (storage_budget_dialog()).
-    long want = SIM_PART_SIZE >= 0x100000 ? (long) STORAGE_DIALOG_TIER_M
-                                          : (long) STORAGE_DIALOG_TIER_S;
-    CHECK((long) storage_dialog_budget() == want, "dialog budget %ld KB",
-          (long) storage_dialog_budget() / KB);
+    // SPIFFS takes the S tier (storage_budget.h).
+    CHECK((long) storage_dialog_budget() == (long) STORAGE_DIALOG_TIER_S,
+          "dialog budget %ld KB", (long) storage_dialog_budget() / KB);
 }
 
 static void test_storage_download(void);
@@ -432,11 +429,6 @@ static void test_storage_download(void);
 static void test_old_reproduces_field_failures(void)
 {
     printf("old policy (1.7.0-beta3) reproduces the field failures\n");
-    if (SIM_PART_SIZE != 0xA0000) {
-        printf("    skipped: reported on the 640 KB layout\n");
-        return;
-    }
-
     // #529: plain dongle, a user with low thresholds (list larger than any
     // budget). The list fills the partition up to 48 KB below full every day.
     device_t d529 = { 0, 79 * KB, 29 * KB, 1000 * KB, false, false, false };

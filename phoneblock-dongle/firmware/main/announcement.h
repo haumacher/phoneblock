@@ -21,7 +21,7 @@
 //
 // Lifecycle:
 //   - announcement_init() must be called once during boot. It mounts
-//     the SPIFFS partition (formatting it on first boot).
+//     the storage partition (storage_mount(); formatting it on first boot).
 //   - announcement_open()/read()/close() stream the active announcement
 //     sequentially. The SPIFFS file is read straight from flash, never
 //     loaded into a single heap block (the device has no PSRAM, so a

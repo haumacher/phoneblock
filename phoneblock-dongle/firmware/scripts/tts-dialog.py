@@ -91,7 +91,7 @@ TEMPO = 1.25
 
 # Most bytes the minimum set of a locale (clip 1 of every phase) may have:
 # the smallest device tier audio-assets.sh publishes ("s", for the 640 KB
-# storage partition of the 4 MB boards, see test/test_storage_sim.c). Every
+# SPIFFS storage partition of the classic ESP32, see test/test_storage_sim.c). Every
 # further clip goes into the larger tiers by priority, so only the minimum
 # set is a hard limit here.
 MAX_SET_BYTES = 128 * 1024

@@ -126,13 +126,13 @@ get_announcement() {
 # carries it). Each speaker's set is published in up to three size tiers
 # (main/storage_budget.h; the device takes the largest within its
 # partition's budget), each ONE file dialog-<lang>-<speaker>-<tier>-<sha8>.bin
-# — a single SPIFFS object on the device instead of one per clip (see
-# test_storage_sim.c) — holding the clip table as a header (format in
+# — a single file on the device instead of one per clip (on SPIFFS many small
+# files cost GC failures, see test_storage_sim.c) — holding the clip table as a header (format in
 # main/dialog.h), then the clips in phase and clip order:
 #
-#   s  at most STORAGE_DIALOG_TIER_S bytes (640 KB partition, 4 MB boards)
-#   m  at most STORAGE_DIALOG_TIER_M bytes (1 MB partition, 16 MB boards)
-#   l  every clip (the Linux port, no limit)
+#   s  at most STORAGE_DIALOG_TIER_S bytes (classic ESP32, 640 KB SPIFFS)
+#   m  at most STORAGE_DIALOG_TIER_M bytes (ESP32-C3, 640 KB LittleFS)
+#   l  every clip (ESP32-S3 with ~9.6 MB LittleFS, the Linux port)
 #
 # Each tier is the longest prefix of one priority order that fits, whole clips
 # only: first clip 1 of every phase (the minimum set), then the further

@@ -81,8 +81,9 @@ void app_main(void)
     log_capture_start();
     config_load();
 #if CONFIG_IDF_TARGET_ESP32S3
-    // Before the SPIFFS mount: a first boot may format the partition for
-    // ~13 s, and the logo shows that the stick is alive meanwhile.
+    // Before the storage mount: the logo shows that the stick is alive
+    // while the partition is mounted (and, on a first boot, formatted —
+    // milliseconds on the S3's LittleFS).
     display_start();
 #endif
     announcement_init();

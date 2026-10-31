@@ -248,19 +248,44 @@ static void probe_tier_boundaries(void)
     CHECK(pick(json, "", 99999, p) == DIALOG_PICK_NONE);
 }
 
-// The real partition: the C3 rig's esp_spiffs_info() total gets the S tier,
-// the 1 MB layout the M tier; the budget never shrinks as storage grows.
+// The real partitions: LittleFS takes M on the C3's 640 KB and the L ceiling
+// on the S3's ~9.6 MB; the budget never shrinks as the partition grows, and
+// every budget picks the matching published tier (s/m/l).
 static void probe_budget_by_partition(void)
 {
-    CHECK(storage_budget_dialog(484025) == STORAGE_DIALOG_TIER_S);
-    CHECK(storage_budget_dialog(STORAGE_DIALOG_M_TOTAL - 1) == STORAGE_DIALOG_TIER_S);
-    CHECK(storage_budget_dialog(STORAGE_DIALOG_M_TOTAL) == STORAGE_DIALOG_TIER_M);
+    const storage_lfs_geometry_t g = { 4096, STORAGE_LFS_RESERVE_BLOCKS };
+    CHECK(storage_budget_lfs_dialog(&g, 0xA0000) == STORAGE_DIALOG_TIER_M);
+    CHECK(storage_budget_lfs_dialog(&g, 0x9A0000) == STORAGE_DIALOG_PLAIN_FS_MAX);
     uint64_t prev = 0;
-    for (uint64_t t = 100000; t < 4000000; t += 7919) {
-        uint64_t b = storage_budget_dialog(t);
+    for (uint64_t t = 100000; t < 12000000; t += 7919) {
+        uint64_t b = storage_budget_lfs_dialog(&g, t);
         CHECK(b >= prev);
         prev = b;
     }
+    // The speakers index is in the M derivation at its cap.
+    static const uint32_t peers[] = STORAGE_LFS_DIALOG_PEERS;
+    CHECK(peers[3] == DIALOG_INDEX_MAX_BYTES);
+
+    // Tiers as audio-assets.sh publishes them (s, m, l at most at their
+    // limits): S on SPIFFS, M on the C3, L on the S3 and Linux.
+    char json[512];
+    snprintf(json, sizeof(json), "{\"speakers\":[{\"id\":\"anna\",\"sets\":["
+             BTIER("a-s.bin", %u) "," BTIER("a-m.bin", %u) "," BTIER("a-l.bin", 520000) "]}]}",
+             STORAGE_DIALOG_TIER_S, STORAGE_DIALOG_TIER_M);
+    char p[64];
+    CHECK(pick(json, "anna", STORAGE_DIALOG_TIER_S, p) == DIALOG_PICK_CHOSEN
+          && strcmp(p, "a-s.bin") == 0);
+    CHECK(pick(json, "anna", storage_budget_lfs_dialog(&g, 0xA0000), p) == DIALOG_PICK_CHOSEN
+          && strcmp(p, "a-m.bin") == 0);
+    CHECK(pick(json, "anna", storage_budget_lfs_dialog(&g, 0x9A0000), p) == DIALOG_PICK_CHOSEN
+          && strcmp(p, "a-l.bin") == 0);
+    CHECK(pick(json, "anna", STORAGE_DIALOG_PLAIN_FS_MAX, p) == DIALOG_PICK_CHOSEN
+          && strcmp(p, "a-l.bin") == 0);
+    // Only s and l published (a locale whose m equals s): the C3 takes s.
+    snprintf(json, sizeof(json), "{\"speakers\":[{\"id\":\"anna\",\"sets\":["
+             BTIER("a-s.bin", 120000) "," BTIER("a-l.bin", 520000) "]}]}");
+    CHECK(pick(json, "anna", storage_budget_lfs_dialog(&g, 0xA0000), p) == DIALOG_PICK_CHOSEN
+          && strcmp(p, "a-s.bin") == 0);
 }
 
 int main(void)

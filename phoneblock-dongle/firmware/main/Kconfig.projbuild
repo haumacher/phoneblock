@@ -256,4 +256,22 @@ menu "PhoneBlock Dongle"
             walk is deferred while a call is streaming RTP and runs on
             the first tick afterwards instead.
 
+    config PHONEBLOCK_STORAGE_LITTLEFS
+        bool "Storage partition is LittleFS"
+        depends on IDF_TARGET_ESP32C3 || IDF_TARGET_ESP32S3
+        default n
+        help
+            Mount the "storage" partition (blocklists, localized packs,
+            announcements, the dialog clip set) as LittleFS instead of
+            SPIFFS. Set by sdkconfig.defaults.esp32c3 and
+            sdkconfig.defaults.esp32s3, whose partition tables
+            (partitions-c3.csv, partitions-16mb.csv) give the partition
+            the littlefs subtype. The classic ESP32 stays on SPIFFS
+            (partitions.csv): its dongles in the field cannot change the
+            partition table over the air.
+
+            Only these targets pull the joltwallet/littlefs component
+            (main/idf_component.yml) — hence the dependency. The storage
+            budget per filesystem: main/storage_budget.h.
+
 endmenu
