@@ -5,6 +5,10 @@
 #   ./scripts/release.sh             # full flow: build, stage, upload, flip channel(s)
 #   ./scripts/release.sh --stage     # build + stage to release/<version>/, no upload
 #   ./scripts/release.sh --dry-run   # all of the above + print scp/ssh commands
+#   ./scripts/release.sh -h | --help # this text
+#
+# The audio (announcements, dialog speakers) is not part of a release: it has
+# its own channel, published with ./scripts/audio-assets.sh (--help there).
 #
 # Version comes from `git describe --tags --match "dongle-v*"`. The working tree
 # must be clean and HEAD must sit exactly on a tag — between-tag builds (e.g.
@@ -61,6 +65,7 @@ MODE="full"
 case "${1:-}" in
     --stage)   MODE="stage"   ;;
     --dry-run) MODE="dry-run" ;;
+    -h|--help) sed -n '3,/^set -euo/p' "${BASH_SOURCE[0]}" | sed '$d; s/^# \{0,1\}//'; exit 0 ;;
     "")        MODE="full"    ;;
     *) echo "Unknown option: $1" >&2; exit 2 ;;
 esac
