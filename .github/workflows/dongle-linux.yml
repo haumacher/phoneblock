@@ -221,6 +221,7 @@ jobs:
           {
             echo "deb=$(phoneblock-dongle/debian/pb-version to-debian "$version")"
             echo "channel=$channel"
+            echo "epoch=$(date -u +%G-W%V)"
             echo "tags=$tags"
           } >> "$GITHUB_OUTPUT"
           echo "Publishing $tags"
@@ -256,7 +257,14 @@ jobs:
           context: phoneblock-dongle/docker
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           build-args: |
+            PHONEBLOCK_BASE_EPOCH=${{ steps.version.outputs.epoch }}
             PHONEBLOCK_VERSION=${{ steps.version.outputs.deb }}
             PHONEBLOCK_CHANNEL=${{ steps.version.outputs.channel }}
           push: true
           tags: ${{ steps.version.outputs.tags }}
+          # The base layer of the Dockerfile is the same for all releases of
+          # one week (PHONEBLOCK_BASE_EPOCH); the cache in the image repository
+          # carries it from one release to the next, so the emulated arm builds
+          # only install the package.
+          cache-from: type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache
+          cache-to: type=registry,ref=${{ env.DOCKER_IMAGE }}:buildcache,mode=max
