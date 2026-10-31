@@ -289,7 +289,8 @@ SPEAKER_ID_RE = re.compile(r"^[a-z][a-z0-9-]{0,15}$")
 
 
 def speakers():
-    """The speaker table: [{id, voice, gender}], the default first."""
+    """The speaker table: [{id, voice, gender[, langs]}], the default first.
+    A speaker with `langs` speaks only those locales; the default speaks all."""
     with open(SPEAKERS, encoding="utf-8") as f:
         table = json.load(f)
     rows = table["speakers"]
@@ -299,6 +300,8 @@ def speakers():
             sys.exit(f"{SPEAKERS}: bad speaker {s}")
     if len(set(ids)) != len(ids) or table.get("default") not in ids:
         sys.exit(f"{SPEAKERS}: duplicate ids or default not among {ids}")
+    if any("langs" in s for s in rows if s["id"] == table["default"]):
+        sys.exit(f"{SPEAKERS}: the default speaker must speak every language (no 'langs')")
     return sorted(rows, key=lambda s: s["id"] != table["default"])
 
 
@@ -446,6 +449,8 @@ def main():
         voice = voice_id(s["voice"], key) if key else s["voice"]   # --dry-run without a key
         speaker = {"voice": s["voice"], "voice_id": voice, "model": MODEL, "tempo": TEMPO}
         for lang in langs:
+            if lang not in s.get("langs", [lang]):
+                continue
             if not os.path.exists(os.path.join(L10N, f"dialog_{lang}.arb")):
                 print(f"{lang}: no dialog_{lang}.arb, skipped")
                 continue

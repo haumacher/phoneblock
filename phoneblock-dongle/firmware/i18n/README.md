@@ -99,8 +99,9 @@ The dialog sentences are an ARB project like the others
 language: a recorded "yes" can be abused as consent. `scripts/tts-dialog.py`
 speaks them through ElevenLabs (the API key from `ELEVENLABS_API_KEY` or
 `elevenlabs.apiKey` in `~/.gradle/gradle.properties`), once per speaker of
-`audio/dialog/speakers.json`: an id, an ElevenLabs voice (by name) and a
-gender, one voice for all languages. The model is fixed in the script
+`audio/dialog/speakers.json`: an id, an ElevenLabs voice (by name), a
+gender and optionally `langs`, the locales it speaks (default: all; the
+default speaker must speak all). The model is fixed in the script
 (`MODEL = "eleven_v4"`). Eleven v4 speaks slowly and ignores the API's speed
 setting, so the conversion speeds the master up locally (`TEMPO = 1.25`,
 pitch kept). Each clip is converted locally from its master: trimmed,
