@@ -10,3 +10,9 @@
 # (improv.c) would never get an answer. Make USJ the primary console;
 # improv.c follows CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG.
 CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y
+
+# Own partition table with a LittleFS storage partition (partitions-c3.csv):
+# no C3 dongle was in the field on the SPIFFS layout of the classic ESP32,
+# so the C3 starts out on LittleFS (main/storage.h, storage_budget.h).
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions-c3.csv"
+CONFIG_PHONEBLOCK_STORAGE_LITTLEFS=y

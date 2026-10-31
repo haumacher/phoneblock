@@ -8,7 +8,7 @@ CFLAGS  ?= -Wall -Wextra -Werror -O0 -g -I../main -I../core
 IDF_PATH ?= $(HOME)/tools/esp/esp-idf
 CJSON_DIR := $(IDF_PATH)/components/json/cJSON
 
-BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_rcpt test_name_filter test_version_cmp test_http_util test_net_local test_heap_guard test_platform_linux test_log_capture_linux test_time_sync_tz test_ota_manifest test_stats test_display_model test_display_probe test_storage_budget test_storage_sim test_storage_sim_16mb test_storage_hostfs test_vad test_dialog test_dialog_probe test_audio_manifest
+BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_rcpt test_name_filter test_version_cmp test_http_util test_net_local test_heap_guard test_platform_linux test_log_capture_linux test_time_sync_tz test_ota_manifest test_stats test_display_model test_display_probe test_storage_budget test_storage_sim test_storage_hostfs test_vad test_dialog test_dialog_probe test_audio_manifest
 
 test_sip_parse: test_sip_parse.c ../core/sip_parse.c ../core/sip_parse.h \
                 ../core/dial_rules.c ../core/dial_rules.h \
@@ -83,7 +83,8 @@ test_storage_budget: test_storage_budget.c ../main/storage_budget.c ../main/stor
 	$(CC) $(CFLAGS) test_storage_budget.c ../main/storage_budget.c -o $@
 
 # test_storage_sim runs the unmodified ESP-IDF SPIFFS core on a RAM flash
-# (spiffs_host/) with the dongle's geometry, read from the same files the
+# (spiffs_host/) with the classic ESP32's geometry (the C3 and the S3 are on
+# LittleFS), read from the same files the
 # firmware is built from: page size and GC budget from sdkconfig.defaults,
 # the partition size from partitions.csv. The core is third-party code, built
 # once with warnings off; storage.c / storage_budget.c are built with ours.
@@ -100,32 +101,12 @@ SPIFFS_CORE := spiffs_core_cache.o spiffs_core_check.o spiffs_core_gc.o \
 spiffs_core_%.o: $(SPIFFS_SRC)/spiffs_%.c spiffs_host/sdkconfig.h ../sdkconfig.defaults ../partitions.csv
 	$(CC) -O2 -g -w $(SIM_FLAGS) -c $< -o $@
 
-# The same on the 16 MB boards' layout (ESP32-S3): partitions-16mb.csv and
-# the GC budget sdkconfig.defaults.esp32s3 layers on top of the shared one.
-# The core takes the GC budget at compile time, so it is built a second time.
-SIM16_GCRUNS := $(or $(shell sed -n 's/^CONFIG_SPIFFS_GC_MAX_RUNS=//p' ../sdkconfig.defaults.esp32s3),$(SIM_GCRUNS))
-SIM16_PART   := $(shell awk -F, '$$1 ~ /^storage/ { gsub(/ /, "", $$5); print $$5 }' ../partitions-16mb.csv)
-SIM16_FLAGS  := -DCONFIG_SPIFFS_PAGE_SIZE=$(SIM_PAGE) -DCONFIG_SPIFFS_GC_MAX_RUNS=$(SIM16_GCRUNS) \
-                -DSIM_PART_SIZE=$(SIM16_PART) -Ispiffs_host -I$(SPIFFS_INC) -I$(SPIFFS_SRC)
-SPIFFS_CORE16 := $(SPIFFS_CORE:spiffs_core_%=spiffs_core16_%)
-
-spiffs_core16_%.o: $(SPIFFS_SRC)/spiffs_%.c spiffs_host/sdkconfig.h ../sdkconfig.defaults \
-                   ../sdkconfig.defaults.esp32s3 ../partitions-16mb.csv
-	$(CC) -O2 -g -w $(SIM16_FLAGS) -c $< -o $@
-
 test_storage_sim: test_storage_sim.c spiffs_host/spiffs_sim.c spiffs_host/spiffs_sim.h \
                   ../main/storage.c ../main/storage.h ../main/storage_budget.c \
                   ../main/storage_budget.h $(SPIFFS_CORE)
 	$(CC) $(CFLAGS) $(SIM_FLAGS) -DSTORAGE_UNLINK=sim_vfs_unlink \
 	    test_storage_sim.c spiffs_host/spiffs_sim.c ../main/storage.c \
 	    ../main/storage_budget.c $(SPIFFS_CORE) -o $@
-
-test_storage_sim_16mb: test_storage_sim.c spiffs_host/spiffs_sim.c spiffs_host/spiffs_sim.h \
-                       ../main/storage.c ../main/storage.h ../main/storage_budget.c \
-                       ../main/storage_budget.h $(SPIFFS_CORE16)
-	$(CC) $(CFLAGS) $(SIM16_FLAGS) -DSTORAGE_UNLINK=sim_vfs_unlink \
-	    test_storage_sim.c spiffs_host/spiffs_sim.c ../main/storage.c \
-	    ../main/storage_budget.c $(SPIFFS_CORE16) -o $@
 
 test_blocklist_lookup: test_blocklist_lookup.c ../main/blocklist_lookup.c ../main/blocklist_lookup.h
 	$(CC) $(CFLAGS) test_blocklist_lookup.c ../main/blocklist_lookup.c -o $@
@@ -285,6 +266,6 @@ test-linux: linux-firmware phoneblock_linux $(LINUX_BINS)
 
 # The Linux build products are removed by the clean:: rule of ../linux/Makefile.
 clean::
-	rm -f $(BINS) $(LINUX_BINS) cjson.o $(SPIFFS_CORE) $(SPIFFS_CORE16)
+	rm -f $(BINS) $(LINUX_BINS) cjson.o $(SPIFFS_CORE)
 
 .PHONY: linux-firmware phoneblock_linux test test-linux clean

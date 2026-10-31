@@ -1,0 +1,21 @@
+# Name,     Type, SubType, Offset,    Size
+# Layout for the ESP32-C3 (4 MB flash, "C3 Super Mini"), selected by
+# sdkconfig.defaults.esp32c3. The classic ESP32 keeps partitions.csv (see
+# there for the history of the shared parts); this table differs in two
+# places, possible because no C3 dongle was in the field before it:
+#   - storage: LittleFS (data subtype 0x83, CONFIG_PHONEBLOCK_STORAGE_LITTLEFS)
+#     instead of SPIFFS, same 640 KB. LittleFS has no SPIFFS-style
+#     write amplification or GC rotation, so the same partition takes the
+#     M dialog tier (main/storage_budget.h) and formats in milliseconds
+#     on a first boot.
+#   - coredump: 56 KB from 0x12000, taking in the 4 KB gap that the
+#     dropped "pairing" partition left on the classic layout.
+# The app slots stay as on the classic ESP32: the C3 image fills them to
+# ~93 %.
+nvs,        data, nvs,      0x9000,    0x6000
+otadata,    data, ota,      0xf000,    0x2000
+phy_init,   data, phy,      0x11000,   0x1000
+coredump,   data, coredump, 0x12000,   0xE000
+ota_0,      app,  ota_0,    0x20000,   0x1A0000
+ota_1,      app,  ota_1,    0x1C0000,  0x1A0000
+storage,    data, littlefs, 0x360000,  0xA0000

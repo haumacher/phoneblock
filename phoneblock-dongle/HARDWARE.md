@@ -268,7 +268,8 @@ APA102-RGB-LED (GPIO 40 Daten, GPIO 39 Takt, BGR). Das 0,96″-Display
 Bitmap aus `scripts/gen-lcd-logo.py`), die Hintergrundbeleuchtung (GPIO 38,
 active-low, PWM) wird nach einer Minute gedimmt. Der SD-Slot bleibt
 ungenutzt. Eigene Partitionstabelle für die 16 MB
-Flash: `firmware/partitions-16mb.csv`. Gemessen: 178 KB freier Heap im
+Flash: `firmware/partitions-16mb.csv` (der ganze Rest des Flashs, ~9,6 MB, ist
+eine LittleFS-Datenpartition). Gemessen: 178 KB freier Heap im
 Betrieb, Chip-Temperatur ~57 °C.
 
 ## Offene Hardware-Punkte

@@ -1,4 +1,11 @@
 dependencies:
   espressif/mdns: "^1.3.0"
   espressif/esp_libsrtp: "^1.0.0"
+  # LittleFS for the storage partition of the C3 and the S3
+  # (CONFIG_PHONEBLOCK_STORAGE_LITTLEFS); the classic ESP32 stays on SPIFFS
+  # and must not pull it. Pinned to the 1.22 line.
+  joltwallet/littlefs:
+    version: "~1.22.3"
+    rules:
+      - if: "target in [esp32c3, esp32s3]"
   idf: ">=5.3"

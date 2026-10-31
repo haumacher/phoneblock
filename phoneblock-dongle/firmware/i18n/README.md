@@ -228,9 +228,9 @@ on the CDN untouched. Releases from now on carry only the string packs.
 ### Dialog sets: one file, size tiers
 
 The dialog clips of a locale are published as **one file** per size tier — on
-the dongle's SPIFFS every file costs index pages and GC relocations, and many
-small files drove the storage simulator (`test/test_storage_sim.c`) into GC
-failures that one file of the same size does not. The file starts with its
+the classic ESP32's SPIFFS every file costs index pages and GC relocations,
+and many small files drove the storage simulator (`test/test_storage_sim.c`)
+into GC failures that one file of the same size does not. The file starts with its
 clip table (header format in `main/dialog.h`: magic `PBDS`, version, the
 clips per phase and each clip's offset and length), covered by the same
 SHA-256 as the audio after it.
@@ -242,14 +242,16 @@ order that fits its limit — first clip 1 of every phase, then the further
 
 | Tier | Limit | For |
 |------|-------|-----|
-| `s` | 128 KiB (`STORAGE_DIALOG_TIER_S`) | 4 MB boards, 640 KB storage partition |
-| `m` | 224 KiB (`STORAGE_DIALOG_TIER_M`) | 16 MB boards (ESP32-S3), 1 MB storage partition |
-| `l` | all clips | the Linux port |
+| `s` | 128 KiB (`STORAGE_DIALOG_TIER_S`) | classic ESP32, 640 KB SPIFFS partition |
+| `m` | 320 KiB (`STORAGE_DIALOG_TIER_M`) | ESP32-C3, 640 KB LittleFS partition |
+| `l` | all clips | ESP32-S3 (~9.6 MB LittleFS) and the Linux port |
 
 A tier with the same clips as a smaller one is not published; a locale whose
 minimum set (one clip per phase) exceeds `s` stops the publish. The limits are
-read from `main/storage_budget.h`, where the simulation that validates them is
-described.
+read from `main/storage_budget.h`, where they are derived: `s` validated by
+the SPIFFS simulation, `m` computed for the C3's LittleFS partition so that a
+128 KB community list stays next to it. A device's tier follows from its
+filesystem and partition size (`storage_dialog_budget()`).
 
 **Speakers.** Every speaker of `audio/dialog/speakers.json` that has all
 clips of a locale is published for it; the `default` speaker comes first and

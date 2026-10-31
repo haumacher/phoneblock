@@ -71,12 +71,12 @@ the #460 i18n decision.
    Linux port, so each locale is published in up to three tiers, each the
    longest prefix of one priority order that fits: clip 1 of every phase
    first, then the further questions, cant-hear-you, am-aparat, hello and
-   who-is-there clips. `s` ≤ 128 KiB (640 KB partition of the 4 MB boards),
-   `m` ≤ 224 KiB (1 MB partition of the 16 MB boards), `l` = all clips (Linux).
-   Both limits are validated by the storage simulator on their partition
-   (`storage_budget.h`); the 1 MB layout needs the SPIFFS GC budget raised to
-   256 runs (`sdkconfig.defaults.esp32s3`). The device's budget is a pure
-   function of the partition (`storage_budget_dialog()`); it takes the largest
+   who-is-there clips. `s` ≤ 128 KiB (640 KB SPIFFS of the classic ESP32),
+   `m` ≤ 320 KiB (640 KB LittleFS of the ESP32-C3), `l` = all clips (the
+   S3's ~9.6 MB LittleFS, Linux). `s` is validated by the SPIFFS storage
+   simulator, `m` derived for the C3's LittleFS (`storage_budget.h`, #674).
+   The device's budget is a pure
+   function of the filesystem and partition (`storage_dialog_budget()`); it takes the largest
    tier within it, **as a whole** from the first locale in the
    `ui_lang → en → de` chain that has one, never mixed across languages. In
    the manifest `assets.<lang>.dialog` is the list of tiers `{path, sha256,
