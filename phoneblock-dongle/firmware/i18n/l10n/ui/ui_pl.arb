@@ -267,6 +267,7 @@
   "status.dialog.own.leave_confirm": "Po przejściu do trybu komunikatów Twój własny tekst dialogowy zostanie usunięty. Czy chcesz kontynuować?",
   "status.dialog.own.leave_download": "Czy chcesz wcześniej pobrać swój dialog jako plik?",
   "status.dialog.edit.title": "Stwórz własny dialog",
+  "status.dialog.edit.intro": "Zaczynasz od fraz zapisanych na kluczu sprzętowym. Usuń nagrania lub dodaj nowe (WAV/MP3/OGG); każde z nich zostanie wyrównane pod względem głośności, a cisza na początku i końcu zostanie usunięta. Każda faza wymaga co najmniej jednej frazy, a klucz sprzętowy wybiera ją losowo.",
   "status.dialog.edit.yes_hint": "Nigdy nie nagrywaj słowa „tak”: nagrane „tak” może zostać wykorzystane jako wyrażenie zgody.",
   "status.dialog.phase.hello": "Powitanie",
   "status.dialog.phase.who-is-there": "Po powitaniu („Kto tam?”) rozmówca milczy",
@@ -281,9 +282,10 @@
   "status.dialog.edit.load_file": "Wczytaj plik dialogowy",
   "status.dialog.edit.reason.empty": "Faza „{phase}” nie ma jeszcze żadnego nagrania.",
   "status.dialog.edit.reason.many": "Faza „{phase}” zawiera ponad {max} ujęć.",
-  "status.dialog.edit.reason.size": "Okno dialogowe jest większe niż miejsce na kluczu USB – usuń lub skróć nagrania.",
+  "status.dialog.edit.reason.size": "Łączna wielkość nagrań przekracza pojemność klucza USB – usuń lub skróć nagrania.",
   "status.dialog.edit.bad_file": "To nie jest prawidłowy plik dialogowy.",
   "status.dialog.edit.no_set": "Na pendrive’ie nie ma jeszcze dialogów – dodaj nagrania dla każdej fazy.",
+  "status.dialog.edit.reload": "Odrzuć i załaduj ponownie",
   "status.dialog.edit.done": "Zapisano własny dialog ({kb} KB).",
   "hero.title": "Wyposażenie",
   "hero.intro": "Dwa kroki – a Twój klucz sprzętowy zacznie automatycznie blokować niechciane połączenia. Zaznacz obie opcje – dopiero wtedy urządzenie będzie gotowe do użycia.",
@@ -430,5 +432,5 @@
   "spam.dialog.comment": "Powód",
   "spam.dialog.comment.hint": "(opcjonalnie, będzie widoczne publicznie)",
   "spam.dialog.error.is_contact": "Ten numer znajduje się w Twojej książce telefonicznej. Wpis w książce telefonicznej ma zawsze pierwszeństwo w przypadku klucza sprzętowego, dlatego w tym przypadku nie jest możliwe zgłoszenie spamu.",
-  "status.dialog.edit.intro": "Zaczynasz od fraz zapisanych na kluczu sprzętowym. Usuń nagrania lub dodaj nowe (WAV/MP3/OGG); każde z nich zostanie wyrównane pod względem głośności, a cisza na początku i końcu zostanie usunięta. Każda faza wymaga co najmniej jednej frazy, a klucz sprzętowy wybiera ją losowo."
+  "status.dialog.edit.changed": "Na pendrive'ie znajdują się teraz inne nagrania (zmieniono język lub głos). Twoje zmiany wprowadzone w edytorze nie zostały jeszcze przesłane."
 }

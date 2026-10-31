@@ -1410,10 +1410,10 @@
     "description": "Dongle web UI: why the upload is disabled — too many recordings in a phase; {phase} is the phase name, {max} the limit",
     "x-translated": "9310fd8d"
   },
-  "status.dialog.edit.reason.size": "Der Dialog ist größer als der Platz auf dem Dongle – lösche oder kürze Aufnahmen.",
+  "status.dialog.edit.reason.size": "Die Aufnahmen sind zusammen größer als der Platz auf dem Dongle – lösche oder kürze Aufnahmen.",
   "@status.dialog.edit.reason.size": {
     "description": "Dongle web UI: why the upload is disabled — the dialog set does not fit the device",
-    "x-translated": "7e361522"
+    "x-translated": "e10d2a9c"
   },
   "status.dialog.edit.bad_file": "Das ist keine gültige Dialog-Datei.",
   "@status.dialog.edit.bad_file": {
@@ -1424,6 +1424,16 @@
   "@status.dialog.edit.no_set": {
     "description": "Dongle web UI: the editor starts empty because the device has no dialog set yet",
     "x-translated": "8772cd59"
+  },
+  "status.dialog.edit.changed": "Auf dem Dongle liegen jetzt andere Aufnahmen (Sprache oder Stimme gewechselt). Deine Bearbeitung im Editor ist noch nicht hochgeladen.",
+  "@status.dialog.edit.changed": {
+    "description": "Dongle web UI: the dialog set on the device changed (language or speaker switch) while the editor holds edits not yet uploaded",
+    "x-translated": "13d2172a"
+  },
+  "status.dialog.edit.reload": "Verwerfen und neu laden",
+  "@status.dialog.edit.reload": {
+    "description": "Dongle web UI: button that drops the editor's unsaved edits and loads the set now on the device",
+    "x-translated": "42e756d2"
   },
   "status.dialog.edit.done": "Eigener Dialog gespeichert ({kb} KB).",
   "@status.dialog.edit.done": {

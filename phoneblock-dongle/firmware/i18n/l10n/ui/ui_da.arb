@@ -267,6 +267,7 @@
   "status.dialog.own.leave_confirm": "Når du skifter til meddelelsesmodus, slettes din egen dialog. Vil du fortsætte?",
   "status.dialog.own.leave_download": "Vil du gerne downloade din dialog som en fil på forhånd?",
   "status.dialog.edit.title": "Udarbejde sin egen dialog",
+  "status.dialog.edit.intro": "Du starter med de sætninger, der er på donglen. Slet optagelser eller tilføj nye (WAV/MP3/OGG); hver enkelt justeres til samme lydstyrke, og stilhed i enderne fjernes. Hver fase kræver mindst ét sæt, og donglen vælger tilfældigt blandt disse.",
   "status.dialog.edit.yes_hint": "Optag aldrig et »ja«: Et optaget »ja« kan misbruges som samtykke.",
   "status.dialog.phase.hello": "Velkomst",
   "status.dialog.phase.who-is-there": "Den, der ringer, forbliver tavs efter hilsenen („Hvem er det?“)",
@@ -281,9 +282,10 @@
   "status.dialog.edit.load_file": "Indlæs dialogfil",
   "status.dialog.edit.reason.empty": "Fasen „{phase}“ har endnu ingen optagelse.",
   "status.dialog.edit.reason.many": "Fasen „{phase}“ har mere end {max} optagelser.",
-  "status.dialog.edit.reason.size": "Dialogboksen fylder mere end pladsen på donglen – slet eller forkort optagelserne.",
+  "status.dialog.edit.reason.size": "Optagelserne fylder tilsammen mere end der er plads på donglen – slet eller forkort optagelserne.",
   "status.dialog.edit.bad_file": "Dette er ikke en gyldig dialogfil.",
   "status.dialog.edit.no_set": "Der er endnu ingen dialog på donglen – tilføj optagelser for hver fase.",
+  "status.dialog.edit.reload": "Annuller og genindlæs",
   "status.dialog.edit.done": "Egen dialog gemt ({kb} KB).",
   "hero.title": "Indretning",
   "hero.intro": "To trin, så blokerer din dongle automatisk spamopkald. Markér begge, først derefter er enheden klar til brug.",
@@ -430,5 +432,5 @@
   "spam.dialog.comment": "Begrundelse",
   "spam.dialog.comment.hint": "(valgfrit, bliver synligt for offentligheden)",
   "spam.dialog.error.is_contact": "Denne opkalder er gemt i din telefonbog. En telefonbogsoplysning har altid forrang på donglen, og derfor er det ikke muligt at markere opkaldet som spam her.",
-  "status.dialog.edit.intro": "Du starter med de sætninger, der er på donglen. Slet optagelser eller tilføj nye (WAV/MP3/OGG); hver enkelt justeres til samme lydstyrke, og stilhed i enderne fjernes. Hver fase kræver mindst ét sæt, og donglen vælger tilfældigt blandt disse."
+  "status.dialog.edit.changed": "Der er nu andre optagelser på donglen (sprog eller stemme er ændret). Din redigering i editoren er endnu ikke uploadet."
 }

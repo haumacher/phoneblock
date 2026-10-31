@@ -267,6 +267,7 @@
   "status.dialog.own.leave_confirm": "När du växlar till meddelandeläge raderas din egen dialog. Vill du fortsätta?",
   "status.dialog.own.leave_download": "Vill du ladda ner din dialog som en fil i förväg?",
   "status.dialog.edit.title": "Skapa en egen dialogruta",
+  "status.dialog.edit.intro": "Du börjar med de meningar som finns på dongeln. Radera inspelningar eller lägg till nya (WAV/MP3/OGG); alla justeras till samma volym och tystnaden i början och slutet tas bort. Varje fas kräver minst en mening, och dongeln väljer slumpmässigt bland dessa.",
   "status.dialog.edit.yes_hint": "Spela aldrig in ett ”ja”: Ett inspelat ”ja” kan missbrukas som ett samtycke.",
   "status.dialog.phase.hello": "Välkomsthälsning",
   "status.dialog.phase.who-is-there": "Den som ringer är tyst efter hälsningen (”Vem är det?”)",
@@ -281,9 +282,10 @@
   "status.dialog.edit.load_file": "Ladda dialogfil",
   "status.dialog.edit.reason.empty": "Fasen ”{phase}” har ännu ingen inspelning.",
   "status.dialog.edit.reason.many": "Fasen ”{phase}” har fler än {max} bilder.",
-  "status.dialog.edit.reason.size": "Dialogrutan är större än utrymmet på dongeln – radera eller korta ner inspelningarna.",
+  "status.dialog.edit.reason.size": "Filmerna tar tillsammans mer plats än vad som finns på dongeln – radera eller klipp ner filmerna.",
   "status.dialog.edit.bad_file": "Det här är ingen giltig dialogfil.",
   "status.dialog.edit.no_set": "Det finns ännu ingen dialog på dongeln – lägg till inspelningar för varje fas.",
+  "status.dialog.edit.reload": "Avbryt och ladda om",
   "status.dialog.edit.done": "Egen dialogruta sparad ({kb} KB).",
   "hero.title": "Inredning",
   "hero.intro": "Två steg, sedan blockerar din dongel automatiskt skräpsamtal. Kryssa i båda rutorna – först då är enheten klar att användas.",
@@ -430,5 +432,5 @@
   "spam.dialog.comment": "Motivering",
   "spam.dialog.comment.hint": "(valfritt, visas offentligt)",
   "spam.dialog.error.is_contact": "Den här uppringaren finns i din telefonbok. En telefonboksuppgift har alltid företräde på dongeln, därför kan det inte vara ett spam-samtal i det här fallet.",
-  "status.dialog.edit.intro": "Du börjar med de meningar som finns på dongeln. Radera inspelningar eller lägg till nya (WAV/MP3/OGG); alla justeras till samma volym och tystnaden i början och slutet tas bort. Varje fas kräver minst en mening, och dongeln väljer slumpmässigt bland dessa."
+  "status.dialog.edit.changed": "Det finns nu andra inspelningar på dongeln (språket eller rösten har ändrats). Din redigering i redigeringsprogrammet har ännu inte laddats upp."
 }

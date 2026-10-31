@@ -267,6 +267,7 @@
   "status.dialog.own.leave_confirm": "Passando alla modalità di annuncio, il tuo dialogo verrà cancellato. Vuoi continuare?",
   "status.dialog.own.leave_download": "Vuoi scaricare prima il tuo dialogo come file?",
   "status.dialog.edit.title": "Creare una finestra di dialogo personalizzata",
+  "status.dialog.edit.intro": "Si inizia con le frasi presenti sul dongle. È possibile eliminare registrazioni o aggiungerne di nuove (WAV/MP3/OGG); ciascuna verrà regolata allo stesso volume e i silenzi alle estremità verranno rimossi. Ogni fase richiede almeno una frase, che il dongle seleziona in modo casuale.",
   "status.dialog.edit.yes_hint": "Non registrare mai un “sì”: un “sì” registrato può essere utilizzato in modo improprio come consenso.",
   "status.dialog.phase.hello": "Saluto di benvenuto",
   "status.dialog.phase.who-is-there": "Dopo il saluto iniziale (“Chi parla?”), il chiamante rimane in silenzio",
@@ -281,9 +282,10 @@
   "status.dialog.edit.load_file": "Carica file di dialogo",
   "status.dialog.edit.reason.empty": "La fase “{phase}” non ha ancora alcuna registrazione.",
   "status.dialog.edit.reason.many": "La fase “{phase}” contiene più di {max} registrazioni.",
-  "status.dialog.edit.reason.size": "La finestra di dialogo occupa più spazio di quello disponibile sul dongle: elimina o accorcia le registrazioni.",
+  "status.dialog.edit.reason.size": "Le registrazioni occupano complessivamente più spazio di quello disponibile sulla chiavetta USB: elimina o accorcia le registrazioni.",
   "status.dialog.edit.bad_file": "Questo non è un file di dialogo valido.",
   "status.dialog.edit.no_set": "Sul dongle non c'è ancora alcuna finestra di dialogo: aggiungi le registrazioni per ogni fase.",
+  "status.dialog.edit.reload": "Elimina e ricarica",
   "status.dialog.edit.done": "Dialogo personalizzato salvato ({kb} KB).",
   "hero.title": "Arredamento",
   "hero.intro": "Due passaggi e il tuo dongle bloccherà automaticamente le chiamate spam. Spunta entrambe le caselle: solo allora il dispositivo sarà pronto all'uso.",
@@ -430,5 +432,5 @@
   "spam.dialog.comment": "Motivo",
   "spam.dialog.comment.hint": "(facoltativo, sarà visibile pubblicamente)",
   "spam.dialog.error.is_contact": "Questo numero è presente nella tua rubrica. Una voce della rubrica ha sempre la precedenza sul dongle, pertanto in questo caso non è possibile segnalare lo spam.",
-  "status.dialog.edit.intro": "Si inizia con le frasi presenti sul dongle. È possibile eliminare registrazioni o aggiungerne di nuove (WAV/MP3/OGG); ciascuna verrà regolata allo stesso volume e i silenzi alle estremità verranno rimossi. Ogni fase richiede almeno una frase, che il dongle seleziona in modo casuale."
+  "status.dialog.edit.changed": "Sul dongle sono ora presenti altre registrazioni (lingua o voce modificate). Le modifiche apportate nell'editor non sono ancora state caricate."
 }

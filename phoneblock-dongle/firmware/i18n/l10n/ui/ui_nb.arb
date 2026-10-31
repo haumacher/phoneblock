@@ -267,6 +267,7 @@
   "status.dialog.own.leave_confirm": "Når du bytter til kunngjøringsmodus, blir din egen dialog slettet. Vil du fortsette?",
   "status.dialog.own.leave_download": "Vil du laste ned dialogen din som en fil på forhånd?",
   "status.dialog.edit.title": "Lage din egen dialog",
+  "status.dialog.edit.intro": "Du starter med setningene som ligger på dongelen. Slett opptak eller legg til nye (WAV/MP3/OGG); hvert opptak justeres til samme lydnivå, og stillheten i endene fjernes. Hver fase trenger minst én setning, og dongelen velger en tilfeldig blant disse.",
   "status.dialog.edit.yes_hint": "Du må aldri ta opp et «ja»: Et innspilt «ja» kan misbrukes som samtykke.",
   "status.dialog.phase.hello": "Velkomst",
   "status.dialog.phase.who-is-there": "Den som ringer, forblir taus etter hilsenen («Hvem er det?»)",
@@ -281,9 +282,10 @@
   "status.dialog.edit.load_file": "Last inn dialogfil",
   "status.dialog.edit.reason.empty": "Fasen «{phase}» har foreløpig ingen opptak.",
   "status.dialog.edit.reason.many": "Fasen «{phase}» har mer enn {max} opptak.",
-  "status.dialog.edit.reason.size": "Dialogboksen er større enn plassen på dongelen – slett eller kort ned opptakene.",
+  "status.dialog.edit.reason.size": "Opptakene tar til sammen mer plass enn det som er ledig på dongelen – slett eller kort ned opptakene.",
   "status.dialog.edit.bad_file": "Dette er ikke en gyldig dialogfil.",
   "status.dialog.edit.no_set": "Det er ennå ingen dialog på dongelen – legg til opptak for hver fase.",
+  "status.dialog.edit.reload": "Avbryt og last inn på nytt",
   "status.dialog.edit.done": "Egen dialog er lagret ({kb} KB).",
   "hero.title": "Innredning",
   "hero.intro": "To trinn, så blokkerer dongelen din automatisk spam-samtaler. Kryss av for begge, først da er enheten klar til bruk.",
@@ -430,5 +432,5 @@
   "spam.dialog.comment": "Årsak",
   "spam.dialog.comment.hint": "(valgfritt, blir synlig for alle)",
   "spam.dialog.error.is_contact": "Denne innringeren står oppført i telefonboken din. En oppføring i telefonboken har alltid forrang på dongelen, og derfor er det ikke mulig å motta en spam-melding her.",
-  "status.dialog.edit.intro": "Du starter med setningene som ligger på dongelen. Slett opptak eller legg til nye (WAV/MP3/OGG); hvert opptak justeres til samme lydnivå, og stillheten i endene fjernes. Hver fase trenger minst én setning, og dongelen velger en tilfeldig blant disse."
+  "status.dialog.edit.changed": "Det ligger nå andre opptak på dongelen (språk eller stemme er endret). Redigeringene dine i redigeringsprogrammet er ennå ikke lastet opp."
 }
