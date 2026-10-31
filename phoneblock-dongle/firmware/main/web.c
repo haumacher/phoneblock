@@ -392,7 +392,7 @@ static void add_system_load(cJSON *root)
     cJSON_AddNumberToObject(sys, "largest_free_block",
                             (double)heap_caps_get_largest_free_block(MALLOC_CAP_DEFAULT));
 
-    // Data-partition ("storage", SPIFFS or LittleFS, storage.h) usage. The
+    // Data-partition ("storage", LittleFS, storage.h) usage. The
     // blocklist cache, the announcement blob, the packs, the dialog set and
     // the temp files used during sync all share this one mount; surface the
     // live free-byte count here for field diagnosis.
@@ -1106,7 +1106,7 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
 
     // UI/content locale: accept only a well-formed code (validated the same
     // way the getter clamps on read), so a malformed POST can never write a
-    // value that the asset-URL / SPIFFS-filename builder would have to
+    // value that the asset-URL / file-name builder would have to
     // defend against. An unrecognised value is ignored (left unchanged).
     const char *ui_lang = (have_ui_lang && config_lang_code_valid(ui_lang_s))
                           ? ui_lang_s : NULL;
@@ -1993,7 +1993,7 @@ static web_http_error_t handle_announcement_get(web_http_request_t *req)
     web_http_set_header(req, "Cache-Control", "no-store");
 
     // Stream the announcement in chunks straight from its source (flash
-    // RODATA for the default, SPIFFS for a custom one) so we never hold
+    // RODATA for the default, the storage partition for a custom one) so we never hold
     // the whole ~240 KB blob in a heap buffer.
     uint8_t buf[1024];
     size_t n;
@@ -2018,7 +2018,7 @@ extern const char ui_en_json_end[]   asm("_binary_ui_en_json_end");
 #endif
 
 // GET /api/i18n/ui — serves the UI translation pack for the active ui_lang.
-// If i18n_sync has downloaded one to SPIFFS, serve that (same-origin, so a
+// If i18n_sync has downloaded one to the storage partition, serve that (same-origin, so a
 // configured dongle needs no CDN at runtime); otherwise serve the baked-in
 // English fallback. Never 404s — the browser always gets a usable dict. No
 // auth: the page needs this to render, possibly before login.
@@ -2087,7 +2087,7 @@ static int upload_recv(web_http_request_t *req, char *buf, int want,
 // POST /api/announcement — replaces the current announcement with the
 // request body. Body is raw A-law bytes (8 kHz mono, no header); the
 // UI does the WAV/MP3/OGG → A-law conversion via the browser's Web
-// Audio API before uploading. Streamed straight into SPIFFS via the
+// Audio API before uploading. Streamed straight into the storage partition via the
 // announcement_write_* API so we don't hold the full 240 KB on heap.
 static web_http_error_t handle_announcement_post(web_http_request_t *req)
 {
@@ -2119,8 +2119,8 @@ static web_http_error_t handle_announcement_post(web_http_request_t *req)
         return WEB_HTTP_OK;
     }
 
-    // 8 KB chunks on the heap: bigger batches keep SPIFFS flushes
-    // coarse and the httpd-worker stack uncluttered.
+    // 8 KB chunks on the heap: bigger batches keep the filesystem's write
+    // calls coarse and the httpd-worker stack uncluttered.
     const int CHUNK = 8192;
     char *chunk = malloc(CHUNK);
     if (!chunk) {
@@ -2147,12 +2147,12 @@ static web_http_error_t handle_announcement_post(web_http_request_t *req)
         if (announcement_write_append((const uint8_t *)chunk, n) != PB_OK) {
             free(chunk);
             announcement_write_abort();
-            send_fail(req, "SPIFFS write failed.");
+            send_fail(req, "Storage write failed.");
             return WEB_HTTP_OK;
         }
         write_us += pb_monotonic_us() - ws;
         got += n;
-        // Up to 240 KB audio blob; SPIFFS write latency plus the
+        // Up to 240 KB audio blob; flash write latency plus the
         // browser upload can push this past CONFIG_ESP_TASK_WDT_TIMEOUT_S
         // on a slow link. Same rationale as the firmware upload handler.
         pb_watchdog_reset();

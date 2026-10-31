@@ -1,7 +1,6 @@
 // Host-filesystem backend of storage.c (the Linux port's STORAGE_HOSTFS
-// build): budget from statvfs, no-op GC, the shared write-buffer file
-// discipline, storage_download()'s GC-retry discipline and the unlimited
-// dialog budget.
+// build): budget from statvfs, the shared write-buffer file discipline,
+// storage_download()'s retry discipline and the unlimited dialog budget.
 //
 // The data directory is a fresh temp directory: -DPHONEBLOCK_DATA_DIR (see
 // the Makefile rule) reads it from PB_HOSTFS_TEST_DIR, which main() sets, so
@@ -27,24 +26,20 @@ bool blocklist_sync_evict_community(void)
 // Failures the storage_download() retry discipline is exercised with.
 static int s_attempts;
 
-static storage_dl_t full_then_ok(void *ctx, size_t *bytes,
-                                 char *err, size_t err_cap)
+static storage_dl_t full_then_ok(void *ctx, char *err, size_t err_cap)
 {
     (void)ctx;
     s_attempts++;
     if (s_attempts == 1) {
-        *bytes = 1234;
         snprintf(err, err_cap, "full");
-        return STORAGE_DL_FULL;   // worth the GC+retry
+        return STORAGE_DL_FULL;   // worth the retry
     }
     return STORAGE_DL_OK;
 }
 
-static storage_dl_t always_failed(void *ctx, size_t *bytes,
-                                  char *err, size_t err_cap)
+static storage_dl_t always_failed(void *ctx, char *err, size_t err_cap)
 {
     (void)ctx;
-    (void)bytes;
     s_attempts++;
     snprintf(err, err_cap, "plain failure");
     return STORAGE_DL_FAILED;   // a retry would only repeat it
@@ -83,9 +78,6 @@ int main(void)
     REQUIRE(access(replaces, F_OK) == 0);
     unlink(replaces);
 
-    // storage_gc() is a no-op on a plain filesystem.
-    storage_gc("test", 1 << 20);
-
     // The shared write-buffer discipline: several small writes land as one
     // file, and close flushes the tail.
     storage_file_t file;
@@ -101,8 +93,8 @@ int main(void)
     REQUIRE(memcmp(buf, "abcdef", 6) == 0);
     unlink(path);
 
-    // storage_download() retries exactly once after STORAGE_DL_FULL (the GC
-    // pass in between is the hostfs no-op), and never after a plain failure.
+    // storage_download() retries exactly once after STORAGE_DL_FULL, and
+    // never after a plain failure.
     char err[64];
     s_attempts = 0;
     REQUIRE(storage_download("test", full_then_ok, NULL, err, sizeof(err)));

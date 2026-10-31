@@ -92,10 +92,15 @@ idf.py set-target esp32
 idf.py build
 ```
 
+Die Speicherpartition (Sperrlisten, Sprachpakete, Ansagen, Dialogsätze) ist
+auf allen Boards LittleFS (`main/storage.h`). Ein ESP32, der mit SPIFFS aus
+1.6 oder älter kommt, formatiert sie beim ersten Start von 1.7 neu (eine
+Warnung im Protokoll); die Partitionstabelle bleibt dabei unverändert.
+
 ESP32-C3 (z.B. "C3 Super Mini") in einem eigenen Build-Verzeichnis, damit
 die ESP32-Konfiguration unangetastet bleibt; die C3-spezifischen Defaults
 (Konsole/Improv über den eingebauten USB-Serial-JTAG, Status-LED GPIO 8,
-eigene Partitionstabelle `partitions-c3.csv` mit 640 KB LittleFS statt SPIFFS)
+eigene Partitionstabelle `partitions-c3.csv`, 56-KB-Coredump-Partition)
 liegen in `sdkconfig.defaults.esp32c3`:
 
 ```bash

@@ -45,8 +45,8 @@ static const char *TAG = "i18nsync";
 #define SPIFFS_DIR       PHONEBLOCK_DATA_DIR
 #endif
 #define DOWNLOAD_CHUNK   1024
-// Temp file path next to an asset: SPIFFS names are short, a Linux data
-// directory can be anywhere.
+// Temp file path next to an asset: paths on the device are short, a Linux
+// data directory can be anywhere.
 #ifdef ESP_PLATFORM
 #define TMP_PATH_CAP     80
 #else
@@ -223,8 +223,7 @@ typedef struct {
 
 // One download attempt of an asset into its temp file, SHA-256 checked
 // (storage_attempt_fn). Removes the temp file again on any failure.
-static storage_dl_t download_to_tmp(void *ctx, size_t *bytes,
-                                    char *err, size_t err_cap)
+static storage_dl_t download_to_tmp(void *ctx, char *err, size_t err_cap)
 {
     const asset_dl_t *a = ctx;
     storage_dl_t result = STORAGE_DL_FAILED;
@@ -259,10 +258,8 @@ static storage_dl_t download_to_tmp(void *ctx, size_t *bytes,
             goto out;
         }
         // The assets have precedence over the community blocklist cache on
-        // the shared partition (storage.h); then make the whole file
-        // writable before the first byte arrives.
+        // the shared partition (storage.h).
         storage_make_room((size_t)content_length, a->final_path);
-        storage_gc(a->tmp_path, (size_t)content_length);
     }
 
     char buf[DOWNLOAD_CHUNK];
@@ -315,7 +312,6 @@ out:
     storage_file_close(&out);
     pb_sha256_destroy(sha);
     unlink(a->tmp_path);
-    *bytes = (size_t)(content_length > 0 ? content_length : total);
     return result;
 }
 
@@ -341,11 +337,8 @@ static bool download_verify_rename(const char *url, const char *final_path,
         return false;
     }
 
-    // SPIFFS has no atomic replace: rename() onto an existing name fails, so
-    // drop the live file first (same reasoning as blocklist_sync.c). The
-    // window without a file is harmless — the announcement just falls back
-    // to silence until the rename lands.
-    unlink(final_path);
+    // rename() replaces the live file atomically (LittleFS, a plain
+    // filesystem): the old copy stays readable until the new one is in place.
     if (rename(tmp_path, final_path) != 0) {
         snprintf(err, err_cap, "rename: %s", strerror(errno));
         unlink(tmp_path);
@@ -379,7 +372,7 @@ static void prune_stale(const char *keep_lang)
     if (!d) return;
     struct dirent *e;
     while ((e = readdir(d)) != NULL) {
-        // readdir on SPIFFS yields the basename; match against the localized
+        // readdir yields the basename; match against the localized
         // announcement / mail-pack naming. The user-uploaded custom file
         // "announcement.alaw" has no "-<lang>" and never matches.
         bool stale =
@@ -756,7 +749,7 @@ static void run_once(void)
     // Prune the PREVIOUS locale's assets BEFORE downloading the new ones. The
     // storage partition (~640 KB, shared with the blocklist) cannot hold two
     // locales at once — an announcement alone is ~80-96 KB — so downloading
-    // first and pruning last overflowed SPIFFS mid-switch (fwrite short), which
+    // first and pruning last overflowed the partition mid-switch (fwrite short), which
     // left the new UI/mail pack half-written and falling back to English. Now
     // peak usage is one locale's assets. On-disk SHAs matching the manifest are
     // still skipped inside sync_kind_chain, so a no-op re-sync re-downloads

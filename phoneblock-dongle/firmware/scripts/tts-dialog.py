@@ -90,11 +90,21 @@ MODEL = "eleven_v4"
 TEMPO = 1.25
 
 # Most bytes the minimum set of a locale (clip 1 of every phase) may have:
-# the smallest device tier audio-assets.sh publishes ("s", for the 640 KB
-# SPIFFS storage partition of the classic ESP32, see test/test_storage_sim.c). Every
-# further clip goes into the larger tiers by priority, so only the minimum
-# set is a hard limit here.
-MAX_SET_BYTES = 128 * 1024
+# the smallest device tier audio-assets.sh publishes ("m", the 640 KB
+# storage partitions of the classic ESP32 and the C3), read from
+# main/storage_budget.h like audio-assets.sh does. Every further clip goes
+# into the larger tier by priority, so only the minimum set is a hard limit
+# here.
+def _fw_define(header, name):
+    with open(os.path.join(FIRMWARE, "main", header), encoding="utf-8") as f:
+        for line in f:
+            m = re.match(r"#define\s+" + name + r"\s+\(?([0-9]+)u?\)?", line)
+            if m:
+                return int(m.group(1))
+    raise SystemExit(f"cannot read {name} from main/{header}")
+
+
+MAX_SET_BYTES = _fw_define("storage_budget.h", "STORAGE_DIALOG_TIER_M")
 
 # Trimming: silence below this level at either end of a clip is cut (TTS output
 # carries up to ~0.5 s of it, which also delays the bot's turn), keeping a

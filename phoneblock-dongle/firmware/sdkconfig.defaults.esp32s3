@@ -14,8 +14,3 @@ CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y
 CONFIG_ESPTOOLPY_FLASHSIZE_16MB=y
 CONFIG_ESPTOOLPY_FLASHSIZE="16MB"
 CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions-16mb.csv"
-
-# The storage partition (the rest of the 16 MB) is LittleFS: it formats in
-# milliseconds where SPIFFS took 13.5 s per MB (partitions-16mb.csv), and it
-# needs no SPIFFS GC tuning (main/storage.h, storage_budget.h).
-CONFIG_PHONEBLOCK_STORAGE_LITTLEFS=y

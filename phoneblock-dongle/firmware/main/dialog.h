@@ -121,8 +121,8 @@ dialog_action_t dialog_tick(dialog_sm_t *d, uint32_t ms, bool clip_done);
 
 // --- The clip set on the device -------------------------------------------
 //
-// The clips of a locale arrive as ONE file (one SPIFFS object costs far less
-// than one per clip, test_storage_sim.c) that starts with its clip table: a
+// The clips of a locale arrive as ONE file (one download, one checksum, one
+// delete-first replacement instead of one per clip) that starts with its clip table: a
 // header saying where in the file each clip of each phase lies. The
 // manifest's SHA-256 covers the header like the audio after it, so a verified
 // file is a consistent set. All integers little-endian:

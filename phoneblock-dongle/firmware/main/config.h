@@ -135,7 +135,7 @@ const char *config_timezone(void);
 // announcement can be localized to the language the user picked. Empty or
 // corrupt NVS reads back as "en". Always a value that satisfies
 // config_lang_code_valid(), so it is safe to splice into a CDN asset URL
-// and a SPIFFS filename.
+// and a file name on the device.
 const char *config_ui_lang(void);
 
 // True once a valid UI language has actually been configured (NVS holds a

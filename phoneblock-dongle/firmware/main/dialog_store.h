@@ -8,14 +8,14 @@
 
 // The dialog clip set on the device's storage (issue #429): where
 // i18n_sync.c puts the set it downloads and where the RTP task streams the
-// clips from. Lives on the shared "storage" SPIFFS partition (the data
+// clips from. Lives on the shared "storage" partition (storage.h; the data
 // directory on Linux) as a rarely written asset, in place of the localized
 // announcement.
 //
 // Layout:
 //   dialog-<lang>.alaw   the set from locale <lang> as published: ONE file,
 //                        its clip table in the header (dialog.h), then every
-//                        clip (one SPIFFS object instead of one per clip)
+//                        clip (one file instead of one per clip)
 //   dialog.idx           "<lang>\n<speaker>\n" (the speaker line empty or
 //                        missing for an own set), written once that file is
 //                        verified, in place and its header valid: present ⇒

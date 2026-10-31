@@ -83,15 +83,15 @@ void pb_log_set_sink(pb_log_sink_t sink);
 
 // State directory of the Linux service (announcement, blocklists, language
 // packs; the settings file is passed with --config). The ESP32 keeps the
-// same files on SPIFFS.
+// same files on its storage partition (storage.h).
 #ifndef PHONEBLOCK_DATA_DIR
 #define PHONEBLOCK_DATA_DIR "/var/lib/phoneblock"
 #endif
 #endif
 
-// Buffer size for the path of a file in the data directory: SPIFFS names
-// are short ("/spiffs/" + at most 32 characters), a Linux data directory
-// can be anywhere. Path builders report a path that does not fit instead
+// Buffer size for the path of a file in the data directory: the device's
+// names are short ("/spiffs/" + a file name of a few dozen characters), a
+// Linux data directory can be anywhere. Path builders report a path that does not fit instead
 // of truncating it.
 #ifdef ESP_PLATFORM
 #define PB_DATA_PATH_CAP 64

@@ -10,7 +10,7 @@
 #   - coredump: 256 KB instead of 52 KB — the S3 has more RAM and so
 #     potentially larger task stacks in a dump.
 #   - storage: everything from 0x660000 to the end of the flash, ~9.6 MB,
-#     LittleFS (data subtype 0x83, CONFIG_PHONEBLOCK_STORAGE_LITTLEFS).
+#     LittleFS (data subtype 0x83, main/storage.h).
 #     Label "storage" as on the 4 MB layouts. An earlier table had a 1 MB
 #     SPIFFS partition and an unformatted ~8.6 MB "reserve": when the
 #     partition holds no valid SPIFFS (leftovers of the board's demo or an

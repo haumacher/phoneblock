@@ -79,34 +79,42 @@ test_audio_manifest: test_audio_manifest.c ../main/audio_manifest.c ../main/audi
 	$(CC) $(CFLAGS) -fsanitize=address -I$(CJSON_DIR) test_audio_manifest.c \
 	  ../main/audio_manifest.c ../main/dialog_manifest.c ../main/dialog.c cjson.o -o $@
 
-test_storage_budget: test_storage_budget.c ../main/storage_budget.c ../main/storage_budget.h
-	$(CC) $(CFLAGS) test_storage_budget.c ../main/storage_budget.c -o $@
+# The storage partition's size in a partition table (column 5 of its line).
+part_size = $(shell awk -F, '$$1 ~ /^storage/ { gsub(/ /, "", $$5); print $$5 }' $(1))
 
-# test_storage_sim runs the unmodified ESP-IDF SPIFFS core on a RAM flash
-# (spiffs_host/) with the classic ESP32's geometry (the C3 and the S3 are on
-# LittleFS), read from the same files the
-# firmware is built from: page size and GC budget from sdkconfig.defaults,
-# the partition size from partitions.csv. The core is third-party code, built
-# once with warnings off; storage.c / storage_budget.c are built with ours.
-SPIFFS_SRC := $(IDF_PATH)/components/spiffs/spiffs/src
-SPIFFS_INC := $(IDF_PATH)/components/spiffs/include
-SIM_PAGE   := $(shell sed -n 's/^CONFIG_SPIFFS_PAGE_SIZE=//p' ../sdkconfig.defaults)
-SIM_GCRUNS := $(shell sed -n 's/^CONFIG_SPIFFS_GC_MAX_RUNS=//p' ../sdkconfig.defaults)
-SIM_PART   := $(shell awk -F, '$$1 ~ /^storage/ { gsub(/ /, "", $$5); print $$5 }' ../partitions.csv)
-SIM_FLAGS  := -DCONFIG_SPIFFS_PAGE_SIZE=$(SIM_PAGE) -DCONFIG_SPIFFS_GC_MAX_RUNS=$(SIM_GCRUNS) \
-              -DSIM_PART_SIZE=$(SIM_PART) -Ispiffs_host -I$(SPIFFS_INC) -I$(SPIFFS_SRC)
-SPIFFS_CORE := spiffs_core_cache.o spiffs_core_check.o spiffs_core_gc.o \
-               spiffs_core_hydrogen.o spiffs_core_nucleus.o
+test_storage_budget: test_storage_budget.c ../main/storage_budget.c ../main/storage_budget.h \
+                     ../partitions.csv ../partitions-c3.csv ../partitions-16mb.csv
+	$(CC) $(CFLAGS) -DPART_CLASSIC=$(call part_size,../partitions.csv) \
+	  -DPART_C3=$(call part_size,../partitions-c3.csv) \
+	  -DPART_S3=$(call part_size,../partitions-16mb.csv) \
+	  test_storage_budget.c ../main/storage_budget.c -o $@
 
-spiffs_core_%.o: $(SPIFFS_SRC)/spiffs_%.c spiffs_host/sdkconfig.h ../sdkconfig.defaults ../partitions.csv
-	$(CC) -O2 -g -w $(SIM_FLAGS) -c $< -o $@
+# test_storage_sim runs storage.c's LittleFS backend against the littlefs
+# core the firmware links — the joltwallet/littlefs component, fetched into
+# ../managed_components by the component manager (any idf.py build or
+# reconfigure) — on a RAM flash (lfs_host/) with the partition size of
+# partitions.csv. The core is third-party code, built once with warnings off;
+# storage.c / storage_budget.c are built with ours.
+LFS_DIR   := ../managed_components/joltwallet__littlefs/src/littlefs
+SIM_PART  := $(call part_size,../partitions.csv)
+SIM_FLAGS := -DSIM_PART_SIZE=$(SIM_PART) -Ilfs_host -I$(LFS_DIR)
+LFS_CORE  := lfs_core_lfs.o lfs_core_lfs_util.o
 
-test_storage_sim: test_storage_sim.c spiffs_host/spiffs_sim.c spiffs_host/spiffs_sim.h \
+$(LFS_DIR)/lfs.c $(LFS_DIR)/lfs_util.c:
+	@echo "$@ missing: the littlefs sources come with the managed components;" >&2
+	@echo "run 'idf.py reconfigure' (or any idf.py build) in phoneblock-dongle/firmware once." >&2
+	@exit 1
+
+lfs_core_%.o: $(LFS_DIR)/%.c lfs_host/lfs_sim_defs.h
+	$(CC) -O2 -g -w -Ilfs_host -DLFS_DEFINES=lfs_sim_defs.h -c $< -o $@
+
+test_storage_sim: test_storage_sim.c lfs_host/lfs_sim.c lfs_host/lfs_sim.h \
+                  lfs_host/esp_littlefs.h lfs_host/esp_partition.h \
                   ../main/storage.c ../main/storage.h ../main/storage_budget.c \
-                  ../main/storage_budget.h $(SPIFFS_CORE)
+                  ../main/storage_budget.h ../partitions.csv $(LFS_CORE)
 	$(CC) $(CFLAGS) $(SIM_FLAGS) -DSTORAGE_UNLINK=sim_vfs_unlink \
-	    test_storage_sim.c spiffs_host/spiffs_sim.c ../main/storage.c \
-	    ../main/storage_budget.c $(SPIFFS_CORE) -o $@
+	    test_storage_sim.c lfs_host/lfs_sim.c ../main/storage.c \
+	    ../main/storage_budget.c $(LFS_CORE) -o $@
 
 test_blocklist_lookup: test_blocklist_lookup.c ../main/blocklist_lookup.c ../main/blocklist_lookup.h
 	$(CC) $(CFLAGS) test_blocklist_lookup.c ../main/blocklist_lookup.c -o $@
@@ -266,6 +274,6 @@ test-linux: linux-firmware phoneblock_linux $(LINUX_BINS)
 
 # The Linux build products are removed by the clean:: rule of ../linux/Makefile.
 clean::
-	rm -f $(BINS) $(LINUX_BINS) cjson.o $(SPIFFS_CORE)
+	rm -f $(BINS) $(LINUX_BINS) cjson.o $(LFS_CORE) spiffs_core_*.o
 
 .PHONY: linux-firmware phoneblock_linux test test-linux clean

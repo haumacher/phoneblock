@@ -23,10 +23,10 @@
 //   - announcement_init() must be called once during boot. It mounts
 //     the storage partition (storage_mount(); formatting it on first boot).
 //   - announcement_open()/read()/close() stream the active announcement
-//     sequentially. The SPIFFS file is read straight from flash, never
+//     sequentially. The file is read straight from flash, never
 //     loaded into a single heap block (the device has no PSRAM, so a
 //     ~240 KB contiguous malloc fails once the heap is fragmented).
-//   - announcement_write_*() replaces the custom SPIFFS file.
+//   - announcement_write_*() replaces the custom file.
 //   - announcement_reset() deletes the custom file; the next open()
 //     falls back to the localized download, or to silence.
 
@@ -36,7 +36,7 @@ int         announcement_init(void);
 
 // A handle for streaming the active announcement frame-by-frame.
 // Either an in-memory source (the embedded default, mapped from flash)
-// or an open SPIFFS file (a custom announcement). Treat as opaque:
+// or an open file (a custom announcement). Treat as opaque:
 // fill it with announcement_open(), drain it with announcement_read(),
 // release it with announcement_close().
 typedef struct {
@@ -53,7 +53,7 @@ typedef struct {
 // The caller MUST release the handle with announcement_close().
 int         announcement_open(announcement_src_t *src);
 
-// Build the SPIFFS path of the downloaded announcement for a locale:
+// Build the path of the downloaded announcement for a locale:
 // "/spiffs/announcement-<lang>.alaw". lang must be a config_lang_code_valid()
 // code. Shared by announcement_open() and i18n_sync.c so the naming
 // convention lives in one place. Size `out` with PB_DATA_PATH_CAP
@@ -64,12 +64,12 @@ bool        announcement_localized_path(char *out, size_t cap, const char *lang)
 // number of bytes produced (0 at end-of-stream or on read error).
 size_t      announcement_read(announcement_src_t *src, uint8_t *out, size_t max);
 
-// Release any resources held by src (closes the SPIFFS file, if any).
+// Release any resources held by src (closes the file, if any).
 // Safe to call on an already-closed or all-memory source.
 void        announcement_close(announcement_src_t *src);
 
 // Streaming write API — lets the web handler spool the upload
-// directly from HTTP into SPIFFS without a 240 KB heap buffer.
+// directly from HTTP into flash without a 240 KB heap buffer.
 //
 //   announcement_write_begin(total) → truncates the live file in place
 //   announcement_write_append(...)  → append a received chunk

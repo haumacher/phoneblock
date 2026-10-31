@@ -9,6 +9,13 @@ Die JSON-Tests ziehen `cJSON` aus
 Toolchain-Aktivierung). Default `IDF_PATH=$(HOME)/tools/esp/esp-idf`, bei
 abweichendem Pfad: `make test IDF_PATH=/...`.
 
+`test_storage_sim` lässt das Speicher-Budget (`../main/storage.c`) gegen den
+LittleFS-Kern laufen, den die Firmware linkt: die Quellen der Komponente
+`joltwallet/littlefs` unter `../managed_components/`. Die holt der
+Component-Manager bei jedem `idf.py build` oder `idf.py reconfigure`; in einem
+frischen Checkout also einmal `idf.py reconfigure` im Firmware-Verzeichnis,
+sonst bricht `make test` mit genau diesem Hinweis ab.
+
 ## Ausführen
 
 ```bash

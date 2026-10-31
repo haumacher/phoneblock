@@ -248,9 +248,10 @@ static void probe_tier_boundaries(void)
     CHECK(pick(json, "", 99999, p) == DIALOG_PICK_NONE);
 }
 
-// The real partitions: LittleFS takes M on the C3's 640 KB and the L ceiling
-// on the S3's ~9.6 MB; the budget never shrinks as the partition grows, and
-// every budget picks the matching published tier (s/m/l).
+// The real partitions: LittleFS takes M on the 640 KB of the classic ESP32
+// and the C3 and the L ceiling on the S3's ~9.6 MB; the budget never shrinks
+// as the partition grows, and every budget picks the matching published tier
+// (m/l).
 static void probe_budget_by_partition(void)
 {
     const storage_lfs_geometry_t g = { 4096, STORAGE_LFS_RESERVE_BLOCKS };
@@ -266,26 +267,33 @@ static void probe_budget_by_partition(void)
     static const uint32_t peers[] = STORAGE_LFS_DIALOG_PEERS;
     CHECK(peers[3] == DIALOG_INDEX_MAX_BYTES);
 
-    // Tiers as audio-assets.sh publishes them (s, m, l at most at their
-    // limits): S on SPIFFS, M on the C3, L on the S3 and Linux.
+    // Tiers as audio-assets.sh publishes them (m, l, m at most at its
+    // limit): M on the 640 KB partitions, L on the S3 and Linux.
     char json[512];
     snprintf(json, sizeof(json), "{\"speakers\":[{\"id\":\"anna\",\"sets\":["
-             BTIER("a-s.bin", %u) "," BTIER("a-m.bin", %u) "," BTIER("a-l.bin", 520000) "]}]}",
-             STORAGE_DIALOG_TIER_S, STORAGE_DIALOG_TIER_M);
+             BTIER("a-m.bin", %u) "," BTIER("a-l.bin", 520000) "]}]}",
+             STORAGE_DIALOG_TIER_M);
     char p[64];
-    CHECK(pick(json, "anna", STORAGE_DIALOG_TIER_S, p) == DIALOG_PICK_CHOSEN
-          && strcmp(p, "a-s.bin") == 0);
     CHECK(pick(json, "anna", storage_budget_lfs_dialog(&g, 0xA0000), p) == DIALOG_PICK_CHOSEN
           && strcmp(p, "a-m.bin") == 0);
     CHECK(pick(json, "anna", storage_budget_lfs_dialog(&g, 0x9A0000), p) == DIALOG_PICK_CHOSEN
           && strcmp(p, "a-l.bin") == 0);
     CHECK(pick(json, "anna", STORAGE_DIALOG_PLAIN_FS_MAX, p) == DIALOG_PICK_CHOSEN
           && strcmp(p, "a-l.bin") == 0);
-    // Only s and l published (a locale whose m equals s): the C3 takes s.
+    // Only m published (a locale whose l equals m): every partition takes m.
     snprintf(json, sizeof(json), "{\"speakers\":[{\"id\":\"anna\",\"sets\":["
-             BTIER("a-s.bin", 120000) "," BTIER("a-l.bin", 520000) "]}]}");
+             BTIER("a-m.bin", 300000) "]}]}");
     CHECK(pick(json, "anna", storage_budget_lfs_dialog(&g, 0xA0000), p) == DIALOG_PICK_CHOSEN
-          && strcmp(p, "a-s.bin") == 0);
+          && strcmp(p, "a-m.bin") == 0);
+    CHECK(pick(json, "anna", storage_budget_lfs_dialog(&g, 0x9A0000), p) == DIALOG_PICK_CHOSEN
+          && strcmp(p, "a-m.bin") == 0);
+    // An index from before the tiers were cut to m and l (an s set of
+    // 128 KiB among them): the 640 KB partitions still take their m.
+    snprintf(json, sizeof(json), "{\"speakers\":[{\"id\":\"anna\",\"sets\":["
+             BTIER("a-s.bin", 131072) "," BTIER("a-m.bin", %u) "," BTIER("a-l.bin", 520000) "]}]}",
+             STORAGE_DIALOG_TIER_M);
+    CHECK(pick(json, "anna", storage_budget_lfs_dialog(&g, 0xA0000), p) == DIALOG_PICK_CHOSEN
+          && strcmp(p, "a-m.bin") == 0);
 }
 
 int main(void)

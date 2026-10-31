@@ -11,8 +11,7 @@
 # improv.c follows CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG.
 CONFIG_ESP_CONSOLE_USB_SERIAL_JTAG=y
 
-# Own partition table with a LittleFS storage partition (partitions-c3.csv):
-# no C3 dongle was in the field on the SPIFFS layout of the classic ESP32,
-# so the C3 starts out on LittleFS (main/storage.h, storage_budget.h).
+# Own partition table (partitions-c3.csv): the coredump partition takes in
+# the 4 KB gap the classic layout keeps, as no C3 dongle was in the field
+# on that layout. The storage partition is the same 640 KB LittleFS.
 CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions-c3.csv"
-CONFIG_PHONEBLOCK_STORAGE_LITTLEFS=y
