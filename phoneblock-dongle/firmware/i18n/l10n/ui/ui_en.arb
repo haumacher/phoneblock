@@ -267,6 +267,7 @@
   "status.dialog.own.leave_confirm": "Switching to announcement mode will delete your own dialogue. Continue?",
   "status.dialog.own.leave_download": "Would you like to download your dialogue as a file first?",
   "status.dialog.edit.title": "Create Your Own Dialog",
+  "status.dialog.edit.intro": "You start with the sentences stored on the dongle. Delete recordings or add new ones (WAV/MP3/OGG); each one is normalized to the same volume, and silence is removed from the ends. Each phase requires at least one sentence, and the dongle selects one at random from among them.",
   "status.dialog.edit.yes_hint": "Never record a “yes”: A recorded “yes” can be misused as consent.",
   "status.dialog.phase.hello": "Welcome",
   "status.dialog.phase.who-is-there": "The caller remains silent after the greeting (“Who is this?”)",
@@ -281,9 +282,10 @@
   "status.dialog.edit.load_file": "Load Dialog File",
   "status.dialog.edit.reason.empty": "The \"{phase}\" phase does not yet have any recordings.",
   "status.dialog.edit.reason.many": "The \"{phase}\" phase has more than {max} shots.",
-  "status.dialog.edit.reason.size": "The dialog box is larger than the space available on the dongle—delete or trim recordings.",
+  "status.dialog.edit.reason.size": "The total size of the recordings exceeds the available space on the dongle—delete or trim some recordings.",
   "status.dialog.edit.bad_file": "This is not a valid dialog file.",
   "status.dialog.edit.no_set": "There is no dialogue on the dongle yet—add recordings for each phase.",
+  "status.dialog.edit.reload": "Discard and reload",
   "status.dialog.edit.done": "Custom dialog saved ({kb} KB).",
   "hero.title": "Setup",
   "hero.intro": "Two steps, then the dongle blocks spam calls automatically. Both need to be ticked before the device is ready.",
@@ -430,5 +432,5 @@
   "spam.dialog.comment": "Reason",
   "spam.dialog.comment.hint": "(optional; will be visible to the public)",
   "spam.dialog.error.is_contact": "This caller is in your phone book. A phone book entry always takes precedence on the dongle, so a spam alert isn't possible in this case.",
-  "status.dialog.edit.intro": "You start with the sentences stored on the dongle. Delete recordings or add new ones (WAV/MP3/OGG); each one is normalized to the same volume, and silence is removed from the ends. Each phase requires at least one sentence, and the dongle selects one at random from among them."
+  "status.dialog.edit.changed": "The dongle now contains different recordings (the language or voice has been changed). Your edits in the editor haven't been uploaded yet."
 }

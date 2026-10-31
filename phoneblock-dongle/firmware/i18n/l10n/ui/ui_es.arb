@@ -267,6 +267,7 @@
   "status.dialog.own.leave_confirm": "Al pasar al modo de locución, se borrará tu propio diálogo. ¿Quieres continuar?",
   "status.dialog.own.leave_download": "¿Quieres descargar antes tu diálogo como archivo?",
   "status.dialog.edit.title": "Crear un diálogo propio",
+  "status.dialog.edit.intro": "Empiezas con las frases que hay en el dongle. Borra grabaciones o añade otras nuevas (WAV/MP3/OGG); cada una se ajusta al mismo volumen y se elimina el silencio al principio y al final. Cada fase necesita al menos una frase; el dongle la selecciona al azar.",
   "status.dialog.edit.yes_hint": "Nunca grabes un «sí»: un «sí» grabado puede utilizarse indebidamente como consentimiento.",
   "status.dialog.phase.hello": "Bienvenida",
   "status.dialog.phase.who-is-there": "La persona que llama guarda silencio tras el saludo («¿Quién es?»).",
@@ -281,9 +282,10 @@
   "status.dialog.edit.load_file": "Cargar archivo de diálogo",
   "status.dialog.edit.reason.empty": "La fase «{phase}» aún no tiene ninguna grabación.",
   "status.dialog.edit.reason.many": "La fase «{phase}» tiene más de {max} grabaciones.",
-  "status.dialog.edit.reason.size": "El diálogo ocupa más espacio del que hay en el dongle: borra o acorta las grabaciones.",
+  "status.dialog.edit.reason.size": "El tamaño total de las grabaciones supera la capacidad del dongle: borra o recorta algunas grabaciones.",
   "status.dialog.edit.bad_file": "Este no es un archivo de diálogo válido.",
   "status.dialog.edit.no_set": "En el dongle aún no hay ningún diálogo; añade grabaciones para cada fase.",
+  "status.dialog.edit.reload": "Deshacer y volver a cargar",
   "status.dialog.edit.done": "Se ha guardado un diálogo propio ({kb} KB).",
   "hero.title": "Configuración",
   "hero.intro": "Dos pasos y el dongle bloqueará llamadas spam automáticamente. Ambos deben completarse para que el dispositivo esté listo.",
@@ -430,5 +432,5 @@
   "spam.dialog.comment": "Motivo",
   "spam.dialog.comment.hint": "(opcional, será visible públicamente)",
   "spam.dialog.error.is_contact": "Esta persona figura en tu agenda. Una entrada de la agenda siempre tiene prioridad en el dongle, por lo que en este caso no es posible recibir un aviso de spam.",
-  "status.dialog.edit.intro": "Empiezas con las frases que hay en el dongle. Borra grabaciones o añade otras nuevas (WAV/MP3/OGG); cada una se ajusta al mismo volumen y se elimina el silencio al principio y al final. Cada fase necesita al menos una frase; el dongle la selecciona al azar."
+  "status.dialog.edit.changed": "En el dongle hay ahora otras grabaciones (se ha cambiado el idioma o la voz). Tu edición en el editor aún no se ha subido."
 }

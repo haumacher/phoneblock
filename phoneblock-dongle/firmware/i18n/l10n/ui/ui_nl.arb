@@ -267,6 +267,7 @@
   "status.dialog.own.leave_confirm": "Als je overschakelt naar de aankondigingsmodus, wordt je eigen dialoog gewist. Wil je doorgaan?",
   "status.dialog.own.leave_download": "Wil je je dialoog eerst als bestand downloaden?",
   "status.dialog.edit.title": "Een eigen dialoog samenstellen",
+  "status.dialog.edit.intro": "Je begint met de zinnen die op de dongle staan. Verwijder opnames of voeg nieuwe toe (WAV/MP3/OGG); elke opname wordt op hetzelfde volume gebracht en de stilte aan het begin en einde wordt verwijderd. Elke fase heeft minstens één zin nodig; de dongle kiest daar willekeurig uit.",
   "status.dialog.edit.yes_hint": "Zeg nooit ‘ja’ op de band: een opgenomen ‘ja’ kan worden misbruikt als instemming.",
   "status.dialog.phase.hello": "Welkomstwoord",
   "status.dialog.phase.who-is-there": "De beller zwijgt na de begroeting („Wie is daar?“)",
@@ -281,9 +282,10 @@
   "status.dialog.edit.load_file": "Dialoogbestand laden",
   "status.dialog.edit.reason.empty": "De fase „{phase}“ bevat nog geen opname.",
   "status.dialog.edit.reason.many": "De fase „{phase}“ bevat meer dan {max} opnames.",
-  "status.dialog.edit.reason.size": "Het dialoogvenster is groter dan de beschikbare ruimte op de dongle – verwijder of verkort opnames.",
+  "status.dialog.edit.reason.size": "De opnames nemen samen meer ruimte in beslag dan er op de dongle beschikbaar is – verwijder of verkort opnames.",
   "status.dialog.edit.bad_file": "Dit is geen geldig dialoogbestand.",
   "status.dialog.edit.no_set": "Er staat nog geen dialoog op de dongle – voeg voor elke fase opnames toe.",
+  "status.dialog.edit.reload": "Verwerpen en opnieuw laden",
   "status.dialog.edit.done": "Eigen dialoog opgeslagen ({kb} KB).",
   "hero.title": "Inrichting",
   "hero.intro": "Twee stappen, en je dongle blokkeert automatisch spam-oproepen. Vink beide aan; pas dan is het apparaat klaar voor gebruik.",
@@ -430,5 +432,5 @@
   "spam.dialog.comment": "Reden",
   "spam.dialog.comment.hint": "(optioneel, wordt openbaar weergegeven)",
   "spam.dialog.error.is_contact": "Deze beller staat in je telefoonboek. Een vermelding in het telefoonboek heeft op de dongle altijd voorrang, daarom is een spammelding hier niet mogelijk.",
-  "status.dialog.edit.intro": "Je begint met de zinnen die op de dongle staan. Verwijder opnames of voeg nieuwe toe (WAV/MP3/OGG); elke opname wordt op hetzelfde volume gebracht en de stilte aan het begin en einde wordt verwijderd. Elke fase heeft minstens één zin nodig; de dongle kiest daar willekeurig uit."
+  "status.dialog.edit.changed": "Op de dongle staan nu andere opnames (taal of stem gewijzigd). Je bewerkingen in de editor zijn nog niet geüpload."
 }

@@ -34,6 +34,7 @@ if (!location.pathname.endsWith('/'))
      open = h2-style header with the bottom rule. */
   details.adminsec{background:#fff;border-radius:8px;padding:1rem;
      margin-bottom:1rem;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+  summary{cursor:pointer}   /* every disclosure is clickable, nested ones too */
   details.adminsec>summary{margin:0;font-size:.85rem;color:#555;
      text-transform:uppercase;letter-spacing:.6px;font-weight:600;
      cursor:pointer;list-style:none;display:flex;align-items:center;gap:.5rem}
@@ -1430,7 +1431,7 @@ function renderStatus(){
     + '<p style="margin:.6rem 0 .2rem;font-size:.85rem">' + esc(t('status.dialog.speaker')) + '</p>'
     + '<div id="dlgSpk" style="font-size:.85rem"></div>'
     + '<details id="dlgEdit" style="margin-top:.6rem;font-size:.85rem">'
-    + '<summary>' + esc(t('status.dialog.edit.title')) + '</summary>'
+    + '<summary style="font-size:.9rem">' + esc(t('status.dialog.edit.title')) + '</summary>'
     + '<p class="muted" style="font-size:.8rem">' + esc(t('status.dialog.edit.intro')) + '</p>'
     + '<p style="font-size:.8rem;color:#b06000">' + esc(t('status.dialog.edit.yes_hint')) + '</p>'
     + '<div id="dlgPhases"></div>'
@@ -1446,7 +1447,7 @@ function renderStatus(){
     + '</p>'
     + '<p id="dlgMsg" class="muted"></p>'
     + '</details>'
-    + '<details style="margin-top:.6rem"><summary style="cursor:pointer;font-size:.9rem">'
+    + '<details style="margin-top:.6rem"><summary style="font-size:.9rem">'
     +   esc(t('status.dialog.tuning'))
     + '  <span id="annDialogMsg" class="muted" style="margin-left:.6rem"></span></summary>'
     + '<div style="display:flex;gap:1.2rem;flex-wrap:wrap;align-items:flex-start;margin-top:.4rem">'
@@ -1550,6 +1551,7 @@ function renderStatus(){
   // Freshly (re)built DOM — let the next poll prefill the mail form once.
   mailPrefilled = false;
   dialogPrefilled = false;
+  dlgReset();   // the speaker list and the editor are new elements, unwired
   applyLangStatus();   // restore the translation bubble after the rebuild
   refreshAll();
   pollTimer = setInterval(refreshAll, 3000);
@@ -1656,6 +1658,11 @@ function renderDialog(d, ownAnnouncement){
     : d.own ? t('status.dialog.clips.own')
     : t('status.dialog.clips.present', {lang: langName(d.clips_lang)});
   if (dialogOn) dlgSpeakers(d);
+  dlgSetChanged(d);
+  // While a set downloads there is nothing to edit yet: the editor would show
+  // the old set or none. It returns (and reloads) once the download is done.
+  const syncing = !d.own && (d.sync === 'pending' || d.sync === 'downloading');
+  $('dlgEdit').style.display = syncing ? 'none' : '';
   $('annDialogClips').style.color = d.clips_present ? ''
     : (d.sync === 'pending' || d.sync === 'downloading') ? '#888' : '#b06000';
   if (!dialogPrefilled){
@@ -3507,7 +3514,7 @@ async function renderSipManual(){
     + '<p class="muted" style="font-size:.75rem;margin:.2rem 0 .6rem">'
     +   esc(t('sip.manual.anon.hint')) + '</p>'
     + '<details style="margin:1rem 0">'
-    +   '<summary style="cursor:pointer;color:#008f7a;font-size:.9rem">'
+    +   '<summary style="color:#008f7a;font-size:.9rem">'
     +     esc(t('sip.manual.advanced')) + '</summary>'
     +   '<label>' + esc(t('sip.manual.transport'))
     +     '<select name="sip_transport">'
@@ -3800,6 +3807,9 @@ function dlgParse(b){
 
 // Speaker list and the own set's editor, shown in dialog mode.
 let dlgKey = '', dlgMax = 0, dlgEd = null, dlgAudio = null, dlgOwn = false;
+// dlgSetKey: which set is on the device; dlgDirty: the editor holds edits
+// not yet uploaded.
+let dlgSetKey = null, dlgDirty = false, dlgUploaded = false;
 const dlgStop = () => { if (dlgAudio){ dlgAudio.pause(); dlgAudio = null; } };
 const dlgPlay = a => { dlgStop(); dlgAudio = a; };
 function dlgMsg(text, color){
@@ -3877,12 +3887,12 @@ function dlgRender(){
       r.style.cssText = 'display:flex;align-items:center;margin:.1rem 0';
       // No order: the dongle picks a phase's clips at random (dialog.c).
       r.append(dlgBtn('▶', t('status.ann.play'), () => dlgPlay(playAlaw(c))),
-               dlgBtn('✕', t('status.dialog.edit.delete'), () => { clips.splice(k, 1); dlgRender(); }),
+               dlgBtn('✕', t('status.dialog.edit.delete'), () => { clips.splice(k, 1); dlgDirty = true; dlgRender(); }),
                Object.assign(document.createElement('span'),
                  {className: 'muted', textContent: (c.length / 8000).toFixed(1) + ' s'}));
       box.append(r);
     });
-    box.append(dlgBtn(t('status.dialog.edit.add'), '', () => dlgPick(f => { clips.push(f); })));
+    box.append(dlgBtn(t('status.dialog.edit.add'), '', () => dlgPick(f => { clips.push(f); dlgDirty = true; })));
     if (!reason && !clips.length) reason = t('status.dialog.edit.reason.empty', {phase: name});
     if (!reason && clips.length > DLG_MAX_CLIPS)
       reason = t('status.dialog.edit.reason.many', {phase: name, max: DLG_MAX_CLIPS});
@@ -3923,20 +3933,57 @@ async function dlgDownloadDevice(){
     if (r.ok) dlgSaveFile(new Uint8Array(await r.arrayBuffer()), 'dialog-own.bin');
   } catch (_){}
 }
-function wireDlgEditor(){
-  const det = $('dlgEdit');
-  if (det.ontoggle) return;
-  det.ontoggle = async () => {
-    if (!det.open || dlgEd) return;
-    dlgEd = [[], [], [], [], []];
+// The status view was rebuilt (a language pack arrived, the view was
+// re-entered): the next poll rebuilds the speaker list, wires the new editor
+// and loads it on open.
+function dlgReset(){
+  dlgStop();
+  dlgKey = ''; dlgSetKey = null; dlgEd = null; dlgDirty = false; dlgLoading = null;
+}
+// Loads the editor from the set on the device (none: starts empty).
+let dlgLoading = null;
+function dlgLoad(){
+  if (dlgLoading) return dlgLoading;
+  dlgEd = [[], [], [], [], []];
+  dlgDirty = false;
+  dlgMsg('');
+  dlgLoading = (async () => {
     try {
       const r = await fetch('api/dialog');
       const ph = r.ok ? dlgParse(new Uint8Array(await r.arrayBuffer())) : null;
       if (ph) dlgEd = ph;
       else dlgMsg(t('status.dialog.edit.no_set'));
     } catch (_){ dlgMsg(t('status.dialog.edit.no_set')); }
+    dlgLoading = null;
     dlgRender();
-  };
+  })();
+  return dlgLoading;
+}
+// The set on the device changed (a language or speaker switch, the sync
+// finished, an own set was stored or dropped): the editor follows, unless it
+// holds edits not uploaded yet: those are kept, with an offer to load the new
+// set instead.
+function dlgSetChanged(d){
+  const key = [d.mode, d.clips_present, d.clips_lang, d.clips_speaker, d.own].join('|');
+  const uploaded = dlgUploaded;   // the poll after an upload sees its result
+  dlgUploaded = false;
+  if (key === dlgSetKey) return;
+  const first = dlgSetKey === null;
+  dlgSetKey = key;
+  // Just uploaded from the editor: it already holds what is on the device.
+  if (first || !dlgEd || uploaded) return;
+  if (dlgDirty){
+    dlgMsg(t('status.dialog.edit.changed'), '#b06000');
+    $('dlgMsg').append(' ', dlgBtn(t('status.dialog.edit.reload'), '', dlgLoad));
+    return;
+  }
+  dlgEd = null;
+  if ($('dlgEdit').open) dlgLoad();
+}
+function wireDlgEditor(){
+  const det = $('dlgEdit');
+  if (det.ontoggle) return;
+  det.ontoggle = () => { if (det.open && !dlgEd) dlgLoad(); };
   $('dlgSave').onclick = () => dlgEd ? dlgSaveFile(dlgBuild(dlgEd), 'dialog-own.bin')
                                      : dlgDownloadDevice();
   $('dlgFile').onchange = async () => {
@@ -3946,6 +3993,7 @@ function wireDlgEditor(){
     const ph = dlgParse(new Uint8Array(await f.arrayBuffer()));
     if (!ph){ dlgMsg(t('status.dialog.edit.bad_file'), '#d93025'); return; }
     dlgEd = ph;
+    dlgDirty = true;
     dlgMsg('');
     dlgRender();
   };
@@ -3959,6 +4007,8 @@ function wireDlgEditor(){
         headers: {'Content-Type': 'application/octet-stream'}, body});
       const d = await r.json().catch(() => ({}));
       if (!r.ok || !d.ok) throw new Error(d.message || ('HTTP ' + r.status));
+      dlgDirty = false;
+      dlgUploaded = true;
       dlgMsg(t('status.dialog.edit.done', {kb: Math.round(body.length / 1024)}), '#188038');
       refreshAll();
     } catch (e){
