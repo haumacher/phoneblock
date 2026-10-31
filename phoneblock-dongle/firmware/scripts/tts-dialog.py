@@ -10,12 +10,14 @@ see i18n/README.md) and writes, for every key <phase>_<n>,
     i18n/audio/dialog/<lang>/<phase>-<n>.alaw   converted locally with ffmpeg:
                                                 raw G.711 A-law, 8 kHz mono
     i18n/audio/dialog/<lang>/<phase>-<n>.txt    the sentence that was spoken
+    i18n/audio/dialog/<lang>/voice.json         the voice and model that spoke them
 
 through the ElevenLabs text-to-speech API. The master is kept so a different
 device encoding (trimming, loudness, a wideband codec) is a local re-run of
 --convert-only, not new API credits. The .txt is the transcript and the cache
 key: a clip is only (re)generated when its sentence changed, so a run after
-editing one sentence costs one request. Clips whose key is gone from the
+editing one sentence costs one request. A different voice or model than the
+one voice.json records regenerates the whole locale. Clips whose key is gone from the
 ARB are deleted. scripts/audio-assets.sh publishes the result.
 
 Usage:
@@ -23,11 +25,13 @@ Usage:
     scripts/tts-dialog.py [--langs "de en"] [--force] [--dry-run]
     scripts/tts-dialog.py --convert-only [--langs "de en"]
 
-Credentials and voice, looked up in this order:
-    ELEVENLABS_API_KEY / ELEVENLABS_VOICE_ID / ELEVENLABS_MODEL environment
-    variables, else elevenlabs.apiKey / elevenlabs.voiceId / elevenlabs.model
-    in ~/.gradle/gradle.properties (next to deepl.apiKey, never committed).
-    The model defaults to eleven_multilingual_v2.
+Credentials, voice and model, looked up in this order:
+    ELEVENLABS_API_KEY / ELEVENLABS_VOICE / ELEVENLABS_MODEL environment
+    variables, else elevenlabs.apiKey / elevenlabs.voice / elevenlabs.model
+    in ~/.gradle/gradle.properties (next to deepl.apiKey, never committed),
+    else the defaults VOICE and MODEL below. The voice is a name from
+    --list-voices (the part before " - ", case-insensitive) or a voice ID;
+    it must be in the account's voice library.
 """
 import argparse
 import json
@@ -48,6 +52,10 @@ L10N = os.path.join(FIRMWARE, "i18n", "l10n", "dialog")
 AUDIO = os.path.join(FIRMWARE, "i18n", "audio", "dialog")
 LANGUAGES = os.path.join(FIRMWARE, "i18n", "languages.txt")
 API = "https://api.elevenlabs.io/v1"
+
+# The voice and model all published clips are spoken with.
+VOICE = "Leonie"
+MODEL = "eleven_v4"
 
 # Most bytes the minimum set of a locale (clip 1 of every phase) may have:
 # the smallest device tier audio-assets.sh publishes ("s", for the 640 KB
@@ -93,6 +101,21 @@ def gradle_property(name):
 
 def setting(env, prop, default=None):
     return os.environ.get(env) or gradle_property(prop) or default
+
+
+def voice_id(voice, key):
+    """The ID of `voice`, a name from --list-voices or already an ID."""
+    voices = json.loads(request("/voices", key))["voices"]
+    for v in voices:
+        if voice == v["voice_id"]:
+            return voice
+    want = voice.strip().casefold()
+    hits = [v for v in voices
+            if v["name"].casefold() == want or v["name"].split(" - ")[0].strip().casefold() == want]
+    if len(hits) != 1:
+        names = ", ".join(v["name"].split(" - ")[0] for v in voices)
+        sys.exit(f"voice {voice!r}: {'ambiguous' if hits else 'not found'} (account has: {names})")
+    return hits[0]["voice_id"]
 
 
 def languages():
@@ -266,10 +289,10 @@ def main():
             print(f"{v['voice_id']}  {v.get('category', ''):12}  {v['name']}")
         return
 
-    voice = setting("ELEVENLABS_VOICE_ID", "elevenlabs.voiceId")
-    model = setting("ELEVENLABS_MODEL", "elevenlabs.model", "eleven_multilingual_v2")
-    if not voice and not a.dry_run:
-        sys.exit("no voice: set ELEVENLABS_VOICE_ID or elevenlabs.voiceId (see --list-voices)")
+    voice_name = setting("ELEVENLABS_VOICE", "elevenlabs.voice", VOICE)
+    model = setting("ELEVENLABS_MODEL", "elevenlabs.model", MODEL)
+    voice = voice_id(voice_name, key) if key else voice_name   # --dry-run without a key
+    speaker = {"voice": voice_name, "voice_id": voice, "model": model}
 
     langs = a.langs.split() if a.langs else languages()
     made = kept = removed = 0
@@ -280,7 +303,13 @@ def main():
         clips = clips_of(lang)
         out_dir = os.path.join(AUDIO, lang)
         os.makedirs(out_dir, exist_ok=True)
-        wanted = set()
+        wanted = {os.path.join(out_dir, "voice.json")}
+        try:
+            with open(os.path.join(out_dir, "voice.json"), encoding="utf-8") as f:
+                was = json.load(f)
+            same_speaker = (was.get("voice_id"), was.get("model")) == (voice, model)
+        except (OSError, ValueError):
+            same_speaker = False
         for (ph, n), text in sorted(clips.items(), key=lambda c: (PHASES.index(c[0][0]), c[0][1])):
             base = os.path.join(out_dir, f"{ph.replace('_', '-')}-{n}")
             wanted.update((base + ".mp3", base + ".alaw", base + ".txt"))
@@ -289,7 +318,7 @@ def main():
                     same = f.read().strip() == text
             except OSError:
                 same = False
-            if same and os.path.exists(base + ".mp3") and not a.force:
+            if same and same_speaker and os.path.exists(base + ".mp3") and not a.force:
                 if not os.path.exists(base + ".alaw") and not a.dry_run:
                     to_alaw(base + ".mp3", base + ".alaw")
                 kept += 1
@@ -311,9 +340,16 @@ def main():
             to_alaw(base + ".mp3", base + ".alaw")
             with open(base + ".txt", "w", encoding="utf-8") as f:
                 f.write(text + "\n")
+        if not a.dry_run:
+            # Only once every clip of the locale is spoken by this speaker: an
+            # interrupted run leaves the old record, and the next run starts
+            # the locale over.
+            with open(os.path.join(out_dir, "voice.json"), "w", encoding="utf-8") as f:
+                json.dump(speaker, f, indent=2)
+                f.write("\n")
         for name in os.listdir(out_dir):
             path = os.path.join(out_dir, name)
-            if path not in wanted and name.endswith((".mp3", ".alaw", ".txt")):
+            if path not in wanted and name.endswith((".mp3", ".alaw", ".txt", ".json")):
                 print(f"{lang}: {name}: no longer in the ARB, removed")
                 if not a.dry_run:
                     os.remove(path)
