@@ -1205,6 +1205,26 @@
     "description": "Dongle web UI: dialog mode is on but no complete clip set is on the device yet",
     "x-translated": "339c5b70"
   },
+  "status.dialog.clips.pending": "Dialog-Sätze werden gleich geladen …",
+  "@status.dialog.clips.pending": {
+    "description": "Dongle web UI: dialog mode, no clip set yet, a download is due (e.g. right after choosing a speaker)",
+    "x-translated": "db521647"
+  },
+  "status.dialog.clips.downloading": "Dialog-Sätze werden geladen ({kb} KB) …",
+  "@status.dialog.clips.downloading": {
+    "description": "Dongle web UI: the dialog clip set is being downloaded; {kb} is its size in kilobytes",
+    "x-translated": "c58473f7"
+  },
+  "status.dialog.clips.failed": "Laden der Dialog-Sätze fehlgeschlagen ({error}) – der Dongle versucht es beim nächsten Abgleich erneut. Bis dahin legt er Spam-Anrufe ohne Ansage auf.",
+  "@status.dialog.clips.failed": {
+    "description": "Dongle web UI: the dialog clip set download failed; {error} is the technical reason (e.g. HTTP 404)",
+    "x-translated": "a225617d"
+  },
+  "status.dialog.clips.unavailable": "Für diese Sprache und dieses Gerät sind keine Dialog-Sätze veröffentlicht – der Dongle legt Spam-Anrufe ohne Ansage auf.",
+  "@status.dialog.clips.unavailable": {
+    "description": "Dongle web UI: the audio channel offers no dialog clip set for the device's language (or none fits its storage)",
+    "x-translated": "98201857"
+  },
   "status.dialog.confirm_delete_own": "Deine eigene Ansage wird gelöscht, wenn du auf den Dialog umschaltest. Du kannst sie im Ansage-Modus wieder hochladen. Fortfahren?",
   "@status.dialog.confirm_delete_own": {
     "description": "Dongle web UI: confirmation before switching to dialog mode while an own recorded announcement exists; the switch deletes it",
@@ -1240,15 +1260,15 @@
     "description": "Dongle web UI: help for the comfort-noise level field",
     "x-translated": "64de224"
   },
-  "status.dialog.save": "Dialog-Einstellungen speichern",
-  "@status.dialog.save": {
-    "description": "Dongle web UI: button that saves the dialog settings",
-    "x-translated": "5aa21d66"
-  },
   "status.dialog.saved": "Gespeichert.",
   "@status.dialog.saved": {
     "description": "Dongle web UI: dialog settings saved",
     "x-translated": "9e7fb387"
+  },
+  "status.dialog.tuning": "Feineinstellungen: Pausenerkennung und Hintergrundrauschen",
+  "@status.dialog.tuning": {
+    "description": "Dongle web UI: summary of the collapsible dialog tuning fields (VAD threshold, minimum pause, comfort noise); they save on change",
+    "x-translated": "285f124"
   },
   "status.dialog.failed": "Speichern fehlgeschlagen.",
   "@status.dialog.failed": {
@@ -1315,10 +1335,10 @@
     "description": "Dongle web UI: title of the editor for an own dialog set (the user's recordings for each dialog phase)",
     "x-translated": "a802de0a"
   },
-  "status.dialog.edit.intro": "Du startest mit den Sätzen, die auf dem Dongle sind. Ersetze, lösche, sortiere oder ergänze Aufnahmen (WAV/MP3/OGG); jede wird auf gleiche Lautstärke gebracht und Stille an den Enden entfernt. Jede Phase braucht mindestens einen Satz, der Dongle wählt daraus zufällig.",
+  "status.dialog.edit.intro": "Du startest mit den Sätzen, die auf dem Dongle sind. Lösche Aufnahmen oder füge neue hinzu (WAV/MP3/OGG); jede wird auf gleiche Lautstärke gebracht und Stille an den Enden entfernt. Jede Phase braucht mindestens einen Satz, der Dongle wählt daraus zufällig.",
   "@status.dialog.edit.intro": {
     "description": "Dongle web UI: explanation of the own dialog set editor",
-    "x-translated": "57f7ad20"
+    "x-translated": "90f40411"
   },
   "status.dialog.edit.yes_hint": "Nimm niemals „Ja“ auf: Ein aufgezeichnetes Ja kann als Zustimmung missbraucht werden.",
   "@status.dialog.edit.yes_hint": {
@@ -1354,11 +1374,6 @@
   "@status.dialog.edit.add": {
     "description": "Dongle web UI: button that adds a recording to a dialog phase",
     "x-translated": "d89cc8cc"
-  },
-  "status.dialog.edit.replace": "Ersetzen",
-  "@status.dialog.edit.replace": {
-    "description": "Dongle web UI: tooltip of the button that replaces a recording in the dialog set",
-    "x-translated": "ac775c40"
   },
   "status.dialog.edit.delete": "Löschen",
   "@status.dialog.edit.delete": {

@@ -83,6 +83,21 @@ bool i18n_sync_run(void);
 // changed may postdate what that pass looked at.
 bool i18n_sync_trigger_now(void);
 
+// Where the dialog clip set stands (#429), so the web UI can tell "being
+// downloaded" from "download failed" from "nothing published" — all three
+// look the same from the set alone (no set on the device).
+typedef enum {
+    I18N_DIALOG_IDLE = 0,     // not in dialog mode, or no pass looked yet
+    I18N_DIALOG_PENDING,      // a pass is due (trigger, speaker or lang change)
+    I18N_DIALOG_DOWNLOADING,  // the set (dialog_bytes) is being downloaded
+    I18N_DIALOG_FAILED,       // the last attempt failed: dialog_error
+    I18N_DIALOG_UNAVAILABLE,  // the audio channel has no set for this device
+    I18N_DIALOG_OK,           // the set is in place (or the own set is)
+} i18n_dialog_state_t;
+
+// The JSON name of `state` ("idle", "pending", ...), for /api/status.
+const char *i18n_dialog_state_name(i18n_dialog_state_t state);
+
 typedef struct {
     bool  ever_ran;
     bool  last_ok;
@@ -90,6 +105,9 @@ typedef struct {
     int64_t last_at_us;      // esp_timer time of the last completed pass
     char  lang[12];          // locale the last pass synced
     char  last_error[64];    // empty when last_ok
+    i18n_dialog_state_t dialog_state;
+    uint32_t dialog_bytes;   // size of the set being downloaded
+    char  dialog_error[64];  // reason of I18N_DIALOG_FAILED / _UNAVAILABLE
 } i18n_sync_status_t;
 
 void i18n_sync_snapshot(i18n_sync_status_t *out);

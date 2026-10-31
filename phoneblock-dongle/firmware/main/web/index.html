@@ -1390,6 +1390,18 @@ function renderStatus(){
     + '</p></details>'
     + '<details id="annSection" class="adminsec" style="display:none">'
     + '<summary>' + esc(t('status.ann.title')) + '</summary>'
+    // Answer-bot mode (#429) first: everything below depends on it — the
+    // announcement, or the interactive dialog with its speakers and tuning.
+    + '<p style="margin-top:.3rem;font-size:.85rem">'
+    + '  <label style="display:flex;align-items:center;gap:.4rem;font-weight:400;color:#444;margin:0">'
+    + '    <span>' + esc(t('status.dialog.mode')) + '</span>'
+    + '    <select id="annMode" style="width:auto;margin:0">'
+    + '      <option value="announcement">' + esc(t('status.dialog.mode.announcement')) + '</option>'
+    + '      <option value="dialog">' + esc(t('status.dialog.mode.dialog')) + '</option>'
+    + '    </select>'
+    + '  </label>'
+    + '</p>'
+    + '<p class="muted" style="margin:.3rem 0 .8rem;font-size:.8rem">' + esc(t('status.dialog.help')) + '</p>'
     // The announcement itself: only in announcement mode (dialog mode keeps
     // no announcement, #429).
     + '<div id="annAnnouncement">'
@@ -1412,18 +1424,6 @@ function renderStatus(){
     + '  <span id="annMsg" class="muted" style="margin-left:.6rem"></span>'
     + '</p>'
     + '</div>'
-    // Answer-bot mode (#429): announcement, or the interactive dialog with
-    // its VAD / comfort-noise tuning (shown only in dialog mode).
-    + '<p style="margin-top:.9rem;font-size:.85rem">'
-    + '  <label style="display:flex;align-items:center;gap:.4rem;font-weight:400;color:#444;margin:0">'
-    + '    <span>' + esc(t('status.dialog.mode')) + '</span>'
-    + '    <select id="annMode" style="width:auto;margin:0">'
-    + '      <option value="announcement">' + esc(t('status.dialog.mode.announcement')) + '</option>'
-    + '      <option value="dialog">' + esc(t('status.dialog.mode.dialog')) + '</option>'
-    + '    </select>'
-    + '  </label>'
-    + '</p>'
-    + '<p class="muted" style="margin-top:.3rem;font-size:.8rem">' + esc(t('status.dialog.help')) + '</p>'
     + '<div id="annDialog" style="display:none">'
     + '<p id="annDialogClips" class="muted" style="margin-top:.3rem;font-size:.85rem"></p>'
     // Speaker choice and the own set's editor (#429).
@@ -1446,6 +1446,9 @@ function renderStatus(){
     + '</p>'
     + '<p id="dlgMsg" class="muted"></p>'
     + '</details>'
+    + '<details style="margin-top:.6rem"><summary style="cursor:pointer;font-size:.9rem">'
+    +   esc(t('status.dialog.tuning'))
+    + '  <span id="annDialogMsg" class="muted" style="margin-left:.6rem"></span></summary>'
     + '<div style="display:flex;gap:1.2rem;flex-wrap:wrap;align-items:flex-start;margin-top:.4rem">'
     + '<label style="display:flex;flex-direction:column;gap:.2rem;font-size:.85rem">'
     +   esc(t('status.dialog.vad_silence_db'))
@@ -1466,11 +1469,7 @@ function renderStatus(){
     +     esc(t('status.dialog.comfort_noise.help')) + '</span>'
     + '</label>'
     + '</div>'
-    + '<p style="margin-top:.5rem">'
-    + '  <button id="annDialogSave" class="btn-primary" style="padding:.4rem .9rem;font-size:.9rem">'
-    +   esc(t('status.dialog.save')) + '</button>'
-    + '  <span id="annDialogMsg" class="muted" style="margin-left:.6rem"></span>'
-    + '</p>'
+    + '</details>'
     + '</div>'
     + '<p style="margin-top:.8rem;font-size:.85rem">'
     + '  <label title="' + esc(t('status.ann.accept_test.help')) + '" '
@@ -1653,11 +1652,12 @@ function renderDialog(d, ownAnnouncement){
   $('annAnnouncement').style.display = dialogOn ? 'none' : '';
   mode.dataset.own = ownAnnouncement ? '1' : '';
   mode.dataset.ownSet = d.own ? '1' : '';
-  $('annDialogClips').textContent = !d.clips_present ? t('status.dialog.clips.missing')
+  $('annDialogClips').textContent = !d.clips_present ? dlgSyncText(d)
     : d.own ? t('status.dialog.clips.own')
     : t('status.dialog.clips.present', {lang: langName(d.clips_lang)});
   if (dialogOn) dlgSpeakers(d);
-  $('annDialogClips').style.color = d.clips_present ? '' : '#b06000';
+  $('annDialogClips').style.color = d.clips_present ? ''
+    : (d.sync === 'pending' || d.sync === 'downloading') ? '#888' : '#b06000';
   if (!dialogPrefilled){
     $('annVadDb').value = d.vad_silence_db;
     $('annVadMs').value = d.vad_min_silence_ms;
@@ -1686,31 +1686,26 @@ function renderDialog(d, ownAnnouncement){
       refreshAll();
     };
   }
-  const save = $('annDialogSave');
-  if (!save.onclick){
-    save.onclick = async () => {
+  // The tuning fields save themselves on change: no button in the middle of
+  // the form that leaves open what it saves.
+  for (const [id, key, min, max] of [
+      ['annVadDb', 'vad_silence_db', -70, -10],
+      ['annVadMs', 'vad_min_silence_ms', 200, 5000],
+      ['annNoise', 'comfort_noise_level', -90, -30]]){
+    const el = $(id);
+    if (el.onchange) continue;
+    el.onchange = async () => {
       const m = $('annDialogMsg');
-      const fields = [
-        ['annVadDb', 'vad_silence_db', -70, -10],
-        ['annVadMs', 'vad_min_silence_ms', 200, 5000],
-        ['annNoise', 'comfort_noise_level', -90, -30],
-      ];
-      const params = {};
-      for (const [id, key, min, max] of fields){
-        const v = Number($(id).value);
-        if (!Number.isInteger(v) || v < min || v > max){
-          m.textContent = t('status.dialog.err.range', {min, max});
-          m.style.color = '#d93025';
-          $(id).focus();
-          return;
-        }
-        params[key] = String(v);
+      const v = Number(el.value);
+      if (!Number.isInteger(v) || v < min || v > max){
+        m.textContent = t('status.dialog.err.range', {min, max});
+        m.style.color = '#d93025';
+        el.focus();
+        return;
       }
-      save.disabled = true;
       m.textContent = '';
       let ok = false;
-      try { ok = await postConfig(params); } catch (_){}
-      save.disabled = false;
+      try { ok = await postConfig({[key]: String(v)}); } catch (_){}
       m.textContent = ok ? t('status.dialog.saved') : t('status.dialog.failed');
       m.style.color = ok ? '#188038' : '#d93025';
     };
@@ -3880,15 +3875,11 @@ function dlgRender(){
     clips.forEach((c, k) => {
       const r = document.createElement('div');
       r.style.cssText = 'display:flex;align-items:center;margin:.1rem 0';
-      const move = dk => () => { [clips[k], clips[k + dk]] = [clips[k + dk], clips[k]]; dlgRender(); };
+      // No order: the dongle picks a phase's clips at random (dialog.c).
       r.append(dlgBtn('▶', t('status.ann.play'), () => dlgPlay(playAlaw(c))),
-               dlgBtn('▲', '', move(-1)), dlgBtn('▼', '', move(1)),
-               dlgBtn('↻', t('status.dialog.edit.replace'), () => dlgPick(f => { clips[k] = f; })),
                dlgBtn('✕', t('status.dialog.edit.delete'), () => { clips.splice(k, 1); dlgRender(); }),
                Object.assign(document.createElement('span'),
-                 {className: 'muted', textContent: (k + 1) + ': ' + (c.length / 8000).toFixed(1) + ' s'}));
-      r.children[1].disabled = k === 0;
-      r.children[2].disabled = k === clips.length - 1;
+                 {className: 'muted', textContent: (c.length / 8000).toFixed(1) + ' s'}));
       box.append(r);
     });
     box.append(dlgBtn(t('status.dialog.edit.add'), '', () => dlgPick(f => { clips.push(f); })));
@@ -3975,6 +3966,17 @@ function wireDlgEditor(){
     }
     b.disabled = false;
   };
+}
+
+// Why there is no dialog set yet (GET /api/status dialog.sync, i18n_sync.h).
+function dlgSyncText(d){
+  switch (d.sync){
+    case 'pending':     return t('status.dialog.clips.pending');
+    case 'downloading': return t('status.dialog.clips.downloading', {kb: Math.round((d.sync_bytes || 0) / 1024)});
+    case 'failed':      return t('status.dialog.clips.failed', {error: d.sync_error || '?'});
+    case 'unavailable': return t('status.dialog.clips.unavailable');
+  }
+  return t('status.dialog.clips.missing');
 }
 
 let annAudio = null;
