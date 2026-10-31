@@ -56,6 +56,12 @@ API = "https://api.elevenlabs.io/v1"
 # The voice and model all published clips are spoken with.
 VOICE = "Leonie"
 MODEL = "eleven_v4"
+# Speed-up applied locally when converting a master (ffmpeg atempo, pitch
+# kept): eleven_v4 speaks ~30 % slower than eleven_multilingual_v2 and ignores
+# the API's voice_settings.speed. 1.25 brings it back to about the v2 pace.
+# Recorded per locale in voice.json; changing it only re-converts, no API
+# requests.
+TEMPO = 1.25
 
 # Most bytes the minimum set of a locale (clip 1 of every phase) may have:
 # the smallest device tier audio-assets.sh publishes ("s", for the 640 KB
@@ -101,6 +107,15 @@ def gradle_property(name):
 
 def setting(env, prop, default=None):
     return os.environ.get(env) or gradle_property(prop) or default
+
+
+def recorded_speaker(out_dir):
+    """The locale's voice.json, or {} if there is none."""
+    try:
+        with open(os.path.join(out_dir, "voice.json"), encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return {}
 
 
 def voice_id(voice, key):
@@ -195,11 +210,12 @@ def normalize(pcm):
     return [max(-32768, min(32767, round(v * g))) for v in pcm]
 
 
-def to_alaw(master, out):
-    """The device format from the master: ffmpeg resamples to 8 kHz mono
-    16-bit PCM; then silence is trimmed, the level normalized and the result
-    encoded as raw A-law."""
-    raw = subprocess.run(["ffmpeg", "-loglevel", "error", "-i", master,
+def to_alaw(master, out, tempo):
+    """The device format from the master: ffmpeg speeds it up by `tempo` and
+    resamples to 8 kHz mono 16-bit PCM; then silence is trimmed, the level
+    normalized and the result encoded as raw A-law."""
+    tempo_filter = ["-af", f"atempo={tempo}"] if tempo != 1 else []
+    raw = subprocess.run(["ffmpeg", "-loglevel", "error", "-i", master, *tempo_filter,
                           "-ar", "8000", "-ac", "1", "-f", "s16le", "-"],
                          check=True, stdout=subprocess.PIPE).stdout
     pcm = list(struct.unpack(f"<{len(raw) // 2}h", raw[:len(raw) // 2 * 2]))
@@ -268,9 +284,10 @@ def main():
         n = 0
         for lang in langs:
             d = os.path.join(AUDIO, lang)
+            tempo = recorded_speaker(d).get("tempo", 1)
             for name in sorted(os.listdir(d)) if os.path.isdir(d) else []:
                 if name.endswith(".mp3"):
-                    to_alaw(os.path.join(d, name), os.path.join(d, name[:-4] + ".alaw"))
+                    to_alaw(os.path.join(d, name), os.path.join(d, name[:-4] + ".alaw"), tempo)
                     n += 1
             if os.path.isdir(d) and not check_budget(lang):
                 over.append(lang)
@@ -292,7 +309,7 @@ def main():
     voice_name = setting("ELEVENLABS_VOICE", "elevenlabs.voice", VOICE)
     model = setting("ELEVENLABS_MODEL", "elevenlabs.model", MODEL)
     voice = voice_id(voice_name, key) if key else voice_name   # --dry-run without a key
-    speaker = {"voice": voice_name, "voice_id": voice, "model": model}
+    speaker = {"voice": voice_name, "voice_id": voice, "model": model, "tempo": TEMPO}
 
     langs = a.langs.split() if a.langs else languages()
     made = kept = removed = 0
@@ -304,12 +321,10 @@ def main():
         out_dir = os.path.join(AUDIO, lang)
         os.makedirs(out_dir, exist_ok=True)
         wanted = {os.path.join(out_dir, "voice.json")}
-        try:
-            with open(os.path.join(out_dir, "voice.json"), encoding="utf-8") as f:
-                was = json.load(f)
-            same_speaker = (was.get("voice_id"), was.get("model")) == (voice, model)
-        except (OSError, ValueError):
-            same_speaker = False
+        was = recorded_speaker(out_dir)
+        same_speaker = (was.get("voice_id"), was.get("model")) == (voice, model)
+        # Same masters, other speed-up: re-convert the kept clips.
+        reconvert = was.get("tempo", 1) != TEMPO
         for (ph, n), text in sorted(clips.items(), key=lambda c: (PHASES.index(c[0][0]), c[0][1])):
             base = os.path.join(out_dir, f"{ph.replace('_', '-')}-{n}")
             wanted.update((base + ".mp3", base + ".alaw", base + ".txt"))
@@ -319,8 +334,8 @@ def main():
             except OSError:
                 same = False
             if same and same_speaker and os.path.exists(base + ".mp3") and not a.force:
-                if not os.path.exists(base + ".alaw") and not a.dry_run:
-                    to_alaw(base + ".mp3", base + ".alaw")
+                if (reconvert or not os.path.exists(base + ".alaw")) and not a.dry_run:
+                    to_alaw(base + ".mp3", base + ".alaw", TEMPO)
                 kept += 1
                 continue
             print(f"{lang}: {os.path.basename(base)}: {text}")
@@ -337,7 +352,7 @@ def main():
                             *MASTER_FFMPEG, "-f", "mp3", base + ".mp3.tmp"], check=True)
             os.remove(base + ".dl.mp3")
             os.replace(base + ".mp3.tmp", base + ".mp3")
-            to_alaw(base + ".mp3", base + ".alaw")
+            to_alaw(base + ".mp3", base + ".alaw", TEMPO)
             with open(base + ".txt", "w", encoding="utf-8") as f:
                 f.write(text + "\n")
         if not a.dry_run:

@@ -102,7 +102,10 @@ model fixed in the script (`VOICE = "Leonie"`, `MODEL = "eleven_v4"`;
 `ELEVENLABS_VOICE` / `ELEVENLABS_MODEL` override them for a trial). It keeps
 a compact `.mp3` master next to each clip and records the speaker in
 `<lang>/voice.json`; a locale spoken by another voice or model is
-regenerated as a whole. Every `.alaw` is converted locally from that master: trimmed,
+regenerated as a whole. Eleven v4 speaks slowly and ignores the API's speed
+setting, so the conversion speeds the master up locally (`TEMPO = 1.25`,
+pitch kept, also recorded in `voice.json`). Changing `TEMPO` only
+re-converts, with no API requests. Every `.alaw` is converted locally from that master: trimmed,
 normalized to a common speech level, then A-law encoded.
 
 ```bash
