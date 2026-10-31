@@ -123,7 +123,12 @@ fi
 # -----------------------------------------------------------------------
 say "Test 6: app binary tampered after signing"
 cp "$TMP/app.bin" "$TMP/app_evil.bin"
-printf '\x42' | dd of="$TMP/app_evil.bin" bs=1 count=1 seek=0 conv=notrunc status=none
+# Flip the first byte (a fixed replacement value would leave the random
+# binary unchanged 1 time in 256, and the check would rightly accept it).
+first=$(od -An -tu1 -N1 "$TMP/app_evil.bin" | tr -d ' ')
+printf "\\$(printf '%03o' $(( first ^ 0xFF )))" \
+    | dd of="$TMP/app_evil.bin" bs=1 count=1 seek=0 conv=notrunc status=none
+cmp -s "$TMP/app.bin" "$TMP/app_evil.bin" && ng "tampering left the binary unchanged"
 if "$SCRIPT_DIR/verify-manifest.sh" "$TMP/manifest.json" "$TMP/pub.pem" "$TMP/app_evil.bin" >/dev/null 2>&1; then
     ng "tampered app binary accepted"
 else

@@ -16,7 +16,7 @@ device encoding (trimming, loudness, a wideband codec) is a local re-run of
 --convert-only, not new API credits. The .txt is the transcript and the cache
 key: a clip is only (re)generated when its sentence changed, so a run after
 editing one sentence costs one request. Clips whose key is gone from the
-ARB are deleted. scripts/i18n-assets.sh publishes the result.
+ARB are deleted. scripts/audio-assets.sh publishes the result.
 
 Usage:
     scripts/tts-dialog.py --list-voices
@@ -50,7 +50,7 @@ LANGUAGES = os.path.join(FIRMWARE, "i18n", "languages.txt")
 API = "https://api.elevenlabs.io/v1"
 
 # Most bytes the minimum set of a locale (clip 1 of every phase) may have:
-# the smallest device tier i18n-assets.sh publishes ("s", for the 640 KB
+# the smallest device tier audio-assets.sh publishes ("s", for the 640 KB
 # storage partition of the 4 MB boards, see test/test_storage_sim.c). Every
 # further clip goes into the larger tiers by priority, so only the minimum
 # set is a hard limit here.

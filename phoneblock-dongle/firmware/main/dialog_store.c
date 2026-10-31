@@ -29,8 +29,8 @@
 
 void dialog_store_file_path(char *out, size_t cap, const char *lang)
 {
-    // lang is a validated locale code (config_lang_code_valid() or
-    // dialog_set_parse()), so the name cannot escape the directory.
+    // lang is a validated locale code (dialog_lang_valid()), so the name
+    // cannot escape the directory.
     snprintf(out, cap, "%s/" FILE_PREFIX "%s.alaw", STORE_DIR, lang);
 }
 
@@ -39,55 +39,65 @@ static void index_path(char *out, size_t cap)
     snprintf(out, cap, "%s/" INDEX_NAME, STORE_DIR);
 }
 
-bool dialog_store_load(dialog_set_t *set, bool check_file)
+bool dialog_store_read_file(const char *lang, dialog_set_t *set)
+{
+    memset(set, 0, sizeof(*set));
+    if (!dialog_lang_valid(lang)) return false;
+    char path[DIALOG_STORE_PATH_CAP];
+    dialog_store_file_path(path, sizeof(path), lang);
+    struct stat st;
+    if (stat(path, &st) != 0 || st.st_size <= 0) return false;
+    FILE *f = fopen(path, "rb");
+    if (!f) return false;
+    // On the heap: this runs on the SIP task and an httpd worker.
+    uint8_t *hdr = malloc(DIALOG_HEADER_MAX);
+    size_t n = 0;
+    bool read_ok = false;
+    if (hdr) {
+        n = fread(hdr, 1, DIALOG_HEADER_MAX, f);
+        read_ok = !ferror(f);
+    }
+    fclose(f);
+    // A SHORT result after reading all there is (or DIALOG_HEADER_MAX
+    // bytes) is a truncated or oversized file: not a set either.
+    bool ok = read_ok &&
+              dialog_header_parse(hdr, n, (uint64_t)st.st_size, set) == DIALOG_HEADER_OK;
+    free(hdr);
+    if (!ok) {
+        memset(set, 0, sizeof(*set));
+        return false;
+    }
+    snprintf(set->lang, sizeof(set->lang), "%s", lang);
+    return true;
+}
+
+bool dialog_store_load(dialog_set_t *set)
 {
     memset(set, 0, sizeof(*set));
     char path[DIALOG_STORE_PATH_CAP];
     index_path(path, sizeof(path));
     FILE *f = fopen(path, "r");
     if (!f) return false;
-    // On the heap: this runs on the SIP task and an httpd worker.
-    char *text = malloc(DIALOG_SET_TEXT_CAP);
-    if (!text) {
-        fclose(f);
-        return false;
-    }
-    size_t n = fread(text, 1, DIALOG_SET_TEXT_CAP - 1, f);
+    char text[16];
+    size_t n = fread(text, 1, sizeof(text) - 1, f);
     bool read_ok = !ferror(f);
     fclose(f);
     text[n] = '\0';
-    bool parsed = read_ok && dialog_set_parse(text, set);
-    free(text);
-    if (!parsed) {
-        memset(set, 0, sizeof(*set));
-        return false;
-    }
-    if (!check_file) return true;
-
-    dialog_store_file_path(path, sizeof(path), set->lang);
-    struct stat st;
-    if (stat(path, &st) != 0 || st.st_size <= 0 ||
-        !dialog_set_within(set, (uint64_t)st.st_size)) {
-        memset(set, 0, sizeof(*set));
-        return false;
-    }
-    return true;
+    // Exactly "<lang>\n".
+    char *nl = strchr(text, '\n');
+    if (!read_ok || !nl || nl[1] != '\0') return false;
+    *nl = '\0';
+    return dialog_store_read_file(text, set);
 }
 
-int dialog_store_write_index(const dialog_set_t *set)
+int dialog_store_write_index(const char *lang)
 {
-    char *text = malloc(DIALOG_SET_TEXT_CAP);
-    if (!text) return PB_FAIL;
-    int n = dialog_set_format(set, text, DIALOG_SET_TEXT_CAP);
+    if (!dialog_lang_valid(lang)) return PB_FAIL;
     char path[DIALOG_STORE_PATH_CAP];
     index_path(path, sizeof(path));
-    FILE *f = n < 0 ? NULL : fopen(path, "w");
-    if (!f) {
-        free(text);
-        return PB_FAIL;
-    }
-    bool ok = fwrite(text, 1, (size_t)n, f) == (size_t)n;
-    free(text);
+    FILE *f = fopen(path, "w");
+    if (!f) return PB_FAIL;
+    bool ok = fprintf(f, "%s\n", lang) > 0;
     if (fclose(f) != 0) ok = false;
     if (!ok) {
         unlink(path);

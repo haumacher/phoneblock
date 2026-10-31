@@ -86,3 +86,9 @@ bool storage_budget_asset_fits(const storage_geometry_t *g, uint64_t total,
     uint64_t live     = div_up(used, g->page_payload);
     return within(g, capacity, live + live_pages(g, bytes));
 }
+
+uint64_t storage_budget_dialog(uint64_t total)
+{
+    return total >= STORAGE_DIALOG_M_TOTAL ? STORAGE_DIALOG_TIER_M
+                                           : STORAGE_DIALOG_TIER_S;
+}

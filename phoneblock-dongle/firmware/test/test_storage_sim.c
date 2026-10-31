@@ -20,6 +20,12 @@
 //    i18n assets are re-downloaded and the day the user uploads a recording.
 //
 // File contents are synthetic; sizes are the CDN's real asset sizes.
+//
+// Built twice (Makefile): test_storage_sim with the 640 KB partition of the
+// 4 MB boards (partitions.csv, sdkconfig.defaults) and test_storage_sim_16mb
+// with the 1 MB one of the 16 MB boards (partitions-16mb.csv, with the GC
+// budget of sdkconfig.defaults.esp32s3). The old policy's field reproduction
+// runs on the 640 KB layout only, where the failures were reported.
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -82,11 +88,28 @@ typedef struct {
     bool dialog;      // ab_mode=dialog: the German dialog clip set (#429)
 } device_t;
 
-// The German dialog clip set as published: one file of all seven clips
-// (i18n-assets.sh concatenates i18n/audio/dialog/de/), plus its clip-table
-// index (~100 B).
-#define DIALOG_BYTES 63903L
-#define DIALOG_INDEX 100L
+// The dialog clip set (#429): one file, clip table in its header, at the
+// largest size the layout's tier admits (storage_dialog_budget()) — the set
+// i18n_sync.c picks is never larger. SIM_DIALOG_BYTES overrides it for
+// measuring the tier limits (the curve in storage_budget.h). Plus the marker
+// naming the complete set's locale ("de\n").
+#define DIALOG_INDEX 3L
+
+static long dialog_bytes(void)
+{
+#ifdef SIM_DIALOG_BYTES
+    return SIM_DIALOG_BYTES;
+#else
+    return (long) storage_dialog_budget();
+#endif
+}
+
+// The partition's own numbers: esp_spiffs_info()'s total — (blocks - 2
+// spare) * 3 data pages + 1 emergency page, 1019 B each, the units
+// storage_budget.c computes in — and the community bucket a large list gets.
+#define SIM_BLOCKS  (SIM_PART_SIZE / 4096)
+#define SIM_TOTAL   (((SIM_BLOCKS - 2) * 3 + 1) * 1019L)
+#define SIM_BUCKET  (SIM_PART_SIZE >= 0x100000 ? 256 * KB : 128 * KB)
 
 typedef struct {
     int  write_failures;     // writes SPIFFS refused (SPIFFS_ERR_FULL etc.)
@@ -180,15 +203,16 @@ static bool new_download(const char *path, const char *final_vfs, long size)
 }
 
 // i18n_sync.c sync_dialog(): the set's one file through storage_download
-// with the precedence of every rarely written asset, the index after it. A
-// changed release (`delta`) replaces both.
+// with the precedence of every rarely written asset, the marker after it. A
+// changed release (`delta`: a few clips shorter, so still within the tier)
+// replaces both.
 static long s_dialog_have = -1;   // size of the set on flash, -1: none
 
 static void new_dialog(long delta)
 {
-    long bytes = DIALOG_BYTES + delta / 8;
+    long bytes = dialog_bytes() - delta / 8;
     if (s_dialog_have == bytes) return;              // up to date
-    sim_unlink("/dialog.idx");                       // the table changed
+    sim_unlink("/dialog.idx");                       // the set changed
     s_dialog_have = -1;
     if (!new_download("/dialog-de.alaw", "/spiffs/dialog-de.alaw", bytes)) return;
     size_t w;
@@ -375,10 +399,12 @@ static outcome_t run(const device_t *d, policy_t p)
 
 static const char *describe(const device_t *d)
 {
-    static char buf[128];
+    static char buf[192];
+    char set[32] = "";
+    if (d->dialog) snprintf(set, sizeof(set), ", dialog %ld KB", dialog_bytes() / KB);
     snprintf(buf, sizeof(buf), "own %3ld KB, ann %2ld KB, ui %2ld KB, list %4ld KB%s%s",
              d->custom / KB, d->ann / KB, d->ui / KB, d->list / KB,
-             d->legacy ? ", 1.6.0 flash" : "", d->dialog ? ", dialog" : "");
+             d->legacy ? ", 1.6.0 flash" : "", set);
     return buf;
 }
 
@@ -392,9 +418,13 @@ static void test_geometry(void)
     sim_init();
     size_t t, u;
     esp_spiffs_info("storage", &t, &u);
-    // (160 blocks - 2 spare) * 3 data pages + 1 emergency page, 1019 B each:
-    // the units storage_budget.c computes in.
-    CHECK(t == 484025 && u == 0, "partition reports %zu B total, %zu used", t, u);
+    CHECK(t == (size_t) SIM_TOTAL && u == 0, "%d KB partition reports %zu B total, %zu used",
+          SIM_PART_SIZE / 1024, t, u);
+    // The dialog tier follows the partition (storage_budget_dialog()).
+    long want = SIM_PART_SIZE >= 0x100000 ? (long) STORAGE_DIALOG_TIER_M
+                                          : (long) STORAGE_DIALOG_TIER_S;
+    CHECK((long) storage_dialog_budget() == want, "dialog budget %ld KB",
+          (long) storage_dialog_budget() / KB);
 }
 
 static void test_storage_download(void);
@@ -402,6 +432,10 @@ static void test_storage_download(void);
 static void test_old_reproduces_field_failures(void)
 {
     printf("old policy (1.7.0-beta3) reproduces the field failures\n");
+    if (SIM_PART_SIZE != 0xA0000) {
+        printf("    skipped: reported on the 640 KB layout\n");
+        return;
+    }
 
     // #529: plain dongle, a user with low thresholds (list larger than any
     // budget). The list fills the partition up to 48 KB below full every day.
@@ -497,8 +531,9 @@ static void test_new_policy(void)
           "default list cached every day (%d days without)", o.refusals);
     device_t big = { 0, 79 * KB, 29 * KB, 1000 * KB, false, false, false };
     o = run(&big, POLICY_NEW);
-    CHECK(o.refusals == 0 && o.community_bytes == 128 * KB,
-          "large list gets the 128 KB bucket (%ld KB)", o.community_bytes / KB);
+    CHECK(o.refusals == 0 && o.community_bytes == SIM_BUCKET,
+          "large list gets the %ld KB bucket (%ld KB)", SIM_BUCKET / KB,
+          o.community_bytes / KB);
 }
 
 static void test_self_healing(void)
@@ -518,7 +553,7 @@ static void test_self_healing(void)
     memset(&s_out, 0, sizeof(s_out));
     new_blocklist(&d);
     long after = sim_file_size("/community.bin");
-    CHECK(wrote && before == 192 * KB && after == 128 * KB && s_out.write_failures == 0,
+    CHECK(wrote && before == 192 * KB && after == SIM_BUCKET && s_out.write_failures == 0,
           "1.6.0 list %ld KB -> %ld KB on the first sync", before / KB, after / KB);
 }
 

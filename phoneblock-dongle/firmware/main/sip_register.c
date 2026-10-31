@@ -1527,16 +1527,18 @@ static void handle_ack(sip_ctx_t *c, const char *req, int req_len,
         // (neither the localized one nor an own recording), so without the
         // set the call is hung up without audio — and the log says why.
         if (config_ab_dialog() && d->rtp_dest_valid) {
-            dialog_set_t set;
-            if (dialog_store_load(&set, true)) {
+            // ~1.3 KB of clip table: on the heap, not the SIP task's stack.
+            dialog_set_t *set = malloc(sizeof(*set));
+            if (set && dialog_store_load(set)) {
                 pb_log_info(TAG, "ACK received → dialog (%s clips) until the caller "
-                                 "hangs up", set.lang);
+                                 "hangs up", set->lang);
                 rtp_srtp_tx_t srtp = { .enabled = d->srtp_tx };
                 if (d->srtp_tx) {
                     memcpy(srtp.key, d->srtp_tx_key, sizeof(srtp.key));
                 }
                 rtp_play_dialog(&d->rtp_dest, &srtp,
-                                d->srtp_rx_valid ? d->srtp_rx_key : NULL, &set);
+                                d->srtp_rx_valid ? d->srtp_rx_key : NULL, set);
+                free(set);
                 // No deadline: the call lasts as long as the caller talks.
                 // A remote BYE aborts the task; if the caller's media stops
                 // instead, the task ends itself (DIALOG_RX_TIMEOUT_MS) and
@@ -1546,6 +1548,7 @@ static void handle_ack(sip_ctx_t *c, const char *req, int req_len,
                 d->state = DIALOG_STREAMING;
                 return;
             }
+            free(set);
             pb_log_warn(TAG, "ACK received → dialog mode is on, but the dialog clip "
                              "set is not (yet) on the device → BYE without audio");
             send_bye(c);

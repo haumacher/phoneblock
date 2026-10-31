@@ -126,12 +126,30 @@ static void test_asset_fits(void)
     CHECK(storage_budget_asset_fits(&G, TOTAL, 0, 0), "empty file fits");
 }
 
+// The dialog tier follows the partition (storage_budget.h): the 640 KB one
+// of the 4 MB boards (esp_spiffs_info() total 484025) gets S, the 1 MB one of
+// the 16 MB boards (777497) M; the tiers are what audio-assets.sh publishes.
+static void test_dialog(void)
+{
+    printf("dialog\n");
+    CHECK(STORAGE_DIALOG_TIER_S == 128 * 1024, "S is 128 KiB");
+    CHECK(STORAGE_DIALOG_TIER_S < STORAGE_DIALOG_TIER_M, "M above S");
+    CHECK(storage_budget_dialog(484025) == STORAGE_DIALOG_TIER_S, "640 KB partition: S");
+    CHECK(storage_budget_dialog(777497) == STORAGE_DIALOG_TIER_M, "1 MB partition: M");
+    CHECK(storage_budget_dialog(STORAGE_DIALOG_M_TOTAL - 1) == STORAGE_DIALOG_TIER_S,
+          "just below the 1 MB partition: S");
+    CHECK(storage_budget_dialog(0) == STORAGE_DIALOG_TIER_S, "nothing known: S");
+    CHECK(storage_budget_dialog(16u * 1024 * 1024) == STORAGE_DIALOG_TIER_M,
+          "larger partitions: M (only validated up to there)");
+}
+
 int main(void)
 {
     test_footprint();
     test_overhead();
     test_community();
     test_asset_fits();
+    test_dialog();
 
     printf("\n%d checks, %d failed\n", tests_run, tests_failed);
     return tests_failed ? 1 : 0;

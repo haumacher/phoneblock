@@ -18,7 +18,8 @@
 //   (endless)                       no  → say(cant-hear-you)
 //
 // Each phase is a set of 1..DIALOG_MAX_CLIPS recorded clips (delivered by the
-// CDN, see dialog_manifest.h); the number is data, not code. A phase picks a
+// CDN, see dialog_manifest.h, with the clip table in the file's header); the
+// number is data, not code. A phase picks a
 // random clip and, with more than one, never the clip it played last.
 //
 // await(): if the caller speaks, their turn ends once they have been quiet for
@@ -45,9 +46,9 @@ typedef enum {
     DIALOG_PHASE_COUNT
 } dialog_phase_t;
 
-// Most clips a phase may have on the device. More in the manifest are a
-// malformed set (dialog_manifest.h skips the locale).
-#define DIALOG_MAX_CLIPS        8
+// Most clips a phase may have on the device. More in a set's header make the
+// set malformed (dialog_header_parse()).
+#define DIALOG_MAX_CLIPS        32
 // How long an await waits for a caller who says nothing.
 #define DIALOG_AWAIT_TIMEOUT_MS 3000
 // No packet from the caller for this long ends the dialog.
@@ -121,13 +122,33 @@ dialog_action_t dialog_tick(dialog_sm_t *d, uint32_t ms, bool clip_done);
 // --- The clip set on the device -------------------------------------------
 //
 // The clips of a locale arrive as ONE file (one SPIFFS object costs far less
-// than eight, test_storage_sim.c) plus a clip table: where in that file each
-// clip of each phase lies. i18n_sync.c stores the table as a small index next
-// to the file (dialog_store.h), written only once the file is in place, so the
-// index's presence means the set is complete. Index format, one line each:
+// than one per clip, test_storage_sim.c) that starts with its clip table: a
+// header saying where in the file each clip of each phase lies. The
+// manifest's SHA-256 covers the header like the audio after it, so a verified
+// file is a consistent set. All integers little-endian:
 //
-//   <lang>\n
-//   <off>:<len> <off>:<len> ...\n     one line per phase, dialog_phase_t order
+//   offset    size  field
+//   0         4     magic "PBDS"
+//   4         1     version, DIALOG_HEADER_VERSION
+//   5         1     P, the number of phases (>= DIALOG_PHASE_COUNT); the
+//                   first DIALOG_PHASE_COUNT in dialog_phase_t order, any
+//                   further ones a later firmware's, skipped here
+//   6         2     H, the header's length: where the audio begins
+//   8         P     clips per phase
+//   8 + P     8 * n per clip, phase by phase in clip order: u32 offset,
+//                   u32 length, the offset counted from the file's start
+//   H         ...   the clips, raw A-law
+//
+// H must equal 8 + P + 8 * n (n: all clips of all P phases) and stay within
+// DIALOG_HEADER_MAX; every clip of the known phases is non-empty and lies
+// between H and the end of the file. scripts/audio-assets.sh writes it.
+
+#define DIALOG_HEADER_VERSION 1
+// Smallest header (no clip at all — never valid, but the fixed part).
+#define DIALOG_HEADER_MIN     8
+// Largest header the device reads: the five phases at DIALOG_MAX_CLIPS clips
+// each take 1293 bytes; the rest is room for phases of a later firmware.
+#define DIALOG_HEADER_MAX     2048
 
 typedef struct {
     uint32_t off;   // byte offset in the set's file
@@ -140,20 +161,21 @@ typedef struct {
     dialog_clip_t clip[DIALOG_PHASE_COUNT][DIALOG_MAX_CLIPS];
 } dialog_set_t;
 
-// Longest index (dialog_set_format()); a buffer of this size always holds it.
-#define DIALOG_SET_TEXT_CAP 1024
+typedef enum {
+    DIALOG_HEADER_OK = 0,
+    DIALOG_HEADER_SHORT,   // `n` bytes end before the header does
+    DIALOG_HEADER_BAD,     // not a valid set (see the format above)
+} dialog_header_result_t;
 
-// Whether two sets name the same locale and the same clip table.
-bool dialog_set_equal(const dialog_set_t *a, const dialog_set_t *b);
+// Parses the header of a set file of `file_size` bytes whose first `n`
+// bytes are in `buf` (reading min(file_size, DIALOG_HEADER_MAX) bytes is
+// always enough). Fills set->count and set->clip on DIALOG_HEADER_OK and
+// clears them otherwise; set->lang is the caller's. SHORT when the header
+// runs past the `n` bytes — with the whole file or DIALOG_HEADER_MAX bytes
+// read, a truncated or oversized file.
+dialog_header_result_t dialog_header_parse(const uint8_t *buf, size_t n,
+                                           uint64_t file_size, dialog_set_t *set);
 
-// Whether every clip of `set` lies inside a file of `bytes`.
-bool dialog_set_within(const dialog_set_t *set, uint64_t bytes);
-
-// Writes the index for `set` into `out`. Returns its length, or -1 if it
-// does not fit.
-int dialog_set_format(const dialog_set_t *set, char *out, size_t cap);
-
-// Parses an index. False (and *set zeroed) unless the locale is a plain code
-// ([a-z0-9-], 2..11 chars) and every phase has 1..DIALOG_MAX_CLIPS clips of
-// non-zero length whose end does not overflow 32 bits.
-bool dialog_set_parse(const char *text, dialog_set_t *set);
+// Whether `s` is a locale code a set may be stored under: [a-z0-9-], 2..11
+// characters, no leading, trailing or doubled '-'.
+bool dialog_lang_valid(const char *s);

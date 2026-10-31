@@ -12,13 +12,14 @@
 // announcement.
 //
 // Layout:
-//   dialog-<lang>.alaw   every clip of the set, from locale <lang>, as ONE
-//                        file (one SPIFFS object instead of one per clip)
-//   dialog.idx           the clip table (dialog_set_format()), written after
-//                        the file is in place: present ⇒ set complete
+//   dialog-<lang>.alaw   the set from locale <lang> as published: ONE file,
+//                        its clip table in the header (dialog.h), then every
+//                        clip (one SPIFFS object instead of one per clip)
+//   dialog.idx           "<lang>\n", written once that file is verified, in
+//                        place and its header valid: present ⇒ set complete
 //
 // The set is kept only while ab_mode is "dialog"; at most one set (one
-// locale) is on the device.
+// locale, one size tier) is on the device.
 
 #ifdef ESP_PLATFORM
 #define DIALOG_STORE_PATH_CAP 64
@@ -29,13 +30,19 @@
 // Path of the set's file for `lang` (a validated locale code).
 void dialog_store_file_path(char *out, size_t cap, const char *lang);
 
-// Reads the index. True if it names a complete set; with `check_file` the
-// set's file must also be there and hold every clip of the table (the call
-// path does that, the status poll does not). False when there is no set.
-bool dialog_store_load(dialog_set_t *set, bool check_file);
+// Reads the clip table from the header of the file of `lang`, checked
+// against the file's size (dialog_header_parse()). True and *set filled
+// (set->lang = lang) if the file is a valid set; false otherwise, *set
+// cleared.
+bool dialog_store_read_file(const char *lang, dialog_set_t *set);
 
-// Writes the index for a set whose file is in place. PB_OK or PB_FAIL.
-int dialog_store_write_index(const dialog_set_t *set);
+// The complete set on the device: the locale the index names, its file's
+// clip table read as above. False when there is none.
+bool dialog_store_load(dialog_set_t *set);
+
+// Marks the set of `lang`, whose file is in place and valid, complete.
+// PB_OK or PB_FAIL.
+int dialog_store_write_index(const char *lang);
 
 // Removes the index only: the file stays, but is no longer a usable set.
 void dialog_store_drop_index(void);

@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "strbuf.h"
 
 // Must be last: bans unsafe string APIs for the rest of this file.
 #include "banned_apis.h"
@@ -137,10 +136,14 @@ dialog_action_t dialog_tick(dialog_sm_t *d, uint32_t ms, bool clip_done)
     return act(DIALOG_ACT_NONE);
 }
 
-// --- Clip-set index ---------------------------------------------------------
+// --- Clip-set header --------------------------------------------------------
 
-static bool lang_ok(const char *s, size_t n)
+bool dialog_lang_valid(const char *s)
 {
+    if (!s) return false;
+    // memchr stops at the terminator: never reads past a short string.
+    const char *z = memchr(s, '\0', 12);
+    size_t n = z ? (size_t)(z - s) : 12;
     if (n < 2 || n > 11) return false;
     if (s[0] == '-' || s[n - 1] == '-') return false;
     for (size_t i = 0; i < n; i++) {
@@ -152,94 +155,68 @@ static bool lang_ok(const char *s, size_t n)
     return true;
 }
 
-bool dialog_set_equal(const dialog_set_t *a, const dialog_set_t *b)
+static uint32_t le32(const uint8_t *p)
 {
-    if (strcmp(a->lang, b->lang) != 0) return false;
+    return (uint32_t)p[0] | (uint32_t)p[1] << 8 | (uint32_t)p[2] << 16 |
+           (uint32_t)p[3] << 24;
+}
+
+static dialog_header_result_t header_fail(dialog_set_t *set,
+                                          dialog_header_result_t r)
+{
+    memset(set->count, 0, sizeof(set->count));
+    memset(set->clip, 0, sizeof(set->clip));
+    return r;
+}
+
+dialog_header_result_t dialog_header_parse(const uint8_t *buf, size_t n,
+                                           uint64_t file_size, dialog_set_t *set)
+{
+    header_fail(set, DIALOG_HEADER_OK);
+    if (n > file_size) n = (size_t)file_size;   // never trust bytes past the end
+    if (n < DIALOG_HEADER_MIN) {
+        // Too few bytes for the fixed part: SHORT only while the file could
+        // still hold one.
+        return header_fail(set, file_size < DIALOG_HEADER_MIN ? DIALOG_HEADER_BAD
+                                                              : DIALOG_HEADER_SHORT);
+    }
+    if (memcmp(buf, "PBDS", 4) != 0) return header_fail(set, DIALOG_HEADER_BAD);
+    if (buf[4] != DIALOG_HEADER_VERSION) return header_fail(set, DIALOG_HEADER_BAD);
+    uint32_t phases = buf[5];
+    uint32_t hlen   = (uint32_t)buf[6] | (uint32_t)buf[7] << 8;
+    if (phases < DIALOG_PHASE_COUNT) return header_fail(set, DIALOG_HEADER_BAD);
+    if (hlen > DIALOG_HEADER_MAX || hlen > file_size) {
+        return header_fail(set, DIALOG_HEADER_BAD);
+    }
+    if (n < DIALOG_HEADER_MIN + phases) return header_fail(set, DIALOG_HEADER_SHORT);
+
+    // The table's size from the counts, before any entry is read.
+    uint32_t clips = 0;
+    for (uint32_t p = 0; p < phases; p++) {
+        uint8_t c = buf[DIALOG_HEADER_MIN + p];
+        if (p < DIALOG_PHASE_COUNT && (c < 1 || c > DIALOG_MAX_CLIPS)) {
+            return header_fail(set, DIALOG_HEADER_BAD);
+        }
+        clips += c;
+    }
+    if (hlen != DIALOG_HEADER_MIN + phases + 8u * clips) {
+        return header_fail(set, DIALOG_HEADER_BAD);
+    }
+    if (n < hlen) return header_fail(set, DIALOG_HEADER_SHORT);
+
+    const uint8_t *e = buf + DIALOG_HEADER_MIN + phases;
     for (int p = 0; p < DIALOG_PHASE_COUNT; p++) {
-        if (a->count[p] != b->count[p]) return false;
-        for (int c = 0; c < a->count[p] && c < DIALOG_MAX_CLIPS; c++) {
-            if (a->clip[p][c].off != b->clip[p][c].off ||
-                a->clip[p][c].len != b->clip[p][c].len) return false;
+        uint8_t c = buf[DIALOG_HEADER_MIN + p];
+        for (int k = 0; k < c; k++, e += 8) {
+            uint32_t off = le32(e), len = le32(e + 4);
+            if (len == 0 || off < hlen || (uint64_t)off + len > file_size) {
+                return header_fail(set, DIALOG_HEADER_BAD);
+            }
+            set->clip[p][k].off = off;
+            set->clip[p][k].len = len;
         }
+        set->count[p] = c;
     }
-    return true;
-}
-
-bool dialog_set_within(const dialog_set_t *set, uint64_t bytes)
-{
-    for (int p = 0; p < DIALOG_PHASE_COUNT; p++) {
-        if (set->count[p] < 1 || set->count[p] > DIALOG_MAX_CLIPS) return false;
-        for (int c = 0; c < set->count[p]; c++) {
-            const dialog_clip_t *k = &set->clip[p][c];
-            if (k->len == 0) return false;
-            if ((uint64_t)k->off + k->len > bytes) return false;
-        }
-    }
-    return true;
-}
-
-int dialog_set_format(const dialog_set_t *set, char *out, size_t cap)
-{
-    if (cap == 0 || cap > INT32_MAX) return -1;
-    strbuf_t sb = sb_init(out, (int)cap);
-    sb_appendf(&sb, "%s\n", set->lang);
-    for (int p = 0; p < DIALOG_PHASE_COUNT; p++) {
-        for (int c = 0; c < set->count[p]; c++) {
-            sb_appendf(&sb, "%s%lu:%lu", c ? " " : "",
-                       (unsigned long)set->clip[p][c].off,
-                       (unsigned long)set->clip[p][c].len);
-        }
-        sb_appendf(&sb, "\n");
-    }
-    if (sb.truncated) return -1;
-    return sb.len;
-}
-
-// A decimal uint32 at *p; advances *p. False if there is none or it overflows.
-static bool parse_u32(const char **p, uint32_t *out)
-{
-    const char *s = *p;
-    if (*s < '0' || *s > '9') return false;
-    uint64_t v = 0;
-    while (*s >= '0' && *s <= '9') {
-        v = v * 10u + (uint64_t)(*s - '0');
-        if (v > UINT32_MAX) return false;
-        s++;
-    }
-    *out = (uint32_t)v;
-    *p = s;
-    return true;
-}
-
-bool dialog_set_parse(const char *text, dialog_set_t *set)
-{
-    memset(set, 0, sizeof(*set));
-    if (!text) return false;
-
-    dialog_set_t s;
-    memset(&s, 0, sizeof(s));
-    const char *p = text;
-    size_t n = strcspn(p, "\n");
-    if (!lang_ok(p, n) || p[n] != '\n') return false;
-    memcpy(s.lang, p, n);
-    p += n + 1;
-
-    for (int ph = 0; ph < DIALOG_PHASE_COUNT; ph++) {
-        int c = 0;
-        for (;;) {
-            if (c == DIALOG_MAX_CLIPS) return false;
-            dialog_clip_t *k = &s.clip[ph][c];
-            if (!parse_u32(&p, &k->off) || *p++ != ':') return false;
-            if (!parse_u32(&p, &k->len) || k->len == 0) return false;
-            if ((uint64_t)k->off + k->len > UINT32_MAX) return false;
-            c++;
-            if (*p == ' ') { p++; continue; }
-            if (*p == '\n') { p++; break; }
-            return false;
-        }
-        s.count[ph] = (uint8_t)c;
-    }
-    if (*p != '\0') return false;
-    *set = s;
-    return true;
+    // Entries of further phases are not this firmware's to check.
+    return DIALOG_HEADER_OK;
 }

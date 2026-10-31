@@ -37,6 +37,11 @@
 // -1 if the partition cannot be read (not mounted).
 int64_t storage_community_budget(void);
 
+// Largest dialog clip set file (#429) the partition takes, in bytes: the
+// tier limit of its layout (storage_budget_dialog()), UINT64_MAX on a plain
+// filesystem (the Linux port), which takes the largest published tier.
+uint64_t storage_dialog_budget(void);
+
 // Makes room for a rarely written file of `bytes` that is about to be written
 // (precedence over the community cache). If the partition's budget does not
 // allow it, the cached community list is evicted first; if that is still not

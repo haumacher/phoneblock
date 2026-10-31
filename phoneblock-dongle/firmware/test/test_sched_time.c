@@ -55,6 +55,37 @@ int main(void)
     // Result is always strictly positive.
     assert(seconds_until_daily(utc(2026, 6, 1, 0, 0, 0), 0, 0) > 0);
 
+    // --- Retry jobs (sched_retry_delay_s) -------------------------------
+    // The i18n job: 5 min doubling to a day, then a daily recheck ± 30 min.
+    const sched_retry_t i18n = { 300, 86400, 86400, 1800 };
+    uint32_t b = 300;
+    assert(sched_retry_delay_s(&i18n, false, &b, 0) == 300 && b == 600);
+    assert(sched_retry_delay_s(&i18n, false, &b, 0) == 600 && b == 1200);
+    for (int i = 0; i < 20; i++) sched_retry_delay_s(&i18n, false, &b, 0);
+    assert(b == 86400);                                      // capped
+    assert(sched_retry_delay_s(&i18n, false, &b, 0) == 86400 && b == 86400);
+    // A success resets the backoff and schedules the recheck, spread over
+    // [recheck - jitter, recheck + jitter).
+    assert(sched_retry_delay_s(&i18n, true, &b, 0) == 86400 - 1800 && b == 300);
+    assert(sched_retry_delay_s(&i18n, true, &b, 3599) == 86400 + 1799);
+    assert(sched_retry_delay_s(&i18n, true, &b, 3600) == 86400 - 1800);
+    for (uint32_t r = 0; r < 100000; r += 977) {
+        uint32_t d = sched_retry_delay_s(&i18n, true, &b, r * 2654435761u);
+        assert(d >= 86400 - 1800 && d < 86400 + 1800);
+    }
+    // ... and the next failure starts over at the shortest backoff.
+    assert(sched_retry_delay_s(&i18n, false, &b, 0) == 300);
+    // Without a recheck a success means "not again" (the old behaviour).
+    const sched_retry_t once = { 300, 86400, 0, 0 };
+    b = 2400;
+    assert(sched_retry_delay_s(&once, true, &b, 12345) == SCHED_NEVER_S && b == 300);
+    // No jitter: exactly the recheck interval.
+    const sched_retry_t exact = { 300, 86400, 3600, 0 };
+    assert(sched_retry_delay_s(&exact, true, &b, 777) == 3600);
+    // A backoff below the minimum (never set) waits the minimum.
+    b = 0;
+    assert(sched_retry_delay_s(&i18n, false, &b, 0) == 300 && b == 600);
+
     printf("test_sched_time: OK\n");
     return 0;
 }

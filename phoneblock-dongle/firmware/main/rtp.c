@@ -375,6 +375,12 @@ typedef struct {
     uint16_t                  seq;
     uint32_t                  timestamp;
     uint32_t                  ssrc;
+    // Packets lost to a failing sendto() since the first failure of the
+    // current run; 0 while sending works. A WiFi TX stall (weak signal)
+    // fails every packet for a second or more — one WARN per packet would
+    // flush the 32-entry log ring, so the run gets one line at its start
+    // and one when it ends.
+    uint32_t                  send_failures;
 } rtp_tx_t;
 
 static void rtp_tx_init(rtp_tx_t *tx, int sock, const struct sockaddr_in *dest,
@@ -386,6 +392,7 @@ static void rtp_tx_init(rtp_tx_t *tx, int sock, const struct sockaddr_in *dest,
     tx->seq       = (uint16_t)pb_random_u32();
     tx->timestamp = pb_random_u32();
     tx->ssrc      = pb_random_u32();
+    tx->send_failures = 0;
 }
 
 // Sends one 20 ms PCMA frame. `pkt` holds the FRAME_SAMPLES payload bytes
@@ -440,7 +447,13 @@ static void rtp_tx_frame(rtp_tx_t *tx, uint8_t pkt[RTP_HEADER_BYTES + FRAME_BYTE
     int n = sendto(tx->sock, send_buf, send_len, 0,
                    (const struct sockaddr *)tx->dest, sizeof(*tx->dest));
     if (n < 0) {
-        pb_log_warn(TAG, "rtp sendto: %s", strerror(errno));
+        if (tx->send_failures++ == 0) {
+            pb_log_warn(TAG, "rtp sendto: %s", strerror(errno));
+        }
+    } else if (tx->send_failures > 0) {
+        pb_log_warn(TAG, "rtp sendto: sending again after %u lost packet(s)",
+                    (unsigned)tx->send_failures);
+        tx->send_failures = 0;
     }
 }
 

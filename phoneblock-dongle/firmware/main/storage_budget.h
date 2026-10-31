@@ -83,3 +83,32 @@ uint64_t storage_budget_community(const storage_geometry_t *g, uint64_t total,
 // replace is still counted.
 bool storage_budget_asset_fits(const storage_geometry_t *g, uint64_t total,
                                uint64_t used, uint64_t bytes);
+
+// --- The dialog clip set (#429) ----------------------------------------------
+//
+// The dialog's clip set is published in up to three size tiers per locale
+// (scripts/audio-assets.sh, which reads the two limits below from this file):
+// each the longest prefix of a fixed clip priority order that fits the
+// tier's limit, header included. A device takes the largest tier within its
+// dialog budget, which depends on the partition alone:
+//
+//   S  the 640 KB partition of the 4 MB boards (partitions.csv)
+//   M  the 1 MB partition of the 16 MB boards (partitions-16mb.csv)
+//   L  unlimited: everything the locale has (the Linux port, storage.c)
+//
+// Both limits are validated by test_storage_sim.c on their layout: 60 days
+// next to the largest localized assets without a failed write, a GC error or
+// a WARN/ERROR line, a community list on every day. S as asked for (a
+// 146 KB set already costs the community cache on some rows). M with margin:
+// on the 1 MB layout the rows stay clean up to 288 KB, but above 224 KB a
+// large community list drops from the 128 KB bucket to the 64 KB one, and at
+// 320 KB it is lost on some rows. 224 KB keeps the 128 KB bucket the 640 KB
+// layout gives without a dialog.
+#define STORAGE_DIALOG_TIER_S 131072u
+#define STORAGE_DIALOG_TIER_M 229376u
+// esp_spiffs_info()'s total of the 1 MB partition: from here on the M tier.
+#define STORAGE_DIALOG_M_TOTAL 777497u
+
+// Largest dialog set file, in bytes, for a SPIFFS partition whose
+// esp_spiffs_info() total is `total`.
+uint64_t storage_budget_dialog(uint64_t total);
