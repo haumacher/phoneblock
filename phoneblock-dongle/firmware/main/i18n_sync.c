@@ -72,6 +72,29 @@ static bool                s_rerun;
 // Small helpers.
 // ---------------------------------------------------------------------------
 
+const char *i18n_dialog_state_name(i18n_dialog_state_t state)
+{
+    switch (state) {
+    case I18N_DIALOG_PENDING:     return "pending";
+    case I18N_DIALOG_DOWNLOADING: return "downloading";
+    case I18N_DIALOG_FAILED:      return "failed";
+    case I18N_DIALOG_UNAVAILABLE: return "unavailable";
+    case I18N_DIALOG_OK:          return "ok";
+    case I18N_DIALOG_IDLE:        break;
+    }
+    return "idle";
+}
+
+static void set_dialog_state(i18n_dialog_state_t state, uint32_t bytes, const char *why)
+{
+    if (!s_lock) return;
+    pb_mutex_lock(s_lock);
+    s_status.dialog_state = state;
+    s_status.dialog_bytes = bytes;
+    snprintf(s_status.dialog_error, sizeof(s_status.dialog_error), "%s", why ? why : "");
+    pb_mutex_unlock(s_lock);
+}
+
 static void set_status(bool ok, const char *lang, const char *err)
 {
     if (!s_lock) return;
@@ -466,6 +489,7 @@ static bool sync_dialog(const cJSON *assets, const char *base_url,
                         char *err, size_t err_cap)
 {
     if (!config_ab_dialog()) {
+        set_dialog_state(I18N_DIALOG_IDLE, 0, NULL);
         int removed = dialog_store_remove_all();
         if (removed > 0) {
             pb_log_info(TAG, "announcement mode — %d dialog file(s) removed", removed);
@@ -489,8 +513,12 @@ static bool sync_dialog(const cJSON *assets, const char *base_url,
     audio_asset_t ix;
     if (!dialog_manifest_index(assets, chain, chain_n, &ix)) {
         unlink(spk_path);
-        if (own) return true;
+        if (own) {
+            set_dialog_state(I18N_DIALOG_OK, 0, NULL);
+            return true;
+        }
         dialog_store_remove_all();
+        set_dialog_state(I18N_DIALOG_UNAVAILABLE, 0, chain[0]);
         pb_log_warn(TAG, "dialog mode, but the audio channel has no dialog index "
                          "for '%s' or its fallbacks — calls are hung up without audio",
                     chain[0]);
@@ -502,6 +530,7 @@ static bool sync_dialog(const cJSON *assets, const char *base_url,
     if (!(sha256_file_hex(spk_path, on_disk) && strcasecmp(on_disk, ix.sha256) == 0)) {
         snprintf(url, sizeof(url), "%s/%s", base_url, ix.path);
         if (!download_verify_rename(url, spk_path, ix.sha256, ix.bytes, err, err_cap)) {
+            set_dialog_state(I18N_DIALOG_FAILED, 0, err);
             return false;
         }
     }
@@ -521,6 +550,7 @@ static bool sync_dialog(const cJSON *assets, const char *base_url,
 
     if (own && dialog_store_claim_own()) {
         pb_log_info(TAG, "own dialog set active — CDN set not fetched");
+        set_dialog_state(I18N_DIALOG_OK, 0, NULL);
         goto out;
     }
     if (!index) {
@@ -555,6 +585,7 @@ static bool sync_dialog(const cJSON *assets, const char *base_url,
         pb_log_warn(TAG, "dialog mode, but the '%s' dialog index has no set within "
                          "%llu bytes — calls are hung up without audio",
                     ix.lang, (unsigned long long)budget);
+        set_dialog_state(I18N_DIALOG_UNAVAILABLE, 0, ix.lang);
         goto out;   // nothing to fetch: not a failed pass
     }
     if (pick != DIALOG_PICK_CHOSEN) {
@@ -576,6 +607,7 @@ static bool sync_dialog(const cJSON *assets, const char *base_url,
     if (file_ok && index_ok) {
         pb_log_info(TAG, "dialog clip set '%s/%s' (%lu B) up to date", want.lang,
                     want.speaker, (unsigned long)want.bytes);
+        set_dialog_state(I18N_DIALOG_OK, 0, NULL);
         goto out;
     }
 
@@ -592,6 +624,7 @@ static bool sync_dialog(const cJSON *assets, const char *base_url,
         // went with dialog_store_remove_others(). A failed download leaves
         // no set; the next sync retries.
         unlink(path);
+        set_dialog_state(I18N_DIALOG_DOWNLOADING, want.bytes, NULL);
         snprintf(url, sizeof(url), "%s/%s", base_url, want.path);
         if (!download_verify_rename(url, path, want.sha256, want.bytes, err, err_cap)) {
             ok = false;
@@ -613,7 +646,9 @@ static bool sync_dialog(const cJSON *assets, const char *base_url,
     }
     pb_log_info(TAG, "dialog clip set '%s/%s' complete (%lu B, %s)", want.lang,
                 want.speaker, (unsigned long)want.bytes, want.path);
+    set_dialog_state(I18N_DIALOG_OK, 0, NULL);
 out:
+    if (!ok) set_dialog_state(I18N_DIALOG_FAILED, 0, err);
     cJSON_Delete(index);
     free(have);
     return ok;
@@ -807,6 +842,12 @@ static void run_once(void)
             pb_log_warn(TAG, "%s", err3);
         }
         if (ok) { ok = false; snprintf(err, sizeof(err), "%s", err3); }
+        if (dialog_mode) {
+            // err3 alone: the 64-byte reason has no room for a prefix, and
+            // the UI already says it is the dialog set that failed.
+            set_dialog_state(I18N_DIALOG_FAILED, 0,
+                             err3[0] ? err3 : "audio channel unreadable");
+        }
     } else {
         // The announcement has no embedded fallback (silence), so it uses
         // the [ui_lang, en, de] chain built above; downloaded after the
@@ -867,6 +908,12 @@ bool i18n_sync_trigger_now(void)
     pb_mutex_lock(s_lock);
     bool running = s_status.running;
     if (running) s_rerun = true;
+    // A change the dialog reacts to (speaker, locale, own set dropped): until
+    // the pass gets there, the UI says a download is due rather than failed.
+    if (config_ab_dialog() && s_status.dialog_state != I18N_DIALOG_DOWNLOADING) {
+        s_status.dialog_state = I18N_DIALOG_PENDING;
+        s_status.dialog_error[0] = '\0';
+    }
     pb_mutex_unlock(s_lock);
     if (running) return false;
     return scheduler_request_i18n_sync();

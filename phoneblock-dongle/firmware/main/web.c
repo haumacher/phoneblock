@@ -619,6 +619,15 @@ static web_http_error_t handle_status(web_http_request_t *req)
                             have_set && strcmp(dset->lang, DIALOG_OWN_LANG) == 0);
     cJSON_AddStringToObject(dlg, "speaker",             config_dialog_speaker());
     free(dset);
+    // Where the set's download stands (i18n_sync.h): what the UI says while
+    // there is no set — due, downloading, failed (and why), not published.
+    {
+        i18n_sync_status_t sync;
+        i18n_sync_snapshot(&sync);
+        cJSON_AddStringToObject(dlg, "sync", i18n_dialog_state_name(sync.dialog_state));
+        cJSON_AddNumberToObject(dlg, "sync_bytes", (double)sync.dialog_bytes);
+        cJSON_AddStringToObject(dlg, "sync_error", sync.dialog_error);
+    }
     // Largest clip set file this device takes (the size tier it downloads,
     // STORAGE_DIALOG_PLAIN_FS_MAX on Linux). scripts/dev-i18n-push.sh picks
     // by it.
