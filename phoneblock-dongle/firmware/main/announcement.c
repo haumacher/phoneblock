@@ -38,7 +38,8 @@ static const char *TAG = "announcement";
 
 static bool     s_storage_ready = false;
 // Latch for "there is no usable custom file" so we don't keep stat()-ing
-// SPIFFS (and re-warning about a bad size) on every /api/status poll.
+// the storage partition (and re-warning about a bad size) on every
+// /api/status poll.
 // Cleared whenever a new file is written or the current one is reset.
 static bool     s_no_custom       = false;
 
@@ -81,7 +82,7 @@ bool announcement_localized_path(char *out, size_t cap, const char *lang)
 {
     // lang comes from config_ui_lang(), which only ever returns a
     // config_lang_code_valid() string — no separators or "..", so this
-    // cannot escape the SPIFFS namespace.
+    // cannot escape the data directory.
     int n = snprintf(out, cap, "%s%s%s",
                      SPIFFS_LOCALIZED_PREFIX, lang, SPIFFS_LOCALIZED_SUFFIX);
     return n >= 0 && (size_t)n < cap;
@@ -109,7 +110,7 @@ static long localized_size(void)
 int announcement_init(void)
 {
 #ifdef ESP_PLATFORM
-    // The storage partition (SPIFFS or LittleFS, storage.h), logged there.
+    // The storage partition (LittleFS, storage.h), logged there.
     if (!storage_mount()) {
         // Keep going — calls are answered without an announcement.
         return PB_FAIL;
@@ -162,7 +163,7 @@ int announcement_open(announcement_src_t *src)
             src->len  = (size_t)sz;
             return PB_OK;
         }
-        // Lost the race with a delete, or a SPIFFS hiccup. There is no
+        // Lost the race with a delete, or a filesystem hiccup. There is no
         // embedded fallback anymore — leave the source empty so the caller
         // answers silently and goes to BYE rather than serving nothing.
         pb_log_warn(TAG, "fopen(%s): %s — no announcement, silent pickup",
@@ -214,8 +215,8 @@ int announcement_write_begin(size_t total_bytes)
     // Write straight into the live file: fopen("wb") truncates it in
     // place, so the partition only ever holds one announcement-sized
     // blob. The old temp+rename approach needed room for both the temp
-    // and the live file at once and then a rename(), which SPIFFS fails
-    // once the slot is near-full — that left every re-upload of a large
+    // and the live file at once and then a rename(), which SPIFFS (up to
+    // 1.7.0-beta7) failed once the slot was near-full — that left every re-upload of a large
     // (near-240 KB) announcement permanently stuck on the embedded
     // default (issue #359). Losing the announcement if a write is
     // interrupted is acceptable here: the default takes over until the
@@ -236,9 +237,9 @@ int announcement_write_begin(size_t total_bytes)
         pb_log_err(TAG, "fopen(%s): %s", SPIFFS_FILE, strerror(errno));
         return PB_FAIL;
     }
-    // Crank the stdio buffer up: SPIFFS pays per flush, not per byte,
-    // so bigger batched writes are noticeably faster than the default
-    // BUFSIZ (~1 KB on IDF).
+    // Crank the stdio buffer up: the filesystem pays per write call, not
+    // per byte, so bigger batched writes are noticeably faster than the
+    // default BUFSIZ (~1 KB on IDF).
     static char s_write_bufio[8192];
     setvbuf(s_write_file, s_write_bufio, _IOFBF, sizeof(s_write_bufio));
     s_write_total = total_bytes;

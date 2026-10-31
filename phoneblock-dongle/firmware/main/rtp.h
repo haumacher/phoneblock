@@ -29,7 +29,7 @@ typedef struct {
 // Spawn a FreeRTOS task that streams the opened announcement `src` to
 // `dest` as G.711 A-law (PCMA) RTP, 20 ms / 160-byte frames at 50
 // packets/s, then exits. The task reads `src` frame-by-frame (so a
-// custom SPIFFS announcement is streamed straight from flash, never
+// custom announcement file is streamed straight from flash, never
 // buffered whole) and closes it when done.
 //
 // If `srtp` is non-NULL and srtp->enabled, the outbound stream is

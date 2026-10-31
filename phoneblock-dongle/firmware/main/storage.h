@@ -2,13 +2,13 @@
 // the dongle keeps: the community and personal blocklists (blocklist_sync.c),
 // the localized announcement, UI and mail packs, the dialog clips
 // (i18n_sync.c, dialog_store.h) and the user's own recorded announcement
-// (announcement.c). Its filesystem depends on the target
-// (CONFIG_PHONEBLOCK_STORAGE_LITTLEFS): SPIFFS on the classic ESP32 (640 KB,
-// partitions.csv), LittleFS on the ESP32-C3 (640 KB, partitions-c3.csv) and
-// the ESP32-S3 (~9.6 MB, partitions-16mb.csv); the Linux port
-// (STORAGE_HOSTFS) uses a plain directory instead. Only this module knows
-// which: it mounts the partition (storage_mount()) and reports its usage
-// (storage_info()).
+// (announcement.c). Its filesystem is LittleFS on every board: the classic
+// ESP32 (640 KB, partitions.csv — the partition kept its spiffs subtype,
+// the first boot of 1.7 reformats the old SPIFFS), the ESP32-C3 (640 KB,
+// partitions-c3.csv) and the ESP32-S3 (~9.6 MB, partitions-16mb.csv); the
+// Linux port (STORAGE_HOSTFS) uses a plain directory instead. Only this
+// module knows which: it mounts the partition (storage_mount()) and reports
+// its usage (storage_info()).
 //
 // This module is the single owner of the partition's budget (the arithmetic
 // and its derivation per filesystem live in storage_budget.h) and of the
@@ -20,12 +20,10 @@
 //    the server as &maxBytes.
 //
 //  * One write buffer. Every file goes to flash through storage_file_open()'s
-//    STORAGE_WRITE_BUF stdio buffer; the SPIFFS budget's stale-page
-//    arithmetic assumes exactly that size.
+//    STORAGE_WRITE_BUF stdio buffer.
 //
 //  * One out-of-space recovery. storage_download() retries a download once
-//    after a garbage-collection pass (a no-op on LittleFS and the Linux
-//    port) when the write ran out of space (issue #499, #530).
+//    when the write ran out of space (issue #499, #530).
 #pragma once
 
 #include <stdbool.h>
@@ -35,27 +33,34 @@
 
 #include "storage_budget.h"
 
-// Mount point of the partition on the device, for both filesystems. The name
-// is historical (SPIFFS came first); the file users spell their paths with
+// Mount point of the partition on the device. The name is historical (the
+// partition held SPIFFS up to 1.6); the file users spell their paths with
 // it ("/spiffs/community.bin", ...). The partition label is "storage" in
 // every table.
 #define STORAGE_BASE_PATH "/spiffs"
 #define STORAGE_LABEL     "storage"
 
-// Mounts the partition at STORAGE_BASE_PATH (device only), formatting it if
-// it holds no valid filesystem (a first boot: milliseconds on LittleFS, about
-// 13 s per MB on SPIFFS). False (logged at ERROR) if that fails; the callers
-// then run without storage.
+// Mounts the partition at STORAGE_BASE_PATH (device only), formatting it
+// (milliseconds) if it holds no LittleFS: quietly when it is erased (a first
+// start), with one WARN when it held something else — an older firmware's
+// SPIFFS, whose files are lost (STORAGE_REFORMAT_WARNING). False (logged at
+// ERROR) if that fails; the callers then run without storage.
 bool storage_mount(void);
 
+// The WARN of a reformat, the one line the web UI's log panel shows of it:
+// what the user has to do again. Everything else on the partition is
+// downloaded again, and the settings are in NVS. At most
+// STATS_ERROR_MSG_LEN - 1 characters (test_storage_sim.c).
+#define STORAGE_REFORMAT_WARNING \
+    "storage reformatted (now LittleFS): settings kept, downloads come back; " \
+    "upload your own announcement again"
+
 // The partition's size and the bytes in use, as the filesystem reports them
-// (device only: esp_spiffs_info() / esp_littlefs_info()). False if it is not
-// mounted.
+// (device only: esp_littlefs_info()). False if it is not mounted.
 bool storage_info(size_t *total, size_t *used);
 
-// stdio buffer every file is written through (see storage_budget.h: each
-// SPIFFS write call leaves one stale index page behind, so the buffer size
-// sets the write amplification there; on LittleFS it is one block).
+// stdio buffer every file is written through: one block per filesystem write
+// call.
 #define STORAGE_WRITE_BUF 4096
 
 // Bytes the community blocklist may take on flash, computed from what is on
@@ -64,11 +69,11 @@ bool storage_info(size_t *total, size_t *used);
 int64_t storage_community_budget(void);
 
 // Largest dialog clip set file (#429) the partition takes, in bytes: the
-// tier of its filesystem and size (storage_budget.h) — S on SPIFFS, on
-// LittleFS storage_budget_lfs_dialog() (M on the C3, the L ceiling
-// STORAGE_DIALOG_PLAIN_FS_MAX on the S3), STORAGE_DIALOG_PLAIN_FS_MAX on a
-// plain filesystem (the Linux port). Both the downloaded tier and an own set
-// (POST /api/dialog) are held to it.
+// tier of its size (storage_budget.h) — storage_budget_lfs_dialog() on
+// LittleFS (M on the 640 KB partitions of the classic ESP32 and the C3, the
+// L ceiling STORAGE_DIALOG_PLAIN_FS_MAX on the S3), STORAGE_DIALOG_PLAIN_FS_MAX
+// on a plain filesystem (the Linux port). Both the downloaded tier and an
+// own set (POST /api/dialog) are held to it.
 uint64_t storage_dialog_budget(void);
 
 // Makes room for a rarely written file of `bytes` that is about to be written
@@ -79,13 +84,6 @@ uint64_t storage_dialog_budget(void);
 // file regardless, the storage_download() retry being the last line.
 void storage_make_room(size_t bytes, const char *replaces);
 
-// Runs a garbage-collection pass that tries to make a file of `bytes`
-// writable (the file's footprint, see storage_budget_footprint_pages()).
-// Logged at INFO: not reaching the target is not itself a failure. SPIFFS
-// only; a no-op on LittleFS and the Linux port, which reclaim deleted blocks
-// themselves.
-void storage_gc(const char *why, size_t bytes);
-
 // A file opened for writing through the shared STORAGE_WRITE_BUF buffer.
 typedef struct {
     FILE *f;
@@ -94,7 +92,7 @@ typedef struct {
 
 // fopen(path, "wb") with the shared write buffer. False (errno set) if the
 // file cannot be opened; a failed buffer allocation only costs speed and
-// write amplification, not the write.
+// write calls, not the write.
 bool storage_file_open(storage_file_t *sf, const char *path);
 
 // Writes `n` bytes. False (errno set, ENOSPC when the filesystem ran out of
@@ -109,18 +107,17 @@ bool storage_file_close(storage_file_t *sf);
 // Outcome of one download attempt.
 typedef enum {
     STORAGE_DL_OK,      // file written
-    STORAGE_DL_FULL,    // out of space (ENOSPC) — worth a GC+retry
+    STORAGE_DL_FULL,    // out of space (ENOSPC) — worth one retry
     STORAGE_DL_FAILED,  // anything else (network, HTTP, too large, ...)
 } storage_dl_t;
 
 // One download attempt. Must remove whatever partial file it wrote before
-// returning anything but STORAGE_DL_OK, and on STORAGE_DL_FULL set *bytes to
-// the size of the file it tried to write.
-typedef storage_dl_t (*storage_attempt_fn)(void *ctx, size_t *bytes,
-                                           char *err, size_t err_cap);
+// returning anything but STORAGE_DL_OK.
+typedef storage_dl_t (*storage_attempt_fn)(void *ctx, char *err, size_t err_cap);
 
-// Runs `attempt`; if it ran out of space, collects garbage for the file's
-// size and tries exactly once more. A single retry: if that fails too, the
+// Runs `attempt`; if it ran out of space, tries exactly once more (with the
+// partial file gone, the attempt's storage_make_room() judges the partition
+// as it is then). A single retry: if that fails too, the
 // callers' fallbacks (live API lookup, embedded English, next sync) take
 // over — not worth hammering the flash for. Returns true on success; `err`
 // holds the last attempt's error otherwise. Logs nothing above INFO, so the

@@ -1,5 +1,5 @@
 // Implementation of blocklist_sync.h: streaming HTTPS download into a
-// SPIFFS temp file, atomic rename, daily background task.
+// temp file on the storage partition, rename, daily background task.
 
 #include "blocklist_sync.h"
 
@@ -84,8 +84,7 @@ typedef struct {
 
 // One download attempt of `d->url` into `d->tmp_path` (storage_attempt_fn).
 // Removes the temp file again on any failure.
-static storage_dl_t download_to_tmp(void *ctx, size_t *bytes,
-                                    char *err, size_t err_cap)
+static storage_dl_t download_to_tmp(void *ctx, char *err, size_t err_cap)
 {
     const download_t *d = ctx;
     storage_dl_t result = STORAGE_DL_FAILED;
@@ -131,8 +130,6 @@ static storage_dl_t download_to_tmp(void *ctx, size_t *bytes,
                      (long long) content_length, (long long) d->budget);
             goto out;
         }
-        // Make the whole file writable before the first byte arrives.
-        storage_gc(d->tmp_path, (size_t) content_length);
     }
 
     char buf[DOWNLOAD_CHUNK];
@@ -148,7 +145,7 @@ static storage_dl_t download_to_tmp(void *ctx, size_t *bytes,
         }
         if (!storage_file_write(&out, buf, (size_t)n)) {
             // errno tells apart the two ways this happens: ENOSPC is the
-            // filesystem refusing space (worth a retry after a GC pass),
+            // filesystem refusing space (worth one retry, storage_download()),
             // anything else is a failure a retry would only repeat.
             snprintf(err, err_cap, "fwrite short at %lld bytes: %s",
                      (long long)total, strerror(errno));
@@ -186,7 +183,6 @@ out:
     pb_http_stream_close(stream);
     storage_file_close(&out);
     unlink(d->tmp_path);
-    *bytes = (size_t)(content_length > 0 ? content_length : total);
     return result;
 }
 
@@ -208,13 +204,11 @@ static bool tmp_parses_ok(const char *tmp_path)
 static bool sync_one(const char *type, const char *path, const char *tmp_path,
                      char *err, size_t err_cap)
 {
-    // Drop the old cached file up front, before downloading the new one.
-    // SPIFFS has no atomic replace — rename() onto an existing name returns
-    // SPIFFS_ERR_CONFLICTING_NAME, which the VFS maps to the catch-all EIO,
-    // so a temp+rename swap fails with "rename …: I/O error" on every run
-    // after the first. Removing the live file first makes the rename target
-    // absent (so it succeeds) and means only one copy is ever on flash, so
-    // the download never needs double the space. The cost is no on-flash
+    // Drop the old cached file up front, before downloading the new one, so
+    // only one copy is ever on flash and the download never needs double
+    // the space: the budget (storage_community_budget()) is computed with
+    // the old copy gone. (On SPIFFS, up to 1.7.0-beta7, it also had to: a
+    // rename() onto an existing name failed there.) The cost is no on-flash
     // fallback during the download window: if the sync fails, the call-time
     // path falls back to the PhoneBlock API until the next successful run.
     //

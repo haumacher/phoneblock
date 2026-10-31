@@ -52,7 +52,7 @@ bool scheduler_request_mail_test(void);
 
 // Ask the scheduler to download the localized device assets (announcement
 // audio / mail pack) for the current ui_lang as soon as possible — raised
-// when the user switches the UI language. Runs the blocking HTTPS/SPIFFS
+// when the user switches the UI language. Runs the blocking HTTPS/flash
 // work on the scheduler task, not the caller's httpd thread. The "already
 // running" guard lives in i18n_sync_trigger_now(). Returns false if the
 // scheduler task is not running.

@@ -3,11 +3,10 @@
 # sdkconfig.defaults.esp32c3. The classic ESP32 keeps partitions.csv (see
 # there for the history of the shared parts); this table differs in two
 # places, possible because no C3 dongle was in the field before it:
-#   - storage: LittleFS (data subtype 0x83, CONFIG_PHONEBLOCK_STORAGE_LITTLEFS)
-#     instead of SPIFFS, same 640 KB. LittleFS has no SPIFFS-style
-#     write amplification or GC rotation, so the same partition takes the
-#     M dialog tier (main/storage_budget.h) and formats in milliseconds
-#     on a first boot.
+#   - storage: data subtype littlefs (0x83) for the same 640 KB at the same
+#     offset. The filesystem is LittleFS on both tables (main/storage.h,
+#     which mounts by label); the classic's partition keeps its old spiffs
+#     subtype only because a table cannot change over the air.
 #   - coredump: 56 KB from 0x12000, taking in the 4 KB gap that the
 #     dropped "pairing" partition left on the classic layout.
 # The app slots stay as on the classic ESP32: the C3 image fills them to

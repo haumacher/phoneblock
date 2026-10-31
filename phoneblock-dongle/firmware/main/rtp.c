@@ -512,7 +512,7 @@ static void rtp_audio_task(void *arg)
             break;
         }
         // Pull the next 20 ms straight from the announcement source
-        // (flash RODATA for the default, SPIFFS file for a custom one).
+        // (flash RODATA for the default, a file for a custom one).
         size_t payload = announcement_read(&a->src, pkt + RTP_HEADER_BYTES,
                                            FRAME_SAMPLES);
         if (payload == 0) break;   // end of stream or read error

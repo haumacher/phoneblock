@@ -208,7 +208,7 @@ typedef struct {
     char ui_lang[12];        // UI/content locale code ("de","en","zh-Hans",…);
                              // empty = default "de". Selects the downloaded
                              // announcement + mail pack; spliced into a CDN
-                             // URL and a SPIFFS filename, so validated on read.
+                             // URL and a file name on the device, so validated on read.
     char dial_prefix[8];     // "+49", "+44", … Country of the line, used to
                              // expand national caller IDs to E.164. Empty or
                              // malformed reads back as DEFAULT_DIAL_PREFIX.
@@ -617,7 +617,7 @@ bool config_lang_code_valid(const char *code)
     // A locale code as used by the web UI and CDN asset paths: 2..11 chars
     // of [a-z0-9] with optional single hyphens between segments (e.g. "de",
     // "en", "zh-Hans", "pt-BR" lower-cased). Deliberately strict — the value
-    // is spliced into a CDN URL and a SPIFFS filename, so this rules out
+    // is spliced into a CDN URL and a file name on the device, so this rules out
     // path traversal ("../"), separators, and case tricks at the source.
     if (!code) return false;
     size_t n = strlen(code);

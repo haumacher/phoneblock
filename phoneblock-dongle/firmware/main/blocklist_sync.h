@@ -1,6 +1,6 @@
 // Daily download of the binary blocklist files from the server.
 //
-// Two SPIFFS files are kept:
+// Two files are kept on the storage partition (storage.h):
 //   /spiffs/community.bin   — community list (shared across users with the
 //                             same minVotes; depends only on that setting)
 //   /spiffs/personal.bin    — user's personal black/white overrides

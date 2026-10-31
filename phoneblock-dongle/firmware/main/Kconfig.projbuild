@@ -196,7 +196,7 @@ menu "PhoneBlock Dongle"
             When enabled, answered spam calls stream the active
             announcement to the caller (G.711 A-law, 8 kHz, 20 ms frames)
             before BYE. The announcement is resolved at call time from
-            SPIFFS: a user-uploaded custom file, else the localized file
+            the storage partition: a user-uploaded custom file, else the localized file
             downloaded from the CDN for the selected ui_lang, else nothing
             (silent pickup). No announcement is baked into the firmware
             (issue #460). Disable this to always send BYE immediately after
@@ -255,23 +255,5 @@ menu "PhoneBlock Dongle"
             and block count so the real cost is known per device. A
             walk is deferred while a call is streaming RTP and runs on
             the first tick afterwards instead.
-
-    config PHONEBLOCK_STORAGE_LITTLEFS
-        bool "Storage partition is LittleFS"
-        depends on IDF_TARGET_ESP32C3 || IDF_TARGET_ESP32S3
-        default n
-        help
-            Mount the "storage" partition (blocklists, localized packs,
-            announcements, the dialog clip set) as LittleFS instead of
-            SPIFFS. Set by sdkconfig.defaults.esp32c3 and
-            sdkconfig.defaults.esp32s3, whose partition tables
-            (partitions-c3.csv, partitions-16mb.csv) give the partition
-            the littlefs subtype. The classic ESP32 stays on SPIFFS
-            (partitions.csv): its dongles in the field cannot change the
-            partition table over the air.
-
-            Only these targets pull the joltwallet/littlefs component
-            (main/idf_component.yml) — hence the dependency. The storage
-            budget per filesystem: main/storage_budget.h.
 
 endmenu

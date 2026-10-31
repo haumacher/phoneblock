@@ -10,17 +10,6 @@ if(_target STREQUAL "esp32s3")
     list(APPEND _board_requires esp_lcd esp_driver_spi esp_driver_ledc)
 endif()
 
-# The storage partition's filesystem (main/storage.h): SPIFFS on the classic
-# ESP32, LittleFS (CONFIG_PHONEBLOCK_STORAGE_LITTLEFS, from the managed
-# joltwallet/littlefs component, main/idf_component.yml) on the C3 and the
-# S3. By target, not by the Kconfig value: the requirements are resolved
-# before sdkconfig is read. Each target links only its own filesystem.
-if(_target STREQUAL "esp32c3" OR _target STREQUAL "esp32s3")
-    list(APPEND _board_requires joltwallet__littlefs)
-else()
-    list(APPEND _board_requires spiffs)
-endif()
-
 idf_component_register(
     SRCS ${_board_srcs} "main.c" "sip_register.c" "sip_response.c" "sip_transport.c" "sip_frame.c" "sip_srv.c" "sip_auth.c" "api.c" "api_scan.c" "../core/sip_parse.c" "audio.c" "rtp.c" "rtp_rx.c" "vad.c" "dialog.c" "dialog_manifest.c" "audio_manifest.c" "dialog_store.c" "stats.c" "log_capture.c" "config.c" "smtp_body.c" "web.c" "web_http_esp32.c" "web_auth.c" "web_access.c" "webhook.c" "net_local.c" "tr064.c" "../core/tr064_parse.c" "../core/platform_esp32.c" "announcement.c" "scheduler.c" "sched_time.c" "time_sync.c" "time_sync_tz.c" "mail.c" "mail_html.c" "mail_i18n.c" "mail_rcpt.c" "name_filter.c" "sync.c" "phone_norm.c" "../core/dial_rules.c" "selftest.c" "firmware_update.c" "ota_manifest.c" "version_cmp.c" "report_queue.c" "http_util.c" "wifi.c" "status_led.c" "chip_temp.c" "crashreport.c" "logreport.c" "improv.c" "improv_proto.c" "blocklist_lookup.c" "blocklist_sync.c" "storage.c" "storage_budget.c" "manifest_sig.c" "i18n_sync.c" "heap_guard.c" "heap_guard_scan.c"
     INCLUDE_DIRS "." "../core"
@@ -49,6 +38,9 @@ idf_component_register(
         esp_https_ota
         espcoredump
         protocol_examples_common
+        # The storage partition's filesystem on every target (storage.h),
+        # the managed component from main/idf_component.yml.
+        joltwallet__littlefs
         ${_board_requires}
 )
 

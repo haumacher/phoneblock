@@ -13,7 +13,7 @@ echten Telefone klingeln. Inbetriebnahme im Browser, keine Konfigurationsdatei.
   `/api/test`), Bearer-Token authentifiziert.
 - **Spam-Ansage** — PCMA-RTP-Stream mit eingebauter Default-Ansage oder
   einer selbst hochgeladenen (WAV/MP3/OGG werden im Browser via Web
-  Audio API auf 8 kHz A-law konvertiert und per SPIFFS gespeichert).
+  Audio API auf 8 kHz A-law konvertiert und im Flash gespeichert, LittleFS).
 - **Fritz!Box-Auto-Provisioning** via TR-064:
   der Dongle legt sich auf Knopfdruck selbst als IP-Telefon an, inkl.
   2FA-Dialog („Knopf drücken / DTMF-Code"), legt gleichzeitig einen
@@ -76,7 +76,7 @@ echten Telefone klingeln. Inbetriebnahme im Browser, keine Konfigurationsdatei.
 | `sip_register.c` | Registrierung, INVITE/ACK/BYE-Dialog, RTP-Start, Dialog-State |
 | `sip_parse.{c,h}` | Pure-C-SIP-Header-Parser (host-testbar) |
 | `rtp.c` / `audio.c` | PCMA-RTP-Sender-Task + G.711-A-law-Encoder |
-| `announcement.{c,h}` | SPIFFS-basierter Announcement-Slot mit Embedded-Fallback |
+| `announcement.{c,h}` | Announcement-Slot auf der Speicherpartition (LittleFS) |
 | `api.c` | PhoneBlock-HTTPS-Client (`check`, `rate`, `selftest`) |
 | `tr064.c` + `tr064_parse.{c,h}` | Fritz!Box-SOAP-Client für Setup, 2FA, RegisterApp, CallBarring |
 | `sync.c` | Tägliche Sperrlisten-Synchronisation |
@@ -143,7 +143,7 @@ Dieselbe Firmware läuft auch als Linux-Dienst (Raspberry Pi, Homeserver):
 
 **Modul: ESP32-WROOM-32** (CH340C, Type-C) — preisgünstig im 10er-Pack,
 4 MB Flash, 520 KB SRAM, PCB-Antenne. Reicht für WLAN + mbedTLS + SIP-
-State + SPIFFS-Partition für die Custom-Ansage. Stromaufnahme ~80 mA
+State + Speicherpartition für die Custom-Ansage. Stromaufnahme ~80 mA
 idle, ~300 mA WLAN-TX — im USB-Budget der Fritz!Box (500 mA).
 
 Eine ausführliche Diskussion der Modul- und Board-Alternativen sowie

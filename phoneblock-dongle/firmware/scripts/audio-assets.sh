@@ -123,15 +123,15 @@ get_announcement() {
 # one per speaker of i18n/audio/dialog/speakers.json whose directory has a
 # complete clip set, raw A-law like the announcement, numbered per phase
 # (<phase>-1.alaw, <phase>-2.alaw, ... — the count is free, the header
-# carries it). Each speaker's set is published in up to three size tiers
+# carries it). Each speaker's set is published in up to two size tiers
 # (main/storage_budget.h; the device takes the largest within its
 # partition's budget), each ONE file dialog-<lang>-<speaker>-<tier>-<sha8>.bin
-# — a single file on the device instead of one per clip (on SPIFFS many small
-# files cost GC failures, see test_storage_sim.c) — holding the clip table as a header (format in
-# main/dialog.h), then the clips in phase and clip order:
+# — a single file on the device instead of one per clip, replaced
+# delete-first as a whole (i18n_sync.c) — holding the clip table as a header
+# (format in main/dialog.h), then the clips in phase and clip order:
 #
-#   s  at most STORAGE_DIALOG_TIER_S bytes (classic ESP32, 640 KB SPIFFS)
-#   m  at most STORAGE_DIALOG_TIER_M bytes (ESP32-C3, 640 KB LittleFS)
+#   m  at most STORAGE_DIALOG_TIER_M bytes (classic ESP32 and ESP32-C3,
+#      640 KB LittleFS)
 #   l  every clip (ESP32-S3 with ~9.6 MB LittleFS, the Linux port)
 #
 # Each tier is the longest prefix of one priority order that fits, whole clips
@@ -148,8 +148,7 @@ get_announcement() {
 # names the index {path, sha256, bytes}. Publishes nothing for a locale
 # without the default speaker's clips; a speaker missing a phase or clips
 # (masters not fetched) is left out with a note, except the default, whose
-# incomplete set stops the publish; so does a minimum set over the s tier.
-DIALOG_TIER_S="$(fw_define storage_budget.h STORAGE_DIALOG_TIER_S)"
+# incomplete set stops the publish; so does a minimum set over the m tier.
 DIALOG_TIER_M="$(fw_define storage_budget.h STORAGE_DIALOG_TIER_M)"
 DIALOG_MAX_CLIPS="$(fw_define dialog.h DIALOG_MAX_CLIPS)"
 DIALOG_INDEX_MAX="$(fw_define dialog_manifest.h DIALOG_INDEX_MAX_BYTES)"
@@ -159,7 +158,7 @@ build_dialog() {
     local lang="$1" entry rc=0
     entry="$(python3 -I - "${AUDIO_DIR}/dialog/${lang}" "$lang" "${CHANNEL}" "$SPEAKERS_JSON" \
              "$DIALOG_MAX_CLIPS" "$DIALOG_INDEX_MAX" \
-             "s=${DIALOG_TIER_S}" "m=${DIALOG_TIER_M}" "l=all" <<'PY'
+             "m=${DIALOG_TIER_M}" "l=all" <<'PY'
 import hashlib, json, os, re, struct, sys
 
 src, lang, out_dir, speakers_json = sys.argv[1:5]

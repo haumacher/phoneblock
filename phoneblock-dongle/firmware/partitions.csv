@@ -6,9 +6,12 @@
 # Storage partition keeps the "storage" label so announcement.c
 # continues to mount it; size dropped from 1024 KB to 640 KB after
 # realising the user-recorded announcement is capped at 240 KB
-# (see ANNOUNCEMENT_MAX_BYTES in announcement.h) — 640 KB still
-# leaves ~2.7× headroom over the cap, plenty for SPIFFS overhead
-# and any future small assets.
+# (see ANNOUNCEMENT_MAX_BYTES in announcement.h). Since 1.7 it holds
+# LittleFS, like the C3's (partitions-c3.csv): the first boot of 1.7
+# reformats the old SPIFFS (main/storage.c). The subtype stays spiffs —
+# the table cannot change over the air, and a USB-flashed dongle must
+# look like an updated one; storage.c mounts by label, whatever the
+# subtype.
 #
 # The 4 KB at 0x12000 (right after phy_init) is left as an unused gap.
 # It formerly held a per-install "pairing" partition (custom data

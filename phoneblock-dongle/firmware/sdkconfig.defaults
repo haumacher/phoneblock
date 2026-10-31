@@ -116,12 +116,12 @@ CONFIG_LWIP_SNTP_MAX_SERVERS=3
 # 4 MB of SPI flash: the ESP32 modules we ship with have 4 MB onboard
 # (the EGBO PICO-D4 packages flash in the SoC; WROOM-32 dev boards
 # use an external 4 MB chip). The IDF default is 2 MB, which cuts
-# our partition table (two 1664 KB OTA slots + 640 KB SPIFFS) in half.
+# our partition table (two 1664 KB OTA slots + 640 KB storage) in half.
 CONFIG_ESPTOOLPY_FLASHSIZE_4MB=y
 CONFIG_ESPTOOLPY_FLASHSIZE="4MB"
 
 # Custom partition table: OTA-capable layout (ota_0/ota_1/otadata)
-# plus a SPIFFS slot for the user-uploaded voice announcement.
+# plus the storage partition (blocklists, packs, announcements; LittleFS).
 # See partitions.csv for the offsets and sizes.
 CONFIG_PARTITION_TABLE_CUSTOM=y
 CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions.csv"
@@ -188,29 +188,11 @@ CONFIG_FREERTOS_GENERATE_RUN_TIME_STATS=y
 # bootloader reverts to the previous slot on the next reboot.
 CONFIG_BOOTLOADER_APP_ROLLBACK_ENABLE=y
 
-# SPIFFS tuning for the announcement slot: the default 256-byte
-# logical-page size is optimised for many tiny files; we have one
-# 60–240 KB blob, and 1024-byte pages ~quadruple raw write
-# throughput. Requires a reformat — we mount with
-# format_if_mount_failed=true, so the change takes effect on the
-# next boot after flashing.
-CONFIG_SPIFFS_PAGE_SIZE=1024
-
-# SPIFFS garbage-collection budget. The default (10) lets an on-demand GC
-# erase at most 10 logical blocks (~40 KB) before a write gives up with a
-# "full" error — even when the partition has plenty of free bytes but they
-# are fragmented across partially-used blocks. That is exactly what happens
-# when i18n_sync prunes the previous locale (creating scattered deleted
-# pages) and then downloads the new ~25 KB UI/mail packs: the write hit
-# SPIFFS_ERR_FULL mid-file (observed as "fwrite short") non-deterministically
-# depending on fragmentation, leaving the pack half-written and the UI stuck
-# on the embedded English fallback. The daily blocklist download hits the same
-# wall from the other side (issue #499): it unlinks the old ~45 KB community
-# list and writes a new one, and the field logs show that write failing at
-# 3-44 KB on devices reporting 236-288 KB free. Raise the budget so GC can
-# consolidate enough blocks to complete these writes. Cost: a GC-heavy write
-# may block longer, which is fine on the background scheduler task.
-CONFIG_SPIFFS_GC_MAX_RUNS=128
+# The storage partition is LittleFS on every board (main/storage.h); the
+# joltwallet/littlefs component's Kconfig defaults are what the budget and
+# its host simulation assume (main/storage_budget.h, test/lfs_host). Its RAM:
+# two 512-byte caches and a 128-byte lookahead buffer per mount, one 512-byte
+# cache per open file — less than the SPIFFS of up to 1.7.0-beta7 held.
 
 # PhoneBlock backend. Production by default; the test instance
 # "https://phoneblock.net/pb-test" goes in .local for dev builds.

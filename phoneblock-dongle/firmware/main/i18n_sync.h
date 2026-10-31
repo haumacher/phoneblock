@@ -47,7 +47,7 @@
 // chosen content is stored under the ui_lang name:
 //   announcement → /spiffs/announcement-<lang>.alaw  (announcement.c reads it)
 //   mail pack    → /spiffs/mail-<lang>.json          (mail_i18n.c reads it)
-// Each asset is streamed to a SPIFFS temp file, its SHA-256 checked against
+// Each asset is streamed to a temp file on the storage partition, its SHA-256 checked against
 // the manifest (integrity against a truncated or corrupted transfer — the
 // manifest itself is only as trustworthy as the CDN), then renamed into place.
 // Assets for other locales are pruned so the shared storage is not filled by
@@ -72,7 +72,7 @@
 void i18n_sync_init(void);
 
 // Perform one sync pass for the active ui_lang. Safe to call only from the
-// scheduler task (does blocking HTTPS + SPIFFS I/O). A no-op with a clear
+// scheduler task (does blocking HTTPS + flash I/O). A no-op with a clear
 // status if offline / the manifest is missing or unparseable. Returns
 // whether the pass succeeded (same as the snapshot's last_ok).
 bool i18n_sync_run(void);
@@ -112,7 +112,7 @@ typedef struct {
 
 void i18n_sync_snapshot(i18n_sync_status_t *out);
 
-// Path of the downloaded web-UI string pack for `lang` on SPIFFS. This module
+// Path of the downloaded web-UI string pack for `lang` on the storage partition. This module
 // owns the layout; web.c serves the file at /api/i18n/ui. Size `out` with
 // PB_DATA_PATH_CAP (platform.h); false (and `out` not to be used) if the path
 // does not fit — a Linux data directory too long for it.

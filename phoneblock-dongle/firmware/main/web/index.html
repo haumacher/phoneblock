@@ -177,7 +177,7 @@ const t = (k, p) => {
 // The UI language is a DEVICE setting (ui_lang — it also drives the status
 // mail and the answer-bot announcement). NOTHING is baked into this page: the
 // dongle serves the strings for its ui_lang from /api/i18n/ui (same-origin) —
-// either the locale pack the firmware downloaded to SPIFFS, or the baked-in
+// either the locale pack the firmware downloaded to its storage, or the baked-in
 // English fallback (from i18n/l10n/ui/ui_en.arb) when that locale isn't
 // available yet. So a configured dongle needs no CDN at runtime (issue #460).
 //

@@ -227,31 +227,31 @@ on the CDN untouched. Releases from now on carry only the string packs.
 
 ### Dialog sets: one file, size tiers
 
-The dialog clips of a locale are published as **one file** per size tier — on
-the classic ESP32's SPIFFS every file costs index pages and GC relocations,
-and many small files drove the storage simulator (`test/test_storage_sim.c`)
-into GC failures that one file of the same size does not. The file starts with its
+The dialog clips of a locale are published as **one file** per size tier —
+one download, one checksum and one delete-first replacement on the device
+instead of one per clip. The file starts with its
 clip table (header format in `main/dialog.h`: magic `PBDS`, version, the
 clips per phase and each clip's offset and length), covered by the same
 SHA-256 as the audio after it.
 
-A full set (36 clips, 440–570 KB) does not fit every device, so up to three
+A full set (36 clips, 440–570 KB) does not fit every device, so up to two
 **tiers** are published per locale and speaker, each the longest prefix of one priority
 order that fits its limit — first clip 1 of every phase, then the further
 `question`, `cant-hear-you`, `am-aparat`, `hello` and `who-is-there` clips:
 
 | Tier | Limit | For |
 |------|-------|-----|
-| `s` | 128 KiB (`STORAGE_DIALOG_TIER_S`) | classic ESP32, 640 KB SPIFFS partition |
-| `m` | 320 KiB (`STORAGE_DIALOG_TIER_M`) | ESP32-C3, 640 KB LittleFS partition |
+| `m` | 320 KiB (`STORAGE_DIALOG_TIER_M`) | classic ESP32 and ESP32-C3, 640 KB LittleFS partition |
 | `l` | all clips | ESP32-S3 (~9.6 MB LittleFS) and the Linux port |
 
-A tier with the same clips as a smaller one is not published; a locale whose
-minimum set (one clip per phase) exceeds `s` stops the publish. The limits are
-read from `main/storage_budget.h`, where they are derived: `s` validated by
-the SPIFFS simulation, `m` computed for the C3's LittleFS partition so that a
-128 KB community list stays next to it. A device's tier follows from its
-filesystem and partition size (`storage_dialog_budget()`).
+A tier with the same clips as the smaller one is not published; a locale whose
+minimum set (one clip per phase) exceeds `m` stops the publish. The limit is
+read from `main/storage_budget.h`, where it is derived for the 640 KB
+LittleFS partition so that a 128 KB community list stays next to the set
+(`test/test_storage_sim.c` runs it on the real littlefs core). A device's tier
+follows from its partition size (`storage_dialog_budget()`). Up to
+1.7.0-beta7 the classic ESP32 kept SPIFFS and an `s` tier of 128 KiB existed
+for it; no released firmware reads the tiers, so it is no longer published.
 
 **Speakers.** Every speaker of `audio/dialog/speakers.json` that has all
 clips of a locale is published for it; the `default` speaker comes first and
@@ -265,7 +265,7 @@ dialog. Per locale, `audio-assets.sh` writes one index
 { "speakers": [
     { "id": "leonie", "name": "Leonie", "gender": "female",
       "preview": "tts/de/leonie/hello-1.mp3",
-      "sets": [ { "path": "dialog-de-leonie-s-5e6f7a8b.bin", "sha256": "…", "bytes": 117995 },
+      "sets": [ { "path": "dialog-de-leonie-m-5e6f7a8b.bin", "sha256": "…", "bytes": 317995 },
                 … ] },
     { "id": "roger", … } ] }
 ```

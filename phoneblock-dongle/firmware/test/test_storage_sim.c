@@ -1,37 +1,34 @@
 // Host simulation of the dongle's storage partition over many days — the
-// unmodified ESP-IDF SPIFFS core on a RAM flash with the dongle's geometry
-// (spiffs_host/spiffs_sim.c), driven through the firmware's own storage.c /
+// littlefs core the firmware links (managed_components/joltwallet__littlefs)
+// on a RAM flash with the 640 KB partition of the 4 MB boards
+// (lfs_host/lfs_sim.c), driven through the firmware's own storage.c /
 // storage_budget.c.
 //
-// Two policies run the same daily cycle the firmware runs (i18n assets after
-// an update, community + personal blocklist every day, now and then an
-// upload of the user's own announcement):
+//  * Mount. What storage_mount() does with the partition it finds: an erased
+//    one is formatted quietly, a LittleFS is mounted as it is, and anything
+//    else — the classic ESP32's SPIFFS on the first boot of 1.7 — is
+//    reformatted with exactly one WARN, the line the web UI's log panel
+//    shows (STORAGE_REFORMAT_WARNING).
 //
-//  * OLD — the 1.6.0 / 1.7.0-beta3 code, re-enacted: community budget =
-//    free - 48 KB, asset downloads through 1 KB writes behind a 48 KB margin
-//    check, no eviction. It must reproduce the field failures: SPIFFS_ERR_FULL
-//    on writes while a large part of the partition is reported free, and the
-//    "SPIFFS_gc failed" ERROR lines (issues #529, #542).
-//
-//  * NEW — storage.c: the shared budget, the 4 KB write buffer, precedence of
-//    the rarely written files (eviction of the community cache), the user's
-//    recording superseding the localized announcement, one GC + retry. It
-//    must run 60 days without a single failed write, including the day the
-//    i18n assets are re-downloaded and the day the user uploads a recording.
+//  * The daily cycle the firmware runs (i18n assets after an update,
+//    community + personal blocklist every day, now and then an upload of the
+//    user's own announcement, in dialog mode the clip set at the partition's
+//    tier): the shared budget, the 4 KB write buffer, precedence of the
+//    rarely written files (eviction of the community cache), the user's
+//    recording superseding the localized announcement, the delete-first
+//    replacement of the dialog set, one retry. It must run 60 days without a
+//    single failed write or a WARN/ERROR line, including the day the i18n
+//    assets are re-downloaded and the day the user uploads a recording.
 //
 // File contents are synthetic; sizes are the CDN's real asset sizes.
-//
-// Built with the 640 KB partition of the classic ESP32 (partitions.csv,
-// sdkconfig.defaults), the one board left on SPIFFS; the C3 and the S3 are on
-// LittleFS, whose budget is plain block arithmetic (test_storage_budget.c).
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "esp_spiffs.h"
-#include "spiffs.h"
-#include "spiffs_sim.h"
+#include "lfs.h"
+#include "lfs_sim.h"
+#include "stats.h"
 #include "storage.h"
 #include "storage_budget.h"
 #include "blocklist_sync.h"
@@ -51,7 +48,7 @@ static int tests_run, tests_failed;
 // Glue: storage.c's two outside dependencies, mapped onto the simulation.
 // ---------------------------------------------------------------------------
 
-// "/spiffs/x" (VFS path) -> "/x" (SPIFFS object name), as esp_spiffs.c does.
+// "/spiffs/x" (VFS path) -> "/x" (littlefs path), as esp_littlefs.c does.
 static const char *obj(const char *path)
 {
     return strncmp(path, "/spiffs/", 8) == 0 ? path + 7 : path;
@@ -71,7 +68,6 @@ bool blocklist_sync_evict_community(void)
     return true;
 }
 
-
 // ---------------------------------------------------------------------------
 // One simulated device.
 // ---------------------------------------------------------------------------
@@ -81,69 +77,33 @@ typedef struct {
     long ann;         // localized announcement (CDN sizes: 72-97 KB)
     long ui;          // UI pack (27-49 KB)
     long list;        // community list the server would send unbounded
-    bool legacy;      // flash state left behind by 1.6.0 / 1.7.0-beta3
     bool upload;      // the user records a new announcement on UPLOAD_DAY
     bool dialog;      // ab_mode=dialog: the German dialog clip set (#429)
 } device_t;
 
 // The dialog clip set (#429): one file, clip table in its header, at the
-// largest size the layout's tier admits (storage_dialog_budget()) — the set
-// i18n_sync.c picks is never larger. SIM_DIALOG_BYTES overrides it for
-// measuring the tier limits (the curve in storage_budget.h). Plus the marker
-// naming the complete set's locale ("de\n").
+// largest size the partition's tier admits (storage_dialog_budget()) — the
+// set i18n_sync.c picks is never larger. Plus the marker naming the complete
+// set's locale ("de\n").
 #define DIALOG_INDEX 3L
 
 static long dialog_bytes(void)
 {
-#ifdef SIM_DIALOG_BYTES
-    return SIM_DIALOG_BYTES;
-#else
     return (long) storage_dialog_budget();
-#endif
 }
 
-// The partition's own numbers: esp_spiffs_info()'s total — (blocks - 2
-// spare) * 3 data pages + 1 emergency page, 1019 B each, the units
-// storage_budget.c computes in — and the community bucket a large list gets.
-#define SIM_BLOCKS  (SIM_PART_SIZE / 4096)
-#define SIM_TOTAL   (((SIM_BLOCKS - 2) * 3 + 1) * 1019L)
+// The community bucket a large list gets.
 #define SIM_BUCKET  (128 * KB)
 
 typedef struct {
-    int  write_failures;     // writes SPIFFS refused (SPIFFS_ERR_FULL etc.)
-    int  full_errors;        // ... of which SPIFFS_ERR_FULL
+    int  write_failures;     // writes littlefs refused (LFS_ERR_NOSPC etc.)
     int  refusals;           // community deliberately not downloaded (no room)
-    int  gc_errors;          // "SPIFFS_gc failed" ERROR lines
-    int  min_free_pct_at_full; // lowest reported free share after an ERR_FULL
     long community_bytes;    // community list on flash at the end
     int  community_days;     // days the community list was on flash
     bool dialog_present;     // dialog set on flash at the end (#429)
 } outcome_t;
 
 static outcome_t s_out;
-
-static size_t fs_free(void)
-{
-    size_t t, u;
-    esp_spiffs_info("storage", &t, &u);
-    return t - u;
-}
-
-// Call after the partial file was removed: the free share is then what the
-// dongle's status page reports next to the error (#542: 188 of 472 KB).
-static void note_write_failure(int err)
-{
-    s_out.write_failures++;
-    if (err == SPIFFS_ERR_FULL) {
-        size_t t, u;
-        esp_spiffs_info("storage", &t, &u);
-        int pct = (int) ((t - u) * 100 / t);
-        if (s_out.full_errors == 0 || pct < s_out.min_free_pct_at_full) {
-            s_out.min_free_pct_at_full = pct;
-        }
-        s_out.full_errors++;
-    }
-}
 
 // The server snaps &maxBytes down to 64/128/256/384/512 KB — never below the
 // smallest bucket (BlocklistServlet.MAX_BYTES_OPTIONS).
@@ -157,46 +117,45 @@ static long server_list_size(long list, long max_bytes)
     return list < b ? list : b;
 }
 
-// --- NEW policy: what the firmware does now --------------------------------
-
 typedef struct {
     const char *tmp;
     const char *final_vfs;   // NULL: no precedence (blocklist files)
     long        size;
-    bool        gc_first;
 } attempt_t;
 
-static storage_dl_t sim_attempt(void *ctx, size_t *bytes, char *err, size_t cap)
+static storage_dl_t sim_attempt(void *ctx, char *err, size_t cap)
 {
     const attempt_t *a = ctx;
     if (a->final_vfs) storage_make_room((size_t) a->size, a->final_vfs);
-    if (a->gc_first)  storage_gc(a->tmp, (size_t) a->size);
     size_t w;
     if (sim_write_file(a->tmp, (size_t) a->size, STORAGE_WRITE_BUF, &w)) {
         return STORAGE_DL_OK;
     }
-    snprintf(err, cap, "fwrite short at %zu: SPIFFS %d", w, sim_last_err());
     int e = sim_last_err();
+    snprintf(err, cap, "fwrite short at %zu: littlefs %d", w, e);
     sim_unlink(a->tmp);
-    *bytes = (size_t) a->size;
-    return e == SPIFFS_ERR_FULL ? STORAGE_DL_FULL : STORAGE_DL_FAILED;
+    return e == LFS_ERR_NOSPC ? STORAGE_DL_FULL : STORAGE_DL_FAILED;
 }
 
 // Download into "<path>.tmp", then replace `path` (blocklist_sync.c /
-// i18n_sync.c: storage_download + unlink + rename).
+// i18n_sync.c: storage_download + rename, which replaces atomically).
 static bool new_download(const char *path, const char *final_vfs, long size)
 {
     char tmp[48];
     snprintf(tmp, sizeof(tmp), "%s.tmp", path);
     sim_unlink(tmp);
-    attempt_t a = { tmp, final_vfs, size, true };
+    attempt_t a = { tmp, final_vfs, size };
     char err[64];
     if (!storage_download(tmp, sim_attempt, &a, err, sizeof(err))) {
-        note_write_failure(sim_last_err());
+        s_out.write_failures++;
+        printf("    write failed: %s (%s)\n", tmp, err);
         return false;
     }
-    sim_unlink(path);
-    sim_rename(tmp, path);
+    if (!sim_rename(tmp, path)) {
+        s_out.write_failures++;
+        printf("    rename failed: %s\n", tmp);
+        return false;
+    }
     return true;
 }
 
@@ -216,9 +175,8 @@ static void new_dialog(long delta)
     if (!new_download("/dialog-de.alaw", "/spiffs/dialog-de.alaw", bytes)) return;
     size_t w;
     if (!sim_write_file("/dialog.idx", DIALOG_INDEX, STORAGE_WRITE_BUF, &w)) {
-        int e = sim_last_err();
         sim_unlink("/dialog.idx");
-        note_write_failure(e);
+        s_out.write_failures++;
         return;
     }
     s_dialog_have = bytes;
@@ -264,81 +222,8 @@ static void new_upload(long size)
     storage_make_room((size_t) size, "/spiffs/announcement.alaw");
     size_t w;
     if (!sim_write_file("/announcement.alaw", (size_t) size, 8192, &w)) {
-        int e = sim_last_err();
         sim_unlink("/announcement.alaw");
-        note_write_failure(e);
-    }
-}
-
-// --- OLD policy: 1.6.0 / 1.7.0-beta3, re-enacted ----------------------------
-
-#define OLD_MARGIN (48 * KB)
-
-static bool old_asset(const char *path, long size)
-{
-    char tmp[48];
-    snprintf(tmp, sizeof(tmp), "%s.tmp", path);
-    if ((size_t) (size + OLD_MARGIN) > fs_free()) {
-        return false;                          // "no space" pre-check
-    }
-    size_t w;
-    if (!sim_write_file(tmp, (size_t) size, 1024, &w)) {   // no stdio buffer
-        int e = sim_last_err();                // no GC, no retry
-        sim_unlink(tmp);
-        note_write_failure(e);
-        return false;
-    }
-    sim_unlink(path);
-    sim_rename(tmp, path);
-    return true;
-}
-
-static void old_i18n(const device_t *d, long delta)
-{
-    old_asset("/ui-de.json", d->ui + delta);
-    old_asset("/mail-de.json", 2 * KB + delta / 8);
-    old_asset("/announcement-de.alaw", d->ann + delta);
-}
-
-static bool old_list(const char *path, long size)
-{
-    char tmp[48];
-    snprintf(tmp, sizeof(tmp), "%s.tmp", path);
-    sim_unlink(tmp);
-    for (int attempt = 0; attempt < 2; attempt++) {
-        if ((size_t) (size + OLD_MARGIN) > fs_free()) return false;
-        esp_spiffs_gc("storage", (size_t) (size + OLD_MARGIN));  // force_gc
-        size_t w;
-        if (sim_write_file(tmp, (size_t) size, 4096, &w)) {
-            sim_rename(tmp, path);
-            return true;
-        }
-        int e = sim_last_err();
-        sim_unlink(tmp);
-        note_write_failure(e);
-        if (e != SPIFFS_ERR_FULL) return false;
-        esp_spiffs_gc("storage", (size_t) (size + OLD_MARGIN));  // retry gc
-    }
-    return false;
-}
-
-static void old_blocklist(const device_t *d)
-{
-    sim_unlink("/community.bin");
-    long budget = (long) fs_free() - OLD_MARGIN;
-    if (budget < 0) budget = 0;
-    old_list("/community.bin", server_list_size(d->list, budget));
-    sim_unlink("/personal.bin");
-    old_list("/personal.bin", 2 * KB);
-}
-
-static void old_upload(long size)
-{
-    size_t w;
-    if (!sim_write_file("/announcement.alaw", (size_t) size, 8192, &w)) {
-        int e = sim_last_err();
-        sim_unlink("/announcement.alaw");
-        note_write_failure(e);
+        s_out.write_failures++;
     }
 }
 
@@ -348,48 +233,35 @@ static void old_upload(long size)
 #define I18N_DAY    30    // a release with changed assets: all re-downloaded
 #define UPLOAD_DAY  20    // the user records a new announcement
 
-typedef enum { POLICY_OLD, POLICY_NEW } policy_t;
-
-static outcome_t run(const device_t *d, policy_t p)
+static outcome_t run(const device_t *d)
 {
     memset(&s_out, 0, sizeof(s_out));
     s_evictions = 0;
     s_dialog_have = -1;
     sim_init();
-    sim_log_reset();
 
     size_t w;
     if (d->custom) sim_write_file("/announcement.alaw", (size_t) d->custom, 8192, &w);
-    if (d->legacy) {
-        // As 1.6.0 left it: assets through 1 KB writes, community list at
-        // free - 48 KB.
-        old_i18n(d, 0);
-        old_blocklist(d);
-        memset(&s_out, 0, sizeof(s_out));
-    }
     // A device switched to dialog mode: the switch deleted the own
     // recording (web.c), whatever was there before.
     if (d->dialog) sim_unlink("/announcement.alaw");
-    int gc_errors_before = sim_gc_error_count();
     sim_log_reset();
 
     for (int day = 0; day < DAYS; day++) {
         if (day == 0 || day == I18N_DAY) {
             // After an update the i18n sync runs first (30 s after boot),
             // the blocklist two minutes later.
-            long delta = day ? 1500 : 0;
-            if (p == POLICY_NEW) new_i18n(d, delta); else old_i18n(d, delta);
+            new_i18n(d, day ? 1500 : 0);
         }
         // In dialog mode there is no own recording: the switch deleted it,
         // and the upload API refuses (web.c).
         if (day == UPLOAD_DAY && d->upload && !d->dialog) {
             long size = d->custom ? d->custom + 20 * KB : 120 * KB;
             if (size > 240 * KB) size = 240 * KB;
-            if (p == POLICY_NEW) new_upload(size); else old_upload(size);
+            new_upload(size);
         }
-        if (p == POLICY_NEW) new_blocklist(d); else old_blocklist(d);
+        new_blocklist(d);
     }
-    s_out.gc_errors = sim_gc_error_count() - gc_errors_before;
     s_out.community_bytes = sim_file_size("/community.bin");
     s_out.dialog_present = sim_file_size("/dialog-de.alaw") == s_dialog_have
                            && s_dialog_have > 0 && sim_file_size("/dialog.idx") > 0;
@@ -401,9 +273,8 @@ static const char *describe(const device_t *d)
     static char buf[192];
     char set[32] = "";
     if (d->dialog) snprintf(set, sizeof(set), ", dialog %ld KB", dialog_bytes() / KB);
-    snprintf(buf, sizeof(buf), "own %3ld KB, ann %2ld KB, ui %2ld KB, list %4ld KB%s%s",
-             d->custom / KB, d->ann / KB, d->ui / KB, d->list / KB,
-             d->legacy ? ", 1.6.0 flash" : "", set);
+    snprintf(buf, sizeof(buf), "own %3ld KB, ann %2ld KB, ui %2ld KB, list %4ld KB%s",
+             d->custom / KB, d->ann / KB, d->ui / KB, d->list / KB, set);
     return buf;
 }
 
@@ -416,100 +287,162 @@ static void test_geometry(void)
     printf("geometry\n");
     sim_init();
     size_t t, u;
-    esp_spiffs_info("storage", &t, &u);
-    CHECK(t == (size_t) SIM_TOTAL && u == 0, "%d KB partition reports %zu B total, %zu used",
+    CHECK(storage_info(&t, &u) && t == (size_t) SIM_PART_SIZE && u == 2 * SIM_BLOCK_SIZE,
+          "%d KB partition reports %zu B total, %zu used (the root pair)",
           SIM_PART_SIZE / 1024, t, u);
-    // SPIFFS takes the S tier (storage_budget.h).
-    CHECK((long) storage_dialog_budget() == (long) STORAGE_DIALOG_TIER_S,
+    // The 640 KB partition takes the M tier (storage_budget.h).
+    CHECK((long) storage_dialog_budget() == (long) STORAGE_DIALOG_TIER_M,
           "dialog budget %ld KB", (long) storage_dialog_budget() / KB);
+    // Not mounted: the tier of the 640 KB partitions as well.
+    sim_unmount();
+    CHECK((long) storage_dialog_budget() == (long) STORAGE_DIALOG_TIER_M
+          && storage_community_budget() == -1,
+          "not mounted: dialog budget M, no community budget");
 }
 
-static void test_storage_download(void);
-
-static void test_old_reproduces_field_failures(void)
+// Fills the partition's first blocks the way an older firmware's SPIFFS does:
+// every block starts with its object lookup page (one 16-bit object id per
+// page of the block, the index-header flag 0x8000 on the first), followed by
+// pages of file data.
+static void write_spiffs_like(int blocks)
 {
-    printf("old policy (1.7.0-beta3) reproduces the field failures\n");
-    // #529: plain dongle, a user with low thresholds (list larger than any
-    // budget). The list fills the partition up to 48 KB below full every day.
-    device_t d529 = { 0, 79 * KB, 29 * KB, 1000 * KB, false, false, false };
-    outcome_t o = run(&d529, POLICY_OLD);
-    printf("    %s: %d failed writes (%d SPIFFS_ERR_FULL, at >= %d %% free), "
-           "%d \"SPIFFS_gc failed\"\n", describe(&d529), o.write_failures,
-           o.full_errors, o.min_free_pct_at_full, o.gc_errors);
-    CHECK(o.full_errors > 0, "#529: SPIFFS_ERR_FULL on writes");
-    CHECK(o.gc_errors > 0, "#529: \"SPIFFS_gc failed\" logged");
-
-    // #542: own recording + localized announcement + the default 40 KB list.
-    // The budget is not even binding — the write fails anyway.
-    device_t d542 = { 175 * KB, 79 * KB, 29 * KB, 40 * KB, true, false, false };
-    o = run(&d542, POLICY_OLD);
-    printf("    %s: %d failed writes (%d SPIFFS_ERR_FULL, at >= %d %% free), "
-           "%d \"SPIFFS_gc failed\"\n", describe(&d542), o.write_failures,
-           o.full_errors, o.min_free_pct_at_full, o.gc_errors);
-    CHECK(o.full_errors >= DAYS / 2, "#542: community write fails on most days");
-    CHECK(o.min_free_pct_at_full >= 25,
-          "#542: ERR_FULL while >= 25 %% is reported free (lowest %d %%)",
-          o.min_free_pct_at_full);
-    CHECK(o.gc_errors > 0, "#542: \"SPIFFS_gc failed\" logged");
+    uint8_t page[1024];
+    for (int b = 0; b < blocks; b++) {
+        memset(page, 0xFF, sizeof(page));
+        uint16_t ids[4] = { 0x8000 | (uint16_t) (b + 1), (uint16_t) (b + 1),
+                            (uint16_t) (b + 1), (uint16_t) (b + 1) };
+        memcpy(page, ids, sizeof(ids));
+        sim_write_raw((uint32_t) b * SIM_BLOCK_SIZE, page, sizeof(page));
+        for (int p = 1; p < 4; p++) {
+            for (size_t i = 0; i < sizeof(page); i++) page[i] = (uint8_t) (i * 7 + b + p);
+            sim_write_raw((uint32_t) b * SIM_BLOCK_SIZE + (uint32_t) p * 1024, page, sizeof(page));
+        }
+    }
 }
 
-static void test_new_policy(void)
+static void test_mount(void)
 {
-    printf("new policy: %d days without a failed write\n", DAYS);
+    printf("storage_mount\n");
+
+    // A factory-fresh partition (USB install): formatted quietly.
+    sim_erase();
+    sim_log_reset();
+    bool ok = storage_mount();
+    CHECK(ok && sim_mounted() && sim_format_count() == 1 && sim_log_count('W') == 0
+          && sim_log_count('E') == 0 && strstr(sim_last_log('I'), "LittleFS mounted"),
+          "erased partition: formatted once, mounted, nothing above INFO");
+
+    // A LittleFS with files (every later boot): mounted as it is.
+    size_t w;
+    sim_write_file("/announcement.alaw", 80 * KB, 8192, &w);
+    sim_write_file("/community.bin", 40 * KB, STORAGE_WRITE_BUF, &w);
+    sim_unmount();
+    sim_log_reset();
+    ok = storage_mount();
+    CHECK(ok && sim_mounted() && sim_format_count() == 1 && sim_log_count('W') == 0
+          && sim_log_count('E') == 0 && sim_file_size("/announcement.alaw") == 80 * KB
+          && sim_file_size("/community.bin") == 40 * KB,
+          "LittleFS: mounted without a format, the files kept");
+
+    // The classic ESP32's SPIFFS on the first boot of 1.7: reformatted with
+    // exactly one WARN, which says what the user has to do.
+    sim_erase();
+    write_spiffs_like(40);
+    sim_log_reset();
+    ok = storage_mount();
+    const char *warn = sim_last_log('W');
+    CHECK(ok && sim_mounted() && sim_format_count() == 1 && sim_log_count('W') == 1
+          && sim_log_count('E') == 0
+          && strcmp(warn, STORAGE_REFORMAT_WARNING) == 0,
+          "old SPIFFS: formatted once, mounted, one WARN: \"%s\"", warn);
+    CHECK(strlen(STORAGE_REFORMAT_WARNING) < STATS_ERROR_MSG_LEN
+          && strstr(STORAGE_REFORMAT_WARNING, "announcement") != NULL,
+          "the WARN names the own announcement and fits the log panel (%zu of %d)",
+          strlen(STORAGE_REFORMAT_WARNING), STATS_ERROR_MSG_LEN - 1);
+    size_t t, u;
+    CHECK(storage_info(&t, &u) && u == 2 * SIM_BLOCK_SIZE
+          && storage_community_budget() == (int64_t) storage_budget_lfs_community(
+                 &(storage_lfs_geometry_t){ SIM_BLOCK_SIZE, STORAGE_LFS_RESERVE_BLOCKS },
+                 t, 2 * SIM_BLOCK_SIZE),
+          "after the reformat the whole partition is free (%zu B used)", u);
+
+    // The next boot: a LittleFS now, no second format, no second WARN.
+    sim_write_file("/community.bin", 64 * KB, STORAGE_WRITE_BUF, &w);
+    sim_unmount();
+    sim_log_reset();
+    ok = storage_mount();
+    CHECK(ok && sim_format_count() == 1 && sim_log_count('W') == 0
+          && sim_log_count('E') == 0 && sim_file_size("/community.bin") == 64 * KB,
+          "second boot: mounted as it is, no WARN, the new files kept");
+
+    // A SPIFFS that never held a file (lookup pages all 0xFF) has nothing to
+    // lose: the quiet path.
+    sim_erase();
+    uint8_t magic[2] = { 0x12, 0x34 };   // SPIFFS' magic sits at the end of the lookup page
+    sim_write_raw(1022, magic, sizeof(magic));
+    sim_log_reset();
+    ok = storage_mount();
+    CHECK(ok && sim_format_count() == 1 && sim_log_count('W') == 0 && sim_log_count('E') == 0,
+          "empty SPIFFS: formatted without a WARN");
+
+    // Mounted state for the tests below.
+    sim_init();
+}
+
+static void test_policy(void)
+{
+    printf("daily cycle: %d days without a failed write\n", DAYS);
     static const device_t devices[] = {
-        // custom    ann       ui       list        legacy upload
-        {   0,       79 * KB,  29 * KB,   40 * KB,  false, true, false  }, // default
-        {   0,       79 * KB,  29 * KB, 1000 * KB,  false, false, false }, // #529
-        {   0,       79 * KB,  29 * KB, 1000 * KB,  false, true, false  },
-        {   0,       96 * KB,  49 * KB, 1000 * KB,  false, true, false  }, // largest assets
-        {   0,       79 * KB,  29 * KB, 1000 * KB,  true,  true, false  }, // #529, after OTA
-        {  60 * KB,  73 * KB,  27 * KB, 1000 * KB,  false, true, false  },
-        { 120 * KB,  96 * KB,  49 * KB,   40 * KB,  false, true, false  },
-        { 175 * KB,  79 * KB,  29 * KB,   40 * KB,  true,  false, false }, // #542
-        { 175 * KB,  79 * KB,  29 * KB, 1000 * KB,  true,  true, false  },
-        { 220 * KB,  96 * KB,  49 * KB, 1000 * KB,  true,  true, false  }, // max recording
+        // custom    ann       ui       list        upload dialog
+        {   0,       79 * KB,  29 * KB,   40 * KB,  true,  false }, // default
+        {   0,       79 * KB,  29 * KB, 1000 * KB,  false, false }, // #529
+        {   0,       79 * KB,  29 * KB, 1000 * KB,  true,  false },
+        {   0,       96 * KB,  49 * KB, 1000 * KB,  true,  false }, // largest assets
+        {  60 * KB,  73 * KB,  27 * KB, 1000 * KB,  true,  false },
+        { 120 * KB,  96 * KB,  49 * KB,   40 * KB,  true,  false },
+        { 175 * KB,  79 * KB,  29 * KB,   40 * KB,  false, false }, // #542
+        { 175 * KB,  79 * KB,  29 * KB, 1000 * KB,  true,  false },
+        { 220 * KB,  96 * KB,  49 * KB, 1000 * KB,  true,  false }, // max recording
     };
     for (size_t i = 0; i < sizeof(devices) / sizeof(devices[0]); i++) {
         const device_t *d = &devices[i];
-        outcome_t o = run(d, POLICY_NEW);
-        CHECK(o.write_failures == 0 && o.gc_errors == 0 && sim_log_count('W') == 0
-              && sim_log_count('E') == 0,
-              "%s: %d failed writes, %d gc errors, community %ld KB, "
-              "%d days without list, %d evictions",
-              describe(d), o.write_failures, o.gc_errors,
+        outcome_t o = run(d);
+        CHECK(o.write_failures == 0 && sim_log_count('W') == 0 && sim_log_count('E') == 0,
+              "%s: %d failed writes, community %ld KB, %d days without list, "
+              "%d evictions", describe(d), o.write_failures,
               o.community_bytes > 0 ? o.community_bytes / KB : 0,
               o.refusals, s_evictions);
     }
 
-    // Dialog mode (#429): the clip set in place of the localized
-    // announcement and of any own recording (the switch deletes it; `upload`
-    // is refused). Every row clean, the set kept, and the community cache
-    // gets a list on every day.
-    printf("new policy, dialog mode: %d days\n", DAYS);
+    // Dialog mode (#429): the M set in place of the localized announcement
+    // and of any own recording (the switch deletes it; `upload` is refused).
+    // Every row clean, the set kept, and the community cache gets a list on
+    // every day — at least the 128 KB bucket where the server has one.
+    printf("daily cycle, dialog mode: %d days\n", DAYS);
     static const device_t dialog_rows[] = {
-        // custom ann       ui       list        legacy upload dialog
-        {  0,    79 * KB,  29 * KB,   40 * KB,  false, false, true }, // default list
-        {  0,    79 * KB,  29 * KB,   40 * KB,  false, true,  true }, // upload refused
-        {  0,    79 * KB,  29 * KB, 1000 * KB,  false, true,  true }, // #529
-        {  0,    96 * KB,  49 * KB, 1000 * KB,  false, true,  true }, // largest assets
-        {  0,    79 * KB,  29 * KB, 1000 * KB,  true,  true,  true }, // #529, after OTA
-        {  0,    96 * KB,  49 * KB,   40 * KB,  true,  false, true }, // legacy, default list
-        // Switched from announcement mode with a maximal own recording on a
-        // 1.6.0 flash (the old worst case): the recording goes with the switch.
-        { 220 * KB, 96 * KB, 49 * KB, 1000 * KB, true,  true,  true },
-        { 175 * KB, 79 * KB, 29 * KB,   40 * KB, true,  false, true }, // #542
+        // custom ann       ui       list        upload dialog
+        {  0,    79 * KB,  29 * KB,   40 * KB,  false, true }, // default list
+        {  0,    79 * KB,  29 * KB,   40 * KB,  true,  true }, // upload refused
+        {  0,    79 * KB,  29 * KB, 1000 * KB,  true,  true }, // #529
+        {  0,    96 * KB,  49 * KB, 1000 * KB,  true,  true }, // largest assets
+        // Switched from announcement mode with a maximal own recording: the
+        // recording goes with the switch.
+        { 220 * KB, 96 * KB, 49 * KB, 1000 * KB, true,  true },
+        { 175 * KB, 79 * KB, 29 * KB,   40 * KB, false, true }, // #542
     };
     for (size_t i = 0; i < sizeof(dialog_rows) / sizeof(dialog_rows[0]); i++) {
         const device_t *d = &dialog_rows[i];
-        outcome_t o = run(d, POLICY_NEW);
-        CHECK(o.write_failures == 0 && o.gc_errors == 0 && sim_log_count('W') == 0
+        outcome_t o = run(d);
+        long want = d->list < SIM_BUCKET ? d->list : SIM_BUCKET;
+        CHECK(o.write_failures == 0 && sim_log_count('W') == 0
               && sim_log_count('E') == 0 && o.dialog_present
               && sim_file_size("/announcement-de.alaw") < 0
               && sim_file_size("/announcement.alaw") < 0
-              && o.refusals == 0 && o.community_days == DAYS,
-              "%s: %d failed writes, %d gc errors, set %s, community %ld KB "
+              && o.refusals == 0 && o.community_days == DAYS
+              && o.community_bytes >= want,
+              "%s: %d failed writes, set %s, community %ld KB "
               "(on %d of %d days), %d evictions",
-              describe(d), o.write_failures, o.gc_errors,
+              describe(d), o.write_failures,
               o.dialog_present ? "kept" : "ABSENT",
               o.community_bytes > 0 ? o.community_bytes / KB : 0,
               o.community_days, DAYS, s_evictions);
@@ -517,48 +450,98 @@ static void test_new_policy(void)
 
     // Without an own recording the community cache must not be starved: a
     // default list is kept every day, a large one gets a real budget.
-    device_t plain = { 0, 79 * KB, 29 * KB, 40 * KB, false, false, false };
-    outcome_t o = run(&plain, POLICY_NEW);
+    device_t plain = { 0, 79 * KB, 29 * KB, 40 * KB, false, false };
+    outcome_t o = run(&plain);
     CHECK(o.refusals == 0 && o.community_bytes == 40 * KB,
           "default list cached every day (%d days without)", o.refusals);
-    device_t big = { 0, 79 * KB, 29 * KB, 1000 * KB, false, false, false };
-    o = run(&big, POLICY_NEW);
-    CHECK(o.refusals == 0 && o.community_bytes == SIM_BUCKET,
-          "large list gets the %ld KB bucket (%ld KB)", SIM_BUCKET / KB,
+    device_t big = { 0, 79 * KB, 29 * KB, 1000 * KB, false, false };
+    o = run(&big);
+    CHECK(o.refusals == 0 && o.community_bytes >= SIM_BUCKET,
+          "large list gets at least the %ld KB bucket (%ld KB)", SIM_BUCKET / KB,
           o.community_bytes / KB);
 }
 
 static void test_self_healing(void)
 {
-    printf("self-healing on update\n");
-    // A dongle coming from 1.6.0 holds an oversized community list. The
-    // first sync deletes it before computing the budget, so the very first
-    // list it asks for already fits.
-    device_t d = { 0, 79 * KB, 29 * KB, 1000 * KB, true, false, false };
-    sim_init();
-    old_i18n(&d, 0);
-    // Larger than the new budget allows; the old one (free - 48 KB) offered
-    // 323 KB.
-    size_t w;
-    bool wrote = sim_write_file("/community.bin", 192 * KB, 4096, &w);
-    long before = sim_file_size("/community.bin");
+    printf("an oversized list is replaced by one within the budget\n");
+    // A community list larger than the budget allows (left by a firmware
+    // with another budget). The sync deletes it before computing the
+    // budget, so the very first list it asks for already fits.
+    device_t d = { 0, 79 * KB, 29 * KB, 1000 * KB, false, false };
     memset(&s_out, 0, sizeof(s_out));
+    sim_init();
+    new_i18n(&d, 0);
+    long want = server_list_size(d.list, (long) storage_community_budget());
+    size_t w;
+    bool wrote = sim_write_file("/community.bin", 480 * KB, STORAGE_WRITE_BUF, &w);
+    long before = sim_file_size("/community.bin");
+    sim_log_reset();
     new_blocklist(&d);
     long after = sim_file_size("/community.bin");
-    CHECK(wrote && before == 192 * KB && after == SIM_BUCKET && s_out.write_failures == 0,
-          "1.6.0 list %ld KB -> %ld KB on the first sync", before / KB, after / KB);
+    CHECK(wrote && before == 480 * KB && after == want
+          && s_out.write_failures == 0 && sim_log_count('W') == 0,
+          "%ld KB list -> %ld KB on the first sync", before / KB, after / KB);
 }
 
-// storage_download(): one GC + exactly one retry, only for out-of-space.
+// The replacement of a set is delete-first (i18n_sync.c): a new M set fits
+// where the old one was, next to the packs and the list — and the budget says
+// so before the write, without an eviction.
+static void test_dialog_replacement(void)
+{
+    printf("dialog set replaced delete-first\n");
+    device_t d = { 0, 96 * KB, 49 * KB, 1000 * KB, false, true };
+    memset(&s_out, 0, sizeof(s_out));
+    s_evictions = 0;
+    s_dialog_have = -1;
+    sim_init();
+    sim_log_reset();
+    new_i18n(&d, 0);
+    new_blocklist(&d);
+    long list = sim_file_size("/community.bin");
+    int evictions = s_evictions;
+    for (int release = 1; release <= 5; release++) {
+        new_dialog(release * 800);
+        new_blocklist(&d);
+    }
+    CHECK(s_out.write_failures == 0 && sim_log_count('W') == 0 && sim_log_count('E') == 0
+          && s_dialog_have > 0 && s_evictions == evictions
+          && sim_file_size("/community.bin") == list,
+          "5 releases of the set: no failed write, no eviction, list stays %ld KB",
+          list / KB);
+}
+
+// rename() onto an existing file replaces it in one commit (i18n_sync.c
+// relies on it): the new content in place, the old copy's blocks free again.
+static void test_replace(void)
+{
+    printf("rename replaces\n");
+    sim_init();
+    size_t w;
+    sim_write_file("/ui-de.json", 49 * KB, STORAGE_WRITE_BUF, &w);
+    size_t t, before, during, after;
+    storage_info(&t, &before);
+    sim_write_file("/ui-de.json.tmp", 30 * KB, STORAGE_WRITE_BUF, &w);
+    storage_info(&t, &during);
+    bool ok = sim_rename("/ui-de.json.tmp", "/ui-de.json");
+    storage_info(&t, &after);
+    CHECK(ok && sim_file_size("/ui-de.json") == 30 * KB
+          && sim_file_size("/ui-de.json.tmp") < 0 && during > before && after < during
+          && after == before - (storage_budget_lfs_file_blocks(
+                 &(storage_lfs_geometry_t){ SIM_BLOCK_SIZE, 0 }, 49 * KB)
+             - storage_budget_lfs_file_blocks(
+                 &(storage_lfs_geometry_t){ SIM_BLOCK_SIZE, 0 }, 30 * KB)) * SIM_BLOCK_SIZE,
+          "49 KB replaced by 30 KB: %zu -> %zu -> %zu B used", before, during, after);
+}
+
+// storage_download(): exactly one retry, only for out-of-space.
 static int s_calls;
 static storage_dl_t s_script[2];
 
-static storage_dl_t scripted(void *ctx, size_t *bytes, char *err, size_t cap)
+static storage_dl_t scripted(void *ctx, char *err, size_t cap)
 {
     (void) ctx;
     storage_dl_t r = s_script[s_calls++];
     if (r != STORAGE_DL_OK) snprintf(err, cap, "attempt %d", s_calls);
-    if (r == STORAGE_DL_FULL) *bytes = 4096;
     return r;
 }
 
@@ -588,58 +571,15 @@ static void test_storage_download(void)
           "nothing above INFO — the caller's one WARN is the only line");
 }
 
-
-// Probe: the fleet transition. Real dongles reach 1.7.0 after weeks of the
-// old policy, on a partition the failing syncs have fragmented, not after a
-// single old sync on a fresh one. The new policy must recover on that same
-// filesystem (no reformat) within its first sync and stay clean afterwards.
-static void test_transition_after_weeks_of_old_policy(void)
-{
-    printf("transition: %d days old policy, then new policy on the same flash\n", DAYS);
-    static const device_t devices[] = {
-        {   0,       79 * KB,  29 * KB, 1000 * KB,  false, false, false }, // #529
-        { 175 * KB,  79 * KB,  29 * KB,   40 * KB,  false, false, false }, // #542
-        { 220 * KB,  96 * KB,  49 * KB, 1000 * KB,  false, false, false }, // max recording
-    };
-    for (size_t i = 0; i < sizeof(devices) / sizeof(devices[0]); i++) {
-        const device_t *d = &devices[i];
-        memset(&s_out, 0, sizeof(s_out));
-        s_evictions = 0;
-        sim_init();
-        sim_log_reset();
-        size_t w;
-        if (d->custom) sim_write_file("/announcement.alaw", (size_t) d->custom, 8192, &w);
-        for (int day = 0; day < DAYS; day++) {
-            if (day == 0) old_i18n(d, 0);
-            old_blocklist(d);
-        }
-        int old_failures = s_out.write_failures;
-
-        // OTA to the new firmware: i18n sync first, then the daily blocklist.
-        memset(&s_out, 0, sizeof(s_out));
-        int gc_before = sim_gc_error_count();
-        sim_log_reset();
-        new_i18n(d, 1500);
-        for (int day = 0; day < 30; day++) {
-            new_blocklist(d);
-        }
-        int gc_errors = sim_gc_error_count() - gc_before;
-        CHECK(s_out.write_failures == 0 && gc_errors == 0 && sim_log_count('E') == 0,
-              "%s: %d old failures, then %d failed writes, %d gc errors, "
-              "%d days without list, community %ld KB",
-              describe(d), old_failures, s_out.write_failures, gc_errors,
-              s_out.refusals, sim_file_size("/community.bin") / KB);
-    }
-}
-
 int main(void)
 {
     test_geometry();
+    test_mount();
     test_storage_download();
-    test_old_reproduces_field_failures();
-    test_new_policy();
+    test_replace();
+    test_policy();
     test_self_healing();
-    test_transition_after_weeks_of_old_policy();
+    test_dialog_replacement();
 
     printf("\n%d checks, %d failed\n", tests_run, tests_failed);
     return tests_failed ? 1 : 0;

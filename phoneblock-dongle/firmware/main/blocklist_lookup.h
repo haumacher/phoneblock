@@ -16,7 +16,7 @@
 //
 // Storage strategy
 // ----------------
-// Both files (community.bin / personal.bin) stay on SPIFFS; lookups go
+// Both files (community.bin / personal.bin) stay on flash (storage.h); lookups go
 // through fseek/fread. The dongle never loads the whole file into RAM —
 // the personal list has no enforced size cap, and even the community list
 // (~156 KB) wants to stay out of the working-set.
@@ -45,7 +45,7 @@ typedef struct blocklist blocklist_t;
 // Opens the given file and parses the header. Returns NULL if the file is
 // missing, the magic is wrong, the format version is unsupported, or the
 // record counts overflow a 31-bit signed int. The file is not held open
-// across calls; each lookup re-opens it (a SPIFFS rename during sync would
+// across calls; each lookup re-opens it (a rename during sync would
 // otherwise serve stale bytes).
 //
 // `path_owned` is duplicated internally; the caller may free its copy.
