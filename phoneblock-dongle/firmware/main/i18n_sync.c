@@ -52,8 +52,8 @@ static const char *TAG = "i18nsync";
 #else
 #define TMP_PATH_CAP     512
 #endif
-// Manifests are small JSON (the audio channel's, the larger one, is ~7 KB
-// with the announcements and dialog tiers of 14 locales); cap with room for
+// Manifests are small JSON (the audio channel's, the larger one, holds the
+// announcement and the dialog index of 14 locales, a few KB); cap with room for
 // more locales and heap-allocate so a growing locale set never smashes the
 // task stack. One contiguous block, so not more than needed.
 #define MANIFEST_CAP     (12 * 1024)
@@ -63,6 +63,10 @@ static const char *TAG = "i18nsync";
 
 static pb_mutex_t *   s_lock = NULL;
 static i18n_sync_status_t  s_status;
+// A trigger arrived while a pass was running: the state it reacts to (a
+// speaker choice, a dropped own dialog set, ...) may have changed after
+// that pass looked, so one more pass follows.
+static bool                s_rerun;
 
 // ---------------------------------------------------------------------------
 // Small helpers.
@@ -365,7 +369,8 @@ static void prune_stale(const char *keep_lang)
             is_stale_localized(e->d_name, "announcement-", ".alaw.tmp", "") ||
             is_stale_localized(e->d_name, "mail-", ".json.tmp", "") ||
             is_stale_localized(e->d_name, "ui-", ".json.tmp", "") ||
-            is_stale_localized(e->d_name, "dialog-", ".alaw.tmp", "");
+            is_stale_localized(e->d_name, "dialog-", ".alaw.tmp", "") ||
+            is_stale_localized(e->d_name, "dialog-", ".json.tmp", "");
         if (stale) {
             // Sized for SPIFFS_DIR + '/' + a full dirent name so the
             // formatted path can never be truncated (-Wformat-truncation).
@@ -438,16 +443,22 @@ static bool sync_announcement(const cJSON *assets, const char *base_url,
                                   err, err_cap);
 }
 
-// The dialog clip set (#429), kept only while ab_mode is "dialog". The largest
-// size tier within the partition's dialog budget (storage_dialog_budget()),
-// taken as a whole from the first locale of `chain` that offers one
-// (dialog_manifest.h): one file, stored under that locale's name, its clip
-// table in the header. The index marks it complete only once the file is
-// verified, in place and its header valid (dialog_store.h). Any other set on
-// the device goes first, so the partition holds one set at a time; another
-// tier of the same locale replaces the file like a new release does. The
-// file is a rarely written asset like the announcement whose place it takes:
+// The dialog clip set (#429), kept only while ab_mode is "dialog", in two
+// steps (dialog_manifest.h): the index of the first locale of `chain` that
+// has one, kept as dialog-speakers.json (downloaded only when its SHA-256
+// changed), then from it the set of the chosen speaker (config
+// dialog_speaker, or the locale's default) in the largest size tier within
+// the partition's dialog budget (storage_dialog_budget()). One file, stored
+// under the locale's name, its clip table in the header. The index line
+// marks it complete only once the file is verified, in place and its header
+// valid (dialog_store.h). Any other set on the device goes first, so the
+// partition holds one set at a time; another tier or speaker of the same
+// locale replaces the file like a new release does. The file is a rarely
+// written asset like the announcement whose place it takes:
 // download_verify_rename() claims its room ahead of the community blocklist.
+//
+// The user's own set (DIALOG_OWN_LANG) is never replaced: while it is on
+// the device only the index is kept current, for the web UI's speaker list.
 static bool sync_dialog(const cJSON *assets, const char *base_url,
                         const char **chain, int chain_n,
                         char *err, size_t err_cap)
@@ -460,36 +471,109 @@ static bool sync_dialog(const cJSON *assets, const char *base_url,
         return true;
     }
 
+    // An own set is being uploaded (web.c): its file and index are the
+    // upload's until it ends; the next pass looks again.
+    if (dialog_store_upload_active()) {
+        pb_log_info(TAG, "dialog: own set upload in progress — set left alone");
+        return true;
+    }
+    bool own = dialog_store_has_own();
+    char spk_path[DIALOG_STORE_PATH_CAP];
+    dialog_store_speakers_path(spk_path, sizeof(spk_path));
+    char url[256];
+    char on_disk[65];
+
+    // Step 1: the locale's index.
+    audio_asset_t ix;
+    if (!dialog_manifest_index(assets, chain, chain_n, &ix)) {
+        unlink(spk_path);
+        if (own) return true;
+        dialog_store_remove_all();
+        pb_log_warn(TAG, "dialog mode, but the audio channel has no dialog index "
+                         "for '%s' or its fallbacks — calls are hung up without audio",
+                    chain[0]);
+        return true;   // nothing to fetch: not a failed pass
+    }
+    if (strcmp(ix.lang, chain[0]) != 0) {
+        pb_log_info(TAG, "dialog: no set for '%s', using '%s'", chain[0], ix.lang);
+    }
+    if (!(sha256_file_hex(spk_path, on_disk) && strcasecmp(on_disk, ix.sha256) == 0)) {
+        snprintf(url, sizeof(url), "%s/%s", base_url, ix.path);
+        if (!download_verify_rename(url, spk_path, ix.sha256, ix.bytes, err, err_cap)) {
+            return false;
+        }
+    }
+
     // The clip table is ~1.3 KB: on the heap, not the scheduler stack that
     // the TLS session of the download needs.
     dialog_set_t *have = malloc(sizeof(*have));
+    char *text = dialog_store_read_speakers();
+    cJSON *index = text ? cJSON_Parse(text) : NULL;
+    free(text);
+    bool ok = true;
     if (!have) {
         snprintf(err, err_cap, "dialog: out of memory");
-        return false;
+        ok = false;
+        goto out;
     }
-    bool ok = true;
+
+    if (own && dialog_store_claim_own()) {
+        pb_log_info(TAG, "own dialog set active — CDN set not fetched");
+        goto out;
+    }
+    if (!index) {
+        snprintf(err, err_cap, "dialog: index of '%s' is not JSON", ix.lang);
+        ok = false;
+        goto out;
+    }
+
+    // Step 2: the speaker's set.
     uint64_t budget = storage_dialog_budget();
+    // No speaker yet (or since a ui_lang change), or one this locale does
+    // not have: one of its speakers at random (dialog_manifest.h), kept from
+    // then on — so the fleet does not all sound alike.
+    bool repicked = false;
+    const char *speaker = dialog_index_resolve_speaker(
+        index, config_dialog_speaker(), pb_random_u32(), &repicked);
+    char picked[DIALOG_SPEAKER_CAP] = "";
+    if (repicked) {
+        snprintf(picked, sizeof(picked), "%s", speaker);
+        pb_log_info(TAG, "dialog: speaker '%s' picked at random for '%s'", picked, ix.lang);
+        if (config_set_dialog_speaker(picked) != 0) {
+            pb_log_warn(TAG, "dialog: could not store the speaker pick '%s'", picked);
+        }
+        speaker = picked;
+    }
+    if (!speaker) speaker = "";
     dialog_manifest_set_t want;
-    if (!dialog_manifest_select(assets, chain, chain_n, budget, &want)) {
-        dialog_store_remove_all();
-        pb_log_warn(TAG, "dialog mode, but this firmware's i18n bundle has no "
-                         "dialog clip set within %llu bytes — calls are hung up "
-                         "without audio", (unsigned long long)budget);
+    dialog_pick_t pick = dialog_index_select(index, speaker, budget, &want);
+    if (pick == DIALOG_PICK_NONE) {
+        dialog_store_drop_index();
+        dialog_store_remove_others(NULL);
+        pb_log_warn(TAG, "dialog mode, but the '%s' dialog index has no set within "
+                         "%llu bytes — calls are hung up without audio",
+                    ix.lang, (unsigned long long)budget);
         goto out;   // nothing to fetch: not a failed pass
     }
-    if (strcmp(want.lang, chain[0]) != 0) {
-        pb_log_info(TAG, "dialog: no set for '%s', using '%s'", chain[0], want.lang);
+    if (pick != DIALOG_PICK_CHOSEN) {
+        // The speaker is in the index (resolved above), but none of its
+        // tiers fits this partition: a publishing gap, the default's set
+        // stands in.
+        pb_log_warn(TAG, "dialog: speaker '%s' has no '%s' set within %llu bytes, "
+                         "using the default speaker '%s'", speaker, ix.lang,
+                    (unsigned long long)budget, want.speaker);
     }
+    want.lang = ix.lang;
 
     char path[DIALOG_STORE_PATH_CAP];
     dialog_store_file_path(path, sizeof(path), want.lang);
-    char on_disk[65];
     bool file_ok = sha256_file_hex(path, on_disk) &&
                    strcasecmp(on_disk, want.sha256) == 0;
-    bool index_ok = dialog_store_load(have) && strcmp(have->lang, want.lang) == 0;
+    bool index_ok = dialog_store_load(have) && strcmp(have->lang, want.lang) == 0 &&
+                    strcmp(have->speaker, want.speaker) == 0;
     if (file_ok && index_ok) {
-        pb_log_info(TAG, "dialog clip set '%s' (%lu B) up to date", want.lang,
-                    (unsigned long)want.bytes);
+        pb_log_info(TAG, "dialog clip set '%s/%s' (%lu B) up to date", want.lang,
+                    want.speaker, (unsigned long)want.bytes);
         goto out;
     }
 
@@ -499,7 +583,6 @@ static bool sync_dialog(const cJSON *assets, const char *base_url,
         pb_log_info(TAG, "dialog: %d file(s) of another set removed", removed);
     }
     if (!file_ok) {
-        char url[256];
         snprintf(url, sizeof(url), "%s/%s", base_url, want.path);
         if (!download_verify_rename(url, path, want.sha256, want.bytes, err, err_cap)) {
             ok = false;
@@ -514,14 +597,15 @@ static bool sync_dialog(const cJSON *assets, const char *base_url,
         ok = false;
         goto out;
     }
-    if (dialog_store_write_index(want.lang) != PB_OK) {
+    if (dialog_store_write_index(want.lang, want.speaker) != PB_OK) {
         snprintf(err, err_cap, "dialog: index write failed");
         ok = false;
         goto out;
     }
-    pb_log_info(TAG, "dialog clip set '%s' complete (%lu B, %s)", want.lang,
-                (unsigned long)want.bytes, want.path);
+    pb_log_info(TAG, "dialog clip set '%s/%s' complete (%lu B, %s)", want.lang,
+                want.speaker, (unsigned long)want.bytes, want.path);
 out:
+    cJSON_Delete(index);
     free(have);
     return ok;
 }
@@ -611,12 +695,19 @@ static void run_once(void)
     if (strcmp(lang, "en") != 0) ann_chain[acn++] = "en";
     if (strcmp(lang, "de") != 0) ann_chain[acn++] = "de";
 
-    char ann_path[48];
-    announcement_localized_path(ann_path, sizeof(ann_path), lang);
-    char mail_path[48];
-    snprintf(mail_path, sizeof(mail_path), "%s/mail-%s.json", SPIFFS_DIR, lang);
-    char ui_path[48];
-    snprintf(ui_path, sizeof(ui_path), "%s/ui-%s.json", SPIFFS_DIR, lang);
+    // Sized for the platform's data directory; a path that does not fit
+    // (a Linux PHONEBLOCK_DATA_DIR too long) is an error, never a truncated
+    // name that would write somewhere else.
+    char ann_path[PB_DATA_PATH_CAP], mail_path[PB_DATA_PATH_CAP];
+    char ui_path[PB_DATA_PATH_CAP];
+    if (!announcement_localized_path(ann_path, sizeof(ann_path), lang)
+            || !i18n_sync_mail_path(mail_path, sizeof(mail_path), lang)
+            || !i18n_sync_ui_path(ui_path, sizeof(ui_path), lang)) {
+        pb_log_warn(TAG, "data directory path too long for the language files "
+                    "(%d bytes per path): %s", PB_DATA_PATH_CAP, SPIFFS_DIR);
+        set_status(false, lang, "data path too long");
+        return;
+    }
 
     // Prune the PREVIOUS locale's assets BEFORE downloading the new ones. The
     // storage partition (~640 KB, shared with the blocklist) cannot hold two
@@ -754,7 +845,10 @@ bool i18n_sync_run(void)
     pb_mutex_lock(s_lock);
     s_status.running = false;
     bool ok = s_status.last_ok;
+    bool rerun = s_rerun;
+    s_rerun = false;
     pb_mutex_unlock(s_lock);
+    if (rerun) scheduler_request_i18n_sync();
     return ok;
 }
 
@@ -763,6 +857,7 @@ bool i18n_sync_trigger_now(void)
     if (!s_lock) return false;
     pb_mutex_lock(s_lock);
     bool running = s_status.running;
+    if (running) s_rerun = true;
     pb_mutex_unlock(s_lock);
     if (running) return false;
     return scheduler_request_i18n_sync();
@@ -777,21 +872,23 @@ void i18n_sync_snapshot(i18n_sync_status_t *out)
     pb_mutex_unlock(s_lock);
 }
 
-void i18n_sync_ui_path(char *out, size_t cap, const char *lang)
+bool i18n_sync_ui_path(char *out, size_t cap, const char *lang)
 {
-    snprintf(out, cap, "%s/ui-%s.json", SPIFFS_DIR, lang ? lang : "");
+    int n = snprintf(out, cap, "%s/ui-%s.json", SPIFFS_DIR, lang ? lang : "");
+    return n >= 0 && (size_t)n < cap;
 }
 
-void i18n_sync_mail_path(char *out, size_t cap, const char *lang)
+bool i18n_sync_mail_path(char *out, size_t cap, const char *lang)
 {
-    snprintf(out, cap, "%s/mail-%s.json", SPIFFS_DIR, lang ? lang : "");
+    int n = snprintf(out, cap, "%s/mail-%s.json", SPIFFS_DIR, lang ? lang : "");
+    return n >= 0 && (size_t)n < cap;
 }
 
 bool i18n_sync_have_ui_pack(const char *lang)
 {
     if (!lang || !*lang) return false;
-    char path[48];
-    i18n_sync_ui_path(path, sizeof(path), lang);
+    char path[PB_DATA_PATH_CAP];
+    if (!i18n_sync_ui_path(path, sizeof(path), lang)) return false;
     struct stat st;
     return stat(path, &st) == 0 && st.st_size > 0;
 }

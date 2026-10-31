@@ -126,11 +126,28 @@ re-generation would add that to the history again.
 ../scripts/tts-dialog.py --convert-only  # re-encode from the masters, no API calls
 ```
 
+A new speaker is one command: the voice ID from the ElevenLabs library (the
+voice's "…" menu → "Copy voice ID"; it need not be in "My voices"):
+
+```bash
+../scripts/tts-dialog.py --add-speaker VNHNa6nN6yJdVF3YRyuF --langs de --upload
+```
+
+It reads the voice's name and gender from the API, appends the speaker to
+`speakers.json` (id and display name derived from the name; `--id` / `--name`
+to override, `--dry-run` to preview), speaks it in the `--langs` locales
+(default all; one locale costs some 400–500 credits) and uploads the new
+masters. Commit `speakers.json` and the new `<lang>/<id>/` directories; the
+next `audio-assets.sh` publishes the speaker. Devices already set keep their
+speaker; they offer the new one in the web UI and pick among all at random
+after a language change.
+
 A run after editing one sentence costs one request per speaker; a speaker
 whose voice or model changed is regenerated as a whole, and changing `TEMPO`
 only re-converts. An interrupted run resumes with the missing clips. Upload
 the new masters, commit the `.txt` and `voice.json` files, then publish with
-`audio-assets.sh` (below), which takes the default speaker's clips.
+`audio-assets.sh` (below), which publishes every speaker of a locale (see
+*Dialog sets* below).
 `--fetch` only takes a master whose CDN transcript and voice equal the
 committed ones.
 
@@ -144,7 +161,9 @@ Two channels, both under `https://cdn.phoneblock.net/dongle/firmware/`
 | mail string pack | `<version>/i18n/mail/mail-<lang>.json` | `l10n/mail/*.arb` | `i18n-assets.sh` (by `release.sh`) | firmware |
 | web-UI pack | `<version>/i18n/ui/lang-<code>.json` | `l10n/ui/*.arb` | `i18n-assets.sh` (by `release.sh`) | firmware, served at `/api/i18n/ui` |
 | announcement audio | `audio/v<N>/announcement-<lang>-<sha8>.alaw` | `audio/announcement-*` | `audio-assets.sh` | firmware, unless an own recording or dialog mode |
-| dialog clips | `audio/v<N>/dialog-<lang>-<tier>-<sha8>.bin` | `audio/dialog/<lang>/<speaker>/` | `audio-assets.sh` | firmware, only while `ab_mode=dialog` |
+| dialog speaker index | `audio/v<N>/dialog-<lang>-<sha8>.json` | `audio/dialog/speakers.json` | `audio-assets.sh` | firmware, only while `ab_mode=dialog` |
+| dialog clips | `audio/v<N>/dialog-<lang>-<speaker>-<tier>-<sha8>.bin` | `audio/dialog/<lang>/<speaker>/` | `audio-assets.sh` | firmware, only while `ab_mode=dialog` |
+| speaker preview | `audio/tts/<lang>/<speaker>/hello-1.mp3` | the TTS master | `tts-dialog.py --upload` | the web UI's ▶ button |
 
 Each channel has its `manifest.json`; every asset is `{path, sha256, bytes}`
 and checked against the SHA-256 after download. The **string packs** are tied
@@ -166,19 +185,23 @@ day (with jitter; an unchanged manifest costs one GET and no download):
 { "format": 1,
   "assets": {
     "de": { "announcement": { "path": "announcement-de-59007339.alaw", "sha256": "…", "bytes": 78762 },
-            "dialog": [ { "path": "dialog-de-s-de522f20.bin", "sha256": "…", "bytes": 117995 },
-                        { "path": "dialog-de-m-01253f03.bin", "sha256": "…", "bytes": 221243 },
-                        { "path": "dialog-de-l-6654dbed.bin", "sha256": "…", "bytes": 489075 } ] },
+            "dialog": { "path": "dialog-de-9c0d1e2f.json", "sha256": "…", "bytes": 1460 } },
     … } }
 ```
+
+The `dialog` entry names the locale's **speaker index** (see *Dialog sets*
+below), not the sets themselves: the manifest stays small however many
+speakers a locale gets.
 
 **Content updates republish `v<N>` in place** — `scripts/audio-assets.sh`.
 File names are content-addressed (`<sha8>` = the first 8 hex digits of the
 file's SHA-256), so an upload never replaces a file a device may be
 downloading; the files go up first, the manifest last via posix-rename
 (atomic), and only then are files removed that neither the new nor the
-previous manifest names — a device that read the previous manifest a moment
-ago still finds its files.
+previous generation names (its manifest, or a dialog index it names) — a
+device that read the previous manifest a moment ago still finds its files.
+The order is sets, then indexes, then the manifest; if a previous index cannot
+be read, nothing is removed.
 
 **Raise `N` only for an incompatible change** — one that firmware reading
 `v<N>` could not handle:
@@ -213,7 +236,7 @@ clips per phase and each clip's offset and length), covered by the same
 SHA-256 as the audio after it.
 
 A full set (36 clips, 440–570 KB) does not fit every device, so up to three
-**tiers** are published per locale, each the longest prefix of one priority
+**tiers** are published per locale and speaker, each the longest prefix of one priority
 order that fits its limit — first clip 1 of every phase, then the further
 `question`, `cant-hear-you`, `am-aparat`, `hello` and `who-is-there` clips:
 
@@ -226,19 +249,68 @@ order that fits its limit — first clip 1 of every phase, then the further
 A tier with the same clips as a smaller one is not published; a locale whose
 minimum set (one clip per phase) exceeds `s` stops the publish. The limits are
 read from `main/storage_budget.h`, where the simulation that validates them is
-described. The device takes the largest tier within its budget
-(`storage_dialog_budget()`), **as a whole** from the first locale of its
-`ui_lang → en → de` chain that has one (never mixed across languages), stores
-it as `dialog-<lang>.alaw` plus a `dialog.idx` naming the locale, written
-once the file is verified and its header valid (`main/dialog_store.h`), and
-removes it when `ab_mode` goes back to `announcement` or the chosen locale or
-tier changes. In dialog mode the set takes the place of both announcements:
-the localized one is neither downloaded nor kept, and switching to dialog
-deletes an own recording (a new one can be uploaded in announcement mode
-only). The set is a rarely written asset in the storage budget, ahead of the
-community blocklist. A manifest must stay below the firmware's 12 KB fetch
-buffer (`MANIFEST_CAP` in `main/i18n_sync.c`; the audio channel's is ~7 KB
-for 14 locales).
+described.
+
+**Speakers.** Every speaker of `audio/dialog/speakers.json` that has all
+clips of a locale is published for it; the `default` speaker comes first and
+must be complete (otherwise the publish stops), a speaker with missing clips
+is left out with a note, and a locale without the default speaker gets no
+dialog. Per locale, `audio-assets.sh` writes one index
+`dialog-<lang>-<sha8>.json` (at most `DIALOG_INDEX_MAX_BYTES`,
+`main/dialog_manifest.h`):
+
+```json
+{ "speakers": [
+    { "id": "leonie", "name": "Leonie", "gender": "female",
+      "preview": "tts/de/leonie/hello-1.mp3",
+      "sets": [ { "path": "dialog-de-leonie-s-5e6f7a8b.bin", "sha256": "…", "bytes": 117995 },
+                … ] },
+    { "id": "roger", … } ] }
+```
+
+**Selection on the device** (`main/dialog_manifest.h`, `main/i18n_sync.c`).
+the index of the first locale of the `ui_lang → en → de` chain that has one
+(never mixed across languages) is downloaded when its SHA-256 changed and kept
+as `dialog-speakers.json`. The speaker is the config key `dialog_speaker`
+(`[a-z][a-z0-9-]{0,15}`): while the index lists it, it stays; when it is empty
+or not in this locale's index, the device picks one uniformly at random,
+persists it and logs one INFO line. Changing `ui_lang` clears
+`dialog_speaker`, so the next sync picks among the new locale's speakers. Of
+the speaker, the device takes the largest tier within its budget
+(`storage_dialog_budget()`); if none of its tiers fits, the default speaker's
+largest fitting tier (WARN), and if that does not fit either, no set (WARN).
+It stores the set as `dialog-<lang>.alaw` plus a `dialog.idx` naming locale
+and speaker, written once the file is verified and its header valid
+(`main/dialog_store.h`), and removes it when `ab_mode` goes back to
+`announcement` or the chosen locale, speaker or tier changes. In dialog mode
+the set takes the place of both announcements: the localized one is neither
+downloaded nor kept, and switching to dialog deletes an own recording (a new
+one can be uploaded in announcement mode only). The set is a rarely written
+asset in the storage budget, ahead of the community blocklist. A manifest must
+stay below the firmware's 12 KB fetch buffer (`MANIFEST_CAP` in
+`main/i18n_sync.c`).
+
+**Own set.** The web UI's editor ("Eigenen Dialog zusammenstellen") starts
+from the clips on the device, lets the user replace, delete, reorder or add
+recordings per phase (trimmed and normalized in the browser with the
+constants of `tts-dialog.py`, as the own announcement is), builds the `PBDS`
+file in JavaScript and uploads it. The device stores it under the
+pseudo-locale `own` (`dialog-own.alaw`); the daily sync keeps it and fetches
+no CDN set while it exists, also across a `ui_lang` change. Choosing a CDN
+speaker or leaving dialog mode deletes it (the UI offers a download first).
+
+Device API (`main/web.c`):
+
+| Endpoint | What |
+|----------|------|
+| `GET /api/dialog/speakers` | `{selected, max_bytes, effective, own, speakers:[{id, name, gender, preview_url}]}` of the stored index |
+| `POST /api/config` `dialog_speaker=<id>` | choose a speaker (drops an own set, triggers a sync); an invalid id (like an invalid `ab_mode` or dialog tuning value) refuses the whole request: 400 `invalid` naming the field, nothing saved |
+| `GET /api/dialog` | the stored set as a file (`dialog-<lang>[-<speaker>].bin`); 404 `no_set` |
+| `POST /api/dialog` | upload an own set (body: the `PBDS` file, at most `max_bytes` = the dialog budget, on Linux `STORAGE_DIALOG_PLAIN_FS_MAX` = 2 MiB); 400 `not_a_set` below a header or with a bad one, 413 `too_large` over the budget, 409 `wrong_mode` outside dialog mode, `busy` while a sync runs |
+| `POST /api/dialog/reset` | delete the own set; the next sync fetches the CDN set |
+
+`/api/status` reports `dialog.speaker` (the persisted id, empty until the
+first pick), `dialog.clips_speaker` and `dialog.own`.
 
 **The manifest is not signed** — unlike the OTA manifest. The per-asset SHA-256
 protects against a truncated or corrupted transfer, not against a hostile CDN:
@@ -311,7 +383,8 @@ tag. `git tag -d dongle-v1.6.0-beta1` when done.
 
 The audio channel has no per-build copy: what is published is what every
 device of that format gets. To try audio that is not published yet, push it
-straight to a device in dialog mode — `scripts/dev-i18n-push.sh --kinds dialog`
-builds the set with `audio-assets.sh --no-upload` and uploads the tier the
-device would download (`POST /api/dev/i18n?kind=dialog`). It stays until the
+straight to a device in dialog mode — `scripts/dev-i18n-push.sh --kinds dialog
+[--speaker <id>]` builds the sets with `audio-assets.sh --no-upload` and
+uploads the tier of that speaker (default: the locale's default speaker) the
+device would download (`POST /api/dev/i18n?kind=dialog&speaker=<id>`). It stays until the
 device's next sync (at the latest the next daily check).

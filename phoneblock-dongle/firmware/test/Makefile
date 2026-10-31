@@ -183,9 +183,10 @@ test_display_probe: test_display_probe.c ../main/display_model.c ../main/display
 
 test_platform_linux: test_platform_linux.c linux_test_util.h \
                      ../core/platform_linux.c ../core/platform.h \
-                     ../main/config.c ../main/config.h \
+                     ../main/config.c ../main/config.h ../main/dialog.c ../main/dialog.h \
                      ../main/log_capture.c ../main/log_capture.h
-	$(CC) $(CFLAGS) -pthread test_platform_linux.c ../core/platform_linux.c ../main/config.c ../main/log_capture.c -o $@
+	$(CC) $(CFLAGS) -pthread test_platform_linux.c ../core/platform_linux.c ../main/config.c \
+	  ../main/dialog.c ../main/log_capture.c -o $@
 
 test_time_sync_tz: test_time_sync_tz.c linux_test_util.h ../main/time_sync_tz.c \
                    ../main/time_sync.h ../core/platform_linux.c ../core/platform.h
@@ -195,10 +196,10 @@ test_time_sync_tz: test_time_sync_tz.c linux_test_util.h ../main/time_sync_tz.c 
 test_log_capture_linux: test_log_capture_linux.c linux_test_util.h \
                         ../main/log_capture_linux.c ../main/log_capture.c \
                         ../main/log_capture.h ../main/stats.c ../main/stats.h \
-                        ../main/config.c ../main/config.h \
+                        ../main/config.c ../main/config.h ../main/dialog.c \
                         ../core/platform_linux.c ../core/platform.h
 	$(CC) $(CFLAGS) -pthread test_log_capture_linux.c ../main/log_capture_linux.c \
-	  ../main/log_capture.c ../main/stats.c ../main/config.c \
+	  ../main/log_capture.c ../main/stats.c ../main/config.c ../main/dialog.c \
 	  ../core/platform_linux.c -o $@
 
 # The hostfs backend of storage.c. The data dir is a fresh mkdtemp()
@@ -220,7 +221,7 @@ test_platform_linux_net: test_platform_linux_net.c linux_test_util.h \
 # The library of the firmware modules that the Linux tests link, and the
 # service itself, come from ../linux/Makefile, shared with debian/rules
 # (#624). Its dependency check applies to these goals.
-LINUX_GOALS := linux-firmware phoneblock_linux test-linux test_api_linux test_web_http_linux test_web_calls_linux test_webhook_linux
+LINUX_GOALS := linux-firmware phoneblock_linux test-linux test_api_linux test_web_http_linux test_web_calls_linux test_webhook_linux test_web_dialog_linux
 include ../linux/Makefile
 
 test_api_linux: test_api_linux.c linux_test_util.h \
@@ -231,6 +232,12 @@ test_api_linux: test_api_linux.c linux_test_util.h \
 
 test_web_calls_linux: test_web_calls_linux.c linux_test_util.h \
                       $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a
+	$(CC) $(CFLAGS) -pthread $(LINUX_PKG_CFLAGS) $< \
+	  $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a \
+	  $(LINUX_NET_LIBS) -o $@
+
+test_web_dialog_linux: test_web_dialog_linux.c linux_test_util.h \
+                       $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a
 	$(CC) $(CFLAGS) -pthread $(LINUX_PKG_CFLAGS) $< \
 	  $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a \
 	  $(LINUX_NET_LIBS) -o $@
@@ -263,10 +270,13 @@ test_sip_response: test_sip_response.c ../main/sip_response.c ../main/sip_respon
 test: $(BINS)
 	@set -e; for b in $(BINS); do echo "→ $$b"; ./$$b; done
 	@echo "→ test-signing-roundtrip.sh"; ./test-signing-roundtrip.sh
+	@# The web UI's dialog set builder against test_dialog.c's vector (needs node).
+	@if command -v node >/dev/null; then echo "→ dialog_set_js_check.js"; node dialog_set_js_check.js; \
+	 else echo "→ dialog_set_js_check.js skipped (no node)"; fi
 
 # Linux build of the firmware modules plus its network tests; needs the
 # extra prerequisites listed in ../linux/Makefile.
-LINUX_BINS = test_platform_linux_net test_api_linux test_web_http_linux test_web_calls_linux test_webhook_linux
+LINUX_BINS = test_platform_linux_net test_api_linux test_web_http_linux test_web_calls_linux test_webhook_linux test_web_dialog_linux
 
 test-linux: linux-firmware phoneblock_linux $(LINUX_BINS)
 	@set -e; for b in $(LINUX_BINS); do echo "→ $$b"; ./$$b; done

@@ -155,8 +155,17 @@ typedef struct {
     uint32_t len;   // bytes, > 0
 } dialog_clip_t;
 
+// Longest speaker id plus NUL (dialog_speaker_valid()).
+#define DIALOG_SPEAKER_CAP 17
+// Pseudo-locale of the user's own set (POST /api/dialog): stored like a
+// downloaded set, never chosen from or replaced by the CDN.
+#define DIALOG_OWN_LANG "own"
+
 typedef struct {
-    char          lang[12];                    // locale the clips came from
+    char          lang[12];                    // locale the clips came from,
+                                               // DIALOG_OWN_LANG for an own set
+    char          speaker[DIALOG_SPEAKER_CAP]; // whose CDN set; "" for an own
+                                               // set or an index without one
     uint8_t       count[DIALOG_PHASE_COUNT];   // 1..DIALOG_MAX_CLIPS each
     dialog_clip_t clip[DIALOG_PHASE_COUNT][DIALOG_MAX_CLIPS];
 } dialog_set_t;
@@ -179,3 +188,7 @@ dialog_header_result_t dialog_header_parse(const uint8_t *buf, size_t n,
 // Whether `s` is a locale code a set may be stored under: [a-z0-9-], 2..11
 // characters, no leading, trailing or doubled '-'.
 bool dialog_lang_valid(const char *s);
+
+// Whether `s` is a speaker id of the dialog index (dialog_manifest.h) and the
+// `dialog_speaker` setting: [a-z][a-z0-9-]{0,15}.
+bool dialog_speaker_valid(const char *s);

@@ -11,11 +11,15 @@
 #include <string.h>
 #include <strings.h>
 
-// Request bodies are buffered before routing and before the login check, so
-// the cap bounds what any LAN client can make the service hold: the largest
-// real upload is the announcement (ANNOUNCEMENT_MAX_BYTES, 240 KB), and the
-// connection limit multiplies this cap into the worst case (4 MB).
-#define WEB_HTTP_MAX_BODY (256U * 1024U)
+// Request bodies are buffered before the login check, so the cap
+// (WEB_HTTP_MAX_BODY, web_http.h) bounds what any LAN client can make the
+// service hold: the largest regular upload is the announcement
+// (ANNOUNCEMENT_MAX_BYTES, 240 KB). Only a route that names a larger
+// max_body (the dialog set, STORAGE_DIALOG_PLAIN_FS_MAX) takes more; the
+// connection limit multiplies the largest into the worst case (32 MB).
+// Responses are the service's own data, so their cap (WEB_HTTP_MAX_RESPONSE)
+// only guards against a runaway handler: the largest is a dialog set
+// (GET /api/dialog).
 #define WEB_HTTP_MAX_CONNECTIONS 16U
 
 // web.c keeps request state in plain statics (the OAuth nonce, the pending
@@ -46,12 +50,16 @@ struct web_http_request {
     unsigned status;
     bool have_content_length;
     bool initialized;
+    size_t max_body;                  // of the route, or WEB_HTTP_MAX_BODY
+    unsigned long long refused_length; // the declared length of a 413
+    web_http_refused_t on_refused;
 };
 
 struct web_http_server {
     struct MHD_Daemon *daemon;
     const web_http_route_t *routes;
     size_t route_count;
+    web_http_refused_t on_body_refused;
 };
 
 typedef struct {
@@ -88,8 +96,9 @@ static enum MHD_Result add_header(void *argument, enum MHD_ValueKind kind,
     request->have_content_length = true;
     char *end = NULL;
     unsigned long long length = strtoull(value, &end, 10);
-    if (!end || *end || length > WEB_HTTP_MAX_BODY) {
-        request->status = length > WEB_HTTP_MAX_BODY ? 413 : 400;
+    if (!end || *end || length > request->max_body) {
+        request->status = end && !*end ? 413 : 400;
+        request->refused_length = length;
         return MHD_NO;
     }
     request->body_capacity = (size_t)length;
@@ -146,12 +155,12 @@ static void *capture_raw_uri(void *context, const char *uri,
 
 static int reserve_body(web_http_request_t *request, size_t needed)
 {
-    if (needed > WEB_HTTP_MAX_BODY) return -1;
+    if (needed > request->max_body) return -1;
     if (needed <= request->body_capacity) return 0;
     size_t capacity = request->body_capacity ? request->body_capacity : 1024;
     while (capacity < needed) {
-        if (capacity > WEB_HTTP_MAX_BODY / 2) {
-            capacity = WEB_HTTP_MAX_BODY;
+        if (capacity > request->max_body / 2) {
+            capacity = request->max_body;
             break;
         }
         capacity *= 2;
@@ -165,12 +174,12 @@ static int reserve_body(web_http_request_t *request, size_t needed)
 
 static int reserve_response(web_http_request_t *request, size_t needed)
 {
-    if (needed > WEB_HTTP_MAX_BODY) return -1;
+    if (needed > WEB_HTTP_MAX_RESPONSE) return -1;
     if (needed <= request->response_capacity) return 0;
     size_t capacity = request->response_capacity ? request->response_capacity : 1024;
     while (capacity < needed) {
-        if (capacity > WEB_HTTP_MAX_BODY / 2) {
-            capacity = WEB_HTTP_MAX_BODY;
+        if (capacity > WEB_HTTP_MAX_RESPONSE / 2) {
+            capacity = WEB_HTTP_MAX_RESPONSE;
             break;
         }
         capacity *= 2;
@@ -201,11 +210,28 @@ static int queue_request_response(web_http_request_t *request)
     return result;
 }
 
-// Answers a request whose Content-Length add_header() refused.
+// Answers a request whose body add_header() or the upload refused. A body
+// too large gets the JSON shape of web.c's refusals, and the owner's
+// on_body_refused hook logs it (a WARN on the device's log panel).
 static enum MHD_Result queue_rejection(web_http_request_t *request)
 {
-    const char *message = request->status == 413 ? "Request body too large\n"
-        : request->status == 500 ? "Out of memory\n"
+    if (request->status == 413) {
+        if (request->on_refused) {
+            request->on_refused(request->url, request->refused_length,
+                                request->max_body);
+        }
+        char json[192];
+        snprintf(json, sizeof(json),
+                 "{\"ok\":false,\"code\":\"too_large\",\"message\":"
+                 "\"The request body has %llu bytes; this endpoint takes at "
+                 "most %zu.\"}\n", request->refused_length, request->max_body);
+        if (web_http_set_type(request, "application/json") != 0
+                || web_http_send_text(request, json) != 0) {
+            return MHD_NO;
+        }
+        return queue_request_response(request);
+    }
+    const char *message = request->status == 500 ? "Out of memory\n"
         : "Invalid request body length\n";
     if (web_http_send_text(request, message) != 0) return MHD_NO;
     return queue_request_response(request);
@@ -237,6 +263,9 @@ static enum MHD_Result access_request(void *context,
         request->method = strdup(method);
         request->status = 200;
         request->route = find_route(server, url, method);
+        request->max_body = request->route && request->route->max_body
+            ? request->route->max_body : WEB_HTTP_MAX_BODY;
+        request->on_refused = server->on_body_refused;
         if (!request->method) return MHD_NO;
         if (MHD_get_connection_values(connection, MHD_HEADER_KIND,
                                       add_header, request) < 0) {
@@ -256,8 +285,12 @@ static enum MHD_Result access_request(void *context,
             *upload_data_size = 0;
             return MHD_YES;
         }
-        if (reserve_body(request, request->body_length + size) != 0) {
+        if (request->body_length + size > request->max_body) {
+            // No (or a lying) Content-Length: refused while streaming.
             request->status = 413;
+            request->refused_length = request->body_length + size;
+        } else if (reserve_body(request, request->body_length + size) != 0) {
+            request->status = 500;
         } else {
             memcpy(request->body + request->body_length, upload_data, size);
             request->body_length += size;
@@ -310,6 +343,7 @@ web_http_error_t web_http_server_start(web_http_server_t **server_out,
     if (!server) return -1;
     server->routes = routes;
     server->route_count = route_count;
+    server->on_body_refused = config->on_body_refused;
     struct sockaddr_storage bind_address = {0};
     unsigned flags = MHD_USE_INTERNAL_POLLING_THREAD
                    | MHD_USE_THREAD_PER_CONNECTION;

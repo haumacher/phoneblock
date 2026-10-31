@@ -3,12 +3,15 @@
 # Push localized resource bundles straight to a dongle, no CDN round-trip.
 #
 #   ./scripts/dev-i18n-push.sh [--host answerbot] [--langs "de en"] [--kinds "ui mail dialog"]
+#                              [--speaker roger]
 #
 # Kinds: ui and mail (the default), and dialog — the interactive answer bot's
-# clip set (#429): the size tier the device would download, i.e. the largest
-# staged tier within the dialog budget it reports in /api/status (the
-# smallest tier if it reports none). The clip table travels in the file's
-# header; the device checks it and marks the set complete. The dialog kind
+# clip set (#429): from the staged dialog index of the locale, the set of
+# --speaker (default: the index's first, the locale's default speaker) in
+# the size tier the device would download, i.e. the largest staged tier
+# within the dialog budget it reports in /api/status (the smallest tier if
+# it reports none). The clip table travels in the file's header; the device
+# checks it, records the speaker and marks the set complete. The dialog kind
 # needs the dongle in dialog mode (ab_mode=dialog; the device answers 409
 # otherwise) and a locale that has a complete set in i18n/audio/dialog/.
 #
@@ -34,13 +37,15 @@ HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 HOST="answerbot"
 LANGS=""
 KINDS="ui mail"
+SPEAKER=""
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --host)  HOST="$2";  shift 2;;
         --langs) LANGS="$2"; shift 2;;
         --kinds) KINDS="$2"; shift 2;;
-        -h|--help) sed -n '2,30p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0;;
+        --speaker) SPEAKER="$2"; shift 2;;
+        -h|--help) sed -n '2,33p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; exit 0;;
         *) echo "unknown option: $1" >&2; exit 2;;
     esac
 done
@@ -82,11 +87,11 @@ if [[ " ${KINDS} " == *" dialog "* ]]; then
 fi
 
 # POST one file; prints the device's answer (its message on a refusal).
-push() {  # kind lang file
+push() {  # kind lang file [speaker]
     local out code
     out="$(mktemp)"
     code="$(curl -s -m 60 -o "$out" -w '%{http_code}' -X POST \
-            "http://${HOST}/api/dev/i18n?kind=$1&lang=$2" --data-binary "@$3")"
+            "http://${HOST}/api/dev/i18n?kind=$1&lang=$2${4:+&speaker=$4}" --data-binary "@$3")"
     printf '    %s/%s: ' "$1" "$2"
     python3 -c '
 import sys, json
@@ -107,21 +112,31 @@ for lang in ${LANGS}; do
                 # (older firmware: take the smallest tier).
                 budget="$(curl -sf -m 10 "http://${HOST}/api/status" | jq -r \
                     'if (.dialog | has("budget_bytes")) then (.dialog.budget_bytes // "all") else "s" end')"
-                rel="$(jq -r --arg l "$lang" --arg b "$budget" '
-                    (.assets[$l].dialog // []) | sort_by(.bytes)
-                    | if $b == "s" then .[0]
-                      elif $b == "all" then .[-1]
-                      else map(select(.bytes <= ($b | tonumber))) | .[-1] end
-                    | .path // empty' "${CHANNEL}/manifest.json")"
+                # The locale's index (manifest → dialog-<lang>-<sha8>.json),
+                # then the speaker's tiers in it.
+                index="$(jq -r --arg l "$lang" '.assets[$l].dialog.path // empty' \
+                         "${CHANNEL}/manifest.json")"
+                rel=""; spk=""
+                if [[ -n "$index" ]]; then
+                    spk="${SPEAKER:-$(jq -r '.speakers[0].id' "${CHANNEL}/${index}")}"
+                    rel="$(jq -r --arg s "$spk" --arg b "$budget" '
+                        (.speakers[] | select(.id == $s) | .sets) // [] | sort_by(.bytes)
+                        | if $b == "s" then .[0]
+                          elif $b == "all" then .[-1]
+                          else map(select(.bytes <= ($b | tonumber))) | .[-1] end
+                        | .path // empty' "${CHANNEL}/${index}")"
+                    [[ -z "$rel" ]] && echo "    dialog/${lang}: speaker '${spk}' has no set within budget ${budget} (speakers: $(jq -r '[.speakers[].id] | join(" ")' "${CHANNEL}/${index}"))"
+                fi
                 file="${CHANNEL}/${rel:-none}"
-                [[ -n "$rel" ]] && echo "    dialog/${lang}: tier ${rel##*/} for budget ${budget}";;
+                [[ -n "$rel" ]] && echo "    dialog/${lang}: ${spk}, tier ${rel##*/} for budget ${budget}";;
             *) echo "unknown kind: ${kind}" >&2; exit 2;;
         esac
         if [[ ! -f "$file" ]]; then
             echo "    ${kind}/${lang}: no bundle generated, skipped"
             continue
         fi
-        push "$kind" "$lang" "$file"
+        if [[ "$kind" == dialog ]]; then push "$kind" "$lang" "$file" "$spk"
+        else push "$kind" "$lang" "$file"; fi
     done
 done
 

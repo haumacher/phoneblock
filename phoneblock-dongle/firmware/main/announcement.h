@@ -56,8 +56,9 @@ int         announcement_open(announcement_src_t *src);
 // Build the SPIFFS path of the downloaded announcement for a locale:
 // "/spiffs/announcement-<lang>.alaw". lang must be a config_lang_code_valid()
 // code. Shared by announcement_open() and i18n_sync.c so the naming
-// convention lives in one place. A 48-byte buffer is always enough.
-void        announcement_localized_path(char *out, size_t cap, const char *lang);
+// convention lives in one place. Size `out` with PB_DATA_PATH_CAP
+// (platform.h); false (`out` not to be used) if the path does not fit.
+bool        announcement_localized_path(char *out, size_t cap, const char *lang);
 
 // Read up to max bytes sequentially from src into out. Returns the
 // number of bytes produced (0 at end-of-stream or on read error).

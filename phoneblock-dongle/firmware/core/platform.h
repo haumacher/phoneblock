@@ -89,6 +89,16 @@ void pb_log_set_sink(pb_log_sink_t sink);
 #endif
 #endif
 
+// Buffer size for the path of a file in the data directory: SPIFFS names
+// are short ("/spiffs/" + at most 32 characters), a Linux data directory
+// can be anywhere. Path builders report a path that does not fit instead
+// of truncating it.
+#ifdef ESP_PLATFORM
+#define PB_DATA_PATH_CAP 64
+#else
+#define PB_DATA_PATH_CAP 512
+#endif
+
 // --- Time, randomness, watchdog -----------------------------------------
 
 uint64_t pb_monotonic_us(void);

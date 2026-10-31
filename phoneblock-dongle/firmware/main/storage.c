@@ -93,8 +93,9 @@ int64_t storage_community_budget(void)
 uint64_t storage_dialog_budget(void)
 {
     // Space on a real filesystem is the operator's business: the largest
-    // tier of a locale is ~150 KB, and storage_make_room() still runs.
-    return UINT64_MAX;
+    // tier of a locale (`l`, 450–530 KB) fits the ceiling, and
+    // storage_make_room() still runs.
+    return STORAGE_DIALOG_PLAIN_FS_MAX;
 }
 
 void storage_make_room(size_t bytes, const char *replaces)

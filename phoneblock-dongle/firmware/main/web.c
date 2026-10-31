@@ -37,6 +37,7 @@
 #include "i18n_sync.h"
 #include "storage.h"
 #include "config.h"
+#include "dialog_manifest.h"
 #include "dialog_store.h"
 #if CONFIG_IDF_TARGET_ESP32S3
 #include "display.h"
@@ -54,6 +55,7 @@
 #include "sip_parse.h"   // is_known_contact() for the "a contact is never spam" rule
 #include "stats.h"
 #include "sync.h"
+#include "strbuf.h"
 #include "time_sync.h"
 #include "tr064.h"
 #include "tr064_parse.h"
@@ -613,12 +615,17 @@ static web_http_error_t handle_status(web_http_request_t *req)
     cJSON_AddNumberToObject(dlg, "comfort_noise_level", config_comfort_noise_db());
     cJSON_AddBoolToObject  (dlg, "clips_present",       have_set);
     cJSON_AddStringToObject(dlg, "clips_lang",          have_set ? dset->lang : "");
+    // Whose set it is ("" for an own set), the chosen speaker ("" until the
+    // sync picks one) and whether the set is the user's own (lang "own").
+    cJSON_AddStringToObject(dlg, "clips_speaker",       have_set ? dset->speaker : "");
+    cJSON_AddBoolToObject  (dlg, "own",
+                            have_set && strcmp(dset->lang, DIALOG_OWN_LANG) == 0);
+    cJSON_AddStringToObject(dlg, "speaker",             config_dialog_speaker());
     free(dset);
-    // Largest clip set file this device takes (the size tier it downloads);
-    // null where unlimited (Linux). scripts/dev-i18n-push.sh picks by it.
-    uint64_t dbudget = storage_dialog_budget();
-    if (dbudget == UINT64_MAX) cJSON_AddNullToObject(dlg, "budget_bytes");
-    else cJSON_AddNumberToObject(dlg, "budget_bytes", (double)dbudget);
+    // Largest clip set file this device takes (the size tier it downloads,
+    // STORAGE_DIALOG_PLAIN_FS_MAX on Linux). scripts/dev-i18n-push.sh picks
+    // by it.
+    cJSON_AddNumberToObject(dlg, "budget_bytes", (double)storage_dialog_budget());
 
     // Locale the device persisted (from the language selector's POST). The
     // UI reconciles its own localStorage pick against this so mail/audio
@@ -849,6 +856,9 @@ static uint64_t sip_config_digest(void)
     return h;
 }
 
+static void send_fail_code(web_http_request_t *req, const char *status,
+                           const char *code, const char *message);
+
 static web_http_error_t handle_config_post(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
@@ -932,6 +942,9 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
     char vad_db_s[8]      = "";
     char vad_ms_s[8]      = "";
     char cn_level_s[8]    = "";
+    // Room for one character more than an id may have, so an over-long one
+    // is refused instead of arriving clipped.
+    char dlg_spk_s[DIALOG_SPEAKER_CAP + 8] = "";
 
     bool have_sip_host  = form_get(body, "sip_host",  sip_host,  sizeof(sip_host));
     bool have_sip_user  = form_get(body, "sip_user",  sip_user,  sizeof(sip_user));
@@ -985,6 +998,7 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
     bool have_vad_db     = form_get(body, "vad_silence_db",     vad_db_s,   sizeof(vad_db_s));
     bool have_vad_ms     = form_get(body, "vad_min_silence_ms", vad_ms_s,   sizeof(vad_ms_s));
     bool have_cn_level   = form_get(body, "comfort_noise_level", cn_level_s, sizeof(cn_level_s));
+    bool have_dlg_spk    = form_get(body, "dialog_speaker",     dlg_spk_s,  sizeof(dlg_spk_s));
     free(body);
 
     // Phonebook selection for new contacts: only a decimal ID is stored, so
@@ -1100,33 +1114,53 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
         pb_log_warn(TAG, "dial_prefix rejected: expected \"+NN\"");
     }
 
-    // Answer-bot mode and dialog tuning (#429): only the two known modes and
-    // values inside the documented ranges are stored; anything else is
-    // refused with a WARN and leaves the stored value as it is. An empty
-    // numeric field means "unchanged".
+    // Answer-bot mode and dialog settings (#429): only the two known modes,
+    // a well-formed speaker id and values inside the documented ranges. Unlike
+    // the older fields above (ignored with a WARN, the rest saved), an invalid
+    // one refuses the WHOLE request — 400 naming the field(s), nothing
+    // applied — so a caller never reads "Saved." for a value that was not.
+    // An empty numeric field means "unchanged".
+    char rejected[160] = "";
+    strbuf_t rej = sb_init(rejected, sizeof(rejected));
     const char *ab_mode = NULL;
     if (have_ab_mode) {
         if (config_ab_mode_valid(ab_mode_s)) ab_mode = ab_mode_s;
-        else pb_log_warn(TAG, "ab_mode rejected: expected announcement or dialog");
+        else sb_appendf(&rej, "%sab_mode (announcement or dialog)", rej.len ? ", " : "");
+    }
+    const char *dialog_speaker = NULL;
+    if (have_dlg_spk) {
+        // The user's choice; "" asks the next sync to pick again.
+        if (config_dialog_speaker_valid(dlg_spk_s)) dialog_speaker = dlg_spk_s;
+        else sb_appendf(&rej, "%sdialog_speaker ([a-z][a-z0-9-]{0,15} or empty)",
+                        rej.len ? ", " : "");
     }
     int vad_db = 0, vad_ms = 0, cn_level = 0;
     if (have_vad_db && vad_db_s[0]) {
         int v = atoi(vad_db_s);
         if (config_vad_silence_db_valid(v)) vad_db = v;
-        else pb_log_warn(TAG, "vad_silence_db rejected: %d..%d dBFS",
-                         CONFIG_VAD_SILENCE_DB_MIN, CONFIG_VAD_SILENCE_DB_MAX);
+        else sb_appendf(&rej, "%svad_silence_db (%d..%d)", rej.len ? ", " : "",
+                        CONFIG_VAD_SILENCE_DB_MIN, CONFIG_VAD_SILENCE_DB_MAX);
     }
     if (have_vad_ms && vad_ms_s[0]) {
         int v = atoi(vad_ms_s);
         if (config_vad_min_silence_ms_valid(v)) vad_ms = v;
-        else pb_log_warn(TAG, "vad_min_silence_ms rejected: %d..%d ms",
-                         CONFIG_VAD_MIN_SILENCE_MS_MIN, CONFIG_VAD_MIN_SILENCE_MS_MAX);
+        else sb_appendf(&rej, "%svad_min_silence_ms (%d..%d)", rej.len ? ", " : "",
+                        CONFIG_VAD_MIN_SILENCE_MS_MIN, CONFIG_VAD_MIN_SILENCE_MS_MAX);
     }
     if (have_cn_level && cn_level_s[0]) {
         int v = atoi(cn_level_s);
         if (config_comfort_noise_db_valid(v)) cn_level = v;
-        else pb_log_warn(TAG, "comfort_noise_level rejected: %d..%d dBFS",
-                         CONFIG_COMFORT_NOISE_DB_MIN, CONFIG_COMFORT_NOISE_DB_MAX);
+        else sb_appendf(&rej, "%scomfort_noise_level (%d..%d)", rej.len ? ", " : "",
+                        CONFIG_COMFORT_NOISE_DB_MIN, CONFIG_COMFORT_NOISE_DB_MAX);
+    }
+    if (rej.len) {
+        // Clamped (sb.truncated) is fine: the first field names the problem.
+        char msg[200];
+        snprintf(msg, sizeof(msg), "Invalid: %s. Nothing was saved.", rejected);
+        pb_log_warn(TAG, "settings refused: %s", msg);
+        free(webhook_url);
+        send_fail_code(req, "400 Bad Request", "invalid", msg);
+        return WEB_HTTP_OK;
     }
 
     config_update_t u = {
@@ -1213,6 +1247,7 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
         .vad_silence_db     = vad_db,
         .vad_min_silence_ms = vad_ms,
         .comfort_noise_db   = cn_level,
+        .dialog_speaker     = dialog_speaker,
     };
 
     // Snapshot the PhoneBlock token before the update so we can detect
@@ -1230,6 +1265,8 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
 
     uint64_t old_sip = sip_config_digest();
     bool old_dialog = config_ab_dialog();
+    char old_speaker[DIALOG_SPEAKER_CAP];
+    snprintf(old_speaker, sizeof(old_speaker), "%s", config_dialog_speaker());
 
     int err = config_update(&u);
     free(webhook_url);
@@ -1266,10 +1303,27 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
         announcement_reset();
     }
 
+    // Choosing a CDN speaker (#429) replaces an own dialog set: only one set
+    // fits on flash. The web UI asked the user before posting the choice.
+    bool own_dropped = false;
+    if (dialog_speaker && config_ab_dialog() && dialog_store_has_own()) {
+        if (dialog_store_upload_active()) {
+            pb_log_warn(TAG, "own dialog set kept: its upload is still running");
+        } else {
+            dialog_store_drop_index();
+            dialog_store_remove_others(NULL);   // the speaker list stays
+            own_dropped = true;
+            pb_log_info(TAG, "speaker '%s' chosen — own dialog set deleted",
+                        config_dialog_speaker()[0] ? config_dialog_speaker() : "(none)");
+        }
+    }
+
     // Locale changed: pull the matching announcement / mail pack now so the
     // user doesn't wait for the daily i18n slot. No-op if one is in flight.
-    // A switch of the answer-bot mode fetches (or removes) the dialog clips.
-    if (strcmp(old_lang, config_ui_lang()) != 0 || old_dialog != config_ab_dialog()) {
+    // A switch of the answer-bot mode fetches (or removes) the dialog clips,
+    // another speaker its set.
+    if (strcmp(old_lang, config_ui_lang()) != 0 || old_dialog != config_ab_dialog() ||
+        strcmp(old_speaker, config_dialog_speaker()) != 0 || own_dropped) {
         i18n_sync_trigger_now();
     }
 
@@ -1967,9 +2021,9 @@ static web_http_error_t handle_i18n_ui(web_http_request_t *req)
     web_http_set_type(req, "application/json");
     web_http_set_header(req, "Cache-Control", "no-store");
 
-    char path[48];
-    i18n_sync_ui_path(path, sizeof(path), config_ui_lang());
-    FILE *f = fopen(path, "rb");
+    char path[PB_DATA_PATH_CAP];
+    FILE *f = i18n_sync_ui_path(path, sizeof(path), config_ui_lang())
+        ? fopen(path, "rb") : NULL;
     if (f) {
         char buf[1024];
         size_t n;
@@ -3084,7 +3138,7 @@ static web_http_error_t handle_whitelist(web_http_request_t *req)
 
 // --- dev resource-bundle upload --------------------------------------
 
-// POST /api/dev/i18n?kind=ui|mail|dialog&lang=<locale>
+// POST /api/dev/i18n?kind=ui|mail|dialog&lang=<locale>[&speaker=<id>]
 //
 // Stores a localized resource bundle straight on the device, replacing what
 // i18n_sync would otherwise have downloaded. This exists for the firmware
@@ -3108,24 +3162,322 @@ static web_http_error_t handle_whitelist(web_http_request_t *req)
 //                 first; once the file is in place and its header valid
 //                 (dialog_header_parse(), the call path's own check), it is
 //                 marked complete — from then on calls get the dialog.
+//                 `speaker` (optional) is recorded as whose set it is; any
+//                 other set on the device (an own one included) goes.
 //
 // The dialog kind needs ab_mode=dialog (409 otherwise): a set pushed onto an
 // announcement-mode device would only be removed by the next sync.
 
-// Largest dialog set the dev push takes on a plain filesystem (a locale's
-// full set is ~0.5 MB).
-#define DEV_DIALOG_PUSH_MAX (1024 * 1024)
+// --- dialog speakers and the own dialog set (#429) --------------------------
+
+#ifndef CONFIG_PHONEBLOCK_OTA_BASE_URL
+#define CONFIG_PHONEBLOCK_OTA_BASE_URL "https://cdn.phoneblock.net/dongle/firmware"
+#endif
+
+// Largest dialog set the device takes, own or pushed: its dialog budget
+// (the tier this partition downloads; STORAGE_DIALOG_PLAIN_FS_MAX on Linux,
+// whose HTTP layer buffers a set whole — the routes taking one name it as
+// their max_body, and GET /api/dialog must fit the response buffer).
+#ifndef ESP_PLATFORM
+_Static_assert(STORAGE_DIALOG_PLAIN_FS_MAX <= WEB_HTTP_MAX_RESPONSE,
+               "GET /api/dialog must fit the Linux response buffer");
+#endif
+static uint64_t dialog_set_cap(void)
+{
+    return storage_dialog_budget();
+}
+
+// GET /api/dialog/speakers — the speakers of the locale's dialog index kept
+// on the device (dialog-speakers.json, i18n_sync.c), without a CDN round
+// trip:
+//   { "selected": "<config dialog_speaker, '' until the first pick>",
+//     "max_bytes": <largest set this device takes (own set upload)>,
+//     "effective": "<speaker of the CDN set on the device, '' = none / own>",
+//     "own": <an own set is on the device>,
+//     "speakers": [ { "id", "name", "gender", "preview_url" }, ... ] }
+// The first speaker is the locale's default; preview_url is absolute (a
+// master on the CDN, played by the browser) or "" when the index has none.
+static web_http_error_t handle_dialog_speakers(web_http_request_t *req)
+{
+    REQUIRE_AUTH_API(req);
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddStringToObject(root, "selected", config_dialog_speaker());
+    cJSON_AddNumberToObject(root, "max_bytes", (double)dialog_set_cap());
+    dialog_set_t *set = malloc(sizeof(*set));
+    bool have = set && dialog_store_load(set);
+    bool own = have && strcmp(set->lang, DIALOG_OWN_LANG) == 0;
+    cJSON_AddStringToObject(root, "effective", have && !own ? set->speaker : "");
+    free(set);
+    cJSON_AddBoolToObject(root, "own", own || dialog_store_has_own());
+    cJSON *list = cJSON_AddArrayToObject(root, "speakers");
+    char *text = dialog_store_read_speakers();
+    cJSON *index = text ? cJSON_Parse(text) : NULL;
+    free(text);
+    dialog_speaker_t sp;
+    for (int i = 0; dialog_index_speaker(index, i, &sp); i++) {
+        cJSON *o = cJSON_CreateObject();
+        cJSON_AddStringToObject(o, "id", sp.id);
+        cJSON_AddStringToObject(o, "name", sp.name);
+        cJSON_AddStringToObject(o, "gender", sp.gender);
+        char url[256] = "";
+        if (sp.preview[0]) {
+            snprintf(url, sizeof(url), "%s/audio/%s", CONFIG_PHONEBLOCK_OTA_BASE_URL,
+                     sp.preview);
+        }
+        cJSON_AddStringToObject(o, "preview_url", url);
+        cJSON_AddItemToArray(list, o);
+    }
+    cJSON_Delete(index);
+    send_json(req, root);
+    return WEB_HTTP_OK;
+}
+
+// GET /api/dialog — the set on the device (own or downloaded) as one file,
+// exactly as stored (PBDS header + clips, dialog.h), for the editor in the
+// web UI and for "Download set".
+static web_http_error_t handle_dialog_get(web_http_request_t *req)
+{
+    REQUIRE_AUTH_API(req);
+    dialog_set_t *set = malloc(sizeof(*set));
+    bool have = set && dialog_store_load(set);
+    char path[DIALOG_STORE_PATH_CAP];
+    char name[64] = "dialog.bin";
+    if (have) {
+        dialog_store_file_path(path, sizeof(path), set->lang);
+        if (set->speaker[0]) {
+            snprintf(name, sizeof(name), "dialog-%s-%s.bin", set->lang, set->speaker);
+        } else {
+            snprintf(name, sizeof(name), "dialog-%s.bin", set->lang);
+        }
+    }
+    free(set);
+    FILE *f = have ? fopen(path, "rb") : NULL;
+    if (!f) {
+        send_fail_code(req, "404 Not Found", "no_set", "No dialog set on the device.");
+        return WEB_HTTP_OK;
+    }
+    char disp[96];
+    snprintf(disp, sizeof(disp), "attachment; filename=\"%s\"", name);
+    web_http_set_type(req, "application/octet-stream");
+    web_http_set_header(req, "Cache-Control", "no-store");
+    web_http_set_header(req, "Content-Disposition", disp);
+    char *buf = malloc(2048);
+    size_t n;
+    bool sent = buf != NULL;
+    while (sent && (n = fread(buf, 1, 2048, f)) > 0) {
+        if (web_http_send_chunk(req, buf, n) != WEB_HTTP_OK) sent = false;
+        pb_watchdog_reset();
+    }
+    free(buf);
+    fclose(f);
+    if (!sent) return WEB_HTTP_FAIL;   // socket gone (or no memory): abort
+    web_http_send_chunk(req, NULL, 0);
+    return WEB_HTTP_OK;
+}
+
+// Refusals shared by the own set's POSTs: dialog mode only, and never while
+// an i18n pass may be replacing the set. Sets the upload flag first and then
+// looks at the sync (which sets its running flag first and then looks at the
+// upload flag), so the two never run at once. True: go ahead, the caller
+// clears the flag with dialog_store_set_upload_active(false).
+static bool own_set_begin(web_http_request_t *req, const char *what)
+{
+    if (!config_ab_dialog()) {
+        pb_log_warn(TAG, "%s refused: ab_mode is not 'dialog'", what);
+        send_fail_code(req, "409 Conflict", "wrong_mode",
+                       "An own dialog set needs the dialog mode.");
+        return false;
+    }
+    if (dialog_store_upload_active()) {
+        send_fail_code(req, "409 Conflict", "busy",
+                       "Another dialog set upload is running.");
+        return false;
+    }
+    dialog_store_set_upload_active(true);
+    i18n_sync_status_t st;
+    i18n_sync_snapshot(&st);
+    if (st.running) {
+        dialog_store_set_upload_active(false);
+        send_fail_code(req, "409 Conflict", "busy",
+                       "The device is syncing its language and audio files — "
+                       "try again in a minute.");
+        return false;
+    }
+    return true;
+}
+
+// POST /api/dialog — body: a complete dialog set file (dialog.h), the
+// user's own set (built by the editor in the web UI). Refused, with the
+// reason, unless dialog_header_parse() accepts it (every phase 1..
+// DIALOG_MAX_CLIPS clips, all within the file) and it fits the device's
+// dialog budget. The header is checked before anything on flash changes;
+// then the current set goes (one set fits) and the file is streamed in. It
+// is stored as the set of DIALOG_OWN_LANG, which the daily sync never
+// replaces and a ui_lang change keeps; leaving dialog mode deletes it.
+static web_http_error_t handle_dialog_post(web_http_request_t *req)
+{
+    REQUIRE_AUTH_API(req);
+    int total = web_http_body_length(req);
+    uint64_t cap = dialog_set_cap();
+    if (total <= DIALOG_HEADER_MIN) {
+        char msg[96];
+        snprintf(msg, sizeof(msg), "Not a dialog set: %d bytes, less than "
+                 "a set header.", total < 0 ? 0 : total);
+        pb_log_warn(TAG, "own dialog set refused: %s", msg);
+        send_fail_code(req, "400 Bad Request", "not_a_set", msg);
+        return WEB_HTTP_OK;
+    }
+    if ((uint64_t)total > cap) {
+        char msg[96];
+        snprintf(msg, sizeof(msg), "The set has %d bytes; this device takes "
+                 "at most %llu.", total, (unsigned long long)cap);
+        pb_log_warn(TAG, "own dialog set refused: %s", msg);
+        send_fail_code(req, "413 Payload Too Large", "too_large", msg);
+        return WEB_HTTP_OK;
+    }
+    if (!own_set_begin(req, "own dialog set upload")) return WEB_HTTP_OK;
+
+    const char *fail = NULL;   // message on failure
+    const char *fail_status = "400 Bad Request";
+    const char *fail_code = "failed";
+    bool touched = false;      // the previous set is gone
+    size_t hn = (size_t)total < DIALOG_HEADER_MAX ? (size_t)total : DIALOG_HEADER_MAX;
+    uint8_t *hdr = malloc(hn);
+    dialog_set_t *set = malloc(sizeof(*set));
+    char *buf = malloc(4096);
+    char path[DIALOG_STORE_PATH_CAP], tmp[DIALOG_STORE_PATH_CAP + 8];
+    dialog_store_file_path(path, sizeof(path), DIALOG_OWN_LANG);
+    snprintf(tmp, sizeof(tmp), "%s.part", path);
+    storage_file_t f;
+    bool open = false;
+    int got = 0;
+    if (!hdr || !set || !buf) {
+        fail = "Out of memory.";
+        fail_status = "500 Internal Server Error";
+        goto out;
+    }
+    while ((size_t)got < hn) {
+        int n = upload_recv(req, (char *)hdr + got, (int)hn - got, "dialog set", got, total);
+        if (n <= 0) { fail = "Upload interrupted."; goto out; }
+        got += n;
+    }
+    if (dialog_header_parse(hdr, hn, (uint64_t)total, set) != DIALOG_HEADER_OK) {
+        fail = "Not a valid dialog set: every phase needs 1 to 32 clips and "
+               "the clip table must match the file.";
+        fail_code = "not_a_set";
+        goto out;
+    }
+
+    // One set fits on flash: the current one goes before the new one is
+    // written.
+    touched = true;
+    dialog_store_drop_index();
+    dialog_store_remove_others(NULL);
+    storage_make_room((size_t)total, path);
+    if (!storage_file_open(&f, tmp)) {
+        fail = "Could not open the set file for writing.";
+        fail_status = "500 Internal Server Error";
+        goto out;
+    }
+    open = true;
+    if (!storage_file_write(&f, hdr, hn)) {
+        fail = "Storage write failed (full?).";
+        fail_status = "500 Internal Server Error";
+        goto out;
+    }
+    while (got < total) {
+        int want = total - got;
+        if (want > 4096) want = 4096;
+        int n = upload_recv(req, buf, want, "dialog set", got, total);
+        if (n <= 0) { fail = "Upload interrupted."; goto out; }
+        if (!storage_file_write(&f, buf, (size_t)n)) {
+            fail = "Storage write failed (full?).";
+            fail_status = "500 Internal Server Error";
+            goto out;
+        }
+        got += n;
+        pb_watchdog_reset();
+    }
+    open = false;
+    if (!storage_file_close(&f)) {
+        fail = "Storage write failed (full?).";
+        fail_status = "500 Internal Server Error";
+        goto out;
+    }
+    unlink(path);
+    if (rename(tmp, path) != 0) {
+        fail = "Could not activate the set.";
+        fail_status = "500 Internal Server Error";
+        goto out;
+    }
+    if (!dialog_store_read_file(DIALOG_OWN_LANG, set) ||
+        dialog_store_write_index(DIALOG_OWN_LANG, NULL) != PB_OK) {
+        unlink(path);
+        fail = "The stored set does not read back.";
+        fail_status = "500 Internal Server Error";
+        goto out;
+    }
+out:
+    if (open) storage_file_close(&f);
+    free(hdr);
+    free(set);
+    free(buf);
+    if (fail) unlink(tmp);
+    dialog_store_set_upload_active(false);
+    if (fail) {
+        pb_log_warn(TAG, "own dialog set upload failed after %d of %d bytes: %s",
+                    got, total, fail);
+        // The previous set is gone: the sync brings the speaker's set back.
+        if (touched) i18n_sync_trigger_now();
+        send_fail_code(req, fail_status, fail_code, fail);
+        return WEB_HTTP_OK;
+    }
+    pb_log_info(TAG, "own dialog set stored: %d bytes", total);
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddBoolToObject  (root, "ok", true);
+    cJSON_AddNumberToObject(root, "bytes", total);
+    cJSON_AddStringToObject(root, "message", "Own dialog set saved.");
+    send_json(req, root);
+    return WEB_HTTP_OK;
+}
+
+// POST /api/dialog/reset — drops the own set; the sync triggered at once
+// fetches the chosen speaker's set.
+static web_http_error_t handle_dialog_reset(web_http_request_t *req)
+{
+    REQUIRE_AUTH_API(req);
+    if (!dialog_store_has_own()) {
+        cJSON *root = cJSON_CreateObject();
+        cJSON_AddBoolToObject  (root, "ok", true);
+        cJSON_AddStringToObject(root, "message", "No own dialog set on the device.");
+        send_json(req, root);
+        return WEB_HTTP_OK;
+    }
+    if (!own_set_begin(req, "own dialog set reset")) return WEB_HTTP_OK;
+    dialog_store_drop_index();
+    dialog_store_remove_others(NULL);
+    dialog_store_set_upload_active(false);
+    i18n_sync_trigger_now();
+    pb_log_info(TAG, "own dialog set deleted — fetching the speaker's set");
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddBoolToObject  (root, "ok", true);
+    cJSON_AddStringToObject(root, "message", "Own dialog set deleted.");
+    send_json(req, root);
+    return WEB_HTTP_OK;
+}
 
 static web_http_error_t handle_dev_i18n_upload(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
 
-    char query[64] = "";
+    char query[96] = "";
     char kind[16]  = "";
     char lang[12]  = "";
+    char speaker[DIALOG_SPEAKER_CAP + 8] = "";
     if (web_http_get_query_string(req, query, sizeof(query)) == WEB_HTTP_OK) {
         web_http_query_value(query, "kind", kind, sizeof(kind));
         web_http_query_value(query, "lang", lang, sizeof(lang));
+        web_http_query_value(query, "speaker", speaker, sizeof(speaker));
     }
     bool is_ui     = strcmp(kind, "ui") == 0;
     bool is_dialog = strcmp(kind, "dialog") == 0;
@@ -3153,6 +3505,11 @@ static web_http_error_t handle_dev_i18n_upload(web_http_request_t *req)
                        "(lower case for the dialog kind).");
         return WEB_HTTP_OK;
     }
+    if (is_dialog && speaker[0] && !dialog_speaker_valid(speaker)) {
+        send_fail_code(req, "400 Bad Request", "invalid_speaker",
+                       "speaker must be a speaker id like 'leonie' ([a-z][a-z0-9-]{0,15}).");
+        return WEB_HTTP_OK;
+    }
     if (is_dialog && !config_ab_dialog()) {
         pb_log_warn(TAG, "dev upload: %s refused — ab_mode is not 'dialog'", kind);
         send_fail_code(req, "409 Conflict", "wrong_mode",
@@ -3167,15 +3524,15 @@ static web_http_error_t handle_dev_i18n_upload(web_http_request_t *req)
     // the shared 640 KB SPIFFS, so a runaway upload cannot fill storage
     // that the announcement audio and the blocklist also live in. The
     // dialog set gets the device's dialog budget, as the CDN download it
-    // stands in for (storage_dialog_budget(): the tier this partition takes;
-    // on the Linux port, where that is unlimited, DEV_DIALOG_PUSH_MAX).
-    uint64_t dialog_cap = storage_dialog_budget();
-    if (dialog_cap > DEV_DIALOG_PUSH_MAX) dialog_cap = DEV_DIALOG_PUSH_MAX;
-    const int MAX_BYTES = is_dialog ? (int)dialog_cap : 128 * 1024;
+    // stands in for (dialog_set_cap()).
+    const int MAX_BYTES = is_dialog ? (int)dialog_set_cap() : 128 * 1024;
     if (total <= 2 || total > MAX_BYTES) {
         char msg[80];
         snprintf(msg, sizeof(msg), "Bundle missing or over %d bytes.", MAX_BYTES);
-        send_fail_code(req, "400 Bad Request", "invalid", msg);
+        pb_log_warn(TAG, "dev upload: %s refused — %d bytes, at most %d", kind,
+                    total, MAX_BYTES);
+        if (total > MAX_BYTES) send_fail_code(req, "413 Payload Too Large", "too_large", msg);
+        else send_fail_code(req, "400 Bad Request", "invalid", msg);
         return WEB_HTTP_OK;
     }
 
@@ -3185,10 +3542,12 @@ static web_http_error_t handle_dev_i18n_upload(web_http_request_t *req)
         // Never a half-replaced set that still counts as complete: without
         // the index the call path ignores the file until it is checked below.
         dialog_store_drop_index();
-    } else if (is_ui) {
-        i18n_sync_ui_path(path, sizeof(path), lang);
-    } else {
-        i18n_sync_mail_path(path, sizeof(path), lang);
+    } else if (!(is_ui ? i18n_sync_ui_path(path, sizeof(path), lang)
+                       : i18n_sync_mail_path(path, sizeof(path), lang))) {
+        pb_log_warn(TAG, "dev upload: %s refused — data directory path too long", kind);
+        send_fail_code(req, "500 Internal Server Error", "path",
+                       "The data directory path is too long.");
+        return WEB_HTTP_OK;
     }
     snprintf(tmp, sizeof(tmp), "%s.part", path);
 
@@ -3259,7 +3618,9 @@ static web_http_error_t handle_dev_i18n_upload(web_http_request_t *req)
                            "table header (push a staged dialog-<lang>-<tier>-<sha8>.bin).");
             return WEB_HTTP_OK;
         }
-        if (dialog_store_write_index(lang) != PB_OK) {
+        // One set on the device: an own set or another locale's goes.
+        dialog_store_remove_others(lang);
+        if (dialog_store_write_index(lang, speaker) != PB_OK) {
             send_fail_code(req, "500 Internal Server Error", "storage",
                            "Could not write the dialog index.");
             return WEB_HTTP_OK;
@@ -3307,6 +3668,14 @@ static web_http_error_t handle_token_test(web_http_request_t *req)
 
 // --- Server lifecycle -----------------------------------------------
 
+// The Linux HTTP layer refused a request body for its size before reading
+// it (web_http.h); the client got a JSON 413, this puts it on the log panel.
+static void log_body_refused(const char *uri, unsigned long long length, size_t max)
+{
+    pb_log_warn(TAG, "%s: request body of %llu bytes refused (at most %zu)",
+                uri, length, max);
+}
+
 static const web_http_route_t URIS[] = {
     { .uri = "/health",               .method = WEB_HTTP_GET,     .handler = handle_health },
     { .uri = "/",                    .method = WEB_HTTP_GET,     .handler = handle_root },
@@ -3332,9 +3701,17 @@ static const web_http_route_t URIS[] = {
     { .uri = "/api/announcement",       .method = WEB_HTTP_GET,  .handler = handle_announcement_get },
     { .uri = "/api/announcement",       .method = WEB_HTTP_POST, .handler = handle_announcement_post },
     { .uri = "/api/announcement/reset", .method = WEB_HTTP_POST, .handler = handle_announcement_reset },
+    { .uri = "/api/dialog",             .method = WEB_HTTP_GET,  .handler = handle_dialog_get },
+    // The routes taking a whole dialog set (Linux: buffered up to max_body;
+    // the handlers hold it to dialog_set_cap(), the ESP32 streams).
+    { .uri = "/api/dialog",             .method = WEB_HTTP_POST, .handler = handle_dialog_post,
+      .max_body = STORAGE_DIALOG_PLAIN_FS_MAX },
+    { .uri = "/api/dialog/reset",       .method = WEB_HTTP_POST, .handler = handle_dialog_reset },
+    { .uri = "/api/dialog/speakers",    .method = WEB_HTTP_GET,  .handler = handle_dialog_speakers },
     { .uri = "/api/sync/run",           .method = WEB_HTTP_POST, .handler = handle_sync_run },
     { .uri = "/api/phonebooks",         .method = WEB_HTTP_GET,  .handler = handle_phonebooks },
-    { .uri = "/api/dev/i18n",           .method = WEB_HTTP_POST, .handler = handle_dev_i18n_upload },
+    { .uri = "/api/dev/i18n",           .method = WEB_HTTP_POST, .handler = handle_dev_i18n_upload,
+      .max_body = STORAGE_DIALOG_PLAIN_FS_MAX },
     { .uri = "/api/phonebook/add",      .method = WEB_HTTP_POST, .handler = handle_phonebook_add },
     { .uri = "/api/rate",               .method = WEB_HTTP_POST, .handler = handle_rate },
     { .uri = "/api/whitelist",          .method = WEB_HTTP_POST, .handler = handle_whitelist },
@@ -3416,6 +3793,7 @@ void web_start(void)
         // wildcard matching has no effect on them.
         .wildcard_uri_match = true,
         .lru_purge = true,
+        .on_body_refused = log_body_refused,
     };
 #ifdef ESP_PLATFORM
     // The default 4 KB is too tight once /api/fritzbox-setup → tr064_*

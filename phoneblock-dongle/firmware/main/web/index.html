@@ -1426,6 +1426,26 @@ function renderStatus(){
     + '<p class="muted" style="margin-top:.3rem;font-size:.8rem">' + esc(t('status.dialog.help')) + '</p>'
     + '<div id="annDialog" style="display:none">'
     + '<p id="annDialogClips" class="muted" style="margin-top:.3rem;font-size:.85rem"></p>'
+    // Speaker choice and the own set's editor (#429).
+    + '<p style="margin:.6rem 0 .2rem;font-size:.85rem">' + esc(t('status.dialog.speaker')) + '</p>'
+    + '<div id="dlgSpk" style="font-size:.85rem"></div>'
+    + '<details id="dlgEdit" style="margin-top:.6rem;font-size:.85rem">'
+    + '<summary>' + esc(t('status.dialog.edit.title')) + '</summary>'
+    + '<p class="muted" style="font-size:.8rem">' + esc(t('status.dialog.edit.intro')) + '</p>'
+    + '<p style="font-size:.8rem;color:#b06000">' + esc(t('status.dialog.edit.yes_hint')) + '</p>'
+    + '<div id="dlgPhases"></div>'
+    + '<p id="dlgGauge" class="muted" style="margin:.4rem 0"></p>'
+    + '<p style="display:flex;gap:.4rem;flex-wrap:wrap;align-items:center">'
+    + '  <button id="dlgUpload" class="btn-primary" style="padding:.35rem .8rem;font-size:.85rem" disabled>'
+    +     esc(t('status.dialog.edit.upload')) + '</button>'
+    + '  <button id="dlgSave" class="btn-ghost" style="padding:.3rem .7rem;font-size:.85rem">'
+    +     esc(t('status.dialog.edit.download')) + '</button>'
+    + '  <label class="btn-ghost" style="padding:.3rem .7rem;font-size:.85rem;margin:0;cursor:pointer">'
+    +     esc(t('status.dialog.edit.load_file'))
+    + '    <input id="dlgFile" type="file" accept=".bin,application/octet-stream" style="display:none"></label>'
+    + '</p>'
+    + '<p id="dlgMsg" class="muted"></p>'
+    + '</details>'
     + '<div style="display:flex;gap:1.2rem;flex-wrap:wrap;align-items:flex-start;margin-top:.4rem">'
     + '<label style="display:flex;flex-direction:column;gap:.2rem;font-size:.85rem">'
     +   esc(t('status.dialog.vad_silence_db'))
@@ -1632,9 +1652,11 @@ function renderDialog(d, ownAnnouncement){
   $('annDialog').style.display = dialogOn ? '' : 'none';
   $('annAnnouncement').style.display = dialogOn ? 'none' : '';
   mode.dataset.own = ownAnnouncement ? '1' : '';
-  $('annDialogClips').textContent = d.clips_present
-    ? t('status.dialog.clips.present', {lang: langName(d.clips_lang)})
-    : t('status.dialog.clips.missing');
+  mode.dataset.ownSet = d.own ? '1' : '';
+  $('annDialogClips').textContent = !d.clips_present ? t('status.dialog.clips.missing')
+    : d.own ? t('status.dialog.clips.own')
+    : t('status.dialog.clips.present', {lang: langName(d.clips_lang)});
+  if (dialogOn) dlgSpeakers(d);
   $('annDialogClips').style.color = d.clips_present ? '' : '#b06000';
   if (!dialogPrefilled){
     $('annVadDb').value = d.vad_silence_db;
@@ -1648,6 +1670,15 @@ function renderDialog(d, ownAnnouncement){
           && !confirm(t('status.dialog.confirm_delete_own'))){
         mode.value = 'announcement';
         return;
+      }
+      // Leaving dialog mode deletes the set, an own one included: say so
+      // and offer to save it first.
+      if (mode.value === 'announcement' && mode.dataset.ownSet){
+        if (!confirm(t('status.dialog.own.leave_confirm'))){
+          mode.value = 'dialog';
+          return;
+        }
+        if (confirm(t('status.dialog.own.leave_download'))) await dlgDownloadDevice();
       }
       mode.disabled = true;
       try { await postConfig({ab_mode: mode.value}); } catch (_){ /* next poll reconciles */ }
@@ -3640,10 +3671,52 @@ function wavBlobFromPcm16(pcm){
   return new Blob([buf], {type: 'audio/wav'});
 }
 
+// Level processing of every uploaded recording (own announcement and the
+// clips of an own dialog set), ported from scripts/tts-dialog.py trim() and
+// normalize() so own clips sound like the published ones. The constants are
+// tts-dialog.py's TRIM_DBFS, TRIM_KEEP_MS, TARGET_DBFS, PEAK_DBFS and
+// ACTIVE_DBFS — keep both in step. <pcm-lib>
+const TRIM_DBFS = -45, TRIM_KEEP_MS = 50;
+const TARGET_DBFS = -20, PEAK_DBFS = -1, ACTIVE_DBFS = -50;
+const dbfs = x => 20 * Math.log10(Math.max(x, 1e-9) / 32768);
+// Leading/trailing 10 ms windows whose peak stays below TRIM_DBFS go,
+// TRIM_KEEP_MS kept on each side. null when no window is louder (silence).
+function trimPcm(pcm){
+  const win = 80, thr = 32768 * 10 ** (TRIM_DBFS / 20);
+  let first = -1, last = -1;
+  for (let i = 0; i < pcm.length; i += win){
+    let m = 0;
+    for (let j = i; j < Math.min(i + win, pcm.length); j++) m = Math.max(m, Math.abs(pcm[j]));
+    if (m > thr){ if (first < 0) first = i; last = i; }
+  }
+  if (first < 0) return null;
+  const keep = TRIM_KEEP_MS * 8;
+  return pcm.slice(Math.max(0, first - keep), Math.min(pcm.length, last + win + keep));
+}
+// Gain to TARGET_DBFS RMS over the 20 ms frames above ACTIVE_DBFS, capped so
+// no peak exceeds PEAK_DBFS. Unchanged without such a frame.
+function normalizePcm(pcm){
+  const thr = 32768 * 10 ** (ACTIVE_DBFS / 20);
+  let sum = 0, frames = 0, peak = 0;
+  for (let i = 0; i + 160 <= pcm.length; i += 160){
+    let e = 0;
+    for (let j = i; j < i + 160; j++) e += pcm[j] * pcm[j];
+    if (Math.sqrt(e / 160) > thr){ sum += e; frames++; }
+  }
+  if (!frames) return pcm;
+  for (const v of pcm) peak = Math.max(peak, Math.abs(v));
+  const gain = 10 ** (Math.min(TARGET_DBFS - dbfs(Math.sqrt(sum / (160 * frames))),
+                               PEAK_DBFS - dbfs(peak)) / 20);
+  return Int16Array.from(pcm, v => Math.max(-32768, Math.min(32767, Math.round(v * gain))));
+}
+// </pcm-lib>
+
 // Decode any browser-supported audio file, mix to mono, resample to
-// 8 kHz via OfflineAudioContext, then A-law-encode. Returns a
-// Uint8Array of raw A-law bytes ready to POST to /api/announcement.
-async function convertToAlaw(file){
+// 8 kHz via OfflineAudioContext, trim and level it (above), then
+// A-law-encode. Returns a Uint8Array of raw A-law bytes, ready to POST to
+// /api/announcement or to put into a dialog set. A file that is silent
+// throughout is refused with a message.
+async function convertToAlaw(file, maxSeconds = ANN_MAX_SECONDS){
   const ctx = new (window.AudioContext || window.webkitAudioContext)();
   let decoded;
   try {
@@ -3653,9 +3726,13 @@ async function convertToAlaw(file){
     throw new Error(t('status.ann.upload.decode_fail'));
   }
   const lengthSamples = Math.ceil(decoded.duration * 8000);
-  if (decoded.duration > ANN_MAX_SECONDS){
+  if (decoded.duration > maxSeconds){
     ctx.close();
-    throw new Error(t('status.ann.upload.toolong', {s: ANN_MAX_SECONDS}));
+    throw new Error(t('status.ann.upload.toolong', {s: maxSeconds}));
+  }
+  if (lengthSamples < 1){
+    ctx.close();
+    throw new Error(t('status.ann.upload.silent'));
   }
   const off = new OfflineAudioContext(1, lengthSamples, 8000);
   const src = off.createBufferSource();
@@ -3664,13 +3741,240 @@ async function convertToAlaw(file){
   src.start();
   const rendered = await off.startRendering();
   ctx.close();
-  const f32 = rendered.getChannelData(0);
-  const out = new Uint8Array(f32.length);
-  for (let i = 0; i < f32.length; i++){
-    let s = Math.round(Math.max(-1, Math.min(1, f32[i])) * 32767);
-    out[i] = pcm16ToAlaw(s);
-  }
+  const pcm = Int16Array.from(rendered.getChannelData(0),
+                              f => Math.round(Math.max(-1, Math.min(1, f)) * 32767));
+  const trimmed = trimPcm(pcm);
+  if (!trimmed) throw new Error(t('status.ann.upload.silent'));
+  return Uint8Array.from(normalizePcm(trimmed), pcm16ToAlaw);
+}
+
+// Plays raw A-law bytes; returns the Audio element (onended: cleanup).
+function playAlaw(alaw){
+  const pcm = Int16Array.from(alaw, alawToPcm16);
+  const url = URL.createObjectURL(wavBlobFromPcm16(pcm));
+  const a = new Audio(url);
+  a.addEventListener('ended', () => URL.revokeObjectURL(url));
+  a.play();
+  return a;
+}
+
+// --- dialog set (#429): the PBDS file of main/dialog.h ---------------- <dlg-lib>
+const DLG_PHASES = ['hello', 'who-is-there', 'am-aparat', 'question', 'cant-hear-you'];
+const DLG_MAX_CLIPS = 32;
+// ph: five arrays of Uint8Array clips → the set file: "PBDS", version 1, P = 5,
+// u16 header length, the clip counts, per clip u32 offset + u32 length
+// (little endian), then the clips in phase order.
+function dlgBuild(ph){
+  const n = ph.reduce((a, c) => a + c.length, 0), h = 13 + 8 * n;
+  const out = new Uint8Array(ph.flat().reduce((a, c) => a + c.length, h));
+  const v = new DataView(out.buffer);
+  out.set([0x50, 0x42, 0x44, 0x53, 1, 5]);
+  v.setUint16(6, h, true);
+  let e = 13, off = h;
+  ph.forEach((clips, p) => {
+    out[8 + p] = clips.length;
+    for (const c of clips){
+      v.setUint32(e, off, true); v.setUint32(e + 4, c.length, true);
+      out.set(c, off); e += 8; off += c.length;
+    }
+  });
   return out;
+}
+// The set file → five arrays of clips (phases of a later format beyond the
+// five are dropped), or null if it is not one.
+function dlgParse(b){
+  if (b.length < 8 || String.fromCharCode(...b.subarray(0, 4)) !== 'PBDS' || b[4] !== 1) return null;
+  const v = new DataView(b.buffer, b.byteOffset, b.length), P = b[5], h = v.getUint16(6, true);
+  if (P < 5 || b.length < 8 + P) return null;
+  let n = 0;
+  for (let p = 0; p < P; p++) n += b[8 + p];
+  if (h !== 8 + P + 8 * n || h > b.length) return null;
+  const ph = [];
+  for (let p = 0, e = 8 + P; p < P; p++){
+    const clips = [];
+    for (let k = 0; k < b[8 + p]; k++, e += 8){
+      const o = v.getUint32(e, true), l = v.getUint32(e + 4, true);
+      if (!l || o < h || o + l > b.length) return null;
+      clips.push(b.slice(o, o + l));
+    }
+    if (p < 5) ph.push(clips);
+  }
+  return ph;
+}
+// </dlg-lib>
+
+// Speaker list and the own set's editor, shown in dialog mode.
+let dlgKey = '', dlgMax = 0, dlgEd = null, dlgAudio = null, dlgOwn = false;
+const dlgStop = () => { if (dlgAudio){ dlgAudio.pause(); dlgAudio = null; } };
+const dlgPlay = a => { dlgStop(); dlgAudio = a; };
+function dlgMsg(text, color){
+  const m = $('dlgMsg');
+  m.textContent = text || '';
+  m.style.color = color || '#888';
+}
+function dlgBtn(label, title, fn){
+  const b = document.createElement('button');
+  b.className = 'btn-ghost';
+  b.style.cssText = 'padding:.15rem .45rem;font-size:.8rem;margin:0 .2rem 0 0';
+  b.textContent = label;
+  if (title) b.title = title;
+  b.onclick = fn;
+  return b;
+}
+async function dlgSpeakers(d){
+  const key = [d.speaker, d.clips_speaker, d.own, d.clips_lang].join('|');
+  if (key === dlgKey) return;
+  dlgKey = key;
+  let r;
+  try { r = await (await fetch('api/dialog/speakers')).json(); } catch (_){ dlgKey = ''; return; }
+  dlgMax = r.max_bytes || 0;
+  dlgOwn = !!r.own;
+  const box = $('dlgSpk');
+  box.textContent = '';
+  const row = (label, active, play, choose) => {
+    const p = document.createElement('div');
+    p.style.cssText = 'display:flex;align-items:center;gap:.3rem;margin:.15rem 0';
+    if (play) p.append(dlgBtn('▶', t('status.ann.play'), play));
+    const s = document.createElement('span');
+    s.textContent = label;
+    if (active) s.style.fontWeight = '600';
+    p.append(s);
+    if (active) p.append(Object.assign(document.createElement('span'),
+      {className: 'muted', textContent: '✓ ' + t('status.dialog.speaker.active')}));
+    else if (choose) p.append(dlgBtn(t('status.dialog.speaker.use'), '', choose));
+    box.append(p);
+  };
+  const choose = (id, name) => async () => {
+    if (r.own && !confirm(t('status.dialog.own.replace_confirm', {name}))) return;
+    dlgStop();
+    await postConfig({dialog_speaker: id}).catch(() => {});
+    refreshAll();
+  };
+  if (!r.speakers.length) box.append(t('status.dialog.speaker.none'));
+  r.speakers.forEach(sp => {
+    const g = sp.gender === 'female' ? ' ♀' : sp.gender === 'male' ? ' ♂' : '';
+    row(sp.name + g, !r.own && r.selected === sp.id,
+        sp.preview_url ? () => {
+          dlgStop();
+          dlgAudio = new Audio(sp.preview_url);
+          dlgAudio.play().catch(() => {});
+        } : null,
+        choose(sp.id, sp.name));
+  });
+  if (r.own) row(t('status.dialog.own'), true, null, null);
+  wireDlgEditor();
+}
+
+// The editor's state: five phase lists of A-law clips.
+function dlgRender(){
+  const box = $('dlgPhases');
+  box.textContent = '';
+  const ph = dlgEd || [[], [], [], [], []];
+  let reason = '';
+  ph.forEach((clips, p) => {
+    const name = t('status.dialog.phase.' + DLG_PHASES[p]);
+    const h = document.createElement('p');
+    h.style.cssText = 'margin:.5rem 0 .1rem;font-weight:600';
+    h.textContent = name + ' (' + clips.length + ')';
+    box.append(h);
+    clips.forEach((c, k) => {
+      const r = document.createElement('div');
+      r.style.cssText = 'display:flex;align-items:center;margin:.1rem 0';
+      const move = dk => () => { [clips[k], clips[k + dk]] = [clips[k + dk], clips[k]]; dlgRender(); };
+      r.append(dlgBtn('▶', t('status.ann.play'), () => dlgPlay(playAlaw(c))),
+               dlgBtn('▲', '', move(-1)), dlgBtn('▼', '', move(1)),
+               dlgBtn('↻', t('status.dialog.edit.replace'), () => dlgPick(f => { clips[k] = f; })),
+               dlgBtn('✕', t('status.dialog.edit.delete'), () => { clips.splice(k, 1); dlgRender(); }),
+               Object.assign(document.createElement('span'),
+                 {className: 'muted', textContent: (k + 1) + ': ' + (c.length / 8000).toFixed(1) + ' s'}));
+      r.children[1].disabled = k === 0;
+      r.children[2].disabled = k === clips.length - 1;
+      box.append(r);
+    });
+    box.append(dlgBtn(t('status.dialog.edit.add'), '', () => dlgPick(f => { clips.push(f); })));
+    if (!reason && !clips.length) reason = t('status.dialog.edit.reason.empty', {phase: name});
+    if (!reason && clips.length > DLG_MAX_CLIPS)
+      reason = t('status.dialog.edit.reason.many', {phase: name, max: DLG_MAX_CLIPS});
+  });
+  const bytes = dlgEd ? dlgBuild(ph).length : 0;
+  if (!reason && dlgMax && bytes > dlgMax) reason = t('status.dialog.edit.reason.size');
+  // The gauge, and why the upload is disabled.
+  const gauge = $('dlgGauge');
+  gauge.textContent = t('status.dialog.edit.gauge',
+    {kb: Math.round(bytes / 1024), max: Math.round(dlgMax / 1024)}) + (reason ? ' — ' + reason : '');
+  gauge.style.color = reason ? '#b06000' : '';
+  $('dlgUpload').disabled = !!reason || !dlgEd;
+  $('dlgUpload').title = reason;
+}
+// Picks an audio file, converts it like an announcement and hands the
+// A-law clip to `put`.
+function dlgPick(put){
+  const inp = Object.assign(document.createElement('input'), {type: 'file', accept: 'audio/*'});
+  inp.onchange = async () => {
+    if (!inp.files.length) return;
+    dlgMsg(t('status.ann.upload.converting'));
+    try { put(await convertToAlaw(inp.files[0])); dlgMsg(''); }
+    catch (e){ dlgMsg(t('status.ann.upload.error', {msg: e.message}), '#d93025'); }
+    dlgRender();
+  };
+  inp.click();
+}
+function dlgSaveFile(bytes, name){
+  const a = Object.assign(document.createElement('a'),
+    {href: URL.createObjectURL(new Blob([bytes])), download: name});
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+// Saves the set on the device as a file (before leaving dialog mode).
+async function dlgDownloadDevice(){
+  try {
+    const r = await fetch('api/dialog');
+    if (r.ok) dlgSaveFile(new Uint8Array(await r.arrayBuffer()), 'dialog-own.bin');
+  } catch (_){}
+}
+function wireDlgEditor(){
+  const det = $('dlgEdit');
+  if (det.ontoggle) return;
+  det.ontoggle = async () => {
+    if (!det.open || dlgEd) return;
+    dlgEd = [[], [], [], [], []];
+    try {
+      const r = await fetch('api/dialog');
+      const ph = r.ok ? dlgParse(new Uint8Array(await r.arrayBuffer())) : null;
+      if (ph) dlgEd = ph;
+      else dlgMsg(t('status.dialog.edit.no_set'));
+    } catch (_){ dlgMsg(t('status.dialog.edit.no_set')); }
+    dlgRender();
+  };
+  $('dlgSave').onclick = () => dlgEd ? dlgSaveFile(dlgBuild(dlgEd), 'dialog-own.bin')
+                                     : dlgDownloadDevice();
+  $('dlgFile').onchange = async () => {
+    const f = $('dlgFile').files[0];
+    $('dlgFile').value = '';
+    if (!f) return;
+    const ph = dlgParse(new Uint8Array(await f.arrayBuffer()));
+    if (!ph){ dlgMsg(t('status.dialog.edit.bad_file'), '#d93025'); return; }
+    dlgEd = ph;
+    dlgMsg('');
+    dlgRender();
+  };
+  $('dlgUpload').onclick = async () => {
+    const body = dlgBuild(dlgEd);
+    const b = $('dlgUpload');
+    b.disabled = true;
+    dlgMsg(t('status.ann.upload.uploading'));
+    try {
+      const r = await fetch('api/dialog', {method: 'POST',
+        headers: {'Content-Type': 'application/octet-stream'}, body});
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok || !d.ok) throw new Error(d.message || ('HTTP ' + r.status));
+      dlgMsg(t('status.dialog.edit.done', {kb: Math.round(body.length / 1024)}), '#188038');
+      refreshAll();
+    } catch (e){
+      dlgMsg(t('status.ann.upload.error', {msg: e.message || 'network'}), '#d93025');
+    }
+    b.disabled = false;
+  };
 }
 
 let annAudio = null;
@@ -3695,17 +3999,12 @@ function wireAnnouncement(){
       const r = await fetch('api/announcement');
       if (!r.ok) throw new Error('HTTP ' + r.status);
       const alaw = new Uint8Array(await r.arrayBuffer());
-      const pcm = new Int16Array(alaw.length);
-      for (let i = 0; i < alaw.length; i++) pcm[i] = alawToPcm16(alaw[i]);
-      const url = URL.createObjectURL(wavBlobFromPcm16(pcm));
-      if (annAudio){ annAudio.pause(); URL.revokeObjectURL(annAudio.src); }
-      annAudio = new Audio(url);
+      if (annAudio) annAudio.pause();
+      annAudio = playAlaw(alaw);
       annAudio.onended = () => {
-        URL.revokeObjectURL(url);
         stopBtn.style.display = 'none';
         playBtn.style.display = '';
       };
-      annAudio.play();
       playBtn.style.display = 'none';
       stopBtn.style.display = '';
     } catch (e){

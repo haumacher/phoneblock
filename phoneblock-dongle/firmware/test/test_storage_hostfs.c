@@ -68,8 +68,10 @@ int main(void)
     int64_t budget = storage_community_budget();
     REQUIRE(budget > 0);
 
-    // A plain filesystem takes the largest dialog tier (#429).
-    REQUIRE(storage_dialog_budget() == UINT64_MAX);
+    // A plain filesystem takes the largest dialog tier (#429), up to the
+    // fixed ceiling the Linux HTTP layer can buffer.
+    REQUIRE(storage_dialog_budget() == STORAGE_DIALOG_PLAIN_FS_MAX);
+    REQUIRE(STORAGE_DIALOG_PLAIN_FS_MAX > 600U * 1024U);
 
     // With plenty of space and nothing cached, making room is a no-op that
     // must not fail or remove the file it is about to replace.

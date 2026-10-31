@@ -140,40 +140,43 @@ static void probe_clip_index_in_range(void)
 
 static void probe_manifest_forward_compatible(void)
 {
-    // A later bundle adds a field to each tier and a fourth, larger tier
-    // (and a key next to the list): the largest tier within the budget is
-    // still found, the rest ignored.
-    const char *json =
-        "{\"de\":{\"announcement\":{},\"dialog-v2\":{},\"dialog\":["
-        "{\"path\":\"audio/dialog-de-s.alaw\",\"sha256\":\"" SHA "\","
-        "\"bytes\":120000,\"voice\":\"x\",\"clips\":[1,2]},"
-        "{\"path\":\"audio/dialog-de-xl.alaw\",\"sha256\":\"" SHA "\","
-        "\"bytes\":900000,\"voice\":\"y\"}]}}";
-    cJSON *assets = cJSON_Parse(json);
+    // A later channel adds fields to the index entry and keys next to it; a
+    // later index adds fields to speakers and tiers and a fourth, larger
+    // tier: the largest tier within the budget is still found, the rest
+    // ignored.
+    cJSON *assets = cJSON_Parse(
+        "{\"de\":{\"announcement\":{},\"dialog-v2\":{},\"dialog\":{"
+        "\"path\":\"dialog-de-1.json\",\"sha256\":\"" SHA "\",\"bytes\":3000,\"x\":1}}}");
     CHECK(assets != NULL);
     const char *chain[] = { "fr", "en", "de" };
-    dialog_manifest_set_t set;
-    CHECK(dialog_manifest_select(assets, chain, 3, 131072, &set));
-    CHECK(set.lang && strcmp(set.lang, "de") == 0);
-    CHECK(set.bytes == 120000 && strcmp(set.path, "audio/dialog-de-s.alaw") == 0);
+    audio_asset_t ix;
+    CHECK(dialog_manifest_index(assets, chain, 3, &ix) && strcmp(ix.lang, "de") == 0);
     cJSON_Delete(assets);
+    cJSON *index = cJSON_Parse(
+        "{\"v\":2,\"speakers\":[{\"id\":\"leonie\",\"accent\":\"x\",\"sets\":["
+        "{\"path\":\"s.bin\",\"sha256\":\"" SHA "\",\"bytes\":120000,\"voice\":\"x\",\"clips\":[1,2]},"
+        "{\"path\":\"xl.bin\",\"sha256\":\"" SHA "\",\"bytes\":900000,\"voice\":\"y\"}]}]}");
+    dialog_manifest_set_t set;
+    CHECK(dialog_index_select(index, "", 131072, &set) == DIALOG_PICK_CHOSEN);
+    CHECK(set.bytes == 120000 && strcmp(set.path, "s.bin") == 0);
+    cJSON_Delete(index);
 }
 
-// A locale whose `dialog` is not a tier list (garbage from a broken bundle,
-// or the single-object form of an unreleased draft) is skipped, the next
-// chain locale is used.
+// A locale whose `dialog` is not an index entry (garbage from a broken
+// channel, or the tier list of the unpublished first format) is skipped,
+// the next chain locale is used.
 static void probe_manifest_garbage_dialog(void)
 {
     const char *json =
         "{\"fr\":{\"dialog\":\"oops\"},"
         "\"en\":{\"dialog\":[1,2,3]},"
-        "\"it\":{\"dialog\":" TIER("audio/dialog-it.alaw", 500) "},"
-        "\"de\":{\"dialog\":[" TIER("audio/dialog-de-s.alaw", 500) "]}}";
+        "\"it\":{\"dialog\":[" TIER("dialog-it-s.bin", 500) "]},"
+        "\"de\":{\"dialog\":" TIER("dialog-de-1.json", 500) "}}";
     cJSON *assets = cJSON_Parse(json);
     const char *chain[] = { "fr", "en", "it", "de" };
-    dialog_manifest_set_t set;
-    CHECK(dialog_manifest_select(assets, chain, 4, 131072, &set));
-    CHECK(set.lang && strcmp(set.lang, "de") == 0);
+    audio_asset_t ix;
+    CHECK(dialog_manifest_index(assets, chain, 4, &ix));
+    CHECK(ix.lang && strcmp(ix.lang, "de") == 0);
     cJSON_Delete(assets);
 }
 
@@ -212,41 +215,37 @@ static void probe_header_extra_phase(void)
 #define SHA64 "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
 #define BTIER(name, n) "{\"path\":\"" name "\",\"sha256\":\"" SHA64 "\",\"bytes\":" #n "}"
 
-static bool pick(const char *json, const char *const *chain, int n, uint64_t budget,
-                 dialog_manifest_set_t *out)
+static dialog_pick_t pick(const char *json, const char *speaker, uint64_t budget,
+                          char *path_out)
 {
-    cJSON *assets = cJSON_Parse(json);
-    CHECK(assets != NULL);
-    bool ok = dialog_manifest_select(assets, chain, n, budget, out);
-    static char path[64], lang[12];
-    if (ok) {                       // copy out before the JSON goes
-        snprintf(path, sizeof(path), "%s", out->path);
-        snprintf(lang, sizeof(lang), "%s", out->lang);
-        out->path = path; out->lang = lang;
-    }
-    cJSON_Delete(assets);
-    return ok;
+    cJSON *index = cJSON_Parse(json);
+    CHECK(index != NULL);
+    dialog_manifest_set_t out;
+    dialog_pick_t r = dialog_index_select(index, speaker, budget, &out);
+    path_out[0] = '\0';
+    if (r != DIALOG_PICK_NONE) snprintf(path_out, 64, "%s", out.path);
+    cJSON_Delete(index);
+    return r;
 }
 
 static void probe_tier_boundaries(void)
 {
     // Tiers listed out of order; a budget exactly at a tier's size takes it.
-    const char *json =
-        "{\"fr\":{\"dialog\":[" BTIER("dialog-fr-l-1.bin", 500000) ","
-                              BTIER("dialog-fr-s-1.bin", 120000) ","
-                              BTIER("dialog-fr-m-1.bin", 220000) "]},"
-        " \"en\":{\"dialog\":[" BTIER("dialog-en-s-1.bin", 100000) "]}}";
-    const char *chain[] = { "fr", "en", "de" };
-    dialog_manifest_set_t set;
-    CHECK(pick(json, chain, 3, 120000, &set) && strcmp(set.path, "dialog-fr-s-1.bin") == 0);
-    CHECK(pick(json, chain, 3, 219999, &set) && strcmp(set.path, "dialog-fr-s-1.bin") == 0);
-    CHECK(pick(json, chain, 3, 220000, &set) && strcmp(set.path, "dialog-fr-m-1.bin") == 0);
-    CHECK(pick(json, chain, 3, UINT64_MAX, &set) && strcmp(set.path, "dialog-fr-l-1.bin") == 0);
-    // Every fr tier too large: the whole locale is skipped, en's fits.
-    CHECK(pick(json, chain, 3, 110000, &set) && strcmp(set.lang, "en") == 0
-          && strcmp(set.path, "dialog-en-s-1.bin") == 0);
+    const char *json = "{\"speakers\":["
+        "{\"id\":\"anna\",\"sets\":[" BTIER("a-s.bin", 100000) "]},"
+        "{\"id\":\"bert\",\"sets\":[" BTIER("b-l.bin", 500000) ","
+                                     BTIER("b-s.bin", 120000) ","
+                                     BTIER("b-m.bin", 220000) "]}]}";
+    char p[64];
+    CHECK(pick(json, "bert", 120000, p) == DIALOG_PICK_CHOSEN && strcmp(p, "b-s.bin") == 0);
+    CHECK(pick(json, "bert", 219999, p) == DIALOG_PICK_CHOSEN && strcmp(p, "b-s.bin") == 0);
+    CHECK(pick(json, "bert", 220000, p) == DIALOG_PICK_CHOSEN && strcmp(p, "b-m.bin") == 0);
+    CHECK(pick(json, "bert", UINT64_MAX, p) == DIALOG_PICK_CHOSEN && strcmp(p, "b-l.bin") == 0);
+    // Every tier of the chosen speaker too large: the default's fits.
+    CHECK(pick(json, "bert", 110000, p) == DIALOG_PICK_NO_FIT && strcmp(p, "a-s.bin") == 0);
     // Nothing fits anywhere.
-    CHECK(!pick(json, chain, 3, 99999, &set));
+    CHECK(pick(json, "bert", 99999, p) == DIALOG_PICK_NONE && p[0] == '\0');
+    CHECK(pick(json, "", 99999, p) == DIALOG_PICK_NONE);
 }
 
 // The real partition: the C3 rig's esp_spiffs_info() total gets the S tier,

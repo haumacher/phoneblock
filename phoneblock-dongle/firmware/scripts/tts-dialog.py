@@ -34,6 +34,14 @@ Usage:
     scripts/tts-dialog.py [--langs "de en"] [--speakers "roger"] [--force] [--dry-run]
     scripts/tts-dialog.py --convert-only [--langs ...] [--speakers ...]
     scripts/tts-dialog.py --upload | --fetch [--langs ...] [--speakers ...]
+    scripts/tts-dialog.py --add-speaker <voice-id> [--id x] [--name N] [--langs "de"] [--upload]
+
+--add-speaker takes a voice ID from the ElevenLabs library (no need to add the
+voice to "My voices"), reads its name and gender from the API, appends it to
+speakers.json (id and display name from the voice's name unless given; only
+the --langs locales, default all) and speaks it; with --upload the new
+masters go to the CDN right after. Then commit speakers.json and the new
+<lang>/<id>/ transcripts and voice.json.
 
 The API key comes from the ELEVENLABS_API_KEY environment variable, else
 elevenlabs.apiKey in ~/.gradle/gradle.properties (next to deepl.apiKey, never
@@ -136,12 +144,17 @@ def recorded_speaker(out_dir):
         return {}
 
 
+VOICE_ID_RE = re.compile(r"^[A-Za-z0-9]{20}$")
+
+
 def voice_id(voice, key):
     """The ID of `voice`, a name from --list-voices or already an ID."""
     voices = json.loads(request("/voices", key))["voices"]
     for v in voices:
         if voice == v["voice_id"]:
             return voice
+    if VOICE_ID_RE.match(voice):
+        return voice   # a voice of the shared library, usable without adding it
     want = voice.strip().casefold()
     hits = [v for v in voices
             if v["name"].casefold() == want or v["name"].split(" - ")[0].strip().casefold() == want]
@@ -317,6 +330,45 @@ def selected(a):
     return langs, rows
 
 
+def add_speaker(a, key):
+    """Appends the voice a.add_speaker to speakers.json; returns its id."""
+    if not VOICE_ID_RE.match(a.add_speaker):
+        sys.exit(f"--add-speaker: {a.add_speaker!r} is not a voice ID (20 letters and digits)")
+    v = json.loads(request(f"/voices/{a.add_speaker}", key))
+    full = v.get("name", "").strip()
+    gender = (v.get("labels") or {}).get("gender")
+    if gender not in ("female", "male"):
+        sys.exit(f"--add-speaker: voice {full!r} has gender {gender!r}; speakers.json needs female or male")
+    # "Hilde - Warm, Nostalgic" / "Elinor | The Gruff Aunt" / "Opa Johann – gentle": the part before the description.
+    name = a.name or re.split(r"\s+[-–|]\s+", full)[0].strip()
+    sid = a.id or re.sub(r"[^a-z0-9-]+", "-", name.split()[-1].casefold()
+                         .translate(str.maketrans("äöüß", "aous"))).strip("-")[:16]
+    if not SPEAKER_ID_RE.match(sid):
+        sys.exit(f"--add-speaker: no usable id from {name!r}, give one with --id")
+    with open(SPEAKERS, encoding="utf-8") as f:
+        table = json.load(f)
+    for s in table["speakers"]:
+        if s["id"] == sid:
+            sys.exit(f"--add-speaker: id {sid!r} exists already (voice {s['voice']}), choose another with --id")
+        if s["voice"] == a.add_speaker:
+            sys.exit(f"--add-speaker: this voice is speaker {s['id']!r} already")
+    row = {"id": sid, "name": name, "voice": a.add_speaker, "gender": gender}
+    if a.langs:
+        unknown = set(a.langs.split()) - set(languages())
+        if unknown:
+            sys.exit(f"--add-speaker: unknown locale(s) {' '.join(sorted(unknown))}")
+        row["langs"] = a.langs.split()
+    table["speakers"].append(row)
+    if not a.dry_run:
+        with open(SPEAKERS, "w", encoding="utf-8") as f:
+            f.write('{\n  "default": ' + json.dumps(table["default"]) + ',\n  "speakers": [\n'
+                    + ",\n".join("    " + json.dumps(r, ensure_ascii=False) for r in table["speakers"])
+                    + "\n  ]\n}\n")
+    print(f"speaker {sid!r}: {full} ({gender}, labelled {(v.get('labels') or {}).get('language', '?')}), "
+          f"langs {' '.join(row.get('langs', ['all']))}" + (" — dry run, not added" if a.dry_run else ""))
+    return sid, row
+
+
 def sftp(batch):
     """Runs an sftp batch on CDN_HOST ('-' prefixed lines may fail)."""
     r = subprocess.run(["sftp", *SSH_OPTS, "-b", "-", CDN_HOST], input=batch,
@@ -403,12 +455,27 @@ def main():
     ap.add_argument("--upload", action="store_true", help="copy the masters to the CDN")
     ap.add_argument("--fetch", action="store_true",
                     help="copy missing masters from the CDN and convert them")
+    ap.add_argument("--add-speaker", metavar="VOICE_ID",
+                    help="add a library voice to speakers.json and speak it")
+    ap.add_argument("--id", help="--add-speaker: the speaker id (default: from the name)")
+    ap.add_argument("--name", help="--add-speaker: the name the web UI shows (default: the voice's)")
     a = ap.parse_args()
+    if (a.id or a.name) and not a.add_speaker:
+        sys.exit("--id and --name belong to --add-speaker")
 
     if not a.list_voices and not a.dry_run and not a.upload and not shutil.which("ffmpeg"):
         sys.exit("ffmpeg needed to convert the masters (e.g. sudo apt install ffmpeg)")
-    langs, rows = selected(a)
-    if a.upload:
+    added = None
+    if a.add_speaker:
+        if a.speakers or a.convert_only or a.fetch or a.list_voices:
+            sys.exit("--add-speaker goes with --langs, --id, --name, --dry-run and --upload only")
+        key = setting("ELEVENLABS_API_KEY", "elevenlabs.apiKey")
+        if not key:
+            sys.exit("no API key: set ELEVENLABS_API_KEY or elevenlabs.apiKey in ~/.gradle/gradle.properties")
+        sid, added = add_speaker(a, key)
+        a.speakers, a.langs = sid, None   # speak it in its langs
+    langs, rows = selected(a) if not (added and a.dry_run) else (languages(), [added])
+    if a.upload and not added:
         upload(langs, rows)
         return
     if a.fetch:
@@ -521,7 +588,10 @@ def main():
     print(f"{verb} {made}, unchanged {kept}, removed {removed}")
     if missing:
         print(f"{missing} unchanged clip(s) have no local master: run --fetch")
-    if made and not a.dry_run:
+    if added and a.upload and not a.dry_run:
+        upload(langs, rows)
+        print(f"now commit {os.path.relpath(SPEAKERS, FIRMWARE)} and i18n/audio/dialog/*/{added['id']}/")
+    elif made and not a.dry_run:
         print("new masters: run --upload, then commit the .txt and voice.json files")
     if over:
         sys.exit(f"over budget: {' '.join(over)} — shorten the first sentence of a phase in dialog_de.arb")

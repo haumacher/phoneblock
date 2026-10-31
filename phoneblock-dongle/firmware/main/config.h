@@ -332,6 +332,19 @@ const char *config_ab_mode(void);
 bool        config_ab_dialog(void);   // config_ab_mode() is "dialog"
 bool        config_ab_mode_valid(const char *mode);
 
+// Dialog speaker (#429): the id of a speaker of the locale's dialog index
+// (dialog_manifest.h), "" until the first pick. The sync keeps it while the
+// locale has that speaker; empty or missing there, it picks one of the
+// locale's speakers at random and persists it (so the fleet does not all
+// sound alike). The web UI sets the user's choice; a ui_lang change clears it
+// (config_update()), so the next sync picks again. The getter returns "" for
+// an unset or corrupt value; _valid() accepts "" and dialog_speaker_valid()
+// ids ([a-z][a-z0-9-]{0,15}).
+const char *config_dialog_speaker(void);
+bool        config_dialog_speaker_valid(const char *id);
+// Persists the speaker (the sync's pick). PB_KV_OK on success.
+int         config_set_dialog_speaker(const char *id);
+
 // Dialog tuning. The caller's audio counts as silence at or below
 // vad_silence_db (dBFS); their turn ends after vad_min_silence_ms of
 // continuous silence. comfort_noise_db is the level (dBFS) of the hiss the
@@ -476,7 +489,8 @@ typedef struct {
     // POSIX TZ string for the wall clock. NULL = leave unchanged. The
     // caller is expected to validate it before writing (see web.c).
     const char *timezone;
-    // UI / content locale code ("de","en",…). NULL = leave unchanged. The
+    // UI / content locale code ("de","en",…). NULL = leave unchanged; a
+    // different code also clears dialog_speaker unless that is set too. The
     // caller must pass only a config_lang_code_valid() string (web.c guards
     // the POST); the getter clamps defensively on read.
     const char *ui_lang;
@@ -492,6 +506,9 @@ typedef struct {
     int         vad_silence_db;
     int         vad_min_silence_ms;
     int         comfort_noise_db;
+    // Dialog speaker id, "" = pick again. NULL = leave unchanged. The caller
+    // passes only a config_dialog_speaker_valid() value (web.c).
+    const char *dialog_speaker;
 } config_update_t;
 
 int config_update(const config_update_t *u);

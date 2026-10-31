@@ -33,11 +33,26 @@ typedef enum {
 typedef web_http_error_t (*web_http_handler_t)(web_http_request_t *request);
 typedef void (*web_http_work_t)(void *arg);
 
+// Linux port: request bodies are buffered whole before the handler runs, up
+// to WEB_HTTP_MAX_BODY unless the route names a larger max_body (the own
+// dialog set). Responses are buffered up to WEB_HTTP_MAX_RESPONSE. The
+// ESP32 streams both, so these limits and max_body do not apply there (its
+// handlers check the length themselves).
+#define WEB_HTTP_MAX_BODY     (256U * 1024U)
+#define WEB_HTTP_MAX_RESPONSE (2U * 1024U * 1024U)
+
 typedef struct {
     const char *uri;
     web_http_method_t method;
     web_http_handler_t handler;
+    size_t max_body;   // Linux: largest request body; 0 = WEB_HTTP_MAX_BODY
 } web_http_route_t;
+
+// Linux: called (from the server thread) when a request body is refused for
+// its size, before any of it is read; `max` is the route's limit. The
+// client gets a 413 with a JSON {ok:false, code:"too_large", message}.
+typedef void (*web_http_refused_t)(const char *uri, unsigned long long length,
+                                   size_t max);
 
 typedef struct web_http_server web_http_server_t;
 
@@ -48,6 +63,7 @@ typedef struct {
     size_t worker_stack_size;
     bool wildcard_uri_match;
     bool lru_purge;
+    web_http_refused_t on_body_refused;   // Linux only; NULL = none
 } web_http_server_config_t;
 
 web_http_error_t web_http_server_start(web_http_server_t **server,

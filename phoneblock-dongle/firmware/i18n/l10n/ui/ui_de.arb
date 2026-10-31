@@ -1260,6 +1260,161 @@
     "description": "Dongle web UI: validation error of a dialog settings field; {min} and {max} are the allowed bounds",
     "x-translated": "27d68741"
   },
+  "status.ann.upload.silent": "Die Aufnahme ist stumm – nichts darin ist lauter als -45 dBFS.",
+  "@status.ann.upload.silent": {
+    "description": "Dongle web UI: an uploaded recording (announcement or dialog clip) contains only silence and is refused",
+    "x-translated": "35e2cdf1"
+  },
+  "status.dialog.clips.own": "Eigener Dialog aktiv.",
+  "@status.dialog.clips.own": {
+    "description": "Dongle web UI: dialog mode status — the user's own uploaded dialog set is on the device",
+    "x-translated": "f03f160b"
+  },
+  "status.dialog.speaker": "Stimme",
+  "@status.dialog.speaker": {
+    "description": "Dongle web UI: heading of the list of dialog speakers (voices) to choose from",
+    "x-translated": "dc20fd32"
+  },
+  "status.dialog.speaker.use": "Verwenden",
+  "@status.dialog.speaker.use": {
+    "description": "Dongle web UI: button that selects this dialog speaker (voice)",
+    "x-translated": "65efb6ba"
+  },
+  "status.dialog.speaker.active": "aktiv",
+  "@status.dialog.speaker.active": {
+    "description": "Dongle web UI: marks the dialog speaker (voice) currently in use",
+    "x-translated": "d0f61d89"
+  },
+  "status.dialog.speaker.none": "Noch keine Stimmen geladen – der Dongle lädt sie bei der nächsten Synchronisation.",
+  "@status.dialog.speaker.none": {
+    "description": "Dongle web UI: the device has not downloaded the list of dialog speakers yet",
+    "x-translated": "89c0fb39"
+  },
+  "status.dialog.own": "Eigener Dialog",
+  "@status.dialog.own": {
+    "description": "Dongle web UI: entry in the speaker list for the user's own uploaded dialog set",
+    "x-translated": "eb93acbe"
+  },
+  "status.dialog.own.replace_confirm": "Dein eigener Dialog wird durch die Sätze von {name} ersetzt – auf den Dongle passt nur ein Dialog. Lade ihn vorher unter „Eigenen Dialog zusammenstellen“ herunter, wenn du ihn behalten willst. Fortfahren?",
+  "@status.dialog.own.replace_confirm": {
+    "description": "Dongle web UI: confirmation before choosing a speaker while an own dialog set exists; {name} is the speaker's name",
+    "x-translated": "76c40ab3"
+  },
+  "status.dialog.own.leave_confirm": "Beim Wechsel in den Ansage-Modus wird dein eigener Dialog gelöscht. Fortfahren?",
+  "@status.dialog.own.leave_confirm": {
+    "description": "Dongle web UI: confirmation before leaving dialog mode while an own dialog set exists",
+    "x-translated": "fefee721"
+  },
+  "status.dialog.own.leave_download": "Möchtest du deinen Dialog vorher als Datei herunterladen?",
+  "@status.dialog.own.leave_download": {
+    "description": "Dongle web UI: offer to download the own dialog set before leaving dialog mode deletes it",
+    "x-translated": "49889b7a"
+  },
+  "status.dialog.edit.title": "Eigenen Dialog zusammenstellen",
+  "@status.dialog.edit.title": {
+    "description": "Dongle web UI: title of the editor for an own dialog set (the user's recordings for each dialog phase)",
+    "x-translated": "a802de0a"
+  },
+  "status.dialog.edit.intro": "Du startest mit den Sätzen, die auf dem Dongle sind. Ersetze, lösche, sortiere oder ergänze Aufnahmen (WAV/MP3/OGG); jede wird auf gleiche Lautstärke gebracht und Stille an den Enden entfernt. Jede Phase braucht mindestens einen Satz, der Dongle wählt daraus zufällig.",
+  "@status.dialog.edit.intro": {
+    "description": "Dongle web UI: explanation of the own dialog set editor",
+    "x-translated": "57f7ad20"
+  },
+  "status.dialog.edit.yes_hint": "Nimm niemals „Ja“ auf: Ein aufgezeichnetes Ja kann als Zustimmung missbraucht werden.",
+  "@status.dialog.edit.yes_hint": {
+    "description": "Dongle web UI: warning in the dialog set editor — never record the word yes, it can be abused as consent",
+    "x-translated": "334c655d"
+  },
+  "status.dialog.phase.hello": "Begrüßung",
+  "@status.dialog.phase.hello": {
+    "description": "Dongle web UI: dialog phase — the greeting when the call is answered",
+    "x-translated": "a5e389fe"
+  },
+  "status.dialog.phase.who-is-there": "Anrufer schweigt nach der Begrüßung („Wer ist da?“)",
+  "@status.dialog.phase.who-is-there": {
+    "description": "Dongle web UI: dialog phase — said when the caller is silent after the greeting",
+    "x-translated": "f15023c0"
+  },
+  "status.dialog.phase.am-aparat": "Anrufer meldet sich",
+  "@status.dialog.phase.am-aparat": {
+    "description": "Dongle web UI: dialog phase — reply after the caller first speaks",
+    "x-translated": "f821c8a7"
+  },
+  "status.dialog.phase.question": "Rückfragen",
+  "@status.dialog.phase.question": {
+    "description": "Dongle web UI: dialog phase — questions asked after each answer of the caller",
+    "x-translated": "80652df3"
+  },
+  "status.dialog.phase.cant-hear-you": "Anrufer schweigt im Gespräch („Ich höre nichts“)",
+  "@status.dialog.phase.cant-hear-you": {
+    "description": "Dongle web UI: dialog phase — said when the caller is silent later in the conversation",
+    "x-translated": "b9bb85d3"
+  },
+  "status.dialog.edit.add": "+ Aufnahme hinzufügen",
+  "@status.dialog.edit.add": {
+    "description": "Dongle web UI: button that adds a recording to a dialog phase",
+    "x-translated": "d89cc8cc"
+  },
+  "status.dialog.edit.replace": "Ersetzen",
+  "@status.dialog.edit.replace": {
+    "description": "Dongle web UI: tooltip of the button that replaces a recording in the dialog set",
+    "x-translated": "ac775c40"
+  },
+  "status.dialog.edit.delete": "Löschen",
+  "@status.dialog.edit.delete": {
+    "description": "Dongle web UI: tooltip of the button that deletes a recording from the dialog set",
+    "x-translated": "49d3f662"
+  },
+  "status.dialog.edit.gauge": "{kb} von {max} KB",
+  "@status.dialog.edit.gauge": {
+    "description": "Dongle web UI: size of the edited dialog set against the space on the device; {kb} and {max} are kilobytes",
+    "x-translated": "18a5e3c"
+  },
+  "status.dialog.edit.upload": "Auf den Dongle laden",
+  "@status.dialog.edit.upload": {
+    "description": "Dongle web UI: button that uploads the edited dialog set to the device",
+    "x-translated": "caee9e7e"
+  },
+  "status.dialog.edit.download": "Dialog-Datei herunterladen",
+  "@status.dialog.edit.download": {
+    "description": "Dongle web UI: button that saves the edited dialog set as a file",
+    "x-translated": "f76f154d"
+  },
+  "status.dialog.edit.load_file": "Dialog-Datei laden",
+  "@status.dialog.edit.load_file": {
+    "description": "Dongle web UI: button that loads a previously saved dialog set file into the editor",
+    "x-translated": "2dacf968"
+  },
+  "status.dialog.edit.reason.empty": "Die Phase „{phase}“ hat noch keine Aufnahme.",
+  "@status.dialog.edit.reason.empty": {
+    "description": "Dongle web UI: why the upload is disabled — a dialog phase is empty; {phase} is the phase name",
+    "x-translated": "539b19db"
+  },
+  "status.dialog.edit.reason.many": "Die Phase „{phase}“ hat mehr als {max} Aufnahmen.",
+  "@status.dialog.edit.reason.many": {
+    "description": "Dongle web UI: why the upload is disabled — too many recordings in a phase; {phase} is the phase name, {max} the limit",
+    "x-translated": "9310fd8d"
+  },
+  "status.dialog.edit.reason.size": "Der Dialog ist größer als der Platz auf dem Dongle – lösche oder kürze Aufnahmen.",
+  "@status.dialog.edit.reason.size": {
+    "description": "Dongle web UI: why the upload is disabled — the dialog set does not fit the device",
+    "x-translated": "7e361522"
+  },
+  "status.dialog.edit.bad_file": "Das ist keine gültige Dialog-Datei.",
+  "@status.dialog.edit.bad_file": {
+    "description": "Dongle web UI: the loaded file is not a dialog set file",
+    "x-translated": "802642d8"
+  },
+  "status.dialog.edit.no_set": "Auf dem Dongle ist noch kein Dialog – füge für jede Phase Aufnahmen hinzu.",
+  "@status.dialog.edit.no_set": {
+    "description": "Dongle web UI: the editor starts empty because the device has no dialog set yet",
+    "x-translated": "8772cd59"
+  },
+  "status.dialog.edit.done": "Eigener Dialog gespeichert ({kb} KB).",
+  "@status.dialog.edit.done": {
+    "description": "Dongle web UI: the own dialog set was uploaded; {kb} is its size in kilobytes",
+    "x-translated": "83a43b53"
+  },
   "hero.title": "Einrichtung",
   "@hero.title": {
     "description": "Dongle web UI: hero.title",
