@@ -57,7 +57,7 @@
 			<p data-tx="t0230:12c794d9">El dongle no <b>funciona en conexiones Vodafone</b> en combinación con una EasyBox de Vodafone.</p>
 		</div>
 		
-		<p data-tx="t0227:9c63c692">Si ha configurado con éxito el dongle - especialmente en combinación con un router que no sea Fritz!Box, o un modelo "histórico" de Fritz!Box - entonces por favor escriba un <a href="#tester">informe de experiencia</a> para que esta ayuda pueda ser mejorada.</p>
+		<p data-tx="t0236:25f15369">Si surge algún problema durante la configuración o tienes alguna duda, encontrarás <a href="#hilfe">más abajo</a> el punto de contacto adecuado.</p>
 
 		<p class="subtitle mt-6" data-tx="t0124:bd004e4f">Aquí es donde la cosa se pone práctica: las instrucciones le guían paso a paso en el pedido y la configuración: unos 10 euros de hardware, un esfuerzo único de unos pocos minutos.</p>
 
@@ -174,7 +174,7 @@
 			<ul>
 				<li data-tx="t0195:758aaf4d"><strong>Windows</strong>: Descargue el controlador <a href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">CH340 de wch-ic.com</a>, ejecute <code>CH341SER.EXE</code> y haga clic en <strong>"INSTALL"</strong>. No es necesario reiniciar.</li>
 				<li data-tx="t0147:901b0f79"><strong>macOS</strong>: A partir de macOS Big Sur, el controlador está incluido en el sistema - no es necesario ningún paso de instalación.</li>
-				<li data-tx="t0148:35f91b38"><strong>Linux</strong>: El controlador del kernel está instalado. En Ubuntu, el servicio BRLTTY puede arrebatar el CH340 para que no pueda ver el archivo de dispositivo - en este caso, desinstalar BRLTTY ayudará: <code>sudo apt remove --purge brltty</code>. Su usuario también debe estar en el grupo <code>dialout</code>: <code>sudo usermod -aG dialout $USER</code>. Ambos pasos se describen en detalle en <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
+				<li data-tx="t0148:ffd71abb"><strong>Linux</strong>: El controlador del núcleo está integrado. En Ubuntu, el servicio BRLTTY puede «apropiarse» del CH340, por lo que es posible que no veas el archivo de dispositivo; en ese caso, desinstalar BRLTTY te ayudará: <code>sudo apt remove --purge brltty</code>. Además, tu usuario debe pertenecer al grupo <code>dialout</code>: <code>sudo usermod -aG dialout $USER</code> (en Arch Linux, el grupo se llama <code>uucp</code>). Ambos pasos se explican detalladamente en <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
 			</ul>
 		</details>
 
@@ -269,27 +269,22 @@
 
 		<p class="has-text-grey" data-tx="t0181:9316079d">¿Algo no funciona, estás usando Firefox/Safari, Linux con peculiaridades u otra placa? Las instrucciones detalladas con todas las opciones, las peculiaridades de Linux y la cadena de herramientas ESP-IDF se pueden encontrar en el repositorio: <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</p>
 
-		<h2 data-tx="t0182:c258f25f" id="tester">Contribuir con un informe de experiencia</h2>
+		<h2 data-tx="t0237:f99f48f3" id="hilfe">Ayuda e informes de errores</h2>
 
-		<p data-tx="t0183:aef4c36">Los primeros dongles PhoneBlock funcionan de forma fiable - pero los modelos de router, proveedores y tipos de conexión son una mezcla de colores y cada combinación tiene sus propias peculiaridades. Con el fin de mejorar el asistente de configuración, los <strong>informes de experiencia estructurados</strong> valen su peso en oro - independientemente de si todo funcionó para usted o si hubo algún contratiempo.</p>
+		<p data-tx="t0238:b354c3fa">Si tienes preguntas sobre la configuración, los routers o los proveedores de Internet, lo mejor es que las plantees en las <strong>discusiones de GitHub</strong>; allí también te ayudarán otros usuarios del dongle y las respuestas quedarán disponibles para que todos puedan consultarlas.</p>
 
-		<p data-tx="t0184:49f94506">Especialmente interesantes son los montajes que aún están poco cubiertos:</p>
+		<p data-tx="t0239:1546fc2a">Si algo no funciona como debería, por favor, informa del problema como <strong>incidencia en GitHub</strong>. Un formulario prellenado te pedirá los datos más importantes (placa, versión de firmware, router, proveedor de Internet y registro de la interfaz web).</p>
 
-		<ul>
-			<li data-tx="t0185:e1971ce0">Conexión Telekom con router <strong>Speedport</strong>.</li>
-			<li data-tx="t0186:61cce24d">Conexión por cable Vodafone/Unitymedia con la caja del proveedor suministrada</li>
-			<li data-tx="t0187:ea506b90">1&amp;1, o2, Deutsche Glasfaser y otros proveedores</li>
-			<li data-tx="t0188:3d2d85c2">Conexiones internacionales (Suiza, Austria, resto de Europa y del mundo)</li>
-		</ul>
-
-		<p data-tx="t0189:3fcb6dd2">Los informes se ejecutan a través de incidencias de GitHub: un formulario precumplimentado solicita los datos clave más importantes (hardware, enrutador, proveedor, versión de firmware, hallazgos) de forma estructurada. Otros probadores pueden ver directamente qué configuraciones ya están cubiertas y cuáles no.</p>
-
-		<p>
-			<a class="button is-primary is-medium" href="https://github.com/haumacher/phoneblock/issues/new?template=dongle-test-report.yml" rel="noopener" target="_blank">
-				<span class="icon"><i class="fab fa-github"></i></span>
-				<span data-tx="t0190:92ec79b">Informe sobre la experiencia abierta</span>
+		<div class="buttons">
+			<a class="button is-primary is-medium" href="https://github.com/haumacher/phoneblock/discussions/categories/q-a" rel="noopener" target="_blank">
+				<span class="icon"><i class="fa-solid fa-comments"></i></span>
+				<span data-tx="t0240:5758640b">Hacer una pregunta</span>
 			</a>
-		</p>
+			<a class="button is-medium" href="https://github.com/haumacher/phoneblock/issues/new?template=dongle-problem.yml" rel="noopener" target="_blank">
+				<span class="icon"><i class="fab fa-github"></i></span>
+				<span data-tx="t0241:b6a71854">Informar de un problema</span>
+			</a>
+		</div>
 
 		<hr class="my-5"/>
 

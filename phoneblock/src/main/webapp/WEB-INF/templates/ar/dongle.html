@@ -57,7 +57,7 @@
 			<p data-tx="t0230:12c794d9">لا يعمل الدونجل <b> لا يعمل على اتصالات فودافون</b> مع جهاز EasyBox من فودافون.</p>
 		</div>
 		
-		<p data-tx="t0227:9c63c692">إذا كنت قد قمت بإعداد الدونجل بنجاح - خاصةً مع جهاز توجيه غير فريتز!بوكس أو نموذج فريتز!بوكس "تاريخي" - فيرجى كتابة تقرير تجربة <a href="#tester"> تقرير تجربة حتى يمكن تحسين هذه المساعدة.</a></p>
+		<p data-tx="t0236:25f15369">إذا واجهتك مشكلة ما أثناء الإعداد أو كان لديك سؤال، فستجد <a href="#hilfe">أدناه</a> جهة الاتصال المناسبة.</p>
 
 		<p class="subtitle mt-6" data-tx="t0124:bd004e4f">هنا يصبح الأمر عملياً: ترشدك التعليمات خطوة بخطوة خلال الطلب والإعداد - حوالي 10 يورو للأجهزة، وهو جهد لمرة واحدة يستغرق بضع دقائق.</p>
 
@@ -174,7 +174,7 @@
 			<ul>
 				<li data-tx="t0195:758aaf4d"><strong>Windows</strong>: قم بتنزيل برنامج التشغيل <a href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">CH340 من wch-ic.com</a>، ثم قم بتنفيذ <code>CH341SER.EXE</code> وانقر على <strong>"INSTALL"</strong>. لا يلزم إعادة التشغيل.</li>
 				<li data-tx="t0147:901b0f79"><strong>macOS: اعتبارًا من macOS Big Sur، يتم تضمين برنامج التشغيل في النظام - لا حاجة لخطوة التثبيت.</strong></li>
-				<li data-tx="t0148:35f91b38"><strong>لينكس</strong>: تم تثبيت برنامج تشغيل النواة. في Ubuntu، يمكن لخدمة BRLTTY انتزاع CH340 بحيث لا يمكنك رؤية ملف الجهاز - في هذه الحالة، سيساعدك إلغاء تثبيت BRLTTY: <code>sudo apt apt remove --purge brltty</code>. يجب أن يكون المستخدم الخاص بك أيضًا في مجموعة <code>dialout</code>: <code>sudo usermod -aG dialout $USER</code>. كلتا الخطوتين موصوفتان بالتفصيل في <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md.</a></li>
+				<li data-tx="t0148:ffd71abb"><strong>Linux</strong>: برنامج تشغيل النواة مدمج. في نظام Ubuntu، قد يستحوذ خدمة BRLTTY على CH340، بحيث لا ترى ملف الجهاز — وفي هذه الحالة، يساعدك إلغاء تثبيت BRLTTY: <code>sudo apt remove --purge brltty</code>. كما يجب أن يكون حسابك عضوًا في المجموعة <code>dialout</code>: <code>sudo usermod -aG dialout $USER</code> (في نظام Arch Linux، يُسمى المجموعة <code>uucp</code>). توجد تفاصيل كلا الخطوتين في ملف <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
 			</ul>
 		</details>
 
@@ -269,27 +269,22 @@
 
 		<p class="has-text-grey" data-tx="t0181:9316079d">هل هناك شيء ما لا يعمل، هل تستخدم فايرفوكس/سفاري أو لينكس بخصائص معينة أو لوحة أخرى؟ يمكن العثور على الإرشادات التفصيلية مع جميع الخيارات ومزالق لينكس وسلسلة أدوات ESP-IDF في الريبو: <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md.</a></p>
 
-		<h2 data-tx="t0182:c258f25f" id="tester">المساهمة بتقرير الخبرة</h2>
+		<h2 data-tx="t0237:f99f48f3" id="hilfe">المساعدة وتقارير الأخطاء</h2>
 
-		<p data-tx="t0183:aef4c36">تعمل أجهزة دونجل PhoneBlock الأولى بشكل موثوق - لكن نماذج أجهزة التوجيه ومزودي الخدمة وأنواع الاتصال هي مزيج ملون ولكل مجموعة خصائصها الخاصة. من أجل تحسين معالج الإعداد، فإن تقارير التجربة المنظمة <strong> تستحق وزنها ذهبًا - بغض النظر عما إذا كان كل شيء يعمل معك أو ما إذا كانت هناك عقبة ما.</strong></p>
+		<p data-tx="t0238:b354c3fa">من الأفضل طرح الأسئلة المتعلقة بالإعداد وأجهزة التوجيه ومزودي الخدمة في <strong>مناقشات GitHub</strong> – حيث يقدم مستخدمو الدونجل الآخرون المساعدة أيضًا، وتظل الإجابات متاحة للجميع.</p>
 
-		<p data-tx="t0184:49f94506">من المثير للاهتمام بشكل خاص الإعدادات التي لا تزال غير مغطاة بشكل جيد:</p>
+		<p data-tx="t0239:1546fc2a">إذا لم يعمل شيء ما كما ينبغي، يرجى الإبلاغ عن المشكلة كـ <strong>مشكلة على GitHub</strong>. سيطلب منك نموذج معدة مسبقًا إدخال البيانات الأساسية (اللوحة، إصدار البرنامج الثابت، جهاز التوجيه، مزود الخدمة، سجل من واجهة الويب).</p>
 
-		<ul>
-			<li data-tx="t0185:e1971ce0">اتصال Telekom مع جهاز توجيه <strong>Speedport</strong></li>
-			<li data-tx="t0186:61cce24d">توصيل كابل Vodafone/Unitymedia مع صندوق الموفر المرفق</li>
-			<li data-tx="t0187:ea506b90">1&amp;1، O2، O2، دويتشه جلازفيزر ومزودون آخرون</li>
-			<li data-tx="t0188:3d2d85c2">الاتصالات الدولية (سويسرا والنمسا وبقية أوروبا والعالم)</li>
-		</ul>
-
-		<p data-tx="t0189:3fcb6dd2">يتم تشغيل التقارير عبر مشكلات GitHub - يطلب نموذج مملوء مسبقًا أهم البيانات الرئيسية (الأجهزة، وجهاز التوجيه، والمزود، وإصدار البرنامج الثابت، والنتائج) بطريقة منظمة. يمكن للمختبرين الآخرين أن يروا مباشرةً الإعدادات التي تمت تغطيتها بالفعل وتلك التي لم تتم تغطيتها.</p>
-
-		<p>
-			<a class="button is-primary is-medium" href="https://github.com/haumacher/phoneblock/issues/new?template=dongle-test-report.yml" rel="noopener" target="_blank">
-				<span class="icon"><i class="fab fa-github"></i></span>
-				<span data-tx="t0190:92ec79b">تقرير التجربة المفتوحة</span>
+		<div class="buttons">
+			<a class="button is-primary is-medium" href="https://github.com/haumacher/phoneblock/discussions/categories/q-a" rel="noopener" target="_blank">
+				<span class="icon"><i class="fa-solid fa-comments"></i></span>
+				<span data-tx="t0240:5758640b">طرح سؤال</span>
 			</a>
-		</p>
+			<a class="button is-medium" href="https://github.com/haumacher/phoneblock/issues/new?template=dongle-problem.yml" rel="noopener" target="_blank">
+				<span class="icon"><i class="fab fa-github"></i></span>
+				<span data-tx="t0241:b6a71854">الإبلاغ عن مشكلة</span>
+			</a>
+		</div>
 
 		<hr class="my-5"/>
 
