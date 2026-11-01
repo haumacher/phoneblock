@@ -6,12 +6,22 @@
 #include "esp_event.h"
 #include "esp_log.h"
 #include "esp_netif.h"
+#include "esp_timer.h"
 #include "esp_wifi.h"
 #include "esp_wps.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"
 #include "freertos/task.h"
 #include "sdkconfig.h"
+#if CONFIG_ESP_WIFI_11KV_SUPPORT
+#include "esp_rrm.h"
+#include "esp_wnm.h"
+#endif
+
+#include "link_watchdog.h"
+#include "rtp.h"
+#include "sip_register.h"
+#include "ticks_util.h"
 
 // Must be last: bans unsafe string APIs for the rest of this file.
 #include "banned_apis.h"
@@ -74,6 +84,53 @@ static TaskHandle_t       s_failsafe_task;
 // duration to ride out a transient outage.
 #define FAILSAFE_PHASE_MS   (2 * 60 * 1000)
 #define FAILSAFE_NOTIF_EXIT 1
+
+// A blocking wifi_scan() is running. The link watchdog stays out of the way
+// meanwhile — a deliberate disconnect would abort the scan.
+static volatile bool      s_scan_active;
+
+// Link watchdog (#585, link_watchdog.h): the station holds an IP but is
+// stuck on a distant mesh AP. The watchdog task disconnects once; the
+// regular DISCONNECTED path below reconnects, and the connect's full-channel
+// scan picks the strongest AP. s_wd_reconnect_pending marks that cycle so the
+// disconnect is logged as intended (INFO) and the reconnect reports the new
+// AP; the old AP is kept for that line.
+static volatile bool      s_wd_reconnect_pending;
+static uint8_t            s_wd_old_bssid[6];
+static int                s_wd_old_rssi;
+
+// 802.11v BSS transition in progress: the AP (Fritz!Box mesh steering) asked
+// us to move and the supplicant is connecting to the target itself. The
+// tick count of its start lets the watchdog task step in should the move
+// never complete (BTM_ROAM_TIMEOUT_S).
+static volatile bool      s_btm_roaming;
+static TickType_t         s_btm_roaming_since;
+#define BTM_ROAM_TIMEOUT_S 60
+
+// Disconnect reason the driver reports when the supplicant leaves the AP to
+// follow a BSS Transition Management request (ESP-IDF specific code 207).
+#define REASON_BTM_ROAMING WIFI_REASON_ROAMING
+
+// Network-assisted roaming (802.11k radio measurement + 802.11v BSS
+// transition management), so the dongle follows the Fritz!Box's mesh
+// steering instead of staying with whichever AP it joined (#585). Needs
+// CONFIG_ESP_WIFI_11KV_SUPPORT (sdkconfig.defaults); the supplicant then
+// answers BTM requests and moves to the AP's candidate on its own. With BTM
+// enabled, the supplicant also clears a BSSID/channel lock from the config
+// on the next (dis)connect, which is what lets a later reconnect pick the
+// strongest AP again. MBO stays off: it needs the scan cache (RAM) and adds
+// nothing the Fritz!Box steering uses.
+static void enable_roaming(wifi_sta_config_t *sta)
+{
+    sta->rm_enabled  = 1;
+    sta->btm_enabled = 1;
+}
+
+static void format_bssid(const uint8_t *b, char *out, size_t cap)
+{
+    snprintf(out, cap, "%02x:%02x:%02x:%02x:%02x:%02x",
+             b[0], b[1], b[2], b[3], b[4], b[5]);
+}
 
 static void start_wps(void)
 {
@@ -224,10 +281,64 @@ static void on_wifi_event(void *arg, esp_event_base_t base, int32_t id, void *da
             }
             break;
 
+        case WIFI_EVENT_STA_CONNECTED: {
+            wifi_event_sta_connected_t *c = data;
+            char bssid[18] = "?";
+            if (c) format_bssid(c->bssid, bssid, sizeof(bssid));
+            wifi_ap_record_t ap;
+            int rssi = esp_wifi_sta_get_ap_info(&ap) == ESP_OK ? ap.rssi : 0;
+            if (s_wd_reconnect_pending) {
+                char old[18];
+                format_bssid(s_wd_old_bssid, old, sizeof(old));
+                ESP_LOGI(TAG, "link watchdog: reconnected to BSSID %s (RSSI %d dBm), "
+                              "was %s (RSSI %d dBm)",
+                         bssid, rssi, old, s_wd_old_rssi);
+                s_wd_reconnect_pending = false;
+            } else if (s_btm_roaming) {
+                ESP_LOGI(TAG, "roamed to BSSID %s (RSSI %d dBm) on the AP's "
+                              "802.11v request", bssid, rssi);
+            }
+            s_btm_roaming = false;
+#if CONFIG_ESP_WIFI_11KV_SUPPORT
+            // Whether this AP offers mesh steering to us at all — the field
+            // evidence for #585 (serial / log stream only).
+            ESP_LOGI(TAG, "associated with BSSID %s, channel %d, RSSI %d dBm "
+                          "(AP supports 802.11v BTM: %s, 802.11k: %s)",
+                     bssid, c ? c->channel : 0, rssi,
+                     esp_wnm_is_btm_supported_connection() ? "yes" : "no",
+                     esp_rrm_is_rrm_supported_connection() ? "yes" : "no");
+#else
+            ESP_LOGI(TAG, "associated with BSSID %s, channel %d, RSSI %d dBm",
+                     bssid, c ? c->channel : 0, rssi);
+#endif
+            break;
+        }
+
         case WIFI_EVENT_STA_DISCONNECTED: {
             wifi_event_sta_disconnected_t *d = data;
-            ESP_LOGW(TAG, "disconnected (reason %d)", d ? d->reason : -1);
+            int reason = d ? d->reason : -1;
             s_has_ip = false;
+
+            if (reason == REASON_BTM_ROAMING) {
+                // The supplicant follows the AP's BSS transition request and
+                // connects to the target itself: a competing esp_wifi_connect()
+                // here would abort that, and the move is no failure to count.
+                char from[18] = "?";
+                if (d) format_bssid(d->bssid, from, sizeof(from));
+                ESP_LOGI(TAG, "leaving BSSID %s for another AP (802.11v BSS transition)",
+                         from);
+                s_btm_roaming_since = xTaskGetTickCount();
+                s_btm_roaming = true;
+                break;
+            }
+            s_btm_roaming = false;
+            if (s_wd_reconnect_pending && reason == WIFI_REASON_ASSOC_LEAVE) {
+                // Our own disconnect from the link watchdog, already
+                // announced with a WARN.
+                ESP_LOGI(TAG, "disconnected by link watchdog — reconnecting");
+            } else {
+                ESP_LOGW(TAG, "disconnected (reason %d)", reason);
+            }
 
             // Only count disconnects that happen during normal
             // reconnect attempts. WPS-driven disconnects are noise
@@ -285,6 +396,8 @@ static void on_wifi_event(void *arg, esp_event_base_t base, int32_t id, void *da
             //    unaffected; this matters for later reboots.
             //  - for the rare multi-AP case (ap_cred_cnt > 1), the
             //    SSID/passphrase, to pick one of the offered sets.
+            //  - rm_enabled / btm_enabled, for mesh roaming (see
+            //    enable_roaming()).
             wifi_event_sta_wps_er_success_t *evt = data;
             wifi_config_t cfg;
             if (esp_wifi_get_config(WIFI_IF_STA, &cfg) == ESP_OK) {
@@ -303,6 +416,7 @@ static void on_wifi_event(void *arg, esp_event_base_t base, int32_t id, void *da
                     ESP_LOGI(TAG, "WPS success — credentials auto-persisted");
                 }
                 cfg.sta.scan_method = WIFI_ALL_CHANNEL_SCAN;
+                enable_roaming(&cfg.sta);
                 ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &cfg));
             } else {
                 ESP_LOGW(TAG, "esp_wifi_get_config failed — "
@@ -439,6 +553,7 @@ esp_err_t wifi_set_credentials(const char *ssid, const char *password)
     // lever. sort_method stays at its zero-init default
     // (WIFI_CONNECT_AP_BY_SIGNAL). See issue #458.
     cfg.sta.scan_method        = WIFI_ALL_CHANNEL_SCAN;
+    enable_roaming(&cfg.sta);
 
     // WIFI_STORAGE_FLASH persists this to NVS for the next boot.
     esp_err_t err = esp_wifi_set_config(WIFI_IF_STA, &cfg);
@@ -463,6 +578,7 @@ int wifi_scan(wifi_ap_record_t *records, int max_records)
     // it. Suspend WPS for the scan and resume afterwards, so closing
     // the provisioning dialog without sending credentials leaves the
     // device in the same pairing mode it was in before.
+    s_scan_active = true;
     bool resume_wps = s_wps_active || s_wps_restart_pending
             || (s_failsafe_active && s_failsafe_in_wps);
     if (resume_wps) {
@@ -496,6 +612,7 @@ int wifi_scan(wifi_ap_record_t *records, int max_records)
     } else if (resume_connect) {
         esp_wifi_connect();
     }
+    s_scan_active = false;
     return result;
 }
 
@@ -527,8 +644,104 @@ static void seed_baked_creds(void)
     // Full active scan so a hidden SSID can be associated with — see the
     // rationale in wifi_set_credentials() and issue #458.
     cfg.sta.scan_method        = WIFI_ALL_CHANNEL_SCAN;
+    enable_roaming(&cfg.sta);
 
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &cfg));
+}
+
+// The pairing machinery or a scan owns the station: the watchdog must not
+// disconnect underneath it (see the s_wps_restart_pending comments above).
+static bool pairing_busy(void)
+{
+    return s_wps_active || s_wps_restart_pending || s_failsafe_active
+        || s_scan_active || s_wd_reconnect_pending || s_btm_roaming;
+}
+
+// Act on a watchdog verdict: one deliberate disconnect. The DISCONNECTED
+// handler reconnects through the regular path (the same esp_wifi_connect()
+// that every other drop uses, counted against the failsafe threshold like
+// any reconnect), so there is no second connect to race it. Should pairing
+// start in the instant between the check and the disconnect, the pairing
+// code gates the handler itself and the cycle stays harmless.
+static void watchdog_reconnect(link_wd_action_t action, const link_wd_input_t *in,
+                               const wifi_ap_record_t *ap, uint32_t gap_s)
+{
+    if (pairing_busy() || !s_has_ip) return;
+    // Re-checked like pairing: a call may have been answered since the sample.
+    if (sip_register_call_answered() || rtp_streaming_active()) return;
+
+    char bssid[18] = "?";
+    if (in->rssi_valid) {
+        memcpy(s_wd_old_bssid, ap->bssid, sizeof(s_wd_old_bssid));
+        format_bssid(ap->bssid, bssid, sizeof(bssid));
+    } else {
+        memset(s_wd_old_bssid, 0, sizeof(s_wd_old_bssid));
+    }
+    s_wd_old_rssi = in->rssi_valid ? in->rssi : 0;
+
+    // One WARN per action (at most every LINK_WD_BACKOFF_MIN_S), so it shows
+    // up in the web UI log without flooding it.
+    if (action == LINK_WD_RECONNECT_REGISTRAR) {
+        ESP_LOGW(TAG, "link watchdog: SIP registrar unanswered for %u s although "
+                      "Wi-Fi is up (BSSID %s, RSSI %d dBm) — reconnecting to pick "
+                      "the strongest AP; next attempt in %u min at the earliest",
+                 (unsigned)in->registrar_unreachable_s, bssid, s_wd_old_rssi,
+                 (unsigned)(gap_s / 60));
+    } else {
+        ESP_LOGW(TAG, "link watchdog: Wi-Fi signal below %d dBm for %u min "
+                      "(BSSID %s, RSSI %d dBm) — reconnecting to pick the "
+                      "strongest AP; next attempt in %u min at the earliest",
+                 LINK_WD_RSSI_LOW_DBM, (unsigned)(LINK_WD_RSSI_LOW_S / 60),
+                 bssid, s_wd_old_rssi, (unsigned)(gap_s / 60));
+    }
+
+    s_wd_reconnect_pending = true;
+    esp_err_t err = esp_wifi_disconnect();
+    if (err != ESP_OK) {
+        s_wd_reconnect_pending = false;
+        ESP_LOGW(TAG, "link watchdog: esp_wifi_disconnect: %s", esp_err_to_name(err));
+    }
+}
+
+static void link_watchdog_task(void *arg)
+{
+    (void)arg;
+    link_wd_t wd;
+    link_wd_init(&wd);
+    for (;;) {
+        vTaskDelay(seconds_to_ticks(LINK_WD_TICK_S));
+
+        // Safety net for the 802.11v path: the DISCONNECTED handler leaves
+        // the reconnect to the supplicant during a BSS transition. Should
+        // that never end in an association, take over with a regular
+        // connect instead of staying offline.
+        if (s_btm_roaming && !s_has_ip
+                && xTaskGetTickCount() - s_btm_roaming_since
+                       >= seconds_to_ticks(BTM_ROAM_TIMEOUT_S)) {
+            s_btm_roaming = false;
+            ESP_LOGW(TAG, "802.11v BSS transition did not complete within %d s — "
+                          "reconnecting", BTM_ROAM_TIMEOUT_S);
+            esp_wifi_connect();
+        }
+
+        link_wd_input_t in = { 0 };
+        wifi_ap_record_t ap;
+        in.has_ip         = s_has_ip;
+        in.pairing_active = pairing_busy();
+        in.rssi_valid     = esp_wifi_sta_get_ap_info(&ap) == ESP_OK;
+        in.rssi           = in.rssi_valid ? ap.rssi : 0;
+        in.sip_configured = sip_register_active();
+        in.registrar_unreachable_s = sip_register_unreachable_s();
+        // A call the dongle answered: the SIP dialog slot, or media still
+        // streaming (announcement / interactive dialog) around it.
+        in.call_active    = sip_register_call_answered() || rtp_streaming_active();
+
+        uint32_t now_s = (uint32_t)(esp_timer_get_time() / 1000000LL);
+        link_wd_action_t action = link_wd_tick(&wd, now_s, &in);
+        if (action != LINK_WD_NONE) {
+            watchdog_reconnect(action, &in, &ap, link_wd_last_gap_s(&wd));
+        }
+    }
 }
 
 esp_err_t wifi_connect(void)
@@ -577,12 +790,15 @@ esp_err_t wifi_connect(void)
         // paired on old firmware still connects if its SSID is hidden
         // after the update. Idempotent: only rewritten when it differs,
         // so a config already on all-channel scan isn't touched. See
-        // issue #458.
-        if (stored.sta.scan_method != WIFI_ALL_CHANNEL_SCAN) {
+        // issue #458. Same for the mesh-roaming flags (#585), which
+        // configs persisted before 1.7.0 lack.
+        if (stored.sta.scan_method != WIFI_ALL_CHANNEL_SCAN
+                || !stored.sta.rm_enabled || !stored.sta.btm_enabled) {
             stored.sta.scan_method = WIFI_ALL_CHANNEL_SCAN;
+            enable_roaming(&stored.sta);
             esp_err_t err = esp_wifi_set_config(WIFI_IF_STA, &stored);
             if (err != ESP_OK) {
-                ESP_LOGW(TAG, "failed to upgrade stored scan_method: %s",
+                ESP_LOGW(TAG, "failed to upgrade stored STA config: %s",
                          esp_err_to_name(err));
             }
         }
@@ -612,6 +828,12 @@ esp_err_t wifi_connect(void)
 
     xEventGroupWaitBits(s_events, WIFI_CONNECTED_BIT,
                         pdFALSE, pdTRUE, portMAX_DELAY);
+
+    // Started only now: the watchdog never acts before the first connection
+    // completed.
+    if (xTaskCreate(link_watchdog_task, "link_wd", 3072, NULL, 3, NULL) != pdPASS) {
+        ESP_LOGE(TAG, "link watchdog task creation failed");
+    }
     return ESP_OK;
 }
 

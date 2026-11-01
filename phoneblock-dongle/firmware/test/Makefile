@@ -128,6 +128,15 @@ test_blocklist_lookup: test_blocklist_lookup.c ../main/blocklist_lookup.c ../mai
 test_sched_time: test_sched_time.c ../main/sched_time.c ../main/sched_time.h
 	$(CC) $(CFLAGS) test_sched_time.c ../main/sched_time.c -o $@
 
+# The Wi-Fi link watchdog's decision logic (#585), on simulated time.
+BINS += test_link_watchdog
+test_link_watchdog: test_link_watchdog.c ../main/link_watchdog.c ../main/link_watchdog.h
+	$(CC) $(CFLAGS) test_link_watchdog.c ../main/link_watchdog.c -o $@
+
+BINS += test_link_watchdog_probe
+test_link_watchdog_probe: test_link_watchdog_probe.c ../main/link_watchdog.c ../main/link_watchdog.h
+	$(CC) $(CFLAGS) test_link_watchdog_probe.c ../main/link_watchdog.c -o $@
+
 test_smtp_body: test_smtp_body.c ../main/smtp_body.c ../main/smtp_body.h
 	$(CC) $(CFLAGS) test_smtp_body.c ../main/smtp_body.c -o $@
 
