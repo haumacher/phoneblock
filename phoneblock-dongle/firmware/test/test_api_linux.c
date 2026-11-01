@@ -11,6 +11,7 @@
 #include "api.h"
 #include "config.h"
 #include "linux_test_util.h"
+#include "log_capture.h"
 #include "stats.h"
 
 static int server_fd;
@@ -49,6 +50,11 @@ static const exchange_t EXCHANGES[] = {
     { "POST /api/rate ", "\"comment\":\"say \\\"hi\\\"\"", "200 OK", "application/json", "{}" },
     { "POST /api/dongle/log ", "W (1) sip: test line", "200 OK", "text/plain", "" },
     { "GET /api/test ", NULL, "401 Unauthorized", "text/plain", "bad token" },
+    // A proxy's error page instead of the server (#532).
+    { "GET /api/test ", NULL, "502 Bad Gateway", "text/html",
+      "<!doctype html><html lang=\"en\"><head><title>HTTP Status 502 \xE2\x80\x93 "
+      "Bad Gateway</title><style type=\"text/css\">body {font-family:Tahoma,"
+      "Arial,sans-serif;}</style></head><body><h1>HTTP Status 502</h1></body></html>" },
 };
 #define EXCHANGE_COUNT (sizeof(EXCHANGES) / sizeof(EXCHANGES[0]))
 
@@ -107,6 +113,7 @@ int main(void)
     REQUIRE(config_update(&update) == 0);
 
     stats_setup();
+    log_capture_start();
     phoneblock_api_init();
     pthread_t server_thread;
     REQUIRE(pthread_create(&server_thread, NULL, serve_test_endpoint, NULL) == 0);
@@ -127,6 +134,20 @@ int main(void)
     // A rejected token fails the self-test and flips the token flag.
     REQUIRE(!phoneblock_selftest(NULL));
     REQUIRE(!api_token_is_valid());
+    // A failure names the URL and shows a body in short: an HTML page by
+    // its title, a text quoted (#532).
+    stats_error_t errors[4];
+    REQUIRE(stats_snapshot_errors(errors, 4) >= 1);
+    char expected[2 * STATS_ERROR_MSG_LEN];
+    snprintf(expected, sizeof(expected),
+             "self-test: HTTP 401 from %s/api/test: \"bad token\"", base_url);
+    REQUIRE(strcmp(errors[0].message, expected) == 0);
+    REQUIRE(!phoneblock_selftest(NULL));
+    REQUIRE(stats_snapshot_errors(errors, 4) >= 1);
+    snprintf(expected, sizeof(expected),
+             "self-test: HTTP 502 from %s/api/test: "
+             "HTML page \"HTTP Status 502 \xE2\x80\x93 Bad Gateway\"", base_url);
+    REQUIRE(strcmp(errors[0].message, expected) == 0);
     REQUIRE(pthread_join(server_thread, NULL) == 0);
 
     // Issue #551: a failed call is recorded as its cause, not as a latency.
