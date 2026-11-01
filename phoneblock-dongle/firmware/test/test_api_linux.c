@@ -151,12 +151,13 @@ int main(void)
     REQUIRE(pthread_join(server_thread, NULL) == 0);
 
     // Issue #551: a failed call is recorded as its cause, not as a latency.
-    // The 401 above answered, but is no success: an HTTP failure.
+    // The 401 and 502 above answered, but are no success: HTTP failures,
+    // the most recent one recorded.
     stats_counters_t c;
     stats_snapshot_counters(&c);
     REQUIRE(c.last_api_failed);
     REQUIRE(c.last_api_failure.kind == API_FAIL_HTTP);
-    REQUIRE(c.last_api_failure.http_status == 401);
+    REQUIRE(c.last_api_failure.http_status == 502);
     REQUIRE(strcmp(c.last_api_failure.call, "test") == 0);
     int64_t last_ok_us = c.last_api_duration_us;
     REQUIRE(last_ok_us > 0);
