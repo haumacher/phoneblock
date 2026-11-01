@@ -285,6 +285,7 @@
   "status.dialog.edit.reason.size": "The total size of the recordings exceeds the available space on the dongle—delete or trim some recordings.",
   "status.dialog.edit.bad_file": "This is not a valid dialog file.",
   "status.dialog.edit.no_set": "There is no dialogue on the dongle yet—add recordings for each phase.",
+  "status.dialog.edit.changed": "The dongle now contains different recordings (the language or voice has been changed). Your edits in the editor haven't been uploaded yet.",
   "status.dialog.edit.reload": "Discard and reload",
   "status.dialog.edit.done": "Custom dialog saved ({kb} KB).",
   "hero.title": "Setup",
@@ -369,6 +370,17 @@
   "token.current.set": "A token is already configured. A new login will generate a new one.",
   "token.current.missing": "No token configured yet.",
   "token.submit": "Sign in to PhoneBlock",
+  "link.submit": "Link PhoneBlock Account",
+  "link.starting": "Link is being prepared…",
+  "link.compare": "Compare the code on phoneblock.net and confirm only if it matches.",
+  "link.open": "Open phoneblock.net",
+  "link.manual": "You can also enter the code at {url}, for example, on your cell phone.",
+  "link.waiting": "Wait for your confirmation on phoneblock.net…",
+  "link.approved": "PhoneBlock account linked — the token has been set.",
+  "link.denied": "The link was rejected on phoneblock.net.",
+  "link.expired": "The code has expired. Request a new code.",
+  "link.error": "The link failed: {msg}",
+  "link.retry": "Try again",
   "back.status": "← back to status",
   "back.sip": "← back to the choice",
   "i18n.loading": "Translation is loading …",
@@ -432,5 +444,5 @@
   "spam.dialog.comment": "Reason",
   "spam.dialog.comment.hint": "(optional; will be visible to the public)",
   "spam.dialog.error.is_contact": "This caller is in your phone book. A phone book entry always takes precedence on the dongle, so a spam alert isn't possible in this case.",
-  "status.dialog.edit.changed": "The dongle now contains different recordings (the language or voice has been changed). Your edits in the editor haven't been uploaded yet."
+  "link.how": "Clicking the button here displays a code and opens phoneblock.net in a new tab. Log in to phoneblock.net and confirm when the same code appears there. The service will then retrieve the token on its own."
 }

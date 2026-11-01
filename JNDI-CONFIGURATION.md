@@ -139,7 +139,7 @@ Credentials for "Login with Google". Without them only the e-mail login is offer
 |----------|------|---------|-------------|
 | `oauth/google/id` | String | Optional | Google OAuth client id |
 | `oauth/google/secret` | String | Optional | Google OAuth client secret (never logged) |
-| `oauth/callbackBase` | String | `https://phoneblock.net` | Protocol and host of the OAuth callback URL; the context path and `/oauth/callback` are appended. Set to `http://localhost:8080` for local development. |
+| `oauth/callbackBase` | String | `https://phoneblock.net` | Protocol and host of the OAuth callback URL; the context path and `/oauth/callback` are appended. Also the public base of the `verifyUrl` that `/api/link/start` hands to a device (context path and `/link` appended, #621). Set to `http://localhost:8080` for local development. |
 
 ### Example Configuration
 

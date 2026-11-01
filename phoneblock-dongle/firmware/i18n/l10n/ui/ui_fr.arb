@@ -285,6 +285,7 @@
   "status.dialog.edit.reason.size": "La taille totale des enregistrements dépasse la capacité de la clé USB : supprimez ou raccourcissez certains enregistrements.",
   "status.dialog.edit.bad_file": "Ce n'est pas un fichier de dialogue valide.",
   "status.dialog.edit.no_set": "Il n'y a pas encore de dialogue sur la clé USB – ajoute des enregistrements pour chaque phase.",
+  "status.dialog.edit.changed": "Le dongle contient désormais d'autres enregistrements (langue ou voix modifiées). Les modifications que tu as apportées dans l'éditeur n'ont pas encore été téléchargées.",
   "status.dialog.edit.reload": "Annuler et recharger",
   "status.dialog.edit.done": "Boîte de dialogue personnalisée enregistrée ({kb} Ko).",
   "hero.title": "Configuration",
@@ -369,6 +370,17 @@
   "token.current.set": "Un jeton est déjà configuré. Une nouvelle connexion en créera un nouveau.",
   "token.current.missing": "Aucun jeton configuré pour l’instant.",
   "token.submit": "Se connecter à PhoneBlock",
+  "link.submit": "Associer un compte PhoneBlock",
+  "link.starting": "Le lien est en cours de préparation…",
+  "link.compare": "Compare le code sur phoneblock.net et ne valide que s'il correspond.",
+  "link.open": "Ouvrir phoneblock.net",
+  "link.manual": "Tu peux également saisir le code à l'adresse {url}, par exemple sur ton téléphone portable.",
+  "link.waiting": "Attends ta confirmation sur phoneblock.net…",
+  "link.approved": "Compte PhoneBlock associé — le jeton est défini.",
+  "link.denied": "Le lien a été refusé sur phoneblock.net.",
+  "link.expired": "Le code a expiré. Demandez un nouveau code.",
+  "link.error": "La connexion a échoué : {msg}",
+  "link.retry": "Réessayer",
   "back.status": "← retour à l’état",
   "back.sip": "← retour au choix",
   "i18n.loading": "Chargement de la traduction…",
@@ -432,5 +444,5 @@
   "spam.dialog.comment": "Raison",
   "spam.dialog.comment.hint": "(facultatif, sera visible publiquement)",
   "spam.dialog.error.is_contact": "Ce correspondant figure dans ton répertoire. Une entrée du répertoire a toujours la priorité sur le dongle ; c'est pourquoi il n'est pas possible de signaler ce numéro comme spam.",
-  "status.dialog.edit.changed": "Le dongle contient désormais d'autres enregistrements (langue ou voix modifiées). Les modifications que tu as apportées dans l'éditeur n'ont pas encore été téléchargées."
+  "link.how": "En cliquant sur le bouton, vous afficherez un code et ouvrirez phoneblock.net dans un nouvel onglet. Connectez-vous à phoneblock.net et confirmez que le même code s'y affiche. Le service récupérera alors lui-même le jeton."
 }

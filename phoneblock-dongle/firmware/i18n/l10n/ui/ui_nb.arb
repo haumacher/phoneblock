@@ -285,6 +285,7 @@
   "status.dialog.edit.reason.size": "Opptakene tar til sammen mer plass enn det som er ledig på dongelen – slett eller kort ned opptakene.",
   "status.dialog.edit.bad_file": "Dette er ikke en gyldig dialogfil.",
   "status.dialog.edit.no_set": "Det er ennå ingen dialog på dongelen – legg til opptak for hver fase.",
+  "status.dialog.edit.changed": "Det ligger nå andre opptak på dongelen (språk eller stemme er endret). Redigeringene dine i redigeringsprogrammet er ennå ikke lastet opp.",
   "status.dialog.edit.reload": "Avbryt og last inn på nytt",
   "status.dialog.edit.done": "Egen dialog er lagret ({kb} KB).",
   "hero.title": "Innredning",
@@ -369,6 +370,17 @@
   "token.current.set": "Det er allerede opprettet et token. Hvis du logger inn på nytt, opprettes det et nytt.",
   "token.current.missing": "Det er ikke opprettet noen token ennå.",
   "token.submit": "Logg inn på PhoneBlock",
+  "link.submit": "Koble til PhoneBlock-konto",
+  "link.starting": "Koblingen forberedes…",
+  "link.compare": "Sammenlign koden på phoneblock.net og bekreft først når den stemmer overens.",
+  "link.open": "Åpne phoneblock.net",
+  "link.manual": "Du kan også skrive inn koden under {url}, f.eks. på mobiltelefonen.",
+  "link.waiting": "Vent på bekreftelsen din på phoneblock.net…",
+  "link.approved": "PhoneBlock-kontoen er koblet til — tokenet er angitt.",
+  "link.denied": "Koblingen ble avvist på phoneblock.net.",
+  "link.expired": "Koden har utløpt. Be om en ny kode.",
+  "link.error": "Koblingen mislyktes: {msg}",
+  "link.retry": "Prøv på nytt",
   "back.status": "← tilbake til status",
   "back.sip": "← tilbake til utvalget",
   "i18n.loading": "Oversettelsen lastes inn …",
@@ -432,5 +444,5 @@
   "spam.dialog.comment": "Årsak",
   "spam.dialog.comment.hint": "(valgfritt, blir synlig for alle)",
   "spam.dialog.error.is_contact": "Denne innringeren står oppført i telefonboken din. En oppføring i telefonboken har alltid forrang på dongelen, og derfor er det ikke mulig å motta en spam-melding her.",
-  "status.dialog.edit.changed": "Det ligger nå andre opptak på dongelen (språk eller stemme er endret). Redigeringene dine i redigeringsprogrammet er ennå ikke lastet opp."
+  "link.how": "Hvis du klikker på knappen, vises en kode her, og phoneblock.net åpnes i en ny fane. Logg inn på phoneblock.net og bekreft at den samme koden vises der. Tjenesten henter deretter tokenet selv."
 }

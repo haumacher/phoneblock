@@ -819,6 +819,39 @@ bool phoneblock_fetch_dial_prefix(char *out, size_t cap)
     return ok;
 }
 
+bool phoneblock_adopt_token(const char *token, const char *origin)
+{
+    if (!token || !token[0]) return false;
+    if (!origin) origin = "token";
+
+    config_update_t u = { .phoneblock_token = token };
+    if (config_update(&u) != PB_KV_OK) {
+        pb_log_err(TAG, "%s: could not store the PhoneBlock token", origin);
+        return false;
+    }
+    pb_log_info(TAG, "%s: stored new PhoneBlock token (%d chars)",
+                origin, (int)strlen(token));
+
+    // Exercise the new token at once, so the dashboard has an API latency
+    // to show on the first poll instead of an empty "–".
+    phoneblock_selftest(NULL);
+
+    // Seed the country from the account, riding the TLS session the
+    // self-test just primed — once only, see api.h.
+    if (!config_dial_prefix_is_set()) {
+        char prefix[8] = "";
+        if (phoneblock_fetch_dial_prefix(prefix, sizeof(prefix))
+                && config_dial_prefix_valid(prefix)) {
+            config_update_t up = { .dial_prefix = prefix };
+            if (config_update(&up) == PB_KV_OK) {
+                pb_log_info(TAG, "%s: adopted country %s from account",
+                            origin, prefix);
+            }
+        }
+    }
+    return true;
+}
+
 int phoneblock_post_log(const char *body, size_t len)
 {
     if (s_check_mutex == NULL) {

@@ -1850,6 +1850,66 @@
     "description": "Dongle web UI: token.submit",
     "x-translated": "81d2ea31"
   },
+  "link.submit": "PhoneBlock-Account verknüpfen",
+  "@link.submit": {
+    "description": "Knopf/Setup-Schritt: den Linux-Dienst hinter Home Assistant über einen Code mit dem PhoneBlock-Account verknüpfen (statt Anmeldung mit Weiterleitung).",
+    "x-translated": "6f499769"
+  },
+  "link.how": "Ein Klick auf den Knopf zeigt hier einen Code an und öffnet phoneblock.net in einem neuen Tab. Melde dich auf phoneblock.net an und bestätige, wenn dort derselbe Code angezeigt wird. Der Dienst holt den Token dann selbst ab.",
+  "@link.how": {
+    "description": "Erklärung auf der Token-Seite im Code-Verknüpfungsmodus (Home Assistant).",
+    "x-translated": "3ce7a10a"
+  },
+  "link.starting": "Verknüpfung wird vorbereitet…",
+  "@link.starting": {
+    "description": "Fortschritt, während der Dienst bei phoneblock.net einen Code anfordert.",
+    "x-translated": "5339462d"
+  },
+  "link.compare": "Vergleiche den Code auf phoneblock.net und bestätige nur, wenn er übereinstimmt.",
+  "@link.compare": {
+    "description": "Hinweis unter dem groß angezeigten Verknüpfungscode.",
+    "x-translated": "3144dbec"
+  },
+  "link.open": "phoneblock.net öffnen",
+  "@link.open": {
+    "description": "Link zur Bestätigungsseite, falls sich kein neuer Tab geöffnet hat.",
+    "x-translated": "c5c0be94"
+  },
+  "link.manual": "Du kannst den Code auch unter {url} eingeben, z. B. auf dem Handy.",
+  "@link.manual": {
+    "description": "Hinweis: der Code kann auf der Seite {url} (Platzhalter für die Adresse, nicht übersetzen) eingegeben werden.",
+    "x-translated": "a9497ea"
+  },
+  "link.waiting": "Warte auf deine Bestätigung auf phoneblock.net…",
+  "@link.waiting": {
+    "description": "Status, während der Dienst auf die Bestätigung auf phoneblock.net wartet.",
+    "x-translated": "af4bdea9"
+  },
+  "link.approved": "PhoneBlock-Account verknüpft — der Token ist gesetzt.",
+  "@link.approved": {
+    "description": "Erfolgsmeldung nach der Bestätigung.",
+    "x-translated": "12723255"
+  },
+  "link.denied": "Die Verknüpfung wurde auf phoneblock.net abgelehnt.",
+  "@link.denied": {
+    "description": "Meldung, wenn der Nutzer die Verknüpfung auf phoneblock.net abgelehnt hat.",
+    "x-translated": "202f52ba"
+  },
+  "link.expired": "Der Code ist abgelaufen. Fordere einen neuen Code an.",
+  "@link.expired": {
+    "description": "Meldung, wenn der Code abgelaufen ist, bevor er bestätigt wurde.",
+    "x-translated": "92e9865f"
+  },
+  "link.error": "Die Verknüpfung ist fehlgeschlagen: {msg}",
+  "@link.error": {
+    "description": "Fehlermeldung; {msg} ist der technische Grund (englisch), Platzhalter nicht übersetzen.",
+    "x-translated": "f8433717"
+  },
+  "link.retry": "Erneut versuchen",
+  "@link.retry": {
+    "description": "Knopf: Verknüpfung neu starten.",
+    "x-translated": "fe85b8bf"
+  },
   "back.status": "← zurück zum Status",
   "@back.status": {
     "description": "Dongle web UI: back.status",

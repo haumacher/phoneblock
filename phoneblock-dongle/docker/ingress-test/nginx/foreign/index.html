@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fremde Seite</title>
+<style>
+  body{font-family:system-ui,sans-serif;max-width:40rem;margin:2rem auto;padding:0 1rem;color:#212121;background:#fff}
+  input{width:100%;box-sizing:border-box;padding:.4rem;font:inherit}
+  code{word-break:break-all}
+</style>
+</head>
+<body>
+<h1>Eine andere Website</h1>
+<p>Steht für phoneblock.net: Ein Link (oder eine Weiterleitung) von hier in den
+   Ingress-Pfad ist eine Cross-Site-Navigation. Der Browser schickt das
+   <code>SameSite=Strict</code>-Cookie dann nicht mit, und der Ingress antwortet
+   <code>401: Unauthorized</code> — wie Home Assistant beim Rücksprung nach der
+   Anmeldung (#619, Hindernis 3).</p>
+<p>Diese Seite muss unter einem anderen Hostnamen geöffnet sein als die Schale
+   (z.&nbsp;B. hier <code>localhost</code>, die Schale unter der LAN-IP); der Port
+   zählt nicht.</p>
+<label>Ziel im Ingress-Pfad
+  <input id="to" placeholder="http://192.168.x.y:8133/api/hassio_ingress/pbtest-ingress-token/">
+</label>
+<p><a id="go" href="#">Diesem Link folgen</a> → 401 erwartet.</p>
+<p>Dieselbe Adresse in die Adressleiste kopiert → die Oberfläche erscheint.</p>
+<script>
+  const to = document.getElementById('to');
+  const go = document.getElementById('go');
+  const param = new URLSearchParams(location.search).get('to');
+  if (param && /^https?:\/\//.test(param)) to.value = param;
+  const update = () => { go.href = /^https?:\/\//.test(to.value) ? to.value : '#'; };
+  to.addEventListener('input', update);
+  update();
+</script>
+</body>
+</html>

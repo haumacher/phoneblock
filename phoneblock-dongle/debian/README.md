@@ -117,6 +117,13 @@ Danach geht es weiter wie unter "Einrichtung", mit der Oberfläche unter
   Verzeichnis, in das dieser Benutzer schreiben darf.
 - **Updates:** `docker pull phoneblock/answerbot2:beta` und den Container neu
   anlegen; die Einstellungen bleiben im Volume.
+- **Home Assistant (Ingress):** Hinter dem Ingress von Home Assistant kann
+  die Anmeldung bei phoneblock.net nicht per Weiterleitung zurückkommen.
+  Dort zeigt die Oberfläche stattdessen **PhoneBlock-Account verknüpfen**:
+  phoneblock.net öffnet sich in einem neuen Tab, du bestätigst den Code, der
+  auch in der Oberfläche steht, und der Dienst holt den Token selbst ab. Den
+  Aufbau zum Ausprobieren ohne Home Assistant beschreibt
+  `docker/ingress-test/README.md`.
 - **Vom alten AnswerBot-Container (`phoneblock/answerbot`):** Die Einstellungen
   werden nicht übernommen; Fritz!Box und PhoneBlock-Anmeldung richtest du in
   der Oberfläche neu ein. Der Dienst nimmt Spam-Anrufe an und spielt die Ansage

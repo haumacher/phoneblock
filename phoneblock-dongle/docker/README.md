@@ -93,6 +93,13 @@ The web UI is then at `http://<docker-host>:8090/`. Use these variables rather
 than the `--web`/`--web-bind` options, so the container's health check finds
 the web UI.
 
+## Home Assistant
+
+Opened through Home Assistant ingress, the PhoneBlock login cannot return to
+the web UI by redirect. There the UI offers **PhoneBlock-Account
+verknüpfen** instead: phoneblock.net opens in a new tab, you confirm the code
+the web UI shows, and the service fetches its API key from PhoneBlock itself.
+
 ## Data
 
 Settings, the device ID and the announcement are stored in the volume at
