@@ -11,6 +11,7 @@
 #include <math.h>
 
 #ifdef ESP_PLATFORM
+#include "esp_heap_caps.h"
 #include "lwip/sockets.h"
 #include "lwip/netdb.h"
 #else
@@ -448,7 +449,21 @@ static void rtp_tx_frame(rtp_tx_t *tx, uint8_t pkt[RTP_HEADER_BYTES + FRAME_BYTE
                    (const struct sockaddr *)tx->dest, sizeof(*tx->dest));
     if (n < 0) {
         if (tx->send_failures++ == 0) {
+            // The packet is dropped, not retried: a late audio frame is no
+            // better than a lost one. With the first failure of a run goes
+            // the heap state (#531), so an ENOMEM tells heap pressure (little
+            // free, or only small blocks left) from a full WiFi TX queue
+            // (plenty free). Free total and largest block differ under
+            // fragmentation, so both.
+#ifdef ESP_PLATFORM
+            int err = errno;
+            pb_log_warn(TAG, "rtp sendto: %s (heap free %u, largest block %u)",
+                        strerror(err),
+                        (unsigned)heap_caps_get_free_size(MALLOC_CAP_8BIT),
+                        (unsigned)heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
+#else
             pb_log_warn(TAG, "rtp sendto: %s", strerror(errno));
+#endif
         }
     } else if (tx->send_failures > 0) {
         pb_log_warn(TAG, "rtp sendto: sending again after %u lost packet(s)",

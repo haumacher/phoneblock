@@ -8,7 +8,7 @@ CFLAGS  ?= -Wall -Wextra -Werror -O0 -g -I../main -I../core
 IDF_PATH ?= $(HOME)/tools/esp/esp-idf
 CJSON_DIR := $(IDF_PATH)/components/json/cJSON
 
-BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_rcpt test_name_filter test_version_cmp test_http_util test_net_local test_heap_guard test_platform_linux test_log_capture_linux test_time_sync_tz test_ota_manifest test_stats test_display_model test_display_probe test_storage_budget test_storage_sim test_storage_hostfs test_vad test_dialog test_dialog_probe test_audio_manifest
+BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_rcpt test_name_filter test_version_cmp test_http_util test_http_util_probe test_net_local test_heap_guard test_platform_linux test_log_capture_linux test_time_sync_tz test_ota_manifest test_stats test_display_model test_display_probe test_storage_budget test_storage_sim test_storage_hostfs test_vad test_dialog test_dialog_probe test_audio_manifest
 
 test_sip_parse: test_sip_parse.c ../core/sip_parse.c ../core/sip_parse.h \
                 ../core/dial_rules.c ../core/dial_rules.h \
@@ -138,8 +138,11 @@ test_version_cmp: test_version_cmp.c ../main/version_cmp.c ../main/version_cmp.h
 	$(CC) $(CFLAGS) test_version_cmp.c ../main/version_cmp.c -o $@
 
 test_http_util: test_http_util.c linux_test_util.h ../main/http_util.c \
-                ../main/http_util.h
-	$(CC) $(CFLAGS) test_http_util.c ../main/http_util.c -o $@
+                ../main/http_util.h ../main/strbuf.h
+	$(CC) $(CFLAGS) -fsanitize=address test_http_util.c ../main/http_util.c -o $@
+
+test_http_util_probe: test_http_util_probe.c ../main/http_util.c ../main/http_util.h ../main/strbuf.h
+	$(CC) $(CFLAGS) -fsanitize=address test_http_util_probe.c ../main/http_util.c -o $@
 
 test_net_local: test_net_local.c ../main/net_local.c ../main/net_local.h
 	$(CC) $(CFLAGS) test_net_local.c ../main/net_local.c -o $@
@@ -262,6 +265,9 @@ test: $(BINS)
 	@# The web UI's dialog set builder against test_dialog.c's vector (needs node).
 	@if command -v node >/dev/null; then echo "→ dialog_set_js_check.js"; node dialog_set_js_check.js; \
 	 else echo "→ dialog_set_js_check.js skipped (no node)"; fi
+	@# The web UI's status poll pausing in a hidden tab (#573, needs node).
+	@if command -v node >/dev/null; then echo "→ poll_visibility_js_check.js"; node poll_visibility_js_check.js; \
+	 else echo "→ poll_visibility_js_check.js skipped (no node)"; fi
 
 # Linux build of the firmware modules plus its network tests; needs the
 # extra prerequisites listed in ../linux/Makefile.

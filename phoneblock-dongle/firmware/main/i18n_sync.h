@@ -74,7 +74,10 @@ void i18n_sync_init(void);
 // Perform one sync pass for the active ui_lang. Safe to call only from the
 // scheduler task (does blocking HTTPS + flash I/O). A no-op with a clear
 // status if offline / the manifest is missing or unparseable. Returns
-// whether the pass succeeded (same as the snapshot's last_ok).
+// whether the pass succeeded (same as the snapshot's last_ok). A firmware
+// whose bundle is not published (its manifest answers 404, e.g. a dev
+// build, #673) is no failure: the packs are skipped with one WARN per boot,
+// the audio is synced, and the pass counts as done.
 bool i18n_sync_run(void);
 
 // Ask the scheduler task to run i18n_sync_run() on its own stack. Returns

@@ -528,14 +528,15 @@ function awaitUiPack(lang, tries){
   if (!i18nPackPending(lang)) { setLangStatus('unavailable'); return; }
   if (tries > 30) { setLangStatus('unavailable'); return; }  // gave up polling
   setLangStatus('loading');
-  setTimeout(() => {
+  // Paused in a hidden tab without using up a try (whenVisible()).
+  setTimeout(() => whenVisible(() => {
     if (LANG !== lang) return;
     fetch('api/i18n/ui').then(r => r.ok ? r.json() : null).then(dict => {
       if (LANG !== lang) return;
       if (storePack(lang, dict) === lang) { setLangStatus(''); route(); }
       else awaitUiPack(lang, tries + 1);
     }).catch(() => awaitUiPack(lang, tries + 1));
-  }, 2000);
+  }), 2000);
 }
 
 // --- helpers --------------------------------------------------------
@@ -1146,9 +1147,49 @@ let pollTimer = null;
 // signal. The flag suppresses that banner while a check is in flight.
 let fwUpdateInFlight = false;
 
+// --- status poll, paused in a hidden tab (#573) ---------------------- <poll-lib>
+// Whether the current view wants the status poll. The interval itself only
+// runs while the tab is visible: a hidden tab polling every 3 s with three
+// requests is ~1 request/s against the device (and as many DNS lookups,
+// #573) for nobody to see. Coming back refreshes at once.
+let pollWanted = false;
+
+function startPolling(){
+  pollWanted = true;
+  if (!pollTimer && !document.hidden) pollTimer = setInterval(refreshAll, 3000);
+}
+
+// Ends the poll for good (until the next startPolling()): a route change,
+// or a device that is about to reboot.
 function stopPolling(){
+  pollWanted = false;
   if (pollTimer){ clearInterval(pollTimer); pollTimer = null; }
 }
+
+// Runs `fn` now if the tab is visible, otherwise once it becomes visible —
+// for timers whose work only matters to someone looking at the page.
+function whenVisible(fn){
+  if (!document.hidden) { fn(); return; }
+  const onShow = () => {
+    if (document.hidden) return;
+    document.removeEventListener('visibilitychange', onShow);
+    fn();
+  };
+  document.addEventListener('visibilitychange', onShow);
+}
+
+// The phoneblock.net sign-in tab closing itself (or the user switching
+// back) makes this tab visible again: the refresh shows the stored token
+// right away.
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden){
+    if (pollTimer){ clearInterval(pollTimer); pollTimer = null; }
+  } else if (pollWanted && !pollTimer){
+    refreshAll();
+    pollTimer = setInterval(refreshAll, 3000);
+  }
+});
+// </poll-lib>
 
 function route(){
   stopPolling();
@@ -1636,7 +1677,7 @@ function renderStatus(){
   dlgReset();   // the speaker list and the editor are new elements, unwired
   applyLangStatus();   // restore the translation bubble after the rebuild
   refreshAll();
-  pollTimer = setInterval(refreshAll, 3000);
+  startPolling();
 }
 
 function renderHero(sipDone, tokenDone){
@@ -3413,6 +3454,10 @@ function render2FAInstructions(methods){
   return hints.length ? hints.join(' ' + esc('oder') + ' ') : '';
 }
 
+// Deliberately not paused in a hidden tab: each status request is what
+// completes the provisioning once the user confirmed on the Fritz!Box
+// (handle_fritzbox_2fa_status), and the device drops the request after two
+// minutes. Bounded by the deadline.
 async function poll2FA(msgEl, btn){
   const deadline = Date.now() + 130 * 1000;
   while (Date.now() < deadline){
