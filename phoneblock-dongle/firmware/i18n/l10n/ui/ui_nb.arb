@@ -270,6 +270,7 @@
   "status.dialog.vad_silence_db": "Støyterskel (dBFS)",
   "status.dialog.vad_silence_db.help": "Hvis lydnivået er lavere enn dette, regnes den som ringer som stille. Høyere (f.eks. -30) ved støy i linjen, lavere (f.eks. -45) for dem som snakker lavt. Standard: -35.",
   "status.dialog.vad_min_silence_ms": "Svarstid (ms)",
+  "status.dialog.vad_min_silence_ms.help": "Så lenge må den som ringer være stille før dongelen svarer. Standard: 500.",
   "status.dialog.comfort_noise": "Ledningsstøy (dBFS)",
   "status.dialog.comfort_noise.help": "En svak susing under og mellom setningene, slik at linjen ikke høres død ut. -90 er praktisk talt av. Standard: -60.",
   "status.dialog.saved": "Lagret.",
@@ -478,5 +479,5 @@
   "status.rec.delete": "Slett opptak",
   "status.rec.delete.confirm": "Skal denne opptaket slettes? Samtalen forblir i listen.",
   "status.rec.failed": "Opptaket kunne ikke lastes inn.",
-  "status.dialog.vad_min_silence_ms.help": "Så lenge må den som ringer være stille før dongelen svarer. Standard: 500."
+  "status.counters.reset": "Tilbakestill alle tellere"
 }

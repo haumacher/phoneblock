@@ -270,6 +270,7 @@
   "status.dialog.vad_silence_db": "Próg ciszy (dBFS)",
   "status.dialog.vad_silence_db.help": "Jeśli poziom jest niższy od tego, rozmówca jest uznawany za mówiącego cicho. Wyższy poziom (np. -30) stosuje się w przypadku szumów w linii, a niższy (np. -45) – w przypadku cicho mówiących rozmówców. Wartość domyślna: -35.",
   "status.dialog.vad_min_silence_ms": "Czas odpowiedzi (ms)",
+  "status.dialog.vad_min_silence_ms.help": "Tyle czasu musi milczeć dzwoniący, zanim klucz sprzętowy odpowie. Wartość domyślna: 500.",
   "status.dialog.comfort_noise": "Szum sieciowy (dBFS)",
   "status.dialog.comfort_noise.help": "Cichy szum w tle i między zdaniami, aby linia nie brzmiała martwo. -90 oznacza praktycznie wyłączenie. Ustawienie domyślne: -60.",
   "status.dialog.saved": "Zapisano.",
@@ -478,5 +479,5 @@
   "status.rec.delete": "Usuń nagranie",
   "status.rec.delete.confirm": "Czy chcesz usunąć to nagranie? Połączenie pozostanie na liście.",
   "status.rec.failed": "Nie udało się załadować nagrania.",
-  "status.dialog.vad_min_silence_ms.help": "Tyle czasu musi milczeć dzwoniący, zanim klucz sprzętowy odpowie. Wartość domyślna: 500."
+  "status.counters.reset": "Zresetuj wszystkie liczniki"
 }

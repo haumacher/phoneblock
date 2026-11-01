@@ -270,6 +270,7 @@
   "status.dialog.vad_silence_db": "Silence Threshold (dBFS)",
   "status.dialog.vad_silence_db.help": "If the caller's volume is lower than this level, they are considered quiet. Set it higher (e.g., -30) if there is line noise, and lower (e.g., -45) for quiet callers. Default: -35.",
   "status.dialog.vad_min_silence_ms": "Response time (ms)",
+  "status.dialog.vad_min_silence_ms.help": "This is how long the caller must remain silent before the dongle responds. Default: 500.",
   "status.dialog.comfort_noise": "Line Noise (dBFS)",
   "status.dialog.comfort_noise.help": "A faint hiss during and between sentences, so the line doesn't sound dead. -90 is practically off. Default: -60.",
   "status.dialog.saved": "Saved.",
@@ -478,5 +479,5 @@
   "status.rec.delete": "Delete Recording",
   "status.rec.delete.confirm": "Delete this recording? The call will remain in the list.",
   "status.rec.failed": "The recording could not be loaded.",
-  "status.dialog.vad_min_silence_ms.help": "This is how long the caller must remain silent before the dongle responds. Default: 500."
+  "status.counters.reset": "Reset All Counters"
 }

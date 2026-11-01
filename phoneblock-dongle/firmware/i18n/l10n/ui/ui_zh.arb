@@ -270,6 +270,7 @@
   "status.dialog.vad_silence_db": "静电阈值（dBFS）",
   "status.dialog.vad_silence_db.help": "如果呼叫者的音量低于该电平，则被视为“静音”。当线路有杂音时，该值应调高（例如 -30）；当呼叫者声音较轻时，则应调低（例如 -45）。默认值：-35。",
   "status.dialog.vad_min_silence_ms": "响应时间（毫秒）",
+  "status.dialog.vad_min_silence_ms.help": "在加密狗响应之前，呼叫方必须保持沉默这么久。默认值：500。",
   "status.dialog.comfort_noise": "线路噪声（dBFS）",
   "status.dialog.comfort_noise.help": "在句子之间及句末加入轻微的嘶嘶声，以免线路听起来死气沉沉。-90 几乎等同于关闭。默认值：-60。",
   "status.dialog.saved": "已保存。",
@@ -478,5 +479,5 @@
   "status.rec.delete": "删除录音",
   "status.rec.delete.confirm": "要删除这条录音吗？该通话仍会保留在列表中。",
   "status.rec.failed": "无法加载该照片。",
-  "status.dialog.vad_min_silence_ms.help": "在加密狗响应之前，呼叫方必须保持沉默这么久。默认值：500。"
+  "status.counters.reset": "重置所有计数器"
 }
