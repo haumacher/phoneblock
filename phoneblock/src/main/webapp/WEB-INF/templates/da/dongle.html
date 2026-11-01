@@ -57,7 +57,7 @@
 			<p data-tx="t0230:12c794d9">Donglen fungerer <b>ikke på Vodafone-forbindelser</b> i kombination med en EasyBox fra Vodafone.</p>
 		</div>
 		
-		<p data-tx="t0227:9c63c692">Hvis du har haft held med at sætte donglen op - især i kombination med en ikke-Fritz!Box-router eller en "historisk" Fritz!Box-model - så skriv venligst en <a href="#tester">erfaringsrapport</a>, så denne hjælp kan blive forbedret.</p>
+		<p data-tx="t0236:25f15369">Hvis der opstår problemer under opsætningen, eller hvis du har et spørgsmål, kan du <a href="#hilfe">nedenfor</a> finde den rette kontakt.</p>
 
 		<p class="subtitle mt-6" data-tx="t0124:bd004e4f">Det er her, det bliver praktisk: Instruktionerne guider dig trin for trin gennem bestilling og opsætning - omkring €10 hardware, en engangsindsats på et par minutter.</p>
 
@@ -174,7 +174,7 @@
 			<ul>
 				<li data-tx="t0195:758aaf4d"><strong>Windows</strong>: Download <a href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">CH340-driveren fra wch-ic.com</a>, udfør <code>CH341SER.EXE</code> og klik på <strong>"INSTALL"</strong>. Ingen genstart nødvendig.</li>
 				<li data-tx="t0147:901b0f79"><strong>macOS</strong>: Fra og med macOS Big Sur er driveren inkluderet i systemet - intet installationstrin er nødvendigt.</li>
-				<li data-tx="t0148:35f91b38"><strong>Linux</strong>: Kernedriveren er installeret. På Ubuntu kan BRLTTY-tjenesten snuppe CH340, så du ikke kan se enhedsfilen - i dette tilfælde vil det hjælpe at afinstallere BRLTTY: <code>sudo apt remove --purge brltty</code>. Din bruger skal også være i gruppen <code>dialout</code>: <code>sudo usermod -aG dialout $USER</code>. Begge trin er beskrevet i detaljer i <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
+				<li data-tx="t0148:ffd71abb"><strong>Linux</strong>: Kernel-driveren er indbygget. På Ubuntu kan BRLTTY-tjenesten overtage CH340, så du ikke kan se enhedsfilen — i så fald hjælper det at afinstallere BRLTTY: <code>sudo apt remove --purge brltty</code>. Din bruger skal desuden være medlem af gruppen <code>dialout</code>: <code>sudo usermod -aG dialout $USER</code> (under Arch Linux hedder gruppen <code>uucp</code>). Begge trin er beskrevet detaljeret i <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
 			</ul>
 		</details>
 
@@ -269,27 +269,22 @@
 
 		<p class="has-text-grey" data-tx="t0181:9316079d">Er der noget, der ikke virker, bruger du Firefox/Safari, Linux med særheder eller et andet board? De detaljerede instruktioner med alle muligheder, Linux-faldgruber og ESP-IDF-værktøjskæden kan findes i repoen: <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</p>
 
-		<h2 data-tx="t0182:c258f25f" id="tester">Bidrag med erfaringsrapport</h2>
+		<h2 data-tx="t0237:f99f48f3" id="hilfe">Hjælp og fejlrapporter</h2>
 
-		<p data-tx="t0183:aef4c36">De første PhoneBlock-dongler fungerer pålideligt - men routermodeller, udbydere og forbindelsestyper er en farverig blanding, og hver kombination har sine egne særegenheder. For at forbedre installationsguiden er <strong>strukturerede erfaringsrapporter</strong> guld værd - uanset om alt fungerede for dig, eller om der var problemer.</p>
+		<p data-tx="t0238:b354c3fa">Spørgsmål om opsætning, routere og internetudbydere stiller du bedst i <strong>GitHub-diskussionerne</strong> – der hjælper andre dongle-brugere også, og svarene forbliver tilgængelige for alle.</p>
 
-		<p data-tx="t0184:49f94506">Særligt interessante er opsætninger, der stadig er dårligt dækket:</p>
+		<p data-tx="t0239:1546fc2a">Hvis noget ikke fungerer som det skal, bedes du indberette problemet som en <strong>GitHub-issue</strong>. Et forudfyldt skema beder om de vigtigste oplysninger (Board, firmwareversion, router, internetudbyder, log fra webgrænsefladen).</p>
 
-		<ul>
-			<li data-tx="t0185:e1971ce0">Telekom-forbindelse med <strong>Speedport</strong>-router</li>
-			<li data-tx="t0186:61cce24d">Vodafone/Unitymedia-kabelforbindelse med den medfølgende udbyderboks</li>
-			<li data-tx="t0187:ea506b90">1&amp;1, o2, Deutsche Glasfaser og andre udbydere</li>
-			<li data-tx="t0188:3d2d85c2">Internationale forbindelser (Schweiz, Østrig, resten af Europa og verden)</li>
-		</ul>
-
-		<p data-tx="t0189:3fcb6dd2">Rapporter køres via GitHub-problemer - en forudfyldt formular beder om de vigtigste nøgledata (hardware, router, udbyder, firmwareversion, resultater) på en struktureret måde. Andre testere kan se direkte, hvilke opsætninger der allerede er dækket, og hvilke der ikke er.</p>
-
-		<p>
-			<a class="button is-primary is-medium" href="https://github.com/haumacher/phoneblock/issues/new?template=dongle-test-report.yml" rel="noopener" target="_blank">
-				<span class="icon"><i class="fab fa-github"></i></span>
-				<span data-tx="t0190:92ec79b">Åben erfaringsrapport</span>
+		<div class="buttons">
+			<a class="button is-primary is-medium" href="https://github.com/haumacher/phoneblock/discussions/categories/q-a" rel="noopener" target="_blank">
+				<span class="icon"><i class="fa-solid fa-comments"></i></span>
+				<span data-tx="t0240:5758640b">Stil et spørgsmål</span>
 			</a>
-		</p>
+			<a class="button is-medium" href="https://github.com/haumacher/phoneblock/issues/new?template=dongle-problem.yml" rel="noopener" target="_blank">
+				<span class="icon"><i class="fab fa-github"></i></span>
+				<span data-tx="t0241:b6a71854">Rapporter et problem</span>
+			</a>
+		</div>
 
 		<hr class="my-5"/>
 

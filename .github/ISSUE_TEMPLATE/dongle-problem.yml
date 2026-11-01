@@ -1,14 +1,15 @@
-name: Dongle-Erfahrungsbericht
-description: Berichten, wie der PhoneBlock-Dongle in deinem Setup läuft (oder nicht).
+name: Dongle-Problem melden
+description: Etwas funktioniert am PhoneBlock-Dongle nicht so, wie es soll.
 title: "[Dongle] "
-labels: ["dongle", "test-report"]
+labels: ["dongle"]
 body:
   - type: markdown
     attributes:
       value: |
-        Danke, dass du den Dongle in deinem Setup ausprobierst! Bitte fülle die folgenden Felder aus,
-        damit andere Tester ihre Setups einordnen können und ich Muster über mehrere Berichte hinweg
-        erkenne. Pflichtfelder sind mit \* markiert; alles andere ist hilfreich, aber optional.
+        Danke für die Meldung! Bitte fülle die folgenden Felder aus, damit sich das Problem
+        nachvollziehen lässt. Pflichtfelder sind mit \* markiert; alles andere ist hilfreich, aber optional.
+        Fragen zur Einrichtung stellst du am besten in den Diskussionen:
+        https://github.com/haumacher/phoneblock/discussions/categories/q-a
 
   - type: input
     id: hardware
@@ -23,8 +24,8 @@ body:
     id: firmware-version
     attributes:
       label: Firmware-Version
-      description: Steht auf der Status-Seite des Dongles unter „firmware_version".
-      placeholder: "z. B. dongle-v0.3.1"
+      description: Steht in der Weboberfläche des Dongles in der Statuszeile („Firmware …").
+      placeholder: "z. B. 1.7.0"
     validations:
       required: true
 
@@ -89,19 +90,20 @@ body:
   - type: textarea
     id: outcome
     attributes:
-      label: Was funktioniert, was nicht?
+      label: Was funktioniert nicht?
       description: |
-        Bitte konkret: blockiert er Spam, klingelt das echte Telefon trotzdem mit, hängt sich der
-        Dongle auf, kommt er gar nicht ins WLAN? Auch positive Ergebnisse sind wertvoll.
+        Bitte konkret: was hast du gemacht, was hast du erwartet, was ist passiert? Blockiert er keinen
+        Spam, klingelt das echte Telefon trotzdem, hängt sich der Dongle auf, kommt er nicht ins WLAN?
     validations:
       required: true
 
   - type: textarea
     id: logs
     attributes:
-      label: Logs / Status-Ausgabe (optional)
+      label: Log (optional)
       description: |
-        Relevante Zeilen aus der seriellen Konsole oder Inhalt der Status-Seite. Bitte als Codeblock.
+        Die Einträge aus dem Protokoll-Bereich der Weboberfläche (oder der seriellen Konsole).
+        Bitte Telefonnummern unkenntlich machen.
       render: text
 
   - type: checkboxes
@@ -109,5 +111,5 @@ body:
     attributes:
       label: Bestätigung
       options:
-        - label: Ich habe vor dem Schreiben geprüft, ob mein Setup nicht schon in einem offenen Issue beschrieben ist.
+        - label: Ich habe vor dem Schreiben geprüft, ob das Problem nicht schon in einem offenen Issue beschrieben ist.
           required: true
