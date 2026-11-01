@@ -1373,10 +1373,10 @@
     "description": "Dongle web UI: label of the field for how long the caller must be silent before the bot answers",
     "x-translated": "257de909"
   },
-  "status.dialog.vad_min_silence_ms.help": "So lange muss der Anrufer schweigen, bevor der Dongle antwortet. Standard: 800.",
+  "status.dialog.vad_min_silence_ms.help": "So lange muss der Anrufer schweigen, bevor der Dongle antwortet. Standard: 500.",
   "@status.dialog.vad_min_silence_ms.help": {
     "description": "Dongle web UI: help for the response time field",
-    "x-translated": "de486bf"
+    "x-translated": "ff8e5e62"
   },
   "status.dialog.comfort_noise": "Leitungsrauschen (dBFS)",
   "@status.dialog.comfort_noise": {

@@ -83,6 +83,8 @@
   "status.system.wifi.ok": "sufficient",
   "status.system.wifi.weak": "weak",
   "status.system.wifi_tx": "Transmit power: {tx} dBm",
+  "status.system.wifi_link": "Wi-Fi \"{ssid}\" via access point {bssid}, channel {channel}, connected since {since}",
+  "status.system.wifi_drops": "{drops} Disconnections since startup",
   "status.system.wifi.weak_hint": "Weak Wi-Fi signal: Move the dongle closer to the Fritz!Box or a repeater. In a mesh network, the Fritz!Box's mesh overview shows which box it is connected to.",
   "status.system.col.task": "Task",
   "status.system.col.cpu": "CPU",
@@ -268,7 +270,6 @@
   "status.dialog.vad_silence_db": "Silence Threshold (dBFS)",
   "status.dialog.vad_silence_db.help": "If the caller's volume is lower than this level, they are considered quiet. Set it higher (e.g., -30) if there is line noise, and lower (e.g., -45) for quiet callers. Default: -35.",
   "status.dialog.vad_min_silence_ms": "Response time (ms)",
-  "status.dialog.vad_min_silence_ms.help": "This is how long the caller must remain silent before the dongle responds. Default: 800.",
   "status.dialog.comfort_noise": "Line Noise (dBFS)",
   "status.dialog.comfort_noise.help": "A faint hiss during and between sentences, so the line doesn't sound dead. -90 is practically off. Default: -60.",
   "status.dialog.saved": "Saved.",
@@ -477,6 +478,5 @@
   "status.rec.delete": "Delete Recording",
   "status.rec.delete.confirm": "Delete this recording? The call will remain in the list.",
   "status.rec.failed": "The recording could not be loaded.",
-  "status.system.wifi_link": "Wi-Fi \"{ssid}\" via access point {bssid}, channel {channel}, connected since {since}",
-  "status.system.wifi_drops": "{drops} Disconnections since startup"
+  "status.dialog.vad_min_silence_ms.help": "This is how long the caller must remain silent before the dongle responds. Default: 500."
 }

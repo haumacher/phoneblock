@@ -83,6 +83,8 @@
   "status.system.wifi.ok": "sufficiente",
   "status.system.wifi.weak": "debole",
   "status.system.wifi_tx": "Potenza di trasmissione: {tx} dBm",
+  "status.system.wifi_link": "Wi-Fi “{ssid}” tramite il punto di accesso {bssid}, canale {channel}, connesso da {since}",
+  "status.system.wifi_drops": "{drops} Interruzioni di connessione dall'avvio",
   "status.system.wifi.weak_hint": "Segnale Wi-Fi debole: avvicina il dongle al Fritz!Box o a un ripetitore. In modalità Mesh, la panoramica Mesh del Fritz!Box mostra a quale box è collegato.",
   "status.system.col.task": "Compito",
   "status.system.col.cpu": "CPU",
@@ -268,7 +270,6 @@
   "status.dialog.vad_silence_db": "Soglia di silenzio (dBFS)",
   "status.dialog.vad_silence_db.help": "Se il volume è inferiore a questo livello, il chiamante viene considerato silenzioso. Un valore più alto (ad es. -30) va utilizzato in caso di rumore sulla linea, mentre uno più basso (ad es. -45) per i chiamanti che parlano a voce bassa. Impostazione predefinita: -35.",
   "status.dialog.vad_min_silence_ms": "Tempo di risposta (ms)",
-  "status.dialog.vad_min_silence_ms.help": "Questo è il tempo che il chiamante deve rimanere in silenzio prima che il dongle risponda. Impostazione predefinita: 800.",
   "status.dialog.comfort_noise": "Rumore di linea (dBFS)",
   "status.dialog.comfort_noise.help": "Un leggero fruscio tra una frase e l’altra, per evitare che la linea sembri muta. -90 equivale praticamente a zero. Impostazione predefinita: -60.",
   "status.dialog.saved": "Salvato.",
@@ -477,6 +478,5 @@
   "status.rec.delete": "Elimina registrazione",
   "status.rec.delete.confirm": "Elimina questa registrazione? La chiamata rimane nell'elenco.",
   "status.rec.failed": "Non è stato possibile caricare il file.",
-  "status.system.wifi_link": "Wi-Fi “{ssid}” tramite il punto di accesso {bssid}, canale {channel}, connesso da {since}",
-  "status.system.wifi_drops": "{drops} Interruzioni di connessione dall'avvio"
+  "status.dialog.vad_min_silence_ms.help": "Questo è il tempo che il chiamante deve rimanere in silenzio prima che il dongle risponda. Impostazione predefinita: 500."
 }

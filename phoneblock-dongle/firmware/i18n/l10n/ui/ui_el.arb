@@ -83,6 +83,8 @@
   "status.system.wifi.ok": "επαρκής",
   "status.system.wifi.weak": "αδύναμος",
   "status.system.wifi_tx": "Ισχύς εκπομπής: {tx} dBm",
+  "status.system.wifi_link": "Wi-Fi «{ssid}» μέσω του σημείου πρόσβασης {bssid}, κανάλι {channel}, συνδεδεμένο από {since}",
+  "status.system.wifi_drops": "{drops} Διακοπές σύνδεσης από την έναρξη",
   "status.system.wifi.weak_hint": "Αδύναμο σήμα Wi-Fi: Τοποθέτησε το dongle πιο κοντά στο Fritz!Box ή σε έναν επαναλήπτη. Σε δίκτυο Mesh, η επισκόπηση Mesh του Fritz!Box δείχνει σε ποιο box είναι συνδεδεμένο.",
   "status.system.col.task": "Εργασία",
   "status.system.col.cpu": "CPU",
@@ -268,7 +270,6 @@
   "status.dialog.vad_silence_db": "Όριο σιωπής (dBFS)",
   "status.dialog.vad_silence_db.help": "Αν η ένταση της φωνής του καλούντος είναι χαμηλότερη από αυτό το επίπεδο, θεωρείται ότι μιλάει σιγά. Υψηλότερη τιμή (π.χ. -30) για θόρυβο στη γραμμή, χαμηλότερη (π.χ. -45) για καλούντες που μιλούν σιγά. Προεπιλογή: -35.",
   "status.dialog.vad_min_silence_ms": "Χρόνος απόκρισης (ms)",
-  "status.dialog.vad_min_silence_ms.help": "Ο καλούντος πρέπει να παραμείνει σιωπηλός για αυτό το χρονικό διάστημα, προτού απαντήσει το dongle. Προεπιλογή: 800.",
   "status.dialog.comfort_noise": "Θόρυβος γραμμής (dBFS)",
   "status.dialog.comfort_noise.help": "Απαλό θόρυβο κάτω και ανάμεσα στις προτάσεις, ώστε η γραμμή να μην ακούγεται νεκρή. Η τιμή -90 ισοδυναμεί πρακτικά με απενεργοποίηση. Προεπιλογή: -60.",
   "status.dialog.saved": "Αποθηκεύτηκε.",
@@ -477,6 +478,5 @@
   "status.rec.delete": "Διαγραφή εγγραφής",
   "status.rec.delete.confirm": "Να διαγραφεί αυτή η εγγραφή; Η κλήση θα παραμείνει στη λίστα.",
   "status.rec.failed": "Δεν ήταν δυνατή η φόρτωση της εικόνας.",
-  "status.system.wifi_link": "Wi-Fi «{ssid}» μέσω του σημείου πρόσβασης {bssid}, κανάλι {channel}, συνδεδεμένο από {since}",
-  "status.system.wifi_drops": "{drops} Διακοπές σύνδεσης από την έναρξη"
+  "status.dialog.vad_min_silence_ms.help": "Τόσο χρόνο πρέπει να παραμείνει σιωπηλός ο καλών, προτού απαντήσει το dongle. Προεπιλογή: 500."
 }

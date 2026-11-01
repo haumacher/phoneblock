@@ -83,6 +83,8 @@
   "status.system.wifi.ok": "tilstrekkelig",
   "status.system.wifi.weak": "svak",
   "status.system.wifi_tx": "Sendeeffekt: {tx} dBm",
+  "status.system.wifi_link": "Wi-Fi «{ssid}» via tilgangspunkt {bssid}, kanal {channel}, tilkoblet siden {since}",
+  "status.system.wifi_drops": "{drops} Tilkoblingsbrudd siden oppstart",
   "status.system.wifi.weak_hint": "Svakt Wi-Fi-signal: Plasser dongelen nærmere Fritz!Boxen eller en repeater. I Mesh-nettverket viser Mesh-oversikten på Fritz!Boxen hvilken boks den er koblet til.",
   "status.system.col.task": "Oppgave",
   "status.system.col.cpu": "CPU",
@@ -268,7 +270,6 @@
   "status.dialog.vad_silence_db": "Støyterskel (dBFS)",
   "status.dialog.vad_silence_db.help": "Hvis lydnivået er lavere enn dette, regnes den som ringer som stille. Høyere (f.eks. -30) ved støy i linjen, lavere (f.eks. -45) for dem som snakker lavt. Standard: -35.",
   "status.dialog.vad_min_silence_ms": "Svarstid (ms)",
-  "status.dialog.vad_min_silence_ms.help": "Så lenge må den som ringer være stille før dongelen svarer. Standard: 800.",
   "status.dialog.comfort_noise": "Ledningsstøy (dBFS)",
   "status.dialog.comfort_noise.help": "En svak susing under og mellom setningene, slik at linjen ikke høres død ut. -90 er praktisk talt av. Standard: -60.",
   "status.dialog.saved": "Lagret.",
@@ -477,6 +478,5 @@
   "status.rec.delete": "Slett opptak",
   "status.rec.delete.confirm": "Skal denne opptaket slettes? Samtalen forblir i listen.",
   "status.rec.failed": "Opptaket kunne ikke lastes inn.",
-  "status.system.wifi_link": "Wi-Fi «{ssid}» via tilgangspunkt {bssid}, kanal {channel}, tilkoblet siden {since}",
-  "status.system.wifi_drops": "{drops} Tilkoblingsbrudd siden oppstart"
+  "status.dialog.vad_min_silence_ms.help": "Så lenge må den som ringer være stille før dongelen svarer. Standard: 500."
 }

@@ -83,6 +83,8 @@
   "status.system.wifi.ok": "wystarczająco",
   "status.system.wifi.weak": "słaby",
   "status.system.wifi_tx": "Moc nadawcza: {tx} dBm",
+  "status.system.wifi_link": "Sieć Wi-Fi „{ssid}” poprzez punkt dostępowy {bssid}, kanał {channel}, połączona od {since}",
+  "status.system.wifi_drops": "{drops} Przerwy w połączeniu od momentu uruchomienia",
   "status.system.wifi.weak_hint": "Słaby sygnał Wi-Fi: Umieść klucz bliżej routera Fritz!Box lub repeatera. W sieci typu mesh przegląd sieci Fritz!Box pokazuje, do którego urządzenia jest on podłączony.",
   "status.system.col.task": "Zadanie",
   "status.system.col.cpu": "Procesor",
@@ -268,7 +270,6 @@
   "status.dialog.vad_silence_db": "Próg ciszy (dBFS)",
   "status.dialog.vad_silence_db.help": "Jeśli poziom jest niższy od tego, rozmówca jest uznawany za mówiącego cicho. Wyższy poziom (np. -30) stosuje się w przypadku szumów w linii, a niższy (np. -45) – w przypadku cicho mówiących rozmówców. Wartość domyślna: -35.",
   "status.dialog.vad_min_silence_ms": "Czas odpowiedzi (ms)",
-  "status.dialog.vad_min_silence_ms.help": "Tyle czasu rozmówca musi milczeć, zanim klucz sprzętowy udzieli odpowiedzi. Wartość domyślna: 800.",
   "status.dialog.comfort_noise": "Szum sieciowy (dBFS)",
   "status.dialog.comfort_noise.help": "Cichy szum w tle i między zdaniami, aby linia nie brzmiała martwo. -90 oznacza praktycznie wyłączenie. Ustawienie domyślne: -60.",
   "status.dialog.saved": "Zapisano.",
@@ -477,6 +478,5 @@
   "status.rec.delete": "Usuń nagranie",
   "status.rec.delete.confirm": "Czy chcesz usunąć to nagranie? Połączenie pozostanie na liście.",
   "status.rec.failed": "Nie udało się załadować nagrania.",
-  "status.system.wifi_link": "Sieć Wi-Fi „{ssid}” poprzez punkt dostępowy {bssid}, kanał {channel}, połączona od {since}",
-  "status.system.wifi_drops": "{drops} Przerwy w połączeniu od momentu uruchomienia"
+  "status.dialog.vad_min_silence_ms.help": "Tyle czasu musi milczeć dzwoniący, zanim klucz sprzętowy odpowie. Wartość domyślna: 500."
 }

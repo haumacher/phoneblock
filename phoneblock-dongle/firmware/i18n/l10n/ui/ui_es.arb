@@ -83,6 +83,8 @@
   "status.system.wifi.ok": "suficiente",
   "status.system.wifi.weak": "débil",
   "status.system.wifi_tx": "Potencia de transmisión: {tx} dBm",
+  "status.system.wifi_link": "Wifi «{ssid}» a través del punto de acceso {bssid}, canal {channel}, conectado desde {since}",
+  "status.system.wifi_drops": "{drops} de conexión desde el inicio",
   "status.system.wifi.weak_hint": "Señal wifi débil: acerca el dongle a la Fritz!Box o a un repetidor. En la red Mesh, la vista general de la Fritz!Box muestra en qué dispositivo está conectado.",
   "status.system.col.task": "Tarea",
   "status.system.col.cpu": "CPU",
@@ -268,7 +270,6 @@
   "status.dialog.vad_silence_db": "Umbral de silencio (dBFS)",
   "status.dialog.vad_silence_db.help": "Si el volumen es inferior a este nivel, se considera que la persona que llama habla en voz baja. Se ajusta a un valor más alto (p. ej., -30) si hay ruido en la línea, y a uno más bajo (p. ej., -45) si la persona que llama habla en voz baja. Valor predeterminado: -35.",
   "status.dialog.vad_min_silence_ms": "Tiempo de respuesta (ms)",
-  "status.dialog.vad_min_silence_ms.help": "El llamante debe permanecer en silencio durante este tiempo antes de que el dongle responda. Valor predeterminado: 800.",
   "status.dialog.comfort_noise": "Ruido de línea (dBFS)",
   "status.dialog.comfort_noise.help": "Un ligero ruido de fondo entre frases y al final de cada una, para que la línea no suene muerta. -90 equivale prácticamente a apagado. Valor predeterminado: -60.",
   "status.dialog.saved": "Guardado.",
@@ -477,6 +478,5 @@
   "status.rec.delete": "Borrar grabación",
   "status.rec.delete.confirm": "¿Quieres borrar esta grabación? La llamada seguirá apareciendo en la lista.",
   "status.rec.failed": "No se ha podido cargar la grabación.",
-  "status.system.wifi_link": "Wifi «{ssid}» a través del punto de acceso {bssid}, canal {channel}, conectado desde {since}",
-  "status.system.wifi_drops": "{drops} de conexión desde el inicio"
+  "status.dialog.vad_min_silence_ms.help": "Este es el tiempo que debe permanecer en silencio la persona que llama antes de que el dongle responda. Valor predeterminado: 500."
 }

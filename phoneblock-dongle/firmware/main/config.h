@@ -362,7 +362,7 @@ int         config_set_dialog_speaker(const char *id);
 // vad_silence_db (dBFS); their turn ends after vad_min_silence_ms of
 // continuous silence. comfort_noise_db is the level (dBFS) of the hiss the
 // dongle sends under and between its prompts. Each getter clamps to the
-// range below and falls back to its default (-35 dBFS, 800 ms, -60 dBFS)
+// range below and falls back to its default (-35 dBFS, 500 ms, -60 dBFS)
 // when unset or out of range; the _valid() functions guard the web POST.
 #define CONFIG_VAD_SILENCE_DB_MIN       (-70)
 #define CONFIG_VAD_SILENCE_DB_MAX       (-10)
