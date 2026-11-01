@@ -73,10 +73,10 @@ host name than the "foreign site" and the server.
    (`/api/status` reports `phoneblock.token_link: true`, `token_signin:
    false`). The click shows the code large with a copy button; **phoneblock.net
    öffnen** opens the server's `/link` page in a new tab, where you enter (or
-   paste) the code and confirm.
-   Within one poll interval (5 s) the setup step turns green. Declining
-   shows the reason and a retry button; an unconfirmed code expires after
-   10 minutes.
+   paste) the code — entering it links the service, there is no second
+   confirmation. Within one poll interval (5 s) the setup step turns green.
+   A code nobody enters expires after 10 minutes; the page then shows the
+   reason and a retry button.
 2. **Directly — unchanged redirect sign-in:** `http://<LAN-IP>:8098/`. No
    `X-Ingress-Path`, so `token_link` is absent, `token_signin: true`, and
    the token page shows the usual "Bei PhoneBlock anmelden" redirect flow

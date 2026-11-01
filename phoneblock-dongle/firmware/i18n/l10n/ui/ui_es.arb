@@ -387,11 +387,14 @@
   "token.current.missing": "Aún no hay token configurado.",
   "token.submit": "Entrar en PhoneBlock",
   "link.submit": "Vincular la cuenta de PhoneBlock",
+  "link.how": "Al hacer clic en el botón, aparecerá un código. A continuación, abre phoneblock.net, inicia sesión e introduce el código allí. El servicio se encargará de recuperar el token automáticamente.",
   "link.starting": "Se está preparando el enlace…",
+  "link.compare": "Introduce este código en phoneblock.net para vincular el servicio a tu cuenta.",
   "link.copy": "Copiar código",
   "link.copied": "Código copiado",
   "link.copy_failed": "No se puede copiar: el código está resaltado; cópialo con Ctrl+C.",
-  "link.waiting": "Espera a recibir tu confirmación en phoneblock.net…",
+  "link.open": "Abrir phoneblock.net",
+  "link.manual": "La página es {url}; también puedes introducir el código allí desde otro dispositivo, por ejemplo, desde el móvil.",
   "link.approved": "Cuenta de PhoneBlock vinculada: el token está configurado.",
   "link.denied": "El enlace ha sido rechazado en phoneblock.net.",
   "link.expired": "El código ha caducado. Solicita un nuevo código.",
@@ -460,8 +463,5 @@
   "spam.dialog.comment": "Motivo",
   "spam.dialog.comment.hint": "(opcional, será visible públicamente)",
   "spam.dialog.error.is_contact": "Esta persona figura en tu agenda. Una entrada de la agenda siempre tiene prioridad en el dongle, por lo que en este caso no es posible recibir un aviso de spam.",
-  "link.how": "Al hacer clic en el botón, aparecerá un código. A continuación, abre phoneblock.net, inicia sesión e introduce el código allí. El servicio se encargará de recuperar el token automáticamente.",
-  "link.compare": "Introduce este código en phoneblock.net para vincular el servicio a tu cuenta.",
-  "link.open": "Abrir phoneblock.net",
-  "link.manual": "La página es {url}; también puedes introducir el código allí desde otro dispositivo, por ejemplo, desde el móvil."
+  "link.waiting": "A la espera de que se introduzca el código en phoneblock.net…"
 }

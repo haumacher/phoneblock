@@ -19,6 +19,8 @@ if (!location.pathname.endsWith('/'))
   :root{--brand:#008f7a;--ok:#188038;--err:#d93025;--warn:#e8710a;
         --caution:#b06000;--info:#1a73e8;--muted:#888;--text:#222;--text2:#444}
   *{box-sizing:border-box}
+  /* The hidden attribute must win over class rules like .actions{display:flex}. */
+  [hidden]{display:none!important}
   body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;
        margin:0;background:#f5f5f7;color:var(--text);line-height:1.45}
   header{background:var(--brand);color:#fff;padding:.8rem 1rem;
@@ -3803,12 +3805,12 @@ async function renderToken(){
     + '<div class="crumb"><a href="#/">' + esc(t('back.status')) + '</a></div>'
     + '<h2>' + esc(t('token.title')) + '</h2>'
     + '<p class="muted">' + esc(t('token.intro')) + '</p>'
-    + '<p class="muted">' + esc(t(link ? 'link.how' : 'token.how')) + '</p>'
-    + '<p class="muted">'
+    + '<p class="muted" id="tokenHow">' + esc(t(link ? 'link.how' : 'token.how')) + '</p>'
+    + '<p class="muted" id="tokenCurrent">'
     + (set ? esc(t('token.current.set')) : esc(t('token.current.missing')))
     + '</p>'
     + (link
-        ? '<p class="actions">'
+        ? '<p class="actions" id="linkStartRow">'
           + '<button id="linkStart" class="btn-primary">' + esc(t('link.submit')) + '</button>'
           + '</p>'
           + '<div id="linkPanel"></div>'
@@ -3828,7 +3830,11 @@ async function renderToken(){
 // first and opens phoneblock.net only on a second click: the code is never
 // carried in the link, so a forwarded link cannot confirm anything.
 async function startLink(btn, panel){
-  btn.disabled = true;
+  // While a link runs, nothing on the page may start another one: the
+  // start button and its explanation go away; a failed link offers its own
+  // retry button in the panel.
+  $('linkStartRow').hidden = true;
+  $('tokenHow').hidden = true;
   panel.innerHTML = '<p class="status-line muted">' + esc(t('link.starting')) + '</p>';
   let r = null;
   try {
@@ -3846,13 +3852,20 @@ async function startLink(btn, panel){
     + '</div>'
     + '<p id="linkCopyMsg" class="hint" hidden></p>'
     + '<p>' + esc(t('link.compare')) + '</p>'
-    + '<p class="actions"><a class="btn-primary" target="_blank" rel="noopener" href="'
+    + '<p class="actions" id="linkOpenRow"><a id="linkOpen" class="btn-primary" target="_blank" rel="noopener" href="'
     +   esc(r.verifyUrl) + '">' + esc(t('link.open')) + '</a></p>'
+    + '<p id="linkMsg" class="status-line" hidden>' + esc(t('link.waiting')) + '</p>'
     + '<p class="hint">' + esc(t('link.manual')).replace('{url}',
         '<a target="_blank" rel="noopener" href="' + esc(r.verifyUrl) + '">' + esc(r.verifyUrl) + '</a>')
-    + '</p>'
-    + '<p id="linkMsg" class="status-line muted">' + esc(t('link.waiting')) + '</p>';
+    + '</p>';
   $('linkCopy').onclick = () => copyLinkCode($('linkCode'), $('linkCopyMsg'), r.userCode);
+  // Once phoneblock.net is open, the button has done its job: in its place
+  // the page says what it is waiting for (the address stays in the hint
+  // below, should the tab get lost).
+  $('linkOpen').addEventListener('click', () => {
+    $('linkOpenRow').hidden = true;
+    $('linkMsg').hidden = false;
+  });
   for (;;){
     await new Promise(res => setTimeout(res, 2000));
     // Left the page: the service keeps polling on its own; the status
@@ -3902,8 +3915,9 @@ async function copyLinkCode(codeEl, msg, code){
 }
 
 function linkEnded(btn, panel, state, message){
-  btn.disabled = false;
   if (state === 'approved'){
+    const current = $('tokenCurrent');
+    if (current) current.textContent = t('token.current.set');
     panel.innerHTML = '<p class="status-line txt-ok">' + esc(t('link.approved')) + '</p>';
     // Back to the status page, whose next poll turns the token pill green.
     setTimeout(() => { if ((location.hash || '#/') === '#/setup/token') location.hash = '#/'; }, 1500);

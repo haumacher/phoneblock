@@ -387,11 +387,14 @@
   "token.current.missing": "Det er ikke opprettet noen token ennå.",
   "token.submit": "Logg inn på PhoneBlock",
   "link.submit": "Koble til PhoneBlock-konto",
+  "link.how": "Hvis du klikker på knappen, vises en kode her. Åpne deretter phoneblock.net, logg inn og skriv inn koden der. Tjenesten henter deretter tokenet selv.",
   "link.starting": "Koblingen forberedes…",
+  "link.compare": "Skriv inn denne koden på phoneblock.net for å knytte tjenesten til kontoen din.",
   "link.copy": "Kopier koden",
   "link.copied": "Koden er kopiert",
   "link.copy_failed": "Det er ikke mulig å kopiere – koden er uthevet. Kopier den med Ctrl+C.",
-  "link.waiting": "Vent på bekreftelsen din på phoneblock.net…",
+  "link.open": "Åpne phoneblock.net",
+  "link.manual": "Nettstedet er {url} – du kan også skrive inn koden der på en annen enhet, for eksempel på mobilen.",
   "link.approved": "PhoneBlock-kontoen er koblet til — tokenet er angitt.",
   "link.denied": "Koblingen ble avvist på phoneblock.net.",
   "link.expired": "Koden har utløpt. Be om en ny kode.",
@@ -460,8 +463,5 @@
   "spam.dialog.comment": "Årsak",
   "spam.dialog.comment.hint": "(valgfritt, blir synlig for alle)",
   "spam.dialog.error.is_contact": "Denne innringeren står oppført i telefonboken din. En oppføring i telefonboken har alltid forrang på dongelen, og derfor er det ikke mulig å motta en spam-melding her.",
-  "link.how": "Hvis du klikker på knappen, vises en kode her. Åpne deretter phoneblock.net, logg inn og skriv inn koden der. Tjenesten henter deretter tokenet selv.",
-  "link.compare": "Skriv inn denne koden på phoneblock.net for å knytte tjenesten til kontoen din.",
-  "link.open": "Åpne phoneblock.net",
-  "link.manual": "Nettstedet er {url} – du kan også skrive inn koden der på en annen enhet, for eksempel på mobilen."
+  "link.waiting": "Venter på at koden skal legges inn på phoneblock.net…"
 }

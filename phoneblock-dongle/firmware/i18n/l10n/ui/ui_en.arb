@@ -387,11 +387,14 @@
   "token.current.missing": "No token configured yet.",
   "token.submit": "Sign in to PhoneBlock",
   "link.submit": "Link PhoneBlock Account",
+  "link.how": "Clicking the button will display a code here. Then open phoneblock.net, log in, and enter the code there. The service will then retrieve the token on its own.",
   "link.starting": "Link is being prepared…",
+  "link.compare": "Enter this code on phoneblock.net to link the service to your account.",
   "link.copy": "Copy code",
   "link.copied": "Code copied",
   "link.copy_failed": "Cannot copy—the code is highlighted; press Ctrl+C to copy it.",
-  "link.waiting": "Wait for your confirmation on phoneblock.net…",
+  "link.open": "Open phoneblock.net",
+  "link.manual": "The page is {url}—you can also enter the code there on another device, such as your cell phone.",
   "link.approved": "PhoneBlock account linked — the token has been set.",
   "link.denied": "The link was rejected on phoneblock.net.",
   "link.expired": "The code has expired. Request a new code.",
@@ -460,8 +463,5 @@
   "spam.dialog.comment": "Reason",
   "spam.dialog.comment.hint": "(optional; will be visible to the public)",
   "spam.dialog.error.is_contact": "This caller is in your phone book. A phone book entry always takes precedence on the dongle, so a spam alert isn't possible in this case.",
-  "link.how": "Clicking the button will display a code here. Then open phoneblock.net, log in, and enter the code there. The service will then retrieve the token on its own.",
-  "link.compare": "Enter this code on phoneblock.net to link the service to your account.",
-  "link.open": "Open phoneblock.net",
-  "link.manual": "The page is {url}—you can also enter the code there on another device, such as your cell phone."
+  "link.waiting": "Waiting for the code to be entered on phoneblock.net…"
 }

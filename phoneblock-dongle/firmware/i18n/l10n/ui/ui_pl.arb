@@ -387,11 +387,14 @@
   "token.current.missing": "Nie skonfigurowano jeszcze tokenu.",
   "token.submit": "Zaloguj się do serwisu PhoneBlock",
   "link.submit": "Połącz konto PhoneBlock",
+  "link.how": "Kliknięcie przycisku spowoduje wyświetlenie kodu. Następnie otwórz stronę phoneblock.net, zaloguj się i wprowadź tam ten kod. Serwis sam pobierze token.",
   "link.starting": "Łącze jest przygotowywane…",
+  "link.compare": "Wprowadź ten kod na stronie phoneblock.net, aby powiązać tę usługę ze swoim kontem.",
   "link.copy": "Skopiuj kod",
   "link.copied": "Kod skopiowany",
   "link.copy_failed": "Kopiowanie nie jest możliwe – kod jest zaznaczony, skopiuj go za pomocą klawiszy Ctrl+C.",
-  "link.waiting": "Czekaj na potwierdzenie na stronie phoneblock.net…",
+  "link.open": "Otwórz stronę phoneblock.net",
+  "link.manual": "Strona znajduje się pod adresem {url} – kod ten możesz wprowadzić również na innym urządzeniu, np. na telefonie komórkowym.",
   "link.approved": "Konto PhoneBlock zostało połączone — token został ustawiony.",
   "link.denied": "Link został odrzucony na stronie phoneblock.net.",
   "link.expired": "Kod stracił ważność. Poproś o nowy kod.",
@@ -460,8 +463,5 @@
   "spam.dialog.comment": "Powód",
   "spam.dialog.comment.hint": "(opcjonalnie, będzie widoczne publicznie)",
   "spam.dialog.error.is_contact": "Ten numer znajduje się w Twojej książce telefonicznej. Wpis w książce telefonicznej ma zawsze pierwszeństwo w przypadku klucza sprzętowego, dlatego w tym przypadku nie jest możliwe zgłoszenie spamu.",
-  "link.how": "Kliknięcie przycisku spowoduje wyświetlenie kodu. Następnie otwórz stronę phoneblock.net, zaloguj się i wprowadź tam ten kod. Serwis sam pobierze token.",
-  "link.compare": "Wprowadź ten kod na stronie phoneblock.net, aby powiązać tę usługę ze swoim kontem.",
-  "link.open": "Otwórz stronę phoneblock.net",
-  "link.manual": "Strona znajduje się pod adresem {url} – kod ten możesz wprowadzić również na innym urządzeniu, np. na telefonie komórkowym."
+  "link.waiting": "Czekam na wprowadzenie kodu na stronie phoneblock.net…"
 }

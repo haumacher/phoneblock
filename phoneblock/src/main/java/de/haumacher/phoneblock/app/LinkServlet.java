@@ -34,10 +34,9 @@ import jakarta.servlet.http.HttpSession;
  * </p>
  *
  * <p>
- * <b>POST /link</b> with <code>code</code>, the session's <code>csrf</code> nonce and
- * <code>action</code>: <code>lookup</code> (the entry form) shows the device label and the code
- * with the buttons to confirm or refuse; <code>approve</code> or <code>deny</code> records the
- * decision and shows the result page.
+ * <b>POST /link</b> with <code>code</code> and the session's <code>csrf</code> nonce approves the
+ * link: typing in the code the device shows is the user's consent, there is no second
+ * confirmation step. The result page names the linked device.
  * </p>
  */
 @WebServlet(urlPatterns = LinkServlet.PATH)
@@ -49,20 +48,8 @@ public class LinkServlet extends HttpServlet {
 	/** Parameter carrying the user code. */
 	public static final String CODE_PARAM = "code";
 
-	/** Parameter selecting the decision. */
-	public static final String ACTION_PARAM = "action";
-
 	/** Parameter carrying the CSRF nonce. */
 	public static final String CSRF_PARAM = "csrf";
-
-	/** {@link #ACTION_PARAM} value of the code entry form: show the link for the entered code. */
-	public static final String ACTION_LOOKUP = "lookup";
-
-	/** {@link #ACTION_PARAM} value confirming the link. */
-	public static final String ACTION_APPROVE = "approve";
-
-	/** {@link #ACTION_PARAM} value refusing the link. */
-	public static final String ACTION_DENY = "deny";
 
 	private static final String TEMPLATE = "/link";
 
@@ -70,10 +57,10 @@ public class LinkServlet extends HttpServlet {
 
 	private static final String LIMIT_ATTR = "linkWrongCodes";
 
-	/** Template variable: <code>confirm</code>, <code>enter</code> or <code>done</code>. */
+	/** Template variable: <code>enter</code> or <code>done</code>. */
 	private static final String VIEW_VAR = "linkView";
 
-	/** Template variable: the {@link LinkInfo} shown on the confirmation view. */
+	/** Template variable: the {@link LinkInfo} of the linked device on the result view. */
 	private static final String LINK_VAR = "link";
 
 	/** Template variable: the code entered by the user (re-filled into the entry form). */
@@ -81,9 +68,6 @@ public class LinkServlet extends HttpServlet {
 
 	/** Template variable: error key shown on the entry view. */
 	private static final String ERROR_VAR = "linkError";
-
-	/** Template variable: <code>approved</code> or <code>denied</code> on the result view. */
-	private static final String RESULT_VAR = "linkResult";
 
 	/** Template variable: the e-mail address or display name of the account to link. */
 	private static final String ACCOUNT_VAR = "linkAccount";
@@ -122,7 +106,6 @@ public class LinkServlet extends HttpServlet {
 			return;
 		}
 
-		String action = req.getParameter(ACTION_PARAM);
 		if (code == null || code.isBlank()) {
 			showEntry(req, resp, null, null);
 			return;
@@ -136,45 +119,14 @@ public class LinkServlet extends HttpServlet {
 			return;
 		}
 
+		// Typing in the code the device shows is the consent: no second confirmation step.
 		DeviceLinks links = DeviceLinks.getInstance();
-		if (ACTION_LOOKUP.equals(action)) {
-			LinkInfo link = links.find(code);
-			if (link == null) {
-				limit.failed(now);
-				resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-				showEntry(req, resp, code, "unknown");
-				return;
-			}
-			switch (link.state()) {
-				case APPROVED:
-					showEntry(req, resp, code, "already-approved");
-					return;
-				case DENIED:
-					showEntry(req, resp, code, "already-denied");
-					return;
-				case PENDING:
-				default:
-					showConfirm(req, resp, link);
-					return;
-			}
-		}
-
-		boolean approve;
-		if (ACTION_APPROVE.equals(action)) {
-			approve = true;
-		} else if (ACTION_DENY.equals(action)) {
-			approve = false;
-		} else {
-			resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-			showEntry(req, resp, code, "invalid");
-			return;
-		}
-
-		Decision decision = approve ? links.approve(code, user) : links.deny(code, user);
+		LinkInfo link = links.find(code);
+		Decision decision = link == null ? Decision.UNKNOWN : links.approve(code, user);
 		switch (decision) {
 			case OK:
 				req.setAttribute(VIEW_VAR, "done");
-				req.setAttribute(RESULT_VAR, approve ? "approved" : "denied");
+				req.setAttribute(LINK_VAR, link);
 				render(req, resp);
 				return;
 			case ALREADY_APPROVED:
@@ -194,18 +146,11 @@ public class LinkServlet extends HttpServlet {
 		}
 	}
 
-	private void showConfirm(HttpServletRequest req, HttpServletResponse resp, LinkInfo link) throws IOException {
-		req.setAttribute(VIEW_VAR, "confirm");
-		req.setAttribute(ACCOUNT_VAR, accountName(req));
-		req.setAttribute(LINK_VAR, link);
-		req.setAttribute(CSRF_VAR, csrfToken(req.getSession()));
-		render(req, resp);
-	}
-
 	private void showEntry(HttpServletRequest req, HttpServletResponse resp, String code, String error) throws IOException {
 		req.setAttribute(VIEW_VAR, "enter");
 		req.setAttribute(CODE_VAR, code == null ? "" : code);
 		req.setAttribute(CSRF_VAR, csrfToken(req.getSession()));
+		req.setAttribute(ACCOUNT_VAR, accountName(req));
 		if (error != null) {
 			req.setAttribute(ERROR_VAR, error);
 		}

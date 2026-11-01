@@ -9,8 +9,8 @@ the state in memory and no login.
   POST <prefix>/api/link/poll    {"deviceCode"} -> pending | slow_down |
                                  approved (+token) | denied | expired
   GET  <prefix>/link             code entry form (a ?code= is ignored, as on the
-                                 real server); POST action=lookup shows the
-                                 confirmation with [Verknüpfen] / [Ablehnen]
+                                 real server); POSTing a code links it, as on
+                                 the real server there is no second confirmation
   GET  <prefix>/api/test         "ok" for a token this fake handed out
   GET  <prefix>/api/account      {"dialPrefix": "+49"}
 
@@ -106,17 +106,13 @@ class Handler(BaseHTTPRequestHandler):
             return self.poll(req)
         if path == "/link":
             form = parse_qs(raw.decode())
-            code = form.get("code", [""])[0]
-            action = form.get("action", [""])[0]
-            if action == "lookup":
-                return self.page(code)
-            return self.decide(code, action)
+            return self.approve(form.get("code", [""])[0])
         self.json(404, {"message": "not found"})
 
     def do_GET(self):
         path, parts = self.path_of()
         if path == "/link":
-            # The code must be typed in, a ?code= never leads to the confirmation.
+            # The code must be typed in, a ?code= is ignored.
             return self.page("")
         if path == "/api/test":
             auth = self.headers.get("Authorization", "")
@@ -177,48 +173,32 @@ class Handler(BaseHTTPRequestHandler):
         self.log_message("token %s picked up for %r", token, e["label"])
         self.json(200, {"status": "approved", "token": token})
 
-    def page(self, code, note=""):
-        with lock:
-            sweep()
-            _, e = find_by_user_code(code) if code else (None, None)
+    def page(self, code):
         action = html.escape(self.server.prefix + "/link")
-        if e and e["state"] == "pending":
-            body = (
-                "<h1>Gerät verknüpfen</h1>"
-                "<p>Gerät: <b>%s</b></p>"
-                "<p style='font:700 2rem monospace;letter-spacing:.15em'>%s</p>"
-                "<p>Bestätige nur eine Verknüpfung, die du selbst gestartet hast.</p>"
-                "<form method='post' action='%s'><input type='hidden' name='code' value='%s'>"
-                "<button name='action' value='approve'>Verknüpfen</button> "
-                "<button name='action' value='deny'>Ablehnen</button></form>"
-            ) % (html.escape(e["label"]), html.escape(e["user_code"]), action,
-                 html.escape(e["user_code"]))
-        else:
-            body = (
-                "<h1>Code eingeben</h1>%s"
-                "<form method='post' action='%s'><input name='code' autofocus> "
-                "<button name='action' value='lookup'>Weiter</button></form>"
-            ) % ("<p>Unbekannter oder abgelaufener Code.</p>" if code else "", action)
+        body = (
+            "<h1>Code eingeben</h1>%s"
+            "<p>Gib nur einen Code ein, den du gerade selbst angefordert hast.</p>"
+            "<form method='post' action='%s'><input name='code' autofocus> "
+            "<button>Verknüpfen</button></form>"
+        ) % ("<p>Unbekannter oder abgelaufener Code.</p>" if code else "", action)
         self.send(200, "<!DOCTYPE html><meta charset='utf-8'><title>Fake PhoneBlock</title>"
                   "<body style='font-family:sans-serif;max-width:36rem;margin:2rem auto'>"
-                  "<p><i>Fake-PhoneBlock (Ingress-Test)</i></p>" + note + body,
+                  "<p><i>Fake-PhoneBlock (Ingress-Test)</i></p>" + body,
                   "text/html")
 
-    def decide(self, code, action):
+    def approve(self, code):
         with lock:
+            sweep()
             _, e = find_by_user_code(code)
-            if e and e["state"] == "pending" and action in ("approve", "deny"):
-                e["state"] = "approved" if action == "approve" else "denied"
-                done = e["state"]
-            else:
-                done = None
-        if not done:
+            ok = bool(e and e["state"] == "pending")
+            if ok:
+                e["state"] = "approved"
+        if not ok:
             return self.page(code)
-        self.log_message("%s %s", done, code)
+        self.log_message("approved %s", code)
         self.send(200, "<!DOCTYPE html><meta charset='utf-8'><title>Fake PhoneBlock</title>"
-                  "<p>%s Du kannst dieses Fenster schließen.</p>"
-                  "<script>window.close()</script>"
-                  % ("Verknüpft." if done == "approved" else "Abgelehnt."), "text/html")
+                  "<p>%s ist verknüpft. Du kannst dieses Fenster schließen.</p>"
+                  "<script>window.close()</script>" % html.escape(e["label"]), "text/html")
 
 
 def main():
@@ -227,7 +207,7 @@ def main():
     ap.add_argument("--prefix", default="/phoneblock",
                     help="context path, like the real server's /phoneblock")
     ap.add_argument("--public-url", default=None,
-                    help="base URL the browser uses for the confirmation page "
+                    help="base URL the browser uses for the code entry page "
                          "(default http://localhost:<port><prefix>)")
     ap.add_argument("--auto-approve", type=int, default=0, metavar="N",
                     help="approve a link at its N-th poll (0: wait for the page)")
@@ -237,7 +217,7 @@ def main():
     server.public_url = (args.public_url or
                          "http://localhost:%d%s" % (args.port, server.prefix)).rstrip("/")
     server.auto_approve = args.auto_approve
-    print("fake-phoneblock: listening on :%d%s, confirmation page %s/link"
+    print("fake-phoneblock: listening on :%d%s, code entry page %s/link"
           % (args.port, server.prefix, server.public_url), flush=True)
     server.serve_forever()
 

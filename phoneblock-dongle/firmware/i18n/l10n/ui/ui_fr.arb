@@ -387,11 +387,14 @@
   "token.current.missing": "Aucun jeton configuré pour l’instant.",
   "token.submit": "Se connecter à PhoneBlock",
   "link.submit": "Associer un compte PhoneBlock",
+  "link.how": "Cliquez sur le bouton pour afficher un code. Ouvrez ensuite phoneblock.net, connectez-vous et saisissez-y ce code. Le service récupérera ensuite le jeton de lui-même.",
   "link.starting": "Le lien est en cours de préparation…",
+  "link.compare": "Saisis ce code sur phoneblock.net pour associer le service à ton compte.",
   "link.copy": "Copier le code",
   "link.copied": "Code copié",
   "link.copy_failed": "Impossible de copier – le code est sélectionné, copiez-le avec Ctrl+C.",
-  "link.waiting": "Attends ta confirmation sur phoneblock.net…",
+  "link.open": "Ouvrir phoneblock.net",
+  "link.manual": "La page se trouve à l'adresse {url} – tu peux également saisir le code sur un autre appareil, par exemple sur ton téléphone portable.",
   "link.approved": "Compte PhoneBlock associé — le jeton est défini.",
   "link.denied": "Le lien a été refusé sur phoneblock.net.",
   "link.expired": "Le code a expiré. Demandez un nouveau code.",
@@ -460,8 +463,5 @@
   "spam.dialog.comment": "Raison",
   "spam.dialog.comment.hint": "(facultatif, sera visible publiquement)",
   "spam.dialog.error.is_contact": "Ce correspondant figure dans ton répertoire. Une entrée du répertoire a toujours la priorité sur le dongle ; c'est pourquoi il n'est pas possible de signaler ce numéro comme spam.",
-  "link.how": "Cliquez sur le bouton pour afficher un code. Ouvrez ensuite phoneblock.net, connectez-vous et saisissez-y ce code. Le service récupérera ensuite le jeton de lui-même.",
-  "link.compare": "Saisis ce code sur phoneblock.net pour associer le service à ton compte.",
-  "link.open": "Ouvrir phoneblock.net",
-  "link.manual": "La page se trouve à l'adresse {url} – tu peux également saisir le code sur un autre appareil, par exemple sur ton téléphone portable."
+  "link.waiting": "En attente de la saisie du code sur phoneblock.net…"
 }

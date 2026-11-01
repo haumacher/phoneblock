@@ -11,38 +11,6 @@
 
 	<h1 data-tx="t0001:f42b8da7">Σύνδεση συσκευής με το PhoneBlock</h1>
 
-	<th:block th:if="${linkView == 'confirm'}">
-		<p data-tx="t0002:d151ab1a">Η συσκευή <strong th:text="${link.label}">PhoneBlock-Dongle</strong> επιθυμεί να αποκτήσει πρόσβαση στον λογαριασμό σου στο PhoneBlock <strong th:if="${linkAccount != null}" th:text="${linkAccount}">name@example.invalid</strong> (<code th:text="${userName}"></code>).</p>
-
-		<p class="has-text-centered is-size-1 has-text-weight-bold is-family-monospace" data-tx="t0003:44300d3" dir="ltr" th:text="${link.userCode}">BCDF-GHJK</p>
-
-		<article class="message is-warning">
-			<div class="message-body">
-				<p data-tx="t0004:62f093c2">Επιβεβαίωσε μόνο αν έχεις ζητήσει εσύ ο ίδιος αυτόν τον κωδικό στη συσκευή σου ή στο Home Assistant και τον έχεις αντιγράψει από εκεί.</p>
-				<p data-tx="t0005:d3362fd0">Αν κάποιος άλλος σου έδωσε αυτόν τον κωδικό, κάνε κλικ στο <em>Απόρριψη</em> – αλλιώς, μια ξένη συσκευή θα αποκτήσει πρόσβαση στον λογαριασμό σου.</p>
-			</div>
-		</article>
-
-		<form method="post" th:action="@{/link}">
-			<input name="code" th:value="${link.userCode}" type="hidden"/>
-			<input name="csrf" th:value="${linkCsrf}" type="hidden"/>
-			<div class="field is-grouped">
-				<p class="control">
-					<button class="button is-primary" name="action" type="submit" value="approve">
-						<span class="icon"><i class="fa-solid fa-link"></i></span>
-						<span data-tx="t0006:280920f2">Σύνδεση</span>
-					</button>
-				</p>
-				<p class="control">
-					<button class="button is-danger is-outlined" name="action" type="submit" value="deny">
-						<span class="icon"><i class="fa-solid fa-xmark"></i></span>
-						<span data-tx="t0007:6bf89a5a">Απόρριψη</span>
-					</button>
-				</p>
-			</div>
-		</form>
-	</th:block>
-
 	<th:block th:if="${linkView == 'enter'}">
 		<article class="message is-danger" th:if="${linkError != null}">
 			<div class="message-body">
@@ -51,11 +19,16 @@
 				<p data-tx="t0010:84ec6915" th:if="${linkError == 'already-approved'}">Αυτή η σύνδεση έχει ήδη επιβεβαιωθεί.</p>
 				<p data-tx="t0011:7648da23" th:if="${linkError == 'already-denied'}">Αυτή η σύνδεση έχει ήδη απορριφθεί. Επανεκκίνησε τη σύνδεση στη συσκευή σου.</p>
 				<p data-tx="t0012:97229cd2" th:if="${linkError == 'csrf'}">Δεν ήταν δυνατή η επαλήθευση του αιτήματος. Παρακαλώ ανανέωσε τη σελίδα και εισάγε ξανά τον κωδικό.</p>
-				<p data-tx="t0013:b409c382" th:if="${linkError == 'invalid'}">Μη έγκυρο αίτημα.</p>
 			</div>
 		</article>
 
-		<p data-tx="t0014:e9436271">Εισάγε τον κωδικό που εμφανίζει η συσκευή σου ή το Home Assistant, για να τη συνδέσεις με τον λογαριασμό σου στο PhoneBlock <code th:text="${userName}"></code>.</p>
+		<p data-tx="t0014:5675e627">Εισάγε τον κωδικό που εμφανίζει η συσκευή σου ή το Home Assistant, για να τη συνδέσεις με τον λογαριασμό σου στο PhoneBlock <strong th:if="${linkAccount != null}" th:text="${linkAccount}">name@example.invalid</strong> (<code th:text="${userName}"></code>).</p>
+
+		<article class="message is-warning">
+			<div class="message-body">
+				<p data-tx="t0004:5ace6c61">Εισάγε μόνο έναν κωδικό που μόλις ζήτησες εσύ ο ίδιος από τη συσκευή σου ή από το Home Assistant. Αν κάποιος άλλος σου έδωσε έναν κωδικό, μην τον εισάγεις – αλλιώς μια ξένη συσκευή θα αποκτήσει πρόσβαση στον λογαριασμό σου.</p>
+			</div>
+		</article>
 
 		<form method="post" th:action="@{/link}">
 			<input name="csrf" th:value="${linkCsrf}" type="hidden"/>
@@ -67,9 +40,9 @@
 			</div>
 			<div class="field">
 				<p class="control">
-					<button class="button is-primary" name="action" type="submit" value="lookup">
-						<span class="icon"><i class="fa-solid fa-arrow-right"></i></span>
-						<span data-tx="t0017:ad5e318d">Συνέχεια</span>
+					<button class="button is-primary" type="submit">
+						<span class="icon"><i class="fa-solid fa-link"></i></span>
+						<span data-tx="t0006:280920f2">Σύνδεση</span>
 					</button>
 				</p>
 			</div>
@@ -77,15 +50,9 @@
 	</th:block>
 
 	<th:block th:if="${linkView == 'done'}">
-		<article class="message is-success" th:if="${linkResult == 'approved'}">
+		<article class="message is-success">
 			<div class="message-body">
-				<p data-tx="t0018:c28b524e">Η σύνδεση έχει επιβεβαιωθεί. Η συσκευή σου θα ολοκληρώσει τη σύνδεση σε λίγα δευτερόλεπτα.</p>
-			</div>
-		</article>
-
-		<article class="message is-info" th:if="${linkResult == 'denied'}">
-			<div class="message-body">
-				<p data-tx="t0019:cb0f6cb0">Η σύνδεση απορρίφθηκε. Η συσκευή δεν έχει πρόσβαση στον λογαριασμό σου.</p>
+				<p data-tx="t0018:963c1b42">Το <strong th:text="${link.label}">PhoneBlock-Dongle</strong> έχει πλέον συνδεθεί με τον λογαριασμό σου στο PhoneBlock και θα ολοκληρώσει τη σύνδεση σε λίγα δευτερόλεπτα.</p>
 			</div>
 		</article>
 
