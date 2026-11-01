@@ -395,6 +395,7 @@
   "link.copy_failed": "Kopiowanie nie jest możliwe – kod jest zaznaczony, skopiuj go za pomocą klawiszy Ctrl+C.",
   "link.open": "Otwórz stronę phoneblock.net",
   "link.manual": "Strona znajduje się pod adresem {url} – kod ten możesz wprowadzić również na innym urządzeniu, np. na telefonie komórkowym.",
+  "link.waiting": "Czekam na wprowadzenie kodu na stronie phoneblock.net…",
   "link.approved": "Konto PhoneBlock zostało połączone — token został ustawiony.",
   "link.denied": "Link został odrzucony na stronie phoneblock.net.",
   "link.expired": "Kod stracił ważność. Poproś o nowy kod.",
@@ -463,5 +464,7 @@
   "spam.dialog.comment": "Powód",
   "spam.dialog.comment.hint": "(opcjonalnie, będzie widoczne publicznie)",
   "spam.dialog.error.is_contact": "Ten numer znajduje się w Twojej książce telefonicznej. Wpis w książce telefonicznej ma zawsze pierwszeństwo w przypadku klucza sprzętowego, dlatego w tym przypadku nie jest możliwe zgłoszenie spamu.",
-  "link.waiting": "Czekam na wprowadzenie kodu na stronie phoneblock.net…"
+  "status.calls.show_all": "Pokaż wszystkie ({count})",
+  "status.calls.show_less": "Pokaż mniej",
+  "status.calls.time_unknown": "nieznane"
 }

@@ -395,6 +395,7 @@
   "link.copy_failed": "Kopiëren is niet mogelijk – de code is geselecteerd; kopieer deze met Ctrl+C.",
   "link.open": "phoneblock.net openen",
   "link.manual": "De pagina is {url} – je kunt de code daar ook op een ander apparaat invoeren, bijvoorbeeld op je mobiel.",
+  "link.waiting": "Wachten op het invoeren van de code op phoneblock.net…",
   "link.approved": "PhoneBlock-account gekoppeld — het token is ingesteld.",
   "link.denied": "De link is afgewezen op phoneblock.net.",
   "link.expired": "De code is verlopen. Vraag een nieuwe code aan.",
@@ -463,5 +464,7 @@
   "spam.dialog.comment": "Reden",
   "spam.dialog.comment.hint": "(optioneel, wordt openbaar weergegeven)",
   "spam.dialog.error.is_contact": "Deze beller staat in je telefoonboek. Een vermelding in het telefoonboek heeft op de dongle altijd voorrang, daarom is een spammelding hier niet mogelijk.",
-  "link.waiting": "Wachten op het invoeren van de code op phoneblock.net…"
+  "status.calls.show_all": "Alles weergeven ({count})",
+  "status.calls.show_less": "Minder weergeven",
+  "status.calls.time_unknown": "onbekend"
 }

@@ -1,5 +1,7 @@
-// Host test for the recent-calls ring in stats.c, as far as the call list's
-// row actions depend on it.
+// Host test for the recent-calls list in stats.c: the row actions the web
+// UI's call list depends on, and its persistence in the call file (#589) —
+// reopen ("reboot"), wrap-around, in-place updates, a damaged file, the
+// time back-fill and clearing.
 //
 // A listed call shows the caller's current state: after "report as spam",
 // "add as contact" or "whitelist" every row with that number must read the new
@@ -11,6 +13,7 @@
 
 #include "platform.h"
 #include "stats.h"
+#include "calls_test_util.h"
 
 static int tests_run, tests_failed;
 
@@ -38,11 +41,11 @@ static void record_checked(const char *number, pb_assessment_t a, bool wildcard)
     stats_record_call_checked(number, "", &r);
 }
 
-// Newest-first snapshot entry `i`.
+// Newest-first entry `i` of the list.
 static stats_call_t call_at(int i)
 {
-    stats_call_t calls[STATS_MAX_CALLS];
-    int n = stats_snapshot_calls(calls, STATS_MAX_CALLS);
+    static stats_call_t calls[STATS_CALL_CAPACITY];
+    int n = stats_snapshot_calls(calls, i + 1);
     stats_call_t c;
     memset(&c, 0, sizeof(c));
     if (i < n) c = calls[i];
@@ -100,8 +103,8 @@ static void test_assessment_for_number(void)
     CHECK(stats_assessment_for_number(NUM_A, &a) && a == PB_ASSESS_SPAM,
           "newest row wins");
 
-    // Wrap the ring so the newest entry sits at a low index again.
-    for (int i = 0; i < STATS_MAX_CALLS - 1; i++)
+    // Wrap the ring so the newest entry sits at a low slot again.
+    for (int i = 0; i < STATS_CALL_CAPACITY - 1; i++)
         record_checked(NUM_B, PB_ASSESS_UNKNOWN, false);
     record_checked(NUM_A, PB_ASSESS_SUSPECT, false);
     CHECK(stats_assessment_for_number(NUM_A, &a) && a == PB_ASSESS_SUSPECT,
@@ -131,14 +134,14 @@ static void test_counters_only_not_listed(void)
     stats_record_call_counters_only(NUM_A, "Max Müller", VERDICT_LEGITIMATE,
                                     PB_ASSESS_LEGITIMATE);
     stats_snapshot_counters(&after);
-    stats_call_t calls[STATS_MAX_CALLS];
-    CHECK(stats_snapshot_calls(calls, STATS_MAX_CALLS) == 0, "not listed");
+    stats_call_t calls[2];
+    CHECK(stats_snapshot_calls(calls, 2) == 0, "not listed");
     CHECK(after.total_calls == before.total_calls + 1, "total counter bumped");
     CHECK(after.legitimate == before.legitimate + 1, "legitimate counter bumped");
 }
 
 // Listener for the webhook hook: remembers every sequence number it gets.
-static uint32_t s_heard[2 * STATS_MAX_CALLS];
+static uint32_t s_heard[2 * STATS_CALL_CAPACITY];
 static int      s_heard_count;
 
 static void hear(uint32_t seq)
@@ -195,10 +198,10 @@ static void test_call_listener(void)
     CHECK(!stats_get_call(0, &c), "0 is never a call");
     CHECK(!stats_get_call(stats_last_call_seq() + 1, &c), "a future number is not found");
 
-    // The ring keeps STATS_MAX_CALLS entries: once that many newer calls
-    // came in, the first one is gone.
+    // The list keeps STATS_CALL_CAPACITY entries: once that many newer
+    // calls came in, the first one is gone.
     uint32_t first = s_heard[0];
-    for (int i = 0; i < STATS_MAX_CALLS - 3; i++)
+    for (int i = 0; i < STATS_CALL_CAPACITY - 3; i++)
         stats_record_call(NUM_B, "", VERDICT_LEGITIMATE);
     CHECK(!stats_get_call(first, &c), "overwritten call is gone");
     CHECK(stats_get_call(first + 1, &c) && strcmp(c.number, NUM_B) == 0,
@@ -294,9 +297,316 @@ static void test_api_result_recording(void)
           && c.last_api_failure.http_status == 503, "HTTP failure replaces the older one");
 }
 
+// --- The call file (#589) -----------------------------------------------
+
+#define NUM_C "+493012345670"
+#define NUM_D "+493012345671"
+
+static int64_t s_epoch;                      // the injected wall clock
+static int64_t test_clock(void) { return s_epoch; }
+
+// Everything a reader sees of a call that survives a reboot (not this_boot
+// and at_us, which belong to the boot that recorded it).
+static bool same_call(const stats_call_t *a, const stats_call_t *b)
+{
+    return a->seq == b->seq && a->epoch_s == b->epoch_s
+        && strcmp(a->number, b->number) == 0 && strcmp(a->display, b->display) == 0
+        && strcmp(a->label, b->label) == 0 && strcmp(a->location, b->location) == 0
+        && a->verdict == b->verdict && a->assessment == b->assessment
+        && a->direct_votes == b->direct_votes && a->range_votes == b->range_votes
+        && a->wildcard == b->wildcard && a->duration_s == b->duration_s;
+}
+
+static void test_reopen(void)
+{
+    printf("call file survives a reboot:\n");
+    stats_clear_calls();
+    s_epoch = 1793000000;
+    pb_check_result_t r;
+    memset(&r, 0, sizeof(r));
+    r.verdict = VERDICT_SPAM;
+    r.assessment = PB_ASSESS_SPAM;
+    r.direct_votes = 12;
+    r.range_votes = 40;
+    r.wildcard = true;
+    snprintf(r.label, sizeof(r.label), "%s", "(DE) 030 1234567x");
+    snprintf(r.location, sizeof(r.location), "%s", "Berlin");
+    stats_record_call_checked(NUM_C, "", &r);
+    stats_record_call(NUM_D, "Max Mustermann", VERDICT_LEGITIMATE);
+    stats_record_call_assessed("**622", "", VERDICT_SPAM, PB_ASSESS_TEST);
+    stats_record_call(NUM_A, "", VERDICT_ERROR);
+    stats_record_call(NUM_B, "", VERDICT_LEGITIMATE);
+
+    stats_call_t before[5], after[5];
+    int nb = stats_snapshot_calls(before, 5);
+    uint32_t last = stats_last_call_seq();
+    s_log_warns = s_log_errors = 0;
+    CHECK(calls_test_reboot(), "reopened");
+    int na = stats_snapshot_calls(after, 5);
+    bool same = nb == 5 && na == 5;
+    for (int i = 0; same && i < 5; i++) same = same_call(&before[i], &after[i]);
+    CHECK(same, "the same 5 calls, field by field");
+    CHECK(strcmp(after[0].number, NUM_B) == 0 && strcmp(after[4].number, NUM_C) == 0
+          && after[0].seq == last && after[4].seq == last - 4, "newest first");
+    CHECK(!after[0].this_boot && after[0].epoch_s == 1793000000,
+          "a call of the earlier boot keeps its time");
+    CHECK(s_log_warns == 0 && s_log_errors == 0, "a good file opens without a WARN");
+    CHECK(stats_last_call_seq() == last, "last seq restored");
+    stats_record_call(NUM_A, "", VERDICT_LEGITIMATE);
+    CHECK(stats_last_call_seq() == last + 1 && call_at(0).this_boot,
+          "sequence numbers go on after the reboot");
+    stats_calls_info_t info;
+    stats_calls_info(&info);
+    CHECK(info.count == 6 && info.newest_seq == last + 1 && info.oldest_seq == last - 4,
+          "info: 6 calls");
+}
+
+static void test_wrap_around(void)
+{
+    printf("call file wraps around:\n");
+    stats_clear_calls();
+    uint32_t first = 0;
+    char num[24];
+    int total = STATS_CALL_CAPACITY + 7;
+    for (int i = 0; i < total; i++) {
+        snprintf(num, sizeof(num), "+4930123%05d", i);
+        stats_record_call(num, "", VERDICT_LEGITIMATE);
+        if (i == 0) first = stats_last_call_seq();
+    }
+    for (int pass = 0; pass < 2; pass++) {
+        stats_calls_info_t info;
+        stats_calls_info(&info);
+        CHECK(info.count == STATS_CALL_CAPACITY, "count == capacity");
+        CHECK(info.newest_seq == first + (uint32_t)total - 1
+              && info.oldest_seq == first + 7, "the 7 oldest dropped");
+        // Page through the whole list, 7 at a time.
+        bool order = true;
+        int seen = 0;
+        uint32_t cursor = 0;
+        stats_call_t page[7];
+        int n;
+        while ((n = stats_read_calls(cursor, page, 7)) > 0) {
+            for (int i = 0; i < n; i++, seen++) {
+                snprintf(num, sizeof(num), "+4930123%05d", total - 1 - seen);
+                if (page[i].seq != info.newest_seq - (uint32_t)seen
+                        || strcmp(page[i].number, num) != 0) order = false;
+            }
+            cursor = page[n - 1].seq;
+        }
+        CHECK(order && seen == STATS_CALL_CAPACITY, "paged newest first, seqs consecutive");
+        stats_call_t c;
+        CHECK(!stats_get_call(first + 6, &c) && stats_get_call(first + 7, &c),
+              "the oldest listed is found, the one before it not");
+        if (pass == 0) CHECK(calls_test_reboot(), "reopened after the wrap");
+    }
+}
+
+static void test_updates_persist(void)
+{
+    printf("in-place updates persist:\n");
+    stats_clear_calls();
+    stats_record_call(NUM_C, "", VERDICT_SPAM);
+    uint32_t spam = stats_last_call_seq();
+    stats_record_call(NUM_D, "", VERDICT_LEGITIMATE);
+    stats_record_call(NUM_A, "", VERDICT_LEGITIMATE);
+    stats_call_ended(spam, 42400000);
+    CHECK(stats_set_display(NUM_D, "Erika Musterfrau") == 1, "name set");
+    CHECK(stats_set_assessment(NUM_A, PB_ASSESS_BLACKLIST) == 1, "assessment set");
+    CHECK(calls_test_reboot(), "reopened");
+    stats_call_t c;
+    CHECK(stats_get_call(spam, &c) && c.duration_s == 42, "duration kept");
+    CHECK(stats_get_call(spam + 1, &c) && strcmp(c.display, "Erika Musterfrau") == 0,
+          "name kept");
+    pb_assessment_t a;
+    CHECK(stats_assessment_for_number(NUM_A, &a) && a == PB_ASSESS_BLACKLIST,
+          "assessment kept");
+    char name[STATS_DISPLAY_LEN];
+    CHECK(stats_display_for_number(NUM_D, name, sizeof(name))
+          && strcmp(name, "Erika Musterfrau") == 0, "name found by number");
+}
+
+// Writes `n` bytes of `data` as the whole call file.
+static void put_file(const void *data, size_t n)
+{
+    FILE *f = fopen(s_calls_file, "wb");
+    if (f) { fwrite(data, 1, n, f); fclose(f); }
+}
+
+static long file_size(void)
+{
+    FILE *f = fopen(s_calls_file, "rb");
+    if (!f) return -1;
+    fseek(f, 0, SEEK_END);
+    long n = ftell(f);
+    fclose(f);
+    return n;
+}
+
+static void check_discarded(const char *what)
+{
+    s_log_warns = s_log_errors = 0;
+    stats_calls_close();
+    bool ok = stats_calls_open(s_calls_file);
+    stats_calls_info_t info;
+    stats_calls_info(&info);
+    char line[128];
+    snprintf(line, sizeof(line), "%s: empty list, one WARN, file rewritten", what);
+    CHECK(ok && info.count == 0 && s_log_warns == 1 && s_log_errors == 0
+          && file_size() == STATS_CALLS_FILE_BYTES(STATS_CALL_CAPACITY), line);
+    stats_record_call(NUM_A, "", VERDICT_LEGITIMATE);
+    snprintf(line, sizeof(line), "%s: then works as usual", what);
+    CHECK(stats_last_call_seq() == 1 && calls_test_reboot() && call_at(0).seq == 1
+          && s_log_warns == 1, line);
+}
+
+static void test_damaged_file(void)
+{
+    printf("damaged or foreign file:\n");
+    static uint8_t buf[STATS_CALLS_FILE_BYTES(STATS_CALL_CAPACITY) + 64];
+
+    memset(buf, 'x', sizeof(buf));
+    put_file(buf, 1000);
+    check_discarded("foreign file");
+
+    put_file(buf, 0);
+    check_discarded("empty file");
+
+    // A good file, then damaged in different ways.
+    stats_clear_calls();
+    stats_record_call(NUM_B, "", VERDICT_LEGITIMATE);
+    uint32_t want = stats_last_call_seq();
+    FILE *f = fopen(s_calls_file, "rb");
+    size_t good = f ? fread(buf, 1, sizeof(buf), f) : 0;
+    if (f) fclose(f);
+    CHECK(good == STATS_CALLS_FILE_BYTES(STATS_CALL_CAPACITY), "file has its full size");
+
+    put_file(buf, good - 100);
+    check_discarded("truncated file");
+
+    put_file(buf, good + 64);
+    check_discarded("file too long");
+
+    uint8_t saved = buf[8];
+    buf[8] ^= 0x01;                     // capacity
+    put_file(buf, good);
+    check_discarded("other capacity");
+    buf[8] = saved;
+
+    saved = buf[4];
+    buf[4] = 9;                         // format version
+    put_file(buf, good);
+    check_discarded("other version");
+    buf[4] = saved;
+
+    // A record in the wrong slot.
+    uint32_t seq;
+    size_t at = STATS_CALL_HEADER_BYTES
+              + (want % STATS_CALL_CAPACITY) * STATS_CALL_RECORD_BYTES;
+    memcpy(&seq, buf + at, sizeof(seq));
+    CHECK(seq == want, "the record of a call sits in slot seq % capacity");
+    seq = want + 1;
+    memcpy(buf + at, &seq, sizeof(seq));
+    put_file(buf, good);
+    check_discarded("record in the wrong slot");
+
+    // No file at all: created quietly.
+    unlink(s_calls_file);
+    s_log_warns = s_log_errors = 0;
+    stats_calls_close();
+    CHECK(stats_calls_open(s_calls_file) && s_log_warns == 0 && s_log_errors == 0
+          && file_size() == STATS_CALLS_FILE_BYTES(STATS_CALL_CAPACITY),
+          "missing file: created without a WARN");
+}
+
+static void test_time_backfill(void)
+{
+    printf("call time back-fill:\n");
+    stats_clear_calls();
+    s_epoch = 0;                         // clock not set yet
+    stats_record_call(NUM_C, "", VERDICT_LEGITIMATE);
+    uint32_t early = stats_last_call_seq();
+    stats_call_t c;
+    CHECK(stats_get_call(early, &c) && c.epoch_s == 0 && c.this_boot,
+          "before the clock is set: no time");
+
+    s_epoch = 1793100000;
+    // Before the back-fill is written, readers derive the time from the age.
+    CHECK(stats_get_call(early, &c) && c.epoch_s >= s_epoch - 1 && c.epoch_s <= s_epoch,
+          "readers see the time as soon as the clock is set");
+    stats_time_synced();
+    s_epoch = 0;                         // the next boot starts without a clock
+    CHECK(calls_test_reboot(), "reopened");
+    CHECK(stats_get_call(early, &c) && !c.this_boot
+          && c.epoch_s >= 1793100000 - 1 && c.epoch_s <= 1793100000,
+          "back-filled time stored in the file");
+
+    // A call of this (new) boot before the clock, then a reboot before it
+    // was set: that call keeps "time unknown" for good.
+    stats_record_call(NUM_D, "", VERDICT_LEGITIMATE);
+    uint32_t lost = stats_last_call_seq();
+    CHECK(calls_test_reboot(), "reopened again");
+    s_epoch = 1793200000;
+    stats_time_synced();
+    stats_record_call(NUM_A, "", VERDICT_LEGITIMATE);
+    CHECK(stats_get_call(lost, &c) && c.epoch_s == 0 && !c.this_boot,
+          "a call of an earlier boot without a time stays 0");
+    CHECK(stats_get_call(stats_last_call_seq(), &c) && c.epoch_s == 1793200000,
+          "a call after the clock is set gets its time");
+
+    // The lazy path: no "synced" event, the next write back-fills.
+    s_epoch = 0;
+    stats_record_call(NUM_B, "", VERDICT_LEGITIMATE);
+    uint32_t lazy = stats_last_call_seq();
+    s_epoch = 1793300000;
+    stats_record_call(NUM_A, "", VERDICT_LEGITIMATE);
+    s_epoch = 0;
+    CHECK(calls_test_reboot() && stats_get_call(lazy, &c)
+          && c.epoch_s >= 1793300000 - 1 && c.epoch_s <= 1793300000,
+          "the next write back-fills without a synced event");
+}
+
+static void test_clear_persists(void)
+{
+    printf("clear:\n");
+    stats_record_call(NUM_A, "", VERDICT_LEGITIMATE);
+    uint32_t last = stats_last_call_seq();
+    stats_clear_calls();
+    stats_calls_info_t info;
+    stats_calls_info(&info);
+    CHECK(info.count == 0 && file_size() == STATS_CALLS_FILE_BYTES(STATS_CALL_CAPACITY),
+          "cleared: empty");
+    CHECK(calls_test_reboot(), "reopened");
+    stats_calls_info(&info);
+    stats_call_t c;
+    CHECK(info.count == 0 && !stats_get_call(last, &c), "still empty after the reboot");
+    stats_record_call(NUM_A, "", VERDICT_LEGITIMATE);
+    CHECK(stats_last_call_seq() == last + 1, "sequence numbers go on after a clear");
+}
+
+// Without an open file (storage not mounted) calls are counted, not listed.
+static void test_no_file(void)
+{
+    printf("no call file:\n");
+    stats_calls_close();
+    stats_counters_t before, after;
+    stats_snapshot_counters(&before);
+    s_heard_count = 0;
+    stats_set_call_listener(hear);
+    stats_record_call(NUM_A, "", VERDICT_LEGITIMATE);
+    stats_snapshot_counters(&after);
+    stats_call_t c[1];
+    CHECK(after.total_calls == before.total_calls + 1 && stats_snapshot_calls(c, 1) == 0
+          && stats_last_call_seq() == 0 && s_heard_count == 0,
+          "counted, not listed, not announced");
+    stats_set_call_listener(NULL);
+    CHECK(calls_test_reboot(), "reopened");
+}
+
 int main(void)
 {
     stats_setup();
+    stats_set_clock(test_clock);
+    calls_test_open();
     test_api_fail_kind();
     test_api_result_recording();
     test_test_call_not_counted();
@@ -305,6 +615,14 @@ int main(void)
     test_contact_flow();
     test_counters_only_not_listed();
     test_call_listener();
+    test_reopen();
+    test_wrap_around();
+    test_updates_persist();
+    test_time_backfill();
+    test_clear_persists();
+    test_no_file();
+    test_damaged_file();
+    calls_test_cleanup();
     printf("\n%d checks, %d failed\n", tests_run, tests_failed);
     return tests_failed ? 1 : 0;
 }

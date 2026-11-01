@@ -114,6 +114,11 @@ static esp_timer_handle_t s_call_timer;
 
 // The call on screen, written by the notifiers under s_state.
 static stats_call_t s_call;
+// The badge's count, recounted by display_calls_changed() in the task that
+// changed the list: the call list is a file (#589), and reading it is no
+// job for the esp_timer task the drawing runs on (3.5 KB stack, and every
+// other timer waits meanwhile).
+static int          s_badge;
 static bool         s_call_active;
 static uint32_t     s_call_gen;          // bumped per call
 static int64_t      s_call_started_us;
@@ -387,9 +392,9 @@ static bool draw_screen(bool force)
     bool call = s_call_active;
     uint32_t gen = s_call_gen;
     if (call) s_draw_call = s_call;
+    int badge = call ? 0 : s_badge;
     xSemaphoreGive(s_state);
 
-    int badge = call ? 0 : stats_count_calls(dm_is_listed_spam);
     if (!force && s_drawn_valid && s_drawn_call == call
         && (call ? s_drawn_gen == gen : s_drawn_badge == badge)) {
         return true;
@@ -480,6 +485,11 @@ void display_call_ended(void)
 void display_calls_changed(void)
 {
     if (!s_redraw_timer) return;
+    // Called by stats.c outside its lock, from the task that changed the list.
+    int badge = stats_count_calls(dm_is_listed_spam, DM_BADGE_CALLS);
+    xSemaphoreTake(s_state, portMAX_DELAY);
+    s_badge = badge;
+    xSemaphoreGive(s_state);
     schedule_redraw();
 }
 

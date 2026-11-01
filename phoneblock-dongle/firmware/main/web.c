@@ -764,13 +764,26 @@ static web_http_error_t handle_status(web_http_request_t *req)
     return WEB_HTTP_OK;
 }
 
+int64_t web_call_age_s(const stats_call_t *call, int64_t now_us, int64_t now_epoch)
+{
+    int64_t age_s;
+    if (call->epoch_s && now_epoch) {
+        age_s = now_epoch - call->epoch_s;
+    } else if (call->this_boot) {
+        age_s = (now_us - call->at_us) / 1000000;
+    } else {
+        return -1;
+    }
+    // A clock stepped back must not make a call lie in the future.
+    return age_s < 0 ? 0 : age_s;
+}
+
 cJSON *web_call_json(const stats_call_t *call, int64_t now_us,
                      int64_t now_epoch)
 {
     cJSON *o = cJSON_CreateObject();
-    int64_t age_s = (now_us - call->at_us) / 1000000;
-    cJSON_AddNumberToObject(o, "age_s",       (double)age_s);
-    cJSON_AddNumberToObject(o, "epoch_s",     now_epoch ? (double)(now_epoch - age_s) : 0);
+    cJSON_AddNumberToObject(o, "age_s",   (double)web_call_age_s(call, now_us, now_epoch));
+    cJSON_AddNumberToObject(o, "epoch_s", (double)call->epoch_s);
     cJSON_AddStringToObject(o, "number",      call->number);
     cJSON_AddStringToObject(o, "display",     call->display);
     cJSON_AddStringToObject(o, "label",       call->label);
@@ -783,24 +796,70 @@ cJSON *web_call_json(const stats_call_t *call, int64_t now_us,
     return o;
 }
 
+// Calls per page of handle_calls(): copied from the list under its lock,
+// then sent without it. On the heap (4 x ~270 B).
+#define CALLS_PAGE 4
+
+// GET /api/calls[?limit=N] — the call list, newest first: every listed call
+// (up to STATS_CALL_CAPACITY, #589), or the N newest. "total" is the number
+// of listed calls, so the web UI can poll only the rows it shows and still
+// offer "show all (total)". Streamed in chunks, one call at a time, so
+// neither the whole list nor its JSON is ever in memory: 200 calls are
+// ~70 KB of JSON, more than the ESP32's heap should hold for a poll every
+// 3 s. The lock is held only per page, never while sending.
 static web_http_error_t handle_calls(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
-    stats_call_t calls[STATS_MAX_CALLS];
-    int n = stats_snapshot_calls(calls, STATS_MAX_CALLS);
+    int limit = STATS_CALL_CAPACITY;
+    char query[32], value[8];
+    if (web_http_get_query_string(req, query, sizeof(query)) == WEB_HTTP_OK
+            && web_http_query_value(query, "limit", value, sizeof(value)) == WEB_HTTP_OK) {
+        int v = atoi(value);
+        if (v > 0 && v < limit) limit = v;
+    }
+    stats_call_t *page = malloc(CALLS_PAGE * sizeof(*page));
+    if (!page) {
+        web_http_send_error(req, WEB_HTTP_STATUS_INTERNAL_SERVER_ERROR, "out of memory");
+        return WEB_HTTP_OK;
+    }
+    stats_calls_info_t info;
+    stats_calls_info(&info);
     int64_t now_us = pb_monotonic_us();
-    // Absolute time for machine clients (Home Assistant, ioBroker, #644),
-    // derived from the age instead of stored per call, so the call buffer
-    // stays as it is. 0 while the clock is not set, as in /api/status.
+    // 0 while the clock is not set, as in /api/status; a call's own epoch_s
+    // is stored with it (0: time not known).
     int64_t now_epoch = time_sync_now_epoch();
 
-    cJSON *root = cJSON_CreateObject();
-    cJSON *arr  = cJSON_AddArrayToObject(root, "calls");
-    for (int i = 0; i < n; i++) {
-        cJSON_AddItemToArray(arr, web_call_json(&calls[i], now_us, now_epoch));
+    web_http_set_type(req, "application/json; charset=utf-8");
+    web_http_set_header(req, "Cache-Control", "no-store");
+    char head[40];
+    int hl = snprintf(head, sizeof(head), "{\"total\":%d,\"calls\":[", info.count);
+    bool ok = web_http_send_chunk(req, head, (size_t)hl) == WEB_HTTP_OK;
+
+    // Only calls up to the newest at the start: a call that comes in while
+    // this runs is not half in the answer.
+    uint32_t before = info.newest_seq + 1;
+    int sent = 0;
+    while (ok && info.newest_seq && sent < limit) {
+        int max = limit - sent < CALLS_PAGE ? limit - sent : CALLS_PAGE;
+        int n = stats_read_calls(before, page, max);
+        for (int i = 0; ok && i < n; i++) {
+            cJSON *o = web_call_json(&page[i], now_us, now_epoch);
+            char *json = o ? cJSON_PrintUnformatted(o) : NULL;
+            cJSON_Delete(o);
+            if (!json) { ok = false; break; }
+            if (sent > 0) ok = web_http_send_chunk(req, ",", 1) == WEB_HTTP_OK;
+            if (ok) ok = web_http_send_chunk(req, json, strlen(json)) == WEB_HTTP_OK;
+            cJSON_free(json);
+            sent++;
+        }
+        if (n < max) break;
+        before = page[n - 1].seq;
     }
-    send_json(req, root);
-    return WEB_HTTP_OK;
+    free(page);
+    if (ok) ok = web_http_send_chunk(req, "]}", 2) == WEB_HTTP_OK;
+    // Terminates the chunked answer; after a failure the client sees it cut.
+    web_http_send_chunk(req, NULL, 0);
+    return ok ? WEB_HTTP_OK : WEB_HTTP_FAIL;
 }
 
 // --- URL-encoded form parsing --------------------------------------
@@ -1924,7 +1983,13 @@ static web_http_error_t handle_fritzbox_2fa_status(web_http_request_t *req)
 static web_http_error_t handle_errors(web_http_request_t *req)
 {
     REQUIRE_AUTH_API(req);
-    stats_error_t errs[STATS_MAX_ERRORS];
+    // On the heap: the whole ring (STATS_MAX_ERRORS x 160 B, 7.5 KB) would
+    // not leave the httpd worker's 8 KB stack room for anything else.
+    stats_error_t *errs = malloc(STATS_MAX_ERRORS * sizeof(*errs));
+    if (!errs) {
+        web_http_send_error(req, WEB_HTTP_STATUS_INTERNAL_SERVER_ERROR, "out of memory");
+        return WEB_HTTP_OK;
+    }
     int n = stats_snapshot_errors(errs, STATS_MAX_ERRORS);
     int64_t now_us = pb_monotonic_us();
 
@@ -1940,6 +2005,7 @@ static web_http_error_t handle_errors(web_http_request_t *req)
         cJSON_AddStringToObject(o, "message", errs[i].message);
         cJSON_AddItemToArray(arr, o);
     }
+    free(errs);
     send_json(req, root);
     return WEB_HTTP_OK;
 }

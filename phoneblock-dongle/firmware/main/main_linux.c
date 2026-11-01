@@ -160,6 +160,18 @@ int main(int argc, char **argv)
         pb_log_err("linux", "announcement storage initialization failed");
         return EXIT_FAILURE;
     }
+    // The call list (#589) in the data directory announcement_init() made.
+    {
+        stats_set_clock(time_sync_now_epoch);
+        char calls_path[PB_DATA_PATH_CAP];
+        int n = snprintf(calls_path, sizeof(calls_path), "%s/%s",
+                         PHONEBLOCK_DATA_DIR, STATS_CALLS_FILE);
+        if (n > 0 && (size_t)n < sizeof(calls_path)) {
+            stats_calls_open(calls_path);
+        } else {
+            pb_log_err("linux", "data directory path too long for the call list");
+        }
+    }
     // The host keeps the wall clock; this only applies the configured
     // timezone (see time_sync_linux.c).
     time_sync_start();

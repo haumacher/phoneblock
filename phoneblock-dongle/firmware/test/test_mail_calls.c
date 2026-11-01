@@ -1,10 +1,14 @@
 // Host test for the status mail's call selection (issue #556): by default the
 // call report lists every new call, as before; with "only blocked calls" it
-// lists just the ones the dongle took as spam, in their original order.
+// lists just the ones the dongle took as spam, in their original order. The
+// calls since the last mail come from the persistent call list (#589): they
+// survive a reboot, are mailed once, and calls that dropped off a full list
+// are counted.
 #include <stdio.h>
 #include <string.h>
 
 #include "mail_calls.h"
+#include "calls_test_util.h"
 
 static int tests_run, tests_failed;
 
@@ -62,7 +66,7 @@ static void test_is_blocked(void)
 static void test_all_calls_by_default(void)
 {
     printf("default (all calls):\n");
-    stats_call_t calls[STATS_MAX_CALLS], orig[STATS_MAX_CALLS];
+    stats_call_t calls[8], orig[8];
     int n = mixed(calls);
     memcpy(orig, calls, sizeof(calls));
     CHECK(mail_select_calls(calls, n, false) == n, "every call is kept");
@@ -73,7 +77,7 @@ static void test_all_calls_by_default(void)
 static void test_blocked_only(void)
 {
     printf("only blocked calls:\n");
-    stats_call_t calls[STATS_MAX_CALLS];
+    stats_call_t calls[8];
     int n = mixed(calls);
     int kept = mail_select_calls(calls, n, true);
     CHECK(kept == 4, "four blocked calls kept");
@@ -95,26 +99,118 @@ static void test_blocked_only(void)
     CHECK(mail_select_calls(legit, 0, true) == 0, "empty list");
 }
 
+// Records the calls of mixed() into the call list, oldest first, so the list
+// reads like mixed() newest first.
+static void record_mixed(void)
+{
+    stats_call_t calls[8];
+    int n = mixed(calls);
+    for (int i = n - 1; i >= 0; i--) {
+        stats_record_call_assessed(calls[i].number, "", calls[i].verdict,
+                                   calls[i].assessment);
+    }
+}
+
+// All calls of the window, read in pages of `page` calls.
+static int read_all(const mail_calls_window_t *w, int page, stats_call_t *out, int max)
+{
+    uint32_t cursor = 0;
+    int total = 0, n;
+    while (total < max
+           && (n = mail_calls_read(w, &cursor, out + total,
+                                   page < max - total ? page : max - total)) > 0) {
+        total += n;
+    }
+    return total;
+}
+
 static void test_new_calls(void)
 {
     printf("new calls since the last mail:\n");
-    stats_call_t calls[STATS_MAX_CALLS];
-    int n = mixed(calls);
-    CHECK(mail_count_new_calls(calls, n, 0) == n, "all new after boot");
-    CHECK(mail_count_new_calls(calls, n, 650) == 3, "three newer than the mark");
-    CHECK(mail_count_new_calls(calls, n, 900) == 0, "none newer than the newest");
-    // The daily flush selects within the new run only.
-    int fresh = mail_count_new_calls(calls, n, 650);
-    CHECK(mail_select_calls(calls, fresh, true) == 1,
+    stats_clear_calls();
+    mail_calls_window_t w;
+    mail_calls_window(false, false, &w);
+    CHECK(w.new_calls == 0 && w.through_seq == 0, "empty list: nothing new");
+
+    record_mixed();
+    mail_calls_window(false, false, &w);
+    CHECK(w.new_calls == 8 && w.not_listed == 0, "all new before the first mail");
+    mail_calls_window(true, false, &w);
+    CHECK(w.new_calls == 4, "four of them blocked");
+    stats_call_t got[8];
+    CHECK(read_all(&w, 3, got, 8) == 4 && strcmp(got[0].number, "+4930000001") == 0
+          && strcmp(got[3].number, "+4930000008") == 0,
+          "blocked calls read newest first across pages");
+
+    mail_calls_mark_sent(&w);
+    mail_calls_window(false, false, &w);
+    CHECK(w.new_calls == 0 && w.through_seq == 0, "after the mail nothing is new");
+
+    stats_record_call("+4930000011", "", VERDICT_LEGITIMATE);
+    stats_record_call("+4930000012", "", VERDICT_SPAM);
+    stats_record_call("+4930000013", "", VERDICT_LEGITIMATE);
+    mail_calls_window(false, false, &w);
+    CHECK(w.new_calls == 3 && w.not_listed == 0, "three newer than the mark");
+    CHECK(read_all(&w, 8, got, 8) == 3 && strcmp(got[0].number, "+4930000013") == 0
+          && strcmp(got[2].number, "+4930000011") == 0, "exactly those three");
+    mail_calls_window(true, false, &w);
+    CHECK(w.new_calls == 1 && read_all(&w, 8, got, 8) == 1
+          && strcmp(got[0].number, "+4930000012") == 0,
           "one blocked call among the new ones");
+
+    // A reboot before the mail: still to be reported, then reported once.
+    CHECK(calls_test_reboot(), "reopened");
+    mail_calls_window(false, false, &w);
+    CHECK(w.new_calls == 3, "unreported calls survive a reboot");
+    mail_calls_mark_sent(&w);
+    CHECK(calls_test_reboot(), "reopened again");
+    mail_calls_window(false, false, &w);
+    CHECK(w.new_calls == 0, "and are mailed once");
+
+    // The test mail lists the whole list, whatever was mailed.
+    mail_calls_window(false, true, &w);
+    CHECK(w.new_calls == 11 && w.not_listed == 0, "test mail: every listed call");
+}
+
+static void test_more_than_capacity(void)
+{
+    printf("more new calls than the list holds:\n");
+    stats_clear_calls();
+    mail_calls_window_t w;
+    mail_calls_window(false, false, &w);
+    mail_calls_mark_sent(&w);
+    char num[24];
+    int total = STATS_CALL_CAPACITY + 5;
+    for (int i = 0; i < total; i++) {
+        snprintf(num, sizeof(num), "+4930123%05d", i);
+        stats_record_call(num, "", i % 2 ? VERDICT_SPAM : VERDICT_LEGITIMATE);
+    }
+    mail_calls_window(false, false, &w);
+    CHECK(w.new_calls == STATS_CALL_CAPACITY && w.not_listed == 5,
+          "capacity listed, 5 older not listed");
+    mail_calls_window(true, false, &w);
+    CHECK(w.new_calls == STATS_CALL_CAPACITY / 2 && w.not_listed == 5,
+          "blocked only: the filter still applies, the count of the missing too");
+    mail_calls_mark_sent(&w);
+
+    // A cleared list: its calls are neither reported nor missing.
+    stats_record_call("+4930000021", "", VERDICT_LEGITIMATE);
+    stats_clear_calls();
+    stats_record_call("+4930000022", "", VERDICT_LEGITIMATE);
+    mail_calls_window(false, false, &w);
+    CHECK(w.new_calls == 1 && w.not_listed == 0, "cleared calls are not counted as missing");
 }
 
 int main(void)
 {
+    stats_setup();
+    calls_test_open();
     test_is_blocked();
     test_all_calls_by_default();
     test_blocked_only();
     test_new_calls();
+    test_more_than_capacity();
+    calls_test_cleanup();
     printf("\n%d checks, %d failed\n", tests_run, tests_failed);
     return tests_failed ? 1 : 0;
 }

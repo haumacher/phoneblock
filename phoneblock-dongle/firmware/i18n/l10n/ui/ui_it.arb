@@ -395,6 +395,7 @@
   "link.copy_failed": "Non è possibile copiare: il codice è selezionato, copialo con Ctrl+C.",
   "link.open": "Apri phoneblock.net",
   "link.manual": "La pagina è {url} – puoi inserire il codice anche su un altro dispositivo, ad esempio sul cellulare.",
+  "link.waiting": "In attesa dell'inserimento del codice su phoneblock.net…",
   "link.approved": "Account PhoneBlock collegato — il token è stato impostato.",
   "link.denied": "Il collegamento è stato rifiutato su phoneblock.net.",
   "link.expired": "Il codice è scaduto. Richiedi un nuovo codice.",
@@ -463,5 +464,7 @@
   "spam.dialog.comment": "Motivo",
   "spam.dialog.comment.hint": "(facoltativo, sarà visibile pubblicamente)",
   "spam.dialog.error.is_contact": "Questo numero è presente nella tua rubrica. Una voce della rubrica ha sempre la precedenza sul dongle, pertanto in questo caso non è possibile segnalare lo spam.",
-  "link.waiting": "In attesa dell'inserimento del codice su phoneblock.net…"
+  "status.calls.show_all": "Mostra tutto ({count})",
+  "status.calls.show_less": "Mostra meno",
+  "status.calls.time_unknown": "sconosciuto"
 }

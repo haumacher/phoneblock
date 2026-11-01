@@ -22,7 +22,7 @@
 void log_capture_start(void);
 
 // --- Live full-log stream (ESP-only) --------------------------------
-// Beyond the 32-entry WARN/ERROR ring, one client at a time can follow
+// Beyond the 47-entry WARN/ERROR ring, one client at a time can follow
 // the *complete* log live: every formatted line that reaches the serial
 // console, all levels, ANSI colour stripped. The HTTP handler in web.c
 // drives this:

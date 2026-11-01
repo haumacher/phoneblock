@@ -395,6 +395,7 @@
   "link.copy_failed": "Cannot copy—the code is highlighted; press Ctrl+C to copy it.",
   "link.open": "Open phoneblock.net",
   "link.manual": "The page is {url}—you can also enter the code there on another device, such as your cell phone.",
+  "link.waiting": "Waiting for the code to be entered on phoneblock.net…",
   "link.approved": "PhoneBlock account linked — the token has been set.",
   "link.denied": "The link was rejected on phoneblock.net.",
   "link.expired": "The code has expired. Request a new code.",
@@ -463,5 +464,7 @@
   "spam.dialog.comment": "Reason",
   "spam.dialog.comment.hint": "(optional; will be visible to the public)",
   "spam.dialog.error.is_contact": "This caller is in your phone book. A phone book entry always takes precedence on the dongle, so a spam alert isn't possible in this case.",
-  "link.waiting": "Waiting for the code to be entered on phoneblock.net…"
+  "status.calls.show_all": "Show all ({count})",
+  "status.calls.show_less": "Show fewer",
+  "status.calls.time_unknown": "unknown"
 }

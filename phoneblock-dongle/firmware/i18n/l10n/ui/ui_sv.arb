@@ -395,6 +395,7 @@
   "link.copy_failed": "Det går inte att kopiera – koden är markerad, kopiera den med Ctrl+C.",
   "link.open": "Öppna phoneblock.net",
   "link.manual": "Sidan är {url} – du kan också ange koden där på en annan enhet, t.ex. på mobilen.",
+  "link.waiting": "Väntar på att koden ska matas in på phoneblock.net…",
   "link.approved": "PhoneBlock-kontot är kopplat — token är inställt.",
   "link.denied": "Länken har avvisats på phoneblock.net.",
   "link.expired": "Koden har gått ut. Begär en ny kod.",
@@ -463,5 +464,7 @@
   "spam.dialog.comment": "Motivering",
   "spam.dialog.comment.hint": "(valfritt, visas offentligt)",
   "spam.dialog.error.is_contact": "Den här uppringaren finns i din telefonbok. En telefonboksuppgift har alltid företräde på dongeln, därför kan det inte vara ett spam-samtal i det här fallet.",
-  "link.waiting": "Väntar på att koden ska matas in på phoneblock.net…"
+  "status.calls.show_all": "Visa alla ({count})",
+  "status.calls.show_less": "Visa färre",
+  "status.calls.time_unknown": "okänt"
 }

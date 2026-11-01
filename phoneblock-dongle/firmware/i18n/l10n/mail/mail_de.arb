@@ -95,6 +95,14 @@
     "description": "Recent-calls table heading",
     "x-translated": "b2aecfcf"
   },
+  "calls.not_listed": "Nicht aufgef&uuml;hrt: <b>{count}</b> &auml;ltere Anrufe.",
+  "@calls.not_listed": {
+    "description": "Status-mail line below the call table: how many calls since the last mail the table does not show, because the dongle's call list no longer holds them or the mail had no room; keep the HTML entities and <b> tags",
+    "placeholders": {
+      "count": {}
+    },
+    "x-translated": "45d282d9"
+  },
   "calls.time": "Zeit",
   "@calls.time": {
     "description": "Table header: time",

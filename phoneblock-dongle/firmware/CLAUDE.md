@@ -17,7 +17,7 @@ problems off the web UI instead of needing a serial console.
 Consequence for new code: **log an unusual condition at WARN or ERROR and
 it shows up on the UI automatically** — no per-call-site plumbing. Keep
 `ESP_LOGI` for normal progress; don't `ESP_LOGW` things that recur every
-few seconds (they'd flush the 32-entry ring). The parsing of the formatted
+few seconds (they'd flush the 47-entry ring). The parsing of the formatted
 log line is host-tested in `test/test_log_capture.c`.
 
 Some ESP-IDF libraries WARN on routine, self-recovering conditions they

@@ -33,5 +33,6 @@
   "verdict.error": "Помилка",
   "verdict.unknown": "невідомо",
   "log.heading": "Нові записи в протоколі",
-  "update.body": "Прошивка на твоєму {device} була оновлена до версії {version}."
+  "update.body": "Прошивка на твоєму {device} була оновлена до версії {version}.",
+  "calls.not_listed": "Не вказано: <b>{count}</b> старі дзвінки."
 }

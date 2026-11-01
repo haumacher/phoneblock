@@ -294,6 +294,35 @@ bool sim_write_file(const char *path, size_t size, size_t chunk,
     return ok;
 }
 
+bool sim_update_file(const char *path, size_t offset, size_t size)
+{
+    s_last_err = 0;
+    if (!s_mounted) { s_last_err = LFS_ERR_INVAL; return false; }
+    // fopen(path, "r+b") + fseek + one fwrite (unbuffered) + fclose, as
+    // stats.c writes a call record: O_RDWR, no truncation.
+    static uint8_t cache[SIM_CACHE];
+    int64_t mtime = ++s_clock;
+    struct lfs_attr attr = { 't', &mtime, sizeof(mtime) };
+    struct lfs_file_config fcfg = { .buffer = cache, .attrs = &attr, .attr_count = 1 };
+    lfs_file_t f;
+    int res = lfs_file_opencfg(&s_lfs, &f, path, LFS_O_RDWR, &fcfg);
+    if (res < 0) { s_last_err = res; return false; }
+    bool ok = lfs_file_seek(&s_lfs, &f, (lfs_soff_t) offset, LFS_SEEK_SET) >= 0;
+    static uint8_t buf[512];
+    size_t done = 0;
+    while (ok && done < size) {
+        size_t n = size - done < sizeof(buf) ? size - done : sizeof(buf);
+        for (size_t i = 0; i < n; i++) buf[i] = (uint8_t) ((offset + done + i) * 37u + (uint8_t) mtime);
+        lfs_ssize_t w = lfs_file_write(&s_lfs, &f, buf, (lfs_size_t) n);
+        if (w < 0) { s_last_err = (int) w; ok = false; break; }
+        if ((size_t) w != n) { s_last_err = LFS_ERR_NOSPC; ok = false; break; }
+        done += n;
+    }
+    res = lfs_file_close(&s_lfs, &f);
+    if (ok && res < 0) { s_last_err = res; ok = false; }
+    return ok;
+}
+
 bool sim_unlink(const char *path)
 {
     return s_mounted && lfs_remove(&s_lfs, path) == 0;

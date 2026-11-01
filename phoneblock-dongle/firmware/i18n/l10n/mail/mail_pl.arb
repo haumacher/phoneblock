@@ -33,5 +33,6 @@
   "verdict.error": "Błąd",
   "verdict.unknown": "nieznane",
   "log.heading": "Nowe wpisy w protokole",
-  "update.body": "Oprogramowanie sprzętowe na Twoim {device} zostało zaktualizowane do wersji {version}."
+  "update.body": "Oprogramowanie sprzętowe na Twoim {device} zostało zaktualizowane do wersji {version}.",
+  "calls.not_listed": "Nie wymieniono: <b>{count}</b> starsze połączenia."
 }

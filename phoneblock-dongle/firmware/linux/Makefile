@@ -86,13 +86,18 @@ endif
 
 all: phoneblock_linux
 
+# -MMD -MP: each object also depends on the headers it includes, so a
+# changed struct (e.g. stats_call_t) rebuilds every module that uses it
+# instead of linking stale objects against the new layout.
 $(LINUX_BUILD_DIR)/core/%.o: ../core/%.c
 	mkdir -p $(@D)
-	$(CC) $(CFLAGS) -std=gnu11 $(LINUX_CPPFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -std=gnu11 -MMD -MP $(LINUX_CPPFLAGS) -c $< -o $@
 
 $(LINUX_BUILD_DIR)/main/%.o: ../main/%.c
 	mkdir -p $(@D)
-	$(CC) $(CFLAGS) -std=gnu11 $(LINUX_CPPFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -std=gnu11 -MMD -MP $(LINUX_CPPFLAGS) -c $< -o $@
+
+-include $(LINUX_OBJECTS:.o=.d)
 
 $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a: $(LINUX_OBJECTS)
 	$(AR) rcs $@ $^
@@ -122,6 +127,6 @@ $(LINUX_WEB_DIR)/ui_en.json: ../i18n/l10n/ui/ui_en.arb
 phoneblock_linux: $(LINUX_BUILD_DIR)/phoneblock-dongle $(LINUX_WEB_ASSETS)
 
 clean::
-	rm -f $(LINUX_OBJECTS) $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a $(LINUX_BUILD_DIR)/phoneblock-dongle
+	rm -f $(LINUX_OBJECTS) $(LINUX_OBJECTS:.o=.d) $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a $(LINUX_BUILD_DIR)/phoneblock-dongle
 
 .PHONY: all linux-firmware phoneblock_linux clean

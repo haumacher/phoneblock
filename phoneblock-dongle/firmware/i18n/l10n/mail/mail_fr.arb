@@ -33,5 +33,6 @@
   "verdict.error": "Erreur",
   "verdict.unknown": "inconnu",
   "log.heading": "Nouvelles entrées dans le journal",
-  "update.body": "Le micrologiciel de ton {device} a été mis à jour vers la version {version}."
+  "update.body": "Le micrologiciel de ton {device} a été mis à jour vers la version {version}.",
+  "calls.not_listed": "Non répertoriés : <b>{count}</b> appels plus anciens."
 }

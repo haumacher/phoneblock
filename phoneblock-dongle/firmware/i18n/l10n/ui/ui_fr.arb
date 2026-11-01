@@ -395,6 +395,7 @@
   "link.copy_failed": "Impossible de copier – le code est sélectionné, copiez-le avec Ctrl+C.",
   "link.open": "Ouvrir phoneblock.net",
   "link.manual": "La page se trouve à l'adresse {url} – tu peux également saisir le code sur un autre appareil, par exemple sur ton téléphone portable.",
+  "link.waiting": "En attente de la saisie du code sur phoneblock.net…",
   "link.approved": "Compte PhoneBlock associé — le jeton est défini.",
   "link.denied": "Le lien a été refusé sur phoneblock.net.",
   "link.expired": "Le code a expiré. Demandez un nouveau code.",
@@ -463,5 +464,7 @@
   "spam.dialog.comment": "Raison",
   "spam.dialog.comment.hint": "(facultatif, sera visible publiquement)",
   "spam.dialog.error.is_contact": "Ce correspondant figure dans ton répertoire. Une entrée du répertoire a toujours la priorité sur le dongle ; c'est pourquoi il n'est pas possible de signaler ce numéro comme spam.",
-  "link.waiting": "En attente de la saisie du code sur phoneblock.net…"
+  "status.calls.show_all": "Tout afficher ({count})",
+  "status.calls.show_less": "Afficher moins",
+  "status.calls.time_unknown": "inconnu"
 }

@@ -8,7 +8,7 @@ CFLAGS  ?= -Wall -Wextra -Werror -O0 -g -I../main -I../core
 IDF_PATH ?= $(HOME)/tools/esp/esp-idf
 CJSON_DIR := $(IDF_PATH)/components/json/cJSON
 
-BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_calls test_mail_rcpt test_name_filter test_version_cmp test_http_util test_net_local test_heap_guard test_platform_linux test_log_capture_linux test_time_sync_tz test_ota_manifest test_stats test_display_model test_display_probe test_storage_budget test_storage_sim test_storage_hostfs test_vad test_dialog test_dialog_probe test_audio_manifest test_link_proto test_http_util_probe
+BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_calls test_mail_rcpt test_name_filter test_version_cmp test_http_util test_net_local test_heap_guard test_platform_linux test_log_capture_linux test_time_sync_tz test_ota_manifest test_stats test_stats_small test_display_model test_display_probe test_storage_budget test_storage_sim test_storage_hostfs test_vad test_dialog test_dialog_probe test_audio_manifest test_link_proto test_http_util_probe
 
 test_sip_parse: test_sip_parse.c ../core/sip_parse.c ../core/sip_parse.h \
                 ../core/dial_rules.c ../core/dial_rules.h \
@@ -88,7 +88,7 @@ test_audio_manifest: test_audio_manifest.c ../main/audio_manifest.c ../main/audi
 # The storage partition's size in a partition table (column 5 of its line).
 part_size = $(shell awk -F, '$$1 ~ /^storage/ { gsub(/ /, "", $$5); print $$5 }' $(1))
 
-test_storage_budget: test_storage_budget.c ../main/storage_budget.c ../main/storage_budget.h \
+test_storage_budget: test_storage_budget.c ../main/storage_budget.c ../main/storage_budget.h ../main/stats.h \
                      ../partitions.csv ../partitions-c3.csv ../partitions-16mb.csv
 	$(CC) $(CFLAGS) -DPART_CLASSIC=$(call part_size,../partitions.csv) \
 	  -DPART_C3=$(call part_size,../partitions-c3.csv) \
@@ -117,7 +117,7 @@ lfs_core_%.o: $(LFS_DIR)/%.c lfs_host/lfs_sim_defs.h
 test_storage_sim: test_storage_sim.c lfs_host/lfs_sim.c lfs_host/lfs_sim.h \
                   lfs_host/esp_littlefs.h lfs_host/esp_partition.h \
                   ../main/storage.c ../main/storage.h ../main/storage_budget.c \
-                  ../main/storage_budget.h ../partitions.csv $(LFS_CORE)
+                  ../main/storage_budget.h ../main/stats.h ../partitions.csv $(LFS_CORE)
 	$(CC) $(CFLAGS) $(SIM_FLAGS) -DSTORAGE_UNLINK=sim_vfs_unlink \
 	    test_storage_sim.c lfs_host/lfs_sim.c ../main/storage.c \
 	    ../main/storage_budget.c $(LFS_CORE) -o $@
@@ -167,13 +167,32 @@ test_heap_guard: test_heap_guard.c ../main/heap_guard_scan.c ../main/heap_guard_
 
 # test_stats and test_platform_linux link only core/platform_linux.c (libc +
 # pthreads); the libcurl/OpenSSL half lives in platform_linux_net.c.
-test_stats: test_stats.c ../main/stats.c ../main/stats.h ../main/api.h ../main/api_fail.c \
-            ../main/display.h ../core/platform_linux.c ../core/platform.h ../main/log_capture.c
-	$(CC) $(CFLAGS) -pthread test_stats.c ../main/stats.c ../main/api_fail.c ../core/platform_linux.c ../main/log_capture.c -o $@
+# The call list is a file (#589): the tests run it in a fresh temp directory
+# (calls_test_util.h). test_stats_small runs the same checks with the call
+# capacity of the 4 MB boards (the host build has the 16 MB / Linux one).
+STATS_TEST_DEPS := calls_test_util.h ../main/stats.c ../main/stats.h ../main/api.h \
+                   ../main/display.h ../core/platform_linux.c ../core/platform.h \
+                   ../main/log_capture.c
+STATS_TEST_SRCS := ../main/stats.c ../core/platform_linux.c ../main/log_capture.c
 
-# Which calls the status mail reports (issue #556): all, or only blocked ones.
-test_mail_calls: test_mail_calls.c ../main/mail_calls.c ../main/mail_calls.h ../main/stats.h
-	$(CC) $(CFLAGS) test_mail_calls.c ../main/mail_calls.c -o $@
+test_stats: test_stats.c ../main/api_fail.c $(STATS_TEST_DEPS)
+	$(CC) $(CFLAGS) -fsanitize=address -pthread test_stats.c ../main/api_fail.c $(STATS_TEST_SRCS) -o $@
+
+test_stats_small: test_stats.c ../main/api_fail.c $(STATS_TEST_DEPS)
+	$(CC) $(CFLAGS) -fsanitize=address -pthread -DSTATS_CALL_CAPACITY=STATS_CALL_CAPACITY_SMALL \
+	  test_stats.c ../main/api_fail.c $(STATS_TEST_SRCS) -o $@
+
+# Which calls the status mail reports (issues #556, #589): all, or only
+# blocked ones, since the last mail — on the real call list.
+# Review probe of the persistent call list (#589), at the 4 MB boards' capacity.
+BINS += test_calls_probe
+test_calls_probe: test_calls_probe.c ../main/mail_calls.c ../main/mail_calls.h $(STATS_TEST_DEPS)
+	$(CC) $(CFLAGS) -fsanitize=address -pthread -DSTATS_CALL_CAPACITY=STATS_CALL_CAPACITY_SMALL \
+	  test_calls_probe.c ../main/mail_calls.c $(STATS_TEST_SRCS) -o $@
+
+test_mail_calls: test_mail_calls.c ../main/mail_calls.c ../main/mail_calls.h $(STATS_TEST_DEPS)
+	$(CC) $(CFLAGS) -fsanitize=address -pthread test_mail_calls.c ../main/mail_calls.c \
+	  $(STATS_TEST_SRCS) -o $@
 
 # The display's model (badge rule, caller screen, UTF-8, text fitting) on top
 # of the real stats ring and the generated fonts. With AddressSanitizer: the
@@ -181,14 +200,16 @@ test_mail_calls: test_mail_calls.c ../main/mail_calls.c ../main/mail_calls.h ../
 test_display_model: test_display_model.c ../main/display_model.c ../main/display_model.h \
                     ../main/lcd_font.c ../main/lcd_font.h ../main/strbuf.h \
                     ../main/stats.c ../main/stats.h ../main/display.h ../main/api.h \
-                    ../core/platform_linux.c ../core/platform.h ../main/log_capture.c
+                    ../core/platform_linux.c ../core/platform.h ../main/log_capture.c \
+                    calls_test_util.h
 	$(CC) $(CFLAGS) -fsanitize=address -pthread test_display_model.c ../main/display_model.c \
 	  ../main/lcd_font.c ../main/stats.c ../core/platform_linux.c ../main/log_capture.c -o $@
 
 test_display_probe: test_display_probe.c ../main/display_model.c ../main/display_model.h \
                     ../main/lcd_font.c ../main/lcd_font.h ../main/strbuf.h \
                     ../main/stats.c ../main/stats.h ../main/display.h ../main/api.h \
-                    ../core/platform_linux.c ../core/platform.h ../main/log_capture.c
+                    ../core/platform_linux.c ../core/platform.h ../main/log_capture.c \
+                    calls_test_util.h
 	$(CC) $(CFLAGS) -fsanitize=address -pthread test_display_probe.c ../main/display_model.c \
 	  ../main/lcd_font.c ../main/stats.c ../core/platform_linux.c ../main/log_capture.c -o $@
 

@@ -55,6 +55,12 @@ int sim_last_err(void);
 bool sim_write_file(const char *path, size_t size, size_t chunk,
                     size_t *written);
 
+// Overwrites `size` bytes at `offset` of an existing file in place, the way
+// fopen("r+b") + fseek + fwrite + fclose does (stats.c's call records):
+// littlefs rewrites the file from the block of `offset` to its end. True on
+// success; on failure sim_last_err() holds the littlefs error.
+bool sim_update_file(const char *path, size_t offset, size_t size);
+
 // unlink() / rename(); true on success.
 bool sim_unlink(const char *path);
 bool sim_rename(const char *from, const char *to);

@@ -19,9 +19,15 @@ uint16_t web_listening_port(void);
 // any caller that needs the decoded form has to call this first.
 void url_decode(const char *src, int src_len, char *dst, size_t cap);
 
+// Seconds since the call: from its stored time and `now_epoch`
+// (time_sync_now_epoch(), 0 = clock not set), else — a call of this boot —
+// from its uptime and `now_us` (pb_monotonic_us()). -1 when it is not known
+// (a call of an earlier boot without a time, or the clock not set yet).
+int64_t web_call_age_s(const stats_call_t *call, int64_t now_us, int64_t now_epoch);
+
 // One listed call as JSON, as /api/calls lists it and the call webhook
-// (webhook.c) posts it: age_s from `now_us` (pb_monotonic_us()), epoch_s
-// from `now_epoch` (time_sync_now_epoch(), 0 = clock not set). The caller
-// owns the returned object.
+// (webhook.c) posts it: age_s as web_call_age_s(), epoch_s the call's own
+// time (0 = not known, stats_call_t.epoch_s). The caller owns the returned
+// object.
 cJSON *web_call_json(const stats_call_t *call, int64_t now_us,
                      int64_t now_epoch);

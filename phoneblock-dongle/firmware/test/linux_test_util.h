@@ -27,3 +27,17 @@ static inline void use_temp_config(char *path, size_t cap)
     close(fd);
     REQUIRE(setenv("PHONEBLOCK_CONFIG_FILE", path, 1) == 0);
 }
+
+// Opens the persistent call list (stats.c, #589) in a fresh temp directory
+// `dir`; the file is `path`. The caller removes both. Declared here, not by
+// including stats.h, so tests that do not link stats.c are not affected.
+#include <stdbool.h>
+bool stats_calls_open(const char *path);
+static inline void use_temp_calls(char *dir, size_t dir_cap, char *path, size_t path_cap)
+{
+    const char *tmp = getenv("TMPDIR");
+    snprintf(dir, dir_cap, "%s/phoneblock-calls-XXXXXX", tmp && tmp[0] ? tmp : "/tmp");
+    REQUIRE(mkdtemp(dir) != NULL);
+    snprintf(path, path_cap, "%s/calls.bin", dir);
+    REQUIRE(stats_calls_open(path));
+}

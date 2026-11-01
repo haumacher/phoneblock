@@ -121,7 +121,7 @@ static void process_contact(const char *uid, const char *number, void *user)
                         config_dial_prefix()) != PHONE_RATEABLE) {
         // Wildcard or non-normalisable entry — leave it in the Fritz!Box
         // silently. Deliberately not WARN: it recurs every sync run and
-        // would flush the 32-entry log ring (issue #469). The run summary
+        // would flush the 47-entry log ring (issue #469). The run summary
         // reports the aggregate skip count at INFO.
         c->skipped++;
         return;
