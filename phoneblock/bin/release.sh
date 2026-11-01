@@ -4,7 +4,8 @@
 #
 # Bumps the version, tags the release and pushes the tag. GitHub Actions
 # (.github/workflows/server-release.yml) then builds the WAR and attaches it to the GitHub
-# release; the answerbot Docker image is published by answerbot-docker.yml at the same time.
+# release. (The old answerbot Docker image is no longer published with it; answerbot-docker.yml
+# can be run by hand.)
 #
 # Deploy afterwards on the server (test first, then production):
 #
