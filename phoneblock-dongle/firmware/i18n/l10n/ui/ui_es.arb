@@ -476,5 +476,7 @@
   "status.rec.download": "Descargar la grabación (WAV)",
   "status.rec.delete": "Borrar grabación",
   "status.rec.delete.confirm": "¿Quieres borrar esta grabación? La llamada seguirá apareciendo en la lista.",
-  "status.rec.failed": "No se ha podido cargar la grabación."
+  "status.rec.failed": "No se ha podido cargar la grabación.",
+  "status.system.wifi_link": "Wifi «{ssid}» a través del punto de acceso {bssid}, canal {channel}, conectado desde {since}",
+  "status.system.wifi_drops": "{drops} de conexión desde el inicio"
 }

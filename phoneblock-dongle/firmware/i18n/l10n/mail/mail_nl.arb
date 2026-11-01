@@ -16,6 +16,7 @@
   "sum.uptime": "Duur: {hours} uur {minutes} min",
   "sum.calls": "Totaal aantal oproepen: {total} &nbsp;|&nbsp; Geblokkeerde spam: {blocked} &nbsp;|&nbsp; Doorgeschakeld: {passed}",
   "calls.heading": "Laatste telefoontjes",
+  "calls.not_listed": "Niet weergegeven: <b>{count}</b> oudere oproepen.",
   "calls.time": "Tijd",
   "calls.number": "Nummer",
   "calls.name": "Naam",
@@ -33,6 +34,5 @@
   "verdict.error": "Fout",
   "verdict.unknown": "onbekend",
   "log.heading": "Nieuwe berichten in het logboek",
-  "update.body": "De firmware op je {device} is bijgewerkt naar versie {version}.",
-  "calls.not_listed": "Niet weergegeven: <b>{count}</b> oudere oproepen."
+  "update.body": "De firmware op je {device} is bijgewerkt naar versie {version}."
 }

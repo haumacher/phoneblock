@@ -16,6 +16,7 @@
   "sum.uptime": "运行时间：{hours}h {minutes}min",
   "sum.calls": "总通话数：{total} &nbsp;|&nbsp; 拦截的垃圾短信：{blocked} &nbsp;|&nbsp; 接通的通话：{passed}",
   "calls.heading": "最近的通话",
+  "calls.not_listed": "未列出：<b>{count}</b> 较早的通话记录。",
   "calls.time": "时间",
   "calls.number": "编号",
   "calls.name": "姓名",
@@ -33,6 +34,5 @@
   "verdict.error": "错误",
   "verdict.unknown": "未知",
   "log.heading": "日志中的新记录",
-  "update.body": "您 {device} 的固件已更新至 {version}。",
-  "calls.not_listed": "未列出：<b>{count}</b> 较早的通话记录。"
+  "update.body": "您 {device} 的固件已更新至 {version}。"
 }

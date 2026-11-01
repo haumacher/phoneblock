@@ -476,5 +476,7 @@
   "status.rec.download": "下载录音（WAV）",
   "status.rec.delete": "删除录音",
   "status.rec.delete.confirm": "要删除这条录音吗？该通话仍会保留在列表中。",
-  "status.rec.failed": "无法加载该照片。"
+  "status.rec.failed": "无法加载该照片。",
+  "status.system.wifi_link": "通过接入点 {bssid}、信道 {channel} 连接到 Wi-Fi “{ssid}”，连接时间自 {since} 起",
+  "status.system.wifi_drops": "{drops} 自启动以来的断连次数"
 }

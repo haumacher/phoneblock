@@ -476,5 +476,7 @@
   "status.rec.download": "Λήψη ηχογράφησης (WAV)",
   "status.rec.delete": "Διαγραφή εγγραφής",
   "status.rec.delete.confirm": "Να διαγραφεί αυτή η εγγραφή; Η κλήση θα παραμείνει στη λίστα.",
-  "status.rec.failed": "Δεν ήταν δυνατή η φόρτωση της εικόνας."
+  "status.rec.failed": "Δεν ήταν δυνατή η φόρτωση της εικόνας.",
+  "status.system.wifi_link": "Wi-Fi «{ssid}» μέσω του σημείου πρόσβασης {bssid}, κανάλι {channel}, συνδεδεμένο από {since}",
+  "status.system.wifi_drops": "{drops} Διακοπές σύνδεσης από την έναρξη"
 }

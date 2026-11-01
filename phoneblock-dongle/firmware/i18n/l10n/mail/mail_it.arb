@@ -16,6 +16,7 @@
   "sum.uptime": "Durata: {hours}h {minutes}min",
   "sum.calls": "Chiamate totali: {total} &nbsp;|&nbsp; SPAM bloccato: {blocked} &nbsp;|&nbsp; inoltrato: {passed}",
   "calls.heading": "Ultime chiamate",
+  "calls.not_listed": "Non elencate: <b>{count}</b> chiamate precedenti.",
   "calls.time": "Tempo",
   "calls.number": "Numero",
   "calls.name": "Nome",
@@ -33,6 +34,5 @@
   "verdict.error": "Errore",
   "verdict.unknown": "sconosciuto",
   "log.heading": "Nuove segnalazioni nel registro",
-  "update.body": "Il firmware del tuo {device} è stato aggiornato alla versione {version}.",
-  "calls.not_listed": "Non elencate: <b>{count}</b> chiamate precedenti."
+  "update.body": "Il firmware del tuo {device} è stato aggiornato alla versione {version}."
 }

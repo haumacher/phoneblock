@@ -429,6 +429,25 @@
     },
     "x-translated": "2f4e474"
   },
+  "status.system.wifi_link": "WLAN „{ssid}“ über Access Point {bssid}, Kanal {channel}, verbunden seit {since}",
+  "@status.system.wifi_link": {
+    "description": "Dongle web UI: second WiFi line in the System section — network name, the access point's MAC address (in a mesh: which box), radio channel, and how long the current connection has lasted (since is a duration like '5 min' or '2 h')",
+    "placeholders": {
+      "bssid": {},
+      "channel": {},
+      "ssid": {},
+      "since": {}
+    },
+    "x-translated": "de7a9c26"
+  },
+  "status.system.wifi_drops": "{drops} Verbindungsabbrüche seit dem Start",
+  "@status.system.wifi_drops": {
+    "description": "Dongle web UI: number of times the WiFi connection was lost since the dongle booted, appended to the WiFi link line",
+    "placeholders": {
+      "drops": {}
+    },
+    "x-translated": "7a8ef891"
+  },
   "status.system.wifi.weak_hint": "Schwaches WLAN-Signal: Stelle den Dongle näher an die Fritz!Box oder einen Repeater. Im Mesh zeigt die Mesh-Übersicht der Fritz!Box, an welcher Box er angemeldet ist.",
   "@status.system.wifi.weak_hint": {
     "description": "Dongle web UI: hint shown for a weak WiFi signal",

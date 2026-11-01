@@ -476,5 +476,7 @@
   "status.rec.download": "Opname downloaden (WAV)",
   "status.rec.delete": "Opname verwijderen",
   "status.rec.delete.confirm": "Deze opname verwijderen? Het gesprek blijft in de lijst staan.",
-  "status.rec.failed": "Het bestand kon niet worden geladen."
+  "status.rec.failed": "Het bestand kon niet worden geladen.",
+  "status.system.wifi_link": "Wifi „{ssid}“ via access point {bssid}, kanaal {channel}, verbonden sinds {since}",
+  "status.system.wifi_drops": "{drops} Verbindingsonderbrekingen sinds de start"
 }

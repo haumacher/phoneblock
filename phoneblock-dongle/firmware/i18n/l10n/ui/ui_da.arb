@@ -476,5 +476,7 @@
   "status.rec.download": "Download optagelse (WAV)",
   "status.rec.delete": "Slet optagelse",
   "status.rec.delete.confirm": "Skal denne optagelse slettes? Opkaldet forbliver på listen.",
-  "status.rec.failed": "Optagelsen kunne ikke indlæses."
+  "status.rec.failed": "Optagelsen kunne ikke indlæses.",
+  "status.system.wifi_link": "Wi-Fi „{ssid}“ via adgangspunkt {bssid}, kanal {channel}, forbundet siden {since}",
+  "status.system.wifi_drops": "{drops} Afbrudte forbindelser siden opstart"
 }

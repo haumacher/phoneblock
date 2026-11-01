@@ -476,5 +476,7 @@
   "status.rec.download": "Завантажити запис (WAV)",
   "status.rec.delete": "Видалити запис",
   "status.rec.delete.confirm": "Видалити цей запис? Дзвінок залишиться у списку.",
-  "status.rec.failed": "Не вдалося завантажити запис."
+  "status.rec.failed": "Не вдалося завантажити запис.",
+  "status.system.wifi_link": "Wi-Fi «{ssid}» через точку доступу {bssid}, канал {channel}, підключено з {since}",
+  "status.system.wifi_drops": "{drops} Переривання з'єднання з моменту запуску"
 }

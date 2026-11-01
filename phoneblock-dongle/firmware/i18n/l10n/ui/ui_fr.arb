@@ -476,5 +476,7 @@
   "status.rec.download": "Télécharger l'enregistrement (WAV)",
   "status.rec.delete": "Supprimer l'enregistrement",
   "status.rec.delete.confirm": "Supprimer cet enregistrement ? L'appel reste dans la liste.",
-  "status.rec.failed": "L'enregistrement n'a pas pu être chargé."
+  "status.rec.failed": "L'enregistrement n'a pas pu être chargé.",
+  "status.system.wifi_link": "Réseau Wi-Fi « {ssid} » via le point d'accès {bssid}, canal {channel}, connecté depuis {since}",
+  "status.system.wifi_drops": "{drops} Déconnexions depuis le démarrage"
 }

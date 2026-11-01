@@ -476,5 +476,7 @@
   "status.rec.download": "Scarica la registrazione (WAV)",
   "status.rec.delete": "Elimina registrazione",
   "status.rec.delete.confirm": "Elimina questa registrazione? La chiamata rimane nell'elenco.",
-  "status.rec.failed": "Non è stato possibile caricare il file."
+  "status.rec.failed": "Non è stato possibile caricare il file.",
+  "status.system.wifi_link": "Wi-Fi “{ssid}” tramite il punto di accesso {bssid}, canale {channel}, connesso da {since}",
+  "status.system.wifi_drops": "{drops} Interruzioni di connessione dall'avvio"
 }

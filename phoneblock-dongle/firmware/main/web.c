@@ -423,13 +423,19 @@ static void add_system_load(cJSON *root)
     }
 
     // Link quality: RSSI is what the dongle receives from the AP; tx_dbm is
-    // the driver's transmit-power limit in effect.
-    int rssi;
-    float tx_dbm = 0;
-    if (wifi_link_info(&rssi, &tx_dbm)) {
-        cJSON_AddNumberToObject(sys, "wifi_rssi", rssi);
+    // the driver's transmit-power limit in effect. Network, AP (which mesh
+    // box), channel, link age and lost links since boot for the System
+    // section.
+    wifi_link_t link;
+    if (wifi_link_status(&link)) {
+        cJSON_AddNumberToObject(sys, "wifi_rssi", link.rssi);
+        cJSON_AddStringToObject(sys, "wifi_ssid", link.ssid);
+        cJSON_AddStringToObject(sys, "wifi_bssid", link.bssid);
+        cJSON_AddNumberToObject(sys, "wifi_channel", link.channel);
+        cJSON_AddNumberToObject(sys, "wifi_connected_s", link.connected_s);
     }
-    if (tx_dbm > 0) cJSON_AddNumberToObject(sys, "wifi_tx_dbm", tx_dbm);
+    if (link.tx_dbm > 0) cJSON_AddNumberToObject(sys, "wifi_tx_dbm", link.tx_dbm);
+    cJSON_AddNumberToObject(sys, "wifi_drops", link.drops);
 
 #if CONFIG_FREERTOS_GENERATE_RUN_TIME_STATS
     UBaseType_t cap = uxTaskGetNumberOfTasks() + 4;   // headroom for mid-sample spawns

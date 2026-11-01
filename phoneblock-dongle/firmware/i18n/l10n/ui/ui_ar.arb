@@ -476,5 +476,7 @@
   "status.rec.download": "تنزيل التسجيل (WAV)",
   "status.rec.delete": "حذف التسجيل",
   "status.rec.delete.confirm": "هل تريد حذف هذا التسجيل؟ ستبقى المكالمة في القائمة.",
-  "status.rec.failed": "تعذر تحميل المقطع الصوتي."
+  "status.rec.failed": "تعذر تحميل المقطع الصوتي.",
+  "status.system.wifi_link": "شبكة WLAN «{ssid}» عبر نقطة الوصول {bssid}، القناة {channel}، متصل منذ {since}",
+  "status.system.wifi_drops": "{drops} حالات انقطاع الاتصال منذ بدء التشغيل"
 }
