@@ -13,6 +13,14 @@ CONFIG_EXAMPLE_USE_OPENETH=n
 CONFIG_EXAMPLE_CONNECT_IPV4=y
 CONFIG_EXAMPLE_CONNECT_IPV6=y
 
+# Mesh roaming (#585): 802.11k radio measurement + 802.11v BSS transition
+# management, so the dongle follows the Fritz!Box mesh steering instead of
+# staying with a distant repeater it happened to join on a reconnect. wifi.c
+# sets rm_enabled/btm_enabled in the STA config. Costs the supplicant's
+# btm_rrm task (6 KB stack) and its BTM/RRM code. Scan cache and MBO stay
+# off (RAM; the steering needs neither). Applies to all targets.
+CONFIG_ESP_WIFI_11KV_SUPPORT=y
+
 # WiFi credentials. Must be supplied in sdkconfig.defaults.local for
 # every real-hardware build (gitignored, so credentials don't leak).
 # QEMU builds switch to Ethernet and ignore these.

@@ -198,6 +198,50 @@ static char    s_pending_error[STATS_ERROR_MSG_LEN] = "";
 // correct (if unused) for TCP/TLS.
 static char    s_public_ip[INET_ADDRSTRLEN] = "";
 
+// Registrar liveness for the Wi-Fi link watchdog (wifi.c, link_watchdog.h,
+// #585). s_registrar_answered: the registrar has answered at least once since
+// the task started or the config was reloaded. s_registrar_silent_since_s:
+// monotonic second (+1, so 0 can mean "answering") of the first exchange that
+// went unanswered after the last answer. Plain 32-bit values: written by the
+// SIP task only, read by the watchdog task without a lock.
+static volatile bool     s_registrar_answered = false;
+static volatile uint32_t s_registrar_silent_since_s = 0;
+
+static uint32_t monotonic_s(void)
+{
+    return (uint32_t)(pb_monotonic_us() / 1000000LL);
+}
+
+static void note_registrar_answered(void)
+{
+    s_registrar_answered = true;
+    s_registrar_silent_since_s = 0;
+}
+
+static void note_registrar_silent(void)
+{
+    if (s_registrar_answered && s_registrar_silent_since_s == 0) {
+        s_registrar_silent_since_s = monotonic_s() + 1;
+    }
+}
+
+uint32_t sip_register_unreachable_s(void)
+{
+    uint32_t since = s_registrar_silent_since_s;
+    if (!s_sip_running || since == 0) return 0;
+    uint32_t now = monotonic_s() + 1;
+    return now > since ? now - since : 0;
+}
+
+bool sip_register_active(void)
+{
+    return s_sip_running;
+}
+
+// The SIP task's dialog state, published for sip_register_call_answered().
+// Points into the task's own context; a 32-bit enum read from another task.
+static volatile const dialog_state_t *s_dialog_state_p = NULL;
+
 bool sip_register_is_registered(void)
 {
     return s_registered;
@@ -226,6 +270,14 @@ void sip_register_request_reload(bool needs_settle)
         return;
     }
     s_reload_requested = true;
+}
+
+bool sip_register_call_answered(void)
+{
+    volatile const dialog_state_t *p = s_dialog_state_p;
+    if (!p) return false;
+    dialog_state_t st = *p;
+    return st == DIALOG_ANSWERED || st == DIALOG_STREAMING;
 }
 
 // ---------------------------------------------------------------------------
@@ -570,6 +622,7 @@ static int sip_send_recv(sip_ctx_t *c, const char *tx, int tx_len,
                          char *rx, int rx_cap)
 {
     if (sip_transport_send(c->transport, tx, tx_len) < 0) {
+        note_registrar_silent();
         return -1;
     }
     // Wait for a complete SIP response until the budget runs out. A single
@@ -599,6 +652,7 @@ static int sip_send_recv(sip_ctx_t *c, const char *tx, int tx_len,
             // web "Protokoll" ring (log_capture.c) on every blip (#402).
             pb_log_info(TAG, "no response from registrar within %d ms",
                      SIP_REGISTER_RECV_TIMEOUT_MS);
+            note_registrar_silent();
             return -1;
         }
         int slice_ms = (int)(remaining_us / 1000);
@@ -606,11 +660,16 @@ static int sip_send_recv(sip_ctx_t *c, const char *tx, int tx_len,
             slice_ms = SIP_REGISTER_RECV_SLICE_MS;
         struct sockaddr_in from;
         r = sip_transport_recv(c->transport, slice_ms, rx, rx_cap - 1, &from);
-        if (r < 0) return -1;   // transport error (already logged/reconnected)
+        if (r < 0) {            // transport error (already logged/reconnected)
+            note_registrar_silent();
+            return -1;
+        }
         if (r > 0) break;       // complete message
         // r == 0: slice expired or partial frame — keep waiting.
     }
     rx[r] = '\0';
+    // Any answer — even a rejection — proves the link to the registrar.
+    note_registrar_answered();
     // Learn our public IP from the registrar's view (Via "received="), so
     // Via/Contact/SDP can advertise it for UDP NAT traversal.
     char rcv[INET_ADDRSTRLEN];
@@ -1779,6 +1838,7 @@ static void sip_task(void *arg)
 {
     (void)arg;
     sip_ctx_t ctx = {0};
+    s_dialog_state_p = &ctx.dialog.state;
     ctx.cseq = 1;
     random_hex(ctx.from_tag, 16);
 
@@ -1912,6 +1972,7 @@ static void sip_task(void *arg)
     rx = malloc(SIP_RX_BUF_SIZE);
     if (!rx) {
         pb_log_err(TAG, "malloc rx buffer failed — aborting SIP task");
+        s_dialog_state_p = NULL;
         s_sip_running = false;
         return;
     }
@@ -1944,6 +2005,11 @@ static void sip_task(void *arg)
         if (s_reload_requested) {
             s_reload_requested = false;
             pb_log_info(TAG, "config reload requested → re-REGISTER with new creds");
+            // A new registrar must answer once before its silence counts
+            // for the link watchdog (a mistyped host is a setup problem,
+            // not a dead Wi-Fi link).
+            s_registrar_answered = false;
+            s_registrar_silent_since_s = 0;
             // Refresh dial address too, in case the registrar host or
             // outbound proxy changed.
             char new_dial_host[64];
@@ -2079,6 +2145,10 @@ static void sip_task(void *arg)
         int n = sip_transport_recv(ctx.transport, (int)(remaining_us / 1000),
                                    rx, SIP_RX_BUF_SIZE - 1, &from);
         if (n < 0) {
+            // A stream transport that cannot reconnect lands here on every
+            // pass and never reaches the refresh below — record the silence
+            // for the link watchdog.
+            note_registrar_silent();
             pb_task_sleep_ms(1000);
             continue;
         }
@@ -2233,6 +2303,7 @@ static void sip_task(void *arg)
         }
 
         // Incoming packet.
+        note_registrar_answered();
         rx[n] = '\0';
         // Breadcrumb for the heap sentinel: this is where network-supplied
         // text gets parsed and echoed into replies, so if the heap goes bad

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stdint.h>
 
 // Start the SIP registration task. Reads credentials from NVS via
 // config_sip_host()/config_sip_user()/config_sip_pass() — populated
@@ -12,6 +13,25 @@ void sip_register_start(void);
 
 // True if the last REGISTER exchange completed with a 200 OK.
 bool sip_register_is_registered(void);
+
+// True while the registration task runs, i.e. SIP host and user are
+// configured. Input of the Wi-Fi link watchdog (link_watchdog.h, #585).
+bool sip_register_active(void);
+
+// Seconds the registrar has gone unanswered: since the first REGISTER
+// exchange (or receive on the SIP connection) that failed after the
+// registrar last answered — any response counts, a rejection too. 0 while it
+// answers, and also as long as it has not answered once since the task
+// started or the SIP config was reloaded: a registrar that never answered is
+// a setup problem, not a dead link, and must not make the watchdog cycle
+// Wi-Fi. Input of the Wi-Fi link watchdog.
+uint32_t sip_register_unreachable_s(void);
+
+// True while the SIP dialog slot holds a call the dongle answered (200 OK
+// sent, waiting for the ACK, or media streaming). Calls that only ring at
+// the other phones (TRYING/PROCEEDING) or are being declined do not count.
+// Input of the Wi-Fi link watchdog, which must not cut such a call.
+bool sip_register_call_answered(void);
 
 // The dongle's public IP as the registrar reported it via the Via
 // "received=" parameter, or "" until the first REGISTER response has
