@@ -46,7 +46,8 @@ LINUX_MAIN_SOURCES := ../main/announcement.c ../main/api.c \
                       ../main/dialog_store.c \
                       ../main/firmware_update.c ../main/heap_guard_linux.c \
                       ../main/heap_guard_scan.c \
-                      ../main/http_util.c ../main/i18n_sync.c ../main/log_capture.c \
+                      ../main/http_util.c ../main/i18n_sync.c \
+                      ../main/link.c ../main/link_proto.c ../main/log_capture.c \
                       ../main/log_capture_linux.c ../main/logreport.c \
                       ../main/mail_linux.c ../main/mail_rcpt.c \
                       ../main/manifest_sig.c ../main/name_filter.c \

@@ -566,3 +566,56 @@ message NumberList {
 	repeated PersonalizedNumber numbers;
 }
 
+
+/**
+ * Request of <code>POST /api/link/start</code>: starts a device-code link (#621).
+ *
+ * <p>
+ * Used by a device that cannot receive the redirect of the regular sign-in (the dongle's Linux
+ * service behind Home Assistant ingress). The device shows the returned user code, the user
+ * confirms it on <code>/link</code>, and the device collects the token with
+ * <code>POST /api/link/poll</code>.
+ * </p>
+ */
+message LinkStartRequest {
+	/** Identifier of the requesting app, e.g. <code>PhoneBlockDongle</code>. Required. */
+	string appId;
+
+	/** User-visible device name, shown on the confirmation page and used as token label (at most 64 characters). Defaults to <code>PhoneBlock-Dongle</code>. */
+	@Nullable
+	string label;
+}
+
+/** Response of <code>POST /api/link/start</code>. */
+message LinkStartResponse {
+	/** Secret code (256 bit, base64url) the device uses to poll for the result. Never shown to the user. */
+	string deviceCode;
+
+	/** Code shown to the user in the form <code>XXXX-XXXX</code>, to be compared on the confirmation page. */
+	string userCode;
+
+	/** URL of the confirmation page with the user code pre-filled. */
+	string verifyUrl;
+
+	/** Minimum number of seconds between two polls. */
+	int interval;
+
+	/** Number of seconds until the link expires. */
+	int expiresIn;
+}
+
+/** Request of <code>POST /api/link/poll</code>. */
+message LinkPollRequest {
+	/** The device code from {@link LinkStartResponse#deviceCode}. */
+	string deviceCode;
+}
+
+/** Response of <code>POST /api/link/poll</code>. */
+message LinkPollResponse {
+	/** One of <code>pending</code>, <code>slow_down</code>, <code>approved</code>, <code>denied</code>, <code>expired</code>. */
+	string status;
+
+	/** The new API token, only set with status <code>approved</code>. */
+	@Nullable
+	string token;
+}

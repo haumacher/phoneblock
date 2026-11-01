@@ -1,0 +1,10 @@
+# Build context of ingress-test/Dockerfile is phoneblock-dongle/: send only
+# what the source build and the runtime stage copy.
+*
+!firmware/core
+!firmware/main
+!firmware/linux
+!firmware/i18n/l10n/ui/ui_en.arb
+!debian/examples/dongle.conf.example
+!docker/entrypoint.sh
+!docker/ingress-test/seed-config.sh

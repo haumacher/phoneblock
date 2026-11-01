@@ -63,6 +63,8 @@
 #include "webhook.h"
 #ifdef ESP_PLATFORM
 #include "wifi.h"
+#else
+#include "link.h"
 #endif
 #include "web_http.h"
 
@@ -531,10 +533,19 @@ static web_http_error_t handle_status(web_http_request_t *req)
     // cannot complete through Home Assistant ingress: phoneblock.net refuses
     // most HA callback hosts, and ingress rejects the cross-site redirect
     // back (#619, #621). HA marks every ingress request with X-Ingress-Path;
-    // there the UI hides the sign-in buttons and the token comes from the
-    // app configuration. Everywhere else the sign-in stays as it is.
+    // there the UI hides the redirect sign-in (on Linux it offers the
+    // device-code link below instead). Everywhere else it stays as it is.
     cJSON_AddBoolToObject  (pb,   "token_signin",
                             !web_http_has_header(req, "X-Ingress-Path"));
+#ifndef ESP_PLATFORM
+    // Under ingress the Linux service links the account with a code instead
+    // (POST /api/link/start, #621): the token travels from phoneblock.net
+    // to the service directly, nothing comes back through the browser.
+    // Only set when true, so a direct request looks as before.
+    if (web_http_has_header(req, "X-Ingress-Path")) {
+        cJSON_AddBoolToObject(pb, "token_link", true);
+    }
+#endif
     cJSON_AddNumberToObject(pb,   "last_api_ms",        (double)(c.last_api_duration_us / 1000));
     // Phase breakdown of the last API call — investigation aid for
     // issue #329 (connect/request/wait/download split).
@@ -1671,7 +1682,7 @@ static web_http_error_t handle_register_start(web_http_request_t *req)
     snprintf(url, sizeof(url),
              "%s/mobile/login?appId=PhoneBlockDongle&tokenLabel=%s"
              "&callback=%s&state=%s",
-             config_phoneblock_base_url(), "PhoneBlock-Dongle",
+             config_phoneblock_base_url(), PB_TOKEN_LABEL,
              callback_enc, s_oauth_nonce);
 
     pb_log_info(TAG, "register-start → redirect to %s", url);
@@ -1737,35 +1748,11 @@ static web_http_error_t handle_token_callback(web_http_request_t *req)
         return WEB_HTTP_OK;
     }
 
-    config_update_t u = { .phoneblock_token = token };
-    if (config_update(&u) != PB_KV_OK) {
+    // Store, self-test, seed the country — the same steps as the Linux
+    // device-code link (link.c), in one shared function.
+    if (!phoneblock_adopt_token(token, "token-callback")) {
         web_http_send_error(req, WEB_HTTP_STATUS_INTERNAL_SERVER_ERROR, "nvs");
         return WEB_HTTP_OK;
-    }
-
-    pb_log_info(TAG, "token-callback: stored new PhoneBlock token (%d chars)",
-             (int)strlen(token));
-
-    // Immediately exercise the new token so the dashboard has an API
-    // latency to show on the first poll, instead of an empty "–".
-    phoneblock_selftest(NULL);
-
-    // Seed the country from the account the token belongs to, riding the
-    // TLS session the self-test just primed. Once only, while the device
-    // is still on the "+49" default: from here on the country belongs to
-    // the web UI, and re-pairing must not overwrite a user's choice.
-    // Best-effort — on failure the default stands and the user can pick a
-    // country under Setup ▸ Region.
-    if (!config_dial_prefix_is_set()) {
-        char prefix[8] = "";
-        if (phoneblock_fetch_dial_prefix(prefix, sizeof(prefix))
-                && config_dial_prefix_valid(prefix)) {
-            config_update_t up = { .dial_prefix = prefix };
-            if (config_update(&up) == PB_KV_OK) {
-                pb_log_info(TAG, "token-callback: adopted country %s from account",
-                         prefix);
-            }
-        }
     }
 
     // The web UI opens the sign-in in its own tab and waits on the status
@@ -1784,6 +1771,55 @@ static web_http_error_t handle_token_callback(web_http_request_t *req)
     web_http_send(req, close_page, sizeof(close_page) - 1);
     return WEB_HTTP_OK;
 }
+
+#ifndef ESP_PLATFORM
+// The device-code link (#621, link.h), offered by the web UI when
+// /api/status reports token_link. Linux only: the ESP32 has the redirect
+// flow above and carries none of this.
+
+static cJSON *link_status_json(const link_status_t *st)
+{
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddStringToObject(root, "state",     link_state_name(st->state));
+    cJSON_AddStringToObject(root, "userCode",  st->user_code);
+    cJSON_AddStringToObject(root, "verifyUrl", st->verify_url);
+    cJSON_AddStringToObject(root, "message",   st->message);
+    return root;
+}
+
+// POST /api/link/start
+// Asks phoneblock.net for a code pair and starts the poll task. Answers
+// {userCode, verifyUrl, expiresIn}; on failure 502 with {state:"error",
+// message}. Never the device code.
+static web_http_error_t handle_link_start(web_http_request_t *req)
+{
+    REQUIRE_AUTH_API(req);
+    link_status_t st;
+    if (!link_start(&st)) {
+        web_http_set_status(req, "502 Bad Gateway");
+        send_json(req, link_status_json(&st));
+        return WEB_HTTP_OK;
+    }
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddStringToObject(root, "userCode",  st.user_code);
+    cJSON_AddStringToObject(root, "verifyUrl", st.verify_url);
+    cJSON_AddNumberToObject(root, "expiresIn", st.expires_in_s);
+    send_json(req, root);
+    return WEB_HTTP_OK;
+}
+
+// GET /api/link/status
+// {state: idle|pending|approved|denied|expired|error, userCode, verifyUrl,
+// message}, polled by the web UI while a link runs.
+static web_http_error_t handle_link_status(web_http_request_t *req)
+{
+    REQUIRE_AUTH_API(req);
+    link_status_t st;
+    link_get_status(&st);
+    send_json(req, link_status_json(&st));
+    return WEB_HTTP_OK;
+}
+#endif
 
 // GET /api/fritzbox-2fa-status
 // Polled by the web UI while a 2FA handshake is pending. Reports the
@@ -3729,6 +3765,10 @@ static const web_http_route_t URIS[] = {
     { .uri = "/api/token-test",         .method = WEB_HTTP_POST, .handler = handle_token_test },
     { .uri = "/register-start",         .method = WEB_HTTP_GET,  .handler = handle_register_start },
     { .uri = "/token-callback",         .method = WEB_HTTP_GET,  .handler = handle_token_callback },
+#ifndef ESP_PLATFORM
+    { .uri = "/api/link/start",         .method = WEB_HTTP_POST, .handler = handle_link_start },
+    { .uri = "/api/link/status",        .method = WEB_HTTP_GET,  .handler = handle_link_status },
+#endif
     { .uri = "/auth/start",             .method = WEB_HTTP_GET,  .handler = web_auth_handle_start },
     { .uri = "/auth/login-link",        .method = WEB_HTTP_GET,  .handler = web_auth_handle_login_link },
     { .uri = "/auth/callback",          .method = WEB_HTTP_GET,  .handler = web_auth_handle_callback },
@@ -3790,6 +3830,9 @@ void web_start(void)
     }
     generate_reset_nonce();
     web_auth_setup();
+#ifndef ESP_PLATFORM
+    link_init();
+#endif
     web_http_server_config_t cfg = {
         .port = s_web_port,
         .bind_address = s_web_bind_address[0] ? s_web_bind_address : NULL,

@@ -285,6 +285,7 @@
   "status.dialog.edit.reason.size": "El tamaño total de las grabaciones supera la capacidad del dongle: borra o recorta algunas grabaciones.",
   "status.dialog.edit.bad_file": "Este no es un archivo de diálogo válido.",
   "status.dialog.edit.no_set": "En el dongle aún no hay ningún diálogo; añade grabaciones para cada fase.",
+  "status.dialog.edit.changed": "En el dongle hay ahora otras grabaciones (se ha cambiado el idioma o la voz). Tu edición en el editor aún no se ha subido.",
   "status.dialog.edit.reload": "Deshacer y volver a cargar",
   "status.dialog.edit.done": "Se ha guardado un diálogo propio ({kb} KB).",
   "hero.title": "Configuración",
@@ -369,6 +370,17 @@
   "token.current.set": "Ya hay un token configurado. Iniciar sesión de nuevo generará uno nuevo.",
   "token.current.missing": "Aún no hay token configurado.",
   "token.submit": "Entrar en PhoneBlock",
+  "link.submit": "Vincular la cuenta de PhoneBlock",
+  "link.starting": "Se está preparando el enlace…",
+  "link.compare": "Compara el código en phoneblock.net y confirma solo si coincide.",
+  "link.open": "Abrir phoneblock.net",
+  "link.manual": "También puedes introducir el código en {url}, por ejemplo, en el móvil.",
+  "link.waiting": "Espera a recibir tu confirmación en phoneblock.net…",
+  "link.approved": "Cuenta de PhoneBlock vinculada: el token está configurado.",
+  "link.denied": "El enlace ha sido rechazado en phoneblock.net.",
+  "link.expired": "El código ha caducado. Solicita un nuevo código.",
+  "link.error": "El enlace ha fallado: {msg}",
+  "link.retry": "Intentarlo de nuevo",
   "back.status": "← volver al estado",
   "back.sip": "← volver a la elección",
   "i18n.loading": "Cargando la traducción…",
@@ -432,5 +444,5 @@
   "spam.dialog.comment": "Motivo",
   "spam.dialog.comment.hint": "(opcional, será visible públicamente)",
   "spam.dialog.error.is_contact": "Esta persona figura en tu agenda. Una entrada de la agenda siempre tiene prioridad en el dongle, por lo que en este caso no es posible recibir un aviso de spam.",
-  "status.dialog.edit.changed": "En el dongle hay ahora otras grabaciones (se ha cambiado el idioma o la voz). Tu edición en el editor aún no se ha subido."
+  "link.how": "Al hacer clic en el botón, aparecerá un código y se abrirá phoneblock.net en una nueva pestaña. Inicia sesión en phoneblock.net y confirma si allí aparece el mismo código. El servicio se encargará entonces de recuperar el token por sí mismo."
 }

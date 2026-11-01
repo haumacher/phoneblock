@@ -285,6 +285,7 @@
   "status.dialog.edit.reason.size": "Łączna wielkość nagrań przekracza pojemność klucza USB – usuń lub skróć nagrania.",
   "status.dialog.edit.bad_file": "To nie jest prawidłowy plik dialogowy.",
   "status.dialog.edit.no_set": "Na pendrive’ie nie ma jeszcze dialogów – dodaj nagrania dla każdej fazy.",
+  "status.dialog.edit.changed": "Na pendrive'ie znajdują się teraz inne nagrania (zmieniono język lub głos). Twoje zmiany wprowadzone w edytorze nie zostały jeszcze przesłane.",
   "status.dialog.edit.reload": "Odrzuć i załaduj ponownie",
   "status.dialog.edit.done": "Zapisano własny dialog ({kb} KB).",
   "hero.title": "Wyposażenie",
@@ -369,6 +370,17 @@
   "token.current.set": "Token został już utworzony. Ponowne zalogowanie spowoduje utworzenie nowego.",
   "token.current.missing": "Nie skonfigurowano jeszcze tokenu.",
   "token.submit": "Zaloguj się do serwisu PhoneBlock",
+  "link.submit": "Połącz konto PhoneBlock",
+  "link.starting": "Łącze jest przygotowywane…",
+  "link.compare": "Porównaj kod na stronie phoneblock.net i potwierdź dopiero wtedy, gdy będzie się zgadzał.",
+  "link.open": "Otwórz stronę phoneblock.net",
+  "link.manual": "Możesz również wprowadzić kod pod adresem {url}, np. na telefonie komórkowym.",
+  "link.waiting": "Czekaj na potwierdzenie na stronie phoneblock.net…",
+  "link.approved": "Konto PhoneBlock zostało połączone — token został ustawiony.",
+  "link.denied": "Link został odrzucony na stronie phoneblock.net.",
+  "link.expired": "Kod stracił ważność. Poproś o nowy kod.",
+  "link.error": "Połączenie nie powiodło się: {msg}",
+  "link.retry": "Spróbować ponownie",
   "back.status": "← powrót do statusu",
   "back.sip": "← powrót do listy",
   "i18n.loading": "Tłumaczenie się ładuje…",
@@ -432,5 +444,5 @@
   "spam.dialog.comment": "Powód",
   "spam.dialog.comment.hint": "(opcjonalnie, będzie widoczne publicznie)",
   "spam.dialog.error.is_contact": "Ten numer znajduje się w Twojej książce telefonicznej. Wpis w książce telefonicznej ma zawsze pierwszeństwo w przypadku klucza sprzętowego, dlatego w tym przypadku nie jest możliwe zgłoszenie spamu.",
-  "status.dialog.edit.changed": "Na pendrive'ie znajdują się teraz inne nagrania (zmieniono język lub głos). Twoje zmiany wprowadzone w edytorze nie zostały jeszcze przesłane."
+  "link.how": "Kliknięcie tego przycisku spowoduje wyświetlenie kodu i otwarcie strony phoneblock.net w nowej karcie. Zaloguj się na stronie phoneblock.net i potwierdź, czy wyświetla się tam ten sam kod. Serwis sam pobierze token."
 }

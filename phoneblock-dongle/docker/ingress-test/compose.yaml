@@ -1,0 +1,60 @@
+# Ingress test setup ("the cookie-swallowing firewall", #619/#621): the Linux
+# service built from the working tree behind an nginx that behaves like Home
+# Assistant ingress. See README.md next to this file.
+#
+#   docker compose up --build -d                     # against a local Jetty
+#   PHONEBLOCK_BASE_URL=https://phoneblock.net/pb-test docker compose up --build -d
+#   PHONEBLOCK_BASE_URL=http://fake-phoneblock:8090/phoneblock \
+#     docker compose --profile fake up --build -d    # against fake-phoneblock.py
+#   docker compose down -v
+
+name: pb-ingress-test
+
+services:
+  phoneblock:
+    build:
+      context: ../..
+      dockerfile: docker/ingress-test/Dockerfile
+    image: pb-ingress-test/phoneblock:dev
+    environment:
+      TZ: Europe/Berlin
+      # The PhoneBlock server the service talks to (pb_url in dongle.conf).
+      # Default: `mvn jetty:run` on the Docker host.
+      PHONEBLOCK_BASE_URL: ${PHONEBLOCK_BASE_URL:-http://host.docker.internal:8080/phoneblock}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - phoneblock-state:/var/lib/phoneblock
+    ports:
+      # Direct access, without the proxy: the unchanged redirect sign-in.
+      - "${SERVICE_PORT:-8098}:8080"
+
+  ingress:
+    image: nginx:1.27-alpine
+    depends_on:
+      - phoneblock
+    volumes:
+      - ./nginx/ingress.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/shell:/usr/share/nginx/shell:ro
+      - ./nginx/foreign:/usr/share/nginx/foreign:ro
+    ports:
+      # The "Home Assistant" shell (HA itself uses 8123).
+      - "${INGRESS_PORT:-8133}:8123"
+      # The "foreign site"; keep it one port above INGRESS_PORT (the shell
+      # links to it that way).
+      - "${FOREIGN_PORT:-8134}:8124"
+
+  # Only with --profile fake: a stand-in for phoneblock.net's link endpoints.
+  fake-phoneblock:
+    profiles: ["fake"]
+    image: python:3.13-alpine
+    volumes:
+      - ./fake-phoneblock.py:/fake-phoneblock.py:ro
+    command: ["python3", "-u", "/fake-phoneblock.py", "--port", "8090",
+              "--public-url", "http://localhost:${FAKE_PORT:-8095}/phoneblock",
+              "--auto-approve", "${FAKE_AUTO_APPROVE:-0}"]
+    ports:
+      - "${FAKE_PORT:-8095}:8090"
+
+volumes:
+  phoneblock-state:

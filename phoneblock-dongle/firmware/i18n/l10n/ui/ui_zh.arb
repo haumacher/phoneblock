@@ -285,6 +285,7 @@
   "status.dialog.edit.reason.size": "这些录音的总大小超过了U盘的存储空间——请删除或剪短部分录音。",
   "status.dialog.edit.bad_file": "这不是一个有效的对话文件。",
   "status.dialog.edit.no_set": "Dongle 上目前还没有对话框——请为每个阶段添加录音。",
+  "status.dialog.edit.changed": "该加密狗中现在存储的是其他录音（语言或声音已更改）。你在编辑器中的编辑内容尚未上传。",
   "status.dialog.edit.reload": "撤销并重新加载",
   "status.dialog.edit.done": "已保存自定义对话框（{kb} KB）。",
   "hero.title": "设施",
@@ -369,6 +370,17 @@
   "token.current.set": "已生成一个令牌。再次登录将生成一个新的令牌。",
   "token.current.missing": "尚未设置令牌。",
   "token.submit": "在PhoneBlock上注册",
+  "link.submit": "关联 PhoneBlock 账户",
+  "link.starting": "正在准备链接……",
+  "link.compare": "请将代码与phoneblock.net上的代码进行比对，只有在完全一致时才予以确认。",
+  "link.open": "打开 phoneblock.net",
+  "link.manual": "你也可以在{url}处输入该代码，例如在手机上。",
+  "link.waiting": "请在 phoneblock.net 上等待您的确认……",
+  "link.approved": "已关联 PhoneBlock 账户——令牌已设置。",
+  "link.denied": "该链接在 phoneblock.net 上被拒绝。",
+  "link.expired": "该代码已过期。请申请新代码。",
+  "link.error": "链接失败：{msg}",
+  "link.retry": "再次尝试",
   "back.status": "← 返回状态",
   "back.sip": "← 返回选项列表",
   "i18n.loading": "正在加载翻译……",
@@ -432,5 +444,5 @@
   "spam.dialog.comment": "原因",
   "spam.dialog.comment.hint": "（可选，将对公众可见）",
   "spam.dialog.error.is_contact": "该来电者已存入你的通讯录。通讯录中的联系人信息在加密狗中始终具有优先权，因此此处不会触发垃圾短信提示。",
-  "status.dialog.edit.changed": "该加密狗中现在存储的是其他录音（语言或声音已更改）。你在编辑器中的编辑内容尚未上传。"
+  "link.how": "点击此处按钮将显示一个验证码，并在新标签页中打开 phoneblock.net。请登录 phoneblock.net，如果该网站显示相同的验证码，请进行确认。随后，该服务将自动获取令牌。"
 }

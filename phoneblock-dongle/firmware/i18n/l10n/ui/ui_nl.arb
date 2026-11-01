@@ -285,6 +285,7 @@
   "status.dialog.edit.reason.size": "De opnames nemen samen meer ruimte in beslag dan er op de dongle beschikbaar is – verwijder of verkort opnames.",
   "status.dialog.edit.bad_file": "Dit is geen geldig dialoogbestand.",
   "status.dialog.edit.no_set": "Er staat nog geen dialoog op de dongle – voeg voor elke fase opnames toe.",
+  "status.dialog.edit.changed": "Op de dongle staan nu andere opnames (taal of stem gewijzigd). Je bewerkingen in de editor zijn nog niet geüpload.",
   "status.dialog.edit.reload": "Verwerpen en opnieuw laden",
   "status.dialog.edit.done": "Eigen dialoog opgeslagen ({kb} KB).",
   "hero.title": "Inrichting",
@@ -369,6 +370,17 @@
   "token.current.set": "Er is al een token aangemaakt. Als je je opnieuw aanmeldt, wordt er een nieuw token aangemaakt.",
   "token.current.missing": "Er is nog geen token ingesteld.",
   "token.submit": "Aanmelden bij PhoneBlock",
+  "link.submit": "PhoneBlock-account koppelen",
+  "link.starting": "De koppeling wordt voorbereid…",
+  "link.compare": "Vergelijk de code op phoneblock.net en bevestig pas als deze overeenkomt.",
+  "link.open": "phoneblock.net openen",
+  "link.manual": "Je kunt de code ook invoeren via {url}, bijvoorbeeld op je mobiele telefoon.",
+  "link.waiting": "Wacht op je bevestiging op phoneblock.net…",
+  "link.approved": "PhoneBlock-account gekoppeld — het token is ingesteld.",
+  "link.denied": "De link is afgewezen op phoneblock.net.",
+  "link.expired": "De code is verlopen. Vraag een nieuwe code aan.",
+  "link.error": "De koppeling is mislukt: {msg}",
+  "link.retry": "Opnieuw proberen",
   "back.status": "← terug naar de status",
   "back.sip": "← terug naar de selectie",
   "i18n.loading": "Vertaling wordt geladen …",
@@ -432,5 +444,5 @@
   "spam.dialog.comment": "Reden",
   "spam.dialog.comment.hint": "(optioneel, wordt openbaar weergegeven)",
   "spam.dialog.error.is_contact": "Deze beller staat in je telefoonboek. Een vermelding in het telefoonboek heeft op de dongle altijd voorrang, daarom is een spammelding hier niet mogelijk.",
-  "status.dialog.edit.changed": "Op de dongle staan nu andere opnames (taal of stem gewijzigd). Je bewerkingen in de editor zijn nog niet geüpload."
+  "link.how": "Als je op de knop klikt, wordt hier een code weergegeven en wordt phoneblock.net in een nieuw tabblad geopend. Log in op phoneblock.net en bevestig of daar dezelfde code wordt weergegeven. De dienst haalt het token vervolgens zelf op."
 }
