@@ -18,8 +18,8 @@
 
 		<article class="message is-warning">
 			<div class="message-body">
-				<p data-tx="t0004:44dc2eeb">Compara este código con el que muestra tu dispositivo o Home Assistant. Confirma solo si los códigos coinciden y si acabas de iniciar tú mismo la conexión.</p>
-				<p data-tx="t0005:a990bc37">Si otra persona te ha facilitado este código o te ha enviado este enlace, haz clic en <em>Rechazar</em>; de lo contrario, un dispositivo ajeno tendrá acceso a tu cuenta.</p>
+				<p data-tx="t0004:62f093c2">Confírmalo solo si acabas de solicitar tú mismo este código en tu dispositivo o en Home Assistant y lo has copiado de allí.</p>
+				<p data-tx="t0005:d3362fd0">Si alguien te ha facilitado este código, haz clic en <em>Rechazar</em>; de lo contrario, un dispositivo ajeno tendrá acceso a tu cuenta.</p>
 			</div>
 		</article>
 
@@ -50,14 +50,15 @@
 				<p data-tx="t0009:b208f84d" th:if="${linkError == 'rate'}">Se han introducido demasiados códigos incorrectos. Espera un minuto y vuelve a intentarlo.</p>
 				<p data-tx="t0010:84ec6915" th:if="${linkError == 'already-approved'}">Esta relación ya ha sido confirmada.</p>
 				<p data-tx="t0011:7648da23" th:if="${linkError == 'already-denied'}">Este enlace ya ha sido rechazado. Vuelve a abrir el enlace en tu dispositivo.</p>
-				<p data-tx="t0012:555fa0ce" th:if="${linkError == 'csrf'}">No se ha podido verificar la solicitud. Actualiza la página y vuelve a confirmar.</p>
+				<p data-tx="t0012:97229cd2" th:if="${linkError == 'csrf'}">No se ha podido verificar la solicitud. Actualiza la página e introduce el código de nuevo.</p>
 				<p data-tx="t0013:b409c382" th:if="${linkError == 'invalid'}">Solicitud no válida.</p>
 			</div>
 		</article>
 
 		<p data-tx="t0014:e9436271">Introduce el código que muestra tu dispositivo o Home Assistant para vincularlo a tu cuenta de PhoneBlock <code th:text="${userName}"></code>.</p>
 
-		<form method="get" th:action="@{/link}">
+		<form method="post" th:action="@{/link}">
+			<input name="csrf" th:value="${linkCsrf}" type="hidden"/>
 			<div class="field">
 				<label class="label" data-tx="t0015:a34add52" for="link-code">Código</label>
 				<div class="control">
@@ -66,7 +67,7 @@
 			</div>
 			<div class="field">
 				<p class="control">
-					<button class="button is-primary" type="submit">
+					<button class="button is-primary" name="action" type="submit" value="lookup">
 						<span class="icon"><i class="fa-solid fa-arrow-right"></i></span>
 						<span data-tx="t0017:ad5e318d">Continuar</span>
 					</button>

@@ -8,7 +8,9 @@ the state in memory and no login.
   POST <prefix>/api/link/start   {"appId", "label"} -> deviceCode, userCode, ...
   POST <prefix>/api/link/poll    {"deviceCode"} -> pending | slow_down |
                                  approved (+token) | denied | expired
-  GET  <prefix>/link[?code=..]   confirmation page with [Verknüpfen] / [Ablehnen]
+  GET  <prefix>/link             code entry form (a ?code= is ignored, as on the
+                                 real server); POST action=lookup shows the
+                                 confirmation with [Verknüpfen] / [Ablehnen]
   GET  <prefix>/api/test         "ok" for a token this fake handed out
   GET  <prefix>/api/account      {"dialPrefix": "+49"}
 
@@ -104,13 +106,18 @@ class Handler(BaseHTTPRequestHandler):
             return self.poll(req)
         if path == "/link":
             form = parse_qs(raw.decode())
-            return self.decide(form.get("code", [""])[0], form.get("action", [""])[0])
+            code = form.get("code", [""])[0]
+            action = form.get("action", [""])[0]
+            if action == "lookup":
+                return self.page(code)
+            return self.decide(code, action)
         self.json(404, {"message": "not found"})
 
     def do_GET(self):
         path, parts = self.path_of()
         if path == "/link":
-            return self.page(parse_qs(parts.query).get("code", [""])[0])
+            # The code must be typed in, a ?code= never leads to the confirmation.
+            return self.page("")
         if path == "/api/test":
             auth = self.headers.get("Authorization", "")
             ok = auth.startswith("Bearer ") and auth[7:] in tokens
@@ -136,7 +143,7 @@ class Handler(BaseHTTPRequestHandler):
         self.json(200, {
             "deviceCode": device_code,
             "userCode": user_code,
-            "verifyUrl": self.server.public_url + "/link?code=" + user_code,
+            "verifyUrl": self.server.public_url + "/link",
             "interval": INTERVAL_S,
             "expiresIn": LIFETIME_S,
         })
@@ -180,8 +187,7 @@ class Handler(BaseHTTPRequestHandler):
                 "<h1>Gerät verknüpfen</h1>"
                 "<p>Gerät: <b>%s</b></p>"
                 "<p style='font:700 2rem monospace;letter-spacing:.15em'>%s</p>"
-                "<p>Vergleiche den Code mit dem auf dem Gerät. Bestätige nur eine "
-                "Verknüpfung, die du selbst gestartet hast.</p>"
+                "<p>Bestätige nur eine Verknüpfung, die du selbst gestartet hast.</p>"
                 "<form method='post' action='%s'><input type='hidden' name='code' value='%s'>"
                 "<button name='action' value='approve'>Verknüpfen</button> "
                 "<button name='action' value='deny'>Ablehnen</button></form>"
@@ -190,8 +196,8 @@ class Handler(BaseHTTPRequestHandler):
         else:
             body = (
                 "<h1>Code eingeben</h1>%s"
-                "<form method='get' action='%s'><input name='code' autofocus> "
-                "<button>Weiter</button></form>"
+                "<form method='post' action='%s'><input name='code' autofocus> "
+                "<button name='action' value='lookup'>Weiter</button></form>"
             ) % ("<p>Unbekannter oder abgelaufener Code.</p>" if code else "", action)
         self.send(200, "<!DOCTYPE html><meta charset='utf-8'><title>Fake PhoneBlock</title>"
                   "<body style='font-family:sans-serif;max-width:36rem;margin:2rem auto'>"

@@ -65,7 +65,8 @@ public class TestLinkApiServlet {
 		assertEquals(200, result.status);
 
 		LinkStartResponse response = LinkStartResponse.readLinkStartResponse(reader(result.body));
-		assertEquals(BASE + Application.getContextPath() + "/link?code=" + response.getUserCode(), response.getVerifyUrl());
+		assertEquals(BASE + Application.getContextPath() + "/link", response.getVerifyUrl());
+		assertTrue(!response.getVerifyUrl().contains(response.getUserCode()));
 		assertTrue(!response.getVerifyUrl().contains("internal.lan"));
 		assertEquals(43, response.getDeviceCode().length());
 		assertEquals(5, response.getInterval());

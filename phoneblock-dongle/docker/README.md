@@ -97,8 +97,9 @@ the web UI.
 
 Opened through Home Assistant ingress, the PhoneBlock login cannot return to
 the web UI by redirect. There the UI offers **PhoneBlock-Account
-verknüpfen** instead: phoneblock.net opens in a new tab, you confirm the code
-the web UI shows, and the service fetches its API key from PhoneBlock itself.
+verknüpfen** instead: the web UI shows a code, you enter it on phoneblock.net
+(the button opens the page in a new tab), and the service fetches its API key
+from PhoneBlock itself.
 
 ## Data
 

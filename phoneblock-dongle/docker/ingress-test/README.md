@@ -43,7 +43,7 @@ docker compose up --build -d
 # Against the test server:
 PHONEBLOCK_BASE_URL=https://phoneblock.net/pb-test docker compose up --build -d
 
-# Without any server: fake-phoneblock.py (confirm at http://localhost:8095/phoneblock/link,
+# Without any server: fake-phoneblock.py (enter the code at http://localhost:8095/phoneblock/link,
 # or FAKE_AUTO_APPROVE=2 to approve at the second poll):
 PHONEBLOCK_BASE_URL=http://fake-phoneblock:8090/phoneblock \
   docker compose --profile fake up --build -d
@@ -54,8 +54,8 @@ docker compose --profile fake down -v  # stop, drop the state
 
 The default `PHONEBLOCK_BASE_URL` is `http://host.docker.internal:8080/phoneblock`
 (mapped to the host by `extra_hosts: host-gateway`). Jetty must listen on all
-addresses (its default). The confirmation link the service shows is the
-server's `verifyUrl`, built from the server's own configured public URL — for
+addresses (its default). The link to the code entry page the service shows is
+the server's `verifyUrl`, built from the server's own configured public URL — for
 a local Jetty usually `http://localhost:8080/phoneblock`, so open the shell in
 a browser on the same machine.
 
@@ -71,8 +71,9 @@ host name than the "foreign site" and the server.
 1. **Through the proxy — device-code link:** `http://<LAN-IP>:8133/`. The
    setup step and the token page show **PhoneBlock-Account verknüpfen**
    (`/api/status` reports `phoneblock.token_link: true`, `token_signin:
-   false`). The click opens a tab with the server's confirmation page and
-   shows the code large; confirm it there (or enter it at `<server>/link`).
+   false`). The click shows the code large with a copy button; **phoneblock.net
+   öffnen** opens the server's `/link` page in a new tab, where you enter (or
+   paste) the code and confirm.
    Within one poll interval (5 s) the setup step turns green. Declining
    shows the reason and a retry button; an unconfirmed code expires after
    10 minutes.

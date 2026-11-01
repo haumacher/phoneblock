@@ -39,7 +39,7 @@ static int g_failures = 0;
 } while (0)
 
 #define DEVICE_CODE "q3Jw0dQ-Hk3d9pLm2vXcT8yZb1nR5sF7aE4uW6oK_Ig"
-#define VERIFY_URL  "https://phoneblock.net/phoneblock/link?code=BCDF-GHJK"
+#define VERIFY_URL  "https://phoneblock.net/phoneblock/link"
 
 static const char START_OK[] =
     "{\"deviceCode\":\"" DEVICE_CODE "\","

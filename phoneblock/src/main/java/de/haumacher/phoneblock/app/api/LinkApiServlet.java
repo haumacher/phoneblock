@@ -107,7 +107,7 @@ public class LinkApiServlet extends HttpServlet {
 		ServletUtil.sendResult(req, resp, LinkStartResponse.create()
 			.setDeviceCode(started.deviceCode())
 			.setUserCode(started.userCode())
-			.setVerifyUrl(verifyUrl(publicBaseUrl(), started.userCode()))
+			.setVerifyUrl(verifyUrl(publicBaseUrl()))
 			.setInterval(started.interval())
 			.setExpiresIn(started.expiresIn()));
 	}
@@ -156,10 +156,15 @@ public class LinkApiServlet extends HttpServlet {
 	}
 
 	/**
-	 * The URL of the confirmation page for the given user code.
+	 * The URL of the page on which the user enters the code.
+	 *
+	 * <p>
+	 * Deliberately without the code: the user must type the code the device shows. A link with
+	 * the code in it would confirm someone else's link with one click when forwarded to a victim.
+	 * </p>
 	 */
-	static String verifyUrl(String baseUrl, String userCode) {
-		return ServletUtil.withParam(baseUrl + LinkServlet.PATH, LinkServlet.CODE_PARAM, userCode);
+	static String verifyUrl(String baseUrl) {
+		return baseUrl + LinkServlet.PATH;
 	}
 
 }

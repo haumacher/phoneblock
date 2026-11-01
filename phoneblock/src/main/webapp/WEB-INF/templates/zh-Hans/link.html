@@ -18,8 +18,8 @@
 
 		<article class="message is-warning">
 			<div class="message-body">
-				<p data-tx="t0004:44dc2eeb">请将此代码与您的设备或 Home Assistant 显示的代码进行比对。仅当代码一致且您刚刚亲自启动了该操作时，才进行确认。</p>
-				<p data-tx="t0005:a990bc37">如果有人向你提供了此代码或发送了此链接，请点击 <em>拒绝</em>——否则，其他设备将获得访问你账户的权限。</p>
+				<p data-tx="t0004:62f093c2">请仅在您刚刚在自己的设备上或Home Assistant中请求了该代码，并从那里抄写下来时进行确认。</p>
+				<p data-tx="t0005:d3362fd0">如果有人向你提供了此验证码，请点击<em>拒绝</em>——否则，其他设备将获得访问你账户的权限。</p>
 			</div>
 		</article>
 
@@ -50,14 +50,15 @@
 				<p data-tx="t0009:b208f84d" th:if="${linkError == 'rate'}">输入错误密码次数过多。请稍等一分钟，然后重试。</p>
 				<p data-tx="t0010:84ec6915" th:if="${linkError == 'already-approved'}">该链接已得到确认。</p>
 				<p data-tx="t0011:7648da23" th:if="${linkError == 'already-denied'}">该快捷方式已被拒绝。请在您的设备上重新启动该快捷方式。</p>
-				<p data-tx="t0012:555fa0ce" th:if="${linkError == 'csrf'}">无法验证该请求。请刷新页面并重新确认。</p>
+				<p data-tx="t0012:97229cd2" th:if="${linkError == 'csrf'}">无法验证该请求。请刷新页面并重新输入验证码。</p>
 				<p data-tx="t0013:b409c382" th:if="${linkError == 'invalid'}">请求无效。</p>
 			</div>
 		</article>
 
 		<p data-tx="t0014:e9436271">请输入设备或 Home Assistant 显示的验证码，将其与您的 PhoneBlock 账户 <code th:text="${userName}"></code> 绑定。</p>
 
-		<form method="get" th:action="@{/link}">
+		<form method="post" th:action="@{/link}">
+			<input name="csrf" th:value="${linkCsrf}" type="hidden"/>
 			<div class="field">
 				<label class="label" data-tx="t0015:a34add52" for="link-code">代码</label>
 				<div class="control">
@@ -66,7 +67,7 @@
 			</div>
 			<div class="field">
 				<p class="control">
-					<button class="button is-primary" type="submit">
+					<button class="button is-primary" name="action" type="submit" value="lookup">
 						<span class="icon"><i class="fa-solid fa-arrow-right"></i></span>
 						<span data-tx="t0017:ad5e318d">继续</span>
 					</button>

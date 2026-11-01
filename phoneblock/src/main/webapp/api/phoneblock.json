@@ -698,7 +698,7 @@
 										},
 										"verifyUrl": {
 											"type": "string",
-											"description": "Confirmation page with the user code filled in."
+											"description": "Page on which the user enters the user code (carries no code, so a forwarded link cannot confirm a link)."
 										},
 										"interval": {
 											"type": "integer",
@@ -713,7 +713,7 @@
 								"example": {
 									"deviceCode": "q3Vt0Ff1yJ5mZ8cXH2kLw9pR4sT7uV0aB6dE1gI3jK8",
 									"userCode": "BCDF-GHJK",
-									"verifyUrl": "https://phoneblock.net/phoneblock/link?code=BCDF-GHJK",
+									"verifyUrl": "https://phoneblock.net/phoneblock/link",
 									"interval": 5,
 									"expiresIn": 600
 								}

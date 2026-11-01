@@ -124,7 +124,7 @@ static void *fake_server(void *unused)
             s_starts++;
             snprintf(answer, sizeof(answer),
                 "{\"deviceCode\":\"devcode%d\",\"userCode\":\"" USER_CODE "\","
-                "\"verifyUrl\":\"http://phoneblock.test/link?code=" USER_CODE "\","
+                "\"verifyUrl\":\"http://phoneblock.test/link\","
                 "\"interval\":1,\"expiresIn\":%d}", s_starts, s_expires_in);
             pthread_mutex_unlock(&s_fake_lock);
             reply(client, "200 OK", answer);
@@ -321,7 +321,7 @@ int main(void)
     REQUIRE(started != NULL);
     REQUIRE(strcmp(cJSON_GetObjectItem(started, "userCode")->valuestring, USER_CODE) == 0);
     REQUIRE(strcmp(cJSON_GetObjectItem(started, "verifyUrl")->valuestring,
-                   "http://phoneblock.test/link?code=" USER_CODE) == 0);
+                   "http://phoneblock.test/link") == 0);
     REQUIRE(cJSON_GetObjectItem(started, "expiresIn")->valueint == 600);
     cJSON_Delete(started);
 

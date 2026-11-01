@@ -4,7 +4,6 @@
 package de.haumacher.phoneblock.app;
 
 import java.io.IOException;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Base64;
@@ -28,16 +27,17 @@ import jakarta.servlet.http.HttpSession;
  * Confirmation page of the device-code link (#621), see {@link DeviceLinks}.
  *
  * <p>
- * <b>GET /link?code=XXXX-XXXX</b> shows the device label and the code with the buttons to confirm
- * or refuse the link; without a code, or with a code that is not open, a code entry form. Login
- * is required; an anonymous request is sent through the normal login and comes back with the
- * code.
+ * <b>GET /link</b> shows the code entry form. Login is required; an anonymous request is sent
+ * through the normal login and comes back here. A <code>code</code> parameter is ignored: the
+ * user must type the code the device shows, so a forwarded link cannot confirm someone else's
+ * link (code phishing).
  * </p>
  *
  * <p>
- * <b>POST /link</b> with <code>code</code>, <code>action</code> (<code>approve</code> or
- * <code>deny</code>) and the session's <code>csrf</code> nonce records the decision and shows the
- * result page.
+ * <b>POST /link</b> with <code>code</code>, the session's <code>csrf</code> nonce and
+ * <code>action</code>: <code>lookup</code> (the entry form) shows the device label and the code
+ * with the buttons to confirm or refuse; <code>approve</code> or <code>deny</code> records the
+ * decision and shows the result page.
  * </p>
  */
 @WebServlet(urlPatterns = LinkServlet.PATH)
@@ -54,6 +54,9 @@ public class LinkServlet extends HttpServlet {
 
 	/** Parameter carrying the CSRF nonce. */
 	public static final String CSRF_PARAM = "csrf";
+
+	/** {@link #ACTION_PARAM} value of the code entry form: show the link for the entered code. */
+	public static final String ACTION_LOOKUP = "lookup";
 
 	/** {@link #ACTION_PARAM} value confirming the link. */
 	public static final String ACTION_APPROVE = "approve";
@@ -96,37 +99,10 @@ public class LinkServlet extends HttpServlet {
 			return;
 		}
 
-		String code = req.getParameter(CODE_PARAM);
-		if (code == null || code.isBlank()) {
-			showEntry(req, resp, null, null);
-			return;
-		}
-
-		WrongCodeLimit limit = limit(req);
-		long now = System.currentTimeMillis();
-		if (!limit.allowed(now)) {
-			showEntry(req, resp, code, "rate");
-			return;
-		}
-
-		LinkInfo link = DeviceLinks.getInstance().find(code);
-		if (link == null) {
-			limit.failed(now);
-			showEntry(req, resp, code, "unknown");
-			return;
-		}
-
-		switch (link.state()) {
-			case APPROVED:
-				showEntry(req, resp, code, "already-approved");
-				return;
-			case DENIED:
-				showEntry(req, resp, code, "already-denied");
-				return;
-			case PENDING:
-			default:
-				showConfirm(req, resp, link);
-		}
+		// A code in the URL is ignored on purpose: the user must type the code the device shows.
+		// A link that leads straight to the confirmation could be sent to a victim by whoever
+		// started the link (code phishing).
+		showEntry(req, resp, null, null);
 	}
 
 	@Override
@@ -135,12 +111,8 @@ public class LinkServlet extends HttpServlet {
 
 		String user = LoginFilter.getAuthenticatedUser(req);
 		if (user == null) {
-			// Back to the confirmation page after login, the decision must be made again.
-			String location = PATH;
-			if (code != null && !code.isBlank()) {
-				location += "?" + CODE_PARAM + "=" + URLEncoder.encode(code, StandardCharsets.UTF_8);
-			}
-			resp.sendRedirect(req.getContextPath() + LoginServlet.PATH + LoginServlet.locationParamFirst(location));
+			// Back to the entry page after login, the code must be entered again.
+			resp.sendRedirect(req.getContextPath() + LoginServlet.PATH + LoginServlet.locationParamFirst(PATH));
 			return;
 		}
 
@@ -151,14 +123,8 @@ public class LinkServlet extends HttpServlet {
 		}
 
 		String action = req.getParameter(ACTION_PARAM);
-		boolean approve;
-		if (ACTION_APPROVE.equals(action)) {
-			approve = true;
-		} else if (ACTION_DENY.equals(action)) {
-			approve = false;
-		} else {
-			resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-			showEntry(req, resp, code, "invalid");
+		if (code == null || code.isBlank()) {
+			showEntry(req, resp, null, null);
 			return;
 		}
 
@@ -171,6 +137,39 @@ public class LinkServlet extends HttpServlet {
 		}
 
 		DeviceLinks links = DeviceLinks.getInstance();
+		if (ACTION_LOOKUP.equals(action)) {
+			LinkInfo link = links.find(code);
+			if (link == null) {
+				limit.failed(now);
+				resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+				showEntry(req, resp, code, "unknown");
+				return;
+			}
+			switch (link.state()) {
+				case APPROVED:
+					showEntry(req, resp, code, "already-approved");
+					return;
+				case DENIED:
+					showEntry(req, resp, code, "already-denied");
+					return;
+				case PENDING:
+				default:
+					showConfirm(req, resp, link);
+					return;
+			}
+		}
+
+		boolean approve;
+		if (ACTION_APPROVE.equals(action)) {
+			approve = true;
+		} else if (ACTION_DENY.equals(action)) {
+			approve = false;
+		} else {
+			resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+			showEntry(req, resp, code, "invalid");
+			return;
+		}
+
 		Decision decision = approve ? links.approve(code, user) : links.deny(code, user);
 		switch (decision) {
 			case OK:
@@ -206,6 +205,7 @@ public class LinkServlet extends HttpServlet {
 	private void showEntry(HttpServletRequest req, HttpServletResponse resp, String code, String error) throws IOException {
 		req.setAttribute(VIEW_VAR, "enter");
 		req.setAttribute(CODE_VAR, code == null ? "" : code);
+		req.setAttribute(CSRF_VAR, csrfToken(req.getSession()));
 		if (error != null) {
 			req.setAttribute(ERROR_VAR, error);
 		}

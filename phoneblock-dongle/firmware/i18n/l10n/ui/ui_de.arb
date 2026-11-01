@@ -1949,30 +1949,45 @@
     "description": "Knopf/Setup-Schritt: den Linux-Dienst hinter Home Assistant über einen Code mit dem PhoneBlock-Account verknüpfen (statt Anmeldung mit Weiterleitung).",
     "x-translated": "6f499769"
   },
-  "link.how": "Ein Klick auf den Knopf zeigt hier einen Code an und öffnet phoneblock.net in einem neuen Tab. Melde dich auf phoneblock.net an und bestätige, wenn dort derselbe Code angezeigt wird. Der Dienst holt den Token dann selbst ab.",
+  "link.how": "Ein Klick auf den Knopf zeigt hier einen Code an. Öffne dann phoneblock.net, melde dich an und gib den Code dort ein. Der Dienst holt den Token danach selbst ab.",
   "@link.how": {
     "description": "Erklärung auf der Token-Seite im Code-Verknüpfungsmodus (Home Assistant).",
-    "x-translated": "3ce7a10a"
+    "x-translated": "62de36c1"
   },
   "link.starting": "Verknüpfung wird vorbereitet…",
   "@link.starting": {
     "description": "Fortschritt, während der Dienst bei phoneblock.net einen Code anfordert.",
     "x-translated": "5339462d"
   },
-  "link.compare": "Vergleiche den Code auf phoneblock.net und bestätige nur, wenn er übereinstimmt.",
+  "link.compare": "Gib diesen Code auf phoneblock.net ein, um den Dienst mit deinem Account zu verknüpfen.",
   "@link.compare": {
-    "description": "Hinweis unter dem groß angezeigten Verknüpfungscode.",
-    "x-translated": "3144dbec"
+    "description": "Hinweis unter dem groß angezeigten Verknüpfungscode: der Nutzer tippt (oder kopiert) den Code auf phoneblock.net ein.",
+    "x-translated": "8604cb2b"
+  },
+  "link.copy": "Code kopieren",
+  "@link.copy": {
+    "description": "Knopf neben dem Verknüpfungscode: kopiert den Code in die Zwischenablage.",
+    "x-translated": "86b5101d"
+  },
+  "link.copied": "Code kopiert",
+  "@link.copied": {
+    "description": "Kurze Bestätigung, nachdem der Code in die Zwischenablage kopiert wurde.",
+    "x-translated": "318996a"
+  },
+  "link.copy_failed": "Kopieren nicht möglich – der Code ist markiert, kopiere ihn mit Strg+C.",
+  "@link.copy_failed": {
+    "description": "Hinweis, wenn der Browser das Kopieren in die Zwischenablage nicht erlaubt; der Code wurde stattdessen markiert.",
+    "x-translated": "1cc5db32"
   },
   "link.open": "phoneblock.net öffnen",
   "@link.open": {
-    "description": "Link zur Bestätigungsseite, falls sich kein neuer Tab geöffnet hat.",
+    "description": "Knopf: öffnet die Seite auf phoneblock.net, auf der der Code eingegeben wird, in einem neuen Tab.",
     "x-translated": "c5c0be94"
   },
-  "link.manual": "Du kannst den Code auch unter {url} eingeben, z. B. auf dem Handy.",
+  "link.manual": "Die Seite ist {url} – du kannst den Code dort auch auf einem anderen Gerät eingeben, z. B. auf dem Handy.",
   "@link.manual": {
     "description": "Hinweis: der Code kann auf der Seite {url} (Platzhalter für die Adresse, nicht übersetzen) eingegeben werden.",
-    "x-translated": "a9497ea"
+    "x-translated": "ebe51cbb"
   },
   "link.waiting": "Warte auf deine Bestätigung auf phoneblock.net…",
   "@link.waiting": {

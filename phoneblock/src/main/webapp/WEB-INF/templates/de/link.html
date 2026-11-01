@@ -20,13 +20,13 @@
 
 		<article class="message is-warning">
 			<div class="message-body">
-				<p data-tx="t0004:44dc2eeb">
-					Vergleiche diesen Code mit dem Code, den Dein Gerät bzw. Home Assistant anzeigt. Bestätige nur,
-					wenn die Codes übereinstimmen und Du die Verknüpfung gerade selbst gestartet hast.
+				<p data-tx="t0004:62f093c2">
+					Bestätige nur, wenn Du diesen Code gerade selbst auf Deinem Gerät bzw. in Home Assistant
+					angefordert und von dort abgeschrieben hast.
 				</p>
-				<p data-tx="t0005:a990bc37">
-					Hat Dir jemand anderes diesen Code genannt oder diesen Link geschickt, dann klicke auf
-					<em>Ablehnen</em> – sonst erhält ein fremdes Gerät Zugriff auf Deinen Account.
+				<p data-tx="t0005:d3362fd0">
+					Hat Dir jemand anderes diesen Code genannt, dann klicke auf <em>Ablehnen</em> – sonst erhält
+					ein fremdes Gerät Zugriff auf Deinen Account.
 				</p>
 			</div>
 		</article>
@@ -67,8 +67,8 @@
 				<p data-tx="t0011:7648da23" th:if="${linkError == 'already-denied'}">
 					Diese Verknüpfung wurde bereits abgelehnt. Starte die Verknüpfung auf Deinem Gerät neu.
 				</p>
-				<p data-tx="t0012:555fa0ce" th:if="${linkError == 'csrf'}">
-					Die Anfrage konnte nicht überprüft werden. Bitte lade die Seite neu und bestätige erneut.
+				<p data-tx="t0012:97229cd2" th:if="${linkError == 'csrf'}">
+					Die Anfrage konnte nicht überprüft werden. Bitte lade die Seite neu und gib den Code erneut ein.
 				</p>
 				<p data-tx="t0013:b409c382" th:if="${linkError == 'invalid'}">
 					Ungültige Anfrage.
@@ -81,7 +81,8 @@
 			<code th:text="${userName}"></code> zu verknüpfen.
 		</p>
 
-		<form method="get" th:action="@{/link}">
+		<form method="post" th:action="@{/link}">
+			<input name="csrf" th:value="${linkCsrf}" type="hidden"/>
 			<div class="field">
 				<label class="label" data-tx="t0015:a34add52" for="link-code">Code</label>
 				<div class="control">
@@ -90,7 +91,7 @@
 			</div>
 			<div class="field">
 				<p class="control">
-					<button class="button is-primary" type="submit">
+					<button class="button is-primary" name="action" type="submit" value="lookup">
 						<span class="icon"><i class="fa-solid fa-arrow-right"></i></span>
 						<span data-tx="t0017:ad5e318d">Weiter</span>
 					</button>

@@ -18,8 +18,8 @@
 
 		<article class="message is-warning">
 			<div class="message-body">
-				<p data-tx="t0004:44dc2eeb">Compare this code with the code displayed by your device or Home Assistant. Confirm only if the codes match and you just initiated the pairing yourself.</p>
-				<p data-tx="t0005:a990bc37">If someone else gave you this code or sent you this link, click <em>Decline</em>—otherwise, an unauthorized device will gain access to your account.</p>
+				<p data-tx="t0004:62f093c2">Please confirm only if you just requested this code yourself on your device or in Home Assistant and copied it from there.</p>
+				<p data-tx="t0005:d3362fd0">If someone else gave you this code, click <em>Decline</em>—otherwise, an unauthorized device will gain access to your account.</p>
 			</div>
 		</article>
 
@@ -50,14 +50,15 @@
 				<p data-tx="t0009:b208f84d" th:if="${linkError == 'rate'}">Too many incorrect codes. Please wait a minute and then try again.</p>
 				<p data-tx="t0010:84ec6915" th:if="${linkError == 'already-approved'}">This link has already been confirmed.</p>
 				<p data-tx="t0011:7648da23" th:if="${linkError == 'already-denied'}">This shortcut has already been rejected. Restart the shortcut on your device.</p>
-				<p data-tx="t0012:555fa0ce" th:if="${linkError == 'csrf'}">The request could not be verified. Please refresh the page and try again.</p>
+				<p data-tx="t0012:97229cd2" th:if="${linkError == 'csrf'}">The request could not be verified. Please refresh the page and enter the code again.</p>
 				<p data-tx="t0013:b409c382" th:if="${linkError == 'invalid'}">Invalid request.</p>
 			</div>
 		</article>
 
 		<p data-tx="t0014:e9436271">Enter the code displayed by your device or Home Assistant to link it to your PhoneBlock account <code th:text="${userName}"></code>.</p>
 
-		<form method="get" th:action="@{/link}">
+		<form method="post" th:action="@{/link}">
+			<input name="csrf" th:value="${linkCsrf}" type="hidden"/>
 			<div class="field">
 				<label class="label" data-tx="t0015:a34add52" for="link-code">Code</label>
 				<div class="control">
@@ -66,7 +67,7 @@
 			</div>
 			<div class="field">
 				<p class="control">
-					<button class="button is-primary" type="submit">
+					<button class="button is-primary" name="action" type="submit" value="lookup">
 						<span class="icon"><i class="fa-solid fa-arrow-right"></i></span>
 						<span data-tx="t0017:ad5e318d">Continue</span>
 					</button>

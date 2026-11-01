@@ -594,7 +594,10 @@ message LinkStartResponse {
 	/** Code shown to the user in the form <code>XXXX-XXXX</code>, to be compared on the confirmation page. */
 	string userCode;
 
-	/** URL of the confirmation page with the user code pre-filled. */
+	/**
+	 * URL of the page on which the user enters the user code. It carries no code: a link that
+	 * confirms without typing the code could be sent to a victim (code phishing).
+	 */
 	string verifyUrl;
 
 	/** Minimum number of seconds between two polls. */

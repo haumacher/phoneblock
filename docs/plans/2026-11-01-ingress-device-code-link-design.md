@@ -41,7 +41,7 @@ Response `200`:
 {
   "deviceCode": "<43 chars base64url, 256 bit>",
   "userCode":   "BCDF-GHJK",
-  "verifyUrl":  "https://phoneblock.net/phoneblock/link?code=BCDF-GHJK",
+  "verifyUrl":  "https://phoneblock.net/phoneblock/link",
   "interval":   5,
   "expiresIn":  600
 }
@@ -52,7 +52,10 @@ Response `200`:
 - User codes: 8 letters from the RFC 8628 consonant alphabet `BCDFGHJKLMNPQRSTVWXZ`, shown as
   `XXXX-XXXX`; input is normalized (case, dashes, spaces), unique among open entries.
 - `verifyUrl` is built from the server's configured public base URL, not from the request's
-  `Host` (the service may reach the server under an internal name).
+  `Host` (the service may reach the server under an internal name). It carries **no code**
+  (no RFC 8628 `verification_uri_complete`): the user must type the code the device shows.
+  A link with the code would let whoever started a link send it to a victim, who then confirms
+  with one click and has nothing to compare against — the tab covers the page with the code.
 
 ### `POST /api/link/poll`
 
@@ -68,12 +71,12 @@ Request: `{"deviceCode": "…"}`. Response `200`: `{"status": "pending"}`, `{"st
 
 ### `/link` (browser page, login required)
 
-- Not logged in: the normal login (login forms, then back to `/link?code=…`).
-- `GET /link?code=…`: shows the account name, the device label and the code in large type with
-  the instruction to compare it with the code on the device and to confirm only a link the user
-  started; buttons **[Verknüpfen]** / **[Ablehnen]** (POST, CSRF-protected like the other forms).
-- `GET /link` without code (or an unknown code): a code entry field — works on a second device
-  (phone) when the browser that shows the code cannot open the tab.
+- Not logged in: the normal login (login forms, then back to `/link`).
+- `GET /link`: a code entry field (POST `action=lookup`, CSRF-protected). A `code` parameter in
+  the URL is ignored, so no link leads straight to the confirmation. Works on any device.
+- The lookup shows the account name, the device label and the code in large type with the
+  instruction to confirm only a link the user started and whose code they copied from the
+  device; buttons **[Verknüpfen]** / **[Ablehnen]** (POST, CSRF-protected).
 - After either button: a result page that calls `window.close()` and otherwise tells the user
   to return to Home Assistant.
 - Wrong codes are rate-limited per session/IP (brute force over 20⁸ codes is hopeless anyway,
@@ -98,10 +101,12 @@ Old firmware, the mobile app and third-party apps keep using `/mobile/login` →
   function: store the token, self-test, seed the country once. WARN on `denied`/`error`, so the
   reason shows in the log panel.
 - Web UI, when `token_link` is set: the PhoneBlock step shows **PhoneBlock-Account verknüpfen**;
-  the click opens a blank tab synchronously (popup blockers), posts `api/link/start`, points the
-  tab to `verifyUrl`, shows the user code large plus the link and "or enter the code at
-  phoneblock.net/link", then polls `api/link/status` until done. Denied/expired/error show their
-  reason and a retry button.
+  the click posts `api/link/start` and shows the user code large with a **Code kopieren** button
+  (Clipboard API, fallback `execCommand('copy')`, last resort: the code is selected for Ctrl+C —
+  the HA iframe over plain http may allow neither) and a **phoneblock.net öffnen** button to
+  `verifyUrl` (`target=_blank`, a user gesture, so no popup blocker). The tab is opened only by
+  that second click, after the user has seen the code. Then it polls `api/link/status` until
+  done. Denied/expired/error show their reason and a retry button.
 
 ## Ingress test setup ("cookie-swallowing firewall")
 
@@ -130,6 +135,7 @@ opening the service directly (without the proxy) still shows the redirect flow.
 
 ## Known cost
 
-Code phishing: an attacker starts a link and talks a victim into confirming. Mitigated by the
-label + code with the compare instruction, 10-minute expiry, single use, the deny button and the
+Code phishing: an attacker starts a link and talks a victim into typing the code in. A forwarded
+link alone does nothing (the code must be typed); further mitigation by the label and the
+instruction on the confirmation page, 10-minute expiry, single use, the deny button and the
 revocable token (listed under the account's API keys with the label).
