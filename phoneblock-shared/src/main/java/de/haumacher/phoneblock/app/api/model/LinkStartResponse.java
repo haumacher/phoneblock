@@ -90,7 +90,8 @@ public class LinkStartResponse extends de.haumacher.msgbuf.data.AbstractDataObje
 	}
 
 	/**
-	 * URL of the confirmation page with the user code pre-filled.
+	 * URL of the page on which the user enters the user code. It carries no code: a link that
+	 * confirms without typing the code could be sent to a victim (code phishing).
 	 */
 	public final String getVerifyUrl() {
 		return _verifyUrl;

@@ -18,8 +18,8 @@
 
 		<article class="message is-warning">
 			<div class="message-body">
-				<p data-tx="t0004:44dc2eeb">Jämför den här koden med den kod som visas på din enhet eller i Home Assistant. Bekräfta endast om koderna stämmer överens och du själv just har startat kopplingen.</p>
-				<p data-tx="t0005:a990bc37">Om någon annan har gett dig den här koden eller skickat den här länken, klicka på <em>Avvisa</em> – annars får en främmande enhet åtkomst till ditt konto.</p>
+				<p data-tx="t0004:62f093c2">Bekräfta endast om du just nu själv har begärt den här koden på din enhet eller i Home Assistant och skrivit ner den därifrån.</p>
+				<p data-tx="t0005:d3362fd0">Om någon annan har gett dig den här koden, klicka på <em>Avvisa</em> – annars får en främmande enhet åtkomst till ditt konto.</p>
 			</div>
 		</article>
 
@@ -50,14 +50,15 @@
 				<p data-tx="t0009:b208f84d" th:if="${linkError == 'rate'}">För många felaktiga koder. Vänta en minut och försök sedan igen.</p>
 				<p data-tx="t0010:84ec6915" th:if="${linkError == 'already-approved'}">Denna länk har redan bekräftats.</p>
 				<p data-tx="t0011:7648da23" th:if="${linkError == 'already-denied'}">Den här genvägen har redan avvisats. Starta om genvägen på din enhet.</p>
-				<p data-tx="t0012:555fa0ce" th:if="${linkError == 'csrf'}">Det gick inte att verifiera förfrågan. Ladda om sidan och bekräfta på nytt.</p>
+				<p data-tx="t0012:97229cd2" th:if="${linkError == 'csrf'}">Det gick inte att verifiera förfrågan. Ladda om sidan och ange koden igen.</p>
 				<p data-tx="t0013:b409c382" th:if="${linkError == 'invalid'}">Ogiltig förfrågan.</p>
 			</div>
 		</article>
 
 		<p data-tx="t0014:e9436271">Ange koden som visas på din enhet eller i Home Assistant för att koppla den till ditt PhoneBlock-konto <code th:text="${userName}"></code>.</p>
 
-		<form method="get" th:action="@{/link}">
+		<form method="post" th:action="@{/link}">
+			<input name="csrf" th:value="${linkCsrf}" type="hidden"/>
 			<div class="field">
 				<label class="label" data-tx="t0015:a34add52" for="link-code">Kod</label>
 				<div class="control">
@@ -66,7 +67,7 @@
 			</div>
 			<div class="field">
 				<p class="control">
-					<button class="button is-primary" type="submit">
+					<button class="button is-primary" name="action" type="submit" value="lookup">
 						<span class="icon"><i class="fa-solid fa-arrow-right"></i></span>
 						<span data-tx="t0017:ad5e318d">Fortsätt</span>
 					</button>

@@ -18,8 +18,8 @@
 
 		<article class="message is-warning">
 			<div class="message-body">
-				<p data-tx="t0004:44dc2eeb">قارن هذا الرمز بالرمز الذي يعرضه جهازك أو Home Assistant. لا تقم بالتأكيد إلا إذا تطابق الرمزان وكنت قد بدأت عملية الربط بنفسك للتو.</p>
-				<p data-tx="t0005:a990bc37">إذا كان شخص آخر قد أبلغك بهذا الرمز أو أرسل لك هذا الرابط، فانقر على <em>رفض</em> – وإلا فسيتم منح جهاز غريب حق الوصول إلى حسابك.</p>
+				<p data-tx="t0004:62f093c2">لا تقم بالتأكيد إلا إذا كنت قد طلبت هذا الرمز بنفسك للتو على جهازك أو في Home Assistant وقمت بنسخه من هناك.</p>
+				<p data-tx="t0005:d3362fd0">إذا كان شخص آخر قد أرسل لك هذا الرمز، فانقر على <em>رفض</em> – وإلا فسيتم منح جهاز غريب حق الوصول إلى حسابك.</p>
 			</div>
 		</article>
 
@@ -50,14 +50,15 @@
 				<p data-tx="t0009:b208f84d" th:if="${linkError == 'rate'}">عدد الرموز الخاطئة كبير جدًا. يرجى الانتظار لمدة دقيقة ثم إعادة المحاولة.</p>
 				<p data-tx="t0010:84ec6915" th:if="${linkError == 'already-approved'}">تم تأكيد هذا الارتباط بالفعل.</p>
 				<p data-tx="t0011:7648da23" th:if="${linkError == 'already-denied'}">تم رفض هذا الرابط بالفعل. أعد تشغيل الرابط على جهازك.</p>
-				<p data-tx="t0012:555fa0ce" th:if="${linkError == 'csrf'}">تعذر التحقق من الطلب. يرجى إعادة تحميل الصفحة وإعادة التأكيد.</p>
+				<p data-tx="t0012:97229cd2" th:if="${linkError == 'csrf'}">تعذر التحقق من الطلب. يرجى تحديث الصفحة وإدخال الرمز مرة أخرى.</p>
 				<p data-tx="t0013:b409c382" th:if="${linkError == 'invalid'}">طلب غير صالح.</p>
 			</div>
 		</article>
 
 		<p data-tx="t0014:e9436271">أدخل الرمز الذي يعرضه جهازك أو Home Assistant لربطه بحسابك على PhoneBlock <code th:text="${userName}"></code>.</p>
 
-		<form method="get" th:action="@{/link}">
+		<form method="post" th:action="@{/link}">
+			<input name="csrf" th:value="${linkCsrf}" type="hidden"/>
 			<div class="field">
 				<label class="label" data-tx="t0015:a34add52" for="link-code">الكود</label>
 				<div class="control">
@@ -66,7 +67,7 @@
 			</div>
 			<div class="field">
 				<p class="control">
-					<button class="button is-primary" type="submit">
+					<button class="button is-primary" name="action" type="submit" value="lookup">
 						<span class="icon"><i class="fa-solid fa-arrow-right"></i></span>
 						<span data-tx="t0017:ad5e318d">تابع</span>
 					</button>

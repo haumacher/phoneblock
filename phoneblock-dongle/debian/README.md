@@ -120,8 +120,9 @@ Danach geht es weiter wie unter "Einrichtung", mit der Oberfläche unter
 - **Home Assistant (Ingress):** Hinter dem Ingress von Home Assistant kann
   die Anmeldung bei phoneblock.net nicht per Weiterleitung zurückkommen.
   Dort zeigt die Oberfläche stattdessen **PhoneBlock-Account verknüpfen**:
-  phoneblock.net öffnet sich in einem neuen Tab, du bestätigst den Code, der
-  auch in der Oberfläche steht, und der Dienst holt den Token selbst ab. Den
+  die Oberfläche zeigt einen Code, du gibst ihn auf phoneblock.net ein (der
+  Knopf öffnet die Seite in einem neuen Tab), und der Dienst holt den Token
+  selbst ab. Den
   Aufbau zum Ausprobieren ohne Home Assistant beschreibt
   `docker/ingress-test/README.md`.
 - **Vom alten AnswerBot-Container (`phoneblock/answerbot`):** Die Einstellungen
