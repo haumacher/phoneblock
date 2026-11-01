@@ -1,17 +1,15 @@
 name: Publish Answerbot Docker image
 
 # Builds the self-hosted answerbot (phoneblock-ab) and pushes it to Docker Hub as
-# phoneblock/answerbot. Runs for every server release tag (X.Y.Z, created by the
-# maven-release-plugin) and on demand for any ref, so an already released
-# version can be (re)published without cutting a new release.
+# phoneblock/answerbot. Manual only: the Java answerbot image is being retired in
+# favour of phoneblock/answerbot2 (the dongle firmware's Linux build, see
+# dongle-linux.yml), so a server release no longer publishes it. Run it by hand
+# for any ref to (re)publish an image if one is still needed.
 #
 # Required repository secrets: DOCKERHUB_USERNAME, DOCKERHUB_TOKEN (an access
 # token with read/write scope for the phoneblock/answerbot repository).
 
 on:
-  push:
-    tags:
-      - '[0-9]+.[0-9]+.[0-9]+'
   workflow_dispatch:
     inputs:
       ref:
