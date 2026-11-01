@@ -61,6 +61,32 @@ public class MailServiceImplTest {
 	}
 
 	/**
+	 * The code in the login and e-mail-change mails is followed by nothing
+	 * but its closing tags: whitespace after it becomes a trailing space when
+	 * the code is double-clicked and copied (in the HTML part), and the plain
+	 * text part must carry the code on a line of its own.
+	 */
+	@Test
+	public void testCodeHasNoTrailingWhitespace() {
+		for (String template : new String[] {"mail-template", "email-change-mail"}) {
+			for (String locale : LOCALES) {
+				Map<String, Object> variables = new HashMap<>();
+				variables.put("name", "TEST_NAME");
+				variables.put("code", "12345678");
+				variables.put("image", "https://test.example.com/image.svg");
+
+				String html = MailTemplateEngine.getInstance().processTemplate(locale, template, variables);
+				assertTrue(html.contains(">12345678</code></p>"),
+					template + "/" + locale + ": code must be directly followed by </code></p>");
+
+				String text = MailServiceImpl.htmlToPlainText(html);
+				assertTrue(text.lines().anyMatch(line -> line.equals("12345678")),
+					template + "/" + locale + ": plain text must have the code alone on a line");
+			}
+		}
+	}
+
+	/**
 	 * Test that email-change-mail.html expands all parameters in all locales.
 	 */
 	@Test

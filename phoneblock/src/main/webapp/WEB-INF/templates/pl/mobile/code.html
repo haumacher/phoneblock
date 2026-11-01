@@ -24,7 +24,7 @@
 					<div class="field">
 						<label class="label" data-tx="t0005:a34add52">Kod</label>
 						<div class="control has-icons-left has-icons-right">
-							<input data-tx="t0006:eba94e42" name="code" placeholder="Kod potwierdzenia" th:class="|input${message == null ? '' : ' is-danger'}|" type="text" value=""/>
+							<input autocomplete="one-time-code" data-tx="t0006:eba94e42" inputmode="numeric" name="code" placeholder="Kod potwierdzenia" th:class="|input${message == null ? '' : ' is-danger'}|" type="text" value=""/>
 							<span class="icon is-small is-left">
 							  <i class="fa-solid fa-barcode"></i>
 							</span>
