@@ -140,6 +140,24 @@ bool phoneblock_selftest(api_phases_t *phases_opt);
 // logs the status code rather than the body.
 bool phoneblock_fetch_dial_prefix(char *out, size_t cap);
 
+// Label of the dongle's API token on phoneblock.net, shown in the account's
+// API key list. Both sign-in flows pass it: the redirect flow as tokenLabel
+// of /mobile/login, the device-code link (Linux, link.c) as its label.
+#define PB_TOKEN_LABEL "PhoneBlock-Dongle"
+
+// Activates a freshly obtained API token — the end of every sign-in, the
+// redirect flow's /token-callback and the device-code link alike: stores the
+// token, runs the self-test at once (so the dashboard has an API latency on
+// its first poll and the token-health flag is fresh), and seeds the country
+// from the account once, while the device still has the "+49" default (from
+// then on the country belongs to the web UI; re-pairing must not overwrite
+// a user's choice). The country is best-effort: on failure the default
+// stands. `origin` prefixes the log lines ("token-callback", "link").
+//
+// Returns false only when the token could not be stored; nothing else is
+// done then. Never logs the token itself.
+bool phoneblock_adopt_token(const char *token, const char *origin);
+
 // Ships a diagnostic log body (newline-separated WARN/ERROR lines) via
 // POST /api/dongle/log. Runs on the shared session-resuming client so
 // the daily upload resumes the TLS ticket the selftest just primed

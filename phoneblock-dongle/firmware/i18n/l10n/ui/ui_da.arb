@@ -285,6 +285,7 @@
   "status.dialog.edit.reason.size": "Optagelserne fylder tilsammen mere end der er plads på donglen – slet eller forkort optagelserne.",
   "status.dialog.edit.bad_file": "Dette er ikke en gyldig dialogfil.",
   "status.dialog.edit.no_set": "Der er endnu ingen dialog på donglen – tilføj optagelser for hver fase.",
+  "status.dialog.edit.changed": "Der er nu andre optagelser på donglen (sprog eller stemme er ændret). Din redigering i editoren er endnu ikke uploadet.",
   "status.dialog.edit.reload": "Annuller og genindlæs",
   "status.dialog.edit.done": "Egen dialog gemt ({kb} KB).",
   "hero.title": "Indretning",
@@ -369,6 +370,17 @@
   "token.current.set": "Der er allerede oprettet et token. Hvis du logger ind igen, oprettes der et nyt.",
   "token.current.missing": "Der er endnu ikke oprettet et token.",
   "token.submit": "Log ind på PhoneBlock",
+  "link.submit": "Knyt PhoneBlock-konto",
+  "link.starting": "Linket forberedes…",
+  "link.compare": "Sammenlign koden på phoneblock.net, og bekræft kun, hvis den stemmer overens.",
+  "link.open": "Åbn phoneblock.net",
+  "link.manual": "Du kan også indtaste koden under {url}, f.eks. på din mobiltelefon.",
+  "link.waiting": "Vent på din bekræftelse på phoneblock.net…",
+  "link.approved": "PhoneBlock-konto er tilknyttet — token er indstillet.",
+  "link.denied": "Linket blev afvist på phoneblock.net.",
+  "link.expired": "Koden er udløbet. Anmod om en ny kode.",
+  "link.error": "Forbindelsen mislykkedes: {msg}",
+  "link.retry": "Prøv igen",
   "back.status": "← tilbage til status",
   "back.sip": "← tilbage til oversigten",
   "i18n.loading": "Oversættelse indlæses …",
@@ -432,5 +444,5 @@
   "spam.dialog.comment": "Begrundelse",
   "spam.dialog.comment.hint": "(valgfrit, bliver synligt for offentligheden)",
   "spam.dialog.error.is_contact": "Denne opkalder er gemt i din telefonbog. En telefonbogsoplysning har altid forrang på donglen, og derfor er det ikke muligt at markere opkaldet som spam her.",
-  "status.dialog.edit.changed": "Der er nu andre optagelser på donglen (sprog eller stemme er ændret). Din redigering i editoren er endnu ikke uploadet."
+  "link.how": "Hvis du klikker på knappen, vises der en kode her, og phoneblock.net åbnes i en ny fane. Log ind på phoneblock.net, og bekræft, når den samme kode vises der. Tjenesten henter derefter selv tokenet."
 }

@@ -646,6 +646,174 @@
 				}
 			}
 		},
+		"/link/start": {
+			"post": {
+				"summary": "Start a device-code link to obtain an API token",
+				"description": "For devices that cannot receive the redirect of the regular sign-in (e.g. the PhoneBlock dongle behind Home Assistant ingress). The device shows the returned user code and the verification URL, the user confirms the code on that page while logged in to PhoneBlock, and the device collects the API token with /link/poll. The device code is a secret and must never be shown to the user. A link expires after expiresIn seconds and can be collected only once. No authentication required.",
+				"security": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"required": [
+									"appId"
+								],
+								"properties": {
+									"appId": {
+										"type": "string",
+										"description": "Identifier of the requesting app."
+									},
+									"label": {
+										"type": "string",
+										"maxLength": 64,
+										"description": "Device name shown on the confirmation page and used as label of the API token. Defaults to 'PhoneBlock-Dongle'."
+									}
+								}
+							},
+							"example": {
+								"appId": "PhoneBlockDongle",
+								"label": "PhoneBlock-Dongle"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "The link was started.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"deviceCode": {
+											"type": "string",
+											"description": "Secret code (256 bit, base64url) for polling the result."
+										},
+										"userCode": {
+											"type": "string",
+											"pattern": "^[BCDFGHJKLMNPQRSTVWXZ]{4}-[BCDFGHJKLMNPQRSTVWXZ]{4}$",
+											"description": "Code to show to the user. Input on the confirmation page ignores case, dashes and spaces."
+										},
+										"verifyUrl": {
+											"type": "string",
+											"description": "Confirmation page with the user code filled in."
+										},
+										"interval": {
+											"type": "integer",
+											"description": "Minimum number of seconds between two polls."
+										},
+										"expiresIn": {
+											"type": "integer",
+											"description": "Number of seconds until the link expires."
+										}
+									}
+								},
+								"example": {
+									"deviceCode": "q3Vt0Ff1yJ5mZ8cXH2kLw9pR4sT7uV0aB6dE1gI3jK8",
+									"userCode": "BCDF-GHJK",
+									"verifyUrl": "https://phoneblock.net/phoneblock/link?code=BCDF-GHJK",
+									"interval": 5,
+									"expiresIn": 600
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "The request is not valid JSON or appId is missing.",
+						"content": {
+							"text/plain; charset=utf-8": {
+								"schema": {
+									"type": "string"
+								}
+							}
+						}
+					},
+					"429": {
+						"description": "Too many open links from this address or in total.",
+						"content": {
+							"text/plain; charset=utf-8": {
+								"schema": {
+									"type": "string"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/link/poll": {
+			"post": {
+				"summary": "Poll the result of a device-code link",
+				"description": "Polls a link started with /link/start. Poll at most every interval seconds; a faster poll answers slow_down and the client should add 5 seconds to its interval. The API token is created when an approved link is collected; the link is removed then, and a later poll answers expired. An unknown, expired or already collected device code also answers expired. No authentication required.",
+				"security": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"type": "object",
+								"required": [
+									"deviceCode"
+								],
+								"properties": {
+									"deviceCode": {
+										"type": "string",
+										"description": "The deviceCode returned by /link/start."
+									}
+								}
+							},
+							"example": {
+								"deviceCode": "q3Vt0Ff1yJ5mZ8cXH2kLw9pR4sT7uV0aB6dE1gI3jK8"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "The current state of the link.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "object",
+									"properties": {
+										"status": {
+											"type": "string",
+											"enum": [
+												"pending",
+												"slow_down",
+												"approved",
+												"denied",
+												"expired"
+											]
+										},
+										"token": {
+											"type": "string",
+											"description": "The new API token, only with status approved."
+										}
+									}
+								},
+								"example": {
+									"status": "approved",
+									"token": "pbt_..."
+								}
+							}
+						}
+					},
+					"400": {
+						"description": "The request is not valid JSON or deviceCode is missing.",
+						"content": {
+							"text/plain; charset=utf-8": {
+								"schema": {
+									"type": "string"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
 		"/ratings": {
 			"get": {
 				"summary": "Retrieve all available rating codes",

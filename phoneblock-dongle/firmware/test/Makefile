@@ -8,7 +8,7 @@ CFLAGS  ?= -Wall -Wextra -Werror -O0 -g -I../main -I../core
 IDF_PATH ?= $(HOME)/tools/esp/esp-idf
 CJSON_DIR := $(IDF_PATH)/components/json/cJSON
 
-BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_rcpt test_name_filter test_version_cmp test_http_util test_net_local test_heap_guard test_platform_linux test_log_capture_linux test_time_sync_tz test_ota_manifest test_stats test_display_model test_display_probe test_storage_budget test_storage_sim test_storage_hostfs test_vad test_dialog test_dialog_probe test_audio_manifest
+BINS = test_strbuf test_sip_parse test_sip_frame test_sip_srv test_sip_auth test_sip_response test_tr064_parse test_phone_norm test_api_scan test_log_capture test_improv_proto test_blocklist_lookup test_sched_time test_smtp_body test_mail_html test_mail_rcpt test_name_filter test_version_cmp test_http_util test_net_local test_heap_guard test_platform_linux test_log_capture_linux test_time_sync_tz test_ota_manifest test_stats test_display_model test_display_probe test_storage_budget test_storage_sim test_storage_hostfs test_vad test_dialog test_dialog_probe test_audio_manifest test_link_proto
 
 test_sip_parse: test_sip_parse.c ../core/sip_parse.c ../core/sip_parse.h \
                 ../core/dial_rules.c ../core/dial_rules.h \
@@ -46,6 +46,12 @@ test_api_scan: test_api_scan.c ../main/api_scan.c ../main/api_scan.h cjson.o
 
 test_ota_manifest: test_ota_manifest.c ../main/ota_manifest.c ../main/ota_manifest.h cjson.o
 	$(CC) $(CFLAGS) -I$(CJSON_DIR) test_ota_manifest.c ../main/ota_manifest.c cjson.o -o $@
+
+# The device-code link's server answers and state machine (#621). With
+# AddressSanitizer: the parsers copy server-chosen strings into fixed fields.
+test_link_proto: test_link_proto.c ../main/link_proto.c ../main/link_proto.h cjson.o
+	$(CC) $(CFLAGS) -fsanitize=address -I$(CJSON_DIR) test_link_proto.c \
+	  ../main/link_proto.c cjson.o -o $@
 
 # The dialog's receive path: A-law decode and the VAD (needs libm).
 test_vad: test_vad.c ../main/vad.c ../main/vad.h ../main/audio.c ../main/audio.h
@@ -210,11 +216,19 @@ test_platform_linux_net: test_platform_linux_net.c linux_test_util.h \
 # The library of the firmware modules that the Linux tests link, and the
 # service itself, come from ../linux/Makefile, shared with debian/rules
 # (#624). Its dependency check applies to these goals.
-LINUX_GOALS := linux-firmware phoneblock_linux test-linux test_api_linux test_web_http_linux test_web_calls_linux test_webhook_linux test_web_dialog_linux
+LINUX_GOALS := linux-firmware phoneblock_linux test-linux test_api_linux test_link_linux test_web_http_linux test_web_calls_linux test_webhook_linux test_web_dialog_linux
 include ../linux/Makefile
 
 test_api_linux: test_api_linux.c linux_test_util.h \
                 $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a
+	$(CC) $(CFLAGS) -pthread $(LINUX_PKG_CFLAGS) $< \
+	  $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a \
+	  $(LINUX_NET_LIBS) -o $@
+
+# The device-code link (#621): the real web server and poll task against a
+# fake of phoneblock.net's /api/link endpoints.
+test_link_linux: test_link_linux.c linux_test_util.h \
+                 $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a
 	$(CC) $(CFLAGS) -pthread $(LINUX_PKG_CFLAGS) $< \
 	  $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a \
 	  $(LINUX_NET_LIBS) -o $@
@@ -265,7 +279,7 @@ test: $(BINS)
 
 # Linux build of the firmware modules plus its network tests; needs the
 # extra prerequisites listed in ../linux/Makefile.
-LINUX_BINS = test_platform_linux_net test_api_linux test_web_http_linux test_web_calls_linux test_webhook_linux test_web_dialog_linux
+LINUX_BINS = test_platform_linux_net test_api_linux test_link_linux test_web_http_linux test_web_calls_linux test_webhook_linux test_web_dialog_linux
 
 test-linux: linux-firmware phoneblock_linux $(LINUX_BINS)
 	@set -e; for b in $(LINUX_BINS); do echo "→ $$b"; ./$$b; done

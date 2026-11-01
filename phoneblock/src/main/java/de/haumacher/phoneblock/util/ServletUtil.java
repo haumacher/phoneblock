@@ -139,6 +139,28 @@ public class ServletUtil {
 		}
 	}
 
+	/**
+	 * The client address of the given request for rate limiting.
+	 *
+	 * <p>
+	 * Behind the reverse proxy, the request comes from the proxy and the client address is the
+	 * <em>last</em> entry of <code>X-Forwarded-For</code>: the proxy appends the address it saw,
+	 * while earlier entries are sent by the client itself and can be chosen freely. Without the
+	 * header, the remote address of the connection is used.
+	 * </p>
+	 */
+	public static String clientAddress(HttpServletRequest req) {
+		String forwarded = req.getHeader("X-Forwarded-For");
+		if (forwarded != null) {
+			int separator = forwarded.lastIndexOf(',');
+			String last = (separator < 0 ? forwarded : forwarded.substring(separator + 1)).trim();
+			if (!last.isEmpty()) {
+				return last;
+			}
+		}
+		return req.getRemoteAddr();
+	}
+
 	public static String lookupDialPrefix(HttpServletRequest req) {
 		UserSettings settings = LoginFilter.getUserSettings(req);
 		if (settings != null) {

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head th:replace="~{fragments/page :: head(titleKey='page.link.title', descriptionKey=null, titleText=null, descriptionText=null)}"></head>
+
+<body th:dir="${currentLang.direction}">
+
+<div th:replace="~{fragments/mobile :: header}"></div>
+
+<section class="section">
+<div class="content">
+
+	<h1 data-tx="t0001:f42b8da7">Gerät mit PhoneBlock verknüpfen</h1>
+
+	<th:block th:if="${linkView == 'confirm'}">
+		<p data-tx="t0002:d151ab1a">
+			Das Gerät <strong th:text="${link.label}">PhoneBlock-Dongle</strong> möchte auf Deinen PhoneBlock-Account <strong th:if="${linkAccount != null}" th:text="${linkAccount}">name@example.invalid</strong> (<code th:text="${userName}"></code>) zugreifen.
+		</p>
+
+		<p class="has-text-centered is-size-1 has-text-weight-bold is-family-monospace" data-tx="t0003:44300d3" dir="ltr" th:text="${link.userCode}">BCDF-GHJK</p>
+
+		<article class="message is-warning">
+			<div class="message-body">
+				<p data-tx="t0004:44dc2eeb">
+					Vergleiche diesen Code mit dem Code, den Dein Gerät bzw. Home Assistant anzeigt. Bestätige nur,
+					wenn die Codes übereinstimmen und Du die Verknüpfung gerade selbst gestartet hast.
+				</p>
+				<p data-tx="t0005:a990bc37">
+					Hat Dir jemand anderes diesen Code genannt oder diesen Link geschickt, dann klicke auf
+					<em>Ablehnen</em> – sonst erhält ein fremdes Gerät Zugriff auf Deinen Account.
+				</p>
+			</div>
+		</article>
+
+		<form method="post" th:action="@{/link}">
+			<input name="code" th:value="${link.userCode}" type="hidden"/>
+			<input name="csrf" th:value="${linkCsrf}" type="hidden"/>
+			<div class="field is-grouped">
+				<p class="control">
+					<button class="button is-primary" name="action" type="submit" value="approve">
+						<span class="icon"><i class="fa-solid fa-link"></i></span>
+						<span data-tx="t0006:280920f2">Verknüpfen</span>
+					</button>
+				</p>
+				<p class="control">
+					<button class="button is-danger is-outlined" name="action" type="submit" value="deny">
+						<span class="icon"><i class="fa-solid fa-xmark"></i></span>
+						<span data-tx="t0007:6bf89a5a">Ablehnen</span>
+					</button>
+				</p>
+			</div>
+		</form>
+	</th:block>
+
+	<th:block th:if="${linkView == 'enter'}">
+		<article class="message is-danger" th:if="${linkError != null}">
+			<div class="message-body">
+				<p data-tx="t0008:5dfec198" th:if="${linkError == 'unknown'}">
+					Zu diesem Code gibt es keine offene Verknüpfung. Prüfe die Eingabe. Ein Code ist nur 10 Minuten
+					gültig und kann nur einmal verwendet werden – starte die Verknüpfung auf Deinem Gerät gegebenenfalls neu.
+				</p>
+				<p data-tx="t0009:b208f84d" th:if="${linkError == 'rate'}">
+					Zu viele falsche Codes. Bitte warte eine Minute und versuche es dann erneut.
+				</p>
+				<p data-tx="t0010:84ec6915" th:if="${linkError == 'already-approved'}">
+					Diese Verknüpfung wurde bereits bestätigt.
+				</p>
+				<p data-tx="t0011:7648da23" th:if="${linkError == 'already-denied'}">
+					Diese Verknüpfung wurde bereits abgelehnt. Starte die Verknüpfung auf Deinem Gerät neu.
+				</p>
+				<p data-tx="t0012:555fa0ce" th:if="${linkError == 'csrf'}">
+					Die Anfrage konnte nicht überprüft werden. Bitte lade die Seite neu und bestätige erneut.
+				</p>
+				<p data-tx="t0013:b409c382" th:if="${linkError == 'invalid'}">
+					Ungültige Anfrage.
+				</p>
+			</div>
+		</article>
+
+		<p data-tx="t0014:e9436271">
+			Gib den Code ein, den Dein Gerät bzw. Home Assistant anzeigt, um es mit Deinem PhoneBlock-Account
+			<code th:text="${userName}"></code> zu verknüpfen.
+		</p>
+
+		<form method="get" th:action="@{/link}">
+			<div class="field">
+				<label class="label" data-tx="t0015:a34add52" for="link-code">Code</label>
+				<div class="control">
+					<input autocapitalize="characters" autocomplete="off" autofocus="autofocus" class="input is-family-monospace" data-tx="t0016:a652a189" id="link-code" maxlength="20" name="code" placeholder="XXXX-XXXX" required="required" th:classappend="${linkError == 'unknown'} ? 'is-danger'" th:value="${linkCode}" type="text"/>
+				</div>
+			</div>
+			<div class="field">
+				<p class="control">
+					<button class="button is-primary" type="submit">
+						<span class="icon"><i class="fa-solid fa-arrow-right"></i></span>
+						<span data-tx="t0017:ad5e318d">Weiter</span>
+					</button>
+				</p>
+			</div>
+		</form>
+	</th:block>
+
+	<th:block th:if="${linkView == 'done'}">
+		<article class="message is-success" th:if="${linkResult == 'approved'}">
+			<div class="message-body">
+				<p data-tx="t0018:c28b524e">
+					Die Verknüpfung ist bestätigt. Dein Gerät übernimmt die Anmeldung in wenigen Sekunden.
+				</p>
+			</div>
+		</article>
+
+		<article class="message is-info" th:if="${linkResult == 'denied'}">
+			<div class="message-body">
+				<p data-tx="t0019:cb0f6cb0">
+					Die Verknüpfung wurde abgelehnt. Das Gerät erhält keinen Zugriff auf Deinen Account.
+				</p>
+			</div>
+		</article>
+
+		<p data-tx="t0020:2ef6837e">
+			Du kannst dieses Fenster jetzt schließen und zu Deinem Gerät bzw. zu Home Assistant zurückkehren.
+		</p>
+
+		<script th:src="@{/assets/js/link-done.js}" type="text/javascript"></script>
+	</th:block>
+
+</div>
+</section>
+
+<div th:replace="~{fragments/mobile :: footer}"></div>
+
+</body>
+</html>

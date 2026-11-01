@@ -168,6 +168,10 @@ if (!location.pathname.endsWith('/'))
      border-left:3px solid #ccc;padding-left:.6rem}
   /* Text tones for a fixed state (after .help/.hint, so they win). */
   .txt-err{color:var(--err)}
+  .txt-ok{color:var(--ok)}
+  /* The user code of the device-code link (#621), compared on phoneblock.net. */
+  .link-code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+     font-size:2rem;font-weight:700;letter-spacing:.15em;margin:.6rem 0}
   .txt-caution{color:var(--caution)}
   /* A checkbox (or a short select) with its text on one line; .opt is the
      paragraph wrapping one such option inside a group. */
@@ -1658,7 +1662,7 @@ function renderHero(sipDone, tokenDone){
            'hero.cta.sip',   '#/setup/sip')
     + step(tokenDone, '2',
            tokenDone ? 'hero.step2.done' : 'hero.step2.todo',
-           'hero.cta.token', '#/setup/token')
+           tokenLink ? 'link.submit' : 'hero.cta.token', '#/setup/token')
     + '</section>';
 }
 
@@ -1666,6 +1670,9 @@ function renderHero(sipDone, tokenDone){
 // Used in the /api/factory-reset POST body so that a POST replayed
 // by the browser across a reboot carries a now-stale value.
 let resetNonce = '';
+
+// Last /api/status's phoneblock.token_link (see the status poll).
+let tokenLink = false;
 
 // The status-email form is prefilled from /api/status exactly once per
 // dashboard build (reset in the build function above), so the 3s poll
@@ -1889,6 +1896,9 @@ async function refreshAll(){
   // token_signin is false behind Home Assistant ingress, where the web
   // sign-in cannot complete (see web.c); missing means available.
   const tokenSignin   = s.phoneblock.token_signin !== false;
+  // token_link: the Linux service behind Home Assistant ingress, where the
+  // account is linked with a code instead (renderToken, #621).
+  tokenLink = s.phoneblock.token_link === true;
   const heroSlot      = $('heroSlot');
   const statusSec     = $('statusSection');
   const callsSec      = $('callsSection');
@@ -2383,7 +2393,13 @@ async function refreshAll(){
     }
     tokenCta.style.display   = 'none';
     tokenTest.style.display  = '';
-    tokenRenew.style.display = tokenSignin ? '' : 'none';
+    // Under ingress "Neu anfordern" leads to the token page and its
+    // code link instead of the redirect sign-in.
+    if (tokenLink){
+      tokenRenew.removeAttribute('data-token-link');
+      tokenRenew.setAttribute('href', '#/setup/token');
+    }
+    tokenRenew.style.display = (tokenSignin || tokenLink) ? '' : 'none';
   } else {
     tokenPill.textContent = t('status.token.missing');
     tokenPill.className = 'pill bad';
@@ -3673,21 +3689,94 @@ async function renderToken(){
   const s = await fetchJson('api/status');
   const set = !!(s && s.phoneblock.token_set);
   const signin = !(s && s.phoneblock.token_signin === false);
+  const link = !!(s && s.phoneblock.token_link === true);
   app.innerHTML = ''
     + '<section>'
     + '<div class="crumb"><a href="#/">' + esc(t('back.status')) + '</a></div>'
     + '<h2>' + esc(t('token.title')) + '</h2>'
     + '<p class="muted">' + esc(t('token.intro')) + '</p>'
-    + '<p class="muted">' + esc(t('token.how'))   + '</p>'
+    + '<p class="muted">' + esc(t(link ? 'link.how' : 'token.how')) + '</p>'
     + '<p class="muted">'
     + (set ? esc(t('token.current.set')) : esc(t('token.current.missing')))
     + '</p>'
-    + (signin
+    + (link
+        ? '<p class="actions">'
+          + '<button id="linkStart" class="btn-primary">' + esc(t('link.submit')) + '</button>'
+          + '</p>'
+          + '<div id="linkPanel"></div>'
+        : signin
         ? '<p class="actions">'
           + '<a href="register-start" data-token-link class="btn-primary">' + esc(t('token.submit')) + '</a>'
           + '</p>'
         : '')
     + '</section>';
+  if (link) $('linkStart').onclick = () => startLink($('linkStart'), $('linkPanel'));
+}
+
+// The device-code link (#621): under Home Assistant ingress the redirect
+// from phoneblock.net cannot come back into the page, so the service asks
+// phoneblock.net for a code, the user confirms it there, and the service
+// collects the token itself (web.c /api/link/*). This page only shows the
+// code and follows the state.
+async function startLink(btn, panel){
+  // Opened synchronously in the click, before any await: popup blockers
+  // allow a new tab only from the user's gesture. Its address follows once
+  // the server named it; if it was blocked, the link below stays.
+  const tab = window.open('', '_blank');
+  btn.disabled = true;
+  panel.innerHTML = '<p class="status-line muted">' + esc(t('link.starting')) + '</p>';
+  let r = null;
+  try {
+    const resp = await fetch('api/link/start', {method: 'POST'});
+    r = await resp.json();
+  } catch(e){ r = null; }
+  if (!r || !r.userCode || !/^https?:\/\//.test(r.verifyUrl || '')){
+    if (tab) tab.close();
+    linkEnded(btn, panel, 'error', r && r.message);
+    return;
+  }
+  if (tab){
+    try { tab.opener = null; } catch(e){}
+    tab.location.href = r.verifyUrl;
+  }
+  let manual = r.verifyUrl;
+  try { const u = new URL(r.verifyUrl); manual = u.origin + u.pathname; } catch(e){}
+  panel.innerHTML = ''
+    + '<p class="link-code">' + esc(r.userCode) + '</p>'
+    + '<p>' + esc(t('link.compare')) + '</p>'
+    + '<p class="actions"><a class="btn-ghost btn-sm" target="_blank" rel="noopener" href="'
+    +   esc(r.verifyUrl) + '">' + esc(t('link.open')) + '</a></p>'
+    + '<p class="hint">' + esc(t('link.manual')).replace('{url}',
+        '<a target="_blank" rel="noopener" href="' + esc(manual) + '">' + esc(manual) + '</a>')
+    + '</p>'
+    + '<p id="linkMsg" class="status-line muted">' + esc(t('link.waiting')) + '</p>';
+  for (;;){
+    await new Promise(res => setTimeout(res, 2000));
+    // Left the page: the service keeps polling on its own; the status
+    // page shows the token once it arrived.
+    if (!document.body.contains(panel)) return;
+    const st = await fetchJson('api/link/status');
+    if (!st || st.state === 'pending') continue;
+    if (st.userCode !== r.userCode) return;   // a newer link took over
+    linkEnded(btn, panel, st.state, st.message);
+    return;
+  }
+}
+
+function linkEnded(btn, panel, state, message){
+  btn.disabled = false;
+  if (state === 'approved'){
+    panel.innerHTML = '<p class="status-line txt-ok">' + esc(t('link.approved')) + '</p>';
+    // Back to the status page, whose next poll turns the token pill green.
+    setTimeout(() => { if ((location.hash || '#/') === '#/setup/token') location.hash = '#/'; }, 1500);
+    return;
+  }
+  const key = state === 'denied' ? 'link.denied'
+            : state === 'expired' ? 'link.expired' : 'link.error';
+  panel.innerHTML = ''
+    + '<p class="status-line txt-err">' + esc(t(key, {msg: message || '–'})) + '</p>'
+    + '<p class="actions"><button class="btn-ghost btn-sm">' + esc(t('link.retry')) + '</button></p>';
+  panel.querySelector('button').onclick = () => startLink(btn, panel);
 }
 
 // --- announcement (G.711 A-law, 8 kHz mono) ------------------------

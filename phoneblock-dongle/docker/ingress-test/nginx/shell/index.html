@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ingress-Test</title>
+<style>
+  :root{--bar:#03a9f4;--side:#fafafa;--text:#212121;--muted:#727272}
+  html,body{margin:0;height:100%;font-family:system-ui,sans-serif;color:var(--text);background:#fff}
+  .app{display:flex;height:100%}
+  nav{width:14rem;background:var(--side);border-right:1px solid #e0e0e0;padding:1rem;box-sizing:border-box;font-size:.9rem}
+  nav h1{font-size:1.1rem;margin:0 0 1rem}
+  nav p{color:var(--muted);margin:.6rem 0}
+  nav a{color:var(--bar)}
+  main{flex:1;display:flex;flex-direction:column;min-width:0}
+  header{background:var(--bar);color:#fff;padding:.7rem 1rem;font-weight:500}
+  iframe{flex:1;border:0;width:100%}
+  @media (max-width:640px){nav{display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+  <nav>
+    <h1>Home Assistant<br><small>(Ingress-Test)</small></h1>
+    <p>Diese Seite imitiert die Ingress-Schale von Home Assistant: Sie setzt das
+       Sitzungs-Cookie <code>ingress_session</code> (SameSite=Strict) und zeigt den
+       Dienst unter <code>/api/hassio_ingress/&lt;token&gt;/</code>.</p>
+    <p><a id="direct" target="_blank" rel="noopener">Dienst-UI im eigenen Tab</a>
+       (gleiche Seite, Cookie wird gesendet)</p>
+    <p><a id="foreign" target="_blank" rel="noopener">Fremde Seite</a> mit einem
+       Link in den Ingress-Pfad (Cross-Site, Cookie fehlt → 401)</p>
+  </nav>
+  <main>
+    <header>PhoneBlock</header>
+    <iframe src="/api/hassio_ingress/pbtest-ingress-token/" title="PhoneBlock"></iframe>
+  </main>
+</div>
+<script>
+  const target = location.origin + '/api/hassio_ingress/pbtest-ingress-token/';
+  document.getElementById('direct').href = target;
+  // The "foreign site" is the second nginx server, one port above this one,
+  // opened as localhost: another host than the shell's, hence another site.
+  const port = (+location.port || 80) + 1;
+  document.getElementById('foreign').href =
+    'http://localhost:' + port + '/?to=' + encodeURIComponent(target);
+</script>
+</body>
+</html>

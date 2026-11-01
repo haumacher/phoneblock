@@ -285,6 +285,7 @@
   "status.dialog.edit.reason.size": "Filmerna tar tillsammans mer plats än vad som finns på dongeln – radera eller klipp ner filmerna.",
   "status.dialog.edit.bad_file": "Det här är ingen giltig dialogfil.",
   "status.dialog.edit.no_set": "Det finns ännu ingen dialog på dongeln – lägg till inspelningar för varje fas.",
+  "status.dialog.edit.changed": "Det finns nu andra inspelningar på dongeln (språket eller rösten har ändrats). Din redigering i redigeringsprogrammet har ännu inte laddats upp.",
   "status.dialog.edit.reload": "Avbryt och ladda om",
   "status.dialog.edit.done": "Egen dialogruta sparad ({kb} KB).",
   "hero.title": "Inredning",
@@ -369,6 +370,17 @@
   "token.current.set": "Ett token har redan skapats. Om du loggar in igen skapas ett nytt.",
   "token.current.missing": "Inget token har konfigurerats ännu.",
   "token.submit": "Logga in på PhoneBlock",
+  "link.submit": "Koppla ett PhoneBlock-konto",
+  "link.starting": "Länken förbereds…",
+  "link.compare": "Jämför koden på phoneblock.net och bekräfta endast om den stämmer överens.",
+  "link.open": "Öppna phoneblock.net",
+  "link.manual": "Du kan också ange koden på {url}, t.ex. på mobilen.",
+  "link.waiting": "Vänta på din bekräftelse på phoneblock.net…",
+  "link.approved": "PhoneBlock-kontot är kopplat — token är inställt.",
+  "link.denied": "Länken har avvisats på phoneblock.net.",
+  "link.expired": "Koden har gått ut. Begär en ny kod.",
+  "link.error": "Länkningen misslyckades: {msg}",
+  "link.retry": "Försök igen",
   "back.status": "← tillbaka till status",
   "back.sip": "← tillbaka till urvalet",
   "i18n.loading": "Översättningen laddas …",
@@ -432,5 +444,5 @@
   "spam.dialog.comment": "Motivering",
   "spam.dialog.comment.hint": "(valfritt, visas offentligt)",
   "spam.dialog.error.is_contact": "Den här uppringaren finns i din telefonbok. En telefonboksuppgift har alltid företräde på dongeln, därför kan det inte vara ett spam-samtal i det här fallet.",
-  "status.dialog.edit.changed": "Det finns nu andra inspelningar på dongeln (språket eller rösten har ändrats). Din redigering i redigeringsprogrammet har ännu inte laddats upp."
+  "link.how": "Om du klickar på knappen visas en kod här och phoneblock.net öppnas i en ny flik. Logga in på phoneblock.net och bekräfta när samma kod visas där. Tjänsten hämtar sedan token själv."
 }

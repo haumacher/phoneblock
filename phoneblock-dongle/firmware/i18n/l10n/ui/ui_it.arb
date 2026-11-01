@@ -285,6 +285,7 @@
   "status.dialog.edit.reason.size": "Le registrazioni occupano complessivamente più spazio di quello disponibile sulla chiavetta USB: elimina o accorcia le registrazioni.",
   "status.dialog.edit.bad_file": "Questo non è un file di dialogo valido.",
   "status.dialog.edit.no_set": "Sul dongle non c'è ancora alcuna finestra di dialogo: aggiungi le registrazioni per ogni fase.",
+  "status.dialog.edit.changed": "Sul dongle sono ora presenti altre registrazioni (lingua o voce modificate). Le modifiche apportate nell'editor non sono ancora state caricate.",
   "status.dialog.edit.reload": "Elimina e ricarica",
   "status.dialog.edit.done": "Dialogo personalizzato salvato ({kb} KB).",
   "hero.title": "Arredamento",
@@ -369,6 +370,17 @@
   "token.current.set": "È già stato creato un token. Effettuando nuovamente l'accesso ne verrà generato uno nuovo.",
   "token.current.missing": "Non è stato ancora configurato alcun token.",
   "token.submit": "Accedi a PhoneBlock",
+  "link.submit": "Collega l'account PhoneBlock",
+  "link.starting": "Collegamento in fase di preparazione…",
+  "link.compare": "Confronta il codice su phoneblock.net e conferma solo se corrisponde.",
+  "link.open": "Apri phoneblock.net",
+  "link.manual": "Puoi inserire il codice anche all'indirizzo {url}, ad esempio sul cellulare.",
+  "link.waiting": "Attendi la conferma su phoneblock.net…",
+  "link.approved": "Account PhoneBlock collegato — il token è stato impostato.",
+  "link.denied": "Il collegamento è stato rifiutato su phoneblock.net.",
+  "link.expired": "Il codice è scaduto. Richiedi un nuovo codice.",
+  "link.error": "L'operazione di collegamento non è andata a buon fine: {msg}",
+  "link.retry": "Riprovare",
   "back.status": "← Torna allo stato",
   "back.sip": "← torna alla selezione",
   "i18n.loading": "Caricamento della traduzione in corso…",
@@ -432,5 +444,5 @@
   "spam.dialog.comment": "Motivo",
   "spam.dialog.comment.hint": "(facoltativo, sarà visibile pubblicamente)",
   "spam.dialog.error.is_contact": "Questo numero è presente nella tua rubrica. Una voce della rubrica ha sempre la precedenza sul dongle, pertanto in questo caso non è possibile segnalare lo spam.",
-  "status.dialog.edit.changed": "Sul dongle sono ora presenti altre registrazioni (lingua o voce modificate). Le modifiche apportate nell'editor non sono ancora state caricate."
+  "link.how": "Cliccando sul pulsante verrà visualizzato un codice e si aprirà phoneblock.net in una nuova scheda. Accedi a phoneblock.net e conferma se lì viene visualizzato lo stesso codice. Il servizio recupererà poi automaticamente il token."
 }
