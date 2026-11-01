@@ -17,12 +17,29 @@ if (!location.pathname.endsWith('/'))
   /* Colour tokens: the fixed states a message or mark can be in. JS uses
      them as var(--…) too, so a state has one colour everywhere. */
   :root{--brand:#008f7a;--ok:#188038;--err:#d93025;--warn:#e8710a;
-        --caution:#b06000;--info:#1a73e8;--muted:#888;--text:#222;--text2:#444}
+        --caution:#b06000;--info:#1a73e8;--muted:#888;--text:#222;--text2:#444;
+        /* Surfaces, lines and secondary text; overridden for dark mode (#590). */
+        --brand-text:#008f7a;--bg:#f5f5f7;--card:#fff;--soft:#fafafa;--line:#eee;--edge:#ccc;
+        --label:#555;--sub:#666;--faint:#aaa;--choice-edge:#e0e0e0;
+        --ok-bg:#d4edda;--ok-fg:#155724;--bad-bg:#f8d7da;--bad-fg:#721c24;
+        --warn-bg:#fff3cd;--warn-fg:#856404;--err-row:#fffafa;--warn-row:#fffdf6;
+        --err-bg:#fce8e6;--hover:#e6f5f2;--hover-spam:#fdecea;--hover-choice:#f0f9f6;
+        color-scheme:light dark}
+  /* Dark mode follows the browser / OS setting (#590). */
+  @media (prefers-color-scheme:dark){
+    :root{--brand-text:#3cc9b0;--ok:#5bb974;--err:#f28b82;--warn:#fcad70;
+          --caution:#f9ab00;--info:#8ab4f8;--muted:#9aa0a6;--text:#e6e6e6;--text2:#c8c8c8;
+          --bg:#121416;--card:#1e2124;--soft:#262a2e;--line:#33373b;--edge:#4a4f54;
+          --label:#b0b4b8;--sub:#a0a4a8;--faint:#6b7075;--choice-edge:#3a3f44;
+          --ok-bg:#1e3a2a;--ok-fg:#a8dab5;--bad-bg:#3c1f22;--bad-fg:#f6aea9;
+          --warn-bg:#3a3214;--warn-fg:#fde293;--err-row:#2a1d1e;--warn-row:#2b2716;
+          --err-bg:#3c1f22;--hover:#1f3833;--hover-spam:#3c1f22;--hover-choice:#1f3833}
+  }
   *{box-sizing:border-box}
   /* The hidden attribute must win over class rules like .actions{display:flex}. */
   [hidden]{display:none!important}
   body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;
-       margin:0;background:#f5f5f7;color:var(--text);line-height:1.45}
+       margin:0;background:var(--bg);color:var(--text);line-height:1.45}
   header{background:var(--brand);color:#fff;padding:.8rem 1rem;
          display:flex;align-items:center;gap:.6rem}
   header img{display:block;width:32px;height:32px}
@@ -30,38 +47,38 @@ if (!location.pathname.endsWith('/'))
   header a{color:#cdeee7;text-decoration:none;font-size:.9rem}
   header a:hover{color:#fff}
   main{max-width:900px;margin:0 auto;padding:1rem}
-  section{background:#fff;border-radius:8px;padding:1rem;margin-bottom:1rem;
+  section{background:var(--card);border-radius:8px;padding:1rem;margin-bottom:1rem;
           box-shadow:0 1px 2px rgba(0,0,0,.06)}
-  h2{margin:0 0 .6rem;font-size:.85rem;color:#555;text-transform:uppercase;
-     letter-spacing:.6px;font-weight:600;border-bottom:1px solid #eee;
+  h2{margin:0 0 .6rem;font-size:.85rem;color:var(--label);text-transform:uppercase;
+     letter-spacing:.6px;font-weight:600;border-bottom:1px solid var(--line);
      padding-bottom:.4rem}
   /* Collapsible admin/config card: same look as a section, with the
      title as a clickable summary. Collapsed = compact (no underline);
      open = h2-style header with the bottom rule. */
-  details.adminsec{background:#fff;border-radius:8px;padding:1rem;
+  details.adminsec{background:var(--card);border-radius:8px;padding:1rem;
      margin-bottom:1rem;box-shadow:0 1px 2px rgba(0,0,0,.06)}
   summary{cursor:pointer}   /* every disclosure is clickable, nested ones too */
-  details.adminsec>summary{margin:0;font-size:.85rem;color:#555;
+  details.adminsec>summary{margin:0;font-size:.85rem;color:var(--label);
      text-transform:uppercase;letter-spacing:.6px;font-weight:600;
      cursor:pointer;list-style:none;display:flex;align-items:center;gap:.5rem}
   details.adminsec>summary::-webkit-details-marker{display:none}
-  details.adminsec>summary::before{content:'\25B8';color:#aaa;font-size:.9rem}
-  details.adminsec[open]>summary{border-bottom:1px solid #eee;
+  details.adminsec>summary::before{content:'\25B8';color:var(--faint);font-size:.9rem}
+  details.adminsec[open]>summary{border-bottom:1px solid var(--line);
      padding-bottom:.4rem;margin-bottom:.6rem}
   details.adminsec[open]>summary::before{content:'\25BE'}
-  h3{margin:1rem 0 .4rem;font-size:1rem;font-weight:600;color:#222}
+  h3{margin:1rem 0 .4rem;font-size:1rem;font-weight:600;color:var(--text)}
   .pill{display:inline-block;padding:.15rem .6rem;border-radius:999px;
         font-size:.85rem;font-weight:600}
-  .ok{background:#d4edda;color:#155724}
-  .bad{background:#f8d7da;color:#721c24}
-  .warn{background:#fff3cd;color:#856404}
+  .ok{background:var(--ok-bg);color:var(--ok-fg)}
+  .bad{background:var(--bad-bg);color:var(--bad-fg)}
+  .warn{background:var(--warn-bg);color:var(--warn-fg)}
   .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.5rem}
-  .stat{padding:.6rem;background:#fafafa;border-radius:4px;text-align:center}
-  .stat-label{font-size:.75rem;color:#666;text-transform:uppercase;letter-spacing:.3px}
-  .stat-value{font-size:1.6rem;font-weight:600;color:var(--brand);line-height:1.2}
+  .stat{padding:.6rem;background:var(--soft);border-radius:4px;text-align:center}
+  .stat-label{font-size:.75rem;color:var(--sub);text-transform:uppercase;letter-spacing:.3px}
+  .stat-value{font-size:1.6rem;font-weight:600;color:var(--brand-text);line-height:1.2}
   table{width:100%;border-collapse:collapse;font-size:.9rem}
-  td,th{padding:.4rem .5rem;text-align:left;border-bottom:1px solid #eee}
-  th{font-weight:600;color:#666;font-size:.75rem;text-transform:uppercase;letter-spacing:.3px}
+  td,th{padding:.4rem .5rem;text-align:left;border-bottom:1px solid var(--line)}
+  th{font-weight:600;color:var(--sub);font-size:.75rem;text-transform:uppercase;letter-spacing:.3px}
   .v-SPAM{color:var(--err);font-weight:600}
   .v-LEGITIMATE{color:var(--ok)}
   .v-SUSPECT{color:var(--warn);font-weight:500}
@@ -74,40 +91,40 @@ if (!location.pathname.endsWith('/'))
   .i18n-bubble.failed{background:#c0392b}
   /* Log line; the level (lvl-E/W/I) colours the left border and the tag. */
   .error-row{border-left:3px solid var(--err);padding:.2rem .5rem;margin-bottom:.35rem;
-             font-size:.9rem;background:#fffafa}
+             font-size:.9rem;background:var(--err-row)}
   .error-row strong{color:var(--err)}
-  .error-row.lvl-W{border-left-color:var(--warn);background:#fffdf6}
+  .error-row.lvl-W{border-left-color:var(--warn);background:var(--warn-row)}
   .error-row.lvl-W strong{color:var(--warn)}
-  .error-row.lvl-I{border-left-color:var(--muted);background:#fafafa}
+  .error-row.lvl-I{border-left-color:var(--muted);background:var(--soft)}
   .error-row.lvl-I strong{color:var(--muted)}
-  .login-error{color:var(--err);background:#fce8e6;border-left:3px solid var(--err);
+  .login-error{color:var(--err);background:var(--err-bg);border-left:3px solid var(--err);
                padding:.6rem .8rem;border-radius:4px;margin:.4rem 0 1rem}
-  label{display:block;margin:.6rem 0 .2rem;font-size:.8rem;color:#555}
-  input, select{width:100%;padding:.4rem;border:1px solid #ccc;border-radius:4px;
+  label{display:block;margin:.6rem 0 .2rem;font-size:.8rem;color:var(--label)}
+  input, select{width:100%;padding:.4rem;border:1px solid var(--edge);border-radius:4px;background:var(--card);color:var(--text);
         font-size:.95rem;font-family:inherit}
-  input:read-only{background:#fafafa;color:#555}
+  input:read-only{background:var(--soft);color:var(--label)}
   .btn-primary{background:var(--brand);color:#fff;border:0;padding:.55rem 1.2rem;
                border-radius:4px;font-size:1rem;cursor:pointer;font-family:inherit;
                text-decoration:none;display:inline-block}
-  .btn-primary:disabled{background:#aaa;cursor:wait}
+  .btn-primary:disabled{background:var(--faint);cursor:wait}
   .modal{position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;
     align-items:center;justify-content:center;padding:1rem;z-index:50}
-  .modal>div{background:#fff;border-radius:8px;padding:1.2rem;max-width:24rem;
+  .modal>div{background:var(--card);border-radius:8px;padding:1.2rem;max-width:24rem;
     width:100%;box-shadow:0 4px 24px rgba(0,0,0,.2)}
   .modal h3{margin:0 0 .6rem;font-size:1rem}
   /* Row actions in the call list. Labelled pills, not bare glyphs: a "+"
      alone does not say what it adds, and the spam vote next to it is
      public and irreversible — both need to read unambiguously. */
-  .rowbtn{display:inline-flex;align-items:center;gap:.2rem;background:#fff;
-    border:1px solid var(--brand);color:var(--brand);border-radius:999px;
+  .rowbtn{display:inline-flex;align-items:center;gap:.2rem;background:var(--card);
+    border:1px solid var(--brand-text);color:var(--brand-text);border-radius:999px;
     padding:.1rem .5rem;font-size:.72rem;line-height:1.5;cursor:pointer;
     width:auto;margin:0;white-space:nowrap;text-transform:none;
     letter-spacing:0;font-weight:500}
-  .rowbtn:hover{background:#e6f5f2}
+  .rowbtn:hover{background:var(--hover)}
   .rowbtn.spam{border-color:var(--err);color:var(--err)}
-  .rowbtn.spam:hover{background:#fdecea}
+  .rowbtn.spam:hover{background:var(--hover-spam)}
   .rowbtn[disabled]{opacity:.5;cursor:default}
-  .btn-ghost{background:#fff;color:var(--brand);border:1px solid var(--brand);
+  .btn-ghost{background:var(--card);color:var(--brand-text);border:1px solid var(--brand-text);
              padding:.55rem 1.2rem;border-radius:4px;font-size:1rem;
              cursor:pointer;font-family:inherit;text-decoration:none;display:inline-block}
   .hero{background:linear-gradient(135deg,var(--brand),#00b894);color:#fff;
@@ -125,10 +142,10 @@ if (!location.pathname.endsWith('/'))
   .hero-step.done .mark{background:#fff;color:var(--brand)}
   .hero-step .body{flex:1;min-width:0}
   .hero-step .body strong{display:block;font-size:1rem}
-  .choice{display:block;padding:1rem;background:#fafafa;border:1px solid #e0e0e0;
+  .choice{display:block;padding:1rem;background:var(--soft);border:1px solid var(--choice-edge);
           border-radius:6px;margin-bottom:.6rem;text-decoration:none;color:inherit}
-  .choice:hover{border-color:var(--brand);background:#f0f9f6}
-  .choice strong{color:var(--brand);display:block;margin-bottom:.2rem}
+  .choice:hover{border-color:var(--brand-text);background:var(--hover-choice)}
+  .choice strong{color:var(--brand-text);display:block;margin-bottom:.2rem}
   .cta-row{margin:.4rem 0 .2rem}
   .status-row{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;
               margin:.4rem 0}
@@ -136,7 +153,7 @@ if (!location.pathname.endsWith('/'))
   footer{text-align:center;color:var(--muted);font-size:.8rem;padding:1rem}
   footer a{color:var(--muted)}
   .crumb{font-size:.85rem;color:var(--muted);margin-bottom:.4rem}
-  .crumb a{color:var(--brand);text-decoration:none}
+  .crumb a{color:var(--brand-text);text-decoration:none}
   .crumb a:hover{text-decoration:underline}
 
   /* ---- Shared vocabulary for the markup the views build in JS: one class
@@ -167,7 +184,7 @@ if (!location.pathname.endsWith('/'))
   .hint{color:var(--muted);font-size:.75rem;margin:.2rem 0 .6rem}
   .hint:last-child{margin-bottom:0}
   .callout{color:var(--muted);font-size:.75rem;margin:.6rem 0;
-     border-left:3px solid #ccc;padding-left:.6rem}
+     border-left:3px solid var(--edge);padding-left:.6rem}
   /* Text tones for a fixed state (after .help/.hint, so they win). */
   .txt-err{color:var(--err)}
   .txt-ok{color:var(--ok)}
@@ -199,7 +216,7 @@ if (!location.pathname.endsWith('/'))
   textarea{width:100%;font:inherit}
   /* Nested disclosure inside a card or a form. */
   details.sub{margin:.6rem 0;font-size:.85rem}
-  details.sub>summary{font-size:.9rem;color:var(--brand)}
+  details.sub>summary{font-size:.9rem;color:var(--brand-text)}
   /* Small heading and rows of a list (dialog speakers, editor phases). */
   .list{font-size:.85rem}
   .list-title{margin:.5rem 0 .2rem;font-size:.85rem;font-weight:600}
