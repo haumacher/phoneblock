@@ -30,6 +30,11 @@
 #include "cJSON.h"
 
 #include "announcement.h"
+#include "call_rec_cfg.h"
+#if PB_CALL_RECORDING
+#include "call_rec.h"
+#include <fcntl.h>
+#endif
 #include "chip_temp.h"
 #include "api.h"
 #include "blocklist_sync.h"
@@ -158,6 +163,12 @@ extern const uint8_t index_html_gz_end[]   asm("_binary_index_html_gz_end");
 
 extern const uint8_t ab_logo_bot_svg_start[] asm("_binary_ab_logo_bot_svg_start");
 extern const uint8_t ab_logo_bot_svg_end[]   asm("_binary_ab_logo_bot_svg_end");
+#if PB_CALL_RECORDING
+// The call recordings' part of the web UI (#663), gzipped like the SPA and
+// embedded only where recordings exist (main/CMakeLists.txt).
+extern const uint8_t rec_js_gz_start[] asm("_binary_rec_js_gz_start");
+extern const uint8_t rec_js_gz_end[]   asm("_binary_rec_js_gz_end");
+#endif
 #else
 #define WEB_ASSET_DIR "/usr/share/phoneblock-dongle/web"
 
@@ -758,6 +769,22 @@ static web_http_error_t handle_status(web_http_request_t *req)
     cJSON *wh = cJSON_AddObjectToObject(root, "webhook");
     cJSON_AddStringToObject(wh,   "url",      config_webhook_url());
 
+    // Call recordings (#663): only the S3 and the Linux service have them;
+    // the web UI shows the option only where "available" is true.
+    cJSON *rec = cJSON_AddObjectToObject(root, "recording");
+#if PB_CALL_RECORDING
+    call_rec_info_t ri;
+    call_rec_get_info(&ri);
+    cJSON_AddBoolToObject  (rec, "available",  true);
+    cJSON_AddBoolToObject  (rec, "enabled",    config_rec_enabled());
+    cJSON_AddNumberToObject(rec, "count",      ri.count);
+    cJSON_AddNumberToObject(rec, "used_bytes", (double)ri.used_bytes);
+    cJSON_AddNumberToObject(rec, "cap_bytes",  (double)ri.cap_bytes);
+    cJSON_AddNumberToObject(rec, "max_s",      ri.call_max_s);
+#else
+    cJSON_AddBoolToObject  (rec, "available",  false);
+#endif
+
     add_system_load(root);
 
     send_json(req, root);
@@ -844,6 +871,14 @@ static web_http_error_t handle_calls(web_http_request_t *req)
         int n = stats_read_calls(before, page, max);
         for (int i = 0; ok && i < n; i++) {
             cJSON *o = web_call_json(&page[i], now_us, now_epoch);
+#if PB_CALL_RECORDING
+            // The call's sequence number (GET /api/recording?seq=) and the
+            // seconds of its recording, 0 = none (#663).
+            if (o) {
+                cJSON_AddNumberToObject(o, "seq",   page[i].seq);
+                cJSON_AddNumberToObject(o, "rec_s", call_rec_seconds(page[i].seq));
+            }
+#endif
             char *json = o ? cJSON_PrintUnformatted(o) : NULL;
             cJSON_Delete(o);
             if (!json) { ok = false; break; }
@@ -1036,6 +1071,9 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
     char vad_db_s[8]      = "";
     char vad_ms_s[8]      = "";
     char cn_level_s[8]    = "";
+#if PB_CALL_RECORDING
+    char rec_en_s[4]      = "";
+#endif
     // Room for one character more than an id may have, so an over-long one
     // is refused instead of arriving clipped.
     char dlg_spk_s[DIALOG_SPEAKER_CAP + 8] = "";
@@ -1094,6 +1132,9 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
     bool have_vad_ms     = form_get(body, "vad_min_silence_ms", vad_ms_s,   sizeof(vad_ms_s));
     bool have_cn_level   = form_get(body, "comfort_noise_level", cn_level_s, sizeof(cn_level_s));
     bool have_dlg_spk    = form_get(body, "dialog_speaker",     dlg_spk_s,  sizeof(dlg_spk_s));
+#if PB_CALL_RECORDING
+    bool have_rec_en     = form_get(body, "rec_enabled",        rec_en_s,   sizeof(rec_en_s));
+#endif
     free(body);
 
     // Phonebook selection for new contacts: only a decimal ID is stored, so
@@ -1344,6 +1385,9 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
         .vad_min_silence_ms = vad_ms,
         .comfort_noise_db   = cn_level,
         .dialog_speaker     = dialog_speaker,
+#if PB_CALL_RECORDING
+        .rec_enabled        = have_rec_en ? (strcmp(rec_en_s, "1") == 0 ? "1" : "0") : NULL,
+#endif
     };
 
     // Snapshot the PhoneBlock token before the update so we can detect
@@ -2549,6 +2593,10 @@ static void factory_reset_task(void *arg)
         pb_log_warn(TAG, "esp_wifi_restore: %s", esp_err_to_name(wifi_err));
     }
     announcement_reset();
+#if PB_CALL_RECORDING
+    // The recorded conversations go with the configuration.
+    call_rec_delete_all();
+#endif
 
     vTaskDelay(pdMS_TO_TICKS(200));
     pb_log_warn(TAG, "factory-reset: restarting now");
@@ -2820,6 +2868,79 @@ static void send_fail_code(web_http_request_t *req, const char *status,
     web_http_set_status(req, status);
     send_json(req, root);
 }
+
+#if PB_CALL_RECORDING
+// --- Call recordings (#663) ------------------------------------------
+
+// The call's sequence number from ?seq=N; 0 if missing or malformed.
+static uint32_t query_seq(web_http_request_t *req)
+{
+    char query[48], value[16];
+    if (web_http_get_query_string(req, query, sizeof(query)) != WEB_HTTP_OK
+            || web_http_query_value(query, "seq", value, sizeof(value)) != WEB_HTTP_OK) {
+        return 0;
+    }
+    char *end = NULL;
+    unsigned long v = strtoul(value, &end, 10);
+    return (end == value || *end || v > UINT32_MAX) ? 0 : (uint32_t)v;
+}
+
+// GET /api/recording?seq=N — the recording of call N as stored: raw G.711
+// A-law, 8 kHz mono, no header (the web UI decodes it, rec.js). Streamed from
+// the file, never held whole. 404 if the call has no recording.
+static web_http_error_t handle_recording_get(web_http_request_t *req)
+{
+    REQUIRE_AUTH_API(req);
+    uint32_t seq = query_seq(req);
+    size_t size = 0;
+    int fd = seq ? call_rec_open(seq, &size) : -1;
+    if (fd < 0) {
+        web_http_send_error(req, WEB_HTTP_STATUS_NOT_FOUND, "no recording of this call");
+        return WEB_HTTP_OK;
+    }
+    char disposition[48];
+    snprintf(disposition, sizeof(disposition), "attachment; filename=\"call-%u.al\"",
+             (unsigned)seq);
+    web_http_set_type(req, "audio/x-alaw-basic");
+    web_http_set_header(req, "Cache-Control", "no-store");
+    web_http_set_header(req, "Content-Disposition", disposition);
+    return web_http_send_fd(req, fd, size) == 0 ? WEB_HTTP_OK : WEB_HTTP_FAIL;
+}
+
+// POST /api/recording/delete?seq=N — deletes the recording of call N (the
+// call stays listed). {ok:true}, or 404 {ok:false, code:"not_found"}.
+static web_http_error_t handle_recording_delete(web_http_request_t *req)
+{
+    REQUIRE_AUTH_API(req);
+    uint32_t seq = query_seq(req);
+    if (!seq || !call_rec_delete(seq)) {
+        send_fail_code(req, "404 Not Found", "not_found", "no recording of this call");
+        return WEB_HTTP_OK;
+    }
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddBoolToObject(root, "ok", true);
+    send_json(req, root);
+    return WEB_HTTP_OK;
+}
+
+// GET /rec.js — the recordings' part of the web UI (play, download, delete;
+// the settings switch). Static like "/", so not behind the login; loaded by
+// index.html only when /api/status reports recordings as available.
+static web_http_error_t handle_rec_js(web_http_request_t *req)
+{
+    REQUIRE_LOCAL_HTML(req);
+    web_http_set_type(req, "text/javascript; charset=utf-8");
+    // Revalidated, so a firmware update never runs an old copy.
+    web_http_set_header(req, "Cache-Control", "no-cache");
+#ifdef ESP_PLATFORM
+    web_http_set_header(req, "Content-Encoding", "gzip");
+    return web_http_send(req, rec_js_gz_start, rec_js_gz_end - rec_js_gz_start) == 0
+        ? WEB_HTTP_OK : WEB_HTTP_FAIL;
+#else
+    return send_web_asset(req, "rec.js.gz", "gzip");
+#endif
+}
+#endif  // PB_CALL_RECORDING
 
 // True when the dongle holds Fritz!Box app credentials and knows a host to
 // reach the box at — i.e. it was set up by the wizard. Without them no
@@ -3817,6 +3938,11 @@ static const web_http_route_t URIS[] = {
 #endif
     { .uri = "/api/errors/clear",    .method = WEB_HTTP_POST,    .handler = handle_errors_clear },
     { .uri = "/api/calls/clear",     .method = WEB_HTTP_POST,    .handler = handle_calls_clear },
+#if PB_CALL_RECORDING
+    { .uri = "/api/recording",        .method = WEB_HTTP_GET,     .handler = handle_recording_get },
+    { .uri = "/api/recording/delete", .method = WEB_HTTP_POST,    .handler = handle_recording_delete },
+    { .uri = "/rec.js",               .method = WEB_HTTP_GET,     .handler = handle_rec_js },
+#endif
     { .uri = "/api/factory-reset",   .method = WEB_HTTP_POST,    .handler = handle_factory_reset },
 #ifdef CONFIG_CRASH_TEST_ENABLE
     { .uri = "/api/dev/crash",       .method = WEB_HTTP_POST,    .handler = handle_crash_test },

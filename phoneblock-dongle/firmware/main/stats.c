@@ -91,6 +91,9 @@ static uint32_t s_boot_seq = 1;     // first number of this boot
 static bool     s_backfill_pending;
 static int64_t (*s_clock)(void);
 static stats_call_listener_t s_call_listener;
+#if PB_CALL_RECORDING
+static stats_drop_hook_t s_drop_hook;
+#endif
 
 static stats_error_t s_errors[STATS_MAX_ERRORS];
 static int           s_errors_head;
@@ -468,6 +471,20 @@ void stats_set_call_listener(stats_call_listener_t listener)
     s_call_listener = listener;
 }
 
+#if PB_CALL_RECORDING
+void stats_set_drop_hook(stats_drop_hook_t hook)
+{
+    s_drop_hook = hook;
+}
+
+// Tells the hook which calls are still listed. Outside the lock.
+static void notify_dropped(uint32_t keep_from)
+{
+    stats_drop_hook_t hook = s_drop_hook;
+    if (hook && keep_from) hook(keep_from);
+}
+#endif
+
 // Lists `call` (seq and time are filled in here) and bumps the counters
 // unless it is a test call. Returns its sequence number, 0 if it could not
 // be listed. Logs (outside the lock) and notifies.
@@ -497,7 +514,13 @@ static uint32_t list_call(stats_call_t *call, bool count)
         err = errno;
     }
     if (seq == 0) call->seq = 0;
+#if PB_CALL_RECORDING
+    uint32_t keep_from = seq ? oldest_seq() : 0;
+#endif
     unlock();
+#if PB_CALL_RECORDING
+    notify_dropped(keep_from);
+#endif
     if (write_failed) pb_log_warn(TAG, "call list: writing a call failed: %s", strerror(err));
     if (DISPLAY_PRESENT) announce_call(call);
     if (seq && call->verdict != VERDICT_SPAM) notify_listener(seq);
@@ -827,7 +850,13 @@ void stats_clear_calls(void)
         ok = write_empty_file();
         if (!ok) err = errno;
     }
+#if PB_CALL_RECORDING
+    uint32_t keep_from = s_calls_open ? s_floor_seq : 0;
+#endif
     unlock();
+#if PB_CALL_RECORDING
+    notify_dropped(keep_from);
+#endif
     if (!ok) pb_log_warn(TAG, "call list: clearing failed: %s", strerror(err));
     display_calls_changed();
 }

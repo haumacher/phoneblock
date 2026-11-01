@@ -3,6 +3,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "call_rec_cfg.h"   // PB_CALL_RECORDING
+
 
 // Runtime configuration with a two-stage source of truth:
 //
@@ -313,6 +315,13 @@ bool        config_mail_on_spam(void);
 bool        config_mail_spam_only(void);
 bool        config_mail_on_update(void);
 
+#if PB_CALL_RECORDING
+// Record the calls held in dialog mode (call_rec.h, #663). Default off:
+// recording a conversation is the user's own responsibility (§201 StGB,
+// GDPR), so it takes an explicit opt-in.
+bool        config_rec_enabled(void);
+#endif
+
 // Version string of the most recent OTA download that did NOT survive
 // to the next successful boot, or "" if no such record exists. Set by
 // the auto-update task before invoking esp_https_ota; cleared in
@@ -514,6 +523,9 @@ typedef struct {
     // Dialog speaker id, "" = pick again. NULL = leave unchanged. The caller
     // passes only a config_dialog_speaker_valid() value (web.c).
     const char *dialog_speaker;
+#if PB_CALL_RECORDING
+    const char *rec_enabled;      // "1"/"0", NULL = unchanged; default off
+#endif
 } config_update_t;
 
 int config_update(const config_update_t *u);

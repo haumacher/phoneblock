@@ -43,6 +43,9 @@
   "status.calls.col.number": "Numero",
   "status.calls.col.name": "Nome",
   "status.calls.col.verdict": "Sentenza",
+  "status.calls.show_all": "Mostra tutto ({count})",
+  "status.calls.show_less": "Mostra meno",
+  "status.calls.time_unknown": "sconosciuto",
   "status.calls.clear": "Svuota elenco",
   "status.calls.log_known": "Registrare i chiamanti conosciuti",
   "status.calls.log_known.help": "Se disattivata, le chiamate provenienti da numeri presenti nella rubrica e i codici interni (**, *…) non compaiono nell’elenco — i contatori in alto vengono comunque aggiornati.",
@@ -464,7 +467,14 @@
   "spam.dialog.comment": "Motivo",
   "spam.dialog.comment.hint": "(facoltativo, sarà visibile pubblicamente)",
   "spam.dialog.error.is_contact": "Questo numero è presente nella tua rubrica. Una voce della rubrica ha sempre la precedenza sul dongle, pertanto in questo caso non è possibile segnalare lo spam.",
-  "status.calls.show_all": "Mostra tutto ({count})",
-  "status.calls.show_less": "Mostra meno",
-  "status.calls.time_unknown": "sconosciuto"
+  "status.rec.enable": "Registrare le conversazioni in modalità dialogo",
+  "status.rec.help": "Il dongle registra le conversazioni che intrattiene con i chiamanti spam in modalità dialogo – entrambe le parti, per un massimo di {min} minuti per chiamata. Puoi riprodurle, scaricarle ed eliminarle dalla lista delle chiamate; se una chiamata viene rimossa dalla lista, la relativa registrazione viene eliminata.",
+  "status.rec.legal": "La registrazione delle conversazioni telefoniche è di tua responsabilità (art. 201 del Codice penale tedesco, GDPR).",
+  "status.rec.usage": "{count} file, {used} di {cap} MB occupati.",
+  "status.rec.play": "Riproduci registrazione",
+  "status.rec.stop": "Metti in pausa la riproduzione",
+  "status.rec.download": "Scarica la registrazione (WAV)",
+  "status.rec.delete": "Elimina registrazione",
+  "status.rec.delete.confirm": "Elimina questa registrazione? La chiamata rimane nell'elenco.",
+  "status.rec.failed": "Non è stato possibile caricare il file."
 }

@@ -2,6 +2,7 @@
 
 #include "announcement.h"
 #include "api.h"
+#include "call_rec.h"   // empty without PB_CALL_RECORDING
 #include "config.h"
 #include "log_capture.h"
 #include "platform.h"
@@ -171,6 +172,10 @@ int main(int argc, char **argv)
         } else {
             pb_log_err("linux", "data directory path too long for the call list");
         }
+        // The recorded dialog calls (#663), bound to the list's entries.
+        n = snprintf(calls_path, sizeof(calls_path), "%s/%s",
+                     PHONEBLOCK_DATA_DIR, CALL_REC_DIR_NAME);
+        if (n > 0 && (size_t)n < sizeof(calls_path)) call_rec_init(calls_path);
     }
     // The host keeps the wall clock; this only applies the configured
     // timezone (see time_sync_linux.c).

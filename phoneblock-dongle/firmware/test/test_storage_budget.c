@@ -242,6 +242,39 @@ static void test_calls_file(void)
           "640 KB at its fullest: the reserve holds the call list's rewrite");
 }
 
+// The call recordings (#663): their cap on the S3 next to everything else
+// at its fullest, and the per-call limits.
+static void test_recordings(void)
+{
+    printf("call recordings (S3)\n");
+    // At its fullest: an L set, the packs with a second copy of the largest
+    // (a pack update in flight), the personal list and the speakers index,
+    // the 200-call list, the largest community bucket, the recordings'
+    // directory pair and the reserve.
+    uint64_t full = ROOT + blocks(52 * 1024) + blocks(52 * 1024) + blocks(4096)
+                  + blocks(4096) + blocks(8192)
+                  + blocks(STATS_CALLS_FILE_BYTES(STATS_CALL_CAPACITY_LARGE))
+                  + blocks(STORAGE_DIALOG_PLAIN_FS_MAX) + blocks(512 * 1024)
+                  + 2 * 4096 + STORAGE_LFS_RESERVE_BLOCKS * 4096ull;
+    uint64_t room = S3_TOTAL - full;
+    printf("    S3 room for recordings at its fullest: %llu KB\n",
+           (unsigned long long) (room / 1024));
+    CHECK_EQ(room / 1024, 7060, "S3: KB of room at its fullest (storage_budget.h: ~6.9 MB)");
+    CHECK(room >= STORAGE_REC_LFS_CAP, "S3: the 4 MB cap fits");
+    // Back in announcement mode with the recordings and the set still
+    // stored: the largest own announcement (240 KB) and localized one (97 KB)
+    // still fit next to a full cap.
+    CHECK(room - STORAGE_REC_LFS_CAP >= blocks(240 * 1024) + blocks(97 * 1024),
+          "S3: a full cap leaves room for both announcements");
+    // One call at the per-call maximum fits the cap whole, block-rounded.
+    CHECK_EQ(STORAGE_REC_LFS_CALL_MAX, 2400000, "S3: 5 min at 8000 B/s");
+    CHECK(blocks(STORAGE_REC_LFS_CALL_MAX) <= STORAGE_REC_LFS_CAP,
+          "S3: the longest recording fits the cap");
+    CHECK_EQ(STORAGE_REC_HOSTFS_CALL_MAX, 14400000, "Linux: 30 min at 8000 B/s");
+    CHECK(STORAGE_REC_HOSTFS_CALL_MAX <= STORAGE_REC_HOSTFS_CAP,
+          "Linux: the longest recording fits the 200 MB cap");
+}
+
 int main(void)
 {
     test_partitions();
@@ -250,6 +283,7 @@ int main(void)
     test_lfs_asset_fits();
     test_dialog();
     test_calls_file();
+    test_recordings();
 
     printf("\n%d checks, %d failed\n", tests_run, tests_failed);
     return tests_failed ? 1 : 0;

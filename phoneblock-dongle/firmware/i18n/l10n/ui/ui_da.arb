@@ -43,6 +43,9 @@
   "status.calls.col.number": "Nummer",
   "status.calls.col.name": "Navn",
   "status.calls.col.verdict": "Dom",
+  "status.calls.show_all": "Vis alle ({count})",
+  "status.calls.show_less": "Vis færre",
+  "status.calls.time_unknown": "ukendt",
   "status.calls.clear": "Tøm liste",
   "status.calls.log_known": "Registrere kendte opkald",
   "status.calls.log_known.help": "Hvis denne funktion er deaktiveret, vises opkald fra numre i telefonbogen og interne koder (**, *…) ikke på listen — tællerne øverst opdateres dog stadig.",
@@ -464,7 +467,14 @@
   "spam.dialog.comment": "Begrundelse",
   "spam.dialog.comment.hint": "(valgfrit, bliver synligt for offentligheden)",
   "spam.dialog.error.is_contact": "Denne opkalder er gemt i din telefonbog. En telefonbogsoplysning har altid forrang på donglen, og derfor er det ikke muligt at markere opkaldet som spam her.",
-  "status.calls.show_all": "Vis alle ({count})",
-  "status.calls.show_less": "Vis færre",
-  "status.calls.time_unknown": "ukendt"
+  "status.rec.enable": "Optag samtaler i dialogtilstand",
+  "status.rec.help": "Donglen optager de samtaler, den fører med spam-opkaldere i dialogtilstand – begge sider, højst {min} minutter pr. opkald. Du kan afspille, downloade og slette dem i opkaldslisten; hvis et opkald fjernes fra listen, slettes optagelsen af det.",
+  "status.rec.legal": "Det er dit ansvar at optage telefonsamtaler (§ 201 i den tyske straffelov, GDPR).",
+  "status.rec.usage": "{count} optagelser, {used} af {cap} MB optaget.",
+  "status.rec.play": "Afspil optagelse",
+  "status.rec.stop": "Stop afspilning",
+  "status.rec.download": "Download optagelse (WAV)",
+  "status.rec.delete": "Slet optagelse",
+  "status.rec.delete.confirm": "Skal denne optagelse slettes? Opkaldet forbliver på listen.",
+  "status.rec.failed": "Optagelsen kunne ikke indlæses."
 }

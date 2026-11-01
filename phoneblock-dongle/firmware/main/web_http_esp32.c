@@ -3,6 +3,9 @@
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+
+#include "call_rec_cfg.h"   // PB_CALL_RECORDING
 
 struct web_http_server {
     httpd_handle_t handle;
@@ -137,6 +140,28 @@ int web_http_send_chunk(web_http_request_t *request, const void *body,
     return httpd_resp_send_chunk(request, body, (ssize_t)length) == ESP_OK
         ? 0 : -1;
 }
+
+#if PB_CALL_RECORDING
+int web_http_send_fd(web_http_request_t *request, int fd, size_t size)
+{
+    if (fd < 0) return -1;
+    // On the heap: the httpd task's stack is small.
+    enum { CHUNK = 2048 };
+    uint8_t *buf = malloc(CHUNK);
+    int rc = buf ? 0 : -1;
+    while (rc == 0 && size > 0) {
+        ssize_t n = read(fd, buf, size < CHUNK ? size : CHUNK);
+        if (n <= 0) { rc = -1; break; }
+        if (httpd_resp_send_chunk(request, (const char *)buf, n) != ESP_OK) rc = -1;
+        size -= (size_t)n;
+    }
+    free(buf);
+    close(fd);
+    // Terminates the chunked answer; after a failure the client sees it cut.
+    if (httpd_resp_send_chunk(request, NULL, 0) != ESP_OK) rc = -1;
+    return rc;
+}
+#endif
 
 int web_http_send_error(web_http_request_t *request, int status,
                         const char *message)

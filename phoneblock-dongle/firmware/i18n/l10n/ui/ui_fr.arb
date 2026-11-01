@@ -43,6 +43,9 @@
   "status.calls.col.number": "Numéro",
   "status.calls.col.name": "Nom",
   "status.calls.col.verdict": "Verdict",
+  "status.calls.show_all": "Tout afficher ({count})",
+  "status.calls.show_less": "Afficher moins",
+  "status.calls.time_unknown": "inconnu",
   "status.calls.clear": "Vider la liste",
   "status.calls.log_known": "Journaliser les appels connus",
   "status.calls.log_known.help": "Si désactivé, les appels provenant de numéros du carnet d’adresses et les codes internes (**, *…) n’apparaissent pas dans la liste — les compteurs ci-dessus restent mis à jour.",
@@ -464,7 +467,14 @@
   "spam.dialog.comment": "Raison",
   "spam.dialog.comment.hint": "(facultatif, sera visible publiquement)",
   "spam.dialog.error.is_contact": "Ce correspondant figure dans ton répertoire. Une entrée du répertoire a toujours la priorité sur le dongle ; c'est pourquoi il n'est pas possible de signaler ce numéro comme spam.",
-  "status.calls.show_all": "Tout afficher ({count})",
-  "status.calls.show_less": "Afficher moins",
-  "status.calls.time_unknown": "inconnu"
+  "status.rec.enable": "Enregistrer des conversations en mode dialogue",
+  "status.rec.help": "Le dongle enregistre les conversations qu'il mène en mode dialogue avec les appelants indésirables – les deux côtés, pendant {min} minutes au maximum par appel. Tu peux les écouter, les télécharger et les supprimer depuis la liste des appels ; lorsqu'un appel disparaît de la liste, son enregistrement est supprimé.",
+  "status.rec.legal": "L'enregistrement des conversations téléphoniques relève de ta responsabilité (article 201 du Code pénal allemand, RGPD).",
+  "status.rec.usage": "{count} fichiers, {used} de {cap} Mo occupés.",
+  "status.rec.play": "Lire l'enregistrement",
+  "status.rec.stop": "Mettre la lecture en pause",
+  "status.rec.download": "Télécharger l'enregistrement (WAV)",
+  "status.rec.delete": "Supprimer l'enregistrement",
+  "status.rec.delete.confirm": "Supprimer cet enregistrement ? L'appel reste dans la liste.",
+  "status.rec.failed": "L'enregistrement n'a pas pu être chargé."
 }

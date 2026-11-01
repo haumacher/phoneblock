@@ -122,6 +122,20 @@ test_storage_sim: test_storage_sim.c lfs_host/lfs_sim.c lfs_host/lfs_sim.h \
 	    test_storage_sim.c lfs_host/lfs_sim.c ../main/storage.c \
 	    ../main/storage_budget.c $(LFS_CORE) -o $@
 
+# The same simulation on the T-Dongle-S3's partition (partitions-16mb.csv),
+# with its 200-call list, the 512 KB community bucket and the call
+# recordings (#663) under rec/.
+BINS += test_storage_sim_s3
+SIM_S3_FLAGS := -DSIM_S3 -DSIM_PART_SIZE=$(call part_size,../partitions-16mb.csv) \
+                -Ilfs_host -I$(LFS_DIR)
+test_storage_sim_s3: test_storage_sim.c lfs_host/lfs_sim.c lfs_host/lfs_sim.h \
+                     lfs_host/esp_littlefs.h lfs_host/esp_partition.h \
+                     ../main/storage.c ../main/storage.h ../main/storage_budget.c \
+                     ../main/storage_budget.h ../main/stats.h ../partitions-16mb.csv $(LFS_CORE)
+	$(CC) $(CFLAGS) $(SIM_S3_FLAGS) -DSTORAGE_UNLINK=sim_vfs_unlink \
+	    test_storage_sim.c lfs_host/lfs_sim.c ../main/storage.c \
+	    ../main/storage_budget.c $(LFS_CORE) -o $@
+
 test_blocklist_lookup: test_blocklist_lookup.c ../main/blocklist_lookup.c ../main/blocklist_lookup.h
 	$(CC) $(CFLAGS) test_blocklist_lookup.c ../main/blocklist_lookup.c -o $@
 
@@ -190,6 +204,15 @@ test_calls_probe: test_calls_probe.c ../main/mail_calls.c ../main/mail_calls.h $
 	$(CC) $(CFLAGS) -fsanitize=address -pthread -DSTATS_CALL_CAPACITY=STATS_CALL_CAPACITY_SMALL \
 	  test_calls_probe.c ../main/mail_calls.c $(STATS_TEST_SRCS) -o $@
 
+# The call recordings (#663): the mix and jitter buffer, the recorder's ring,
+# writer, budget and its binding to the real call list.
+BINS += test_call_rec
+test_call_rec: test_call_rec.c ../main/call_rec.c ../main/call_rec.h ../main/call_rec_cfg.h \
+               ../main/call_rec_mix.c ../main/call_rec_mix.h ../main/audio.c \
+               ../main/storage_budget.c ../main/storage_budget.h $(STATS_TEST_DEPS)
+	$(CC) $(CFLAGS) -fsanitize=address -pthread test_call_rec.c ../main/call_rec.c \
+	  ../main/call_rec_mix.c ../main/audio.c ../main/storage_budget.c $(STATS_TEST_SRCS) -o $@
+
 test_mail_calls: test_mail_calls.c ../main/mail_calls.c ../main/mail_calls.h $(STATS_TEST_DEPS)
 	$(CC) $(CFLAGS) -fsanitize=address -pthread test_mail_calls.c ../main/mail_calls.c \
 	  $(STATS_TEST_SRCS) -o $@
@@ -253,7 +276,7 @@ test_platform_linux_net: test_platform_linux_net.c linux_test_util.h \
 # The library of the firmware modules that the Linux tests link, and the
 # service itself, come from ../linux/Makefile, shared with debian/rules
 # (#624). Its dependency check applies to these goals.
-LINUX_GOALS := linux-firmware phoneblock_linux test-linux test_api_linux test_link_linux test_web_http_linux test_web_calls_linux test_webhook_linux test_web_dialog_linux
+LINUX_GOALS := linux-firmware phoneblock_linux test-linux test_api_linux test_link_linux test_web_http_linux test_web_calls_linux test_webhook_linux test_web_dialog_linux test_web_rec_linux
 include ../linux/Makefile
 
 test_api_linux: test_api_linux.c linux_test_util.h \
@@ -272,6 +295,14 @@ test_link_linux: test_link_linux.c linux_test_util.h \
 
 test_web_calls_linux: test_web_calls_linux.c linux_test_util.h \
                       $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a
+	$(CC) $(CFLAGS) -pthread $(LINUX_PKG_CFLAGS) $< \
+	  $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a \
+	  $(LINUX_NET_LIBS) -o $@
+
+# The call recordings (#663) through the real web server; needs the
+# installed web assets (rec.js) of the same build.
+test_web_rec_linux: test_web_rec_linux.c linux_test_util.h \
+                    $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a phoneblock_linux
 	$(CC) $(CFLAGS) -pthread $(LINUX_PKG_CFLAGS) $< \
 	  $(LINUX_BUILD_DIR)/libphoneblock_firmware_linux.a \
 	  $(LINUX_NET_LIBS) -o $@
@@ -316,10 +347,13 @@ test: $(BINS)
 	@# The web UI's status poll pausing in a hidden tab (#573, needs node).
 	@if command -v node >/dev/null; then echo "→ poll_visibility_js_check.js"; node poll_visibility_js_check.js; \
 	 else echo "→ poll_visibility_js_check.js skipped (no node)"; fi
+	@# The call recordings' A-law decode and WAV builder (#663, needs node).
+	@if command -v node >/dev/null; then echo "→ rec_js_check.js"; node rec_js_check.js; \
+	 else echo "→ rec_js_check.js skipped (no node)"; fi
 
 # Linux build of the firmware modules plus its network tests; needs the
 # extra prerequisites listed in ../linux/Makefile.
-LINUX_BINS = test_platform_linux_net test_api_linux test_link_linux test_web_http_linux test_web_calls_linux test_webhook_linux test_web_dialog_linux
+LINUX_BINS = test_platform_linux_net test_api_linux test_link_linux test_web_http_linux test_web_calls_linux test_webhook_linux test_web_dialog_linux test_web_rec_linux
 
 test-linux: linux-firmware phoneblock_linux $(LINUX_BINS)
 	@set -e; for b in $(LINUX_BINS); do echo "→ $$b"; ./$$b; done

@@ -43,6 +43,9 @@
   "status.calls.col.number": "Nummer",
   "status.calls.col.name": "Namn",
   "status.calls.col.verdict": "Dom",
+  "status.calls.show_all": "Visa alla ({count})",
+  "status.calls.show_less": "Visa färre",
+  "status.calls.time_unknown": "okänt",
   "status.calls.clear": "Töm lista",
   "status.calls.log_known": "Registrera kända uppringare",
   "status.calls.log_known.help": "Om funktionen är inaktiverad visas inte samtal från nummer i telefonboken och interna koder (**, *…) i listan — räknarna högst upp uppdateras ändå.",
@@ -464,7 +467,14 @@
   "spam.dialog.comment": "Motivering",
   "spam.dialog.comment.hint": "(valfritt, visas offentligt)",
   "spam.dialog.error.is_contact": "Den här uppringaren finns i din telefonbok. En telefonboksuppgift har alltid företräde på dongeln, därför kan det inte vara ett spam-samtal i det här fallet.",
-  "status.calls.show_all": "Visa alla ({count})",
-  "status.calls.show_less": "Visa färre",
-  "status.calls.time_unknown": "okänt"
+  "status.rec.enable": "Spela in samtal i dialogläge",
+  "status.rec.help": "Dongeln spelar in de samtal som den för med spamsamtalare i dialogläge – båda sidor, högst {min} minuter per samtal. Du kan spela upp, ladda ner och radera dem i samtalslistan; om ett samtal tas bort från listan raderas inspelningen.",
+  "status.rec.legal": "Det är ditt ansvar att spela in telefonsamtal (§ 201 StGB, GDPR).",
+  "status.rec.usage": "{count} bilder, {used} av {cap} MB upptaget.",
+  "status.rec.play": "Spela upp inspelningen",
+  "status.rec.stop": "Pausa uppspelningen",
+  "status.rec.download": "Ladda ner inspelningen (WAV)",
+  "status.rec.delete": "Radera inspelning",
+  "status.rec.delete.confirm": "Vill du radera den här inspelningen? Samtalet finns kvar i listan.",
+  "status.rec.failed": "Det gick inte att ladda bilden."
 }

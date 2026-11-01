@@ -90,6 +90,9 @@ static const char *NS   = "phoneblock";
 #define K_MAIL_ON_SPAM  "mail_on_spam"
 #define K_MAIL_SPAM_ONLY "mail_spam_only"
 #define K_MAIL_ON_UPDATE "mail_on_update"
+#if PB_CALL_RECORDING
+#define K_REC_ENABLED   "rec_enabled"
+#endif
 #define K_WEBHOOK_URL   "webhook_url"
 #define K_DEVICE_ID     "device_id"
 #define K_TIMEZONE      "timezone"
@@ -220,6 +223,9 @@ typedef struct {
     int  comfort_noise_db;   // 0 = default; clamped on read
     char dialog_speaker[DIALOG_SPEAKER_CAP];   // dialog speaker id; empty =
                                                // not picked yet
+#if PB_CALL_RECORDING
+    char rec_enabled[4];     // "1" = record dialog calls (default off)
+#endif
 } config_cache_t;
 
 static config_cache_t s_config;
@@ -430,6 +436,9 @@ static void load_values(void)
         s_config.vad_min_silence_ms = 0;
         s_config.comfort_noise_db   = 0;
         s_config.dialog_speaker[0]  = '\0';
+#if PB_CALL_RECORDING
+        s_config.rec_enabled[0]     = '\0';
+#endif
         return;
     }
     if (err != PB_KV_OK) {
@@ -546,6 +555,10 @@ static void load_values(void)
     s_config.comfort_noise_db   = load_int(h, K_CN_LEVEL,    0);
     load_str(h, K_DIALOG_SPK, "",
              s_config.dialog_speaker, sizeof(s_config.dialog_speaker));
+#if PB_CALL_RECORDING
+    load_str(h, K_REC_ENABLED, "",
+             s_config.rec_enabled, sizeof(s_config.rec_enabled));
+#endif
     pb_kv_close(h);
 
     pb_log_info(TAG, "loaded config: sip=%s@%s:%d, pb=%s",
@@ -811,6 +824,13 @@ bool        config_mail_on_update(void)
     return s_config.mail_on_update[0] != '0';
 }
 const char *config_last_failed_ota(void)     { return s_config.last_failed_ota; }
+#if PB_CALL_RECORDING
+bool        config_rec_enabled(void)
+{
+    // Default off; only "1" (the switch turned on and saved) records.
+    return s_config.rec_enabled[0] == '1';
+}
+#endif
 
 bool config_ab_mode_valid(const char *mode)
 {
@@ -1078,6 +1098,10 @@ int config_update(const config_update_t *u)
                                         &s_config.comfort_noise_db);
     if (err == PB_KV_OK) err = set_str_if(h, K_DIALOG_SPK, dialog_speaker,
                                         s_config.dialog_speaker, sizeof(s_config.dialog_speaker));
+#if PB_CALL_RECORDING
+    if (err == PB_KV_OK) err = set_str_if(h, K_REC_ENABLED, u->rec_enabled,
+                                        s_config.rec_enabled, sizeof(s_config.rec_enabled));
+#endif
 
 
     if (err == PB_KV_OK) err = pb_kv_commit(h);

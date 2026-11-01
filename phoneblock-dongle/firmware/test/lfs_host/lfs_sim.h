@@ -64,6 +64,9 @@ bool sim_update_file(const char *path, size_t offset, size_t size);
 // unlink() / rename(); true on success.
 bool sim_unlink(const char *path);
 bool sim_rename(const char *from, const char *to);
+// mkdir(); true on success or if it exists (the call recordings' rec/,
+// test_storage_sim_s3).
+bool sim_mkdir(const char *path);
 
 // Size of an existing file, or -1.
 long sim_file_size(const char *path);

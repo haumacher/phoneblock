@@ -43,6 +43,9 @@
   "status.calls.col.number": "Nummer",
   "status.calls.col.name": "Navn",
   "status.calls.col.verdict": "Dom",
+  "status.calls.show_all": "Vis alle ({count})",
+  "status.calls.show_less": "Vis færre",
+  "status.calls.time_unknown": "ukjent",
   "status.calls.clear": "Tøm listen",
   "status.calls.log_known": "Registrere kjente innringere",
   "status.calls.log_known.help": "Hvis denne funksjonen er deaktivert, vises ikke anrop fra numre i telefonboken og interne koder (**, *…) i listen — tellerne øverst oppdateres likevel.",
@@ -464,7 +467,14 @@
   "spam.dialog.comment": "Årsak",
   "spam.dialog.comment.hint": "(valgfritt, blir synlig for alle)",
   "spam.dialog.error.is_contact": "Denne innringeren står oppført i telefonboken din. En oppføring i telefonboken har alltid forrang på dongelen, og derfor er det ikke mulig å motta en spam-melding her.",
-  "status.calls.show_all": "Vis alle ({count})",
-  "status.calls.show_less": "Vis færre",
-  "status.calls.time_unknown": "ukjent"
+  "status.rec.enable": "Ta opp samtaler i dialogmodus",
+  "status.rec.help": "Dongelen tar opp samtalene den fører med spam-innringere i dialogmodus – begge sider, maksimalt {min} minutter per samtale. Du kan spille av, laste ned og slette dem i samtalelisten; hvis en samtale fjernes fra listen, blir opptaket slettet.",
+  "status.rec.legal": "Det er ditt ansvar å ta opp telefonsamtaler (§ 201 StGB, GDPR).",
+  "status.rec.usage": "{count} bilder, {used} av {cap} MB brukt.",
+  "status.rec.play": "Spill av opptaket",
+  "status.rec.stop": "Stopp avspilling",
+  "status.rec.download": "Last ned opptaket (WAV)",
+  "status.rec.delete": "Slett opptak",
+  "status.rec.delete.confirm": "Skal denne opptaket slettes? Samtalen forblir i listen.",
+  "status.rec.failed": "Opptaket kunne ikke lastes inn."
 }

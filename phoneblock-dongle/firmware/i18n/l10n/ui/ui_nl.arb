@@ -43,6 +43,9 @@
   "status.calls.col.number": "Nummer",
   "status.calls.col.name": "Naam",
   "status.calls.col.verdict": "Vonnis",
+  "status.calls.show_all": "Alles weergeven ({count})",
+  "status.calls.show_less": "Minder weergeven",
+  "status.calls.time_unknown": "onbekend",
   "status.calls.clear": "Lijst leegmaken",
   "status.calls.log_known": "Bekende bellers registreren",
   "status.calls.log_known.help": "Als deze optie is uitgeschakeld, verschijnen oproepen van nummers uit het telefoonboek en interne codes (**, *…) niet in de lijst — de tellers bovenaan worden wel bijgewerkt.",
@@ -464,7 +467,14 @@
   "spam.dialog.comment": "Reden",
   "spam.dialog.comment.hint": "(optioneel, wordt openbaar weergegeven)",
   "spam.dialog.error.is_contact": "Deze beller staat in je telefoonboek. Een vermelding in het telefoonboek heeft op de dongle altijd voorrang, daarom is een spammelding hier niet mogelijk.",
-  "status.calls.show_all": "Alles weergeven ({count})",
-  "status.calls.show_less": "Minder weergeven",
-  "status.calls.time_unknown": "onbekend"
+  "status.rec.enable": "Gesprekken in de dialoogmodus opnemen",
+  "status.rec.help": "De dongle neemt de gesprekken op die hij in de dialoogmodus met spam-bellers voert – beide kanten, maximaal {min} minuten per gesprek. Je kunt ze afspelen, downloaden en verwijderen in de oproeplijst; als een oproep uit de lijst verdwijnt, wordt de opname ervan verwijderd.",
+  "status.rec.legal": "Het opnemen van telefoongesprekken valt onder jouw verantwoordelijkheid (§ 201 StGB, AVG).",
+  "status.rec.usage": "{count} opnames, {used} van {cap} MB in beslag genomen.",
+  "status.rec.play": "Opname afspelen",
+  "status.rec.stop": "Afspelen pauzeren",
+  "status.rec.download": "Opname downloaden (WAV)",
+  "status.rec.delete": "Opname verwijderen",
+  "status.rec.delete.confirm": "Deze opname verwijderen? Het gesprek blijft in de lijst staan.",
+  "status.rec.failed": "Het bestand kon niet worden geladen."
 }

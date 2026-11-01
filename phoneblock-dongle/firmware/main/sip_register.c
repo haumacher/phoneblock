@@ -1595,6 +1595,11 @@ static void handle_ack(sip_ctx_t *c, const char *req, int req_len,
                 if (d->srtp_tx) {
                     memcpy(srtp.key, d->srtp_tx_key, sizeof(srtp.key));
                 }
+#if PB_CALL_RECORDING
+                // Recorded only with the user's opt-in, and only a listed call:
+                // the recording belongs to its entry (call_rec.h, #663).
+                rtp_record_next_dialog(config_rec_enabled() ? d->call_seq : 0);
+#endif
                 rtp_play_dialog(&d->rtp_dest, &srtp,
                                 d->srtp_rx_valid ? d->srtp_rx_key : NULL, set);
                 free(set);

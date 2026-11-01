@@ -43,6 +43,9 @@
   "status.calls.col.number": "Numer",
   "status.calls.col.name": "Nazwisko",
   "status.calls.col.verdict": "Wyrok",
+  "status.calls.show_all": "Pokaż wszystkie ({count})",
+  "status.calls.show_less": "Pokaż mniej",
+  "status.calls.time_unknown": "nieznane",
   "status.calls.clear": "Wyczyść listę",
   "status.calls.log_known": "Rejestrowanie znanych numerów dzwoniących",
   "status.calls.log_known.help": "Jeśli opcja jest wyłączona, połączenia z numerów z książki telefonicznej oraz kody wewnętrzne (**, *…) nie pojawiają się na liście — liczniki u góry są jednak nadal aktualizowane.",
@@ -464,7 +467,14 @@
   "spam.dialog.comment": "Powód",
   "spam.dialog.comment.hint": "(opcjonalnie, będzie widoczne publicznie)",
   "spam.dialog.error.is_contact": "Ten numer znajduje się w Twojej książce telefonicznej. Wpis w książce telefonicznej ma zawsze pierwszeństwo w przypadku klucza sprzętowego, dlatego w tym przypadku nie jest możliwe zgłoszenie spamu.",
-  "status.calls.show_all": "Pokaż wszystkie ({count})",
-  "status.calls.show_less": "Pokaż mniej",
-  "status.calls.time_unknown": "nieznane"
+  "status.rec.enable": "Nagrywanie rozmów w trybie dialogowym",
+  "status.rec.help": "Klucz sprzętowy nagrywa rozmowy prowadzone w trybie dialogowym ze sprawcami spamowych połączeń – obie strony, maksymalnie {min} minut na połączenie. Możesz je odtwarzać, pobierać i usuwać z listy połączeń; jeśli połączenie zostanie usunięte z listy, jego nagranie zostanie usunięte.",
+  "status.rec.legal": "Odpowiedzialność za nagrywanie rozmów telefonicznych spoczywa na tobie (§ 201 niemieckiego kodeksu karnego, RODO).",
+  "status.rec.usage": "{count} zdjęć, {used} zajmuje {cap} MB.",
+  "status.rec.play": "Odtwórz nagranie",
+  "status.rec.stop": "Wstrzymaj odtwarzanie",
+  "status.rec.download": "Pobierz nagranie (WAV)",
+  "status.rec.delete": "Usuń nagranie",
+  "status.rec.delete.confirm": "Czy chcesz usunąć to nagranie? Połączenie pozostanie na liście.",
+  "status.rec.failed": "Nie udało się załadować nagrania."
 }

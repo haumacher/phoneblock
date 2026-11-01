@@ -43,6 +43,9 @@
   "status.calls.col.number": "Número",
   "status.calls.col.name": "Nombre",
   "status.calls.col.verdict": "Veredicto",
+  "status.calls.show_all": "Mostrar todo ({count})",
+  "status.calls.show_less": "Mostrar menos",
+  "status.calls.time_unknown": "desconocido",
   "status.calls.clear": "Vaciar lista",
   "status.calls.log_known": "Registrar llamadas conocidas",
   "status.calls.log_known.help": "Si está desactivado, las llamadas de números de la agenda y los códigos internos (**, *…) no aparecen en la lista — los contadores de arriba se siguen actualizando.",
@@ -464,7 +467,14 @@
   "spam.dialog.comment": "Motivo",
   "spam.dialog.comment.hint": "(opcional, será visible públicamente)",
   "spam.dialog.error.is_contact": "Esta persona figura en tu agenda. Una entrada de la agenda siempre tiene prioridad en el dongle, por lo que en este caso no es posible recibir un aviso de spam.",
-  "status.calls.show_all": "Mostrar todo ({count})",
-  "status.calls.show_less": "Mostrar menos",
-  "status.calls.time_unknown": "desconocido"
+  "status.rec.enable": "Grabar conversaciones en modo de diálogo",
+  "status.rec.help": "El dongle graba las conversaciones que mantiene con los autores de llamadas spam en el modo de diálogo: ambas partes, con una duración máxima de {min} minutos por llamada. Puedes reproducirlas, descargarlas y borrarlas desde el historial de llamadas; si se elimina una llamada del historial, se borra su grabación.",
+  "status.rec.legal": "La grabación de las conversaciones telefónicas es responsabilidad tuya (art. 201 del Código Penal alemán, RGPD).",
+  "status.rec.usage": "{count} archivos, {used} de {cap} MB ocupados.",
+  "status.rec.play": "Reproducir grabación",
+  "status.rec.stop": "Pausar la reproducción",
+  "status.rec.download": "Descargar la grabación (WAV)",
+  "status.rec.delete": "Borrar grabación",
+  "status.rec.delete.confirm": "¿Quieres borrar esta grabación? La llamada seguirá apareciendo en la lista.",
+  "status.rec.failed": "No se ha podido cargar la grabación."
 }

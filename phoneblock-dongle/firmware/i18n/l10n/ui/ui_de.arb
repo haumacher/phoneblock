@@ -2348,5 +2348,55 @@
   "@spam.dialog.error.is_contact": {
     "description": "Fehlermeldung, wenn versucht wird, einen Telefonbuch-Kontakt als Spam zu melden.",
     "x-translated": "74e47230"
+  },
+  "status.rec.enable": "Gespräche im Dialog-Modus aufzeichnen",
+  "@status.rec.enable": {
+    "description": "Dongle web UI (T-Dongle-S3 and Linux only): label of the switch that turns on the recording of calls held in dialog mode",
+    "x-translated": "664c781e"
+  },
+  "status.rec.help": "Der Dongle zeichnet die Gespräche auf, die er im Dialog-Modus mit Spam-Anrufern führt – beide Seiten, höchstens {min} Minuten je Anruf. Abspielen, herunterladen und löschen kannst du sie in der Anrufliste; fällt ein Anruf aus der Liste, wird seine Aufnahme gelöscht.",
+  "@status.rec.help": {
+    "description": "Dongle web UI: help below the call recording switch. {min} is the maximum length of one recording in minutes.",
+    "x-translated": "815b546a"
+  },
+  "status.rec.legal": "Das Aufzeichnen von Telefongesprächen liegt in deiner Verantwortung (§ 201 StGB, DSGVO).",
+  "@status.rec.legal": {
+    "description": "Dongle web UI: the one-sentence notice confirmed when the call recording is switched on. Keep the legal references (German criminal code section 201, GDPR) as they are, translated only where a language has its own abbreviation for the GDPR.",
+    "x-translated": "8c2c6dfd"
+  },
+  "status.rec.usage": "{count} Aufnahmen, {used} von {cap} MB belegt.",
+  "@status.rec.usage": {
+    "description": "Dongle web UI: how many call recordings are stored and how much space they take. {used} is a number with one decimal, {cap} a whole number of megabytes.",
+    "x-translated": "b6a0c4e"
+  },
+  "status.rec.play": "Aufnahme abspielen",
+  "@status.rec.play": {
+    "description": "Dongle web UI: tooltip of the play button of a call recording in the call list",
+    "x-translated": "9ea1a744"
+  },
+  "status.rec.stop": "Wiedergabe anhalten",
+  "@status.rec.stop": {
+    "description": "Dongle web UI: tooltip of the stop button of a playing call recording",
+    "x-translated": "ab72326b"
+  },
+  "status.rec.download": "Aufnahme herunterladen (WAV)",
+  "@status.rec.download": {
+    "description": "Dongle web UI: tooltip of the download button of a call recording",
+    "x-translated": "2bbddb6c"
+  },
+  "status.rec.delete": "Aufnahme löschen",
+  "@status.rec.delete": {
+    "description": "Dongle web UI: tooltip of the delete button of a call recording",
+    "x-translated": "9771be65"
+  },
+  "status.rec.delete.confirm": "Diese Aufnahme löschen? Der Anruf bleibt in der Liste.",
+  "@status.rec.delete.confirm": {
+    "description": "Dongle web UI: confirmation before a call recording is deleted",
+    "x-translated": "aa817b6a"
+  },
+  "status.rec.failed": "Die Aufnahme konnte nicht geladen werden.",
+  "@status.rec.failed": {
+    "description": "Dongle web UI: error when a call recording cannot be fetched or played",
+    "x-translated": "5da5d642"
   }
 }
