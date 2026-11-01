@@ -72,8 +72,16 @@ typedef struct {
     uint32_t spam_blocked;
     uint32_t legitimate;
     uint32_t errors;                           // internal/API errors
-    int64_t  last_api_duration_us;             // total latency of last API call
-    api_phases_t last_api_phases;              // phase breakdown of last API call
+    // Latency of the last *successful* API call (0 / !valid before the
+    // first one). A failed call never lands here: its "latency" is just how
+    // long it took to give up, typically the timeout (issue #551).
+    int64_t  last_api_duration_us;             // total latency of last successful API call
+    api_phases_t last_api_phases;              // phase breakdown of last successful API call
+    // The most recent failed call, kept until the next failure overwrites
+    // it. last_api_failed says whether it is also the most recent call
+    // overall, i.e. no call has succeeded since.
+    bool     last_api_failed;
+    api_failure_t last_api_failure;            // kind == API_FAIL_NONE: none yet
 } stats_counters_t;
 
 // Renamed from `stats_init` to avoid colliding with lwip's
@@ -136,9 +144,12 @@ void stats_record_call_counters_only(const char *number, const char *display,
 void stats_record_error(int level, const char *tag, const char *message);
 void stats_record_sip_state(bool registered);
 
-// Records the latency breakdown of the last API call (total + phases).
-// Feeds the dashboard's API-latency display; see api_phases_t.
-void stats_record_api_phases(const api_phases_t *p);
+// Records the outcome of one timed API call. `failure` NULL (or of kind
+// API_FAIL_NONE) is a success: `p` becomes the shown latency and the failure
+// flag clears. Otherwise the latency of the last success is kept and
+// `failure` is stored, stamped with the current time (its at_us is ignored).
+// Feeds the dashboard's API-latency / API-error display.
+void stats_record_api_result(const api_phases_t *p, const api_failure_t *failure);
 
 // --- Snapshots (for the web UI) -------------------------------------
 

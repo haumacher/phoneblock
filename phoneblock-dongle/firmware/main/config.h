@@ -303,10 +303,14 @@ const char *config_webhook_url(void);
 //              last one; also drives the immediate crash mail at boot.
 //   on_spam:   (default off) a daily mail when spam calls were caught since
 //              the last one.
+//   spam_only: (default off) narrows that mail to the calls the dongle
+//              blocked (verdict SPAM); off, it lists every new call as before
+//              (issue #556).
 //   on_update: (default on) a one-shot mail after a firmware update, with a
 //              link to the release's changelog.
 bool        config_mail_on_error(void);
 bool        config_mail_on_spam(void);
+bool        config_mail_spam_only(void);
 bool        config_mail_on_update(void);
 
 // Version string of the most recent OTA download that did NOT survive
@@ -482,6 +486,7 @@ typedef struct {
     // default off, on_update defaults on (see config_mail_on_update).
     const char *mail_on_error;
     const char *mail_on_spam;
+    const char *mail_spam_only;   // "1"/"0", NULL = unchanged; default off
     const char *mail_on_update;
     // Call webhook URL, "" = off. NULL = leave unchanged. The caller
     // validates it before writing (see web.c).

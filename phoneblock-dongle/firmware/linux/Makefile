@@ -38,7 +38,7 @@ LINUX_SRTP_INCLUDEDIR := $(shell pkg-config --variable=includedir libsrtp2 2>/de
 LINUX_NET_LIBS := -lcurl -lssl -lcrypto $(LINUX_PKG_LIBS) -lm
 LINUX_CORE_SOURCES := ../core/platform_linux.c ../core/platform_linux_net.c \
                       ../core/sip_parse.c ../core/dial_rules.c ../core/tr064_parse.c
-LINUX_MAIN_SOURCES := ../main/announcement.c ../main/api.c \
+LINUX_MAIN_SOURCES := ../main/announcement.c ../main/api.c ../main/api_fail.c \
                       ../main/api_scan.c \
                       ../main/audio.c ../main/blocklist_lookup.c \
                       ../main/blocklist_sync.c ../main/config.c \

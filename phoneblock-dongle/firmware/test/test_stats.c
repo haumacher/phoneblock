@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "platform.h"
 #include "stats.h"
 
 static int tests_run, tests_failed;
@@ -212,9 +213,92 @@ static void test_call_listener(void)
     CHECK(s_heard_count == 0, "removed listener hears nothing");
 }
 
+// Issue #551: only a 2xx response is a latency; a failed call is recorded
+// as its cause and leaves the last latency alone.
+static void test_api_fail_kind(void)
+{
+    printf("api failure classification:\n");
+    CHECK(api_fail_kind(true, PB_HTTP_FAIL_OTHER, 200) == API_FAIL_NONE, "200 is success");
+    CHECK(api_fail_kind(true, PB_HTTP_FAIL_OTHER, 204) == API_FAIL_NONE, "204 is success");
+    CHECK(api_fail_kind(true, PB_HTTP_FAIL_OTHER, 401) == API_FAIL_HTTP, "401 is an HTTP failure");
+    CHECK(api_fail_kind(true, PB_HTTP_FAIL_OTHER, 503) == API_FAIL_HTTP, "503 is an HTTP failure");
+    CHECK(api_fail_kind(true, PB_HTTP_FAIL_CONNECT, 302) == API_FAIL_HTTP,
+          "with a response, the transport class is ignored");
+    CHECK(api_fail_kind(false, PB_HTTP_FAIL_DNS, 0) == API_FAIL_DNS, "DNS");
+    CHECK(api_fail_kind(false, PB_HTTP_FAIL_CONNECT, 0) == API_FAIL_CONNECT, "connect");
+    CHECK(api_fail_kind(false, PB_HTTP_FAIL_TLS, 0) == API_FAIL_TLS, "TLS");
+    CHECK(api_fail_kind(false, PB_HTTP_FAIL_TIMEOUT, 0) == API_FAIL_TIMEOUT, "timeout");
+    CHECK(api_fail_kind(false, PB_HTTP_FAIL_OTHER, 0) == API_FAIL_OTHER, "other");
+    CHECK(api_fail_kind(false, 999, 0) == API_FAIL_OTHER, "unknown class is other");
+    CHECK(strcmp(api_fail_kind_name(API_FAIL_NONE), "") == 0, "name of none");
+    CHECK(strcmp(api_fail_kind_name(API_FAIL_CONNECT), "connect") == 0, "name of connect");
+    CHECK(strcmp(api_fail_kind_name(API_FAIL_DNS), "dns") == 0, "name of dns");
+    CHECK(strcmp(api_fail_kind_name(API_FAIL_TLS), "tls") == 0, "name of tls");
+    CHECK(strcmp(api_fail_kind_name(API_FAIL_TIMEOUT), "timeout") == 0, "name of timeout");
+    CHECK(strcmp(api_fail_kind_name(API_FAIL_HTTP), "http") == 0, "name of http");
+    CHECK(strcmp(api_fail_kind_name(API_FAIL_OTHER), "other") == 0, "name of other");
+}
+
+static void test_api_result_recording(void)
+{
+    printf("api result recording:\n");
+    stats_counters_t c;
+    stats_snapshot_counters(&c);
+    CHECK(c.last_api_duration_us == 0 && !c.last_api_phases.valid,
+          "no latency before the first call");
+    CHECK(!c.last_api_failed && c.last_api_failure.kind == API_FAIL_NONE,
+          "no failure before the first call");
+
+    api_phases_t ok = { .valid = true, .total_us = 230000, .connect_us = 120000,
+                        .wait_us = 90000, .download_us = 20000 };
+    stats_record_api_result(&ok, NULL);
+    stats_snapshot_counters(&c);
+    CHECK(c.last_api_duration_us == 230000, "success sets the latency");
+    CHECK(c.last_api_phases.valid && c.last_api_phases.connect_us == 120000,
+          "success sets the phases");
+    CHECK(!c.last_api_failed, "success is not a failure");
+
+    // The #551 case: connect never succeeded, the whole time is the timeout.
+    api_phases_t timeout = { .valid = true, .total_us = 10075000 };
+    api_failure_t f = { .kind = API_FAIL_CONNECT, .elapsed_us = 10075000 };
+    snprintf(f.detail, sizeof(f.detail), "%s", "ESP_ERR_HTTP_CONNECT");
+    snprintf(f.call, sizeof(f.call), "%s", "test");
+    stats_record_api_result(&timeout, &f);
+    stats_snapshot_counters(&c);
+    CHECK(c.last_api_duration_us == 230000, "failure keeps the last latency");
+    CHECK(c.last_api_phases.total_us == 230000, "failure keeps the last phases");
+    CHECK(c.last_api_failed, "failure flag set");
+    CHECK(c.last_api_failure.kind == API_FAIL_CONNECT, "failure kind stored");
+    CHECK(strcmp(c.last_api_failure.detail, "ESP_ERR_HTTP_CONNECT") == 0, "detail stored");
+    CHECK(strcmp(c.last_api_failure.call, "test") == 0, "call stored");
+    CHECK(c.last_api_failure.elapsed_us == 10075000, "elapsed time stored");
+    CHECK(c.last_api_failure.at_us > 0, "failure is time-stamped");
+
+    // A kind of API_FAIL_NONE is a success, like NULL.
+    api_failure_t none = { .kind = API_FAIL_NONE };
+    api_phases_t ok2 = { .valid = true, .total_us = 180000 };
+    stats_record_api_result(&ok2, &none);
+    stats_snapshot_counters(&c);
+    CHECK(c.last_api_duration_us == 180000, "recovery updates the latency");
+    CHECK(!c.last_api_failed, "recovery clears the failure flag");
+    CHECK(c.last_api_failure.kind == API_FAIL_CONNECT,
+          "the last failure stays on record after recovery");
+
+    api_phases_t ok3 = { .valid = true, .total_us = 50000 };
+    api_failure_t http = { .kind = API_FAIL_HTTP, .http_status = 503 };
+    snprintf(http.detail, sizeof(http.detail), "%s", "HTTP 503");
+    stats_record_api_result(&ok3, &http);
+    stats_snapshot_counters(&c);
+    CHECK(c.last_api_duration_us == 180000, "an HTTP error is no latency either");
+    CHECK(c.last_api_failed && c.last_api_failure.kind == API_FAIL_HTTP
+          && c.last_api_failure.http_status == 503, "HTTP failure replaces the older one");
+}
+
 int main(void)
 {
     stats_setup();
+    test_api_fail_kind();
+    test_api_result_recording();
     test_test_call_not_counted();
     test_set_assessment_all_rows();
     test_assessment_for_number();

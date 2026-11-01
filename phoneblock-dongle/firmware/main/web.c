@@ -546,9 +546,25 @@ static web_http_error_t handle_status(web_http_request_t *req)
         cJSON_AddBoolToObject(pb, "token_link", true);
     }
 #endif
+    // Latency of the last *successful* call; 0 before the first one. A
+    // failed call no longer shows up here as its timeout (issue #551).
     cJSON_AddNumberToObject(pb,   "last_api_ms",        (double)(c.last_api_duration_us / 1000));
-    // Phase breakdown of the last API call — investigation aid for
-    // issue #329 (connect/request/wait/download split).
+    // Whether the most recent timed call failed, and the most recent
+    // failure (kept after a later success, so a flapping link stays
+    // visible). The object is present only once a call has failed.
+    cJSON_AddBoolToObject  (pb,   "last_api_failed",    c.last_api_failed);
+    if (c.last_api_failure.kind != API_FAIL_NONE) {
+        const api_failure_t *f = &c.last_api_failure;
+        cJSON *fe = cJSON_AddObjectToObject(pb, "last_api_error");
+        cJSON_AddStringToObject(fe, "kind",        api_fail_kind_name(f->kind));
+        cJSON_AddStringToObject(fe, "detail",      f->detail);
+        cJSON_AddNumberToObject(fe, "http_status", f->http_status);
+        cJSON_AddStringToObject(fe, "call",        f->call);
+        cJSON_AddNumberToObject(fe, "ago_s",       (double)((now_us - f->at_us) / 1000000));
+        cJSON_AddNumberToObject(fe, "elapsed_ms",  (double)(f->elapsed_us / 1000));
+    }
+    // Phase breakdown of the last successful API call — investigation aid
+    // for issue #329 (connect/request/wait/download split).
     cJSON *ph = cJSON_AddObjectToObject(pb, "last_api_phases");
     cJSON_AddBoolToObject  (ph, "valid",       c.last_api_phases.valid);
     cJSON_AddNumberToObject(ph, "total_ms",    (double)(c.last_api_phases.total_us    / 1000));
@@ -736,6 +752,7 @@ static web_http_error_t handle_status(web_http_request_t *req)
     cJSON_AddBoolToObject  (ml,   "pass_set", config_smtp_pass()[0] != '\0');
     cJSON_AddBoolToObject  (ml,   "on_error", config_mail_on_error());
     cJSON_AddBoolToObject  (ml,   "on_spam",  config_mail_on_spam());
+    cJSON_AddBoolToObject  (ml,   "spam_only", config_mail_spam_only());
     cJSON_AddBoolToObject  (ml,   "on_update", config_mail_on_update());
 
     cJSON *wh = cJSON_AddObjectToObject(root, "webhook");
@@ -949,6 +966,7 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
     char spam_names[NAME_FILTER_SPEC_CAP + 1] = "";
     char mail_err_s[4]    = "";
     char mail_spam_s[4]   = "";
+    char mail_only_s[4]   = "";
     char mail_upd_s[4]    = "";
     char tz_s[64]         = "";
     char ui_lang_s[12]    = "";
@@ -1005,6 +1023,7 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
     bool have_webhook    = form_get(body, "webhook_url",   webhook_url, CONFIG_WEBHOOK_URL_CAP + 1);
     bool have_mail_err   = form_get(body, "mail_on_error", mail_err_s,  sizeof(mail_err_s));
     bool have_mail_spam  = form_get(body, "mail_on_spam",  mail_spam_s, sizeof(mail_spam_s));
+    bool have_mail_only  = form_get(body, "mail_spam_only", mail_only_s, sizeof(mail_only_s));
     bool have_mail_upd   = form_get(body, "mail_on_update", mail_upd_s, sizeof(mail_upd_s));
     bool have_tz         = form_get(body, "timezone",      tz_s,        sizeof(tz_s));
     bool have_ui_lang    = form_get(body, "ui_lang",       ui_lang_s,   sizeof(ui_lang_s));
@@ -1255,6 +1274,7 @@ static web_http_error_t handle_config_post(web_http_request_t *req)
         .smtp_to       = smtp_to_val,
         .mail_on_error = have_mail_err  ? mail_err_s  : NULL,
         .mail_on_spam  = have_mail_spam ? mail_spam_s : NULL,
+        .mail_spam_only = have_mail_only ? mail_only_s : NULL,
         .mail_on_update = have_mail_upd ? mail_upd_s  : NULL,
         .webhook_url   = webhook_val,
         .timezone      = timezone,

@@ -267,6 +267,23 @@ enum {
 const char *pb_http_err_name(int result);
 bool pb_http_is_connect_error(int result);
 
+// Coarse cause of a failed request, for a user-facing "why did it fail"
+// (issue #551: a connection that never came up must not read as a slow
+// server). PB_HTTP_FAIL_OTHER for anything not listed, PB_HTTP_OK included.
+typedef enum {
+    PB_HTTP_FAIL_OTHER = 0,
+    PB_HTTP_FAIL_DNS,       // host name could not be resolved
+    PB_HTTP_FAIL_CONNECT,   // TCP connection refused or unreachable
+    PB_HTTP_FAIL_TLS,       // TLS handshake or certificate check failed
+    PB_HTTP_FAIL_TIMEOUT,   // no connection or no answer within the timeout
+} pb_http_fail_t;
+
+// Classifies a native transport error: a pb_http_request() result, or on
+// the ESP32 also the esp-tls error recorded for the failed connection
+// (ESP_ERR_ESP_TLS_* / ESP_ERR_MBEDTLS_*), which tells DNS, TCP and TLS
+// apart where the HTTP client only says ESP_ERR_HTTP_CONNECT.
+pb_http_fail_t pb_http_fail_class(int result);
+
 enum {
     PB_OK = 0,
     PB_FAIL = -1,

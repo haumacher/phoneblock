@@ -21,6 +21,7 @@
 
 #include "config.h"
 #include "heap_guard.h"
+#include "mail_calls.h"
 #include "mail_i18n.h"
 #include "mail_html.h"
 #include "mail_rcpt.h"
@@ -625,13 +626,16 @@ static size_t append_log_html(char *body, size_t cap, size_t len,
 // Assemble the full text/html status body. `include_log` gates the log
 // section (the daily flush only attaches it once a new ERROR has fired;
 // the test mail always shows the whole ring). `new_calls` > 0 adds the
-// "since the last mail" line. Returns the assembled length.
+// "since the last mail" line, worded for blocked calls when `spam_only`
+// (config_mail_spam_only) narrowed the list to them. Returns the assembled
+// length.
 static size_t build_status_html(char *body, size_t cap,
                                 const stats_counters_t *cnt,
                                 const stats_call_t *calls, int ncalls,
                                 const stats_error_t *errs, int nerr,
                                 int64_t since_us, int64_t *newest_us,
-                                bool include_log, int new_calls)
+                                bool include_log, int new_calls,
+                                bool spam_only)
 {
     char intro[224];
     snprintf(intro, sizeof(intro),
@@ -642,12 +646,14 @@ static size_t build_status_html(char *body, size_t cap,
     if (new_calls > 0) {
         char sentence[192], line[224];
         if (new_calls == 1) {
-            mail_render(sentence, sizeof(sentence), mail_i18n_str("newcalls.one"),
+            mail_render(sentence, sizeof(sentence),
+                        mail_i18n_str(spam_only ? "newspam.one" : "newcalls.one"),
                         (const char *)NULL);
         } else {
             char count[12];
             snprintf(count, sizeof(count), "%d", new_calls);
-            mail_render(sentence, sizeof(sentence), mail_i18n_str("newcalls.many"),
+            mail_render(sentence, sizeof(sentence),
+                        mail_i18n_str(spam_only ? "newspam.many" : "newcalls.many"),
                         "count", count, (const char *)NULL);
         }
         snprintf(line, sizeof(line), "<p>%s</p>", sentence);
@@ -685,11 +691,15 @@ void mail_daily_flush(void)
     // New calls since the last mail. The snapshot is newest-first and at_us
     // is monotonic, so the new calls are the leading run above the mark —
     // all verdicts, not just spam. mail_on_spam is the "report calls" opt-in.
+    // mail_spam_only (issue #556, default off) narrows the report to the
+    // calls the dongle blocked; then legitimate calls alone send no mail.
     stats_call_t calls[STATS_MAX_CALLS];
     int ncalls = stats_snapshot_calls(calls, STATS_MAX_CALLS);
-    int new_calls = 0;
-    while (new_calls < ncalls && calls[new_calls].at_us > s_reported_calls_us)
-        new_calls++;
+    int new_calls = mail_count_new_calls(calls, ncalls, s_reported_calls_us);
+    // The mark advances past every new call, reported or filtered out.
+    int64_t newest_call_us = new_calls > 0 ? calls[0].at_us : 0;
+    bool spam_only = config_mail_spam_only();
+    new_calls = mail_select_calls(calls, new_calls, spam_only);
     bool have_new_calls = on_spam && new_calls > 0;
 
     if (!have_new_error && !have_new_calls) return;   // nothing noteworthy
@@ -708,18 +718,19 @@ void mail_daily_flush(void)
     build_status_html(body, MAIL_BODY_CAP, &cnt, calls,
                       have_new_calls ? new_calls : 0, errs, n,
                       s_reported_through_us, &newest_us, have_new_error,
-                      have_new_calls ? new_calls : 0);
+                      have_new_calls ? new_calls : 0, spam_only);
 
     const char *subject =
-        (have_new_error && have_new_calls) ? mail_i18n_str("subj.error_and_calls")
-      : have_new_error                     ? mail_i18n_str("subj.error")
-      :                                      mail_i18n_str("subj.calls");
+        (have_new_error && have_new_calls)
+            ? mail_i18n_str(spam_only ? "subj.error_and_spam" : "subj.error_and_calls")
+      : have_new_error ? mail_i18n_str("subj.error")
+      : mail_i18n_str(spam_only ? "subj.spam" : "subj.calls");
 
     if (mail_send(subject, MAIL_BODY_CT, body)) {
         // Advance the marks only after a confirmed send, so a failure
         // retries the same window next cycle.
         if (have_new_error) s_reported_through_us = newest_us;
-        if (have_new_calls) s_reported_calls_us = calls[0].at_us;
+        if (have_new_calls) s_reported_calls_us = newest_call_us;
     }
     free(body);
 }
@@ -740,9 +751,11 @@ bool mail_send_test(void)
     stats_call_t calls[STATS_MAX_CALLS];
     int     ncalls = stats_snapshot_calls(calls, STATS_MAX_CALLS);
     int64_t newest = 0;
+    // Same call selection as the daily mail (issue #556).
+    ncalls = mail_select_calls(calls, ncalls, config_mail_spam_only());
 
     build_status_html(body, MAIL_BODY_CAP, &cnt, calls, ncalls, errs, n,
-                      0, &newest, true, 0);
+                      0, &newest, true, 0, false);
 
     bool ok = mail_send(mail_i18n_str("subj.status"), MAIL_BODY_CT, body);
     free(body);

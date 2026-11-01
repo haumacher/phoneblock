@@ -145,6 +145,53 @@
     "description": "Dongle web UI: status.info",
     "x-translated": "d9b78f83"
   },
+  "status.api.failed": "Der letzte Aufruf des PhoneBlock-Servers ({when}) ist fehlgeschlagen: {reason}.",
+  "@status.api.failed": {
+    "description": "Dongle web UI: dashboard line when the most recent PhoneBlock API call failed; when is a time like 'heute 14:03', reason is one of the status.api.fail.* texts",
+    "placeholders": {
+      "reason": {},
+      "when": {}
+    },
+    "x-translated": "975279f7"
+  },
+  "status.api.fail.dns": "Servername nicht auflösbar (DNS)",
+  "@status.api.fail.dns": {
+    "description": "Dongle web UI: API failure reason, host name could not be resolved",
+    "x-translated": "82f126a6"
+  },
+  "status.api.fail.connect": "keine Verbindung zum Server",
+  "@status.api.fail.connect": {
+    "description": "Dongle web UI: API failure reason, TCP connection failed",
+    "x-translated": "cc075a75"
+  },
+  "status.api.fail.tls": "sichere Verbindung (TLS) fehlgeschlagen",
+  "@status.api.fail.tls": {
+    "description": "Dongle web UI: API failure reason, TLS handshake failed",
+    "x-translated": "16878224"
+  },
+  "status.api.fail.timeout": "keine Antwort innerhalb der Wartezeit",
+  "@status.api.fail.timeout": {
+    "description": "Dongle web UI: API failure reason, timeout",
+    "x-translated": "15a531f1"
+  },
+  "status.api.fail.http": "Server antwortet mit HTTP {status}",
+  "@status.api.fail.http": {
+    "description": "Dongle web UI: API failure reason, non-2xx HTTP status",
+    "placeholders": {
+      "status": {}
+    },
+    "x-translated": "c189e7d9"
+  },
+  "status.api.fail.other": "Übertragungsfehler",
+  "@status.api.fail.other": {
+    "description": "Dongle web UI: API failure reason, other transport error",
+    "x-translated": "8ed013db"
+  },
+  "status.api.fail.hint": "Prüfe die Internetverbindung des Routers und die Netzwerkeinstellungen (Gateway, DNS) des Dongles.",
+  "@status.api.fail.hint": {
+    "description": "Dongle web UI: hint after a network-level API failure",
+    "x-translated": "b39788ed"
+  },
   "status.calls.title": "Letzte Anrufe",
   "@status.calls.title": {
     "description": "Dongle web UI: status.calls.title",
@@ -334,6 +381,43 @@
   "@status.system.temp": {
     "description": "Dongle web UI: status.system.temp — die temperature of the dongle's chip, only shown on chips with a built-in sensor",
     "x-translated": "db368f8"
+  },
+  "status.system.wifi": "WLAN-Signal: {rssi} dBm ({quality})",
+  "@status.system.wifi": {
+    "description": "Dongle web UI: WiFi signal strength line in the System section; quality is one of the status.system.wifi.* words",
+    "placeholders": {
+      "rssi": {},
+      "quality": {}
+    },
+    "x-translated": "6a4bdf6a"
+  },
+  "status.system.wifi.good": "gut",
+  "@status.system.wifi.good": {
+    "description": "Dongle web UI: WiFi signal quality word (RSSI >= -60 dBm)",
+    "x-translated": "b7f93c21"
+  },
+  "status.system.wifi.ok": "ausreichend",
+  "@status.system.wifi.ok": {
+    "description": "Dongle web UI: WiFi signal quality word (RSSI -70..-61 dBm)",
+    "x-translated": "e42eda37"
+  },
+  "status.system.wifi.weak": "schwach",
+  "@status.system.wifi.weak": {
+    "description": "Dongle web UI: WiFi signal quality word (RSSI below -70 dBm)",
+    "x-translated": "d58abc8c"
+  },
+  "status.system.wifi_tx": "Sendeleistung: {tx} dBm",
+  "@status.system.wifi_tx": {
+    "description": "Dongle web UI: WiFi transmit power limit, appended to the signal line",
+    "placeholders": {
+      "tx": {}
+    },
+    "x-translated": "2f4e474"
+  },
+  "status.system.wifi.weak_hint": "Schwaches WLAN-Signal: Stelle den Dongle näher an die Fritz!Box oder einen Repeater. Im Mesh zeigt die Mesh-Übersicht der Fritz!Box, an welcher Box er angemeldet ist.",
+  "@status.system.wifi.weak_hint": {
+    "description": "Dongle web UI: hint shown for a weak WiFi signal",
+    "x-translated": "61fa3d20"
   },
   "status.system.col.task": "Task",
   "@status.system.col.task": {
@@ -770,15 +854,25 @@
     "description": "Dongle web UI: status.mail.on_error.help",
     "x-translated": "8a5eb725"
   },
-  "status.mail.on_spam": "E-Mail bei abgefangenen SPAM-Anrufen",
+  "status.mail.on_spam": "Anrufe per E-Mail melden",
   "@status.mail.on_spam": {
     "description": "Dongle web UI: status.mail.on_spam",
-    "x-translated": "5d8c9369"
+    "x-translated": "bd6395c6"
   },
-  "status.mail.on_spam.help": "Sendet einmal täglich eine E-Mail, wenn seit der letzten Meldung SPAM-Anrufe blockiert wurden.",
+  "status.mail.on_spam.help": "Sendet einmal täglich eine E-Mail mit den Anrufen seit der letzten Meldung – blockierte und durchgelassene.",
   "@status.mail.on_spam.help": {
     "description": "Dongle web UI: status.mail.on_spam.help",
-    "x-translated": "9e9d39c3"
+    "x-translated": "8c9dd2ae"
+  },
+  "status.mail.spam_only": "Nur abgewehrte SPAM-Anrufe melden",
+  "@status.mail.spam_only": {
+    "description": "Dongle web UI: mail option, report only blocked calls",
+    "x-translated": "e141823b"
+  },
+  "status.mail.spam_only.help": "Die Anruf-E-Mail listet nur Anrufe, die der Dongle als SPAM abgewehrt hat. Legitime und unbekannte Anrufer fehlen, und kommen nur solche Anrufe, wird keine E-Mail verschickt.",
+  "@status.mail.spam_only.help": {
+    "description": "Dongle web UI: help for the report-only-blocked-calls mail option",
+    "x-translated": "51aa10ad"
   },
   "status.mail.on_update": "E-Mail bei Firmware-Aktualisierung",
   "@status.mail.on_update": {

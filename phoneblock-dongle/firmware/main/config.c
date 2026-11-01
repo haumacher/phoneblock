@@ -88,6 +88,7 @@ static const char *NS   = "phoneblock";
 #define K_SMTP_TO       "smtp_to"
 #define K_MAIL_ON_ERROR "mail_on_error"
 #define K_MAIL_ON_SPAM  "mail_on_spam"
+#define K_MAIL_SPAM_ONLY "mail_spam_only"
 #define K_MAIL_ON_UPDATE "mail_on_update"
 #define K_WEBHOOK_URL   "webhook_url"
 #define K_DEVICE_ID     "device_id"
@@ -201,6 +202,7 @@ typedef struct {
     char smtp_to[MAIL_RCPT_SPEC_CAP];
     char mail_on_error[4];   // "1" = mail on ERROR/crash (default off)
     char mail_on_spam[4];    // "1" = mail when spam calls were caught (default off)
+    char mail_spam_only[4];  // "1" = that mail lists only blocked calls (default off)
     char mail_on_update[4];  // "0" = suppress firmware-update mail (default on)
     char webhook_url[CONFIG_WEBHOOK_URL_CAP];   // call webhook; empty = off
     char last_failed_ota[32];   // semver, plus headroom for "-rcN" suffixes
@@ -416,6 +418,7 @@ static void load_values(void)
         s_config.smtp_to[0]       = '\0';
         s_config.mail_on_error[0] = '\0';
         s_config.mail_on_spam[0]  = '\0';
+        s_config.mail_spam_only[0] = '\0';
         s_config.mail_on_update[0] = '\0';   // empty → default on (see getter)
         s_config.webhook_url[0]   = '\0';
         s_config.last_failed_ota[0] = '\0';
@@ -522,6 +525,8 @@ static void load_values(void)
              s_config.mail_on_error, sizeof(s_config.mail_on_error));
     load_str(h, K_MAIL_ON_SPAM, "",
              s_config.mail_on_spam, sizeof(s_config.mail_on_spam));
+    load_str(h, K_MAIL_SPAM_ONLY, "",
+             s_config.mail_spam_only, sizeof(s_config.mail_spam_only));
     load_str(h, K_MAIL_ON_UPDATE, "",
              s_config.mail_on_update, sizeof(s_config.mail_on_update));
     load_str(h, K_WEBHOOK_URL, "",
@@ -792,6 +797,12 @@ bool        config_mail_on_spam(void)
 {
     return s_config.mail_on_spam[0] == '1';
 }
+bool        config_mail_spam_only(void)
+{
+    // Default off: an existing installation keeps mailing every call. Only
+    // "1" (box ticked and saved) narrows the report to blocked calls.
+    return s_config.mail_spam_only[0] == '1';
+}
 bool        config_mail_on_update(void)
 {
     // Default on: a firmware update is low-volume and worth telling the
@@ -1037,6 +1048,8 @@ int config_update(const config_update_t *u)
                                         s_config.mail_on_error, sizeof(s_config.mail_on_error));
     if (err == PB_KV_OK) err = set_str_if(h, K_MAIL_ON_SPAM, u->mail_on_spam,
                                         s_config.mail_on_spam, sizeof(s_config.mail_on_spam));
+    if (err == PB_KV_OK) err = set_str_if(h, K_MAIL_SPAM_ONLY, u->mail_spam_only,
+                                        s_config.mail_spam_only, sizeof(s_config.mail_spam_only));
     if (err == PB_KV_OK) err = set_str_if(h, K_MAIL_ON_UPDATE, u->mail_on_update,
                                         s_config.mail_on_update, sizeof(s_config.mail_on_update));
     if (err == PB_KV_OK) err = set_str_if(h, K_WEBHOOK_URL, u->webhook_url,

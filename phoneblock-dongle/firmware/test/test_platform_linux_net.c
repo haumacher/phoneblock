@@ -16,6 +16,8 @@
 #include <openssl/x509.h>
 
 #include "linux_test_util.h"
+#include <curl/curl.h>
+
 #include "platform.h"
 
 static void test_crypto(void)
@@ -137,6 +139,29 @@ static void test_http_errors(void)
     REQUIRE(pb_http_is_connect_error(result));
     REQUIRE(pb_http_err_name(result)[0] != '\0');
     REQUIRE(status == 0);
+    // Issue #551: the refused connection is classified as such, not as a
+    // slow answer.
+    REQUIRE(pb_http_fail_class(result) == PB_HTTP_FAIL_CONNECT);
+
+    // Probe (#551): a real lookup of a name that cannot resolve (.invalid,
+    // RFC 2606) is reported as a DNS failure, the most common cause behind
+    // "no internet" on a LAN device — not as a refused connection.
+    status = -1;
+    result = pb_http_request("GET", "http://pb-probe.invalid/", NULL, 0,
+                             NULL, 0, 5000, body, sizeof(body), NULL,
+                             &status, NULL, NULL, NULL);
+    REQUIRE(result != PB_HTTP_OK && result != PB_HTTP_ERROR);
+    REQUIRE(pb_http_fail_class(result) == PB_HTTP_FAIL_DNS);
+    REQUIRE(status == 0);
+
+    // The other causes the dashboard tells apart.
+    REQUIRE(pb_http_fail_class(PB_HTTP_OK) == PB_HTTP_FAIL_OTHER);
+    REQUIRE(pb_http_fail_class(PB_HTTP_ERROR) == PB_HTTP_FAIL_OTHER);
+    REQUIRE(pb_http_fail_class(CURLE_COULDNT_RESOLVE_HOST) == PB_HTTP_FAIL_DNS);
+    REQUIRE(pb_http_fail_class(CURLE_OPERATION_TIMEDOUT) == PB_HTTP_FAIL_TIMEOUT);
+    REQUIRE(pb_http_fail_class(CURLE_SSL_CONNECT_ERROR) == PB_HTTP_FAIL_TLS);
+    REQUIRE(pb_http_fail_class(CURLE_PEER_FAILED_VERIFICATION) == PB_HTTP_FAIL_TLS);
+    REQUIRE(pb_http_fail_class(CURLE_RECV_ERROR) == PB_HTTP_FAIL_OTHER);
 }
 
 static int server_fd;
