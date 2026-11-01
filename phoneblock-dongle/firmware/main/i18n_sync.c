@@ -160,9 +160,13 @@ static bool sha256_file_hex(const char *path, char out[65])
 // HTTP GET into a caller buffer (for the small manifest file).
 // ---------------------------------------------------------------------------
 
+// *outcome tells a definite 404 from a failure worth retrying
+// (http_fetch_classify()); a body that cannot be read in full is RETRY.
 static bool http_get_buf(const char *url, char *body, size_t cap,
-                         char *err, size_t err_cap)
+                         char *err, size_t err_cap,
+                         http_fetch_outcome_t *outcome)
 {
+    *outcome = HTTP_FETCH_RETRY;
     const pb_http_header_t headers[] = {
         { "User-Agent", http_util_user_agent() },
     };
@@ -179,6 +183,7 @@ static bool http_get_buf(const char *url, char *body, size_t cap,
     bool ok = false;
     if (status != 200) {
         snprintf(err, err_cap, "HTTP %d", status);
+        *outcome = http_fetch_classify(rc, status);
         goto out;
     }
     int total = 0;
@@ -198,6 +203,7 @@ static bool http_get_buf(const char *url, char *body, size_t cap,
         snprintf(err, err_cap, "manifest too large");
     } else {
         ok = true;
+        *outcome = HTTP_FETCH_OK;
     }
 out:
     pb_http_stream_close(stream);
@@ -675,24 +681,37 @@ static bool sync_kind_chain(cJSON *assets, const char *kind, const char *base_ur
 // ---------------------------------------------------------------------------
 
 // Fetches and parses the manifest at `url`. NULL (err set) if it cannot be
-// fetched or is not JSON.
-static cJSON *fetch_manifest(const char *url, char *err, size_t err_cap)
+// fetched or is not JSON; *outcome then says whether the server reported it
+// missing (HTTP_FETCH_ABSENT, logged by the caller) or the fetch may pass
+// later (HTTP_FETCH_RETRY, logged here).
+static cJSON *fetch_manifest(const char *url, char *err, size_t err_cap,
+                             http_fetch_outcome_t *outcome)
 {
+    *outcome = HTTP_FETCH_RETRY;
     char *buf = malloc(MANIFEST_CAP);
     if (!buf) {
         snprintf(err, err_cap, "out of memory");
         return NULL;
     }
-    if (!http_get_buf(url, buf, MANIFEST_CAP, err, err_cap)) {
-        pb_log_warn(TAG, "manifest fetch %s: %s", url, err);
+    if (!http_get_buf(url, buf, MANIFEST_CAP, err, err_cap, outcome)) {
+        if (*outcome != HTTP_FETCH_ABSENT) {
+            pb_log_warn(TAG, "manifest fetch %s: %s", url, err);
+        }
         free(buf);
         return NULL;
     }
     cJSON *root = cJSON_Parse(buf);
     free(buf);
-    if (!root) snprintf(err, err_cap, "manifest parse");
+    if (!root) {
+        snprintf(err, err_cap, "manifest parse");
+        *outcome = HTTP_FETCH_RETRY;
+    }
     return root;
 }
+
+// The bundle of this firmware is not on the CDN (#673): said once per boot,
+// later passes only at INFO.
+static bool s_bundle_absent_warned;
 
 static void run_once(void)
 {
@@ -794,9 +813,26 @@ static void run_once(void)
     bool ok = true;
     char url[256];
     snprintf(url, sizeof(url), "%s/manifest.json", base);
-    cJSON *root = fetch_manifest(url, err, sizeof(err));
+    http_fetch_outcome_t outcome;
+    cJSON *root = fetch_manifest(url, err, sizeof(err), &outcome);
     cJSON *assets = root ? cJSON_GetObjectItem(root, "assets") : NULL;
-    if (!cJSON_IsObject(assets)) {
+    if (!root && outcome == HTTP_FETCH_ABSENT) {
+        // No bundle published for this firmware (a dev build, typically):
+        // nothing to sync, not a failure. Retrying every few minutes would
+        // only poll the CDN for a file that will not appear; the daily
+        // re-check picks it up if it is published later. The packs on the
+        // device stay as they are, otherwise the embedded English is used.
+        // The audio below does not depend on the bundle.
+        if (!s_bundle_absent_warned) {
+            s_bundle_absent_warned = true;
+            pb_log_warn(TAG, "no UI/mail language pack bundle for firmware %s "
+                        "(%s: %s), using the built-in English texts",
+                        pb_firmware_version(), url, err);
+        } else {
+            pb_log_info(TAG, "still no language pack bundle at %s", url);
+        }
+        err[0] = '\0';
+    } else if (!cJSON_IsObject(assets)) {
         if (root) {
             pb_log_warn(TAG, "manifest has no assets object");
             snprintf(err, sizeof(err), "no assets");
@@ -826,7 +862,12 @@ static void run_once(void)
              AUDIO_FORMAT_VERSION);
     snprintf(url, sizeof(url), "%s/manifest.json", abase);
     char err3[64] = "";
-    cJSON *aroot = fetch_manifest(url, err3, sizeof(err3));
+    cJSON *aroot = fetch_manifest(url, err3, sizeof(err3), &outcome);
+    if (!aroot && outcome == HTTP_FETCH_ABSENT) {
+        // Unlike the bundle, the audio channel is always published: missing,
+        // it is a CDN fault, retried like any other.
+        pb_log_warn(TAG, "manifest fetch %s: %s", url, err3);
+    }
     const cJSON *aassets = audio_manifest_assets(aroot);
     if (!aassets) {
         if (aroot) {

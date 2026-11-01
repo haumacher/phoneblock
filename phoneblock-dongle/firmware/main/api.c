@@ -390,6 +390,23 @@ static int shared_request(const char *url, const pb_http_header_t *headers,
 }
 #endif
 
+// Logs a failed request whose response body is worth a look: names the
+// URL (scheme, host and path only, see http_url_for_log()) and a compact
+// summary of the body instead of the raw buffer (http_body_summary()), so
+// one log line says what was asked and what came back. `echo_text` as for
+// http_body_summary().
+static void log_body_error(const char *what, const char *problem,
+                           const char *url, const char *body, int len,
+                           bool echo_text)
+{
+    char shown_url[160];
+    char summary[HTTP_BODY_SUMMARY_TEXT_MAX + 32];
+    http_url_for_log(url, shown_url, sizeof(shown_url));
+    http_body_summary(body, len > 0 ? (size_t)len : 0, echo_text,
+                      summary, sizeof(summary));
+    pb_log_err(TAG, "%s: %s from %s: %s", what, problem, shown_url, summary);
+}
+
 // Discards a response body whose content does not matter (report-call).
 static void discard_body(const void *data, size_t length, void *context)
 {
@@ -743,8 +760,9 @@ bool phoneblock_selftest(api_phases_t *phases_opt)
         pb_log_info(TAG, "self-test: HTTP 200, token accepted");
         ok = true;
     } else {
-        pb_log_err(TAG, "self-test: HTTP %d, body: %.*s",
-                 status, resp.len, resp.data);
+        char problem[16];
+        snprintf(problem, sizeof(problem), "HTTP %d", status);
+        log_body_error("self-test", problem, url, resp.data, resp.len, true);
     }
     free(resp.data);
     return ok;
@@ -964,7 +982,9 @@ bool phoneblock_verify_auth_code(const char *code, const char *state,
     } else {
         cJSON *root = cJSON_Parse(resp.data);
         if (!root) {
-            pb_log_warn(TAG, "verify-code: bad JSON: %.*s", resp.len, resp.data);
+            // Not echoed: a well-formed answer names the account.
+            log_body_error("verify-code", "bad JSON", url, resp.data,
+                           resp.len, false);
         } else {
             cJSON *ok_node   = cJSON_GetObjectItem(root, "ok");
             cJSON *user_node = cJSON_GetObjectItem(root, "user");
@@ -1091,7 +1111,9 @@ bool phoneblock_mint_login_ticket(const char *next, char *url_out, size_t url_ca
     } else {
         cJSON *root = cJSON_Parse(resp.data);
         if (!root) {
-            pb_log_warn(TAG, "mint-ticket: bad JSON: %.*s", resp.len, resp.data);
+            // Not echoed: a well-formed answer carries a login ticket.
+            log_body_error("mint-ticket", "bad JSON", url, resp.data,
+                           resp.len, false);
         } else {
             cJSON *ticket_node = cJSON_GetObjectItem(root, "ticket");
             if (cJSON_IsString(ticket_node) && ticket_node->valuestring
