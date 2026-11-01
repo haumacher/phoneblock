@@ -387,11 +387,14 @@
   "token.current.missing": "Der er endnu ikke oprettet et token.",
   "token.submit": "Log ind på PhoneBlock",
   "link.submit": "Knyt PhoneBlock-konto",
+  "link.how": "Hvis du klikker på knappen, vises der en kode her. Åbn derefter phoneblock.net, log ind og indtast koden der. Tjenesten henter derefter selv tokenet.",
   "link.starting": "Linket forberedes…",
+  "link.compare": "Indtast denne kode på phoneblock.net for at knytte tjenesten til din konto.",
   "link.copy": "Kopier kode",
   "link.copied": "Kode kopieret",
   "link.copy_failed": "Det er ikke muligt at kopiere – koden er markeret; kopier den med Ctrl+C.",
-  "link.waiting": "Vent på din bekræftelse på phoneblock.net…",
+  "link.open": "Åbn phoneblock.net",
+  "link.manual": "Siden er {url} – du kan også indtaste koden der på en anden enhed, f.eks. på din mobiltelefon.",
   "link.approved": "PhoneBlock-konto er tilknyttet — token er indstillet.",
   "link.denied": "Linket blev afvist på phoneblock.net.",
   "link.expired": "Koden er udløbet. Anmod om en ny kode.",
@@ -460,8 +463,5 @@
   "spam.dialog.comment": "Begrundelse",
   "spam.dialog.comment.hint": "(valgfrit, bliver synligt for offentligheden)",
   "spam.dialog.error.is_contact": "Denne opkalder er gemt i din telefonbog. En telefonbogsoplysning har altid forrang på donglen, og derfor er det ikke muligt at markere opkaldet som spam her.",
-  "link.how": "Hvis du klikker på knappen, vises der en kode her. Åbn derefter phoneblock.net, log ind og indtast koden der. Tjenesten henter derefter selv tokenet.",
-  "link.compare": "Indtast denne kode på phoneblock.net for at knytte tjenesten til din konto.",
-  "link.open": "Åbn phoneblock.net",
-  "link.manual": "Siden er {url} – du kan også indtaste koden der på en anden enhed, f.eks. på din mobiltelefon."
+  "link.waiting": "Venter på, at koden indtastes på phoneblock.net…"
 }

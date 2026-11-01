@@ -33,7 +33,7 @@ Both endpoints are anonymous (no bearer token — the device has none yet), JSON
 ### `POST /api/link/start`
 
 Request: `{"appId": "PhoneBlockDongle", "label": "PhoneBlock-Dongle"}` (`label` optional, ≤ 64
-chars, shown on the confirmation page and becomes the token label).
+chars, shown on the result page and becomes the token label).
 
 Response `200`:
 
@@ -72,13 +72,14 @@ Request: `{"deviceCode": "…"}`. Response `200`: `{"status": "pending"}`, `{"st
 ### `/link` (browser page, login required)
 
 - Not logged in: the normal login (login forms, then back to `/link`).
-- `GET /link`: a code entry field (POST `action=lookup`, CSRF-protected). A `code` parameter in
-  the URL is ignored, so no link leads straight to the confirmation. Works on any device.
-- The lookup shows the account name, the device label and the code in large type with the
-  instruction to confirm only a link the user started and whose code they copied from the
-  device; buttons **[Verknüpfen]** / **[Ablehnen]** (POST, CSRF-protected).
-- After either button: a result page that calls `window.close()` and otherwise tells the user
-  to return to Home Assistant.
+- `GET /link`: the code entry field with the account name and the warning to enter only a code
+  the user requested on their own device, never one somebody else passed on. A `code`
+  parameter in the URL is ignored. Works on any device.
+- POST (CSRF-protected) with the code **approves** the link: typing in the code the device shows
+  is the consent, there is no second confirmation step (and no deny button — a code the user
+  does not want to link is simply not entered and expires).
+- The result page names the linked device (label), calls `window.close()` and otherwise tells
+  the user to return to Home Assistant.
 - Wrong codes are rate-limited per session/IP (brute force over 20⁸ codes is hopeless anyway,
   the limit keeps logs clean).
 
@@ -101,12 +102,15 @@ Old firmware, the mobile app and third-party apps keep using `/mobile/login` →
   function: store the token, self-test, seed the country once. WARN on `denied`/`error`, so the
   reason shows in the log panel.
 - Web UI, when `token_link` is set: the PhoneBlock step shows **PhoneBlock-Account verknüpfen**;
-  the click posts `api/link/start` and shows the user code large with a **Code kopieren** button
+  the click hides the start button and its explanation (nothing may start a second link while
+  one runs; failures offer their own retry), posts `api/link/start` and shows the user code large with a **Code kopieren** button
   (Clipboard API, fallback `execCommand('copy')`, last resort: the code is selected for Ctrl+C —
   the HA iframe over plain http may allow neither) and a **phoneblock.net öffnen** button to
   `verifyUrl` (`target=_blank`, a user gesture, so no popup blocker). The tab is opened only by
-  that second click, after the user has seen the code. Then it polls `api/link/status` until
-  done. Denied/expired/error show their reason and a retry button.
+  that second click, after the user has seen the code; the open button then gives way to
+  "Warten auf die Eingabe des Codes auf phoneblock.net…". It polls `api/link/status` until
+  done; on success the token line updates and the page returns to the status view.
+  Denied/expired/error show their reason and a retry button.
 
 ## Ingress test setup ("cookie-swallowing firewall")
 
@@ -137,5 +141,4 @@ opening the service directly (without the proxy) still shows the redirect flow.
 
 Code phishing: an attacker starts a link and talks a victim into typing the code in. A forwarded
 link alone does nothing (the code must be typed); further mitigation by the label and the
-instruction on the confirmation page, 10-minute expiry, single use, the deny button and the
-revocable token (listed under the account's API keys with the label).
+warning on the entry page, 10-minute expiry, single use and the revocable token (listed under the account's API keys with the label).

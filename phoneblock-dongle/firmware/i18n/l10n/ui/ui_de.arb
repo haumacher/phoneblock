@@ -1989,10 +1989,10 @@
     "description": "Hinweis: der Code kann auf der Seite {url} (Platzhalter für die Adresse, nicht übersetzen) eingegeben werden.",
     "x-translated": "ebe51cbb"
   },
-  "link.waiting": "Warte auf deine Bestätigung auf phoneblock.net…",
+  "link.waiting": "Warten auf die Eingabe des Codes auf phoneblock.net…",
   "@link.waiting": {
-    "description": "Status, während der Dienst auf die Bestätigung auf phoneblock.net wartet.",
-    "x-translated": "af4bdea9"
+    "description": "Status, nachdem phoneblock.net geöffnet wurde: der Dienst wartet, bis der Nutzer den Code dort eingegeben hat.",
+    "x-translated": "6459993"
   },
   "link.approved": "PhoneBlock-Account verknüpft — der Token ist gesetzt.",
   "@link.approved": {

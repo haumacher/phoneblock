@@ -387,11 +387,14 @@
   "token.current.missing": "Er is nog geen token ingesteld.",
   "token.submit": "Aanmelden bij PhoneBlock",
   "link.submit": "PhoneBlock-account koppelen",
+  "link.how": "Als je op de knop klikt, wordt hier een code weergegeven. Ga vervolgens naar phoneblock.net, log in en voer de code daar in. De dienst haalt het token daarna zelf op.",
   "link.starting": "De koppeling wordt voorbereid…",
+  "link.compare": "Voer deze code in op phoneblock.net om de dienst aan je account te koppelen.",
   "link.copy": "Code kopiëren",
   "link.copied": "Code gekopieerd",
   "link.copy_failed": "Kopiëren is niet mogelijk – de code is geselecteerd; kopieer deze met Ctrl+C.",
-  "link.waiting": "Wacht op je bevestiging op phoneblock.net…",
+  "link.open": "phoneblock.net openen",
+  "link.manual": "De pagina is {url} – je kunt de code daar ook op een ander apparaat invoeren, bijvoorbeeld op je mobiel.",
   "link.approved": "PhoneBlock-account gekoppeld — het token is ingesteld.",
   "link.denied": "De link is afgewezen op phoneblock.net.",
   "link.expired": "De code is verlopen. Vraag een nieuwe code aan.",
@@ -460,8 +463,5 @@
   "spam.dialog.comment": "Reden",
   "spam.dialog.comment.hint": "(optioneel, wordt openbaar weergegeven)",
   "spam.dialog.error.is_contact": "Deze beller staat in je telefoonboek. Een vermelding in het telefoonboek heeft op de dongle altijd voorrang, daarom is een spammelding hier niet mogelijk.",
-  "link.how": "Als je op de knop klikt, wordt hier een code weergegeven. Ga vervolgens naar phoneblock.net, log in en voer de code daar in. De dienst haalt het token daarna zelf op.",
-  "link.compare": "Voer deze code in op phoneblock.net om de dienst aan je account te koppelen.",
-  "link.open": "phoneblock.net openen",
-  "link.manual": "De pagina is {url} – je kunt de code daar ook op een ander apparaat invoeren, bijvoorbeeld op je mobiel."
+  "link.waiting": "Wachten op het invoeren van de code op phoneblock.net…"
 }

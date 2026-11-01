@@ -11,38 +11,6 @@
 
 	<h1 data-tx="t0001:f42b8da7">ربط الجهاز بـ PhoneBlock</h1>
 
-	<th:block th:if="${linkView == 'confirm'}">
-		<p data-tx="t0002:d151ab1a">يرغب الجهاز <strong th:text="${link.label}">PhoneBlock-Dongle</strong> في الوصول إلى حساب PhoneBlock الخاص بك <strong th:if="${linkAccount != null}" th:text="${linkAccount}">name@example.invalid</strong> (<code th:text="${userName}"></code>).</p>
-
-		<p class="has-text-centered is-size-1 has-text-weight-bold is-family-monospace" data-tx="t0003:44300d3" dir="ltr" th:text="${link.userCode}">BCDF-GHJK</p>
-
-		<article class="message is-warning">
-			<div class="message-body">
-				<p data-tx="t0004:62f093c2">لا تقم بالتأكيد إلا إذا كنت قد طلبت هذا الرمز بنفسك للتو على جهازك أو في Home Assistant وقمت بنسخه من هناك.</p>
-				<p data-tx="t0005:d3362fd0">إذا كان شخص آخر قد أرسل لك هذا الرمز، فانقر على <em>رفض</em> – وإلا فسيتم منح جهاز غريب حق الوصول إلى حسابك.</p>
-			</div>
-		</article>
-
-		<form method="post" th:action="@{/link}">
-			<input name="code" th:value="${link.userCode}" type="hidden"/>
-			<input name="csrf" th:value="${linkCsrf}" type="hidden"/>
-			<div class="field is-grouped">
-				<p class="control">
-					<button class="button is-primary" name="action" type="submit" value="approve">
-						<span class="icon"><i class="fa-solid fa-link"></i></span>
-						<span data-tx="t0006:280920f2">الربط</span>
-					</button>
-				</p>
-				<p class="control">
-					<button class="button is-danger is-outlined" name="action" type="submit" value="deny">
-						<span class="icon"><i class="fa-solid fa-xmark"></i></span>
-						<span data-tx="t0007:6bf89a5a">رفض</span>
-					</button>
-				</p>
-			</div>
-		</form>
-	</th:block>
-
 	<th:block th:if="${linkView == 'enter'}">
 		<article class="message is-danger" th:if="${linkError != null}">
 			<div class="message-body">
@@ -51,11 +19,16 @@
 				<p data-tx="t0010:84ec6915" th:if="${linkError == 'already-approved'}">تم تأكيد هذا الارتباط بالفعل.</p>
 				<p data-tx="t0011:7648da23" th:if="${linkError == 'already-denied'}">تم رفض هذا الرابط بالفعل. أعد تشغيل الرابط على جهازك.</p>
 				<p data-tx="t0012:97229cd2" th:if="${linkError == 'csrf'}">تعذر التحقق من الطلب. يرجى تحديث الصفحة وإدخال الرمز مرة أخرى.</p>
-				<p data-tx="t0013:b409c382" th:if="${linkError == 'invalid'}">طلب غير صالح.</p>
 			</div>
 		</article>
 
-		<p data-tx="t0014:e9436271">أدخل الرمز الذي يعرضه جهازك أو Home Assistant لربطه بحسابك على PhoneBlock <code th:text="${userName}"></code>.</p>
+		<p data-tx="t0014:5675e627">أدخل الرمز الذي يعرضه جهازك أو Home Assistant لربطه بحسابك على PhoneBlock <strong th:if="${linkAccount != null}" th:text="${linkAccount}">name@example.invalid</strong> (<code th:text="${userName}"></code>).</p>
+
+		<article class="message is-warning">
+			<div class="message-body">
+				<p data-tx="t0004:5ace6c61">أدخل فقط الرمز الذي طلبته بنفسك للتو على جهازك أو في Home Assistant. إذا أعطاك شخص آخر رمزًا، فلا تدخله — وإلا فسيتمكن جهاز غريب من الوصول إلى حسابك.</p>
+			</div>
+		</article>
 
 		<form method="post" th:action="@{/link}">
 			<input name="csrf" th:value="${linkCsrf}" type="hidden"/>
@@ -67,9 +40,9 @@
 			</div>
 			<div class="field">
 				<p class="control">
-					<button class="button is-primary" name="action" type="submit" value="lookup">
-						<span class="icon"><i class="fa-solid fa-arrow-right"></i></span>
-						<span data-tx="t0017:ad5e318d">تابع</span>
+					<button class="button is-primary" type="submit">
+						<span class="icon"><i class="fa-solid fa-link"></i></span>
+						<span data-tx="t0006:280920f2">الربط</span>
 					</button>
 				</p>
 			</div>
@@ -77,15 +50,9 @@
 	</th:block>
 
 	<th:block th:if="${linkView == 'done'}">
-		<article class="message is-success" th:if="${linkResult == 'approved'}">
+		<article class="message is-success">
 			<div class="message-body">
-				<p data-tx="t0018:c28b524e">تم تأكيد الربط. سيقوم جهازك بتسجيل الدخول خلال بضع ثوانٍ.</p>
-			</div>
-		</article>
-
-		<article class="message is-info" th:if="${linkResult == 'denied'}">
-			<div class="message-body">
-				<p data-tx="t0019:cb0f6cb0">تم رفض الربط. لن يتمكن الجهاز من الوصول إلى حسابك.</p>
+				<p data-tx="t0018:963c1b42"><strong th:text="${link.label}">جهاز PhoneBlock</strong> مرتبط الآن بحسابك على PhoneBlock وسيقوم بتسجيل الدخول في غضون ثوانٍ معدودة.</p>
 			</div>
 		</article>
 
