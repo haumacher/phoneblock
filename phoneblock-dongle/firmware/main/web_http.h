@@ -85,6 +85,12 @@ int web_http_send_chunk(web_http_request_t *request, const void *body,
                         size_t length);
 int web_http_send_error(web_http_request_t *request, int status,
                         const char *message);
+// Sends `size` bytes read from the open file descriptor `fd` as the whole
+// body, and closes `fd` (also on failure). Never holds the file in memory:
+// the ESP32 sends it in chunks from a small buffer, the Linux server
+// streams it from the descriptor (so WEB_HTTP_MAX_RESPONSE does not apply).
+// Returns 0 on success. Used for the call recordings (#663).
+int web_http_send_fd(web_http_request_t *request, int fd, size_t size);
 int web_http_get_header(web_http_request_t *request, const char *name,
                         char *value, size_t capacity);
 // True if the request carries header `name`, whatever its length; needs no

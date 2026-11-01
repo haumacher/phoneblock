@@ -24,6 +24,10 @@
 #endif
 
 #include "audio.h"
+#include "call_rec_cfg.h"
+#if PB_CALL_RECORDING
+#include "call_rec.h"
+#endif
 #include "config.h"
 #include "dialog.h"
 #include "dialog_store.h"
@@ -613,7 +617,21 @@ typedef struct {
     bool               rx_key_valid;
     uint8_t            rx_key[RTP_SRTP_KEY_LEN];       // remote's SDES key+salt
     dialog_set_t       set;
+#if PB_CALL_RECORDING
+    uint32_t           rec_seq;                        // call to record, 0: none
+#endif
 } rtp_dialog_args_t;
+
+#if PB_CALL_RECORDING
+// The call the next rtp_play_dialog() records (rtp_record_next_dialog()).
+// Set and read on the SIP task.
+static uint32_t s_rec_next;
+
+void rtp_record_next_dialog(uint32_t call_seq)
+{
+    s_rec_next = call_seq;
+}
+#endif
 
 static uint32_t dialog_rng(void *ctx)
 {
@@ -652,10 +670,16 @@ static void mix_frame(uint8_t *out, uint32_t *rng, int amp,
 }
 
 // Decrypts (if `rx`) and parses one received datagram and feeds its PCMA
-// audio to the VAD, the VAD's transitions to the dialog. Returns false if
-// the packet was not usable audio.
+// audio to the VAD, the VAD's transitions to the dialog — and to the
+// recording, if the call is recorded. Returns false if the packet was not
+// usable audio.
+#if PB_CALL_RECORDING
+static bool dialog_rx_packet(uint8_t *buf, int len, srtp_t rx, vad_t *vad,
+                             dialog_sm_t *dlg, call_rec_t *rec)
+#else
 static bool dialog_rx_packet(uint8_t *buf, int len, srtp_t rx, vad_t *vad,
                              dialog_sm_t *dlg)
+#endif
 {
     if (rx) {
 #ifdef ESP_PLATFORM
@@ -672,6 +696,15 @@ static bool dialog_rx_packet(uint8_t *buf, int len, srtp_t rx, vad_t *vad,
     const uint8_t *payload;
     size_t n;
     if (!rtp_rx_payload(buf, (size_t)len, PT_PCMA, &payload, &n)) return false;
+#if PB_CALL_RECORDING
+    if (rec) {
+        // The RTP timestamp places the samples in the recording's jitter
+        // buffer (rtp_rx_payload() checked the 12-byte header).
+        uint32_t ts = ((uint32_t)buf[4] << 24) | ((uint32_t)buf[5] << 16)
+                    | ((uint32_t)buf[6] << 8)  |  (uint32_t)buf[7];
+        call_rec_rx(rec, ts, payload, n);
+    }
+#endif
 
     // One VAD frame per FRAME_SAMPLES; a 30 ms packet becomes 20 + 10 ms.
     while (n > 0) {
@@ -695,6 +728,9 @@ static void rtp_dialog_task(void *arg)
     // its clip and `clip_left` bytes from there.
     FILE *clips = NULL;
     uint32_t clip_left = 0;
+#if PB_CALL_RECORDING
+    call_rec_t *rec = NULL;
+#endif
 
     int sock = rtp_socket_ensure();
     if (sock < 0) goto done;
@@ -755,6 +791,12 @@ static void rtp_dialog_task(void *arg)
                 deaf ? "unreadable" : (srtp_rx ? "SRTP" : "plain"),
                 silence_db, min_silence_ms);
 
+#if PB_CALL_RECORDING
+    // Opt-in (config_rec_enabled(), checked by the SIP task). The writer
+    // task does every flash access; this task only fills its RAM ring.
+    if (a->rec_seq) rec = call_rec_begin(a->rec_seq);
+#endif
+
     dialog_sm_t dlg;
     dialog_action_t act = dialog_start(&dlg, a->set.count, dialog_rng, NULL);
     bool clip_done = true;
@@ -806,7 +848,11 @@ static void rtp_dialog_task(void *arg)
             // not (a deaf dialog still sees the media stop).
             dialog_rx(&dlg);
             if (deaf) continue;
+#if PB_CALL_RECORDING
+            if (dialog_rx_packet(rbuf, rn, srtp_rx, &vad, &dlg, rec)) rx_audio++;
+#else
             if (dialog_rx_packet(rbuf, rn, srtp_rx, &vad, &dlg)) rx_audio++;
+#endif
             else rx_other++;
         }
 
@@ -820,6 +866,10 @@ static void rtp_dialog_task(void *arg)
             if (clip_left == 0) clip_done = true;
         }
         mix_frame(pkt + RTP_HEADER_BYTES, &noise_rng, noise_amp, chunk, chunk_n);
+#if PB_CALL_RECORDING
+        // The frame as sent, mixed with the caller's audio of this tick.
+        call_rec_tick(rec, pkt + RTP_HEADER_BYTES);
+#endif
         rtp_tx_frame(&tx, pkt);
 
         pb_task_delay_until(&next, FRAME_MS);
@@ -833,6 +883,9 @@ static void rtp_dialog_task(void *arg)
     pb_net_low_latency(false);
 
 done:
+#if PB_CALL_RECORDING
+    call_rec_end(rec);
+#endif
     if (clips) fclose(clips);
     if (srtp_tx) srtp_dealloc(srtp_tx);
     if (srtp_rx) srtp_dealloc(srtp_rx);
@@ -855,6 +908,10 @@ void rtp_play_dialog(const struct sockaddr_in *dest, const rtp_srtp_tx_t *srtp,
         memcpy(args->rx_key, srtp_rx_key, RTP_SRTP_KEY_LEN);
     }
     args->set = *set;
+#if PB_CALL_RECORDING
+    args->rec_seq = s_rec_next;
+    s_rec_next = 0;
+#endif
     s_abort = false;
     s_streaming = true;   // before the task starts, see rtp_play_audio
     if (pb_task_create(rtp_dialog_task, args, "rtp_dialog", RTP_DIALOG_STACK,

@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
+#include <unistd.h>
 
 // Request bodies are buffered before the login check, so the cap
 // (WEB_HTTP_MAX_BODY, web_http.h) bounds what any LAN client can make the
@@ -45,6 +46,10 @@ struct web_http_request {
     char *response_body;
     size_t response_length;
     size_t response_capacity;
+    // web_http_send_fd(): the body is this file (0 = none, else fd + 1, so a
+    // calloc'ed request has none), streamed by libmicrohttpd.
+    int response_fd1;
+    size_t response_fd_size;
     response_header_t headers[32];
     size_t header_count;
     unsigned status;
@@ -75,6 +80,7 @@ static void request_free(web_http_request_t *request)
         free(request->headers[index].value);
     }
     free(request->response_body);
+    if (request->response_fd1) close(request->response_fd1 - 1);
     free(request->body);
     free(request->method);
     free(request->url);
@@ -193,8 +199,16 @@ static int reserve_response(web_http_request_t *request, size_t needed)
 
 static int queue_request_response(web_http_request_t *request)
 {
-    struct MHD_Response *response = MHD_create_response_from_buffer(
-        request->response_length, request->response_body, MHD_RESPMEM_MUST_COPY);
+    struct MHD_Response *response;
+    if (request->response_fd1) {
+        // libmicrohttpd owns the descriptor from here on and closes it.
+        response = MHD_create_response_from_fd(request->response_fd_size,
+                                               request->response_fd1 - 1);
+        if (response) request->response_fd1 = 0;
+    } else {
+        response = MHD_create_response_from_buffer(
+            request->response_length, request->response_body, MHD_RESPMEM_MUST_COPY);
+    }
     if (!response) return MHD_NO;
     for (size_t index = 0; index < request->header_count; index++) {
         if (MHD_add_response_header(response, request->headers[index].name,
@@ -494,6 +508,19 @@ int web_http_send_chunk(web_http_request_t *request, const void *body,
         return -1;
     if (length) memcpy(request->response_body + request->response_length, body, length);
     request->response_length += length;
+    return 0;
+}
+
+int web_http_send_fd(web_http_request_t *request, int fd, size_t size)
+{
+    if (!request || fd < 0) {
+        if (fd >= 0) close(fd);
+        return -1;
+    }
+    if (request->response_fd1) close(request->response_fd1 - 1);
+    request->response_fd1 = fd + 1;
+    request->response_fd_size = size;
+    request->response_length = 0;
     return 0;
 }
 

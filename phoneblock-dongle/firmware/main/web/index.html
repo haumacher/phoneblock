@@ -1612,6 +1612,7 @@ function renderStatus(){
     + '</label>'
     + '</div>'
     + '</details>'
+    + '<div id="recSection" style="display:none"></div>'
     + '</div>'
     + '<p class="opt">'
     + '  <label title="' + esc(t('status.ann.accept_test.help')) + '" '
@@ -1774,6 +1775,20 @@ let stickyLoginError = false;
 function langName(code){
   const opt = document.querySelector('#langSelect option[value="' + code + '"]');
   return opt ? opt.textContent : code;
+}
+
+// Call recordings (#663): only the S3 and the Linux service have them, and
+// their UI is rec.js, loaded the first time /api/status says so.
+let recLoading = false;
+function recStatus(r){
+  if (!r || !r.available) return;
+  if (window.PBRec){ PBRec.status(r); return; }
+  if (recLoading) return;
+  recLoading = true;
+  const sc = document.createElement('script');
+  sc.src = 'rec.js';
+  sc.onload = () => refreshAll();
+  document.head.appendChild(sc);
 }
 
 async function postConfig(params){
@@ -2378,6 +2393,7 @@ async function refreshAll(){
   // Answer-bot mode and dialog settings (#429). Older firmware has no
   // `dialog` object: the controls stay hidden there.
   renderDialog(s.dialog, (s.announcement || {}).custom);
+  recStatus(s.recording);
 
   // SIP pill + detail
   const sipPill = $('sipPill');
@@ -2789,7 +2805,8 @@ async function refreshAll(){
       // v-SUSPECT (green would wrongly imply "fine"), an un-rated number
       // gets neutral v-UNKNOWN, and spam/blacklist share red.
       const verdictCls = verdictClass(c.assessment);
-      return '<tr><td>' + esc(callWhen(c)) + '</td>'
+      // The recording's controls (#663, rec.js) beside the time.
+      return '<tr><td>' + esc(callWhen(c)) + (window.PBRec ? PBRec.cell(c) : '') + '</td>'
         + '<td>' + numCol + '</td>'
         + '<td>' + nameCol + (act.contact ? pbAddButton(c.number) : '') + '</td>'
         + '<td class="v-' + esc(verdictCls) + '">' + esc(verdictLabel(c))
@@ -2800,6 +2817,7 @@ async function refreshAll(){
   }
   if (!tbody.onclick){
     tbody.onclick = (e) => {
+      if (window.PBRec && PBRec.click(e)) return;
       const add = e.target.closest('button[data-pbnum]');
       if (add) { pbOpenAddContact(add.dataset.pbnum); return; }
       const spam = e.target.closest('button[data-spamnum]');

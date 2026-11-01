@@ -174,3 +174,29 @@ uint64_t storage_budget_lfs_dialog_room(const storage_lfs_geometry_t *g,
 // storage_budget_lfs_dialog_room(); 0 if none is (no published set fits).
 uint64_t storage_budget_lfs_dialog(const storage_lfs_geometry_t *g,
                                    uint64_t total);
+
+// --- Call recordings (#663) --------------------------------------------------
+//
+// The recordings of dialog calls (call_rec.h) exist on the S3 and on Linux
+// only. They do not take part in the precedence above: the community list
+// never yields to them and they never claim its room. Instead they have a
+// fixed cap of their own — counted in whole blocks (a recording of n bytes
+// takes storage_budget_lfs_file_blocks(n) blocks) — which the S3's ~9.6 MB
+// partition holds next to everything else at its fullest: a dialog set at
+// the L ceiling, the packs with a pack update's second copy, the personal
+// list, the speakers index, the 200-call list, the server's largest
+// community bucket (512 KB) and the reserve, plus the recordings
+// directory's metadata pair. That leaves ~6.9 MB, so a 4 MB cap keeps
+// ~2.9 MB to spare — what an own announcement and the localized one take
+// when the user switches back to announcement mode with recordings still
+// stored (test_storage_budget.c checks the numbers, test_storage_sim_s3 —
+// test_storage_sim.c built for the S3 — runs 60 days of it on the real
+// littlefs core).
+//
+// Per call: 5 min (2.4 MB) on the S3 — a spam caller who is still talking
+// after that has long been wasted enough time — and 30 min on Linux, whose
+// cap is a plain 200 MB of the data directory.
+#define STORAGE_REC_LFS_CAP         (4u * 1024u * 1024u)
+#define STORAGE_REC_LFS_CALL_MAX    (5u * 60u * 8000u)
+#define STORAGE_REC_HOSTFS_CAP      (200ull * 1024u * 1024u)
+#define STORAGE_REC_HOSTFS_CALL_MAX (30u * 60u * 8000u)

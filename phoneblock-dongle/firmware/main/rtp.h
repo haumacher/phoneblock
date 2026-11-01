@@ -11,6 +11,7 @@
 #endif
 
 #include "announcement.h"
+#include "call_rec_cfg.h"
 #include "dialog.h"
 
 // The UDP port the dongle binds for RTP audio is configurable via
@@ -63,6 +64,13 @@ void rtp_play_audio(const struct sockaddr_in *dest,
 // (pb_net_low_latency()). All arguments are copied.
 void rtp_play_dialog(const struct sockaddr_in *dest, const rtp_srtp_tx_t *srtp,
                      const uint8_t *srtp_rx_key, const dialog_set_t *set);
+
+#if PB_CALL_RECORDING
+// The next rtp_play_dialog() records the conversation as the recording of
+// the listed call `call_seq` (call_rec.h, #663); 0 = do not record. Applies
+// to that one dialog only. Call it on the SIP task right before.
+void rtp_record_next_dialog(uint32_t call_seq);
+#endif
 
 // Ensure the singleton RTP UDP socket exists and is bound to
 // config_rtp_port(); returns its fd or -1 on failure. The socket is

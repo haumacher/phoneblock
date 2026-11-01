@@ -43,6 +43,9 @@
   "status.calls.col.number": "编号",
   "status.calls.col.name": "姓名",
   "status.calls.col.verdict": "判决书",
+  "status.calls.show_all": "显示全部 ({count})",
+  "status.calls.show_less": "显示更少",
+  "status.calls.time_unknown": "未知",
   "status.calls.clear": "清空列表",
   "status.calls.log_known": "记录已知来电者",
   "status.calls.log_known.help": "如果此功能被禁用，通讯录中的号码和内部代码（**、*…）拨打的电话将不会显示在列表中——但顶部的计数器仍会更新。",
@@ -464,7 +467,14 @@
   "spam.dialog.comment": "原因",
   "spam.dialog.comment.hint": "（可选，将对公众可见）",
   "spam.dialog.error.is_contact": "该来电者已存入你的通讯录。通讯录中的联系人信息在加密狗中始终具有优先权，因此此处不会触发垃圾短信提示。",
-  "status.calls.show_all": "显示全部 ({count})",
-  "status.calls.show_less": "显示更少",
-  "status.calls.time_unknown": "未知"
+  "status.rec.enable": "录制对话模式下的通话",
+  "status.rec.help": "该加密狗会录制其在对话模式下与垃圾电话拨打者进行的通话——包括双方内容，每次通话最长录制{min}分钟。 你可以在通话记录中播放、下载和删除这些录音；如果通话记录中某通电话被移除，其录音也将被删除。",
+  "status.rec.legal": "电话通话的录音由你负责（《德国刑法典》第201条，《通用数据保护条例》）。",
+  "status.rec.usage": "{count} 张照片，占用 {used} {cap} MB 空间。",
+  "status.rec.play": "播放录音",
+  "status.rec.stop": "暂停播放",
+  "status.rec.download": "下载录音（WAV）",
+  "status.rec.delete": "删除录音",
+  "status.rec.delete.confirm": "要删除这条录音吗？该通话仍会保留在列表中。",
+  "status.rec.failed": "无法加载该照片。"
 }

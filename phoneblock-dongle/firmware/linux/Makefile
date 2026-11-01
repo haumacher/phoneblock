@@ -22,6 +22,7 @@ LINUX_GOALS ?= all linux-firmware phoneblock_linux
 LINUX_BUILD_DIR := ../build/linux-host
 LINUX_WEB_DIR := $(LINUX_BUILD_DIR)/web
 LINUX_WEB_ASSETS := $(LINUX_WEB_DIR)/index.html.gz \
+                    $(LINUX_WEB_DIR)/rec.js.gz \
                     $(LINUX_WEB_DIR)/ab-logo-bot.svg \
                     $(LINUX_WEB_DIR)/ui_en.json
 # pkg-config is required: without it the include flags would silently come
@@ -41,7 +42,8 @@ LINUX_CORE_SOURCES := ../core/platform_linux.c ../core/platform_linux_net.c \
 LINUX_MAIN_SOURCES := ../main/announcement.c ../main/api.c ../main/api_fail.c \
                       ../main/api_scan.c \
                       ../main/audio.c ../main/blocklist_lookup.c \
-                      ../main/blocklist_sync.c ../main/config.c \
+                      ../main/blocklist_sync.c ../main/call_rec.c \
+                      ../main/call_rec_mix.c ../main/config.c \
                       ../main/dialog.c ../main/dialog_manifest.c ../main/audio_manifest.c \
                       ../main/dialog_store.c \
                       ../main/firmware_update.c ../main/heap_guard_linux.c \
@@ -57,7 +59,7 @@ LINUX_MAIN_SOURCES := ../main/announcement.c ../main/api.c ../main/api_fail.c \
                       ../main/sip_auth.c ../main/sip_frame.c \
                       ../main/selftest.c ../main/sip_register.c ../main/sip_response.c \
                       ../main/sip_srv.c ../main/sip_transport.c \
-                      ../main/stats.c ../main/storage.c \
+                      ../main/stats.c ../main/storage.c ../main/storage_budget.c \
                       ../main/sync.c ../main/time_sync_linux.c \
                       ../main/time_sync_tz.c ../main/tr064.c \
                       ../main/vad.c ../main/version_cmp.c \
@@ -113,6 +115,10 @@ $(LINUX_BUILD_DIR)/phoneblock-dongle: ../main/main_linux.c \
 	  $(LDFLAGS) $(LINUX_NET_LIBS) -o $@
 
 $(LINUX_WEB_DIR)/index.html.gz: ../main/web/index.html
+	mkdir -p $(@D)
+	gzip -9 -n -c $< > $@
+
+$(LINUX_WEB_DIR)/rec.js.gz: ../main/web/rec.js
 	mkdir -p $(@D)
 	gzip -9 -n -c $< > $@
 

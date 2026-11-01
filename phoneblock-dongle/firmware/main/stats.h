@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "api.h"  // verdict_t
+#include "call_rec_cfg.h"  // PB_CALL_RECORDING
 
 #ifdef ESP_PLATFORM
 #include "sdkconfig.h"   // CONFIG_ESPTOOLPY_FLASHSIZE_16MB
@@ -192,6 +193,16 @@ void stats_record_call_checked(const char *number, const char *display,
 // listener; NULL removes it.
 typedef void (*stats_call_listener_t)(uint32_t seq);
 void stats_set_call_listener(stats_call_listener_t listener);
+
+#if PB_CALL_RECORDING
+// Called (outside the stats lock, on the recording task) whenever calls may
+// have left the list: after a call was listed (the ring may have wrapped)
+// and after stats_clear_calls(). Every call below `keep_from` is gone. The
+// call recordings (call_rec.c, #663) delete theirs. One hook; NULL removes
+// it.
+typedef void (*stats_drop_hook_t)(uint32_t keep_from);
+void stats_set_drop_hook(stats_drop_hook_t hook);
+#endif
 
 // Sequence number of the call most recently added to the list, 0 before
 // the first (since the file was created). sip_register.c compares it before and after screening a call

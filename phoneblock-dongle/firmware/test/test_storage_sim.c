@@ -24,6 +24,18 @@
 //    day the i18n assets are re-downloaded and the day the user uploads a
 //    recording.
 //
+// Built a second time as test_storage_sim_s3 (-DSIM_S3, the partition of
+// partitions-16mb.csv): the T-Dongle-S3's dialog set at the L ceiling, its
+// 200-call list, the server's largest community bucket (512 KB) — and the
+// call recordings (#663) under rec/: in dialog mode every call of the day
+// recorded right after the blocklist sync, written the way call_rec.c's
+// writer does (rec/<seq>.tmp in runs of 5 frames, renamed to <seq>.al,
+// shorter than 1 s removed), oldest first evicted to keep the 4 MB cap
+// (STORAGE_REC_LFS_CAP), the recording of a call that leaves the list
+// removed with it, all of them on "clear list". And the device switched
+// back to announcement mode with the set and a full cap of recordings
+// still stored. Same bar: no failed write, no WARN/ERROR.
+//
 // File contents are synthetic; sizes are the CDN's real asset sizes.
 #include <stdarg.h>
 #include <stdio.h>
@@ -97,7 +109,11 @@ static long dialog_bytes(void)
 }
 
 // The community bucket a large list gets.
+#ifdef SIM_S3
+#define SIM_BUCKET  (512 * KB)
+#else
 #define SIM_BUCKET  (128 * KB)
+#endif
 
 typedef struct {
     int  write_failures;     // writes littlefs refused (LFS_ERR_NOSPC etc.)
@@ -233,11 +249,15 @@ static void new_upload(long size)
 
 // --- The call list (#589) ------------------------------------------------------
 
-// The 4 MB boards' call list (stats.h), as stats.c writes it: created record
-// by record at full size, each call one record written in place, a spam
-// call's duration a second write into the same record, the mail's mark the
-// header.
+// The call list (stats.h) as stats.c writes it: created record by record at
+// full size, each call one record written in place, a spam call's duration a
+// second write into the same record, the mail's mark the header. The 4 MB
+// boards keep 50 calls, the S3 200.
+#ifdef SIM_S3
+#define CALLS_CAP   STATS_CALL_CAPACITY_LARGE
+#else
 #define CALLS_CAP   STATS_CALL_CAPACITY_SMALL
+#endif
 #define CALLS_BYTES STATS_CALLS_FILE_BYTES(CALLS_CAP)
 #define CALLS_PER_DAY 5
 
@@ -261,6 +281,11 @@ static void calls_write(size_t offset, size_t size)
     }
 }
 
+#ifdef SIM_S3
+static void rec_call(unsigned seq);
+static void rec_left_list(unsigned seq);
+#endif
+
 static void calls_day(void)
 {
     for (int i = 0; i < CALLS_PER_DAY; i++) {
@@ -268,16 +293,181 @@ static void calls_day(void)
         size_t at = STATS_CALL_HEADER_BYTES
                   + (seq % CALLS_CAP) * (size_t) STATS_CALL_RECORD_BYTES;
         calls_write(at, STATS_CALL_RECORD_BYTES);
+#ifdef SIM_S3
+        // The call that this one pushed out of the list takes its recording
+        // with it (stats.c's drop hook); then this call's own.
+        if (seq > CALLS_CAP) rec_left_list(seq - CALLS_CAP);
+        rec_call(seq);
+#endif
         if (i % 2 == 0) calls_write(at, STATS_CALL_RECORD_BYTES);   // duration
     }
     calls_write(0, STATS_CALL_HEADER_BYTES);                      // mail mark
 }
+
+#ifdef SIM_S3
+// --- The call recordings (#663) ------------------------------------------------
+
+// What call_rec.c does with rec/ on the S3: `s_rec_on` records every call
+// (dialog mode with recording switched on).
+#define REC_FRAME_BYTES 160u
+#define REC_WRITE      (5u * REC_FRAME_BYTES)    // one writer poll: 100 ms
+#define REC_MAX_STORED 64
+
+static bool s_rec_on;
+static struct { unsigned seq; long bytes; } s_rec[REC_MAX_STORED];  // oldest first
+static int  s_rec_count;
+static long s_rec_used, s_rec_peak;    // footprint (whole blocks) of the stored ones
+static int  s_rec_saved, s_rec_evicted, s_rec_dropped, s_rec_discarded;
+
+static long rec_footprint(long bytes)
+{
+    static const storage_lfs_geometry_t g = { .block_size = SIM_BLOCK_SIZE };
+    return (long) (storage_budget_lfs_file_blocks(&g, (uint64_t) bytes) * SIM_BLOCK_SIZE);
+}
+
+static void rec_path(char *buf, size_t cap, unsigned seq, const char *ext)
+{
+    snprintf(buf, cap, "/rec/%u.%s", seq, ext);
+}
+
+static void rec_remove_at(int i)
+{
+    char path[32];
+    rec_path(path, sizeof(path), s_rec[i].seq, "al");
+    if (!sim_unlink(path)) {
+        s_out.write_failures++;
+        printf("    %s cannot be removed\n", path);
+    }
+    s_rec_used -= rec_footprint(s_rec[i].bytes);
+    memmove(&s_rec[i], &s_rec[i + 1], (size_t) (s_rec_count - i - 1) * sizeof(s_rec[0]));
+    s_rec_count--;
+}
+
+static void rec_store(unsigned seq, long bytes)
+{
+    if (s_rec_count == REC_MAX_STORED) { s_out.write_failures++; return; }
+    s_rec[s_rec_count].seq = seq;
+    s_rec[s_rec_count].bytes = bytes;
+    s_rec_count++;
+    s_rec_used += rec_footprint(bytes);
+    if (s_rec_used > s_rec_peak) s_rec_peak = s_rec_used;
+}
+
+// The length of call `seq`'s recording: a mix of short and long calls, every
+// fifth one at the per-call maximum, now and then one under 1 s.
+static long rec_length(unsigned seq)
+{
+    static const long secs[] = { 300, 45, 180, 0, 120, 300, 20, 240, 60, 300 };
+    long s = secs[seq % (sizeof(secs) / sizeof(secs[0]))];
+    return s ? s * 8000 : 4000;
+}
+
+static void rec_write(unsigned seq, long bytes)
+{
+    if (bytes > (long) STORAGE_REC_LFS_CALL_MAX) bytes = STORAGE_REC_LFS_CALL_MAX;
+    // make_room() as the recording grows: the oldest go until the finished
+    // one fits the cap — the same set the writer evicts run by run.
+    while (s_rec_count > 0 && s_rec_used + rec_footprint(bytes) > (long) STORAGE_REC_LFS_CAP) {
+        rec_remove_at(0);
+        s_rec_evicted++;
+    }
+    if (s_rec_used + rec_footprint(bytes) > s_rec_peak) s_rec_peak = s_rec_used + rec_footprint(bytes);
+    char tmp[32], fin[32];
+    rec_path(tmp, sizeof(tmp), seq, "tmp");
+    rec_path(fin, sizeof(fin), seq, "al");
+    size_t w;
+    if (!sim_write_file(tmp, (size_t) bytes, REC_WRITE, &w)) {
+        s_out.write_failures++;
+        printf("    recording %s failed at %zu of %ld B (littlefs %d)\n",
+               tmp, w, bytes, sim_last_err());
+        sim_unlink(tmp);
+        return;
+    }
+    if (bytes < 8000) {                       // under 1 s: discarded
+        sim_unlink(tmp);
+        s_rec_discarded++;
+        return;
+    }
+    if (!sim_rename(tmp, fin)) {
+        s_out.write_failures++;
+        printf("    rename of %s failed\n", tmp);
+        return;
+    }
+    rec_store(seq, bytes);
+    s_rec_saved++;
+}
+
+static void rec_call(unsigned seq)
+{
+    if (s_rec_on) rec_write(seq, rec_length(seq));
+}
+
+static void rec_left_list(unsigned seq)
+{
+    for (int i = 0; i < s_rec_count; i++) {
+        if (s_rec[i].seq == seq) { rec_remove_at(i); s_rec_dropped++; return; }
+    }
+}
+
+// "Clear list": every recording with it.
+static void rec_clear(void)
+{
+    while (s_rec_count > 0) { rec_remove_at(0); s_rec_dropped++; }
+}
+
+static void rec_reset(void)
+{
+    s_rec_count = 0;
+    s_rec_used = s_rec_peak = 0;
+    s_rec_saved = s_rec_evicted = s_rec_dropped = s_rec_discarded = 0;
+}
+
+// Back in announcement mode after dialog use with recording on: the set at
+// the L ceiling and a full cap of recordings are still stored (neither goes
+// with the switch), written before day 0.
+static bool s_rec_leftover;
+static long s_rec_prefilled;   // footprint written by rec_prefill()
+static int  s_rec_prefilled_n;
+
+static void rec_prefill(void)
+{
+    size_t w;
+    long set = (long) storage_dialog_budget();
+    if (!sim_write_file("/dialog-de.alaw", (size_t) set, STORAGE_WRITE_BUF, &w)
+        || !sim_write_file("/dialog.idx", DIALOG_INDEX, STORAGE_WRITE_BUF, &w)) {
+        s_out.write_failures++;
+        return;
+    }
+    // 1 min each, as many as the cap takes.
+    unsigned seq = 1;
+    while (s_rec_used + rec_footprint(60 * 8000) <= (long) STORAGE_REC_LFS_CAP) {
+        rec_write(seq++, 60 * 8000);
+    }
+    s_call_seq = seq - 1;      // those calls are in the list
+    s_rec_evicted = 0;
+    s_rec_saved = s_rec_discarded = 0;
+    s_rec_prefilled = s_rec_used;
+    s_rec_prefilled_n = s_rec_count;
+}
+
+// Every stored recording is on flash at its size.
+static bool rec_consistent(void)
+{
+    for (int i = 0; i < s_rec_count; i++) {
+        char path[32];
+        rec_path(path, sizeof(path), s_rec[i].seq, "al");
+        if (sim_file_size(path) != s_rec[i].bytes) return false;
+    }
+    return true;
+}
+#endif
 
 // --- The cycle ---------------------------------------------------------------
 
 #define DAYS        60
 #define I18N_DAY    30    // a release with changed assets: all re-downloaded
 #define UPLOAD_DAY  20    // the user records a new announcement
+#define CLEAR_DAY   50    // S3: the user clears the call list (recordings)
 
 static outcome_t run(const device_t *d)
 {
@@ -293,6 +483,11 @@ static outcome_t run(const device_t *d)
     if (d->dialog) sim_unlink("/announcement.alaw");
     // The first boot of 1.7 creates the call list, before any sync.
     calls_create();
+#ifdef SIM_S3
+    rec_reset();
+    if (!sim_mkdir("/rec")) s_out.write_failures++;
+    if (s_rec_leftover) rec_prefill();
+#endif
     sim_log_reset();
 
     for (int day = 0; day < DAYS; day++) {
@@ -312,6 +507,9 @@ static outcome_t run(const device_t *d)
         // The calls of the day, at the partition's fullest: the blocklist
         // sync just took what the budget left.
         calls_day();
+#ifdef SIM_S3
+        if (day == CLEAR_DAY && s_rec_on) rec_clear();   // the user clears the list
+#endif
     }
     if (sim_file_size("/calls.bin") != CALLS_BYTES) {
         s_out.write_failures++;
@@ -345,9 +543,15 @@ static void test_geometry(void)
     CHECK(storage_info(&t, &u) && t == (size_t) SIM_PART_SIZE && u == 2 * SIM_BLOCK_SIZE,
           "%d KB partition reports %zu B total, %zu used (the root pair)",
           SIM_PART_SIZE / 1024, t, u);
+#ifdef SIM_S3
+    // The S3's partition takes the L ceiling (storage_budget.h).
+    CHECK((long) storage_dialog_budget() == (long) STORAGE_DIALOG_PLAIN_FS_MAX,
+          "dialog budget %ld KB", (long) storage_dialog_budget() / KB);
+#else
     // The 640 KB partition takes the M tier (storage_budget.h).
     CHECK((long) storage_dialog_budget() == (long) STORAGE_DIALOG_TIER_M,
           "dialog budget %ld KB", (long) storage_dialog_budget() / KB);
+#endif
     // Not mounted: the tier of the 640 KB partitions as well.
     sim_unmount();
     CHECK((long) storage_dialog_budget() == (long) STORAGE_DIALOG_TIER_M
@@ -516,6 +720,69 @@ static void test_policy(void)
           o.community_bytes / KB);
 }
 
+#ifdef SIM_S3
+static void test_recordings(void)
+{
+    printf("S3 call recordings (#663): %d days, %d calls a day\n", DAYS, CALLS_PER_DAY);
+    static const device_t dialog_rows[] = {
+        // custom ann       ui       list        upload dialog
+        {  0,    79 * KB,  29 * KB,   40 * KB,  false, true }, // default list
+        {  0,    79 * KB,  29 * KB, 1000 * KB,  true,  true }, // the 512 KB bucket
+        {  0,    96 * KB,  49 * KB, 1000 * KB,  true,  true }, // largest assets
+    };
+    s_rec_on = true;
+    for (size_t i = 0; i < sizeof(dialog_rows) / sizeof(dialog_rows[0]); i++) {
+        const device_t *d = &dialog_rows[i];
+        outcome_t o = run(d);
+        long want = d->list < SIM_BUCKET ? d->list : SIM_BUCKET;
+        CHECK(o.write_failures == 0 && sim_log_count('W') == 0
+              && sim_log_count('E') == 0 && o.dialog_present
+              && o.refusals == 0 && o.community_days == DAYS
+              && o.community_bytes >= want
+              && s_rec_peak <= (long) STORAGE_REC_LFS_CAP && rec_consistent()
+              && s_rec_saved > 0 && s_rec_evicted > 0 && s_rec_discarded > 0
+              && s_rec_dropped > 0,
+              "%s: %d failed writes, set %s, community %ld KB (on %d of %d days); "
+              "recordings: %d saved, %d evicted, %d discarded (< 1 s), %d with "
+              "their call, peak %ld of %ld KB",
+              describe(d), o.write_failures, o.dialog_present ? "kept" : "ABSENT",
+              o.community_bytes > 0 ? o.community_bytes / KB : 0,
+              o.community_days, DAYS, s_rec_saved, s_rec_evicted,
+              s_rec_discarded, s_rec_dropped, s_rec_peak / KB,
+              (long) STORAGE_REC_LFS_CAP / KB);
+    }
+    s_rec_on = false;
+
+    // Back in announcement mode with the set and a full cap of recordings
+    // left: the own announcement (up to its 240 KB) and the localized one
+    // still fit, the community list still gets its bucket every day. The
+    // recordings belong to the first calls of the list and leave with them
+    // once 200 newer calls have come in (day 40), not before.
+    static const device_t back_rows[] = {
+        // custom    ann       ui       list        upload dialog
+        {   0,       96 * KB,  49 * KB, 1000 * KB,  true,  false },
+        { 220 * KB,  96 * KB,  49 * KB, 1000 * KB,  true,  false },
+    };
+    s_rec_leftover = true;
+    for (size_t i = 0; i < sizeof(back_rows) / sizeof(back_rows[0]); i++) {
+        const device_t *d = &back_rows[i];
+        outcome_t o = run(d);
+        CHECK(o.write_failures == 0 && sim_log_count('W') == 0
+              && sim_log_count('E') == 0 && o.refusals == 0
+              && o.community_days == DAYS && o.community_bytes >= SIM_BUCKET
+              && s_rec_prefilled > (long) STORAGE_REC_LFS_CAP - 512 * KB
+              && s_rec_dropped == s_rec_prefilled_n && s_rec_count == 0
+              && sim_file_size("/announcement.alaw") > 0,
+              "back in announcement mode, %s, %ld KB of recordings (%d, gone with "
+              "their calls: %d): %d failed writes, community %ld KB (on %d of %d days)",
+              describe(d), s_rec_prefilled / KB, s_rec_prefilled_n, s_rec_dropped,
+              o.write_failures, o.community_bytes > 0 ? o.community_bytes / KB : 0,
+              o.community_days, DAYS);
+    }
+    s_rec_leftover = false;
+}
+#endif
+
 static void test_self_healing(void)
 {
     printf("an oversized list is replaced by one within the budget\n");
@@ -638,6 +905,9 @@ int main(void)
     test_policy();
     test_self_healing();
     test_dialog_replacement();
+#ifdef SIM_S3
+    test_recordings();
+#endif
 
     printf("\n%d checks, %d failed\n", tests_run, tests_failed);
     return tests_failed ? 1 : 0;

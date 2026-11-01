@@ -5,8 +5,11 @@
 set(_board_srcs)
 set(_board_requires)
 idf_build_get_property(_target IDF_TARGET)
+# The call recordings (#663, call_rec_cfg.h) likewise: the 16 MB S3 only, the
+# 4 MB boards carry none of their code, web UI or strings.
 if(_target STREQUAL "esp32s3")
     list(APPEND _board_srcs "display.c" "display_model.c" "lcd_font.c" "lcd_logo.c")
+    list(APPEND _board_srcs "call_rec.c" "call_rec_mix.c")
     list(APPEND _board_requires esp_lcd esp_driver_spi esp_driver_ledc)
 endif()
 
@@ -50,11 +53,18 @@ idf_component_register(
 # no downloaded pack for the active locale is present; the browser reads it
 # same-origin. German is NOT embedded — it is a normal downloaded locale like
 # any other (its source ui_de.arb is the translation source).
+# The strings of the call recordings (status.rec.*, #663) only where they
+# exist: the 4 MB boards drop them.
 set(_ui_en_arb  "${CMAKE_CURRENT_SOURCE_DIR}/../i18n/l10n/ui/ui_en.arb")
 set(_ui_en_json "${CMAKE_CURRENT_BINARY_DIR}/ui_en.json")
+if(_target STREQUAL "esp32s3")
+    set(_ui_drop "-")
+else()
+    set(_ui_drop "status.rec.")
+endif()
 add_custom_command(
     OUTPUT  "${_ui_en_json}"
-    COMMAND python3 -c "import json,sys;d=json.load(open(sys.argv[1],encoding='utf-8'));json.dump({k:v for k,v in d.items() if k=='@@locale' or not k.startswith('@')},open(sys.argv[2],'w',encoding='utf-8'),ensure_ascii=False,separators=(',',':'))" "${_ui_en_arb}" "${_ui_en_json}"
+    COMMAND python3 -c "import json,sys;d=json.load(open(sys.argv[1],encoding='utf-8'));p=sys.argv[3];json.dump({k:v for k,v in d.items() if (k=='@@locale' or not k.startswith('@')) and not k.startswith(p)},open(sys.argv[2],'w',encoding='utf-8'),ensure_ascii=False,separators=(',',':'))" "${_ui_en_arb}" "${_ui_en_json}" "${_ui_drop}"
     DEPENDS "${_ui_en_arb}"
     COMMENT "Stripping ui_en.arb -> ui_en.json (embedded English UI fallback)"
     VERBATIM)
@@ -91,3 +101,18 @@ add_custom_command(
     VERBATIM)
 target_add_binary_data(${COMPONENT_LIB} "${index_html_gz}" BINARY
     DEPENDS "${index_html_gz}")
+
+# The call recordings' part of the web UI (web/rec.js, #663), gzipped like the
+# SPA, served at /rec.js — on the S3 only (see _board_srcs above).
+if(_target STREQUAL "esp32s3")
+    set(rec_js_src "${CMAKE_CURRENT_SOURCE_DIR}/web/rec.js")
+    set(rec_js_gz "${CMAKE_CURRENT_BINARY_DIR}/rec.js.gz")
+    add_custom_command(
+        OUTPUT "${rec_js_gz}"
+        COMMAND gzip -9 -n -c "${rec_js_src}" > "${rec_js_gz}"
+        MAIN_DEPENDENCY "${rec_js_src}"
+        COMMENT "Gzipping the call recordings' web UI (web/rec.js)"
+        VERBATIM)
+    target_add_binary_data(${COMPONENT_LIB} "${rec_js_gz}" BINARY
+        DEPENDS "${rec_js_gz}")
+endif()

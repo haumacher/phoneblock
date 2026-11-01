@@ -333,6 +333,14 @@ bool sim_rename(const char *from, const char *to)
     return s_mounted && lfs_rename(&s_lfs, from, to) == 0;
 }
 
+bool sim_mkdir(const char *path)
+{
+    if (!s_mounted) return false;
+    int res = lfs_mkdir(&s_lfs, path);
+    if (res < 0 && res != LFS_ERR_EXIST) { s_last_err = res; return false; }
+    return true;
+}
+
 long sim_file_size(const char *path)
 {
     struct lfs_info info;

@@ -43,6 +43,9 @@
   "status.calls.col.number": "Number",
   "status.calls.col.name": "Name",
   "status.calls.col.verdict": "Verdict",
+  "status.calls.show_all": "Show all ({count})",
+  "status.calls.show_less": "Show fewer",
+  "status.calls.time_unknown": "unknown",
   "status.calls.clear": "Clear list",
   "status.calls.log_known": "Log known callers",
   "status.calls.log_known.help": "When off, calls from numbers in the address book and internal codes (**, *…) are not added to the list — counters above still update.",
@@ -464,7 +467,14 @@
   "spam.dialog.comment": "Reason",
   "spam.dialog.comment.hint": "(optional; will be visible to the public)",
   "spam.dialog.error.is_contact": "This caller is in your phone book. A phone book entry always takes precedence on the dongle, so a spam alert isn't possible in this case.",
-  "status.calls.show_all": "Show all ({count})",
-  "status.calls.show_less": "Show fewer",
-  "status.calls.time_unknown": "unknown"
+  "status.rec.enable": "Record Conversations in Dialogue Mode",
+  "status.rec.help": "The dongle records the conversations it has with spam callers in dialog mode—both sides, up to {min} minutes per call. You can play them back, download them, and delete them from the call list; if a call is removed from the list, its recording is deleted.",
+  "status.rec.legal": "You are responsible for recording telephone conversations (Section 201 of the German Criminal Code (StGB), GDPR).",
+  "status.rec.usage": "{count} photos, {used} {cap} MB of storage.",
+  "status.rec.play": "Play Recording",
+  "status.rec.stop": "Pause playback",
+  "status.rec.download": "Download recording (WAV)",
+  "status.rec.delete": "Delete Recording",
+  "status.rec.delete.confirm": "Delete this recording? The call will remain in the list.",
+  "status.rec.failed": "The recording could not be loaded."
 }

@@ -17,6 +17,7 @@
 
 #include "announcement.h"
 #include "api.h"
+#include "call_rec.h"   // empty without PB_CALL_RECORDING
 #include "config.h"
 #include "crashreport.h"
 #include "heap_guard.h"
@@ -93,6 +94,10 @@ void app_main(void)
     // has set it.
     stats_set_clock(time_sync_now_epoch);
     stats_calls_open(STORAGE_BASE_PATH "/" STATS_CALLS_FILE);
+#if PB_CALL_RECORDING
+    // The recorded dialog calls (#663) belong to the list's entries: after it.
+    call_rec_init(STORAGE_BASE_PATH "/" CALL_REC_DIR_NAME);
+#endif
     // Start the LED early so the user sees "CONNECTING" (or
     // "PAIRING" a few hundred ms later) before WiFi blocks us.
     status_led_start();
