@@ -123,7 +123,7 @@ static void test_config_dialog(void)
     REQUIRE(config_update(&start) == PB_KV_OK);
     REQUIRE(!config_ab_dialog());
     REQUIRE(config_vad_silence_db() == -35);
-    REQUIRE(config_vad_min_silence_ms() == 800);
+    REQUIRE(config_vad_min_silence_ms() == 500);
     REQUIRE(config_comfort_noise_db() == -60);
 
     config_update_t update = {
@@ -176,7 +176,7 @@ static void test_config_dialog(void)
     config_load();
     REQUIRE(strcmp(config_ab_mode(), "announcement") == 0);
     REQUIRE(config_vad_silence_db() == -35);
-    REQUIRE(config_vad_min_silence_ms() == 800);
+    REQUIRE(config_vad_min_silence_ms() == 500);
     REQUIRE(config_comfort_noise_db() == -60);
 
     REQUIRE(config_erase() == PB_KV_OK);

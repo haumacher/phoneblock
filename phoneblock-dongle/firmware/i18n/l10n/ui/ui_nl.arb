@@ -83,6 +83,8 @@
   "status.system.wifi.ok": "voldoende",
   "status.system.wifi.weak": "zwak",
   "status.system.wifi_tx": "Zendvermogen: {tx} dBm",
+  "status.system.wifi_link": "Wifi „{ssid}“ via access point {bssid}, kanaal {channel}, verbonden sinds {since}",
+  "status.system.wifi_drops": "{drops} Verbindingsonderbrekingen sinds de start",
   "status.system.wifi.weak_hint": "Zwak wifi-signaal: plaats de dongle dichter bij de Fritz!Box of een repeater. In het mesh-netwerk kun je in het mesh-overzicht van de Fritz!Box zien bij welke box hij is aangemeld.",
   "status.system.col.task": "Taak",
   "status.system.col.cpu": "CPU",
@@ -268,7 +270,6 @@
   "status.dialog.vad_silence_db": "Stilte-drempel (dBFS)",
   "status.dialog.vad_silence_db.help": "Als het geluidsniveau lager is dan deze waarde, wordt de beller als stil beschouwd. Hoger (bijv. -30) bij ruis op de lijn, lager (bijv. -45) voor stille bellers. Standaard: -35.",
   "status.dialog.vad_min_silence_ms": "Responstijd (ms)",
-  "status.dialog.vad_min_silence_ms.help": "Zo lang moet de beller wachten voordat de dongle reageert. Standaard: 800.",
   "status.dialog.comfort_noise": "Leidingsruis (dBFS)",
   "status.dialog.comfort_noise.help": "Een zacht ruisje tussen de zinnen door, zodat de verbinding niet dood klinkt. -90 staat praktisch uit. Standaard: -60.",
   "status.dialog.saved": "Opgeslagen.",
@@ -477,6 +478,5 @@
   "status.rec.delete": "Opname verwijderen",
   "status.rec.delete.confirm": "Deze opname verwijderen? Het gesprek blijft in de lijst staan.",
   "status.rec.failed": "Het bestand kon niet worden geladen.",
-  "status.system.wifi_link": "Wifi „{ssid}“ via access point {bssid}, kanaal {channel}, verbonden sinds {since}",
-  "status.system.wifi_drops": "{drops} Verbindingsonderbrekingen sinds de start"
+  "status.dialog.vad_min_silence_ms.help": "Zo lang moet de beller wachten voordat de dongle reageert. Standaard: 500."
 }

@@ -83,6 +83,8 @@
   "status.system.wifi.ok": "كافية",
   "status.system.wifi.weak": "ضعيف",
   "status.system.wifi_tx": "قدرة الإرسال: {tx} ديسيبل ميليوات",
+  "status.system.wifi_link": "شبكة WLAN «{ssid}» عبر نقطة الوصول {bssid}، القناة {channel}، متصل منذ {since}",
+  "status.system.wifi_drops": "{drops} حالات انقطاع الاتصال منذ بدء التشغيل",
   "status.system.wifi.weak_hint": "إشارة واي فاي ضعيفة: ضع جهاز الدونجل في مكان أقرب إلى جهاز Fritz!Box أو إلى مكرر الإشارة. في شبكة Mesh، تُظهر «نظرة عامة على شبكة Mesh» في جهاز Fritz!Box الجهاز الذي تم تسجيله عليه.",
   "status.system.col.task": "المهمة",
   "status.system.col.cpu": "وحدة المعالجة المركزية",
@@ -268,7 +270,6 @@
   "status.dialog.vad_silence_db": "عتبة الصمت (ديسيبل بالنسبة إلى مستوى الصوت الكامل)",
   "status.dialog.vad_silence_db.help": "إذا كان مستوى الصوت أقل من هذا المستوى، يُعتبر المتصل صامتًا. يُستخدم مستوى أعلى (مثل -30) في حالة وجود ضجيج في الخط، ومستوى أقل (مثل -45) للمتصلين ذوي الصوت الخافت. القيمة الافتراضية: -35.",
   "status.dialog.vad_min_silence_ms": "زمن الاستجابة (مللي ثانية)",
-  "status.dialog.vad_min_silence_ms.help": "هذه هي المدة التي يجب أن يلتزم فيها المتصل بالصمت قبل أن يستجيب جهاز الدونجل. القيمة الافتراضية: 800.",
   "status.dialog.comfort_noise": "ضجيج الخط (ديسيبل بالنسبة إلى مستوى الصوت الكامل)",
   "status.dialog.comfort_noise.help": "ضجيج خافت بين الجمل وخلالها، حتى لا يبدو الخط صامتًا. القيمة -90 تعني إيقاف التشغيل عمليًّا. القيمة الافتراضية: -60.",
   "status.dialog.saved": "تم الحفظ.",
@@ -477,6 +478,5 @@
   "status.rec.delete": "حذف التسجيل",
   "status.rec.delete.confirm": "هل تريد حذف هذا التسجيل؟ ستبقى المكالمة في القائمة.",
   "status.rec.failed": "تعذر تحميل المقطع الصوتي.",
-  "status.system.wifi_link": "شبكة WLAN «{ssid}» عبر نقطة الوصول {bssid}، القناة {channel}، متصل منذ {since}",
-  "status.system.wifi_drops": "{drops} حالات انقطاع الاتصال منذ بدء التشغيل"
+  "status.dialog.vad_min_silence_ms.help": "هذه هي المدة التي يجب أن يلتزم فيها المتصل بالصمت قبل أن يستجيب جهاز الدونجل. القيمة الافتراضية: 500."
 }

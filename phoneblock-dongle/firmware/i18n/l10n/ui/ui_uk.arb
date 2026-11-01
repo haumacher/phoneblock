@@ -83,6 +83,8 @@
   "status.system.wifi.ok": "достатньо",
   "status.system.wifi.weak": "слабкий",
   "status.system.wifi_tx": "Потужність передачі: {tx} дБм",
+  "status.system.wifi_link": "Wi-Fi «{ssid}» через точку доступу {bssid}, канал {channel}, підключено з {since}",
+  "status.system.wifi_drops": "{drops} Переривання з'єднання з моменту запуску",
   "status.system.wifi.weak_hint": "Слабкий сигнал Wi-Fi: перемістіть адаптер ближче до Fritz!Box або репітера. У мережі Mesh огляд мережі Fritz!Box показує, до якого пристрою він підключений.",
   "status.system.col.task": "Завдання",
   "status.system.col.cpu": "Процесор",
@@ -268,7 +270,6 @@
   "status.dialog.vad_silence_db": "Поріг тиші (dBFS)",
   "status.dialog.vad_silence_db.help": "Якщо рівень голосу абонента нижчий за цей показник, він вважається тихим. Вищий показник (наприклад, -30) використовується у разі шуму в лінії, нижчий (наприклад, -45) — для тихих абонентів. Стандарт: -35.",
   "status.dialog.vad_min_silence_ms": "Час відгуку (мс)",
-  "status.dialog.vad_min_silence_ms.help": "Саме стільки часу абонент повинен мовчати, перш ніж донгл відповість. За замовчуванням: 800.",
   "status.dialog.comfort_noise": "Шум у лінії (dBFS)",
   "status.dialog.comfort_noise.help": "Легкий шум під час пауз між реченнями, щоб зв’язок не звучав мертво. -90 — це практично вимкнено. Стандарт: -60.",
   "status.dialog.saved": "Збережено.",
@@ -477,6 +478,5 @@
   "status.rec.delete": "Видалити запис",
   "status.rec.delete.confirm": "Видалити цей запис? Дзвінок залишиться у списку.",
   "status.rec.failed": "Не вдалося завантажити запис.",
-  "status.system.wifi_link": "Wi-Fi «{ssid}» через точку доступу {bssid}, канал {channel}, підключено з {since}",
-  "status.system.wifi_drops": "{drops} Переривання з'єднання з моменту запуску"
+  "status.dialog.vad_min_silence_ms.help": "Саме стільки часу абонент повинен мовчати, перш ніж донгл відповість. За замовчуванням: 500."
 }

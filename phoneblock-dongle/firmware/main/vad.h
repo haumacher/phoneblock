@@ -42,7 +42,7 @@ typedef struct {
     int  loud_run;          // consecutive loud frames (debounce counter)
 } vad_t;
 
-// (Re)initialise a detector, e.g. silence_db = -35, min_silence_ms = 800.
+// (Re)initialise a detector, e.g. silence_db = -35, min_silence_ms = 500.
 //
 // The detector starts non-speaking, so the caller's first utterance always
 // produces a VAD_SPEECH_ONSET — the dialog keys "did the caller answer" on

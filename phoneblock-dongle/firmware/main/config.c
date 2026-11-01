@@ -134,7 +134,7 @@ static const char *NS   = "phoneblock";
 // quiet "live line" hiss, far below the silence threshold so it never reads
 // as the caller speaking (and is not echoed back as such).
 #define DEFAULT_VAD_SILENCE_DB      (-35)
-#define DEFAULT_VAD_MIN_SILENCE_MS  800
+#define DEFAULT_VAD_MIN_SILENCE_MS  500
 #define DEFAULT_COMFORT_NOISE_DB    (-60)
 // Version string of the most recent OTA download that did NOT survive
 // to the next successful boot. Set pessimistically before

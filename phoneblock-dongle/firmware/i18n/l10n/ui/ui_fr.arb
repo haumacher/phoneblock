@@ -83,6 +83,8 @@
   "status.system.wifi.ok": "suffisante",
   "status.system.wifi.weak": "faible",
   "status.system.wifi_tx": "Puissance d'émission : {tx} dBm",
+  "status.system.wifi_link": "Réseau Wi-Fi « {ssid} » via le point d'accès {bssid}, canal {channel}, connecté depuis {since}",
+  "status.system.wifi_drops": "{drops} Déconnexions depuis le démarrage",
   "status.system.wifi.weak_hint": "Signal Wi-Fi faible : rapprochez la clé de la Fritz!Box ou d'un répéteur. En mode Mesh, l'aperçu Mesh de la Fritz!Box indique à quelle box elle est connectée.",
   "status.system.col.task": "Tâche",
   "status.system.col.cpu": "CPU",
@@ -268,7 +270,6 @@
   "status.dialog.vad_silence_db": "Seuil de silence (dBFS)",
   "status.dialog.vad_silence_db.help": "Si le volume est inférieur à ce niveau, l'appelant est considéré comme parlant à voix basse. Réglez-le sur une valeur plus élevée (par exemple -30) en cas de bruit sur la ligne, et sur une valeur plus basse (par exemple -45) pour les appelants qui parlent à voix basse. Valeur par défaut : -35.",
   "status.dialog.vad_min_silence_ms": "Temps de réponse (ms)",
-  "status.dialog.vad_min_silence_ms.help": "C'est le temps pendant lequel l'appelant doit rester silencieux avant que le dongle ne réponde. Valeur par défaut : 800.",
   "status.dialog.comfort_noise": "Bruit de ligne (dBFS)",
   "status.dialog.comfort_noise.help": "Un léger bruit de fond entre les phrases et pendant celles-ci, pour que la ligne ne semble pas « morte ». -90 correspond pratiquement à l'arrêt total. Valeur par défaut : -60.",
   "status.dialog.saved": "Enregistré.",
@@ -477,6 +478,5 @@
   "status.rec.delete": "Supprimer l'enregistrement",
   "status.rec.delete.confirm": "Supprimer cet enregistrement ? L'appel reste dans la liste.",
   "status.rec.failed": "L'enregistrement n'a pas pu être chargé.",
-  "status.system.wifi_link": "Réseau Wi-Fi « {ssid} » via le point d'accès {bssid}, canal {channel}, connecté depuis {since}",
-  "status.system.wifi_drops": "{drops} Déconnexions depuis le démarrage"
+  "status.dialog.vad_min_silence_ms.help": "C'est le temps pendant lequel l'appelant doit rester silencieux avant que le dongle ne réponde. Valeur par défaut : 500."
 }
