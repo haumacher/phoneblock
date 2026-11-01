@@ -148,6 +148,34 @@ int main(void)
     CHECK_CHAR("suppress/httpd-send-error", 0,
                log_capture_suppressed('E', "httpd_txrx",
                                       "httpd_sock_err: error in send : 9"));
+    // #560: non-HTTP bytes on port 80 and a GET for an unknown path. The
+    // lines exactly as a dongle's log panel showed them.
+    CHECK_CHAR("suppress/560-parser", 1,
+               log_capture_suppressed('W', "httpd_parse",
+                   "parse_block: incomplete (1/9) with parser error = 16"));
+    CHECK_CHAR("suppress/560-400-default", 1,
+               log_capture_suppressed('W', "httpd_txrx",
+                   "httpd_resp_send_err: 400 Bad Request - Bad request syntax"));
+    CHECK_CHAR("suppress/560-setsockopt", 1,
+               log_capture_suppressed('W', "httpd_txrx",
+                   "httpd_resp_send_err: error calling setsockopt : 22"));
+    CHECK_CHAR("suppress/560-get-unknown", 1,
+               log_capture_suppressed('W', "httpd_uri",
+                   "httpd_uri: Method '1' not allowed for URI '/apple-touch-icon.png'"));
+    // Kept: the dongle's own 400 (own message), a POST to a GET-only route
+    // (method 3), httpd's setsockopt ERROR, and a 404 of our own.
+    CHECK_CHAR("suppress/560-own-400", 0,
+               log_capture_suppressed('W', "httpd_txrx",
+                   "httpd_resp_send_err: 400 Bad Request - invalid seq"));
+    CHECK_CHAR("suppress/560-post-wrong-route", 0,
+               log_capture_suppressed('W', "httpd_uri",
+                   "httpd_uri: Method '3' not allowed for URI '/api/status'"));
+    CHECK_CHAR("suppress/560-setsockopt-error", 0,
+               log_capture_suppressed('E', "httpd_txrx",
+                   "httpd_resp_send_err: error calling setsockopt : 22"));
+    CHECK_CHAR("suppress/560-own-404", 0,
+               log_capture_suppressed('W', "httpd_txrx",
+                   "httpd_resp_send_err: 404 Not Found - no recording of this call"));
     // A different tag with the same substring is left alone.
     CHECK_CHAR("suppress/other-tag", 0,
                log_capture_suppressed('W', "sip", "error in recv : 104"));

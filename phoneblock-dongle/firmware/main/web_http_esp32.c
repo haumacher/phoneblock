@@ -20,6 +20,22 @@ static esp_err_t dispatch_route(httpd_req_t *request)
     return route->handler(request);
 }
 
+// The OPTIONS route "/*" (the PNA preflight) matches every URI, so a GET for
+// a path no route serves (an iPhone asking for /apple-touch-icon.png) reaches
+// httpd as "method not allowed". For GET/HEAD that is really "not found":
+// answer a plain 404 without httpd_resp_send_err(), whose WARN would land in
+// the log panel for every such request (#560). Other methods keep the 405.
+static esp_err_t on_method_not_allowed(httpd_req_t *req, httpd_err_code_t err)
+{
+    if (req->method == HTTP_GET || req->method == HTTP_HEAD) {
+        httpd_resp_set_status(req, HTTPD_404);
+        httpd_resp_set_type(req, HTTPD_TYPE_TEXT);
+        return httpd_resp_sendstr(req, "Not found");
+    }
+    httpd_resp_send_err(req, err, NULL);
+    return ESP_FAIL;
+}
+
 web_http_error_t web_http_server_start(web_http_server_t **server_out,
                                        const web_http_server_config_t *config,
                                        const web_http_route_t *routes,
@@ -55,6 +71,8 @@ web_http_error_t web_http_server_start(web_http_server_t **server_out,
         free(server);
         return result;
     }
+    httpd_register_err_handler(server->handle, HTTPD_405_METHOD_NOT_ALLOWED,
+                               on_method_not_allowed);
 
     for (size_t index = 0; index < route_count; index++) {
         httpd_method_t method;

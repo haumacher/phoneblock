@@ -153,6 +153,21 @@ static const struct log_suppress k_suppress[] = {
     // fault. (esp-idf httpd_txrx.c: httpd_sock_err("send", …) →
     //  "httpd_sock_err: error in send : <errno>".)
     { 'W', "httpd_txrx", "error in send" },
+    // Garbage on port 80 (#560): a LAN scanner (e.g. a Firewalla's device
+    // scan) or a TLS handshake sent to the plain-HTTP port fails on its first
+    // byte ("parse_block: incomplete (1/9) with parser error = 16", i.e.
+    // HPE_INVALID_METHOD), httpd answers 400 with its default text, and the
+    // scanner has usually closed the socket by then, so setting TCP_NODELAY
+    // for that reply fails with EINVAL. All client-caused; the dongle's own
+    // 400s carry their own message and stay visible.
+    { 'W', "httpd_parse", "with parser error =" },
+    { 'W', "httpd_txrx", "400 Bad Request - Bad request syntax" },
+    { 'W', "httpd_txrx", "error calling setsockopt" },
+    // A GET for a path the dongle does not serve (an iPhone asking for
+    // /apple-touch-icon.png): the wildcard OPTIONS route matches every URI,
+    // so httpd logs "method not allowed" before our error handler answers it
+    // with a plain 404 (web_http_esp32.c). Method 1 is HTTP_GET.
+    { 'W', "httpd_uri", "Method '1' not allowed for URI" },
 };
 
 int log_capture_suppressed(char level, const char *tag, const char *msg)
