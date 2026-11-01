@@ -8,6 +8,7 @@
 #ifdef ESP_PLATFORM
 #include "esp_http_client.h"
 #include "esp_crt_bundle.h"
+#include "esp_tls.h"
 #include "sdkconfig.h"
 #endif
 
@@ -117,6 +118,11 @@ typedef struct {
     int64_t t_headers_sent;  // HTTP_EVENT_HEADERS_SENT
     int64_t t_first_header;  // first HTTP_EVENT_ON_HEADER
     int64_t t_finish;        // HTTP_EVENT_ON_FINISH
+    // esp-tls error of a failed connection (ESP_ERR_ESP_TLS_* /
+    // ESP_ERR_MBEDTLS_*), picked up on HTTP_EVENT_ERROR. The HTTP client
+    // itself reports DNS, TCP and TLS failures alike as ESP_ERR_HTTP_CONNECT;
+    // this tells them apart for the dashboard (issue #551). 0 if none.
+    int     tls_error;
 } pb_timing_t;
 #endif
 
@@ -152,16 +158,47 @@ static void sink_feed(pb_sink_t *sink, const void *data, int len)
     }
 }
 
-// Logs one request's phase breakdown, records it for the dashboard and —
-// if phases_out is non-NULL — copies it out. `what` tags the log line.
-static void record_phases(const char *what, const api_phases_t *p,
-                          api_phases_t *phases_out)
+// Records the outcome of one timed request for the dashboard and — if
+// phases_out is non-NULL — copies its phase breakdown out. `what` tags the
+// log line. `result` is the transport result (PB_HTTP_OK or the native
+// error), `cause` the native error that best explains a failure (on the
+// ESP32 the esp-tls error when there is one, else `result`), `status` the
+// HTTP status. Both shared_request() variants end here, so every timed call
+// is classified the same way: only a 2xx response counts as a latency; a
+// failure is recorded as its cause and leaves the last latency alone
+// (issue #551 — a connection that never came up showed as "API latency
+// 10033 ms", which is just the timeout). The caller logs failures at
+// ERROR already, so this stays at INFO.
+static void record_outcome(const char *what, const api_phases_t *p,
+                           int result, int cause, int status,
+                           api_phases_t *phases_out)
 {
-    pb_log_info(TAG, "%s latency: total=%lldms connect=%lldms request=%lldms wait=%lldms download=%lldms",
-             what, (long long)(p->total_us / 1000), (long long)(p->connect_us / 1000),
-             (long long)(p->request_us / 1000), (long long)(p->wait_us / 1000),
-             (long long)(p->download_us / 1000));
-    stats_record_api_phases(p);
+    bool transport_ok = result == PB_HTTP_OK;
+    api_fail_kind_t kind = api_fail_kind(transport_ok, pb_http_fail_class(cause),
+                                         status);
+    if (kind == API_FAIL_NONE) {
+        pb_log_info(TAG, "%s latency: total=%lldms connect=%lldms request=%lldms wait=%lldms download=%lldms",
+                 what, (long long)(p->total_us / 1000), (long long)(p->connect_us / 1000),
+                 (long long)(p->request_us / 1000), (long long)(p->wait_us / 1000),
+                 (long long)(p->download_us / 1000));
+        stats_record_api_result(p, NULL);
+    } else {
+        api_failure_t f = {
+            .kind        = kind,
+            .http_status = transport_ok ? status : 0,
+            .elapsed_us  = p->total_us,
+        };
+        if (transport_ok) {
+            snprintf(f.detail, sizeof(f.detail), "HTTP %d", status);
+        } else {
+            snprintf(f.detail, sizeof(f.detail), "%s", pb_http_err_name(cause));
+        }
+        snprintf(f.call, sizeof(f.call), "%s", what);
+        pb_log_info(TAG, "%s failed after %lldms: %s (%s)", what,
+                 (long long)(p->total_us / 1000), api_fail_kind_name(kind),
+                 f.detail);
+        stats_record_api_result(p, &f);
+    }
     if (phases_out) {
         *phases_out = *p;
     }
@@ -237,6 +274,15 @@ static esp_err_t http_event_shared(esp_http_client_event_t *evt)
         break;
     case HTTP_EVENT_ON_DATA:
         sink_feed(sink, evt->data, evt->data_len);
+        break;
+    case HTTP_EVENT_ERROR:
+        // evt->data is the transport's esp-tls error handle. Keep the first
+        // error: it is the cause, later ones are follow-ups.
+        if (evt->data != NULL && sink->timing.tls_error == 0) {
+            int code = 0, flags = 0;
+            sink->timing.tls_error = (int)esp_tls_get_and_clear_last_error(
+                (esp_tls_error_handle_t)evt->data, &code, &flags);
+        }
         break;
     default:
         break;
@@ -328,17 +374,23 @@ static int shared_request(const char *url, const pb_http_header_t *headers,
     }
 
     esp_err_t err;
+    int64_t total = 0;
     if (what) {
         sink->timing.t_start = pb_monotonic_us();
         err = esp_http_client_perform(client);
-        int64_t total = pb_monotonic_us() - sink->timing.t_start;
-        api_phases_t p = derive_phases(&sink->timing, total);
-        record_phases(what, &p, phases_out);
+        total = pb_monotonic_us() - sink->timing.t_start;
     } else {
         err = esp_http_client_perform(client);
     }
     if (err == ESP_OK) {
         *status = esp_http_client_get_status_code(client);
+    }
+    if (what) {
+        api_phases_t p = derive_phases(&sink->timing, total);
+        int tls_error = sink->timing.tls_error;
+        int cause = (err != ESP_OK && tls_error != ESP_OK && tls_error != ESP_ERR_INVALID_STATE)
+                  ? tls_error : (int)err;
+        record_outcome(what, &p, (int)err, cause, *status, phases_out);
     }
 
     if (body) {
@@ -384,7 +436,7 @@ static int shared_request(const char *url, const pb_http_header_t *headers,
             .wait_us     = (int64_t)timing.wait_us,
             .download_us = (int64_t)timing.download_us,
         };
-        record_phases(what, &p, phases_out);
+        record_outcome(what, &p, result, result, *status, phases_out);
     }
     return result;
 }

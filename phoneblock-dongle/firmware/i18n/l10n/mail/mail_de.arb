@@ -43,6 +43,29 @@
     },
     "x-translated": "983053ba"
   },
+  "subj.spam": "PhoneBlock-Dongle: Abgewehrte SPAM-Anrufe",
+  "@subj.spam": {
+    "description": "Status-mail subject when only blocked calls are reported (no new error)",
+    "x-translated": "72867eb0"
+  },
+  "subj.error_and_spam": "PhoneBlock-Dongle: Fehler und abgewehrte SPAM-Anrufe",
+  "@subj.error_and_spam": {
+    "description": "Status-mail subject: new error plus blocked calls, when only blocked calls are reported",
+    "x-translated": "b2d4cfce"
+  },
+  "newspam.one": "Seit der letzten Meldung wurde <b>1</b> SPAM-Anruf abgewehrt.",
+  "@newspam.one": {
+    "description": "Status-mail line when only blocked calls are reported: one blocked call; keep <b> tags",
+    "x-translated": "c4455afa"
+  },
+  "newspam.many": "Seit der letzten Meldung wurden <b>{count}</b> SPAM-Anrufe abgewehrt.",
+  "@newspam.many": {
+    "description": "Status-mail line when only blocked calls are reported: several blocked calls; keep <b> tags",
+    "placeholders": {
+      "count": {}
+    },
+    "x-translated": "3d211940"
+  },
   "sum.device": "Ger&auml;t:",
   "@sum.device": {
     "description": "Summary label: device",

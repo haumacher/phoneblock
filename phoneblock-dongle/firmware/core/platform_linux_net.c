@@ -443,6 +443,28 @@ bool pb_http_is_connect_error(int result)
     return result == CURLE_COULDNT_CONNECT;
 }
 
+pb_http_fail_t pb_http_fail_class(int result)
+{
+    switch (result) {
+    case CURLE_COULDNT_RESOLVE_HOST:
+    case CURLE_COULDNT_RESOLVE_PROXY:
+        return PB_HTTP_FAIL_DNS;
+    case CURLE_COULDNT_CONNECT:
+        return PB_HTTP_FAIL_CONNECT;
+    case CURLE_OPERATION_TIMEDOUT:
+        return PB_HTTP_FAIL_TIMEOUT;
+    case CURLE_SSL_CONNECT_ERROR:
+    case CURLE_PEER_FAILED_VERIFICATION:
+    case CURLE_SSL_CERTPROBLEM:
+    case CURLE_SSL_CIPHER:
+    case CURLE_SSL_CACERT_BADFILE:
+    case CURLE_SSL_ISSUER_ERROR:
+        return PB_HTTP_FAIL_TLS;
+    default:
+        return PB_HTTP_FAIL_OTHER;
+    }
+}
+
 // Pull reads on top of libcurl's push model: the multi interface runs the
 // transfer only while pb_http_stream_read() pumps it, the write callback
 // parks each chunk in `pending`, and a chunk that does not fit pauses the

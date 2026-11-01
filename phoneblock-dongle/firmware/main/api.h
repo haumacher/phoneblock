@@ -40,6 +40,42 @@ typedef struct {
     bool    valid;
 } api_phases_t;
 
+// Why the last API call failed (issue #551). A call whose connection never
+// came up used to surface its timeout as "API latency 10033 ms", which reads
+// like a slow server; the dashboard now names the cause instead. Values are
+// reported as api_fail_kind_name() strings in /api/status.
+typedef enum {
+    API_FAIL_NONE = 0,   // success: 2xx response
+    API_FAIL_DNS,        // phoneblock.net could not be resolved
+    API_FAIL_CONNECT,    // no TCP connection (refused, unreachable, no route)
+    API_FAIL_TLS,        // TLS handshake / certificate check failed
+    API_FAIL_TIMEOUT,    // no connection or no answer within the timeout
+    API_FAIL_HTTP,       // the server answered, but with a non-2xx status
+    API_FAIL_OTHER,      // any other transport error
+} api_fail_kind_t;
+
+#define API_FAIL_DETAIL_LEN 48
+#define API_FAIL_CALL_LEN   16
+
+// One failed API call: what failed, why, and when.
+typedef struct {
+    api_fail_kind_t kind;
+    int     http_status;                   // API_FAIL_HTTP only, else 0
+    char    detail[API_FAIL_DETAIL_LEN];   // native error name, e.g. "ESP_ERR_HTTP_CONNECT"
+    char    call[API_FAIL_CALL_LEN];       // the request: "test", "check-prefix", ...
+    int64_t at_us;                         // pb_monotonic_us() when it was recorded
+    int64_t elapsed_us;                    // how long the failed attempt took
+} api_failure_t;
+
+// Classifies one finished request. `transport_ok` is false when no response
+// arrived at all; `fail_class` (a pb_http_fail_t, see platform.h) then says
+// why. With a response, every non-2xx status counts as API_FAIL_HTTP.
+api_fail_kind_t api_fail_kind(bool transport_ok, int fail_class, int http_status);
+
+// Stable lower-case name of a kind for /api/status ("dns", "connect", "tls",
+// "timeout", "http", "other"; "" for API_FAIL_NONE).
+const char *api_fail_kind_name(api_fail_kind_t kind);
+
 // Display + count info lifted from the /api/check-prefix response.
 // Populated by phoneblock_check() when called with a non-NULL `out`.
 //

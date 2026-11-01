@@ -501,6 +501,30 @@ bool pb_http_is_connect_error(int result)
     return result == ESP_ERR_HTTP_CONNECT;
 }
 
+pb_http_fail_t pb_http_fail_class(int result)
+{
+    switch (result) {
+    case ESP_ERR_ESP_TLS_CANNOT_RESOLVE_HOSTNAME:
+        return PB_HTTP_FAIL_DNS;
+    case ESP_ERR_ESP_TLS_FAILED_CONNECT_TO_HOST:
+    case ESP_ERR_ESP_TLS_CANNOT_CREATE_SOCKET:
+    case ESP_ERR_HTTP_CONNECT:
+        return PB_HTTP_FAIL_CONNECT;
+    case ESP_ERR_ESP_TLS_CONNECTION_TIMEOUT:
+    case ESP_ERR_HTTP_EAGAIN:
+        return PB_HTTP_FAIL_TIMEOUT;
+    default:
+        break;
+    }
+    // The mbedTLS-backed esp-tls errors (handshake, certificate parse/verify,
+    // SSL setup) occupy ESP_ERR_ESP_TLS_BASE + 0x10 .. + 0x2F.
+    if (result >= ESP_ERR_MBEDTLS_CERT_PARTLY_OK
+            && result < ESP_ERR_ESP_TLS_BASE + 0x30) {
+        return PB_HTTP_FAIL_TLS;
+    }
+    return PB_HTTP_FAIL_OTHER;
+}
+
 // The stream is the esp_http_client handle itself: no wrapper allocation,
 // and the calls below are exactly the open/fetch_headers/read/close sequence
 // the downloads used before the platform layer existed.

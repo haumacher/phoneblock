@@ -93,14 +93,34 @@ static void save_url(uint16_t port, const char *encoded_url)
     REQUIRE(strstr(response, "200 OK") != NULL);
 }
 
-// The URL /api/status reports, as the web UI prefills it.
-static void status_url(uint16_t port, char *out, size_t cap)
+// Saves one form field the way the web UI does (POST /api/config).
+static void save_field(uint16_t port, const char *field)
+{
+    char message[512], response[2048];
+    snprintf(message, sizeof(message),
+             "POST /api/config HTTP/1.1\r\nHost: localhost\r\n"
+             "Content-Type: application/x-www-form-urlencoded\r\n"
+             "Content-Length: %zu\r\nConnection: close\r\n\r\n%s",
+             strlen(field), field);
+    http(port, message, response, sizeof(response));
+    REQUIRE(strstr(response, "200 OK") != NULL);
+}
+
+// GET /api/status, parsed. The caller deletes it.
+static cJSON *status_json(uint16_t port)
 {
     static char response[16384];
     http(port, "GET /api/status HTTP/1.1\r\nHost: localhost\r\n"
                "Connection: close\r\n\r\n", response, sizeof(response));
     cJSON *root = cJSON_Parse(strstr(response, "\r\n\r\n") + 4);
     REQUIRE(root != NULL);
+    return root;
+}
+
+// The URL /api/status reports, as the web UI prefills it.
+static void status_url(uint16_t port, char *out, size_t cap)
+{
+    cJSON *root = status_json(port);
     cJSON *url = cJSON_GetObjectItem(cJSON_GetObjectItem(root, "webhook"), "url");
     REQUIRE(cJSON_IsString(url));
     snprintf(out, cap, "%s", url->valuestring);
@@ -230,6 +250,49 @@ int main(void)
     save_url(web_port, "");
     status_url(web_port, stored, sizeof(stored));
     REQUIRE(stored[0] == '\0');
+
+    // The other additive /api/status fields of 1.7.0, on the same server.
+    // "Only blocked calls" in the mail (issue #556): off by default, saved
+    // like the other mail toggles, and saving something else leaves it be.
+    cJSON *st = status_json(web_port);
+    cJSON *mail = cJSON_GetObjectItem(st, "mail");
+    REQUIRE(cJSON_IsFalse(cJSON_GetObjectItem(mail, "spam_only")));
+    REQUIRE(cJSON_IsFalse(cJSON_GetObjectItem(mail, "on_spam")));
+    // The API failure state (issue #551): no call made yet, no failure.
+    cJSON *pb = cJSON_GetObjectItem(st, "phoneblock");
+    REQUIRE(cJSON_IsFalse(cJSON_GetObjectItem(pb, "last_api_failed")));
+    REQUIRE(cJSON_GetObjectItem(pb, "last_api_error") == NULL);
+    REQUIRE(cJSON_IsNumber(cJSON_GetObjectItem(pb, "last_api_ms")));
+    cJSON_Delete(st);
+    save_field(web_port, "mail_spam_only=1");
+    REQUIRE(config_mail_spam_only());
+    save_field(web_port, "mail_on_spam=1");
+    st = status_json(web_port);
+    mail = cJSON_GetObjectItem(st, "mail");
+    REQUIRE(cJSON_IsTrue(cJSON_GetObjectItem(mail, "spam_only")));
+    REQUIRE(cJSON_IsTrue(cJSON_GetObjectItem(mail, "on_spam")));
+    cJSON_Delete(st);
+    save_field(web_port, "mail_spam_only=0");
+    REQUIRE(!config_mail_spam_only());
+
+    // A failed API call shows up as its cause.
+    api_failure_t failure = { .kind = API_FAIL_CONNECT, .elapsed_us = 10000000 };
+    snprintf(failure.detail, sizeof(failure.detail), "%s", "Couldn't connect to server");
+    snprintf(failure.call, sizeof(failure.call), "%s", "test");
+    api_phases_t phases = { .valid = true, .total_us = 10000000 };
+    stats_record_api_result(&phases, &failure);
+    st = status_json(web_port);
+    pb = cJSON_GetObjectItem(st, "phoneblock");
+    REQUIRE(cJSON_IsTrue(cJSON_GetObjectItem(pb, "last_api_failed")));
+    REQUIRE(cJSON_GetObjectItem(pb, "last_api_ms")->valuedouble == 0);
+    cJSON *error = cJSON_GetObjectItem(pb, "last_api_error");
+    REQUIRE(strcmp(cJSON_GetObjectItem(error, "kind")->valuestring, "connect") == 0);
+    REQUIRE(strcmp(cJSON_GetObjectItem(error, "call")->valuestring, "test") == 0);
+    REQUIRE(strcmp(cJSON_GetObjectItem(error, "detail")->valuestring,
+                   "Couldn't connect to server") == 0);
+    REQUIRE(cJSON_GetObjectItem(error, "elapsed_ms")->valuedouble == 10000);
+    REQUIRE(cJSON_GetObjectItem(error, "ago_s")->valuedouble >= 0);
+    cJSON_Delete(st);
 
     web_stop();
     close(listener);

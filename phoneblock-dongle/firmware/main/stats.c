@@ -218,11 +218,21 @@ void stats_record_sip_state(bool registered)
     unlock();
 }
 
-void stats_record_api_phases(const api_phases_t *p)
+void stats_record_api_result(const api_phases_t *p, const api_failure_t *failure)
 {
     lock();
-    s_counters.last_api_phases     = *p;
-    s_counters.last_api_duration_us = p->total_us;
+    if (failure == NULL || failure->kind == API_FAIL_NONE) {
+        s_counters.last_api_phases      = *p;
+        s_counters.last_api_duration_us = p->total_us;
+        s_counters.last_api_failed      = false;
+    } else {
+        s_counters.last_api_failure       = *failure;
+        s_counters.last_api_failure.at_us = (int64_t)pb_monotonic_us();
+        // The detail/call strings come from the caller; keep them terminated.
+        s_counters.last_api_failure.detail[API_FAIL_DETAIL_LEN - 1] = '\0';
+        s_counters.last_api_failure.call[API_FAIL_CALL_LEN - 1]     = '\0';
+        s_counters.last_api_failed = true;
+    }
     unlock();
 }
 

@@ -1271,6 +1271,7 @@ function renderStatus(){
     + '  <div class="stat"><div class="stat-label">' + esc(t('status.counters.errors'))+ '</div><div class="stat-value" id="cErr">–</div></div>'
     + '</div>'
     + '<p class="muted status-line" id="statusInfo"></p>'
+    + '<p class="status-line" id="apiError" style="display:none;color:var(--err)"></p>'
     + '</section>'
     + '<section id="callsSection" style="display:none">'
     + '<h2 class="bar">'
@@ -1336,6 +1337,8 @@ function renderStatus(){
     + '<p id="systemHeap" class="muted info-line"></p>'
     + '<p id="systemFs" class="muted info-line"></p>'
     + '<p id="systemTemp" class="muted info-line" style="display:none"></p>'
+    + '<p id="systemWifi" class="muted info-line" style="display:none"></p>'
+    + '<p id="systemWifiHint" class="info-line" style="display:none;color:var(--warn)"></p>'
     + '<p id="clockInfo" class="muted info-line"></p>'
     + '<p id="tzInfo" class="muted info-line">'
     +   '<span id="tzCurrent"></span>'
@@ -1487,6 +1490,12 @@ function renderStatus(){
     +    'class="check">'
     + '    <input id="mailOnSpam" type="checkbox">'
     + '    <span>' + esc(t('status.mail.on_spam')) + '</span></label>'
+    + '</p>'
+    + '<p class="opt" style="margin-left:1.5rem">'
+    + '  <label title="' + esc(t('status.mail.spam_only.help')) + '" '
+    +    'class="check">'
+    + '    <input id="mailSpamOnly" type="checkbox">'
+    + '    <span>' + esc(t('status.mail.spam_only')) + '</span></label>'
     + '</p>'
     + '<p class="opt">'
     + '  <label title="' + esc(t('status.mail.on_update.help')) + '" '
@@ -2490,14 +2499,34 @@ async function refreshAll(){
   // can contain by accident. Spliced via a replacer function so a '$' in the
   // link can never be read as a replacement pattern.
   const FW_MARK = '\u0001fw\u0001';
+  // A failed call is not a latency (issue #551): while the most recent API
+  // call failed, the latency slot shows '–' and the line below names the
+  // cause instead of the timeout reading as "API latency 10033 ms".
+  // last_api_failed is absent on older firmware — then nothing changes.
+  const apiFailed = !!s.phoneblock.last_api_failed;
   const infoLine = t('status.info', {
     fw: FW_MARK,
     ip: s.ip_address || '–',
     uptime: fmtSec(s.uptime_s),
-    api: s.phoneblock.last_api_ms > 0 ? s.phoneblock.last_api_ms + ' ms' : '–',
+    api: !apiFailed && s.phoneblock.last_api_ms > 0
+      ? s.phoneblock.last_api_ms + ' ms' : '–',
   });
   $('statusInfo').innerHTML =
     esc(infoLine).replace(FW_MARK, () => fwLink(s.firmware_version));
+  const apiErr = $('apiError');
+  const fe = s.phoneblock.last_api_error;
+  if (apiFailed && fe) {
+    const kinds = ['dns', 'connect', 'tls', 'timeout', 'http'];
+    const kind = kinds.includes(fe.kind) ? fe.kind : 'other';
+    let reason = t('status.api.fail.' + kind, {status: fe.http_status});
+    if (kind !== 'http' && fe.detail) reason += ' (' + fe.detail + ')';
+    let line = t('status.api.failed', {when: fmtClock(fe.ago_s), reason: reason});
+    if (kind !== 'http') line += ' ' + t('status.api.fail.hint');
+    apiErr.textContent = line;
+    apiErr.style.display = '';
+  } else {
+    apiErr.style.display = 'none';
+  }
 
   // System load / memory — diagnostic card. Surfaces a runaway task as a
   // high CPU% so "the dongle is hot/unstable" can be pinned, not guessed.
@@ -2525,6 +2554,30 @@ async function refreshAll(){
         {temp: s.system.temp_c.toFixed(1)});
     } else {
       $('systemTemp').style.display = 'none';
+    }
+    // WLAN signal (issue #585): what the dongle receives from its access
+    // point. Absent when not associated, and on the Linux service, which has
+    // no system object at all — then both lines stay hidden.
+    const rssi = s.system.wifi_rssi;
+    const wifiHint = $('systemWifiHint');
+    if (typeof rssi === 'number' && rssi < 0) {
+      const q = rssi >= -60 ? 'good' : rssi >= -70 ? 'ok' : 'weak';
+      let line = t('status.system.wifi',
+        {rssi: rssi, quality: t('status.system.wifi.' + q)});
+      if (typeof s.system.wifi_tx_dbm === 'number' && s.system.wifi_tx_dbm > 0) {
+        line += ' · ' + t('status.system.wifi_tx', {tx: s.system.wifi_tx_dbm});
+      }
+      $('systemWifi').textContent = line;
+      $('systemWifi').style.display = '';
+      if (q === 'weak') {
+        wifiHint.textContent = t('status.system.wifi.weak_hint');
+        wifiHint.style.display = '';
+      } else {
+        wifiHint.style.display = 'none';
+      }
+    } else {
+      $('systemWifi').style.display = 'none';
+      wifiHint.style.display = 'none';
     }
     const tb = $('systemTasks');
     tb.innerHTML = '';
@@ -3154,6 +3207,14 @@ async function refreshAll(){
       $('mailPassKeep').textContent = mail.pass_set ? t('status.mail.pass.keep') : '';
       $('mailOnError').checked = !!mail.on_error;
       $('mailOnSpam').checked  = !!mail.on_spam;
+      // Absent on older firmware: unticked, which is also the default.
+      $('mailSpamOnly').checked = !!mail.spam_only;
+      // A sub-option of the call report: only meaningful while that is on.
+      const syncSpamOnly = () => {
+        $('mailSpamOnly').disabled = !$('mailOnSpam').checked;
+      };
+      $('mailOnSpam').addEventListener('change', syncSpamOnly);
+      syncSpamOnly();
       $('mailOnUpdate').checked = !!mail.on_update;
       mailPrefilled = true;
     }
@@ -3170,6 +3231,7 @@ async function refreshAll(){
       body.append('smtp_to',       $('mailTo').value.trim());
       body.append('mail_on_error', $('mailOnError').checked ? '1' : '0');
       body.append('mail_on_spam',  $('mailOnSpam').checked ? '1' : '0');
+      body.append('mail_spam_only', $('mailSpamOnly').checked ? '1' : '0');
       body.append('mail_on_update', $('mailOnUpdate').checked ? '1' : '0');
       // Only send the password when the user typed one; an absent field
       // tells the server to keep the stored value.
