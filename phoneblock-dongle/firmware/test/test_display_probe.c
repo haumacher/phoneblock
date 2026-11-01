@@ -16,6 +16,7 @@
 
 #include "display_model.h"
 #include "stats.h"
+#include "calls_test_util.h"
 
 static int tests_run, tests_failed;
 
@@ -26,17 +27,17 @@ static int tests_run, tests_failed;
                                   (what), __FILE__, __LINE__); } \
 } while (0)
 
-static stats_call_t s_calls[STATS_MAX_CALLS];
+static stats_call_t s_calls[DM_BADGE_CALLS];
 
 static int badge(void)
 {
-    int n = stats_snapshot_calls(s_calls, STATS_MAX_CALLS);
+    int n = stats_snapshot_calls(s_calls, DM_BADGE_CALLS);
     return dm_count_listed_spam(s_calls, n);
 }
 
 static void newest_screen(dm_call_screen_t *out)
 {
-    int n = stats_snapshot_calls(s_calls, STATS_MAX_CALLS);
+    int n = stats_snapshot_calls(s_calls, 1);
     if (n == 0) { memset(out, 0, sizeof(*out)); return; }
     dm_call_screen(&s_calls[0], out);
 }
@@ -69,6 +70,7 @@ static void number_as_name(const char *display)
 int main(void)
 {
     stats_setup();
+    calls_test_open();
 
     printf("number sent as display name\n");
     number_as_name("030111222");
@@ -140,5 +142,6 @@ int main(void)
     }
 
     printf("\n%d tests, %d failures\n", tests_run, tests_failed);
+    calls_test_cleanup();
     return tests_failed ? 1 : 0;
 }

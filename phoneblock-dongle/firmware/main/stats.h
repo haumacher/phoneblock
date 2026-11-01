@@ -6,18 +6,56 @@
 
 #include "api.h"  // verdict_t
 
-// Runtime statistics and recent-events ring buffer. All accessors are
-// thread-safe; the underlying state lives behind a mutex. Snapshots
-// copy the current state into caller-owned buffers so the mutex is
-// held only briefly.
+#ifdef ESP_PLATFORM
+#include "sdkconfig.h"   // CONFIG_ESPTOOLPY_FLASHSIZE_16MB
+#endif
 
-#define STATS_MAX_CALLS      10
-// Sized generously: the ring is now fed by a global log hook
-// (log_capture.c) that mirrors every WARN/ERROR line — our own and the
-// ESP-IDF libraries' — so a single failing operation can emit several
-// related entries. A deeper ring keeps the root cause from scrolling
-// off before the user looks.
-#define STATS_MAX_ERRORS     32
+// Runtime statistics, the recent-calls list and the log ring. All accessors
+// are thread-safe; the underlying state lives behind a mutex. Snapshots
+// copy the current state into caller-owned buffers so the mutex is held
+// only briefly.
+//
+// The recent-calls list lives in a file (issue #589), not in RAM, so it
+// survives a reboot or a power cut: STATS_CALLS_FILE in the data directory
+// (/spiffs/calls.bin on the device, <PHONEBLOCK_DATA_DIR>/calls.bin on
+// Linux), opened with stats_calls_open(). Fixed-size records in a ring, so
+// an update of a listed call (duration, name, assessment) is one seek and
+// one write. Until the file is open (or when it cannot be created) calls
+// are counted but not listed.
+
+#define STATS_CALLS_FILE "calls.bin"
+
+// Calls the file holds. The 4 MB boards (classic ESP32, C3) share a 640 KB
+// partition with the dialog set's M tier, which leaves room for 3 blocks:
+// 50 calls (STATS_CALLS_FILE_BYTES(50) = 12032 B, storage_budget.h). The
+// 16 MB S3 (~9.6 MB partition) and the Linux port keep 200 (12 blocks on
+// the S3) — several weeks of calls for a household.
+#define STATS_CALL_CAPACITY_SMALL 50
+#define STATS_CALL_CAPACITY_LARGE 200
+// (A host test may predefine it: test_stats_small runs with the 4 MB one.)
+#ifndef STATS_CALL_CAPACITY
+#if defined(ESP_PLATFORM) && !defined(CONFIG_ESPTOOLPY_FLASHSIZE_16MB)
+#define STATS_CALL_CAPACITY STATS_CALL_CAPACITY_SMALL
+#else
+#define STATS_CALL_CAPACITY STATS_CALL_CAPACITY_LARGE
+#endif
+#endif
+
+// On-flash layout: a header, then STATS_CALL_CAPACITY records of
+// STATS_CALL_RECORD_BYTES (stats.c asserts both against its structs).
+#define STATS_CALL_HEADER_BYTES 32
+#define STATS_CALL_RECORD_BYTES 240
+#define STATS_CALLS_FILE_BYTES(capacity) \
+    (STATS_CALL_HEADER_BYTES + (capacity) * STATS_CALL_RECORD_BYTES)
+
+// The log ring. It is fed by a global log hook (log_capture.c) that mirrors
+// every WARN/ERROR line — our own and the ESP-IDF libraries' — so a single
+// failing operation can emit several related entries; a deep ring keeps the
+// root cause from scrolling off before the user looks. 47 = the 32 it had
+// plus what the former 10-entry RAM call ring freed (10 x 240 B = 2400 B,
+// 15 entries of 160 B), so the RAM use stays as it was. Consumers copy it
+// to the heap, not the stack (47 x 160 B = 7.5 KB).
+#define STATS_MAX_ERRORS     47
 #define STATS_NUMBER_LEN     48
 // Wide enough for the labels a Fritz!Box phonebook imported from a spam-list
 // provider carries ("tellows Score 8 Aggressive advertising", 38 chars). The
@@ -38,8 +76,20 @@ enum {
     STATS_LOG_LEVEL_INFO = 3,
 };
 
+// One listed call as the readers get it (a copy; the file holds a compact
+// record of it).
 typedef struct {
-    int64_t   at_us;                           // esp_timer_get_time() at event
+    // Sequence number (stats_set_call_listener): unique across reboots,
+    // counting up from 1. 0 for a call that is not listed (the display's
+    // copy of a counters-only call).
+    uint32_t  seq;
+    // Wall-clock time of the call, UTC seconds; 0 when it is not known: a
+    // call recorded before the clock was set, in an earlier boot. (A call
+    // of this boot gets its time once the clock is set.)
+    int64_t   epoch_s;
+    // pb_monotonic_us() at the call — meaningful only while `this_boot`.
+    int64_t   at_us;
+    bool      this_boot;                       // recorded since this boot's stats_calls_open()
     char      number[STATS_NUMBER_LEN];        // raw From-user or normalized
     char      display[STATS_DISPLAY_LEN];      // Fritz!Box display name, may be empty
     verdict_t verdict;                         // decision taken by the dongle
@@ -88,6 +138,30 @@ typedef struct {
 // stats_init() macro (components/lwip/lwip/src/include/lwip/stats.h).
 void stats_setup(void);
 
+// --- The call file ----------------------------------------------------
+
+// Opens the call list at `path` (normally STATS_CALLS_FILE in the data
+// directory), creating it when it does not exist. A file of another format
+// (magic, version, record size, capacity) or a truncated or inconsistent one
+// is discarded with one WARN and replaced by an empty list. Calls recorded
+// from now on are "of this boot" (stats_call_t.this_boot). False (logged at
+// ERROR) if the file cannot be created; calls are then counted, not listed.
+bool stats_calls_open(const char *path);
+
+// Forgets the open call file (the file stays). For the host tests: close +
+// open is a reboot of the list.
+void stats_calls_close(void);
+
+// The wall clock the call records are stamped with: UTC seconds, 0 while it
+// is not set (time_sync_now_epoch()). NULL (the default) stamps nothing.
+void stats_set_clock(int64_t (*now_epoch)(void));
+
+// The clock has just been set: calls of this boot recorded before it get
+// their time (epoch = now - their age). Calls of earlier boots without a
+// time keep 0. Also done on the next write if this is never called (the
+// Linux host clock has no "set" event).
+void stats_time_synced(void);
+
 // --- Event hooks (called from the SIP / API code) -------------------
 
 void stats_record_call(const char *number, const char *display, verdict_t verdict);
@@ -110,7 +184,7 @@ void stats_record_call_checked(const char *number, const char *display,
                                const pb_check_result_t *result);
 
 // Called with the sequence number of every call added to the recent-calls
-// ring (stats_record_call*, not stats_record_call_counters_only), after the
+// list (stats_record_call*, not stats_record_call_counters_only), after the
 // stats lock is released, on the recording task. A spam call is answered
 // by the dongle, so it is announced only when it ends (stats_call_ended()),
 // with its duration; every other call when it is recorded. The call
@@ -119,18 +193,18 @@ void stats_record_call_checked(const char *number, const char *display,
 typedef void (*stats_call_listener_t)(uint32_t seq);
 void stats_set_call_listener(stats_call_listener_t listener);
 
-// Sequence number of the call most recently added to the ring, 0 before
-// the first. sip_register.c compares it before and after screening a call
+// Sequence number of the call most recently added to the list, 0 before
+// the first (since the file was created). sip_register.c compares it before and after screening a call
 // to learn whether, and as which number, the call was listed.
 uint32_t stats_last_call_seq(void);
 
 // The answered spam call `seq` has ended after `duration_us`: stores the
 // duration and announces the call to the listener. Ignored for a call that
-// has left the ring or is not a spam call.
+// has left the list or is not a spam call.
 void stats_call_ended(uint32_t seq, int64_t duration_us);
 
 // Bumps counters for a call without adding it to the recent-calls
-// ring buffer. Used by sip_register.c when the user has opted out of
+// list. Used by sip_register.c when the user has opted out of
 // listing "known" calls (phone-book matches, internal Fritz!Box
 // codes) but still wants the dashboard counters (total/legitimate)
 // to reflect that a call happened. The caller's number, name and
@@ -156,9 +230,37 @@ void stats_record_api_result(const api_phases_t *p, const api_failure_t *failure
 void stats_snapshot_counters(stats_counters_t *out);
 
 // Fill up to `max` entries into `out`, newest first. Returns the
-// number of entries actually written (<= max and <= STATS_MAX_*).
-int stats_snapshot_calls(stats_call_t *out, int max);
+// number of entries actually written (<= max and <= STATS_MAX_ERRORS).
 int stats_snapshot_errors(stats_error_t *out, int max);
+
+// Up to `max` listed calls older than `before_seq` (0: from the newest),
+// newest first, into `out`. Returns how many. Page through the whole list
+// with before_seq = the seq of the last call of the previous page; fewer
+// than `max` means the end. One pass over the file under the lock, so a
+// page is consistent; between pages new calls may come in (they are newer,
+// a page never repeats or skips a call that is still listed).
+int stats_read_calls(uint32_t before_seq, stats_call_t *out, int max);
+
+// The first page: the `max` newest calls.
+int stats_snapshot_calls(stats_call_t *out, int max);
+
+typedef struct {
+    int      count;        // calls listed (<= STATS_CALL_CAPACITY)
+    uint32_t newest_seq;   // seq of the newest listed call, 0 if none
+    uint32_t oldest_seq;   // seq of the oldest listed call, 0 if none
+    // Every call up to here was cleared (stats_clear_calls) or never
+    // existed: calls between floor_seq and oldest_seq dropped off the list.
+    uint32_t floor_seq;
+    uint32_t mailed_seq;   // stats_set_mailed_seq()
+} stats_calls_info_t;
+
+// The list's shape, from RAM (no file access).
+void stats_calls_info(stats_calls_info_t *out);
+
+// The daily mail's high-water mark (mail.c): the newest call seq already
+// reported. Kept in the file, so calls not yet mailed before a reboot are
+// mailed afterwards.
+void stats_set_mailed_seq(uint32_t seq);
 
 // Drop all buffered error entries.
 void stats_clear_errors(void);
@@ -191,15 +293,17 @@ bool stats_assessment_for_number(const char *number, pb_assessment_t *out);
 // the list.
 bool stats_display_for_number(const char *number, char *out, size_t cap);
 
-// Drop all buffered call entries (counters are kept).
+// Drop all listed calls (counters are kept): the file is emptied. Sequence
+// numbers continue.
 void stats_clear_calls(void);
 
 // Copy the listed call with this sequence number (see
-// stats_set_call_listener) into `out`. False once it has left the ring
-// (more than STATS_MAX_CALLS newer calls, or stats_clear_calls()).
+// stats_set_call_listener) into `out`. False once it has left the list
+// (more than STATS_CALL_CAPACITY newer calls, or stats_clear_calls()).
 bool stats_get_call(uint32_t seq, stats_call_t *out);
 
-// Number of listed calls for which `match` returns true (called under the
-// stats lock: `match` must not call back into stats). Used by the display
-// to count the blocked spam calls for its badge.
-int stats_count_calls(bool (*match)(const stats_call_t *call));
+// Number of the `newest` most recent listed calls for which `match` returns
+// true (called under the stats lock: `match` must not call back into
+// stats). Used by the display to count the blocked spam calls for its
+// badge.
+int stats_count_calls(bool (*match)(const stats_call_t *call), int newest);

@@ -395,6 +395,7 @@
   "link.copy_failed": "Det er ikke mulig å kopiere – koden er uthevet. Kopier den med Ctrl+C.",
   "link.open": "Åpne phoneblock.net",
   "link.manual": "Nettstedet er {url} – du kan også skrive inn koden der på en annen enhet, for eksempel på mobilen.",
+  "link.waiting": "Venter på at koden skal legges inn på phoneblock.net…",
   "link.approved": "PhoneBlock-kontoen er koblet til — tokenet er angitt.",
   "link.denied": "Koblingen ble avvist på phoneblock.net.",
   "link.expired": "Koden har utløpt. Be om en ny kode.",
@@ -463,5 +464,7 @@
   "spam.dialog.comment": "Årsak",
   "spam.dialog.comment.hint": "(valgfritt, blir synlig for alle)",
   "spam.dialog.error.is_contact": "Denne innringeren står oppført i telefonboken din. En oppføring i telefonboken har alltid forrang på dongelen, og derfor er det ikke mulig å motta en spam-melding her.",
-  "link.waiting": "Venter på at koden skal legges inn på phoneblock.net…"
+  "status.calls.show_all": "Vis alle ({count})",
+  "status.calls.show_less": "Vis færre",
+  "status.calls.time_unknown": "ukjent"
 }

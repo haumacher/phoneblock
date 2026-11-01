@@ -2,7 +2,9 @@
 
 // /api/calls through the real web server of the Linux build: each call
 // carries its absolute time (epoch_s, #644) next to its age, and the two
-// add up to the wall clock at the time of the request.
+// add up to the wall clock at the time of the request. The list is the
+// persistent call file (#589): streamed in pages, "total" counts it, and
+// ?limit=N returns the N newest.
 
 #include <arpa/inet.h>
 #include <stdio.h>
@@ -16,6 +18,7 @@
 #include "config.h"
 #include "linux_test_util.h"
 #include "stats.h"
+#include "time_sync.h"
 #include "web.h"
 
 static size_t request(uint16_t port, const char *message,
@@ -51,11 +54,29 @@ static size_t request(uint16_t port, const char *message,
     return received;
 }
 
+// GET `uri`; the parsed JSON body (caller deletes).
+static cJSON *get_json(uint16_t port, const char *uri)
+{
+    static char response[131072];
+    char message[256];
+    snprintf(message, sizeof(message),
+             "GET %s HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n", uri);
+    REQUIRE(request(port, message, response, sizeof(response)) > 0);
+    REQUIRE(strstr(response, "200 OK") != NULL);
+    const char *body = strstr(response, "\r\n\r\n");
+    REQUIRE(body != NULL);
+    cJSON *root = cJSON_Parse(body + 4);
+    REQUIRE(root != NULL);
+    return root;
+}
+
 int main(void)
 {
-    char config_path[256];
+    char config_path[256], calls_dir[256], calls_path[300];
     use_temp_config(config_path, sizeof(config_path));
     stats_setup();
+    stats_set_clock(time_sync_now_epoch);
+    use_temp_calls(calls_dir, sizeof(calls_dir), calls_path, sizeof(calls_path));
     config_load();
     web_configure_listener(0, "127.0.0.1");
     web_start();
@@ -92,10 +113,57 @@ int main(void)
     // "clock not set" 0, and age plus epoch is the time of the request.
     double sum = epoch->valuedouble + age->valuedouble;
     REQUIRE(sum >= (double)before && sum <= (double)after);
+    REQUIRE(cJSON_GetObjectItem(root, "total")->valueint == 1);
+    cJSON_Delete(root);
+
+    // More calls than one page of the handler: all of them, newest first.
+    char number[24];
+    for (int i = 0; i < 12; i++) {
+        snprintf(number, sizeof(number), "03012345%02d", i);
+        stats_record_call(number, "", VERDICT_LEGITIMATE);
+    }
+    root = get_json(port, "/api/calls");
+    calls = cJSON_GetObjectItem(root, "calls");
+    REQUIRE(cJSON_GetArraySize(calls) == 13);
+    REQUIRE(cJSON_GetObjectItem(root, "total")->valueint == 13);
+    REQUIRE(strcmp(cJSON_GetObjectItem(cJSON_GetArrayItem(calls, 0), "number")->valuestring,
+                   "0301234511") == 0);
+    REQUIRE(strcmp(cJSON_GetObjectItem(cJSON_GetArrayItem(calls, 12), "number")->valuestring,
+                   "0301234567") == 0);
+    cJSON_Delete(root);
+
+    // ?limit=N: the N newest, the total still all of them (the web UI's
+    // "show all (13)").
+    root = get_json(port, "/api/calls?limit=10");
+    calls = cJSON_GetObjectItem(root, "calls");
+    REQUIRE(cJSON_GetArraySize(calls) == 10);
+    REQUIRE(cJSON_GetObjectItem(root, "total")->valueint == 13);
+    REQUIRE(strcmp(cJSON_GetObjectItem(cJSON_GetArrayItem(calls, 9), "number")->valuestring,
+                   "0301234502") == 0);
+    cJSON_Delete(root);
+
+    // The list survives a restart: same calls, a call of the earlier run
+    // keeps its time and its age follows from it.
+    stats_calls_close();
+    REQUIRE(stats_calls_open(calls_path));
+    root = get_json(port, "/api/calls?limit=1");
+    call = cJSON_GetArrayItem(cJSON_GetObjectItem(root, "calls"), 0);
+    REQUIRE(strcmp(cJSON_GetObjectItem(call, "number")->valuestring, "0301234511") == 0);
+    REQUIRE(cJSON_GetObjectItem(call, "epoch_s")->valuedouble > 0);
+    REQUIRE(cJSON_GetObjectItem(call, "age_s")->valuedouble >= 0);
+    REQUIRE(cJSON_GetObjectItem(root, "total")->valueint == 13);
+    cJSON_Delete(root);
+
+    stats_clear_calls();
+    root = get_json(port, "/api/calls");
+    REQUIRE(cJSON_GetArraySize(cJSON_GetObjectItem(root, "calls")) == 0);
+    REQUIRE(cJSON_GetObjectItem(root, "total")->valueint == 0);
     cJSON_Delete(root);
 
     web_stop();
     unlink(config_path);
+    unlink(calls_path);
+    rmdir(calls_dir);
     puts("test_web_calls_linux: all tests passed");
     return 0;
 }

@@ -28,11 +28,11 @@ static const char *TAG = "logreport";
 #define LOGREPORT_MIN_FREE_HEAP     (64 * 1024)
 
 // Upper bound for the assembled text body. The ring holds at most
-// STATS_MAX_ERRORS (32) entries, each at most a tag plus a 128-byte
-// message plus framing — comfortably under this. Sized with margin and
-// used as a hard truncation guard so a malformed entry can never make us
-// over-run the buffer.
-#define LOGREPORT_BODY_CAP          6144
+// STATS_MAX_ERRORS (47) entries, each at most a tag plus a 128-byte
+// message plus framing (~165 B) — under this. Sized with margin and used
+// as a hard truncation guard so a malformed entry can never make us
+// over-run the buffer; what does not fit ships next cycle.
+#define LOGREPORT_BODY_CAP          8192
 
 // High-water mark: the largest at_us already shipped. The monotonic clock
 // (esp_timer on the ESP32) is uptime-relative and resets on reboot (or a
@@ -41,22 +41,14 @@ static const char *TAG = "logreport";
 // RAM-only; there is no value in persisting it across boots.
 static int64_t s_reported_through_us = 0;
 
-// Snapshots the WARN/ERROR ring and assembles the upload body on the
-// heap. The 32-entry stats_error_t snapshot (~5 KB) lives only in this
-// frame and is gone the moment it returns — so it is not sitting on the
-// stack underneath the subsequent TLS handshake. That matters: the
-// upload runs on the 8 KB selftest task, and a full handshake's P-384
-// cert-chain verify already comes close to that limit on its own. The
-// 1.3.5 field crashes were exactly this — the ~5 KB array plus the
-// handshake tipped the task over its stack guard.
+// Assembles the upload body on the heap from the snapshot `errs` (n
+// entries, newest first).
 //
 // Returns the malloc'd body (caller frees) and fills *out_len /
 // *out_through / *out_shipped, or NULL when there is nothing new to ship.
-static char *logreport_build_body(size_t *out_len, int64_t *out_through,
-                                  int *out_shipped)
+static char *build_body_from(const stats_error_t *errs, int n, size_t *out_len,
+                             int64_t *out_through, int *out_shipped)
 {
-    stats_error_t errs[STATS_MAX_ERRORS];
-    int n = stats_snapshot_errors(errs, STATS_MAX_ERRORS);
     if (n <= 0) return NULL;
 
     // De-noising rule: a lone WARN is almost always transient or benign —
@@ -67,7 +59,7 @@ static char *logreport_build_body(size_t *out_len, int64_t *out_through,
     // then ship the whole new WARN/ERROR window so the surrounding context
     // rides along. When there's no new error we deliberately leave the
     // high-water mark untouched, so the benign WARNs accumulate (bounded
-    // by the 32-entry ring) and are still there as context the moment an
+    // by the 47-entry ring) and are still there as context the moment an
     // error eventually does fire.
     bool have_new_error = false;
     for (int i = 0; i < n; i++) {
@@ -129,6 +121,25 @@ static char *logreport_build_body(size_t *out_len, int64_t *out_through,
     return body;
 }
 
+// Snapshots the WARN/ERROR ring and assembles the upload body. The
+// stats_error_t snapshot (STATS_MAX_ERRORS x 160 B, 7.5 KB) is on the heap
+// and freed before this returns — never on the stack underneath the
+// subsequent TLS handshake. That matters: the upload runs on the 8 KB
+// selftest task, and a full handshake's P-384 cert-chain verify already
+// comes close to that limit on its own. The 1.3.5 field crashes were
+// exactly this — a ~5 KB array on the stack plus the handshake tipped the
+// task over its stack guard.
+static char *logreport_build_body(size_t *out_len, int64_t *out_through,
+                                  int *out_shipped)
+{
+    stats_error_t *errs = malloc(STATS_MAX_ERRORS * sizeof(*errs));
+    if (!errs) return NULL;
+    int n = stats_snapshot_errors(errs, STATS_MAX_ERRORS);
+    char *body = build_body_from(errs, n, out_len, out_through, out_shipped);
+    free(errs);
+    return body;
+}
+
 void logreport_flush(void)
 {
     // Opt-in: the same toggle that governs crash reports ("send errors to
@@ -146,7 +157,7 @@ void logreport_flush(void)
     int64_t shipped_through;
     int     shipped;
     char *body = logreport_build_body(&len, &shipped_through, &shipped);
-    if (!body) return;   // nothing new to ship; errs[] already off the stack
+    if (!body) return;   // nothing new to ship; the snapshot is already freed
 
 #ifdef ESP_PLATFORM
     size_t free_heap = esp_get_free_heap_size();

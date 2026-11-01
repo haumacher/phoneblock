@@ -68,6 +68,13 @@ dm_class_t dm_class_of(pb_assessment_t assessment);
 // web UI's call list renders it in the red "SPAM" class — assessment spam,
 // spam_list, blacklist or name_pattern. Test calls ("Test", grey), suspected
 // spam (orange) and calls the user re-rated as legitimate (green) do not count.
+//
+// Only the DM_BADGE_CALLS newest calls are counted — what the web UI's call
+// list shows before "show all", and what the badge counted when the list
+// was a 10-entry RAM ring. The persistent list (#589) holds weeks of calls; a
+// badge summing them would only ever grow.
+#define DM_BADGE_CALLS 10
+
 bool dm_is_listed_spam(const stats_call_t *call);
 int  dm_count_listed_spam(const stats_call_t *calls, int n);
 

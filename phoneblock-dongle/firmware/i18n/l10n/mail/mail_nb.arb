@@ -33,5 +33,6 @@
   "verdict.error": "Feil",
   "verdict.unknown": "ukjent",
   "log.heading": "Nye oppføringer i protokollen",
-  "update.body": "Firmware på din {device} er oppdatert til versjon {version}."
+  "update.body": "Firmware på din {device} er oppdatert til versjon {version}.",
+  "calls.not_listed": "Ikke oppført: <b>{count}</b> eldre samtaler."
 }

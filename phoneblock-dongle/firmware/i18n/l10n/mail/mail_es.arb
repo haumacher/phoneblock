@@ -33,5 +33,6 @@
   "verdict.error": "Error",
   "verdict.unknown": "desconocido",
   "log.heading": "Nuevas entradas en el registro",
-  "update.body": "El firmware de tu {device} se ha actualizado a la versión {version}."
+  "update.body": "El firmware de tu {device} se ha actualizado a la versión {version}.",
+  "calls.not_listed": "No aparecen: <b>{count}</b> llamadas anteriores."
 }

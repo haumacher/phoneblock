@@ -33,5 +33,6 @@
   "verdict.error": "错误",
   "verdict.unknown": "未知",
   "log.heading": "日志中的新记录",
-  "update.body": "您 {device} 的固件已更新至 {version}。"
+  "update.body": "您 {device} 的固件已更新至 {version}。",
+  "calls.not_listed": "未列出：<b>{count}</b> 较早的通话记录。"
 }

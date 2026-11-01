@@ -395,6 +395,7 @@
   "link.copy_failed": "Det er ikke muligt at kopiere – koden er markeret; kopier den med Ctrl+C.",
   "link.open": "Åbn phoneblock.net",
   "link.manual": "Siden er {url} – du kan også indtaste koden der på en anden enhed, f.eks. på din mobiltelefon.",
+  "link.waiting": "Venter på, at koden indtastes på phoneblock.net…",
   "link.approved": "PhoneBlock-konto er tilknyttet — token er indstillet.",
   "link.denied": "Linket blev afvist på phoneblock.net.",
   "link.expired": "Koden er udløbet. Anmod om en ny kode.",
@@ -463,5 +464,7 @@
   "spam.dialog.comment": "Begrundelse",
   "spam.dialog.comment.hint": "(valgfrit, bliver synligt for offentligheden)",
   "spam.dialog.error.is_contact": "Denne opkalder er gemt i din telefonbog. En telefonbogsoplysning har altid forrang på donglen, og derfor er det ikke muligt at markere opkaldet som spam her.",
-  "link.waiting": "Venter på, at koden indtastes på phoneblock.net…"
+  "status.calls.show_all": "Vis alle ({count})",
+  "status.calls.show_less": "Vis færre",
+  "status.calls.time_unknown": "ukendt"
 }

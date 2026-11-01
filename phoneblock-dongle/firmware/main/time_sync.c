@@ -11,6 +11,7 @@
 
 #include "config.h"
 #include "scheduler.h"
+#include "stats.h"
 
 // Must be last: bans unsafe string APIs for the rest of this file.
 #include "banned_apis.h"
@@ -68,6 +69,8 @@ static void on_time_set(struct timeval *tv)
         // Daily jobs parked on the "clock not valid yet" retry need to
         // recompute against real local time now that we have it.
         scheduler_notify_time_synced();
+        // Calls listed before the clock was set get their time (#589).
+        stats_time_synced();
     }
 }
 

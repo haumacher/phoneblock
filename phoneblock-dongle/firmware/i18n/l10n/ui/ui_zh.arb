@@ -395,6 +395,7 @@
   "link.copy_failed": "无法复制——该代码已被选中，请按 Ctrl+C 复制。",
   "link.open": "打开 phoneblock.net",
   "link.manual": "该页面是 {url}——你也可以在其他设备上输入该代码，例如在手机上。",
+  "link.waiting": "正在等待在 phoneblock.net 上输入验证码……",
   "link.approved": "已关联 PhoneBlock 账户——令牌已设置。",
   "link.denied": "该链接在 phoneblock.net 上被拒绝。",
   "link.expired": "该代码已过期。请申请新代码。",
@@ -463,5 +464,7 @@
   "spam.dialog.comment": "原因",
   "spam.dialog.comment.hint": "（可选，将对公众可见）",
   "spam.dialog.error.is_contact": "该来电者已存入你的通讯录。通讯录中的联系人信息在加密狗中始终具有优先权，因此此处不会触发垃圾短信提示。",
-  "link.waiting": "正在等待在 phoneblock.net 上输入验证码……"
+  "status.calls.show_all": "显示全部 ({count})",
+  "status.calls.show_less": "显示更少",
+  "status.calls.time_unknown": "未知"
 }

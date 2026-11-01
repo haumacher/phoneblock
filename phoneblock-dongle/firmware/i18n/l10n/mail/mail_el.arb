@@ -33,5 +33,6 @@
   "verdict.error": "Σφάλμα",
   "verdict.unknown": "άγνωστο",
   "log.heading": "Νέες καταχωρήσεις στο αρχείο καταγραφής",
-  "update.body": "Το firmware της συσκευής σου {device} ενημερώθηκε στην έκδοση {version}."
+  "update.body": "Το firmware της συσκευής σου {device} ενημερώθηκε στην έκδοση {version}.",
+  "calls.not_listed": "Δεν εμφανίζονται: <b>{count}</b> παλαιότερες κλήσεις."
 }

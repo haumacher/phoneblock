@@ -55,11 +55,20 @@ static const char *TAG = "mail";
 // MAIL_RCPT_MAX addresses (~330 B) on top of Date/From/Subject/Content-Type.
 #define MAIL_LINE_CAP       1024
 // Upper bound for the assembled status body. The status mail is a single
-// text/html document — summary + up to STATS_MAX_CALLS calls + the log
+// text/html document — summary + the calls since the last mail + the log
 // window. text/html (not multipart/alternative) keeps the body — held in
-// RAM across the heap-hungry TLS handshake — small. 8 KB is comfortable
-// headroom for the worst case (10 calls + the full 32-entry log ring).
-#define MAIL_BODY_CAP       8192
+// RAM across the heap-hungry TLS handshake — small. 16 KB takes ~50 call
+// rows (~300 B each) or, next to the log, ~35 of them and the log's
+// 47 entries; rows that do not fit are counted in the "not listed" line.
+// The free-heap check (MAIL_MIN_FREE_HEAP) runs before this is allocated,
+// so the handshake keeps 48 KB.
+#define MAIL_BODY_CAP       16384
+
+// Room the call table leaves for the log section when the mail has one.
+#define MAIL_LOG_RESERVE    5120
+
+// Call rows read from the call list at a time, on the heap.
+#define MAIL_CALLS_PAGE     4
 
 // Content-Type for the status mail body.
 #define MAIL_BODY_CT        "text/html; charset=utf-8"
@@ -73,11 +82,12 @@ typedef struct {
     bool                tls_up;
 } smtp_conn_t;
 
-// High-water marks, RAM-only (reset on reboot — intended: a reboot's own
-// crash ERROR then ships once more, which is the point). Independent of
-// logreport.c's marks: this is a separate sink.
+// High-water mark of the log, RAM-only (reset on reboot — intended: a
+// reboot's own crash ERROR then ships once more, which is the point).
+// Independent of logreport.c's marks: this is a separate sink. The calls'
+// mark is in the call file (stats_set_mailed_seq, mail_calls.h, #589), so
+// calls not yet mailed before a reboot are mailed afterwards.
 static int64_t  s_reported_through_us = 0;  // newest log at_us already mailed
-static int64_t  s_reported_calls_us   = 0;  // newest call at_us already mailed
 
 // One-shot "we just updated" latch. Set once at boot (mail_note_update, from
 // main.c) when the running image is a freshly-installed OTA build, consumed
@@ -442,6 +452,25 @@ static void format_event_time(int64_t at_us, char *out, size_t cap)
     }
 }
 
+// A call's time: its stored wall-clock time (local), else — a call of this
+// boot before the clock was set — "+Ns since boot", else (an earlier boot
+// without a time) "?".
+static void format_call_time(const stats_call_t *c, char *out, size_t cap)
+{
+    if (c->epoch_s) {
+        time_t ev = (time_t)c->epoch_s;
+        struct tm lt;
+        time_sync_tz_lock();
+        localtime_r(&ev, &lt);
+        time_sync_tz_unlock();
+        strftime(out, cap, "%Y-%m-%d %H:%M:%S", &lt);
+    } else if (c->this_boot) {
+        snprintf(out, cap, "+%llds", (long long)(c->at_us / 1000000));
+    } else {
+        snprintf(out, cap, "%s", "?");
+    }
+}
+
 // mail_render() (ICU {name} substitution for the localized strings) lives in
 // mail_html.c so it is host-tested (test/test_mail_html.c).
 
@@ -522,14 +551,21 @@ static size_t append_summary_html(char *body, size_t cap, size_t len,
     return append_str(body, cap, len, line);
 }
 
-// Append the recent-calls table. Dialable numbers link to their PhoneBlock
-// detail page (<base>/nums/<number>); the server normalises the number and
-// redirects to its canonical form, exactly as the web UI's links do. Renders
-// nothing when there are no calls.
+// Append the table of the calls in `w` (mail_calls_read: newest first,
+// filtered), read from the call list a few at a time — the list can hold
+// STATS_CALL_CAPACITY calls, no copy of it is ever made. Rows stop at
+// `limit` bytes of body; *listed receives how many made it. Dialable numbers
+// link to their PhoneBlock detail page (<base>/nums/<number>); the server
+// normalises the number and redirects to its canonical form, exactly as the
+// web UI's links do. Renders nothing when there are no calls.
 static size_t append_calls_html(char *body, size_t cap, size_t len,
-                                const stats_call_t *calls, int ncalls)
+                                const mail_calls_window_t *w, size_t limit,
+                                int *listed)
 {
-    if (ncalls <= 0) return len;
+    *listed = 0;
+    if (w->new_calls <= 0) return len;
+    stats_call_t *page = malloc(MAIL_CALLS_PAGE * sizeof(*page));
+    if (!page) return len;
     const char *base = config_phoneblock_base_url();
 
     char heading[320];
@@ -547,9 +583,17 @@ static size_t append_calls_html(char *body, size_t cap, size_t len,
         mail_i18n_str("calls.name"), mail_i18n_str("calls.rating"));
     len = append_str(body, cap, len, hrow);
 
-    for (int i = 0; i < ncalls && len < cap - 400; i++) {
-        const stats_call_t *c = &calls[i];
-        char when[24]; format_event_time(c->at_us, when, sizeof(when));
+    uint32_t cursor = 0;
+    int n = 0, i = 0;
+    while (len < limit) {
+        if (i == n) {
+            n = mail_calls_read(w, &cursor, page, MAIL_CALLS_PAGE);
+            i = 0;
+            if (n == 0) break;
+        }
+        const stats_call_t *c = &page[i++];
+        (*listed)++;
+        char when[24]; format_call_time(c, when, sizeof(when));
         char vl[64];   verdict_label(c, vl, sizeof(vl));
         // API-checked entries carry a PhoneBlock label/location; phone-book
         // and internal-code entries fall back to the raw number/display.
@@ -579,6 +623,7 @@ static size_t append_calls_html(char *body, size_t cap, size_t len,
         len = append_html_escaped(body, cap, len, vl);
         len = append_str(body, cap, len, "</td></tr>");
     }
+    free(page);
     return append_str(body, cap, len, "</table>");
 }
 
@@ -625,18 +670,21 @@ static size_t append_log_html(char *body, size_t cap, size_t len,
 
 // Assemble the full text/html status body. `include_log` gates the log
 // section (the daily flush only attaches it once a new ERROR has fired;
-// the test mail always shows the whole ring). `new_calls` > 0 adds the
-// "since the last mail" line, worded for blocked calls when `spam_only`
-// (config_mail_spam_only) narrowed the list to them. Returns the assembled
-// length.
+// the test mail always shows the whole ring). `calls` (NULL: no call table)
+// are the calls to list; with `since_line` the "since the last mail" line
+// precedes them, worded for blocked calls when calls->blocked_only
+// (config_mail_spam_only) narrowed the list to them. Calls of the window
+// that are no longer stored or did not fit get a line of their own.
+// Returns the assembled length.
 static size_t build_status_html(char *body, size_t cap,
                                 const stats_counters_t *cnt,
-                                const stats_call_t *calls, int ncalls,
+                                const mail_calls_window_t *calls, bool since_line,
                                 const stats_error_t *errs, int nerr,
                                 int64_t since_us, int64_t *newest_us,
-                                bool include_log, int new_calls,
-                                bool spam_only)
+                                bool include_log)
 {
+    int  new_calls = calls && since_line ? calls->new_calls : 0;
+    bool spam_only = calls && calls->blocked_only;
     char intro[224];
     snprintf(intro, sizeof(intro),
         "<html><body style=\"font-family:Arial,Helvetica,sans-serif;color:#222\">"
@@ -659,7 +707,20 @@ static size_t build_status_html(char *body, size_t cap,
         snprintf(line, sizeof(line), "<p>%s</p>", sentence);
         len = append_str(body, cap, len, line);
     }
-    len = append_calls_html(body, cap, len, calls, ncalls);
+    if (calls) {
+        size_t limit = cap - 400 - (include_log ? MAIL_LOG_RESERVE : 0);
+        int listed;
+        len = append_calls_html(body, cap, len, calls, limit, &listed);
+        int missing = calls->not_listed + (calls->new_calls - listed);
+        if (missing > 0) {
+            char count[12], sentence[224], line[256];
+            snprintf(count, sizeof(count), "%d", missing);
+            mail_render(sentence, sizeof(sentence), mail_i18n_str("calls.not_listed"),
+                        "count", count, (const char *)NULL);
+            snprintf(line, sizeof(line), "<p style=\"font-size:14px\">%s</p>", sentence);
+            len = append_str(body, cap, len, line);
+        }
+    }
     if (include_log)
         len = append_log_html(body, cap, len, errs, nerr, since_us, newest_us);
     return append_str(body, cap, len, "</body></html>\n");
@@ -677,7 +738,9 @@ void mail_daily_flush(void)
 
     // New ERROR since the last mail? (WARN alone never triggers, matching
     // logreport.c; WARNs still ride along as context once an error fires.)
-    stats_error_t errs[STATS_MAX_ERRORS];
+    // The ring's copy on the heap (7.5 KB), not on the scheduler's stack.
+    stats_error_t *errs = malloc(STATS_MAX_ERRORS * sizeof(*errs));
+    if (!errs) return;
     int  n = on_error ? stats_snapshot_errors(errs, STATS_MAX_ERRORS) : 0;
     bool have_new_error = false;
     for (int i = 0; i < n; i++) {
@@ -688,37 +751,35 @@ void mail_daily_flush(void)
         }
     }
 
-    // New calls since the last mail. The snapshot is newest-first and at_us
-    // is monotonic, so the new calls are the leading run above the mark —
-    // all verdicts, not just spam. mail_on_spam is the "report calls" opt-in.
-    // mail_spam_only (issue #556, default off) narrows the report to the
-    // calls the dongle blocked; then legitimate calls alone send no mail.
-    stats_call_t calls[STATS_MAX_CALLS];
-    int ncalls = stats_snapshot_calls(calls, STATS_MAX_CALLS);
-    int new_calls = mail_count_new_calls(calls, ncalls, s_reported_calls_us);
-    // The mark advances past every new call, reported or filtered out.
-    int64_t newest_call_us = new_calls > 0 ? calls[0].at_us : 0;
+    // New calls since the last mail: every call above the mark kept in the
+    // call file (mail_calls.h) — all verdicts, not just spam. mail_on_spam
+    // is the "report calls" opt-in. mail_spam_only (issue #556, default off)
+    // narrows the report to the calls the dongle blocked; then legitimate
+    // calls alone send no mail. The mark advances past every call of the
+    // window, reported or filtered out.
     bool spam_only = config_mail_spam_only();
-    new_calls = mail_select_calls(calls, new_calls, spam_only);
-    bool have_new_calls = on_spam && new_calls > 0;
+    mail_calls_window_t window;
+    mail_calls_window(spam_only, false, &window);
+    bool have_new_calls = on_spam && window.new_calls > 0;
 
-    if (!have_new_error && !have_new_calls) return;   // nothing noteworthy
-    if (esp_get_free_heap_size() < MAIL_MIN_FREE_HEAP) return;
+    if (!have_new_error && !have_new_calls) { free(errs); return; }   // nothing noteworthy
+    if (esp_get_free_heap_size() < MAIL_MIN_FREE_HEAP) { free(errs); return; }
 
     char *body = malloc(MAIL_BODY_CAP);
-    if (!body) return;
+    if (!body) { free(errs); return; }
 
     stats_counters_t cnt;
     stats_snapshot_counters(&cnt);
 
     // Advance the log high-water mark over every WARN/ERROR we append, so
     // the same window isn't re-mailed; the *trigger* is still a new ERROR.
-    // The call table shows only the new calls (0 when calls aren't reported).
+    // The call table shows only the new calls (none when calls aren't
+    // reported).
     int64_t newest_us = s_reported_through_us;
-    build_status_html(body, MAIL_BODY_CAP, &cnt, calls,
-                      have_new_calls ? new_calls : 0, errs, n,
-                      s_reported_through_us, &newest_us, have_new_error,
-                      have_new_calls ? new_calls : 0, spam_only);
+    build_status_html(body, MAIL_BODY_CAP, &cnt,
+                      have_new_calls ? &window : NULL, true, errs, n,
+                      s_reported_through_us, &newest_us, have_new_error);
+    free(errs);
 
     const char *subject =
         (have_new_error && have_new_calls)
@@ -730,7 +791,7 @@ void mail_daily_flush(void)
         // Advance the marks only after a confirmed send, so a failure
         // retries the same window next cycle.
         if (have_new_error) s_reported_through_us = newest_us;
-        if (have_new_calls) s_reported_calls_us = newest_call_us;
+        if (have_new_calls) mail_calls_mark_sent(&window);
     }
     free(body);
 }
@@ -746,16 +807,18 @@ bool mail_send_test(void)
     // button is to see the real mail on demand.
     stats_counters_t cnt;
     stats_snapshot_counters(&cnt);
-    stats_error_t errs[STATS_MAX_ERRORS];
+    stats_error_t *errs = malloc(STATS_MAX_ERRORS * sizeof(*errs));
+    if (!errs) { free(body); return false; }
     int     n      = stats_snapshot_errors(errs, STATS_MAX_ERRORS);
-    stats_call_t calls[STATS_MAX_CALLS];
-    int     ncalls = stats_snapshot_calls(calls, STATS_MAX_CALLS);
     int64_t newest = 0;
-    // Same call selection as the daily mail (issue #556).
-    ncalls = mail_select_calls(calls, ncalls, config_mail_spam_only());
+    // Same call selection as the daily mail (issue #556), over the whole
+    // list; the mark stays where it is.
+    mail_calls_window_t window;
+    mail_calls_window(config_mail_spam_only(), true, &window);
 
-    build_status_html(body, MAIL_BODY_CAP, &cnt, calls, ncalls, errs, n,
-                      0, &newest, true, 0, false);
+    build_status_html(body, MAIL_BODY_CAP, &cnt, &window, false, errs, n,
+                      0, &newest, true);
+    free(errs);
 
     bool ok = mail_send(mail_i18n_str("subj.status"), MAIL_BODY_CT, body);
     free(body);

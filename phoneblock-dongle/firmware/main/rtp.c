@@ -379,7 +379,7 @@ typedef struct {
     // Packets lost to a failing sendto() since the first failure of the
     // current run; 0 while sending works. A WiFi TX stall (weak signal)
     // fails every packet for a second or more — one WARN per packet would
-    // flush the 32-entry log ring, so the run gets one line at its start
+    // flush the 47-entry log ring, so the run gets one line at its start
     // and one when it ends.
     uint32_t                  send_failures;
 } rtp_tx_t;

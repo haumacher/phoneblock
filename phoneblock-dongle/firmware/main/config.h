@@ -97,7 +97,7 @@ bool        config_log_known_calls(void);
 // Whether the global log hook also mirrors INFO lines (not just
 // WARN/ERROR) into the log panel. Default off; a troubleshooting toggle
 // — INFO carries the context (tried host:port, request URLs, …) that a
-// bare WARN/ERROR omits. Floods the 32-entry ring, so meant to be turned
+// bare WARN/ERROR omits. Floods the 47-entry ring, so meant to be turned
 // on, reproduced, read, and turned off again.
 bool        config_log_info(void);
 

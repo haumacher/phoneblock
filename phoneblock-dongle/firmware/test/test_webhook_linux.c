@@ -22,6 +22,7 @@
 #include "platform.h"
 #include "report_queue.h"
 #include "stats.h"
+#include "time_sync.h"
 #include "web.h"
 #include "webhook.h"
 
@@ -159,10 +160,12 @@ static bool error_ring_contains(const char *text)
 
 int main(void)
 {
-    char config_path[256];
+    char config_path[256], calls_dir[256], calls_path[300];
     use_temp_config(config_path, sizeof(config_path));
     stats_setup();
     log_capture_start();
+    stats_set_clock(time_sync_now_epoch);   // as main_linux.c
+    use_temp_calls(calls_dir, sizeof(calls_dir), calls_path, sizeof(calls_path));
     config_load();
 
     listener = socket(AF_INET, SOCK_STREAM, 0);
@@ -297,6 +300,8 @@ int main(void)
     web_stop();
     close(listener);
     unlink(config_path);
+    unlink(calls_path);
+    rmdir(calls_dir);
     puts("test_webhook_linux: all tests passed");
     return 0;
 }

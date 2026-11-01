@@ -222,6 +222,21 @@
     "description": "Dongle web UI: status.calls.col.verdict",
     "x-translated": "34e948d5"
   },
+  "status.calls.show_all": "Alle anzeigen ({count})",
+  "@status.calls.show_all": {
+    "description": "Dongle web UI: button below the call list that shows all stored calls instead of the newest 10; {count} is the number of stored calls",
+    "x-translated": "1bcc3ce5"
+  },
+  "status.calls.show_less": "Weniger anzeigen",
+  "@status.calls.show_less": {
+    "description": "Dongle web UI: button below the full call list that goes back to the newest 10 calls",
+    "x-translated": "ee13155e"
+  },
+  "status.calls.time_unknown": "unbekannt",
+  "@status.calls.time_unknown": {
+    "description": "Dongle web UI: call list time column for a call whose time is not known (recorded before the dongle's clock was set, before a restart)",
+    "x-translated": "5e6b2084"
+  },
   "status.calls.clear": "Liste leeren",
   "@status.calls.clear": {
     "description": "Dongle web UI: status.calls.clear",

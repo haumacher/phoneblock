@@ -33,5 +33,6 @@
   "verdict.error": "Fout",
   "verdict.unknown": "onbekend",
   "log.heading": "Nieuwe berichten in het logboek",
-  "update.body": "De firmware op je {device} is bijgewerkt naar versie {version}."
+  "update.body": "De firmware op je {device} is bijgewerkt naar versie {version}.",
+  "calls.not_listed": "Niet weergegeven: <b>{count}</b> oudere oproepen."
 }

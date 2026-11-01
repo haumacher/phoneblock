@@ -1887,7 +1887,7 @@ static void sip_task(void *arg)
         // Surface the failure on the dashboard, but only on the first try
         // and then roughly every 5 min (every 20th attempt at the 15 s
         // cadence). Logging an ERROR on every retry would flush the
-        // 32-entry log ring and bury whatever else the operator needs to
+        // 47-entry log ring and bury whatever else the operator needs to
         // see. dial_host is up to 64 chars; cap to keep the formatted
         // line within the stats error-message buffer.
         if (attempt == 0 || (attempt % 20) == 0) {

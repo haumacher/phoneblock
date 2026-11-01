@@ -32,6 +32,7 @@
 #include "display.h"
 #endif
 #include "status_led.h"
+#include "storage.h"
 #include "time_sync.h"
 #include "web.h"
 #include "webhook.h"
@@ -87,6 +88,11 @@ void app_main(void)
     display_start();
 #endif
     announcement_init();
+    // The call list lives on the storage partition (#589), mounted by
+    // announcement_init(); calls are stamped with the wall clock once SNTP
+    // has set it.
+    stats_set_clock(time_sync_now_epoch);
+    stats_calls_open(STORAGE_BASE_PATH "/" STATS_CALLS_FILE);
     // Start the LED early so the user sees "CONNECTING" (or
     // "PAIRING" a few hundred ms later) before WiFi blocks us.
     status_led_start();

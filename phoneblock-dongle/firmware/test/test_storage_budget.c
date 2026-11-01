@@ -6,6 +6,7 @@
 // littlefs core.
 #include <stdio.h>
 
+#include "stats.h"            // the call list's size (#589)
 #include "storage_budget.h"
 
 static int tests_run, tests_failed;
@@ -148,9 +149,10 @@ static void test_dialog(void)
     CHECK(STORAGE_DIALOG_TIER_M == 320 * 1024, "M is 320 KiB");
     CHECK(STORAGE_DIALOG_TIER_M < STORAGE_DIALOG_PLAIN_FS_MAX, "M < L ceiling");
 
-    // 640 KB: 160 - 8 reserve - 2 root - 33 community - (14 + 1 + 1 + 3) packs,
-    // list, index - 14 (a pack update's second copy) = 84 blocks for the set.
-    CHECK_EQ(storage_budget_lfs_dialog_room(&L, K640_TOTAL), 343416, "640 KB room for the set");
+    // 640 KB: 160 - 8 reserve - 2 root - 33 community - (14 + 1 + 1 + 3 + 3)
+    // packs, list, index, call list - 14 (a pack update's second copy) = 81
+    // blocks for the set (84 before the call list, #589).
+    CHECK_EQ(storage_budget_lfs_dialog_room(&L, K640_TOTAL), 331144, "640 KB room for the set");
     CHECK(STORAGE_DIALOG_TIER_M <= storage_budget_lfs_dialog_room(&L, K640_TOTAL) &&
           STORAGE_DIALOG_TIER_M + 16 * 1024 > storage_budget_lfs_dialog_room(&L, K640_TOTAL) &&
           STORAGE_DIALOG_TIER_M % (16 * 1024) == 0,
@@ -176,7 +178,7 @@ static void test_dialog(void)
     // community list keeps (at least) the 128 KB bucket, and next to such a
     // list a pack update's second copy still fits — no eviction.
     uint64_t c3 = ROOT + blocks(52 * 1024) + blocks(4096) + blocks(4096) + blocks(8192)
-                  + blocks(STORAGE_DIALOG_TIER_M);
+                  + blocks(STORAGE_LFS_CALLS_BYTES) + blocks(STORAGE_DIALOG_TIER_M);
     uint64_t c3_community = storage_budget_lfs_community(&L, K640_TOTAL, c3);
     printf("    640 KB community budget next to an M set: %llu B\n",
            (unsigned long long) c3_community);
@@ -194,11 +196,50 @@ static void test_dialog(void)
     // S3: an L set at the ceiling and the packs leave a community budget far
     // above the server's largest bucket (512 KB).
     uint64_t s3 = ROOT + blocks(52 * 1024) + blocks(4096) + blocks(4096) + blocks(8192)
+                  + blocks(STATS_CALLS_FILE_BYTES(STATS_CALL_CAPACITY_LARGE))
                   + blocks(STORAGE_DIALOG_PLAIN_FS_MAX);
     uint64_t s3_community = storage_budget_lfs_community(&L, S3_TOTAL, s3);
     printf("    S3 community budget next to a 2 MB set: %llu B\n",
            (unsigned long long) s3_community);
     CHECK(s3_community > 512 * 1024, "S3: every bucket");
+    // Next to the largest list the S3's call list can be rewritten whole
+    // (an update of its first record) far outside the reserve.
+    CHECK(storage_budget_lfs_asset_fits(&L, S3_TOTAL, s3 + blocks(512 * 1024),
+                                        STATS_CALLS_FILE_BYTES(STATS_CALL_CAPACITY_LARGE)),
+          "S3: an in-place rewrite of the 200-call list fits next to a 512 KB list");
+}
+
+// The call list (#589) on the shared partition: its size per layout, and
+// that its in-place updates fit what the budget keeps free.
+static void test_calls_file(void)
+{
+    printf("call list\n");
+    CHECK_EQ(STORAGE_LFS_CALLS_BYTES, STATS_CALLS_FILE_BYTES(STATS_CALL_CAPACITY_SMALL),
+             "storage_budget.h and stats.h agree on the 4 MB call list");
+    CHECK_EQ(STATS_CALLS_FILE_BYTES(STATS_CALL_CAPACITY_SMALL), 12032,
+             "4 MB boards: 50 calls");
+    CHECK_EQ(storage_budget_lfs_file_blocks(&L, STORAGE_LFS_CALLS_BYTES), 3,
+             "4 MB boards: 3 blocks");
+    CHECK_EQ(storage_budget_lfs_file_blocks(&L,
+                 STATS_CALLS_FILE_BYTES(STATS_CALL_CAPACITY_LARGE)), 12,
+             "S3 / Linux: 200 calls in 12 blocks");
+    // A record written into the call list rewrites it from that block on:
+    // at most its 3 blocks in flight, which the reserve's 4 blocks for
+    // unbudgeted small writes hold (the personal list's growth and the
+    // inlined dialog marker need next to none).
+    CHECK(storage_budget_lfs_file_blocks(&L, STORAGE_LFS_CALLS_BYTES)
+              <= STORAGE_LFS_RESERVE_BLOCKS - 4,
+          "640 KB: an in-place update fits the reserve's unbudgeted blocks");
+    // The 640 KB partition at its fullest in dialog mode (an M set, the
+    // packs, the call list, the list at its budget): exactly the reserve
+    // free, and the call list's rewrite fits in it.
+    uint64_t full = ROOT + blocks(52 * 1024) + blocks(4096) + blocks(4096) + blocks(8192)
+                    + blocks(STORAGE_LFS_CALLS_BYTES) + blocks(STORAGE_DIALOG_TIER_M);
+    uint64_t list = storage_budget_lfs_community(&L, K640_TOTAL, full);
+    uint64_t free_blocks = K640_TOTAL / 4096 - (full + blocks(list)) / 4096;
+    CHECK(free_blocks == STORAGE_LFS_RESERVE_BLOCKS
+          && free_blocks >= storage_budget_lfs_file_blocks(&L, STORAGE_LFS_CALLS_BYTES),
+          "640 KB at its fullest: the reserve holds the call list's rewrite");
 }
 
 int main(void)
@@ -208,6 +249,7 @@ int main(void)
     test_lfs_community();
     test_lfs_asset_fits();
     test_dialog();
+    test_calls_file();
 
     printf("\n%d checks, %d failed\n", tests_run, tests_failed);
     return tests_failed ? 1 : 0;

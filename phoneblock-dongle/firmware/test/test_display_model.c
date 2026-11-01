@@ -15,6 +15,7 @@
 
 #include "display_model.h"
 #include "stats.h"
+#include "calls_test_util.h"
 
 static int tests_run, tests_failed;
 
@@ -40,10 +41,10 @@ static void record_checked(const char *number, verdict_t verdict,
 
 static int badge(void)
 {
-    int n = stats_count_calls(dm_is_listed_spam);
+    int n = stats_count_calls(dm_is_listed_spam, DM_BADGE_CALLS);
     // The same rule over a snapshot gives the same count.
-    stats_call_t calls[STATS_MAX_CALLS];
-    int k = stats_snapshot_calls(calls, STATS_MAX_CALLS);
+    stats_call_t calls[DM_BADGE_CALLS];
+    int k = stats_snapshot_calls(calls, DM_BADGE_CALLS);
     if (dm_count_listed_spam(calls, k) != n) return -1;
     return n;
 }
@@ -79,9 +80,9 @@ static void test_badge(void)
         snprintf(num, sizeof(num), "+49301000%02d", i);
         record_checked(num, VERDICT_SPAM, PB_ASSESS_SPAM, 3);
     }
-    CHECK(badge() == STATS_MAX_CALLS, "12 spam calls → 10 (ring size)");
+    CHECK(badge() == DM_BADGE_CALLS, "12 spam calls → 10 (the newest counted)");
     stats_record_call("+4930999999", "", VERDICT_LEGITIMATE);
-    CHECK(badge() == STATS_MAX_CALLS - 1, "oldest spam call dropped off the ring");
+    CHECK(badge() == DM_BADGE_CALLS - 1, "oldest spam call dropped out of the count");
     stats_clear_calls();
 }
 
@@ -264,10 +265,12 @@ static void test_glyphs(void)
 int main(void)
 {
     stats_setup();
+    calls_test_open();
     test_badge();
     test_call_screen();
     test_utf8();
     test_glyphs();
     printf("\n%d tests, %d failures\n", tests_run, tests_failed);
+    calls_test_cleanup();
     return tests_failed ? 1 : 0;
 }

@@ -16,9 +16,13 @@
 //    tier): the shared budget, the 4 KB write buffer, precedence of the
 //    rarely written files (eviction of the community cache), the user's
 //    recording superseding the localized announcement, the delete-first
-//    replacement of the dialog set, one retry. It must run 60 days without a
-//    single failed write or a WARN/ERROR line, including the day the i18n
-//    assets are re-downloaded and the day the user uploads a recording.
+//    replacement of the dialog set, one retry — and the call list (#589):
+//    created at full size at the first boot, then a few calls a day written
+//    into it in place right after the blocklist sync left the partition at
+//    its fullest, and the daily mail's mark in its header. It must run 60
+//    days without a single failed write or a WARN/ERROR line, including the
+//    day the i18n assets are re-downloaded and the day the user uploads a
+//    recording.
 //
 // File contents are synthetic; sizes are the CDN's real asset sizes.
 #include <stdarg.h>
@@ -227,6 +231,48 @@ static void new_upload(long size)
     }
 }
 
+// --- The call list (#589) ------------------------------------------------------
+
+// The 4 MB boards' call list (stats.h), as stats.c writes it: created record
+// by record at full size, each call one record written in place, a spam
+// call's duration a second write into the same record, the mail's mark the
+// header.
+#define CALLS_CAP   STATS_CALL_CAPACITY_SMALL
+#define CALLS_BYTES STATS_CALLS_FILE_BYTES(CALLS_CAP)
+#define CALLS_PER_DAY 5
+
+static unsigned s_call_seq;
+
+static void calls_create(void)
+{
+    size_t w;
+    if (!sim_write_file("/calls.bin", CALLS_BYTES, STATS_CALL_RECORD_BYTES, &w)) {
+        s_out.write_failures++;
+        printf("    call list not created (littlefs %d)\n", sim_last_err());
+    }
+    s_call_seq = 0;
+}
+
+static void calls_write(size_t offset, size_t size)
+{
+    if (!sim_update_file("/calls.bin", offset, size)) {
+        s_out.write_failures++;
+        printf("    call list write at %zu failed (littlefs %d)\n", offset, sim_last_err());
+    }
+}
+
+static void calls_day(void)
+{
+    for (int i = 0; i < CALLS_PER_DAY; i++) {
+        unsigned seq = ++s_call_seq;
+        size_t at = STATS_CALL_HEADER_BYTES
+                  + (seq % CALLS_CAP) * (size_t) STATS_CALL_RECORD_BYTES;
+        calls_write(at, STATS_CALL_RECORD_BYTES);
+        if (i % 2 == 0) calls_write(at, STATS_CALL_RECORD_BYTES);   // duration
+    }
+    calls_write(0, STATS_CALL_HEADER_BYTES);                      // mail mark
+}
+
 // --- The cycle ---------------------------------------------------------------
 
 #define DAYS        60
@@ -245,6 +291,8 @@ static outcome_t run(const device_t *d)
     // A device switched to dialog mode: the switch deleted the own
     // recording (web.c), whatever was there before.
     if (d->dialog) sim_unlink("/announcement.alaw");
+    // The first boot of 1.7 creates the call list, before any sync.
+    calls_create();
     sim_log_reset();
 
     for (int day = 0; day < DAYS; day++) {
@@ -261,6 +309,13 @@ static outcome_t run(const device_t *d)
             new_upload(size);
         }
         new_blocklist(d);
+        // The calls of the day, at the partition's fullest: the blocklist
+        // sync just took what the budget left.
+        calls_day();
+    }
+    if (sim_file_size("/calls.bin") != CALLS_BYTES) {
+        s_out.write_failures++;
+        printf("    call list has %ld bytes\n", sim_file_size("/calls.bin"));
     }
     s_out.community_bytes = sim_file_size("/community.bin");
     s_out.dialog_present = sim_file_size("/dialog-de.alaw") == s_dialog_have
@@ -494,6 +549,7 @@ static void test_dialog_replacement(void)
     s_evictions = 0;
     s_dialog_have = -1;
     sim_init();
+    calls_create();
     sim_log_reset();
     new_i18n(&d, 0);
     new_blocklist(&d);
@@ -501,7 +557,9 @@ static void test_dialog_replacement(void)
     int evictions = s_evictions;
     for (int release = 1; release <= 5; release++) {
         new_dialog(release * 800);
+        calls_day();
         new_blocklist(&d);
+        calls_day();
     }
     CHECK(s_out.write_failures == 0 && sim_log_count('W') == 0 && sim_log_count('E') == 0
           && s_dialog_have > 0 && s_evictions == evictions

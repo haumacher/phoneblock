@@ -1294,6 +1294,8 @@ function renderStatus(){
     + '<th>' + esc(t('status.calls.col.name'))    + '</th>'
     + '<th>' + esc(t('status.calls.col.verdict')) + '</th>'
     + '</tr></thead><tbody id="callsBody"></tbody></table>'
+    + '<p id="callsMoreRow" style="display:none;margin:.5rem 0 0">'
+    + '<button id="callsMore" class="btn-ghost btn-xs"></button></p>'
     + '</section>'
     // Language + country. A collapsible card like the admin sections below,
     // but unlike them it is *not* hidden while setup is incomplete: the
@@ -1723,6 +1725,10 @@ function renderHero(sipDone, tokenDone){
 // Used in the /api/factory-reset POST body so that a POST replayed
 // by the browser across a reboot carries a now-stale value.
 let resetNonce = '';
+// The call list keeps weeks of calls (#589); the page shows the newest
+// CALLS_SHOWN until "show all" is clicked, and polls only those meanwhile.
+const CALLS_SHOWN = 10;
+let callsShowAll = false;
 
 // Last /api/status's phoneblock.token_link (see the status poll).
 let tokenLink = false;
@@ -1931,7 +1937,7 @@ async function refreshAll(){
   }
   const [s, calls, errs] = await Promise.all([
     sResp && sResp.ok ? sResp.json().catch(() => null) : null,
-    fetchJson('api/calls'),
+    fetchJson(callsShowAll ? 'api/calls' : 'api/calls?limit=' + CALLS_SHOWN),
     fetchJson('api/errors'),
   ]);
   if (!s) return;
@@ -2739,7 +2745,26 @@ async function refreshAll(){
       whitelist: spam && !contact && tokenSet,
     };
   };
+  // When the call was: from its age; a call of an earlier boot while the
+  // dongle's clock is not set yet has only its time (epoch_s); one recorded
+  // before any clock was set has neither (age_s -1, epoch_s 0).
+  const callWhen = (c) => c.age_s >= 0 ? fmtClock(c.age_s, false)
+    : c.epoch_s > 0 ? fmtClock(Date.now() / 1000 - c.epoch_s, false)
+    : t('status.calls.time_unknown');
   const hasCalls = calls && calls.calls.length;
+  const callsTotal = calls ? (calls.total || calls.calls.length) : 0;
+  const callsMoreRow = $('callsMoreRow');
+  const callsMore = $('callsMore');
+  if (callsTotal > CALLS_SHOWN){
+    callsMoreRow.style.display = '';
+    callsMore.textContent = callsShowAll ? t('status.calls.show_less')
+                                         : t('status.calls.show_all', {count: callsTotal});
+  } else {
+    callsMoreRow.style.display = 'none';
+  }
+  if (!callsMore.onclick){
+    callsMore.onclick = () => { callsShowAll = !callsShowAll; refreshAll(); };
+  }
   if (hasCalls){
     tbody.innerHTML = calls.calls.map(c => {
       // API-checked entries carry a label/location from PhoneBlock;
@@ -2764,7 +2789,7 @@ async function refreshAll(){
       // v-SUSPECT (green would wrongly imply "fine"), an un-rated number
       // gets neutral v-UNKNOWN, and spam/blacklist share red.
       const verdictCls = verdictClass(c.assessment);
-      return '<tr><td>' + esc(fmtClock(c.age_s, false)) + '</td>'
+      return '<tr><td>' + esc(callWhen(c)) + '</td>'
         + '<td>' + numCol + '</td>'
         + '<td>' + nameCol + (act.contact ? pbAddButton(c.number) : '') + '</td>'
         + '<td class="v-' + esc(verdictCls) + '">' + esc(verdictLabel(c))

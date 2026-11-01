@@ -52,8 +52,15 @@
 //          split;
 //       4  the small files written without a budget check: the personal
 //          list (a few KB, re-downloaded after its old copy was removed, so
-//          only its growth counts) and the dialog marker (dialog_store.c),
-//          each at least one block unless inlined.
+//          only its growth counts, typically no block), the dialog marker
+//          (dialog_store.c, 3 bytes: inlined into its directory's metadata)
+//          and the in-place update of the call list (calls.bin, stats.c,
+//          #589): a record written into its middle rewrites the file from
+//          that block to its end (the CTZ skip list points backwards), its
+//          old blocks freed on the commit — up to its 3 blocks on the
+//          640 KB partitions. The call list itself has its full size from
+//          the start, so its 3 blocks are in `used` like any other file
+//          (STORAGE_LFS_CALLS_BYTES among the dialog peers below).
 //     The community list needs nothing extra: blocklist_sync.c removes the
 //     old copy before it asks for the budget, so it never has two copies.
 //
@@ -115,14 +122,15 @@ bool storage_budget_lfs_asset_fits(const storage_lfs_geometry_t *g,
 // before it downloads the new one), so a set needs room for one copy: the
 // partition minus the reserve, the root metadata pair, everything else a
 // dongle in dialog mode keeps (STORAGE_LFS_DIALOG_PEERS: the largest UI pack,
-// the mail pack, the personal list, the speakers index), a community list
+// the mail pack, the personal list, the speakers index, the call list), a community list
 // in the server's 128 KB bucket (STORAGE_LFS_DIALOG_COMMUNITY) — and a
 // second copy of the largest pack: the packs are still replaced
 // old-copy-kept (download_verify_rename(), storage_make_room() counts the
 // old one), and a pack update must not cost the 128 KB list either. On the
-// 640 KB partition that leaves 84 blocks, 343416 bytes
-// (storage_budget_lfs_dialog_room()); M is that rounded down to 16 KiB,
-// 320 KiB. Next to an M set the community budget is then ~200 KB, the
+// 640 KB partition that leaves 81 blocks, 331144 bytes
+// (storage_budget_lfs_dialog_room(); 84 blocks before the call list of
+// 1.7.0, #589); M is that rounded down to 16 KiB, 320 KiB. Next to an M
+// set the community budget is then ~190 KB, the
 // 128 KB bucket, with a pack update's second copy still fitting beside it
 // (test_storage_budget.c checks all of these numbers; test_storage_sim.c
 // runs 60 days of it on the real littlefs core without a failed write).
@@ -138,12 +146,20 @@ bool storage_budget_lfs_asset_fits(const storage_lfs_geometry_t *g,
 // 64, 128, 256, 384, 512 KB).
 #define STORAGE_LFS_DIALOG_COMMUNITY (128u * 1024u)
 
+// The call list of the 4 MB boards (#589): STATS_CALLS_FILE_BYTES(
+// STATS_CALL_CAPACITY_SMALL) of stats.h, 50 calls in 3 blocks
+// (test_storage_budget.c checks that the two agree). The S3's 200 calls
+// (12 blocks) do not limit its ~9.6 MB.
+#define STORAGE_LFS_CALLS_BYTES 12032u
+
 // What a LittleFS partition in dialog mode holds besides the set and the
 // community list, at most, in bytes: the largest UI pack (49 KB on the CDN),
-// the mail pack (~2 KB), the personal list (a few KB) and the speakers index
-// (DIALOG_INDEX_MAX_BYTES, dialog_manifest.h). The dialog marker is in the
-// reserve. No announcement: dialog mode removes it and the own recording.
-#define STORAGE_LFS_DIALOG_PEERS { 52u * 1024u, 4096u, 4096u, 8192u }
+// the mail pack (~2 KB), the personal list (a few KB), the speakers index
+// (DIALOG_INDEX_MAX_BYTES, dialog_manifest.h) and the call list. The dialog
+// marker is in the reserve. No announcement: dialog mode removes it and the
+// own recording.
+#define STORAGE_LFS_DIALOG_PEERS \
+    { 52u * 1024u, 4096u, 4096u, 8192u, STORAGE_LFS_CALLS_BYTES }
 
 // Largest dialog set file, in bytes, that fits next to
 // STORAGE_LFS_DIALOG_PEERS, a second copy of the largest of them (a pack

@@ -33,5 +33,6 @@
   "verdict.error": "خطأ",
   "verdict.unknown": "غير معروف",
   "log.heading": "أخبار جديدة في المحضر",
-  "update.body": "تم تحديث البرنامج الثابت على جهازك {device} إلى الإصدار {version}."
+  "update.body": "تم تحديث البرنامج الثابت على جهازك {device} إلى الإصدار {version}.",
+  "calls.not_listed": "غير مدرجة: <b>{count}</b> المكالمات الأقدم."
 }
