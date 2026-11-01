@@ -57,7 +57,7 @@
 			<p data-tx="t0230:12c794d9">该加密狗与 Vodafone 的 EasyBox 结合使用时，<b>不能在 Vodafone 连接上使用</b>。</p>
 		</div>
 		
-		<p data-tx="t0227:9c63c692">如果您已经成功设置了加密狗，尤其是与非 Fritz!Box 路由器或 "历史悠久 "的 Fritz!Box 型号结合使用时，请撰写<a href="#tester">经验报告</a>，以便改进本帮助。</p>
+		<p data-tx="t0236:25f15369">如果在设置过程中遇到问题或有任何疑问，你可以在<a href="#hilfe">下方</a>找到相应的联系渠道。</p>
 
 		<p class="subtitle mt-6" data-tx="t0124:bd004e4f">这就是它的实用之处：说明书一步一步地指导你进行订购和设置--大约 10 欧元的硬件，只需几分钟的一次性努力。</p>
 
@@ -174,7 +174,7 @@
 			<ul>
 				<li data-tx="t0195:758aaf4d"><strong>Windows</strong>：从 wch-ic.com 下载 <a href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">CH340 驱动程序</a>，执行 <code>CH341SER.EXE</code> 并单击 <strong>"安装"</strong>。无需重新启动。</li>
 				<li data-tx="t0147:901b0f79"><strong>macOS</strong>：从 macOS Big Sur 开始，驱动程序已包含在系统中，无需任何安装步骤。</li>
-				<li data-tx="t0148:35f91b38"><strong>Linux</strong>：已安装内核驱动程序。在 Ubuntu 上，BRLTTY 服务可能会抢走 CH340，使你无法看到设备文件 - 在这种情况下，卸载 BRLTTY 会有帮助：<code>sudo apt remove --purge brltty</code>。你的用户还必须在 <code>dialout</code> 组中：<code>sudo usermod -aG dialout $USER</code>。这两个步骤在 <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a> 中都有详细说明。</li>
+				<li data-tx="t0148:ffd71abb"><strong>Linux</strong>：内核驱动程序已内置。在 Ubuntu 系统中，BRLTTY 服务可能会抢占 CH340 设备，导致你无法看到设备文件——此时卸载 BRLTTY 即可解决问题： <code>sudo apt remove --purge brltty</code>。此外，你的用户必须属于 <code>dialout</code> 组： <code>sudo usermod -aG dialout $USER</code>（在 Arch Linux 中，该组名为 <code>uucp</code>）。这两个步骤在 <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a> 中都有详细说明。</li>
 			</ul>
 		</details>
 
@@ -269,27 +269,22 @@
 
 		<p class="has-text-grey" data-tx="t0181:9316079d">有什么问题吗？您使用的是 Firefox/Safari，Linux 有特殊问题，还是另一块板子？详细说明包括所有选项、Linux 漏洞和 ESP-IDF 工具链，请参阅软件仓库：<a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>。</p>
 
-		<h2 data-tx="t0182:c258f25f" id="tester">提交经验报告</h2>
+		<h2 data-tx="t0237:f99f48f3" id="hilfe">帮助与错误报告</h2>
 
-		<p data-tx="t0183:aef4c36">第一批 PhoneBlock 加密狗工作稳定，但路由器型号、供应商和连接类型五花八门，每种组合都有其特殊性。为了改进设置向导，<strong>结构化体验报告</strong>的价值不言而喻--无论一切是否为您所用，也无论是否存在故障。</p>
+		<p data-tx="t0238:b354c3fa">关于设置、路由器和网络服务提供商的问题，最好在<strong>GitHub讨论区</strong>中提出——那里还有其他Dongle用户会提供帮助，而且这些回答对所有人都是可见的。</p>
 
-		<p data-tx="t0184:49f94506">尤其有趣的是，这些设置的覆盖面仍然很窄：</p>
+		<p data-tx="t0239:1546fc2a">如果某项功能无法正常运行，请将该问题作为<strong>GitHub Issue</strong>提交。系统会通过预填好的表单收集关键信息（板卡、固件版本、路由器、网络服务商、Web界面日志）。</p>
 
-		<ul>
-			<li data-tx="t0185:e1971ce0">使用 <strong>Speedport</strong> 路由器的 Telekom 连接</li>
-			<li data-tx="t0186:61cce24d">通过提供的提供盒连接 Vodafone/Unitymedia 电缆</li>
-			<li data-tx="t0187:ea506b90">1&amp;1、o2、Deutsche Glasfaser 和其他供应商</li>
-			<li data-tx="t0188:3d2d85c2">国际联系（瑞士、奥地利、欧洲其他国家和世界）</li>
-		</ul>
-
-		<p data-tx="t0189:3fcb6dd2">报告通过 GitHub 问题运行--预先填写的表格以结构化的方式要求提供最重要的关键数据（硬件、路由器、提供商、固件版本、结果）。其他测试人员可直接查看哪些设置已涵盖，哪些未涵盖。</p>
-
-		<p>
-			<a class="button is-primary is-medium" href="https://github.com/haumacher/phoneblock/issues/new?template=dongle-test-report.yml" rel="noopener" target="_blank">
-				<span class="icon"><i class="fab fa-github"></i></span>
-				<span data-tx="t0190:92ec79b">开放体验报告</span>
+		<div class="buttons">
+			<a class="button is-primary is-medium" href="https://github.com/haumacher/phoneblock/discussions/categories/q-a" rel="noopener" target="_blank">
+				<span class="icon"><i class="fa-solid fa-comments"></i></span>
+				<span data-tx="t0240:5758640b">提问</span>
 			</a>
-		</p>
+			<a class="button is-medium" href="https://github.com/haumacher/phoneblock/issues/new?template=dongle-problem.yml" rel="noopener" target="_blank">
+				<span class="icon"><i class="fab fa-github"></i></span>
+				<span data-tx="t0241:b6a71854">报告问题</span>
+			</a>
+		</div>
 
 		<hr class="my-5"/>
 

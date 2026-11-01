@@ -57,7 +57,7 @@
 			<p data-tx="t0230:12c794d9">Klucz sprzętowy <b>nie działa na połączeniach Vodafone</b> w połączeniu z EasyBox od Vodafone.</p>
 		</div>
 		
-		<p data-tx="t0227:9c63c692">Jeśli udało Ci się skonfigurować klucz sprzętowy - zwłaszcza w połączeniu z routerem innym niż Fritz!Box lub "historycznym" modelem Fritz!Box - napisz <a href="#tester">raport z doświadczeń</a>, aby ta pomoc mogła zostać ulepszona.</p>
+		<p data-tx="t0236:25f15369">Jeśli podczas konfiguracji coś nie działa lub masz jakieś pytanie, <a href="#hilfe">poniżej</a> znajdziesz odpowiednią pomoc.</p>
 
 		<p class="subtitle mt-6" data-tx="t0124:bd004e4f">W tym miejscu staje się to praktyczne: instrukcje prowadzą krok po kroku przez proces zamawiania i konfiguracji - około 10 euro za sprzęt, jednorazowy wysiłek trwający kilka minut.</p>
 
@@ -174,7 +174,7 @@
 			<ul>
 				<li data-tx="t0195:758aaf4d"><strong>Windows</strong>: Pobierz sterownik <a href="https://www.wch-ic.com/downloads/CH341SER_EXE.html" rel="noopener" target="_blank">CH340 z wch-ic.com</a>, uruchom <code>CH341SER.EXE</code> i kliknij <strong>"INSTALL"</strong>. Ponowne uruchomienie nie jest konieczne.</li>
 				<li data-tx="t0147:901b0f79"><strong>macOS</strong>: Od wersji macOS Big Sur sterownik jest dołączony do systemu - nie jest wymagana instalacja.</li>
-				<li data-tx="t0148:35f91b38"><strong>Linux</strong>: Sterownik jądra jest zainstalowany. Na Ubuntu, usługa BRLTTY może wyrwać CH340 tak, że nie można zobaczyć pliku urządzenia - w tym przypadku, odinstalowanie BRLTTY pomoże: <code>sudo apt remove --purge brltty</code>. Użytkownik musi również należeć do grupy <code>dialout</code>: <code>sudo usermod -aG dialout $USER</code>. Oba kroki zostały szczegółowo opisane w <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
+				<li data-tx="t0148:ffd71abb"><strong>Linux</strong>: Sterownik jądra jest wbudowany. W systemie Ubuntu usługa BRLTTY może przejąć kontrolę nad CH340, przez co plik urządzenia nie jest widoczny — w takim przypadku pomocne jest odinstalowanie BRLTTY: <code>sudo apt remove --purge brltty</code>. Twój użytkownik musi również należeć do grupy <code>dialout</code>: <code>sudo usermod -aG dialout $USER</code> (w systemie Arch Linux grupa ta nosi nazwę <code>uucp</code>). Oba kroki zostały szczegółowo opisane w pliku <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</li>
 			</ul>
 		</details>
 
@@ -269,27 +269,22 @@
 
 		<p class="has-text-grey" data-tx="t0181:9316079d">Coś nie działa, używasz Firefoxa/Safari, Linuksa z osobliwościami lub innej płyty? Szczegółowe instrukcje ze wszystkimi opcjami, pułapkami Linuksa i łańcuchem narzędzi ESP-IDF można znaleźć w repozytorium: <a href="https://github.com/haumacher/phoneblock/blob/master/phoneblock-dongle/GETTING_STARTED.md" rel="noopener" target="_blank">GETTING_STARTED.md</a>.</p>
 
-		<h2 data-tx="t0182:c258f25f" id="tester">Raport z doświadczeń</h2>
+		<h2 data-tx="t0237:f99f48f3" id="hilfe">Pomoc i zgłoszenia błędów</h2>
 
-		<p data-tx="t0183:aef4c36">Pierwsze klucze sprzętowe PhoneBlock działają niezawodnie - ale modele routerów, dostawcy i typy połączeń to barwna mieszanka, a każda kombinacja ma swoje osobliwości. Aby ulepszyć kreatora konfiguracji, <strong>uporządkowane raporty z doświadczeń</strong> są na wagę złota - niezależnie od tego, czy wszystko działało, czy też wystąpił jakiś problem.</p>
+		<p data-tx="t0238:b354c3fa">Pytania dotyczące konfiguracji, routerów i dostawców usług najlepiej zadawać w <strong>dyskusjach na GitHubie</strong> – tam pomoc udzielają również inni użytkownicy klucza, a odpowiedzi pozostają dostępne dla wszystkich.</p>
 
-		<p data-tx="t0184:49f94506">Szczególnie interesujące są konfiguracje, które wciąż są słabo opisane:</p>
+		<p data-tx="t0239:1546fc2a">Jeśli coś nie działa tak, jak powinno, zgłoś ten problem jako <strong>GitHub-Issue</strong>. Wstępnie wypełniony formularz poprosi o podanie najważniejszych danych (tablica, wersja oprogramowania sprzętowego, router, dostawca usług internetowych, log z interfejsu internetowego).</p>
 
-		<ul>
-			<li data-tx="t0185:e1971ce0">Połączenie Telekom z routerem <strong>Speedport</strong></li>
-			<li data-tx="t0186:61cce24d">Połączenie kablowe Vodafone/Unitymedia z dostarczoną skrzynką operatora</li>
-			<li data-tx="t0187:ea506b90">1&amp;1, o2, Deutsche Glasfaser i inni operatorzy</li>
-			<li data-tx="t0188:3d2d85c2">Połączenia międzynarodowe (Szwajcaria, Austria, reszta Europy i świata)</li>
-		</ul>
-
-		<p data-tx="t0189:3fcb6dd2">Raporty są uruchamiane za pośrednictwem wydań GitHub - wstępnie wypełniony formularz prosi o podanie najważniejszych kluczowych danych (sprzęt, router, dostawca, wersja oprogramowania układowego, ustalenia) w ustrukturyzowany sposób. Inni testerzy mogą bezpośrednio zobaczyć, które konfiguracje zostały już uwzględnione, a które nie.</p>
-
-		<p>
-			<a class="button is-primary is-medium" href="https://github.com/haumacher/phoneblock/issues/new?template=dongle-test-report.yml" rel="noopener" target="_blank">
-				<span class="icon"><i class="fab fa-github"></i></span>
-				<span data-tx="t0190:92ec79b">Raport z otwartych doświadczeń</span>
+		<div class="buttons">
+			<a class="button is-primary is-medium" href="https://github.com/haumacher/phoneblock/discussions/categories/q-a" rel="noopener" target="_blank">
+				<span class="icon"><i class="fa-solid fa-comments"></i></span>
+				<span data-tx="t0240:5758640b">Zadaj pytanie</span>
 			</a>
-		</p>
+			<a class="button is-medium" href="https://github.com/haumacher/phoneblock/issues/new?template=dongle-problem.yml" rel="noopener" target="_blank">
+				<span class="icon"><i class="fab fa-github"></i></span>
+				<span data-tx="t0241:b6a71854">Zgłoś problem</span>
+			</a>
+		</div>
 
 		<hr class="my-5"/>
 
