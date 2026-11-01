@@ -565,6 +565,35 @@ static void test_time_backfill(void)
           "the next write back-fills without a synced event");
 }
 
+static void test_reset_counters(void)
+{
+    printf("reset counters:\n");
+    stats_clear_calls();
+    stats_record_call(NUM_A, "", VERDICT_SPAM);
+    stats_record_call(NUM_A, "", VERDICT_LEGITIMATE);
+    stats_record_call(NUM_A, "", VERDICT_ERROR);
+    stats_counters_t c;
+    stats_snapshot_counters(&c);
+    CHECK(c.total_calls >= 3 && c.spam_blocked >= 1 && c.legitimate >= 1
+          && c.errors >= 1, "counters populated");
+
+    stats_reset_counters();
+    stats_snapshot_counters(&c);
+    CHECK(c.total_calls == 0, "total reset");
+    CHECK(c.spam_blocked == 0, "spam reset");
+    CHECK(c.legitimate == 0, "legitimate reset");
+    CHECK(c.errors == 0, "errors reset");
+    stats_calls_info_t info;
+    stats_calls_info(&info);
+    CHECK(info.count == 3, "call list kept");
+    CHECK(call_at(0).verdict == VERDICT_ERROR && call_at(2).verdict == VERDICT_SPAM,
+          "listed calls unchanged");
+
+    stats_record_call(NUM_A, "", VERDICT_SPAM);
+    stats_snapshot_counters(&c);
+    CHECK(c.total_calls == 1 && c.spam_blocked == 1, "counting continues from zero");
+}
+
 static void test_clear_persists(void)
 {
     printf("clear:\n");
@@ -619,6 +648,7 @@ int main(void)
     test_wrap_around();
     test_updates_persist();
     test_time_backfill();
+    test_reset_counters();
     test_clear_persists();
     test_no_file();
     test_damaged_file();

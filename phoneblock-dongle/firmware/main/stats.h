@@ -276,6 +276,11 @@ void stats_set_mailed_seq(uint32_t seq);
 // Drop all buffered error entries.
 void stats_clear_errors(void);
 
+// Set the call counters (total, spam blocked, legitimate, errors) back to
+// zero (issue #557). The call list, the SIP state and the last API result
+// are kept.
+void stats_reset_counters(void);
+
 // --- retroactive updates to listed calls ----------------------------
 //
 // A listed call shows the caller's *current* state, and two of its fields

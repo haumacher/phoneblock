@@ -227,6 +227,7 @@ if (!location.pathname.endsWith('/'))
      flex-wrap:wrap;gap:.6rem}
   h2.bar .tools{display:flex;align-items:center;gap:.8rem}
   .counters{margin-top:.8rem}
+  .counters-tools{display:flex;justify-content:flex-end;margin-top:.4rem}
   .tasks{font-size:.8rem;margin-top:.8rem}
   .num{text-align:right}
   /* Every card ends on its padding, whatever its last element is. */
@@ -1289,6 +1290,9 @@ function renderStatus(){
     + '  <div class="stat"><div class="stat-label">' + esc(t('status.counters.spam'))   + '</div><div class="stat-value" id="cSpam">–</div></div>'
     + '  <div class="stat"><div class="stat-label">' + esc(t('status.counters.legit')) + '</div><div class="stat-value" id="cLegit">–</div></div>'
     + '  <div class="stat"><div class="stat-label">' + esc(t('status.counters.errors'))+ '</div><div class="stat-value" id="cErr">–</div></div>'
+    + '</div>'
+    + '<div class="counters-tools">'
+    + '  <button id="countersReset" class="btn-ghost btn-xs">' + esc(t('status.counters.reset')) + '</button>'
     + '</div>'
     + '<p class="muted status-line" id="statusInfo"></p>'
     + '<p class="status-line" id="apiError" style="display:none;color:var(--err)"></p>'
@@ -2531,6 +2535,16 @@ async function refreshAll(){
   $('cSpam').textContent  = s.counters.spam_blocked;
   $('cLegit').textContent = s.counters.legitimate;
   $('cErr').textContent   = s.counters.errors;
+  const countersResetBtn = $('countersReset');
+  if (!countersResetBtn.onclick){
+    countersResetBtn.onclick = async () => {
+      countersResetBtn.disabled = true;
+      try { await fetch('api/counters/reset', { method: 'POST' }); }
+      catch (_){ /* next poll will reflect whatever state we end up in */ }
+      await refreshAll();
+      countersResetBtn.disabled = false;
+    };
+  }
   // The only line that wants markup (the version links to its release notes),
   // so it goes through innerHTML — but the template comes from the downloaded
   // pack, which is NOT signed (see i18n_sync.h) and therefore untrusted input.

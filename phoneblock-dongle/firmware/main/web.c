@@ -2848,6 +2848,17 @@ static web_http_error_t handle_errors_clear(web_http_request_t *req)
     return WEB_HTTP_OK;
 }
 
+// POST /api/counters/reset — sets the call counters back to zero (#557).
+static web_http_error_t handle_counters_reset(web_http_request_t *req)
+{
+    REQUIRE_AUTH_API(req);
+    stats_reset_counters();
+    cJSON *root = cJSON_CreateObject();
+    cJSON_AddBoolToObject(root, "ok", true);
+    send_json(req, root);
+    return WEB_HTTP_OK;
+}
+
 // POST /api/calls/clear — drops all buffered call entries.
 static web_http_error_t handle_calls_clear(web_http_request_t *req)
 {
@@ -3944,6 +3955,7 @@ static const web_http_route_t URIS[] = {
 #endif
     { .uri = "/api/errors/clear",    .method = WEB_HTTP_POST,    .handler = handle_errors_clear },
     { .uri = "/api/calls/clear",     .method = WEB_HTTP_POST,    .handler = handle_calls_clear },
+    { .uri = "/api/counters/reset",  .method = WEB_HTTP_POST,    .handler = handle_counters_reset },
 #if PB_CALL_RECORDING
     { .uri = "/api/recording",        .method = WEB_HTTP_GET,     .handler = handle_recording_get },
     { .uri = "/api/recording/delete", .method = WEB_HTTP_POST,    .handler = handle_recording_delete },

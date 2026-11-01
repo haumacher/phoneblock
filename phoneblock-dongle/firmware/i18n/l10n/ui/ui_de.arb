@@ -140,6 +140,11 @@
     "description": "Dongle web UI: status.counters.errors",
     "x-translated": "20cfd2b5"
   },
+  "status.counters.reset": "Alle Zähler zurücksetzen",
+  "@status.counters.reset": {
+    "description": "Dongle web UI: button below the call counters that sets them back to zero",
+    "x-translated": "6871ea60"
+  },
   "status.info": "Firmware {fw} · IP {ip} · Uptime {uptime} · API-Latenz {api}",
   "@status.info": {
     "description": "Dongle web UI: status.info",

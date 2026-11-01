@@ -270,6 +270,7 @@
   "status.dialog.vad_silence_db": "Tystnadsgräns (dBFS)",
   "status.dialog.vad_silence_db.help": "Om ljudnivån är lägre än detta värde betraktas den som ringer som tyst. Högre värde (t.ex. -30) vid brus i linjen, lägre värde (t.ex. -45) för tysta samtalare. Standard: -35.",
   "status.dialog.vad_min_silence_ms": "Svarstid (ms)",
+  "status.dialog.vad_min_silence_ms.help": "Så länge måste den som ringer vara tyst innan dongeln svarar. Standardvärde: 500.",
   "status.dialog.comfort_noise": "Ledningsbrus (dBFS)",
   "status.dialog.comfort_noise.help": "Ett svagt brus under och mellan meningarna, så att linjen inte låter död. -90 är praktiskt taget avstängt. Standard: -60.",
   "status.dialog.saved": "Sparat.",
@@ -478,5 +479,5 @@
   "status.rec.delete": "Radera inspelning",
   "status.rec.delete.confirm": "Vill du radera den här inspelningen? Samtalet finns kvar i listan.",
   "status.rec.failed": "Det gick inte att ladda bilden.",
-  "status.dialog.vad_min_silence_ms.help": "Så länge måste den som ringer vara tyst innan dongeln svarar. Standardvärde: 500."
+  "status.counters.reset": "Nollställ alla räknare"
 }

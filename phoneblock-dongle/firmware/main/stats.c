@@ -649,6 +649,16 @@ void stats_clear_errors(void)
     unlock();
 }
 
+void stats_reset_counters(void)
+{
+    lock();
+    s_counters.total_calls  = 0;
+    s_counters.spam_blocked = 0;
+    s_counters.legitimate   = 0;
+    s_counters.errors       = 0;
+    unlock();
+}
+
 // --- Reading and updating the call list -----------------------------
 
 int stats_read_calls(uint32_t before_seq, stats_call_t *out, int max)

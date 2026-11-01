@@ -270,6 +270,7 @@
   "status.dialog.vad_silence_db": "Stilte-drempel (dBFS)",
   "status.dialog.vad_silence_db.help": "Als het geluidsniveau lager is dan deze waarde, wordt de beller als stil beschouwd. Hoger (bijv. -30) bij ruis op de lijn, lager (bijv. -45) voor stille bellers. Standaard: -35.",
   "status.dialog.vad_min_silence_ms": "Responstijd (ms)",
+  "status.dialog.vad_min_silence_ms.help": "Zo lang moet de beller wachten voordat de dongle reageert. Standaard: 500.",
   "status.dialog.comfort_noise": "Leidingsruis (dBFS)",
   "status.dialog.comfort_noise.help": "Een zacht ruisje tussen de zinnen door, zodat de verbinding niet dood klinkt. -90 staat praktisch uit. Standaard: -60.",
   "status.dialog.saved": "Opgeslagen.",
@@ -478,5 +479,5 @@
   "status.rec.delete": "Opname verwijderen",
   "status.rec.delete.confirm": "Deze opname verwijderen? Het gesprek blijft in de lijst staan.",
   "status.rec.failed": "Het bestand kon niet worden geladen.",
-  "status.dialog.vad_min_silence_ms.help": "Zo lang moet de beller wachten voordat de dongle reageert. Standaard: 500."
+  "status.counters.reset": "Alle tellers resetten"
 }

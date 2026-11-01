@@ -270,6 +270,7 @@
   "status.dialog.vad_silence_db": "Seuil de silence (dBFS)",
   "status.dialog.vad_silence_db.help": "Si le volume est inférieur à ce niveau, l'appelant est considéré comme parlant à voix basse. Réglez-le sur une valeur plus élevée (par exemple -30) en cas de bruit sur la ligne, et sur une valeur plus basse (par exemple -45) pour les appelants qui parlent à voix basse. Valeur par défaut : -35.",
   "status.dialog.vad_min_silence_ms": "Temps de réponse (ms)",
+  "status.dialog.vad_min_silence_ms.help": "C'est le temps pendant lequel l'appelant doit rester silencieux avant que le dongle ne réponde. Valeur par défaut : 500.",
   "status.dialog.comfort_noise": "Bruit de ligne (dBFS)",
   "status.dialog.comfort_noise.help": "Un léger bruit de fond entre les phrases et pendant celles-ci, pour que la ligne ne semble pas « morte ». -90 correspond pratiquement à l'arrêt total. Valeur par défaut : -60.",
   "status.dialog.saved": "Enregistré.",
@@ -478,5 +479,5 @@
   "status.rec.delete": "Supprimer l'enregistrement",
   "status.rec.delete.confirm": "Supprimer cet enregistrement ? L'appel reste dans la liste.",
   "status.rec.failed": "L'enregistrement n'a pas pu être chargé.",
-  "status.dialog.vad_min_silence_ms.help": "C'est le temps pendant lequel l'appelant doit rester silencieux avant que le dongle ne réponde. Valeur par défaut : 500."
+  "status.counters.reset": "Réinitialiser tous les compteurs"
 }
