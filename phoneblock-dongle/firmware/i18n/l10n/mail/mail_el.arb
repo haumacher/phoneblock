@@ -16,6 +16,7 @@
   "sum.uptime": "Διάρκεια: {hours} ώρες {minutes} λεπτά",
   "sum.calls": "Συνολικές κλήσεις: {total} &nbsp;|&nbsp; Αποκλεισμένες κλήσεις SPAM: {blocked} &nbsp;|&nbsp; Διαβιβασμένες κλήσεις: {passed}",
   "calls.heading": "Τελευταίες κλήσεις",
+  "calls.not_listed": "Δεν εμφανίζονται: <b>{count}</b> παλαιότερες κλήσεις.",
   "calls.time": "Χρόνος",
   "calls.number": "Αριθμός",
   "calls.name": "Όνομα",
@@ -33,6 +34,5 @@
   "verdict.error": "Σφάλμα",
   "verdict.unknown": "άγνωστο",
   "log.heading": "Νέες καταχωρήσεις στο αρχείο καταγραφής",
-  "update.body": "Το firmware της συσκευής σου {device} ενημερώθηκε στην έκδοση {version}.",
-  "calls.not_listed": "Δεν εμφανίζονται: <b>{count}</b> παλαιότερες κλήσεις."
+  "update.body": "Το firmware της συσκευής σου {device} ενημερώθηκε στην έκδοση {version}."
 }

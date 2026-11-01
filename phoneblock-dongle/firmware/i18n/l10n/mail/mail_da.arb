@@ -16,6 +16,7 @@
   "sum.uptime": "Varighed: {hours}h {minutes}min",
   "sum.calls": "Samlet antal opkald: {total} &nbsp;|&nbsp; Blokeret spam: {blocked} &nbsp;|&nbsp; Gennemstillet: {passed}",
   "calls.heading": "Seneste opkald",
+  "calls.not_listed": "Ikke vist: <b>{count}</b> ældre opkald.",
   "calls.time": "Tid",
   "calls.number": "Nummer",
   "calls.name": "Navn",
@@ -33,6 +34,5 @@
   "verdict.error": "Fejl",
   "verdict.unknown": "ukendt",
   "log.heading": "Nye meddelelser i protokollen",
-  "update.body": "Firmwaren på din {device} er blevet opdateret til version {version}.",
-  "calls.not_listed": "Ikke vist: <b>{count}</b> ældre opkald."
+  "update.body": "Firmwaren på din {device} er blevet opdateret til version {version}."
 }

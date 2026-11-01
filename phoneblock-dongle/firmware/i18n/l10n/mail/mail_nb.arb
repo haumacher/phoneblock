@@ -16,6 +16,7 @@
   "sum.uptime": "Varighet: {hours}t {minutes}min",
   "sum.calls": "Totalt antall samtaler: {total} &nbsp;|&nbsp; Blokkert spam: {blocked} &nbsp;|&nbsp; Gjennomslippte: {passed}",
   "calls.heading": "Siste samtaler",
+  "calls.not_listed": "Ikke oppført: <b>{count}</b> eldre samtaler.",
   "calls.time": "Tid",
   "calls.number": "Nummer",
   "calls.name": "Navn",
@@ -33,6 +34,5 @@
   "verdict.error": "Feil",
   "verdict.unknown": "ukjent",
   "log.heading": "Nye oppføringer i protokollen",
-  "update.body": "Firmware på din {device} er oppdatert til versjon {version}.",
-  "calls.not_listed": "Ikke oppført: <b>{count}</b> eldre samtaler."
+  "update.body": "Firmware på din {device} er oppdatert til versjon {version}."
 }

@@ -16,6 +16,7 @@
   "sum.uptime": "Czas trwania: {hours}h {minutes}min",
   "sum.calls": "Łączna liczba połączeń: {total} &nbsp;|&nbsp; Zablokowane wiadomości spamowe: {blocked} &nbsp;|&nbsp; Przekierowane: {passed}",
   "calls.heading": "Ostatnie połączenia",
+  "calls.not_listed": "Nie wymieniono: <b>{count}</b> starsze połączenia.",
   "calls.time": "Czas",
   "calls.number": "Numer",
   "calls.name": "Nazwisko",
@@ -33,6 +34,5 @@
   "verdict.error": "Błąd",
   "verdict.unknown": "nieznane",
   "log.heading": "Nowe wpisy w protokole",
-  "update.body": "Oprogramowanie sprzętowe na Twoim {device} zostało zaktualizowane do wersji {version}.",
-  "calls.not_listed": "Nie wymieniono: <b>{count}</b> starsze połączenia."
+  "update.body": "Oprogramowanie sprzętowe na Twoim {device} zostało zaktualizowane do wersji {version}."
 }

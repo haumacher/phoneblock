@@ -1343,6 +1343,7 @@ function renderStatus(){
     + '<p id="systemFs" class="muted info-line"></p>'
     + '<p id="systemTemp" class="muted info-line" style="display:none"></p>'
     + '<p id="systemWifi" class="muted info-line" style="display:none"></p>'
+    + '<p id="systemWifiLink" class="muted info-line" style="display:none"></p>'
     + '<p id="systemWifiHint" class="info-line" style="display:none;color:var(--warn)"></p>'
     + '<p id="clockInfo" class="muted info-line"></p>'
     + '<p id="tzInfo" class="muted info-line">'
@@ -2594,6 +2595,23 @@ async function refreshAll(){
       }
       $('systemWifi').textContent = line;
       $('systemWifi').style.display = '';
+      // Which network and which AP (in a mesh: which box) — the BSSID is what
+      // the Fritz!Box mesh overview lists for each box.
+      if (s.system.wifi_bssid) {
+        let link = t('status.system.wifi_link', {
+          ssid: s.system.wifi_ssid || '?',
+          bssid: s.system.wifi_bssid,
+          channel: s.system.wifi_channel,
+          since: fmtSec(s.system.wifi_connected_s || 0),
+        });
+        if (s.system.wifi_drops > 0) {
+          link += ' · ' + t('status.system.wifi_drops', {drops: s.system.wifi_drops});
+        }
+        $('systemWifiLink').textContent = link;
+        $('systemWifiLink').style.display = '';
+      } else {
+        $('systemWifiLink').style.display = 'none';
+      }
       if (q === 'weak') {
         wifiHint.textContent = t('status.system.wifi.weak_hint');
         wifiHint.style.display = '';
@@ -2602,6 +2620,7 @@ async function refreshAll(){
       }
     } else {
       $('systemWifi').style.display = 'none';
+      $('systemWifiLink').style.display = 'none';
       wifiHint.style.display = 'none';
     }
     const tb = $('systemTasks');

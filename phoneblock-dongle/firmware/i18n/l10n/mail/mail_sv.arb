@@ -16,6 +16,7 @@
   "sum.uptime": "Körningstid: {hours}h {minutes}min",
   "sum.calls": "Totalt antal samtal: {total} &nbsp;|&nbsp; Blockerad skräppost: {blocked} &nbsp;|&nbsp; Vidarebefordrade samtal: {passed}",
   "calls.heading": "Senaste samtal",
+  "calls.not_listed": "Ej listade: <b>{count}</b> äldre samtal.",
   "calls.time": "Tid",
   "calls.number": "Nummer",
   "calls.name": "Namn",
@@ -33,6 +34,5 @@
   "verdict.error": "Fel",
   "verdict.unknown": "okänt",
   "log.heading": "Nya meddelanden i protokollet",
-  "update.body": "Firmware på din {device} har uppdaterats till version {version}.",
-  "calls.not_listed": "Ej listade: <b>{count}</b> äldre samtal."
+  "update.body": "Firmware på din {device} har uppdaterats till version {version}."
 }

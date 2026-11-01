@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -62,7 +64,18 @@ int wifi_scan(wifi_ap_record_t *records, int max_records);
 // False while the device has no IP.
 bool wifi_get_ip_str(char *buf, size_t cap);
 
-// Signal strength of the associated AP (dBm) and the driver's transmit-power
-// limit in effect (dBm). Each is set only if known; returns false while not
-// associated (then *rssi is untouched, *tx_dbm may still be set).
-bool wifi_link_info(int *rssi, float *tx_dbm);
+// The Wi-Fi link as the System section of the web UI shows it.
+typedef struct {
+    int      rssi;          // dBm, from the associated AP
+    float    tx_dbm;        // driver's transmit-power limit in effect, 0: unknown
+    char     ssid[33];      // network name
+    char     bssid[18];     // "aa:bb:cc:dd:ee:ff" of the AP (the mesh box)
+    int      channel;
+    uint32_t connected_s;   // seconds since this association
+    uint32_t drops;         // links lost since boot (not counting the link
+                            // watchdog's own reconnects or 802.11v moves)
+} wifi_link_t;
+
+// Fills *l. Returns false while not associated; then only tx_dbm and drops
+// are meaningful.
+bool wifi_link_status(wifi_link_t *l);

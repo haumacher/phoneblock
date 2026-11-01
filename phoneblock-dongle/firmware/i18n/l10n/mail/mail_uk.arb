@@ -16,6 +16,7 @@
   "sum.uptime": "Тривалість: {hours} год {minutes} хв",
   "sum.calls": "Загальна кількість дзвінків: {total} &nbsp;|&nbsp; Заблоковано спам: {blocked} &nbsp;|&nbsp; Пропущено: {passed}",
   "calls.heading": "Останні дзвінки",
+  "calls.not_listed": "Не вказано: <b>{count}</b> старі дзвінки.",
   "calls.time": "Час",
   "calls.number": "Номер",
   "calls.name": "Ім'я",
@@ -33,6 +34,5 @@
   "verdict.error": "Помилка",
   "verdict.unknown": "невідомо",
   "log.heading": "Нові записи в протоколі",
-  "update.body": "Прошивка на твоєму {device} була оновлена до версії {version}.",
-  "calls.not_listed": "Не вказано: <b>{count}</b> старі дзвінки."
+  "update.body": "Прошивка на твоєму {device} була оновлена до версії {version}."
 }

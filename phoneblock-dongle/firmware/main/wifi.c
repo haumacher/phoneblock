@@ -104,6 +104,10 @@ static int                s_wd_old_rssi;
 // tick count of its start lets the watchdog task step in should the move
 // never complete (BTM_ROAM_TIMEOUT_S).
 static volatile bool      s_btm_roaming;
+// For the web UI's link line: when the current association began (0: none)
+// and how many established links were lost since boot.
+static volatile int64_t   s_assoc_since_us;
+static volatile uint32_t  s_link_drops;
 static TickType_t         s_btm_roaming_since;
 #define BTM_ROAM_TIMEOUT_S 60
 
@@ -285,6 +289,7 @@ static void on_wifi_event(void *arg, esp_event_base_t base, int32_t id, void *da
             wifi_event_sta_connected_t *c = data;
             char bssid[18] = "?";
             if (c) format_bssid(c->bssid, bssid, sizeof(bssid));
+            s_assoc_since_us = esp_timer_get_time();
             wifi_ap_record_t ap;
             int rssi = esp_wifi_sta_get_ap_info(&ap) == ESP_OK ? ap.rssi : 0;
             if (s_wd_reconnect_pending) {
@@ -318,6 +323,14 @@ static void on_wifi_event(void *arg, esp_event_base_t base, int32_t id, void *da
             wifi_event_sta_disconnected_t *d = data;
             int reason = d ? d->reason : -1;
             s_has_ip = false;
+            // An established link lost — not our own watchdog reconnect, not
+            // an AP-requested move, not a failed connect attempt.
+            if (s_assoc_since_us > 0 && reason != REASON_BTM_ROAMING
+                    && !(s_wd_reconnect_pending && reason == WIFI_REASON_ASSOC_LEAVE)
+                    && !s_wps_active && !s_wps_restart_pending) {
+                s_link_drops++;
+            }
+            s_assoc_since_us = 0;
 
             if (reason == REASON_BTM_ROAMING) {
                 // The supplicant follows the AP's BSS transition request and
@@ -837,12 +850,19 @@ esp_err_t wifi_connect(void)
     return ESP_OK;
 }
 
-bool wifi_link_info(int *rssi, float *tx_dbm)
+bool wifi_link_status(wifi_link_t *l)
 {
+    memset(l, 0, sizeof(*l));
+    l->drops = s_link_drops;
     int8_t qdbm;
-    if (esp_wifi_get_max_tx_power(&qdbm) == ESP_OK) *tx_dbm = qdbm / 4.0f;
+    if (esp_wifi_get_max_tx_power(&qdbm) == ESP_OK) l->tx_dbm = qdbm / 4.0f;
     wifi_ap_record_t ap;
     if (esp_wifi_sta_get_ap_info(&ap) != ESP_OK) return false;
-    *rssi = ap.rssi;
+    l->rssi = ap.rssi;
+    l->channel = ap.primary;
+    snprintf(l->ssid, sizeof(l->ssid), "%.32s", (const char *)ap.ssid);
+    format_bssid(ap.bssid, l->bssid, sizeof(l->bssid));
+    int64_t since = s_assoc_since_us;
+    if (since > 0) l->connected_s = (uint32_t)((esp_timer_get_time() - since) / 1000000LL);
     return true;
 }

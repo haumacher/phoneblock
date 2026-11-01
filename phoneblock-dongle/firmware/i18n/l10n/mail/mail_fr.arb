@@ -16,6 +16,7 @@
   "sum.uptime": "Durée : {hours} h {minutes} min",
   "sum.calls": "Nombre total d'appels : {total} &nbsp;|&nbsp; Spams bloqués : {blocked} &nbsp;|&nbsp; Appels transmis : {passed}",
   "calls.heading": "Derniers appels",
+  "calls.not_listed": "Non répertoriés : <b>{count}</b> appels plus anciens.",
   "calls.time": "Heure",
   "calls.number": "Numéro",
   "calls.name": "Nom",
@@ -33,6 +34,5 @@
   "verdict.error": "Erreur",
   "verdict.unknown": "inconnu",
   "log.heading": "Nouvelles entrées dans le journal",
-  "update.body": "Le micrologiciel de ton {device} a été mis à jour vers la version {version}.",
-  "calls.not_listed": "Non répertoriés : <b>{count}</b> appels plus anciens."
+  "update.body": "Le micrologiciel de ton {device} a été mis à jour vers la version {version}."
 }

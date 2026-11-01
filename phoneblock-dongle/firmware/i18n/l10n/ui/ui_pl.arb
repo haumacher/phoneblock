@@ -476,5 +476,7 @@
   "status.rec.download": "Pobierz nagranie (WAV)",
   "status.rec.delete": "Usuń nagranie",
   "status.rec.delete.confirm": "Czy chcesz usunąć to nagranie? Połączenie pozostanie na liście.",
-  "status.rec.failed": "Nie udało się załadować nagrania."
+  "status.rec.failed": "Nie udało się załadować nagrania.",
+  "status.system.wifi_link": "Sieć Wi-Fi „{ssid}” poprzez punkt dostępowy {bssid}, kanał {channel}, połączona od {since}",
+  "status.system.wifi_drops": "{drops} Przerwy w połączeniu od momentu uruchomienia"
 }

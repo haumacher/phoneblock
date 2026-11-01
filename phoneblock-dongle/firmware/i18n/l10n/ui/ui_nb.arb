@@ -476,5 +476,7 @@
   "status.rec.download": "Last ned opptaket (WAV)",
   "status.rec.delete": "Slett opptak",
   "status.rec.delete.confirm": "Skal denne opptaket slettes? Samtalen forblir i listen.",
-  "status.rec.failed": "Opptaket kunne ikke lastes inn."
+  "status.rec.failed": "Opptaket kunne ikke lastes inn.",
+  "status.system.wifi_link": "Wi-Fi «{ssid}» via tilgangspunkt {bssid}, kanal {channel}, tilkoblet siden {since}",
+  "status.system.wifi_drops": "{drops} Tilkoblingsbrudd siden oppstart"
 }

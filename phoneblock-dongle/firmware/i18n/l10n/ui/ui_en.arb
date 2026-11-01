@@ -476,5 +476,7 @@
   "status.rec.download": "Download recording (WAV)",
   "status.rec.delete": "Delete Recording",
   "status.rec.delete.confirm": "Delete this recording? The call will remain in the list.",
-  "status.rec.failed": "The recording could not be loaded."
+  "status.rec.failed": "The recording could not be loaded.",
+  "status.system.wifi_link": "Wi-Fi \"{ssid}\" via access point {bssid}, channel {channel}, connected since {since}",
+  "status.system.wifi_drops": "{drops} Disconnections since startup"
 }

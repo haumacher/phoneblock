@@ -16,6 +16,7 @@
   "sum.uptime": "المدة: {hours} ساعة {minutes} دقيقة",
   "sum.calls": "إجمالي المكالمات: {total} &nbsp;|&nbsp; المكالمات غير المرغوب فيها التي تم حظرها: {blocked} &nbsp;|&nbsp; المكالمات التي تم تمريرها: {passed}",
   "calls.heading": "المكالمات الأخيرة",
+  "calls.not_listed": "غير مدرجة: <b>{count}</b> المكالمات الأقدم.",
   "calls.time": "الوقت",
   "calls.number": "الرقم",
   "calls.name": "الاسم",
@@ -33,6 +34,5 @@
   "verdict.error": "خطأ",
   "verdict.unknown": "غير معروف",
   "log.heading": "أخبار جديدة في المحضر",
-  "update.body": "تم تحديث البرنامج الثابت على جهازك {device} إلى الإصدار {version}.",
-  "calls.not_listed": "غير مدرجة: <b>{count}</b> المكالمات الأقدم."
+  "update.body": "تم تحديث البرنامج الثابت على جهازك {device} إلى الإصدار {version}."
 }
