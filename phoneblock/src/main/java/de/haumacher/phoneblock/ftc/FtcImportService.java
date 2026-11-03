@@ -177,7 +177,9 @@ public class FtcImportService implements ServletContextListener {
 	}
 
 	private synchronized void scheduleRetry() {
-		if (_retry != null && !_retry.isDone()) {
+		// Skip only if a retry is still pending. When called from the retry task itself, _retry is
+		// not done yet (it is executing), but its delay has elapsed - a new retry must be scheduled.
+		if (_retry != null && !_retry.isDone() && _retry.getDelay(TimeUnit.MILLISECONDS) > 0) {
 			return;
 		}
 		_retry = _schedulerService.scheduler().schedule((Runnable) this::runImport, RATE_LIMIT_RETRY_MINUTES, TimeUnit.MINUTES);
