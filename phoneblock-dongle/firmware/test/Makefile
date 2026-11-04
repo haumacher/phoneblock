@@ -350,6 +350,9 @@ test: $(BINS)
 	@# The call recordings' A-law decode and WAV builder (#663, needs node).
 	@if command -v node >/dev/null; then echo "→ rec_js_check.js"; node rec_js_check.js; \
 	 else echo "→ rec_js_check.js skipped (no node)"; fi
+	@# Only comments are stripped from the embedded web UI (#676, needs node).
+	@if command -v node >/dev/null; then echo "→ strip_web_comments_js_check.js"; node strip_web_comments_js_check.js; \
+	 else echo "→ strip_web_comments_js_check.js skipped (no node)"; fi
 
 # Linux build of the firmware modules plus its network tests; needs the
 # extra prerequisites listed in ../linux/Makefile.
