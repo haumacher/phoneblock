@@ -1951,6 +1951,16 @@ function showLoginState(){
   }
 }
 
+// <login-gate-lib>
+// Only web_auth.c's 401 asks for a sign-in; HA ingress sends its own
+// when its session has expired.
+async function isLoginRequired(resp){
+  if (!resp || resp.status !== 401) return false;
+  const body = await resp.json().catch(() => null);
+  return !!body && body.reason === 'login_required';
+}
+// </login-gate-lib>
+
 function hideLoginState(){
   const loginSec = $('loginSection');
   if (loginSec) loginSec.style.display = 'none';
@@ -1969,7 +1979,7 @@ async function refreshAll(){
   }
   const sResp = await fetch('api/status').catch(() => null);
   if (sResp && sResp.status === 401){
-    showLoginState();
+    if (await isLoginRequired(sResp)) showLoginState();
     return;
   }
   const [s, calls, errs] = await Promise.all([
