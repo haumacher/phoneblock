@@ -4,6 +4,7 @@
 !firmware/core
 !firmware/main
 !firmware/linux
+!firmware/scripts/strip-js-comments.py
 !firmware/i18n/l10n/ui/ui_en.arb
 !debian/examples/dongle.conf.example
 !docker/entrypoint.sh

@@ -91,12 +91,18 @@ target_add_binary_data(${COMPONENT_LIB} "${_mail_en_json}" TEXT DEPENDS "${_mail
 # serves it with "Content-Encoding: gzip". `gzip -9 -n` (no name/timestamp)
 # keeps the output reproducible across builds. Regenerated automatically
 # whenever web/index.html changes (MAIN_DEPENDENCY on the source).
+# Whole-line // comments are dropped first (scripts/strip-js-comments.py,
+# #676): they stay in the source but would cost ~18 KB of gzipped flash.
+set(strip_js_comments "${CMAKE_CURRENT_SOURCE_DIR}/../scripts/strip-js-comments.py")
 set(index_html_src "${CMAKE_CURRENT_SOURCE_DIR}/web/index.html")
+set(index_html_stripped "${CMAKE_CURRENT_BINARY_DIR}/index.stripped.html")
 set(index_html_gz "${CMAKE_CURRENT_BINARY_DIR}/index.html.gz")
 add_custom_command(
     OUTPUT "${index_html_gz}"
-    COMMAND gzip -9 -n -c "${index_html_src}" > "${index_html_gz}"
+    COMMAND python3 "${strip_js_comments}" "${index_html_src}" "${index_html_stripped}"
+    COMMAND gzip -9 -n -c "${index_html_stripped}" > "${index_html_gz}"
     MAIN_DEPENDENCY "${index_html_src}"
+    DEPENDS "${strip_js_comments}"
     COMMENT "Gzipping dashboard SPA (web/index.html)"
     VERBATIM)
 target_add_binary_data(${COMPONENT_LIB} "${index_html_gz}" BINARY
@@ -106,11 +112,14 @@ target_add_binary_data(${COMPONENT_LIB} "${index_html_gz}" BINARY
 # SPA, served at /rec.js — on the S3 only (see _board_srcs above).
 if(_target STREQUAL "esp32s3")
     set(rec_js_src "${CMAKE_CURRENT_SOURCE_DIR}/web/rec.js")
+    set(rec_js_stripped "${CMAKE_CURRENT_BINARY_DIR}/rec.stripped.js")
     set(rec_js_gz "${CMAKE_CURRENT_BINARY_DIR}/rec.js.gz")
     add_custom_command(
         OUTPUT "${rec_js_gz}"
-        COMMAND gzip -9 -n -c "${rec_js_src}" > "${rec_js_gz}"
+        COMMAND python3 "${strip_js_comments}" "${rec_js_src}" "${rec_js_stripped}"
+        COMMAND gzip -9 -n -c "${rec_js_stripped}" > "${rec_js_gz}"
         MAIN_DEPENDENCY "${rec_js_src}"
+        DEPENDS "${strip_js_comments}"
         COMMENT "Gzipping the call recordings' web UI (web/rec.js)"
         VERBATIM)
     target_add_binary_data(${COMPONENT_LIB} "${rec_js_gz}" BINARY
